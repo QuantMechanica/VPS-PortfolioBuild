@@ -1,0 +1,9 @@
+.private/
+.claude/settings.local.json
+*.log
+Thumbs.db
+Desktop.ini
+desktop.ini
+*.env
+*.key
+*.pem

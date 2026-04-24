@@ -1,0 +1,82 @@
+You are working on the QuantMechanica VPS.
+
+Task:
+Determine which custom symbol matches the live broker EURUSD symbol in the T1 factory terminal on the D drive:
+
+- Broker symbol: EURUSD
+- European DST candidate: EURUSD_DAYLIGHT
+- US DST candidate: EURUSD_DAYLIGHT2
+
+You must do this end-to-end yourself using the T1 MT5 installation and an MT5 script that you create, compile, and execute. Do not rely on visual chart inspection alone.
+
+Environment constraints:
+- Work only against the T1 factory terminal on D:\
+- Do NOT modify T6_Live
+- Do NOT expose or log credentials, passwords, account IDs, or other sensitive values
+- Do NOT guess; produce machine-checkable evidence
+
+What you must do:
+1. Locate the exact T1 MT5 installation and confirm the real portable data folder in use.
+2. Confirm that these symbols exist in T1:
+   - EURUSD
+   - EURUSD_DAYLIGHT
+   - EURUSD_DAYLIGHT2
+   If any are missing, stop and report that clearly.
+3. Create an MT5 script inside T1 `MQL5\Scripts` that compares:
+   - EURUSD vs EURUSD_DAYLIGHT
+   - EURUSD vs EURUSD_DAYLIGHT2
+4. The script must:
+   - accept symbol names, timeframe, and date range as inputs
+   - compare bar counts
+   - compare exact bar open times
+   - report first mismatch
+   - report total mismatches
+   - report time delta in seconds and minutes
+   - report whether the delta is constant or shifts during the tested range
+   - optionally compare OHLC if useful
+   - write CSV evidence into `MQL5\Files` or `Common\Files`
+   - print a clear `PASS` or `SETUP_DATA_MISMATCH` summary into the MT5 log
+5. Compile the script with MetaEditor.
+6. Execute it in T1 for a DST-sensitive spring window. Start with:
+   - From: `2026.03.08 00:00`
+   - To: `2026.04.05 23:59`
+   - Timeframe: `M1`
+   If the full range is not available, use the broadest available subset and state that clearly.
+7. If useful, run a second confirmation window to strengthen the conclusion.
+8. Compare both custom symbols against live EURUSD and determine:
+   - which one matches better
+   - whether either is fully correct
+   - whether neither is correct
+9. Based on evidence, answer these exact questions:
+   - Does `EURUSD_DAYLIGHT` match live `EURUSD`?
+   - Does `EURUSD_DAYLIGHT2` match live `EURUSD`?
+   - If there is a mismatch, how large is it?
+   - Is the mismatch constant or shifting?
+   - Does switching from European DST to US DST solve the problem?
+   - Or does the evidence instead suggest the base GMT offset must be changed, for example to GMT+3?
+   - If neither conclusion is proven from the current symbol state, say that explicitly and explain what must be rebuilt or re-exported.
+10. Do not tell me what to click. Perform the work yourself where the environment allows it.
+
+Interpretation rule:
+- A timezone mismatch is `SETUP_DATA_MISMATCH`
+- Do not call it a strategy problem
+
+Preferred final output format:
+- Status
+- Exact T1 path used
+- Exact MT5 data folder used
+- Script created
+- Evidence files
+- Result for EURUSD_DAYLIGHT
+- Result for EURUSD_DAYLIGHT2
+- Which symbol matches better
+- Mismatch size
+- Interpretation
+- Recommended next configuration:
+  - keep European DST
+  - use US DST
+  - rebuild with GMT+3
+  - rebuild with another export setting
+  - insufficient evidence
+
+If you hit a blocker, stop at the blocker and report exactly what is missing.
