@@ -1,5 +1,72 @@
 # Migration Log
 
+## 2026-04-26 (evening) — V5 brand application + framework trade-mgmt + chart UI
+
+Scope: pull QuantMechanica brand system from Drive into repo, write V5-application brand guide, extend framework with standardized trade-management modules and a per-EA in-chart dashboard widget.
+
+Operator: Claude Board Advisor under OWNER direction.
+
+### Brand-system migration
+
+Source on Drive (canonical, read-only for V5):
+
+- `G:\My Drive\QuantMechanica\ClaudeDesign_Upload\01_Brand_System\Brand_Guidelines.docx`
+- `G:\My Drive\QuantMechanica\ClaudeDesign_Upload\01_Brand_System\QuantMechanica_Brand_Book.html`
+- `G:\My Drive\QuantMechanica\ClaudeDesign_Upload\03_Website\style.css` (full design system)
+- `G:\My Drive\QuantMechanica\ClaudeDesign_Upload\04_Voice_Content\Brand_Voice_Samples.md`
+- `G:\My Drive\QuantMechanica\Company\Research\DASHBOARD_DESIGN_BRIEF.md`
+
+Brand stays canonical on Drive. Repo gets working artifacts only.
+
+| Repo file | Purpose |
+|---|---|
+| `branding/QM_BRANDING_GUIDE.md` | V5-application brand guide — hard rules, MT5-applicable colour mapping, voice-applied-to-V5-artifacts, where-the-brand-lives matrix |
+| `branding/brand_tokens.json` | Machine-readable colour / typography / spacing tokens; used by MQL5 (via `sync_brand_tokens.ps1` → `QM_Branding.mqh`) and CSS-consuming scripts |
+
+### Framework extension
+
+`framework/V5_FRAMEWORK_DESIGN.md` extended with 7 new MQL5 include modules:
+
+- `QM_Branding.mqh` — colour + font constants generated from brand_tokens.json
+- `QM_OrderTypes.mqh` — typed wrappers for MT5's 5 order types
+- `QM_Entry.mqh` — single entry point with kill-switch / news / risk / dup-check enforcement
+- `QM_Exit.mqh` — single exit point with named-reason enum
+- `QM_StopRules.mqh` — ATR / structure / volatility / fixed-pip stop strategies
+- `QM_TradeManagement.mqh` — position lifecycle (open / modify / partial / pyramiding opt-in)
+- `QM_ChartUI.mqh` — per-EA in-chart dashboard widget
+
+Implementation order grew from 15 to 25 steps. New steps include `sync_brand_tokens.ps1` and `brand_report.ps1` for the brand-toolchain side.
+
+### Per-EA chart UI design
+
+Specced in `framework/V5_FRAMEWORK_DESIGN.md` § QM_ChartUI:
+
+- 720×200 px panel, configurable anchor corner, collapses below 720px chart width
+- Header: wordmark + EA name + UTC timestamp
+- 6 stat tiles: Risk %, Open P/L, Today P/L, Magic, News Mode, Kill Switch
+- Status row: AutoTrading + NewsFilter + Calendar
+- Log footer: last major event one-liner
+- ChartObject API only (no custom indicator buffer); `OnTimer` 1s refresh
+- Tester mode: minimal rendering, no tick overhead
+
+### Decision log
+
+| File | SHA256 |
+|---|---|
+| `decisions/2026-04-26_v5_branding_and_chart_ui.md` | computed at next build_check |
+
+### Phase 0 board updates
+
+- P0-28 added: brand-system migration + V5 brand guide — DONE
+- P0-29 added: framework trade-mgmt + chart UI extension — DESIGN DONE, implementation pending Codex (continues from P0-26)
+
+### Out of scope (NOT done)
+
+- Codex framework implementation — Codex's task per implementation order
+- Logo SVG copy into `branding/assets/` — pending OWNER confirm of brand guide § 10 default
+- Backtest report styler (`brand_report.ps1`) implementation — pending Codex
+- Public web dashboard work — separate workstream (P0-16 / WEBSITE_DASHBOARD_PAPERCLIP_STYLE.md), not affected by this commit
+
 ## 2026-04-26 (afternoon) — Codex second pass + V5 sub-gate reconstruction + framework defaults
 
 Scope: receive Codex second-pass on the missing V2.1 sub-gate receipts, reconstruct V5 sub-gate spec from surviving evidence, lock in the 6 framework-design defaults so Codex can begin implementation.

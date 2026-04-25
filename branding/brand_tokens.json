@@ -1,0 +1,166 @@
+{
+  "$schema": "QuantMechanica V5 Brand Tokens",
+  "version": "1.0.0",
+  "source": "G:/My Drive/QuantMechanica/ClaudeDesign_Upload/03_Website/style.css",
+  "updated": "2026-04-26",
+  "guide": "branding/QM_BRANDING_GUIDE.md",
+
+  "color": {
+    "surface": {
+      "bg":          "#020617",
+      "surface_0":   "#060b18",
+      "surface_1":   "#0f172a",
+      "surface_2":   "#1e293b",
+      "glass":       "rgba(15,23,42,0.6)"
+    },
+    "border": {
+      "default":  "rgba(148,163,184,0.08)",
+      "strong":   "rgba(148,163,184,0.18)",
+      "bright":   "rgba(148,163,184,0.32)"
+    },
+    "text": {
+      "primary":  "#f8fafc",
+      "dim":      "#cbd5e1",
+      "muted":    "#94a3b8",
+      "subtle":   "#64748b",
+      "faint":    "#475569"
+    },
+    "brand": {
+      "emerald":        "#10b981",
+      "emerald_light":  "#34d399",
+      "emerald_dark":   "#059669",
+      "emerald_subtle": "rgba(16,185,129,0.12)",
+      "emerald_glow":   "rgba(16,185,129,0.25)"
+    },
+    "status": {
+      "pass":       "#10b981",
+      "promising":  "#f59e0b",
+      "fail":       "#ef4444",
+      "dead":       "#6b7280",
+      "live":       "#06b6d4",
+      "warn":       "#f59e0b",
+      "info":       "#3b82f6"
+    }
+  },
+
+  "color_mql5_bgr_int": {
+    "comment": "MT5 uses BGR ints; values below are the BGR equivalent of the RGB hex above. Use these in MQL5 color constants.",
+    "bg":         "0x170602",
+    "surface_1":  "0x2a170f",
+    "text_primary":"0xfcfaf8",
+    "text_muted": "0xb8a394",
+    "emerald":    "0x81b910",
+    "fail":       "0x4444ef",
+    "promising":  "0x0b9ef5",
+    "live":       "0xd4b606",
+    "dead":       "0x80726b"
+  },
+
+  "typography": {
+    "font_sans":  "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif",
+    "font_mono":  "'Source Code Pro', ui-monospace, 'SF Mono', Menlo, monospace",
+    "mt5_font_sans": "Segoe UI",
+    "mt5_font_mono": "Consolas",
+    "size": {
+      "xs":   11,
+      "sm":   13,
+      "base": 15,
+      "md":   17,
+      "lg":   20,
+      "xl":   24,
+      "2xl":  32,
+      "3xl":  42,
+      "4xl":  56,
+      "5xl":  72,
+      "6xl":  96
+    },
+    "line_height": {
+      "tight":   1.08,
+      "snug":    1.2,
+      "normal":  1.5,
+      "relaxed": 1.7
+    },
+    "letter_spacing": {
+      "headline":  "-2px",
+      "wordmark":  "-1px",
+      "label":     "+1px",
+      "normal":    "0"
+    }
+  },
+
+  "spacing": {
+    "comment": "4px base unit. Token = pixels.",
+    "1":  4,
+    "2":  8,
+    "3":  12,
+    "4":  16,
+    "5":  20,
+    "6":  24,
+    "8":  32,
+    "10": 40,
+    "12": 48,
+    "16": 64,
+    "20": 80,
+    "24": 96,
+    "32": 128
+  },
+
+  "radius": {
+    "xs":   4,
+    "sm":   8,
+    "md":   12,
+    "lg":   16,
+    "xl":   20,
+    "2xl":  24,
+    "pill": 999
+  },
+
+  "shadow": {
+    "sm":      "0 1px 2px rgba(0,0,0,0.6)",
+    "md":      "0 4px 16px rgba(0,0,0,0.5)",
+    "lg":      "0 12px 40px rgba(0,0,0,0.6)",
+    "glow":    "0 0 48px rgba(16,185,129,0.18)",
+    "glow_sm": "0 0 12px rgba(16,185,129,0.25)"
+  },
+
+  "motion": {
+    "ease_out":     "cubic-bezier(0.16,1,0.3,1)",
+    "ease_in_out":  "cubic-bezier(0.65,0,0.35,1)",
+    "duration_fast": "150ms",
+    "duration_base": "250ms",
+    "duration_slow": "400ms"
+  },
+
+  "wordmark": {
+    "left":      { "text": "Quant",     "color": "#f8fafc", "weight": 700 },
+    "right":     { "text": "Mechanica", "color": "#10b981", "weight": 700 },
+    "dot": {
+      "size_px":   10,
+      "color":     "#10b981",
+      "glow":      "0 0 12px #10b981",
+      "animation": "breathe 3s ease-in-out infinite"
+    },
+    "ascii":     "QuantMechanica",
+    "ascii_short": "QM5"
+  },
+
+  "voice": {
+    "person":     "first_singular",
+    "pronoun":    "I",
+    "forbidden_pronoun": "we",
+    "attributes": ["honest", "data_driven", "self_ironic_failures", "technical_accessible", "first_person"],
+    "forbidden":  ["hype", "guru_tone", "corporate_speak", "weak_apologetic", "false_precision", "profit_promise", "100_percent_win_rate", "guaranteed", "proven_returns"]
+  },
+
+  "forbidden_globally": [
+    "light_backgrounds",
+    "fonts_other_than_inter_or_source_code_pro_or_fallbacks",
+    "colours_not_in_palette",
+    "emojis_in_professional_content",
+    "stock_photos",
+    "lambo_imagery",
+    "money_pile_imagery",
+    "neon_glow",
+    "red_as_design_accent"
+  ]
+}
