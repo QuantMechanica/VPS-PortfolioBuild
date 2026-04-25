@@ -449,13 +449,46 @@ When this design is approved, Codex implements in strict order:
 
 Each step writes its own evidence note under `D:\QM\reports\framework\<step>/`.
 
-## Open Questions To Confirm Before Codex Starts
+## Confirmed Defaults (2026-04-26)
 
-1. **Logger output path**: per-EA file vs. one daily rotating file shared. Per-EA is easier to grep but more handles open. Default proposed: per-EA.
-2. **`PORTFOLIO_WEIGHT` ≤ 1.0 enforcement**: hard fail on > 1.0 or just clamp + warn? Default proposed: hard fail.
-3. **News CSV refresh policy**: weekly cron + manifest re-deploy, or in-place update with hash check? Default proposed: in-place with hash logged at every `OnInit`.
-4. **EA per folder vs. flat**: I've proposed one folder per EA (`EAs/QM5_NNNN_<slug>/`) so each EA's set files and docs live next to it. Alternative is flat with set files in a shared `setfiles/`. Folder-per-EA recommended for grep-ability.
-5. **`OnTester` default objective**: `Profit Factor`, `Sharpe`, or a V5-specific composite (e.g. `PF * sqrt(N) * (1 - DD)`)? Default proposed: PF for V5 day-1, with `QM_DefaultObjective()` switchable per EA.
-6. **Compile via `metaeditor.exe` vs. `terminal64.exe /compile`**: both work; `metaeditor.exe` produces cleaner logs. Default proposed: `metaeditor.exe`.
+OWNER asked for a defaults proposal; below are the binding choices. Each line is the chosen default + the alternative it overrules + the reason.
 
-OWNER + CTO confirms these defaults (or overrides) before Codex implements.
+### 1. Logger output path → **per-EA file**
+
+- Path: `<MT5 data folder>/MQL5/Logs/QM/QM5_NNNN_<slug>.log`, JSON-line, one file per EA per terminal.
+- Rejected: single shared rotating file. Reason: V5 runs many EAs in parallel on T1-T5; lock contention on a shared file under tester load creates real corruption risk, and grep-by-EA is the dominant query pattern.
+- Operational: a daily zero-overhead rollover script under `framework/scripts/rotate_logs.ps1` archives any log > 100 MB into `<dir>/archive/<date>/`.
+
+### 2. `PORTFOLIO_WEIGHT` > 1.0 → **hard fail with `EA_INPUT_PORTFOLIO_WEIGHT_OUT_OF_RANGE`**
+
+- Range: `0.0 < PORTFOLIO_WEIGHT ≤ 1.0`. Zero or negative or > 1.0 → `OnInit` returns `INIT_FAILED`.
+- Rejected: clamp + warn. Reason: portfolio weight comes from the deploy manifest. A weight > 1.0 is always a manifest authoring error — silently clamping would hide the error and ship a sleeve at unintended sizing. V5's evidence-first stance prefers loud failure.
+
+### 3. News CSV refresh → **in-place update with hash check at every `OnInit`**
+
+- `QM_NewsFilter` reads `D:\QM\data\news_calendar\*.csv` at every `OnInit`, computes SHA256, logs the hash via `QM_LogEvent(QM_INFO, "NEWS_CALENDAR_LOADED", {hash, rows, modified_utc})`.
+- Refresh process: a weekly Task-Scheduler job updates the CSVs in place from the canonical source; hash change is visible via the `OnInit` log line on next EA restart.
+- Rejected: weekly cron + manifest re-deploy. Reason: every news-rule change shouldn't require redeploying every EA. The hash log gives auditable change history without operational overhead.
+- Hard rule (preserved): if either CSV is missing or unreadable at `OnInit`, all news modes except `QM_NEWS_OFF` return `false` for all queries and `SETUP_DATA_MISSING` is logged. EA does not silently fall back to "no news filter".
+
+### 4. EA per folder → **one folder per EA**
+
+- `framework/EAs/QM5_NNNN_<slug>/` with `QM5_NNNN_<slug>.mq5`, `sets/`, `docs/`.
+- Rejected: flat layout with shared `setfiles/`. Reason: per-EA grouping keeps the strategy card, set files, and lessons-learned for one sleeve in one place. Lessons-learned are the V5 mechanism for preventing V4-style waiver creep — they need to live next to the EA, not in a shared graveyard.
+
+### 5. `OnTester` default objective → **Profit Factor**, switchable per-EA via `QM_DefaultObjective()`
+
+- Default: `OnTester` returns `Profit Factor` for V5 day-1.
+- Per-EA override: an EA can set `qm_objective = QM_OBJ_SHARPE` or `QM_OBJ_PF_NCOMP` (composite `PF * sqrt(N) * (1 - DD)`) via input.
+- Rejected (as default): bare Sharpe — too sensitive to small N during early V5 testing. Rejected (as default): V5-composite — has tunable weights that drift; better as opt-in.
+- Quality-Tech reviews this default after the first 5 V5 EAs reach P3 (tracked in `PIPELINE_V5_SUB_GATE_SPEC.md` § Recalibration Triggers).
+
+### 6. Compile tool → **`metaeditor.exe`** (not `terminal64.exe /compile`)
+
+- All `compile_one.ps1` calls invoke `metaeditor.exe /compile:<path>.mq5 /log:<build/path>.log`.
+- Rejected: `terminal64.exe /compile`. Reason: `metaeditor.exe` produces a cleaner machine-parseable log (line / column / severity / code), and does not require a running terminal context. Terminal-mode compile leaves more side-effects in the data folder.
+- Strict mode default in `build_check.ps1`: 0 errors, 0 warnings. Per-EA override possible via `framework/EAs/QM5_NNNN_<slug>/.compile-warnings-allowed` (a file listing tolerated warning codes), but use is logged and CEO + CTO sign-off required to add a code.
+
+### What this unblocks
+
+Codex can implement per § Implementation Order without further round-trip on these six. Any future override goes through a new ADR entry under `decisions/`.

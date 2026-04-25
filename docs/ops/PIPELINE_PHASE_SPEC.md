@@ -90,7 +90,7 @@ T6 is the live execution terminal. T1-T5 never trade live.
 ## Open Questions / TBD
 
 - News-rule-set compliance variants (FTMO / The5ers / no-trading-on-news / news-only) are **not** part of the canonical P8 News Impact spec. Decision pending: see `decisions/2026-04-25_news_compliance_variants_TBD.md`.
-- **Sub-gate detail must be authored fresh by V5.** Codex laptop investigation 2026-04-26 confirmed that `Company/Results/CODEX_PIPELINE_V2.1_SPEC.md`, `_IMPACT.md`, and `_DIFF.md` **do not exist on the laptop**. The one-line gate descriptions in the table above are the only persisted spec. Concrete parameters — P5 calibrated stress scenario list, P5b MC trial counts and noise magnitudes, P6 per-seed acceptance band, P7 DSR/MC/FDR threshold formulas, P10 KS-test statistic + p-value + lookback + kill action — must be defined by V5 (Quality-Tech + CTO) before the corresponding gate runs against any V5 EA. Owner: Quality-Tech, with first author pass once the V5 framework (P0-26) produces the first EA distributions.
+- **Sub-gate detail authored 2026-04-26 in `docs/ops/PIPELINE_V5_SUB_GATE_SPEC.md`** — V5-local reconstruction replacing the missing V4 `CODEX_PIPELINE_V2.1_SPEC/IMPACT/DIFF.md` files (Codex 2026-04-26 second-pass confirmed they do not exist anywhere on Drive). Defaults are provisional pending Quality-Tech recalibration after first V5 EA distributions exist.
 
 ## Evidence Index
 

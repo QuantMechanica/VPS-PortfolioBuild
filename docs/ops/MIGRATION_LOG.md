@@ -1,5 +1,72 @@
 # Migration Log
 
+## 2026-04-26 (afternoon) — Codex second pass + V5 sub-gate reconstruction + framework defaults
+
+Scope: receive Codex second-pass on the missing V2.1 sub-gate receipts, reconstruct V5 sub-gate spec from surviving evidence, lock in the 6 framework-design defaults so Codex can begin implementation.
+
+Operator: Claude Board Advisor under OWNER direction.
+
+### Codex second-pass result
+
+- `CODEX_PIPELINE_V2.1_SPEC.md` — confirmed MISSING anywhere on `G:\`
+- `CODEX_PIPELINE_V2.1_IMPACT.md` — confirmed MISSING
+- `CODEX_PIPELINE_V2.1_DIFF.md` — confirmed MISSING
+- Search scope: full recursive filename + full-text across `G:\`, including backups
+- Git provenance unusable on laptop (`fatal: bad object refs/heads/main`)
+- Defensible conclusion: not recoverable from current Drive / backup state
+- New file in pack: `pipeline_spec_second_pass_provenance.md`
+
+### V5 sub-gate reconstruction
+
+OWNER approved Codex's suggestion to reconstruct from surviving evidence into a V5-local receipt set. Single file chosen over three (cleaner single-source-of-truth):
+
+| File | Purpose |
+|---|---|
+| `docs/ops/PIPELINE_V5_SUB_GATE_SPEC.md` | per-phase sub-gate parameters for P3.5, P5, P5b, P5c, P6, P7, P10 with provenance, V5 vs V2.1 diff section, recalibration triggers, open items for Quality-Tech |
+| `decisions/2026-04-26_v5_sub_gate_reconstruction.md` | ADR documenting the reconstruction approach, source-by-source mapping, alternatives rejected |
+
+Provenance built from surviving evidence:
+
+- laptop `doc/pipeline-v2-1-detailed.md` (one-line spec table)
+- laptop `Company/scripts/README_V2.1_RUNNERS.md` (concrete CLI + defaults)
+- laptop `Company/Results/V5_PORTFOLIO_RISK_REVIEW_20260418.md`
+- laptop `Company/Results/V5_COMPOSITION_LOCK_20260418.md`
+- laptop `Company/Results/V5_P6_MULTISEED_WAIVERS_20260418.md`
+- laptop `Company/Results/SM_221_P5B_YELLOW_DECISION_20260418.md`
+- laptop `Company/Results/SM_221_P8_NEWS_IMPACT_20260418.md`
+- laptop `Company/Results/P5_CALIBRATED_NOISE_RECAL_SM_124_UK100_20260418_R002.md`
+
+V5 additions over V4 evidence (each documented in the spec): P5 trade-count guard, P5b one-YELLOW-per-basket cap, P6 4-state verdict, P7 consolidated runner, P10 numeric KS thresholds + lookback + minimum sample size + shadow magic offset, broad-asset-class taxonomy, crisis-slice list.
+
+### Framework defaults locked
+
+`framework/V5_FRAMEWORK_DESIGN.md` § Open Questions replaced with § Confirmed Defaults:
+
+1. Logger output → per-EA file (rejected: shared rotating)
+2. `PORTFOLIO_WEIGHT > 1.0` → hard fail (rejected: clamp + warn)
+3. News CSV refresh → in-place + hash log at OnInit (rejected: weekly cron + manifest re-deploy)
+4. EA layout → one folder per EA (rejected: flat with shared setfiles/)
+5. `OnTester` default → Profit Factor, switchable per-EA (rejected as default: Sharpe, V5-composite)
+6. Compile tool → `metaeditor.exe` (rejected: `terminal64.exe /compile`)
+
+Codex implementation can now begin without further OWNER round-trip on these six.
+
+### Phase 0 board updates
+
+- P0-26 status updated to "DESIGN DONE + DEFAULTS CONFIRMED, implementation pending Codex"
+- P0-27 added: V5 sub-gate spec reconstruction — DONE
+
+### PIPELINE_PHASE_SPEC.md updates
+
+Open Questions section updated to reference the new sub-gate spec; sub-gate-detail TBD removed (now satisfied by `PIPELINE_V5_SUB_GATE_SPEC.md`).
+
+### Out of scope (NOT done)
+
+- Codex framework implementation — Codex's next task
+- Quality-Tech first calibration pass on the provisional defaults — blocked on first V5 EA producing distributions
+- Re-author of the three V4 receipts as literal V4 files — explicitly rejected per ADR
+- Notion mirror update for the new sub-gate spec — Documentation-KM follow-up
+
 ## 2026-04-26 — Codex laptop pack delivery + V5 framework design
 
 Scope: receive Codex laptop investigation pack, fold findings into VPS docs, write V5 EA framework design.
