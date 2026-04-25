@@ -10,9 +10,9 @@ This document exists to onboard the VPS Claude instance before it performs DST v
 - Local reports: `D:\QM\reports`
 - Local exports: `D:\QM\exports`
 - Local news seed target: `D:\QM\data\news_calendar`
-- Google Drive mount on Windows host: `G:\MyDrive`
-- QuantMechanica Drive root on host: `G:\MyDrive\QuantMechanica`
-- VPS bootstrap pack on host: `G:\Meine Ablage\QuantMechanica - VPS Portfolio Build`
+- Google Drive mount on Windows host: `G:\My Drive\` (canonical; older docs may say `G:\MyDrive` or `G:\Meine Ablage\` — those do not resolve on this VPS)
+- QuantMechanica Drive root on host: `G:\My Drive\QuantMechanica\`
+- VPS bootstrap pack on host: `G:\My Drive\QuantMechanica - VPS Portfolio Build\`
 - Notion is available for review and cross-checks, but local files remain higher priority once exported.
 
 ## Old Project Context
@@ -28,12 +28,13 @@ Claude may inspect the old project to identify reusable assets, but must not ass
 
 ## News Calendar / CSV Data
 Current known seed location in the bootstrap pack:
-- `Seeds\news_calendar\news_calendar_2015_2025.csv`
-- `Seeds\news_calendar\forex_factory_calendar_clean.csv`
-- `Seeds\news_calendar\MANIFEST.md`
+- `G:\My Drive\QuantMechanica - VPS Portfolio Build\Seeds\news_calendar\news_calendar_2015_2025.csv`
+- `G:\My Drive\QuantMechanica - VPS Portfolio Build\Seeds\news_calendar\forex_factory_calendar_clean.csv`
+- `G:\My Drive\QuantMechanica - VPS Portfolio Build\Seeds\news_calendar\MANIFEST.md`
 
-Claude should treat these files as the initial known seed set for news data.
-If additional or better news datasets exist in `G:\MyDrive\QuantMechanica`, Claude may inventory them and recommend migration, but it must document the source path and why the replacement is better.
+Already installed on VPS at `D:\QM\data\news_calendar\` (verified 2026-04-24 by SHA256 + row count, see `MIGRATION_LOG.md`).
+
+If additional or better news datasets exist in `G:\My Drive\QuantMechanica\`, Claude may inventory them and recommend migration, but it must document the source path and why the replacement is better.
 
 ## Notion Usage Rule
 Notion can be used to:
@@ -65,10 +66,10 @@ Claude should be prepared to help with:
 
 ## Required First Pass Inventory
 Before major implementation work, Claude should inventory and summarize:
-- `G:\MyDrive\QuantMechanica`
+- `G:\My Drive\QuantMechanica\`
 - local `docs\ops\`
 - local `.private\VPS_SERVER_RECORD.md`
-- local `Seeds\news_calendar\`
+- local `D:\QM\data\news_calendar\` (already installed)
 
 The result should be a concise migration/inventory summary that answers:
 - what should be reused from the old project

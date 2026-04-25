@@ -3,8 +3,9 @@
 This guide exists because the VPS Claude instance cannot assume that all important QuantMechanica V5 knowledge already lives under `C:\QM\repo`.
 
 At onboarding time, the knowledge base is distributed across:
-- Google Drive on the VPS host (`G:\MyDrive`)
-- the VPS bootstrap pack (`G:\Meine Ablage\QuantMechanica - VPS Portfolio Build`)
+- Google Drive on the VPS host (`G:\My Drive\` — canonical; NOT `G:\MyDrive` or `G:\Meine Ablage\`, those do not resolve on this VPS)
+- the VPS bootstrap pack (`G:\My Drive\QuantMechanica - VPS Portfolio Build\`)
+- the older project archive on the same Drive (`G:\My Drive\QuantMechanica\`)
 - Notion
 - the actual VPS operational filesystem (`C:\QM`, `D:\QM`)
 
@@ -25,26 +26,25 @@ For company context, prompts, runbooks, historic assets, and migration candidate
 
 Claude must not confuse these two layers.
 
-## Source Order During Onboarding
-Before the repo is fully populated, use this onboarding source order:
-1. `G:\Meine Ablage\QuantMechanica - VPS Portfolio Build`
-2. `G:\MyDrive\QuantMechanica`
-3. Notion root and relevant V5 pages
-4. Existing files already present in `C:\QM\repo`
-5. Actual VPS operational filesystem under `C:\QM` and `D:\QM`
+## Source Order
 
-## Source Order After Onboarding / During Operations
-Once onboarding is complete and local docs are exported:
-1. Actual VPS operational filesystem
-2. `C:\QM\repo` local docs
-3. private local docs / exported private docs
-4. Google Drive reference material
-5. Notion as cross-check source
+CLAUDE.md is the binding rule. Per CLAUDE.md, source-of-truth order is:
+
+1. Actual filesystem state on this VPS (`C:\QM`, `D:\QM`)
+2. Local private docs in `.private\`
+3. Local exported ops docs in `docs\ops\`
+4. Explicit user instructions
+5. Notion references only when local docs are missing
+
+Google Drive (`G:\My Drive\QuantMechanica\` and `G:\My Drive\QuantMechanica - VPS Portfolio Build\`) is a migration source for material that has not yet been mirrored into `C:\QM\repo`. It is read-only reference, not authoritative truth — once content is exported into the repo, the repo wins.
+
+If local repo and Drive disagree, treat the repo as canonical and report the drift. If local repo and Notion disagree, treat the repo as canonical and report the drift.
 
 ## Known Google Drive Context
-- `G:\MyDrive` is the Google Drive mount on the VPS host.
-- `G:\MyDrive\QuantMechanica` contains the complete old project.
-- Treat the old project as a migration source, not as automatically valid operational truth for V5.
+- `G:\My Drive\` is the Google Drive mount on the VPS host (with a space; the German-locale alias `Meine Ablage` does not exist here, and `MyDrive` without space does not resolve either).
+- `G:\My Drive\QuantMechanica\` contains the complete old project (laptop archive: pipeline-v2-1-detailed.md, Company/, etc.).
+- `G:\My Drive\QuantMechanica - VPS Portfolio Build\` contains the bootstrap pack used for the initial VPS migration.
+- Treat both as migration sources, not as automatically valid operational truth for V5.
 
 Claude should inventory the old project and explicitly classify findings into:
 - reuse as-is
@@ -53,7 +53,7 @@ Claude should inventory the old project and explicitly classify findings into:
 - ignore / obsolete
 
 ## Things Claude Must Try To Locate In Google Drive
-Claude should search `G:\MyDrive\QuantMechanica` for:
+Claude should search `G:\My Drive\QuantMechanica\` for:
 - old strategy archive material
 - previous prompts and agent definitions
 - company/process docs
@@ -64,10 +64,10 @@ Claude should search `G:\MyDrive\QuantMechanica` for:
 - test / backtest outputs that may still be useful as reference
 
 ## News Data Guidance
-Known current seed set in the bootstrap pack:
-- `G:\Meine Ablage\QuantMechanica - VPS Portfolio Build\Seeds\news_calendar\news_calendar_2015_2025.csv`
-- `G:\Meine Ablage\QuantMechanica - VPS Portfolio Build\Seeds\news_calendar\forex_factory_calendar_clean.csv`
-- `G:\Meine Ablage\QuantMechanica - VPS Portfolio Build\Seeds\news_calendar\MANIFEST.md`
+Known current seed set in the bootstrap pack (already installed on `D:\QM\data\news_calendar\` per `MIGRATION_LOG.md`):
+- `G:\My Drive\QuantMechanica - VPS Portfolio Build\Seeds\news_calendar\news_calendar_2015_2025.csv`
+- `G:\My Drive\QuantMechanica - VPS Portfolio Build\Seeds\news_calendar\forex_factory_calendar_clean.csv`
+- `G:\My Drive\QuantMechanica - VPS Portfolio Build\Seeds\news_calendar\MANIFEST.md`
 
 Claude should treat this as the currently known seed set, then search Google Drive for:
 - newer calendar files
