@@ -29,13 +29,13 @@ This supersedes the older 10-phase `Strategy Card → P1 Smoke → … → P8 Da
 
 ## What Paperclip Does Autonomously
 
-- Research extracts Strategy Cards from one approved source at a time.
-- CTO turns approved cards into technical specs.
-- Development implements one EA at a time.
-- Pipeline-Operator runs G0-P8 jobs on T1-T5.
-- Quality-Tech and Quality-Business challenge PASS decisions.
+- Research extracts Strategy Cards from one approved source at a time (G0).
+- CTO turns approved cards into technical specs (between G0 and P1).
+- Development implements one EA at a time (P1 prep).
+- Pipeline-Operator runs P1-P8 jobs on T1-T5.
+- Quality-Tech and Quality-Business challenge PASS decisions at every phase boundary.
 - CEO decides gate progression up to P8.
-- LiveOps executes approved P9b/P10/Live deploy manifests on T6.
+- LiveOps executes approved P9b / P10 / Live deploy manifests on T6 only after OWNER manifest approval.
 - Observability-SRE watches health and pages risk.
 - Controlling publishes dashboard KPIs.
 

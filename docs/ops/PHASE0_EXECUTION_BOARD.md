@@ -33,9 +33,9 @@ V5 is a restart. The first week should produce a clean public skeleton and a rep
 | P0-20 | Register news calendar seed asset and install on VPS | DevOps + Pipeline-Operator | `seed_assets/news_calendar/MANIFEST.md` reviewed; files copied to `D:\QM\data\news_calendar\`; SHA256 and row counts verified — DONE 2026-04-24 (see `MIGRATION_LOG.md`) |
 | P0-21 | Migrate canonical reconstruction docs from laptop | Claude Board Advisor | `docs/ops/CANONICAL_LAPTOP_STATE_2026-04-25.md` and `docs/ops/CANONICAL_STRATEGY_ARCHIVE_2026-04-25.md` byte-identical from Drive — DONE 2026-04-25 |
 | P0-22 | Replace 10-phase pipeline outline with 15-phase canonical spec | CTO + Claude Board Advisor | `docs/ops/PIPELINE_PHASE_SPEC.md` written from laptop `doc/pipeline-v2-1-detailed.md`; `PIPELINE_AUTONOMY_MODEL.md` rewritten; decision log entry — DONE 2026-04-25 |
-| P0-23 | Migrate process registry from laptop | Documentation-KM + CEO | 12 process docs from `Company/Processes/` copied into repo `processes/`; README updated; lessons-learned hooks intact |
-| P0-24 | Migrate strategy specs and locked-basket evidence | Research + Documentation-KM | 5 markdown specs from `Company/Research/strategies/` copied into `strategy-seeds/specs/`; `strategy-seeds/v5_locked_basket_2026-04-18.md` written from laptop `V5_COMPOSITION_LOCK_20260418.md` |
-| P0-25 | Migrate news-impact tooling from laptop | DevOps + Development | `run_news_impact_tests.py` and helper modules located on laptop, copied into repo `scripts/`, paths adjusted to VPS layout, smoke-run with `D:\QM\data\news_calendar\` |
+| P0-23 | Migrate process registry from laptop | Documentation-KM + CEO | DONE 2026-04-25: 13 files (12 process docs + README) byte-identical from `Company/Processes/`; SHA256 in `MIGRATION_LOG.md` Phase E. Content review by CEO + CTO still pending. |
+| P0-24 | Migrate strategy specs and locked-basket evidence | Research + Documentation-KM | DONE 2026-04-25: 5 markdown specs in `strategy-seeds/specs/`; `strategy-seeds/v5_locked_basket_2026-04-18.md` written; lane-drift on 3 of 5 sleeves flagged for closure before P10. SHA256 in `MIGRATION_LOG.md` Phase F. |
+| P0-25 | Migrate news-impact tooling from laptop | DevOps + Development | PENDING: `run_news_impact_tests.py` not located by recursive search of `G:\My Drive\QuantMechanica\`. Codex Task A queued (see `Phase0_Migration_Pack_2026-04-25` request). After Codex reply: copy script + helpers into repo `scripts/`, rewire to VPS paths, smoke-run with `D:\QM\data\news_calendar\`. |
 
 ## Acceptance Gate For Phase 0
 

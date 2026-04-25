@@ -52,6 +52,37 @@ Per `V5_PORTFOLIO_RISK_REVIEW_20260418.md`, with these three excluded the outlie
 - `Company/Analysis/baseline_failure_taxonomy_post_restart_20260418.md`
 - `Company/Analysis/edge_cluster_SM_890_20260418.md`
 
-## Note on Symbol-vs-Lane Discrepancies
+## Lane Drift — Three Sleeves, Not Two (revised 2026-04-26)
 
-- `SM_345` and `SM_157` are both locked on AUDNZD per `V5_COMPOSITION_LOCK_20260418.md`, but the P5b receipts on disk reference `SM_157 EURCAD` and `SM_345 EURGBP`. This may indicate a lane reassignment between P5b and the v3 lock, or a documentation drift. To verify before P9b sign-off.
+Re-read of laptop receipts shows lane drift on **three** of the five locked sleeves, not just two:
+
+| Sleeve | Lock symbol (`V5_COMPOSITION_LOCK_20260418.md`) | P5b R002 receipt symbol | Drift? |
+|---|---|---|---|
+| `SM_124` | UK100 | UK100 | none |
+| `SM_221` | AUDUSD | AUDUSD | none |
+| `SM_345` | AUDNZD | EURGBP | **yes** |
+| `SM_157` | AUDNZD | EURCAD | **yes** |
+| `SM_640` | XTIUSD | AUDUSD | **yes** |
+
+### Working Hypothesis
+
+The lock approved deploy on a different lane than P5b was run on. Most likely explanation: the lock leaned on **P3.5 Cross-Sectional Robustness** evidence (orthogonal asset-class robustness) to justify shifting the deploy lane after P5b. The P5b PASS was therefore for a *neighbouring* symbol, not the deploy symbol.
+
+This is an **elevated risk**, not a documentation glitch:
+
+- Prop-firm compliance numbers (`100.00%` daily-loss compliance) cited in `V5_PORTFOLIO_RISK_REVIEW_20260418.md` are for EURCAD / EURGBP / AUDUSD — not for the lock lanes.
+- The risk-budget statement (`MaxDD P50 -14.27, P95 -11.09`) was computed on whatever symbol the underlying P5b was run on, not the lock lane.
+- A sleeve whose edge survives EURGBP may not survive AUDNZD with the same parameter set. Cross-sectional robustness reduces but does not eliminate this risk.
+
+### Closure Required Before P10
+
+Either:
+
+1. **Run fresh P5b R002 (or R003) on the lock lanes** (`SM_345 AUDNZD`, `SM_157 AUDNZD`, `SM_640 XTIUSD`) and replace the existing receipts. Or:
+2. **Document an explicit waiver** stating that the lock lane is being approved on cross-sectional robustness alone, with named acceptance criteria.
+
+Option 1 is the safer path. Without one of these, the basket cannot cleanly clear P9b Operational Readiness for the lock lanes.
+
+### Cross-reference
+
+Codex laptop investigation (Task C in `Phase0_Migration_Pack_2026-04-25` request) is expected to confirm which hypothesis is correct, by checking `HANDOFF.md` lines ~924-933 and `V5_WEIGHT_MATRIX_SM221_0.25X_5SLEEVE.md` for any post-P5b lane-reassignment record.
