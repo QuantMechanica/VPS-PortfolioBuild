@@ -90,19 +90,32 @@ T6 is the live execution terminal. T1-T5 never trade live.
 ## Open Questions / TBD
 
 - News-rule-set compliance variants (FTMO / The5ers / no-trading-on-news / news-only) are **not** part of the canonical P8 News Impact spec. Decision pending: see `decisions/2026-04-25_news_compliance_variants_TBD.md`.
-- Sub-gate detail for P5 (which calibrated stress scenarios), P5b (MC trial counts, noise magnitudes), P6 (per-seed acceptance band), and P10 (KS-test statistic, p-value threshold, kill action) is currently captured in the laptop `Company/Results/CODEX_PIPELINE_V2.1_SPEC.md` and related artifacts. Migrate into this file when the next sub-gate audit happens.
+- **Sub-gate detail must be authored fresh by V5.** Codex laptop investigation 2026-04-26 confirmed that `Company/Results/CODEX_PIPELINE_V2.1_SPEC.md`, `_IMPACT.md`, and `_DIFF.md` **do not exist on the laptop**. The one-line gate descriptions in the table above are the only persisted spec. Concrete parameters — P5 calibrated stress scenario list, P5b MC trial counts and noise magnitudes, P6 per-seed acceptance band, P7 DSR/MC/FDR threshold formulas, P10 KS-test statistic + p-value + lookback + kill action — must be defined by V5 (Quality-Tech + CTO) before the corresponding gate runs against any V5 EA. Owner: Quality-Tech, with first author pass once the V5 framework (P0-26) produces the first EA distributions.
 
-## Evidence Index (laptop)
+## Evidence Index
 
-- `Company/Results/CODEX_PIPELINE_V2.1_SPEC.md`
-- `Company/Results/CODEX_PIPELINE_V2.1_IMPACT.md`
-- `Company/Results/CODEX_PIPELINE_V2.1_DIFF.md`
+### V5 (this repo)
+
+- `framework/V5_FRAMEWORK_DESIGN.md` — V5 EA framework spec
+- `decisions/2026-04-25_pipeline_15_phase_override.md`
+- `decisions/2026-04-26_v5_restart_clean_slate.md`
+- `decisions/2026-04-26_v5_framework_design.md`
+
+### V4 / laptop (legacy reference, NOT V5 inputs)
+
 - `Company/Results/V5_COMPOSITION_LOCK_20260418.md`
 - `Company/Results/V5_PORTFOLIO_RISK_REVIEW_20260418.md`
 - `Company/Results/V5_P6_MULTISEED_WAIVERS_20260418.md`
 - `Company/Results/SM_221_P5B_YELLOW_DECISION_20260418.md`
 - `Company/Results/SM_221_P8_NEWS_IMPACT_20260418.md`
 - `Company/Results/P5_CALIBRATED_NOISE_RECAL_SM_124_UK100_20260418_R002.md`
+
+### Confirmed missing on laptop (per Codex 2026-04-26)
+
+- `Company/Results/CODEX_PIPELINE_V2.1_SPEC.md` — does not exist
+- `Company/Results/CODEX_PIPELINE_V2.1_IMPACT.md` — does not exist
+- `Company/Results/CODEX_PIPELINE_V2.1_DIFF.md` — does not exist
+- `Company/scripts/run_news_impact_tests.py` — does not exist (V4 P8 was hand-orchestrated)
 
 ## Hard Rules
 

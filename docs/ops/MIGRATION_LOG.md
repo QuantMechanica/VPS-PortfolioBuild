@@ -1,5 +1,58 @@
 # Migration Log
 
+## 2026-04-26 — Codex laptop pack delivery + V5 framework design
+
+Scope: receive Codex laptop investigation pack, fold findings into VPS docs, write V5 EA framework design.
+
+Operator: Claude Board Advisor under OWNER direction.
+
+### Codex pack delivered
+
+Pack location (laptop side):
+
+```
+G:\Meine Ablage\QuantMechanica - VPS Portfolio Build\Phase0_Migration_Pack_2026-04-25\
+```
+
+Note: Codex used the German-locale alias `G:\Meine Ablage\` which the laptop OS exposes as the same Drive mount that the VPS reaches via `G:\My Drive\`. Both paths resolve to the same Drive root from their respective machines. No file copy needed onto the VPS — the docs read are reports about laptop state, not artifacts to import.
+
+Files in pack:
+
+- `pipeline_spec/pipeline-v2-1-detailed.md` — same file already migrated 2026-04-25, included for parity
+- `pipeline_spec/MANIFEST.md` — 4 rows; `CODEX_PIPELINE_V2.1_SPEC.md`, `_IMPACT.md`, `_DIFF.md` listed as **MISSING**
+- `news_impact_tooling_location_report.md` — verdict: **RUNNER NOT PRESENT**
+- `v4_framework_inventory.md` — 5 sections; top-3 keep / top-3 reconsider lists
+
+### Findings folded into VPS docs
+
+| Finding | Affected doc | Action |
+|---|---|---|
+| `CODEX_PIPELINE_V2.1_SPEC/IMPACT/DIFF.md` MISSING | `docs/ops/PIPELINE_PHASE_SPEC.md` | Evidence Index restructured into V5 / V4-legacy / confirmed-missing sections; Open Questions block now states sub-gate detail must be authored fresh by V5 |
+| `run_news_impact_tests.py` NOT PRESENT (P8 hand-orchestrated) | `decisions/2026-04-25_news_compliance_variants_TBD.md` | Sub-decision 3 marked RESOLVED — V5 builds tooling from scratch, no legacy constraint |
+| `Company/Include/` absent (V4 had no shared library) | `framework/V5_FRAMEWORK_DESIGN.md` | Single shared framework is now non-optional; explicitly addresses V4's root-cause failure mode |
+| Keep: `SM_ID * 10000 + slot` magic, `RISK_FIXED + RISK_PERCENT` dual mode, evidence-first markdown receipts | `framework/V5_FRAMEWORK_DESIGN.md` | Both inherited from V4 verbatim; documented as "kept" with rationale |
+| Reconsider: doc/code drift, no checked-in `.set` files, no compile harness | `framework/V5_FRAMEWORK_DESIGN.md` | Schema validation, registry-baked-into-binary, build_check pre-commit gate all designed in |
+
+### V5 EA framework design
+
+| File | SHA256 |
+|---|---|
+| `framework/V5_FRAMEWORK_DESIGN.md` | computed at next build_check |
+| `framework/README.md` | computed at next build_check |
+| `decisions/2026-04-26_v5_framework_design.md` | computed at next build_check |
+
+### Phase 0 board updates
+
+- P0-25 closed (RUNNER NOT PRESENT — V5 builds new)
+- P0-26 design phase done; implementation pending OWNER + CTO sign-off on § Open Questions
+
+### Out of scope (NOT done in this session)
+
+- Codex framework implementation — pending design sign-off
+- Authoring of V5 sub-gate detail (P5/P5b/P6/P7/P10 specifics) — Quality-Tech task once first V5 EA distributions exist
+- Notion mirror update for V5_RESTART_SCOPE_BOUNDARY.md or V5_FRAMEWORK_DESIGN.md
+- Tick Data Manager DST validation on T1
+
 ## 2026-04-25 — Phase 0 Reconstruction migration
 
 Scope: pull canonical pipeline spec, process registry, strategy specs, and locked-basket evidence from the laptop snapshot on `G:\My Drive\QuantMechanica\` into `C:\QM\repo\` so the V5 build matches actual laptop state. Address Notion / Codex 10-phase pipeline drift documented in `decisions/2026-04-25_pipeline_15_phase_override.md`.

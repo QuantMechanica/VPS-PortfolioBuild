@@ -63,7 +63,7 @@ Sub-decisions still required from OWNER before this can ship:
 
 1. First-wave deploy targets (FTMO? The5ers? DarwinexZero only?). Drives which `*_PAUSE` modes are mandatory in P8.
 2. Whether news-impact tier metadata in `D:\QM\data\news_calendar\` is sufficient for FTMO/5ers tiering. CTO + Quality-Tech sign-off.
-3. Whether existing `run_news_impact_tests.py` (laptop, location TBD per Codex Task A) can ingest a per-firm rule-set config, or needs extension.
+3. ~~Whether existing `run_news_impact_tests.py` can ingest a per-firm rule-set config, or needs extension.~~ **RESOLVED 2026-04-26**: Codex confirmed the runner does not exist; V4 P8 was hand-orchestrated from raw MT5 CSV output. V5 builds news-impact tooling from scratch as part of the V5 EA framework (see `framework/V5_FRAMEWORK_DESIGN.md` § QM_NewsFilter.mqh and the `framework/include/news_rules/{ftmo,5ers}.mqh` files). The Hybrid A+C architecture is therefore implemented natively — no porting effort, no constraint from a legacy runner.
 
 ## Decision
 
