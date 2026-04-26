@@ -76,6 +76,24 @@ def now_iso() -> str:
     return dt.datetime.now().isoformat(timespec="seconds")
 
 
+def compute_readiness(
+    *,
+    missing: list[str],
+    pending: list[Path],
+    groups_ok: bool,
+    service_ok: bool,
+    spec_bad: list[str],
+) -> bool:
+    """Single-source readiness verdict logic for report + unit tests."""
+    return (
+        not missing
+        and not pending
+        and groups_ok
+        and service_ok
+        and not spec_bad
+    )
+
+
 def open_log() -> Path:
     LOGS.mkdir(parents=True, exist_ok=True)
     return LOGS / f"hourly_{dt.date.today().isoformat()}.log"
@@ -229,12 +247,12 @@ def write_readiness_report(fp) -> bool:
             if not spec_ok:
                 spec_bad.append(s.name)
 
-        ready = (
-            not missing
-            and not pending
-            and groups_ok
-            and service_ok
-            and not spec_bad
+        ready = compute_readiness(
+            missing=missing,
+            pending=pending,
+            groups_ok=groups_ok,
+            service_ok=service_ok,
+            spec_bad=spec_bad,
         )
         verdict = "READY" if ready else "NOT_READY"
 
