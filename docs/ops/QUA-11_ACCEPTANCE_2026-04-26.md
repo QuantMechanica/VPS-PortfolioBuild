@@ -8,6 +8,7 @@ Issue: QUA-11 DevOps Day-1 - DWX heartbeat-script fix + infra audit.
 
 1. DWX service heartbeat now includes wall-clock UTC field.
 - Patched and rebuilt `D:\QM\mt5\T1\MQL5\Services\Import_DWX_Queue_Service.mq5`.
+- Added explicit heartbeat-semantics comment block at the top of `Import_DWX_Queue_Service.mq5` documenting `alive`, `broker_time`, `wall_clock_utc`, and `utc_epoch` plus weekend semantics.
 - Compile result: `0 errors, 0 warnings` in `Import_DWX_Queue_Service.compile.log`.
 - After controlled T1 terminal restart, heartbeat content:
 
