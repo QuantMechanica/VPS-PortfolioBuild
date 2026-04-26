@@ -1,5 +1,74 @@
 # Migration Log
 
+## 2026-04-26 (late night) — Sweep 1: 13 Paperclip prompts + 4 critical Notion docs + Strategy Card Template
+
+Scope: migrate the Wave-0-blocking material so Paperclip Wave 0 hire has all source-of-truth references in repo. Per OWNER 2026-04-26: "Paperclip soll das ja auch als Basis verwenden, wir werden ihm das dann selbst zum Durcharbeiten, Rollenbilden, etc. füttern" — material migrated as-is for Wave 0 to process, not pre-condensed.
+
+Operator: Claude Board Advisor under OWNER direction.
+
+### 13 Paperclip Agent Prompts → `paperclip-prompts/`
+
+All from Notion `Paperclip V2 Company Design` (id `34947da5-8f4a-8127-b842-f5b123b63287`) sub-pages. Repo file format: V5 source header + system prompt verbatim (formatted from Notion's mixed code-block syntax to clean Markdown) + V1→V5 changes table + first-issues-on-spawn list.
+
+| Wave | Role | Repo file | Notion id |
+|---|---|---|---|
+| 0 | CEO | `paperclip-prompts/ceo.md` | `34947da5-8f4a-817e-aeb6-c6b324fe7f73` |
+| 0 | CTO | `paperclip-prompts/cto.md` | `34947da5-8f4a-81e3-a49b-f0940c7e331f` |
+| 0 | Research | `paperclip-prompts/research.md` | `34947da5-8f4a-81ca-8b24-fe5a7fe57cb2` |
+| 0 | Documentation-KM | `paperclip-prompts/documentation-km.md` | `34947da5-8f4a-8125-9d97-c8c0b3422305` |
+| 1 | Pipeline-Operator | `paperclip-prompts/pipeline-operator.md` | `34947da5-8f4a-8104-a95b-ce4337631374` |
+| 1 | DevOps | `paperclip-prompts/devops.md` | `34947da5-8f4a-8197-ae2b-f3fbfe648e93` |
+| 2 | Development | `paperclip-prompts/development.md` | `34947da5-8f4a-8172-aa7a-cbeba3433322` |
+| 2 | Quality-Tech | `paperclip-prompts/quality-tech.md` | `34947da5-8f4a-811b-94e3-d4aa8079ceda` |
+| 2 | Quality-Business | `paperclip-prompts/quality-business.md` | `34947da5-8f4a-8197-ba26-ccd8a93d3e06` |
+| 3 | Controlling | `paperclip-prompts/controlling.md` | `34947da5-8f4a-815c-8d89-e28596e7d0ac` |
+| 3 | Observability-SRE | `paperclip-prompts/observability-sre.md` | `34947da5-8f4a-8188-932f-dfee5d1b0856` |
+| 4 | LiveOps | `paperclip-prompts/liveops.md` | `34947da5-8f4a-81fb-8a66-eb1ceb91adac` |
+| 5 | R-and-D | `paperclip-prompts/r-and-d.md` | `34947da5-8f4a-813d-83e4-cef62de294cc` |
+
+Also: `paperclip-prompts/README.md` documents purpose, hiring waves, source order. **Repo path is now canonical** for prompt source-of-truth (per Codex Audit § Immediate Next Action 3).
+
+CTO and DevOps prompts touched up beyond verbatim with V5-aware additions:
+
+- CTO: includes V5 framework hard rules (`framework/V5_FRAMEWORK_DESIGN.md` reference), Friday Close, ENV-mode-enforcement, 4-module Modularity, ML ban
+- DevOps: PC1-00 (Drive `.git/` exclusion + git mutex + stale-`index.lock` monitor) added as first issue on spawn — closes V4 mass-delete-incident risk before Wave 0 starts concurrent writes
+- Quality-Tech: sub-gate calibration ownership added (per `PIPELINE_V5_SUB_GATE_SPEC.md` § Recalibration Triggers)
+- Pipeline-Operator: cleaner non-V4-script-bound wording (V4 referenced specific script names that don't exist in V5)
+- Development: V5 framework usage mandatory (every V5 EA goes through `QM_Common.mqh`)
+- Observability-SRE: stale-`index.lock` watch added
+- LiveOps: P10 Shadow Deploy detail added (14-day window, KS p<0.01 kill-switch, magic offset +9000)
+
+These additions preserve the V1→V5 changes table style; deviations from Notion are explicit so Documentation-KM can reconcile.
+
+### 4 critical Notion docs → `docs/ops/`
+
+| Repo file | Notion id |
+|---|---|
+| `docs/ops/PROJECT_CHARTER.md` | `34947da5-8f4a-81a2-9de5-c04561b50eba` |
+| `docs/ops/RESEARCH_METHODOLOGY_V2.md` | `34947da5-8f4a-81d3-acf3-e1e0d6074d4a` |
+| `docs/ops/CODEX_AUDIT_V5_UPGRADE_PLAN.md` | `34947da5-8f4a-8101-b7db-c3b827733bb1` (with 2026-04-26 status updates appended) |
+| `docs/ops/PAPERCLIP_V2_COMPANY_DESIGN.md` | `34947da5-8f4a-8127-b842-f5b123b63287` (with repo agent-prompt index appended) |
+
+### Strategy Card Template
+
+`strategy-seeds/cards/_TEMPLATE.md` authored from `RESEARCH_METHODOLOGY_V2.md` § Step 2 + V5 Hub Fragenkatalog conventions (4-module Modularity, V5 strategy allowability check including ML ban, Friday Close compatibility check). 14 sections covering source, concept, markets, entry, exit, filters, trade management, parameters, author claims, risk profile, allowability, implementation notes, pipeline history, lessons captured. Status field tracks DRAFT → IN_REVIEW → APPROVED → IN_BUILD → IN_PIPELINE → DEPLOYED → RETIRED.
+
+### Owner-fed-this-to-Paperclip note
+
+OWNER's stance (2026-04-26): Paperclip Wave 0 reads this material as basis and works it out itself. The 13 prompts especially are starting points — Wave 0 reviews + adapts + role-forms before activation. This file is the input, not the final prompt; Documentation-KM tracks the diff between repo prompts and deployed Paperclip prompts.
+
+### Phase 0 board
+
+P0-32 added: "Sweep 1: Migrate critical Wave-0 bootstrap material" — DONE.
+
+### Out of scope (Sweep 2 / 3)
+
+- Notion-versions of `Paperclip Operating System & Process Roadmap`, `Episode Guide`, `GitHub Repo Plan`, `Prompts & Scripts Library`, `quantmechanica.com Dashboard Spec`, `Public Expense Log`, `Website Relaunch Plan` — Sweep 2
+- V4 scripts as `reference/v4_scripts/` — Sweep 3
+- V4 infra PowerShell as `reference/v4_infra/` — Sweep 3
+- Brand assets (logo SVG, mascot poses) into `branding/assets/` — Sweep 2
+- doc/decision-history.md + doc/star-ea-reference.md → `reference/v4_doc/` — Sweep 3
+
 ## 2026-04-26 (night) — V4 = V5 basis correction + framework Friday Close/Modularity + open-items audit
 
 Scope: OWNER clarified V4 learnings ARE V5 basis (not "legacy"); the Pipeline phases are the grundgerüst Paperclip professionalizes; the EA framework has a basis (Friday Close, BT=Fixed/Live=Percent risk, 4-module Modularity, gridding cap, ML ban). Migrated V4 learnings, file-deletion policy, mass-delete incident. Reframed where "legacy" was too hard. Added Friday Close, ENV-mode-enforcement, 4-module pattern, gridding rule, ML ban to framework spec. Fixed PHASE0 P0-21 numbering drift against Notion-canonical (Notion P0-21 = Tick Data Manager DST). Added Open/Weak Items to PROJECT_BACKLOG. Wrote V5 self-review.
