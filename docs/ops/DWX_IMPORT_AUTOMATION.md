@@ -66,6 +66,7 @@ is populated, and the service heartbeat is fresh.
 - Polls `imports\*.import.txt` every 60 s.
 - For each new sidecar: refuses to clobber, calls `CustomSymbolCreate(target, group, source)`, patches `tick_value_profit/loss = tick_value`, bulk-loads ticks (500k chunks) via `CustomTicksAdd`, bulk-loads M1 (100k chunks) via `CustomRatesUpdate`, archives sidecar+bins to `imports\done\<timestamp>_*`.
 - Writes a heartbeat to `imports\service_heartbeat.txt` every loop so the cron can tell whether it's alive.
+- Heartbeat content now includes `wall_clock_utc=<ISO8601 UTC>Z` and `utc_epoch=<unix_seconds>` in addition to broker-time fields (`alive`, `broker_time`). This avoids false stale signals on market-close windows where `TimeCurrent()` is static.
 - Honours `IsStopped()` cleanly so OWNER can stop the service from the Services panel.
 
 ## OWNER setup checklist (one-time)
