@@ -1,5 +1,84 @@
 # Migration Log
 
+## 2026-04-26 (night) — V4 = V5 basis correction + framework Friday Close/Modularity + open-items audit
+
+Scope: OWNER clarified V4 learnings ARE V5 basis (not "legacy"); the Pipeline phases are the grundgerüst Paperclip professionalizes; the EA framework has a basis (Friday Close, BT=Fixed/Live=Percent risk, 4-module Modularity, gridding cap, ML ban). Migrated V4 learnings, file-deletion policy, mass-delete incident. Reframed where "legacy" was too hard. Added Friday Close, ENV-mode-enforcement, 4-module pattern, gridding rule, ML ban to framework spec. Fixed PHASE0 P0-21 numbering drift against Notion-canonical (Notion P0-21 = Tick Data Manager DST). Added Open/Weak Items to PROJECT_BACKLOG. Wrote V5 self-review.
+
+Operator: Claude Board Advisor under OWNER direction.
+
+### V4 → V5 lessons-learned migration
+
+| Repo file | Source on Drive | Status |
+|---|---|---|
+| `lessons-learned/V4_LEARNINGS_ARCHIVE_2026-04-21.md` | Notion `Learnings Archive — What We Keep vs. Change` | new — 22 entries (KEPT/CHANGED/DISCARDED) framed as V5 BASIS, not legacy |
+| `lessons-learned/2026-04-20_mass_delete_incident.md` | `Company/Learnings/2026-04-20_mass_delete_incident.md` | byte-identical from Drive |
+| `lessons-learned/2026-04-20_file_deletion_policy_v1.md` | `Company/Policy/file_deletion_policy.md` | byte-identical from Drive |
+
+**Critical V4 learning carried into PROJECT_BACKLOG Open Items:** the mass-delete incident root cause was Drive-sync conflict on `.git/` triggered by concurrent multi-agent git writes. Same architectural risk applies to VPS unless mitigated before Paperclip Wave 0 hiring. PC1-00 added to Phase 1 as first task to close this before Wave 0 starts writing concurrently.
+
+### Framing correction (V4 = basis, not legacy)
+
+OWNER overruled my earlier "V4 is legacy" framing. Corrected wording where it was too hard:
+
+- `lessons-learned/V4_LEARNINGS_ARCHIVE_2026-04-21.md` header explicitly frames V4 as V5 BASIS that Paperclip professionalizes
+- `docs/ops/PHASE0_EXECUTION_BOARD.md` P0-25 reframed: V4 strategy bestand (specific SM_XXX) starts fresh, but V4 framework patterns and learnings ARE inherited
+- `framework/V5_FRAMEWORK_DESIGN.md` new "V5 Framework Basis" section makes V4 inheritance explicit before V5 additions
+
+The earlier `decisions/2026-04-26_v5_restart_clean_slate.md` framing remains correct *for strategy bestand* (no SM_XXX into V5 without re-derivation) but the lesson side is now properly carried. No retroactive ADR edit needed.
+
+### Framework spec extension — V4 patterns now encoded
+
+`framework/V5_FRAMEWORK_DESIGN.md` extended with:
+
+- **V5 Framework Basis section** listing 7 V4-inherited patterns (Friday Close, Risk-Mode Convention, .DWX discipline, Model 4, Magic schema, Enhancement Doctrine, Darwinex-native data)
+- **Strategy Allowability section**: Trend/MR/carry/seasonality allowed; Gridding allowed with strict 1%-cap fallback; Scalping allowed with mandatory P5b stress; **Machine Learning NOT allowed in V5** (build_check enforces via import grep)
+- **Modularity 4-module pattern**: No-Trade / Trade Entry / Trade Management / Trade Close — every V5 EA structurally identical at framework boundary, strategy logic lives inside named modules
+- **Input Parameter Groups convention**: `input group "QuantMechanica V5 Framework"`, `"Risk"`, `"News"`, `"Friday Close"`, `"Strategy"` mandatory in every EA, build_check enforces
+- **Risk-Mode ENV-enforcement**: `RISK_FIXED` defaults to $1000 (backtest), `RISK_PERCENT` defaults to 0 (live activation). Set-file ENV (`backtest`/`demo`/`shadow`/`live`) determines required mode; mismatch hard-fails with `EA_INPUT_RISK_MODE_MISMATCH`
+- **QM_Exit Friday Close detail**: `QM_EXIT_FRIDAY_CLOSE` reason, default cut-off Friday 21:00 broker time, optional pre-event warn window, per-EA disable allowed but documented
+- **QM_Errors additions**: `EA_INPUT_RISK_MODE_MISMATCH`, `EA_INPUT_GROUP_MISSING`, `EA_ML_FORBIDDEN`, `EA_GRID_RISK_EXCEEDED`
+
+### PHASE0 board numbering drift fix
+
+Notion `Phase 0 Execution Board` (canonical) has P0-21 = "Verify Tick Data Manager DarwinexZero GMT/DST settings". My earlier repo edit had used P0-21 for "Migrate canonical reconstruction docs" — drift. Fixed:
+
+- P0-21 restored to Notion-canonical (Tick Data Manager DST) and marked **ACTIVE — current Phase-0 task per OWNER 2026-04-26**
+- My added rows renumbered to P0-22..P0-31:
+  - P0-22 = Migrate canonical reconstruction docs (was P0-21)
+  - P0-23 = Replace 10-phase pipeline outline (was P0-22)
+  - P0-24 = Migrate process registry (was P0-23)
+  - P0-25 = Migrate V4 strategy artifacts (was P0-24, reframed: basis-reference not legacy)
+  - P0-26 = Decide fate V4 news-impact tooling (was P0-25)
+  - P0-27 = Establish V5 EA framework (was P0-26)
+  - P0-28 = Reconstruct V5 sub-gate spec (was P0-27)
+  - P0-29 = Migrate brand system (was P0-28)
+  - P0-30 = Extend framework with trade-mgmt + chart UI (was P0-29)
+  - **P0-31 = Migrate V4 lessons-learned (basis for V5)** — new
+
+### PROJECT_BACKLOG additions
+
+- Custom Tick Data Verification (P0-21) inserted as Phase-0 final / Phase-1 prerequisite — explicitly identified as the bridge between Phase 0 closeout and Paperclip Bootstrap
+- PC1-00 added as Phase 1's new first task: Drive-sync `.git/` exclusion + repo isolation pattern (mitigates V4 mass-delete root cause before Wave 0 starts writing)
+- New section "Open / Weak Items" with 20 enumerated risks/gaps grouped CRITICAL / HIGH / MEDIUM / LOW
+- "Resolved this session" sub-section to track what closed in this commit
+
+### V5 self-review
+
+`docs/ops/V5_SELF_REVIEW_2026-04-26.md` — honest one-shot critical pass:
+
+- Strong / Weak / Missing / Risky enumerated
+- Doc-vs-code drift risk explicitly flagged ("specified everything, ran nothing" trap)
+- Self-bias warning (same Claude that produced the work is reviewing it)
+- 7 specific unknowns where empirical validation is needed (Friday Close time, news-CSV file-handle scaling, log file write density, magic-int boundary check, ChartUI OnTimer aggressiveness, 4-module composition, etc.)
+- Recommended next concrete actions in order: TDM, PC1-00, calibration, MT5 install, Phase 1 start, Codex implementation, Quality-Tech first calibration
+
+### Out of scope (NOT done)
+
+- 13 Paperclip prompts not yet migrated to repo `paperclip-prompts/` — PC1-03 task
+- VPS_SLIPPAGE_LATENCY_CALIBRATION_V2.json not measured — needs T1 + Darwinex demo
+- Custom Tick Data verification on T1 not run — that's the actual current task
+- `framework/scripts/build_check.ps1` ML-import grep + group-presence grep + colour-constant grep — design only, no implementation
+
 ## 2026-04-26 (late evening) — Project backlog + Paperclip reality check
 
 Scope: stand up `PROJECT_BACKLOG.md` as the single backlog across all phases of V5; record the obvious-but-unwritten reality that Paperclip is not installed yet; codify the Specification Density Principle.

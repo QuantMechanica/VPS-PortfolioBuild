@@ -17,6 +17,73 @@ Codex's V4 framework inventory (2026-04-26) confirmed that V4 had **no shared `C
 
 V5 ships a single shared framework that every V5 EA imports. No shared lib, no V5 EA.
 
+## V5 Framework Basis (from V4 — not from scratch)
+
+The V5 framework is V4's **best patterns professionalized**, not a clean redesign. Inherited verbatim from V4 / V2.1 (full V4 → V5 audit trail in `lessons-learned/V4_LEARNINGS_ARCHIVE_2026-04-21.md`):
+
+| Pattern | V5 application |
+|---|---|
+| **Friday Close** | Default exit trigger. `QM_Exit` reason `QM_EXIT_FRIDAY_CLOSE` fires at configured cut-off (default `Friday 21:00 broker time`). Each EA can disable via input but the default is on. |
+| **Risk-Mode Convention** | **Backtest = `RISK_FIXED` (default $1K). Live = `RISK_PERCENT`.** Both inputs always present per L-K-02. The set-file ENV (`backtest` / `demo` / `shadow` / `live`) determines which mode is active by default; the other input must be 0. Hard-fail per `EA_INPUT_RISK_MODE_MISMATCH` if mode does not match ENV. |
+| **`.DWX` suffix discipline** | Symbols carry `.DWX` in research and backtest, stripped only at deploy packaging. `framework/scripts/strip_dwx_at_deploy.ps1` is the only sanctioned stripper. |
+| **Model 4 Every Real Tick** | All baseline / sweep / WF / stress / multi-seed runs use Model 4. `framework/scripts/run_smoke.ps1` and downstream runners refuse to launch with Model 1 / 2. |
+| **Magic schema `ea_id * 10000 + symbol_slot`** | `QM_MagicResolver` per § QM_MagicResolver above. V5 ea_id namespace 1000-9999 leaves V4 SM_XXX (1-~770) reserved as legacy. |
+| **Enhancement Doctrine** | Exit-only modifications preserve prior PASS evidence; entry-filter modifications invalidate prior PASS and require full pipeline re-run. `QM_TradeManagement.AddToPosition`, `QM_TM_TrailATR`, `QM_TM_MoveToBreakEven` are exit-side and OK; any change to `QM_Entry` parameters invalidates pipeline state. |
+| **Darwinex MT5 native data only** | No external market-data API calls in framework or any EA. `framework/scripts/build_check.ps1` greps for forbidden imports / WebRequest URLs and blocks the build. |
+
+## Strategy Allowability (from V5 Hub)
+
+Three explicit V5 stances on strategy class:
+
+| Class | V5 stance | Constraint |
+|---|---|---|
+| **Trend / momentum / mean-reversion / carry / seasonality** | Allowed | Standard pipeline gates apply |
+| **Gridding** | Allowed | Strict fallbacks required: worst-case-scenario explicit in Strategy Card; per-grid-cycle risk **never > 1%** of equity; `QM_KillSwitch` covers grid-stack DD. |
+| **Scalping** | Allowed | Standard gates plus P5b stress with VPS-realistic latency calibration mandatory before P9. |
+| **Machine Learning** | **NOT allowed in V5** | Source collection allowed (research only). No ML-predicted entries / exits / sizing in V5 EAs. May reconsider in V6. |
+
+`framework/scripts/build_check.ps1` greps for ML-library imports (`tensorflow`, `torch`, `sklearn`, `keras`, `onnx`, ML-runtime DLLs) and blocks the build with `EA_ML_FORBIDDEN`.
+
+## Modularity — 4-Module Pattern
+
+V5 EAs are structured as 4 explicit modules per the V5 Hub Fragenkatalog. Strategy logic lives **inside** these named modules; the framework provides their entry/exit interface:
+
+| Module | Purpose | Framework hook |
+|---|---|---|
+| **No-Trade** | "Should I be trading at all right now?" — global gates: kill-switch, news, session, Friday-close window, weekend, calendar holiday, broker disconnect | `QM_NoTrade.mqh` orchestrates `QM_KillSwitch`, `QM_NewsFilter`, `QM_SessionFilter` (new) |
+| **Trade Entry** | "Given trading is allowed, do I open a position now?" — strategy-specific signal logic | EA implements `bool Strategy_EntrySignal(QM_EntryRequest &req)`; framework calls it under No-Trade clearance |
+| **Trade Management** | "Given I have an open position, do I modify it?" — trailing, BE, partial close, pyramiding | EA implements `void Strategy_ManageOpenPosition(ulong ticket)`; framework calls it on each tick post-No-Trade-check |
+| **Trade Close** | "Should I exit this position now?" — strategy-specific exit logic beyond SL/TP/trailing | EA implements `QM_ExitReason Strategy_ExitSignal(ulong ticket)`; framework wires the chosen reason through `QM_Exit` |
+
+This means every V5 EA is structurally identical at the framework boundary. CTO review reads four named functions; the strategy-specific code is the only delta between EAs. Codex implementation effort per new EA stays low.
+
+## Input Parameter Groups (V5 convention)
+
+EA inputs are grouped via MT5's `input group "..."` syntax for readability:
+
+```mql5
+input group "QuantMechanica V5 Framework"
+input int    ea_id              = 9999;
+input int    magic_slot_offset  = 0;
+
+input group "Risk"
+input double RISK_PERCENT       = 0.0;       // live default
+input double RISK_FIXED         = 1000.0;    // backtest default
+input double PORTFOLIO_WEIGHT   = 1.0;
+
+input group "News"
+input QM_NewsMode news_mode     = QM_NEWS_OFF;
+
+input group "Friday Close"
+input bool   friday_close_enabled = true;
+input int    friday_close_hour_broker = 21;
+
+input group "Strategy"
+// strategy-specific inputs grouped here
+```
+
+Build-check enforces presence of `QuantMechanica V5 Framework`, `Risk`, `News`, `Friday Close`, `Strategy` groups in every EA.
+
 ## Design Principles
 
 1. **One source of truth per concern.** Magic, risk, news, kill-switch, logger — each lives in exactly one include file. No duplication across EAs.
@@ -156,19 +223,32 @@ bool QM_MagicRegistered(int ea_id, int slot); // queries baked-in registry hash
 
 The registry file is hashed at compile time; the hash is baked into the EA binary so a runtime mismatch between binary and registry triggers `OnInit` abort.
 
-## Risk Sizing — Dual Mode (KEPT from V4)
+## Risk Sizing — Dual Mode + ENV Convention (KEPT from V4 + V5 enforcement)
 
-Two inputs, exactly one non-zero:
+Two inputs, exactly one non-zero, and the active mode is **determined by the set-file ENV per L-K-02**:
 
 ```mql5
-input double RISK_PERCENT = 0.0;   // % of equity per trade, 0..5.0
-input double RISK_FIXED   = 0.0;   // cash amount per trade, account currency
+input double RISK_PERCENT = 0.0;     // primary for live ENV; default 0 in backtest
+input double RISK_FIXED   = 1000.0;  // primary for backtest ENV; default 1000 ($1K)
 ```
 
+**ENV → mode mapping (V5 hard rule):**
+
+| ENV (set-file header) | Required mode | If wrong combination present |
+|---|---|---|
+| `backtest` | `RISK_FIXED > 0`, `RISK_PERCENT == 0` | `EA_INPUT_RISK_MODE_MISMATCH` (mismatch with ENV) |
+| `demo` | `RISK_PERCENT > 0`, `RISK_FIXED == 0` | same |
+| `shadow` | `RISK_PERCENT > 0`, `RISK_FIXED == 0` | same |
+| `live` | `RISK_PERCENT > 0`, `RISK_FIXED == 0` | same |
+
 **OnInit() validation:**
-- exactly one of the two > 0 → continue
+- ENV read from set-file header comment block
+- exactly one of the two inputs > 0 AND matches ENV expectation → continue
 - both 0 → abort with `EA_INPUT_RISK_BOTH_ZERO`
 - both > 0 → abort with `EA_INPUT_RISK_BOTH_SET`
+- input non-zero but mismatches ENV → abort with `EA_INPUT_RISK_MODE_MISMATCH`
+
+This makes "backtest fixed-risk metrics, live percent-risk behavior" structural rather than convention-by-discipline. Validates L-K-02 as code, not as a prompt rule.
 
 **V5 addition:** portfolio-level weighting
 
@@ -401,7 +481,7 @@ V5 hard rule: an EA may have at most one open position per (magic, symbol). `QM_
 
 ### QM_Exit.mqh
 
-Standardized exit patterns. Three exit triggers, all wired through `QM_Exit`:
+Standardized exit patterns. All exit triggers wired through `QM_Exit`:
 
 ```mql5
 enum QM_ExitReason {
@@ -410,15 +490,25 @@ enum QM_ExitReason {
    QM_EXIT_TRAILING,         // trailing stop closed
    QM_EXIT_BREAK_EVEN,       // BE rule moved SL to entry, then hit
    QM_EXIT_TIME_STOP,        // hold-time exceeded
+   QM_EXIT_FRIDAY_CLOSE,     // V4-inherited: Friday cut-off forced flat
    QM_EXIT_NEWS_EXIT,        // news-mode forced flat
    QM_EXIT_KILLSWITCH,       // kill-switch closed
    QM_EXIT_MANUAL,           // OWNER closed via halt-flag file
    QM_EXIT_OPPOSITE_SIGNAL,  // EA strategy logic reversed
+   QM_EXIT_STRATEGY,         // Strategy_ExitSignal returned this; payload carries strategy detail
    QM_EXIT_PARTIAL           // partial close (also fires on remaining-close)
 };
 
 bool QM_Exit(ulong ticket, QM_ExitReason reason, double partial_lots = 0.0);
 ```
+
+**Friday Close detail (V4-inherited):**
+
+- Default: `friday_close_enabled = true`, `friday_close_hour_broker = 21`
+- Logic: at every tick, if `DayOfWeek == FRIDAY && Hour(broker_time) >= friday_close_hour_broker`, every open position with this EA's magic gets closed at market with `QM_EXIT_FRIDAY_CLOSE`
+- Pre-event window: optional `friday_close_warn_hours = 1` triggers `QM_LogEvent(WARN, "FRIDAY_CLOSE_PENDING", ...)` to give monitoring time to react
+- Per-EA override: `friday_close_enabled = false` allowed for strategies that explicitly require weekend hold (rare; must be documented in Strategy Card)
+- V5 default `friday_close_hour_broker = 21` chosen for DarwinexZero NY-Close convention (≈ 14:00 NY local Friday) — gives buffer before Friday 17:00 NY broker close
 
 `QM_Exit` always logs `event:"EXIT"` with `payload.reason` set to the named enum. Post-trade analysis can group exits by reason to understand what's killing the EA.
 
@@ -547,9 +637,13 @@ Named error codes used across the framework:
 ```
 EA_INPUT_RISK_BOTH_ZERO
 EA_INPUT_RISK_BOTH_SET
+EA_INPUT_RISK_MODE_MISMATCH       // ENV-vs-mode mismatch (L-K-02 enforcement)
 EA_INPUT_PORTFOLIO_WEIGHT_OUT_OF_RANGE
+EA_INPUT_GROUP_MISSING            // input groups missing per V5 convention
 EA_MAGIC_COLLISION_DETECTED
 EA_MAGIC_NOT_REGISTERED
+EA_ML_FORBIDDEN                   // ML library / runtime detected per V5 stance
+EA_GRID_RISK_EXCEEDED             // gridding cycle exceeded 1% cap
 SETUP_DATA_MISSING
 SETUP_DATA_MISMATCH
 SETUP_DATA_STALE

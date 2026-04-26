@@ -86,7 +86,7 @@ Anchor doc: `docs/ops/PHASE0_EXECUTION_BOARD.md` (rows P0-01 to P0-29).
 
 - ⬜ **P0-04 / P0-05 MT5 T1-T5 + T6 install + isolation proof** — OWNER walks the install, Board Advisor scripts the validation. Today's owner: OWNER + Board Advisor.
 - ⬜ **P0-06 DarwinexZero / MT5 access confirmation** — OWNER confirms Demo + Live login work. Today's owner: OWNER.
-- ⬜ **Tick Data Manager DST/custom-symbol validation on T1** (per `docs/ops/TICK_DATA_MANAGER_DARWINEX_TIME.md`) — Pflicht-Voraussetzung vor jedem Backtest. Today's owner: OWNER + Board Advisor (script) + manual MT5 walkthrough.
+- 🟡 **P0-21 Verify Tick Data Manager DarwinexZero GMT/DST settings + install Custom Tick Data** — **CURRENT ACTIVE TASK per OWNER 2026-04-26.** Per `docs/ops/TICK_DATA_MANAGER_DARWINEX_TIME.md`. Pflicht-Voraussetzung vor jedem Backtest UND vor sinnvollem Paperclip-Bootstrap (Wave 0 CTO/Pipeline-Operator brauchen funktionierende TDM). Today's owner: OWNER + Board Advisor (script) + manual MT5 walkthrough. Evidence target: `D:\QM\reports\setup\tick-data-timezone\`. *This is the bridge between Phase 0 closeout and Phase 1 (Paperclip Bootstrap).*
 - ⬜ **P0-13 T6 deploy manifest schema** — schema.yaml exists in `LIVE_T6_AUTOMATION_RUNBOOK.md`; needs first dry-run validation. Today's owner: Board Advisor (spec review), deferred for execution to Phase 5 LiveOps.
 - ⬜ **P0-15 Public expense log v0** — CSV + repo. Today's owner: OWNER (data) + Board Advisor (format).
 - ⬜ **P0-16 quantmechanica.com dashboard snapshot schema** — already specced in `docs/ops/WEBSITE_DASHBOARD_PAPERCLIP_STYLE.md`. JSON contract needs first version. Today's owner: Board Advisor.
@@ -117,13 +117,16 @@ Phase 0 closes when: T1-T5 + T6 isolation proven, Paperclip V5 company exists wi
 
 **Today's owner:** OWNER (install + agent prompt approval) + Board Advisor (validation + evidence capture).
 
+**Prerequisite from Phase 0:** P0-21 Custom Tick Data verification must pass. CTO + Pipeline-Operator agents cannot do useful Phase 2 work without verified TDM data.
+
 ### Workstream
 
+- ⬜ **PC1-00 Drive-sync `.git/` exclusion + repo isolation pattern** — **NEW + CRITICAL** based on V4 mass-delete incident 2026-04-20 (see `lessons-learned/2026-04-20_mass_delete_incident.md`). Before Paperclip writes to the repo concurrently, the VPS must mirror the architectural fix V4 never closed: `.git/` excluded from any Drive sync surface, per-repo git mutex strategy decided, stale `index.lock` monitor planned. Today's owner: OWNER + Board Advisor.
 - ⬜ **PC1-01 Install Paperclip in `C:\QM\paperclip\`** — currently empty by design, awaiting installer
 - ⬜ **PC1-02 Browser / control plane health check on `http://localhost:3100`**
-- ⬜ **PC1-03 Migrate / author the 13 system prompts into Paperclip** — review existing prompts on Drive (`G:\My Drive\QuantMechanica\Company\Agents\` plus 13 prompt drafts in Notion); write V5-clean versions; only the 4 Wave-0 prompts must ship for PC1 close
+- ⬜ **PC1-03 Migrate / author the 13 system prompts into Paperclip** — Drive has CTO Agent prompt as a reference (`Notion: CTO Agent — System Prompt`, with verbatim hard rules already aligned to V5); 4 Wave-0 prompts must ship for PC1 close. Existing V4 prompts on Drive `Company/Agents/` are V5 BASIS, not blank-page rewrites.
 - ⬜ **PC1-04 Hire Wave 0**: CEO-Claude, CTO-Codex, Research-Claude, Documentation-KM-Claude with their V5 prompts
-- ⬜ **PC1-05 Wire Paperclip to repo**: agents read `CLAUDE.md`, `docs/ops/`, `processes/`, `branding/`, `framework/` as canonical
+- ⬜ **PC1-05 Wire Paperclip to repo**: agents read `CLAUDE.md`, `docs/ops/`, `processes/`, `branding/`, `framework/`, `lessons-learned/V4_LEARNINGS_ARCHIVE_2026-04-21.md` as canonical
 - ⬜ **PC1-06 First org-design issue** — CEO's first task per `docs/ops/ORG_SELF_DESIGN_MODEL.md`: propose which roles become live agents and when
 - ⬜ **PC1-07 First milestone board** populated with Phase 0 closeout + Phase 2 framework implementation
 
@@ -297,6 +300,51 @@ Without waiting for Paperclip:
 
 ---
 
+## Open / Weak Items (honest review 2026-04-26)
+
+This section enumerates known weaknesses, opens, and risks that are not closed. Reviewing these every commit prevents them from rotting silently. New items added at top.
+
+### CRITICAL — architectural risks
+
+1. **Drive-sync vs. `.git/` conflict (mass-delete incident class).** V4's `lessons-learned/2026-04-20_mass_delete_incident.md` shows Drive can batch-trash 12+ files in 13 s when concurrent multi-agent git writes leave orphaned `index.lock` files. **Same architecture is set up on the VPS** unless we mitigate before Paperclip Wave 0 starts writing concurrently. Mitigation tracked as PC1-00 (Phase 1 first task). Until closed, keep agent count low and serialize commits.
+2. **Custom Tick Data NOT verified** — Phase 0 cannot close until P0-21 runs. Every backtest produced before this passes is `SETUP_DATA_MISMATCH` risk. **Active today.**
+3. **VPS_SLIPPAGE_LATENCY_CALIBRATION_V2.json does not exist on VPS** — required for P5 Stress and P5b Calibrated Noise. V4 calibration on laptop is not transferable to new VPS. Must measure on Darwinex demo on T1 before Phase 3 runs. Tracked in `PIPELINE_V5_SUB_GATE_SPEC.md` § P5.
+4. **No `.git/` exclusion documented for VPS Drive setup** — same as item 1 from a different angle. Infrastructure-Setup doc references Google Drive selective sync but does not call out `.git/` exclusion explicitly.
+
+### HIGH — design assumptions not yet validated
+
+5. **V5 framework is unimplemented** — full design spec exists (`framework/V5_FRAMEWORK_DESIGN.md`, 25 steps) but no MQL5 code. Until Codex implements + a smoke EA runs cleanly, the design is theory. Cannot prove the 4-module Modularity pattern, the BT-Fixed/Live-Percent ENV-enforcement, or the Friday Close hook actually compose without surprises.
+6. **Sub-gate parameter defaults are provisional** — `PIPELINE_V5_SUB_GATE_SPEC.md` § Recalibration Triggers lists 6 thresholds Quality-Tech must validate after first V5 EA distributions. None of those distributions exist yet. Defaults may not survive contact with reality.
+7. **News-Compliance Hybrid A+C is recommendation, not decision** — `decisions/2026-04-25_news_compliance_variants_TBD.md` is open. FTMO / 5ers blackout-window definitions not yet authored.
+8. **Per-EA chart UI specced but not visually mocked** — design says 720×200 px panel with 6 tiles; whether it actually reads cleanly on T1-T6 chart density is untested. First implementation may force layout revision.
+9. **13 Paperclip prompts not migrated into repo** — V4 prompts on Drive (`Company/Agents/<role>/system_prompt.md`) are reference only. Wave 0 needs V5-revised CTO + CEO + Research + Documentation-KM prompts in `paperclip-prompts/` before PC1-04. Today the repo `paperclip-prompts/` folder does not exist.
+10. **EP01 artifact pack not produced** — Phase 0 acceptance gate requires EP01 published or ready; today nothing exists in `episodes/`.
+
+### MEDIUM — process gaps
+
+11. **Public snapshot schema + skeleton script not built** — `WEBSITE_DASHBOARD_PAPERCLIP_STYLE.md` specs the JSON contract and hourly export pattern, but no script exists in `scripts/` (folder still has only README stub).
+12. **First T6 deploy manifest dry run not executed** — `docs/ops/LIVE_T6_AUTOMATION_RUNBOOK.md` § "First Implementation Task" requires harmless demo dry-run before any real EA deploy. Not done.
+13. **Commission / swap docs per symbol not authored** — `CLAUDE.md` § Tester Configuration requires it. Folder `docs/ops/` has no commission-per-symbol artifact.
+14. **Codex doc/code-drift risk reintroduced** — `framework/V5_FRAMEWORK_DESIGN.md` references scripts that do not exist (`sync_brand_tokens.ps1`, `compile_one.ps1`, `build_check.ps1`, `run_smoke.ps1`, `brand_report.ps1`, `validate_setfile.ps1`, `rotate_logs.ps1`). This is the exact V4 failure mode L-D-08-adjacent. Mitigation: every script reference in spec docs gets a status badge `[SPEC ONLY — NOT IMPLEMENTED]` until Codex builds it.
+15. **Notion ↔ Repo drift** — Notion `V5 Pipeline Design` carries my superseded-banner; Notion `Phase 0 Execution Board` is now divergent from repo (repo has P0-22..P0-31 added). Documentation-KM (Wave 0) owns reconciliation. Until then, **PROJECT_BACKLOG.md and PHASE0_EXECUTION_BOARD.md in the repo are the source of truth**, Notion lags.
+
+### LOW — nice-to-have
+
+16. **No logo SVG copy in `branding/assets/`** — Brand guide § 10 open question. Without it, dashboard rendering on VPS depends on Drive mount.
+17. **No `framework/scripts/sync_brand_tokens.ps1` yet** — auto-generation of `QM_Branding.mqh` from `brand_tokens.json` is design-only.
+18. **`PHASE_FINAL_FOUNDER_COMMS.md` and `DWX_IMPORT_AUTOMATION.md` are untracked in git** — both exist on disk but never committed. OWNER's call whether to commit or leave staged.
+19. **Strategy Card template not authored** — `strategy-seeds/cards/` folder will hold V5 cards but no template defines what a Strategy Card must contain. Should be authored before first V5 Research extraction.
+20. **Prop-firm rule sets (FTMO, 5ers) not authored as data** — once news-compliance decision lands, blackout-window definitions need to live as `framework/include/news_rules/{ftmo,5ers}.mqh` per the spec. Currently zero content.
+
+### Resolved this session (for context)
+
+- P0-21 number-drift (was conflicting with my reconstruction tasks) — fixed in PHASE0 board
+- V4 learnings archive missing from repo — migrated to `lessons-learned/`
+- Mass-delete incident learnings missing — migrated
+- File-deletion policy missing — migrated
+- V4 framework patterns (Friday Close, BT/Live convention, 4-module Modularity, gridding cap, ML ban) missing from V5_FRAMEWORK_DESIGN — added
+- Framing of "V4 = legacy" too hard — corrected to "V4 = V5 BASIS, Paperclip professionalizes"
+
 ## How To Read This File
 
 - ✅ = done with evidence
@@ -305,4 +353,4 @@ Without waiting for Paperclip:
 - 🚫 = blocked, blocker named
 - Today's owner column tells you who can act *right now*. If the future owner is a Paperclip agent that doesn't exist, today's owner is "blocked on Phase 1" or an explicit OWNER + Board Advisor manual interim.
 
-When status changes, update this file in the same commit as the change.
+When status changes, update this file in the same commit as the change. When a weak/open item closes, move it to "Resolved this session" then archive on next commit.
