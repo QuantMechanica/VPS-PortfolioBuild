@@ -23,7 +23,9 @@ param(
     [string]$T6LiveHeartbeat = "D:\QM\mt5\T6_Live\MQL5\Files\terminal_heartbeat.txt",
     [string]$T6DemoHeartbeat = "D:\QM\mt5\T6_Demo\MQL5\Files\terminal_heartbeat.txt",
     [int]$T6MaxAgeMinutes = 5,
-    [string]$DwxHeartbeatScript = "C:\QM\repo\infra\monitoring\Test-DwxHeartbeat.ps1"
+    [string]$DwxHeartbeatScript = "C:\QM\repo\infra\monitoring\Test-DwxHeartbeat.ps1",
+    [string]$DriveGitExclusionScript = "C:\QM\repo\infra\monitoring\Test-DriveGitExclusion.ps1",
+    [string]$TaskTickScript = "C:\QM\repo\infra\tasks\Test-HourlyTaskTick.ps1"
 )
 
 Set-StrictMode -Version Latest
@@ -124,6 +126,30 @@ if (Test-Path -LiteralPath $DwxHeartbeatScript) {
     }
     catch {
         $checks.Add((New-Check -Name "dwx_service_heartbeat" -Status "critical" -Message "DWX heartbeat check execution failed." -Details $_.Exception.Message))
+    }
+}
+
+# Drive/git exclusion check (PC1-00 hard rule)
+if (Test-Path -LiteralPath $DriveGitExclusionScript) {
+    try {
+        $driveCheckRaw = & powershell -NoProfile -ExecutionPolicy Bypass -File $DriveGitExclusionScript 2>$null | Out-String
+        $driveCheck = $driveCheckRaw | ConvertFrom-Json -ErrorAction Stop
+        $checks.Add((New-Check -Name "drive_git_exclusion" -Status $driveCheck.status -Message $driveCheck.message -Details $driveCheck))
+    }
+    catch {
+        $checks.Add((New-Check -Name "drive_git_exclusion" -Status "critical" -Message "Drive/git exclusion check execution failed." -Details $_.Exception.Message))
+    }
+}
+
+# Verify hourly cadence + observed tick for DWX heartbeat task
+if (Test-Path -LiteralPath $TaskTickScript) {
+    try {
+        $tickRaw = & powershell -NoProfile -ExecutionPolicy Bypass -File $TaskTickScript -TaskName "QM_DWX_HourlyCheck" 2>$null | Out-String
+        $tickObj = $tickRaw | ConvertFrom-Json -ErrorAction Stop
+        $checks.Add((New-Check -Name "dwx_hourly_task_tick" -Status $tickObj.status -Message $tickObj.message -Details $tickObj))
+    }
+    catch {
+        $checks.Add((New-Check -Name "dwx_hourly_task_tick" -Status "critical" -Message "DWX hourly task tick check execution failed." -Details $_.Exception.Message))
     }
 }
 

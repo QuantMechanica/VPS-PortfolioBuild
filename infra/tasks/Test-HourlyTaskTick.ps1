@@ -16,6 +16,7 @@ $result = [ordered]@{
     last_run_time = $null
     next_run_time = $null
     observed_tick_count = 0
+    observed_from_last_run = $false
     status = "unknown"
     message = ""
 }
@@ -35,7 +36,14 @@ if ($trigger -and $trigger.Repetition) {
 }
 
 $taskInfo = Get-ScheduledTaskInfo -TaskName $TaskName
-$result.last_run_time = if ($taskInfo.LastRunTime -and $taskInfo.LastRunTime.Year -gt 1900) { $taskInfo.LastRunTime.ToUniversalTime().ToString("o") } else { $null }
+$lastRunUtc = $null
+if ($taskInfo.LastRunTime -and $taskInfo.LastRunTime.Year -gt 1900) {
+    $lastRunUtc = $taskInfo.LastRunTime.ToUniversalTime()
+    $result.last_run_time = $lastRunUtc.ToString("o")
+}
+else {
+    $result.last_run_time = $null
+}
 $result.next_run_time = if ($taskInfo.NextRunTime -and $taskInfo.NextRunTime.Year -gt 1900) { $taskInfo.NextRunTime.ToUniversalTime().ToString("o") } else { $null }
 
 $start = (Get-Date).AddHours(-1 * $LookbackHours)
@@ -46,6 +54,9 @@ $filter = @{
 }
 $events = @(Get-WinEvent -FilterHashtable $filter -ErrorAction SilentlyContinue | Where-Object { $_.Message -like "*\\$TaskName*" })
 $result.observed_tick_count = $events.Count
+if ($result.observed_tick_count -lt 1 -and $null -ne $lastRunUtc -and $lastRunUtc -ge $start.ToUniversalTime()) {
+    $result.observed_from_last_run = $true
+}
 
 $isHourly = $false
 if ($result.repetition_interval -and $result.repetition_interval -eq "PT1H") {
@@ -59,7 +70,7 @@ if (-not $isHourly) {
     exit 2
 }
 
-if ($result.observed_tick_count -lt 1) {
+if ($result.observed_tick_count -lt 1 -and -not $result.observed_from_last_run) {
     $result.status = "warn"
     $result.message = "Task is hourly but no completed tick observed in lookback window."
     $result | ConvertTo-Json -Depth 6
@@ -67,6 +78,6 @@ if ($result.observed_tick_count -lt 1) {
 }
 
 $result.status = "ok"
-$result.message = "Hourly cadence verified with observed completed tick(s)."
+$result.message = "Hourly cadence verified with observed completed tick."
 $result | ConvertTo-Json -Depth 6
 exit 0
