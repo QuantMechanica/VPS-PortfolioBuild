@@ -1,5 +1,63 @@
 # Migration Log
 
+## 2026-04-26 (final overnight) — Sweep 3: V4 reference material + Voice samples + Open-items audit
+
+Scope: migrate V4 scripts, infra PowerShell, Controlling KPI tooling, doc/ history, voice samples — as reference material for Wave 0+ to study, not as V5 input. Plus a one-shot honest open-items audit so OWNER knows exactly what's left after 13 commits of spec work.
+
+Operator: Claude Board Advisor under OWNER direction.
+
+### Sources copied (byte-equivalent from Drive)
+
+| Repo target | Drive source | Files |
+|---|---|---|
+| `reference/v4_scripts/` | `Company/scripts/*.{py,ps1}` (substantive only, .cto_lock noise excluded) | 8 files: `_rewrite_dashboard_template.py`, `build_processes_html.{py,ps1}`, `full_dashboard_refresh_15min.py`, `pipeline_feed_guard.py`, `setup_processes_scheduler.ps1`, `standalone_aggregator_loop.py`, `strategy_panel_refresh_15min.py` |
+| `reference/v4_infra/` | `Company/scripts/infra/` | 9 files: 3 PS1s + 1 SH (`mt5_load_shaping_gate.ps1`, `mt5_tester_bar_tmp_watchdog.ps1`, `paperclip_github_issues_sync.sh`, plus `setup_strategy_panel_refresh_scheduler.ps1`, `vps_winrm_probe.ps1`, `winrm_client_bootstrap.ps1`) + 3 READMEs |
+| `reference/v4_controlling/` | `Company/Controlling/` | `build_kpi_sections.py`, `dashboard_evidence_map.md`, `refresh_dashboard_data.js` |
+| `reference/v4_doc/` | `doc/` (excluding `pipeline-v2-1-detailed.md` which is mirrored as `docs/ops/PIPELINE_PHASE_SPEC.md` to avoid drift) | `decision-history.md`, `star-ea-reference.md` |
+| `branding/voice/` | `ClaudeDesign_Upload/04_Voice_Content/` | `Brand_Voice_Samples.md`, `Key_Messaging.md` |
+
+Each folder has a `README.md`:
+
+- `reference/README.md` — top-level read rule, what's useful, what's confusing, what's NOT migrated, sync rule
+- `reference/v4_doc/README.md` — explains why pipeline-v2-1-detailed.md is intentionally not duplicated here
+- `branding/voice/README.md` — voice-application reference, sync rule, companion to Brand Guide § 5
+
+### What was NOT migrated (intentionally)
+
+- `Company/scripts/.cto_lock*` (~120 V4 operational lock files)
+- `Company/scripts/state.json`, `.cto_last_message.txt` (V4 runtime state)
+- `Company/scripts/forum_research_toolkit/` (large, V4-specific, on-demand)
+- `Company/scripts/__pycache__/` (Python build artifacts)
+- `Company/HANDOFF.md`, `Company/TODO.md` (V4 operational logs, very large)
+- `Company/Status/CTO/current.md` (80k tokens, V4 operational state)
+
+### Sweep-3 confirmed-missing files
+
+Per Codex 2026-04-26 second-pass full Drive search, these scripts are referenced in V4 docs but do not exist on Drive:
+
+- `Company/scripts/p35_csr_runner.py` — referenced in `Company/scripts/README_V2.1_RUNNERS.md`
+- `Company/scripts/p5_calibrated_noise_runner.py` — same
+- `Company/scripts/run_news_impact_tests.py` — referenced in `Company/TODO.md`
+
+V5 builds these natively per `framework/V5_FRAMEWORK_DESIGN.md` and `PIPELINE_V5_SUB_GATE_SPEC.md` § Recalibration Triggers. No further migration possible.
+
+### Open-items audit
+
+`docs/ops/OPEN_ITEMS_2026-04-26.md` — one-shot snapshot grouped by actor:
+
+- OWNER + Board Advisor (8 items actionable today): top-priority is **P0-21 Tick Data Manager DST verification on T1**, then PC1-00 Drive `.git/` mitigation, then VPS slippage/latency calibration measurement, then MT5 install + T6 isolation, etc.
+- OWNER alone (5 gate decisions): News-Compliance Hybrid A+C, Brand Guide § 10 questions, V5/V6 deploy folder choice, TDS renewal, MyOEM Windows license
+- Wave 0 (blocked until Paperclip installed): CEO / CTO / Research / Documentation-KM first issues — biggest workload is CTO's 25-step framework implementation
+- Wave 1+ (blocked on Wave 0): DevOps PC1-00, Pipeline-Operator T1-T5 verification, Development first EA, Quality-Tech overfitting detection, etc.
+- Phase Final: Founder-Comms / Chief of Staff explicitly deferred until OWNER triggers
+- Repo housekeeping: 7 housekeeping items including untracked files, stub READMEs, prompts/ folder fate
+
+Honest summary: spec layer is complete; nothing produces evidence yet. Recommended next session: walk P0-21 with OWNER on T1.
+
+### Phase 0 board
+
+P0-34 added: "Sweep 3: Migrate V4 reference material" — DONE.
+
 ## 2026-04-26 (overnight) — Sweep 2: Wave-0/1 reference material + brand assets
 
 Scope: migrate the second batch of Wave-0+ supporting material — Paperclip Operating System Notion mirror, Episode Guide, GitHub Repo Plan, Prompts & Scripts Library Index, Dashboard Spec, Website Relaunch Plan, Public Expense Log + machine-readable CSV, brand SVG + logo PNGs.
