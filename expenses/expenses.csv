@@ -1,0 +1,3 @@
+date,item,vendor,amount_eur,category,note,episode
+2026-04-21,Hetzner AX42-U setup fee (one-time),Hetzner,128.40,Infrastructure,"Order B20260421-3420195-2995101 HEL1 AX42-U with 1 TB extra NVMe delivered 2026-04-22",EP02
+2026-04-21,Hetzner AX42-U first month,Hetzner,75.60,Infrastructure,"Monthly cost incl. primary IPv4 and 1 TB NVMe add-on monthly billing",EP02

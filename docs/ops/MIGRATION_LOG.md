@@ -1,5 +1,59 @@
 # Migration Log
 
+## 2026-04-26 (overnight) — Sweep 2: Wave-0/1 reference material + brand assets
+
+Scope: migrate the second batch of Wave-0+ supporting material — Paperclip Operating System Notion mirror, Episode Guide, GitHub Repo Plan, Prompts & Scripts Library Index, Dashboard Spec, Website Relaunch Plan, Public Expense Log + machine-readable CSV, brand SVG + logo PNGs.
+
+Operator: Claude Board Advisor under OWNER direction.
+
+### Notion docs mirrored to `docs/ops/`
+
+| Repo file | Notion id |
+|---|---|
+| `docs/ops/PAPERCLIP_OPERATING_SYSTEM_NOTION.md` | `34947da5-8f4a-81c2-8045-ebec3ad6d78a` |
+| `docs/ops/EPISODE_GUIDE.md` | `34947da5-8f4a-8168-8ca7-ff3e1097b8d4` |
+| `docs/ops/GITHUB_REPO_PLAN.md` | `34947da5-8f4a-81a0-9777-d378977ef0e8` (with 2026-04-26 current-repo-structure section appended) |
+| `docs/ops/PROMPTS_AND_SCRIPTS_LIBRARY_INDEX.md` | `34947da5-8f4a-81ae-9ee6-d97c1af42ed4` (with current repo locations + Sweep 3 candidates) |
+| `docs/ops/QUANTMECHANICA_DASHBOARD_SPEC.md` | `34947da5-8f4a-8174-858f-f8ed7926cef2` (with V5 15-phase JSON schema correction) |
+| `docs/ops/WEBSITE_RELAUNCH_PLAN.md` | `34947da5-8f4a-814f-9267-c66ba0f2a169` |
+
+PAPERCLIP_OPERATING_SYSTEM_NOTION.md is **complementary** to the existing `docs/ops/PAPERCLIP_OPERATING_SYSTEM.md` (laptop-version, migrated 2026-04-25). Documentation-KM (Wave 0) reconciles divergences.
+
+QUANTMECHANICA_DASHBOARD_SPEC.md is **complementary** to `docs/ops/WEBSITE_DASHBOARD_PAPERCLIP_STYLE.md` (laptop-version). Sweep-2 file has the JSON contract + widget list; laptop file has more Paperclip-style UI pattern depth.
+
+### Public Expense Log
+
+| Repo file | Source |
+|---|---|
+| `expenses/PUBLIC_EXPENSE_LOG.md` | Notion `Public Expense Log` (id `34947da5-8f4a-8112-94ce-e9067fc4830f`) |
+| `expenses/expenses.csv` | Machine-readable form for dashboard consumption — 2 rows (Hetzner setup + first month) |
+
+### Brand assets
+
+`branding/assets/` populated with working copies (Drive remains canonical for full archive):
+
+| Repo file | SHA256 | Source |
+|---|---|---|
+| `branding/assets/favicon.svg` | `ac9a746462e9915c14b917719b1b4833d5701ffa85e496a37ce8a08adc39c1bf` | `Backups/pre_claude_design_20260418/Website/favicon.svg` |
+| `branding/assets/og-image.svg` | `f4e920877af12112d3058fd8a4050f5abb2b15ca15d9ade821014c244e178019` | `Backups/pre_claude_design_20260418/Website/assets/og-image.svg` |
+| `branding/assets/logo_transparent_2000px.png` | `93f2c51fa4d3fe9aaa1ac8457f69ed053e2ef097a455ebea96a324efa5c5ec13` | `Backups/pre_claude_design_20260418/Brand_Assets/Logo_Transparent_2000px.png` |
+| `branding/assets/logo_black_bg_2000px.png` | `ea7de30921863d2a8f83f4df1691442ae737b6fe258fab6cd6f18a526067c434` | `Backups/pre_claude_design_20260418/Brand_Assets/Logo_Black_BG_2000px.png` |
+| `branding/assets/README.md` | new | sync rules + what's not in repo |
+
+Closes Brand Guide § 10 open question 2 ("logo SVG copy in repo for VPS dashboard rendering without Drive mount").
+
+### Phase 0 board
+
+P0-33 added: "Sweep 2: Migrate Wave-0/1 reference material" — DONE.
+
+### Out of scope (Sweep 3)
+
+- V4 Python scripts as `reference/v4_scripts/` (run_news_impact_tests.py if findable, p35_csr_runner.py, p5_calibrated_noise_runner.py, build_kpi_sections.py, etc.)
+- V4 PowerShell infra as `reference/v4_infra/` (mt5_tester_bar_tmp_watchdog.ps1, mt5_load_shaping_gate.ps1, winrm_client_bootstrap.ps1)
+- doc/decision-history.md + doc/star-ea-reference.md → `reference/v4_doc/`
+- VPS Bootstrap PowerShell, Paperclip V2 Install, Episode Production Prompts, Common Dispatch Templates → Wave 0 / Wave 1 first-issues, deferred per `PROMPTS_AND_SCRIPTS_LIBRARY_INDEX.md`
+- Voice Samples MD into `branding/voice/` for episode-script-consistency
+
 ## 2026-04-26 (late night) — Sweep 1: 13 Paperclip prompts + 4 critical Notion docs + Strategy Card Template
 
 Scope: migrate the Wave-0-blocking material so Paperclip Wave 0 hire has all source-of-truth references in repo. Per OWNER 2026-04-26: "Paperclip soll das ja auch als Basis verwenden, wir werden ihm das dann selbst zum Durcharbeiten, Rollenbilden, etc. füttern" — material migrated as-is for Wave 0 to process, not pre-condensed.
