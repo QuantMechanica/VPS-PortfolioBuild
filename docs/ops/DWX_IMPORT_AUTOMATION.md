@@ -19,7 +19,8 @@ end-to-end on its own.
 | Importer (MT5 Service) | `D:\QM\mt5\T1\MQL5\Services\Import_DWX_Queue_Service.ex5` | Drag onto Navigator → Services **once**; runs forever |
 | Importer (MT5 Script — manual fallback) | `D:\QM\mt5\T1\MQL5\Scripts\Import_DWX_From_Bin.ex5` | Drag onto a chart for one-shot batch processing |
 | Verifier (Python) | `D:\QM\mt5\T1\dwx_import\verify_import.py` | Called by the hourly cron after queue drains |
-| Hourly orchestrator | `D:\QM\mt5\T1\dwx_import\dwx_hourly_check.py` | Windows Scheduled Task `QM_DWX_HourlyCheck` |
+| Hourly orchestrator | `C:\QM\repo\infra\scripts\Invoke-DwxHourlyCheck.ps1` | Windows Scheduled Task `QM_DWX_HourlyCheck` |
+| Task installer (idempotent) | `C:\QM\repo\infra\scripts\Install-DwxHourlyTask.ps1` | Re-apply desired scheduler state |
 | Readiness report | `D:\QM\reports\setup\T1_READINESS_REPORT.md` | Written by the orchestrator |
 
 Job-staging area: `D:\QM\mt5\T1\MQL5\Files\imports\` (sidecars + binaries)
@@ -27,7 +28,7 @@ Archive: `D:\QM\mt5\T1\MQL5\Files\imports\done\`
 
 ## Hourly automation flow
 
-The `QM_DWX_HourlyCheck` Scheduled Task runs `dwx_hourly_check.py` once an
+The `QM_DWX_HourlyCheck` Scheduled Task runs `Invoke-DwxHourlyCheck.ps1` once an
 hour. It is **idempotent** — every fire is a no-op until the next thing
 becomes possible.
 
@@ -71,7 +72,9 @@ is populated, and the service heartbeat is fresh.
 
 1. **Start the MT5 Service.** Open T1 portable (the desktop shortcut), Navigator (Ctrl+N) → Services → drag `Import_DWX_Queue_Service` onto the Services pane. Right-click → Start. The service icon should turn green.  
    *If you ever close MT5: when you reopen it via the desktop shortcut, the service auto-resumes.*
-2. The Scheduled Task `QM_DWX_HourlyCheck` is already registered. It runs hourly under `Administrator`, fires only when the user is logged in, and is logged to `D:\QM\mt5\T1\dwx_import\logs\hourly_<date>.log`.
+2. Register/repair the Scheduled Task with:
+   `powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-DwxHourlyTask.ps1 -MinuteOffset 7`
+   This enforces desired-state scheduling (hourly, overlap-safe, `SYSTEM` account) and is safe to re-run.
 3. Continue downloading via TDM normally. Once WS30 is fully filled and idle for 30 min, the cron's next hourly fire kicks off the rest of the pipeline.
 
 ## Status at a glance
@@ -83,6 +86,7 @@ is populated, and the service heartbeat is fresh.
 ## Manual operations
 
 - **Trigger the cron now:** `Start-ScheduledTask -TaskName "QM_DWX_HourlyCheck"` (PowerShell).
+- **Re-apply task desired state:** `powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-DwxHourlyTask.ps1`.
 - **Stage one symbol manually (bypass cron):** `python D:\QM\mt5\T1\dwx_import\prepare_import.py D:\QM\reports\setup\tick-data-timezone\<SYMBOL>_GMT+2_US-DST.csv`.
 - **Manual import without the service:** drag `Scripts\Import_DWX_From_Bin` onto any chart — it processes the queue once and exits.
 - **Verify only:** `python D:\QM\mt5\T1\dwx_import\verify_import.py`.
