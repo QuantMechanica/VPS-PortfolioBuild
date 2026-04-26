@@ -238,15 +238,16 @@ P5c is **report-first**. There is no automatic FAIL — the report flags abnorma
 - combined verdict
 - raw bootstrap distributions attached as JSON
 
-## P10 — Shadow Deploy (KS-Test Kill-Switch)
+## P10 — Live Burn-In Window (KS-Test Kill-Switch)
 
-**Purpose**: 2-week forward window with an automatic kill-switch if forward distribution diverges from backtest distribution.
+**Purpose**: 2-week first-live window at minimum lot, with an automatic KS-test kill-switch if forward distribution diverges from backtest distribution. **No demo intermediary** — DarwinexZero is live-only (per OWNER 2026-04-26), so P10 is the first money-at-risk window.
 
 ### Mechanics
 
-- forward window: **14 calendar days** (10 trading days approx) on T6 demo with **AutoTrading OFF for live**, AutoTrading ON for shadow capture only
-- shadow EA runs on T6 with magic offset `+9000` (so shadow trades are clearly distinct from any live magic in registry)
-- forward trade-by-trade outcomes captured to `D:\QM\reports\shadow\<ea_id>\<datetime>\trades.csv`
+- forward window: **14 calendar days** (10 trading days approx) on T6 connected to DXZ Live, **AutoTrading ON**, **minimum lot size** (per-EA contract minimum, typically 0.01 for FX, 0.10 for indices)
+- live EA runs on T6 with its registered magic (no shadow-magic-offset — there is no shadow phase)
+- live trade-by-trade outcomes captured to `D:\QM\reports\live_burn_in\<ea_id>\<datetime>\trades.csv`
+- T6 monitoring per LiveOps Runbook continues; Observability-SRE alerts on any anomaly
 
 ### KS-test
 
@@ -268,13 +269,17 @@ P5c is **report-first**. There is no automatic FAIL — the report flags abnorma
 
 | Condition | Verdict |
 |---|---|
-| 14 days passed, N_fwd ≥ 30, KS p ≥ 0.01 | `SHADOW_PASS` → eligible for live promotion via 03-v-portfolio-deploy |
-| KS p < 0.01 at any check | `SHADOW_KILL` → terminate |
-| 14 days passed, N_fwd < 30 | `INSUFFICIENT_DATA` → OWNER decides extend or kill |
+| 14 days passed, N_fwd ≥ 30, KS p ≥ 0.01 | `LIVE_BURN_IN_PASS` → eligible for position-size expansion per OWNER manifest |
+| KS p < 0.01 at any check | `LIVE_BURN_IN_KILL` → flatten + retire, full incident report |
+| 14 days passed, N_fwd < 30 | `INSUFFICIENT_DATA` → OWNER decides extend or retire (extending = continued real-money exposure) |
 
 ### Runner
 
-`framework/scripts/p10_shadow_runner.py` (V5 new). Runs on a daily schedule via Task Scheduler, reads T6 trade history, executes the KS test, writes verdict to receipt + Slack/page if KILL.
+`framework/scripts/p10_live_burn_in_runner.py` (V5 new). Runs on a daily schedule via Task Scheduler, reads T6 live trade history, executes the KS test, writes verdict to receipt + immediately pages OWNER if KILL (money-at-risk path).
+
+### Why no demo intermediary
+
+OWNER decision 2026-04-26: DarwinexZero is live-only (monthly subscription fee, no demo account in between). Building a separate demo-broker pre-step would (a) duplicate infrastructure, (b) test against a different liquidity profile than DXZ uses, (c) delay learning real DXZ behavior. Trade-off: P10 is genuinely money-at-risk from day 1, mitigated by minimum-lot size + tight KS kill-switch. See `decisions/2026-04-26_dxz_live_only_and_p10_live_burn_in.md`.
 
 ## V5 vs V2.1 — Where defaults differ
 
@@ -286,6 +291,7 @@ P5c is **report-first**. There is no automatic FAIL — the report flags abnorma
 | P7 consolidated runner | none (4 tests run separately) | single runner returns combined verdict | reduces orchestration drift |
 | P10 KS p-threshold | not numerically specified anywhere | `p < 0.01` | conservative against the failure mode being detected |
 | P10 lookback | not specified | trailing 6 months of BT | matches regime persistence |
+| P10 architecture | "shadow on demo" (V4 implicit, never implemented) | "Live Burn-In with minimum lot + KS-test kill-switch" | DXZ is live-only per OWNER 2026-04-26; no demo intermediary |
 | All sub-gate runners | Python scripts under `Company/scripts/` | Python scripts under `framework/scripts/` (V5 namespace) | V5 framework boundary |
 | Calibration JSON | `Company/Results/VPS_SLIPPAGE_LATENCY_CALIBRATION_V2.json` | `framework/calibrations/VPS_SLIPPAGE_LATENCY_CALIBRATION_V2.json`, V5 must re-measure from VPS | new VPS, new calibration |
 

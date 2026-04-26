@@ -230,8 +230,8 @@ Repeating the Brand Book's hard list because these surface most often in code:
 
 Brand assets live on Drive as canonical; the repo holds working copies. If Drive brand guidelines change, this guide must be updated in the same week and the change recorded in `decisions/`.
 
-## 10. Open Items
+## 10. Confirmed Defaults (OWNER 2026-04-26)
 
-1. Should `framework/include/QM_Branding.mqh` be auto-generated from `brand_tokens.json` at build time? Cleaner than hand-mirroring two files. Default proposed: yes, via `framework/scripts/sync_brand_tokens.ps1`.
-2. Logo asset copies in repo (`branding/assets/`)? They live on Drive but a small SVG in repo helps when generating reports / dashboards on the VPS without Drive mount. Default proposed: copy SVG only, not PNGs.
-3. Mascot ("Quant", 9 poses) usage in V5 EA artifacts? Default proposed: no — mascot is YouTube / social only, not framework / EA / dashboard.
+1. **`framework/include/QM_Branding.mqh` auto-generated** from `brand_tokens.json` via `framework/scripts/sync_brand_tokens.ps1`. CONFIRMED. Hand-mirror is forbidden — every `QM_CLR_*` constant flows from the JSON, single-source.
+2. **Logo SVG + minimum PNGs in repo `branding/assets/`** — DONE 2026-04-26 (favicon.svg, og-image.svg, logo_transparent_2000px.png, logo_black_bg_2000px.png). Mascot PNGs and YouTube banners stay on Drive.
+3. **Mascot ("Quant", 9 poses) NEVER appears in V5 EA / framework / chart-UI / report surfaces.** CONFIRMED. YouTube and social only. `framework/scripts/build_check.ps1` greps for `pose_*_transparent.png` references in `framework/` and `EAs/` and blocks the build.

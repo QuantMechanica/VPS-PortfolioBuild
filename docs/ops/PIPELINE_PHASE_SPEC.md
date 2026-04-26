@@ -24,11 +24,11 @@ P5b Calibrated Noise Add-on         (V2.1 additive)
 P5c Crisis Event Slices             (optional, report-first)
 P6  Multi-Seed
 P7  Statistical Validation
-P8  News Impact
+P8  News Impact (7 modes: OFF/PAUSE/SKIP_DAY/FTMO_PAUSE/5ers_PAUSE/no_news/news_only)
 P9  Portfolio Construction          (manual)
 P9b Operational Readiness           (manual)
-P10 Shadow Deploy                   (manual)
-→ Live (post-P10 promotion via 03-v-portfolio-deploy process)
+P10 Live Burn-In Window             (manual; minimum-lot live + KS-test kill-switch — no demo intermediary)
+→ Full Live (post-P10 promotion: position-size expansion per OWNER approval)
 ```
 
 ## Phase Detail
@@ -49,7 +49,7 @@ P10 Shadow Deploy                   (manual)
 | P8 | News Impact | OFF / PAUSE / SKIP_DAY mode selection for deploy behavior. | Autonomous |
 | P9 | Portfolio Construction | Family cap 3, symbol cap 2, ENB + marginal Sharpe. | Manual (OWNER) |
 | P9b | Operational Readiness | Compile / deploy / risk / restart / news / filter / commission checks. | Manual (OWNER) |
-| P10 | Shadow Deploy | 2-week forward test with KS-test kill-switch policy. | Manual (OWNER) |
+| P10 | Live Burn-In Window | 2-week LIVE forward test on T6/DXZ with minimum lot + KS-test kill-switch (no demo intermediary, per OWNER 2026-04-26). | Manual (OWNER) |
 
 ## V2.1 Policy Notes
 
@@ -74,18 +74,16 @@ The current locked 5-sleeve basket sits at the P9 / P9b boundary with documented
 
 ## Deploy Promotion Path (post-P10)
 
-Per `Company/Processes/03-v-portfolio-deploy.md` (laptop):
+V5 architecture: **DarwinexZero is live-only (no demo account, monthly fee).** There is no demo-broker phase between Backtest and Live — P10 is the first live exposure with minimum lot and KS-test kill-switch.
 
-1. validated candidate (P10 PASS)
-2. portfolio admission
-3. operational readiness sign-off
-4. VPS deploy
-5. first live heartbeat
-6. smoke checks (within first 24 h of live trading)
-7. rollback decision window inside that early live window
-8. live monitoring
+1. P9b Operational Readiness sign-off
+2. P10 Live Burn-In Window — 14 days at minimum lot on T6/DXZ, AutoTrading ON
+3. KS-test kill-switch active throughout — kills at p < 0.01 vs backtest distribution (per `PIPELINE_V5_SUB_GATE_SPEC.md` § P10)
+4. P10 PASS = OWNER explicit approval to proceed to position-size expansion
+5. Position-size expansion = additional manifest signed by OWNER per increment
+6. Live monitoring continuous (Observability-SRE)
 
-T6 is the live execution terminal. T1-T5 never trade live.
+T6 is the only terminal that trades live. T1-T5 never trade live.
 
 ## Open Questions / TBD
 

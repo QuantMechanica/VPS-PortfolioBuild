@@ -1,6 +1,6 @@
 # T6 Live MT5 Automation Runbook
 
-Purpose: allow Fabian to steer and approve live/demo deployments without manually dragging EAs onto charts.
+Purpose: allow OWNER to steer and approve live/demo deployments without manually dragging EAs onto charts.
 
 ## Architecture
 
@@ -15,12 +15,12 @@ T6 is a separate portable MT5 install with its own data directory, logs, profile
 
 ## DarwinexZero Operating Model
 
-DarwinexZero is the primary live-test portfolio and public proof engine. Treat it with live-money discipline even though it is subscription-funded and not external client capital.
+DarwinexZero is **live-only** — no demo account, monthly subscription fee (per OWNER 2026-04-26). Treat with full live-money discipline; there is no demo intermediary between Backtest and Live. P10 Live Burn-In is the first live exposure (minimum lot, KS-test kill-switch) per `PIPELINE_V5_SUB_GATE_SPEC.md` § P10.
 
 Operational language:
 - Use "DarwinexZero live test", "public track record", or "live-test portfolio".
-- Avoid calling it a "hedge fund" in public copy unless Fabian has legal/compliance review.
-- Every money-at-risk action traces to a deploy manifest and Fabian approval.
+- Avoid calling it a "hedge fund" in public copy unless OWNER has legal/compliance review.
+- Every money-at-risk action traces to a deploy manifest and OWNER approval.
 - Profitability on DarwinexZero becomes the investor-facing proof signal for the business.
 
 ## Risk Of Same-VPS Co-Location
@@ -32,23 +32,23 @@ Putting factory and live trading on one VPS reduces cost and friction, but adds 
 - No optimizer or Strategy Tester ever runs inside T6.
 - T6 has its own backup and log export path.
 - LiveOps alarms if T6 ping, journal, or Darwinex connection degrades.
-- Any money-at-risk action requires Fabian approval by manifest.
+- Any money-at-risk action requires OWNER approval by manifest.
 
 ## Deploy Manifest
 
-Fabian approves a manifest, not a manual chart action.
+OWNER approves a manifest, not a manual chart action.
 
 Example:
 
 ```yaml
 manifest_id: DEPLOY-2026-04-21-001
-environment: demo
+environment: live_burn_in       # was: demo (DXZ has no demo; environments are live_burn_in | live_full)
 terminal: T6
-approved_by: Fabian
+approved_by: OWNER
 approved_at: null
 account:
-  broker: Darwinex
-  account_type: demo
+  broker: DarwinexZero
+  account_type: live              # was: demo (DXZ live-only)
 global_limits:
   max_risk_per_trade_pct: 0.50
   daily_loss_halt_pct: 3.0
@@ -73,7 +73,7 @@ Prefer MT5 templates and profiles where possible. A prepared T6 profile can cont
 
 ### Level 1 - File automation
 
-LiveOps copies `.ex5`, `.set`, templates, and manifest to T6. Fabian or LiveOps manually opens charts if needed.
+LiveOps copies `.ex5`, `.set`, templates, and manifest to T6. OWNER or LiveOps manually opens charts if needed.
 
 ### Level 2 - Chart bootstrap automation
 
@@ -116,14 +116,14 @@ No placement is considered complete until LiveOps verifies:
 - Journal log has no trade-context or authorization errors.
 - Screenshot proof is archived.
 
-## Fabian's Role
+## OWNER's Role
 
-Fabian does:
+OWNER does:
 - approve or reject the deploy manifest
 - approve live-money transition separately
 - monitor dashboard and alerts
 
-Fabian does not:
+OWNER does not:
 - drag EAs onto charts
 - manually import setfiles during normal operation
 - reconcile magic numbers by hand

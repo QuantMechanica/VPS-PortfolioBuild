@@ -62,3 +62,13 @@ Create Paperclip issue: `P0: Verify Tick Data Manager DarwinexZero GMT/DST setti
 Owner: DevOps + Pipeline-Operator
 Reviewer: Quality-Tech
 Gate: must pass before any bulk tick download or V5 gate backtest.
+
+## Status (2026-04-26)
+
+P0-21 **PASS on T1** per `D:\QM\reports\setup\tick-data-timezone\REPORT_2026-04-25_test_eurusd_dst_match.md` — TEST-EURUSD verified against broker EURUSD across winter / US-DST-only / both-DST windows with 0-second offset and sub-pip OHLC differences.
+
+**TDS renewal:** SKIPPED per `decisions/2026-04-26_tds_renewal_skip.md`. Existing exports (~30 symbols, ~500GB) cover V5 first-wave; future fresh imports require short-term re-buy (€32.90/month).
+
+**Custom-symbol naming convention:** `<root>.DWX` for every TDM-imported symbol per `docs/ops/DWX_IMPORT_AUTOMATION.md` (e.g., `EURUSD.DWX`, `XAUUSD.DWX`, `WS30.DWX`). T1 is master; T2-T5 inherit by copying `D:\QM\mt5\T1\Bases\Custom\`.
+
+**Open follow-ups** (post-Wave-0): T2-T5 propagation + per-terminal verification, `portable.txt` drop, AppData `…BA21BF\` rename, full TDS recipe (settings + tick source + contract spec) captured here as a How-To section.
