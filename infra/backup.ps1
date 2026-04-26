@@ -2,7 +2,7 @@
 param(
     [string]$GoogleDriveRoot = "G:\QM_Backups",
     [string]$PaperclipDbPath = "C:\QM\paperclip\data\instances\default\paperclip.sqlite",
-    [string]$LastCheckStatePath = "C:\QM\last_check_state.json",
+    [string]$LastCheckStatePath = "D:\QM\reports\state\last_check_state.json",
     [string]$NotionExportRoot = "C:\QM\notion-exports",
     [string]$RecentLogsRoot = "C:\QM\logs",
     [string]$WeeklyGitLfsRoot = "C:\QM\repo\infra\backups\weekly",

@@ -1,5 +1,7 @@
 # Deploy Manifests
 
-YAML manifests for T6 demo/live deployments. Schema lives in `schema.yaml` (TBD).
+Deploy manifests for operational rollout surfaces.
 
-Every manifest traces to Fabian approval; see `docs/ops/LIVE_T6_AUTOMATION_RUNBOOK.md`.
+- `aggregator-state-writer-v5.md`: QUA-22 standalone aggregator state-writer mapping and scheduler run mode.
+
+T6 demo/live manifests trace to OWNER approval; see `docs/ops/LIVE_T6_AUTOMATION_RUNBOOK.md`.

@@ -3,6 +3,7 @@ param(
     [string]$RepoRoot = "C:\QM\repo",
     [string]$PythonExe = "python",
     [string]$DwxHourlyScript = "C:\QM\repo\infra\scripts\dwx_hourly_check.py",
+    [string]$AggregatorScript = "C:\QM\repo\scripts\aggregator\standalone_aggregator_loop.py",
     [string]$SnapshotScript = "C:\QM\repo\scripts\export_public_snapshot.ps1",
     [string]$HealthScript = "C:\QM\repo\infra\monitoring\Invoke-InfraHealthCheck.ps1",
     [string]$BackupScript = "C:\QM\repo\infra\backup.ps1"
@@ -78,6 +79,23 @@ if (Test-Path -LiteralPath $DwxHourlyScript) {
 }
 else {
     Write-Warning "DWX orchestrator script missing; skipped QM_DWX_HourlyCheck registration."
+}
+
+# Aggregator state writer every minute, only if source script exists
+if (Test-Path -LiteralPath $AggregatorScript) {
+    $aggTrigger = New-RepeatingTriggerFromToday `
+        -AtTime (Get-Date "00:00") `
+        -Interval (New-TimeSpan -Minutes 1) `
+        -Duration (New-TimeSpan -Days 3650)
+    Register-DesiredTask `
+        -TaskName "QM_AggregatorState_1min" `
+        -Executable $PythonExe `
+        -Arguments "`"$AggregatorScript`" --once" `
+        -Trigger $aggTrigger `
+        -Description "Writes V5 last_check_state.json and aggregator heartbeat every minute."
+}
+else {
+    Write-Warning "Aggregator script missing; skipped QM_AggregatorState_1min registration."
 }
 
 # Infra health monitor every 5 minutes

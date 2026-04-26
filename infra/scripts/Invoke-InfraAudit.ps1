@@ -5,7 +5,7 @@ param(
     [int]$DiskCriticalGb = 30,
     [string[]]$FactoryTerminalRoots = @('D:\QM\mt5\T1', 'D:\QM\mt5\T2', 'D:\QM\mt5\T3', 'D:\QM\mt5\T4', 'D:\QM\mt5\T5'),
     [string[]]$T6TerminalRoots = @('C:\QM\mt5\T6_Live', 'C:\QM\mt5\T6_Demo'),
-    [string]$AggregatorStateFile = 'D:\QM\mt5\T1\MQL5\Experts\EA_Testing\last_check_state.json',
+    [string]$AggregatorStateFile = 'D:\QM\reports\state\last_check_state.json',
     [int]$AggregatorSilentMinutes = 15,
     [string]$DriveLogDir = 'C:\ProgramData\Google\DriveFS\Logs',
     [int]$DriveSilentMinutes = 60,

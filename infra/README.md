@@ -27,6 +27,10 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
     - Google Drive sync freshness
     - stale `.git/index.lock` detection
   - Writes machine-readable JSON report to `infra/reports/infra_audit_latest.json`.
+- `scripts/Install-AggregatorStateTask.ps1`
+  - Registers Task Scheduler job `QM_AggregatorState_1min` as `SYSTEM`.
+  - Runs `scripts/aggregator/standalone_aggregator_loop.py --once` every minute.
+  - Safe to re-run (`Register-ScheduledTask -Force`) and overlap-safe (`MultipleInstances=IgnoreNew`).
 - `monitoring/Test-DwxHeartbeat.ps1`
   - Validates DWX service heartbeat freshness from content.
   - Requires `wall_clock_utc` field for strict `ok`; missing field is `warn`.
@@ -49,6 +53,12 @@ Infra audit (hourly, can run at HH:12 or similar):
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Invoke-InfraAudit.ps1 -FailOnCritical
+```
+
+Aggregator state writer (every minute):
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-AggregatorStateTask.ps1
 ```
 
 ## Non-goals
