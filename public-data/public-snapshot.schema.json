@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "QuantMechanica Public Snapshot",
+  "type": "object",
+  "required": [
+    "generated_at",
+    "phase",
+    "agents",
+    "pipeline",
+    "t6",
+    "expenses"
+  ],
+  "properties": {
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "phase": {
+      "type": "string"
+    },
+    "agents": {
+      "type": "object",
+      "required": ["online", "offline", "blocked"],
+      "properties": {
+        "online": { "type": "integer", "minimum": 0 },
+        "offline": { "type": "integer", "minimum": 0 },
+        "blocked": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "pipeline": {
+      "type": "object",
+      "required": ["strategy_cards", "eas_built", "by_phase"],
+      "properties": {
+        "strategy_cards": { "type": "integer", "minimum": 0 },
+        "eas_built": { "type": "integer", "minimum": 0 },
+        "by_phase": {
+          "type": "object",
+          "required": [
+            "G0",
+            "P1",
+            "P2",
+            "P3",
+            "P3_5",
+            "P4",
+            "P5",
+            "P5b",
+            "P5c",
+            "P6",
+            "P7",
+            "P8",
+            "P9",
+            "P9b",
+            "P10"
+          ],
+          "properties": {
+            "G0": { "type": "integer", "minimum": 0 },
+            "P1": { "type": "integer", "minimum": 0 },
+            "P2": { "type": "integer", "minimum": 0 },
+            "P3": { "type": "integer", "minimum": 0 },
+            "P3_5": { "type": "integer", "minimum": 0 },
+            "P4": { "type": "integer", "minimum": 0 },
+            "P5": { "type": "integer", "minimum": 0 },
+            "P5b": { "type": "integer", "minimum": 0 },
+            "P5c": { "type": "integer", "minimum": 0 },
+            "P6": { "type": "integer", "minimum": 0 },
+            "P7": { "type": "integer", "minimum": 0 },
+            "P8": { "type": "integer", "minimum": 0 },
+            "P9": { "type": "integer", "minimum": 0 },
+            "P9b": { "type": "integer", "minimum": 0 },
+            "P10": { "type": "integer", "minimum": 0 }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "t6": {
+      "type": "object",
+      "required": ["status", "autotrading", "risk_state"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["offline", "demo", "live", "degraded"]
+        },
+        "autotrading": { "type": "boolean" },
+        "risk_state": {
+          "type": "string",
+          "enum": ["green", "yellow", "red"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "expenses": {
+      "type": "object",
+      "required": ["spent_eur", "budget_eur", "entries"],
+      "properties": {
+        "spent_eur": { "type": "number", "minimum": 0 },
+        "budget_eur": { "type": "number", "minimum": 0 },
+        "entries": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

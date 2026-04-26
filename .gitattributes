@@ -1,0 +1,2 @@
+# Weekly DB snapshots are designed for Git LFS tracking.
+infra/backups/weekly/*.sqlite filter=lfs diff=lfs merge=lfs -text

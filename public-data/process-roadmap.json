@@ -1,0 +1,84 @@
+﻿{
+    "generated_at":  "2026-04-26T18:57:13.5072685Z",
+    "total":  13,
+    "items":  [
+                  {
+                      "id":  "01-ea-lifecycle",
+                      "title":  "01-ea-lifecycle",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-04-25T14:21:56.2625686Z"
+                  },
+                  {
+                      "id":  "02-zt-recovery",
+                      "title":  "02-zt-recovery",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-04-25T14:21:56.2766054Z"
+                  },
+                  {
+                      "id":  "03-v-portfolio-deploy",
+                      "title":  "03-v-portfolio-deploy",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-04-25T14:21:56.2916444Z"
+                  },
+                  {
+                      "id":  "04-incident-response",
+                      "title":  "04-incident-response",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-04-25T14:21:56.3036750Z"
+                  },
+                  {
+                      "id":  "05-dashboard-refresh",
+                      "title":  "05-dashboard-refresh",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-04-25T14:21:56.3157067Z"
+                  },
+                  {
+                      "id":  "06-issue-triage",
+                      "title":  "06-issue-triage",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-04-25T14:21:56.3287407Z"
+                  },
+                  {
+                      "id":  "07-ceo-cto-dialectic",
+                      "title":  "07-ceo-cto-dialectic",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-04-25T14:21:56.3407722Z"
+                  },
+                  {
+                      "id":  "08-daily-operating-rhythm",
+                      "title":  "08-daily-operating-rhythm",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-04-25T14:21:56.3548078Z"
+                  },
+                  {
+                      "id":  "09-disaster-recovery",
+                      "title":  "09-disaster-recovery",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-04-25T14:21:56.3688445Z"
+                  },
+                  {
+                      "id":  "10-agent-rescope",
+                      "title":  "10-agent-rescope",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-04-25T14:21:56.3888975Z"
+                  },
+                  {
+                      "id":  "11-disk-and-sync",
+                      "title":  "11-disk-and-sync",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-04-25T14:21:56.4019311Z"
+                  },
+                  {
+                      "id":  "12-board-escalation",
+                      "title":  "12-board-escalation",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-04-25T14:21:56.4169700Z"
+                  },
+                  {
+                      "id":  "README",
+                      "title":  "README",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-04-25T14:21:56.4360192Z"
+                  }
+              ]
+}

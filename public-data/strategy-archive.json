@@ -1,0 +1,42 @@
+﻿{
+    "generated_at":  "2026-04-26T18:57:13.5132841Z",
+    "total":  6,
+    "items":  [
+                  {
+                      "slug":  "ath-breakout-atr-trail",
+                      "source":  "strategy-seeds/specs",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-04-25T14:22:07.7227160Z"
+                  },
+                  {
+                      "slug":  "good-carry-bad-carry",
+                      "source":  "strategy-seeds/specs",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-04-25T14:22:07.7437710Z"
+                  },
+                  {
+                      "slug":  "modernising-turtle-trading",
+                      "source":  "strategy-seeds/specs",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-04-25T14:22:07.7668318Z"
+                  },
+                  {
+                      "slug":  "README",
+                      "source":  "strategy-seeds/specs",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-04-25T22:06:45.0733913Z"
+                  },
+                  {
+                      "slug":  "seasonality-trend-mr-bitcoin",
+                      "source":  "strategy-seeds/specs",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-04-25T14:22:07.8109453Z"
+                  },
+                  {
+                      "slug":  "two-regime-trend-following",
+                      "source":  "strategy-seeds/specs",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-04-25T14:22:07.8360112Z"
+                  }
+              ]
+}
