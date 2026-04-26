@@ -1,5 +1,64 @@
 # Migration Log
 
+## 2026-04-26 (early morning) — OWNER decision sweep + DXZ-live-only redesign + DWX automation commit
+
+Scope: process OWNER's batch of 9 decisions; absorb consequences across Pipeline spec, Sub-Gate spec, LiveOps Runbook, Brand Guide; mark P0-21 PASS based on other-Claude-session evidence; commit DWX_IMPORT_AUTOMATION.md (high V5-relevance) and PHASE_FINAL_FOUNDER_COMMS.md (frozen content).
+
+Operator: Claude Board Advisor under OWNER direction.
+
+### OWNER decisions absorbed
+
+| # | Decision | ADR / Doc Action |
+|---|---|---|
+| 2B | Paperclip install after TDS+PC1-00+MT5 isolation done | Backlog stays |
+| 3 | News Compliance Option A pure (P8 expanded; P9 not gated) | `decisions/2026-04-25_news_compliance_variants_TBD.md` → ACCEPTED 2026-04-26 |
+| 4a | sync_brand_tokens.ps1 auto-generates QM_Branding.mqh | `branding/QM_BRANDING_GUIDE.md` § 10 → CONFIRMED |
+| 4b | Mascot stays YouTube/social-only, never in EA/framework | same § 10 → CONFIRMED + build_check enforcement noted |
+| 5D | TDS renewal SKIP (~2026-05-05 lapse) | New ADR `decisions/2026-04-26_tds_renewal_skip.md` |
+| 6a | DXZ Live account already exists | confirmed in narrative |
+| 6b/6c | DXZ live-only (monthly fee), no demo broker, no demo phase between BT and Live | New ADR `decisions/2026-04-26_dxz_live_only_and_p10_live_burn_in.md` |
+| 7 | Commit PHASE_FINAL_FOUNDER_COMMS as-is; review DWX_IMPORT — both committed | git add + commit |
+| 8A | Bootstrap prompts in `prompts/` stay | no action |
+| 9C | Other Claude session = Operations; this session = Review only | confirmed |
+| 10 B | No CLAUDE.md update | no action (temporary state) |
+
+### P10 Pipeline redesign (consequence of 6b/6c)
+
+V5 docs assumed DXZ supported demo + live tiers. OWNER confirmed DXZ is live-only. P10 redesigned from "Shadow Deploy on T6 demo" to "Live Burn-In Window on T6 + DXZ Live, minimum lot, KS-test kill-switch". Affects:
+
+- `docs/ops/PIPELINE_PHASE_SPEC.md` — § P10 row + § Deploy Promotion Path rewritten
+- `docs/ops/PIPELINE_V5_SUB_GATE_SPEC.md` — § P10 mechanics, verdict labels (`LIVE_BURN_IN_PASS/KILL/INSUFFICIENT_DATA`), runner renamed `p10_live_burn_in_runner.py`, new "Why no demo intermediary" sub-section, P10 architecture row added to § V5 vs V2.1 table
+- `docs/ops/LIVE_T6_AUTOMATION_RUNBOOK.md` — Operating Model, manifest schema example (`environment: live_burn_in`, `account_type: live`)
+- TODO for next pass: `docs/ops/PROJECT_CHARTER.md` risk register, `docs/ops/EPISODE_GUIDE.md` § EP04, `paperclip-prompts/liveops.md`, `processes/03-v-portfolio-deploy.md` (Wave-0 Documentation-KM rewrite)
+
+### P0-21 PASS marker
+
+Other Claude session reports on disk (P0-21 PASS on T1, with documented follow-ups). Reports listed in detail in `OPEN_ITEMS_2026-04-26.md` and `decisions/2026-04-26_dxz_live_only_and_p10_live_burn_in.md` (Sources section).
+
+### Files committed (untracked at session start)
+
+- `docs/ops/DWX_IMPORT_AUTOMATION.md` — DWX hourly automation pipeline (other-Claude-session work, V5-operational)
+- `docs/ops/PHASE_FINAL_FOUNDER_COMMS.md` — frozen content per its own header
+
+### New ADRs
+
+- `decisions/2026-04-26_dxz_live_only_and_p10_live_burn_in.md`
+- `decisions/2026-04-26_tds_renewal_skip.md`
+
+### Updated ADRs
+
+- `decisions/2026-04-25_news_compliance_variants_TBD.md` — TBD → ACCEPTED Option A
+
+### Doc edits
+
+- `branding/QM_BRANDING_GUIDE.md` § 10 — Open Items → Confirmed Defaults
+- `docs/ops/TICK_DATA_MANAGER_DARWINEX_TIME.md` — Status (2026-04-26) section appended
+
+### Phase 0 board
+
+- P0-21 marked PASS on T1
+- P0-35 added: "OWNER decision sweep + DXZ-live-only redesign" — DONE
+
 ## 2026-04-26 (final overnight) — Sweep 3: V4 reference material + Voice samples + Open-items audit
 
 Scope: migrate V4 scripts, infra PowerShell, Controlling KPI tooling, doc/ history, voice samples — as reference material for Wave 0+ to study, not as V5 input. Plus a one-shot honest open-items audit so OWNER knows exactly what's left after 13 commits of spec work.
