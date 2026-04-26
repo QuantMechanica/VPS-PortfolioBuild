@@ -3,6 +3,8 @@
 Date range: 2026-04-21 to 2026-04-28
 Goal: turn the V5 plan into a runnable, public, auditable foundation.
 
+> **Owner-field reading rule (added 2026-04-26):** the `Owner` column lists the *planned long-term owner* (CEO, CTO, Pipeline-Operator, etc.). Paperclip is not installed yet, so most named owners do not exist as agents. For *today's actual owner* of each row see `PROJECT_BACKLOG.md` § Phase 0 — most rows are owned by OWNER + Board Advisor Claude in interim, others are blocked on Phase 1 (Paperclip Bootstrap). When Paperclip Wave 0 comes online, the named owners take over per `docs/ops/ORG_SELF_DESIGN_MODEL.md`.
+
 ## Decision
 
 V5 is a restart. The first week should produce a clean public skeleton and a reproducible VPS factory, not revive the old QUAA company.

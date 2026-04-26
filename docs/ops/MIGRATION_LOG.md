@@ -1,5 +1,54 @@
 # Migration Log
 
+## 2026-04-26 (late evening) — Project backlog + Paperclip reality check
+
+Scope: stand up `PROJECT_BACKLOG.md` as the single backlog across all phases of V5; record the obvious-but-unwritten reality that Paperclip is not installed yet; codify the Specification Density Principle.
+
+Operator: Claude Board Advisor under OWNER direction.
+
+### Why
+
+Across recent commits, workstream owners have piled up as `CTO + Development`, `CEO + Pipeline-Operator`, `Quality-Tech`. These reflect Wave 0+ Paperclip agents per `ORG_SELF_DESIGN_MODEL.md`. **Those agents do not exist yet**. Today the only actors on the VPS are OWNER and this Claude instance. The backlog read as if work was queued when in fact most of it is blocked on Phase 1 (Paperclip Bootstrap).
+
+OWNER also clarified: Paperclip should work things out itself wherever it can. This file should pre-specify the outer boundary, not the interior.
+
+### Files
+
+| File | Purpose |
+|---|---|
+| `PROJECT_BACKLOG.md` (new, repo root) | Single backlog across Phase 0 → Phase Final. Per-row "today's actual owner" so OWNER can answer "what can I do right now?" without grepping five docs. |
+| `decisions/2026-04-26_paperclip_reality_and_phase_map.md` | ADR: Paperclip reality + 7-phase project map + Specification Density Principle |
+| `CLAUDE.md` | Pointer to `PROJECT_BACKLOG.md` added; "Paperclip Reality" + "Specification Density Principle" sections added; Required Local Docs list expanded with V5 specs and brand guide |
+| `docs/ops/PHASE0_EXECUTION_BOARD.md` | Owner-field-reading-rule banner added at top: named owners are *planned long-term* owners (Paperclip agents); see `PROJECT_BACKLOG.md` for *today's actual* owner |
+
+### Phase map adopted
+
+```
+Phase 0 — VPS Foundation + Specs                  ← we are here
+Phase 1 — Paperclip Bootstrap (install + Wave 0)
+Phase 2 — V5 Framework Implementation
+Phase 3 — First V5 EA Through Pipeline
+Phase 4 — V5 Portfolio Build
+Phase 5 — Live Deployment on T6
+Phase 6 — Public Dashboard Live (parallel-eligible from Phase 1)
+Phase Final — Founder-Comms / Chief of Staff (frozen)
+```
+
+### Specification Density Principle
+
+Hard-bounded: hard rules, gate criteria, brand tokens, magic-number formula, set-file format, news-data location, T6 isolation, broker-time convention.
+
+Skeleton + acceptance gate (interior left to Paperclip): phase workstreams, individual EA design, sub-gate recalibration, dashboard widget content, episode artifacts.
+
+When Paperclip Wave 0 comes online, the answer to "what should I do here?" is usually "what do you propose, given the constraints?" — not "here is the answer pre-baked".
+
+### Out of scope (NOT done)
+
+- Paperclip install — that is Phase 1's first task
+- 13 prompt review and Wave 0 prompt authoring — Phase 1
+- DST validation on T1 — separate physical-VPS task, see `PROJECT_BACKLOG.md` § Phase 0 not-started-actionable-today
+- EP01 publishing artifacts — Phase 0 unblocked-actionable, OWNER's call
+
 ## 2026-04-26 (evening) — V5 brand application + framework trade-mgmt + chart UI
 
 Scope: pull QuantMechanica brand system from Drive into repo, write V5-application brand guide, extend framework with standardized trade-management modules and a per-EA in-chart dashboard widget.
