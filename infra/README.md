@@ -56,3 +56,10 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts
 - No EA strategy code changes.
 - No T6 live automation mutations.
 - No secret material in repo.
+
+## T1 one-shot script runner (operational)
+
+- `D:\QM\mt5\T1\run_fix_dwx_spec_v2.ini`
+  - Startup config for scripted execution of `Fix_DWX_Spec_v2` with `ShutdownTerminal=1`.
+  - Command: `D:\QM\mt5\T1\terminal64.exe /portable /config:D:\QM\mt5\T1\run_fix_dwx_spec_v2.ini`.
+  - Use only on T1; do not point this flow at T6 paths.
