@@ -40,6 +40,9 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Runs backup workflow in an isolated temp workspace and asserts manifest/artifacts.
 - `tasks/Test-HourlyTaskTick.ps1`
   - Verifies `QM_DWX_HourlyCheck` is hourly (`PT1H`) and has at least one observed completed tick.
+- `paperclip-stale-lock-runbook.md`
+  - Manual and platform recovery flow for stale `checkoutRunId` / `executionRunId` lock conflicts (QUA-24).
+  - Documents the comment-side-effect and PATCH-only assignee-cycle workaround.
 
 ## Recommended scheduler wiring
 
