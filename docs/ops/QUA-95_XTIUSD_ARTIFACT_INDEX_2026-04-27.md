@@ -21,6 +21,8 @@ Status recommendation: `blocked` (`defer`)
   - `docs/ops/QUA-95_BLOCKER_REFRESH_TASK_INSTALL_2026-04-27.md`
 - Task-health monitor install record:
   - `docs/ops/QUA-95_TASK_HEALTH_TASK_INSTALL_2026-04-27.md`
+- Infra-audit integration proof:
+  - `docs/ops/QUA-95_INFRA_AUDIT_INTEGRATION_2026-04-27.md`
 
 ## Investigation + evidence trail
 
