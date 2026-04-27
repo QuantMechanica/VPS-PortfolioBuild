@@ -1,0 +1,26 @@
+{
+  "parent_issue": "QUA-207",
+  "proposed_child_issue": {
+    "title": "QUA-207 follow-up — verifier acceptance rerun for XTIUSD.DWX after runtime restore",
+    "owner": "verifier_implementation_owner",
+    "priority": "high",
+    "status": "todo"
+  },
+  "context": {
+    "runtime_owner_scope": "completed",
+    "runtime_evidence": "lessons-learned/evidence/2026-04-27_qua95_xtiusd_custom_visibility_probe_rerun.json",
+    "target_rates_from_pos_m1_count": 10,
+    "isolated_custom_bars_visibility_failure": false
+  },
+  "required_completion_criteria": [
+    "Direct verifier rerun for XTIUSD.DWX reports bars_got > 0",
+    "Tail alignment condition met (no positive shortfall)",
+    "QUA-95 transition/readiness chain refreshed cleanly after verifier pass"
+  ],
+  "supporting_artifacts": [
+    "docs/ops/QUA-207_CLOSEOUT_PACKET_2026-04-27.md",
+    "docs/ops/QUA-207_ISSUE_TRANSITION_PAYLOAD_2026-04-27.json",
+    "docs/ops/QUA-207_OPS_BUNDLE_2026-04-27.json",
+    "lessons-learned/evidence/2026-04-27_qua95_xtiusd_direct_verify_rerun.json"
+  ]
+}
