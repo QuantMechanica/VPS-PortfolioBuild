@@ -1,6 +1,6 @@
 ﻿{
     "issue":  "QUA-95",
-    "generated_at_local":  "2026-04-27T14:30:04+02:00",
+    "generated_at_local":  "2026-04-27T14:32:34+02:00",
     "refresh_executed":  false,
     "refresh_exit_code":  null,
     "audit_executed":  false,
@@ -16,20 +16,15 @@
     "infra_audit":  {
                         "overall_status":  "critical",
                         "checks_count":  37,
-                        "issues_count":  7
+                        "issues_count":  2
                     },
     "audit_signal":  {
                          "qua95_issues_count":  0,
-                         "non_qua95_issues_count":  7,
+                         "non_qua95_issues_count":  2,
                          "qua95_issue_names":  [
 
                                                ],
                          "non_qua95_issue_names":  [
-                                                       "factory_portable_marker_T1",
-                                                       "factory_portable_marker_T2",
-                                                       "factory_portable_marker_T3",
-                                                       "factory_portable_marker_T4",
-                                                       "factory_portable_marker_T5",
                                                        "t6_live_demo_isolation",
                                                        "google_drive_sync"
                                                    ]

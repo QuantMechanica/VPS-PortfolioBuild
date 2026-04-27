@@ -362,6 +362,7 @@
 - Checks (when blocker remains `blocked`):
   - `mid_ticks_5min > 0`
   - `bars_one_shot <= 0` and `bars_chunked <= 0`
+  - `tail_delta_ms < 0` and `tail_shortfall_seconds >= MinTailShortfallSeconds` (default `3600`)
   - `isolated_custom_bars_visibility_failure == true`
   - `target` bars absent while `source` bars remain visible
   - blocker disposition remains `defer` with `bars_got <= 0`
@@ -814,3 +815,19 @@
   - refuses any `T6` terminal root path.
 - Example:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Ensure-Mt5PortableMarker.ps1 -FailOnMissingRoot`
+
+## `Drop-PortableMarkers.ps1`
+
+- Acceptance-run wrapper for QUA-190 factory marker drift fix (`T1`-`T5` only).
+- Idempotent behavior:
+  - ensures/normalizes `portable.txt` at each terminal root
+  - verifies marker existence per terminal
+  - writes JSON evidence to `D:\QM\reports\ops\devops\portable_marker_evidence_<timestamp>.json`
+- Optional probe mode (`-RestartForNonPortableProbe`) does a controlled restart:
+  - starts each terminal once without `/portable` argument
+  - checks for AppData `origin.txt` writes tied to that terminal exe
+  - restores previously running factory terminals with `/portable`
+- Safety:
+  - hard-refuses T6 scope.
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Drop-PortableMarkers.ps1 -RestartForNonPortableProbe -ProbeWaitSeconds 10`
