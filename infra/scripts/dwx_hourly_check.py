@@ -94,6 +94,22 @@ def compute_readiness(
     )
 
 
+def is_symbol_spec_ok(si) -> bool:
+    """Readiness spec gate for a DWX symbol.
+
+    We require non-zero profit/loss tick values plus base/profit currencies.
+    `trade_tick_value` itself is informational and may differ by symbol type.
+    """
+    tvp = float(si.trade_tick_value_profit or 0.0)
+    tvl = float(si.trade_tick_value_loss or 0.0)
+    return (
+        tvp > 0
+        and tvl > 0
+        and si.currency_base != ""
+        and si.currency_profit != ""
+    )
+
+
 def open_log() -> Path:
     LOGS.mkdir(parents=True, exist_ok=True)
     return LOGS / f"hourly_{dt.date.today().isoformat()}.log"
@@ -232,18 +248,7 @@ def write_readiness_report(fp) -> bool:
             if si is None:
                 spec_bad.append(s.name)
                 continue
-            tv = float(si.trade_tick_value or 0.0)
-            tvp = float(si.trade_tick_value_profit or 0.0)
-            tvl = float(si.trade_tick_value_loss or 0.0)
-            spec_ok = (
-                tv > 0
-                and tvp > 0
-                and tvl > 0
-                and tvp == tv
-                and tvl == tv
-                and si.currency_base != ""
-                and si.currency_profit != ""
-            )
+            spec_ok = is_symbol_spec_ok(si)
             if not spec_ok:
                 spec_bad.append(s.name)
 
@@ -279,8 +284,7 @@ def write_readiness_report(fp) -> bool:
             tv = si.trade_tick_value
             tvp = si.trade_tick_value_profit
             tvl = si.trade_tick_value_loss
-            spec_ok = (tvp > 0 and tvl > 0 and tvp == tv and tvl == tv
-                       and si.currency_base != "" and si.currency_profit != "")
+            spec_ok = is_symbol_spec_ok(si)
             lines.append(f"| {s.name} | {s.path} | {'OK' if spec_ok else 'BAD'} "
                          f"| {tv} | {tvp} | {tvl} |")
         lines.append(f"\n## Queue\n")
