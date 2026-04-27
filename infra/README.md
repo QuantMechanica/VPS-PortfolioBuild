@@ -125,7 +125,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `scripts/Test-QUA95OpsBundleManifest.ps1`
   - Verifies hash consistency for the QUA-95 blocked-ops bundle manifest.
 - `scripts/Write-QUA95OpsSuiteSnapshot.ps1`
-  - Runs the QUA-95 ops suite and persists the JSON snapshot artifact.
+  - Runs the QUA-95 ops suite, persists the JSON snapshot artifact, and refreshes the ops-bundle manifest pre+post by default.
 - `scripts/Update-QUA95OpsBundleManifest.ps1`
   - Regenerates SHA256 manifest for core QUA-95 blocked-ops artifact bundle.
 - `scripts/Test-QUA95IssueTransitionPayload.ps1`

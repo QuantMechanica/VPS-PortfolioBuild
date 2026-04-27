@@ -399,9 +399,13 @@
 - Defaults:
   - suite script: `infra\scripts\Test-QUA95OpsSuite.ps1`
   - output: `docs\ops\QUA-95_OPS_SUITE_2026-04-27.json`
+- Automatically resyncs (pre and post run):
+  - `docs\ops\QUA-95_OPS_BUNDLE_2026-04-27.sha256`
+  to prevent pre-check and post-write manifest drift.
 - Exit code mirrors suite result.
 - Optional:
   - `-SkipBlockerTaskHealthCheck` to run the suite without the scheduler last-result gate check (used by refresh runner self-heal path).
+  - `-SkipManifestResync` to skip post-write manifest refresh.
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Write-QUA95OpsSuiteSnapshot.ps1`
 
