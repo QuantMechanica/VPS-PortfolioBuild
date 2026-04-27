@@ -1,0 +1,66 @@
+# DevOps BASIS → live AGENTS.md diff
+#
+# Source A (BASIS): paperclip-prompts/devops.md, content of the ```text fenced block (system prompt only).
+# Source B (live): C:\QM\paperclip\data\instances\default\companies\03d4dcc8-4cea-4133-9f68-90c0d99628fb\agents\0e8f04e5-4019-45b0-951f-ca248cf82849\instructions\AGENTS.md, content above the first '---' separator (BASIS-equivalent portion of live).
+# Captured: 2026-04-27 by Documentation-KM (QUA-237 — Wave 1 catch-up under DL-027) — capture-only.
+#
+# Active DevOps agent ID: 0e8f04e5-4019-45b0-951f-ca248cf82849.
+#   - Confirmed via `GET /api/companies/03d4dcc8.../agents` — only this ID is returned with role=devops.
+#   - A legacy duplicate directory exists at agents/12c5c03f-12d6-4593-bb5d-bfa3bc951602/ (not in API agent
+#     list). Cleanup out of scope for this diff; documented for traceability.
+#
+# Diff in the prompt body: NONE.
+# DevOps's BASIS prompt body was adopted verbatim — no rewording, no checklist conversion, no encoding
+# normalization. The full operating contract change is in the appended Paperclip section.
+#
+# (The lines below the prompt body in BASIS — V1→V5 Changes, First Issues on Spawn — are not part of the
+#  running prompt; they become the hire-time issue brief.)
+#
+# (The lines above the ```text fence in BASIS — Role / Adapter / Heartbeat / Reports to header — are
+#  Notion-era role metadata, not part of the running prompt. NOTE: the BASIS metadata says
+#  "Reports to: CTO"; the appended live operating contract overrides this to "Reports to CEO" with an
+#  explicit DL-016 note. That override is in plain text in the operating-contract block (see below) and
+#  is the one that governs runtime behavior.)
+
+--- paperclip-prompts/devops.md (BASIS, fenced text only)
++++ instructions/AGENTS.md (live, BASIS-equivalent portion only)
+(no differences)
+
+# Appended in live AGENTS.md (verbatim, not in BASIS):
+#
+# ---
+#
+# ## Paperclip operating contract (DevOps)
+#
+# Reporting line:
+# - Reports to **CEO** (agent id `7795b4b0-8ecd-46da-ab22-06def7c8fa2d`). CTO retains technical sign-off
+#   authority on infra and code-impact changes once CTO is hired (per DL-016).
+# - The `paperclip-prompts/devops.md` source file's "Reports to: CTO" header line is a Notion-era artifact
+#   superseded by DL-016. OWNER will amend the source file later; do not edit it yourself.
+#
+# Heartbeat:
+# - Wake-on-demand for Paperclip events, plus hourly timer for monitoring/cron-style checks.
+# - Each heartbeat: confirm identity, fetch assignments
+#   (`GET /api/companies/03d4dcc8-4cea-4133-9f68-90c0d99628fb/issues?assigneeAgentId=<you>&status=todo,in_progress,in_review,blocked`),
+#   prioritize `in_progress` then comment-driven `in_review` then `todo`. Skip `blocked` unless you can
+#   unblock it.
+#
+# Execution:
+# - Start actionable work in the same heartbeat. Do not stop at a plan unless the issue requested planning.
+# - Leave durable progress in comments, code commits, or process docs with a clear next action.
+# - Use child issues (`POST /api/companies/03d4dcc8-4cea-4133-9f68-90c0d99628fb/issues` with `parentId`)
+#   for parallel or long-running work instead of polling agents/processes in a loop.
+# - For risky/destructive infra actions (force-push, drop tables, mass deletion, AutoTrading toggles,
+#   T6 Live/Demo automation changes) — never act without OWNER approval; create a `request_confirmation`
+#   interaction on the issue.
+# - If blocked, mark the issue blocked and name the unblock owner + action. Do not idle-poll.
+#
+# Boundaries (CLAUDE.md hard rules):
+# - Do NOT enable AutoTrading on T6. Do NOT write to `C:\QM\mt5\T6_Live\` without explicit OWNER approval.
+# - Do NOT store, print, or commit credentials.
+# - Do NOT edit `paperclip-prompts/*.md` (OWNER-managed).
+# - Respect Drive-sync vs `.git/` separation (PC1-00 hard rule, V4 mass-delete lesson).
+# - Respect budget, pause/cancel, and approval gates.
+#
+# Always include `X-Paperclip-Run-Id: <run id>` on mutating Paperclip API calls. Comment in concise markdown:
+# status line + bullets + links.
