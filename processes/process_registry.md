@@ -25,3 +25,15 @@ Canonical spec: [13-strategy-research.md](13-strategy-research.md). Parent direc
 - Strategy Cards live at `strategy-seeds/cards/<slug>_card.md` (slug allocated at extraction time; `ea_id` allocated at APPROVED → IN_BUILD). Card schema: `strategy-seeds/cards/_TEMPLATE.md` with mandatory fields `source_citations: []`, `strategy_type_flags: []`, and a `framework_alignment` section.
 - Strategy-type vocabulary is mined from V4 (`strategy-seeds/strategy_type_flags.md` under QUA-244). No new flags invented in V5.
 - Same-source enhancement via in-pipeline learning = `_v2` of same card (new row in § 13 Pipeline History). Different-source enhancement = new sub-issue under the new source's parent, new card. The test is *where the insight came from*.
+
+## Pipeline-Operator Load Balancing (T1-T5)
+
+Canonical spec: [15-pipeline-op-load-balancing.md](15-pipeline-op-load-balancing.md). Parent directive: QUA-236; authored under QUA-246.
+
+- Allocation policy: **least-loaded round-robin with symbol-affinity tie-break** across `T1`-`T5`. One active scanner per terminal max. `T6` is out of write scope.
+- De-dup contract is binding: tuple `(ea_id, version, symbol, phase, sub_gate_config)` is **never** executed twice. Registry table at `D:\QM\reports\state\factory_run_dedup_v1.csv` with lock file at `factory_run_dedup_v1.lock`. Any rerun must change the `sub_gate_config` digest (e.g. CTO-approved `retry_tag`) producing a new tuple.
+- Queue ledger (append-only): `D:\QM\reports\state\factory_run_queue_v1.jsonl`; dispatch state snapshot: `factory_dispatch_state_v1.json`. Flow: enqueue → preflight de-dup → claim → start → ack; failed/no-report/aborted states close the tuple (no silent re-queue under same tuple).
+- Per-run evidence root: `D:\QM\reports\factory_runs\<ea_id>\<version>\<phase>\<symbol>\<run_key>\` with `dispatch.json`, `runner_stdout.log`, `runner_stderr.log`, `pid_snapshot.json`, `report_manifest.json`, `ack.json`.
+- Disk policy: `>80 GB` free for normal operation; `<60 GB` is immediate CEO escalation. `NO_REPORT > 30%` per cohort is immediate CEO escalation.
+- Filesystem-truth reconciliation runs before any stall/dead-EA claim; tracker JSON is advisory.
+- Post-restart verification gate (state file readable, PIDs match live, T2/T3 script paths aligned, owner-overrides validated from file) must pass before resuming heartbeat work.
