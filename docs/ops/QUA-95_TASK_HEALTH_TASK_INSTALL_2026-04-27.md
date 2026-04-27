@@ -73,3 +73,25 @@ Observed fields:
 - `Last Run Time: 4/27/2026 10:28:41 AM`
 - `Last Result: 0`
 - direct check output: `status=ok task=QM_QUA95_BlockerRefresh ...`
+
+## Live readiness-wiring proof
+
+Executed:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-QUA95TaskHealthTask.ps1 -EveryMinutes 15 -MaxAgeMinutes 125
+schtasks /Run /TN "QM_QUA95_TaskHealth_15min"
+schtasks /Query /TN "QM_QUA95_TaskHealth_15min" /V /FO LIST
+```
+
+Observed:
+- installer output: `installed_task=QM_QUA95_TaskHealth_15min`
+- scheduler run attempt: `SUCCESS`
+- post-run `Last Run Time: 4/27/2026 11:39:13 AM`
+- post-run `Last Result: 0`
+
+Full action argument (PowerShell API):
+
+```text
+-NoProfile -ExecutionPolicy Bypass -File "C:\QM\repo\infra\monitoring\Test-QUA95BlockerTaskHealth.ps1" -MaxAgeMinutes 125 -TransitionPayloadCheckScript "C:\QM\repo\infra\scripts\Test-QUA95IssueTransitionPayload.ps1" -UnblockReadinessCheckScript "C:\QM\repo\infra\scripts\Test-QUA95UnblockReadiness.ps1"
+```
