@@ -20,6 +20,7 @@ param(
     [string]$Qua95BlockerStatusJson = 'C:\QM\repo\docs\ops\QUA-95_XTIUSD_BLOCKER_STATUS_2026-04-27.json',
     [string]$Qua95BlockedAssertionMd = 'C:\QM\repo\docs\ops\QUA-95_BLOCKED_STATE_ASSERTION_2026-04-27.md',
     [int]$Qua95BlockedAssertionMaxLagMinutes = 30,
+    [string]$Qua95OpsBundleManifestScript = 'C:\QM\repo\infra\scripts\Test-QUA95OpsBundleManifest.ps1',
     [string]$Qua95BlockedHeartbeatWrapperTestScript = 'C:\QM\repo\infra\monitoring\Test-QUA95BlockedHeartbeatWrapper.ps1',
     [string]$OutJson = 'C:\QM\repo\infra\reports\infra_audit_latest.json',
     [switch]$FailOnCritical
@@ -265,6 +266,24 @@ else {
         lag_minutes = $lag
         blocker_last_checked = $blocker.last_checked_local
         assertion_last_write_local = $assertionWrite.ToString('o')
+    }
+}
+
+# QUA-95 ops bundle manifest integrity
+if (-not (Test-Path -LiteralPath $Qua95OpsBundleManifestScript)) {
+    Add-Check -Name 'qua95_ops_bundle_manifest' -Status 'warn' -Meta @{
+        reason = 'manifest_script_missing'
+        path = $Qua95OpsBundleManifestScript
+    }
+}
+else {
+    $bundleOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $Qua95OpsBundleManifestScript 2>&1
+    $bundleCode = $LASTEXITCODE
+    $bundleText = ($bundleOut | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
+    $bundleStatus = if ($bundleCode -eq 0) { 'ok' } else { 'critical' }
+    Add-Check -Name 'qua95_ops_bundle_manifest' -Status $bundleStatus -Meta @{
+        exit_code = $bundleCode
+        output = $bundleText
     }
 }
 
