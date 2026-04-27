@@ -174,11 +174,12 @@
   10. `Write-QUA95UnblockReadinessSummary.ps1`
   11. `monitoring/Test-QUA95AutomationHealth.ps1 -SkipRefreshLastResultCheck -SkipTaskHealthCheck`
   12. `Update-QUA95AuditSignal.ps1`
-  13. Refreshes `QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.sha256`
-  14. `Test-QUA95HandoffIntegrity.ps1`
-  15. `Update-QUA95OpsBundleManifest.ps1` (pre-suite resync)
-  16. `Write-QUA95OpsSuiteSnapshot.ps1 -SkipBlockerTaskHealthCheck`
-  17. `Update-QUA95OpsBundleManifest.ps1` (post-suite resync)
+  13. `Test-QUA95AuditSignal.ps1`
+  14. Refreshes `QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.sha256`
+  15. `Test-QUA95HandoffIntegrity.ps1`
+  16. `Update-QUA95OpsBundleManifest.ps1` (pre-suite resync)
+  17. `Write-QUA95OpsSuiteSnapshot.ps1 -SkipBlockerTaskHealthCheck`
+  18. `Update-QUA95OpsBundleManifest.ps1` (post-suite resync)
 - Enforces non-zero exit handling for each step; task fails when any step exits non-zero.
 - Log append writes are lock-tolerant (`Add-Content` retry loop) so concurrent
   writer contention does not crash the runner.
@@ -385,9 +386,10 @@
   6. `Write-QUA95UnblockReadinessSummary.ps1`
   7. `monitoring/Test-QUA95AutomationHealth.ps1`
   8. `Update-QUA95AuditSignal.ps1`
-  9. `Update-QUA95OpsBundleManifest.ps1` (pre-suite resync)
-  10. `Write-QUA95OpsSuiteSnapshot.ps1 -SkipBlockerTaskHealthCheck`
-  11. `Update-QUA95OpsBundleManifest.ps1` (post-suite resync)
+  9. `Test-QUA95AuditSignal.ps1`
+  10. `Update-QUA95OpsBundleManifest.ps1` (pre-suite resync)
+  11. `Write-QUA95OpsSuiteSnapshot.ps1 -SkipBlockerTaskHealthCheck`
+  12. `Update-QUA95OpsBundleManifest.ps1` (post-suite resync)
 - Reads canonical outputs and writes consolidated summary:
   - `docs\ops\QUA-95_BLOCKED_HEARTBEAT_2026-04-27.json`
 - Supports:

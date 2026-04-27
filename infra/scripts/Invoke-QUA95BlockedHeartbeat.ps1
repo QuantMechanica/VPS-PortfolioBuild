@@ -18,13 +18,14 @@ $unblockReadinessScript = Join-Path $RepoRoot 'infra\scripts\Update-QUA95Unblock
 $unblockReadinessSummaryScript = Join-Path $RepoRoot 'infra\scripts\Write-QUA95UnblockReadinessSummary.ps1'
 $automationHealthScript = Join-Path $RepoRoot 'infra\monitoring\Test-QUA95AutomationHealth.ps1'
 $auditSignalScript = Join-Path $RepoRoot 'infra\scripts\Update-QUA95AuditSignal.ps1'
+$auditSignalCheckScript = Join-Path $RepoRoot 'infra\scripts\Test-QUA95AuditSignal.ps1'
 $opsSuiteSnapshotScript = Join-Path $RepoRoot 'infra\scripts\Write-QUA95OpsSuiteSnapshot.ps1'
 $opsBundleManifestScript = Join-Path $RepoRoot 'infra\scripts\Update-QUA95OpsBundleManifest.ps1'
 $gateJson = Join-Path $RepoRoot 'docs\ops\QUA-95_GATE_DECISION_2026-04-27.json'
 $auditJson = Join-Path $RepoRoot 'infra\reports\infra_audit_latest.json'
 $outFull = Join-Path $RepoRoot $OutPath
 
-foreach ($p in @($refreshScript, $auditScript, $gateScript, $assertionScript, $blockedInvariantScript, $unblockReadinessScript, $unblockReadinessSummaryScript, $automationHealthScript, $auditSignalScript, $opsSuiteSnapshotScript, $opsBundleManifestScript)) {
+foreach ($p in @($refreshScript, $auditScript, $gateScript, $assertionScript, $blockedInvariantScript, $unblockReadinessScript, $unblockReadinessSummaryScript, $automationHealthScript, $auditSignalScript, $auditSignalCheckScript, $opsSuiteSnapshotScript, $opsBundleManifestScript)) {
     if (-not (Test-Path -LiteralPath $p)) {
         throw "Required script missing: $p"
     }
@@ -95,6 +96,13 @@ $auditSignalCode = $LASTEXITCODE
 if ($auditSignalCode -ne 0) {
     $auditSignalText = ($auditSignalOut | ForEach-Object { $_.ToString() }) -join '; '
     throw ("Audit signal snapshot failed: exit_code={0} output={1}" -f $auditSignalCode, $auditSignalText)
+}
+
+$auditSignalCheckOut = & $auditSignalCheckScript 2>&1
+$auditSignalCheckCode = $LASTEXITCODE
+if ($auditSignalCheckCode -ne 0) {
+    $auditSignalCheckText = ($auditSignalCheckOut | ForEach-Object { $_.ToString() }) -join '; '
+    throw ("Audit signal validation failed: exit_code={0} output={1}" -f $auditSignalCheckCode, $auditSignalCheckText)
 }
 
 if (-not ($SkipRefresh.IsPresent -and $SkipAudit.IsPresent)) {

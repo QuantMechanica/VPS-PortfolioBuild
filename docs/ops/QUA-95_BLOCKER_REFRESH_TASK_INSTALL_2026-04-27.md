@@ -35,9 +35,15 @@ Verified highlights:
   - `Update-QUA95BlockedAssertion.ps1`
   - `New-QUA95IssueTransitionPayload.ps1`
   - `Test-QUA95IssueTransitionPayload.ps1`
+  - `Test-QUA95BlockedInvariant.ps1`
+  - `Update-QUA95UnblockReadiness.ps1`
+  - `Write-QUA95UnblockReadinessSummary.ps1`
+  - `Test-QUA95AutomationHealth.ps1 -SkipRefreshLastResultCheck -SkipTaskHealthCheck`
+  - `Update-QUA95AuditSignal.ps1`
+  - `Test-QUA95AuditSignal.ps1`
   - `Test-QUA95HandoffIntegrity.ps1`
   - `Update-QUA95OpsBundleManifest.ps1` (pre-suite resync)
-  - `Write-QUA95OpsSuiteSnapshot.ps1`
+  - `Write-QUA95OpsSuiteSnapshot.ps1 -SkipBlockerTaskHealthCheck`
   - `Update-QUA95OpsBundleManifest.ps1` (post-suite resync)
 
 ## Runtime remediation
