@@ -1,0 +1,62 @@
+[
+  {
+    "symbol": "XTIUSD.DWX",
+    "source": "XTIUSD",
+    "isolated_custom_bars_visibility_failure": true,
+    "target_range": 0,
+    "target_pos": 0,
+    "source_range": 262,
+    "source_pos": 10,
+    "exit_code": 1
+  },
+  {
+    "symbol": "XNGUSD.DWX",
+    "source": "XNGUSD",
+    "isolated_custom_bars_visibility_failure": true,
+    "target_range": 0,
+    "target_pos": 0,
+    "source_range": 145,
+    "source_pos": 10,
+    "exit_code": 1
+  },
+  {
+    "symbol": "XAUUSD.DWX",
+    "source": "XAUUSD",
+    "isolated_custom_bars_visibility_failure": true,
+    "target_range": 0,
+    "target_pos": 0,
+    "source_range": 261,
+    "source_pos": 10,
+    "exit_code": 1
+  },
+  {
+    "symbol": "XAGUSD.DWX",
+    "source": "XAGUSD",
+    "isolated_custom_bars_visibility_failure": true,
+    "target_range": 0,
+    "target_pos": 0,
+    "source_range": 262,
+    "source_pos": 10,
+    "exit_code": 1
+  },
+  {
+    "symbol": "WS30.DWX",
+    "source": "WS30",
+    "isolated_custom_bars_visibility_failure": false,
+    "target_range": 0,
+    "target_pos": 10,
+    "source_range": 262,
+    "source_pos": 10,
+    "exit_code": 0
+  },
+  {
+    "symbol": "EURUSD.DWX",
+    "source": "EURUSD",
+    "isolated_custom_bars_visibility_failure": true,
+    "target_range": 0,
+    "target_pos": 0,
+    "source_range": 314,
+    "source_pos": 10,
+    "exit_code": 1
+  }
+]

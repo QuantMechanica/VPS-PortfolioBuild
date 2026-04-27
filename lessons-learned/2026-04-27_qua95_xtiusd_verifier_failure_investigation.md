@@ -70,6 +70,8 @@ Probe artifacts:
 - `lessons-learned/evidence/2026-04-27_qua95_xtiusd_source_vs_custom_api_probe.md`
 - `lessons-learned/evidence/2026-04-27_qua95_xtiusd_custom_visibility_probe.json`
 - `lessons-learned/evidence/2026-04-27_qua95_xtiusd_custom_visibility_probe.md`
+- `lessons-learned/evidence/2026-04-27_qua95_custom_visibility_scope_matrix.json`
+- `lessons-learned/evidence/2026-04-27_qua95_custom_visibility_scope_matrix.md`
 
 Source-vs-custom API comparison (same terminal/session) additionally confirms:
 - `XTIUSD` source symbol returns M1 bars (`rates_range_2d=257`, `rates_from_pos=10`).
@@ -80,6 +82,11 @@ Automated classification probe (`infra/scripts/probe_custom_symbol_visibility.py
 - `isolated_custom_bars_visibility_failure=True`
 - target bars (range/pos): `0/0`
 - source bars (range/pos): `260/10`
+
+Scope matrix (same day, six-symbol sample) shows the class is broader than XTI:
+- `True` for `XTIUSD.DWX`, `XNGUSD.DWX`, `XAUUSD.DWX`, `XAGUSD.DWX`, `EURUSD.DWX`
+- `False` for `WS30.DWX` (partial exception with `target_pos=10`)
+- Indicates runtime/custom-symbol bars visibility issue with symbol-family variance.
 
 ## Durable change in this heartbeat
 
