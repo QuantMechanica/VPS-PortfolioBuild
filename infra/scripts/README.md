@@ -57,8 +57,8 @@
 - Candidate (non-production) verifier behavior for handoff testing.
 - Proposed deltas vs live verifier:
   - mid/tail probes use `copy_ticks_from(...)` windows
-  - bounded tail tolerance (`--tail-tolerance-ms`, default `180000`)
-  - degraded bars classification (`WARN_bars_unavailable`) when ticks exist but M1 bars API returns zero
+  - bounded tail tolerance (`--tail-basis source --tail-tol-ms 1000` used in QUA-95 proof flow)
+  - bars fallback counts from `copy_rates_from_pos(...)` when range reads are zero/invalid
 - Example:
   - `python C:\QM\repo\infra\scripts\verify_import_candidate.py --symbol XAUUSD.DWX`
 
@@ -631,7 +631,7 @@
 ## `Run-QUA95DirectVerifierProof.ps1`
 
 - Runs direct verifier command for `XTIUSD.DWX`:
-  - `python D:\QM\mt5\T1\dwx_import\verify_import.py --symbol XTIUSD.DWX`
+  - `python D:\QM\mt5\T1\dwx_import\verify_import.py --symbol XTIUSD.DWX --tail-basis source --tail-tol-ms 1000`
 - Captures raw log under:
   - `infra\smoke\verify_import_direct_*_qua95.log`
 - Writes durable proof artifacts:
@@ -639,6 +639,8 @@
   - `docs\ops\QUA-95_DIRECT_VERIFIER_RERUN_2026-04-27.md`
 - Exit behavior:
   - script exits `0` when proof artifacts are written (even when verifier exits non-zero), and prints `verify_exit_code=<n>`.
+- Acceptance semantics:
+  - `recommended_state=clear` when `(bars_one_shot > 0 or bars_chunked > 0)` and `abs(tail_delta_ms) <= tail_tolerance_ms`.
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Run-QUA95DirectVerifierProof.ps1`
 
@@ -658,11 +660,13 @@
 
 - Deterministic runtime repair flow for QUA-207 (`XTIUSD.DWX` bars visibility).
 - Steps:
-  1. choose latest archived `imports\done\*XTIUSD.DWX.import.txt` + paired bins
+  1. choose latest archived `imports\done\*XTIUSD.DWX.import.txt` and resolve matching archived bins from sidecar-declared filenames
   2. compile and run `Delete_One_Custom_Symbol.mq5` via startup ini
   3. re-stage sidecar+bins into `MQL5\Files\imports\`
-  4. run `Import_DWX_From_Bin` via startup ini
-  5. refresh custom-visibility proof (`Run-QUA95CustomVisibilityProof.ps1`)
+  4. temporarily disable `MQL5\Services\Import_DWX_Queue_Service.ex5` to avoid startup race/partial import
+  5. run `Import_DWX_From_Bin` via startup ini
+  6. restore queue-service ex5
+  7. refresh custom-visibility proof (`Run-QUA95CustomVisibilityProof.ps1`)
 - Safety:
   - T1-scoped (`D:\QM\mt5\T1`) by default
   - refuses T6 paths
@@ -856,14 +860,14 @@
 ## `Invoke-VerifyDisposition.ps1`
 
 - Idempotent verifier rerun helper for issue triage.
-- Runs `verify_import.py`, captures a timestamped raw log under `infra\\smoke\\`,
+- Runs `verify_import.py` (scoped symbol + source-tail basis by default), captures a timestamped raw log under `infra\\smoke\\`,
   parses FAIL rows, and writes tracked evidence JSON under
   `lessons-learned\\evidence\\`.
 - Parser supports both verifier output schemas for bars fields:
   - legacy `bars expected=.../got=...`
   - newer `bars_sidecar_expected=...; ... bars_chunked=...`
 - Emits symbol-level disposition:
-  - `clear`: `bars_got > 0` and tail timestamps aligned
+  - `clear`: `bars_got > 0` and tail aligned within tolerance (`abs(tail_delta_ms) <= 1000`)
   - `defer`: systemic zero-bars pattern or symbol bars still zero
   - `fix`: not clear/defer; investigation still in-flight
 - Example:

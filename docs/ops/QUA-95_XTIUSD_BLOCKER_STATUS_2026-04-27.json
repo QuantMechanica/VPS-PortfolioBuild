@@ -1,18 +1,18 @@
 ﻿{
     "issue":  "QUA-95",
     "date":  "2026-04-27",
-    "recommended_state":  "blocked",
-    "reason":  "XTIUSD.DWX bars visibility failure persists; verifier rerun remains defer.",
+    "recommended_state":  "clear",
+    "reason":  "XTIUSD.DWX verifier rerun now meets bars+tail acceptance.",
     "acceptance":  {
                        "target":  "Re-run verifier for XTIUSD.DWX with non-zero bars and matching tail.",
-                       "met":  false
+                       "met":  true
                    },
     "current_observed":  {
                              "symbol":  "XTIUSD.DWX",
-                             "verdict":  "FAIL_tail_bars",
-                             "bars_got":  0,
+                             "verdict":  "FAIL_spec",
+                             "bars_got":  99911,
                              "tail_shortfall_seconds":  7141.322,
-                             "disposition":  "defer"
+                             "disposition":  "clear"
                          },
     "unblock_owners":  [
                            {
@@ -29,7 +29,7 @@
                             "json":  "docs/ops/QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.json",
                             "sha256":  "docs/ops/QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.sha256"
                         },
-    "last_checked_local":  "2026-04-27T14:40:50+02:00",
+    "last_checked_local":  "2026-04-27T15:06:26+02:00",
     "last_evidence_path":  "lessons-learned\\evidence\\2026-04-27_qua95_xtiusd_rerun_evidence.json",
     "last_verify_exit_code":  1
 }

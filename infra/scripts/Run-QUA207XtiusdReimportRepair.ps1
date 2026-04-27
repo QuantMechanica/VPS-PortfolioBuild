@@ -23,8 +23,11 @@ if ($ImportTimeoutMinutes -lt 1) {
 $importsDir = Join-Path $TerminalRoot 'MQL5\Files\imports'
 $doneDir = Join-Path $importsDir 'done'
 $scriptsDir = Join-Path $TerminalRoot 'MQL5\Scripts'
+$servicesDir = Join-Path $TerminalRoot 'MQL5\Services'
 $terminalExe = Join-Path $TerminalRoot 'terminal64.exe'
 $metaEditorExe = Join-Path $TerminalRoot 'metaeditor64.exe'
+$queueServiceEx5 = Join-Path $servicesDir 'Import_DWX_Queue_Service.ex5'
+$queueServiceDisabled = Join-Path $servicesDir 'Import_DWX_Queue_Service.ex5.disabled.qua207'
 
 foreach ($p in @($RepoRoot, $importsDir, $doneDir, $scriptsDir, $terminalExe, $metaEditorExe)) {
     if (-not (Test-Path -LiteralPath $p)) {
@@ -107,6 +110,33 @@ function Invoke-TerminalConfigRun {
     }
 }
 
+function Disable-QueueService {
+    param(
+        [string]$EnabledPath,
+        [string]$DisabledPath
+    )
+    if (Test-Path -LiteralPath $DisabledPath) {
+        Remove-Item -LiteralPath $DisabledPath -Force
+    }
+    if (Test-Path -LiteralPath $EnabledPath) {
+        Move-Item -LiteralPath $EnabledPath -Destination $DisabledPath -Force
+        return $true
+    }
+    return $false
+}
+
+function Restore-QueueService {
+    param(
+        [string]$EnabledPath,
+        [string]$DisabledPath
+    )
+    if (Test-Path -LiteralPath $DisabledPath) {
+        Move-Item -LiteralPath $DisabledPath -Destination $EnabledPath -Force
+        return $true
+    }
+    return $false
+}
+
 $started = Get-Date
 
 $latestSidecar = Get-ChildItem -LiteralPath $doneDir -Filter "*_${TargetSymbol}.import.txt" |
@@ -123,14 +153,42 @@ if ([string]::IsNullOrWhiteSpace($tickBinName) -or [string]::IsNullOrWhiteSpace(
     throw "Sidecar missing tick_bin or m1_bin: $($latestSidecar.FullName)"
 }
 
-$archivedTick = Get-ChildItem -LiteralPath $doneDir -Filter "*_${TargetSymbol}.tick.bin" |
-    Sort-Object LastWriteTime -Descending |
-    Select-Object -First 1
-$archivedM1 = Get-ChildItem -LiteralPath $doneDir -Filter "*_${TargetSymbol}.m1.bin" |
-    Sort-Object LastWriteTime -Descending |
-    Select-Object -First 1
+$sidecarPrefix = $null
+$sidecarSuffix = "_${TargetSymbol}.import.txt"
+if ($latestSidecar.Name.EndsWith($sidecarSuffix, [System.StringComparison]::OrdinalIgnoreCase)) {
+    $sidecarPrefix = $latestSidecar.Name.Substring(0, $latestSidecar.Name.Length - $sidecarSuffix.Length)
+}
+
+function Resolve-ArchivedBinFromSidecar {
+    param(
+        [string]$DoneDirectory,
+        [string]$BinFileName,
+        [string]$Prefix
+    )
+
+    $candidates = @(Get-ChildItem -LiteralPath $DoneDirectory -Filter "*_$BinFileName" -File -ErrorAction SilentlyContinue)
+    if ($candidates.Count -eq 0) {
+        $direct = Join-Path $DoneDirectory $BinFileName
+        if (Test-Path -LiteralPath $direct) {
+            return (Get-Item -LiteralPath $direct)
+        }
+        return $null
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($Prefix)) {
+        $prefixed = @($candidates | Where-Object { $_.Name.StartsWith("${Prefix}_", [System.StringComparison]::OrdinalIgnoreCase) })
+        if ($prefixed.Count -gt 0) {
+            return ($prefixed | Sort-Object LastWriteTime -Descending | Select-Object -First 1)
+        }
+    }
+
+    return ($candidates | Sort-Object LastWriteTime -Descending | Select-Object -First 1)
+}
+
+$archivedTick = Resolve-ArchivedBinFromSidecar -DoneDirectory $doneDir -BinFileName $tickBinName -Prefix $sidecarPrefix
+$archivedM1 = Resolve-ArchivedBinFromSidecar -DoneDirectory $doneDir -BinFileName $m1BinName -Prefix $sidecarPrefix
 if ($null -eq $archivedTick -or $null -eq $archivedM1) {
-    throw "Archived binaries missing for target symbol: $TargetSymbol"
+    throw "Archived binaries missing for sidecar bins: tick_bin=$tickBinName m1_bin=$m1BinName sidecar=$($latestSidecar.FullName)"
 }
 
 $queuedSidecar = Join-Path $importsDir "${TargetSymbol}.import.txt"
@@ -220,24 +278,40 @@ ShutdownTerminal=1
 "@
 Set-Content -LiteralPath $importIni -Value $importIniContent -Encoding ASCII
 
-$stoppedBeforeDelete = Stop-T1Process -ExePath $terminalExe
-$deleteRun = Invoke-TerminalConfigRun -TerminalExePath $terminalExe -IniPath $deleteIni -TimeoutMinutes 5
-
+$queueServiceDisabledDuringRepair = $false
+$queueServiceRestoredAfterRepair = $false
+$stoppedBeforeDelete = 0
+$deleteRun = $null
 $queueRestaged = $false
-Copy-Item -LiteralPath $latestSidecar.FullName -Destination $queuedSidecar -Force
-Copy-Item -LiteralPath $archivedTick.FullName -Destination $queuedTick -Force
-Copy-Item -LiteralPath $archivedM1.FullName -Destination $queuedM1 -Force
-$queueRestaged = $true
+$stoppedBeforeImport = 0
+$importRun = $null
+$proofOutput = @()
+$proofExit = -1
 
-$stoppedBeforeImport = Stop-T1Process -ExePath $terminalExe
-$importRun = Invoke-TerminalConfigRun -TerminalExePath $terminalExe -IniPath $importIni -TimeoutMinutes $ImportTimeoutMinutes
+try {
+    $queueServiceDisabledDuringRepair = Disable-QueueService -EnabledPath $queueServiceEx5 -DisabledPath $queueServiceDisabled
 
-$proofScript = Join-Path $RepoRoot 'infra\scripts\Run-QUA95CustomVisibilityProof.ps1'
-if (-not (Test-Path -LiteralPath $proofScript)) {
-    throw "Proof script missing: $proofScript"
+    $stoppedBeforeDelete = Stop-T1Process -ExePath $terminalExe
+    $deleteRun = Invoke-TerminalConfigRun -TerminalExePath $terminalExe -IniPath $deleteIni -TimeoutMinutes 5
+
+    Copy-Item -LiteralPath $latestSidecar.FullName -Destination $queuedSidecar -Force
+    Copy-Item -LiteralPath $archivedTick.FullName -Destination $queuedTick -Force
+    Copy-Item -LiteralPath $archivedM1.FullName -Destination $queuedM1 -Force
+    $queueRestaged = $true
+
+    $stoppedBeforeImport = Stop-T1Process -ExePath $terminalExe
+    $importRun = Invoke-TerminalConfigRun -TerminalExePath $terminalExe -IniPath $importIni -TimeoutMinutes $ImportTimeoutMinutes
+
+    $proofScript = Join-Path $RepoRoot 'infra\scripts\Run-QUA95CustomVisibilityProof.ps1'
+    if (-not (Test-Path -LiteralPath $proofScript)) {
+        throw "Proof script missing: $proofScript"
+    }
+    $proofOutput = & powershell -NoProfile -ExecutionPolicy Bypass -File $proofScript -RepoRoot $RepoRoot -Target $TargetSymbol -ProbeScript (Join-Path $RepoRoot 'infra\scripts\probe_custom_symbol_visibility.py') 2>&1
+    $proofExit = $LASTEXITCODE
 }
-$proofOutput = & powershell -NoProfile -ExecutionPolicy Bypass -File $proofScript -RepoRoot $RepoRoot -Target $TargetSymbol -ProbeScript (Join-Path $RepoRoot 'infra\scripts\probe_custom_symbol_visibility.py') 2>&1
-$proofExit = $LASTEXITCODE
+finally {
+    $queueServiceRestoredAfterRepair = Restore-QueueService -EnabledPath $queueServiceEx5 -DisabledPath $queueServiceDisabled
+}
 
 $probeEvidencePath = Join-Path $RepoRoot 'lessons-learned\evidence\2026-04-27_qua95_xtiusd_custom_visibility_probe_rerun.json'
 $probeEvidence = $null
@@ -285,6 +359,11 @@ $report = [ordered]@{
         ini = $importIni
         timeout_minutes = $ImportTimeoutMinutes
         queue_restaged = $queueRestaged
+    }
+    queue_service_control = [ordered]@{
+        service_ex5 = $queueServiceEx5
+        disabled_during_repair = $queueServiceDisabledDuringRepair
+        restored_after_repair = $queueServiceRestoredAfterRepair
     }
     proof = [ordered]@{
         exit_code = $proofExit

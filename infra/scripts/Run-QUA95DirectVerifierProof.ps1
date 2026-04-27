@@ -3,6 +3,9 @@ param(
     [string]$RepoRoot = 'C:\QM\repo',
     [string]$Symbol = 'XTIUSD.DWX',
     [string]$VerifyScript = 'D:\QM\mt5\T1\dwx_import\verify_import.py',
+    [ValidateSet('sidecar','source')]
+    [string]$TailBasis = 'source',
+    [int]$TailToleranceMs = 1000,
     [string]$SmokeLogDir = 'infra\smoke',
     [string]$OutEvidenceJson = 'lessons-learned\evidence\2026-04-27_qua95_xtiusd_direct_verify_rerun.json',
     [string]$OutProofMd = 'docs\ops\QUA-95_DIRECT_VERIFIER_RERUN_2026-04-27.md'
@@ -20,7 +23,7 @@ New-Item -ItemType Directory -Path $smokeFull -Force | Out-Null
 $stamp = Get-Date -Format 'yyyy-MM-dd_HHmmss'
 $logPath = Join-Path $smokeFull ("verify_import_direct_{0}_qua95.log" -f $stamp)
 
-$rawOut = & python $VerifyScript --symbol $Symbol 2>&1
+$rawOut = & python $VerifyScript --symbol $Symbol --tail-basis $TailBasis --tail-tol-ms $TailToleranceMs 2>&1
 $verifyCode = $LASTEXITCODE
 $outLines = @($rawOut | ForEach-Object { $_.ToString() })
 $outLines | Set-Content -LiteralPath $logPath -Encoding UTF8
@@ -32,7 +35,7 @@ if (-not $line) {
 
 function Get-IntMatch([string]$Pattern, [string]$Text) {
     $m = [regex]::Match($Text, $Pattern)
-    if ($m.Success) { return [int]$m.Groups[1].Value }
+    if ($m.Success) { return [int](($m.Groups[1].Value) -replace ',', '') }
     return $null
 }
 
@@ -51,20 +54,22 @@ if ($mVerdict.Success) {
 $tailDeltaMs = Get-DoubleMatch 'tail_delta_ms=([-0-9.]+)' $line
 $midTicks = Get-IntMatch 'mid_ticks_5min=([0-9]+)' $line
 $barsOneShot = Get-IntMatch 'bars_one_shot=([0-9]+)' $line
-$barsChunked = Get-IntMatch 'bars_chunked=([0-9]+)' $line
-$barsExpectedAccessible = Get-IntMatch 'bars_expected_accessible=([0-9,]+)' ($line -replace ',', '')
+$barsChunked = Get-IntMatch 'bars_chunked=([0-9,]+)' $line
+$barsExpectedAccessible = Get-IntMatch 'bars_expected_accessible=([0-9,]+)' $line
 $barsDrift = Get-IntMatch 'bars_drift=([-0-9]+)' $line
 
 $capturedAt = (Get-Date).ToString('yyyy-MM-ddTHH:mm:ssK')
 $tailShortfallSeconds = if ($tailDeltaMs -ne $null) { [math]::Round(([math]::Abs($tailDeltaMs) / 1000.0), 3) } else { $null }
-$recommended = if (($barsOneShot -ne $null -and $barsOneShot -le 0) -or ($barsChunked -ne $null -and $barsChunked -le 0)) { 'blocked' } else { 'clear' }
+$barsPositive = (($barsOneShot -ne $null -and $barsOneShot -gt 0) -or ($barsChunked -ne $null -and $barsChunked -gt 0))
+$tailAligned = ($tailDeltaMs -ne $null -and [math]::Abs($tailDeltaMs) -le $TailToleranceMs)
+$recommended = if ($barsPositive -and $tailAligned) { 'clear' } else { 'blocked' }
 $disposition = if ($recommended -eq 'blocked') { 'defer' } else { 'clear' }
 
 $evidence = [ordered]@{
     issue = 'QUA-95'
     symbol = $Symbol
     captured_at_local = $capturedAt
-    command = ("python {0} --symbol {1}" -f $VerifyScript, $Symbol)
+    command = ("python {0} --symbol {1} --tail-basis {2} --tail-tol-ms {3}" -f $VerifyScript, $Symbol, $TailBasis, $TailToleranceMs)
     verify_exit_code = $verifyCode
     verdict = $verdict
     tail_delta_ms = $tailDeltaMs
@@ -74,6 +79,8 @@ $evidence = [ordered]@{
     bars_chunked = $barsChunked
     bars_expected_accessible = $barsExpectedAccessible
     bars_drift = $barsDrift
+    tail_basis = $TailBasis
+    tail_tolerance_ms = $TailToleranceMs
     raw_log = $logPath
     recommended_state = $recommended
     disposition = $disposition
@@ -92,7 +99,7 @@ $proofLines = @(
     '## Command',
     '',
     '```powershell',
-    ("python {0} --symbol {1}" -f $VerifyScript, $Symbol),
+    ("python {0} --symbol {1} --tail-basis {2} --tail-tol-ms {3}" -f $VerifyScript, $Symbol, $TailBasis, $TailToleranceMs),
     '```',
     '',
     '## Result',

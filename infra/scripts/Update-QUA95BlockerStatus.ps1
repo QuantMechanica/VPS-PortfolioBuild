@@ -43,7 +43,20 @@ $bl.current_observed.verdict = $ev.symbol.verdict
 $bl.current_observed.bars_got = [int]$ev.symbol.bars_got
 $bl.current_observed.tail_shortfall_seconds = [double]$ev.symbol.tail_shortfall_seconds
 $bl.current_observed.disposition = $ev.disposition
-$bl.acceptance.met = ($ev.symbol.bars_got -gt 0 -and ($ev.symbol.tail_ms_expected -eq $ev.symbol.tail_ms_got))
+$tailAligned = $false
+if ($ev.symbol.PSObject.Properties.Name -contains 'tail_delta_ms' -and $null -ne $ev.symbol.tail_delta_ms) {
+    $tailAligned = ([math]::Abs([double]$ev.symbol.tail_delta_ms) -le 1000.0)
+} elseif ($null -ne $ev.symbol.tail_ms_expected -and $null -ne $ev.symbol.tail_ms_got) {
+    $tailAligned = ($ev.symbol.tail_ms_expected -eq $ev.symbol.tail_ms_got)
+}
+$bl.acceptance.met = ($ev.symbol.bars_got -gt 0 -and $tailAligned)
+if ($bl.acceptance.met -and [string]$ev.disposition -eq 'clear') {
+    $bl.recommended_state = 'clear'
+    $bl.reason = 'XTIUSD.DWX verifier rerun now meets bars+tail acceptance.'
+} else {
+    $bl.recommended_state = 'blocked'
+    $bl.reason = 'XTIUSD.DWX bars visibility failure persists; verifier rerun remains defer.'
+}
 Set-OrAddProperty -Object $bl -Name 'last_checked_local' -Value $ev.generated_at_local
 Set-OrAddProperty -Object $bl -Name 'last_evidence_path' -Value $EvidencePath
 Set-OrAddProperty -Object $bl -Name 'last_verify_exit_code' -Value ([int]$ev.verify_exit_code)

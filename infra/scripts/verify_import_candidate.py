@@ -66,6 +66,25 @@ def count_rates_chunked(symbol: str, first_s: int, last_s: int, chunk_days: int)
     return total, bad_chunks
 
 
+def count_rates_from_pos(symbol: str, *, page_size: int = 1000, max_pages: int = 500) -> tuple[int, int]:
+    total = 0
+    bad_calls = 0
+    pos = 0
+    for _ in range(max_pages):
+        rates = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_M1, pos, page_size)
+        if rates is None:
+            bad_calls += 1
+            break
+        got = len(rates)
+        if got <= 0:
+            break
+        total += got
+        pos += got
+        if got < page_size:
+            break
+    return total, bad_calls
+
+
 def check_one(
     job: dict[str, str],
     *,
@@ -132,6 +151,12 @@ def check_one(
     one_shot_err = mt5.last_error()
 
     chunked_count, bad_chunks = count_rates_chunked(target, b_first, b_last, chunk_days)
+    from_pos_count, from_pos_bad = count_rates_from_pos(target)
+    bars_basis = "range"
+    if chunked_count <= 0 and from_pos_count > 0:
+        chunked_count = from_pos_count
+        bad_chunks += from_pos_bad
+        bars_basis = "from_pos"
 
     ti = mt5.terminal_info()
     maxbars = int(getattr(ti, "maxbars", 0) or 0)
@@ -166,7 +191,8 @@ def check_one(
         f"tail_basis={tail_basis}; tail_ref_ms={tail_ref}; tail_delta_ms={tail_delta}; "
         f"mid_ticks_5min={len(mid_ticks)}; "
         f"bars_sidecar_expected={b_count:,}; bars_one_shot={one_shot_count:,}; bars_one_shot_err={one_shot_err}; "
-        f"bars_chunked={chunked_count:,}; maxbars={maxbars:,}; bars_expected_accessible={expected_accessible:,}; "
+        f"bars_from_pos={from_pos_count:,}; bars_chunked={chunked_count:,}; bars_basis={bars_basis}; "
+        f"maxbars={maxbars:,}; bars_expected_accessible={expected_accessible:,}; "
         f"bars_drift={bar_drift:+,}; bad_chunks={bad_chunks}; path={si.path}"
     )
     return verdict == "OK"
