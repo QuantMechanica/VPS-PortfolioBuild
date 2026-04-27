@@ -204,6 +204,19 @@
 - Smoke proof artifact:
   - `docs\ops\QUA-93_BLOCKER_REFRESH_TASK_SMOKE_2026-04-27.md`
 
+## `Test-QUA93HandoffIntegrity.ps1`
+
+- Validates SHA256 entries in:
+  - `docs\ops\QUA-93_XAUUSD_VERIFIER_HANDOFF_2026-04-27.sha256`
+- Verifies core blocked-state handoff artifacts for QUA-93:
+  - blocker status JSON
+  - blocked comment markdown
+  - blocker refresh smoke markdown
+  - latest rerun evidence JSON
+  - CSV mismatch nudge evidence JSON
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA93HandoffIntegrity.ps1`
+
 ## `verify_import_chunked_probe.py`
 
 - Read-only verifier mirror for symbol-level deep dive.

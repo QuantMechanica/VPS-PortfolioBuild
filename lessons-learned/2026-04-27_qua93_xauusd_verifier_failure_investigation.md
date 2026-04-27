@@ -307,6 +307,19 @@ Validation:
 Smoke proof:
 - `docs/ops/QUA-93_BLOCKER_REFRESH_TASK_SMOKE_2026-04-27.md`
 
+## Handoff Integrity Check (2026-04-27 09:59 CEST)
+
+Added:
+- `infra/scripts/Test-QUA93HandoffIntegrity.ps1`
+- `docs/ops/QUA-93_XAUUSD_VERIFIER_HANDOFF_2026-04-27.sha256`
+
+Executed:
+- `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA93HandoffIntegrity.ps1`
+
+Result:
+- all listed artifacts verified `ok=True`
+- final status: `status=ok`
+
 ## Durable change in this heartbeat
 
 - Added this investigation record for `QUA-93` with concrete classifier output and triage conclusion.
