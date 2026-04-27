@@ -1,0 +1,192 @@
+{
+  "issue": "QUA-93",
+  "generated_at": "2026-04-27T09:48:16+02:00",
+  "nudge_file": "C:\\Users\\Administrator\\Desktop\\CSV_TAIL_MISMATCH.txt",
+  "nudge_exists": true,
+  "runtime_log": "C:\\QM\\repo\\infra\\smoke\\dwx_hourly_check_2026-04-27_094746_qua93_csv_nudge_validation.log",
+  "mismatch_count": 36,
+  "xau_gap_hours": 167.983,
+  "max_gap_hours": 1.0,
+  "symbols": [
+    {
+      "symbol": "AUDCAD",
+      "gap_hours": 191.983,
+      "max_gap_hours": 1.0
+    },
+    {
+      "symbol": "AUDCHF",
+      "gap_hours": 191.983,
+      "max_gap_hours": 1.0
+    },
+    {
+      "symbol": "AUDJPY",
+      "gap_hours": 191.983,
+      "max_gap_hours": 1.0
+    },
+    {
+      "symbol": "AUDNZD",
+      "gap_hours": 191.985,
+      "max_gap_hours": 1.0
+    },
+    {
+      "symbol": "AUDUSD",
+      "gap_hours": 191.984,
+      "max_gap_hours": 1.0
+    },
+    {
+      "symbol": "CADCHF",
+      "gap_hours": 191.984,
+      "max_gap_hours": 1.0
+    },
+    {
+      "symbol": "CADJPY",
+      "gap_hours": 191.983,
+      "max_gap_hours": 1.0
+    },
+    {
+      "symbol": "CHFJPY",
+      "gap_hours": 191.983,
+      "max_gap_hours": 1.0
+    },
+    {
+      "symbol": "EURAUD",
+      "gap_hours": 191.984,
+      "max_gap_hours": 1.0
+    },
+    {
+      "symbol": "EURCAD",
+      "gap_hours": 191.983,
+      "max_gap_hours": 1.0
+    },
+    {
+      "symbol": "EURCHF",
+      "gap_hours": 191.984,
+      "max_gap_hours": 1.0
+    },
+    {
+      "symbol": "EURGBP",
+      "gap_hours": 191.986,
+      "max_gap_hours": 1.0
+    },
+    {
+      "symbol": "EURJPY",
+      "gap_hours": 191.983,
+      "max_gap_hours": 1.0
+    },
+    {
+      "symbol": "EURNZD",
+      "gap_hours": 191.983,
+      "max_gap_hours": 1.0
+    },
+    {
+      "symbol": "EURUSD",
+      "gap_hours": 191.983,
+      "max_gap_hours": 1.0
+    },
+    {
+      "symbol": "GBPAUD",
+      "gap_hours": 191.984,
+      "max_gap_hours": 1.0
+    },
+    {
+      "symbol": "GBPCAD",
+      "gap_hours": 191.983,
+      "max_gap_hours": 1.0
+    },
+    {
+      "symbol": "GBPCHF",
+      "gap_hours": 191.983,
+      "max_gap_hours": 1.0
+    },
+    {
+      "symbol": "GBPJPY",
+      "gap_hours": 191.983,
+      "max_gap_hours": 1.0
+    },
+    {
+      "symbol": "GBPNZD",
+      "gap_hours": 191.984,
+      "max_gap_hours": 1.0
+    },
+    {
+      "symbol": "GBPUSD",
+      "gap_hours": 191.984,
+      "max_gap_hours": 1.0
+    },
+    {
+      "symbol": "GDAXIm",
+      "gap_hours": 191.917,
+      "max_gap_hours": 1.0
+    },
+    {
+      "symbol": "NDXm",
+      "gap_hours": 167.983,
+      "max_gap_hours": 1.0
+    },
+    {
+      "symbol": "NZDCAD",
+      "gap_hours": 191.984,
+      "max_gap_hours": 1.0
+    },
+    {
+      "symbol": "NZDCHF",
+      "gap_hours": 191.984,
+      "max_gap_hours": 1.0
+    },
+    {
+      "symbol": "NZDJPY",
+      "gap_hours": 191.983,
+      "max_gap_hours": 1.0
+    },
+    {
+      "symbol": "NZDUSD",
+      "gap_hours": 191.984,
+      "max_gap_hours": 1.0
+    },
+    {
+      "symbol": "UK100",
+      "gap_hours": 243.983,
+      "max_gap_hours": 1.0
+    },
+    {
+      "symbol": "USDCAD",
+      "gap_hours": 191.985,
+      "max_gap_hours": 1.0
+    },
+    {
+      "symbol": "USDCHF",
+      "gap_hours": 191.984,
+      "max_gap_hours": 1.0
+    },
+    {
+      "symbol": "USDJPY",
+      "gap_hours": 191.983,
+      "max_gap_hours": 1.0
+    },
+    {
+      "symbol": "WS30",
+      "gap_hours": 167.983,
+      "max_gap_hours": 1.0
+    },
+    {
+      "symbol": "XAGUSD",
+      "gap_hours": 167.986,
+      "max_gap_hours": 1.0
+    },
+    {
+      "symbol": "XAUUSD",
+      "gap_hours": 167.983,
+      "max_gap_hours": 1.0
+    },
+    {
+      "symbol": "XNGUSD",
+      "gap_hours": 167.997,
+      "max_gap_hours": 1.0
+    },
+    {
+      "symbol": "XTIUSD",
+      "gap_hours": 167.983,
+      "max_gap_hours": 1.0
+    }
+  ]
+}

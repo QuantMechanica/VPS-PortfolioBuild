@@ -226,6 +226,24 @@ Observed:
 - `warn XAUUSD: already imported, but csv tail alignment failed (tail gap 167.983h > 1.000h)`
 - confirms the new visibility path works at runtime even when staging is skipped for already-imported symbols.
 
+## Desktop Nudge Validation (2026-04-27 09:47 CEST)
+
+Executed:
+- `python C:\QM\repo\infra\scripts\dwx_hourly_check.py`
+- runtime log: `infra/smoke/dwx_hourly_check_2026-04-27_094746_qua93_csv_nudge_validation.log`
+
+Captured artifacts:
+- desktop nudge file: `C:\Users\Administrator\Desktop\CSV_TAIL_MISMATCH.txt`
+- machine-readable summary: `lessons-learned/evidence/2026-04-27_qua93_csv_tail_mismatch_nudge_validation.json`
+
+Observed:
+- nudge file was created with `36` mismatched symbols from the current staging set.
+- `XAUUSD` appears explicitly in the nudge list with `tail gap 167.983h > 1.000h`.
+
+Interpretation:
+- Gate behavior is now operator-visible even when symbols are already imported:
+  stale inputs are surfaced on desktop and remain actionable without reading terminal logs.
+
 ## Durable change in this heartbeat
 
 - Added this investigation record for `QUA-93` with concrete classifier output and triage conclusion.

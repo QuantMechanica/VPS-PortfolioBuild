@@ -23,6 +23,9 @@
   - compares tick CSV tail vs M1 CSV tail (`MAX_CSV_TAIL_GAP_HOURS=1.0`)
   - symbols with stale/misaligned tails are deferred and not queued for import
   - already-imported symbols still emit a warning when tails are misaligned
+  - when mismatches exist, hourly writes desktop nudge file
+    `C:\Users\Administrator\Desktop\CSV_TAIL_MISMATCH.txt` listing affected symbols;
+    file is removed automatically once no mismatches are detected
 - No `tvp` / `tvl` fields are used for gate decisions.
 
 ## `verify_import_preflight_probe.py`
