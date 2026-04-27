@@ -272,6 +272,12 @@ Factory portable-marker convergence (`T1`-`T5`, idempotent):
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Ensure-Mt5PortableMarker.ps1 -FailOnMissingRoot
 ```
 
+Factory portable-marker acceptance runner (`T1`-`T5` + evidence JSON):
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Drop-PortableMarkers.ps1 -RestartForNonPortableProbe -ProbeWaitSeconds 10
+```
+
 Agent worktree isolation (idempotent, per agent key):
 
 ```powershell
