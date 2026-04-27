@@ -4,6 +4,7 @@ param(
     [string]$RepoRoot = 'C:\QM\repo',
     [int]$EveryMinutes = 15,
     [int]$MaxAgeMinutes = 125,
+    [string]$TransitionPayloadCheckScript = '',
     [switch]$PreviewOnly
 )
 
@@ -19,7 +20,14 @@ if (-not (Test-Path -LiteralPath $checkScript)) {
     throw "Health check script missing: $checkScript"
 }
 
-$args = "-NoProfile -ExecutionPolicy Bypass -File `"$checkScript`" -MaxAgeMinutes $MaxAgeMinutes"
+if ([string]::IsNullOrWhiteSpace($TransitionPayloadCheckScript)) {
+    $TransitionPayloadCheckScript = Join-Path $RepoRoot 'infra\scripts\Test-QUA95IssueTransitionPayload.ps1'
+}
+if (-not (Test-Path -LiteralPath $TransitionPayloadCheckScript)) {
+    throw "Transition payload check script missing: $TransitionPayloadCheckScript"
+}
+
+$args = "-NoProfile -ExecutionPolicy Bypass -File `"$checkScript`" -MaxAgeMinutes $MaxAgeMinutes -TransitionPayloadCheckScript `"$TransitionPayloadCheckScript`""
 $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument $args
 $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).Date.AddMinutes(2) `
     -RepetitionInterval (New-TimeSpan -Minutes $EveryMinutes) `
@@ -31,6 +39,7 @@ if ($PreviewOnly) {
     Write-Host ("preview_task_name={0}" -f $TaskName)
     Write-Host ("preview_interval_minutes={0}" -f $EveryMinutes)
     Write-Host ("preview_max_age_minutes={0}" -f $MaxAgeMinutes)
+    Write-Host ("preview_transition_payload_check_script={0}" -f $TransitionPayloadCheckScript)
     Write-Host ("preview_action=PowerShell {0}" -f $args)
     exit 0
 }
