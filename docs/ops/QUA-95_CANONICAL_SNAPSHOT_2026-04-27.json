@@ -1,6 +1,6 @@
 ﻿{
     "issue":  "QUA-95",
-    "generated_at_local":  "2026-04-27T12:40:42+02:00",
+    "generated_at_local":  "2026-04-27T12:48:35+02:00",
     "flow":  "qua95_canonical_snapshot",
     "command":  "Run-QUA95CanonicalSnapshot.ps1",
     "command_exit_code":  0,
@@ -19,13 +19,13 @@
                 },
     "audit_signal":  {
                          "infra_audit_overall_status":  "critical",
-                         "infra_audit_checks_count":  22,
+                         "infra_audit_checks_count":  23,
                          "infra_audit_issues_count":  2,
                          "qua95_issues_count":  0,
                          "non_qua95_issues_count":  2
                      },
     "ops_suite":  {
                       "overall_status":  "ok",
-                      "checks_count":  8
+                      "checks_count":  9
                   }
 }

@@ -4,7 +4,8 @@ param(
     [int]$MaxAgeMinutes = 125,
     [string]$TransitionPayloadCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95IssueTransitionPayload.ps1',
     [string]$UnblockReadinessCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95UnblockReadiness.ps1',
-    [string]$AuditSignalCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95AuditSignal.ps1'
+    [string]$AuditSignalCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95AuditSignal.ps1',
+    [string]$CanonicalSnapshotCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95CanonicalSnapshot.ps1'
 )
 
 Set-StrictMode -Version Latest
@@ -77,6 +78,19 @@ $auditSignalCode = $LASTEXITCODE
 if ($auditSignalCode -ne 0) {
     $auditSignalText = ($auditSignalOut | ForEach-Object { $_.ToString() }) -join '; '
     Write-Host ("status=critical task={0} issues=audit_signal_check_failed exit_code={1} output={2}" -f $TaskName, $auditSignalCode, $auditSignalText)
+    exit 2
+}
+
+if (-not (Test-Path -LiteralPath $CanonicalSnapshotCheckScript)) {
+    Write-Host ("status=critical task={0} issues=canonical_snapshot_check_missing path={1}" -f $TaskName, $CanonicalSnapshotCheckScript)
+    exit 2
+}
+
+$canonicalOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $CanonicalSnapshotCheckScript 2>&1
+$canonicalCode = $LASTEXITCODE
+if ($canonicalCode -ne 0) {
+    $canonicalText = ($canonicalOut | ForEach-Object { $_.ToString() }) -join '; '
+    Write-Host ("status=critical task={0} issues=canonical_snapshot_check_failed exit_code={1} output={2}" -f $TaskName, $canonicalCode, $canonicalText)
     exit 2
 }
 

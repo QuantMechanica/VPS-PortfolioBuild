@@ -7,6 +7,7 @@ param(
     [string]$TransitionPayloadCheckScript = '',
     [string]$UnblockReadinessCheckScript = '',
     [string]$AuditSignalCheckScript = '',
+    [string]$CanonicalSnapshotCheckScript = '',
     [switch]$PreviewOnly
 )
 
@@ -43,7 +44,14 @@ if (-not (Test-Path -LiteralPath $AuditSignalCheckScript)) {
     throw "Audit signal check script missing: $AuditSignalCheckScript"
 }
 
-$args = "-NoProfile -ExecutionPolicy Bypass -File `"$checkScript`" -MaxAgeMinutes $MaxAgeMinutes -TransitionPayloadCheckScript `"$TransitionPayloadCheckScript`" -UnblockReadinessCheckScript `"$UnblockReadinessCheckScript`" -AuditSignalCheckScript `"$AuditSignalCheckScript`""
+if ([string]::IsNullOrWhiteSpace($CanonicalSnapshotCheckScript)) {
+    $CanonicalSnapshotCheckScript = Join-Path $RepoRoot 'infra\scripts\Test-QUA95CanonicalSnapshot.ps1'
+}
+if (-not (Test-Path -LiteralPath $CanonicalSnapshotCheckScript)) {
+    throw "Canonical snapshot check script missing: $CanonicalSnapshotCheckScript"
+}
+
+$args = "-NoProfile -ExecutionPolicy Bypass -File `"$checkScript`" -MaxAgeMinutes $MaxAgeMinutes -TransitionPayloadCheckScript `"$TransitionPayloadCheckScript`" -UnblockReadinessCheckScript `"$UnblockReadinessCheckScript`" -AuditSignalCheckScript `"$AuditSignalCheckScript`" -CanonicalSnapshotCheckScript `"$CanonicalSnapshotCheckScript`""
 $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument $args
 $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).Date.AddMinutes(2) `
     -RepetitionInterval (New-TimeSpan -Minutes $EveryMinutes) `
@@ -58,6 +66,7 @@ if ($PreviewOnly) {
     Write-Host ("preview_transition_payload_check_script={0}" -f $TransitionPayloadCheckScript)
     Write-Host ("preview_unblock_readiness_check_script={0}" -f $UnblockReadinessCheckScript)
     Write-Host ("preview_audit_signal_check_script={0}" -f $AuditSignalCheckScript)
+    Write-Host ("preview_canonical_snapshot_check_script={0}" -f $CanonicalSnapshotCheckScript)
     Write-Host ("preview_action=PowerShell {0}" -f $args)
     exit 0
 }

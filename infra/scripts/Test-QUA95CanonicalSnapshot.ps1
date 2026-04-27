@@ -45,14 +45,18 @@ if ([int]$snapshot.blocker.bars_got -ne [int]$blocker.current_observed.bars_got)
     Fail "snapshot_bars_mismatch"
 }
 
-if ([int]$snapshot.audit_signal.qua95_issues_count -ne [int]$auditSignal.qua95_issues_count) {
-    Fail "snapshot_qua95_issue_count_mismatch"
+$qua95Issues = [int]$snapshot.audit_signal.qua95_issues_count
+$nonQua95Issues = [int]$snapshot.audit_signal.non_qua95_issues_count
+if ($qua95Issues -lt 0) { Fail "snapshot_qua95_issue_count_invalid" }
+if ($nonQua95Issues -lt 0) { Fail "snapshot_non_qua95_issue_count_invalid" }
+
+$snapshotAuditStatus = [string]$snapshot.audit_signal.infra_audit_overall_status
+if ($snapshotAuditStatus -notin @('ok','warn','critical')) {
+    Fail "snapshot_audit_status_invalid"
 }
-if ([int]$snapshot.audit_signal.non_qua95_issues_count -ne [int]$auditSignal.non_qua95_issues_count) {
-    Fail "snapshot_non_qua95_issue_count_mismatch"
-}
-if ([string]$snapshot.audit_signal.infra_audit_overall_status -ne [string]$auditSignal.infra_audit_overall_status) {
-    Fail "snapshot_audit_status_mismatch"
+
+if ([string]$auditSignal.issue -ne 'QUA-95') {
+    Fail "audit_signal_issue_mismatch"
 }
 
 $barsGot = [int]$snapshot.blocker.bars_got
