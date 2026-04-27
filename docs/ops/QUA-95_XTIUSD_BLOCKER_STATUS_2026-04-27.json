@@ -1,32 +1,35 @@
-{
-  "issue": "QUA-95",
-  "date": "2026-04-27",
-  "recommended_state": "blocked",
-  "reason": "XTIUSD.DWX bars visibility failure persists; verifier rerun remains defer.",
-  "acceptance": {
-    "target": "Re-run verifier for XTIUSD.DWX with non-zero bars and matching tail.",
-    "met": false
-  },
-  "current_observed": {
-    "symbol": "XTIUSD.DWX",
-    "verdict": "FAIL_tail_bars",
-    "bars_got": 0,
-    "tail_shortfall_seconds": 7141.322,
-    "disposition": "defer"
-  },
-  "unblock_owners": [
-    {
-      "owner": "runtime_custom_symbol_owner",
-      "required_action": "Restore XTIUSD.DWX M1 bars visibility in T1 runtime (bars APIs return non-zero)."
-    },
-    {
-      "owner": "verifier_implementation_owner",
-      "required_action": "After runtime recovery, rerun verifier and confirm bars_got > 0 with aligned tail."
-    }
-  ],
-  "handoff_package": {
-    "markdown": "docs/ops/QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.md",
-    "json": "docs/ops/QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.json",
-    "sha256": "docs/ops/QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.sha256"
-  }
+﻿{
+    "issue":  "QUA-95",
+    "date":  "2026-04-27",
+    "recommended_state":  "blocked",
+    "reason":  "XTIUSD.DWX bars visibility failure persists; verifier rerun remains defer.",
+    "acceptance":  {
+                       "target":  "Re-run verifier for XTIUSD.DWX with non-zero bars and matching tail.",
+                       "met":  false
+                   },
+    "current_observed":  {
+                             "symbol":  "XTIUSD.DWX",
+                             "verdict":  "FAIL_tail_bars",
+                             "bars_got":  0,
+                             "tail_shortfall_seconds":  7141.322,
+                             "disposition":  "defer"
+                         },
+    "unblock_owners":  [
+                           {
+                               "owner":  "runtime_custom_symbol_owner",
+                               "required_action":  "Restore XTIUSD.DWX M1 bars visibility in T1 runtime (bars APIs return non-zero)."
+                           },
+                           {
+                               "owner":  "verifier_implementation_owner",
+                               "required_action":  "After runtime recovery, rerun verifier and confirm bars_got \u003e 0 with aligned tail."
+                           }
+                       ],
+    "handoff_package":  {
+                            "markdown":  "docs/ops/QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.md",
+                            "json":  "docs/ops/QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.json",
+                            "sha256":  "docs/ops/QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.sha256"
+                        },
+    "last_checked_local":  "2026-04-27T09:24:30+02:00",
+    "last_evidence_path":  "lessons-learned\\evidence\\2026-04-27_qua95_xtiusd_rerun_evidence.json",
+    "last_verify_exit_code":  1
 }
