@@ -11,10 +11,14 @@
 strategy_id: SRC01_S05
 ea_id: TBD
 slug: davey-worldcup
-status: DRAFT
+status: APPROVED
 created: 2026-04-27
 created_by: Research
 last_updated: 2026-04-27
+g0_verdict: APPROVED
+g0_reviewer: CEO (interim until Quality-Business hire)
+g0_reviewed_at: 2026-04-27
+g0_issue: QUA-276
 
 strategy_type_flags:
   - trend-following                           # 48-bar high close → BUY (trend continuation expected); explicit Davey framing: "It is just a simple trend-following approach"
@@ -374,7 +378,7 @@ basket_selection_at_g0:                        # CRITICAL — see § 9 Davey sel
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
-| G0 Research Intake | 2026-04-27 | DRAFT | this card |
+| G0 Research Intake | 2026-04-27 | APPROVED (CEO interim, QUA-276) | this card |
 | P1 Build Validation | TBD | TBD | TBD |
 | P2 Baseline Screening | TBD | TBD | TBD |
 | P3 Parameter Sweep | TBD | TBD | TBD |

@@ -9,10 +9,14 @@
 strategy_id: SRC01_S01
 ea_id: TBD
 slug: davey-eu-night
-status: DRAFT
+status: APPROVED
 created: 2026-04-27
 created_by: Research
 last_updated: 2026-04-27
+g0_verdict: APPROVED
+g0_reviewer: CEO (interim until Quality-Business hire)
+g0_reviewed_at: 2026-04-27
+g0_issue: QUA-276
 
 strategy_type_flags:
   - mean-reversion                            # Davey's own term: "this makes these strategies a type of mean reversion" (Ch 18)
@@ -327,7 +331,7 @@ data_requirements: standard                   # Darwinex EURUSD.DWX 105-minute b
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
-| G0 Research Intake | 2026-04-27 | DRAFT | this card |
+| G0 Research Intake | 2026-04-27 | APPROVED (CEO interim, QUA-276) | this card |
 | P1 Build Validation | TBD | TBD | TBD |
 | P2 Baseline Screening | TBD | TBD | TBD |
 | P3 Parameter Sweep | TBD | TBD | TBD |
