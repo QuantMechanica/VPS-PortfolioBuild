@@ -201,6 +201,21 @@ Interpretation:
 - Input data itself is internally stale/misaligned; a rebuild from these files cannot produce a tail beyond the tick CSV horizon.
 - This explains why repeated re-verification keeps failing tail checks for `XAUUSD.DWX`.
 
+## Preventive Guard Added (2026-04-27 09:41 CEST)
+
+Added preflight script:
+- `infra/scripts/check_dwx_csv_tail_alignment.py`
+
+Run output for `XAUUSD`:
+- artifact: `lessons-learned/evidence/2026-04-27_qua93_xauusd_tail_alignment_check.json`
+- `gap_hours_m1_minus_tick=167.983`
+- `max_gap_hours=1.0`
+- `aligned=false` (exit `1`)
+
+Use:
+- run this check before `prepare_import.py` / verifier loops;
+- block reimport when tails are misaligned to avoid producing stale sidecars and false verifier churn.
+
 ## Durable change in this heartbeat
 
 - Added this investigation record for `QUA-93` with concrete classifier output and triage conclusion.
@@ -218,6 +233,7 @@ Interpretation:
 - Executed source-history hydration and confirmed only source symbol recovered; custom symbol still fails and remains `defer`.
 - Added sidecar-vs-observed drift evidence to support custom-symbol history rebuild as the unblock path.
 - Added CSV-tail freshness evidence showing stale/misaligned input files (tick vs M1 horizon mismatch).
+- Added an automated CSV-tail alignment guard and validated failure on current `XAUUSD` inputs.
 
 ## Next action
 

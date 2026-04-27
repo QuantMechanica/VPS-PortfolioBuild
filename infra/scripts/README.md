@@ -32,6 +32,19 @@
 - Example:
   - `python C:\QM\repo\infra\scripts\verify_import_preflight_probe.py --symbol XAUUSD.DWX`
 
+## `check_dwx_csv_tail_alignment.py`
+
+- Fast DWX CSV preflight: compares tail timestamp of tick CSV vs M1 CSV.
+- Use before `prepare_import.py`/verifier runs to catch stale or internally
+  misaligned exports.
+- Exit codes:
+  - `0`: aligned within threshold
+  - `1`: misaligned/stale beyond threshold
+  - `2`: missing files
+  - `3`: empty tails
+- Example:
+  - `python C:\QM\repo\infra\scripts\check_dwx_csv_tail_alignment.py --symbol XAUUSD --max-gap-hours 1 --json-out C:\QM\repo\lessons-learned\evidence\2026-04-27_qua93_xauusd_tail_alignment_check.json`
+
 ## `verify_import_candidate.py`
 
 - Candidate (non-production) verifier behavior for handoff testing.
