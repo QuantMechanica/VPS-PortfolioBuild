@@ -1,0 +1,33 @@
+﻿{
+    "issue":  "QUA-208",
+    "parent_issue":  "QUA-95",
+    "generated_at_local":  "2026-04-27T15:22:50+02:00",
+    "source":  {
+                   "direct_verify_evidence_json":  "lessons-learned\\evidence\\2026-04-27_qua95_xtiusd_direct_verify_rerun.json",
+                   "blocker_status_json":  "docs\\ops\\QUA-95_XTIUSD_BLOCKER_STATUS_2026-04-27.json",
+                   "gate_decision_json":  "docs\\ops\\QUA-95_GATE_DECISION_2026-04-27.json",
+                   "closeout_doc_md":  "docs\\ops\\QUA-208_DEVOPS004_UNBLOCK_CLOSEOUT_2026-04-27.md"
+               },
+    "recommended_transition":  {
+                                   "status":  "in_review",
+                                   "reason":  "devops_unblock_complete",
+                                   "resume":  true
+                               },
+    "acceptance":  {
+                       "met":  true,
+                       "bars_got":  99911,
+                       "tail_delta_ms":  -323,
+                       "tail_tolerance_ms":  1000,
+                       "tail_aligned":  true,
+                       "verdict":  "FAIL_spec"
+                   },
+    "blocker_state":  {
+                          "disposition":  "clear",
+                          "blocker_recommended_state":  "clear",
+                          "gate_recommended_state":  "clear"
+                      },
+    "handoff":  {
+                    "next_owner":  "verifier_implementation_owner",
+                    "next_action":  "Apply transition payload and move issue to in_review for final owner sign-off."
+                }
+}

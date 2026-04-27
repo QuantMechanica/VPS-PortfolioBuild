@@ -762,6 +762,39 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\New-QUA207IssueComment.ps1`
 
+## `New-QUA208IssueTransitionPayload.ps1`
+
+- Generates deterministic QUA-208 transition payload from canonical unblock artifacts:
+  - direct verifier rerun evidence JSON
+  - QUA-95 blocker status JSON
+  - QUA-95 gate decision JSON
+  - QUA-208 closeout markdown
+- Writes:
+  - `docs\ops\QUA-208_ISSUE_TRANSITION_PAYLOAD_2026-04-27.json`
+- Decision mapping:
+  - `in_review` when acceptance is met, bars are positive, and tail delta is within tolerance
+  - `blocked` otherwise
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\New-QUA208IssueTransitionPayload.ps1`
+
+## `Test-QUA208IssueTransitionPayload.ps1`
+
+- Validates QUA-208 transition payload consistency against canonical evidence:
+  - payload JSON (`docs\ops\QUA-208_ISSUE_TRANSITION_PAYLOAD_2026-04-27.json`)
+  - direct verifier rerun evidence JSON
+  - blocker status JSON
+  - gate decision JSON
+- Checks:
+  - issue/parent IDs
+  - transition status mapping
+  - bars/tail fields and acceptance flag
+  - blocker/gate clear-state fields
+- Exit codes:
+  - `0`: payload is consistent
+  - `1`: payload mismatch or missing input
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA208IssueTransitionPayload.ps1`
+
 ## `Assert-CommitAllowlist.ps1`
 
 - Guardrail for staged-file safety before committing in noisy worktrees.
