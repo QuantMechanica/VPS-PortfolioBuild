@@ -5,8 +5,10 @@ param(
     [string]$TransitionPayloadCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95IssueTransitionPayload.ps1',
     [string]$UnblockReadinessCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95UnblockReadiness.ps1',
     [string]$AuditSignalCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95AuditSignal.ps1',
+    [string]$UnblockOwnerConsistencyCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95UnblockOwnerConsistency.ps1',
     [string]$CanonicalSnapshotCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95CanonicalSnapshot.ps1',
     [string]$CustomVisibilityProofCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95CustomVisibilityProof.ps1',
+    [string]$EvidenceCohesionCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95EvidenceCohesion.ps1',
     [string]$HeartbeatCustomVisibilityCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95HeartbeatCustomVisibility.ps1'
 )
 
@@ -83,6 +85,19 @@ if ($auditSignalCode -ne 0) {
     exit 2
 }
 
+if (-not (Test-Path -LiteralPath $UnblockOwnerConsistencyCheckScript)) {
+    Write-Host ("status=critical task={0} issues=unblock_owner_consistency_check_missing path={1}" -f $TaskName, $UnblockOwnerConsistencyCheckScript)
+    exit 2
+}
+
+$unblockOwnerConsistencyOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $UnblockOwnerConsistencyCheckScript 2>&1
+$unblockOwnerConsistencyCode = $LASTEXITCODE
+if ($unblockOwnerConsistencyCode -ne 0) {
+    $unblockOwnerConsistencyText = ($unblockOwnerConsistencyOut | ForEach-Object { $_.ToString() }) -join '; '
+    Write-Host ("status=critical task={0} issues=unblock_owner_consistency_check_failed exit_code={1} output={2}" -f $TaskName, $unblockOwnerConsistencyCode, $unblockOwnerConsistencyText)
+    exit 2
+}
+
 if (-not (Test-Path -LiteralPath $CanonicalSnapshotCheckScript)) {
     Write-Host ("status=critical task={0} issues=canonical_snapshot_check_missing path={1}" -f $TaskName, $CanonicalSnapshotCheckScript)
     exit 2
@@ -106,6 +121,19 @@ $customVisibilityCode = $LASTEXITCODE
 if ($customVisibilityCode -ne 0) {
     $customVisibilityText = ($customVisibilityOut | ForEach-Object { $_.ToString() }) -join '; '
     Write-Host ("status=critical task={0} issues=custom_visibility_proof_check_failed exit_code={1} output={2}" -f $TaskName, $customVisibilityCode, $customVisibilityText)
+    exit 2
+}
+
+if (-not (Test-Path -LiteralPath $EvidenceCohesionCheckScript)) {
+    Write-Host ("status=critical task={0} issues=evidence_cohesion_check_missing path={1}" -f $TaskName, $EvidenceCohesionCheckScript)
+    exit 2
+}
+
+$evidenceCohesionOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $EvidenceCohesionCheckScript 2>&1
+$evidenceCohesionCode = $LASTEXITCODE
+if ($evidenceCohesionCode -ne 0) {
+    $evidenceCohesionText = ($evidenceCohesionOut | ForEach-Object { $_.ToString() }) -join '; '
+    Write-Host ("status=critical task={0} issues=evidence_cohesion_check_failed exit_code={1} output={2}" -f $TaskName, $evidenceCohesionCode, $evidenceCohesionText)
     exit 2
 }
 

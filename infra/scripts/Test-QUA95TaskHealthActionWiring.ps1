@@ -5,8 +5,10 @@ param(
         '-TransitionPayloadCheckScript',
         '-UnblockReadinessCheckScript',
         '-AuditSignalCheckScript',
+        '-UnblockOwnerConsistencyCheckScript',
         '-CanonicalSnapshotCheckScript',
         '-CustomVisibilityProofCheckScript',
+        '-EvidenceCohesionCheckScript',
         '-HeartbeatCustomVisibilityCheckScript'
     )
 )

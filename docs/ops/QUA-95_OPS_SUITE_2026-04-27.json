@@ -1,6 +1,6 @@
 ﻿{
     "issue":  "QUA-95",
-    "generated_at_local":  "2026-04-27T13:59:06+02:00",
+    "generated_at_local":  "2026-04-27T14:03:11+02:00",
     "overall_status":  "ok",
     "checks":  [
                    {
@@ -37,7 +37,7 @@
                        "name":  "unblock_readiness",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok lag_minutes=8.91 ready_to_unblock=False bars_got=0 owner_count=2"
+                       "output":  "status=ok lag_minutes=0.41 ready_to_unblock=False bars_got=0 owner_count=2"
                    },
                    {
                        "name":  "unblock_owner_consistency",
@@ -73,7 +73,7 @@
                        "name":  "evidence_cohesion",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok max_pair_skew_minutes=0 direct_at=2026-04-27T13:47:22.0000000+02:00 custom_at=2026-04-27T13:47:22.0000000+02:00 blocker_at=2026-04-27T13:47:22.0000000+02:00"
+                       "output":  "status=ok max_pair_skew_minutes=13.65 direct_at=2026-04-27T13:47:22.0000000+02:00 custom_at=2026-04-27T13:47:22.0000000+02:00 blocker_at=2026-04-27T14:01:01.0000000+02:00"
                    },
                    {
                        "name":  "failure_signature",
@@ -97,13 +97,13 @@
                        "name":  "blocked_heartbeat_wrapper",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok gate_state=blocked audit_status=critical checks_count=29 automation_health=ok qua95_issues=0 non_qua95_issues=2 isolated_custom_failure=True"
+                       "output":  "status=ok gate_state=blocked audit_status=critical checks_count=30 automation_health=ok qua95_issues=0 non_qua95_issues=2 isolated_custom_failure=True"
                    },
                    {
                        "name":  "blocker_task_health",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok task=QM_QUA95_BlockerRefresh last_run=2026-04-27T13:01:01.0000000+02:00 age_minutes=58.05"
+                       "output":  "status=ok task=QM_QUA95_BlockerRefresh last_run=2026-04-27T14:01:01.0000000+02:00 age_minutes=2.13"
                    }
                ]
 }

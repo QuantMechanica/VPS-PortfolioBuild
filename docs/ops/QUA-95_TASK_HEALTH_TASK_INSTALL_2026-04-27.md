@@ -116,3 +116,11 @@ Observed:
 - `preview_heartbeat_custom_visibility_check_script=C:\QM\repo\infra\scripts\Test-QUA95HeartbeatCustomVisibility.ps1`
 - preview action contains `-HeartbeatCustomVisibilityCheckScript "C:\QM\repo\infra\scripts\Test-QUA95HeartbeatCustomVisibility.ps1"`
 - scheduler post-run `Last Result: 0`
+
+## Owner/Cohesion wiring extension proof
+
+Preview verification now also requires:
+- `preview_unblock_owner_consistency_check_script=C:\QM\repo\infra\scripts\Test-QUA95UnblockOwnerConsistency.ps1`
+- preview action contains `-UnblockOwnerConsistencyCheckScript "C:\QM\repo\infra\scripts\Test-QUA95UnblockOwnerConsistency.ps1"`
+- `preview_evidence_cohesion_check_script=C:\QM\repo\infra\scripts\Test-QUA95EvidenceCohesion.ps1`
+- preview action contains `-EvidenceCohesionCheckScript "C:\QM\repo\infra\scripts\Test-QUA95EvidenceCohesion.ps1"`

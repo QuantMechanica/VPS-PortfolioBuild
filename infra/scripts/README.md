@@ -432,8 +432,10 @@
   - `-TransitionPayloadCheckScript`
   - `-UnblockReadinessCheckScript`
   - `-AuditSignalCheckScript`
+  - `-UnblockOwnerConsistencyCheckScript`
   - `-CanonicalSnapshotCheckScript`
   - `-CustomVisibilityProofCheckScript`
+  - `-EvidenceCohesionCheckScript`
   - `-HeartbeatCustomVisibilityCheckScript`
 - Exit codes:
   - `0`: wiring is present

@@ -7,8 +7,10 @@ param(
     [string]$TransitionPayloadCheckScript = '',
     [string]$UnblockReadinessCheckScript = '',
     [string]$AuditSignalCheckScript = '',
+    [string]$UnblockOwnerConsistencyCheckScript = '',
     [string]$CanonicalSnapshotCheckScript = '',
     [string]$CustomVisibilityProofCheckScript = '',
+    [string]$EvidenceCohesionCheckScript = '',
     [string]$HeartbeatCustomVisibilityCheckScript = '',
     [switch]$PreviewOnly
 )
@@ -46,6 +48,13 @@ if (-not (Test-Path -LiteralPath $AuditSignalCheckScript)) {
     throw "Audit signal check script missing: $AuditSignalCheckScript"
 }
 
+if ([string]::IsNullOrWhiteSpace($UnblockOwnerConsistencyCheckScript)) {
+    $UnblockOwnerConsistencyCheckScript = Join-Path $RepoRoot 'infra\scripts\Test-QUA95UnblockOwnerConsistency.ps1'
+}
+if (-not (Test-Path -LiteralPath $UnblockOwnerConsistencyCheckScript)) {
+    throw "Unblock owner consistency check script missing: $UnblockOwnerConsistencyCheckScript"
+}
+
 if ([string]::IsNullOrWhiteSpace($CanonicalSnapshotCheckScript)) {
     $CanonicalSnapshotCheckScript = Join-Path $RepoRoot 'infra\scripts\Test-QUA95CanonicalSnapshot.ps1'
 }
@@ -60,6 +69,13 @@ if (-not (Test-Path -LiteralPath $CustomVisibilityProofCheckScript)) {
     throw "Custom visibility proof check script missing: $CustomVisibilityProofCheckScript"
 }
 
+if ([string]::IsNullOrWhiteSpace($EvidenceCohesionCheckScript)) {
+    $EvidenceCohesionCheckScript = Join-Path $RepoRoot 'infra\scripts\Test-QUA95EvidenceCohesion.ps1'
+}
+if (-not (Test-Path -LiteralPath $EvidenceCohesionCheckScript)) {
+    throw "Evidence cohesion check script missing: $EvidenceCohesionCheckScript"
+}
+
 if ([string]::IsNullOrWhiteSpace($HeartbeatCustomVisibilityCheckScript)) {
     $HeartbeatCustomVisibilityCheckScript = Join-Path $RepoRoot 'infra\scripts\Test-QUA95HeartbeatCustomVisibility.ps1'
 }
@@ -67,7 +83,7 @@ if (-not (Test-Path -LiteralPath $HeartbeatCustomVisibilityCheckScript)) {
     throw "Heartbeat custom visibility check script missing: $HeartbeatCustomVisibilityCheckScript"
 }
 
-$args = "-NoProfile -ExecutionPolicy Bypass -File `"$checkScript`" -MaxAgeMinutes $MaxAgeMinutes -TransitionPayloadCheckScript `"$TransitionPayloadCheckScript`" -UnblockReadinessCheckScript `"$UnblockReadinessCheckScript`" -AuditSignalCheckScript `"$AuditSignalCheckScript`" -CanonicalSnapshotCheckScript `"$CanonicalSnapshotCheckScript`" -CustomVisibilityProofCheckScript `"$CustomVisibilityProofCheckScript`" -HeartbeatCustomVisibilityCheckScript `"$HeartbeatCustomVisibilityCheckScript`""
+$args = "-NoProfile -ExecutionPolicy Bypass -File `"$checkScript`" -MaxAgeMinutes $MaxAgeMinutes -TransitionPayloadCheckScript `"$TransitionPayloadCheckScript`" -UnblockReadinessCheckScript `"$UnblockReadinessCheckScript`" -AuditSignalCheckScript `"$AuditSignalCheckScript`" -UnblockOwnerConsistencyCheckScript `"$UnblockOwnerConsistencyCheckScript`" -CanonicalSnapshotCheckScript `"$CanonicalSnapshotCheckScript`" -CustomVisibilityProofCheckScript `"$CustomVisibilityProofCheckScript`" -EvidenceCohesionCheckScript `"$EvidenceCohesionCheckScript`" -HeartbeatCustomVisibilityCheckScript `"$HeartbeatCustomVisibilityCheckScript`""
 $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument $args
 $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).Date.AddMinutes(2) `
     -RepetitionInterval (New-TimeSpan -Minutes $EveryMinutes) `
@@ -82,8 +98,10 @@ if ($PreviewOnly) {
     Write-Host ("preview_transition_payload_check_script={0}" -f $TransitionPayloadCheckScript)
     Write-Host ("preview_unblock_readiness_check_script={0}" -f $UnblockReadinessCheckScript)
     Write-Host ("preview_audit_signal_check_script={0}" -f $AuditSignalCheckScript)
+    Write-Host ("preview_unblock_owner_consistency_check_script={0}" -f $UnblockOwnerConsistencyCheckScript)
     Write-Host ("preview_canonical_snapshot_check_script={0}" -f $CanonicalSnapshotCheckScript)
     Write-Host ("preview_custom_visibility_proof_check_script={0}" -f $CustomVisibilityProofCheckScript)
+    Write-Host ("preview_evidence_cohesion_check_script={0}" -f $EvidenceCohesionCheckScript)
     Write-Host ("preview_heartbeat_custom_visibility_check_script={0}" -f $HeartbeatCustomVisibilityCheckScript)
     Write-Host ("preview_action=PowerShell {0}" -f $args)
     exit 0
