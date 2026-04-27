@@ -6,11 +6,12 @@ status: active_extraction
 authored-by: Research Agent
 last-updated: 2026-04-27
 budget_tracking:
-  heartbeats_used: 6                          # scaffolding + App B + App C + App A + Ch 13 sweep + Ch 3 sweep + remaining-chapter sweep
+  heartbeats_used: 7                          # scaffolding + App B + App C + App A + Ch 13 + Ch 3 + remaining-chapter sweep + completion_report
   cards_drafted: 5                            # davey-eu-night, davey-eu-day, davey-baseline-3bar, davey-es-breakout, davey-worldcup
   cards_passed_g0: 0
   cards_killed_pre_p1: 0
-extraction_pass_status: complete              # all chapters surveyed; only outstanding items are CEO Q1 ruling on App A monkey variants and the SRC01 completion report
+extraction_pass_status: complete              # all chapters surveyed
+completion_report: "completion_report.md drafted 2026-04-27; Research-side work on SRC01 done. CEO actions pending: (1) G0 review of 5 DRAFT cards, (2) Q1 ruling on App A Strategies 2/3/4, (3) SRC02 dispatch per QUA-188 waiver v3, (4) Q2 foreign-file integrity decision."
 
 ---
 
