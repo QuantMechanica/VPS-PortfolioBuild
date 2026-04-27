@@ -17,6 +17,8 @@ Status recommendation: `blocked` (`defer`)
   - `docs/ops/QUA-95_BLOCKED_COMMENT_2026-04-27.md`
 - Task installer smoke evidence:
   - `docs/ops/QUA-95_BLOCKER_REFRESH_TASK_SMOKE_2026-04-27.md`
+- Task install record:
+  - `docs/ops/QUA-95_BLOCKER_REFRESH_TASK_INSTALL_2026-04-27.md`
 
 ## Investigation + evidence trail
 
