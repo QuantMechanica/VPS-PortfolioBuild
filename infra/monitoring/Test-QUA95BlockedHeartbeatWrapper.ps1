@@ -3,7 +3,7 @@ param(
     [string]$RepoRoot = 'C:\QM\repo',
     [string]$WrapperScript = 'C:\QM\repo\infra\scripts\Invoke-QUA95BlockedHeartbeat.ps1',
     [string]$HeartbeatJson = 'C:\QM\repo\docs\ops\QUA-95_BLOCKED_HEARTBEAT_2026-04-27.json',
-    [switch]$SkipRefresh = $true
+    [switch]$RunRefresh
 )
 
 Set-StrictMode -Version Latest
@@ -21,7 +21,7 @@ $args = @(
     '-RepoRoot', $RepoRoot,
     '-SkipAudit'
 )
-if ($SkipRefresh.IsPresent) {
+if (-not $RunRefresh.IsPresent) {
     $args += '-SkipRefresh'
 }
 

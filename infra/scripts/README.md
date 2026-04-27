@@ -235,6 +235,7 @@
   - `-SkipAudit` (refresh-only heartbeat)
 - Companion validator:
   - `infra\monitoring\Test-QUA95BlockedHeartbeatWrapper.ps1`
+  - default validator mode uses `-SkipRefresh -SkipAudit`; pass `-RunRefresh` to include refresh execution.
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Invoke-QUA95BlockedHeartbeat.ps1`
 

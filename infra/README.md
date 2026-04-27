@@ -97,6 +97,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Runs `Invoke-QUA95BlockedHeartbeat.ps1` in non-recursive validation mode
     (`-SkipRefresh -SkipAudit`) and validates
     consolidated heartbeat JSON structure and key blocked-state fields.
+  - Use `-RunRefresh` to include refresh execution in validation runs.
 - `scripts/Test-QUA95IssueTransitionPayload.ps1`
   - Validates that `docs/ops/QUA-95_ISSUE_TRANSITION_PAYLOAD_2026-04-27.json`
     is consistent with gate + blocker canonical JSON artifacts.

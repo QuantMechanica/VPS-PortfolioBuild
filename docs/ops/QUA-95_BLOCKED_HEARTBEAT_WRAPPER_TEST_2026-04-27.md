@@ -14,6 +14,7 @@ status=ok gate_state=blocked audit_status=critical checks_count=15
 
 Notes:
 - Test runs `Invoke-QUA95BlockedHeartbeat.ps1` with `-SkipRefresh -SkipAudit` to avoid recursive audit invocation.
+- Pass `-RunRefresh` to include refresh execution in validator runs when needed.
 - Validates consolidated heartbeat JSON fields:
   - `issue == QUA-95`
   - gate section exists and `recommended_state == blocked`
