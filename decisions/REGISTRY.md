@@ -25,6 +25,7 @@ Conventions:
 | DL-024 | 2026-04-27 | CEO scheduled heartbeat enablement (3600s) — under DL-023 authority | [`2026-04-27_ceo_scheduled_heartbeat.md`](./2026-04-27_ceo_scheduled_heartbeat.md) | [QUA-210](https://paperclip.local/QUA/issues/QUA-210) (change) / [QUA-214](https://paperclip.local/QUA/issues/QUA-214) (recording) |
 | DL-025 | 2026-04-27 | T6 Deploy Boundary Refinement — deploy of approved EAs/setfiles/templates/profiles under manifest in scope; AutoTrading toggle stays manual OWNER | [`DL-025_t6_deploy_boundary_refinement.md`](./DL-025_t6_deploy_boundary_refinement.md) | [QUA-209](https://paperclip.local/QUA/issues/QUA-209) (parent) / [QUA-226](https://paperclip.local/QUA/issues/QUA-226) (recording) |
 | DL-026 | 2026-04-27 | Commit-Hash-In-Close-Out Rule for Coding-Agent `done` Deliverables | [`2026-04-27_commit_hash_in_close_out_rule.md`](./2026-04-27_commit_hash_in_close_out_rule.md) | [QUA-234](/QUA/issues/QUA-234) (ratification) / [QUA-238](/QUA/issues/QUA-238) (recording) |
+| DL-027 | 2026-04-27 | BASIS→active diff propagation rule (Wave 1 catch-up included) — every BASIS revision names a propagation path (`hot_reload` / `re_hire` / `config_patch` / `reference_only`); Doc-KM regenerates the diff side-artifact post-revision | [`DL-027_basis_active_diff_propagation_rule.md`](./DL-027_basis_active_diff_propagation_rule.md) | [QUA-235](/QUA/issues/QUA-235) (originating learning-candidate) / [QUA-237](/QUA/issues/QUA-237) (recording) |
 
 ## Cross-links
 
@@ -35,6 +36,9 @@ Conventions:
 - **QUA-209 ↔ DL-025.** Forward link: QUA-209 → DL-025 (recorded via QUA-226). Reverse link: [`DL-025_t6_deploy_boundary_refinement.md`](./DL-025_t6_deploy_boundary_refinement.md) cites QUA-209 as the parent recording task. DL-025 is an OWNER directive on V5 hard rules and is independent of DL-017 / DL-023 (which govern CEO unilateral authority).
 - **DL-023 ↔ DL-026.** DL-026 is the second concrete process change recorded under the DL-023 broadened-authority waiver (class 4: internal process choices → agent-vs-agent escalation rules). DL-026 cites DL-023 as its authority basis.
 - **QUA-234 ↔ DL-026.** Forward link: QUA-234 → DL-026 (recorded via QUA-238). Reverse link: [`2026-04-27_commit_hash_in_close_out_rule.md`](./2026-04-27_commit_hash_in_close_out_rule.md) cites QUA-234 as the ratification task and QUA-180 as the original P0 fix. The CTO prompt-language patch is tracked separately as [QUA-239](/QUA/issues/QUA-239) (OWNER-gated, out of Doc-KM scope).
+- **DL-014 ↔ DL-027.** DL-027 operationalizes the BASIS→active propagation question that DL-014's two-layer hire model raised but did not answer. The rule itself is captured in `lessons-learned/2026-04-27_prompt_basis_activation_diff.md`; DL-027 records it with an authority basis and registry slot.
+- **DL-023 ↔ DL-027.** DL-027 is the third concrete process change recorded under the DL-023 broadened-authority waiver (class 4: internal process choices → drift-capture rule). DL-027 cites DL-023 as its authority basis.
+- **QUA-235 ↔ DL-027.** Forward link: QUA-235 → DL-027 (recorded via QUA-237). Reverse link: [`DL-027_basis_active_diff_propagation_rule.md`](./DL-027_basis_active_diff_propagation_rule.md) cites QUA-235 as the originating learning-candidate. The Wave 1 catch-up diff side-artifacts shipped under QUA-237 cover DevOps (live agent `0e8f04e5-4019-45b0-951f-ca248cf82849`) and Pipeline-Operator (live agent `46fc11e5-7fc2-43f4-9a34-bde29e5dee3b`).
 
 ## Backfilling External entries
 
