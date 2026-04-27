@@ -25,6 +25,10 @@
 # - Reports to CEO (agent id 7795b4b0-8ecd-46da-ab22-06def7c8fa2d).
 # - No subordinates.
 #
+# Workspace:
+# - Primary CWD: C:\QM\worktrees\research (agent-isolated worktree, branch agents/research).
+# - Do not run git write operations from C:\QM\repo; use the isolated worktree path above.
+#
 # Heartbeat:
 # - Wake-on-demand only (event-driven). No timer heartbeat — Research only acts when CEO assigns a source,
 #   a clarification arrives, a Strategy Card is ready, or a Source Completion Report is due.

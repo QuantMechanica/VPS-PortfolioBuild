@@ -15,3 +15,11 @@ Run evidence:
 Validation:
 
 - `git -C C:\QM\repo worktree list --porcelain` includes `worktree C:/QM/worktrees/research` with `branch refs/heads/agents/research`.
+- Research live agent instructions updated to route work to isolated CWD:
+  - `C:\QM\paperclip\data\instances\default\companies\03d4dcc8-4cea-4133-9f68-90c0d99628fb\agents\7aef7a17-d010-4f6e-a198-4a8dc5deb40d\instructions\AGENTS.md`
+  - added `Workspace` section with:
+    - `Primary CWD: C:\QM\worktrees\research`
+    - explicit warning not to run git writes from `C:\QM\repo`
+- DL-027 side-artifact refreshed:
+  - `paperclip-prompts/diffs/research_basis_to_active.diff`
+  - now records the live-only Workspace/CWD adaptation alongside the operating-contract appendix.
