@@ -752,6 +752,17 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Run-QUA207OpsBundle.ps1`
 
+## `New-QUA207BlockedOnVerifierSnapshot.ps1`
+
+- Generates blocker snapshot when QUA-207 runtime scope is complete but verifier owner remains pending.
+- Inputs:
+  - custom visibility evidence JSON
+  - QUA-207 transition payload JSON
+- Writes:
+  - `docs\ops\QUA-207_BLOCKED_ON_VERIFIER_2026-04-27.json`
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\New-QUA207BlockedOnVerifierSnapshot.ps1`
+
 ## `New-QUA207IssueComment.ps1`
 
 - Generates ready-to-post QUA-207 issue comment markdown from:
