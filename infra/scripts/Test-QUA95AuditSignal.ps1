@@ -22,6 +22,10 @@ if ([int]$s.infra_audit_issues_count -lt 0) { $issues += 'issues_count_invalid' 
 if ([int]$s.qua95_checks_count -lt 1) { $issues += 'qua95_checks_count_invalid' }
 if ([int]$s.qua95_issues_count -lt 0) { $issues += 'qua95_issues_count_invalid' }
 if ([int]$s.non_qua95_issues_count -lt 0) { $issues += 'non_qua95_issues_count_invalid' }
+if ($null -eq $s.qua95_issue_names) { $issues += 'qua95_issue_names_missing' }
+if ($null -eq $s.non_qua95_issue_names) { $issues += 'non_qua95_issue_names_missing' }
+if (@($s.qua95_issue_names).Count -ne [int]$s.qua95_issues_count) { $issues += 'qua95_issue_names_count_mismatch' }
+if (@($s.non_qua95_issue_names).Count -ne [int]$s.non_qua95_issues_count) { $issues += 'non_qua95_issue_names_count_mismatch' }
 
 if ($issues.Count -gt 0) {
     Write-Host ("status=critical issues={0}" -f ($issues -join ','))

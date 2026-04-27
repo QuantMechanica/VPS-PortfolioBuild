@@ -295,6 +295,7 @@
   - total audit issues
   - QUA-95 issues vs non-QUA95 issues counts
   - QUA-95 check statuses
+  - issue-name breakdown arrays for both QUA-95 and non-QUA95 issues
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Update-QUA95AuditSignal.ps1`
 

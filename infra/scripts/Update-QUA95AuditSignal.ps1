@@ -31,6 +31,7 @@ $summary = [ordered]@{
     qua95_issues_count = @($qua95Issues).Count
     non_qua95_issues_count = @($nonQua95Issues).Count
     qua95_checks = @($qua95Checks | Select-Object name, status)
+    qua95_issue_names = @($qua95Issues | ForEach-Object { $_.name })
     non_qua95_issue_names = @($nonQua95Issues | ForEach-Object { $_.name })
 }
 
