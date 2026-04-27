@@ -39,6 +39,8 @@ Status recommendation: `blocked` (`defer`)
   - `docs/ops/QUA-95_OPS_SUITE_2026-04-27.json`
 - Blocked automation runbook:
   - `docs/ops/QUA-95_BLOCKED_AUTOMATION_RUNBOOK_2026-04-27.md`
+- Ops bundle manifest:
+  - `docs/ops/QUA-95_OPS_BUNDLE_2026-04-27.sha256`
 
 ## Investigation + evidence trail
 
@@ -88,6 +90,8 @@ Status recommendation: `blocked` (`defer`)
   - `infra/scripts/Test-QUA95OpsSuite.ps1`
 - Ops suite snapshot writer:
   - `infra/scripts/Write-QUA95OpsSuiteSnapshot.ps1`
+- Ops bundle manifest generator:
+  - `infra/scripts/Update-QUA95OpsBundleManifest.ps1`
 
 ## Verification commands
 

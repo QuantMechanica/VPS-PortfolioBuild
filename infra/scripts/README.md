@@ -246,6 +246,14 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Write-QUA95OpsSuiteSnapshot.ps1`
 
+## `Update-QUA95OpsBundleManifest.ps1`
+
+- Regenerates SHA256 manifest for core QUA-95 blocked ops artifacts.
+- Default output:
+  - `docs\ops\QUA-95_OPS_BUNDLE_2026-04-27.sha256`
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Update-QUA95OpsBundleManifest.ps1`
+
 ## `Invoke-QUA95BlockedHeartbeat.ps1`
 
 - One-command heartbeat wrapper for blocked QUA-95 operations.

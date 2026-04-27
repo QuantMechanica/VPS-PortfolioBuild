@@ -102,6 +102,8 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Runs core QUA-95 ops checks as one suite and emits JSON summary.
 - `scripts/Write-QUA95OpsSuiteSnapshot.ps1`
   - Runs the QUA-95 ops suite and persists the JSON snapshot artifact.
+- `scripts/Update-QUA95OpsBundleManifest.ps1`
+  - Regenerates SHA256 manifest for core QUA-95 blocked-ops artifact bundle.
 - `scripts/Test-QUA95IssueTransitionPayload.ps1`
   - Validates that `docs/ops/QUA-95_ISSUE_TRANSITION_PAYLOAD_2026-04-27.json`
     is consistent with gate + blocker canonical JSON artifacts.
