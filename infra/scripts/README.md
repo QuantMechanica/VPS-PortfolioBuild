@@ -75,6 +75,13 @@
 - Also reports source-vs-custom tail parity (`custom_minus_source_tail_ms`) so
   tail failures can be classified as symbol corruption vs expectation-basis mismatch.
 
+## `verify_import_candidate.py`
+
+- Repo-side candidate replacement for production `verify_import.py`.
+- Uses chunked M1 reads + `terminal.maxbars`-aware bar expectations.
+- Keeps existing tick/spec checks and outputs one-shot vs chunked bar diagnostics.
+- Useful handoff artifact to the verifier owner; does not mutate production files.
+
 ## `Invoke-VerifyDisposition.ps1`
 
 - Idempotent verifier rerun helper for issue triage.

@@ -124,6 +124,29 @@ Final disposition for QUA-91 scope:
 - **WS30 symbol-specific corruption hypothesis: cleared.**
 - **Outstanding work:** verifier logic fix (global) for bar query shape and expected-tail comparison basis.
 
+## Candidate verifier run (repo-side, non-production)
+
+Command:
+
+```powershell
+python infra/scripts/verify_import_candidate.py --symbol WS30.DWX --chunk-days 20
+```
+
+Observed verdict:
+- `[FAIL_tail] WS30.DWX` (bars no longer failing in candidate logic)
+
+Key diagnostics:
+- `bars_sidecar_expected=445,870`
+- `bars_one_shot=0` with `(-2, 'Terminal: Invalid params')`
+- `bars_chunked=99,900`
+- `maxbars=100,000`
+- `bars_expected_accessible=100,000`
+- `bars_drift=-100` (within candidate tolerance)
+
+Meaning:
+- Candidate logic removes false `FAIL_bars` on WS30 and isolates residual `FAIL_tail`.
+- Confirms remaining blocker is tail expectation-basis mismatch / source-window lag handling.
+
 ## Durable change in this heartbeat
 
 - Added/extended tests for verifier fail-pattern classification in:
