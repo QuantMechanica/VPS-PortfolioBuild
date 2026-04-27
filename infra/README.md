@@ -104,7 +104,8 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Runs `Invoke-QUA95BlockedHeartbeat.ps1` in non-recursive validation mode
     (`-SkipRefresh -SkipAudit`) and validates
     consolidated heartbeat JSON structure, key blocked-state fields, and
-    `QUA-95_AUTOMATION_HEALTH_2026-04-27.json` health status.
+    `QUA-95_AUTOMATION_HEALTH_2026-04-27.json` plus
+    `QUA-95_AUDIT_SIGNAL_2026-04-27.json` signal status.
   - Use `-RunRefresh` to include refresh execution in validation runs.
 - `monitoring/Test-QUA95AutomationHealth.ps1`
   - Combined scheduler-health check for `QM_QUA95_BlockerRefresh` and `QM_QUA95_TaskHealth_15min`.
