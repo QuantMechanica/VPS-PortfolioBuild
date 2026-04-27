@@ -1,0 +1,17 @@
+﻿{
+    "status":  "ok",
+    "run_key":  "529207171fb2573c5c263e4e660e0a09ef2bff1910fd65318b2873fd1c9f7d34",
+    "ea_id":  "QM5_2460",
+    "version":  "v5.0.0-qua246",
+    "symbol":  "EURUSD",
+    "phase":  "P2",
+    "sub_gate_config":  "qua246-dryrun-001",
+    "terminal":  "T2",
+    "final_status":  "succeeded",
+    "paths":  {
+                  "dedup_csv":  "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-246\\state\\factory_run_dedup_v1.csv",
+                  "queue_jsonl":  "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-246\\state\\factory_run_queue_v1.jsonl",
+                  "dispatch_state_json":  "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-246\\state\\factory_dispatch_state_v1.json",
+                  "report_dir":  "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-246\\factory_runs\\QM5_2460\\v5.0.0-qua246\\P2\\EURUSD\\529207171fb2573c5c263e4e660e0a09ef2bff1910fd65318b2873fd1c9f7d34"
+              }
+}

@@ -1,0 +1,2 @@
+﻿"run_key","ea_id","version","symbol","phase","sub_gate_config","enqueue_ts_utc","claim_ts_utc","terminal","scanner_pid","status","ack_ts_utc","report_dir","htm_count","report_bytes"
+"529207171fb2573c5c263e4e660e0a09ef2bff1910fd65318b2873fd1c9f7d34","QM5_2460","v5.0.0-qua246","EURUSD","P2","qua246-dryrun-001","2026-04-27T14:23:38Z","2026-04-27T14:23:38Z","T2","73192","succeeded","2026-04-27T14:23:38Z","C:\QM\worktrees\pipeline-operator\artifacts\qua-246\factory_runs\QM5_2460\v5.0.0-qua246\P2\EURUSD\529207171fb2573c5c263e4e660e0a09ef2bff1910fd65318b2873fd1c9f7d34","1","37"

@@ -26,6 +26,7 @@ Each process file follows the same structure:
 | 10 | Agent Re-scope | [10-agent-rescope.md](10-agent-rescope.md) | [CEO](/QUA/agents/ceo) | Needs role-rename pass |
 | 11 | Disk-Management and Drive-Sync-Maintenance | [11-disk-and-sync.md](11-disk-and-sync.md) | [DevOps](/QUA/agents/devops) (interim until Obs-SRE Wave 3) | Needs role-rename pass |
 | 12 | Board Escalation Contract | [12-board-escalation.md](12-board-escalation.md) | [Documentation-KM](/QUA/agents/documentation-km) | Needs role-rename pass |
+| 15 | Pipeline-Operator Load Balancing (T1-T5) | [15-pipeline-op-load-balancing.md](15-pipeline-op-load-balancing.md) | [Pipeline-Operator](/QUA/agents/pipeline-operator) | **V5-authored 2026-04-27** |
 
 V5 audit detail: [`docs/ops/QUA-213_PROCESS_AUDIT_2026-04-27.md`](../docs/ops/QUA-213_PROCESS_AUDIT_2026-04-27.md). Files marked "needs full V5 rewrite" have child issues opened off QUA-213; the role-rename pass is tracked as a single follow-up.
 
