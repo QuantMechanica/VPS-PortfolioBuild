@@ -171,6 +171,7 @@
   7. `Test-QUA95IssueTransitionPayload.ps1`
   8. Refreshes `QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.sha256`
   9. `Test-QUA95HandoffIntegrity.ps1`
+  10. `Write-QUA95OpsSuiteSnapshot.ps1`
 - Enforces non-zero exit handling for each step; task fails when any step exits non-zero.
 - Log append writes are lock-tolerant (`Add-Content` retry loop) so concurrent
   writer contention does not crash the runner.

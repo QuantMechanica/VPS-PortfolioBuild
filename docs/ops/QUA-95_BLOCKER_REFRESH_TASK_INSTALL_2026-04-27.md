@@ -36,6 +36,7 @@ Verified highlights:
   - `New-QUA95IssueTransitionPayload.ps1`
   - `Test-QUA95IssueTransitionPayload.ps1`
   - `Test-QUA95HandoffIntegrity.ps1`
+  - `Write-QUA95OpsSuiteSnapshot.ps1`
 
 ## Runtime remediation
 
