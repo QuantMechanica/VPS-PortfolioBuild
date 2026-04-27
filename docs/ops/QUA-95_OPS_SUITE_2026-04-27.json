@@ -1,6 +1,6 @@
 ﻿{
     "issue":  "QUA-95",
-    "generated_at_local":  "2026-04-27T14:34:16+02:00",
+    "generated_at_local":  "2026-04-27T14:36:43+02:00",
     "overall_status":  "ok",
     "checks":  [
                    {
@@ -13,13 +13,13 @@
                        "name":  "canonical_snapshot",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok bars_got=0 disposition=defer qua95_issues=0 non_qua95_issues=7"
+                       "output":  "status=ok bars_got=0 disposition=defer qua95_issues=0 non_qua95_issues=2"
                    },
                    {
                        "name":  "canonical_snapshot_freshness",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok snapshot_age_minutes=8.23 max_age_minutes=180"
+                       "output":  "status=ok snapshot_age_minutes=0.11 max_age_minutes=180"
                    },
                    {
                        "name":  "handoff_integrity",
@@ -43,7 +43,7 @@
                        "name":  "unblock_readiness",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok lag_minutes=7.52 ready_to_unblock=False bars_got=0 owner_count=2"
+                       "output":  "status=ok lag_minutes=0.85 ready_to_unblock=False bars_got=0 owner_count=2"
                    },
                    {
                        "name":  "unblock_owner_consistency",
@@ -73,25 +73,25 @@
                        "name":  "custom_visibility_proof",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok isolated_custom_failure=True target_bars=0/0 source_bars=566/10"
+                       "output":  "status=ok isolated_custom_failure=True target_bars=0/0 source_bars=557/10"
                    },
                    {
                        "name":  "evidence_cohesion",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok max_pair_skew_minutes=0 direct_at=2026-04-27T14:25:03.0000000+02:00 custom_at=2026-04-27T14:25:03.0000000+02:00 blocker_at=2026-04-27T14:25:03.0000000+02:00"
+                       "output":  "status=ok max_pair_skew_minutes=0 direct_at=2026-04-27T14:35:34.0000000+02:00 custom_at=2026-04-27T14:35:34.0000000+02:00 blocker_at=2026-04-27T14:35:34.0000000+02:00"
                    },
                    {
                        "name":  "failure_signature",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok signature=blocked_systemic mid_ticks=997 bars_one_shot=0 bars_chunked=0 tail_shortfall_seconds=7141.322 target_bars=0 source_bars=566"
+                       "output":  "status=ok signature=blocked_systemic mid_ticks=997 bars_one_shot=0 bars_chunked=0 tail_shortfall_seconds=7141.322 target_bars=0 source_bars=557"
                    },
                    {
                        "name":  "heartbeat_custom_visibility",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok isolated_custom_failure=True target_bars=0/0 source_bars=566/10"
+                       "output":  "status=ok isolated_custom_failure=True target_bars=0/0 source_bars=557/10"
                    },
                    {
                        "name":  "task_health_action_wiring",
@@ -115,7 +115,7 @@
                        "name":  "blocker_task_health",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok task=QM_QUA95_BlockerRefresh last_run=2026-04-27T14:01:01.0000000+02:00 age_minutes=33.2"
+                       "output":  "status=ok task=QM_QUA95_BlockerRefresh last_run=2026-04-27T14:01:01.0000000+02:00 age_minutes=35.65"
                    }
                ]
 }
