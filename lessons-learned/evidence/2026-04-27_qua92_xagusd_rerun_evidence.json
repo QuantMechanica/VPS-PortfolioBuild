@@ -19,5 +19,8 @@
                    "tail_ms_got":  1775437249841,
                    "tail_shortfall_seconds":  7140.626
                },
-    "disposition":  "defer"
+    "disposition":  "defer",
+    "recommended_issue_state":  "blocked",
+    "unblock_owner":  "verifier implementation owner",
+    "unblock_action":  "Harden D:\\QM\\mt5\\T1\\dwx_import\\verify_import.py with MT5 session pre-flight (symbol_select + bars warm-up/retry) and rerun verifier for XAGUSD.DWX until bars_got > 0 and tail aligns."
 }

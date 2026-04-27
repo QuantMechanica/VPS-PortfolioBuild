@@ -2,6 +2,7 @@
 
 Issue: `QUA-92` (DEVOPS-004 child)  
 Parent context: `QUA-19` verifier re-run
+Recommended issue state: `blocked` (pending verifier implementation hardening)
 
 ## Scope
 
