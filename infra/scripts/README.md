@@ -42,6 +42,14 @@
 - Example:
   - `python C:\QM\repo\infra\scripts\verify_import_candidate.py --symbol XAUUSD.DWX`
 
+## `patches/verify_import_candidate_port.patch`
+
+- Unified diff artifact from live verifier:
+  - `D:\QM\mt5\T1\dwx_import\verify_import.py`
+  - to candidate logic in `infra/scripts/verify_import_candidate.py`
+- Purpose: accelerate owner-side review/apply of tested read-path hardening.
+- Generated in this issue heartbeat; regenerate by diffing the same two files when either side changes.
+
 ## `probe_verify_rates_span.py`
 
 - Read-only MT5 probe for verifier investigations.

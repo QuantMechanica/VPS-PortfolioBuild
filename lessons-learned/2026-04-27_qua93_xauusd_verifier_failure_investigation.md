@@ -100,6 +100,13 @@ Outputs:
 - evidence JSON: `lessons-learned/evidence/2026-04-27_qua93_xauusd_rerun_evidence.json`
 - disposition: `defer`
 
+## Apply-Ready Port Patch (2026-04-27 09:13 CEST)
+
+Generated unified diff artifact for owner-side apply/review:
+- `infra/scripts/patches/verify_import_candidate_port.patch`
+- diff source: `D:\QM\mt5\T1\dwx_import\verify_import.py`
+- diff target: `infra/scripts/verify_import_candidate.py`
+
 ## Durable change in this heartbeat
 
 - Added this investigation record for `QUA-93` with concrete classifier output and triage conclusion.
@@ -109,6 +116,7 @@ Outputs:
 - Added a reusable probe script (`infra/scripts/verify_import_preflight_probe.py`) and captured artifact output.
 - Added a runnable candidate verifier (`infra/scripts/verify_import_candidate.py`) and validated behavior on `XAUUSD.DWX`.
 - Added machine-readable disposition evidence (`defer`) for issue handoff.
+- Added an apply-ready patch artifact for faster owner-side integration.
 
 ## Next action
 
