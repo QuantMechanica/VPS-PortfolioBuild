@@ -123,13 +123,13 @@ Never compute magic by hand. Never reuse an `ea_id` from V4 (1-~770 reserved as 
 ### 8. Symbol naming discipline
 
 - Research + backtest: symbols carry `.DWX` suffix (e.g. `EURUSD.DWX`)
-- Live deploy: stripped only via `framework/scripts/strip_dwx_at_deploy.ps1`
+- Live deploy: `.DWX` stripping happens only in deploy packaging workflow (never in EA build/backtest artifacts)
 - Never strip `.DWX` by hand or anywhere else in the build
 
 ### 9. Compile
 
 ```powershell
-framework/scripts/compile_one.ps1 -EA QM5_<NNNN>_<slug> -Strict
+framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_<NNNN>_<slug>/QM5_<NNNN>_<slug>.mq5 -Strict
 ```
 
 `-Strict` runs `build_check.ps1` after compile:
@@ -154,7 +154,7 @@ Examples:
 - `QM5_1001_EURUSD.DWX_H1_backtest.set`
 - `QM5_1001_EURUSD_H1_live.set`
 
-Run `framework/scripts/validate_setfile.ps1` on every `.set`.
+Run `framework/scripts/build_check.ps1` after setfile authoring to enforce set header completeness and build-hash updates.
 
 ### 11. Submit for CTO review
 
@@ -185,5 +185,6 @@ CTO approves → card status moves to `IN_PIPELINE`, EA is handed to Pipeline-Op
 - `framework/templates/EA_Skeleton.mq5` — copy-from skeleton
 - `framework/registry/magic_numbers.csv` — magic-allocation source of truth
 - `framework/scripts/compile_one.ps1` + `build_check.ps1` — compile + validation
+- `docs/ops/DWX_IMPORT_AUTOMATION.md` — `.DWX` symbol naming discipline and deploy-time boundary
 - `decisions/2026-04-26_v5_framework_design.md` — V5 framework decision rationale
 - `lessons-learned/V4_LEARNINGS_ARCHIVE_2026-04-21.md` — what V4 patterns were inherited and which were rejected

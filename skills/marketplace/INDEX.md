@@ -29,7 +29,9 @@ Skills pinned from external marketplaces (skills.sh / Anthropic / community repo
 |---|---|
 | Source | https://github.com/anthropics/skills |
 | Path | `skill-creator/` |
-| commit_pin | TBD (CTO to fill) |
+| commit_pin | `5128e1865d670f5d6c9cef000e6dfc4e951fb5b9` |
+| reviewed_at | `2026-04-27` |
+| reviewed_by | `CTO` |
 | Assigned to | Documentation-KM, CTO |
 | Why | Authoring framework for the 6 custom V5 skills (eat-own-dogfood pattern) |
 
@@ -39,7 +41,9 @@ Skills pinned from external marketplaces (skills.sh / Anthropic / community repo
 |---|---|
 | Source | https://github.com/anthropics/skills |
 | Path | `pdf/` |
-| commit_pin | TBD (CTO to fill) |
+| commit_pin | `5128e1865d670f5d6c9cef000e6dfc4e951fb5b9` |
+| reviewed_at | `2026-04-27` |
+| reviewed_by | `CTO` |
 | Assigned to | Research |
 | Why | Reading books / papers (Ernest Chan, Kaufman, Ehlers PDFs) for `qm-strategy-card-extraction` |
 
@@ -49,7 +53,9 @@ Skills pinned from external marketplaces (skills.sh / Anthropic / community repo
 |---|---|
 | Source | https://github.com/anthropics/skills |
 | Path | `xlsx/` |
-| commit_pin | TBD (CTO to fill) |
+| commit_pin | `5128e1865d670f5d6c9cef000e6dfc4e951fb5b9` |
+| reviewed_at | `2026-04-27` |
+| reviewed_by | `CTO` |
 | Assigned to | Pipeline-Operator, CTO |
 | Why | Backtest report parsing + commission table handling |
 
@@ -59,7 +65,9 @@ Skills pinned from external marketplaces (skills.sh / Anthropic / community repo
 |---|---|
 | Source | https://github.com/obra/superpowers |
 | Path | `verification-before-completion/` |
-| commit_pin | TBD (CTO to fill) |
+| commit_pin | `6efe32c9e2dd002d0c394e861e0529675d1ab32e` |
+| reviewed_at | `2026-04-27` |
+| reviewed_by | `CTO` |
 | Assigned to | CEO, CTO, DevOps |
 | Why | Codifies the "verify before promote" pattern already running at QM (PC1-00 mitigation, T6 deploy verification, etc.) |
 
@@ -69,7 +77,9 @@ Skills pinned from external marketplaces (skills.sh / Anthropic / community repo
 |---|---|
 | Source | https://github.com/obra/superpowers |
 | Path | `using-git-worktrees/` |
-| commit_pin | TBD (CTO to fill) |
+| commit_pin | `6efe32c9e2dd002d0c394e861e0529675d1ab32e` |
+| reviewed_at | `2026-04-27` |
+| reviewed_by | `CTO` |
 | Assigned to | CTO, DevOps |
 | Why | Codifies PC1-00 Drive-vs-Git mitigation pattern (already running per `docs/ops/PC1-00_WORKTREE_PROOF_2026-04-27.md`) |
 
@@ -79,7 +89,9 @@ Skills pinned from external marketplaces (skills.sh / Anthropic / community repo
 |---|---|
 | Source | https://github.com/obra/superpowers |
 | Path | `test-driven-development/` |
-| commit_pin | TBD (CTO to fill) |
+| commit_pin | `6efe32c9e2dd002d0c394e861e0529675d1ab32e` |
+| reviewed_at | `2026-04-27` |
+| reviewed_by | `CTO` |
 | Assigned to | CTO, Development |
 | Why | TDD discipline for framework includes (`include/QM_*.mqh`) and EA build code |
 
@@ -89,7 +101,9 @@ Skills pinned from external marketplaces (skills.sh / Anthropic / community repo
 |---|---|
 | Source | https://github.com/obra/superpowers |
 | Path | `systematic-debugging/` |
-| commit_pin | TBD (CTO to fill) |
+| commit_pin | `6efe32c9e2dd002d0c394e861e0529675d1ab32e` |
+| reviewed_at | `2026-04-27` |
+| reviewed_by | `CTO` |
 | Assigned to | DevOps |
 | Why | Debugging methodology for incidents (P0 / P1 incident response per `processes/04-incident-response.md`) |
 

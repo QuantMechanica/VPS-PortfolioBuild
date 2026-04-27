@@ -1,0 +1,93 @@
+[
+  {
+    "source": "C:\\QM\\repo\\skills\\qm\\qm-validate-custom-symbol",
+    "ok": false,
+    "status": "error",
+    "message": "Response status code does not indicate success: 403 (Forbidden).",
+    "detail": "\r\n{\r\n  \"error\": \"Missing permission: can create agents\"\r\n}"
+  },
+  {
+    "source": "C:\\QM\\repo\\skills\\qm\\qm-strategy-card-extraction",
+    "ok": false,
+    "status": "error",
+    "message": "Response status code does not indicate success: 403 (Forbidden).",
+    "detail": "\r\n{\r\n  \"error\": \"Missing permission: can create agents\"\r\n}"
+  },
+  {
+    "source": "C:\\QM\\repo\\skills\\qm\\qm-build-ea-from-card",
+    "ok": false,
+    "status": "error",
+    "message": "Response status code does not indicate success: 403 (Forbidden).",
+    "detail": "\r\n{\r\n  \"error\": \"Missing permission: can create agents\"\r\n}"
+  },
+  {
+    "source": "C:\\QM\\repo\\skills\\qm\\qm-run-pipeline-phase",
+    "ok": false,
+    "status": "error",
+    "message": "Response status code does not indicate success: 403 (Forbidden).",
+    "detail": "\r\n{\r\n  \"error\": \"Missing permission: can create agents\"\r\n}"
+  },
+  {
+    "source": "C:\\QM\\repo\\skills\\qm\\qm-t6-deploy-verification",
+    "ok": false,
+    "status": "error",
+    "message": "Response status code does not indicate success: 403 (Forbidden).",
+    "detail": "\r\n{\r\n  \"error\": \"Missing permission: can create agents\"\r\n}"
+  },
+  {
+    "source": "C:\\QM\\repo\\skills\\qm\\qm-zero-trades-recovery",
+    "ok": false,
+    "status": "error",
+    "message": "Response status code does not indicate success: 403 (Forbidden).",
+    "detail": "\r\n{\r\n  \"error\": \"Missing permission: can create agents\"\r\n}"
+  },
+  {
+    "source": "anthropics/skills/skill-creator",
+    "ok": false,
+    "status": "error",
+    "message": "Response status code does not indicate success: 403 (Forbidden).",
+    "detail": "\r\n{\r\n  \"error\": \"Missing permission: can create agents\"\r\n}"
+  },
+  {
+    "source": "anthropics/skills/pdf",
+    "ok": false,
+    "status": "error",
+    "message": "Response status code does not indicate success: 403 (Forbidden).",
+    "detail": "\r\n{\r\n  \"error\": \"Missing permission: can create agents\"\r\n}"
+  },
+  {
+    "source": "anthropics/skills/xlsx",
+    "ok": false,
+    "status": "error",
+    "message": "Response status code does not indicate success: 403 (Forbidden).",
+    "detail": "\r\n{\r\n  \"error\": \"Missing permission: can create agents\"\r\n}"
+  },
+  {
+    "source": "obra/superpowers/verification-before-completion",
+    "ok": false,
+    "status": "error",
+    "message": "Response status code does not indicate success: 403 (Forbidden).",
+    "detail": "\r\n{\r\n  \"error\": \"Missing permission: can create agents\"\r\n}"
+  },
+  {
+    "source": "obra/superpowers/using-git-worktrees",
+    "ok": false,
+    "status": "error",
+    "message": "Response status code does not indicate success: 403 (Forbidden).",
+    "detail": "\r\n{\r\n  \"error\": \"Missing permission: can create agents\"\r\n}"
+  },
+  {
+    "source": "obra/superpowers/test-driven-development",
+    "ok": false,
+    "status": "error",
+    "message": "Response status code does not indicate success: 403 (Forbidden).",
+    "detail": "\r\n{\r\n  \"error\": \"Missing permission: can create agents\"\r\n}"
+  },
+  {
+    "source": "obra/superpowers/systematic-debugging",
+    "ok": false,
+    "status": "error",
+    "message": "Response status code does not indicate success: 403 (Forbidden).",
+    "detail": "\r\n{\r\n  \"error\": \"Missing permission: can create agents\"\r\n}"
+  }
+]

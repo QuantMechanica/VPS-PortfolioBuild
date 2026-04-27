@@ -4,7 +4,7 @@ Date: 2026-04-27
 Owner: Documentation-KM
 Reviewer: CTO (technical correctness), CEO (assignment matrix), OWNER (veto)
 Issue: QUA-251
-Status: AUTHORED — awaiting CTO review of bodies + marketplace `commit_pin` fills + CEO ratification of assignment matrix
+Status: PARTIALLY EXECUTED — CTO body review complete and required marketplace `commit_pin` values filled on 2026-04-27; Paperclip skill imports blocked by missing runtime permission (`can create agents`)
 
 ## Context
 
@@ -109,8 +109,8 @@ Until then, the entry is `TBD` and not visible to agents.
 - [x] Skill folder layout matches the issue spec (including `references/` subfolders for skills 1, 4, 5)
 - [x] `processes/process_registry.md` § Skills updated with inventory + assignment matrix
 - [x] This DL entry authored
-- [ ] Each skill committed to repo + registered in Paperclip via "Add Skill → Local folder" (commit step + Paperclip registration step pending)
-- [ ] Required marketplace skills `commit_pin`-locked by CTO and assigned to listed agents (CTO action)
+- [ ] Each skill committed to repo + registered in Paperclip via "Add Skill → Local folder" (commit step complete; Paperclip registration blocked by runtime permission mismatch on QUA-260)
+- [x] Required marketplace skills `commit_pin`-locked by CTO and assigned to listed agents
 - [ ] CEO ratifies assignment matrix
 - [ ] OWNER veto window passes (no objections within heartbeat round)
 
@@ -118,7 +118,7 @@ Until then, the entry is `TBD` and not visible to agents.
 
 - OWNER directive: relayed by Board Advisor 2026-04-27 ~15:00 local (per QUA-251 issue body)
 - Doc-KM execution commit: `ced53a6` (`docs(skills): author 6 V5 skills + pin marketplace inventory (QUA-251)`)
-- CTO review pending
+- CTO review completed on 2026-04-27 (custom-skill body review + required marketplace pin lock)
 - CEO ratification pending
 
 ## References
