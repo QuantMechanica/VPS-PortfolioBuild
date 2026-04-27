@@ -28,6 +28,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
     - Google Drive sync freshness
     - stale `.git/index.lock` detection
     - QUA-95 blocker refresh task health (`QM_QUA95_BlockerRefresh`)
+    - QUA-95 combined automation health (`Test-QUA95AutomationHealth.ps1`)
     - QUA-95 issue-transition payload consistency (`Test-QUA95IssueTransitionPayload.ps1`)
     - QUA-95 blocked invariant enforcement (`Test-QUA95BlockedInvariant.ps1`)
     - QUA-95 handoff integrity (`Test-QUA95HandoffIntegrity.ps1`)

@@ -15,6 +15,7 @@ param(
     [string]$Qua95TaskName = 'QM_QUA95_BlockerRefresh',
     [int]$Qua95TaskMaxAgeMinutes = 125,
     [string]$Qua95TaskHealthScript = 'C:\QM\repo\infra\monitoring\Test-QUA95BlockerTaskHealth.ps1',
+    [string]$Qua95AutomationHealthScript = 'C:\QM\repo\infra\monitoring\Test-QUA95AutomationHealth.ps1',
     [string]$Qua95TransitionPayloadCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95IssueTransitionPayload.ps1',
     [string]$Qua95BlockedInvariantScript = 'C:\QM\repo\infra\scripts\Test-QUA95BlockedInvariant.ps1',
     [string]$Qua95HandoffIntegrityScript = 'C:\QM\repo\infra\scripts\Test-QUA95HandoffIntegrity.ps1',
@@ -205,6 +206,24 @@ else {
         max_age_minutes = $Qua95TaskMaxAgeMinutes
         exit_code = $healthCode
         output = $healthText
+    }
+}
+
+# QUA-95 combined automation health
+if (-not (Test-Path -LiteralPath $Qua95AutomationHealthScript)) {
+    Add-Check -Name 'qua95_automation_health' -Status 'warn' -Meta @{
+        reason = 'health_script_missing'
+        path = $Qua95AutomationHealthScript
+    }
+}
+else {
+    $automationOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $Qua95AutomationHealthScript 2>&1
+    $automationCode = $LASTEXITCODE
+    $automationText = ($automationOut | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
+    $automationStatus = if ($automationCode -eq 0) { 'ok' } else { 'critical' }
+    Add-Check -Name 'qua95_automation_health' -Status $automationStatus -Meta @{
+        exit_code = $automationCode
+        output = $automationText
     }
 }
 
