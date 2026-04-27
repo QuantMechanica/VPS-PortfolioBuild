@@ -333,6 +333,24 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA95DirectVerifierProof.ps1`
 
+## `Test-QUA95CustomVisibilityProof.ps1`
+
+- Validates custom-visibility proof artifacts:
+  - `lessons-learned\evidence\2026-04-27_qua95_xtiusd_custom_visibility_probe_rerun.json`
+  - `docs\ops\QUA-95_CUSTOM_VISIBILITY_RERUN_2026-04-27.md`
+- Cross-checks with blocker status:
+  - `docs\ops\QUA-95_XTIUSD_BLOCKER_STATUS_2026-04-27.json`
+- Checks:
+  - target/source symbol identity
+  - non-negative bars counters
+  - blocked/defer consistency when isolated custom visibility failure is true
+  - proof markdown contains expected heading/target symbol
+- Exit codes:
+  - `0`: proof artifacts are consistent
+  - `1`: drift/missing artifact detected
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA95CustomVisibilityProof.ps1`
+
 ## `Test-QUA95CanonicalSnapshot.ps1`
 
 - Validates canonical snapshot summary artifact:
@@ -394,9 +412,10 @@
   7. `Test-QUA95UnblockReadinessSummary.ps1`
   8. `Test-QUA95AuditSignal.ps1`
   9. `Test-QUA95DirectVerifierProof.ps1`
-  10. `Test-QUA95TaskHealthActionWiring.ps1`
-  11. `monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
-  12. `monitoring/Test-QUA95BlockerTaskHealth.ps1`
+  10. `Test-QUA95CustomVisibilityProof.ps1`
+  11. `Test-QUA95TaskHealthActionWiring.ps1`
+  12. `monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
+  13. `monitoring/Test-QUA95BlockerTaskHealth.ps1`
 - Emits JSON summary to stdout and returns:
   - `0` when all checks pass
   - `2` when any check is critical

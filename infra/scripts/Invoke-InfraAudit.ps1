@@ -27,6 +27,7 @@ param(
     [string]$Qua95UnblockReadinessCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95UnblockReadiness.ps1',
     [string]$Qua95AuditSignalCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95AuditSignal.ps1',
     [string]$Qua95DirectVerifierProofCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95DirectVerifierProof.ps1',
+    [string]$Qua95CustomVisibilityProofCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95CustomVisibilityProof.ps1',
     [string]$Qua95CanonicalSnapshotCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95CanonicalSnapshot.ps1',
     [string]$Qua95OpsBundleManifestScript = 'C:\QM\repo\infra\scripts\Test-QUA95OpsBundleManifest.ps1',
     [string]$Qua95BlockedHeartbeatWrapperTestScript = 'C:\QM\repo\infra\monitoring\Test-QUA95BlockedHeartbeatWrapper.ps1',
@@ -383,6 +384,24 @@ else {
     Add-Check -Name 'qua95_direct_verifier_proof' -Status $directProofStatus -Meta @{
         exit_code = $directProofCode
         output = $directProofText
+    }
+}
+
+# QUA-95 custom visibility proof consistency
+if (-not (Test-Path -LiteralPath $Qua95CustomVisibilityProofCheckScript)) {
+    Add-Check -Name 'qua95_custom_visibility_proof' -Status 'warn' -Meta @{
+        reason = 'check_script_missing'
+        path = $Qua95CustomVisibilityProofCheckScript
+    }
+}
+else {
+    $customVisibilityOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $Qua95CustomVisibilityProofCheckScript 2>&1
+    $customVisibilityCode = $LASTEXITCODE
+    $customVisibilityText = ($customVisibilityOut | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
+    $customVisibilityStatus = if ($customVisibilityCode -eq 0) { 'ok' } else { 'critical' }
+    Add-Check -Name 'qua95_custom_visibility_proof' -Status $customVisibilityStatus -Meta @{
+        exit_code = $customVisibilityCode
+        output = $customVisibilityText
     }
 }
 
