@@ -90,6 +90,16 @@ Interpretation:
 - Proposed verifier read-path changes remove false `FAIL_tail_mid_*` for this symbol in current runtime.
 - Remaining gap is MT5 bars visibility (`bars_got=0`), which should be treated as degraded/warn in this runtime class.
 
+## Disposition Artifact (2026-04-27 09:11 CEST)
+
+Ran the idempotent disposition helper:
+- `powershell -File C:\QM\repo\infra\scripts\Invoke-VerifyDisposition.ps1 -IssueId QUA-93 -Symbol XAUUSD.DWX`
+
+Outputs:
+- raw log: `infra/smoke/verify_import_run_2026-04-27_091107_qua93.log`
+- evidence JSON: `lessons-learned/evidence/2026-04-27_qua93_xauusd_rerun_evidence.json`
+- disposition: `defer`
+
 ## Durable change in this heartbeat
 
 - Added this investigation record for `QUA-93` with concrete classifier output and triage conclusion.
@@ -98,6 +108,7 @@ Interpretation:
 - Added MT5 API-level diagnostic evidence to narrow implementation fix scope.
 - Added a reusable probe script (`infra/scripts/verify_import_preflight_probe.py`) and captured artifact output.
 - Added a runnable candidate verifier (`infra/scripts/verify_import_candidate.py`) and validated behavior on `XAUUSD.DWX`.
+- Added machine-readable disposition evidence (`defer`) for issue handoff.
 
 ## Next action
 
