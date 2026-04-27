@@ -65,6 +65,11 @@ Generated evidence:
 - classifier: `fail_count=56`, `systemic_zero_bars=true`, `systemic_zero_mid_ticks=false`
 - symbol payload confirms `XNGUSD.DWX` remained `FAIL_tail_mid_bars` with `bars_got=0` and `tail_ms_got=0`
 
+Additional root-cause probe:
+- `lessons-learned/evidence/2026-04-27_qua94_rates_probe.md`
+- `XNGUSD.DWX` stayed at `oneshot_count=0`, `chunked_count=0`, `tail_window_count=0` even with chunked/day windows.
+- Comparator `WS30.DWX` returned partial chunked bars (`100,251`), so the runtime read-path issue is not perfectly uniform across symbols.
+
 ## Durable change in this heartbeat
 
 - Added this investigation record for `QUA-94` with concrete row-level evidence and batch classifier context.
@@ -77,4 +82,4 @@ Generated evidence:
 
 Blocked on verifier owner action:
 - Unblock owner: verifier implementation owner (`verify_import.py` runtime path)
-- Required unblock action: add MT5 session pre-flight hardening (`symbol_select` confirmation + bars warm-up/retry before `copy_rates_range`) and provide a rerun log where `XNGUSD.DWX` has non-zero `bars got` and non-zero tail sample.
+- Required unblock action: add MT5 session pre-flight hardening (`symbol_select` confirmation + bars warm-up/retry before `copy_rates_range`) plus chunked fallback, and provide a rerun log where `XNGUSD.DWX` has non-zero `bars got` and non-zero tail sample.

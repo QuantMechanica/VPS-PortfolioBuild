@@ -80,12 +80,22 @@ def count_chunked(symbol: str, span: Span, chunk_days: int) -> tuple[int, int, i
     return total, chunks, bad_chunks
 
 
+def count_tail_window(symbol: str, span: Span, tail_hours: int) -> tuple[int, tuple[int, str], dt.datetime, dt.datetime]:
+    tail_start = max(span.start, span.end - dt.timedelta(hours=tail_hours))
+    tail_end = span.end
+    rates = mt5.copy_rates_range(symbol, mt5.TIMEFRAME_M1, tail_start, tail_end)
+    if rates is None:
+        return 0, mt5.last_error(), tail_start, tail_end
+    return len(rates), mt5.last_error(), tail_start, tail_end
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--terminal", default=T1_TERMINAL_DEFAULT)
     ap.add_argument("--done-dir", default=str(DONE_DIR_DEFAULT))
     ap.add_argument("--symbol", default="WS30.DWX")
     ap.add_argument("--chunk-days", type=int, default=20)
+    ap.add_argument("--tail-hours", type=int, default=24)
     args = ap.parse_args()
 
     done_dir = Path(args.done_dir)
@@ -97,17 +107,29 @@ def main() -> int:
         return 2
     try:
         mt5.symbol_select(args.symbol, True)
+        si = mt5.symbol_info(args.symbol)
         one_count, one_err = count_oneshot(args.symbol, span)
         chunk_count, chunks, bad_chunks = count_chunked(args.symbol, span, args.chunk_days)
+        tail_count, tail_err, tail_start, tail_end = count_tail_window(args.symbol, span, args.tail_hours)
 
         print(f"symbol={args.symbol}")
         print(f"sidecar={sidecar}")
+        if si is not None:
+            print(
+                f"symbol_info_selected={si.select} visible={si.visible} custom={si.custom} "
+                f"path={si.path}"
+            )
         print(f"span_start_utc={span.start.isoformat()} span_end_utc={span.end.isoformat()}")
         print(f"m1_expected_count={expected}")
         print(f"oneshot_count={one_count} oneshot_last_error={one_err}")
         print(
             f"chunked_count={chunk_count} chunk_days={args.chunk_days} "
             f"chunks={chunks} bad_chunks={bad_chunks}"
+        )
+        print(
+            f"tail_window_count={tail_count} tail_hours={args.tail_hours} "
+            f"tail_start_utc={tail_start.isoformat()} tail_end_utc={tail_end.isoformat()} "
+            f"tail_last_error={tail_err}"
         )
         drift = chunk_count - expected
         print(f"chunked_drift={drift}")
@@ -118,4 +140,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
