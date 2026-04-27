@@ -74,6 +74,8 @@ Status recommendation: `blocked` (`defer`)
   - `lessons-learned/evidence/2026-04-27_qua95_xtiusd_custom_visibility_probe.md`
   - `lessons-learned/evidence/2026-04-27_qua95_xtiusd_custom_visibility_probe.json`
   - `lessons-learned/evidence/2026-04-27_qua95_xtiusd_custom_visibility_probe_after_warmup.json`
+  - `lessons-learned/evidence/2026-04-27_qua95_xtiusd_custom_visibility_probe_rerun.json`
+  - `docs/ops/QUA-95_CUSTOM_VISIBILITY_RERUN_2026-04-27.md`
 - Scope matrix:
   - `lessons-learned/evidence/2026-04-27_qua95_custom_visibility_scope_matrix.md`
   - `lessons-learned/evidence/2026-04-27_qua95_custom_visibility_scope_matrix.json`
