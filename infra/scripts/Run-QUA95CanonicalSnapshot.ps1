@@ -10,11 +10,12 @@ $ErrorActionPreference = 'Stop'
 $heartbeatScript = Join-Path $RepoRoot 'infra\scripts\Invoke-QUA95BlockedHeartbeat.ps1'
 $directProofScript = Join-Path $RepoRoot 'infra\scripts\Run-QUA95DirectVerifierProof.ps1'
 $customVisibilityProofScript = Join-Path $RepoRoot 'infra\scripts\Run-QUA95CustomVisibilityProof.ps1'
+$heartbeatCustomVisibilityScript = Join-Path $RepoRoot 'infra\scripts\Test-QUA95HeartbeatCustomVisibility.ps1'
 $bundleUpdateScript = Join-Path $RepoRoot 'infra\scripts\Update-QUA95OpsBundleManifest.ps1'
 $bundleTestScript = Join-Path $RepoRoot 'infra\scripts\Test-QUA95OpsBundleManifest.ps1'
 $taskHealthWiringScript = Join-Path $RepoRoot 'infra\scripts\Test-QUA95TaskHealthActionWiring.ps1'
 
-foreach ($path in @($heartbeatScript, $directProofScript, $customVisibilityProofScript, $bundleUpdateScript, $bundleTestScript, $taskHealthWiringScript)) {
+foreach ($path in @($heartbeatScript, $directProofScript, $customVisibilityProofScript, $heartbeatCustomVisibilityScript, $bundleUpdateScript, $bundleTestScript, $taskHealthWiringScript)) {
     if (-not (Test-Path -LiteralPath $path)) {
         throw "Required script missing: $path"
     }
@@ -32,6 +33,7 @@ $bundleTestCode = -1
 $taskHealthWiringCode = -1
 $directProofCode = -1
 $customVisibilityProofCode = -1
+$heartbeatCustomVisibilityCode = -1
 
 $blockerPath = Join-Path $RepoRoot 'docs\ops\QUA-95_XTIUSD_BLOCKER_STATUS_2026-04-27.json'
 $auditSignalPath = Join-Path $RepoRoot 'docs\ops\QUA-95_AUDIT_SIGNAL_2026-04-27.json'
@@ -57,6 +59,7 @@ $summary = [ordered]@{
         blocked_heartbeat_exit_code = $heartbeatCode
         direct_verifier_proof_exit_code = $directProofCode
         custom_visibility_proof_exit_code = $customVisibilityProofCode
+        heartbeat_custom_visibility_exit_code = $heartbeatCustomVisibilityCode
         task_health_action_wiring_exit_code = $taskHealthWiringCode
         ops_bundle_update_exit_code = $bundleUpdateCode
         ops_bundle_test_exit_code = $bundleTestCode
@@ -88,8 +91,12 @@ if ($summaryDir) {
     New-Item -ItemType Directory -Path $summaryDir -Force | Out-Null
 }
 
-$summary | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $summaryFullPath -Encoding UTF8
-Write-Output ("wrote=" + $summaryFullPath)
+$heartbeatCustomVisibilityOut = & $heartbeatCustomVisibilityScript 2>&1
+$heartbeatCustomVisibilityCode = $LASTEXITCODE
+($heartbeatCustomVisibilityOut | ForEach-Object { $_.ToString() }) | Write-Output
+if ($heartbeatCustomVisibilityCode -ne 0) {
+    throw ("Heartbeat custom-visibility check failed: exit_code={0}" -f $heartbeatCustomVisibilityCode)
+}
 
 $directProofOut = & $directProofScript 2>&1
 $directProofCode = $LASTEXITCODE
@@ -128,6 +135,7 @@ if ($bundleTestCode -ne 0) {
 
 $summary.steps.direct_verifier_proof_exit_code = $directProofCode
 $summary.steps.custom_visibility_proof_exit_code = $customVisibilityProofCode
+$summary.steps.heartbeat_custom_visibility_exit_code = $heartbeatCustomVisibilityCode
 $summary.steps.task_health_action_wiring_exit_code = $taskHealthWiringCode
 $summary.steps.ops_bundle_update_exit_code = $bundleUpdateCode
 $summary.steps.ops_bundle_test_exit_code = $bundleTestCode

@@ -37,6 +37,10 @@ if ([string]$snapshot.flow -ne 'qua95_canonical_snapshot') { Fail "snapshot_flow
 if ([int]$snapshot.command_exit_code -ne 0) { Fail "snapshot_command_exit_nonzero" }
 if ([int]$snapshot.steps.blocked_heartbeat_exit_code -ne 0) { Fail "snapshot_heartbeat_exit_nonzero" }
 if ([int]$snapshot.steps.custom_visibility_proof_exit_code -ne 0) { Fail "snapshot_custom_visibility_proof_exit_nonzero" }
+$hasHeartbeatCustomVisibilityExitCode = @($snapshot.steps.PSObject.Properties.Name) -contains 'heartbeat_custom_visibility_exit_code'
+if ($hasHeartbeatCustomVisibilityExitCode -and [int]$snapshot.steps.heartbeat_custom_visibility_exit_code -ne 0) {
+    Fail "snapshot_heartbeat_custom_visibility_exit_nonzero"
+}
 if ([int]$snapshot.steps.ops_bundle_update_exit_code -ne 0) { Fail "snapshot_bundle_update_exit_nonzero" }
 if ([int]$snapshot.steps.ops_bundle_test_exit_code -ne 0) { Fail "snapshot_bundle_test_exit_nonzero" }
 

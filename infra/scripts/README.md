@@ -377,7 +377,7 @@
   - `docs\ops\QUA-95_CUSTOM_VISIBILITY_RERUN_2026-04-27.md`
 - Checks:
   - snapshot identity/flow fields
-  - step exit codes (including `custom_visibility_proof_exit_code`)
+  - step exit codes (including `custom_visibility_proof_exit_code` and `heartbeat_custom_visibility_exit_code`)
   - blocker state/disposition/bars consistency
   - audit-signal count consistency
 - Exit codes:
@@ -512,9 +512,10 @@
   1. `Invoke-QUA95BlockedHeartbeat.ps1`
   2. `Run-QUA95DirectVerifierProof.ps1`
   3. `Run-QUA95CustomVisibilityProof.ps1`
-  4. `Test-QUA95TaskHealthActionWiring.ps1`
-  5. `Update-QUA95OpsBundleManifest.ps1`
-  6. `Test-QUA95OpsBundleManifest.ps1`
+  4. `Test-QUA95HeartbeatCustomVisibility.ps1`
+  5. `Test-QUA95TaskHealthActionWiring.ps1`
+  6. `Update-QUA95OpsBundleManifest.ps1`
+  7. `Test-QUA95OpsBundleManifest.ps1`
 - Writes machine-readable run summary:
   - `docs\ops\QUA-95_CANONICAL_SNAPSHOT_2026-04-27.json`
 - Purpose:

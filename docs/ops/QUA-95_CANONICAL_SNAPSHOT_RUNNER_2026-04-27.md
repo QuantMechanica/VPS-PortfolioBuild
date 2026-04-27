@@ -16,7 +16,7 @@ disposition=defer
 verify_exit_code=1
 isolated_custom_bars_visibility_failure=True
 status=ok task=QM_QUA95_TaskHealth_15min
-Infra audit completed: status=critical, checks=25, issues=2
+Infra audit completed: status=critical, checks=27, issues=2
 status=ok qua95_issues=0 non_qua95_issues=2
 status=ok flow=qua95_canonical_snapshot
 ```
@@ -27,7 +27,8 @@ status=ok flow=qua95_canonical_snapshot
   1. `Invoke-QUA95BlockedHeartbeat.ps1`
   2. `Run-QUA95DirectVerifierProof.ps1`
   3. `Run-QUA95CustomVisibilityProof.ps1`
-  4. `Test-QUA95TaskHealthActionWiring.ps1`
-  5. `Update-QUA95OpsBundleManifest.ps1`
-  6. `Test-QUA95OpsBundleManifest.ps1`
+  4. `Test-QUA95HeartbeatCustomVisibility.ps1`
+  5. `Test-QUA95TaskHealthActionWiring.ps1`
+  6. `Update-QUA95OpsBundleManifest.ps1`
+  7. `Test-QUA95OpsBundleManifest.ps1`
 - It is the preferred one-command path for producing a post-run manifest-consistent QUA-95 blocked-state artifact set.
