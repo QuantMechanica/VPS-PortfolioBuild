@@ -154,6 +154,23 @@ Interpretation:
 - In this runtime, both custom and source tail probes are zero for the target window, and all bar read modes return zero.
 - Disposition remains `defer` pending source-history visibility validation.
 
+## Source-History Hydration Attempt (2026-04-27 09:25 CEST)
+
+Hydration run (MT5 API warm-up loops) results:
+- source `XAUUSD`: repeated non-zero ticks/rates near recent anchors (`ticks=2000`, `rates=2000`)
+- custom `XAUUSD.DWX`: recent anchors show `ticks=0`, `rates=0`; older anchors show ticks but still `rates=0`
+
+Post-hydration probes/rerun:
+- chunked probe artifact: `lessons-learned/evidence/2026-04-27_qua93_xauusd_chunked_probe_after_hydration.json`
+- official verifier log: `infra/smoke/verify_import_run_2026-04-27_092526_qua93_after_hydration.log`
+- disposition helper log: `infra/smoke/verify_import_run_2026-04-27_092548_qua93.log`
+- refreshed disposition JSON: `lessons-learned/evidence/2026-04-27_qua93_xauusd_rerun_evidence.json`
+- outcome remains `verify_exit_code=1`, `disposition=defer`
+
+Interpretation:
+- Source symbol is alive in current terminal context, but `XAUUSD.DWX` custom-history/bar visibility remains degraded.
+- Root cause now points to custom-symbol history state/coverage rather than broker-source outage.
+
 ## Durable change in this heartbeat
 
 - Added this investigation record for `QUA-93` with concrete classifier output and triage conclusion.
@@ -168,12 +185,14 @@ Interpretation:
 - Hardened disposition parser compatibility so evidence remains valid across verifier output-schema changes.
 - Re-executed official rerun + disposition generation in liveness continuation; status remains `defer`.
 - Added chunked-probe JSON evidence confirming zero visibility across multiple MT5 read paths.
+- Executed source-history hydration and confirmed only source symbol recovered; custom symbol still fails and remains `defer`.
 
 ## Next action
 
 Acceptance target (`XAUUSD` non-zero bars + matching tail) remains unmet after rerun.  
 Unblock owner: verifier implementation owner (`D:\QM\mt5\T1\dwx_import\verify_import.py`).  
 Required action:
-- validate source symbol history visibility for `XAUUSD` in MT5 terminal data context (not only custom symbol path);
+- validate and rebuild `XAUUSD.DWX` custom-symbol history coverage from import artifacts (or re-import) in MT5 custom base;
+- confirm source-symbol visibility remains healthy while custom-history is restored;
 - keep verifier hardening (`copy_ticks_from` windows + retry pre-flight + degraded bars classification);
 - rerun official verifier and disposition helper after source-history visibility is restored/confirmed.
