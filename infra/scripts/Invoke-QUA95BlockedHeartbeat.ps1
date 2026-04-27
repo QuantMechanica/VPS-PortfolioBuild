@@ -13,13 +13,14 @@ $refreshScript = Join-Path $RepoRoot 'infra\scripts\Run-QUA95BlockerRefresh.ps1'
 $auditScript = Join-Path $RepoRoot 'infra\scripts\Invoke-InfraAudit.ps1'
 $gateScript = Join-Path $RepoRoot 'infra\scripts\Get-QUA95GateDecision.ps1'
 $assertionScript = Join-Path $RepoRoot 'infra\scripts\Update-QUA95BlockedAssertion.ps1'
+$blockedInvariantScript = Join-Path $RepoRoot 'infra\scripts\Test-QUA95BlockedInvariant.ps1'
 $opsSuiteSnapshotScript = Join-Path $RepoRoot 'infra\scripts\Write-QUA95OpsSuiteSnapshot.ps1'
 $opsBundleManifestScript = Join-Path $RepoRoot 'infra\scripts\Update-QUA95OpsBundleManifest.ps1'
 $gateJson = Join-Path $RepoRoot 'docs\ops\QUA-95_GATE_DECISION_2026-04-27.json'
 $auditJson = Join-Path $RepoRoot 'infra\reports\infra_audit_latest.json'
 $outFull = Join-Path $RepoRoot $OutPath
 
-foreach ($p in @($refreshScript, $auditScript, $gateScript, $assertionScript, $opsSuiteSnapshotScript, $opsBundleManifestScript)) {
+foreach ($p in @($refreshScript, $auditScript, $gateScript, $assertionScript, $blockedInvariantScript, $opsSuiteSnapshotScript, $opsBundleManifestScript)) {
     if (-not (Test-Path -LiteralPath $p)) {
         throw "Required script missing: $p"
     }
@@ -50,6 +51,13 @@ $assertCode = $LASTEXITCODE
 if ($assertCode -ne 0) {
     $assertText = ($assertOut | ForEach-Object { $_.ToString() }) -join '; '
     throw ("Blocked assertion sync failed: exit_code={0} output={1}" -f $assertCode, $assertText)
+}
+
+$invariantOut = & $blockedInvariantScript 2>&1
+$invariantCode = $LASTEXITCODE
+if ($invariantCode -ne 0) {
+    $invariantText = ($invariantOut | ForEach-Object { $_.ToString() }) -join '; '
+    throw ("Blocked invariant check failed: exit_code={0} output={1}" -f $invariantCode, $invariantText)
 }
 
 if (-not ($SkipRefresh.IsPresent -and $SkipAudit.IsPresent)) {

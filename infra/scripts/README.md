@@ -169,11 +169,12 @@
   5. `Update-QUA95BlockedAssertion.ps1`
   6. `New-QUA95IssueTransitionPayload.ps1`
   7. `Test-QUA95IssueTransitionPayload.ps1`
-  8. Refreshes `QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.sha256`
-  9. `Test-QUA95HandoffIntegrity.ps1`
-  10. `Update-QUA95OpsBundleManifest.ps1` (pre-suite resync)
-  11. `Write-QUA95OpsSuiteSnapshot.ps1`
-  12. `Update-QUA95OpsBundleManifest.ps1` (post-suite resync)
+  8. `Test-QUA95BlockedInvariant.ps1`
+  9. Refreshes `QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.sha256`
+  10. `Test-QUA95HandoffIntegrity.ps1`
+  11. `Update-QUA95OpsBundleManifest.ps1` (pre-suite resync)
+  12. `Write-QUA95OpsSuiteSnapshot.ps1`
+  13. `Update-QUA95OpsBundleManifest.ps1` (post-suite resync)
 - Enforces non-zero exit handling for each step; task fails when any step exits non-zero.
 - Log append writes are lock-tolerant (`Add-Content` retry loop) so concurrent
   writer contention does not crash the runner.
@@ -287,9 +288,10 @@
   1. `Run-QUA95BlockerRefresh.ps1`
   2. `Invoke-InfraAudit.ps1`
   3. `Update-QUA95BlockedAssertion.ps1`
-  4. `Update-QUA95OpsBundleManifest.ps1` (pre-suite resync)
-  5. `Write-QUA95OpsSuiteSnapshot.ps1`
-  6. `Update-QUA95OpsBundleManifest.ps1` (post-suite resync)
+  4. `Test-QUA95BlockedInvariant.ps1`
+  5. `Update-QUA95OpsBundleManifest.ps1` (pre-suite resync)
+  6. `Write-QUA95OpsSuiteSnapshot.ps1`
+  7. `Update-QUA95OpsBundleManifest.ps1` (post-suite resync)
 - Reads canonical outputs and writes consolidated summary:
   - `docs\ops\QUA-95_BLOCKED_HEARTBEAT_2026-04-27.json`
 - Supports:

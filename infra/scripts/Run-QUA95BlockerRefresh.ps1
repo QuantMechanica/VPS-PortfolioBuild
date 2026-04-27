@@ -64,13 +64,14 @@ $gate = Join-Path $RepoRoot 'infra\scripts\Get-QUA95GateDecision.ps1'
 $assertion = Join-Path $RepoRoot 'infra\scripts\Update-QUA95BlockedAssertion.ps1'
 $transition = Join-Path $RepoRoot 'infra\scripts\New-QUA95IssueTransitionPayload.ps1'
 $transitionCheck = Join-Path $RepoRoot 'infra\scripts\Test-QUA95IssueTransitionPayload.ps1'
+$blockedInvariant = Join-Path $RepoRoot 'infra\scripts\Test-QUA95BlockedInvariant.ps1'
 $integrity = Join-Path $RepoRoot 'infra\scripts\Test-QUA95HandoffIntegrity.ps1'
 $opsSuiteWriter = Join-Path $RepoRoot 'infra\scripts\Write-QUA95OpsSuiteSnapshot.ps1'
 $opsBundleManifest = Join-Path $RepoRoot 'infra\scripts\Update-QUA95OpsBundleManifest.ps1'
 $manifest = Join-Path $RepoRoot 'docs\ops\QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.sha256'
 $gateOut = 'docs\ops\QUA-95_GATE_DECISION_2026-04-27.json'
 
-foreach ($f in @($invoke, $sync, $summary, $gate, $assertion, $transition, $transitionCheck, $integrity, $opsSuiteWriter, $opsBundleManifest, $manifest)) {
+foreach ($f in @($invoke, $sync, $summary, $gate, $assertion, $transition, $transitionCheck, $blockedInvariant, $integrity, $opsSuiteWriter, $opsBundleManifest, $manifest)) {
     if (-not (Test-Path -LiteralPath $f)) {
         throw "Required script missing: $f"
     }
@@ -112,6 +113,11 @@ try {
     $transitionCheckOutput = & $transitionCheck 2>&1
     Write-CommandOutputToLog -Output $transitionCheckOutput
     if ($LASTEXITCODE -ne 0) { throw ("Step failed with exit code {0}: {1}" -f $LASTEXITCODE, $transitionCheck) }
+
+    $global:LASTEXITCODE = 0
+    $blockedInvariantOutput = & $blockedInvariant 2>&1
+    Write-CommandOutputToLog -Output $blockedInvariantOutput
+    if ($LASTEXITCODE -ne 0) { throw ("Step failed with exit code {0}: {1}" -f $LASTEXITCODE, $blockedInvariant) }
 
     $hashFiles = @(
         'docs/ops/QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.md',

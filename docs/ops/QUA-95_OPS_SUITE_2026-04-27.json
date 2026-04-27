@@ -1,6 +1,6 @@
 ﻿{
     "issue":  "QUA-95",
-    "generated_at_local":  "2026-04-27T11:26:44+02:00",
+    "generated_at_local":  "2026-04-27T11:29:41+02:00",
     "overall_status":  "ok",
     "checks":  [
                    {
@@ -37,7 +37,7 @@
                        "name":  "blocker_task_health",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok task=QM_QUA95_BlockerRefresh last_run=2026-04-27T11:01:01.0000000+02:00 age_minutes=25.72"
+                       "output":  "status=ok task=QM_QUA95_BlockerRefresh last_run=2026-04-27T11:01:01.0000000+02:00 age_minutes=28.67"
                    }
                ]
 }
