@@ -1,6 +1,6 @@
 ﻿{
     "issue":  "QUA-207",
-    "generated_at_local":  "2026-04-27T15:25:41+02:00",
+    "generated_at_local":  "2026-04-28T00:07:49+02:00",
     "status":  "blocked",
     "reason":  "runtime_scope_completed_waiting_on_verifier_owner",
     "runtime_owner_scope":  {
