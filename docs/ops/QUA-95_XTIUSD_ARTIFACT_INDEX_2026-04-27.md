@@ -43,6 +43,8 @@ Status recommendation: `blocked` (`defer`)
   - `docs/ops/QUA-95_CANONICAL_SNAPSHOT_RUNNER_2026-04-27.md`
 - Canonical snapshot run summary JSON:
   - `docs/ops/QUA-95_CANONICAL_SNAPSHOT_2026-04-27.json`
+- Direct verifier rerun proof:
+  - `docs/ops/QUA-95_DIRECT_VERIFIER_RERUN_2026-04-27.md`
 - Automation health snapshot:
   - `docs/ops/QUA-95_AUTOMATION_HEALTH_2026-04-27.json`
 - QUA-95 audit signal snapshot:
@@ -60,6 +62,8 @@ Status recommendation: `blocked` (`defer`)
   - `lessons-learned/2026-04-27_qua95_xtiusd_verifier_failure_investigation.md`
 - Rerun disposition JSON:
   - `lessons-learned/evidence/2026-04-27_qua95_xtiusd_rerun_evidence.json`
+- Direct verifier rerun JSON:
+  - `lessons-learned/evidence/2026-04-27_qua95_xtiusd_direct_verify_rerun.json`
 - Preflight/chunked probe:
   - `lessons-learned/evidence/2026-04-27_qua95_xtiusd_probe.md`
   - `lessons-learned/evidence/2026-04-27_qua95_xtiusd_chunked_probe.json`

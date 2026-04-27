@@ -1,0 +1,19 @@
+{
+  "bars_drift": -100000,
+  "command": "python D:\\\\QM\\\\mt5\\\\T1\\\\dwx_import\\\\verify_import.py --symbol XTIUSD.DWX",
+  "disposition": "defer",
+  "symbol": "XTIUSD.DWX",
+  "bars_chunked": 0,
+  "captured_at_local": "2026-04-27T12:59:41+02:00",
+  "recommended_state": "blocked",
+  "issue": "QUA-95",
+  "raw_log": "C:\\QM\\repo\\infra\\smoke\\verify_import_direct_2026-04-27_125921_qua95.log",
+  "verdict": "FAIL_tail_bars",
+  "exit_code": 1,
+  "bars_one_shot": 0,
+  "bars_one_shot_err": "(-2, 'Terminal: Invalid params')",
+  "bars_expected_accessible": 100000,
+  "mid_ticks_5min": 997,
+  "tail_shortfall_seconds": 7141.322,
+  "tail_delta_ms": -7141322
+}
