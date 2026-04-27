@@ -38,6 +38,32 @@ bool ReadSpec(const string symbol,
    return true;
 }
 
+bool ReadSourceSpecWithRetry(const string symbol,
+                             double &tick_value,
+                             double &swap_long,
+                             double &swap_short,
+                             double &contract_size,
+                             int &attempts_used)
+{
+   const int MAX_ATTEMPTS = 40;   // up to 10 seconds at 250ms sleep
+   const int SLEEP_MS = 250;
+
+   attempts_used = 0;
+   for(int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++)
+   {
+      attempts_used = attempt;
+      if(ReadSpec(symbol, tick_value, swap_long, swap_short, contract_size) && tick_value > 0.0)
+         return true;
+
+      SymbolSelect(symbol, true);
+      MqlTick tick;
+      SymbolInfoTick(symbol, tick);
+      Sleep(SLEEP_MS);
+   }
+
+   return ReadSpec(symbol, tick_value, swap_long, swap_short, contract_size);
+}
+
 bool TryResolveSource(const string custom_symbol, string &source_symbol)
 {
    string root = custom_symbol;
@@ -195,7 +221,8 @@ void OnStart()
       double src_tv = 0.0, src_swap_long = 0.0, src_swap_short = 0.0, src_contract_size = 0.0;
       double dst_tv = 0.0, dst_swap_long = 0.0, dst_swap_short = 0.0, dst_contract_size = 0.0;
 
-      if(!ReadSpec(source_symbol, src_tv, src_swap_long, src_swap_short, src_contract_size))
+      int source_attempts = 0;
+      if(!ReadSourceSpecWithRetry(source_symbol, src_tv, src_swap_long, src_swap_short, src_contract_size, source_attempts))
       {
          failed++;
          PrintFormat("ROW|custom=%s|source=%s|spec_ok=BAD|reason=source_spec_read_failed", custom_symbol, source_symbol);
@@ -212,6 +239,8 @@ void OnStart()
       if(src_tv <= 0.0)
       {
          failed++;
+         PrintFormat("DETAIL|custom=%s|source=%s|source_attempts=%d|reason=source_tick_value_zero_after_retry",
+                     custom_symbol, source_symbol, source_attempts);
          PrintRow(custom_symbol, source_symbol, src_tv, dst_tv, RelativeError(dst_tv, src_tv),
                   src_swap_long, dst_swap_long, src_swap_short, dst_swap_short,
                   src_contract_size, dst_contract_size,
