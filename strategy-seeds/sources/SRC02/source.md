@@ -6,11 +6,11 @@ status: scaffolded_pending_extraction
 authored-by: Research Agent
 last-updated: 2026-04-27
 budget_tracking:
-  heartbeats_used: 3                          # h1: scaffold; h2: Ch 3+7 deep-read + S01 cointegration card + Ex 7.1 SKIP; h3: S02 Bollinger ES card
-  cards_drafted: 2                            # S01 chan-pairs-stat-arb; S02 chan-bollinger-es
+  heartbeats_used: 4                          # h1 scaffold; h2 Ch 3+7 deep-read + S01 + Ex 7.1 SKIP; h3 S02 Bollinger ES; h4 Ch 7 Seasonal full-read + S07+S08 commodity calendars + HFT/Leverage SKIPs
+  cards_drafted: 4                            # S01 pairs-stat-arb; S02 bollinger-es; S07 gasoline-rb-spring; S08 natgas-spring
   cards_passed_g0: 0
   cards_killed_pre_p1: 0
-extraction_pass_status: in_progress           # 2/N cards drafted; Ch 7 strategy-rich examples surveyed; Ex 7.1 verdict landed (SKIP — perceptron NN); S03/S04/S05/S06 candidates pending
+extraction_pass_status: in_progress           # 4/N cards drafted; Ch 7 fully surveyed (Ex 7.1 SKIP, HFT SKIP, Leverage SKIP); S03/S04 (multi-stock from Ch 3 + Ex 7.4) and S05/S06 (multi-stock from Ex 7.6+7.7) and S09 (PEAD narrative) pending
 completion_report: pending                    # authored after all SRC02_S* sub-issues close
 
 ---
@@ -122,20 +122,36 @@ The slot table is populated as cards are drafted. Slug pattern: `chan-<topic>` p
 | S01 | `chan-pairs-stat-arb` | `strategy-seeds/cards/chan-pairs-stat-arb_card.md` | TBD (`todo` at open) | DRAFT (2026-04-27) | Example 3.6 (pp. 55-59) + Ex 7.2 (pp. 128-130) + Ex 7.3 (pp. 131-133) + Ex 7.5 (pp. 141-142) + Ch 7 narrative pp. 126-133 — folded into one card. Cointegration pair-trade with cadf filter, OLS hedge ratio, ±N·σ z-score entry/exit, OU-half-life time-stop. Surfaces 2 vocabulary gaps (`cointegration-pair-trade`, `mean-reach-exit`) per `strategy_type_flags.md` addition-process. Friday-close incompatibility flagged as load-bearing G0 risk. |
 | S02 | `chan-bollinger-es` | `strategy-seeds/cards/chan-bollinger-es_card.md` | TBD (`blocked`) | DRAFT (2026-04-27) | **Inline ES Bollinger demo, Ch 2 pp. 22-23** (NOT labeled Example 3.x by Chan; in § "How Will Transaction Costs Affect the Strategy?"). Single-symbol M5 Bollinger ±2σ entry / ±1σ exit on E-mini S&P. Sharpe +3 pre-cost, −3 with 1 bp/trade cost — Chan's deliberate transaction-cost FAILURE example. V5-architecture compatible (single-symbol; maps to `US500.DWX`). Primary risk: `scalping_p5b_latency` (M5 churn); expected pipeline failure at P9b Operational Readiness. Surfaces a 3rd vocabulary gap: `zscore-band-reversion` (single-leg ±N·σ band MR). |
 | S03 | TBD (likely `chan-khandani-lo-mr`) | TBD | TBD (`blocked`) | candidate, architecture-incompatible | Example 3.7 (Khandani-Lo cross-sectional MR on S&P 500) + Example 3.8 (Open-vs-Close timing micro-variant). Multi-stock 500-position daily-rebalance long/short — V5 single-symbol architecture incompatible. Card drafted per Rule 1; G0 likely KILL. Ex 3.7 + 3.8 fold into one card (same strategy, different bar-time). |
-| S04 | TBD (likely `chan-pca-factor`) | TBD | TBD (`blocked`) | candidate, architecture-incompatible | Example 7.4 (PCA factor model on S&P 600 small-cap, 100-position rebalance). Multi-stock; V5 architecture incompatible; Chan's own backtest negative (-1.81% annualized). Card drafted per Rule 1. |
-| S05 | TBD (likely `chan-seasonal`) | TBD | TBD (`blocked`) | candidate | Ch 7 Seasonal Trading section, pp. 143-150 (January effect + commodity-futures seasonals). Need detailed read at next extraction pass. |
-| S06? | TBD (likely `chan-pead`) | TBD | TBD (`blocked`) | candidate, data-feed-incompatible | Ch 7 PEAD narrative pp. 117-118. Per-stock event-driven; needs earnings calendar (`darwinex_native_data_only` Hard Rule binds). Card drafted per Rule 1; G0 likely KILL. |
+| S04 | TBD (likely `chan-pca-factor`) | TBD | TBD (`blocked`) | candidate, architecture-incompatible | Example 7.4 (PCA factor model on S&P 600 small-cap, 100-position rebalance). Multi-stock; V5 architecture incompatible; Chan's own backtest negative (−1.81% annualized). Card drafted per Rule 1. |
+| S05 | TBD (likely `chan-january-effect`) | TBD | TBD (`blocked`) | candidate, architecture-incompatible | Example 7.6 (January Effect on S&P 600 small-cap, pp. 143-146). Sort by prior-year annual return, long bottom decile + short top decile, hold Dec close → Jan close. Multi-stock cross-section. Performance mixed: -2.4% / -0.7% / +8.8% in 2005/2006/2007. Card drafted per Rule 1; G0 / P3.5 decide. |
+| S06 | TBD (likely `chan-yoy-same-month`) | TBD | TBD (`blocked`) | candidate, architecture-incompatible | Example 7.7 (Heston-Sadka year-on-year same-month anomaly on S&P 500, pp. 146-148). Each month-end, sort by same-month-last-year returns, long top decile + short bottom decile. Performance: avg ann return **−91.67%** / Sharpe −0.10 — Chan's deliberate FAILURE example (anomaly decayed post-2002). Multi-stock cross-section. Card drafted per Rule 1. |
+| S07 | `chan-gasoline-rb-spring` | `strategy-seeds/cards/chan-gasoline-rb-spring_card.md` | TBD (`blocked`) | DRAFT (2026-04-27) | **Sidebar p. 149** (Ch 7 Seasonal section). Long-only annual calendar trade on NYMEX RB unleaded gasoline futures, May expiry. Entry close of Apr 13 (or next trading day), exit close of Apr 25 (or previous trading day). 14 consecutive years of profitability 1995-2008; max single-year DD −$2,226 (1996). Single-symbol; surfaces 4th vocabulary gap `annual-calendar-trade`. Primary G0 risk: `dwx_suffix_discipline` — Darwinex CFD universe doesn't natively offer gasoline; closest related products OIL.DWX / BRENT.DWX are CRUDE oil, not refined gasoline. Secondary risk: `friday_close` waiver required (9-day hold spans 2 weekends). |
+| S08 | `chan-natgas-spring` | `strategy-seeds/cards/chan-natgas-spring_card.md` | TBD (`blocked`) | DRAFT (2026-04-27) | **Sidebar p. 150** (Ch 7 Seasonal section). Long-only annual calendar trade on NYMEX NG natural gas futures, June expiry. Entry close of Feb 25 (or next trading day), exit close of Apr 15 (or previous trading day). 14 consecutive years of profitability 1995-2008; max single-year DD −$5,550 (2005), 2008 actual-trading −$7,470. Single-symbol. Sister card to S07 (shared `annual-calendar-trade` vocabulary gap). **PRIMARY OPERATIONAL RISK**: `kill_switch_coverage` — Chan's explicit Amaranth Advisors $6B + Bank of Montreal $450M loss cautionary tale (p. 150). Friday-close waiver more load-bearing than S07 (36-day hold spans 7 weekends). |
+| S09? | TBD (likely `chan-pead`) | TBD | TBD (`blocked`) | candidate, data-feed-incompatible | Ch 7 PEAD narrative pp. 117-118. Per-stock event-driven; needs earnings calendar (`darwinex_native_data_only` Hard Rule binds). Card drafted per Rule 1; G0 likely KILL. |
 
-Slot count remains preliminary. Final count depends on:
-- Whether Ex 3.7 and Ex 3.8 fold into one card (Research's read: yes — same Khandani-Lo strategy, different bar-time-of-day; one card with parameter-sweep axis covering both).
-- Whether the Ch 7 Seasonal section yields a single distinct card or several (read pending).
-- All architecture-incompatible cards (S03, S04, S06) advance through G0 per Rule 1; pipeline G0 / P3.5 decides actual deployability against the Darwinex single-symbol stack.
+Slot count converging. Final SRC02 candidate set is **9 cards** (S01-S09 with two SKIP entries for Ex 7.1 ML and HFT/Leverage narrative-only sections). Architecture-fit profile:
+
+| Card | Single/multi-symbol | V5-architecture-fit | Friday-close compat |
+|---|---|---|---|
+| S01 chan-pairs-stat-arb | 2-symbol pair | flagged (no Darwinex GDX equiv; CSR scan needed) | waiver required |
+| S02 chan-bollinger-es | single | clean (US500.DWX) | OK |
+| S03 chan-khandani-lo-mr | multi-stock (500) | incompatible | OK (intraday) |
+| S04 chan-pca-factor | multi-stock (600) | incompatible | OK (daily rebalance) |
+| S05 chan-january-effect | multi-stock (600) | incompatible | OK (1-month hold; spans 4 weekends so technically waiver) |
+| S06 chan-yoy-same-month | multi-stock (500) | incompatible | OK (1-month hold) |
+| S07 chan-gasoline-rb-spring | single (CFD if available) | flagged (no native Darwinex gasoline) | waiver required |
+| S08 chan-natgas-spring | single (CFD if available) | flagged (no native Darwinex natgas) | waiver required + Amaranth-class kill-switch load |
+| S09 chan-pead | single-stock event-driven | data-feed incompatible (needs earnings calendar) | n/a |
+
+All architecture-incompatible cards (S03, S04, S05, S06, S09) advance through G0 per Rule 1; pipeline G0 / P3.5 decides actual deployability against the Darwinex single-symbol stack.
 
 Skipped sources (failed V5 HARD RULE OR underspecified-beyond-cardable):
 
 | Source location | Reason for skip | Rule-1 classification |
 |---|---|---|
 | Example 7.1 (pp. 122-126) — "Using a Machine Learning Tool to Profit from Regime Switching in the Stock Market" | **V5 hard-fail per `EA_ML_FORBIDDEN`.** Chan's verbatim implementation: "Finally, we run a perceptron learning algorithm on the outputs of I7 and I9 (a perceptron is a type of neural network). This algorithm will find out the best weights for the different rules with different holding periods (among other parameters) based on a moving window of historical training data with the objective of maximizing the total profit in this window." (p. 124). Per `strategy_type_flags.md` § E `ml-required` definition: "neural net, gradient boost, random forest, online learner ... V5 hard-fail per CLAUDE.md". Perceptron = neural network = ML. The disambiguation against `hmm-regime-blend` (HMM with EM is NOT ML, allowed) does not save this strategy — Chan explicitly uses a perceptron, not an HMM. | V5 HARD-RULE FAILURE — `ml-required` true. |
+| Ch 7 § "High-Frequency Trading Strategies" (pp. 151-153) | **Narrative-only; no specific entry/exit rules.** Chan discusses HFT generally — law-of-large-numbers Sharpe argument, backtesting-difficulty challenges, execution-collocation requirements — but does NOT name any specific mechanical strategy. Verbatim p. 152: "it is impossible to explain in general why high-frequency strategies are often profitable, as there are as many such strategies as there are fund managers." Per DL-033 Rule 1, no strategy specification = no card. Aligned with SOURCE_QUEUE.md `HFT_NOT_APPLICABLE` flag (V5 stack MT5 + DXZ live-only cannot run HFT competitively). | Source-spec-completeness failure (NOT a hard-rule failure). |
+| Ch 7 § "Is It Better to Have a High-Leverage versus a High-Beta Portfolio?" (pp. 153-154) | **Methodology, not a strategy.** Chan compares Kelly-formula leverage (Ch 6) vs Fama-French beta (Ch 7 factor models) as alternative routes to higher portfolio return. No entry/exit/hold rules; pure portfolio-construction argument. | Source-spec-completeness failure (NOT a hard-rule failure). |
 
 ## 7. Chapter index (TOC seeded; validate page numbers at extraction)
 
