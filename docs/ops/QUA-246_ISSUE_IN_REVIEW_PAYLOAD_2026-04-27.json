@@ -13,6 +13,10 @@
   },
   "commit": {
     "branch": "agents/pipeline-operator",
-    "sha": "09f0792e65f5581a60122a4a3019bcbfca38d7fc"
-  }
+    "sha": "7b7ca3a90bc46f953fd03fb56638f08f25275179"
+  },
+  "related_commits": [
+    "09f0792e65f5581a60122a4a3019bcbfca38d7fc",
+    "dc49854e7927b5e460f90f1fa4d93fce7ff2ea35"
+  ]
 }

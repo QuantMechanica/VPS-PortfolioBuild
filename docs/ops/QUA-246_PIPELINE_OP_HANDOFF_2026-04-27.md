@@ -8,6 +8,7 @@ Status: design published, implementation confirmation pending
 
 - `processes/15-pipeline-op-load-balancing.md`
 - `AGENTS.md` (Pipeline-Operator addendum for queue/de-dup behavior)
+- `paperclip-prompts/pipeline-operator.md` (QUA-246 addendum folded into canonical role prompt)
 - `processes/README.md` index entry for process 15
 - `infra/scripts/Invoke-PipelineQueueDryRun.ps1` (queue/de-dup execution smoke tool)
 - `docs/ops/QUA-246_QUEUE_DRYRUN_EVIDENCE_2026-04-27.md` (dry-run evidence)
