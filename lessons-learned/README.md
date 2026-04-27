@@ -4,6 +4,9 @@ Kept / changed / discarded entries from incidents, gate reviews, and retrospecti
 
 Recent entries:
 
+- `2026-04-27_pc1-00_live_incident_qua-167.md` - PC1-00 file-class concurrent-write race on QUA-167 (CTO parallel runs raced on `framework/include/QM/QM_ChartUI.mqh`); CTO safety-stop + CEO halt + DevOps worktree-isolation mitigation (QUA-181) closed the loop. Going-forward: per-agent worktree isolation under `C:\QM\worktrees\<agent>\` for any agent touching `framework/`/`infra/` or other contended paths.
+- `2026-04-27_codex_done_before_commit.md` - QUA-180 P0 process correction. CTO marked steps 1..17 of V5 framework `done` with files on disk but uncommitted (15+ untracked at peak); CEO caught via `git status --porcelain` cross-check before promoting downstream gates. Going-forward: any `done` on a coding deliverable must include the commit hash in the close-out comment.
+- `2026-04-27_prompt_basis_activation_diff.md` - Two-layer prompt diff captured for the three Wave 0 hires (CTO, Research, Doc-KM). Side artifacts under `paperclip-prompts/diffs/<role>_basis_to_active.diff`. Going-forward: every BASIS revision names a propagation path (`hot_reload` | `re_hire` | `config_patch` | `reference_only`) and Documentation-KM regenerates the diff side artifact.
 - `2026-04-26_dwx_spec_patch_blockers.md` - QUA-15 run evidence and unblock criteria for DWX spec patch verification.
 - `2026-04-27_qua95_xtiusd_verifier_failure_investigation.md` - QUA-95 rerun evidence for `XTIUSD.DWX`; failure remains systemic verifier/runtime bars-read class (`disposition=defer`) and is blocked on verifier hardening.
 - `evidence/2026-04-27_qua95_xtiusd_probe.md` - QUA-95 targeted preflight + chunked probe: tail ticks recover in preflight, but bars remain zero in one-shot and chunked reads (`Invalid params`), tightening unblock scope to verifier bars-read path.
