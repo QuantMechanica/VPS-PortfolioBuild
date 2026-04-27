@@ -32,6 +32,16 @@
 - Example:
   - `python C:\QM\repo\infra\scripts\verify_import_preflight_probe.py --symbol XAUUSD.DWX`
 
+## `verify_import_candidate.py`
+
+- Candidate (non-production) verifier behavior for handoff testing.
+- Proposed deltas vs live verifier:
+  - mid/tail probes use `copy_ticks_from(...)` windows
+  - bounded tail tolerance (`--tail-tolerance-ms`, default `180000`)
+  - degraded bars classification (`WARN_bars_unavailable`) when ticks exist but M1 bars API returns zero
+- Example:
+  - `python C:\QM\repo\infra\scripts\verify_import_candidate.py --symbol XAUUSD.DWX`
+
 ## `probe_verify_rates_span.py`
 
 - Read-only MT5 probe for verifier investigations.
@@ -44,6 +54,16 @@
   before classifying a symbol as corrupted.
 - Default target is `WS30.DWX`; span comes from latest
   `imports\\done\\*_<symbol>.import.txt`.
+
+## `verify_import_chunked_probe.py`
+
+- Read-only verifier mirror for symbol-level deep dive.
+- Reuses verifier checks (head/tail/mid/spec) and compares:
+  - full-span `copy_rates_range(...)` count
+  - chunked `copy_rates_range(...)` count
+- Prints `terminal_maxbars` so evidence can distinguish:
+  - MT5 chart-history cap effects (for example 100k cap), vs
+  - genuine zero-bars visibility for a symbol.
 
 ## `verify_import_chunked_probe.py`
 

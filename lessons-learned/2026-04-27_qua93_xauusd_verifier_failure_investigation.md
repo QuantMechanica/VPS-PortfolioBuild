@@ -72,6 +72,24 @@ Interpretation:
 - Tick history is readable via `copy_ticks_from(...)` but not via current verifier path.
 - Acceptance target remains unmet because bar visibility is still zero and tail exact-match gate still fails.
 
+## Candidate Verifier Run (2026-04-27 09:08 CEST)
+
+Implemented candidate verifier logic in repo:
+- `infra/scripts/verify_import_candidate.py`
+- run: `python C:\QM\repo\infra\scripts\verify_import_candidate.py --symbol XAUUSD.DWX`
+- log: `infra/smoke/verify_candidate_2026-04-27_090829_qua93.log`
+
+Result:
+- verdict: `WARN_bars_unavailable`
+- `head_ms` exact match
+- `tail_ms expected=1775444399867/got=1775444374863` (within 180s tolerance)
+- `mid_ticks_probe=50`
+- `bars_got=0`
+
+Interpretation:
+- Proposed verifier read-path changes remove false `FAIL_tail_mid_*` for this symbol in current runtime.
+- Remaining gap is MT5 bars visibility (`bars_got=0`), which should be treated as degraded/warn in this runtime class.
+
 ## Durable change in this heartbeat
 
 - Added this investigation record for `QUA-93` with concrete classifier output and triage conclusion.
@@ -79,6 +97,7 @@ Interpretation:
 - Performed and captured a fresh verifier rerun to validate whether the condition self-cleared (it did not).
 - Added MT5 API-level diagnostic evidence to narrow implementation fix scope.
 - Added a reusable probe script (`infra/scripts/verify_import_preflight_probe.py`) and captured artifact output.
+- Added a runnable candidate verifier (`infra/scripts/verify_import_candidate.py`) and validated behavior on `XAUUSD.DWX`.
 
 ## Next action
 
