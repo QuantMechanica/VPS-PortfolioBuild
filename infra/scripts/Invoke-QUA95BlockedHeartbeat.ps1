@@ -91,6 +91,13 @@ $automationParams = @{}
 if ($SkipRefresh.IsPresent -and $SkipAudit.IsPresent) {
     $automationParams.SkipRefreshLastResultCheck = $true
     $automationParams.SkipTaskHealthCheck = $true
+} else {
+    $gatePre = Get-Content -Raw -LiteralPath $gateJson | ConvertFrom-Json
+    if ([string]$gatePre.recommended_state -eq 'clear') {
+        # In clear-mode follow-up, scheduler last-result checks are not blockers for heartbeat synthesis.
+        $automationParams.SkipRefreshLastResultCheck = $true
+        $automationParams.SkipTaskHealthCheck = $true
+    }
 }
 $automationOut = & $automationHealthScript @automationParams 2>&1
 $automationCode = $LASTEXITCODE

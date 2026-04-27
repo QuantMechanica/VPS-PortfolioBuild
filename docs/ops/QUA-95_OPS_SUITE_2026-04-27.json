@@ -1,6 +1,6 @@
 ﻿{
     "issue":  "QUA-95",
-    "generated_at_local":  "2026-04-27T15:14:58+02:00",
+    "generated_at_local":  "2026-04-27T15:18:16+02:00",
     "overall_status":  "ok",
     "checks":  [
                    {
@@ -13,13 +13,13 @@
                        "name":  "canonical_snapshot",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok bars_got=0 disposition=defer qua95_issues=0 non_qua95_issues=2"
+                       "output":  "status=ok bars_got=99911 disposition=clear qua95_issues=1 non_qua95_issues=2"
                    },
                    {
                        "name":  "canonical_snapshot_freshness",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok snapshot_age_minutes=29.21 max_age_minutes=180"
+                       "output":  "status=ok snapshot_age_minutes=0.39 max_age_minutes=180"
                    },
                    {
                        "name":  "handoff_integrity",
@@ -43,7 +43,7 @@
                        "name":  "unblock_readiness",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok lag_minutes=0.92 ready_to_unblock=True bars_got=99911 owner_count=1"
+                       "output":  "status=ok lag_minutes=0.64 ready_to_unblock=True bars_got=99911 owner_count=1"
                    },
                    {
                        "name":  "unblock_owner_consistency",
@@ -61,7 +61,7 @@
                        "name":  "audit_signal",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok qua95_issues=3 non_qua95_issues=2"
+                       "output":  "status=ok qua95_issues=1 non_qua95_issues=2"
                    },
                    {
                        "name":  "direct_verifier_proof",
@@ -73,13 +73,13 @@
                        "name":  "custom_visibility_proof",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok isolated_custom_failure=False target_bars=0/10 source_bars=614/10"
+                       "output":  "status=ok isolated_custom_failure=False target_bars=0/10 source_bars=618/10"
                    },
                    {
                        "name":  "evidence_cohesion",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok max_pair_skew_minutes=0 direct_at=2026-04-27T15:13:46.0000000+02:00 custom_at=2026-04-27T15:13:46.0000000+02:00 blocker_at=2026-04-27T15:13:46.0000000+02:00"
+                       "output":  "status=ok max_pair_skew_minutes=0 direct_at=2026-04-27T15:17:19.0000000+02:00 custom_at=2026-04-27T15:17:19.0000000+02:00 blocker_at=2026-04-27T15:17:19.0000000+02:00"
                    },
                    {
                        "name":  "failure_signature",
@@ -91,7 +91,7 @@
                        "name":  "heartbeat_custom_visibility",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok isolated_custom_failure=False target_bars=0/10 source_bars=614/10"
+                       "output":  "status=ok isolated_custom_failure=False target_bars=0/10 source_bars=618/10"
                    },
                    {
                        "name":  "task_health_action_wiring",
@@ -109,7 +109,7 @@
                        "name":  "blocked_heartbeat_wrapper",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok gate_state=clear audit_status=critical checks_count=37 automation_health=ok qua95_issues=3 non_qua95_issues=2 isolated_custom_failure=False"
+                       "output":  "status=ok gate_state=clear audit_status=critical checks_count=37 automation_health=ok qua95_issues=1 non_qua95_issues=2 isolated_custom_failure=False"
                    }
                ]
 }

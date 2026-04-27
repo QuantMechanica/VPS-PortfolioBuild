@@ -1,6 +1,6 @@
 ﻿{
     "issue":  "QUA-95",
-    "generated_at_local":  "2026-04-27T15:15:12+02:00",
+    "generated_at_local":  "2026-04-27T15:18:29+02:00",
     "overall_status":  "ok",
     "checks":  [
                    {
@@ -9,7 +9,7 @@
                        "max_age_minutes":  125,
                        "last_run_local":  "2026-04-27T15:01:01.0000000+02:00",
                        "last_result":  1,
-                       "age_minutes":  14.2,
+                       "age_minutes":  17.47,
                        "issues":  [
 
                                   ]
