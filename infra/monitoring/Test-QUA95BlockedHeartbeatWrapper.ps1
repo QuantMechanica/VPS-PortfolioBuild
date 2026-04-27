@@ -5,6 +5,7 @@ param(
     [string]$HeartbeatJson = 'C:\QM\repo\docs\ops\QUA-95_BLOCKED_HEARTBEAT_2026-04-27.json',
     [string]$AutomationHealthJson = 'C:\QM\repo\docs\ops\QUA-95_AUTOMATION_HEALTH_2026-04-27.json',
     [string]$AuditSignalJson = 'C:\QM\repo\docs\ops\QUA-95_AUDIT_SIGNAL_2026-04-27.json',
+    [string]$CustomVisibilityEvidenceJson = 'C:\QM\repo\lessons-learned\evidence\2026-04-27_qua95_xtiusd_custom_visibility_probe_rerun.json',
     [switch]$RunRefresh
 )
 
@@ -47,16 +48,22 @@ if (-not (Test-Path -LiteralPath $AuditSignalJson)) {
     Write-Host ("status=critical reason=audit_signal_json_missing path={0}" -f $AuditSignalJson)
     exit 2
 }
+if (-not (Test-Path -LiteralPath $CustomVisibilityEvidenceJson)) {
+    Write-Host ("status=critical reason=custom_visibility_evidence_missing path={0}" -f $CustomVisibilityEvidenceJson)
+    exit 2
+}
 
 $hb = Get-Content -Raw -LiteralPath $HeartbeatJson | ConvertFrom-Json
 $automation = Get-Content -Raw -LiteralPath $AutomationHealthJson | ConvertFrom-Json
 $auditSignal = Get-Content -Raw -LiteralPath $AuditSignalJson | ConvertFrom-Json
+$customVisibility = Get-Content -Raw -LiteralPath $CustomVisibilityEvidenceJson | ConvertFrom-Json
 $issues = @()
 
 if ($hb.issue -ne 'QUA-95') { $issues += 'issue_mismatch' }
 if ($null -eq $hb.gate) { $issues += 'missing_gate' }
 if ($null -eq $hb.infra_audit) { $issues += 'missing_infra_audit' }
 if ($null -eq $hb.audit_signal) { $issues += 'missing_audit_signal' }
+if ($null -eq $hb.custom_visibility) { $issues += 'missing_custom_visibility' }
 if ($hb.gate.recommended_state -ne 'blocked') { $issues += ("unexpected_gate_state={0}" -f $hb.gate.recommended_state) }
 if ([int]$hb.gate.bars_got -ne 0) { $issues += ("unexpected_bars_got={0}" -f $hb.gate.bars_got) }
 if ([double]$hb.gate.tail_shortfall_seconds -le 0) { $issues += ("unexpected_tail_shortfall={0}" -f $hb.gate.tail_shortfall_seconds) }
@@ -67,11 +74,17 @@ if ($auditSignal.qua95_issues_count -lt 0) { $issues += ("audit_signal_qua95_iss
 if ($auditSignal.non_qua95_issues_count -lt 0) { $issues += ("audit_signal_non_qua95_issues_invalid={0}" -f $auditSignal.non_qua95_issues_count) }
 if ($hb.audit_signal.qua95_issues_count -ne $auditSignal.qua95_issues_count) { $issues += 'heartbeat_qua95_issue_count_mismatch' }
 if ($hb.audit_signal.non_qua95_issues_count -ne $auditSignal.non_qua95_issues_count) { $issues += 'heartbeat_non_qua95_issue_count_mismatch' }
+if ([string]$customVisibility.target -ne 'XTIUSD.DWX') { $issues += ("custom_visibility_target_mismatch={0}" -f $customVisibility.target) }
+if ([bool]$hb.custom_visibility.isolated_custom_bars_visibility_failure -ne [bool]$customVisibility.isolated_custom_bars_visibility_failure) { $issues += 'heartbeat_custom_visibility_flag_mismatch' }
+if ([int]$hb.custom_visibility.target_bars_range_m1 -ne [int]$customVisibility.target_probe.rates_range_m1_count) { $issues += 'heartbeat_custom_visibility_target_range_mismatch' }
+if ([int]$hb.custom_visibility.target_bars_from_pos_m1 -ne [int]$customVisibility.target_probe.rates_from_pos_m1_count) { $issues += 'heartbeat_custom_visibility_target_pos_mismatch' }
+if ([int]$hb.custom_visibility.source_bars_range_m1 -ne [int]$customVisibility.source_probe.rates_range_m1_count) { $issues += 'heartbeat_custom_visibility_source_range_mismatch' }
+if ([int]$hb.custom_visibility.source_bars_from_pos_m1 -ne [int]$customVisibility.source_probe.rates_from_pos_m1_count) { $issues += 'heartbeat_custom_visibility_source_pos_mismatch' }
 
 if ($issues.Count -gt 0) {
     Write-Host ("status=critical reason=validation_failed issues={0}" -f ($issues -join ','))
     exit 2
 }
 
-Write-Host ("status=ok gate_state={0} audit_status={1} checks_count={2} automation_health={3} qua95_issues={4} non_qua95_issues={5}" -f $hb.gate.recommended_state, $hb.infra_audit.overall_status, $hb.infra_audit.checks_count, $automation.overall_status, $auditSignal.qua95_issues_count, $auditSignal.non_qua95_issues_count)
+Write-Host ("status=ok gate_state={0} audit_status={1} checks_count={2} automation_health={3} qua95_issues={4} non_qua95_issues={5} isolated_custom_failure={6}" -f $hb.gate.recommended_state, $hb.infra_audit.overall_status, $hb.infra_audit.checks_count, $automation.overall_status, $auditSignal.qua95_issues_count, $auditSignal.non_qua95_issues_count, $customVisibility.isolated_custom_bars_visibility_failure)
 exit 0

@@ -479,6 +479,7 @@
   - gate state snapshot
   - infra-audit counts
   - audit-signal issue counts/names split (`qua95` vs `non_qua95`)
+  - custom-visibility snapshot fields (isolated failure flag + source/target bars)
 - Supports:
   - `-SkipRefresh` (audit-only heartbeat)
   - `-SkipAudit` (refresh-only heartbeat)
