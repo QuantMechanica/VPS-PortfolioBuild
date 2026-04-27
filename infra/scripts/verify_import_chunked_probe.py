@@ -114,6 +114,13 @@ def main() -> int:
         one_shot_count = 0 if one_shot is None else len(one_shot)
         one_shot_err = mt5.last_error()
 
+        pos0 = mt5.copy_rates_from_pos(args.symbol, mt5.TIMEFRAME_M1, 0, 10)
+        pos0_count = 0 if pos0 is None else len(pos0)
+        pos0_err = mt5.last_error()
+        pos1k = mt5.copy_rates_from_pos(args.symbol, mt5.TIMEFRAME_M1, 1000, 10)
+        pos1k_count = 0 if pos1k is None else len(pos1k)
+        pos1k_err = mt5.last_error()
+
         chunked_count, chunks, bad_chunks = count_bars_chunked(
             args.symbol, b_first, b_last, args.chunk_days
         )
@@ -149,6 +156,10 @@ def main() -> int:
             "bars_expected": b_count,
             "bars_oneshot_count": one_shot_count,
             "bars_oneshot_err": list(one_shot_err) if one_shot_err is not None else None,
+            "bars_from_pos_0_count": pos0_count,
+            "bars_from_pos_0_err": list(pos0_err) if pos0_err is not None else None,
+            "bars_from_pos_1000_count": pos1k_count,
+            "bars_from_pos_1000_err": list(pos1k_err) if pos1k_err is not None else None,
             "bars_chunked_count": chunked_count,
             "chunk_days": args.chunk_days,
             "chunks": chunks,
@@ -168,6 +179,8 @@ def main() -> int:
         print(f"mid_ticks_5min={len(mid)}")
         print(f"bars_expected={b_count}")
         print(f"bars_oneshot_count={one_shot_count} bars_oneshot_err={one_shot_err}")
+        print(f"bars_from_pos_0_count={pos0_count} bars_from_pos_0_err={pos0_err}")
+        print(f"bars_from_pos_1000_count={pos1k_count} bars_from_pos_1000_err={pos1k_err}")
         print(
             f"bars_chunked_count={chunked_count} chunk_days={args.chunk_days} "
             f"chunks={chunks} bad_chunks={bad_chunks}"

@@ -68,6 +68,7 @@
 - Read-only verifier mirror for symbol-level deep dive.
 - Reuses verifier checks (head/tail/mid/spec) and compares:
   - full-span `copy_rates_range(...)` count
+  - position-based `copy_rates_from_pos(...)` counts (pos `0`, `1000`)
   - chunked `copy_rates_range(...)` count
 - Prints `terminal_maxbars` so evidence can distinguish:
   - MT5 chart-history cap effects (for example 100k cap), vs

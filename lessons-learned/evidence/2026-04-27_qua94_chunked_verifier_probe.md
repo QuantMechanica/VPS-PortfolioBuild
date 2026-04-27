@@ -24,6 +24,8 @@ Results (key fields):
 - `mid_ticks_5min=0`
 - `bars_expected=383654`
 - `bars_oneshot_count=0` (`Invalid params`)
+- `bars_from_pos_0_count=0` (`Call failed`)
+- `bars_from_pos_1000_count=0` (`Call failed`)
 - `bars_chunked_count=0` (`chunks=467`, `bad_chunks=0`)
 - `terminal_maxbars=100000`
 
@@ -35,11 +37,15 @@ Results (key fields):
 - `mid_ticks_5min=1561`
 - `bars_expected=445870`
 - `bars_oneshot_count=0` (`Invalid params`)
+- `bars_from_pos_0_count=10` (`Success`)
+- `bars_from_pos_1000_count=10` (`Success`)
 - `bars_chunked_count=100251` (`chunks=467`, `bad_chunks=0`)
 - `terminal_maxbars=100000`
 
 Interpretation:
 - Full-span bar read is invalid for both symbols (`Invalid params`).
+- Position-based reads (`copy_rates_from_pos`) fail for `XNG` but succeed for `WS30`,
+  which indicates `XNG` is not only failing full-span query shape.
 - Chunked fallback is partially effective for `WS30` but not for `XNGUSD`.
 - `terminal_maxbars=100000` explains why full expected bar counts cannot be read in one run context.
 - `XNGUSD` remains a hard-zero visibility case (tail/mid/bars all zero), which is stronger than generic verifier query-shape failure.

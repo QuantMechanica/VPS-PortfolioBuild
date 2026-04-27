@@ -72,6 +72,7 @@ Additional root-cause probe:
 - `lessons-learned/evidence/2026-04-27_qua94_chunked_verifier_probe.md`
   - Confirms `terminal_maxbars=100000` in this MT5 runtime.
   - Confirms full-span bars read returns `Invalid params` for both `XNG` and `WS30`.
+  - Confirms position-based bar reads (`copy_rates_from_pos`) fail for `XNG` (`Call failed`) but succeed for `WS30`.
   - Confirms `XNG` remains hard-zero (`tail=0`, `mid=0`, `bars=0`) while `WS30` returns chunked bars.
   - JSON payloads captured for owner handoff:
     - `lessons-learned/evidence/2026-04-27_qua94_xng_chunked_probe.json`

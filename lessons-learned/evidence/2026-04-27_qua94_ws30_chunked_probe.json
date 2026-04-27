@@ -17,6 +17,16 @@
     -2,
     "Terminal: Invalid params"
   ],
+  "bars_from_pos_0_count": 10,
+  "bars_from_pos_0_err": [
+    1,
+    "Success"
+  ],
+  "bars_from_pos_1000_count": 10,
+  "bars_from_pos_1000_err": [
+    1,
+    "Success"
+  ],
   "bars_chunked_count": 100251,
   "chunk_days": 1,
   "chunks": 467,
