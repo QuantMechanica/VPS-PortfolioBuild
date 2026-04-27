@@ -1,7 +1,7 @@
 ﻿# QUA-95 Unblock Readiness Summary (2026-04-27)
 
 Issue: `QUA-95`
-Generated: `2026-04-27T11:51:53+02:00`
+Generated: `2026-04-27T11:59:01+02:00`
 
 ## Status
 

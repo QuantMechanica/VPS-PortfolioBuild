@@ -68,13 +68,14 @@ $blockedInvariant = Join-Path $RepoRoot 'infra\scripts\Test-QUA95BlockedInvarian
 $unblockReadiness = Join-Path $RepoRoot 'infra\scripts\Update-QUA95UnblockReadiness.ps1'
 $unblockReadinessSummary = Join-Path $RepoRoot 'infra\scripts\Write-QUA95UnblockReadinessSummary.ps1'
 $automationHealth = Join-Path $RepoRoot 'infra\monitoring\Test-QUA95AutomationHealth.ps1'
+$auditSignal = Join-Path $RepoRoot 'infra\scripts\Update-QUA95AuditSignal.ps1'
 $integrity = Join-Path $RepoRoot 'infra\scripts\Test-QUA95HandoffIntegrity.ps1'
 $opsSuiteWriter = Join-Path $RepoRoot 'infra\scripts\Write-QUA95OpsSuiteSnapshot.ps1'
 $opsBundleManifest = Join-Path $RepoRoot 'infra\scripts\Update-QUA95OpsBundleManifest.ps1'
 $manifest = Join-Path $RepoRoot 'docs\ops\QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.sha256'
 $gateOut = 'docs\ops\QUA-95_GATE_DECISION_2026-04-27.json'
 
-foreach ($f in @($invoke, $sync, $summary, $gate, $assertion, $transition, $transitionCheck, $blockedInvariant, $unblockReadiness, $unblockReadinessSummary, $automationHealth, $integrity, $opsSuiteWriter, $opsBundleManifest, $manifest)) {
+foreach ($f in @($invoke, $sync, $summary, $gate, $assertion, $transition, $transitionCheck, $blockedInvariant, $unblockReadiness, $unblockReadinessSummary, $automationHealth, $auditSignal, $integrity, $opsSuiteWriter, $opsBundleManifest, $manifest)) {
     if (-not (Test-Path -LiteralPath $f)) {
         throw "Required script missing: $f"
     }
@@ -136,6 +137,11 @@ try {
     $automationHealthOutput = & $automationHealth 2>&1
     Write-CommandOutputToLog -Output $automationHealthOutput
     if ($LASTEXITCODE -ne 0) { throw ("Step failed with exit code {0}: {1}" -f $LASTEXITCODE, $automationHealth) }
+
+    $global:LASTEXITCODE = 0
+    $auditSignalOutput = & $auditSignal 2>&1
+    Write-CommandOutputToLog -Output $auditSignalOutput
+    if ($LASTEXITCODE -ne 0) { throw ("Step failed with exit code {0}: {1}" -f $LASTEXITCODE, $auditSignal) }
 
     $hashFiles = @(
         'docs/ops/QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.md',
