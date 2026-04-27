@@ -291,6 +291,19 @@ Output:
 Result:
 - deterministic blocked comment now generated from blocker JSON, so updates can be posted without re-reading long investigation history.
 
+## Blocked Refresh Automation (2026-04-27 09:54 CEST)
+
+Added scripts:
+- `infra/scripts/Run-QUA93BlockerRefresh.ps1`
+- `infra/scripts/Install-QUA93BlockerRefreshTask.ps1`
+
+Validation:
+- `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Run-QUA93BlockerRefresh.ps1`
+  - refreshed verifier evidence (`verify_exit_code=1`, `disposition=defer`)
+  - refreshed blocker JSON and blocked comment markdown outputs
+- `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-QUA93BlockerRefreshTask.ps1 -PreviewOnly`
+  - preview action generated for `QM_QUA93_BlockerRefresh` (60-minute repetition, SYSTEM principal)
+
 ## Durable change in this heartbeat
 
 - Added this investigation record for `QUA-93` with concrete classifier output and triage conclusion.

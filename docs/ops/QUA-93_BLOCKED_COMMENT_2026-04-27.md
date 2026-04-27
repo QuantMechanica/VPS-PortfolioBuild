@@ -7,7 +7,7 @@
 - bars_got: 0
 - tail_shortfall_seconds: 1775444399.867
 - acceptance_met: False
-- last_checked_local: 2026-04-27T09:49:42+02:00
+- last_checked_local: 2026-04-27T09:54:47+02:00
 - last_evidence_path: lessons-learned\evidence\2026-04-27_qua93_xauusd_rerun_evidence.json
 
 Unblock owners:

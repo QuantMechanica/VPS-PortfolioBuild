@@ -139,10 +139,23 @@
   - interval: `60` minutes
   - principal: `SYSTEM` (highest)
   - log: `C:\QM\repo\infra\smoke\qua95_blocker_refresh_task.log`
+  - python: resolved at install time via `Get-Command python` (pass `-PythonExe <fullpath>` if needed)
 - Preview mode (no task registration):
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-QUA95BlockerRefreshTask.ps1 -PreviewOnly`
 - Validation note:
   - For SYSTEM tasks, prefer `schtasks /Query /TN "<task-name>" /V /FO LIST` as a visibility check when `Get-ScheduledTask` does not enumerate the task in the current shell context.
+  - If task runs fail with `python not recognized`, reinstall with explicit `-PythonExe` so SYSTEM does not depend on PATH inheritance.
+
+## `Run-QUA95BlockerRefresh.ps1`
+
+- Task runner invoked by Scheduler for QUA-95 refresh chain.
+- Executes and logs:
+  1. `Invoke-VerifyDisposition.ps1`
+  2. `Update-QUA95BlockerStatus.ps1`
+  3. `Write-QUA95BlockedSummary.ps1`
+  4. `Test-QUA95HandoffIntegrity.ps1`
+- Default log:
+  - `C:\QM\repo\infra\smoke\qua95_blocker_refresh_task.log`
 
 ## `Update-QUA93BlockerStatus.ps1`
 
@@ -166,6 +179,28 @@
 - Useful when posting deterministic issue status updates for blocked QUA-93 follow-up.
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Write-QUA93BlockedSummary.ps1`
+
+## `Run-QUA93BlockerRefresh.ps1`
+
+- Single-run orchestrator for QUA-93 blocked-state refresh.
+- Runs in order:
+  1. `Invoke-VerifyDisposition.ps1` (`QUA-93`, `XAUUSD.DWX`)
+  2. `Update-QUA93BlockerStatus.ps1`
+  3. `Write-QUA93BlockedSummary.ps1`
+- Appends task log lines to:
+  - `C:\QM\repo\infra\smoke\qua93_blocker_refresh_task.log`
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Run-QUA93BlockerRefresh.ps1`
+
+## `Install-QUA93BlockerRefreshTask.ps1`
+
+- Idempotently installs a Windows Scheduled Task for QUA-93 blocked-state refresh.
+- Defaults:
+  - task name: `QM_QUA93_BlockerRefresh`
+  - interval: `60` minutes
+  - principal: `SYSTEM` (highest)
+- Preview mode (no task registration):
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-QUA93BlockerRefreshTask.ps1 -PreviewOnly`
 
 ## `verify_import_chunked_probe.py`
 

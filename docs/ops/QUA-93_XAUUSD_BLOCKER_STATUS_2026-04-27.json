@@ -27,7 +27,7 @@
                               "csv_tail_alignment_json":  "lessons-learned/evidence/2026-04-27_qua93_xauusd_tail_alignment_check.json",
                               "csv_mismatch_nudge_json":  "lessons-learned/evidence/2026-04-27_qua93_csv_tail_mismatch_nudge_validation.json"
                           },
-    "last_checked_local":  "2026-04-27T09:49:42+02:00",
+    "last_checked_local":  "2026-04-27T09:54:47+02:00",
     "last_evidence_path":  "lessons-learned\\evidence\\2026-04-27_qua93_xauusd_rerun_evidence.json",
     "last_verify_exit_code":  1
 }
