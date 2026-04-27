@@ -71,7 +71,8 @@ If a Paperclip pre-`done` hook is later implemented (e.g. an agent-side script t
 - **Original P0 fix:** [QUA-180](/QUA/issues/QUA-180) — `[P0] Commit ALL untracked framework + decisions files; ship per-step commit hashes` (where the rule was first stated).
 - **Originating workstream:** [QUA-149](/QUA/issues/QUA-149) (V5 framework Implementation Order, 25 steps) and the per-step children QUA-153..QUA-167 (where the drift occurred).
 - **Originating lesson:** [`lessons-learned/2026-04-27_codex_done_before_commit.md`](../lessons-learned/2026-04-27_codex_done_before_commit.md) (commit `6e4c614`).
-- **CTO prompt-patch sibling task (OWNER-gated):** [QUA-239](/QUA/issues/QUA-239) — `[DL-026 prompt patch] Tighten coding-agent prompts to require commit-hash-in-close-out`.
+- **CTO prompt-patch sibling task (OWNER-gated):** [QUA-239](/QUA/issues/QUA-239) — `[DL-026 prompt patch] Tighten coding-agent prompts to require commit-hash-in-close-out` (cancelled — OWNER preempted via commit `82b6be9`).
+- **Prompt-patch deliverable record:** [`DL-026_coding_agent_done_requires_commit_hash.md`](./DL-026_coding_agent_done_requires_commit_hash.md) — stub recording the five BASIS prompts patched by OWNER (commit `82b6be9`) and the activation-propagation caveat.
 - **Registry:** [`decisions/REGISTRY.md`](./REGISTRY.md) — DL-026 row.
 
 ## Boundary reminder
