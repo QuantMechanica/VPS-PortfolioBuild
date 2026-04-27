@@ -1,0 +1,85 @@
+<html>
+<head>
+<style id="qm-brand-report-css-v1">
+/* qm-brand-report-css-v1 */
+:root {
+  --qm-bg: #020617;
+  --qm-surface-0: #060b18;
+  --qm-surface-1: #0f172a;
+  --qm-surface-2: #1e293b;
+  --qm-border: rgba(148,163,184,0.08);
+  --qm-border-strong: rgba(148,163,184,0.18);
+  --qm-text: #f8fafc;
+  --qm-text-dim: #cbd5e1;
+  --qm-text-muted: #94a3b8;
+  --qm-emerald: #10b981;
+  --qm-emerald-light: #34d399;
+  --qm-fail: #ef4444;
+  --qm-warn: #f59e0b;
+}
+html, body {
+  background: var(--qm-bg) !important;
+  color: var(--qm-text) !important;
+  font-family: Inter, "Segoe UI", Helvetica, sans-serif !important;
+}
+a {
+  color: var(--qm-emerald) !important;
+}
+a:hover {
+  color: var(--qm-emerald-light) !important;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--qm-surface-1);
+  border: 1px solid var(--qm-border);
+}
+th, td {
+  border: 1px solid var(--qm-border);
+  padding: 6px 8px;
+}
+th {
+  background: var(--qm-surface-2);
+  color: var(--qm-text-dim);
+}
+tr:nth-child(even) td {
+  background: var(--qm-surface-0);
+}
+h1, h2, h3, h4 {
+  color: var(--qm-text);
+  letter-spacing: -0.02em;
+}
+.qm-brand-report-banner {
+  margin: 0 0 12px 0;
+  padding: 10px 12px;
+  background: var(--qm-surface-1);
+  border: 1px solid var(--qm-border-strong);
+  border-radius: 10px;
+  font-weight: 700;
+}
+.qm-brand-report-banner .qm-left {
+  color: var(--qm-text);
+}
+.qm-brand-report-banner .qm-right {
+  color: var(--qm-emerald);
+}
+.qm-badge-pass, .profit, .positive {
+  color: var(--qm-emerald) !important;
+}
+.qm-badge-fail, .loss, .negative {
+  color: var(--qm-fail) !important;
+}
+.qm-badge-warn, .warning {
+  color: var(--qm-warn) !important;
+}
+/* /qm-brand-report-css-v1 */
+</style>
+
+<title>Strategy Tester Report</title></head>
+<body class="qm-brand-report">
+<div class="qm-brand-report-banner"><span class="qm-left">Quant</span><span class="qm-right">Mechanica</span> <span>V5</span></div>
+
+<h1>Report</h1>
+<table><tr><th>Metric</th><th>Value</th></tr><tr><td>Net Profit</td><td class="profit">1234</td></tr></table>
+</body>
+</html>

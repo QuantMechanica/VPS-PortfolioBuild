@@ -1,0 +1,11 @@
+; QuantMechanica V5 smoke fixture
+; EA: QM5_1001_framework_smoke
+; Purpose: deterministic regression gate for framework smoke harness
+ea_id=1001
+magic_slot_offset=0
+RISK_PERCENT=0.0
+RISK_FIXED=1000.0
+PORTFOLIO_WEIGHT=1.0
+news_mode=0
+friday_close_enabled=true
+friday_close_hour_broker=21

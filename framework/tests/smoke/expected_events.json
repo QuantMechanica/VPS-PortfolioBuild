@@ -1,0 +1,21 @@
+{
+  "fixture": "QM5_1001_framework_smoke",
+  "log_file_pattern": "QM5_1001_*.log",
+  "required_events": [
+    "INIT",
+    "SMOKE_INIT_OK",
+    "SMOKE_TICK",
+    "SMOKE_DEINIT"
+  ],
+  "forbidden_events": [
+    "SETUP_DATA_MISSING",
+    "EA_MAGIC_NOT_REGISTERED",
+    "EA_MAGIC_COLLISION_DETECTED"
+  ],
+  "minimum_occurrences": {
+    "INIT": 1,
+    "SMOKE_INIT_OK": 1,
+    "SMOKE_TICK": 1,
+    "SMOKE_DEINIT": 1
+  }
+}
