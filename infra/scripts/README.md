@@ -128,6 +128,12 @@
 - Validates SHA256 entries in `docs/ops/QUA-91_WS30_VERIFIER_HANDOFF_2026-04-27.sha256`.
 - Outputs per-file `OK/FAIL` plus final `checked`/`failed` counters.
 
+## `Run-QUA91-HandoffChecks.ps1`
+
+- Single entrypoint for QUA-91 closeout checks:
+  - runs `Verify-HandoffIntegrity.ps1`
+  - runs `summarize_verify_candidate_log.py` against the candidate run log
+
 ## `Invoke-VerifyDisposition.ps1`
 
 - Idempotent verifier rerun helper for issue triage.
