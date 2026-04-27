@@ -102,6 +102,28 @@ Disposition refinement:
   1) verifier bar query is chunked, and
   2) WS30 tail aligns on rerun.
 
+## Source-vs-custom tail parity check (2026-04-27)
+
+Command:
+
+```powershell
+python infra/scripts/verify_import_chunked_probe.py --symbol WS30.DWX --chunk-days 20
+```
+
+Additional fields:
+- `tick_tail expected/got=1775444399667/1775437255743`
+- `source_tick_tail_got=1775437256065`
+- `custom_minus_source_tail_ms=-322`
+
+Interpretation:
+- `WS30.DWX` tail is aligned with broker source `WS30` in the verifier tail window.
+- Remaining tail shortfall is against sidecar `expected` timestamp, not against live source symbol.
+- This indicates a **global verifier expectation/time-basis issue**, not WS30-specific import corruption.
+
+Final disposition for QUA-91 scope:
+- **WS30 symbol-specific corruption hypothesis: cleared.**
+- **Outstanding work:** verifier logic fix (global) for bar query shape and expected-tail comparison basis.
+
 ## Durable change in this heartbeat
 
 - Added/extended tests for verifier fail-pattern classification in:

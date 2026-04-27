@@ -52,6 +52,8 @@
   - one-shot full-span M1 read (current verifier shape)
   - chunked M1 range reads (diagnostic/fix candidate)
 - Helps decide whether `FAIL_bars` is query-shape/API-limit related vs data loss.
+- Also reports source-vs-custom tail parity (`custom_minus_source_tail_ms`) so
+  tail failures can be classified as symbol corruption vs expectation-basis mismatch.
 
 ## `Invoke-VerifyDisposition.ps1`
 

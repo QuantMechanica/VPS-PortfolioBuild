@@ -119,12 +119,22 @@ def main() -> int:
         head_got = int(head[0]["time_msc"]) if head else 0
         tail_got = int(tail[-1]["time_msc"]) if tail else 0
         tail_short_s = (t_last - tail_got) / 1000 if tail_got else None
+        source_tail = []
+        source_tail_got = 0
+        if source:
+            mt5.symbol_select(source, True)
+            source_tail = mt5.copy_ticks_range(source, tail_lo, tail_hi, mt5.COPY_TICKS_ALL)
+            source_tail = list(source_tail) if source_tail is not None else []
+            source_tail_got = int(source_tail[-1]["time_msc"]) if source_tail else 0
+        tail_delta_source_ms = (tail_got - source_tail_got) if tail_got and source_tail_got else None
 
         print(f"symbol={args.symbol} source={source} path={si.path}")
         print(f"sidecar={sidecar}")
         print(f"tick_head expected/got={t_first}/{head_got}")
         print(f"tick_tail expected/got={t_last}/{tail_got}")
         print(f"tick_tail_shortfall_seconds={tail_short_s}")
+        print(f"source_tick_tail_got={source_tail_got}")
+        print(f"custom_minus_source_tail_ms={tail_delta_source_ms}")
         print(f"mid_ticks_5min={len(mid)}")
         print(f"bars_expected={b_count}")
         print(f"bars_oneshot_count={one_shot_count} bars_oneshot_err={one_shot_err}")
@@ -142,4 +152,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
