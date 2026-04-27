@@ -203,6 +203,9 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Writes `docs/ops/QUA-207_RUNTIME_HEARTBEAT_2026-04-27.json`.
 - `scripts/New-QUA207IssueComment.ps1`
   - Generates `docs/ops/QUA-207_ISSUE_COMMENT_2026-04-27.md` from live transition + evidence artifacts.
+- `scripts/Assert-CommitAllowlist.ps1`
+  - Pre-commit guard that fails when staged files are outside explicit allowlist prefixes.
+  - Use to prevent accidental mixed commits in shared/dirty worktrees.
 - `scripts/Test-QUA95UnblockReadiness.ps1`
   - Validates unblock-readiness artifact freshness/consistency against blocker status.
   - Returns non-zero on drift.

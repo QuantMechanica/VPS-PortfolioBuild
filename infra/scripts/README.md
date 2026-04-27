@@ -730,6 +730,16 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\New-QUA207IssueComment.ps1`
 
+## `Assert-CommitAllowlist.ps1`
+
+- Guardrail for staged-file safety before committing in noisy worktrees.
+- Reads `git diff --cached --name-only` and fails when staged files fall outside allowed path prefixes.
+- Typical usage:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Assert-CommitAllowlist.ps1 -AllowedPaths infra/scripts/ docs/ops/QUA-207_`
+- Exit codes:
+  - `0`: staged set is allowed
+  - `2`: staged files violate allowlist
+
 ## `Restore-QUA95RuntimeBars.ps1`
 
 - Bounded runtime restore flow for `XTIUSD.DWX` M1 bars visibility.
