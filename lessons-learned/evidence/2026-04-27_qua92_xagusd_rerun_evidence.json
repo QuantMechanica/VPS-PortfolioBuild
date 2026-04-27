@@ -1,22 +1,23 @@
-{
-  "issue": "QUA-92",
-  "generated_at_local": "2026-04-27T08:56:23+02:00",
-  "command": "python D:\\QM\\mt5\\T1\\dwx_import\\verify_import.py",
-  "raw_log_path_local": "C:\\QM\\repo\\infra\\smoke\\verify_import_run_2026-04-27_085623_qua92.log",
-  "verify_exit_code": 1,
-  "classifier": {
-    "fail_count": 56,
-    "systemic_zero_bars": true,
-    "systemic_zero_mid_ticks": false
-  },
-  "symbol": {
-    "name": "XAGUSD.DWX",
-    "verdict": "FAIL_tail_bars",
-    "mid_ticks_5min": 255,
-    "bars_expected": 446113,
-    "bars_got": 0,
-    "tail_ms_expected": 1775444390467,
-    "tail_ms_got": 1775437249841,
-    "tail_shortfall_seconds": 7140.626
-  }
+﻿{
+    "issue":  "QUA-92",
+    "generated_at_local":  "2026-04-27T09:00:59+02:00",
+    "command":  "python D:\\QM\\mt5\\T1\\dwx_import\\verify_import.py",
+    "raw_log_path_local":  "C:\\QM\\repo\\infra\\smoke\\verify_import_run_2026-04-27_090059_qua92.log",
+    "verify_exit_code":  1,
+    "classifier":  {
+                       "fail_count":  56,
+                       "systemic_zero_bars":  true,
+                       "systemic_zero_mid_ticks":  false
+                   },
+    "symbol":  {
+                   "name":  "XAGUSD.DWX",
+                   "verdict":  "FAIL_tail_bars",
+                   "mid_ticks_5min":  255,
+                   "bars_expected":  446113,
+                   "bars_got":  0,
+                   "tail_ms_expected":  1775444390467,
+                   "tail_ms_got":  1775437249841,
+                   "tail_shortfall_seconds":  7140.626
+               },
+    "disposition":  "defer"
 }

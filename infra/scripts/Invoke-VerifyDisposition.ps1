@@ -1,0 +1,143 @@
+[CmdletBinding()]
+param(
+    [Parameter(Mandatory = $true)]
+    [string]$IssueId,
+
+    [Parameter(Mandatory = $true)]
+    [string]$Symbol,
+
+    [string]$RepoRoot = 'C:\QM\repo',
+    [string]$PythonExe = 'python',
+    [string]$VerifyImportScript = 'D:\QM\mt5\T1\dwx_import\verify_import.py'
+)
+
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+
+function Convert-IntValue {
+    param([string]$Value)
+    return [int64]($Value -replace ',', '')
+}
+
+if (-not (Test-Path -LiteralPath $RepoRoot)) {
+    throw "Repo root not found: $RepoRoot"
+}
+if (-not (Test-Path -LiteralPath $VerifyImportScript)) {
+    throw "verify_import.py not found: $VerifyImportScript"
+}
+
+$smokeDir = Join-Path $RepoRoot 'infra\smoke'
+$evidenceDir = Join-Path $RepoRoot 'lessons-learned\evidence'
+New-Item -ItemType Directory -Path $smokeDir -Force | Out-Null
+New-Item -ItemType Directory -Path $evidenceDir -Force | Out-Null
+
+$now = Get-Date
+$dateTag = $now.ToString('yyyy-MM-dd')
+$timeTag = $now.ToString('yyyy-MM-dd_HHmmss')
+$issueTag = ($IssueId.ToLowerInvariant() -replace '[^a-z0-9]', '')
+$symbolTag = ($Symbol -replace '\.DWX$', '').ToLowerInvariant()
+
+$rawLogPath = Join-Path $smokeDir ("verify_import_run_{0}_{1}.log" -f $timeTag, $issueTag)
+$evidencePath = Join-Path $evidenceDir ("{0}_{1}_{2}_rerun_evidence.json" -f $dateTag, $issueTag, $symbolTag)
+
+$procOutput = & $PythonExe $VerifyImportScript 2>&1
+$verifyExitCode = $LASTEXITCODE
+$logText = ($procOutput | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
+Set-Content -LiteralPath $rawLogPath -Value $logText -Encoding UTF8
+
+$failRows = @()
+$rowPattern = [regex]'^\[\s*(?<verdict>[^\]]+)\]\s+(?<symbol>[^:]+):.*?mid_ticks_5min=(?<mid>\d+);.*?bars expected=(?<barsExp>[0-9,]+)/got=(?<barsGot>[0-9,]+)\b'
+$tailPattern = [regex]'tail_ms expected=(?<tailExp>\d+)/got=(?<tailGot>\d+)'
+
+$target = $null
+foreach ($line in ($logText -split "`r?`n")) {
+    $m = $rowPattern.Match($line)
+    if (-not $m.Success) {
+        continue
+    }
+
+    $verdict = $m.Groups['verdict'].Value.Trim()
+    if (-not $verdict.ToUpperInvariant().StartsWith('FAIL')) {
+        continue
+    }
+
+    $sym = $m.Groups['symbol'].Value.Trim()
+    $entry = [ordered]@{
+        symbol = $sym
+        verdict = $verdict
+        mid_ticks_5min = [int]$m.Groups['mid'].Value
+        bars_expected = Convert-IntValue $m.Groups['barsExp'].Value
+        bars_got = Convert-IntValue $m.Groups['barsGot'].Value
+    }
+    $failRows += [pscustomobject]$entry
+
+    if ($sym -ieq $Symbol) {
+        $tailMatch = $tailPattern.Match($line)
+        $tailExpected = $null
+        $tailGot = $null
+        $tailShortfall = $null
+        if ($tailMatch.Success) {
+            $tailExpected = [int64]$tailMatch.Groups['tailExp'].Value
+            $tailGot = [int64]$tailMatch.Groups['tailGot'].Value
+            $tailShortfall = [Math]::Round(($tailExpected - $tailGot) / 1000.0, 3)
+        }
+        $target = [ordered]@{
+            name = $sym
+            verdict = $verdict
+            mid_ticks_5min = $entry.mid_ticks_5min
+            bars_expected = $entry.bars_expected
+            bars_got = $entry.bars_got
+            tail_ms_expected = $tailExpected
+            tail_ms_got = $tailGot
+            tail_shortfall_seconds = $tailShortfall
+        }
+    }
+}
+
+$allExpectedPositive = $true
+$allBarsZero = $true
+$allMidZero = $true
+foreach ($row in $failRows) {
+    if ($row.bars_expected -le 0) { $allExpectedPositive = $false }
+    if ($row.bars_got -ne 0) { $allBarsZero = $false }
+    if ($row.mid_ticks_5min -ne 0) { $allMidZero = $false }
+}
+
+$systemicZeroBars = ($failRows.Count -ge 10 -and $allExpectedPositive -and $allBarsZero)
+$systemicZeroMidTicks = ($failRows.Count -ge 10 -and $allMidZero)
+
+$disposition = 'fix'
+if ($null -ne $target) {
+    $tailAligned = (
+        $null -ne $target.tail_ms_expected -and
+        $null -ne $target.tail_ms_got -and
+        $target.tail_ms_expected -eq $target.tail_ms_got
+    )
+    if ($target.bars_got -gt 0 -and $tailAligned) {
+        $disposition = 'clear'
+    } elseif ($target.bars_got -eq 0 -or $systemicZeroBars) {
+        $disposition = 'defer'
+    }
+}
+
+$evidence = [ordered]@{
+    issue = $IssueId
+    generated_at_local = $now.ToString('yyyy-MM-ddTHH:mm:ssK')
+    command = "$PythonExe $VerifyImportScript"
+    raw_log_path_local = $rawLogPath
+    verify_exit_code = $verifyExitCode
+    classifier = [ordered]@{
+        fail_count = $failRows.Count
+        systemic_zero_bars = $systemicZeroBars
+        systemic_zero_mid_ticks = $systemicZeroMidTicks
+    }
+    symbol = $target
+    disposition = $disposition
+}
+
+$evidence | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $evidencePath -Encoding UTF8
+
+Write-Host ("verify_exit_code={0}" -f $verifyExitCode)
+Write-Host ("raw_log={0}" -f $rawLogPath)
+Write-Host ("evidence_json={0}" -f $evidencePath)
+Write-Host ("disposition={0}" -f $disposition)

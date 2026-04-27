@@ -27,13 +27,14 @@ Cross-symbol context in the same run:
 
 `XAGUSD.DWX` is a symptom of the same systemic verifier/runtime condition seen across the batch. Treat as runtime/read-path issue until disproven by a clean-session rerun.
 
-## Rerun Evidence (2026-04-27 08:56 CEST)
+## Rerun Evidence (2026-04-27 09:00 CEST)
 
 Fresh verifier run executed:
 - command: `python D:\QM\mt5\T1\dwx_import\verify_import.py`
-- log artifact: `infra/smoke/verify_import_run_2026-04-27_085623_qua92.log`
+- log artifact: `infra/smoke/verify_import_run_2026-04-27_090059_qua92.log`
 - exit code: `1`
 - tracked summary artifact: `lessons-learned/evidence/2026-04-27_qua92_xagusd_rerun_evidence.json`
+- automated by: `infra/scripts/Invoke-VerifyDisposition.ps1`
 
 Classifier output on the rerun artifact:
 - `fail_count=56`
@@ -50,6 +51,10 @@ Classifier output on the rerun artifact:
 
 - Performed and captured a fresh verifier rerun for `QUA-92`.
 - Updated this investigation record with concrete rerun diagnostics and current disposition.
+
+## Final Disposition
+
+- `defer`
 
 ## Next action
 

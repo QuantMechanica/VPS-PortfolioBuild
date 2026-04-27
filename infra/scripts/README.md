@@ -30,3 +30,16 @@
   before classifying a symbol as corrupted.
 - Default target is `WS30.DWX`; span comes from latest
   `imports\\done\\*_<symbol>.import.txt`.
+
+## `Invoke-VerifyDisposition.ps1`
+
+- Idempotent verifier rerun helper for issue triage.
+- Runs `verify_import.py`, captures a timestamped raw log under `infra\\smoke\\`,
+  parses FAIL rows, and writes tracked evidence JSON under
+  `lessons-learned\\evidence\\`.
+- Emits symbol-level disposition:
+  - `clear`: `bars_got > 0` and tail timestamps aligned
+  - `defer`: systemic zero-bars pattern or symbol bars still zero
+  - `fix`: not clear/defer; investigation still in-flight
+- Example:
+  - `powershell -File C:\QM\repo\infra\scripts\Invoke-VerifyDisposition.ps1 -IssueId QUA-92 -Symbol XAGUSD.DWX`
