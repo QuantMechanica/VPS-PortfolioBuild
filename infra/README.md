@@ -78,6 +78,19 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Runs direct verifier for `XTIUSD.DWX`, captures raw log, and writes deterministic direct-rerun proof JSON/markdown artifacts.
 - `scripts/Run-QUA95CustomVisibilityProof.ps1`
   - Runs the custom-symbol visibility probe for `XTIUSD.DWX` and writes deterministic rerun proof JSON/markdown artifacts.
+- `scripts/Restore-QUA95RuntimeBars.ps1`
+  - Runs a bounded runtime-recovery flow for `XTIUSD.DWX` bars visibility:
+    - precheck probe (`probe_custom_symbol_visibility.py`)
+    - T1 terminal restart only when precheck still shows isolated custom-bars failure
+    - post-restart probe up to bounded retry count
+  - Writes deterministic recovery artifacts:
+    - `docs/ops/QUA-207_RUNTIME_RESTORE_XTIUSD_2026-04-27.json`
+    - `docs/ops/QUA-207_RUNTIME_RESTORE_XTIUSD_2026-04-27.md`
+  - Refuses T6 scope by design.
+- `scripts/Install-QUA95RuntimeRestoreTask.ps1`
+  - Registers Task Scheduler job `QM_QUA95_RuntimeRestore_15min` as `SYSTEM` (15-minute cadence by default).
+  - Runs `Restore-QUA95RuntimeBars.ps1` with explicit bounded retry parameters.
+  - Safe to re-run (`Register-ScheduledTask -Force`).
 - `scripts/Update-QUA95BlockedAssertion.ps1`
   - Regenerates blocked-state assertion markdown from canonical gate + blocker JSON.
 - `scripts/Install-QUA95BlockedHeartbeatTask.ps1`
@@ -258,6 +271,12 @@ QUA-95 blocked heartbeat wrapper task (hourly):
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-QUA95BlockedHeartbeatTask.ps1 -EveryMinutes 60
+```
+
+QUA-95 runtime bars restore task (every 15 minutes):
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-QUA95RuntimeRestoreTask.ps1 -EveryMinutes 15
 ```
 
 Recovery orphan cleanup (daily schedule is managed by `tasks/Register-QMInfraTasks.ps1`):

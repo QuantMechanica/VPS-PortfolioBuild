@@ -650,6 +650,36 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Run-QUA95CustomVisibilityProof.ps1`
 
+## `Restore-QUA95RuntimeBars.ps1`
+
+- Bounded runtime restore flow for `XTIUSD.DWX` M1 bars visibility.
+- Uses check-then-act sequence:
+  1. precheck custom-vs-source visibility probe
+  2. only if still failing, stop/restart T1 `terminal64.exe` and re-probe
+  3. repeat up to `-MaxRestartAttempts` (default `2`)
+- Writes deterministic artifacts:
+  - `docs\ops\QUA-207_RUNTIME_RESTORE_XTIUSD_2026-04-27.json`
+  - `docs\ops\QUA-207_RUNTIME_RESTORE_XTIUSD_2026-04-27.md`
+- Safety:
+  - refuses T6 paths
+  - scoped process control to the exact `terminal64.exe` under configured `-TerminalRoot`
+- Exit codes:
+  - `0`: restored (or already healthy at precheck)
+  - `2`: still not restored / probe init failure
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Restore-QUA95RuntimeBars.ps1`
+
+## `Install-QUA95RuntimeRestoreTask.ps1`
+
+- Idempotently installs a Scheduler task for periodic runtime restore attempts.
+- Defaults:
+  - task name: `QM_QUA95_RuntimeRestore_15min`
+  - interval: `15` minutes
+  - principal: `SYSTEM` (highest)
+  - flow: runs `Restore-QUA95RuntimeBars.ps1` with explicit Python path and bounded restart attempts
+- Preview mode (no registration):
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-QUA95RuntimeRestoreTask.ps1 -PreviewOnly`
+
 ## `Install-QUA95BlockedHeartbeatTask.ps1`
 
 - Idempotently installs a Scheduler task that runs:
