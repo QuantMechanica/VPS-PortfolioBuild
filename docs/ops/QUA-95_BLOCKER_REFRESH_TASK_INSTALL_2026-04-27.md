@@ -32,6 +32,7 @@ Verified highlights:
   - `Update-QUA95BlockerStatus.ps1`
   - `Write-QUA95BlockedSummary.ps1`
   - `Get-QUA95GateDecision.ps1`
+  - `Update-QUA95BlockedAssertion.ps1`
   - `New-QUA95IssueTransitionPayload.ps1`
   - `Test-QUA95IssueTransitionPayload.ps1`
   - `Test-QUA95HandoffIntegrity.ps1`
