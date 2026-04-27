@@ -49,11 +49,24 @@ if ($evidenceAgeMinutes -gt $MaxEvidenceAgeMinutes) {
 $verifyExit = [int]$evidence.verify_exit_code
 $barsOneShot = [int]$evidence.bars_one_shot
 $barsChunked = [int]$evidence.bars_chunked
+$verdict = [string]$evidence.verdict
+$rawLogPath = [string]$evidence.raw_log
 $recommended = [string]$evidence.recommended_state
 $disposition = [string]$evidence.disposition
 
 if ($barsOneShot -le 0 -and $recommended -ne 'blocked') { Fail "evidence_recommended_state_mismatch" }
 if ($barsChunked -le 0 -and $disposition -ne 'defer') { Fail "evidence_disposition_mismatch" }
+
+if ([string]::IsNullOrWhiteSpace($rawLogPath)) { Fail "evidence_raw_log_missing" }
+if (-not [System.IO.Path]::IsPathRooted($rawLogPath)) { Fail "evidence_raw_log_not_absolute" }
+if (-not (Test-Path -LiteralPath $rawLogPath)) { Fail "evidence_raw_log_not_found" }
+
+$rawLogText = Get-Content -LiteralPath $rawLogPath -Raw
+if ($rawLogText -notmatch [regex]::Escape([string]$evidence.symbol)) { Fail "evidence_raw_log_symbol_missing" }
+if ($rawLogText -notmatch '\[ *FAIL') { Fail "evidence_raw_log_fail_row_missing" }
+if (-not [string]::IsNullOrWhiteSpace($verdict) -and $rawLogText -notmatch [regex]::Escape($verdict)) {
+    Fail "evidence_raw_log_verdict_missing"
+}
 
 if ([string]$blocker.recommended_state -ne $recommended) { Fail "blocker_recommended_state_mismatch" }
 if ([string]$blocker.current_observed.disposition -ne $disposition) { Fail "blocker_disposition_mismatch" }

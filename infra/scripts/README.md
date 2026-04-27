@@ -326,6 +326,7 @@
 - Checks:
   - issue/symbol identity
   - evidence freshness (`captured_at_local`) within max-age window (`-MaxEvidenceAgeMinutes`, default `240`)
+  - raw log path exists, is absolute, and log content contains symbol + FAIL row (and verdict token when provided)
   - blocked/defer consistency when bars are zero
   - proof markdown contains expected heading/symbol
 - Exit codes:
