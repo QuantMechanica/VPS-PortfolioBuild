@@ -31,6 +31,14 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Registers Task Scheduler job `QM_AggregatorState_1min` as `SYSTEM`.
   - Runs `scripts/aggregator/standalone_aggregator_loop.py --once` every minute.
   - Safe to re-run (`Register-ScheduledTask -Force`) and overlap-safe (`MultipleInstances=IgnoreNew`).
+- `scripts/Install-DwxSpecPatchRunner.ps1`
+  - Converges a non-interactive MT5 startup INI from one patch version to another (default: `v2 -> v3`).
+  - Check-then-act writes: updates target only when content differs.
+  - Enforces `ShutdownTerminal=1` and refuses T6 paths by default.
+- `scripts/Fix_DWX_Spec_v3.mq5`
+  - Corrected DWX custom-symbol spec patch (`tvp/tvl` excluded from writable/settable fields).
+  - Enforces `spec_ok := custom.tv > 0 and rel_err(custom.tv, broker.tv) < 0.05`.
+  - Includes batch throttling (`5` symbols + `Sleep(200)`).
 - `monitoring/Test-DwxHeartbeat.ps1`
   - Validates DWX service heartbeat freshness from content.
   - Requires `wall_clock_utc` field for strict `ok`; missing field is `warn`.
@@ -80,9 +88,18 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts
 - No T6 live automation mutations.
 - No secret material in repo.
 
-## T1 one-shot script runner (operational)
+## T1 DWX spec patch runner (operational)
 
-- `D:\QM\mt5\T1\run_fix_dwx_spec_v2.ini`
-  - Startup config for scripted execution of `Fix_DWX_Spec_v2` with `ShutdownTerminal=1`.
-  - Command: `D:\QM\mt5\T1\terminal64.exe /portable /config:D:\QM\mt5\T1\run_fix_dwx_spec_v2.ini`.
-  - Use only on T1; do not point this flow at T6 paths.
+Converge current patch launcher (`v3` baseline) from prior known-good launcher (`v2`):
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-DwxSpecPatchRunner.ps1 -TerminalRoot D:\QM\mt5\T1 -FromVersion v2 -ToVersion v3
+```
+
+Run after convergence:
+
+```powershell
+D:\QM\mt5\T1\terminal64.exe /portable /config:D:\QM\mt5\T1\run_fix_dwx_spec_v3.ini
+```
+
+Use only on T1; do not point this flow at T6 paths.
