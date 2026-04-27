@@ -19,6 +19,9 @@
   - `custom.trade_tick_value > 0`
   - `broker.trade_tick_value > 0`
   - `abs(custom.tv - broker.tv) / broker.tv < 0.05`
+- Phase-B staging now includes CSV tail-alignment gate:
+  - compares tick CSV tail vs M1 CSV tail (`MAX_CSV_TAIL_GAP_HOURS=1.0`)
+  - symbols with stale/misaligned tails are deferred and not queued for import
 - No `tvp` / `tvl` fields are used for gate decisions.
 
 ## `verify_import_preflight_probe.py`
@@ -111,6 +114,14 @@
 - Useful for posting/attaching a deterministic issue status comment.
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Write-QUA95BlockedSummary.ps1`
+
+## `Update-QUA95BlockerStatus.ps1`
+
+- Refreshes `docs\ops\QUA-95_XTIUSD_BLOCKER_STATUS_2026-04-27.json` from latest rerun evidence:
+  - `lessons-learned\evidence\2026-04-27_qua95_xtiusd_rerun_evidence.json`
+- Updates symbol verdict, bars/tail fields, disposition, acceptance flag, and check timestamp.
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Update-QUA95BlockerStatus.ps1`
 
 ## `verify_import_chunked_probe.py`
 

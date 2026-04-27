@@ -234,6 +234,7 @@ Use:
 - Added sidecar-vs-observed drift evidence to support custom-symbol history rebuild as the unblock path.
 - Added CSV-tail freshness evidence showing stale/misaligned input files (tick vs M1 horizon mismatch).
 - Added an automated CSV-tail alignment guard and validated failure on current `XAUUSD` inputs.
+- Integrated CSV-tail alignment as a hard staging gate in `infra/scripts/dwx_hourly_check.py` (defer instead of queue when misaligned).
 
 ## Next action
 

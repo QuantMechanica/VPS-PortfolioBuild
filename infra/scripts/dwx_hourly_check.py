@@ -60,6 +60,7 @@ CSV_PATTERN = re.compile(
     r"^(?P<symbol>.+?)_GMT[+\-]\d+_(?:US|EU)-DST\.csv$",
     re.IGNORECASE,
 )
+MAX_CSV_TAIL_GAP_HOURS = 1.0
 VERIFY_FAIL_PATTERN = re.compile(
     r"^\[\s*(?P<verdict>[^\]]+)\]\s+(?P<symbol>[^:]+):.*?"
     r"mid_ticks_5min=(?P<mid_ticks>\d+);.*?"
@@ -181,6 +182,61 @@ def is_stable(p: Path, now: float) -> tuple[bool, str]:
     if p.stat().st_size == 0:
         return False, "zero-byte"
     return True, f"stable ({age_min:.0f} min old)"
+
+
+def read_last_line(path: Path) -> str:
+    with path.open("rb") as f:
+        f.seek(0, 2)
+        size = f.tell()
+        if size == 0:
+            return ""
+        pos = size - 1
+        while pos >= 0:
+            f.seek(pos)
+            b = f.read(1)
+            if b not in (b"\n", b"\r"):
+                break
+            pos -= 1
+        if pos < 0:
+            return ""
+        while pos > 0:
+            f.seek(pos)
+            if f.read(1) == b"\n":
+                pos += 1
+                break
+            pos -= 1
+        f.seek(pos)
+        return f.readline().decode("utf-8", errors="replace").strip()
+
+
+def csv_tail_aligned(
+    tick_csv: Path, m1_csv: Path, max_gap_hours: float = MAX_CSV_TAIL_GAP_HOURS
+) -> tuple[bool, str]:
+    """Validate tick/M1 tail timestamps are aligned within threshold."""
+    try:
+        tick_tail = read_last_line(tick_csv)
+        m1_tail = read_last_line(m1_csv)
+        if not tick_tail:
+            return False, "tick tail empty"
+        if not m1_tail:
+            return False, "m1 tail empty"
+
+        # tick: 2026.04.06 02:59:59.867,....
+        tick_stamp = tick_tail.split(",", 1)[0].strip()
+        tick_dt = dt.datetime.strptime(tick_stamp, "%Y.%m.%d %H:%M:%S.%f")
+        # m1:   2026.04.13,02:59:00,....
+        m1_parts = m1_tail.split(",")
+        if len(m1_parts) < 2:
+            return False, "m1 tail parse error"
+        m1_stamp = f"{m1_parts[0].strip()} {m1_parts[1].strip()}"
+        m1_dt = dt.datetime.strptime(m1_stamp, "%Y.%m.%d %H:%M:%S")
+    except Exception as e:
+        return False, f"tail parse failed ({e})"
+
+    gap_h = (m1_dt - tick_dt).total_seconds() / 3600.0
+    if abs(gap_h) > float(max_gap_hours):
+        return False, f"tail gap {gap_h:.3f}h > {max_gap_hours:.3f}h"
+    return True, f"tail aligned (gap={gap_h:.3f}h)"
 
 
 def find_csv_pairs() -> list[tuple[str, Path, Path]]:
@@ -420,6 +476,10 @@ def main() -> int:
                 ok_m, why_m = is_stable(m1, now)
                 if not (ok_t and ok_m):
                     log(f"  defer {root}: tick={why_t} m1={why_m}", fp); continue
+                tails_ok, tails_why = csv_tail_aligned(tick, m1)
+                if not tails_ok:
+                    log(f"  defer {root}: csv tail alignment failed ({tails_why})", fp)
+                    continue
                 source = SOURCE_OVERRIDES.get(root) or root
                 src_ok, src_why = source_symbol_ready(source)
                 if not src_ok:
