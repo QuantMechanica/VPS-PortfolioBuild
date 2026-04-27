@@ -135,6 +135,25 @@ Validation rerun in this continuation:
 - refreshed evidence JSON: `lessons-learned/evidence/2026-04-27_qua93_xauusd_rerun_evidence.json`
 - outcome: `verify_exit_code=1`, `disposition=defer`
 
+## Chunked Probe Deep-Dive (2026-04-27 09:22 CEST)
+
+Ran:
+- `python C:\QM\repo\infra\scripts\verify_import_chunked_probe.py --symbol XAUUSD.DWX --chunk-days 7 --json-out C:\QM\repo\lessons-learned\evidence\2026-04-27_qua93_xauusd_chunked_probe.json`
+
+Key outputs:
+- `tick_head expected/got=1506906061008/1506906061008`
+- `tick_tail expected/got=1775444399867/0`
+- `source_tick_tail_got=0`
+- `bars_oneshot_count=0` with `Invalid params`
+- `bars_from_pos_0_count=0` and `bars_from_pos_1000_count=0` (`Call failed`)
+- `bars_chunked_count=0` (`67` chunks, `bad_chunks=0`)
+- `terminal_maxbars=100000`
+
+Interpretation:
+- Failure is not limited to one verifier API shape.
+- In this runtime, both custom and source tail probes are zero for the target window, and all bar read modes return zero.
+- Disposition remains `defer` pending source-history visibility validation.
+
 ## Durable change in this heartbeat
 
 - Added this investigation record for `QUA-93` with concrete classifier output and triage conclusion.
@@ -148,12 +167,13 @@ Validation rerun in this continuation:
 - Applied patch to live verifier with explicit backup, reran officially, and confirmed issue still defers.
 - Hardened disposition parser compatibility so evidence remains valid across verifier output-schema changes.
 - Re-executed official rerun + disposition generation in liveness continuation; status remains `defer`.
+- Added chunked-probe JSON evidence confirming zero visibility across multiple MT5 read paths.
 
 ## Next action
 
 Acceptance target (`XAUUSD` non-zero bars + matching tail) remains unmet after rerun.  
 Unblock owner: verifier implementation owner (`D:\QM\mt5\T1\dwx_import\verify_import.py`).  
 Required action:
-- replace tail/mid probes with `copy_ticks_from(...)` window checks (not `copy_ticks_range(...)`);
-- add retry + reconnect pre-flight around MT5 reads;
-- make bar checks optional/degraded when MT5 returns zero bars for custom symbols despite non-zero tick probes, then rerun verification.
+- validate source symbol history visibility for `XAUUSD` in MT5 terminal data context (not only custom symbol path);
+- keep verifier hardening (`copy_ticks_from` windows + retry pre-flight + degraded bars classification);
+- rerun official verifier and disposition helper after source-history visibility is restored/confirmed.
