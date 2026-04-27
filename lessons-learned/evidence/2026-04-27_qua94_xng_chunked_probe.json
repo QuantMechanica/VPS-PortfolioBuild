@@ -1,0 +1,27 @@
+{
+  "symbol": "XNGUSD.DWX",
+  "source": "XNGUSD",
+  "sidecar": "D:\\QM\\mt5\\T1\\MQL5\\Files\\imports\\done\\20260427_080814_XNGUSD.DWX.import.txt",
+  "path": "Custom\\Commodities\\Energies\\XNGUSD.DWX",
+  "tick_head_expected": 1506906007813,
+  "tick_head_got": 1506906007813,
+  "tick_tail_expected": 1775444289019,
+  "tick_tail_got": 0,
+  "tick_tail_shortfall_seconds": null,
+  "source_tick_tail_got": 0,
+  "custom_minus_source_tail_ms": null,
+  "mid_ticks_5min": 0,
+  "bars_expected": 383654,
+  "bars_oneshot_count": 0,
+  "bars_oneshot_err": [
+    -2,
+    "Terminal: Invalid params"
+  ],
+  "bars_chunked_count": 0,
+  "chunk_days": 1,
+  "chunks": 467,
+  "bad_chunks": 0,
+  "terminal_maxbars": 100000,
+  "custom_tv": 10.0,
+  "broker_tv": 10.0
+}

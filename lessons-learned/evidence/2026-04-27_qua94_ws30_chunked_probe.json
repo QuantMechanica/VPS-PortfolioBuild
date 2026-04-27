@@ -1,0 +1,27 @@
+{
+  "symbol": "WS30.DWX",
+  "source": "WS30",
+  "sidecar": "D:\\QM\\mt5\\T1\\MQL5\\Files\\imports\\done\\20260427_075056_WS30.DWX.import.txt",
+  "path": "Custom\\Indices\\Index 1\\WS30.DWX",
+  "tick_head_expected": 1530493208796,
+  "tick_head_got": 1530493208796,
+  "tick_tail_expected": 1775444399667,
+  "tick_tail_got": 1775437255743,
+  "tick_tail_shortfall_seconds": 7143.924,
+  "source_tick_tail_got": 1775437256065,
+  "custom_minus_source_tail_ms": -322,
+  "mid_ticks_5min": 1561,
+  "bars_expected": 445870,
+  "bars_oneshot_count": 0,
+  "bars_oneshot_err": [
+    -2,
+    "Terminal: Invalid params"
+  ],
+  "bars_chunked_count": 100251,
+  "chunk_days": 1,
+  "chunks": 467,
+  "bad_chunks": 0,
+  "terminal_maxbars": 100000,
+  "custom_tv": 0.1,
+  "broker_tv": 0.1
+}

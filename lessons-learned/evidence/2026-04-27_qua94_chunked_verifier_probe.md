@@ -10,6 +10,10 @@ python C:\QM\repo\infra\scripts\verify_import_chunked_probe.py --symbol XNGUSD.D
 python C:\QM\repo\infra\scripts\verify_import_chunked_probe.py --symbol WS30.DWX --chunk-days 1
 ```
 
+Machine-readable outputs:
+- `lessons-learned/evidence/2026-04-27_qua94_xng_chunked_probe.json`
+- `lessons-learned/evidence/2026-04-27_qua94_ws30_chunked_probe.json`
+
 Results (key fields):
 
 ## XNGUSD.DWX

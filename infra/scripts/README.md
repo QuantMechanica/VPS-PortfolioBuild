@@ -64,6 +64,8 @@
 - Prints `terminal_maxbars` so evidence can distinguish:
   - MT5 chart-history cap effects (for example 100k cap), vs
   - genuine zero-bars visibility for a symbol.
+- Supports `--json-out <path>` to emit machine-readable probe payloads for
+  issue evidence/handoff.
 
 ## `verify_import_chunked_probe.py`
 

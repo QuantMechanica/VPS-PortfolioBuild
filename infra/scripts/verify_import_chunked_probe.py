@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import json
 from pathlib import Path
 
 import MetaTrader5 as mt5
@@ -66,6 +67,7 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--symbol", default="WS30.DWX")
     ap.add_argument("--chunk-days", type=int, default=20)
+    ap.add_argument("--json-out", default="")
     args = ap.parse_args()
 
     sidecar = find_latest_sidecar(args.symbol)
@@ -128,6 +130,34 @@ def main() -> int:
             source_tail_got = int(source_tail[-1]["time_msc"]) if source_tail else 0
         tail_delta_source_ms = (tail_got - source_tail_got) if tail_got and source_tail_got else None
 
+        ti = mt5.terminal_info()
+        terminal_maxbars = getattr(ti, "maxbars", None)
+
+        payload = {
+            "symbol": args.symbol,
+            "source": source,
+            "sidecar": str(sidecar),
+            "path": si.path,
+            "tick_head_expected": t_first,
+            "tick_head_got": head_got,
+            "tick_tail_expected": t_last,
+            "tick_tail_got": tail_got,
+            "tick_tail_shortfall_seconds": tail_short_s,
+            "source_tick_tail_got": source_tail_got,
+            "custom_minus_source_tail_ms": tail_delta_source_ms,
+            "mid_ticks_5min": len(mid),
+            "bars_expected": b_count,
+            "bars_oneshot_count": one_shot_count,
+            "bars_oneshot_err": list(one_shot_err) if one_shot_err is not None else None,
+            "bars_chunked_count": chunked_count,
+            "chunk_days": args.chunk_days,
+            "chunks": chunks,
+            "bad_chunks": bad_chunks,
+            "terminal_maxbars": terminal_maxbars,
+            "custom_tv": custom_tv,
+            "broker_tv": broker_tv,
+        }
+
         print(f"symbol={args.symbol} source={source} path={si.path}")
         print(f"sidecar={sidecar}")
         print(f"tick_head expected/got={t_first}/{head_got}")
@@ -142,9 +172,14 @@ def main() -> int:
             f"bars_chunked_count={chunked_count} chunk_days={args.chunk_days} "
             f"chunks={chunks} bad_chunks={bad_chunks}"
         )
-        ti = mt5.terminal_info()
-        print(f"terminal_maxbars={getattr(ti, 'maxbars', None)}")
+        print(f"terminal_maxbars={terminal_maxbars}")
         print(f"custom_tv={custom_tv} broker_tv={broker_tv}")
+
+        if args.json_out:
+            out_path = Path(args.json_out)
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            out_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+            print(f"json_out={out_path}")
     finally:
         mt5.shutdown()
     return 0
