@@ -1,0 +1,62 @@
+# Notion -> Git mirror manifest
+#
+# Per QUA-151 + CEO policy 2026-04-27 (comment 2e2f2b1f on QUA-151):
+#   - Direction: notion-to-mirror only (one-way, public-snapshot model)
+#   - Target: docs/notion-mirror/<slug>.md (NOT docs/ops/ — that stays Git-canonical)
+#   - Schedule: daily 23:00 UTC via Paperclip routine (assignee: Documentation-KM)
+#   - Commit message: docs: nightly Notion sync YYYY-MM-DD
+#   - No-diff = skip commit, log "no-diff" in routine output
+#   - NEVER sync paperclip-prompts/* back to Notion (Git-canonical)
+#   - NEVER auto-publish anywhere
+#
+# To add a page: append an entry below. To retire: set `direction: skip` with a
+# `retired_at` ISO date. Do NOT delete entries — keep history of what was synced.
+
+version: 1
+
+pages:
+  - notion_id: "34947da58f4a81a29de5c04561b50eba"
+    notion_title: "Project Charter"
+    slug: "project_charter"
+    direction: notion-to-mirror
+
+  - notion_id: "34947da58f4a8192bbebc65eaacb0949"
+    notion_title: "V5 Pipeline Design"
+    slug: "v5_pipeline_design"
+    direction: notion-to-mirror
+    note: "Notion is the public/planning copy. docs/ops/PIPELINE_PHASE_SPEC.md is the Git-canonical V2.1 implementation spec — do NOT overwrite it."
+
+  - notion_id: "34947da58f4a81d3acf3e1e0d6074d4a"
+    notion_title: "Research Methodology V2"
+    slug: "research_methodology_v2"
+    direction: notion-to-mirror
+
+  - notion_id: "34947da58f4a8136a6a8ee48fe47fc7d"
+    notion_title: "Learnings Archive — What We Keep vs. Change"
+    slug: "learnings_archive"
+    direction: notion-to-mirror
+    note: "lessons-learned/ in repo is the Git-canonical operational lessons store. This mirror is the public/board snapshot."
+
+  - notion_id: "34947da58f4a81688ca7ff3e1097b8d4"
+    notion_title: "Episode Guide (YouTube)"
+    slug: "episode_guide"
+    direction: notion-to-mirror
+
+  - notion_id: "34947da58f4a81c28045ebec3ad6d78a"
+    notion_title: "Paperclip Company Operating System & Process Roadmap"
+    slug: "process_roadmap"
+    direction: notion-to-mirror
+    note: "Per CEO 2026-04-27 mapping decision (QUA-151 comment 2e2f2b1f) — closest match for BASIS 'Process Roadmap'."
+
+# BASIS-listed but skipped:
+#   - "Agent Skill Matrix" — Git-canonical (docs/ops/AGENT_SKILL_MATRIX.md). No
+#     Notion source page surfaced in the V5 hub. Per CEO 2026-04-27, do not
+#     hallucinate a Notion source. Routine logs this as "skip: git-only".
+
+skip:
+  - reason: git-only
+    bullet: "Agent Skill Matrix → docs/ops/AGENT_SKILL_MATRIX.md (Git-canonical, no Notion source)"
+
+# Hard-prohibited (BASIS):
+prohibited:
+  - "paperclip-prompts/* (agent system prompts) — Git-canonical, never sync to Notion"
