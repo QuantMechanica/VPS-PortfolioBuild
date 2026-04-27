@@ -30,3 +30,4 @@ Scope: investigate verifier failure for `WS30.DWX` only.
 - Candidate log summarizer: `infra/scripts/summarize_verify_candidate_log.py`
 - Full-batch candidate run log: `infra/smoke/verify_import_candidate_run_2026-04-27_091415_all_symbols.log`
 - Structured handoff JSON: `docs/ops/QUA-91_WS30_VERIFIER_HANDOFF_2026-04-27.json`
+- Integrity manifest (SHA256): `docs/ops/QUA-91_WS30_VERIFIER_HANDOFF_2026-04-27.sha256`
