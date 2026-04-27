@@ -224,6 +224,20 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA95IssueTransitionPayload.ps1`
 
+## `Test-QUA95BlockedInvariant.ps1`
+
+- Enforces blocked/defer state invariants from canonical artifacts:
+  - `docs\ops\QUA-95_GATE_DECISION_2026-04-27.json`
+  - `docs\ops\QUA-95_ISSUE_TRANSITION_PAYLOAD_2026-04-27.json`
+- Invariant:
+  - if `bars_got <= 0`, gate + transition must remain `blocked` + `defer`.
+- Exit codes:
+  - `0`: invariant satisfied
+  - `1`: invariant violated
+  - `2`: required artifact missing
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA95BlockedInvariant.ps1`
+
 ## `Test-QUA95OpsSuite.ps1`
 
 - Single-command QUA-95 ops sanity suite.
@@ -231,8 +245,9 @@
   1. `Test-QUA95OpsBundleManifest.ps1`
   2. `Test-QUA95HandoffIntegrity.ps1`
   3. `Test-QUA95IssueTransitionPayload.ps1`
-  4. `monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
-  5. `monitoring/Test-QUA95BlockerTaskHealth.ps1`
+  4. `Test-QUA95BlockedInvariant.ps1`
+  5. `monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
+  6. `monitoring/Test-QUA95BlockerTaskHealth.ps1`
 - Emits JSON summary to stdout and returns:
   - `0` when all checks pass
   - `2` when any check is critical

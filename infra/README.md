@@ -29,6 +29,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
     - stale `.git/index.lock` detection
     - QUA-95 blocker refresh task health (`QM_QUA95_BlockerRefresh`)
     - QUA-95 issue-transition payload consistency (`Test-QUA95IssueTransitionPayload.ps1`)
+    - QUA-95 blocked invariant enforcement (`Test-QUA95BlockedInvariant.ps1`)
     - QUA-95 handoff integrity (`Test-QUA95HandoffIntegrity.ps1`)
     - QUA-95 blocked assertion freshness (`QUA-95_BLOCKED_STATE_ASSERTION_2026-04-27.md`)
     - QUA-95 ops bundle manifest integrity (`Test-QUA95OpsBundleManifest.ps1`)
@@ -111,6 +112,9 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Validates that `docs/ops/QUA-95_ISSUE_TRANSITION_PAYLOAD_2026-04-27.json`
     is consistent with gate + blocker canonical JSON artifacts.
   - Returns non-zero on mismatch and is consumed by `Invoke-InfraAudit.ps1`.
+- `scripts/Test-QUA95BlockedInvariant.ps1`
+  - Enforces blocked/defer invariant when `bars_got <= 0` using gate + transition payload artifacts.
+  - Returns non-zero if blocked-state policy drifts.
 - `tasks/Test-HourlyTaskTick.ps1`
   - Verifies `QM_DWX_HourlyCheck` is hourly (`PT1H`) and has at least one observed completed tick.
 - `paperclip-stale-lock-runbook.md`

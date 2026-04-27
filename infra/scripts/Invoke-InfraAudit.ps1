@@ -16,6 +16,7 @@ param(
     [int]$Qua95TaskMaxAgeMinutes = 125,
     [string]$Qua95TaskHealthScript = 'C:\QM\repo\infra\monitoring\Test-QUA95BlockerTaskHealth.ps1',
     [string]$Qua95TransitionPayloadCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95IssueTransitionPayload.ps1',
+    [string]$Qua95BlockedInvariantScript = 'C:\QM\repo\infra\scripts\Test-QUA95BlockedInvariant.ps1',
     [string]$Qua95HandoffIntegrityScript = 'C:\QM\repo\infra\scripts\Test-QUA95HandoffIntegrity.ps1',
     [string]$Qua95BlockerStatusJson = 'C:\QM\repo\docs\ops\QUA-95_XTIUSD_BLOCKER_STATUS_2026-04-27.json',
     [string]$Qua95BlockedAssertionMd = 'C:\QM\repo\docs\ops\QUA-95_BLOCKED_STATE_ASSERTION_2026-04-27.md',
@@ -221,6 +222,24 @@ else {
     Add-Check -Name 'qua95_transition_payload_consistency' -Status $payloadStatus -Meta @{
         exit_code = $payloadCode
         output = $payloadText
+    }
+}
+
+# QUA-95 blocked invariant enforcement
+if (-not (Test-Path -LiteralPath $Qua95BlockedInvariantScript)) {
+    Add-Check -Name 'qua95_blocked_invariant' -Status 'warn' -Meta @{
+        reason = 'check_script_missing'
+        path = $Qua95BlockedInvariantScript
+    }
+}
+else {
+    $invariantOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $Qua95BlockedInvariantScript 2>&1
+    $invariantCode = $LASTEXITCODE
+    $invariantText = ($invariantOut | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
+    $invariantStatus = if ($invariantCode -eq 0) { 'ok' } else { 'critical' }
+    Add-Check -Name 'qua95_blocked_invariant' -Status $invariantStatus -Meta @{
+        exit_code = $invariantCode
+        output = $invariantText
     }
 }
 
