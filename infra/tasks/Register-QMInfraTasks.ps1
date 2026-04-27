@@ -6,7 +6,8 @@ param(
     [string]$AggregatorScript = "C:\QM\repo\scripts\aggregator\standalone_aggregator_loop.py",
     [string]$SnapshotScript = "C:\QM\repo\scripts\export_public_snapshot.ps1",
     [string]$HealthScript = "C:\QM\repo\infra\monitoring\Invoke-InfraHealthCheck.ps1",
-    [string]$BackupScript = "C:\QM\repo\infra\backup.ps1"
+    [string]$BackupScript = "C:\QM\repo\infra\backup.ps1",
+    [string]$RecoveryOrphanCleanupScript = "C:\QM\repo\infra\scripts\Remove-RecoveryOrphans.ps1"
 )
 
 Set-StrictMode -Version Latest
@@ -118,3 +119,12 @@ Register-DesiredTask `
     -Arguments "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$BackupScript`"" `
     -Trigger $backupTrigger `
     -Description "Runs daily backup workflow with retention."
+
+# Recovery orphan cleanup daily at 03:10 (24h min-age enforced inside script)
+$recoveryCleanupTrigger = New-ScheduledTaskTrigger -Daily -At "03:10"
+Register-DesiredTask `
+    -TaskName "QM_RecoveryOrphans_Cleanup_Daily_0310" `
+    -Executable "powershell.exe" `
+    -Arguments "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$RecoveryOrphanCleanupScript`"" `
+    -Trigger $recoveryCleanupTrigger `
+    -Description "Cleans D:\\QM\\_recovery_orphans_* directories older than 24h."

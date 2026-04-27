@@ -35,6 +35,10 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Converges a non-interactive MT5 startup INI from one patch version to another (default: `v2 -> v3`).
   - Check-then-act writes: updates target only when content differs.
   - Enforces `ShutdownTerminal=1` and refuses T6 paths by default.
+- `scripts/Remove-RecoveryOrphans.ps1`
+  - Cleans `D:\QM\_recovery_orphans_*` directories after the 24h hold window.
+  - Idempotent check-then-act delete flow with retries for transient remove failures.
+  - Writes JSON run logs to `D:\QM\reports\infra\recovery_orphans\`.
 - `scripts/Fix_DWX_Spec_v3.mq5`
   - Corrected DWX custom-symbol spec patch (`tvp/tvl` excluded from writable/settable fields).
   - Enforces `spec_ok := custom.tv > 0 and rel_err(custom.tv, broker.tv) < 0.05`.
@@ -81,6 +85,12 @@ Aggregator state writer (every minute):
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-AggregatorStateTask.ps1
+```
+
+Recovery orphan cleanup (daily schedule is managed by `tasks/Register-QMInfraTasks.ps1`):
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Remove-RecoveryOrphans.ps1
 ```
 
 ## Non-goals
