@@ -12,6 +12,8 @@
   - These are logged as verifier/runtime conditions, not symbol-specific corruption.
   - Parser contract covers real verifier row shapes with leading verdict spacing
     (for example `[ FAIL_tail_bars] XAGUSD.DWX: ...`) and trailing fields.
+- One-command triage on a captured verifier log:
+  - `python -c "from pathlib import Path;import importlib.util as u;p=Path(r'C:\QM\repo\infra\scripts\dwx_hourly_check.py');s=u.spec_from_file_location('m',p);m=u.module_from_spec(s);s.loader.exec_module(m);t=Path(r'C:\QM\repo\infra\smoke\verify_import_run_2026-04-27_qua19.log').read_text(encoding='utf-8',errors='replace');print(m.summarize_verify_failures(t))"`
 - Criterion:
   - `custom.trade_tick_value > 0`
   - `broker.trade_tick_value > 0`
