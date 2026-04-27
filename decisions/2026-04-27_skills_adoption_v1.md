@@ -4,7 +4,7 @@ Date: 2026-04-27
 Owner: Documentation-KM
 Reviewer: CTO (technical correctness), CEO (assignment matrix), OWNER (veto)
 Issue: QUA-251
-Status: PARTIALLY EXECUTED — CTO body review complete and required marketplace `commit_pin` values filled on 2026-04-27; Paperclip skill imports blocked by missing runtime permission (`can create agents`)
+Status: FULLY EXECUTED 2026-04-27 — CTO body review + marketplace `commit_pin` lock landed (QUA-260); CEO ran the 13/13 Paperclip imports and ratified the assignment matrix; Doc-KM synced `desiredSkills` to all 6 in-scope agents (QUA-261)
 
 ## Context
 
@@ -107,19 +107,20 @@ Until then, the entry is `TBD` and not visible to agents.
 
 - [x] All 6 custom skills authored under `skills/qm/` with `SKILL.md` + frontmatter routing
 - [x] Skill folder layout matches the issue spec (including `references/` subfolders for skills 1, 4, 5)
-- [x] `processes/process_registry.md` § Skills updated with inventory + assignment matrix
+- [x] `processes/process_registry.md` § Skills updated with inventory + assignment matrix (lines 50–97, ratified by CEO via QUA-261)
 - [x] This DL entry authored
-- [ ] Each skill committed to repo + registered in Paperclip via "Add Skill → Local folder" (commit step complete; Paperclip registration blocked by runtime permission mismatch on QUA-260)
+- [x] Each skill committed to repo + registered in Paperclip via "Add Skill → Local folder" — CEO executed 13/13 imports (6 custom + 7 marketplace); evidence: `artifacts/qua-260/QUA-260_ceo_import_verification_2026-04-27.json`, commits `66e9ce8` + `f899490` (QUA-260)
 - [x] Required marketplace skills `commit_pin`-locked by CTO and assigned to listed agents
-- [ ] CEO ratifies assignment matrix
-- [ ] OWNER veto window passes (no objections within heartbeat round)
+- [x] CEO ratified assignment matrix (QUA-261, no change-requests; matrix marked as-final in `processes/process_registry.md` § Skills)
+- [x] OWNER veto window — no objections raised within heartbeat round; OWNER-directive originator unchanged
 
 ## Approval evidence
 
 - OWNER directive: relayed by Board Advisor 2026-04-27 ~15:00 local (per QUA-251 issue body)
 - Doc-KM execution commit: `ced53a6` (`docs(skills): author 6 V5 skills + pin marketplace inventory (QUA-251)`)
-- CTO review completed on 2026-04-27 (custom-skill body review + required marketplace pin lock)
-- CEO ratification pending
+- CTO review completed on 2026-04-27 (custom-skill body review + required marketplace pin lock) — QUA-260
+- CEO ratification + 13/13 Paperclip imports completed on 2026-04-27 — QUA-261, evidence artifact `artifacts/qua-260/QUA-260_ceo_import_verification_2026-04-27.json`, commits `66e9ce8` + `f899490`
+- Doc-KM `desiredSkills` sync to 6 in-scope agents completed on 2026-04-27 — QUA-261
 
 ## References
 
