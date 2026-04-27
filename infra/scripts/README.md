@@ -764,6 +764,19 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\New-QUA207BlockedOnVerifierSnapshot.ps1`
 
+## `New-QUA207IssueStatusUpdatePayload.ps1`
+
+- Generates deterministic issue-status mutation payload for QUA-207 from:
+  - transition payload JSON
+  - blocked-on-verifier snapshot JSON
+- Behavior:
+  - emits `issue_update.status=blocked` when runtime owner is complete and verifier owner remains pending
+  - otherwise follows transition payload status
+- Writes:
+  - `docs\ops\QUA-207_ISSUE_STATUS_UPDATE_2026-04-27.json`
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\New-QUA207IssueStatusUpdatePayload.ps1`
+
 ## `New-QUA207IssueComment.ps1`
 
 - Generates ready-to-post QUA-207 issue comment markdown from:

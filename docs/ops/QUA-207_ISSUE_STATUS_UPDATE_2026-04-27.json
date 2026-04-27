@@ -1,0 +1,18 @@
+﻿{
+    "issue":  "QUA-207",
+    "generated_at_local":  "2026-04-27T15:27:34+02:00",
+    "source":  {
+                   "transition_payload_json":  "docs\\ops\\QUA-207_ISSUE_TRANSITION_PAYLOAD_2026-04-27.json",
+                   "blocked_snapshot_json":  "docs\\ops\\QUA-207_BLOCKED_ON_VERIFIER_2026-04-27.json"
+               },
+    "issue_update":  {
+                         "status":  "blocked",
+                         "reason":  "runtime_scope_completed_waiting_on_verifier_owner",
+                         "resume":  true
+                     },
+    "unblock":  {
+                    "owner":  "verifier_implementation_owner",
+                    "action":  "Rerun/fix verifier acceptance path for XTIUSD.DWX until bars_got \u003e 0 and tail is aligned."
+                },
+    "note":  "Mark blocked until verifier owner completes acceptance rerun/fix."
+}
