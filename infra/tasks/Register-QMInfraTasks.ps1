@@ -6,7 +6,9 @@ param(
     [string]$AggregatorScript = "C:\QM\repo\scripts\aggregator\standalone_aggregator_loop.py",
     [string]$SnapshotScript = "C:\QM\repo\scripts\export_public_snapshot.ps1",
     [string]$HealthScript = "C:\QM\repo\infra\monitoring\Invoke-InfraHealthCheck.ps1",
+    [string]$GitIndexLockMonitorScript = "C:\QM\repo\infra\monitoring\Invoke-GitIndexLockMonitor.ps1",
     [string]$StaleLockWatchdogScript = "C:\QM\repo\infra\monitoring\Invoke-PaperclipStaleLockWatchdog.ps1",
+    [string]$Qua207RuntimeHeartbeatScript = "C:\QM\repo\infra\scripts\Run-QUA207RuntimeCompletionHeartbeat.ps1",
     [string]$BackupScript = "C:\QM\repo\infra\backup.ps1",
     [string]$RecoveryOrphanCleanupScript = "C:\QM\repo\infra\scripts\Remove-RecoveryOrphans.ps1"
 )
@@ -112,6 +114,23 @@ Register-DesiredTask `
     -Trigger $healthTrigger `
     -Description "Checks infra health: disk, MT5 heartbeat, Paperclip daemon, Drive sync, stale index.lock."
 
+# Git index lock monitor every 10 minutes (PC1-00)
+if (Test-Path -LiteralPath $GitIndexLockMonitorScript) {
+    $gitLockTrigger = New-RepeatingTriggerFromToday `
+        -AtTime (Get-Date "00:02") `
+        -Interval (New-TimeSpan -Minutes 10) `
+        -Duration (New-TimeSpan -Days 3650)
+    Register-DesiredTask `
+        -TaskName "QM_GitIndexLockMonitor_10min" `
+        -Executable "powershell.exe" `
+        -Arguments "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$GitIndexLockMonitorScript`" -StaleAfterMinutes 20 -FailOnFinding" `
+        -Trigger $gitLockTrigger `
+        -Description "Detects stale .git/index.lock files and raises critical state."
+}
+else {
+    Write-Warning "Git index lock monitor script missing; skipped QM_GitIndexLockMonitor_10min registration."
+}
+
 # Paperclip stale-lock watchdog every 15 minutes, only if source script exists.
 if (Test-Path -LiteralPath $StaleLockWatchdogScript) {
     $staleWatchdogTrigger = New-RepeatingTriggerFromToday `
@@ -127,6 +146,23 @@ if (Test-Path -LiteralPath $StaleLockWatchdogScript) {
 }
 else {
     Write-Warning "Paperclip stale-lock watchdog script missing; skipped QM_PaperclipStaleLockWatchdog_15min registration."
+}
+
+# QUA-207 runtime completion heartbeat every 30 minutes (if script exists)
+if (Test-Path -LiteralPath $Qua207RuntimeHeartbeatScript) {
+    $qua207Trigger = New-RepeatingTriggerFromToday `
+        -AtTime (Get-Date "00:04") `
+        -Interval (New-TimeSpan -Minutes 30) `
+        -Duration (New-TimeSpan -Days 3650)
+    Register-DesiredTask `
+        -TaskName "QM_QUA207_RuntimeHeartbeat_30min" `
+        -Executable "powershell.exe" `
+        -Arguments "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$Qua207RuntimeHeartbeatScript`" -RepoRoot `"$RepoRoot`"" `
+        -Trigger $qua207Trigger `
+        -Description "Runs QUA-207 runtime completion heartbeat and refreshes transition/comment artifacts."
+}
+else {
+    Write-Warning "QUA-207 runtime heartbeat script missing; skipped QM_QUA207_RuntimeHeartbeat_30min registration."
 }
 
 # Daily backup at 02:15

@@ -209,6 +209,8 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `scripts/Run-QUA207OpsBundle.ps1`
   - Runs the QUA-207 runtime heartbeat + issue-comment generation in one command.
   - Writes `docs/ops/QUA-207_OPS_BUNDLE_2026-04-27.json`.
+- `tasks/Register-QMInfraTasks.ps1`
+  - Also converges `QM_QUA207_RuntimeHeartbeat_30min` when `Run-QUA207RuntimeCompletionHeartbeat.ps1` is present.
 - `scripts/New-QUA207IssueComment.ps1`
   - Generates `docs/ops/QUA-207_ISSUE_COMMENT_2026-04-27.md` from live transition + evidence artifacts.
 - `scripts/Assert-CommitAllowlist.ps1`
