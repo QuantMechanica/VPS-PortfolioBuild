@@ -24,7 +24,7 @@
                      },
     "source_probe":  {
                          "symbol":  "XTIUSD",
-                         "rates_range_m1_count":  557,
+                         "rates_range_m1_count":  581,
                          "rates_range_m1_err":  [
                                                     1,
                                                     "Success"
@@ -43,5 +43,5 @@
                          "tick_minutes":  10
                      },
     "issue":  "QUA-95",
-    "captured_at_local":  "2026-04-27T14:35:34+02:00"
+    "captured_at_local":  "2026-04-27T14:40:50+02:00"
 }
