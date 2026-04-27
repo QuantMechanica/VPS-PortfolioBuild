@@ -28,13 +28,15 @@ $transition = Get-Content -Raw -LiteralPath $transitionFull | ConvertFrom-Json
 $barsGot = if ($null -ne $gate.bars_got) { [int]$gate.bars_got } else { 0 }
 $tailShortfall = if ($null -ne $gate.tail_shortfall_seconds) { [double]$gate.tail_shortfall_seconds } else { 0.0 }
 $acceptanceMet = [bool]$blocker.acceptance.met
-$readyToUnblock = ($acceptanceMet -and $barsGot -gt 0 -and $tailShortfall -le 0.0)
+$recommendedState = [string]$gate.recommended_state
+$transitionStatus = [string]$transition.transition.status
+$readyToUnblock = ($acceptanceMet -and $barsGot -gt 0 -and $recommendedState -eq 'clear' -and $transitionStatus -eq 'in_progress')
 
 $unmet = @()
 if (-not $acceptanceMet) { $unmet += 'acceptance_not_met' }
 if ($barsGot -le 0) { $unmet += 'bars_got_zero' }
-if ($tailShortfall -gt 0.0) { $unmet += 'tail_not_aligned' }
-if ([string]$transition.transition.status -ne 'blocked' -and -not $readyToUnblock) { $unmet += 'transition_state_unexpected_for_blocked' }
+if ($recommendedState -ne 'clear') { $unmet += 'gate_not_clear' }
+if ($transitionStatus -ne 'in_progress') { $unmet += 'transition_not_in_progress' }
 
 $selectedOwners = if ($null -ne $transition.unblock_owners -and @($transition.unblock_owners).Count -gt 0) {
     @($transition.unblock_owners)

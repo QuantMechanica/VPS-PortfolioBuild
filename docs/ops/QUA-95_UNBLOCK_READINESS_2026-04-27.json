@@ -1,25 +1,23 @@
 ﻿{
     "issue":  "QUA-95",
-    "generated_at_local":  "2026-04-27T14:56:43+02:00",
+    "generated_at_local":  "2026-04-27T15:10:11+02:00",
     "readiness":  {
-                      "ready_to_unblock":  false,
+                      "ready_to_unblock":  true,
                       "unmet_criteria":  [
-                                             "acceptance_not_met",
-                                             "bars_got_zero",
-                                             "tail_not_aligned"
+
                                          ]
                   },
     "current":  {
-                    "recommended_state":  "blocked",
-                    "disposition":  "defer",
-                    "bars_got":  0,
-                    "tail_shortfall_seconds":  1775444399.967,
-                    "last_checked_local":  "2026-04-27T14:54:30+02:00"
+                    "recommended_state":  "clear",
+                    "disposition":  "clear",
+                    "bars_got":  99911,
+                    "tail_shortfall_seconds":  7141.322,
+                    "last_checked_local":  "2026-04-27T15:06:26+02:00"
                 },
     "transition":  {
-                       "status":  "blocked",
-                       "reason":  "acceptance_not_met",
-                       "disposition":  "defer"
+                       "status":  "in_progress",
+                       "reason":  "acceptance_met",
+                       "disposition":  "clear"
                    },
     "unblock_owners":  [
                            {

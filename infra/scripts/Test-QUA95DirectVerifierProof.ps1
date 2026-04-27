@@ -53,9 +53,22 @@ $verdict = [string]$evidence.verdict
 $rawLogPath = [string]$evidence.raw_log
 $recommended = [string]$evidence.recommended_state
 $disposition = [string]$evidence.disposition
+$tailDelta = $null
+if ($evidence.PSObject.Properties.Name -contains 'tail_delta_ms' -and $null -ne $evidence.tail_delta_ms) {
+    $tailDelta = [double]$evidence.tail_delta_ms
+}
+$tailTolMs = 1000.0
+if ($evidence.PSObject.Properties.Name -contains 'tail_tolerance_ms' -and $null -ne $evidence.tail_tolerance_ms) {
+    $tailTolMs = [double]$evidence.tail_tolerance_ms
+}
 
-if ($barsOneShot -le 0 -and $recommended -ne 'blocked') { Fail "evidence_recommended_state_mismatch" }
-if ($barsChunked -le 0 -and $disposition -ne 'defer') { Fail "evidence_disposition_mismatch" }
+$barsPositive = ($barsOneShot -gt 0 -or $barsChunked -gt 0)
+$tailAligned = ($null -ne $tailDelta -and [math]::Abs($tailDelta) -le $tailTolMs)
+$expectedRecommended = if ($barsPositive -and $tailAligned) { 'clear' } else { 'blocked' }
+$expectedDisposition = if ($expectedRecommended -eq 'clear') { 'clear' } else { 'defer' }
+
+if ($recommended -ne $expectedRecommended) { Fail "evidence_recommended_state_mismatch" }
+if ($disposition -ne $expectedDisposition) { Fail "evidence_disposition_mismatch" }
 
 if ([string]::IsNullOrWhiteSpace($rawLogPath)) { Fail "evidence_raw_log_missing" }
 if (-not [System.IO.Path]::IsPathRooted($rawLogPath)) { Fail "evidence_raw_log_not_absolute" }

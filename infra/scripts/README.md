@@ -275,6 +275,8 @@
   - `ready_to_unblock`
   - `unmet_criteria`
   - `unblock_owners`
+- Current readiness contract:
+  - `ready_to_unblock=true` when acceptance is met, bars are positive, gate is `clear`, and transition status is `in_progress`
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Update-QUA95UnblockReadiness.ps1`
 
@@ -331,7 +333,8 @@
   - issue/symbol identity
   - evidence freshness (`captured_at_local`) within max-age window (`-MaxEvidenceAgeMinutes`, default `240`)
   - raw log path exists, is absolute, and log content contains symbol + FAIL row (and verdict token when provided)
-  - blocked/defer consistency when bars are zero
+  - recommended/disposition consistency with acceptance semantics:
+    `bars_positive && abs(tail_delta_ms) <= tail_tolerance_ms` => `clear/clear`, else `blocked/defer`
   - proof markdown contains expected heading/symbol
 - Exit codes:
   - `0`: proof artifacts are consistent
@@ -716,6 +719,16 @@
   - `2`: one or more steps failed
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Run-QUA207RuntimeCompletionHeartbeat.ps1`
+
+## `New-QUA207IssueComment.ps1`
+
+- Generates ready-to-post QUA-207 issue comment markdown from:
+  - QUA-207 transition payload JSON
+  - custom-visibility evidence JSON
+- Writes:
+  - `docs\ops\QUA-207_ISSUE_COMMENT_2026-04-27.md`
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\New-QUA207IssueComment.ps1`
 
 ## `Restore-QUA95RuntimeBars.ps1`
 

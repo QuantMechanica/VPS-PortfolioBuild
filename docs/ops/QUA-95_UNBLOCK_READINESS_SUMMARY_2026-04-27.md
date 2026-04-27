@@ -1,21 +1,19 @@
 ﻿# QUA-95 Unblock Readiness Summary (2026-04-27)
 
 Issue: `QUA-95`
-Generated: `2026-04-27T14:56:43+02:00`
+Generated: `2026-04-27T15:10:11+02:00`
 
 ## Status
 
-- `ready_to_unblock`: `false`
-- `recommended_state`: `blocked`
-- `disposition`: `defer`
-- `bars_got`: `0`
-- `tail_shortfall_seconds`: `1775444399.967`
+- `ready_to_unblock`: `true`
+- `recommended_state`: `clear`
+- `disposition`: `clear`
+- `bars_got`: `99911`
+- `tail_shortfall_seconds`: `7141.322`
 
 ## Unmet Criteria
 
-- `acceptance_not_met`
-- `bars_got_zero`
-- `tail_not_aligned`
+- none
 
 ## Unblock Owners
 
