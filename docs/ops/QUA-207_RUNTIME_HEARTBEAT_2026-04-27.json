@@ -1,8 +1,8 @@
 ﻿{
     "issue":  "QUA-207",
-    "generated_at_local":  "2026-04-27T15:21:01+02:00",
+    "generated_at_local":  "2026-04-27T15:22:10+02:00",
     "status":  "ok",
-    "duration_seconds":  0.447,
+    "duration_seconds":  0.502,
     "steps":  [
                   {
                       "script":  "C:\\QM\\repo\\infra\\scripts\\New-QUA207IssueTransitionPayload.ps1",
