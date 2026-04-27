@@ -650,6 +650,28 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Run-QUA95CustomVisibilityProof.ps1`
 
+## `Run-QUA207XtiusdReimportRepair.ps1`
+
+- Deterministic runtime repair flow for QUA-207 (`XTIUSD.DWX` bars visibility).
+- Steps:
+  1. choose latest archived `imports\done\*XTIUSD.DWX.import.txt` + paired bins
+  2. compile and run `Delete_One_Custom_Symbol.mq5` via startup ini
+  3. re-stage sidecar+bins into `MQL5\Files\imports\`
+  4. run `Import_DWX_From_Bin` via startup ini
+  5. refresh custom-visibility proof (`Run-QUA95CustomVisibilityProof.ps1`)
+- Safety:
+  - T1-scoped (`D:\QM\mt5\T1`) by default
+  - refuses T6 paths
+  - single-symbol scope (`XTIUSD.DWX`) only
+- Outputs:
+  - `docs\ops\QUA-207_REIMPORT_REPAIR_XTIUSD_2026-04-27.json`
+  - `docs\ops\QUA-207_REIMPORT_REPAIR_XTIUSD_2026-04-27.md`
+- Exit codes:
+  - `0`: runtime bars visibility restored (target bars available via range or pos probe)
+  - `2`: not restored
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Run-QUA207XtiusdReimportRepair.ps1`
+
 ## `Restore-QUA95RuntimeBars.ps1`
 
 - Bounded runtime restore flow for `XTIUSD.DWX` M1 bars visibility.

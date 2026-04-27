@@ -1,0 +1,60 @@
+﻿{
+    "issue":  "QUA-207",
+    "generated_at_local":  "2026-04-27T14:50:40+02:00",
+    "target_symbol":  "XTIUSD.DWX",
+    "source_symbol":  "XTIUSD",
+    "terminal_root":  "D:\\QM\\mt5\\T1",
+    "status":  "restored",
+    "duration_seconds":  21.499,
+    "restage":  {
+                    "source_sidecar":  "D:\\QM\\mt5\\T1\\MQL5\\Files\\imports\\done\\20260427_144846_XTIUSD.DWX.import.txt",
+                    "source_tick_bin":  "D:\\QM\\mt5\\T1\\MQL5\\Files\\imports\\done\\20260427_144906_XTIUSD.DWX.tick.bin",
+                    "source_m1_bin":  "D:\\QM\\mt5\\T1\\MQL5\\Files\\imports\\done\\20260427_144906_XTIUSD.DWX.m1.bin",
+                    "queued_sidecar":  "D:\\QM\\mt5\\T1\\MQL5\\Files\\imports\\XTIUSD.DWX.import.txt",
+                    "queued_tick_bin":  "D:\\QM\\mt5\\T1\\MQL5\\Files\\imports\\XTIUSD.DWX.tick.bin",
+                    "queued_m1_bin":  "D:\\QM\\mt5\\T1\\MQL5\\Files\\imports\\XTIUSD.DWX.m1.bin"
+                },
+    "compile":  {
+                    "exit_code":  1,
+                    "log_path":  "D:\\QM\\mt5\\T1\\MQL5\\Scripts\\Delete_One_Custom_Symbol.compile.log"
+                },
+    "delete_step":  {
+                        "stopped_processes":  1,
+                        "run":  {
+                                    "pid":  79624,
+                                    "timed_out":  false,
+                                    "exit_code":  1
+                                },
+                        "ini":  "D:\\QM\\mt5\\T1\\run_delete_one_custom_symbol.ini"
+                    },
+    "import_step":  {
+                        "stopped_processes":  0,
+                        "run":  {
+                                    "pid":  70512,
+                                    "timed_out":  false,
+                                    "exit_code":  0
+                                },
+                        "ini":  "D:\\QM\\mt5\\T1\\run_import_dwx_from_bin.ini",
+                        "timeout_minutes":  30,
+                        "queue_restaged":  true
+                    },
+    "proof":  {
+                  "exit_code":  0,
+                  "evidence_path":  "C:\\QM\\repo\\lessons-learned\\evidence\\2026-04-27_qua95_xtiusd_custom_visibility_probe_rerun.json",
+                  "target_range_m1":  0,
+                  "target_pos_m1":  10,
+                  "source_range_m1":  557,
+                  "source_pos_m1":  10,
+                  "isolated_custom_failure":  false,
+                  "output":  [
+                                 "target=XTIUSD.DWX source=XTIUSD isolated_custom_bars_visibility_failure=False",
+                                 "target bars(range/pos)=0/10 source bars(range/pos)=557/10",
+                                 "json_out=C:\\QM\\repo\\lessons-learned\\evidence\\2026-04-27_qua95_xtiusd_custom_visibility_probe_rerun.json",
+                                 "probe_exit_code=0",
+                                 "isolated_custom_bars_visibility_failure=False",
+                                 "wrote=C:\\QM\\repo\\lessons-learned\\evidence\\2026-04-27_qua95_xtiusd_custom_visibility_probe_rerun.json",
+                                 "wrote=C:\\QM\\repo\\docs\\ops\\QUA-95_CUSTOM_VISIBILITY_RERUN_2026-04-27.md"
+                             ]
+              },
+    "next_action":  "Run direct verifier proof and unblock readiness chain."
+}

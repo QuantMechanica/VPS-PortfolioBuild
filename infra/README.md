@@ -78,6 +78,15 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Runs direct verifier for `XTIUSD.DWX`, captures raw log, and writes deterministic direct-rerun proof JSON/markdown artifacts.
 - `scripts/Run-QUA95CustomVisibilityProof.ps1`
   - Runs the custom-symbol visibility probe for `XTIUSD.DWX` and writes deterministic rerun proof JSON/markdown artifacts.
+- `scripts/Run-QUA207XtiusdReimportRepair.ps1`
+  - Idempotent QUA-207 repair flow for `XTIUSD.DWX`:
+    - compile/run single-symbol delete script in T1
+    - restage archived `imports\done` sidecar+bins to queue
+    - run `Import_DWX_From_Bin` via startup ini
+    - refresh custom-visibility proof artifact
+  - Writes:
+    - `docs/ops/QUA-207_REIMPORT_REPAIR_XTIUSD_2026-04-27.json`
+    - `docs/ops/QUA-207_REIMPORT_REPAIR_XTIUSD_2026-04-27.md`
 - `scripts/Restore-QUA95RuntimeBars.ps1`
   - Runs a bounded runtime-recovery flow for `XTIUSD.DWX` bars visibility:
     - precheck probe (`probe_custom_symbol_visibility.py`)
