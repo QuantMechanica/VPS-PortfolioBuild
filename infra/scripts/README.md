@@ -270,6 +270,17 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Update-QUA95UnblockReadiness.ps1`
 
+## `Write-QUA95UnblockReadinessSummary.ps1`
+
+- Writes deterministic markdown summary from:
+  - `docs\ops\QUA-95_UNBLOCK_READINESS_2026-04-27.json`
+- Output:
+  - `docs\ops\QUA-95_UNBLOCK_READINESS_SUMMARY_2026-04-27.md`
+- Includes:
+  - `ready_to_unblock`, current blocker metrics, unmet criteria, unblock owners/actions
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Write-QUA95UnblockReadinessSummary.ps1`
+
 ## `Test-QUA95OpsSuite.ps1`
 
 - Single-command QUA-95 ops sanity suite.
