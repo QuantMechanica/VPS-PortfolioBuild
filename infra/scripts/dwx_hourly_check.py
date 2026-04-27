@@ -94,20 +94,23 @@ def compute_readiness(
     )
 
 
-def is_symbol_spec_ok(si) -> bool:
-    """Readiness spec gate for a DWX symbol.
+def source_symbol_for_target(target_symbol: str) -> str:
+    """Resolve expected broker source symbol for a .DWX target."""
+    root = target_symbol[:-4] if target_symbol.endswith(".DWX") else target_symbol
+    return SOURCE_OVERRIDES.get(root) or root
 
-    We require non-zero profit/loss tick values plus base/profit currencies.
-    `trade_tick_value` itself is informational and may differ by symbol type.
+
+def is_symbol_spec_ok(custom_tick_value: float, broker_tick_value: float) -> bool:
+    """Corrected binding criterion for DWX spec readiness.
+
+    spec_ok := custom.tv > 0 and broker.tv > 0 and
+               abs(custom.tv - broker.tv) / broker.tv < 0.05
     """
-    tvp = float(si.trade_tick_value_profit or 0.0)
-    tvl = float(si.trade_tick_value_loss or 0.0)
-    return (
-        tvp > 0
-        and tvl > 0
-        and si.currency_base != ""
-        and si.currency_profit != ""
-    )
+    ctv = float(custom_tick_value or 0.0)
+    btv = float(broker_tick_value or 0.0)
+    if ctv <= 0 or btv <= 0:
+        return False
+    return abs(ctv - btv) / btv < 0.05
 
 
 def open_log() -> Path:
@@ -244,11 +247,19 @@ def write_readiness_report(fp) -> bool:
 
         spec_bad = []
         for s in dwx_symbols:
-            si = mt5.symbol_info(s.name)
-            if si is None:
+            custom_si = mt5.symbol_info(s.name)
+            if custom_si is None:
                 spec_bad.append(s.name)
                 continue
-            spec_ok = is_symbol_spec_ok(si)
+            source_symbol = source_symbol_for_target(s.name)
+            source_si = mt5.symbol_info(source_symbol)
+            if source_si is None:
+                spec_bad.append(s.name)
+                continue
+            spec_ok = is_symbol_spec_ok(
+                custom_tick_value=custom_si.trade_tick_value,
+                broker_tick_value=source_si.trade_tick_value,
+            )
             if not spec_ok:
                 spec_bad.append(s.name)
 
@@ -277,16 +288,20 @@ def write_readiness_report(fp) -> bool:
         if unexpected:
             lines.append(f"- unexpected (in MT5 but no CSV): {unexpected}\n")
         lines.append("\n## Per-symbol detail\n")
-        lines.append("| symbol | path | spec_ok | tick_value | tvp | tvl |")
-        lines.append("|---|---|---|---|---|---|")
+        lines.append("| symbol | source | path | spec_ok | custom_tv | broker_tv | rel_err |")
+        lines.append("|---|---|---|---|---|---|---|")
         for s in dwx_symbols:
-            si = mt5.symbol_info(s.name)
-            tv = si.trade_tick_value
-            tvp = si.trade_tick_value_profit
-            tvl = si.trade_tick_value_loss
-            spec_ok = is_symbol_spec_ok(si)
-            lines.append(f"| {s.name} | {s.path} | {'OK' if spec_ok else 'BAD'} "
-                         f"| {tv} | {tvp} | {tvl} |")
+            custom_si = mt5.symbol_info(s.name)
+            source_symbol = source_symbol_for_target(s.name)
+            source_si = mt5.symbol_info(source_symbol)
+            ctv = float(custom_si.trade_tick_value or 0.0) if custom_si else 0.0
+            btv = float(source_si.trade_tick_value or 0.0) if source_si else 0.0
+            spec_ok = is_symbol_spec_ok(ctv, btv)
+            rel_err = abs(ctv - btv) / btv if btv > 0 else 1.0
+            lines.append(
+                f"| {s.name} | {source_symbol} | {s.path} | {'OK' if spec_ok else 'BAD'} "
+                f"| {ctv} | {btv} | {rel_err:.4f} |"
+            )
         lines.append(f"\n## Queue\n")
         lines.append(f"- pending sidecars in imports\\: {len(pending)}")
         if pending:

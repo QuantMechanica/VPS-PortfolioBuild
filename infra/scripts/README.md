@@ -6,7 +6,7 @@
   - readiness gate (`spec_bad` aggregation)
   - per-symbol readiness report row (`spec_ok` column)
 - Criterion:
-  - `trade_tick_value_profit > 0`
-  - `trade_tick_value_loss > 0`
-  - `currency_base` and `currency_profit` are both populated
-- `trade_tick_value` equality checks (`tv == tvp == tvl`) are intentionally not part of readiness.
+  - `custom.trade_tick_value > 0`
+  - `broker.trade_tick_value > 0`
+  - `abs(custom.tv - broker.tv) / broker.tv < 0.05`
+- No `tvp` / `tvl` fields are used for gate decisions.

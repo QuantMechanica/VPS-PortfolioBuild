@@ -1,7 +1,6 @@
 import importlib.util
 import sys
 import types
-from types import SimpleNamespace
 from pathlib import Path
 import unittest
 
@@ -86,35 +85,19 @@ class ReadinessTests(unittest.TestCase):
             )
         )
 
-    def test_symbol_spec_ok_accepts_positive_tvp_tvl_with_currencies(self):
-        si = SimpleNamespace(
-            trade_tick_value=0.0,
-            trade_tick_value_profit=1.25,
-            trade_tick_value_loss=1.35,
-            currency_base="EUR",
-            currency_profit="USD",
-        )
-        self.assertTrue(self.mod.is_symbol_spec_ok(si))
+    def test_symbol_spec_ok_accepts_within_five_percent(self):
+        self.assertTrue(self.mod.is_symbol_spec_ok(10.2, 10.0))
 
-    def test_symbol_spec_ok_rejects_zero_profit_or_loss_tick_value(self):
-        si = SimpleNamespace(
-            trade_tick_value=1.0,
-            trade_tick_value_profit=0.0,
-            trade_tick_value_loss=1.0,
-            currency_base="EUR",
-            currency_profit="USD",
-        )
-        self.assertFalse(self.mod.is_symbol_spec_ok(si))
+    def test_symbol_spec_ok_rejects_zero_or_negative_tick_values(self):
+        self.assertFalse(self.mod.is_symbol_spec_ok(0.0, 10.0))
+        self.assertFalse(self.mod.is_symbol_spec_ok(10.0, 0.0))
 
-    def test_symbol_spec_ok_rejects_missing_currency_fields(self):
-        si = SimpleNamespace(
-            trade_tick_value=1.0,
-            trade_tick_value_profit=1.0,
-            trade_tick_value_loss=1.0,
-            currency_base="",
-            currency_profit="USD",
-        )
-        self.assertFalse(self.mod.is_symbol_spec_ok(si))
+    def test_symbol_spec_ok_rejects_five_percent_or_more(self):
+        self.assertFalse(self.mod.is_symbol_spec_ok(10.5, 10.0))
+
+    def test_source_symbol_for_target_applies_override(self):
+        self.assertEqual(self.mod.source_symbol_for_target("NDXm.DWX"), "NDX")
+        self.assertEqual(self.mod.source_symbol_for_target("EURUSD.DWX"), "EURUSD")
 
 
 if __name__ == "__main__":
