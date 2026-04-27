@@ -28,6 +28,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
     - Google Drive sync freshness
     - stale `.git/index.lock` detection
     - QUA-95 blocker refresh task health (`QM_QUA95_BlockerRefresh`)
+    - QUA-95 issue-transition payload consistency (`Test-QUA95IssueTransitionPayload.ps1`)
   - Writes machine-readable JSON report to `infra/reports/infra_audit_latest.json`.
 - `scripts/Install-AggregatorStateTask.ps1`
   - Registers Task Scheduler job `QM_AggregatorState_1min` as `SYSTEM`.
@@ -79,6 +80,10 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `monitoring/Test-QUA95BlockerTaskHealth.ps1`
   - Validates task existence, enabled state, last result, and staleness window for `QM_QUA95_BlockerRefresh`.
   - Returns non-zero on critical task-health drift.
+- `scripts/Test-QUA95IssueTransitionPayload.ps1`
+  - Validates that `docs/ops/QUA-95_ISSUE_TRANSITION_PAYLOAD_2026-04-27.json`
+    is consistent with gate + blocker canonical JSON artifacts.
+  - Returns non-zero on mismatch and is consumed by `Invoke-InfraAudit.ps1`.
 - `tasks/Test-HourlyTaskTick.ps1`
   - Verifies `QM_DWX_HourlyCheck` is hourly (`PT1H`) and has at least one observed completed tick.
 - `paperclip-stale-lock-runbook.md`

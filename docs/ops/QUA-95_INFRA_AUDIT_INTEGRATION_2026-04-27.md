@@ -1,7 +1,7 @@
 # QUA-95 Infra Audit Integration Proof (2026-04-27)
 
 Issue: `QUA-95`  
-Scope: confirm `QM_QUA95_BlockerRefresh` health is present in central infra audit output.
+Scope: confirm both blocker task health and issue-transition payload consistency are present in central infra audit output.
 
 ## Command
 
@@ -16,7 +16,14 @@ Infra audit completed: status=critical, checks=13, issues=2
 Report: C:\QM\repo\infra\reports\infra_audit_latest.json
 ```
 
-## Extracted check entry
+Latest integration run:
+
+```text
+Infra audit completed: status=critical, checks=14, issues=2
+Report: C:\QM\repo\infra\reports\infra_audit_latest.json
+```
+
+## Extracted check entries
 
 From `infra/reports/infra_audit_latest.json`:
 
@@ -32,7 +39,17 @@ From `infra/reports/infra_audit_latest.json`:
 }
 ```
 
+```json
+{
+  "name": "qua95_transition_payload_consistency",
+  "status": "ok",
+  "meta": {
+    "exit_code": 0
+  }
+}
+```
+
 ## Interpretation
 
-- QUA-95 scheduler health is now audited in the same report as disk, terminal liveness, Drive sync, and stale index-lock checks.
+- QUA-95 scheduler health and transition payload consistency are now audited in the same report as disk, terminal liveness, Drive sync, and stale index-lock checks.
 - The audit can stay overall `critical` for unrelated checks while QUA-95 task health remains independently visible as `ok`.

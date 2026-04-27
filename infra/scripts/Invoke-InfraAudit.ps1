@@ -15,6 +15,7 @@ param(
     [string]$Qua95TaskName = 'QM_QUA95_BlockerRefresh',
     [int]$Qua95TaskMaxAgeMinutes = 125,
     [string]$Qua95TaskHealthScript = 'C:\QM\repo\infra\monitoring\Test-QUA95BlockerTaskHealth.ps1',
+    [string]$Qua95TransitionPayloadCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95IssueTransitionPayload.ps1',
     [string]$OutJson = 'C:\QM\repo\infra\reports\infra_audit_latest.json',
     [switch]$FailOnCritical
 )
@@ -196,6 +197,24 @@ else {
         max_age_minutes = $Qua95TaskMaxAgeMinutes
         exit_code = $healthCode
         output = $healthText
+    }
+}
+
+# QUA-95 transition payload consistency
+if (-not (Test-Path -LiteralPath $Qua95TransitionPayloadCheckScript)) {
+    Add-Check -Name 'qua95_transition_payload_consistency' -Status 'warn' -Meta @{
+        reason = 'check_script_missing'
+        path = $Qua95TransitionPayloadCheckScript
+    }
+}
+else {
+    $payloadOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $Qua95TransitionPayloadCheckScript 2>&1
+    $payloadCode = $LASTEXITCODE
+    $payloadText = ($payloadOut | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
+    $payloadStatus = if ($payloadCode -eq 0) { 'ok' } else { 'critical' }
+    Add-Check -Name 'qua95_transition_payload_consistency' -Status $payloadStatus -Meta @{
+        exit_code = $payloadCode
+        output = $payloadText
     }
 }
 
