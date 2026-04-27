@@ -28,3 +28,15 @@ Verified highlights:
 - `Repeat: Every: 0 Hour(s), 15 Minute(s)`
 - Task action:
   - `powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\QM\repo\infra\monitoring\Test-QUA95BlockerTaskHealth.ps1" -MaxAgeMinutes 125`
+
+## Runtime proof
+
+Manual trigger:
+
+```powershell
+schtasks /Run /TN "QM_QUA95_TaskHealth_15min"
+```
+
+Post-run scheduler fields:
+- `Last Run Time: 4/27/2026 10:07:17 AM`
+- `Last Result: 0`
