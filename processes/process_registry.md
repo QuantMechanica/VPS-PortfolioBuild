@@ -1,5 +1,27 @@
 # Process Registry
 
+## Issue Routing
+
+Per [DL-031](../decisions/DL-031_projects_formalization_and_routing_convention.md): every new issue is created with `projectId` set. Authoritative goal-project hierarchy:
+
+| Project | id | Status | Scope |
+|---|---|---|---|
+| **V5 Framework Implementation** | `71b6d994-70ba-4a28-bd62-732b42a9ea58` | in_progress | MQL5 framework + pipeline runners + build/test harness; repo-only (`C:\QM\repo`) |
+| **V5 Pipeline Operations** | `ac8daa03-00ae-49fd-bd4a-f1283a075f83` | in_progress | T1-T5 factory: backtest runs, evidence, NO_REPORT, calibration, mirror integrity |
+| **V5 Strategy Research** | `b2adcc7f-064f-47c7-8563-d1c917639231` | in_progress | Source extraction + Strategy Card authoring per DL-029 |
+| **T6 Live Operations** | `2603d13a-8152-4514-987c-d9abee1c948f` | backlog | DXZ live deploy of approved EAs; OWNER-gated (manifest + AutoTrading-OFF) |
+
+Goal: `4662e91e-8e9b-458e-9383-b1f67751965b` ("Build-in-public quant research factory"). All 4 projects roll up to it.
+
+Heuristic — pick the project whose path the issue's deliverable touches:
+
+- `framework/`, `infra/`, `paperclip-prompts/`, `decisions/`, `processes/`, `docs/`, `lessons-learned/`, `governance/`, agent prompt/instruction edits, learning-candidates → **V5 Framework Implementation**
+- `D:\QM\mt5\T1`-T5, `D:\QM\reports\pipeline\`, `D:\QM\reports\ops\`, calibration JSON, runner outputs, NO_REPORT, .DWX symbol verification, silent-run / stale-lock recovery → **V5 Pipeline Operations**
+- `strategy-seeds/`, source extraction, Strategy Card authoring → **V5 Strategy Research**
+- `C:\QM\mt5\T6_Live`, deploy manifests, AutoTrading-OFF discipline → **T6 Live Operations** (OWNER-gated)
+
+Cross-functional issues split: parent in primary project, children scoped to their owners' projects. If genuinely ambiguous, route to **V5 Framework Implementation** as meta-default and let the assignee re-route on triage. Authority: CEO unilateral on routing per DL-023.
+
 ## Execution Policies
 
 Per [DL-030](../decisions/2026-04-27_execution_policies_v1.md): every issue created in scope of a stakes-bearing flow MUST carry an `executionPolicy` block at creation time (or via PATCH before `in_progress`). The runtime — not the agent — enforces the `in_progress → done` interception. The full JSON snippets (with concrete reviewer/approver participant identifiers) live in DL-030; this registry section is the role-level convention.
@@ -24,3 +46,52 @@ For the full JSON shape per class (including reviewer/approver participant ident
 ## Factory Setup Standards
 
 - MT5 factory terminals `T1`-`T5` must include an install-root `portable.txt` marker file (empty file) to prevent AppData split-brain when launched without explicit `/portable`.
+
+## Skills
+
+V5 adopts Paperclip's Skills system per OWNER directive 2026-04-27 (see `decisions/2026-04-27_skills_adoption_v1.md`). Skills are reusable, token-efficient instruction bundles loaded on demand by agents. They do **not** override agent prompts in `paperclip-prompts/*.md` — they augment them. Hard rules stay in `CLAUDE.md` + agent prompts; skills are how-tos.
+
+### Custom V5 Skills (authored by Doc-KM)
+
+| Skill | Folder | Owner | Reviewer | Required for |
+|---|---|---|---|---|
+| `qm-validate-custom-symbol` | `skills/qm/qm-validate-custom-symbol/` | DevOps + Pipeline-Operator | Quality-Tech | Required: DevOps, Pipeline-Operator |
+| `qm-strategy-card-extraction` | `skills/qm/qm-strategy-card-extraction/` | Research | CEO + Quality-Business | Required: Research |
+| `qm-build-ea-from-card` | `skills/qm/qm-build-ea-from-card/` | Development (Codex) | CTO | Required: Development; Optional: CTO |
+| `qm-run-pipeline-phase` | `skills/qm/qm-run-pipeline-phase/` | Pipeline-Operator | Quality-Tech | Required: Pipeline-Operator |
+| `qm-t6-deploy-verification` | `skills/qm/qm-t6-deploy-verification/` | LiveOps (DevOps interim) | OWNER | Required: LiveOps; Optional: DevOps |
+| `qm-zero-trades-recovery` | `skills/qm/qm-zero-trades-recovery/` | Strategy-Analyst + R-and-D + CEO + CTO | Quality-Tech | Required: Strategy-Analyst, R-and-D, CEO, CTO |
+
+### Marketplace Skills (pinned external)
+
+Pinned per `skills/marketplace/INDEX.md`. Each entry has source provenance + commit hash + assignment.
+
+**Required (CTO to fill `commit_pin` on review):**
+
+| Skill | Source | Assigned to |
+|---|---|---|
+| `anthropics/skills/skill-creator` | anthropics/skills | Documentation-KM, CTO |
+| `anthropics/skills/pdf` | anthropics/skills | Research |
+| `anthropics/skills/xlsx` | anthropics/skills | Pipeline-Operator, CTO |
+| `obra/superpowers/verification-before-completion` | obra/superpowers | CEO, CTO, DevOps |
+| `obra/superpowers/using-git-worktrees` | obra/superpowers | CTO, DevOps |
+| `obra/superpowers/test-driven-development` | obra/superpowers | CTO, Development |
+| `obra/superpowers/systematic-debugging` | obra/superpowers | DevOps |
+
+**Optional (assign on demand):** see `skills/marketplace/INDEX.md` § Optional.
+
+### Governance
+
+- **Doc-KM** authors and maintains the inventory.
+- **CTO** reviews each skill body for technical correctness before pin.
+- **CEO** ratifies the assignment matrix.
+- **OWNER** has veto on any external pin via request_confirmation.
+
+### Pin lifecycle
+
+A marketplace skill is **registered in Paperclip** only after:
+1. CTO has filled `commit_pin: <SHA>` + `reviewed_at` + `reviewed_by: CTO`
+2. CEO has ratified the assignment in the `INDEX.md` matrix
+3. (For sensitive sources) OWNER has accepted a `request_confirmation` interaction
+
+Until then, the entry sits in `INDEX.md` with `commit_pin: TBD` and is not visible to agents.
