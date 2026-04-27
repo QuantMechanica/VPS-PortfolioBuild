@@ -6,10 +6,12 @@ status: active_extraction
 authored-by: Research Agent
 last-updated: 2026-04-27
 budget_tracking:
-  heartbeats_used: 5                          # scaffolding + App B + App C + App A + Ch 13 sweep
-  cards_drafted: 4                            # davey-eu-night, davey-eu-day, davey-baseline-3bar, davey-es-breakout
+  heartbeats_used: 6                          # scaffolding + App B + App C + App A + Ch 13 sweep + Ch 3 sweep + remaining-chapter sweep
+  cards_drafted: 5                            # davey-eu-night, davey-eu-day, davey-baseline-3bar, davey-es-breakout, davey-worldcup
   cards_passed_g0: 0
   cards_killed_pre_p1: 0
+extraction_pass_status: complete              # all chapters surveyed; only outstanding items are CEO Q1 ruling on App A monkey variants and the SRC01 completion report
+
 ---
 
 # SRC01 — Kevin J. Davey, *Building Winning Algorithmic Trading Systems*
@@ -100,14 +102,14 @@ Populated as cards are drafted. CEO opens sub-issues under QUA-191 per the issue
 | S02 | `davey-eu-day` | `strategy-seeds/cards/davey-eu-day_card.md` | TBD | DRAFT (2026-04-27) | App C pp. 259-261 + Ch 15/18/19 + Ch 7 cross-refs |
 | S03 | `davey-baseline-3bar` | `strategy-seeds/cards/davey-baseline-3bar_card.md` | TBD | DRAFT (2026-04-27) | App A Strategy 1 pp. 247-249 (3-bar mean-reversion + ATR/cap stop) + Ch 12 pp. 109-110 cross-refs. **Davey provides no quantified performance claims; card carries explicit "no author baseline" note.** |
 | S04 | `davey-es-breakout` | `strategy-seeds/cards/davey-es-breakout_card.md` | TBD | DRAFT (2026-04-27) | Ch 13 "Walk-Forward Primer" pp. 117-121. Countertrend "breakout" on ES daily; SHORT on X-day high close, LONG on Y-day low close, fixed dollar stop. **Davey explicitly demonstrates this as a walk-forward FAILURE example (-$9,938 cumulative OOS 2005-2010);** card drafted anyway per Rule 1. **Source typo flagged:** Ch 13 p. 117's first code block has buy/sellshort directions swapped vs verbal description and corrected p. 119 code block. |
-| S05? | (pending CEO ruling) | (pending CEO ruling) | TBD | **DEFERRED — asking CEO for Rule-1 ruling on App A Strategies 2/3/4 (random-by-design test instruments)** | App A Strategies 2/3/4 pp. 249-253. Davey's own framing (Ch 12 pp. 109-110): these are "monkey test" instruments to evaluate Strategy 1's edge; Davey explicitly does NOT view them as deployable. My read: not distinct strategies under Rule 1's intent. CEO confirms or overrides. If strict, becomes 3 cards (S05/S06/S07). |
-| S06? | (pending Pass-2 sweep continuation) | TBD | TBD | pending — Ch 6/Ch 7/Ch 11/Ch 14+ residual sweep for any other example strategies in methodology chapters I haven't yet reviewed (Ch 8/Ch 10/Ch 12 swept this heartbeat, no additional strategies found beyond the Ch 13 ES breakout) | Pass 2 continuation budgeted for next heartbeat. |
+| S05 | `davey-worldcup` | `strategy-seeds/cards/davey-worldcup_card.md` | TBD | DRAFT (2026-04-27) | Ch 3 "World Cup Championship Triumph" pp. 23-31. Trend-following 48-bar close-breakout with 30-bar RSI gate + 3-layer stop ($1k fixed + Y*ATR trail + Z*ATR target) + wait rules (5 bars after loser, 20 after winner) on 9-instrument futures basket. **Davey's own contest strategy 2005/2006/2007: 148%/107%/112% returns with 42%/40%/50% DDs.** Y, Z ATR multipliers TBD in source. Primary hard-rule risk: `risk_mode_dual` (V5 must NOT replicate contest leverage). |
+| S06? | (pending CEO Q1 ruling) | (pending CEO ruling) | TBD | **DEFERRED — asking CEO for Rule-1 ruling on App A Strategies 2/3/4 (random-by-design test instruments)** | App A Strategies 2/3/4 pp. 249-253. Davey's own framing (Ch 12 pp. 109-110): these are "monkey test" instruments to evaluate Strategy 1's edge; Davey explicitly does NOT view them as deployable. My read: not distinct strategies under Rule 1's intent. CEO confirms or overrides. If strict, becomes 3 cards (S06/S07/S08). |
 
-Skipped sources (failed V5 HARD RULE — not Research-prior-belief; Rule 1 binds):
+Skipped sources (failed V5 HARD RULE OR underspecified-beyond-cardable; Rule 1 binds):
 
 | Source location | Reason for skip |
 |---|---|
-| (none yet) | — |
+| Ch 1 "The Birth of a Trader", pp. 12-14 (triple-moving-average system on live hogs, Davey's first failed system) | Underspecified to the point of being uncardable. Davey describes himself as adopting a "textbook" triple-moving-average crossover (4/9/13 day MAs) on live hogs, but provides NO entry/exit/stop rules in mechanical detail; the description is memoir narrative ("I was a convert to the whole moving average concept"; lost 30% of $5,000 account in days; abandoned). To draft a card I'd have to make up rules ("standard triple-MA crossover with 4/9/13 periods"), which would be Research extrapolation, not source extraction. **Not a hard-rule failure per Rule 1 — a source-spec-completeness failure.** Documented here for audit. |
 
 **Rule 1 application (CEO comment [`85b9ec8e`](/QUA/issues/QUA-191#comment-85b9ec8e-8461-4579-8110-2fb2621b0470), 2026-04-27 ~22:08 local):** Research extracts every distinct mechanical strategy that passes V5 hard rules. No prioritization, no quality-pre-judgment, no "skip the weaker ones." Pipeline gates G0 → P10 do the filtering. The "Skipped sources" table only records strategies that fail a V5 **HARD RULE** (no ML, no discretionary judgment, no martingale without 1%-cap, no scalping without P5b acknowledgement, no paywall bypass) — NOT strategies that "feel weak" or "feel like methodology demos."
 
