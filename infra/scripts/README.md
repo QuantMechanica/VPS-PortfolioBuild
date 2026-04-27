@@ -676,6 +676,18 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Run-QUA207XtiusdReimportRepair.ps1`
 
+## `Test-QUA207RuntimeRestoreCompletion.ps1`
+
+- Validates QUA-207 runtime-restore completion contract across canonical artifacts:
+  - custom visibility evidence (`target bars visible`, `isolated_custom_bars_visibility_failure=false`)
+  - gate decision (`runtime_visibility_recovered=true`)
+  - owner lists in gate/transition/readiness (runtime owner removed, verifier owner present)
+- Exit codes:
+  - `0`: completion contract holds
+  - `1`: mismatch detected
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA207RuntimeRestoreCompletion.ps1`
+
 ## `Restore-QUA95RuntimeBars.ps1`
 
 - Bounded runtime restore flow for `XTIUSD.DWX` M1 bars visibility.

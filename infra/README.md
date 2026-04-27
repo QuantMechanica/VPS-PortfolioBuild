@@ -184,6 +184,12 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
     is consistent with gate + blocker canonical JSON artifacts.
   - Owner-count check follows gate snapshot owner set (supports runtime-owner auto-clear after visibility recovery).
   - Returns non-zero on mismatch and is consumed by `Invoke-InfraAudit.ps1`.
+- `scripts/Test-QUA207RuntimeRestoreCompletion.ps1`
+  - Validates QUA-207 runtime-restore completion:
+    - custom visibility evidence confirms target bars visible and no isolated custom failure
+    - gate marks `runtime_visibility_recovered=true`
+    - runtime owner removed from gate/transition/readiness owner lists
+  - Returns non-zero when runtime completion contract drifts.
 - `scripts/Test-QUA95UnblockReadiness.ps1`
   - Validates unblock-readiness artifact freshness/consistency against blocker status.
   - Returns non-zero on drift.
