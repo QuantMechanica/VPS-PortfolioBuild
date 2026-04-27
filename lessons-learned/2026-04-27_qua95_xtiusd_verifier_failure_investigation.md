@@ -70,6 +70,8 @@ Probe artifacts:
 - `lessons-learned/evidence/2026-04-27_qua95_xtiusd_source_vs_custom_api_probe.md`
 - `lessons-learned/evidence/2026-04-27_qua95_xtiusd_custom_visibility_probe.json`
 - `lessons-learned/evidence/2026-04-27_qua95_xtiusd_custom_visibility_probe.md`
+- `lessons-learned/evidence/2026-04-27_qua95_xtiusd_custom_visibility_probe_after_warmup.json`
+- `lessons-learned/evidence/2026-04-27_qua95_xtiusd_warmup_attempt.md`
 - `lessons-learned/evidence/2026-04-27_qua95_custom_visibility_scope_matrix.json`
 - `lessons-learned/evidence/2026-04-27_qua95_custom_visibility_scope_matrix.md`
 
@@ -87,6 +89,11 @@ Scope matrix (same day, six-symbol sample) shows the class is broader than XTI:
 - `True` for `XTIUSD.DWX`, `XNGUSD.DWX`, `XAUUSD.DWX`, `XAGUSD.DWX`, `EURUSD.DWX`
 - `False` for `WS30.DWX` (partial exception with `target_pos=10`)
 - Indicates runtime/custom-symbol bars visibility issue with symbol-family variance.
+
+Warm-up retry attempt (40 read-only iterations) did not recover `XTIUSD.DWX` bars visibility:
+- post-warmup probe still `isolated_custom_bars_visibility_failure=True`
+- target bars remained `0/0`, source bars remained healthy (`265/10`)
+- immediate verifier rerun remained `FAIL_tail_bars` with `bars_got=0` and `disposition=defer`
 
 ## Durable change in this heartbeat
 

@@ -32,6 +32,10 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Registers Task Scheduler job `QM_AggregatorState_1min` as `SYSTEM`.
   - Runs `scripts/aggregator/standalone_aggregator_loop.py --once` every minute.
   - Safe to re-run (`Register-ScheduledTask -Force`) and overlap-safe (`MultipleInstances=IgnoreNew`).
+- `scripts/Install-PaperclipStaleLockWatchdogTask.ps1`
+  - Registers Task Scheduler job `QM_PaperclipStaleLockWatchdog_15min` as `SYSTEM`.
+  - Runs `monitoring/Invoke-PaperclipStaleLockWatchdog.ps1 -StaleAfterMinutes 15 -FailOnFinding` every 15 minutes (monitor-only).
+  - Safe to re-run (`Register-ScheduledTask -Force`) and overlap-safe (`MultipleInstances=IgnoreNew`).
 - `scripts/Install-DwxSpecPatchRunner.ps1`
   - Converges a non-interactive MT5 startup INI from one patch version to another (default: `v2 -> v3`).
   - Check-then-act writes: updates target only when content differs.
@@ -80,6 +84,12 @@ Paperclip stale-lock watchdog (every 10-15 minutes, monitor-only):
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\monitoring\Invoke-PaperclipStaleLockWatchdog.ps1 -StaleAfterMinutes 15
+```
+
+Install the scheduler task (idempotent):
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-PaperclipStaleLockWatchdogTask.ps1
 ```
 
 Aggregator state writer (every minute):
