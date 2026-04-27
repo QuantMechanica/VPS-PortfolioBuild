@@ -1,0 +1,34 @@
+{
+  "issue": "QUA-91",
+  "date": "2026-04-27",
+  "scope": "Investigate verifier failure for WS30.DWX",
+  "symbol_scope_result": "clear",
+  "recommended_issue_transition": "done",
+  "summary": {
+    "ws30_symbol_corruption": false,
+    "bars_failure_cause": "one-shot full-span copy_rates_range query shape",
+    "tail_basis_note": "source-tail parity passes; sidecar-tail strict match fails"
+  },
+  "remaining_global_blocker": {
+    "owner": "DWX verifier/runtime maintainer",
+    "action": "Deploy global verifier update with chunked M1 reads, maxbars-aware bars gate, and canonical tail basis policy."
+  },
+  "evidence": {
+    "investigation_note": "lessons-learned/2026-04-27_qua91_ws30_verifier_failure_investigation.md",
+    "handoff_note": "docs/ops/QUA-91_WS30_VERIFIER_HANDOFF_2026-04-27.md",
+    "candidate_verifier": "infra/scripts/verify_import_candidate.py",
+    "candidate_log": "infra/smoke/verify_import_candidate_run_2026-04-27_091415_all_symbols.log"
+  },
+  "commits": [
+    "58a4bd2",
+    "365661b",
+    "718ad8a",
+    "6b9b6a3",
+    "5e39132",
+    "60de04c",
+    "cdf4bc5",
+    "d5da1d3",
+    "5fd2500",
+    "066fbc6"
+  ]
+}
