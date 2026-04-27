@@ -20,8 +20,8 @@ python D:\QM\mt5\T1\dwx_import\verify_import.py --symbol XTIUSD.DWX
 - bars chunked: 0
 - bars expected accessible: 100000
 - bars drift: -100
-- raw log: C:\QM\repo\infra\smoke\verify_import_direct_2026-04-27_134721_qua95.log
-- captured at: 2026-04-27T13:47:22+02:00
+- raw log: C:\QM\repo\infra\smoke\verify_import_direct_2026-04-27_141402_qua95.log
+- captured at: 2026-04-27T14:14:03+02:00
 
 ## Disposition
 

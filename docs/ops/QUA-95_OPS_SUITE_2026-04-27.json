@@ -1,6 +1,6 @@
 ﻿{
     "issue":  "QUA-95",
-    "generated_at_local":  "2026-04-27T14:12:18+02:00",
+    "generated_at_local":  "2026-04-27T14:15:34+02:00",
     "overall_status":  "ok",
     "checks":  [
                    {
@@ -19,7 +19,7 @@
                        "name":  "canonical_snapshot_freshness",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok snapshot_age_minutes=24.06 max_age_minutes=180"
+                       "output":  "status=ok snapshot_age_minutes=0.47 max_age_minutes=180"
                    },
                    {
                        "name":  "handoff_integrity",
@@ -43,7 +43,7 @@
                        "name":  "unblock_readiness",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok lag_minutes=9.32 ready_to_unblock=False bars_got=0 owner_count=2"
+                       "output":  "status=ok lag_minutes=1.08 ready_to_unblock=False bars_got=0 owner_count=2"
                    },
                    {
                        "name":  "unblock_owner_consistency",
@@ -73,25 +73,25 @@
                        "name":  "custom_visibility_proof",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok isolated_custom_failure=True target_bars=0/0 source_bars=528/10"
+                       "output":  "status=ok isolated_custom_failure=True target_bars=0/0 source_bars=555/10"
                    },
                    {
                        "name":  "evidence_cohesion",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok max_pair_skew_minutes=13.65 direct_at=2026-04-27T13:47:22.0000000+02:00 custom_at=2026-04-27T13:47:22.0000000+02:00 blocker_at=2026-04-27T14:01:01.0000000+02:00"
+                       "output":  "status=ok max_pair_skew_minutes=0.02 direct_at=2026-04-27T14:14:03.0000000+02:00 custom_at=2026-04-27T14:14:03.0000000+02:00 blocker_at=2026-04-27T14:14:04.0000000+02:00"
                    },
                    {
                        "name":  "failure_signature",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok signature=blocked_systemic mid_ticks=997 bars_one_shot=0 bars_chunked=0 target_bars=0 source_bars=528"
+                       "output":  "status=ok signature=blocked_systemic mid_ticks=997 bars_one_shot=0 bars_chunked=0 target_bars=0 source_bars=555"
                    },
                    {
                        "name":  "heartbeat_custom_visibility",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok isolated_custom_failure=True target_bars=0/0 source_bars=528/10"
+                       "output":  "status=ok isolated_custom_failure=True target_bars=0/0 source_bars=555/10"
                    },
                    {
                        "name":  "task_health_action_wiring",
@@ -109,13 +109,13 @@
                        "name":  "blocked_heartbeat_wrapper",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok gate_state=blocked audit_status=critical checks_count=31 automation_health=ok qua95_issues=0 non_qua95_issues=2 isolated_custom_failure=True"
+                       "output":  "status=ok gate_state=blocked audit_status=critical checks_count=32 automation_health=ok qua95_issues=1 non_qua95_issues=2 isolated_custom_failure=True"
                    },
                    {
                        "name":  "blocker_task_health",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok task=QM_QUA95_BlockerRefresh last_run=2026-04-27T14:01:01.0000000+02:00 age_minutes=11.24"
+                       "output":  "status=ok task=QM_QUA95_BlockerRefresh last_run=2026-04-27T14:01:01.0000000+02:00 age_minutes=14.5"
                    }
                ]
 }

@@ -1,6 +1,6 @@
 ﻿{
     "issue":  "QUA-95",
-    "generated_at_local":  "2026-04-27T13:50:34+02:00",
+    "generated_at_local":  "2026-04-27T14:16:09+02:00",
     "refresh_executed":  false,
     "refresh_exit_code":  null,
     "audit_executed":  false,
@@ -11,11 +11,11 @@
                  "disposition":  "defer",
                  "bars_got":  0,
                  "tail_shortfall_seconds":  7141.322,
-                 "last_checked_local":  "2026-04-27T13:47:22+02:00"
+                 "last_checked_local":  "2026-04-27T14:14:04+02:00"
              },
     "infra_audit":  {
                         "overall_status":  "critical",
-                        "checks_count":  27,
+                        "checks_count":  32,
                         "issues_count":  2
                     },
     "audit_signal":  {
@@ -35,7 +35,7 @@
                               "source":  "XTIUSD",
                               "target_bars_range_m1":  0,
                               "target_bars_from_pos_m1":  0,
-                              "source_bars_range_m1":  528,
+                              "source_bars_range_m1":  555,
                               "source_bars_from_pos_m1":  10
                           }
 }
