@@ -6,11 +6,11 @@ status: scaffolded_pending_extraction
 authored-by: Research Agent
 last-updated: 2026-04-28
 budget_tracking:
-  heartbeats_used: 6                          # h1 scaffold; h2 S01 + Ex 7.1 SKIP; h3 S02; h4 S07+S08 + HFT/Leverage SKIPs; h5 S05+S06; h6 S03+S04 multi-stock cross-section
-  cards_drafted: 8                            # S01-S08 except S09 (PEAD pending)
+  heartbeats_used: 7                          # h1 scaffold; h2 S01 + Ex 7.1 SKIP; h3 S02; h4 S07+S08 + HFT/Leverage SKIPs; h5 S05+S06; h6 S03+S04; h7 PEAD SKIP verdict + completion_report.md
+  cards_drafted: 8                            # S01-S08; PEAD reclassified as SKIP (underspecified-beyond-cardable, same as SRC01 Davey hogs)
   cards_passed_g0: 0
   cards_killed_pre_p1: 0
-extraction_pass_status: in_progress           # 8/9 cards drafted; S09 (PEAD Ch 7 narrative pp. 117-118) pending in heartbeat 7 along with completion_report.md draft start
+extraction_pass_status: complete              # all chapters surveyed; final set 8 cards + 4 SKIPs; completion_report.md drafted in heartbeat 7
 completion_report: pending                    # authored after all SRC02_S* sub-issues close
 
 ---
@@ -127,9 +127,7 @@ The slot table is populated as cards are drafted. Slug pattern: `chan-<topic>` p
 | S06 | `chan-yoy-same-month` | `strategy-seeds/cards/chan-yoy-same-month_card.md` | TBD (`blocked`) | DRAFT (2026-04-27) | Example 7.7 (Heston-Sadka year-on-year same-month anomaly on S&P 500, pp. 146-148). Each month-end, sort by same-month-last-year returns, long top decile + short bottom decile. Performance verbatim: **`Avg ann return = -0.9167   Sharpe ratio = -0.1055`** (p. 147) — Chan's deliberate-failure example #2 (anomaly decayed post-2002 per author's own framing). Multi-stock cross-section. Sister card to S05 (shared 5th vocab gap). Survivorship-bias warning per Chan p. 146. Same V5-architecture-incompatibility profile as S05. |
 | S07 | `chan-gasoline-rb-spring` | `strategy-seeds/cards/chan-gasoline-rb-spring_card.md` | TBD (`blocked`) | DRAFT (2026-04-27) | **Sidebar p. 149** (Ch 7 Seasonal section). Long-only annual calendar trade on NYMEX RB unleaded gasoline futures, May expiry. Entry close of Apr 13 (or next trading day), exit close of Apr 25 (or previous trading day). 14 consecutive years of profitability 1995-2008; max single-year DD −$2,226 (1996). Single-symbol; surfaces 4th vocabulary gap `annual-calendar-trade`. Primary G0 risk: `dwx_suffix_discipline` — Darwinex CFD universe doesn't natively offer gasoline; closest related products OIL.DWX / BRENT.DWX are CRUDE oil, not refined gasoline. Secondary risk: `friday_close` waiver required (9-day hold spans 2 weekends). |
 | S08 | `chan-natgas-spring` | `strategy-seeds/cards/chan-natgas-spring_card.md` | TBD (`blocked`) | DRAFT (2026-04-27) | **Sidebar p. 150** (Ch 7 Seasonal section). Long-only annual calendar trade on NYMEX NG natural gas futures, June expiry. Entry close of Feb 25 (or next trading day), exit close of Apr 15 (or previous trading day). 14 consecutive years of profitability 1995-2008; max single-year DD −$5,550 (2005), 2008 actual-trading −$7,470. Single-symbol. Sister card to S07 (shared `annual-calendar-trade` vocabulary gap). **PRIMARY OPERATIONAL RISK**: `kill_switch_coverage` — Chan's explicit Amaranth Advisors $6B + Bank of Montreal $450M loss cautionary tale (p. 150). Friday-close waiver more load-bearing than S07 (36-day hold spans 7 weekends). |
-| S09? | TBD (likely `chan-pead`) | TBD | TBD (`blocked`) | candidate, data-feed-incompatible | Ch 7 PEAD narrative pp. 117-118. Per-stock event-driven; needs earnings calendar (`darwinex_native_data_only` Hard Rule binds). Card drafted per Rule 1; G0 likely KILL. |
-
-Slot count converging. Final SRC02 candidate set is **9 cards** (S01-S09 with two SKIP entries for Ex 7.1 ML and HFT/Leverage narrative-only sections). Architecture-fit profile:
+Slot count finalized at **8 cards + 4 SKIPs** (PEAD reclassified to SKIP per source-spec-completeness failure; see Skipped table below). Architecture-fit profile:
 
 | Card | Single/multi-symbol | V5-architecture-fit | Friday-close compat |
 |---|---|---|---|
@@ -141,9 +139,8 @@ Slot count converging. Final SRC02 candidate set is **9 cards** (S01-S09 with tw
 | S06 chan-yoy-same-month | multi-stock (500) | incompatible | OK (1-month hold) |
 | S07 chan-gasoline-rb-spring | single (CFD if available) | flagged (no native Darwinex gasoline) | waiver required |
 | S08 chan-natgas-spring | single (CFD if available) | flagged (no native Darwinex natgas) | waiver required + Amaranth-class kill-switch load |
-| S09 chan-pead | single-stock event-driven | data-feed incompatible (needs earnings calendar) | n/a |
 
-All architecture-incompatible cards (S03, S04, S05, S06, S09) advance through G0 per Rule 1; pipeline G0 / P3.5 decides actual deployability against the Darwinex single-symbol stack.
+All architecture-incompatible cards (S03, S04, S05, S06) advance through G0 per Rule 1; pipeline G0 / P3.5 decides actual deployability against the Darwinex single-symbol stack.
 
 Skipped sources (failed V5 HARD RULE OR underspecified-beyond-cardable):
 
@@ -152,6 +149,7 @@ Skipped sources (failed V5 HARD RULE OR underspecified-beyond-cardable):
 | Example 7.1 (pp. 122-126) — "Using a Machine Learning Tool to Profit from Regime Switching in the Stock Market" | **V5 hard-fail per `EA_ML_FORBIDDEN`.** Chan's verbatim implementation: "Finally, we run a perceptron learning algorithm on the outputs of I7 and I9 (a perceptron is a type of neural network). This algorithm will find out the best weights for the different rules with different holding periods (among other parameters) based on a moving window of historical training data with the objective of maximizing the total profit in this window." (p. 124). Per `strategy_type_flags.md` § E `ml-required` definition: "neural net, gradient boost, random forest, online learner ... V5 hard-fail per CLAUDE.md". Perceptron = neural network = ML. The disambiguation against `hmm-regime-blend` (HMM with EM is NOT ML, allowed) does not save this strategy — Chan explicitly uses a perceptron, not an HMM. | V5 HARD-RULE FAILURE — `ml-required` true. |
 | Ch 7 § "High-Frequency Trading Strategies" (pp. 151-153) | **Narrative-only; no specific entry/exit rules.** Chan discusses HFT generally — law-of-large-numbers Sharpe argument, backtesting-difficulty challenges, execution-collocation requirements — but does NOT name any specific mechanical strategy. Verbatim p. 152: "it is impossible to explain in general why high-frequency strategies are often profitable, as there are as many such strategies as there are fund managers." Per DL-033 Rule 1, no strategy specification = no card. Aligned with SOURCE_QUEUE.md `HFT_NOT_APPLICABLE` flag (V5 stack MT5 + DXZ live-only cannot run HFT competitively). | Source-spec-completeness failure (NOT a hard-rule failure). |
 | Ch 7 § "Is It Better to Have a High-Leverage versus a High-Beta Portfolio?" (pp. 153-154) | **Methodology, not a strategy.** Chan compares Kelly-formula leverage (Ch 6) vs Fama-French beta (Ch 7 factor models) as alternative routes to higher portfolio return. No entry/exit/hold rules; pure portfolio-construction argument. | Source-spec-completeness failure (NOT a hard-rule failure). |
+| Ch 7 § "Mean-Reverting versus Momentum Strategies" Post-Earnings Announcement Drift (PEAD) narrative, pp. 117-118 | **Underspecified-beyond-cardable.** Chan describes PEAD conceptually: "this strategy recommends that you buy a stock when its earnings exceed expectations, and short a stock when it falls short." Direction and rationale are specified, but Chan EXPLICITLY delegates the rest to the reader (verbatim p. 118): "As to what kind of news will trigger this, and how long the trending period will last, it is again up to you to find out." Threshold for "exceed expectations" (numeric surprise %), hold period, stop-loss, and universe are all undefined. To draft a card I'd have to import threshold + hold-period values from the referenced quantlogic.blogspot.com article — that would be Research extrapolation, not Chan extraction. **Same classification as SRC01 Davey Ch 1 hogs** ("Underspecified-beyond-cardable"). Compounding `darwinex_native_data_only` concern: PEAD requires per-stock quarterly earnings calendar + analyst-consensus data, neither of which is in Darwinex-native feeds. | Source-spec-completeness failure (NOT a hard-rule failure). |
 
 ## 7. Chapter index (TOC seeded; validate page numbers at extraction)
 
