@@ -102,6 +102,8 @@ Status recommendation: `blocked` (`defer`)
   - `infra/monitoring/Test-QUA95AutomationHealth.ps1`
 - QUA-95 audit signal generator:
   - `infra/scripts/Update-QUA95AuditSignal.ps1`
+- Canonical snapshot validator:
+  - `infra/scripts/Test-QUA95CanonicalSnapshot.ps1`
 - Blocked assertion generator:
   - `infra/scripts/Update-QUA95BlockedAssertion.ps1`
 - Unblock-readiness generator:

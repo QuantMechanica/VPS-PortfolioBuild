@@ -316,6 +316,24 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA95AuditSignal.ps1`
 
+## `Test-QUA95CanonicalSnapshot.ps1`
+
+- Validates canonical snapshot summary artifact:
+  - `docs\ops\QUA-95_CANONICAL_SNAPSHOT_2026-04-27.json`
+- Cross-checks against:
+  - `docs\ops\QUA-95_XTIUSD_BLOCKER_STATUS_2026-04-27.json`
+  - `docs\ops\QUA-95_AUDIT_SIGNAL_2026-04-27.json`
+- Checks:
+  - snapshot identity/flow fields
+  - step exit codes
+  - blocker state/disposition/bars consistency
+  - audit-signal count consistency
+- Exit codes:
+  - `0`: snapshot is consistent
+  - `1`: missing/invalid/mismatched snapshot
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA95CanonicalSnapshot.ps1`
+
 ## `Test-QUA95UnblockReadinessSummary.ps1`
 
 - Validates markdown summary consistency with unblock-readiness JSON:
@@ -336,14 +354,15 @@
 - Single-command QUA-95 ops sanity suite.
 - Runs:
   1. `Test-QUA95OpsBundleManifest.ps1`
-  2. `Test-QUA95HandoffIntegrity.ps1`
-  3. `Test-QUA95IssueTransitionPayload.ps1`
-  4. `Test-QUA95BlockedInvariant.ps1`
-  5. `Test-QUA95UnblockReadiness.ps1`
-  6. `Test-QUA95UnblockReadinessSummary.ps1`
-  7. `Test-QUA95AuditSignal.ps1`
-  8. `monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
-  9. `monitoring/Test-QUA95BlockerTaskHealth.ps1`
+  2. `Test-QUA95CanonicalSnapshot.ps1`
+  3. `Test-QUA95HandoffIntegrity.ps1`
+  4. `Test-QUA95IssueTransitionPayload.ps1`
+  5. `Test-QUA95BlockedInvariant.ps1`
+  6. `Test-QUA95UnblockReadiness.ps1`
+  7. `Test-QUA95UnblockReadinessSummary.ps1`
+  8. `Test-QUA95AuditSignal.ps1`
+  9. `monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
+  10. `monitoring/Test-QUA95BlockerTaskHealth.ps1`
 - Emits JSON summary to stdout and returns:
   - `0` when all checks pass
   - `2` when any check is critical
