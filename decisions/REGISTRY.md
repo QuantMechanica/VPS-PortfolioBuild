@@ -23,6 +23,7 @@ Conventions:
 | DL-022 | 2026-04-27 | DWX `spec_ok` criterion + import mitigation pattern | External (cited in [`lessons-learned/2026-04-27_dwx_recovery_and_spec_fix.md`](../lessons-learned/2026-04-27_dwx_recovery_and_spec_fix.md)) | QUA-65..70 / DEVOPS-006..010 |
 | DL-023 | 2026-04-27 | CEO Autonomy Waiver, broadened scope (v2) — additive to DL-017 | [`2026-04-27_ceo_autonomy_waiver_v2.md`](./2026-04-27_ceo_autonomy_waiver_v2.md) | [QUA-188](https://paperclip.local/QUA/issues/QUA-188) (directive) / [QUA-192](https://paperclip.local/QUA/issues/QUA-192) (recording) |
 | DL-024 | 2026-04-27 | CEO scheduled heartbeat enablement (3600s) — under DL-023 authority | [`2026-04-27_ceo_scheduled_heartbeat.md`](./2026-04-27_ceo_scheduled_heartbeat.md) | [QUA-210](https://paperclip.local/QUA/issues/QUA-210) (change) / [QUA-214](https://paperclip.local/QUA/issues/QUA-214) (recording) |
+| DL-025 | 2026-04-27 | T6 Deploy Boundary Refinement — deploy of approved EAs/setfiles/templates/profiles under manifest in scope; AutoTrading toggle stays manual OWNER | [`DL-025_t6_deploy_boundary_refinement.md`](./DL-025_t6_deploy_boundary_refinement.md) | [QUA-209](https://paperclip.local/QUA/issues/QUA-209) (parent) / [QUA-226](https://paperclip.local/QUA/issues/QUA-226) (recording) |
 
 ## Cross-links
 
@@ -30,6 +31,7 @@ Conventions:
 - **QUA-188 ↔ DL-023.** Forward link: QUA-188 → DL-023 (recorded via QUA-192). Reverse link: [`2026-04-27_ceo_autonomy_waiver_v2.md`](./2026-04-27_ceo_autonomy_waiver_v2.md) cites QUA-188 as its source directive.
 - **DL-023 ↔ DL-024.** DL-024 is the first concrete operational change recorded under the DL-023 broadened-authority waiver (class 4: internal process choices → heartbeat cadence). DL-024 cites DL-023 as its authority basis.
 - **QUA-210 ↔ DL-024.** Forward link: QUA-210 → DL-024 (recorded via QUA-214). Reverse link: [`2026-04-27_ceo_scheduled_heartbeat.md`](./2026-04-27_ceo_scheduled_heartbeat.md) cites QUA-210 as the source change.
+- **QUA-209 ↔ DL-025.** Forward link: QUA-209 → DL-025 (recorded via QUA-226). Reverse link: [`DL-025_t6_deploy_boundary_refinement.md`](./DL-025_t6_deploy_boundary_refinement.md) cites QUA-209 as the parent recording task. DL-025 is an OWNER directive on V5 hard rules and is independent of DL-017 / DL-023 (which govern CEO unilateral authority).
 
 ## Backfilling External entries
 

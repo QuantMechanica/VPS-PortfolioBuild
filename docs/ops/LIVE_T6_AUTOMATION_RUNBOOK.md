@@ -142,12 +142,13 @@ LiveOps aborts immediately if:
 - Darwinex connection is unstable
 - UI automation cannot prove the exact chart/EA/setfile state
 
-## First Implementation Task
+## Pre-deploy verification dry-run
 
-Before any real deployment, build and test a demo-only dry run:
+DarwinexZero is **live-only** — there is no demo account (see § "DarwinexZero Operating Model" above). The first implementation task is therefore a **pre-deploy verification dry-run**, not a "demo dry run". The goal is to exercise the placement automation and the verification contract on real T6 with **zero order traffic**, so that the operating mechanics are proven before any EA capable of trading is staged.
 
-1. Create one harmless demo EA or use a non-trading logging EA.
-2. Create one manifest for `EURUSD M15`.
-3. Execute placement automation on T6 with AutoTrading OFF.
-4. Archive screenshot and logs.
-5. Only after this passes, allow real EA demo manifests.
+1. **Use a deliberately non-trading EA.** Logging-only, no `OrderSend`. Examples: `framework/tests/smoke/QM5_9000_smoke.ex5` once CTO ships it (currently behind [QUA-149](/QUA/issues/QUA-149) / [QUA-176](/QUA/issues/QUA-176)), or any test EA explicitly without `OrderSend`. **Never** use a V4-legacy `SM_XXX` EA — see [QUA-145](/QUA/issues/QUA-145) stand-down.
+2. **Manifest scoped to a single benign symbol/timeframe** (e.g. `EURUSD M15`), marked `environment: live_burn_in` (DXZ has no demo).
+3. **AutoTrading remains OFF throughout the dry-run.** OWNER toggles ON only on real promote-to-live, never during a dry-run.
+4. **Verify the full Verification Contract** (§ "Verification Contract", lines 105-117 above) — including AutoTrading state OFF before AND after placement.
+5. **Capture evidence** under `D:\QM\reports\ops\liveops_dryrun_<ts>\`: Experts log + Journal log + screenshot proof of chart, EA name, setfile timestamp/hash, and AutoTrading-OFF indicator.
+6. **Only after this passes** does any real EA manifest become eligible for OWNER approval.
