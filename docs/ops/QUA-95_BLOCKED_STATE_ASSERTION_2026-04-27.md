@@ -1,7 +1,7 @@
 # QUA-95 Blocked State Assertion (2026-04-27)
 
 Issue: `QUA-95`  
-Generated from canonical artifacts at `2026-04-27T10:21:28+02:00`.
+Generated from canonical artifacts at `2026-04-27T10:47:00+02:00`.
 
 ## Current gate
 
