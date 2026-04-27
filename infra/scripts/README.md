@@ -149,3 +149,17 @@
   - `fix`: not clear/defer; investigation still in-flight
 - Example:
   - `powershell -File C:\QM\repo\infra\scripts\Invoke-VerifyDisposition.ps1 -IssueId QUA-92 -Symbol XAGUSD.DWX`
+
+## `Confirm-DwxRegistryMitigation.ps1`
+
+- Idempotent QUA-69 confirmation helper for the `Fix_DWX_Spec_v3` registry-corruption mitigation.
+- Pulls latest T1 terminal log + MQL5 log and checks:
+  - successful script close events (`Fix_DWX_Spec_v3 ... closes terminal with code 0`) >= `-MinSuccessfulRuns` (default `3`)
+  - throttle markers present (`BATCH|processed=5|sleep_ms=200`)
+  - `symbols.custom.dat` exists and is above truncation floor (`-MinSafeBytes`, default `16384`)
+- Emits machine-readable evidence JSON:
+  - default `C:\QM\repo\lessons-learned\evidence\qua69_registry_mitigation_confirmation.json`
+- Optional failure gate:
+  - pass `-FailOnInsufficientEvidence` to return exit code `2` when checks fail.
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Confirm-DwxRegistryMitigation.ps1 -FailOnInsufficientEvidence`

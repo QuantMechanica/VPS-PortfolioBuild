@@ -1,0 +1,41 @@
+{
+    "generated_at_utc":  "2026-04-27T07:33:36.7007400Z",
+    "issue":  "QUA-69",
+    "mitigation":  "Fix_DWX_Spec_v3 batch-of-5 + Sleep(200)",
+    "verdict":  "pass",
+    "checks":  {
+                   "registry_exists":  true,
+                   "registry_size_safe":  true,
+                   "terminal_successful_runs":  true,
+                   "throttle_markers_present":  true
+               },
+    "evidence":  {
+                     "terminal_log":  "D:\\QM\\mt5\\T1\\logs\\20260427.log",
+                     "mql_log":  "D:\\QM\\mt5\\T1\\MQL5\\logs\\20260427.log",
+                     "successful_run_count":  6,
+                     "successful_run_samples":  [
+                                                    "PI\t0\t08:30:27.041\tScripts\tscript Fix_DWX_Spec_v3 (EURUSD,M1) closes terminal with code 0",
+                                                    "LK\t0\t08:31:59.467\tScripts\tscript Fix_DWX_Spec_v3 (EURUSD,M1) closes terminal with code 0",
+                                                    "MK\t0\t08:32:21.886\tScripts\tscript Fix_DWX_Spec_v3 (EURUSD,M1) closes terminal with code 0",
+                                                    "DH\t0\t08:32:39.077\tScripts\tscript Fix_DWX_Spec_v3 (EURUSD,M1) closes terminal with code 0",
+                                                    "IQ\t0\t08:39:01.764\tScripts\tscript Fix_DWX_Spec_v3 (EURUSD,M1) closes terminal with code 0"
+                                                ],
+                     "load_count":  6,
+                     "batch_marker_count":  28,
+                     "done_summary_count":  6,
+                     "done_failed_zero_count":  1
+                 },
+    "registry":  {
+                     "path":  "D:\\QM\\mt5\\T1\\Bases\\symbols.custom.dat",
+                     "size_bytes":  20480,
+                     "min_safe_bytes":  16384,
+                     "sha256":  "49D4BA80F9409AA30977D6777C34F67B325F7581C0878202A79DDDE1F9C90075",
+                     "last_write_time_local":  "2026-04-27T08:32:23.1043314+02:00"
+                 },
+    "baseline_registry":  {
+                              "path":  "D:\\QM\\mt5\\T1\\Bases\\symbols.custom.dat.bak.before-recovery.20260426",
+                              "exists":  true,
+                              "size_bytes":  8192,
+                              "sha256":  "C0F6B4B7ED3F26FF51302B5486F2EA3ACA7AAF0382B527CE62F59C92D7F598F9"
+                          }
+}

@@ -40,6 +40,10 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Converges a non-interactive MT5 startup INI from one patch version to another (default: `v2 -> v3`).
   - Check-then-act writes: updates target only when content differs.
   - Enforces `ShutdownTerminal=1` and refuses T6 paths by default.
+- `scripts/Confirm-DwxRegistryMitigation.ps1`
+  - Emits machine-readable QUA-69 evidence for registry-corruption mitigation confirmation.
+  - Verifies >= 3 successful `Fix_DWX_Spec_v3` terminal-close events from latest T1 log, throttling markers (`BATCH|processed=5|sleep_ms=200`), and non-truncated `symbols.custom.dat` size.
+  - Writes JSON output to `lessons-learned/evidence/qua69_registry_mitigation_confirmation.json`.
 - `scripts/Remove-RecoveryOrphans.ps1`
   - Cleans `D:\QM\_recovery_orphans_*` directories after the 24h hold window.
   - Idempotent check-then-act delete flow with retries for transient remove failures.
@@ -125,3 +129,9 @@ D:\QM\mt5\T1\terminal64.exe /portable /config:D:\QM\mt5\T1\run_fix_dwx_spec_v3.i
 ```
 
 Use only on T1; do not point this flow at T6 paths.
+
+Registry mitigation confirmation (`QUA-69` evidence):
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Confirm-DwxRegistryMitigation.ps1 -FailOnInsufficientEvidence
+```
