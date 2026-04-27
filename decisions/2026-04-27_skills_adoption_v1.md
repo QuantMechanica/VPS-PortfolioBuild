@@ -117,7 +117,7 @@ Until then, the entry is `TBD` and not visible to agents.
 ## Approval evidence
 
 - OWNER directive: relayed by Board Advisor 2026-04-27 ~15:00 local (per QUA-251 issue body)
-- Doc-KM execution: this commit (commit hash to be appended on commit close-out per `decisions/2026-04-27_commit_hash_in_close_out_rule.md`)
+- Doc-KM execution commit: `ced53a6` (`docs(skills): author 6 V5 skills + pin marketplace inventory (QUA-251)`)
 - CTO review pending
 - CEO ratification pending
 
