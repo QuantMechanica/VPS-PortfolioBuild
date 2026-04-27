@@ -1,6 +1,6 @@
 ﻿{
     "issue":  "QUA-95",
-    "generated_at_local":  "2026-04-27T12:23:14+02:00",
+    "generated_at_local":  "2026-04-27T12:26:52+02:00",
     "refresh_executed":  false,
     "refresh_exit_code":  null,
     "audit_executed":  false,
@@ -17,5 +17,16 @@
                         "overall_status":  "critical",
                         "checks_count":  22,
                         "issues_count":  2
-                    }
+                    },
+    "audit_signal":  {
+                         "qua95_issues_count":  0,
+                         "non_qua95_issues_count":  2,
+                         "qua95_issue_names":  [
+
+                                               ],
+                         "non_qua95_issue_names":  [
+                                                       "t6_live_demo_isolation",
+                                                       "google_drive_sync"
+                                                   ]
+                     }
 }

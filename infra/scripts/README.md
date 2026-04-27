@@ -393,6 +393,10 @@
   12. `Update-QUA95OpsBundleManifest.ps1` (post-suite resync)
 - Reads canonical outputs and writes consolidated summary:
   - `docs\ops\QUA-95_BLOCKED_HEARTBEAT_2026-04-27.json`
+- Summary includes:
+  - gate state snapshot
+  - infra-audit counts
+  - audit-signal issue counts/names split (`qua95` vs `non_qua95`)
 - Supports:
   - `-SkipRefresh` (audit-only heartbeat)
   - `-SkipAudit` (refresh-only heartbeat)

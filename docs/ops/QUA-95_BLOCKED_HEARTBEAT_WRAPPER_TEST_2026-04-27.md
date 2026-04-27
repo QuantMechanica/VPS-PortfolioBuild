@@ -9,7 +9,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\monitoring\
 Observed output:
 
 ```text
-status=ok gate_state=blocked audit_status=critical checks_count=21 automation_health=ok qua95_issues=1 non_qua95_issues=2
+status=ok gate_state=blocked audit_status=critical checks_count=22 automation_health=ok qua95_issues=0 non_qua95_issues=2
 ```
 
 Notes:
@@ -21,5 +21,7 @@ Notes:
   - `bars_got == 0`
   - `tail_shortfall_seconds > 0`
   - infra audit section exists and has `overall_status`
+  - heartbeat `audit_signal` section exists with QUA-95/non-QUA95 counts
   - automation-health artifact exists and is `overall_status == ok`
   - audit-signal artifact exists and has valid QUA-95/non-QUA95 issue counts.
+  - heartbeat `audit_signal` counts match the canonical audit-signal artifact.

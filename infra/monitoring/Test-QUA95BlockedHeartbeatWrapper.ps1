@@ -56,6 +56,7 @@ $issues = @()
 if ($hb.issue -ne 'QUA-95') { $issues += 'issue_mismatch' }
 if ($null -eq $hb.gate) { $issues += 'missing_gate' }
 if ($null -eq $hb.infra_audit) { $issues += 'missing_infra_audit' }
+if ($null -eq $hb.audit_signal) { $issues += 'missing_audit_signal' }
 if ($hb.gate.recommended_state -ne 'blocked') { $issues += ("unexpected_gate_state={0}" -f $hb.gate.recommended_state) }
 if ([int]$hb.gate.bars_got -ne 0) { $issues += ("unexpected_bars_got={0}" -f $hb.gate.bars_got) }
 if ([double]$hb.gate.tail_shortfall_seconds -le 0) { $issues += ("unexpected_tail_shortfall={0}" -f $hb.gate.tail_shortfall_seconds) }
@@ -64,6 +65,8 @@ if ($automation.overall_status -ne 'ok') { $issues += ("automation_health_not_ok
 if ($auditSignal.issue -ne 'QUA-95') { $issues += ("audit_signal_issue_mismatch={0}" -f $auditSignal.issue) }
 if ($auditSignal.qua95_issues_count -lt 0) { $issues += ("audit_signal_qua95_issues_invalid={0}" -f $auditSignal.qua95_issues_count) }
 if ($auditSignal.non_qua95_issues_count -lt 0) { $issues += ("audit_signal_non_qua95_issues_invalid={0}" -f $auditSignal.non_qua95_issues_count) }
+if ($hb.audit_signal.qua95_issues_count -ne $auditSignal.qua95_issues_count) { $issues += 'heartbeat_qua95_issue_count_mismatch' }
+if ($hb.audit_signal.non_qua95_issues_count -ne $auditSignal.non_qua95_issues_count) { $issues += 'heartbeat_non_qua95_issue_count_mismatch' }
 
 if ($issues.Count -gt 0) {
     Write-Host ("status=critical reason=validation_failed issues={0}" -f ($issues -join ','))

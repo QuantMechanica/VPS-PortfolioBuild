@@ -22,6 +22,7 @@ $auditSignalCheckScript = Join-Path $RepoRoot 'infra\scripts\Test-QUA95AuditSign
 $opsSuiteSnapshotScript = Join-Path $RepoRoot 'infra\scripts\Write-QUA95OpsSuiteSnapshot.ps1'
 $opsBundleManifestScript = Join-Path $RepoRoot 'infra\scripts\Update-QUA95OpsBundleManifest.ps1'
 $gateJson = Join-Path $RepoRoot 'docs\ops\QUA-95_GATE_DECISION_2026-04-27.json'
+$auditSignalJson = Join-Path $RepoRoot 'docs\ops\QUA-95_AUDIT_SIGNAL_2026-04-27.json'
 $auditJson = Join-Path $RepoRoot 'infra\reports\infra_audit_latest.json'
 $outFull = Join-Path $RepoRoot $OutPath
 
@@ -49,6 +50,9 @@ if (-not (Test-Path -LiteralPath $gateJson)) {
 }
 if (-not (Test-Path -LiteralPath $auditJson)) {
     throw "Infra audit report missing: $auditJson"
+}
+if (-not (Test-Path -LiteralPath $auditSignalJson)) {
+    throw "Audit signal snapshot missing: $auditSignalJson"
 }
 
 $assertOut = & $assertionScript 2>&1
@@ -130,6 +134,7 @@ if (-not ($SkipRefresh.IsPresent -and $SkipAudit.IsPresent)) {
 
 $gate = Get-Content -Raw -LiteralPath $gateJson | ConvertFrom-Json
 $audit = Get-Content -Raw -LiteralPath $auditJson | ConvertFrom-Json
+$auditSignal = Get-Content -Raw -LiteralPath $auditSignalJson | ConvertFrom-Json
 
 $summary = [ordered]@{
     issue = 'QUA-95'
@@ -150,6 +155,12 @@ $summary = [ordered]@{
         overall_status = $audit.overall_status
         checks_count = @($audit.checks).Count
         issues_count = @($audit.issues).Count
+    }
+    audit_signal = [ordered]@{
+        qua95_issues_count = $auditSignal.qua95_issues_count
+        non_qua95_issues_count = $auditSignal.non_qua95_issues_count
+        qua95_issue_names = @($auditSignal.qua95_issue_names)
+        non_qua95_issue_names = @($auditSignal.non_qua95_issue_names)
     }
 }
 
