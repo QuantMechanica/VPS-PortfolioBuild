@@ -16,6 +16,7 @@ param(
     [int]$Qua95TaskMaxAgeMinutes = 125,
     [string]$Qua95TaskHealthScript = 'C:\QM\repo\infra\monitoring\Test-QUA95BlockerTaskHealth.ps1',
     [string]$Qua95TransitionPayloadCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95IssueTransitionPayload.ps1',
+    [string]$Qua95HandoffIntegrityScript = 'C:\QM\repo\infra\scripts\Test-QUA95HandoffIntegrity.ps1',
     [string]$OutJson = 'C:\QM\repo\infra\reports\infra_audit_latest.json',
     [switch]$FailOnCritical
 )
@@ -215,6 +216,24 @@ else {
     Add-Check -Name 'qua95_transition_payload_consistency' -Status $payloadStatus -Meta @{
         exit_code = $payloadCode
         output = $payloadText
+    }
+}
+
+# QUA-95 handoff integrity
+if (-not (Test-Path -LiteralPath $Qua95HandoffIntegrityScript)) {
+    Add-Check -Name 'qua95_handoff_integrity' -Status 'warn' -Meta @{
+        reason = 'integrity_script_missing'
+        path = $Qua95HandoffIntegrityScript
+    }
+}
+else {
+    $integrityOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $Qua95HandoffIntegrityScript 2>&1
+    $integrityCode = $LASTEXITCODE
+    $integrityText = ($integrityOut | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
+    $integrityStatus = if ($integrityCode -eq 0) { 'ok' } else { 'critical' }
+    Add-Check -Name 'qua95_handoff_integrity' -Status $integrityStatus -Meta @{
+        exit_code = $integrityCode
+        output = $integrityText
     }
 }
 

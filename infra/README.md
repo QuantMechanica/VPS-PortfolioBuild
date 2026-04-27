@@ -29,6 +29,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
     - stale `.git/index.lock` detection
     - QUA-95 blocker refresh task health (`QM_QUA95_BlockerRefresh`)
     - QUA-95 issue-transition payload consistency (`Test-QUA95IssueTransitionPayload.ps1`)
+    - QUA-95 handoff integrity (`Test-QUA95HandoffIntegrity.ps1`)
   - Writes machine-readable JSON report to `infra/reports/infra_audit_latest.json`.
 - `scripts/Install-AggregatorStateTask.ps1`
   - Registers Task Scheduler job `QM_AggregatorState_1min` as `SYSTEM`.
