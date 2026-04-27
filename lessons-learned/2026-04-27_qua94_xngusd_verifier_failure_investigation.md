@@ -69,6 +69,10 @@ Additional root-cause probe:
 - `lessons-learned/evidence/2026-04-27_qua94_rates_probe.md`
 - `XNGUSD.DWX` stayed at `oneshot_count=0`, `chunked_count=0`, `tail_window_count=0` even with chunked/day windows.
 - Comparator `WS30.DWX` returned partial chunked bars (`100,251`), so the runtime read-path issue is not perfectly uniform across symbols.
+- `lessons-learned/evidence/2026-04-27_qua94_chunked_verifier_probe.md`
+  - Confirms `terminal_maxbars=100000` in this MT5 runtime.
+  - Confirms full-span bars read returns `Invalid params` for both `XNG` and `WS30`.
+  - Confirms `XNG` remains hard-zero (`tail=0`, `mid=0`, `bars=0`) while `WS30` returns chunked bars.
 
 ## Durable change in this heartbeat
 
@@ -83,3 +87,4 @@ Additional root-cause probe:
 Blocked on verifier owner action:
 - Unblock owner: verifier implementation owner (`verify_import.py` runtime path)
 - Required unblock action: add MT5 session pre-flight hardening (`symbol_select` confirmation + bars warm-up/retry before `copy_rates_range`) plus chunked fallback, and provide a rerun log where `XNGUSD.DWX` has non-zero `bars got` and non-zero tail sample.
+- Parallel unblock owner: MT5 terminal/runtime owner for commodity custom-symbol visibility (`XNG`/`XTI`/`XAU`) in current session context.
