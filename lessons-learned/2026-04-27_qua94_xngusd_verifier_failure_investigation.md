@@ -28,6 +28,28 @@ Cross-symbol context in the same run:
 
 `XNGUSD.DWX` is **not isolated** in this verifier pass. The dominant signature is systemic verifier/runtime bars-read failure, not XNG-specific data corruption.
 
+## Follow-up rerun (same day)
+
+Rerun command executed:
+
+```powershell
+python D:\QM\mt5\T1\dwx_import\verify_import.py
+```
+
+Captured output:
+- `infra/smoke/verify_import_run_2026-04-27_085826_qua94_rerun.log`
+- process exit code: `1`
+- fail rows observed: `56`
+- `XNGUSD.DWX` row remained:
+  - verdict: `FAIL_tail_mid_bars`
+  - `tail_ms expected=1775444289019/got=0`
+  - `mid_ticks_5min=0`
+  - `bars expected=383,654/got=0`
+
+Disposition after rerun:
+- `QUA-94` is **not cleared**.
+- This remains a verifier/runtime read-path failure class, not symbol-level XNG import damage.
+
 ## Durable change in this heartbeat
 
 - Added this investigation record for `QUA-94` with concrete row-level evidence and batch classifier context.
@@ -38,4 +60,6 @@ Cross-symbol context in the same run:
 
 ## Next action
 
-Re-run verifier in a healthy market/session window. If `systemic_zero_bars` persists, escalate to verifier implementation owner for MT5 bars-read-path hardening (`symbol_select` + bars warm-up) before any symbol-level repair.
+Blocked on verifier owner action:
+- Unblock owner: verifier implementation owner (`verify_import.py` runtime path)
+- Required unblock action: add MT5 session pre-flight hardening (`symbol_select` confirmation + bars warm-up/retry before `copy_rates_range`) and provide a rerun log where `XNGUSD.DWX` has non-zero `bars got` and non-zero tail sample.

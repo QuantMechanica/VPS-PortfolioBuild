@@ -5,4 +5,4 @@ Kept / changed / discarded entries from incidents, gate reviews, and retrospecti
 Recent entries:
 
 - `2026-04-26_dwx_spec_patch_blockers.md` - QUA-15 run evidence and unblock criteria for DWX spec patch verification.
-- `2026-04-27_qua94_xngusd_verifier_failure_investigation.md` - QUA-94 evidence showing XNGUSD failure matches systemic verifier/runtime bars-read condition.
+- `2026-04-27_qua94_xngusd_verifier_failure_investigation.md` - QUA-94 evidence showing XNGUSD failure matches systemic verifier/runtime bars-read condition; same-day rerun remained FAIL and is escalated to verifier owner.
