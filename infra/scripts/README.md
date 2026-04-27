@@ -119,6 +119,17 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Write-QUA95BlockedSummary.ps1`
 
+## `Update-QUA95BlockedAssertion.ps1`
+
+- Regenerates:
+  - `docs\ops\QUA-95_BLOCKED_STATE_ASSERTION_2026-04-27.md`
+- Uses canonical inputs:
+  - `docs\ops\QUA-95_XTIUSD_BLOCKER_STATUS_2026-04-27.json`
+  - `docs\ops\QUA-95_GATE_DECISION_2026-04-27.json`
+- Keeps assertion markdown synchronized with latest blocked-state snapshot.
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Update-QUA95BlockedAssertion.ps1`
+
 ## `Update-QUA95BlockerStatus.ps1`
 
 - Refreshes `docs\ops\QUA-95_XTIUSD_BLOCKER_STATUS_2026-04-27.json` from latest rerun evidence:

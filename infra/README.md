@@ -56,6 +56,8 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `scripts/Invoke-QUA95BlockedHeartbeat.ps1`
   - One-command heartbeat wrapper for blocked QUA-95 operations.
   - Runs blocker refresh + infra audit and writes consolidated status JSON.
+- `scripts/Update-QUA95BlockedAssertion.ps1`
+  - Regenerates blocked-state assertion markdown from canonical gate + blocker JSON.
 - `scripts/Install-QUA95BlockedHeartbeatTask.ps1`
   - Registers a dedicated `SYSTEM` scheduler task for the blocked-heartbeat wrapper.
   - Safe to re-run (`Register-ScheduledTask -Force`).

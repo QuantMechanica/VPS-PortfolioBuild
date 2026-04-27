@@ -78,6 +78,8 @@ Status recommendation: `blocked` (`defer`)
   - `infra/scripts/Install-QUA95BlockedHeartbeatTask.ps1`
 - Blocked heartbeat wrapper validator:
   - `infra/monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
+- Blocked assertion generator:
+  - `infra/scripts/Update-QUA95BlockedAssertion.ps1`
 
 ## Verification commands
 
