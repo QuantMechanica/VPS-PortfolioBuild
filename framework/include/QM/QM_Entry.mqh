@@ -34,12 +34,12 @@ int         g_qm_entry_ea_id            = 0;
 QM_NewsMode g_qm_entry_news_mode        = QM_NEWS_OFF;
 int         g_qm_entry_deviation_points = 20;
 
-void QM_EntryConfigure(const int ea_id,
-                       const QM_NewsMode news_mode = QM_NEWS_OFF,
+void QM_EntryConfigure(const int entry_ea_id,
+                       const QM_NewsMode entry_news_mode = QM_NEWS_OFF,
                        const int deviation_points = 20)
 {
-   g_qm_entry_ea_id = ea_id;
-   g_qm_entry_news_mode = news_mode;
+   g_qm_entry_ea_id = entry_ea_id;
+   g_qm_entry_news_mode = entry_news_mode;
    g_qm_entry_deviation_points = (deviation_points > 0) ? deviation_points : 20;
 }
 

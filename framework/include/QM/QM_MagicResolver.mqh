@@ -22,52 +22,52 @@ static const int    QM_MAGIC_REG_SLOT[QM_MAGIC_REGISTRY_ROWS]    = {0};
 static const string QM_MAGIC_REG_SYMBOL[QM_MAGIC_REGISTRY_ROWS]  = {"EURUSD.DWX"};
 static const int    QM_MAGIC_REG_MAGIC[QM_MAGIC_REGISTRY_ROWS]   = {10010000};
 
-int QM_Magic(const int ea_id, const int symbol_slot)
+int QM_Magic(const int magic_ea_id, const int magic_symbol_slot)
 {
    static int cache_ea_id = -1;
    static int cache_slot  = -1;
    static int cache_magic = -1;
 
-   if(ea_id == cache_ea_id && symbol_slot == cache_slot)
+   if(magic_ea_id == cache_ea_id && magic_symbol_slot == cache_slot)
    {
       return cache_magic;
    }
 
-   if(ea_id < QM_MAGIC_EA_ID_MIN || ea_id > QM_MAGIC_EA_ID_MAX)
+   if(magic_ea_id < QM_MAGIC_EA_ID_MIN || magic_ea_id > QM_MAGIC_EA_ID_MAX)
    {
-      PrintFormat("%s: invalid ea_id=%d", EA_MAGIC_NOT_REGISTERED, ea_id);
+      PrintFormat("%s: invalid ea_id=%d", EA_MAGIC_NOT_REGISTERED, magic_ea_id);
       return -1;
    }
 
-   if(symbol_slot < QM_MAGIC_SLOT_MIN || symbol_slot > QM_MAGIC_SLOT_MAX)
+   if(magic_symbol_slot < QM_MAGIC_SLOT_MIN || magic_symbol_slot > QM_MAGIC_SLOT_MAX)
    {
-      PrintFormat("%s: invalid symbol_slot=%d", EA_MAGIC_NOT_REGISTERED, symbol_slot);
+      PrintFormat("%s: invalid symbol_slot=%d", EA_MAGIC_NOT_REGISTERED, magic_symbol_slot);
       return -1;
    }
 
-   const long magic64 = (long)ea_id * 10000L + (long)symbol_slot;
+   const long magic64 = (long)magic_ea_id * 10000L + (long)magic_symbol_slot;
    if(magic64 <= 0 || magic64 > 2147483647L)
    {
-      PrintFormat("%s: magic out of range ea_id=%d slot=%d", EA_MAGIC_NOT_REGISTERED, ea_id, symbol_slot);
+      PrintFormat("%s: magic out of range ea_id=%d slot=%d", EA_MAGIC_NOT_REGISTERED, magic_ea_id, magic_symbol_slot);
       return -1;
    }
 
    const int magic = (int)magic64;
    if(magic == 0)
    {
-      PrintFormat("%s: computed magic is zero ea_id=%d slot=%d", EA_MAGIC_NOT_REGISTERED, ea_id, symbol_slot);
+      PrintFormat("%s: computed magic is zero ea_id=%d slot=%d", EA_MAGIC_NOT_REGISTERED, magic_ea_id, magic_symbol_slot);
       return -1;
    }
 
-   cache_ea_id = ea_id;
-   cache_slot  = symbol_slot;
+   cache_ea_id = magic_ea_id;
+   cache_slot  = magic_symbol_slot;
    cache_magic = magic;
    return magic;
 }
 
-bool QM_MagicRegistered(const int ea_id, const int symbol_slot)
+bool QM_MagicRegistered(const int reg_ea_id, const int reg_symbol_slot)
 {
-   const int computed_magic = QM_Magic(ea_id, symbol_slot);
+   const int computed_magic = QM_Magic(reg_ea_id, reg_symbol_slot);
    if(computed_magic <= 0)
    {
       return false;
@@ -75,7 +75,7 @@ bool QM_MagicRegistered(const int ea_id, const int symbol_slot)
 
    for(int i = 0; i < QM_MAGIC_REGISTRY_ROWS; ++i)
    {
-      if(QM_MAGIC_REG_EA_ID[i] == ea_id && QM_MAGIC_REG_SLOT[i] == symbol_slot)
+      if(QM_MAGIC_REG_EA_ID[i] == reg_ea_id && QM_MAGIC_REG_SLOT[i] == reg_symbol_slot)
       {
          return (QM_MAGIC_REG_MAGIC[i] == computed_magic);
       }
@@ -129,17 +129,17 @@ bool QM_MagicCollisionWithForeignOpenPositions(const int magic, const string exp
    return false;
 }
 
-int QM_MagicChecked(const int ea_id, const int symbol_slot, const string expected_symbol = "")
+int QM_MagicChecked(const int checked_ea_id, const int checked_symbol_slot, const string expected_symbol = "")
 {
-   const int magic = QM_Magic(ea_id, symbol_slot);
+   const int magic = QM_Magic(checked_ea_id, checked_symbol_slot);
    if(magic <= 0)
    {
       return -1;
    }
 
-   if(!QM_MagicRegistered(ea_id, symbol_slot))
+   if(!QM_MagicRegistered(checked_ea_id, checked_symbol_slot))
    {
-      PrintFormat("%s: ea_id=%d slot=%d magic=%d", EA_MAGIC_NOT_REGISTERED, ea_id, symbol_slot, magic);
+      PrintFormat("%s: ea_id=%d slot=%d magic=%d", EA_MAGIC_NOT_REGISTERED, checked_ea_id, checked_symbol_slot, magic);
       return -1;
    }
 

@@ -109,17 +109,17 @@ bool QM_LoggerEnsurePaths()
    return true;
   }
 
-bool QM_LoggerInit(const int ea_id,
-                   const string slug,
-                   const string symbol,
-                   const ENUM_TIMEFRAMES tf,
-                   const long magic)
+bool QM_LoggerInit(const int init_ea_id,
+                   const string init_slug,
+                   const string init_symbol,
+                   const ENUM_TIMEFRAMES init_tf,
+                   const long init_magic)
   {
-   g_qm_logger_ea_id       = ea_id;
-   g_qm_logger_slug        = slug;
-   g_qm_logger_symbol      = (StringLen(symbol) > 0) ? symbol : _Symbol;
-   g_qm_logger_tf          = tf;
-   g_qm_logger_magic       = magic;
+   g_qm_logger_ea_id       = init_ea_id;
+   g_qm_logger_slug        = init_slug;
+   g_qm_logger_symbol      = (StringLen(init_symbol) > 0) ? init_symbol : _Symbol;
+   g_qm_logger_tf          = init_tf;
+   g_qm_logger_magic       = init_magic;
    g_qm_logger_initialized = true;
    g_qm_logger_active_path = QM_LoggerPrimaryPath();
    QM_LoggerEnsurePaths();

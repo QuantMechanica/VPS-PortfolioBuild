@@ -143,7 +143,6 @@ double QM_ChartUIOpenPnL(const long magic)
 
       pnl += PositionGetDouble(POSITION_PROFIT);
       pnl += PositionGetDouble(POSITION_SWAP);
-      pnl += PositionGetDouble(POSITION_COMMISSION);
      }
    return pnl;
   }
@@ -290,12 +289,12 @@ bool QM_ChartUIRenderTiles()
    int today_trades = 0;
    const double today_pnl = QM_ChartUITodayPnL(magic, today_trades);
 
-   string news_mode = "ACTIVE";
+   string news_mode_label = "ACTIVE";
    string news_detail = "[calendar loaded]";
    color news_color = QM_CLR_PASS;
    if(g_qm_chartui_last_event == "SETUP_DATA_MISSING")
      {
-      news_mode = "SETUP_DATA_MISSING";
+      news_mode_label = "SETUP_DATA_MISSING";
       news_detail = "[calendar missing]";
       news_color = QM_CLR_FAIL;
      }
@@ -330,7 +329,7 @@ bool QM_ChartUIRenderTiles()
 
    if(!QM_ChartUIEnsureRect("tile_news", c2, row2, tile_w, tile_h, QM_CLR_SURFACE_1, QM_CLR_SURFACE_2)) return false;
    if(!QM_ChartUIEnsureLabel("tile_news_t", c2 + 8, row2 + 5, "NEWS MODE", QM_CLR_TEXT_MUTED, 8, QM_FONT_SANS)) return false;
-   if(!QM_ChartUIEnsureLabel("tile_news_v1", c2 + 8, row2 + 19, news_mode, news_color, 10, QM_FONT_MONO)) return false;
+   if(!QM_ChartUIEnsureLabel("tile_news_v1", c2 + 8, row2 + 19, news_mode_label, news_color, 10, QM_FONT_MONO)) return false;
    if(!QM_ChartUIEnsureLabel("tile_news_v2", c2 + 8, row2 + 31, news_detail, QM_CLR_TEXT_DIM, 8, QM_FONT_MONO)) return false;
 
    if(!QM_ChartUIEnsureRect("tile_ks", c3, row2, tile_w, tile_h, QM_CLR_SURFACE_1, QM_CLR_SURFACE_2)) return false;
@@ -353,10 +352,10 @@ bool QM_ChartUIRenderTiles()
    return true;
   }
 
-bool QM_ChartUI_Init(const int ea_id, const string slug)
+bool QM_ChartUI_Init(const int chartui_ea_id, const string slug)
   {
    g_qm_chartui_chart_id = ChartID();
-   g_qm_chartui_ea_id = ea_id;
+   g_qm_chartui_ea_id = chartui_ea_id;
    g_qm_chartui_slug = slug;
    g_qm_chartui_last_event_time = TimeCurrent();
    g_qm_chartui_last_event = "INIT";
@@ -366,7 +365,7 @@ bool QM_ChartUI_Init(const int ea_id, const string slug)
    if(!qm_chartui_enabled)
       return true;
 
-   QM_LogEvent(QM_INFO, "CHART_UI_INIT", StringFormat("{\"ea_id\":%d,\"slug\":\"%s\"}", ea_id, QM_LoggerEscapeJson(slug)));
+   QM_LogEvent(QM_INFO, "CHART_UI_INIT", StringFormat("{\"ea_id\":%d,\"slug\":\"%s\"}", chartui_ea_id, QM_LoggerEscapeJson(slug)));
    QM_ChartUI_Refresh();
    return true;
   }

@@ -26,9 +26,9 @@ int  g_qm_fw_friday_close_hour_broker = 21;
 
 CTrade g_qm_fw_trade;
 
-string QM_FrameworkSlug(const int ea_id)
+string QM_FrameworkSlug(const int framework_ea_id)
   {
-   return StringFormat("ea-%04d", ea_id);
+   return StringFormat("ea-%04d", framework_ea_id);
   }
 
 bool QM_FrameworkValidateRiskInputs(const double risk_percent, const double risk_fixed)
@@ -46,16 +46,16 @@ bool QM_FrameworkValidateRiskInputs(const double risk_percent, const double risk
    return true;
   }
 
-bool QM_FrameworkInit(const int ea_id,
-                      const int magic_slot_offset,
+bool QM_FrameworkInit(const int framework_ea_id,
+                      const int framework_magic_slot_offset,
                       const double risk_percent,
                       const double risk_fixed,
                       const double portfolio_weight,
-                      const QM_NewsMode news_mode,
-                      const bool friday_close_enabled = true,
-                      const int friday_close_hour_broker = 21)
+                      const QM_NewsMode framework_news_mode,
+                      const bool framework_friday_close_enabled = true,
+                      const int framework_friday_close_hour_broker = 21)
   {
-   if(ea_id <= 0)
+   if(framework_ea_id <= 0)
       return false;
    if(portfolio_weight <= 0.0 || portfolio_weight > 1.0)
      {
@@ -65,14 +65,14 @@ bool QM_FrameworkInit(const int ea_id,
    if(!QM_FrameworkValidateRiskInputs(risk_percent, risk_fixed))
       return false;
 
-   g_qm_fw_ea_id = ea_id;
-   g_qm_fw_magic_slot = magic_slot_offset;
-   g_qm_fw_magic = QM_MagicChecked(ea_id, magic_slot_offset, _Symbol);
+   g_qm_fw_ea_id = framework_ea_id;
+   g_qm_fw_magic_slot = framework_magic_slot_offset;
+   g_qm_fw_magic = QM_MagicChecked(framework_ea_id, framework_magic_slot_offset, _Symbol);
    if(g_qm_fw_magic <= 0)
       return false;
 
-   const string slug = QM_FrameworkSlug(ea_id);
-   QM_LoggerInit(ea_id, slug, _Symbol, (ENUM_TIMEFRAMES)_Period, g_qm_fw_magic);
+   const string slug = QM_FrameworkSlug(framework_ea_id);
+   QM_LoggerInit(framework_ea_id, slug, _Symbol, (ENUM_TIMEFRAMES)_Period, g_qm_fw_magic);
 
    QM_RiskMode mode = QM_RISK_MODE_PERCENT;
    if(risk_fixed > 0.0)
@@ -84,16 +84,16 @@ bool QM_FrameworkInit(const int ea_id,
    if(!QM_NewsInit())
      {
       QM_LogEvent(QM_WARN, SETUP_DATA_MISSING, "{\"component\":\"news_calendar\"}");
-      if(news_mode != QM_NEWS_OFF)
+      if(framework_news_mode != QM_NEWS_OFF)
          return false;
      }
 
-   QM_EntryConfigure(ea_id, news_mode);
-   QM_KillSwitchInit(ea_id, g_qm_fw_magic, 3.0, 0.0, 1.0);
-   g_qm_fw_friday_close_enabled = friday_close_enabled;
-   g_qm_fw_friday_close_hour_broker = MathMin(23, MathMax(0, friday_close_hour_broker));
+   QM_EntryConfigure(framework_ea_id, framework_news_mode);
+   QM_KillSwitchInit(framework_ea_id, g_qm_fw_magic, 3.0, 0.0, 1.0);
+   g_qm_fw_friday_close_enabled = framework_friday_close_enabled;
+   g_qm_fw_friday_close_hour_broker = MathMin(23, MathMax(0, framework_friday_close_hour_broker));
 
-   if(!QM_ChartUI_Init(ea_id, slug))
+   if(!QM_ChartUI_Init(framework_ea_id, slug))
       return false;
 
    if(qm_chartui_enabled && MQLInfoInteger(MQL_TESTER) == 0)

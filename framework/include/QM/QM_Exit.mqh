@@ -182,15 +182,15 @@ bool QM_ExitBuildRequest(const ulong ticket,
    return false;
   }
 
-bool QM_ExitInit(const long magic,
-                 const bool friday_close_enabled = true,
-                 const int friday_close_hour_broker = 21,
-                 const int friday_close_warn_hours = 1)
+bool QM_ExitInit(const long init_magic,
+                 const bool init_friday_close_enabled = true,
+                 const int init_friday_close_hour_broker = 21,
+                 const int init_friday_close_warn_hours = 1)
   {
-   g_qm_exit_magic = magic;
-   g_qm_exit_friday_close_enabled = friday_close_enabled;
-   g_qm_exit_friday_close_hour = MathMin(23, MathMax(0, friday_close_hour_broker));
-   g_qm_exit_friday_close_warn_hours = MathMax(0, friday_close_warn_hours);
+   g_qm_exit_magic = init_magic;
+   g_qm_exit_friday_close_enabled = init_friday_close_enabled;
+   g_qm_exit_friday_close_hour = MathMin(23, MathMax(0, init_friday_close_hour_broker));
+   g_qm_exit_friday_close_warn_hours = MathMax(0, init_friday_close_warn_hours);
    g_qm_exit_last_warn_day_key = -1;
    g_qm_exit_last_sweep_day_key = -1;
    g_qm_exit_initialized = true;

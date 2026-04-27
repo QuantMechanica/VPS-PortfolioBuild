@@ -195,24 +195,24 @@ void QM_KillSwitchTrip(const string reason, const string details_json)
                             details_json));
 }
 
-bool QM_KillSwitchInit(const int ea_id,
-                       const long magic,
-                       const double daily_loss_halt_pct,
-                       const double portfolio_dd_halt_pct = 0.0,
-                       const double per_trade_risk_cap_pct = 1.0,
-                       const string portfolio_dd_signal_file = "",
-                       const string manual_halt_file = "")
+bool QM_KillSwitchInit(const int init_ea_id,
+                       const long init_magic,
+                       const double init_daily_loss_halt_pct,
+                       const double init_portfolio_dd_halt_pct = 0.0,
+                       const double init_per_trade_risk_cap_pct = 1.0,
+                       const string init_portfolio_dd_signal_file = "",
+                       const string init_manual_halt_file = "")
 {
-   g_qm_ks_ea_id = ea_id;
-   g_qm_ks_magic = magic;
-   g_qm_ks_daily_loss_halt_pct = MathMax(0.0, daily_loss_halt_pct);
-   g_qm_ks_portfolio_dd_halt_pct = MathMax(0.0, portfolio_dd_halt_pct);
-   g_qm_ks_per_trade_risk_cap_pct = MathMax(0.0, per_trade_risk_cap_pct);
-   g_qm_ks_portfolio_dd_signal_file = QM_KillSwitchTrim(portfolio_dd_signal_file);
-   g_qm_ks_manual_halt_file = QM_KillSwitchTrim(manual_halt_file);
-   if(StringLen(g_qm_ks_manual_halt_file) == 0 && ea_id > 0)
-      g_qm_ks_manual_halt_file = StringFormat("D:\\QM\\data\\halt\\%d.halt", ea_id);
-   if(StringLen(g_qm_ks_portfolio_dd_signal_file) == 0 && ea_id > 0)
+   g_qm_ks_ea_id = init_ea_id;
+   g_qm_ks_magic = init_magic;
+   g_qm_ks_daily_loss_halt_pct = MathMax(0.0, init_daily_loss_halt_pct);
+   g_qm_ks_portfolio_dd_halt_pct = MathMax(0.0, init_portfolio_dd_halt_pct);
+   g_qm_ks_per_trade_risk_cap_pct = MathMax(0.0, init_per_trade_risk_cap_pct);
+   g_qm_ks_portfolio_dd_signal_file = QM_KillSwitchTrim(init_portfolio_dd_signal_file);
+   g_qm_ks_manual_halt_file = QM_KillSwitchTrim(init_manual_halt_file);
+   if(StringLen(g_qm_ks_manual_halt_file) == 0 && init_ea_id > 0)
+      g_qm_ks_manual_halt_file = StringFormat("D:\\QM\\data\\halt\\%d.halt", init_ea_id);
+   if(StringLen(g_qm_ks_portfolio_dd_signal_file) == 0 && init_ea_id > 0)
       g_qm_ks_portfolio_dd_signal_file = "D:\\QM\\data\\halt\\portfolio_dd.signal";
 
    g_qm_ks_halted = false;

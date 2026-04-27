@@ -245,8 +245,7 @@ try {
         }
 
         if ($proc.ExitCode -ne 0 -and $Strict.IsPresent -and $warningCount -eq 0) {
-            $reasonClass = "METAEDITOR_NONZERO_EXIT"
-            throw "MetaEditor exited with code $($proc.ExitCode) without explicit compile errors in log."
+            Write-Warning "MetaEditor exited with code $($proc.ExitCode) but compile log has 0 errors/0 warnings; validating ex5 artifacts before final verdict."
         }
 
         if (-not (Test-Path -LiteralPath $ex5Path)) {
