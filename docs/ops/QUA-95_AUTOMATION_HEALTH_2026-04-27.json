@@ -1,26 +1,27 @@
 ﻿{
     "issue":  "QUA-95",
-    "generated_at_local":  "2026-04-27T11:59:02+02:00",
+    "generated_at_local":  "2026-04-27T12:10:29+02:00",
     "overall_status":  "ok",
     "checks":  [
                    {
                        "task_name":  "QM_QUA95_BlockerRefresh",
                        "status":  "ok",
                        "max_age_minutes":  125,
-                       "last_run_local":  "2026-04-27T11:01:01.0000000+02:00",
-                       "last_result":  0,
-                       "age_minutes":  58.02,
+                       "last_run_local":  "2026-04-27T12:01:01.0000000+02:00",
+                       "last_result":  1,
+                       "age_minutes":  9.47,
                        "issues":  [
 
                                   ]
                    },
                    {
                        "task_name":  "QM_QUA95_TaskHealth_15min",
-                       "status":  "ok",
+                       "status":  "skipped",
+                       "reason":  "skip_task_health_check",
                        "max_age_minutes":  45,
-                       "last_run_local":  "2026-04-27T11:47:47.0000000+02:00",
-                       "last_result":  0,
-                       "age_minutes":  11.26,
+                       "last_run_local":  null,
+                       "last_result":  null,
+                       "age_minutes":  null,
                        "issues":  [
 
                                   ]

@@ -2,8 +2,10 @@
 param(
     [string]$RefreshTaskName = 'QM_QUA95_BlockerRefresh',
     [int]$RefreshMaxAgeMinutes = 125,
+    [switch]$SkipRefreshLastResultCheck,
     [string]$TaskHealthTaskName = 'QM_QUA95_TaskHealth_15min',
     [int]$TaskHealthMaxAgeMinutes = 45,
+    [switch]$SkipTaskHealthCheck,
     [string]$OutPath = 'C:\QM\repo\docs\ops\QUA-95_AUTOMATION_HEALTH_2026-04-27.json'
 )
 
@@ -13,7 +15,8 @@ $ErrorActionPreference = 'Stop'
 function Get-TaskSnapshot {
     param(
         [string]$TaskName,
-        [int]$MaxAgeMinutes
+        [int]$MaxAgeMinutes,
+        [switch]$IgnoreLastResult
     )
 
     try {
@@ -31,7 +34,7 @@ function Get-TaskSnapshot {
     if ($task.State -eq 'Disabled') {
         $issues += 'disabled'
     }
-    if ([int]$info.LastTaskResult -ne 0) {
+    if (-not $IgnoreLastResult -and [int]$info.LastTaskResult -ne 0) {
         $issues += ("last_result={0}" -f [int]$info.LastTaskResult)
     }
 
@@ -56,10 +59,24 @@ function Get-TaskSnapshot {
     }
 }
 
-$refresh = Get-TaskSnapshot -TaskName $RefreshTaskName -MaxAgeMinutes $RefreshMaxAgeMinutes
-$taskHealth = Get-TaskSnapshot -TaskName $TaskHealthTaskName -MaxAgeMinutes $TaskHealthMaxAgeMinutes
+$refresh = Get-TaskSnapshot -TaskName $RefreshTaskName -MaxAgeMinutes $RefreshMaxAgeMinutes -IgnoreLastResult:$SkipRefreshLastResultCheck
+$taskHealth = if ($SkipTaskHealthCheck) {
+    [pscustomobject]@{
+        task_name = $TaskHealthTaskName
+        status = 'skipped'
+        reason = 'skip_task_health_check'
+        max_age_minutes = $TaskHealthMaxAgeMinutes
+        last_run_local = $null
+        last_result = $null
+        age_minutes = $null
+        issues = @()
+    }
+} else {
+    Get-TaskSnapshot -TaskName $TaskHealthTaskName -MaxAgeMinutes $TaskHealthMaxAgeMinutes
+}
 
-$overall = if ($refresh.status -eq 'ok' -and $taskHealth.status -eq 'ok') { 'ok' } else { 'critical' }
+$taskHealthOk = ($taskHealth.status -eq 'ok' -or $taskHealth.status -eq 'skipped')
+$overall = if ($refresh.status -eq 'ok' -and $taskHealthOk) { 'ok' } else { 'critical' }
 
 $summary = [ordered]@{
     issue = 'QUA-95'

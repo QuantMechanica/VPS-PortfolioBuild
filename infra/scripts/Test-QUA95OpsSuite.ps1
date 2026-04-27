@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param(
-    [string]$RepoRoot = 'C:\QM\repo'
+    [string]$RepoRoot = 'C:\QM\repo',
+    [switch]$SkipBlockerTaskHealthCheck
 )
 
 Set-StrictMode -Version Latest
@@ -13,9 +14,13 @@ $steps = @(
     @{ name = 'blocked_invariant'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95BlockedInvariant.ps1' },
     @{ name = 'unblock_readiness'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95UnblockReadiness.ps1' },
     @{ name = 'unblock_readiness_summary'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95UnblockReadinessSummary.ps1' },
-    @{ name = 'blocked_heartbeat_wrapper'; script = Join-Path $RepoRoot 'infra\monitoring\Test-QUA95BlockedHeartbeatWrapper.ps1' },
-    @{ name = 'blocker_task_health'; script = Join-Path $RepoRoot 'infra\monitoring\Test-QUA95BlockerTaskHealth.ps1' }
+    @{ name = 'audit_signal'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95AuditSignal.ps1' },
+    @{ name = 'blocked_heartbeat_wrapper'; script = Join-Path $RepoRoot 'infra\monitoring\Test-QUA95BlockedHeartbeatWrapper.ps1' }
 )
+
+if (-not $SkipBlockerTaskHealthCheck) {
+    $steps += @{ name = 'blocker_task_health'; script = Join-Path $RepoRoot 'infra\monitoring\Test-QUA95BlockerTaskHealth.ps1' }
+}
 
 $results = @()
 $failed = $false

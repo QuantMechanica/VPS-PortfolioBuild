@@ -110,6 +110,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `monitoring/Test-QUA95AutomationHealth.ps1`
   - Combined scheduler-health check for `QM_QUA95_BlockerRefresh` and `QM_QUA95_TaskHealth_15min`.
   - Writes machine-readable snapshot to `docs/ops/QUA-95_AUTOMATION_HEALTH_2026-04-27.json`.
+  - Supports `-SkipRefreshLastResultCheck` and `-SkipTaskHealthCheck` for refresh-runner self-check contexts.
 - `scripts/Test-QUA95OpsSuite.ps1`
   - Runs core QUA-95 ops checks as one suite and emits JSON summary.
 - `scripts/Test-QUA95OpsBundleManifest.ps1`
@@ -133,6 +134,8 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Validates that unblock-readiness markdown summary stays aligned with canonical readiness JSON.
 - `scripts/Update-QUA95AuditSignal.ps1`
   - Writes a QUA-95-focused audit signal snapshot that separates QUA-95 issues from unrelated infra issues.
+- `scripts/Test-QUA95AuditSignal.ps1`
+  - Validates the QUA-95 audit-signal artifact structure and core counters.
 - `scripts/Test-QUA95BlockedInvariant.ps1`
   - Enforces blocked/defer invariant when `bars_got <= 0` using gate + transition payload artifacts.
   - Returns non-zero if blocked-state policy drifts.

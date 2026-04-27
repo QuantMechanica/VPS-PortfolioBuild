@@ -172,12 +172,12 @@
   8. `Test-QUA95BlockedInvariant.ps1`
   9. `Update-QUA95UnblockReadiness.ps1`
   10. `Write-QUA95UnblockReadinessSummary.ps1`
-  11. `monitoring/Test-QUA95AutomationHealth.ps1`
+  11. `monitoring/Test-QUA95AutomationHealth.ps1 -SkipRefreshLastResultCheck -SkipTaskHealthCheck`
   12. `Update-QUA95AuditSignal.ps1`
   13. Refreshes `QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.sha256`
   14. `Test-QUA95HandoffIntegrity.ps1`
   15. `Update-QUA95OpsBundleManifest.ps1` (pre-suite resync)
-  16. `Write-QUA95OpsSuiteSnapshot.ps1`
+  16. `Write-QUA95OpsSuiteSnapshot.ps1 -SkipBlockerTaskHealthCheck`
   17. `Update-QUA95OpsBundleManifest.ps1` (post-suite resync)
 - Enforces non-zero exit handling for each step; task fails when any step exits non-zero.
 - Log append writes are lock-tolerant (`Add-Content` retry loop) so concurrent
@@ -297,6 +297,20 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Update-QUA95AuditSignal.ps1`
 
+## `Test-QUA95AuditSignal.ps1`
+
+- Validates the QUA-95-focused audit signal snapshot:
+  - `docs\ops\QUA-95_AUDIT_SIGNAL_2026-04-27.json`
+- Checks core fields and counts:
+  - `issue == QUA-95`
+  - non-negative issue counters
+  - expected check-count fields are present and valid
+- Exit codes:
+  - `0`: audit signal is valid
+  - `1`: missing/invalid signal artifact
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA95AuditSignal.ps1`
+
 ## `Test-QUA95UnblockReadinessSummary.ps1`
 
 - Validates markdown summary consistency with unblock-readiness JSON:
@@ -322,8 +336,9 @@
   4. `Test-QUA95BlockedInvariant.ps1`
   5. `Test-QUA95UnblockReadiness.ps1`
   6. `Test-QUA95UnblockReadinessSummary.ps1`
-  7. `monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
-  8. `monitoring/Test-QUA95BlockerTaskHealth.ps1`
+  7. `Test-QUA95AuditSignal.ps1`
+  8. `monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
+  9. `monitoring/Test-QUA95BlockerTaskHealth.ps1`
 - Emits JSON summary to stdout and returns:
   - `0` when all checks pass
   - `2` when any check is critical
@@ -345,6 +360,8 @@
   - suite script: `infra\scripts\Test-QUA95OpsSuite.ps1`
   - output: `docs\ops\QUA-95_OPS_SUITE_2026-04-27.json`
 - Exit code mirrors suite result.
+- Optional:
+  - `-SkipBlockerTaskHealthCheck` to run the suite without the scheduler last-result gate check (used by refresh runner self-heal path).
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Write-QUA95OpsSuiteSnapshot.ps1`
 
@@ -369,7 +386,7 @@
   7. `monitoring/Test-QUA95AutomationHealth.ps1`
   8. `Update-QUA95AuditSignal.ps1`
   9. `Update-QUA95OpsBundleManifest.ps1` (pre-suite resync)
-  10. `Write-QUA95OpsSuiteSnapshot.ps1`
+  10. `Write-QUA95OpsSuiteSnapshot.ps1 -SkipBlockerTaskHealthCheck`
   11. `Update-QUA95OpsBundleManifest.ps1` (post-suite resync)
 - Reads canonical outputs and writes consolidated summary:
   - `docs\ops\QUA-95_BLOCKED_HEARTBEAT_2026-04-27.json`
@@ -378,7 +395,7 @@
   - `-SkipAudit` (refresh-only heartbeat)
 - Companion validator:
   - `infra\monitoring\Test-QUA95BlockedHeartbeatWrapper.ps1`
-  - default validator mode uses `-SkipRefresh -SkipAudit`; pass `-RunRefresh` to include refresh execution.
+  - default validator mode uses `-SkipRefresh -SkipAudit` and an automation-health self-check mode that skips scheduler last-result gates; pass `-RunRefresh` to include refresh execution.
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Invoke-QUA95BlockedHeartbeat.ps1`
 

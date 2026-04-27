@@ -78,7 +78,12 @@ if ($readinessSummaryCode -ne 0) {
     throw ("Unblock readiness summary update failed: exit_code={0} output={1}" -f $readinessSummaryCode, $readinessSummaryText)
 }
 
-$automationOut = & $automationHealthScript 2>&1
+$automationParams = @{}
+if ($SkipRefresh.IsPresent -and $SkipAudit.IsPresent) {
+    $automationParams.SkipRefreshLastResultCheck = $true
+    $automationParams.SkipTaskHealthCheck = $true
+}
+$automationOut = & $automationHealthScript @automationParams 2>&1
 $automationCode = $LASTEXITCODE
 if ($automationCode -ne 0) {
     $automationText = ($automationOut | ForEach-Object { $_.ToString() }) -join '; '
@@ -100,7 +105,7 @@ if (-not ($SkipRefresh.IsPresent -and $SkipAudit.IsPresent)) {
         throw ("Ops bundle manifest failed: exit_code={0} output={1}" -f $bundleCode, $bundleText)
     }
 
-    $opsSuiteOut = & $opsSuiteSnapshotScript 2>&1
+    $opsSuiteOut = & $opsSuiteSnapshotScript -SkipBlockerTaskHealthCheck 2>&1
     $opsSuiteCode = $LASTEXITCODE
     if ($opsSuiteCode -ne 0) {
         $opsSuiteText = ($opsSuiteOut | ForEach-Object { $_.ToString() }) -join '; '

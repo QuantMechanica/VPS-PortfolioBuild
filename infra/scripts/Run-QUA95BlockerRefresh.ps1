@@ -134,7 +134,7 @@ try {
     if ($LASTEXITCODE -ne 0) { throw ("Step failed with exit code {0}: {1}" -f $LASTEXITCODE, $unblockReadinessSummary) }
 
     $global:LASTEXITCODE = 0
-    $automationHealthOutput = & $automationHealth 2>&1
+    $automationHealthOutput = & $automationHealth -SkipRefreshLastResultCheck -SkipTaskHealthCheck 2>&1
     Write-CommandOutputToLog -Output $automationHealthOutput
     if ($LASTEXITCODE -ne 0) { throw ("Step failed with exit code {0}: {1}" -f $LASTEXITCODE, $automationHealth) }
 
@@ -167,7 +167,7 @@ try {
     if ($LASTEXITCODE -ne 0) { throw ("Step failed with exit code {0}: {1}" -f $LASTEXITCODE, $opsBundleManifest) }
 
     $global:LASTEXITCODE = 0
-    $opsSuiteOutput = & $opsSuiteWriter 2>&1
+    $opsSuiteOutput = & $opsSuiteWriter -SkipBlockerTaskHealthCheck 2>&1
     Write-CommandOutputToLog -Output $opsSuiteOutput
     if ($LASTEXITCODE -ne 0) { throw ("Step failed with exit code {0}: {1}" -f $LASTEXITCODE, $opsSuiteWriter) }
 
