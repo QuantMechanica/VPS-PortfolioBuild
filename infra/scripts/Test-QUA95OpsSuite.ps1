@@ -23,6 +23,7 @@ $steps = @(
     @{ name = 'failure_signature'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95FailureSignature.ps1' },
     @{ name = 'heartbeat_custom_visibility'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95HeartbeatCustomVisibility.ps1' },
     @{ name = 'task_health_action_wiring'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95TaskHealthActionWiring.ps1' },
+    @{ name = 'blocker_refresh_action_wiring'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95BlockerRefreshActionWiring.ps1' },
     @{ name = 'blocked_heartbeat_wrapper'; script = Join-Path $RepoRoot 'infra\monitoring\Test-QUA95BlockedHeartbeatWrapper.ps1' }
 )
 

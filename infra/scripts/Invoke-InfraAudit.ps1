@@ -17,6 +17,7 @@ param(
     [int]$Qua95TaskMaxAgeMinutes = 125,
     [string]$Qua95TaskHealthScript = 'C:\QM\repo\infra\monitoring\Test-QUA95BlockerTaskHealth.ps1',
     [string]$Qua95TaskHealthActionWiringScript = 'C:\QM\repo\infra\scripts\Test-QUA95TaskHealthActionWiring.ps1',
+    [string]$Qua95BlockerRefreshActionWiringScript = 'C:\QM\repo\infra\scripts\Test-QUA95BlockerRefreshActionWiring.ps1',
     [string]$Qua95AutomationHealthScript = 'C:\QM\repo\infra\monitoring\Test-QUA95AutomationHealth.ps1',
     [string]$Qua95TransitionPayloadCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95IssueTransitionPayload.ps1',
     [string]$Qua95BlockedInvariantScript = 'C:\QM\repo\infra\scripts\Test-QUA95BlockedInvariant.ps1',
@@ -235,6 +236,25 @@ else {
         task_name = $Qua95TaskHealthTaskName
         exit_code = $wiringCode
         output = $wiringText
+    }
+}
+
+# QUA-95 blocker-refresh action wiring
+if (-not (Test-Path -LiteralPath $Qua95BlockerRefreshActionWiringScript)) {
+    Add-Check -Name 'qua95_blocker_refresh_action_wiring' -Status 'warn' -Meta @{
+        reason = 'check_script_missing'
+        path = $Qua95BlockerRefreshActionWiringScript
+    }
+}
+else {
+    $refreshWiringOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $Qua95BlockerRefreshActionWiringScript -TaskName $Qua95TaskName 2>&1
+    $refreshWiringCode = $LASTEXITCODE
+    $refreshWiringText = ($refreshWiringOut | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
+    $refreshWiringStatus = if ($refreshWiringCode -eq 0) { 'ok' } else { 'critical' }
+    Add-Check -Name 'qua95_blocker_refresh_action_wiring' -Status $refreshWiringStatus -Meta @{
+        task_name = $Qua95TaskName
+        exit_code = $refreshWiringCode
+        output = $refreshWiringText
     }
 }
 

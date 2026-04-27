@@ -443,6 +443,22 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA95TaskHealthActionWiring.ps1`
 
+## `Test-QUA95BlockerRefreshActionWiring.ps1`
+
+- Validates scheduler action-argument wiring for:
+  - `QM_QUA95_BlockerRefresh`
+- Ensures task action uses PowerShell and includes required fragments:
+  - `Run-QUA95BlockerRefresh.ps1`
+  - `-RepoRoot`
+  - `-LogPath`
+  - `-TaskName`
+  - `-PythonExe`
+- Exit codes:
+  - `0`: wiring is present
+  - `2`: task missing or required fragment missing
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA95BlockerRefreshActionWiring.ps1`
+
 ## `Test-QUA95UnblockReadinessSummary.ps1`
 
 - Validates markdown summary consistency with unblock-readiness JSON:
@@ -493,8 +509,9 @@
   13. `Test-QUA95FailureSignature.ps1`
   14. `Test-QUA95HeartbeatCustomVisibility.ps1`
   15. `Test-QUA95TaskHealthActionWiring.ps1`
-  16. `monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
-  17. `monitoring/Test-QUA95BlockerTaskHealth.ps1`
+  16. `Test-QUA95BlockerRefreshActionWiring.ps1`
+  17. `monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
+  18. `monitoring/Test-QUA95BlockerTaskHealth.ps1`
 - Emits JSON summary to stdout and returns:
   - `0` when all checks pass
   - `2` when any check is critical
