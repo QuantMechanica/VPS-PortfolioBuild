@@ -10,6 +10,7 @@ param(
     [int]$AggregatorSilentMinutes = 15,
     [string]$DriveLogDir = 'C:\ProgramData\Google\DriveFS\Logs',
     [int]$DriveSilentMinutes = 60,
+    [string]$DriveGitExclusionScript = 'C:\QM\repo\infra\monitoring\Test-DriveGitExclusion.ps1',
     [string[]]$GitRepoRoots = @('C:\QM\repo', 'C:\QM\paperclip'),
     [int]$StaleIndexLockMinutes = 10,
     [string]$PaperclipProcessPattern = 'paperclip',
@@ -208,6 +209,24 @@ else {
         $ageMin = [math]::Round(((Get-Date) - $latestLog.LastWriteTime).TotalMinutes, 2)
         $status = if ($ageMin -gt $DriveSilentMinutes) { 'critical' } else { 'ok' }
         Add-Check -Name 'google_drive_sync' -Status $status -Meta @{ latest_log = $latestLog.FullName; age_minutes = $ageMin; threshold_minutes = $DriveSilentMinutes }
+    }
+}
+
+# Drive/git exclusion hard-fence check (PC1-00)
+if (-not (Test-Path -LiteralPath $DriveGitExclusionScript)) {
+    Add-Check -Name 'drive_git_exclusion' -Status 'warn' -Meta @{
+        reason = 'check_script_missing'
+        path = $DriveGitExclusionScript
+    }
+}
+else {
+    $driveFenceOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $DriveGitExclusionScript 2>&1
+    $driveFenceCode = $LASTEXITCODE
+    $driveFenceText = ($driveFenceOut | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
+    $driveFenceStatus = if ($driveFenceCode -eq 0) { 'ok' } elseif ($driveFenceCode -eq 1) { 'warn' } else { 'critical' }
+    Add-Check -Name 'drive_git_exclusion' -Status $driveFenceStatus -Meta @{
+        exit_code = $driveFenceCode
+        output = $driveFenceText
     }
 }
 

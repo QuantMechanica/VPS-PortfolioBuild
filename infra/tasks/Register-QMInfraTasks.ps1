@@ -6,6 +6,7 @@ param(
     [string]$AggregatorScript = "C:\QM\repo\scripts\aggregator\standalone_aggregator_loop.py",
     [string]$SnapshotScript = "C:\QM\repo\scripts\export_public_snapshot.ps1",
     [string]$HealthScript = "C:\QM\repo\infra\monitoring\Invoke-InfraHealthCheck.ps1",
+    [string]$DriveGitExclusionScript = "C:\QM\repo\infra\monitoring\Test-DriveGitExclusion.ps1",
     [string]$GitIndexLockMonitorScript = "C:\QM\repo\infra\monitoring\Invoke-GitIndexLockMonitor.ps1",
     [string]$StaleLockWatchdogScript = "C:\QM\repo\infra\monitoring\Invoke-PaperclipStaleLockWatchdog.ps1",
     [string]$Qua207RuntimeHeartbeatScript = "C:\QM\repo\infra\scripts\Run-QUA207RuntimeCompletionHeartbeat.ps1",
@@ -129,6 +130,23 @@ if (Test-Path -LiteralPath $GitIndexLockMonitorScript) {
 }
 else {
     Write-Warning "Git index lock monitor script missing; skipped QM_GitIndexLockMonitor_10min registration."
+}
+
+# Drive/git exclusion hard-fence verification every 15 minutes (PC1-00)
+if (Test-Path -LiteralPath $DriveGitExclusionScript) {
+    $driveFenceTrigger = New-RepeatingTriggerFromToday `
+        -AtTime (Get-Date "00:06") `
+        -Interval (New-TimeSpan -Minutes 15) `
+        -Duration (New-TimeSpan -Days 3650)
+    Register-DesiredTask `
+        -TaskName "QM_DriveGitExclusion_15min" `
+        -Executable "powershell.exe" `
+        -Arguments "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$DriveGitExclusionScript`"" `
+        -Trigger $driveFenceTrigger `
+        -Description "Verifies repo/.git paths remain outside Drive sync roots (PC1-00 hard fence)."
+}
+else {
+    Write-Warning "Drive/git exclusion script missing; skipped QM_DriveGitExclusion_15min registration."
 }
 
 # Paperclip stale-lock watchdog every 15 minutes, only if source script exists.

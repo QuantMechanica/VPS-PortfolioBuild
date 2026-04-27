@@ -130,7 +130,12 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Validates DWX service heartbeat freshness from content.
   - Requires `wall_clock_utc` field for strict `ok`; missing field is `warn`.
 - `monitoring/Test-DriveGitExclusion.ps1`
-  - Verifies repo path is outside known Google Drive sync roots (PC1-00 guard).
+  - Verifies repo roots and resolved git metadata paths (`.git` dir or worktree `gitdir`) are outside Google Drive sync roots (PC1-00 hard fence).
+  - Flags reparse-point `.git` entries as critical.
+- `scripts/Install-DriveGitExclusionTask.ps1`
+  - Registers Task Scheduler job `QM_DriveGitExclusion_15min` as `SYSTEM`.
+  - Runs `monitoring/Test-DriveGitExclusion.ps1` every 15 minutes.
+  - Safe to re-run (`Register-ScheduledTask -Force`) and overlap-safe (`MultipleInstances=IgnoreNew`).
 - `monitoring/Test-PipelineOperatorRunHealth.ps1`
   - Classifies Pipeline-Operator 24h failures into recovered/unrecovered `process_loss`.
   - Flags `critical` only for unrecovered `process_loss` runs and keeps recovered retries as non-critical.
@@ -262,6 +267,8 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Manual and platform recovery flow for stale `checkoutRunId` / `executionRunId` lock conflicts (QUA-24).
   - Documents the comment-side-effect and PATCH-only assignee-cycle workaround.
   - Includes stale-run watchdog duplicate-suppression patch notes for source-derived issues (QUA-67 / DEVOPS-008).
+- `drive-git-exclusion-runbook.md`
+  - Runbook for PC1-00 Drive-sync hard-fence verification and recurring scheduler check (`QM_DriveGitExclusion_15min`).
 
 ## Recommended scheduler wiring
 
@@ -293,6 +300,12 @@ Git index-lock monitor (every 10 minutes, PC1-00):
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-GitIndexLockMonitorTask.ps1 -EveryMinutes 10 -StaleAfterMinutes 20 -FailOnFinding
+```
+
+Drive/git hard-fence verification (every 15 minutes, PC1-00):
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-DriveGitExclusionTask.ps1 -EveryMinutes 15
 ```
 
 Aggregator state writer (every minute):
