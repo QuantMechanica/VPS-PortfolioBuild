@@ -96,6 +96,15 @@
   - `source`: compare custom tail to broker source tail in same window (`--tail-tol-ms`)
 - Useful handoff artifact to the verifier owner; does not mutate production files.
 
+## `summarize_verify_candidate_log.py`
+
+- Parses `verify_import_candidate.py` log output and reports:
+  - total parsed rows
+  - unique symbol count
+  - verdict distribution for all rows
+  - verdict distribution by latest row per symbol
+  - list of latest `OK` symbols
+
 ## `Invoke-VerifyDisposition.ps1`
 
 - Idempotent verifier rerun helper for issue triage.

@@ -191,6 +191,12 @@ Use:
 - Confirms QUA-91 (WS30-specific) is cleared under source-tail basis.
 - Confirms parent/global verifier remediation is still required for other symbols.
 
+Repro parser:
+
+```powershell
+python infra/scripts/summarize_verify_candidate_log.py infra/smoke/verify_import_candidate_run_2026-04-27_091415_all_symbols.log
+```
+
 ## Durable change in this heartbeat
 
 - Added/extended tests for verifier fail-pattern classification in:
