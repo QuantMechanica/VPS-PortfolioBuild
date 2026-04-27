@@ -305,6 +305,9 @@
   - `docs\ops\QUA-95_AUDIT_SIGNAL_2026-04-27.json`
 - Checks core fields and counts:
   - `issue == QUA-95`
+  - `qua95_checks` array/count consistency
+  - `qua95_*` prefix integrity for QUA-95 check/issue names
+  - non-QUA95 issue-name prefix integrity
   - non-negative issue counters
   - expected check-count fields are present and valid
 - Exit codes:
