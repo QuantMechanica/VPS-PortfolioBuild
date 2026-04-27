@@ -379,6 +379,12 @@ Agent worktree isolation (idempotent, per agent key):
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Ensure-AgentWorktree.ps1 -AgentKey devops -CreateBranchIfMissing
 ```
 
+Research worktree materialization (`QUA-249`, explicit target path):
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Ensure-AgentWorktree.ps1 -AgentKey research -CreateBranchIfMissing
+```
+
 ## Non-goals
 
 - No EA strategy code changes.
