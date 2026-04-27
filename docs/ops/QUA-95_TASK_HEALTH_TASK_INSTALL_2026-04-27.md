@@ -40,3 +40,20 @@ schtasks /Run /TN "QM_QUA95_TaskHealth_15min"
 Post-run scheduler fields:
 - `Last Run Time: 4/27/2026 10:07:17 AM`
 - `Last Result: 0`
+
+## Negative-path monitor proof
+
+Controlled check:
+1. Temporarily disable `QM_QUA95_BlockerRefresh`.
+2. Run `Test-QUA95BlockerTaskHealth.ps1` (expect critical).
+3. Re-enable `QM_QUA95_BlockerRefresh`.
+4. Run `Test-QUA95BlockerTaskHealth.ps1` again (expect ok).
+
+Observed outputs:
+
+```text
+disabled_check_exit=2
+status=critical task=QM_QUA95_BlockerRefresh issues=disabled
+reenabled_check_exit=0
+status=ok task=QM_QUA95_BlockerRefresh last_run=2026-04-27T10:13:13.0000000+02:00 age_minutes=1.92
+```
