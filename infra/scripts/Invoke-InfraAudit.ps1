@@ -28,6 +28,7 @@ param(
     [string]$Qua95AuditSignalCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95AuditSignal.ps1',
     [string]$Qua95DirectVerifierProofCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95DirectVerifierProof.ps1',
     [string]$Qua95CustomVisibilityProofCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95CustomVisibilityProof.ps1',
+    [string]$Qua95FailureSignatureCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95FailureSignature.ps1',
     [string]$Qua95HeartbeatCustomVisibilityCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95HeartbeatCustomVisibility.ps1',
     [string]$Qua95CanonicalSnapshotCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95CanonicalSnapshot.ps1',
     [string]$Qua95OpsBundleManifestScript = 'C:\QM\repo\infra\scripts\Test-QUA95OpsBundleManifest.ps1',
@@ -403,6 +404,24 @@ else {
     Add-Check -Name 'qua95_custom_visibility_proof' -Status $customVisibilityStatus -Meta @{
         exit_code = $customVisibilityCode
         output = $customVisibilityText
+    }
+}
+
+# QUA-95 systemic failure signature coherence
+if (-not (Test-Path -LiteralPath $Qua95FailureSignatureCheckScript)) {
+    Add-Check -Name 'qua95_failure_signature' -Status 'warn' -Meta @{
+        reason = 'check_script_missing'
+        path = $Qua95FailureSignatureCheckScript
+    }
+}
+else {
+    $failureSignatureOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $Qua95FailureSignatureCheckScript 2>&1
+    $failureSignatureCode = $LASTEXITCODE
+    $failureSignatureText = ($failureSignatureOut | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
+    $failureSignatureStatus = if ($failureSignatureCode -eq 0) { 'ok' } else { 'critical' }
+    Add-Check -Name 'qua95_failure_signature' -Status $failureSignatureStatus -Meta @{
+        exit_code = $failureSignatureCode
+        output = $failureSignatureText
     }
 }
 

@@ -353,6 +353,26 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA95CustomVisibilityProof.ps1`
 
+## `Test-QUA95FailureSignature.ps1`
+
+- Validates QUA-95 blocked systemic failure signature coherence across:
+  - `lessons-learned\evidence\2026-04-27_qua95_xtiusd_direct_verify_rerun.json`
+  - `lessons-learned\evidence\2026-04-27_qua95_xtiusd_custom_visibility_probe_rerun.json`
+  - `docs\ops\QUA-95_XTIUSD_BLOCKER_STATUS_2026-04-27.json`
+- Checks (when blocker remains `blocked`):
+  - `mid_ticks_5min > 0`
+  - `bars_one_shot <= 0` and `bars_chunked <= 0`
+  - `isolated_custom_bars_visibility_failure == true`
+  - `target` bars absent while `source` bars remain visible
+  - blocker disposition remains `defer` with `bars_got <= 0`
+- Behavior:
+  - if blocker state is no longer `blocked`, check exits `0` with `signature_check=skipped`.
+- Exit codes:
+  - `0`: failure signature is coherent (or skipped for non-blocked state)
+  - `1`: signature mismatch/drift detected
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA95FailureSignature.ps1`
+
 ## `Test-QUA95HeartbeatCustomVisibility.ps1`
 
 - Validates blocked-heartbeat `custom_visibility` section against canonical evidence:
@@ -434,10 +454,11 @@
   8. `Test-QUA95AuditSignal.ps1`
   9. `Test-QUA95DirectVerifierProof.ps1`
   10. `Test-QUA95CustomVisibilityProof.ps1`
-  11. `Test-QUA95HeartbeatCustomVisibility.ps1`
-  12. `Test-QUA95TaskHealthActionWiring.ps1`
-  13. `monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
-  14. `monitoring/Test-QUA95BlockerTaskHealth.ps1`
+  11. `Test-QUA95FailureSignature.ps1`
+  12. `Test-QUA95HeartbeatCustomVisibility.ps1`
+  13. `Test-QUA95TaskHealthActionWiring.ps1`
+  14. `monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
+  15. `monitoring/Test-QUA95BlockerTaskHealth.ps1`
 - Emits JSON summary to stdout and returns:
   - `0` when all checks pass
   - `2` when any check is critical
