@@ -55,6 +55,9 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `scripts/Invoke-QUA95BlockedHeartbeat.ps1`
   - One-command heartbeat wrapper for blocked QUA-95 operations.
   - Runs blocker refresh + infra audit and writes consolidated status JSON.
+- `scripts/Install-QUA95BlockedHeartbeatTask.ps1`
+  - Registers a dedicated `SYSTEM` scheduler task for the blocked-heartbeat wrapper.
+  - Safe to re-run (`Register-ScheduledTask -Force`).
 - `scripts/Install-DwxSpecPatchRunner.ps1`
   - Converges a non-interactive MT5 startup INI from one patch version to another (default: `v2 -> v3`).
   - Check-then-act writes: updates target only when content differs.
@@ -139,6 +142,12 @@ QUA-95 task-health monitor (every 15 minutes):
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-QUA95TaskHealthTask.ps1 -EveryMinutes 15 -MaxAgeMinutes 125
+```
+
+QUA-95 blocked heartbeat wrapper task (hourly):
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-QUA95BlockedHeartbeatTask.ps1 -EveryMinutes 60
 ```
 
 Recovery orphan cleanup (daily schedule is managed by `tasks/Register-QMInfraTasks.ps1`):

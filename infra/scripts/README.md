@@ -223,6 +223,17 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Invoke-QUA95BlockedHeartbeat.ps1`
 
+## `Install-QUA95BlockedHeartbeatTask.ps1`
+
+- Idempotently installs a Scheduler task that runs:
+  - `Invoke-QUA95BlockedHeartbeat.ps1`
+- Defaults:
+  - task name: `QM_QUA95_BlockedHeartbeat_60min`
+  - interval: `60` minutes
+  - principal: `SYSTEM` (highest)
+- Preview mode (no registration):
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-QUA95BlockedHeartbeatTask.ps1 -PreviewOnly`
+
 ## `Update-QUA93BlockerStatus.ps1`
 
 - Idempotently creates/refreshes `docs\ops\QUA-93_XAUUSD_BLOCKER_STATUS_2026-04-27.json`
