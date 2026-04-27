@@ -167,6 +167,8 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Optional guarded cleanup mode (`-AutoCleanup`) only removes stale lock when no `git.exe` process references the repo.
   - Writes machine-readable output to `C:\QM\logs\infra\health\git_index_lock_monitor_latest.json`.
   - Canonical lock signal source consumed by both `monitoring/Invoke-InfraHealthCheck.ps1` and `scripts/Invoke-InfraAudit.ps1`.
+- `monitoring/Invoke-InfraHealthCheck.ps1`
+  - Delegates `git_index_lock` evaluation to `monitoring/Invoke-GitIndexLockMonitor.ps1` when present, with inline stale-lock scan fallback only if the monitor script is missing.
 - `scripts/Install-GitIndexLockMonitorTask.ps1`
   - Registers Task Scheduler job `QM_GitIndexLockMonitor_10min` as `SYSTEM`.
   - Runs `monitoring/Invoke-GitIndexLockMonitor.ps1 -StaleAfterMinutes 20 -FailOnFinding`.
