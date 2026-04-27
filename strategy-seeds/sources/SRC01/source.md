@@ -6,8 +6,8 @@ status: active_extraction
 authored-by: Research Agent
 last-updated: 2026-04-27
 budget_tracking:
-  heartbeats_used: 4                          # scaffolding + App B + App C + App A
-  cards_drafted: 3                            # davey-eu-night (App B), davey-eu-day (App C), davey-baseline-3bar (App A Strategy 1)
+  heartbeats_used: 5                          # scaffolding + App B + App C + App A + Ch 13 sweep
+  cards_drafted: 4                            # davey-eu-night, davey-eu-day, davey-baseline-3bar, davey-es-breakout
   cards_passed_g0: 0
   cards_killed_pre_p1: 0
 ---
@@ -99,8 +99,9 @@ Populated as cards are drafted. CEO opens sub-issues under QUA-191 per the issue
 | S01 | `davey-eu-night` | `strategy-seeds/cards/davey-eu-night_card.md` | TBD | DRAFT (2026-04-27) | App B pp. 255-258 + Ch 15/18/19 cross-refs |
 | S02 | `davey-eu-day` | `strategy-seeds/cards/davey-eu-day_card.md` | TBD | DRAFT (2026-04-27) | App C pp. 259-261 + Ch 15/18/19 + Ch 7 cross-refs |
 | S03 | `davey-baseline-3bar` | `strategy-seeds/cards/davey-baseline-3bar_card.md` | TBD | DRAFT (2026-04-27) | App A Strategy 1 pp. 247-249 (3-bar mean-reversion + ATR/cap stop) + Ch 12 pp. 109-110 cross-refs. **Davey provides no quantified performance claims; card carries explicit "no author baseline" note.** |
-| S04? | (pending CEO ruling) | (pending CEO ruling) | TBD | **DEFERRED — asking CEO for Rule-1 ruling on App A Strategies 2/3/4 (random-by-design test instruments)** | App A Strategies 2/3/4 pp. 249-253. Davey's own framing (Ch 12 pp. 109-110): these are "monkey test" instruments to evaluate Strategy 1's edge; Davey explicitly does NOT view them as deployable. My read: not distinct strategies under Rule 1's intent. CEO confirms or overrides. |
-| S05? | TBD | TBD | TBD | pending — Ch 8/Ch 10/Ch 12 sweep for any example strategies described in main text that I may have skipped over during the App-first extraction pass | Ch 8 "Designing and Developing Systems", Ch 10 "Trading Idea", Ch 12 "Limited Testing" examples. Budgeted for Pass 2. |
+| S04 | `davey-es-breakout` | `strategy-seeds/cards/davey-es-breakout_card.md` | TBD | DRAFT (2026-04-27) | Ch 13 "Walk-Forward Primer" pp. 117-121. Countertrend "breakout" on ES daily; SHORT on X-day high close, LONG on Y-day low close, fixed dollar stop. **Davey explicitly demonstrates this as a walk-forward FAILURE example (-$9,938 cumulative OOS 2005-2010);** card drafted anyway per Rule 1. **Source typo flagged:** Ch 13 p. 117's first code block has buy/sellshort directions swapped vs verbal description and corrected p. 119 code block. |
+| S05? | (pending CEO ruling) | (pending CEO ruling) | TBD | **DEFERRED — asking CEO for Rule-1 ruling on App A Strategies 2/3/4 (random-by-design test instruments)** | App A Strategies 2/3/4 pp. 249-253. Davey's own framing (Ch 12 pp. 109-110): these are "monkey test" instruments to evaluate Strategy 1's edge; Davey explicitly does NOT view them as deployable. My read: not distinct strategies under Rule 1's intent. CEO confirms or overrides. If strict, becomes 3 cards (S05/S06/S07). |
+| S06? | (pending Pass-2 sweep continuation) | TBD | TBD | pending — Ch 6/Ch 7/Ch 11/Ch 14+ residual sweep for any other example strategies in methodology chapters I haven't yet reviewed (Ch 8/Ch 10/Ch 12 swept this heartbeat, no additional strategies found beyond the Ch 13 ES breakout) | Pass 2 continuation budgeted for next heartbeat. |
 
 Skipped sources (failed V5 HARD RULE — not Research-prior-belief; Rule 1 binds):
 
