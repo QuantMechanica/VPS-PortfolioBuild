@@ -1,7 +1,7 @@
 # QUA-95 Infra Audit Integration Proof (2026-04-27)
 
 Issue: `QUA-95`  
-Scope: confirm blocker task health, combined automation health, issue-transition payload consistency, blocked invariant enforcement, handoff integrity, blocked assertion freshness, unblock-readiness freshness, audit-signal consistency, canonical-snapshot consistency, ops-bundle manifest integrity, and blocked-heartbeat wrapper validation are present in central infra audit output.
+Scope: confirm blocker task health, task-health action wiring, combined automation health, issue-transition payload consistency, blocked invariant enforcement, handoff integrity, blocked assertion freshness, unblock-readiness freshness, audit-signal consistency, canonical-snapshot consistency, ops-bundle manifest integrity, and blocked-heartbeat wrapper validation are present in central infra audit output.
 
 ## Command
 
@@ -19,7 +19,7 @@ Report: C:\QM\repo\infra\reports\infra_audit_latest.json
 Latest integration run:
 
 ```text
-Infra audit completed: status=critical, checks=23, issues=2
+Infra audit completed: status=critical, checks=24, issues=2
 Report: C:\QM\repo\infra\reports\infra_audit_latest.json
 ```
 
@@ -35,6 +35,16 @@ From `infra/reports/infra_audit_latest.json`:
     "task_name": "QM_QUA95_BlockerRefresh",
     "max_age_minutes": 125,
     "exit_code": 0
+  }
+}
+```
+
+```json
+{
+  "name": "qua95_task_health_action_wiring",
+  "status": "ok",
+  "meta": {
+    "task_name": "QM_QUA95_TaskHealth_15min"
   }
 }
 ```
@@ -141,6 +151,6 @@ From `infra/reports/infra_audit_latest.json`:
 
 ## Interpretation
 
-- QUA-95 scheduler health, combined automation health, transition payload consistency, blocked invariant enforcement, handoff integrity, blocked assertion freshness, unblock-readiness freshness, audit-signal consistency, canonical-snapshot consistency, ops-bundle manifest integrity, and blocked-heartbeat wrapper validation are now audited in the same report as disk, terminal liveness, Drive sync, and stale index-lock checks.
+- QUA-95 scheduler health, task-health action wiring, combined automation health, transition payload consistency, blocked invariant enforcement, handoff integrity, blocked assertion freshness, unblock-readiness freshness, audit-signal consistency, canonical-snapshot consistency, ops-bundle manifest integrity, and blocked-heartbeat wrapper validation are now audited in the same report as disk, terminal liveness, Drive sync, and stale index-lock checks.
 - The audit can stay overall `critical` for unrelated checks while QUA-95 task health remains independently visible as `ok`.
 - Latest run shows all QUA-95 checks `ok`; the remaining audit issues are outside QUA-95 scope.

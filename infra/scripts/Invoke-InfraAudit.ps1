@@ -13,6 +13,7 @@ param(
     [int]$StaleIndexLockMinutes = 10,
     [string]$PaperclipProcessPattern = 'paperclip',
     [string]$Qua95TaskName = 'QM_QUA95_BlockerRefresh',
+    [string]$Qua95TaskHealthTaskName = 'QM_QUA95_TaskHealth_15min',
     [int]$Qua95TaskMaxAgeMinutes = 125,
     [string]$Qua95TaskHealthScript = 'C:\QM\repo\infra\monitoring\Test-QUA95BlockerTaskHealth.ps1',
     [string]$Qua95AutomationHealthScript = 'C:\QM\repo\infra\monitoring\Test-QUA95AutomationHealth.ps1',
@@ -208,6 +209,43 @@ else {
         max_age_minutes = $Qua95TaskMaxAgeMinutes
         exit_code = $healthCode
         output = $healthText
+    }
+}
+
+# QUA-95 task-health action wiring
+try {
+    $taskHealthTask = Get-ScheduledTask -TaskName $Qua95TaskHealthTaskName -ErrorAction Stop
+    $taskHealthArgs = ''
+    if ($taskHealthTask.Actions -and $taskHealthTask.Actions.Count -gt 0) {
+        $taskHealthArgs = [string]$taskHealthTask.Actions[0].Arguments
+    }
+
+    $requiredFragments = @(
+        '-TransitionPayloadCheckScript',
+        '-UnblockReadinessCheckScript',
+        '-AuditSignalCheckScript',
+        '-CanonicalSnapshotCheckScript'
+    )
+
+    $missingFragments = @()
+    foreach ($fragment in $requiredFragments) {
+        if ($taskHealthArgs -notlike "*$fragment*") {
+            $missingFragments += $fragment
+        }
+    }
+
+    $wiringStatus = if ($missingFragments.Count -eq 0) { 'ok' } else { 'critical' }
+    Add-Check -Name 'qua95_task_health_action_wiring' -Status $wiringStatus -Meta @{
+        task_name = $Qua95TaskHealthTaskName
+        missing_fragments = @($missingFragments)
+        action_arguments = $taskHealthArgs
+    }
+}
+catch {
+    Add-Check -Name 'qua95_task_health_action_wiring' -Status 'critical' -Meta @{
+        task_name = $Qua95TaskHealthTaskName
+        reason = 'task_not_found'
+        error = $_.Exception.Message
     }
 }
 
