@@ -9,6 +9,7 @@ param(
     [string]$AuditSignalCheckScript = '',
     [string]$CanonicalSnapshotCheckScript = '',
     [string]$CustomVisibilityProofCheckScript = '',
+    [string]$HeartbeatCustomVisibilityCheckScript = '',
     [switch]$PreviewOnly
 )
 
@@ -59,7 +60,14 @@ if (-not (Test-Path -LiteralPath $CustomVisibilityProofCheckScript)) {
     throw "Custom visibility proof check script missing: $CustomVisibilityProofCheckScript"
 }
 
-$args = "-NoProfile -ExecutionPolicy Bypass -File `"$checkScript`" -MaxAgeMinutes $MaxAgeMinutes -TransitionPayloadCheckScript `"$TransitionPayloadCheckScript`" -UnblockReadinessCheckScript `"$UnblockReadinessCheckScript`" -AuditSignalCheckScript `"$AuditSignalCheckScript`" -CanonicalSnapshotCheckScript `"$CanonicalSnapshotCheckScript`" -CustomVisibilityProofCheckScript `"$CustomVisibilityProofCheckScript`""
+if ([string]::IsNullOrWhiteSpace($HeartbeatCustomVisibilityCheckScript)) {
+    $HeartbeatCustomVisibilityCheckScript = Join-Path $RepoRoot 'infra\scripts\Test-QUA95HeartbeatCustomVisibility.ps1'
+}
+if (-not (Test-Path -LiteralPath $HeartbeatCustomVisibilityCheckScript)) {
+    throw "Heartbeat custom visibility check script missing: $HeartbeatCustomVisibilityCheckScript"
+}
+
+$args = "-NoProfile -ExecutionPolicy Bypass -File `"$checkScript`" -MaxAgeMinutes $MaxAgeMinutes -TransitionPayloadCheckScript `"$TransitionPayloadCheckScript`" -UnblockReadinessCheckScript `"$UnblockReadinessCheckScript`" -AuditSignalCheckScript `"$AuditSignalCheckScript`" -CanonicalSnapshotCheckScript `"$CanonicalSnapshotCheckScript`" -CustomVisibilityProofCheckScript `"$CustomVisibilityProofCheckScript`" -HeartbeatCustomVisibilityCheckScript `"$HeartbeatCustomVisibilityCheckScript`""
 $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument $args
 $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).Date.AddMinutes(2) `
     -RepetitionInterval (New-TimeSpan -Minutes $EveryMinutes) `
@@ -76,6 +84,7 @@ if ($PreviewOnly) {
     Write-Host ("preview_audit_signal_check_script={0}" -f $AuditSignalCheckScript)
     Write-Host ("preview_canonical_snapshot_check_script={0}" -f $CanonicalSnapshotCheckScript)
     Write-Host ("preview_custom_visibility_proof_check_script={0}" -f $CustomVisibilityProofCheckScript)
+    Write-Host ("preview_heartbeat_custom_visibility_check_script={0}" -f $HeartbeatCustomVisibilityCheckScript)
     Write-Host ("preview_action=PowerShell {0}" -f $args)
     exit 0
 }

@@ -6,7 +6,8 @@ param(
         '-UnblockReadinessCheckScript',
         '-AuditSignalCheckScript',
         '-CanonicalSnapshotCheckScript',
-        '-CustomVisibilityProofCheckScript'
+        '-CustomVisibilityProofCheckScript',
+        '-HeartbeatCustomVisibilityCheckScript'
     )
 )
 

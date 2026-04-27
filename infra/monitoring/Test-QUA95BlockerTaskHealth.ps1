@@ -6,7 +6,8 @@ param(
     [string]$UnblockReadinessCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95UnblockReadiness.ps1',
     [string]$AuditSignalCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95AuditSignal.ps1',
     [string]$CanonicalSnapshotCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95CanonicalSnapshot.ps1',
-    [string]$CustomVisibilityProofCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95CustomVisibilityProof.ps1'
+    [string]$CustomVisibilityProofCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95CustomVisibilityProof.ps1',
+    [string]$HeartbeatCustomVisibilityCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95HeartbeatCustomVisibility.ps1'
 )
 
 Set-StrictMode -Version Latest
@@ -105,6 +106,19 @@ $customVisibilityCode = $LASTEXITCODE
 if ($customVisibilityCode -ne 0) {
     $customVisibilityText = ($customVisibilityOut | ForEach-Object { $_.ToString() }) -join '; '
     Write-Host ("status=critical task={0} issues=custom_visibility_proof_check_failed exit_code={1} output={2}" -f $TaskName, $customVisibilityCode, $customVisibilityText)
+    exit 2
+}
+
+if (-not (Test-Path -LiteralPath $HeartbeatCustomVisibilityCheckScript)) {
+    Write-Host ("status=critical task={0} issues=heartbeat_custom_visibility_check_missing path={1}" -f $TaskName, $HeartbeatCustomVisibilityCheckScript)
+    exit 2
+}
+
+$heartbeatCustomVisibilityOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $HeartbeatCustomVisibilityCheckScript 2>&1
+$heartbeatCustomVisibilityCode = $LASTEXITCODE
+if ($heartbeatCustomVisibilityCode -ne 0) {
+    $heartbeatCustomVisibilityText = ($heartbeatCustomVisibilityOut | ForEach-Object { $_.ToString() }) -join '; '
+    Write-Host ("status=critical task={0} issues=heartbeat_custom_visibility_check_failed exit_code={1} output={2}" -f $TaskName, $heartbeatCustomVisibilityCode, $heartbeatCustomVisibilityText)
     exit 2
 }
 

@@ -27,8 +27,8 @@ Verified highlights:
 - `Run As User: SYSTEM`
 - `Repeat: Every: 0 Hour(s), 15 Minute(s)`
 - Task action:
-  - `powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\QM\repo\infra\monitoring\Test-QUA95BlockerTaskHealth.ps1" -MaxAgeMinutes 125 -TransitionPayloadCheckScript "C:\QM\repo\infra\scripts\Test-QUA95IssueTransitionPayload.ps1" -UnblockReadinessCheckScript "C:\QM\repo\infra\scripts\Test-QUA95UnblockReadiness.ps1" -AuditSignalCheckScript "C:\QM\repo\infra\scripts\Test-QUA95AuditSignal.ps1" -CanonicalSnapshotCheckScript "C:\QM\repo\infra\scripts\Test-QUA95CanonicalSnapshot.ps1" -CustomVisibilityProofCheckScript "C:\QM\repo\infra\scripts\Test-QUA95CustomVisibilityProof.ps1"`
-  - Script now enforces transition-payload, unblock-readiness, audit-signal, canonical-snapshot, and custom-visibility-proof consistency as part of health status.
+  - `powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\QM\repo\infra\monitoring\Test-QUA95BlockerTaskHealth.ps1" -MaxAgeMinutes 125 -TransitionPayloadCheckScript "C:\QM\repo\infra\scripts\Test-QUA95IssueTransitionPayload.ps1" -UnblockReadinessCheckScript "C:\QM\repo\infra\scripts\Test-QUA95UnblockReadiness.ps1" -AuditSignalCheckScript "C:\QM\repo\infra\scripts\Test-QUA95AuditSignal.ps1" -CanonicalSnapshotCheckScript "C:\QM\repo\infra\scripts\Test-QUA95CanonicalSnapshot.ps1" -CustomVisibilityProofCheckScript "C:\QM\repo\infra\scripts\Test-QUA95CustomVisibilityProof.ps1" -HeartbeatCustomVisibilityCheckScript "C:\QM\repo\infra\scripts\Test-QUA95HeartbeatCustomVisibility.ps1"`
+  - Script now enforces transition-payload, unblock-readiness, audit-signal, canonical-snapshot, custom-visibility-proof, and heartbeat-custom-visibility consistency as part of health status.
 
 ## Runtime proof
 
@@ -93,7 +93,7 @@ Observed:
 Full action argument (PowerShell API):
 
 ```text
--NoProfile -ExecutionPolicy Bypass -File "C:\QM\repo\infra\monitoring\Test-QUA95BlockerTaskHealth.ps1" -MaxAgeMinutes 125 -TransitionPayloadCheckScript "C:\QM\repo\infra\scripts\Test-QUA95IssueTransitionPayload.ps1" -UnblockReadinessCheckScript "C:\QM\repo\infra\scripts\Test-QUA95UnblockReadiness.ps1" -AuditSignalCheckScript "C:\QM\repo\infra\scripts\Test-QUA95AuditSignal.ps1" -CanonicalSnapshotCheckScript "C:\QM\repo\infra\scripts\Test-QUA95CanonicalSnapshot.ps1" -CustomVisibilityProofCheckScript "C:\QM\repo\infra\scripts\Test-QUA95CustomVisibilityProof.ps1"
+-NoProfile -ExecutionPolicy Bypass -File "C:\QM\repo\infra\monitoring\Test-QUA95BlockerTaskHealth.ps1" -MaxAgeMinutes 125 -TransitionPayloadCheckScript "C:\QM\repo\infra\scripts\Test-QUA95IssueTransitionPayload.ps1" -UnblockReadinessCheckScript "C:\QM\repo\infra\scripts\Test-QUA95UnblockReadiness.ps1" -AuditSignalCheckScript "C:\QM\repo\infra\scripts\Test-QUA95AuditSignal.ps1" -CanonicalSnapshotCheckScript "C:\QM\repo\infra\scripts\Test-QUA95CanonicalSnapshot.ps1" -CustomVisibilityProofCheckScript "C:\QM\repo\infra\scripts\Test-QUA95CustomVisibilityProof.ps1" -HeartbeatCustomVisibilityCheckScript "C:\QM\repo\infra\scripts\Test-QUA95HeartbeatCustomVisibility.ps1"
 ```
 
 ## Audit-signal wiring proof
@@ -113,4 +113,6 @@ Observed:
 - preview action contains `-CanonicalSnapshotCheckScript "C:\QM\repo\infra\scripts\Test-QUA95CanonicalSnapshot.ps1"`
 - `preview_custom_visibility_proof_check_script=C:\QM\repo\infra\scripts\Test-QUA95CustomVisibilityProof.ps1`
 - preview action contains `-CustomVisibilityProofCheckScript "C:\QM\repo\infra\scripts\Test-QUA95CustomVisibilityProof.ps1"`
+- `preview_heartbeat_custom_visibility_check_script=C:\QM\repo\infra\scripts\Test-QUA95HeartbeatCustomVisibility.ps1`
+- preview action contains `-HeartbeatCustomVisibilityCheckScript "C:\QM\repo\infra\scripts\Test-QUA95HeartbeatCustomVisibility.ps1"`
 - scheduler post-run `Last Result: 0`
