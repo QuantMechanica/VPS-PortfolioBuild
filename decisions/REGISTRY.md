@@ -1,0 +1,33 @@
+# Decisions Registry (DL Index)
+
+Lightweight index of project-level decisions. Each row maps a `DL-NNN` id to its canonical document and originating issue.
+
+Conventions:
+- `decisions/DL-NNN_<topic>.md` — numbered ADRs.
+- `decisions/YYYY-MM-DD_<topic>.md` — date-prefixed decision docs (also assigned a DL-NNN in the index).
+- A DL-NNN may be **External** if it was allocated in conversation / lessons-learned / scratch before a canonical file existed; once materialized, the row is updated with the file path.
+- New DL-NNN: take `max(existing) + 1`. Skipped numbers are intentional gaps; do not reuse.
+
+| DL | Date | Title | Canonical document | Originating issue / source |
+|---|---|---|---|---|
+| DL-001 | 2026-04-27 | CTO Prompt Hard Rules Checklist Adaptation | [`DL-001_cto_prompt_hard_rules_checklist.md`](./DL-001_cto_prompt_hard_rules_checklist.md) | QUA-147 |
+| DL-002 | 2026-04-27 | Pipeline Infrastructure Audit | [`DL-002_pipeline_infra_audit.md`](./DL-002_pipeline_infra_audit.md) | QUA-146 |
+| DL-003 | 2026-04-27 | V5 Framework Review | [`DL-003_v5_framework_review.md`](./DL-003_v5_framework_review.md) | QUA-149 |
+| DL-010 | 2026-04-26 | Auto-CEO / wizard tutorial agents — repurpose, do not delete | External (cited in [`lessons-learned/2026-04-26_paperclip_wave0_bootstrap.md`](../lessons-learned/2026-04-26_paperclip_wave0_bootstrap.md)) | QUA-8 |
+| DL-011 | 2026-04-26 | Backlog-driven org chart | External (cited in [`lessons-learned/2026-04-26_paperclip_wave0_bootstrap.md`](../lessons-learned/2026-04-26_paperclip_wave0_bootstrap.md)) | Wave-0 bootstrap |
+| DL-012 | 2026-04-26 | Capability routing matrix | External (cited in [`lessons-learned/2026-04-26_paperclip_wave0_bootstrap.md`](../lessons-learned/2026-04-26_paperclip_wave0_bootstrap.md)) | Wave-0 bootstrap |
+| DL-013 | 2026-04-26 | Wave-1 hire proposal | External (cited in [`lessons-learned/2026-04-26_paperclip_wave0_bootstrap.md`](../lessons-learned/2026-04-26_paperclip_wave0_bootstrap.md)) | Wave-0 bootstrap |
+| DL-014 | 2026-04-26 | Two-layer hire pattern (Paperclip system prompt + V5 first-issue brief) | External (cited in [`lessons-learned/2026-04-26_paperclip_wave0_bootstrap.md`](../lessons-learned/2026-04-26_paperclip_wave0_bootstrap.md)) | Wave-0 bootstrap |
+| DL-016 | 2026-04-27 | CTO vacancy → CEO absorbs infra/code sign-off | External (cited in QUA-65/QUA-66 sign-off scratch) | CTO vacancy |
+| DL-017 | 2026-04-27 | CEO hire-approval waiver (`requireBoardApprovalForNewAgents=false`) | External (Paperclip company config + QUA-188 narrative reference) | Phase 1 closeout |
+| DL-022 | 2026-04-27 | DWX `spec_ok` criterion + import mitigation pattern | External (cited in [`lessons-learned/2026-04-27_dwx_recovery_and_spec_fix.md`](../lessons-learned/2026-04-27_dwx_recovery_and_spec_fix.md)) | QUA-65..70 / DEVOPS-006..010 |
+| DL-023 | 2026-04-27 | CEO Autonomy Waiver, broadened scope (v2) — additive to DL-017 | [`2026-04-27_ceo_autonomy_waiver_v2.md`](./2026-04-27_ceo_autonomy_waiver_v2.md) | [QUA-188](https://paperclip.local/QUA/issues/QUA-188) (directive) / [QUA-192](https://paperclip.local/QUA/issues/QUA-192) (recording) |
+
+## Cross-links
+
+- **DL-017 ↔ DL-023.** DL-023 is additive to DL-017; DL-017 (hires) is now the first item in the DL-023 broadened-authority list. Reverse link from DL-017 lives only in this registry — DL-017 itself is not file-materialized; if/when a canonical doc is filed, that file should backlink to DL-023.
+- **QUA-188 ↔ DL-023.** Forward link: QUA-188 → DL-023 (recorded via QUA-192). Reverse link: [`2026-04-27_ceo_autonomy_waiver_v2.md`](./2026-04-27_ceo_autonomy_waiver_v2.md) cites QUA-188 as its source directive.
+
+## Backfilling External entries
+
+External rows are not Doc-KM gaps — they reflect decisions logged in lessons-learned or scratch before a canonical ADR was filed. CEO or the relevant decision owner may at any time materialize a canonical `DL-NNN_<topic>.md` and update the row.
