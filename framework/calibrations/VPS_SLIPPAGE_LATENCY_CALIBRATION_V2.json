@@ -1,0 +1,31 @@
+{
+  "measurement_status": "MEASURED_PARTIAL",
+  "notes": "Measured on T1 Darwinex-Live on 2026-04-27. Ping and spread are measured from 120 live samples. Slippage and commission remain null because no EURUSD deal fills were present in the 30-day lookback on this terminal/account.",
+  "measurement": {
+    "terminal": "T1",
+    "broker_server": "Darwinex-Live",
+    "symbol_source": "EURUSD",
+    "measured_at_server_time": "2026.04.27 16:17:32",
+    "spread_ping_samples": 120,
+    "history_days": 30,
+    "deals_used_for_slippage": 0,
+    "raw_evidence_file": "artifacts/qua-228/vps_slippage_latency_calibration_v2_raw_20260427_161732.json"
+  },
+  "symbols": {
+    "EURUSD.DWX": {
+      "commission_cents_per_lot": null,
+      "latency_ms": {
+        "avg": 33.145,
+        "p95": 33.219
+      },
+      "slippage_points": {
+        "avg": null,
+        "p95": null
+      },
+      "spread_points": {
+        "median": 3.0,
+        "p95": 4.0
+      }
+    }
+  }
+}

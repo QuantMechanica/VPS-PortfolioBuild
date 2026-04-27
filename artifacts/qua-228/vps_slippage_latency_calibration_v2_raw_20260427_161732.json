@@ -1,0 +1,19 @@
+{
+  "measurement_status": "MEASURED_PARTIAL",
+  "measured_at_server_time": "2026.04.27 16:17:32",
+  "source_terminal": "T1",
+  "broker_server": "Darwinex-Live",
+  "symbol_source": "EURUSD",
+  "symbol_key": "EURUSD.DWX",
+  "sampling": {
+    "spread_ping_samples": 120,
+    "history_days": 30,
+    "deals_used_for_slippage": 0
+  },
+  "metrics": {
+    "commission_cents_per_lot": null,
+    "latency_ms": { "avg": 33.145, "p95": 33.219 },
+    "slippage_points": { "avg": null, "p95": null },
+    "spread_points": { "median": 3.000, "p95": 4.000 }
+  }
+}
