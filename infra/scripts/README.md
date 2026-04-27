@@ -159,6 +159,15 @@
 - Default log:
   - `C:\QM\repo\infra\smoke\qua95_blocker_refresh_task.log`
 
+## `Get-QUA95GateDecision.ps1`
+
+- Reads `docs\ops\QUA-95_XTIUSD_BLOCKER_STATUS_2026-04-27.json` and emits a deterministic transition payload.
+- Exit code contract:
+  - `0`: `recommended_state=clear`
+  - `3`: `recommended_state=blocked`
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Get-QUA95GateDecision.ps1`
+
 ## `Update-QUA93BlockerStatus.ps1`
 
 - Idempotently creates/refreshes `docs\ops\QUA-93_XAUUSD_BLOCKER_STATUS_2026-04-27.json`
