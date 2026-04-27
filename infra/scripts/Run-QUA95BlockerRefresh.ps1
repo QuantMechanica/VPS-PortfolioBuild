@@ -132,6 +132,11 @@ try {
     if ($LASTEXITCODE -ne 0) { throw ("Step failed with exit code {0}: {1}" -f $LASTEXITCODE, $integrity) }
 
     $global:LASTEXITCODE = 0
+    $opsBundleOutput = & $opsBundleManifest 2>&1
+    Write-CommandOutputToLog -Output $opsBundleOutput
+    if ($LASTEXITCODE -ne 0) { throw ("Step failed with exit code {0}: {1}" -f $LASTEXITCODE, $opsBundleManifest) }
+
+    $global:LASTEXITCODE = 0
     $opsSuiteOutput = & $opsSuiteWriter 2>&1
     Write-CommandOutputToLog -Output $opsSuiteOutput
     if ($LASTEXITCODE -ne 0) { throw ("Step failed with exit code {0}: {1}" -f $LASTEXITCODE, $opsSuiteWriter) }

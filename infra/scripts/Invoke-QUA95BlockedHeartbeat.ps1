@@ -53,6 +53,13 @@ if ($assertCode -ne 0) {
 }
 
 if (-not ($SkipRefresh.IsPresent -and $SkipAudit.IsPresent)) {
+    $bundleOut = & $opsBundleManifestScript 2>&1
+    $bundleCode = $LASTEXITCODE
+    if ($bundleCode -ne 0) {
+        $bundleText = ($bundleOut | ForEach-Object { $_.ToString() }) -join '; '
+        throw ("Ops bundle manifest failed: exit_code={0} output={1}" -f $bundleCode, $bundleText)
+    }
+
     $opsSuiteOut = & $opsSuiteSnapshotScript 2>&1
     $opsSuiteCode = $LASTEXITCODE
     if ($opsSuiteCode -ne 0) {
