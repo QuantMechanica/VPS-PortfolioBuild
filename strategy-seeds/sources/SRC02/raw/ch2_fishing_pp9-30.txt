@@ -1,0 +1,645 @@
+                         Contents
+
+Preface                                                         xi
+
+Acknowledgments                                                 xvii
+
+CHAPTER 1 The Whats, Whos, and Whys of Quantitative
+
+             Trading                                            1
+
+Who Can Become a Quantitative Trader?                           2
+
+The Business Case for Quantitative Trading                      4
+
+Scalability                                                     5
+
+Demand on Time                                                  5
+
+The Nonnecessity of Marketing                                   7
+
+The Way Forward                                                 8
+
+CHAPTER 2 Fishing for Ideas                                     9
+
+How to Identify a Strategy That Suits You                       12
+
+Your Working Hours                                              12
+
+Your Programming Skills                                         13
+
+Your Trading Capital                                            13
+
+Your Goal                                                       16
+
+A Taste for Plausible Strategies and Their Pitfalls             17
+
+How Does It Compare with a Benchmark and How Consistent
+
+Are Its Returns?                                                18
+
+How Deep and Long Is the Drawdown?                              21
+
+How Will Transaction Costs Affect the Strategy?                 22
+
+Does the Data Suffer from Survivorship Bias?                    24
+
+How Did the Performance of the Strategy Change over the Years?  24
+
+                                                                vii
+viii                                                          CONTENTS
+
+    Does the Strategy Suffer from Data-Snooping Bias?                    25
+    Does the Strategy "Fly under the Radar" of Institutional
+                                                                         27
+         Money Managers?                                               28
+Summary
+                                                                     31
+CHAPTER 3 Backtesting
+                                                                       32
+Common Backtesting Platforms                                             32
+    Excel                                                                32
+    MATLAB                                                               35
+    TradeStation                                                         35
+    High-End Backtesting Platforms                                     36
+                                                                         36
+Finding and Using Historical Databases                                   40
+    Are the Data Split and Dividend Adjusted?                            42
+    Are the Data Survivorship Bias Free?                               43
+    Does Your Strategy Use High and Low Data?                          50
+                                                                         51
+Performance Measurement                                                  52
+Common Backtesting Pitfalls to Avoid                                   60
+                                                                       65
+    Look-Ahead Bias                                                    66
+    Data-Snooping Bias
+Transaction Costs                                                    69
+Strategy Refinement
+Summary                                                                69
+                                                                       71
+CHAPTER 4 Setting Up Your Business                                     75
+                                                                       77
+Business Structure: Retail or Proprietary?
+Choosing a Brokerage or Proprietary Trading Firm                     79
+Physical Infrastructure
+Summary                                                                79
+                                                                         81
+CHAPTER 5 Execution Systems                                              84
+                                                                       87
+What an Automated Trading System Can Do for You
+    Building a Semiautomated Trading System
+    Building a Fully Automated Trading System
+
+Minimizing Transaction Costs
+Contents                                                 ix
+
+Testing Your System by Paper Trading                     89
+
+Why Does Actual Performance Diverge from Expectations?   90
+
+Summary                                                  92
+
+CHAPTER 6 Money and Risk Management                      95
+
+Optimal Capital Allocation and Leverage                    95
+Risk Management                                          103
+Psychological Preparedness                               108
+Summary                                                  111
+Appendix: A Simple Derivation of the Kelly Formula when
+                                                         112
+    Return Distribution Is Gaussian
+                                                         115
+CHAPTER 7 Special Topics in Quantitative Trading
+
+Mean-Reverting versus Momentum Strategies                116
+Regime Switching                                         119
+Stationarity and Cointegration                           126
+Factor Models                                            133
+What Is Your Exit Strategy?                              140
+Seasonal Trading Strategies                              143
+High-Frequency Trading Strategies                        151
+Is It Better to Have a High-Leverage versus
+                                                         153
+    a High-Beta Portfolio?                               154
+Summary
+                                                         157
+CHAPTER 8 Conclusion: Can Independent Traders
+                    Succeed?                             161
+
+Next Steps
+
+Appendix A Quick Survey of MATLAB                        163
+Bibliography                                             169
+About the Author                                         173
+Index                                                    175
+             Preface
+
+B y some estimates, quantitative or algorithmic trading now ac-
+         counts for over one-third of the trading volume in the United
+         States. There are, of course, innumerable books on the ad-
+vanced mathematics and strategies utilized by institutional traders
+in this arena. However, can an independent, retail trader benefit
+from these algorithms? Can an individual with limited resources and
+computing power backtest and execute their strategies over thou-
+sands of stocks, and come to challenge the powerful industry par-
+ticipants in their own game?
+
+     I will show you how this can, in fact, be achieved.
+
+WHO IS THIS BOOK FOR?
+
+I wrote this book with two types of readers in mind:
+
+ 1. Aspiring independent ("retail") traders who are looking to start
+     a quantitative trading business.
+
+ 2. Students of finance or other technical disciplines (at the un-
+     dergraduate or MBA level) who aspire to become quantitative
+     traders and portfolio managers at major institutions.
+
+     Can these two very different groups of readers benefit from the
+same set of knowledge and skills? Is there anything common be-
+tween managing a $100 million portfolio and managing a $100,000
+portfolio? My contention is that it is much more logical and sen-
+sible for someone to become a profitable $100,000 trader before
+
+                                                                                               xi
+xii  PREFACE
+
+becoming a profitable $100 million trader. This can be shown to be
+true on many fronts.
+
+    Many legendary quantitative hedge fund managers such as Dr.
+Edward Thorp of the former Princeton-Newport Partners (Pound-
+stone, 2005) and Dr. Jim Simons of Renaissance Technologies Corp.
+(Lux, 2000) started their careers trading their own money. They did
+not begin as portfolio managers for investment banks and hedge
+funds before starting their own fund management business. Of
+course, there are also plenty of counterexamples, but clearly this
+is a possible route to riches as well as intellectual accomplishment,
+and for someone with an entrepreneurial bent, a preferred route.
+
+    Even if your goal is to become an institutional trader, it is still
+worthwhile to start your own trading business as a first step. Physi-
+cists and mathematicians are now swarming Wall Street. Few peo-
+ple on the Street are impressed by a mere PhD from a prestigious
+university anymore. What is the surest way to get through the door
+of the top banks and funds? To show that you have a systematic
+way to profits--in other words, a track record. Quite apart from
+serving as a stepping stone to a lucrative career in big institutions,
+having a profitable track record as an independent trader is an in-
+valuable experience in itself. The experience forces you to focus on
+simple but profitable strategies, and not get sidetracked by overly
+theoretical or sophisticated theories. It also forces you to focus
+on the nitty-gritty of quantitative trading that you won't learn from
+most books: things such as how to build an order entry system that
+doesn't cost $10,000 of programming resource. Most importantly, it
+forces you to focus on risk management--after all, your own per-
+sonal bankruptcy is a possibility here. Finally, having been an insti-
+tutional as well as a retail quantitative trader and strategist at differ-
+ent times, I only wish that I had read a similar book before I started
+my career at a bank--I would have achieved profitability many
+years sooner.
+
+    Given these preambles, I won't make any further apologies in
+the rest of the book in focusing on the entrepreneurial, indepen-
+dent traders and how they can build a quantitative trading business
+on their own, while hoping that many of the lessons would be useful
+on their way to institutional money management as well.
+Preface  xiii
+
+WHAT KIND OF BACKGROUND DO YOU NEED?
+
+Despite the scary-sounding title, you don't need to be a math or
+computer whiz in order to use this book as a guide to start trading
+quantitatively. Yes, you do need to possess some basic knowledge
+of statistics, such as how to calculate averages, standard deviations,
+or how to fit a straight line through a set of data points. Yes, you
+also need to have some basic familiarity with Excel. But what you
+don't need is any advanced knowledge of stochastic calculus, neural
+networks, or other impressive-sounding techniques.
+
+    Though it is true that you can make millions with nothing more
+than Excel, it is also true that there is another tool that, if you are
+proficient at it, will enable you to backtest trading strategies much
+more efficiently, and may also allow you to retrieve and process
+data much more easily than you otherwise can. This tool is called
+MATLAB®, and it is a mathematical platform that many institutional
+quantitative strategists and portfolio managers use. Therefore, I will
+demonstrate how to backtest the majority of strategies using MAT-
+LAB. In fact, I have included a brief tutorial in the appendix on how
+to do some basic programming in MATLAB. For many retail traders,
+MATLAB is too expensive to purchase, but there are cheaper alter-
+natives, which I will mention in Chapter 3 on backtesting. Further-
+more, many university students can either purchase a cheaper stu-
+dent MATLAB license or they already have free access to it through
+their schools.
+
+WHAT WILL YOU FIND IN THIS BOOK?
+
+This book is definitely not designed as an encyclopedia of quantita-
+tive trading techniques or terminologies. It will not even be about
+specific profitable strategies (although you can refine the few ex-
+ample strategies embedded here to make them quite profitable.) In-
+stead, this is a book that teaches you how to find a profitable strategy
+yourself. It teaches you the characteristics of a good strategy, how
+to refine and backtest a strategy to ensure that it has good historical
+performance, and, more importantly, to ensure that it will remain
+xiv                                               PREFACE
+
+profitable in the future. It teaches you a systematic way to scale up
+or wind down your strategies depending on their real-life profitabil-
+ity. It teaches you some of the nuts and bolts of implementing an au-
+tomated execution system in your own home. Finally, it teaches you
+some basics of risk management, which is critical if you want to sur-
+vive over the long term, and also some psychological pitfalls to avoid
+if you want an enjoyable (and not just profitable) life as a trader.
+
+    Even though the basic techniques for finding a good strategy
+should work for any tradable securities, I have focused my ex-
+amples on an area of trading I personally know best: statistical
+arbitrage trading in stocks. While I discuss sources of historical
+data on stocks, futures, and foreign currencies in the chapter on
+backtesting, I did not include options because those are not in my
+area of expertise.
+
+    The book is organized roughly in the order of the steps that
+traders need to undertake to set up their quantitative trading busi-
+ness. These steps begin at finding a viable trading strategy (Chap-
+ter 2), then backtesting the strategy to ensure that it at least has
+good historical performance (Chapter 3), setting up the business
+and technological infrastructure (Chapter 4), building an automated
+trading system to execute your strategy (Chapter 5), and managing
+the money and risks involved in holding positions generated by this
+strategy (Chapter 6). I will then describe in Chapter 7 a number of
+important advanced concepts with which most professional quan-
+titative traders are familiar, and finally conclude in Chapter 8 with
+reflections on how independent traders can find their niche and how
+they can grow their business. I have also included an appendix that
+contains a tutorial on using MATLAB.
+
+    You'll see two different types of boxed material in this book:
+
+r Sidebars containing an elaboration or illustration of a concept, and
+
+r Examples, accompanied by MATLAB or Excel code.
+Preface  xv
+
+    For readers who want to learn more and keep up to date with
+the latest news, ideas, and trends in quantitative trading, they are
+welcome to visit my blog epchan.blogspot.com, where I will do my
+best to answer their questions, as well as my premium content web
+site epchan.com/subscriptions. My premium content web site con-
+tains articles of a more advanced nature, as well as backtest results
+of several profitable strategies. Readers of this book will have free
+access to the premium content and will find the password in a later
+chapter to enter that web site.
+
+                                                                --ERNEST P. CHAN
+                                                                  Toronto, Ontario
+
+                                                                        August 2008
+      Acknowledgments
+
+M uch of my knowledge and experiences in quantitative trad-
+           ing come from my colleagues and mentors at the var-
+           ious investment banks (Morgan Stanley, Credit Suisse,
+Maple Securities) and hedge funds (Mapleridge Capital, Millen-
+nium Partners, MANE Fund Management), and I am very grate-
+ful for their advice, guidance, and help over the years. Since I
+became an independent trader and consultant, I have benefited
+enormously from discussions with my clients, readers of my blog,
+fellow bloggers, and various trader-collaborators. In particular, I
+would like to offer thanks to Steve Halpern and Ramon Cum-
+mins for reading parts of the manuscript and correcting some
+of the errors; to John Rigg for suggesting some of the topics
+for my blog, many of which found their way into this book; to
+Ashton Dorkins, editor-in-chief of tradingmarkets.com, who helped
+syndicate my blog; and to Yaser Anwar for publicizing it to read-
+ers of his own very popular investment blog. I am also indebted to
+editor Bill Falloon at John Wiley & Sons for suggesting this book,
+and to my development editor, Emilie Herman, and production ed-
+itor Christina Verigan for seeing this book through to fruition. Last
+but not least, I thank Ben Xie for insisting that simplicity is the best
+policy.
+
+                                                                                 E.P.C.
+
+                                                                                             xvii
+Quantitative
+   Trading
+                                    CHAPTER 1
+
+          The Whats,
+       Whos, and Whys
+        of Quantitative
+
+             Trading
+
+I f you are curious enough to pick up this book, you probably have
+     already heard of quantitative trading. But even for readers who
+     learned about this kind of trading from the mainstream media
+before, it is worth clearing up some common misconceptions.
+
+     Quantitative trading, also known as algorithmic trading, is the
+trading of securities based strictly on the buy/sell decisions of com-
+puter algorithms. The computer algorithms are designed and per-
+haps programmed by the traders themselves, based on the histor-
+ical performance of the encoded strategy tested against historical
+financial data.
+
+     Is quantitative trading just a fancy name for technical analysis,
+then? Granted, a strategy based on technical analysis can be part of
+a quantitative trading system if it can be fully encoded as computer
+programs. However, not all technical analysis can be regarded as
+quantitative trading. For example, certain chartist techniques such
+as "look for the formation of a head and shoulders pattern" might
+not be included in a quantitative trader's arsenal because they are
+quite subjective and may not be quantifiable.
+
+     Yet quantitative trading includes more than just technical anal-
+ysis. Many quantitative trading systems incorporate fundamental
+data in their inputs: numbers such as revenue, cash flow, debt-to-
+equity ratio, and others. After all, fundamental data are nothing but
+
+                                                                                                1
+2  QUANTITATIVE TRADING
+
+numbers, and computers can certainly crunch any numbers that are
+fed into them! When it comes to judging the current financial per-
+formance of a company compared to its peers or compared to its
+historical performance, the computer is often just as good as hu-
+man financial analysts--and the computer can watch thousands of
+such companies all at once. Some advanced quantitative systems
+can even incorporate news events as inputs: Nowadays, it is pos-
+sible to use a computer to parse and understand the news report.
+(After all, I used to be a researcher in this very field at IBM, work-
+ing on computer systems that can understand approximately what a
+document is about.)
+
+    So you get the picture: As long as you can convert information
+into bits and bytes that the computer can understand, it can be re-
+garded as part of quantitative trading.
+
+WHO CAN BECOME A
+QUANTITATIVE TRADER?
+
+It is true that most institutional quantitative traders received their
+advanced degrees as physicists, mathematicians, engineers, or com-
+puter scientists. This kind of training in the hard sciences is often
+necessary when you want to analyze or trade complex derivative
+instruments. But those instruments are not the focus in this book.
+There is no law stating that one can become wealthy only by work-
+ing with complicated financial instruments. (In fact, one can become
+quite poor trading complex mortgage-backed securities, as the finan-
+cial crisis of 2007­08 and the demise of Bear Stearns have shown.)
+The kind of quantitative trading I focus on is called statistical ar-
+bitrage trading. Statistical arbitrage deals with the simplest finan-
+cial instruments: stocks, futures, and sometimes currencies. One
+does not need an advanced degree to become a statistical arbitrage
+trader. If you have taken a few high school­level courses in math,
+statistics, computer programming, or economics, you are probably
+as qualified as anyone to tackle some of the basic statistical arbi-
+trage strategies.
+The Whats, Whos, and Whys of Quantitative Trading  3
+
+    Okay, you say, you don't need an advanced degree, but surely
+it gives you an edge in statistical arbitrage trading? Not necessarily.
+I received a PhD from one of the top physics departments of the
+world (Cornell's). I worked as a successful researcher in one of the
+top computer science research groups in the world (at that temple of
+high-techdom: IBM's T. J. Watson Research Center). Then I worked
+in a string of top investment banks and hedge funds as a researcher
+and finally trader, including Morgan Stanley, Credit Suisse, and so
+on. As a researcher and trader in these august institutions, I had al-
+ways strived to use some of the advanced mathematical techniques
+and training that I possessed and applied them to statistical arbi-
+trage trading. Hundreds of millions of dollars of trades later, what
+was the result? Losses, more losses, and losses as far as the eye can
+see, for my employers and their investors. Finally, I quit the finan-
+cial industry in frustration, set up a spare bedroom in my home as
+my trading office, and started to trade the simplest but still quan-
+titative strategies I know. These are strategies that any smart high
+school student can easily research and execute. For the first time
+in my life, my trading strategies became profitable (one of which is
+described in Example 3.6), and has been the case ever since. The
+lesson I learned? As Einstein said: "Make everything as simple as
+possible." But not simpler.
+
+    (Stay tuned: I will detail more reasons why independent traders
+can beat institutional money managers at their own game in
+Chapter 8.)
+
+    Though I became a quantitative trader through a fairly tradi-
+tional path, many others didn't. Who are the typical independent
+quantitative traders? Among people I know, they include a former
+trader at a hedge fund that has gone out of business, a computer pro-
+grammer who used to work for a brokerage, a former trader at one
+of the exchanges, a former investment banker, a former biochemist,
+and an architect. Some of them have received advanced technical
+training, but others have only basic familiarity of high school­level
+statistics. Most of them backtest their strategies using basic tools
+like Excel, though others may hire programming contractors to help.
+Most of them have at some point in their career been professionally
+involved with the financial world but have now decided that being
+4  QUANTITATIVE TRADING
+
+independent suits their needs better. As far as I know, most of them
+are doing quite well on their own, while enjoying the enormous free-
+dom that independence brings.
+
+    Besides having gained some knowledge of finance through their
+former jobs, the fact that these traders have saved up a nest egg
+for their independent venture is obviously important too. When one
+plunges into independent trading, fear of losses and of being iso-
+lated from the rest of the world is natural, and so it helps to have
+both a prior appreciation of risks and some savings to lean on. It is
+important not to have a need for immediate profits to sustain your
+daily living, as strategies have intrinsic rates of returns that cannot
+be hurried (see Chapter 6).
+
+    Instead of fear, some of you are planning to trade because of
+the love of thrill and danger, or an incredible self-confidence that
+instant wealth is imminent. This is also a dangerous emotion to bring
+to independent quantitative trading. As I hope to persuade you in
+this chapter and in the rest of the book, instant wealth is not the
+objective of quantitative trading.
+
+    The ideal independent quantitative trader is therefore someone
+who has some prior experience with finance or computer program-
+ming, who has enough savings to withstand the inevitable losses and
+periods without income, and whose emotion has found the right bal-
+ance between fear and greed.
+
+THE BUSINESS CASE FOR
+QUANTITATIVE TRADING
+
+A lot of us are in the business of quantitative trading because it is
+exciting, intellectually stimulating, financially rewarding, or perhaps
+it is the only thing we are good at doing. But for others who may have
+alternative skills and opportunities, it is worth pondering whether
+quantitative trading is the best business for you.
+
+    Despite all the talk about untold hedge fund riches and dollars
+that are measured in units of billions, in many ways starting a
+quantitative trading business is very similar to starting any small
+business. We need to start small, with limited investment (perhaps
+The Whats, Whos, and Whys of Quantitative Trading  5
+
+only a $50,000 initial investment), and gradually scale up the
+business as we gain know-how and become profitable.
+
+    In other ways, however, a quantitative trading business is very
+different from other small businesses. Here are some of the most
+important.
+
+Scalability
+
+Compared to most small businesses (other than certain dot-coms),
+quantitative trading is very scalable (up to a point). It is easy to find
+yourselves trading millions of dollars in the comfort of your own
+home, as long as your strategy is consistently profitable. This is be-
+cause scaling up often just means changing a number in your pro-
+gram. This number is called leverage. You do not need to negotiate
+with a banker or a venture capitalist to borrow more capital for your
+business. The brokerages stand ready and willing to do that. If you
+are a member of a proprietary trading firm (more on this later in
+Chapter 4 on setting up a business), you may even be able to obtain
+a leverage far exceeding that allowed by Securities and Exchange
+Commission (SEC) Regulation T. It is not unheard of for a propri-
+etary trading firm to let you trade a portfolio worth $2 million in-
+traday even if you have only $50,000 equity in your account (a ×40
+leverage). At the same time, quantitative trading is definitely not a
+get-rich-quick scheme. You should hope to have steadily increasing
+profits, but most likely it won't be 200 percent a year, unlike starting
+a dot-com or a software firm. In fact, as I will explain in Chapter 6
+on money and risk management, it is dangerous to overleverage in
+pursuit of overnight riches.
+
+Demand on Time
+
+Running most small businesses takes a lot of your time, at least
+initially. Quantitative trading takes relatively little of your time. By
+its very nature, quantitative trading is a highly automated business.
+Sometimes, the more you manually interfere with the system and
+override its decision, the worse it will perform. (Again, more on this
+in Chapter 6.)
+6  QUANTITATIVE TRADING
+
+    How much time you need to spend on day-to-day quantitative
+trading depends very much on the degree of automation you have
+achieved. For example, at a hedge fund I used to work for, some col-
+leagues come into the office only once a month. The rest of the time,
+they just sit at home and occasionally remotely monitor their office
+computers, which are trading for them.
+
+    I consider myself to be in the middle of the pack in terms of au-
+tomation. The largest block of time I need to spend is in the morning
+before the market opens: I typically need to run various programs to
+download and process the latest historical data, read company news
+that comes up on my alert screen, run programs to generate the or-
+ders for the day, and then launch a few baskets of orders before
+the market opens and start a program that will launch orders auto-
+matically throughout the day. I would also update my spreadsheet
+to record the previous day's profit and loss (P&L) of the different
+strategies I run based on the brokerages' statements. All of this takes
+about two hours.
+
+    After that, I spend another half hour near the market close to di-
+rect the programs to exit various positions, manually checking that
+those exit orders are correctly transmitted, and closing down vari-
+ous automated programs properly.
+
+    In between market open and close, everything is supposed to be
+on autopilot. Alas, the spirit is willing but the flesh is weak: I often
+cannot resist the urge to take a look (sometimes many looks) at
+the intraday P&L of the various strategies on my trading screens. In
+extreme situations, I might even be transfixed by the huge swings
+in P&L and be tempted to intervene by manually exiting positions.
+Fortunately, I have learned to better resist the temptation as time
+goes on.
+
+    The urge to intervene manually is also strong when I have too
+much time on my hands. Hence, instead of just staring at your trad-
+ing screen, it is actually important to engage yourself in some other,
+more healthful and enjoyable activities, such as going to the gym
+during the trading day.
+
+    When I said quantitative trading takes little of your time, I am
+referring to the operational side of the business. If you want to grow
+your business, or keep your current profits from declining due to
+The Whats, Whos, and Whys of Quantitative Trading  7
+
+increasing competition, you will need to spend time doing research
+and backtesting on new strategies. But research and development of
+new strategies is the creative part of any business, and it can be done
+whenever you want to. So, between the market's open and close, I
+do my research; answer e-mails; chat with other traders, collabora-
+tors, or clients; go to the gym; and so on. I do some of that work in
+the evening and on weekends, too, but only when I feel like it--not
+because I am obligated to.
+
+    When I generate more earnings, I will devote more software de-
+velopment resources to further automate my process, so that the
+programs can automatically start themselves up at the right time,
+know how to download data automatically, maybe even know how
+to interpret the news items that come across the newswire and take
+appropriate actions, and shut themselves down automatically after
+the market closes. When that day comes, the daily operation may
+take no time at all, and it can run as it normally does even while I am
+on vacation, as long as it can alert my mobile phone or a technical
+support service when something goes wrong. In short, if you trea-
+sure your leisure time or if you need time and financial resources
+to explore other businesses, quantitative trading is the business
+for you.
+
+The Nonnecessity of Marketing
+
+Here is the biggest and most obvious difference between quantita-
+tive trading and other small businesses. Marketing is crucial to most
+small businesses--after all, you generate your revenue from other
+people, who base their purchase decisions on things other than price
+alone. In trading, your counterparties in the financial marketplace
+base their purchase decisions on nothing but the price. Unless you
+are managing money for other people (which is beyond the scope of
+this book), there is absolutely no marketing to do in a quantitative
+trading business. This may seem obvious and trivial but is actually
+an important difference, since the business of quantitative trading
+allows you to focus exclusively on your product (the strategy and
+the software), and not on anything that has to do with influencing
+other people's perception of yourself. To many people, this may
+8  QUANTITATIVE TRADING
+
+be the ultimate beauty of starting your own quantitative trading
+business.
+
+THE WAY FORWARD
+
+If you are convinced that you want to become a quantitative trader,
+a number of questions immediately follow: How do you find the right
+strategy to trade? How do you recognize a good versus a bad strat-
+egy even before devoting any time to backtesting them? How do you
+rigorously backtest them? If the backtest performance is good, what
+steps do you need to take to implement the strategy, in terms of both
+the business structure and the technological infrastructure? If the
+strategy is profitable in initial real-life trading, how does one scale
+up the capital to make it into a growing income stream while manag-
+ing the inevitable (but, hopefully, only occasional) losses that come
+with trading? These nuts and bolts of quantitative trading will be
+tackled in Chapters 2 through 6.
+
+    Though the list of processes to go through in order to get to the
+final destination of sustained and growing profitability may seem
+long and daunting, in reality it may be faster and easier than many
+other businesses. When I first started as an independent trader, it
+took me only three months to find and backtest my first new strat-
+egy, set up a new brokerage account with $100,000 capital, imple-
+ment the execution system, and start trading the strategy. The strat-
+egy immediately became profitable in the first month. Back in the
+dot-com era, I started an Internet software firm. It took about 3 times
+more investment, 5 times more human-power, and 24 times longer
+to find out that the business model didn't work, whereupon all in-
+vestors including myself lost 100 percent of their investments. Com-
+pared to that experience, it really has been a breeze trading quanti-
+tatively and profitably.
+

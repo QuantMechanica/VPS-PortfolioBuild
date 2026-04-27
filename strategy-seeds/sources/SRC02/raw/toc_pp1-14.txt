@@ -1,0 +1,291 @@
+    Wiley Trading
+
+Quantitative
+
+Trading
+
+ How to Build Your Own Algorithmic Trading Business
+
+          ER NEST P. CHAN
+Quantitative
+   Trading
+Founded in 1807, John Wiley & Sons is the oldest independent publish-
+ing company in the United States. With offices in North America, Europe,
+Australia, and Asia, Wiley is globally committed to developing and market-
+ing print and electronic products and services for our customers' profes-
+sional and personal knowledge and understanding.
+
+     The Wiley Trading series features books by traders who have survived
+the market's ever changing temperament and have prospered--some by
+reinventing systems, others by getting back to basics. Whether a novice
+trader, professional, or somewhere in-between, these books will provide
+the advice and strategies needed to prosper today and well into the future.
+
+     For a list of available titles, visit our Web site at www.WileyFinance.com.
+Quantitative
+   Trading
+
+       How to Build Your Own
+  Algorithmic Trading Business
+
+         ERNEST P. CHAN
+
+                John Wiley & Sons, Inc.
+Copyright C 2009 by Ernest P. Chan. All rights reserved.
+
+Published by John Wiley & Sons, Inc., Hoboken, New Jersey.
+Published simultaneously in Canada.
+
+No part of this publication may be reproduced, stored in a retrieval system, or transmitted in
+any form or by any means, electronic, mechanical, photocopying, recording, scanning, or oth-
+erwise, except as permitted under Section 107 or 108 of the 1976 United States Copyright Act,
+without either the prior written permission of the Publisher, or authorization through payment
+of the appropriate per-copy fee to the Copyright Clearance Center, Inc., 222 Rosewood Drive,
+Danvers, MA 01923, (978) 750-8400, fax (978) 646-8600, or on the web at www.copyright.com.
+Requests to the Publisher for permission should be addressed to the Permissions Department,
+John Wiley & Sons, Inc., 111 River Street, Hoboken, NJ 07030, (201) 748-6011, fax (201) 748-
+6008, or online at http://www.wiley.com/go/permissions.
+
+Limit of Liability/Disclaimer of Warranty: While the publisher and author have used their best
+efforts in preparing this book, they make no representations or warranties with respect to the
+accuracy or completeness of the contents of this book and specifically disclaim any implied
+warranties of merchantability or fitness for a particular purpose. No warranty may be created
+or extended by sales representatives or written sales materials. The advice and strategies con-
+tained herein may not be suitable for your situation. You should consult with a professional
+where appropriate. Neither the publisher nor author shall be liable for any loss of profit or any
+other commercial damages, including but not limited to special, incidental, consequential, or
+other damages.
+
+For general information on our other products and services or for technical support, please
+contact our Customer Care Department within the United States at (800) 762-2974, outside the
+United States at (317) 572-3993 or fax (317) 572-4002.
+
+Wiley also publishes its books in a variety of electronic formats. Some content that appears
+in print may not be available in electronic books. For more information about Wiley products,
+visit our web site at www.wiley.com.
+
+Library of Congress Cataloging-in-Publication Data
+
+Chan, Ernest P.
+   Quantitative trading: how to build your own algorithmic trading business / Ernest P. Chan.
+         p. cm.­(Wiley trading series)
+   Includes bibliographical references and index.
+   ISBN 978-0-470-28488-9 (cloth)
+   1. Investment analysis. 2. Stocks. 3. Stockbrokers. I. Title.
+   HG4529.C445 2009
+   332.64­dc22
+                                                                                                           2008020125
+
+Printed in the United States of America.
+
+10 9 8 7 6 5 4 3 2 1
+To my parents Hung Yip and Ching, and to Ben.
+                         Contents
+
+Preface                                                         xi
+
+Acknowledgments                                                 xvii
+
+CHAPTER 1 The Whats, Whos, and Whys of Quantitative
+
+             Trading                                            1
+
+Who Can Become a Quantitative Trader?                           2
+
+The Business Case for Quantitative Trading                      4
+
+Scalability                                                     5
+
+Demand on Time                                                  5
+
+The Nonnecessity of Marketing                                   7
+
+The Way Forward                                                 8
+
+CHAPTER 2 Fishing for Ideas                                     9
+
+How to Identify a Strategy That Suits You                       12
+
+Your Working Hours                                              12
+
+Your Programming Skills                                         13
+
+Your Trading Capital                                            13
+
+Your Goal                                                       16
+
+A Taste for Plausible Strategies and Their Pitfalls             17
+
+How Does It Compare with a Benchmark and How Consistent
+
+Are Its Returns?                                                18
+
+How Deep and Long Is the Drawdown?                              21
+
+How Will Transaction Costs Affect the Strategy?                 22
+
+Does the Data Suffer from Survivorship Bias?                    24
+
+How Did the Performance of the Strategy Change over the Years?  24
+
+                                                                vii
+viii                                                          CONTENTS
+
+    Does the Strategy Suffer from Data-Snooping Bias?                    25
+    Does the Strategy "Fly under the Radar" of Institutional
+                                                                         27
+         Money Managers?                                               28
+Summary
+                                                                     31
+CHAPTER 3 Backtesting
+                                                                       32
+Common Backtesting Platforms                                             32
+    Excel                                                                32
+    MATLAB                                                               35
+    TradeStation                                                         35
+    High-End Backtesting Platforms                                     36
+                                                                         36
+Finding and Using Historical Databases                                   40
+    Are the Data Split and Dividend Adjusted?                            42
+    Are the Data Survivorship Bias Free?                               43
+    Does Your Strategy Use High and Low Data?                          50
+                                                                         51
+Performance Measurement                                                  52
+Common Backtesting Pitfalls to Avoid                                   60
+                                                                       65
+    Look-Ahead Bias                                                    66
+    Data-Snooping Bias
+Transaction Costs                                                    69
+Strategy Refinement
+Summary                                                                69
+                                                                       71
+CHAPTER 4 Setting Up Your Business                                     75
+                                                                       77
+Business Structure: Retail or Proprietary?
+Choosing a Brokerage or Proprietary Trading Firm                     79
+Physical Infrastructure
+Summary                                                                79
+                                                                         81
+CHAPTER 5 Execution Systems                                              84
+                                                                       87
+What an Automated Trading System Can Do for You
+    Building a Semiautomated Trading System
+    Building a Fully Automated Trading System
+
+Minimizing Transaction Costs
+Contents                                                 ix
+
+Testing Your System by Paper Trading                     89
+
+Why Does Actual Performance Diverge from Expectations?   90
+
+Summary                                                  92
+
+CHAPTER 6 Money and Risk Management                      95
+
+Optimal Capital Allocation and Leverage                    95
+Risk Management                                          103
+Psychological Preparedness                               108
+Summary                                                  111
+Appendix: A Simple Derivation of the Kelly Formula when
+                                                         112
+    Return Distribution Is Gaussian
+                                                         115
+CHAPTER 7 Special Topics in Quantitative Trading
+
+Mean-Reverting versus Momentum Strategies                116
+Regime Switching                                         119
+Stationarity and Cointegration                           126
+Factor Models                                            133
+What Is Your Exit Strategy?                              140
+Seasonal Trading Strategies                              143
+High-Frequency Trading Strategies                        151
+Is It Better to Have a High-Leverage versus
+                                                         153
+    a High-Beta Portfolio?                               154
+Summary
+                                                         157
+CHAPTER 8 Conclusion: Can Independent Traders
+                    Succeed?                             161
+
+Next Steps
+
+Appendix A Quick Survey of MATLAB                        163
+Bibliography                                             169
+About the Author                                         173
+Index                                                    175
+             Preface
+
+B y some estimates, quantitative or algorithmic trading now ac-
+         counts for over one-third of the trading volume in the United
+         States. There are, of course, innumerable books on the ad-
+vanced mathematics and strategies utilized by institutional traders
+in this arena. However, can an independent, retail trader benefit
+from these algorithms? Can an individual with limited resources and
+computing power backtest and execute their strategies over thou-
+sands of stocks, and come to challenge the powerful industry par-
+ticipants in their own game?
+
+     I will show you how this can, in fact, be achieved.
+
+WHO IS THIS BOOK FOR?
+
+I wrote this book with two types of readers in mind:
+
+ 1. Aspiring independent ("retail") traders who are looking to start
+     a quantitative trading business.
+
+ 2. Students of finance or other technical disciplines (at the un-
+     dergraduate or MBA level) who aspire to become quantitative
+     traders and portfolio managers at major institutions.
+
+     Can these two very different groups of readers benefit from the
+same set of knowledge and skills? Is there anything common be-
+tween managing a $100 million portfolio and managing a $100,000
+portfolio? My contention is that it is much more logical and sen-
+sible for someone to become a profitable $100,000 trader before
+
+                                                                                               xi
+xii  PREFACE
+
+becoming a profitable $100 million trader. This can be shown to be
+true on many fronts.
+
+    Many legendary quantitative hedge fund managers such as Dr.
+Edward Thorp of the former Princeton-Newport Partners (Pound-
+stone, 2005) and Dr. Jim Simons of Renaissance Technologies Corp.
+(Lux, 2000) started their careers trading their own money. They did
+not begin as portfolio managers for investment banks and hedge
+funds before starting their own fund management business. Of
+course, there are also plenty of counterexamples, but clearly this
+is a possible route to riches as well as intellectual accomplishment,
+and for someone with an entrepreneurial bent, a preferred route.
+
+    Even if your goal is to become an institutional trader, it is still
+worthwhile to start your own trading business as a first step. Physi-
+cists and mathematicians are now swarming Wall Street. Few peo-
+ple on the Street are impressed by a mere PhD from a prestigious
+university anymore. What is the surest way to get through the door
+of the top banks and funds? To show that you have a systematic
+way to profits--in other words, a track record. Quite apart from
+serving as a stepping stone to a lucrative career in big institutions,
+having a profitable track record as an independent trader is an in-
+valuable experience in itself. The experience forces you to focus on
+simple but profitable strategies, and not get sidetracked by overly
+theoretical or sophisticated theories. It also forces you to focus
+on the nitty-gritty of quantitative trading that you won't learn from
+most books: things such as how to build an order entry system that
+doesn't cost $10,000 of programming resource. Most importantly, it
+forces you to focus on risk management--after all, your own per-
+sonal bankruptcy is a possibility here. Finally, having been an insti-
+tutional as well as a retail quantitative trader and strategist at differ-
+ent times, I only wish that I had read a similar book before I started
+my career at a bank--I would have achieved profitability many
+years sooner.
+
+    Given these preambles, I won't make any further apologies in
+the rest of the book in focusing on the entrepreneurial, indepen-
+dent traders and how they can build a quantitative trading business
+on their own, while hoping that many of the lessons would be useful
+on their way to institutional money management as well.
+

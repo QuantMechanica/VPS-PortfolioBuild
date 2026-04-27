@@ -1,0 +1,2044 @@
+94  QUANTITATIVE TRADING
+
+problems: Eliminate bugs in the strategy or execution software; re-
+duce transaction costs; and simplify the strategy by eliminating pa-
+rameters. But, fundamentally, your strategy still may have suffered
+from data-snooping bias or regime shift.
+
+    If you believe (and you can only believe, as you can never prove
+this) that your poor live trading performance is due to bad luck and
+not to data-snooping bias in your backtest nor to a regime shift, how
+should you proceed when the competing demands of perseverance
+and capital preservation seem to suggest opposite actions? This crit-
+ical issue will be addressed in the next chapter, which discusses sys-
+tematic ways to preserve capital in the face of losses and yet still be
+in a position to recover once the tide turns.
+                                    CHAPTER 6
+
+       Money and Risk
+         Management
+
+A ll trading strategies suffer occasional losses, technically
+         known as drawdowns. The drawdowns may last a few min-
+         utes or a few years. To profit from a quantitative trading busi-
+ness, it is essential to manage your risks in a way that limits your
+drawdowns to a tolerable level and yet be positioned to use opti-
+mal leverage of your equity to achieve maximum possible growth of
+your wealth. Furthermore, if you have more than one strategy, you
+will also need to find a way to optimally allocate capital among them
+so as to maximize overall risk-adjusted return.
+
+     The optimal allocation of capital and the optimal leverage to use
+so as to strike the right balance between risk management and max-
+imum growth is the focus of this chapter, and the central tool we
+use is called the Kelly formula.
+
+OPTIMAL CAPITAL ALLOCATION
+AND LEVERAGE
+Suppose you plan to trade several strategies, each with their own
+expected returns and standard deviations. How should you allocate
+capital among them in an optimal way? Furthermore, what should
+be the overall leverage (ratio of the size of your portfolio to your
+
+                                                                                              95
+96  QUANTITATIVE TRADING
+
+account equity)? Dr. Edward Thorp, whom I mentioned in the pref-
+ace, has written an excellent expository article on this subject in one
+of his papers (Thorp, 1997), and I shall follow his discussion closely
+in this chapter. (Dr. Thorp's discussion is centered on a portfolio of
+securities, and mine is constructed around a portfolio of strategies.
+However, the mathematics are almost identical.)
+
+    Every optimization problem begins with an objective. Our ob-
+jective here is to maximize our long-term wealth--an objective that
+I believe is not controversial for the individual investor. Maximiz-
+ing long-term wealth is equivalent to maximizing the long-term com-
+pounded growth rate g of your portfolio. Note that this objective im-
+plicitly means that ruin (i.e., equity's going to zero or less because of
+a loss) must be avoided. This is because if ruin can be reached with
+nonzero probability at some point, the long-term wealth is surely
+zero, as is the long-term growth rate.
+
+    (In all of the discussions, I assume that we reinvest all trading
+profits, and therefore it is the levered, compounded growth rate that
+is of ultimate importance.)
+
+    One approximation that I will make is that the probability dis-
+tribution of the returns of each of the trading strategy i is Gaussian,
+with a fixed mean mi and standard deviation si. (The returns should
+be net of all financing costs; that is, they should be excess returns.)
+This is a common approximation in finance, but it can be quite
+inaccurate. Certain big losses in the financial markets occur with
+far higher frequencies (or viewed alternatively, at far higher magni-
+tudes) than Gaussian probability distributions will allow. However,
+every scientific or engineering endeavor starts with the simplest
+model with the crudest approximation, and finance is no excep-
+tion. I will discuss the remedies to such inaccuracies later in this
+chapter.
+
+    Let's denote the optimal fractions of your equity that you should
+allocate to each of your n strategies by a column vector F = ( f1,
+f2, . . . , fn)T. Here, T means transpose.
+
+    Given our optimization objective and the Gaussian assumption,
+Dr. Thorp has shown that the optimal allocation is given by
+
+                                    F  = C-1 M
+Money and Risk Management  97
+
+Here, C is the covariance matrix such that matrix element Cij is
+the covariance of the returns of the ith and jth strategies, -1 indi-
+cates matrix inverse, and M = (m1, m2, . . . , mn)T is the column vec-
+tor of mean returns of the strategies. Note that these returns are
+one-period, simple (uncompounded), unlevered returns. For exam-
+ple, if the strategy is long $1 of stock A and short $1 of stock B and
+made $0.10 profit in a period, m is 0.05, no matter what the equity in
+the account is.
+
+    If we assume that the strategies are all statistically independent,
+the covariance matrix becomes a diagonal matrix, with the diagonal
+elements equal to the variance of the individual strategies. This leads
+to an especially simple formula:
+
+                                      fi = mi/si2
+
+This is the famous Kelly formula (for the many interesting stories
+surrounding this formula, see, for example, Poundstone, 2005) as
+applied to continuous finance as opposed to gambling with discrete
+outcomes, and it gives the optimal leverage one should employ for a
+particular trading strategy.
+
+    Interested readers can look up a simple derivation of Kelly for-
+mula at the end of this chapter in the simple one-strategy case.
+
+Example 6.1: An Interesting Puzzle (or Why Risk Is Bad for
+You)*
+
+Here is a little puzzle that may stymie many a professional trader. Sup-
+pose a certain stock exhibits a true (geometric) random walk, by which
+I mean there is a 50­50 chance that the stock is going up 1 percent or
+down 1 percent every minute. If you buy this stock, are you most likely--in
+the long run and ignoring financing costs--to make money, lose money,
+or be flat?
+
+      Most traders will blurt out the answer "Flat!," and that is wrong. The
+correct answer is that you will lose money, at the rate of 0.005 percent (or
+0.5 basis point) every minute! This is because for a geometric random walk,
+the average compounded rate of return is not the short-term (or one-period)
+return m (0 here), but is g = m - s2/2. This follows from the general formula
+for compounded growth g(f ) given in the appendix to this chapter, with the
+leverage f set to 1 and risk-free rate r set to 0. This is also consistent with
+98  QUANTITATIVE TRADING
+
+the fact that the geometric mean of a set of numbers is always smaller than
+the arithmetic mean (unless the numbers are identical, in which case the
+two means are the same). When we assume, as I did, that the arithmetic
+mean of the returns is zero, the geometric mean, which gives the average
+compounded rate of return, must be negative.
+
+      The take-away lesson here is that risk always decreases long-term
+growth rate--hence the importance of risk management!
+
+*This example was reproduced with corrections from my blog article "Maximizing
+Compounded Rate of Return," which you can find at epchan.blogspot.com/2006/
+10/maximizing-compounded-rate-of-return.html.
+
+    Often, because of uncertainties in parameter estimations, and
+also because return distributions are not really Gaussian, traders
+prefer to cut this recommended leverage in half for safety. This is
+called "half-Kelly" betting.
+
+    If you have a retail trading account, your maximum overall lever-
+age l will be restricted to either 2 or 4, depending on whether you
+hold the positions overnight or just intraday. In this situation, you
+would have to reduce each fi by the same factor l/(| f1| + | f2| +
+· · · + | fn|), where | f1| + | f2| + · · · + | fn| is the total unrestricted
+leverage of the portfolio. Here, we ignore the possibility that some of
+your individual strategies may hold positions that offset each other
+(such as a long and a short position each balanced with short and
+long T-bills, respectively) which may allow you to hold a higher
+leverage than this formula suggests.
+
+    I stated that adopting this capital allocation and leverage will al-
+low us to maximize the long-term compounded growth rate of your
+equity. So what is this maximum compounded growth rate? It turns
+out to be
+
+                                    g = r + S2/2
+
+where the S is none other than the Sharpe ratio of your portfolio! As
+I mentioned in Chapter 2, the higher the Sharpe ratio of your portfo-
+lio (or strategy), the higher the maximum growth rate of your equity
+Money and Risk Management  99
+
+(or wealth), provided you use the optimal leverage recommended
+by the Kelly formula. Here is the simple mathematical embodiment
+of this fact.
+
+Example 6.2: Calculating the Optimal Leverage Based on the
+Kelly Formula
+
+Let's see an example of the Kelly formula at work. Suppose our portfolio
+consists of just a long position in SPY, the exchange-traded fund (ETF) track-
+ing the S&P 500 index. Let's suppose that the mean annual return of SPY is
+11.23 percent, with an annualized standard deviation of 16.91 percent, and
+that the risk-free rate is 4 percent. Hence, the portfolio has an annual mean
+excess return of 7.231 percent and an annual standard deviation of 16.91
+percent, giving it a Sharpe ratio of 0.4275. The optimal leverage according
+to the Kelly formula is f = 0.07231/0.16912 = 2.528. (Notice one inter-
+esting tidbit: The Kelly f is independent of time scale, so it actually does
+not matter whether you annualize your return and standard deviation, as
+opposed to Sharpe ratio which is time scale dependent.) Finally, the annu-
+alized compounded, levered growth rate is 13.14 percent, which includes
+the financing costs.
+
+      You can verify these numbers yourselves by downloading the SPY daily
+prices from Yahoo! Finance and computing the various quantities on a
+spreadsheet. I did that on December 29, 2007, and my spreadsheet is avail-
+able at epchan.com/book/example6 2.xls. In column H, I have computed
+the daily returns of the (adjusted) closing prices of SPY, while in row 3760
+starting at column H, I have computed the (annualized) mean return of
+SPY, the standard deviation of SPY, the mean excess return of the portfo-
+lio, the Sharpe ratio of the portfolio, the Kelly leverage, and, finally, the
+compounded growth rate.
+
+      The Kelly leverage of 2.528 that we computed is saying that, for this
+strategy, if you have $100,000 in cash to invest, and if you really be-
+lieve the expected values of your returns and standard deviations, you
+should borrow money to buy $252,800 worth of SPY. Furthermore, ex-
+pect an annual compounded return on your $100,000 investment to be
+13.14 percent.
+
+      For comparison, let's see what compounded growth rate we will get if
+we did not leverage our investment (see the formula in the appendix to this
+chapter): g = r + m- s2/2 = 0.1123 - (0.1691)2/2 = 9.8 percent. This, and
+not mean annual return of 11.23 percent, is the long-term growth rate of
+buying SPY with cash only.
+100  QUANTITATIVE TRADING
+
+Example 6.3: Calculating the Optimal Allocation Using
+Kelly Formula
+
+We pick three sector-specific ETFs and see how we should allocate cap-
+ital among them to achieve the maximum growth rate for the portfolio.
+The three ETFs are: OIH (oil service), RKH (regional bank), and RTH (re-
+tail). The daily prices are downloaded from Yahoo! Finance and saved in
+epchan.com/book as OIH.xls, RKH.xls, and RTH.xls. Here is the MATLAB
+program (epchan.com/book/example6 3.m) to retrieve these files and cal-
+culate M, C, and F *.
+
+% make sure previously defined variables are erased.
+clear;
+% read a spreadsheet named "OIH.xls" into MATLAB.
+[num1, txt1]=xlsread('OIH');
+% the first column (starting from the second row) is
+% the trading days in format mm/dd/yyyy.
+tday1=txt1(2:end, 1);
+tday1=datestr(datenum(tday1, 'mm/dd/yyyy'), 'yyyym-
+mdd'); % convert the format into yyyymmdd.
+
+% convert the date strings first into cell arrays
+% and then into numeric format.
+tday1=str2double(cellstr(tday1));
+% the last column contains the adjusted close prices.
+adjcls1=num1(:, end);
+% read a spreadsheet named "RKH.xls" into MATLAB.
+[num2, txt2]=xlsread('RKH');
+% the first column (starting from the second row) is
+% the trading days in format mm/dd/yyyy.
+tday2=txt2(2:end, 1);
+% convert the format into yyyymmdd.
+tday2=..
+datestr(datenum(tday2, 'mm/dd/yyyy'), 'yyyymmdd');
+
+% convert the date strings first into cell arrays and
+% then into numeric format.
+tday2=str2double(cellstr(tday2));
+adjcls2=num2(:, end);
+
+% read a spreadsheet named "RTH.xls" into MATLAB.
+[num3, txt3]=xlsread('RTH');
+% the first column (starting from the second row) is
+% the trading days in format mm/dd/yyyy.
+tday3=txt3(2:end, 1);
+Money and Risk Management                              101
+
+% convert the format into yyyymmdd.
+tday3=..
+datestr(datenum(tday3, 'mm/dd/yyyy'), 'yyyymmdd');
+
+% convert the date strings first into cell arrays and
+% then into numeric format.
+tday3=str2double(cellstr(tday3));
+adjcls3=num3(:, end);
+
+% merge these data
+tday=union(tday1, tday2);
+tday=union(tday, tday3);
+adjcls=NaN(length(tday), 3);
+
+[foo idx1 idx]=intersect(tday1, tday);
+adjcls(idx, 1)=adjcls1(idx1);
+[foo idx2 idx]=intersect(tday2, tday);
+adjcls(idx, 2)=adjcls2(idx2);
+[foo idx3 idx]=intersect(tday3, tday);
+adjcls(idx, 3)=adjcls3(idx3);
+
+ret=(adjcls-lag1(adjcls))./lag1(adjcls); % returns
+
+% days where any one return is missing
+baddata=find(any(isfinite(ret), 2));
+% eliminate days where any one return is missing
+ret(baddata,:)=[];
+% excess returns: assume annualized risk free rate is 4%
+excessRet=ret-repmat(0.04/252, size(ret));
+
+% annualized mean excess returns
+
+M=252*mean(excessRet, 1)'% M =
+
+%
+
+%    0.1396
+
+% 0.0294
+
+% -0.0073
+
+C=252*cov(excessRet) % annualized covariance matrix
+
+%C=
+
+%
+
+%    0.1109 0.0200 0.0183
+
+%    0.0200 0.0372 0.0269
+
+%    0.0183 0.0269 0.0420
+
+F=inv(C)*M % Kelly optimal leverages
+102                                                        QUANTITATIVE TRADING
+
+%F=
+
+%
+
+%    1.2919
+
+%    1.1723
+
+% -1.4882
+
+      Notice that the mean excess return of RTH is negative. Given this, it is
+not surprising that the Kelly formula recommends we short RTH.
+
+      You might wonder what the Sharpe ratio and the maximum com-
+pounded growth rate generated using this optimal allocation are. It turns
+out that the maximum growth rate of a multistrategy Gaussian process is
+
+             g (F ) = r + F T C F /2
+
+and the Sharpe ratio is given by
+                                                  
+
+                                             S = F T C F 
+
+     Here is the MATLAB code snippet that calculates these two quantities:
+
+% Maximum annualized compounded growth rate
+
+g=0.04+F'*C*F/2 % g =
+
+%
+
+%    0.1529
+
+S=sqrt(F'*C*F) % Sharpe ratio of portfolio
+
+%S=
+
+%
+
+%    0.4751
+
+      Notice that the compounded growth rate of the portfolio is 15.29 per-
+cent, higher than that of the maximum growth rate achievable by any of
+the individual stocks. (As an exercise, you can verify that the compounded
+growth rate of OIH, which has the highest one-period return among the
+three stocks, is 12.78 percent.)
+
+    Note that following the Kelly formula requires you to continu-
+ously adjust your capital allocation as your equity changes so that
+it remains optimal. Based on the SPY example (6.2), let's say you
+followed the Kelly formula and bought a portfolio worth $252,800.
+The next day, disaster struck, and you lost 10 percent on the SPY.
+So now your portfolio is worth only $227,520, and your equity is now
+only $74,720. What should you do now? Kelly's criterion will dictate
+Money and Risk Management  103
+
+that you immediately reduce the size of your portfolio to $188,892.
+Why? Because the optimal leverage of 2.528 times the current equity
+of $74,720 is $188,892.
+
+    As a practical procedure, this continuous updating of the capi-
+tal allocation should occur at least once at the end of each trading
+day. In addition to updating the capital allocation, one should also
+periodically update F* itself by recalculating the most recent trail-
+ing mean return and standard deviation. What should the lookback
+period be and how often do you need to update these inputs to the
+Kelly formula? These depend on the average holding period of your
+strategy. If you hold your positions for only one day or so, then as a
+rule of thumb, I would advise using a lookback period of six months.
+Using a relatively short lookback period has the advantage of allow-
+ing you to gradually reduce your exposure to strategies that have
+been losing their performance. As for the frequency of update, it
+should not be a burden to update F* daily once you have written a
+program to do so.
+
+    One last point: Some strategies generate a variable number of
+trading signals each day, which may result in a variable number of
+positions and thus total capital each day. How should the Kelly for-
+mula be used to determine the capital in this case when we don't
+know what it will be beforehand? One can still use the Kelly for-
+mula to determine the maximum number of positions and thus the
+maximum capital allowed. It is always safer to have a leverage be-
+low what the Kelly formula recommends.
+
+RISK MANAGEMENT
+
+We saw in the previous section that the Kelly formula is not only
+useful for the optimal allocation of capital and for the determination
+of the optimal leverage, but also for risk management. In fact, the
+SPY example (6.2) illustrated that the Kelly formula would advise
+you to reduce the portfolio size in the face of trading losses. This
+selling at a loss is the frequent result of risk management, whether
+or not the risk management scheme is based on Kelly's formula.
+104  QUANTITATIVE TRADING
+
+    Risk management always dictates that you should reduce your
+position size whenever there is a loss, even when it means realizing
+those losses. (The other face of the coin is that optimal leverage dic-
+tates that you should increase your position size when your strategy
+generates profits.) This kind of selling is believed by some analysts
+to be the cause of "financial contagion" affecting many large hedge
+funds simultaneously when one faces a large loss.
+
+    An example of this is the summer 2007 meltdown, described in
+the previously cited article "What Happened to the Quants in Au-
+gust 2007?" by Amir Khandani and Andrew Lo. During August 2007,
+under the ominous cloud of a housing and mortgage default crisis,
+a number of well-known hedge funds experienced unprecedented
+losses, with Goldman Sachs's Global Alpha fund falling 22.5 per-
+cent. Several billion dollars evaporated within all of one week. Even
+Renaissance Technologies Corporation, arguably the most success-
+ful quantitative hedge fund of all time, lost 8.7 percent in the first
+half of August, though it later recovered most of it. Not only is the
+magnitude of the loss astounding, but the widespread nature of it
+was causing great concern in the financial community. Strangest of
+all, few of these funds hold any mortgage-backed securities at all,
+ostensibly the root cause of the panic. It therefore became a classic
+study of financial contagion as propagated by hedge funds.
+
+    This kind of contagion occurs because a large loss by one hedge
+fund causes it to sell off some large positions that it holds (whether
+or not these are the positions that cause the loss in the first place).
+This selling causes the prices of the securities to drop (or rise in
+the case of short positions). If other hedge funds are holding sim-
+ilar positions, they will then suffer large losses also, causing their
+own risk management system to sell off their own positions, and on
+and on. For example, in the summer of 2007, one large hedge fund
+might have been holding subprime mortgage-backed securities and
+suffered a large loss in that sector. Risk management then required
+that it sold off liquid stock positions in their portfolio which might,
+up to that point, be unaffected by the subprime debacle. Because of
+the selling of such stock positions, other statistical arbitrage hedge
+funds that hold no mortgage-backed securities might now suffered
+big losses, and proceeded to sell their stocks as well. Hence, a
+Money and Risk Management  105
+
+sell-off in the mortgage-backed securities market suddenly became
+a sell-off in the stock market--a nice demonstration of the meaning
+of contagion.
+
+    Given the necessity of realizing losses as well as the scale and
+frequency of trading required to constantly rebalance the portfolio
+in order to closely follow the Kelly formula, it is understandable that
+most traders prefer to trade at half-Kelly leverage. A lower leverage
+implies a smaller size of the selling required for risk management.
+
+    Sometimes, even taking the conservative half-Kelly formula may
+be too aggressive, and traders may want to limit their portfolio
+size further by additional constraints. This is because, as I pointed
+out previously, the application of the Kelly formula to continuous
+finance is premised on the assumption that return distribution is
+Gaussian. (Finance is continuous in the sense that the outcomes of
+making bets in the financial market fall on a continuum of profits or
+losses, as opposed to a game of cards where the outcomes fall into
+discrete cases.) But, of course, the returns are not really Gaussian:
+large losses occur at far higher frequencies than would be predicted
+by a nice bell-shaped curve. Some people refer to the true distri-
+butions of returns as having "fat tails." What this means is that the
+probability of an event far, far away from the mean is much higher
+than allowed by the Gaussian bell curve. These highly improbable
+events have been called "black swan" events by the author Nassim
+Taleb (see Taleb, 2007).
+
+    To handle extreme events that fall outside the Gaussian distri-
+bution, we can use our simple backtest technique to roughly esti-
+mate what the maximum one-period loss was historically. (The pe-
+riod may be one week, one day, or one hour. The only criterion to
+use is that you should be ready to rebalance your portfolio accord-
+ing to the Kelly formula at the end of every period.) You should also
+have in mind what is the maximum one-period drawdown on your
+equity that you are willing to suffer. Dividing the maximum tolera-
+ble one-period drawdown on equity by the maximum historical loss
+will tell you whether even half-Kelly leverage is too large for your
+comfort. The leverage to use is always the smaller of the half-Kelly
+leverage and the maximum leverage obtained using the worst histor-
+ical loss. In the S&P 500 index example in the previous section, the
+106  QUANTITATIVE TRADING
+
+maximum historical one-day loss is about 20.47 percent, which oc-
+curred on October 19, 1987--"Black Monday." If you can tolerate
+only a 20 percent one-day drawdown on equity, then the maxi-
+mum leverage you can apply is about 1. Meanwhile, the leverage
+recommended by half-Kelly is 1.26. Hence, in this case, even half-
+Kelly leverage would not be conservative enough to survive Black
+Monday.
+
+    The truly scary scenario in risk management is the one that
+has not occurred in history before. Echoing the philosopher Lud-
+wig Wittgenstein, "Whereof one cannot speak, thereof one must be
+silent"--on such unknowables, theoretical models are appropriately
+silent.
+
+  IS THE USE OF STOP LOSS A GOOD RISK
+  MANAGEMENT PRACTICE?
+
+Some traders believe that good risk management means imposing stop loss on
+every trade; that is, if a position incurs a certain percent loss, the trader will
+exit the position. It is a common fallacy to believe that imposing stop loss will
+prevent the portfolio from suffering catastrophic losses. When a catastrophic
+event occurs, securities prices will drop discontinuously, so the stop loss orders
+to exit the positions will only be filled at prices much worse than those before
+the event. So, by exiting the positions, we are actually realizing the catastrophic
+loss and not avoiding it. For stop loss to be beneficial, we must believe that we
+are in a momentum, or trending, regime. In other words, we must believe that
+the prices will get worse within the expected lifetime of our trade. Otherwise, if
+the market is mean reverting within that lifetime, we will eventually recoup our
+losses if we didn't exit the position too quickly.
+
+      Of course, it is not easy to tell whether one is in a momentum regime (when
+stop loss is beneficial) or in a mean-reverting regime (when stop loss is harm-
+ful). My own observation is that when the movement of prices is due to news
+or other fundamental reasons (such as a company's deteriorating revenue), one
+is likely to be in a momentum regime, and one should not "stand in front of
+a freight train," in traders' vernacular. For example, if a fundamental analysis
+of a company reveals that it is currently overvalued, its stock price will likely
+gradually decrease (at least in relation to the market index) in order to reach
+a new, lower equilibrium price. This movement to the lower equilibrium price
+is irreversible as long as the fundamental economics of the company does not
+change. However, when securities prices move drastically without any apparent
+news or reasons, it is likely that the move is the result of a liquidity event--for
+example, major holders of the securities suddenly need to liquidate large
+Money and Risk Management  107
+
+positions for their own idiosyncratic reasons, or major speculators suddenly
+decide to cover their short positions. These liquidity events are of relatively
+short durations and mean reversion to the previous price levels is likely.
+
+      I will discuss in some more detail the appropriate exit strategies for mean-
+reverting versus momentum strategies in Chapter 7.
+
+    Beyond position risk (which is comprised of both market risk
+and specific risk), there are other forms of risks to consider: model
+risk, software risk, and natural disaster risk, in decreasing order of
+likelihood.
+
+    Model risk simply refers to the possibility that trading losses are
+not due to the statistical vagaries of the market, but to the fact that
+the trading model is wrong. It could be wrong for a large number of
+reasons, some of which were detailed in Chapter 3: data-snooping
+bias, survivorship bias, and so on. To eliminate all these different
+biases and errors in the backtest programs, it is extremely helpful to
+have a collaborator or consultant to duplicate your backtest results
+independently to ensure their validity. This need to duplicate results
+is routinely done in scientific research and is no less essential in
+financial research.
+
+    Model risk can also come not from any bias or error in your
+model or backtesting procedure, but from increased competition
+from other institutional traders all running the same strategy as
+you; or it could be a result of some fundamental change in market
+structure that eliminated the edge of your trading model. This is the
+regime shift that I talked about in Chapter 5.
+
+    There is not much you can do to alleviate these sources of model
+risk, except to gradually lower the leverage of the model as it racks
+up losses, up to the point where the leverage is zero. This can be ac-
+complished in a systematic way if you constantly update the lever-
+age according to the Kelly formula based on the trailing mean return
+and standard deviation. (As the mean return decreases to zero in the
+lookback period, your Kelly leverage will be driven to zero.) This
+is preferable to abruptly shutting down a model because of a large
+drawdown (see my discussion of the psychological pressure to shut
+down models prematurely in the following section on psychological
+preparedness).
+108  QUANTITATIVE TRADING
+
+    Software risk refers to the case where the automated trading
+system that generates trades every day actually does not faith-
+fully reflect your backtest model. This happens because of the om-
+nipresent software bugs. I discussed the way to eliminate such soft-
+ware errors in Chapter 5: you should compare the trades generated
+by your automated trading system with the theoretical trades gener-
+ated by your backtest system to ensure that they are the same.
+
+    Finally, physical or natural disasters can happen, which can
+cause big losses, and they don't have to be anything dramatic like
+earthquakes or tsunami. What if your Internet connection went
+down before you could enter a hedging position? What if your power
+went down in the middle of transmitting a trade? The different meth-
+ods of preventing physical disasters from causing major disruptions
+to your trading can be found in the section on physical infrastruc-
+ture in Chapter 4.
+
+PSYCHOLOGICAL PREPAREDNESS
+
+It may seem strange that a book on quantitative trading would in-
+clude a section on psychological preparedness. After all, isn't quan-
+titative trading supposed to liberate us from our emotions and let the
+computer make all the trading decisions in a disciplined manner? If
+only it were this easy: human traders who are not psychologically
+prepared will often override their automated trading systems' deci-
+sions, especially when there is a position or day with abnormal profit
+or loss. Hence, it is critical even if we trade using quantitative strate-
+gies to understand some of our own psychological weaknesses.
+
+    Fortunately, there is a field of financial research called "behav-
+ioral finance" (Thaler, 1994) that studies irrational financial decision
+making. I will try to highlight a few of the common irrational behav-
+iors that affect trading.
+
+    The first behavioral bias is known variously as the endowment
+effect, status quo bias, or loss aversion. The first two effects cause
+some traders to hold on to a losing position for too long, because
+traders (and people in general) give too much preference to the sta-
+tus quo (the status quo bias), or because they demand much more
+Money and Risk Management  109
+
+to give up the stock than what they would pay to acquire it (the en-
+dowment effect). As I argued in the risk management section, there
+are rational reasons to hold on to a losing position (e.g., when you
+expect mean-reverting behavior); however, these behavioral biases
+cause traders to hold on to losing positions even when there is no
+rational reason (e.g., when you expect trending behavior, and the
+trend is such that your positions will lose even more). At the same
+time, the loss aversion bias causes some traders to exit their prof-
+itable positions too soon, even if holding longer will lead to a larger
+profit on average. Why do they exit the profitable positions so soon?
+Because the pain from possibly losing some of the current profits
+outweighs the pleasure from gaining higher profits.
+
+    This behavioral bias manifests itself most clearly and most dis-
+astrously when one has entered a position by mistake (because of
+either a software bug, an operational error, or a data problem) and
+has incurred a big loss. The rational step to take is to exit the po-
+sition immediately upon discovery of the error. However, traders
+are often tempted to wait for mean reversion such that the loss is
+smaller before they exit. Unless you have a model for mean rever-
+sion that suggests now is a good time to enter into this position,
+this wait for mean reversion may very well lead to bigger losses
+instead.
+
+    Another common bias that I have personally experienced is the
+"representativeness bias"--people tend to put too much weight on
+recent experience and underweight long-term average (Ritter, 2003).
+(This reference has a good introduction to various biases studied
+by behavioral finance.) After a big loss, traders--even quantitative
+traders--tend to immediately modify certain parameters of their
+strategies so that they would have avoided the big loss if they were
+to trade this modified system. But, of course, this is unwise because
+this modification may invite some other big loss that is yet to hap-
+pen, or it may have eliminated many profit opportunities that ex-
+isted. We must remember that we are operating in a probabilistic
+regime: No system can avoid all the market vagaries that can result
+in losses.
+
+    If you feel that your system really is deficient and want to tweak
+it, you should always backtest the modified version to make sure
+110  QUANTITATIVE TRADING
+
+that it does outperform the old system over a sufficiently long back-
+test period, not just over the last few weeks.
+
+    There are two major psychological weaknesses that are more
+well known to the traders than to economists: despair and greed.
+
+    Despair occurs when a trading model is in a major, prolonged
+drawdown. Many traders (and their managers, investors, etc.) will
+be under great pressure under this circumstance to shut down the
+model completely. Other overly self-confident traders with a reck-
+less bent will do the opposite: They will double their bets on their
+losing models, hoping to recoup their losses eventually, if and when
+the models rebound. Neither behavior is rational: if you have been
+managing your capital allocation and leverage by the Kelly for-
+mula, you would lower the capital allocation for the losing model
+gradually.
+
+    Greed is the more usual emotion when the model is having a
+good run and is generating a lot of profits. The temptation now is to
+increase its leverage quickly in order to get rich quickly. Once again,
+a well-disciplined quantitative trader will keep the leverage below
+the dictates of the Kelly formula as well as the caution imposed by
+the possibility of fat-tail events.
+
+    Both despair and greed can lead to overleveraging (i.e., trad-
+ing an overly large portfolio): In despair, one tries to recoup the
+losses by adding fresh capital; in greed, one adds capital too
+quickly after initial successes with a strategy. Therefore, the one
+golden rule in risk management is to keep the size of your port-
+folio under control at all times. This is, however, easier said than
+done. Large, well-known funds have succumbed to the tempta-
+tion to overleverage and failed: Long-Term Capital Management in
+2000 (Lowenstein, 2000) and Amaranth Advisors in 2006 (epchan.
+blogspot.com/2006/10/highly-improbable-event.html). In the Ama-
+ranth Advisors case, the leverage employed on one single strategy
+(natural gas calendar spread trade) due to one single trader (Brian
+Hunter) is so large that a $6 billion dollar loss was incurred, com-
+fortably wiping out the fund's equity--a textbook case of risk mis-
+management.
+
+    I have experienced this pressure myself both in an institutional
+setting and in a personal setting, and the unfortunate result both
+Money and Risk Management  111
+
+times was to succumb prematurely. When I was with a money man-
+agement firm, I lost over $1 million for the fund's investors because,
+in a fit of greed, I added over $100 million to a portfolio based on a
+strategy that had been traded for barely six months. (That was be-
+fore I learned of the Kelly criterion.) As if this is not enough lesson,
+I repeated the same mistake again when I started trading indepen-
+dently. It concerns a mean-reverting spread strategy involving XLE,
+an energy exchange-traded fund (ETF) and the crude oil future (CL).
+When the spread refused to mean revert over time, I stubbornly in-
+creased the size of the spread to almost $500,000. Finally, despair
+set in, and I exited the spread with close to a six-figure loss. Natu-
+rally, the spread started to revert afterward when I wasn't around to
+benefit. (Fortunately, several of my other strategies performed well
+in that first year of my independent trading, so the fiscal year ended
+with only a small overall loss.)
+
+    How should we train ourselves to overcome these psychologi-
+cal weaknesses and learn not to override the models manually and
+to remedy trading errors correctly and expeditiously? As with most
+human endeavors, the way to do this is to start with a small port-
+folio and gradually gain psychological preparedness, discipline, and
+confidence in your models. As you become emotionally more able
+to handle the daily swings in profit and loss (P&L) and rein in the
+primordial urges of the psyche, your portfolio's actual performance
+will hew to the theoretically expected performance of your strategy.
+
+    I have certainly found that to be the case after getting over those
+aforementioned disastrous trades. My newfound discipline and faith
+in the Kelly formula has so far prevented similar disasters from hap-
+pening again.
+
+SUMMARY
+
+Risk management is a crucial discipline in trading. The trading world
+is littered with numerous examples of giant hedge funds and invest-
+ment banks laid low by enormous losses due to a single trade or in a
+very short period of time. Most of these losses are due to overlever-
+aging positions and not to an inherently erroneous model. Typically,
+112  QUANTITATIVE TRADING
+
+traders will not overleverage a model that has not worked very well.
+It is a hitherto superbly performing model that is at the greatest risk
+of huge loss due to overconfidence and overleverage. This chapter
+therefore provides an important tool for risk management: the de-
+termination of the optimal leverage using the Kelly formula.
+
+    Besides the determination of the optimal leverage, the Kelly for-
+mula has a very useful side benefit: It also determines the optimal
+allocation of capital among different strategies, based on the covari-
+ance of their returns.
+
+    But no risk management formula or system will prevent disas-
+ters if you are not psychologically prepared for the ups and downs
+of trading and thus deviating from the prescriptions of rational de-
+cision making (i.e., your models). The ultimate risk management
+mind-set is very simple: Do not succumb to either despair or greed.
+To gain practice in this psychological discipline, one must proceed
+slowly with small position size, and thoroughly test various aspects
+of the trading business (model, software, operational procedure,
+money and risk management) before scaling up according to the
+Kelly formula.
+
+    I have found that in order to proceed slowly and cautiously, it
+is helpful to have other sources of income or other businesses to
+help sustain yourself either financially or emotionally (to avoid the
+boredom associated with slow progress). It is indeed possible that
+finding a diversion, whether income producing or not, may actually
+help improve the long-term growth of your wealth.
+
+APPENDIX: A SIMPLE DERIVATION OF
+THE KELLY FORMULA WHEN RETURN
+DISTRIBUTION IS GAUSSIAN
+
+If we assume that the return distribution of a strategy (or security) is
+Gaussian, then the Kelly formula can be derived very easily. We start
+with the formula for a compounded, levered growth rate applicable
+to a Gaussian process:
+
+                            g( f ) = r + f m - s2 f 2/2
+Money and Risk Management  113
+
+where f is the leverage, r is the risk-free rate; m is the average sim-
+ple, uncompounded one-period excess return; and s is the standard
+deviation of those uncompounded returns. This formula for com-
+pounded growth rate can itself be derived quite simply, but not as
+simply as the Kelly formula, so I leave its derivation for the reader
+to look up in the Thorp article referenced earlier.
+
+    To find the optimal f which maximizes g, simply take its first
+derivative with respect to f and set the derivative to zero:
+
+                              dg/d f = m - s2 f = 0
+
+    Solving this equation for f gives us f=m/s2, the Kelly formula for
+one strategy or security under the Gaussian assumption.
+                                    CHAPTER 7
+
+      Special Topics in
+          Quantitative
+             Trading
+
+T he first six chapters of this book covered most of the ba-
+       sic knowledge needed to research, develop, and execute your
+       own quantitative strategy. This chapter explains important
+themes in quantitative trading in more detail. These themes form the
+bases of statistical arbitrage trading, and most quantitative traders
+are conversant in some if not most of these topics. They are also
+very helpful in informing our intuition about trading.
+
+     I will describe the two basic categories of trading strategies:
+mean-reverting versus momentum strategies. Periods of mean-
+reverting and trending behaviors are examples of what some traders
+call regimes, and the switch between different regimes is a topic of
+discussion here. Mean-reverting strategies derive their mathemati-
+cal justification from the concepts of stationarity and cointegration
+of time series, which I will cover next. Then I will describe a the-
+ory that many hedge funds use to manage large portfolios and one
+that has caused much turmoil in their performances: namely, factor
+models. Other categories of strategies that traders frequently dis-
+cuss are seasonal trading and high-frequency strategies. All trading
+strategies require a way to exit their positions; I will describe the dif-
+ferent logical ways to do this. Finally, I ponder the question of how
+to best enhance the returns of a strategy: through higher leverage or
+trading higher-beta stocks?
+
+                                                                                            115
+116  QUANTITATIVE TRADING
+
+MEAN-REVERTING VERSUS
+MOMENTUM STRATEGIES
+
+Trading strategies can be profitable only if securities prices are
+either mean-reverting or trending. Otherwise, they are random-
+walking, and trading will be futile. If you believe that prices are mean
+reverting and that they are currently low relative to some reference
+price, you should buy now and plan to sell higher later. However, if
+you believe the prices are trending and that they are currently low,
+you should (short) sell now and plan to buy at an even lower price
+later. The opposite is true if you believe prices are high.
+
+    Academic research has indicated that stock prices are on av-
+erage very close to random walking. However, this does not mean
+that under certain special conditions, they cannot exhibit some de-
+gree of mean reversion or trending behavior. Furthermore, at any
+given time, stock prices can be both mean reverting and trending
+depending on the time horizon you are interested in. Constructing a
+trading strategy is essentially a matter of determining if the prices
+under certain conditions and for a certain time horizon will be mean
+reverting or trending, and what the initial reference price should be
+at any given time. (When the prices are trending, they are also said
+to have "momentum," and thus the corresponding trading strategy
+is often called a momentum strategy.)
+
+    Some people like to describe the phenomenon that prices can
+be both mean reverting and trending at the same time as the "frac-
+tal" nature of stock prices. Technical analysts or chartists like to
+use the so-called Elliott wave theory to analyze such phenomena.
+Still others like to use the discipline of machine learning or artifi-
+cial intelligence (in particular, techniques such as hidden Markov
+models, Kalman filter, neural networks, etc.) to discover whether
+the prices are in a mean-reverting or trending "regime." I person-
+ally have not found such general theories of mean reversion or mo-
+mentum particularly useful. (See, however, the section on regime
+switching, which describes an apparently successful attempt to pre-
+dict regime switch for one particular stock.) Rather, I find it is usu-
+ally safe to assume that, unless the expected earnings of a company
+Special Topics in Quantitative Trading  117
+
+have changed, stock prices will be mean reverting. In fact, financial
+researchers (Khandani and Lo, 2007) have constructed a very simple
+short-term mean reversal model that is profitable (before transac-
+tion costs) over many years. Of course, whether the mean reversion
+is strong enough and consistent enough such that we can trade prof-
+itably after factoring in transaction costs is another matter, and it is
+up to you, the trader, to find those special circumstances when it is
+strong and consistent.
+
+    Though mean reversion is quite prevalent, backtesting a prof-
+itable mean-reverting strategy can be quite perilous.
+
+    Many historical financial databases contain errors in price
+quotes. Any such error tends to artificially inflate the performance
+of mean-reverting strategies. It is easy to see why: a mean-reverting
+strategy will buy on a fictitious quote that is much lower than some
+moving average and sell on the next correct quote that is in line with
+the moving average and thus makes a profit. One must make sure the
+data is thoroughly cleansed of such fictitious quotes before one can
+completely trust your backtesting performance on a mean-reverting
+strategy.
+
+    Survivorship bias also affects the backtesting of mean-reverting
+strategies disproportionately, as I discussed in Chapter 3. Stocks
+that went through extreme price actions are likely to be either ac-
+quired (the prices went very high) or went bankrupt (the prices
+went to zeros). A mean-reverting strategy will short the former and
+buy the latter, losing money in both cases. However, these stocks
+may not appear at all in your historical database if it has survivor-
+ship bias, thus artificially inflating your backtest performance. You
+can look up Table 3.1 to find out which database has survivor-
+ship bias.
+
+    Momentum can be generated by the slow diffusion of
+information--as more people become aware of certain news, more
+people decide to buy or sell a stock, thereby driving the price in
+the same direction. I suggested earlier that stock prices may ex-
+hibit momentum when the expected earnings have changed. This
+can happen when a company announces its quarterly earnings, and
+investors either gradually become aware of this announcement or
+118  QUANTITATIVE TRADING
+
+they react to this change by incrementally executing a large or-
+der (so as to minimize market impact). And indeed, this leads to
+a momentum strategy called post earnings announcement drift, or
+PEAD. (For a particularly useful article with lots of references on
+this strategy, look up quantlogic.blogspot.com/2006/03/pocket-phd-
+post-earning-announcment.html.) Essentially, this strategy recom-
+mends that you buy a stock when its earnings exceed expectations,
+and short a stock when it falls short. More generally, many news an-
+nouncements have the potential of altering expectations of a stock's
+future earnings, and therefore have the potential to trigger a trend-
+ing period. As to what kind of news will trigger this, and how long
+the trending period will last, it is again up to you to find out.
+
+    Besides the slow diffusion of information, momentum can be
+caused by the incremental execution of a large order due to the li-
+quidity needs or private investment decisions of a large investor.
+This cause probably accounts for more instances of short-term mo-
+mentum than any other causes. With the advent of increasingly so-
+phisticated execution algorithms adopted by the large brokerages, it
+is, however, increasingly difficult to ascertain whether a large order
+is behind the observed momentum.
+
+    Momentum can also be generated by the herdlike behavior of in-
+vestors: investors interpret the (possibly random and meaningless)
+buying or selling decisions of others as the sole justifications of their
+own trading decisions. As Yale economist Robert Schiller said in the
+New York Times (Schiller, 2008), nobody has all the information
+they need in order to make a fully informed financial decision. One
+has to rely on the judgment of others. There is, however, no sure
+way to discern the quality of the judgment of others. More problem-
+atically, people make their financial decisions at different times, not
+meeting at a town hall and reaching a consensus once and for all.
+The first person who paid a high price for a house is "informing"
+the others that houses are good investments, which leads another
+person to make the same decision, and so on. Thus, a possibly erro-
+neous decision by the first buyer is propagated as "information" to a
+herd of others.
+
+    Unfortunately, momentum regimes generated by these two
+causes (private liquidity needs and herdlike behavior) have highly
+Special Topics in Quantitative Trading  119
+
+unpredictable time horizons. How could you know how big an or-
+der an institution needs to execute incrementally? How do you pre-
+dict when the "herd" is large enough to form a stampede? Where is
+the infamous tipping point? If we do not have a reliable way to es-
+timate these time horizons, we cannot execute a momentum trade
+profitably based on these phenomena. In a later section on regime
+switch, I will examine some attempts to predict these tipping or
+"turning" points.
+
+    There is one last contrast between mean-reverting and mo-
+mentum strategies that is worth pondering. What are the effects
+of increasing competition from traders with the same strategies?
+For mean-reverting strategies, the effect typically is the gradual
+elimination of any arbitrage opportunity, and thus gradually dimin-
+ishing returns down to zero. When the number of arbitrage op-
+portunities has been reduced to almost zero, the mean-reverting
+strategy is subject to the risk that an increasing percentage of
+trading signals are actually due to fundamental changes in stocks'
+valuation and thus is not going to mean revert. For momentum
+strategies, the effect of competition is often the diminishing of the
+time horizon over which the trend will continue. As news dissem-
+inates at a faster rate and as more traders take advantage of this
+trend earlier on, the equilibrium price will be reached sooner. Any
+trade entered after this equilibrium price is reached will be unprof-
+itable.
+
+REGIME SWITCHING*
+
+The concept of regimes is most basic to financial markets. What
+else are "bull" and "bear" markets if not regimes? The desire to pre-
+dict regime switches, which are also commonly known as turning
+points, is also as old as financial markets themselves.
+
+    If our attempts to predict the switching from a bull to a
+bear market were even slightly successful, we could focus our
+
+*This section was adapted from an article I published in Automated Trader
+magazine.
+120  QUANTITATIVE TRADING
+
+discussion to this one type of switching and call it a day. If only
+it were that easy. The difficulty with predicting this type of switch-
+ing encourages researchers to look more broadly at other types of
+regime switching in the financial markets, hoping to find some that
+may be more amenable to existing statistical tools.
+
+    I have already described two regime switches (or "shifts," for
+these two examples did not switch back to their former regimes)
+that are due to changes in market and regulatory structures: deci-
+malization of stock prices in 2003 and the elimination of the short-
+sale plus-tick rule in 2007. (See Chapter 5 for details.) These regime
+shifts are preannounced by the government, so no predictions of
+the shifts are necessary, though few people can predict the exact
+consequences of the regulatory changes.
+
+    Some of the other most common financial or economic regimes
+studied are inflationary vs. recessionary regimes, high- vs. low-
+volatility regimes, and mean-reverting vs. trending regimes. Among
+these, volatility regime switching seems to be most amenable to
+classical econometric tools such as the generalized autoregres-
+sive conditional heteroskedasticity (GARCH) model (See Klaassen,
+2002). That is not surprising, as there is a long history of success
+among financial economists in modeling volatilities as opposed to
+the underlying stock prices themselves. While such predictions of
+volatility regime switches can be of great value to options traders,
+they are unfortunately of no help to stock traders.
+
+    Academic attempts to model regime switches in stock prices
+generally proceed along these lines:
+
+1. Propose that the two (or more) regimes are characterized by
+   different probability distributions of the prices. In the simplest
+   cases, the log of the prices of both regimes may be represented
+   by normal distributions, except that they have different means
+   and/or standard deviations.
+
+2. Assume that there is some kind of transition probability among
+   the regimes.
+
+3. Determine the exact parameters that specify the regime proba-
+   bility distributions and the transition probabilities by fitting the
+Special Topics in Quantitative Trading  121
+
+   model to past prices, using standard statistical methods such as
+   maximum likelihood estimation.
+
+4. Based on the fitted model above, find out the expected regime
+   of the next time step and, more importantly, the expected stock
+   price.
+
+    This type of approach is usually called Markov regime switch-
+ing or hidden Markov models, and it is generally based on a
+Bayesian probabilistic framework. Readers who are interested in
+reading more about some of these approaches may peruse Nielsen
+and Olesen (2000), van Norden and Schaller (1993), or Kaufmann
+and Scheicher (1996).
+
+    Despite the elegant theoretical framework, such Markov regime-
+switching models are generally useless for actual trading purposes.
+The reason for this weakness is that they assume constant tran-
+sition probabilities among regimes at all times. In practice, this
+means that at any time (as illustrated by the Nielsen and Olesen pa-
+per), there is always a very small probability for the stock to tran-
+sition from a normal, quiescent regime to a volatile regime. But this
+is useless to traders who want to know when--and under what pre-
+cise conditions--the transition probability will suddenly peak. This
+question is tackled by the turning points models.
+
+    Turning points models take a data mining approach (Chai, 2007):
+Enter all possible variables that might predict a turning point or
+regime switch. Variables such as current volatility; last-period re-
+turn; or changes in macroeconomic numbers such as consumer con-
+fidence, oil price changes, bond price changes, and so on can all
+be part of this input. In fact, in a very topical article about turning
+points in the real estate market by economist Robert Schiller (2007),
+it was suggested that the crescendo of media chatter about impend-
+ing boom or bust may actually be a good predictor of a coming turn-
+ing point.
+
+    In Example 7.1, I illustrate how we might detect turning points
+using a data-mining approach with just simple technical indicators
+built on stock price series as inputs while using stock returns of
+multiple holding periods as outputs.
+122  QUANTITATIVE TRADING
+
+Example 7.1: Using a Machine Learning Tool to Profit from
+Regime Switching in the Stock Market
+
+As I discussed in the main text, I believe that regime switching can be most
+easily discovered by using a data-mining approach: examining a massive
+number of indicators to see which one might predict a switch. This is nor-
+mally a very onerous task, even with MATLAB. But, luckily, a recent machine
+learning program has enabled this discovery process to be done in a matter
+of hours.
+
+      I shall employ a tool here called Alphacet Discovery, which is an inte-
+grated backtesting and execution platform recently launched by Alphacet,
+Inc. (www.alphacet.com. Full disclosure: Alphacet is a client of my firm.)
+This platform not only integrates all historical and real-time data needed
+for rapid strategy prototyping, backtesting, analysis, and real-time deploy-
+ment; it also contains an expanding array of machine learning programs
+such as neural networks and genetic algorithms that are well suited to data
+mining for the kind of relationships we are seeking.
+
+      I will pick a prominent brokerage stock--GS--as a proxy for the finan-
+cial sector. My objective is to find out if I can detect turning points in this
+sector where it goes from bull to bear and back. My initial hypothesis is that
+major shifts of interest rates, a release of government macroeconomic data,
+or earnings announcements are likely triggers of turning points. At the time
+of this writing, Alphacet had not yet completed integration of macroeco-
+nomic or company news data into its database, so I will use a large percent
+change in GS as proxy for such news releases. Furthermore, I believe that
+whenever GS reaches an N-day high or low just before this large drop or
+rise in prices occurs is a good signal that a previous regime is close to an
+end. So I shall use this condition as an additional input as well.
+
+      The search problem we face is: How large a percent change is sufficient
+to trigger a regime switch? What should N be in the N-day high/low con-
+dition? And how long does the new regime generally last? (In other words,
+what is the optimal holding period?) To answer these questions in the old-
+fashioned, manual way is very time consuming, as one has to run multi-
+ple simulations with different thresholds for the independent variables and
+multiple return horizons for the dependent variables. Let's see if Alphacet
+Discovery can help us automate this process.
+
+      The independent variables of the model are just the one-day returns
+of GS. The dependent variables are the future returns of GS within various
+holding periods. Discovery can easily find an optimal rule, or an optimal
+combination of rules, which will lead to the best backtest performance. In
+our case, each percent-change threshold can be encapsulated as a rule. I
+entered two thresholds for buys and two for shorts: -1 percent, -3 percent,
+Special Topics in Quantitative Trading  123
+
+1 percent, and 3 percent. Similarly, each holding period can be encapsulated
+as a rule, too, and I entered six such periods: 1, 5, 10, 20, 40, and 60 days.
+
+      To prepare the price, percent-change, and 10-day high/low time series
+for this search is very easy: most things can be done by drag and drop,
+using a mouse, in Discovery. (For simplicity, I fix N to 10 for the strategy
+here, but this parameter can be optimized as well.) I just dragged a GS
+price series into the strategy editor and specified a 1-day frequency with
+the available controls. (The price series started around December 2006.)
+See box S1 in Figure 7.1. Then I dragged several prepackaged "Rules" that
+compute the 1-day percent change, and simple 10-day moving highs and
+lows of a series to the strategy editor (box I2 in Figure 7.1.). And I feed
+the original price series into the Program Group box by directing an arrow
+from the Symbol Group box to the Program Group box.
+
+FIGURE 7.1 Strategy Editor Showing Data and Rules Represented by Boxes
+
+      Now I can create the entry rules by using the drop-down menus and
+typing into the textboxes inside a new Rule box's editor. Figure 7.2 shows
+what's inside Rule box R3 for the buy-and-sell rule based on a change of
+±1 percent. I have created a similar Rule box for ±3 percent. Note that,
+by default, subsequent entry signals will override positions established by
+previous signals.
+124  QUANTITATIVE TRADING
+
+                                                          R3
+       ­ BuySellAt0.1After10DayLowHigh
+
+          IF
+
+                    12-Percent-Change.3.0 >= 1
+               AND
+
+                    12-Moving-Low-10.2.0 >= TALT.NYSE.ESXXXX.GS.Last.Low
+          THEN
+
+               1
+          ELSE
+
+          IF
+                    12-Percent-Change.3.0 >= -1
+
+               AND
+                    12-Moving-High-10.1.0 <= TALT.NYSE.ESXXXX.GS.Last.High
+
+          THEN
+               -1
+
+FIGURE 7.2 Inside a Rule Box
+
+      We can specify the holding periods using the prepackaged program
+called "Holding Period" with different parameters. (In fact, you can easily
+create such programs yourself if you know the programming language Lisp.)
+These are all encapsulated in the box I5 (and I6 for the ±2 percent rule
+separately). We feed the output of the boxes R3 to I5 by drawing an arrow,
+and similarly R4 to I9.
+
+      Finally, we run a perceptron learning algorithm on the outputs of I7 and
+I9 (a perceptron is a type of neural network). This algorithm will find out the
+best weights for the different rules with different holding periods (among
+other parameters) based on a moving window of historical training data
+with the objective of maximizing the total profit in this window. Based on
+these optimized weights, the perceptron will trigger a buy-and-sell decision
+at the end of each period. (Examples of other algorithms that you can select
+are genetic algorithm and a K-nearest-neighbor clustering technique.)
+
+      Interestingly, the perceptron will not force us to hold a position for
+exactly N days, even though that was what the component rule was con-
+structed to do so in the moving window. Every day, the strategy will decide
+whether to buy, sell, or do nothing, based on the latest parameter optimiza-
+tion using the latest data in the moving window and the resulting linearly
+weighted decisions from the different rules.
+Special Topics in Quantitative Trading  125
+
+      Now we are ready to look at the performance results of this strategy.
+We can bring up Discovery's charting application for this. In Figure 7.3, I
+have shown three of the best equity curves that come from the perceptron
+optimization. The best curve belongs to a model using a 50-day moving
+window for the optimization. (The length of the moving window can itself
+be an object of optimization, but we will skip that step here.) On the side-
+bar of the charting application, we can see that this strategy has a 37.93
+percent gross cumulative return over a six-month backtest period, with 89
+round-trip trades. (This is to be compared with a 15.77 percent return of a
+buy-and-hold strategy on GS, with a 14 percent drawdown.) We have also
+shown the best equity curve from the various holding period routines to
+quantify the improvement from optimization (holding period of 10 days in
+I5 on the 1 percent rule at R3), which has a gross cumulative return of 18.55
+percent over the period.
+
+      Though the backtest period is short, this return looks very impressive.
+Can something be wrong? In particular, what about the much-feared data-
+snooping bias that seems to creep into every strategy that is based on ma-
+chine learning or artificial intelligence? The basic philosophy of Alphacet
+
+FIGURE 7.3 Charting Application Showing Equity Curves and Performance
+Statistics in the Sidebar
+126  QUANTITATIVE TRADING
+
+Discovery is to prevent this kind of bias from happening. In theory, though
+not in our particular illustration here, optimization over all rules and all
+parameters can be done in a backward-looking moving window, so that we
+are using absolutely no unseen future data for the backtest. Of course, data-
+snooping bias can still creep in because we can abandon a whole category
+of models when the performance is poor and try one new category after
+another until it improves. But then, this is unavoidable whenever we are in
+the business of backtesting.
+
+      One should also note that the parameters that the search engine is
+allowed to optimize over in this case are actually quite limited: They are
+just the different holding periods. This further reduces the danger of data-
+snooping bias.
+
+      Since the backtest looks good, I can immediately press a single button
+and have this strategy run against real-time data and generate orders in
+either a paper or a real trading account.
+
+      As you can see, it may not be hard to create a regime-switching model
+with the simplest of technical indicators as long as one is able to effi-
+ciently optimize over a large number of parameters, conducted strictly
+in a backward-looking moving window. (See my sidebar on "Parameter-
+less Trading Models" in Chapter 3.) The performance may even be bet-
+ter if we can confirm the price moves with macroeconomic or company-
+specific news. I believe that this same technique can be applied profitably
+to many exchange-traded funds (ETFs), futures, or even currency trading
+as well.
+
+I would like to thank Rosario Ingargiola, chief technology officer of Alphacet, Inc., for
+his help in using Alphacet Discovery to develop the strategy shown here.
+
+STATIONARITY AND COINTEGRATION
+
+A time series is "stationary" if it never drifts farther and farther away
+from its initial value. In technical terms, stationary time series are
+"integrated of order zero," or I(0). (See Alexander, 2001.) It is obvi-
+ous that if the price series of a security is stationary, it would be a
+great candidate for a mean-reversion strategy. Unfortunately, most
+stock price series are not stationary--they exhibit a geometric ran-
+dom walk that gets them farther and farther away from their start-
+ing (i.e., initial public offering) values. However, you can often find
+Special Topics in Quantitative Trading                                       127
+
+a pair of stocks such that if you long one and short the other, the
+market value of the pair is stationary. If this is the case, then the
+two individual time series are said to be cointegrated. They are so
+described because a linear combination of them is integrated of or-
+der zero. Typically, two stocks that form a cointegrating pair are
+from the same industry group. Traders have long been familiar with
+this so-called pair-trading strategy. They buy the pair portfolio when
+the spread of the stock prices formed by these pairs is low, and
+sell/short the pair when the spread is high--in other words, a classic
+mean-reverting strategy.
+
+    An example of a pair of cointegrating price series is the gold
+ETF GLD versus the gold miners ETF, GDX, which I discussed
+in Example 3.6. If we form a portfolio with long 1 share of GLD
+and short 1.6766 share of GDX, the prices of the portfolio form a
+stationary time series (see Figure 7.4). The exact number of shares
+of GLD and GDX can be determined by a regression fit of the two
+component time series (see Example 7.2).
+
+                                       Spread between GLD and GDX
+               10
+
+               8   Long 1 share of GLD
+                   Short 1.6766 share of GDX
+
+               6
+
+Spread (in $)  4
+
+               2
+
+               0
+
+               -2
+
+               -4
+
+ -6                20061012  20070309 20070801                     20071221
+20060523                            Date
+
+FIGURE 7.4 A Stationary Time Series Formed by the Spread between GLD and
+GDX
+128  QUANTITATIVE TRADING
+
+Example 7.2: How to Form a Good Cointegrating
+(and Mean-Reverting) Pair of Stocks
+
+As I explained in the main text, if you long one security and short
+another one in the same industry group and in the right proportion,
+sometimes the combination (or "spread") becomes a stationary series.
+A stationary series is an excellent candidate for a mean-reverting strat-
+egy. This example teaches you how to use a free MATLAB package
+downloadable at www.spatial-econometrics.com to determine if two price
+series are cointegrated and, if so, how to find the optimal "hedge ratio" (i.e.,
+the number of shares of the second security versus one share of the first
+security).
+
+      The main method used to test for cointegration is called the cointegrat-
+ing augmented Dickey-Fuller test, hence the function name cadf. A detailed
+description of this method can be found in the manual also available on the
+same web site mentioned earlier.
+
+      The following program is available online as epchan.com/book/ exam-
+ple7 2.m:
+
+% make sure previously defined variables are erased.
+clear;
+% read a spreadsheet named "GLD.xls" into MATLAB.
+[num, txt]=xlsread('GLD');
+
+% the first column (starting from the second row) is
+% the trading days in format mm/dd/yyyy.
+tday1=txt(2:end, 1);
+% convert the format into yyyymmdd.
+tday1=..
+datestr(datenum(tday1, 'mm/dd/yyyy'), 'yyyymmdd');
+
+% convert the date strings first into cell arrays and
+% then into numeric format.
+tday1=str2double(cellstr(tday1));
+% the last column contains the adjusted close prices.
+adjcls1=num(:, end);
+% read a spreadsheet named "GDX.xls" into MATLAB.
+[num2, txt2]=xlsread('GDX');
+% the first column (starting from the second row) is
+% the trading days in format mm/dd/yyyy.
+tday2=txt2(2:end, 1);
+% convert the format into yyyymmdd.
+tday2=..
+datestr(datenum(tday2, 'mm/dd/yyyy'), 'yyyymmdd');
+Special Topics in Quantitative Trading                     129
+
+% convert the date strings first into cell arrays and
+% then into numeric format.
+tday2=str2double(cellstr(tday2));
+adjcls2=num2(:, end);
+
+% find all the days when either GLD or GDX has data.
+tday=union(tday1, tday2);
+[foo idx idx1]=intersect(tday, tday1);
+
+% combining the two price series
+adjcls=NaN(length(tday), 2);
+adjcls(idx, 1)=adjcls1(idx1);
+
+[foo idx idx2]=intersect(tday, tday2);
+
+adjcls(idx, 2)=adjcls2(idx2);
+
+% days where any one price is missing
+baddata=find(any(~isfinite(adjcls), 2));
+tday(baddata)=[];
+
+adjcls(baddata,:)=[];
+
+vnames=strvcat('GLD', 'GDX');
+
+% run cointegration check using
+% augmented Dickey-Fuller test
+res=cadf(adjcls(:, 1), adjcls(:, 2), 0, 1);
+prt(res, vnames);
+
+% Output from cadf function:
+
+% Augmented DF test for co-integration variables:
+
+   GLD,GDX
+
+% CADF t-statistic     # of lags AR(1) estimate
+
+%  -3.35698533                          1       -0.060892
+
+%
+
+% 1% Crit Value 5% Crit Value 10% Crit Value
+
+%           -3.819                      -3.343  -3.042
+
+% The t-statistic of -3.36 which is in between the
+% 1% Crit Value of -3.819
+% and the 5% Crit Value of -3.343 means that
+% there is a better than 95%
+% probability that these 2 time series are
+% cointegrated.
+130                                                    QUANTITATIVE TRADING
+
+  results=ols(adjcls(:, 1), adjcls(:, 2));
+
+  hedgeRatio=results.beta
+  z=results.resid;
+
+  % A hedgeRatio of 1.6766 was found.
+  % I.e. GLD=1.6766*GDX + z, where z can be
+  % interpreted as the
+  % spread GLD-1.6766*GDX and should be stationary.
+
+  % This should produce a chart similar to Figure 7.4.
+  plot(z);
+
+    In case you think that any two stocks in the same industry group
+would be cointegrating, here is a counterexample: KO (Coca-Cola)
+versus PEP (Pepsi). The same cointegration test as used in Example
+7.1 tells us that there is a less than 90 percent probability that they
+are cointegrated. (You should try it yourself and then compare with
+my program epchan.com/book/example7 3.m.) If you use linear re-
+gression to find the best fit between KO and PEP, the plot of the time
+series will resemble Figure 7.5.
+
+                    50
+
+                    40   Long 1 share of KO
+
+                         Short 1.01 share of PEP
+
+                    30
+
+     Spread (in $)  20
+
+                    10
+
+                    0
+
+                    -10
+
+                    -20
+
+                    -30       19841128       19921027  20000927
+                    19770103                    Date
+
+FIGURE 7.5 A Nonstationary Time Series Formed by the Spread between KO and
+PEP
+Special Topics in Quantitative Trading  131
+
+    If a price series (of a stock, a pair of stocks, or, in general, a port-
+folio of stocks) is stationary, then a mean-reverting strategy is guar-
+anteed to be profitable, as long as the stationarity persists into the
+future (which is by no means guaranteed). However, the converse is
+not true. You don't necessarily need a stationary price series in order
+to have a successful mean-reverting strategy. Even a nonstationary
+price series can have many short-term reversal opportunities that
+one can exploit, as many traders have discovered.
+
+    Many pair traders are unfamiliar with the concepts of station-
+arity and cointegration. But most of them are familiar with correla-
+tion, which superficially seems to mean the same thing as cointe-
+gration. Actually, they are quite different. Correlation between two
+price series actually refers to the correlations of their returns over
+some time horizon (for concreteness, let's say a day). If two stocks
+are positively correlated, there is a good chance that their prices
+will move in the same direction most days. However, having a posi-
+tive correlation does not say anything about the long-term behavior
+of the two stocks. In particular, it doesn't guarantee that the stock
+prices will not grow farther and farther apart in the long run even
+if they do move in the same direction most days. However, if two
+stocks were cointegrated and remain so in the future, their prices
+(weighted appropriately) will be unlikely to diverge. Yet their daily
+(or weekly, or any other time horizon) returns may be quite uncor-
+related.
+
+    As an artificial example of two stocks, A and B, that are coin-
+tegrated but not correlated, see Figure 7.6. Stock B clearly doesn't
+move in any correlated fashion with stock A: Some days they move
+in the same direction, other days the opposite. Most days, stock B
+doesn't move at all. But notice that the spread in stock prices be-
+tween A and B always returns to about $1 after a while.
+
+    Can we find real-life example of this phenomenon? Well, KO
+versus PEP is one. In the program example7 3.m I have shown
+that they do not cointegrate. If, however, you test their daily re-
+turns for correlation, you will find that their correlation of 0.4849
+is indeed statistically significant. The correlation test is presented
+at the end of the example7 3.m program and shown here in
+Example 7.3.
+132                                                    QUANTITATIVE TRADING
+
+              73
+
+                                         Stock A
+
+              72                         Stock B
+
+              71
+
+              70
+
+Daily Prices  69
+
+              68
+
+              67
+
+              66
+
+              65
+
+              64
+
+              63  0  5       10  15  20        25  30  35        40                           45
+
+                                         Days
+
+FIGURE 7.6 Cointegration Is Not Correlation. Stocks A and B are cointegrated but
+not correlated
+
+Example 7.3: Testing the Cointegration versus Correlation
+Properties between KO and PEP
+
+              The cointegration test for KO and PEP is the same as that for GDX and
+              GLD in Example 7.2, so it won't be repeated here. (It is available from
+              epchan.com/book/example7 3.m) The cointegration result shows that the
+              t-statistic for the augmented Dicky-Fuller test is -2.14, larger than the 10
+              percent critical value of -3.038, meaning that there is a less than 90 percent
+              probability that these two time series are cointegrated.
+
+                    The following code fragment, however, tests for correlation between
+              the two time series:
+
+              % A test for correlation.
+              dailyReturns=(adjcls-lag1(adjcls))./lag1(adjcls);
+              [R,P]=corrcoef(dailyReturns(2:end,:));
+
+              %R=
+
+              %
+
+              %      1.0000  0.4849
+                             1.0000
+              %      0.4849
+Special Topics in Quantitative Trading                 133
+
+%
+
+%
+
+%P=
+
+%
+
+%    1  0
+
+%    0  1
+
+% The P value of 0 indicates that the two time series
+% are significantly correlated.
+
+    Stationarity is not limited to the spread between stocks: it can
+also be found in certain currency rates. For example, the Cana-
+dian dollar/Australian dollar (CAD/AUD) cross-currency rate is quite
+stationary, both being commodities currencies. Numerous pairs of
+futures as well as well as fixed-income instruments can be found
+to be cointegrating as well. (The simplest examples of cointegrat-
+ing futures pairs are calendar spreads: long and short futures con-
+tracts of the same underlying commodity but different expiration
+months. Similarly for fixed-income instruments, one can long and
+short bonds by the same issuer but of different maturities.)
+
+FACTOR MODELS
+
+Financial commentators often say something like this: "The current
+market favors value stocks," "The market is focusing on earnings
+growth," or "Investors are paying attention to inflation numbers."
+How do we quantify these and other common drivers of returns?
+
+    There is a well-known framework in quantitative finance called
+factor models (also known as arbitrage pricing theory [APT]) that
+attempts to capture the different drivers of returns such as earnings
+growth rates, interest rate, or the market capitalization of a com-
+pany. These drivers are called factors. Mathematically, we can write
+the excess returns (returns minus risk-free rate) R of N stocks as
+
+                                     R = Xb + u
+134  QUANTITATIVE TRADING
+
+where X is an N × N matrix of factor exposures (also known as
+factor loadings), b is an N vector of factor returns, and u an N vector
+of specific returns. (Every one of these quantities is time dependent,
+but I suppress this explicit dependence for simplicity.)
+
+    The terms factor exposure, factor return, and specific return
+are commonly used in quantitative finance, and it is well worth our
+effort to understand their meanings. Factor returns are the com-
+mon drivers of stock returns, and are therefore independent of a
+particular stock. Factor exposures are the sensitivities to each of
+these common drivers. Any part of a stock's return that cannot be
+explained by these common factor returns is deemed a specific re-
+turn (i.e., specific to a stock and essentially regarded as just random
+noise within the APT framework). Each stock's specific return is as-
+sumed to be uncorrelated to another stock's.
+
+    Let's illustrate these using a simple factor model called the
+Fama-French Three-Factor model (Fama and French, 1992). This
+model postulates that the excess return of a stock depends linearly
+on only three factor exposures: its beta (i.e., its sensitivity to the
+market index), its market capitalization, and its book-to-price ratio.
+These factor exposures are obviously different for each stock and
+for each time period. (Factor exposures are often normalized such
+that the average of the factor exposures within a universe of stocks
+is zero, and the standard deviation is 1.)
+
+    Now that we know how to calculate the factor exposures, what
+about the factor returns and specific returns? We cannot directly
+compute the factor returns and specific returns--we have to infer
+their values by running a multivariate linear regression of the excess
+returns of stocks against the factor exposures. Note that each stock
+represents one data point in this linear regression, and we have to
+either run a separate linear regression for each time period or, if
+we want an average value over many time periods, aggregate the
+values from all these time periods into one training set and run one
+regression against them all.
+
+    If you perform this linear regression fit over many time peri-
+ods for the Fama-French Three-Factor model, you will find that
+the market capitalization factor return is usually negative (meaning
+Special Topics in Quantitative Trading  135
+
+that small-cap stocks usually outperform large-cap stocks), and the
+book-to-price ratio factor return is usually positive (meaning value
+stocks usually outperform growth stocks). And since most stocks
+are positively correlated with the market index, the beta factor re-
+turn is positive as well.
+
+    The Fama-French model has no monopoly on the choice of
+factors. In fact, you can construct as many factors as creativity
+and rationality allow. For example, you can choose return on eq-
+uity as a factor exposure, or the correlation of the stock return
+with the prime rate as another. You can choose any number of
+other economic, fundamental, or technical factors. Whether the
+factor exposures you have chosen are sensible or not will deter-
+mine whether the factor model explains the excess returns of the
+stocks adequately. If the factor exposures (and consequently the
+model as a whole) are poorly chosen, the linear regression fit will
+produce specific returns of significant sizes, and the R2 statistic
+of the fit will be small. According to experts (Grinold and Kahn,
+1999), the R2 statistic of a good factor model with monthly re-
+turns of 1,000 stocks and 50 factors is typically about 30 percent to
+40 percent.
+
+    It may appear that these factor models are only explanatory in
+retrospect--that is, given historical returns and factor exposures,
+we can compute the factor returns of those historical periods. But
+what good are those historical factor returns for our trading? It turns
+out that often factor returns are more stable than individual stock
+returns. In other words, they have momentum. You can therefore
+assume that their values remain unchanged from the current period
+(known from the regression fit) to the next time period. If this is
+the case, then, of course, you can also predict the excess returns,
+as long as the factor exposures are well chosen and therefore the
+time-varying specific returns are not significant.
+
+    Let me clarify one point of potential confusion. Even though
+I stated that factor models can be useful as a predictive model
+(and therefore for trading) only if we assume the factor returns
+have momentum, it does not mean that factor models cannot cap-
+ture mean reversion of stock returns. You can, in fact, construct a
+136  QUANTITATIVE TRADING
+
+factor exposure that captures mean reversion, such as the negative
+of the previous period return. If stock returns are indeed mean re-
+verting, then the corresponding factor return will be positive.
+
+    If you are interested in building a trading model based on funda-
+mental factors, there are a number of vendors from whom you can
+obtain historical factor data:
+
+  r Capital IQ: www.capitaliq.com
+  r Compustat: www.compustat.com
+  r MSCI Barra: www.mscibarra.com
+  r Northfield Information Services: www.northinfo.com
+  r Quantitative Services Group: www.qsg.com
+
+Example 7.4: Principal Component Analysis as an Example of
+Factor Model
+
+The examples of factor exposures I described above are typically economic
+(e.g., interest rates), fundamental (e.g., book-to-price ratio), or technical
+(e.g., previous period's return). To obtain historical values of these factor
+exposures for a large portfolio of stocks so as to backtest a factor model
+is usually quite expensive and not very practical to an independent trader.
+(For those who are fiscally prepared to purchase such data, see the list in
+the main text.) However, there is one kind of factor model that relies on
+nothing more than historical returns to construct. This method is the so-
+called principal component analysis (PCA).
+
+      If we use PCA to construct the factor exposures and factor returns, we
+must assume that the factor exposures are constant (time independent)
+over the estimation period. (This rules out factors that represent mean re-
+version or momentum, since these factor exposures depend on the prior
+period returns.) More importantly, we assume that the factor returns are
+uncorrelated; that is to say, their covariance matrix bbT is diagonal. If we
+use the eigenvectors of the covariance matrix R RT as the columns of the
+matrix X in the APT equation R = X b + u above, we will find via elementary
+linear algebra that bbT is indeed diagonal; and furthermore, the eigenval-
+ues of R RT are none other than the variances of the factor returns b. But
+of course, there is no point to use factor analysis if the number of factors
+is the same as the number of stocks--typically, we can just pick the eigen-
+vectors with the top few eigenvalues to form the matrix X. The number of
+eigenvectors to pick is a parameter that you can adjust to optimize your
+trading model.
+Special Topics in Quantitative Trading  137
+
+      In the following MATLAB program (epchan.com/book/example7 4.m),
+I illustrate a possible trading strategy applying PCA to S&P 600 small-cap
+stocks. It is a strategy based on the assumption that factor returns have
+momentum: They remain constant from the current time period to the next.
+Hence, we can buy the stocks with the highest expected returns based on
+these factors, and short the ones with the lowest expected returns. You will
+find that the average return of this strategy is negative, indicating that this
+assumption may be quite inaccurate, or that specific returns are too large
+for this strategy to work.
+
+clear;
+
+% use lookback days as estimation (training) period
+% for determining factor exposures.
+lookback=252;numFactors=5; % Use only 5 factors
+% for trading strategy, long stocks with topN expected
+1-day returns.
+topN=50;
+% test on SP600 smallcap stocks. (This MATLAB binary
+% input file contains tday, stocks, op, hi, lo, cl
+% arrays.)
+load('IJR 20080114');
+mycls=fillMissingData(cl);
+
+positionsTable=zeros(size(cl));
+
+% note the rows of dailyret are the observations at
+% different time periods
+dailyret= (mycls-lag1(mycls))/lag1(mycls);
+for t=lookback+1:length(tday)
+
+       % here the columns of R are the different
+       % observations.
+ R=dailyret(t-lookback+1:t,:)';
+       % avoid any stocks with missing returns
+hasData=find(all(isfinite(R), 2));
+       R=R(hasData,:);
+
+       avgR=smartmean(R, 2);
+       % subtract mean from returns
+ R=R-repmat(avgR, [1 size(R, 2)]);
+       % compute covariance matrix, with observations in
+       % rows.
+ covR=smartcov(R');
+       % X is the factor exposures matrix, B the
+138  QUANTITATIVE TRADING
+
+       % variances of factor returns. Use the
+       % eigenvectors of covR as column vectors
+       % for X.
+       [X, B]=eig(covR);
+       % Retain only numFactors
+ X(:, 1:size(X, 2)-numFactors)=[];
+       % b are the factor returns for time period t-1
+       % to t.
+ results=ols(R(:, end), X); b=results.beta;
+
+       % Rexp is the expected return for next period
+       % assuming factor returns remain constant.
+ Rexp=avgR+X*b;
+       [foo idxSort]=sort(Rexp, 'ascend');
+
+       % short topN stocks with lowest expected returns
+       positionsTable(t, hasData(idxSort(1:topN)))=-1;
+     % buy topN stocks with highest expected returns
+     positionsTable(t, ..
+     hasData(idxSort(end-topN+1:end)))=1;
+end
+
+% compute daily returns of trading strategy
+ret=..
+smartsum(backshift(1, positionsTable).*dailyret, 2);
+% compute annualized average return of
+% trading strategy
+avgret=smartmean(ret)*252;% A very poor return!
+% avgret =
+%
+% -1.8099
+
+      This program made use of a function smartcov, which computes a co-
+variance matrix based on the daily return vectors of many stocks. In con-
+trast to the MATLAB built-in function cov, it ignores days with no returns
+(i.e., those with NaN values.)
+
+function y = smartcov(x)
+% Covariance n of finite elements.
+% Rows of observations, columns of variables
+% Normalizes by N, not N-1
+
+y=NaN(size(x, 2), size(x, 2));
+xc=NaN(size(x));
+
+goodstk=find(~all(isnan(x), 1));
+Special Topics in Quantitative Trading               139
+
+xc(:, goodstk)=..
+x(:, goodstk)-repmat(smartmean(x(:, goodstk),1), ..
+[size(x, 1) 1]); % Remove mean
+
+for m=1:length(goodstk)
+       for n=m:length(goodstk)
+              y(goodstk(m), goodstk(n))=..
+                    smartmean(xc(:, goodstk(m)).*..
+                  xc(:, goodstk(n)));
+              y(goodstk(n), goodstk(m))=..
+                  y(goodstk(m), goodstk(n));
+       end
+
+end
+
+    How good are the performances of factor models in real trad-
+ing? Naturally, it mostly depends on which factor model we are
+looking at. But one can make a general observation that factor mod-
+els that are dominated by fundamental and macroeconomic factors
+have one major drawback--they depend on the fact that investors
+persist in using the same metric to value companies. This is just an-
+other way of saying that the factor returns must have momentum for
+factor models to work.
+
+    For example, even though the value (book-to-price ratio) factor
+returns are usually positive, there are periods of time when investors
+prefer growth stocks such as during the Internet bubble in the late
+1990s, and in August and December of 2007. As The Economist
+noted, one reason growth stocks were back in favor in 2007 is the
+simple fact that their price premium over value stocks has narrowed
+significantly (Economist, 2007b). Another reason is that as the U.S.
+economy slowed, investors increasingly opted for companies that
+still managed to generate increasing earnings instead of those that
+were hurt by the recessionary economy.
+
+    Therefore, it is not uncommon for factor models to experi-
+ence steep drawdown during the times when investors' valuation
+method shifts, even if only for a short duration. But then, this prob-
+lem is common to practically any trading model that holds stocks
+overnight.
+140  QUANTITATIVE TRADING
+
+WHAT IS YOUR EXIT STRATEGY?
+
+While entry signals are very specific to each trading strategy, there
+isn't usually much variety in the way exit signals are generated. They
+are based on one of these:
+
+  r A fixed holding period
+  r A target price or profit cap
+  r The latest entry signals
+  r A stop price
+
+    A fixed holding period is the default exit strategy for any trad-
+ing strategy, whether it is a momentum model, a reversal model, or
+some kind of seasonal trading strategy, which can be either momen-
+tum or reversal based. (More on this later.) I said before that one of
+the ways momentum is generated is the slow diffusion of informa-
+tion. In this case, the process has a finite lifetime. The average value
+of this finite lifetime determines the optimal holding period, which
+can usually be discovered in a backtest.
+
+    One word of caution on determining the optimal holding period
+of a momentum model: As I said before, this optimal period typically
+decreases due to the increasing speed of the diffusion of information
+and the increasing number of traders who catch on to this trading
+opportunity. Hence, a momentum model that has worked well with a
+holding period equal to a week in the backtest period may work only
+with a one-day holding period now. Worse, the whole strategy may
+become unprofitable a year into the future. Also, using a backtest of
+the trading strategy to determine holding period can be fraught with
+data-snooping bias, since the number of historical trades may be
+limited. Unfortunately, for a momentum strategy where the trades
+are triggered by news or events, there are no other alternatives. For
+a mean-reverting strategy, however, there is a more statistically ro-
+bust way to determine the optimal holding period that does not de-
+pend on the limited number of actual trades.
+
+    The mean reversion of a time series can be modeled by an
+equation called the Ornstein-Uhlenbeck formula (Unlenbeck, 1930).
+Let's say we denote the mean-reverting spread (long market value
+Special Topics in Quantitative Trading  141
+
+minus short market value) of a pair of stocks as z(t). Then we can
+write
+
+                         dz(t) = -(z(t) - µ)dt + dW
+
+where µ is the mean value of the prices over time, and dW is sim-
+ply some random Gaussian noise. Given a time series of the daily
+spread values, we can easily find  (and µ) by performing a linear
+regression fit of the daily change in the spread dz against the spread
+itself. Mathematicians tell us that the average value of z(t) follows
+an exponential decay to its mean µ, and the half-life of this expo-
+nential decay is equal to ln(2)/ , which is the expected time it takes
+for the spread to revert to half its initial deviation from the mean.
+This half-life can be used to determine the optimal holding period
+for a mean-reverting position. Since we can make use of the entire
+time series to find the best estimate of , and not just on the days
+where a trade was triggered, the estimate for the half-life is much
+more robust than can be obtained directly from a trading model. In
+Example 7.5, I demonstrate this method of estimating the half-life of
+mean reversion using our favorite spread between GLD and GDX.
+
+  Example 7.5: Calculation of the Half-Life of a Mean-Reverting
+  Time Series
+
+   We can use the mean-reverting spread between GLD and GDX in Example
+   7.2 to illustrate the calculation of the half-life of its mean reversion. The
+   MATLAB code is available at epchan.com/book/example7 5.m. (The first
+   part of the program is the same as example7 2.m.)
+
+  % === Insert example7 2.m in the beginning here ===
+
+  prevz=backshift(1, z); % z at a previous time-step
+  dz=z-prevz;
+  dz(1)=[];
+  prevz(1)=[];
+  % assumes dz=theta*(z-mean(z))dt+w,
+  % where w is error term
+  results=ols(dz, prevz-mean(prevz));theta=results.beta;
+
+  halflife=-log(2)/theta
+142  QUANTITATIVE TRADING
+
+% halflife =
+%
+% 10.0037
+
+The program finds that the half-life for mean reversion of the GLD-GDX is
+about 10 days, which is approximately how long you should expect to hold
+this spread before it becomes profitable.
+
+    If you believe that your security is mean reverting, then you also
+have a ready-made target price--the mean value of the historical
+prices of the security, or µ in the Ornstein-Uhlenbeck formula. This
+target price can be used together with the half-life as exit signals
+(exit when either criterion is met).
+
+    Target prices can also be used in the case of momentum models
+if you have a fundamental valuation model of a company. But as
+fundamental valuation is at best an inexact science, target prices
+are not as easily justified in momentum models as in mean-reverting
+models. If it were that easy to profit using target prices based on
+fundamental valuation, all investors have to do is to check out stock
+analysts' reports every day to make their investment decisions.
+
+    Suppose you are running a trading model, and you entered into
+a position based on its signal. Some time later, you run this model
+again. If you find that the sign of this latest signal is opposite to your
+original position (e.g., the latest signal is "buy" when you have an
+existing short position), then you have two choices. Either you sim-
+ply use the latest signal to exit the existing position and become flat
+or you can exit the existing position and then enter into an opposite
+position. Either way, you have used a new, more recent entry signal
+as an exit signal for your existing position. This is a common way
+to generate exit signals when a trading model can be run in shorter
+intervals than the optimal holding period.
+
+    Notice that this strategy of exiting a position based on running
+an entry model also tells us whether a stop-loss strategy is recom-
+mended. In a momentum model, when a more recent entry signal
+is opposite to an existing position, it means that the direction of
+momentum has changed, and thus a loss (or more precisely, a draw-
+down) in your position has been incurred. Exiting this position now
+Special Topics in Quantitative Trading  143
+
+is almost akin to a stop loss. However, rather than imposing an ar-
+bitrary stop-loss price and thus introducing an extra adjustable pa-
+rameter, which invites data-snooping bias, exiting based on the most
+recent entry signal is clearly justified based on the rationale for the
+momentum model.
+
+    Consider a parallel situation when we are running a reversal
+model. If an existing position has incurred a loss, running the re-
+versal model again will simply generate a new signal with the same
+sign. Thus, a reversal model for entry signals will never recommend
+a stop loss. (On the contrary, it can recommend a target price or
+profit cap when the reversal has gone so far as to hit the opposite
+entry threshold.) And, indeed, it is much more reasonable to exit
+a position recommended by a mean-reversal model based on hold-
+ing period or profit cap than stop loss, as a stop loss in this case
+often means you are exiting at the worst possible time. (The only
+exception is when you believe that you have suddenly entered into
+a momentum regime because of recent news.)
+
+SEASONAL TRADING STRATEGIES
+
+This type of trading strategy is also called the calendar effect. Gen-
+erally, these strategies recommend that you buy or sell certain secu-
+rities at a fixed date of every year, and close the position at another
+fixed date. These strategies have been applied to both equity and
+commodity futures markets. However, from my own experience,
+much of the seasonality in equity markets has weakened or even
+disappeared in recent years, perhaps due to the widespread knowl-
+edge of this trading opportunity, whereas some seasonal trades in
+commodity futures are still profitable.
+
+    The most famous seasonal trade in equities is called the January
+effect. There are actually many versions of this trade. One ver-
+sion states that small-cap stocks that had the worst returns in the
+previous calendar year will have higher returns in January than
+small-cap stocks that had the best returns (Singal, 2006). The ra-
+tionale for this is that investors like to sell their losers in Decem-
+ber to benefit from tax losses, which creates additional downward
+

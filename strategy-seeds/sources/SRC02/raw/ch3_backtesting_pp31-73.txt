@@ -1,0 +1,1735 @@
+                                    CHAPTER 2
+
+      Fishing for Ideas
+
+                     Where Can We Find
+                       Good Strategies?
+
+T his is the surprise: Finding a trading idea is actually not the
+       hardest part of building a quantitative trading business. There
+       are hundreds, if not thousands, of trading ideas that are in
+the public sphere at any time, accessible to anyone at little or no
+cost. Many authors of these trading ideas will tell you their com-
+plete methodologies in addition to their backtest results. There are
+finance and investment books, newspapers and magazines, main-
+stream media web sites, academic papers available online or in the
+nearest public library, trader forums, blogs, and on and on. Some of
+the ones I find valuable are listed in Table 2.1, but this is just a small
+fraction of what is available out there.
+
+     In the past, because of my own academic bent, I regularly
+perused the various preprints published by business school pro-
+fessors or downloaded the latest online finance journal articles
+to scan for good prospective strategies. In fact, the first strategy
+I traded when I became independent was based on such academic
+research. (It was a version of the PEAD strategy referenced in
+Chapter 7.) Increasingly, however, I have found that many strate-
+gies described by academics are either too complicated, out of date
+(perhaps the once-profitable strategies have already lost their power
+due to competition), or require expensive data to backtest (such as
+historical fundamental data). Furthermore, many of these academic
+
+                                                                                                9
+10                                                           QUANTITATIVE TRADING
+
+TABLE 2.1 Sources of Trading Ideas         URL
+
+Type                                       www.hbs.edu/research/research
+                                              .html
+Academic
+Business schools' finance professors' web  www.ssrn.com
+                                           www.nber.org
+   sites                                   www.ieor.columbia.edu/seminars/
+Social Science Research Network
+National Bureau of Economic Research          financialengineering
+Business schools' quantitative finance     www.nytimes.com
+
+   seminars                                www.economist.com
+Mark Hulbert's column in the New York
+                                           finance.yahoo.com
+   Times' Sunday business section          www.TradingMarkets.com
+Buttonwood column in the Economist         www.SeekingAlpha.com
+                                           www.TheStreet.com
+   magazine's finance section              www.TheKirkReport.com
+                                           www.aleablog.com
+Financial web sites and blogs              www.AbnormalReturns.com
+Yahoo! Finance                             www.brettsteenbarger.com
+TradingMarkets                             epchan.blogspot.com
+Seeking Alpha
+TheStreet.com                              www.Elitetrader.com
+The Kirk Report                            www.wealth-lab.com
+Alea Blog
+Abnormal Returns                           www.sfomag.com
+Brett Steenbarger Trading Psychology
+My own!
+
+Trader forums
+Elite Trader
+Wealth-Lab
+
+Newspaper and magazines
+Stocks, Futures and Options magazine
+
+strategies work only on small-cap stocks, whose illiquidity may ren-
+der actual trading profits far less impressive than their backtests
+would suggest.
+
+    This is not to say that you will not find some gems if you are
+persistent enough, but I have found that many traders' forums or
+blogs may suggest simpler strategies that are equally profitable. You
+might be skeptical that people would actually post truly profitable
+strategies in the public space for all to see. After all, doesn't this
+disclosure increase the competition and decrease the profitability
+of the strategy? And you would be right: Most ready-made strategies
+that you may find in these places actually do not withstand careful
+Fishing for Ideas  11
+
+backtesting. Just like the academic studies, the strategies from
+traders' forums may have worked only for a little while, or they
+work for only a certain class of stocks, or they work only if you
+don't factor in transaction costs. However, the trick is that you
+can often modify the basic strategy and make it profitable. (Many
+of these caveats as well as a few common variations on a basic
+strategy will be examined in detail in Chapter 3.)
+
+    For example, someone once suggested a strategy to me that was
+described in Wealth-Lab (see Table 2.1), where it was claimed that it
+had a high Sharpe ratio. When I backtested the strategy, it turned out
+not to work as well as advertised. I then tried a few simple modifica-
+tions, such as decreasing the holding period and entering and exiting
+at different times than suggested, and was able to turn this strategy
+into one of my main profit centers. If you are diligent and creative
+enough to try the multiple variations of a basic strategy, chances are
+you will find one of those variations that is highly profitable.
+
+    When I left the institutional money management industry to
+trade on my own, I worried that I would be cut off from the flow
+of trading ideas from my colleagues and mentors. But then I found
+out that one of the best ways to gather and share trading ideas is
+to start your own trading blog--for every trading "secret" that you
+divulge to the world, you will be rewarded with multiple ones from
+your readers. (The person who suggested the Wealth-Lab strategy to
+me was a reader who works 12 time zones away. If it weren't for my
+blog, there was little chance that I would have met him and bene-
+fited from his suggestion.) In fact, what you thought of as secrets
+are more often than not well-known ideas to many others! What
+truly make a strategy proprietary and its secrets worth protecting
+are the tricks and variations that you have come up with, not the
+plain vanilla version.
+
+    Furthermore, your bad ideas will quickly get shot down by your
+online commentators, thus potentially saving you from major losses.
+After I glowingly described a seasonal stock-trading strategy on
+my blog that was developed by some finance professors, a reader
+promptly went ahead and backtested that strategy and reported that
+it didn't work. (See my blog entry, "Seasonal Trades in Stocks,"
+at epchan.blogspot.com/2007/11/seasonal-trades-in-stocks.html and
+12  QUANTITATIVE TRADING
+
+the reader's comment therein. This strategy is described in more de-
+tail in Example 7.6.) Of course, I would not have traded this strategy
+without backtesting it on my own anyway, and indeed, my subse-
+quent backtest confirmed his findings. But the fact that my reader
+found significant flaws with the strategy is important confirmation
+that my own backtest is not erroneous.
+
+    All in all, I have found that it is actually easier to gather and
+exchange trading ideas as an independent trader than when I was
+working in the secretive hedge fund world in New York. (When I
+worked at Millennium Partners--a multibillion-dollar hedge fund on
+Fifth Avenue--one trader ripped a published paper out of the hands
+of his programmer, who happened to have picked it up from the
+trader's desk. He was afraid the programmer might learn his "se-
+crets.") That may be because people are less wary of letting you
+know their secrets when they think you won't be obliterating their
+profits by allocating $100 million to that strategy.
+
+    No, the difficulty is not the lack of ideas. The difficulty is to de-
+velop a taste for which strategy is suitable for your personal circum-
+stances and goals, and which ones look viable even before you de-
+vote the time to diligently backtest them. This taste for prospective
+strategies is what I will try to convey in this chapter.
+
+HOW TO IDENTIFY A STRATEGY THAT
+SUITS YOU
+
+Whether a strategy is viable often does not have anything to do with
+the strategy itself--it has to do with you. Here are some considera-
+tions.
+
+Your Working Hours
+
+Do you trade only part time? If so, you would probably want to con-
+sider only strategies that hold overnight and not the intraday strate-
+gies. Otherwise, you may have to fully automate your strategies (see
+Chapter 5 on execution) so that they can run on autopilot most of
+the time and alert you only when problems occur.
+Fishing for Ideas  13
+
+    When I was working full time for others and trading part time
+for myself, I traded a simple strategy in my personal account that
+required entering or adjusting limit orders on a few exchange-traded
+funds (ETFs) once a day, before the market opened. Then, when I
+first became independent, my level of automation was still relatively
+low, so I considered only strategies that require entering orders once
+before the market opens and once before the close. Later on, I added
+a program that can automatically scan real-time market data and
+transmit orders to my brokerage account throughout the trading day
+when certain conditions are met. So trading remains a "part-time"
+pursuit for me, which is partly why I want to trade quantitatively in
+the first place.
+
+Your Programming Skills
+
+Are you good at programming? If you know some programming
+languages such as Visual Basic or even Java, C#, or C++, you can
+explore high-frequency strategies, and you can also trade a large
+number of securities. Otherwise, settle for strategies that trade only
+once a day, or trade just a few stocks, futures, or currencies. (This
+constraint may be overcome if you don't mind the expense of hiring
+a software contractor. Again, see Chapter 5 for more details.)
+
+Your Trading Capital
+
+Do you have a lot of capital for trading as well as expenditure on
+infrastructure and operation? In general, I would not recommend
+quantitative trading for an account with less than $50,000 capi-
+tal. Let's say the dividing line between a high- versus low-capital
+account is $100,000. Capital availability affects many choices; the
+first is whether you should open a retail brokerage account or a
+proprietary trading account (more on this in Chapter 4 on setting
+up your business). For now, I will consider this constraint with
+strategy choices in mind.
+
+    With a low-capital account, we need to find strategies that can
+utilize the maximum leverage available. (Of course, getting a higher
+leverage is beneficial only if you have a consistently profitable
+14  QUANTITATIVE TRADING
+
+strategy.) Trading futures, currencies, and options can offer you
+higher leverage than stocks; intraday positions allow a Regulation
+T leverage of 4, while interday (overnight) positions allow only a
+leverage of 2, requiring double the amount of capital for a portfo-
+lio of the same size. Finally, capital (or leverage) availability de-
+termines whether you should focus on directional trades (long or
+short only) or dollar-neutral trades (hedged or pair trades). A dollar-
+neutral portfolio (meaning the market value of the long positions
+equals the market value of the short positions) or market-neutral
+portfolio (meaning the beta of the portfolio with respect to a mar-
+ket index is close to zero, where beta measures the ratio between
+the expected returns of the portfolio and the expected returns of
+the market index) require twice the capital or leverage of a long- or
+short-only portfolio. So even though a hedged position is less risky
+than an unhedged position, the returns generated are correspond-
+ingly smaller and may not meet your personal requirements.
+
+    Capital availability also imposes a number of indirect con-
+straints. It affects how much you can spend on various infrastruc-
+ture, data, and software. For example, if you have low trading capi-
+tal, your online brokerage will not be likely to supply you with real-
+time market data for too many stocks, so you can't really have a
+strategy that requires real-time market data over a large universe of
+stocks. (You can, of course, subscribe to a third-party market data
+vendor, but then the extra cost may not be justifiable if your trad-
+ing capital is low.) Similarly, clean historical stock data with high
+frequency costs more than historical daily stock data, so a high-
+frequency stock-trading strategy may not be feasible with small cap-
+ital expenditure. For historical stock data, there is another quality
+that may be even more important than their frequencies: whether
+the data are free of survivorship bias. I will define survivorship bias
+in the following section. Here, we just need to know that historical
+stock data without survivorship bias are much more expensive than
+those that have such a bias. Yet if your data have survivorship bias,
+the backtest result can be unreliable.
+
+    The same consideration applies to news--whether you can af-
+ford a high-coverage, real-time news source such as Bloomberg de-
+termines whether a news-driven strategy is a viable one. Same for
+Fishing for Ideas                                             15
+
+fundamental (i.e., companies' financial) data--whether you can af-
+ford a good historical database with fundamental data on companies
+determines whether you can build a strategy that relies on such data.
+
+    Table 2.2 lists how capital (whether for trading or expenditure)
+constraint can influence your many choices.
+
+    This table is, of course, not a set of hard-and-fast rules, just some
+issues to consider. For example, if you have low capital but opened
+an account at a proprietary trading firm, then you will be free of
+many of the considerations above (though not expenditure on in-
+frastructure). I started my life as an independent quantitative trader
+with $100,000 at a retail brokerage account (I chose Interactive Bro-
+kers), and I traded only directional, intraday stock strategies at first.
+But when I developed a strategy that sometimes requires much more
+leverage in order to be profitable, I signed up as a member of a pro-
+prietary trading firm as well. (Yes, you can have both, or more, ac-
+counts simultaneously. In fact, there are good reasons to do so if
+only for the sake of comparing their execution speeds and access to
+liquidity. See "Choosing a Brokerage or Proprietary Trading Firm"
+in Chapter 4.)
+
+    Despite my frequent admonitions here and elsewhere to beware
+of historical data with survivorship bias, when I first started I down-
+loaded only the split-and-dividend-adjusted Yahoo! Finance data
+
+TABLE 2.2 How Capital Availability Affects Your Many Choices
+
+Low Capital                              High Capital
+
+Proprietary trading firm's membership    Retail brokerage account
+Futures, currencies, options             Everything, including stocks
+Intraday                                 Both intra- and interday (overnight)
+Directional                              Directional or market neutral
+Small stock universe for intraday        Large stock universe for intraday
+
+   trading                                  trading
+Daily historical data with survivorship  High-frequency historical data,
+
+   bias                                     survivorship bias­free
+Low-coverage or delayed news source      High-coverage, real-time news source
+No historical news database              Survivorship bias­free historical news
+
+No historical fundamental data on           database
+   stocks                                Survivorship bias­free historical
+
+                                            fundamental data on stocks
+16  QUANTITATIVE TRADING
+
+using the download program from HQuotes.com (more on the dif-
+ferent databases and tools in Chapter 3). This database is not sur-
+vivorship bias­free--but more than two years later, I am still using
+it for most of my backtesting! In fact, a trader I know, who each
+day trades more than 10 times my account size, typically uses such
+biased data for his backtesting, and yet his strategies are still prof-
+itable. How can this be possible? Probably because these are intra-
+day strategies. It seems that the only people I know who are willing
+and able to afford survivorship bias­free data are those who work in
+money management firms trading tens of millions of dollars or more
+(that includes my former self). So, you see, as long as you are aware
+of the limitations of your tools and data, you can cut many corners
+and still succeed.
+
+    Though futures afford you high leverage, some futures contracts
+have such a large size that it would still be impossible for a small ac-
+count to trade. For instance, though the platinum future contract on
+the New York Mercantile Exchange (NYMEX) has a margin require-
+ment of only $8,100, its nominal value is currently about $100,000.
+Furthermore, its volatility is such that a 6 percent daily move is
+not too rare, which translates to a $6,000 daily profit-and-loss (P&L)
+swing in your account due to just this one contract. (Believe me,
+I used to have a few of these contracts in my account, and it is a
+sickening feeling when they move against you.) In contrast, ES, the
+E-mini S&P 500 future on the Chicago Mercantile Exchange (CME,
+soon to be merged with NYMEX), has a nominal value of about
+$67,500, and a 6 percent or larger daily move happened only twice in
+the last 15 years. That's why its margin requirement is $4,500, only
+55 percent that of the platinum contract.
+
+Your Goal
+
+Most people who choose to become traders want to earn a steady
+(hopefully increasing) monthly, or at least quarterly, income. But
+you may be independently wealthy, and long-term capital gain is all
+that matters to you. The strategies to pursue for short-term income
+versus long-term capital gain are distinguished mainly by their hold-
+ing periods. Obviously, if you hold a stock for an average of one
+Fishing for Ideas  17
+
+year, you won't be generating much monthly income (unless you
+started trading a while ago and have launched a new subportfolio
+every month, which you proceed to hold for a year--that is, you
+stagger your portfolios.) More subtly, even if your strategy holds a
+stock only for a month on average, your month-to-month profit fluc-
+tuation is likely to be fairly large (unless you hold hundreds of dif-
+ferent stocks in your portfolio, which can be a result of staggering
+your portfolios), and therefore you cannot count on generating in-
+come on a monthly basis. This relationship between holding period
+(or, conversely, the trading frequency) and consistency of returns
+(that is, the Sharpe ratio or, conversely, the drawdown) will be dis-
+cussed further in the following section. The upshot here is that the
+more regularly you want to realize profits and generate income, the
+shorter your holding period should be.
+
+    There is a misconception aired by some investment advisers,
+though, that if your goal is to achieve maximum long-term capital
+growth, then the best strategy is a buy-and-hold one. This notion
+has been shown to be mathematically false. In reality, maximum
+long-term growth is achieved by finding a strategy with the maxi-
+mum Sharpe ratio (defined in the next section), provided that you
+have access to sufficiently high leverage. Therefore, comparing a
+short-term strategy with a very short holding period, small annual
+return, but very high Sharpe ratio, to a long-term strategy with a
+long holding period, high annual return, but lower Sharpe ratio, it is
+still preferable to choose the short-term strategy even if your goal is
+long-term growth, barring tax considerations and the limitation on
+your margin borrowing (more on this surprising fact later in Chapter
+6 on money and risk management).
+
+A TASTE FOR PLAUSIBLE STRATEGIES
+AND THEIR PITFALLS
+
+Now, let's suppose that you have read about several potential strate-
+gies that fit your personal requirements. Presumably, someone else
+has done backtests on these strategies and reported that they have
+great historical returns. Before proceeding to devote your time to
+18                       QUANTITATIVE TRADING
+
+performing a comprehensive backtest on this strategy (not to men-
+tion devoting your capital to actually trading this strategy), there
+are a number of quick checks you can do to make sure you won't be
+wasting your time or money.
+
+How Does It Compare with a Benchmark and
+How Consistent Are Its Returns?
+
+This point seems obvious when the strategy in question is a stock-
+trading strategy that buys (but not shorts) stocks. Everybody seems
+to know that if a long-only strategy returns 10 percent a year, it is
+not too fantastic because investing in an index fund will generate as
+much, if not better, return on average. However, if the strategy is a
+long-short dollar-neutral strategy (i.e., the portfolio holds long and
+short positions with equal capital), then 10 percent is quite a good
+return, because then the benchmark of comparison is not the market
+index, but a riskless asset such as the yield of the three-month U.S.
+Treasury bill (which at the time of this writing is about 4 percent).
+
+    Another issue to consider is the consistency of the returns gen-
+erated by a strategy. Though a strategy may have the same average
+return as the benchmark, perhaps it delivered positive returns every
+month while the benchmark occasionally suffered some very bad
+months. In this case, we would still deem the strategy superior. This
+leads us to consider the information ratio or Sharpe ratio (Sharpe,
+1994), rather than returns, as the proper performance measurement
+of a quantitative trading strategy.
+
+    Information ratio is the measure to use when you want to assess
+a long-only strategy. It is defined as
+
+    Information Ratio =  Average of Excess Returns
+
+                         Standard Deviation of Excess Returns
+
+where
+
+    Excess Returns = Portfolio Returns - Benchmark Returns
+
+    Now the benchmark is usually the market index to which the
+securities you are trading belong. For example, if you trade only
+Fishing for Ideas  19
+
+small-cap stocks, the market index should be the Standard & Poor's
+small-cap index or the Russell 2000 index, rather than the S&P 500.
+If you are trading just gold futures, then the market index should be
+gold spot price, rather than a stock index.
+
+    The Sharpe ratio is actually a special case of the information
+ratio, suitable when we have a dollar-neutral strategy, so that the
+benchmark to use is always the risk-free rate. In practice, most
+traders use the Sharpe ratio even when they are trading a directional
+(long or short only) strategy, simply because it facilitates compar-
+ison across different strategies. Everyone agrees on what the risk-
+free rate is, but each trader can use a different market index to come
+up with their own favorite information ratio, rendering comparison
+difficult.
+
+    (Actually, there are some subtleties in calculating the Sharpe ra-
+tio related to whether and how to subtract the risk-free rate, how to
+annualize your Sharpe ratio for ease of comparison, and so on. I will
+cover these subtleties in the next chapter, which will also contain
+an example on how to compute the Sharpe ratio for a dollar-neutral
+and a long-only strategy.)
+
+    If the Sharpe ratio is such a nice performance measure across
+different strategies, you may wonder why it is not quoted more of-
+ten instead of returns. In fact, when a colleague and I went to SAC
+Capital Advisors (assets under management: $14 billion) to pitch a
+strategy, their then head of risk management said to us: "Well, a high
+Sharpe ratio is certainly nice, but if you can get a higher return in-
+stead, we can all go buy bigger houses with our bonuses!" This rea-
+soning is quite wrong: A higher Sharpe ratio will actually allow you
+to make more profits in the end, since it allows you to trade at a
+higher leverage. It is the leveraged return that matters in the end,
+not the nominal return of a trading strategy. For more on this, see
+Chapter 6 on money and risk management.
+
+    (And no, our pitching to SAC was not successful, but for rea-
+sons quite unrelated to the returns of the strategy. In any case,
+at that time neither my colleague nor I were familiar enough with
+the mathematical connection between the Sharpe ratio and lever-
+aged returns to make a proper counterargument to that head of risk
+management.)
+20                                               QUANTITATIVE TRADING
+
+    Now that you know what a Sharpe ratio is, you may want to
+find out what kind of Sharpe ratio your candidate strategies have.
+Often, they are not reported by the authors of that strategy, and you
+will have to e-mail them in private for this detail. And often, they
+will oblige, especially if the authors are finance professors; but if
+they refuse, you have no choice but to perform the backtest yourself.
+Sometimes, however, you can still make an educated guess based on
+the flimsiest of information:
+
+r If a strategy trades only a few times a year, chances are its
+  Sharpe ratio won't be high. This does not prevent it from being
+  part of your multistrategy trading business, but it does disqualify
+  the strategy from being your main profit center.
+
+r If a strategy has deep (e.g., more than 10 percent) or lengthy
+  (e.g., four or more months) drawdowns, it is unlikely that it will
+  have a high Sharpe ratio. I will explain the concept of drawdown
+  in the next section, but you can just visually inspect the equity
+  curve (which is also the cumulative profit-and-loss curve, assum-
+  ing no redemption or cash infusion) to see if it is very bumpy
+  or not. Any peak-to-trough of that curve is a drawdown. (See
+  Figure 2.1 for an example.)
+
+                              Maximum
+                              drawdown duration
+
+                                                 A drawdown
+
+    Equity in $  3x104
+
+                 2x104        Maximum
+                 1x104        drawdown
+
+    2000                2001            2002     2003 Time
+
+FIGURE 2.1 Drawdown, Maximum Drawdown, and Maximum Drawdown
+Duration
+Fishing for Ideas  21
+
+    As a rule of thumb, any strategy that has a Sharpe ratio of less
+than 1 is not suitable as a stand-alone strategy. For a strategy that
+achieves profitability almost every month, its (annualized) Sharpe
+ratio is typically greater than 2. For a strategy that is profitable al-
+most every day, its Sharpe ratio is usually greater than 3. I will show
+you how to calculate Sharpe ratios for various strategies in Exam-
+ples 3.4, 3.6, and 3.7 in the next chapter.
+
+How Deep and Long Is the Drawdown?
+
+A strategy suffers a drawdown whenever it has lost money recently.
+A drawdown at a given time t is defined as the difference between
+the current equity value (assuming no redemption or cash infusion)
+of the portfolio and the global maximum of the equity curve occur-
+ring on or before time t. The maximum drawdown is the difference
+between the global maximum of the equity curve with the global
+minimum of the curve after the occurrence of the global maximum
+(time order matters here: The global minimum must occur later
+than the global maximum). The global maximum is called the "high
+watermark." The maximum drawdown duration is the longest it
+has taken for the equity curve to recover losses.
+
+    More often, drawdowns are measured in percentage terms, with
+the denominator being the equity at the high watermark, and the nu-
+merator being the loss of equity since reaching the high watermark.
+
+    Figure 2.1 illustrates a typical drawdown, the maximum draw-
+down, and the maximum drawdown duration of an equity curve.
+I will include a tutorial in Example 3.5 on how to compute these
+quantities from a table of daily profits and losses using either Excel
+or MATLAB. One thing to keep in mind: The maximum drawdown
+and the maximum drawdown duration do not typically overlap over
+the same period.
+
+    Defined mathematically, drawdown seems abstract and remote.
+However, in real life there is nothing more gut-wrenching and
+emotionally disturbing to suffer than a drawdown if you're a trader.
+(This is as true for independent traders as for institutional ones.
+When an institutional trading group is suffering a drawdown, every-
+body seems to feel that life has lost meaning and spend their days
+22  QUANTITATIVE TRADING
+
+dreading the eventual shutdown of the strategy or maybe even the
+group as a whole.) It is therefore something we would want to mini-
+mize. You have to ask yourself, realistically, how deep and how long
+a drawdown will you be able to tolerate and not liquidate your port-
+folio and shut down your strategy? Would it be 20 percent and three
+months, or 10 percent and one month? Comparing your tolerance
+with the numbers obtained from the backtest of a candidate strat-
+egy determines whether that strategy is for you.
+
+    Even if the author of the strategy you read about did not pub-
+lish the precise numbers for drawdowns, you should still be able to
+make an estimate from a graph of its equity curve. For example, in
+Figure 2.1, you can see that the longest drawdown goes from around
+February 2001 to around October 2002. So the maximum drawdown
+duration is about 20 months. Also, at the beginning of the maximum
+drawdown, the equity was about $2.3 × 104, and at the end, about
+$0.5 × 104. So the maximum drawdown is about $1.8 × 104.
+
+How Will Transaction Costs Affect the Strategy?
+
+Every time a strategy buys and sells a security, it incurs a trans-
+action cost. The more frequent it trades, the larger the impact of
+transaction costs will be on the profitability of the strategy. These
+transaction costs are not just due to commission fees charged by
+the broker. There will also be the cost of liquidity--when you buy
+and sell securities at their market prices, you are paying the bid-ask
+spread. If you buy and sell securities using limit orders, however,
+you avoid the liquidity costs but incur opportunity costs. This is be-
+cause your limit orders may not be executed, and therefore you may
+miss out on the potential profits of your trade. Also, when you buy
+or sell a large chunk of securities, you will not be able to complete
+the transaction without impacting the prices at which this transac-
+tion is done. (Sometimes just displaying a bid to buy a large number
+of shares for a stock can move the prices higher without your having
+bought a single share yet!) This effect on the market prices due to
+your own order is called market impact, and it can contribute to a
+large part of the total transaction cost when the security is not very
+liquid.
+Fishing for Ideas  23
+
+    Finally, there can be a delay between the time your program
+transmits an order to your brokerage and the time it is executed
+at the exchange, due to delays on the Internet or various software-
+related issues. This delay can cause a "slippage," the difference be-
+tween the price that triggers the order and the execution price. Of
+course, this slippage can be of either sign, but on average it will be
+a cost rather than a gain to the trader. (If you find that it is a gain on
+average, you should change your program to deliberately delay the
+transmission of the order by a few seconds!)
+
+    Transaction costs vary widely for different kinds of securities.
+You can typically estimate it by taking half the average bid-ask
+spread of a security and then adding the commission if your or-
+der size is not much bigger than the average sizes of the best bid
+and offer. If you are trading S&P 500 stocks, for example, the aver-
+age transaction cost (excluding commissions, which depend on your
+brokerage) would be about 5 basis points (that is, five-hundredths of
+a percent). Note that I count a round-trip transaction of a buy and
+then a sell as two transactions--hence, a round trip will cost 10 ba-
+sis points in this example. If you are trading ES, the E-mini S&P 500
+futures, the transaction cost will be about 1 basis point. Sometimes
+the authors whose strategies you read about will disclose that they
+have included transaction costs in their backtest performance, but
+more often they will not. If they haven't, then you just to have to
+assume that the results are before transactions, and apply your own
+judgment to its validity.
+
+    As an example of the impact of transaction costs on a strategy,
+consider this simple mean-reverting strategy on ES. It is based on
+Bollinger bands: that is, every time the price exceeds plus or minus
+2 moving standard deviations of its moving average, short or buy, re-
+spectively. Exit the position when the price reverts back to within 1
+moving standard deviation of the moving average. If you allow your-
+self to enter and exit every five minutes, you will find that the Sharpe
+ratio is about 3 without transaction costs--very excellent indeed!
+Unfortunately, the Sharpe ratio is reduced to ­3 if we subtract 1 ba-
+sis point as transaction costs, making it a very unprofitable strategy.
+
+    For another example of the impact of transaction costs, see
+Example 3.7.
+24  QUANTITATIVE TRADING
+
+Does the Data Suffer from Survivorship Bias?
+
+A historical database of stock prices that does not include stocks
+that have disappeared due to bankruptcies, delistings, mergers, or
+acquisitions suffer from the so-called survivorship bias, because
+only "survivors" of those often unpleasant events remain in the
+database. (The same term can be applied to mutual fund or hedge
+fund databases that do not include funds that went out of business.)
+Backtesting a strategy using data with survivorship bias can be dan-
+gerous because it may inflate the historical performance of the strat-
+egy. This is especially true if the strategy has a "value" bent; that is,
+it tends to buy stocks that are cheap. Some stocks were cheap be-
+cause the companies were going bankrupt shortly. So if your strat-
+egy includes only those cases when the stocks were very cheap
+but eventually survived (and maybe prospered) and neglects those
+cases where the stocks finally did get delisted, the backtest perfor-
+mance will, of course, be much better than what a trader would ac-
+tually have suffered at that time.
+
+    So when you read about a "buy on the cheap" strategy that has
+great performance, ask the author of that strategy whether it was
+tested on survivorship bias­free (sometimes called "point-in-time")
+data. If not, be skeptical of its results. (A toy strategy that illustrates
+this can be found in Example 3.3.)
+
+How Did the Performance of the Strategy
+Change over the Years?
+
+Most strategies performed much better 10 years ago than now, at
+least in a backtest. There weren't as many hedge funds running
+quantitative strategies then. Also, bid-ask spreads were much wider
+then: So if you assumed the transaction cost today was applicable
+throughout the backtest, the earlier period would have unrealisti-
+cally high returns.
+
+    Survivorship bias in the data might also contribute to the good
+performance in the early period. The reason that survivorship bias
+mainly inflates the performance of an earlier period is that the fur-
+ther back we go in our backtest, the more missing stocks we will
+Fishing for Ideas  25
+
+have. Since some of those stocks are missing because they went
+out of business, a long-only strategy would have looked better in
+the early period of the backtest than what the actual profit and loss
+(P&L) would have been at that time. Therefore, when judging the
+suitability of a strategy, one must pay particular attention to its per-
+formance in the most recent few years, and not be fooled by the
+overall performance, which inevitably includes some rosy numbers
+back in the old days.
+
+    Finally, "regime shifts" in the financial markets can mean that
+financial data from an earlier period simply cannot be fitted to the
+same model that is applicable today. Major regime shifts can oc-
+cur because of changes in securities market regulation (such as
+decimalization of stock prices or the elimination of the short-sale
+rule, which I allude to in Chapter 5) or other macroeconomic events
+(such as the subprime mortgage meltdown).
+
+    This point may be hard to swallow for many statistically minded
+readers. Many of them may think that the more data there is, the
+more statistically robust the backtest should be. This is true only
+when the financial time series is generated by a stationary process.
+Unfortunately, financial time series is famously nonstationary, due
+to all of the reasons given earlier.
+
+    It is possible to incorporate such regime shifts into a sophisti-
+cated "super"-model (as I will discuss in Example 7.1), but it is much
+simpler if we just demand that our model deliver good performance
+on recent data.
+
+Does the Strategy Suffer from
+Data-Snooping Bias?
+
+If you build a trading strategy that has 100 parameters, it is very
+likely that you can optimize those parameters in such a way that
+the historical performance will look fantastic. It is also very likely
+that the future performance of this strategy will look nothing like
+its historical performance and will turn out to be very poor. By hav-
+ing so many parameters, you are probably fitting the model to his-
+torical accidents in the past that will not repeat themselves in the
+26  QUANTITATIVE TRADING
+
+future. Actually, this so-called data-snooping bias is very hard to
+avoid even if you have just one or two parameters (such as entry and
+exit thresholds), and I will leave the discussion on how to minimize
+its impact to Chapter 3. But, in general, the more rules the strategy
+has, and the more parameters the model has, the more likely it is go-
+ing to suffer data-snooping bias. Simple models are often the ones
+that will stand the test of time. (See the sidebar on my views on
+artificial intelligence and stock picking.)
+
+  ARTIFICIAL INTELLIGENCE AND STOCK
+  PICKING*
+
+There was an article in the New York Times a short while ago about a new hedge
+fund launched by Mr. Ray Kurzweil, a pioneer in the field of artificial intelligence.
+(Thanks to my fellow blogger, Yaser Anwar, who pointed it out to me.) According
+to Kurzweil, the stock-picking decisions in this fund are supposed to be made
+by machines that ". . . can observe billions of market transactions to see patterns
+we could never see" (quoted in Duhigg, 2006).
+
+      While I am certainly a believer in algorithmic trading, I have become a skep-
+tic when it comes to trading based on "artificial intelligence."
+
+      At the risk of oversimplification, we can characterize artificial intelligence
+(AI) as trying to fit past data points into a function with many, many param-
+eters. This is the case for some of the favorite tools of AI: neural networks,
+decision trees, and genetic algorithms. With many parameters, we can for sure
+capture small patterns that no human can see. But do these patterns persist?
+Or are they random noises that will never replay again? Experts in AI assure
+us that they have many safeguards against fitting the function to transient
+noise. And indeed, such tools have been very effective in consumer market-
+ing and credit card fraud detection. Apparently, the patterns of consumers and
+thefts are quite consistent over time, allowing such AI algorithms to work even
+with a large number of parameters. However, from my experience, these safe-
+guards work far less well in financial markets prediction, and overfitting to
+the noise in historical data remains a rampant problem. As a matter of fact,
+I have built financial predictive models based on many of these AI algorithms in
+the past. Every time a carefully constructed model that seems to work marvels
+in backtest came up, they inevitably performed miserably going forward. The
+main reason for this seems to be that the amount of statistically independent
+financial data is far more limited compared to the billions of independent con-
+sumer and credit transactions available. (You may think that there is a lot of tick-
+by-tick financial data to mine, but such data is serially correlated and far from
+independent.)
+Fishing for Ideas  27
+
+      This is not to say that no methods based on AI will work in prediction. The
+ones that work for me are usually characterized by these properties:
+
+   r They are based on a sound econometric or rational basis, and not on ran-
+
+      dom discovery of patterns.
+
+   r They have few parameters that need to be fitted to past data.
+   r They involve linear regression only, and not fitting to some esoteric non-
+
+      linear functions.
+
+   r They are conceptually simple.
+   r All optimizations must occur in a lookback moving window, involving no fu-
+
+      ture unseen data. And the effect of this optimization must be continuously
+      demonstrated using this future, unseen data.
+
+      Only when a trading model is constrained in such a manner do I dare to
+allow testing on my small, precious amount of historical data. Apparently, Oc-
+cam's razor works not only in science, but in finance as well.
+
+*This section was adapted from my blog article "Artificial Intelligence and Stock Pick-
+ing," which you can find at epchan.blogspot.com/2006/12/artificial-intelligence-and-
+stock.html.
+
+Does the Strategy "Fly under the Radar"
+of Institutional Money Managers?
+
+Since this book is about starting a quantitative trading business from
+scratch, and not about starting a hedge fund that manages multiple
+millions of dollars, we should not be concerned whether a strategy
+is one that can absorb multiple millions of dollars. (Capacity is the
+technical term for how much a strategy can absorb without nega-
+tively impacting its returns.) In fact, quite the opposite--you should
+look for those strategies that fly under the radar of most institutional
+investors, for example, strategies that have very low capacities be-
+cause they trade too often, strategies that trade very few stocks ev-
+ery day, or strategies that have very infrequent positions (such as
+some seasonal trades in commodity futures described in Chapter 7).
+Those niches are the ones that are likely still to be profitable because
+they have not yet been completely arbitraged away by the gigantic
+hedge funds.
+28  QUANTITATIVE TRADING
+
+SUMMARY
+
+Finding prospective quantitative trading strategies is not difficult.
+There are:
+
+  r Business school and other economic research web sites.
+  r Financial web sites and blogs focusing on the retail investors.
+  r Trader forums where you can exchange ideas with fellow
+
+    traders.
+
+    After you have done a sufficient amount of Net surfing or trading
+magazine riffling, you will find a number of promising trading strate-
+gies. Whittle them down to just a handful based on your personal
+circumstances and requirements, and by applying the screening cri-
+teria (more accurately described as healthy skepticism) that I listed
+earlier:
+
+  r How much time do you have for baby-sitting your trading pro-
+    grams?
+
+  r How good a programmer are you?
+  r How much capital do you have?
+  r Is your goal to earn steady monthly income or to strive for a
+
+    large, long-term capital gain?
+
+    Even before doing an in-depth backtest of the strategy, you can
+quickly filter out some unsuitable strategies if they fail one or more
+of these tests:
+
+  r Does it outperform a benchmark?
+  r Does it have a high enough Sharpe ratio?
+  r Does it have a small enough drawdown and short enough draw-
+
+    down duration?
+  r Does the backtest suffer from survivorship bias?
+  r Does the strategy lose steam in recent years compared to its ear-
+
+    lier years?
+Fishing for Ideas  29
+
+r Does the strategy have its own "niche" that protects it from in-
+  tense competition from large institutional money managers?
+
+    After making all these quick judgments, you are now ready to
+proceed to the next chapter, which is to rigorously backtest the
+strategy yourself to make sure that it does what it is advertised
+to do.
+                                   CHAPTER 3
+
+          Backtesting
+
+A key difference between a traditional investment management pro-
+cess and a quantitative investment process is the possibility of back-
+testing a quantitative investment strategy to see how it would have
+performed in the past. Even if you found a strategy described in
+complete detail with all the historical performance data available,
+you would still need to backtest it yourself. This exercise serves
+several purposes. If nothing else, this replication of the research will
+ensure that you have understood the strategy completely and have
+reproduced it exactly for implementation as a trading system. Just
+as in any medical or scientific research, replicating others' results
+also ensures that the original research did not commit any of the
+common errors plaguing this process. But more than just perform-
+ing due diligence, doing the backtest yourself allows you to exper-
+iment with variations of the original strategy, thereby refining and
+improving the strategy.
+
+    In this chapter, I will describe the common platforms that can
+be used for backtesting, various sources of historical data useful for
+backtesting, a minimal set of standard performance measures that a
+backtest should provide, common pitfalls to avoid, and simple re-
+finements and improvements to strategies. A few fully developed
+backtesting examples will also be presented to illustrate the prin-
+ciples and techniques described.
+
+                                                                                              31
+32  QUANTITATIVE TRADING
+
+COMMON BACKTESTING PLATFORMS
+
+There are numerous commercial platforms that are designed for
+backtesting, some of them costing tens of thousands of dollars. In
+keeping with the focus on start-ups in this book, I start with those
+with which I am familiar and that can be purchased economically
+and are widely used.
+
+Excel
+
+This is the most basic and most common tool for traders, whether
+retail or institutional. You can enhance its power further if you can
+write Visual Basic macros. The beauty of Excel is "What you see
+is what you get" (or WYSIWYG in computing parlance). Data and
+program are all in one place so that nothing is hidden. Also, a com-
+mon backtesting pitfall called "look-ahead bias," which will be ex-
+plained later, is unlikely to occur in Excel (unless you use macros,
+which renders it no longer WYSIWYG) because you can easily align
+the dates with the various data columns and signals on a spread-
+sheet. Another advantage of Excel is that often backtesting and live
+trade generation can be done from the same spreadsheet, eliminat-
+ing any duplication of programming efforts. The major disadvantage
+of Excel is that it can be used to backtest only fairly simple models.
+But, as I explained in the previous chapter, simple models are often
+the best!
+
+MATLAB
+
+MATLAB R (www.mathworks.com) is one of the most common
+backtesting platforms used by quantitative analysts and traders in
+large institutions. It is ideal for testing strategies that involve a
+large portfolio of stocks. (Imagine backtesting a strategy involving
+1,500 symbols on Excel--it is possible, but quite painful.). It has nu-
+merous advanced statistical and mathematical modules built in, so
+traders do not have to reinvent the wheel if their trading algorithms
+involve some sophisticated but common mathematical concepts.
+Backtesting                             33
+
+(A good example is principal component analysis--often used in
+factor models in statistical arbitrage trading, and a hassle to im-
+plement in other programming languages. See Example 7.4.) There
+is also a large number of third-party freeware available for down-
+load from the Internet, many of them very useful for quantitative
+trading purposes (an example is the cointegration package used in
+Example 7.2). Finally, MATLAB is very useful in retrieving web
+pages with financial information and parsing it into a useful form
+(so-called web scraping). Example 3.1 shows how this can be done.
+
+    Despite the seeming sophistication of the platform, it is actually
+very easy to learn (at least for basic usage) and it is very quick to
+write a complete backtest program using this language. The main
+drawback of MATLAB is that it is relatively expensive: it costs over
+$1,000 to acquire a license. However, there are several clones of
+MATLAB on the market where you can write and use codes that
+are very similar to MATLAB:
+
+r O-Matrix (www.omatrix.com)
+r Octave (www.gnu.org/software/octave)
+r Scilab (www.scilab.org)
+
+    These clones may cost only several hundred dollars, or may be
+entirely free. Not surprisingly, the more expensive the clone is, the
+more compatible it is with programs written in MATLAB. (Of course,
+if you intend to write all the programs yourself and not use any third
+party's codes, compatibility is not an issue. But then you would be
+forfeiting one of the main benefits of using this language.) The other
+drawback of MATLAB is that it is very useful for backtesting but
+clumsy to use as an execution platform. So, often, you will need
+to build a separate execution system in another language once you
+have backtested your strategy. Despite these drawbacks, MATLAB
+has found widespread use within the quantitative trading commu-
+nity. I will include MATLAB codes for all the backtesting examples
+in this book as well as provide a quick survey of the MATLAB lan-
+guage itself in the appendix.
+34  QUANTITATIVE TRADING
+
+Example 3.1: Using MATLAB to Scrape Web Pages
+for Financial Data
+
+MATLAB is not only useful for numerical computations, but also for text
+parsing. Following is an example of using MATLAB to retrieve a stock's
+historical price information from Yahoo! Finance:
+
+clear; % make sure previously defined variables are
+%erased.
+
+symbol=`IBM'; % the stock of interest
+% retrieving a webpage
+historicalPriceFile =...
+urlread([`http://finance.yahoo.com/q/hp?s=', symbol]);
+
+% extracting the date field to a cell array of cells
+dateField=...
+regexp(historicalPriceFile, ...
+'<td class="yfnc tabledata1" nowrap align="right">...
+([\d\w-]+)</td>', `tokens');
+
+% extracting the numbers field to a cell array of cells
+numField=regexp(historicalPriceFile, ...
+'<td class="yfnc tabledata1" align="right">...
+([\d\.,]+)</td>', `tokens');
+
+% convert to cell array of strings
+dates=[dateField{:}]';
+
+% convert to cell array of strings
+numField=[numField{:}]';
+
+% convert to doubles array
+op=str2double(numField (1:6:end)); % open
+hi=str2double(numField (2:6:end)); % high
+lo=str2double(numField (3:6:end)); % low
+cl=str2double(numField (4:6:end)); % close
+vol=str2double(numField (5:6:end)); % volume
+adjCl=str2double(numField (6:6:end)); % adjusted close
+
+This program file is available for download as epchan.com/book/
+example3 1.m, with "sharperatio" as both username and password. There is
+one limitation to this web-scraping script: It can retrieve only one web page
+at a time. Because Yahoo! displays its historical data over many pages, it is
+not really useful for retrieving the entire price history of IBM. Nevertheless,
+it is a simple illustration of MATLAB's text processing functions.
+Backtesting  35
+
+TradeStation
+
+TradeStation (www.tradestation.com) is familiar to many retail
+traders as a brokerage that provides all-in-one backtesting and trade
+execution platforms linked to the brokerage's servers. The main ad-
+vantages of this setup are:
+
+  r Most of the historical data necessary for backtesting is readily
+    available, whereas you have to download the data from some-
+    where else if you use Excel or MATLAB.
+
+  r Once you have backtested the program, you can immediately
+    generate orders using the same program and transmit them to
+    the brokerage.
+
+    The disadvantages of this approach are that once you have writ-
+ten the software for your strategy, you are tied to TradeStation as
+your broker, and the proprietary language used by TradeStation is
+not as flexible as MATLAB and does not include some of the more
+advanced statistical and mathematical functions some traders use.
+Nevertheless, if you prefer the ease of use of an all-in-one system,
+TradeStation may be a good choice.
+
+    Since I have not used TradeStation in my own work, I will not
+include backtesting examples in TradeStation.
+
+High-End Backtesting Platforms
+
+In case you do have the financial resources to purchase a high-end,
+institutional-grade backtesting platform, here is a partial list:
+
+  r FactSet's Alpha Testing (www.factset.com/products/directions/
+    qim/alphatesting)
+
+  r Clarifi's ModelStation (www.clarifi.com/ModelStation-Over-
+    view.php)
+
+  r Quantitative Analytics' MarketQA (www.qaisoftware.com)
+  r Barra's Aegis System (www.mscibarra.com/products/analytics/
+
+    aegis)
+  r Logical Information Machines (www.lim.com)
+  r Alphacet's Discovery (www.alphacet.com)
+36  QUANTITATIVE TRADING
+
+    Of all these, I have personal experience with only Logical In-
+formation Machines and Alphacet Discovery. Logical Information
+Machines is excellent for testing futures trading strategies, but it is
+weaker for equities strategies, based on my experience 10 years ago.
+Alphacet Discovery is a new product that integrates data retrieval,
+backtesting, optimization with machine learning algorithms, and au-
+tomated execution. It is quite powerful for backtesting and trading a
+range of markets including futures, equities, and currencies. Exam-
+ple 7.1 is a backtest example using the Discovery platform.
+
+FINDING AND USING HISTORICAL
+DATABASES
+
+If you have a strategy in mind that requires a specific type of his-
+torical data, the first thing to do is to Google that type of data. You
+will be surprised how many free or low-cost historical databases
+are available out there for many types of data. (For example, try
+the search phrase "free historical intraday futures data.") Table 3.1
+includes a number of the databases that I have found useful over
+the years, most of them either free or very low cost. I have deliber-
+ately left out the expensive databases from Bloomberg, Dow Jones,
+FactSet, Thomson Reuters, or Tick Data. Though they have almost
+every type of data imaginable for purchase, these data vendors cater
+mostly to more established institutions and are typically not in the
+price range of individuals or start-up institutions.
+
+    While finding sources of data on the Internet is even easier than
+finding prospective strategies, there are a number of issues and pit-
+falls with many of these databases that I will discuss later in this sec-
+tion. These issues apply mostly to stock and exchange-traded fund
+(ETF) data only. Here are the most important ones.
+
+Are the Data Split and Dividend Adjusted?
+
+When a company had its stocks split N to 1 (N is usually 2, but
+can be a fraction like 0.5 as well. When N is smaller than 1, it is
+Backtesting                                                                 37
+
+TABLE 3.1 Historical Databases for Backtesting
+
+Source           Pros                                    Cons
+
+                        Daily Stock Data
+
+Finance.yahoo.com Free. Split/dividend adjusted.         Has survivorship bias.
+                                                            Can download only
+HQuotes.com      Low cost. Same data as                     one symbol at a
+CSIdata.com         finance.yahoo.com. Software             time.
+TrackData.com       enables download of multiple
+CRSP.com            symbols.                             Has survivorship bias.
+                                                            Split but not
+                 Low cost. Source of Yahoo! and             dividend adjusted.
+                    Google's historical data. Software
+                    enables download of multiple         Has survivorship bias.
+                    symbols.
+                                                         Has survivorship bias.
+                 Low cost. Split/dividend adjusted.
+                    Software enables download of         Expensive. Updated
+                    multiple symbols. Fundamental data      only once a month.
+                    available.
+
+                 Survivorship bias free.
+
+                                Daily Futures Data
+
+Quotes-plus.com  Low cost. Software enables download
+CSIdata.com         of multiple symbols.
+
+                 (See above.)
+                                  Daily Forex Data
+
+Oanda.com        Free.
+
+                        Intraday Stock Data
+
+HQuotes.com      (See above.)                            Short history for
+                             Intraday Futures Data          intraday data.
+
+DTN.com          Bid-ask data history available as part  Expensive: requires
+                    of NxCore product.                      subscription to live
+                                                            datafeed.
+                               Intraday Forex Data
+
+GainCapital.com Free. Long history.
+38                         QUANTITATIVE TRADING
+
+called a reverse split) with an ex-date of T, all the prices before T
+need to be multiplied by 1/N. Similarly, when a company issued a
+dividend $d per share with an ex-date of T, all the prices before T
+need to be multiplied by the number (Close(T ­ 1) ­ d)/Close(T ­
+1), where Close(T ­ 1) is the closing price of the trading day before
+T. Notice that I adjust the historical prices by a multiplier instead
+of subtracting $d so that the historical daily returns will remain the
+same pre- and postadjustment. This is the way Yahoo! Finance ad-
+justs its historical data, and is the most common way. (If you adjust
+by subtracting $d instead, the historical daily changes in prices will
+be the same pre- and postadjustment, but not the daily returns.) If
+the historical data are not adjusted, you will find a drop in price
+at the ex-date's market open from previous day's close (apart from
+normal market fluctuation), which may trigger an erroneous trading
+signal.
+
+    I recommend getting historical data that are already split and
+dividend adjusted, because otherwise you would have to find a
+separate historical database (such as earnings.com) of splits and
+dividends and apply the adjustments yourself--a somewhat te-
+dious and error-prone task, which I will describe in the following
+example.
+
+Example 3.2: Adjusting for Splits and Dividends
+
+Here we look at IGE, an ETF that has had both splits and dividends in its
+history. It had a 2:1 split on June 9, 2005 (the ex-date). Let's look at the
+unadjusted prices around that date (you can download the historical prices
+of IGE from Yahoo! Finance into an Excel spreadsheet):
+
+Date       Open     High    Low                  Close
+
+6/10/2005   73.98   74.08   73.31                 74
+6/9/2005    72.45   73.74   72.23                 73.74
+6/8/2005   144.13  146.44  143.75                144.48
+6/7/2005   145     146.07  144.11                144.11
+Backtesting                                                                                 39
+
+    We need to adjust the prices prior to 6/9/2005 due to this split. This
+
+is  easy:  N  =  2  here,  and  all  we  need  to  do  is  to  multiply  those  prices  by  1  .
+                                                                                            2
+
+The following table shows the adjusted prices:
+
+Date                       Open          High                   Low             Close
+
+6/10/2005                  73.98         74.08                 73.31            74
+6/9/2005                   72.45         73.74                 72.23            73.74
+6/8/2005                   72.065        73.22                 71.875           72.24
+6/7/2005                   72.5          73.035                72.055           72.055
+
+      Now, the astute reader will notice that the adjusted close prices here
+do not match the adjusted close prices displayed in the Yahoo! Finance
+table. The reason for this is that there have been dividends distributed af-
+ter 6/9/2005, so the Yahoo! prices have been adjusted for all those as
+well. Since each adjustment is a multiplier, the aggregate adjustment is
+just the product of all the individual multipliers. Here are the dividends
+from 6/9/2005 to November 2007, together with the unadjusted closing
+prices of the previous trading days and the resulting individual multipliers:
+
+Ex-Date                    Dividend                Prev Close                   Multiplier
+
+9/26/2007                     0.177                   128.08                    0.998618
+6/29/2007                     0.3                     119.44                    0.997488
+12/21/2006                    0.322                   102.61                    0.996862
+9/27/2006                     0.258                                             0.997181
+6/23/2006                     0.32                      91.53                   0.996529
+3/27/2006                     0.253                     92.2                    0.997331
+12/23/2005                    0.236                     94.79                   0.997374
+9/26/2005                     0.184                     89.87                   0.997933
+6/21/2005                     0.217                     89                      0.997214
+                                                        77.9
+
+      (Check out the multipliers yourself on Excel using the formula I gave
+above to see if they agree with my values here.) So the aggregate multi-
+plier for the dividends is simply 0.998618 × 0.997488 × · · · × 0.997214 =
+0.976773. This multiplier should be applied to all the unadjusted prices
+on or after 6/9/2005. The aggregate multiplier for the dividends and the
+split is 0.976773 × 0.5 = 0.488386, which should be applied to all the
+40                                         QUANTITATIVE TRADING
+
+unadjusted prices before 6/9/2005. So let's look at the resulting adjusted
+prices after applying these multipliers:
+
+Date         Open           High      Low            Close
+
+6/10/2005  72.26163      72.35931  71.6072         72.28117
+6/9/2005   70.76717      72.02721  70.55228        72.02721
+6/8/2005   70.39111      71.51929  70.20553        70.56205
+6/7/2005   70.81601      71.33858  70.38135        70.38135
+
+Now compare with the table from Yahoo! around November 1, 2007:
+
+Date       Open High Low Close Volume Adj Close
+
+6/10/2005 73.98   74.08   73.31     74     179300  72.28
+6/9/2005 72.45    73.74   72.23     73.74  853200  72.03
+6/8/2005 144.13  146.44  143.75    144.48  109600  70.56
+6/7/2005 145     146.07  144.11    144.11  58000   70.38
+
+      You can see that the adjusted closing prices from our calculations and
+from Yahoo! are the same (after rounding to two decimal places). But, of
+course, when you are reading this, IGE will likely have distributed more
+dividends and may have even split further, so your Yahoo! table won't look
+like the one above. It is a good exercise to check that you can make further
+adjustments based on those dividends and splits that result in the same
+adjusted prices as your current Yahoo! table.
+
+Are the Data Survivorship Bias Free?
+
+We already covered this issue in Chapter 2. Unfortunately, databases
+that are free from survivorship bias are quite expensive and may
+not be affordable for a start-up business. One way to overcome this
+problem is to start collecting point-in-time data yourself for the ben-
+efit of your future backtest. If you save the prices each day of all the
+stocks in your universe to a file, then you will have a point-in-time
+or survivorship-bias-free database to use in the future. Another way
+to lessen the impact of survivorship bias is to backtest your strate-
+gies on more recent data so that the results are not distorted by too
+many missing stocks.
+Example 3.3: An Example of How Survivorship Bias Can
+Artificially Inflate a Strategy's Performance
+
+Here is a toy "buy low-price stocks" strategy (Warning: This toy strategy is
+hazardous to your financial health!). Let's say from a universe of the 1,000
+largest stocks (based on market capitalization), we pick 10 that have the
+lowest closing prices at the beginning of the year and hold them (with equal
+initial capital) for one year. Let's look at what we would have picked if we
+had a good, survivorship-bias-free database:
+
+SYMBOL  Closing Price  Closing Price  Terminal Price
+        on 1/2/2001    on 1/2/2002
+ETYS                                          0.125
+MDM          0.2188           NaN             0.49
+INTW         0.3125           0.49            0.11
+FDHG         0.4063           NaN             0.33
+OGNC         0.5              NaN             0.2
+MPLX         0.6875           NaN             0.8
+GTS          0.7188           NaN             0.35
+BUYX         0.75             NaN             0.17
+PSIX         0.75             NaN             0.2188
+             0.75             NaN
+
+      All but MDM were delisted sometime between 1/2/2001 and 1/2/2002
+(after all, the dot-com bubble was seriously bursting then!). The NaNs indi-
+cate those with nonexistent closing prices on 1/2/2002. The Terminal Price
+column indicates the last prices at which the stocks were traded on or before
+1/2/2002. The total return on this portfolio in that year was ­42 percent.
+
+      Now, let's look at what we would have picked if our database had sur-
+vivorship bias and actually missed all those stocks that were delisted that
+year. We would then have picked the following list instead:
+
+SYMBOL Closing Price on 1/2/2001 Closing Price on 1/2/2002
+
+MDM     0.3125                         0.49
+ENGA    0.8438                         0.44
+NEOF    0.875                         27.9
+ENP     0.875                          0.05
+MVL     0.9583                         2.5
+URBN    1.0156                         3.0688
+FNV     1.0625                         0.81
+APT     1.125                          0.88
+FLIR    1.2813                         9.475
+RAZF    1.3438                         0.25
+
+                                               41
+42  QUANTITATIVE TRADING
+
+      Notice that since we select only those stocks that "survived" until at
+least 1/2/2002, they all have closing prices on that day. The total return on
+this portfolio was 388 percent!
+
+      In this example, ­42 percent was the actual return a trader would ex-
+perience following this strategy, whereas 388 percent is a fictitious return
+that was due to survivorship bias in our database.
+
+Does Your Strategy Use High and Low Data?
+
+For almost all daily stock data, the high and low prices are far noisier
+than the open and close prices. What this means is that even when
+you had placed a buy limit order below the recorded high of a day, it
+might not have been filled, and vice versa for a sell limit order. (This
+could be due to the fact that a very small order was transacted at the
+high, or the execution could have occurred on a market to which
+your order was not routed. Sometimes, the high or low is simply
+due to an incorrectly reported tick that was not filtered out.) Hence,
+a backtest that relies on high and low data is less reliable than one
+that relies on the open and close.
+
+    Actually, sometimes even a market on open (MOO) or market
+on close (MOC) order might not be filled at the historical open
+and close prices shown in your data. This is due to the fact that
+the historical prices shown may be due to the primary exchange
+(e.g., New York Stock Exchange [NYSE]), or it may be a composite
+price including all the regional exchanges. Depending on where your
+order was routed, it may be filled at a different price from the his-
+torical opening or closing price shown in your dataset. Neverthe-
+less, the discrepancies of the open and close prices usually have
+less impact on backtest performance than the errors in the high
+and low prices, since the latter almost always inflate your backtest
+returns.
+
+    After retrieving the data from a database, it is often advisable to
+do a quick error check. The simplest way to do this is to calculate
+the daily returns based on the data. If you have open, high, low, and
+close prices, you can calculate the various combinations of daily
+returns such as from the previous high to today's close as well. You
+Backtesting  43
+
+can then examine closely those days with returns that are, say, 4
+standard deviations away from the average. Typically, an extreme
+return should be accompanied by a news announcement, or should
+occur on a day when the market index also experienced extreme
+returns. If not, then your data is suspect.
+
+PERFORMANCE MEASUREMENT
+
+Quantitative traders use a good variety of performance measures.
+Which set of numbers to use is sometimes a matter of personal pref-
+erence, but with ease of comparisons across different strategies and
+traders in mind, I would argue that the Sharpe ratio and drawdowns
+are the two most important. Notice that I did not include average an-
+nualized returns, the measure most commonly quoted by investors,
+because if you use this measure, you have to tell people a number
+of things about what denominator you use to calculate returns. For
+example, in a long-short strategy, did you use just one side of capital
+or both sides in the denominator? Is the return a leveraged one (the
+denominator is based on account equity), or is it unleveraged (the
+denominator is based on market value of the portfolio)? If the equity
+or market value changes daily, do you use a moving average as the
+denominator, or just the value at the end of each day or each month?
+Most (but not all) of these problems associated with comparing re-
+turns can be avoided by quoting Sharpe ratio and drawdown instead
+as the standard performance measures.
+
+    I introduced the concepts of the Sharpe ratio, maximum draw-
+down, and maximum drawdown duration in Chapter 2. Here, I will
+just note a number of subtleties associated with calculating the
+Sharpe ratio, and give some computational examples in both Excel
+and MATLAB.
+
+    There is one subtlety that often confounds even seasoned port-
+folio managers when they calculate Sharpe ratios: should we or
+shouldn't we subtract the risk-free rate from the returns of a dollar-
+neutral portfolio? The answer is no. A dollar-neutral portfolio is
+44  QUANTITATIVE TRADING
+
+self-financing, meaning the cash you get from selling short pays for
+the purchase of the long securities, so the financing cost (due to the
+spread between the credit and debit interest rates) is small and can
+be neglected for many backtesting purposes. Meanwhile, the mar-
+gin balance you have to maintain earns a credit interest close to the
+risk-free rate rF. So let's say the strategy return (the portfolio return
+minus the contribution from the credit interest) is R, and the risk-
+free rate is rF. Then the excess return used in calculating the Sharpe
+ratio is R + rF ­ rF = R. So, essentially, you can ignore the risk-free
+rate in the whole calculation and just focus on the returns due to
+your stock positions.
+
+    Similarly, if you have a long-only day-trading strategy that does
+not hold positions overnight, you again have no need to subtract the
+risk-free rate from the strategy return in order to obtain the excess
+returns, since you do not have financing costs in this case, either. In
+general, you need to subtract the risk-free rate from your strategy
+returns in calculating the Sharpe ratio only if your strategy incurs
+financing cost.
+
+    To further facilitate comparison across strategies, most traders
+annualize the Sharpe ratio. Most people know how to annualize the
+average returns. For example, if you have been using monthly re-
+turns, then the average annual return is just 12 times the average
+monthly return.
+
+    However, annualizing the standard deviation of returns is a bit
+trickier. Here, based on the assumption that the monthly returns are
+serially uncorrelated (Sharpe, 1994), the annual standard deviation
+of returns is 12 times the monthly standarddeviation. Hence, over-
+all, the annualized Sharpe ratio would be 12 times the monthly
+Sharpe ratio.
+
+    In general, if you calculate your average and standard deviation
+of returns based on a certain trading period T, whether T is a month,
+a day, or an hour, and you want to annualize these quantities, you
+have to first find out how many such trading periods there are in a
+year (call it NT). Then
+
+    Annualized Sharpe Ratio = NT × Sharpe Ratio Based on T
+Backtesting  45
+
+For example, if your strategy holds positions only during the NYSE
+market hours (9:30­16:00 ET), and the average hourly returns is R,
+and the standard deviation of the hourly returns is s, then the annu-
+alized Sharpe ratio is 1638 × R/s. This is because NT = (252 trad-
+ing days) × (6.5 trading hours per trading day) = 1,638. (A common
+mistake is to compute NT as 252 × 24 = 6,048.)
+
+Example 3.4: Calculating Sharpe Ratio for Long-Only Versus
+Market-Neutral Strategies
+
+Let's calculate the Sharpe ratio of a trivial long-only strategy for IGE: buy-
+ing and holding a share since the close of November 26, 2001, and selling
+it at close of November 14, 2007. Assume the average risk-free rate dur-
+ing this period is 4 percent per annum in this example. You can download
+the daily prices from Yahoo! Finance, specifying the date range desired,
+and store them as an Excel file (not the default comma-separated file),
+which you can call IGE.xls. The next steps can be done in either Excel or
+MATLAB:
+
+Using Excel
+
+ 1. The file should have columns A­G already from the download.
+ 2. Sort all the columns in ascending order of Date (use the Data-Sort
+
+      function, choose the "Expand the selection" radio button, and choose
+      the "Ascending" as well as the "My data has Header row" radio
+      buttons).
+ 3. In cell H3, type "=(G3-G2)/G2". This is the daily return.
+ 4. Double-clicking the little black dot at the lower right corner of the
+      cell H3 will populate the entire column H with daily returns of
+      IGE.
+ 5. For clarity, you can type "Dailyret" in the header cell H1.
+ 6. In cell I3, type "=H3-0.04/252", which is the excess daily return, as-
+      suming a 4 percent per annum risk-free rate and 252 trading days in a
+      year.
+ 7. Double-clicking the little black dot at the lower right corner of cell I3
+      will populate the entire column I with excess daily returns.
+ 8. For clarity, type "Excess Dailyret" in the header cell I1.
+46  QUANTITATIVE TRADING
+
+  9. In cell I1506 (the last row in the next column), type
+       "=SQRT(252)*AVERAGE(I3:I1505)/STDEV(I3:I1505)".
+
+10. The number displayed in cell I1505, which should be "0.789317538",
+       is the Sharpe ratio of this buy-and-hold strategy.
+
+       The finished spreadsheet is available at my web site at epchan.com/
+book/example3 4.xls.
+
+Using MATLAB
+
+% make sure previously defined variables are erased.
+clear;
+
+% read a spreadsheet named "IGE.xls" into MATLAB.
+[num, txt]=xlsread(`IGE');
+
+% the first column (starting from the second row)
+% contains the trading days in format mm/dd/yyyy.
+tday=txt(2:end, 1);
+
+% convert the format into yyyymmdd.
+tday=datestr(datenum(tday, `mm/dd/yyyy'), `yyyymmdd');
+% convert the date strings first into cell arrays and
+% then into numeric format.
+tday=str2double(cellstr(tday));
+% the last column contains the adjusted close prices.
+cls=num(:, end);
+% sort tday into ascending order.
+[tday sortIndex]=sort(tday, `ascend');
+% sort cls into ascending order of dates.
+cls=cls(sortIndex);
+% daily returns
+dailyret=(cls(2:end)-cls(1:end-1))./cls(1:end-1);
+% excess daily returns assuming risk-free rate of 4%
+% per annum and 252 trading days in a year
+excessRet=dailyret - 0.04/252;
+% the output should be 0.7893
+sharpeRatio=sqrt(252)*mean(excessRet)/std(excessRet)
+
+      This MATLAB code is also available for download at my web site
+(epchan.com/book/example3 4.m).
+
+      Now let's calculate the Sharpe ratio of a long-short market-neutral strat-
+egy. In fact, it is a very trivial twist of the buy-and-hold strategy above: at the
+time we bought IGE, let's suppose we just shorted an equal dollar amount
+of Standard & Poor's depositary receipts (SPY) as a hedge, and closed both
+Backtesting  47
+
+positions at the same time in November 2007. You can also download SPY
+from Yahoo! Finance and store it in a file SPY.xls. You can go through very
+similar steps as above in both Excel and MATLAB, and I will leave it as an
+exercise for the reader to perform the exact steps:
+
+Using Excel
+
+ 1. Sort the columns in SPY.xls in ascending order of date just like above.
+ 2. Copy column G (Adj Close) in SPY.xls and paste it onto column J of
+
+      IGE.xls above.
+ 3. Check that column J has the same number of rows as columns A­I. If
+
+      not, you have a different set of dates--make sure you download the
+      matching date range from Yahoo!.
+ 4. Perform the same steps as above to calculate the daily returns in col-
+      umn K.
+ 5. For clarity, type "dailyretSPY" as the header in column K.
+ 6. In column L, compute the net returns for the hedged strategy as the
+      difference between column H and K divided by 2. (Divide by 2 because
+      we now have twice the capital.)
+ 7. In cell L1506, compute the Sharpe ratio of this hedged strategy. You
+      should get "0.783681".
+
+Using MATLAB
+% Assume this is a continuation of the above MATLAB
+%code.
+
+% Insert your own code here to retrieve data from
+% SPY.xls just as above.
+
+% Name the array that contains the daily returns of
+% SPY "dailyretSPY".
+
+% net daily returns
+(divide by 2 because we now have twice as much capital.)
+netRet=(dailyret - dailyretSPY)/2;
+
+% the output should be 0.7837.
+sharpeRatio=sqrt(252)*mean(excessRet)/std(excessRet)
+48  QUANTITATIVE TRADING
+
+Example 3.5: Calculating Maximum Drawdown and Maximum
+Drawdown Duration
+
+We shall continue the preceding long-short market-neutral example in order
+to illustrate the calculation of maximum drawdown and maximum draw-
+down duration. The first step in this calculation is to calculate the "high
+watermark" at the close of each day, which is the maximum cumulative re-
+turn of the strategy up to that time. (Using the cumulative return curve to
+calculate high watermark and drawdown is equivalent to using the equity
+curve, since equity is nothing more than initial investment times 1 plus the
+cumulative return.) From the high watermark, we can calculate the draw-
+down, the maximum drawdown, and maximum drawdown duration.
+
+Using Excel
+
+ 1. In cell M3, type "=L3".
+ 2. In cell M4, type "=(1+M3)*(1+L4)-1". This is the cumulative com-
+
+      pounded return of the strategy up to that day. Populate the entire col-
+      umn M with the cumulative compounded returns of the strategy and
+      erase the last cell of the column. Name this column Cumret.
+ 3. In cell N3, type "=M3".
+ 4. In cell N4, type "=MAX(N3, M4)". This is the high watermark up to that
+      day. Populate the entire column N with the running high watermark of
+      the strategy and erase the last cell of the column. Name this column
+      High watermark.
+ 5. In cell O3, type "=(1+N3)/(1+M3)-1". This is the drawdown at that day's
+      close. Populate the entire column O with the drawdowns of the strategy.
+ 6. In cell O1506, type "=MAX(O3:O1505)". This is the maximum draw-
+      down of the strategy. It should have a value of about 0.1053, that is, a
+      maximum drawdown of 10.53 percent.
+ 7. In cell P3, type "=IF(O3=0, 0, P2+1)". This is the duration of the current
+      drawdown. Populate the entire column R with the drawdown durations
+      of the strategy and erase the last cell of the column.
+ 8. In cell P1506, type "=MAX(P3:P1505)". This is the maximum drawdown
+      duration of the strategy. It should have a value of 497, that is, a maxi-
+      mum drawdown duration of 497 trading days.
+
+Using MATLAB
+
+% Assume this is a continuation of the above MATLAB
+% code.
+% cumulative compounded returns
+Backtesting  49
+
+cumret=cumprod(1+netRet)-1;plot(cumret);
+
+[maxDrawdown maxDrawdownDuration]=...
+calculateMaxDD(cumret);
+
+ [maxDrawdown maxDrawdownDuration]=...
+calculateMaxDD(cumret);
+
+% maximum drawdown. Output should be 0.1053
+maxDrawdown
+% maximum drawdown duration. Output should be 497.
+maxDrawdownDuration
+
+Notice the code fragment above calls a function "calculateMaxDrawdown,"
+which I display below.
+
+function [maxDD maxDDD]=calculateMaxDD(cumret)
+% [maxDD maxDDD]=calculateMaxDD(cumret)
+% calculation of maximum drawdown and maximum drawdown
+% duration based on cumulative compounded returns.
+
+% initialize high watermarks to zero.
+highwatermark=zeros(size(cumret));
+% initialize drawdowns to zero.
+drawdown=zeros(size(cumret));
+% initialize drawdown duration to zero.
+drawdownduration=zeros(size(cumret));
+for t=2:length(cumret)
+
+       highwatermark(t)=...
+max(highwatermark(t-1), cumret(t));
+
+       % drawdown on each day
+ drawdown(t)=(1+highwatermark(t))/(1+cumret(t))-1;
+
+       if (drawdown(t)==0)
+              drawdownduration(t)=0;
+
+       else
+              drawdownduration(t)=drawdownduration(t-1)+1;
+
+       end
+end
+
+maxDD=max(drawdown); % maximum drawdown
+
+% maximum drawdown duration
+maxDDD=max(drawdownduration);
+
+      The file that contains this function is available as epchan.com/book/
+calculateMaxDD.m. You can see where the maximum drawdown and
+50                                                                           QUANTITATIVE TRADING
+
+maximum drawdown duration occurred in this plot of the cumulative re-
+turns in Figure 3.1.
+
+                    0.6
+
+                    0.5
+
+Cumulative Returns  0.4                                                      10.53% max drawdown
+
+                    0.3
+
+                    0.2
+
+                                       497 days max drawdown duration
+
+                    0.1
+
+                    0
+
+-0.1                     200  400  600                                 800 1000 1200 1400 1600
+      0
+
+                                                                       Days
+
+FIGURE 3.1 Maximum drawdown and maximum drawdown duration for
+Example 3.4
+
+COMMON BACKTESTING PITFALLS
+TO AVOID
+
+Backtesting is the process of creating the historical trades given the
+historical information available at that time, and then finding out
+what the subsequent performance of those trades is. This process
+seems easy given that the trades were made using a computer algo-
+rithm in our case, but there are numerous ways in which it can go
+wrong. Usually, an erroneous backtest would produce a historical
+performance that is better than what we would have obtained in ac-
+tual trading. We have already seen how survivorship bias in the data
+used for backtesting can result in inflated performance. There are,
+Backtesting  51
+
+however, other common pitfalls related to how the backtest pro-
+gram is written, or more fundamentally, to how you construct your
+trading strategy. I will describe two of the most common ones here,
+with tips on how to avoid them.
+
+Look-Ahead Bias
+
+This error refers to the situation when you are using information
+that was available only at a time ahead of the instant the trade was
+made. For example, if your trade entry rule reads: "Buy when the
+stock is within 1 percent of the day's low," you have introduced a
+look-ahead bias in your strategy, because you could not possibly
+have known what the day's low was until the market closed that
+day. Another example: Suppose a model involves a linear regression
+fit of two price series. If you use the regression coefficients obtained
+from the entire data set to determine your daily trading signals, you
+have again introduced look-ahead bias.
+
+    How do we avoid look-ahead bias? Use lagged historical data
+for calculating signals at every opportunity. Lagging a series of data
+means that you calculate all the quantities like moving averages,
+highs and lows, or even volume, based on data up to the close of the
+previous trading period only. (Of course, you needn't lag the data if
+your strategy enters only at the close of the period.)
+
+    Look-ahead bias is easier to avoid using Excel or other WYSI-
+WYG programs than using MATLAB. This is because it is easy to
+align all the different columns of data in Excel and ensure that the
+formula in each cell is computed based on the rows above the cur-
+rent row. It would be visually obvious when one is using current
+day's data in generating signals, given the cell-highlighting function-
+ality in Excel. (Double-clicking a cell with a formula will highlight
+the cells of data this formula utilizes.) With MATLAB, you have to
+be more careful and remember to run a lag function on certain se-
+ries used for signal generation.
+
+    Even with all the care and caution that goes into creating a
+backtest program without look-ahead bias, sometimes we may
+still let some of it slip in. Some look-ahead bias is quite subtle in
+nature and not easy to avoid, especially if you are using MATLAB.
+
