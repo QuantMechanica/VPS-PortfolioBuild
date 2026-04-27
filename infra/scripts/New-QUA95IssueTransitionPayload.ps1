@@ -27,6 +27,22 @@ $blocker = Get-Content -Raw -LiteralPath $blockerPath | ConvertFrom-Json
 $status = if ($gate.recommended_state -eq 'blocked') { 'blocked' } else { 'in_progress' }
 $statusReason = if ($gate.recommended_state -eq 'blocked') { 'acceptance_not_met' } else { 'acceptance_met' }
 
+$effectiveOwners = @($gate.unblock_owners)
+if (@($effectiveOwners).Count -eq 0) {
+    $effectiveOwners = @($blocker.unblock_owners)
+}
+
+$runtimeRecovered = $false
+if ($null -ne $gate.runtime_visibility_recovered) {
+    $runtimeRecovered = [bool]$gate.runtime_visibility_recovered
+}
+
+$blockedNextAction = if ($runtimeRecovered) {
+    'Runtime visibility restored. Wait for verifier rerun proof (bars_got > 0 with aligned tail).'
+} else {
+    'Wait for runtime custom-symbol bars visibility recovery and verifier rerun proof (bars_got > 0 with aligned tail).'
+}
+
 $payload = [ordered]@{
     issue = $blocker.issue
     generated_at_local = (Get-Date).ToString('yyyy-MM-ddTHH:mm:ssK')
@@ -44,9 +60,9 @@ $payload = [ordered]@{
         tail_shortfall_seconds = [double]$gate.tail_shortfall_seconds
         last_checked_local = $gate.last_checked_local
     }
-    unblock_owners = @($blocker.unblock_owners)
+    unblock_owners = @($effectiveOwners)
     next_action = if ($status -eq 'blocked') {
-        'Wait for runtime custom-symbol bars visibility recovery and verifier rerun proof (bars_got > 0 with aligned tail).'
+        $blockedNextAction
     } else {
         'Proceed with normal completion/handoff path.'
     }

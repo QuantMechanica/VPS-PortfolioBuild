@@ -3,14 +3,11 @@
     "recommended_state":  "blocked",
     "reason":  "acceptance_not_met",
     "disposition":  "defer",
-    "last_checked_local":  "2026-04-27T14:40:50+02:00",
+    "last_checked_local":  "2026-04-27T14:54:30+02:00",
     "bars_got":  0,
-    "tail_shortfall_seconds":  7141.322,
+    "tail_shortfall_seconds":  1775444399.967,
+    "runtime_visibility_recovered":  true,
     "unblock_owners":  [
-                           {
-                               "owner":  "runtime_custom_symbol_owner",
-                               "required_action":  "Restore XTIUSD.DWX M1 bars visibility in T1 runtime (bars APIs return non-zero)."
-                           },
                            {
                                "owner":  "verifier_implementation_owner",
                                "required_action":  "After runtime recovery, rerun verifier and confirm bars_got \u003e 0 with aligned tail."

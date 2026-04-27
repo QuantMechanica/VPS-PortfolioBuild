@@ -36,6 +36,12 @@ if ($barsGot -le 0) { $unmet += 'bars_got_zero' }
 if ($tailShortfall -gt 0.0) { $unmet += 'tail_not_aligned' }
 if ([string]$transition.transition.status -ne 'blocked' -and -not $readyToUnblock) { $unmet += 'transition_state_unexpected_for_blocked' }
 
+$selectedOwners = if ($null -ne $transition.unblock_owners -and @($transition.unblock_owners).Count -gt 0) {
+    @($transition.unblock_owners)
+} else {
+    @($blocker.unblock_owners)
+}
+
 $summary = [ordered]@{
     issue = 'QUA-95'
     generated_at_local = (Get-Date).ToString('yyyy-MM-ddTHH:mm:ssK')
@@ -55,7 +61,7 @@ $summary = [ordered]@{
         reason = $transition.transition.reason
         disposition = $transition.transition.disposition
     }
-    unblock_owners = @($blocker.unblock_owners)
+    unblock_owners = [object[]]@($selectedOwners)
 }
 
 $outDir = Split-Path -Parent $outFull

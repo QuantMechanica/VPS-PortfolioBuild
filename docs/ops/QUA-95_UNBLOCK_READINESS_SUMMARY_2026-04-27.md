@@ -1,7 +1,7 @@
 ﻿# QUA-95 Unblock Readiness Summary (2026-04-27)
 
 Issue: `QUA-95`
-Generated: `2026-04-27T14:41:34+02:00`
+Generated: `2026-04-27T14:56:43+02:00`
 
 ## Status
 
@@ -9,7 +9,7 @@ Generated: `2026-04-27T14:41:34+02:00`
 - `recommended_state`: `blocked`
 - `disposition`: `defer`
 - `bars_got`: `0`
-- `tail_shortfall_seconds`: `7141.322`
+- `tail_shortfall_seconds`: `1775444399.967`
 
 ## Unmet Criteria
 
@@ -19,5 +19,4 @@ Generated: `2026-04-27T14:41:34+02:00`
 
 ## Unblock Owners
 
-- `runtime_custom_symbol_owner`: Restore XTIUSD.DWX M1 bars visibility in T1 runtime (bars APIs return non-zero).
 - `verifier_implementation_owner`: After runtime recovery, rerun verifier and confirm bars_got > 0 with aligned tail.

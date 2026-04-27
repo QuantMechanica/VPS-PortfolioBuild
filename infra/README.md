@@ -182,6 +182,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `scripts/Test-QUA95IssueTransitionPayload.ps1`
   - Validates that `docs/ops/QUA-95_ISSUE_TRANSITION_PAYLOAD_2026-04-27.json`
     is consistent with gate + blocker canonical JSON artifacts.
+  - Owner-count check follows gate snapshot owner set (supports runtime-owner auto-clear after visibility recovery).
   - Returns non-zero on mismatch and is consumed by `Invoke-InfraAudit.ps1`.
 - `scripts/Test-QUA95UnblockReadiness.ps1`
   - Validates unblock-readiness artifact freshness/consistency against blocker status.

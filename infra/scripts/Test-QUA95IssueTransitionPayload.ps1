@@ -53,9 +53,9 @@ if ($payload.transition.last_checked_local -ne $gate.last_checked_local) {
 }
 
 $ownersCountPayload = @($payload.unblock_owners).Count
-$ownersCountBlocker = @($blocker.unblock_owners).Count
-if ($ownersCountPayload -ne $ownersCountBlocker) {
-    Write-Host ("mismatch=unblock_owners_count payload={0} blocker={1}" -f $ownersCountPayload, $ownersCountBlocker)
+$ownersCountGate = @($gate.unblock_owners).Count
+if ($ownersCountPayload -ne $ownersCountGate) {
+    Write-Host ("mismatch=unblock_owners_count payload={0} gate={1}" -f $ownersCountPayload, $ownersCountGate)
     $ok = $false
 }
 

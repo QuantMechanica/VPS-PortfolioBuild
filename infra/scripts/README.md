@@ -191,6 +191,9 @@
 ## `Get-QUA95GateDecision.ps1`
 
 - Reads `docs\ops\QUA-95_XTIUSD_BLOCKER_STATUS_2026-04-27.json` and emits a deterministic transition payload.
+- Reads custom-visibility evidence (`2026-04-27_qua95_xtiusd_custom_visibility_probe_rerun.json`) and
+  sets `runtime_visibility_recovered=true` when target bars are visible and isolated-failure is false.
+- When runtime visibility is recovered, removes `runtime_custom_symbol_owner` from emitted `unblock_owners`.
 - Exit code contract:
   - `0`: `recommended_state=clear`
   - `3`: `recommended_state=blocked`
@@ -212,7 +215,8 @@
   - target status (`blocked` or `in_progress`)
   - reason/disposition/acceptance fields
   - current bars/tail values
-  - unblock owners and deterministic next-action text
+  - unblock owners from gate snapshot (runtime owner auto-cleared when runtime visibility is recovered)
+  - deterministic next-action text reflecting runtime recovery state
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\New-QUA95IssueTransitionPayload.ps1`
 
