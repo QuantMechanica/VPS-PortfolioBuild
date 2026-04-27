@@ -44,6 +44,7 @@ Fix applied:
 - Installer now passes explicit `-PythonExe` to task runner.
 - Added dedicated runner script:
   - `infra/scripts/Run-QUA95BlockerRefresh.ps1`
+- Runner now treats `Invoke-VerifyDisposition` exit code as informational (`defer` can be `1`) and enforces strict pass/fail on downstream sync/summary/integrity steps.
 
 Post-fix verification:
 - Manual run time: `2026-04-27 09:55:29` local
@@ -51,3 +52,7 @@ Post-fix verification:
 - task log shows:
   - `[2026-04-27T09:55:29+02:00] start task=QM_QUA95_BlockerRefresh`
   - `[2026-04-27T09:55:45+02:00] success task=QM_QUA95_BlockerRefresh`
+
+Final scheduled-task verification after runner hardening:
+- `Last Run Time: 4/27/2026 10:01:55 AM`
+- `Last Result: 0`

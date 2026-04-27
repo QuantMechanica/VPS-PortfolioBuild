@@ -153,7 +153,9 @@
   1. `Invoke-VerifyDisposition.ps1`
   2. `Update-QUA95BlockerStatus.ps1`
   3. `Write-QUA95BlockedSummary.ps1`
-  4. `Test-QUA95HandoffIntegrity.ps1`
+  4. Refreshes `QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.sha256`
+  5. `Test-QUA95HandoffIntegrity.ps1`
+- Enforces non-zero exit handling for each step; task fails when any step exits non-zero.
 - Default log:
   - `C:\QM\repo\infra\smoke\qua95_blocker_refresh_task.log`
 
