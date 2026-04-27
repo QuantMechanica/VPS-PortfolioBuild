@@ -154,5 +154,23 @@ class ReadinessTests(unittest.TestCase):
         self.assertEqual(row["bars_expected"], 446113)
         self.assertEqual(row["bars_got"], 0)
 
+    def test_summarize_verify_failures_parses_real_xngusd_line(self):
+        output = (
+            "[FAIL_tail_mid_bars] XNGUSD.DWX: source=XNGUSD; custom_tv=10.0; broker_tv=10.0; "
+            "rel_err=0.0000; head_ms expected=1506906007813/got=1506906007813; "
+            "tail_ms expected=1775444289019/got=0; mid_ticks_5min=0; "
+            "bars expected=383,654/got=0 drift=-383,654; path=Custom\\Commodities\\Energies\\XNGUSD.DWX"
+        )
+        summary = self.mod.summarize_verify_failures(output)
+        self.assertEqual(summary["fail_count"], 1)
+        self.assertFalse(summary["systemic_zero_bars"])
+        self.assertFalse(summary["systemic_zero_mid_ticks"])
+        row = summary["fail_rows"][0]
+        self.assertEqual(row["symbol"], "XNGUSD.DWX")
+        self.assertEqual(row["verdict"], "FAIL_tail_mid_bars")
+        self.assertEqual(row["mid_ticks_5min"], 0)
+        self.assertEqual(row["bars_expected"], 383654)
+        self.assertEqual(row["bars_got"], 0)
+
 if __name__ == "__main__":
     unittest.main()
