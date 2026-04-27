@@ -4,6 +4,8 @@
   "scope": "Investigate verifier failure for WS30.DWX",
   "symbol_scope_result": "clear",
   "recommended_issue_transition": "done",
+  "ready_for_close": true,
+  "last_handoff_run_id": "610c3b9b-7b00-44b7-9fa8-7660b3ff0921",
   "summary": {
     "ws30_symbol_corruption": false,
     "bars_failure_cause": "one-shot full-span copy_rates_range query shape",
