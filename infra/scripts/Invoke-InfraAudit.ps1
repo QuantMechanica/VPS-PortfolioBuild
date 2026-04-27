@@ -21,6 +21,8 @@ param(
     [string]$Qua95BlockerStatusJson = 'C:\QM\repo\docs\ops\QUA-95_XTIUSD_BLOCKER_STATUS_2026-04-27.json',
     [string]$Qua95BlockedAssertionMd = 'C:\QM\repo\docs\ops\QUA-95_BLOCKED_STATE_ASSERTION_2026-04-27.md',
     [int]$Qua95BlockedAssertionMaxLagMinutes = 30,
+    [string]$Qua95UnblockReadinessJson = 'C:\QM\repo\docs\ops\QUA-95_UNBLOCK_READINESS_2026-04-27.json',
+    [int]$Qua95UnblockReadinessMaxLagMinutes = 30,
     [string]$Qua95OpsBundleManifestScript = 'C:\QM\repo\infra\scripts\Test-QUA95OpsBundleManifest.ps1',
     [string]$Qua95BlockedHeartbeatWrapperTestScript = 'C:\QM\repo\infra\monitoring\Test-QUA95BlockedHeartbeatWrapper.ps1',
     [string]$OutJson = 'C:\QM\repo\infra\reports\infra_audit_latest.json',
@@ -285,6 +287,51 @@ else {
         lag_minutes = $lag
         blocker_last_checked = $blocker.last_checked_local
         assertion_last_write_local = $assertionWrite.ToString('o')
+    }
+}
+
+# QUA-95 unblock readiness freshness/consistency
+if (-not (Test-Path -LiteralPath $Qua95BlockerStatusJson)) {
+    Add-Check -Name 'qua95_unblock_readiness_freshness' -Status 'warn' -Meta @{
+        reason = 'blocker_status_missing'
+        blocker_status_json = $Qua95BlockerStatusJson
+    }
+}
+elseif (-not (Test-Path -LiteralPath $Qua95UnblockReadinessJson)) {
+    Add-Check -Name 'qua95_unblock_readiness_freshness' -Status 'critical' -Meta @{
+        reason = 'unblock_readiness_missing'
+        unblock_readiness_json = $Qua95UnblockReadinessJson
+    }
+}
+else {
+    $blocker = Get-Content -Raw -LiteralPath $Qua95BlockerStatusJson | ConvertFrom-Json
+    $readiness = Get-Content -Raw -LiteralPath $Qua95UnblockReadinessJson | ConvertFrom-Json
+    $blockerChecked = Get-Date $blocker.last_checked_local
+    $readinessWrite = (Get-Item -LiteralPath $Qua95UnblockReadinessJson).LastWriteTime
+    $lag = [math]::Round(([math]::Abs(($readinessWrite - $blockerChecked).TotalMinutes)), 2)
+    $ownersCount = @($readiness.unblock_owners).Count
+    $readyFlag = [bool]$readiness.readiness.ready_to_unblock
+    $barsGot = [int]$readiness.current.bars_got
+
+    $status = 'ok'
+    if ($lag -gt $Qua95UnblockReadinessMaxLagMinutes) {
+        $status = 'critical'
+    }
+    if ($ownersCount -lt 1) {
+        $status = 'critical'
+    }
+    if ($barsGot -le 0 -and $readyFlag) {
+        $status = 'critical'
+    }
+
+    Add-Check -Name 'qua95_unblock_readiness_freshness' -Status $status -Meta @{
+        max_lag_minutes = $Qua95UnblockReadinessMaxLagMinutes
+        lag_minutes = $lag
+        blocker_last_checked = $blocker.last_checked_local
+        readiness_last_write_local = $readinessWrite.ToString('o')
+        ready_to_unblock = $readyFlag
+        bars_got = $barsGot
+        unblock_owner_count = $ownersCount
     }
 }
 

@@ -1,6 +1,6 @@
 ﻿{
     "issue":  "QUA-95",
-    "generated_at_local":  "2026-04-27T11:33:07+02:00",
+    "generated_at_local":  "2026-04-27T11:35:28+02:00",
     "overall_status":  "ok",
     "checks":  [
                    {
@@ -31,13 +31,13 @@
                        "name":  "blocked_heartbeat_wrapper",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok gate_state=blocked audit_status=critical checks_count=19"
+                       "output":  "status=ok gate_state=blocked audit_status=critical checks_count=20"
                    },
                    {
                        "name":  "blocker_task_health",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok task=QM_QUA95_BlockerRefresh last_run=2026-04-27T11:01:01.0000000+02:00 age_minutes=32.09"
+                       "output":  "status=ok task=QM_QUA95_BlockerRefresh last_run=2026-04-27T11:01:01.0000000+02:00 age_minutes=34.46"
                    }
                ]
 }
