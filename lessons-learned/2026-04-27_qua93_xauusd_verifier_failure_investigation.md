@@ -216,6 +216,16 @@ Use:
 - run this check before `prepare_import.py` / verifier loops;
 - block reimport when tails are misaligned to avoid producing stale sidecars and false verifier churn.
 
+## Hourly Runtime Validation (2026-04-27 09:45 CEST)
+
+Executed:
+- `python C:\QM\repo\infra\scripts\dwx_hourly_check.py`
+- validation log: `infra/smoke/dwx_hourly_check_2026-04-27_094503_qua93_warn_validation.log`
+
+Observed:
+- `warn XAUUSD: already imported, but csv tail alignment failed (tail gap 167.983h > 1.000h)`
+- confirms the new visibility path works at runtime even when staging is skipped for already-imported symbols.
+
 ## Durable change in this heartbeat
 
 - Added this investigation record for `QUA-93` with concrete classifier output and triage conclusion.
@@ -235,6 +245,8 @@ Use:
 - Added CSV-tail freshness evidence showing stale/misaligned input files (tick vs M1 horizon mismatch).
 - Added an automated CSV-tail alignment guard and validated failure on current `XAUUSD` inputs.
 - Integrated CSV-tail alignment as a hard staging gate in `infra/scripts/dwx_hourly_check.py` (defer instead of queue when misaligned).
+- Added visibility warning for already-imported symbols when CSV tails are misaligned, so stale inputs are still surfaced in hourly logs.
+- Validated runtime warning emission for `XAUUSD` in hourly execution logs.
 
 ## Next action
 
