@@ -7,8 +7,10 @@ param(
     [string]$AuditSignalCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95AuditSignal.ps1',
     [string]$UnblockOwnerConsistencyCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95UnblockOwnerConsistency.ps1',
     [string]$CanonicalSnapshotCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95CanonicalSnapshot.ps1',
+    [string]$DirectVerifierProofCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95DirectVerifierProof.ps1',
     [string]$CustomVisibilityProofCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95CustomVisibilityProof.ps1',
     [string]$EvidenceCohesionCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95EvidenceCohesion.ps1',
+    [string]$FailureSignatureCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95FailureSignature.ps1',
     [string]$BlockerRefreshActionWiringCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95BlockerRefreshActionWiring.ps1',
     [string]$HeartbeatCustomVisibilityCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95HeartbeatCustomVisibility.ps1'
 )
@@ -125,6 +127,19 @@ if ($customVisibilityCode -ne 0) {
     exit 2
 }
 
+if (-not (Test-Path -LiteralPath $DirectVerifierProofCheckScript)) {
+    Write-Host ("status=critical task={0} issues=direct_verifier_proof_check_missing path={1}" -f $TaskName, $DirectVerifierProofCheckScript)
+    exit 2
+}
+
+$directVerifierProofOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $DirectVerifierProofCheckScript 2>&1
+$directVerifierProofCode = $LASTEXITCODE
+if ($directVerifierProofCode -ne 0) {
+    $directVerifierProofText = ($directVerifierProofOut | ForEach-Object { $_.ToString() }) -join '; '
+    Write-Host ("status=critical task={0} issues=direct_verifier_proof_check_failed exit_code={1} output={2}" -f $TaskName, $directVerifierProofCode, $directVerifierProofText)
+    exit 2
+}
+
 if (-not (Test-Path -LiteralPath $EvidenceCohesionCheckScript)) {
     Write-Host ("status=critical task={0} issues=evidence_cohesion_check_missing path={1}" -f $TaskName, $EvidenceCohesionCheckScript)
     exit 2
@@ -135,6 +150,19 @@ $evidenceCohesionCode = $LASTEXITCODE
 if ($evidenceCohesionCode -ne 0) {
     $evidenceCohesionText = ($evidenceCohesionOut | ForEach-Object { $_.ToString() }) -join '; '
     Write-Host ("status=critical task={0} issues=evidence_cohesion_check_failed exit_code={1} output={2}" -f $TaskName, $evidenceCohesionCode, $evidenceCohesionText)
+    exit 2
+}
+
+if (-not (Test-Path -LiteralPath $FailureSignatureCheckScript)) {
+    Write-Host ("status=critical task={0} issues=failure_signature_check_missing path={1}" -f $TaskName, $FailureSignatureCheckScript)
+    exit 2
+}
+
+$failureSignatureOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $FailureSignatureCheckScript 2>&1
+$failureSignatureCode = $LASTEXITCODE
+if ($failureSignatureCode -ne 0) {
+    $failureSignatureText = ($failureSignatureOut | ForEach-Object { $_.ToString() }) -join '; '
+    Write-Host ("status=critical task={0} issues=failure_signature_check_failed exit_code={1} output={2}" -f $TaskName, $failureSignatureCode, $failureSignatureText)
     exit 2
 }
 

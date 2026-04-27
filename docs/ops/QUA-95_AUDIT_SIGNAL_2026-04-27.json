@@ -1,11 +1,11 @@
 ﻿{
     "issue":  "QUA-95",
-    "generated_at_local":  "2026-04-27T14:16:09+02:00",
+    "generated_at_local":  "2026-04-27T14:20:50+02:00",
     "infra_audit_overall_status":  "critical",
     "infra_audit_checks_count":  32,
-    "infra_audit_issues_count":  2,
+    "infra_audit_issues_count":  3,
     "qua95_checks_count":  20,
-    "qua95_issues_count":  0,
+    "qua95_issues_count":  1,
     "non_qua95_issues_count":  2,
     "qua95_checks":  [
                          {
@@ -82,7 +82,7 @@
                          },
                          {
                              "name":  "qua95_ops_bundle_manifest",
-                             "status":  "ok"
+                             "status":  "critical"
                          },
                          {
                              "name":  "qua95_blocked_heartbeat_wrapper",
@@ -90,7 +90,7 @@
                          }
                      ],
     "qua95_issue_names":  [
-
+                              "qua95_ops_bundle_manifest"
                           ],
     "non_qua95_issue_names":  [
                                   "t6_live_demo_isolation",

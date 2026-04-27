@@ -122,7 +122,11 @@ Observed:
 Preview verification now also requires:
 - `preview_unblock_owner_consistency_check_script=C:\QM\repo\infra\scripts\Test-QUA95UnblockOwnerConsistency.ps1`
 - preview action contains `-UnblockOwnerConsistencyCheckScript "C:\QM\repo\infra\scripts\Test-QUA95UnblockOwnerConsistency.ps1"`
+- `preview_direct_verifier_proof_check_script=C:\QM\repo\infra\scripts\Test-QUA95DirectVerifierProof.ps1`
+- preview action contains `-DirectVerifierProofCheckScript "C:\QM\repo\infra\scripts\Test-QUA95DirectVerifierProof.ps1"`
 - `preview_evidence_cohesion_check_script=C:\QM\repo\infra\scripts\Test-QUA95EvidenceCohesion.ps1`
 - preview action contains `-EvidenceCohesionCheckScript "C:\QM\repo\infra\scripts\Test-QUA95EvidenceCohesion.ps1"`
+- `preview_failure_signature_check_script=C:\QM\repo\infra\scripts\Test-QUA95FailureSignature.ps1`
+- preview action contains `-FailureSignatureCheckScript "C:\QM\repo\infra\scripts\Test-QUA95FailureSignature.ps1"`
 - `preview_blocker_refresh_action_wiring_check_script=C:\QM\repo\infra\scripts\Test-QUA95BlockerRefreshActionWiring.ps1`
 - preview action contains `-BlockerRefreshActionWiringCheckScript "C:\QM\repo\infra\scripts\Test-QUA95BlockerRefreshActionWiring.ps1"`

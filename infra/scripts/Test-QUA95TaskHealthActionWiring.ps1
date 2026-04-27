@@ -7,8 +7,10 @@ param(
         '-AuditSignalCheckScript',
         '-UnblockOwnerConsistencyCheckScript',
         '-CanonicalSnapshotCheckScript',
+        '-DirectVerifierProofCheckScript',
         '-CustomVisibilityProofCheckScript',
         '-EvidenceCohesionCheckScript',
+        '-FailureSignatureCheckScript',
         '-BlockerRefreshActionWiringCheckScript',
         '-HeartbeatCustomVisibilityCheckScript'
     )
