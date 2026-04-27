@@ -1,6 +1,6 @@
 ﻿{
     "issue":  "QUA-95",
-    "generated_at_local":  "2026-04-27T14:10:07+02:00",
+    "generated_at_local":  "2026-04-27T14:12:18+02:00",
     "overall_status":  "ok",
     "checks":  [
                    {
@@ -14,6 +14,12 @@
                        "status":  "ok",
                        "exit_code":  0,
                        "output":  "status=ok bars_got=0 disposition=defer qua95_issues=0 non_qua95_issues=2"
+                   },
+                   {
+                       "name":  "canonical_snapshot_freshness",
+                       "status":  "ok",
+                       "exit_code":  0,
+                       "output":  "status=ok snapshot_age_minutes=24.06 max_age_minutes=180"
                    },
                    {
                        "name":  "handoff_integrity",
@@ -37,7 +43,7 @@
                        "name":  "unblock_readiness",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok lag_minutes=7.66 ready_to_unblock=False bars_got=0 owner_count=2"
+                       "output":  "status=ok lag_minutes=9.32 ready_to_unblock=False bars_got=0 owner_count=2"
                    },
                    {
                        "name":  "unblock_owner_consistency",
@@ -109,7 +115,7 @@
                        "name":  "blocker_task_health",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok task=QM_QUA95_BlockerRefresh last_run=2026-04-27T14:01:01.0000000+02:00 age_minutes=9.05"
+                       "output":  "status=ok task=QM_QUA95_BlockerRefresh last_run=2026-04-27T14:01:01.0000000+02:00 age_minutes=11.24"
                    }
                ]
 }

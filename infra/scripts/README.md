@@ -424,6 +424,20 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA95CanonicalSnapshot.ps1`
 
+## `Test-QUA95CanonicalSnapshotFreshness.ps1`
+
+- Validates canonical snapshot freshness:
+  - `docs\ops\QUA-95_CANONICAL_SNAPSHOT_2026-04-27.json`
+- Checks:
+  - issue/flow identity
+  - `generated_at_local` parseability and non-future timestamp
+  - age within `-MaxAgeMinutes` (default `180`)
+- Exit codes:
+  - `0`: snapshot is fresh
+  - `1`: stale/invalid snapshot
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA95CanonicalSnapshotFreshness.ps1`
+
 ## `Test-QUA95TaskHealthActionWiring.ps1`
 
 - Validates scheduler action-argument wiring for:
@@ -501,22 +515,23 @@
 - Runs:
   1. `Test-QUA95OpsBundleManifest.ps1`
   2. `Test-QUA95CanonicalSnapshot.ps1`
-  3. `Test-QUA95HandoffIntegrity.ps1`
-  4. `Test-QUA95IssueTransitionPayload.ps1`
-  5. `Test-QUA95BlockedInvariant.ps1`
-  6. `Test-QUA95UnblockReadiness.ps1`
-  7. `Test-QUA95UnblockOwnerConsistency.ps1`
-  8. `Test-QUA95UnblockReadinessSummary.ps1`
-  9. `Test-QUA95AuditSignal.ps1`
-  10. `Test-QUA95DirectVerifierProof.ps1`
-  11. `Test-QUA95CustomVisibilityProof.ps1`
-  12. `Test-QUA95EvidenceCohesion.ps1`
-  13. `Test-QUA95FailureSignature.ps1`
-  14. `Test-QUA95HeartbeatCustomVisibility.ps1`
-  15. `Test-QUA95TaskHealthActionWiring.ps1`
-  16. `Test-QUA95BlockerRefreshActionWiring.ps1`
-  17. `monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
-  18. `monitoring/Test-QUA95BlockerTaskHealth.ps1`
+  3. `Test-QUA95CanonicalSnapshotFreshness.ps1`
+  4. `Test-QUA95HandoffIntegrity.ps1`
+  5. `Test-QUA95IssueTransitionPayload.ps1`
+  6. `Test-QUA95BlockedInvariant.ps1`
+  7. `Test-QUA95UnblockReadiness.ps1`
+  8. `Test-QUA95UnblockOwnerConsistency.ps1`
+  9. `Test-QUA95UnblockReadinessSummary.ps1`
+  10. `Test-QUA95AuditSignal.ps1`
+  11. `Test-QUA95DirectVerifierProof.ps1`
+  12. `Test-QUA95CustomVisibilityProof.ps1`
+  13. `Test-QUA95EvidenceCohesion.ps1`
+  14. `Test-QUA95FailureSignature.ps1`
+  15. `Test-QUA95HeartbeatCustomVisibility.ps1`
+  16. `Test-QUA95TaskHealthActionWiring.ps1`
+  17. `Test-QUA95BlockerRefreshActionWiring.ps1`
+  18. `monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
+  19. `monitoring/Test-QUA95BlockerTaskHealth.ps1`
 - Emits JSON summary to stdout and returns:
   - `0` when all checks pass
   - `2` when any check is critical

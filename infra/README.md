@@ -182,6 +182,8 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Validates blocked-heartbeat custom-visibility section against canonical custom-visibility evidence.
 - `scripts/Test-QUA95CanonicalSnapshot.ps1`
   - Validates canonical snapshot summary JSON against blocker + audit-signal artifacts, including custom-visibility proof step/artifacts.
+- `scripts/Test-QUA95CanonicalSnapshotFreshness.ps1`
+  - Validates canonical snapshot timestamp freshness against a bounded max-age window.
 - `scripts/Test-QUA95TaskHealthActionWiring.ps1`
   - Validates `QM_QUA95_TaskHealth_15min` action arguments include all required QUA-95 check flags.
 - `scripts/Test-QUA95BlockerRefreshActionWiring.ps1`

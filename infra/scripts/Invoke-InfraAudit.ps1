@@ -34,6 +34,7 @@ param(
     [string]$Qua95FailureSignatureCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95FailureSignature.ps1',
     [string]$Qua95HeartbeatCustomVisibilityCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95HeartbeatCustomVisibility.ps1',
     [string]$Qua95CanonicalSnapshotCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95CanonicalSnapshot.ps1',
+    [string]$Qua95CanonicalSnapshotFreshnessCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95CanonicalSnapshotFreshness.ps1',
     [string]$Qua95OpsBundleManifestScript = 'C:\QM\repo\infra\scripts\Test-QUA95OpsBundleManifest.ps1',
     [string]$Qua95BlockedHeartbeatWrapperTestScript = 'C:\QM\repo\infra\monitoring\Test-QUA95BlockedHeartbeatWrapper.ps1',
     [string]$OutJson = 'C:\QM\repo\infra\reports\infra_audit_latest.json',
@@ -516,6 +517,24 @@ else {
     Add-Check -Name 'qua95_canonical_snapshot' -Status $canonicalStatus -Meta @{
         exit_code = $canonicalCode
         output = $canonicalText
+    }
+}
+
+# QUA-95 canonical snapshot freshness
+if (-not (Test-Path -LiteralPath $Qua95CanonicalSnapshotFreshnessCheckScript)) {
+    Add-Check -Name 'qua95_canonical_snapshot_freshness' -Status 'warn' -Meta @{
+        reason = 'check_script_missing'
+        path = $Qua95CanonicalSnapshotFreshnessCheckScript
+    }
+}
+else {
+    $canonicalFreshnessOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $Qua95CanonicalSnapshotFreshnessCheckScript 2>&1
+    $canonicalFreshnessCode = $LASTEXITCODE
+    $canonicalFreshnessText = ($canonicalFreshnessOut | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
+    $canonicalFreshnessStatus = if ($canonicalFreshnessCode -eq 0) { 'ok' } else { 'critical' }
+    Add-Check -Name 'qua95_canonical_snapshot_freshness' -Status $canonicalFreshnessStatus -Meta @{
+        exit_code = $canonicalFreshnessCode
+        output = $canonicalFreshnessText
     }
 }
 

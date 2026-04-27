@@ -10,6 +10,7 @@ $ErrorActionPreference = 'Stop'
 $steps = @(
     @{ name = 'ops_bundle_manifest'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95OpsBundleManifest.ps1' },
     @{ name = 'canonical_snapshot'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95CanonicalSnapshot.ps1' },
+    @{ name = 'canonical_snapshot_freshness'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95CanonicalSnapshotFreshness.ps1' },
     @{ name = 'handoff_integrity'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95HandoffIntegrity.ps1' },
     @{ name = 'transition_payload'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95IssueTransitionPayload.ps1' },
     @{ name = 'blocked_invariant'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95BlockedInvariant.ps1' },

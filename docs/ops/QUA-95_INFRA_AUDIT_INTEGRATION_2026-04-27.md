@@ -1,7 +1,7 @@
 # QUA-95 Infra Audit Integration Proof (2026-04-27)
 
 Issue: `QUA-95`  
-Scope: confirm blocker task health, blocker-refresh action wiring, task-health action wiring, combined automation health, issue-transition payload consistency, blocked invariant enforcement, handoff integrity, blocked assertion freshness, unblock-readiness freshness, unblock-owner/action consistency, audit-signal consistency, direct-verifier proof consistency, custom-visibility proof consistency, cross-artifact evidence cohesion, blocked failure-signature coherence, heartbeat custom-visibility coherence, canonical-snapshot consistency, ops-bundle manifest integrity, and blocked-heartbeat wrapper validation are present in central infra audit output.
+Scope: confirm blocker task health, blocker-refresh action wiring, task-health action wiring, combined automation health, issue-transition payload consistency, blocked invariant enforcement, handoff integrity, blocked assertion freshness, unblock-readiness freshness, unblock-owner/action consistency, audit-signal consistency, direct-verifier proof consistency, custom-visibility proof consistency, cross-artifact evidence cohesion, blocked failure-signature coherence, heartbeat custom-visibility coherence, canonical-snapshot consistency, canonical-snapshot freshness, ops-bundle manifest integrity, and blocked-heartbeat wrapper validation are present in central infra audit output.
 
 ## Command
 
@@ -48,6 +48,13 @@ Latest integration run:
 
 ```text
 Infra audit completed: status=critical, checks=31, issues=2
+Report: C:\QM\repo\infra\reports\infra_audit_latest.json
+```
+
+Latest integration run:
+
+```text
+Infra audit completed: status=critical, checks=32, issues=2
 Report: C:\QM\repo\infra\reports\infra_audit_latest.json
 ```
 
@@ -229,6 +236,16 @@ From `infra/reports/infra_audit_latest.json`:
 
 ```json
 {
+  "name": "qua95_canonical_snapshot_freshness",
+  "status": "ok",
+  "meta": {
+    "exit_code": 0
+  }
+}
+```
+
+```json
+{
   "name": "qua95_ops_bundle_manifest",
   "status": "ok",
   "meta": {
@@ -249,6 +266,6 @@ From `infra/reports/infra_audit_latest.json`:
 
 ## Interpretation
 
-- QUA-95 scheduler health, blocker-refresh action wiring, task-health action wiring, combined automation health, transition payload consistency, blocked invariant enforcement, handoff integrity, blocked assertion freshness, unblock-readiness freshness, unblock-owner/action consistency, audit-signal consistency, direct-verifier proof consistency, custom-visibility proof consistency, cross-artifact evidence cohesion, blocked failure-signature coherence, heartbeat custom-visibility coherence, canonical-snapshot consistency, ops-bundle manifest integrity, and blocked-heartbeat wrapper validation are now audited in the same report as disk, terminal liveness, Drive sync, and stale index-lock checks.
+- QUA-95 scheduler health, blocker-refresh action wiring, task-health action wiring, combined automation health, transition payload consistency, blocked invariant enforcement, handoff integrity, blocked assertion freshness, unblock-readiness freshness, unblock-owner/action consistency, audit-signal consistency, direct-verifier proof consistency, custom-visibility proof consistency, cross-artifact evidence cohesion, blocked failure-signature coherence, heartbeat custom-visibility coherence, canonical-snapshot consistency, canonical-snapshot freshness, ops-bundle manifest integrity, and blocked-heartbeat wrapper validation are now audited in the same report as disk, terminal liveness, Drive sync, and stale index-lock checks.
 - The audit can stay overall `critical` for unrelated checks while QUA-95 task health remains independently visible as `ok`.
 - Latest run shows all QUA-95 checks `ok`; the remaining audit issues are outside QUA-95 scope.
