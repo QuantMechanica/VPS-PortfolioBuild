@@ -63,6 +63,24 @@
 - Default target is `WS30.DWX`; span comes from latest
   `imports\\done\\*_<symbol>.import.txt`.
 
+## `probe_custom_symbol_visibility.py`
+
+- Read-only MT5 probe that compares a custom symbol (for example `XTIUSD.DWX`)
+  against its broker/source symbol (for example `XTIUSD`).
+- Uses both bars APIs:
+  - `copy_rates_range(...)`
+  - `copy_rates_from_pos(...)`
+- Also captures recent ticks (`copy_ticks_from(...)`) for context.
+- Emits `isolated_custom_bars_visibility_failure=true` when:
+  - source bars are available, and
+  - custom bars are zero/failing in the same session.
+- Exit codes:
+  - `0`: no isolated custom-bars failure detected
+  - `1`: isolated custom-bars visibility failure detected
+  - `2`: MT5 init failed
+- Example:
+  - `python C:\QM\repo\infra\scripts\probe_custom_symbol_visibility.py --target XTIUSD.DWX --json-out C:\QM\repo\lessons-learned\evidence\2026-04-27_qua95_xtiusd_custom_visibility_probe.json`
+
 ## `verify_import_chunked_probe.py`
 
 - Read-only verifier mirror for symbol-level deep dive.

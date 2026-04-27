@@ -68,11 +68,18 @@ Probe artifacts:
 - `lessons-learned/evidence/2026-04-27_qua95_xtiusd_probe.md`
 - `lessons-learned/evidence/2026-04-27_qua95_xtiusd_chunked_probe.json`
 - `lessons-learned/evidence/2026-04-27_qua95_xtiusd_source_vs_custom_api_probe.md`
+- `lessons-learned/evidence/2026-04-27_qua95_xtiusd_custom_visibility_probe.json`
+- `lessons-learned/evidence/2026-04-27_qua95_xtiusd_custom_visibility_probe.md`
 
 Source-vs-custom API comparison (same terminal/session) additionally confirms:
 - `XTIUSD` source symbol returns M1 bars (`rates_range_2d=257`, `rates_from_pos=10`).
 - `XTIUSD.DWX` custom symbol returns zero/fail on bars APIs (`rates_range_2d=0`, `rates_from_pos=0` with `Terminal: Call failed`).
 - Therefore the blocker is not broker source feed unavailability; it is custom-symbol/runtime bars visibility plus verifier handling.
+
+Automated classification probe (`infra/scripts/probe_custom_symbol_visibility.py`) confirms:
+- `isolated_custom_bars_visibility_failure=True`
+- target bars (range/pos): `0/0`
+- source bars (range/pos): `260/10`
 
 ## Durable change in this heartbeat
 
@@ -80,6 +87,7 @@ Source-vs-custom API comparison (same terminal/session) additionally confirms:
 - Added archived evidence artifacts (raw log + structured JSON).
 - Added this investigation report for traceable issue-level disposition.
 - Added targeted preflight/chunked probe artifacts that narrow the failure to verifier bars-read behavior.
+- Added reusable `probe_custom_symbol_visibility.py` infra diagnostic and QUA-95 evidence output.
 
 ## Final Disposition
 

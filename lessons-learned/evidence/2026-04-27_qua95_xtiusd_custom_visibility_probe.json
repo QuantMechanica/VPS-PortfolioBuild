@@ -1,0 +1,45 @@
+{
+  "target": "XTIUSD.DWX",
+  "source": "XTIUSD",
+  "isolated_custom_bars_visibility_failure": true,
+  "target_probe": {
+    "symbol": "XTIUSD.DWX",
+    "rates_range_m1_count": 0,
+    "rates_range_m1_err": [
+      1,
+      "Success"
+    ],
+    "rates_from_pos_m1_count": 0,
+    "rates_from_pos_m1_err": [
+      -1,
+      "Terminal: Call failed"
+    ],
+    "ticks_from_count": 0,
+    "ticks_from_err": [
+      1,
+      "Success"
+    ],
+    "lookback_days": 2,
+    "tick_minutes": 10
+  },
+  "source_probe": {
+    "symbol": "XTIUSD",
+    "rates_range_m1_count": 260,
+    "rates_range_m1_err": [
+      1,
+      "Success"
+    ],
+    "rates_from_pos_m1_count": 10,
+    "rates_from_pos_m1_err": [
+      1,
+      "Success"
+    ],
+    "ticks_from_count": 200,
+    "ticks_from_err": [
+      1,
+      "Success"
+    ],
+    "lookback_days": 2,
+    "tick_minutes": 10
+  }
+}
