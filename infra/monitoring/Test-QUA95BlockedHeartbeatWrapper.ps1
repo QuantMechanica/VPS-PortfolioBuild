@@ -18,7 +18,8 @@ $args = @(
     '-NoProfile',
     '-ExecutionPolicy', 'Bypass',
     '-File', $WrapperScript,
-    '-RepoRoot', $RepoRoot
+    '-RepoRoot', $RepoRoot,
+    '-SkipAudit'
 )
 if ($SkipRefresh.IsPresent) {
     $args += '-SkipRefresh'

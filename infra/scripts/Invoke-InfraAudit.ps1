@@ -17,6 +17,7 @@ param(
     [string]$Qua95TaskHealthScript = 'C:\QM\repo\infra\monitoring\Test-QUA95BlockerTaskHealth.ps1',
     [string]$Qua95TransitionPayloadCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95IssueTransitionPayload.ps1',
     [string]$Qua95HandoffIntegrityScript = 'C:\QM\repo\infra\scripts\Test-QUA95HandoffIntegrity.ps1',
+    [string]$Qua95BlockedHeartbeatWrapperTestScript = 'C:\QM\repo\infra\monitoring\Test-QUA95BlockedHeartbeatWrapper.ps1',
     [string]$OutJson = 'C:\QM\repo\infra\reports\infra_audit_latest.json',
     [switch]$FailOnCritical
 )
@@ -234,6 +235,24 @@ else {
     Add-Check -Name 'qua95_handoff_integrity' -Status $integrityStatus -Meta @{
         exit_code = $integrityCode
         output = $integrityText
+    }
+}
+
+# QUA-95 blocked-heartbeat wrapper validation
+if (-not (Test-Path -LiteralPath $Qua95BlockedHeartbeatWrapperTestScript)) {
+    Add-Check -Name 'qua95_blocked_heartbeat_wrapper' -Status 'warn' -Meta @{
+        reason = 'wrapper_test_script_missing'
+        path = $Qua95BlockedHeartbeatWrapperTestScript
+    }
+}
+else {
+    $wrapperOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $Qua95BlockedHeartbeatWrapperTestScript 2>&1
+    $wrapperCode = $LASTEXITCODE
+    $wrapperText = ($wrapperOut | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
+    $wrapperStatus = if ($wrapperCode -eq 0) { 'ok' } else { 'critical' }
+    Add-Check -Name 'qua95_blocked_heartbeat_wrapper' -Status $wrapperStatus -Meta @{
+        exit_code = $wrapperCode
+        output = $wrapperText
     }
 }
 

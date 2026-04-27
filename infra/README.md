@@ -30,6 +30,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
     - QUA-95 blocker refresh task health (`QM_QUA95_BlockerRefresh`)
     - QUA-95 issue-transition payload consistency (`Test-QUA95IssueTransitionPayload.ps1`)
     - QUA-95 handoff integrity (`Test-QUA95HandoffIntegrity.ps1`)
+    - QUA-95 blocked-heartbeat wrapper validation (`Test-QUA95BlockedHeartbeatWrapper.ps1`)
   - Writes machine-readable JSON report to `infra/reports/infra_audit_latest.json`.
 - `scripts/Install-AggregatorStateTask.ps1`
   - Registers Task Scheduler job `QM_AggregatorState_1min` as `SYSTEM`.
@@ -90,7 +91,8 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Validates QUA-95 transition payload consistency via `scripts/Test-QUA95IssueTransitionPayload.ps1`.
   - Returns non-zero on critical task-health drift.
 - `monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
-  - Runs `Invoke-QUA95BlockedHeartbeat.ps1` (audit-only by default) and validates
+  - Runs `Invoke-QUA95BlockedHeartbeat.ps1` in non-recursive validation mode
+    (`-SkipRefresh -SkipAudit`) and validates
     consolidated heartbeat JSON structure and key blocked-state fields.
 - `scripts/Test-QUA95IssueTransitionPayload.ps1`
   - Validates that `docs/ops/QUA-95_ISSUE_TRANSITION_PAYLOAD_2026-04-27.json`
