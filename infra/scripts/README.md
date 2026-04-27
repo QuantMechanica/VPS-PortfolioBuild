@@ -720,6 +720,16 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Run-QUA207RuntimeCompletionHeartbeat.ps1`
 
+## `Install-QUA207RuntimeHeartbeatTask.ps1`
+
+- Idempotently installs a Scheduler task for periodic QUA-207 runtime heartbeat refresh.
+- Defaults:
+  - task name: `QM_QUA207_RuntimeHeartbeat_30min`
+  - interval: `30` minutes
+  - principal: `SYSTEM` (highest)
+- Preview mode:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-QUA207RuntimeHeartbeatTask.ps1 -PreviewOnly`
+
 ## `New-QUA207IssueComment.ps1`
 
 - Generates ready-to-post QUA-207 issue comment markdown from:

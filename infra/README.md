@@ -201,6 +201,9 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `scripts/Run-QUA207RuntimeCompletionHeartbeat.ps1`
   - Runs QUA-207 transition payload generation + completion check in one command.
   - Writes `docs/ops/QUA-207_RUNTIME_HEARTBEAT_2026-04-27.json`.
+- `scripts/Install-QUA207RuntimeHeartbeatTask.ps1`
+  - Registers scheduler task `QM_QUA207_RuntimeHeartbeat_30min` to run the QUA-207 runtime heartbeat runner as `SYSTEM`.
+  - Safe to re-run (`Register-ScheduledTask -Force`).
 - `scripts/New-QUA207IssueComment.ps1`
   - Generates `docs/ops/QUA-207_ISSUE_COMMENT_2026-04-27.md` from live transition + evidence artifacts.
 - `scripts/Assert-CommitAllowlist.ps1`
