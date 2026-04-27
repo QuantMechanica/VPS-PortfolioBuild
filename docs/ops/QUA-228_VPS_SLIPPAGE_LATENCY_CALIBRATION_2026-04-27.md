@@ -18,7 +18,15 @@ Status: partial measurement completed on T1.
 ## Evidence
 
 - Raw artifact: `artifacts/qua-228/vps_slippage_latency_calibration_v2_raw_20260427_161732.json`
+- Pipeline evidence note: `D:\QM\reports\pipeline\calibration\QUA-228_VPS_SLIPPAGE_LATENCY_CALIBRATION_EVIDENCE_2026-04-27.md`
 - MT5 log proof: `D:\QM\mt5\T1\MQL5\Logs\20260427.log` line with `CALIB|status=OK`
+
+## Account-mode check
+
+- T1 account mode verified as `REAL`:
+- `ACCOUNT_MODE|mode=REAL|login=4000090541|server=Darwinex-Live|company=Tradeslide Trading Tech Limited`
+- Deal-history scan (365 days): `DEAL_SCAN|status=OK|total_deals=1`
+- No usable BUY/SELL fill sample set for slippage extraction.
 
 ## Unblock
 
