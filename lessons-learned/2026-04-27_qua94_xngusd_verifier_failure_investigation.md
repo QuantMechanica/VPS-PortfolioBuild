@@ -50,6 +50,21 @@ Disposition after rerun:
 - `QUA-94` is **not cleared**.
 - This remains a verifier/runtime read-path failure class, not symbol-level XNG import damage.
 
+## Structured disposition artifact
+
+Automated rerun + classification command:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Invoke-VerifyDisposition.ps1 -IssueId QUA-94 -Symbol XNGUSD.DWX
+```
+
+Generated evidence:
+- `lessons-learned/evidence/2026-04-27_qua94_xngusd_rerun_evidence.json`
+- `disposition=defer`
+- `verify_exit_code=1`
+- classifier: `fail_count=56`, `systemic_zero_bars=true`, `systemic_zero_mid_ticks=false`
+- symbol payload confirms `XNGUSD.DWX` remained `FAIL_tail_mid_bars` with `bars_got=0` and `tail_ms_got=0`
+
 ## Durable change in this heartbeat
 
 - Added this investigation record for `QUA-94` with concrete row-level evidence and batch classifier context.
