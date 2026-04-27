@@ -58,3 +58,18 @@ status=critical task=QM_QUA95_BlockerRefresh issues=disabled
 reenabled_check_exit=0
 status=ok task=QM_QUA95_BlockerRefresh last_run=2026-04-27T10:13:13.0000000+02:00 age_minutes=1.92
 ```
+
+## Post-hardening runtime proof
+
+Manual trigger after adding transition-payload enforcement:
+
+```powershell
+schtasks /Run /TN "QM_QUA95_TaskHealth_15min"
+schtasks /Query /TN "QM_QUA95_TaskHealth_15min" /V /FO LIST
+powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\monitoring\Test-QUA95BlockerTaskHealth.ps1 -MaxAgeMinutes 125
+```
+
+Observed fields:
+- `Last Run Time: 4/27/2026 10:28:41 AM`
+- `Last Result: 0`
+- direct check output: `status=ok task=QM_QUA95_BlockerRefresh ...`
