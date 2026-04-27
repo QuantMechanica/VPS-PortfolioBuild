@@ -16,6 +16,7 @@ $steps = @(
     @{ name = 'unblock_readiness'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95UnblockReadiness.ps1' },
     @{ name = 'unblock_readiness_summary'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95UnblockReadinessSummary.ps1' },
     @{ name = 'audit_signal'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95AuditSignal.ps1' },
+    @{ name = 'task_health_action_wiring'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95TaskHealthActionWiring.ps1' },
     @{ name = 'blocked_heartbeat_wrapper'; script = Join-Path $RepoRoot 'infra\monitoring\Test-QUA95BlockedHeartbeatWrapper.ps1' }
 )
 

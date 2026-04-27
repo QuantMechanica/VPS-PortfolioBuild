@@ -147,6 +147,8 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Validates the QUA-95 audit-signal artifact structure and core counters.
 - `scripts/Test-QUA95CanonicalSnapshot.ps1`
   - Validates canonical snapshot summary JSON against blocker + audit-signal artifacts.
+- `scripts/Test-QUA95TaskHealthActionWiring.ps1`
+  - Validates `QM_QUA95_TaskHealth_15min` action arguments include all required QUA-95 check flags.
 - `scripts/Test-QUA95BlockedInvariant.ps1`
   - Enforces blocked/defer invariant when `bars_got <= 0` using gate + transition payload artifacts.
   - Returns non-zero if blocked-state policy drifts.

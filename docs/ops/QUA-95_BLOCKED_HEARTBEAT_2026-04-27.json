@@ -1,10 +1,10 @@
 ﻿{
     "issue":  "QUA-95",
-    "generated_at_local":  "2026-04-27T12:48:35+02:00",
-    "refresh_executed":  true,
-    "refresh_exit_code":  0,
-    "audit_executed":  true,
-    "audit_exit_code":  0,
+    "generated_at_local":  "2026-04-27T12:53:35+02:00",
+    "refresh_executed":  false,
+    "refresh_exit_code":  null,
+    "audit_executed":  false,
+    "audit_exit_code":  null,
     "gate":  {
                  "recommended_state":  "blocked",
                  "reason":  "acceptance_not_met",
@@ -15,14 +15,14 @@
              },
     "infra_audit":  {
                         "overall_status":  "critical",
-                        "checks_count":  23,
-                        "issues_count":  2
+                        "checks_count":  24,
+                        "issues_count":  3
                     },
     "audit_signal":  {
-                         "qua95_issues_count":  0,
+                         "qua95_issues_count":  1,
                          "non_qua95_issues_count":  2,
                          "qua95_issue_names":  [
-
+                                                   "qua95_ops_bundle_manifest"
                                                ],
                          "non_qua95_issue_names":  [
                                                        "t6_live_demo_isolation",

@@ -334,6 +334,21 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA95CanonicalSnapshot.ps1`
 
+## `Test-QUA95TaskHealthActionWiring.ps1`
+
+- Validates scheduler action-argument wiring for:
+  - `QM_QUA95_TaskHealth_15min`
+- Ensures action args include:
+  - `-TransitionPayloadCheckScript`
+  - `-UnblockReadinessCheckScript`
+  - `-AuditSignalCheckScript`
+  - `-CanonicalSnapshotCheckScript`
+- Exit codes:
+  - `0`: wiring is present
+  - `2`: task missing or required arg fragment missing
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA95TaskHealthActionWiring.ps1`
+
 ## `Test-QUA95UnblockReadinessSummary.ps1`
 
 - Validates markdown summary consistency with unblock-readiness JSON:
@@ -361,8 +376,9 @@
   6. `Test-QUA95UnblockReadiness.ps1`
   7. `Test-QUA95UnblockReadinessSummary.ps1`
   8. `Test-QUA95AuditSignal.ps1`
-  9. `monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
-  10. `monitoring/Test-QUA95BlockerTaskHealth.ps1`
+  9. `Test-QUA95TaskHealthActionWiring.ps1`
+  10. `monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
+  11. `monitoring/Test-QUA95BlockerTaskHealth.ps1`
 - Emits JSON summary to stdout and returns:
   - `0` when all checks pass
   - `2` when any check is critical

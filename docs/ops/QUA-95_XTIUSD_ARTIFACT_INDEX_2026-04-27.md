@@ -104,6 +104,8 @@ Status recommendation: `blocked` (`defer`)
   - `infra/scripts/Update-QUA95AuditSignal.ps1`
 - Canonical snapshot validator:
   - `infra/scripts/Test-QUA95CanonicalSnapshot.ps1`
+- Task-health action wiring validator:
+  - `infra/scripts/Test-QUA95TaskHealthActionWiring.ps1`
 - Blocked assertion generator:
   - `infra/scripts/Update-QUA95BlockedAssertion.ps1`
 - Unblock-readiness generator:

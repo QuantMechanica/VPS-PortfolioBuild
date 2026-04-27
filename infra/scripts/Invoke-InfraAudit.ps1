@@ -16,6 +16,7 @@ param(
     [string]$Qua95TaskHealthTaskName = 'QM_QUA95_TaskHealth_15min',
     [int]$Qua95TaskMaxAgeMinutes = 125,
     [string]$Qua95TaskHealthScript = 'C:\QM\repo\infra\monitoring\Test-QUA95BlockerTaskHealth.ps1',
+    [string]$Qua95TaskHealthActionWiringScript = 'C:\QM\repo\infra\scripts\Test-QUA95TaskHealthActionWiring.ps1',
     [string]$Qua95AutomationHealthScript = 'C:\QM\repo\infra\monitoring\Test-QUA95AutomationHealth.ps1',
     [string]$Qua95TransitionPayloadCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95IssueTransitionPayload.ps1',
     [string]$Qua95BlockedInvariantScript = 'C:\QM\repo\infra\scripts\Test-QUA95BlockedInvariant.ps1',
@@ -213,39 +214,21 @@ else {
 }
 
 # QUA-95 task-health action wiring
-try {
-    $taskHealthTask = Get-ScheduledTask -TaskName $Qua95TaskHealthTaskName -ErrorAction Stop
-    $taskHealthArgs = ''
-    if ($taskHealthTask.Actions -and $taskHealthTask.Actions.Count -gt 0) {
-        $taskHealthArgs = [string]$taskHealthTask.Actions[0].Arguments
-    }
-
-    $requiredFragments = @(
-        '-TransitionPayloadCheckScript',
-        '-UnblockReadinessCheckScript',
-        '-AuditSignalCheckScript',
-        '-CanonicalSnapshotCheckScript'
-    )
-
-    $missingFragments = @()
-    foreach ($fragment in $requiredFragments) {
-        if ($taskHealthArgs -notlike "*$fragment*") {
-            $missingFragments += $fragment
-        }
-    }
-
-    $wiringStatus = if ($missingFragments.Count -eq 0) { 'ok' } else { 'critical' }
-    Add-Check -Name 'qua95_task_health_action_wiring' -Status $wiringStatus -Meta @{
-        task_name = $Qua95TaskHealthTaskName
-        missing_fragments = @($missingFragments)
-        action_arguments = $taskHealthArgs
+if (-not (Test-Path -LiteralPath $Qua95TaskHealthActionWiringScript)) {
+    Add-Check -Name 'qua95_task_health_action_wiring' -Status 'warn' -Meta @{
+        reason = 'check_script_missing'
+        path = $Qua95TaskHealthActionWiringScript
     }
 }
-catch {
-    Add-Check -Name 'qua95_task_health_action_wiring' -Status 'critical' -Meta @{
+else {
+    $wiringOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $Qua95TaskHealthActionWiringScript -TaskName $Qua95TaskHealthTaskName 2>&1
+    $wiringCode = $LASTEXITCODE
+    $wiringText = ($wiringOut | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
+    $wiringStatus = if ($wiringCode -eq 0) { 'ok' } else { 'critical' }
+    Add-Check -Name 'qua95_task_health_action_wiring' -Status $wiringStatus -Meta @{
         task_name = $Qua95TaskHealthTaskName
-        reason = 'task_not_found'
-        error = $_.Exception.Message
+        exit_code = $wiringCode
+        output = $wiringText
     }
 }
 
