@@ -1,0 +1,33 @@
+﻿{
+    "issue":  "QUA-93",
+    "parent_issue":  "QUA-19",
+    "symbol":  "XAUUSD.DWX",
+    "recommended_state":  "blocked",
+    "blocker_reason":  "Acceptance unmet: verifier still returns zero bars and missing tail for XAUUSD.DWX.",
+    "acceptance":  {
+                       "criterion":  "Re-run verifier for XAUUSD.DWX with non-zero bars and matching tail",
+                       "met":  false
+                   },
+    "current_observed":  {
+                             "symbol":  "XAUUSD.DWX",
+                             "verdict":  "FAIL_tail_mid_bars",
+                             "bars_got":  0,
+                             "tail_shortfall_seconds":  1775444399.867,
+                             "disposition":  "defer"
+                         },
+    "unblock_owners":  [
+                           {
+                               "owner":  "Verifier/import owner (D:\\QM\\mt5\\T1\\dwx_import\\verify_import.py + XAU export pipeline)",
+                               "required_action":  "Refresh aligned XAU tick/M1 exports, rebuild XAUUSD.DWX custom history + sidecars, rerun verifier"
+                           }
+                       ],
+    "handoff_artifacts":  {
+                              "investigation_markdown":  "lessons-learned/2026-04-27_qua93_xauusd_verifier_failure_investigation.md",
+                              "rerun_evidence_json":  "lessons-learned\\evidence\\2026-04-27_qua93_xauusd_rerun_evidence.json",
+                              "csv_tail_alignment_json":  "lessons-learned/evidence/2026-04-27_qua93_xauusd_tail_alignment_check.json",
+                              "csv_mismatch_nudge_json":  "lessons-learned/evidence/2026-04-27_qua93_csv_tail_mismatch_nudge_validation.json"
+                          },
+    "last_checked_local":  "2026-04-27T09:49:42+02:00",
+    "last_evidence_path":  "lessons-learned\\evidence\\2026-04-27_qua93_xauusd_rerun_evidence.json",
+    "last_verify_exit_code":  1
+}

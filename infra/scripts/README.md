@@ -138,10 +138,24 @@
   - task name: `QM_QUA95_BlockerRefresh`
   - interval: `60` minutes
   - principal: `SYSTEM` (highest)
+  - log: `C:\QM\repo\infra\smoke\qua95_blocker_refresh_task.log`
 - Preview mode (no task registration):
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-QUA95BlockerRefreshTask.ps1 -PreviewOnly`
 - Validation note:
   - For SYSTEM tasks, prefer `schtasks /Query /TN "<task-name>" /V /FO LIST` as a visibility check when `Get-ScheduledTask` does not enumerate the task in the current shell context.
+
+## `Update-QUA93BlockerStatus.ps1`
+
+- Idempotently creates/refreshes `docs\ops\QUA-93_XAUUSD_BLOCKER_STATUS_2026-04-27.json`
+  from latest QUA-93 rerun evidence:
+  - `lessons-learned\evidence\2026-04-27_qua93_xauusd_rerun_evidence.json`
+- Tracks:
+  - current observed verifier row (`verdict`, `bars_got`, `tail_shortfall_seconds`, `disposition`)
+  - acceptance-met flag (`bars_got > 0` and tail exact match)
+  - last check timestamp and evidence path
+  - recommended state (`blocked` vs `ready`)
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Update-QUA93BlockerStatus.ps1`
 
 ## `verify_import_chunked_probe.py`
 

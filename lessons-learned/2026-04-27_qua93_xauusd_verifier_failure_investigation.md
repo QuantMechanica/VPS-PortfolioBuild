@@ -265,6 +265,21 @@ Interpretation:
 - Latest official rerun still does not meet acceptance (`non-zero bars + matching tail`).
 - Blocker remains upstream input/custom-history rebuild, not an hourly staging control defect.
 
+## Structured Blocked State Refresh (2026-04-27 09:51 CEST)
+
+Executed:
+- `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Update-QUA93BlockerStatus.ps1`
+
+Output:
+- `updated=C:\QM\repo\docs\ops\QUA-93_XAUUSD_BLOCKER_STATUS_2026-04-27.json`
+
+Status snapshot:
+- `recommended_state=blocked`
+- `acceptance.met=false`
+- `current_observed.verdict=FAIL_tail_mid_bars`
+- `current_observed.bars_got=0`
+- `current_observed.disposition=defer`
+
 ## Durable change in this heartbeat
 
 - Added this investigation record for `QUA-93` with concrete classifier output and triage conclusion.
