@@ -35,6 +35,7 @@
     ],
     "cherry_pick_command": "git cherry-pick 87a68a4 d1bfe30 b972948 2a58f09 d0dc820 06438e4"
   },
+  "blocker_status_json": "docs/ops/QUA-95_XTIUSD_BLOCKER_STATUS_2026-04-27.json",
   "evidence": [
     "lessons-learned/2026-04-27_qua95_xtiusd_verifier_failure_investigation.md",
     "lessons-learned/evidence/2026-04-27_qua95_xtiusd_rerun_evidence.json",
