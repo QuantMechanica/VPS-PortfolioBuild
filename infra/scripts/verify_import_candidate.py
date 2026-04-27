@@ -66,7 +66,14 @@ def count_rates_chunked(symbol: str, first_s: int, last_s: int, chunk_days: int)
     return total, bad_chunks
 
 
-def check_one(job: dict[str, str], *, chunk_days: int, symbol_filter: str | None) -> bool:
+def check_one(
+    job: dict[str, str],
+    *,
+    chunk_days: int,
+    symbol_filter: str | None,
+    tail_basis: str,
+    tail_tol_ms: int,
+) -> bool:
     target = job["target_symbol"]
     if symbol_filter and target != symbol_filter:
         return True
@@ -104,7 +111,15 @@ def check_one(job: dict[str, str], *, chunk_days: int, symbol_filter: str | None
     mid_ticks = list(mid_ticks) if mid_ticks is not None else []
 
     head_ok = bool(head) and int(head[0]["time_msc"]) == t_first
-    tail_ok = bool(tail) and int(tail[-1]["time_msc"]) == t_last
+    tail_got = int(tail[-1]["time_msc"]) if tail else 0
+    tail_ok = bool(tail) and tail_got == t_last
+    source_tail_got = 0
+    if source and tail_basis == "source":
+        mt5.symbol_select(source, True)
+        source_tail = mt5.copy_ticks_range(source, last_dt_lo, last_dt_hi, mt5.COPY_TICKS_ALL)
+        source_tail = list(source_tail) if source_tail is not None else []
+        source_tail_got = int(source_tail[-1]["time_msc"]) if source_tail else 0
+        tail_ok = bool(tail) and bool(source_tail) and abs(tail_got - source_tail_got) <= tail_tol_ms
     mid_ok = len(mid_ticks) > 0
 
     one_shot = mt5.copy_rates_range(
@@ -140,12 +155,15 @@ def check_one(job: dict[str, str], *, chunk_days: int, symbol_filter: str | None
         verdict = "FAIL_" + "_".join(failures)
 
     head_t = head[0]["time_msc"] if head else 0
-    tail_t = tail[-1]["time_msc"] if tail else 0
+    tail_t = tail_got
+    tail_ref = t_last if tail_basis == "sidecar" else source_tail_got
+    tail_delta = (tail_t - tail_ref) if tail_t and tail_ref else None
     print(
         f"[{verdict:>15}] {target}: "
         f"source={source}; custom_tv={custom_tv}; broker_tv={broker_tv}; rel_err={rel_err:.4f}; "
         f"head_ms expected={t_first}/got={head_t}; "
         f"tail_ms expected={t_last}/got={tail_t}; "
+        f"tail_basis={tail_basis}; tail_ref_ms={tail_ref}; tail_delta_ms={tail_delta}; "
         f"mid_ticks_5min={len(mid_ticks)}; "
         f"bars_sidecar_expected={b_count:,}; bars_one_shot={one_shot_count:,}; bars_one_shot_err={one_shot_err}; "
         f"bars_chunked={chunked_count:,}; maxbars={maxbars:,}; bars_expected_accessible={expected_accessible:,}; "
@@ -158,6 +176,18 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--symbol", default=None, help="optional exact symbol filter, e.g. WS30.DWX")
     ap.add_argument("--chunk-days", type=int, default=20)
+    ap.add_argument(
+        "--tail-basis",
+        choices=["sidecar", "source"],
+        default="sidecar",
+        help="sidecar: strict sidecar tick_last_ms match; source: parity with source symbol tail in same window",
+    )
+    ap.add_argument(
+        "--tail-tol-ms",
+        type=int,
+        default=1000,
+        help="max custom-vs-source tail delta when --tail-basis source",
+    )
     args = ap.parse_args()
 
     if not DONE_DIR.exists():
@@ -182,7 +212,13 @@ def main() -> int:
                 print(f"[skip] cannot parse {sc.name}: {e}")
                 continue
             try:
-                if not check_one(job, chunk_days=args.chunk_days, symbol_filter=args.symbol):
+                if not check_one(
+                    job,
+                    chunk_days=args.chunk_days,
+                    symbol_filter=args.symbol,
+                    tail_basis=args.tail_basis,
+                    tail_tol_ms=args.tail_tol_ms,
+                ):
                     overall_ok = False
             except Exception as e:
                 print(f"[ERROR] {sc.name}: {e}")
@@ -194,4 +230,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

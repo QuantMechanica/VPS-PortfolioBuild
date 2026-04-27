@@ -82,6 +82,9 @@
 - Repo-side candidate replacement for production `verify_import.py`.
 - Uses chunked M1 reads + `terminal.maxbars`-aware bar expectations.
 - Keeps existing tick/spec checks and outputs one-shot vs chunked bar diagnostics.
+- Supports `--tail-basis sidecar|source`:
+  - `sidecar`: strict match to archived `tick_last_ms`
+  - `source`: compare custom tail to broker source tail in same window (`--tail-tol-ms`)
 - Useful handoff artifact to the verifier owner; does not mutate production files.
 
 ## `Invoke-VerifyDisposition.ps1`

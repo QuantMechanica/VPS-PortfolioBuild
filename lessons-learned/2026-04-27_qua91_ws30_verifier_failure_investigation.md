@@ -147,6 +147,25 @@ Meaning:
 - Candidate logic removes false `FAIL_bars` on WS30 and isolates residual `FAIL_tail`.
 - Confirms remaining blocker is tail expectation-basis mismatch / source-window lag handling.
 
+## Tail-basis validation (candidate)
+
+Commands:
+
+```powershell
+python infra/scripts/verify_import_candidate.py --symbol WS30.DWX --chunk-days 20 --tail-basis sidecar
+python infra/scripts/verify_import_candidate.py --symbol WS30.DWX --chunk-days 20 --tail-basis source --tail-tol-ms 1000
+```
+
+Observed:
+- `--tail-basis sidecar` => `[FAIL_tail]`
+- `--tail-basis source` => `[OK]` with `tail_delta_ms=-322`
+
+Acceptance interpretation for QUA-91 investigation:
+- Non-zero bars condition is satisfied by chunked read path.
+- Tail match is satisfied when measured against broker source in-window parity.
+- Therefore WS30-specific investigation outcome is **CLEAR**.
+- Remaining work is global verifier policy: choose canonical tail basis and deploy production verifier update.
+
 ## Durable change in this heartbeat
 
 - Added/extended tests for verifier fail-pattern classification in:
