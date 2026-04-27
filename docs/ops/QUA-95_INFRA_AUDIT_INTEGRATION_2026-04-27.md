@@ -1,7 +1,7 @@
 # QUA-95 Infra Audit Integration Proof (2026-04-27)
 
 Issue: `QUA-95`  
-Scope: confirm blocker task health, issue-transition payload consistency, handoff integrity, and blocked-heartbeat wrapper validation are present in central infra audit output.
+Scope: confirm blocker task health, issue-transition payload consistency, handoff integrity, blocked assertion freshness, and blocked-heartbeat wrapper validation are present in central infra audit output.
 
 ## Command
 
@@ -19,7 +19,7 @@ Report: C:\QM\repo\infra\reports\infra_audit_latest.json
 Latest integration run:
 
 ```text
-Infra audit completed: status=critical, checks=16, issues=2
+Infra audit completed: status=critical, checks=17, issues=2
 Report: C:\QM\repo\infra\reports\infra_audit_latest.json
 ```
 
@@ -61,6 +61,16 @@ From `infra/reports/infra_audit_latest.json`:
 
 ```json
 {
+  "name": "qua95_blocked_assertion_freshness",
+  "status": "ok",
+  "meta": {
+    "lag_minutes": 0.31
+  }
+}
+```
+
+```json
+{
   "name": "qua95_blocked_heartbeat_wrapper",
   "status": "ok",
   "meta": {
@@ -71,5 +81,5 @@ From `infra/reports/infra_audit_latest.json`:
 
 ## Interpretation
 
-- QUA-95 scheduler health, transition payload consistency, handoff integrity, and blocked-heartbeat wrapper validation are now audited in the same report as disk, terminal liveness, Drive sync, and stale index-lock checks.
+- QUA-95 scheduler health, transition payload consistency, handoff integrity, blocked assertion freshness, and blocked-heartbeat wrapper validation are now audited in the same report as disk, terminal liveness, Drive sync, and stale index-lock checks.
 - The audit can stay overall `critical` for unrelated checks while QUA-95 task health remains independently visible as `ok`.

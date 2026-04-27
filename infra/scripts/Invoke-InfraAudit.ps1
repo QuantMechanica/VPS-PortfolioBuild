@@ -17,6 +17,9 @@ param(
     [string]$Qua95TaskHealthScript = 'C:\QM\repo\infra\monitoring\Test-QUA95BlockerTaskHealth.ps1',
     [string]$Qua95TransitionPayloadCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95IssueTransitionPayload.ps1',
     [string]$Qua95HandoffIntegrityScript = 'C:\QM\repo\infra\scripts\Test-QUA95HandoffIntegrity.ps1',
+    [string]$Qua95BlockerStatusJson = 'C:\QM\repo\docs\ops\QUA-95_XTIUSD_BLOCKER_STATUS_2026-04-27.json',
+    [string]$Qua95BlockedAssertionMd = 'C:\QM\repo\docs\ops\QUA-95_BLOCKED_STATE_ASSERTION_2026-04-27.md',
+    [int]$Qua95BlockedAssertionMaxLagMinutes = 30,
     [string]$Qua95BlockedHeartbeatWrapperTestScript = 'C:\QM\repo\infra\monitoring\Test-QUA95BlockedHeartbeatWrapper.ps1',
     [string]$OutJson = 'C:\QM\repo\infra\reports\infra_audit_latest.json',
     [switch]$FailOnCritical
@@ -235,6 +238,33 @@ else {
     Add-Check -Name 'qua95_handoff_integrity' -Status $integrityStatus -Meta @{
         exit_code = $integrityCode
         output = $integrityText
+    }
+}
+
+# QUA-95 blocked assertion freshness
+if (-not (Test-Path -LiteralPath $Qua95BlockerStatusJson)) {
+    Add-Check -Name 'qua95_blocked_assertion_freshness' -Status 'warn' -Meta @{
+        reason = 'blocker_status_missing'
+        blocker_status_json = $Qua95BlockerStatusJson
+    }
+}
+elseif (-not (Test-Path -LiteralPath $Qua95BlockedAssertionMd)) {
+    Add-Check -Name 'qua95_blocked_assertion_freshness' -Status 'critical' -Meta @{
+        reason = 'blocked_assertion_missing'
+        blocked_assertion_md = $Qua95BlockedAssertionMd
+    }
+}
+else {
+    $blocker = Get-Content -Raw -LiteralPath $Qua95BlockerStatusJson | ConvertFrom-Json
+    $blockerChecked = Get-Date $blocker.last_checked_local
+    $assertionWrite = (Get-Item -LiteralPath $Qua95BlockedAssertionMd).LastWriteTime
+    $lag = [math]::Round(([math]::Abs(($assertionWrite - $blockerChecked).TotalMinutes)), 2)
+    $assertionStatus = if ($lag -le $Qua95BlockedAssertionMaxLagMinutes) { 'ok' } else { 'critical' }
+    Add-Check -Name 'qua95_blocked_assertion_freshness' -Status $assertionStatus -Meta @{
+        max_lag_minutes = $Qua95BlockedAssertionMaxLagMinutes
+        lag_minutes = $lag
+        blocker_last_checked = $blocker.last_checked_local
+        assertion_last_write_local = $assertionWrite.ToString('o')
     }
 }
 

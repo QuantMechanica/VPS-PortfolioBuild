@@ -30,6 +30,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
     - QUA-95 blocker refresh task health (`QM_QUA95_BlockerRefresh`)
     - QUA-95 issue-transition payload consistency (`Test-QUA95IssueTransitionPayload.ps1`)
     - QUA-95 handoff integrity (`Test-QUA95HandoffIntegrity.ps1`)
+    - QUA-95 blocked assertion freshness (`QUA-95_BLOCKED_STATE_ASSERTION_2026-04-27.md`)
     - QUA-95 blocked-heartbeat wrapper validation (`Test-QUA95BlockedHeartbeatWrapper.ps1`)
   - Writes machine-readable JSON report to `infra/reports/infra_audit_latest.json`.
 - `scripts/Install-AggregatorStateTask.ps1`
