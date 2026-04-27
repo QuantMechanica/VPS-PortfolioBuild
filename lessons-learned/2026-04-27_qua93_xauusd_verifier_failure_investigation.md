@@ -187,6 +187,20 @@ Interpretation:
 - Sidecar expectation and current custom-symbol state appear drifted/misaligned.
 - This can produce persistent verifier `FAIL_tail_mid_bars` even when source symbol is healthy.
 
+## CSV Tail Freshness Check (2026-04-27 09:33 CEST)
+
+Freshness artifact:
+- `lessons-learned/evidence/2026-04-27_qua93_xauusd_csv_tail_freshness.json`
+
+Observed tails:
+- tick CSV (`XAUUSD_GMT+2_US-DST.csv`) ends at `2026-04-06 02:59:59.867`
+- M1 CSV (`XAUUSD_GMT+2_US-DST_M1.csv`) ends at `2026-04-13 02:59:00`
+- tail gap (M1 - tick): `~168.983` hours
+
+Interpretation:
+- Input data itself is internally stale/misaligned; a rebuild from these files cannot produce a tail beyond the tick CSV horizon.
+- This explains why repeated re-verification keeps failing tail checks for `XAUUSD.DWX`.
+
 ## Durable change in this heartbeat
 
 - Added this investigation record for `QUA-93` with concrete classifier output and triage conclusion.
@@ -203,12 +217,14 @@ Interpretation:
 - Added chunked-probe JSON evidence confirming zero visibility across multiple MT5 read paths.
 - Executed source-history hydration and confirmed only source symbol recovered; custom symbol still fails and remains `defer`.
 - Added sidecar-vs-observed drift evidence to support custom-symbol history rebuild as the unblock path.
+- Added CSV-tail freshness evidence showing stale/misaligned input files (tick vs M1 horizon mismatch).
 
 ## Next action
 
 Acceptance target (`XAUUSD` non-zero bars + matching tail) remains unmet after rerun.  
 Unblock owner: verifier implementation owner (`D:\QM\mt5\T1\dwx_import\verify_import.py`).  
 Required action:
+- refresh/re-export `XAUUSD` tick CSV so tail horizon is current and aligned with M1 CSV before reimport;
 - validate and rebuild `XAUUSD.DWX` custom-symbol history coverage from import artifacts (or re-import) in MT5 custom base;
 - regenerate/refresh verifier sidecar expectations after rebuild so expected tail aligns with current symbol state;
 - confirm source-symbol visibility remains healthy while custom-history is restored;
