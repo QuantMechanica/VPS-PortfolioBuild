@@ -81,6 +81,14 @@
 - Example:
   - `python C:\QM\repo\infra\scripts\probe_custom_symbol_visibility.py --target XTIUSD.DWX --json-out C:\QM\repo\lessons-learned\evidence\2026-04-27_qua95_xtiusd_custom_visibility_probe.json`
 
+## `Test-QUA95HandoffIntegrity.ps1`
+
+- Verifies SHA256 integrity for the QUA-95 handoff package files listed in:
+  - `docs\ops\QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.sha256`
+- Fails (`exit 1`) when any file is missing, a hash mismatches, or manifest rows are malformed.
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA95HandoffIntegrity.ps1`
+
 ## `verify_import_chunked_probe.py`
 
 - Read-only verifier mirror for symbol-level deep dive.
