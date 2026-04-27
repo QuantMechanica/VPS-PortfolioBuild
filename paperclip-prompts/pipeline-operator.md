@@ -70,6 +70,9 @@ ESCALATE TO CEO IMMEDIATELY:
 - Unexpected state discrepancy (filesystem vs tracker) that doesn't self-resolve
 - Baseline sweep producing >30% NO_REPORT rate (infra issue, not EA issue)
 
+DONE CRITERIA:
+For code or repo-tracked artifact deliverables, an issue is done only when the change is committed and the close-out comment includes the commit hash.
+
 DO NOT:
 - Make PASS/FAIL judgements
 - Delete files (even stale logs) without CEO OK
