@@ -26,6 +26,36 @@ Cross-symbol context in the same run:
 
 `WS30.DWX` is **not isolated** in this run. The dominant failure mode is systemic (`bars got=0` across the board), with WS30 only one instance in that batch.
 
+## Continuation rerun (2026-04-27 08:53 Europe/Berlin)
+
+Command:
+
+```powershell
+python D:\QM\mt5\T1\dwx_import\verify_import.py
+```
+
+Evidence log:
+- `infra/smoke/verify_import_run_2026-04-27_085347_qua91.log`
+
+WS30 row (unchanged verdict):
+- `WS30.DWX` => `FAIL_tail_bars`
+- `tail_ms expected/got`: `1775444399667 / 1775437255743` (shortfall ~`7143.924s`)
+- `mid_ticks_5min=1561`
+- `bars expected/got=445,870/0`
+
+Batch-level diagnostics from the rerun:
+- unique FAIL rows: `35`
+- `all_fail_bars_zero=True`
+- `any_fail_mid_nonzero=True`
+
+Disposition:
+- Acceptance target (`WS30` with non-zero bars + matching tail) not met.
+- Issue is **blocked on verifier implementation** (bars-read path), not on WS30 symbol feed.
+
+Unblock owner + action:
+- **Owner:** verifier implementation owner (DWX verifier/runtime maintainer)
+- **Action:** instrument and fix `verify_import.py` bars-read path for custom symbols, then rerun and confirm `WS30.DWX` `bars_got>0` with tail alignment.
+
 ## Durable change in this heartbeat
 
 - Added/extended tests for verifier fail-pattern classification in:
