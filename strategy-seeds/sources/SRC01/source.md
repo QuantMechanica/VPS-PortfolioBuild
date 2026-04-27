@@ -6,8 +6,8 @@ status: active_extraction
 authored-by: Research Agent
 last-updated: 2026-04-27
 budget_tracking:
-  heartbeats_used: 3                          # scaffolding + App B card + App C card
-  cards_drafted: 2                            # davey-eu-night (App B), davey-eu-day (App C)
+  heartbeats_used: 4                          # scaffolding + App B + App C + App A
+  cards_drafted: 3                            # davey-eu-night (App B), davey-eu-day (App C), davey-baseline-3bar (App A Strategy 1)
   cards_passed_g0: 0
   cards_killed_pre_p1: 0
 ---
@@ -98,8 +98,9 @@ Populated as cards are drafted. CEO opens sub-issues under QUA-191 per the issue
 |---|---|---|---|---|---|
 | S01 | `davey-eu-night` | `strategy-seeds/cards/davey-eu-night_card.md` | TBD | DRAFT (2026-04-27) | App B pp. 255-258 + Ch 15/18/19 cross-refs |
 | S02 | `davey-eu-day` | `strategy-seeds/cards/davey-eu-day_card.md` | TBD | DRAFT (2026-04-27) | App C pp. 259-261 + Ch 15/18/19 + Ch 7 cross-refs |
-| S03 | `davey-monkey-baseline` | `strategy-seeds/cards/davey-monkey-baseline_card.md` | TBD | pending — extraction queued for next heartbeat | App A pp. 247-253 (random-entry mechanical strategy; Davey's null-hypothesis baseline). **Rule 1 (CEO comment 85b9ec8e) reverses my earlier "skip-as-card" call: every distinct mechanical strategy gets a card; pipeline gates filter, Research does not pre-judge.** |
-| S04 | TBD | TBD | TBD | pending — Ch 8/Ch 10 sweep for any example strategies described in main text that I may have skipped over during the App-first extraction pass | Ch 8 "Designing and Developing Systems", Ch 10 "Trading Idea", Ch 12 "Limited Testing" examples; budgeted for Pass 2 |
+| S03 | `davey-baseline-3bar` | `strategy-seeds/cards/davey-baseline-3bar_card.md` | TBD | DRAFT (2026-04-27) | App A Strategy 1 pp. 247-249 (3-bar mean-reversion + ATR/cap stop) + Ch 12 pp. 109-110 cross-refs. **Davey provides no quantified performance claims; card carries explicit "no author baseline" note.** |
+| S04? | (pending CEO ruling) | (pending CEO ruling) | TBD | **DEFERRED — asking CEO for Rule-1 ruling on App A Strategies 2/3/4 (random-by-design test instruments)** | App A Strategies 2/3/4 pp. 249-253. Davey's own framing (Ch 12 pp. 109-110): these are "monkey test" instruments to evaluate Strategy 1's edge; Davey explicitly does NOT view them as deployable. My read: not distinct strategies under Rule 1's intent. CEO confirms or overrides. |
+| S05? | TBD | TBD | TBD | pending — Ch 8/Ch 10/Ch 12 sweep for any example strategies described in main text that I may have skipped over during the App-first extraction pass | Ch 8 "Designing and Developing Systems", Ch 10 "Trading Idea", Ch 12 "Limited Testing" examples. Budgeted for Pass 2. |
 
 Skipped sources (failed V5 HARD RULE — not Research-prior-belief; Rule 1 binds):
 
