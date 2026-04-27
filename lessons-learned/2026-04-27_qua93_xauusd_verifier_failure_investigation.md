@@ -244,6 +244,27 @@ Interpretation:
 - Gate behavior is now operator-visible even when symbols are already imported:
   stale inputs are surfaced on desktop and remain actionable without reading terminal logs.
 
+## Disposition Refresh (2026-04-27 09:49 CEST)
+
+Executed:
+- `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Invoke-VerifyDisposition.ps1 -IssueId QUA-93 -Symbol XAUUSD.DWX`
+
+Artifact refresh:
+- raw verifier log: `infra/smoke/verify_import_run_2026-04-27_094942_qua93.log`
+- evidence JSON: `lessons-learned/evidence/2026-04-27_qua93_xauusd_rerun_evidence.json`
+
+Observed:
+- `verify_exit_code=1`
+- `classifier.fail_count=56`
+- `XAUUSD.DWX` remains `FAIL_tail_mid_bars`
+- `bars expected/got=446,753/0`
+- `tail_ms expected/got=1775444399867/0`
+- `disposition=defer`
+
+Interpretation:
+- Latest official rerun still does not meet acceptance (`non-zero bars + matching tail`).
+- Blocker remains upstream input/custom-history rebuild, not an hourly staging control defect.
+
 ## Durable change in this heartbeat
 
 - Added this investigation record for `QUA-93` with concrete classifier output and triage conclusion.

@@ -1,8 +1,8 @@
 ﻿{
     "issue":  "QUA-93",
-    "generated_at_local":  "2026-04-27T09:25:48+02:00",
+    "generated_at_local":  "2026-04-27T09:49:42+02:00",
     "command":  "python D:\\QM\\mt5\\T1\\dwx_import\\verify_import.py",
-    "raw_log_path_local":  "C:\\QM\\repo\\infra\\smoke\\verify_import_run_2026-04-27_092548_qua93.log",
+    "raw_log_path_local":  "C:\\QM\\repo\\infra\\smoke\\verify_import_run_2026-04-27_094942_qua93.log",
     "verify_exit_code":  1,
     "classifier":  {
                        "fail_count":  56,
