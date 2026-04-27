@@ -415,6 +415,8 @@
   1. `Invoke-QUA95BlockedHeartbeat.ps1`
   2. `Update-QUA95OpsBundleManifest.ps1`
   3. `Test-QUA95OpsBundleManifest.ps1`
+- Writes machine-readable run summary:
+  - `docs\ops\QUA-95_CANONICAL_SNAPSHOT_2026-04-27.json`
 - Purpose:
   - avoids post-heartbeat manifest drift by always finishing with manifest resync + verification.
 - Default run:

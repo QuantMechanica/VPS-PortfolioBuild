@@ -1,0 +1,31 @@
+﻿{
+    "issue":  "QUA-95",
+    "generated_at_local":  "2026-04-27T12:40:42+02:00",
+    "flow":  "qua95_canonical_snapshot",
+    "command":  "Run-QUA95CanonicalSnapshot.ps1",
+    "command_exit_code":  0,
+    "steps":  {
+                  "blocked_heartbeat_exit_code":  0,
+                  "ops_bundle_update_exit_code":  0,
+                  "ops_bundle_test_exit_code":  0
+              },
+    "blocker":  {
+                    "recommended_state":  "blocked",
+                    "disposition":  "defer",
+                    "verdict":  "FAIL_tail_bars",
+                    "bars_got":  0,
+                    "tail_shortfall_seconds":  7141.322,
+                    "acceptance_met":  false
+                },
+    "audit_signal":  {
+                         "infra_audit_overall_status":  "critical",
+                         "infra_audit_checks_count":  22,
+                         "infra_audit_issues_count":  2,
+                         "qua95_issues_count":  0,
+                         "non_qua95_issues_count":  2
+                     },
+    "ops_suite":  {
+                      "overall_status":  "ok",
+                      "checks_count":  8
+                  }
+}

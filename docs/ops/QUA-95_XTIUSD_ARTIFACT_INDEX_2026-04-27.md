@@ -41,6 +41,8 @@ Status recommendation: `blocked` (`defer`)
   - `docs/ops/QUA-95_BLOCKED_HEARTBEAT_WRAPPER_TEST_2026-04-27.md`
 - Canonical snapshot runner proof:
   - `docs/ops/QUA-95_CANONICAL_SNAPSHOT_RUNNER_2026-04-27.md`
+- Canonical snapshot run summary JSON:
+  - `docs/ops/QUA-95_CANONICAL_SNAPSHOT_2026-04-27.json`
 - Automation health snapshot:
   - `docs/ops/QUA-95_AUTOMATION_HEALTH_2026-04-27.json`
 - QUA-95 audit signal snapshot:

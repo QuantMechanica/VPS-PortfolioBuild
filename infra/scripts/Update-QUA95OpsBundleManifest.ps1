@@ -14,6 +14,9 @@ param(
         'docs/ops/QUA-95_OPS_SUITE_2026-04-27.json',
         'docs/ops/QUA-95_BLOCKED_AUTOMATION_RUNBOOK_2026-04-27.md'
     ),
+    [string[]]$OptionalFiles = @(
+        'docs/ops/QUA-95_CANONICAL_SNAPSHOT_2026-04-27.json'
+    ),
     [string]$OutPath = 'docs/ops/QUA-95_OPS_BUNDLE_2026-04-27.sha256'
 )
 
@@ -25,6 +28,15 @@ foreach ($rel in $Files) {
     $full = Join-Path $RepoRoot $rel
     if (-not (Test-Path -LiteralPath $full)) {
         throw "Missing bundle file: $full"
+    }
+    $h = (Get-FileHash -LiteralPath $full -Algorithm SHA256).Hash.ToLowerInvariant()
+    $lines += ("{0}  {1}" -f $h, $rel)
+}
+
+foreach ($rel in $OptionalFiles) {
+    $full = Join-Path $RepoRoot $rel
+    if (-not (Test-Path -LiteralPath $full)) {
+        continue
     }
     $h = (Get-FileHash -LiteralPath $full -Algorithm SHA256).Hash.ToLowerInvariant()
     $lines += ("{0}  {1}" -f $h, $rel)
