@@ -304,6 +304,9 @@ Validation:
 - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-QUA93BlockerRefreshTask.ps1 -PreviewOnly`
   - preview action generated for `QM_QUA93_BlockerRefresh` (60-minute repetition, SYSTEM principal)
 
+Smoke proof:
+- `docs/ops/QUA-93_BLOCKER_REFRESH_TASK_SMOKE_2026-04-27.md`
+
 ## Durable change in this heartbeat
 
 - Added this investigation record for `QUA-93` with concrete classifier output and triage conclusion.

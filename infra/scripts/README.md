@@ -201,6 +201,8 @@
   - principal: `SYSTEM` (highest)
 - Preview mode (no task registration):
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-QUA93BlockerRefreshTask.ps1 -PreviewOnly`
+- Smoke proof artifact:
+  - `docs\ops\QUA-93_BLOCKER_REFRESH_TASK_SMOKE_2026-04-27.md`
 
 ## `verify_import_chunked_probe.py`
 
