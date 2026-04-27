@@ -155,8 +155,10 @@
   2. `Update-QUA95BlockerStatus.ps1`
   3. `Write-QUA95BlockedSummary.ps1`
   4. `Get-QUA95GateDecision.ps1 -OutPath docs\ops\QUA-95_GATE_DECISION_2026-04-27.json -NoFail`
-  5. Refreshes `QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.sha256`
-  6. `Test-QUA95HandoffIntegrity.ps1`
+  5. `New-QUA95IssueTransitionPayload.ps1`
+  6. `Test-QUA95IssueTransitionPayload.ps1`
+  7. Refreshes `QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.sha256`
+  8. `Test-QUA95HandoffIntegrity.ps1`
 - Enforces non-zero exit handling for each step; task fails when any step exits non-zero.
 - Log append writes are lock-tolerant (`Add-Content` retry loop) so concurrent
   writer contention does not crash the runner.
@@ -192,6 +194,20 @@
   - unblock owners and deterministic next-action text
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\New-QUA95IssueTransitionPayload.ps1`
+
+## `Test-QUA95IssueTransitionPayload.ps1`
+
+- Validates `docs\ops\QUA-95_ISSUE_TRANSITION_PAYLOAD_2026-04-27.json`
+  against canonical inputs:
+  - `docs\ops\QUA-95_GATE_DECISION_2026-04-27.json`
+  - `docs\ops\QUA-95_XTIUSD_BLOCKER_STATUS_2026-04-27.json`
+- Checks issue id, status mapping, disposition, bars/tail fields, last-checked timestamp,
+  and unblock-owner count.
+- Exit codes:
+  - `0`: payload is consistent
+  - `1`: payload mismatch or missing input
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA95IssueTransitionPayload.ps1`
 
 ## `Update-QUA93BlockerStatus.ps1`
 

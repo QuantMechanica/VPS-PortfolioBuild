@@ -64,6 +64,8 @@ Status recommendation: `blocked` (`defer`)
   - `infra/scripts/Run-QUA95BlockerRefresh.ps1`
 - Issue-transition payload generator:
   - `infra/scripts/New-QUA95IssueTransitionPayload.ps1`
+- Issue-transition payload integrity check:
+  - `infra/scripts/Test-QUA95IssueTransitionPayload.ps1`
 
 ## Verification commands
 

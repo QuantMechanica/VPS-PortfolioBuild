@@ -61,11 +61,13 @@ $invoke = Join-Path $RepoRoot 'infra\scripts\Invoke-VerifyDisposition.ps1'
 $sync = Join-Path $RepoRoot 'infra\scripts\Update-QUA95BlockerStatus.ps1'
 $summary = Join-Path $RepoRoot 'infra\scripts\Write-QUA95BlockedSummary.ps1'
 $gate = Join-Path $RepoRoot 'infra\scripts\Get-QUA95GateDecision.ps1'
+$transition = Join-Path $RepoRoot 'infra\scripts\New-QUA95IssueTransitionPayload.ps1'
+$transitionCheck = Join-Path $RepoRoot 'infra\scripts\Test-QUA95IssueTransitionPayload.ps1'
 $integrity = Join-Path $RepoRoot 'infra\scripts\Test-QUA95HandoffIntegrity.ps1'
 $manifest = Join-Path $RepoRoot 'docs\ops\QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.sha256'
 $gateOut = 'docs\ops\QUA-95_GATE_DECISION_2026-04-27.json'
 
-foreach ($f in @($invoke, $sync, $summary, $gate, $integrity, $manifest)) {
+foreach ($f in @($invoke, $sync, $summary, $gate, $transition, $transitionCheck, $integrity, $manifest)) {
     if (-not (Test-Path -LiteralPath $f)) {
         throw "Required script missing: $f"
     }
@@ -92,6 +94,16 @@ try {
     $gateOutput = & $gate -OutPath $gateOut -NoFail 2>&1
     Write-CommandOutputToLog -Output $gateOutput
     if (-not $?) { throw ("Step failed: {0}" -f $gate) }
+
+    $global:LASTEXITCODE = 0
+    $transitionOutput = & $transition 2>&1
+    Write-CommandOutputToLog -Output $transitionOutput
+    if (-not $?) { throw ("Step failed: {0}" -f $transition) }
+
+    $global:LASTEXITCODE = 0
+    $transitionCheckOutput = & $transitionCheck 2>&1
+    Write-CommandOutputToLog -Output $transitionCheckOutput
+    if ($LASTEXITCODE -ne 0) { throw ("Step failed with exit code {0}: {1}" -f $LASTEXITCODE, $transitionCheck) }
 
     $hashFiles = @(
         'docs/ops/QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.md',
