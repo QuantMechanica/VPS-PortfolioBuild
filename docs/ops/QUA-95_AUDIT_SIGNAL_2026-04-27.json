@@ -1,10 +1,10 @@
 ﻿{
     "issue":  "QUA-95",
-    "generated_at_local":  "2026-04-27T13:08:03+02:00",
+    "generated_at_local":  "2026-04-27T13:38:32+02:00",
     "infra_audit_overall_status":  "critical",
-    "infra_audit_checks_count":  25,
+    "infra_audit_checks_count":  27,
     "infra_audit_issues_count":  2,
-    "qua95_checks_count":  13,
+    "qua95_checks_count":  15,
     "qua95_issues_count":  0,
     "non_qua95_issues_count":  2,
     "qua95_checks":  [
@@ -46,6 +46,14 @@
                          },
                          {
                              "name":  "qua95_direct_verifier_proof",
+                             "status":  "ok"
+                         },
+                         {
+                             "name":  "qua95_custom_visibility_proof",
+                             "status":  "ok"
+                         },
+                         {
+                             "name":  "qua95_heartbeat_custom_visibility",
                              "status":  "ok"
                          },
                          {

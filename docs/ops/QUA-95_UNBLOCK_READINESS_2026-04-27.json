@@ -1,6 +1,6 @@
 ﻿{
     "issue":  "QUA-95",
-    "generated_at_local":  "2026-04-27T13:08:02+02:00",
+    "generated_at_local":  "2026-04-27T13:38:32+02:00",
     "readiness":  {
                       "ready_to_unblock":  false,
                       "unmet_criteria":  [
@@ -14,7 +14,7 @@
                     "disposition":  "defer",
                     "bars_got":  0,
                     "tail_shortfall_seconds":  7141.322,
-                    "last_checked_local":  "2026-04-27T13:07:08+02:00"
+                    "last_checked_local":  "2026-04-27T13:37:53+02:00"
                 },
     "transition":  {
                        "status":  "blocked",
