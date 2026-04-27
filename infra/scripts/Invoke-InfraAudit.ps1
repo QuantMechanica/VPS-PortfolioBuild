@@ -23,6 +23,7 @@ param(
     [string]$Qua95BlockedAssertionMd = 'C:\QM\repo\docs\ops\QUA-95_BLOCKED_STATE_ASSERTION_2026-04-27.md',
     [int]$Qua95BlockedAssertionMaxLagMinutes = 30,
     [string]$Qua95UnblockReadinessCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95UnblockReadiness.ps1',
+    [string]$Qua95AuditSignalCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95AuditSignal.ps1',
     [string]$Qua95OpsBundleManifestScript = 'C:\QM\repo\infra\scripts\Test-QUA95OpsBundleManifest.ps1',
     [string]$Qua95BlockedHeartbeatWrapperTestScript = 'C:\QM\repo\infra\monitoring\Test-QUA95BlockedHeartbeatWrapper.ps1',
     [string]$OutJson = 'C:\QM\repo\infra\reports\infra_audit_latest.json',
@@ -217,7 +218,7 @@ if (-not (Test-Path -LiteralPath $Qua95AutomationHealthScript)) {
     }
 }
 else {
-    $automationOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $Qua95AutomationHealthScript 2>&1
+    $automationOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $Qua95AutomationHealthScript -NoWriteSnapshot 2>&1
     $automationCode = $LASTEXITCODE
     $automationText = ($automationOut | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
     $automationStatus = if ($automationCode -eq 0) { 'ok' } else { 'critical' }
@@ -323,6 +324,24 @@ else {
     Add-Check -Name 'qua95_unblock_readiness_freshness' -Status $readinessStatus -Meta @{
         exit_code = $readinessCode
         output = $readinessText
+    }
+}
+
+# QUA-95 audit signal consistency
+if (-not (Test-Path -LiteralPath $Qua95AuditSignalCheckScript)) {
+    Add-Check -Name 'qua95_audit_signal' -Status 'warn' -Meta @{
+        reason = 'check_script_missing'
+        path = $Qua95AuditSignalCheckScript
+    }
+}
+else {
+    $auditSignalOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $Qua95AuditSignalCheckScript 2>&1
+    $auditSignalCode = $LASTEXITCODE
+    $auditSignalText = ($auditSignalOut | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
+    $auditSignalStatus = if ($auditSignalCode -eq 0) { 'ok' } else { 'critical' }
+    Add-Check -Name 'qua95_audit_signal' -Status $auditSignalStatus -Meta @{
+        exit_code = $auditSignalCode
+        output = $auditSignalText
     }
 }
 

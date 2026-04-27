@@ -5,6 +5,7 @@ param(
     [switch]$SkipRefreshLastResultCheck,
     [string]$TaskHealthTaskName = 'QM_QUA95_TaskHealth_15min',
     [int]$TaskHealthMaxAgeMinutes = 45,
+    [switch]$NoWriteSnapshot,
     [switch]$SkipTaskHealthCheck,
     [string]$OutPath = 'C:\QM\repo\docs\ops\QUA-95_AUTOMATION_HEALTH_2026-04-27.json'
 )
@@ -85,14 +86,18 @@ $summary = [ordered]@{
     checks = @($refresh, $taskHealth)
 }
 
-$outDir = Split-Path -Parent $OutPath
-if ($outDir) {
-    New-Item -ItemType Directory -Path $outDir -Force | Out-Null
+if (-not $NoWriteSnapshot.IsPresent) {
+    $outDir = Split-Path -Parent $OutPath
+    if ($outDir) {
+        New-Item -ItemType Directory -Path $outDir -Force | Out-Null
+    }
+    $summary | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $OutPath -Encoding UTF8
 }
-$summary | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $OutPath -Encoding UTF8
 
 Write-Host ("status={0} refresh_task={1} task_health={2}" -f $overall, $refresh.status, $taskHealth.status)
-Write-Host ("wrote={0}" -f $OutPath)
+if (-not $NoWriteSnapshot.IsPresent) {
+    Write-Host ("wrote={0}" -f $OutPath)
+}
 if ($overall -ne 'ok') {
     exit 2
 }
