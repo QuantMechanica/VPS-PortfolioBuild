@@ -1,5 +1,19 @@
 # Infra Scripts Notes
 
+## `Deploy-QM5SmokeExpertToT1.ps1`
+
+- Idempotent T1 smoke-expert deploy helper for `QM5_1001_framework_smoke.ex5`.
+- Default source:
+  - `C:\QM\repo\framework\tests\smoke\QM5_1001_framework_smoke.ex5`
+- Default destination:
+  - `D:\QM\mt5\T1\MQL5\Experts\QM\QM5_1001_framework_smoke.ex5`
+- Behavior:
+  - SHA256 check-then-act copy (`created` / `updated` / `unchanged`)
+  - refuses T6-target paths
+  - optional durable JSON evidence via `-EvidenceJsonPath`
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Deploy-QM5SmokeExpertToT1.ps1 -EvidenceJsonPath C:\QM\repo\docs\ops\QUA-269_DEPLOY_QM5_1001_FRAMEWORK_SMOKE_2026-04-27.json`
+
 ## `dwx_hourly_check.py`
 
 - `spec_ok` is now evaluated by one shared helper (`is_symbol_spec_ok`) for both:

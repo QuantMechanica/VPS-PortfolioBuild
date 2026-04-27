@@ -118,6 +118,10 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Idempotently converges `portable.txt` marker files for factory terminals (`T1`-`T5`).
   - Creates missing marker files and normalizes non-empty markers to an empty file.
   - Refuses T6 paths by design; supports `-FailOnMissingRoot` for strict runs.
+- `scripts/Deploy-QM5SmokeExpertToT1.ps1`
+  - Idempotently deploys `QM5_1001_framework_smoke.ex5` from repo smoke artifacts to `D:\QM\mt5\T1\MQL5\Experts\QM\`.
+  - Hash-based check-then-act copy (`created` / `updated` / `unchanged`) with deterministic JSON output.
+  - Refuses T6 paths by design; optional `-EvidenceJsonPath` writes durable deployment proof.
 - `scripts/Confirm-DwxRegistryMitigation.ps1`
   - Emits machine-readable QUA-69 evidence for registry-corruption mitigation confirmation.
   - Verifies >= 3 successful `Fix_DWX_Spec_v3` terminal-close events from latest T1 log, throttling markers (`BATCH|processed=5|sleep_ms=200`), and non-truncated `symbols.custom.dat` size.

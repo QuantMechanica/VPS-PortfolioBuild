@@ -1,0 +1,10 @@
+﻿{
+    "status":  "unchanged",
+    "source_path":  "C:\\QM\\repo\\framework\\tests\\smoke\\QM5_1001_framework_smoke.ex5",
+    "destination_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_1001_framework_smoke.ex5",
+    "source_hash_sha256":  "2795DBEA6E49ED2CEA4DED4A03096BCFA40278F114689A83D030071920CB500B",
+    "destination_hash_before_sha256":  "2795DBEA6E49ED2CEA4DED4A03096BCFA40278F114689A83D030071920CB500B",
+    "destination_hash_after_sha256":  "2795DBEA6E49ED2CEA4DED4A03096BCFA40278F114689A83D030071920CB500B",
+    "hash_match_after":  true,
+    "deployed_at_local":  "2026-04-27T19:35:42.8391709+02:00"
+}
