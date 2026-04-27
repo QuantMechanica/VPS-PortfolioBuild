@@ -26,6 +26,7 @@ param(
     [int]$T6MaxAgeMinutes = 5,
     [string]$DwxHeartbeatScript = "C:\QM\repo\infra\monitoring\Test-DwxHeartbeat.ps1",
     [string]$DriveGitExclusionScript = "C:\QM\repo\infra\monitoring\Test-DriveGitExclusion.ps1",
+    [string]$PipelineOperatorRunHealthScript = "C:\QM\repo\infra\monitoring\Test-PipelineOperatorRunHealth.ps1",
     [string]$TaskTickScript = "C:\QM\repo\infra\tasks\Test-HourlyTaskTick.ps1"
 )
 
@@ -166,6 +167,18 @@ if (Test-Path -LiteralPath $DriveGitExclusionScript) {
     }
     catch {
         $checks.Add((New-Check -Name "drive_git_exclusion" -Status "critical" -Message "Drive/git exclusion check execution failed." -Details $_.Exception.Message))
+    }
+}
+
+# Pipeline-Operator heartbeat run health (process_loss recovery view)
+if (Test-Path -LiteralPath $PipelineOperatorRunHealthScript) {
+    try {
+        $pipelineRunHealthRaw = & powershell -NoProfile -ExecutionPolicy Bypass -File $PipelineOperatorRunHealthScript 2>$null | Out-String
+        $pipelineRunHealth = $pipelineRunHealthRaw | ConvertFrom-Json -ErrorAction Stop
+        $checks.Add((New-Check -Name "pipeline_operator_run_health" -Status $pipelineRunHealth.status -Message $pipelineRunHealth.message -Details $pipelineRunHealth))
+    }
+    catch {
+        $checks.Add((New-Check -Name "pipeline_operator_run_health" -Status "critical" -Message "Pipeline-Operator run health check execution failed." -Details $_.Exception.Message))
     }
 }
 

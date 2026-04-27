@@ -27,6 +27,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
     - Paperclip daemon process health
     - aggregator freshness
     - Google Drive sync freshness
+    - Pipeline-Operator heartbeat run health (`process_loss` recovered vs unrecovered)
     - stale `.git/index.lock` detection
     - QUA-95 blocker refresh task health (`QM_QUA95_BlockerRefresh`)
     - QUA-95 task-health action wiring (`QM_QUA95_TaskHealth_15min` args)
@@ -130,6 +131,10 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Requires `wall_clock_utc` field for strict `ok`; missing field is `warn`.
 - `monitoring/Test-DriveGitExclusion.ps1`
   - Verifies repo path is outside known Google Drive sync roots (PC1-00 guard).
+- `monitoring/Test-PipelineOperatorRunHealth.ps1`
+  - Classifies Pipeline-Operator 24h failures into recovered/unrecovered `process_loss`.
+  - Flags `critical` only for unrecovered `process_loss` runs and keeps recovered retries as non-critical.
+  - Emits `warn` for elevated non-process-loss failure-rate drift (for example adapter usage-limit spikes).
 - `monitoring/Test-BackupSmoke.ps1`
   - Runs backup workflow in an isolated temp workspace and asserts manifest/artifacts.
 - `monitoring/Invoke-PaperclipStaleLockWatchdog.ps1`
