@@ -79,6 +79,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Adds `X-Paperclip-Run-Id` header on all mutating PATCH calls.
 - `monitoring/Test-QUA95BlockerTaskHealth.ps1`
   - Validates task existence, enabled state, last result, and staleness window for `QM_QUA95_BlockerRefresh`.
+  - Validates QUA-95 transition payload consistency via `scripts/Test-QUA95IssueTransitionPayload.ps1`.
   - Returns non-zero on critical task-health drift.
 - `scripts/Test-QUA95IssueTransitionPayload.ps1`
   - Validates that `docs/ops/QUA-95_ISSUE_TRANSITION_PAYLOAD_2026-04-27.json`

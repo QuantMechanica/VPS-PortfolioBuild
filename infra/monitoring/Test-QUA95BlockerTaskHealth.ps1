@@ -1,7 +1,8 @@
 [CmdletBinding()]
 param(
     [string]$TaskName = 'QM_QUA95_BlockerRefresh',
-    [int]$MaxAgeMinutes = 125
+    [int]$MaxAgeMinutes = 125,
+    [string]$TransitionPayloadCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95IssueTransitionPayload.ps1'
 )
 
 Set-StrictMode -Version Latest
@@ -35,6 +36,19 @@ if ($info.LastRunTime -and $info.LastRunTime.Year -gt 2000) {
 
 if ($issues.Count -gt 0) {
     Write-Host ("status=critical task={0} issues={1}" -f $TaskName, ($issues -join ','))
+    exit 2
+}
+
+if (-not (Test-Path -LiteralPath $TransitionPayloadCheckScript)) {
+    Write-Host ("status=critical task={0} issues=transition_check_missing path={1}" -f $TaskName, $TransitionPayloadCheckScript)
+    exit 2
+}
+
+$transitionOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $TransitionPayloadCheckScript 2>&1
+$transitionCode = $LASTEXITCODE
+if ($transitionCode -ne 0) {
+    $transitionText = ($transitionOut | ForEach-Object { $_.ToString() }) -join '; '
+    Write-Host ("status=critical task={0} issues=transition_payload_check_failed exit_code={1} output={2}" -f $TaskName, $transitionCode, $transitionText)
     exit 2
 }
 
