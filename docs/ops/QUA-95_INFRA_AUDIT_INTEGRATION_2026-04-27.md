@@ -19,7 +19,7 @@ Report: C:\QM\repo\infra\reports\infra_audit_latest.json
 Latest integration run:
 
 ```text
-Infra audit completed: status=critical, checks=22, issues=4
+Infra audit completed: status=critical, checks=22, issues=2
 Report: C:\QM\repo\infra\reports\infra_audit_latest.json
 ```
 
@@ -133,3 +133,4 @@ From `infra/reports/infra_audit_latest.json`:
 
 - QUA-95 scheduler health, combined automation health, transition payload consistency, blocked invariant enforcement, handoff integrity, blocked assertion freshness, unblock-readiness freshness, audit-signal consistency, ops-bundle manifest integrity, and blocked-heartbeat wrapper validation are now audited in the same report as disk, terminal liveness, Drive sync, and stale index-lock checks.
 - The audit can stay overall `critical` for unrelated checks while QUA-95 task health remains independently visible as `ok`.
+- Latest run shows all QUA-95 checks `ok`; the remaining audit issues are outside QUA-95 scope.

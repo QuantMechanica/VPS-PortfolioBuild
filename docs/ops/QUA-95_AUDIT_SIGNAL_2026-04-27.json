@@ -1,20 +1,20 @@
 ﻿{
     "issue":  "QUA-95",
-    "generated_at_local":  "2026-04-27T12:13:47+02:00",
+    "generated_at_local":  "2026-04-27T12:17:22+02:00",
     "infra_audit_overall_status":  "critical",
     "infra_audit_checks_count":  22,
-    "infra_audit_issues_count":  5,
+    "infra_audit_issues_count":  3,
     "qua95_checks_count":  10,
-    "qua95_issues_count":  3,
+    "qua95_issues_count":  1,
     "non_qua95_issues_count":  2,
     "qua95_checks":  [
                          {
                              "name":  "qua95_blocker_task_health",
-                             "status":  "critical"
+                             "status":  "ok"
                          },
                          {
                              "name":  "qua95_automation_health",
-                             "status":  "critical"
+                             "status":  "ok"
                          },
                          {
                              "name":  "qua95_transition_payload_consistency",
