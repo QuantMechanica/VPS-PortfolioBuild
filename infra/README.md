@@ -100,6 +100,8 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Use `-RunRefresh` to include refresh execution in validation runs.
 - `scripts/Test-QUA95OpsSuite.ps1`
   - Runs core QUA-95 ops checks as one suite and emits JSON summary.
+- `scripts/Test-QUA95OpsBundleManifest.ps1`
+  - Verifies hash consistency for the QUA-95 blocked-ops bundle manifest.
 - `scripts/Write-QUA95OpsSuiteSnapshot.ps1`
   - Runs the QUA-95 ops suite and persists the JSON snapshot artifact.
 - `scripts/Update-QUA95OpsBundleManifest.ps1`

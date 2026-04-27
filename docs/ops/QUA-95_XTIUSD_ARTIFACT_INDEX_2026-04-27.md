@@ -92,6 +92,8 @@ Status recommendation: `blocked` (`defer`)
   - `infra/scripts/Write-QUA95OpsSuiteSnapshot.ps1`
 - Ops bundle manifest generator:
   - `infra/scripts/Update-QUA95OpsBundleManifest.ps1`
+- Ops bundle manifest validator:
+  - `infra/scripts/Test-QUA95OpsBundleManifest.ps1`
 
 ## Verification commands
 

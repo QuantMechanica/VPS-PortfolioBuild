@@ -227,15 +227,24 @@
 
 - Single-command QUA-95 ops sanity suite.
 - Runs:
-  1. `Test-QUA95HandoffIntegrity.ps1`
-  2. `Test-QUA95IssueTransitionPayload.ps1`
-  3. `monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
-  4. `monitoring/Test-QUA95BlockerTaskHealth.ps1`
+  1. `Test-QUA95OpsBundleManifest.ps1`
+  2. `Test-QUA95HandoffIntegrity.ps1`
+  3. `Test-QUA95IssueTransitionPayload.ps1`
+  4. `monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
+  5. `monitoring/Test-QUA95BlockerTaskHealth.ps1`
 - Emits JSON summary to stdout and returns:
   - `0` when all checks pass
   - `2` when any check is critical
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA95OpsSuite.ps1`
+
+## `Test-QUA95OpsBundleManifest.ps1`
+
+- Verifies SHA256 entries in:
+  - `docs\ops\QUA-95_OPS_BUNDLE_2026-04-27.sha256`
+- Confirms all listed blocked-ops artifacts are present and hash-consistent.
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA95OpsBundleManifest.ps1`
 
 ## `Write-QUA95OpsSuiteSnapshot.ps1`
 

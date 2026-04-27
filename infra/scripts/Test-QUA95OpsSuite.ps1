@@ -7,6 +7,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $steps = @(
+    @{ name = 'ops_bundle_manifest'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95OpsBundleManifest.ps1' },
     @{ name = 'handoff_integrity'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95HandoffIntegrity.ps1' },
     @{ name = 'transition_payload'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95IssueTransitionPayload.ps1' },
     @{ name = 'blocked_heartbeat_wrapper'; script = Join-Path $RepoRoot 'infra\monitoring\Test-QUA95BlockedHeartbeatWrapper.ps1' },
