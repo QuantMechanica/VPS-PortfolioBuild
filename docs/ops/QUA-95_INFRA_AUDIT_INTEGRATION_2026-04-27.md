@@ -84,8 +84,7 @@ From `infra/reports/infra_audit_latest.json`:
   "name": "qua95_unblock_readiness_freshness",
   "status": "ok",
   "meta": {
-    "lag_minutes": 1.23,
-    "ready_to_unblock": false
+    "exit_code": 0
   }
 }
 ```
