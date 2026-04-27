@@ -39,6 +39,8 @@ Status recommendation: `blocked` (`defer`)
   - `docs/ops/QUA-95_BLOCKED_HEARTBEAT_TASK_SMOKE_2026-04-27.md`
 - Blocked-heartbeat wrapper test proof:
   - `docs/ops/QUA-95_BLOCKED_HEARTBEAT_WRAPPER_TEST_2026-04-27.md`
+- Canonical snapshot runner proof:
+  - `docs/ops/QUA-95_CANONICAL_SNAPSHOT_RUNNER_2026-04-27.md`
 - Automation health snapshot:
   - `docs/ops/QUA-95_AUTOMATION_HEALTH_2026-04-27.json`
 - QUA-95 audit signal snapshot:
@@ -88,6 +90,8 @@ Status recommendation: `blocked` (`defer`)
   - `infra/scripts/Test-QUA95IssueTransitionPayload.ps1`
 - Blocked heartbeat wrapper:
   - `infra/scripts/Invoke-QUA95BlockedHeartbeat.ps1`
+- Canonical snapshot runner:
+  - `infra/scripts/Run-QUA95CanonicalSnapshot.ps1`
 - Blocked heartbeat task installer:
   - `infra/scripts/Install-QUA95BlockedHeartbeatTask.ps1`
 - Blocked heartbeat wrapper validator:
