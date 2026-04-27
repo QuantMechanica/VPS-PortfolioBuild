@@ -15,13 +15,14 @@ $gateScript = Join-Path $RepoRoot 'infra\scripts\Get-QUA95GateDecision.ps1'
 $assertionScript = Join-Path $RepoRoot 'infra\scripts\Update-QUA95BlockedAssertion.ps1'
 $blockedInvariantScript = Join-Path $RepoRoot 'infra\scripts\Test-QUA95BlockedInvariant.ps1'
 $unblockReadinessScript = Join-Path $RepoRoot 'infra\scripts\Update-QUA95UnblockReadiness.ps1'
+$unblockReadinessSummaryScript = Join-Path $RepoRoot 'infra\scripts\Write-QUA95UnblockReadinessSummary.ps1'
 $opsSuiteSnapshotScript = Join-Path $RepoRoot 'infra\scripts\Write-QUA95OpsSuiteSnapshot.ps1'
 $opsBundleManifestScript = Join-Path $RepoRoot 'infra\scripts\Update-QUA95OpsBundleManifest.ps1'
 $gateJson = Join-Path $RepoRoot 'docs\ops\QUA-95_GATE_DECISION_2026-04-27.json'
 $auditJson = Join-Path $RepoRoot 'infra\reports\infra_audit_latest.json'
 $outFull = Join-Path $RepoRoot $OutPath
 
-foreach ($p in @($refreshScript, $auditScript, $gateScript, $assertionScript, $blockedInvariantScript, $unblockReadinessScript, $opsSuiteSnapshotScript, $opsBundleManifestScript)) {
+foreach ($p in @($refreshScript, $auditScript, $gateScript, $assertionScript, $blockedInvariantScript, $unblockReadinessScript, $unblockReadinessSummaryScript, $opsSuiteSnapshotScript, $opsBundleManifestScript)) {
     if (-not (Test-Path -LiteralPath $p)) {
         throw "Required script missing: $p"
     }
@@ -66,6 +67,13 @@ $readinessCode = $LASTEXITCODE
 if ($readinessCode -ne 0) {
     $readinessText = ($readinessOut | ForEach-Object { $_.ToString() }) -join '; '
     throw ("Unblock readiness update failed: exit_code={0} output={1}" -f $readinessCode, $readinessText)
+}
+
+$readinessSummaryOut = & $unblockReadinessSummaryScript 2>&1
+$readinessSummaryCode = $LASTEXITCODE
+if ($readinessSummaryCode -ne 0) {
+    $readinessSummaryText = ($readinessSummaryOut | ForEach-Object { $_.ToString() }) -join '; '
+    throw ("Unblock readiness summary update failed: exit_code={0} output={1}" -f $readinessSummaryCode, $readinessSummaryText)
 }
 
 if (-not ($SkipRefresh.IsPresent -and $SkipAudit.IsPresent)) {
