@@ -27,14 +27,31 @@ Cross-symbol context in the same run:
 
 `XAGUSD.DWX` is a symptom of the same systemic verifier/runtime condition seen across the batch. Treat as runtime/read-path issue until disproven by a clean-session rerun.
 
+## Rerun Evidence (2026-04-27 08:56 CEST)
+
+Fresh verifier run executed:
+- command: `python D:\QM\mt5\T1\dwx_import\verify_import.py`
+- log artifact: `infra/smoke/verify_import_run_2026-04-27_085623_qua92.log`
+- exit code: `1`
+
+Classifier output on the rerun artifact:
+- `fail_count=56`
+- `systemic_zero_bars=True`
+- `systemic_zero_mid_ticks=False`
+
+`XAGUSD.DWX` in rerun:
+- verdict: `FAIL_tail_bars`
+- `mid_ticks_5min=255`
+- `bars expected=446,113/got=0`
+- `tail_ms expected=1775444390467/got=1775437249841` (shortfall `7140.626s`)
+
 ## Durable change in this heartbeat
 
-- Added parser regression coverage for a real `XAGUSD.DWX` verifier row in:
-  - `infra/scripts/tests/test_dwx_hourly_check_readiness.py`
-- Updated parser contract notes in:
-  - `infra/scripts/README.md`
+- Performed and captured a fresh verifier rerun for `QUA-92`.
+- Updated this investigation record with concrete rerun diagnostics and current disposition.
 
 ## Next action
 
-- Re-run verifier under confirmed healthy market session.
-- If `systemic_zero_bars` repeats, escalate to verifier implementation owner for MT5 bars-read-path debugging (`verify_import.py` pre-flight/warm-up), not symbol-level DWX data repair.
+Acceptance target (`XAGUSD` non-zero bars + matching tail) remains unmet after rerun.  
+Unblock owner: verifier implementation owner (`D:\QM\mt5\T1\dwx_import\verify_import.py`).  
+Required action: add MT5 session pre-flight hardening (`symbol_select`/bars warm-up/retry) before per-symbol checks, then rerun verification.
