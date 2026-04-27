@@ -36,6 +36,14 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Registers Task Scheduler job `QM_PaperclipStaleLockWatchdog_15min` as `SYSTEM`.
   - Runs `monitoring/Invoke-PaperclipStaleLockWatchdog.ps1 -StaleAfterMinutes 15 -FailOnFinding` every 15 minutes (monitor-only).
   - Safe to re-run (`Register-ScheduledTask -Force`) and overlap-safe (`MultipleInstances=IgnoreNew`).
+- `scripts/Install-QUA95BlockerRefreshTask.ps1`
+  - Registers Task Scheduler job `QM_QUA95_BlockerRefresh` as `SYSTEM` (hourly by default).
+  - Action chain: verifier rerun -> blocker sync -> blocked summary -> handoff integrity check.
+  - Safe to re-run (`Register-ScheduledTask -Force`).
+- `scripts/Run-QUA95BlockerRefresh.ps1`
+  - Scheduled runner used by `QM_QUA95_BlockerRefresh`.
+  - Logs to `infra\smoke\qua95_blocker_refresh_task.log`.
+  - Refreshes handoff SHA manifest before integrity validation.
 - `scripts/Install-DwxSpecPatchRunner.ps1`
   - Converges a non-interactive MT5 startup INI from one patch version to another (default: `v2 -> v3`).
   - Check-then-act writes: updates target only when content differs.
@@ -63,6 +71,9 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Detects stale Paperclip execution locks (`executionLockedAt` stale while `activeRun=null`) on targeted assignees/issues.
   - Default mode is monitor-only (no mutations); optional `-AutoRecover` performs PATCH-only assignee-cycle recovery.
   - Adds `X-Paperclip-Run-Id` header on all mutating PATCH calls.
+- `monitoring/Test-QUA95BlockerTaskHealth.ps1`
+  - Validates task existence, enabled state, last result, and staleness window for `QM_QUA95_BlockerRefresh`.
+  - Returns non-zero on critical task-health drift.
 - `tasks/Test-HourlyTaskTick.ps1`
   - Verifies `QM_DWX_HourlyCheck` is hourly (`PT1H`) and has at least one observed completed tick.
 - `paperclip-stale-lock-runbook.md`
@@ -100,6 +111,12 @@ Aggregator state writer (every minute):
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-AggregatorStateTask.ps1
+```
+
+QUA-95 blocker refresh task (hourly):
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-QUA95BlockerRefreshTask.ps1 -EveryMinutes 60
 ```
 
 Recovery orphan cleanup (daily schedule is managed by `tasks/Register-QMInfraTasks.ps1`):
