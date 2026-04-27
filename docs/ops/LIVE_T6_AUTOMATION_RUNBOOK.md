@@ -144,11 +144,11 @@ LiveOps aborts immediately if:
 
 ## Pre-deploy verification dry-run
 
-DarwinexZero is **live-only** — there is no demo account (see § "DarwinexZero Operating Model" above). The first implementation task is therefore a **pre-deploy verification dry-run**, not a "demo dry run". The goal is to exercise the placement automation and the verification contract on real T6 with **zero order traffic**, so that the operating mechanics are proven before any EA capable of trading is staged.
+DarwinexZero is **live-only** — there is no demo account (see § "DarwinexZero Operating Model" above). "Pre-deploy verification dry-run" is the **verification protocol** applied during a Phase 3 P10 (Live Burn-In) deploy: compile, deploy, attach, verify with **AutoTrading OFF**, capture evidence, **never trades** until OWNER explicitly toggles AutoTrading ON. This protocol applies to the first real V5 EA placement on T6 and to every subsequent EA deploy. There is no separate prior-and-isolated dry-run gate using a smoke EA — OWNER directive 2026-04-27 (recorded in [DL-025](../../decisions/DL-025_t6_deploy_boundary_refinement.md)).
 
-1. **Use a deliberately non-trading EA.** Logging-only, no `OrderSend`. Examples: `framework/tests/smoke/QM5_9000_smoke.ex5` once CTO ships it (currently behind [QUA-149](/QUA/issues/QUA-149) / [QUA-176](/QUA/issues/QUA-176)), or any test EA explicitly without `OrderSend`. **Never** use a V4-legacy `SM_XXX` EA — see [QUA-145](/QUA/issues/QUA-145) stand-down.
-2. **Manifest scoped to a single benign symbol/timeframe** (e.g. `EURUSD M15`), marked `environment: live_burn_in` (DXZ has no demo).
-3. **AutoTrading remains OFF throughout the dry-run.** OWNER toggles ON only on real promote-to-live, never during a dry-run.
-4. **Verify the full Verification Contract** (§ "Verification Contract", lines 105-117 above) — including AutoTrading state OFF before AND after placement.
+1. **EA selection.** The EA must be a real V5-framework binary that has cleared its upstream phase gates and arrived at P10 Live Burn-In with an OWNER-approved deploy manifest. **Never** use a V4-legacy `SM_XXX` EA — see [QUA-145](/QUA/issues/QUA-145) stand-down. *(Optional cushion, at the manifest author's discretion: a deliberately non-trading EA — logging-only, no `OrderSend`, e.g. `framework/tests/smoke/QM5_9000_smoke.ex5` once CTO ships it under [QUA-149](/QUA/issues/QUA-149) / [QUA-176](/QUA/issues/QUA-176) — can be deployed first as an extra confidence step. This is allowed but not required.)*
+2. **Manifest scoped to a single benign symbol/timeframe** for the first real deploy (e.g. `EURUSD M15`), marked `environment: live_burn_in` (DXZ has no demo).
+3. **AutoTrading remains OFF for the verification window.** OWNER toggles ON only after verification passes and the deploy is promoted to live trading. Agents never toggle AutoTrading.
+4. **Verify the full Verification Contract** (§ "Verification Contract", lines 105-117 above) — including AutoTrading state OFF before AND after chart placement.
 5. **Capture evidence** under `D:\QM\reports\ops\liveops_dryrun_<ts>\`: Experts log + Journal log + screenshot proof of chart, EA name, setfile timestamp/hash, and AutoTrading-OFF indicator.
-6. **Only after this passes** does any real EA manifest become eligible for OWNER approval.
+6. **Pass = OWNER may toggle AutoTrading ON** for the manifest. Verification failure = abort per § "Abort Conditions" above; the manifest does not promote until the failure is resolved.
