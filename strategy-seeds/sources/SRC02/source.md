@@ -6,11 +6,11 @@ status: scaffolded_pending_extraction
 authored-by: Research Agent
 last-updated: 2026-04-27
 budget_tracking:
-  heartbeats_used: 2                          # heartbeat 1: scaffold; heartbeat 2: Ch 3+7 deep-read + S01 cointegration card drafted + Ex 7.1 ML SKIP verdict
-  cards_drafted: 1                            # SRC02_S01 chan-pairs-stat-arb (cointegration family fold of Ex 3.6 + 7.2 + 7.3 + 7.5)
+  heartbeats_used: 3                          # h1: scaffold; h2: Ch 3+7 deep-read + S01 cointegration card + Ex 7.1 SKIP; h3: S02 Bollinger ES card
+  cards_drafted: 2                            # S01 chan-pairs-stat-arb; S02 chan-bollinger-es
   cards_passed_g0: 0
   cards_killed_pre_p1: 0
-extraction_pass_status: in_progress           # 1/N cards drafted; Ch 7 strategy-rich examples surveyed; Ex 7.1 verdict landed (SKIP — perceptron NN); other candidates pending
+extraction_pass_status: in_progress           # 2/N cards drafted; Ch 7 strategy-rich examples surveyed; Ex 7.1 verdict landed (SKIP — perceptron NN); S03/S04/S05/S06 candidates pending
 completion_report: pending                    # authored after all SRC02_S* sub-issues close
 
 ---
@@ -120,7 +120,7 @@ The slot table is populated as cards are drafted. Slug pattern: `chan-<topic>` p
 | Slot | Strategy slug | Card path | Sub-issue | Status | Source location |
 |---|---|---|---|---|---|
 | S01 | `chan-pairs-stat-arb` | `strategy-seeds/cards/chan-pairs-stat-arb_card.md` | TBD (`todo` at open) | DRAFT (2026-04-27) | Example 3.6 (pp. 55-59) + Ex 7.2 (pp. 128-130) + Ex 7.3 (pp. 131-133) + Ex 7.5 (pp. 141-142) + Ch 7 narrative pp. 126-133 — folded into one card. Cointegration pair-trade with cadf filter, OLS hedge ratio, ±N·σ z-score entry/exit, OU-half-life time-stop. Surfaces 2 vocabulary gaps (`cointegration-pair-trade`, `mean-reach-exit`) per `strategy_type_flags.md` addition-process. Friday-close incompatibility flagged as load-bearing G0 risk. |
-| S02 | TBD (likely `chan-bollinger-es`) | TBD | TBD (`blocked`) | not-yet-extracted | **Inline ES Bollinger demo, Ch 3 ~p. 50** (NOT labeled Example 3.x by Chan) — single-symbol M5 Bollinger 2σ entry / 1σ exit on E-mini S&P. Sharpe +3 no-cost, -3 with 1bp/round-trip cost. Single-symbol, V5-architecture compatible. |
+| S02 | `chan-bollinger-es` | `strategy-seeds/cards/chan-bollinger-es_card.md` | TBD (`blocked`) | DRAFT (2026-04-27) | **Inline ES Bollinger demo, Ch 2 pp. 22-23** (NOT labeled Example 3.x by Chan; in § "How Will Transaction Costs Affect the Strategy?"). Single-symbol M5 Bollinger ±2σ entry / ±1σ exit on E-mini S&P. Sharpe +3 pre-cost, −3 with 1 bp/trade cost — Chan's deliberate transaction-cost FAILURE example. V5-architecture compatible (single-symbol; maps to `US500.DWX`). Primary risk: `scalping_p5b_latency` (M5 churn); expected pipeline failure at P9b Operational Readiness. Surfaces a 3rd vocabulary gap: `zscore-band-reversion` (single-leg ±N·σ band MR). |
 | S03 | TBD (likely `chan-khandani-lo-mr`) | TBD | TBD (`blocked`) | candidate, architecture-incompatible | Example 3.7 (Khandani-Lo cross-sectional MR on S&P 500) + Example 3.8 (Open-vs-Close timing micro-variant). Multi-stock 500-position daily-rebalance long/short — V5 single-symbol architecture incompatible. Card drafted per Rule 1; G0 likely KILL. Ex 3.7 + 3.8 fold into one card (same strategy, different bar-time). |
 | S04 | TBD (likely `chan-pca-factor`) | TBD | TBD (`blocked`) | candidate, architecture-incompatible | Example 7.4 (PCA factor model on S&P 600 small-cap, 100-position rebalance). Multi-stock; V5 architecture incompatible; Chan's own backtest negative (-1.81% annualized). Card drafted per Rule 1. |
 | S05 | TBD (likely `chan-seasonal`) | TBD | TBD (`blocked`) | candidate | Ch 7 Seasonal Trading section, pp. 143-150 (January effect + commodity-futures seasonals). Need detailed read at next extraction pass. |
