@@ -37,6 +37,8 @@ Status recommendation: `blocked` (`defer`)
   - `docs/ops/QUA-95_BLOCKED_HEARTBEAT_WRAPPER_TEST_2026-04-27.md`
 - Ops-suite snapshot:
   - `docs/ops/QUA-95_OPS_SUITE_2026-04-27.json`
+- Blocked automation runbook:
+  - `docs/ops/QUA-95_BLOCKED_AUTOMATION_RUNBOOK_2026-04-27.md`
 
 ## Investigation + evidence trail
 
