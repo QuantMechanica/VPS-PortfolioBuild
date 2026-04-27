@@ -32,3 +32,22 @@ Verified highlights:
   - `Update-QUA95BlockerStatus.ps1`
   - `Write-QUA95BlockedSummary.ps1`
   - `Test-QUA95HandoffIntegrity.ps1`
+
+## Runtime remediation
+
+Observed failure before remediation:
+- `Last Result: 1`
+- task log error:
+  - `python is not recognized` (SYSTEM PATH did not resolve Python)
+
+Fix applied:
+- Installer now passes explicit `-PythonExe` to task runner.
+- Added dedicated runner script:
+  - `infra/scripts/Run-QUA95BlockerRefresh.ps1`
+
+Post-fix verification:
+- Manual run time: `2026-04-27 09:55:29` local
+- `Last Result: 0`
+- task log shows:
+  - `[2026-04-27T09:55:29+02:00] start task=QM_QUA95_BlockerRefresh`
+  - `[2026-04-27T09:55:45+02:00] success task=QM_QUA95_BlockerRefresh`

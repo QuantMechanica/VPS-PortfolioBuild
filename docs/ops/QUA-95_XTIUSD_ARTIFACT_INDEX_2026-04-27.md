@@ -50,6 +50,8 @@ Status recommendation: `blocked` (`defer`)
   - `infra/scripts/Test-QUA95HandoffIntegrity.ps1`
 - Blocked summary generator:
   - `infra/scripts/Write-QUA95BlockedSummary.ps1`
+- Task runner (scheduled execution target):
+  - `infra/scripts/Run-QUA95BlockerRefresh.ps1`
 
 ## Verification commands
 
