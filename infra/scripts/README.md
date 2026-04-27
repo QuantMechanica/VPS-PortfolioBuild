@@ -436,6 +436,7 @@
   - `-CanonicalSnapshotCheckScript`
   - `-CustomVisibilityProofCheckScript`
   - `-EvidenceCohesionCheckScript`
+  - `-BlockerRefreshActionWiringCheckScript`
   - `-HeartbeatCustomVisibilityCheckScript`
 - Exit codes:
   - `0`: wiring is present

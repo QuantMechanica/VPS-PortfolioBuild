@@ -9,6 +9,7 @@ param(
         '-CanonicalSnapshotCheckScript',
         '-CustomVisibilityProofCheckScript',
         '-EvidenceCohesionCheckScript',
+        '-BlockerRefreshActionWiringCheckScript',
         '-HeartbeatCustomVisibilityCheckScript'
     )
 )

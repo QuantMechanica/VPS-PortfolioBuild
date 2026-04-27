@@ -9,6 +9,7 @@ param(
     [string]$CanonicalSnapshotCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95CanonicalSnapshot.ps1',
     [string]$CustomVisibilityProofCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95CustomVisibilityProof.ps1',
     [string]$EvidenceCohesionCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95EvidenceCohesion.ps1',
+    [string]$BlockerRefreshActionWiringCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95BlockerRefreshActionWiring.ps1',
     [string]$HeartbeatCustomVisibilityCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95HeartbeatCustomVisibility.ps1'
 )
 
@@ -134,6 +135,19 @@ $evidenceCohesionCode = $LASTEXITCODE
 if ($evidenceCohesionCode -ne 0) {
     $evidenceCohesionText = ($evidenceCohesionOut | ForEach-Object { $_.ToString() }) -join '; '
     Write-Host ("status=critical task={0} issues=evidence_cohesion_check_failed exit_code={1} output={2}" -f $TaskName, $evidenceCohesionCode, $evidenceCohesionText)
+    exit 2
+}
+
+if (-not (Test-Path -LiteralPath $BlockerRefreshActionWiringCheckScript)) {
+    Write-Host ("status=critical task={0} issues=blocker_refresh_action_wiring_check_missing path={1}" -f $TaskName, $BlockerRefreshActionWiringCheckScript)
+    exit 2
+}
+
+$blockerRefreshWiringOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $BlockerRefreshActionWiringCheckScript -TaskName $TaskName 2>&1
+$blockerRefreshWiringCode = $LASTEXITCODE
+if ($blockerRefreshWiringCode -ne 0) {
+    $blockerRefreshWiringText = ($blockerRefreshWiringOut | ForEach-Object { $_.ToString() }) -join '; '
+    Write-Host ("status=critical task={0} issues=blocker_refresh_action_wiring_check_failed exit_code={1} output={2}" -f $TaskName, $blockerRefreshWiringCode, $blockerRefreshWiringText)
     exit 2
 }
 

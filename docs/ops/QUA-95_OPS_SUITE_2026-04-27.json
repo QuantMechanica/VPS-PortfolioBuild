@@ -1,6 +1,6 @@
 ﻿{
     "issue":  "QUA-95",
-    "generated_at_local":  "2026-04-27T14:05:44+02:00",
+    "generated_at_local":  "2026-04-27T14:08:30+02:00",
     "overall_status":  "ok",
     "checks":  [
                    {
@@ -37,7 +37,7 @@
                        "name":  "unblock_readiness",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok lag_minutes=2.36 ready_to_unblock=False bars_got=0 owner_count=2"
+                       "output":  "status=ok lag_minutes=5.51 ready_to_unblock=False bars_got=0 owner_count=2"
                    },
                    {
                        "name":  "unblock_owner_consistency",
@@ -103,13 +103,13 @@
                        "name":  "blocked_heartbeat_wrapper",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok gate_state=blocked audit_status=critical checks_count=30 automation_health=ok qua95_issues=0 non_qua95_issues=2 isolated_custom_failure=True"
+                       "output":  "status=ok gate_state=blocked audit_status=critical checks_count=31 automation_health=ok qua95_issues=0 non_qua95_issues=2 isolated_custom_failure=True"
                    },
                    {
                        "name":  "blocker_task_health",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok task=QM_QUA95_BlockerRefresh last_run=2026-04-27T14:01:01.0000000+02:00 age_minutes=4.69"
+                       "output":  "status=ok task=QM_QUA95_BlockerRefresh last_run=2026-04-27T14:01:01.0000000+02:00 age_minutes=7.45"
                    }
                ]
 }
