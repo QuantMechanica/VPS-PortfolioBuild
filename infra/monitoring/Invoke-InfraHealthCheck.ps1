@@ -161,7 +161,14 @@ if (Test-Path -LiteralPath $DwxHeartbeatScript) {
 # Drive/git exclusion check (PC1-00 hard rule)
 if (Test-Path -LiteralPath $DriveGitExclusionScript) {
     try {
-        $driveCheckRaw = & powershell -NoProfile -ExecutionPolicy Bypass -File $DriveGitExclusionScript 2>$null | Out-String
+        $driveArgs = @(
+            "-NoProfile",
+            "-ExecutionPolicy", "Bypass",
+            "-File", $DriveGitExclusionScript,
+            "-PrimaryRepoForWorktrees", $RepoRoots[0],
+            "-IncludeGitWorktrees"
+        )
+        $driveCheckRaw = & powershell @driveArgs 2>$null | Out-String
         $driveCheck = $driveCheckRaw | ConvertFrom-Json -ErrorAction Stop
         $checks.Add((New-Check -Name "drive_git_exclusion" -Status $driveCheck.status -Message $driveCheck.message -Details $driveCheck))
     }
