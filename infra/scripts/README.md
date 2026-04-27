@@ -378,6 +378,7 @@
   - `-UnblockReadinessCheckScript`
   - `-AuditSignalCheckScript`
   - `-CanonicalSnapshotCheckScript`
+  - `-CustomVisibilityProofCheckScript`
 - Exit codes:
   - `0`: wiring is present
   - `2`: task missing or required arg fragment missing

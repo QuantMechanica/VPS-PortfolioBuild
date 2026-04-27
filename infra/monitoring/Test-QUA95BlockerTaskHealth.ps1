@@ -5,7 +5,8 @@ param(
     [string]$TransitionPayloadCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95IssueTransitionPayload.ps1',
     [string]$UnblockReadinessCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95UnblockReadiness.ps1',
     [string]$AuditSignalCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95AuditSignal.ps1',
-    [string]$CanonicalSnapshotCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95CanonicalSnapshot.ps1'
+    [string]$CanonicalSnapshotCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95CanonicalSnapshot.ps1',
+    [string]$CustomVisibilityProofCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95CustomVisibilityProof.ps1'
 )
 
 Set-StrictMode -Version Latest
@@ -91,6 +92,19 @@ $canonicalCode = $LASTEXITCODE
 if ($canonicalCode -ne 0) {
     $canonicalText = ($canonicalOut | ForEach-Object { $_.ToString() }) -join '; '
     Write-Host ("status=critical task={0} issues=canonical_snapshot_check_failed exit_code={1} output={2}" -f $TaskName, $canonicalCode, $canonicalText)
+    exit 2
+}
+
+if (-not (Test-Path -LiteralPath $CustomVisibilityProofCheckScript)) {
+    Write-Host ("status=critical task={0} issues=custom_visibility_proof_check_missing path={1}" -f $TaskName, $CustomVisibilityProofCheckScript)
+    exit 2
+}
+
+$customVisibilityOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $CustomVisibilityProofCheckScript 2>&1
+$customVisibilityCode = $LASTEXITCODE
+if ($customVisibilityCode -ne 0) {
+    $customVisibilityText = ($customVisibilityOut | ForEach-Object { $_.ToString() }) -join '; '
+    Write-Host ("status=critical task={0} issues=custom_visibility_proof_check_failed exit_code={1} output={2}" -f $TaskName, $customVisibilityCode, $customVisibilityText)
     exit 2
 }
 
