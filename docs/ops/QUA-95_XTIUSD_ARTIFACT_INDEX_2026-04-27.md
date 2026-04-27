@@ -33,6 +33,8 @@ Status recommendation: `blocked` (`defer`)
   - `docs/ops/QUA-95_BLOCKED_HEARTBEAT_2026-04-27.json`
 - Blocked-heartbeat task smoke:
   - `docs/ops/QUA-95_BLOCKED_HEARTBEAT_TASK_SMOKE_2026-04-27.md`
+- Blocked-heartbeat wrapper test proof:
+  - `docs/ops/QUA-95_BLOCKED_HEARTBEAT_WRAPPER_TEST_2026-04-27.md`
 
 ## Investigation + evidence trail
 
@@ -74,6 +76,8 @@ Status recommendation: `blocked` (`defer`)
   - `infra/scripts/Invoke-QUA95BlockedHeartbeat.ps1`
 - Blocked heartbeat task installer:
   - `infra/scripts/Install-QUA95BlockedHeartbeatTask.ps1`
+- Blocked heartbeat wrapper validator:
+  - `infra/monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
 
 ## Verification commands
 
