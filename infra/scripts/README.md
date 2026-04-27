@@ -730,6 +730,15 @@
 - Preview mode:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-QUA207RuntimeHeartbeatTask.ps1 -PreviewOnly`
 
+## `Remove-QUA207RuntimeHeartbeatTask.ps1`
+
+- Idempotently removes scheduler task `QM_QUA207_RuntimeHeartbeat_30min`.
+- Behavior:
+  - returns `status=ok task_absent=<name>` when task does not exist
+  - removes task without prompt when present
+- Preview mode:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Remove-QUA207RuntimeHeartbeatTask.ps1 -PreviewOnly`
+
 ## `New-QUA207IssueComment.ps1`
 
 - Generates ready-to-post QUA-207 issue comment markdown from:

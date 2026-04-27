@@ -204,6 +204,8 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `scripts/Install-QUA207RuntimeHeartbeatTask.ps1`
   - Registers scheduler task `QM_QUA207_RuntimeHeartbeat_30min` to run the QUA-207 runtime heartbeat runner as `SYSTEM`.
   - Safe to re-run (`Register-ScheduledTask -Force`).
+- `scripts/Remove-QUA207RuntimeHeartbeatTask.ps1`
+  - Removes `QM_QUA207_RuntimeHeartbeat_30min` idempotently (`ok` when already absent).
 - `scripts/New-QUA207IssueComment.ps1`
   - Generates `docs/ops/QUA-207_ISSUE_COMMENT_2026-04-27.md` from live transition + evidence artifacts.
 - `scripts/Assert-CommitAllowlist.ps1`
