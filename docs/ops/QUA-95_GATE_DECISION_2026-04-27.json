@@ -3,7 +3,7 @@
     "recommended_state":  "blocked",
     "reason":  "acceptance_not_met",
     "disposition":  "defer",
-    "last_checked_local":  "2026-04-27T11:11:37+02:00",
+    "last_checked_local":  "2026-04-27T11:13:24+02:00",
     "bars_got":  0,
     "tail_shortfall_seconds":  7141.322,
     "unblock_owners":  [

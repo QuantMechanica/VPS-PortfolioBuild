@@ -66,10 +66,11 @@ $transition = Join-Path $RepoRoot 'infra\scripts\New-QUA95IssueTransitionPayload
 $transitionCheck = Join-Path $RepoRoot 'infra\scripts\Test-QUA95IssueTransitionPayload.ps1'
 $integrity = Join-Path $RepoRoot 'infra\scripts\Test-QUA95HandoffIntegrity.ps1'
 $opsSuiteWriter = Join-Path $RepoRoot 'infra\scripts\Write-QUA95OpsSuiteSnapshot.ps1'
+$opsBundleManifest = Join-Path $RepoRoot 'infra\scripts\Update-QUA95OpsBundleManifest.ps1'
 $manifest = Join-Path $RepoRoot 'docs\ops\QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.sha256'
 $gateOut = 'docs\ops\QUA-95_GATE_DECISION_2026-04-27.json'
 
-foreach ($f in @($invoke, $sync, $summary, $gate, $assertion, $transition, $transitionCheck, $integrity, $opsSuiteWriter, $manifest)) {
+foreach ($f in @($invoke, $sync, $summary, $gate, $assertion, $transition, $transitionCheck, $integrity, $opsSuiteWriter, $opsBundleManifest, $manifest)) {
     if (-not (Test-Path -LiteralPath $f)) {
         throw "Required script missing: $f"
     }
@@ -134,6 +135,11 @@ try {
     $opsSuiteOutput = & $opsSuiteWriter 2>&1
     Write-CommandOutputToLog -Output $opsSuiteOutput
     if ($LASTEXITCODE -ne 0) { throw ("Step failed with exit code {0}: {1}" -f $LASTEXITCODE, $opsSuiteWriter) }
+
+    $global:LASTEXITCODE = 0
+    $opsBundleOutput = & $opsBundleManifest 2>&1
+    Write-CommandOutputToLog -Output $opsBundleOutput
+    if ($LASTEXITCODE -ne 0) { throw ("Step failed with exit code {0}: {1}" -f $LASTEXITCODE, $opsBundleManifest) }
 
     Write-TaskLog "success task=$TaskName"
     exit 0
