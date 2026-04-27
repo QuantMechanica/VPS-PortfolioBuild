@@ -52,6 +52,9 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Scheduled runner used by `QM_QUA95_BlockerRefresh`.
   - Logs to `infra\smoke\qua95_blocker_refresh_task.log`.
   - Refreshes handoff SHA manifest before integrity validation.
+- `scripts/Invoke-QUA95BlockedHeartbeat.ps1`
+  - One-command heartbeat wrapper for blocked QUA-95 operations.
+  - Runs blocker refresh + infra audit and writes consolidated status JSON.
 - `scripts/Install-DwxSpecPatchRunner.ps1`
   - Converges a non-interactive MT5 startup INI from one patch version to another (default: `v2 -> v3`).
   - Check-then-act writes: updates target only when content differs.

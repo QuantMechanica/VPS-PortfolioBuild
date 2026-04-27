@@ -209,6 +209,20 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA95IssueTransitionPayload.ps1`
 
+## `Invoke-QUA95BlockedHeartbeat.ps1`
+
+- One-command heartbeat wrapper for blocked QUA-95 operations.
+- Runs, by default:
+  1. `Run-QUA95BlockerRefresh.ps1`
+  2. `Invoke-InfraAudit.ps1`
+- Reads canonical outputs and writes consolidated summary:
+  - `docs\ops\QUA-95_BLOCKED_HEARTBEAT_2026-04-27.json`
+- Supports:
+  - `-SkipRefresh` (audit-only heartbeat)
+  - `-SkipAudit` (refresh-only heartbeat)
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Invoke-QUA95BlockedHeartbeat.ps1`
+
 ## `Update-QUA93BlockerStatus.ps1`
 
 - Idempotently creates/refreshes `docs\ops\QUA-93_XAUUSD_BLOCKER_STATUS_2026-04-27.json`

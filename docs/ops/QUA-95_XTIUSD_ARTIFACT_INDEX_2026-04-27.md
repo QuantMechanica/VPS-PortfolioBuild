@@ -29,6 +29,8 @@ Status recommendation: `blocked` (`defer`)
   - `docs/ops/QUA-95_BLOCKED_STATE_ASSERTION_2026-04-27.md`
 - Issue-transition payload snapshot:
   - `docs/ops/QUA-95_ISSUE_TRANSITION_PAYLOAD_2026-04-27.json`
+- Blocked-heartbeat snapshot:
+  - `docs/ops/QUA-95_BLOCKED_HEARTBEAT_2026-04-27.json`
 
 ## Investigation + evidence trail
 
@@ -66,6 +68,8 @@ Status recommendation: `blocked` (`defer`)
   - `infra/scripts/New-QUA95IssueTransitionPayload.ps1`
 - Issue-transition payload integrity check:
   - `infra/scripts/Test-QUA95IssueTransitionPayload.ps1`
+- Blocked heartbeat wrapper:
+  - `infra/scripts/Invoke-QUA95BlockedHeartbeat.ps1`
 
 ## Verification commands
 
