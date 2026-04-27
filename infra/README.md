@@ -265,6 +265,12 @@ Recovery orphan cleanup (daily schedule is managed by `tasks/Register-QMInfraTas
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Remove-RecoveryOrphans.ps1
 ```
 
+Factory portable-marker convergence (`T1`-`T5`, idempotent):
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Ensure-Mt5PortableMarker.ps1 -FailOnMissingRoot
+```
+
 Agent worktree isolation (idempotent, per agent key):
 
 ```powershell

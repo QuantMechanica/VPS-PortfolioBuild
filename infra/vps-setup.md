@@ -13,6 +13,7 @@ same state.
    `.git/`.
 3. MT5 layout:
    - `D:\QM\mt5\T1` to `D:\QM\mt5\T5` factory terminals
+   - each factory terminal root has `portable.txt` marker present (empty file)
    - `D:\QM\mt5\T6_Live` and `D:\QM\mt5\T6_Demo` isolated
 4. Seed assets installed:
    - `seed_assets/news_calendar/*.csv` copied to `D:\QM\data\news_calendar\`
@@ -31,7 +32,8 @@ same state.
 1. `powershell -File C:\QM\repo\infra\tasks\Register-QMInfraTasks.ps1`
 2. `powershell -File C:\QM\repo\infra\backup.ps1 -WhatIf` for dry-run check
 3. `powershell -File C:\QM\repo\infra\monitoring\Invoke-InfraHealthCheck.ps1`
-4. `powershell -File C:\QM\repo\scripts\export_public_snapshot.ps1 -NoGit`
+4. `powershell -File C:\QM\repo\infra\scripts\Ensure-Mt5PortableMarker.ps1 -FailOnMissingRoot`
+5. `powershell -File C:\QM\repo\scripts\export_public_snapshot.ps1 -NoGit`
 
 ## Drive/Git Safety Rules (PC1-00)
 

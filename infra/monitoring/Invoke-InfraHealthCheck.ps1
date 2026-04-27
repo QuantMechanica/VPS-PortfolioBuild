@@ -19,6 +19,7 @@ param(
         "D:\QM\mt5\T4\MQL5\Files\factory_heartbeat.txt",
         "D:\QM\mt5\T5\MQL5\Files\factory_heartbeat.txt"
     ),
+    [string]$FactoryPortableMarkerName = "portable.txt",
     [int]$FactoryMaxAgeMinutes = 10,
     [string]$T6LiveHeartbeat = "D:\QM\mt5\T6_Live\MQL5\Files\terminal_heartbeat.txt",
     [string]$T6DemoHeartbeat = "D:\QM\mt5\T6_Demo\MQL5\Files\terminal_heartbeat.txt",
@@ -92,6 +93,33 @@ for ($i = 0; $i -lt $FactoryHeartbeats.Count; $i++) {
         $checks.Add((New-Check -Name "factory_$terminal" -Status "critical" -Message "Factory terminal heartbeat stale." -Details @{ path = $path; age_minutes = $age; max_age_minutes = $FactoryMaxAgeMinutes }))
     } else {
         $checks.Add((New-Check -Name "factory_$terminal" -Status "ok" -Message "Factory terminal heartbeat fresh." -Details @{ age_minutes = $age }))
+    }
+}
+
+# T1-T5 portable marker drift
+for ($i = 0; $i -lt $FactoryHeartbeats.Count; $i++) {
+    $heartbeatPath = $FactoryHeartbeats[$i]
+    $terminal = "T$($i + 1)"
+    $mqlRoot = Split-Path -Path (Split-Path -Path $heartbeatPath -Parent) -Parent
+    $terminalRoot = Split-Path -Path $mqlRoot -Parent
+    $markerPath = Join-Path $terminalRoot $FactoryPortableMarkerName
+
+    if (-not (Test-Path -LiteralPath $terminalRoot -PathType Container)) {
+        $checks.Add((New-Check -Name "factory_${terminal}_portable_marker" -Status "critical" -Message "Factory terminal root missing for portable marker check." -Details @{ terminal_root = $terminalRoot; marker_path = $markerPath }))
+        continue
+    }
+
+    if (-not (Test-Path -LiteralPath $markerPath -PathType Leaf)) {
+        $checks.Add((New-Check -Name "factory_${terminal}_portable_marker" -Status "critical" -Message "portable.txt marker missing." -Details @{ terminal_root = $terminalRoot; marker_path = $markerPath }))
+        continue
+    }
+
+    $size = (Get-Item -LiteralPath $markerPath).Length
+    if ($size -eq 0) {
+        $checks.Add((New-Check -Name "factory_${terminal}_portable_marker" -Status "ok" -Message "portable.txt marker present." -Details @{ marker_path = $markerPath; size_bytes = $size }))
+    }
+    else {
+        $checks.Add((New-Check -Name "factory_${terminal}_portable_marker" -Status "warn" -Message "portable.txt marker is not empty; normalizing is recommended." -Details @{ marker_path = $markerPath; size_bytes = $size }))
     }
 }
 

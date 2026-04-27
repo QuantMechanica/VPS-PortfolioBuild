@@ -4,6 +4,7 @@ param(
     [int]$DiskWarnGb = 60,
     [int]$DiskCriticalGb = 30,
     [string[]]$FactoryTerminalRoots = @('D:\QM\mt5\T1', 'D:\QM\mt5\T2', 'D:\QM\mt5\T3', 'D:\QM\mt5\T4', 'D:\QM\mt5\T5'),
+    [string]$FactoryPortableMarkerName = 'portable.txt',
     [string[]]$T6TerminalRoots = @('C:\QM\mt5\T6_Live', 'C:\QM\mt5\T6_Demo'),
     [string]$AggregatorStateFile = 'D:\QM\reports\state\last_check_state.json',
     [int]$AggregatorSilentMinutes = 15,
@@ -101,6 +102,39 @@ foreach ($root in $FactoryTerminalRoots) {
     Add-Check -Name ("factory_terminal_{0}" -f (Split-Path $normalized -Leaf)) -Status $status -Meta @{
         root = $normalized
         pids = @($matches | ForEach-Object { $_.ProcessId })
+    }
+}
+
+# Factory portable marker convergence signal
+foreach ($root in $FactoryTerminalRoots) {
+    $normalized = [IO.Path]::GetFullPath($root).TrimEnd('\\')
+    $leaf = Split-Path -Path $normalized -Leaf
+    $markerPath = Join-Path $normalized $FactoryPortableMarkerName
+
+    if (-not (Test-Path -LiteralPath $normalized -PathType Container)) {
+        Add-Check -Name ("factory_portable_marker_{0}" -f $leaf) -Status 'critical' -Meta @{
+            reason = 'terminal_root_missing'
+            root = $normalized
+            marker_path = $markerPath
+        }
+        continue
+    }
+
+    if (-not (Test-Path -LiteralPath $markerPath -PathType Leaf)) {
+        Add-Check -Name ("factory_portable_marker_{0}" -f $leaf) -Status 'critical' -Meta @{
+            reason = 'marker_missing'
+            root = $normalized
+            marker_path = $markerPath
+        }
+        continue
+    }
+
+    $sizeBytes = (Get-Item -LiteralPath $markerPath).Length
+    $markerStatus = if ($sizeBytes -eq 0) { 'ok' } else { 'warn' }
+    Add-Check -Name ("factory_portable_marker_{0}" -f $leaf) -Status $markerStatus -Meta @{
+        root = $normalized
+        marker_path = $markerPath
+        size_bytes = $sizeBytes
     }
 }
 
