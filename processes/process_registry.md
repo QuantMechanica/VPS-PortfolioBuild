@@ -1,5 +1,36 @@
 # Process Registry
 
+## CEO Authority Boundaries
+
+Per [DL-017](../decisions/REGISTRY.md) (hires) + [DL-023](../decisions/2026-04-27_ceo_autonomy_waiver_v2.md) (technical / operational / process v2) + [DL-032](../decisions/2026-04-27_ceo_autonomy_waiver_v3.md) (research source-queue ordering v3): CEO acts unilaterally on the classes listed below. OWNER's stated preference is bias to action, fewer interrupts. When ambiguous, CEO **acts**, then retroactively raises via successor DL-NNN if the call needs ratification.
+
+### CEO-autonomous (no OWNER surfacing required)
+
+1. **Hires** — DL-017. `requireBoardApprovalForNewAgents=false`.
+2. **Technical implementation choices within the framework spec** — adapter choices, library structure, internal scripts, test harness shape, gitignore / artifact retention policy, Notion ↔ Git mirror layout, scheduler choice (Paperclip routine vs Windows Task), Linux / PowerShell tooling decisions.
+3. **Operational decisions for non-T6 deploys** — file paths, scheduler windows, log rotation policy, retention windows, agent confirmation cadence, worktree layout, lock-file monitoring, bookkeeping cleanups (orphan-run cancellations, stuck-process terminations).
+4. **Internal process choices** — heartbeat cadence, issue-tree shape, sub-issue spawning patterns, agent-vs-agent escalation rules, parallel-run rules.
+5. **Research source-queue ordering** — which source Research extracts next within an already-ratified queue (Davey vs Chan first, JBM batch 3 vs 4, etc.). DL-032.
+6. **Source-survey ratification** — accepting / rejecting / re-scoping a source-survey deliverable produced under DL-029. DL-032.
+7. **SRC0N parent creation** — opening the next `SRC0N` parent issue when the current closes, including its child cohort skeleton. DL-032.
+8. **Per-batch T3 source approval** — approving the per-batch T3 source bundle that hands off to Pipeline-Operator under DL-029's binding-sequential workflow. DL-032.
+
+### Still requires OWNER surfacing (escalation list, v3-reframed)
+
+1. **T6 anything** — OFF LIMITS without explicit OWNER approval (no code, no read, no inference). V5 hard rule.
+2. **Live deploy** — first T6 deploy manifest, AutoTrading toggle, live-account credential touches, live capital exposure changes.
+3. **True strategic direction** — kill V5 entirely, pivot to a different broker, change the goal-tier strategic outcome. (Source-queue ordering is *not* strategic direction; that's CEO's lane per DL-032.)
+4. **Compliance / legal** — news-compliance variants (FTMO / 5ers / DXZ blackouts), broker-of-record changes, account-class transitions.
+5. **Brand application** to public-facing artifacts that OWNER personally approves (logo, mascot, episode pack).
+6. **Budget step-changes** — anything materially raising monthly token / compute spend beyond the existing operating envelope.
+7. **V5 hard-rule boundary changes** — ML ban, Model 4, .DWX suffix, Friday Close default, magic-formula registry.
+
+### Pre-flight rule for `paperclip-prompts/*.md` patches (DL-032)
+
+When a prompt patch under `paperclip-prompts/*.md` aligns with an **existing** DL-NNN, the workflow is **either** pre-flight a `request_confirmation` to OWNER on the patch, **or** treat the commit as DL-aligned routine work that CEO can ship under broadened authority, citing the DL-NNN in the commit body. **Never commit-then-ask-after.** Once committed, hot-reload propagates the change to every wake of the affected agent and a retroactive confirmation is no longer a confirmation but a notification.
+
+This rule applies only when a DL-NNN already exists. Brand-new prompt changes not yet covered by a DL stay in their existing surfacing path. OWNER manages the BASIS source-of-truth in either case.
+
 ## Issue Routing
 
 Per [DL-031](../decisions/DL-031_projects_formalization_and_routing_convention.md): every new issue is created with `projectId` set. Authoritative goal-project hierarchy:

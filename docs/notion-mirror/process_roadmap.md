@@ -130,3 +130,4 @@ It must not expose credentials, internal paths, account IDs, RDP details, or raw
 - [DL-027 — BASIS→active Diff Propagation Rule (Decision Log)](https://www.notion.so/34f47da58f4a813f9c8eee045c2cf4c4)
 - [DL-028 — Per-Agent Worktree Isolation Standard (Decision Log)](https://www.notion.so/34f47da58f4a810fabbae254ab710778)
 - [DL-031 — Projects Formalization + Issue Routing Convention (Decision Log)](https://www.notion.so/34f47da58f4a814b9df7f6e4f8e661d1)
+- DL-032 — CEO Autonomy Waiver, Research Source-Queue Ordering v3 (Decision Log) — `decisions/2026-04-27_ceo_autonomy_waiver_v3.md` (Notion URL pending nightly sync)
