@@ -282,6 +282,21 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Write-QUA95UnblockReadinessSummary.ps1`
 
+## `Test-QUA95UnblockReadinessSummary.ps1`
+
+- Validates markdown summary consistency with unblock-readiness JSON:
+  - `docs\ops\QUA-95_UNBLOCK_READINESS_2026-04-27.json`
+  - `docs\ops\QUA-95_UNBLOCK_READINESS_SUMMARY_2026-04-27.md`
+- Checks:
+  - `ready_to_unblock` value
+  - `bars_got`, `tail_shortfall_seconds`
+  - unblock owner keys
+- Exit codes:
+  - `0`: summary is consistent
+  - `1`: summary drift detected
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA95UnblockReadinessSummary.ps1`
+
 ## `Test-QUA95OpsSuite.ps1`
 
 - Single-command QUA-95 ops sanity suite.
@@ -291,8 +306,9 @@
   3. `Test-QUA95IssueTransitionPayload.ps1`
   4. `Test-QUA95BlockedInvariant.ps1`
   5. `Test-QUA95UnblockReadiness.ps1`
-  6. `monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
-  7. `monitoring/Test-QUA95BlockerTaskHealth.ps1`
+  6. `Test-QUA95UnblockReadinessSummary.ps1`
+  7. `monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
+  8. `monitoring/Test-QUA95BlockerTaskHealth.ps1`
 - Emits JSON summary to stdout and returns:
   - `0` when all checks pass
   - `2` when any check is critical

@@ -123,6 +123,8 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Writes machine-readable unblock readiness snapshot with `ready_to_unblock`, unmet criteria, and unblock owners/actions.
 - `scripts/Write-QUA95UnblockReadinessSummary.ps1`
   - Writes a deterministic human-readable summary from the unblock-readiness JSON.
+- `scripts/Test-QUA95UnblockReadinessSummary.ps1`
+  - Validates that unblock-readiness markdown summary stays aligned with canonical readiness JSON.
 - `scripts/Test-QUA95BlockedInvariant.ps1`
   - Enforces blocked/defer invariant when `bars_got <= 0` using gate + transition payload artifacts.
   - Returns non-zero if blocked-state policy drifts.
