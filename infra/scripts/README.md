@@ -137,6 +137,8 @@
   - principal: `SYSTEM` (highest)
 - Preview mode (no task registration):
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-QUA95BlockerRefreshTask.ps1 -PreviewOnly`
+- Validation note:
+  - For SYSTEM tasks, prefer `schtasks /Query /TN "<task-name>" /V /FO LIST` as a visibility check when `Get-ScheduledTask` does not enumerate the task in the current shell context.
 
 ## `verify_import_chunked_probe.py`
 

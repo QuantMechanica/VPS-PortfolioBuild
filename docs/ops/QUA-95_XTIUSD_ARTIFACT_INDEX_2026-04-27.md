@@ -15,6 +15,8 @@ Status recommendation: `blocked` (`defer`)
   - `docs/ops/QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.sha256`
 - Ready-to-post blocked summary:
   - `docs/ops/QUA-95_BLOCKED_COMMENT_2026-04-27.md`
+- Task installer smoke evidence:
+  - `docs/ops/QUA-95_BLOCKER_REFRESH_TASK_SMOKE_2026-04-27.md`
 
 ## Investigation + evidence trail
 
