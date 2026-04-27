@@ -1,12 +1,12 @@
 ﻿{
     "issue":  "QUA-95",
-    "generated_at_local":  "2026-04-27T14:23:40+02:00",
+    "generated_at_local":  "2026-04-27T14:26:28+02:00",
     "infra_audit_overall_status":  "critical",
-    "infra_audit_checks_count":  32,
-    "infra_audit_issues_count":  3,
+    "infra_audit_checks_count":  37,
+    "infra_audit_issues_count":  7,
     "qua95_checks_count":  20,
-    "qua95_issues_count":  1,
-    "non_qua95_issues_count":  2,
+    "qua95_issues_count":  0,
+    "non_qua95_issues_count":  7,
     "qua95_checks":  [
                          {
                              "name":  "qua95_blocker_task_health",
@@ -82,7 +82,7 @@
                          },
                          {
                              "name":  "qua95_ops_bundle_manifest",
-                             "status":  "critical"
+                             "status":  "ok"
                          },
                          {
                              "name":  "qua95_blocked_heartbeat_wrapper",
@@ -90,9 +90,14 @@
                          }
                      ],
     "qua95_issue_names":  [
-                              "qua95_ops_bundle_manifest"
+
                           ],
     "non_qua95_issue_names":  [
+                                  "factory_portable_marker_T1",
+                                  "factory_portable_marker_T2",
+                                  "factory_portable_marker_T3",
+                                  "factory_portable_marker_T4",
+                                  "factory_portable_marker_T5",
                                   "t6_live_demo_isolation",
                                   "google_drive_sync"
                               ]

@@ -1,6 +1,6 @@
 ﻿{
     "issue":  "QUA-95",
-    "generated_at_local":  "2026-04-27T14:23:40+02:00",
+    "generated_at_local":  "2026-04-27T14:26:28+02:00",
     "refresh_executed":  false,
     "refresh_exit_code":  null,
     "audit_executed":  false,
@@ -11,20 +11,25 @@
                  "disposition":  "defer",
                  "bars_got":  0,
                  "tail_shortfall_seconds":  7141.322,
-                 "last_checked_local":  "2026-04-27T14:14:04+02:00"
+                 "last_checked_local":  "2026-04-27T14:25:03+02:00"
              },
     "infra_audit":  {
                         "overall_status":  "critical",
-                        "checks_count":  32,
-                        "issues_count":  3
+                        "checks_count":  37,
+                        "issues_count":  7
                     },
     "audit_signal":  {
-                         "qua95_issues_count":  1,
-                         "non_qua95_issues_count":  2,
+                         "qua95_issues_count":  0,
+                         "non_qua95_issues_count":  7,
                          "qua95_issue_names":  [
-                                                   "qua95_ops_bundle_manifest"
+
                                                ],
                          "non_qua95_issue_names":  [
+                                                       "factory_portable_marker_T1",
+                                                       "factory_portable_marker_T2",
+                                                       "factory_portable_marker_T3",
+                                                       "factory_portable_marker_T4",
+                                                       "factory_portable_marker_T5",
                                                        "t6_live_demo_isolation",
                                                        "google_drive_sync"
                                                    ]
@@ -35,7 +40,7 @@
                               "source":  "XTIUSD",
                               "target_bars_range_m1":  0,
                               "target_bars_from_pos_m1":  0,
-                              "source_bars_range_m1":  555,
+                              "source_bars_range_m1":  566,
                               "source_bars_from_pos_m1":  10
                           }
 }
