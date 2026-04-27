@@ -157,6 +157,16 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Update-QUA93BlockerStatus.ps1`
 
+## `Write-QUA93BlockedSummary.ps1`
+
+- Renders a concise markdown blocked-status comment from:
+  - `docs\ops\QUA-93_XAUUSD_BLOCKER_STATUS_2026-04-27.json`
+- Default output:
+  - `docs\ops\QUA-93_BLOCKED_COMMENT_2026-04-27.md`
+- Useful when posting deterministic issue status updates for blocked QUA-93 follow-up.
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Write-QUA93BlockedSummary.ps1`
+
 ## `verify_import_chunked_probe.py`
 
 - Read-only verifier mirror for symbol-level deep dive.

@@ -280,6 +280,17 @@ Status snapshot:
 - `current_observed.bars_got=0`
 - `current_observed.disposition=defer`
 
+## Blocked Comment Renderer (2026-04-27 09:54 CEST)
+
+Executed:
+- `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Write-QUA93BlockedSummary.ps1`
+
+Output:
+- `wrote=C:\QM\repo\docs\ops\QUA-93_BLOCKED_COMMENT_2026-04-27.md`
+
+Result:
+- deterministic blocked comment now generated from blocker JSON, so updates can be posted without re-reading long investigation history.
+
 ## Durable change in this heartbeat
 
 - Added this investigation record for `QUA-93` with concrete classifier output and triage conclusion.
