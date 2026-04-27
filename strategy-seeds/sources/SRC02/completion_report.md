@@ -9,8 +9,8 @@ budget_summary:
   cards_drafted: 8                            # S01-S08
   cards_passed_g0: 0                          # all DRAFT; awaiting CEO + Quality-Business review
   cards_killed_pre_p1: 0
-  yield_ratio_cards_per_heartbeat: 1.14       # 8 / 7 — recompute when G0 ratification lands
-  vs_src01_yield: 1.14 / 0.71 = 1.6× SRC01    # SRC02 yield is 60% above SRC01's; primarily because Chan Ch 7 packs ~6 cards into one chapter
+  yield_ratio_cards_per_heartbeat: 1.0        # 8 / 8 — recompute when G0 ratification lands (heartbeat 8 added sub-issue creation + vocab proposal commenting + final commit)
+  vs_src01_yield: 1.0 / 0.71 = 1.4× SRC01     # SRC02 yield is 40% above SRC01's; primarily because Chan Ch 7 packs ~6 cards into one chapter
 ---
 
 # SRC02 Completion Report — Chan, *Quantitative Trading: How to Build Your Own Algorithmic Trading Business*
@@ -36,16 +36,16 @@ Source-text on disk at `G:\My Drive\QuantMechanica\Ebook\PDF resources\Quantitat
 
 Eight Strategy Cards drafted; full set summarized in the table below. All eight carry `status: DRAFT` and are awaiting CEO + Quality-Business G0 review.
 
-| Slot | Card slug | Source location | Strategy character | Author-claim type | Primary `hard_rules_at_risk` |
-|---|---|---|---|---|---|
-| S01 | `chan-pairs-stat-arb` | Ex 3.6 + 7.2 + 7.3 + 7.5 + Ch 7 narrative pp. 126-133 | Cointegration pair-trade (cadf filter + OLS hedge-ratio + ±N·σ z-score entry/exit + OU-half-life time-stop) | Real backtest: Sharpe 1.5/2.1 test (default/refined thresholds) on GLD/GDX | `friday_close` (PRIMARY), `dwx_suffix_discipline` (no Darwinex GDX equivalent), `one_position_per_magic_symbol`, `kill_switch_coverage`, `enhancement_doctrine` |
-| S02 | `chan-bollinger-es` | Ch 2 pp. 22-23 inline example (NOT labeled Ex 3.x) | Single-symbol M5 Bollinger ±2σ entry / ±1σ exit on E-mini S&P | Author Sharpe: +3 pre-cost / **−3 with 1 bp/trade** — Chan's deliberate FAILURE example #1 (transaction-cost demo) | **`scalping_p5b_latency` (PRIMARY)**, `dwx_suffix_discipline`, `kill_switch_coverage`, `enhancement_doctrine` (lookback unspecified) |
-| S03 | `chan-khandani-lo-mr` | Ex 3.7 (close-bar baseline) + Ex 3.8 (open-bar refinement) | Continuous-weight cross-sectional MR; weight ∝ −(r_i − r_market) / N_valid; daily rebalance, dollar-neutral | Author Sharpe: 0.25/−3.19 close-bar; 4.43/**+0.78** open-bar at 5 bp — Chan's transaction-cost-vs-execution-timing demo | `dwx_suffix_discipline` (no Darwinex SP500 cross-section), `one_position_per_magic_symbol` (~500 positions/bar), `darwinex_native_data_only`, `magic_schema` |
-| S04 | `chan-pca-factor` | Ex 7.4 | Rolling 252-bar PCA + top-5 eigenvectors as factor exposures + OLS factor returns + project Rexp + long top-50 / short bottom-50 on S&P 600 | Author result: avg ann return = **−1.81%** ("A very poor return!") — Chan's deliberate FAILURE example #2 (factor-momentum-assumption violated) | `dwx_suffix_discipline`, `one_position_per_magic_symbol` (100 positions/bar), `darwinex_native_data_only`, `magic_schema`, `kill_switch_coverage` |
-| S05 | `chan-january-effect` | Ex 7.6 | Annual cross-sectional decile MR on S&P 600 small-cap; sort by prior-year annual return, long bottom decile + short top decile, hold Dec close → Jan close | Author 3-year sample (2005-2007): −2.44% / −0.68% / +8.81% (1 winner, 2 losers; +8.81% driven by SocGen tail-event) | `dwx_suffix_discipline`, `one_position_per_magic_symbol`, `friday_close` (4-weekend hold), `darwinex_native_data_only`, `magic_schema` |
-| S06 | `chan-yoy-same-month` | Ex 7.7 | Monthly cross-sectional decile momentum on S&P 500; sort by same-month-last-year return, long top decile + short bottom decile | Author result: avg ann return = **−91.67%**, Sharpe = **−0.1055** — Chan's deliberate FAILURE example #3 (Heston-Sadka anomaly decayed post-2002); SP500 snapshot has explicit survivorship bias | `dwx_suffix_discipline`, `one_position_per_magic_symbol`, `friday_close`, `darwinex_native_data_only`, `magic_schema` |
-| S07 | `chan-gasoline-rb-spring` | Ch 7 sidebar p. 149 | Long-only annual calendar trade on NYMEX RB unleaded gasoline futures (May expiry); Apr 13 → Apr 25 | Real P&L: **14 consecutive years of profitability 1995-2008**; per-contract P&L from $118 to $6,985, max-DD $2,226 (1996) | **`dwx_suffix_discipline` (PRIMARY G0 BLOCKER — no Darwinex gasoline)**, `friday_close` (waiver required, 9-day hold spans 2 weekends), `kill_switch_coverage`, `magic_schema` (annual cycle) |
-| S08 | `chan-natgas-spring` | Ch 7 sidebar p. 150 | Long-only annual calendar trade on NYMEX NG natural gas futures (June expiry); Feb 25 → Apr 15 | Real P&L: 14 consecutive years 1995-2008; per-contract P&L from $450 to $10,137, max-DD $5,550 (2005); 2008 actual-trading hit −$7,470 mid-trade | **`kill_switch_coverage` (PRIMARY OPERATIONAL RISK — Amaranth-class blow-up explicit in Chan p. 150)**, `dwx_suffix_discipline` (no Darwinex natgas), `friday_close` (7-weekend hold), `magic_schema` |
+| Slot | Sub-issue | Card slug | Source location | Strategy character | Author-claim type | Primary `hard_rules_at_risk` |
+|---|---|---|---|---|---|---|
+| S01 | [QUA-284](/QUA/issues/QUA-284) (`todo`) | `chan-pairs-stat-arb` | Ex 3.6 + 7.2 + 7.3 + 7.5 + Ch 7 narrative pp. 126-133 | Cointegration pair-trade (cadf filter + OLS hedge-ratio + ±N·σ z-score entry/exit + OU-half-life time-stop) | Real backtest: Sharpe 1.5/2.1 test (default/refined thresholds) on GLD/GDX | `friday_close` (PRIMARY), `dwx_suffix_discipline` (no Darwinex GDX equivalent), `one_position_per_magic_symbol`, `kill_switch_coverage`, `enhancement_doctrine` |
+| S02 | [QUA-285](/QUA/issues/QUA-285) (`blocked`) | `chan-bollinger-es` | Ch 2 pp. 22-23 inline example (NOT labeled Ex 3.x) | Single-symbol M5 Bollinger ±2σ entry / ±1σ exit on E-mini S&P | Author Sharpe: +3 pre-cost / **−3 with 1 bp/trade** — Chan's deliberate FAILURE example #1 (transaction-cost demo) | **`scalping_p5b_latency` (PRIMARY)**, `dwx_suffix_discipline`, `kill_switch_coverage`, `enhancement_doctrine` (lookback unspecified) |
+| S03 | [QUA-286](/QUA/issues/QUA-286) (`blocked`) | `chan-khandani-lo-mr` | Ex 3.7 (close-bar baseline) + Ex 3.8 (open-bar refinement) | Continuous-weight cross-sectional MR; weight ∝ −(r_i − r_market) / N_valid; daily rebalance, dollar-neutral | Author Sharpe: 0.25/−3.19 close-bar; 4.43/**+0.78** open-bar at 5 bp — Chan's transaction-cost-vs-execution-timing demo | `dwx_suffix_discipline` (no Darwinex SP500 cross-section), `one_position_per_magic_symbol` (~500 positions/bar), `darwinex_native_data_only`, `magic_schema` |
+| S04 | [QUA-287](/QUA/issues/QUA-287) (`blocked`) | `chan-pca-factor` | Ex 7.4 | Rolling 252-bar PCA + top-5 eigenvectors as factor exposures + OLS factor returns + project Rexp + long top-50 / short bottom-50 on S&P 600 | Author result: avg ann return = **−1.81%** ("A very poor return!") — Chan's deliberate FAILURE example #2 (factor-momentum-assumption violated) | `dwx_suffix_discipline`, `one_position_per_magic_symbol` (100 positions/bar), `darwinex_native_data_only`, `magic_schema`, `kill_switch_coverage` |
+| S05 | [QUA-288](/QUA/issues/QUA-288) (`blocked`) | `chan-january-effect` | Ex 7.6 | Annual cross-sectional decile MR on S&P 600 small-cap; sort by prior-year annual return, long bottom decile + short top decile, hold Dec close → Jan close | Author 3-year sample (2005-2007): −2.44% / −0.68% / +8.81% (1 winner, 2 losers; +8.81% driven by SocGen tail-event) | `dwx_suffix_discipline`, `one_position_per_magic_symbol`, `friday_close` (4-weekend hold), `darwinex_native_data_only`, `magic_schema` |
+| S06 | [QUA-289](/QUA/issues/QUA-289) (`blocked`) | `chan-yoy-same-month` | Ex 7.7 | Monthly cross-sectional decile momentum on S&P 500; sort by same-month-last-year return, long top decile + short bottom decile | Author result: avg ann return = **−91.67%**, Sharpe = **−0.1055** — Chan's deliberate FAILURE example #3 (Heston-Sadka anomaly decayed post-2002); SP500 snapshot has explicit survivorship bias | `dwx_suffix_discipline`, `one_position_per_magic_symbol`, `friday_close`, `darwinex_native_data_only`, `magic_schema` |
+| S07 | [QUA-290](/QUA/issues/QUA-290) (`blocked`) | `chan-gasoline-rb-spring` | Ch 7 sidebar p. 149 | Long-only annual calendar trade on NYMEX RB unleaded gasoline futures (May expiry); Apr 13 → Apr 25 | Real P&L: **14 consecutive years of profitability 1995-2008**; per-contract P&L from $118 to $6,985, max-DD $2,226 (1996) | **`dwx_suffix_discipline` (PRIMARY G0 BLOCKER — no Darwinex gasoline)**, `friday_close` (waiver required, 9-day hold spans 2 weekends), `kill_switch_coverage`, `magic_schema` (annual cycle) |
+| S08 | [QUA-291](/QUA/issues/QUA-291) (`blocked`) | `chan-natgas-spring` | Ch 7 sidebar p. 150 | Long-only annual calendar trade on NYMEX NG natural gas futures (June expiry); Feb 25 → Apr 15 | Real P&L: 14 consecutive years 1995-2008; per-contract P&L from $450 to $10,137, max-DD $5,550 (2005); 2008 actual-trading hit −$7,470 mid-trade | **`kill_switch_coverage` (PRIMARY OPERATIONAL RISK — Amaranth-class blow-up explicit in Chan p. 150)**, `dwx_suffix_discipline` (no Darwinex natgas), `friday_close` (7-weekend hold), `magic_schema` |
 
 **Total: 8 cards, 8 distinct mechanical structures.** Reasonable harvest density given Chan's methodology-and-toolkit weighting (Ch 1 + Ch 4 + Ch 5 + Ch 6 + Ch 8 + App A are all infrastructure / methodology / memoir).
 
@@ -161,15 +161,16 @@ Chan's *Quantitative Trading* is structurally a process textbook like Davey. Cha
 
 | Metric | Value |
 |---|---|
-| Heartbeats used | 7 |
+| Heartbeats used | 8 (h1 scaffold + h2-h7 extraction + h8 sub-issue creation + completion-report finalization) |
 | Cards drafted | 8 |
+| Sub-issues opened | 8 (QUA-284 .. QUA-291; first `todo`, rest `blocked`) per process 13 |
 | Cards passed G0 | 0 (all DRAFT) |
 | Cards killed pre-P1 | 0 |
 | Skips (hard-fail + source-spec-completeness) | 4 (1 hard-fail Ex 7.1 ML + 3 source-spec-completeness: HFT, Leverage, PEAD) |
-| Cards/heartbeat | **1.14** |
+| Cards/heartbeat | **1.0** (8 / 8) |
 | G0-pass-rate (cards_passed_g0 / cards_drafted) | TBD pending CEO + Quality-Business review |
 
-**SRC02 yield (1.14) is 1.6× SRC01's yield (0.71).** Why?
+**SRC02 yield (1.0) is 1.4× SRC01's yield (0.71).** Why?
 
 1. **Ch 7 density**: Chan packs 6 cards into one chapter (vs Davey's 1 card per appendix + 2 from Ch 3/13). A methodology-heavy book with one strategy-rich chapter is a high-yield SRC.
 2. **Card-template internalization**: heartbeats 4-6 each landed 2 cards because the template is now well-practiced from SRC01 + SRC02 H1-H3. New cards reuse infrastructure (raw evidence files, common Hard Rule patterns, vocabulary-gap proposals).
