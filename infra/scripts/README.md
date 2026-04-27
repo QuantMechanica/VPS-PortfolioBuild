@@ -20,3 +20,13 @@
   - `broker.trade_tick_value > 0`
   - `abs(custom.tv - broker.tv) / broker.tv < 0.05`
 - No `tvp` / `tvl` fields are used for gate decisions.
+
+## `probe_verify_rates_span.py`
+
+- Read-only MT5 probe for verifier investigations.
+- Compares one-shot `copy_rates_range(...)` across the full sidecar span vs
+  chunked `copy_rates_range(...)` windows.
+- Use to confirm/quantify range-query limits (`Invalid params` / empty results)
+  before classifying a symbol as corrupted.
+- Default target is `WS30.DWX`; span comes from latest
+  `imports\\done\\*_<symbol>.import.txt`.

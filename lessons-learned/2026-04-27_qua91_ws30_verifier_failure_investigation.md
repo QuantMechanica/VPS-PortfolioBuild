@@ -56,6 +56,29 @@ Unblock owner + action:
 - **Owner:** verifier implementation owner (DWX verifier/runtime maintainer)
 - **Action:** instrument and fix `verify_import.py` bars-read path for custom symbols, then rerun and confirm `WS30.DWX` `bars_got>0` with tail alignment.
 
+## Additional root-cause probe (2026-04-27)
+
+Command:
+
+```powershell
+python infra/scripts/probe_verify_rates_span.py --symbol WS30.DWX --chunk-days 20
+```
+
+Output summary:
+- `oneshot_count=0`
+- `oneshot_last_error=(-2, 'Terminal: Invalid params')`
+- `chunked_count=99899` with `bad_chunks=0`
+- sidecar expected M1 bars: `445,870`
+
+Interpretation:
+- The verifier's current **single full-span** `copy_rates_range(...)` call is the primary failure trigger.
+- MT5 can return substantial bar data for WS30 when queried in smaller windows.
+- This confirms a verifier query-shape bug/limit interaction, not WS30-specific feed absence.
+
+Implementation direction:
+- Replace one-shot full-span bar read in `verify_import.py` with chunked reads.
+- Gate bar verdict against accessible-history bounds (for example terminal `maxbars`) plus tail/head alignment, instead of requiring full sidecar `m1_count` from one API call.
+
 ## Durable change in this heartbeat
 
 - Added/extended tests for verifier fail-pattern classification in:
