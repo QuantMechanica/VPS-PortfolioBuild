@@ -1,0 +1,45 @@
+{
+  "issue": "QUA-95",
+  "scope_symbol": "XTIUSD.DWX",
+  "date": "2026-04-27",
+  "status_recommendation": "blocked",
+  "disposition": "defer",
+  "acceptance_met": false,
+  "latest_rerun_evidence": {
+    "path": "lessons-learned/evidence/2026-04-27_qua95_xtiusd_rerun_evidence.json",
+    "verify_exit_code": 1,
+    "symbol_verdict": "FAIL_tail_bars",
+    "bars_got": 0,
+    "tail_shortfall_seconds": 7141.322
+  },
+  "blockers": [
+    {
+      "owner": "runtime_custom_symbol_owner",
+      "action": "Restore XTIUSD.DWX M1 bars visibility in T1 runtime (range/pos bars APIs must return non-zero)."
+    },
+    {
+      "owner": "verifier_implementation_owner",
+      "action": "After runtime recovery, rerun verifier and confirm bars_got > 0 with aligned tail for XTIUSD.DWX."
+    }
+  ],
+  "canonical_branch_payload": {
+    "branch": "qua95-clean",
+    "worktree": "C:\\QM\\worktrees\\qua95-clean",
+    "commits": [
+      "87a68a4",
+      "d1bfe30",
+      "b972948",
+      "2a58f09",
+      "d0dc820",
+      "06438e4"
+    ],
+    "cherry_pick_command": "git cherry-pick 87a68a4 d1bfe30 b972948 2a58f09 d0dc820 06438e4"
+  },
+  "evidence": [
+    "lessons-learned/2026-04-27_qua95_xtiusd_verifier_failure_investigation.md",
+    "lessons-learned/evidence/2026-04-27_qua95_xtiusd_rerun_evidence.json",
+    "lessons-learned/evidence/2026-04-27_qua95_xtiusd_warmup_attempt.md",
+    "lessons-learned/evidence/2026-04-27_qua95_custom_visibility_scope_matrix.md",
+    "infra/scripts/probe_custom_symbol_visibility.py"
+  ]
+}
