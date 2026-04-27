@@ -46,7 +46,11 @@ $logText = ($procOutput | ForEach-Object { $_.ToString() }) -join [Environment]:
 Set-Content -LiteralPath $rawLogPath -Value $logText -Encoding UTF8
 
 $failRows = @()
-$rowPattern = [regex]'^\[\s*(?<verdict>[^\]]+)\]\s+(?<symbol>[^:]+):.*?mid_ticks_5min=(?<mid>\d+);.*?bars expected=(?<barsExp>[0-9,]+)/got=(?<barsGot>[0-9,]+)\b'
+# Supports both legacy verifier rows:
+#   ... mid_ticks_5min=0; bars expected=446,753/got=0 ...
+# and newer rows:
+#   ... mid_ticks_5min=0; bars_sidecar_expected=446,753; ... bars_chunked=0; ...
+$rowPattern = [regex]'^\[\s*(?<verdict>[^\]]+)\]\s+(?<symbol>[^:]+):.*?mid_ticks_5min=(?<mid>\d+);(?:(?:.*?bars expected=(?<barsExpLegacy>[0-9,]+)/got=(?<barsGotLegacy>[0-9,]+))|(?:.*?bars_sidecar_expected=(?<barsExpNew>[0-9,]+);.*?bars_chunked=(?<barsGotNew>[0-9,]+)))'
 $tailPattern = [regex]'tail_ms expected=(?<tailExp>\d+)/got=(?<tailGot>\d+)'
 
 $target = $null
@@ -62,12 +66,24 @@ foreach ($line in ($logText -split "`r?`n")) {
     }
 
     $sym = $m.Groups['symbol'].Value.Trim()
+    $barsExpectedRaw = $null
+    $barsGotRaw = $null
+    if ($m.Groups['barsExpLegacy'].Success -and $m.Groups['barsGotLegacy'].Success) {
+        $barsExpectedRaw = $m.Groups['barsExpLegacy'].Value
+        $barsGotRaw = $m.Groups['barsGotLegacy'].Value
+    } elseif ($m.Groups['barsExpNew'].Success -and $m.Groups['barsGotNew'].Success) {
+        $barsExpectedRaw = $m.Groups['barsExpNew'].Value
+        $barsGotRaw = $m.Groups['barsGotNew'].Value
+    } else {
+        continue
+    }
+
     $entry = [ordered]@{
         symbol = $sym
         verdict = $verdict
         mid_ticks_5min = [int]$m.Groups['mid'].Value
-        bars_expected = Convert-IntValue $m.Groups['barsExp'].Value
-        bars_got = Convert-IntValue $m.Groups['barsGot'].Value
+        bars_expected = Convert-IntValue $barsExpectedRaw
+        bars_got = Convert-IntValue $barsGotRaw
     }
     $failRows += [pscustomobject]$entry
 

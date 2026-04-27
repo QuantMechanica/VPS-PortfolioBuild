@@ -107,6 +107,26 @@ Generated unified diff artifact for owner-side apply/review:
 - diff source: `D:\QM\mt5\T1\dwx_import\verify_import.py`
 - diff target: `infra/scripts/verify_import_candidate.py`
 
+## Post-Patch Official Rerun (2026-04-27 09:16 CEST)
+
+Applied candidate logic to live verifier with backup:
+- backup: `D:\QM\mt5\T1\dwx_import\verify_import.py.bak_20260427_091619`
+- live: `D:\QM\mt5\T1\dwx_import\verify_import.py`
+
+Official rerun:
+- command: `python D:\QM\mt5\T1\dwx_import\verify_import.py`
+- log: `infra/smoke/verify_import_run_2026-04-27_091626_qua93_postpatch.log`
+- exit: `1`
+- `XAUUSD.DWX` remains `FAIL_tail_mid_bars` with `bars_chunked=0`
+
+Disposition regeneration:
+- helper: `infra/scripts/Invoke-VerifyDisposition.ps1`
+- parser updated to support both verifier row formats:
+  - legacy `bars expected=.../got=...`
+  - newer `bars_sidecar_expected=...; ... bars_chunked=...`
+- refreshed evidence: `lessons-learned/evidence/2026-04-27_qua93_xauusd_rerun_evidence.json`
+- final disposition after parser fix: `defer`
+
 ## Durable change in this heartbeat
 
 - Added this investigation record for `QUA-93` with concrete classifier output and triage conclusion.
@@ -117,6 +137,8 @@ Generated unified diff artifact for owner-side apply/review:
 - Added a runnable candidate verifier (`infra/scripts/verify_import_candidate.py`) and validated behavior on `XAUUSD.DWX`.
 - Added machine-readable disposition evidence (`defer`) for issue handoff.
 - Added an apply-ready patch artifact for faster owner-side integration.
+- Applied patch to live verifier with explicit backup, reran officially, and confirmed issue still defers.
+- Hardened disposition parser compatibility so evidence remains valid across verifier output-schema changes.
 
 ## Next action
 

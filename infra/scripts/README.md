@@ -102,6 +102,9 @@
 - Runs `verify_import.py`, captures a timestamped raw log under `infra\\smoke\\`,
   parses FAIL rows, and writes tracked evidence JSON under
   `lessons-learned\\evidence\\`.
+- Parser supports both verifier output schemas for bars fields:
+  - legacy `bars expected=.../got=...`
+  - newer `bars_sidecar_expected=...; ... bars_chunked=...`
 - Emits symbol-level disposition:
   - `clear`: `bars_got > 0` and tail timestamps aligned
   - `defer`: systemic zero-bars pattern or symbol bars still zero
