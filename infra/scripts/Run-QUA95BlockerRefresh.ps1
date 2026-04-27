@@ -17,16 +17,55 @@ if (-not (Test-Path -LiteralPath $logDir)) {
 function Write-TaskLog {
     param([string]$Message)
     $ts = Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'
-    "[${ts}] $Message" | Out-File -FilePath $LogPath -Append -Encoding utf8
+    Write-LogText -Text "[${ts}] $Message"
+}
+
+function Write-LogText {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Text,
+        [int]$MaxAttempts = 12,
+        [int]$SleepMilliseconds = 250
+    )
+
+    for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
+        try {
+            Add-Content -LiteralPath $LogPath -Value $Text -Encoding utf8
+            return
+        } catch [System.IO.IOException] {
+            if ($attempt -eq $MaxAttempts) {
+                throw
+            }
+            Start-Sleep -Milliseconds $SleepMilliseconds
+        }
+    }
+}
+
+function Write-CommandOutputToLog {
+    param(
+        [AllowNull()]
+        [object[]]$Output
+    )
+
+    if ($null -eq $Output) {
+        return
+    }
+
+    foreach ($line in $Output) {
+        $text = if ($null -eq $line) { '' } else { $line.ToString() }
+        Write-LogText -Text $text
+    }
 }
 
 $invoke = Join-Path $RepoRoot 'infra\scripts\Invoke-VerifyDisposition.ps1'
 $sync = Join-Path $RepoRoot 'infra\scripts\Update-QUA95BlockerStatus.ps1'
 $summary = Join-Path $RepoRoot 'infra\scripts\Write-QUA95BlockedSummary.ps1'
+$gate = Join-Path $RepoRoot 'infra\scripts\Get-QUA95GateDecision.ps1'
 $integrity = Join-Path $RepoRoot 'infra\scripts\Test-QUA95HandoffIntegrity.ps1'
 $manifest = Join-Path $RepoRoot 'docs\ops\QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.sha256'
+$gateOut = 'docs\ops\QUA-95_GATE_DECISION_2026-04-27.json'
 
-foreach ($f in @($invoke, $sync, $summary, $integrity, $manifest)) {
+foreach ($f in @($invoke, $sync, $summary, $gate, $integrity, $manifest)) {
     if (-not (Test-Path -LiteralPath $f)) {
         throw "Required script missing: $f"
     }
@@ -35,16 +74,24 @@ foreach ($f in @($invoke, $sync, $summary, $integrity, $manifest)) {
 Write-TaskLog "start task=$TaskName"
 try {
     $global:LASTEXITCODE = 0
-    & $invoke -IssueId 'QUA-95' -Symbol 'XTIUSD.DWX' -PythonExe "$PythonExe" 2>&1 | Out-File -FilePath $LogPath -Append -Encoding utf8
+    $invokeOutput = & $invoke -IssueId 'QUA-95' -Symbol 'XTIUSD.DWX' -PythonExe "$PythonExe" 2>&1
+    Write-CommandOutputToLog -Output $invokeOutput
     Write-TaskLog ("invoke_verify_disposition_exit_code={0}" -f $LASTEXITCODE)
 
     $global:LASTEXITCODE = 0
-    & $sync 2>&1 | Out-File -FilePath $LogPath -Append -Encoding utf8
+    $syncOutput = & $sync 2>&1
+    Write-CommandOutputToLog -Output $syncOutput
     if (-not $?) { throw ("Step failed: {0}" -f $sync) }
 
     $global:LASTEXITCODE = 0
-    & $summary 2>&1 | Out-File -FilePath $LogPath -Append -Encoding utf8
+    $summaryOutput = & $summary 2>&1
+    Write-CommandOutputToLog -Output $summaryOutput
     if (-not $?) { throw ("Step failed: {0}" -f $summary) }
+
+    $global:LASTEXITCODE = 0
+    $gateOutput = & $gate -OutPath $gateOut -NoFail 2>&1
+    Write-CommandOutputToLog -Output $gateOutput
+    if (-not $?) { throw ("Step failed: {0}" -f $gate) }
 
     $hashFiles = @(
         'docs/ops/QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.md',
@@ -60,7 +107,8 @@ try {
     Write-TaskLog "manifest_refreshed"
 
     $global:LASTEXITCODE = 0
-    & $integrity 2>&1 | Out-File -FilePath $LogPath -Append -Encoding utf8
+    $integrityOutput = & $integrity 2>&1
+    Write-CommandOutputToLog -Output $integrityOutput
     if ($LASTEXITCODE -ne 0) { throw ("Step failed with exit code {0}: {1}" -f $LASTEXITCODE, $integrity) }
     Write-TaskLog "success task=$TaskName"
     exit 0

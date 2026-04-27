@@ -158,6 +158,10 @@
   5. Refreshes `QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.sha256`
   6. `Test-QUA95HandoffIntegrity.ps1`
 - Enforces non-zero exit handling for each step; task fails when any step exits non-zero.
+- Log append writes are lock-tolerant (`Add-Content` retry loop) so concurrent
+  writer contention does not crash the runner.
+- Command-output logging is null-safe (steps that emit no stdout/stderr do not
+  fail the run).
 - Default log:
   - `C:\QM\repo\infra\smoke\qua95_blocker_refresh_task.log`
 
