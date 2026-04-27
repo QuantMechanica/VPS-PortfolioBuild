@@ -27,7 +27,7 @@ param(
     [string]$DwxHeartbeatScript = "C:\QM\repo\infra\monitoring\Test-DwxHeartbeat.ps1",
     [string]$DriveGitExclusionScript = "C:\QM\repo\infra\monitoring\Test-DriveGitExclusion.ps1",
     [string]$PipelineOperatorRunHealthScript = "C:\QM\repo\infra\monitoring\Test-PipelineOperatorRunHealth.ps1",
-    [string]$TaskTickScript = "C:\QM\repo\infra\tasks\Test-HourlyTaskTick.ps1"
+    [string]$DwxRoutineTickScript = "C:\QM\repo\infra\monitoring\Test-DwxRoutineTick.ps1"
 )
 
 Set-StrictMode -Version Latest
@@ -189,15 +189,15 @@ if (Test-Path -LiteralPath $PipelineOperatorRunHealthScript) {
     }
 }
 
-# Verify hourly cadence + observed tick for DWX heartbeat task
-if (Test-Path -LiteralPath $TaskTickScript) {
+# Verify hourly cadence + observed tick for DWX Paperclip routine
+if (Test-Path -LiteralPath $DwxRoutineTickScript) {
     try {
-        $tickRaw = & powershell -NoProfile -ExecutionPolicy Bypass -File $TaskTickScript -TaskName "QM_DWX_HourlyCheck" 2>$null | Out-String
+        $tickRaw = & powershell -NoProfile -ExecutionPolicy Bypass -File $DwxRoutineTickScript 2>$null | Out-String
         $tickObj = $tickRaw | ConvertFrom-Json -ErrorAction Stop
-        $checks.Add((New-Check -Name "dwx_hourly_task_tick" -Status $tickObj.status -Message $tickObj.message -Details $tickObj))
+        $checks.Add((New-Check -Name "dwx_hourly_routine_tick" -Status $tickObj.status -Message $tickObj.message -Details $tickObj))
     }
     catch {
-        $checks.Add((New-Check -Name "dwx_hourly_task_tick" -Status "critical" -Message "DWX hourly task tick check execution failed." -Details $_.Exception.Message))
+        $checks.Add((New-Check -Name "dwx_hourly_routine_tick" -Status "critical" -Message "DWX hourly routine tick check execution failed." -Details $_.Exception.Message))
     }
 }
 

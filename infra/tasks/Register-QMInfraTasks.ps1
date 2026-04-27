@@ -2,6 +2,8 @@
 param(
     [string]$RepoRoot = "C:\QM\repo",
     [string]$PythonExe = "python",
+    [string]$DwxRoutineInstallerScript = "C:\QM\repo\infra\scripts\Install-DwxHourlyRoutine.ps1",
+    [switch]$EnableLegacyDwxTask,
     [string]$DwxHourlyScript = "C:\QM\repo\infra\scripts\dwx_hourly_check.py",
     [string]$AggregatorScript = "C:\QM\repo\scripts\aggregator\standalone_aggregator_loop.py",
     [string]$SnapshotScript = "C:\QM\repo\scripts\export_public_snapshot.ps1",
@@ -70,21 +72,31 @@ Register-DesiredTask `
     -Description "Exports public-data snapshot JSON hourly and publishes if changed." `
     -WorkingDirectory $RepoRoot
 
-# DWX hourly orchestrator, only if source script exists
-if (Test-Path -LiteralPath $DwxHourlyScript) {
-    $dwxTrigger = New-RepeatingTriggerFromToday `
-        -AtTime (Get-Date "00:11") `
-        -Interval (New-TimeSpan -Hours 1) `
-        -Duration (New-TimeSpan -Days 3650)
-    Register-DesiredTask `
-        -TaskName "QM_DWX_HourlyCheck" `
-        -Executable $PythonExe `
-        -Arguments "`"$DwxHourlyScript`"" `
-        -Trigger $dwxTrigger `
-        -Description "Runs DWX import orchestrator hourly."
+# DWX hourly orchestrator runs via Paperclip routine (primary scheduler path)
+if (Test-Path -LiteralPath $DwxRoutineInstallerScript) {
+    Write-Host "DWX hourly scheduler is Paperclip routine-based. Converge with:"
+    Write-Host "  powershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$DwxRoutineInstallerScript`" -Apply"
 }
 else {
-    Write-Warning "DWX orchestrator script missing; skipped QM_DWX_HourlyCheck registration."
+    Write-Warning "DWX routine installer script missing; cannot print convergence command."
+}
+
+if ($EnableLegacyDwxTask.IsPresent) {
+    if (Test-Path -LiteralPath $DwxHourlyScript) {
+        $dwxTrigger = New-RepeatingTriggerFromToday `
+            -AtTime (Get-Date "00:11") `
+            -Interval (New-TimeSpan -Hours 1) `
+            -Duration (New-TimeSpan -Days 3650)
+        Register-DesiredTask `
+            -TaskName "QM_DWX_HourlyCheck" `
+            -Executable $PythonExe `
+            -Arguments "`"$DwxHourlyScript`"" `
+            -Trigger $dwxTrigger `
+            -Description "Runs DWX import orchestrator hourly (legacy fallback; routine is primary)."
+    }
+    else {
+        Write-Warning "DWX orchestrator script missing; skipped legacy QM_DWX_HourlyCheck registration."
+    }
 }
 
 # Aggregator state writer every minute, only if source script exists

@@ -10,12 +10,16 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - WS30 gate + per-symbol check-then-act staging.
   - Writes run logs and `dwx_hourly_state.json`.
 - `scripts/dwx_hourly_check.py`
-  - Canonical DWX Python orchestrator used by `QM_DWX_HourlyCheck`.
+  - Canonical DWX Python orchestrator used by the Paperclip routine `DWX import hourly check`.
   - Includes source-symbol pre-flight (`tick_value > 0`, currencies present) before staging.
   - Readiness verdict is strict: missing symbols, pending queue, stale service heartbeat, bad symbol spec, or missing commission file => `OVERALL=NOT_READY`.
   - Parses `verify_import.py` output and emits diagnostics when FAIL rows show a systemic pattern (`bars expected>0` with `got=0` across many symbols), preventing false symbol-level triage.
+- `scripts/Install-DwxHourlyRoutine.ps1`
+  - Converges Paperclip routine `DWX import hourly check` and its schedule trigger (`7 * * * *`, `UTC`) to desired state.
+  - Idempotent API check-then-act: create/patch routine, create/patch trigger, optional legacy task disable.
+  - Safe preview mode by default; mutate only with `-Apply`.
 - `scripts/Install-DwxHourlyTask.ps1`
-  - Registers Task Scheduler job `QM_DWX_HourlyCheck` as `SYSTEM` (works when no user is logged in).
+  - Registers Task Scheduler job `QM_DWX_HourlyCheck` as `SYSTEM` (legacy fallback only).
   - Safe to re-run (`Register-ScheduledTask -Force`).
   - Uses `MultipleInstances=IgnoreNew` to prevent concurrent overlap.
 - `scripts/Invoke-InfraAudit.ps1`
@@ -279,7 +283,9 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Enforces blocked/defer invariant when `bars_got <= 0` using gate + transition payload artifacts.
   - Returns non-zero if blocked-state policy drifts.
 - `tasks/Test-HourlyTaskTick.ps1`
-  - Verifies `QM_DWX_HourlyCheck` is hourly (`PT1H`) and has at least one observed completed tick.
+  - Legacy fallback check for `QM_DWX_HourlyCheck` Task Scheduler cadence.
+- `monitoring/Test-DwxRoutineTick.ps1`
+  - Verifies Paperclip routine `DWX import hourly check` exists, schedule matches expected cron/timezone, and recent fired tick freshness is within bound.
 - `paperclip-stale-lock-runbook.md`
   - Manual and platform recovery flow for stale `checkoutRunId` / `executionRunId` lock conflicts (QUA-24).
   - Documents the comment-side-effect and PATCH-only assignee-cycle workaround.
@@ -289,10 +295,10 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 
 ## Recommended scheduler wiring
 
-DWX heartbeat (hourly HH:07 baseline):
+DWX heartbeat routine (hourly HH:07 baseline in UTC cron minute offset):
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-DwxHourlyTask.ps1 -MinuteOffset 7
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-DwxHourlyRoutine.ps1 -Apply
 ```
 
 Infra audit (hourly, can run at HH:12 or similar):

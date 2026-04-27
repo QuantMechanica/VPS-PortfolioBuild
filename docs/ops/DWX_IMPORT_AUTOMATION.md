@@ -19,8 +19,9 @@ end-to-end on its own.
 | Importer (MT5 Service) | `D:\QM\mt5\T1\MQL5\Services\Import_DWX_Queue_Service.ex5` | Drag onto Navigator → Services **once**; runs forever |
 | Importer (MT5 Script — manual fallback) | `D:\QM\mt5\T1\MQL5\Scripts\Import_DWX_From_Bin.ex5` | Drag onto a chart for one-shot batch processing |
 | Verifier (Python) | `D:\QM\mt5\T1\dwx_import\verify_import.py` | Called by the hourly cron after queue drains |
-| Hourly orchestrator | `C:\QM\repo\infra\scripts\Invoke-DwxHourlyCheck.ps1` | Windows Scheduled Task `QM_DWX_HourlyCheck` |
-| Task installer (idempotent) | `C:\QM\repo\infra\scripts\Install-DwxHourlyTask.ps1` | Re-apply desired scheduler state |
+| Hourly orchestrator | `C:\QM\repo\infra\scripts\Invoke-DwxHourlyCheck.ps1` | Paperclip routine `DWX import hourly check` |
+| Routine installer (idempotent) | `C:\QM\repo\infra\scripts\Install-DwxHourlyRoutine.ps1` | Re-apply desired routine + trigger state |
+| Legacy task installer (fallback only) | `C:\QM\repo\infra\scripts\Install-DwxHourlyTask.ps1` | Windows Task Scheduler fallback (`QM_DWX_HourlyCheck`) |
 | Readiness report | `D:\QM\reports\setup\T1_READINESS_REPORT.md` | Written by the orchestrator |
 
 Job-staging area: `D:\QM\mt5\T1\MQL5\Files\imports\` (sidecars + binaries)
@@ -28,9 +29,9 @@ Archive: `D:\QM\mt5\T1\MQL5\Files\imports\done\`
 
 ## Hourly automation flow
 
-The `QM_DWX_HourlyCheck` Scheduled Task runs `Invoke-DwxHourlyCheck.ps1` once an
-hour. It is **idempotent** — every fire is a no-op until the next thing
-becomes possible.
+The Paperclip routine `DWX import hourly check` runs `Invoke-DwxHourlyCheck.ps1`
+once an hour (cron `7 * * * *`, timezone `UTC`). It is **idempotent** — every
+fire is a no-op until the next thing becomes possible.
 
 **Phase A — wait for WS30.** The orchestrator gates on WS30 because TDM
 imports it last. Both `WS30_GMT+2_US-DST.csv` and `..._M1.csv` must
@@ -73,9 +74,9 @@ is populated, and the service heartbeat is fresh.
 
 1. **Start the MT5 Service.** Open T1 portable (the desktop shortcut), Navigator (Ctrl+N) → Services → drag `Import_DWX_Queue_Service` onto the Services pane. Right-click → Start. The service icon should turn green.  
    *If you ever close MT5: when you reopen it via the desktop shortcut, the service auto-resumes.*
-2. Register/repair the Scheduled Task with:
-   `powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-DwxHourlyTask.ps1 -MinuteOffset 7`
-   This enforces desired-state scheduling (hourly, overlap-safe, `SYSTEM` account) and is safe to re-run.
+2. Register/repair the Paperclip routine with:
+   `powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-DwxHourlyRoutine.ps1 -Apply`
+   This enforces desired-state scheduling (hourly + overlap-safe routine policy) and is safe to re-run.
 3. Continue downloading via TDM normally. Once WS30 is fully filled and idle for 30 min, the cron's next hourly fire kicks off the rest of the pipeline.
 
 ## Status at a glance
@@ -86,8 +87,9 @@ is populated, and the service heartbeat is fresh.
 
 ## Manual operations
 
-- **Trigger the cron now:** `Start-ScheduledTask -TaskName "QM_DWX_HourlyCheck"` (PowerShell).
-- **Re-apply task desired state:** `powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-DwxHourlyTask.ps1`.
+- **Trigger now (routine):** `curl -s -X POST -H "Authorization: Bearer $PAPERCLIP_API_KEY" -H "X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID" -H "Content-Type: application/json" http://127.0.0.1:3100/api/routines/<routine-id>/run -d "{\"source\":\"manual\"}"`.
+- **Re-apply routine desired state:** `powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-DwxHourlyRoutine.ps1 -Apply`.
+- **Legacy fallback (Task Scheduler):** `powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-DwxHourlyTask.ps1`.
 - **Stage one symbol manually (bypass cron):** `python D:\QM\mt5\T1\dwx_import\prepare_import.py D:\QM\reports\setup\tick-data-timezone\<SYMBOL>_GMT+2_US-DST.csv`.
 - **Manual import without the service:** drag `Scripts\Import_DWX_From_Bin` onto any chart — it processes the queue once and exits.
 - **Verify only:** `python D:\QM\mt5\T1\dwx_import\verify_import.py`.
