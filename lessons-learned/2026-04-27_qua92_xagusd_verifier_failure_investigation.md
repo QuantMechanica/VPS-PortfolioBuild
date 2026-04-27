@@ -33,6 +33,7 @@ Fresh verifier run executed:
 - command: `python D:\QM\mt5\T1\dwx_import\verify_import.py`
 - log artifact: `infra/smoke/verify_import_run_2026-04-27_085623_qua92.log`
 - exit code: `1`
+- tracked summary artifact: `lessons-learned/evidence/2026-04-27_qua92_xagusd_rerun_evidence.json`
 
 Classifier output on the rerun artifact:
 - `fail_count=56`
