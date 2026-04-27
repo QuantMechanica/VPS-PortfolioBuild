@@ -13,7 +13,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Run
 
 ```text
 disposition=defer
-Infra audit completed: status=critical, checks=22, issues=2
+verify_exit_code=1
+status=ok task=QM_QUA95_TaskHealth_15min
+Infra audit completed: status=critical, checks=25, issues=2
 status=ok qua95_issues=0 non_qua95_issues=2
 status=ok flow=qua95_canonical_snapshot
 ```
@@ -22,6 +24,8 @@ status=ok flow=qua95_canonical_snapshot
 
 - This runner executes:
   1. `Invoke-QUA95BlockedHeartbeat.ps1`
-  2. `Update-QUA95OpsBundleManifest.ps1`
-  3. `Test-QUA95OpsBundleManifest.ps1`
+  2. `Run-QUA95DirectVerifierProof.ps1`
+  3. `Test-QUA95TaskHealthActionWiring.ps1`
+  4. `Update-QUA95OpsBundleManifest.ps1`
+  5. `Test-QUA95OpsBundleManifest.ps1`
 - It is the preferred one-command path for producing a post-run manifest-consistent QUA-95 blocked-state artifact set.
