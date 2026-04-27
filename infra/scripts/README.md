@@ -739,6 +739,19 @@
 - Preview mode:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Remove-QUA207RuntimeHeartbeatTask.ps1 -PreviewOnly`
 
+## `Run-QUA207OpsBundle.ps1`
+
+- One-command QUA-207 maintenance bundle:
+  1. `Run-QUA207RuntimeCompletionHeartbeat.ps1`
+  2. `New-QUA207IssueComment.ps1`
+- Writes consolidated snapshot:
+  - `docs\ops\QUA-207_OPS_BUNDLE_2026-04-27.json`
+- Exit codes:
+  - `0`: all steps passed
+  - `2`: at least one step failed
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Run-QUA207OpsBundle.ps1`
+
 ## `New-QUA207IssueComment.ps1`
 
 - Generates ready-to-post QUA-207 issue comment markdown from:

@@ -206,6 +206,9 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Safe to re-run (`Register-ScheduledTask -Force`).
 - `scripts/Remove-QUA207RuntimeHeartbeatTask.ps1`
   - Removes `QM_QUA207_RuntimeHeartbeat_30min` idempotently (`ok` when already absent).
+- `scripts/Run-QUA207OpsBundle.ps1`
+  - Runs the QUA-207 runtime heartbeat + issue-comment generation in one command.
+  - Writes `docs/ops/QUA-207_OPS_BUNDLE_2026-04-27.json`.
 - `scripts/New-QUA207IssueComment.ps1`
   - Generates `docs/ops/QUA-207_ISSUE_COMMENT_2026-04-27.md` from live transition + evidence artifacts.
 - `scripts/Assert-CommitAllowlist.ps1`
