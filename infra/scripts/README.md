@@ -703,6 +703,20 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\New-QUA207IssueTransitionPayload.ps1`
 
+## `Run-QUA207RuntimeCompletionHeartbeat.ps1`
+
+- One-command QUA-207 runtime completion heartbeat.
+- Runs:
+  1. `New-QUA207IssueTransitionPayload.ps1`
+  2. `Test-QUA207RuntimeRestoreCompletion.ps1`
+- Writes summary:
+  - `docs\ops\QUA-207_RUNTIME_HEARTBEAT_2026-04-27.json`
+- Exit codes:
+  - `0`: all steps passed
+  - `2`: one or more steps failed
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Run-QUA207RuntimeCompletionHeartbeat.ps1`
+
 ## `Restore-QUA95RuntimeBars.ps1`
 
 - Bounded runtime restore flow for `XTIUSD.DWX` M1 bars visibility.

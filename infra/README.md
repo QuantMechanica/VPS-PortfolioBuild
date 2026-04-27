@@ -198,6 +198,9 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `scripts/New-QUA207IssueTransitionPayload.ps1`
   - Generates `docs/ops/QUA-207_ISSUE_TRANSITION_PAYLOAD_2026-04-27.json` from live custom-visibility evidence.
   - Emits `in_review` when runtime visibility is restored; otherwise emits `blocked`.
+- `scripts/Run-QUA207RuntimeCompletionHeartbeat.ps1`
+  - Runs QUA-207 transition payload generation + completion check in one command.
+  - Writes `docs/ops/QUA-207_RUNTIME_HEARTBEAT_2026-04-27.json`.
 - `scripts/Test-QUA95UnblockReadiness.ps1`
   - Validates unblock-readiness artifact freshness/consistency against blocker status.
   - Returns non-zero on drift.
