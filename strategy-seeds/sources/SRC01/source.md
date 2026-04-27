@@ -6,8 +6,8 @@ status: active_extraction
 authored-by: Research Agent
 last-updated: 2026-04-27
 budget_tracking:
-  heartbeats_used: 2                          # scaffolding + first-card extraction
-  cards_drafted: 1                            # davey-eu-night (App B)
+  heartbeats_used: 3                          # scaffolding + App B card + App C card
+  cards_drafted: 2                            # davey-eu-night (App B), davey-eu-day (App C)
   cards_passed_g0: 0
   cards_killed_pre_p1: 0
 ---
@@ -57,25 +57,25 @@ Cards extracted from this source therefore double as **methodology-validation ev
 
 ## 4. Expected strategy count
 
-Davey is **methodology-heavy, strategy-light** by design. The book teaches the *process* of strategy development; the named strategies are illustrative rather than a strategy library.
+Davey is **methodology-heavy, strategy-light** by design. The book teaches the *process* of strategy development; the named strategies are illustrative rather than a strategy library. Per OWNER Rule 1 (CEO comment [`85b9ec8e`](/QUA/issues/QUA-191#comment-85b9ec8e-8461-4579-8110-2fb2621b0470)), Research extracts EVERY distinct mechanical strategy regardless of perceived quality.
 
 ```yaml
-expected_strategy_count: 3-5
+expected_strategy_count: 3-4                  # revised post-Rule-1: App B + App C + App A Monkey + possible Ch 8/10/12 examples to-be-discovered
 expected_chapter_count: 25                    # plus 3 appendices
-strategy_locations:                            # estimated from TOC (validated at extraction)
-  - "Chapter 18 (Goals, Initial and Walk-Forward Testing) — walk-through example strategy built end-to-end as the book's pedagogical case study"
-  - "Appendix B (Euro Night Strategy, TradeStation EasyLanguage Format, p. 255) — fully-specified EURUSD overnight strategy"
-  - "Appendix C (Euro Day Strategy, TradeStation EasyLanguage Format, p. 259) — fully-specified EURUSD intraday strategy"
-  - "Appendix A (Monkey Trading Example, p. 247) — RANDOM-ENTRY baseline; NOT a real strategy. Use as null-hypothesis reference for V5's P2 Baseline Screening rather than as a card."
+strategy_locations:                            # validated at extraction
+  - "Appendix A (Monkey Trading Example, p. 247) — RANDOM-ENTRY mechanical strategy; Davey's null-hypothesis baseline. Per Rule 1, gets a card; pipeline G0/P2 decide pass/fail. Card pending next heartbeat."
+  - "Appendix B (Euro Night Strategy, p. 255) — DRAFT (S01)"
+  - "Appendix C (Euro Day Strategy, p. 259) — DRAFT (S02)"
+  - "Chapter 18 (Goals, Initial and Walk-Forward Testing) — pedagogical walk-through of the App B + App C strategy pair; NOT a separate strategy (S03 collapsed in earlier reading)."
+  - "Chapter 10 (Trading Idea, pp. 79-83) and Chapter 8 (Designing and Developing Systems, p. 61), Ch 12 (Limited Testing, p. 103) — to be swept in Pass 2 for any example strategies described in main text that I may have skipped."
 notes: |
   Most of the book's value to V5 is methodological (Parts II-VI). The strategy harvest is small but
   high-quality: each appendix strategy is given in EasyLanguage source code with all parameters,
-  entry/exit rules, and Davey's own backtest commentary. These are the cleanest mechanical
-  specifications in the book and should produce 1-card-each cards with minimal interpretation risk.
+  entry/exit rules, and Davey's own backtest commentary.
   
-  Chapter 18's walk-through may yield 1 card if the example strategy is concrete enough to extract.
-  At extraction time Research will assess whether the Ch 18 example is a distinct strategy or a
-  parameterized variant of the appendix strategies.
+  Rule 1 binds: even App A Monkey Trading gets a card. Even if Ch 10's "Trading Idea" turns up
+  half-formed mechanical sketches, those get cards. Pipeline G0 mechanical-only check is the gate,
+  not Research's pre-judgment.
 ```
 
 ## 5. v0 filter rules applied to this source
@@ -97,14 +97,19 @@ Populated as cards are drafted. CEO opens sub-issues under QUA-191 per the issue
 | Slot | Strategy slug | Card path | Sub-issue | Status | Source location |
 |---|---|---|---|---|---|
 | S01 | `davey-eu-night` | `strategy-seeds/cards/davey-eu-night_card.md` | TBD | DRAFT (2026-04-27) | App B pp. 255-258 + Ch 15/18/19 cross-refs |
-| S02 | TBD (likely `davey-eu-day`) | `strategy-seeds/cards/davey-eu-day_card.md` | TBD | not yet extracted | App C, p. 259 (EasyLanguage source) |
-| S03 | TBD (Ch 18 walk-through) | TBD | TBD | not yet extracted | Ch 18, pp. 155-162 (decide at extraction whether distinct from S01/S02 — initial reading: Ch 18 walk-through IS the Euro Day + Euro Night pair built end-to-end, so S03 may collapse into S01/S02) |
+| S02 | `davey-eu-day` | `strategy-seeds/cards/davey-eu-day_card.md` | TBD | DRAFT (2026-04-27) | App C pp. 259-261 + Ch 15/18/19 + Ch 7 cross-refs |
+| S03 | `davey-monkey-baseline` | `strategy-seeds/cards/davey-monkey-baseline_card.md` | TBD | pending — extraction queued for next heartbeat | App A pp. 247-253 (random-entry mechanical strategy; Davey's null-hypothesis baseline). **Rule 1 (CEO comment 85b9ec8e) reverses my earlier "skip-as-card" call: every distinct mechanical strategy gets a card; pipeline gates filter, Research does not pre-judge.** |
+| S04 | TBD | TBD | TBD | pending — Ch 8/Ch 10 sweep for any example strategies described in main text that I may have skipped over during the App-first extraction pass | Ch 8 "Designing and Developing Systems", Ch 10 "Trading Idea", Ch 12 "Limited Testing" examples; budgeted for Pass 2 |
 
-Skipped sources (failed v0 filter):
+Skipped sources (failed V5 HARD RULE — not Research-prior-belief; Rule 1 binds):
 
 | Source location | Reason for skip |
 |---|---|
-| App A (Monkey Trading Example, p. 247) | Random-entry; not a strategy. Useful as P2 Baseline Screening null-hypothesis reference rather than as a card. **Skip-as-card; archive code as `strategy-seeds/sources/SRC01/raw/appA_monkey_baseline.md` for V5 P2 reference.** |
+| (none yet) | — |
+
+**Rule 1 application (CEO comment [`85b9ec8e`](/QUA/issues/QUA-191#comment-85b9ec8e-8461-4579-8110-2fb2621b0470), 2026-04-27 ~22:08 local):** Research extracts every distinct mechanical strategy that passes V5 hard rules. No prioritization, no quality-pre-judgment, no "skip the weaker ones." Pipeline gates G0 → P10 do the filtering. The "Skipped sources" table only records strategies that fail a V5 **HARD RULE** (no ML, no discretionary judgment, no martingale without 1%-cap, no scalping without P5b acknowledgement, no paywall bypass) — NOT strategies that "feel weak" or "feel like methodology demos."
+
+**Reversal of earlier call:** my prior heartbeat marked App A (Monkey Trading) as "skip-as-card / null-hypothesis reference only." That was Research prior-belief filtering, which Rule 1 forbids. App A becomes S03 in the queue above; card extraction queued for next heartbeat. The Monkey strategy is mechanical (RNG-based entries are deterministic given a seed; exits are fixed-rule), passes all V5 hard rules, and therefore gets a card. Whether it survives G0 / P2 is the pipeline's call, not mine.
 
 ## 7. Chapter index (TOC seeded; validate page numbers at extraction)
 
