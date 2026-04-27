@@ -39,6 +39,12 @@ Ops suite snapshot:
 powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Write-QUA95OpsSuiteSnapshot.ps1
 ```
 
+Direct verifier proof (acceptance-focused evidence):
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Run-QUA95DirectVerifierProof.ps1
+```
+
 ## Monitoring checks
 
 Blocker task health:
