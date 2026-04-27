@@ -104,6 +104,9 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
     (`-SkipRefresh -SkipAudit`) and validates
     consolidated heartbeat JSON structure and key blocked-state fields.
   - Use `-RunRefresh` to include refresh execution in validation runs.
+- `monitoring/Test-QUA95AutomationHealth.ps1`
+  - Combined scheduler-health check for `QM_QUA95_BlockerRefresh` and `QM_QUA95_TaskHealth_15min`.
+  - Writes machine-readable snapshot to `docs/ops/QUA-95_AUTOMATION_HEALTH_2026-04-27.json`.
 - `scripts/Test-QUA95OpsSuite.ps1`
   - Runs core QUA-95 ops checks as one suite and emits JSON summary.
 - `scripts/Test-QUA95OpsBundleManifest.ps1`

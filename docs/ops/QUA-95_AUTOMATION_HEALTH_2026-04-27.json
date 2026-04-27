@@ -1,0 +1,29 @@
+﻿{
+    "issue":  "QUA-95",
+    "generated_at_local":  "2026-04-27T11:49:21+02:00",
+    "overall_status":  "ok",
+    "checks":  [
+                   {
+                       "task_name":  "QM_QUA95_BlockerRefresh",
+                       "status":  "ok",
+                       "max_age_minutes":  125,
+                       "last_run_local":  "2026-04-27T11:01:01.0000000+02:00",
+                       "last_result":  0,
+                       "age_minutes":  48.34,
+                       "issues":  [
+
+                                  ]
+                   },
+                   {
+                       "task_name":  "QM_QUA95_TaskHealth_15min",
+                       "status":  "ok",
+                       "max_age_minutes":  45,
+                       "last_run_local":  "2026-04-27T11:47:47.0000000+02:00",
+                       "last_result":  0,
+                       "age_minutes":  1.58,
+                       "issues":  [
+
+                                  ]
+                   }
+               ]
+}
