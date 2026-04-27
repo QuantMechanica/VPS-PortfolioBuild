@@ -36,6 +36,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
     - QUA-95 blocked assertion freshness (`QUA-95_BLOCKED_STATE_ASSERTION_2026-04-27.md`)
     - QUA-95 unblock-readiness freshness (`QUA-95_UNBLOCK_READINESS_2026-04-27.json`)
     - QUA-95 audit-signal consistency (`Test-QUA95AuditSignal.ps1`)
+    - QUA-95 direct-verifier proof consistency (`Test-QUA95DirectVerifierProof.ps1`)
     - QUA-95 canonical-snapshot consistency (`Test-QUA95CanonicalSnapshot.ps1`)
     - QUA-95 ops bundle manifest integrity (`Test-QUA95OpsBundleManifest.ps1`)
     - QUA-95 blocked-heartbeat wrapper validation (`Test-QUA95BlockedHeartbeatWrapper.ps1`)
@@ -147,6 +148,8 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Writes a QUA-95-focused audit signal snapshot that separates QUA-95 issues from unrelated infra issues.
 - `scripts/Test-QUA95AuditSignal.ps1`
   - Validates the QUA-95 audit-signal artifact structure and core counters.
+- `scripts/Test-QUA95DirectVerifierProof.ps1`
+  - Validates direct-verifier proof artifacts against QUA-95 blocker state.
 - `scripts/Test-QUA95CanonicalSnapshot.ps1`
   - Validates canonical snapshot summary JSON against blocker + audit-signal artifacts.
 - `scripts/Test-QUA95TaskHealthActionWiring.ps1`

@@ -1,6 +1,6 @@
 ﻿{
     "issue":  "QUA-95",
-    "generated_at_local":  "2026-04-27T12:58:20+02:00",
+    "generated_at_local":  "2026-04-27T13:05:45+02:00",
     "overall_status":  "ok",
     "checks":  [
                    {
@@ -37,7 +37,7 @@
                        "name":  "unblock_readiness",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok lag_minutes=0.5 ready_to_unblock=False bars_got=0 owner_count=2"
+                       "output":  "status=ok lag_minutes=0.34 ready_to_unblock=False bars_got=0 owner_count=2"
                    },
                    {
                        "name":  "unblock_readiness_summary",
@@ -52,6 +52,12 @@
                        "output":  "status=ok qua95_issues=0 non_qua95_issues=2"
                    },
                    {
+                       "name":  "direct_verifier_proof",
+                       "status":  "ok",
+                       "exit_code":  0,
+                       "output":  "status=ok verify_exit_code=1 bars_one_shot=0 bars_chunked=0 disposition=defer"
+                   },
+                   {
                        "name":  "task_health_action_wiring",
                        "status":  "ok",
                        "exit_code":  0,
@@ -62,6 +68,12 @@
                        "status":  "ok",
                        "exit_code":  0,
                        "output":  "status=ok gate_state=blocked audit_status=critical checks_count=24 automation_health=ok qua95_issues=0 non_qua95_issues=2"
+                   },
+                   {
+                       "name":  "blocker_task_health",
+                       "status":  "ok",
+                       "exit_code":  0,
+                       "output":  "status=ok task=QM_QUA95_BlockerRefresh last_run=2026-04-27T13:01:01.0000000+02:00 age_minutes=4.72"
                    }
                ]
 }

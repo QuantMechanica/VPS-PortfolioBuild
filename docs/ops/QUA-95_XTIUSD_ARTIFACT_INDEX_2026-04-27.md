@@ -102,6 +102,8 @@ Status recommendation: `blocked` (`defer`)
   - `infra/scripts/Run-QUA95CanonicalSnapshot.ps1`
 - Direct verifier proof runner:
   - `infra/scripts/Run-QUA95DirectVerifierProof.ps1`
+- Direct verifier proof validator:
+  - `infra/scripts/Test-QUA95DirectVerifierProof.ps1`
 - Blocked heartbeat task installer:
   - `infra/scripts/Install-QUA95BlockedHeartbeatTask.ps1`
 - Blocked heartbeat wrapper validator:

@@ -26,6 +26,7 @@ param(
     [int]$Qua95BlockedAssertionMaxLagMinutes = 30,
     [string]$Qua95UnblockReadinessCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95UnblockReadiness.ps1',
     [string]$Qua95AuditSignalCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95AuditSignal.ps1',
+    [string]$Qua95DirectVerifierProofCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95DirectVerifierProof.ps1',
     [string]$Qua95CanonicalSnapshotCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95CanonicalSnapshot.ps1',
     [string]$Qua95OpsBundleManifestScript = 'C:\QM\repo\infra\scripts\Test-QUA95OpsBundleManifest.ps1',
     [string]$Qua95BlockedHeartbeatWrapperTestScript = 'C:\QM\repo\infra\monitoring\Test-QUA95BlockedHeartbeatWrapper.ps1',
@@ -364,6 +365,24 @@ else {
     Add-Check -Name 'qua95_audit_signal' -Status $auditSignalStatus -Meta @{
         exit_code = $auditSignalCode
         output = $auditSignalText
+    }
+}
+
+# QUA-95 direct verifier proof consistency
+if (-not (Test-Path -LiteralPath $Qua95DirectVerifierProofCheckScript)) {
+    Add-Check -Name 'qua95_direct_verifier_proof' -Status 'warn' -Meta @{
+        reason = 'check_script_missing'
+        path = $Qua95DirectVerifierProofCheckScript
+    }
+}
+else {
+    $directProofOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $Qua95DirectVerifierProofCheckScript 2>&1
+    $directProofCode = $LASTEXITCODE
+    $directProofText = ($directProofOut | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
+    $directProofStatus = if ($directProofCode -eq 0) { 'ok' } else { 'critical' }
+    Add-Check -Name 'qua95_direct_verifier_proof' -Status $directProofStatus -Meta @{
+        exit_code = $directProofCode
+        output = $directProofText
     }
 }
 
