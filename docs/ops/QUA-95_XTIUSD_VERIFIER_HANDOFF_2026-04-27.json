@@ -41,6 +41,15 @@
     "lessons-learned/evidence/2026-04-27_qua95_xtiusd_rerun_evidence.json",
     "lessons-learned/evidence/2026-04-27_qua95_xtiusd_warmup_attempt.md",
     "lessons-learned/evidence/2026-04-27_qua95_custom_visibility_scope_matrix.md",
-    "infra/scripts/probe_custom_symbol_visibility.py"
+    "infra/scripts/probe_custom_symbol_visibility.py",
+    "docs/ops/QUA-95_XTIUSD_ARTIFACT_INDEX_2026-04-27.md",
+    "docs/ops/QUA-95_BLOCKER_REFRESH_TASK_INSTALL_2026-04-27.md",
+    "docs/ops/QUA-95_TASK_HEALTH_TASK_INSTALL_2026-04-27.md",
+    "docs/ops/QUA-95_INFRA_AUDIT_INTEGRATION_2026-04-27.md",
+    "docs/ops/QUA-95_GATE_DECISION_2026-04-27.json",
+    "docs/ops/QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.md",
+    "docs/ops/QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.json",
+    "docs/ops/QUA-95_XTIUSD_BLOCKER_STATUS_2026-04-27.json",
+    "docs/ops/QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.sha256"
   ]
 }

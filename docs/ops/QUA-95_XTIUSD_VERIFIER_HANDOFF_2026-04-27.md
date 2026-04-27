@@ -49,6 +49,11 @@ git cherry-pick 87a68a4 d1bfe30 b972948 2a58f09 d0dc820 06438e4
 - Warm-up attempt: `lessons-learned/evidence/2026-04-27_qua95_xtiusd_warmup_attempt.md`
 - Custom visibility probe: `infra/scripts/probe_custom_symbol_visibility.py`
 - Scope matrix: `lessons-learned/evidence/2026-04-27_qua95_custom_visibility_scope_matrix.md`
+- Artifact index: `docs/ops/QUA-95_XTIUSD_ARTIFACT_INDEX_2026-04-27.md`
+- Task install proof: `docs/ops/QUA-95_BLOCKER_REFRESH_TASK_INSTALL_2026-04-27.md`
+- Task health install proof: `docs/ops/QUA-95_TASK_HEALTH_TASK_INSTALL_2026-04-27.md`
+- Infra audit integration proof: `docs/ops/QUA-95_INFRA_AUDIT_INTEGRATION_2026-04-27.md`
+- Gate snapshot: `docs/ops/QUA-95_GATE_DECISION_2026-04-27.json`
 - Structured handoff JSON: `docs/ops/QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.json`
 - Structured blocker status JSON: `docs/ops/QUA-95_XTIUSD_BLOCKER_STATUS_2026-04-27.json`
 - Integrity manifest (SHA256): `docs/ops/QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.sha256`
