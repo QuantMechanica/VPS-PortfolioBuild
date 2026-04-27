@@ -136,5 +136,23 @@ class ReadinessTests(unittest.TestCase):
         self.assertFalse(summary["systemic_zero_bars"])
         self.assertFalse(summary["systemic_zero_mid_ticks"])
 
+    def test_summarize_verify_failures_parses_real_xagusd_line(self):
+        output = (
+            "[ FAIL_tail_bars] XAGUSD.DWX: source=XAGUSD; custom_tv=5.0; broker_tv=5.0; "
+            "rel_err=0.0000; head_ms expected=1506906002441/got=1506906002441; "
+            "tail_ms expected=1775444390467/got=1775437249841; mid_ticks_5min=255; "
+            "bars expected=446,113/got=0 drift=-446,113; path=Custom\\Commodities\\Metals\\XAGUSD.DWX"
+        )
+        summary = self.mod.summarize_verify_failures(output)
+        self.assertEqual(summary["fail_count"], 1)
+        self.assertFalse(summary["systemic_zero_bars"])
+        self.assertFalse(summary["systemic_zero_mid_ticks"])
+        row = summary["fail_rows"][0]
+        self.assertEqual(row["symbol"], "XAGUSD.DWX")
+        self.assertEqual(row["verdict"], "FAIL_tail_bars")
+        self.assertEqual(row["mid_ticks_5min"], 255)
+        self.assertEqual(row["bars_expected"], 446113)
+        self.assertEqual(row["bars_got"], 0)
+
 if __name__ == "__main__":
     unittest.main()
