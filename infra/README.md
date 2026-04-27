@@ -38,6 +38,10 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Verifies repo path is outside known Google Drive sync roots (PC1-00 guard).
 - `monitoring/Test-BackupSmoke.ps1`
   - Runs backup workflow in an isolated temp workspace and asserts manifest/artifacts.
+- `monitoring/Invoke-PaperclipStaleLockWatchdog.ps1`
+  - Detects stale Paperclip execution locks (`executionLockedAt` stale while `activeRun=null`) on targeted assignees/issues.
+  - Default mode is monitor-only (no mutations); optional `-AutoRecover` performs PATCH-only assignee-cycle recovery.
+  - Adds `X-Paperclip-Run-Id` header on all mutating PATCH calls.
 - `tasks/Test-HourlyTaskTick.ps1`
   - Verifies `QM_DWX_HourlyCheck` is hourly (`PT1H`) and has at least one observed completed tick.
 - `paperclip-stale-lock-runbook.md`
@@ -56,6 +60,12 @@ Infra audit (hourly, can run at HH:12 or similar):
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Invoke-InfraAudit.ps1 -FailOnCritical
+```
+
+Paperclip stale-lock watchdog (every 10-15 minutes, monitor-only):
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\monitoring\Invoke-PaperclipStaleLockWatchdog.ps1 -StaleAfterMinutes 15
 ```
 
 Aggregator state writer (every minute):

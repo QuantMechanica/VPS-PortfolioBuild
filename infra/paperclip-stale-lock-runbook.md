@@ -46,3 +46,20 @@ If upstream upgrade is delayed, run a periodic watchdog:
   - suggested PATCH-only assignee-cycle recovery
 
 Do not force-clear T6-related issues without OWNER/LiveOps approval gates.
+
+### Scripted watchdog
+
+- Script: `C:\QM\repo\infra\monitoring\Invoke-PaperclipStaleLockWatchdog.ps1`
+- Default behavior is monitor-only.
+- Optional `-AutoRecover` executes the same PATCH-only assignee-cycle described above.
+- Mutating calls include `X-Paperclip-Run-Id` by design.
+
+Examples:
+
+```powershell
+# monitor only
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\monitoring\Invoke-PaperclipStaleLockWatchdog.ps1 -StaleAfterMinutes 15
+
+# explicit auto-recover mode (use only for approved scopes)
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\monitoring\Invoke-PaperclipStaleLockWatchdog.ps1 -StaleAfterMinutes 15 -AutoRecover
+```
