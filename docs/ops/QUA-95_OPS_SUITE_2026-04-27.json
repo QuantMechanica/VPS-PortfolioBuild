@@ -1,0 +1,31 @@
+{
+    "issue":  "QUA-95",
+    "generated_at_local":  "2026-04-27T10:57:00+02:00",
+    "overall_status":  "ok",
+    "checks":  [
+                   {
+                       "name":  "handoff_integrity",
+                       "status":  "ok",
+                       "exit_code":  0,
+                       "output":  "file=docs/ops/QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.md ok=True; file=docs/ops/QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.json ok=True; file=docs/ops/QUA-95_XTIUSD_BLOCKER_STATUS_2026-04-27.json ok=True; status=ok"
+                   },
+                   {
+                       "name":  "transition_payload",
+                       "status":  "ok",
+                       "exit_code":  0,
+                       "output":  "status=ok check=qua95_issue_transition_payload status_value=blocked"
+                   },
+                   {
+                       "name":  "blocked_heartbeat_wrapper",
+                       "status":  "ok",
+                       "exit_code":  0,
+                       "output":  "status=ok gate_state=blocked audit_status=critical checks_count=17"
+                   },
+                   {
+                       "name":  "blocker_task_health",
+                       "status":  "ok",
+                       "exit_code":  0,
+                       "output":  "status=ok task=QM_QUA95_BlockerRefresh last_run=2026-04-27T10:31:31.0000000+02:00 age_minutes=25.49"
+                   }
+               ]
+}

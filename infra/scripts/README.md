@@ -221,6 +221,20 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA95IssueTransitionPayload.ps1`
 
+## `Test-QUA95OpsSuite.ps1`
+
+- Single-command QUA-95 ops sanity suite.
+- Runs:
+  1. `Test-QUA95HandoffIntegrity.ps1`
+  2. `Test-QUA95IssueTransitionPayload.ps1`
+  3. `monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
+  4. `monitoring/Test-QUA95BlockerTaskHealth.ps1`
+- Emits JSON summary to stdout and returns:
+  - `0` when all checks pass
+  - `2` when any check is critical
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA95OpsSuite.ps1`
+
 ## `Invoke-QUA95BlockedHeartbeat.ps1`
 
 - One-command heartbeat wrapper for blocked QUA-95 operations.

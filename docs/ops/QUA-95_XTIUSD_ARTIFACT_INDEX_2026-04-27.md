@@ -35,6 +35,8 @@ Status recommendation: `blocked` (`defer`)
   - `docs/ops/QUA-95_BLOCKED_HEARTBEAT_TASK_SMOKE_2026-04-27.md`
 - Blocked-heartbeat wrapper test proof:
   - `docs/ops/QUA-95_BLOCKED_HEARTBEAT_WRAPPER_TEST_2026-04-27.md`
+- Ops-suite snapshot:
+  - `docs/ops/QUA-95_OPS_SUITE_2026-04-27.json`
 
 ## Investigation + evidence trail
 
@@ -80,6 +82,8 @@ Status recommendation: `blocked` (`defer`)
   - `infra/monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
 - Blocked assertion generator:
   - `infra/scripts/Update-QUA95BlockedAssertion.ps1`
+- Ops suite runner:
+  - `infra/scripts/Test-QUA95OpsSuite.ps1`
 
 ## Verification commands
 
