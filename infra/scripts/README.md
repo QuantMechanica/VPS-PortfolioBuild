@@ -235,6 +235,16 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA95OpsSuite.ps1`
 
+## `Write-QUA95OpsSuiteSnapshot.ps1`
+
+- Runs `Test-QUA95OpsSuite.ps1` and persists the JSON output artifact.
+- Defaults:
+  - suite script: `infra\scripts\Test-QUA95OpsSuite.ps1`
+  - output: `docs\ops\QUA-95_OPS_SUITE_2026-04-27.json`
+- Exit code mirrors suite result.
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Write-QUA95OpsSuiteSnapshot.ps1`
+
 ## `Invoke-QUA95BlockedHeartbeat.ps1`
 
 - One-command heartbeat wrapper for blocked QUA-95 operations.

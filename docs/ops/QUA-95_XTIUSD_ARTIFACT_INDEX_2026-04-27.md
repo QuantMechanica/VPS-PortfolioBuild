@@ -84,6 +84,8 @@ Status recommendation: `blocked` (`defer`)
   - `infra/scripts/Update-QUA95BlockedAssertion.ps1`
 - Ops suite runner:
   - `infra/scripts/Test-QUA95OpsSuite.ps1`
+- Ops suite snapshot writer:
+  - `infra/scripts/Write-QUA95OpsSuiteSnapshot.ps1`
 
 ## Verification commands
 
