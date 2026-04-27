@@ -28,7 +28,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
     - aggregator freshness
     - Google Drive sync freshness
     - Pipeline-Operator heartbeat run health (`process_loss` recovered vs unrecovered)
-    - stale `.git/index.lock` detection
+    - stale `.git/index.lock` detection (delegated to `monitoring/Invoke-GitIndexLockMonitor.ps1` for canonical lock logic)
     - QUA-95 blocker refresh task health (`QM_QUA95_BlockerRefresh`)
     - QUA-95 task-health action wiring (`QM_QUA95_TaskHealth_15min` args)
     - QUA-95 combined automation health (`Test-QUA95AutomationHealth.ps1`)
