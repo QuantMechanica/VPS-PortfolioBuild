@@ -14,6 +14,7 @@ $steps = @(
     @{ name = 'transition_payload'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95IssueTransitionPayload.ps1' },
     @{ name = 'blocked_invariant'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95BlockedInvariant.ps1' },
     @{ name = 'unblock_readiness'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95UnblockReadiness.ps1' },
+    @{ name = 'unblock_owner_consistency'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95UnblockOwnerConsistency.ps1' },
     @{ name = 'unblock_readiness_summary'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95UnblockReadinessSummary.ps1' },
     @{ name = 'audit_signal'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95AuditSignal.ps1' },
     @{ name = 'direct_verifier_proof'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95DirectVerifierProof.ps1' },

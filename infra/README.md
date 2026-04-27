@@ -158,6 +158,8 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `scripts/Test-QUA95UnblockReadiness.ps1`
   - Validates unblock-readiness artifact freshness/consistency against blocker status.
   - Returns non-zero on drift.
+- `scripts/Test-QUA95UnblockOwnerConsistency.ps1`
+  - Validates unblock owner/action consistency across readiness, gate-decision, transition-payload, and summary artifacts.
 - `scripts/Update-QUA95UnblockReadiness.ps1`
   - Writes machine-readable unblock readiness snapshot with `ready_to_unblock`, unmet criteria, and unblock owners/actions.
 - `scripts/Write-QUA95UnblockReadinessSummary.ps1`

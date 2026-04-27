@@ -456,6 +456,22 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA95UnblockReadinessSummary.ps1`
 
+## `Test-QUA95UnblockOwnerConsistency.ps1`
+
+- Validates unblock-owner/action consistency across:
+  - `docs\ops\QUA-95_UNBLOCK_READINESS_2026-04-27.json`
+  - `docs\ops\QUA-95_GATE_DECISION_2026-04-27.json`
+  - `docs\ops\QUA-95_ISSUE_TRANSITION_PAYLOAD_2026-04-27.json`
+  - `docs\ops\QUA-95_UNBLOCK_READINESS_SUMMARY_2026-04-27.md`
+- Checks:
+  - normalized owner/action pairs match across JSON artifacts
+  - summary markdown includes each owner key and required action string
+- Exit codes:
+  - `0`: owner/action data is coherent
+  - `1`: owner/action drift detected
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA95UnblockOwnerConsistency.ps1`
+
 ## `Test-QUA95OpsSuite.ps1`
 
 - Single-command QUA-95 ops sanity suite.
@@ -466,16 +482,17 @@
   4. `Test-QUA95IssueTransitionPayload.ps1`
   5. `Test-QUA95BlockedInvariant.ps1`
   6. `Test-QUA95UnblockReadiness.ps1`
-  7. `Test-QUA95UnblockReadinessSummary.ps1`
-  8. `Test-QUA95AuditSignal.ps1`
-  9. `Test-QUA95DirectVerifierProof.ps1`
-  10. `Test-QUA95CustomVisibilityProof.ps1`
-  11. `Test-QUA95EvidenceCohesion.ps1`
-  12. `Test-QUA95FailureSignature.ps1`
-  13. `Test-QUA95HeartbeatCustomVisibility.ps1`
-  14. `Test-QUA95TaskHealthActionWiring.ps1`
-  15. `monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
-  16. `monitoring/Test-QUA95BlockerTaskHealth.ps1`
+  7. `Test-QUA95UnblockOwnerConsistency.ps1`
+  8. `Test-QUA95UnblockReadinessSummary.ps1`
+  9. `Test-QUA95AuditSignal.ps1`
+  10. `Test-QUA95DirectVerifierProof.ps1`
+  11. `Test-QUA95CustomVisibilityProof.ps1`
+  12. `Test-QUA95EvidenceCohesion.ps1`
+  13. `Test-QUA95FailureSignature.ps1`
+  14. `Test-QUA95HeartbeatCustomVisibility.ps1`
+  15. `Test-QUA95TaskHealthActionWiring.ps1`
+  16. `monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
+  17. `monitoring/Test-QUA95BlockerTaskHealth.ps1`
 - Emits JSON summary to stdout and returns:
   - `0` when all checks pass
   - `2` when any check is critical

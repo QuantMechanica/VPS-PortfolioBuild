@@ -25,6 +25,7 @@ param(
     [string]$Qua95BlockedAssertionMd = 'C:\QM\repo\docs\ops\QUA-95_BLOCKED_STATE_ASSERTION_2026-04-27.md',
     [int]$Qua95BlockedAssertionMaxLagMinutes = 30,
     [string]$Qua95UnblockReadinessCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95UnblockReadiness.ps1',
+    [string]$Qua95UnblockOwnerConsistencyCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95UnblockOwnerConsistency.ps1',
     [string]$Qua95AuditSignalCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95AuditSignal.ps1',
     [string]$Qua95DirectVerifierProofCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95DirectVerifierProof.ps1',
     [string]$Qua95CustomVisibilityProofCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95CustomVisibilityProof.ps1',
@@ -351,6 +352,24 @@ else {
     Add-Check -Name 'qua95_unblock_readiness_freshness' -Status $readinessStatus -Meta @{
         exit_code = $readinessCode
         output = $readinessText
+    }
+}
+
+# QUA-95 unblock owner/action consistency
+if (-not (Test-Path -LiteralPath $Qua95UnblockOwnerConsistencyCheckScript)) {
+    Add-Check -Name 'qua95_unblock_owner_consistency' -Status 'warn' -Meta @{
+        reason = 'check_script_missing'
+        path = $Qua95UnblockOwnerConsistencyCheckScript
+    }
+}
+else {
+    $ownerConsistencyOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $Qua95UnblockOwnerConsistencyCheckScript 2>&1
+    $ownerConsistencyCode = $LASTEXITCODE
+    $ownerConsistencyText = ($ownerConsistencyOut | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
+    $ownerConsistencyStatus = if ($ownerConsistencyCode -eq 0) { 'ok' } else { 'critical' }
+    Add-Check -Name 'qua95_unblock_owner_consistency' -Status $ownerConsistencyStatus -Meta @{
+        exit_code = $ownerConsistencyCode
+        output = $ownerConsistencyText
     }
 }
 
