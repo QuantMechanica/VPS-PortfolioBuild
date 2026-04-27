@@ -1,22 +1,22 @@
-{
-  "issue": "QUA-207",
-  "generated_at_local": "2026-04-27T15:24:12+02:00",
-  "status": "blocked",
-  "reason": "runtime_scope_completed_waiting_on_verifier_owner",
-  "runtime_owner_scope": {
-    "owner": "runtime_custom_symbol_owner",
-    "state": "completed",
-    "evidence": "lessons-learned\\evidence\\2026-04-27_qua95_xtiusd_custom_visibility_probe_rerun.json",
-    "target_rates_from_pos_m1_count": 10,
-    "isolated_custom_bars_visibility_failure": false
-  },
-  "unblock_owner": {
-    "owner": "verifier_implementation_owner",
-    "required_action": "Rerun/fix verifier acceptance path for XTIUSD.DWX until bars_got > 0 and tail is aligned."
-  },
-  "transition_state": {
-    "recommended_status": "in_review",
-    "next_owner": "verifier_implementation_owner"
-  },
-  "next_action_after_unblock": "Refresh QUA-95 transition/readiness chain and advance QUA-207 per board policy."
+﻿{
+    "issue":  "QUA-207",
+    "generated_at_local":  "2026-04-27T15:25:41+02:00",
+    "status":  "blocked",
+    "reason":  "runtime_scope_completed_waiting_on_verifier_owner",
+    "runtime_owner_scope":  {
+                                "owner":  "runtime_custom_symbol_owner",
+                                "state":  "completed",
+                                "evidence":  "lessons-learned\\evidence\\2026-04-27_qua95_xtiusd_custom_visibility_probe_rerun.json",
+                                "target_rates_from_pos_m1_count":  10,
+                                "isolated_custom_bars_visibility_failure":  false
+                            },
+    "unblock_owner":  {
+                          "owner":  "verifier_implementation_owner",
+                          "required_action":  "Rerun/fix verifier acceptance path for XTIUSD.DWX until bars_got \u003e 0 and tail is aligned."
+                      },
+    "transition_state":  {
+                             "recommended_status":  "in_review",
+                             "next_owner":  "verifier_implementation_owner"
+                         },
+    "next_action_after_unblock":  "Refresh QUA-95 transition/readiness chain and advance QUA-207 per board policy."
 }

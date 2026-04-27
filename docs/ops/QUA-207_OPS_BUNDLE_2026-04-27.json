@@ -1,29 +1,38 @@
-{
-  "issue": "QUA-207",
-  "generated_at_local": "2026-04-27T15:22:10+02:00",
-  "status": "ok",
-  "duration_seconds": 1.002,
-  "steps": [
-    {
-      "script": "C:\\QM\\repo\\infra\\scripts\\Run-QUA207RuntimeCompletionHeartbeat.ps1",
-      "exit_code": 0,
-      "output": [
-        "wrote=C:\\QM\\repo\\docs\\ops\\QUA-207_RUNTIME_HEARTBEAT_2026-04-27.json",
-        "status=ok"
-      ]
-    },
-    {
-      "script": "C:\\QM\\repo\\infra\\scripts\\New-QUA207IssueComment.ps1",
-      "exit_code": 0,
-      "output": [
-        "wrote=C:\\QM\\repo\\docs\\ops\\QUA-207_ISSUE_COMMENT_2026-04-27.md",
-        "recommended_status=in_review"
-      ]
-    }
-  ],
-  "artifacts": {
-    "heartbeat_json": "docs/ops/QUA-207_RUNTIME_HEARTBEAT_2026-04-27.json",
-    "transition_payload_json": "docs/ops/QUA-207_ISSUE_TRANSITION_PAYLOAD_2026-04-27.json",
-    "issue_comment_md": "docs/ops/QUA-207_ISSUE_COMMENT_2026-04-27.md"
-  }
+﻿{
+    "issue":  "QUA-207",
+    "generated_at_local":  "2026-04-27T15:25:41+02:00",
+    "status":  "ok",
+    "duration_seconds":  1.236,
+    "steps":  [
+                  {
+                      "script":  "C:\\QM\\repo\\infra\\scripts\\Run-QUA207RuntimeCompletionHeartbeat.ps1",
+                      "exit_code":  0,
+                      "output":  [
+                                     "wrote=C:\\QM\\repo\\docs\\ops\\QUA-207_RUNTIME_HEARTBEAT_2026-04-27.json",
+                                     "status=ok"
+                                 ]
+                  },
+                  {
+                      "script":  "C:\\QM\\repo\\infra\\scripts\\New-QUA207IssueComment.ps1",
+                      "exit_code":  0,
+                      "output":  [
+                                     "wrote=C:\\QM\\repo\\docs\\ops\\QUA-207_ISSUE_COMMENT_2026-04-27.md",
+                                     "recommended_status=in_review"
+                                 ]
+                  },
+                  {
+                      "script":  "C:\\QM\\repo\\infra\\scripts\\New-QUA207BlockedOnVerifierSnapshot.ps1",
+                      "exit_code":  0,
+                      "output":  [
+                                     "wrote=C:\\QM\\repo\\docs\\ops\\QUA-207_BLOCKED_ON_VERIFIER_2026-04-27.json",
+                                     "runtime_completed=True"
+                                 ]
+                  }
+              ],
+    "artifacts":  {
+                      "heartbeat_json":  "docs/ops/QUA-207_RUNTIME_HEARTBEAT_2026-04-27.json",
+                      "transition_payload_json":  "docs/ops/QUA-207_ISSUE_TRANSITION_PAYLOAD_2026-04-27.json",
+                      "issue_comment_md":  "docs/ops/QUA-207_ISSUE_COMMENT_2026-04-27.md",
+                      "blocked_snapshot_json":  "docs/ops/QUA-207_BLOCKED_ON_VERIFIER_2026-04-27.json"
+                  }
 }

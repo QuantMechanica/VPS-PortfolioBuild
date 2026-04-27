@@ -207,7 +207,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `scripts/Remove-QUA207RuntimeHeartbeatTask.ps1`
   - Removes `QM_QUA207_RuntimeHeartbeat_30min` idempotently (`ok` when already absent).
 - `scripts/Run-QUA207OpsBundle.ps1`
-  - Runs the QUA-207 runtime heartbeat + issue-comment generation in one command.
+  - Runs runtime heartbeat + issue-comment generation + blocked-snapshot generation in one command.
   - Writes `docs/ops/QUA-207_OPS_BUNDLE_2026-04-27.json`.
 - `scripts/New-QUA207BlockedOnVerifierSnapshot.ps1`
   - Generates `docs/ops/QUA-207_BLOCKED_ON_VERIFIER_2026-04-27.json` from current evidence + transition state.

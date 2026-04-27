@@ -744,6 +744,7 @@
 - One-command QUA-207 maintenance bundle:
   1. `Run-QUA207RuntimeCompletionHeartbeat.ps1`
   2. `New-QUA207IssueComment.ps1`
+  3. `New-QUA207BlockedOnVerifierSnapshot.ps1`
 - Writes consolidated snapshot:
   - `docs\ops\QUA-207_OPS_BUNDLE_2026-04-27.json`
 - Exit codes:
