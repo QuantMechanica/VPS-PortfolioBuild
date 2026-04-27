@@ -174,6 +174,8 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Validates custom-symbol visibility probe proof artifacts against QUA-95 blocker state.
 - `scripts/Test-QUA95FailureSignature.ps1`
   - Validates blocked systemic failure signature coherence across direct verifier proof, custom visibility evidence, and blocker status.
+- `scripts/Test-QUA95EvidenceCohesion.ps1`
+  - Validates timestamp cohesion across direct verifier evidence, custom-visibility evidence, and blocker status artifacts.
 - `scripts/Test-QUA95HeartbeatCustomVisibility.ps1`
   - Validates blocked-heartbeat custom-visibility section against canonical custom-visibility evidence.
 - `scripts/Test-QUA95CanonicalSnapshot.ps1`

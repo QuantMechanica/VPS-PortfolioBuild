@@ -373,6 +373,22 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA95FailureSignature.ps1`
 
+## `Test-QUA95EvidenceCohesion.ps1`
+
+- Validates timestamp cohesion across canonical QUA-95 evidence artifacts:
+  - `lessons-learned\evidence\2026-04-27_qua95_xtiusd_direct_verify_rerun.json`
+  - `lessons-learned\evidence\2026-04-27_qua95_xtiusd_custom_visibility_probe_rerun.json`
+  - `docs\ops\QUA-95_XTIUSD_BLOCKER_STATUS_2026-04-27.json`
+- Checks:
+  - direct/custom/blocker identity fields
+  - pairwise timestamp skew within `-MaxPairSkewMinutes` (default `20`)
+  - uses custom-evidence file write-time fallback when `captured_at_local` is absent in legacy artifacts
+- Exit codes:
+  - `0`: evidence timestamps are coherent
+  - `1`: skew/drift/missing data detected
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA95EvidenceCohesion.ps1`
+
 ## `Test-QUA95HeartbeatCustomVisibility.ps1`
 
 - Validates blocked-heartbeat `custom_visibility` section against canonical evidence:
@@ -454,11 +470,12 @@
   8. `Test-QUA95AuditSignal.ps1`
   9. `Test-QUA95DirectVerifierProof.ps1`
   10. `Test-QUA95CustomVisibilityProof.ps1`
-  11. `Test-QUA95FailureSignature.ps1`
-  12. `Test-QUA95HeartbeatCustomVisibility.ps1`
-  13. `Test-QUA95TaskHealthActionWiring.ps1`
-  14. `monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
-  15. `monitoring/Test-QUA95BlockerTaskHealth.ps1`
+  11. `Test-QUA95EvidenceCohesion.ps1`
+  12. `Test-QUA95FailureSignature.ps1`
+  13. `Test-QUA95HeartbeatCustomVisibility.ps1`
+  14. `Test-QUA95TaskHealthActionWiring.ps1`
+  15. `monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
+  16. `monitoring/Test-QUA95BlockerTaskHealth.ps1`
 - Emits JSON summary to stdout and returns:
   - `0` when all checks pass
   - `2` when any check is critical

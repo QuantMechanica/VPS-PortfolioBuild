@@ -18,6 +18,7 @@ $steps = @(
     @{ name = 'audit_signal'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95AuditSignal.ps1' },
     @{ name = 'direct_verifier_proof'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95DirectVerifierProof.ps1' },
     @{ name = 'custom_visibility_proof'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95CustomVisibilityProof.ps1' },
+    @{ name = 'evidence_cohesion'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95EvidenceCohesion.ps1' },
     @{ name = 'failure_signature'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95FailureSignature.ps1' },
     @{ name = 'heartbeat_custom_visibility'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95HeartbeatCustomVisibility.ps1' },
     @{ name = 'task_health_action_wiring'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95TaskHealthActionWiring.ps1' },
