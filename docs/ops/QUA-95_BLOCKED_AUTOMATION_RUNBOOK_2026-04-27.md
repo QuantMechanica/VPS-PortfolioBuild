@@ -3,7 +3,17 @@
 Issue: `QUA-95`  
 State target: keep `blocked/defer` synchronized and auditable until acceptance is met.
 
-## Core commands
+## Primary command
+
+Canonical snapshot (recommended single command):
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Run-QUA95CanonicalSnapshot.ps1
+```
+
+This command runs blocked-heartbeat, then forces ops-bundle manifest resync and validation to avoid post-heartbeat drift.
+
+## Diagnostic commands
 
 Refresh pipeline (single run):
 
