@@ -12,6 +12,9 @@ param(
     [string[]]$GitRepoRoots = @('C:\QM\repo', 'C:\QM\paperclip'),
     [int]$StaleIndexLockMinutes = 10,
     [string]$PaperclipProcessPattern = 'paperclip',
+    [string]$Qua95TaskName = 'QM_QUA95_BlockerRefresh',
+    [int]$Qua95TaskMaxAgeMinutes = 125,
+    [string]$Qua95TaskHealthScript = 'C:\QM\repo\infra\monitoring\Test-QUA95BlockerTaskHealth.ps1',
     [string]$OutJson = 'C:\QM\repo\infra\reports\infra_audit_latest.json',
     [switch]$FailOnCritical
 )
@@ -176,11 +179,31 @@ Add-Check -Name 'stale_git_index_lock' -Status $staleLockStatus -Meta @{
     stale_locks = @($staleLocks)
 }
 
+# QUA-95 blocker task health
+if (-not (Test-Path -LiteralPath $Qua95TaskHealthScript)) {
+    Add-Check -Name 'qua95_blocker_task_health' -Status 'warn' -Meta @{
+        reason = 'health_script_missing'
+        path = $Qua95TaskHealthScript
+    }
+}
+else {
+    $healthOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $Qua95TaskHealthScript -TaskName $Qua95TaskName -MaxAgeMinutes $Qua95TaskMaxAgeMinutes 2>&1
+    $healthCode = $LASTEXITCODE
+    $healthText = ($healthOut | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
+    $healthStatus = if ($healthCode -eq 0) { 'ok' } else { 'critical' }
+    Add-Check -Name 'qua95_blocker_task_health' -Status $healthStatus -Meta @{
+        task_name = $Qua95TaskName
+        max_age_minutes = $Qua95TaskMaxAgeMinutes
+        exit_code = $healthCode
+        output = $healthText
+    }
+}
+
 $overallStatus = 'ok'
-if (($checks | Where-Object { $_.status -eq 'critical' }).Count -gt 0) {
+if ((@($checks | Where-Object { $_.status -eq 'critical' }).Count) -gt 0) {
     $overallStatus = 'critical'
 }
-elseif (($checks | Where-Object { $_.status -eq 'warn' }).Count -gt 0) {
+elseif ((@($checks | Where-Object { $_.status -eq 'warn' }).Count) -gt 0) {
     $overallStatus = 'warn'
 }
 

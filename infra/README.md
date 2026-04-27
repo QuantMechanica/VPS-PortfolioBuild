@@ -27,6 +27,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
     - aggregator freshness
     - Google Drive sync freshness
     - stale `.git/index.lock` detection
+    - QUA-95 blocker refresh task health (`QM_QUA95_BlockerRefresh`)
   - Writes machine-readable JSON report to `infra/reports/infra_audit_latest.json`.
 - `scripts/Install-AggregatorStateTask.ps1`
   - Registers Task Scheduler job `QM_AggregatorState_1min` as `SYSTEM`.
