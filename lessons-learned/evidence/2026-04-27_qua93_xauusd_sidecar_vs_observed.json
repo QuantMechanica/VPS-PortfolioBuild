@@ -1,0 +1,89 @@
+{
+  "generated_at_local": "2026-04-27T09:28:18+02:00",
+  "issue": "QUA-93",
+  "symbol": "XAUUSD.DWX",
+  "sidecars": [
+    {
+      "file": "20260426_203255_XAUUSD.DWX.import.txt",
+      "tick_first_ms": 1506906061008,
+      "tick_last_ms": 1775444399867,
+      "tick_last_utc": "2026-04-06T02:59:59.867000",
+      "tick_count": 601552393,
+      "m1_count": 446753
+    },
+    {
+      "file": "20260427_080755_XAUUSD.DWX.import.txt",
+      "tick_first_ms": 1506906061008,
+      "tick_last_ms": 1775444399867,
+      "tick_last_utc": "2026-04-06T02:59:59.867000",
+      "tick_count": 601552393,
+      "m1_count": 446753
+    }
+  ],
+  "observed_windows": {
+    "source": {
+      "now_minus_5m": {
+        "tick_count": 2000,
+        "rate_count": 2000,
+        "first_tick_ms": 1777274597149,
+        "last_tick_ms": 1777275434646
+      },
+      "now_minus_1h": {
+        "tick_count": 2000,
+        "rate_count": 2000,
+        "first_tick_ms": 1777271297039,
+        "last_tick_ms": 1777271791164
+      },
+      "now_minus_1d": {
+        "tick_count": 2000,
+        "rate_count": 2000,
+        "first_tick_ms": 1777251660083,
+        "last_tick_ms": 1777251949023
+      },
+      "now_minus_7d": {
+        "tick_count": 2000,
+        "rate_count": 2000,
+        "first_tick_ms": 1776670099540,
+        "last_tick_ms": 1776670623908
+      },
+      "now_minus_30d": {
+        "tick_count": 2000,
+        "rate_count": 2000,
+        "first_tick_ms": 1774832460374,
+        "last_tick_ms": 1774832992570
+      }
+    },
+    "custom": {
+      "now_minus_5m": {
+        "tick_count": 0,
+        "rate_count": 0,
+        "first_tick_ms": 0,
+        "last_tick_ms": 0
+      },
+      "now_minus_1h": {
+        "tick_count": 0,
+        "rate_count": 0,
+        "first_tick_ms": 0,
+        "last_tick_ms": 0
+      },
+      "now_minus_1d": {
+        "tick_count": 2000,
+        "rate_count": 0,
+        "first_tick_ms": 1517794490114,
+        "last_tick_ms": 1713316610833
+      },
+      "now_minus_7d": {
+        "tick_count": 2000,
+        "rate_count": 0,
+        "first_tick_ms": 1517794490114,
+        "last_tick_ms": 1713316610833
+      },
+      "now_minus_30d": {
+        "tick_count": 512,
+        "rate_count": 0,
+        "first_tick_ms": 1774893254789,
+        "last_tick_ms": 1775168606152
+      }
+    }
+  }
+}

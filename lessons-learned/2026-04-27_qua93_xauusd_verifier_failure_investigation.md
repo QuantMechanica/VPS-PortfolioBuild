@@ -171,6 +171,22 @@ Interpretation:
 - Source symbol is alive in current terminal context, but `XAUUSD.DWX` custom-history/bar visibility remains degraded.
 - Root cause now points to custom-symbol history state/coverage rather than broker-source outage.
 
+## Sidecar Expectation Drift Check (2026-04-27 09:29 CEST)
+
+Evidence artifact:
+- `lessons-learned/evidence/2026-04-27_qua93_xauusd_sidecar_vs_observed.json`
+
+Findings:
+- Both archived sidecars for `XAUUSD.DWX` encode the same tail expectation:
+  - `tick_last_ms=1775444399867` (`2026-04-06T02:59:59.867Z`)
+- Observed windows from MT5 API show:
+  - source `XAUUSD` has healthy recent ticks/rates;
+  - custom `XAUUSD.DWX` has partial recent tick presence in some windows but no M1 rates.
+
+Interpretation:
+- Sidecar expectation and current custom-symbol state appear drifted/misaligned.
+- This can produce persistent verifier `FAIL_tail_mid_bars` even when source symbol is healthy.
+
 ## Durable change in this heartbeat
 
 - Added this investigation record for `QUA-93` with concrete classifier output and triage conclusion.
@@ -186,6 +202,7 @@ Interpretation:
 - Re-executed official rerun + disposition generation in liveness continuation; status remains `defer`.
 - Added chunked-probe JSON evidence confirming zero visibility across multiple MT5 read paths.
 - Executed source-history hydration and confirmed only source symbol recovered; custom symbol still fails and remains `defer`.
+- Added sidecar-vs-observed drift evidence to support custom-symbol history rebuild as the unblock path.
 
 ## Next action
 
@@ -193,6 +210,7 @@ Acceptance target (`XAUUSD` non-zero bars + matching tail) remains unmet after r
 Unblock owner: verifier implementation owner (`D:\QM\mt5\T1\dwx_import\verify_import.py`).  
 Required action:
 - validate and rebuild `XAUUSD.DWX` custom-symbol history coverage from import artifacts (or re-import) in MT5 custom base;
+- regenerate/refresh verifier sidecar expectations after rebuild so expected tail aligns with current symbol state;
 - confirm source-symbol visibility remains healthy while custom-history is restored;
 - keep verifier hardening (`copy_ticks_from` windows + retry pre-flight + degraded bars classification);
 - rerun official verifier and disposition helper after source-history visibility is restored/confirmed.
