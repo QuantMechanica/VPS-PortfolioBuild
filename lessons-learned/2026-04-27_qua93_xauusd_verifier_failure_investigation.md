@@ -127,6 +127,14 @@ Disposition regeneration:
 - refreshed evidence: `lessons-learned/evidence/2026-04-27_qua93_xauusd_rerun_evidence.json`
 - final disposition after parser fix: `defer`
 
+## Liveness Continuation Rerun (2026-04-27 09:19 CEST)
+
+Validation rerun in this continuation:
+- official log: `infra/smoke/verify_import_run_2026-04-27_091929_qua93_postpatch_liveness2.log`
+- disposition helper log: `infra/smoke/verify_import_run_2026-04-27_091937_qua93.log`
+- refreshed evidence JSON: `lessons-learned/evidence/2026-04-27_qua93_xauusd_rerun_evidence.json`
+- outcome: `verify_exit_code=1`, `disposition=defer`
+
 ## Durable change in this heartbeat
 
 - Added this investigation record for `QUA-93` with concrete classifier output and triage conclusion.
@@ -139,6 +147,7 @@ Disposition regeneration:
 - Added an apply-ready patch artifact for faster owner-side integration.
 - Applied patch to live verifier with explicit backup, reran officially, and confirmed issue still defers.
 - Hardened disposition parser compatibility so evidence remains valid across verifier output-schema changes.
+- Re-executed official rerun + disposition generation in liveness continuation; status remains `defer`.
 
 ## Next action
 
