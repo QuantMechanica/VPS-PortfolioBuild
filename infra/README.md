@@ -40,6 +40,10 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Registers Task Scheduler job `QM_QUA95_BlockerRefresh` as `SYSTEM` (hourly by default).
   - Action chain: verifier rerun -> blocker sync -> blocked summary -> handoff integrity check.
   - Safe to re-run (`Register-ScheduledTask -Force`).
+- `scripts/Install-QUA95TaskHealthTask.ps1`
+  - Registers Task Scheduler job `QM_QUA95_TaskHealth_15min` as `SYSTEM`.
+  - Runs `monitoring/Test-QUA95BlockerTaskHealth.ps1` on a 15-minute cadence.
+  - Safe to re-run (`Register-ScheduledTask -Force`).
 - `scripts/Run-QUA95BlockerRefresh.ps1`
   - Scheduled runner used by `QM_QUA95_BlockerRefresh`.
   - Logs to `infra\smoke\qua95_blocker_refresh_task.log`.
@@ -117,6 +121,12 @@ QUA-95 blocker refresh task (hourly):
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-QUA95BlockerRefreshTask.ps1 -EveryMinutes 60
+```
+
+QUA-95 task-health monitor (every 15 minutes):
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-QUA95TaskHealthTask.ps1 -EveryMinutes 15 -MaxAgeMinutes 125
 ```
 
 Recovery orphan cleanup (daily schedule is managed by `tasks/Register-QMInfraTasks.ps1`):
