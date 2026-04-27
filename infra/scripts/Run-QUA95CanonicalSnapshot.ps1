@@ -10,8 +10,9 @@ $ErrorActionPreference = 'Stop'
 $heartbeatScript = Join-Path $RepoRoot 'infra\scripts\Invoke-QUA95BlockedHeartbeat.ps1'
 $bundleUpdateScript = Join-Path $RepoRoot 'infra\scripts\Update-QUA95OpsBundleManifest.ps1'
 $bundleTestScript = Join-Path $RepoRoot 'infra\scripts\Test-QUA95OpsBundleManifest.ps1'
+$taskHealthWiringScript = Join-Path $RepoRoot 'infra\scripts\Test-QUA95TaskHealthActionWiring.ps1'
 
-foreach ($path in @($heartbeatScript, $bundleUpdateScript, $bundleTestScript)) {
+foreach ($path in @($heartbeatScript, $bundleUpdateScript, $bundleTestScript, $taskHealthWiringScript)) {
     if (-not (Test-Path -LiteralPath $path)) {
         throw "Required script missing: $path"
     }
@@ -26,6 +27,7 @@ if ($heartbeatCode -ne 0) {
 
 $bundleUpdateCode = -1
 $bundleTestCode = -1
+$taskHealthWiringCode = -1
 
 $blockerPath = Join-Path $RepoRoot 'docs\ops\QUA-95_XTIUSD_BLOCKER_STATUS_2026-04-27.json'
 $auditSignalPath = Join-Path $RepoRoot 'docs\ops\QUA-95_AUDIT_SIGNAL_2026-04-27.json'
@@ -49,6 +51,7 @@ $summary = [ordered]@{
     command_exit_code = 0
     steps = [ordered]@{
         blocked_heartbeat_exit_code = $heartbeatCode
+        task_health_action_wiring_exit_code = $taskHealthWiringCode
         ops_bundle_update_exit_code = $bundleUpdateCode
         ops_bundle_test_exit_code = $bundleTestCode
     }
@@ -82,6 +85,13 @@ if ($summaryDir) {
 $summary | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $summaryFullPath -Encoding UTF8
 Write-Output ("wrote=" + $summaryFullPath)
 
+$taskHealthWiringOut = & $taskHealthWiringScript 2>&1
+$taskHealthWiringCode = $LASTEXITCODE
+($taskHealthWiringOut | ForEach-Object { $_.ToString() }) | Write-Output
+if ($taskHealthWiringCode -ne 0) {
+    throw ("Task-health action wiring check failed: exit_code={0}" -f $taskHealthWiringCode)
+}
+
 $bundleUpdateOut = & $bundleUpdateScript 2>&1
 $bundleUpdateCode = $LASTEXITCODE
 ($bundleUpdateOut | ForEach-Object { $_.ToString() }) | Write-Output
@@ -96,6 +106,7 @@ if ($bundleTestCode -ne 0) {
     throw ("Ops bundle verification failed: exit_code={0}" -f $bundleTestCode)
 }
 
+$summary.steps.task_health_action_wiring_exit_code = $taskHealthWiringCode
 $summary.steps.ops_bundle_update_exit_code = $bundleUpdateCode
 $summary.steps.ops_bundle_test_exit_code = $bundleTestCode
 $summary.generated_at_local = (Get-Date).ToString('yyyy-MM-ddTHH:mm:ssK')

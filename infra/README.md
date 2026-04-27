@@ -67,7 +67,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - One-command heartbeat wrapper for blocked QUA-95 operations.
   - Runs blocker refresh + infra audit + blocked assertion sync + blocked-invariant check + unblock-readiness snapshot + unblock-readiness summary + automation-health snapshot + audit-signal snapshot + audit-signal validation + ops-suite snapshot + ops-bundle manifest, then writes consolidated status JSON.
 - `scripts/Run-QUA95CanonicalSnapshot.ps1`
-  - Runs blocked heartbeat, then forces final ops-bundle manifest resync + integrity verification in one command.
+  - Runs blocked heartbeat, validates task-health action wiring, then forces final ops-bundle manifest resync + integrity verification in one command.
   - Emits machine-readable snapshot summary to `docs/ops/QUA-95_CANONICAL_SNAPSHOT_2026-04-27.json`.
 - `scripts/Update-QUA95BlockedAssertion.ps1`
   - Regenerates blocked-state assertion markdown from canonical gate + blocker JSON.

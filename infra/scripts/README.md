@@ -452,8 +452,9 @@
 
 - One-command canonical QUA-95 blocked snapshot flow:
   1. `Invoke-QUA95BlockedHeartbeat.ps1`
-  2. `Update-QUA95OpsBundleManifest.ps1`
-  3. `Test-QUA95OpsBundleManifest.ps1`
+  2. `Test-QUA95TaskHealthActionWiring.ps1`
+  3. `Update-QUA95OpsBundleManifest.ps1`
+  4. `Test-QUA95OpsBundleManifest.ps1`
 - Writes machine-readable run summary:
   - `docs\ops\QUA-95_CANONICAL_SNAPSHOT_2026-04-27.json`
 - Purpose:
