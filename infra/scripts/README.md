@@ -177,6 +177,22 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Get-QUA95GateDecision.ps1`
 
+## `New-QUA95IssueTransitionPayload.ps1`
+
+- Builds a deterministic issue-transition payload from canonical QUA-95 artifacts:
+  - `docs\ops\QUA-95_GATE_DECISION_2026-04-27.json`
+  - `docs\ops\QUA-95_XTIUSD_BLOCKER_STATUS_2026-04-27.json`
+  - `docs\ops\QUA-95_BLOCKED_COMMENT_2026-04-27.md`
+- Writes:
+  - `docs\ops\QUA-95_ISSUE_TRANSITION_PAYLOAD_2026-04-27.json`
+- Payload includes:
+  - target status (`blocked` or `in_progress`)
+  - reason/disposition/acceptance fields
+  - current bars/tail values
+  - unblock owners and deterministic next-action text
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\New-QUA95IssueTransitionPayload.ps1`
+
 ## `Update-QUA93BlockerStatus.ps1`
 
 - Idempotently creates/refreshes `docs\ops\QUA-93_XAUUSD_BLOCKER_STATUS_2026-04-27.json`

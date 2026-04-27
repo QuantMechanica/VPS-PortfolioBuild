@@ -27,6 +27,8 @@ Status recommendation: `blocked` (`defer`)
   - `docs/ops/QUA-95_GATE_DECISION_2026-04-27.json`
 - Blocked-state assertion snapshot:
   - `docs/ops/QUA-95_BLOCKED_STATE_ASSERTION_2026-04-27.md`
+- Issue-transition payload snapshot:
+  - `docs/ops/QUA-95_ISSUE_TRANSITION_PAYLOAD_2026-04-27.json`
 
 ## Investigation + evidence trail
 
@@ -60,6 +62,8 @@ Status recommendation: `blocked` (`defer`)
   - `infra/scripts/Write-QUA95BlockedSummary.ps1`
 - Task runner (scheduled execution target):
   - `infra/scripts/Run-QUA95BlockerRefresh.ps1`
+- Issue-transition payload generator:
+  - `infra/scripts/New-QUA95IssueTransitionPayload.ps1`
 
 ## Verification commands
 

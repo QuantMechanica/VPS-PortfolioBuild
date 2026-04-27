@@ -1,0 +1,29 @@
+﻿{
+    "issue":  "QUA-95",
+    "generated_at_local":  "2026-04-27T10:23:20+02:00",
+    "source":  {
+                   "gate_decision_json":  "docs\\ops\\QUA-95_GATE_DECISION_2026-04-27.json",
+                   "blocker_status_json":  "docs\\ops\\QUA-95_XTIUSD_BLOCKER_STATUS_2026-04-27.json",
+                   "blocked_comment_md":  "docs\\ops\\QUA-95_BLOCKED_COMMENT_2026-04-27.md"
+               },
+    "transition":  {
+                       "status":  "blocked",
+                       "reason":  "acceptance_not_met",
+                       "disposition":  "defer",
+                       "acceptance_met":  false,
+                       "bars_got":  0,
+                       "tail_shortfall_seconds":  7141.322,
+                       "last_checked_local":  "2026-04-27T10:21:28+02:00"
+                   },
+    "unblock_owners":  [
+                           {
+                               "owner":  "runtime_custom_symbol_owner",
+                               "required_action":  "Restore XTIUSD.DWX M1 bars visibility in T1 runtime (bars APIs return non-zero)."
+                           },
+                           {
+                               "owner":  "verifier_implementation_owner",
+                               "required_action":  "After runtime recovery, rerun verifier and confirm bars_got \u003e 0 with aligned tail."
+                           }
+                       ],
+    "next_action":  "Wait for runtime custom-symbol bars visibility recovery and verifier rerun proof (bars_got \u003e 0 with aligned tail)."
+}
