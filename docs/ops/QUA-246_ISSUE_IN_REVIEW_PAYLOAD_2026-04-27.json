@@ -1,0 +1,18 @@
+{
+  "issue": "QUA-246",
+  "recommended_transition": {
+    "status": "in_review",
+    "reason": "Pipeline-Operator design and implementation artifacts committed; ready for Doc-KM canonical mirror handoff."
+  },
+  "comment_markdown_path": "docs/ops/QUA-246_ISSUE_COMMENT_POST_COMMIT_2026-04-27.md",
+  "hints": {
+    "target_assignee": "documentation-km",
+    "target_branch_for_dockm": "agents/docs-km",
+    "required_follow_up": "publish process 15 canonical mirror to Notion and sync result",
+    "remaining_acceptance_item": "first real backtest run confirmation using de-dup queue contract"
+  },
+  "commit": {
+    "branch": "agents/pipeline-operator",
+    "sha": "09f0792e65f5581a60122a4a3019bcbfca38d7fc"
+  }
+}
