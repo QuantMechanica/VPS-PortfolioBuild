@@ -1,6 +1,6 @@
 {
     "issue_id":  "QUA-185",
-    "updated_at_local":  "2026-04-27T16:34:55.2463643+02:00",
+    "updated_at_local":  "2026-04-27T16:36:12.1267010+02:00",
     "target_status":  "in_review",
     "reason":  "pc1_00_drive_git_hard_fence_operationalized",
     "summary":  "Drive-sync exclusion hard fence is implemented for repo + worktree git pointers with recurring task wiring, evidence path, and failure alert routing.",

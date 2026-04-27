@@ -233,6 +233,11 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `scripts/New-QUA185IssueTransitionPayload.ps1`
   - Generates deterministic issue-transition payload for QUA-185 from closeout + runbook + snapshot artifacts.
   - Writes `docs/ops/QUA-185_ISSUE_TRANSITION_PAYLOAD_2026-04-27.json` with `target_status=in_review`.
+- `scripts/Run-QUA185OpsBundle.ps1`
+  - One-command QUA-185 operations bundle:
+    - runs worktree-aware drive/git hard-fence check
+    - regenerates QUA-185 issue-transition payload
+  - Writes consolidated summary to `docs/ops/QUA-185_OPS_BUNDLE_2026-04-27.json`.
 - `scripts/Test-QUA95UnblockReadiness.ps1`
   - Validates unblock-readiness artifact freshness/consistency against blocker status.
   - Returns non-zero on drift.
