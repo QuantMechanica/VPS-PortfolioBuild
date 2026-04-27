@@ -7,6 +7,7 @@ param(
     [string]$SnapshotScript = "C:\QM\repo\scripts\export_public_snapshot.ps1",
     [string]$HealthScript = "C:\QM\repo\infra\monitoring\Invoke-InfraHealthCheck.ps1",
     [string]$DriveGitExclusionScript = "C:\QM\repo\infra\monitoring\Test-DriveGitExclusion.ps1",
+    [string]$DriveGitExclusionOutputPath = "C:\QM\logs\infra\health\drive_git_exclusion_latest.json",
     [string]$GitIndexLockMonitorScript = "C:\QM\repo\infra\monitoring\Invoke-GitIndexLockMonitor.ps1",
     [string]$StaleLockWatchdogScript = "C:\QM\repo\infra\monitoring\Invoke-PaperclipStaleLockWatchdog.ps1",
     [string]$Qua207RuntimeHeartbeatScript = "C:\QM\repo\infra\scripts\Run-QUA207RuntimeCompletionHeartbeat.ps1",
@@ -141,7 +142,7 @@ if (Test-Path -LiteralPath $DriveGitExclusionScript) {
     Register-DesiredTask `
         -TaskName "QM_DriveGitExclusion_15min" `
         -Executable "powershell.exe" `
-        -Arguments "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$DriveGitExclusionScript`"" `
+        -Arguments "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$DriveGitExclusionScript`" -PrimaryRepoForWorktrees `"$RepoRoot`" -IncludeGitWorktrees -OutputPath `"$DriveGitExclusionOutputPath`"" `
         -Trigger $driveFenceTrigger `
         -Description "Verifies repo/.git paths remain outside Drive sync roots (PC1-00 hard fence)."
 }

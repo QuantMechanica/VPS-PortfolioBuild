@@ -10,7 +10,11 @@ param(
         "C:\Users\Administrator\My Drive",
         "C:\Users\Administrator\Google Drive\My Drive"
     ),
-    [switch]$FailOnMissingRepo
+    [switch]$FailOnMissingRepo,
+    [string]$PrimaryRepoForWorktrees = "C:\QM\repo",
+    [switch]$IncludeGitWorktrees,
+    [string]$OutputPath = "C:\QM\logs\infra\health\drive_git_exclusion_latest.json",
+    [string]$AlertWebhookUrl = $(if ($env:QM_ALERT_WEBHOOK_URL) { $env:QM_ALERT_WEBHOOK_URL } else { "" })
 )
 
 Set-StrictMode -Version Latest
@@ -78,6 +82,44 @@ function Resolve-GitMetadataPath {
     }
 }
 
+function Ensure-ParentDirectory {
+    param([string]$Path)
+    $parent = Split-Path -Path $Path -Parent
+    if ($parent -and -not (Test-Path -LiteralPath $parent)) {
+        New-Item -ItemType Directory -Path $parent -Force | Out-Null
+    }
+}
+
+function Get-RepoRootsWithWorktrees {
+    param(
+        [string[]]$BaseRepoRoots,
+        [string]$PrimaryRepo
+    )
+
+    $paths = @()
+    foreach ($r in $BaseRepoRoots) {
+        if (-not $r) { continue }
+        $paths += (Resolve-NormalizedPath -Path $r)
+    }
+
+    if ($IncludeGitWorktrees.IsPresent -and (Test-Path -LiteralPath $PrimaryRepo -PathType Container)) {
+        try {
+            $lines = & git -C $PrimaryRepo worktree list --porcelain 2>$null
+            foreach ($line in $lines) {
+                if (-not $line.StartsWith("worktree ")) { continue }
+                $worktreePath = $line.Substring(9).Trim()
+                if (-not $worktreePath) { continue }
+                $paths += (Resolve-NormalizedPath -Path $worktreePath)
+            }
+        }
+        catch {
+            # keep base roots only when git worktree introspection fails
+        }
+    }
+
+    return @($paths | Select-Object -Unique)
+}
+
 $resolvedDriveRoots = @()
 foreach ($root in $PossibleDriveRoots) {
     if (-not (Test-Path -LiteralPath $root)) { continue }
@@ -85,8 +127,10 @@ foreach ($root in $PossibleDriveRoots) {
 }
 $resolvedDriveRoots = @($resolvedDriveRoots | Select-Object -Unique)
 
+$resolvedRepoRoots = Get-RepoRootsWithWorktrees -BaseRepoRoots $RepoRoots -PrimaryRepo $PrimaryRepoForWorktrees
+
 $repoResults = @()
-foreach ($repoRoot in $RepoRoots) {
+foreach ($repoRoot in $resolvedRepoRoots) {
     if (-not $repoRoot) { continue }
 
     $resolvedRepo = Resolve-NormalizedPath -Path $repoRoot
@@ -180,6 +224,11 @@ $result = [pscustomobject]@{
     status = $overallStatus
     message = $message
     drive_roots = @($resolvedDriveRoots)
+    include_git_worktrees = $IncludeGitWorktrees.IsPresent
+    primary_repo_for_worktrees = $PrimaryRepoForWorktrees
+    resolved_repo_roots = @($resolvedRepoRoots)
+    output_path = $OutputPath
+    alert_webhook_enabled = [bool]($AlertWebhookUrl)
     repo_roots = @($repoResults)
     summary = [pscustomobject]@{
         repo_count = $repoResults.Count
@@ -189,7 +238,19 @@ $result = [pscustomobject]@{
     }
 }
 
+Ensure-ParentDirectory -Path $OutputPath
+$result | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $OutputPath -Encoding ASCII
 $result | ConvertTo-Json -Depth 8
+
+if ($overallStatus -ne "ok" -and $AlertWebhookUrl) {
+    try {
+        Invoke-RestMethod -Method Post -Uri $AlertWebhookUrl -ContentType "application/json" -Body ($result | ConvertTo-Json -Depth 8) | Out-Null
+    }
+    catch {
+        Write-Warning "Drive/git hard-fence alert webhook post failed: $($_.Exception.Message)"
+    }
+}
+
 if ($overallStatus -eq "ok") { exit 0 }
 if ($overallStatus -eq "warn") { exit 1 }
 exit 2

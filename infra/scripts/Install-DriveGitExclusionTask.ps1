@@ -3,6 +3,10 @@ param(
     [string]$TaskName = "QM_DriveGitExclusion_15min",
     [string]$RepoRoot = "C:\QM\repo",
     [string]$ScriptRelativePath = "infra\monitoring\Test-DriveGitExclusion.ps1",
+    [string]$PrimaryRepoForWorktrees = "C:\QM\repo",
+    [string]$OutputPath = "C:\QM\logs\infra\health\drive_git_exclusion_latest.json",
+    [bool]$IncludeGitWorktrees = $true,
+    [string]$AlertWebhookUrl = "",
     [int]$MinuteOffset = 6,
     [int]$EveryMinutes = 15,
     [switch]$RunNow
@@ -26,7 +30,9 @@ if ($startBoundary -le (Get-Date)) {
     $startBoundary = $startBoundary.AddMinutes($EveryMinutes)
 }
 
-$args = "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`""
+$args = "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`" -PrimaryRepoForWorktrees `"$PrimaryRepoForWorktrees`" -OutputPath `"$OutputPath`""
+if ($IncludeGitWorktrees) { $args += " -IncludeGitWorktrees" }
+if ($AlertWebhookUrl) { $args += " -AlertWebhookUrl `"$AlertWebhookUrl`"" }
 $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument $args -WorkingDirectory $RepoRoot
 $trigger = New-ScheduledTaskTrigger -Once -At $startBoundary -RepetitionInterval (New-TimeSpan -Minutes $EveryMinutes)
 $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -RunLevel Highest -LogonType ServiceAccount
