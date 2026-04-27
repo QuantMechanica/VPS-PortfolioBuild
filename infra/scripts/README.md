@@ -409,6 +409,17 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Invoke-QUA95BlockedHeartbeat.ps1`
 
+## `Run-QUA95CanonicalSnapshot.ps1`
+
+- One-command canonical QUA-95 blocked snapshot flow:
+  1. `Invoke-QUA95BlockedHeartbeat.ps1`
+  2. `Update-QUA95OpsBundleManifest.ps1`
+  3. `Test-QUA95OpsBundleManifest.ps1`
+- Purpose:
+  - avoids post-heartbeat manifest drift by always finishing with manifest resync + verification.
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Run-QUA95CanonicalSnapshot.ps1`
+
 ## `Install-QUA95BlockedHeartbeatTask.ps1`
 
 - Idempotently installs a Scheduler task that runs:
