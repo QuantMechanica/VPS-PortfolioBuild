@@ -471,9 +471,10 @@
 - One-command canonical QUA-95 blocked snapshot flow:
   1. `Invoke-QUA95BlockedHeartbeat.ps1`
   2. `Run-QUA95DirectVerifierProof.ps1`
-  3. `Test-QUA95TaskHealthActionWiring.ps1`
-  4. `Update-QUA95OpsBundleManifest.ps1`
-  5. `Test-QUA95OpsBundleManifest.ps1`
+  3. `Run-QUA95CustomVisibilityProof.ps1`
+  4. `Test-QUA95TaskHealthActionWiring.ps1`
+  5. `Update-QUA95OpsBundleManifest.ps1`
+  6. `Test-QUA95OpsBundleManifest.ps1`
 - Writes machine-readable run summary:
   - `docs\ops\QUA-95_CANONICAL_SNAPSHOT_2026-04-27.json`
 - Purpose:
@@ -494,6 +495,18 @@
   - script exits `0` when proof artifacts are written (even when verifier exits non-zero), and prints `verify_exit_code=<n>`.
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Run-QUA95DirectVerifierProof.ps1`
+
+## `Run-QUA95CustomVisibilityProof.ps1`
+
+- Runs custom-symbol visibility probe for `XTIUSD.DWX`:
+  - `python C:\QM\repo\infra\scripts\probe_custom_symbol_visibility.py --target XTIUSD.DWX`
+- Writes durable proof artifacts:
+  - `lessons-learned\evidence\2026-04-27_qua95_xtiusd_custom_visibility_probe_rerun.json`
+  - `docs\ops\QUA-95_CUSTOM_VISIBILITY_RERUN_2026-04-27.md`
+- Exit behavior:
+  - script exits `0` when proof artifacts are written (even when probe exits non-zero), and prints `probe_exit_code=<n>`.
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Run-QUA95CustomVisibilityProof.ps1`
 
 ## `Install-QUA95BlockedHeartbeatTask.ps1`
 
