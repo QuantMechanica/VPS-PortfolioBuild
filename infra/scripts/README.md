@@ -32,6 +32,17 @@
 - Example:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Seed-DwxSymbolHistory.ps1 -IssueId QUA-270 -SourceSymbol EURUSD -OutEvidenceJson docs\ops\QUA-270_T1_EURUSD_DWX_SEED_2026-04-27.json -OutSummaryMd docs\ops\QUA-270_T1_EURUSD_DWX_SEED_2026-04-27.md`
 
+## `rebuild_m1_from_ticks.py`
+
+- Streaming converter to rebuild TDM-style `_M1.csv` from full tick CSV.
+- Purpose: recover missing M1 history windows (for example 2024) when tick CSV is full-span but sidecar M1 is truncated.
+- Behavior:
+  - constant-memory minute aggregation (open/high/low/close/tick_count from bid)
+  - atomic write via `*.tmp` then replace
+  - SHA256 compare to avoid unnecessary file replacement
+- Example:
+  - `python C:\QM\repo\infra\scripts\rebuild_m1_from_ticks.py --tick-csv D:\QM\reports\setup\tick-data-timezone\EURUSD_GMT+2_US-DST.csv --m1-csv D:\QM\reports\setup\tick-data-timezone\EURUSD_GMT+2_US-DST_M1.csv`
+
 ## `dwx_hourly_check.py`
 
 - `spec_ok` is now evaluated by one shared helper (`is_symbol_spec_ok`) for both:
