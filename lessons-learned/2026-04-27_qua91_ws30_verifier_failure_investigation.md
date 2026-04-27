@@ -79,6 +79,29 @@ Implementation direction:
 - Replace one-shot full-span bar read in `verify_import.py` with chunked reads.
 - Gate bar verdict against accessible-history bounds (for example terminal `maxbars`) plus tail/head alignment, instead of requiring full sidecar `m1_count` from one API call.
 
+## WS30-focused verifier-equivalent probe (2026-04-27)
+
+Command:
+
+```powershell
+python infra/scripts/verify_import_chunked_probe.py --symbol WS30.DWX --chunk-days 20
+```
+
+Result:
+- `tick_head expected/got=1530493208796/1530493208796` (head OK)
+- `tick_tail expected/got=1775444399667/1775437255743` (tail shortfall `7143.924s`)
+- `mid_ticks_5min=1561` (non-zero)
+- `bars_oneshot_count=0` with `(-2, 'Terminal: Invalid params')`
+- `bars_chunked_count=99900` (`chunks=24`, `bad_chunks=0`)
+- `terminal_maxbars=100000`
+
+Disposition refinement:
+- `FAIL_bars` in current verifier is a query-shape defect.
+- After isolating that defect, WS30 still has a **tail lag** condition.
+- QUA-91 should remain **defer/fix** under verifier maintainer until:
+  1) verifier bar query is chunked, and
+  2) WS30 tail aligns on rerun.
+
 ## Durable change in this heartbeat
 
 - Added/extended tests for verifier fail-pattern classification in:

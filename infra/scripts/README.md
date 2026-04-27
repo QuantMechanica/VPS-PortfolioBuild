@@ -31,6 +31,14 @@
 - Default target is `WS30.DWX`; span comes from latest
   `imports\\done\\*_<symbol>.import.txt`.
 
+## `verify_import_chunked_probe.py`
+
+- Non-production probe that mirrors `verify_import.py` checks for one symbol.
+- Keeps tick checks intact, but compares:
+  - one-shot full-span M1 read (current verifier shape)
+  - chunked M1 range reads (diagnostic/fix candidate)
+- Helps decide whether `FAIL_bars` is query-shape/API-limit related vs data loss.
+
 ## `Invoke-VerifyDisposition.ps1`
 
 - Idempotent verifier rerun helper for issue triage.
