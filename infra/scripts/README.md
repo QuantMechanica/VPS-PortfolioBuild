@@ -14,6 +14,24 @@
 - Example:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Deploy-QM5SmokeExpertToT1.ps1 -EvidenceJsonPath C:\QM\repo\docs\ops\QUA-269_DEPLOY_QM5_1001_FRAMEWORK_SMOKE_2026-04-27.json`
 
+## `Seed-DwxSymbolHistory.ps1`
+
+- Idempotent single-symbol DWX seed/repair helper for T1-T5 custom-symbol history.
+- Default scope targets QUA-270 (`EURUSD` -> `EURUSD.DWX` on `D:\QM\mt5\T1`).
+- Behavior:
+  - probes runtime visibility (`probe_custom_symbol_visibility.py`) before acting
+  - no-op when target bars are already visible
+  - check-then-act queue staging (`prepare_import.py`) with duplicate queue guard
+  - optional `-AllowDeleteReimport` fallback for "symbol exists but no bars visible" recovery
+  - waits for queue convergence, then runs symbol-scoped `verify_import.py`
+  - emits durable JSON + markdown evidence outputs under `docs\ops\`
+- Safety:
+  - refuses T6 paths
+  - requires stable CSV inputs (default `30` minutes) before staging
+  - delete+reimport path is opt-in only (`-AllowDeleteReimport`)
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Seed-DwxSymbolHistory.ps1 -IssueId QUA-270 -SourceSymbol EURUSD -OutEvidenceJson docs\ops\QUA-270_T1_EURUSD_DWX_SEED_2026-04-27.json -OutSummaryMd docs\ops\QUA-270_T1_EURUSD_DWX_SEED_2026-04-27.md`
+
 ## `dwx_hourly_check.py`
 
 - `spec_ok` is now evaluated by one shared helper (`is_symbol_spec_ok`) for both:

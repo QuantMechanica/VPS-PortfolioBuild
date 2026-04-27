@@ -1,0 +1,227 @@
+﻿{
+    "issue":  "QUA-270",
+    "generated_at_local":  "2026-04-27T20:11:03+02:00",
+    "duration_seconds":  984.088,
+    "terminal_root":  "D:\\QM\\mt5\\T1",
+    "terminal_exe":  "D:\\QM\\mt5\\T1\\terminal64.exe",
+    "source_symbol":  "EURUSD",
+    "target_symbol":  "EURUSD.DWX",
+    "status":  "restored",
+    "action":  "delete_reimport",
+    "queue_wait_seconds":  320,
+    "queue_timed_out":  false,
+    "csv_inputs":  {
+                       "tick_csv":  "D:\\QM\\reports\\setup\\tick-data-timezone\\EURUSD_GMT+2_US-DST.csv",
+                       "tick_bytes":  11837268871,
+                       "tick_last_write_local":  "2026-04-25T11:37:06+02:00",
+                       "m1_csv":  "D:\\QM\\reports\\setup\\tick-data-timezone\\EURUSD_GMT+2_US-DST_M1.csv",
+                       "m1_bytes":  24823992,
+                       "m1_last_write_local":  "2026-04-25T11:25:16+02:00",
+                       "min_stable_minutes":  30,
+                       "stable_before_local":  "2026-04-27T19:24:39+02:00",
+                       "stable":  true
+                   },
+    "queue":  {
+                  "existing_queue_sidecar":  null,
+                  "existing_done_sidecar":  null,
+                  "latest_done_sidecar":  "D:\\QM\\mt5\\T1\\MQL5\\Files\\imports\\done\\20260427_201058_EURUSD.DWX.import.txt",
+                  "latest_done_after_start":  true
+              },
+    "stage_prepare_import":  {
+                                 "script":  "D:\\QM\\mt5\\T1\\dwx_import\\prepare_import.py",
+                                 "exit_code":  0,
+                                 "output":  [
+                                                "[stage] tick csv : D:\\QM\\reports\\setup\\tick-data-timezone\\EURUSD_GMT+2_US-DST.csv  (11,837,268,871 bytes)",
+                                                "[stage] m1 csv   : D:\\QM\\reports\\setup\\tick-data-timezone\\EURUSD_GMT+2_US-DST_M1.csv  (24,823,992 bytes)",
+                                                "[stage] root     : EURUSD",
+                                                "[stage] target   : EURUSD.DWX",
+                                                "[stage] source   : EURUSD",
+                                                "[check] verifying CSV tails are parseable (truncation/mid-download guard) ...",
+                                                "[stage] src path : \u0027Forex\\\\EURUSD\u0027",
+                                                "[stage] target group: \u0027Custom\\\\Forex\u0027",
+                                                "ERROR: target symbol \u0027EURUSD.DWX\u0027 already exists (custom=True, path=\u0027Custom\\\\Forex\\\\EURUSD.DWX\u0027). Refusing to clobber. Delete it in MT5 first if you really want to re-import.",
+                                                "[stage] tick csv : D:\\QM\\reports\\setup\\tick-data-timezone\\EURUSD_GMT+2_US-DST.csv  (11,837,268,871 bytes)",
+                                                "[stage] m1 csv   : D:\\QM\\reports\\setup\\tick-data-timezone\\EURUSD_GMT+2_US-DST_M1.csv  (24,823,992 bytes)",
+                                                "[stage] root     : EURUSD",
+                                                "[stage] target   : EURUSD.DWX",
+                                                "[stage] source   : EURUSD",
+                                                "[check] verifying CSV tails are parseable (truncation/mid-download guard) ...",
+                                                "[stage] src path : \u0027Forex\\\\EURUSD\u0027",
+                                                "[stage] target group: \u0027Custom\\\\Forex\u0027",
+                                                "[conv ] ticks -\u003e D:\\QM\\mt5\\T1\\MQL5\\Files\\imports\\EURUSD.DWX.tick.bin.tmp",
+                                                "        290,296,266 ticks; first=2017-10-02 00:05:00.032000; last=2026-04-06 02:59:59.967000; size=6,967,110,384 bytes",
+                                                "[conv ] m1    -\u003e D:\\QM\\mt5\\T1\\MQL5\\Files\\imports\\EURUSD.DWX.m1.bin.tmp",
+                                                "        445,023 bars; first=2025-01-02 00:04:00; last=2026-04-14 02:59:00; size=21,361,104 bytes",
+                                                "[stage] sidecar  -\u003e D:\\QM\\mt5\\T1\\MQL5\\Files\\imports\\EURUSD.DWX.import.txt",
+                                                "[stage] DONE. Drag MQL5 script \u0027Import_DWX_From_Bin\u0027 onto any chart to process this and any other queued job."
+                                            ]
+                             },
+    "runtime_recovery":  {
+                             "max_restart_attempts":  2,
+                             "post_start_wait_seconds":  20,
+                             "attempts":  [
+                                              {
+                                                  "attempt":  1,
+                                                  "stopped_process_count":  1,
+                                                  "started_pid":  84248,
+                                                  "target_range_m1":  0,
+                                                  "target_pos_m1":  0,
+                                                  "source_range_m1":  948,
+                                                  "source_pos_m1":  10,
+                                                  "isolated_custom_failure":  true,
+                                                  "restored":  false
+                                              },
+                                              {
+                                                  "attempt":  2,
+                                                  "stopped_process_count":  1,
+                                                  "started_pid":  43056,
+                                                  "target_range_m1":  0,
+                                                  "target_pos_m1":  0,
+                                                  "source_range_m1":  948,
+                                                  "source_pos_m1":  10,
+                                                  "isolated_custom_failure":  true,
+                                                  "restored":  false
+                                              }
+                                          ]
+                         },
+    "delete_reimport":  {
+                            "enabled":  true,
+                            "attempted":  true,
+                            "compile_exit_code":  1,
+                            "compile_log":  "D:\\QM\\mt5\\T1\\MQL5\\Scripts\\Delete_One_Custom_Symbol_QM.compile.log",
+                            "delete_run":  {
+                                               "pid":  30676,
+                                               "timed_out":  false,
+                                               "exit_code":  1
+                                           },
+                            "restage_exit_code":  0
+                        },
+    "verify_import":  {
+                          "ran":  true,
+                          "exit_code":  0,
+                          "stdout":  [
+                                         "[             OK] EURUSD.DWX: source=EURUSD; custom_tv=1.0; broker_tv=1.0; rel_err=0.0000; head_ms expected=1506902700032/got=1506902700032; tail_ms expected=1775444399967/got=1775437258545; tail_basis=source; tail_ref_ms=1775437258868; tail_delta_ms=-323; mid_ticks_5min=77; bars_sidecar_expected=445,023; bars_one_shot=0; bars_one_shot_err=(-2, \u0027Terminal: Invalid params\u0027); bars_from_pos=88,939; bars_chunked=99,904; bars_basis=range; maxbars=100,000; bars_expected_accessible=100,000; bars_drift=-96; bad_chunks=0; path=Custom\\Forex\\EURUSD.DWX"
+                                     ]
+                      },
+    "probe":  {
+                  "pre":  {
+                              "probe_exit_code":  1,
+                              "probe_stdout":  [
+                                                   "target=EURUSD.DWX source=EURUSD isolated_custom_bars_visibility_failure=True",
+                                                   "target bars(range/pos)=0/0 source bars(range/pos)=947/10",
+                                                   "json_out=C:\\QM\\repo\\infra\\smoke\\qua270_seed_probe_20260427_195439.json"
+                                               ],
+                              "payload":  {
+                                              "target":  "EURUSD.DWX",
+                                              "source":  "EURUSD",
+                                              "isolated_custom_bars_visibility_failure":  true,
+                                              "target_probe":  {
+                                                                   "symbol":  "EURUSD.DWX",
+                                                                   "rates_range_m1_count":  0,
+                                                                   "rates_range_m1_err":  [
+                                                                                              1,
+                                                                                              "Success"
+                                                                                          ],
+                                                                   "rates_from_pos_m1_count":  0,
+                                                                   "rates_from_pos_m1_err":  [
+                                                                                                 -1,
+                                                                                                 "Terminal: Call failed"
+                                                                                             ],
+                                                                   "ticks_from_count":  0,
+                                                                   "ticks_from_err":  [
+                                                                                          1,
+                                                                                          "Success"
+                                                                                      ],
+                                                                   "lookback_days":  2,
+                                                                   "tick_minutes":  10
+                                                               },
+                                              "source_probe":  {
+                                                                   "symbol":  "EURUSD",
+                                                                   "rates_range_m1_count":  947,
+                                                                   "rates_range_m1_err":  [
+                                                                                              1,
+                                                                                              "Success"
+                                                                                          ],
+                                                                   "rates_from_pos_m1_count":  10,
+                                                                   "rates_from_pos_m1_err":  [
+                                                                                                 1,
+                                                                                                 "Success"
+                                                                                             ],
+                                                                   "ticks_from_count":  200,
+                                                                   "ticks_from_err":  [
+                                                                                          1,
+                                                                                          "Success"
+                                                                                      ],
+                                                                   "lookback_days":  2,
+                                                                   "tick_minutes":  10
+                                                               }
+                                          },
+                              "target_range_m1":  0,
+                              "target_pos_m1":  0,
+                              "source_range_m1":  947,
+                              "source_pos_m1":  10,
+                              "isolated_custom_failure":  true,
+                              "restored":  false
+                          },
+                  "post":  {
+                               "probe_exit_code":  0,
+                               "probe_stdout":  [
+                                                    "target=EURUSD.DWX source=EURUSD isolated_custom_bars_visibility_failure=False",
+                                                    "target bars(range/pos)=0/10 source bars(range/pos)=964/10",
+                                                    "json_out=C:\\QM\\repo\\infra\\smoke\\qua270_seed_probe_20260427_195439.json"
+                                                ],
+                               "payload":  {
+                                               "target":  "EURUSD.DWX",
+                                               "source":  "EURUSD",
+                                               "isolated_custom_bars_visibility_failure":  false,
+                                               "target_probe":  {
+                                                                    "symbol":  "EURUSD.DWX",
+                                                                    "rates_range_m1_count":  0,
+                                                                    "rates_range_m1_err":  [
+                                                                                               1,
+                                                                                               "Success"
+                                                                                           ],
+                                                                    "rates_from_pos_m1_count":  10,
+                                                                    "rates_from_pos_m1_err":  [
+                                                                                                  1,
+                                                                                                  "Success"
+                                                                                              ],
+                                                                    "ticks_from_count":  0,
+                                                                    "ticks_from_err":  [
+                                                                                           1,
+                                                                                           "Success"
+                                                                                       ],
+                                                                    "lookback_days":  2,
+                                                                    "tick_minutes":  10
+                                                                },
+                                               "source_probe":  {
+                                                                    "symbol":  "EURUSD",
+                                                                    "rates_range_m1_count":  964,
+                                                                    "rates_range_m1_err":  [
+                                                                                               1,
+                                                                                               "Success"
+                                                                                           ],
+                                                                    "rates_from_pos_m1_count":  10,
+                                                                    "rates_from_pos_m1_err":  [
+                                                                                                  1,
+                                                                                                  "Success"
+                                                                                              ],
+                                                                    "ticks_from_count":  200,
+                                                                    "ticks_from_err":  [
+                                                                                           1,
+                                                                                           "Success"
+                                                                                       ],
+                                                                    "lookback_days":  2,
+                                                                    "tick_minutes":  10
+                                                                }
+                                           },
+                               "target_range_m1":  0,
+                               "target_pos_m1":  10,
+                               "source_range_m1":  964,
+                               "source_pos_m1":  10,
+                               "isolated_custom_failure":  false,
+                               "restored":  true
+                           }
+              },
+    "next_action":  "Run Step 22 Model-4 smoke rerun on T1 with EURUSD.DWX and attach evidence."
+}
