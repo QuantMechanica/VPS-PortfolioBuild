@@ -31,6 +31,10 @@ if (-not (Test-Path -LiteralPath $evidenceFull)) {
 
 $evidence = Get-Content -LiteralPath $evidenceFull -Raw | ConvertFrom-Json
 $capturedAt = (Get-Date).ToString('yyyy-MM-ddTHH:mm:ssK')
+$evidence | Add-Member -NotePropertyName issue -NotePropertyValue 'QUA-95' -Force
+$evidence | Add-Member -NotePropertyName captured_at_local -NotePropertyValue $capturedAt -Force
+$evidence | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $evidenceFull -Encoding UTF8
+
 $isolatedFailure = [bool]$evidence.isolated_custom_bars_visibility_failure
 $targetRange = [int]$evidence.target_probe.rates_range_m1_count
 $targetPos = [int]$evidence.target_probe.rates_from_pos_m1_count

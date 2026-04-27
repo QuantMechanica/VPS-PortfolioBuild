@@ -70,7 +70,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - One-command heartbeat wrapper for blocked QUA-95 operations.
   - Runs blocker refresh + infra audit + blocked assertion sync + blocked-invariant check + unblock-readiness snapshot + unblock-readiness summary + automation-health snapshot + audit-signal snapshot + audit-signal validation + ops-suite snapshot + ops-bundle manifest, then writes consolidated status JSON.
 - `scripts/Run-QUA95CanonicalSnapshot.ps1`
-  - Runs blocked heartbeat, direct verifier proof, custom visibility proof, validates task-health action wiring, then forces final ops-bundle manifest resync + integrity verification in one command.
+  - Runs direct verifier proof + custom visibility proof first, then blocked heartbeat, heartbeat/evidence coherence check, task-health action wiring check, and finally forces ops-bundle manifest resync + integrity verification in one command.
   - Emits machine-readable snapshot summary to `docs/ops/QUA-95_CANONICAL_SNAPSHOT_2026-04-27.json`.
 - `scripts/Run-QUA95DirectVerifierProof.ps1`
   - Runs direct verifier for `XTIUSD.DWX`, captures raw log, and writes deterministic direct-rerun proof JSON/markdown artifacts.
@@ -108,6 +108,21 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Detects stale Paperclip execution locks (`executionLockedAt` stale while `activeRun=null`) on targeted assignees/issues.
   - Default mode is monitor-only (no mutations); optional `-AutoRecover` performs PATCH-only assignee-cycle recovery.
   - Adds `X-Paperclip-Run-Id` header on all mutating PATCH calls.
+- `scripts/Invoke-GitWithMutex.ps1`
+  - Serializes git writes per-repo via a global named mutex (`Global\QM_GIT_REPO_MUTEX_<hash>`).
+  - Use as wrapper for commit/push automation to enforce one writer process per repo.
+  - Safe to re-run and side-effect free beyond the wrapped git command.
+- `monitoring/Invoke-GitIndexLockMonitor.ps1`
+  - Dedicated stale `.git/index.lock` detector for PC1-00.
+  - Optional guarded cleanup mode (`-AutoCleanup`) only removes stale lock when no `git.exe` process references the repo.
+  - Writes machine-readable output to `C:\QM\logs\infra\health\git_index_lock_monitor_latest.json`.
+- `scripts/Install-GitIndexLockMonitorTask.ps1`
+  - Registers Task Scheduler job `QM_GitIndexLockMonitor_10min` as `SYSTEM`.
+  - Runs `monitoring/Invoke-GitIndexLockMonitor.ps1 -StaleAfterMinutes 20 -FailOnFinding`.
+  - Safe to re-run (`Register-ScheduledTask -Force`) and overlap-safe (`MultipleInstances=IgnoreNew`).
+- `scripts/Ensure-AgentWorktree.ps1`
+  - Converges per-agent worktree paths under `C:\QM\worktrees\` for CWD isolation.
+  - Refuses non-empty non-worktree target paths and supports idempotent re-runs.
 - `monitoring/Test-QUA95BlockerTaskHealth.ps1`
   - Validates task existence, enabled state, last result, and staleness window for `QM_QUA95_BlockerRefresh`.
   - Validates QUA-95 transition payload consistency via `scripts/Test-QUA95IssueTransitionPayload.ps1`.
@@ -199,6 +214,12 @@ Install the scheduler task (idempotent):
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-PaperclipStaleLockWatchdogTask.ps1
 ```
 
+Git index-lock monitor (every 10 minutes, PC1-00):
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-GitIndexLockMonitorTask.ps1 -EveryMinutes 10 -StaleAfterMinutes 20 -FailOnFinding
+```
+
 Aggregator state writer (every minute):
 
 ```powershell
@@ -227,6 +248,12 @@ Recovery orphan cleanup (daily schedule is managed by `tasks/Register-QMInfraTas
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Remove-RecoveryOrphans.ps1
+```
+
+Agent worktree isolation (idempotent, per agent key):
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Ensure-AgentWorktree.ps1 -AgentKey devops -CreateBranchIfMissing
 ```
 
 ## Non-goals

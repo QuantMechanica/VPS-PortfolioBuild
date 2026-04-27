@@ -21,19 +21,34 @@ foreach ($path in @($heartbeatScript, $directProofScript, $customVisibilityProof
     }
 }
 
-$heartbeatOut = & $heartbeatScript 2>&1
-$heartbeatCode = $LASTEXITCODE
-($heartbeatOut | ForEach-Object { $_.ToString() }) | Write-Output
-if ($heartbeatCode -ne 0) {
-    throw ("Heartbeat failed: exit_code={0}" -f $heartbeatCode)
-}
-
 $bundleUpdateCode = -1
 $bundleTestCode = -1
 $taskHealthWiringCode = -1
 $directProofCode = -1
 $customVisibilityProofCode = -1
 $heartbeatCustomVisibilityCode = -1
+$heartbeatCode = -1
+
+$directProofOut = & $directProofScript 2>&1
+$directProofCode = $LASTEXITCODE
+($directProofOut | ForEach-Object { $_.ToString() }) | Write-Output
+if ($directProofCode -ne 0) {
+    throw ("Direct verifier proof failed: exit_code={0}" -f $directProofCode)
+}
+
+$customVisibilityProofOut = & $customVisibilityProofScript 2>&1
+$customVisibilityProofCode = $LASTEXITCODE
+($customVisibilityProofOut | ForEach-Object { $_.ToString() }) | Write-Output
+if ($customVisibilityProofCode -ne 0) {
+    throw ("Custom visibility proof failed: exit_code={0}" -f $customVisibilityProofCode)
+}
+
+$heartbeatOut = & $heartbeatScript 2>&1
+$heartbeatCode = $LASTEXITCODE
+($heartbeatOut | ForEach-Object { $_.ToString() }) | Write-Output
+if ($heartbeatCode -ne 0) {
+    throw ("Heartbeat failed: exit_code={0}" -f $heartbeatCode)
+}
 
 $blockerPath = Join-Path $RepoRoot 'docs\ops\QUA-95_XTIUSD_BLOCKER_STATUS_2026-04-27.json'
 $auditSignalPath = Join-Path $RepoRoot 'docs\ops\QUA-95_AUDIT_SIGNAL_2026-04-27.json'
@@ -96,20 +111,6 @@ $heartbeatCustomVisibilityCode = $LASTEXITCODE
 ($heartbeatCustomVisibilityOut | ForEach-Object { $_.ToString() }) | Write-Output
 if ($heartbeatCustomVisibilityCode -ne 0) {
     throw ("Heartbeat custom-visibility check failed: exit_code={0}" -f $heartbeatCustomVisibilityCode)
-}
-
-$directProofOut = & $directProofScript 2>&1
-$directProofCode = $LASTEXITCODE
-($directProofOut | ForEach-Object { $_.ToString() }) | Write-Output
-if ($directProofCode -ne 0) {
-    throw ("Direct verifier proof failed: exit_code={0}" -f $directProofCode)
-}
-
-$customVisibilityProofOut = & $customVisibilityProofScript 2>&1
-$customVisibilityProofCode = $LASTEXITCODE
-($customVisibilityProofOut | ForEach-Object { $_.ToString() }) | Write-Output
-if ($customVisibilityProofCode -ne 0) {
-    throw ("Custom visibility proof failed: exit_code={0}" -f $customVisibilityProofCode)
 }
 
 $taskHealthWiringOut = & $taskHealthWiringScript 2>&1

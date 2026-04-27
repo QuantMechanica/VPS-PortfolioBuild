@@ -325,6 +325,7 @@
   - `docs\ops\QUA-95_XTIUSD_BLOCKER_STATUS_2026-04-27.json`
 - Checks:
   - issue/symbol identity
+  - evidence freshness (`captured_at_local`) within max-age window (`-MaxEvidenceAgeMinutes`, default `240`)
   - blocked/defer consistency when bars are zero
   - proof markdown contains expected heading/symbol
 - Exit codes:
@@ -341,6 +342,7 @@
 - Cross-checks with blocker status:
   - `docs\ops\QUA-95_XTIUSD_BLOCKER_STATUS_2026-04-27.json`
 - Checks:
+  - evidence freshness (`captured_at_local`) within max-age window (`-MaxEvidenceAgeMinutes`, default `240`; falls back to evidence file write-time for legacy artifacts)
   - target/source symbol identity
   - non-negative bars counters
   - blocked/defer consistency when isolated custom visibility failure is true
@@ -377,7 +379,7 @@
   - `docs\ops\QUA-95_CUSTOM_VISIBILITY_RERUN_2026-04-27.md`
 - Checks:
   - snapshot identity/flow fields
-  - step exit codes (including `custom_visibility_proof_exit_code` and `heartbeat_custom_visibility_exit_code`)
+  - step exit codes (including direct verifier proof, custom visibility proof, heartbeat custom-visibility check, and task-health wiring)
   - blocker state/disposition/bars consistency
   - audit-signal count consistency
 - Exit codes:
@@ -509,9 +511,9 @@
 ## `Run-QUA95CanonicalSnapshot.ps1`
 
 - One-command canonical QUA-95 blocked snapshot flow:
-  1. `Invoke-QUA95BlockedHeartbeat.ps1`
-  2. `Run-QUA95DirectVerifierProof.ps1`
-  3. `Run-QUA95CustomVisibilityProof.ps1`
+  1. `Run-QUA95DirectVerifierProof.ps1`
+  2. `Run-QUA95CustomVisibilityProof.ps1`
+  3. `Invoke-QUA95BlockedHeartbeat.ps1`
   4. `Test-QUA95HeartbeatCustomVisibility.ps1`
   5. `Test-QUA95TaskHealthActionWiring.ps1`
   6. `Update-QUA95OpsBundleManifest.ps1`

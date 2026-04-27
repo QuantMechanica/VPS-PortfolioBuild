@@ -1,6 +1,6 @@
 ﻿{
     "issue":  "QUA-95",
-    "generated_at_local":  "2026-04-27T13:40:47+02:00",
+    "generated_at_local":  "2026-04-27T13:48:04+02:00",
     "flow":  "qua95_canonical_snapshot",
     "command":  "Run-QUA95CanonicalSnapshot.ps1",
     "command_exit_code":  0,

@@ -24,9 +24,9 @@ status=ok flow=qua95_canonical_snapshot
 ## Notes
 
 - This runner executes:
-  1. `Invoke-QUA95BlockedHeartbeat.ps1`
-  2. `Run-QUA95DirectVerifierProof.ps1`
-  3. `Run-QUA95CustomVisibilityProof.ps1`
+  1. `Run-QUA95DirectVerifierProof.ps1`
+  2. `Run-QUA95CustomVisibilityProof.ps1`
+  3. `Invoke-QUA95BlockedHeartbeat.ps1`
   4. `Test-QUA95HeartbeatCustomVisibility.ps1`
   5. `Test-QUA95TaskHealthActionWiring.ps1`
   6. `Update-QUA95OpsBundleManifest.ps1`

@@ -14,11 +14,11 @@ python C:\QM\repo\infra\scripts\probe_custom_symbol_visibility.py --target XTIUS
 - probe exit code: 1
 - isolated custom bars visibility failure: True
 - target bars (range/pos): 0/0
-- source bars (range/pos): 521/10
+- source bars (range/pos): 528/10
 - target ticks: 0
 - source ticks: 200
 - evidence json: C:\QM\repo\lessons-learned\evidence\2026-04-27_qua95_xtiusd_custom_visibility_probe_rerun.json
-- captured at: 2026-04-27T13:40:47+02:00
+- captured at: 2026-04-27T13:47:22+02:00
 
 ## Disposition
 

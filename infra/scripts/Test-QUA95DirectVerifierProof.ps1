@@ -3,7 +3,8 @@ param(
     [string]$RepoRoot = 'C:\QM\repo',
     [string]$EvidencePath = 'lessons-learned\evidence\2026-04-27_qua95_xtiusd_direct_verify_rerun.json',
     [string]$ProofPath = 'docs\ops\QUA-95_DIRECT_VERIFIER_RERUN_2026-04-27.md',
-    [string]$BlockerPath = 'docs\ops\QUA-95_XTIUSD_BLOCKER_STATUS_2026-04-27.json'
+    [string]$BlockerPath = 'docs\ops\QUA-95_XTIUSD_BLOCKER_STATUS_2026-04-27.json',
+    [int]$MaxEvidenceAgeMinutes = 240
 )
 
 Set-StrictMode -Version Latest
@@ -30,6 +31,20 @@ $proof = Get-Content -LiteralPath $proofFull -Raw
 
 if ([string]$evidence.issue -ne 'QUA-95') { Fail "evidence_issue_mismatch" }
 if ([string]$evidence.symbol -ne 'XTIUSD.DWX') { Fail "evidence_symbol_mismatch" }
+
+$capturedAtRaw = [string]$evidence.captured_at_local
+if ([string]::IsNullOrWhiteSpace($capturedAtRaw)) { Fail "evidence_captured_at_missing" }
+
+$capturedAt = [DateTimeOffset]::MinValue
+if (-not [DateTimeOffset]::TryParse($capturedAtRaw, [ref]$capturedAt)) {
+    Fail "evidence_captured_at_invalid"
+}
+
+$evidenceAgeMinutes = [math]::Floor(((Get-Date).ToUniversalTime() - $capturedAt.UtcDateTime).TotalMinutes)
+if ($evidenceAgeMinutes -lt 0) { Fail "evidence_captured_at_in_future" }
+if ($evidenceAgeMinutes -gt $MaxEvidenceAgeMinutes) {
+    Fail ("evidence_too_old age_minutes={0} max_minutes={1}" -f $evidenceAgeMinutes, $MaxEvidenceAgeMinutes)
+}
 
 $verifyExit = [int]$evidence.verify_exit_code
 $barsOneShot = [int]$evidence.bars_one_shot
