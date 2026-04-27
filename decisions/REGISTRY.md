@@ -24,7 +24,7 @@ Conventions:
 | DL-023 | 2026-04-27 | CEO Autonomy Waiver, broadened scope (v2) — additive to DL-017 | [`2026-04-27_ceo_autonomy_waiver_v2.md`](./2026-04-27_ceo_autonomy_waiver_v2.md) | [QUA-188](https://paperclip.local/QUA/issues/QUA-188) (directive) / [QUA-192](https://paperclip.local/QUA/issues/QUA-192) (recording) |
 | DL-024 | 2026-04-27 | CEO scheduled heartbeat enablement (3600s) — under DL-023 authority | [`2026-04-27_ceo_scheduled_heartbeat.md`](./2026-04-27_ceo_scheduled_heartbeat.md) | [QUA-210](https://paperclip.local/QUA/issues/QUA-210) (change) / [QUA-214](https://paperclip.local/QUA/issues/QUA-214) (recording) |
 | DL-025 | 2026-04-27 | T6 Deploy Boundary Refinement — deploy of approved EAs/setfiles/templates/profiles under manifest in scope; AutoTrading toggle stays manual OWNER | [`DL-025_t6_deploy_boundary_refinement.md`](./DL-025_t6_deploy_boundary_refinement.md) | [QUA-209](https://paperclip.local/QUA/issues/QUA-209) (parent) / [QUA-226](https://paperclip.local/QUA/issues/QUA-226) (recording) |
-| DL-026 | 2026-04-27 | Coding-agent done criteria requires commit hash in close-out comment | [`DL-026_coding_agent_done_requires_commit_hash.md`](./DL-026_coding_agent_done_requires_commit_hash.md) | QUA-239 |
+| DL-026 | 2026-04-27 | Commit-Hash-In-Close-Out Rule for Coding-Agent `done` Deliverables | [`2026-04-27_commit_hash_in_close_out_rule.md`](./2026-04-27_commit_hash_in_close_out_rule.md) | [QUA-234](/QUA/issues/QUA-234) (ratification) / [QUA-238](/QUA/issues/QUA-238) (recording) |
 
 ## Cross-links
 
@@ -33,6 +33,8 @@ Conventions:
 - **DL-023 ↔ DL-024.** DL-024 is the first concrete operational change recorded under the DL-023 broadened-authority waiver (class 4: internal process choices → heartbeat cadence). DL-024 cites DL-023 as its authority basis.
 - **QUA-210 ↔ DL-024.** Forward link: QUA-210 → DL-024 (recorded via QUA-214). Reverse link: [`2026-04-27_ceo_scheduled_heartbeat.md`](./2026-04-27_ceo_scheduled_heartbeat.md) cites QUA-210 as the source change.
 - **QUA-209 ↔ DL-025.** Forward link: QUA-209 → DL-025 (recorded via QUA-226). Reverse link: [`DL-025_t6_deploy_boundary_refinement.md`](./DL-025_t6_deploy_boundary_refinement.md) cites QUA-209 as the parent recording task. DL-025 is an OWNER directive on V5 hard rules and is independent of DL-017 / DL-023 (which govern CEO unilateral authority).
+- **DL-023 ↔ DL-026.** DL-026 is the second concrete process change recorded under the DL-023 broadened-authority waiver (class 4: internal process choices → agent-vs-agent escalation rules). DL-026 cites DL-023 as its authority basis.
+- **QUA-234 ↔ DL-026.** Forward link: QUA-234 → DL-026 (recorded via QUA-238). Reverse link: [`2026-04-27_commit_hash_in_close_out_rule.md`](./2026-04-27_commit_hash_in_close_out_rule.md) cites QUA-234 as the ratification task and QUA-180 as the original P0 fix. The CTO prompt-language patch is tracked separately as [QUA-239](/QUA/issues/QUA-239) (OWNER-gated, out of Doc-KM scope).
 
 ## Backfilling External entries
 
