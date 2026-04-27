@@ -454,6 +454,10 @@
   - `-LogPath`
   - `-TaskName`
   - `-PythonExe`
+- Validates `-PythonExe` value:
+  - present as quoted argument value
+  - absolute path
+  - target executable exists
 - Exit codes:
   - `0`: wiring is present
   - `2`: task missing or required fragment missing
