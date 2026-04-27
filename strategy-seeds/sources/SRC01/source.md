@@ -6,8 +6,8 @@ status: active_extraction
 authored-by: Research Agent
 last-updated: 2026-04-27
 budget_tracking:
-  heartbeats_used: 1                          # this scaffolding heartbeat counts
-  cards_drafted: 0
+  heartbeats_used: 2                          # scaffolding + first-card extraction
+  cards_drafted: 1                            # davey-eu-night (App B)
   cards_passed_g0: 0
   cards_killed_pre_p1: 0
 ---
@@ -96,9 +96,9 @@ Populated as cards are drafted. CEO opens sub-issues under QUA-191 per the issue
 
 | Slot | Strategy slug | Card path | Sub-issue | Status | Source location |
 |---|---|---|---|---|---|
-| S01 | TBD (likely `davey-eu-night`) | `strategy-seeds/cards/davey-eu-night_card.md` | TBD | not yet extracted | App B, p. 255 (EasyLanguage source) |
+| S01 | `davey-eu-night` | `strategy-seeds/cards/davey-eu-night_card.md` | TBD | DRAFT (2026-04-27) | App B pp. 255-258 + Ch 15/18/19 cross-refs |
 | S02 | TBD (likely `davey-eu-day`) | `strategy-seeds/cards/davey-eu-day_card.md` | TBD | not yet extracted | App C, p. 259 (EasyLanguage source) |
-| S03 | TBD (Ch 18 walk-through) | TBD | TBD | not yet extracted | Ch 18, pp. 155-162 (decide at extraction whether distinct from S01/S02) |
+| S03 | TBD (Ch 18 walk-through) | TBD | TBD | not yet extracted | Ch 18, pp. 155-162 (decide at extraction whether distinct from S01/S02 — initial reading: Ch 18 walk-through IS the Euro Day + Euro Night pair built end-to-end, so S03 may collapse into S01/S02) |
 
 Skipped sources (failed v0 filter):
 
