@@ -252,6 +252,7 @@
   1. `Run-QUA95BlockerRefresh.ps1`
   2. `Invoke-InfraAudit.ps1`
   3. `Update-QUA95BlockedAssertion.ps1`
+  4. `Write-QUA95OpsSuiteSnapshot.ps1`
 - Reads canonical outputs and writes consolidated summary:
   - `docs\ops\QUA-95_BLOCKED_HEARTBEAT_2026-04-27.json`
 - Supports:
