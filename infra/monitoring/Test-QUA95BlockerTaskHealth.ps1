@@ -120,7 +120,7 @@ if (-not (Test-Path -LiteralPath $CanonicalSnapshotFreshnessCheckScript)) {
     exit 2
 }
 
-$canonicalFreshnessOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $CanonicalSnapshotFreshnessCheckScript 2>&1
+$canonicalFreshnessOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $CanonicalSnapshotFreshnessCheckScript -MaxAgeMinutes $MaxAgeMinutes 2>&1
 $canonicalFreshnessCode = $LASTEXITCODE
 if ($canonicalFreshnessCode -ne 0) {
     $canonicalFreshnessText = ($canonicalFreshnessOut | ForEach-Object { $_.ToString() }) -join '; '
@@ -133,7 +133,7 @@ if (-not (Test-Path -LiteralPath $CustomVisibilityProofCheckScript)) {
     exit 2
 }
 
-$customVisibilityOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $CustomVisibilityProofCheckScript 2>&1
+$customVisibilityOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $CustomVisibilityProofCheckScript -MaxEvidenceAgeMinutes $MaxAgeMinutes 2>&1
 $customVisibilityCode = $LASTEXITCODE
 if ($customVisibilityCode -ne 0) {
     $customVisibilityText = ($customVisibilityOut | ForEach-Object { $_.ToString() }) -join '; '
@@ -146,7 +146,7 @@ if (-not (Test-Path -LiteralPath $DirectVerifierProofCheckScript)) {
     exit 2
 }
 
-$directVerifierProofOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $DirectVerifierProofCheckScript 2>&1
+$directVerifierProofOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $DirectVerifierProofCheckScript -MaxEvidenceAgeMinutes $MaxAgeMinutes 2>&1
 $directVerifierProofCode = $LASTEXITCODE
 if ($directVerifierProofCode -ne 0) {
     $directVerifierProofText = ($directVerifierProofOut | ForEach-Object { $_.ToString() }) -join '; '

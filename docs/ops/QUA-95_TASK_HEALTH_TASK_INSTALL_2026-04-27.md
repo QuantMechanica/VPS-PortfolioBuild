@@ -132,3 +132,7 @@ Preview verification now also requires:
 - preview action contains `-FailureSignatureCheckScript "C:\QM\repo\infra\scripts\Test-QUA95FailureSignature.ps1"`
 - `preview_blocker_refresh_action_wiring_check_script=C:\QM\repo\infra\scripts\Test-QUA95BlockerRefreshActionWiring.ps1`
 - preview action contains `-BlockerRefreshActionWiringCheckScript "C:\QM\repo\infra\scripts\Test-QUA95BlockerRefreshActionWiring.ps1"`
+- freshness propagation: preview action includes `-MaxAgeMinutes 125`, and runtime monitor passes this value into:
+  - `Test-QUA95CanonicalSnapshotFreshness.ps1 -MaxAgeMinutes 125`
+  - `Test-QUA95DirectVerifierProof.ps1 -MaxEvidenceAgeMinutes 125`
+  - `Test-QUA95CustomVisibilityProof.ps1 -MaxEvidenceAgeMinutes 125`
