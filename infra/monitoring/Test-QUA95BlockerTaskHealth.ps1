@@ -3,7 +3,8 @@ param(
     [string]$TaskName = 'QM_QUA95_BlockerRefresh',
     [int]$MaxAgeMinutes = 125,
     [string]$TransitionPayloadCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95IssueTransitionPayload.ps1',
-    [string]$UnblockReadinessCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95UnblockReadiness.ps1'
+    [string]$UnblockReadinessCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95UnblockReadiness.ps1',
+    [string]$AuditSignalCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95AuditSignal.ps1'
 )
 
 Set-StrictMode -Version Latest
@@ -63,6 +64,19 @@ $readinessCode = $LASTEXITCODE
 if ($readinessCode -ne 0) {
     $readinessText = ($readinessOut | ForEach-Object { $_.ToString() }) -join '; '
     Write-Host ("status=critical task={0} issues=unblock_readiness_check_failed exit_code={1} output={2}" -f $TaskName, $readinessCode, $readinessText)
+    exit 2
+}
+
+if (-not (Test-Path -LiteralPath $AuditSignalCheckScript)) {
+    Write-Host ("status=critical task={0} issues=audit_signal_check_missing path={1}" -f $TaskName, $AuditSignalCheckScript)
+    exit 2
+}
+
+$auditSignalOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $AuditSignalCheckScript 2>&1
+$auditSignalCode = $LASTEXITCODE
+if ($auditSignalCode -ne 0) {
+    $auditSignalText = ($auditSignalOut | ForEach-Object { $_.ToString() }) -join '; '
+    Write-Host ("status=critical task={0} issues=audit_signal_check_failed exit_code={1} output={2}" -f $TaskName, $auditSignalCode, $auditSignalText)
     exit 2
 }
 

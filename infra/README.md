@@ -53,7 +53,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `scripts/Install-QUA95TaskHealthTask.ps1`
   - Registers Task Scheduler job `QM_QUA95_TaskHealth_15min` as `SYSTEM`.
   - Runs `monitoring/Test-QUA95BlockerTaskHealth.ps1` on a 15-minute cadence.
-  - Passes explicit `-TransitionPayloadCheckScript` and `-UnblockReadinessCheckScript` paths to avoid hidden default/path drift.
+  - Passes explicit `-TransitionPayloadCheckScript`, `-UnblockReadinessCheckScript`, and `-AuditSignalCheckScript` paths to avoid hidden default/path drift.
   - Safe to re-run (`Register-ScheduledTask -Force`).
 - `scripts/Run-QUA95BlockerRefresh.ps1`
   - Scheduled runner used by `QM_QUA95_BlockerRefresh`.
@@ -100,6 +100,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Validates task existence, enabled state, last result, and staleness window for `QM_QUA95_BlockerRefresh`.
   - Validates QUA-95 transition payload consistency via `scripts/Test-QUA95IssueTransitionPayload.ps1`.
   - Validates QUA-95 unblock readiness consistency via `scripts/Test-QUA95UnblockReadiness.ps1`.
+  - Validates QUA-95 audit signal consistency via `scripts/Test-QUA95AuditSignal.ps1`.
   - Returns non-zero on critical task-health drift.
 - `monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
   - Runs `Invoke-QUA95BlockedHeartbeat.ps1` in non-recursive validation mode

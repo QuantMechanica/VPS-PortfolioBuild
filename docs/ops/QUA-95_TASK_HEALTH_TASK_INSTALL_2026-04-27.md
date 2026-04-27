@@ -27,8 +27,8 @@ Verified highlights:
 - `Run As User: SYSTEM`
 - `Repeat: Every: 0 Hour(s), 15 Minute(s)`
 - Task action:
-  - `powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\QM\repo\infra\monitoring\Test-QUA95BlockerTaskHealth.ps1" -MaxAgeMinutes 125 -TransitionPayloadCheckScript "C:\QM\repo\infra\scripts\Test-QUA95IssueTransitionPayload.ps1" -UnblockReadinessCheckScript "C:\QM\repo\infra\scripts\Test-QUA95UnblockReadiness.ps1"`
-  - Script now enforces both transition-payload and unblock-readiness consistency as part of health status.
+  - `powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\QM\repo\infra\monitoring\Test-QUA95BlockerTaskHealth.ps1" -MaxAgeMinutes 125 -TransitionPayloadCheckScript "C:\QM\repo\infra\scripts\Test-QUA95IssueTransitionPayload.ps1" -UnblockReadinessCheckScript "C:\QM\repo\infra\scripts\Test-QUA95UnblockReadiness.ps1" -AuditSignalCheckScript "C:\QM\repo\infra\scripts\Test-QUA95AuditSignal.ps1"`
+  - Script now enforces transition-payload, unblock-readiness, and audit-signal consistency as part of health status.
 
 ## Runtime proof
 
@@ -93,5 +93,20 @@ Observed:
 Full action argument (PowerShell API):
 
 ```text
--NoProfile -ExecutionPolicy Bypass -File "C:\QM\repo\infra\monitoring\Test-QUA95BlockerTaskHealth.ps1" -MaxAgeMinutes 125 -TransitionPayloadCheckScript "C:\QM\repo\infra\scripts\Test-QUA95IssueTransitionPayload.ps1" -UnblockReadinessCheckScript "C:\QM\repo\infra\scripts\Test-QUA95UnblockReadiness.ps1"
+-NoProfile -ExecutionPolicy Bypass -File "C:\QM\repo\infra\monitoring\Test-QUA95BlockerTaskHealth.ps1" -MaxAgeMinutes 125 -TransitionPayloadCheckScript "C:\QM\repo\infra\scripts\Test-QUA95IssueTransitionPayload.ps1" -UnblockReadinessCheckScript "C:\QM\repo\infra\scripts\Test-QUA95UnblockReadiness.ps1" -AuditSignalCheckScript "C:\QM\repo\infra\scripts\Test-QUA95AuditSignal.ps1"
 ```
+
+## Audit-signal wiring proof
+
+Executed:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-QUA95TaskHealthTask.ps1 -PreviewOnly
+powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-QUA95TaskHealthTask.ps1 -EveryMinutes 15 -MaxAgeMinutes 125
+schtasks /Run /TN "QM_QUA95_TaskHealth_15min"
+```
+
+Observed:
+- `preview_audit_signal_check_script=C:\QM\repo\infra\scripts\Test-QUA95AuditSignal.ps1`
+- preview action contains `-AuditSignalCheckScript "C:\QM\repo\infra\scripts\Test-QUA95AuditSignal.ps1"`
+- scheduler post-run `Last Result: 0`
