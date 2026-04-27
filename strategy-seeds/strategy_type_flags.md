@@ -44,7 +44,7 @@ Card reviewers should expect 3–6 flags per card. Fewer than 2 is suspicious (u
 ### n-period-min-reversion
 - **Definition**: Long-bias entry when current close prints at or below an N-bar minimum, N typically 3–20, expecting bounce / mean-reversion over a time-bounded hold.
 - **V4 examples**: Padysak-Vojtko mean-revert leg in `specs/seasonality-trend-mr-bitcoin.md` §3 Sub-signal C (default N=10, hold 3 days).
-- **Disambiguation from**: `n-period-max-continuation` (opposite extreme, opposite expected direction over the hold); `mean-revert-rsi` (uses raw price extremum, not an oscillator threshold).
+- **Disambiguation from**: `n-period-max-continuation` (opposite extreme, opposite expected direction over the hold).
 
 ### carry-direction
 - **Definition**: Entry direction set by the sign of the broker overnight swap differential (`SymbolInfoDouble(SYMBOL_SWAP_LONG/SHORT)`); long when positive carry, short when negative carry, optionally smoothed and dead-banded.
