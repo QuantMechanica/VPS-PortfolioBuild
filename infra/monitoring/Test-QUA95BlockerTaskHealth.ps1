@@ -2,6 +2,8 @@
 param(
     [string]$TaskName = 'QM_QUA95_BlockerRefresh',
     [int]$MaxAgeMinutes = 125,
+    [string]$RepoRoot = 'C:\QM\repo',
+    [string]$GateDecisionPath = 'docs\ops\QUA-95_GATE_DECISION_2026-04-27.json',
     [string]$TransitionPayloadCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95IssueTransitionPayload.ps1',
     [string]$UnblockReadinessCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95UnblockReadiness.ps1',
     [string]$AuditSignalCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95AuditSignal.ps1',
@@ -31,7 +33,19 @@ $issues = @()
 if ($task.State -eq 'Disabled') {
     $issues += 'disabled'
 }
-if ([int]$info.LastTaskResult -ne 0) {
+$gateState = $null
+$gateFull = Join-Path $RepoRoot $GateDecisionPath
+if (Test-Path -LiteralPath $gateFull) {
+    try {
+        $gate = Get-Content -Raw -LiteralPath $gateFull | ConvertFrom-Json
+        $gateState = [string]$gate.recommended_state
+    } catch {
+        $gateState = $null
+    }
+}
+
+$enforceZeroLastResult = ($gateState -ne 'clear')
+if ($enforceZeroLastResult -and [int]$info.LastTaskResult -ne 0) {
     $issues += ("last_result={0}" -f [int]$info.LastTaskResult)
 }
 

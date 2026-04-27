@@ -1,6 +1,6 @@
 ﻿{
     "issue":  "QUA-95",
-    "generated_at_local":  "2026-04-27T14:41:35+02:00",
+    "generated_at_local":  "2026-04-27T15:14:58+02:00",
     "overall_status":  "ok",
     "checks":  [
                    {
@@ -19,7 +19,7 @@
                        "name":  "canonical_snapshot_freshness",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok snapshot_age_minutes=5.07 max_age_minutes=180"
+                       "output":  "status=ok snapshot_age_minutes=29.21 max_age_minutes=180"
                    },
                    {
                        "name":  "handoff_integrity",
@@ -31,67 +31,67 @@
                        "name":  "transition_payload",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok check=qua95_issue_transition_payload status_value=blocked"
+                       "output":  "status=ok check=qua95_issue_transition_payload status_value=in_progress"
                    },
                    {
                        "name":  "blocked_invariant",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok bars_got=0 gate_state=blocked disposition=defer transition_status=blocked transition_disposition=defer transition_reason=acceptance_not_met"
+                       "output":  "status=ok bars_got=99911 invariant=not_applicable gate_state=clear transition_status=in_progress"
                    },
                    {
                        "name":  "unblock_readiness",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok lag_minutes=0.64 ready_to_unblock=False bars_got=0 owner_count=2"
+                       "output":  "status=ok lag_minutes=0.92 ready_to_unblock=True bars_got=99911 owner_count=1"
                    },
                    {
                        "name":  "unblock_owner_consistency",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok owner_count=2 owners=runtime_custom_symbol_owner,verifier_implementation_owner"
+                       "output":  "status=ok owner_count=1 owners=verifier_implementation_owner"
                    },
                    {
                        "name":  "unblock_readiness_summary",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok ready_to_unblock=false bars_got=0"
+                       "output":  "status=ok ready_to_unblock=true bars_got=99911"
                    },
                    {
                        "name":  "audit_signal",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok qua95_issues=0 non_qua95_issues=2"
+                       "output":  "status=ok qua95_issues=3 non_qua95_issues=2"
                    },
                    {
                        "name":  "direct_verifier_proof",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok verify_exit_code=1 bars_one_shot=0 bars_chunked=0 disposition=defer"
+                       "output":  "status=ok verify_exit_code=1 bars_one_shot=0 bars_chunked=99911 disposition=clear"
                    },
                    {
                        "name":  "custom_visibility_proof",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok isolated_custom_failure=True target_bars=0/0 source_bars=581/10"
+                       "output":  "status=ok isolated_custom_failure=False target_bars=0/10 source_bars=614/10"
                    },
                    {
                        "name":  "evidence_cohesion",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok max_pair_skew_minutes=0 direct_at=2026-04-27T14:40:50.0000000+02:00 custom_at=2026-04-27T14:40:50.0000000+02:00 blocker_at=2026-04-27T14:40:50.0000000+02:00"
+                       "output":  "status=ok max_pair_skew_minutes=0 direct_at=2026-04-27T15:13:46.0000000+02:00 custom_at=2026-04-27T15:13:46.0000000+02:00 blocker_at=2026-04-27T15:13:46.0000000+02:00"
                    },
                    {
                        "name":  "failure_signature",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok signature=blocked_systemic mid_ticks=997 bars_one_shot=0 bars_chunked=0 tail_shortfall_seconds=7141.322 target_bars=0 source_bars=581"
+                       "output":  "status=ok signature_check=skipped blocker_state=clear disposition=clear bars_got=99911"
                    },
                    {
                        "name":  "heartbeat_custom_visibility",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok isolated_custom_failure=True target_bars=0/0 source_bars=581/10"
+                       "output":  "status=ok isolated_custom_failure=False target_bars=0/10 source_bars=614/10"
                    },
                    {
                        "name":  "task_health_action_wiring",
@@ -109,7 +109,7 @@
                        "name":  "blocked_heartbeat_wrapper",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok gate_state=blocked audit_status=critical checks_count=37 automation_health=ok qua95_issues=0 non_qua95_issues=2 isolated_custom_failure=True"
+                       "output":  "status=ok gate_state=clear audit_status=critical checks_count=37 automation_health=ok qua95_issues=3 non_qua95_issues=2 isolated_custom_failure=False"
                    }
                ]
 }

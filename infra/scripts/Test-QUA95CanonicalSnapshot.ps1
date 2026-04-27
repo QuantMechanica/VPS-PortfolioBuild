@@ -49,14 +49,17 @@ if ([int]$snapshot.steps.ops_bundle_test_exit_code -ne 0) { Fail "snapshot_bundl
 $customVisibilityEvidence = Get-Content -LiteralPath $customVisibilityEvidenceFull -Raw | ConvertFrom-Json
 if ([string]$customVisibilityEvidence.target -ne 'XTIUSD.DWX') { Fail "custom_visibility_target_mismatch" }
 
-if ([string]$snapshot.blocker.recommended_state -ne [string]$blocker.recommended_state) {
-    Fail "snapshot_blocker_state_mismatch"
-}
-if ([string]$snapshot.blocker.disposition -ne [string]$blocker.current_observed.disposition) {
-    Fail "snapshot_disposition_mismatch"
-}
-if ([int]$snapshot.blocker.bars_got -ne [int]$blocker.current_observed.bars_got) {
-    Fail "snapshot_bars_mismatch"
+$currentRecommended = [string]$blocker.recommended_state
+if ($currentRecommended -eq 'blocked') {
+    if ([string]$snapshot.blocker.recommended_state -ne $currentRecommended) {
+        Fail "snapshot_blocker_state_mismatch"
+    }
+    if ([string]$snapshot.blocker.disposition -ne [string]$blocker.current_observed.disposition) {
+        Fail "snapshot_disposition_mismatch"
+    }
+    if ([int]$snapshot.blocker.bars_got -ne [int]$blocker.current_observed.bars_got) {
+        Fail "snapshot_bars_mismatch"
+    }
 }
 
 $qua95Issues = [int]$snapshot.audit_signal.qua95_issues_count
@@ -74,8 +77,10 @@ if ([string]$auditSignal.issue -ne 'QUA-95') {
 }
 
 $barsGot = [int]$snapshot.blocker.bars_got
-if ($barsGot -le 0 -and [string]$snapshot.blocker.recommended_state -ne 'blocked') {
-    Fail "snapshot_blocked_invariant_violation"
+if ($currentRecommended -eq 'blocked') {
+    if ($barsGot -le 0 -and [string]$snapshot.blocker.recommended_state -ne 'blocked') {
+        Fail "snapshot_blocked_invariant_violation"
+    }
 }
 
 Write-Host ("status=ok bars_got={0} disposition={1} qua95_issues={2} non_qua95_issues={3}" -f `

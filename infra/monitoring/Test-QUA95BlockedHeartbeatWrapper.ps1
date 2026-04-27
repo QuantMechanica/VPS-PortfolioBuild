@@ -64,9 +64,19 @@ if ($null -eq $hb.gate) { $issues += 'missing_gate' }
 if ($null -eq $hb.infra_audit) { $issues += 'missing_infra_audit' }
 if ($null -eq $hb.audit_signal) { $issues += 'missing_audit_signal' }
 if ($null -eq $hb.custom_visibility) { $issues += 'missing_custom_visibility' }
-if ($hb.gate.recommended_state -ne 'blocked') { $issues += ("unexpected_gate_state={0}" -f $hb.gate.recommended_state) }
-if ([int]$hb.gate.bars_got -ne 0) { $issues += ("unexpected_bars_got={0}" -f $hb.gate.bars_got) }
-if ([double]$hb.gate.tail_shortfall_seconds -le 0) { $issues += ("unexpected_tail_shortfall={0}" -f $hb.gate.tail_shortfall_seconds) }
+$gateState = [string]$hb.gate.recommended_state
+$gateBars = [int]$hb.gate.bars_got
+$gateTailShortfall = [double]$hb.gate.tail_shortfall_seconds
+$gateDisposition = [string]$hb.gate.disposition
+if ($gateState -eq 'blocked') {
+    if ($gateBars -ne 0) { $issues += ("unexpected_bars_got={0}" -f $gateBars) }
+    if ($gateTailShortfall -le 0) { $issues += ("unexpected_tail_shortfall={0}" -f $gateTailShortfall) }
+} elseif ($gateState -eq 'clear') {
+    if ($gateBars -le 0) { $issues += ("unexpected_bars_got_for_clear={0}" -f $gateBars) }
+    if ($gateDisposition -ne 'clear') { $issues += ("unexpected_disposition_for_clear={0}" -f $gateDisposition) }
+} else {
+    $issues += ("unexpected_gate_state={0}" -f $gateState)
+}
 if ([string]::IsNullOrWhiteSpace($hb.infra_audit.overall_status)) { $issues += 'missing_audit_status' }
 if ($automation.overall_status -ne 'ok') { $issues += ("automation_health_not_ok={0}" -f $automation.overall_status) }
 if ($auditSignal.issue -ne 'QUA-95') { $issues += ("audit_signal_issue_mismatch={0}" -f $auditSignal.issue) }

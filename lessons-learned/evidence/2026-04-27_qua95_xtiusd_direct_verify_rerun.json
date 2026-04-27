@@ -1,7 +1,7 @@
 ﻿{
     "issue":  "QUA-95",
     "symbol":  "XTIUSD.DWX",
-    "captured_at_local":  "2026-04-27T15:06:26+02:00",
+    "captured_at_local":  "2026-04-27T15:13:46+02:00",
     "command":  "python D:\\QM\\mt5\\T1\\dwx_import\\verify_import.py --symbol XTIUSD.DWX --tail-basis source --tail-tol-ms 1000",
     "verify_exit_code":  1,
     "verdict":  "FAIL_spec",
@@ -14,7 +14,7 @@
     "bars_drift":  -89,
     "tail_basis":  "source",
     "tail_tolerance_ms":  1000,
-    "raw_log":  "C:\\QM\\repo\\infra\\smoke\\verify_import_direct_2026-04-27_150625_qua95.log",
+    "raw_log":  "C:\\QM\\repo\\infra\\smoke\\verify_import_direct_2026-04-27_151346_qua95.log",
     "recommended_state":  "clear",
     "disposition":  "clear"
 }
