@@ -121,7 +121,12 @@
   - unique symbol count
   - verdict distribution for all rows
   - verdict distribution by latest row per symbol
-  - list of latest `OK` symbols
+- list of latest `OK` symbols
+
+## `Verify-HandoffIntegrity.ps1`
+
+- Validates SHA256 entries in `docs/ops/QUA-91_WS30_VERIFIER_HANDOFF_2026-04-27.sha256`.
+- Outputs per-file `OK/FAIL` plus final `checked`/`failed` counters.
 
 ## `Invoke-VerifyDisposition.ps1`
 
