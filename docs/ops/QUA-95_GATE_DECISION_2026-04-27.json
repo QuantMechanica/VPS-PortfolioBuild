@@ -1,23 +1,19 @@
-{
-  "generated_at_local": "2026-04-27T10:11:41+02:00",
-  "exit_code": 3,
-  "payload": {
-    "issue": "QUA-95",
-    "recommended_state": "blocked",
-    "reason": "acceptance_not_met",
-    "disposition": "defer",
-    "last_checked_local": "2026-04-27T10:03:14+02:00",
-    "bars_got": 0,
-    "tail_shortfall_seconds": 7141.322,
-    "unblock_owners": [
-      {
-        "owner": "runtime_custom_symbol_owner",
-        "required_action": "Restore XTIUSD.DWX M1 bars visibility in T1 runtime (bars APIs return non-zero)."
-      },
-      {
-        "owner": "verifier_implementation_owner",
-        "required_action": "After runtime recovery, rerun verifier and confirm bars_got > 0 with aligned tail."
-      }
-    ]
-  }
+﻿{
+    "issue":  "QUA-95",
+    "recommended_state":  "blocked",
+    "reason":  "acceptance_not_met",
+    "disposition":  "defer",
+    "last_checked_local":  "2026-04-27T10:13:38+02:00",
+    "bars_got":  0,
+    "tail_shortfall_seconds":  7141.322,
+    "unblock_owners":  [
+                           {
+                               "owner":  "runtime_custom_symbol_owner",
+                               "required_action":  "Restore XTIUSD.DWX M1 bars visibility in T1 runtime (bars APIs return non-zero)."
+                           },
+                           {
+                               "owner":  "verifier_implementation_owner",
+                               "required_action":  "After runtime recovery, rerun verifier and confirm bars_got \u003e 0 with aligned tail."
+                           }
+                       ]
 }

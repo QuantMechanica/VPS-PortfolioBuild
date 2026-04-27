@@ -133,7 +133,8 @@
   1. `Invoke-VerifyDisposition.ps1` (`QUA-95`, `XTIUSD.DWX`)
   2. `Update-QUA95BlockerStatus.ps1`
   3. `Write-QUA95BlockedSummary.ps1`
-  4. `Test-QUA95HandoffIntegrity.ps1`
+  4. `Get-QUA95GateDecision.ps1` (writes gate snapshot; no-fail mode)
+  5. `Test-QUA95HandoffIntegrity.ps1`
 - Defaults:
   - task name: `QM_QUA95_BlockerRefresh`
   - interval: `60` minutes
@@ -153,8 +154,9 @@
   1. `Invoke-VerifyDisposition.ps1`
   2. `Update-QUA95BlockerStatus.ps1`
   3. `Write-QUA95BlockedSummary.ps1`
-  4. Refreshes `QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.sha256`
-  5. `Test-QUA95HandoffIntegrity.ps1`
+  4. `Get-QUA95GateDecision.ps1 -OutPath docs\ops\QUA-95_GATE_DECISION_2026-04-27.json -NoFail`
+  5. Refreshes `QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.sha256`
+  6. `Test-QUA95HandoffIntegrity.ps1`
 - Enforces non-zero exit handling for each step; task fails when any step exits non-zero.
 - Default log:
   - `C:\QM\repo\infra\smoke\qua95_blocker_refresh_task.log`
@@ -165,6 +167,9 @@
 - Exit code contract:
   - `0`: `recommended_state=clear`
   - `3`: `recommended_state=blocked`
+- Optional:
+  - `-OutPath <relative-path>` writes JSON payload to file.
+  - `-NoFail` forces exit `0` (for scheduled refresh pipelines).
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Get-QUA95GateDecision.ps1`
 
