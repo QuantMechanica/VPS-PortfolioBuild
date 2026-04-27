@@ -240,6 +240,21 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA95BlockedInvariant.ps1`
 
+## `Test-QUA95UnblockReadiness.ps1`
+
+- Validates unblock-readiness artifact against blocker status:
+  - `docs\ops\QUA-95_UNBLOCK_READINESS_2026-04-27.json`
+  - `docs\ops\QUA-95_XTIUSD_BLOCKER_STATUS_2026-04-27.json`
+- Checks:
+  - lag vs `last_checked_local` within threshold
+  - non-empty `unblock_owners`
+  - `ready_to_unblock` is not true while `bars_got <= 0`
+- Exit codes:
+  - `0`: readiness artifact is consistent
+  - `1`: readiness drift/missing artifact
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA95UnblockReadiness.ps1`
+
 ## `Update-QUA95UnblockReadiness.ps1`
 
 - Writes unblock-readiness snapshot from canonical gate/blocker/transition artifacts:
@@ -263,8 +278,9 @@
   2. `Test-QUA95HandoffIntegrity.ps1`
   3. `Test-QUA95IssueTransitionPayload.ps1`
   4. `Test-QUA95BlockedInvariant.ps1`
-  5. `monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
-  6. `monitoring/Test-QUA95BlockerTaskHealth.ps1`
+  5. `Test-QUA95UnblockReadiness.ps1`
+  6. `monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
+  7. `monitoring/Test-QUA95BlockerTaskHealth.ps1`
 - Emits JSON summary to stdout and returns:
   - `0` when all checks pass
   - `2` when any check is critical

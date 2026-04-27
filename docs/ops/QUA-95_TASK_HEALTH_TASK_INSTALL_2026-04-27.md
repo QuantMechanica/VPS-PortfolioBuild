@@ -27,8 +27,8 @@ Verified highlights:
 - `Run As User: SYSTEM`
 - `Repeat: Every: 0 Hour(s), 15 Minute(s)`
 - Task action:
-  - `powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\QM\repo\infra\monitoring\Test-QUA95BlockerTaskHealth.ps1" -MaxAgeMinutes 125 -TransitionPayloadCheckScript "C:\QM\repo\infra\scripts\Test-QUA95IssueTransitionPayload.ps1"`
-  - Script now also enforces `Test-QUA95IssueTransitionPayload.ps1` success as part of health status.
+  - `powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\QM\repo\infra\monitoring\Test-QUA95BlockerTaskHealth.ps1" -MaxAgeMinutes 125 -TransitionPayloadCheckScript "C:\QM\repo\infra\scripts\Test-QUA95IssueTransitionPayload.ps1" -UnblockReadinessCheckScript "C:\QM\repo\infra\scripts\Test-QUA95UnblockReadiness.ps1"`
+  - Script now enforces both transition-payload and unblock-readiness consistency as part of health status.
 
 ## Runtime proof
 

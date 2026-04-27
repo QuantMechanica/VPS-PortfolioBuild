@@ -11,6 +11,7 @@ $steps = @(
     @{ name = 'handoff_integrity'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95HandoffIntegrity.ps1' },
     @{ name = 'transition_payload'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95IssueTransitionPayload.ps1' },
     @{ name = 'blocked_invariant'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95BlockedInvariant.ps1' },
+    @{ name = 'unblock_readiness'; script = Join-Path $RepoRoot 'infra\scripts\Test-QUA95UnblockReadiness.ps1' },
     @{ name = 'blocked_heartbeat_wrapper'; script = Join-Path $RepoRoot 'infra\monitoring\Test-QUA95BlockedHeartbeatWrapper.ps1' },
     @{ name = 'blocker_task_health'; script = Join-Path $RepoRoot 'infra\monitoring\Test-QUA95BlockerTaskHealth.ps1' }
 )

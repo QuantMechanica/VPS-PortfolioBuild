@@ -51,7 +51,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `scripts/Install-QUA95TaskHealthTask.ps1`
   - Registers Task Scheduler job `QM_QUA95_TaskHealth_15min` as `SYSTEM`.
   - Runs `monitoring/Test-QUA95BlockerTaskHealth.ps1` on a 15-minute cadence.
-  - Passes explicit `-TransitionPayloadCheckScript` path to avoid hidden default/path drift.
+  - Passes explicit `-TransitionPayloadCheckScript` and `-UnblockReadinessCheckScript` paths to avoid hidden default/path drift.
   - Safe to re-run (`Register-ScheduledTask -Force`).
 - `scripts/Run-QUA95BlockerRefresh.ps1`
   - Scheduled runner used by `QM_QUA95_BlockerRefresh`.
@@ -96,6 +96,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `monitoring/Test-QUA95BlockerTaskHealth.ps1`
   - Validates task existence, enabled state, last result, and staleness window for `QM_QUA95_BlockerRefresh`.
   - Validates QUA-95 transition payload consistency via `scripts/Test-QUA95IssueTransitionPayload.ps1`.
+  - Validates QUA-95 unblock readiness consistency via `scripts/Test-QUA95UnblockReadiness.ps1`.
   - Returns non-zero on critical task-health drift.
 - `monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
   - Runs `Invoke-QUA95BlockedHeartbeat.ps1` in non-recursive validation mode
@@ -114,6 +115,9 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Validates that `docs/ops/QUA-95_ISSUE_TRANSITION_PAYLOAD_2026-04-27.json`
     is consistent with gate + blocker canonical JSON artifacts.
   - Returns non-zero on mismatch and is consumed by `Invoke-InfraAudit.ps1`.
+- `scripts/Test-QUA95UnblockReadiness.ps1`
+  - Validates unblock-readiness artifact freshness/consistency against blocker status.
+  - Returns non-zero on drift.
 - `scripts/Update-QUA95UnblockReadiness.ps1`
   - Writes machine-readable unblock readiness snapshot with `ready_to_unblock`, unmet criteria, and unblock owners/actions.
 - `scripts/Test-QUA95BlockedInvariant.ps1`

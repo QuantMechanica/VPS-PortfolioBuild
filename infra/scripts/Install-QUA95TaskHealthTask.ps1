@@ -5,6 +5,7 @@ param(
     [int]$EveryMinutes = 15,
     [int]$MaxAgeMinutes = 125,
     [string]$TransitionPayloadCheckScript = '',
+    [string]$UnblockReadinessCheckScript = '',
     [switch]$PreviewOnly
 )
 
@@ -27,7 +28,14 @@ if (-not (Test-Path -LiteralPath $TransitionPayloadCheckScript)) {
     throw "Transition payload check script missing: $TransitionPayloadCheckScript"
 }
 
-$args = "-NoProfile -ExecutionPolicy Bypass -File `"$checkScript`" -MaxAgeMinutes $MaxAgeMinutes -TransitionPayloadCheckScript `"$TransitionPayloadCheckScript`""
+if ([string]::IsNullOrWhiteSpace($UnblockReadinessCheckScript)) {
+    $UnblockReadinessCheckScript = Join-Path $RepoRoot 'infra\scripts\Test-QUA95UnblockReadiness.ps1'
+}
+if (-not (Test-Path -LiteralPath $UnblockReadinessCheckScript)) {
+    throw "Unblock readiness check script missing: $UnblockReadinessCheckScript"
+}
+
+$args = "-NoProfile -ExecutionPolicy Bypass -File `"$checkScript`" -MaxAgeMinutes $MaxAgeMinutes -TransitionPayloadCheckScript `"$TransitionPayloadCheckScript`" -UnblockReadinessCheckScript `"$UnblockReadinessCheckScript`""
 $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument $args
 $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).Date.AddMinutes(2) `
     -RepetitionInterval (New-TimeSpan -Minutes $EveryMinutes) `
@@ -40,6 +48,7 @@ if ($PreviewOnly) {
     Write-Host ("preview_interval_minutes={0}" -f $EveryMinutes)
     Write-Host ("preview_max_age_minutes={0}" -f $MaxAgeMinutes)
     Write-Host ("preview_transition_payload_check_script={0}" -f $TransitionPayloadCheckScript)
+    Write-Host ("preview_unblock_readiness_check_script={0}" -f $UnblockReadinessCheckScript)
     Write-Host ("preview_action=PowerShell {0}" -f $args)
     exit 0
 }
