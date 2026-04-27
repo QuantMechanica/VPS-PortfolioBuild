@@ -3,6 +3,8 @@ title: EA Life-Cycle (L0 → L10)
 owner: CTO
 last-updated: 2026-04-27
 v5-refresh: QUA-213 (label-collision fix + V5 actor refresh)
+addenda:
+  - QUA-272 (Doc-KM, 2026-04-27 ~20:00 OWNER addendum) — § Canonical lifecycle phrasing added; explicit no-pre-filtering rule (selection happens at pipeline gates, not at L0/L1 extraction); ratified as DL-033
 ---
 
 # 01 — EA Life-Cycle (L0 → L10)
@@ -10,6 +12,18 @@ v5-refresh: QUA-213 (label-collision fix + V5 actor refresh)
 The 11-phase journey an expert advisor takes from idea to retirement, **distinct from the methodological validation pipeline** (G0..P10) at [PIPELINE_PHASE_SPEC.md](../docs/ops/PIPELINE_PHASE_SPEC.md).
 
 > **Phase-label disambiguation (V5).** Lifecycle labels here are `L0 … L10` (organizational journey: idea → retire). The methodological pipeline at [PIPELINE_PHASE_SPEC.md](../docs/ops/PIPELINE_PHASE_SPEC.md) uses `G0 … P10` (validation methodology: Research Intake → Shadow Deploy). Same numbers no longer collide — `L` is lifecycle, `G/P` is pipeline. The **pipeline runs inside lifecycle phases L3–L5** (validation, candidate, portfolio entry); see § Pipeline integration.
+
+> **Canonical lifecycle (OWNER addendum 2026-04-27 ~20:00 local; DL-033).** OWNER's plain-language phrasing for the V5 research-to-portfolio arc is `Research → Strategy Built → Pipeline Backtest → Ready for Portfolio (or not)`. This is the same arc as `L0..L6` here, in OWNER vocabulary. The mapping:
+>
+> | OWNER label | V5 lifecycle phases | V5 pipeline phases |
+> |---|---|---|
+> | **Research** | L0 Idea + L1 Hypothesis | G0 Research Intake |
+> | **Strategy Built** | L2 Prototype | P1 Build Validation |
+> | **Pipeline Backtest** | L3 Backtest + L4 Validation | P2 → P3 → P3.5 → P4 → P5 → P5b → P5c → P6 → P7 → P8 |
+> | **Ready for Portfolio (or not)** | L5 Candidate + L6 V-Portfolio Entry | P9 Portfolio Construction + P9b Operational Readiness |
+> | *(Live)* | L7 Shadow Deploy + L8 Live Burn-in | P10 Live Burn-In on T6 (DXZ; OWNER manifest approval) |
+>
+> **Selection happens at pipeline gates, not at extraction.** Every Strategy Card that passes G0 walks all the way through P9/P9b. Strategies are not pre-filtered at L0/L1 by Research's prior beliefs about which ideas "feel promising"; the pipeline gates (G0 / P2 / P3.5 / P7 / P8) are the filter. Source-level tiering (which source CEO picks NEXT) and V5 hard-rule extraction filters (no ML, no discretionary, no martingale without 1%-cap, no scalping without P5b stress, no paywall bypass) still apply — those are V5 boundary, not prioritization. See [13-strategy-research.md](13-strategy-research.md) § Extraction Discipline and [`decisions/DL-033_no_strategy_prioritization_and_canonical_lifecycle.md`](../decisions/DL-033_no_strategy_prioritization_and_canonical_lifecycle.md).
 
 ## Trigger
 
@@ -97,5 +111,7 @@ flowchart TD
 - **Org self-design model:** [`docs/ops/ORG_SELF_DESIGN_MODEL.md`](../docs/ops/ORG_SELF_DESIGN_MODEL.md)
 - **DXZ-only deploy + P10 live burn-in:** [`decisions/2026-04-26_dxz_live_only_and_p10_live_burn_in.md`](../decisions/2026-04-26_dxz_live_only_and_p10_live_burn_in.md)
 - **T6 boundary (deploy permitted, AutoTrading manual):** `CLAUDE.md` § Hard Boundaries (per OWNER 2026-04-27)
+- **Strategy research workflow (extraction discipline + canonical lifecycle):** [13-strategy-research.md](13-strategy-research.md), [`decisions/DL-029_strategy_research_workflow.md`](../decisions/DL-029_strategy_research_workflow.md)
+- **No strategy-level prioritization + canonical lifecycle (OWNER addendum 2026-04-27 ~20:00 local):** [`decisions/DL-033_no_strategy_prioritization_and_canonical_lifecycle.md`](../decisions/DL-033_no_strategy_prioritization_and_canonical_lifecycle.md)
 - **Process registry:** [`process_registry.md`](process_registry.md)
 - **Cross-process links:** [02-zt-recovery.md](02-zt-recovery.md), [03-v-portfolio-deploy.md](03-v-portfolio-deploy.md), [04-incident-response.md](04-incident-response.md), [12-board-escalation.md](12-board-escalation.md), [13-strategy-research.md](13-strategy-research.md), [14-ea-enhancement-loop.md](14-ea-enhancement-loop.md)

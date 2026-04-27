@@ -4,6 +4,8 @@ owner: Documentation-KM
 last-updated: 2026-04-27
 authored-by: QUA-242 (Doc-KM)
 parent-directive: QUA-236 (OWNER 2026-04-27)
+addenda:
+  - QUA-272 (Doc-KM, 2026-04-27 ~20:00 OWNER addendum) — § Extraction Discipline (Rule 1 no strategy-level prioritization, Rule 2 canonical lifecycle, Rule 3 enhancement-loop reaffirmation); ratified as DL-033
 ---
 
 # 13 — Strategy Research Workflow
@@ -75,6 +77,50 @@ The card uses `strategy-seeds/cards/_TEMPLATE.md` (V5 schema, updated under QUA-
 
 Cards land in `DRAFT` status, advance to `IN_REVIEW` (Research → CEO), then `APPROVED` (CEO sign-off, CTO framework-alignment block filled), then `IN_BUILD` (handoff to Development / CTO). See template § Card Header for the full status ladder.
 
+## Extraction Discipline (binding — DL-033)
+
+OWNER addendum 2026-04-27 ~20:00 local (QUA-236 comment `95ea3bde…`, ratified as DL-033).
+
+### Rule 1 — No strategy-level prioritization within a source
+
+Within a source, Research extracts **every distinct mechanical strategy that passes V5 hard rules**. No tiering, no quality-pre-judgment, no "skip the weaker ones to save tokens". The pipeline gates (G0 → P1 → P2 → … → P10) are the filter. Research's job is exhaustive extraction *within hard rules*.
+
+If a source contains 12 distinct mechanical strategies that pass V5 hard rules, Research produces 12 Strategy Cards. Period. The pipeline kills the weak ones at G0 (mechanical-only check), at P2 (PF / DD / trade-count gate), at P3.5 (cross-sectional robustness), at P7 (PBO < 5% hard gate), or wherever they fail.
+
+What this changes vs prior practice:
+
+- **Source-level tiering still applies** (A/B/C/D source quality + which source CEO picks NEXT — that remains CEO's call per `strategy-seeds/SOURCE_QUEUE.md` and the QUA-188 v3 waiver). Source-level prioritization is about *order of extraction* across sources, not *which strategies* inside a chosen source get extracted.
+- **Strategy-level pre-filtering is OUT.** The author's own emphasis ("flagship strategy" vs "throwaway example") does not justify pre-filtering. If it's mechanical, it gets a card.
+
+What still applies (not prioritization — V5 boundary constraints):
+
+- **V5 hard-rule extraction filters.** No ML strategies, no discretionary judgment, no martingale without 1%-cap fallback, no scalping without acknowledged P5b stress requirement, no paywall bypass. Hard-rule failures produce **no card** — they are out-of-V5-scope concepts, not "deprioritized strategies".
+- **Author-claim quoting verbatim** per [`paperclip-prompts/research.md`](../paperclip-prompts/research.md) § ANTI-PATTERNS.
+- **Citation precision** per the multi-citation `source_citations[]` schema.
+- **Sub-issue blocking convention** above — ONE source actively worked at a time, ONE strategy from that source actively worked at a time. The "every strategy → pipeline" rule expands the *count* of cards Research produces; it does not authorise parallel sub-issue work.
+
+### Rule 2 — Canonical lifecycle (every G0-passing card walks this path)
+
+```
+Research → Strategy Built → Pipeline Backtest → Ready for Portfolio (or not)
+```
+
+In V5 terms:
+
+| OWNER label | V5 phase set | Owner |
+|---|---|---|
+| **Research** | G0 Research Intake — Strategy Card authored, source-cited, V5-hard-rule-passing | Research → CEO + Quality-Business approval (CEO interim) |
+| **Strategy Built** | P1 Build Validation — Development copies `EA_Skeleton.mq5`, fills in 4 modules, compiles strict | Development *(Wave 2)* → CTO review (CTO interim) |
+| **Pipeline Backtest** | P2 → P3 → P3.5 → P4 → P5 → P5b → P5c (optional) → P6 → P7 → P8 | Pipeline-Operator runs, Quality-Tech reviews verdicts (CTO interim) |
+| **Ready for Portfolio (or not)** | P9 Portfolio Construction + P9b Operational Readiness — portfolio decision based on per-EA results vs portfolio constraints | OWNER (manual phases per `PIPELINE_PHASE_SPEC.md`) |
+| *(Live)* | P10 Live Burn-In on T6 (DXZ) — minimum lot, KS-test kill-switch | OWNER manifest approval per `LIVE_T6_AUTOMATION_RUNBOOK.md` |
+
+Every Strategy Card that passes G0 walks all the way through P9 / P9b. The portfolio decision is made AT THE END based on backtest evidence + portfolio constraints, NOT pre-filtered at Research's desk. Pre-filtering at Research level imposes Research's biases on what reaches Quality-Tech / OWNER; OWNER wants portfolio decisions made on real backtest distributions, not Research's prior beliefs about which ideas "feel promising".
+
+### Rule 3 — Zero-trades = `_v<n>` enhancement loop is part of the canonical lifecycle
+
+Reaffirming for completeness (already ratified under DL-029 / QUA-245). A pipeline failure that points to the EA implementation rather than the strategy concept (zero-trades, input-rule change, parameter-set change beyond sweep, news-mode change) returns to Development as `_v<n>`. The Strategy Card lineage is preserved; a new `_v<n>` row appears in the card's § 13 Pipeline History; the new build re-runs the full P1 → P8 from scratch. This is part of the canonical lifecycle, not a deviation from it. See [14-ea-enhancement-loop.md](14-ea-enhancement-loop.md) for the full trigger list and mechanics.
+
 ## Strategy lineage = Source linkage (binding)
 
 Two distinct enhancement paths — choose by *where the new insight came from*:
@@ -134,6 +180,8 @@ flowchart TD
 ## Hard rules (do not break)
 
 - One source actively worked at a time. One strategy from that source actively worked at a time. No parallel-source extraction.
+- **No strategy-level pre-filtering within a source.** Every distinct mechanical strategy that passes V5 hard rules gets a card. The pipeline gates are the filter, not Research's judgment of "feel". (DL-033)
+- **Every G0-passing card walks the canonical lifecycle.** Research → Strategy Built → Pipeline Backtest → Ready for Portfolio (or not). Portfolio selection happens at P9/P9b on real backtest evidence, not pre-filtered at extraction. (DL-033)
 - No new strategy types invented in V5 — controlled vocabulary mined from V4 first (`strategy-seeds/strategy_type_flags.md`).
 - No card lands in `IN_REVIEW` without verbatim author-claims with page/timestamp citations.
 - No EA enters L2 build without an APPROVED card.
@@ -151,5 +199,6 @@ flowchart TD
 - **Source header convention:** `strategy-seeds/sources/SRC<NN>/source.md` (e.g. [SRC01](../strategy-seeds/sources/SRC01/source.md))
 - **Research role scope (CORE RULE — one source at a time):** [`paperclip-prompts/research.md`](../paperclip-prompts/research.md)
 - **Methodological pipeline (G0..P10):** [`docs/ops/PIPELINE_PHASE_SPEC.md`](../docs/ops/PIPELINE_PHASE_SPEC.md)
-- **DL ratification of this workflow:** `decisions/2026-04-27_strategy_research_workflow.md` (CEO authors under QUA-247)
+- **DL ratification of this workflow:** [`decisions/DL-029_strategy_research_workflow.md`](../decisions/DL-029_strategy_research_workflow.md)
+- **DL ratification of extraction discipline + canonical lifecycle:** [`decisions/DL-033_no_strategy_prioritization_and_canonical_lifecycle.md`](../decisions/DL-033_no_strategy_prioritization_and_canonical_lifecycle.md) (OWNER addendum 2026-04-27 ~20:00 local; recorded under QUA-272)
 - **Process registry:** [`process_registry.md`](process_registry.md)

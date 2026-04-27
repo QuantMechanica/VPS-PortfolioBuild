@@ -4,6 +4,8 @@ owner: Documentation-KM
 last-updated: 2026-04-27
 authored-by: QUA-245 (Doc-KM)
 parent-directive: QUA-236 (OWNER 2026-04-27)
+addenda:
+  - QUA-272 (Doc-KM, 2026-04-27 ~20:00 OWNER addendum) — cross-link confirming `_v<n>` rebuilds are part of the canonical lifecycle, not a deviation from it; ratified as DL-033
 ---
 
 # 14 — EA Enhancement Loop
@@ -11,6 +13,8 @@ parent-directive: QUA-236 (OWNER 2026-04-27)
 How V5 versions an EA when in-pipeline learning (or a hard "must re-test from P1" trigger) forces a fresh build. The card stays the same; the EA file gains a `_v<n>` suffix; the new version re-runs the full P1 → P8 pipeline from scratch.
 
 > **Binding source:** OWNER directive 2026-04-27 (QUA-236) + QUA-245. Pairs with [13-strategy-research.md](13-strategy-research.md) § Strategy lineage and the card's § 13 Pipeline History block. This file supersedes any improvised `_v2` flow inherited from V4 (the V4 ZT-recovery v2/v3/v4-cap mechanism in [02-zt-recovery.md](02-zt-recovery.md) is legacy reference only — V5 uses the rules below).
+
+> **Canonical lifecycle integration (DL-033).** A `_v<n>` rebuild is **part of the canonical lifecycle**, not a deviation from it. Per OWNER addendum 2026-04-27 ~20:00 local (QUA-236 / DL-033), every G0-passing Strategy Card walks `Research → Strategy Built → Pipeline Backtest → Ready for Portfolio (or not)`. When a pipeline failure points to the EA implementation rather than the strategy concept (zero-trades, input-rule change, parameter-set change beyond sweep, news-mode change), the card re-enters the **Strategy Built** leg as `_v<n>` and walks **Pipeline Backtest** again from P1. The card itself never leaves the lifecycle — only the *build* gets re-issued. Kill verdicts close the card's lifecycle; rebuild verdicts continue it. See [13-strategy-research.md](13-strategy-research.md) § Extraction Discipline for the canonical-lifecycle table and [`decisions/DL-033_no_strategy_prioritization_and_canonical_lifecycle.md`](../decisions/DL-033_no_strategy_prioritization_and_canonical_lifecycle.md) for the OWNER addendum.
 
 ## Trigger
 
@@ -176,7 +180,8 @@ flowchart TD
 ## References
 
 - **Parent directive:** QUA-236 (OWNER 2026-04-27) — sequencing rule that this loop must land before Phase 3 P2 backtest ramp.
-- **Strategy research workflow (lineage rules):** [13-strategy-research.md](13-strategy-research.md)
+- **OWNER addendum (canonical-lifecycle integration):** QUA-272 + [`decisions/DL-033_no_strategy_prioritization_and_canonical_lifecycle.md`](../decisions/DL-033_no_strategy_prioritization_and_canonical_lifecycle.md) — `_v<n>` rebuilds are part of the canonical lifecycle.
+- **Strategy research workflow (lineage rules + extraction discipline + canonical-lifecycle table):** [13-strategy-research.md](13-strategy-research.md)
 - **EA Life-Cycle (where `_v<n>` slots into L2..L7):** [01-ea-lifecycle.md](01-ea-lifecycle.md)
 - **Pipeline-Op load balancing across T1-T5:** [15-pipeline-op-load-balancing.md](15-pipeline-op-load-balancing.md)
 - **Strategy Card template (§ 13 Pipeline History format):** [`strategy-seeds/cards/_TEMPLATE.md`](../strategy-seeds/cards/_TEMPLATE.md)
