@@ -34,6 +34,12 @@ Install/converge task:
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-DriveGitExclusionTask.ps1 -EveryMinutes 15
 ```
 
+Preview without scheduler mutation:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-DriveGitExclusionTask.ps1 -PreviewOnly
+```
+
 Task name:
 
 - `QM_DriveGitExclusion_15min`

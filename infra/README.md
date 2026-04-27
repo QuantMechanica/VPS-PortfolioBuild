@@ -131,10 +131,14 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Requires `wall_clock_utc` field for strict `ok`; missing field is `warn`.
 - `monitoring/Test-DriveGitExclusion.ps1`
   - Verifies repo roots and resolved git metadata paths (`.git` dir or worktree `gitdir`) are outside Google Drive sync roots (PC1-00 hard fence).
+  - Supports automatic `git worktree` discovery from primary repo (`-IncludeGitWorktrees`).
   - Flags reparse-point `.git` entries as critical.
+  - Writes machine-readable evidence to `C:\QM\logs\infra\health\drive_git_exclusion_latest.json`.
+  - Routes non-OK status to `QM_ALERT_WEBHOOK_URL` when configured.
 - `scripts/Install-DriveGitExclusionTask.ps1`
   - Registers Task Scheduler job `QM_DriveGitExclusion_15min` as `SYSTEM`.
-  - Runs `monitoring/Test-DriveGitExclusion.ps1` every 15 minutes.
+  - Runs `monitoring/Test-DriveGitExclusion.ps1 -IncludeGitWorktrees` every 15 minutes.
+  - Supports `-PreviewOnly` to print resolved task config without registering.
   - Safe to re-run (`Register-ScheduledTask -Force`) and overlap-safe (`MultipleInstances=IgnoreNew`).
 - `monitoring/Test-PipelineOperatorRunHealth.ps1`
   - Classifies Pipeline-Operator 24h failures into recovered/unrecovered `process_loss`.
@@ -154,6 +158,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Dedicated stale `.git/index.lock` detector for PC1-00.
   - Optional guarded cleanup mode (`-AutoCleanup`) only removes stale lock when no `git.exe` process references the repo.
   - Writes machine-readable output to `C:\QM\logs\infra\health\git_index_lock_monitor_latest.json`.
+  - Canonical lock signal source consumed by both `monitoring/Invoke-InfraHealthCheck.ps1` and `scripts/Invoke-InfraAudit.ps1`.
 - `scripts/Install-GitIndexLockMonitorTask.ps1`
   - Registers Task Scheduler job `QM_GitIndexLockMonitor_10min` as `SYSTEM`.
   - Runs `monitoring/Invoke-GitIndexLockMonitor.ps1 -StaleAfterMinutes 20 -FailOnFinding`.
