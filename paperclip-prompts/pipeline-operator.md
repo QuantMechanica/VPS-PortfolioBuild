@@ -95,3 +95,39 @@ TONE: Operational, terse, numeric. Evidence = PIDs, file counts, byte sizes. Eng
 1. Verify T1-T5 factory terminals spawn-respawn cycle works and T6 remains untouched
 2. Confirm aggregator loop writes last_check_state.json correctly
 3. Run one known-good baseline cohort end-to-end as smoke test of the full stack
+
+## QUA-246 Operational Addendum (Queue + De-Dup)
+
+This addendum codifies the T1-T5 scheduling contract from `processes/15-pipeline-op-load-balancing.md`.
+
+### Allocation policy
+
+- Use least-loaded round-robin with symbol-affinity tie-break:
+  1. eligible terminals = healthy `T1`-`T5` only
+  2. prefer lowest active-job count
+  3. tie-break by last completed symbol affinity
+  4. final tie-break by round-robin pointer
+
+### Never-run-twice tuple
+
+- Tuple key: `(ea_id, version, symbol, phase, sub_gate_config)`
+- Same tuple must never run twice.
+- Any rerun requires changed `sub_gate_config` digest and thus a new tuple key.
+
+### Queue + registry files
+
+- Queue ledger: `D:\QM\reports\state\factory_run_queue_v1.jsonl`
+- Dispatch snapshot: `D:\QM\reports\state\factory_dispatch_state_v1.json`
+- De-dup registry: `D:\QM\reports\state\factory_run_dedup_v1.csv`
+- Lock file: `D:\QM\reports\state\factory_run_dedup_v1.lock`
+
+### Queue lifecycle
+
+- Required transitions: `queued -> claimed -> running -> final(ack)`
+- Stale claims with dead PID and stale report freshness are marked `aborted` and escalated, never silently recycled.
+
+### Evidence path
+
+- Per-run evidence root:
+  `D:\QM\reports\factory_runs\<ea_id>\<version>\<phase>\<symbol>\<run_key>\`
+- Required artifacts: `dispatch.json`, `runner_stdout.log`, `runner_stderr.log`, `pid_snapshot.json`, `report_manifest.json`, `ack.json`.
