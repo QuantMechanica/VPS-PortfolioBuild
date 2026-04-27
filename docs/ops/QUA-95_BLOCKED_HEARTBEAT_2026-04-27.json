@@ -1,17 +1,17 @@
 ﻿{
     "issue":  "QUA-95",
-    "generated_at_local":  "2026-04-27T12:26:52+02:00",
-    "refresh_executed":  false,
-    "refresh_exit_code":  null,
-    "audit_executed":  false,
-    "audit_exit_code":  null,
+    "generated_at_local":  "2026-04-27T12:29:36+02:00",
+    "refresh_executed":  true,
+    "refresh_exit_code":  0,
+    "audit_executed":  true,
+    "audit_exit_code":  0,
     "gate":  {
                  "recommended_state":  "blocked",
                  "reason":  "acceptance_not_met",
                  "disposition":  "defer",
                  "bars_got":  0,
                  "tail_shortfall_seconds":  7141.322,
-                 "last_checked_local":  "2026-04-27T12:22:43+02:00"
+                 "last_checked_local":  "2026-04-27T12:29:01+02:00"
              },
     "infra_audit":  {
                         "overall_status":  "critical",
