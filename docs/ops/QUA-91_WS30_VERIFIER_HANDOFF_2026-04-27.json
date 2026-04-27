@@ -17,7 +17,11 @@
     "investigation_note": "lessons-learned/2026-04-27_qua91_ws30_verifier_failure_investigation.md",
     "handoff_note": "docs/ops/QUA-91_WS30_VERIFIER_HANDOFF_2026-04-27.md",
     "candidate_verifier": "infra/scripts/verify_import_candidate.py",
-    "candidate_log": "infra/smoke/verify_import_candidate_run_2026-04-27_091415_all_symbols.log"
+    "candidate_log": "infra/smoke/verify_import_candidate_run_2026-04-27_091415_all_symbols.log",
+    "candidate_log_summary_tool": "infra/scripts/summarize_verify_candidate_log.py",
+    "handoff_integrity_tool": "infra/scripts/Verify-HandoffIntegrity.ps1",
+    "handoff_wrapper_tool": "infra/scripts/Run-QUA91-HandoffChecks.ps1",
+    "last_verified_at": "2026-04-27T09:29:18+02:00"
   },
   "commits": [
     "58a4bd2",
@@ -29,6 +33,11 @@
     "cdf4bc5",
     "d5da1d3",
     "5fd2500",
-    "066fbc6"
+    "066fbc6",
+    "aa93f79",
+    "d46dda3",
+    "c5b81f9",
+    "587372c",
+    "6c95e1e"
   ]
 }
