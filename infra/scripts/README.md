@@ -22,6 +22,7 @@
 - Phase-B staging now includes CSV tail-alignment gate:
   - compares tick CSV tail vs M1 CSV tail (`MAX_CSV_TAIL_GAP_HOURS=1.0`)
   - symbols with stale/misaligned tails are deferred and not queued for import
+  - already-imported symbols still emit a warning when tails are misaligned
 - No `tvp` / `tvl` fields are used for gate decisions.
 
 ## `verify_import_preflight_probe.py`
@@ -122,6 +123,20 @@
 - Updates symbol verdict, bars/tail fields, disposition, acceptance flag, and check timestamp.
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Update-QUA95BlockerStatus.ps1`
+
+## `Install-QUA95BlockerRefreshTask.ps1`
+
+- Idempotently installs a Windows Scheduled Task that runs:
+  1. `Invoke-VerifyDisposition.ps1` (`QUA-95`, `XTIUSD.DWX`)
+  2. `Update-QUA95BlockerStatus.ps1`
+  3. `Write-QUA95BlockedSummary.ps1`
+  4. `Test-QUA95HandoffIntegrity.ps1`
+- Defaults:
+  - task name: `QM_QUA95_BlockerRefresh`
+  - interval: `60` minutes
+  - principal: `SYSTEM` (highest)
+- Preview mode (no task registration):
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-QUA95BlockerRefreshTask.ps1 -PreviewOnly`
 
 ## `verify_import_chunked_probe.py`
 
