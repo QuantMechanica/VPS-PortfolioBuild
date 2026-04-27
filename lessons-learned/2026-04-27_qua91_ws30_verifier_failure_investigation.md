@@ -166,6 +166,31 @@ Acceptance interpretation for QUA-91 investigation:
 - Therefore WS30-specific investigation outcome is **CLEAR**.
 - Remaining work is global verifier policy: choose canonical tail basis and deploy production verifier update.
 
+## Candidate full-batch sanity check (context for parent issue)
+
+Command:
+
+```powershell
+python infra/scripts/verify_import_candidate.py --chunk-days 20 --tail-basis source --tail-tol-ms 1000
+```
+
+Evidence log:
+- `infra/smoke/verify_import_candidate_run_2026-04-27_091415_all_symbols.log`
+
+Parsed summary:
+- rows emitted: `56` (multiple archived sidecars per some symbols)
+- unique symbols (latest verdict per symbol): `35`
+- latest verdict distribution:
+  - `OK`: `1` (`WS30.DWX`)
+  - `FAIL_mid_bars`: `11`
+  - `FAIL_bars`: `11`
+  - `FAIL_tail_mid_bars`: `9`
+  - `FAIL_tail_bars`: `3`
+
+Use:
+- Confirms QUA-91 (WS30-specific) is cleared under source-tail basis.
+- Confirms parent/global verifier remediation is still required for other symbols.
+
 ## Durable change in this heartbeat
 
 - Added/extended tests for verifier fail-pattern classification in:
