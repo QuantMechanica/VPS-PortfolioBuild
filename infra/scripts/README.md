@@ -462,6 +462,20 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Run-QUA95CanonicalSnapshot.ps1`
 
+## `Run-QUA95DirectVerifierProof.ps1`
+
+- Runs direct verifier command for `XTIUSD.DWX`:
+  - `python D:\QM\mt5\T1\dwx_import\verify_import.py --symbol XTIUSD.DWX`
+- Captures raw log under:
+  - `infra\smoke\verify_import_direct_*_qua95.log`
+- Writes durable proof artifacts:
+  - `lessons-learned\evidence\2026-04-27_qua95_xtiusd_direct_verify_rerun.json`
+  - `docs\ops\QUA-95_DIRECT_VERIFIER_RERUN_2026-04-27.md`
+- Exit behavior:
+  - script exits `0` when proof artifacts are written (even when verifier exits non-zero), and prints `verify_exit_code=<n>`.
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Run-QUA95DirectVerifierProof.ps1`
+
 ## `Install-QUA95BlockedHeartbeatTask.ps1`
 
 - Idempotently installs a Scheduler task that runs:
