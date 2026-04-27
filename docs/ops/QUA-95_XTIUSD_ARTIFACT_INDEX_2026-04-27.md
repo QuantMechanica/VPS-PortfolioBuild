@@ -29,6 +29,8 @@ Status recommendation: `blocked` (`defer`)
   - `docs/ops/QUA-95_BLOCKED_STATE_ASSERTION_2026-04-27.md`
 - Issue-transition payload snapshot:
   - `docs/ops/QUA-95_ISSUE_TRANSITION_PAYLOAD_2026-04-27.json`
+- Unblock-readiness snapshot:
+  - `docs/ops/QUA-95_UNBLOCK_READINESS_2026-04-27.json`
 - Blocked-heartbeat snapshot:
   - `docs/ops/QUA-95_BLOCKED_HEARTBEAT_2026-04-27.json`
 - Blocked-heartbeat task smoke:
@@ -86,6 +88,8 @@ Status recommendation: `blocked` (`defer`)
   - `infra/monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
 - Blocked assertion generator:
   - `infra/scripts/Update-QUA95BlockedAssertion.ps1`
+- Unblock-readiness generator:
+  - `infra/scripts/Update-QUA95UnblockReadiness.ps1`
 - Ops suite runner:
   - `infra/scripts/Test-QUA95OpsSuite.ps1`
 - Ops suite snapshot writer:

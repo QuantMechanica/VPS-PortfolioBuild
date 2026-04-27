@@ -6,6 +6,7 @@ param(
         'docs/ops/QUA-95_GATE_DECISION_2026-04-27.json',
         'docs/ops/QUA-95_ISSUE_TRANSITION_PAYLOAD_2026-04-27.json',
         'docs/ops/QUA-95_BLOCKED_STATE_ASSERTION_2026-04-27.md',
+        'docs/ops/QUA-95_UNBLOCK_READINESS_2026-04-27.json',
         'docs/ops/QUA-95_BLOCKED_HEARTBEAT_2026-04-27.json',
         'docs/ops/QUA-95_OPS_SUITE_2026-04-27.json',
         'docs/ops/QUA-95_BLOCKED_AUTOMATION_RUNBOOK_2026-04-27.md'

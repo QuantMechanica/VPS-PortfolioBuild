@@ -1,0 +1,34 @@
+﻿{
+    "issue":  "QUA-95",
+    "generated_at_local":  "2026-04-27T11:33:05+02:00",
+    "readiness":  {
+                      "ready_to_unblock":  false,
+                      "unmet_criteria":  [
+                                             "acceptance_not_met",
+                                             "bars_got_zero",
+                                             "tail_not_aligned"
+                                         ]
+                  },
+    "current":  {
+                    "recommended_state":  "blocked",
+                    "disposition":  "defer",
+                    "bars_got":  0,
+                    "tail_shortfall_seconds":  7141.322,
+                    "last_checked_local":  "2026-04-27T11:31:52+02:00"
+                },
+    "transition":  {
+                       "status":  "blocked",
+                       "reason":  "acceptance_not_met",
+                       "disposition":  "defer"
+                   },
+    "unblock_owners":  [
+                           {
+                               "owner":  "runtime_custom_symbol_owner",
+                               "required_action":  "Restore XTIUSD.DWX M1 bars visibility in T1 runtime (bars APIs return non-zero)."
+                           },
+                           {
+                               "owner":  "verifier_implementation_owner",
+                               "required_action":  "After runtime recovery, rerun verifier and confirm bars_got \u003e 0 with aligned tail."
+                           }
+                       ]
+}

@@ -59,7 +59,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Enforces blocked invariant (`scripts/Test-QUA95BlockedInvariant.ps1`) in-run.
 - `scripts/Invoke-QUA95BlockedHeartbeat.ps1`
   - One-command heartbeat wrapper for blocked QUA-95 operations.
-  - Runs blocker refresh + infra audit + blocked assertion sync + blocked-invariant check + ops-suite snapshot + ops-bundle manifest, then writes consolidated status JSON.
+  - Runs blocker refresh + infra audit + blocked assertion sync + blocked-invariant check + unblock-readiness snapshot + ops-suite snapshot + ops-bundle manifest, then writes consolidated status JSON.
 - `scripts/Update-QUA95BlockedAssertion.ps1`
   - Regenerates blocked-state assertion markdown from canonical gate + blocker JSON.
 - `scripts/Install-QUA95BlockedHeartbeatTask.ps1`
@@ -113,6 +113,8 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Validates that `docs/ops/QUA-95_ISSUE_TRANSITION_PAYLOAD_2026-04-27.json`
     is consistent with gate + blocker canonical JSON artifacts.
   - Returns non-zero on mismatch and is consumed by `Invoke-InfraAudit.ps1`.
+- `scripts/Update-QUA95UnblockReadiness.ps1`
+  - Writes machine-readable unblock readiness snapshot with `ready_to_unblock`, unmet criteria, and unblock owners/actions.
 - `scripts/Test-QUA95BlockedInvariant.ps1`
   - Enforces blocked/defer invariant when `bars_got <= 0` using gate + transition payload artifacts.
   - Returns non-zero if blocked-state policy drifts.
