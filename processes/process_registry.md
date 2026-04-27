@@ -26,6 +26,17 @@ Canonical spec: [13-strategy-research.md](13-strategy-research.md). Parent direc
 - Strategy-type vocabulary is mined from V4 (`strategy-seeds/strategy_type_flags.md` under QUA-244). No new flags invented in V5.
 - Same-source enhancement via in-pipeline learning = `_v2` of same card (new row in § 13 Pipeline History). Different-source enhancement = new sub-issue under the new source's parent, new card. The test is *where the insight came from*.
 
+## EA Enhancement Loop (`_v<n>` versioning)
+
+Canonical spec: [14-ea-enhancement-loop.md](14-ea-enhancement-loop.md). Parent directive: QUA-236; authored under QUA-245.
+
+- Trigger list is **closed**: (a) zero-trades backtest report = automatic send-back to Development; (b) "must re-test from P1" failures — input-rule change, parameter-set change beyond declared sweep bounds, news-mode change. Any other rebuild candidate escalates to CEO + CTO before `_v<n>` is created.
+- Sweep selections within P3 bounds, re-runs at the same gate, and multi-seed variance checks are **not** enhancements — they continue under the existing version row.
+- File versioning: EA build gains `_v2`, `_v3`, ... suffix (e.g. `QM5_NNNN_<slug>_v2.mq5`); `slug` and `ea_id` are stable across versions; magic-number rows do not change.
+- `_v<n>` is treated as a NEW EA for backtesting: it re-runs P1 → P8 from scratch, no metric carry-forward from `_v<n-1>`.
+- Card stays canonical at `strategy-seeds/cards/<slug>_card.md` (no `_v2` card files). Each version appends a `### v<n>` block to the card's § 13 Pipeline History, headed with the trigger.
+- Only one version live at a time — `_v<n>` supersedes `_v<n-1>` at L7 → L8 promotion.
+
 ## Pipeline-Operator Load Balancing (T1-T5)
 
 Canonical spec: [15-pipeline-op-load-balancing.md](15-pipeline-op-load-balancing.md). Parent directive: QUA-236; authored under QUA-246.

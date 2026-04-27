@@ -98,4 +98,4 @@ flowchart TD
 - **DXZ-only deploy + P10 live burn-in:** [`decisions/2026-04-26_dxz_live_only_and_p10_live_burn_in.md`](../decisions/2026-04-26_dxz_live_only_and_p10_live_burn_in.md)
 - **T6 boundary (deploy permitted, AutoTrading manual):** `CLAUDE.md` § Hard Boundaries (per OWNER 2026-04-27)
 - **Process registry:** [`process_registry.md`](process_registry.md)
-- **Cross-process links:** [02-zt-recovery.md](02-zt-recovery.md), [03-v-portfolio-deploy.md](03-v-portfolio-deploy.md), [04-incident-response.md](04-incident-response.md), [12-board-escalation.md](12-board-escalation.md)
+- **Cross-process links:** [02-zt-recovery.md](02-zt-recovery.md), [03-v-portfolio-deploy.md](03-v-portfolio-deploy.md), [04-incident-response.md](04-incident-response.md), [12-board-escalation.md](12-board-escalation.md), [13-strategy-research.md](13-strategy-research.md), [14-ea-enhancement-loop.md](14-ea-enhancement-loop.md)
