@@ -56,12 +56,29 @@ Implication:
 - The verifier currently over-classifies this as tail/mid data loss because it relies on `copy_ticks_range(...)`.
 - `bars got=0` appears to be an MT5 runtime/bar-build visibility condition for these custom symbols, not proof that tick history is absent.
 
+## Preflight Probe Artifact (2026-04-27 09:04 CEST)
+
+Implemented and ran:
+- `python C:\QM\repo\infra\scripts\verify_import_preflight_probe.py --symbol XAUUSD.DWX`
+- log: `infra/smoke/verify_preflight_probe_2026-04-27_090411_qua93.log`
+
+Observed:
+- `range(h/m/t)=(0/0/0)`
+- `from(h/m/t)=(50/50/50)`
+- `bars_got=0`
+- `tail_expected_ms=1775444399867`, `tail_got_ms=1775444279109`
+
+Interpretation:
+- Tick history is readable via `copy_ticks_from(...)` but not via current verifier path.
+- Acceptance target remains unmet because bar visibility is still zero and tail exact-match gate still fails.
+
 ## Durable change in this heartbeat
 
 - Added this investigation record for `QUA-93` with concrete classifier output and triage conclusion.
 - Updated `infra/scripts/README.md` with a one-command local triage probe for captured verifier logs.
 - Performed and captured a fresh verifier rerun to validate whether the condition self-cleared (it did not).
 - Added MT5 API-level diagnostic evidence to narrow implementation fix scope.
+- Added a reusable probe script (`infra/scripts/verify_import_preflight_probe.py`) and captured artifact output.
 
 ## Next action
 

@@ -21,11 +21,25 @@
   - `abs(custom.tv - broker.tv) / broker.tv < 0.05`
 - No `tvp` / `tvl` fields are used for gate decisions.
 
+## `verify_import_preflight_probe.py`
+
+- Non-production helper for targeted verifier investigation on one symbol.
+- Compares MT5 read paths directly:
+  - `copy_ticks_range(...)` window counts (head/mid/tail)
+  - `copy_ticks_from(...)` window counts (head/mid/tail)
+  - `copy_rates_range(...)` bar count over sidecar M1 range
+- Includes lightweight pre-flight + retries to reduce session/cache timing noise.
+- Example:
+  - `python C:\QM\repo\infra\scripts\verify_import_preflight_probe.py --symbol XAUUSD.DWX`
+
 ## `probe_verify_rates_span.py`
 
 - Read-only MT5 probe for verifier investigations.
 - Compares one-shot `copy_rates_range(...)` across the full sidecar span vs
   chunked `copy_rates_range(...)` windows.
+- Also prints a short tail-window sample (`--tail-hours`, default `24`) and
+  symbol metadata (`selected/visible/custom/path`) to distinguish range-query
+  param issues from "no bars visible" runtime conditions.
 - Use to confirm/quantify range-query limits (`Invalid params` / empty results)
   before classifying a symbol as corrupted.
 - Default target is `WS30.DWX`; span comes from latest
