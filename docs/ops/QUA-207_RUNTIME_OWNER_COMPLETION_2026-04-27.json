@@ -1,0 +1,24 @@
+{
+  "issue": "QUA-207",
+  "parent_issue": "QUA-95",
+  "generated_at_local": "2026-04-27T14:50:40+02:00",
+  "runtime_owner_completion": {
+    "target_symbol": "XTIUSD.DWX",
+    "visibility_restored": true,
+    "evidence": {
+      "custom_visibility_probe_json": "lessons-learned/evidence/2026-04-27_qua95_xtiusd_custom_visibility_probe_rerun.json",
+      "target_rates_range_m1_count": 0,
+      "target_rates_from_pos_m1_count": 10,
+      "source_rates_range_m1_count": 557,
+      "source_rates_from_pos_m1_count": 10,
+      "isolated_custom_bars_visibility_failure": false
+    },
+    "repair_report_json": "docs/ops/QUA-207_REIMPORT_REPAIR_XTIUSD_2026-04-27.json"
+  },
+  "remaining_blocker": {
+    "owner": "verifier_implementation_owner",
+    "reason": "direct verifier rerun still non-zero",
+    "evidence_json": "lessons-learned/evidence/2026-04-27_qua95_xtiusd_direct_verify_rerun.json"
+  },
+  "next_action": "Verifier owner to complete rerun/fix path; then run transition chain in quiet scheduler window."
+}
