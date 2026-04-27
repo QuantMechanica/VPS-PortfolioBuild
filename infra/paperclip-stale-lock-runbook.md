@@ -32,6 +32,11 @@ Important: Use PATCH-only for the assignee cycle. Do not bundle comment text in 
 
 - Upstream Paperclip service patch (local `C:\QM\paperclip\app`) now reconciles stale `checkoutRunId` to the current run when `executionRunId` already belongs to that run.
 - This removes the recurring 409 path where execution ownership had moved but checkout ownership had not.
+- Upstream watchdog patch (QUA-67 / DEVOPS-008) now matches stale-run evaluation history by any of:
+  - `originId = runId`
+  - `originRunId = runId`
+  - `originFingerprint = stale_active_run:{companyId}:{runId}`
+- This blocks duplicate stale-run evaluation issue creation when source-derivation/cloning paths preserve `originRunId` or fingerprint but clear `originId` (common on weekend-style silent-run loops).
 
 ## Optional watchdog (company-side mitigation)
 

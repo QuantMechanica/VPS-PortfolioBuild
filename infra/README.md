@@ -55,6 +55,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `paperclip-stale-lock-runbook.md`
   - Manual and platform recovery flow for stale `checkoutRunId` / `executionRunId` lock conflicts (QUA-24).
   - Documents the comment-side-effect and PATCH-only assignee-cycle workaround.
+  - Includes stale-run watchdog duplicate-suppression patch notes for source-derived issues (QUA-67 / DEVOPS-008).
 
 ## Recommended scheduler wiring
 
