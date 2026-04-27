@@ -351,6 +351,21 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA95CustomVisibilityProof.ps1`
 
+## `Test-QUA95HeartbeatCustomVisibility.ps1`
+
+- Validates blocked-heartbeat `custom_visibility` section against canonical evidence:
+  - `docs\ops\QUA-95_BLOCKED_HEARTBEAT_2026-04-27.json`
+  - `lessons-learned\evidence\2026-04-27_qua95_xtiusd_custom_visibility_probe_rerun.json`
+- Checks:
+  - heartbeat issue identity
+  - heartbeat custom-visibility section exists
+  - isolated-failure flag + source/target bars counters match evidence
+- Exit codes:
+  - `0`: heartbeat custom-visibility section is coherent
+  - `1`: missing/invalid/mismatched data
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA95HeartbeatCustomVisibility.ps1`
+
 ## `Test-QUA95CanonicalSnapshot.ps1`
 
 - Validates canonical snapshot summary artifact:
@@ -416,9 +431,10 @@
   8. `Test-QUA95AuditSignal.ps1`
   9. `Test-QUA95DirectVerifierProof.ps1`
   10. `Test-QUA95CustomVisibilityProof.ps1`
-  11. `Test-QUA95TaskHealthActionWiring.ps1`
-  12. `monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
-  13. `monitoring/Test-QUA95BlockerTaskHealth.ps1`
+  11. `Test-QUA95HeartbeatCustomVisibility.ps1`
+  12. `Test-QUA95TaskHealthActionWiring.ps1`
+  13. `monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
+  14. `monitoring/Test-QUA95BlockerTaskHealth.ps1`
 - Emits JSON summary to stdout and returns:
   - `0` when all checks pass
   - `2` when any check is critical

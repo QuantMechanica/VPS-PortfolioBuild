@@ -28,6 +28,7 @@ param(
     [string]$Qua95AuditSignalCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95AuditSignal.ps1',
     [string]$Qua95DirectVerifierProofCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95DirectVerifierProof.ps1',
     [string]$Qua95CustomVisibilityProofCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95CustomVisibilityProof.ps1',
+    [string]$Qua95HeartbeatCustomVisibilityCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95HeartbeatCustomVisibility.ps1',
     [string]$Qua95CanonicalSnapshotCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95CanonicalSnapshot.ps1',
     [string]$Qua95OpsBundleManifestScript = 'C:\QM\repo\infra\scripts\Test-QUA95OpsBundleManifest.ps1',
     [string]$Qua95BlockedHeartbeatWrapperTestScript = 'C:\QM\repo\infra\monitoring\Test-QUA95BlockedHeartbeatWrapper.ps1',
@@ -402,6 +403,24 @@ else {
     Add-Check -Name 'qua95_custom_visibility_proof' -Status $customVisibilityStatus -Meta @{
         exit_code = $customVisibilityCode
         output = $customVisibilityText
+    }
+}
+
+# QUA-95 heartbeat custom-visibility coherence
+if (-not (Test-Path -LiteralPath $Qua95HeartbeatCustomVisibilityCheckScript)) {
+    Add-Check -Name 'qua95_heartbeat_custom_visibility' -Status 'warn' -Meta @{
+        reason = 'check_script_missing'
+        path = $Qua95HeartbeatCustomVisibilityCheckScript
+    }
+}
+else {
+    $hbCustomVisibilityOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $Qua95HeartbeatCustomVisibilityCheckScript 2>&1
+    $hbCustomVisibilityCode = $LASTEXITCODE
+    $hbCustomVisibilityText = ($hbCustomVisibilityOut | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
+    $hbCustomVisibilityStatus = if ($hbCustomVisibilityCode -eq 0) { 'ok' } else { 'critical' }
+    Add-Check -Name 'qua95_heartbeat_custom_visibility' -Status $hbCustomVisibilityStatus -Meta @{
+        exit_code = $hbCustomVisibilityCode
+        output = $hbCustomVisibilityText
     }
 }
 

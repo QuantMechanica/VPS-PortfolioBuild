@@ -38,6 +38,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
     - QUA-95 audit-signal consistency (`Test-QUA95AuditSignal.ps1`)
     - QUA-95 direct-verifier proof consistency (`Test-QUA95DirectVerifierProof.ps1`)
     - QUA-95 custom-visibility proof consistency (`Test-QUA95CustomVisibilityProof.ps1`)
+    - QUA-95 heartbeat custom-visibility coherence (`Test-QUA95HeartbeatCustomVisibility.ps1`)
     - QUA-95 canonical-snapshot consistency (`Test-QUA95CanonicalSnapshot.ps1`)
     - QUA-95 ops bundle manifest integrity (`Test-QUA95OpsBundleManifest.ps1`)
     - QUA-95 blocked-heartbeat wrapper validation (`Test-QUA95BlockedHeartbeatWrapper.ps1`)
@@ -156,6 +157,8 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Validates direct-verifier proof artifacts against QUA-95 blocker state.
 - `scripts/Test-QUA95CustomVisibilityProof.ps1`
   - Validates custom-symbol visibility probe proof artifacts against QUA-95 blocker state.
+- `scripts/Test-QUA95HeartbeatCustomVisibility.ps1`
+  - Validates blocked-heartbeat custom-visibility section against canonical custom-visibility evidence.
 - `scripts/Test-QUA95CanonicalSnapshot.ps1`
   - Validates canonical snapshot summary JSON against blocker + audit-signal artifacts, including custom-visibility proof step/artifacts.
 - `scripts/Test-QUA95TaskHealthActionWiring.ps1`
