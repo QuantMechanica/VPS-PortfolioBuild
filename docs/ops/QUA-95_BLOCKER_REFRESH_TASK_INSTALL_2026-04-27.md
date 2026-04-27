@@ -31,6 +31,9 @@ Verified highlights:
   - `Invoke-VerifyDisposition.ps1`
   - `Update-QUA95BlockerStatus.ps1`
   - `Write-QUA95BlockedSummary.ps1`
+  - `Get-QUA95GateDecision.ps1`
+  - `New-QUA95IssueTransitionPayload.ps1`
+  - `Test-QUA95IssueTransitionPayload.ps1`
   - `Test-QUA95HandoffIntegrity.ps1`
 
 ## Runtime remediation
@@ -54,5 +57,8 @@ Post-fix verification:
   - `[2026-04-27T09:55:45+02:00] success task=QM_QUA95_BlockerRefresh`
 
 Final scheduled-task verification after runner hardening:
-- `Last Run Time: 4/27/2026 10:01:55 AM`
+- `Last Run Time: 4/27/2026 10:31:34 AM`
 - `Last Result: 0`
+- recent task log excerpt includes:
+  - `wrote=C:\QM\repo\docs\ops\QUA-95_ISSUE_TRANSITION_PAYLOAD_2026-04-27.json`
+  - `[2026-04-27T10:31:50+02:00] success task=QM_QUA95_BlockerRefresh`
