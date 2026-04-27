@@ -1,6 +1,6 @@
 ﻿{
     "issue":  "QUA-95",
-    "generated_at_local":  "2026-04-27T11:47:47+02:00",
+    "generated_at_local":  "2026-04-27T11:51:38+02:00",
     "source":  {
                    "gate_decision_json":  "docs\\ops\\QUA-95_GATE_DECISION_2026-04-27.json",
                    "blocker_status_json":  "docs\\ops\\QUA-95_XTIUSD_BLOCKER_STATUS_2026-04-27.json",
@@ -13,7 +13,7 @@
                        "acceptance_met":  false,
                        "bars_got":  0,
                        "tail_shortfall_seconds":  7141.322,
-                       "last_checked_local":  "2026-04-27T11:47:30+02:00"
+                       "last_checked_local":  "2026-04-27T11:51:21+02:00"
                    },
     "unblock_owners":  [
                            {

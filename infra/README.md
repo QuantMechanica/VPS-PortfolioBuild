@@ -58,10 +58,10 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Logs to `infra\smoke\qua95_blocker_refresh_task.log`.
   - Refreshes handoff SHA manifest before integrity validation.
   - Enforces blocked invariant (`scripts/Test-QUA95BlockedInvariant.ps1`) in-run.
-  - Auto-refreshes both unblock-readiness JSON and markdown summary artifacts.
+  - Auto-refreshes unblock-readiness JSON/markdown plus automation-health snapshot artifacts.
 - `scripts/Invoke-QUA95BlockedHeartbeat.ps1`
   - One-command heartbeat wrapper for blocked QUA-95 operations.
-  - Runs blocker refresh + infra audit + blocked assertion sync + blocked-invariant check + unblock-readiness snapshot + unblock-readiness summary + ops-suite snapshot + ops-bundle manifest, then writes consolidated status JSON.
+  - Runs blocker refresh + infra audit + blocked assertion sync + blocked-invariant check + unblock-readiness snapshot + unblock-readiness summary + automation-health snapshot + ops-suite snapshot + ops-bundle manifest, then writes consolidated status JSON.
 - `scripts/Update-QUA95BlockedAssertion.ps1`
   - Regenerates blocked-state assertion markdown from canonical gate + blocker JSON.
 - `scripts/Install-QUA95BlockedHeartbeatTask.ps1`
