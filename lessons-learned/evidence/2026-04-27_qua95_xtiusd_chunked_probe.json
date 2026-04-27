@@ -1,0 +1,27 @@
+{
+  "symbol": "XTIUSD.DWX",
+  "source": "XTIUSD",
+  "sidecar": "D:\\QM\\mt5\\T1\\MQL5\\Files\\imports\\done\\20260427_081054_XTIUSD.DWX.import.txt",
+  "path": "Custom\\Commodities\\Energies\\XTIUSD.DWX",
+  "tick_head_expected": 1506906007801,
+  "tick_head_got": 1506906007801,
+  "tick_tail_expected": 1775444399967,
+  "tick_tail_got": 1775437258645,
+  "tick_tail_shortfall_seconds": 7141.322,
+  "source_tick_tail_got": 1775437258968,
+  "custom_minus_source_tail_ms": -323,
+  "mid_ticks_5min": 997,
+  "bars_expected": 443430,
+  "bars_oneshot_count": 0,
+  "bars_oneshot_err": [
+    -2,
+    "Terminal: Invalid params"
+  ],
+  "bars_chunked_count": 0,
+  "chunk_days": 1,
+  "chunks": 467,
+  "bad_chunks": 0,
+  "terminal_maxbars": 100000,
+  "custom_tv": 10.0,
+  "broker_tv": 10.0
+}

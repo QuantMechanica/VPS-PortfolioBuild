@@ -50,11 +50,30 @@ Generated artifacts:
 
 `XTIUSD.DWX` is not a cleared symbol-level import issue in this heartbeat. It remains within the broader verifier/runtime bars-read failure class.
 
+## Follow-up probe evidence (same heartbeat)
+
+Additional targeted probes were executed for `XTIUSD.DWX`:
+
+```powershell
+python C:\QM\repo\infra\scripts\verify_import_preflight_probe.py --symbol XTIUSD.DWX
+python C:\QM\repo\infra\scripts\verify_import_chunked_probe.py --symbol XTIUSD.DWX --chunk-days 1 --json-out C:\QM\repo\lessons-learned\evidence\2026-04-27_qua95_xtiusd_chunked_probe.json
+```
+
+Observed:
+- Preflight probe recovered expected tail via `copy_ticks_from(...)` (`tail_got_ms=1775444399967`) but still returned `bars_got=0`.
+- Chunked probe showed `bars_oneshot_count=0` with `Invalid params`, and `bars_chunked_count=0` even across `467` chunks.
+- Chunked probe also showed `source_tick_tail_got` and custom tail nearly equal (`custom_minus_source_tail_ms=-323ms`), which argues against XTI-only custom symbol corruption.
+
+Probe artifacts:
+- `lessons-learned/evidence/2026-04-27_qua95_xtiusd_probe.md`
+- `lessons-learned/evidence/2026-04-27_qua95_xtiusd_chunked_probe.json`
+
 ## Durable change in this heartbeat
 
 - Ran an idempotent verifier rerun + classifier for `QUA-95` via `Invoke-VerifyDisposition.ps1`.
 - Added archived evidence artifacts (raw log + structured JSON).
 - Added this investigation report for traceable issue-level disposition.
+- Added targeted preflight/chunked probe artifacts that narrow the failure to verifier bars-read behavior.
 
 ## Final Disposition
 
