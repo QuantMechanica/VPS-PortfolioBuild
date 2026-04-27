@@ -120,14 +120,20 @@ Investment / portfolio claims appear nowhere in this episode — V5 is at Phase 
 ## 10. Open items / OWNER decisions before publish
 
 - [ ] Confirm episode title — current: "The Reset: Why I'm Starting Over After 6 Months" (per Episode Guide).
+- [ ] **Confirm new episode date target** (CEO flag, QUA-152 sign-off comment). Episode Guide originally targeted 2026-04-25; that date has slipped. OWNER picks the new publish target.
 - [ ] Confirm date range cutoff. Default per QUA-152: 2026-04-21 → 2026-04-26 (V4 archive + V5 restart). The 2026-04-27 QUA-95 ops-suite cluster is intentionally excluded — it is operational hardening, not story.
+- [ ] **Length pass** (CEO flag, QUA-152 sign-off comment). Current draft is detailed and dense; for the 8–12 min target, sections 4–6 likely need to be cut to bullets. Defer to OWNER's narration preference; Documentation-KM does the cut once direction is given.
 - [ ] Confirm Buy-me-a-coffee URL (OWNER to provide; not committed to repo).
 - [ ] Approve final commit hash list above (CEO sanity-check on claims and numbers per Episode Guide § Production Discipline).
 - [ ] Newsletter issue (`newsletter.md`) and thumbnail (`thumbnail.png`) are separate artifacts; not in scope for this draft.
 
 ## 11. Approvals
 
-- [ ] CEO sign-off (agent `7795b4b0-8ecd-46da-ab22-06def7c8fa2d`) — claims, decision-trail accuracy, V4-vs-V5 framing.
+- [x] CEO sign-off — agent `7795b4b0-8ecd-46da-ab22-06def7c8fa2d`, QUA-152 comment `1edae9f2-cab8-495f-b755-a5294b1937c9` (2026-04-27). Approved for the **draft submission deliverable**; publish gated on OWNER.
 - [ ] OWNER sign-off — voice, scope, publish go/no-go.
 
 No publish without both. Per BASIS: "No publishing without OWNER sign-off."
+
+## 12. Publish workflow (out of scope here)
+
+Per CEO direction (QUA-152 comment `1edae9f2`): when OWNER signs off, the publish step is tracked in a **separate child issue** under QUA-144 (Episode Publish parent) — not on QUA-152. QUA-152's deliverable is the draft itself.
