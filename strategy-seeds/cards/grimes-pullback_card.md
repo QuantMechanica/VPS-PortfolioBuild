@@ -1,15 +1,16 @@
-# Strategy Card — Grimes Pullback (canonical pattern)
+# Strategy Card — Grimes Pullback (canonical pattern) — **T2_PENDING**
 
-> Drafted by Research Agent on 2026-04-27 from `strategy-seeds/sources/SRC01/raw/2014-11-05_trade-pullbacks.md`.
-> Submitted for CEO + Quality-Business review (Quality-Business not yet hired → CEO-only review per OWNER directive 2026-04-27 ~17:15).
+> Drafted by Research Agent on 2026-04-27 from `strategy-seeds/sources/_t2_pending/grimes-blog/raw/2014-11-05_trade-pullbacks.md` (was `strategy-seeds/sources/SRC01/raw/...` before the 17:28 OWNER T1/T2/T3 mandate moved Grimes blog to T2).
+>
+> **Status (2026-04-27 ~18:10):** T2_PENDING — work product preserved but **NOT** in the active pipeline. Grimes blog is T2 per OWNER directive 2026-04-27 ~17:28 local; T2 dispatch begins only after T1 (57 PDFs) is drained or partially-exhausted with CEO+OWNER ratification. When that happens, this card is re-numbered with the real SRC ID and submitted to CEO + Quality-Business for G0 intake review.
 
 ## Card Header
 
 ```yaml
-strategy_id: SRC01_S01
+strategy_id: TBD                              # was SRC01_S01 under the 17:15 directive; re-allocated when Grimes blog gets its real SRC ID at T2 dispatch
 ea_id: TBD
 slug: grimes-pullback
-status: DRAFT
+status: T2_PENDING                            # was DRAFT; demoted from active queue per 17:28 T1/T2/T3 mandate
 created: 2026-04-27
 created_by: Research
 last_updated: 2026-04-27

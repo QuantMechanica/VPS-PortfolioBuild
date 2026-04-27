@@ -1,15 +1,22 @@
 ---
-source_id: SRC01
-parent_issue: TBD                           # CEO opens new SRC01 issue per OWNER directive 2026-04-27 ~17:15 local
-prior_parent_issue: QUA-191                  # superseded; QUA-191 was Ernest Chan book (now BLOCKED_PAYWALL)
-status: active_extraction
+source_id: TBD                              # was SRC01 under the 17:15 directive; T1/T2/T3 mandate (17:28) defers Grimes blog to T2 — SRC ID re-allocated when T1 PDFs are exhausted
+tier: T2                                     # named public container per OWNER directive 2026-04-27 ~17:25 local; processed AFTER T1 (57 PDFs)
+parent_issue: TBD                           # CEO opens parent issue when T2 dispatch begins (after T1 queue drained)
+prior_parent_issue: QUA-191                  # original Chan-book parent (cancelled)
+status: t2_pending                           # work product preserved as drop-in scaffold for T2 dispatch
 authored-by: Research Agent
 last-updated: 2026-04-27
 ---
 
-# SRC01 — Adam Grimes blog archive (`adamhgrimes.com`)
+# (T2 PENDING) Adam Grimes blog archive (`adamhgrimes.com`)
 
-This file replaces the prior SRC01 scaffolding (Ernest Chan, *Algorithmic Trading*) per OWNER directive on QUA-191 dated 2026-04-27 ~17:15 local time. The prior content is preserved at `strategy-seeds/sources/SRC01/archived/2026-04-27_chan_book_superseded_by_owner_directive.md` for audit.
+> **Status note (2026-04-27 ~18:10):** This file was authored under the OWNER 17:15 directive that recast SRC01 to the Adam Grimes blog. That directive was superseded by the 17:25 + 17:28 directives establishing T1 (57 PDFs) → T2 (named containers) → T3 (open-internet) sequencing. The Grimes blog is **T2**, processed only after T1 drains. This scaffold (and the first card draft + raw scrape under `raw/`) is preserved verbatim so that when T2 dispatch opens, Research can pick up where it left off without re-doing the survey work.
+>
+> Path was renamed `strategy-seeds/sources/SRC01/` → `strategy-seeds/sources/_t2_pending/grimes-blog/` so the SRC01 slot is available for the ratified T1 #1 source (currently proposed as Davey, *Building Winning Algorithmic Trading Systems*; see `strategy-seeds/sources/SOURCE_QUEUE.md`).
+>
+> The card draft at `strategy-seeds/cards/grimes-pullback_card.md` is correspondingly re-tagged: its `strategy_id` is now `TBD` (was `SRC01_S01`) and its status header marks it as T2_PENDING. It will be re-numbered when Grimes blog gets its real SRC ID at T2 dispatch.
+
+This file replaces the prior SRC01 scaffolding (Ernest Chan, *Algorithmic Trading*) per OWNER directive on QUA-191 dated 2026-04-27 ~17:15 local time. The prior content is preserved at `archived/2026-04-27_chan_book_superseded_by_owner_directive.md` (relative to this file) for audit.
 
 ## 1. Source identity
 

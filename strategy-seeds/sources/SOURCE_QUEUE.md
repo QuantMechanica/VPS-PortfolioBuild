@@ -1,18 +1,27 @@
 ---
 authored_by: Research Agent
 authored_on: 2026-04-27
+last_updated: 2026-04-27
 parent_issue: QUA-191
 status: proposed_for_owner_ceo_ratification
 folder_root: G:\My Drive\QuantMechanica\Ebook\PDF resources\
 file_count_total: 59
 file_count_unique: 53
 file_count_duplicates: 6
+tier_schema:                                  # OWNER directive 2026-04-27 ~17:28 local — T1/T2/T3 sequential mandate
+  T1: curated_local_pdfs                      # 57 PDFs, OWNER-supplied; processed first
+  T2: named_public_containers                 # OWNER-named (Babypips, Forex Factory, MQL5, Grimes blog, etc.); processed after T1
+  T3: open_internet_autonomous_discovery      # Research finds these itself; processed after T2; steady-state operating mode
 v0_filter:
   - mechanical
   - no_ml
   - no_dwx_suffix
   - fits_magic_formula_registry
   - news_compliance_compatible
+diversity_bias_rules:                         # per OWNER directive 17:28 — apply when picking next-up source
+  - "3+ consecutive trend-following sources queued → next pick must be different class"
+  - "3+ from same author → next pick must be different author"
+  - "3+ from same source domain → next pick must be different domain"
 ---
 
 # SOURCE_QUEUE.md — V5 Research source-prioritization queue
@@ -51,6 +60,10 @@ Based on filename + author reputation + file size + Research's prior knowledge o
 - **SKIP** — flagged as duplicate or low-signal.
 
 ---
+
+# T1 — Curated local PDFs (OWNER-supplied)
+
+All rows in the three tables below (Tier A / Tier B / Tier C) are **T1** sources from `G:\My Drive\QuantMechanica\Ebook\PDF resources\`. Per the OWNER 17:28 directive, **T1 is processed first; no T2 / T3 work begins until T1 is drained or partially-exhausted with explicit CEO + OWNER ratification of pivoting.** The proposed_order column applies within T1 only; T2 and T3 have their own ordering once they activate.
 
 ## Tier A — peer-reviewed / known-author primary works (proposed_order 1–13)
 
@@ -167,6 +180,123 @@ The previously-blocked SRC01 (Ernest Chan, *Algorithmic Trading*) is mooted: tha
 - [ ] All future SRC issues created one-at-a-time; only one SRC active in `in_progress` at any time per the OWNER constraint.
 - [ ] This file (`SOURCE_QUEUE.md`) is treated as the canonical research roadmap; updated when sources are completed (`status` column added) or when extraction reveals a tier-change is warranted.
 
-## Out-of-folder sources (informational)
+## Out-of-folder sources (informational, T1-scope only)
 
-The earlier wake context mentioned firecrawl + paper-context-resolver for follow-up reading on cited sub-references inside the books. Those skills remain available but are NOT part of this queue. If a Tier A book cites a paper that materially refines a strategy (e.g., Chan citing a Lo-MacKinlay paper), Research may pull that supplemental paper at extraction time and cite it as `role: supplement` per `_TEMPLATE.md` § 1. The queue itself stays bounded to the 53 unique on-disk PDFs above.
+The earlier wake context mentioned firecrawl + paper-context-resolver for follow-up reading on cited sub-references inside the books. Those skills remain available but are NOT part of T1. If a Tier A book cites a paper that materially refines a strategy (e.g., Chan citing a Lo-MacKinlay paper), Research may pull that supplemental paper at extraction time and cite it as `role: supplement` per `_TEMPLATE.md` § 1. The T1 queue itself stays bounded to the 53 unique on-disk PDFs above.
+
+---
+
+# T2 — Named public containers (OWNER-named at 2026-04-27 ~17:25)
+
+T2 sources are **public-internet containers** (forums, blog archives, article aggregators, paper repositories). Per the OWNER 17:25 source-class taxonomy directive, the granularity differs from T1:
+
+> **A book is a source, a forum is a CONTAINER of sources.** Each high-quality thread / post / paper inside the container becomes its own SRC sub-issue, NOT one container = one source.
+
+**T2 dispatch begins only after T1 is drained or partially-exhausted with CEO + OWNER ratification of pivoting.** When T2 dispatch opens, Research first runs a survey-pass over each container (sampling N threads / posts / papers, tagging each by quality tier A/B/C and v5_flags), then proposes a per-thread / per-post extraction order for CEO + OWNER ratification — same shape as the T1 queue above.
+
+## T2 container manifest (proposed_order TBD; per-container survey-pass at T2 dispatch)
+
+| # | container | URL | source_class | survey_method | quality_skew | v5_flags | preliminary_priority |
+|---|---|---|---|---|---|---|---|
+| T2-01 | MQL5 articles | https://www.mql5.com/en/articles | Class 2 (peer-curated articles) | `firecrawl-search` filter `site:mql5.com/en/articles` by category ("Trading Systems", "Expert Advisors", "Statistics and analysis") | mostly B-tier; some MetaQuotes / known-author = A-tier; signal-to-noise highest of T2 | — | high (best signal density of T2) |
+| T2-02 | Adam Grimes blog | https://www.adamhgrimes.com/ | Class 2 (single-author practitioner blog) | `WebFetch` per post; `firecrawl-scrape` once skill loads. **Survey-pass already partial** — see `strategy-seeds/sources/_t2_pending/grimes-blog/source.md` | mostly A/B-tier (verifiable practitioner; published author of *The Art and Science of Technical Analysis*, Wiley 2012) | — | high (pre-surveyed; first card already drafted at `strategy-seeds/cards/grimes-pullback_card.md` as T2_PENDING) |
+| T2-03 | John Ehlers / MESA Software papers | https://www.mesasoftware.com/papers/ | Class 3 (academic/practitioner papers) | `paper-context-resolver` + `WebFetch` for individual papers | A-tier signal-processing-rooted strategies | — | high |
+| T2-04 | Robot Wealth blog (Kris Longmore) | https://robotwealth.com/blog/ | Class 2 (practitioner blog) | `firecrawl-search` per post. Note: Longmore's *Back to Basics* PDF is at T1 row 19; the blog has more recent content | A/B-tier; engineering-rigorous | overlap_with_T1_row19 (Longmore PDF) | high |
+| T2-05 | Ernest Chan blog | https://epchan.blogspot.com/ | Class 2 (single-author practitioner blog) | `firecrawl-search` per post | A-tier | overlap_with_T1_rows_2,5,13 (Chan PDFs) | medium (overlaps heavily with three T1 Chan books) |
+| T2-06 | arXiv q-fin | https://arxiv.org/list/q-fin/recent | Class 3 (peer-reviewed-ish papers) | `paper-context-resolver` per paper; pre-filter for "trading", "strategy", "backtest" keywords | A-tier; peer-reviewed-ish; free | — | medium |
+| T2-07 | SSRN finance | https://www.ssrn.com/index.cfm/en/fmrc/ | Class 3 (free preprints) | `paper-context-resolver` per paper | A/B-tier; often more practical than arXiv | — | medium |
+| T2-08 | Forex Factory — Trading Systems subforum | https://www.forexfactory.com/forum/71-trading-systems | Class 2 (forum threads) | `firecrawl-search` site-restricted; filter by replies > 500 + activity / view-count threshold | wildly variable; legendary threads = A-tier; most C/D-tier; specific watchlist: "London Breakout", "4-Hour MACD", "Holy Grail", "Big Dog", Ronald Raygun, KOBASFX (overlaps T1 row 39) | — | medium (high noise; needs disciplined survey-pass) |
+| T2-09 | Babypips forum | https://forums.babypips.com/ | Class 2 (forum threads) + Class 1 sub-area (School of Pipeline at https://www.babypips.com/learn) | `firecrawl-search site:forums.babypips.com "trading system" OR "strategy"` + author filter / view-count threshold; School of Pipeline treated as a small Class 1 book for survey purposes | educational, beginner-heavy; most threads C-tier; small set of long-running mechanical-strategy threads B-tier | — | low-medium (high noise; School of Pipeline only first-pass interest) |
+
+### T2 quality gate (additive to V5 v0_filter above)
+
+- A/B/C/D tiering same as T1 Tier definitions
+- No paywall bypass, no piracy, no scraping behind login (binding)
+- Anonymous claims without verifiable backtest evidence → auto-C
+- Discretionary judgment patterns → kill at G0
+- Any martingale / grid → must show strict 1%-cap fallback or fail V5
+
+### T2 acceptance criteria (when dispatch opens)
+
+- [ ] Per-container survey-pass produces a candidate list of threads / posts / papers, each tagged with quality tier + v5_flags + estimated mechanical-strategy yield
+- [ ] CEO + OWNER ratify the survey-pass results and approve which T2 candidates enter the active per-thread queue
+- [ ] Same ONE-source-at-a-time rule binds: T2 doesn't relax it
+- [ ] Diversity-bias rules (above frontmatter `diversity_bias_rules`) apply to T2 picks just as to T1
+
+---
+
+# T3 — Open-internet autonomous discovery (placeholder; activates after T2)
+
+T3 is Research's **steady-state operating mode** per the OWNER 17:28 directive: actively search the public internet for additional mechanical-trading-strategy sources and add them to the queue. **T3 has no fixed end.** It runs continuously after T2 is processed (or T2 yields are exhausted earlier than T1, with CEO + OWNER ratification).
+
+## T3 discovery methods
+
+- **`firecrawl-search`** — search the web with specific queries, return ranked URLs (skill not yet loaded into Research's active session — needs ToolSearch `select:firecrawl-search` or skill-pin)
+- **`firecrawl-scrape`** — pull article / page content for survey-pass evaluation (same skill-load note)
+- **`paper-context-resolver`** — academic paper analysis when search hits arXiv / SSRN / journal sites (skill-load note)
+- **`anthropics/skills/pdf` (`pdf--3924e73e8d`)** — for any free PDF found in the wild (already loaded)
+- **`WebFetch` + `WebSearch`** — built-in deferred tools; sufficient for discovery in heartbeats where the firecrawl skills are not loaded
+
+## T3 search-heuristic seed list (Research evolves these)
+
+- `"mechanical trading strategy" site:arxiv.org OR site:ssrn.com`
+- `"quantitative trading rules" backtest`
+- `"trading system" "entry rules" "exit rules" -course -"buy now"` (filter out paid content)
+- `"algorithmic strategy" forex OR indices OR "S&P"`
+- `"trading bot" "open source" github` (open-source EA repos sometimes carry strategy reasoning in their READMEs)
+- Archetype searches: `"momentum strategy" backtest`, `"mean reversion" "ATR"`, `"breakout system" hourly`, `"carry trade" mechanical`, `"seasonal pattern" forex`
+- Author-snowballing: when a high-quality source cites another author, follow the citation
+
+## T3 actively-seek list
+
+- arXiv q-fin, SSRN finance, MESA Software (also in T2)
+- QuantStart, Adam Grimes, Quantocracy, Alvarez Quant Trading, Build Alpha (known-quality practitioner blogs)
+- University finance department working papers (Stanford GSB, NYU Stern, LSE Finance)
+- Open-source EA / strategy GitHub repos (README + commit history)
+- Federal Reserve / BIS working papers (macroeconomic / FX regime; useful for filter design)
+
+## T3 deprioritize list (Research's judgment, not absolute bans)
+
+- Reddit threads — high noise, mostly opinion. Exception: r/algotrading occasional high-quality posts with code.
+- Stack Exchange (Quant.SE) — useful for specific technical questions, less for full strategies
+- YouTube — only if the channel publishes structured strategy content (not "pump my newsletter" videos); transcript availability uneven
+- Twitter / X — atomized, low-context. Skip unless a specific quant author writes thread-form analysis.
+
+## T3 approval cadence
+
+- Research submits batches of ~5–10 newly discovered candidates per heartbeat-budget cycle to keep approval overhead reasonable
+- CEO + OWNER tier each batch (A/B/C/D) and approve which to add to the active queue
+- Rejected candidates archived in `strategy-seeds/sources/REJECTED.md` with reason — so we don't re-discover the same junk (file authored at first rejection event)
+
+## T3 boundaries (binding, same as T1/T2)
+
+- ONE source actively worked at a time. T3 doesn't relax this.
+- No paywall bypass. No piracy. No scraping behind login.
+- V5 hard rules trump source signal.
+- T6 OFF LIMITS — Research never touches live trading paths.
+- Public-domain / open-license content preferred for archived-citation purposes; copyrighted content fine to read for extraction but Strategy Cards quote sparingly per fair-use norms.
+
+---
+
+# Per-source budget tracking (OWNER directive 17:28 acceptance criterion)
+
+Each SRC source's lifecycle is tracked for "this source took N heartbeats to extract M cards" so CEO can adjust the quality bar over time. Convention:
+
+- The source's `source.md` § header gains two fields populated as work progresses:
+  ```yaml
+  budget_tracking:
+    heartbeats_used: 0                       # incremented at end of each heartbeat that touched this source
+    cards_drafted: 0                         # incremented when a card lands at DRAFT
+    cards_passed_g0: 0                       # incremented when CEO + Quality-Business ratify a card
+    cards_killed_pre_p1: 0                   # incremented on G0 fail / skip-on-extraction
+  ```
+- Source-completion report (`completion_report.md`, per `processes/13-strategy-research.md`) summarizes the four counts above plus a yield ratio (`cards_passed_g0 / heartbeats_used`).
+- CEO uses the running yield ratio across SRCs to pivot the queue (e.g., demote a source mid-extraction if yield is far below T1 average).
+
+---
+
+# Diversity tracker — `STRATEGY_TYPE_DISTRIBUTION.md`
+
+Per OWNER 17:28 acceptance criterion: a tracker file `strategy-seeds/sources/STRATEGY_TYPE_DISTRIBUTION.md` records the strategy-type-flag distribution across the queue (using the controlled vocabulary in `strategy-seeds/strategy_type_flags.md`).
+
+**Authorship:** Doc-KM (per the directive). Research updates the file as cards land DRAFT / PASS_G0 / KILLED. The directive notes "Doc-KM authors a small auto-updating template"; until Doc-KM is hired or assigned, the diversity-bias rules in this file's frontmatter (`diversity_bias_rules`) provide an interim manual check at next-source-pick time.
