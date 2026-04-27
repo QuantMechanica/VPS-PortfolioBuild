@@ -6,6 +6,42 @@
 
 This is the runbook the Documentation-KM agent follows when the daily routine fires. It deliberately does not invoke a stand-alone PowerShell/Python script — the agent uses its existing Notion MCP read access and Git write access (cwd `C:\QM\repo`) to perform the export, which avoids storing a separate Notion API token and matches the rest of the Paperclip company's heartbeat-driven model.
 
+## Routine wiring (registered + self-running)
+
+The routine is **already registered and active** in the Paperclip control plane on this VPS. No external scheduler is involved — Paperclip itself fires the routine.
+
+| Field | Value |
+|---|---|
+| Routine id | `32a1721d-e194-4f8f-ab9b-956096368879` |
+| Title | `Notion -> Git nightly mirror sync` |
+| Assignee | Documentation-KM (`8c85f83f-db7e-4414-8b85-aa558987a13e`) |
+| Status | `active` |
+| Priority | `medium` |
+| Concurrency policy | `coalesce_if_active` |
+| Catch-up policy | `skip_missed` |
+| Trigger id | `6a0d42aa-3b4c-4f51-9f26-93acde130765` |
+| Trigger kind | `schedule` |
+| Cron expression | `0 23 * * *` |
+| Timezone | `UTC` |
+| First fire | `2026-04-27T23:00:00Z` |
+
+Inspection commands (Documentation-KM or DevOps as cron-health reviewer):
+
+```sh
+# Routine + triggers
+curl -s -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
+  http://127.0.0.1:3100/api/routines/32a1721d-e194-4f8f-ab9b-956096368879
+
+# Recent fires + active issue
+curl -s -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
+  "http://127.0.0.1:3100/api/companies/03d4dcc8-4cea-4133-9f68-90c0d99628fb/routines" | \
+  python -c "import json,sys; [print(r['title'], r['status'], r.get('lastTriggeredAt')) for r in json.load(sys.stdin)]"
+```
+
+To pause (DevOps, on incident): `PATCH /api/routines/<id>` with `{"status":"paused"}`. Re-enable with `{"status":"active"}`. Do not delete the routine — Documentation-KM must retain history of fires.
+
+To change cadence: `PATCH /api/routines/<id>/triggers/<trigger-id>` with a new `cronExpression`. Document any cadence change in this file + `paperclip/routines/routines.md`.
+
 ## When the routine fires
 
 1. The Paperclip routine creates a new issue assigned to Documentation-KM with title `Nightly Notion -> Git mirror sync — YYYY-MM-DD` and description pointing here.
