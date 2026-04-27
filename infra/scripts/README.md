@@ -688,6 +688,17 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA207RuntimeRestoreCompletion.ps1`
 
+## `New-QUA207IssueTransitionPayload.ps1`
+
+- Generates QUA-207 issue transition payload directly from current custom-visibility evidence.
+- Writes:
+  - `docs\ops\QUA-207_ISSUE_TRANSITION_PAYLOAD_2026-04-27.json`
+- Decision mapping:
+  - `in_review` when runtime visibility is restored (`target bars visible` and `isolated_custom_bars_visibility_failure=false`)
+  - `blocked` otherwise
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\New-QUA207IssueTransitionPayload.ps1`
+
 ## `Restore-QUA95RuntimeBars.ps1`
 
 - Bounded runtime restore flow for `XTIUSD.DWX` M1 bars visibility.

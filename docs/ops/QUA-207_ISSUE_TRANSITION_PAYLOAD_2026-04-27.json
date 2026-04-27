@@ -1,30 +1,30 @@
-{
-  "issue": "QUA-207",
-  "generated_at_local": "2026-04-27T15:00:00+02:00",
-  "recommended_transition": {
-    "status": "in_review",
-    "reason": "runtime_owner_scope_completed",
-    "resume": true
-  },
-  "objective": "Restore MT5 custom symbol bars visibility for XTIUSD.DWX",
-  "completion_evidence": {
-    "custom_visibility_probe_json": "lessons-learned/evidence/2026-04-27_qua95_xtiusd_custom_visibility_probe_rerun.json",
-    "target_rates_range_m1_count": 0,
-    "target_rates_from_pos_m1_count": 10,
-    "isolated_custom_bars_visibility_failure": false
-  },
-  "owner_state": {
-    "runtime_custom_symbol_owner": "completed",
-    "verifier_implementation_owner": "pending"
-  },
-  "handoff": {
-    "next_owner": "verifier_implementation_owner",
-    "next_action": "Rerun/fix verifier acceptance path for XTIUSD.DWX (bars_got > 0 and tail aligned), then rerun transition chain."
-  },
-  "supporting_docs": [
-    "docs/ops/QUA-207_CLOSEOUT_PACKET_2026-04-27.md",
-    "docs/ops/QUA-207_RUNTIME_OWNER_COMPLETION_2026-04-27.md",
-    "docs/ops/QUA-207_RUNTIME_COMPLETION_CHECK_2026-04-27.md",
-    "docs/ops/QUA-207_REIMPORT_REPAIR_XTIUSD_2026-04-27.md"
-  ]
+﻿{
+    "issue":  "QUA-207",
+    "generated_at_local":  "2026-04-27T15:00:33+02:00",
+    "recommended_transition":  {
+                                   "status":  "in_review",
+                                   "reason":  "runtime_owner_scope_completed",
+                                   "resume":  true
+                               },
+    "objective":  "Restore MT5 custom symbol bars visibility for XTIUSD.DWX",
+    "completion_evidence":  {
+                                "custom_visibility_probe_json":  "lessons-learned\\evidence\\2026-04-27_qua95_xtiusd_custom_visibility_probe_rerun.json",
+                                "target_rates_range_m1_count":  0,
+                                "target_rates_from_pos_m1_count":  10,
+                                "isolated_custom_bars_visibility_failure":  false
+                            },
+    "owner_state":  {
+                        "runtime_custom_symbol_owner":  "completed",
+                        "verifier_implementation_owner":  "pending"
+                    },
+    "handoff":  {
+                    "next_owner":  "verifier_implementation_owner",
+                    "next_action":  "Rerun/fix verifier acceptance path for XTIUSD.DWX (bars_got \u003e 0 and tail aligned), then rerun transition chain."
+                },
+    "supporting_docs":  [
+                            "docs/ops/QUA-207_CLOSEOUT_PACKET_2026-04-27.md",
+                            "docs/ops/QUA-207_RUNTIME_OWNER_COMPLETION_2026-04-27.md",
+                            "docs/ops/QUA-207_RUNTIME_COMPLETION_CHECK_2026-04-27.md",
+                            "docs/ops/QUA-207_REIMPORT_REPAIR_XTIUSD_2026-04-27.md"
+                        ]
 }

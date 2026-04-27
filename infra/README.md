@@ -190,6 +190,9 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
     - gate marks `runtime_visibility_recovered=true`
     - runtime owner removed from gate/transition/readiness owner lists
   - Returns non-zero when runtime completion contract drifts.
+- `scripts/New-QUA207IssueTransitionPayload.ps1`
+  - Generates `docs/ops/QUA-207_ISSUE_TRANSITION_PAYLOAD_2026-04-27.json` from live custom-visibility evidence.
+  - Emits `in_review` when runtime visibility is restored; otherwise emits `blocked`.
 - `scripts/Test-QUA95UnblockReadiness.ps1`
   - Validates unblock-readiness artifact freshness/consistency against blocker status.
   - Returns non-zero on drift.
