@@ -89,6 +89,16 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA95HandoffIntegrity.ps1`
 
+## `Write-QUA95BlockedSummary.ps1`
+
+- Renders a concise blocked-status markdown summary from:
+  - `docs\ops\QUA-95_XTIUSD_BLOCKER_STATUS_2026-04-27.json`
+- Default output:
+  - `docs\ops\QUA-95_BLOCKED_COMMENT_2026-04-27.md`
+- Useful for posting/attaching a deterministic issue status comment.
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Write-QUA95BlockedSummary.ps1`
+
 ## `verify_import_chunked_probe.py`
 
 - Read-only verifier mirror for symbol-level deep dive.
