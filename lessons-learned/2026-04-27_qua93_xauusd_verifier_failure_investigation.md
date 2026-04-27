@@ -45,14 +45,29 @@ Classifier output on the rerun artifact:
 - `bars expected=446,753/got=0`
 - `tail_ms expected=1775444399867/got=0`
 
+## Targeted API Probe (2026-04-27 09:00 CEST)
+
+Direct MT5 probe for `XAUUSD.DWX` with explicit warm-up/retries showed:
+- `copy_ticks_from(...)` returns data at head, mid, and tail windows (non-zero ticks).
+- `copy_ticks_range(...)` with datetime windows (as used by current verifier) returns zero in the same windows.
+- `copy_rates_range(...)`, `copy_rates_from(...)`, and `copy_rates_from_pos(...)` all return zero M1 bars for this symbol in this runtime.
+
+Implication:
+- The verifier currently over-classifies this as tail/mid data loss because it relies on `copy_ticks_range(...)`.
+- `bars got=0` appears to be an MT5 runtime/bar-build visibility condition for these custom symbols, not proof that tick history is absent.
+
 ## Durable change in this heartbeat
 
 - Added this investigation record for `QUA-93` with concrete classifier output and triage conclusion.
 - Updated `infra/scripts/README.md` with a one-command local triage probe for captured verifier logs.
 - Performed and captured a fresh verifier rerun to validate whether the condition self-cleared (it did not).
+- Added MT5 API-level diagnostic evidence to narrow implementation fix scope.
 
 ## Next action
 
 Acceptance target (`XAUUSD` non-zero bars + matching tail) remains unmet after rerun.  
 Unblock owner: verifier implementation owner (`D:\QM\mt5\T1\dwx_import\verify_import.py`).  
-Required action: add MT5 session pre-flight hardening (`symbol_select`/bars warm-up/retry) before per-symbol checks, then rerun verification.
+Required action:
+- replace tail/mid probes with `copy_ticks_from(...)` window checks (not `copy_ticks_range(...)`);
+- add retry + reconnect pre-flight around MT5 reads;
+- make bar checks optional/degraded when MT5 returns zero bars for custom symbols despite non-zero tick probes, then rerun verification.
