@@ -25,6 +25,8 @@ Status recommendation: `blocked` (`defer`)
   - `docs/ops/QUA-95_INFRA_AUDIT_INTEGRATION_2026-04-27.md`
 - Gate-decision snapshot:
   - `docs/ops/QUA-95_GATE_DECISION_2026-04-27.json`
+- Blocked-state assertion snapshot:
+  - `docs/ops/QUA-95_BLOCKED_STATE_ASSERTION_2026-04-27.md`
 
 ## Investigation + evidence trail
 
