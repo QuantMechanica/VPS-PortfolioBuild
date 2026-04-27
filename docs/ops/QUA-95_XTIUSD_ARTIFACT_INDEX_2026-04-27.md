@@ -41,6 +41,8 @@ Status recommendation: `blocked` (`defer`)
   - `docs/ops/QUA-95_BLOCKED_HEARTBEAT_WRAPPER_TEST_2026-04-27.md`
 - Automation health snapshot:
   - `docs/ops/QUA-95_AUTOMATION_HEALTH_2026-04-27.json`
+- QUA-95 audit signal snapshot:
+  - `docs/ops/QUA-95_AUDIT_SIGNAL_2026-04-27.json`
 - Ops-suite snapshot:
   - `docs/ops/QUA-95_OPS_SUITE_2026-04-27.json`
 - Blocked automation runbook:
@@ -92,6 +94,8 @@ Status recommendation: `blocked` (`defer`)
   - `infra/monitoring/Test-QUA95BlockedHeartbeatWrapper.ps1`
 - Combined automation health validator:
   - `infra/monitoring/Test-QUA95AutomationHealth.ps1`
+- QUA-95 audit signal generator:
+  - `infra/scripts/Update-QUA95AuditSignal.ps1`
 - Blocked assertion generator:
   - `infra/scripts/Update-QUA95BlockedAssertion.ps1`
 - Unblock-readiness generator:

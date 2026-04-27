@@ -283,6 +283,19 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Write-QUA95UnblockReadinessSummary.ps1`
 
+## `Update-QUA95AuditSignal.ps1`
+
+- Produces QUA-95-focused audit signal snapshot from:
+  - `infra/reports/infra_audit_latest.json`
+- Output:
+  - `docs/ops/QUA-95_AUDIT_SIGNAL_2026-04-27.json`
+- Includes:
+  - total audit issues
+  - QUA-95 issues vs non-QUA95 issues counts
+  - QUA-95 check statuses
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Update-QUA95AuditSignal.ps1`
+
 ## `Test-QUA95UnblockReadinessSummary.ps1`
 
 - Validates markdown summary consistency with unblock-readiness JSON:
