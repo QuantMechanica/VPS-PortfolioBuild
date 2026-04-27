@@ -358,9 +358,11 @@
 - Cross-checks against:
   - `docs\ops\QUA-95_XTIUSD_BLOCKER_STATUS_2026-04-27.json`
   - `docs\ops\QUA-95_AUDIT_SIGNAL_2026-04-27.json`
+  - `lessons-learned\evidence\2026-04-27_qua95_xtiusd_custom_visibility_probe_rerun.json`
+  - `docs\ops\QUA-95_CUSTOM_VISIBILITY_RERUN_2026-04-27.md`
 - Checks:
   - snapshot identity/flow fields
-  - step exit codes
+  - step exit codes (including `custom_visibility_proof_exit_code`)
   - blocker state/disposition/bars consistency
   - audit-signal count consistency
 - Exit codes:

@@ -3,7 +3,9 @@ param(
     [string]$RepoRoot = 'C:\QM\repo',
     [string]$SnapshotPath = 'docs\ops\QUA-95_CANONICAL_SNAPSHOT_2026-04-27.json',
     [string]$BlockerPath = 'docs\ops\QUA-95_XTIUSD_BLOCKER_STATUS_2026-04-27.json',
-    [string]$AuditSignalPath = 'docs\ops\QUA-95_AUDIT_SIGNAL_2026-04-27.json'
+    [string]$AuditSignalPath = 'docs\ops\QUA-95_AUDIT_SIGNAL_2026-04-27.json',
+    [string]$CustomVisibilityEvidencePath = 'lessons-learned\evidence\2026-04-27_qua95_xtiusd_custom_visibility_probe_rerun.json',
+    [string]$CustomVisibilityProofPath = 'docs\ops\QUA-95_CUSTOM_VISIBILITY_RERUN_2026-04-27.md'
 )
 
 Set-StrictMode -Version Latest
@@ -17,8 +19,10 @@ function Fail([string]$Message) {
 $snapshotFull = Join-Path $RepoRoot $SnapshotPath
 $blockerFull = Join-Path $RepoRoot $BlockerPath
 $auditSignalFull = Join-Path $RepoRoot $AuditSignalPath
+$customVisibilityEvidenceFull = Join-Path $RepoRoot $CustomVisibilityEvidencePath
+$customVisibilityProofFull = Join-Path $RepoRoot $CustomVisibilityProofPath
 
-foreach ($path in @($snapshotFull, $blockerFull, $auditSignalFull)) {
+foreach ($path in @($snapshotFull, $blockerFull, $auditSignalFull, $customVisibilityEvidenceFull, $customVisibilityProofFull)) {
     if (-not (Test-Path -LiteralPath $path)) {
         Fail ("missing_file=" + $path)
     }
@@ -32,8 +36,12 @@ if ([string]$snapshot.issue -ne 'QUA-95') { Fail "snapshot_issue_mismatch" }
 if ([string]$snapshot.flow -ne 'qua95_canonical_snapshot') { Fail "snapshot_flow_mismatch" }
 if ([int]$snapshot.command_exit_code -ne 0) { Fail "snapshot_command_exit_nonzero" }
 if ([int]$snapshot.steps.blocked_heartbeat_exit_code -ne 0) { Fail "snapshot_heartbeat_exit_nonzero" }
+if ([int]$snapshot.steps.custom_visibility_proof_exit_code -ne 0) { Fail "snapshot_custom_visibility_proof_exit_nonzero" }
 if ([int]$snapshot.steps.ops_bundle_update_exit_code -ne 0) { Fail "snapshot_bundle_update_exit_nonzero" }
 if ([int]$snapshot.steps.ops_bundle_test_exit_code -ne 0) { Fail "snapshot_bundle_test_exit_nonzero" }
+
+$customVisibilityEvidence = Get-Content -LiteralPath $customVisibilityEvidenceFull -Raw | ConvertFrom-Json
+if ([string]$customVisibilityEvidence.target -ne 'XTIUSD.DWX') { Fail "custom_visibility_target_mismatch" }
 
 if ([string]$snapshot.blocker.recommended_state -ne [string]$blocker.recommended_state) {
     Fail "snapshot_blocker_state_mismatch"
