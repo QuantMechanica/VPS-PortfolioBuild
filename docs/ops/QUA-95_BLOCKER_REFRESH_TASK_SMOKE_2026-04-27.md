@@ -14,6 +14,8 @@ schtasks /Delete /TN "QM_QUA95_BlockerRefresh_Smoke" /F
 
 - Install script reported:
   - `installed_task=QM_QUA95_BlockerRefresh_Smoke`
+- `Get-ScheduledTask` check (same run) reported:
+  - `get_scheduledtask_found=True`
 - `schtasks /Query` confirmed:
   - task exists in root folder
   - `Run As User: SYSTEM`
@@ -30,3 +32,4 @@ schtasks /Delete /TN "QM_QUA95_BlockerRefresh_Smoke" /F
 
 - Initial installer implementation used `TimeSpan::MaxValue` for repetition duration, which Task Scheduler rejected.
 - Patched to `New-TimeSpan -Days 3650` and smoke passed.
+- A prior failed `Get-ScheduledTask` observation was not reproduced after the installer fix and clean rerun.
