@@ -60,6 +60,12 @@ CSV_PATTERN = re.compile(
     r"^(?P<symbol>.+?)_GMT[+\-]\d+_(?:US|EU)-DST\.csv$",
     re.IGNORECASE,
 )
+VERIFY_FAIL_PATTERN = re.compile(
+    r"^\[\s*(?P<verdict>[^\]]+)\]\s+(?P<symbol>[^:]+):.*?"
+    r"mid_ticks_5min=(?P<mid_ticks>\d+);.*?"
+    r"bars expected=(?P<bars_expected>[0-9,]+)/got=(?P<bars_got>[0-9,]+)\b",
+    re.IGNORECASE,
+)
 
 # TDS sometimes exports a symbol under a name that differs from the broker's.
 # Map CSV-root -> broker source symbol to use when cloning.
@@ -98,6 +104,47 @@ def source_symbol_for_target(target_symbol: str) -> str:
     """Resolve expected broker source symbol for a .DWX target."""
     root = target_symbol[:-4] if target_symbol.endswith(".DWX") else target_symbol
     return SOURCE_OVERRIDES.get(root) or root
+
+
+def summarize_verify_failures(output: str) -> dict[str, object]:
+    """Extract verifier fail rows and classify systemic patterns."""
+    fail_rows: list[dict[str, object]] = []
+    for raw_line in (output or "").splitlines():
+        line = raw_line.strip()
+        m = VERIFY_FAIL_PATTERN.match(line)
+        if not m:
+            continue
+        verdict = m.group("verdict").strip()
+        if not verdict.upper().startswith("FAIL"):
+            continue
+        fail_rows.append(
+            {
+                "symbol": m.group("symbol").strip(),
+                "verdict": verdict,
+                "mid_ticks_5min": int(m.group("mid_ticks")),
+                "bars_expected": int(m.group("bars_expected").replace(",", "")),
+                "bars_got": int(m.group("bars_got").replace(",", "")),
+            }
+        )
+
+    result: dict[str, object] = {
+        "fail_count": len(fail_rows),
+        "systemic_zero_bars": False,
+        "systemic_zero_mid_ticks": False,
+        "fail_rows": fail_rows,
+    }
+    if not fail_rows:
+        return result
+
+    rows = fail_rows
+    all_expected_positive = all(int(r["bars_expected"]) > 0 for r in rows)
+    all_got_zero = all(int(r["bars_got"]) == 0 for r in rows)
+    all_mid_zero = all(int(r["mid_ticks_5min"]) == 0 for r in rows)
+
+    # Threshold keeps this for broad verifier/runtime failures, not single-symbol defects.
+    result["systemic_zero_bars"] = len(rows) >= 10 and all_expected_positive and all_got_zero
+    result["systemic_zero_mid_ticks"] = len(rows) >= 10 and all_mid_zero
+    return result
 
 
 def is_symbol_spec_ok(custom_tick_value: float, broker_tick_value: float) -> bool:
@@ -429,8 +476,26 @@ def main() -> int:
                 [PYTHON, str(VERIFY_SCRIPT)],
                 capture_output=True, text=True, timeout=600,
             )
-            for line in (proc.stdout + proc.stderr).splitlines()[-30:]:
+            verify_output = (proc.stdout or "") + (proc.stderr or "")
+            for line in verify_output.splitlines()[-30:]:
                 log(f"  verify | {line}", fp)
+            verify_diag = summarize_verify_failures(verify_output)
+            fail_count = int(verify_diag["fail_count"])
+            if fail_count:
+                log(f"  verify diagnostics: fail_count={fail_count}", fp)
+            if bool(verify_diag["systemic_zero_bars"]):
+                log(
+                    "  verify diagnostics: systemic bars mismatch detected "
+                    "(all FAIL rows show bars expected>0 but got=0). "
+                    "Treat as verifier/runtime condition, not symbol-specific data corruption.",
+                    fp,
+                )
+            if bool(verify_diag["systemic_zero_mid_ticks"]):
+                log(
+                    "  verify diagnostics: all FAIL rows have mid_ticks_5min=0. "
+                    "Likely market-data/session visibility issue at verifier runtime.",
+                    fp,
+                )
         except Exception as e:
             log(f"  verify FAILED to run: {e}", fp)
 

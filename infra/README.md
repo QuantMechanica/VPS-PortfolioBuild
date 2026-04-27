@@ -13,6 +13,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Canonical DWX Python orchestrator used by `QM_DWX_HourlyCheck`.
   - Includes source-symbol pre-flight (`tick_value > 0`, currencies present) before staging.
   - Readiness verdict is strict: missing symbols, pending queue, stale service heartbeat, bad symbol spec, or missing commission file => `OVERALL=NOT_READY`.
+  - Parses `verify_import.py` output and emits diagnostics when FAIL rows show a systemic pattern (`bars expected>0` with `got=0` across many symbols), preventing false symbol-level triage.
 - `scripts/Install-DwxHourlyTask.ps1`
   - Registers Task Scheduler job `QM_DWX_HourlyCheck` as `SYSTEM` (works when no user is logged in).
   - Safe to re-run (`Register-ScheduledTask -Force`).

@@ -99,6 +99,67 @@ class ReadinessTests(unittest.TestCase):
         self.assertEqual(self.mod.source_symbol_for_target("NDXm.DWX"), "NDX")
         self.assertEqual(self.mod.source_symbol_for_target("EURUSD.DWX"), "EURUSD")
 
+    def test_summarize_verify_failures_flags_systemic_zero_bars(self):
+        output = "\n".join(
+            [
+                f"[ FAIL_tail_bars] S{i}.DWX: mid_ticks_5min=10; bars expected=12,345/got=0"
+                for i in range(1, 11)
+            ]
+        )
+        summary = self.mod.summarize_verify_failures(output)
+        self.assertEqual(summary["fail_count"], 10)
+        self.assertTrue(summary["systemic_zero_bars"])
+        self.assertFalse(summary["systemic_zero_mid_ticks"])
+
+    def test_summarize_verify_failures_flags_systemic_zero_mid_ticks(self):
+        output = "\n".join(
+            [
+                f"[FAIL_tail_mid_bars] S{i}.DWX: mid_ticks_5min=0; bars expected=999/got=0"
+                for i in range(1, 10 + 1)
+            ]
+        )
+        summary = self.mod.summarize_verify_failures(output)
+        self.assertEqual(summary["fail_count"], 10)
+        self.assertTrue(summary["systemic_zero_bars"])
+        self.assertTrue(summary["systemic_zero_mid_ticks"])
+
+    def test_summarize_verify_failures_ignores_small_or_mixed_batches(self):
+        output = "\n".join(
+            [
+                "[ FAIL_tail_bars] WS30.DWX: mid_ticks_5min=1561; bars expected=445,870/got=0",
+                "[ FAIL_tail_mid_bars] XAUUSD.DWX: mid_ticks_5min=0; bars expected=446,753/got=0",
+                "[ FAIL_tail_bars] EURUSD.DWX: mid_ticks_5min=1; bars expected=446,100/got=100",
+            ]
+        )
+        summary = self.mod.summarize_verify_failures(output)
+        self.assertEqual(summary["fail_count"], 3)
+        self.assertFalse(summary["systemic_zero_bars"])
+        self.assertFalse(summary["systemic_zero_mid_ticks"])
+
+    def test_summarize_verify_failures_detects_systemic_zero_bars(self):
+        lines = []
+        for i in range(10):
+            lines.append(
+                f"[FAIL_tail_mid_bars] S{i}.DWX: source=S{i}; "
+                "mid_ticks_5min=0; bars expected=123,456/got=0"
+            )
+        summary = self.mod.summarize_verify_failures("\n".join(lines))
+        self.assertEqual(summary["fail_count"], 10)
+        self.assertTrue(summary["systemic_zero_bars"])
+        self.assertTrue(summary["systemic_zero_mid_ticks"])
+
+    def test_summarize_verify_failures_does_not_flag_symbol_level_failure(self):
+        output = (
+            "[FAIL_tail_bars] USDJPY.DWX: source=USDJPY; "
+            "mid_ticks_5min=11; bars expected=446,627/got=441,000\n"
+            "[      OK      ] EURUSD.DWX: source=EURUSD; "
+            "mid_ticks_5min=10; bars expected=445,000/got=445,000"
+        )
+        summary = self.mod.summarize_verify_failures(output)
+        self.assertEqual(summary["fail_count"], 1)
+        self.assertFalse(summary["systemic_zero_bars"])
+        self.assertFalse(summary["systemic_zero_mid_ticks"])
+
 
 if __name__ == "__main__":
     unittest.main()
