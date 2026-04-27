@@ -24,6 +24,7 @@ param(
     [int]$Qua95BlockedAssertionMaxLagMinutes = 30,
     [string]$Qua95UnblockReadinessCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95UnblockReadiness.ps1',
     [string]$Qua95AuditSignalCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95AuditSignal.ps1',
+    [string]$Qua95CanonicalSnapshotCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95CanonicalSnapshot.ps1',
     [string]$Qua95OpsBundleManifestScript = 'C:\QM\repo\infra\scripts\Test-QUA95OpsBundleManifest.ps1',
     [string]$Qua95BlockedHeartbeatWrapperTestScript = 'C:\QM\repo\infra\monitoring\Test-QUA95BlockedHeartbeatWrapper.ps1',
     [string]$OutJson = 'C:\QM\repo\infra\reports\infra_audit_latest.json',
@@ -342,6 +343,24 @@ else {
     Add-Check -Name 'qua95_audit_signal' -Status $auditSignalStatus -Meta @{
         exit_code = $auditSignalCode
         output = $auditSignalText
+    }
+}
+
+# QUA-95 canonical snapshot consistency
+if (-not (Test-Path -LiteralPath $Qua95CanonicalSnapshotCheckScript)) {
+    Add-Check -Name 'qua95_canonical_snapshot' -Status 'warn' -Meta @{
+        reason = 'check_script_missing'
+        path = $Qua95CanonicalSnapshotCheckScript
+    }
+}
+else {
+    $canonicalOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $Qua95CanonicalSnapshotCheckScript 2>&1
+    $canonicalCode = $LASTEXITCODE
+    $canonicalText = ($canonicalOut | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
+    $canonicalStatus = if ($canonicalCode -eq 0) { 'ok' } else { 'critical' }
+    Add-Check -Name 'qua95_canonical_snapshot' -Status $canonicalStatus -Meta @{
+        exit_code = $canonicalCode
+        output = $canonicalText
     }
 }
 

@@ -35,6 +35,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
     - QUA-95 blocked assertion freshness (`QUA-95_BLOCKED_STATE_ASSERTION_2026-04-27.md`)
     - QUA-95 unblock-readiness freshness (`QUA-95_UNBLOCK_READINESS_2026-04-27.json`)
     - QUA-95 audit-signal consistency (`Test-QUA95AuditSignal.ps1`)
+    - QUA-95 canonical-snapshot consistency (`Test-QUA95CanonicalSnapshot.ps1`)
     - QUA-95 ops bundle manifest integrity (`Test-QUA95OpsBundleManifest.ps1`)
     - QUA-95 blocked-heartbeat wrapper validation (`Test-QUA95BlockedHeartbeatWrapper.ps1`)
   - Writes machine-readable JSON report to `infra/reports/infra_audit_latest.json`.
