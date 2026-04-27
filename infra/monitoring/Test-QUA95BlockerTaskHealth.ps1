@@ -7,6 +7,7 @@ param(
     [string]$AuditSignalCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95AuditSignal.ps1',
     [string]$UnblockOwnerConsistencyCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95UnblockOwnerConsistency.ps1',
     [string]$CanonicalSnapshotCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95CanonicalSnapshot.ps1',
+    [string]$CanonicalSnapshotFreshnessCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95CanonicalSnapshotFreshness.ps1',
     [string]$DirectVerifierProofCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95DirectVerifierProof.ps1',
     [string]$CustomVisibilityProofCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95CustomVisibilityProof.ps1',
     [string]$EvidenceCohesionCheckScript = 'C:\QM\repo\infra\scripts\Test-QUA95EvidenceCohesion.ps1',
@@ -111,6 +112,19 @@ $canonicalCode = $LASTEXITCODE
 if ($canonicalCode -ne 0) {
     $canonicalText = ($canonicalOut | ForEach-Object { $_.ToString() }) -join '; '
     Write-Host ("status=critical task={0} issues=canonical_snapshot_check_failed exit_code={1} output={2}" -f $TaskName, $canonicalCode, $canonicalText)
+    exit 2
+}
+
+if (-not (Test-Path -LiteralPath $CanonicalSnapshotFreshnessCheckScript)) {
+    Write-Host ("status=critical task={0} issues=canonical_snapshot_freshness_check_missing path={1}" -f $TaskName, $CanonicalSnapshotFreshnessCheckScript)
+    exit 2
+}
+
+$canonicalFreshnessOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $CanonicalSnapshotFreshnessCheckScript 2>&1
+$canonicalFreshnessCode = $LASTEXITCODE
+if ($canonicalFreshnessCode -ne 0) {
+    $canonicalFreshnessText = ($canonicalFreshnessOut | ForEach-Object { $_.ToString() }) -join '; '
+    Write-Host ("status=critical task={0} issues=canonical_snapshot_freshness_check_failed exit_code={1} output={2}" -f $TaskName, $canonicalFreshnessCode, $canonicalFreshnessText)
     exit 2
 }
 

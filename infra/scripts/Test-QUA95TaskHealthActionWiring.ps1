@@ -7,6 +7,7 @@ param(
         '-AuditSignalCheckScript',
         '-UnblockOwnerConsistencyCheckScript',
         '-CanonicalSnapshotCheckScript',
+        '-CanonicalSnapshotFreshnessCheckScript',
         '-DirectVerifierProofCheckScript',
         '-CustomVisibilityProofCheckScript',
         '-EvidenceCohesionCheckScript',

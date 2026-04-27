@@ -9,6 +9,7 @@ param(
     [string]$AuditSignalCheckScript = '',
     [string]$UnblockOwnerConsistencyCheckScript = '',
     [string]$CanonicalSnapshotCheckScript = '',
+    [string]$CanonicalSnapshotFreshnessCheckScript = '',
     [string]$DirectVerifierProofCheckScript = '',
     [string]$CustomVisibilityProofCheckScript = '',
     [string]$EvidenceCohesionCheckScript = '',
@@ -65,6 +66,13 @@ if (-not (Test-Path -LiteralPath $CanonicalSnapshotCheckScript)) {
     throw "Canonical snapshot check script missing: $CanonicalSnapshotCheckScript"
 }
 
+if ([string]::IsNullOrWhiteSpace($CanonicalSnapshotFreshnessCheckScript)) {
+    $CanonicalSnapshotFreshnessCheckScript = Join-Path $RepoRoot 'infra\scripts\Test-QUA95CanonicalSnapshotFreshness.ps1'
+}
+if (-not (Test-Path -LiteralPath $CanonicalSnapshotFreshnessCheckScript)) {
+    throw "Canonical snapshot freshness check script missing: $CanonicalSnapshotFreshnessCheckScript"
+}
+
 if ([string]::IsNullOrWhiteSpace($DirectVerifierProofCheckScript)) {
     $DirectVerifierProofCheckScript = Join-Path $RepoRoot 'infra\scripts\Test-QUA95DirectVerifierProof.ps1'
 }
@@ -107,7 +115,7 @@ if (-not (Test-Path -LiteralPath $HeartbeatCustomVisibilityCheckScript)) {
     throw "Heartbeat custom visibility check script missing: $HeartbeatCustomVisibilityCheckScript"
 }
 
-$args = "-NoProfile -ExecutionPolicy Bypass -File `"$checkScript`" -MaxAgeMinutes $MaxAgeMinutes -TransitionPayloadCheckScript `"$TransitionPayloadCheckScript`" -UnblockReadinessCheckScript `"$UnblockReadinessCheckScript`" -AuditSignalCheckScript `"$AuditSignalCheckScript`" -UnblockOwnerConsistencyCheckScript `"$UnblockOwnerConsistencyCheckScript`" -CanonicalSnapshotCheckScript `"$CanonicalSnapshotCheckScript`" -DirectVerifierProofCheckScript `"$DirectVerifierProofCheckScript`" -CustomVisibilityProofCheckScript `"$CustomVisibilityProofCheckScript`" -EvidenceCohesionCheckScript `"$EvidenceCohesionCheckScript`" -FailureSignatureCheckScript `"$FailureSignatureCheckScript`" -BlockerRefreshActionWiringCheckScript `"$BlockerRefreshActionWiringCheckScript`" -HeartbeatCustomVisibilityCheckScript `"$HeartbeatCustomVisibilityCheckScript`""
+$args = "-NoProfile -ExecutionPolicy Bypass -File `"$checkScript`" -MaxAgeMinutes $MaxAgeMinutes -TransitionPayloadCheckScript `"$TransitionPayloadCheckScript`" -UnblockReadinessCheckScript `"$UnblockReadinessCheckScript`" -AuditSignalCheckScript `"$AuditSignalCheckScript`" -UnblockOwnerConsistencyCheckScript `"$UnblockOwnerConsistencyCheckScript`" -CanonicalSnapshotCheckScript `"$CanonicalSnapshotCheckScript`" -CanonicalSnapshotFreshnessCheckScript `"$CanonicalSnapshotFreshnessCheckScript`" -DirectVerifierProofCheckScript `"$DirectVerifierProofCheckScript`" -CustomVisibilityProofCheckScript `"$CustomVisibilityProofCheckScript`" -EvidenceCohesionCheckScript `"$EvidenceCohesionCheckScript`" -FailureSignatureCheckScript `"$FailureSignatureCheckScript`" -BlockerRefreshActionWiringCheckScript `"$BlockerRefreshActionWiringCheckScript`" -HeartbeatCustomVisibilityCheckScript `"$HeartbeatCustomVisibilityCheckScript`""
 $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument $args
 $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).Date.AddMinutes(2) `
     -RepetitionInterval (New-TimeSpan -Minutes $EveryMinutes) `
@@ -124,6 +132,7 @@ if ($PreviewOnly) {
     Write-Host ("preview_audit_signal_check_script={0}" -f $AuditSignalCheckScript)
     Write-Host ("preview_unblock_owner_consistency_check_script={0}" -f $UnblockOwnerConsistencyCheckScript)
     Write-Host ("preview_canonical_snapshot_check_script={0}" -f $CanonicalSnapshotCheckScript)
+    Write-Host ("preview_canonical_snapshot_freshness_check_script={0}" -f $CanonicalSnapshotFreshnessCheckScript)
     Write-Host ("preview_direct_verifier_proof_check_script={0}" -f $DirectVerifierProofCheckScript)
     Write-Host ("preview_custom_visibility_proof_check_script={0}" -f $CustomVisibilityProofCheckScript)
     Write-Host ("preview_evidence_cohesion_check_script={0}" -f $EvidenceCohesionCheckScript)

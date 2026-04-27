@@ -448,6 +448,7 @@
   - `-AuditSignalCheckScript`
   - `-UnblockOwnerConsistencyCheckScript`
   - `-CanonicalSnapshotCheckScript`
+  - `-CanonicalSnapshotFreshnessCheckScript`
   - `-DirectVerifierProofCheckScript`
   - `-CustomVisibilityProofCheckScript`
   - `-EvidenceCohesionCheckScript`
@@ -800,3 +801,16 @@
   - pass `-FailOnInsufficientEvidence` to return exit code `2` when checks fail.
 - Example:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Confirm-DwxRegistryMitigation.ps1 -FailOnInsufficientEvidence`
+
+## `Ensure-Mt5PortableMarker.ps1`
+
+- Idempotent factory terminal convergence helper for MT5 portable markers.
+- Default scope is `D:\QM\mt5\T1` through `D:\QM\mt5\T5`.
+- Check-then-act behavior:
+  - creates missing `portable.txt`
+  - normalizes non-empty marker files back to empty
+  - skips missing roots (optionally hard-fail with `-FailOnMissingRoot`)
+- Safety:
+  - refuses any `T6` terminal root path.
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Ensure-Mt5PortableMarker.ps1 -FailOnMissingRoot`

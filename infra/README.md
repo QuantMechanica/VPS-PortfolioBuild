@@ -22,6 +22,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Audits core infra health checks:
     - disk free thresholds
     - T1-T5 terminal liveness
+    - T1-T5 `portable.txt` marker presence (portable-mode drift signal)
     - T6 live/demo isolation signal
     - Paperclip daemon process health
     - aggregator freshness
@@ -58,7 +59,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `scripts/Install-QUA95TaskHealthTask.ps1`
   - Registers Task Scheduler job `QM_QUA95_TaskHealth_15min` as `SYSTEM`.
   - Runs `monitoring/Test-QUA95BlockerTaskHealth.ps1` on a 15-minute cadence.
-  - Passes explicit `-TransitionPayloadCheckScript`, `-UnblockReadinessCheckScript`, `-AuditSignalCheckScript`, `-UnblockOwnerConsistencyCheckScript`, `-CanonicalSnapshotCheckScript`, `-DirectVerifierProofCheckScript`, `-CustomVisibilityProofCheckScript`, `-EvidenceCohesionCheckScript`, `-FailureSignatureCheckScript`, `-BlockerRefreshActionWiringCheckScript`, and `-HeartbeatCustomVisibilityCheckScript` paths to avoid hidden default/path drift.
+  - Passes explicit `-TransitionPayloadCheckScript`, `-UnblockReadinessCheckScript`, `-AuditSignalCheckScript`, `-UnblockOwnerConsistencyCheckScript`, `-CanonicalSnapshotCheckScript`, `-CanonicalSnapshotFreshnessCheckScript`, `-DirectVerifierProofCheckScript`, `-CustomVisibilityProofCheckScript`, `-EvidenceCohesionCheckScript`, `-FailureSignatureCheckScript`, `-BlockerRefreshActionWiringCheckScript`, and `-HeartbeatCustomVisibilityCheckScript` paths to avoid hidden default/path drift.
   - Safe to re-run (`Register-ScheduledTask -Force`).
 - `scripts/Run-QUA95BlockerRefresh.ps1`
   - Scheduled runner used by `QM_QUA95_BlockerRefresh`.
@@ -85,6 +86,10 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Converges a non-interactive MT5 startup INI from one patch version to another (default: `v2 -> v3`).
   - Check-then-act writes: updates target only when content differs.
   - Enforces `ShutdownTerminal=1` and refuses T6 paths by default.
+- `scripts/Ensure-Mt5PortableMarker.ps1`
+  - Idempotently converges `portable.txt` marker files for factory terminals (`T1`-`T5`).
+  - Creates missing marker files and normalizes non-empty markers to an empty file.
+  - Refuses T6 paths by design; supports `-FailOnMissingRoot` for strict runs.
 - `scripts/Confirm-DwxRegistryMitigation.ps1`
   - Emits machine-readable QUA-69 evidence for registry-corruption mitigation confirmation.
   - Verifies >= 3 successful `Fix_DWX_Spec_v3` terminal-close events from latest T1 log, throttling markers (`BATCH|processed=5|sleep_ms=200`), and non-truncated `symbols.custom.dat` size.

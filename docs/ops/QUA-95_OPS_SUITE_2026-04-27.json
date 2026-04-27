@@ -1,6 +1,6 @@
 ﻿{
     "issue":  "QUA-95",
-    "generated_at_local":  "2026-04-27T14:20:23+02:00",
+    "generated_at_local":  "2026-04-27T14:23:13+02:00",
     "overall_status":  "ok",
     "checks":  [
                    {
@@ -19,7 +19,7 @@
                        "name":  "canonical_snapshot_freshness",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok snapshot_age_minutes=5.26 max_age_minutes=180"
+                       "output":  "status=ok snapshot_age_minutes=8.14 max_age_minutes=180"
                    },
                    {
                        "name":  "handoff_integrity",
@@ -43,7 +43,7 @@
                        "name":  "unblock_readiness",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok lag_minutes=4.96 ready_to_unblock=False bars_got=0 owner_count=2"
+                       "output":  "status=ok lag_minutes=6.77 ready_to_unblock=False bars_got=0 owner_count=2"
                    },
                    {
                        "name":  "unblock_owner_consistency",
@@ -61,7 +61,7 @@
                        "name":  "audit_signal",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok qua95_issues=0 non_qua95_issues=2"
+                       "output":  "status=ok qua95_issues=1 non_qua95_issues=2"
                    },
                    {
                        "name":  "direct_verifier_proof",
@@ -115,7 +115,7 @@
                        "name":  "blocker_task_health",
                        "status":  "ok",
                        "exit_code":  0,
-                       "output":  "status=ok task=QM_QUA95_BlockerRefresh last_run=2026-04-27T14:01:01.0000000+02:00 age_minutes=19.31"
+                       "output":  "status=ok task=QM_QUA95_BlockerRefresh last_run=2026-04-27T14:01:01.0000000+02:00 age_minutes=22.14"
                    }
                ]
 }

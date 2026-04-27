@@ -122,6 +122,8 @@ Observed:
 Preview verification now also requires:
 - `preview_unblock_owner_consistency_check_script=C:\QM\repo\infra\scripts\Test-QUA95UnblockOwnerConsistency.ps1`
 - preview action contains `-UnblockOwnerConsistencyCheckScript "C:\QM\repo\infra\scripts\Test-QUA95UnblockOwnerConsistency.ps1"`
+- `preview_canonical_snapshot_freshness_check_script=C:\QM\repo\infra\scripts\Test-QUA95CanonicalSnapshotFreshness.ps1`
+- preview action contains `-CanonicalSnapshotFreshnessCheckScript "C:\QM\repo\infra\scripts\Test-QUA95CanonicalSnapshotFreshness.ps1"`
 - `preview_direct_verifier_proof_check_script=C:\QM\repo\infra\scripts\Test-QUA95DirectVerifierProof.ps1`
 - preview action contains `-DirectVerifierProofCheckScript "C:\QM\repo\infra\scripts\Test-QUA95DirectVerifierProof.ps1"`
 - `preview_evidence_cohesion_check_script=C:\QM\repo\infra\scripts\Test-QUA95EvidenceCohesion.ps1`
