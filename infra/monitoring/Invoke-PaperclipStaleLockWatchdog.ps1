@@ -4,8 +4,10 @@ param(
     [string]$CompanyId = $(if ($env:PAPERCLIP_COMPANY_ID) { $env:PAPERCLIP_COMPANY_ID } else { "" }),
     [string]$ApiKey = $(if ($env:PAPERCLIP_API_KEY) { $env:PAPERCLIP_API_KEY } else { "" }),
     [int]$StaleAfterMinutes = 15,
+    [int]$RunningLockMaxMinutes = 90,
     [string[]]$Statuses = @("in_progress"),
-    [string[]]$AllowedAssigneeAgentIds = @("46fc11e5-7fc2-43f4-9a34-bde29e5dee3b"),
+    [string]$AssigneeAgentId = $(if ($env:PAPERCLIP_AGENT_ID) { $env:PAPERCLIP_AGENT_ID } else { "" }),
+    [string[]]$AllowedAssigneeAgentIds = @(),
     [switch]$AutoRecover,
     [switch]$FailOnFinding
 )
@@ -51,7 +53,21 @@ function Get-PropValue {
         [Parameter(Mandatory = $true)] [object]$Object,
         [Parameter(Mandatory = $true)] [string]$Name
     )
+    if ($Object -is [System.Collections.IDictionary]) {
+        foreach ($key in $Object.Keys) {
+            if ([string]$key -ieq $Name) {
+                return $Object[$key]
+            }
+        }
+    }
+
     $prop = $Object.PSObject.Properties[$Name]
+    if ($null -eq $prop) {
+        $matches = @($Object.PSObject.Properties | Where-Object { $_.Name -ieq $Name })
+        if ($matches.Count -gt 0) {
+            $prop = $matches[0]
+        }
+    }
     if ($null -eq $prop) { return $null }
     return $prop.Value
 }
@@ -67,9 +83,18 @@ if ([string]::IsNullOrWhiteSpace($CompanyId) -or [string]::IsNullOrWhiteSpace($A
 
 $apiBase = $PaperclipApiUrl.TrimEnd("/")
 $script:headers = @{ Authorization = "Bearer $ApiKey" }
+$allowedAssignees = @($AllowedAssigneeAgentIds | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+if ($allowedAssignees.Count -eq 0 -and -not [string]::IsNullOrWhiteSpace($AssigneeAgentId)) {
+    $allowedAssignees = @($AssigneeAgentId)
+}
 
 $statusCsv = ($Statuses | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) -join ","
-$listUrl = "$apiBase/api/companies/$CompanyId/issues?status=$statusCsv&limit=200"
+$queryParts = @("status=$statusCsv", "limit=200")
+if (-not [string]::IsNullOrWhiteSpace($AssigneeAgentId)) {
+    $queryParts += "assigneeAgentId=$([uri]::EscapeDataString($AssigneeAgentId))"
+}
+$query = $queryParts -join "&"
+$listUrl = "$apiBase/api/companies/$CompanyId/issues?$query"
 $issues = @(Invoke-PaperclipApiGet -Uri $listUrl)
 
 $now = [datetime]::UtcNow
@@ -81,17 +106,26 @@ foreach ($issue in $issues) {
     $activeRun = Get-PropValue -Object $issue -Name "activeRun"
     $assigneeAgentId = [string](Get-PropValue -Object $issue -Name "assigneeAgentId")
     if ([string]::IsNullOrWhiteSpace($executionLockedAt)) { continue }
-    if ($null -ne $activeRun) { continue }
 
     $agentAllowed = $true
-    if ($AllowedAssigneeAgentIds.Count -gt 0) {
-        $agentAllowed = $AllowedAssigneeAgentIds -contains $assigneeAgentId
+    if ($allowedAssignees.Count -gt 0) {
+        $agentAllowed = $allowedAssignees -contains $assigneeAgentId
     }
     if (-not $agentAllowed) { continue }
 
     $lockedAt = [datetime]::Parse($executionLockedAt).ToUniversalTime()
     $ageMin = [math]::Round(($now - $lockedAt).TotalMinutes, 2)
-    if ($ageMin -lt $StaleAfterMinutes) { continue }
+    $activeRunId = [string](Get-PropValue -Object $activeRun -Name "id")
+    $activeRunStartedAt = [string](Get-PropValue -Object $activeRun -Name "startedAt")
+
+    $lockClass = $null
+    if ($null -eq $activeRun -and $ageMin -ge $StaleAfterMinutes) {
+        $lockClass = "orphaned_lock"
+    }
+    elseif ($null -ne $activeRun -and $ageMin -ge $RunningLockMaxMinutes) {
+        $lockClass = "stale_running_lock"
+    }
+    if ($null -eq $lockClass) { continue }
 
     $entry = [ordered]@{
         issue_id = [string](Get-PropValue -Object $issue -Name "id")
@@ -103,13 +137,16 @@ foreach ($issue in $issues) {
         execution_run_id = [string](Get-PropValue -Object $issue -Name "executionRunId")
         execution_agent_name_key = [string](Get-PropValue -Object $issue -Name "executionAgentNameKey")
         execution_locked_at = $executionLockedAt
+        lock_class = $lockClass
+        active_run_id = if ([string]::IsNullOrWhiteSpace($activeRunId)) { $null } else { $activeRunId }
+        active_run_started_at = if ([string]::IsNullOrWhiteSpace($activeRunStartedAt)) { $null } else { $activeRunStartedAt }
         lock_age_minutes = $ageMin
         auto_recover_attempted = $false
         auto_recover_ok = $false
         auto_recover_error = $null
     }
 
-    if ($AutoRecover.IsPresent -and -not [string]::IsNullOrWhiteSpace($assigneeAgentId)) {
+    if ($AutoRecover.IsPresent -and $lockClass -eq "orphaned_lock" -and -not [string]::IsNullOrWhiteSpace($assigneeAgentId)) {
         $entry.auto_recover_attempted = $true
         $issueUrl = "$apiBase/api/issues/$([string](Get-PropValue -Object $issue -Name 'id'))"
         try {
@@ -133,8 +170,9 @@ foreach ($issue in $issues) {
 if ($stale.Count -eq 0) {
     $result = New-Result -Status "ok" -Message "No stale Paperclip issue locks detected." -Details @{
         stale_after_minutes = $StaleAfterMinutes
+        running_lock_max_minutes = $RunningLockMaxMinutes
         statuses = $Statuses
-        allowed_assignee_agent_ids = $AllowedAssigneeAgentIds
+        allowed_assignee_agent_ids = $allowedAssignees
     }
     $result | ConvertTo-Json -Depth 10
     exit 0
@@ -142,6 +180,8 @@ if ($stale.Count -eq 0) {
 
 $failedRecoveries = @($stale | Where-Object { $_.auto_recover_attempted -and -not $_.auto_recover_ok }).Count
 $allRecovered = $AutoRecover.IsPresent -and $failedRecoveries -eq 0
+$orphanedCount = @($stale | Where-Object { $_.lock_class -eq "orphaned_lock" }).Count
+$staleRunningCount = @($stale | Where-Object { $_.lock_class -eq "stale_running_lock" }).Count
 $status = if ($allRecovered) { "warn" } else { "critical" }
 $message = if ($allRecovered) {
     "Detected stale Paperclip issue locks; automatic PATCH-only assignee-cycle succeeded."
@@ -152,9 +192,13 @@ else {
 
 $result = New-Result -Status $status -Message $message -Details @{
     stale_count = $stale.Count
+    orphaned_lock_count = $orphanedCount
+    stale_running_lock_count = $staleRunningCount
     stale_after_minutes = $StaleAfterMinutes
+    running_lock_max_minutes = $RunningLockMaxMinutes
     auto_recover = $AutoRecover.IsPresent
     recoveries = @($recoveries)
+    allowed_assignee_agent_ids = $allowedAssignees
     issues = @($stale)
 }
 $result | ConvertTo-Json -Depth 10

@@ -57,6 +57,11 @@ Do not force-clear T6-related issues without OWNER/LiveOps approval gates.
 - Script: `C:\QM\repo\infra\monitoring\Invoke-PaperclipStaleLockWatchdog.ps1`
 - Default behavior is monitor-only.
 - Optional `-AutoRecover` executes the same PATCH-only assignee-cycle described above.
+- Use `-AssigneeAgentId <agent-id>` (defaults to `PAPERCLIP_AGENT_ID`) for deterministic lock visibility on large issue sets.
+- `-AllowedAssigneeAgentIds` is optional; if omitted, the script auto-uses `-AssigneeAgentId`.
+- Lock classes:
+  - `orphaned_lock`: stale lock with `activeRun=null`
+  - `stale_running_lock`: issue still points at an old `activeRun` long past expected runtime
 - Mutating calls include `X-Paperclip-Run-Id` by design.
 
 Examples:
