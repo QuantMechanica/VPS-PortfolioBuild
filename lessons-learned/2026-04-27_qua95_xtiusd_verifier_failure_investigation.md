@@ -67,6 +67,12 @@ Observed:
 Probe artifacts:
 - `lessons-learned/evidence/2026-04-27_qua95_xtiusd_probe.md`
 - `lessons-learned/evidence/2026-04-27_qua95_xtiusd_chunked_probe.json`
+- `lessons-learned/evidence/2026-04-27_qua95_xtiusd_source_vs_custom_api_probe.md`
+
+Source-vs-custom API comparison (same terminal/session) additionally confirms:
+- `XTIUSD` source symbol returns M1 bars (`rates_range_2d=257`, `rates_from_pos=10`).
+- `XTIUSD.DWX` custom symbol returns zero/fail on bars APIs (`rates_range_2d=0`, `rates_from_pos=0` with `Terminal: Call failed`).
+- Therefore the blocker is not broker source feed unavailability; it is custom-symbol/runtime bars visibility plus verifier handling.
 
 ## Durable change in this heartbeat
 
@@ -81,5 +87,8 @@ Probe artifacts:
 
 ## Next action
 
-Unblock owner: verifier implementation owner (`D:\QM\mt5\T1\dwx_import\verify_import.py`).  
-Required action: implement runtime hardening (`symbol_select` pre-flight, bars warm-up/retry, chunked fallback for range reads), then rerun until `XTIUSD.DWX` shows `bars_got > 0` with aligned tail.
+Unblock owner A: custom-symbol/runtime owner (T1 DWX state).  
+Required action A: restore `XTIUSD.DWX` M1 bar visibility in terminal runtime (bars APIs returning non-zero).  
+
+Unblock owner B: verifier implementation owner (`D:\QM\mt5\T1\dwx_import\verify_import.py`).  
+Required action B: keep hardening (`symbol_select` pre-flight, bars warm-up/retry, chunked/alt-path diagnostics), then rerun until `XTIUSD.DWX` shows `bars_got > 0` with aligned tail.
