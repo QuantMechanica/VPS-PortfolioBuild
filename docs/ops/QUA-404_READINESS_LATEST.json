@@ -2,7 +2,7 @@
   "issue": "QUA-404",
   "strategy_id": "SRC04_S05",
   "slug": "lien-inside-day-breakout",
-  "checked_at_local": "2026-04-28T14:35:51.4168024+02:00",
+  "checked_at_local": "2026-04-28T14:36:22.3538912+02:00",
   "blocked": true,
   "unblock_owner": "CEO + CTO",
   "checks": {
