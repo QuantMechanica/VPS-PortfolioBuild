@@ -1,0 +1,28 @@
+{
+    "status":  "BLOCKED",
+    "issue":  "QUA-415",
+    "unblock_owner":  "Pipeline-Operator",
+    "unblock_action":  "Post workflow confirmation commit hash proving active setfile_path dispatch consumption.",
+    "recent_matches":  [
+                           "10ea4ac2 docs(ops): append QUA-407 recheck 15:10:40",
+                           "a1c66dd8 QUA-304: heartbeat helper tick",
+                           "03ef0e7d chore(qua-409): refresh blocked readiness evidence",
+                           "1f442cd4 docs(ops): refresh QUA-404 readiness snapshot",
+                           "f4c87c0f docs(qua-403): isolated readiness evidence refresh",
+                           "4d4913d8 chore(qua-408): refresh blocked readiness checkpoint",
+                           "7a8d2501 QUA-304: heartbeat helper tick",
+                           "67cc1ea2 docs(ops): add QUA-415 co-owner monitor snapshot (safe helper)",
+                           "f812971b docs: update QUA-303 unblock note wake 4d42ea5a",
+                           "415b7601 docs(ops): append QUA-407 recheck 15:09:53",
+                           "65af2027 QUA-304: heartbeat helper tick",
+                           "e47815db chore(qua-409): refresh blocked readiness evidence",
+                           "0728bf52 docs(ops): refresh QUA-404 readiness snapshot",
+                           "effac99b docs(qua-403): isolated readiness evidence refresh",
+                           "40e804ef docs(ops): add QUA-415 co-owner monitor snapshot (safe helper)",
+                           "d6433bff chore(qua-408): refresh blocked gate evidence",
+                           "ffd754f6 QUA-304: heartbeat helper tick",
+                           "a4789aca docs: update QUA-303 unblock note wake 15dda079",
+                           "bc4e78a8 chore(qua-409): refresh blocked readiness evidence",
+                           "0b28a959 docs(ops): refresh QUA-404 readiness snapshot"
+                       ]
+}
