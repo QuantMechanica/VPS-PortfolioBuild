@@ -18,13 +18,14 @@ Pipeline-Operator receives one or more runnable backtest jobs with `target_termi
 ## State + Evidence Paths
 
 - Queue + dedup state root: `D:\QM\Reports\pipeline\`
-- Dedup index: `D:\QM\Reports\pipeline\dedup_index.json`
+- Dispatch state: `D:\QM\Reports\pipeline\dispatch_state.json`
 - Scheduler implementation: `framework/scripts/pipeline_dispatcher.py`
 - Scheduler tests: `framework/scripts/tests/test_pipeline_dispatcher.py`
+- Launcher hooks: `framework/scripts/run_backtest_smoke.ps1`, `framework/scripts/run_smoke.ps1`
 
 ## Scheduling Policy
 
-1. Reject duplicates when dedup key already exists in `dedup_index.json`.
+1. Reject duplicates when dedup key already exists in `dispatch_state.json`.
 2. Build eligible terminal set from T1-T5 where running count `< 3`.
 3. Pick least-loaded terminal(s) from eligible set.
 4. If symbol affinity exists for same symbol within 24h and terminal is in least-loaded set, pick that terminal.
