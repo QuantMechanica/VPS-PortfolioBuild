@@ -1,0 +1,34 @@
+{
+  "issue": "QUA-415",
+  "timestamp_utc": "2026-04-28T12:46:45Z",
+  "status": "BLOCKED",
+  "unblock_owner": "Pipeline-Operator",
+  "unblock_action": "Post workflow confirmation commit hash proving active setfile_path dispatch consumption.",
+  "devops_closeout_commits": [
+    {
+      "sha": "21cc3e6",
+      "note": "setfile generator + dispatch refusal baseline",
+      "role": "devops_impl"
+    },
+    {
+      "sha": "fc52012",
+      "note": "worked example setfile + deterministic output",
+      "role": "devops_example"
+    },
+    {
+      "sha": "f28df74",
+      "note": "dispatcher schema requires setfile_path",
+      "role": "schema_enforce"
+    },
+    {
+      "sha": "20f6d4f",
+      "note": "co-owner closeout monitor false-positive fix",
+      "role": "monitor_hardening"
+    },
+    {
+      "sha": "c2ae643",
+      "note": "latest monitor snapshot commit",
+      "role": "latest_monitor_snapshot"
+    }
+  ]
+}
