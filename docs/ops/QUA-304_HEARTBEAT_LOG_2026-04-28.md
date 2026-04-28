@@ -2834,3 +2834,9 @@
 - Tooling Note: compile_one wrapper returned METAEDITOR_NONZERO_EXIT despite clean compile log; treated as environment/wrapper anomaly, not EA compile failure.
 - Blocker: CTO review-only gate remains the unblock owner/action.
 
+
+- Checkpoint: 2026-04-28T08:09:43Z
+- Status: WAITING_CTO_REVIEW
+- Handoff: P1 build artifacts confirmed for QM5_1003_davey_baseline_3bar (EA source + ex5). Key evidence commits: 8e4b31a (rule/citation alignment checkpoint), 7e46ff0 (clean compile evidence).
+- Unblock Owner/Action: CTO review-only gate approval/decision on QUA-304.
+
