@@ -1,0 +1,907 @@
+                                                                 CHAPTER 8
+
+Technical Trading
+Strategy: Multiple
+Time Frame
+Analysis
+
+                                                                                                  91
+
+To trade successfully on an intraday basis, it is important to be selective. Trend
+     trading is one of the most popular strategies employed by global macro hedge
+funds. Although many traders prefer to range trade, the big profit potentials tend to
+lie in trades that capture and participate in big market moves. It was once said by
+Mark Boucher, a hedge fund manager of Midas Trust Fund and a former number-one
+money manager as ranked by Nelson's World Best Money Managers, that 70% of a
+market's moves occurs 20% of the time. This makes multiple time frame analysis
+particularly important, because no trader wants to lose sight of the big picture. A
+great comparison would be to imagine taking a road trip from Chicago to Florida.
+There are going to be a lot of left and right turns along the way, but the most
+important thing to be aware of during the trip is that you should be headed south.
+The same approach should be taken in trading. Looking for opportunities to buy in
+an uptrend or sell in a downtrend can be far much more profitable than trying to
+pick tops and bottoms.
+
+   The most common form of multiple time frame analysis is to use daily charts to
+identify the overall trend and then use the hourly charts to determine specific entry
+levels.
+                                                          FIGURE 8.1 USDJPY Monthly Chart
+
+92                                                        Source: eSignal
+
+TECHNICAL TRADING STRATEGY: MULTIPLE TIME FRAME ANALYSIS     Take a look at the USDJPY chart in Figure 8.1. This is a daily chart of the
+                                                          U.S. dollar against the Japanese yen (USDJPY). As you can see, USDJPY has been
+                                                          trending higher since late 2012. During this period, range or contrarian traders
+                                                          looking to pick tops would have been faced with at least two years of difficult and
+                                                          most likely unprofitable trading--particularly when the currency pair was hitting
+                                                          three- or four-year highs in late 2013 and early 2014. This area would have certainly
+                                                          attracted a good deal of traders looking to pick a top or to fade the trend. Despite
+                                                          a dip in mid-2013, USDJPY remained strong going into 2105, making life very
+                                                          difficult for medium-term range players.
+
+                                                             Instead, the more effective trading strategy would have been to take a position
+                                                          in the direction of the trend. In USDJPY, this would have involved looking for
+                                                          opportunities to buy on dips. Figure 8.2 shows one way to do so on a 15-minute
+                                                          chart using the Relative Strength Index (RSI). Rather than looking for opportunities
+                                                          to sell when RSI rose above 70, it was smarter to buy when it dipped to 30. The first
+                                                          horizontal line in Figure 8.2 shows the point at which RSI rose above 70. If you sold
+                                                          at that level, USDJPY would have moved against you by 40 pips before reversing.
+                                                          The second horizontal line shows the point at which RSI dipped to 30. If you bought
+                                                          at that level, you would have picked the bottom on this short term USDJPY chart
+                                                          for a move of at least 50 pips.
+FIGURE 8.2 USDJPY 15-Minute Chart
+
+Source: eSignal                                                                        93
+
+   Now let's take a look at another example of the British pound. Figure 8.3           TECHNICAL TRADING STRATEGY: MULTIPLE TIME FRAME ANALYSIS
+shows the monthly chart of the USDCAD from January 2013 to January 2015. Like
+USDJPY, traders trying to pick tops in the USDCAD would have faced at least two
+straight years of difficult trading--particularly when the USDCAD was climbing
+to fresh five-year highs in late 2014 early 2015. This level would have certainly
+attracted a number of top pickers. To the frustration of those who tried to fade
+the move, USDCAD rallied 9% beyond its five-year highs, which means those top
+pickers would have incurred significant losses. Taking a look at the hourly chart for
+the USDCAD, we want to look for opportunities to buy on dips rather than sell on
+rallies. Figure 8.4 shows Fibonacci retracement levels drawn from the 2002 to 2008
+bear wave. Those levels held pretty well with declines finding support at the 38.2%
+Fibonacci retracements between January 2008, January 2009, and January 2015.
+
+   Multiple time frame analysis can also be employed on a shorter-term basis. Let
+us take a look at an example using CHFJPY. First we start with the hourly chart
+of CHFJPY, shown in Figure 8.5. Using Fibonacci retracements, we can see on the
+hourly charts that prices have failed at the 38.2% retracement of the December 30,
+2004, to February 9, 2005, bear wave numerous times. This indicates that the
+pair is contained within a weeklong downtrend below those levels. In this case,
+we want to use our 15-minute charts to look for entry levels to participate in the
+                                                          FIGURE 8.3 USDCAD Weekly Chart
+
+94                                                        Source: eSignal
+
+TECHNICAL TRADING STRATEGY: MULTIPLE TIME FRAME ANALYSIS  overall downtrend. However, in order to increase the successfulness of this trade,
+                                                          we want to make sure that CHFJPY is also in a downtrend on a daily basis. Taking
+                                                          a look at Figure 8.6, we can see that CHFJPY is indeed trading below the 200-day
+                                                          simple moving average, with the 20-day SMA crossing below the 100-day SMA. This
+                                                          confirms the bearish momentum in the currency pair. So as a day trader, we move to
+                                                          the 15-minute chart to identify entry levels. Figure 8.7 is the 15-minute chart; the
+                                                          horizontal line is the 38.2% Fibonacci retracement of the earlier downtrend. We
+                                                          see that CHFJPY broke above the horizontal line on May 11, 2005; however, rather
+                                                          than buying into a potential breakout trade, the bearish big picture reflected on the
+                                                          hourly and daily charts point to a contrarian trade. In fact, there were two instances
+                                                          shown in Figure 8.7 where the currency pair broke above the Fibonacci level only
+                                                          to trade significantly lower. Disciplined day traders would use those opportunities
+                                                          to fade the breakout.
+
+                                                             The importance of multiple time frame analysis cannot be underestimated.
+                                                          Looking at the big picture first can help to keep traders out of a lot of dangerous
+                                                          trades. The majority of new traders in the market are range traders for the simple
+                                                          fact that buying at the low and selling at the high is an easy concept to grasp.
+TECHNICAL TRADING STRATEGY: MULTIPLE TIME FRAME ANALYSIS95
+
+                                            FIGURE 8.4 USDCAD Hourly Chart
+                                                      Source: eSignal
+TECHNICAL TRADING STRATEGY: MULTIPLE TIME FRAME ANALYSIS96
+
+    FIGURE 8.5 CHFJPY Hourly Chart
+Source: eSignal
+TECHNICAL TRADING STRATEGY: MULTIPLE TIME FRAME ANALYSIS97
+
+                                                     FIGURE 8.6 CHFJPY Daily Chart
+                                                               Source: eSignal
+TECHNICAL TRADING STRATEGY: MULTIPLE TIME FRAME ANALYSIS98
+
+    FIGURE 8.7 CHFJPY 15-Minute Chart
+Source: eSignal
+Of course, this strategy will work from time to time, but traders need to be
+mindful of the overall trading environment if they want to be consistently profitable.
+Referencing back to Chapter 7, range traders should only try to play the trade
+when the conditions for a range bound market are met. One useful way to identify
+this type of market is to look for ADX to be less than 25 and ideally trending
+downward.
+
+                                                                                                  99
+
+TECHNICAL TRADING STRATEGY: MULTIPLE TIME FRAME ANALYSIS
+                                                                 CHAPTER 9
+
+Technical Strategy:
+Trading with
+Double Bollinger
+Bands
+
+                                                                                                  101
+
+One of the most useful technical indicators in my experience is Bollinger Bands.
+      Traditionally, Bollinger Bands are used as overbought and oversold indicators,
+but given the trending nature of currencies, there are more efficient ways to use the
+bands. Traditionally, Bollinger Bands consists of three lines--the 20-period moving
+average and the two standard deviation bands above and below the moving average.
+If the currency pair rises to the upper Bollinger Band, it is considered overbought
+because the move extended to an extreme level and should therefore be faded. The
+same is true if it drops to the lower Bollinger Band. Unfortunately, currencies are
+trending, and using the 20-period two standard deviation bands may not be the best
+way to trade. Take a look at Figure 9.1. In this daily chart of EURUSD, the arrows
+highlight the points where the currency pair ``hugs'' the second standard deviation
+band. If you bought each time EURUSD touched the lower band or sold each time it
+touched the upper band, there would be significant losses before the currency pair
+finally turned around.
+
+   The better technique would be to add another set of Bollinger Bands--the 20-
+period, one-standard deviation. This would put four bands on the chart if the basis
+TECHNICAL STRATEGY: TRADING WITH DOUBLE BOLLINGER BANDS102
+
+                       FIGURE 9.1 EURUSD Bollinger Band Daily Chart
+                          Source: eSignal
+or the 20-period moving average is removed, and most charting packages will allow
+you to do that. Figure 9.2 shows how the same EURUSD daily chart with look with
+two sets of Bollinger Bands. The outer lines are the two-standard-deviation Bollinger
+Bands, and the two inner lines are the one-standard-deviation Bollinger Bands.
+
+ Using Double Bollinger Bands to Pick Tops
+   and Bottoms
+
+Having two sets of Bollinger Bands on your chart is a much more effective way
+to pick a top or bottom in currencies. The general rule of thumb is that we don't
+buy a bottom until the currency pair has traded above the first standard deviation
+Bollinger Band. Along the same lines, we do not sell a top until the pair trades
+below the first standard deviation Bollinger Band. While this technique may not
+pick the perfect bottom, it can help avoid prematurely picking a top or bottom
+which can mean major losses in a trending environment. Here are the rules for the
+long and short trades on a daily chart for picking tops and bottoms using the double
+Bollinger Bands.
+
+Strategy Rules for Long Trade
+
+1. Look for the currency pair to be trading between the lower first and second         103
+
+standard deviation Bollinger Bands.
+
+2. Look for a close above the first standard deviation Bollinger Band.                 TECHNICAL STRATEGY: TRADING WITH DOUBLE BOLLINGER BANDS
+
+3. If so, BUY at close of candle or 5pm NY Time.
+
+4. Stop 50 pips below first standard deviation Bollinger Band.
+
+5. Close half of position when it moves by amount risked; move stop on rest to
+
+initial entry price (breakeven).
+
+6. Close remainder of position at two times risk or trail the stop.
+
+Strategy Rules for Short Trade
+1. Look for the currency pair to be trading between the upper first and second
+
+    standard deviation Bollinger Bands.
+2. Look for a close below the first standard deviation Bollinger Band.
+3. If so, sell at close of candle or 5pm NY Time.
+4. Stop 30 pips above first standard deviation Bollinger Band.
+5. Close half of position when it moves by amount risked; move stop on rest to
+
+    initial entry price (breakeven).
+6. Close remainder of position at two times risk or trail the stop.
+
+   Lets take a look at the same EURUSD chart. Figure 9.3 shows the points at which
+a trade would have been entered, and in most cases, it was a more effective way to
+pick a top or bottom in the currency pair.
+TECHNICAL STRATEGY: TRADING WITH DOUBLE BOLLINGER BANDS104
+
+                       FIGURE 9.2 EURUSD Bollinger Band Daily Chart
+                          Source: eSignal
+                                              105
+
+FIGURE 9.3 EURUSD Bollinger Band Daily Chart  TECHNICAL STRATEGY: TRADING WITH DOUBLE BOLLINGER BANDS
+Source: eSignal
+                                                         FIGURE 9.4 EURUSD Short Trade
+                                                         Source: eSignal
+
+106                                                         Now let's take a look at some examples in more detail. In Figure 9.4, we see that
+                                                         on May 18, the EURUSD, which had been trading between the two upper bands,
+
+TECHNICAL STRATEGY: TRADING WITH DOUBLE BOLLINGER BANDS  fell strongly to break out of the zone and close below the first standard deviation
+
+                                                         Bollinger Band. We sell at the NY close (there's usually a leeway of two hours). A
+
+                                                         two-lot trade is established at 1.1313 with a stop 30 pips above the first standard
+
+                                                         deviation Bollinger Band (1.1341) at 1.1371. The risk is 58 pips, which means that
+
+                                                         the first exit is 1.1313 minus 58 pips or 1.1255. The second profit target is 1.1197,
+
+                                                         which is two times risk or 116 pips. The first and second profit targets are reached
+
+                                                         on the very next day when the currency pair drops to a low of 1.1119, for a profit
+
+                                                         of 58 pips on the first half of the position and another 116 pips on the second half. If
+
+                                                         the stop was trailed using a moving average or percentage, a trader may have been
+
+                                                         able to capitalize on the selloff that ensued.
+
+                                                         Figure 9.5 shows that on June 2, the EURUSD, which had been trading between
+
+                                                         the two lower bands, rose strongly to break out of the zone and close firmly above
+
+                                                         the first standard deviation Bollinger Band. We buy at the NY close (there's usually
+
+                                                         a leeway of two hours). A two-lot trade is established at 1.1151, with a stop 30 pips
+
+                                                         below the first standard deviation Bollinger Band (1.0970) at 1.0940. The risk is 211
+
+                                                         pips, which means that the first exit is 1.1151 plus 211 pips, or 1.1361. This profit
+
+                                                         target is reached two days later, when the currency pair races to a high of 1.1380.
+
+                                                         At the time, the stop is moved to 1.1151, and the following day the breakeven stop
+14:40 GMT April 19th
+1 Month To 1 Year Risk Reversal
+
+Currency             1M R/R       3M R/R       6M R/R                1YR R/R
+
+USDJPY               0.3/0.6 :IC  0.7/1.0 JC   1.1/1.3 JC            1.3/1.6 JC
+                                  0.0/0.3 EC
+EURUSD               0.1/0.3 EC   0.0/0.3 SC   0.0/0.3 EC            0.1/0.4 EC
+                                  0.0/0.3 CC.
+GBPUSD               0.0/0.3 SP                0.0/0.3 SC            0.0/0.3 SC
+
+USDCHF               0.2/0.2 CC                0.0/0.4 CC            0.1/0.5 CC
+
+* JC = Japanese Yen Call                       * SC = Sterling Call
+
+* EC = Euro Call                               * CC = Swiss Call
+
+* SP = Sterling Put
+
+FIGURE 9.5 EURUSD Long Trade                                                          TECHNICAL STRATEGY: TRADING WITH DOUBLE BOLLINGER BANDS
+Source: eSignal
+
+is hit, and we end up banking only +211 on the first half of the trade with no losses
+or gains on the second half.
+
+Using Double Bollinger Bands to Determine Trend versus Range
+
+In addition to identifying levels to pick tops and bottoms, the double Bollinger Bands
+can also be very helpful in determining the market environment. One of the most 107
+commonly asked questions in forex is whether a currency pair is in trend or range.
+When the pair is trading between the two lower or upper Bollinger Bands, it is in
+trend, and when it is trading between the first standard deviation Bollinger Bands,
+it is in range, as shown in Figure 9.6. When the currency pair is in trend mode,
+it is best to look for opportunities to join the trend. When it is in the range zone,
+picking tops and bottoms is preferred.
+
+Using Double Bollinger Bands to Join a New Trend
+
+Another way to use the double Bollinger Bands is to join a new uptrend or downtrend
+using a daily chart. Here are the trading rules:
+
+Strategy Rules for Long Trade
+1. Look for the currency pair to close above the first standard deviation Bollinger
+
+    Band.
+2. Check to see if the last two candles were below the first standard deviation
+
+    Bollinger Band.
+3. If so, buy at close of candle or 5pm NY Time.
+4. Initial stop at +65 pips.
+TECHNICAL STRATEGY: TRADING WITH DOUBLE BOLLINGER BANDS108
+
+                       FIGURE 9.6 GBPUSD Bollinger Band Trend Range Chart
+                          Source: eSignal
+FIGURE 9.7 USDJPY Long Trade                                                                        TECHNICAL STRATEGY: TRADING WITH DOUBLE BOLLINGER BANDS
+Source: eSignal
+
+                                                                                                 109
+
+FIGURE 9.8 GBPUSD Short Trade
+Source: eSignal
+                                                         5. Close half of position at +50 pips; move stop on rest to initial entry price
+                                                             (breakeven).
+
+                                                         6. Close remainder of position at +195 pips.
+
+                                                         Strategy Rules for Short Trade
+
+                                                         1. Look for the currency pair to close below the first standard deviation Bollinger
+                                                             Band.
+
+                                                         2. Check to see if the last two candles were above the first standard deviation
+                                                             Bollinger Band.
+
+                                                         3. If so, sell at close of candle or 5pm NY Time.
+                                                         4. Initial stop at +65 pips.
+                                                         5. Close half of position at +50 pips; move stop on rest to initial entry price
+
+                                                             (breakeven).
+                                                         6. Close remainder of position at +195 pips.
+
+                                                         Here are some examples:
+
+                                                         In Figure 9.7, we see that USDJPY closed above the first standard deviation
+
+                                                         Bollinger Band on May 18. We check to see if the last two candles were below the
+
+                                                         band and the rules are satisfied, allowing us to initiate a long trade at 119.97. The
+
+                                                         stop is placed 65 pips below at 119.32. The target for the first half of the position is
+
+110                                                      50 pips, or 120.47, and the target for the second half is 195 pips, or 121.92. The
+
+                                                         first profit target is reached 24 hours later (which is generally the case). When that
+
+TECHNICAL STRATEGY: TRADING WITH DOUBLE BOLLINGER BANDS  happens, the stop is raised to 119.97, which is the initial entry or breakeven price.
+
+                                                         The trade is left on and the second profit target of +195 pips is reached six trading
+
+                                                         days after the trade was first initiated.
+
+                                                         In Figure 9.8, we see GBPUSD close below the first standard deviation Bollinger
+
+                                                         Band on March 4, so we check to see if the last two candles were above the band and
+
+                                                         the rules are satisfied, allowing us to initiate a short trade at 5pm when the currency
+
+                                                         pair is trading at 1.5263. The stop is placed 65 pips above at 1.5328. The target for
+
+                                                         the first half of the position is 50 pips, or 1.5213, and the target for the second half
+
+                                                         is 195 pips, or 1.5068. The trade floats for 24 hours, then GBPUSD drops sharply,
+
+                                                         hitting our first and second profit target on the very same day.
+
+                                                         We encourage you to lay the Bollinger Bands on your charts and look for more
+
+                                                         examples of these strategies in action. There are many ways to use the double
+
+                                                         Bollinger Bands for forex trading. Both of these strategies are for daily charts, but
+
+                                                         different strategies and rules can be used for intraday trading using the bands.
+                                                                CHAPTER 10
+
+Technical Trading
+Strategy: Fading
+the Double Zeros
+
+                                                                                                  111
+
+One of the most widely overlooked areas of trading is market structure.
+      Developing a keen understanding of market structure and its dynamics
+can help day traders to gain an unbelievable advantage. Developing a feel and
+understanding for market dynamics is key to profitably taking advantage of short-
+term fluctuations. In foreign exchange trading this is especially critical as the primary
+influence of intraday price action is order flow. Given the fact that most individual
+traders are not privy to sell-side bank order flow, day traders looking to profit from
+short-term fluctuations need to learn how to identify and anticipate price zones
+where large order flows should be triggered. This technique is very efficient for
+intraday traders as it allows them to get on the same side as the market maker.
+
+   When trading intraday, it is impossible to look for bounces off every support or
+resistance level and expect to be profitable. The key to successful intraday trading
+requires more selectivity and only entering at those levels where a reaction is more
+likely. Trading off psychologically important levels such as the double zeros or round
+numbers is one good way of identifying such opportunities. Double zeros represent
+numbers where the last two digits are zeros. Examples of double zeros would be
+118.00 in USDJPY or 1.1100 in the EURUSD. After noticing how many times a
+currency pair would bounce off double zero support or resistance levels intraday
+despite the underlying trend, we have observed that these bounces are usually much
+larger and more relevant that rallies off other price levels. This type of reaction is
+                                                     perfect for intraday FX traders because it gives them the opportunity to make 30 to
+
+                                                     50 pips while risking only 15­20 pips.
+
+                                                     This trading technique is not difficult, but it requires individual traders to develop
+
+                                                     a solid feel for dealing room and market participant psychology. The idea behind this
+
+                                                     double zero methodology is simple. Large banks with access to conditional order
+
+                                                     flow have a distinct advantage over other market participants. The bank's order book
+
+                                                     gives them direct insight into potential reactions at different price levels. Dealers
+
+                                                     will often use this strategic information to put on short-term positions in their own
+
+                                                     accounts.
+
+                                                     Market participants as a whole tend to put conditional orders near or around
+
+                                                     the same levels. While stop-loss orders are usually placed just beyond the round
+
+                                                     numbers, traders will cluster their take profit orders at the round number. The
+
+                                                     reason why this occurs is because traders are humans, and humans tend to think in
+
+                                                     round numbers. As a result, take profit orders have a very high tendency of being
+
+                                                     placed at the double zero level. Since the FX market is a 24-hour continuous market,
+
+                                                     speculators also use stop and limit orders more frequently than in other markets.
+
+                                                     Large banks with access to conditional order flow, like stops and limits, actively seek
+
+                                                     to exploit this clustering of positions to basically gun stops. The fading the double zero
+
+                                                     strategy attempts to put traders on the same side as market makers by positioning
+
+                                                     traders for a quick contra-trend move at the double zero level.
+
+112                                                  This trade is most profitable when there are other technical indicators that will
+
+TECHNICAL TRADING STRATEGY: FADING THE DOUBLE ZEROS  confirm the significance of the double zero level. Here are some guidelines for fading
+
+                                                     the double zeros or ``round numbers.''
+
+                                                      Strategy Rules
+
+                                                                    Long:
+
+                                                                   1. Identify a currency pair that is trading below its intraday 20-period simple
+                                                                        moving average on a 15-minute chart.
+
+                                                                   2. Enter a long position 10 to 15 pips above the figure.
+                                                                   3. Place an initial protective stop 20 pips below the figure.
+
+                                                                        a. When the position is profitable by the amount risked, close half of the
+                                                                             position and move your stop on the remaining portion of the trade to
+                                                                             breakeven.
+
+                                                                        b. Trail your stop as the price moves in your favor.
+
+                                                                    Short:
+                                                                    1. Identify a currency pair that is trading above its intraday 20-period simple
+
+                                                                        moving average on a 15-minute chart.
+                                                                    2. Short the currency pair 10 to 15 pips below the figure.
+3. Place an initial protective stop 20 pips above the round number.
+4. When the position is profitable by the amount that you risked, close half of the
+
+    position and move your stop on the remaining portion of the trade to breakeven.
+    Trail your stop as the price moves in your favor.
+
+Market Conditions
+
+This strategy works best when the move happens in quieter market conditions
+without the influence of major reports. It is more successful for currency pairs with
+tighter trading ranges, crosses, and commodity currencies. This strategy also works
+in the majors but under quieter market conditions since the stop loss is relatively
+tight.
+
+Further Optimization
+
+Round numbers are important because they are significant levels but if the price
+coincides with a key technical level, a reversal becomes more likely. This means the
+strategy has an even higher probability of success when other important support or
+resistance levels converge at the figure. This can be caused by moving averages, key
+Fibonacci levels or Bollinger Bands, or other technical indicators.
+
+Examples                                                                                   113
+
+Now let's take a look at some of the examples of this strategy in action. The first        TECHNICAL TRADING STRATEGY: FADING THE DOUBLE ZEROS
+example that we will go over is a 15-minute chart of USDJPY shown in Figure 10.1.
+According to the rules of the strategy, we can see that on April 24, USDJPY was
+trading above its 20-period moving. Prices continued to move higher with the
+currency pair drifting toward 120.00, our double zero level. In accordance with the
+rules, we place an entry order a few pips below the round number at 1110.85. Our
+order is triggered, and we put our stop 20 above the figure at 120.20. USDJPY
+climbs to a high of 120.08 before turning lower. We close half of the position when
+it moves by the amount risked or 35 pips at 1110.50. Notice that USDJPY falls and
+then rallies again before hitting our initial profit target. When the first profit target
+is reached, the stop on the remaining half of the position is moved to breakeven or
+our initial entry price of 1110.85.
+
+   We then proceed to trail stop. The trailing stop can be done using a variety of
+methods including a monetary or percentage basis. We choose to trail the stop by
+two-bar low for a really short-term trade and end up getting out of the other half of
+the position at 1110.50 as well, earning us 35 pips on the first and second half of the
+positions.
+
+   The next chart that we want to look at is GBPUSD. What's interesting about
+Figure 10.2 is that there are a number of examples. In the first example, labeled ``1,''
+TECHNICAL TRADING STRATEGY: FADING THE DOUBLE ZEROSFIGURE 10.1 USDJPY 15-Minute Chart
+                                  Source: eSignal
+
+114
+
+                               FIGURE 10.2 GBPUSD 15-Minute Chart
+                                  Source: eSignal
+we can see that GBP/USD was trading above its 20-period moving average on a                         TECHNICAL TRADING STRATEGY: FADING THE DOUBLE ZEROS
+15-minute chart and headed for 1.55. According to our rules, we place an order to
+sell at 1.5485 (the high on this move was 1.5492) with a stop at 1.5520 for 35-pip
+risk. GBPUSD moves in our favor, and our first profit target is hit at (1.5485 ­.0035)
+at 1.5450. We then move our stop to breakeven, or our initial entry price of 1.5485,
+and proceed to trail it by the 20-day SMA + 10 pips. If we manage our trade using
+this type of trailing stop, the second half of the position would have been exited
+at 1.5350 for 35 pips on the first half of the position and 135 pips on the second.
+Part of the reason why this trade was so successful is because the 1.5500 is also
+a significant technical level. Example ``2'' is a long trail that reversed but not by
+enough to hit the profit target. Example ``3'' is a successful long trade that hit the first
+profit target.
+
+   Making sure that the double zero level is a significant level is a key element of
+filtering for good trades. The last example shown in Figure 10.3 is USDCAD on a
+15-minute chart. The great thing about this trade is that it is triple zero level rather
+than just a double zero level. Triple zero levels hold even more significance than a
+double zero level because of their less frequent occurrence. In Figure 10.3, we see
+that USDCAD is also trading well below its 20-period moving average and heading
+toward 1.2000. We look to go long 15 pips above the double zero level at 1.2015.
+
+                                                                                                 115
+
+FIGURE 10.3 USDCAD 15-Minute Chart
+Source: eSignal
+                          We place our stop 20 pips below the round number at 1.1980. The currency pair
+                          hits a low of 1.2011 before moving higher. We then sell half of our positions when
+                          the currency pair rallies by the amount that we risked at 1.2050. The stop on the
+                          remaining half of the position is then moved to breakeven at 1.2015. We proceed
+                          to trail the stop once again by the two-bar low and end up exiting the second half
+                          of the position at 1.2055. As a result, we earned 35 pips on the first position and
+                          40 pips on the second position.
+
+116
+
+TECHNICAL TRADING STRATEGY: FADING THE DOUBLE ZEROS
+                                                                CHAPTER 11
+
+Technical Trading
+Strategy: Waiting
+for the Deal
+
+                                                                                                  117
+
+The lack of volume data in the FX market has forced day traders to develop
+     different strategies that rely less on the level of demand and more on the micro
+structure of the market. One of the most common characteristics that day traders
+try to exploit is the market's 24-hour round-the-clock nature. Although the market
+is open for trading throughout the course of the day, the extent of market activity
+during each trading session can vary significantly. Traditionally, trading tends to be
+the quietest during the Asian market hours as we indicated in Chapter 4. This means
+that currencies such as the EURUSD and GBPUSD tend to trade within a very
+tight range during these hours. According to the Bank of International Settlement's
+Triennial FX Survey published in September of 2014, the United Kingdom is the
+most active trading center, capturing 41% of total volume. Adding in Germany,
+France, Italy, and Switzerland, European trading as a whole accounts for 50% of
+total FX trading. The United States, on the other hand, is only second to the
+United Kingdom for the title of most active trading center, but that amounts to only
+approximately 19% of total turnover. This makes the London open exceptionally
+important because it gives the majority of traders in the market an opportunity
+to take advantage of events or announcements that may have occurred during
+late U.S. trading or overnight Asian sessions. This becomes even more critical on
+                                                  days when the FOMC meets to discuss and announce monetary policy because the
+
+                                                  announcement occurs at 2:15pm NY Time, after the London close.
+
+                                                  The British pound trades most actively against the U.S. dollar during the European
+
+                                                  and London trading hours. There is also active trading during the U.S./European
+
+                                                  overlap, but outside those time frames, the pair tends to trade relatively lightly
+
+                                                  because the majority of GBPUSD trading is done through UK and European market
+
+                                                  makers. This provides a great opportunity for day traders to capture the initial
+
+                                                  directional intraday real move that occurs within the first few hours of London
+
+                                                  trading. This strategy exploits the common perception that UK traders are notorious
+
+                                                  stop hunters. This means that the initial movement at the London open may not
+
+                                                  always be the real one. Since UK and European dealers are the primary market
+
+                                                  makers for the GBPUSD, they have tremendous insight into the extent of actual
+
+                                                  supply and demand for the pair. The ``waiting for the real deal'' trading strategy
+
+                                                  first sets up when interbank dealing desks survey their books at the onset of trading
+
+                                                  and use their client data to trigger close stops on both sides of the markets to gain
+
+                                                  the pip differential. Once these stops are taken out and the books are cleared, the
+
+                                                  real directional move in the GBPUSD will begin to occur, at which point we look
+
+                                                  for the rules of this strategy to be met before entering into a long or short position.
+
+                                                  This strategy works best following the U.S. open or after a major economic release.
+
+                                                  With this strategy, you are looking for the noise in the markets to settle before
+
+118                                               trading the real trend of the day.
+
+TECHNICAL TRADING STRATEGY: WAITING FOR THE DEAL   Strategy Rules
+
+                                                                 Longs:
+
+                                                                 1. Early European trading in GBPUSD begins around 1am NY Time, and we look
+                                                                     for the pair to make new range low of at least 25 pips above the opening price
+                                                                     (the range is defined as the price action between the Frankfurt and London
+                                                                     power hour of 6 GMT to 7 GMT NY Time).
+
+                                                                 2. Look for the pair to reverse and penetrate the high.
+                                                                 3. Place an entry order to buy 10 pips above the high of the range.
+                                                                 4. Place a protective stop no more than 25 pips away from your range high, or 35
+
+                                                                     pips.
+                                                                 5. If the position moves lower by 50 pips, close half of the position, move stop on
+
+                                                                     rest to breakeven, and target three times risk, or 105 pips on the remainder.
+
+                                                                 Shorts:
+                                                                 1. GBPUSD opens in Europe and trades more than 25 pips above the high
+
+                                                                     established during the Frankfurt to London power hour.
+                                                                 2. Wait for the pair to reverse and penetrate the low.
+3. When that occurs, place an entry order to sell 10 pips below the low of the                      TECHNICAL TRADING STRATEGY: WAITING FOR THE DEAL
+    range.
+
+4. Place a protective stop no more than 25 pips away from your range low, or 35
+    pips.
+
+5. If the position moves lower by 50 pips, close half of the position, move stop on
+    rest to breakeven, and target three times risk, or 105 pips on the remainder.
+
+Examples
+Now let's take a look at some examples of this strategy in action. Figure 11.1 is
+a textbook example of the ``waiting for the real deal'' strategy. Between 6 and 7
+GMT, the range high and low for GBPUSD are 1.5359 and 1.5234, respectively. At
+the start of the London trading session, we see GBPUSD squeeze upwards, taking
+out the range high of 1.5359. At the time, we place an order to sell GBPUSD 10
+pips below the range low at 1.5324. The entry is triggered about an hour and a half
+later. The protective stop is placed 25 pips above the range low (35 pips total) at
+1.5359. A take profit on half of the position is placed at 1.5274, or 50 pips below
+the entry price. The stop on the remainder of the position is moved to breakeven
+or 1.5324. The second half of the position is exited at three times risk at 1.5219
+shortly after the NY open.
+
+                                                                                                 119
+
+FIGURE 11.1 GBPUSD 5-Minute Chart
+Source: eSignal
+TECHNICAL TRADING STRATEGY: WAITING FOR THE DEALFIGURE 11.2 GBPUSD 10-Minute Chart
+                                  Source: eSignal
+
+120
+
+                               FIGURE 11.3 GBPUSD 15-Minute Chart
+                                  Source: eSignal
+   The next example is shown in Figure 11.2. In this example, the range high and
+low established between 6 and 7 GMT are 1.5433 and 1.5399, respectively. At the
+start of the London trading session, we see GBPUSD squeeze upward, taking out
+the range high of 1.5433 and racing all the way to 1.5492. At the time, we place an
+order to sell GBPUSD 10 pips below the range low at 1.5389. The entry is triggered
+around the NY open. The protective stop is placed 25 pips above the range low (35
+pips total) at 1.5424. A take profit on half of the position is placed at 1.5339, or 50
+pips below the entry price. The stop on the remainder of the position is moved to
+breakeven or 1.5389. The second half of the position is exited at three times risk at
+1.5284 after the London open on the following trading day.
+
+   The third example is shown in Figure 11.3. In this example, the range during the
+Frankfurt London power hour is 1.5187 and 1.5139. At the start of the London
+trading session, GBPUSD drips lower, breaking below the range low and trading
+down to 1.5105. When the range low is broken, we place an order to buy GBPUSD
+10 pips below the range high at 1.5197. The entry is triggered around the NY open.
+The protective stop is placed 25 pips below the range high (35 pips total) at 1.5172.
+A take profit on half of the position is placed at 1.5247, or 50 pips below the entry
+price. The stop on the remainder of the position is moved to breakeven or 1.5197.
+The second exit is not shown in the chart in Figure 11.3, but the breakeven stop is
+triggered.
+
+                                                                                                 121
+
+TECHNICAL TRADING STRATEGY: WAITING FOR THE DEAL
+                                                                CHAPTER 12
+
+Technical Trading
+Strategy: Inside
+Days Breakout Play
+
+                                                                                                  123
+
+Throughout this book, volatility trading has been discussed as one of the most
+     popular strategies employed by professional traders. There are many ways to
+interpret changes in volatilities, but one of the simplest strategies is actually a visual
+one that requires nothing more than a keen eye. Although this is a strategy that is
+very popular in the world of professional trading, new traders are frequently amazed
+by its ease, accuracy, and reliability. Breakout traders can identify inside days with
+nothing more than a basic candlestick chart.
+
+   An inside day is defined as a day where the daily range has been contained within
+the prior day's trading range, or in other words, the day's high and low do not
+exceed the previous day's high and low. There needs to be at least two inside days
+before the volatility play can be implemented. The more inside days, the higher the
+likelihood of an upside surge in volatility, or a breakout. This type of strategy is best
+employed on daily charts, but the longer the time frame, the more significant the
+breakout opportunity. Some traders use the inside day strategy on hourly charts,
+which works to some success, but identifying inside days on daily charts tends to
+lead to an even greater probability of success. For day traders looking for inside days
+on hourly charts, chances of a solid breakout increases if the contraction precedes
+the London or U.S. market opens. The key is to predict a valid breakout and not
+get caught in a false breakout move. Traders using the daily charts could look for
+                                                       breakouts ahead of major economic releases for the specific currency pair. This
+                                                       strategy works with all currencies pairs, but has less frequent instances of false
+                                                       breakouts in the tighter range pairs such as the EURGBP, USDCAD, EURCHF,
+                                                       EURCAD, and AUDCAD.
+
+                                                        Strategy Rules
+
+                                                       Long:
+
+                                                       1. Identify a currency pair where the daily range has been contained within the
+                                                           prior day's range for at least two days (we are looking for multiple inside days).
+
+                                                       2. Buy 10 pips above the high of the previous inside day.
+                                                       3. Place stop and reverse order for two lots at least 10 pips below the low of the
+
+                                                           nearest inside day.
+                                                       4. Take profit when prices reach double the amount risked or begin to trail stop
+
+                                                           at that level.
+
+                                                          Protect against false breakouts: If the stop and reverse order is triggered, place a stop
+                                                       at least 10 pips above the high of the nearest inside day and protect any profits larger
+                                                       than what you risked with a trailing stop.
+
+124                                                    Short:
+
+TECHNICAL TRADING STRATEGY: INSIDE DAYS BREAKOUT PLAY  1. Identify a currency pair where the daily range has been contained within the
+
+                                                       prior day's range for at least two days (we are looking for multiple inside days).
+
+                                                       2. Sell 10 pips below the low of the previous inside day.
+
+                                                       3. Place stop and reverse order for two lots at least 10 pips above the high of the
+
+                                                       nearest inside day.
+
+                                                       4. Take profit when prices reach double the amount risked or begin to trail stop
+
+                                                       at that level.
+
+                                                          Protect against false breakouts: If the stop and reverse order is triggered, place a stop
+                                                       at least 10 pips below the low of the nearest inside day and protect any profits larger
+                                                       than what you risked with a trailing stop.
+
+                                                       Further Optimization
+
+                                                       For higher-probability trades, technical formations can be used in conjunction with
+                                                       the visual identification to place a higher weight on a specific direction of the
+                                                       breakout. For example, if the inside days are building and contracting toward the
+                                                       top of a recent range such as a bullish ascending triangle formation, the breakout has
+                                                       a higher likelihood of occurring to the upside. The opposite scenario is also true; if
+                                                       inside days are building and contracting toward the bottom of a recent range and
+                                                       we begin to see that a bearish descending triangle is forming, the breakout has a
+higher likelihood of occurring to the downside. Aside from triangles, other technical            TECHNICAL TRADING STRATEGY: INSIDE DAYS BREAKOUT PLAY
+factors that can be considered include significant support and resistance levels. For
+example, if there are significant Fibonacci and moving average support zones resting
+below the inside day levels, this either supports a higher likelihood of an upside
+breakout or at least a higher probability of a false breakout to the downside.
+
+Examples
+Let us take a look at a few examples. Figure 12.1 is a daily chart of euro against the
+British pound, or the EURGBP. The two inside days are identified on the chart, and
+it is clear visually that each of those days' ranges, which includes the high and low, is
+contained within the previous day's range. In accordance with our rules, we place
+an order to go long 10 pips above the high on the previous inside at 0.6634 and an
+order to sell 10 pips below the low of the previous inside day at 0.6579. Our long
+order gets triggered two bars after the most recent inside day. We then proceed
+to place a stop and reverse order 10 pips below the low of the most recent inside
+day at 0.6579. So basically, we went long at 0.6634 with a stop at 0.6579, which
+means that we are risking 45 pips. When prices reached our target level of double
+the amount risked (90 pips), or 0.6724, we have two choices: to either close out the
+entire trade or begin trailing the stop. More conservative traders should probably
+square positions at this point, while more aggressive traders could look for more 125
+
+                                                                       0.6724 Hit
+                                                                      on This Day
+
+                                                                                      Breaks High
+                                                                                      of Previous
+                                                                                       Inside Day
+                                                                          Inside
+                                                                          Days
+
+FIGURE 12.1 EURGBP Inside Day Chart
+Source: eSignal
+                                                                Inside Days
+
+                                                                                    Stop and Reverse
+                                                                                    Order Triggered
+
+                                                       Stop moved to
+                                                       Breakeven
+                                                       @0.6560
+
+                                                       FIGURE 12.2 NZDUSD Inside Day Chart
+                                                       Source: eSignal
+
+126                                                    profit potential. We choose to close out the trade for a 90-pip profit, but those who
+
+TECHNICAL TRADING STRATEGY: INSIDE DAYS BREAKOUT PLAY  stayed in and weathered a bit of volatility could have taken advantage of another 100
+
+                                                       pips of profits three weeks later.
+
+                                                       Figure 12.2 is another example of inside day trading using the daily chart of
+
+                                                       the New Zealand dollar against the U.S. dollar (or the NZDUSD). The difference
+
+                                                       between this example and the previous one is that our stop and reverse order
+
+                                                       actually gets triggered, indicating that the first move was a false breakout. The two
+
+                                                       inside days are labeled on the chart. In accordance with our rules, after identifying
+
+                                                       the inside days, we place an order to buy on the break of the high of the previous
+
+                                                       inside day and an order to sell on the break of the low of the previous inside day.
+
+                                                       The high on the first or previous inside day is 0.6628. This means we place an order
+
+                                                       to go long at 0.6638 or to go short at 0.6618. Our long order gets triggered on
+
+                                                       the first day of the break at 0.6638, and we place a stop and reverse order 10 pips
+
+                                                       below the low of most recent inside day (or the daily candle before the breakout),
+
+                                                       which is 0.6560. However, instead of continuing the breakout, the pair reverses
+
+                                                       and we close our first position at 0.6560 with a 78 pips loss. We then enter into a
+
+                                                       new short position with the reverse order at 0.6560. The new stop is then 10 pips
+
+                                                       above the high of the most recent inside day at 0.6619. When NZDUSD moves by
+
+                                                       double the initial amount risked, conservative traders can take profit on the entire
+
+                                                       position while aggressive traders can trail the stop using various methods that might
+
+                                                       depend on how wide the trading range is. In this example, since the daily trading
+                                                                                                   Trade Exited  TECHNICAL TRADING STRATEGY: INSIDE DAYS BREAKOUT PLAY
+
+                                                                                  Inside Days
+
+                                                                                                        Trade
+                                                                                                        Triggered
+
+FIGURE 12.3 EURCAD Inside Day Chart
+Source: eSignal
+
+range is fairly wide, we choose to close the position once the price reaches our limit 127
+of 0.6404 for a profit of 156 pips and a total profit on the entire trade of 78 pips.
+
+   The last example uses technicals to help determine a directional bias of the inside
+day breakout. Figure 12.3 is a daily chart of EURCAD. The inside days are once
+again identified directly on the chart. The presence of higher lows suggests that the
+breakout could very well be to the upside. Adding in the MACD histogram to the
+bottom of the chart, we see that the histogram is also in positive territory right when
+the inside days are forming. As such, we choose to opt for an upside breakout trade.
+In accordance with the rules, we go long 10 pips above the high of the previous
+inside day at 1.6008. Our long trade is triggered, and we place our stop and reverse
+order 10 pips below the low of the most recent inside day at 1.5905. When prices
+move by double the amount that we risked to 1.6208, we exit the entire position
+for a 200-pip profit.
+
+   With the inside day breakout strategy, the risk is generally pretty high if done
+on daily charts, but the profit potentials following the breakout are usually fairly
+large as well. More aggressive traders can also trade more than one position, which
+would allow them to lock in profits on the first half of the position when prices
+move by double the amount risked and then trail the stop on the remaining position.
+Generally these breakout trades are a precursor to big trends, and using trailing
+stops would allow traders to participate in the trend move while also banking
+some profits.
