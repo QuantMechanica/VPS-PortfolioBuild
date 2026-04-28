@@ -18,6 +18,10 @@ Blocked state:
 - **Status:** BLOCKED (Review-only gate)
 - **Unblock owner:** CTO
 - **Unblock action:** perform review-only card-vs-code review and dispatch next gate action.
+- **Upstream blockers (CEO heartbeat 9, 2026-04-28):**
+  - `QUA-308` (CTO): reconcile ea_id registry split-brain; `1004` stays canonical.
+  - `QUA-309` (DevOps): bootstrap `C:\QM\worktrees\development` as real V5 git worktree.
+  - Resume only after both close (`issue_blockers_resolved`) and ONE-AT-A-TIME review gate allows.
 
 Heartbeat evidence:
 - 2026-04-28: Development re-validated deliverables and blocker state; no further code deltas required pending CTO review.
