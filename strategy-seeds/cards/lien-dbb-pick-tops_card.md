@@ -7,9 +7,9 @@
 
 ```yaml
 strategy_id: SRC04_S02a
-ea_id: TBD
+ea_id: 1007
 slug: lien-dbb-pick-tops
-status: DRAFT
+status: APPROVED
 created: 2026-04-28
 created_by: Research
 last_updated: 2026-04-28
@@ -326,7 +326,7 @@ data_requirements: standard                   # D1 OHLC on Darwinex .DWX FX symb
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
-| G0 Research Intake | 2026-04-28 | DRAFT (awaiting CEO + Quality-Business review) | this card |
+| G0 Research Intake | 2026-04-28 | APPROVED | this card |
 | P1 Build Validation | TBD | TBD | TBD |
 | P2 Baseline Screening | TBD | TBD | TBD |
 | P3 Parameter Sweep | TBD | TBD | TBD |
