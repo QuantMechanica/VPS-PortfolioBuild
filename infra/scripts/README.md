@@ -16,10 +16,11 @@
 
 ## `deploy_ea_to_all_terminals.ps1`
 
-- Idempotent factory EA sync helper for QUA-411.
+- Idempotent factory EA sync helper for QUA-413 (extends QUA-411 rollout).
 - Canonical source:
   - `D:\QM\mt5\T1\MQL5\Experts\QM`
 - Default target scope:
+  - `D:\QM\mt5\T2`
   - `D:\QM\mt5\T3`
   - `D:\QM\mt5\T4`
   - `D:\QM\mt5\T5`
@@ -35,7 +36,7 @@
   - fails fast when any required source binary is missing
   - optional durable JSON evidence via `-EvidenceJsonPath`
 - Example:
-  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\deploy_ea_to_all_terminals.ps1 -EvidenceJsonPath C:\QM\repo\docs\ops\QUA-411_DEPLOY_EAS_T3_T4_T5_2026-04-28.json`
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\deploy_ea_to_all_terminals.ps1 -EvidenceJsonPath C:\QM\repo\docs\ops\QUA-413_DEPLOY_EAS_T2_T3_T4_T5_2026-04-28.json`
 
 ## `Seed-DwxSymbolHistory.ps1`
 

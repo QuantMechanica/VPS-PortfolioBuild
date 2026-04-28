@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [string]$SourceTerminalRoot = 'D:\QM\mt5\T1',
-    [string[]]$TargetTerminalRoots = @('D:\QM\mt5\T3', 'D:\QM\mt5\T4', 'D:\QM\mt5\T5'),
+    [string[]]$TargetTerminalRoots = @('D:\QM\mt5\T2', 'D:\QM\mt5\T3', 'D:\QM\mt5\T4', 'D:\QM\mt5\T5'),
     [string]$ExpertsRelativeDir = 'MQL5\Experts\QM',
     [string[]]$AllowedExpertFiles = @(
         'EA_Skeleton.ex5',

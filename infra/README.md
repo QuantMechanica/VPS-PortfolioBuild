@@ -139,7 +139,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Hash-based check-then-act copy (`created` / `updated` / `unchanged`) with deterministic JSON output.
   - Refuses T6 paths by design; optional `-EvidenceJsonPath` writes durable deployment proof.
 - `scripts/deploy_ea_to_all_terminals.ps1`
-  - Idempotently syncs 4 approved QM binaries from `D:\QM\mt5\T1\MQL5\Experts\QM` to factory terminals `T3/T4/T5`.
+  - Idempotently syncs 4 approved QM binaries from `D:\QM\mt5\T1\MQL5\Experts\QM` to factory terminals `T2/T3/T4/T5`.
   - Hash-based check-then-act copy (`created` / `updated` / `unchanged`) per target/file with deterministic JSON output.
   - Creates missing `MQL5\Experts\QM` target directories and hard-refuses T6 source/target scope.
 - `scripts/Confirm-DwxRegistryMitigation.ps1`
