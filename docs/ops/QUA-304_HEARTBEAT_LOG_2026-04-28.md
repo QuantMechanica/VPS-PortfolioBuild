@@ -2813,3 +2813,10 @@
 - Blocker: CTO review-only gate remains the unblock owner/action.
 - Note: framework/registry/ea_id_registry.csv remains externally modified and intentionally untouched by Development.
 
+
+- Checkpoint: 2026-04-28T08:07:38Z
+- Status: WAITING_CTO_REVIEW
+- Blocker: CTO review-only gate remains the unblock owner/action.
+- Decision: No user reply after repeated wake prompts on mixed commit d2a9ee2; proceeding with option 1 (keep mixed commit as-is) to restore heartbeat continuity.
+- Note: framework/registry/ea_id_registry.csv remains externally modified and intentionally untouched by Development.
+
