@@ -19,3 +19,5 @@ Development implementation scope is complete and evidence is published. Remainin
 - `docs/ops/QUA-391_WAITING_CTO_REVIEW_2026-04-28.md`
 
 No pipeline dispatch executed by Development.
+
+Heartbeat: 2026-04-28 12:48:13 +02:00 — Blocked state revalidated; awaiting CTO EA-vs-Card decision.
