@@ -13,21 +13,21 @@ try {
     Pop-Location
 }
 
-$hits = @($lines | Where-Object { $_ -match 'setfile|dispatch|QUA-415|pipeline' })
-$knownDevops = @('21cc3e6','fc52012','591e9af','a19c7cf','f28df74','61699e2','bc87ec0','b655daa','4139caf','abd7a4f','e7bd317','659df32')
-$nonDevops = @(
-    $hits | Where-Object {
-        $hash = ($_ -split '\s+')[0]
-        ($knownDevops -notcontains $hash) -and
-        ($_ -notmatch 'docs:|infra:|DevOps|hold note|readiness|manifest|handoff|blocked|final status')
+# Only treat as co-owner closeout when commit message indicates
+# pipeline dispatch behavior and setfile path consumption.
+$hits = @(
+    $lines | Where-Object {
+        ($_ -match '(?i)(pipeline-operator|pipeline-op|dispatcher|dispatch)') -and
+        ($_ -match '(?i)(setfile_path|setfile path|setfile)') -and
+        ($_ -match '(?i)(consume|consumption|enforce|required|require)')
     }
 )
 
-if ($nonDevops.Count -gt 0) {
+if ($hits.Count -gt 0) {
     [pscustomobject]@{
         status = "READY"
         issue = "QUA-415"
-        matches = $nonDevops
+        matches = $hits
     } | ConvertTo-Json -Depth 6
     exit 0
 }
@@ -37,6 +37,6 @@ if ($nonDevops.Count -gt 0) {
     issue = "QUA-415"
     unblock_owner = "Pipeline-Operator"
     unblock_action = "Post workflow confirmation commit hash proving active setfile_path dispatch consumption."
-    recent_matches = $hits
+    recent_matches = @($lines | Select-Object -First 20)
 } | ConvertTo-Json -Depth 6
 exit 2
