@@ -26,3 +26,4 @@ Issue remains blocked for Development implementation under V5 hard rules.
 - Revalidated on 2026-04-28: card still `DRAFT` with `ea_id: TBD`.
 - Registry still has no `SRC04` row.
 - Development remains blocked pending CTO+CEO unblock actions already listed above.
+- 2026-04-28 heartbeat: revalidated unchanged blocker (`DRAFT` card, `ea_id: TBD`, no `SRC04` registry row).
