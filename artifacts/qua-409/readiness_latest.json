@@ -1,7 +1,7 @@
 {
     "issue":  "QUA-409",
-    "checked_at":  "2026-04-28T14:01:31.7699672+02:00",
-    "head":  "bc87ec0",
+    "checked_at":  "2026-04-28T14:02:18.1598213+02:00",
+    "head":  "05d4395",
     "card_path":  "C:\\QM\\repo\\strategy-seeds\\cards\\lien-carry-trade_card.md",
     "registry_path":  "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
     "card_exists":  true,
