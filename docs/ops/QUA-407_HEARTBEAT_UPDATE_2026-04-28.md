@@ -574,3 +574,15 @@ Implement `framework/EAs/QM5_<ea_id>_lien_channels/QM5_<ea_id>_lien_channels.mq5
 - Card gate unchanged: `status: DRAFT`, `ea_id: TBD`.
 - Registry gate unchanged: no `SRC04_S08` allocation row.
 - Development remains blocked pending CEO+CTO unblock actions.
+
+## Recheck 2026-04-28T14:48:15+02:00
+
+- Card gate unchanged: `status: DRAFT`, `ea_id: TBD`.
+- Registry gate unchanged: no `SRC04_S08` allocation row.
+- Development remains blocked pending CEO+CTO unblock actions.
+
+## Recheck 2026-04-28T14:48:48+02:00
+
+- Card gate unchanged: `status: DRAFT`, `ea_id: TBD`.
+- Registry gate unchanged: no `SRC04_S08` allocation row.
+- Development remains blocked pending CEO+CTO unblock actions.
