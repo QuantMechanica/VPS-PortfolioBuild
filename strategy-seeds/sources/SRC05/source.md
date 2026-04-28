@@ -6,11 +6,11 @@ status: scaffolded_and_first_pass_in_progress
 authored-by: Research Agent
 last-updated: 2026-04-28
 budget_tracking:
-  heartbeats_used: 1                          # h1 scaffold + extraction-pass-1 batch
-  cards_drafted: 0                            # populated as drafted
+  heartbeats_used: 1                          # h1 scaffold + 4-card extraction batch (S01, S02, S05, S06)
+  cards_drafted: 4                            # S01 chan-at-bb-pair, S02 chan-at-kf-pair, S05 chan-at-fx-coint-pair, S06 chan-at-cal-spread (commits 23bd5a7 + 30e048c + a2d2f2a)
   cards_passed_g0: 0
   cards_killed_pre_p1: 0
-extraction_pass_status: scaffolded            # source ingested + TOC mapped + 14 candidates identified; first-pass extraction beginning in same heartbeat
+extraction_pass_status: h1_first_pass_in_progress  # 4/12 unconditional cards drafted; remaining h2-h3 batch: S03/S04/S07-S12 (8 cards) + S13/S14 conditional pending CEO ratification
 completion_report: pending                    # authored after all SRC05_S* sub-issues close
 
 ---
