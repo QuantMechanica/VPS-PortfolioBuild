@@ -6,12 +6,13 @@ status: scaffolded_and_first_pass_in_progress
 authored-by: Research Agent
 last-updated: 2026-04-28
 budget_tracking:
-  heartbeats_used: 4                          # h1 scaffold + 4-card extraction batch (S01, S02, S05, S06); h2 single-symbol-futures batch (S07, S08, S09); h3 intraday-gap batch (S12 single-symbol opening-gap + S03 cross-sectional buy-on-gap); h4 multi-stock-universe / cross-sectional-momentum batch (S04 SPY-arb + S10 XS futures momentum + S11 XS stock momentum)
-  cards_drafted: 12                           # S01 chan-at-bb-pair, S02 chan-at-kf-pair, S05 chan-at-fx-coint-pair, S06 chan-at-cal-spread (h1 commits 23bd5a7 + 30e048c + a2d2f2a) + S07 chan-at-ts-mom-fut, S08 chan-at-roll-arb-etf, S09 chan-at-vx-es-roll-mom (h2 commit 7ff7d27) + S12 chan-at-fstx-gap-mom, S03 chan-at-buy-on-gap (h3 commit b810b18) + S04 chan-at-spy-arb, S10 chan-at-xs-mom-fut, S11 chan-at-xs-mom-stock (h4 batch this commit)
+  heartbeats_used: 5                          # h1 scaffold + 4-card extraction batch (S01, S02, S05, S06); h2 single-symbol-futures batch (S07, S08, S09); h3 intraday-gap batch (S12 single-symbol opening-gap + S03 cross-sectional buy-on-gap); h4 multi-stock-universe / cross-sectional-momentum batch (S04 SPY-arb + S10 XS futures momentum + S11 XS stock momentum); h5 v1 completion_report drafted
+  cards_drafted: 12                           # S01 chan-at-bb-pair, S02 chan-at-kf-pair, S05 chan-at-fx-coint-pair, S06 chan-at-cal-spread (h1 commits 23bd5a7 + 30e048c + a2d2f2a) + S07 chan-at-ts-mom-fut, S08 chan-at-roll-arb-etf, S09 chan-at-vx-es-roll-mom (h2 commit 7ff7d27) + S12 chan-at-fstx-gap-mom, S03 chan-at-buy-on-gap (h3 commit b810b18) + S04 chan-at-spy-arb, S10 chan-at-xs-mom-fut, S11 chan-at-xs-mom-stock (h4 commit 6e9a852)
   cards_passed_g0: 0
   cards_killed_pre_p1: 0
-extraction_pass_status: unconditional_extraction_complete  # 12/12 unconditional cards drafted across h1-h4. Remaining: S13/S14 conditional pending CEO ratification of darwinex_native_data_only exception per § 6 vocab-gap proposals + § 8 step 5; OR completion-report drafting if CEO declines conditional batch.
-completion_report: pending                    # authored after all SRC05_S* sub-issues close
+  cards_pending_ceo_decision: 2               # S13 PEAD + S14 leveraged-ETF-rebal — DRAFT_PENDING_CEO_RATIFICATION on darwinex_native_data_only exception
+extraction_pass_status: closeout_pass_v1_complete  # 12/12 unconditional cards drafted across h1-h4 + completion_report.md v1 drafted h5. Remaining: S13/S14 conditional pending CEO ratification (v2 closeout) + sub-issue queue creation per DL-029 (h6 work).
+completion_report: drafted_v1                 # strategy-seeds/sources/SRC05/completion_report.md authored 2026-04-28; v2 will append S13/S14 if CEO ratifies darwinex_native_data_only exception
 
 ---
 
