@@ -28,7 +28,7 @@ Each process file follows the same structure:
 | 12 | Board Escalation Contract | [12-board-escalation.md](12-board-escalation.md) | [Documentation-KM](/QUA/agents/documentation-km) | Needs role-rename pass |
 | 13 | Strategy Research Workflow | [13-strategy-research.md](13-strategy-research.md) | [Documentation-KM](/QUA/agents/documentation-km) | **V5-authored 2026-04-27** (QUA-242 — codifies OWNER directive on source/strategy/version tree) |
 | 14 | EA Enhancement Loop (`_v2` versioning) | 14-ea-enhancement-loop.md | [Documentation-KM](/QUA/agents/documentation-km) | Pending — QUA-245 |
-| 15 | Pipeline-Op Load Balancing (T1-T5) | 15-pipeline-op-load-balancing.md | [Pipeline-Operator](/QUA/agents/pipeline-operator) | Pending — QUA-246 |
+| 15 | Pipeline-Op Load Balancing (T1-T5) | [15-pipeline-op-load-balancing.md](15-pipeline-op-load-balancing.md) | [Pipeline-Operator](/QUA/agents/pipeline-operator) | **V5-authored 2026-04-28** (QUA-307 P0: 3-cap concurrency, dedup key, least-loaded round-robin with symbol affinity) |
 
 V5 audit detail: [`docs/ops/QUA-213_PROCESS_AUDIT_2026-04-27.md`](../docs/ops/QUA-213_PROCESS_AUDIT_2026-04-27.md). Files marked "needs full V5 rewrite" have child issues opened off QUA-213; the role-rename pass is tracked as a single follow-up.
 
