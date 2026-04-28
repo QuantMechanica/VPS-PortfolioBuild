@@ -1,7 +1,7 @@
 {
   "issue": "QUA-409",
-  "checked_at": "2026-04-28T13:51:16.0439856+02:00",
-  "head": "dc38433",
+  "checked_at": "2026-04-28T13:52:20.7872315+02:00",
+  "head": "140e31a",
   "scope": "SRC04 phase-2 build: card QUA-349",
   "strategy_id": "SRC04_S11",
   "slug": "lien-carry-trade",
