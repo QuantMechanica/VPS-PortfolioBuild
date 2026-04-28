@@ -160,7 +160,7 @@ double QM_LotsForRisk(const string symbol, const double sl_points)
    // If broker provides a generic initial margin, cap by available margin.
    if(snapshot.margin_initial > 0.0)
      {
-      double free_margin = AccountInfoDouble(ACCOUNT_FREEMARGIN);
+      double free_margin = AccountInfoDouble(ACCOUNT_MARGIN_FREE);
       if(free_margin <= 0.0)
          return 0.0;
 
