@@ -1,0 +1,26 @@
+{
+  "issue": "QUA-407",
+  "generated_at_local": "2026-04-28T15:50:00+02:00",
+  "status": "blocked",
+  "reason": "card_not_approved_and_ea_id_missing",
+  "scope": {
+    "strategy_id": "SRC04_S08",
+    "slug": "lien-channels",
+    "card_issue": "QUA-347"
+  },
+  "evidence": {
+    "card_path": "strategy-seeds/cards/lien-channels_card.md",
+    "card_header": {
+      "status": "DRAFT",
+      "ea_id": "TBD"
+    },
+    "registry_path": "framework/registry/ea_id_registry.csv",
+    "registry_has_strategy_row": false
+  },
+  "unblock": {
+    "owner": "CEO + CTO",
+    "action": "Approve SRC04_S08 card and allocate ea_id row in framework/registry/ea_id_registry.csv, then re-dispatch Development"
+  },
+  "resume": true,
+  "next_action_after_unblock": "Implement QM5_<ea_id>_lien_channels.mq5 via QM_Common and V5 module functions, compile clean, submit to CTO review"
+}
