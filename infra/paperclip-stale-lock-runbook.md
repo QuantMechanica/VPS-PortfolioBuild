@@ -61,7 +61,7 @@ Do not force-clear T6-related issues without OWNER/LiveOps approval gates.
 - `-AllowedAssigneeAgentIds` is optional; if omitted, the script auto-uses `-AssigneeAgentId`.
 - Lock classes:
   - `orphaned_lock`: stale lock with `activeRun=null`
-  - `stale_running_lock`: issue still points at an old `activeRun` long past expected runtime
+  - `stale_running_lock`: issue still points at an old `activeRun` long past expected runtime (age from `executionLockedAt` or fallback `activeRun.startedAt`)
 - Mutating calls include `X-Paperclip-Run-Id` by design.
 
 Examples:

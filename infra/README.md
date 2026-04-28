@@ -157,7 +157,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `monitoring/Invoke-PaperclipStaleLockWatchdog.ps1`
   - Detects stale Paperclip execution locks on targeted assignees/issues:
     - `orphaned_lock`: `executionLockedAt` stale while `activeRun=null`
-    - `stale_running_lock`: `activeRun` still marked running far past threshold (`-RunningLockMaxMinutes`)
+    - `stale_running_lock`: `activeRun` still marked running far past threshold (`-RunningLockMaxMinutes`), with age from `executionLockedAt` or fallback `activeRun.startedAt`
   - Default mode is monitor-only (no mutations); optional `-AutoRecover` performs PATCH-only assignee-cycle recovery.
   - Uses `-AssigneeAgentId` (defaults to `PAPERCLIP_AGENT_ID`) to avoid missing stale locks in large company issue lists.
   - `-AllowedAssigneeAgentIds` is optional; when omitted, it auto-scopes to `-AssigneeAgentId` to prevent silent allowlist mismatches.

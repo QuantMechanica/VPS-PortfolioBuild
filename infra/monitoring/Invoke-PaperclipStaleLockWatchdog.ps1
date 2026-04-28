@@ -50,9 +50,10 @@ function Invoke-PaperclipApiPatch {
 
 function Get-PropValue {
     param(
-        [Parameter(Mandatory = $true)] [object]$Object,
+        [Parameter(Mandatory = $false)] [AllowNull()] [object]$Object,
         [Parameter(Mandatory = $true)] [string]$Name
     )
+    if ($null -eq $Object) { return $null }
     if ($Object -is [System.Collections.IDictionary]) {
         foreach ($key in $Object.Keys) {
             if ([string]$key -ieq $Name) {
@@ -95,17 +96,19 @@ if (-not [string]::IsNullOrWhiteSpace($AssigneeAgentId)) {
 }
 $query = $queryParts -join "&"
 $listUrl = "$apiBase/api/companies/$CompanyId/issues?$query"
-$issues = @(Invoke-PaperclipApiGet -Uri $listUrl)
+$issuesRaw = Invoke-PaperclipApiGet -Uri $listUrl
+$issues = @($issuesRaw | ForEach-Object { $_ })
 
 $now = [datetime]::UtcNow
-$stale = New-Object System.Collections.Generic.List[object]
-$recoveries = New-Object System.Collections.Generic.List[object]
+$stale = New-Object System.Collections.ArrayList
+$recoveries = New-Object System.Collections.ArrayList
 
 foreach ($issue in $issues) {
     $executionLockedAt = [string](Get-PropValue -Object $issue -Name "executionLockedAt")
     $activeRun = Get-PropValue -Object $issue -Name "activeRun"
     $assigneeAgentId = [string](Get-PropValue -Object $issue -Name "assigneeAgentId")
-    if ([string]::IsNullOrWhiteSpace($executionLockedAt)) { continue }
+    $activeRunId = [string](Get-PropValue -Object $activeRun -Name "id")
+    $activeRunStartedAt = [string](Get-PropValue -Object $activeRun -Name "startedAt")
 
     $agentAllowed = $true
     if ($allowedAssignees.Count -gt 0) {
@@ -113,10 +116,25 @@ foreach ($issue in $issues) {
     }
     if (-not $agentAllowed) { continue }
 
-    $lockedAt = [datetime]::Parse($executionLockedAt).ToUniversalTime()
-    $ageMin = [math]::Round(($now - $lockedAt).TotalMinutes, 2)
-    $activeRunId = [string](Get-PropValue -Object $activeRun -Name "id")
-    $activeRunStartedAt = [string](Get-PropValue -Object $activeRun -Name "startedAt")
+    $ageBasis = $null
+    $ageMin = $null
+    if (-not [string]::IsNullOrWhiteSpace($executionLockedAt)) {
+        try {
+            $lockedAt = [datetime]::Parse($executionLockedAt).ToUniversalTime()
+            $ageMin = [math]::Round(($now - $lockedAt).TotalMinutes, 2)
+            $ageBasis = "execution_locked_at"
+        }
+        catch {}
+    }
+    if ($null -eq $ageMin -and $null -ne $activeRun -and -not [string]::IsNullOrWhiteSpace($activeRunStartedAt)) {
+        try {
+            $runStartedAt = [datetime]::Parse($activeRunStartedAt).ToUniversalTime()
+            $ageMin = [math]::Round(($now - $runStartedAt).TotalMinutes, 2)
+            $ageBasis = "active_run_started_at"
+        }
+        catch {}
+    }
+    if ($null -eq $ageMin) { continue }
 
     $lockClass = $null
     if ($null -eq $activeRun -and $ageMin -ge $StaleAfterMinutes) {
@@ -137,6 +155,7 @@ foreach ($issue in $issues) {
         execution_run_id = [string](Get-PropValue -Object $issue -Name "executionRunId")
         execution_agent_name_key = [string](Get-PropValue -Object $issue -Name "executionAgentNameKey")
         execution_locked_at = $executionLockedAt
+        age_basis = $ageBasis
         lock_class = $lockClass
         active_run_id = if ([string]::IsNullOrWhiteSpace($activeRunId)) { $null } else { $activeRunId }
         active_run_started_at = if ([string]::IsNullOrWhiteSpace($activeRunStartedAt)) { $null } else { $activeRunStartedAt }
