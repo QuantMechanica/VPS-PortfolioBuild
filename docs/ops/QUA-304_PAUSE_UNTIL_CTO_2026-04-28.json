@@ -1,0 +1,11 @@
+{
+  "issue": "QUA-304",
+  "marker": "PAUSE_UNTIL_CTO_REVIEW",
+  "created_utc": "2026-04-28T10:39:30Z",
+  "reason": "Development implementation scope complete; further changes would be redundant without reviewer input.",
+  "resume_triggers": [
+    "CTO requests change",
+    "Compile evidence invalidated",
+    "Policy change requires new artifact"
+  ]
+}
