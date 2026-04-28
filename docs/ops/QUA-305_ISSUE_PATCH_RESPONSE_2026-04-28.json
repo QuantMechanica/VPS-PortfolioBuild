@@ -1,0 +1,67 @@
+PATCH http://localhost:3100/api/issues/QUA-305
+{
+    "id":  "de5ff8fc-4865-4b75-b971-950f944a35b2",
+    "companyId":  "03d4dcc8-4cea-4133-9f68-90c0d99628fb",
+    "projectId":  "71b6d994-70ba-4a28-bd62-732b42a9ea58",
+    "projectWorkspaceId":  null,
+    "goalId":  "4662e91e-8e9b-458e-9383-b1f67751965b",
+    "parentId":  "a5bae364-08e8-48f2-b192-42613d0b21f5",
+    "title":  "P1 — Development build EA from APPROVED card davey-es-breakout",
+    "description":  "## P1 — Development build EA from APPROVED card davey-es-breakout\n\nParent: [QUA-280](/QUA/issues/QUA-280) — SRC01_S* P2..P10 pipeline run (will auto-wake when this P1 child closes).\n\nBuild the EA from the APPROVED Strategy Card `strategy-seeds/cards/davey-es-breakout_card.md`.\n\nTasks:\n1. Read `strategy-seeds/cards/davey-es-breakout_card.md` (Research output, CEO G0 APPROVED in [QUA-276](/QUA/issues/QUA-276)).\n2. Allocate next ea_id via `framework/registry/ea_id_registry.csv` (coordinate with CTO if registry lock contention).\n3. Implement at `framework/EAs/QM5_\u003cea_id\u003e_davey_es_breakout/QM5_\u003cea_id\u003e_davey_es_breakout.mq5`.\n4. V5 Hard Rules: 4-module Modularity, `#include \u003cQM/QM_Common.mqh\u003e`, magic via QM_Magic, RISK_FIXED + RISK_PERCENT, Friday Close enabled, news-compliance compatible, no hardcoded symbols, ML ban.\n5. Inline-cite the Card section/page for every rule.\n6. Compile clean. MetaEditor path will be available via [QUA-300](/QUA/issues/QUA-300) if not already.\n7. Commit; close-out includes commit hash per [DL-026](/QUA/issues/DL-026).\n\n## Review-only gate\n\nThis issue carries Review-only `executionPolicy` with **CTO** as the reviewer (Quality-Tech swap on Wave 2). CTO performs the EA-vs-Card review per the 11-item CODE REVIEW DISCIPLINE checklist before this issue can close.\n\nAfter CTO approves, Pipeline-Op auto-resumes the parent `P2..P10 pipeline run` issue and dispatches the P1 baseline run on the planned terminal per [QUA-299](/QUA/issues/QUA-299) load-balancing convention.\n\n## Acceptance\n\n- [ ] EA file committed and compiles clean (no warnings, no build_check violations)\n- [ ] Card-rule citations inline at every rule\n- [ ] Close-out comment includes commit hash per [DL-026](/QUA/issues/DL-026)\n- [ ] CTO Review-only stage **accepted**\n\n## Boundaries\n\n- Factory only (T1-T5 via Pipeline-Op later); T6 OFF LIMITS.\n- One EA at a time per Development prompt\u0027s ONE-AT-A-TIME RULE.\n\n— CEO under [DL-035](/QUA/issues/QUA-301) EA review gate. Pipeline-Op routing plan in [QUA-299](/QUA/issues/QUA-299).\n",
+    "status":  "blocked",
+    "priority":  "high",
+    "assigneeAgentId":  "ebefc3a6-4a11-43a7-bd5d-c0baf50eb1f9",
+    "assigneeUserId":  null,
+    "checkoutRunId":  null,
+    "executionRunId":  null,
+    "executionAgentNameKey":  null,
+    "executionLockedAt":  null,
+    "createdByAgentId":  "7795b4b0-8ecd-46da-ab22-06def7c8fa2d",
+    "createdByUserId":  null,
+    "issueNumber":  305,
+    "identifier":  "QUA-305",
+    "originKind":  "manual",
+    "originId":  null,
+    "originRunId":  null,
+    "originFingerprint":  "default",
+    "requestDepth":  0,
+    "billingCode":  null,
+    "assigneeAdapterOverrides":  null,
+    "executionPolicy":  {
+                            "mode":  "normal",
+                            "stages":  [
+                                           {
+                                               "id":  "c52547ba-4a67-49bb-92c8-259726da1b05",
+                                               "type":  "review",
+                                               "participants":  [
+                                                                    {
+                                                                        "id":  "47d0f255-d104-459b-ae96-6d6af0f41ad7",
+                                                                        "type":  "agent",
+                                                                        "userId":  null,
+                                                                        "agentId":  "241ccf3c-ab68-40d6-b8eb-e03917795878"
+                                                                    }
+                                                                ],
+                                               "approvalsNeeded":  1
+                                           }
+                                       ],
+                            "commentRequired":  true
+                        },
+    "executionState":  null,
+    "executionWorkspaceId":  null,
+    "executionWorkspacePreference":  null,
+    "executionWorkspaceSettings":  null,
+    "startedAt":  "2026-04-28T04:32:36.614Z",
+    "completedAt":  null,
+    "cancelledAt":  null,
+    "hiddenAt":  null,
+    "createdAt":  "2026-04-28T04:32:36.247Z",
+    "updatedAt":  "2026-04-28T04:41:16.715Z",
+    "labels":  [
+
+               ],
+    "labelIds":  [
+
+                 ],
+    "comment":  null
+}
+
