@@ -4521,3 +4521,10 @@
 - Recovery note: codex usage-cap cascade acknowledged as resolved by CEO comment 7b13871f-8ecf-4804-917d-c3a91072a416.
 - Status transition context: reset from blocked/todo flow back to active continuation for Development ownership.
 - Next action: resume QUA-304 implementation steps on subsequent wake with CTO review gate discipline preserved.
+
+## Heartbeat checkpoint (2026-04-28T12:32:49.2922936+02:00)
+- Source run: 4c3139e2-b141-4a8f-a306-9c74c2cc44d9
+- Action this wake: resumed implementation verification and audited existing EA at framework/EAs/QM5_1003_davey_baseline_3bar/QM5_1003_davey_baseline_3bar.mq5 against card SRC01_S03 requirements.
+- Compile evidence: framework/scripts/compile_one.ps1 PASS (0 errors, 0 warnings) with log C:\QM\repo\framework\build\compile\20260428_103238\QM5_1003_davey_baseline_3bar.compile.log.
+- Note: strict-mode run reported MetaEditor non-zero exit despite zero errors/warnings; non-strict run confirms clean build artifact generation (.ex5 present).
+- Next action: proceed from verification state to CTO review-gate handoff or requested implementation deltas.
