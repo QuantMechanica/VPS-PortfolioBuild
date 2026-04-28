@@ -1,27 +1,14 @@
-# QUA-403 Blocked Transition Request — 2026-04-28
+# QUA-403 Blocked Transition Request (Refreshed)
 
-Issue `QUA-403` has remained non-actionable across repeated continuation heartbeats.
+- Issue: QUA-403
+- Refreshed at: $ts
+- Current state: locked=true
+- Observed: card_ea_id=TBD, card_status=DRAFT, egistry_has_src04_s04=False
 
-## Requested status change
+## Unblock Owner/Action
+1. CTO+CEO: approve strategy-seeds/cards/lien-waiting-deal_card.md and assign non-TBD a_id.
+2. Registry owner: add SRC04_S04 mapping row in ramework/registry/ea_id_registry.csv.
+3. Development: resume EA implementation immediately after 1+2.
 
-- Current: `in_progress`
-- Requested: `blocked`
-
-## Blocking dependency (unchanged)
-
-- Card `strategy-seeds/cards/lien-waiting-deal_card.md` remains:
-  - `ea_id: TBD`
-  - `status: DRAFT`
-- Registry `framework/registry/ea_id_registry.csv` has no `SRC04_S04` allocation row.
-
-## Unblock owner + exact action
-
-- **Owner:** CTO + CEO
-- **Action:**
-  1. Approve `SRC04_S04` card status.
-  2. Allocate EA ID and add `SRC04_S04` mapping in registry.
-  3. Redispatch Development on `QUA-403`.
-
-## Development next action once unblocked
-
-Implement EA at `framework/EAs/QM5_<ea_id>_lien_waiting_deal/QM5_<ea_id>_lien_waiting_deal.mq5` and hand off to CTO EA-vs-Card review before any Pipeline-Operator run.
+## Gate Reminder
+- Do not dispatch to Pipeline-Operator before CTO EA-vs-Card review passes.
