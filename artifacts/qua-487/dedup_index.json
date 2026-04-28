@@ -1,0 +1,14 @@
+{
+  "QM5_SRC04_S03_lien_fade_double_zeros_v5_P2": {
+    "matrix": [
+      {
+        "evidence": null,
+        "symbol": "EURUSD.DWX",
+        "terminal": "T1",
+        "verdict": null
+      }
+    ],
+    "next_strategy_unblocked": null,
+    "phase_verdict": null
+  }
+}

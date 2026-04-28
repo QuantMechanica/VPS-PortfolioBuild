@@ -1,0 +1,9 @@
+{
+  "ea_id": "QM5_SRC04_S03_lien_fade_double_zeros",
+  "version": "v5",
+  "symbol": "EURUSD.DWX",
+  "phase": "P2",
+  "sub_gate_config_hash": "H1-2024",
+  "setfile_path": "framework/EAs/QM5_SRC04_S03_lien_fade_double_zeros/sets/QM5_SRC04_S03_lien_fade_double_zeros_EURUSD.DWX_H1_backtest.set",
+  "target_terminal": "any"
+}

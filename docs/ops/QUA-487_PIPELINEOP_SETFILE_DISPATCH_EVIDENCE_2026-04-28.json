@@ -1,0 +1,18 @@
+{
+  "issue": "QUA-487",
+  "timestamp_utc": "2026-04-28T16:05:39.9166261Z",
+  "verification": {
+    "unit_tests": "python -m unittest framework.scripts.tests.test_pipeline_dispatcher framework.scripts.tests.test_resolve_backtest_target",
+    "missing_setfile_result": {
+      "error_code": "BACKTEST_REJECTED_NO_SETFILE",
+      "message": "Dispatch requires job.setfile_path for backtest runs.",
+      "status": "rejected"
+    },
+    "with_setfile_result": {
+      "dedup_key": "QM5_SRC04_S03_lien_fade_double_zeros|v5|EURUSD.DWX|P2|H1-2024",
+      "status": "scheduled",
+      "terminal": "T1"
+    }
+  },
+  "dispatch_entrypoint": "framework/scripts/resolve_backtest_target.py"
+}
