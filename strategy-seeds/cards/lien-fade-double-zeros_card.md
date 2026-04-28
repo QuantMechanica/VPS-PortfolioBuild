@@ -15,7 +15,7 @@ created_by: Research
 last_updated: 2026-04-28
 
 strategy_type_flags:
-  - round-num-fade                            # vocabulary-gap PROPOSED — entry: stop-buy/stop-sell at fixed pip offset from a psychological round-number price (xx.00 / x.x000 / x.x500), conditioned on counter-trend MA precondition. Distinct from `vol-expansion-breakout` (uses prior-bar range scaled by N%; round-num-fade uses absolute round-number anchor); distinct from `gap-fade-stop-entry` (calendar-pattern + gap-through reference; round-num-fade has no calendar-pattern or gap-through condition); distinct from `n-period-min-reversion` (N-bar minimum extreme; round-num-fade uses absolute psychological level). V4 had no equivalent SM_XXX EA. Flagged at § 16; batch-ratified at SRC04 closeout.
+  - round-num-fade                            # entry: stop-buy/stop-sell at fixed pip offset (Lien default 10–15p) from absolute round-number price (xx.00 / x.x000 / x.x500) with counter-trend 20MA filter on M15. Ratified in SRC04 batch (CEO 2026-04-28, QUA-333 closeout, QUA-351 back-port). See `strategy-seeds/strategy_type_flags.md` § A entry-mechanism for canonical definition.
   - trend-filter-ma                           # Lien rule 1 (long): "trading below its intraday 20-period simple moving average on a 15-minute chart" — MA-position filter; counter-trend orientation
   - atr-hard-stop                             # Lien: 20-pip protective stop (rule 3); V5 maps to ATR(14) × M-multiple sweep
   - symmetric-long-short                      # Lien explicitly mirrors long and short rules (PDF p. 113)
@@ -60,7 +60,7 @@ timeframes:
   - H1                                        # plausible variant; out-of-source extrapolation (P3 axis variant)
 session_window: not specified                 # Lien implies 24-hour applicability; "Market Conditions" (PDF p. 113) prefers "quieter market conditions without the influence of major reports"
 primary_target_symbols:
-  - "USDJPY.DWX (Lien example: PDF pp. 113-114, fade @ 110.00 level, sell @ 110.85 with 20MA above)"  # Note: Lien text uses '1110.85' and '1110.50' which appears to be a typesetting artifact for '110.85' / '110.50' (USDJPY range). PDF p. 114 chart Fig 10.1 confirms USDJPY ~110-120 range.
+  - "USDJPY.DWX (Lien example: PDF pp. 113-114, fade @ 120.00 level, sell @ 119.85 with 20MA above)"  # Note: Lien text uses '1110.85' and '1110.50' which appears to be a typesetting artifact for '110.85' / '110.50' (USDJPY range). PDF p. 114 chart Fig 10.1 confirms USDJPY ~110-120 range.
   - "GBPUSD.DWX (Lien example: PDF p. 114-115, fade @ 1.5500, sell @ 1.5485)"
   - "USDCAD.DWX (Lien example: PDF p. 115, fade @ 1.2000 — triple-zero level — long @ 1.2015)"
   - "EURUSD.DWX, USDCHF.DWX, AUDUSD.DWX, NZDUSD.DWX (multi-major generalization implicit in Lien's chapter framing)"
@@ -268,6 +268,8 @@ Worked example pip P&L, PDF p. 114 (USDJPY @ 110.00 fade):
 
 > "We close half of the position when it moves by the amount risked or 35 pips at 1110.50. ... earning us 35 pips on the first and second half of the positions."
 
+(Interpretation: round number = 120.00 per source line 500; stop value 120.20 per source line 502 is clean text, not OCR-corrupted; therefore '1110.85' = OCR artifact for 119.85 and '1110.50' = OCR artifact for 119.50.)
+
 Worked example pip P&L, PDF p. 114-115 (GBPUSD @ 1.5500 fade):
 
 > "GBPUSD moves in our favor, and our first profit target is hit at (1.5485 -.0035) at 1.5450. We then move our stop to breakeven, or our initial entry price of 1.5485, and proceed to trail it by the 20-day SMA + 10 pips. If we manage our trade using this type of trailing stop, the second half of the position would have been exited at 1.5350 for 35 pips on the first half of the position and 135 pips on the second."
@@ -414,9 +416,10 @@ data_requirements: standard                   # M15 OHLC on Darwinex .DWX FX sym
   source verbatim quotes.
 
 - 2026-04-28: USDJPY example pip values in source PDF text are typeset with stray '1' prefix
-  ('1110.85' / '1110.50') which is a transcription / OCR artifact — actual values are 110.85
-  / 110.50 per chart Fig 10.1 PDF p. 114 and per JPY-pair pip arithmetic ('110.85 - 0.35 =
-  110.50'). Card preserves verbatim text in § 9 with explanatory note in § 3 markets section.
+  ('1110.85' / '1110.50') which is a transcription / OCR artifact — actual values are 119.85
+  / 119.50 per source-stated round number 120.00 (raw line 500) and stop value 120.20 (raw
+  line 502, no OCR artifact). Per JPY-pair pip arithmetic: 119.85 - 0.35 = 119.50. Card
+  preserves verbatim text in § 9 with explanatory note in § 3 markets section.
 
 - 2026-04-28: Latency sensitivity flagged at `scalping_p5b_latency` despite M15 bar size. The
   20-pip stop is tight enough that VPS latency on stop-buy / stop-sell fills materially affects
