@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from framework.scripts.pipeline_dispatcher import TERMINALS, dedup_key, dispatch_job
+from framework.scripts.pipeline_dispatcher import TERMINALS, dedup_key, dispatch_job, resolve_target_terminal
 
 
 def base_job(symbol: str = "EURUSD.DWX") -> dict[str, str]:
@@ -88,6 +88,27 @@ class PipelineDispatcherTests(unittest.TestCase):
         decision = dispatch_job(job, state, max_per_terminal=3, now_epoch=1000)
         self.assertEqual(decision["status"], "scheduled")
         self.assertEqual(decision["terminal"], "T2")
+
+    def test_resolve_target_terminal_keeps_pinned_target(self) -> None:
+        state = {"dedup": {}, "running": {name: 0 for name in TERMINALS}}
+        job = base_job()
+        job["target_terminal"] = "T4"
+        decision = resolve_target_terminal(job, state, now_epoch=1000)
+        self.assertEqual(decision["status"], "pinned")
+        self.assertEqual(decision["terminal"], "T4")
+
+    def test_resolve_target_terminal_dispatches_any(self) -> None:
+        state = {
+            "dedup": {},
+            "last_rr_index": -1,
+            "running": {"T1": 0, "T2": 0, "T3": 3, "T4": 3, "T5": 3},
+            "symbol_affinity": {},
+        }
+        job = base_job()
+        job["target_terminal"] = "any"
+        decision = resolve_target_terminal(job, state, now_epoch=1000)
+        self.assertEqual(decision["status"], "scheduled")
+        self.assertEqual(decision["terminal"], "T1")
 
 
 if __name__ == "__main__":

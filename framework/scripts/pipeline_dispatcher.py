@@ -4,11 +4,14 @@
 from __future__ import annotations
 
 import time
+import json
+from pathlib import Path
 from typing import Any
 
 TERMINALS = ("T1", "T2", "T3", "T4", "T5")
 AFFINITY_TTL_SECONDS = 24 * 60 * 60
 RECENT_WINDOW_SECONDS = 24 * 60 * 60
+DEFAULT_STATE_PATH = Path(r"D:\QM\Reports\pipeline\dispatch_state.json")
 
 
 def dedup_key(job: dict[str, Any]) -> str:
@@ -90,3 +93,29 @@ def dispatch_job(
     state.setdefault("recent_runs", {}).setdefault(selected, []).append(now)
     dedup[key] = {"symbol": symbol, "terminal": selected, "ts": now}
     return {"dedup_key": key, "status": "scheduled", "terminal": selected}
+
+
+def resolve_target_terminal(
+    job: dict[str, Any],
+    state: dict[str, Any],
+    max_per_terminal: int = 3,
+    now_epoch: int | None = None,
+) -> dict[str, Any]:
+    target = str(job.get("target_terminal", "any")).upper()
+    if target in TERMINALS:
+        return {"status": "pinned", "terminal": target, "dedup_key": dedup_key(job)}
+    return dispatch_job(job, state, max_per_terminal=max_per_terminal, now_epoch=now_epoch)
+
+
+def load_dispatch_state(path: Path = DEFAULT_STATE_PATH) -> dict[str, Any]:
+    if not path.exists():
+        return {"dedup": {}, "last_rr_index": -1, "recent_runs": {}, "running": {}, "symbol_affinity": {}}
+    with path.open("r", encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def save_dispatch_state(state: dict[str, Any], path: Path = DEFAULT_STATE_PATH) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="\n") as handle:
+        json.dump(state, handle, indent=2, sort_keys=True)
+        handle.write("\n")
