@@ -5,7 +5,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-$stamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHHmmZ")
+$stamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHHmmssZ")
 $target = Join-Path $RepoRoot ("docs/ops/QUA-415_COOWNER_MONITOR_{0}.json" -f $stamp)
 
 $raw = & powershell -ExecutionPolicy Bypass -File (Join-Path $RepoRoot "infra/scripts/Test-QUA415CoOwnerCloseout.ps1") 2>&1
