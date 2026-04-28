@@ -77,6 +77,7 @@ For the full JSON shape per class (including reviewer/approver participant ident
 ## Factory Setup Standards
 
 - MT5 factory terminals `T1`-`T5` must include an install-root `portable.txt` marker file (empty file) to prevent AppData split-brain when launched without explicit `/portable`.
+- Canonical factory compile path: `D:\QM\mt5\T1\MetaEditor64.exe` (fallback: `D:\QM\mt5\T2\MetaEditor64.exe`). Consumers should use `framework/scripts/metaeditor_path.txt` or `infra/scripts/Resolve-MetaEditorPath.ps1` and avoid PATH-based discovery.
 
 ## Skills
 
