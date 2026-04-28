@@ -11,6 +11,7 @@ param(
     [string]$DriveGitExclusionScript = "C:\QM\repo\infra\monitoring\Test-DriveGitExclusion.ps1",
     [string]$DriveGitExclusionOutputPath = "C:\QM\logs\infra\health\drive_git_exclusion_latest.json",
     [string]$GitIndexLockMonitorScript = "C:\QM\repo\infra\monitoring\Invoke-GitIndexLockMonitor.ps1",
+    [string]$Class2ExecutionPolicySentinelScript = "C:\QM\repo\infra\monitoring\Test-Class2ExecutionPolicySentinel.ps1",
     [string]$StaleLockWatchdogScript = "C:\QM\repo\infra\monitoring\Invoke-PaperclipStaleLockWatchdog.ps1",
     [string]$Qua207RuntimeHeartbeatScript = "C:\QM\repo\infra\scripts\Run-QUA207RuntimeCompletionHeartbeat.ps1",
     [string]$BackupScript = "C:\QM\repo\infra\backup.ps1",
@@ -143,6 +144,23 @@ if (Test-Path -LiteralPath $GitIndexLockMonitorScript) {
 }
 else {
     Write-Warning "Git index lock monitor script missing; skipped QM_GitIndexLockMonitor_10min registration."
+}
+
+# Class-2 execution-policy sentinel every 60 minutes (DL-030 convention guard)
+if (Test-Path -LiteralPath $Class2ExecutionPolicySentinelScript) {
+    $class2PolicyTrigger = New-RepeatingTriggerFromToday `
+        -AtTime (Get-Date "00:08") `
+        -Interval (New-TimeSpan -Minutes 60) `
+        -Duration (New-TimeSpan -Days 3650)
+    Register-DesiredTask `
+        -TaskName "QM_Class2ExecutionPolicySentinel_60min" `
+        -Executable "powershell.exe" `
+        -Arguments "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$Class2ExecutionPolicySentinelScript`" -FailOnFinding" `
+        -Trigger $class2PolicyTrigger `
+        -Description "Detects missing executionPolicy on Class-2 Strategy Card issues (DL-030 sentinel)."
+}
+else {
+    Write-Warning "Class-2 execution-policy sentinel script missing; skipped QM_Class2ExecutionPolicySentinel_60min registration."
 }
 
 # Drive/git exclusion hard-fence verification every 15 minutes (PC1-00)

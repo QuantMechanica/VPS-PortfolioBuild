@@ -190,11 +190,20 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Optional guarded cleanup mode (`-AutoCleanup`) only removes stale lock when no `git.exe` process references the repo.
   - Writes machine-readable output to `C:\QM\logs\infra\health\git_index_lock_monitor_latest.json`.
   - Canonical lock signal source consumed by both `monitoring/Invoke-InfraHealthCheck.ps1` and `scripts/Invoke-InfraAudit.ps1`.
+- `monitoring/Test-Class2ExecutionPolicySentinel.ps1`
+  - DL-030 Class-2 sentinel for Strategy Card issues in V5 Strategy Research.
+  - Detects child issues missing `executionPolicy` and writes machine-readable output to `C:\QM\logs\infra\health\class2_execution_policy_sentinel_latest.json`.
+  - Preview-safe by default (detect-only); optional `-ApplyMissingPolicy` performs PATCH with required `X-Paperclip-Run-Id`.
 - `monitoring/Invoke-InfraHealthCheck.ps1`
   - Delegates `git_index_lock` evaluation to `monitoring/Invoke-GitIndexLockMonitor.ps1` when present, with inline stale-lock scan fallback only if the monitor script is missing.
 - `scripts/Install-GitIndexLockMonitorTask.ps1`
   - Registers Task Scheduler job `QM_GitIndexLockMonitor_10min` as `SYSTEM`.
   - Runs `monitoring/Invoke-GitIndexLockMonitor.ps1 -StaleAfterMinutes 20 -FailOnFinding`.
+  - Safe to re-run (`Register-ScheduledTask -Force`) and overlap-safe (`MultipleInstances=IgnoreNew`).
+- `scripts/Install-Class2ExecutionPolicySentinelTask.ps1`
+  - Registers Task Scheduler job `QM_Class2ExecutionPolicySentinel_60min` as `SYSTEM`.
+  - Runs `monitoring/Test-Class2ExecutionPolicySentinel.ps1 -FailOnFinding` every 60 minutes.
+  - Supports `-PreviewOnly` for non-mutating task-plan output.
   - Safe to re-run (`Register-ScheduledTask -Force`) and overlap-safe (`MultipleInstances=IgnoreNew`).
 - `scripts/Ensure-AgentWorktree.ps1`
   - Converges per-agent worktree paths under `C:\QM\worktrees\` for CWD isolation.
@@ -368,6 +377,12 @@ Git index-lock monitor (every 10 minutes, PC1-00):
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-GitIndexLockMonitorTask.ps1 -EveryMinutes 10 -StaleAfterMinutes 20 -FailOnFinding
+```
+
+Class-2 execution-policy sentinel (every 60 minutes, DL-030):
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-Class2ExecutionPolicySentinelTask.ps1 -EveryMinutes 60 -FailOnFinding
 ```
 
 Drive/git hard-fence verification (every 15 minutes, PC1-00):
