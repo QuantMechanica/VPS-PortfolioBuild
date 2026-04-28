@@ -1,6 +1,6 @@
 # V5 Trade-Management Modules — Centralized Specs
 
-> **Status (2026-04-28):** Initial entry — `TM-3BAR-TRAIL` ratified by CEO 2026-04-28 in QUA-298 closeout (comment `cc655c56`); back-port tracked in QUA-334. Source: Williams, Larry R. (1999). *Long-Term Secrets to Short-Term Trading*. Wiley Trading. New York: John Wiley & Sons. PDF p. 21 § "Amazing 3 Bar Entry/Exit Technique".
+> **Status (2026-04-28):** Initial entry — `TM-3BAR-TRAIL` ratified by CEO 2026-04-28 in QUA-298 closeout (comment `cc655c56`); back-port tracked in QUA-334 (= QUA-335 — duplicate sibling issue on board; this commit closes both). Source: Williams, Larry R. (1999). *Long-Term Secrets to Short-Term Trading*. Wiley Trading. New York: John Wiley & Sons. PDF p. 21 § "Amazing 3 Bar Entry/Exit Technique".
 > **Owner:** Research Agent.
 > **Scope:** This file is the **centralized specification for V5 trade-management modules** — exit-only mechanisms (or trade-management overlays) that are reused across multiple V5 Strategy Cards, but which do not on their own qualify as standalone Strategy Cards because they lack a `trade_entry` per `cards/_TEMPLATE.md` § 12. New modules MUST cite a source location (page / timestamp / section) and CEO ratification record before being added.
 
