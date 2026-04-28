@@ -1,0 +1,49 @@
+{
+  "issue": "QUA-415",
+  "ts_utc": "2026-04-28T12:01:08Z",
+  "devops_commits": [
+    "21cc3e6",
+    "fc52012",
+    "591e9af",
+    "a19c7cf",
+    "f28df74"
+  ],
+  "files": [
+    {
+      "path": "framework/scripts/gen_setfile.ps1",
+      "sha256": "2ed08032ee31e60a6cffa8b9d3a451eb0fe3ae8e9f28774a5696c98d72f23eb3"
+    },
+    {
+      "path": "framework/scripts/resolve_backtest_target.py",
+      "sha256": "cc2b83b2a52a569e75a5fb65f58df58860c925aede0513963d684a2ccc97a91b"
+    },
+    {
+      "path": "framework/scripts/pipeline_dispatcher.py",
+      "sha256": "547b7f4c13f3afb02e38b3a172e0df04bdff1d9b91a1510dd8d87d352d3c837c"
+    },
+    {
+      "path": "framework/scripts/tests/test_pipeline_dispatcher.py",
+      "sha256": "44d87082c3152e50c4735216bc45edb9baec036b2bc043b3cd594df6a8a996ee"
+    },
+    {
+      "path": "framework/scripts/tests/test_resolve_backtest_target.py",
+      "sha256": "48176572da31c366543f12320592267cc4e11f3c0c9fb56ac18c665fc2f20bb6"
+    },
+    {
+      "path": "framework/EAs/QM5_SRC04_S03_lien_fade_double_zeros/sets/QM5_SRC04_S03_lien_fade_double_zeros_EURUSD.DWX_H1_backtest.set",
+      "sha256": "d38d2adbe1932227e96bd3f33e24078e0b5b9b0109087350c27cce6f739eea18"
+    },
+    {
+      "path": "docs/ops/QUA-415_SETFILE_WORKED_EXAMPLE_2026-04-28.md",
+      "sha256": "686a34b1c3ee65a70aa0bab2b121f84637238e459f00270af9fd35c83a592fb7"
+    },
+    {
+      "path": "docs/ops/QUA-415_DISPATCH_GATE_EVIDENCE_2026-04-28.json",
+      "sha256": "786fc31dc684416badc29222109e0e924feee6a4560138257e23e29252f87826"
+    },
+    {
+      "path": "docs/ops/QUA-415_DEVOPS_CLOSEOUT_COMMENT_2026-04-28.md",
+      "sha256": "70eabae8abc1ae23108fa25aedd20e495063eab52a6f919d4d8ca38c99cdb8f1"
+    }
+  ]
+}
