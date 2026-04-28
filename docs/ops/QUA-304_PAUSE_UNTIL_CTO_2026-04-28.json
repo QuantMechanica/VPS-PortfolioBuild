@@ -3,7 +3,7 @@
     "state":  "paused_waiting_cto_review",
     "execution_policy":  "review-only",
     "unblock_owner":  "CTO",
-    "last_checked_utc":  "2026-04-28T11:37:47.1003465Z",
+    "last_checked_utc":  "2026-04-28T11:38:15.4083145Z",
     "issue":  "QUA-304",
     "unblock_action":  "Provide review decision or request scoped deltas"
 }
