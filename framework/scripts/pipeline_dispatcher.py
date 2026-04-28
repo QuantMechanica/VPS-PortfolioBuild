@@ -9,20 +9,119 @@ from pathlib import Path
 from typing import Any
 
 TERMINALS = ("T1", "T2", "T3", "T4", "T5")
+REQUIRED_JOB_FIELDS = ("ea_id", "version", "symbol", "phase", "sub_gate_config_hash")
+MATRIX_REQUIRED_FIELDS = ("ea_id", "version", "phase", "sub_gate_config_hash", "symbols")
+MATRIX_SYMBOL_COUNT = 36
 AFFINITY_TTL_SECONDS = 24 * 60 * 60
 RECENT_WINDOW_SECONDS = 24 * 60 * 60
 DEFAULT_STATE_PATH = Path(r"D:\QM\Reports\pipeline\dispatch_state.json")
+DEFAULT_DEDUP_INDEX_PATH = Path(r"D:\QM\Reports\pipeline\dedup_index.json")
 DEFAULT_COMPLETED_RETENTION_SECONDS = 48 * 60 * 60
 
 
+def _require_non_empty_string(value: Any, field_name: str) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"job.{field_name} must be a non-empty string")
+    return value.strip()
+
+
+def validate_job(job: dict[str, Any]) -> dict[str, str]:
+    if not isinstance(job, dict):
+        raise ValueError("job must be an object")
+    normalized: dict[str, str] = {}
+    for field in REQUIRED_JOB_FIELDS:
+        normalized[field] = _require_non_empty_string(job.get(field), field)
+    if not normalized["symbol"].endswith(".DWX"):
+        raise ValueError("job.symbol must end with .DWX")
+    return normalized
+
+
+def validate_matrix_payload(payload: dict[str, Any]) -> tuple[dict[str, str], list[str]]:
+    if not isinstance(payload, dict):
+        raise ValueError("matrix payload must be an object")
+    for field in MATRIX_REQUIRED_FIELDS:
+        if field not in payload:
+            raise ValueError(f"matrix.{field} is required")
+    base_job: dict[str, str] = {}
+    for field in ("ea_id", "version", "phase", "sub_gate_config_hash"):
+        base_job[field] = _require_non_empty_string(payload.get(field), field)
+    raw_symbols = payload.get("symbols")
+    if not isinstance(raw_symbols, list):
+        raise ValueError("matrix.symbols must be an array")
+    symbols = [_require_non_empty_string(item, "symbol") for item in raw_symbols]
+    if len(symbols) != MATRIX_SYMBOL_COUNT:
+        raise ValueError(f"matrix.symbols must contain exactly {MATRIX_SYMBOL_COUNT} entries")
+    if len(set(symbols)) != len(symbols):
+        raise ValueError("matrix.symbols contains duplicates")
+    for symbol in symbols:
+        if not symbol.endswith(".DWX"):
+            raise ValueError(f"matrix symbol must end with .DWX: {symbol}")
+    return base_job, symbols
+
+
+def build_matrix_jobs(payload: dict[str, Any]) -> list[dict[str, str]]:
+    base_job, symbols = validate_matrix_payload(payload)
+    jobs: list[dict[str, str]] = []
+    for symbol in symbols:
+        job = dict(base_job)
+        job["symbol"] = symbol
+        jobs.append(job)
+    return jobs
+
+
+def matrix_bucket_key(job: dict[str, Any]) -> str:
+    normalized = validate_job(job)
+    return f"{normalized['ea_id']}_{normalized['version']}_{normalized['phase']}"
+
+
+def _phase_matrix_index(state: dict[str, Any]) -> dict[str, Any]:
+    return state.setdefault("phase_matrix_index", {})
+
+
+def _upsert_matrix_row(bucket: dict[str, Any], symbol: str, terminal: str | None = None) -> dict[str, Any]:
+    rows = bucket.setdefault("matrix", [])
+    for row in rows:
+        if str(row.get("symbol", "")) == symbol:
+            if terminal:
+                row["terminal"] = terminal
+            return row
+    row = {"symbol": symbol, "terminal": terminal, "verdict": None, "evidence": None}
+    rows.append(row)
+    return row
+
+
+def _ensure_matrix_bucket(state: dict[str, Any], job: dict[str, Any]) -> tuple[str, dict[str, Any]]:
+    key = matrix_bucket_key(job)
+    index = _phase_matrix_index(state)
+    bucket = index.setdefault(key, {"matrix": [], "phase_verdict": None, "next_strategy_unblocked": None})
+    return key, bucket
+
+
+def _refresh_phase_verdict(bucket: dict[str, Any], pass_threshold: int = 1, fail_phase_label: str | None = None) -> None:
+    rows = list(bucket.get("matrix", []))
+    verdicts = [str(row.get("verdict")) for row in rows if row.get("verdict") is not None]
+    if not rows or len(verdicts) < len(rows):
+        bucket["phase_verdict"] = None
+        return
+    pass_count = sum(1 for value in verdicts if value == "PASS")
+    if pass_count >= pass_threshold:
+        bucket["phase_verdict"] = "PASS"
+        return
+    if fail_phase_label:
+        bucket["phase_verdict"] = f"FAIL_PHASE_{fail_phase_label}"
+        return
+    bucket["phase_verdict"] = "FAIL_NO_SYMBOLS_PASSED"
+
+
 def dedup_key(job: dict[str, Any]) -> str:
+    normalized = validate_job(job)
     return "|".join(
         [
-            str(job.get("ea_id", "")),
-            str(job.get("version", "")),
-            str(job.get("symbol", "")),
-            str(job.get("phase", "")),
-            str(job.get("sub_gate_config_hash", "")),
+            normalized["ea_id"],
+            normalized["version"],
+            normalized["symbol"],
+            normalized["phase"],
+            normalized["sub_gate_config_hash"],
         ]
     )
 
@@ -94,6 +193,8 @@ def dispatch_job(
     affinity[symbol] = {"terminal": selected, "ts": now}
     state.setdefault("recent_runs", {}).setdefault(selected, []).append(now)
     dedup[key] = {"symbol": symbol, "terminal": selected, "ts": now}
+    _, bucket = _ensure_matrix_bucket(state, job)
+    _upsert_matrix_row(bucket, symbol=symbol, terminal=selected)
     return {"dedup_key": key, "status": "scheduled", "terminal": selected}
 
 
@@ -109,7 +210,16 @@ def resolve_target_terminal(
     return dispatch_job(job, state, max_per_terminal=max_per_terminal, now_epoch=now_epoch)
 
 
-def release_job(job: dict[str, Any], state: dict[str, Any], now_epoch: int | None = None) -> dict[str, Any]:
+def release_job(
+    job: dict[str, Any],
+    state: dict[str, Any],
+    now_epoch: int | None = None,
+    verdict: str | None = None,
+    evidence: str | None = None,
+    pass_threshold: int = 1,
+    fail_phase_label: str | None = None,
+    next_strategy_unblocked: str | None = None,
+) -> dict[str, Any]:
     now = int(now_epoch if now_epoch is not None else time.time())
     key = dedup_key(job)
     dedup = state.setdefault("dedup", {})
@@ -124,6 +234,15 @@ def release_job(job: dict[str, Any], state: dict[str, Any], now_epoch: int | Non
         running[terminal] = max(current - 1, 0)
     record["status"] = "complete"
     record["completed_ts"] = now
+    _, bucket = _ensure_matrix_bucket(state, job)
+    row = _upsert_matrix_row(bucket, symbol=str(record.get("symbol", job.get("symbol", ""))), terminal=terminal or None)
+    if verdict is not None:
+        row["verdict"] = verdict
+    if evidence is not None:
+        row["evidence"] = evidence
+    if next_strategy_unblocked is not None:
+        bucket["next_strategy_unblocked"] = next_strategy_unblocked
+    _refresh_phase_verdict(bucket, pass_threshold=pass_threshold, fail_phase_label=fail_phase_label)
     return {"dedup_key": key, "status": "released", "terminal": terminal or None}
 
 
@@ -156,4 +275,28 @@ def save_dispatch_state(state: dict[str, Any], path: Path = DEFAULT_STATE_PATH) 
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8", newline="\n") as handle:
         json.dump(state, handle, indent=2, sort_keys=True)
+        handle.write("\n")
+
+
+def export_phase_matrix_index(state: dict[str, Any]) -> dict[str, Any]:
+    index = state.get("phase_matrix_index", {})
+    if not isinstance(index, dict):
+        return {}
+    return index
+
+
+def load_dedup_index(path: Path = DEFAULT_DEDUP_INDEX_PATH) -> dict[str, Any]:
+    if not path.exists():
+        return {}
+    with path.open("r", encoding="utf-8") as handle:
+        data = json.load(handle)
+    if not isinstance(data, dict):
+        return {}
+    return data
+
+
+def save_dedup_index(index: dict[str, Any], path: Path = DEFAULT_DEDUP_INDEX_PATH) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="\n") as handle:
+        json.dump(index, handle, indent=2, sort_keys=True)
         handle.write("\n")
