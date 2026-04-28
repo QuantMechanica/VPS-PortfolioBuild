@@ -9,3 +9,4 @@
 2026-04-28T12:51:15.6889939+02:00 | blocked-state checkpoint: CTO review gate pending.
 2026-04-28T12:52:13.3828399+02:00 | wake checkpoint: blocked on CTO review-only gate.
 2026-04-28T12:53:14.8286398+02:00 | blocked wake checkpoint: still waiting on CTO review.
+2026-04-28T12:54:17.7482802+02:00 | blocked telemetry: QUA-304 still pending CTO review.
