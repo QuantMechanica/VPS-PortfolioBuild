@@ -18,6 +18,10 @@ Issue: `QUA-406` (SRC04 phase-2 build from card `QUA-346`)
    - `1008,lien-dbb-trend-join,SRC04_S02b`
    No active row for `SRC04_S07` / `lien-20day-breakout`.
 4. Branch sync attempt via `git pull --ff-only` is not available on local branch `agents/development` because no upstream tracking is configured; cannot assume remote updates without explicit sync directive.
+5. Local artifact/card presence gate is now cleared in Development checkout:
+   - `strategy-seeds/cards/lien-20day-breakout_card.md` (synced)
+   - `artifacts/qua-346/src04_s07_run_manifest_template.json` (synced)
+   Remaining blockers are governance/allocation only.
 
 ## Blocked State
 Implementation remains blocked under V5 hard rules because the mapped card is not approved (`DRAFT`) and no `ea_id` allocation exists for `SRC04_S07`.
