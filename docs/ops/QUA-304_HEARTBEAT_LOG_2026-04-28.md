@@ -4540,3 +4540,9 @@
 - Compliance sweep (QM5_1003): includes QM_Common; uses QM_FrameworkMagic; exposes RISK_PERCENT + RISK_FIXED; Friday Close enabled; 3-bar long/short signal + explicit reversal path present; no symbol hardcoding detected in strategy logic.
 - Compile confirmation retained: strict compile PASS with 0 errors/0 warnings (log: C:\QM\repo\framework\build\compile\20260428_103323\QM5_1003_davey_baseline_3bar.compile.log).
 - Next action: handoff-ready for CTO review gate on QUA-304.
+
+## Heartbeat checkpoint (2026-04-28T12:34:28.5325660+02:00)
+- Source run: 58250d41-92af-4c88-a978-d4b5464d8494 follow-up
+- Development terminal state: implementation + compile verification complete for QM5_1003; strict compile helper behavior corrected; evidence paths logged in prior checkpoints.
+- Unblock owner/action: CTO review decision on QUA-304 review-only execution gate.
+- Next heartbeat expectation: no additional code changes unless CTO requests deltas.
