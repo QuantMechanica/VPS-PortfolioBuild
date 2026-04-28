@@ -1,9 +1,8 @@
 ﻿# Darwinex Bond-CFD Inventory (US10Y + DE10Y)
 
-- generated_at_utc: 2026-04-28T09:08:45Z
+- generated_at_utc: 2026-04-28T09:10:32Z
 - terminal_path: D:\QM\mt5\T1\terminal64.exe
-- mt5_probe_ok: False
-- mt5_probe_error: MT5 probe did not return output
+- mt5_probe_ok: True
 - overall: fail
 - note: trade_hours/liquidity/commission fields require live broker symbol metadata; null means probe host could not read MT5 symbol details
 

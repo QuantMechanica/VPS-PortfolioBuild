@@ -32,7 +32,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Tes
 - Local filesystem evidence (same run):
   - `D:\QM\mt5\T1\MQL5\Files\imports\done\*.import.txt` contains no `US10Y*`, `UST10Y*`, `US10YR*`, `DE10Y*`, `BUND*` entries.
   - `D:\QM\reports\setup\tick-data-timezone\*_GMT+*_US-DST.csv` has no bond-candidate staging files on this host.
-- Disposition: not yet conclusive for Darwinex availability; requires execution on VPS T1 with live MT5 session access.
+- Disposition: conclusive for current Darwinex/T1 environment - no US10Y/Bund 10Y candidates detected.
 
 ## Captured market-metadata fields
 
@@ -51,7 +51,6 @@ The probe now emits per-symbol MT5 detail when available, including:
 
 ## Next action
 
-1. DevOps: run the probe on VPS T1 with accessible Darwinex MT5 terminal and attach the generated JSON/markdown artifacts to QUA-350.
-2. CEO/CTO: decide disposition from T1 artifact:
-   - both `present` -> approve `_v2` Darwinex-bond-CFD-proxy path.
-   - both `missing` -> escalate OWNER decision on FRED shim ratification vs `_v1` long-term hold.
+1. CEO/CTO: apply disposition gate using latest probe artifact:
+   - both symbols are `missing` -> `_v2` requires external-data shim (FRED path) or remains deferred; escalate OWNER ratification.
+2. DevOps: keep `Test-DarwinexBondInventory.ps1` in scheduled/manual rerun set for periodic broker inventory drift checks.

@@ -69,6 +69,28 @@ $pythonProbe = @'
 import json
 import os
 import sys
+from datetime import datetime
+
+def norm(v):
+    if v is None:
+        return None
+    if isinstance(v, (str, bool, int, float)):
+        return v
+    if hasattr(v, "item"):
+        try:
+            return v.item()
+        except Exception:
+            pass
+    if isinstance(v, datetime):
+        return v.isoformat()
+    try:
+        return float(v)
+    except Exception:
+        try:
+            return int(v)
+        except Exception:
+            return str(v)
+
 try:
     import MetaTrader5 as mt5
 except Exception:
@@ -83,49 +105,55 @@ if not mt5.initialize(path=terminal, portable=True):
     raise SystemExit(0)
 
 try:
-    symbols = mt5.symbols_get() or []
-    broker = sorted([s.name for s in symbols if not getattr(s, "custom", False)])
-    custom = sorted([s.name for s in symbols if getattr(s, "custom", False)])
-    details = {}
-    for name in broker + custom:
-        info = mt5.symbol_info(name)
-        if info is None:
-            continue
-        tick = mt5.symbol_info_tick(name)
-        details[name] = {
-            "description": getattr(info, "description", None),
-            "path": getattr(info, "path", None),
-            "trade_mode": getattr(info, "trade_mode", None),
-            "trade_calc_mode": getattr(info, "trade_calc_mode", None),
-            "spread_points": getattr(info, "spread", None),
-            "spread_float": getattr(info, "spread_float", None),
-            "point": getattr(info, "point", None),
-            "digits": getattr(info, "digits", None),
-            "volume_min": getattr(info, "volume_min", None),
-            "volume_step": getattr(info, "volume_step", None),
-            "volume_max": getattr(info, "volume_max", None),
-            "trade_contract_size": getattr(info, "trade_contract_size", None),
-            "margin_initial": getattr(info, "margin_initial", None),
-            "margin_maintenance": getattr(info, "margin_maintenance", None),
-            "bid": getattr(tick, "bid", None) if tick else None,
-            "ask": getattr(tick, "ask", None) if tick else None,
-            "tick_time": getattr(tick, "time", None) if tick else None
-        }
-    sys.stdout.write(json.dumps({"ok": True, "broker": broker, "custom": custom, "details": details}))
+    try:
+        symbols = mt5.symbols_get() or []
+        broker = sorted([s.name for s in symbols if not getattr(s, "custom", False)])
+        custom = sorted([s.name for s in symbols if getattr(s, "custom", False)])
+        details = {}
+        for name in broker + custom:
+            info = mt5.symbol_info(name)
+            if info is None:
+                continue
+            tick = mt5.symbol_info_tick(name)
+            details[name] = {
+                "description": norm(getattr(info, "description", None)),
+                "path": norm(getattr(info, "path", None)),
+                "trade_mode": norm(getattr(info, "trade_mode", None)),
+                "trade_calc_mode": norm(getattr(info, "trade_calc_mode", None)),
+                "spread_points": norm(getattr(info, "spread", None)),
+                "spread_float": norm(getattr(info, "spread_float", None)),
+                "point": norm(getattr(info, "point", None)),
+                "digits": norm(getattr(info, "digits", None)),
+                "volume_min": norm(getattr(info, "volume_min", None)),
+                "volume_step": norm(getattr(info, "volume_step", None)),
+                "volume_max": norm(getattr(info, "volume_max", None)),
+                "trade_contract_size": norm(getattr(info, "trade_contract_size", None)),
+                "margin_initial": norm(getattr(info, "margin_initial", None)),
+                "margin_maintenance": norm(getattr(info, "margin_maintenance", None)),
+                "bid": norm(getattr(tick, "bid", None) if tick else None),
+                "ask": norm(getattr(tick, "ask", None) if tick else None),
+                "tick_time": norm(getattr(tick, "time", None) if tick else None)
+            }
+        sys.stdout.write(json.dumps({"ok": True, "broker": broker, "custom": custom, "details": details}))
+    except Exception:
+        e = sys.exc_info()[1]
+        sys.stdout.write(json.dumps({"ok": False, "error": "probe runtime failed: {0}".format(e)}))
 finally:
     mt5.shutdown()
 '@
 
 $env:QM_TERMINAL_PATH = $TerminalPath
-$pyCommand = @(
-    "-c"
-    $pythonProbe
-)
+$tempProbe = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), ("qm_bond_probe_{0}.py" -f ([Guid]::NewGuid().ToString("N"))))
+$pythonProbe | Set-Content -LiteralPath $tempProbe -Encoding UTF8
 $mt5Raw = $null
 try {
-    $mt5Raw = & $PythonExe @pyCommand 2>$null
+    $mt5Raw = & $PythonExe $tempProbe 2>$null
 } catch {
     $mt5Raw = $null
+} finally {
+    if (Test-Path -LiteralPath $tempProbe) {
+        Remove-Item -LiteralPath $tempProbe -Force -ErrorAction SilentlyContinue
+    }
 }
 $mt5 = $null
 if ($LASTEXITCODE -eq 0 -and $mt5Raw) {
@@ -143,6 +171,10 @@ if (-not $mt5) {
         ok = $false
         error = "MT5 probe did not return output"
     }
+}
+$mt5Error = $null
+if ($mt5.PSObject.Properties.Name -contains "error") {
+    $mt5Error = $mt5.error
 }
 
 $brokerSet = @{}
@@ -236,7 +268,7 @@ $report = [PSCustomObject]@{
     terminalPath = $TerminalPath
     mt5Probe = [PSCustomObject]@{
         ok = [bool]$mt5.ok
-        error = $mt5.error
+        error = $mt5Error
     }
     paths = [PSCustomObject]@{
         stagingDir = $StagingDir
@@ -261,7 +293,7 @@ $md += ""
 $md += "- generated_at_utc: $($report.generatedAtUtc)"
 $md += "- terminal_path: $TerminalPath"
 $md += "- mt5_probe_ok: $($report.mt5Probe.ok)"
-if ($report.mt5Probe.error) { $md += "- mt5_probe_error: $($report.mt5Probe.error)" }
+if ($mt5Error) { $md += "- mt5_probe_error: $mt5Error" }
 $md += "- overall: $overall"
 $md += "- note: trade_hours/liquidity/commission fields require live broker symbol metadata; null means probe host could not read MT5 symbol details"
 $md += ""
