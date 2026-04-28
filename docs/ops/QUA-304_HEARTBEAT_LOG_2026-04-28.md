@@ -2820,3 +2820,10 @@
 - Decision: No user reply after repeated wake prompts on mixed commit d2a9ee2; proceeding with option 1 (keep mixed commit as-is) to restore heartbeat continuity.
 - Note: framework/registry/ea_id_registry.csv remains externally modified and intentionally untouched by Development.
 
+
+- Checkpoint: 2026-04-28T08:08:23Z
+- Status: WAITING_CTO_REVIEW
+- Validation: Confirmed existing implementation at framework/EAs/QM5_1003_davey_baseline_3bar/QM5_1003_davey_baseline_3bar.mq5 aligns with SRC01_S03 card intent (3-bar mean-reversion, ATR+USD-cap stop, reversal on opposite trigger, Friday-close/news framework hooks, QM_Common include, QM magic/risk wiring).
+- Blocker: CTO review-only gate remains the unblock owner/action.
+- Note: No registry edits performed in this wake.
+
