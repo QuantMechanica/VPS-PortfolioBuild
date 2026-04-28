@@ -7,9 +7,9 @@
 
 ```yaml
 strategy_id: SRC04_S02a
-ea_id: TBD
+ea_id: 1007
 slug: lien-dbb-pick-tops
-status: DRAFT
+status: APPROVED
 created: 2026-04-28
 created_by: Research
 last_updated: 2026-04-28
