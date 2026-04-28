@@ -16,3 +16,4 @@
 2026-04-28T12:58:15.8620835+02:00 | blocked-state wake line: CTO review pending.
 2026-04-28T12:59:13.9716693+02:00 | blocked-state checkpoint: CTO review still pending.
 2026-04-28T13:00:14.5897266+02:00 | blocked-state checkpoint: awaiting CTO review gate.
+2026-04-28T13:01:15.8106807+02:00 | blocked-state timeline entry: awaiting CTO review decision.
