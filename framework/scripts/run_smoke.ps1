@@ -147,6 +147,59 @@ function Resolve-DispatchTerminal {
     }
 }
 
+function Invoke-DispatchCompletion {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$OriginalTargetTerminal,
+        [Parameter(Mandatory = $true)]
+        [int]$EAIdValue,
+        [Parameter(Mandatory = $true)]
+        [string]$SymbolName,
+        [Parameter(Mandatory = $true)]
+        [string]$PeriodName,
+        [Parameter(Mandatory = $true)]
+        [int]$YearValue
+    )
+
+    if ($OriginalTargetTerminal -ine 'any') {
+        return
+    }
+
+    $resolverPath = Join-Path $PSScriptRoot "resolve_backtest_target.py"
+    if (-not (Test-Path -LiteralPath $resolverPath -PathType Leaf)) {
+        Write-Warning "run_smoke.dispatch_complete skipped; resolver missing at $resolverPath"
+        return
+    }
+
+    $jobPath = Join-Path $env:TEMP ("qua307_dispatch_job_{0}.json" -f [guid]::NewGuid().ToString("N"))
+    $statePath = "D:\QM\Reports\pipeline\dispatch_state.json"
+    $job = [ordered]@{
+        ea_id = "QM5_{0}" -f $EAIdValue
+        version = "smoke"
+        symbol = $SymbolName
+        phase = "P1"
+        sub_gate_config_hash = "{0}-{1}" -f $PeriodName, $YearValue
+        target_terminal = "any"
+    } | ConvertTo-Json -Depth 4
+    Set-Content -LiteralPath $jobPath -Value $job -Encoding utf8
+    try {
+        $raw = & python $resolverPath --job-json $jobPath --state-json $statePath --event complete --prune-completed
+        if ($LASTEXITCODE -eq 0 -and $raw) {
+            $decision = $raw | ConvertFrom-Json
+            Write-Output ("run_smoke.dispatch_complete_status={0}" -f $decision.status)
+            if ($decision.terminal) {
+                Write-Output ("run_smoke.dispatch_complete_terminal={0}" -f $decision.terminal)
+            }
+        } else {
+            Write-Warning "run_smoke.dispatch_complete failed (exit=$LASTEXITCODE)"
+        }
+    } finally {
+        if (Test-Path -LiteralPath $jobPath) {
+            Remove-Item -LiteralPath $jobPath -Force
+        }
+    }
+}
+
 function Resolve-TerminalExecutable {
     param(
         [Parameter(Mandatory = $true)]
@@ -623,6 +676,8 @@ Write-Output "run_smoke.reason_classes=$([string]::Join(';', $summary.reason_cla
 Write-Output "run_smoke.summary=$summaryPath"
 Write-Output "run_smoke.report_dir=$reportDir"
 Write-Output "run_smoke.evidence=$evidencePath"
+
+Invoke-DispatchCompletion -OriginalTargetTerminal $Terminal -EAIdValue $EAId -SymbolName $Symbol -PeriodName $Period -YearValue $Year
 
 if (-not $passed) {
     exit 1

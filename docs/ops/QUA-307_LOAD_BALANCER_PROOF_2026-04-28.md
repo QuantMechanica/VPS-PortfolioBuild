@@ -45,6 +45,8 @@ python C:\QM\repo\framework\scripts\resolve_backtest_target.py --job-json <job.j
 - `framework/scripts/run_smoke.ps1`
 - `framework/scripts/resolve_backtest_target.py`
 
+`run_smoke.ps1` now invokes completion release (`--event complete --prune-completed`) before exit for `target_terminal:any` runs.
+
 ## Notes
 
 - T6 is not referenced by the dispatcher code path and remains out of scope.
