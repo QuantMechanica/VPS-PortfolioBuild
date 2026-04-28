@@ -23,12 +23,12 @@ input bool   qm_friday_close_enabled      = true;
 input int    qm_friday_close_hour_broker  = 21;
 
 input group "Strategy"
-input int    strategy_xb                  = 5;      // Card ?4, pp. 259-261 (App C): highest/lowest window.
-input int    strategy_xb2                 = 80;     // Card ?4, pp. 259-261: momentum lookback close[xb2].
-input int    strategy_pipadd              = 8;      // Card ?4, pp. 259-261: limit offset pipadd/10000.
-input double strategy_stopl_usd           = 425.0;  // Card ?4/?5, pp. 259-261 + Ch18 p.157: fixed dollar stop.
-input double strategy_proft_usd           = 5000.0; // Card ?5, pp. 259-261 + Ch18 p.157: fixed dollar target.
-input int    strategy_time_cutoff_hhmm    = 1500;   // Card ?4/?6, pp. 259-261: entry gate time < 1500.
+input int    strategy_xb                  = 5;      // Card §8 + §4, pp. 259-261 (App C): highest/lowest window.
+input int    strategy_xb2                 = 80;     // Card §8 + §4, pp. 259-261: momentum lookback close[xb2].
+input int    strategy_pipadd              = 8;      // Card §8 + §4, pp. 259-261: limit offset pipadd/10000.
+input double strategy_stopl_usd           = 425.0;  // Card §8 + §5, pp. 259-261; Ch18 p.157: fixed dollar stop.
+input double strategy_proft_usd           = 5000.0; // Card §8 + §5, pp. 259-261; Ch18 p.157: fixed dollar target.
+input int    strategy_time_cutoff_hhmm    = 1500;   // Card §4 + §6, pp. 259-261: entry gate time < 1500.
 
 CTrade   g_trade;
 datetime g_last_bar_time = 0;
@@ -65,7 +65,7 @@ void RefreshTradeDayState()
    const int key = DayKey(TimeCurrent());
    if(key != g_trade_day_key)
      {
-      // Card ?4/?6, pp. 259-261: tradestoday resets on session/day change.
+      // Card §4 + §6, pp. 259-261: tradestoday resets on session/day change.
       g_trade_day_key = key;
       g_trade_taken_today = false;
      }
@@ -166,7 +166,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    RefreshTradeDayState();
 
-   // Card ?6, pp. 259-261: one-trade-per-day + time-of-day gate.
+   // Card §6, pp. 259-261: one-trade-per-day + time-of-day gate.
    if(g_trade_taken_today)
       return false;
 
@@ -195,7 +195,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(pip_offset <= 0.0 || stop_dist <= 0.0 || tp_dist <= 0.0)
       return false;
 
-   // Card ?4, pp. 259-261: short limit at high + pipadd when fresh high and momentum down.
+   // Card §4, pp. 259-261: short limit at high + pipadd when fresh high and momentum down.
    if(h1 >= hi && c1 < cmom)
      {
       req.type = QM_SELL;
@@ -206,7 +206,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return true;
      }
 
-   // Card ?4, pp. 259-261: long limit at low - pipadd when fresh low and momentum up.
+   // Card §4, pp. 259-261: long limit at low - pipadd when fresh low and momentum up.
    if(l1 <= lo && c1 > cmom)
      {
       req.type = QM_BUY;
@@ -222,12 +222,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
 void Strategy_ManageOpenPosition()
   {
-   // Card ?7, pp. 259-261: no trailing/partial/BE logic.
+   // Card §7, pp. 259-261: no trailing/partial/BE logic.
   }
 
 bool Strategy_ExitSignal()
   {
-   // Card ?5/?12: no discretionary exit signal; exits via SL/TP and framework Friday close.
+   // Card §5 + §12: no discretionary exit signal; exits via SL/TP and framework Friday close.
    return false;
   }
 
