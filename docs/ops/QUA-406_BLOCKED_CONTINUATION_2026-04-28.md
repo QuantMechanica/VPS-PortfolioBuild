@@ -37,3 +37,4 @@ Implementation remains blocked under V5 hard rules because the mapped card is no
 Implement `framework/EAs/QM5_<ea_id>_<slug>/QM5_<ea_id>_<slug>.mq5` with V5 4-module functions and card-section inline citations, then hand off to CTO review (no Pipeline-Operator dispatch).
 
 - heartbeat_utc: 2026-04-28T12:58:19.9016425Z | card_status=DRAFT | card_ea_id=TBD | registry_row_found=false | ready_for_implementation=false
+- heartbeat_utc: 2026-04-28T12:59:00.8879036Z | card_status=DRAFT | card_ea_id=TBD | registry_row_found=false | ready_for_implementation=false
