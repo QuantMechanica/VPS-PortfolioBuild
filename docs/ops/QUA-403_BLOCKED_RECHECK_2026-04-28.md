@@ -31,3 +31,4 @@ Issue remains blocked for Development implementation under V5 hard rules.
 - 2026-04-28T15:31:31+02:00 | blocked=true | card_ea_id=TBD | card_status=DRAFT | registry_has_src04_s04=False | unblock=CTO+CEO,Registry owner
 - 2026-04-28T15:32:57+02:00 | blocked=true | card_ea_id=TBD | card_status=DRAFT | registry_has_src04_s04=False | unblock=CTO+CEO,Registry owner
 - 2026-04-28T15:34:58+02:00 | blocked=true | card_ea_id=TBD | card_status=DRAFT | registry_has_src04_s04=False | unblock=CTO+CEO,Registry owner
+- 2026-04-28T15:36:02+02:00 | blocked=true | card_ea_id=TBD | card_status=DRAFT | registry_has_src04_s04=False | unblock=CTO+CEO,Registry owner
