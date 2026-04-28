@@ -24,12 +24,12 @@ powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Tes
 - `docs/ops/QUA-350_BOND_CFD_INVENTORY_RESULT_2026-04-28.md`
 - `docs/ops/QUA-350_ISSUE_STATUS_UPDATE_2026-04-28.json`
 - `docs/ops/QUA-350_ISSUE_COMMENT_2026-04-28.md`
+- `docs/ops/QUA-350_EVIDENCE_MANIFEST_2026-04-28.sha256`
 
 ## Current run status (2026-04-28)
 
-- Probe executed successfully on this host, but MT5 symbol probe is unavailable:
-  - `mt5_probe_ok: false`
-  - `mt5_probe_error: MT5 probe did not return output`
+- Probe executed successfully with MT5 symbol probe active:
+  - `mt5_probe_ok: true`
 - Current inventory classification:
   - `US10Y`: `missing`
   - `DE10Y`: `missing`
