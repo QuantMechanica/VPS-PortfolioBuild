@@ -25,3 +25,4 @@
 2026-04-28T13:07:15.9429791+02:00 | blocked-state heartbeat: CTO review gate still pending.
 2026-04-28T13:08:15.2646836+02:00 | blocked checkpoint: waiting for CTO review decision.
 2026-04-28T13:09:14.3930156+02:00 | blocked timeline wake: CTO review pending.
+2026-04-28T13:10:15.1736572+02:00 | blocked wake line: CTO review-only gate pending.
