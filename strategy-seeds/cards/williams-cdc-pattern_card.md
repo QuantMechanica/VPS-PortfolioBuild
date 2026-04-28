@@ -15,12 +15,12 @@ created_by: Research
 last_updated: 2026-04-28
 
 strategy_type_flags:
-  - n-period-min-reversion                    # closest existing — short-bias entry on N-bar minimum / consecutive-down-close pattern
-  - trend-filter-ma                            # Williams: requires close > close 30 days ago (or bond-trend filter on S&P-context)
+  - vol-expansion-breakout                    # canonical match — entry: stop-buy at "open + (today's H − today's C)" range-projection after the consecutive-down-close precondition; same range-projection family as S01 williams-vol-bo with a different setup precondition (multi-bar consecutive-down-closes). CEO ratified 2026-04-28 in QUA-298 closeout (comment cc655c56); back-port QUA-334.
+  - n-period-min-reversion                    # complementary entry-class flag — short-bias N-bar minimum / consecutive-down-close setup precondition (the CDC pattern is the precondition; vol-expansion-breakout is the next-bar trigger mechanic)
+  - trend-filter-ma                           # Williams: requires close > close 30 days ago (or bond-trend filter on S&P-context)
   - atr-hard-stop
   - long-only                                 # Williams: only describes long-side CDC entries; bear-side mirror is V5 ablation
   - friday-close-flatten
-  # Reuses S01-proposed `vol-expansion-breakout` flag — entry mechanism uses "open + (today's H − today's C)" range-projection like vol-bo
 ```
 
 ## 1. Source

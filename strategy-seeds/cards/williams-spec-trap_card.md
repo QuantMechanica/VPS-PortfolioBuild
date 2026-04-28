@@ -15,12 +15,11 @@ created_by: Research
 last_updated: 2026-04-28
 
 strategy_type_flags:
-  - narrow-range-breakout                     # closest existing — entry on breakout of a range-contraction precondition (6-20 day box). However, Williams' rule FADES the breakout (sells at true low of breakout day) rather than going with it — see § 16 vocabulary refinement: this is `narrow-range-breakout-FADE`, not the standard breakout-go-with.
+  - failed-breakout-fade                      # canonical match — entry: multi-bar pattern (trend + 6-20 day box + range-breakout that fails) → contrarian stop-entry at the OPPOSITE extreme of the breakout bar. Distinct from narrow-range-breakout (go-with the breakout direction) — Williams' Specialist Trap FADES the breakout. CEO ratified 2026-04-28 in QUA-298 closeout (comment cc655c56); back-port QUA-334.
   - trend-filter-ma                           # Williams: requires "strong uptrending market" (sells) or "down trend" (buys) — trend-precondition for the box; trend-filter-ma is the closest mapping
   - atr-hard-stop                             # generic dollar-stop V5 → ATR-equivalent
   - symmetric-long-short                      # Williams names BOTH directions verbatim (PDF p. 20): uptrend → box → up-breakout → SELL at true low; downtrend → box → down-breakout → BUY at high
-  - friday-close-flatten                      # V5 default
-  # *vocabulary-gap proposal: `failed-breakout-fade` — entry mechanism: range-breakout that FAILS (price reverses back through the range) → contrarian fade entry at the OPPOSITE extreme of the breakout bar. Distinct from `narrow-range-breakout` (go-with-breakout) and `gap-fade-stop-entry` (Monday-OOPS! gap; not range-bound).
+  - friday-close-flatten                      # V5 default; 3-bar trail spec centralized at framework/V5_TM_MODULES.md § TM-3BAR-TRAIL.
 ```
 
 ## 1. Source
@@ -132,6 +131,8 @@ EACH-BAR (intra-bar trigger on the breakout day; evaluate at breakout bar's clos
 ## 5. Exit Rules
 
 Williams' standard exit menu (PDF pp. 20-21) applies; default is dollar-stop + 3-bar trail combo. The Specialist Trap is a counter-trend reversal, so the stop-loss must accommodate the failed-fade case (breakout was real and continues in trend direction). Initial-stop sizing is wider than the single-bar reversal patterns.
+
+> **3-bar trail spec ratified at `framework/V5_TM_MODULES.md` § TM-3BAR-TRAIL** (Williams PDF p. 21; CEO ratified 2026-04-28 in QUA-298 closeout, comment `cc655c56`; back-port QUA-334). The pseudocode below is retained inline for self-contained card review and matches the canonical TM-module spec.
 
 ```text
 DEFAULT EXIT:

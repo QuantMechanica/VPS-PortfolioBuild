@@ -15,11 +15,10 @@ created_by: Research
 last_updated: 2026-04-28
 
 strategy_type_flags:
-  - intraday-day-of-month                     # weekday-conditional (Mon/Thu/Fri); reuses calendar-cycle vocab
+  - gap-fade-stop-entry                       # canonical match — entry: gap THROUGH a calendar-pattern reference price (projected formula `(H+L+C)/3 × 2`) → stop-entry placed BACK at the reference. Same family as S02 Monday OOPS! with a different reference-price formula. CEO ratified 2026-04-28 in QUA-298 closeout (comment cc655c56); back-port QUA-334.
   - atr-hard-stop                             # generic V5 hard stop
   - long-only                                 # Williams' verbatim sub-rules describe LONG entries; short-side mirror is V5 ablation
   - friday-close-flatten                      # V5 default
-  # Reuses S02-proposed `gap-fade-stop-entry` vocabulary-gap flag — same family as Monday OOPS! with a different reference-price formula
 ```
 
 ## 1. Source

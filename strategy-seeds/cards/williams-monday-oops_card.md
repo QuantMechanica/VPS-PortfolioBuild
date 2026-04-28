@@ -14,15 +14,11 @@ created: 2026-04-28
 created_by: Research
 last_updated: 2026-04-28
 
-strategy_type_flags:                          # closest existing values from strategy_type_flags.md;
-                                              # entry-side vocabulary GAP (no flag for "calendar-day gap-fade with stop entry at prior-day extreme").
-                                              # session-time-gate is closest filter analog but Monday-OOPS! pattern is the entry trigger, not a filter.
-  - intraday-day-of-month                     # closest available — calendar-day-conditional entry (Monday is the "day"); see § 16 for the gap-below + stop-entry vocabulary gap proposal
+strategy_type_flags:
+  - gap-fade-stop-entry                       # canonical match — entry: gap THROUGH a calendar-pattern reference price (Friday's TRUE LOW) → stop-buy placed BACK at the reference, fading the gap. The flag's definition subsumes the calendar-pattern precondition (Monday-after-Friday-down-close). CEO ratified 2026-04-28 in QUA-298 closeout (comment cc655c56); back-port QUA-334.
   - atr-hard-stop                             # Williams: catastrophic stop after entry; fixed-distance from fill
   - symmetric-long-short                      # Williams names long Monday OOPS!; Workshop "Failure Day Family" (PDF p. 19) is symmetric, implying Monday OOPS! short-mirror is "Friday down-close → Monday open ABOVE Friday TRUE HIGH → sell at Friday high on stop"
   - friday-close-flatten                      # V5 default; Williams' typical exit is first-profitable-open + bail-out (1-3 day max hold)
-  # *vocabulary-gap flag proposed for CEO + CTO ratification per strategy_type_flags.md addition-process (see § 16):
-  #   - gap-fade-stop-entry                   # entry mechanism: gap THROUGH a calendar-pattern reference price → stop-entry placed BACK at the reference price, fading the gap
 ```
 
 ## 1. Source

@@ -19,7 +19,7 @@ strategy_type_flags:
   - n-period-max-continuation                 # closest existing entry-side flag — 2-bar continuation pattern with stop-entry at extreme of confirmation window
   - atr-hard-stop                             # generic V5 stop
   - symmetric-long-short                      # Williams names BOTH directions verbatim
-  - friday-close-flatten                      # V5 default
+  - friday-close-flatten                      # V5 default; 3-bar trail spec centralized at framework/V5_TM_MODULES.md § TM-3BAR-TRAIL.
 ```
 
 ## 1. Source
@@ -96,6 +96,8 @@ ENTRY (only when not in position; orders staged at session start):
 ```
 
 ## 5. Exit Rules
+
+> **3-bar trail spec ratified at `framework/V5_TM_MODULES.md` § TM-3BAR-TRAIL** (Williams PDF p. 21; CEO ratified 2026-04-28 in QUA-298 closeout, comment `cc655c56`; back-port QUA-334). The pseudocode below is retained inline for self-contained card review and matches the canonical TM-module spec.
 
 ```text
 DEFAULT EXIT (Williams' standard menu):

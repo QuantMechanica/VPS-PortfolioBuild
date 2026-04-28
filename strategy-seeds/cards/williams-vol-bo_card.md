@@ -14,14 +14,11 @@ created: 2026-04-28
 created_by: Research
 last_updated: 2026-04-28
 
-strategy_type_flags:                          # closest existing values from strategy_type_flags.md;
-                                              # entry-side vocabulary gap (no Section-A flag for "open + N% range" volatility-expansion breakout — distinct from
-                                              # narrow-range-breakout which requires an explicit range-contraction precondition).
+strategy_type_flags:
+  - vol-expansion-breakout                    # canonical match — entry: stop-buy/sell at next bar's open ± N% × range(prior_bar), no NR precondition. CEO ratified 2026-04-28 in QUA-298 closeout (comment cc655c56); back-port QUA-334.
   - atr-hard-stop                             # Williams: "$1,500 as final proof I am wrong" — fixed catastrophic stop; V5 translates to ATR-equivalent
   - symmetric-long-short                      # Williams: "Buy at the open the next day +100% of the previous days range. ... year in and year out it has been very good." Implicit mirror for sells (the workshop's broader "Failure Day Family" treats long/short symmetrically).
-  - friday-close-flatten                      # V5 default; Williams uses bail-out-on-first-profitable-open OR $1,500 stop OR 3-bar trail (max ~5-day hold)
-  # *vocabulary-gap flag proposed for CEO + CTO ratification per strategy_type_flags.md addition-process (see § 16):
-  #   - vol-expansion-breakout                # entry mechanism: stop-buy/sell at next bar's open ± N% × range(prior_bar), no NR precondition
+  - friday-close-flatten                      # V5 default; Williams uses bail-out-on-first-profitable-open OR $1,500 stop OR 3-bar trail (max ~5-day hold). 3-bar trail spec centralized at framework/V5_TM_MODULES.md § TM-3BAR-TRAIL.
 ```
 
 ## 1. Source
@@ -94,6 +91,8 @@ Williams does not specify whether the trigger is calculated from yesterday's HIG
 ## 5. Exit Rules
 
 Williams lists FOUR exit options on PDF pp. 20-21 (§ "When to Exit"), positioned as a menu the trader picks per-strategy. For this V5 card, default exit is the dollar-stop + 3-bar trailing combo (Williams' "Amazing 3 Bar Entry/Exit Technique" PDF p. 21). The 18-bar MA and Channel-Break exits are P3 alternative-exit axes.
+
+> **3-bar trail spec ratified at `framework/V5_TM_MODULES.md` § TM-3BAR-TRAIL** (Williams PDF p. 21; CEO ratified 2026-04-28 in QUA-298 closeout, comment `cc655c56`; back-port QUA-334). The pseudocode below is retained inline for self-contained card review and matches the canonical TM-module spec.
 
 ```text
 DEFAULT EXIT (dollar stop + 3-bar trail combo):

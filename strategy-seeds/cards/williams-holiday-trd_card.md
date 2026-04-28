@@ -15,7 +15,7 @@ created_by: Research
 last_updated: 2026-04-28
 
 strategy_type_flags:
-  - intraday-day-of-month                     # closest existing — calendar-anchored entry; here the anchor is the federal-holiday calendar rather than month-of-year, but flag definition reasonably extends. Sister-flag-gap candidacy noted in § 16.
+  - holiday-anchored-bias                     # canonical match — entry: federal-holiday calendar anchor with N-th-trading-day-before/after-holiday offsets; per-holiday long/short bias (NYE sell, Pres Day buy, etc.); sibling-of intraday-day-of-month, federal-holiday cycle anchor (additive sibling, NOT generalize-rename). CEO ratified 2026-04-28 in QUA-298 closeout (comment cc655c56); back-port QUA-334.
   - signal-reversal-exit                      # Bonds: "exit on the first profitable opening" — entry signal reversed by profit. S&P: "bail out after holding for one day past entry" — time-stop variant
   - atr-hard-stop                             # Williams Bonds $1,400 / S&P $2,500; V5 → ATR-equivalent
   - symmetric-long-short                      # Williams' tables include BOTH buy and sell holiday entries verbatim (NYE sell, Pres Day buy, etc.) — symmetric is verbatim, not mirror-extension

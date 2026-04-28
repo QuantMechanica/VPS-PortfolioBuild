@@ -15,10 +15,10 @@ created_by: Research
 last_updated: 2026-04-28
 
 strategy_type_flags:
+  - rejection-bar-stop-entry                  # canonical match — entry: candle-shape rejection bar (Naked Close variant: close-outside-prior-range — close < prior low → buy at high; close > prior high → sell at low; attributed by Williams to Joe Stowell) → stop-entry at the OPPOSITE extreme. Same family as S07 Smash Day + S08 Fakeout with a different sub-pattern. CEO ratified 2026-04-28 in QUA-298 closeout (comment cc655c56); back-port QUA-334.
   - atr-hard-stop                             # generic dollar-stop V5 → ATR-equivalent
   - symmetric-long-short                      # Williams names BOTH directions verbatim (PDF pp. 19-20): close < prior low → buy at high; close > prior high → sell at low
-  - friday-close-flatten                      # V5 default
-  # Same vocabulary-gap candidate as S07 Smash Day + S08 Fake Out (`rejection-bar-stop-entry` family) — single-bar reversal entry pattern
+  - friday-close-flatten                      # V5 default; 3-bar trail spec centralized at framework/V5_TM_MODULES.md § TM-3BAR-TRAIL.
 ```
 
 ## 1. Source
@@ -99,6 +99,8 @@ ENTRY (only when not in position; orders staged at session start):
 ## 5. Exit Rules
 
 Williams' standard exit menu (PDF pp. 20-21) applies; default is dollar-stop + 3-bar trail combo (consistent with S07 Smash Day + S08 Fake Out per the Failure-Day-Family thesis).
+
+> **3-bar trail spec ratified at `framework/V5_TM_MODULES.md` § TM-3BAR-TRAIL** (Williams PDF p. 21; CEO ratified 2026-04-28 in QUA-298 closeout, comment `cc655c56`; back-port QUA-334). The pseudocode below is retained inline for self-contained card review and matches the canonical TM-module spec.
 
 ```text
 DEFAULT EXIT:

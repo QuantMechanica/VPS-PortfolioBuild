@@ -14,13 +14,11 @@ created: 2026-04-28
 created_by: Research
 last_updated: 2026-04-28
 
-strategy_type_flags:                          # closest existing values from strategy_type_flags.md;
-                                              # entry-side vocabulary GAP (no flag for "candle-shape-rejection-pattern stop entry at extreme of pattern bar").
+strategy_type_flags:
+  - rejection-bar-stop-entry                  # canonical match — entry: candle-shape rejection bar (close substantially against open, vs prior bar trend) → stop-entry at the OPPOSITE extreme of the rejection bar (Smash variant: close-vs-open rejection). CEO ratified 2026-04-28 in QUA-298 closeout (comment cc655c56); back-port QUA-334.
   - atr-hard-stop                             # Williams: $1,500-equivalent hard stop after entry
   - symmetric-long-short                      # Williams names BOTH directions verbatim (PDF p. 19): bullish smash → buy at takeout of high; bearish smash → sell at low
-  - friday-close-flatten                      # V5 default; Williams' typical exit menu (3-bar trail / 18-bar MA / channel break / dollar stop)
-  # *vocabulary-gap flag proposed for CEO + CTO ratification per strategy_type_flags.md addition-process (see § 16):
-  #   - rejection-bar-stop-entry              # entry mechanism: candle-shape-rejection bar (close substantially against open, vs prior bar trend) → stop-entry at the OPPOSITE extreme of the rejection bar
+  - friday-close-flatten                      # V5 default; Williams' typical exit menu (3-bar trail / 18-bar MA / channel break / dollar stop). 3-bar trail spec centralized at framework/V5_TM_MODULES.md § TM-3BAR-TRAIL.
 ```
 
 ## 1. Source
@@ -110,6 +108,8 @@ ENTRY (only when not in position; orders staged at session start):
 ## 5. Exit Rules
 
 Williams' standard exit menu (PDF pp. 20-21 § "When to Exit") applies; default is the dollar-stop + 3-bar trail combo (consistent with Smash Day's reversal-thesis + Williams' card-specific framing on PDF p. 19 that ends "Taking out this day[']s high is very bullish" — implies multi-day continuation expected post-entry).
+
+> **3-bar trail spec ratified at `framework/V5_TM_MODULES.md` § TM-3BAR-TRAIL** (Williams PDF p. 21; CEO ratified 2026-04-28 in QUA-298 closeout, comment `cc655c56`; back-port QUA-334). The pseudocode below is retained inline for self-contained card review and matches the canonical TM-module spec.
 
 ```text
 DEFAULT EXIT:

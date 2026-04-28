@@ -15,7 +15,7 @@ created_by: Research
 last_updated: 2026-04-28
 
 strategy_type_flags:
-  - intraday-day-of-month                     # closest existing — calendar-day-conditional entry; here the cycle is WEEKLY rather than monthly. Strict reading: TDW is weekly, not monthly, but flag definition (`entry triggered or biased by recurring calendar dates`) covers weekly cycles too. Sister-flag-gap candidacy noted in § 16.
+  - intraday-day-of-week                      # canonical match — weekday-of-week (Mon/Tue/Wed/Thu/Fri) calendar-cycle bias; sibling-of intraday-day-of-month, weekly cycle anchor (additive sibling, NOT generalize-rename — V4 Gotobi precedent on intraday-day-of-month preserved). CEO ratified 2026-04-28 in QUA-298 closeout (comment cc655c56); back-port QUA-334.
   - signal-reversal-exit                      # exit fires when "first profitable open" condition met — the bullish-signal that triggered entry has been reversed by a profitable close; falls within the signal-reversal exit family
   - atr-hard-stop                             # Williams: $3,500 S&P stop / no stop on basic Bonds table — V5 translation: ATR-equivalent hard stop
   - long-only                                 # Williams' tables show LONG-side performance only ("buying on the opening"); short-side bias is implicitly "fade the negative days" but Williams does NOT publish that table

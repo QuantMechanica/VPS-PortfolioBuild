@@ -15,12 +15,12 @@ created_by: Research
 last_updated: 2026-04-28
 
 strategy_type_flags:
-  - n-period-min-reversion                    # gap-down + open-rebound entry; mean-reversion class
+  - vol-expansion-breakout                    # canonical match — entry: stop-buy at "open + (H − C)" range-projection after the gap-down-close setup precondition (today H < yesterday L); same range-projection family as S01 williams-vol-bo with a different setup precondition (single-bar gap-down vs none). CEO ratified 2026-04-28 in QUA-298 closeout (comment cc655c56); back-port QUA-334.
+  - n-period-min-reversion                    # complementary entry-class flag — gap-down + open-rebound setup precondition; mean-reversion class
   - trend-filter-ma                            # Bonds-context sub-rule B requires Gold-trend filter
   - atr-hard-stop
   - long-only                                 # Williams: only describes long-side gap-down-buy; short-side mirror is V5 ablation
   - friday-close-flatten
-  # Reuses S01-proposed `vol-expansion-breakout` family — entry-method uses open + (H − C) range-projection
 ```
 
 ## 1. Source

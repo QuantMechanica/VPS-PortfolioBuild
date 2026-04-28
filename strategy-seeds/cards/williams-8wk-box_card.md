@@ -19,7 +19,7 @@ strategy_type_flags:
   - trend-filter-ma                           # Williams: requires identifying "what the major trend move was coming into that 8-week box"
   - atr-trailing-stop                         # Williams' "Keep Swinging" framing implies trailing/re-entry approach; ATR-trail is V5 best fit
   - symmetric-long-short                      # Williams: "you must trade these congestions with 1) no predetermined belief 2) the conviction and bankroll to take all breakouts until the big one"
-  - friday-close-flatten                      # V5 default for Williams' typical hold
+  - friday-close-flatten                      # V5 default for Williams' typical hold; 3-bar trail spec centralized at framework/V5_TM_MODULES.md § TM-3BAR-TRAIL.
 ```
 
 ## 1. Source
@@ -126,6 +126,8 @@ EACH-BAR (next-day open trigger, evaluated at prior-day close):
 ```
 
 ## 5. Exit Rules
+
+> **3-bar trail spec ratified at `framework/V5_TM_MODULES.md` § TM-3BAR-TRAIL** (Williams PDF p. 21; CEO ratified 2026-04-28 in QUA-298 closeout, comment `cc655c56`; back-port QUA-334). The pseudocode below is retained inline for self-contained card review and matches the canonical TM-module spec.
 
 ```text
 DEFAULT EXIT (Williams-style trailing for go-with-breakout):
