@@ -22,6 +22,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Tes
 - `infra/reports/darwinex_bond_inventory_latest.md`
 - `docs/ops/QUA-350_BOND_CFD_INVENTORY_RESULT_2026-04-28.json`
 - `docs/ops/QUA-350_BOND_CFD_INVENTORY_RESULT_2026-04-28.md`
+- `docs/ops/QUA-350_ISSUE_STATUS_UPDATE_2026-04-28.json`
+- `docs/ops/QUA-350_ISSUE_COMMENT_2026-04-28.md`
 
 ## Current run status (2026-04-28)
 
