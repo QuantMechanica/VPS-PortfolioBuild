@@ -6,11 +6,11 @@ status: scaffolded_pending_extraction
 authored-by: Research Agent
 last-updated: 2026-04-28
 budget_tracking:
-  heartbeats_used: 1                          # h1 scaffold + survey-pass on QUA-298
-  cards_drafted: 0                            # survey-pass only this heartbeat; cards drafted in subsequent heartbeats
+  heartbeats_used: 2                          # h1 scaffold + survey-pass; h2 first-pass: S01 Vol-BO + S02 Monday-OOPS! + S07 Smash Day cards drafted
+  cards_drafted: 3                            # S01, S02, S07 drafted to DRAFT this heartbeat; sub-issues created in subsequent heartbeats once first-pass cards stabilize
   cards_passed_g0: 0
   cards_killed_pre_p1: 0
-extraction_pass_status: survey_complete       # 15 candidate strategies identified from extracted text pp. 1-46; later pages OCR-degraded (see § 2)
+extraction_pass_status: first_pass_partial    # 15 candidate strategies identified from extracted text pp. 1-46 (survey complete); 3/15 first-pass cards drafted (S01, S02, S07); 12 candidates remain for subsequent passes
 completion_report: pending                    # authored after all SRC03_S* sub-issues close
 
 ---
@@ -119,13 +119,13 @@ Per QUA-298 acceptance: "Each candidate that survives V5 v0_filter becomes a SRC
 
 | Slot | Strategy slug | Card path | Sub-issue | Status | Source location | Notes |
 |---|---|---|---|---|---|---|
-| S01 | `williams-vol-bo` | TBD | TBD | TBD | PDF p. 25 + chapter-context | Volatility Breakout: open + 100% (or N%) of prior day's range. Single-symbol; V5-architecture-clean. Williams' calling-card pattern. Likely first card. |
-| S02 | `williams-monday-oops` | TBD | TBD | TBD | PDF pp. 35-36, 39-40 | Monday OOPS!: Friday up-close → Monday opens below Friday TRUE LOW → buy at Friday low on stop. Single-symbol S&P / Bonds. Variants for Thurs/Fri (B). |
+| S01 | `williams-vol-bo` | `strategy-seeds/cards/williams-vol-bo_card.md` | TBD | DRAFT (2026-04-28) | PDF p. 25 + chapter-context | Volatility Breakout: open + N% × prior-day range (default N=100, Bonds=30, T-Bonds-best-day=7). Single-symbol; V5-architecture-clean. Multi-market generalization claim. Surfaces vocabulary gap: `vol-expansion-breakout`. |
+| S02 | `williams-monday-oops` | `strategy-seeds/cards/williams-monday-oops_card.md` | TBD | DRAFT (2026-04-28) | PDF pp. 35-36, 39-40 | Monday OOPS!: Monday opens below Friday's TRUE LOW (Friday not outside-day) → stop-buy at Friday's low. Sub-rule B extension: Thurs/Fri prior, last-2-days low. Single-symbol S&P / Bonds. Surfaces vocabulary gap: `gap-fade-stop-entry`. Bonds-Monday-buys composite ($79,200 / 69%) is RELATED-BUT-DISTINCT (cited verbatim, not asserted as Monday-OOPS! perf). |
 | S03 | `williams-hidden-oops` | TBD | TBD | TBD | PDF pp. 36, 40 | Hidden OOPS!: projected H/L = (H+L+C)/3 *2; entry at projected level on stop. May fold into S02 if mechanically equivalent. |
 | S04 | `williams-tdw-bias` | TBD | TBD | TBD | PDF pp. 32-33, 37-38 | Trade Day of Week bias: buy on Monday/Tuesday open, exit first profitable open. Sub-variants: Bond-context, S&P-context, gold-filtered. |
 | S05 | `williams-tdom-bias` | TBD | TBD | TBD | PDF pp. 33, 37-38 | Trade Day of Month bias: buy on specific TDOM (1, 4, 9, 12 etc. for S&P). Many sub-day variants — folded into one card with day-list as parameter. |
 | S06 | `williams-holiday-trd` | TBD | TBD | TBD | PDF pp. 33-34, 41-42 | National Holiday trades: 8 holidays × specific buy-open-Nth-TD-before / sell-close-Nth-TD-after rules. May be one composite card or split per holiday — TBD. |
-| S07 | `williams-smash-day` | TBD | TBD | TBD | PDF p. 19 | Smash Day: higher H/L/C with close substantially below open → buy at takeout of that day's high. Single-symbol; multi-market. |
+| S07 | `williams-smash-day` | `strategy-seeds/cards/williams-smash-day_card.md` | TBD | DRAFT (2026-04-28) | PDF p. 19 | Smash Day: bullish setup = higher H/L/C with close substantially below open (body-rejection-pct ≥ 50% default) → stop-buy at smash-bar's high. Symmetric short-side verbatim Williams. Multi-market generic candle-pattern. Surfaces vocabulary gap: `rejection-bar-stop-entry`. "Substantially" qualifier is enhancement_doctrine load-bearing. |
 | S08 | `williams-fakeout-day` | TBD | TBD | TBD | PDF p. 19 | Fake Out Day: higher H, higher L, lower C → buy at prior day's high. Sister-card to S07. |
 | S09 | `williams-naked-close` | TBD | TBD | TBD | PDF p. 20 | Naked Close: close below prior day's low → buy at high of that day. May fold into S08 family. |
 | S10 | `williams-spec-trap` | TBD | TBD | TBD | PDF p. 20 | Specialist Trap: uptrend → 6-20 day box → big breakout day → SELL at true low of breakout day (failed-breakout reversal). |
@@ -136,6 +136,12 @@ Per QUA-298 acceptance: "Each candidate that survives V5 v0_filter becomes a SRC
 | S15 | `williams-gap-dn-buy` | TBD | TBD | TBD | PDF p. 36 | Gap-Down-Close buy pattern: today's high < yesterday's low (full gap down) + Gold-filter; buy at open + (today's H − today's C). May fold into S14 family. |
 
 Slot count finalized at survey-pass: **15 candidates**. Cards-vs-fold decisions made at extraction time per Rule 1. Expected harvest: 10-15 cards (some folding likely between S02/S03 OOPS family, S08/S09 reversal-day family, S14/S15 down-close family).
+
+**Running vocabulary-gap proposals (SRC03 first-pass: 3 gaps surfaced)** — per-card § 16 details; batch-proposed to CEO + CTO via `strategy_type_flags.md` addition-process when extraction stabilizes:
+
+1. `vol-expansion-breakout` (S01) — entry mechanism: stop-buy/sell at next bar's open ± N% × range(prior_bar). Distinct from `narrow-range-breakout` (no NR precondition required) and `donchian-breakout` (single prior-bar range, not N-bar rolling extreme).
+2. `gap-fade-stop-entry` (S02) — entry mechanism: gap THROUGH a calendar-pattern reference price → stop-buy/sell BACK at the reference price, fading the gap. Distinct from `n-period-min-reversion` (which fires at next-bar open without a gap-through condition).
+3. `rejection-bar-stop-entry` (S07) — entry mechanism: candle-shape rejection bar (close substantially against open) → stop-buy/sell at the OPPOSITE extreme of the rejection bar. Distinct from `narrow-range-breakout` (Smash Day requires WIDE-RANGE rejection, not NR contraction) and `gap-fade-stop-entry` (no gap; bar-internal close-vs-open structure).
 
 **Filters NOT extracted as separate cards** (workshop pp. 1-14, integrated into per-card § 6 Filters where applicable):
 
