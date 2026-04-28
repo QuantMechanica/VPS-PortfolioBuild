@@ -39,12 +39,28 @@ Canonical spec: [14-ea-enhancement-loop.md](14-ea-enhancement-loop.md). Parent d
 
 ## Pipeline-Operator Load Balancing (T1-T5)
 
-Canonical spec: [15-pipeline-op-load-balancing.md](15-pipeline-op-load-balancing.md). Parent directive: QUA-236; authored under QUA-246.
+Canonical spec: [15-pipeline-op-load-balancing.md](15-pipeline-op-load-balancing.md). Parent directive: QUA-236; authored under QUA-246. Dispatch convention codified as [DL-035](../decisions/2026-04-28_pipeline_loadbalance_convention.md) (interim) under QUA-301 in response to OWNER 2026-04-28 audit ("all 5 MT5 instances should work in parallel").
 
 - Allocation policy: **least-loaded round-robin with symbol-affinity tie-break** across `T1`-`T5`. One active scanner per terminal max. `T6` is out of write scope.
+- Issue spawn convention: every backtest issue carries `target_terminal: T1 | T2 | T3 | T4 | T5 | any`. `any` is the default; Pipeline-Op picks least-loaded for `any` (DL-035).
 - De-dup contract is binding: tuple `(ea_id, version, symbol, phase, sub_gate_config)` is **never** executed twice. Registry table at `D:\QM\reports\state\factory_run_dedup_v1.csv` with lock file at `factory_run_dedup_v1.lock`. Any rerun must change the `sub_gate_config` digest (e.g. CTO-approved `retry_tag`) producing a new tuple.
 - Queue ledger (append-only): `D:\QM\reports\state\factory_run_queue_v1.jsonl`; dispatch state snapshot: `factory_dispatch_state_v1.json`. Flow: enqueue → preflight de-dup → claim → start → ack; failed/no-report/aborted states close the tuple (no silent re-queue under same tuple).
 - Per-run evidence root: `D:\QM\reports\factory_runs\<ea_id>\<version>\<phase>\<symbol>\<run_key>\` with `dispatch.json`, `runner_stdout.log`, `runner_stderr.log`, `pid_snapshot.json`, `report_manifest.json`, `ack.json`.
 - Disk policy: `>80 GB` free for normal operation; `<60 GB` is immediate CEO escalation. `NO_REPORT > 30%` per cohort is immediate CEO escalation.
 - Filesystem-truth reconciliation runs before any stall/dead-EA claim; tracker JSON is advisory.
 - Post-restart verification gate (state file readable, PIDs match live, T2/T3 script paths aligned, owner-overrides validated from file) must pass before resuming heartbeat work.
+- T1-T5 parallel discipline (DL-035): all five terminals carry concurrent work whenever the queue can supply it; OWNER's parallel-fleet expectation is the binding floor.
+
+## EA Review Gate (DL-036, additive to DL-030 Class 3)
+
+Canonical decision: [DL-036](../decisions/2026-04-28_ea_review_gate.md). Recording task: QUA-301. Parent driver: QUA-297 (OWNER 2026-04-28 audit — "EA should also be reviewed, then backtests can start").
+
+- **Scope test (title regex, anchored, case-sensitive):** `^SRC\d+_S\d+ — .* \(APPROVED card → P1\.\.P10 pipeline run\)$`. Examples: `SRC03_S2 — Trend MA Cross (APPROVED card → P1..P10 pipeline run)`.
+- **Policy:** Review-only `executionPolicy` with single participant `agentId: "241ccf3c-ab68-40d6-b8eb-e03917795878"` (CTO, interim). On Wave 2 hire, CEO PATCHes participants to Quality-Tech agent id; the swap is identical to (and batched with) the DL-030 Class 3 swap.
+- **Pipeline-Op binding rule:** Pipeline-Op may NOT P2-baseline an EA whose parent SRC0N_Sn issue's Review stage is `pending`. P1 sanity runs (compile + zero-trades probe) are allowed without Review-stage clearance; the boundary is the **P1 → P2 transition**, not "any backtest run".
+- **Self-review prevention:** the runtime excludes the original executor from being selected as reviewer. CTO is rarely the executor on SRC0N_Sn issues, so collisions are unlikely; if CTO ever is the executor, CEO PATCHes a fallback participant in (mirrors DL-030 Class 2 fallback).
+- **Sentinel sweep:** CEO heartbeat scans for in-scope unpolicied issues and PATCHes a policy in (DL-030 sentinel role).
+- **Relationship to DL-030 Class 3:** DL-036 is **additive**. DL-030 Class 3 catches `_v[0-9]+` enhancement rebuilds; DL-036 catches the first `_v1` baseline run for an APPROVED card. Together they close the loop on every EA → backtest pathway.
+- **In-flight enforcement (2026-04-28):** 5 PATCHes already applied by CEO this heartbeat — QUA-277 / 278 / 279 / 280 / 281.
+
+> **Reconciliation note.** The full DL-030 Execution Policies section (Classes 1-4) and the parallel content from `main` (CEO Authority Boundaries, Issue Routing) live on `main` and are pending merge into `agents/docs-km`. This subsection adds DL-036 inline so the convention is discoverable; on the next reconciliation pass, DL-036 lands as **Class 5** in the unified Execution Policies table (or equivalently extends DL-030 Class 3's scope test, whichever is cleaner at merge time).
