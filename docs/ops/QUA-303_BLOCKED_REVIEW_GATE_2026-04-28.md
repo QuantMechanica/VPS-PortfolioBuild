@@ -20,6 +20,7 @@ Issue is blocked only by the review-only execution policy.
   - `framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_1006_davey_eu_day/QM5_1006_davey_eu_day.mq5`
   - Result: `PASS`, `0 errors`, `0 warnings`
   - Log: `C:\QM\worktrees\development\framework\build\compile\20260428_103123\QM5_1006_davey_eu_day.compile.log`
+  - Re-validated log: `C:\QM\worktrees\development\framework\build\compile\20260428_103344\QM5_1006_davey_eu_day.compile.log`
 
 ## Blocker
 
@@ -27,4 +28,3 @@ Issue is blocked only by the review-only execution policy.
 - Required unblock action:
   1. Approve Card-vs-EA compliance for `SRC01_S02`; or
   2. Return requested changes to Development.
-
