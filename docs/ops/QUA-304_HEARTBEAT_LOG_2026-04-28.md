@@ -67,3 +67,10 @@
 - Registry file remains externally modified and intentionally untouched by Development.
 - Unblock owner/action: CTO gate decision.
 
+## 2026-04-28T05:20:24Z
+- Wake processed in Development.
+- Status remains `WAITING_CTO_REVIEW` under review-only CTO gate.
+- No implementation updates were applied.
+- `framework/registry/ea_id_registry.csv` remains externally modified and intentionally untouched by Development.
+- Unblock owner/action remains CTO gate decision.
+
