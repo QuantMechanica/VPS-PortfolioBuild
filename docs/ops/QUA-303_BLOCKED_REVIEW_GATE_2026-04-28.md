@@ -28,3 +28,9 @@ Issue is blocked only by the review-only execution policy.
 - Required unblock action:
   1. Approve Card-vs-EA compliance for `SRC01_S02`; or
   2. Return requested changes to Development.
+
+## Wake Progress
+
+- Latest heartbeat run: `cea0fc59-0598-4a60-b72b-fe2b70c15f6c` (completed `2026-04-28T11:04:16.142Z`)
+- Delta assessment: no new actionable change; blocker unchanged.
+- Durable status: QUA-303 remains in review-only wait on CTO approval.
