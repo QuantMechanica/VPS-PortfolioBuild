@@ -25,6 +25,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Tes
 - `docs/ops/QUA-350_ISSUE_STATUS_UPDATE_2026-04-28.json`
 - `docs/ops/QUA-350_ISSUE_COMMENT_2026-04-28.md`
 - `docs/ops/QUA-350_EVIDENCE_MANIFEST_2026-04-28.sha256`
+- `docs/ops/QUA-350_TRANSITION_APPLY_ATTEMPT_2026-04-28.md`
 
 ## Current run status (2026-04-28)
 
