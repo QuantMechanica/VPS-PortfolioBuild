@@ -1,0 +1,13 @@
+{
+  "issue": "QUA-402",
+  "date": "2026-04-28",
+  "status": "blocked",
+  "strategy_id": "SRC04_S03",
+  "slug": "lien-fade-double-zeros",
+  "blocking_condition": "ea_id not allocated in framework/registry/ea_id_registry.csv",
+  "unblock_owner": "CTO",
+  "unblock_action": "Append allocated SRC04_S03 row to framework/registry/ea_id_registry.csv",
+  "required_row_template": "<ea_id>,lien-fade-double-zeros,SRC04_S03,active,CTO,2026-04-28",
+  "next_action_after_unblock": "Implement QM5_<ea_id>_lien_fade_double_zeros.mq5 per QUA-342 and submit CTO review",
+  "pipeline_dispatch_allowed": false
+}
