@@ -1,0 +1,27 @@
+{
+  "issue": "QUA-307",
+  "requested_at_utc": "2026-04-28T04:50:00Z",
+  "requested_state": "closed",
+  "state_reason": "completed",
+  "summary": "Pipeline-Op T1-T5 load-balancing P0 directive implemented with scheduler, launcher hooks, lifecycle release, prune control, and closeout evidence.",
+  "evidence": {
+    "closeout_markdown": "docs/ops/QUA-307_CLOSEOUT_2026-04-28.md",
+    "proof_markdown": "docs/ops/QUA-307_LOAD_BALANCER_PROOF_2026-04-28.md",
+    "ready_manifest_json": "docs/ops/QUA-307_READY_TO_CLOSE_2026-04-28.json"
+  },
+  "verification": {
+    "unit_tests": "python -m unittest C:\\QM\\repo\\framework\\scripts\\tests\\test_pipeline_dispatcher.py",
+    "last_result": "Ran 11 tests ... OK",
+    "dry_run": "powershell -NoProfile -ExecutionPolicy Bypass -File C:\\QM\\repo\\framework\\scripts\\run_backtest_smoke.ps1 -Terminal any -DryRun"
+  },
+  "scope_boundary": {
+    "factory_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5"
+    ],
+    "t6_touched": false
+  }
+}
