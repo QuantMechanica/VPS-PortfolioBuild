@@ -1,5 +1,18 @@
 # Infra Scripts Notes
 
+## `Verify-QUA415Readiness.ps1`
+
+- Single-command PASS/FAIL gate for QUA-415 closeout readiness.
+- Validates presence of:
+  - worked example set file
+  - dispatch-gate evidence artifact
+  - changeset manifest
+- Asserts dispatch behavior captured in evidence:
+  - reject code is `BACKTEST_REJECTED_NO_SETFILE`
+  - with setfile status is `scheduled`
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Verify-QUA415Readiness.ps1`
+
 ## `Deploy-QM5SmokeExpertToT1.ps1`
 
 - Idempotent T1 smoke-expert deploy helper for `QM5_1001_framework_smoke.ex5`.
