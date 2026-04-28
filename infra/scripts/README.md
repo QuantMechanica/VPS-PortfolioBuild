@@ -14,6 +14,29 @@
 - Example:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Deploy-QM5SmokeExpertToT1.ps1 -EvidenceJsonPath C:\QM\repo\docs\ops\QUA-269_DEPLOY_QM5_1001_FRAMEWORK_SMOKE_2026-04-27.json`
 
+## `deploy_ea_to_all_terminals.ps1`
+
+- Idempotent factory EA sync helper for QUA-411.
+- Canonical source:
+  - `D:\QM\mt5\T1\MQL5\Experts\QM`
+- Default target scope:
+  - `D:\QM\mt5\T3`
+  - `D:\QM\mt5\T4`
+  - `D:\QM\mt5\T5`
+- Fixed allowlist (4 binaries):
+  - `EA_Skeleton.ex5`
+  - `QM5_1001_framework_smoke.ex5`
+  - `QM5_1002_davey-eu-night.ex5`
+  - `QM5_SRC04_S03_lien_fade_double_zeros.ex5`
+- Behavior:
+  - SHA256 check-then-act copy (`created` / `updated` / `unchanged`) per target/file
+  - auto-creates missing target `MQL5\Experts\QM` directory
+  - refuses T6 paths for source and targets
+  - fails fast when any required source binary is missing
+  - optional durable JSON evidence via `-EvidenceJsonPath`
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\deploy_ea_to_all_terminals.ps1 -EvidenceJsonPath C:\QM\repo\docs\ops\QUA-411_DEPLOY_EAS_T3_T4_T5_2026-04-28.json`
+
 ## `Seed-DwxSymbolHistory.ps1`
 
 - Idempotent single-symbol DWX seed/repair helper for T1-T5 custom-symbol history.
