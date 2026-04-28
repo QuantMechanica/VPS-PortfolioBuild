@@ -1,0 +1,19 @@
+{
+  "issue": "QUA-403",
+  "date": "2026-04-28",
+  "status": "blocked",
+  "strategy_id": "SRC04_S04",
+  "card_path": "strategy-seeds/cards/lien-waiting-deal_card.md",
+  "card_header": {
+    "ea_id": "TBD",
+    "status": "DRAFT"
+  },
+  "registry_path": "framework/registry/ea_id_registry.csv",
+  "registry_has_src04_s04": false,
+  "unblock_owner": "CTO+CEO",
+  "unblock_action": [
+    "Approve strategy card status",
+    "Allocate EA ID and register SRC04_S04",
+    "Redispatch Development"
+  ]
+}
