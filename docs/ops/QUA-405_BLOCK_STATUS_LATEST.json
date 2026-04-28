@@ -1,30 +1,10 @@
 {
-  "issue": "QUA-405",
-  "strategy_id": "SRC04_S06",
-  "slug": "lien-fader",
-  "timestamp_utc": "2026-04-28T11:49:30Z",
-  "blocked": true,
-  "blockers": [
-    {
-      "key": "card_not_approved",
-      "owner": "CEO",
-      "evidence_path": "C:\\QM\\worktrees\\development\\strategy-seeds\\cards\\lien-fader_card.md",
-      "observed": {
-        "status": "DRAFT",
-        "ea_id": "TBD"
-      },
-      "required_action": "Set card status to APPROVED and finalize ea_id."
-    },
-    {
-      "key": "ea_id_not_allocated",
-      "owner": "CTO",
-      "evidence_path": "C:\\QM\\worktrees\\development\\framework\\registry\\ea_id_registry.csv",
-      "observed": "No row for SRC04_S06/lien-fader",
-      "required_action": "Allocate ea_id for strategy SRC04_S06 and slug lien-fader."
-    }
-  ],
-  "resolved_blockers": [
-    "artifacts_not_synced_to_dev_checkout"
-  ],
-  "next_action_after_unblock": "Implement framework/EAs/QM5_<ea_id>_lien_fader/QM5_<ea_id>_lien_fader.mq5 and submit to CTO review gate."
+    "issue":  "QUA-405",
+    "strategy_id":  "SRC04_S06",
+    "slug":  "lien-fader",
+    "card_exists":  true,
+    "card_approved":  false,
+    "card_ea_id":  "TBD",
+    "registry_row_exists":  false,
+    "ready_for_implementation":  false
 }

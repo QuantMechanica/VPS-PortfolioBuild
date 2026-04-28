@@ -10,6 +10,7 @@ $result = [ordered]@{
   issue = "QUA-405"
   strategy_id = "SRC04_S06"
   slug = "lien-fader"
+  checked_at_utc = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
   card_exists = Test-Path $cardPath
   card_approved = $false
   card_ea_id = $null
