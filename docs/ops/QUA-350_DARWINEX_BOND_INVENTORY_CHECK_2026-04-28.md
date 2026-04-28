@@ -29,6 +29,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Tes
 - Current inventory classification:
   - `US10Y`: `missing`
   - `DE10Y`: `missing`
+- Local filesystem evidence (same run):
+  - `D:\QM\mt5\T1\MQL5\Files\imports\done\*.import.txt` contains no `US10Y*`, `UST10Y*`, `US10YR*`, `DE10Y*`, `BUND*` entries.
+  - `D:\QM\reports\setup\tick-data-timezone\*_GMT+*_US-DST.csv` has no bond-candidate staging files on this host.
 - Disposition: not yet conclusive for Darwinex availability; requires execution on VPS T1 with live MT5 session access.
 
 ## Captured market-metadata fields
