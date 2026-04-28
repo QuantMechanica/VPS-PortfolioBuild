@@ -340,14 +340,73 @@ function Start-TesterRun {
     $args = @("/portable", "/config:$IniPath")
     $proc = Start-Process -FilePath $TerminalExe -ArgumentList $args -PassThru
     $finished = $proc.WaitForExit($TimeoutSec * 1000)
-    if (-not $finished) {
+    $timedOut = -not $finished
+    if ($timedOut) {
         try {
             Stop-Process -Id $proc.Id -Force -ErrorAction Stop
         } catch {
         }
-        throw "Tester run timed out after $TimeoutSec seconds for ini: $IniPath"
     }
-    return $proc.ExitCode
+
+    return [pscustomobject]@{
+        exit_code = $(if ($finished) { $proc.ExitCode } else { $null })
+        timed_out = $timedOut
+        terminal_pid = $proc.Id
+    }
+}
+
+function Get-MetaTesterProcessesForTerminalRoot {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$TerminalRoot
+    )
+
+    $normalizedRoot = $TerminalRoot.TrimEnd('\')
+    $escapedRoot = [regex]::Escape($normalizedRoot)
+    $processes = Get-CimInstance Win32_Process -Filter "Name='metatester64.exe'" -ErrorAction SilentlyContinue
+    if (-not $processes) {
+        return @()
+    }
+
+    $matches = @()
+    foreach ($proc in $processes) {
+        $exePath = [string]$proc.ExecutablePath
+        $cmdLine = [string]$proc.CommandLine
+        $matchesRoot = ($exePath -and [regex]::IsMatch($exePath, "^$escapedRoot\\", [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)) -or
+            ($cmdLine -and [regex]::IsMatch($cmdLine, $escapedRoot, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase))
+        if ($matchesRoot) {
+            $matches += $proc
+        }
+    }
+
+    return @($matches)
+}
+
+function Wait-ForReportExport {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ReportPath,
+        [Parameter(Mandatory = $true)]
+        [string]$TerminalRoot,
+        [ValidateRange(0, 300)]
+        [int]$MaxWaitSeconds = 30
+    )
+
+    $deadline = (Get-Date).ToUniversalTime().AddSeconds($MaxWaitSeconds)
+    do {
+        if (Test-Path -LiteralPath $ReportPath -PathType Leaf) {
+            return $true
+        }
+
+        $activeMetaTesters = @(Get-MetaTesterProcessesForTerminalRoot -TerminalRoot $TerminalRoot)
+        if (@($activeMetaTesters).Count -eq 0) {
+            return (Test-Path -LiteralPath $ReportPath -PathType Leaf)
+        }
+
+        Start-Sleep -Milliseconds 500
+    } while ((Get-Date).ToUniversalTime() -lt $deadline)
+
+    return (Test-Path -LiteralPath $ReportPath -PathType Leaf)
 }
 
 function Convert-RunMetricsToFingerprint {
@@ -423,18 +482,28 @@ for ($i = 1; $i -le $Runs; $i++) {
         -ReportValue $relativeReportFile `
         -SetFilePath $SetFile
 
-    $exitCode = $null
-    try {
-        $exitCode = Start-TesterRun -TerminalExe $terminalExe -IniPath $iniPath -TimeoutSec $TimeoutSeconds
-    } catch {
+    $runExec = Start-TesterRun -TerminalExe $terminalExe -IniPath $iniPath -TimeoutSec $TimeoutSeconds
+    $exitCode = $runExec.exit_code
+
+    if ($runExec.timed_out) {
+        $lingeringMeta = @(Get-MetaTesterProcessesForTerminalRoot -TerminalRoot $terminalRoot)
+        foreach ($metaProc in $lingeringMeta) {
+            try {
+                Stop-Process -Id $metaProc.ProcessId -Force -ErrorAction Stop
+            } catch {
+            }
+        }
         $globalTimeoutFailure = $true
         $globalRealTicksMarker = $false
         $reasonClasses.Add("TIMEOUT")
+        if (@($lingeringMeta).Count -gt 0) {
+            $reasonClasses.Add("METATESTER_HUNG")
+        }
         $runResults += [pscustomobject]@{
             run = $runName
             status = "FAIL"
             failure = "TIMEOUT"
-            error = $_.Exception.Message
+            error = "Tester run timed out after $TimeoutSeconds seconds for ini: $iniPath"
             exit_code = $null
             report_source_path = $sourceReportPath
             report_canonical_path = $reportHtmPath
@@ -444,9 +513,20 @@ for ($i = 1; $i -le $Runs; $i++) {
         continue
     }
 
-    if (-not (Test-Path -LiteralPath $sourceReportPath -PathType Leaf)) {
+    $reportMaterialized = Wait-ForReportExport -ReportPath $sourceReportPath -TerminalRoot $terminalRoot -MaxWaitSeconds 30
+    if (-not $reportMaterialized) {
         $reasonClasses.Add("REPORT_MISSING")
         $globalRealTicksMarker = $false
+        $lingeringMeta = @(Get-MetaTesterProcessesForTerminalRoot -TerminalRoot $terminalRoot)
+        if (@($lingeringMeta).Count -gt 0) {
+            $reasonClasses.Add("METATESTER_HUNG")
+            foreach ($metaProc in $lingeringMeta) {
+                try {
+                    Stop-Process -Id $metaProc.ProcessId -Force -ErrorAction Stop
+                } catch {
+                }
+            }
+        }
         $runResults += [pscustomobject]@{
             run = $runName
             status = "FAIL"
