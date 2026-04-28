@@ -4561,3 +4561,7 @@
 - Source run: 57ff113e-9d50-4017-a089-b581de3f2c92 follow-up
 - No-change status: Development remains paused per QUA-304_PAUSE_UNTIL_CTO_2026-04-28.json.
 - Unblock owner/action: CTO review-only decision.
+
+## Heartbeat checkpoint (2026-04-28T12:41:17.0028057+02:00)
+- Source run: fc478f1d-09ff-4595-b536-c5c38c935018 follow-up
+- Liveness update: paused-state reaffirmed; waiting on CTO review-only gate decision.
