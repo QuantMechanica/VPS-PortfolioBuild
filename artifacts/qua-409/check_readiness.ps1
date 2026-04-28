@@ -58,6 +58,11 @@ $line = "{0},{1},{2},{3},{4},{5}" -f `
   $out.card_header.status, `
   $out.card_header.ea_id, `
   $out.registry_row_present
-Add-Content -Path $historyPath -Value $line
+$last = Get-Content $historyPath | Select-Object -Last 1
+$lineSig = ($line -split ',', 2)[1]
+$lastSig = if ($last -and $last -ne "checked_at,head,blocked,status,ea_id,registry_row_present") { ($last -split ',', 2)[1] } else { "" }
+if ($lineSig -ne $lastSig) {
+  Add-Content -Path $historyPath -Value $line
+}
 
 Write-Output $outPath
