@@ -27,7 +27,7 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     job_path = Path(args.job_json)
-    with job_path.open("r", encoding="utf-8") as handle:
+    with job_path.open("r", encoding="utf-8-sig") as handle:
         job: dict[str, Any] = json.load(handle)
 
     state_path = Path(args.state_json)
