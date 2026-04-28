@@ -32,3 +32,4 @@
 2026-04-28T13:14:15.1148769+02:00 | blocked-state checkpoint: no dev delta, CTO gate pending.
 2026-04-28T13:15:16.8981822+02:00 | blocked-state checkpoint line: CTO review still pending.
 2026-04-28T13:16:20.1819699+02:00 | blocked wake checkpoint: CTO review gate pending.
+2026-04-28T13:17:15.5787369+02:00 | blocked-state checkpoint: review-only CTO gate unchanged.
