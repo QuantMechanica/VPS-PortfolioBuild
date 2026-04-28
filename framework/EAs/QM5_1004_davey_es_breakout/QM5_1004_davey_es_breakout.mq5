@@ -30,6 +30,12 @@ input double atr_stop_mult                = 2.0;  // Card §4/§6
 CTrade   g_trade;
 datetime g_last_bar_time = 0;
 
+int StrategyMagic()
+  {
+   // Hard rule: magic must be derived via QM_Magic(ea_id, slot).
+   return QM_Magic(qm_ea_id, qm_magic_slot_offset);
+  }
+
 bool IsNewBar()
   {
    const datetime t0 = iTime(_Symbol, _Period, 0);
@@ -45,7 +51,7 @@ bool GetOurPosition(ENUM_POSITION_TYPE &ptype, double &price_open, ulong &ticket
    price_open = 0.0;
    ticket = 0;
 
-   const int magic = QM_FrameworkMagic();
+   const int magic = StrategyMagic();
    if(magic <= 0)
       return false;
 
@@ -165,7 +171,7 @@ void Strategy_ManageOpenPosition()
    if(sl <= 0.0)
       return;
 
-   g_trade.SetExpertMagicNumber(QM_FrameworkMagic());
+   g_trade.SetExpertMagicNumber(StrategyMagic());
    g_trade.PositionModify(_Symbol, sl, 0.0);
   }
 
@@ -192,7 +198,7 @@ bool ExecuteEntrySignal(const QM_EntryRequest &req)
    if(lots <= 0.0)
       return false;
 
-   g_trade.SetExpertMagicNumber(QM_FrameworkMagic());
+   g_trade.SetExpertMagicNumber(StrategyMagic());
    if(req.type == QM_BUY)
       return g_trade.Buy(lots, _Symbol, 0.0, req.sl, 0.0, req.reason);
    return g_trade.Sell(lots, _Symbol, 0.0, req.sl, 0.0, req.reason);
@@ -212,7 +218,7 @@ bool ProcessSignalWithReversal(const QM_EntryRequest &req)
          return false;
 
       // Card §3/§4: opposite breakout closes and reverses.
-      g_trade.SetExpertMagicNumber(QM_FrameworkMagic());
+      g_trade.SetExpertMagicNumber(StrategyMagic());
       if(!g_trade.PositionClose(ticket))
          return false;
      }
