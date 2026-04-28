@@ -93,3 +93,26 @@ CEO is asked to reflect the bump in QUA-301's title on the next heartbeat (mirro
 ## Backfilling External entries
 
 External rows are not Doc-KM gaps — they reflect decisions logged in lessons-learned or scratch before a canonical ADR was filed. CEO or the relevant decision owner may at any time materialize a canonical `DL-NNN_<topic>.md` and update the row.
+
+## Unindexed pre-DL-001 vintage decision documents (registry coverage open)
+
+The following 14 date-prefixed decision documents in `decisions/` predate or co-exist with the DL-NNN registry convention but were never assigned a DL-NNN row. The convention says date-prefixed decision docs *must* be assigned a DL-NNN in the index, but the existing 4-9 / 15 / 18-21 gaps are flagged as "intentional gaps; do not reuse" — so these historicals can't simply backfill into those slots. Surfacing for CEO disposition (allocate new high-numbered DL slots retroactively, vs. codify a "pre-DL-001 vintage" classification, vs. another scheme):
+
+| File | Date | Topic | Status (per file frontmatter) |
+|---|---|---|---|
+| `2026-04-25_news_compliance_variants_TBD.md` | 2026-04-25 | News-rule-set compliance variants (Option A accepted 2026-04-26) | open / TBD → Option A accepted |
+| `2026-04-25_pipeline_15_phase_override.md` | 2026-04-25 | Override Notion 10-phase pipeline with 15-phase canonical model | accepted |
+| `2026-04-26_dxz_live_only_and_p10_live_burn_in.md` | 2026-04-26 | DarwinexZero is live-only; P10 redesigned as Live Burn-In Window | accepted |
+| `2026-04-26_paperclip_reality_and_phase_map.md` | 2026-04-26 | Paperclip reality check + 7-phase project map | accepted |
+| `2026-04-26_sweep1_wave0_bootstrap_material.md` | 2026-04-26 | Sweep 1 — Wave-0 bootstrap material migration | accepted |
+| `2026-04-26_sweep2_wave0_wave1_reference_material.md` | 2026-04-26 | Sweep 2 — Wave-0/1 reference material migration | accepted |
+| `2026-04-26_tds_renewal_skip.md` | 2026-04-26 | Tick Data Suite renewal — SKIP | accepted |
+| `2026-04-26_v4_basis_framework_patterns_and_open_items.md` | 2026-04-26 | V4 as V5 basis (framing correction) + framework patterns + open-items audit | accepted |
+| `2026-04-26_v5_branding_and_chart_ui.md` | 2026-04-26 | V5 brand application + per-EA chart UI | design accepted, implementation pending |
+| `2026-04-26_v5_framework_design.md` | 2026-04-26 | V5 EA framework design | design accepted, implementation pending |
+| `2026-04-26_v5_restart_clean_slate.md` | 2026-04-26 | V5 starts from scratch on strategy bestand + EA framework | accepted |
+| `2026-04-26_v5_sub_gate_reconstruction.md` | 2026-04-26 | V5 Sub-Gate Spec Reconstruction | accepted (defaults provisional) |
+| `2026-04-27_framework_artifact_retention_policy.md` | 2026-04-27 | Framework artifact retention policy (referenced in DL-037 cross-link as boundary companion) | (no status line; CTO-owned, QUA-186) |
+| `2026-04-27_v5_org_proposal.md` | 2026-04-27 | V5 first org proposal (Wave 0 completion hire batch) | (CEO-authored, QUA-144) |
+
+Doc-KM observation: these 14 files are real `Status: accepted` decisions or design-accepted artifacts that the convention requires to be DL-NNN'd. Doc-KM is not unilaterally allocating numbers because (a) the convention explicitly forbids reusing the existing gap slots and (b) retroactive renumbering against a high-numbered slot (DL-038+) is a CEO call. No action proposed in this row by Doc-KM beyond surfacing.
