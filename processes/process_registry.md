@@ -51,6 +51,24 @@ Canonical spec: [15-pipeline-op-load-balancing.md](15-pipeline-op-load-balancing
 - Post-restart verification gate (state file readable, PIDs match live, T2/T3 script paths aligned, owner-overrides validated from file) must pass before resuming heartbeat work.
 - T1-T5 parallel discipline (DL-035): all five terminals carry concurrent work whenever the queue can supply it; OWNER's parallel-fleet expectation is the binding floor.
 
+## Backtest Execution Discipline (DL-038)
+
+Canonical spec: [16-backtest-execution-discipline.md](16-backtest-execution-discipline.md). Ratifying decision: [DL-038](../decisions/2026-04-28_seven_backtest_rules.md). Parent directive: [QUA-400](/QUA/issues/QUA-400) (OWNER 2026-04-28 ~11:15 local — verbatim 7 rules). Process recording task: [QUA-426](/QUA/issues/QUA-426) (Doc-KM); DL recording task: [QUA-422](/QUA/issues/QUA-422) (CEO).
+
+Seven binding rules govern every V5 backtest dispatch on T1–T5. T6 OFF LIMITS per [DL-025](../decisions/DL-025_t6_deploy_boundary_refinement.md).
+
+| # | Rule | Owner | Sibling sub-issue |
+|---|---|---|---|
+| 1 | `.DWX`-only — never native broker symbols | Pipeline-Op | [QUA-421](/QUA/issues/QUA-421) (matrix dispatcher) |
+| 2 | 36-symbol matrix per EA per phase | Pipeline-Op (Quality-Tech sets PASS-N) | [QUA-421](/QUA/issues/QUA-421) |
+| 3 | T1–T5 parallel discipline (binding floor, not soft target) | Pipeline-Op + DevOps (Rule 5 dependency) | covered by Rule 5 deploy + [DL-035](../decisions/2026-04-28_pipeline_loadbalance_convention.md) |
+| 4 | Fail-fast — phase failure unblocks next SRC sibling | Pipeline-Op + CEO confirm | [QUA-421](/QUA/issues/QUA-421) |
+| 5 | Every EA on all 5 terminals — `framework/scripts/deploy_ea_to_all_terminals.ps1` mandatory step of build close | DevOps; CTO Review-only gate | [QUA-412](/QUA/issues/QUA-412) (DevOps deploy rollout) + [QUA-424](/QUA/issues/QUA-424) (CTO retroactive review) |
+| 6 | Drive `QuantMechanica` = Tier 1.5 concept resource — never V4 backtest results, cite ORIGINAL sources | Research; CEO at card review | [QUA-423](/QUA/issues/QUA-423) (SOURCE_QUEUE survey-pass) |
+| 7 | `RISK_FIXED` set-file mandatory per dispatch (`<EA>_<symbol>_<TF>_backtest.set`) | DevOps generator + Pipeline-Op gate | [QUA-419](/QUA/issues/QUA-419) (gen_setfile.ps1 + dispatch refusal) |
+
+Hard-fail rejects: `BACKTEST_REJECTED_NATIVE_SYMBOL` (Rule 1), `BACKTEST_REJECTED_NO_SETFILE` (Rule 7), missing-deploy hash mismatch (Rule 5). EA Review prerequisite under [DL-036](../decisions/2026-04-28_ea_review_gate.md) (additive to [DL-030](../decisions/2026-04-27_execution_policies_v1.md) Class 3). Strategy-research workflow upstream: [13-strategy-research.md](13-strategy-research.md). Enhancement-loop boundary: [14-ea-enhancement-loop.md](14-ea-enhancement-loop.md).
+
 ## EA Review Gate (DL-036, additive to DL-030 Class 3)
 
 Canonical decision: [DL-036](../decisions/2026-04-28_ea_review_gate.md). Recording task: QUA-301. Parent driver: QUA-297 (OWNER 2026-04-28 audit — "EA should also be reviewed, then backtests can start").
