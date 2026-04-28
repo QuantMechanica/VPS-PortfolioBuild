@@ -6,11 +6,11 @@ status: scaffold_first_heartbeat
 authored-by: Research Agent
 last-updated: 2026-04-28
 budget_tracking:
-  heartbeats_used: 2                          # h1 scaffold + PDF text extract + per-chapter validation read; h2 first-pass extraction (S02a + S02b + S03 — 3 cards). SRC03 ceiling 5 heartbeats / 14 cards.
-  cards_drafted: 3                            # SRC04_S02a (lien-dbb-pick-tops), SRC04_S02b (lien-dbb-trend-join), SRC04_S03 (lien-fade-double-zeros)
+  heartbeats_used: 3                          # h1 scaffold + PDF text extract + per-chapter validation read; h2 first-pass extraction (S02a + S02b + S03 — 3 cards); h3 first-pass technical-block continuation (S05 + S07 — 2 cards). SRC03 ceiling 5 heartbeats / 14 cards.
+  cards_drafted: 5                            # SRC04_S02a (lien-dbb-pick-tops), SRC04_S02b (lien-dbb-trend-join), SRC04_S03 (lien-fade-double-zeros), SRC04_S05 (lien-inside-day-breakout), SRC04_S07 (lien-20day-breakout)
   cards_passed_g0: 0
   cards_killed_pre_p1: 0
-extraction_pass_status: first_pass_partial    # h2 closed first three high-prediction technical cards (Ch 9 split + Ch 10); remaining first-pass S05 (Inside Days), S07 (20-Day Breakout) pulled into h3
+extraction_pass_status: first_pass_partial    # h2 closed first three high-prediction technical cards (Ch 9 split + Ch 10); h3 closed S05 (Ch 12 Inside Days) + S07 (Ch 14 20-Day Breakout); remaining first-pass S04/S06/S08/S09 + fundamental block scheduled for h4-h6
 completion_report: pending                    # authored after all SRC04_S* sub-issues close
 
 ---
@@ -137,9 +137,9 @@ Per QUA-333 acceptance: "Each candidate that survives V5 v0_filter becomes a SRC
 | S02b | `lien-dbb-trend-join` | `cards/lien-dbb-trend-join_card.md` | TBD | DRAFT (h2) | Ch 9 PDF pp. 107-110 | Double BB **trend-mode** trend-join entry (close back across 1st-σ band after K-bar opposite-side dwell). Sibling of S02a; shares proposed `bband-reclaim` flag with `precondition_mode=n-bars-opposite-1sigma`. Co-regime-fire suppression vs S02a documented in card § 6. |
 | S03 | `lien-fade-double-zeros` | `cards/lien-fade-double-zeros_card.md` | TBD | DRAFT (h2) | Ch 10 PDF pp. 112-115 | Round-number psychological-level fade (M15, 20MA counter-trend filter, 10-15-pip entry offset, 20-pip stop). Vocab gap: proposes `round-num-fade` flag. |
 | S04 | `lien-waiting-deal` | TBD | TBD | TBD | Ch 11 | Patience-based pullback / better-price entry pattern. |
-| S05 | `lien-inside-day-breakout` | TBD | TBD | TBD | Ch 12 | Inside-day → next-day breakout in trend direction. May fold with V4 inside-day flag if existing. |
+| S05 | `lien-inside-day-breakout` | `cards/lien-inside-day-breakout_card.md` | TBD | DRAFT (h3) | Ch 12 PDF pp. 123-127 | Multi-inside-day volatility-compression breakout (D1). Bracket stop-buy/sell at prev-inside-day extremes ±10p; stop-and-reverse at nearest-inside-day opposite extreme ±10p (Lien rule 3, 2-lot reversal exposed as P3 variant only — `risk_mode_dual` flagged). TP1=2R + BE move + 2-bar trail. Reuses `narrow-range-breakout` flag with card-level `range_contraction_pattern = "consecutive-inside-days"` parameter; no vocab gap. |
 | S06 | `lien-fader` | TBD | TBD | TBD | Ch 13 | Counter-trend fade strategy with specific setup; potentially overlaps with Williams S10 (failed-breakout-fade). |
-| S07 | `lien-20day-breakout` | TBD | TBD | TBD | Ch 14 | Classic Donchian / 20-day-channel breakout; clear V4 `donchian-breakout` flag fit. |
+| S07 | `lien-20day-breakout` | `cards/lien-20day-breakout_card.md` | TBD | DRAFT (h3) | Ch 14 PDF pp. 135-138 | Failed-pullback continuation 20-day breakout (D1). 3-state machine: ARMED_SCAN (20-day extreme) → ARMED_PULLBACK (2-day opposite extreme within 1 bar) → ARMED_REBREAK (re-break within 3 bars). Initial stop a few pips beyond pullback extreme; TP1=1R + BE + 2-bar-extreme trail. Reuses `donchian-breakout` flag with card-level `pre-breakout-pullback-required = true` parameter; **first canonical Donchian-family card** in the SRC corpus. No vocab gap. |
 | S08 | `lien-channels` | TBD | TBD | TBD | Ch 15 | Channel-trade pattern (range-bound channel entry/exit). |
 | S09 | `lien-perfect-order` | TBD | TBD | TBD | Ch 16 | "Perfect order" of multiple MAs (e.g., 5 > 10 > 20 > 50 > 100 > 200) — trend-strength filter + entry. |
 | S10 | `lien-strong-vs-weak` | TBD | TBD | TBD | Ch 17 | Currency relative-strength ranking; fundamental strong/weak pairing. Cross-sectional → may parallel SRC02 chan-decile-sort family. |
@@ -160,6 +160,17 @@ First-pass extraction batch closed the highest-rule-density technical chapters �
 - **SRC04_S02a** `lien-dbb-pick-tops` (Ch 9 PDF pp. 103-107 § "Pick Tops and Bottoms") — range-mode mean-reversion. Long stop 50 pips below 1st-σ band; short stop 30 pips above (Lien's verbatim asymmetry preserved as P3 sweep axis since the worked example uses 30 pips for both).
 - **SRC04_S02b** `lien-dbb-trend-join` (Ch 9 PDF pp. 107-110 § "Join a New Trend") — trend-join breakout. Fixed 65-pip initial stop, 50-pip TP1, 195-pip TP2 (3.0R fat-tail TM).
 - **SRC04_S03** `lien-fade-double-zeros` (Ch 10 PDF pp. 112-115) — round-number psychological-level fade with 20-period SMA counter-trend filter on M15. `scalping_p5b_latency` flagged for IMPL despite M15 bar size (tight 20-pip stops are latency-sensitive).
+
+### h3 progress log (2026-04-28)
+
+Continuation of first-pass technical block — **2 cards drafted** in h3 (S05 + S07), bringing SRC04 cumulative to 5 cards / 3 heartbeats = **1.67 cards/heartbeat throughput**. This places SRC04 between SRC02 Chan (1.0 cards/heartbeat methodology-heavy) and SRC03 Williams (2.33 cards/heartbeat ceiling rule-tight) — within the 1.0-1.5 card/heartbeat target band stated in QUA-333, leaning toward the upper end of the band. Cards committed:
+
+- **SRC04_S05** `lien-inside-day-breakout` (Ch 12 PDF pp. 123-127) — multi-inside-day volatility-compression breakout on D1. Bracket-and-reverse logic (Lien rule 3) with stop-and-reverse at opposite-extreme + 10p offset. Reuses existing `narrow-range-breakout` flag with card-level parameter `range_contraction_pattern = "consecutive-inside-days"` rather than proposing a new sub-flag. **NO vocab gap proposed**. Two hard-rules-at-risk surface: (a) `risk_mode_dual` for the Lien-verbatim 2-lot reversal variant — card defaults to 1-unit (V5-compliant) and exposes 2-unit only as a P3 sweep variant for CTO ratification if it outperforms; (b) `friday_close` load-bearing — D1 swing with multi-day-to-multi-week holds (Lien EURGBP example PDF p. 125 holds "three weeks"), waiver candidacy at P3 mirroring SRC03_S03 williams-cdc-pattern + SRC02_S01 chan-pairs-stat-arb precedent.
+- **SRC04_S07** `lien-20day-breakout` (Ch 14 PDF pp. 135-138) — failed-pullback continuation 20-day breakout on D1. Reuses existing `donchian-breakout` flag with card-level parameter `pre-breakout-pullback-required = true`. **First canonical Donchian-family card across the entire SRC corpus** (V4 Modernised Turtle was an inspiration spec, not a deployed EA). 3-state-machine entry pattern (ARMED_SCAN → ARMED_PULLBACK → ARMED_REBREAK) is the FIRST multi-state entry pattern in SRC cards — all prior cards used single-bar entry triggers; CTO will need to validate state-machine bookkeeping at IMPL. **NO vocab gap proposed**. Hard-rules-at-risk: `friday_close` load-bearing (multi-day-to-multi-week holds per Lien EURUSD example trail to 1.1846), waiver candidacy at P3.
+
+**Cumulative vocabulary-gap status**: 2 proposed flags (`bband-reclaim` from S02a/S02b, `round-num-fade` from S03) batched at SRC04 closeout; h3 added zero new gaps (S05 reused `narrow-range-breakout`, S07 reused `donchian-breakout` — both with card-level parameterization rather than sub-flag proliferation). Roll-up table in § 8.5 unchanged.
+
+**Next heartbeat (h4)**: continue first-pass technical block — S04 `lien-waiting-deal` (Ch 11 patience pullback entry, PDF pp. 117-121), S06 `lien-fader` (Ch 13 ADX<20 false-breakout fade, PDF pp. 129-133, check overlap with SRC03_S10 williams-spec-trap), S08 `lien-channels` (Ch 15 channel-trade pattern, PDF pp. 139-141), and/or S09 `lien-perfect-order` (Ch 16 multi-MA stack filter + entry, PDF pp. 143-147) — target 2-3 cards per QUA-333 throughput band.
 
 ## 6.5 Survey-pass observations (per-chapter validation read 2026-04-28 h1)
 
