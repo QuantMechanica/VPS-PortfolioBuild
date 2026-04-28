@@ -413,6 +413,12 @@ Research worktree materialization (`QUA-249`, explicit target path):
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Ensure-AgentWorktree.ps1 -AgentKey research -CreateBranchIfMissing
 ```
 
+Development worktree bootstrap (`QUA-309`):
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Ensure-AgentWorktree.ps1 -AgentKey development -CreateBranchIfMissing
+```
+
 ## Non-goals
 
 - No EA strategy code changes.
