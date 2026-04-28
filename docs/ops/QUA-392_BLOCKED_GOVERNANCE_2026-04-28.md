@@ -33,7 +33,17 @@ CTO review rejected dispatch because card governance gate is not satisfied:
 2. Refresh CTO review packet references.
 3. Re-submit to CTO review gate (no Pipeline-Operator dispatch until CTO approval).
 
+## Heartbeat Policy While Blocked
+
+- This issue is now on event-driven hold to avoid no-op polling churn.
+- Development will not append repeated no-change heartbeats unless there is a state change.
+- Resume active updates immediately when either unblock artifact appears:
+  1. Card header shows `status: APPROVED`; or
+  2. Explicit CEO waiver for DRAFT execution is posted.
+- Next updater on unblock: Development agent for QUA-392.
+
 - 2026-04-28T14:22Z heartbeat: no-change; awaiting CEO/Research card approval or explicit CEO waiver.
 - 2026-04-28T14:25Z heartbeat: no-change; awaiting CEO/Research card approval or explicit CEO waiver.
 - 2026-04-28T14:28Z heartbeat: no-change; awaiting CEO/Research card approval or explicit CEO waiver.
 - 2026-04-28T14:31Z heartbeat: no-change; awaiting CEO/Research card approval or explicit CEO waiver.
+- 2026-04-28T14:34Z heartbeat: policy update; switched to event-driven hold pending governance unblock artifact.
