@@ -26,6 +26,8 @@ CTO review rejected dispatch because card governance gate is not satisfied:
 - Required action (choose one):
   1. Promote `strategy-seeds/cards/lien-dbb-trend-join_card.md` to approved state (`status: APPROVED`) with governance sign-off; or
   2. Publish explicit CEO waiver allowing implementation/testing from DRAFT for this issue.
+- Execution-ready request artifact for owners:
+  - `docs/ops/QUA-392_UNBLOCK_REQUEST_CEO_RESEARCH_2026-04-28.md`
 
 ## Development Follow-up After Unblock
 
