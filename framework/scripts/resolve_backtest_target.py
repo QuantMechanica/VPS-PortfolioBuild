@@ -15,6 +15,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from framework.scripts.pipeline_dispatcher import (
     load_dispatch_state,
+    prune_state,
     release_job,
     resolve_target_terminal,
     save_dispatch_state,
@@ -27,6 +28,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--state-json", default=r"D:\QM\Reports\pipeline\dispatch_state.json", help="Dispatch state path.")
     parser.add_argument("--max-per-terminal", type=int, default=3, help="Max active runs per terminal.")
     parser.add_argument("--event", choices=("start", "complete"), default="start", help="Dispatch lifecycle event.")
+    parser.add_argument("--prune-completed", action="store_true", help="Prune stale completed dedup records.")
     return parser.parse_args()
 
 
@@ -42,8 +44,15 @@ def main() -> int:
         decision = release_job(job, state)
     else:
         decision = resolve_target_terminal(job, state, max_per_terminal=args.max_per_terminal)
+    pruned = 0
+    if args.prune_completed:
+        pruned = prune_state(state)
     if decision.get("status") in {"scheduled", "released"}:
         save_dispatch_state(state, state_path)
+    if pruned > 0 and decision.get("status") not in {"scheduled", "released"}:
+        save_dispatch_state(state, state_path)
+    if pruned > 0:
+        decision["pruned_completed"] = pruned
     print(json.dumps(decision, sort_keys=True))
     return 0
 

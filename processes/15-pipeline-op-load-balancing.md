@@ -33,6 +33,7 @@ Pipeline-Operator receives one or more runnable backtest jobs with `target_termi
 6. If still tied, round-robin across the tied terminals (stable progression by previous selection index).
 7. Write reservation into dedup index and increment running count for selected terminal.
 8. On run completion, call completion event and decrement running count for the assigned terminal.
+9. Periodically prune stale `complete` dedup records to keep state bounded.
 
 ## Steps
 

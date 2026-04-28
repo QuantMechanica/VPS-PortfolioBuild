@@ -2,7 +2,14 @@ from __future__ import annotations
 
 import unittest
 
-from framework.scripts.pipeline_dispatcher import TERMINALS, dedup_key, dispatch_job, release_job, resolve_target_terminal
+from framework.scripts.pipeline_dispatcher import (
+    TERMINALS,
+    dedup_key,
+    dispatch_job,
+    prune_state,
+    release_job,
+    resolve_target_terminal,
+)
 
 
 def base_job(symbol: str = "EURUSD.DWX") -> dict[str, str]:
@@ -127,6 +134,20 @@ class PipelineDispatcherTests(unittest.TestCase):
         state = {"dedup": {}, "running": {"T1": 0, "T2": 0, "T3": 0, "T4": 0, "T5": 0}}
         result = release_job(base_job(), state, now_epoch=1002)
         self.assertEqual(result["status"], "not_found")
+
+    def test_prune_state_drops_old_completed_records(self) -> None:
+        state = {
+            "dedup": {
+                "old": {"status": "complete", "completed_ts": 100},
+                "fresh": {"status": "complete", "completed_ts": 90000},
+                "active": {"status": "scheduled", "ts": 90000},
+            }
+        }
+        removed = prune_state(state, now_epoch=170000, retention_seconds=86400)
+        self.assertEqual(removed, 1)
+        self.assertTrue("old" not in state["dedup"])
+        self.assertTrue("fresh" in state["dedup"])
+        self.assertTrue("active" in state["dedup"])
 
 
 if __name__ == "__main__":

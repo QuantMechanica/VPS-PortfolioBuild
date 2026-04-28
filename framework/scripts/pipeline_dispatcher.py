@@ -12,6 +12,7 @@ TERMINALS = ("T1", "T2", "T3", "T4", "T5")
 AFFINITY_TTL_SECONDS = 24 * 60 * 60
 RECENT_WINDOW_SECONDS = 24 * 60 * 60
 DEFAULT_STATE_PATH = Path(r"D:\QM\Reports\pipeline\dispatch_state.json")
+DEFAULT_COMPLETED_RETENTION_SECONDS = 48 * 60 * 60
 
 
 def dedup_key(job: dict[str, Any]) -> str:
@@ -124,6 +125,24 @@ def release_job(job: dict[str, Any], state: dict[str, Any], now_epoch: int | Non
     record["status"] = "complete"
     record["completed_ts"] = now
     return {"dedup_key": key, "status": "released", "terminal": terminal or None}
+
+
+def prune_state(
+    state: dict[str, Any],
+    now_epoch: int | None = None,
+    retention_seconds: int = DEFAULT_COMPLETED_RETENTION_SECONDS,
+) -> int:
+    now = int(now_epoch if now_epoch is not None else time.time())
+    dedup = state.setdefault("dedup", {})
+    remove_keys: list[str] = []
+    for key, record in dedup.items():
+        status = str(record.get("status", ""))
+        completed_ts = int(record.get("completed_ts", 0))
+        if status == "complete" and completed_ts > 0 and (now - completed_ts) > retention_seconds:
+            remove_keys.append(key)
+    for key in remove_keys:
+        dedup.pop(key, None)
+    return len(remove_keys)
 
 
 def load_dispatch_state(path: Path = DEFAULT_STATE_PATH) -> dict[str, Any]:
