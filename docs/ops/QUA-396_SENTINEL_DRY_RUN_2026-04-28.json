@@ -1,0 +1,276 @@
+﻿{
+    "check":  "class2_execution_policy_sentinel",
+    "generated_at_utc":  "2026-04-28T10:43:45.7277637Z",
+    "status":  "critical",
+    "message":  "Class-2 issues missing executionPolicy detected.",
+    "details":  {
+                    "strategy_research_project_id":  "b2adcc7f-064f-47c7-8563-d1c917639231",
+                    "scanned_issue_count":  200,
+                    "class2_candidate_count":  31,
+                    "missing_policy_count":  31,
+                    "include_issue_identifiers":  [
+                                                      "QUA-342",
+                                                      "QUA-354",
+                                                      "QUA-356",
+                                                      "QUA-358",
+                                                      "QUA-360",
+                                                      "QUA-361",
+                                                      "QUA-359",
+                                                      "QUA-393"
+                                                  ],
+                    "apply_missing_policy":  false,
+                    "patched_identifiers":  [
+
+                                            ],
+                    "violations":  [
+                                       {
+                                           "issue_id":  "3b0c0658-2354-4653-85ed-5be11522e3f4",
+                                           "identifier":  "QUA-393",
+                                           "title":  "QUA-342 P1 Dev build: lien-fade-double-zeros _v1 EA + smoke backtest",
+                                           "status":  "in_progress",
+                                           "patched":  false,
+                                           "patch_error":  null
+                                       },
+                                       {
+                                           "issue_id":  "ca1e9b6d-3a44-4ea8-8195-73a4fe1ed73a",
+                                           "identifier":  "QUA-342",
+                                           "title":  "SRC04_S03 — lien-fade-double-zeros: Round-Number Psychological-Level FADE (M15, 20MA counter-trend, 10-15p offset, 20p stop)",
+                                           "status":  "done",
+                                           "patched":  false,
+                                           "patch_error":  null
+                                       },
+                                       {
+                                           "issue_id":  "689d0f28-365f-4864-b474-6f7b46f9a071",
+                                           "identifier":  "QUA-346",
+                                           "title":  "SRC04_S07 — lien-20day-breakout: Failed-Pullback Continuation 20-DAY BREAKOUT (D1, 3-state machine)",
+                                           "status":  "blocked",
+                                           "patched":  false,
+                                           "patch_error":  null
+                                       },
+                                       {
+                                           "issue_id":  "88b3ac9b-e4d9-48a8-a2b1-5597a235f8e2",
+                                           "identifier":  "QUA-344",
+                                           "title":  "SRC04_S05 — lien-inside-day-breakout: Multi-Inside-Day VOLATILITY-COMPRESSION BREAKOUT (D1, bracket-and-reverse)",
+                                           "status":  "blocked",
+                                           "patched":  false,
+                                           "patch_error":  null
+                                       },
+                                       {
+                                           "issue_id":  "768564ba-7788-4d82-a2e9-d7c9f9544452",
+                                           "identifier":  "QUA-349",
+                                           "title":  "SRC04_S11 — lien-carry-trade: Carry-Direction + Bond-Yield-Spread Risk-Aversion Gate (D1, 6-month minimum hold) — FIRST CARRY-FAMILY CARD ACROSS ALL SRCs",
+                                           "status":  "blocked",
+                                           "patched":  false,
+                                           "patch_error":  null
+                                       },
+                                       {
+                                           "issue_id":  "4f523c95-e36b-4c8c-b80c-b773f00a8ee7",
+                                           "identifier":  "QUA-348",
+                                           "title":  "SRC04_S09 — lien-perfect-order: 5-MA Sequential-Monotonic-Stack ENTRY (D1, multi-month hold) — VOCAB GAP ma-stack-entry",
+                                           "status":  "blocked",
+                                           "patched":  false,
+                                           "patch_error":  null
+                                       },
+                                       {
+                                           "issue_id":  "449fe8ac-250f-40c0-b245-b2d2209b51f0",
+                                           "identifier":  "QUA-347",
+                                           "title":  "SRC04_S08 — lien-channels: Narrow-Channel BREAKOUT (M15 default, n-bar horizontal range, multi-TF)",
+                                           "status":  "blocked",
+                                           "patched":  false,
+                                           "patch_error":  null
+                                       },
+                                       {
+                                           "issue_id":  "7a076ab5-2785-4f63-acbb-04e73652a622",
+                                           "identifier":  "QUA-345",
+                                           "title":  "SRC04_S06 — lien-fader: ADX(14)\u003c20 PRIOR-DAY-RANGE FALSE-BREAKOUT FADE (D1 setup + H1 entry)",
+                                           "status":  "blocked",
+                                           "patched":  false,
+                                           "patch_error":  null
+                                       },
+                                       {
+                                           "issue_id":  "01d5ef61-379d-450a-84e8-09ba5ae8a059",
+                                           "identifier":  "QUA-343",
+                                           "title":  "SRC04_S04 — lien-waiting-deal: London-Open Opening-Range FALSE-BREAKOUT FADE (M5-M15, GBPUSD-specific, 06:00-07:00 GMT range)",
+                                           "status":  "blocked",
+                                           "patched":  false,
+                                           "patch_error":  null
+                                       },
+                                       {
+                                           "issue_id":  "78315d62-9060-4cd4-a16c-de2520772016",
+                                           "identifier":  "QUA-341",
+                                           "title":  "SRC04_S02b — lien-dbb-trend-join: Double Bollinger Band TREND JOIN — trend-mode breakout (close-back-across-1σ after K-bar opposite-side dwell)",
+                                           "status":  "blocked",
+                                           "patched":  false,
+                                           "patch_error":  null
+                                       },
+                                       {
+                                           "issue_id":  "65e163f0-4f45-47ad-91a5-294b18e1e625",
+                                           "identifier":  "QUA-360",
+                                           "title":  "Recover stalled issue QUA-341",
+                                           "status":  "done",
+                                           "patched":  false,
+                                           "patch_error":  null
+                                       },
+                                       {
+                                           "issue_id":  "8d7b4b4a-f498-40f4-8f90-c30de446aac0",
+                                           "identifier":  "QUA-361",
+                                           "title":  "Recover stalled issue QUA-340",
+                                           "status":  "done",
+                                           "patched":  false,
+                                           "patch_error":  null
+                                       },
+                                       {
+                                           "issue_id":  "32e76bcf-6a38-4ee4-89ab-c03b376b292e",
+                                           "identifier":  "QUA-354",
+                                           "title":  "Recover stalled issue QUA-344",
+                                           "status":  "done",
+                                           "patched":  false,
+                                           "patch_error":  null
+                                       },
+                                       {
+                                           "issue_id":  "44156ca6-717a-430d-8bcd-8a715be9e875",
+                                           "identifier":  "QUA-356",
+                                           "title":  "Recover stalled issue QUA-346",
+                                           "status":  "done",
+                                           "patched":  false,
+                                           "patch_error":  null
+                                       },
+                                       {
+                                           "issue_id":  "99dccbd8-dcdb-4609-be35-d66d9c56b1db",
+                                           "identifier":  "QUA-359",
+                                           "title":  "Recover stalled issue QUA-342",
+                                           "status":  "done",
+                                           "patched":  false,
+                                           "patch_error":  null
+                                       },
+                                       {
+                                           "issue_id":  "dc073db7-1ef2-4681-b988-4a0df80cf9b0",
+                                           "identifier":  "QUA-358",
+                                           "title":  "Recover stalled issue QUA-348",
+                                           "status":  "done",
+                                           "patched":  false,
+                                           "patch_error":  null
+                                       },
+                                       {
+                                           "issue_id":  "d0e7ce8d-9818-4a81-98e9-a463b94630e4",
+                                           "identifier":  "QUA-284",
+                                           "title":  "SRC02_S01 — chan-pairs-stat-arb: cointegration pair-trade z-score MR",
+                                           "status":  "blocked",
+                                           "patched":  false,
+                                           "patch_error":  null
+                                       },
+                                       {
+                                           "issue_id":  "a5bbb364-c930-4dfe-96f4-fb6ccc73abcb",
+                                           "identifier":  "QUA-314",
+                                           "title":  "SRC03_S01 — williams-vol-bo: Volatility Breakout — open ± N% × prior-day range stop-entry, multi-market",
+                                           "status":  "blocked",
+                                           "patched":  false,
+                                           "patch_error":  null
+                                       },
+                                       {
+                                           "issue_id":  "5b361588-9a46-47df-996a-5a274c9402c0",
+                                           "identifier":  "QUA-285",
+                                           "title":  "SRC02_S02 — chan-bollinger-es: single-symbol M5 Bollinger ±2σ MR on E-mini S\u0026P",
+                                           "status":  "blocked",
+                                           "patched":  false,
+                                           "patch_error":  null
+                                       },
+                                       {
+                                           "issue_id":  "1aee3243-25c2-4421-894f-dc5eb0f50fc0",
+                                           "identifier":  "QUA-327",
+                                           "title":  "SRC03_S15 — williams-gap-dn-buy: Gap-Down-Close Buy — full-gap-down recovery; Bonds-context only with optional Gold-trend filter",
+                                           "status":  "blocked",
+                                           "patched":  false,
+                                           "patch_error":  null
+                                       },
+                                       {
+                                           "issue_id":  "3a3a6f7a-0947-4d77-be12-af6fa87d5a20",
+                                           "identifier":  "QUA-326",
+                                           "title":  "SRC03_S14 — williams-cdc-pattern: Consecutive Down Closes — 2-3 down closes + range-shrinking + trend filter; entry at open + (H-C)",
+                                           "status":  "blocked",
+                                           "patched":  false,
+                                           "patch_error":  null
+                                       },
+                                       {
+                                           "issue_id":  "6bffddab-a1bd-44d3-8c60-f677f17cfd79",
+                                           "identifier":  "QUA-324",
+                                           "title":  "SRC03_S11 — williams-8wk-box: 8-Week Box Congestion Breakout — go-with-breakout in pre-box-trend direction; KEEP_SWINGING multi-attempt",
+                                           "status":  "blocked",
+                                           "patched":  false,
+                                           "patch_error":  null
+                                       },
+                                       {
+                                           "issue_id":  "8e83c40f-122b-42a1-b201-c21f318cb2c5",
+                                           "identifier":  "QUA-323",
+                                           "title":  "SRC03_S10 — williams-spec-trap: Specialist Trap — failed-breakout fade after 6-20 day box from established trend",
+                                           "status":  "blocked",
+                                           "patched":  false,
+                                           "patch_error":  null
+                                       },
+                                       {
+                                           "issue_id":  "8f3a4570-27a7-4748-94e2-c32c0707965c",
+                                           "identifier":  "QUA-322",
+                                           "title":  "SRC03_S09 — williams-naked-close: Naked Close Days — close-outside-prior-bar with stop-buy at SAME bar\u0027s high (Joe-Stowell-attributed)",
+                                           "status":  "blocked",
+                                           "patched":  false,
+                                           "patch_error":  null
+                                       },
+                                       {
+                                           "issue_id":  "e7a2ccce-6c5b-4bc2-8205-948c12971d86",
+                                           "identifier":  "QUA-321",
+                                           "title":  "SRC03_S08 — williams-fakeout-day: Fake Out Day — HH+HL+lower-close-vs-prior reversal with stop-buy at PRIOR bar\u0027s high",
+                                           "status":  "blocked",
+                                           "patched":  false,
+                                           "patch_error":  null
+                                       },
+                                       {
+                                           "issue_id":  "22609b4e-ca2d-42d6-851c-94650df3f799",
+                                           "identifier":  "QUA-320",
+                                           "title":  "SRC03_S07 — williams-smash-day: Smash Day — candle-shape body-rejection reversal with stop-buy at smash-bar\u0027s high",
+                                           "status":  "blocked",
+                                           "patched":  false,
+                                           "patch_error":  null
+                                       },
+                                       {
+                                           "issue_id":  "3a860522-44b4-4099-866d-8bea1c720a22",
+                                           "identifier":  "QUA-319",
+                                           "title":  "SRC03_S06 — williams-holiday-trd: National Holiday Trades — 8 federal holidays × specific buy/sell open/close on N-th TD before/after",
+                                           "status":  "blocked",
+                                           "patched":  false,
+                                           "patch_error":  null
+                                       },
+                                       {
+                                           "issue_id":  "9a996680-f0e7-4350-872f-9fdf2bac0ae9",
+                                           "identifier":  "QUA-318",
+                                           "title":  "SRC03_S05 — williams-tdom-bias: Trade Day of Month bias — positive-TDOM open-buy, consolidates dozens of best-day tabulations",
+                                           "status":  "blocked",
+                                           "patched":  false,
+                                           "patch_error":  null
+                                       },
+                                       {
+                                           "issue_id":  "be02cf1e-2893-4e61-ae34-9bbc6a43dfa2",
+                                           "identifier":  "QUA-317",
+                                           "title":  "SRC03_S04 — williams-tdw-bias: Trade Day of Week bias — buy positive-bias weekdays open, exit first profitable open",
+                                           "status":  "blocked",
+                                           "patched":  false,
+                                           "patch_error":  null
+                                       },
+                                       {
+                                           "issue_id":  "358d0c60-c827-4632-85d6-cfce8c59670c",
+                                           "identifier":  "QUA-316",
+                                           "title":  "SRC03_S03 — williams-hidden-oops: Hidden OOPS! — projected H/L formula `(H+L+C)/3 × 2` gap-fade",
+                                           "status":  "blocked",
+                                           "patched":  false,
+                                           "patch_error":  null
+                                       },
+                                       {
+                                           "issue_id":  "eb0ea7e3-4240-4982-8852-51f0d81e1819",
+                                           "identifier":  "QUA-315",
+                                           "title":  "SRC03_S02 — williams-monday-oops: Monday OOPS! — gap-below-Friday\u0027s-TRUE-LOW fade with stop entry at Friday\u0027s low",
+                                           "status":  "blocked",
+                                           "patched":  false,
+                                           "patch_error":  null
+                                       }
+                                   ]
+                }
+}

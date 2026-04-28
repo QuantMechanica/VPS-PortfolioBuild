@@ -7,6 +7,7 @@ param(
     [string]$StrategyResearchProjectId = "b2adcc7f-064f-47c7-8563-d1c917639231",
     [string[]]$Statuses = @("todo", "in_progress", "in_review", "blocked"),
     [string[]]$ExemptIssueIdentifiers = @("QUA-236"),
+    [string[]]$IncludeIssueIdentifiers = @(),
     [string]$OutPath = "C:\QM\logs\infra\health\class2_execution_policy_sentinel_latest.json",
     [switch]$ApplyMissingPolicy,
     [switch]$FailOnFinding
@@ -75,6 +76,7 @@ function Is-Class2Candidate {
         [string[]]$ExemptIdentifiers
     )
     $identifier = [string](Get-PropValue -Object $Issue -Name "identifier")
+    if ($IncludeIssueIdentifiers -contains $identifier) { return $true }
     if ($ExemptIdentifiers -contains $identifier) { return $false }
 
     $issueProjectId = [string](Get-PropValue -Object $Issue -Name "projectId")
@@ -197,6 +199,7 @@ $details = [ordered]@{
     scanned_issue_count = $issues.Count
     class2_candidate_count = $candidates.Count
     missing_policy_count = $violations.Count
+    include_issue_identifiers = @($IncludeIssueIdentifiers)
     apply_missing_policy = [bool]$ApplyMissingPolicy.IsPresent
     patched_identifiers = @($patches)
     violations = @($violations)

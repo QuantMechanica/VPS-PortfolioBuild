@@ -14,6 +14,7 @@ Status: implemented (monitor + scheduler installer + infra task wiring)
     - child issue (`parentIssueId` or `parentId` set)
     - title pattern `^SRC\d{2}_S\d+[a-z]?\b`
     - excludes explicit identifiers list (default includes `QUA-236`)
+    - optional explicit include override via `-IncludeIssueIdentifiers` for known regressions with non-card operational titles
   - Flags missing/invalid `executionPolicy` as `critical`.
   - Optional `-ApplyMissingPolicy` PATCHes interim Class-2 policy per DL-030:
     - review participants: CEO agent + `local-board`
@@ -38,6 +39,9 @@ Status: implemented (monitor + scheduler installer + infra task wiring)
 - Sentinel check:
   - `Test-Class2ExecutionPolicySentinel.ps1`
   - Result: `critical` with missing-policy detections in live issue set (expected for current backlog state).
+- Sentinel dry-run with targeted known IDs from QUA-394:
+  - Artifact: `docs/ops/QUA-396_SENTINEL_DRY_RUN_2026-04-28.json`
+  - Summary: `docs/ops/QUA-396_SENTINEL_DRY_RUN_2026-04-28.md`
 
 ### Next action
 - CTO/CEO decision on whether to run sentinel in detect-only mode or enable `-ApplyMissingPolicy` in scheduled task args.
