@@ -1,0 +1,6 @@
+{
+  "issue_id": "QUA-420",
+  "target_status": "blocked",
+  "reason": "pending_cto_review_gate",
+  "resume": true
+}
