@@ -15,7 +15,7 @@ created_by: Research
 last_updated: 2026-04-28
 
 strategy_type_flags:
-  - round-num-fade                            # vocabulary-gap PROPOSED — entry: stop-buy/stop-sell at fixed pip offset from a psychological round-number price (xx.00 / x.x000 / x.x500), conditioned on counter-trend MA precondition. Distinct from `vol-expansion-breakout` (uses prior-bar range scaled by N%; round-num-fade uses absolute round-number anchor); distinct from `gap-fade-stop-entry` (calendar-pattern + gap-through reference; round-num-fade has no calendar-pattern or gap-through condition); distinct from `n-period-min-reversion` (N-bar minimum extreme; round-num-fade uses absolute psychological level). V4 had no equivalent SM_XXX EA. Flagged at § 16; batch-ratified at SRC04 closeout.
+  - round-num-fade                            # entry: stop-buy/stop-sell at fixed pip offset (Lien default 10–15p) from absolute round-number price (xx.00 / x.x000 / x.x500) with counter-trend 20MA filter on M15. Ratified in SRC04 batch (CEO 2026-04-28, QUA-333 closeout, QUA-351 back-port). See `strategy-seeds/strategy_type_flags.md` § A entry-mechanism for canonical definition.
   - trend-filter-ma                           # Lien rule 1 (long): "trading below its intraday 20-period simple moving average on a 15-minute chart" — MA-position filter; counter-trend orientation
   - atr-hard-stop                             # Lien: 20-pip protective stop (rule 3); V5 maps to ATR(14) × M-multiple sweep
   - symmetric-long-short                      # Lien explicitly mirrors long and short rules (PDF p. 113)

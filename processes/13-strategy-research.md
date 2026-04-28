@@ -123,6 +123,34 @@ flowchart TD
 - **Escalation:** Research blocked on missing source text → mark sub-issue `blocked` and name OWNER as unblock-owner with the drop path. Card schema gap (a real strategy doesn't fit the controlled vocabulary or template) → escalate to CEO + CTO before forcing a fit.
 - **Kill (sub-issue):** Pipeline gate fail at any of P2..P8, or zero-trades not recoverable via the [enhancement loop](14-ea-enhancement-loop.md). Verdict + evidence path captured in the card's § 13 Pipeline History.
 
+### Opening sub-issues — DL-029 sequential discipline (binding)
+
+When a source closeout opens N sequential sub-issues (one per surviving Strategy Card), Research MUST populate `blockedByIssueIds` on every non-first sub-issue so the harness enforces the DL-029 sequential constraint. **`status: blocked` alone is insufficient** — Pipeline-Operator's `issue_assigned` wakes auto-claim any sub-issue whose `blockedByIssueIds` is empty, even if `status` is `blocked`. The lesson was learned at the SRC04 closeout (QUA-333 → QUA-340..QUA-349, 2026-04-28): all 10 sub-issues were opened with `status: blocked` but `blockedByIssueIds: []` empty, and 7 of them ran simultaneously after Pipeline-Op auto-claimed them on the first heartbeat — non-catastrophic only because all 10 SRC04 G0 PASS Path 1, but still a breach of the DL-029 contract documented at `decisions/2026-04-27_strategy_research_workflow.md`.
+
+Concrete pattern (pseudo-code) for opening the N sub-issues:
+
+```python
+# Open N sub-issues (one per surviving Strategy Card) as a strict serial chain.
+# Only the first sub-issue is `todo`; all subsequent ones MUST be `blocked` AND
+# carry `blockedByIssueIds = [previous_sub_issue_id]` so the harness enforces order.
+prev_id = None
+for slot, card in cards:  # cards in the desired serial order (S02a, S02b, ..., S11)
+    body = {
+        "title":             f"SRC0N_{slot} — {card.slug}",
+        "parentId":          parent_issue_id,  # the source closeout issue (e.g. QUA-333)
+        "assigneeAgentId":   pipeline_operator_agent_id,
+        "status":            "blocked" if prev_id else "todo",
+        "blockedByIssueIds": [prev_id] if prev_id else [],
+        # ... title/body/labels/priority per Issue tree shape above
+    }
+    new_id = create_issue(body)  # POST /api/companies/<companyId>/issues
+    prev_id = new_id  # next iteration blocks on this one
+```
+
+Failure mode if `blockedByIssueIds` is omitted: Pipeline-Operator receives an `issue_assigned` wake for every sub-issue (the assignment-bus does not check `status: blocked` on its own), claims them all in parallel, and runs G0 Path 1 dispatches concurrently. This is exactly what DL-029 was created to prevent (Research has finite review capacity for parallel cards; gate verdicts must arrive serially so Research can absorb each one before the next P1 fires).
+
+Verification before exit: after opening the N sub-issues, fetch each one (`GET /api/issues/<id>`) and confirm `blockedByIssueIds = [prev_id]` is present on every non-first sub-issue. The harness logs `dl029_block_check` on first wake; if the field is empty, the wake will proceed despite `status: blocked`.
+
 ## SLA
 
 - **Source nomination → parent open:** within 1 business day of CEO ratification.

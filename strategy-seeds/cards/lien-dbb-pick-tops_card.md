@@ -15,7 +15,7 @@ created_by: Research
 last_updated: 2026-04-28
 
 strategy_type_flags:
-  - bband-reclaim                             # vocabulary-gap PROPOSED — entry: close back across N·σ Bollinger band after a multi-bar dwell on the OUTER side of the band. Distinct from `zscore-band-reversion` (entry on band CROSS OUT, not reclaim BACK IN). V4 had no equivalent SM_XXX EA. Per-card precondition disambiguation: `precondition_mode = outer-band-zone` (S02a — range-bound between 1st-σ and 2nd-σ) vs `n-bars-opposite-1sigma` (S02b — n consecutive bars on outer side). Flagged at § 16; batch-ratified at SRC04 closeout.
+  - bband-reclaim                             # entry: close back across inner ±1·σ band after dwell on the OUTER side; this card uses precondition_mode=outer-band-zone (range-bound between 1st-σ and 2nd-σ). Ratified in SRC04 batch (CEO 2026-04-28, QUA-333 closeout, QUA-351 back-port). See `strategy-seeds/strategy_type_flags.md` § A entry-mechanism for canonical definition.
   - atr-hard-stop                             # Lien: 50-pip / 30-pip protective stop below/above 1st-σ band; V5 maps to ATR(14) × M-multiple sweep
   - symmetric-long-short                      # Lien explicitly mirrors long and short rules (PDF pp. 103-104)
   - friday-close-flatten                      # V5 default; Lien examples typically resolve in 24 hours to 6 trading days, so weekend-hold rare

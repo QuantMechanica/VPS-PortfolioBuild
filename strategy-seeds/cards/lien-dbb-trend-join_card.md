@@ -15,7 +15,7 @@ created_by: Research
 last_updated: 2026-04-28
 
 strategy_type_flags:
-  - bband-reclaim                             # vocabulary-gap PROPOSED — entry: close back across N·σ Bollinger band after K consecutive bars on the OUTER side. SHARED FLAG with sibling S02a; per-card disambiguation `precondition_mode = n-bars-opposite-1sigma` (this card) vs `outer-band-zone` (S02a). V4 had no equivalent SM_XXX EA. Flagged at § 16; batch-ratified at SRC04 closeout. See sibling card `lien-dbb-pick-tops_card.md` § 16 for canonical proposal.
+  - bband-reclaim                             # entry: close back across inner ±1·σ band after K consecutive bars on the OUTER side; this card uses precondition_mode=n-bars-opposite-1sigma. SHARED FLAG with sibling SRC04_S02a (which uses precondition_mode=outer-band-zone); co-regime-fire suppression S02a→S02b documented in § 6. Ratified in SRC04 batch (CEO 2026-04-28, QUA-333 closeout, QUA-351 back-port). See `strategy-seeds/strategy_type_flags.md` § A entry-mechanism for canonical definition.
   - atr-hard-stop                             # Lien: fixed 65-pip initial stop; V5 maps to ATR(14) × M-multiple sweep
   - symmetric-long-short                      # Lien explicitly mirrors long and short rules (PDF pp. 107-110)
   - friday-close-flatten                      # V5 default; trend-join hold typically 24 hours to ~6 trading days per Lien examples
