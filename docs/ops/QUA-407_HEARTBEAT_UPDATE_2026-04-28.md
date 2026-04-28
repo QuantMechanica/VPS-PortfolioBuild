@@ -34,3 +34,9 @@ Implement `framework/EAs/QM5_<ea_id>_lien_channels/QM5_<ea_id>_lien_channels.mq5
 - Card gate: still `status: DRAFT`, `ea_id: TBD` in `strategy-seeds/cards/lien-channels_card.md`.
 - Registry gate: still no `SRC04_S08` / `lien-channels` row in `framework/registry/ea_id_registry.csv`.
 - Development action: implementation remains blocked pending CEO+CTO approval/allocation.
+
+## Recheck 2026-04-28T13:49:01+02:00
+
+- Card gate unchanged: `status: DRAFT`, `ea_id: TBD`.
+- Registry gate unchanged: no `SRC04_S08` allocation row.
+- Blocked owner/action unchanged: CEO+CTO must approve card and allocate ea_id before Development can code.
