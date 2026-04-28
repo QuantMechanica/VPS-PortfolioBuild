@@ -1,34 +1,30 @@
 {
-  "timestamp_utc": "2026-04-28T11:48:06Z",
+  "issue": "QUA-405",
+  "strategy_id": "SRC04_S06",
+  "slug": "lien-fader",
+  "timestamp_utc": "2026-04-28T11:49:30Z",
+  "blocked": true,
   "blockers": [
     {
       "key": "card_not_approved",
-      "observed": {
-        "ea_id": "TBD",
-        "status": "DRAFT"
-      },
-      "evidence_path": "C:\\QM\\repo\\strategy-seeds\\cards\\lien-fader_card.md",
       "owner": "CEO",
+      "evidence_path": "C:\\QM\\worktrees\\development\\strategy-seeds\\cards\\lien-fader_card.md",
+      "observed": {
+        "status": "DRAFT",
+        "ea_id": "TBD"
+      },
       "required_action": "Set card status to APPROVED and finalize ea_id."
     },
     {
       "key": "ea_id_not_allocated",
+      "owner": "CTO",
+      "evidence_path": "C:\\QM\\worktrees\\development\\framework\\registry\\ea_id_registry.csv",
       "observed": "No row for SRC04_S06/lien-fader",
-      "evidence_path": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
-      "owner": "CTO",
       "required_action": "Allocate ea_id for strategy SRC04_S06 and slug lien-fader."
-    },
-    {
-      "key": "artifacts_not_synced_to_dev_checkout",
-      "observed": "Missing",
-      "evidence_path": "C:\\QM\\worktrees\\development\\strategy-seeds\\cards\\lien-fader_card.md",
-      "owner": "CTO",
-      "required_action": "Sync approved card + registry allocation into development checkout."
     }
   ],
-  "strategy_id": "SRC04_S06",
-  "next_action_after_unblock": "Implement framework/EAs/QM5_<ea_id>_lien_fader/QM5_<ea_id>_lien_fader.mq5 and submit to CTO review gate.",
-  "slug": "lien-fader",
-  "issue": "QUA-405",
-  "blocked": true
+  "resolved_blockers": [
+    "artifacts_not_synced_to_dev_checkout"
+  ],
+  "next_action_after_unblock": "Implement framework/EAs/QM5_<ea_id>_lien_fader/QM5_<ea_id>_lien_fader.mq5 and submit to CTO review gate."
 }
