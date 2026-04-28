@@ -263,6 +263,12 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Also converges `QM_QUA207_RuntimeHeartbeat_30min` when `Run-QUA207RuntimeCompletionHeartbeat.ps1` is present.
 - `scripts/New-QUA207IssueComment.ps1`
   - Generates `docs/ops/QUA-207_ISSUE_COMMENT_2026-04-27.md` from live transition + evidence artifacts.
+- `scripts/Invoke-QUA350IssueTransition.ps1`
+  - Posts the prepared QUA-350 issue comment and applies status transition payload to Paperclip with `X-Paperclip-Run-Id`.
+  - Preview-by-default; mutates only with `-Apply`.
+  - Uses:
+    - `docs/ops/QUA-350_ISSUE_STATUS_UPDATE_2026-04-28.json`
+    - `docs/ops/QUA-350_ISSUE_COMMENT_2026-04-28.md`
 - `scripts/Assert-CommitAllowlist.ps1`
   - Pre-commit guard that fails when staged files are outside explicit allowlist prefixes.
   - Use to prevent accidental mixed commits in shared/dirty worktrees.
