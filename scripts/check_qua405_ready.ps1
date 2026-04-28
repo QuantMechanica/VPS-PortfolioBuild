@@ -1,5 +1,6 @@
 param(
-  [string]$RepoRoot = "C:\QM\worktrees\development"
+  [string]$RepoRoot = "C:\QM\worktrees\development",
+  [string]$WriteStatusPath = ""
 )
 
 $cardPath = Join-Path $RepoRoot "strategy-seeds\cards\lien-fader_card.md"
@@ -46,4 +47,10 @@ $result.ready_for_implementation = (
   $result.registry_row_exists
 )
 
-$result | ConvertTo-Json -Depth 4
+$json = $result | ConvertTo-Json -Depth 4
+
+if ($WriteStatusPath -ne "") {
+  Set-Content -Encoding ASCII -LiteralPath $WriteStatusPath $json
+}
+
+$json
