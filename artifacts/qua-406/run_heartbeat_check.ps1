@@ -10,19 +10,21 @@ if (-not (Test-Path $readinessScript)) {
   throw "Missing readiness script: $readinessScript"
 }
 
-$json = & $readinessScript -RepoRoot $RepoRoot | ConvertFrom-Json
-$json | ConvertTo-Json -Depth 8 | Set-Content -Path $jsonPath -Encoding UTF8
+$raw = & $readinessScript -RepoRoot $RepoRoot
+$json = $raw | ConvertFrom-Json -AsHashtable
+$raw | Set-Content -Path $jsonPath -Encoding UTF8
+$checkedAt = [regex]::Match($raw, '"checked_at_utc"\s*:\s*"([^"]+)"').Groups[1].Value
 
 $md = @(
   "# QUA-406 Heartbeat Status (auto)"
   ""
-  "- checked_at_utc: $($json.checked_at_utc)"
-  "- strategy_id: $($json.strategy_id)"
-  "- card_status: $($json.card.status)"
-  "- card_ea_id: $($json.card.ea_id)"
-  "- registry_row_found: $($json.registry.row_found)"
-  "- manifest_exists: $($json.manifest.exists)"
-  "- ready_for_implementation: $($json.ready_for_implementation)"
+  "- checked_at_utc: $checkedAt"
+  "- strategy_id: $($json['strategy_id'])"
+  "- card_status: $($json['card']['status'])"
+  "- card_ea_id: $($json['card']['ea_id'])"
+  "- registry_row_found: $($json['registry']['row_found'])"
+  "- manifest_exists: $($json['manifest']['exists'])"
+  "- ready_for_implementation: $($json['ready_for_implementation'])"
 )
 
 $md -join "`r`n" | Set-Content -Path $mdPath -Encoding UTF8
