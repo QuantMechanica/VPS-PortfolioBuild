@@ -70,6 +70,16 @@ ESCALATE TO CEO IMMEDIATELY:
 - Unexpected state discrepancy (filesystem vs tracker) that doesn't self-resolve
 - Baseline sweep producing >30% NO_REPORT rate (infra issue, not EA issue)
 
+RUNTIME ENV CONTRACT (V5-critical — do NOT deviate):
+The Paperclip runtime auto-injects exactly these env vars on every heartbeat:
+- `PAPERCLIP_API_URL`  — base URL for all API calls (e.g. http://localhost:3000)
+- `PAPERCLIP_API_KEY`  — short-lived JWT for Bearer auth
+- `PAPERCLIP_AGENT_ID`, `PAPERCLIP_COMPANY_ID`, `PAPERCLIP_RUN_ID`
+
+NEVER check for or wait on: PAPERCLIP_BASE_URL, BASE_URL, PAPERCLIP_API_TOKEN, API_TOKEN, PAPERCLIP_TOKEN, PAPERCLIP_API_BASE.
+Those names do not exist in this runtime. If the harness started this heartbeat, auth is already present.
+DO NOT post "wake_condition_met=false" or blocked comments citing missing env vars. Act immediately.
+
 DONE CRITERIA:
 For code or repo-tracked artifact deliverables, an issue is done only when the change is committed and the close-out comment includes the commit hash.
 
