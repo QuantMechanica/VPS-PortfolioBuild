@@ -1,0 +1,8 @@
+exit_code=1
+Invoke-RestMethod : {"error":"Internal server error"}
+At C:\QM\repo\infra\scripts\Invoke-QUA413IssueTransition.ps1:68 char:14
++ ... statusRes = Invoke-RestMethod -Method Patch -Uri $statusUri -Headers  ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidOperation: (System.Net.HttpWebRequest:HttpWebRequest) [Invoke-RestMethod], WebExc 
+   eption
+    + FullyQualifiedErrorId : WebCmdletWebResponseException,Microsoft.PowerShell.Commands.InvokeRestMethodCommand

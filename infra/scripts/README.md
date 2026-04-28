@@ -38,6 +38,14 @@
 - Example:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\deploy_ea_to_all_terminals.ps1 -EvidenceJsonPath C:\QM\repo\docs\ops\QUA-413_DEPLOY_EAS_T2_T3_T4_T5_2026-04-28.json`
 
+## `Invoke-QUA413IssueTransition.ps1`
+
+- Applies the QUA-413 issue transition in one PATCH call with inline comment and required `X-Paperclip-Run-Id`.
+- Preview-by-default; mutates only with `-Apply`.
+- Uses:
+  - `docs/ops/QUA-413_ISSUE_STATUS_UPDATE_2026-04-28.json`
+  - `docs/ops/QUA-413_ISSUE_COMMENT_2026-04-28.md`
+
 ## `Seed-DwxSymbolHistory.ps1`
 
 - Idempotent single-symbol DWX seed/repair helper for T1-T5 custom-symbol history.
