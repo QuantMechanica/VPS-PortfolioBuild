@@ -11,3 +11,4 @@
 2026-04-28T12:53:14.8286398+02:00 | blocked wake checkpoint: still waiting on CTO review.
 2026-04-28T12:54:17.7482802+02:00 | blocked telemetry: QUA-304 still pending CTO review.
 2026-04-28T12:55:14.0757103+02:00 | telemetry checkpoint: blocked pending CTO review.
+2026-04-28T12:56:18.5868137+02:00 | blocked checkpoint: no dev changes, awaiting CTO.
