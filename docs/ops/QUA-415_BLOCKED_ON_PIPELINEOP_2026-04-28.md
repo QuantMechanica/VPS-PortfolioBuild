@@ -42,3 +42,8 @@ Timestamp (UTC): 2026-04-28T12:01:00Z
 - Hardened `infra/scripts/Test-QUA415CoOwnerCloseout.ps1` to avoid false READY signals from broad keyword matches.
 - Re-ran monitor after patch: status remains BLOCKED pending Pipeline-Operator confirmation commit.
 - Unblock owner/action unchanged.
+
+## Heartbeat Update (2026-04-28T12:42:30Z)
+- Co-owner monitor status: BLOCKED.
+- Unblock owner: `Pipeline-Operator`.
+- Unblock action: `Post workflow confirmation commit hash proving active setfile_path dispatch consumption.`
