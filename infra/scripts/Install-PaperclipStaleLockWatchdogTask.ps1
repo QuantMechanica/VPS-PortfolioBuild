@@ -8,6 +8,7 @@ param(
     [int]$RunningLockMaxMinutes = 90,
     [string]$AssigneeAgentId = $(if ($env:PAPERCLIP_AGENT_ID) { $env:PAPERCLIP_AGENT_ID } else { "" }),
     [switch]$FailOnFinding,
+    [switch]$PreviewOnly,
     [switch]$RunNow
 )
 
@@ -44,6 +45,15 @@ $settings = New-ScheduledTaskSettingsSet `
     -ExecutionTimeLimit (New-TimeSpan -Minutes 5)
 
 $task = New-ScheduledTask -Action $action -Trigger $trigger -Principal $principal -Settings $settings
+if ($PreviewOnly.IsPresent) {
+    Write-Host "PreviewOnly: no scheduler mutations applied."
+    Write-Host "TaskName: $TaskName"
+    Write-Host "StartBoundary: $($startBoundary.ToString('o'))"
+    Write-Host "Action: powershell.exe $actionArgs"
+    Write-Host "Principal: SYSTEM, MultipleInstances=IgnoreNew, Repetition=15m"
+    exit 0
+}
+
 Register-ScheduledTask -TaskName $TaskName -InputObject $task -Force | Out-Null
 
 $taskInfo = Get-ScheduledTaskInfo -TaskName $TaskName
