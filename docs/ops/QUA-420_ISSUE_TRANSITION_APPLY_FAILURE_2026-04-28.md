@@ -38,3 +38,8 @@ Additional API diagnostic:
 - Method: curl direct (JSON body with `comment` + `resume`)
 - Result: HTTP 500 {"error":"Internal server error"}
 - Conclusion: issue-mutation endpoints are server-failing; read endpoints remain healthy.
+
+Update after controlled repro script:
+- PATCH /api/issues/QUA-420 succeeded; issue status is now `in_review`.
+- Remaining failure is comment mutation endpoint (`POST /api/issues/QUA-420/comments`) returning server error / bad-request variants.
+- Scope of platform blocker narrowed to issue-comment mutation, not status transition.
