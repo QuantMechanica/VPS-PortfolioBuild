@@ -7,21 +7,27 @@ Issue: `QUA-406` (SRC04 phase-2 build from card `QUA-346`)
 - Result: still blocked; no actionable strategy-to-EA mapping is available in this checkout.
 
 ## Fresh Evidence
-1. `framework/registry/ea_id_registry.csv` still ends at:
+1. Cross-worktree/repo mapping is now confirmed:
+   - `QUA-346` -> `SRC04_S07` -> `lien-20day-breakout`
+   - Evidence: `C:\QM\repo\artifacts\qua-346\src04_s07_run_manifest_template.json`
+2. Source card exists in repo but is not implementation-ready:
+   - `C:\QM\repo\strategy-seeds\cards\lien-20day-breakout_card.md`
+   - Header currently shows `status: DRAFT` and `ea_id: TBD`.
+3. Local Development registry still ends at:
    - `1007,lien-dbb-pick-tops,SRC04_S02a`
    - `1008,lien-dbb-trend-join,SRC04_S02b`
-   No row maps `QUA-346` to a unique `strategy_id`/`slug`/`ea_id`.
-2. Search across `docs/ops`, `artifacts`, and `strategy-seeds/cards` still finds no local `QUA-346` dispatch artifact for this issue.
-3. Branch sync attempt via `git pull --ff-only` is not available on local branch `agents/development` because no upstream tracking is configured; cannot assume remote updates without explicit sync directive.
+   No active row for `SRC04_S07` / `lien-20day-breakout`.
+4. Branch sync attempt via `git pull --ff-only` is not available on local branch `agents/development` because no upstream tracking is configured; cannot assume remote updates without explicit sync directive.
 
 ## Blocked State
-Implementation remains blocked under V5 hard rules because coding without deterministic card-to-EA mapping would violate approved-card-only execution.
+Implementation remains blocked under V5 hard rules because the mapped card is not approved (`DRAFT`) and no `ea_id` allocation exists for `SRC04_S07`.
 
 ## Unblock Owner / Exact Action
 - Owner: CTO (or dispatch issuer)
 - Required action:
-  1. Sync/provide issue packet for `QUA-406` that maps `QUA-346` to exact `strategy_id`, `slug`, and allocated `ea_id`.
-  2. Ensure registry row exists in this checkout for that mapping in `framework/registry/ea_id_registry.csv`.
+  1. CEO/CTO: promote `SRC04_S07` card (`lien-20day-breakout`) to `APPROVED` and set concrete `ea_id` in card header.
+  2. CTO: append matching row in `framework/registry/ea_id_registry.csv` for `SRC04_S07` / `lien-20day-breakout`.
+  3. Sync those approved/allocation artifacts into `C:\QM\worktrees\development`.
 
 ## Next Action On Unblock
 Implement `framework/EAs/QM5_<ea_id>_<slug>/QM5_<ea_id>_<slug>.mq5` with V5 4-module functions and card-section inline citations, then hand off to CTO review (no Pipeline-Operator dispatch).
