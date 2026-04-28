@@ -4534,3 +4534,9 @@
 - Action this wake: patched framework/scripts/compile_one.ps1 strict-mode behavior to avoid false FAIL on MetaEditor non-zero exit when compile log has 0 errors/0 warnings and .ex5 exists.
 - Verification: strict compile now PASS for QM5_1003 with compile_one.metaeditor_exit_code=1, errors=0, warnings=0.
 - Evidence log: C:\QM\repo\framework\build\compile\20260428_103323\QM5_1003_davey_baseline_3bar.compile.log.
+
+## Heartbeat checkpoint (2026-04-28T12:34:02.0123013+02:00)
+- Source run: d3e00ed9-fd03-4e69-a474-eaa0f878b4ce follow-up
+- Compliance sweep (QM5_1003): includes QM_Common; uses QM_FrameworkMagic; exposes RISK_PERCENT + RISK_FIXED; Friday Close enabled; 3-bar long/short signal + explicit reversal path present; no symbol hardcoding detected in strategy logic.
+- Compile confirmation retained: strict compile PASS with 0 errors/0 warnings (log: C:\QM\repo\framework\build\compile\20260428_103323\QM5_1003_davey_baseline_3bar.compile.log).
+- Next action: handoff-ready for CTO review gate on QUA-304.
