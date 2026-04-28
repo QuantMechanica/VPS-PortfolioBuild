@@ -99,9 +99,10 @@
 
 - Idempotently installs scheduler task `QM_PaperclipStaleLockWatchdog_15min` as `SYSTEM`.
 - Task action runs:
-  - `monitoring\Invoke-PaperclipStaleLockWatchdog.ps1 -StaleAfterMinutes <n> -RunningLockMaxMinutes <n> [-AssigneeAgentId <id>] [-OutPath <json>] [-FailOnFinding]`
+  - `monitoring\Invoke-PaperclipStaleLockWatchdog.ps1 -StaleAfterMinutes <n> -RunningLockMaxMinutes <n> [-PaperclipApiUrl <url>] [-CompanyId <id>] [-AssigneeAgentId <id>] [-OutPath <json>] [-FailOnFinding]`
 - Behavior:
   - explicit stale thresholds are embedded into the scheduled action at install time
+  - optional explicit Paperclip endpoint/company values can be embedded to avoid environment drift in `SYSTEM` context
   - optional assignee scope can be embedded to avoid environment-variable dependency in `SYSTEM` context
   - optional output path can be embedded so each run writes JSON status to a stable health artifact path
   - overlap-safe (`MultipleInstances=IgnoreNew`)
@@ -882,11 +883,24 @@
 
 - Guardrail for staged-file safety before committing in noisy worktrees.
 - Reads `git diff --cached --name-only` and fails when staged files fall outside allowed path prefixes.
+- Supports both prefix (`-AllowedPaths`) and exact-file (`-AllowedExactPaths`) allowlists.
 - Typical usage:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Assert-CommitAllowlist.ps1 -AllowedPaths infra/scripts/ docs/ops/QUA-207_`
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Assert-CommitAllowlist.ps1 -AllowedExactPaths docs/ops/QUA-304_HEARTBEAT_LOG_2026-04-28.md`
 - Exit codes:
   - `0`: staged set is allowed
   - `2`: staged files violate allowlist
+
+## `Commit-HeartbeatCheckpoint.ps1`
+
+- Safe heartbeat-checkpoint commit helper for noisy repos/worktrees.
+- Hard guards:
+  - refuses commits from shared main worktree `C:/QM/repo` (requires per-agent worktree)
+  - stages only one explicit repo-relative path (`-CheckpointPath`)
+  - commits with pathspec `-- <checkpoint-path>` so unrelated staged files are not absorbed
+  - enforces exact-file staged allowlist through `Invoke-GitWithMutex.ps1` + `Assert-CommitAllowlist.ps1`
+- Typical usage:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Commit-HeartbeatCheckpoint.ps1 -RepoRoot C:\QM\worktrees\development -IssueId QUA-304 -CheckpointPath docs/ops/QUA-304_HEARTBEAT_LOG_2026-04-28.md -ExpectedTopLevel C:\QM\worktrees\development`
 
 ## `Restore-QUA95RuntimeBars.ps1`
 

@@ -6,6 +6,8 @@ param(
     [int]$MinuteOffset = 3,
     [int]$StaleAfterMinutes = 15,
     [int]$RunningLockMaxMinutes = 90,
+    [string]$PaperclipApiUrl = $(if ($env:PAPERCLIP_API_URL) { $env:PAPERCLIP_API_URL } else { "" }),
+    [string]$CompanyId = $(if ($env:PAPERCLIP_COMPANY_ID) { $env:PAPERCLIP_COMPANY_ID } else { "" }),
     [string]$AssigneeAgentId = $(if ($env:PAPERCLIP_AGENT_ID) { $env:PAPERCLIP_AGENT_ID } else { "" }),
     [string]$OutPath = "C:\QM\logs\infra\health\paperclip_stale_lock_watchdog_latest.json",
     [switch]$FailOnFinding,
@@ -28,6 +30,12 @@ if ($startBoundary -le (Get-Date)) {
 }
 
 $actionArgs = "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`" -StaleAfterMinutes $StaleAfterMinutes -RunningLockMaxMinutes $RunningLockMaxMinutes"
+if (-not [string]::IsNullOrWhiteSpace($PaperclipApiUrl)) {
+    $actionArgs += " -PaperclipApiUrl `"$PaperclipApiUrl`""
+}
+if (-not [string]::IsNullOrWhiteSpace($CompanyId)) {
+    $actionArgs += " -CompanyId `"$CompanyId`""
+}
 if (-not [string]::IsNullOrWhiteSpace($AssigneeAgentId)) {
     $actionArgs += " -AssigneeAgentId `"$AssigneeAgentId`""
 }
