@@ -46,4 +46,18 @@ $out = [ordered]@{
 
 $outPath = Join-Path $RepoRoot "artifacts\qua-409\readiness_latest.json"
 $out | ConvertTo-Json -Depth 6 | Set-Content $outPath
+
+$historyPath = Join-Path $RepoRoot "artifacts\qua-409\readiness_history.csv"
+if (-not (Test-Path $historyPath)) {
+  "checked_at,head,blocked,status,ea_id,registry_row_present" | Set-Content $historyPath
+}
+$line = "{0},{1},{2},{3},{4},{5}" -f `
+  $out.checked_at, `
+  $out.head, `
+  $out.blocked, `
+  $out.card_header.status, `
+  $out.card_header.ea_id, `
+  $out.registry_row_present
+Add-Content -Path $historyPath -Value $line
+
 Write-Output $outPath
