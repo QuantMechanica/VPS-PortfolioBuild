@@ -4047,3 +4047,9 @@
 - Status unchanged: WAITING_CTO_REVIEW (review-only gate)
 - Unblock owner/action: CTO review decision on QUA-304.
 - Action this wake: committed durable blocked-state checkpoint while external review gate remains active.
+
+## Heartbeat checkpoint (2026-04-28T11:45:26.0782843+02:00)
+- Source run: c221ee80-ad88-4105-b548-e5f4aec0c423
+- Status unchanged: WAITING_CTO_REVIEW (review-only gate)
+- Unblock owner/action: CTO review decision on QUA-304.
+- Action this wake: committed durable blocked-state checkpoint while CTO review decision is still pending.
