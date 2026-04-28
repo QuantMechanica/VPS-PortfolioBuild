@@ -1,6 +1,6 @@
 param(
-    [string]$PaperclipApiUrl = "http://127.0.0.1:3000",
-    [string]$IssueId = "QUA-350",
+    [string]$PaperclipApiUrl = $(if ($env:PAPERCLIP_API_URL) { $env:PAPERCLIP_API_URL } else { "http://127.0.0.1:3101" }),
+    [string]$IssueId = $(if ($env:PAPERCLIP_TASK_ID) { $env:PAPERCLIP_TASK_ID } else { "QUA-350" }),
     [string]$StatusPayloadPath = "docs/ops/QUA-350_ISSUE_STATUS_UPDATE_2026-04-28.json",
     [string]$CommentPath = "docs/ops/QUA-350_ISSUE_COMMENT_2026-04-28.md",
     [string]$RunId = $env:PAPERCLIP_RUN_ID,
@@ -22,6 +22,13 @@ function Read-JsonFile {
     return ($raw | ConvertFrom-Json)
 }
 
+function Normalize-ApiBaseUrl {
+    param([Parameter(Mandatory = $true)] [string]$Url)
+    $trimmed = $Url.TrimEnd('/')
+    if ($trimmed -match '/api$') { return $trimmed }
+    return "$trimmed/api"
+}
+
 $statusPath = Resolve-RepoPath -PathValue $StatusPayloadPath
 $commentPath = Resolve-RepoPath -PathValue $CommentPath
 
@@ -36,35 +43,29 @@ $headers = @{
     "Content-Type" = "application/json"
     "X-Paperclip-Run-Id" = $RunId
 }
+if (-not [string]::IsNullOrWhiteSpace($env:PAPERCLIP_API_KEY)) {
+    $headers["Authorization"] = "Bearer $($env:PAPERCLIP_API_KEY)"
+}
 
 $statusPayload = @{
     status = $statusObj.target_status
     resume = $true
 }
 
-$commentPayload = @{
-    body = $commentBody
-    resume = $true
-}
-
-$statusUri = "{0}/api/issues/{1}" -f $PaperclipApiUrl.TrimEnd('/'), $IssueId
-$commentUri = "{0}/api/issues/{1}/comments" -f $PaperclipApiUrl.TrimEnd('/'), $IssueId
+$apiRoot = Normalize-ApiBaseUrl -Url $PaperclipApiUrl
+$statusUri = "{0}/issues/{1}" -f $apiRoot, $IssueId
 
 if (-not $Apply) {
     Write-Output "preview_only: true"
     Write-Output "status_uri: $statusUri"
-    Write-Output "comment_uri: $commentUri"
     Write-Output "target_status: $($statusObj.target_status)"
     Write-Output "run_id: $RunId"
     exit 0
 }
 
-$commentJson = $commentPayload | ConvertTo-Json -Depth 6
+$statusPayload.comment = $commentBody
 $statusJson = $statusPayload | ConvertTo-Json -Depth 6
-
-$commentRes = Invoke-RestMethod -Method Post -Uri $commentUri -Headers $headers -Body $commentJson
 $statusRes = Invoke-RestMethod -Method Patch -Uri $statusUri -Headers $headers -Body $statusJson
 
-Write-Output ("comment_posted: {0}" -f [bool]$commentRes)
 Write-Output ("status_updated: {0}" -f [bool]$statusRes)
 Write-Output ("target_status: {0}" -f $statusObj.target_status)
