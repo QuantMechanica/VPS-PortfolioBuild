@@ -43,3 +43,9 @@ Update after controlled repro script:
 - PATCH /api/issues/QUA-420 succeeded; issue status is now `in_review`.
 - Remaining failure is comment mutation endpoint (`POST /api/issues/QUA-420/comments`) returning server error / bad-request variants.
 - Scope of platform blocker narrowed to issue-comment mutation, not status transition.
+
+Post-transition probe behavior (after status reached in_review):
+- PATCH with closeout comment via helper: HTTP 500
+- Direct Invoke-RestMethod PATCH: HTTP 409 Conflict
+- Direct curl PATCH: HTTP 500
+Interpretation: mutation path is unstable/intermittent after transition; closeout marker should be treated as best-effort until backend stabilized.
