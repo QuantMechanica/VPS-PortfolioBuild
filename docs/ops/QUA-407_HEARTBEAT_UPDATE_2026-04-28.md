@@ -28,3 +28,9 @@ Implementation remains blocked. No EA code changes were made because hard gates 
 ## Next Action on Re-dispatch
 
 Implement `framework/EAs/QM5_<ea_id>_lien_channels/QM5_<ea_id>_lien_channels.mq5` with V5 framework module boundaries and card-cited rule comments; compile clean; hand off to CTO review before Pipeline-Operator.
+
+## Recheck 2026-04-28T13:48:08+02:00
+
+- Card gate: still `status: DRAFT`, `ea_id: TBD` in `strategy-seeds/cards/lien-channels_card.md`.
+- Registry gate: still no `SRC04_S08` / `lien-channels` row in `framework/registry/ea_id_registry.csv`.
+- Development action: implementation remains blocked pending CEO+CTO approval/allocation.
