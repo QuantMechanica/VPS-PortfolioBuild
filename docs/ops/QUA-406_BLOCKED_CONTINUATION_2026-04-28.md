@@ -60,3 +60,4 @@ Implement `framework/EAs/QM5_<ea_id>_<slug>/QM5_<ea_id>_<slug>.mq5` with V5 4-mo
 - heartbeat_utc: 2026-04-28T13:09:12.1309104Z | card_status=DRAFT | card_ea_id=TBD | registry_row_found=false | ready_for_implementation=false
 - heartbeat_utc: 2026-04-28T13:09:46.8749189Z | card_status=DRAFT | card_ea_id=TBD | registry_row_found=false | ready_for_implementation=false
 - heartbeat_utc: 2026-04-28T13:10:27.3968860Z | card_status=DRAFT | card_ea_id=TBD | registry_row_found=false | ready_for_implementation=false
+- heartbeat_utc: 2026-04-28T13:10:58.2467655Z | card_status=DRAFT | card_ea_id=TBD | registry_row_found=false | ready_for_implementation=false
