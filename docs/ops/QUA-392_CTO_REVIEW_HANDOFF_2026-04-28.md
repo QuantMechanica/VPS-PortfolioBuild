@@ -17,6 +17,17 @@ EA: `QM5_1008_lien_dbb_trend_join`
 - Log: `artifacts/qua-392/QM5_1008_compile.log`
 - Result: `0 errors, 0 warnings`
 
+## Governance Gate Evidence
+
+- Card approval state is now present in the synced card header:
+  - `status: APPROVED`
+  - `g0_verdict: APPROVED`
+  - `g0_reviewer: CEO (interim until Quality-Business hire)`
+  - `g0_reviewed_at: 2026-04-28`
+  - `g0_issue: QUA-398`
+- Approval source commit: `9457934` on branch `agents/ceo`.
+- Governance path used: approved card state (not waiver).
+
 ## Card-vs-EA Trace Map (line references)
 
 1. Framework + hard-rule inputs

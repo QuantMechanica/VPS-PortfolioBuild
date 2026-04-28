@@ -49,3 +49,16 @@ CTO review rejected dispatch because card governance gate is not satisfied:
 - 2026-04-28T14:28Z heartbeat: no-change; awaiting CEO/Research card approval or explicit CEO waiver.
 - 2026-04-28T14:31Z heartbeat: no-change; awaiting CEO/Research card approval or explicit CEO waiver.
 - 2026-04-28T14:34Z heartbeat: policy update; switched to event-driven hold pending governance unblock artifact.
+
+## Unblocked Update (2026-04-28)
+
+- Governance gate is now satisfied via approved card state (not waiver).
+- Synced evidence in Development checkout:
+  - `strategy-seeds/cards/lien-dbb-trend-join_card.md`
+  - `status: APPROVED`
+  - `g0_verdict: APPROVED`
+  - `g0_reviewer: CEO (interim until Quality-Business hire)`
+  - `g0_reviewed_at: 2026-04-28`
+  - `g0_issue: QUA-398`
+- Source approval commit: `9457934` (`agents/ceo`).
+- Next state: CTO re-submission ready; still no Pipeline-Operator dispatch until CTO approval.

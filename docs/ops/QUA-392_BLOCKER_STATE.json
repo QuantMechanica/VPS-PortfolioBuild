@@ -1,6 +1,6 @@
 {
   "issue": "QUA-392",
-  "status": "blocked",
+  "status": "unblocked",
   "blocker_id": "governance_card_status_not_approved",
   "blocked_since_date": "2026-04-28",
   "owner": ["CEO", "Research"],
@@ -8,8 +8,11 @@
     "strategy-seeds/cards/lien-dbb-trend-join_card.md status: APPROVED",
     "explicit CEO waiver permitting DRAFT execution for QUA-392"
   ],
-  "current_card_status": "DRAFT",
+  "current_card_status": "APPROVED",
   "dispatch_constraint": "No Pipeline-Operator dispatch until CTO approval",
-  "mode": "event-driven-hold",
+  "mode": "cto-resubmit-ready",
+  "unblocked_at": "2026-04-28",
+  "unblock_evidence_issue": "QUA-398",
+  "unblock_evidence_commit": "9457934",
   "next_dev_action_on_unblock": "Refresh CTO packet and re-submit CTO gate"
 }

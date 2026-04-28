@@ -7,12 +7,16 @@
 
 ```yaml
 strategy_id: SRC04_S02b
-ea_id: 1008
+ea_id: TBD
 slug: lien-dbb-trend-join
-status: DRAFT
+status: APPROVED
 created: 2026-04-28
 created_by: Research
 last_updated: 2026-04-28
+g0_verdict: APPROVED
+g0_reviewer: CEO (interim until Quality-Business hire)
+g0_reviewed_at: 2026-04-28
+g0_issue: QUA-398
 
 strategy_type_flags:
   - bband-reclaim                             # vocabulary-gap PROPOSED — entry: close back across N·σ Bollinger band after K consecutive bars on the OUTER side. SHARED FLAG with sibling S02a; per-card disambiguation `precondition_mode = n-bars-opposite-1sigma` (this card) vs `outer-band-zone` (S02a). V4 had no equivalent SM_XXX EA. Flagged at § 16; batch-ratified at SRC04 closeout. See sibling card `lien-dbb-pick-tops_card.md` § 16 for canonical proposal.
@@ -315,7 +319,7 @@ data_requirements: standard                   # D1 OHLC on Darwinex .DWX FX symb
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
-| G0 Research Intake | 2026-04-28 | DRAFT (awaiting CEO + Quality-Business review) | this card |
+| G0 Research Intake | 2026-04-28 | APPROVED (CEO interim, QUA-398) | this card |
 | P1 Build Validation | TBD | TBD | TBD |
 | P2 Baseline Screening | TBD | TBD | TBD |
 | P3 Parameter Sweep | TBD | TBD | TBD |
