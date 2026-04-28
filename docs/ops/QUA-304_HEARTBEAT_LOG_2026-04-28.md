@@ -2840,3 +2840,9 @@
 - Handoff: P1 build artifacts confirmed for QM5_1003_davey_baseline_3bar (EA source + ex5). Key evidence commits: 8e4b31a (rule/citation alignment checkpoint), 7e46ff0 (clean compile evidence).
 - Unblock Owner/Action: CTO review-only gate approval/decision on QUA-304.
 
+
+- Checkpoint: 2026-04-28T08:11:12Z
+- Status: WAITING_CTO_REVIEW
+- Completion Signal: Development-side P1 implementation and evidence packaging are complete for QM5_1003; no further code/build action pending in this issue scope.
+- Unblock Owner/Action: CTO must perform review-only gate decision for QUA-304.
+
