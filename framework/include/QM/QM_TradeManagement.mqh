@@ -486,8 +486,7 @@ double QM_TM_OpenPnL(const int magic)
          continue;
       pnl += PositionGetDouble(POSITION_PROFIT);
       pnl += PositionGetDouble(POSITION_SWAP);
-      pnl += PositionGetDouble(POSITION_COMMISSION);
-     }
+   }
    return pnl;
   }
 
