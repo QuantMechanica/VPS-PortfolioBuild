@@ -4,6 +4,8 @@
 
 Source-of-truth roster snapshot (live agent list authoritative: `paperclipai agent list`). V5 BASIS prompts are Git-canonical at [`paperclip-prompts/<role>.md`](../paperclip-prompts/) (OWNER-managed, do not edit). Wave/hire trigger detail: [`docs/ops/AGENT_SKILL_MATRIX.md`](../docs/ops/AGENT_SKILL_MATRIX.md) § Wave Hire Triggers and [`decisions/2026-04-27_v5_org_proposal.md`](../decisions/2026-04-27_v5_org_proposal.md).
 
+**Active-agent count: 9** (Wave 0 + Wave 2). The V5 Org Proposal § 6 anti-sprawl 8-cap was explicitly waived **one-time** by OWNER on 2026-04-28 to seat Quality-Business as the 9th active agent (per [DL-039](../decisions/2026-04-28_quality_business_hire.md), [QUA-429](/QUA/issues/QUA-429)). The 8-cap remains in force for any further hires; the override does not extend to Wave 3+.
+
 - **CEO**
   - Role: Strategic gating, issue routing, hires (DL-017), CEO ↔ CTO dialectic, OWNER escalation, governance ratification.
   - Adapter: claude_local (Claude Opus 4.7), heartbeat 30 min ([DL-034](../decisions/2026-04-28_ceo_heartbeat_30min.md)) + wake-on-demand on board/issue events.
@@ -46,14 +48,51 @@ Source-of-truth roster snapshot (live agent list authoritative: `paperclipai age
   - Source: [`paperclip-prompts/pipeline-operator.md`](../paperclip-prompts/pipeline-operator.md).
   - Agent ID: `46fc11e5-7fc2-43f4-9a34-bde29e5dee3b`.
 
-- **Quality-Business**
-  - Role: G0 Strategy Card economic-thesis review (second eye with CEO); P4 selection co-review; PASS cross-challenge at P2; portfolio-fit caps; monthly business review to OWNER.
-  - Adapter: claude_local (Claude Opus 4.7), heartbeat 4h fallback + wake-on-demand.
-  - Reports to: CEO (organizationally), OWNER (strategically).
-  - Source: [`paperclip-prompts/quality-business.md`](../paperclip-prompts/quality-business.md); hire issue [QUA-429](/QUA/issues/QUA-429).
+- **Quality-Tech** *(Wave 2 hire — landed 2026-04-28)*
+  - Role: EA code audit (P2..P7); overfitting / DSR / MC / FDR / PBO checks; technical cross-challenge on CEO+CTO PASS decisions; sub-gate calibration first-pass once V5 EA distributions exist; EA Review-gate reviewer (DL-036 + DL-030 Class 3 named participant on Wave 2 swap).
+  - Adapter: claude_local (Claude Opus 4.7), heartbeat event-driven + wake-on-demand.
+  - Reports to: CTO.
+  - Source: [`paperclip-prompts/quality-tech.md`](../paperclip-prompts/quality-tech.md).
+  - Agent ID: `c1f90ba8-d637-46d9-8895-ead705bb4933`.
+
+- **Development** *(Wave 2 hire — landed 2026-04-28)*
+  - Role: V5 EA implementation in MQL5 from CEO-approved Strategy Cards; one-at-a-time discipline; CTO Review-only gate before Pipeline-Op smoke; commit-hash close-out per [DL-026](../decisions/DL-026_coding_agent_done_requires_commit_hash.md).
+  - Adapter: codex_local (gpt-5.3-codex), heartbeat timer-driven + wake-on-demand.
+  - Reports to: CTO.
+  - Source: [`paperclip-prompts/development.md`](../paperclip-prompts/development.md).
+  - Agent ID: `ebefc3a6-4a11-43a7-bd5d-c0baf50eb1f9`.
+
+- **Quality-Business** *(Wave 2 hire — landed 2026-04-28; 9th-agent OWNER-override per [DL-039](../decisions/2026-04-28_quality_business_hire.md))*
+  - Role: Strategy Card economic-thesis review (G0 second eye with CEO); portfolio-fit pre-screen; author-claim verification; PASS cross-challenge at P2; portfolio composition sanity (correlation, market/timeframe/style caps); DarwinexZero track-record stewardship; monthly business review to OWNER. Advisory verdicts only — does not dispatch work, edit code, or run backtests.
+  - Adapter: claude_local (Claude Opus 4.7), heartbeat event-driven + 4h timer fallback (`intervalSec=14400`).
+  - Reports to: CEO (organizationally), OWNER (strategically — monthly business review).
+  - Source: [`paperclip-prompts/quality-business.md`](../paperclip-prompts/quality-business.md); hire issues [QUA-429](/QUA/issues/QUA-429), [QUA-438](/QUA/issues/QUA-438).
   - Agent ID: `f2c79849-a19e-4bc0-8737-438dd50ada64`.
 
-Wave 2 hires still pending (no agent assigned, no heartbeat budget consumed): Quality-Tech, Development. Wave 3+ remain planned per the wave plan; Chief of Staff is deferred indefinitely per `docs/ops/PHASE_FINAL_FOUNDER_COMMS.md`.
+Wave-plan status (per [`decisions/2026-04-27_v5_org_proposal.md`](../decisions/2026-04-27_v5_org_proposal.md) § 6 + the [DL-039](../decisions/2026-04-28_quality_business_hire.md) one-time override): **Wave 0** (CEO/CTO/Research/Documentation-KM) + **Wave 1** (DevOps/Pipeline-Operator) + **Wave 2** (Quality-Tech/Development/Quality-Business) all live. Pending: Wave 3 (Controlling, Observability-SRE), Wave 4 (LiveOps), Wave 5 (R-and-D). Chief of Staff is deferred indefinitely per `docs/ops/PHASE_FINAL_FOUNDER_COMMS.md`.
+
+## Execution Policies
+
+Per [DL-030](../decisions/2026-04-27_execution_policies_v1.md): every issue created in scope of a stakes-bearing flow MUST carry an `executionPolicy` block at creation time (or via PATCH before `in_progress`). The runtime — not the agent — enforces the `in_progress → done` interception. The full JSON snippets (with concrete reviewer/approver participant identifiers) live in DL-030; this registry section is the role-level convention.
+
+| Class | Flow | Scope test | Policy | Reviewer / Approver (role) | Wave 2 hire trigger |
+|---|---|---|---|---|---|
+| 1 | T6 deploy | `projectId` = T6 Live Operations, **or** title matches `^T6 deploy` (case-insensitive) | **Approval-only** | OWNER | n/a |
+| 2 | Strategy Card extraction | `projectId` = V5 Strategy Research **and** issue is a Strategy Card (child of a Source-research parent per DL-029; source-extraction parents and the workflow-charter parent are exempt) | **Review-only** | **CEO + Quality-Business** (Wave 2 active per [DL-039](../decisions/2026-04-28_quality_business_hire.md), OWNER fallback retained per [DL-016](REGISTRY.md)) | shipped 2026-04-28 — DL-039 |
+| 3 | EA `_v2+` enhancement | `projectId` = V5 Framework Implementation **and** title matches `_v[0-9]+\b` | **Review-only** | **Quality-Tech** (Wave 2 active — hire landed 2026-04-28; CTO retains fallback) | shipped 2026-04-28 |
+| 4 | All other issues | n/a (default) | Comment-required only (Paperclip default) | n/a | n/a |
+
+Class 2 / 3 transition note (per [DL-039](../decisions/2026-04-28_quality_business_hire.md) "What changes immediately" § 1): new Strategy Card and `_v[0-9]+` enhancement child issues created on/after 2026-04-28 carry the named Wave 2 reviewer (Quality-Business / Quality-Tech). Existing in-flight cards keep their original participants until close-out — CEO does not retroactively re-policy them.
+
+`commentRequired: true` is independent of stages and remains on for every issue regardless of class.
+
+**Class 1 layered relationship to DL-025.** Approval-only is layered on top of — not a substitute for — the V5 hard rule that **AutoTrading is OWNER-manual**. The runtime gate intercepts the `done` transition; the live-account toggle stays out of agent hands entirely.
+
+**Sentinel role.** CEO scans for unpolicied issues in scope and PATCHes a policy in. Manual sweep until an automation routine is added.
+
+**Self-review prevention.** The runtime excludes the original executor from the eligible reviewer/approver set. Class 2 lists OWNER as a fallback participant so CEO-authored strategy cards can still close while CEO holds the interim Quality-Business seat. Same fallback applies to Class 3 / DL-036 if CTO is ever the executor on an EA Review-gate issue.
+
+For the full JSON shape per class (including reviewer/approver participant identifiers), see [DL-030 § Implementation mechanism](../decisions/2026-04-27_execution_policies_v1.md). DL-030 itself is **not** updated to name Wave 2 hires — DL-NNN docs are time-stamped records of the convention at decision time; this registry section reflects what is currently in force per [DL-026](../decisions/DL-026_coding_agent_done_requires_commit_hash.md) operational-doc precedence.
 
 ## Factory Setup Standards
 
@@ -136,4 +175,4 @@ Canonical decision: [DL-036](../decisions/2026-04-28_ea_review_gate.md). Recordi
 - **Relationship to DL-030 Class 3:** DL-036 is **additive**. DL-030 Class 3 catches `_v[0-9]+` enhancement rebuilds; DL-036 catches the first `_v1` baseline run for an APPROVED card. Together they close the loop on every EA → backtest pathway.
 - **In-flight enforcement (2026-04-28):** 5 PATCHes already applied by CEO this heartbeat — QUA-277 / 278 / 279 / 280 / 281.
 
-> **Reconciliation note.** The full DL-030 Execution Policies section (Classes 1-4) and the parallel content from `main` (CEO Authority Boundaries, Issue Routing) live on `main` and are pending merge into `agents/docs-km`. This subsection adds DL-036 inline so the convention is discoverable; on the next reconciliation pass, DL-036 lands as **Class 5** in the unified Execution Policies table (or equivalently extends DL-030 Class 3's scope test, whichever is cleaner at merge time).
+> **Reconciliation note.** The full DL-030 Execution Policies section (Classes 1–4) is now merged into this branch above (under "Execution Policies"); see QUA-441 for the merge commit. The parallel content from `main` (CEO Authority Boundaries, Issue Routing) is still pending merge into `agents/docs-km` and tracked separately. This DL-036 subsection stays inline as the canonical reference for the EA Review gate; on a future reconciliation pass, DL-036 can fold into the Execution Policies table as **Class 5** (or extend Class 3's scope test) — whichever is cleaner at the time.
