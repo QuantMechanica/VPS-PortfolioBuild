@@ -1,0 +1,19 @@
+{
+  "ts_utc": "2026-04-28T11:58:44Z",
+  "issue": "QUA-415",
+  "reject_without_set": {
+    "error_code": "BACKTEST_REJECTED_NO_SETFILE",
+    "message": "Dispatch requires job.setfile_path for backtest runs.",
+    "status": "rejected"
+  },
+  "schedule_with_set": {
+    "dedup_key": "QM5_SRC04_S03_lien_fade_double_zeros|v1|EURUSD.DWX|P2|cfg001",
+    "status": "scheduled",
+    "terminal": "T1"
+  },
+  "setfile_path": "framework/EAs/QM5_SRC04_S03_lien_fade_double_zeros/sets/QM5_SRC04_S03_lien_fade_double_zeros_EURUSD.DWX_H1_backtest.set",
+  "commits": [
+    "21cc3e6",
+    "fc52012"
+  ]
+}
