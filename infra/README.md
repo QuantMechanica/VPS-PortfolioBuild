@@ -55,7 +55,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Safe to re-run (`Register-ScheduledTask -Force`) and overlap-safe (`MultipleInstances=IgnoreNew`).
 - `scripts/Install-PaperclipStaleLockWatchdogTask.ps1`
   - Registers Task Scheduler job `QM_PaperclipStaleLockWatchdog_15min` as `SYSTEM`.
-  - Runs `monitoring/Invoke-PaperclipStaleLockWatchdog.ps1 -StaleAfterMinutes 15 -RunningLockMaxMinutes 90 [-AssigneeAgentId <id>] -FailOnFinding` every 15 minutes (monitor-only).
+  - Runs `monitoring/Invoke-PaperclipStaleLockWatchdog.ps1 -StaleAfterMinutes 15 -RunningLockMaxMinutes 90 [-AssigneeAgentId <id>] [-OutPath <json>] -FailOnFinding` every 15 minutes (monitor-only).
   - Supports `-PreviewOnly` to print resolved task config without registering.
   - Safe to re-run (`Register-ScheduledTask -Force`) and overlap-safe (`MultipleInstances=IgnoreNew`).
 - `scripts/Install-QUA95BlockerRefreshTask.ps1`
@@ -162,6 +162,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Default mode is monitor-only (no mutations); optional `-AutoRecover` performs PATCH-only assignee-cycle recovery.
   - Uses `-AssigneeAgentId` (defaults to `PAPERCLIP_AGENT_ID`) to avoid missing stale locks in large company issue lists.
   - `-AllowedAssigneeAgentIds` is optional; when omitted, it auto-scopes to `-AssigneeAgentId` to prevent silent allowlist mismatches.
+  - Optional `-OutPath` writes JSON output to disk while preserving stdout output.
   - `-AutoRecover` applies only to `orphaned_lock` class.
   - Adds `X-Paperclip-Run-Id` header on all mutating PATCH calls.
 - `scripts/Invoke-GitWithMutex.ps1`

@@ -99,10 +99,11 @@
 
 - Idempotently installs scheduler task `QM_PaperclipStaleLockWatchdog_15min` as `SYSTEM`.
 - Task action runs:
-  - `monitoring\Invoke-PaperclipStaleLockWatchdog.ps1 -StaleAfterMinutes <n> -RunningLockMaxMinutes <n> [-AssigneeAgentId <id>] [-FailOnFinding]`
+  - `monitoring\Invoke-PaperclipStaleLockWatchdog.ps1 -StaleAfterMinutes <n> -RunningLockMaxMinutes <n> [-AssigneeAgentId <id>] [-OutPath <json>] [-FailOnFinding]`
 - Behavior:
   - explicit stale thresholds are embedded into the scheduled action at install time
   - optional assignee scope can be embedded to avoid environment-variable dependency in `SYSTEM` context
+  - optional output path can be embedded so each run writes JSON status to a stable health artifact path
   - overlap-safe (`MultipleInstances=IgnoreNew`)
 - Preview mode (no task registration/mutation):
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-PaperclipStaleLockWatchdogTask.ps1 -StaleAfterMinutes 15 -RunningLockMaxMinutes 90 -PreviewOnly`

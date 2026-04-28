@@ -7,6 +7,7 @@ param(
     [int]$StaleAfterMinutes = 15,
     [int]$RunningLockMaxMinutes = 90,
     [string]$AssigneeAgentId = $(if ($env:PAPERCLIP_AGENT_ID) { $env:PAPERCLIP_AGENT_ID } else { "" }),
+    [string]$OutPath = "C:\QM\logs\infra\health\paperclip_stale_lock_watchdog_latest.json",
     [switch]$FailOnFinding,
     [switch]$PreviewOnly,
     [switch]$RunNow
@@ -29,6 +30,9 @@ if ($startBoundary -le (Get-Date)) {
 $actionArgs = "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`" -StaleAfterMinutes $StaleAfterMinutes -RunningLockMaxMinutes $RunningLockMaxMinutes"
 if (-not [string]::IsNullOrWhiteSpace($AssigneeAgentId)) {
     $actionArgs += " -AssigneeAgentId `"$AssigneeAgentId`""
+}
+if (-not [string]::IsNullOrWhiteSpace($OutPath)) {
+    $actionArgs += " -OutPath `"$OutPath`""
 }
 if ($FailOnFinding.IsPresent) {
     $actionArgs += " -FailOnFinding"

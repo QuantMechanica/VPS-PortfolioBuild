@@ -8,6 +8,7 @@ param(
     [string[]]$Statuses = @("in_progress"),
     [string]$AssigneeAgentId = $(if ($env:PAPERCLIP_AGENT_ID) { $env:PAPERCLIP_AGENT_ID } else { "" }),
     [string[]]$AllowedAssigneeAgentIds = @(),
+    [string]$OutPath = "",
     [switch]$AutoRecover,
     [switch]$FailOnFinding
 )
@@ -73,12 +74,29 @@ function Get-PropValue {
     return $prop.Value
 }
 
+function Write-Result {
+    param([object]$Result)
+    $json = $Result | ConvertTo-Json -Depth 10
+    if (-not [string]::IsNullOrWhiteSpace($OutPath)) {
+        $outFull = $OutPath
+        if (-not [System.IO.Path]::IsPathRooted($outFull)) {
+            $outFull = Join-Path (Get-Location).Path $outFull
+        }
+        $outDir = Split-Path -Parent $outFull
+        if (-not [string]::IsNullOrWhiteSpace($outDir)) {
+            New-Item -ItemType Directory -Path $outDir -Force | Out-Null
+        }
+        $json | Set-Content -LiteralPath $outFull -Encoding UTF8
+    }
+    $json
+}
+
 if ([string]::IsNullOrWhiteSpace($CompanyId) -or [string]::IsNullOrWhiteSpace($ApiKey)) {
     $missing = @()
     if ([string]::IsNullOrWhiteSpace($CompanyId)) { $missing += "CompanyId/PAPERCLIP_COMPANY_ID" }
     if ([string]::IsNullOrWhiteSpace($ApiKey)) { $missing += "ApiKey/PAPERCLIP_API_KEY" }
     $result = New-Result -Status "critical" -Message "Paperclip watchdog configuration missing required auth values." -Details @{ missing = $missing }
-    $result | ConvertTo-Json -Depth 8
+    Write-Result -Result $result
     exit 2
 }
 
@@ -193,7 +211,7 @@ if ($stale.Count -eq 0) {
         statuses = $Statuses
         allowed_assignee_agent_ids = $allowedAssignees
     }
-    $result | ConvertTo-Json -Depth 10
+    Write-Result -Result $result
     exit 0
 }
 
@@ -220,7 +238,7 @@ $result = New-Result -Status $status -Message $message -Details @{
     allowed_assignee_agent_ids = $allowedAssignees
     issues = @($stale)
 }
-$result | ConvertTo-Json -Depth 10
+Write-Result -Result $result
 
 if ($FailOnFinding.IsPresent -or $status -eq "critical") {
     exit 2
