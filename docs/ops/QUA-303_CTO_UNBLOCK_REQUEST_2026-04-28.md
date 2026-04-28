@@ -3,7 +3,7 @@
 Date: 2026-04-28
 Issue: QUA-303
 Stage: Review-only gate (`SRC01_S02`)
-Latest heartbeat run: `01ad9988-f61d-4994-b058-74ac5a05ace3` (completed `2026-04-28T12:32:09.830Z`)
+Latest heartbeat run: `84255462-66f0-4567-82a5-9aa7a34f4911` (completed `2026-04-28T12:32:51.856Z`)
 
 ## Decision Requested from CTO
 
