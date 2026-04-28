@@ -13,6 +13,14 @@
 - Example:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Verify-QUA415Readiness.ps1`
 
+## `Test-QUA415CoOwnerCloseout.ps1`
+
+- Reports QUA-415 co-owner closeout state from recent git commits.
+- Returns `READY` only when a setfile/dispatch related commit appears outside the known DevOps QUA-415 commit chain.
+- Returns `BLOCKED` with unblock owner/action otherwise.
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA415CoOwnerCloseout.ps1`
+
 ## `Deploy-QM5SmokeExpertToT1.ps1`
 
 - Idempotent T1 smoke-expert deploy helper for `QM5_1001_framework_smoke.ex5`.
