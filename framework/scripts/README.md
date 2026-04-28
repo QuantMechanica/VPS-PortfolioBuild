@@ -24,6 +24,9 @@ Each runner emits deterministic JSON under `D:\QM\reports\pipeline\<ea_id>\<phas
 - `deploy_ea_to_all_terminals.ps1` idempotently deploys a single `.ex5` to `T1..T5\MQL5\Experts\QM`, creates missing directories, rejects T6 scope, and verifies SHA256 convergence on every target.
 - `gen_setfile.ps1` idempotently creates/updates per-symbol set files in `framework/EAs/QM5_<id>_<slug>/sets/` using `QM5_<id>_<SYMBOL>_<TF>_<ENV>.set` naming and emits `setfile_sha256`.
 - `resolve_backtest_target.py` rejects start dispatch without a resolvable `job.setfile_path` using `BACKTEST_REJECTED_NO_SETFILE`.
+- Use `-EaSlug` for generator input (`-Ea` conflicts with PowerShell's built-in `-ErrorAction` alias).
+- Example:
+  - `powershell -ExecutionPolicy Bypass -File framework/scripts/gen_setfile.ps1 -EaSlug QM5_SRC04_S03_lien_fade_double_zeros -Symbol EURUSD.DWX -TF H1 -Env backtest`
 
 ## Pipeline-Op Matrix Dispatch (36 .DWX Symbols)
 

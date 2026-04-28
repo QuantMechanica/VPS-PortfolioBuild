@@ -21,20 +21,17 @@ $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repoRoot = Split-Path -Parent (Split-Path -Parent $scriptDir)
 $easRoot = Join-Path $repoRoot 'framework\EAs'
 
-if ($EaSlug -notmatch '^QM5_(\d+)_') {
-    throw "EaSlug must be full slug format QM5_<ea_id>_<slug>. Got: $EaSlug"
+if ($EaSlug -notmatch '^QM5_[A-Za-z0-9_]+$') {
+    throw "EaSlug must start with QM5_ and contain only letters, digits, and underscores. Got: $EaSlug"
 }
-$eaPrefix = "QM5_$($Matches[1])"
 
 $eaFolder = Join-Path $easRoot $EaSlug
-if (-not (Test-Path -LiteralPath $eaFolder -PathType Container)) {
-    throw "EA folder not found: $eaFolder"
-}
+New-Item -ItemType Directory -Path $eaFolder -Force | Out-Null
 
 $setsFolder = Join-Path $eaFolder 'sets'
 New-Item -ItemType Directory -Path $setsFolder -Force | Out-Null
 
-$fileName = "${eaPrefix}_${Symbol}_${TF}_${Env}.set"
+$fileName = "${EaSlug}_${Symbol}_${TF}_${Env}.set"
 $targetPath = Join-Path $setsFolder $fileName
 
 if ($Env -eq 'backtest') {
@@ -48,7 +45,6 @@ if ($Env -eq 'backtest') {
 
 $lines = @(
     "; QuantMechanica V5 generated set file",
-    "; GeneratedAtUtc=$((Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ'))",
     "; Generator=framework/scripts/gen_setfile.ps1",
     "ENV=$Env",
     "RISK_FIXED=$RiskFixed",
