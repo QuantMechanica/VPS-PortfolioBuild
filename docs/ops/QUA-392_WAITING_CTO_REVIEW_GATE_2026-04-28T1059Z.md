@@ -1,0 +1,26 @@
+# QUA-392 Waiting On CTO Review Gate — 2026-04-28T10:59Z
+
+Issue: `QUA-392`  
+Status: `blocked_by_gate`
+
+## Why blocked
+
+Development implementation is complete and compile-verified. Remaining work requires CTO review-only decision before any pipeline dispatch.
+
+## Unblock owner/action
+
+- Owner: CTO
+- Action: complete EA-vs-Card review for `SRC04_S02b` and either:
+  1. approve continuation to Pipeline-Operator under parent `QUA-390`, or
+  2. return exact required deltas to Development.
+
+## Evidence pointers
+
+- EA implementation commit: `8871df3`
+- Continuity sync commit: `d945c5d`
+- Closeout: `dd23bf4`
+- Corrective cleanup: `57fbd2e`
+- Ready-for-gate note: `012e7eb`
+- CTO checklist/handoff docs:
+  - `docs/ops/QUA-392_CTO_CHECKLIST_PREFILL_2026-04-28.md`
+  - `docs/ops/QUA-392_CTO_REVIEW_HANDOFF_2026-04-28.md`
