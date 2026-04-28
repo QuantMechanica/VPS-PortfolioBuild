@@ -1,0 +1,9 @@
+{
+  "issue": "QUA-415",
+  "timestamp_utc": "2026-04-28T12:40:00Z",
+  "status": "BLOCKED",
+  "unblock_owner": "Pipeline-Operator",
+  "unblock_action": "Post workflow confirmation commit hash proving active setfile_path dispatch consumption.",
+  "devops_last_monitor_commit": "20f6d4f",
+  "devops_last_snapshot_commit": "7fd8249"
+}
