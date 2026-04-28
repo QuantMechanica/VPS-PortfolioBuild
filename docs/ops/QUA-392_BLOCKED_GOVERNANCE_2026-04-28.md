@@ -35,3 +35,4 @@ CTO review rejected dispatch because card governance gate is not satisfied:
 
 - 2026-04-28T14:22Z heartbeat: no-change; awaiting CEO/Research card approval or explicit CEO waiver.
 - 2026-04-28T14:25Z heartbeat: no-change; awaiting CEO/Research card approval or explicit CEO waiver.
+- 2026-04-28T14:28Z heartbeat: no-change; awaiting CEO/Research card approval or explicit CEO waiver.
