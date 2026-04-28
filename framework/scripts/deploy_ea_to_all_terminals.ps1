@@ -123,12 +123,14 @@ if ($EvidenceJsonPath) {
     Set-Content -LiteralPath $full -Value $json -Encoding UTF8
 }
 
-foreach ($row in ($results | Sort-Object terminal)) {
-    Write-Output ("{0} {1} {2} {3}" -f $row.terminal, $row.status.ToUpperInvariant(), $row.destination_hash_after_sha256, $row.destination_path)
-}
-
 if ($mismatches.Count -gt 0) {
+    foreach ($row in $mismatches) {
+        [Console]::Error.WriteLine(("{0} HASH_MISMATCH {1} {2}" -f $row.terminal, $row.destination_hash_after_sha256, $row.destination_path))
+    }
     exit 2
 }
-exit 0
 
+foreach ($row in ($results | Sort-Object terminal)) {
+    Write-Output ("{0} OK {1} {2}" -f $row.terminal, $row.destination_hash_after_sha256, $row.destination_path)
+}
+exit 0

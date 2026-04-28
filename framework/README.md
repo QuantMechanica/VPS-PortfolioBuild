@@ -46,6 +46,16 @@ pwsh -File framework/scripts/run_backtest_smoke.ps1 -Year 2024 -Terminal any
 
 `-Terminal any` resolves to `T1..T5` via `framework/scripts/resolve_backtest_target.py` using state at `D:\QM\Reports\pipeline\dispatch_state.json`.
 
+Factory deploy helpers (idempotent):
+
+```powershell
+pwsh -File framework/scripts/deploy_ea_to_all_terminals.ps1 -EaPath D:\QM\mt5\T1\MQL5\Experts\QM\QM5_1002_davey-eu-night.ex5
+pwsh -File framework/scripts/deploy_ea_manifest_to_all_terminals.ps1 -EvidenceJsonPath C:\QM\repo\docs\ops\QUA-411_DEPLOY_MANIFEST_T1_T5_2026-04-28.json
+```
+
+Single-EA helper success line format:
+`T<n> OK <sha256> <dst path>`.
+
 ## Inheritance From V4
 
 `V5_FRAMEWORK_DESIGN.md` § "What V5 Explicitly Does NOT Inherit From V4" enumerates the boundary. Briefly:

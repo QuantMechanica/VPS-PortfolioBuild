@@ -1,0 +1,303 @@
+﻿{
+    "ran_at_local":  "2026-04-28T13:50:08.6502839+02:00",
+    "deploy_script_path":  "C:\\QM\\repo\\framework\\scripts\\deploy_ea_to_all_terminals.ps1",
+    "ea_count":  4,
+    "runs":  [
+                 {
+                     "ea_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\EA_Skeleton.ex5",
+                     "evidence":  {
+                                      "source_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\EA_Skeleton.ex5",
+                                      "file_name":  "EA_Skeleton.ex5",
+                                      "deployed_at_local":  "2026-04-28T13:50:07.3758991+02:00",
+                                      "terminal_roots":  [
+                                                             "D:\\QM\\mt5\\T1",
+                                                             "D:\\QM\\mt5\\T2",
+                                                             "D:\\QM\\mt5\\T3",
+                                                             "D:\\QM\\mt5\\T4",
+                                                             "D:\\QM\\mt5\\T5"
+                                                         ],
+                                      "status_counts":  [
+                                                            {
+                                                                "status":  "unchanged",
+                                                                "count":  5
+                                                            }
+                                                        ],
+                                      "files":  [
+                                                    {
+                                                        "terminal":  "T1",
+                                                        "status":  "unchanged",
+                                                        "source_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\EA_Skeleton.ex5",
+                                                        "destination_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\EA_Skeleton.ex5",
+                                                        "source_hash_sha256":  "934484A074ADE8314D95E557C0E8C5C79D21017B5E645B804D3E89ACAEE39D5C",
+                                                        "destination_hash_before_sha256":  "934484A074ADE8314D95E557C0E8C5C79D21017B5E645B804D3E89ACAEE39D5C",
+                                                        "destination_hash_after_sha256":  "934484A074ADE8314D95E557C0E8C5C79D21017B5E645B804D3E89ACAEE39D5C",
+                                                        "hash_match":  true
+                                                    },
+                                                    {
+                                                        "terminal":  "T2",
+                                                        "status":  "unchanged",
+                                                        "source_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\EA_Skeleton.ex5",
+                                                        "destination_path":  "D:\\QM\\mt5\\T2\\MQL5\\Experts\\QM\\EA_Skeleton.ex5",
+                                                        "source_hash_sha256":  "934484A074ADE8314D95E557C0E8C5C79D21017B5E645B804D3E89ACAEE39D5C",
+                                                        "destination_hash_before_sha256":  "934484A074ADE8314D95E557C0E8C5C79D21017B5E645B804D3E89ACAEE39D5C",
+                                                        "destination_hash_after_sha256":  "934484A074ADE8314D95E557C0E8C5C79D21017B5E645B804D3E89ACAEE39D5C",
+                                                        "hash_match":  true
+                                                    },
+                                                    {
+                                                        "terminal":  "T3",
+                                                        "status":  "unchanged",
+                                                        "source_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\EA_Skeleton.ex5",
+                                                        "destination_path":  "D:\\QM\\mt5\\T3\\MQL5\\Experts\\QM\\EA_Skeleton.ex5",
+                                                        "source_hash_sha256":  "934484A074ADE8314D95E557C0E8C5C79D21017B5E645B804D3E89ACAEE39D5C",
+                                                        "destination_hash_before_sha256":  "934484A074ADE8314D95E557C0E8C5C79D21017B5E645B804D3E89ACAEE39D5C",
+                                                        "destination_hash_after_sha256":  "934484A074ADE8314D95E557C0E8C5C79D21017B5E645B804D3E89ACAEE39D5C",
+                                                        "hash_match":  true
+                                                    },
+                                                    {
+                                                        "terminal":  "T4",
+                                                        "status":  "unchanged",
+                                                        "source_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\EA_Skeleton.ex5",
+                                                        "destination_path":  "D:\\QM\\mt5\\T4\\MQL5\\Experts\\QM\\EA_Skeleton.ex5",
+                                                        "source_hash_sha256":  "934484A074ADE8314D95E557C0E8C5C79D21017B5E645B804D3E89ACAEE39D5C",
+                                                        "destination_hash_before_sha256":  "934484A074ADE8314D95E557C0E8C5C79D21017B5E645B804D3E89ACAEE39D5C",
+                                                        "destination_hash_after_sha256":  "934484A074ADE8314D95E557C0E8C5C79D21017B5E645B804D3E89ACAEE39D5C",
+                                                        "hash_match":  true
+                                                    },
+                                                    {
+                                                        "terminal":  "T5",
+                                                        "status":  "unchanged",
+                                                        "source_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\EA_Skeleton.ex5",
+                                                        "destination_path":  "D:\\QM\\mt5\\T5\\MQL5\\Experts\\QM\\EA_Skeleton.ex5",
+                                                        "source_hash_sha256":  "934484A074ADE8314D95E557C0E8C5C79D21017B5E645B804D3E89ACAEE39D5C",
+                                                        "destination_hash_before_sha256":  "934484A074ADE8314D95E557C0E8C5C79D21017B5E645B804D3E89ACAEE39D5C",
+                                                        "destination_hash_after_sha256":  "934484A074ADE8314D95E557C0E8C5C79D21017B5E645B804D3E89ACAEE39D5C",
+                                                        "hash_match":  true
+                                                    }
+                                                ],
+                                      "all_hashes_match":  true
+                                  }
+                 },
+                 {
+                     "ea_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_1001_framework_smoke.ex5",
+                     "evidence":  {
+                                      "source_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_1001_framework_smoke.ex5",
+                                      "file_name":  "QM5_1001_framework_smoke.ex5",
+                                      "deployed_at_local":  "2026-04-28T13:50:07.8020120+02:00",
+                                      "terminal_roots":  [
+                                                             "D:\\QM\\mt5\\T1",
+                                                             "D:\\QM\\mt5\\T2",
+                                                             "D:\\QM\\mt5\\T3",
+                                                             "D:\\QM\\mt5\\T4",
+                                                             "D:\\QM\\mt5\\T5"
+                                                         ],
+                                      "status_counts":  [
+                                                            {
+                                                                "status":  "unchanged",
+                                                                "count":  5
+                                                            }
+                                                        ],
+                                      "files":  [
+                                                    {
+                                                        "terminal":  "T1",
+                                                        "status":  "unchanged",
+                                                        "source_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_1001_framework_smoke.ex5",
+                                                        "destination_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_1001_framework_smoke.ex5",
+                                                        "source_hash_sha256":  "2795DBEA6E49ED2CEA4DED4A03096BCFA40278F114689A83D030071920CB500B",
+                                                        "destination_hash_before_sha256":  "2795DBEA6E49ED2CEA4DED4A03096BCFA40278F114689A83D030071920CB500B",
+                                                        "destination_hash_after_sha256":  "2795DBEA6E49ED2CEA4DED4A03096BCFA40278F114689A83D030071920CB500B",
+                                                        "hash_match":  true
+                                                    },
+                                                    {
+                                                        "terminal":  "T2",
+                                                        "status":  "unchanged",
+                                                        "source_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_1001_framework_smoke.ex5",
+                                                        "destination_path":  "D:\\QM\\mt5\\T2\\MQL5\\Experts\\QM\\QM5_1001_framework_smoke.ex5",
+                                                        "source_hash_sha256":  "2795DBEA6E49ED2CEA4DED4A03096BCFA40278F114689A83D030071920CB500B",
+                                                        "destination_hash_before_sha256":  "2795DBEA6E49ED2CEA4DED4A03096BCFA40278F114689A83D030071920CB500B",
+                                                        "destination_hash_after_sha256":  "2795DBEA6E49ED2CEA4DED4A03096BCFA40278F114689A83D030071920CB500B",
+                                                        "hash_match":  true
+                                                    },
+                                                    {
+                                                        "terminal":  "T3",
+                                                        "status":  "unchanged",
+                                                        "source_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_1001_framework_smoke.ex5",
+                                                        "destination_path":  "D:\\QM\\mt5\\T3\\MQL5\\Experts\\QM\\QM5_1001_framework_smoke.ex5",
+                                                        "source_hash_sha256":  "2795DBEA6E49ED2CEA4DED4A03096BCFA40278F114689A83D030071920CB500B",
+                                                        "destination_hash_before_sha256":  "2795DBEA6E49ED2CEA4DED4A03096BCFA40278F114689A83D030071920CB500B",
+                                                        "destination_hash_after_sha256":  "2795DBEA6E49ED2CEA4DED4A03096BCFA40278F114689A83D030071920CB500B",
+                                                        "hash_match":  true
+                                                    },
+                                                    {
+                                                        "terminal":  "T4",
+                                                        "status":  "unchanged",
+                                                        "source_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_1001_framework_smoke.ex5",
+                                                        "destination_path":  "D:\\QM\\mt5\\T4\\MQL5\\Experts\\QM\\QM5_1001_framework_smoke.ex5",
+                                                        "source_hash_sha256":  "2795DBEA6E49ED2CEA4DED4A03096BCFA40278F114689A83D030071920CB500B",
+                                                        "destination_hash_before_sha256":  "2795DBEA6E49ED2CEA4DED4A03096BCFA40278F114689A83D030071920CB500B",
+                                                        "destination_hash_after_sha256":  "2795DBEA6E49ED2CEA4DED4A03096BCFA40278F114689A83D030071920CB500B",
+                                                        "hash_match":  true
+                                                    },
+                                                    {
+                                                        "terminal":  "T5",
+                                                        "status":  "unchanged",
+                                                        "source_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_1001_framework_smoke.ex5",
+                                                        "destination_path":  "D:\\QM\\mt5\\T5\\MQL5\\Experts\\QM\\QM5_1001_framework_smoke.ex5",
+                                                        "source_hash_sha256":  "2795DBEA6E49ED2CEA4DED4A03096BCFA40278F114689A83D030071920CB500B",
+                                                        "destination_hash_before_sha256":  "2795DBEA6E49ED2CEA4DED4A03096BCFA40278F114689A83D030071920CB500B",
+                                                        "destination_hash_after_sha256":  "2795DBEA6E49ED2CEA4DED4A03096BCFA40278F114689A83D030071920CB500B",
+                                                        "hash_match":  true
+                                                    }
+                                                ],
+                                      "all_hashes_match":  true
+                                  }
+                 },
+                 {
+                     "ea_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_1002_davey-eu-night.ex5",
+                     "evidence":  {
+                                      "source_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_1002_davey-eu-night.ex5",
+                                      "file_name":  "QM5_1002_davey-eu-night.ex5",
+                                      "deployed_at_local":  "2026-04-28T13:50:08.1792259+02:00",
+                                      "terminal_roots":  [
+                                                             "D:\\QM\\mt5\\T1",
+                                                             "D:\\QM\\mt5\\T2",
+                                                             "D:\\QM\\mt5\\T3",
+                                                             "D:\\QM\\mt5\\T4",
+                                                             "D:\\QM\\mt5\\T5"
+                                                         ],
+                                      "status_counts":  [
+                                                            {
+                                                                "status":  "unchanged",
+                                                                "count":  5
+                                                            }
+                                                        ],
+                                      "files":  [
+                                                    {
+                                                        "terminal":  "T1",
+                                                        "status":  "unchanged",
+                                                        "source_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_1002_davey-eu-night.ex5",
+                                                        "destination_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_1002_davey-eu-night.ex5",
+                                                        "source_hash_sha256":  "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+                                                        "destination_hash_before_sha256":  "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+                                                        "destination_hash_after_sha256":  "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+                                                        "hash_match":  true
+                                                    },
+                                                    {
+                                                        "terminal":  "T2",
+                                                        "status":  "unchanged",
+                                                        "source_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_1002_davey-eu-night.ex5",
+                                                        "destination_path":  "D:\\QM\\mt5\\T2\\MQL5\\Experts\\QM\\QM5_1002_davey-eu-night.ex5",
+                                                        "source_hash_sha256":  "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+                                                        "destination_hash_before_sha256":  "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+                                                        "destination_hash_after_sha256":  "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+                                                        "hash_match":  true
+                                                    },
+                                                    {
+                                                        "terminal":  "T3",
+                                                        "status":  "unchanged",
+                                                        "source_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_1002_davey-eu-night.ex5",
+                                                        "destination_path":  "D:\\QM\\mt5\\T3\\MQL5\\Experts\\QM\\QM5_1002_davey-eu-night.ex5",
+                                                        "source_hash_sha256":  "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+                                                        "destination_hash_before_sha256":  "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+                                                        "destination_hash_after_sha256":  "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+                                                        "hash_match":  true
+                                                    },
+                                                    {
+                                                        "terminal":  "T4",
+                                                        "status":  "unchanged",
+                                                        "source_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_1002_davey-eu-night.ex5",
+                                                        "destination_path":  "D:\\QM\\mt5\\T4\\MQL5\\Experts\\QM\\QM5_1002_davey-eu-night.ex5",
+                                                        "source_hash_sha256":  "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+                                                        "destination_hash_before_sha256":  "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+                                                        "destination_hash_after_sha256":  "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+                                                        "hash_match":  true
+                                                    },
+                                                    {
+                                                        "terminal":  "T5",
+                                                        "status":  "unchanged",
+                                                        "source_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_1002_davey-eu-night.ex5",
+                                                        "destination_path":  "D:\\QM\\mt5\\T5\\MQL5\\Experts\\QM\\QM5_1002_davey-eu-night.ex5",
+                                                        "source_hash_sha256":  "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+                                                        "destination_hash_before_sha256":  "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+                                                        "destination_hash_after_sha256":  "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+                                                        "hash_match":  true
+                                                    }
+                                                ],
+                                      "all_hashes_match":  true
+                                  }
+                 },
+                 {
+                     "ea_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+                     "evidence":  {
+                                      "source_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+                                      "file_name":  "QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+                                      "deployed_at_local":  "2026-04-28T13:50:08.5836048+02:00",
+                                      "terminal_roots":  [
+                                                             "D:\\QM\\mt5\\T1",
+                                                             "D:\\QM\\mt5\\T2",
+                                                             "D:\\QM\\mt5\\T3",
+                                                             "D:\\QM\\mt5\\T4",
+                                                             "D:\\QM\\mt5\\T5"
+                                                         ],
+                                      "status_counts":  [
+                                                            {
+                                                                "status":  "unchanged",
+                                                                "count":  5
+                                                            }
+                                                        ],
+                                      "files":  [
+                                                    {
+                                                        "terminal":  "T1",
+                                                        "status":  "unchanged",
+                                                        "source_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+                                                        "destination_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+                                                        "source_hash_sha256":  "75A71F06C5AF87AD5BE1C8EDA58FB39A9B698FD5B034677BB0E71240405A6D19",
+                                                        "destination_hash_before_sha256":  "75A71F06C5AF87AD5BE1C8EDA58FB39A9B698FD5B034677BB0E71240405A6D19",
+                                                        "destination_hash_after_sha256":  "75A71F06C5AF87AD5BE1C8EDA58FB39A9B698FD5B034677BB0E71240405A6D19",
+                                                        "hash_match":  true
+                                                    },
+                                                    {
+                                                        "terminal":  "T2",
+                                                        "status":  "unchanged",
+                                                        "source_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+                                                        "destination_path":  "D:\\QM\\mt5\\T2\\MQL5\\Experts\\QM\\QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+                                                        "source_hash_sha256":  "75A71F06C5AF87AD5BE1C8EDA58FB39A9B698FD5B034677BB0E71240405A6D19",
+                                                        "destination_hash_before_sha256":  "75A71F06C5AF87AD5BE1C8EDA58FB39A9B698FD5B034677BB0E71240405A6D19",
+                                                        "destination_hash_after_sha256":  "75A71F06C5AF87AD5BE1C8EDA58FB39A9B698FD5B034677BB0E71240405A6D19",
+                                                        "hash_match":  true
+                                                    },
+                                                    {
+                                                        "terminal":  "T3",
+                                                        "status":  "unchanged",
+                                                        "source_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+                                                        "destination_path":  "D:\\QM\\mt5\\T3\\MQL5\\Experts\\QM\\QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+                                                        "source_hash_sha256":  "75A71F06C5AF87AD5BE1C8EDA58FB39A9B698FD5B034677BB0E71240405A6D19",
+                                                        "destination_hash_before_sha256":  "75A71F06C5AF87AD5BE1C8EDA58FB39A9B698FD5B034677BB0E71240405A6D19",
+                                                        "destination_hash_after_sha256":  "75A71F06C5AF87AD5BE1C8EDA58FB39A9B698FD5B034677BB0E71240405A6D19",
+                                                        "hash_match":  true
+                                                    },
+                                                    {
+                                                        "terminal":  "T4",
+                                                        "status":  "unchanged",
+                                                        "source_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+                                                        "destination_path":  "D:\\QM\\mt5\\T4\\MQL5\\Experts\\QM\\QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+                                                        "source_hash_sha256":  "75A71F06C5AF87AD5BE1C8EDA58FB39A9B698FD5B034677BB0E71240405A6D19",
+                                                        "destination_hash_before_sha256":  "75A71F06C5AF87AD5BE1C8EDA58FB39A9B698FD5B034677BB0E71240405A6D19",
+                                                        "destination_hash_after_sha256":  "75A71F06C5AF87AD5BE1C8EDA58FB39A9B698FD5B034677BB0E71240405A6D19",
+                                                        "hash_match":  true
+                                                    },
+                                                    {
+                                                        "terminal":  "T5",
+                                                        "status":  "unchanged",
+                                                        "source_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+                                                        "destination_path":  "D:\\QM\\mt5\\T5\\MQL5\\Experts\\QM\\QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+                                                        "source_hash_sha256":  "75A71F06C5AF87AD5BE1C8EDA58FB39A9B698FD5B034677BB0E71240405A6D19",
+                                                        "destination_hash_before_sha256":  "75A71F06C5AF87AD5BE1C8EDA58FB39A9B698FD5B034677BB0E71240405A6D19",
+                                                        "destination_hash_after_sha256":  "75A71F06C5AF87AD5BE1C8EDA58FB39A9B698FD5B034677BB0E71240405A6D19",
+                                                        "hash_match":  true
+                                                    }
+                                                ],
+                                      "all_hashes_match":  true
+                                  }
+                 }
+             ]
+}
