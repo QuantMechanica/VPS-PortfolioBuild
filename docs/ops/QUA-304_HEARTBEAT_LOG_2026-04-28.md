@@ -2853,3 +2853,8 @@
 - Unblock Owner: CTO
 - Unblock Action: Approve/reject QUA-304 review gate to move issue state forward.
 
+
+- Checkpoint: 2026-04-28T08:12:53Z
+- State: BLOCKED (review-only gate unchanged)
+- Unblock Owner/Action: CTO review decision on QUA-304.
+
