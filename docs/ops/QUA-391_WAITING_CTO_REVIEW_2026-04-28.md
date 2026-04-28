@@ -23,3 +23,5 @@ Status: `WAITING_CTO_REVIEW`
 - Result: `0 errors`, `0 warnings`
 
 No pipeline execution was triggered by Development.
+
+Update: done-criteria evidence map added in commit 42415ed (docs/ops/QUA-391_DONE_CRITERIA_MET_2026-04-28.md).
