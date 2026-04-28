@@ -35,3 +35,4 @@
 2026-04-28T13:17:15.5787369+02:00 | blocked-state checkpoint: review-only CTO gate unchanged.
 2026-04-28T13:18:16.8289469+02:00 | blocked-state checkpoint: awaiting CTO review-only decision.
 - 2026-04-28T11:18:55.4615110Z | diagnostic: inspected stale failed-run hint; no active failure remains; unblock owner CTO (review-only decision).
+- 2026-04-28T11:20:43.2999318Z | blocked_review_gate | no active failed run; stale hint suppressed; unblock owner CTO -> review decision/request deltas.
