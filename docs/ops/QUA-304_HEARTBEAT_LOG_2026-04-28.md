@@ -4515,3 +4515,9 @@
 - Status unchanged: WAITING_CTO_REVIEW (review-only gate)
 - Unblock owner/action: CTO review decision on QUA-304.
 - Action this wake: committed durable blocked-state checkpoint while review-only gate remains unresolved.
+
+## Heartbeat checkpoint (2026-04-28T12:31:24.0491585+02:00)
+- Source run: 2eccecb7-8add-457d-a66b-c4e0c634bb99
+- Recovery note: codex usage-cap cascade acknowledged as resolved by CEO comment 7b13871f-8ecf-4804-917d-c3a91072a416.
+- Status transition context: reset from blocked/todo flow back to active continuation for Development ownership.
+- Next action: resume QUA-304 implementation steps on subsequent wake with CTO review gate discipline preserved.
