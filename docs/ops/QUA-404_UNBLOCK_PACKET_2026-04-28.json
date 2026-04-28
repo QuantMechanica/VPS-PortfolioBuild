@@ -1,0 +1,28 @@
+{
+  "issue": "QUA-404",
+  "generated_at_local": "2026-04-28T13:45:54+02:00",
+  "state": "blocked",
+  "strategy": {
+    "strategy_id": "SRC04_S05",
+    "slug": "lien-inside-day-breakout",
+    "card_issue": "QUA-344"
+  },
+  "required_patch": {
+    "card_header": {
+      "path": "strategy-seeds/cards/lien-inside-day-breakout_card.md",
+      "set": {
+        "status": "APPROVED",
+        "ea_id": "<allocated_id>"
+      }
+    },
+    "registry_row": {
+      "path": "framework/registry/ea_id_registry.csv",
+      "append": "<allocated_id>,lien-inside-day-breakout,SRC04_S05,active,Development,2026-04-28"
+    }
+  },
+  "post_unblock_target": {
+    "ea_path": "framework/EAs/QM5_<allocated_id>_lien_inside_day_breakout/QM5_<allocated_id>_lien_inside_day_breakout.mq5",
+    "compile_required": true,
+    "handoff": "CTO review"
+  }
+}
