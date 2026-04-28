@@ -95,6 +95,20 @@
 - Example:
   - `python C:\QM\repo\infra\scripts\check_dwx_csv_tail_alignment.py --symbol XAUUSD --max-gap-hours 1 --json-out C:\QM\repo\lessons-learned\evidence\2026-04-27_qua93_xauusd_tail_alignment_check.json`
 
+## `Install-PaperclipStaleLockWatchdogTask.ps1`
+
+- Idempotently installs scheduler task `QM_PaperclipStaleLockWatchdog_15min` as `SYSTEM`.
+- Task action runs:
+  - `monitoring\Invoke-PaperclipStaleLockWatchdog.ps1 -StaleAfterMinutes <n> -RunningLockMaxMinutes <n> [-AssigneeAgentId <id>] [-FailOnFinding]`
+- Behavior:
+  - explicit stale thresholds are embedded into the scheduled action at install time
+  - optional assignee scope can be embedded to avoid environment-variable dependency in `SYSTEM` context
+  - overlap-safe (`MultipleInstances=IgnoreNew`)
+- Preview mode (no task registration/mutation):
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-PaperclipStaleLockWatchdogTask.ps1 -StaleAfterMinutes 15 -RunningLockMaxMinutes 90 -PreviewOnly`
+- Install/update mode (idempotent):
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-PaperclipStaleLockWatchdogTask.ps1 -StaleAfterMinutes 15 -RunningLockMaxMinutes 90 -AssigneeAgentId <agent-id> -FailOnFinding`
+
 ## `verify_import_candidate.py`
 
 - Candidate (non-production) verifier behavior for handoff testing.
