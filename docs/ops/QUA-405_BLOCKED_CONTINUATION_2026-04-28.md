@@ -42,3 +42,12 @@ Re-validated unblock prerequisites after continuation wake:
 ## Immediate Next Action After Unblock
 
 Implement `framework/EAs/QM5_<ea_id>_lien_fader/QM5_<ea_id>_lien_fader.mq5` with V5 module boundaries and card-section citation comments, compile clean, then hand off to CTO review gate.
+
+## Revalidation Snapshot (2026-04-28, continuation heartbeat)
+
+- `C:\QM\repo\strategy-seeds\cards\lien-fader_card.md` still shows `status: DRAFT` and `ea_id: TBD`.
+- No `SRC04_S06` / `lien-fader` allocation exists in either checked `ea_id_registry.csv`.
+- `C:\QM\worktrees\development\strategy-seeds\cards\lien-fader_card.md` still missing.
+- No `QM5_1009_lien_fader` scaffold in this checkout.
+
+Blocked owner/action remains unchanged: CEO + CTO must approve card, allocate `ea_id`, sync into this checkout, then re-dispatch Development.
