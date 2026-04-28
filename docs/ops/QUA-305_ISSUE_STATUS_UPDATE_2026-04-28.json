@@ -1,0 +1,20 @@
+{
+  "issue": "QUA-305",
+  "timestamp_utc": "2026-04-28T00:00:00Z",
+  "status_update": {
+    "status": "blocked",
+    "reason": "review_only_gate_waiting_for_cto",
+    "execution_policy": "review_only",
+    "unblock_owner": "CTO",
+    "unblock_action": "Perform card-vs-code review and dispatch next gate action.",
+    "development_deliverables": {
+      "ea_commit": "1498e3d",
+      "handoff_commit": "1e5a4b2",
+      "blocked_marker_commit": "7b7fa05",
+      "heartbeat_revalidation_commit": "44d0cc6",
+      "ready_note_path": "docs/ops/QUA-305_READY_FOR_CTO_REVIEW_2026-04-28.md",
+      "ea_path": "framework/EAs/QM5_1004_davey_es_breakout/QM5_1004_davey_es_breakout.mq5"
+    }
+  }
+}
+
