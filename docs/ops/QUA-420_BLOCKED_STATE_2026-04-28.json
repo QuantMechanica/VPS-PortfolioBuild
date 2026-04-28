@@ -1,0 +1,15 @@
+{
+  "issue": "QUA-420",
+  "status": "blocked",
+  "reason": "pending_cto_review_gate",
+  "unblock_owner": "CTO",
+  "unblock_action": "Review commit 83c1e4c using docs/ops/QUA-420_FIXLIST_CLOSEOUT_2026-04-28.md and docs/ops/QUA-420_CTO_REVIEW_PACKET_2026-04-28.md",
+  "evidence": {
+    "code_commit": "83c1e4c",
+    "closeout_commit": "3b6bbee",
+    "packet_commit": "3ca59bc",
+    "compile_log": "framework/build/compile/20260428_115145/QM5_SRC04_S03_lien_fade_double_zeros.compile.log",
+    "compile_result": "0 errors, 0 warnings"
+  },
+  "timestamp_utc": "2026-04-28T00:00:00Z"
+}
