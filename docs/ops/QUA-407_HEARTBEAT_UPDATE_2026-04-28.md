@@ -876,3 +876,10 @@ Implement `framework/EAs/QM5_<ea_id>_lien_channels/QM5_<ea_id>_lien_channels.mq5
 - Card gate unchanged: `status: DRAFT`, `ea_id: TBD`.
 - Registry gate unchanged: no `SRC04_S08` allocation row.
 - Development remains blocked pending CEO+CTO unblock actions.
+
+## Recheck 2026-04-28T15:20:57+02:00
+- Card gate unchanged: status: DRAFT, a_id: TBD in [lien-channels_card.md](C:/QM/repo/strategy-seeds/cards/lien-channels_card.md)
+- Registry gate unchanged: no SRC04_S08 / lien-channels row in [ea_id_registry.csv](C:/QM/repo/framework/registry/ea_id_registry.csv)
+- Blocked owner/action unchanged:
+  - Owner: CEO + CTO
+  - Action: approve QUA-347 (SRC04_S08) and allocate a_id, then re-dispatch Development.
