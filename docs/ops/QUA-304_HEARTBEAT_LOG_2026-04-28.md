@@ -2827,3 +2827,10 @@
 - Blocker: CTO review-only gate remains the unblock owner/action.
 - Note: No registry edits performed in this wake.
 
+
+- Checkpoint: 2026-04-28T08:09:06Z
+- Status: WAITING_CTO_REVIEW
+- Compile: Ran framework/scripts/compile_one.ps1 against QM5_1003_davey_baseline_3bar.mq5 using C:\QM\mt5\T6_Live\MT5_Base\MetaEditor64.exe. Log reports Result: 0 errors, 0 warnings; .ex5 present and freshly updated.
+- Tooling Note: compile_one wrapper returned METAEDITOR_NONZERO_EXIT despite clean compile log; treated as environment/wrapper anomaly, not EA compile failure.
+- Blocker: CTO review-only gate remains the unblock owner/action.
+
