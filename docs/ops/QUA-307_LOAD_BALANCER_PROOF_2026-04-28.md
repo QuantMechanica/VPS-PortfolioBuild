@@ -19,7 +19,7 @@ python -m unittest C:\QM\repo\framework\scripts\tests\test_pipeline_dispatcher.p
 powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\framework\scripts\run_backtest_smoke.ps1 -Terminal any -DryRun
 python C:\QM\repo\framework\scripts\resolve_backtest_target.py --job-json <job.json> --state-json <dispatch_state.json> --event start
 python C:\QM\repo\framework\scripts\resolve_backtest_target.py --job-json <job.json> --state-json <dispatch_state.json> --event complete
-python C:\QM\repo\framework\scripts\resolve_backtest_target.py --job-json <job.json> --state-json <dispatch_state.json> --event complete --prune-completed
+python C:\QM\repo\framework\scripts\resolve_backtest_target.py --job-json <job.json> --state-json <dispatch_state.json> --event complete --prune-completed --retention-seconds 172800
 ```
 
 ## Verification results
@@ -33,7 +33,7 @@ python C:\QM\repo\framework\scripts\resolve_backtest_target.py --job-json <job.j
   - start event returns `status=scheduled`
   - complete event returns `status=released`
   - persisted `running.<terminal>` returns to `0`
-  - prune option removes stale completed dedup records and reports `pruned_completed`
+  - prune option removes stale completed dedup records and reports `pruned_completed` (retention configurable via `--retention-seconds`)
 
 ## Runtime state path
 

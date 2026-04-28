@@ -14,6 +14,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from framework.scripts.pipeline_dispatcher import (
+    DEFAULT_COMPLETED_RETENTION_SECONDS,
     load_dispatch_state,
     prune_state,
     release_job,
@@ -29,6 +30,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-per-terminal", type=int, default=3, help="Max active runs per terminal.")
     parser.add_argument("--event", choices=("start", "complete"), default="start", help="Dispatch lifecycle event.")
     parser.add_argument("--prune-completed", action="store_true", help="Prune stale completed dedup records.")
+    parser.add_argument(
+        "--retention-seconds",
+        type=int,
+        default=DEFAULT_COMPLETED_RETENTION_SECONDS,
+        help="Retention for completed dedup records when --prune-completed is enabled.",
+    )
     return parser.parse_args()
 
 
@@ -46,7 +53,7 @@ def main() -> int:
         decision = resolve_target_terminal(job, state, max_per_terminal=args.max_per_terminal)
     pruned = 0
     if args.prune_completed:
-        pruned = prune_state(state)
+        pruned = prune_state(state, retention_seconds=args.retention_seconds)
     if decision.get("status") in {"scheduled", "released"}:
         save_dispatch_state(state, state_path)
     if pruned > 0 and decision.get("status") not in {"scheduled", "released"}:
