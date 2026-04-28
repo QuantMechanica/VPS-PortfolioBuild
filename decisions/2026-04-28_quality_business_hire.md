@@ -9,13 +9,13 @@
 
 Hired **Quality-Business** as the V5 second-eye reviewer on Strategy Cards. QB is the 9th active agent, exceeding the 8-agent anti-sprawl cap from CEO V5 Org Proposal § 6 — OWNER explicitly waived that cap on this directive ("Hire right now please and reroute those tasks to him. CEO can approve. We should get things going!").
 
-**Canonical agent:** `f2c79849-a19e-4bc0-8737-438dd50ada64` (urlKey `quality-business`).
+**Canonical agent:** `0ab3d743-e3fb-44e5-8d35-c05d0d78715d` (urlKey `quality-business-2`, name `Quality-Business 2` — auto-suffixed because the failed first hire had already claimed `quality-business`; see "Race-condition note" below).
 
 **Adapter / runtime:**
 
 - `claude_local`, model `claude-opus-4-7` (cache-friendly long-form economic-thesis reasoning; matches Research's adapter).
-- `cwd: C:\QM\repo` (read-only — QB does not write source; verdicts are issue comments).
-- Heartbeat: `enabled=true, intervalSec=14400, wakeOnDemand=true, maxConcurrentRuns=3` — event-driven primary, 4h timer fallback.
+- `cwd: C:\QM\worktrees\quality-business` (per-agent worktree under DL-027; QB does not write source — verdicts are issue comments — but the worktree gives QB its own scratch space for review notes).
+- Heartbeat (after QUA-444 patch): `enabled=false, wakeOnDemand=true, maxConcurrentRuns=1` — purely event-driven (wake on assignment / mention). No timer fallback; G0 review is reactive, not periodic.
 - Reports to CEO (`reportsTo: 7795b4b0-8ecd-46da-ab22-06def7c8fa2d`); strategically reports to OWNER via monthly business review.
 - Instructions sourced from BASIS `paperclip-prompts/quality-business.md` (V5 BASIS, migrated from Notion 2026-04-26).
 
@@ -34,7 +34,7 @@ QB does **not** edit code, edit prompts, run backtests, dispatch work, or unilat
 
 ## Reroute on landing — G0 review queue
 
-Per QUA-429, CEO routed the following to QB on hire (rollup issue [QUA-438](/QUA/issues/QUA-438), `assigneeAgentId=f2c79849-a19e-4bc0-8737-438dd50ada64`):
+Per QUA-429, CEO routed the following to QB on hire (rollup issue [QUA-438](/QUA/issues/QUA-438), `assigneeAgentId=0ab3d743-e3fb-44e5-8d35-c05d0d78715d`):
 
 | Source | Cards routed to QB |
 |---|---|
@@ -53,11 +53,19 @@ Per QUA-429, CEO routed the following to QB on hire (rollup issue [QUA-438](/QUA
 
 CEO retains G0 final-approval authority — QB is the second eye, not the sole gate.
 
-## Race-condition note (parallel hire collision)
+## Race-condition + retired-hire note (canonical agent corrected)
 
-A parallel orchestrator (likely Board Advisor or another CEO heartbeat instance) hired QB at `2026-04-28T12:54:47Z` — ~20s before this CEO heartbeat completed its own hire at `12:55:08Z`. The duplicate landed as `Quality-Business 2` (`0ab3d743-e3fb-44e5-8d35-c05d0d78715d`) with auto-suffixed name. The duplicate has been disabled (`heartbeat.enabled=false, wakeOnDemand=false`) to make it inert; **board deletion is required to fully remove it** (CEO lacks DELETE-agent permission).
+This DL note's earlier revision named `f2c79849-a19e-4bc0-8737-438dd50ada64` as canonical. That was wrong; this revision flips it. Truth:
 
-Lesson logged to memory: hires need a "list-existing-agents-with-includeInactive=true-before-creating" check, not just a default `agent-configurations` GET — the default list filters out idle agents that haven't heartbeat yet. Both Quality-Business and Quality-Tech don't appear in the default list because they've never run.
+1. **CEO heartbeat 12:52Z** submitted `agent-hires` for QB and got `f2c79849`. The hire payload was built via Python `json.dumps` with the literal Windows path `"C:\\QM\\repo"` for `cwd`; in the JSON-on-the-wire serialisation the `\r` in `\repo` was interpreted as a carriage return, so the agent landed with `cwd=C:\QMepo` (ENOENT). The first run failed at process spawn.
+2. **Parallel run** (likely Board Advisor or a sibling CEO heartbeat) detected the broken hire and re-hired QB at `2026-04-28T12:54:47Z` with the corrected, worktree-isolated cwd. Because the urlKey `quality-business` was already claimed by the broken hire, the new agent got auto-suffixed urlKey `quality-business-2` and name `Quality-Business 2` — the canonical agent on this DL.
+3. **Recovery (QUA-440):** broken hire `f2c79849` was renamed to `Quality-Business (RETIRED 2026-04-28)`, urlKey rotated to `quality-business-retired-2026-04-28`, heartbeat fully disabled (`enabled=false, wakeOnDemand=false, maxConcurrentRuns=0`). Inert; board deletion needed to fully purge it (CEO lacks DELETE-agent permission). QUA-432 (and other QB-routed issues misattributed to the retired id) were reassigned to `0ab3d743`.
+
+**Lessons logged to memory:**
+
+- `feedback_hire_cwd_json_escape.md`: Windows `cwd` in `adapterConfig` must be `\\`-escaped (or use `/`). A single `\r`/`\n`/`\t` silently corrupts the path. Build the JSON payload with the path expressed as either forward-slashes or `\\\\`-doubled when going through Python `json.dumps`.
+- `feedback_hire_runtime_wakeondemand.md`: `paperclip-create-agent` ships `runtimeConfig.heartbeat.wakeOnDemand=false` by default; PATCH to `true` post-hire or the agent never wakes. QB2 was stranded for ~30 min until this was patched (QUA-444 cascade).
+- Earlier hires-discovery lesson stands: list existing agents with `includeInactive=true` before creating, since the default `agent-configurations` list filters out idle agents that have never run, and that filtering masks both QB and Quality-Tech.
 
 ## Cross-links
 
@@ -81,6 +89,8 @@ Lesson logged to memory: hires need a "list-existing-agents-with-includeInactive
 
 ## Verification
 
-- `GET /api/agents/f2c79849-a19e-4bc0-8737-438dd50ada64` returns `status=idle`, `reportsTo=CEO`, model `claude-opus-4-7`, instructions present at the managed-bundle path.
-- [QUA-438](/QUA/issues/QUA-438) created and assigned to QB with the SRC02-SRC05 G0 backlog dispatched.
+- `GET /api/companies/{companyId}/agents` (default list) returns canonical `0ab3d743-e3fb-44e5-8d35-c05d0d78715d` (`Quality-Business 2`, urlKey `quality-business-2`, status `idle`, `reportsTo=CEO`, adapter `claude_local`, model `claude-opus-4-7`, cwd `C:\QM\worktrees\quality-business`).
+- Same call returns retired `f2c79849-a19e-4bc0-8737-438dd50ada64` (`Quality-Business (RETIRED 2026-04-28)`, urlKey `quality-business-retired-2026-04-28`, heartbeat fully disabled, cwd `C:\QMepo` — ENOENT).
+- [QUA-438](/QUA/issues/QUA-438) created and assigned to canonical QB with the SRC02-SRC05 G0 backlog dispatched.
+- Forward G0 verdicts already landed on QUA-340, QUA-346, QUA-348, QUA-349 (and others) showing `0ab3d743` posting `APPROVED` advisory pre-screens, with CEO co-signing under DL-030 Class-2 Review-only execution policy. Live two-eye protocol confirmed.
 - Doc-KM follow-up tracked separately to update `processes/process_registry.md` § "Active agents" and to backfill DL-030 participants table to name QB explicitly.
