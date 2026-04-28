@@ -22,6 +22,13 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Registers Task Scheduler job `QM_DWX_HourlyCheck` as `SYSTEM` (legacy fallback only).
   - Safe to re-run (`Register-ScheduledTask -Force`).
   - Uses `MultipleInstances=IgnoreNew` to prevent concurrent overlap.
+- `scripts/Test-DarwinexCommodityInventory.ps1`
+  - Runs a read-only commodity inventory probe for Darwinex commodity CFDs `NG` and `RB`.
+  - Cross-checks broker/custom symbol presence in MT5 plus staged CSV roots and `imports\done` sidecars.
+  - Writes deterministic artifacts:
+    - `infra/reports/darwinex_commodity_inventory_latest.json`
+    - `infra/reports/darwinex_commodity_inventory_latest.md`
+  - Safe to re-run; no MT5 writes and no T6 scope.
 - `scripts/Invoke-InfraAudit.ps1`
   - Audits core infra health checks:
     - disk free thresholds
