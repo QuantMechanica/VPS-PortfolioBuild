@@ -58,6 +58,7 @@ Do not force-clear T6-related issues without OWNER/LiveOps approval gates.
 - Default behavior is monitor-only.
 - Optional `-AutoRecover` executes the same PATCH-only assignee-cycle described above.
 - Use `-AssigneeAgentId <agent-id>` (defaults to `PAPERCLIP_AGENT_ID`) for deterministic lock visibility on large issue sets.
+- Use `-PaperclipRunId <run-id>` (defaults to `PAPERCLIP_RUN_ID`) so mutating calls carry the current heartbeat run trace.
 - `-AllowedAssigneeAgentIds` is optional; if omitted, the script auto-uses `-AssigneeAgentId`.
 - Lock classes:
   - `orphaned_lock`: stale lock with `activeRun=null`

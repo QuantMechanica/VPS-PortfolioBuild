@@ -169,6 +169,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Default mode is monitor-only (no mutations); optional `-AutoRecover` performs PATCH-only assignee-cycle recovery.
   - Uses `-AssigneeAgentId` (defaults to `PAPERCLIP_AGENT_ID`) to avoid missing stale locks in large company issue lists.
   - `-AllowedAssigneeAgentIds` is optional; when omitted, it auto-scopes to `-AssigneeAgentId` to prevent silent allowlist mismatches.
+  - Uses `-PaperclipRunId` (defaults to `PAPERCLIP_RUN_ID`) for mutating PATCH audit traceability.
   - Optional `-OutPath` writes JSON output to disk while preserving stdout output.
   - `-AutoRecover` applies only to `orphaned_lock` class.
   - Adds `X-Paperclip-Run-Id` header on all mutating PATCH calls.

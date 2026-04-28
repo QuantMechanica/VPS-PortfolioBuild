@@ -8,6 +8,7 @@ param(
     [string[]]$Statuses = @("in_progress"),
     [string]$AssigneeAgentId = $(if ($env:PAPERCLIP_AGENT_ID) { $env:PAPERCLIP_AGENT_ID } else { "" }),
     [string[]]$AllowedAssigneeAgentIds = @(),
+    [string]$PaperclipRunId = $(if ($env:PAPERCLIP_RUN_ID) { $env:PAPERCLIP_RUN_ID } else { "" }),
     [string]$OutPath = "",
     [switch]$AutoRecover,
     [switch]$FailOnFinding
@@ -41,7 +42,12 @@ function Invoke-PaperclipApiPatch {
         [string]$Uri,
         [hashtable]$Payload
     )
-    $runId = [guid]::NewGuid().ToString()
+    $runId = if (-not [string]::IsNullOrWhiteSpace($script:paperclipRunId)) {
+        $script:paperclipRunId
+    }
+    else {
+        "watchdog-manual-{0}" -f ([guid]::NewGuid().ToString())
+    }
     $mutatingHeaders = @{
         Authorization = $script:headers.Authorization
         "X-Paperclip-Run-Id" = $runId
@@ -102,6 +108,7 @@ if ([string]::IsNullOrWhiteSpace($CompanyId) -or [string]::IsNullOrWhiteSpace($A
 
 $apiBase = $PaperclipApiUrl.TrimEnd("/")
 $script:headers = @{ Authorization = "Bearer $ApiKey" }
+$script:paperclipRunId = $PaperclipRunId
 $allowedAssignees = @($AllowedAssigneeAgentIds | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
 if ($allowedAssignees.Count -eq 0 -and -not [string]::IsNullOrWhiteSpace($AssigneeAgentId)) {
     $allowedAssignees = @($AssigneeAgentId)
