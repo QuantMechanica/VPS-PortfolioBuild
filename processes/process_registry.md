@@ -1,5 +1,60 @@
 # Process Registry
 
+## Active agents
+
+Source-of-truth roster snapshot (live agent list authoritative: `paperclipai agent list`). V5 BASIS prompts are Git-canonical at [`paperclip-prompts/<role>.md`](../paperclip-prompts/) (OWNER-managed, do not edit). Wave/hire trigger detail: [`docs/ops/AGENT_SKILL_MATRIX.md`](../docs/ops/AGENT_SKILL_MATRIX.md) § Wave Hire Triggers and [`decisions/2026-04-27_v5_org_proposal.md`](../decisions/2026-04-27_v5_org_proposal.md).
+
+- **CEO**
+  - Role: Strategic gating, issue routing, hires (DL-017), CEO ↔ CTO dialectic, OWNER escalation, governance ratification.
+  - Adapter: claude_local (Claude Opus 4.7), heartbeat 30 min ([DL-034](../decisions/2026-04-28_ceo_heartbeat_30min.md)) + wake-on-demand on board/issue events.
+  - Reports to: OWNER.
+  - Source: [`paperclip-prompts/ceo.md`](../paperclip-prompts/ceo.md).
+  - Agent ID: `7795b4b0-8ecd-46da-ab22-06def7c8fa2d`.
+
+- **CTO**
+  - Role: V5 framework spec authority, MQL5 code review, Hard Rules custodian, technical implementation choices within DL-023 broadened autonomy.
+  - Adapter: codex_local (gpt-5.3-codex), heartbeat 1h review queue + wake-on-demand.
+  - Reports to: CEO (organizationally), OWNER (strategically).
+  - Source: [`paperclip-prompts/cto.md`](../paperclip-prompts/cto.md).
+  - Agent ID: `241ccf3c-ab68-40d6-b8eb-e03917795878`.
+
+- **Research**
+  - Role: Source extraction, Strategy Card authoring per [DL-029](../decisions/DL-029_strategy_research_workflow.md) and [13-strategy-research.md](13-strategy-research.md), survey-pass synthesis.
+  - Adapter: claude_local (Claude Opus 4.7), wake-on-demand (event-driven per BASIS).
+  - Reports to: CEO.
+  - Source: [`paperclip-prompts/research.md`](../paperclip-prompts/research.md).
+  - Agent ID: `7aef7a17-d010-4f6e-a198-4a8dc5deb40d`.
+
+- **Documentation-KM**
+  - Role: Process registry + decisions registry + lessons-learned curation, Notion ↔ Git mirror, episode artifact packs, onboarding packs.
+  - Adapter: claude_local (Claude Opus 4.7), heartbeat 2h Notion-sync fallback + wake-on-demand.
+  - Reports to: CEO.
+  - Source: [`paperclip-prompts/documentation-km.md`](../paperclip-prompts/documentation-km.md).
+  - Agent ID: `8c85f83f-db7e-4414-8b85-aa558987a13e`.
+
+- **DevOps**
+  - Role: VPS infrastructure, Drive ↔ Git fence, MT5 portable-mode + factory deploy ([Rule 5](../decisions/2026-04-28_seven_backtest_rules.md)), monitoring scripts, set-file generator, disk policy enforcement.
+  - Adapter: codex_local (gpt-5.3-codex), heartbeat hourly cron + wake-on-demand.
+  - Reports to: CEO; Obs-SRE will absorb the monitoring slice on Wave 3.
+  - Source: [`paperclip-prompts/devops.md`](../paperclip-prompts/devops.md).
+  - Agent ID: `0e8f04e5-4019-45b0-951f-ca248cf82849`.
+
+- **Pipeline-Operator**
+  - Role: T1–T5 dispatch + de-dup ([15-pipeline-op-load-balancing.md](15-pipeline-op-load-balancing.md)), backtest-execution discipline ([16-backtest-execution-discipline.md](16-backtest-execution-discipline.md)), evidence capture, NO_REPORT recovery, EA Review gate enforcement at P1 → P2.
+  - Adapter: codex_local (gpt-5.3-codex), heartbeat timer-driven + wake-on-demand.
+  - Reports to: CEO.
+  - Source: [`paperclip-prompts/pipeline-operator.md`](../paperclip-prompts/pipeline-operator.md).
+  - Agent ID: `46fc11e5-7fc2-43f4-9a34-bde29e5dee3b`.
+
+- **Quality-Business**
+  - Role: G0 Strategy Card economic-thesis review (second eye with CEO); P4 selection co-review; PASS cross-challenge at P2; portfolio-fit caps; monthly business review to OWNER.
+  - Adapter: claude_local (Claude Opus 4.7), heartbeat 4h fallback + wake-on-demand.
+  - Reports to: CEO (organizationally), OWNER (strategically).
+  - Source: [`paperclip-prompts/quality-business.md`](../paperclip-prompts/quality-business.md); hire issue [QUA-429](/QUA/issues/QUA-429).
+  - Agent ID: `f2c79849-a19e-4bc0-8737-438dd50ada64`.
+
+Wave 2 hires still pending (no agent assigned, no heartbeat budget consumed): Quality-Tech, Development. Wave 3+ remain planned per the wave plan; Chief of Staff is deferred indefinitely per `docs/ops/PHASE_FINAL_FOUNDER_COMMS.md`.
+
 ## Factory Setup Standards
 
 - MT5 factory terminals `T1`-`T5` must include an install-root `portable.txt` marker file (empty file) to prevent AppData split-brain when launched without explicit `/portable`.
