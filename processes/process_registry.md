@@ -1,5 +1,9 @@
 # Process Registry
 
+## Recently added
+
+- 2026-04-28 — [`processes/16-backtest-execution-discipline.md`](16-backtest-execution-discipline.md) (Documentation-KM authoring; Pipeline-Operator owns Rules 1-4, 7; DevOps owns Rule 5 + co-owns Rule 7; Research owns Rule 6; CTO owns Rule 5 review-pass) — codifies the seven OWNER 2026-04-28 binding backtest rules (`.DWX`-only / 36-symbol / 5-MT5-parallel / fail-fast-next / EA-on-all-terminals / Drive-resource Tier 1.5 / fixed-risk set file). Binding source: [QUA-400](/QUA/issues/QUA-400) → [DL-038](../decisions/2026-04-28_seven_backtest_rules.md). Authored under [QUA-418](/QUA/issues/QUA-418).
+
 ## CEO Authority Boundaries
 
 Per [DL-017](../decisions/REGISTRY.md) (hires) + [DL-023](../decisions/2026-04-27_ceo_autonomy_waiver_v2.md) (technical / operational / process v2) + [DL-032](../decisions/2026-04-27_ceo_autonomy_waiver_v3.md) (research source-queue ordering v3): CEO acts unilaterally on the classes listed below. OWNER's stated preference is bias to action, fewer interrupts. When ambiguous, CEO **acts**, then retroactively raises via successor DL-NNN if the call needs ratification.
