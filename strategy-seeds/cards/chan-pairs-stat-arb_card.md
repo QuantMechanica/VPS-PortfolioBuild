@@ -285,13 +285,13 @@ data_requirements: standard                   # daily adj-close on Darwinex .DWX
 
 | version | date | rebuild reason | P-stage reached | verdict |
 |---|---|---|---|---|
-| _v1 | 2026-04-27 | initial build | TBD | TBD |
+| _v1 | 2026-04-27 | initial build | G0 | **G0 PASS** (CEO ACCEPT 2026-04-28; QUA-275 closeout comment `65e06e0e` + per-card mirror QUA-284 comment `53d1ca57`; `friday_close` Hard Rule waiver granted; vocab back-port tracked on QUA-332) |
 
 ## 15. Pipeline Phase Status (current `_v1`)
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
-| G0 Research Intake | 2026-04-27 | DRAFT (awaiting CEO + Quality-Business review) | this card |
+| G0 Research Intake | 2026-04-28 | **PASS** (CEO ACCEPT; `friday_close` waiver granted; pair-substitution path → AUDCAD.DWX default + cadf-grid scan at P3.5) | QUA-275 closeout comment `65e06e0e` + QUA-284 comment `53d1ca57` |
 | P1 Build Validation | TBD | TBD | TBD |
 | P2 Baseline Screening | TBD | TBD | TBD |
 | P3 Parameter Sweep | TBD | TBD | TBD |
@@ -318,4 +318,5 @@ data_requirements: standard                   # daily adj-close on Darwinex .DWX
 - 2026-04-27: Chan strongly disclaims stop-losses on reversal models (Ch 7 p. 143 verbatim). V5 framework's kill-switch + account MAX_DD trip is the authoritative catastrophic backstop for this card; per-trade stops would degrade the strategy. CTO confirms kill-switch sizing at P5.
 - 2026-04-27: GLD/GDX (Chan's canonical pair) is **not Darwinex-deployable** because GDX (gold-miners ETF) has no Darwinex equivalent. The strategy is deployable on cadf-eligible pairs that ARE on Darwinex (CAD/AUD spot, AUDUSD-NZDUSD spot, GOLD-SILVER spot, etc.). Research recommends Pipeline-Operator run a cadf scan over the Darwinex-eligible candidate-pair grid at P3.5 to select live pairs; GLD/GDX is the cross-walk reference for V5 framework correctness, not a live target.
 - 2026-04-27: Friday-close incompatibility (10-day OU half-life vs weekly forced-flat) is the load-bearing G0 risk. Without explicit Hard Rule waiver this card REJECTS at G0; with waiver, it advances. Research escalates to CEO + CTO for the waiver decision.
+- 2026-04-28: **G0 PASS — CEO ACCEPT** (QUA-275 closeout comment `65e06e0e` + per-card mirror QUA-284 comment `53d1ca57`). `friday_close` Hard Rule WAIVER GRANTED with rationale: "two-currency-pair spreads have bounded weekend-gap exposure (covered weekend gaps on FX majors typically <50 pips per leg, partially correlated → spread weekend-gap is sub-pair-magnitude)" — applies to Darwinex-pair deployment, not GLD/GDX. Vocab additions ratified in batch on QUA-275; back-port to flip card YAML `status: DRAFT → APPROVED` + insert `cointegration-pair-trade` / `mean-reach-exit` flags is filed as QUA-332 (low priority, non-blocking). Default primary symbol set to **AUDCAD.DWX** (single-symbol Darwinex spot proxy of Chan's CAD/AUD generalization). Issue handed off to Pipeline-Operator (`46fc11e5`) for P1..P10 dispatch; status `in_review → todo`. Per CEO comment, P1 Dev build child to be filed when Dev queue (5 Davey P1 rebuilds QUA-302..305 in flight) drains.
 ```
