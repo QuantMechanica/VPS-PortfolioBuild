@@ -1,0 +1,726 @@
+Welcome to the Inner Circle Workshop
+
+                  This is my personal opportunity to teach you the best of what I have learned
+over the last 37 years and, hopefully, jump start your trading and learning. I'm looking
+forward to it.
+
+                                                                                                              Larry Williams
+
+MARKET ADDAGE #1--Charts don't move the Markets... Markets move the
+charts.
+
+Despite what you have read, heard or have come to believe, by and large it is my experience that
+technical analysis (chart reading), is not an effective investment strategy. Its usage is limited to
+timing our entry and exits into and out of trades.
+
+Thus I want to begin this workshop with revealing to you what does work, what does set up
+
+major market up and downswings. I have isolated the major "fundamental" conditions seen at
+
+this significant market turning point over the last 30+ years. These conditions set the stage for
+
+market moves that technical analysis can "time". Without these conditions we are destined to a
+
+life of perplexity and confusion. With these conditional set ups we will be working with the
+
+major causes of market movements.      :
+
+The "SET UP" criteria you will learn:     -
+
+1. HOW TO DETERMINE FUNDAMENTAL UNDER AND OVER
+
+VALUATION
+
+2. GET IN PHASE WITH THE POWERS THAT MAKE THE MARKETS
+
+3. THE "END OF THE TREND" INDICATOR
+
+4. THE PINCH AND THE PAUNCH TOP AND BOTTOM INDICATOR                                                                          *m
+
+5. HOW TO FADE THE USUALLY WRONG PUBLIC
+
+6. HOW TO SUPERCHARGE SEASONAL TRADING STRATEGIES
+
+7. THE OPEN INTEREST "PLAY" I'VE BEEN USING SINCE 1970
+
+8. THE SECRET MESSAGE OF SPREADS...PRICE PREMIUMS
+IT'S ALL ABOUT SYNERGISIM- While it is true that many major highs and lows are ·
+correctly "called" by any one of these tools, the best plays come from a cluster of at least 4 of
+these Set Up tools being present. I'm a team player, I want at least 4 members of my team .
+present when I venture out to bag major highs and lows.
+
+L) HOW TO DETERMINE FUNDAMENTAL UNDER AND OVER
+
+VALUATION                                                                                ~-';,*:V^
+
+Technicians have bandied about the concept of overbought and oversold since the first chart was
+drawn, but what they looked at was only price action. Indeed, the DJIA has been overbought
+since 1983! All bull markets are "overbought", all bear markets seriously "oversold". ""'·" · / · ; ·
+
+In 1998, while searching for a better way to determine value, a novel thought crossed my mind.
+
+Value in stocks is measured by P/E ratios, dividends and the like, things not available to us as
+                                                                                  " -;i · ' · - - ' .
+commodity traders.
+
+What is value is the notion I wrestled with most of 1997 and 1998. How could I determine if
+Wheat was overvalued? And, would that same measurement work for Pork Bellies or Cotton?
+What is value, and how do we measure it?
+
+History and most major religions teach us there is an ultimate storehouse of value.. ..Gold. ···'·· ; ,
+
+This got me to thinking, why not compare the price of all commodities to this ultimate
+
+storehouse to see if major undervalued and overvalued zones vs. gold could be isolated.
+
+The search began with a study of spreads and almost at once I knew I was on the track of
+
+something very good.                                                                              ;-
+
+The evolution of this idea can now be stated quite simply;
+
+Divide the price of any commodity by the price of Gold (this shows the spread relationship) and
+multiply this by 100 to normalize. Then construct either a 2 week or 2 period exponential
+average of this spread. Also construct a 22-week average or 22 period exponential of the spread.
+It does not make much difference which mathematical formula you us. Finally, subtract the 2
+period average from the 22 period average. The resulting product, the Preliminary Valuation
+Index (PVT), is clearly shows high and low levels of valuation that are not present in any
+technical indicators I know.
+
+UNDERSTANDING WHAT YOU ARE LOOKING FOR... Initially, I was not able to isolate a
+
+"be all, end all" number that represented +/-values for all commodities. My next step was tc z?
+
+the same thing with this index I do with the Commercial and Public Sentiment Index. By th j_
+
+mean I then constructed essentially a %R indicator. The math is to take the current weeks
+
+reading and subtract from that the lowest reading of the last three years. That amount is then
+
+divided by an amount arrived at my subtracting the lowest reading of the last three years from
+
+the highest reading of the last three years.  ·             '·-..-·'  v^  :..;*,           :«.;··.
+What we have accomplished is the construction of an index we can use to measure overvalued
+and undervalued zones across the board for all markets. All one needs is a long-term weekly
+chart of the commodity under question and the Williams Valuation Index (WVI).TM.
+
+I simply draw a line across the extreme readings found at major market highs and lows. As a~
+example, using the Genesis Charting Software we see that most all major highs have come wiih
+the index in the 75 area while most major lows are indicated by a reading in the 15 area. You are
+free to "move" these zones around a bit, but generally speaking you will see these are the
+readings associated with major highs, 75% or higher and major lows, under 15%.
+
+NOTE: Some times the index will be a little early, and yes, sometimes it may not even be in the
+major high/low zones. Since we are using a combination of our tools of the trade, don't let this
+bother you. Plus, we still need to determine our entry levels. Suffice it to say, though, that once
+an overvalued or undervalued zone is indicated, we need to be alert. Big game is near, get your
+guns ready.
+
+Also note, this is does not work at all like a technical oscillator. As I will show in the seminar
+there are numerous times a market is flat or even declining, yet the Valuation Index
+clearly--and correctly--tells us the market is over valued. The opposite is equally true.
+
+Now let's look at some examples. The first is Wheat and I'm presenting charts covering the last
+30 years, 1968 to 1999. Just this index alone alerted us to most all major highs and lows in this
+market. This is remarkable consistency.
+
+See Pages 1 Through 4
+
+Cotton has little in common with Wheat, but the same thing can be seen in the WVI Again, most
+
+all-major highs appear with our index in the 75% area and lows in the 15% area. Additional
+
+long-term charts are shown for your understanding and persona "track record" of the major
+
+commodities.            ,'
+
+Seepages
+
+Pork Bellies or Platinum all show the same relationship to Gold as the next charts demonstrate.
+I'm also showing here most all major markets with my WVI tm for your study and historical
+records.
+
+See Pages 6 Through 22
+     SO HOW DO WE MEASURE OVERVALUED AND UNDERVALUED IN GOLD???
+
+Obviously, we can't spread Gold vs. Gold, so what are we do to? My answer to this is to
+construct the same measurement, but spreading Gold against Treasury Bonds. As I will show
+when we discuss Will Go, there is a very strong and powerful correlation between these two
+markets.
+
+  ee Pages 23 Through 2
+
+CONCERNING THE CURRENCIES--Currencies do well with the WVI, but perhaps do
+better spreading against the Dollar Index. The next charts show each of the major commodities'
+against both Gold and the Dollar Index. I'll let you choose.
+
+See Pages 25 Through 30
+
+2.) GET IN PHASE WITH THE POWERS THAT MAKE THE MARKETS
+
+CLEARING UP ON THE COMMERCIALS
+
+Many, many analysts have passed by this treasure house of market forecasting techniques. I was
+first introduced to the concept by Bill Meehan in the late 1960's, so I guess it's safe to say I have
+more experience with this tool than any other current analyst.
+
+There are several critical points I need to share with you about this index, to begin let's
+talk about the index itself. First of all it is constructed of just the large hedger activity as released
+by the Commodity Futures Trading Commission and can be garnered every other week (in the
+old days it came only once a month). On their web site at · HYPERLINK
+http:/AVWW.CFTC.GOV · WWW.CFTC.GOV* , there is a bar there that says "Commitment of
+Traders", click on it for the data. This is the only data I use from the CFTC, I do not use the
+large traders, (funds and trend followers), or small traders.
+
+I construct the index by taking the highest value of the net difference between long and short
+positions for the current reporting period. Then subtract from the lowest such reading of the last
+three years, this value is then divided by the difference between the highest and lowest readings
+of the last three years. This normalizes their activity.
+
+Keep in mind the Commercials are the ultimate trend enders. They are not top and bottom
+pickers, they accumulate and distribute. As such they are usually early. Also the mere fact thev
+are or have just become net long or short may not have great meaning. This is not like a lignx *?
+switch that is on or off, bullish or bearish.
+
+There are three important ways to use this index.
+
+      L Extremely high/low readings
+      2. 12 month high/low readings
+      3. The Crouch (rollovers/rollups)
+A) EXTREMELY HIGH/LOW READINGS--There do appear to be absolute levels that aic
+
+found at major market highs and lows. Certainly any reading greater than 75% is bullish and ...
+
+than 2 5 % bearish.      -.,,         -....,-
+
+B) 12 MONTH HIGHS AND LOWS--What I'm looking for here are readings that are higher
+than all values for the last 12 months, that's bullish. Readings lower than all postings for the last
+12 months are bearish. In both instances this is irrespective of the % or absolute raw value
+reading.
+
+See Pages 31 Through 35
+
+C) THE "CROUCH" WITH THE COMMERCIALS
+
+AN OVERVIEW OF COMMERCIAL ACTIVITY-- For the last 25 years I've been talking
+
+and writing about how this group of traders sets the tone for most all market activity. Nothing
+
+has changed. The markets were set up by these people, brokers and, to facilitate business. The
+
+exchanges are not there to accommodate speculation, they serve a commercial purpose and we
+
+speculators are a mere pawn, and useful one, in the grand scale of things. ..  -,'.,>.., ;";v-
+
+Traders have taken the wrong view of Commercial activity. It is not a light switch that is on or
+off. What does matter is a very high level of buying/selling over the last 12 months. That's the
+initial set up. We can measure this by taking the 3-year high and low of Commercial activity
+and dividing that into the current reading minus the 3-year low. That's the COT index you'll
+see in most chart books and the Genesis software.
+
+In this fashion we can watch the pendulum of Commercial activity to see when it has reached an
+extreme. It will surely move from one extended reading to another, to the opposite side, from
+bullish to bearish, and in the process will go from positive to negative. This change in direction
+from bullish to less bullish is not bearish, nor is a change from + to -.
+
+Indeed, it is often a positive sign, indicating the move is underway. You need not worry about
+this and in fact can use the roll over as a sign the move has begun! The examples prove my ,
+point. The roll over is an early indication the trend move has begun, not that it is over!
+
+See Pages 36Through41
+
+'The long and short of Commercial activity is that a 12-month high/low in their buying/sellinr ::
+a signal for a trend reversal. These people do not try to buy tops and bottoms they accumulate
+and distribute. My final point is that when they are diametrically opposed to the public maj<»
+moves usually develop, i.e., if the public is excessively bearish while the Commercials are
+heavily long prices will rally.
+But there's another point you should know about, one I call the "crouch" as it looks like the
+commercials crouch into their buying/selling then spring from this extreme position and a new
+trend begins. The amazing rule is...
+
+                   WHEN THE COMMERCIALS INCREASE THEIR SELLING
+                                         THE MARKETS RALLIES!
+
+          WHEN THE COMMERCIALS INCREASE THEIR BUYING
+                             THE MARKETS DECLINES! -
+
+Yes, you read correctly an increase in Commercial buying is bearish--if it comes at a time they
+have moved to an extended or high level of selling. When they decrease there of buying
+(increase selling) from a high level of buying the markets usually rally. This is like a turn of the
+tide and signals excellent points to hop aboard as the following charts illustrate. One needs to
+first see an over-extended move by the commercials, the crouch in case of a sell, then it appears
+they change directions and the markets follow.
+
+3.) THE "END OF THE TREND" INDICATOR
+
+        Discovery consists in seeing what everybody has seen and thinking what nobody else
+has thought.
+
+          Albert Szent-Gyorgi
+
+Years ago Welles Wilder came forth with the Directional Market Index and the ADX line. I
+have found this a very, very valuable long-term tool to call major highs and lows when used in a
+
+certain fashion. Unfortunately, this does not signal all tops and bottoms, but when it does,
+
+especially in conjunction with Sentiment and/or commercials, you have as sure a deal as I know.
+
+This understanding on the index is original to my work.
+
+                                                         >. - '--·'
+
+A "·,,;"  +60 DMI SELL SIGNALS
+
+          AND MAJOR BUYS
+
+ These are even fewer and farther in between, but .they are a snap to spot. All you need look for is
+ a DMI reading of over 60. Such readings have an excellent record of saying a top is at hand. __
+r Readings of > 60 in market declines indicate excellent buying opportunities at hand.
+
+ Excellent sell signals have also come from readings over 40 but I would want such selling
+ indications to be backed by BOTH Sentiment and Commercial sells as well.
+
+Do not be misled by the fact it takes only two paragraphs to define these signals! Readings over
+60 present wonderful opportunities for the informed risk taker.
+See Pages 42 Through 53
+
+DIVERGENT SIGNALS WORK VERY WELL HERE
+
+We'll also be looking for markets that go to new highs but are not matched by new highs in the
+DMI. Market buys can be just the reverse, a new low not matched by higher DMI readings.
+Finally, I have noted major lows that have had lower DMI readings, then on the plunge a ver>
+high value > 40 is registered indicating a selling panic.
+
+Even a quick study of your charts will reveal the amazing power of this approach. Note that this
+technique was FIRST fully revealed in January 1994 to hundreds of fellow traders.
+
+4.) THE PINCH AND THE PAUNCH                                                        Vx
+
+I have noticed one more relationship in the DMI (ADX) and Stochastic innerworkings that can
+be of real value to the trader looking for intermediate term set up plays.
+
+Keep in mind the DMI simply shows if a market is trending, in other words does it have any ,,.
+strength to what it is doing? If so it will be steadily increasing, if not it will be declining. , ^;^
+
+Stochastic on the other hand measures how far the market is getting away from price x days ago
+
+regardless of the integrity of the move.                                         H
+
+THE PINCH.. .So consider what it means when Stochastic is rising, and above 75%, the usual
+
+overbought area, while the DMI has been declining. This suggest to me the price move that
+
+pushed stochastic higher had no "umph" or meaning behind it and any sells coming should be
+
+good ones. This appears as a "pinch" on charts as the DMI is coming down, the Stochastic
+
+coming up, as the lines pinch together.                                             ...
+
+A buying indication is just the opposite, Stochastic declining and below 25%, while DMI is
+
+rapidly advancing. This suggests a selling panic as, usually, price declines on a declining DMI.
+
+This appears as a widening between these two lines, a "paunch" effect.  .......
+
+See Pages 65 Through 73
+
+THE PAUNCH SIGNAL.. .When the weekly 7-bar ADX line rises above 40 a buy point of __
+lasting duration is at hand. The + 40 reading does not cause the entry, only tells us the time
+,ripe.
+
+CRITICAL POINT...This pattern, of going from below 40 to above 40 only creates buy sisnais
+if the market is substantially oversold as the crossing takes place. What is going on is that no;
+only is the market oversold, Stochastic below 25%, but downside volatility has picked up. This
+means a selling climax is at hand and a market bottom very near as not only have prices been
+suppressed, sellers have become irrational, almost dumping at the market, hence the DMI picks
+up. (Another ideal confirmation comes from the Market Sentiment or Commercial data
+
+confirming a high or low).                       ,:     rr^vv- ...-.-...·;·.
+
+Additionally, it will pay to wait a turn down in the index to signal the trend move is over or
+
+least in the terminal stages of market atrophy.      :
+
+See Pages 74 Through 86
+
+IF YOU WILL JUST LIMIT YOURSELF TO THESE TRADES YOU WILL TRADE LESS
+OFTEN AND CATCH MOST ALL MAJOR HIGHS AND LOWS.
+
+ON DAILY CHARTS TOO--Yes, these formations do appear on daily and even interdaily
+charts and are usually pretty good set up patterns to alert us to important trend changes for the
+time frame we are trading. My use here is to help us further evaluate and zero on major trend
+changes using weekly bar chart data.
+
+AN ADDITIONAL USE--In recent years I have noticed that a very low DMI/ADX
+reading, below 20, at the same time the Commercials are heavy buyers sets up beautiful--
+and immediate--buy signals. This makes sense, what's going on is an apparently lackless
+market where it appears nothing is going on, but under the surface the commercials have
+been accumulating telling us to expect higher prices.
+
+5.) HOW TO FADE THE USUALLY WRONG PUBLIC
+
+While the Commercials are usually correct, but early, the public is often correct--mid stream--
+but when they become excessively bullish or bearish they are most often dead wrong. This is
+even more true when the are bucking the commercials.
+
+Hence our best sentiment play is these two groups in opposition,
+
+I use the Market Vane index (626) 395-7436 or the Genesis Data index. Both are similar in
+nature. Market Vane measures the most wrong crowd, newsletter writers at brokerage firms.
+Using just this index many major highs and lows appear. It is a good check on your own
+emotions. There are shorter, daily, measures of sentiment; they work good for that time frame
+not for longer-term set-ups.
+
+See Pages 74 Through 86
+                   THE YEAR IS NEVER WHAT IT STARTS OUT TO BE.... v > i \
+
+                      (Reallypossible,... real time trading with 85%accuracy?) < : ; . · '
+
+There are few sure bets in trading commodities, but one of the better is that what investors ar~ =
+doing at the first of the year will be wrong! In short the highly emotional "planning" time rigni
+at the first of the year is most often apt to be wrong...all those investors dreams will soon be ---·
+as under. I will use weekly charts to establish all of the following points.
+
+To check this thesis I carefully recorded, for the last 8 years what the Market Vane measure of
+
+investor sentiment was telling us at the start of each year. Readings of over 75% bullishness I
+
+took to indicate tops, readings below 33% as buys. The following list indicates the potential
+
+buys, when the index was under 33% and the sells with readings of greater than 75%. Here are
+
+the results:          ·                                                    .           ·-" f:,
+
+SELLS                 -'                               ' . '·/"                        =";
+
+1988 Copper, Beans, Wheat, Sugar '. .'"'·,,.../- :-v.,;.......,/.
+                                                                           :*::: ; -^
+1989 Crude Oil, Corn, Oats, Meal, Wheat
+
+1990 Gold, Crude Oil, O.J., Cattle, F.Cattle                               .. · -'. ,  vj
+1991 Gold, Copper, Corn, Coffee, Sugar, Cattle, F.Catt, Dmark                          :;i vv,
+
+1992 Wheat, Pound, D.Mark, Swiss F.              . .,                      - . . . . .... :. , ·
+
+1993 Oats, Meal, Oil, Coffee, Lumber, F. Cattle                ^·"~        V^v- ^^ /··';
+
+1994 Gold, Silver, Beans, Meal, Oil, Wheat, Oil, Sug, Bonds ·                          ^ t!lV · - ° ·
+       Corn, Cotton
+
+1995 Beans, Oil, Sugar, Cattle, F. Cattle ,, :·.·.;.. .". . . . , -. ( _,  :; -\\,' f.v.
+
+BUYS          ; :P^'-^-- '           '   . " " " · · ' " ' · ' : " ; ' .jim^mf^
+_  -- nr                      ,-,                                                      , ->.-..._ . _ . . . . . ,, .  _
+
+1988 Cocoa, Crude Oil, Bellies
+1989 Silver, Cocoa, O.J., D. Mark
+1990 Copper, Cocoa, Cotton
+1991 Beans, Meal, Cocoa, Hogs, Swiss Franc
+1992 Copper, Corn, Sugar, O.J., Cattle, Hogs
+1993 Gold, Sugar, Bellies
+1994 Coffee, Hogs, Yen
+1995 Beans, Meal, C. Oil, B. Pound, D Mark, Yen, Swiss F.
+
+These "start of the year excesses" have proven to be excellent set-ups for major long-term
+
+moves. Now, no one, at least no one I know can predict 12 months in advance and I don't think
+rany of my tools can, but they can tell us about trends for the first 3 to 6 months. Then the
+
+integrity of those trends will tell us if that condition will last all year long.
+
+              '-·  V
+
+The purpose of measuring investor sentiment is to tell what the crowd is doing, as they are
+
+usually wrong. What I have discovered is the crowd is even better at being wrong at the pivotal
+
+start of the new-year time period!
+6.) SUPERCHARGING SEASONAL TRADING
+
+While not perfect, seasonal patterns are a tool every trader should have in his or her arsenal wncn i^~^
+
+you go hunting for big game. The problem is these patterns are not repeated every year, gosh 7~^
+
+that would not make trading any fun. Hence, the pattern or tendency becomes a tool or back-: · · · · ^^^
+
+to place trades against.            ,·                   ;V:'v'.;. : v, ;
+
+I think the ideal trade will have three of our major tools AND backed by a seasonal. If I have
+two "set up" trades one with a seasonal, one without, I will take the one with,
+
+,:                        THE STRONGEST SEASONAL TRADES  >;
+
+I had no idea what an "industry" my 1974 book, "Sure Thing Commodity Trading", "How                    -·" ·. :
+Seasonal Factors Influence Commodity Prices", would create. Maybe that's because it was the
+first book ever written on the subject. But more than likely because we never envisioned how                ;
+easy it would be to study these influences with the advent of the computer.
+
+While my original work was done by hand and took over 12 months looking at charts and
+tabulations of prices, this same work can now be done in an afternoon with a laptop.
+
+But a problem remains the seasonal trades are about as reliable as Mark Fuhrman's testimony. '·'<· fc.;
+Which got me to thinking. . The reason these trades are so spotty is that most studies the seasonal
+crowd uses are based on 5 to 15 years of data. That means the current data base they use goes
+back to 1985.
+
+The following tendencies were based on two time periods, the most recent 15 years. . plus. . I
+went back to my original 1974 book, which covered 1960 to 1973 and found the trades that still
+exhibit themselves in the current data. I next put these into a monthly trade recap. These recaps
+do not give specific buy sell dates, as I do not think that is the best use of the information. The
+best use is to advise us of these very strong patterns. In each case the pattern is that most all the
+time prices have closed up/down for the months in question, hence these indicate pretty big
+trades.
+
+JANUARY                   DOWN
+SWISS FRANC               DOWN
+DMARK                     DOWN
+BPOUND                    DOWN
+OATS                      UP
+CATTLE                    UP
+HOGS                      UP
+LUMBER
+
+FEBRUARY                  DOWN
+TBONDS                    DOWN
+SPRANG                    UP
+COPPER
+
+                                10
+S MEAL '"·:  DOWN
+SOIL         UP
+CATTLE       UP
+
+MARCH        DOWN  (1ST HALF OF MONTH)
+WHEAT        DOWN
+B POUND      UP
+S BEANS
+             UP
+APRIL
+O JUICE      UP
+             DOWN
+JUNE         DOWN
+T BONDS      DOWN
+BPOUND       DOWN
+SMEAL        DOWN
+OJUICE
+COTTON       DOWN
+LUMBER       UP
+             UP
+JULY         DOWN
+T. BONDS     UP
+GOLD
+CATTLE       UP (ALL CURRENCIES BEST
+COTTON i
+LUMBER       UP TO BW MID MONTH)     - ·· X: Xv
+
+AUGUST       UP ' . -· ' -·" · -· -
+BPOUND
+JYEN         UP
+DMARK V
+SPRANG       DOWN (FIRST TWO WEEKS ONLY)
+S MEAL
+CATTLE       DOWN
+BELLIES
+COFFEE       UP    · ..      ··:. <
+COTTON
+             UP (STARTING MID MONTH)
+SEPTEMBER
+BONDS        DOWN        . . . .-·; t
+B POUND
+JYEN         VP (FOR FIRST HALF OF MONTH)
+DMARK        DOWN (TOPS FIRST FEW DAYS OF SEPT)
+SPRANG       UP (BOTTOMS SECOND HALF OF MONTH)
+COPPER
+COTTON       U P :.:..-v- :v;/a,j.-.-- > = - , , -
+LUMBER
+             UP
+
+             DOWN
+             DOWN (STARTS MID MONTH)
+             DOWN
+
+                         11
+OCTOBER        DOWN (ABOUT OCT. 1OTH)
+B POUND        VP (FIRST HALF OF MONTH)
+JYEN
+               UP            ' . : ' ·. " -:-... - . . . & \£-^. "
+D MARK
+SPRANG         UP
+
+S MEAL r       DOWN .:'^i-h- :·'"..<-\ :- . - - . . *>'· .;--'v'x,. ;
+COCOA
+COFFEE         DOWN "' ^ '" Jv : : " ' ' *'\
+COTTON
+               UP
+
+               DOWN (this is just so-so)
+
+NOVEMBER       UP (STARTS ABOUT 5TH TRADING DAY)
+T BONDS        DOWN
+SPRANG         DOWN (FOR FIRST HALF OF MONTH)
+COPPER         DOWN
+SMEAL          DOWN (FOR FIRST HALF OF MONTH)
+SUGAR          UP (RALLY STARTS ABOUT THE 20TH)
+LUMBER
+
+DECEMBER
+
+T BONDS            UP
+
+B POUND        UP (LATE IN MONTH)
+
+JYEN               UP
+SPRANG         UP                 .   ^   ·,.,.  /;'.:,   .';'';:':';!,v-
+D MARK                       ^?'
+GOLD           UP                 ;-  A'  '. '"  '''' -'
+                                         ---- ' "*"'· :
+                   DOWN
+
+COPPER             UP (AFTER FIRST WEEK)
+
+BEANS              DOWN                    ·:;..:
+SMEAL i            DOWN               _ . -, v ,/r ',
+
+HOGS           /' -,:· . UP
+
+COFFEE         V.>" -UP               '
+
+SUGAR .- ·x DOWN
+
+O.J. y'- -1' DOWN (STARTS MID MONTH)
+
+LUMBER ......      UP
+
+               MOST RELIABLE TRADES
+
+LUMBER         SHORT IN MID MARCH
+
+CURRENCIES SHORT IN MARCH
+
+COPPER         SHORT APRIL
+
+COCOA          BUY LATE JUNE V ^ w ;
+
+T BONDS        SHORT FEBRUARY
+
+B POUND        SHORT JUNE
+
+DMARK          n             11
+
+SPRANG         ii            n
+
+SMEAL          SHORT DEC                                  i
+CORN           SHORT LATE JUNE -;,:
+
+WHEAT          BUY , « ;
+
+                                                          12
+BELLIES  SELL NOVEMBER         \ / :'^ ;^VvH-,vr
+CATTLE
+BONDS    BUY JANUARY/FEBRUARY
+
+         A JANUARY DECLINE INTO MARCH LOWS, RALLY
+
+         INTO JUNE 1STH, DECLINE OR SIDEWAYS UNTIL
+
+         LATE SEPT, RALLY INTO CHRISTMAS  ,....... .,,.,·.,
+
+MAJOR SEASONAL PLAYS...Jake Bernstein, is certainly the most noted student of sc^or^:
+plays. Jake and I have been buddies and competitors since the late 1970's. Certainly Jake nas
+done more than any other individual to study seasonal influences. The following indications are
+based on over 40 years of data Jake has painstakingly compiled Several of his favorites call for
+COPPER to top in March bottom in June and rally well at the end of the year. SOYBEANS
+should rally from January to a May-June peak, decline into a September-October low then stage
+a year-end rally. BONDS have usually rallied from mid February to mid May, slumped into a
+mid July low and rallied into mid November. COFFEE is most apt to rally from the end of
+December to mid June, then tank until October where it bounces up until the end of the year.
+BEAN MEAL bottoms in February, tops in late June declines into October low. Look for a
+low in SUGAR in mid April with a bullish bias all the way to a mid November high, then back
+down to the April lows. PORK BELLIES have most often rallied from March to July-August
+then declined into November lows. WHEAT IS THE MOST CONSISTENT SEAONALI
+HA VE FOUND. Expect selling pressure from January to late July then a rally until after
+Christmas. CORN has been just the opposite, it rallies from February to Mid July, declines until
+right around the end of the year. The February/March rally has been very reliable.
+
+The astute trader will focus on seasonal indications ad look for confirmation from trend ;
+indications as well as rest of our tools during these windows of opportunity.
+
+7.) THE OPEN INTERST "PLAY" I'VE BEEN USING SINCE 1970
+
+Opening up the way we can use this exciting early warning indication
+
+While you may have read about this tool in other of my writings it's one that we need to be
+reminded of. As you may recall, the operating rule is that IF price is in an up trend, then enters
+a trading range and Open Interest declines (usually about 20%) expect a rally. Sells come from
+a down trending market entering a trading range while Open Interest increases about 20%.
+
+This is the basic rule as taught me by Bill Meehan in 1970. The reason it works is that the
+decline in O.I indicates the commercials are most likely covering their shorts. Keeping in mind
+they account for about 60% of market volume or AND they are usually hedging, selling, r-iu
+felt the reduction meant they were bullish and he expected a further trend move.
+
+I'm showing a few of the 1997 O.I. plays for your study. The first is Sugar in October. Notice
+the nice up trend, next an elongated 3-month trading range, then a rapid decline in O.I. rfore
+the break to new highs! ·> -.·.,:,, ··...,..-
+
+Live Cattle gave a similar buy in June 1997 when O.I. fell off in the face of a trading range and
+shortly thereafter prices skipped to new highs.
+Silver, while not fitting our rule of being in a trading range had a massive O.I. reduction while
+
+the Commercial/Public data was bullish. AG sprang from $4.60 an ounce to $5.30 in just a
+
+matter of days.  .,                           .. ,
+
+Copper in March/April 1997 (a move we traded) was a perfect example of this technique. _j_
+
+This last trade opens up an interesting door. . .can we take O.I. formations that do not h-v:: :::·_-
+trend factor going--if we have our bigger guns blazing away? The answer is yes. In fact there
+appears to be some relationships between the Commercials getting excessively bullish/bearish
+and O.I. moves, but I have not been able to codify trading procedures.. .yet.
+
+My studies show some excellent trades can be made using the following sequence; first we have
+
+the Commercial/Public set up, then a rally off the lows followed by a trading range with our O.I.
+
+reduction. Typically, Commercials sell rallies, so if we see a reduction, following a set up, it's a
+
+decent bet prices will move higher. ; . . : . ,,                        ;
+
+8.) THE SECRET MESSAGE OF SPREADS...PRICE PREMIUMS
+
+As you know, spreads are among the most powerful and fundamental of all market indicators.
+
+Yet, most analysts blow them off like Al Gore at a Republican fundraiser. I've never been able
+
+to figure this out because even a cursory glance reveals how important they are. I look at a
+
+spread (that is the difference between the nearby contracts closing price and the next or
+
+successive months) in two major ways.               ; . - . ; ' ; - - · '":
+
+            1. Price Premium Structure
+            2. Sfrengthejiing and weakening of the spread
+
+PRICE PREMIUM STRUCTURE--This term, "a premium" simply means the nearby
+contract is trading at a higher price than the next month out. This is a fundamental anomaly, it
+should not be this way. The distant months should always sell at a higher value.
+
+The only thing that can create a premium is someone wanting the nearby contract badly enough
+that they are willing to pay more for it than the distant months. My belief is that this can only be
+the commercial, hence this designates a commercial bull market. A non-premium or "carrying
+charge" market is meaningless, telling us nothing.
+
+The important point is not just that there is a premium, after all a market can be at a premium, -*-
+
+but winding down or losing it. Thus what we will be looking for is the
+
+"premium coming on", that point in time when the nearby actually trades at a higher \a.^^ ..Ii^i--
+
+the distant. That's bullish telling us to look to get long. Traditionally markets go to a          m-
+
+approximately one of the following two ways;
+
+ee Page 81
+
+                                              14
+

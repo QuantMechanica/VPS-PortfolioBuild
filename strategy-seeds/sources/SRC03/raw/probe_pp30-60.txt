@@ -1,0 +1,1034 @@
+For years we have looked for the fastest way to get to the end of the game. What I have learned
+is that this is certainly the riskiest, and more importantly correct money management should be
+about you and your comfort levels not maximizing gains.
+
+If you divided this amount, $20,000, by the drawdown of the system, lets say that's $5,000 so
+you can trade four contracts and sleep at nights. That would be your starting point.
+
+Now, when do you increase and decrease? The kicker is the largest losing trade--it will come
+back to bit you again--and sooner rather than later, so we need some protection. If our largest
+loss is, say, $3,000, this one trade, one contract can cause a 15% reduction of our $20,000 at 5
+contracts that's a $15,000 hit, consuming almost all of our equity dip cushion.
+
+If money management is our only defense in this risky game, what type of shield can we employ
+to protect us from the largest loss?
+
+In private talks with Ralph Vince I learned that there are several things one can do . Ralph likes
+the idea of dividing the Kelley number into the largest loss to tell how much money one needs to
+increase and decrease contracts by. By and large the Kelley ratio number will usually come in at
+.30 so we will use that for all systems. If my largest loss is $2,5007.30 means I need to make
+$8,333 to bump up to an additional contract.
+
+This seerns high to me, I might require just two times the largess loss generated in new profits to
+trade an additional contract. In this case that's $5,000. Where the "truth" is no one knows at this
+time but we are in the ballpark here by basing our ups and downs on the key ingredients of the
+system, not just % accuracy and risk/reward ratio as Kelley does. Both Ralph and I feel you
+need to make more than 100% of the largest loss before you can increase contracts. He may
+have hit the nail on the head with Kelley relationship, it certainly is adaptable to all systems.
+(You may also consider dividing largest loss by Kelley, in our example above that's $8,333 and
+then dividing this in the he maximum equity dip you want, in the example above that's
+$20,000/$8,333 telling us you can trade 2.4 contracts on your $50,000 account. Once you make
+$8,000 you will trade one more contract. An even more conservative approach would be to take
+40% of the new equity, 58,000 *.40/8,333 which tells us we can now trade 2.7 contracts. This is
+probably the safest way to use these numbers).
+
+I hope you get the point.. .this is not the perfect scenario but it gives you room to create a money
+management program for you and your system...strategy will vary not only from system to
+system but also from person to person and now you can tailor your system to your comfort
+levels.
+
+PROOF IS IN THE PUDDING...Now let's take a look at what happens when we employ si--
+an approach in trading. We'll use a very simple system that buys on the opening every Monaav
+if that opening is less than Fridays close. Our exit is standard Bail Out with a $ 1,750 stop.
+Trading just one contract on all signals makes $79,200 with 69% accuracy and a risk reward
+ratio of .81. That's the first clip.
+
+                                                                  30
+The Kelley formula gives us a number of about .30 so that divided into max loss of 1,800 tells us
+we can "re-up" every $6,000. I stopped trading at 100 contracts. The next clip shows these
+results...$868,875 of profits, over 10 times more dollars gained. It took from 1/190 to get to in
+contracts. I stopped there and started over. They system has just now stepped up to 2 contra-.-.^
+
+(12/20/96). Staying fixed at 100 contracts trading up till now would have been an equity dip j
+$763,725 while one lot trading has made $11,850!!
+
+I I I I ! I l l I I 1 1 1 I I III I I I I 1 1 1 1 1 1 I I 1 1 1 Hill A L L TRADES - Test 1 \ \ V \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \
+
+Total net profit          $79,200.00        Gross loss               $-95,400.00
+Gross profit             $174,600.00
+
+Total # of trades        172                Percent profitable       69%
+                                                                     53
+Number winning trades    119                Number losing trades
+
+Largest winning trade    $6,375.00          Largest losing trade     $-1,800.00
+Average winning trade    $1,467.23          Average losing trade     $-1,800.00
+Ratio avg win/avg loss                      Avg trade (win & loss)
+                               0.81                                    $460.47
+
+Max consecutive winners  15                 Max consecutive losers   5
+
+Ave. #bars in winners    1                  Avg. #bars in losers     0
+
+Max closed-out drawdown  $-10,400.00        Max intra-day drawdawn   $-10,400.00
+Profit factor                     1.83      Max # of contracts held            1
+Account size required                       Return on account
+                          $30,400.00                                        260%
+
+/ / Illllllllll Illllll I I III 1 1 1 I I I I I III I I A L L TRADES - Test 1 \ \ U \ \ \ \ \ \ \ \ \ \ \ \ U \ \ \ \ \ \ \ \ \ \ \ \ \ \
+
+Total net profit          $868,875.00       Gross loss               1625,400.00
+Gross profit             $2494,275.00
+
+Total # of trades        138                Percent profitable       74%
+
+Number winning trades    103                Number losing trades     35
+
+Largest winning trade    $260,000.00        Largest losing trade     -180,000.00
+Average winning trade     $24,216.26        Average losing trade
+Ratio avg win/avg loss            0.52      Avg trade (win & loss)   $-46,440.00
+                                                                       $6,296.20
+
+Max consecutive winners  15                 Max consecutive losers       3
+
+Ave. #bars in winners    1                  Avg. #bars in losers         0
+
+Max closed-out drawdown  -360,000.00        Max intra-day drawdawn   -386,250.00
+Profit factor                     1.53      Max # of contracts held        100
+Account size required                       Return on account               36%
+                         2386,250.00
+
+                                        31
+              HOW TO DESIGN YOUR MONEY MANAGEMENT STRATEGY
+
+ Thanks to Mark Thorn, there now exists software that will tell you everything you ever wanted
+ to know about how to best manage the dollar behind your system.
+
+ His software allows you to just about any possible scheme of money management--and rr_:r~ _
+ importantly--also enables you to also note which parts or rules of your systems are the mcc; =;
+ efficient.
+
+ Of all the tests I have run, and we are talking thousands here, the simplest for the average guy or
+ gal in the street is presented here;
+
+                        TAKE 20% OF YOUR ACCOUNT EQUITY AND
+                          DIVIDE THIS BY THE LARGEST LOSS YOU
+                          WILL ACCEPT OR YOUR SYSTEM ALLOWS
+
+If your account balance is $20,000, we know the 20% figure is $4,000. Divide this by the largest
+loss, let's say $1,000. which means you would trade 4 contracts. As your account balance moves
+up and down so will the number of contracts you will trade.
+
+This is the formula my 16-year-old daughter used to take $10,000 to $100,000 in 1997. Need I
+say more? Yes, traders would do better if they spent more time on this aspect of speculation, and
+less on buy/sell signals. Money management makes fortunes- - -not systems. This is the most
+important data presented to my Inner Circle members.
+
+What do you think...has this lesson in money management been worthwhile???
+
+  INSIDE CIRCLE SHORT TERM TRADING APPROACH
+
+Short term trading is a complex and confusing business. A traders mind and ego are constantly
+butted about by reality. That reality collision is the result of hopes and predictions of how life
+should be running into how life is.
+
+The problem will always exist, in my opinion, as a great deal of market activity, the gyrations of
+the dance are totally random. Yes, totally.
+
+Sure, the beat is there but the cacophony is more chaotic than a pack of whirling dervishes, oo 4,
+what are we to do, give up ship? No way, this is too much fun to play. But it is the playin^ -;---TM
+gets us into trouble, hence I suggest you keep this adage in mind;
+
+                                                          32
+It is far better to be on the ground wishing you
+                    were flying...
+
+Than to be in the air wishing you were on
+                   the ground
+
+BACK TO BASICS--Short term trading, as I see it, is very similar to long term trading.
+What's needed is a basis to operate upon, an advantage, a bias or a tipping of the scales. There
+are may ways we can gain an advantage in the game, so let's begin at that point. ..establishing a
+bias...then developing trading rules around a known and provable condition that is the cause of
+market moves, not a consequence of them.
+
+There are several such advantages we can use in trading U.S. Bonds, among the best are;
+
+1. Trade Day of the Week
+2. Trade Day of the Month
+3. National Holidays
+4. The Power to Gold
+5. Specific Price Patterns
+
+1.) TRADE DAY OF THE WEEK--The following table reflects buying on the opening
+of each trading day of the week and exiting on the first profitable opening. Note it is clear that
+some days are not so good, by an large, for trading
+
+DAY OF WEEK  +/-$ PROFITS      % WINS  AVERAGE $ TRADE
+
+MONDAY         41,568             79           83
+TUESDAY        32,951             76           73
+WEDNESDAY     -18,615             73          -37
+THURSDAY      -13,108       . 70              -26
+FRIDAY         14,426             73           30
+
+There are 52 Monday opportunities a year for trading, 52 Tuesdays and 52 Fridays giving us a
+total of 156 potential trades. Maybe we should just feast, upon these!
+
+2.) TRADE DAYS OF THE MONTH AS WELL-The same bias or advantage car. rr
+
+garnered from TDOM's. The first table list buying on the opening of every TDOM, the seccnc
+only buying if Gold has closed lower than 25 days ago. Clearly there is a difference, clear;-; ^
+short term trader should be alerted to these set up opportunities.
+
+                            33
+TDOM $+/-     %Wins  Avg Profit        TDOM $+/-  %Wins  Avg Profit
+
+ 1 18,827       68%    72              1 15,507   70%        100
+                58%  -107                          57%       ----- -
+2 -22,641       56%  -159              2 -19,711  57%        _._.
+                60%   -71                         60%
+3 -41,047       67%                    3 -22,158  70%         -w /
+                61%    23                         62%          83
+4 -18,547       60%  -109              4 10,457   61%         -42
+                69%   -72                         64%         -42
+5   6046        69%   114              5 12,500   71%          43
+                68%                               67%        126
+6 -28,297       63%    68 '            6 -6060    69%          57
+                62%    27                         64%         36
+7 -18,797       63%    53              7 -6271    64%         -24
+                61%   -62                         63%          11
+8 29,608        68%   -42              8 6153     70%        -52
+                65%   -78                         69%          5
+9 17,640        65%   139              9 18,603   68%         10
+                67%   -29                         67%         29
+10  7015        67%   -13              10  8740   68%         10
+                65%    15                         61%         25
+11 -14,422      68%   -18              11  5370   72%        -37
+                67%    46                         76%        120
+12 -16,047      73%    30              12 -3791   85%        162
+                       31                                   343
+13 -11,016            169              13  1670
+
+14 -20,096                             14 -7740
+
+15  353                                15  808
+
+16 -7430                               16  1545
+
+17 -3430                               17  4605
+
+18  3822                               18  1406
+
+19  -4401                              19  3610
+
+20  9166                               20 -4628
+
+21  4531                               21 10,856
+
+22  2842                               22  8298
+
+23  3902                               23  4807
+
+3.) NATIONAL HOLIDAYS-There has been a clear-cut advantage to trading around the
+national holidays every year. Why I am not sure, but since I was first alerted to this in 1962 anr
+have seen it hold up--in real time trading--ever since, I'm trading these biases as well.
+
+The results are quite good. The next tabulation reflects the trading strategy I will teach. These -
+results are from 1978 forward, use a $1,400 stop and exit on the first profitable opening. The
+$50,956 of profits with a drawdown of only $ 1,978 is among the best I have ever seen. We omv
+have 8 holidays a year, but they are dandies, netting a trader, on average, $2,500 + a year. If
+that doesn't sound like much keep in mind that's about an 80% a year gain with only 16 trading
+days of "exposure" per year.
+
+The rules below show the holiday and how many days before the holiday to take action as wel_
+as the best strategy, buying or selling on the open or the close.
+
+HOLIDAY_________DAYS BEFORE                OPEN OR CLOSE ENTRY
+                                           TD Before Holiday
+NEW YEARS DAY        Sell Close Third      TD Before Holiday
+                                           TD Before Holiday
+PRESIDENTS DAY       Buy Close Fifth       TD Before Holiday
+                                           TD Before Holiday
+                     Sell Open First
+
+EASTER *             Sell Close First
+
+MEMORIAL DAY         Buy Open Fourth
+
+                                       34
+INDEPENDENCE DAY         Buy Open Fifth     TD Before Holiday
+                         Sell Open First    TD After Holiday
+LABOR DAY                Buy Close Third    TD Before Holiday
+THANKSGIVING DAY         Buy Close Fourth   TD Before Holiday
+                         Sell Close Sixth   TD Before Holiday
+CHRISTMAS DAY            Buy Open Second    TD Before Holiday
+
+EXPLANATION--As an example, the trade for New Years is to sell on the close of the marKet
+
+three days before the holiday. Keep in mind "0" means the day before the actual holiday. For
+Easter, sell on the close of the day before the holiday. For Thanksgiving buy the close on the 4th
+
+day before the holiday.
+
+Data              : DAY T-BONDS
+Calc Dates        : 01/10/78 - 07/06/99
+
+//////////////////////////// ALL TRADES - Test 1 \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+Total net profit         $52,200.00         Gross loss -               $-15,742.50
+Gross profit             $67,942.50
+
+Total # of trades                190        Percent profitable         84%
+Number winning trades                                                    29
+                                 161        Number losing trades
+
+Largest winning trade    $2,986.25          Largest losing trade       $-1,451.25
+Average winning trade       $422.00         Average losing trade          $ -542.84
+Ratio avg win/avg loss           0.77       Avg trade (win & loss)             $274.74
+
+Max consecutive winners          20         Max consecutive losers     2
+
+Avg # bars in winners            1          Avg # bars in losers       .2
+
+Max closed-out drawdown $-1,978.75          Max intra-day drawdown $ - 1 , 9 7 8 . 7 5
+
+Profit factor                    4.31       Max # of contracts held    1
+
+Account size required    $4,978.75          Return on account          1,048%
+
+4.) THE POWER OF GOLD-Gold, or at least the trend of Gold, has a powerful effect on
+Bond prices. Not always, but often enough that it should be used to further develop the hot hand
+we are wishing to construct. I do not want to trade every day, only days that have the odds
+heavily in my favor. The trend of Gold does that. If we do this same study above but buy require
+that the closing price of Gold be less than 25 days ago we notice the following results;
+
+DAY OF WEEK              +/- $ PROFITS      %WINS $ +/-AV. TRADE
+
+MONDAY                   25,883             84                    187
+TUESDAY                  31,168
+WEDNESDAY                                   82                  222
+THURSDAY                  1,037
+FRIDAY                    8,825             74                      7
+                         22,075
+                                            76                    53
+
+                                            81                    133
+
+5.) SPECIFIC PRICE PATTERNS-It's time to get down to the business of trading
+what follows are simple signals and patterns based on the above advantages we have been able
+to uncover in the art of trading;
+
+                                        35
+         1. CONSECUTIVE DOWN CLOSES
+
+A. When there are two consecutive down closes AND the distance from today's true high to
+today's close is less than that same value from yesterday THEN buy tomorrow at the open pku
+that value, today's high - today'slSw IF today's close is greater than the close 30 days ago. (this
+is even better if gold closes lower than the previous day)
+
+B. When there are three consecutive days with lower closes than the prior day
+AND the distance from today's high to today's close is less than that same value from the prior
+day, THEN buy tomorrow at the open plus today's high- today's close.
+
+                                                     I
+          2. GAP DOWN CLOSES
+
+                            F
+
+A. If today's high is less, below, yesterdays low (a gap down) and the open tomorrow is above
+today's low but less than yesterdays low THEN buy tomorrow at the open plus whichever
+amount is less; today's high minus today's close or today's open minus today's low.
+
+B. If today's high is less than yesterdays low and Gold has closed lower than the close of Gold
+15 or 24 days ago THEN buy tomorrow at the open plus today's high minus today's close.
+
+         3. FRIDAY SET UP TRADES FOR MONDAY
+
+The first requirement for all of the following trades is that close today is Friday.
+
+A. If Mondays open is equal to or greater than Fridays low and less than or equal Fridays close
+    THEN buy tomorrow at the open plus 20% of Fridays range on a stop.
+
+B. Fridays high is greater than or equal to Thursdays close and Mondays open is below Fridays
+    low then buy Monday at Fridays low on a stop. (OOPS!)
+
+C. Fridays low is less than or equal Thursdays close and both Friday and Thursday are up closes
+    (> than prior day close to close) AND open Monday is above Fridays high, buy on the open.
+
+D. IF Thursday is not an inside day AND Gold closes lower on Friday than it did 20 days ago
+    and Fridays low in Bonds is <= Thursdays close and the filter (H-C of Friday is less than H-
+    C of Thursday) AND the open Monday is below Fridays high, THEN buy Monday at the
+    open plus 15% of Fridays range.
+
+E. Friday is an inside day with a down close and Thursday was an up close if so and
+
+      1. Tomorrows open is greater than Fridays high buy the market.
+     2. Tomorrows open is>= Fridays close and < Fridays high buy at Fridays high stop.
+      3. Tomorrows open is >= Fridays low and < Fridays close but at Fridays close stop.
+     4. Tomorrows open is < Fridays low > Thursdays low buy at Fridays lows on a stop.
+
+                                                       36
+4. HIDDEN OOPS! TRADES
+
+For these trades we use the projected high/low formula which is; (high + low + close)/3 *2. ----
+Subtract the high to arrive at the projected low, subtract the low to arrive at the projected h_--..
+
+A. If today is a down close and today is Monday or Friday AND Gold is lower than 19 day" "~~
+    AND today's close is the lowest close of the last 8,10 or 12 days ago AND the open
+    tomorrow is greater than the projected low THEN buy tomorrow on the open.
+
+B. If today is Friday and the open tomorrow is below the projected low then buy tomorrow a the
+    projected low on a stop. EXCEPTION IF FRIDAY IS AN INSIDE DAY and Mondays
+    opening is below the projected low, THEN buy at the PROJECTED HIGH on a stop.
+
+C. If today is Monday, Thursday or Friday and Gold closes less than 6 OR 25 days ago and the
+    open tomorrow is below the PROJECTED HIGH THEN buy tomorrow at the projected high
+    on a stop.
+
+Well there you have it, a simple way to trade the bonds that does not have you all worked up
+about every tick or e very day of the week. But does it trade enough to keep you happy? I
+should think so as it trades almost once a week, but then again.. .you guys and gals sure do like
+to trade.
+
+Couple these with the Holiday trades and you should have plenty of opportunities for profits
+which have averaged about $8,000 a year with a trade about every 7 market days. On your own
+you can build trading models and make trading decisions. For the best implementation of your
+signals I suggest closely watching the direction of Gold, Trade Day of Week and TDOM. By
+and large a 30% volatility expansion works well in this market as well.
+
+After all these years of frustration as a trader I would advise you that I think it is best to trade
+with a bias or approach, such as above, but not locked into a totally mechanical mode. Use the
+knowledge we have of market biases to make your trades more profitable.
+
+Data               DAY T-BONDS           67/99
+Calc Dates
+                   01/01/90 - 07/06/99
+
+I!11111II111111111111!111111 ALL TRADES - Test 1 \\X\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+Total net profit          $72,550.00                             $-32 ,120 . 0'""'
+Gross profit             $104,670.00 . Gross loss
+
+Total # of trades               285      Percent profitable       87%
+
+Number winning trades           249      Number losing trades     36
+
+Largest winning trade    $1,705.00       Largest losing trade     $-1,451.2-
+Average winning trade       $420.36      Average losing trade      $ -892.2::
+Ratio avg win/avg loss            0.47   Avg trade (win & loss)
+                                                                        $254.5
+
+Max consecutive winners         27       Max consecutive losers   3
+
+Avg # bars in winners           1        Avg # bars in losers     2
+
+Max closed-out drawdown  $-4,543.75      Max intra-day drawdown   $-5,252.50
+Profit factor                      3.25  Max # of contracts held            1
+Account size required                    Return on account
+                          $8,262.50                                      878%
+
+                                         37
+           S &P 500 TRADING RULES
+
+TRADE DAY OF THE WEEK
+
+As with bonds, TDW, TDOM reveal a great deal to the short term trader The first table reflects
+buying on the opening and exiting on the first profitable close with a $3,500 stop for every day
+of the week
+
+MONDAY     $169,810     71%          $230
+TUESDAY       39.927    65
+WEDNESDAY               65 .         50     ·
+THURSDAY   - 33,842     65
+FRIDAY       30,592     63           -39
+
+           - 34,665                  35
+
+                                     -40
+
+TRADE DAY OF THE MONTH
+
+Some times of the month are better than others for buying or selling as our next table exhibits.
+Here you see each TDOM with our bail out and $3,500 stop.
+
+           TDOM $+/-             %Wins      A vg Profit
+
+              1            4175      64%         20
+                          -5505      66%         -27
+               2          -5970      61%         -29
+               3         16,867      67%         83
+               4        -31,490      64%       -155
+               5          -4412      62% -       -21
+               6         14,170      70%         69
+               7          -7947      68%         -39
+               8        -16,210      62%         -79
+               9        48,202       69%        237
+               10       -10,535      60%         -51
+               11       12,262       68%         60
+               12       54,505       65%        268
+               13        -7282       61%        -35
+               14       11,307       66%         55
+               15       -32,915      60%       -162
+               16       17,205       70%         84
+               17       -12,927      66%       -64
+               18       25,635       64% .      130
+               19       35,490       70%       209
+               20       27,922       73%       234
+               21       21,124       72%       286
+               22          7975      90%       398
+
+           . 23
+
+                                 38
+THE POWER OF BONDS
+
+Bonds, interest rates, have more power on stock prices than anything I have yet uncovered.
+Here's some hard proof, we see each TDW now but with Bonds in an up-trend, i.e., greater thu;
+14 days ago;
+
+MONDAY              $133,330          72%    239
+TUESDAY               58,650
+WEDNESDAY               5,022         65%    133
+THURSDAY               15,597
+FRIDAY                -6,792          65% .        10
+
+                                      64%          33
+
+                                      65%    -14
+
+It's the same story with TDOMS as the next listing illustrates. Here we have each TDOM and
+then next to it only trades when bonds were greater than the close 10 or 15 days ago.
+
+           TDOM       $+/-     %Wins  Avg Profit
+                      -7292      61%        -52
+              1     -15,807      63%      -110
+                    -12,280      60%       -87
+               2     10,030      66%        73
+               3    -16,207      68%      -122
+               4     21,040      66%       153
+               5     30,355      74%
+               6                 68%       237
+               7       5857      60%         46
+               8    -19,115      67%
+               9     36,970      64%      -148
+               10                70%       260 '-
+               11      8170      68%
+               12    12,017      65%        58
+               13    51,872      65%   '·' 85
+               14    12,137      59%
+               15    27,727      69%       378
+               16   -19,382      64%        88
+               17    14,847      65%
+               18     -7567      68%       202
+               19   26,657       71%      -155
+               20    18,112      69%
+               21      7477      92%       111
+               22    15,860
+               23      4385               -58
+
+                                           218
+                                           152
+                                            93
+                                           305
+                                           337
+
+Now let's look at ways of using this information to set up successful trading.
+
+                               39
+1.) MONDAY OOPS!
+
+A. It's the ultimate S&P trade, to take an OOPS! Buy on Monday as long as Friday was not an
+   outside day.. That's all there is to it, it prices open below Fridays TRUE LOW, on Moncr;
+    ,buy long at Fridays low on a stop.
+
+B. If the day that has just closed is Thursday or Friday and the open tomorrow is below the
+    lowest low of the last 2 days, buy on a stop at that low.
+
+2.) HIDDEN OOPS!
+
+A. If today is Friday or Monday and the open tomorrow is 2 ticks less than the projected TRUE
+    LOW for that day, based on todays TH+TL+C/3*2, THEN buy tomorrow at the projected
+    low.
+
+B. If today is Thursday and todays high is greater or equal the prior days close and the open
+    tomorrow is below the projected low- 2 ticks, buy at the projected low on a stop.
+
+C. If today is any day but Friday and the close is less that the prior days close while todays h-c
+    is less than the prior days h-c AND Bonds have closed higher than the close 1 or 6 days ago
+    AND the open tomorrow is less than the PROJECTED HIGH then buy long tomorrow at the
+    projected high on a stop.
+
+D. If today's high is greater than or equal to the prior days close while today's low is less than
+    or equal the prior days close AND bonds have closed higher than the close 1,2,4 or 8 days
+    ago and today is Monday, Thursday or Friday AND the open tomorrow is less than the
+    projected low, then buy tomorrow at the projected low on a stop, (exclude Octobers)
+
+3.) CONSECUTIVE DOWN CLOSES
+
+    A. This calls for 2 consecutive down closes with today's h-c less than that value from
+        yesterday, today is Wednesday or Thursday bonds greater than 2 or 20 days ago, THEN
+        buy tomorrow at the open Plus today's h-c value.
+
+    B. Exactly as above but there have been three consecutive down closes.
+
+    C. If today is Thursday and today's close is less than the prior day and that day is also
+        down close (close to close) while today's high is greater or = the prior close (no gapsj
+        and today's high and low are lower than yesterdays high and low THEN buy tomorr?-- '
+        today's high on a stop.
+
+                                                               40
+4.) MONDAY ONLY TRADES The following rules are only for entering on Monday
+
+    A. Friday is an up close, Monday opens lower than Fridays close, greater than Fridays low
+        and the h-c value is less than Thursdays same value or the c-1 is greater than Thursday '
+        1 then buy Monday at Fridays close on a stop.
+
+    B. Same as above buy Friday is a down close buy t the opening plus 80% of Thursdays
+        range.
+
+    C. Friday is an up close Mondays open is > close and < high of Friday and h-c is less than
+        prior days h-c then buy Monday at the opening + h-c stop.
+
+    D. Friday is a down close same qualifier as above buy at Fridays close on a limit.
+
+5.) SHORT TERM SELL PATTERNS
+
+A. If day of week is Wednesday and it has not been an inside day while today's close is
+
+> 6 days ago and bonds are >18 days ago and today's open- the low is < than the
+
+previous days same value sell short at the open tomorrow minus 65% of today's range
+
+if the open tomorrow is less than today's high.  ..
+
+B, A takeout day with up close and the prior close is > the previous days low and
+   tomorrow open in < today's close and > today's low then sell short at the low before
+   the fakeout day.
+
+C. Same as above any day but Thursday, open > c and open < h then sell at today's close
+    on a stop.
+
+D. Same as above, open tomorrow < c and o tomorrow > 1 sell at open tomorrow --
+    today's range * 10%.
+
+B. Day of week is 3 bonds < 15 days ago close > c (1) and close high (1) and o tomorrow
+    greater than the high sell tomorrow at high stop. OOPS!
+
+C. Day of week is 5 and high < high (1) and 1 > low (1) and close < close (1) and the open
+    tomorrow > close then sell tomorrow at open tomorrow minus 20% of today's range on a
+    stop.
+
+                              41
+Data                : S&P 500 IND-9967 01/80
+Calc Dates          : 08/09/82 - 07/02/99
+
+1111!I III III III 11II11111i11i ALL TRADES - Test 1
+
+Total net profit         $326, 727.00       Gross loss                -187,788.00
+Gross profit             $514,515.00
+
+Total # of trades        602                Percent profitable             84%
+
+Number winning trades    511                Number losing trades          91
+
+Largest winning trade    $15,924.00         Largest losing trade . $-5,£97.00
+Average winning trade     $1,006.88
+Ratio avg win/avg loss             0.48     Average losing trade      $-2,063.60
+
+                                            Avg trade (win & loss)    $542.74
+
+Max consecutive winners  25                 Max consecutive losers         2
+
+Avg ft bars in winners        1             Avg ft bars in losers          4
+
+Max closed-out drawdown $-11,397.00         Max intra-day drawdown $-11,919.00
+
+Profit factor                 2.73          Max ft of contracts held       1
+
+Account size reouired    $14,919.00         Return on account         2,190%
+
+                         S&P HOLIDAY TRADES
+
+Our Holiday trading strategy works well here. The following table lists the holidays with the
+entry rules. The exit was to bail out after holding for one day past entry, in other words buy/sell
+today, hold tomorrow then look to bailout. The stop is a very small $2,500 from entry hit.
+
+NEW YEARS                Buy Open Third      TD Before Holiday
+PRESIDENTS DAY           Buy Open Third      TD Before Holiday
+                         Sell Close Second   TD Before Holiday
+EASTER                   Buy Close Second    TD Before Holiday
+                         Sell Open First     TD After Holiday
+MEMORIAL DAY             Buy Close First     TD Before Holiday
+JULY 4TH                                     TD Before Holiday
+LABOR DAY                Buy Open Fifth      TD After Holiday
+THANKSGIVING             Buy Open First      TD Before Holiday
+CHRISTMAS                Buy Close Third     TD Before Holiday
+                         Buy Open Fifth
+
+Data                S&P 500 IND-9967 12/99
+Calc Dates          08/09/82 - 07/02/99
+
+II11IIIII III 111111IIII111111 ALL TRADES - Test 1 \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+Total net profit         $108,675.00     Gross loss                 $-65,265.00
+Gross profit             $173,940.00
+
+Total ft of trades       170             Percent profitable           63%
+
+Number winning trades    108             Number losing trades         62
+
+Largest winning trade    $13,355.00      Largest losing trade         $-9,995.00
+Average winning trade     $1,610.56      Average losing trade         $-1,052.66
+Ratio avg win/avg loss             1.52  Avg trade (win & loss)
+                                                                           $639.26
+
+Max consecutive winners  7               Max consecutive losers       5
+
+Avg # bars in winners    1               Avg ft bars in losers        i
+
+Max closed-out drawdown  $-9,995.00       Max intra-day drawdown      $-9,995.00
+Profit factor                      2.66  Max ft of contracts held               l
+Account size reouired                     Return on account
+                         $12,995.00                                         836%
+
+                                         42
+          S&P 500 ADDITIONAL SIGNALS
+
+First of month Bond filtered trades - Buy the first trading day of every month from 1982 to
+1998 with a 2 day exit and 90% of the range stop makes $182,350 with 56% accuracy and $99!
+per trade. That's good, even better is the exact same scenario except Bonds close is greater than
+32 days ago. Results; 59% accuracy, $147,925 average profit per trade is $1,286. Also consi~<:-
+the TDOM's, month by month, when backed by Bonds.
+
+OOPS! Day of Month - To improve my OOPS! performance simply take buys around the end
+of the month. Taking trades from TDOM 19 on makes $45,000 with 83% winners on 18 trades
+and an average profit per trade of $2,500 with $2,750 stop and bail out. Taking signals on
+TDOM 4 through 7 makes a total $72,875 with over 80% accuracy.
+
+The best TDOM sell days are 3,6,17 netting $56,675 with 77% accuracy sporting an average
+profit per trade of over $800.
+
+          TREASURY BOND ADDITIONAL SIGNALS
+
+First of month Gold filtered trades - Buy the first trade day of every months, since 1977, with
+a 3 day exit and $1,400 stop for $40,062 of profit and 55% accuracy on 241 trades or just take
+these trades when Gold has closed lower than 5 days ago for 57% accuracy on 142 trades and
+$34,344 on profits. Average win jumps from $166 to $241, a 45% increase, while draw down
+plummets from $12,500 to $4,800. Also consider the TDOM's month by month, when backed
+by Gold.
+
+OOPS! Day of Month - Same game here as with the S&P, combine the OOPS! signal with the
+strongest days of the month for some wonderful trades and further proof that a combination of
+non-technical ingredients makes for the best trading medicine. Best buys are TDOMS 1,4,17
+and 19 with a total profit of $48,906 with a hefty average profit per trade of $520 and 80%
+accuracy.
+
+The best TDOM sell periods are TDOM's 1,3,4 with $33,387 profits on 41 trades and an average
+profit per trade of $814. TDOM 16 is also hot with 83% winners on 36 trades making $12,812
+or $355 a trade.
+
+                                     SP500
+          BEST SHORT TERM BUY DAYS OF THE YEAR
+
+JANUARY   9   9/13 69%   10,710
+              9/12 75%   7,910
+FEBRUARY  4   12/13 92%  12,170
+              10/13 76%  11,165
+MARCH     18  9/11 81%   9,075
+              11/13 84%  4,135
+APRIL     2   11/13 84%  11,585
+              11/13 84%  9,260
+MAY       15
+
+JUNE      14
+
+JULY      17
+
+AUGUST    18
+
+              43
+         SEPTEMBER  20     12/13 92%        13,545
+                           11/14 78%        12,725
+         OCTOBER    11     13/15 86%        14,040
+                           10/14 71%        11,805
+         NOVEMBER   6
+
+         DECEMBER   12
+
+                    BEST SHORT TERM SELL DAYS OF THE YEAR
+
+         JANUARY    1      9/13 69%         7,295
+
+         FEBRYARY   13     12/14 85%        8,540
+
+         MARCH      15     11/13 84%        7,930
+
+         APRIL      14     10/11 90%        5,605
+
+         MAY ' ' 3         10/13 76%        5,825
+
+       JUNE         2      11/13 84%        17,085
+
+         JULY       15     13/14 92%        14,910
+
+       AUGUST       11     10/13 76%        7,285
+
+         SEPTEMBER  3      11/13 84%        10,465
+
+         OCTOBER    19     10/14 71%        14,450
+
+       NOVEMBER     7      11/13 84%        9,395
+
+       DECEMBER     21     11/14 78%        11,790
+
+In the Bond Market I have found the best short-term trades to be those below. The rules are
+slightly different, buy on the opening of the day shown, plus 7% of the previous days range
+added to the opening. Use an $1,800 protective stop or exit on any profitable opening after 3
+days.
+
+                T BONDS BEST BUY TRADE DAYS WITH 4 DAYS HOLD
+
+JANUARY 15          7756   15/18 83% -2050          3106      430
+
+                7   10025  1317 75% -2018 " 3325              589
+
+FEBRUARY 14         10150  12/17 70% -3725 . 5075             597
+
+MARCH NONE
+
+APRIL          4    8443   1318 72% -5075           2950      469
+
+MAY            21   11575 10/11 90% -1862 ' 3168 1052
+
+                22  5250   5/5 100%                           1450
+
+JUNE           6    15737  16/19 84% -1862          5200      828
+
+                1   7881 14/18 77% -2143 4512                 437
+
+                17  7325   14/16 875 -1862 . 1825             457
+
+JULY            18  9106   13/16 81% -1862          2356      569
+
+                5   7962   16/17 94% -1862          1981      468
+
+AUGUST 21           6056   12/17 70% -4662          2825      356 '
+
+SEPTEMBER 20        15606  13/16 81% -1862          4075      975
+
+(19-19)         2   6012   14/16 87% -1862          2293      375
+
+OCTOBER 18(19,20)   14818  16/18 88% -2081          3106      883
+
+                15  8781   13/15 86% -1862          2606      585
+
+NOVEMBER 5          13662  15/18 83% -1925          2387      759
+
+                20  8993   10/12 83% -2887          2887      749
+
+4/2/            13  7800   12/14 85% -1862          2548      557
+
+                           44
+         21 4418 4/4
+
+DECEMBER 10 12018 15/19 78% -1862 5168                 652
+
+         12    11443 . 14/18 77% -1987  4356           635
+
+         14    11412  16/18 88% -1862   2293           634
+
+         15 6518 13/14 92% -1862 1512
+
+         T BONDS BEST SELL TRADE DAYS WITH 4 DAY HOLD
+
+JANUARY 2      12650  14/17 82% -1881   2887           74-
+
+         3     9231   14/16 87% -3525   2762           51C
+
+         20    8718   17/20 85% -1987   2793           435
+
+         22    6387   6/6 100%
+
+FEBRUARY 2     9268   15/19 78% -4343   3793           487
+
+         4     7043   12/16 75% -1881   2856           440
+
+         20    3381   3/3
+
+MARCH 1        10350  14/18 77% -3756   5326           575
+
+         5     9831   14/19 73% -4068   3137           517
+
+         18    4718   15/12 80% -1862   1606           314
+
+APRIL    11    12393  15/19 78% -3725   3793           652
+
+(10-14)  22    3381   3/3
+
+MAY      NONE
+
+JUNE     10    9100   14/18 77% -4006   2918           505
+
+JULY     3     7987   16/19 84% -4000   3168           420
+
+         11    7743   14/17 82% -2387   2356           455
+
+AUGUST 12      11293  15/16 93% -1862   2575           705
+
+         14    6643   16/19 84% -3556   1793           349
+
+SEPTEMBER 11   7450   14/16 87% -1862   1981           465
+
+OCTOBER 6      6412   15/18 83% -2437   2731           356
+
+NOVEMBER NONE
+
+DECEMBER 4     13306  15/17 88% -2175   3606           782
+
+         20    9506   15/18 83% -1862   2512           528
+
+         17    8918   14/16 87% -1862   1918           557
+
+                      45
+Jln 3ff%
+                             d^m&'^ ni
+
+      <u!m ^ MJM&M mmm, xmfm^A Ml^>ydtwv
+
+      $*$. Wm jyb jAcJot M(M M/miJJ&A wk
+
+(».- /L,. ,,....,. . , . · yaJ] S.ISIM A////, i* /ii,Vi ''7-'^7?/,^>i /
+
+·""T&& U                            M
+
+                        ~.*s  ? (S^ is <m
+11  f"  It
+
+                                           m <w iiO/ /MY 71 -V) "1 o
+
+wwfrjuo fimfl,' ^^mjj^m ,, ?i
+
+                                            ·/M/b W
+                                                          \
+
+             ?                                   ^n^ ^ U\> (n
+                             \x '/'                       ri
+   <c
+           >                          '"". "^ ---- !
+
+ <§r                         ^                            . pJ-^>-
+  ££?r<~~
+                                 --------------  -^^
+h3
+                                      - < -7 3^ ·I' 'I
+                                                 -cc.-
+                                                                                            Po Y^
+
+                                                 f--N *^. K~
+
+                             >                   ^^\ ^=%
+                                                 ^5 ?s g>^
+                                                 v-^>     r <J^ iJ:~-( _
+
+                                                 ^"~-~.
+
+                                                 ^> * C
+                                                      -i
+                             \                             Uo                                                 f
+                                      ..--
+                                                          ve^
+                                      "'" 5
+                                 \^
+
+                   ^ fe^EV   "\                  ^                                                 05? $
+
+l^ -<for           ^ ^ ^^if      /% ^i
+                §                U'l             TJjj~
+s^
+                                 ^^
+
+                                                                                                          I^
+                                                                                                          &-
+                                 5
+
+                                 c\.                                                                      PF5^ 4^ «
+                                       "· /M£.( §pp?ffl>) piffi-niis v \A )MT PiM/fjrvw^i
+                                       \..     '  '  " I 'J '       i  ' 'L
+
+                                                                                                                9.h
+
+                                                  0/7
+
+.'.- 7/wsfnf' J itf l^'fl/V -^fflMT ^                                         TP f :J
+7 ^ · ^S ·t!.-:...vv  w xaywmf few ^ v
+                         ~?~ / f . ^~  >    1                                                                 . ' s\
+LWi tv wi - - ziwf
+                      ·  /v                    y// f iW/ j^//m/ ·n  (,/·"""',, <r'-'"' ;"7
+^ftfvwofr*. ffim!/ '^^f^/^/ijmi'O^ '^jm 7/]pp/z> ^ idy
+5?
+v/
+
+        ^AiJimM
+O
+                                           '      '     '        '
+
+                               " m^
+
+Wrvtfrj.                                          ^f/wty'fifpfr
+
+^is'i^rWmw/ftfs/j!/(if/a (  'ifpr-pw jwn w $ w       1
+                            V                 (/        /^ t I
+
+cMwrrf^ Ts--Wyfmmjfj^ (tm"f-v/nT(J ^Im/ "
+W A JmfJr.
+
+                                     ^Jm/Al/alJ^K
+
+                                                                            i (/ *
+
+                                                                      SELL
+rmbwfIrT ?w WM
+                        Umi /m lo^ia/a,i /a,
+
+                               &i altilt k 45 M
+
+§
+
+     JIMd xk
+     *                                           J  )
+
+ft-
+     fcf '
+
+                      \.
+
+                             ·0
+
+                          fe*-- ?vi
+
+                          ^: ??-
+
+                                                         ^·7
+                                                      V- ·-
+
+~v'  I-
+
+     &
+
+         I
+
+     -^
+                       ^
+                k
+                    .^-
+            a.
+r>      -1 ^ !~
+
+    IU
+   fel*
+
+r        ^ ^^,
+i
+i
+

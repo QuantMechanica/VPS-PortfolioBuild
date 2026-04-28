@@ -1,0 +1,2390 @@
+Welcome to the Inner Circle Workshop
+
+                  This is my personal opportunity to teach you the best of what I have learned
+over the last 37 years and, hopefully, jump start your trading and learning. I'm looking
+forward to it.
+
+                                                                                                              Larry Williams
+
+MARKET ADDAGE #1--Charts don't move the Markets... Markets move the
+charts.
+
+Despite what you have read, heard or have come to believe, by and large it is my experience that
+technical analysis (chart reading), is not an effective investment strategy. Its usage is limited to
+timing our entry and exits into and out of trades.
+
+Thus I want to begin this workshop with revealing to you what does work, what does set up
+
+major market up and downswings. I have isolated the major "fundamental" conditions seen at
+
+this significant market turning point over the last 30+ years. These conditions set the stage for
+
+market moves that technical analysis can "time". Without these conditions we are destined to a
+
+life of perplexity and confusion. With these conditional set ups we will be working with the
+
+major causes of market movements.      :
+
+The "SET UP" criteria you will learn:     -
+
+1. HOW TO DETERMINE FUNDAMENTAL UNDER AND OVER
+
+VALUATION
+
+2. GET IN PHASE WITH THE POWERS THAT MAKE THE MARKETS
+
+3. THE "END OF THE TREND" INDICATOR
+
+4. THE PINCH AND THE PAUNCH TOP AND BOTTOM INDICATOR                                                                          *m
+
+5. HOW TO FADE THE USUALLY WRONG PUBLIC
+
+6. HOW TO SUPERCHARGE SEASONAL TRADING STRATEGIES
+
+7. THE OPEN INTEREST "PLAY" I'VE BEEN USING SINCE 1970
+
+8. THE SECRET MESSAGE OF SPREADS...PRICE PREMIUMS
+IT'S ALL ABOUT SYNERGISIM- While it is true that many major highs and lows are ·
+correctly "called" by any one of these tools, the best plays come from a cluster of at least 4 of
+these Set Up tools being present. I'm a team player, I want at least 4 members of my team .
+present when I venture out to bag major highs and lows.
+
+L) HOW TO DETERMINE FUNDAMENTAL UNDER AND OVER
+
+VALUATION                                                                                ~-';,*:V^
+
+Technicians have bandied about the concept of overbought and oversold since the first chart was
+drawn, but what they looked at was only price action. Indeed, the DJIA has been overbought
+since 1983! All bull markets are "overbought", all bear markets seriously "oversold". ""'·" · / · ; ·
+
+In 1998, while searching for a better way to determine value, a novel thought crossed my mind.
+
+Value in stocks is measured by P/E ratios, dividends and the like, things not available to us as
+                                                                                  " -;i · ' · - - ' .
+commodity traders.
+
+What is value is the notion I wrestled with most of 1997 and 1998. How could I determine if
+Wheat was overvalued? And, would that same measurement work for Pork Bellies or Cotton?
+What is value, and how do we measure it?
+
+History and most major religions teach us there is an ultimate storehouse of value.. ..Gold. ···'·· ; ,
+
+This got me to thinking, why not compare the price of all commodities to this ultimate
+
+storehouse to see if major undervalued and overvalued zones vs. gold could be isolated.
+
+The search began with a study of spreads and almost at once I knew I was on the track of
+
+something very good.                                                                              ;-
+
+The evolution of this idea can now be stated quite simply;
+
+Divide the price of any commodity by the price of Gold (this shows the spread relationship) and
+multiply this by 100 to normalize. Then construct either a 2 week or 2 period exponential
+average of this spread. Also construct a 22-week average or 22 period exponential of the spread.
+It does not make much difference which mathematical formula you us. Finally, subtract the 2
+period average from the 22 period average. The resulting product, the Preliminary Valuation
+Index (PVT), is clearly shows high and low levels of valuation that are not present in any
+technical indicators I know.
+
+UNDERSTANDING WHAT YOU ARE LOOKING FOR... Initially, I was not able to isolate a
+
+"be all, end all" number that represented +/-values for all commodities. My next step was tc z?
+
+the same thing with this index I do with the Commercial and Public Sentiment Index. By th j_
+
+mean I then constructed essentially a %R indicator. The math is to take the current weeks
+
+reading and subtract from that the lowest reading of the last three years. That amount is then
+
+divided by an amount arrived at my subtracting the lowest reading of the last three years from
+
+the highest reading of the last three years.  ·             '·-..-·'  v^  :..;*,           :«.;··.
+What we have accomplished is the construction of an index we can use to measure overvalued
+and undervalued zones across the board for all markets. All one needs is a long-term weekly
+chart of the commodity under question and the Williams Valuation Index (WVI).TM.
+
+I simply draw a line across the extreme readings found at major market highs and lows. As a~
+example, using the Genesis Charting Software we see that most all major highs have come wiih
+the index in the 75 area while most major lows are indicated by a reading in the 15 area. You are
+free to "move" these zones around a bit, but generally speaking you will see these are the
+readings associated with major highs, 75% or higher and major lows, under 15%.
+
+NOTE: Some times the index will be a little early, and yes, sometimes it may not even be in the
+major high/low zones. Since we are using a combination of our tools of the trade, don't let this
+bother you. Plus, we still need to determine our entry levels. Suffice it to say, though, that once
+an overvalued or undervalued zone is indicated, we need to be alert. Big game is near, get your
+guns ready.
+
+Also note, this is does not work at all like a technical oscillator. As I will show in the seminar
+there are numerous times a market is flat or even declining, yet the Valuation Index
+clearly--and correctly--tells us the market is over valued. The opposite is equally true.
+
+Now let's look at some examples. The first is Wheat and I'm presenting charts covering the last
+30 years, 1968 to 1999. Just this index alone alerted us to most all major highs and lows in this
+market. This is remarkable consistency.
+
+See Pages 1 Through 4
+
+Cotton has little in common with Wheat, but the same thing can be seen in the WVI Again, most
+
+all-major highs appear with our index in the 75% area and lows in the 15% area. Additional
+
+long-term charts are shown for your understanding and persona "track record" of the major
+
+commodities.            ,'
+
+Seepages
+
+Pork Bellies or Platinum all show the same relationship to Gold as the next charts demonstrate.
+I'm also showing here most all major markets with my WVI tm for your study and historical
+records.
+
+See Pages 6 Through 22
+     SO HOW DO WE MEASURE OVERVALUED AND UNDERVALUED IN GOLD???
+
+Obviously, we can't spread Gold vs. Gold, so what are we do to? My answer to this is to
+construct the same measurement, but spreading Gold against Treasury Bonds. As I will show
+when we discuss Will Go, there is a very strong and powerful correlation between these two
+markets.
+
+  ee Pages 23 Through 2
+
+CONCERNING THE CURRENCIES--Currencies do well with the WVI, but perhaps do
+better spreading against the Dollar Index. The next charts show each of the major commodities'
+against both Gold and the Dollar Index. I'll let you choose.
+
+See Pages 25 Through 30
+
+2.) GET IN PHASE WITH THE POWERS THAT MAKE THE MARKETS
+
+CLEARING UP ON THE COMMERCIALS
+
+Many, many analysts have passed by this treasure house of market forecasting techniques. I was
+first introduced to the concept by Bill Meehan in the late 1960's, so I guess it's safe to say I have
+more experience with this tool than any other current analyst.
+
+There are several critical points I need to share with you about this index, to begin let's
+talk about the index itself. First of all it is constructed of just the large hedger activity as released
+by the Commodity Futures Trading Commission and can be garnered every other week (in the
+old days it came only once a month). On their web site at · HYPERLINK
+http:/AVWW.CFTC.GOV · WWW.CFTC.GOV* , there is a bar there that says "Commitment of
+Traders", click on it for the data. This is the only data I use from the CFTC, I do not use the
+large traders, (funds and trend followers), or small traders.
+
+I construct the index by taking the highest value of the net difference between long and short
+positions for the current reporting period. Then subtract from the lowest such reading of the last
+three years, this value is then divided by the difference between the highest and lowest readings
+of the last three years. This normalizes their activity.
+
+Keep in mind the Commercials are the ultimate trend enders. They are not top and bottom
+pickers, they accumulate and distribute. As such they are usually early. Also the mere fact thev
+are or have just become net long or short may not have great meaning. This is not like a lignx *?
+switch that is on or off, bullish or bearish.
+
+There are three important ways to use this index.
+
+      L Extremely high/low readings
+      2. 12 month high/low readings
+      3. The Crouch (rollovers/rollups)
+A) EXTREMELY HIGH/LOW READINGS--There do appear to be absolute levels that aic
+
+found at major market highs and lows. Certainly any reading greater than 75% is bullish and ...
+
+than 2 5 % bearish.      -.,,         -....,-
+
+B) 12 MONTH HIGHS AND LOWS--What I'm looking for here are readings that are higher
+than all values for the last 12 months, that's bullish. Readings lower than all postings for the last
+12 months are bearish. In both instances this is irrespective of the % or absolute raw value
+reading.
+
+See Pages 31 Through 35
+
+C) THE "CROUCH" WITH THE COMMERCIALS
+
+AN OVERVIEW OF COMMERCIAL ACTIVITY-- For the last 25 years I've been talking
+
+and writing about how this group of traders sets the tone for most all market activity. Nothing
+
+has changed. The markets were set up by these people, brokers and, to facilitate business. The
+
+exchanges are not there to accommodate speculation, they serve a commercial purpose and we
+
+speculators are a mere pawn, and useful one, in the grand scale of things. ..  -,'.,>.., ;";v-
+
+Traders have taken the wrong view of Commercial activity. It is not a light switch that is on or
+off. What does matter is a very high level of buying/selling over the last 12 months. That's the
+initial set up. We can measure this by taking the 3-year high and low of Commercial activity
+and dividing that into the current reading minus the 3-year low. That's the COT index you'll
+see in most chart books and the Genesis software.
+
+In this fashion we can watch the pendulum of Commercial activity to see when it has reached an
+extreme. It will surely move from one extended reading to another, to the opposite side, from
+bullish to bearish, and in the process will go from positive to negative. This change in direction
+from bullish to less bullish is not bearish, nor is a change from + to -.
+
+Indeed, it is often a positive sign, indicating the move is underway. You need not worry about
+this and in fact can use the roll over as a sign the move has begun! The examples prove my ,
+point. The roll over is an early indication the trend move has begun, not that it is over!
+
+See Pages 36Through41
+
+'The long and short of Commercial activity is that a 12-month high/low in their buying/sellinr ::
+a signal for a trend reversal. These people do not try to buy tops and bottoms they accumulate
+and distribute. My final point is that when they are diametrically opposed to the public maj<»
+moves usually develop, i.e., if the public is excessively bearish while the Commercials are
+heavily long prices will rally.
+But there's another point you should know about, one I call the "crouch" as it looks like the
+commercials crouch into their buying/selling then spring from this extreme position and a new
+trend begins. The amazing rule is...
+
+                   WHEN THE COMMERCIALS INCREASE THEIR SELLING
+                                         THE MARKETS RALLIES!
+
+          WHEN THE COMMERCIALS INCREASE THEIR BUYING
+                             THE MARKETS DECLINES! -
+
+Yes, you read correctly an increase in Commercial buying is bearish--if it comes at a time they
+have moved to an extended or high level of selling. When they decrease there of buying
+(increase selling) from a high level of buying the markets usually rally. This is like a turn of the
+tide and signals excellent points to hop aboard as the following charts illustrate. One needs to
+first see an over-extended move by the commercials, the crouch in case of a sell, then it appears
+they change directions and the markets follow.
+
+3.) THE "END OF THE TREND" INDICATOR
+
+        Discovery consists in seeing what everybody has seen and thinking what nobody else
+has thought.
+
+          Albert Szent-Gyorgi
+
+Years ago Welles Wilder came forth with the Directional Market Index and the ADX line. I
+have found this a very, very valuable long-term tool to call major highs and lows when used in a
+
+certain fashion. Unfortunately, this does not signal all tops and bottoms, but when it does,
+
+especially in conjunction with Sentiment and/or commercials, you have as sure a deal as I know.
+
+This understanding on the index is original to my work.
+
+                                                         >. - '--·'
+
+A "·,,;"  +60 DMI SELL SIGNALS
+
+          AND MAJOR BUYS
+
+ These are even fewer and farther in between, but .they are a snap to spot. All you need look for is
+ a DMI reading of over 60. Such readings have an excellent record of saying a top is at hand. __
+r Readings of > 60 in market declines indicate excellent buying opportunities at hand.
+
+ Excellent sell signals have also come from readings over 40 but I would want such selling
+ indications to be backed by BOTH Sentiment and Commercial sells as well.
+
+Do not be misled by the fact it takes only two paragraphs to define these signals! Readings over
+60 present wonderful opportunities for the informed risk taker.
+See Pages 42 Through 53
+
+DIVERGENT SIGNALS WORK VERY WELL HERE
+
+We'll also be looking for markets that go to new highs but are not matched by new highs in the
+DMI. Market buys can be just the reverse, a new low not matched by higher DMI readings.
+Finally, I have noted major lows that have had lower DMI readings, then on the plunge a ver>
+high value > 40 is registered indicating a selling panic.
+
+Even a quick study of your charts will reveal the amazing power of this approach. Note that this
+technique was FIRST fully revealed in January 1994 to hundreds of fellow traders.
+
+4.) THE PINCH AND THE PAUNCH                                                        Vx
+
+I have noticed one more relationship in the DMI (ADX) and Stochastic innerworkings that can
+be of real value to the trader looking for intermediate term set up plays.
+
+Keep in mind the DMI simply shows if a market is trending, in other words does it have any ,,.
+strength to what it is doing? If so it will be steadily increasing, if not it will be declining. , ^;^
+
+Stochastic on the other hand measures how far the market is getting away from price x days ago
+
+regardless of the integrity of the move.                                         H
+
+THE PINCH.. .So consider what it means when Stochastic is rising, and above 75%, the usual
+
+overbought area, while the DMI has been declining. This suggest to me the price move that
+
+pushed stochastic higher had no "umph" or meaning behind it and any sells coming should be
+
+good ones. This appears as a "pinch" on charts as the DMI is coming down, the Stochastic
+
+coming up, as the lines pinch together.                                             ...
+
+A buying indication is just the opposite, Stochastic declining and below 25%, while DMI is
+
+rapidly advancing. This suggests a selling panic as, usually, price declines on a declining DMI.
+
+This appears as a widening between these two lines, a "paunch" effect.  .......
+
+See Pages 65 Through 73
+
+THE PAUNCH SIGNAL.. .When the weekly 7-bar ADX line rises above 40 a buy point of __
+lasting duration is at hand. The + 40 reading does not cause the entry, only tells us the time
+,ripe.
+
+CRITICAL POINT...This pattern, of going from below 40 to above 40 only creates buy sisnais
+if the market is substantially oversold as the crossing takes place. What is going on is that no;
+only is the market oversold, Stochastic below 25%, but downside volatility has picked up. This
+means a selling climax is at hand and a market bottom very near as not only have prices been
+suppressed, sellers have become irrational, almost dumping at the market, hence the DMI picks
+up. (Another ideal confirmation comes from the Market Sentiment or Commercial data
+
+confirming a high or low).                       ,:     rr^vv- ...-.-...·;·.
+
+Additionally, it will pay to wait a turn down in the index to signal the trend move is over or
+
+least in the terminal stages of market atrophy.      :
+
+See Pages 74 Through 86
+
+IF YOU WILL JUST LIMIT YOURSELF TO THESE TRADES YOU WILL TRADE LESS
+OFTEN AND CATCH MOST ALL MAJOR HIGHS AND LOWS.
+
+ON DAILY CHARTS TOO--Yes, these formations do appear on daily and even interdaily
+charts and are usually pretty good set up patterns to alert us to important trend changes for the
+time frame we are trading. My use here is to help us further evaluate and zero on major trend
+changes using weekly bar chart data.
+
+AN ADDITIONAL USE--In recent years I have noticed that a very low DMI/ADX
+reading, below 20, at the same time the Commercials are heavy buyers sets up beautiful--
+and immediate--buy signals. This makes sense, what's going on is an apparently lackless
+market where it appears nothing is going on, but under the surface the commercials have
+been accumulating telling us to expect higher prices.
+
+5.) HOW TO FADE THE USUALLY WRONG PUBLIC
+
+While the Commercials are usually correct, but early, the public is often correct--mid stream--
+but when they become excessively bullish or bearish they are most often dead wrong. This is
+even more true when the are bucking the commercials.
+
+Hence our best sentiment play is these two groups in opposition,
+
+I use the Market Vane index (626) 395-7436 or the Genesis Data index. Both are similar in
+nature. Market Vane measures the most wrong crowd, newsletter writers at brokerage firms.
+Using just this index many major highs and lows appear. It is a good check on your own
+emotions. There are shorter, daily, measures of sentiment; they work good for that time frame
+not for longer-term set-ups.
+
+See Pages 74 Through 86
+                   THE YEAR IS NEVER WHAT IT STARTS OUT TO BE.... v > i \
+
+                      (Reallypossible,... real time trading with 85%accuracy?) < : ; . · '
+
+There are few sure bets in trading commodities, but one of the better is that what investors ar~ =
+doing at the first of the year will be wrong! In short the highly emotional "planning" time rigni
+at the first of the year is most often apt to be wrong...all those investors dreams will soon be ---·
+as under. I will use weekly charts to establish all of the following points.
+
+To check this thesis I carefully recorded, for the last 8 years what the Market Vane measure of
+
+investor sentiment was telling us at the start of each year. Readings of over 75% bullishness I
+
+took to indicate tops, readings below 33% as buys. The following list indicates the potential
+
+buys, when the index was under 33% and the sells with readings of greater than 75%. Here are
+
+the results:          ·                                                    .           ·-" f:,
+
+SELLS                 -'                               ' . '·/"                        =";
+
+1988 Copper, Beans, Wheat, Sugar '. .'"'·,,.../- :-v.,;.......,/.
+                                                                           :*::: ; -^
+1989 Crude Oil, Corn, Oats, Meal, Wheat
+
+1990 Gold, Crude Oil, O.J., Cattle, F.Cattle                               .. · -'. ,  vj
+1991 Gold, Copper, Corn, Coffee, Sugar, Cattle, F.Catt, Dmark                          :;i vv,
+
+1992 Wheat, Pound, D.Mark, Swiss F.              . .,                      - . . . . .... :. , ·
+
+1993 Oats, Meal, Oil, Coffee, Lumber, F. Cattle                ^·"~        V^v- ^^ /··';
+
+1994 Gold, Silver, Beans, Meal, Oil, Wheat, Oil, Sug, Bonds ·                          ^ t!lV · - ° ·
+       Corn, Cotton
+
+1995 Beans, Oil, Sugar, Cattle, F. Cattle ,, :·.·.;.. .". . . . , -. ( _,  :; -\\,' f.v.
+
+BUYS          ; :P^'-^-- '           '   . " " " · · ' " ' · ' : " ; ' .jim^mf^
+_  -- nr                      ,-,                                                      , ->.-..._ . _ . . . . . ,, .  _
+
+1988 Cocoa, Crude Oil, Bellies
+1989 Silver, Cocoa, O.J., D. Mark
+1990 Copper, Cocoa, Cotton
+1991 Beans, Meal, Cocoa, Hogs, Swiss Franc
+1992 Copper, Corn, Sugar, O.J., Cattle, Hogs
+1993 Gold, Sugar, Bellies
+1994 Coffee, Hogs, Yen
+1995 Beans, Meal, C. Oil, B. Pound, D Mark, Yen, Swiss F.
+
+These "start of the year excesses" have proven to be excellent set-ups for major long-term
+
+moves. Now, no one, at least no one I know can predict 12 months in advance and I don't think
+rany of my tools can, but they can tell us about trends for the first 3 to 6 months. Then the
+
+integrity of those trends will tell us if that condition will last all year long.
+
+              '-·  V
+
+The purpose of measuring investor sentiment is to tell what the crowd is doing, as they are
+
+usually wrong. What I have discovered is the crowd is even better at being wrong at the pivotal
+
+start of the new-year time period!
+6.) SUPERCHARGING SEASONAL TRADING
+
+While not perfect, seasonal patterns are a tool every trader should have in his or her arsenal wncn i^~^
+
+you go hunting for big game. The problem is these patterns are not repeated every year, gosh 7~^
+
+that would not make trading any fun. Hence, the pattern or tendency becomes a tool or back-: · · · · ^^^
+
+to place trades against.            ,·                   ;V:'v'.;. : v, ;
+
+I think the ideal trade will have three of our major tools AND backed by a seasonal. If I have
+two "set up" trades one with a seasonal, one without, I will take the one with,
+
+,:                        THE STRONGEST SEASONAL TRADES  >;
+
+I had no idea what an "industry" my 1974 book, "Sure Thing Commodity Trading", "How                    -·" ·. :
+Seasonal Factors Influence Commodity Prices", would create. Maybe that's because it was the
+first book ever written on the subject. But more than likely because we never envisioned how                ;
+easy it would be to study these influences with the advent of the computer.
+
+While my original work was done by hand and took over 12 months looking at charts and
+tabulations of prices, this same work can now be done in an afternoon with a laptop.
+
+But a problem remains the seasonal trades are about as reliable as Mark Fuhrman's testimony. '·'<· fc.;
+Which got me to thinking. . The reason these trades are so spotty is that most studies the seasonal
+crowd uses are based on 5 to 15 years of data. That means the current data base they use goes
+back to 1985.
+
+The following tendencies were based on two time periods, the most recent 15 years. . plus. . I
+went back to my original 1974 book, which covered 1960 to 1973 and found the trades that still
+exhibit themselves in the current data. I next put these into a monthly trade recap. These recaps
+do not give specific buy sell dates, as I do not think that is the best use of the information. The
+best use is to advise us of these very strong patterns. In each case the pattern is that most all the
+time prices have closed up/down for the months in question, hence these indicate pretty big
+trades.
+
+JANUARY                   DOWN
+SWISS FRANC               DOWN
+DMARK                     DOWN
+BPOUND                    DOWN
+OATS                      UP
+CATTLE                    UP
+HOGS                      UP
+LUMBER
+
+FEBRUARY                  DOWN
+TBONDS                    DOWN
+SPRANG                    UP
+COPPER
+
+                                10
+S MEAL '"·:  DOWN
+SOIL         UP
+CATTLE       UP
+
+MARCH        DOWN  (1ST HALF OF MONTH)
+WHEAT        DOWN
+B POUND      UP
+S BEANS
+             UP
+APRIL
+O JUICE      UP
+             DOWN
+JUNE         DOWN
+T BONDS      DOWN
+BPOUND       DOWN
+SMEAL        DOWN
+OJUICE
+COTTON       DOWN
+LUMBER       UP
+             UP
+JULY         DOWN
+T. BONDS     UP
+GOLD
+CATTLE       UP (ALL CURRENCIES BEST
+COTTON i
+LUMBER       UP TO BW MID MONTH)     - ·· X: Xv
+
+AUGUST       UP ' . -· ' -·" · -· -
+BPOUND
+JYEN         UP
+DMARK V
+SPRANG       DOWN (FIRST TWO WEEKS ONLY)
+S MEAL
+CATTLE       DOWN
+BELLIES
+COFFEE       UP    · ..      ··:. <
+COTTON
+             UP (STARTING MID MONTH)
+SEPTEMBER
+BONDS        DOWN        . . . .-·; t
+B POUND
+JYEN         VP (FOR FIRST HALF OF MONTH)
+DMARK        DOWN (TOPS FIRST FEW DAYS OF SEPT)
+SPRANG       UP (BOTTOMS SECOND HALF OF MONTH)
+COPPER
+COTTON       U P :.:..-v- :v;/a,j.-.-- > = - , , -
+LUMBER
+             UP
+
+             DOWN
+             DOWN (STARTS MID MONTH)
+             DOWN
+
+                         11
+OCTOBER        DOWN (ABOUT OCT. 1OTH)
+B POUND        VP (FIRST HALF OF MONTH)
+JYEN
+               UP            ' . : ' ·. " -:-... - . . . & \£-^. "
+D MARK
+SPRANG         UP
+
+S MEAL r       DOWN .:'^i-h- :·'"..<-\ :- . - - . . *>'· .;--'v'x,. ;
+COCOA
+COFFEE         DOWN "' ^ '" Jv : : " ' ' *'\
+COTTON
+               UP
+
+               DOWN (this is just so-so)
+
+NOVEMBER       UP (STARTS ABOUT 5TH TRADING DAY)
+T BONDS        DOWN
+SPRANG         DOWN (FOR FIRST HALF OF MONTH)
+COPPER         DOWN
+SMEAL          DOWN (FOR FIRST HALF OF MONTH)
+SUGAR          UP (RALLY STARTS ABOUT THE 20TH)
+LUMBER
+
+DECEMBER
+
+T BONDS            UP
+
+B POUND        UP (LATE IN MONTH)
+
+JYEN               UP
+SPRANG         UP                 .   ^   ·,.,.  /;'.:,   .';'';:':';!,v-
+D MARK                       ^?'
+GOLD           UP                 ;-  A'  '. '"  '''' -'
+                                         ---- ' "*"'· :
+                   DOWN
+
+COPPER             UP (AFTER FIRST WEEK)
+
+BEANS              DOWN                    ·:;..:
+SMEAL i            DOWN               _ . -, v ,/r ',
+
+HOGS           /' -,:· . UP
+
+COFFEE         V.>" -UP               '
+
+SUGAR .- ·x DOWN
+
+O.J. y'- -1' DOWN (STARTS MID MONTH)
+
+LUMBER ......      UP
+
+               MOST RELIABLE TRADES
+
+LUMBER         SHORT IN MID MARCH
+
+CURRENCIES SHORT IN MARCH
+
+COPPER         SHORT APRIL
+
+COCOA          BUY LATE JUNE V ^ w ;
+
+T BONDS        SHORT FEBRUARY
+
+B POUND        SHORT JUNE
+
+DMARK          n             11
+
+SPRANG         ii            n
+
+SMEAL          SHORT DEC                                  i
+CORN           SHORT LATE JUNE -;,:
+
+WHEAT          BUY , « ;
+
+                                                          12
+BELLIES  SELL NOVEMBER         \ / :'^ ;^VvH-,vr
+CATTLE
+BONDS    BUY JANUARY/FEBRUARY
+
+         A JANUARY DECLINE INTO MARCH LOWS, RALLY
+
+         INTO JUNE 1STH, DECLINE OR SIDEWAYS UNTIL
+
+         LATE SEPT, RALLY INTO CHRISTMAS  ,....... .,,.,·.,
+
+MAJOR SEASONAL PLAYS...Jake Bernstein, is certainly the most noted student of sc^or^:
+plays. Jake and I have been buddies and competitors since the late 1970's. Certainly Jake nas
+done more than any other individual to study seasonal influences. The following indications are
+based on over 40 years of data Jake has painstakingly compiled Several of his favorites call for
+COPPER to top in March bottom in June and rally well at the end of the year. SOYBEANS
+should rally from January to a May-June peak, decline into a September-October low then stage
+a year-end rally. BONDS have usually rallied from mid February to mid May, slumped into a
+mid July low and rallied into mid November. COFFEE is most apt to rally from the end of
+December to mid June, then tank until October where it bounces up until the end of the year.
+BEAN MEAL bottoms in February, tops in late June declines into October low. Look for a
+low in SUGAR in mid April with a bullish bias all the way to a mid November high, then back
+down to the April lows. PORK BELLIES have most often rallied from March to July-August
+then declined into November lows. WHEAT IS THE MOST CONSISTENT SEAONALI
+HA VE FOUND. Expect selling pressure from January to late July then a rally until after
+Christmas. CORN has been just the opposite, it rallies from February to Mid July, declines until
+right around the end of the year. The February/March rally has been very reliable.
+
+The astute trader will focus on seasonal indications ad look for confirmation from trend ;
+indications as well as rest of our tools during these windows of opportunity.
+
+7.) THE OPEN INTERST "PLAY" I'VE BEEN USING SINCE 1970
+
+Opening up the way we can use this exciting early warning indication
+
+While you may have read about this tool in other of my writings it's one that we need to be
+reminded of. As you may recall, the operating rule is that IF price is in an up trend, then enters
+a trading range and Open Interest declines (usually about 20%) expect a rally. Sells come from
+a down trending market entering a trading range while Open Interest increases about 20%.
+
+This is the basic rule as taught me by Bill Meehan in 1970. The reason it works is that the
+decline in O.I indicates the commercials are most likely covering their shorts. Keeping in mind
+they account for about 60% of market volume or AND they are usually hedging, selling, r-iu
+felt the reduction meant they were bullish and he expected a further trend move.
+
+I'm showing a few of the 1997 O.I. plays for your study. The first is Sugar in October. Notice
+the nice up trend, next an elongated 3-month trading range, then a rapid decline in O.I. rfore
+the break to new highs! ·> -.·.,:,, ··...,..-
+
+Live Cattle gave a similar buy in June 1997 when O.I. fell off in the face of a trading range and
+shortly thereafter prices skipped to new highs.
+Silver, while not fitting our rule of being in a trading range had a massive O.I. reduction while
+
+the Commercial/Public data was bullish. AG sprang from $4.60 an ounce to $5.30 in just a
+
+matter of days.  .,                           .. ,
+
+Copper in March/April 1997 (a move we traded) was a perfect example of this technique. _j_
+
+This last trade opens up an interesting door. . .can we take O.I. formations that do not h-v:: :::·_-
+trend factor going--if we have our bigger guns blazing away? The answer is yes. In fact there
+appears to be some relationships between the Commercials getting excessively bullish/bearish
+and O.I. moves, but I have not been able to codify trading procedures.. .yet.
+
+My studies show some excellent trades can be made using the following sequence; first we have
+
+the Commercial/Public set up, then a rally off the lows followed by a trading range with our O.I.
+
+reduction. Typically, Commercials sell rallies, so if we see a reduction, following a set up, it's a
+
+decent bet prices will move higher. ; . . : . ,,                        ;
+
+8.) THE SECRET MESSAGE OF SPREADS...PRICE PREMIUMS
+
+As you know, spreads are among the most powerful and fundamental of all market indicators.
+
+Yet, most analysts blow them off like Al Gore at a Republican fundraiser. I've never been able
+
+to figure this out because even a cursory glance reveals how important they are. I look at a
+
+spread (that is the difference between the nearby contracts closing price and the next or
+
+successive months) in two major ways.               ; . - . ; ' ; - - · '":
+
+            1. Price Premium Structure
+            2. Sfrengthejiing and weakening of the spread
+
+PRICE PREMIUM STRUCTURE--This term, "a premium" simply means the nearby
+contract is trading at a higher price than the next month out. This is a fundamental anomaly, it
+should not be this way. The distant months should always sell at a higher value.
+
+The only thing that can create a premium is someone wanting the nearby contract badly enough
+that they are willing to pay more for it than the distant months. My belief is that this can only be
+the commercial, hence this designates a commercial bull market. A non-premium or "carrying
+charge" market is meaningless, telling us nothing.
+
+The important point is not just that there is a premium, after all a market can be at a premium, -*-
+
+but winding down or losing it. Thus what we will be looking for is the
+
+"premium coming on", that point in time when the nearby actually trades at a higher \a.^^ ..Ii^i--
+
+the distant. That's bullish telling us to look to get long. Traditionally markets go to a          m-
+
+approximately one of the following two ways;
+
+ee Page 81
+
+                                              14
+ONCE THE PREMIUM IS THERE...We need to turn our attention to what the premium
+doing in relationship to the market. A new high in price should have a new high in the spr?:.^. T
+it does not, that is a negative sign, buyers were no longer bidding for the nearby.
+
+On a correction the premium should out perform price action, i.e., price makes a new shon term
+rally low and the premium does not.. .it "holds up". That is very bullish action telling us rnp, ^
+correction is not the start of a market slide.
+
+The fact there are only three paragraphs here should not dissuade you from studying this
+relationship. I have written about it in other places.
+
+LARRY WILLIAMS ENTRY TECHNIQUES AND RULES
+
+        Most traders begin and end with entry techniques. I don't see it that way...my base is
+set up trading, but I still need entry points. Here they are...
+
+1.) CHANNEL BREAKOUT TRADING
+
+Don't sneeze at this...first popularized by my friend DickDonchian in the late 1940's...it hit the
+big time with Richard Dennis and his Turtles in the 1980's. Last year the Turtles are reported to
+have made about $100,000,000 on their managed funds. Granted, they have a zillion dollars
+under management now, and have implemented may of their own rules, but still.. .a
+$100,000,000 is a lot of money!
+
+I broke the dam wide open when in 1988 I promoted seminars for Russell Sands, the first "Turtle
+to Talk" and reveal all. The system, which Russell still teaches, is based on buying 20-day
+breakout (of the highest high of the last 20 days, lowest low for selling) with a 10-day stop or 50
+day breakouts with a 20-day stop.
+
+This works.  /
+
+We can make it work better by waiting for a setup market--then and only then--using a channel
+break out. My research shows a 12-day breakout works best for the set-ups.
+
+                                  llfl
+
+                                       11
+
+                              15
+                             THE IMMUTABLE LAW OF AVERAGES
+
+  Markets can only be understood backwards;
+But the problem is they must be traded foreword
+
+Timing is always a traders greatest problem/opportunity. I do not know of ANY purely technical
+
+timing system that maximizes profits. My thinking is that by selecting trades based on th- ··-····-
+
+and then bringing in the timing tools we will have more success than just taking technical ouy
+
+and sells signals. ······'-  ··
+
+Surely, this is one of the most important laws operating on our planet. Just as with the Law of
+Gravity, this law impacts our everyday life, every day. On average the weather in San Diego is
+72 degrees with fluctuations above and below the average. WHENEVER the temperature rises
+above that average for very long it's a sure bet that eventually things will cool back down. Even
+our personal relationships are that way; they are pretty good on average, yet run in hot and cold
+streaks.
+
+2.) THE 18 BAR PATH OF RIGHESTOUSNESS
+
+I have chosen to use an 18-day moving average to help us understand commodity prices. There
+is no magic to this average, it was chosen largely because is has been used for years and is
+readily available in chart books and software.
+
+While none of us would resist the Law of Gravity, traders every day disregard the Law of
+Averages. The basic rule is that if price is below the 18 bar average you probably don't want to
+be long unless there is an EXCEPTIONAL REASON to buck the trend.
+
+PATTERNS TO THE LAW OF AVERAGES
+
+KISS AND COLLAPSE--This is the primary pattern that sucks traders into losses. The length
+of the moving average does not matter; the length simply identifies or isolates your time frame.
+When a market has been in a steep up/down trend and takes a run up/down to the moving
+average it will usually trade their for a bit then--just when we went long--collapse, pulling back
+to the dominant trend.
+
+BUMP AND RUN--This is the pattern I like to see when looking for a trend reversal. In this
+case price runs into the moving average horizontally while in the Kiss and Collapse the meting is
+the result of a vertical move. Bump and Go is a visual representation of trend slowing
+suggesting a much better probability of a trend change.
+
+BREAK AND GO--Our final repetitive pattern takes place when price rises above the
+average signaling a trend change, the pulls back or actually works both sides of the ave
+resuming the trend change move. This is a very powerful move you should be on the
+for.
+
+                                 16
+See Pages 88 Through 92
+
+              SIMPLE TREND ENTRY TECHNIQUE
+
+Precise timing of our entry is the greatest problem/opportunity. I do not know of A_ Y
+purely technical timing system that maximizes profits. After all these years, thousands 01
+research hours and who knows how much money in research I have still not found a msmv
+profitable timing system that can be used on just one market. Trend following systems
+work only on a big basket of commodities on the assumption something in the basket will
+have a big move and pay off the little losses.
+
+        THE ESSEENCE OF MY METHOD IS TO FIND A MARKET SET UP BY
+
+COMMERICALS, PUBLIC, SEASONAL, OPEN INTEREST, DMI/ADX, ACCUMULATION
+
+DISTRIBUTION, PREMIUMS AND THE LIKE--AND THEN AND ONLY THEN
+
+ESTABLISH A POSITON ONCE THERE HAS BEEN A CHANGE IN TREND. THERE
+
+ARE TWO COMPONENTS THE SET UP, WHICH IS NOT A REASON FOR ENTRY, AND
+
+THE ENTRY WHICH IS A TIMING MECHANISM NOT THE REASON FOR THE
+
+TRADE.                                                                .,:-:;,'
+
+         HARD AND FAST RULES FOR THE 18 DAY AVERAGE
+
+A buy signal will require that we have two consecutive days with lows that are above
+(greater than) the 18 day moving average of closing prices. Neither of these day can be an
+inside day (that's a day with a lower high than the previous day as well as a higher low).
+Given this condition we will go long at the highest high of these two bars.
+
+A sell signal will require that we have two consecutive days with highs that are below (less
+than) the 18 day average of closing prices. Neither of these can be an inside day. Given
+this condition we will go short at the lowest low of these two bars.
+
+This system does make money on its' own as you can see from the following listing of taking all
+buys and sells without any setup criteria. This is comforting, we know it works, but the accuracy
+is low and it is replete with whipsaws. Our purpose as traders is to bypass as much of this as
+possible and I know of no better way than with the setups, thinking and common sense.
+
+18 DAY MOVING AVERAGE WITH 2 OUTSIDE BARS 10 YEAR RESULTS
+
+COPPER        29.2 (THOUSANDS)
+
+S FRANC       48.9                           ,        .
+
+B POUND132.9             ·                    ^ .:···.;
+                                             . - "\"'r ' I
+CORN · - · · . 35.8      ..,..· J· · ' .
+                         ''' V ^ 'A
+GOLD          83.4                           ;vi-\.;  ' ''../''.
+
+JYEN          147.5      \: 'J \ ·                    ·           \.
+
+COFFEE        188.0         · \ ,,
+
+HOIL          30.2                        A
+
+BEANS         87.9       v
+
+                            17
+EURO     30.5                                                   " '·'      /; "
+SUGAR                                                                          ^'
+WHEAT    96.0
+DMARK
+T BONDS  41.5
+
+         79.1 r
+
+         44.8 · . ·                                                    /
+
+3.) QUALIFIED TREND LINE BREAK ENTRY
+
+This is a steal from Tom DeMark, my trading buddy of more than 25 years. Tom has come up
+with many novel trading ideas and way of looking at market movement, as most of you know.
+
+A few years ago Tom told me how to tell if a trend line breakout would succeed or not. The idea
+
+Tom shared with me is that if the day before the expected trend like break (to the upside for a
+
+buy signal, reveres it for a sell) has an up close the breakout is suspect. Exceptions would be
+
+inside days following down close days and up days that close below the opening, those days
+
+would not disqualify taking a trade.                                                         ;_. ; ... > \.
+
+Tom has added that gapping above the trend line, even if the upclose days were present, is ok for
+entry. Tom does like to see such a gap move up from the opening a few ticks to confirm
+The buy, down a few ticks to confirm a sell.
+
+4.) A NEW INDICATOR PRO-GO                                             -.  "' ' .- - .. - ·  '?*'·,..-:.'-*,
+         TM^^TM"TM"""^^ --·--··"^--' m-- '""" TM" ~" ^-TM-- --
+
+Many, many years ago I wrote about how to separate public buying from professional buying.
+The essence of the technique was to create an A/D line for the public that shows the change from
+yesterdays close to today's open. The professional A/D line is then constructed by using the
+change from today's open to today's close. Those two lines clearly "tip" us as to what is really
+
+We can take this one step farther by simply constructing an index of the previous close to open
+
++/- values and then taking a 14 day average which is plotted against a 14 day average of the +/-
+
+values of the open to close.                                                       ·
+
+I can see at least two ways to use this data, and there may be more. The first is to simply look
+for divergences between price and the Professional index. Price lows not matched by the Pro
+index are bullish. New highs not matched by this index tend to be bearish. \ -:-,,-,
+
+Additionally, crossings of these two indicators have given some excellent intermediate, term buy
+and sell signal as the charts below depict. This can be used as an entry or timing technique wim
+the rules as provided at the seminar.
+
+See Pages 93 Through 100
+
+                                                                18
+5.) THE FAILURE DAY FAMILY
+The market loves to catch people by surprise. Never forget that statement. The following
+patterns can be used to enter the market taking advantage of what looks like a strong ma:;-:c:
+move. The underlying truth of these patterns is that the day after the pattern prices do e,-_,.._,; T ..--
+opposite what "the crowd" was expecting.
+FAKE OUT DAY--Here we have a higher high, higher low and lower close than the prior aay -
+for a buy. The sell is just the opposite, a lower -high and low with a higher close. Buy/Sell at the
+prior days high/low.
+
+SMASH DAY--This is a bit like a fakeout day. The pattern to look for is a day with a higher
+high, low and higher close. BUT, the close is substantially below the open. Taking out this day
+high is very bullish. The sell is just the opposite, a down close substantially above the open, with
+a sell at that day's low tomorrow.
+
+                                                    19
+NAKED CLOSE DAYS--This is a nice term coined by Joe Stowell. It's easy to spot, a naked
+close "buy set up" requires a close lower than yesterdays low, buy at the high of this down close.
+A "sell set up" requires a close above yesterdays high, sell at the low of this up close.
+
+SPECIALISTS TRAP - For a sell look for a strong uptrending market that goes into a trading
+
+range or "box" for 6 to 20 days, then thrusts up on big breakout day. It may go on, or it may not.
+
+Our sell will be at the true low of the break out day. If prices are in a down trend and go into that
+
+box the reverse of the above, buy long at the high of the breakdown day.                               ,
+
+                                      WHEN TO EXIT
+
+Well, let's see, we've narrowed down the markets we will trade for big moves and have also
+determined our buy and sell points. All that's left is to tell how to get out of the trade.
+
+                                                      20
+1.) MY LEAST FAVORITE EXIT TECHNIQUE        y
+
+I hate this exit technique, but it is the most important on in the world. What it is, is simply u
+dollar stop. While this is not fancy it's protection and that's what we all need. The amount YOU :
+are willing to lose on a trade is dependent upon three things, 1. Your belief in the trade 2. -... ,,--
+size of your bankroll and 3. The volatility of the market.
+
+I believe all these trades will work, but know some won't ...this means I cannot fall in love or
+marry a position, some of them will not work out...the sooner your accept that hard dose of
+reality the better your trading will become.
+
+These major mega trades we are looking for have often made $5,000 to $10,000 a contract so I'm
+willing to use a stop of about $ 1,500 as final proof I am wrong. Smaller traders may want to risk
+less, but the closer your stop is the greater the probability that you will be stopped out just before
+the big move begins. Each of us must ultimately decide how much we want to lose.
+
+I will also protect against loss by a rally to new highs if short, new lows if long. This does not
+mean I'm through with it...I'll be back on the next buy/sell...if the conditions are still there.
+
+2.) THE AMAZING 3 BAR ENTRY/EXIT TECHNIQUE
+
+This is one of the very best trading techniques I have ever developed. It is really quite simple,
+once the market is in a run away move, as I call it a "Rock and Roll" market - then and only
+then--do we use this entry. Price must be out of a trading range. ,
+
+If so, and we are long, determine the highest close in the up move so far. Count that as day one
+and go back to get two more days. None of these can be an inside day. Once all three days have
+been noted, then determine the lowest true low of those three days. Place your stop to exit (sell
+short?) at that price. . ·, , . , ., . . .
+
+If short determine the lowest close in the down move so far. Count that as day one and go back
+to get two more days. None of these can be an inside day. Once you have all three days note the
+highest true high. Place your stop to exit (buy long?) at that price.
+
+AN INPROVEMENT?? In recent years I have noted this; in the buy example, if the day
+
+before the low close was an up close then go back one more day, and again use no inside
+days. If the high close, in a sell example, has a down close the day before, go back ~"tt *"«»-o
+
+day. Again use no inside days.
+
+See Pages 101 Through 103
+
+                           21
+.V, ·>·  EXTRA EXIT/ENTRY TECHNIQUES
+
+If I'm not stopped out the only other thing that can happen is to take a profit! I will use o-- ... ..-
+following techniques to exit;
+
+1.) STOCHASTICS...I will be very tempted to take profits when the slow % D hits 75% i: s^_
+long, 25% if short. If the market is trending quite strongly I may wait for a crossover of D
+and %K, and again, I'm using the 14 bar weekly series. This may get me out too early, but
+there's little perfection in this business.
+
+2.) 3 BAR...I also use the 3 bar exit technique...as discussed earlier in this presentation. This is
+
+an excellent technique to use when a market goes in a tight trend move. IN FACT, THIS IS
+
+THE BEST TRAILING STOP TECHNIQUE I KNOW OF TO HOLD ON TO ONE OF THESE
+
+TIGER MOVES...IN AN UP OR DOWN MARKET.                              s .,,
+
+3.) THE 18 DAY MOVING AVERAGE...You can use the 18 bar moving averages as an exit
+
+technique. This works well for holding onto long term trend moves.  ·      - .,
+
+4.) CHANNEL BREAKS...If all else fails, I will exit at the highest high of the last 20 days if
+short, lowest low of the last 20 days of long.
+
+No one has perfected long term trading. If so we would see funds with more consistent results.
+But there is big, and relatively easy, money to be made by locating markets that make major
+highs and lows, getting aboard and staying with them as long as possible.
+
+5.) TARGET SHOOTER...Finally, don't forget to use our handy dandy target shooter to
+determine levels were price should go and bounce.
+
+See Pages 105 Throng h i D <
+
+  ,.,-.;'./& ,vv,.^ ·: ADDITIONAL COMMENTS ,; ;',A;,\,- ':-:.:·'. --^
+
+                         THE "CROUCH" VERSION TWO-WITH PRICE
+
+      THE SECRET TO THE INTERNAL TRIANGLE, OR SOMETHING LIKE THAT
+
+Chartists have long been fascinated with chart pattern such as the 5 point reversal or exDanams
+wedge first written about by a fellow named Wetzel in the 1920's then popularized by C^.I_, ,,.
+1935, only to be picked up by Edward and McGee, then re-popularized by Wilder in the i?ou s > ;
+
+Price seems to "crouch" down into a formation then spring into a major move. The prco;c~. ;D
+the more you study these patterns the more confused on can become. Curtis Arnold was the first
+person to mechanize and prove there are profits* in these configurations with his PPS systems
+(phone 407-747-1554) for more information.
+
+                              22
+My twist to all this has been to identify two crouch patterns we can trade and establish some
+rules, especially rules for when the patterns change mid stream, which they often do.
+Let's start with the traditional Triangle. Schabacker called these coils, Gartley coined the woiu
+triangle and identified that there must be four points of contact with point one starting af::r -·"··:
+he called the mark-up move. He also went to the heart of the problem saying, "...triangles z-znzTM
+as continuation patterns, as wells as reversal patterns."!
+What I have noticed is that there must be two lower highs and two higher lows to establish the
+possibility of a triangle and that the expected move will be in the direction of the mark-up move
+(These swing points or triangle points should have 3-6 days on both sides to be valid). In other
+words the move that created point one is the most likely move to develop. Now lets' look at a
+chart to establish our references as I have identified them. ALSO NOTICE WHERE THE STOP
+POINT CAN BE A VALUABLE CONTRIBUTION FROM ARNOLD.
+The problem comes false breakouts. Can this inherent problem be overcome? I think so by
+waiting for a close that is above the last triangle point if buying or below the last triangle valley
+if selling. By doing this, should a new triangle develop, we will be able to reconstruct the next
+triangle within the even larger triangle and take appropriate action. Hopefully the following
+diagram will show you how this develops. The key to this pattern is to keep in mind you must
+have two lower highs with a low point in between that is greater than the previous low if selling.
+For buying you need two higher lows with a high point in between that is less than the previous
+high. The triangles shown may help you get the point.
+
+                                                    STOP
+
+                                                     23
+                                CONGESTION BREAKOUT TRADING
+
+                                   MY 8 WEEK BOX APPROACH
+
+       Major market moves frequently come out of congestion ranges. Here's how to spoz --
+and trade these set-ups.
+
+About one third of the time a market will trend, the other two thirds it's in congestion zones,
+backing and filling almost with a mind of its' own to find stops, punish or frazzle traders
+endurance. Then, low and behold, one day it rips out of the congestion zone leaving most
+traders on the sidelines nursing their wounds, cursing their "luck".
+
+SPRINGING THE CONGESTION TRAP IN YOUR FAVOR...Instead of getting caught in
+these traps let's turn them to our advantage! The way to do it is to scan through your charts
+looking for any market that has been in a sideways move for at least 8 weeks. A further
+"definition" that may help is that it has been at least 8 weeks since a new rally high or low has
+been seen.
+
+Isolate the 8 weeks and identify what the major trend move was coming into that 8-week box
+and expect a break out in the same direction. But, keep in mind that 12 weeks later you have a
+new 8-week box and the major swing direction may have changed. In any event, mark off the
+major trend lines in this box. Our wager is price will smash out of these trend lines. Our game
+is one of waiting for these congestion ranges to set up before we get involved. . . this is a
+waiting game.. .if you can't wait don't play.
+
+Our timing indication of this can come in many ways. Some of the better are extreme
+Commercial Public readings, VAN-DIV set ups, DMI loss of trend integrity, 3 point trend line
+break outs Pro/Go, seasonal indications and all the other tricks of our trades. I also use Tom
+Demarks' qualified trend line entry technique.
+
+                    . .. AND HERE'S THE SECRET.. .KEEP SWINGING. . .
+
+OK, you've been patient got into the congestion on a breakout up or down on the assumption
+this should catapult the market. Hopefully it will. But, happy camper that you are, don't
+become complacent. . .it may well be a false breakout.
+
+Which means you need to keep a new 8-week box and take opposite breakout signals untii one ^
+of them is the big one.
+Clearly this means you may be whipped around a little, my guess is 1/3 of these initial signcu:; --
+will be wrong and you will be stuck in the mud with other traders. BUT, you got in later
+you know one of these days it will break out and more importantly--YOU DON'T CARE
+WHICH WAY IT ULTIMATELY BREAKS OUT--in fact you must trade these congestions
+with 1) no predetermined belief 2) the conviction and bankroll to take all breakouts until the big
+
+                                                      24
+ one bites your bait, knowing you may loose a few lures first. That is your cost of doing
+ business.
+ If you cannot stay the course do not take these trades. If you can, you will catch some of the
+ biggest moves on the year.
+
+                                           ENTRY TECHNIQUES
+Here are other approaches I use:
+Short term swing points.. .1 will buy/sell at the penetration of the last short-term trend point as
+shown below. But again, keep in mind there must first be a set up of some sort, I will not take
+just any reversal.
+
+Volatility breakouts. . Generally speaking. . When the market is "primed" I will buy at the open
+the next day +100% of the previous days range. This can be a smaller figure for some markets,
+buy year in and year out it has been very good.
+
+                                                                       Buy X'/,
+
+                                                      y ·/.
+
+                                                       25
+       STOCHASTICS...THE MOST OVER-RATED TOOL OF TECHNICAL ANALYSIS
+ I am not much of a fan of oscillators of any sort. They are dangerous, they are treacherous, yet
+ there is a place for them when used selectively, and here that place is;
+
+ 1.) TREND TRADING WITH AN OSCILLATOR
+What I'm about to show you works well with any of the standard oscillators. It is to simply buy
+ when the index gets above 60%, sell when it falls below 40%. This is a good entry tool when
+rest of our "work" tells us a top or bottom is at hand. It waits until the turn is made, but not too
+long, and will keep us in for a long term trade should that develop.
+2.) VANDIV...The divergence signals that really works
+Nick Van Nice showed me this excellent divergent pattern that can be used on short or long-term
+data. It is a new concept so I will go slowly. A buy is established when price makes a higher
+low than the previous one, yet the oscillator makes a lower low. The reverse is true for a sell.
+Price will make a lower high, while the oscillator makes a higher high. I'm showing the basic
+pattern to look for and then actual examples.
+
+                          BULL MARKETS AND THEIR DIFFERENCES
+Not all bull and bear markets are the same. A commercially driven bull market will have fe-.v
+'pullbacks, and those will be short in time and price. Speculative bull markets will have maj :r
+swings, up and down, along the way. They are not buy and hold markets as are the commercials.
+The way to tell the difference is the tight commercial markets will have a premium, and or
+DMI will be rising as price rises, there will be Accumulation Line divergence's in speculative
+bull markets at intermediate term highs and lows. The big "key" is the lack of pullbacks of any
+
+                                                       26
+size if that's taking place you know you are in a commercially driven bull market. One should
+also monitor the commercial long/short position as well.
+
+                                    MY INSIGHT INTO CYCLES
+
+Traditionally, chartists look for cycles in time, 30 days from low to low, etc. While these cycl. _
+do exist, the ones I prefer have nothing to do with time. They are as follows, and will help you
+determine the future direction of price.
+
+HIGH/LOW CLOSE CYCLE...As price begins to decline the closes are in the upper half of
+the range, right at, or near the low, the close is at or near the low of the day. Then, as price rallies
+the close "creeps" closer to the high of the day until it closes at or about the high, at which point
+the up swing is about over. Also note large range up days or weeks don't dip much below the
+opening, large range down days do not rally much above the opening.
+
+RANGE CYCLE...There is a natural cycle on going from small ranges for a few days to large
+ranges, back to small ranges. Short term traders want to await small ranges, take a position, exit
+with profits on large ranges, then stand aside until small ranges again appear.
+
+TRADING RANGE TO TREND... As above, prices spend a good deal of time in trading
+ranges...then have run ups or downs and go back into trading ranges. Trend runs "suck" in
+traders, when what we should await are trading ranges as they "produce" the trend swings we
+need.
+
+                 MONEY MANAGEMENT . . . THE KEY TO THE KINGDOM
+
+All the hot systems and wining trades in the world will not Create massive wealth on their own.
+It is the ability to parlay winnings that creates fortunes.
+
+The way I traded $10,000 to $1,1000,000 in 12 months was mostly due to money management,
+not arcane markets secrets.
+
+The secret to it all is that as soon as you have made more money you must increase your number
+of contracts based on the new equity. As soon as you loose you must cut back on the number of
+contracts.
+
+YOU'LL NEVER LEARN TO FLY UNTIL YOU LEARN TO FALL...
+
+There are several formulas you can use. The simplest is to take the margin required to trade. ,,.__
+a systems drawdown and trade one contract for that amount of money. Once you make that
+much money, start trading two contracts, then three, etc., if you loose that much then cut bacK
+one contract, and on and on it goes.
+The problem with all this is after a big string of wins you will have way too large a position on
+for the inevitable loss and as you have a string of losses and have been cutting back you will not
+have enough contracts at the start of the equally inevitable wining streak.
+
+A solution to this has been answered by ULTIMANAGER, software developed by Mark Thorn
+now available from Genesis Data 1-800-808-3282 that allows you to test just about any
+combination of money management as well as various elements of your system, like entries,
+
+exits, stops and the like.
+
+                                     ...
+
+One of Ryan Jones solutions is to not increase and decrease the number of contracts at the same
+rate. As an example if you increase one contract for every $10,000 gained you might decrease
+one contract for every $5,000 lost. This protects your winnings. Now the problem is if you
+follow an equity dip you increase at the old rate of one contract per $10,000 it may be pretty
+slow going. So, Ryan suggests increasing, once you have turned the corner and are making
+
+money again. The obvious solution is, once you have a win to increase now by the same
+
+amount you decreased until you get back to the old equity high, then go back to the original
+game plan, increasing by the $ 10,000 amount instead of the $5,000.
+
+ON THE END OF A LIMB AND SAWING IT OFF
+
+The problem with and optimal F approach or fixed fraction of your account is that once you get
+on a roll you roll too fast. Let me prove my point; if your average win/loss trade is $200 and you
+have 10 trades per month and you will increase on contract at every $10,000 of profits it will
+take you 50 trades or 5 months to add that first additional contract. Then only 2.5 months to for
+from 2 to 3, about 7 weeks to boost it up to 4 contracts, 5 weeks to jump to 5, one month to 6, 25
+days takes you to 7, 21 days to 8 contracts... 18 days later you are at 9 and 16.5 days trading a 10
+lot.
+
+Then disaster strikes, as it surely must. You have now scooted out on the end of a limb and are
+sitting there with lots of contracts on while the limb snaps when you have a large losing trade,
+one 3 times the average of $200 or $600 per contract times the 10 lot so you just dropped $6,000,
+you have not given back $ 10.000 yet so you trade a 10 lot on the next trade and lose another
+$6,000. Now in two trades you are down 12,000 of from your equity high at $100,000.
+
+The next trade is also a loser. 3 in a row, for the average of $200 x the 9 lot you are now trading
+and you get tagged for another $1800 let's call it $2,000 so you are now down $14,000.
+
+Meanwhile a "smarter" trader decreases faster than you, cutting back two contract for every
+$5,000 lost, so on the first hit he/she is back to 8 contracts, losing only $2,400, side steppine ,;
+another $6,000 hit...and on it goes.
+
+AND IT CAN GET WORSE BY FAR....
+
+Let's take a winning system. It wins 55% of the time and you decide to trade 25% of your bank
+roll, starting at $25,000, on each trade. Wins are equal to losses at $1,000 each. Here's the way
+the trades played out;
+
+                                 28
+$20,000 *.25 = 6 contracts on the first trade margin is always $1,000 in this example
+
+1. -6,000     15,000
+2 . -3,000    12,000
+3. -3,000      9,000
+4. +2,000      11,000
+5. -2,000
+6. -2,000       9,000
+7. +2,000       7,000
+8. +2,000      9,000
+9. +3,000     11,000
+10. +3,000    14,000
+11. +4,000    17,000
+              21,000
+
+You made $1,000 yet had a 65% drawdown while a single contract trader would have dipped to
+$16,000 a 20% drawdown!
+
+Let's look at another scenario where we hit it right from the get go winning 5 of 8 trades, a great
+deal, right?
+
+1. +5,000 '   25,000
+
+2. +6,000     31,000
+
+3. +7,000     38,000
+
+4. +9,000 · 47,000                ..'.'..'.
+
+5. +11,000    , 58,000 (WOW)
+
+6. -14,000 .  44,000              v          ;
+
+7. -11,000    33,000
+
+8. -16,000    13,000 WHAT??
+
+Look at this...5 winners, 3 losers and you are down. How can this be, well it's a combination of
+two things, one the money management that got you to the $58,000 also brought you down.
+Plus, I threw in a kicker, the last trade was just like what the market gives us all the time, a loss 2
+times greater than the average loss. Had it been the traditional loss your account would be at
+$26,000. The smart trader who cut back twice the amount after the first loss would have lost
+$5,000 on trade 7, taking him to $29,000 and -$8,000 on the double hit on trade #8 to show a net
+of $31,000!
+
+              MONEY MANAGEMENT STRATEGIES
+
+The easy way is to buy the software Mark sells for optimal trading results for any system, or
+combination, call for details. A bootstrap approach would be to first determine the pain you are
+willing to sit through... how much equity dip you will endure. Let's say you have $50,000 and
+will risk a 40% dip (you can vary this to suit your fancy).
+
+                              29
+For years we have looked for the fastest way to get to the end of the game. What I have learned
+is that this is certainly the riskiest, and more importantly correct money management should be
+about you and your comfort levels not maximizing gains.
+
+If you divided this amount, $20,000, by the drawdown of the system, lets say that's $5,000 so
+you can trade four contracts and sleep at nights. That would be your starting point.
+
+Now, when do you increase and decrease? The kicker is the largest losing trade--it will come
+back to bit you again--and sooner rather than later, so we need some protection. If our largest
+loss is, say, $3,000, this one trade, one contract can cause a 15% reduction of our $20,000 at 5
+contracts that's a $15,000 hit, consuming almost all of our equity dip cushion.
+
+If money management is our only defense in this risky game, what type of shield can we employ
+to protect us from the largest loss?
+
+In private talks with Ralph Vince I learned that there are several things one can do . Ralph likes
+the idea of dividing the Kelley number into the largest loss to tell how much money one needs to
+increase and decrease contracts by. By and large the Kelley ratio number will usually come in at
+.30 so we will use that for all systems. If my largest loss is $2,5007.30 means I need to make
+$8,333 to bump up to an additional contract.
+
+This seerns high to me, I might require just two times the largess loss generated in new profits to
+trade an additional contract. In this case that's $5,000. Where the "truth" is no one knows at this
+time but we are in the ballpark here by basing our ups and downs on the key ingredients of the
+system, not just % accuracy and risk/reward ratio as Kelley does. Both Ralph and I feel you
+need to make more than 100% of the largest loss before you can increase contracts. He may
+have hit the nail on the head with Kelley relationship, it certainly is adaptable to all systems.
+(You may also consider dividing largest loss by Kelley, in our example above that's $8,333 and
+then dividing this in the he maximum equity dip you want, in the example above that's
+$20,000/$8,333 telling us you can trade 2.4 contracts on your $50,000 account. Once you make
+$8,000 you will trade one more contract. An even more conservative approach would be to take
+40% of the new equity, 58,000 *.40/8,333 which tells us we can now trade 2.7 contracts. This is
+probably the safest way to use these numbers).
+
+I hope you get the point.. .this is not the perfect scenario but it gives you room to create a money
+management program for you and your system...strategy will vary not only from system to
+system but also from person to person and now you can tailor your system to your comfort
+levels.
+
+PROOF IS IN THE PUDDING...Now let's take a look at what happens when we employ si--
+an approach in trading. We'll use a very simple system that buys on the opening every Monaav
+if that opening is less than Fridays close. Our exit is standard Bail Out with a $ 1,750 stop.
+Trading just one contract on all signals makes $79,200 with 69% accuracy and a risk reward
+ratio of .81. That's the first clip.
+
+                                                                  30
+The Kelley formula gives us a number of about .30 so that divided into max loss of 1,800 tells us
+we can "re-up" every $6,000. I stopped trading at 100 contracts. The next clip shows these
+results...$868,875 of profits, over 10 times more dollars gained. It took from 1/190 to get to in
+contracts. I stopped there and started over. They system has just now stepped up to 2 contra-.-.^
+
+(12/20/96). Staying fixed at 100 contracts trading up till now would have been an equity dip j
+$763,725 while one lot trading has made $11,850!!
+
+I I I I ! I l l I I 1 1 1 I I III I I I I 1 1 1 1 1 1 I I 1 1 1 Hill A L L TRADES - Test 1 \ \ V \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \
+
+Total net profit          $79,200.00        Gross loss               $-95,400.00
+Gross profit             $174,600.00
+
+Total # of trades        172                Percent profitable       69%
+                                                                     53
+Number winning trades    119                Number losing trades
+
+Largest winning trade    $6,375.00          Largest losing trade     $-1,800.00
+Average winning trade    $1,467.23          Average losing trade     $-1,800.00
+Ratio avg win/avg loss                      Avg trade (win & loss)
+                               0.81                                    $460.47
+
+Max consecutive winners  15                 Max consecutive losers   5
+
+Ave. #bars in winners    1                  Avg. #bars in losers     0
+
+Max closed-out drawdown  $-10,400.00        Max intra-day drawdawn   $-10,400.00
+Profit factor                     1.83      Max # of contracts held            1
+Account size required                       Return on account
+                          $30,400.00                                        260%
+
+/ / Illllllllll Illllll I I III 1 1 1 I I I I I III I I A L L TRADES - Test 1 \ \ U \ \ \ \ \ \ \ \ \ \ \ \ U \ \ \ \ \ \ \ \ \ \ \ \ \ \
+
+Total net profit          $868,875.00       Gross loss               1625,400.00
+Gross profit             $2494,275.00
+
+Total # of trades        138                Percent profitable       74%
+
+Number winning trades    103                Number losing trades     35
+
+Largest winning trade    $260,000.00        Largest losing trade     -180,000.00
+Average winning trade     $24,216.26        Average losing trade
+Ratio avg win/avg loss            0.52      Avg trade (win & loss)   $-46,440.00
+                                                                       $6,296.20
+
+Max consecutive winners  15                 Max consecutive losers       3
+
+Ave. #bars in winners    1                  Avg. #bars in losers         0
+
+Max closed-out drawdown  -360,000.00        Max intra-day drawdawn   -386,250.00
+Profit factor                     1.53      Max # of contracts held        100
+Account size required                       Return on account               36%
+                         2386,250.00
+
+                                        31
+              HOW TO DESIGN YOUR MONEY MANAGEMENT STRATEGY
+
+ Thanks to Mark Thorn, there now exists software that will tell you everything you ever wanted
+ to know about how to best manage the dollar behind your system.
+
+ His software allows you to just about any possible scheme of money management--and rr_:r~ _
+ importantly--also enables you to also note which parts or rules of your systems are the mcc; =;
+ efficient.
+
+ Of all the tests I have run, and we are talking thousands here, the simplest for the average guy or
+ gal in the street is presented here;
+
+                        TAKE 20% OF YOUR ACCOUNT EQUITY AND
+                          DIVIDE THIS BY THE LARGEST LOSS YOU
+                          WILL ACCEPT OR YOUR SYSTEM ALLOWS
+
+If your account balance is $20,000, we know the 20% figure is $4,000. Divide this by the largest
+loss, let's say $1,000. which means you would trade 4 contracts. As your account balance moves
+up and down so will the number of contracts you will trade.
+
+This is the formula my 16-year-old daughter used to take $10,000 to $100,000 in 1997. Need I
+say more? Yes, traders would do better if they spent more time on this aspect of speculation, and
+less on buy/sell signals. Money management makes fortunes- - -not systems. This is the most
+important data presented to my Inner Circle members.
+
+What do you think...has this lesson in money management been worthwhile???
+
+  INSIDE CIRCLE SHORT TERM TRADING APPROACH
+
+Short term trading is a complex and confusing business. A traders mind and ego are constantly
+butted about by reality. That reality collision is the result of hopes and predictions of how life
+should be running into how life is.
+
+The problem will always exist, in my opinion, as a great deal of market activity, the gyrations of
+the dance are totally random. Yes, totally.
+
+Sure, the beat is there but the cacophony is more chaotic than a pack of whirling dervishes, oo 4,
+what are we to do, give up ship? No way, this is too much fun to play. But it is the playin^ -;---TM
+gets us into trouble, hence I suggest you keep this adage in mind;
+
+                                                          32
+It is far better to be on the ground wishing you
+                    were flying...
+
+Than to be in the air wishing you were on
+                   the ground
+
+BACK TO BASICS--Short term trading, as I see it, is very similar to long term trading.
+What's needed is a basis to operate upon, an advantage, a bias or a tipping of the scales. There
+are may ways we can gain an advantage in the game, so let's begin at that point. ..establishing a
+bias...then developing trading rules around a known and provable condition that is the cause of
+market moves, not a consequence of them.
+
+There are several such advantages we can use in trading U.S. Bonds, among the best are;
+
+1. Trade Day of the Week
+2. Trade Day of the Month
+3. National Holidays
+4. The Power to Gold
+5. Specific Price Patterns
+
+1.) TRADE DAY OF THE WEEK--The following table reflects buying on the opening
+of each trading day of the week and exiting on the first profitable opening. Note it is clear that
+some days are not so good, by an large, for trading
+
+DAY OF WEEK  +/-$ PROFITS      % WINS  AVERAGE $ TRADE
+
+MONDAY         41,568             79           83
+TUESDAY        32,951             76           73
+WEDNESDAY     -18,615             73          -37
+THURSDAY      -13,108       . 70              -26
+FRIDAY         14,426             73           30
+
+There are 52 Monday opportunities a year for trading, 52 Tuesdays and 52 Fridays giving us a
+total of 156 potential trades. Maybe we should just feast, upon these!
+
+2.) TRADE DAYS OF THE MONTH AS WELL-The same bias or advantage car. rr
+
+garnered from TDOM's. The first table list buying on the opening of every TDOM, the seccnc
+only buying if Gold has closed lower than 25 days ago. Clearly there is a difference, clear;-; ^
+short term trader should be alerted to these set up opportunities.
+
+                            33
+TDOM $+/-     %Wins  Avg Profit        TDOM $+/-  %Wins  Avg Profit
+
+ 1 18,827       68%    72              1 15,507   70%        100
+                58%  -107                          57%       ----- -
+2 -22,641       56%  -159              2 -19,711  57%        _._.
+                60%   -71                         60%
+3 -41,047       67%                    3 -22,158  70%         -w /
+                61%    23                         62%          83
+4 -18,547       60%  -109              4 10,457   61%         -42
+                69%   -72                         64%         -42
+5   6046        69%   114              5 12,500   71%          43
+                68%                               67%        126
+6 -28,297       63%    68 '            6 -6060    69%          57
+                62%    27                         64%         36
+7 -18,797       63%    53              7 -6271    64%         -24
+                61%   -62                         63%          11
+8 29,608        68%   -42              8 6153     70%        -52
+                65%   -78                         69%          5
+9 17,640        65%   139              9 18,603   68%         10
+                67%   -29                         67%         29
+10  7015        67%   -13              10  8740   68%         10
+                65%    15                         61%         25
+11 -14,422      68%   -18              11  5370   72%        -37
+                67%    46                         76%        120
+12 -16,047      73%    30              12 -3791   85%        162
+                       31                                   343
+13 -11,016            169              13  1670
+
+14 -20,096                             14 -7740
+
+15  353                                15  808
+
+16 -7430                               16  1545
+
+17 -3430                               17  4605
+
+18  3822                               18  1406
+
+19  -4401                              19  3610
+
+20  9166                               20 -4628
+
+21  4531                               21 10,856
+
+22  2842                               22  8298
+
+23  3902                               23  4807
+
+3.) NATIONAL HOLIDAYS-There has been a clear-cut advantage to trading around the
+national holidays every year. Why I am not sure, but since I was first alerted to this in 1962 anr
+have seen it hold up--in real time trading--ever since, I'm trading these biases as well.
+
+The results are quite good. The next tabulation reflects the trading strategy I will teach. These -
+results are from 1978 forward, use a $1,400 stop and exit on the first profitable opening. The
+$50,956 of profits with a drawdown of only $ 1,978 is among the best I have ever seen. We omv
+have 8 holidays a year, but they are dandies, netting a trader, on average, $2,500 + a year. If
+that doesn't sound like much keep in mind that's about an 80% a year gain with only 16 trading
+days of "exposure" per year.
+
+The rules below show the holiday and how many days before the holiday to take action as wel_
+as the best strategy, buying or selling on the open or the close.
+
+HOLIDAY_________DAYS BEFORE                OPEN OR CLOSE ENTRY
+                                           TD Before Holiday
+NEW YEARS DAY        Sell Close Third      TD Before Holiday
+                                           TD Before Holiday
+PRESIDENTS DAY       Buy Close Fifth       TD Before Holiday
+                                           TD Before Holiday
+                     Sell Open First
+
+EASTER *             Sell Close First
+
+MEMORIAL DAY         Buy Open Fourth
+
+                                       34
+INDEPENDENCE DAY         Buy Open Fifth     TD Before Holiday
+                         Sell Open First    TD After Holiday
+LABOR DAY                Buy Close Third    TD Before Holiday
+THANKSGIVING DAY         Buy Close Fourth   TD Before Holiday
+                         Sell Close Sixth   TD Before Holiday
+CHRISTMAS DAY            Buy Open Second    TD Before Holiday
+
+EXPLANATION--As an example, the trade for New Years is to sell on the close of the marKet
+
+three days before the holiday. Keep in mind "0" means the day before the actual holiday. For
+Easter, sell on the close of the day before the holiday. For Thanksgiving buy the close on the 4th
+
+day before the holiday.
+
+Data              : DAY T-BONDS
+Calc Dates        : 01/10/78 - 07/06/99
+
+//////////////////////////// ALL TRADES - Test 1 \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+Total net profit         $52,200.00         Gross loss -               $-15,742.50
+Gross profit             $67,942.50
+
+Total # of trades                190        Percent profitable         84%
+Number winning trades                                                    29
+                                 161        Number losing trades
+
+Largest winning trade    $2,986.25          Largest losing trade       $-1,451.25
+Average winning trade       $422.00         Average losing trade          $ -542.84
+Ratio avg win/avg loss           0.77       Avg trade (win & loss)             $274.74
+
+Max consecutive winners          20         Max consecutive losers     2
+
+Avg # bars in winners            1          Avg # bars in losers       .2
+
+Max closed-out drawdown $-1,978.75          Max intra-day drawdown $ - 1 , 9 7 8 . 7 5
+
+Profit factor                    4.31       Max # of contracts held    1
+
+Account size required    $4,978.75          Return on account          1,048%
+
+4.) THE POWER OF GOLD-Gold, or at least the trend of Gold, has a powerful effect on
+Bond prices. Not always, but often enough that it should be used to further develop the hot hand
+we are wishing to construct. I do not want to trade every day, only days that have the odds
+heavily in my favor. The trend of Gold does that. If we do this same study above but buy require
+that the closing price of Gold be less than 25 days ago we notice the following results;
+
+DAY OF WEEK              +/- $ PROFITS      %WINS $ +/-AV. TRADE
+
+MONDAY                   25,883             84                    187
+TUESDAY                  31,168
+WEDNESDAY                                   82                  222
+THURSDAY                  1,037
+FRIDAY                    8,825             74                      7
+                         22,075
+                                            76                    53
+
+                                            81                    133
+
+5.) SPECIFIC PRICE PATTERNS-It's time to get down to the business of trading
+what follows are simple signals and patterns based on the above advantages we have been able
+to uncover in the art of trading;
+
+                                        35
+         1. CONSECUTIVE DOWN CLOSES
+
+A. When there are two consecutive down closes AND the distance from today's true high to
+today's close is less than that same value from yesterday THEN buy tomorrow at the open pku
+that value, today's high - today'slSw IF today's close is greater than the close 30 days ago. (this
+is even better if gold closes lower than the previous day)
+
+B. When there are three consecutive days with lower closes than the prior day
+AND the distance from today's high to today's close is less than that same value from the prior
+day, THEN buy tomorrow at the open plus today's high- today's close.
+
+                                                     I
+          2. GAP DOWN CLOSES
+
+                            F
+
+A. If today's high is less, below, yesterdays low (a gap down) and the open tomorrow is above
+today's low but less than yesterdays low THEN buy tomorrow at the open plus whichever
+amount is less; today's high minus today's close or today's open minus today's low.
+
+B. If today's high is less than yesterdays low and Gold has closed lower than the close of Gold
+15 or 24 days ago THEN buy tomorrow at the open plus today's high minus today's close.
+
+         3. FRIDAY SET UP TRADES FOR MONDAY
+
+The first requirement for all of the following trades is that close today is Friday.
+
+A. If Mondays open is equal to or greater than Fridays low and less than or equal Fridays close
+    THEN buy tomorrow at the open plus 20% of Fridays range on a stop.
+
+B. Fridays high is greater than or equal to Thursdays close and Mondays open is below Fridays
+    low then buy Monday at Fridays low on a stop. (OOPS!)
+
+C. Fridays low is less than or equal Thursdays close and both Friday and Thursday are up closes
+    (> than prior day close to close) AND open Monday is above Fridays high, buy on the open.
+
+D. IF Thursday is not an inside day AND Gold closes lower on Friday than it did 20 days ago
+    and Fridays low in Bonds is <= Thursdays close and the filter (H-C of Friday is less than H-
+    C of Thursday) AND the open Monday is below Fridays high, THEN buy Monday at the
+    open plus 15% of Fridays range.
+
+E. Friday is an inside day with a down close and Thursday was an up close if so and
+
+      1. Tomorrows open is greater than Fridays high buy the market.
+     2. Tomorrows open is>= Fridays close and < Fridays high buy at Fridays high stop.
+      3. Tomorrows open is >= Fridays low and < Fridays close but at Fridays close stop.
+     4. Tomorrows open is < Fridays low > Thursdays low buy at Fridays lows on a stop.
+
+                                                       36
+4. HIDDEN OOPS! TRADES
+
+For these trades we use the projected high/low formula which is; (high + low + close)/3 *2. ----
+Subtract the high to arrive at the projected low, subtract the low to arrive at the projected h_--..
+
+A. If today is a down close and today is Monday or Friday AND Gold is lower than 19 day" "~~
+    AND today's close is the lowest close of the last 8,10 or 12 days ago AND the open
+    tomorrow is greater than the projected low THEN buy tomorrow on the open.
+
+B. If today is Friday and the open tomorrow is below the projected low then buy tomorrow a the
+    projected low on a stop. EXCEPTION IF FRIDAY IS AN INSIDE DAY and Mondays
+    opening is below the projected low, THEN buy at the PROJECTED HIGH on a stop.
+
+C. If today is Monday, Thursday or Friday and Gold closes less than 6 OR 25 days ago and the
+    open tomorrow is below the PROJECTED HIGH THEN buy tomorrow at the projected high
+    on a stop.
+
+Well there you have it, a simple way to trade the bonds that does not have you all worked up
+about every tick or e very day of the week. But does it trade enough to keep you happy? I
+should think so as it trades almost once a week, but then again.. .you guys and gals sure do like
+to trade.
+
+Couple these with the Holiday trades and you should have plenty of opportunities for profits
+which have averaged about $8,000 a year with a trade about every 7 market days. On your own
+you can build trading models and make trading decisions. For the best implementation of your
+signals I suggest closely watching the direction of Gold, Trade Day of Week and TDOM. By
+and large a 30% volatility expansion works well in this market as well.
+
+After all these years of frustration as a trader I would advise you that I think it is best to trade
+with a bias or approach, such as above, but not locked into a totally mechanical mode. Use the
+knowledge we have of market biases to make your trades more profitable.
+
+Data               DAY T-BONDS           67/99
+Calc Dates
+                   01/01/90 - 07/06/99
+
+I!11111II111111111111!111111 ALL TRADES - Test 1 \\X\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+Total net profit          $72,550.00                             $-32 ,120 . 0'""'
+Gross profit             $104,670.00 . Gross loss
+
+Total # of trades               285      Percent profitable       87%
+
+Number winning trades           249      Number losing trades     36
+
+Largest winning trade    $1,705.00       Largest losing trade     $-1,451.2-
+Average winning trade       $420.36      Average losing trade      $ -892.2::
+Ratio avg win/avg loss            0.47   Avg trade (win & loss)
+                                                                        $254.5
+
+Max consecutive winners         27       Max consecutive losers   3
+
+Avg # bars in winners           1        Avg # bars in losers     2
+
+Max closed-out drawdown  $-4,543.75      Max intra-day drawdown   $-5,252.50
+Profit factor                      3.25  Max # of contracts held            1
+Account size required                    Return on account
+                          $8,262.50                                      878%
+
+                                         37
+           S &P 500 TRADING RULES
+
+TRADE DAY OF THE WEEK
+
+As with bonds, TDW, TDOM reveal a great deal to the short term trader The first table reflects
+buying on the opening and exiting on the first profitable close with a $3,500 stop for every day
+of the week
+
+MONDAY     $169,810     71%          $230
+TUESDAY       39.927    65
+WEDNESDAY               65 .         50     ·
+THURSDAY   - 33,842     65
+FRIDAY       30,592     63           -39
+
+           - 34,665                  35
+
+                                     -40
+
+TRADE DAY OF THE MONTH
+
+Some times of the month are better than others for buying or selling as our next table exhibits.
+Here you see each TDOM with our bail out and $3,500 stop.
+
+           TDOM $+/-             %Wins      A vg Profit
+
+              1            4175      64%         20
+                          -5505      66%         -27
+               2          -5970      61%         -29
+               3         16,867      67%         83
+               4        -31,490      64%       -155
+               5          -4412      62% -       -21
+               6         14,170      70%         69
+               7          -7947      68%         -39
+               8        -16,210      62%         -79
+               9        48,202       69%        237
+               10       -10,535      60%         -51
+               11       12,262       68%         60
+               12       54,505       65%        268
+               13        -7282       61%        -35
+               14       11,307       66%         55
+               15       -32,915      60%       -162
+               16       17,205       70%         84
+               17       -12,927      66%       -64
+               18       25,635       64% .      130
+               19       35,490       70%       209
+               20       27,922       73%       234
+               21       21,124       72%       286
+               22          7975      90%       398
+
+           . 23
+
+                                 38
+THE POWER OF BONDS
+
+Bonds, interest rates, have more power on stock prices than anything I have yet uncovered.
+Here's some hard proof, we see each TDW now but with Bonds in an up-trend, i.e., greater thu;
+14 days ago;
+
+MONDAY              $133,330          72%    239
+TUESDAY               58,650
+WEDNESDAY               5,022         65%    133
+THURSDAY               15,597
+FRIDAY                -6,792          65% .        10
+
+                                      64%          33
+
+                                      65%    -14
+
+It's the same story with TDOMS as the next listing illustrates. Here we have each TDOM and
+then next to it only trades when bonds were greater than the close 10 or 15 days ago.
+
+           TDOM       $+/-     %Wins  Avg Profit
+                      -7292      61%        -52
+              1     -15,807      63%      -110
+                    -12,280      60%       -87
+               2     10,030      66%        73
+               3    -16,207      68%      -122
+               4     21,040      66%       153
+               5     30,355      74%
+               6                 68%       237
+               7       5857      60%         46
+               8    -19,115      67%
+               9     36,970      64%      -148
+               10                70%       260 '-
+               11      8170      68%
+               12    12,017      65%        58
+               13    51,872      65%   '·' 85
+               14    12,137      59%
+               15    27,727      69%       378
+               16   -19,382      64%        88
+               17    14,847      65%
+               18     -7567      68%       202
+               19   26,657       71%      -155
+               20    18,112      69%
+               21      7477      92%       111
+               22    15,860
+               23      4385               -58
+
+                                           218
+                                           152
+                                            93
+                                           305
+                                           337
+
+Now let's look at ways of using this information to set up successful trading.
+
+                               39
+1.) MONDAY OOPS!
+
+A. It's the ultimate S&P trade, to take an OOPS! Buy on Monday as long as Friday was not an
+   outside day.. That's all there is to it, it prices open below Fridays TRUE LOW, on Moncr;
+    ,buy long at Fridays low on a stop.
+
+B. If the day that has just closed is Thursday or Friday and the open tomorrow is below the
+    lowest low of the last 2 days, buy on a stop at that low.
+
+2.) HIDDEN OOPS!
+
+A. If today is Friday or Monday and the open tomorrow is 2 ticks less than the projected TRUE
+    LOW for that day, based on todays TH+TL+C/3*2, THEN buy tomorrow at the projected
+    low.
+
+B. If today is Thursday and todays high is greater or equal the prior days close and the open
+    tomorrow is below the projected low- 2 ticks, buy at the projected low on a stop.
+
+C. If today is any day but Friday and the close is less that the prior days close while todays h-c
+    is less than the prior days h-c AND Bonds have closed higher than the close 1 or 6 days ago
+    AND the open tomorrow is less than the PROJECTED HIGH then buy long tomorrow at the
+    projected high on a stop.
+
+D. If today's high is greater than or equal to the prior days close while today's low is less than
+    or equal the prior days close AND bonds have closed higher than the close 1,2,4 or 8 days
+    ago and today is Monday, Thursday or Friday AND the open tomorrow is less than the
+    projected low, then buy tomorrow at the projected low on a stop, (exclude Octobers)
+
+3.) CONSECUTIVE DOWN CLOSES
+
+    A. This calls for 2 consecutive down closes with today's h-c less than that value from
+        yesterday, today is Wednesday or Thursday bonds greater than 2 or 20 days ago, THEN
+        buy tomorrow at the open Plus today's h-c value.
+
+    B. Exactly as above but there have been three consecutive down closes.
+
+    C. If today is Thursday and today's close is less than the prior day and that day is also
+        down close (close to close) while today's high is greater or = the prior close (no gapsj
+        and today's high and low are lower than yesterdays high and low THEN buy tomorr?-- '
+        today's high on a stop.
+
+                                                               40
+4.) MONDAY ONLY TRADES The following rules are only for entering on Monday
+
+    A. Friday is an up close, Monday opens lower than Fridays close, greater than Fridays low
+        and the h-c value is less than Thursdays same value or the c-1 is greater than Thursday '
+        1 then buy Monday at Fridays close on a stop.
+
+    B. Same as above buy Friday is a down close buy t the opening plus 80% of Thursdays
+        range.
+
+    C. Friday is an up close Mondays open is > close and < high of Friday and h-c is less than
+        prior days h-c then buy Monday at the opening + h-c stop.
+
+    D. Friday is a down close same qualifier as above buy at Fridays close on a limit.
+
+5.) SHORT TERM SELL PATTERNS
+
+A. If day of week is Wednesday and it has not been an inside day while today's close is
+
+> 6 days ago and bonds are >18 days ago and today's open- the low is < than the
+
+previous days same value sell short at the open tomorrow minus 65% of today's range
+
+if the open tomorrow is less than today's high.  ..
+
+B, A takeout day with up close and the prior close is > the previous days low and
+   tomorrow open in < today's close and > today's low then sell short at the low before
+   the fakeout day.
+
+C. Same as above any day but Thursday, open > c and open < h then sell at today's close
+    on a stop.
+
+D. Same as above, open tomorrow < c and o tomorrow > 1 sell at open tomorrow --
+    today's range * 10%.
+
+B. Day of week is 3 bonds < 15 days ago close > c (1) and close high (1) and o tomorrow
+    greater than the high sell tomorrow at high stop. OOPS!
+
+C. Day of week is 5 and high < high (1) and 1 > low (1) and close < close (1) and the open
+    tomorrow > close then sell tomorrow at open tomorrow minus 20% of today's range on a
+    stop.
+
+                              41
+Data                : S&P 500 IND-9967 01/80
+Calc Dates          : 08/09/82 - 07/02/99
+
+1111!I III III III 11II11111i11i ALL TRADES - Test 1
+
+Total net profit         $326, 727.00       Gross loss                -187,788.00
+Gross profit             $514,515.00
+
+Total # of trades        602                Percent profitable             84%
+
+Number winning trades    511                Number losing trades          91
+
+Largest winning trade    $15,924.00         Largest losing trade . $-5,£97.00
+Average winning trade     $1,006.88
+Ratio avg win/avg loss             0.48     Average losing trade      $-2,063.60
+
+                                            Avg trade (win & loss)    $542.74
+
+Max consecutive winners  25                 Max consecutive losers         2
+
+Avg ft bars in winners        1             Avg ft bars in losers          4
+
+Max closed-out drawdown $-11,397.00         Max intra-day drawdown $-11,919.00
+
+Profit factor                 2.73          Max ft of contracts held       1
+
+Account size reouired    $14,919.00         Return on account         2,190%
+
+                         S&P HOLIDAY TRADES
+
+Our Holiday trading strategy works well here. The following table lists the holidays with the
+entry rules. The exit was to bail out after holding for one day past entry, in other words buy/sell
+today, hold tomorrow then look to bailout. The stop is a very small $2,500 from entry hit.
+
+NEW YEARS                Buy Open Third      TD Before Holiday
+PRESIDENTS DAY           Buy Open Third      TD Before Holiday
+                         Sell Close Second   TD Before Holiday
+EASTER                   Buy Close Second    TD Before Holiday
+                         Sell Open First     TD After Holiday
+MEMORIAL DAY             Buy Close First     TD Before Holiday
+JULY 4TH                                     TD Before Holiday
+LABOR DAY                Buy Open Fifth      TD After Holiday
+THANKSGIVING             Buy Open First      TD Before Holiday
+CHRISTMAS                Buy Close Third     TD Before Holiday
+                         Buy Open Fifth
+
+Data                S&P 500 IND-9967 12/99
+Calc Dates          08/09/82 - 07/02/99
+
+II11IIIII III 111111IIII111111 ALL TRADES - Test 1 \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+Total net profit         $108,675.00     Gross loss                 $-65,265.00
+Gross profit             $173,940.00
+
+Total ft of trades       170             Percent profitable           63%
+
+Number winning trades    108             Number losing trades         62
+
+Largest winning trade    $13,355.00      Largest losing trade         $-9,995.00
+Average winning trade     $1,610.56      Average losing trade         $-1,052.66
+Ratio avg win/avg loss             1.52  Avg trade (win & loss)
+                                                                           $639.26
+
+Max consecutive winners  7               Max consecutive losers       5
+
+Avg # bars in winners    1               Avg ft bars in losers        i
+
+Max closed-out drawdown  $-9,995.00       Max intra-day drawdown      $-9,995.00
+Profit factor                      2.66  Max ft of contracts held               l
+Account size reouired                     Return on account
+                         $12,995.00                                         836%
+
+                                         42
+          S&P 500 ADDITIONAL SIGNALS
+
+First of month Bond filtered trades - Buy the first trading day of every month from 1982 to
+1998 with a 2 day exit and 90% of the range stop makes $182,350 with 56% accuracy and $99!
+per trade. That's good, even better is the exact same scenario except Bonds close is greater than
+32 days ago. Results; 59% accuracy, $147,925 average profit per trade is $1,286. Also consi~<:-
+the TDOM's, month by month, when backed by Bonds.
+
+OOPS! Day of Month - To improve my OOPS! performance simply take buys around the end
+of the month. Taking trades from TDOM 19 on makes $45,000 with 83% winners on 18 trades
+and an average profit per trade of $2,500 with $2,750 stop and bail out. Taking signals on
+TDOM 4 through 7 makes a total $72,875 with over 80% accuracy.
+
+The best TDOM sell days are 3,6,17 netting $56,675 with 77% accuracy sporting an average
+profit per trade of over $800.
+
+          TREASURY BOND ADDITIONAL SIGNALS
+
+First of month Gold filtered trades - Buy the first trade day of every months, since 1977, with
+a 3 day exit and $1,400 stop for $40,062 of profit and 55% accuracy on 241 trades or just take
+these trades when Gold has closed lower than 5 days ago for 57% accuracy on 142 trades and
+$34,344 on profits. Average win jumps from $166 to $241, a 45% increase, while draw down
+plummets from $12,500 to $4,800. Also consider the TDOM's month by month, when backed
+by Gold.
+
+OOPS! Day of Month - Same game here as with the S&P, combine the OOPS! signal with the
+strongest days of the month for some wonderful trades and further proof that a combination of
+non-technical ingredients makes for the best trading medicine. Best buys are TDOMS 1,4,17
+and 19 with a total profit of $48,906 with a hefty average profit per trade of $520 and 80%
+accuracy.
+
+The best TDOM sell periods are TDOM's 1,3,4 with $33,387 profits on 41 trades and an average
+profit per trade of $814. TDOM 16 is also hot with 83% winners on 36 trades making $12,812
+or $355 a trade.
+
+                                     SP500
+          BEST SHORT TERM BUY DAYS OF THE YEAR
+
+JANUARY   9   9/13 69%   10,710
+              9/12 75%   7,910
+FEBRUARY  4   12/13 92%  12,170
+              10/13 76%  11,165
+MARCH     18  9/11 81%   9,075
+              11/13 84%  4,135
+APRIL     2   11/13 84%  11,585
+              11/13 84%  9,260
+MAY       15
+
+JUNE      14
+
+JULY      17
+
+AUGUST    18
+
+              43
+         SEPTEMBER  20     12/13 92%        13,545
+                           11/14 78%        12,725
+         OCTOBER    11     13/15 86%        14,040
+                           10/14 71%        11,805
+         NOVEMBER   6
+
+         DECEMBER   12
+
+                    BEST SHORT TERM SELL DAYS OF THE YEAR
+
+         JANUARY    1      9/13 69%         7,295
+
+         FEBRYARY   13     12/14 85%        8,540
+
+         MARCH      15     11/13 84%        7,930
+
+         APRIL      14     10/11 90%        5,605
+
+         MAY ' ' 3         10/13 76%        5,825
+
+       JUNE         2      11/13 84%        17,085
+
+         JULY       15     13/14 92%        14,910
+
+       AUGUST       11     10/13 76%        7,285
+
+         SEPTEMBER  3      11/13 84%        10,465
+
+         OCTOBER    19     10/14 71%        14,450
+
+       NOVEMBER     7      11/13 84%        9,395
+
+       DECEMBER     21     11/14 78%        11,790
+
+In the Bond Market I have found the best short-term trades to be those below. The rules are
+slightly different, buy on the opening of the day shown, plus 7% of the previous days range
+added to the opening. Use an $1,800 protective stop or exit on any profitable opening after 3
+days.
+
+                T BONDS BEST BUY TRADE DAYS WITH 4 DAYS HOLD
+
+JANUARY 15          7756   15/18 83% -2050          3106      430
+
+                7   10025  1317 75% -2018 " 3325              589
+
+FEBRUARY 14         10150  12/17 70% -3725 . 5075             597
+
+MARCH NONE
+
+APRIL          4    8443   1318 72% -5075           2950      469
+
+MAY            21   11575 10/11 90% -1862 ' 3168 1052
+
+                22  5250   5/5 100%                           1450
+
+JUNE           6    15737  16/19 84% -1862          5200      828
+
+                1   7881 14/18 77% -2143 4512                 437
+
+                17  7325   14/16 875 -1862 . 1825             457
+
+JULY            18  9106   13/16 81% -1862          2356      569
+
+                5   7962   16/17 94% -1862          1981      468
+
+AUGUST 21           6056   12/17 70% -4662          2825      356 '
+
+SEPTEMBER 20        15606  13/16 81% -1862          4075      975
+
+(19-19)         2   6012   14/16 87% -1862          2293      375
+
+OCTOBER 18(19,20)   14818  16/18 88% -2081          3106      883
+
+                15  8781   13/15 86% -1862          2606      585
+
+NOVEMBER 5          13662  15/18 83% -1925          2387      759
+
+                20  8993   10/12 83% -2887          2887      749
+
+4/2/            13  7800   12/14 85% -1862          2548      557
+
+                           44
+         21 4418 4/4
+
+DECEMBER 10 12018 15/19 78% -1862 5168                 652
+
+         12    11443 . 14/18 77% -1987  4356           635
+
+         14    11412  16/18 88% -1862   2293           634
+
+         15 6518 13/14 92% -1862 1512
+
+         T BONDS BEST SELL TRADE DAYS WITH 4 DAY HOLD
+
+JANUARY 2      12650  14/17 82% -1881   2887           74-
+
+         3     9231   14/16 87% -3525   2762           51C
+
+         20    8718   17/20 85% -1987   2793           435
+
+         22    6387   6/6 100%
+
+FEBRUARY 2     9268   15/19 78% -4343   3793           487
+
+         4     7043   12/16 75% -1881   2856           440
+
+         20    3381   3/3
+
+MARCH 1        10350  14/18 77% -3756   5326           575
+
+         5     9831   14/19 73% -4068   3137           517
+
+         18    4718   15/12 80% -1862   1606           314
+
+APRIL    11    12393  15/19 78% -3725   3793           652
+
+(10-14)  22    3381   3/3
+
+MAY      NONE
+
+JUNE     10    9100   14/18 77% -4006   2918           505
+
+JULY     3     7987   16/19 84% -4000   3168           420
+
+         11    7743   14/17 82% -2387   2356           455
+
+AUGUST 12      11293  15/16 93% -1862   2575           705
+
+         14    6643   16/19 84% -3556   1793           349
+
+SEPTEMBER 11   7450   14/16 87% -1862   1981           465
+
+OCTOBER 6      6412   15/18 83% -2437   2731           356
+
+NOVEMBER NONE
+
+DECEMBER 4     13306  15/17 88% -2175   3606           782
+
+         20    9506   15/18 83% -1862   2512           528
+
+         17    8918   14/16 87% -1862   1918           557
+
+                      45
+Jln 3ff%
+                             d^m&'^ ni
+
+      <u!m ^ MJM&M mmm, xmfm^A Ml^>ydtwv
+
+      $*$. Wm jyb jAcJot M(M M/miJJ&A wk
+
+(».- /L,. ,,....,. . , . · yaJ] S.ISIM A////, i* /ii,Vi ''7-'^7?/,^>i /
+
+·""T&& U                            M
+
+                        ~.*s  ? (S^ is <m
+11  f"  It
+
+                                           m <w iiO/ /MY 71 -V) "1 o
+
+wwfrjuo fimfl,' ^^mjj^m ,, ?i
+
+                                            ·/M/b W
+                                                          \
+
+             ?                                   ^n^ ^ U\> (n
+                             \x '/'                       ri
+   <c
+           >                          '"". "^ ---- !
+
+ <§r                         ^                            . pJ-^>-
+  ££?r<~~
+                                 --------------  -^^
+h3
+                                      - < -7 3^ ·I' 'I
+                                                 -cc.-
+                                                                                            Po Y^
+
+                                                 f--N *^. K~
+
+                             >                   ^^\ ^=%
+                                                 ^5 ?s g>^
+                                                 v-^>     r <J^ iJ:~-( _
+
+                                                 ^"~-~.
+
+                                                 ^> * C
+                                                      -i
+                             \                             Uo                                                 f
+                                      ..--
+                                                          ve^
+                                      "'" 5
+                                 \^
+
+                   ^ fe^EV   "\                  ^                                                 05? $
+
+l^ -<for           ^ ^ ^^if      /% ^i
+                §                U'l             TJjj~
+s^
+                                 ^^
+
+                                                                                                          I^
+                                                                                                          &-
+                                 5
+
+                                 c\.                                                                      PF5^ 4^ «
+                                       "· /M£.( §pp?ffl>) piffi-niis v \A )MT PiM/fjrvw^i
+                                       \..     '  '  " I 'J '       i  ' 'L
+
+                                                                                                                9.h
+
+                                                  0/7
+
+.'.- 7/wsfnf' J itf l^'fl/V -^fflMT ^                                         TP f :J
+7 ^ · ^S ·t!.-:...vv  w xaywmf few ^ v
+                         ~?~ / f . ^~  >    1                                                                 . ' s\
+LWi tv wi - - ziwf
+                      ·  /v                    y// f iW/ j^//m/ ·n  (,/·"""',, <r'-'"' ;"7
+^ftfvwofr*. ffim!/ '^^f^/^/ijmi'O^ '^jm 7/]pp/z> ^ idy
+5?
+v/
+
+        ^AiJimM
+O
+                                           '      '     '        '
+
+                               " m^
+
+Wrvtfrj.                                          ^f/wty'fifpfr
+
+^is'i^rWmw/ftfs/j!/(if/a (  'ifpr-pw jwn w $ w       1
+                            V                 (/        /^ t I
+
+cMwrrf^ Ts--Wyfmmjfj^ (tm"f-v/nT(J ^Im/ "
+W A JmfJr.
+
+                                     ^Jm/Al/alJ^K
+
+                                                                            i (/ *
+
+                                                                      SELL
+rmbwfIrT ?w WM
+                        Umi /m lo^ia/a,i /a,
+
+                               &i altilt k 45 M
+
+§
+
+     JIMd xk
+     *                                           J  )
+
+ft-
+     fcf '
+
+                      \.
+
+                             ·0
+
+                          fe*-- ?vi
+
+                          ^: ??-
+
+                                                         ^·7
+                                                      V- ·-
+
+~v'  I-
+
+     &
+
+         I
+
+     -^
+                       ^
+                k
+                    .^-
+            a.
+r>      -1 ^ !~
+
+    IU
+   fel*
+
+r        ^ ^^,
+i
+i
+^^k^a/i/^ (Umiiod^ ^^ja ^Jmc\
+                       IA                                 \
+                                                             /I
+%'/'.-·
+                                                         Iki
+         ·J
+                                                                         '
+    M
+                                                                d -tt m
+                     6 i, V                                                                  /'
+
+                                               //  / /'               //  f
+                                       /d&^M MX J/uo X?
+                                           \/      ic V,,V/; .  ^'//
+
+                             yA.       4I          a
+
+                                  S.r
+
+                                       jte nmli d^
+ !m/m '                                                    -tin
+
+                     1                              ^
+                                         <rm
+fl ( '
+
+/ "'i.f'f ' !             ,,
+
+     vw - » v .         / Ua
+
+                                     'Y
+                            '<fo rmu/ · &·
+
+ytfmTWt/^ /"· lV" " f U -W
+'' ·'*-<'  ^
+I
+
+ BOOK I
+
