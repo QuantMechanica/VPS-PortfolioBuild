@@ -10,6 +10,7 @@ param(
     [string]$CompanyId = $(if ($env:PAPERCLIP_COMPANY_ID) { $env:PAPERCLIP_COMPANY_ID } else { "" }),
     [string]$AssigneeAgentId = $(if ($env:PAPERCLIP_AGENT_ID) { $env:PAPERCLIP_AGENT_ID } else { "" }),
     [string]$OutPath = "C:\QM\logs\infra\health\paperclip_stale_lock_watchdog_latest.json",
+    [switch]$AllowMissingPaperclipContext,
     [switch]$FailOnFinding,
     [switch]$PreviewOnly,
     [switch]$RunNow
@@ -27,6 +28,13 @@ $minuteOffset = [Math]::Max(0, [Math]::Min(59, $MinuteOffset))
 $startBoundary = (Get-Date).Date.AddHours((Get-Date).Hour).AddMinutes($minuteOffset)
 if ($startBoundary -le (Get-Date)) {
     $startBoundary = $startBoundary.AddMinutes(15)
+}
+
+$missingContext = @()
+if ([string]::IsNullOrWhiteSpace($PaperclipApiUrl)) { $missingContext += 'PaperclipApiUrl' }
+if ([string]::IsNullOrWhiteSpace($CompanyId)) { $missingContext += 'CompanyId' }
+if ($missingContext.Count -gt 0 -and -not $AllowMissingPaperclipContext.IsPresent) {
+    throw ("Missing required Paperclip context for scheduler action: {0}. Pass explicit values or set -AllowMissingPaperclipContext." -f ($missingContext -join ', '))
 }
 
 $actionArgs = "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`" -StaleAfterMinutes $StaleAfterMinutes -RunningLockMaxMinutes $RunningLockMaxMinutes"

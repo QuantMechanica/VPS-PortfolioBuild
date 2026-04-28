@@ -105,6 +105,7 @@
   - optional explicit Paperclip endpoint/company values can be embedded to avoid environment drift in `SYSTEM` context
   - optional assignee scope can be embedded to avoid environment-variable dependency in `SYSTEM` context
   - optional output path can be embedded so each run writes JSON status to a stable health artifact path
+  - fails fast when endpoint/company context is missing unless `-AllowMissingPaperclipContext` is explicitly provided
   - overlap-safe (`MultipleInstances=IgnoreNew`)
 - Preview mode (no task registration/mutation):
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-PaperclipStaleLockWatchdogTask.ps1 -StaleAfterMinutes 15 -RunningLockMaxMinutes 90 -PreviewOnly`
