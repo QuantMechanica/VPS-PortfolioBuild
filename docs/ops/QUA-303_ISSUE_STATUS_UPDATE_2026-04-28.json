@@ -1,0 +1,17 @@
+{
+  "issue": "QUA-303",
+  "timestamp_utc": "2026-04-28T00:00:00Z",
+  "status_update": {
+    "status": "blocked",
+    "reason": "missing_approved_strategy_card_artifact",
+    "execution_policy": "review_only",
+    "unblock_owner": "CTO / Research sync owner (QUA-312)",
+    "unblock_action": "Commit strategy-seeds/cards/davey-eu-day_card.md into this worktree and re-dispatch Development.",
+    "development_readiness": {
+      "ea_id_allocated": 1006,
+      "ea_slug": "davey-eu-day",
+      "missing_artifact": "strategy-seeds/cards/davey-eu-day_card.md",
+      "blocker_note_path": "docs/ops/QUA-303_BLOCKED_2026-04-28.md"
+    }
+  }
+}
