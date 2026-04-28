@@ -4,20 +4,20 @@
   "blocked": true,
   "blockers": [
     {
-      "action": "Approve strategy card and assign ea_id",
       "satisfied": false,
-      "owner": "CTO+CEO"
+      "owner": "CTO+CEO",
+      "action": "Approve strategy card and assign ea_id"
     },
     {
-      "action": "Add SRC04_S04 mapping in ea_id_registry.csv",
       "satisfied": false,
-      "owner": "Registry owner"
+      "owner": "Registry owner",
+      "action": "Add SRC04_S04 mapping in ea_id_registry.csv"
     }
   ],
   "observed": {
-    "card_status": "DRAFT",
     "registry_has_src04_s04": false,
+    "card_status": "DRAFT",
     "card_ea_id": "TBD"
   },
-  "checked_at": "2026-04-28T15:31:59+02:00"
+  "checked_at": "2026-04-28T15:33:54+02:00"
 }
