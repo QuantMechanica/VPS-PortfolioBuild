@@ -2,7 +2,7 @@
     "issue":  "QUA-406",
     "strategy_id":  "SRC04_S07",
     "slug":  "lien-20day-breakout",
-    "checked_at_utc":  "2026-04-28T13:14:51.6965927Z",
+    "checked_at_utc":  "2026-04-28T13:16:01.6667022Z",
     "card":  {
                  "path":  "C:\\QM\\worktrees\\development\\strategy-seeds\\cards\\lien-20day-breakout_card.md",
                  "status":  "DRAFT",
