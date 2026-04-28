@@ -2,18 +2,18 @@
   "issue": "QUA-406",
   "strategy_id": "SRC04_S07",
   "slug": "lien-20day-breakout",
-  "checked_at_utc": "2026-04-28T12:44:42.6266760Z",
+  "checked_at_utc": "2026-04-28T12:45:21.2493878Z",
   "card": {
+    "status": "DRAFT",
     "exists": true,
     "ea_id": "TBD",
-    "path": "C:\\QM\\worktrees\\development\\strategy-seeds\\cards\\lien-20day-breakout_card.md",
-    "status": "DRAFT"
+    "path": "C:\\QM\\worktrees\\development\\strategy-seeds\\cards\\lien-20day-breakout_card.md"
   },
   "registry": {
-    "exists": true,
-    "path": "C:\\QM\\worktrees\\development\\framework\\registry\\ea_id_registry.csv",
     "row": null,
-    "row_found": false
+    "exists": true,
+    "row_found": false,
+    "path": "C:\\QM\\worktrees\\development\\framework\\registry\\ea_id_registry.csv"
   },
   "manifest": {
     "exists": true,
