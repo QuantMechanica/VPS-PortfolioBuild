@@ -1,9 +1,9 @@
 {
-  "execution_policy": "review-only",
-  "last_checked_utc": "2026-04-28T12:46:28.8463511Z",
-  "state": "paused_waiting_cto_review",
-  "unblock_owner": "CTO",
   "unblock_action": "Provide review decision or request scoped deltas",
+  "issue": "QUA-304",
+  "last_checked_utc": "2026-04-28T12:46:53.0875838Z",
   "development_status": "implementation_complete",
-  "issue": "QUA-304"
+  "execution_policy": "review-only",
+  "unblock_owner": "CTO",
+  "state": "paused_waiting_cto_review"
 }
