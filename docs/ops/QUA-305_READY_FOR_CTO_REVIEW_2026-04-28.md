@@ -18,3 +18,6 @@ Blocked state:
 - **Status:** BLOCKED (Review-only gate)
 - **Unblock owner:** CTO
 - **Unblock action:** perform review-only card-vs-code review and dispatch next gate action.
+
+Heartbeat evidence:
+- 2026-04-28: Development re-validated deliverables and blocker state; no further code deltas required pending CTO review.
