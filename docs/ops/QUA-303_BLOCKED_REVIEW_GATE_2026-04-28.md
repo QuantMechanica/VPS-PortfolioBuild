@@ -31,8 +31,9 @@ Issue is blocked only by the review-only execution policy.
 
 ## Wake Progress
 
-- Latest heartbeat run: `0b105327-98e6-407e-8ecd-77f821a46c77` (completed `2026-04-28T11:05:22.842Z`)
+- Latest heartbeat run: `96b38409-c1b8-46f8-9946-e177cb4a9b0d` (completed `2026-04-28T11:06:01.125Z`)
 - Delta assessment: no new actionable change; blocker unchanged.
 - Durable status: QUA-303 remains in review-only wait on CTO approval.
 - Revalidation compile check: `PASS` (`0 errors`, `0 warnings`)
 - Revalidation compile log: `C:\QM\worktrees\development\framework\build\compile\20260428_110545\QM5_1006_davey_eu_day.compile.log`
+- Failed-run inspection: no local compile log failure markers found (`error|failed|FAIL` scan returned no matches).
