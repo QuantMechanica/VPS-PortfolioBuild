@@ -14,7 +14,7 @@ Compile evidence:
 - `compile_one` PASS, 0 errors, 0 warnings
 - log: `framework/build/compile/20260428_043607/QM5_1004_davey_es_breakout.compile.log`
 
-Next unblock owner/action:
-- **Owner: CTO**
-- **Action:** perform review-only card-vs-code review and dispatch next gate action.
-
+Blocked state:
+- **Status:** BLOCKED (Review-only gate)
+- **Unblock owner:** CTO
+- **Unblock action:** perform review-only card-vs-code review and dispatch next gate action.
