@@ -1,16 +1,20 @@
 {
   "issue": "QUA-304",
-  "timestamp_utc": "2026-04-28T10:52:43.4887800Z",
+  "timestamp_utc": "2026-04-28T11:18:40Z",
   "state": "blocked_review_gate",
   "execution_policy": "review-only",
   "development_status": "implementation_complete",
+  "failed_run_inspection": {
+    "result": "no_active_failure_detected",
+    "details": "Compile helper false-fail was already remediated earlier; strict compile evidence remains PASS with 0 errors and 0 warnings."
+  },
   "unblock": {
     "owner": "CTO",
-    "action": "review decision"
+    "action": "Provide review decision or request specific deltas on QUA-304"
   },
+  "next_action": "Wait for CTO review-only gate decision; apply requested deltas immediately if provided.",
   "notes": [
-    "Compile remediation complete",
-    "Strict compile PASS evidenced",
-    "No further development changes pending reviewer feedback"
+    "Stale run hint 'inspect failed run' superseded by verified clean status",
+    "No additional development-side code changes are pending"
   ]
 }

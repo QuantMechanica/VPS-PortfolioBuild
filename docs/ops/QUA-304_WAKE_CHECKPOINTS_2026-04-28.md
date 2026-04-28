@@ -33,3 +33,5 @@
 2026-04-28T13:15:16.8981822+02:00 | blocked-state checkpoint line: CTO review still pending.
 2026-04-28T13:16:20.1819699+02:00 | blocked wake checkpoint: CTO review gate pending.
 2026-04-28T13:17:15.5787369+02:00 | blocked-state checkpoint: review-only CTO gate unchanged.
+2026-04-28T13:18:16.8289469+02:00 | blocked-state checkpoint: awaiting CTO review-only decision.
+- 2026-04-28T11:18:55.4615110Z | diagnostic: inspected stale failed-run hint; no active failure remains; unblock owner CTO (review-only decision).
