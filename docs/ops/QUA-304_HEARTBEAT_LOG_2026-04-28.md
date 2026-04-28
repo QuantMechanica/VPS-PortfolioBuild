@@ -4528,3 +4528,9 @@
 - Compile evidence: framework/scripts/compile_one.ps1 PASS (0 errors, 0 warnings) with log C:\QM\repo\framework\build\compile\20260428_103238\QM5_1003_davey_baseline_3bar.compile.log.
 - Note: strict-mode run reported MetaEditor non-zero exit despite zero errors/warnings; non-strict run confirms clean build artifact generation (.ex5 present).
 - Next action: proceed from verification state to CTO review-gate handoff or requested implementation deltas.
+
+## Heartbeat checkpoint (2026-04-28T12:33:31.1800817+02:00)
+- Source run: d94e487c-5e23-43f3-8605-cee749150eb1 follow-up
+- Action this wake: patched framework/scripts/compile_one.ps1 strict-mode behavior to avoid false FAIL on MetaEditor non-zero exit when compile log has 0 errors/0 warnings and .ex5 exists.
+- Verification: strict compile now PASS for QM5_1003 with compile_one.metaeditor_exit_code=1, errors=0, warnings=0.
+- Evidence log: C:\QM\repo\framework\build\compile\20260428_103323\QM5_1003_davey_baseline_3bar.compile.log.

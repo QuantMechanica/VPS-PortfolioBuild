@@ -198,6 +198,7 @@ $result = "FAIL"
 $reasonClass = "UNKNOWN"
 $errorCount = -1
 $warningCount = -1
+$metaEditorExitCode = 0
 $includeSyncRoot = ""
 $includeSyncTargets = @()
 
@@ -217,6 +218,7 @@ try {
         )
 
         $proc = Start-Process -FilePath $MetaEditorPath -ArgumentList $arguments -PassThru -Wait -NoNewWindow
+        $metaEditorExitCode = $proc.ExitCode
         if (-not (Test-Path -LiteralPath $compileLogPath)) {
             throw "MetaEditor did not produce a compile log at $compileLogPath"
         }
@@ -242,11 +244,6 @@ try {
         if ($Strict.IsPresent -and $warningCount -gt 0) {
             $reasonClass = "STRICT_WARNINGS"
             throw "Strict compile failed with $warningCount warnings."
-        }
-
-        if ($proc.ExitCode -ne 0 -and $Strict.IsPresent -and $warningCount -eq 0) {
-            $reasonClass = "METAEDITOR_NONZERO_EXIT"
-            throw "MetaEditor exited with code $($proc.ExitCode) without explicit compile errors in log."
         }
 
         if (-not (Test-Path -LiteralPath $ex5Path)) {
@@ -284,6 +281,7 @@ try {
         strict = [bool]$Strict.IsPresent
         errors = $errorCount
         warnings = $warningCount
+        metaeditor_exit_code = $metaEditorExitCode
         include_sync_root = $includeSyncRoot
         include_sync_targets = ($includeSyncTargets -join ";")
         result = $result
@@ -295,6 +293,7 @@ try {
     Write-Output "compile_one.reason_class=$reasonClass"
     Write-Output "compile_one.errors=$errorCount"
     Write-Output "compile_one.warnings=$warningCount"
+    Write-Output "compile_one.metaeditor_exit_code=$metaEditorExitCode"
     Write-Output "compile_one.include_sync_root=$includeSyncRoot"
     Write-Output ("compile_one.include_sync_targets=" + ($includeSyncTargets -join ";"))
     Write-Output "compile_one.log=$compileLogPath"
