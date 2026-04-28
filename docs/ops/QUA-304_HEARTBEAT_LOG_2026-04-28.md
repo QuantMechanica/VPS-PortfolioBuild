@@ -4546,3 +4546,8 @@
 - Development terminal state: implementation + compile verification complete for QM5_1003; strict compile helper behavior corrected; evidence paths logged in prior checkpoints.
 - Unblock owner/action: CTO review decision on QUA-304 review-only execution gate.
 - Next heartbeat expectation: no additional code changes unless CTO requests deltas.
+
+## Heartbeat checkpoint (2026-04-28T12:34:49.9013391+02:00)
+- Source run: 4065c57a-1952-41bf-a287-4777e25c8956 follow-up
+- Clarification: prior adapter/compile failure path has been remediated (strict compile helper patched, strict compile PASS evidenced).
+- Canonical next action for QUA-304: await CTO review-only gate decision; no remaining Development-side implementation work identified in this heartbeat.
