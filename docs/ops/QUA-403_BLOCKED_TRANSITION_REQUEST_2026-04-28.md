@@ -1,7 +1,7 @@
 # QUA-403 Blocked Transition Request (Refreshed)
 
 - Issue: QUA-403
-- Refreshed at: 2026-04-28T15:26:38+02:00
+- Refreshed at: 2026-04-28T15:30:02+02:00
 - Current state: blocked=true
 - Observed: card_ea_id=TBD, card_status=DRAFT, registry_has_src04_s04=False
 
