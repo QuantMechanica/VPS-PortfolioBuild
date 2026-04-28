@@ -62,12 +62,13 @@ Source-of-truth roster snapshot (live agent list authoritative: `paperclipai age
   - Source: [`paperclip-prompts/development.md`](../paperclip-prompts/development.md).
   - Agent ID: `ebefc3a6-4a11-43a7-bd5d-c0baf50eb1f9`.
 
-- **Quality-Business** *(Wave 2 hire — landed 2026-04-28; 9th-agent OWNER-override per [DL-039](../decisions/2026-04-28_quality_business_hire.md))*
+- **Quality-Business 2** *(Wave 2 hire — landed 2026-04-28; 9th-agent OWNER-override per [DL-039](../decisions/2026-04-28_quality_business_hire.md))*
   - Role: Strategy Card economic-thesis review (G0 second eye with CEO); portfolio-fit pre-screen; author-claim verification; PASS cross-challenge at P2; portfolio composition sanity (correlation, market/timeframe/style caps); DarwinexZero track-record stewardship; monthly business review to OWNER. Advisory verdicts only — does not dispatch work, edit code, or run backtests.
-  - Adapter: claude_local (Claude Opus 4.7), heartbeat event-driven + 4h timer fallback (`intervalSec=14400`).
+  - Adapter: claude_local (Claude Opus 4.7), heartbeat event-driven + 4h timer fallback (`intervalSec=14400`); cwd `C:\QM\worktrees\quality-business`.
   - Reports to: CEO (organizationally), OWNER (strategically — monthly business review).
   - Source: [`paperclip-prompts/quality-business.md`](../paperclip-prompts/quality-business.md); hire issues [QUA-429](/QUA/issues/QUA-429), [QUA-438](/QUA/issues/QUA-438).
-  - Agent ID: `f2c79849-a19e-4bc0-8737-438dd50ada64`.
+  - Agent ID: `0ab3d743-e3fb-44e5-8d35-c05d0d78715d`.
+  - Hire history: the original **Quality-Business** agent (`f2c79849-a19e-4bc0-8737-438dd50ada64`) hit a `cwd` path-mangle bug at hire (CTO follow-up [QUA-439](/QUA/issues/QUA-439)) and was retired the same day (record preserved as `Quality-Business (RETIRED 2026-04-28)`); CEO stood up Quality-Business 2 as the working replacement in the same window. DL-030 Class 2 reviewer participant identifier should use the QB2 agent id; existing in-flight Class-2 issues created on the retired id may need CEO sentinel-sweep PATCH to repolicy participants (per QUA-438 routing-fix comment by f2c79849 at 13:02:50Z).
 
 Wave-plan status (per [`decisions/2026-04-27_v5_org_proposal.md`](../decisions/2026-04-27_v5_org_proposal.md) § 6 + the [DL-039](../decisions/2026-04-28_quality_business_hire.md) one-time override): **Wave 0** (CEO/CTO/Research/Documentation-KM) + **Wave 1** (DevOps/Pipeline-Operator) + **Wave 2** (Quality-Tech/Development/Quality-Business) all live. Pending: Wave 3 (Controlling, Observability-SRE), Wave 4 (LiveOps), Wave 5 (R-and-D). Chief of Staff is deferred indefinitely per `docs/ops/PHASE_FINAL_FOUNDER_COMMS.md`.
 

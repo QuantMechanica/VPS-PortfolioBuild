@@ -2,7 +2,7 @@
 
 Purpose: define which Paperclip roles need which skills, tools, and operating processes — and **which roles are actually hired today** vs deferred to a later wave.
 
-**V5 refresh:** 2026-04-27 — synced with `decisions/2026-04-27_v5_org_proposal.md` (current 6-agent reality + Wave 2..6 triggers). See QUA-213 for the refresh task.
+**V5 refresh:** 2026-04-27 (initial); refreshed 2026-04-28 for Wave 2 hires (Quality-Tech, Development, Quality-Business). `processes/process_registry.md` § Active agents is the operational source-of-truth; this matrix is the planning/skill-pack overlay. See [DL-039](../../decisions/2026-04-28_quality_business_hire.md) for the 9th-agent OWNER override and QUA-441 for the registry reconciliation. Original refresh task: QUA-213.
 
 ## Principle
 
@@ -10,9 +10,9 @@ Prompts are not enough. Each role should have a skill pack that matches its real
 
 Skills can be native Paperclip skills, Codex skills, Claude project instructions, scripts, SOP checklists, or repo-local runbooks. A role may use a skill only within its write authority.
 
-## Hiring Reality (2026-04-27)
+## Hiring Reality (2026-04-28)
 
-The org runs 6 agents today. Wave 2+ roles below are **placeholders** — they appear in the skill rows so the future skill pack exists, but no agent is assigned and no heartbeat budget is consumed until the wave's hire trigger fires.
+The org runs 9 agents today (Wave 0 + Wave 1 + Wave 2 all live). Wave 3+ roles below are **placeholders** — they appear in the skill rows so the future skill pack exists, but no agent is assigned and no heartbeat budget is consumed until the wave's hire trigger fires. The Wave 2 cap was originally 8 (per `2026-04-27_v5_org_proposal.md` § 6); OWNER granted a one-time override on 2026-04-28 to seat Quality-Business as the 9th active agent — see [DL-039](../../decisions/2026-04-28_quality_business_hire.md). The 8-cap remains in force for any further hires.
 
 | Wave | Role | Status | Agent ID | Adapter |
 |------|------|--------|----------|---------|
@@ -22,16 +22,16 @@ The org runs 6 agents today. Wave 2+ roles below are **placeholders** — they a
 | 0 | Documentation-KM | **Live** | `8c85f83f-...` | claude_local |
 | 1 | DevOps | **Live** | `0e8f04e5-...` | codex_local |
 | 1 | Pipeline-Operator | **Live** | `46fc11e5-...` | codex_local |
-| 2 | Quality-Tech | Planned | — | codex_local |
-| 2 | Development | Planned | — | codex_local |
-| 2 | Quality-Business | Planned | — | claude_local |
+| 2 | Quality-Tech | **Live** (2026-04-28) | `c1f90ba8-...` | claude_local |
+| 2 | Development | **Live** (2026-04-28) | `ebefc3a6-...` | codex_local |
+| 2 | Quality-Business 2 | **Live** (2026-04-28, DL-039 override) | `0ab3d743-...` | claude_local |
 | 3 | Controlling | Planned | — | claude_local (lightweight) |
 | 3 | Observability-SRE | Planned | — | codex_local (lightweight) |
 | 4 | LiveOps | Planned | — | codex_local + strict runbooks |
 | 5 | R-and-D | Planned | — | mixed |
 | 6 | Chief of Staff | **Deferred indefinitely** | — | — |
 
-Source of truth: live agent list = `paperclipai agent list`; this table reflects the snapshot at refresh time.
+Source of truth: live agent list = `paperclipai agent list`; this table reflects the snapshot at refresh time. Operational roster (full role/source/reports-to detail) lives at `processes/process_registry.md` § Active agents. Adapter note: Quality-Tech was originally provisioned as `codex_local` in the Wave-2 trigger plan but landed as `claude_local` (Opus 4.7) at hire time — the live agent record is authoritative. QB note: the original Quality-Business agent (`f2c79849-...`) hit a `cwd` path-mangle bug at hire (CTO follow-up [QUA-439](/QUA/issues/QUA-439)) and was retired the same day; CEO stood up **Quality-Business 2** (`0ab3d743-...`, cwd `C:\QM\worktrees\quality-business`) as the working replacement — the retired record is preserved as `Quality-Business (RETIRED 2026-04-28)`.
 
 ## Wave Hire Triggers
 
