@@ -32,3 +32,9 @@ Attempt 3:
 - IssueId: 06474c21-aa09-4756-b46e-9d7c6828e5f1 (`$PAPERCLIP_TASK_ID`)
 - RunId: 44eeaf4f-1628-4365-8ddb-3759932eb8d7
 - Result: HTTP 500 {"error":"Internal server error"}
+
+Additional API diagnostic:
+- Endpoint: POST /api/issues/QUA-420/comments
+- Method: curl direct (JSON body with `comment` + `resume`)
+- Result: HTTP 500 {"error":"Internal server error"}
+- Conclusion: issue-mutation endpoints are server-failing; read endpoints remain healthy.
