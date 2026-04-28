@@ -1,0 +1,28 @@
+{
+    "status":  "BLOCKED",
+    "issue":  "QUA-415",
+    "unblock_owner":  "Pipeline-Operator",
+    "unblock_action":  "Post workflow confirmation commit hash proving active setfile_path dispatch consumption.",
+    "recent_matches":  [
+                           "6cba67b chore(qua-408): refresh blocked gate snapshot",
+                           "f80dc59 QUA-304: heartbeat helper tick",
+                           "bc0413b docs(ops): refresh QUA-404 readiness snapshot",
+                           "d95282a docs(ops): add QUA-415 artifact index",
+                           "dc7b04b docs(qua-403): isolated readiness evidence refresh",
+                           "a791c55 chore(qua-409): refresh blocked readiness evidence",
+                           "8e3c419 docs(ops): append QUA-407 recheck 14:41:36",
+                           "d0f3a4f docs(ops): add QUA-415 co-owner monitor snapshot via helper",
+                           "61a5c13 docs(ops): refresh QUA-404 readiness snapshot",
+                           "bdc64f8 chore(qua-408): refresh blocked status evidence",
+                           "a4f577b docs(qua-403): isolated readiness evidence refresh",
+                           "70a90de chore(qua-409): refresh blocked readiness evidence",
+                           "d071085 infra: add QUA-415 blocked heartbeat snapshot helper",
+                           "875e4b5 QUA-304: heartbeat helper tick",
+                           "5d6a630 docs(ops): append QUA-407 recheck 14:41:09",
+                           "6d486cd docs(ops): refresh QUA-404 readiness snapshot",
+                           "f41044f chore(qua-409): refresh blocked readiness evidence",
+                           "4bd7ace chore(qua-408): refresh blocked readiness checkpoint",
+                           "7cb0f1c docs(qua-403): isolated readiness evidence refresh",
+                           "bb14479 docs(ops): add QUA-415 pipeline-op unblock instructions"
+                       ]
+}
