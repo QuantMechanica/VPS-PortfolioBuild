@@ -26,3 +26,9 @@ Repo artifacts for blocked state and CTO handoff are complete, but issue-system 
 ## Unblock owner/action
 - Owner: DevOps / Paperclip platform owner
 - Action: inspect server logs for PATCH `/api/issues/{id}` failures for run id `44eeaf4f-1628-4365-8ddb-3759932eb8d7`, then re-run transition apply using existing payload files.
+
+Attempt 3:
+- API base: http://127.0.0.1:3101
+- IssueId: 06474c21-aa09-4756-b46e-9d7c6828e5f1 (`$PAPERCLIP_TASK_ID`)
+- RunId: 44eeaf4f-1628-4365-8ddb-3759932eb8d7
+- Result: HTTP 500 {"error":"Internal server error"}
