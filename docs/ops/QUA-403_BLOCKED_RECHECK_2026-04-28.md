@@ -20,3 +20,9 @@ Issue remains blocked for Development implementation under V5 hard rules.
 
 - **Owner:** CTO + CEO
 - **Action:** approve the card and allocate `ea_id` in registry, then redispatch Development.
+
+## Continuation recheck (heartbeat)
+
+- Revalidated on 2026-04-28: card still `DRAFT` with `ea_id: TBD`.
+- Registry still has no `SRC04` row.
+- Development remains blocked pending CTO+CEO unblock actions already listed above.
