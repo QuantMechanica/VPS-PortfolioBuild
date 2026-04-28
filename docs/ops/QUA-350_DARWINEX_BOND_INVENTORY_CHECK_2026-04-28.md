@@ -21,6 +21,25 @@ powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Tes
 - `infra/reports/darwinex_bond_inventory_latest.json`
 - `infra/reports/darwinex_bond_inventory_latest.md`
 
+## Current run status (2026-04-28)
+
+- Probe executed successfully on this host, but MT5 symbol probe is unavailable:
+  - `mt5_probe_ok: false`
+  - `mt5_probe_error: MT5 probe did not return output`
+- Current inventory classification:
+  - `US10Y`: `missing`
+  - `DE10Y`: `missing`
+- Disposition: not yet conclusive for Darwinex availability; requires execution on VPS T1 with live MT5 session access.
+
+## Captured market-metadata fields
+
+The probe now emits per-symbol MT5 detail when available, including:
+- `trade_mode`, `trade_calc_mode`
+- `spread_points`, `spread_float`, `bid`, `ask`
+- `volume_min`, `volume_step`, `volume_max`
+- `margin_initial`, `margin_maintenance`
+- symbol description/path (used to infer session/liquidity context)
+
 ## Status model
 
 - `present`: broker source symbol hit exists and at least one custom artifact hit exists (`MT5 custom`, staging CSV, or `imports\done`)
@@ -29,5 +48,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Tes
 
 ## Next action
 
-1. Run the probe on VPS T1 and attach the generated JSON/markdown artifacts to QUA-350.
-2. If `US10Y` or `DE10Y` is `partial`/`missing`, align naming candidate sets to broker-visible symbols and update source overrides before the next import pass.
+1. DevOps: run the probe on VPS T1 with accessible Darwinex MT5 terminal and attach the generated JSON/markdown artifacts to QUA-350.
+2. CEO/CTO: decide disposition from T1 artifact:
+   - both `present` -> approve `_v2` Darwinex-bond-CFD-proxy path.
+   - both `missing` -> escalate OWNER decision on FRED shim ratification vs `_v1` long-term hold.

@@ -86,7 +86,32 @@ try:
     symbols = mt5.symbols_get() or []
     broker = sorted([s.name for s in symbols if not getattr(s, "custom", False)])
     custom = sorted([s.name for s in symbols if getattr(s, "custom", False)])
-    sys.stdout.write(json.dumps({"ok": True, "broker": broker, "custom": custom}))
+    details = {}
+    for name in broker + custom:
+        info = mt5.symbol_info(name)
+        if info is None:
+            continue
+        tick = mt5.symbol_info_tick(name)
+        details[name] = {
+            "description": getattr(info, "description", None),
+            "path": getattr(info, "path", None),
+            "trade_mode": getattr(info, "trade_mode", None),
+            "trade_calc_mode": getattr(info, "trade_calc_mode", None),
+            "spread_points": getattr(info, "spread", None),
+            "spread_float": getattr(info, "spread_float", None),
+            "point": getattr(info, "point", None),
+            "digits": getattr(info, "digits", None),
+            "volume_min": getattr(info, "volume_min", None),
+            "volume_step": getattr(info, "volume_step", None),
+            "volume_max": getattr(info, "volume_max", None),
+            "trade_contract_size": getattr(info, "trade_contract_size", None),
+            "margin_initial": getattr(info, "margin_initial", None),
+            "margin_maintenance": getattr(info, "margin_maintenance", None),
+            "bid": getattr(tick, "bid", None) if tick else None,
+            "ask": getattr(tick, "ask", None) if tick else None,
+            "tick_time": getattr(tick, "time", None) if tick else None
+        }
+    sys.stdout.write(json.dumps({"ok": True, "broker": broker, "custom": custom, "details": details}))
 finally:
     mt5.shutdown()
 '@
@@ -126,6 +151,26 @@ if ($mt5.ok) {
     foreach ($s in $mt5.broker) { $brokerSet[$s] = $true }
     foreach ($s in $mt5.custom) { $customSet[$s] = $true }
 }
+$detailMap = @{}
+if ($mt5.ok -and $mt5.details) {
+    $detailProps = $mt5.details.PSObject.Properties
+    foreach ($p in $detailProps) {
+        $detailMap[$p.Name] = $p.Value
+    }
+}
+
+function Get-SymbolDetail {
+    param(
+        [hashtable]$Map,
+        [string[]]$Candidates
+    )
+    foreach ($candidate in $Candidates) {
+        if ($Map.ContainsKey($candidate)) {
+            return $Map[$candidate]
+        }
+    }
+    return $null
+}
 
 $bonds = @()
 foreach ($pack in $candidatePacks) {
@@ -160,6 +205,8 @@ foreach ($pack in $candidatePacks) {
         $status = "partial"
     }
 
+    $detail = Get-SymbolDetail -Map $detailMap -Candidates @($sourceHits + $customHitsMt5)
+
     $bonds += [PSCustomObject]@{
         bondCode = $pack.bondCode
         status = $status
@@ -169,6 +216,7 @@ foreach ($pack in $candidatePacks) {
         customHitsDone = ($customHitsDone | Sort-Object -Unique)
         sourceCandidates = $pack.sourceCandidates
         customCandidates = $pack.customCandidates
+        mt5SymbolDetail = $detail
     }
 }
 
@@ -215,11 +263,41 @@ $md += "- terminal_path: $TerminalPath"
 $md += "- mt5_probe_ok: $($report.mt5Probe.ok)"
 if ($report.mt5Probe.error) { $md += "- mt5_probe_error: $($report.mt5Probe.error)" }
 $md += "- overall: $overall"
+$md += "- note: trade_hours/liquidity/commission fields require live broker symbol metadata; null means probe host could not read MT5 symbol details"
 $md += ""
 $md += "| bond | status | broker_source_hits | custom_mt5_hits | staging_hits | imports_done_hits |"
 $md += "|---|---|---|---|---|---|"
 foreach ($row in $bonds) {
     $md += "| $($row.bondCode) | $($row.status) | $(Join-List $row.sourceHitsBroker) | $(Join-List $row.customHitsMt5) | $(Join-List $row.customHitsStaging) | $(Join-List $row.customHitsDone) |"
+}
+
+$md += ""
+$md += "## MT5 Symbol Details (when available)"
+$md += ""
+foreach ($row in $bonds) {
+    $detail = $row.mt5SymbolDetail
+    $md += "### $($row.bondCode)"
+    if (-not $detail) {
+        $md += "- detail: unavailable"
+        continue
+    }
+    $md += "- description: $($detail.description)"
+    $md += "- path: $($detail.path)"
+    $md += "- trade_mode: $($detail.trade_mode)"
+    $md += "- trade_calc_mode: $($detail.trade_calc_mode)"
+    $md += "- spread_points: $($detail.spread_points)"
+    $md += "- spread_float: $($detail.spread_float)"
+    $md += "- point: $($detail.point)"
+    $md += "- digits: $($detail.digits)"
+    $md += "- volume_min: $($detail.volume_min)"
+    $md += "- volume_step: $($detail.volume_step)"
+    $md += "- volume_max: $($detail.volume_max)"
+    $md += "- trade_contract_size: $($detail.trade_contract_size)"
+    $md += "- margin_initial: $($detail.margin_initial)"
+    $md += "- margin_maintenance: $($detail.margin_maintenance)"
+    $md += "- bid: $($detail.bid)"
+    $md += "- ask: $($detail.ask)"
+    $md += "- tick_time: $($detail.tick_time)"
 }
 
 $md | Set-Content -LiteralPath $outMdAbs -Encoding UTF8
