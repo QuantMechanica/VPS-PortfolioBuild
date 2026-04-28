@@ -1,0 +1,819 @@
+                                                                                CHAPTER 7
+
+   Trade Parameters
+   for Various Market
+   Conditions
+
+                                                                                                                 73
+
+    After learning about the emergence of the foreign exchange market, who the
+                    major players are, significant historical milestones, and what moves the markets,
+               it is time to move on and discuss some of my favorite strategies for trading currencies.
+               However, before I even begin going over these strategies, the most important first
+               step for any trader, regardless of the market that you are trading in, is to create a
+               trading journal.
+
+ Keep a Trading Journal
+
+               Through my experience, I have learned that being a successful trader is not about
+               finding the holy grail of indicators that can perfectly forecast movements 100% of
+               the time, but instead, to develop discipline. I cannot undermine the importance of
+               ``the journal'' as the primary first step to becoming a successful and professional
+               trader. While working on the Inter-bank FX trading desk at J.P. Morgan and then
+               on the Cross-Markets trading desk after the merger with Chase, the trading journal
+               mentality was engrained into the minds of every dealer and proprietary trader on the
+               trading floors, regardless of rank. The reason was simple--the bank was providing
+               the capital for trading and we needed to be held accountable, especially since each
+               transaction involved millions of dollars. For every trade that was executed, we
+                                                needed to have a solid rationale as well as justification for the choice of entry and exit
+                                                levels. More specifically, you had to know where to place your exit points before
+                                                you placed the trade to approximate worst case losses and to manage risk.
+
+                                                   With this sort of accountability, the leading banks of the world are able to breed
+                                                successful and professional traders. For individual traders, this practice is even more
+                                                important because you are trading with your own money and not someone else's.
+                                                Bank traders are trading with someone else's money so regardless of how poorly
+                                                they perform over a one- or two-week basis, they will receive their paycheck twice
+                                                a month. At a bank, traders have plenty of time to make the money back without any
+                                                disruptions to their daily way of life--unless of course they lose $1 million in one
+                                                day. As an individual trader--you do not have this luxury. When you are trading
+                                                with your own money, each dollar lost is a dollar less that you own. So even though
+                                                you should only be trading with risk capital, or money that would not otherwise be
+                                                used for rent or groceries, one way or the other, the pain is felt. To avoid repeating
+                                                the same mistakes and taking large losses, I cannot stress enough the importance of
+                                                keeping a trading journal. The journal is designed to ensure that as a trader, you
+                                                only take calculated losses and learn from each mistake. The trading journal setup
+                                                that I recommend should be broken up into three parts:
+
+                                                1. Currency pair checklist
+
+74                                              2. Trades that I am waiting for
+
+                                                3. Existing or completed trades
+
+TRADE PARAMETERS FOR VARIOUS MARKET CONDITIONS  Currency Pair Checklist
+
+                                                The first section of your trading journal should consist of a spreadsheet that can be
+                                                printed out and completed every day. This purpose of this checklist is to get a feel
+                                                of the market and to identify trades. It should list of all of the currency pairs that are
+                                                offered for trading on the left column, followed by three columns for the current,
+                                                high, and low prices, and then a series of triggers laid out as a row on the right
+                                                hand side. Newer traders should start with following only the four major currency
+                                                pairs, which are the EURUSD, USDJPY, USDCHF, and the GBPUSD, and then
+                                                gradually add the AUDUSD, USDCAD, and NZDUSD, followed by the nondollar
+                                                pairs. Although the checklist that I have created is fairly detailed, I find that it is
+                                                a very useful daily exercise and should take no more than 20 minutes to complete
+                                                once the appropriate indicators are saved on the charts. The purpose of this checklist
+                                                is to get a clear visual of which currencies are trending and which are range trading.
+                                                Comprehending the big picture is the first step to trading successfully. Too often
+                                                have I seen traders fail because they lose sight of the overall environment that they
+                                                are trading in. The worst thing to do is to trade blindly. Trying to pick tops or
+                                                bottoms in a strong trend or buying breakouts in a range-bound environment can
+                                                lead to significant losses. Just take a look at Figure 7.1 of the EURUSD. If you tried
+TRADE PARAMETERS FOR VARIOUS MARKET CONDITIONS75
+
+                                              FIGURE 7.1 EURUSD Chart
+                                                       Source: eSignal
+                                                to pick bottoms in this pair, it would have led to an entire year of frustrating and
+
+                                                unsuccessful trading. In trending environments, traders will find a higher success
+
+                                                rate by buying on retracements in an uptrend or selling on rallies in a downtrend.
+
+                                                Picking tops and bottoms should only be a strategy that is used in clear range trading
+
+                                                environments and even with that, traders need to be careful of contracting ranges
+
+                                                that can lead to breakout scenarios.
+
+                                                A simplified version of the daily market overview sheet that I use is shown in
+
+                                                Figure 7.2.
+
+                                                As you can see in Figure 7.2, the first two columns after the daily high and low
+
+                                                prices are the levels of the 10-day high or low. Recording this price helps to identify
+
+                                                where current prices are within previous price action. This helps traders get a gauge
+
+                                                of whether we are pressing toward a 10-day high or low or if we are simply trapped
+
+                                                in the middle of the range. Yet the prices alone do not provide enough information
+
+                                                to determine if we are in a trending or a range-bound environment. The next five
+
+                                                indicators is a checklist for determining a trending environment. The more X marks
+
+                                                in this section, the stronger the trend.
+
+                                                The first column in the trending indicator group is the ``ADX (14) above 25.''
+
+                                                ADX is the Accumulation Distribution Index, which is the most popular used
+
+                                                indicator for determining the strength of a trend. If the index reading is above 25,
+
+76                                              it indicates that a trend has developed. Generally speaking, the greater the number,
+
+                                                the stronger the trend. The next column is Bollinger Bands. When strong trends
+
+TRADE PARAMETERS FOR VARIOUS MARKET CONDITIONS  develop, the pair will frequently tag and cross either the upper or lower Bollinger
+
+                                                Band. The next three trend indicators are the longer term moving averages. A
+
+                                                break above or below these moving averages may also be indicative of a trending
+
+                                                environment. With moving averages, crossovers in the direction of the trend can be
+
+                                                used as a further confirmation. If there are two or more Xs in this section, traders
+
+                                                should be looking for opportunities to buy on dips in an uptrend or sell on rallies in a
+
+                                                downtrend rather than selling at the top and buying back at the bottom of the range.
+
+                                                The last section of the trading journal is indications of range. The first indicator is
+
+                                                also ADX, but this time, we are looking for ADX below 25, which signals that the
+
+                                                currency pair's trend is weak. Next, we look at the traditional oscillators, RSI and
+
+                                                stochastics. If the ADX is weak and there is significant technical resistance above,
+
+                                                provided by indicators such as moving averages or Fibonacci retracement levels,
+
+                                                and RSI and/or stochastics are at overbought or oversold levels, we identify an
+
+                                                environment that is highly conducive to range trading.
+
+                                                Of course, the market overview sheet is not foolproof, and just because you have
+
+                                                a lot of X marks in either the trend or range group doesn't mean that a trend will
+
+                                                not fade or a breakout will not occur. Yet, what this spreadsheet will do is prevent
+
+                                                traders from trading blindly and ignoring the broader market conditions. It provides
+
+                                                traders with a launching pad from which to identify the day's trading opportunities.
+Date - Time
+
+                                  Trending      Range
+
+Currency Current Daily Daily 10-day 10-day Bollinger Bollinger (14) Crosses Crosses Crosses Bollinger ADX RS1 (14) (14) Stochastics Stochastics
+
+Pair         Price High Low High Low Band Up Band Down above 25 50-Day 100-day 200-day Band (14) Greater Less > 70  < 30
+
+                                            Range below than 80 than 80
+
+                                            25
+
+EURUSD 1.105 1.1144 1.0923     X  X             X                                                                   X
+
+GBPUSD
+
+USDJPY
+
+USDCHF
+
+AUDUSD                                                                                                                                           77
+
+NZDUSD
+
+USDCAD
+
+EURJPY
+
+EURGBP                                                                                                                                           TRADE PARAMETERS FOR VARIOUS MARKET CONDITIONS
+
+EURCHF
+
+AUDJPY
+
+CHFJPY
+
+GBPJPY
+
+GBPCHF
+
+AUDCAD
+
+EURCAD
+
+AUDNZD
+
+FIGURE 7.2 Currency Checklist
+TRADE PARAMETERS FOR VARIOUS MARKET CONDITIONSTrades That I Am Waiting For
+
+                         The next section in the trading journal lists out the possible trades for the day. Based
+                         on an initial overview of the charts, this section is where you should list the trades
+                         for which you are waiting. A sample entry would look like the following:
+
+                            April 5, 2015
+                            Buy AUDUSD on a break of 0.7850 (previous day high)
+                            Stop at 0.7800 (50-day SMA)
+                            Target 1--0.7925 (38.2% Fibonacci retracement of Nov-Mar bull wave)
+                            Target 2--0.8075 (Upper Bollinger)
+                            Target 3--10-day Trailing Low
+
+                            As soon as your entry level is reached, you know exactly how to take action and
+                         where to place your stops and limits. Of course, it is also important to take a quick
+                         glance at the market to make sure that the trading conditions that you were waiting
+                         for are still intact. For example, if you were looking for a strong breakout with no
+                         retracement to occur at the entry level, when it does break, you want to make sure
+                         that the break has decent momentum. This exercise will help you develop a plan of
+                         action to approach your trading day. Before every battle, warriors will regroup to
+                         go over the plan of attack--in trading, you want to have the same mentality. Plan
+                         and prepare for the worst-case scenario and know your plan of attack for the day!
+78
+                       Existing or Completed Trades
+
+                         This section is developed and used to enforce discipline and to learn from your
+                         mistakes. At the end of each trading day, it is important to review this section to
+                         understand why certain trades resulted in losses and others in profits. The purpose
+                         of this section is to identify trends. To understand why this is important, let's look
+                         at an example that is completely unrelated to trading. On a normal given day,
+                         most people will subconsciously inject a lot of ``ums'' or ``uhs'' into their daily
+                         conversation. However, most of these people do not even realize that they are even
+                         doing so until someone records their conversation and replays it back to them. This
+                         is one of the ways that professional presenters and newscasters train to kick the
+                         habit of using placeholder words. Having worked with over 65,000 traders, too
+                         often have I seen these traders make the same mistakes repeatedly. This includes
+                         taking profits too early, letting losses run, getting emotional about trading, ignoring
+                         economic releases, or entering a trade prematurely. Keeping a record of previous
+                         trades is like keeping a recording of your conversations. When you flip back to the
+                         trades that you have completed, you may have a perfect map of what strategies have
+                         or have not been profitable for you. The reason why a journal is so important is
+                         because it minimizes the emotional intervention of trades. I frequently see novice
+                         traders take profits early but let losses run. The following are two samples of trade
+                         journal entries that could have provided learning opportunities:
+February 12, 2015
+Trade: Short 3 lots of EURUSD @ 1.1045
+Stop: 1.1195 (former all-time high)
+Target: 1.0800
+Result: Trade closed on Feb 13, 2015--stopped out of the 3 lots @ 1.1195
+
+   (­150 pips)
+Comments: Got margin call! It broke the all-time high, I thought it was going
+
+   to reverse, did not stick to stop--kept letting losses run, eventually margin
+   call closed out all positions. Note to self: MAKE SURE STICK TO STOPS!
+
+April 3, 2015
+
+Trade: Long 2 lots of USDCAD @ 1.2135
+
+Stop: 1.2000 (strong technical support--confluence of 50-day moving average
+
+and 68% Fibonacci retracement of Feb--March rally)
+
+Target: First lot @ 1.2295 (upper Bollinger and 5 pips shy of 1.2300 psychological
+
+resistance)
+
+Second lot @ 1.2450 (Former head and shoulders support turned resistance,
+
+100-day SMA)
+
+Result: Trade closed on April 5, 2015--stopped out of the 2 lots at 1.2000
+
+(­135 pips)
+
+Comments: USDCAD did not continue uptrend and was becoming overbought,              79
+
+I didn't see that ADX was weakening and falling from higher levels, there was
+
+also a divergence in Stochastics. Note to self: MAKE SURE TO LOOK FOR               TRADE PARAMETERS FOR VARIOUS MARKET CONDITIONS
+
+DIVERGENCES NEXT TIME!
+
+   Unlike many traders, the best trades in my opinion are the trades where both
+technicals and fundamentals support the trade. In general, I prefer to stay out of
+trades that contradict my fundamental outlook. For example, if there is a bullish
+formation in both the GBPUSD and the AUDUSD due to U.S. dollar weakness,
+but the Bank of England has finished raising interest rates, while the Reserve
+Bank of Australia has full intentions of tightening to tame the strength of the
+Australian economy, I would most likely choose to express my bearish dollar view
+in the AUDUSD rather than the GBPUSD. My bias for choosing the AUDUSD
+over the GBPUSD would be even stronger if the AUDUSD already offered a
+higher interest rate differential than the GBPUSD. I seen technicals thwarted by
+fundamentals so often that now I always incorporate both into my trading strategy.
+I use a combination of technical, fundamental, and positioning, and am generally
+also a trend follower. I also typically use a top-down approach that involves the
+following:
+
+1. I will start by taking an overall technical survey of the market and pick the
+    currency pairs that have retraced to attractive levels for entry in order to
+    participate in a medium term fundamentally supportive trend.
+                                                2. For currencies with a dollar component (i.e., not the crosses), I determine if my
+                                                    initial technical view for that pair coincides with my fundamental view on the
+                                                    dollar, as well as my view on how upcoming U.S. releases may impact trading
+                                                    for the day. The reason why I look at the dollar specifically is because 80% of all
+                                                    currency trades involve the dollar, which makes U.S. fundamentals particularly
+                                                    important.
+
+                                                3. If it is a cross, I will proceed by determining if the technical view coincides with
+                                                    the fundamental outlook using Fibonacci retracements, ADX, moving averages,
+                                                    oscillators, and other technical tools.
+
+                                                4. Then I like to look at positioning using the Commitment of Traders Report or
+                                                    the FXCM Speculative Sentiment index to see if it supports the trade.
+
+                                                5. If I am left with two equally compelling trade ideas, I will choose the one with
+                                                    a positive interest rate differential.
+
+                                                Have a Toolbox--Use What Works for the Current Market
+                                                Environment
+
+                                                Once you have created a trading journal, it is time to figure out which indicators to
+
+                                                lay on your charts. The reason why a lot of traders fail is because they neglect to
+
+                                                realize that their favorite indicators are not foolproof. Buying when stochastics are
+
+80                                              in oversold territory and selling when it is in overbought territory is a strategy that
+
+TRADE PARAMETERS FOR VARIOUS MARKET CONDITIONS  is used quite often by range traders, to a great deal of success, but once the market
+
+                                                stops range trading and begins to trend, then relying on stochastics could lead to
+
+                                                tremendous amount of losses. In order to become consistently profitable, successful
+
+                                                traders need to learn to be adaptable.
+
+                                                One of the most important practices that every trader must understand is to be
+
+                                                conscious of the environment that they are trading in. Every trader needs to have
+
+                                                some sort of checklist that will help to classify the trading environment so that
+
+                                                they can determine whether the market is trending or range bound. Defining
+
+                                                trade parameters is one of the most important disciplines of trading. Too many
+
+                                                traders have tried to pick the top within a trend, only to wind up with consistently
+
+                                                unprofitable trades.
+
+                                                Although defining trade parameters is important to traders in any market
+
+                                                (currencies, futures, equities), it is particularly important in the currency market
+
+                                                since over 80% of the volume is speculative in nature. This means that currencies
+
+                                                can spend a very long period of time in a certain trading environment. Also, the
+
+                                                currency market obeys technical analysis particularly well, given its large scale and
+
+                                                number of participants.
+
+                                                There are basically two types of trading environments, which means that at any
+
+                                                point in time an instrument is either range trading or trending. The first step every
+
+                                                trader needs to take is to define the current trading environment. The shortest time
+frame that traders should start looking at when their trading day starts are daily
+charts, even if you are trading on a 5-minute time frame.
+
+ Step #1: Determine the Trading Environment
+
+             Rules to Determining Trading Environment
+
+               There are many different ways that traders can determine whether a currency pair
+               is range trading or trending. Of course, many people do it visually, but having set
+               rules will help to keep traders out of trends that may be fading or to prevent traders
+               from getting into a range trade in the midst of a possible breakout. In Figure 7.3, I
+               have outlined some of the rules that I look for in order to classify a currency pair's
+               trading environment.
+
+Profiling a Range Environment
+
+Look for:
+
+1. ADX (Average Directional Index) less than 20--The Average Directional Index is
+
+one of the primary technical indicators used to determine the strength of a
+
+trend. When ADX is less than 20, this suggests that the trend is weak, which                           81
+is generally characteristic of range-bound market. If ADX is less than 20 and
+
+trending downward, it provides a further confirmation that the trend is not only                       TRADE PARAMETERS FOR VARIOUS MARKET CONDITIONS
+
+weak but will probably stay in a range-trading environment for a while longer.
+
+2. Decreasing implied volatility--There are many ways to analyze volatility. What I
+
+like to do is actually track short-term versus long-term volatility. When short-
+
+term volatility is falling, especially after a burst above long-term volatility, it
+
+is usually indicative of a reversion to range trading scenarios. Volatility usually
+
+Trade      Rules                                         Indicators
+Range                                                    Bollinger, Bands, ADX,
+            ADX < 20                                     Options
+Trend       Decreasing implied volatility
+            Risk reversals near choice or flipping       Moving
+                                                         averages, ADX, Options,
+              between favoring calls and puts            Momentum
+
+            ADX > 25
+            Momentum consistent with trend
+
+              direction
+            Risk reversals strongly bid for put or call
+
+FIGURE 7.3 Trend/Range Trading Rules
+                                                blows out when a currency pair experiences sharp, quick moves. It contracts
+
+                                                when ranges are narrow and the trading is very quiet in the markets. The lazy
+
+                                                man's version of the way I track volatility is Bollinger Bands, which is actually
+
+                                                also a fairly decent measure for determining volatility conditions. A narrow
+
+                                                Bollinger Band suggests that ranges are small and there is low volatility in the
+
+                                                markets, while wide Bollinger Bands are reflective of large ranges and a highly
+
+                                                volatile environment. In a range-trading environment, we are looking for fairly
+
+                                                narrow Bollinger Bands, ideally in a horizontal formation similar to the USDJPY
+
+                                                chart in Figure 7.4.
+
+                                                3. Risk reversals flipping between calls and puts: A risk reversal consists of a pair of
+
+                                                options, a call and a put, on the same currency. Risk reversals have both the
+
+                                                same expiration (1 month) and sensitivity to the underlying spot rate. They are
+
+                                                quoted in terms of the difference in volatility between the two options. While
+
+                                                in theory these options should have the same implied volatility in practice, these
+
+                                                volatilities often differ in the market. Risk reversals can be seen as having a
+
+                                                market polling function. A number strongly in favor of calls or puts indicates
+
+                                                that the market prefers calls over puts. The reverse is true if the number is
+
+                                                strongly in favor of puts versus calls. Thus, risk reversals can be used as a
+
+                                                substitute for gauging positions in the FX market. In an ideal environment, far
+
+                                                out of the money calls and puts should have the same volatility. However, this
+
+82                                              is rarely the case, since there is generally a sentiment bias in the markets that
+
+TRADE PARAMETERS FOR VARIOUS MARKET CONDITIONS  is reflected in risk reversals. In range-bound environments, risk reversals tend
+
+                                                FIGURE 7.4 USDJPY Bollinger Band Chart
+to flip between favoring calls and puts at nearly zero (or equal). This indicates
+that there is indecision among bulls and bears, and there is no strong bias in
+the markets.
+
+What Does a Risk Reversal Table Look Like?
+
+According to the risk reversals in Figure 7.5, we can see that the market is strongly
+favoring yen calls (JC) and dollar puts over the long term. EURUSD short-term
+risk reversals are near choice, which is what you are looking for when profiling a
+range-bound environment. Risk reversal information used to be readily available
+but is more difficult to find these days. Currently, the only place we know of that
+provides this information is the Bloomberg Professional Terminal, which costs over
+US$1500 a month.
+
+Identifying a Trending Environment
+
+Look for three things:
+
+1. ADX (Average Directional Index) greater than 20--As mentioned earlier when we
+
+talked about range-trading conditions, the Average Directional Index is one of
+
+the primary technical indicators used to determine the strength of a trend. In
+
+a trending environment, we look for ADX to be greater than 25 and rising. If           83
+ADX is greater than 25 but sloping downward, especially off of the extreme 40
+
+level, you have to be careful of aggressive trend positioning since it may indicate    TRADE PARAMETERS FOR VARIOUS MARKET CONDITIONS
+
+that the trend is waning.
+
+2. Momentum consistent with trend direction--In addition to using ADX, I also
+
+recommend looking for confirmation of a trending environment through
+
+momentum indicators. Traders should look for momentum to be consistent
+
+14:40 GMT April 19th
+
+1 Month To 1 Year Risk Reversal
+
+Currency             1M R/R      3M R/R      6M R/R                1YR R/R
+
+USDJPY               0.3/0.6 JC  0.7/1.0 JC  1.1/1.3 JC            1.3/1.6 JC
+                                 0.0/0.3 EC
+EURUSD               0.1/0.3 EC  0.0/0.3 SC  0.0/0.3 EC            0.1/0.4 EC
+                                 0.0/0.3 CC
+GBPUSD               0.0/0.3 SP              0.0/0.3 SC            0.0/0.3 SC
+
+USDCHF               0.2/0.2 CC              0.0/0.4 CC            0.1/0.5 CC
+
+* JC = Japanese yen call                     * SC = Sterling call
+
+* EC = Euro call                             * CC = Swiss call
+
+* SP = Sterling put
+
+FIGURE 7.5 Risk Reversals
+                                                    with the direction of the trend. Most currency traders will look for oscillators to
+                                                    point strongly in the direction of the trend. For example, in an uptrend, trend
+                                                    traders will look for the moving averages, RSI, stochastics, and MACD to all
+                                                    point strongly upward. In a downtrend, they will look for these same indicators
+                                                    to point downward. Some currency traders use the momentum index, but in
+                                                    my experience, it is less popular and reliable. Instead, one of the strongest
+                                                    momentum indicators is a perfect order of moving averages. A perfect order is
+                                                    when we have the moving averages line up perfectly: that is, for an uptrend,
+                                                    the 10-day SMA is greater than the 20-day SMA, which is greater 50-day SMA.
+                                                    The 100-day SMA and the 200-day SMA are below the shorter-term moving
+                                                    averages. In a downtrend, a perfect order would be when the shorter-term
+                                                    moving averages stack up below the longer-term moving averages.
+                                                3. Options (risk reversals)--With a trending environment, we are looking for risk
+                                                    reversals to strongly favor calls or puts. When one side of the market is laden
+                                                    with interest, it is usually indicative of a strong trending environment or that a
+                                                    contra-trend move may be brewing if risk reversals are at extreme levels.
+
+                                                 Step #2: Determine the Time Frame for Trade
+
+84                                              Once you have determined that a currency pair is either range-bound or trending,
+
+                                                it is time to determine how long you plan on holding the trade. The following is a
+
+TRADE PARAMETERS FOR VARIOUS MARKET CONDITIONS  set of guidelines and indicators that I use for trading different time frames. Not all
+
+                                                of the guidelines need to be met, but the more guidelines that are met, the more
+
+                                                solid the trading opportunity.
+
+                                                Intraday Trade (Range)
+
+                                                Rules:
+
+                                                1. Use hourly charts to determine entry points and daily charts to confirm that a
+                                                    range trade exists on a longer-time frame.
+
+                                                2. Use oscillators to determine entry point within range.
+                                                3. Look for short-dated risk reversals to be near choice.
+                                                4. Look for reversal in oscillators (RSI or stochastics at extreme point).
+                                                5. Trade stronger when prices fail at key resistance or hold key support levels (use
+
+                                                    Fibonacci retracement points and moving averages).
+
+                                                Indicators Used:
+                                                   Stochastics, MACD, RSI, Bollinger Bands, options, Fibonacci retracement
+                                                      levels
+Medium-Term Range Trade
+
+Rules:
+
+1. Use daily charts.
+2. There are two ways to range trade medium term--position for upcoming range
+
+    trading opportunities or get involved in existing ranges.
+3. Upcoming range opportunities: Look for high-volatility environments, where short-
+
+    term implied volatilities are significantly higher than longer-term volatilities.
+    Seek reversion back to the mean environments.
+4. Existing ranges: Use Bollinger Bands to identify existing ranges.
+5. Look for reversals in oscillators such as RSI and stochastics.
+6. Make sure ADX is below 25 and ideally falling.
+7. Look for medium-term risk reversals near choice.
+8. Confirm with price action--failure at key range resistances and bounces on key
+    range supports (using traditional technical indicators).
+
+Indicators:
+   Options, Bollinger Bands, stochastics, MACD, RSI, Fibonacci retracement
+      levels
+
+Medium-Term Trend Trade                                                                85
+
+Rules:                                                                                 TRADE PARAMETERS FOR VARIOUS MARKET CONDITIONS
+
+1. Look for ranges on daily charts and use weekly charts for confirmation.
+2. Refer back to the characteristics of a trending environment--look for those
+
+    parameters to be met.
+3. Buy breakout/retracement scenarios on key Fibonacci levels or moving averages.
+4. Look for no major resistance levels in front of trade.
+5. Look for candlestick pattern confirmation.
+6. Look for moving average confluence to be on same side of trade.
+7. Enter on a break of significant high or low.
+8. The ideal is to wait for volatilities to contract before getting in.
+9. Look for fundamentals to also be supportive of trade--growth and interest
+
+    rates. You want to see a string of economic surprises or disappointments
+    depending on directional bias.
+
+Indicators
+   ADX, Parabolic SAR, RSI, Ichimoku Clouds, Elliot waves, Fibonacci
+                                                Medium-Term Breakout Trade
+
+                                                Rules:
+
+                                                1. Use daily charts.
+                                                2. Look for contraction in short-term volatility to a point where it is sharply below
+
+                                                    long-term volatility.
+                                                3. Use pivot points to determine whether a break is a true break or a false break.
+                                                4. Look for moving average confluences to be supportive of trade.
+
+                                                Indicators
+                                                   Bollinger Bands, moving averages, Fibonacci
+
+                                                 Risk Management
+
+                                                Although risk management is one of the more simple topics to grasp, it is also one
+
+                                                of the most important. Too often we have seen traders turn winning positions into
+
+                                                losing positions and solid strategies result in losses instead of profits. The fact of the
+
+                                                matter is that regardless of how intelligent and knowledgeable a trader may be about
+
+                                                the markets, their own psychology will cause them to lose money. Why does this
+
+                                                happen? Are the markets really so enigmatic that few can profit? Or is there simply
+
+86                                              a common mistake that virtually all traders are prone to making? The answer is the
+
+TRADE PARAMETERS FOR VARIOUS MARKET CONDITIONS  latter. And the good news is that the problem, while it can be an emotionally and
+
+                                                psychologically challenging, is ultimately fairly easy to grasp and solve.
+
+                                                Most traders lose money simply because they have no understanding or place no
+
+                                                importance in risk management. Risk management involves essentially knowing how
+
+                                                much you are willing to risk and how much you are looking to gain. Without a
+
+                                                sense of risk management, most traders simply hold on to losing positions for an
+
+                                                extremely long amount of time, but take profits on winning positions prematurely.
+
+                                                The result is a seemingly paradoxical scenario that in reality is all too common: The
+
+                                                trader ends up having more winning positions than losing ones, but ends up with a
+
+                                                negative P/L. So, what can traders do to ensure they have solid risk management
+
+                                                habits? There are a few key guidelines that every trader, regardless of their strategy
+
+                                                or what they are trading, should keep in mind:
+
+                                                 Risk-reward ratio. Traders should look to establish a risk-reward ratio for every
+                                                  trade they place. In other words, they should have an idea of how much they are
+                                                  willing to lose, and how much they are looking to gain. Generally, the risk-reward
+                                                  ratio should be at least 1:2, if not more. Having a solid risk-reward ratio can
+                                                  prevent traders from entering positions that ultimately are not worth the risk.
+
+                                                 Stop-loss orders. Traders should also employ stop-loss orders as a way of specifying
+                                                  the maximum loss they are willing to accept. By using stop-loss orders, traders
+  can avoid the common predicament of being in a scenario where they have many           TRADE PARAMETERS FOR VARIOUS MARKET CONDITIONS
+  winning trades but a single loss large enough to eliminate any trace of profitability
+  in the account. Trailing stops to lock in profits are particularly useful. A good
+  habit of more successful traders is to employ the rule of moving your stop to
+  break even as soon as your position has profited by the same amount that you
+  initially risked through the stop order. At the same time, some traders may also
+  choose to close a portion of their position.
+
+   For those looking to add to a winning position or go with trend, the best strategy
+is to treat it as if it were a new trade of its own, independent of the winning position.
+If you are going to add to a winning position, perform the same analysis of the chart
+that you would if you had no position at all. If a trade continues to go in your favor,
+you can also close out part of the position while trailing your stop higher on the
+remaining lots that you are holding. Try thinking about your risk and reward on
+each separate lot that you have bought if they are at different entry points as well. If
+you buy a second lot 50 pips above your first entry point, don't use the same stop
+price on both, but manage the risk on the second lot independently from the first.
+
+Using Stop-Loss Orders to Manage Risk
+
+Given the importance of money management to successful trading, using the stop-
+loss order is imperative for any trader looking to succeed in the currency market. 87
+Stop-loss orders allow traders to specify the maximum loss they are willing to
+accept on any given trade. If the market reaches the rate the trader specifies in
+his/her stop-loss order, then the trade will be closed immediately. As a result, using
+stop-loss orders allows you to know how much you are risking at the time you enter
+the trade.
+
+   There are two parts to successfully using a stop-loss order: (1) initially placing
+the stop at a reasonable level and (2) trailing the stop--or moving it forward toward
+profitability--as the trade progresses in your favor.
+
+Placing the Stop Loss
+
+We recommend two ways of placing a trailing stop-loss order:
+
+ The first is a two-day low method. These volatility-based stops involve placing your
+  stop-loss order approximately 10 to 20 pips below the two-day low of the pair.
+  For example, if the low on the EURUSD's most recent candle was 1.1200, and
+  the previous candle's low was 1.1100, then the stop should be placed around
+  1.1090--10 pips below the two-day low--if a trader is looking to get long. This
+  type of trailing stop allows you to keep tight control of the position and minimizes
+  the time in trade. The downside is that it can be closed prematurely during a brief
+  period of consolidation.
+                                                 Parabolic SAR. Another form of volatility-based stop is the parabolic SAR, an
+                                                  indicator that is found on many currency trading charting applications. This
+                                                  indicator graphically displays a small dot at the point on the chart where the stop
+                                                  should be placed. The benefit of parabolic SAR is that it is dynamic and generally
+                                                  further away from the current price.
+
+                                                There is no magic formula for what works best in every situation, but the
+
+                                                following is an example of how these stops could be used.
+
+                                                Upon entering a long position, determine where support is and place a stop 20
+
+                                                pips below support. For example, let's say this is 60 pips below the entry point. If
+
+                                                the trade earns a profit of 60 pips, close half of my position using a market order,
+
+                                                then move the stop up to the entry point. At this point, trail the stop 60 pips behind
+
+                                                the moving market price. If the parabolic SAR moves up so that it is above the entry
+
+                                                point, you could switch to using parabolic SAR as the stop level. Of course, during
+
+                                                the day, there can be other signals that could prompt you to move your stop. If the
+
+                                                price breaks through a new resistance level, that resistance then becomes support.
+
+                                                You can place a stop 20 pips below that support level, even if it is only 30­40
+
+                                                pips away from the current price. The underlying principle you have to use is to
+
+                                                find a point to place your stop where you would no longer want to be in the trade
+
+                                                once the price reaches that level. Usually it falls at a point where the price goes
+
+                                                below support.
+
+88                                              Aside from employing proper risk management strategies, one of the other
+
+TRADE PARAMETERS FOR VARIOUS MARKET CONDITIONS  more crucial yet overlooked elements of successful trading is maintaining a healthy
+
+                                                psychological outlook. At the end of the day, a trader who is unable to cope with the
+
+                                                stress of market fluctuations will not stand the test of time--no matter how skilled
+
+                                                they may be at the more scientific elements of trading. Here are some tips:
+
+                                                 Practice emotional detachment. That is, traders must make trading decisions based on
+                                                  strategies independent of fear and greed. One of the premiere attributes a good
+                                                  trader has is emotional detachment: While these traders are dedicated and fully
+                                                  involved in their trades, they are not emotionally married to them; they accept
+                                                  losing, and make their investment decisions on an intellectual level. Traders who
+                                                  are emotionally involved in trading often make substantial errors, as they tend
+                                                  to whimsically change their strategy after a few losing trades, or become overly
+                                                  carefree after a few winning trades. A good trader must be emotionally balanced,
+                                                  and must base all trading decisions on strategy--not fear or greed.
+
+                                                 Know when to take a break. In the midst of a losing streak, consider taking a break
+                                                  from trading before fear and greed dominate your strategy.
+                                                     Not every trade can be a winning one. As a result, traders must be psycholog-
+                                                  ically capable of coping with losses. Most traders, even successful ones, will go
+                                                  through a stretch of losing trades. The key to being a successful trader, though,
+                                                  is being able to go through a losing stretch unfazed and undeterred. If you are
+experiencing a string of losing trades, it may be time to take a break from trading.
+Often, taking a few days off from watching the market to clear your mind can be
+the best remedy for a losing streak. Continuing to trade relentlessly during a tough
+market condition can breed greater losses and ruin your psychological trading
+capacity. Ultimately, it's always better to acknowledge your losses rather than
+continue to fight through them and pretend they don't exist. Make no mistake
+about it: Regardless of how much you study, practice, or trade, there will be losing
+trades throughout your entire career. The key is to make them small enough that
+you can live to trade another day and allow your winning trades room to breathe
+and flourish. You can overcome a lot of bad luck with proper money management
+techniques. This is why we have stressed a 2:1 reward to risk ratio, and why we
+recommend not risking more than 2% of your equity on any single trade.
+
+   Whether you are trading forex, equities, or futures, there are 10 trading rules
+that successful traders should live by:
+
+1. Limit your losses.
+
+2. Let your profits run.
+
+3. Keep position sizes within reason.
+
+4. Know your risk versus reward ratio.
+
+5. Be adequately capitalized.
+
+6. Don't fight the trend.                                                             89
+
+7. Never add to losing positions.                                                     TRADE PARAMETERS FOR VARIOUS MARKET CONDITIONS
+
+8. Know market expectations.
+
+9. Learn from your mistake--keep a trade log.
+
+10. Have a maximum drawdown.
