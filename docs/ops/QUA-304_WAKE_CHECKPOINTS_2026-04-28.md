@@ -305,3 +305,4 @@
 - 2026-04-28T13:20:02.2917560Z | blocked_review_gate | heartbeat helper tick; no active failed run; unblock owner CTO -> review decision/request deltas.
 - 2026-04-28T13:20:16.7567177Z | blocked_review_gate | heartbeat helper tick; no active failed run; unblock owner CTO -> review decision/request deltas.
 - 2026-04-28T13:20:51.3489018Z | blocked_review_gate | heartbeat helper tick; no active failed run; unblock owner CTO -> review decision/request deltas.
+- 2026-04-28T13:21:36.1462399Z | blocked_review_gate | heartbeat helper tick; no active failed run; unblock owner CTO -> review decision/request deltas.
