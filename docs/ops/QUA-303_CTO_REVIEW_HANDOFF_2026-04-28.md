@@ -41,3 +41,21 @@ Warning source:
 ## CTO Next Action
 1. Review EA-vs-Card for `SRC01_S02` (review-only gate).
 2. Confirm whether shared-framework deprecation warnings are accepted at this stage or require centralized framework fix.
+
+## Post-Handoff Updates (Development)
+
+- Commit `66b4f99`  
+  `ea: fix QUA-303 card section citations for QM5_1006`
+  - Replaced placeholder `Card ?...` inline tags with explicit `§4/§5/§6/§7/§8/§12` references.
+  - Recompile evidence:
+    - `framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_1006_davey_eu_day/QM5_1006_davey_eu_day.mq5`
+    - `PASS`, `0 errors`, `0 warnings`
+    - Log: `C:\QM\worktrees\development\framework\build\compile\20260428_103123\QM5_1006_davey_eu_day.compile.log`
+
+- Commit `c738c6b`  
+  `docs: record QUA-303 waiting-for-CTO review state`
+  - Added: `docs/ops/QUA-303_WAITING_CTO_REVIEW_2026-04-28.md`
+
+- Commit `301b31a`  
+  `docs: add QUA-303 CTO checklist prefill`
+  - Added: `docs/ops/QUA-303_CTO_CHECKLIST_PREFILL_2026-04-28.md`
