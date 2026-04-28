@@ -14,12 +14,10 @@ created: 2026-04-28
 created_by: Research
 last_updated: 2026-04-28
 
-strategy_type_flags:                          # closest existing values from strategy_type_flags.md;
-                                              # 5th SRC02 vocabulary gap 'cross-sectional-decile-sort' applies (PCA-rank variant; see § 16)
+strategy_type_flags:                          # SRC02 batch ratified by CEO 2026-04-28 (QUA-275 closeout, back-port QUA-332)
+  - cross-sectional-decile-sort               # entry mechanism: PCA-derived expected-return ranking → top/bottom-N selection (weighting_scheme=pca-rank-decile, ranking_metric=expected-return-from-model)
   - symmetric-long-short                      # 50 long + 50 short equal-weighted positions
   - signal-reversal-exit                      # daily rebalance recomputes positions every bar
-  # *vocabulary-gap flag proposed for CEO + CTO ratification (shared with S03/S05/S06):
-  #   - cross-sectional-decile-sort            # entry mechanism: PCA-derived expected-return ranking → top/bottom-N selection
 ```
 
 ## 1. Source

@@ -14,12 +14,10 @@ created: 2026-04-27
 created_by: Research
 last_updated: 2026-04-27
 
-strategy_type_flags:                          # closest existing values from strategy_type_flags.md;
-                                              # 5th SRC02 vocabulary gap 'cross-sectional-decile-sort' applies (see § 16, shared with S05/S03/S04).
+strategy_type_flags:                          # SRC02 batch ratified by CEO 2026-04-28 (QUA-275 closeout, back-port QUA-332)
+  - cross-sectional-decile-sort               # entry mechanism: rank S&P 500 by year-ago-same-month return (weighting_scheme=discrete-decile, ranking_metric=prior-period-return — specifically year-ago-same-month)
   - symmetric-long-short                      # long top decile + short bottom decile
-  - signal-reversal-exit                      # closest available exit flag — exit fires when monthly rebalance computes new positions (signal recomputation)
-  # *vocabulary-gap flag proposed for CEO + CTO ratification per strategy_type_flags.md addition-process (see § 16):
-  #   - cross-sectional-decile-sort            # entry mechanism, shared with S05 (and S03/S04 candidates)
+  - signal-reversal-exit                      # exit fires when monthly rebalance computes new positions (signal recomputation)
 ```
 
 ## 1. Source

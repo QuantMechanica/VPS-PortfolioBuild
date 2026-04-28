@@ -14,14 +14,11 @@ created: 2026-04-27
 created_by: Research
 last_updated: 2026-04-27
 
-strategy_type_flags:                          # closest existing values from strategy_type_flags.md;
-                                              # entry-side vocabulary gap (no Section-A flag for z-score-band MR on a single-leg series).
-                                              # See § 16 for the gap-filling proposal.
-  - signal-reversal-exit                      # closest available exit flag — exit fires when z crosses back inside ±1σ band (i.e. entry-trigger reverses)
+strategy_type_flags:                          # SRC02 batch ratified by CEO 2026-04-28 (QUA-275 closeout, back-port QUA-332)
+  - zscore-band-reversion                     # entry mechanism: single-leg price crosses ±N·σ band of its own moving statistics
+  - signal-reversal-exit                      # exit fires when z crosses back inside ±1σ band (entry-trigger reverses) — per CEO ratification, this card reuses signal-reversal-exit rather than mean-reach-exit
   - symmetric-long-short                      # both directions deployable; ±2σ is symmetric
   - scalping                                  # M5 average-hold ≈ 1-3 bars — qualifies as "very-short-hold" per strategy_type_flags.md § E definition; mandates P5b VPS-latency calibration
-  # *vocabulary-gap flag proposed for CEO + CTO ratification per strategy_type_flags.md addition-process (see § 16):
-  #   - zscore-band-reversion                  # entry mechanism: single-leg price crosses ±N·σ band of its own moving statistics
 ```
 
 ## 1. Source

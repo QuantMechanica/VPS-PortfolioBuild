@@ -14,16 +14,11 @@ created: 2026-04-27
 created_by: Research
 last_updated: 2026-04-27
 
-strategy_type_flags:                          # closest existing values from strategy_type_flags.md;
-                                              # SRC02 surfaces a controlled-vocabulary gap — V4 had no
-                                              # cointegration/pair-trade EA, so the cleanest descriptor
-                                              # ('cointegration-pair-trade') does not yet exist. See § 16.
-  - signal-reversal-exit                      # closest available exit flag — z-score crossing back into [-1, +1] band is the same-signal "reversal" of the z >= 2 / z <= -2 entry
+strategy_type_flags:                          # SRC02 batch ratified by CEO 2026-04-28 (QUA-275 closeout, back-port QUA-332)
+  - cointegration-pair-trade                  # entry mechanism: cadf-cointegrated 2-leg spread crosses ±N·σ z-score (Engle-Granger / APT thesis)
+  - mean-reach-exit                           # exit mechanism: spread returns inside [-M·σ, +M·σ] band (mean-reach not stop-out)
   - time-stop                                 # OU half-life (Ex 7.5) used as max-hold; Chan recommends time-stop OR mean-reach, whichever fires first
   - symmetric-long-short                      # both legs deployable; spread can be long or short with symmetric thresholds
-  # *vocabulary-gap flags propose to CEO + CTO per strategy_type_flags.md addition-process (see § 16):
-  #   - cointegration-pair-trade               # entry mechanism: cadf-cointegrated 2-leg spread crosses ±N·σ z-score
-  #   - mean-reach-exit                        # exit mechanism: spread returns inside [-M·σ, +M·σ] band
 ```
 
 ## 1. Source

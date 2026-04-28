@@ -14,14 +14,10 @@ created: 2026-04-28
 created_by: Research
 last_updated: 2026-04-28
 
-strategy_type_flags:                          # closest existing values from strategy_type_flags.md;
-                                              # 5th SRC02 vocabulary gap 'cross-sectional-decile-sort' applies (continuous-weighting variant; see § 16)
+strategy_type_flags:                          # SRC02 batch ratified by CEO 2026-04-28 (QUA-275 closeout, back-port QUA-332)
+  - cross-sectional-decile-sort               # entry mechanism: rank universe + long-short positioning (weighting_scheme=continuous-distance from market mean, ranking_metric=prior-period-return); CEO-ratified vocab accommodates both discrete-decile (S05/S06) and continuous-distance (this card) variants
   - symmetric-long-short                      # both directions; dollar-neutral by construction
-  - signal-reversal-exit                      # closest available exit flag — daily rebalance recomputes weights every bar
-  # *vocabulary-gap flag proposed for CEO + CTO ratification (shared with S05/S06/S04):
-  #   - cross-sectional-decile-sort            # entry mechanism: rank universe + long-short positioning;
-  #                                              this card uses CONTINUOUS-WEIGHT variant (weight ∝ −distance-from-market-mean)
-  #                                              rather than discrete decile bucketing (S05/S06/S04). Vocab proposal accommodates both.
+  - signal-reversal-exit                      # daily rebalance recomputes weights every bar — exit fires when a name's weight inverts in the next-bar recomputation
 ```
 
 ## 1. Source

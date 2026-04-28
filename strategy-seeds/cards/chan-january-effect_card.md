@@ -14,13 +14,11 @@ created: 2026-04-27
 created_by: Research
 last_updated: 2026-04-27
 
-strategy_type_flags:                          # closest existing values from strategy_type_flags.md;
-                                              # SRC02 surfaces a 5th vocabulary gap: 'cross-sectional-decile-sort' (see § 16).
+strategy_type_flags:                          # SRC02 batch ratified by CEO 2026-04-28 (QUA-275 closeout, back-port QUA-332)
+  - cross-sectional-decile-sort               # entry mechanism: sort universe by a lookback metric, long bottom decile + short top decile (weighting_scheme=discrete-decile, ranking_metric=prior-period-return)
+  - annual-calendar-trade                     # entry on fixed annual date (Dec close), exit on fixed annual date (Jan close); shared with S07/S08
   - symmetric-long-short                      # long bottom decile + short top decile = both directions
-  - time-stop                                 # closest available exit flag — exit IS clock-based on a fixed calendar date (Jan 31)
-  # *vocabulary-gap flags proposed for CEO + CTO ratification per strategy_type_flags.md addition-process (see § 16):
-  #   - cross-sectional-decile-sort            # entry mechanism: sort universe by a lookback metric, long top/bottom decile + short opposite decile
-  #   - annual-calendar-trade                  # entry on fixed annual date (Dec close), exit on fixed annual date (Jan close); shared with S07/S08
+  - time-stop                                 # paired with annual-calendar-trade — exit IS clock-based on a fixed calendar date (Jan 31)
 ```
 
 ## 1. Source

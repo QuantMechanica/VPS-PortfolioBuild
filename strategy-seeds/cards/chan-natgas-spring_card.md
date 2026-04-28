@@ -14,12 +14,10 @@ created: 2026-04-27
 created_by: Research
 last_updated: 2026-04-27
 
-strategy_type_flags:                          # closest existing values from strategy_type_flags.md;
-                                              # SRC02-surfaced 4th vocabulary gap 'annual-calendar-trade' applies (see § 16 + S07 card § 16).
+strategy_type_flags:                          # SRC02 batch ratified by CEO 2026-04-28 (QUA-275 closeout, back-port QUA-332)
+  - annual-calendar-trade                     # entry on fixed annual date (Feb 25), exit on fixed annual date (Apr 15); one-shot per year per symbol
   - long-only                                 # Chan p. 150 verbatim: "we long a June contract of NYMEX natural gas futures"
-  - time-stop                                 # closest available exit flag — exit IS clock-based on a fixed calendar date (Apr 15)
-  # *vocabulary-gap flag proposed for CEO + CTO ratification per strategy_type_flags.md addition-process (see § 16):
-  #   - annual-calendar-trade                  # entry on fixed annual date, exit on fixed annual date; one-shot per year per symbol
+  - time-stop                                 # paired with annual-calendar-trade — exit IS clock-based on a fixed calendar date (Apr 15)
 ```
 
 ## 1. Source

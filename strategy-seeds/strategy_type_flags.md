@@ -1,6 +1,6 @@
 # Strategy Type Flags — V4-Mined Controlled Vocabulary
 
-> **Status (2026-04-27):** CEO-ratified (comment `10bceb95` on QUA-244, accepts coverage; struck `mean-revert-rsi` per Q1; kept `skew-regime-filter` per Q2; kept composite `asian-session-drift` / `intraday-session-pattern` per Q3; approved addition-process per Q4). Awaiting CTO technical-correctness ratification — specifically the §E Modality section against the V5 hard rules.
+> **Status (2026-04-28):** CEO-ratified (comment `10bceb95` on QUA-244, accepts coverage; struck `mean-revert-rsi` per Q1; kept `skew-regime-filter` per Q2; kept composite `asian-session-drift` / `intraday-session-pattern` per Q3; approved addition-process per Q4). SRC02 batch ratified by CEO 2026-04-28 in QUA-275 closeout (5 flag additions: `cointegration-pair-trade`, `mean-reach-exit`, `zscore-band-reversion`, `annual-calendar-trade`, `cross-sectional-decile-sort`); back-port tracked in QUA-332. Awaiting CTO technical-correctness ratification — specifically the §E Modality section against the V5 hard rules.
 > **Owner:** Research Agent.
 > **Scope:** This file is the **controlled vocabulary** of `strategy_type_flags` used in V5 Strategy Cards (`strategy-seeds/cards/_TEMPLATE.md` field, child issue under QUA-236). It is **mined from V4 archives** — every flag has at least one V4-named example. New flags MUST cite V4 evidence; otherwise propose a new source via Research before adding.
 
@@ -76,6 +76,30 @@ Card reviewers should expect 3–6 flags per card. Fewer than 2 is suspicious (u
 - **V4 examples**: SM_404 ADX5NR6 (ADX(5) + Narrow-Range-6, "Strong holdout PF, 6/8 walk-forward symbols" — `reference/v4_doc/star-ea-reference.md`).
 - **Disambiguation from**: `donchian-breakout` (NR-breakout requires an explicit range-contraction precondition; donchian fires on any N-bar extreme regardless of preceding compression); `vol-regime-gate` (NR is the entry, not just an overlay).
 
+### cointegration-pair-trade
+- **Definition**: Two-leg statistical-arbitrage entry triggered when the linear-combination spread of a cadf-cointegrated pair (Engle-Granger / arbitrage-pricing-theory framing) crosses ±N·σ of its training-set mean; long-spread on negative-z deviation, short-spread on positive-z deviation, with a hedge-ratio precomputed by OLS on the training window.
+- **V4 examples**: None — V4 had no statistical-arbitrage / cointegration EAs per the Mining-provenance table below; this flag was added in the SRC02 batch (CEO ratified 2026-04-28 in QUA-275 closeout) on first deployment.
+- **SRC02 example**: `chan-pairs-stat-arb` (SRC02_S01, `strategy-seeds/cards/chan-pairs-stat-arb_card.md` Header / § 4 Entry Rules) — Chan Ex 3.6 GLD/GDX pair, Ex 7.2 cadf hedge-ratio derivation, Ex 7.3 KO/PEP cointegration-vs-correlation counterexample.
+- **Disambiguation from**: `zscore-band-reversion` (single-leg series crossing its own ±N·σ band, no second-leg hedge); `signal-reversal-exit` (this flag is the *entry trigger*; the matching exit is `mean-reach-exit`); `carry-direction` (carry sets a directional bias on a single instrument, not a stationary spread between two instruments).
+
+### zscore-band-reversion
+- **Definition**: Single-leg mean-reversion entry triggered when a price series crosses ±N·σ of its own moving statistics (rolling mean and rolling stdev over a lookback window L); long when z ≤ −N, short when z ≥ +N. Distinct from `cointegration-pair-trade` because there is no second-leg hedge: the mean-reverting series IS the asset's own price history, not a spread.
+- **V4 examples**: None — V4 surviving sleeves contain no single-leg z-score-band MR EAs per the Mining-provenance table below; this flag was added in the SRC02 batch (CEO ratified 2026-04-28 in QUA-275 closeout) on first deployment.
+- **SRC02 example**: `chan-bollinger-es` (SRC02_S02, `strategy-seeds/cards/chan-bollinger-es_card.md` Header / § 4 Entry Rules) — Chan Ch 2 inline mechanical example pp. 22-23 (M5 ES E-mini ±2σ band MR, scalping-class hold); reuses `signal-reversal-exit` as its exit (entry-trigger reverses when price crosses back inside the ±1σ band).
+- **Disambiguation from**: `cointegration-pair-trade` (single-leg, no hedge-ratio second symbol); `signal-reversal-exit` (entry mechanism vs exit mechanism — they pair on a Bollinger-band MR card); `n-period-min-reversion` (z-score-band uses rolling mean ± stdev band, not n-bar minimum-extreme; long-and-short symmetric, not long-bias).
+
+### annual-calendar-trade
+- **Definition**: Entry on a fixed annual calendar date and exit on a fixed annual calendar date (one-shot per year per symbol), exploiting calendar-anchored seasonal phenomena in commodity futures (e.g., gasoline driving-season build, natural-gas pre-summer cooling demand). Distinct from `time-stop` because the exit date is the *same calendar date every year*, not "N bars after entry"; distinct from `session-close-seasonality` because the cycle is annual, not daily.
+- **V4 examples**: None — V4 had no annual-cycle commodity-seasonal EAs per the Mining-provenance table below; this flag was added in the SRC02 batch (CEO ratified 2026-04-28 in QUA-275 closeout) on first deployment.
+- **SRC02 example**: `chan-gasoline-rb-spring` (SRC02_S07, `strategy-seeds/cards/chan-gasoline-rb-spring_card.md` Header / § 4 Entry Rules) — Chan Ch 7 sidebar p. 149, RB long entry on Feb 25, exit on Apr 25, 14-year P&L 1995-2008. Also `chan-natgas-spring` (SRC02_S08, `strategy-seeds/cards/chan-natgas-spring_card.md`) — Chan Ch 7 sidebar p. 150, NG June-contract long entry on Feb 25, exit on Apr 15.
+- **Disambiguation from**: `session-close-seasonality` (daily session-close cycle, not annual); `intraday-day-of-month` (date-of-month repeats monthly, not annually); `time-stop` (clock-N-bars-from-entry, not fixed-calendar-date-of-year); `cross-sectional-decile-sort` (single-symbol calendar bet, not universe-ranked long-short).
+
+### cross-sectional-decile-sort
+- **Definition**: Entry mechanism that ranks a universe of candidate instruments by a `ranking_metric` (e.g., prior-period return, factor exposure, model-derived expected return), then takes long positions in the top decile and short positions in the bottom decile (or symmetric variants). Strategy-Card-level parameters: `weighting_scheme` ∈ {discrete-decile, continuous-distance, pca-rank-decile} and `ranking_metric` ∈ {prior-period-return, factor-exposure, expected-return-from-model}.
+- **V4 examples**: None — V4 surviving sleeves are single-instrument or pair-trade strategies; cross-sectional decile-sort over a managed universe was net-new with SRC02 (CEO ratified 2026-04-28 in QUA-275 closeout).
+- **SRC02 example**: Path 2 / cross-sectional family — `chan-january-effect` (SRC02_S05, `strategy-seeds/cards/chan-january-effect_card.md` Header / § 4 Entry Rules — Chan Ch 7 Ex 7.6 small-cap decile sort by Dec-month return, weighting=discrete-decile, ranking=prior-period-return); `chan-yoy-same-month` (SRC02_S06, `strategy-seeds/cards/chan-yoy-same-month_card.md` — Chan Ex 7.7 monthly cycle, weighting=discrete-decile, ranking=year-ago-same-month-return); `chan-khandani-lo-mr` (SRC02_S03, `strategy-seeds/cards/chan-khandani-lo-mr_card.md` — Chan Ex 3.7/3.8 daily-rebalance, weighting=continuous-distance from market mean, ranking=prior-period-return); `chan-pca-factor` (SRC02_S04, `strategy-seeds/cards/chan-pca-factor_card.md` — Chan Ex 7.4 rolling-window eigen-decomposition, weighting=pca-rank-decile, ranking=expected-return-from-model).
+- **Disambiguation from**: `n-period-max-continuation` / `n-period-min-reversion` (single-instrument N-bar extreme, not universe-ranked); `carry-direction` (single-instrument signed bias, not relative ranking); `annual-calendar-trade` (single-symbol calendar bet, not universe sort); `regime-filter-multi` (gates a base entry, does not produce ranked long/short positions itself).
+
 *(Note: a draft `mean-revert-rsi` flag was proposed in the v1 draft but **struck per CEO ratification 2026-04-27** because it had no V4 SM_XXX deployment evidence. Per OWNER directive — vocabulary is mined from V4, not pre-stocked; if a real V5 card surfaces an RSI-mean-reversion strategy, propose the flag at that point via the Research-issue + source-citation + CEO/CTO process documented at the bottom of this file.)*
 
 ---
@@ -105,7 +129,13 @@ Card reviewers should expect 3–6 flags per card. Fewer than 2 is suspicious (u
 ### signal-reversal-exit
 - **Definition**: Exit when the same signal that triggered entry reverses (carry-flip, posterior-blend flip, target-exposure crosses through zero), often debounced over 2–3 consecutive bars.
 - **V4 examples**: Two-Regime Trend-Following (V4 inspiration spec §4: target-exposure reversal exit + posterior-blend flip is the *primary* mechanism); Good-Carry-Bad-Carry (V4 inspiration spec §4: 2-bar carry-direction-flip exit + 3-bar skew-regime-flip exit).
-- **Disambiguation from**: `donchian-trail` (signal logic, not price extreme); `regime-stand-down-exit` (driven by *signal value*, not by the *detector failing diagnostics*).
+- **Disambiguation from**: `donchian-trail` (signal logic, not price extreme); `regime-stand-down-exit` (driven by *signal value*, not by the *detector failing diagnostics*); `mean-reach-exit` (signal-reversal fires on *value flip through zero or threshold*, while mean-reach fires on *return into a band around the mean*).
+
+### mean-reach-exit
+- **Definition**: Exit when the spread (for pair-trade) or z-score (for single-leg MR) returns inside a band [-M·σ, +M·σ] around the training-set mean, M typically 0.5–1.0; the position closes because the mean-reversion thesis has played out, not because the entry signal flipped sign. Standard pairing with `cointegration-pair-trade` (Engle-Granger spread) and `zscore-band-reversion` (single-leg Bollinger-band MR).
+- **V4 examples**: None — V4 surviving sleeves had no statistical-arbitrage or single-leg MR-band EAs per the Mining-provenance table below; this flag was added in the SRC02 batch (CEO ratified 2026-04-28 in QUA-275 closeout) on first deployment.
+- **SRC02 example**: `chan-pairs-stat-arb` (SRC02_S01, `strategy-seeds/cards/chan-pairs-stat-arb_card.md` Header / § 5 Exit Rules) — Chan Ex 3.6 §B.2 ("exit any spread position when its value is within 1 standard deviation of its mean") + Ex 7.5 p. 142 ("This target price [the mean spread μ] can be used together with the half-life as exit signals (exit when either criterion is met)"). Pairs in Chan's construction with a `time-stop` set to the OU half-life — whichever fires first.
+- **Disambiguation from**: `signal-reversal-exit` (signal-reversal is value-flip through zero or a directional threshold; mean-reach is return into a band around the mean — for a pair-trade the entry-signal "reversal" happens at the band boundary itself, so mean-reach is the structurally cleaner descriptor); `time-stop` (clock-only, no price condition); `donchian-trail` / `atr-trailing-stop` (move with extremes; mean-reach is anchored to the training-set mean and stationary).
 
 ### regime-stand-down-exit
 - **Definition**: Exit triggered when the regime detector itself fails its self-validation diagnostics (e.g. BIC gap collapses, transition-matrix diagonals < 0.9, state-mean separation degenerates), and the EA refuses to take new positions until diagnostics restore.
@@ -215,6 +245,7 @@ These flags are already named in `cards/_TEMPLATE.md` §10 (`gridding`, `scalpin
 | `reference/v4_doc/star-ea-reference.md` | `intraday-day-of-month` (Gotobi), `asian-session-drift` (GoldAsianDrift), `intraday-session-pattern` (SilverBullet, ProGo), `narrow-range-breakout` (ADX5NR6) |
 | `strategy-seeds/v5_locked_basket_2026-04-18.md` | SM_124 / SM_186 / SM_221 / SM_345 / SM_157 / SM_640 / SM_882 / SM_890 SM-name registry |
 | `lessons-learned/V4_LEARNINGS_ARCHIVE_2026-04-21.md` + `CLAUDE.md` | `gridding`, `scalping`, `ml-required`, `pyramiding`, `news-blackout`, `friday-close-flatten` modality flags |
+| `strategy-seeds/sources/SRC02/` (Chan 2009 *Quantitative Trading*) — added 2026-04-28 via QUA-275/QUA-332 | `cointegration-pair-trade` (S01), `mean-reach-exit` (S01), `zscore-band-reversion` (S02), `annual-calendar-trade` (S07/S08), `cross-sectional-decile-sort` (S03/S04/S05/S06) |
 
 ## Ratification record
 
@@ -226,6 +257,20 @@ CEO ratified the v1 draft on 2026-04-27 (QUA-244 comment `10bceb95`) with the fo
 4. **Addition process — APPROVED.** New flags require: a Research issue + V4 (or new-source) citation + CEO/CTO ratification before being appended here under the matching section. Do not add silently.
 
 CTO technical-correctness ratification (specifically §E Modality vs V5 hard rules) is pending.
+
+### SRC02 batch (5 flag additions) — CEO ratified 2026-04-28 (QUA-275 closeout, QUA-332 back-port)
+
+CEO ratified the following 5 flag additions on the QUA-275 (SRC02 Chan extraction) closeout, applying the addition-process documented above (V4-or-new-source citation + Research issue + CEO/CTO sign-off). Back-port into this file tracked under QUA-332. Source: Chan, Ernest P. (2009). *Quantitative Trading: How to Build Your Own Algorithmic Trading Business*. Wiley.
+
+| Section | Flag | Card sourcing it | Notes |
+|---|---|---|---|
+| A. Entry-mechanism | `cointegration-pair-trade` | SRC02_S01 `chan-pairs-stat-arb` | cadf-cointegrated 2-leg spread crosses ±N·σ z-score (Engle-Granger / APT thesis) |
+| C. Exit-mechanism* | `mean-reach-exit` | SRC02_S01 `chan-pairs-stat-arb` | spread returns inside [−M·σ, +M·σ] band (mean-reach not stop-out); filed under §B Exit-mechanism in this file (CEO comment used "C" colloquially) |
+| A. Entry-mechanism | `zscore-band-reversion` | SRC02_S02 `chan-bollinger-es` | single-leg price crosses ±N·σ band of own moving statistics; reuses existing `signal-reversal-exit` exit |
+| A. Entry-mechanism | `annual-calendar-trade` | SRC02_S07 `chan-gasoline-rb-spring`, SRC02_S08 `chan-natgas-spring` | calendar-anchored entry/exit on commodity-futures seasonals |
+| A. Entry-mechanism | `cross-sectional-decile-sort` | SRC02_S03 `chan-khandani-lo-mr`, SRC02_S04 `chan-pca-factor`, SRC02_S05 `chan-january-effect`, SRC02_S06 `chan-yoy-same-month` | parameterised by Strategy-Card-level `weighting_scheme` ∈ {discrete-decile, continuous-distance, pca-rank-decile} and `ranking_metric` ∈ {prior-period-return, factor-exposure, expected-return-from-model} |
+
+CTO technical-correctness ratification of the SRC02 §A/§B definitions remains pending (rolls up with the prior-batch CTO ratification).
 
 ---
 
