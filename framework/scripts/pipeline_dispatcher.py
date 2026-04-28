@@ -9,8 +9,8 @@ from pathlib import Path
 from typing import Any
 
 TERMINALS = ("T1", "T2", "T3", "T4", "T5")
-REQUIRED_JOB_FIELDS = ("ea_id", "version", "symbol", "phase", "sub_gate_config_hash")
-MATRIX_REQUIRED_FIELDS = ("ea_id", "version", "phase", "sub_gate_config_hash", "symbols")
+REQUIRED_JOB_FIELDS = ("ea_id", "version", "symbol", "phase", "sub_gate_config_hash", "setfile_path")
+MATRIX_REQUIRED_FIELDS = ("ea_id", "version", "phase", "sub_gate_config_hash", "setfile_path", "symbols")
 MATRIX_SYMBOL_COUNT = 36
 AFFINITY_TTL_SECONDS = 24 * 60 * 60
 RECENT_WINDOW_SECONDS = 24 * 60 * 60
@@ -43,7 +43,7 @@ def validate_matrix_payload(payload: dict[str, Any]) -> tuple[dict[str, str], li
         if field not in payload:
             raise ValueError(f"matrix.{field} is required")
     base_job: dict[str, str] = {}
-    for field in ("ea_id", "version", "phase", "sub_gate_config_hash"):
+    for field in ("ea_id", "version", "phase", "sub_gate_config_hash", "setfile_path"):
         base_job[field] = _require_non_empty_string(payload.get(field), field)
     raw_symbols = payload.get("symbols")
     if not isinstance(raw_symbols, list):

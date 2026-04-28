@@ -25,6 +25,7 @@ def base_job(symbol: str = "EURUSD.DWX") -> dict[str, str]:
     return {
         "ea_id": "QM5_1001",
         "phase": "P1",
+        "setfile_path": "framework/EAs/QM5_1001_example/sets/QM5_1001_example_EURUSD.DWX_H1_backtest.set",
         "sub_gate_config_hash": "cfg001",
         "symbol": symbol,
         "version": "v1",
@@ -50,6 +51,7 @@ class PipelineDispatcherTests(unittest.TestCase):
             "ea_id": "QM5_1001",
             "version": "v1",
             "phase": "P1",
+            "setfile_path": "framework/EAs/QM5_1001_example/sets/QM5_1001_example_EURUSD.DWX_H1_backtest.set",
             "sub_gate_config_hash": "cfg001",
             "symbols": [f"S{i:02d}.DWX" for i in range(MATRIX_SYMBOL_COUNT)],
         }
@@ -62,6 +64,7 @@ class PipelineDispatcherTests(unittest.TestCase):
             "ea_id": "QM5_1001",
             "version": "v1",
             "phase": "P1",
+            "setfile_path": "framework/EAs/QM5_1001_example/sets/QM5_1001_example_EURUSD.DWX_H1_backtest.set",
             "sub_gate_config_hash": "cfg001",
             "symbols": [f"S{i:02d}.DWX" for i in range(MATRIX_SYMBOL_COUNT - 1)],
         }
@@ -75,6 +78,7 @@ class PipelineDispatcherTests(unittest.TestCase):
             "ea_id": "QM5_1001",
             "version": "v1",
             "phase": "P1",
+            "setfile_path": "framework/EAs/QM5_1001_example/sets/QM5_1001_example_EURUSD.DWX_H1_backtest.set",
             "sub_gate_config_hash": "cfg001",
             "symbols": symbols,
         }
@@ -87,6 +91,7 @@ class PipelineDispatcherTests(unittest.TestCase):
             "ea_id": "QM5_1001",
             "version": "v1",
             "phase": "P1",
+            "setfile_path": "framework/EAs/QM5_1001_example/sets/QM5_1001_example_EURUSD.DWX_H1_backtest.set",
             "sub_gate_config_hash": "cfg001",
             "symbols": symbols,
         }
