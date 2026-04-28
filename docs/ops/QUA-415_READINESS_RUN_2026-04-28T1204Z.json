@@ -1,0 +1,12 @@
+{
+  "issue": "QUA-415",
+  "ts_utc": "2026-04-28T12:04:20Z",
+  "verifier": "infra/scripts/Verify-QUA415Readiness.ps1",
+  "result": {
+    "status": "PASS",
+    "issue": "QUA-415",
+    "reject_code": "BACKTEST_REJECTED_NO_SETFILE",
+    "scheduled_status": "scheduled",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_SRC04_S03_lien_fade_double_zeros\\sets\\QM5_SRC04_S03_lien_fade_double_zeros_EURUSD.DWX_H1_backtest.set"
+  }
+}
