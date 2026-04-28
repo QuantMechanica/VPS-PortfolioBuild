@@ -20,3 +20,4 @@
 2026-04-28T13:02:18.3305607+02:00 | blocked checkpoint: CTO review-only gate still pending.
 2026-04-28T13:03:16.1260264+02:00 | blocked timeline: CTO review gate pending.
 2026-04-28T13:04:14.6633378+02:00 | blocked checkpoint: review-only CTO decision pending.
+2026-04-28T13:05:18.6205087+02:00 | blocked checkpoint entry: CTO review-only gate unchanged.
