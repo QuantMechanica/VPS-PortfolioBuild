@@ -1,0 +1,9 @@
+{
+  "issue": "QUA-415",
+  "timestamp_utc": "2026-04-28T12:44:00Z",
+  "signal_found": false,
+  "match_count": 0,
+  "matches": [],
+  "unblock_owner": "Pipeline-Operator",
+  "unblock_action": "Post workflow confirmation commit hash proving active setfile_path dispatch consumption."
+}
