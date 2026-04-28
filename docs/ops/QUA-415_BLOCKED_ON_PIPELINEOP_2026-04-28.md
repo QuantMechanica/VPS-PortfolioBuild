@@ -31,3 +31,9 @@ Timestamp (UTC): 2026-04-28T12:01:00Z
 - Active repo head at wake: `549f749`.
 - Unblock owner: `Pipeline-Operator`.
 - Unblock action: `Post workflow confirmation commit hash proving active setfile_path dispatch consumption.`
+
+## Heartbeat Update (2026-04-28T12:38:29Z)
+- Cleanup applied: accidental unrelated change from `0165bd2` was reverted by `8a1187d`.
+- QUA-415 blocker note remains active and scoped correctly.
+- Unblock owner: `Pipeline-Operator`.
+- Unblock action: `Post workflow confirmation commit hash proving active setfile_path dispatch consumption.`
