@@ -1,0 +1,86 @@
+# DL-039 — Quality-Business Hire (9th-Agent Override + G0 Review Reroute)
+
+**Date:** 2026-04-28
+**Authority:** OWNER directive 2026-04-28 ~12:30 local (relayed via Board Advisor); CEO unilateral under DL-017 (hires) + DL-023 (broadened authority v2). 9th-agent cap from CEO V5 Org Proposal § 6 explicitly overridden by OWNER.
+**Originating issue:** [QUA-429](/QUA/issues/QUA-429)
+**Recording issue:** [QUA-429](/QUA/issues/QUA-429) (this same issue carries the disposition; no separate recording task — directive→action was same heartbeat).
+
+## Decision
+
+Hired **Quality-Business** as the V5 second-eye reviewer on Strategy Cards. QB is the 9th active agent, exceeding the 8-agent anti-sprawl cap from CEO V5 Org Proposal § 6 — OWNER explicitly waived that cap on this directive ("Hire right now please and reroute those tasks to him. CEO can approve. We should get things going!").
+
+**Canonical agent:** `f2c79849-a19e-4bc0-8737-438dd50ada64` (urlKey `quality-business`).
+
+**Adapter / runtime:**
+
+- `claude_local`, model `claude-opus-4-7` (cache-friendly long-form economic-thesis reasoning; matches Research's adapter).
+- `cwd: C:\QM\repo` (read-only — QB does not write source; verdicts are issue comments).
+- Heartbeat: `enabled=true, intervalSec=14400, wakeOnDemand=true, maxConcurrentRuns=3` — event-driven primary, 4h timer fallback.
+- Reports to CEO (`reportsTo: 7795b4b0-8ecd-46da-ab22-06def7c8fa2d`); strategically reports to OWNER via monthly business review.
+- Instructions sourced from BASIS `paperclip-prompts/quality-business.md` (V5 BASIS, migrated from Notion 2026-04-26).
+
+## Charter (advisory + economic, never sole gate)
+
+QB is **the second eye, not the sole gate**. APPROVED requires CEO **and** QB. Per BASIS:
+
+1. **G0 Strategy Card portfolio-fit review** with CEO — pre-screens cards before Development burns P1 build cycles.
+2. **Economic-thesis depth check** — "Is this strategy's edge plausible vs known market microstructure?"
+3. **Author-claim verification** — does the source's performance claim hold up under skeptical reading?
+4. **PASS cross-challenge at P2** — mandatory 2-agent check on PASS decisions; QB's lens is business/strategic, not technical.
+5. **Portfolio-fit checks at P9** — when first PASS-eligible EA reaches P9, QB partners with OWNER on portfolio inclusion.
+6. **Monthly business review** to OWNER (first Monday).
+
+QB does **not** edit code, edit prompts, run backtests, dispatch work, or unilaterally reject Strategy Cards (proposes; CEO decides). QB does not touch T6 ever.
+
+## Reroute on landing — G0 review queue
+
+Per QUA-429, CEO routed the following to QB on hire (rollup issue [QUA-438](/QUA/issues/QUA-438), `assigneeAgentId=f2c79849-a19e-4bc0-8737-438dd50ada64`):
+
+| Source | Cards routed to QB |
+|---|---|
+| **SRC02 Chan QT** | `chan-pairs-stat-arb_card.md` (QUA-284) — note the QUA-429 task said "8 cards" but only S01 is currently in Chan-QT scope; the broader chan-AT inventory belongs to SRC05 below |
+| **SRC03 Williams** | QUA-314 (S01 williams-vol-bo) — card file not yet on disk; QB to flag missing-card to Research |
+| **SRC04 Lien** (S03 already P1-shipped, skip) | QUA-341, QUA-343, QUA-344, QUA-345, QUA-346, QUA-347, QUA-348, QUA-349 + `lien-dbb-pick-tops_card.md` (no QUA-issue ref yet) |
+| **SRC05 Chan AT WS** | QUA-352 in_review; cards arrive over heartbeats — QB watches and verdicts as each lands. The 12 `chan-at-*` cards already on disk fall here. |
+
+**Excluded from QB review:** SRC01 Davey 5 cards — already CEO interim-APPROVED at QUA-276; proceed through Development without retroactive QB. New cards from SRC02+ get QB review going forward.
+
+**Verdict format** (per BASIS):
+
+- `APPROVED` (with edge mechanism + portfolio-fit + author-claim notes)
+- `REJECTED — <thin-thesis|unfalsifiable-claim|duplicate-archetype|source-non-reputable|over-concentration>` with reason + suggested next
+- `NEEDS_CLARIFICATION — <ask>` with specific question
+
+CEO retains G0 final-approval authority — QB is the second eye, not the sole gate.
+
+## Race-condition note (parallel hire collision)
+
+A parallel orchestrator (likely Board Advisor or another CEO heartbeat instance) hired QB at `2026-04-28T12:54:47Z` — ~20s before this CEO heartbeat completed its own hire at `12:55:08Z`. The duplicate landed as `Quality-Business 2` (`0ab3d743-e3fb-44e5-8d35-c05d0d78715d`) with auto-suffixed name. The duplicate has been disabled (`heartbeat.enabled=false, wakeOnDemand=false`) to make it inert; **board deletion is required to fully remove it** (CEO lacks DELETE-agent permission).
+
+Lesson logged to memory: hires need a "list-existing-agents-with-includeInactive=true-before-creating" check, not just a default `agent-configurations` GET — the default list filters out idle agents that haven't heartbeat yet. Both Quality-Business and Quality-Tech don't appear in the default list because they've never run.
+
+## Cross-links
+
+- **DL-017 ↔ DL-039.** DL-039 is the second hire materialised under DL-017's CEO hire-approval waiver (after Wave 1 hires DL-013/DL-014). The 9th-agent override is OWNER-additional to DL-017 — DL-017 covers "CEO can hire", QUA-429 OWNER directive covers "specifically QB, specifically now, even past the 8-cap".
+- **DL-029 ↔ DL-039.** DL-029's research workflow names the Research → QB → Development gate; DL-039 fills the QB seat that gate had been waiting on. With QB live, the gate is no longer interim-CEO-only.
+- **DL-030 ↔ DL-039.** DL-030 names QB as the Wave 2 named reviewer on Class 2 (Strategy Card Review-only) issues. DL-039 transitions Class 2 from "interim CEO + Board Advisor" to "CEO + Quality-Business" as participants on new cards. (Existing in-flight cards keep their current participants until close-out.)
+
+## What changes immediately
+
+1. New Strategy Card child issues in V5 Strategy Research (project `b2adcc7f-064f-47c7-8563-d1c917639231`) get `executionPolicy.participants` set to `[CEO, QB]` instead of `[CEO, Board Advisor]`. Existing in-flight cards: not retroactively repolicied.
+2. CEO ceases to be sole G0-approver; QB AGREE-or-DISAGREE binds.
+3. CEO V5 Org Proposal § 6 active-agent count: 8 → 9. Anti-sprawl rule remains in force for further hires; this is a one-time OWNER override.
+
+## What does not change
+
+- T6 boundary (OFF LIMITS for QB).
+- Statistical / overfit / PBO review at P7 stays Quality-Tech's lane.
+- CTO EA-vs-Card technical review stays CTO's lane.
+- DL-026 commit-hash-in-close-out rule still applies to Development (not QB; QB doesn't ship code).
+- DL-029 binding-sequential research workflow unchanged.
+
+## Verification
+
+- `GET /api/agents/f2c79849-a19e-4bc0-8737-438dd50ada64` returns `status=idle`, `reportsTo=CEO`, model `claude-opus-4-7`, instructions present at the managed-bundle path.
+- [QUA-438](/QUA/issues/QUA-438) created and assigned to QB with the SRC02-SRC05 G0 backlog dispatched.
+- Doc-KM follow-up tracked separately to update `processes/process_registry.md` § "Active agents" and to backfill DL-030 participants table to name QB explicitly.
