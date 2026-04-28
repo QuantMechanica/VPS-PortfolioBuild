@@ -1,16 +1,17 @@
 ---
 authored_by: Research Agent
 authored_on: 2026-04-27
-last_updated: 2026-04-27
+last_updated: 2026-04-28
 parent_issue: QUA-191
 status: proposed_for_owner_ceo_ratification
 folder_root: G:\My Drive\QuantMechanica\Ebook\PDF resources\
 file_count_total: 59
 file_count_unique: 53
 file_count_duplicates: 6
-tier_schema:                                  # OWNER directive 2026-04-27 ~17:28 local — T1/T2/T3 sequential mandate
+tier_schema:                                  # OWNER directive 2026-04-27 ~17:28 local — T1/T2/T3 sequential mandate; T1.5 inserted per QUA-400 Rule 6 / QUA-416
   T1: curated_local_pdfs                      # 57 PDFs, OWNER-supplied; processed first
-  T2: named_public_containers                 # OWNER-named (Babypips, Forex Factory, MQL5, Grimes blog, etc.); processed after T1
+  T1_5: drive_quantmechanica_v4_archive       # Google Drive `QuantMechanica` V4-era research artifacts; INSPIRATION ONLY — every V5 card cites the original book/paper/blog the V4 doc itself cited, NEVER the V4 doc as primary; processed after T1, before T2
+  T2: named_public_containers                 # OWNER-named (Babypips, Forex Factory, MQL5, Grimes blog, etc.); processed after T1.5
   T3: open_internet_autonomous_discovery      # Research finds these itself; processed after T2; steady-state operating mode
 v0_filter:
   - mechanical
@@ -186,13 +187,58 @@ The earlier wake context mentioned firecrawl + paper-context-resolver for follow
 
 ---
 
+# T1.5 — Drive `QuantMechanica` V4 archive (OWNER + CEO via [QUA-400](/QUA/issues/QUA-400) Rule 6 / [QUA-416](/QUA/issues/QUA-416))
+
+T1.5 sits **between T1 and T2**. Activates **after** the T1 PDF queue is drained (or partially-exhausted with explicit CEO + OWNER ratification of pivoting). At time of registration the queue ahead of T1.5 is: SRC04 (Lien) in flight, SRC05 (Chan, *Algorithmic Trading*) pending [QUA-352](/QUA/issues/QUA-352), then the remainder of T1 Tier A → Tier B → Tier C. **DO NOT pre-empt SRC05+.** First T1.5 action when dispatched is a survey-pass over `Company\Research\strategies\` only, then back to CEO for SRC0N spawn under v3 autonomy.
+
+## What the resource is
+
+The Google Drive `QuantMechanica` tree is the **V4-era output of this same project** — research notes, strategy-database entries, marketplace EAs, and historical artifacts. It is high-signal because it represents work the OWNER + prior agents already did on the same problem domain; it is **not a primary research source** because V4 was a different methodology and the V5 clean-slate rule binds (V5 strategies are derived only from external primary sources — books, papers, blogs — never from V4's own work product).
+
+## Locations registered
+
+| # | path | purpose | priority |
+|---|---|---|---|
+| T1.5-01 | `G:\My Drive\QuantMechanica\Company\Research\strategies\` | V4-era research output (concept memos, strategy notes) | highest signal — survey-pass first |
+| T1.5-02 | `G:\My Drive\QuantMechanica\MT5 Marketplace\` | V4 SM_XXX strategy folders (named-strategy implementations) | high — survey-pass second |
+| T1.5-03 | `G:\My Drive\QuantMechanica\Website\strategy-database\strategies\` | V4 strategy database (catalog of strategies + metadata) | high |
+| T1.5-04 | `G:\My Drive\QuantMechanica\Backups\`, `Archive\`, `Reviews\` | historical artifacts (older drafts, archived reviews) | low — only if T1.5-01..03 yield is exhausted |
+
+## Binding citation rule (OWNER + V5 clean-slate, non-negotiable)
+
+1. T1.5 docs are **inspiration / concept references only**, never V5 primary sources.
+2. Every V5 Strategy Card produced from a Drive doc **MUST cite the original book / paper / blog the V4 doc itself cited** — NOT the V4 doc as primary source. The V4 doc may be cited at most as `role: secondary` per `_TEMPLATE.md` § 1, with the original work as `role: primary`.
+3. If the V4 doc is **uncited** (no traceable upstream primary source), the resulting V5 strategy is `C-tier` and tagged `BLOCKED_NO_PRIMARY_SOURCE` until traceable. Such strategies do not advance past G0 until the upstream source is identified or the OWNER explicitly waives the rule for that card.
+4. **Backtest results from V4 / Drive are NEVER cited and NEVER imported as PASS evidence into V5.** V4 backtests used different methodology, different brokers, different data, and different risk rules — they have zero evidentiary weight in V5's pipeline. V5 P0–P5 must produce its own results from scratch.
+5. V4 SM_XXX names stay in **V4 namespace**; V5 reimplementations get a fresh `ea_id` in the 1000–9999 range per the Magic Formula registry. No V4 SM_XXX → V5 ea_id aliasing.
+
+## Survey-pass methodology (when T1.5 dispatch opens)
+
+Same shape as the T2 survey-pass:
+
+1. **Inventory** — list all docs in `T1.5-01` (`Company\Research\strategies\`), tag each with: V4 doc title, claimed strategy archetype, **upstream primary source citation** (or `UNCITED`), V4 backtest claim (recorded but not imported), v5_flags (mechanical / discretionary / ML / SMC / etc.).
+2. **Tier per inventory row** — A/B/C/D using the same Tier definitions as T1, plus the `BLOCKED_NO_PRIMARY_SOURCE` flag for `UNCITED` rows.
+3. **Propose extraction order** for CEO + OWNER ratification — only `cited` rows are candidates; `UNCITED` rows are parked under `BLOCKED_NO_PRIMARY_SOURCE` until traceable.
+4. **Repeat** for `T1.5-02` (MT5 Marketplace), then `T1.5-03` (strategy-database).
+5. `T1.5-04` (Backups / Archive / Reviews) is touched only if `T1.5-01..03` is exhausted and CEO + OWNER ratify pivoting deeper.
+
+## T1.5 acceptance criteria (when dispatch opens)
+
+- [ ] Survey-pass inventory file at `strategy-seeds/sources/_t1_5_pending/quantmechanica-drive/inventory.md` listing each doc with primary-source citation status
+- [ ] CEO + OWNER ratify which `cited` rows enter the active per-doc SRC queue
+- [ ] Same ONE-source-at-a-time rule binds: T1.5 doesn't relax it
+- [ ] Diversity-bias rules (frontmatter `diversity_bias_rules`) apply to T1.5 picks
+- [ ] Any `UNCITED` row stays `BLOCKED_NO_PRIMARY_SOURCE`; Research does not invent a citation to unblock
+
+---
+
 # T2 — Named public containers (OWNER-named at 2026-04-27 ~17:25)
 
 T2 sources are **public-internet containers** (forums, blog archives, article aggregators, paper repositories). Per the OWNER 17:25 source-class taxonomy directive, the granularity differs from T1:
 
 > **A book is a source, a forum is a CONTAINER of sources.** Each high-quality thread / post / paper inside the container becomes its own SRC sub-issue, NOT one container = one source.
 
-**T2 dispatch begins only after T1 is drained or partially-exhausted with CEO + OWNER ratification of pivoting.** When T2 dispatch opens, Research first runs a survey-pass over each container (sampling N threads / posts / papers, tagging each by quality tier A/B/C and v5_flags), then proposes a per-thread / per-post extraction order for CEO + OWNER ratification — same shape as the T1 queue above.
+**T2 dispatch begins only after T1 AND T1.5 are drained or partially-exhausted with CEO + OWNER ratification of pivoting.** When T2 dispatch opens, Research first runs a survey-pass over each container (sampling N threads / posts / papers, tagging each by quality tier A/B/C and v5_flags), then proposes a per-thread / per-post extraction order for CEO + OWNER ratification — same shape as the T1 queue above.
 
 ## T2 container manifest (proposed_order TBD; per-container survey-pass at T2 dispatch)
 
