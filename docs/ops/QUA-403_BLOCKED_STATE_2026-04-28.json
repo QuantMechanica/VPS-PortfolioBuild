@@ -1,20 +1,23 @@
 {
   "issue": "QUA-403",
-  "date": "2026-04-28",
-  "status": "blocked",
   "strategy_id": "SRC04_S04",
-  "card_path": "strategy-seeds/cards/lien-waiting-deal_card.md",
-  "card_header": {
-    "ea_id": "TBD",
-    "status": "DRAFT"
-  },
-  "registry_path": "framework/registry/ea_id_registry.csv",
-  "registry_has_src04_s04": false,
-  "unblock_owner": "CTO+CEO",
-  "unblock_action": [
-    "Approve strategy card status",
-    "Allocate EA ID and register SRC04_S04",
-    "Redispatch Development"
+  "blocked": true,
+  "blockers": [
+    {
+      "owner": "CTO+CEO",
+      "action": "Approve strategy card and assign ea_id",
+      "satisfied": false
+    },
+    {
+      "owner": "Registry owner",
+      "action": "Add SRC04_S04 mapping in ea_id_registry.csv",
+      "satisfied": false
+    }
   ],
-  "last_checked": "2026-04-28T13:50:15+02:00"
+  "observed": {
+    "card_ea_id": "TBD",
+    "card_status": "DRAFT",
+    "registry_has_src04_s04": false
+  },
+  "checked_at": "2026-04-28T15:25:48+02:00"
 }
