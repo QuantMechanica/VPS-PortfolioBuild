@@ -1,0 +1,15 @@
+{
+  "issue": "QUA-392",
+  "status": "blocked",
+  "blocker_id": "governance_card_status_not_approved",
+  "blocked_since_date": "2026-04-28",
+  "owner": ["CEO", "Research"],
+  "unblock_conditions": [
+    "strategy-seeds/cards/lien-dbb-trend-join_card.md status: APPROVED",
+    "explicit CEO waiver permitting DRAFT execution for QUA-392"
+  ],
+  "current_card_status": "DRAFT",
+  "dispatch_constraint": "No Pipeline-Operator dispatch until CTO approval",
+  "mode": "event-driven-hold",
+  "next_dev_action_on_unblock": "Refresh CTO packet and re-submit CTO gate"
+}
