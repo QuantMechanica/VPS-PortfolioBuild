@@ -5,6 +5,8 @@ param(
     [string]$ScriptRelativePath = "infra\monitoring\Invoke-PaperclipStaleLockWatchdog.ps1",
     [int]$MinuteOffset = 3,
     [int]$StaleAfterMinutes = 15,
+    [int]$RunningLockMaxMinutes = 90,
+    [string]$AssigneeAgentId = $(if ($env:PAPERCLIP_AGENT_ID) { $env:PAPERCLIP_AGENT_ID } else { "" }),
     [switch]$FailOnFinding,
     [switch]$RunNow
 )
@@ -23,7 +25,10 @@ if ($startBoundary -le (Get-Date)) {
     $startBoundary = $startBoundary.AddMinutes(15)
 }
 
-$actionArgs = "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`" -StaleAfterMinutes $StaleAfterMinutes"
+$actionArgs = "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`" -StaleAfterMinutes $StaleAfterMinutes -RunningLockMaxMinutes $RunningLockMaxMinutes"
+if (-not [string]::IsNullOrWhiteSpace($AssigneeAgentId)) {
+    $actionArgs += " -AssigneeAgentId `"$AssigneeAgentId`""
+}
 if ($FailOnFinding.IsPresent) {
     $actionArgs += " -FailOnFinding"
 }

@@ -55,7 +55,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Safe to re-run (`Register-ScheduledTask -Force`) and overlap-safe (`MultipleInstances=IgnoreNew`).
 - `scripts/Install-PaperclipStaleLockWatchdogTask.ps1`
   - Registers Task Scheduler job `QM_PaperclipStaleLockWatchdog_15min` as `SYSTEM`.
-  - Runs `monitoring/Invoke-PaperclipStaleLockWatchdog.ps1 -StaleAfterMinutes 15 -FailOnFinding` every 15 minutes (monitor-only).
+  - Runs `monitoring/Invoke-PaperclipStaleLockWatchdog.ps1 -StaleAfterMinutes 15 -RunningLockMaxMinutes 90 [-AssigneeAgentId <id>] -FailOnFinding` every 15 minutes (monitor-only).
   - Safe to re-run (`Register-ScheduledTask -Force`) and overlap-safe (`MultipleInstances=IgnoreNew`).
 - `scripts/Install-QUA95BlockerRefreshTask.ps1`
   - Registers Task Scheduler job `QM_QUA95_BlockerRefresh` as `SYSTEM` (hourly by default).
@@ -327,7 +327,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\monitor
 Install the scheduler task (idempotent):
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-PaperclipStaleLockWatchdogTask.ps1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-PaperclipStaleLockWatchdogTask.ps1 -StaleAfterMinutes 15 -RunningLockMaxMinutes 90
 ```
 
 Git index-lock monitor (every 10 minutes, PC1-00):
