@@ -17,15 +17,21 @@ Proof that factory backtest launcher paths resolve `target_terminal:any` into co
 ```powershell
 python -m unittest C:\QM\repo\framework\scripts\tests\test_pipeline_dispatcher.py
 powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\framework\scripts\run_backtest_smoke.ps1 -Terminal any -DryRun
+python C:\QM\repo\framework\scripts\resolve_backtest_target.py --job-json <job.json> --state-json <dispatch_state.json> --event start
+python C:\QM\repo\framework\scripts\resolve_backtest_target.py --job-json <job.json> --state-json <dispatch_state.json> --event complete
 ```
 
 ## Verification results
 
-- Unit tests: `Ran 8 tests ... OK`
+- Unit tests: `Ran 10 tests ... OK`
 - Dry run evidence lines:
   - `run_backtest_smoke.dispatch_status=duplicate`
   - `run_backtest_smoke.dispatch_terminal=T1`
   - Preview command includes `-Terminal T1`
+- Completion lifecycle evidence:
+  - start event returns `status=scheduled`
+  - complete event returns `status=released`
+  - persisted `running.<terminal>` returns to `0`
 
 ## Runtime state path
 

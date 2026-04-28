@@ -32,6 +32,7 @@ Pipeline-Operator receives one or more runnable backtest jobs with `target_termi
 5. Otherwise, from least-loaded set, pick the terminal with the lowest run-count in the last 24h.
 6. If still tied, round-robin across the tied terminals (stable progression by previous selection index).
 7. Write reservation into dedup index and increment running count for selected terminal.
+8. On run completion, call completion event and decrement running count for the assigned terminal.
 
 ## Steps
 
@@ -55,6 +56,7 @@ flowchart TD
 - `scheduled`: terminal selected and reservation written.
 - `duplicate`: job skipped due to existing dedup tuple.
 - `no_capacity`: all factory terminals at cap; keep queued.
+- `released`: completion recorded and terminal capacity decremented.
 
 ## SLA
 

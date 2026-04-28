@@ -108,6 +108,24 @@ def resolve_target_terminal(
     return dispatch_job(job, state, max_per_terminal=max_per_terminal, now_epoch=now_epoch)
 
 
+def release_job(job: dict[str, Any], state: dict[str, Any], now_epoch: int | None = None) -> dict[str, Any]:
+    now = int(now_epoch if now_epoch is not None else time.time())
+    key = dedup_key(job)
+    dedup = state.setdefault("dedup", {})
+    if key not in dedup:
+        return {"dedup_key": key, "status": "not_found", "terminal": None}
+
+    record = dedup[key]
+    terminal = str(record.get("terminal", ""))
+    if terminal in TERMINALS:
+        running = state.setdefault("running", {name: 0 for name in TERMINALS})
+        current = int(running.get(terminal, 0))
+        running[terminal] = max(current - 1, 0)
+    record["status"] = "complete"
+    record["completed_ts"] = now
+    return {"dedup_key": key, "status": "released", "terminal": terminal or None}
+
+
 def load_dispatch_state(path: Path = DEFAULT_STATE_PATH) -> dict[str, Any]:
     if not path.exists():
         return {"dedup": {}, "last_rr_index": -1, "recent_runs": {}, "running": {}, "symbol_affinity": {}}

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from framework.scripts.pipeline_dispatcher import TERMINALS, dedup_key, dispatch_job, resolve_target_terminal
+from framework.scripts.pipeline_dispatcher import TERMINALS, dedup_key, dispatch_job, release_job, resolve_target_terminal
 
 
 def base_job(symbol: str = "EURUSD.DWX") -> dict[str, str]:
@@ -109,6 +109,24 @@ class PipelineDispatcherTests(unittest.TestCase):
         decision = resolve_target_terminal(job, state, now_epoch=1000)
         self.assertEqual(decision["status"], "scheduled")
         self.assertEqual(decision["terminal"], "T1")
+
+    def test_release_job_decrements_running_and_marks_complete(self) -> None:
+        job = base_job()
+        key = dedup_key(job)
+        state = {
+            "dedup": {key: {"terminal": "T2", "symbol": "EURUSD.DWX", "ts": 1000}},
+            "running": {"T1": 0, "T2": 2, "T3": 0, "T4": 0, "T5": 0},
+        }
+        result = release_job(job, state, now_epoch=1002)
+        self.assertEqual(result["status"], "released")
+        self.assertEqual(result["terminal"], "T2")
+        self.assertEqual(state["running"]["T2"], 1)
+        self.assertEqual(state["dedup"][key]["status"], "complete")
+
+    def test_release_job_noop_when_missing_dedup(self) -> None:
+        state = {"dedup": {}, "running": {"T1": 0, "T2": 0, "T3": 0, "T4": 0, "T5": 0}}
+        result = release_job(base_job(), state, now_epoch=1002)
+        self.assertEqual(result["status"], "not_found")
 
 
 if __name__ == "__main__":
