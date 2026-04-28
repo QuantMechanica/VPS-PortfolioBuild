@@ -20,7 +20,7 @@ same state.
    - manifest hashes verified before backtest jobs.
 5. Runtime tasks registered with desired-state updater:
    - `QM_PublicSnapshot_Export_Hourly` (HH:07)
-   - `QM_DWX_HourlyCheck` (if DWX pipeline exists on host)
+   - `DWX import hourly check` Paperclip routine (cron `7 * * * *`, UTC)
    - `QM_InfraHealthCheck_5min`
    - `QM_Backup_Daily_0215`
 6. Monitoring outputs written to:
@@ -30,10 +30,11 @@ same state.
 ## Re-run Procedure
 
 1. `powershell -File C:\QM\repo\infra\tasks\Register-QMInfraTasks.ps1`
-2. `powershell -File C:\QM\repo\infra\backup.ps1 -WhatIf` for dry-run check
-3. `powershell -File C:\QM\repo\infra\monitoring\Invoke-InfraHealthCheck.ps1`
-4. `powershell -File C:\QM\repo\infra\scripts\Ensure-Mt5PortableMarker.ps1 -FailOnMissingRoot`
-5. `powershell -File C:\QM\repo\scripts\export_public_snapshot.ps1 -NoGit`
+2. `powershell -File C:\QM\repo\infra\scripts\Install-DwxHourlyRoutine.ps1 -Apply`
+3. `powershell -File C:\QM\repo\infra\backup.ps1 -WhatIf` for dry-run check
+4. `powershell -File C:\QM\repo\infra\monitoring\Invoke-InfraHealthCheck.ps1`
+5. `powershell -File C:\QM\repo\infra\scripts\Ensure-Mt5PortableMarker.ps1 -FailOnMissingRoot`
+6. `powershell -File C:\QM\repo\scripts\export_public_snapshot.ps1 -NoGit`
 
 ## Drive/Git Safety Rules (PC1-00)
 

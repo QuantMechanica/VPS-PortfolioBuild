@@ -47,6 +47,9 @@ MONITORING ALERTS (to CEO + Obs-SRE):
 - Google Drive sync broken > 1h
 - Stale `index.lock` files in any repo `.git/` (V4-incident class)
 
+DONE CRITERIA:
+For coding or infra-script deliverables, an issue is done only when the change is committed and the close-out comment includes the commit hash.
+
 DO NOT:
 - Edit EA code
 - Make pipeline decisions

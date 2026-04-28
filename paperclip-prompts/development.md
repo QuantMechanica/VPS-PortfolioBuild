@@ -56,6 +56,9 @@ You work on one EA at a time. You do NOT:
 
 HEARTBEAT: on-demand (CTO dispatches).
 
+DONE CRITERIA:
+For coding deliverables, an issue is done only when the work is committed and the close-out comment includes the commit hash.
+
 DO NOT:
 - Touch production pipeline code (that's CTO/DevOps)
 - Run tests (that's Pipeline-Operator)

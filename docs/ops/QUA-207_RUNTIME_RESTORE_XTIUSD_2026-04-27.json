@@ -1,22 +1,22 @@
 ﻿{
     "issue":  "QUA-207",
-    "generated_at_local":  "2026-04-27T14:44:30+02:00",
+    "generated_at_local":  "2026-04-28T00:07:41+02:00",
     "target_symbol":  "XTIUSD.DWX",
     "terminal_exe":  "D:\\QM\\mt5\\T1\\terminal64.exe",
-    "status":  "not_restored",
-    "restored_on":  "none",
-    "duration_seconds":  43.611,
+    "status":  "restored",
+    "restored_on":  "restart_attempt_1",
+    "duration_seconds":  23.421,
     "parameters":  {
                        "max_restart_attempts":  2,
-                       "post_start_wait_seconds":  15,
-                       "inter_attempt_wait_seconds":  8
+                       "post_start_wait_seconds":  20,
+                       "inter_attempt_wait_seconds":  10
                    },
     "precheck":  {
                      "probe_exit_code":  1,
                      "probe_stdout":  [
                                           "target=XTIUSD.DWX source=XTIUSD isolated_custom_bars_visibility_failure=True",
-                                          "target bars(range/pos)=0/0 source bars(range/pos)=584/10",
-                                          "json_out=C:\\QM\\repo\\infra\\smoke\\qua95_runtime_restore_probe_20260427_144347.json"
+                                          "target bars(range/pos)=0/0 source bars(range/pos)=1148/10",
+                                          "json_out=C:\\QM\\repo\\infra\\smoke\\qua95_runtime_restore_probe_20260428_000718.json"
                                       ],
                      "probe_payload":  {
                                            "target":  "XTIUSD.DWX",
@@ -26,8 +26,8 @@
                                                                 "symbol":  "XTIUSD.DWX",
                                                                 "rates_range_m1_count":  0,
                                                                 "rates_range_m1_err":  [
-                                                                                           1,
-                                                                                           "Success"
+                                                                                           -1,
+                                                                                           "Terminal: Call failed"
                                                                                        ],
                                                                 "rates_from_pos_m1_count":  0,
                                                                 "rates_from_pos_m1_err":  [
@@ -36,15 +36,15 @@
                                                                                           ],
                                                                 "ticks_from_count":  0,
                                                                 "ticks_from_err":  [
-                                                                                       1,
-                                                                                       "Success"
+                                                                                       -4,
+                                                                                       "Terminal: Not found"
                                                                                    ],
                                                                 "lookback_days":  2,
                                                                 "tick_minutes":  10
                                                             },
                                            "source_probe":  {
                                                                 "symbol":  "XTIUSD",
-                                                                "rates_range_m1_count":  584,
+                                                                "rates_range_m1_count":  1148,
                                                                 "rates_range_m1_err":  [
                                                                                            1,
                                                                                            "Success"
@@ -65,7 +65,7 @@
                                        },
                      "target_range_m1":  0,
                      "target_pos_m1":  0,
-                     "source_range_m1":  584,
+                     "source_range_m1":  1148,
                      "source_pos_m1":  10,
                      "isolated_custom_failure":  true,
                      "restored":  false
@@ -74,39 +74,27 @@
                      {
                          "attempt":  1,
                          "stopped_process_count":  1,
-                         "started_pid":  55468,
-                         "probe_exit_code":  1,
-                         "restored":  false,
-                         "isolated_custom_failure":  true,
+                         "started_pid":  44948,
+                         "probe_exit_code":  0,
+                         "restored":  true,
+                         "isolated_custom_failure":  false,
                          "target_range_m1":  0,
-                         "target_pos_m1":  0,
-                         "source_range_m1":  557,
-                         "source_pos_m1":  10
-                     },
-                     {
-                         "attempt":  2,
-                         "stopped_process_count":  1,
-                         "started_pid":  62936,
-                         "probe_exit_code":  1,
-                         "restored":  false,
-                         "isolated_custom_failure":  true,
-                         "target_range_m1":  0,
-                         "target_pos_m1":  0,
-                         "source_range_m1":  585,
+                         "target_pos_m1":  10,
+                         "source_range_m1":  1148,
                          "source_pos_m1":  10
                      }
                  ],
     "final_probe":  {
-                        "probe_exit_code":  1,
+                        "probe_exit_code":  0,
                         "probe_stdout":  [
-                                             "target=XTIUSD.DWX source=XTIUSD isolated_custom_bars_visibility_failure=True",
-                                             "target bars(range/pos)=0/0 source bars(range/pos)=585/10",
-                                             "json_out=C:\\QM\\repo\\infra\\smoke\\qua95_runtime_restore_probe_20260427_144347.json"
+                                             "target=XTIUSD.DWX source=XTIUSD isolated_custom_bars_visibility_failure=False",
+                                             "target bars(range/pos)=0/10 source bars(range/pos)=1148/10",
+                                             "json_out=C:\\QM\\repo\\infra\\smoke\\qua95_runtime_restore_probe_20260428_000718.json"
                                          ],
                         "probe_payload":  {
                                               "target":  "XTIUSD.DWX",
                                               "source":  "XTIUSD",
-                                              "isolated_custom_bars_visibility_failure":  true,
+                                              "isolated_custom_bars_visibility_failure":  false,
                                               "target_probe":  {
                                                                    "symbol":  "XTIUSD.DWX",
                                                                    "rates_range_m1_count":  0,
@@ -114,10 +102,10 @@
                                                                                               1,
                                                                                               "Success"
                                                                                           ],
-                                                                   "rates_from_pos_m1_count":  0,
+                                                                   "rates_from_pos_m1_count":  10,
                                                                    "rates_from_pos_m1_err":  [
-                                                                                                 -1,
-                                                                                                 "Terminal: Call failed"
+                                                                                                 1,
+                                                                                                 "Success"
                                                                                              ],
                                                                    "ticks_from_count":  0,
                                                                    "ticks_from_err":  [
@@ -129,7 +117,7 @@
                                                                },
                                               "source_probe":  {
                                                                    "symbol":  "XTIUSD",
-                                                                   "rates_range_m1_count":  585,
+                                                                   "rates_range_m1_count":  1148,
                                                                    "rates_range_m1_err":  [
                                                                                               1,
                                                                                               "Success"
@@ -149,11 +137,11 @@
                                                                }
                                           },
                         "target_range_m1":  0,
-                        "target_pos_m1":  0,
-                        "source_range_m1":  585,
+                        "target_pos_m1":  10,
+                        "source_range_m1":  1148,
                         "source_pos_m1":  10,
-                        "isolated_custom_failure":  true,
-                        "restored":  false
+                        "isolated_custom_failure":  false,
+                        "restored":  true
                     },
-    "next_action":  "Escalate to runtime custom-symbol owner for manual terminal/runtime recovery; rerun this script after recovery."
+    "next_action":  "Run verifier rerun proof and update QUA-95/QUA-207 blocker artifacts."
 }

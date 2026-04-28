@@ -26,8 +26,9 @@ param(
     [int]$T6MaxAgeMinutes = 5,
     [string]$DwxHeartbeatScript = "C:\QM\repo\infra\monitoring\Test-DwxHeartbeat.ps1",
     [string]$DriveGitExclusionScript = "C:\QM\repo\infra\monitoring\Test-DriveGitExclusion.ps1",
+    [string]$GitIndexLockMonitorScript = "C:\QM\repo\infra\monitoring\Invoke-GitIndexLockMonitor.ps1",
     [string]$PipelineOperatorRunHealthScript = "C:\QM\repo\infra\monitoring\Test-PipelineOperatorRunHealth.ps1",
-    [string]$TaskTickScript = "C:\QM\repo\infra\tasks\Test-HourlyTaskTick.ps1"
+    [string]$DwxRoutineTickScript = "C:\QM\repo\infra\monitoring\Test-DwxRoutineTick.ps1"
 )
 
 Set-StrictMode -Version Latest
@@ -161,7 +162,14 @@ if (Test-Path -LiteralPath $DwxHeartbeatScript) {
 # Drive/git exclusion check (PC1-00 hard rule)
 if (Test-Path -LiteralPath $DriveGitExclusionScript) {
     try {
-        $driveCheckRaw = & powershell -NoProfile -ExecutionPolicy Bypass -File $DriveGitExclusionScript 2>$null | Out-String
+        $driveArgs = @(
+            "-NoProfile",
+            "-ExecutionPolicy", "Bypass",
+            "-File", $DriveGitExclusionScript,
+            "-PrimaryRepoForWorktrees", $RepoRoots[0],
+            "-IncludeGitWorktrees"
+        )
+        $driveCheckRaw = & powershell @driveArgs 2>$null | Out-String
         $driveCheck = $driveCheckRaw | ConvertFrom-Json -ErrorAction Stop
         $checks.Add((New-Check -Name "drive_git_exclusion" -Status $driveCheck.status -Message $driveCheck.message -Details $driveCheck))
     }
@@ -182,15 +190,15 @@ if (Test-Path -LiteralPath $PipelineOperatorRunHealthScript) {
     }
 }
 
-# Verify hourly cadence + observed tick for DWX heartbeat task
-if (Test-Path -LiteralPath $TaskTickScript) {
+# Verify hourly cadence + observed tick for DWX Paperclip routine
+if (Test-Path -LiteralPath $DwxRoutineTickScript) {
     try {
-        $tickRaw = & powershell -NoProfile -ExecutionPolicy Bypass -File $TaskTickScript -TaskName "QM_DWX_HourlyCheck" 2>$null | Out-String
+        $tickRaw = & powershell -NoProfile -ExecutionPolicy Bypass -File $DwxRoutineTickScript 2>$null | Out-String
         $tickObj = $tickRaw | ConvertFrom-Json -ErrorAction Stop
-        $checks.Add((New-Check -Name "dwx_hourly_task_tick" -Status $tickObj.status -Message $tickObj.message -Details $tickObj))
+        $checks.Add((New-Check -Name "dwx_hourly_routine_tick" -Status $tickObj.status -Message $tickObj.message -Details $tickObj))
     }
     catch {
-        $checks.Add((New-Check -Name "dwx_hourly_task_tick" -Status "critical" -Message "DWX hourly task tick check execution failed." -Details $_.Exception.Message))
+        $checks.Add((New-Check -Name "dwx_hourly_routine_tick" -Status "critical" -Message "DWX hourly routine tick check execution failed." -Details $_.Exception.Message))
     }
 }
 
@@ -223,20 +231,44 @@ if ($null -eq $driveAge -or $driveAge -gt $DriveSyncMaxSilentMinutes) {
     $checks.Add((New-Check -Name "drive_sync" -Status "ok" -Message "Drive sync heartbeat fresh." -Details @{ age_minutes = $driveAge }))
 }
 
-# Stale .git/index.lock files
-$staleLocks = New-Object System.Collections.Generic.List[object]
-foreach ($repo in $RepoRoots) {
-    $lockPath = Join-Path $repo ".git\index.lock"
-    if (-not (Test-Path -LiteralPath $lockPath)) { continue }
-    $age = Get-FileAgeMinutes -Path $lockPath
-    if ($null -ne $age -and $age -gt $IndexLockStaleMinutes) {
-        $staleLocks.Add(@{ path = $lockPath; age_minutes = $age })
+# Stale .git/index.lock files (canonical monitor delegation, with fallback)
+if (Test-Path -LiteralPath $GitIndexLockMonitorScript) {
+    try {
+        $monitorOutputPath = Join-Path $OutputDirectory "git_index_lock_monitor_latest.json"
+        $monitorArgs = @(
+            "-NoProfile",
+            "-ExecutionPolicy", "Bypass",
+            "-File", $GitIndexLockMonitorScript,
+            "-StaleAfterMinutes", $IndexLockStaleMinutes,
+            "-OutputPath", $monitorOutputPath
+        )
+        if ($RepoRoots.Count -gt 0) {
+            $monitorArgs += "-RepoRoots"
+            $monitorArgs += $RepoRoots
+        }
+        $lockRaw = & powershell @monitorArgs 2>$null | Out-String
+        $lockObj = $lockRaw | ConvertFrom-Json -ErrorAction Stop
+        $checks.Add((New-Check -Name "git_index_lock" -Status $lockObj.status -Message $lockObj.message -Details $lockObj))
+    }
+    catch {
+        $checks.Add((New-Check -Name "git_index_lock" -Status "critical" -Message "Git index.lock monitor execution failed." -Details $_.Exception.Message))
     }
 }
-if ($staleLocks.Count -gt 0) {
-    $checks.Add((New-Check -Name "git_index_lock" -Status "critical" -Message "Stale .git/index.lock detected." -Details $staleLocks))
-} else {
-    $checks.Add((New-Check -Name "git_index_lock" -Status "ok" -Message "No stale .git/index.lock files detected." -Details @{ max_age_minutes = $IndexLockStaleMinutes }))
+else {
+    $staleLocks = New-Object System.Collections.Generic.List[object]
+    foreach ($repo in $RepoRoots) {
+        $lockPath = Join-Path $repo ".git\index.lock"
+        if (-not (Test-Path -LiteralPath $lockPath)) { continue }
+        $age = Get-FileAgeMinutes -Path $lockPath
+        if ($null -ne $age -and $age -gt $IndexLockStaleMinutes) {
+            $staleLocks.Add(@{ path = $lockPath; age_minutes = $age })
+        }
+    }
+    if ($staleLocks.Count -gt 0) {
+        $checks.Add((New-Check -Name "git_index_lock" -Status "critical" -Message "Stale .git/index.lock detected." -Details $staleLocks))
+    } else {
+        $checks.Add((New-Check -Name "git_index_lock" -Status "ok" -Message "No stale .git/index.lock files detected." -Details @{ max_age_minutes = $IndexLockStaleMinutes }))
+    }
 }
 
 $criticalCount = @($checks | Where-Object { $_.status -eq "critical" }).Count

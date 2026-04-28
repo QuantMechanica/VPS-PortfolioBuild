@@ -7,7 +7,7 @@ param(
     [Parameter(Mandatory = $true)]
     [ValidateRange(2000, 2100)]
     [int]$Year,
-    [ValidateSet("T1", "T2", "T3", "T4", "T5")]
+    [ValidateSet("any", "T1", "T2", "T3", "T4", "T5")]
     [string]$Terminal = "T1",
     [string]$Expert,
     [string]$Period = "H1",
@@ -94,6 +94,112 @@ function Resolve-TerminalRoot {
     return (Resolve-Path -LiteralPath $root).Path
 }
 
+function Resolve-DispatchTerminal {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$TargetTerminal,
+        [Parameter(Mandatory = $true)]
+        [int]$EAIdValue,
+        [Parameter(Mandatory = $true)]
+        [string]$SymbolName,
+        [Parameter(Mandatory = $true)]
+        [string]$PeriodName,
+        [Parameter(Mandatory = $true)]
+        [int]$YearValue
+    )
+
+    if ($TargetTerminal -ine 'any') {
+        return $TargetTerminal
+    }
+
+    $resolverPath = Join-Path $PSScriptRoot "resolve_backtest_target.py"
+    if (-not (Test-Path -LiteralPath $resolverPath -PathType Leaf)) {
+        throw "resolve_backtest_target.py not found at $resolverPath"
+    }
+    $jobPath = Join-Path $env:TEMP ("qua307_dispatch_job_{0}.json" -f [guid]::NewGuid().ToString("N"))
+    $statePath = "D:\QM\Reports\pipeline\dispatch_state.json"
+    $job = [ordered]@{
+        ea_id = "QM5_{0}" -f $EAIdValue
+        version = "smoke"
+        symbol = $SymbolName
+        phase = "P1"
+        sub_gate_config_hash = "{0}-{1}" -f $PeriodName, $YearValue
+        target_terminal = "any"
+    } | ConvertTo-Json -Depth 4
+    Set-Content -LiteralPath $jobPath -Value $job -Encoding utf8
+
+    try {
+        $raw = & python $resolverPath --job-json $jobPath --state-json $statePath --max-per-terminal 3
+        if ($LASTEXITCODE -ne 0) {
+            throw "resolve_backtest_target.py exited with code $LASTEXITCODE"
+        }
+        $decision = $raw | ConvertFrom-Json
+        if (-not $decision.terminal) {
+            throw "Terminal resolution returned no terminal. status=$($decision.status)"
+        }
+        Write-Output ("run_smoke.dispatch_status={0}" -f $decision.status)
+        Write-Output ("run_smoke.dispatch_terminal={0}" -f $decision.terminal)
+        return [string]$decision.terminal
+    } finally {
+        if (Test-Path -LiteralPath $jobPath) {
+            Remove-Item -LiteralPath $jobPath -Force
+        }
+    }
+}
+
+function Invoke-DispatchCompletion {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$OriginalTargetTerminal,
+        [Parameter(Mandatory = $true)]
+        [int]$EAIdValue,
+        [Parameter(Mandatory = $true)]
+        [string]$SymbolName,
+        [Parameter(Mandatory = $true)]
+        [string]$PeriodName,
+        [Parameter(Mandatory = $true)]
+        [int]$YearValue
+    )
+
+    if ($OriginalTargetTerminal -ine 'any') {
+        return
+    }
+
+    $resolverPath = Join-Path $PSScriptRoot "resolve_backtest_target.py"
+    if (-not (Test-Path -LiteralPath $resolverPath -PathType Leaf)) {
+        Write-Warning "run_smoke.dispatch_complete skipped; resolver missing at $resolverPath"
+        return
+    }
+
+    $jobPath = Join-Path $env:TEMP ("qua307_dispatch_job_{0}.json" -f [guid]::NewGuid().ToString("N"))
+    $statePath = "D:\QM\Reports\pipeline\dispatch_state.json"
+    $job = [ordered]@{
+        ea_id = "QM5_{0}" -f $EAIdValue
+        version = "smoke"
+        symbol = $SymbolName
+        phase = "P1"
+        sub_gate_config_hash = "{0}-{1}" -f $PeriodName, $YearValue
+        target_terminal = "any"
+    } | ConvertTo-Json -Depth 4
+    Set-Content -LiteralPath $jobPath -Value $job -Encoding utf8
+    try {
+        $raw = & python $resolverPath --job-json $jobPath --state-json $statePath --event complete --prune-completed
+        if ($LASTEXITCODE -eq 0 -and $raw) {
+            $decision = $raw | ConvertFrom-Json
+            Write-Output ("run_smoke.dispatch_complete_status={0}" -f $decision.status)
+            if ($decision.terminal) {
+                Write-Output ("run_smoke.dispatch_complete_terminal={0}" -f $decision.terminal)
+            }
+        } else {
+            Write-Warning "run_smoke.dispatch_complete failed (exit=$LASTEXITCODE)"
+        }
+    } finally {
+        if (Test-Path -LiteralPath $jobPath) {
+            Remove-Item -LiteralPath $jobPath -Force
+        }
+    }
+}
+
 function Resolve-TerminalExecutable {
     param(
         [Parameter(Mandatory = $true)]
@@ -146,7 +252,7 @@ function Write-TesterIni {
         [Parameter(Mandatory = $true)]
         [string]$ToDate,
         [Parameter(Mandatory = $true)]
-        [string]$ReportPath,
+        [string]$ReportValue,
         [string]$SetFilePath
     )
 
@@ -171,7 +277,7 @@ function Write-TesterIni {
         "Replace=1",
         "ReplaceReport=1",
         "ShutdownTerminal=1",
-        "Report=$ReportPath"
+        "Report=$ReportValue"
     )
 
     if ($SetFilePath) {
@@ -179,6 +285,25 @@ function Write-TesterIni {
     }
 
     Set-Content -LiteralPath $Path -Value $lines -Encoding ascii
+}
+
+function Get-RelativeReportFileName {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$EaLabel,
+        [Parameter(Mandatory = $true)]
+        [string]$SymbolName,
+        [Parameter(Mandatory = $true)]
+        [string]$RunTag,
+        [Parameter(Mandatory = $true)]
+        [string]$RunName
+    )
+
+    $sanitizedSymbol = ($SymbolName -replace '[^A-Za-z0-9]+', '_').Trim('_')
+    if ([string]::IsNullOrWhiteSpace($sanitizedSymbol)) {
+        $sanitizedSymbol = "symbol"
+    }
+    return "{0}_{1}_{2}_{3}.htm" -f $EaLabel, $sanitizedSymbol, $RunTag, $RunName
 }
 
 function Get-LatestTesterLog {
@@ -215,14 +340,73 @@ function Start-TesterRun {
     $args = @("/portable", "/config:$IniPath")
     $proc = Start-Process -FilePath $TerminalExe -ArgumentList $args -PassThru
     $finished = $proc.WaitForExit($TimeoutSec * 1000)
-    if (-not $finished) {
+    $timedOut = -not $finished
+    if ($timedOut) {
         try {
             Stop-Process -Id $proc.Id -Force -ErrorAction Stop
         } catch {
         }
-        throw "Tester run timed out after $TimeoutSec seconds for ini: $IniPath"
     }
-    return $proc.ExitCode
+
+    return [pscustomobject]@{
+        exit_code = $(if ($finished) { $proc.ExitCode } else { $null })
+        timed_out = $timedOut
+        terminal_pid = $proc.Id
+    }
+}
+
+function Get-MetaTesterProcessesForTerminalRoot {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$TerminalRoot
+    )
+
+    $normalizedRoot = $TerminalRoot.TrimEnd('\')
+    $escapedRoot = [regex]::Escape($normalizedRoot)
+    $processes = Get-CimInstance Win32_Process -Filter "Name='metatester64.exe'" -ErrorAction SilentlyContinue
+    if (-not $processes) {
+        return @()
+    }
+
+    $matches = @()
+    foreach ($proc in $processes) {
+        $exePath = [string]$proc.ExecutablePath
+        $cmdLine = [string]$proc.CommandLine
+        $matchesRoot = ($exePath -and [regex]::IsMatch($exePath, "^$escapedRoot\\", [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)) -or
+            ($cmdLine -and [regex]::IsMatch($cmdLine, $escapedRoot, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase))
+        if ($matchesRoot) {
+            $matches += $proc
+        }
+    }
+
+    return @($matches)
+}
+
+function Wait-ForReportExport {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ReportPath,
+        [Parameter(Mandatory = $true)]
+        [string]$TerminalRoot,
+        [ValidateRange(0, 300)]
+        [int]$MaxWaitSeconds = 30
+    )
+
+    $deadline = (Get-Date).ToUniversalTime().AddSeconds($MaxWaitSeconds)
+    do {
+        if (Test-Path -LiteralPath $ReportPath -PathType Leaf) {
+            return $true
+        }
+
+        $activeMetaTesters = @(Get-MetaTesterProcessesForTerminalRoot -TerminalRoot $TerminalRoot)
+        if (@($activeMetaTesters).Count -eq 0) {
+            return (Test-Path -LiteralPath $ReportPath -PathType Leaf)
+        }
+
+        Start-Sleep -Milliseconds 500
+    } while ((Get-Date).ToUniversalTime() -lt $deadline)
+
+    return (Test-Path -LiteralPath $ReportPath -PathType Leaf)
 }
 
 function Convert-RunMetricsToFingerprint {
@@ -234,12 +418,13 @@ function Convert-RunMetricsToFingerprint {
     return "{0}|{1}|{2}|{3}" -f $Metrics.total_trades_raw, $Metrics.profit_factor_raw, $Metrics.drawdown_raw, $Metrics.net_profit_raw
 }
 
-$terminalRoot = Resolve-TerminalRoot -TerminalName $Terminal
+$effectiveTerminal = Resolve-DispatchTerminal -TargetTerminal $Terminal -EAIdValue $EAId -SymbolName $Symbol -PeriodName $Period -YearValue $Year
+$terminalRoot = Resolve-TerminalRoot -TerminalName $effectiveTerminal
 $terminalExe = Resolve-TerminalExecutable -TerminalRoot $terminalRoot
 
 if (-not $AllowRunningTerminal.IsPresent) {
     if (Test-TerminalAlreadyRunning -TerminalRoot $terminalRoot) {
-        throw "Terminal instance is already running for $TerminalRoot. Stop it first or pass -AllowRunningTerminal."
+        throw "Terminal instance is already running for $terminalRoot. Stop it first or pass -AllowRunningTerminal."
     }
 }
 
@@ -276,7 +461,16 @@ for ($i = 1; $i -le $Runs; $i++) {
 
     $iniPath = Join-Path $runDir "tester.ini"
     $reportHtmPath = Join-Path $runDir "report.htm"
+    $relativeReportFile = Get-RelativeReportFileName -EaLabel $eaLabel -SymbolName $Symbol -RunTag $runTag -RunName $runName
+    $sourceReportPath = Join-Path $terminalRoot $relativeReportFile
     $runStartUtc = (Get-Date).ToUniversalTime()
+
+    if (Test-Path -LiteralPath $sourceReportPath -PathType Leaf) {
+        Remove-Item -LiteralPath $sourceReportPath -Force
+    }
+    if (Test-Path -LiteralPath $reportHtmPath -PathType Leaf) {
+        Remove-Item -LiteralPath $reportHtmPath -Force
+    }
 
     Write-TesterIni -Path $iniPath `
         -ExpertPath $Expert `
@@ -285,38 +479,117 @@ for ($i = 1; $i -le $Runs; $i++) {
         -ModelMode $Model `
         -FromDate $fromDate `
         -ToDate $toDate `
-        -ReportPath $reportHtmPath `
+        -ReportValue $relativeReportFile `
         -SetFilePath $SetFile
 
-    $exitCode = $null
-    try {
-        $exitCode = Start-TesterRun -TerminalExe $terminalExe -IniPath $iniPath -TimeoutSec $TimeoutSeconds
-    } catch {
+    $runExec = Start-TesterRun -TerminalExe $terminalExe -IniPath $iniPath -TimeoutSec $TimeoutSeconds
+    $exitCode = $runExec.exit_code
+
+    if ($runExec.timed_out) {
+        $lingeringMeta = @(Get-MetaTesterProcessesForTerminalRoot -TerminalRoot $terminalRoot)
+        foreach ($metaProc in $lingeringMeta) {
+            try {
+                Stop-Process -Id $metaProc.ProcessId -Force -ErrorAction Stop
+            } catch {
+            }
+        }
         $globalTimeoutFailure = $true
         $globalRealTicksMarker = $false
         $reasonClasses.Add("TIMEOUT")
+        if (@($lingeringMeta).Count -gt 0) {
+            $reasonClasses.Add("METATESTER_HUNG")
+        }
         $runResults += [pscustomobject]@{
             run = $runName
             status = "FAIL"
             failure = "TIMEOUT"
-            error = $_.Exception.Message
+            error = "Tester run timed out after $TimeoutSeconds seconds for ini: $iniPath"
             exit_code = $null
-            report_path = $reportHtmPath
+            report_source_path = $sourceReportPath
+            report_canonical_path = $reportHtmPath
+            report_size_bytes = 0
             tester_log_path = $null
         }
         continue
     }
 
-    if (-not (Test-Path -LiteralPath $reportHtmPath -PathType Leaf)) {
+    $reportMaterialized = Wait-ForReportExport -ReportPath $sourceReportPath -TerminalRoot $terminalRoot -MaxWaitSeconds 30
+    if (-not $reportMaterialized) {
         $reasonClasses.Add("REPORT_MISSING")
         $globalRealTicksMarker = $false
+        $lingeringMeta = @(Get-MetaTesterProcessesForTerminalRoot -TerminalRoot $terminalRoot)
+        if (@($lingeringMeta).Count -gt 0) {
+            $reasonClasses.Add("METATESTER_HUNG")
+            foreach ($metaProc in $lingeringMeta) {
+                try {
+                    Stop-Process -Id $metaProc.ProcessId -Force -ErrorAction Stop
+                } catch {
+                }
+            }
+        }
         $runResults += [pscustomobject]@{
             run = $runName
             status = "FAIL"
             failure = "REPORT_MISSING"
-            error = "Strategy tester did not produce report file."
+            error = "Strategy tester did not produce report file at relative export path."
             exit_code = $exitCode
-            report_path = $reportHtmPath
+            report_source_path = $sourceReportPath
+            report_canonical_path = $reportHtmPath
+            report_size_bytes = 0
+            tester_log_path = $null
+        }
+        continue
+    }
+
+    $sourceInfo = Get-Item -LiteralPath $sourceReportPath
+    if ($sourceInfo.Length -le 0) {
+        $reasonClasses.Add("REPORT_EMPTY")
+        $globalRealTicksMarker = $false
+        $runResults += [pscustomobject]@{
+            run = $runName
+            status = "FAIL"
+            failure = "REPORT_EMPTY"
+            error = "Strategy tester produced size-0 report file (infra NO_REPORT)."
+            exit_code = $exitCode
+            report_source_path = $sourceReportPath
+            report_canonical_path = $reportHtmPath
+            report_size_bytes = [int64]$sourceInfo.Length
+            tester_log_path = $null
+        }
+        continue
+    }
+
+    Copy-Item -LiteralPath $sourceReportPath -Destination $reportHtmPath -Force
+    if (-not (Test-Path -LiteralPath $reportHtmPath -PathType Leaf)) {
+        $reasonClasses.Add("REPORT_COPY_FAILED")
+        $globalRealTicksMarker = $false
+        $runResults += [pscustomobject]@{
+            run = $runName
+            status = "FAIL"
+            failure = "REPORT_COPY_FAILED"
+            error = "Post-copy to canonical evidence path failed."
+            exit_code = $exitCode
+            report_source_path = $sourceReportPath
+            report_canonical_path = $reportHtmPath
+            report_size_bytes = [int64]$sourceInfo.Length
+            tester_log_path = $null
+        }
+        continue
+    }
+
+    $canonicalInfo = Get-Item -LiteralPath $reportHtmPath
+    if ($canonicalInfo.Length -le 0) {
+        $reasonClasses.Add("REPORT_EMPTY")
+        $globalRealTicksMarker = $false
+        $runResults += [pscustomobject]@{
+            run = $runName
+            status = "FAIL"
+            failure = "REPORT_EMPTY"
+            error = "Canonical report copy is size-0 (infra NO_REPORT)."
+            exit_code = $exitCode
+            report_source_path = $sourceReportPath
+            report_canonical_path = $reportHtmPath
+            report_size_bytes = [int64]$canonicalInfo.Length
             tester_log_path = $null
         }
         continue
@@ -367,7 +640,9 @@ for ($i = 1; $i -le $Runs; $i++) {
         run = $runName
         status = "OK"
         exit_code = $exitCode
-        report_path = $reportHtmPath
+        report_source_path = $sourceReportPath
+        report_canonical_path = $reportHtmPath
+        report_size_bytes = [int64]$canonicalInfo.Length
         tester_log_path = $testerLogPath
         oninit_failure = $onInitFailure
         real_ticks_marker = $hasRealTicksMarker
@@ -383,10 +658,11 @@ for ($i = 1; $i -le $Runs; $i++) {
 }
 
 $completedRuns = @($runResults | Where-Object { $_.status -eq "OK" })
+$completedRunCount = @($completedRuns).Count
 $tradeGatePassed = $false
 $deterministic = $false
 
-if ($completedRuns.Count -eq $Runs) {
+if ($completedRunCount -eq $Runs) {
     $minTradesSeen = ($completedRuns | Measure-Object -Property total_trades -Minimum).Minimum
     $tradeGatePassed = ($minTradesSeen -ge $MinTrades)
     if (-not $tradeGatePassed) {
@@ -401,7 +677,7 @@ if ($completedRuns.Count -eq $Runs) {
             net_profit_raw = $_.net_profit_raw
         }
     }
-    $deterministic = (($fingerprints | Select-Object -Unique).Count -eq 1)
+    $deterministic = (@($fingerprints | Select-Object -Unique).Count -eq 1)
     if (-not $deterministic) {
         $reasonClasses.Add("NON_DETERMINISTIC")
     }
@@ -414,14 +690,14 @@ if (-not $realTicksGatePassed -and -not $AllowMissingRealTicksLogMarker.IsPresen
     $reasonClasses.Add("MODEL4_MARKER_REQUIRED")
 }
 
-$passed = ($completedRuns.Count -eq $Runs) -and
+$passed = ($completedRunCount -eq $Runs) -and
     (-not $globalOnInitFailure) -and
     $tradeGatePassed -and
     $deterministic -and
     (-not $globalTimeoutFailure) -and
     $realTicksGatePassed
 
-if ($reasonClasses.Count -eq 0) {
+if (@($reasonClasses).Count -eq 0) {
     $reasonClasses.Add("OK")
 }
 
@@ -443,6 +719,7 @@ $summary = [ordered]@{
     oninit_failure_detected = $globalOnInitFailure
     model4_log_marker_detected = $globalRealTicksMarker
     report_dir = $reportDir
+    report_export_mode = "relative_report_plus_postcopy"
     runs = $runResults
 }
 
@@ -463,8 +740,15 @@ $evidenceLines = @(
     "- model: $Model",
     "- reason_classes: $([string]::Join(', ', $summary.reason_classes))",
     "- summary_json: $summaryPath",
-    "- report_dir: $reportDir"
+    "- report_dir: $reportDir",
+    "- report_export_mode: relative_report_plus_postcopy",
+    "",
+    "## Report Chain Evidence"
 )
+
+foreach ($run in $runResults) {
+    $evidenceLines += "- $($run.run): source=$($run.report_source_path) -> target=$($run.report_canonical_path) bytes=$($run.report_size_bytes) status=$($run.status)"
+}
 Set-Content -LiteralPath $evidencePath -Value $evidenceLines -Encoding utf8
 
 Write-Output "run_smoke.result=$($summary.result)"
@@ -472,6 +756,8 @@ Write-Output "run_smoke.reason_classes=$([string]::Join(';', $summary.reason_cla
 Write-Output "run_smoke.summary=$summaryPath"
 Write-Output "run_smoke.report_dir=$reportDir"
 Write-Output "run_smoke.evidence=$evidencePath"
+
+Invoke-DispatchCompletion -OriginalTargetTerminal $Terminal -EAIdValue $EAId -SymbolName $Symbol -PeriodName $Period -YearValue $Year
 
 if (-not $passed) {
     exit 1

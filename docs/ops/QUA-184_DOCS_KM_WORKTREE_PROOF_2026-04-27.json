@@ -1,0 +1,27 @@
+{
+  "check": "agent_worktree_isolation",
+  "issue": "QUA-184",
+  "agent": {
+    "id": "8c85f83f-db7e-4414-8b85-aa558987a13e",
+    "name": "Documentation-KM",
+    "adapter_type": "claude_local"
+  },
+  "generated_at_utc": "2026-04-27T14:18:30.5727825Z",
+  "status": "ok",
+  "action": "created",
+  "repo_root": "C:\\QM\\repo",
+  "agent_key": "docs-km",
+  "branch": "agents/docs-km",
+  "worktree_path": "C:\\QM\\worktrees\\docs-km",
+  "runtime_checks": {
+    "git_rev_parse_show_toplevel": "C:/QM/worktrees/docs-km",
+    "git_branch_show_current": "agents/docs-km"
+  },
+  "adapter_config_pre": {
+    "cwd": "C:\\QM\\repo"
+  },
+  "adapter_config_post": {
+    "cwd": "C:\\QM\\worktrees\\docs-km"
+  },
+  "convergence_command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\\QM\\repo\\infra\\scripts\\Ensure-AgentWorktree.ps1 -RepoRoot C:\\QM\\repo -WorktreeRoot C:\\QM\\worktrees -AgentKey docs-km -CreateBranchIfMissing"
+}

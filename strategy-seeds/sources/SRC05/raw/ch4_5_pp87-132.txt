@@ -1,0 +1,1951 @@
+Example 3.1 (Continued)
+
+regression_result=ols(log(y(t-lookback+1:t)), ...
+   [log(x(t-lookback+1:t)) ones(lookback, 1)]);
+
+and
+
+    yport=sum([-hedgeRatio ones(size(hedgeRatio))].*log(y2), ...
+       2); % The net market value of the portfolio is same as
+       % the "spread"
+
+   The APR of 9 percent and Sharpe ratio of 0.5 are actually
+lower than the ones using the price spread strategy, and this is
+before accounting for the extra transactions costs associated with
+rebalancing the portfolio every day to maintain the capital allocation
+to each ETF.
+
+   Next, we will try using ratio as the signal. In this case, we will also
+require the long and short side to have the same dollar capital.The
+source code is in Ratio.m. It is interesting to look at a plot of the ratio
+in Figure 3.2 first.
+
+You can see that the ratio actually doesn't look very stationary at
+
+all, compared with either the price spread or adaptive hedge ratio.          69
+
+So it should not surprise us if we find the mean-reverting strategy to       IMPLEMENTING MEAN REVERSION STRATEGIES
+
+perform poorly, with a negative APR.
+
+FIGURE 3.2 Ratio = USO/GLD
+
+                                                   (Continued )
+ALGORITHMIC TRADING                 Example 3.1 (Continued)
+
+                      lookback=20; % Lookback is set arbitrarily
+                      ratio=y./x;
+                      ratio(1:lookback)=[]; % Removed to have same test set as
+
+                         % price spread and log price spread strategies
+                      x(1:lookback)=[];
+                      y(1:lookback)=[];
+
+                      % Apply a simple linear mean reversion strategy to GLD-USO
+                      numUnits=-(ratio-movingAvg(ratio, lookback))...
+
+                         ./movingStd(ratio, lookback); positions=repmat(numUnits, ...
+                         [1 2]).*[-ones(size(x, 1), 1) ones(size(x, 1), 1)];
+                         pnl=sum(lag(positions, 1).*([x y]-lag([x y], 1)). ...
+                         /lag([x y], 1), 2); ret=pnl./sum(abs(lag(positions, 1)), 2);
+
+        Bollinger Bands
+
+        The only mean-reversal strategy I have described so far is the linear strat-
+        egy: simply scale the number of units invested in a stationary unit portfolio
+70 to be proportional to the deviation of the market value (price) of the unit
+        portfolio from a moving average. This simple strategy is chosen because it
+        is virtually parameterless, and therefore least subject to data-snooping bias.
+        While this linear strategy is useful for demonstrating whether mean rever-
+        sion trading can be profitable for a given portfolio, it is not practical because
+        we don't know beforehand what the maximum capital deployed will be, as
+        there is no limit to the temporary deviation of the price from its average.
+
+           For practical trading, we can use the Bollinger band, where we enter into
+        a position only when the price deviates by more than entryZscore standard
+        deviations from the mean. entryZscore is a free parameter to be optimized in
+        a training set, and both standard deviation and mean are computed within
+        a look-back period, whose length again can be a free parameter to be op-
+        timized, or it can be set equal to the half-life of mean reversion. We can
+        exit when the price mean-reverts to exitZscore standard deviations from the
+        mean, where exitZscore < entryZscore. Note that if exitZscore = 0, this means
+        we will exit when the price mean-reverts to the current mean. If exitZscore
+        = -entryZscore, we will exit when the price moves beyond the opposite band
+        so as to trigger a trading signal of the opposite sign. At any one time, we can
+        have either zero or one unit (long or short) invested, so it is very easy to
+        allocate capital to this strategy or to manage its risk. If we set the look-back
+to a short period, and small entryZscore and exitZscore magnitude, we will get
+a shorter holding period and more round trip trades and generally higher
+profits.We illustrate the Bollinger band technique in Example 3.2 using the
+pair GLD-USO we discussed above.
+
+Example 3.2: Bollinger Band Mean
+          Reversion Strategy
+
+We traded GLD-USO in Example 3.1 using price spread USO-
+
+hedgeRatio*GLD as the signal with a linear mean reversion strategy.
+
+Here, we simply switch to a Bollinger band strategy, using the
+
+entryZscore = 1 and exitZscore = 0, with the first part of the program
+
+identical to PriceSpread.m.The present source code is in bollinger.m.
+
+Notice that the entry signals longsEntry and shortsEntry are Tx1 logical
+
+arrays, as are the exit signals longsExit and shortsExit.We initialize the
+
+number of units of the unit portfolio on the long side, numUnitsLong,
+
+a Tx1 array, and then set one of its values to 1 if we have a long entry
+
+signal, and to 0 if we have a long exit signal; and vice versa for the
+
+number of units on the short side. For those days that do not have
+
+any entry or exit signals, we use the fillMissingData function to carry         71
+forward the previous day's units. (fillMissingData starts with the
+                                                                                IMPLEMENTING MEAN REVERSION STRATEGIES
+second row of an array, and overwrites any cell's NaN value with the
+
+corresponding cell's value in the previous row. It can be downloaded
+
+from my website.) Once numUnitsLong and numUnitsShort are
+
+computed, we can combine them to find the net number of units
+
+denoted by numUnits.The rest of the program is the same as in
+
+Example 3.1's PriceSpread.m.
+
+% Bollinger band strategy
+entryZscore=1;
+exitZscore=0;
+
+zScore=(yport-movingAvg(yport, lookback))./movingStd(yport, ...
+  lookback);
+
+longsEntry=zScore < -entryZscore; % a long position means we
+   % should buy EWC
+
+longsExit=zScore >= -exitZscore;
+
+shortsEntry=zScore > entryZscore;
+shortsExit=zScore <= exitZscore;
+
+numUnitsLong=NaN(length(yport), 1);
+
+                                     (Continued )
+ALGORITHMIC TRADING                 Example 3.2 (Continued)
+
+                      numUnitsShort=NaN(length(yport), 1);
+                      numUnitsLong(1)=0;
+                      numUnitsLong(longsEntry)=1;
+                      numUnitsLong(longsExit)=0;
+                      numUnitsLong =fillMissingData(numUnitsLong);
+                      numUnitsShort(1)=0;
+                      numUnitsShort(shortsEntry)=-1;
+                      numUnitsShort(shortsExit)=0;
+                      numUnitsShort =fillMissingData(numUnitsShort);
+                      numUnits= numUnitsLong + numUnitsShort;
+
+               The Bollinger band strategy has an APR = 17.8 percent, and Sharpe
+           ratio of 0.96, quite an improvement from the linear mean reversal
+           strategy!The cumulative returns curve is shown on Figure 3.3.
+
+72
+
+                           FIGURE 3.3 Cumulative Returns of Bollinger Band
+                           Strategy on GLD-USO
+
+        Does Scaling-in Work?
+
+        The notion of scaling into a position with a mean-reverting strategy is famil-
+        iar to many traders. (Another name for it is averaging-in.) As the price (of an
+        asset, a spread, or a portfolio) deviates further and further from its mean,
+the potential profit to be reaped from an eventual reversal is also increas-      IMPLEMENTING MEAN REVERSION STRATEGIES
+ing; thus, it makes sense to increase the capital invested.This is exactly what
+our linear mean-reversal strategy does. Note also that this type of scaling-in
+strategies also scale out gradually: We do not have to wait until the price
+reverts to its mean before taking profits.The advantage of being able to exit
+whenever the price reverts by a small increment is that even if the price
+series is not really stationary and therefore never really reverts to its mean,
+we can still be profitable by constantly realizing small profits.An added ben-
+efit is that if you are trading large sizes, scaling-in and -out will reduce the
+market impact of the entry and exit trades. If we want to implement scaling-
+in using Bollinger bands, we can just have multiple entries and exits: for
+example, entryZscore = 1, 2, 3, ..., N and exitZscore = 0, 1, 2, ..., N - 1. Of
+course, N is another parameter to be optimized using a training data set.
+
+   All of these seemed very commonsensical until the research by Schoen-
+berg and Corwin proved that entering or exiting at two or more Bollinger
+bands is never optimal; that is, you can always find a single entry/exit level
+that will generate a higher average return in a backtest (Schoenberg and
+Corwin, 2010).They call this optimal single entry method "all-in."
+
+   To illustrate their point, let's say a future contract has recently dropped to
+a price L1, and you expect it to revert to a higher final price F > L1 (we have 73
+to assume mean reversion to compare averaging-in versus all-in), though
+there is a probability p that the price will go lower to L2 < L1 before re-
+bounding to F. These possibilities are illustrated in Figure 3.4. We have just
+enough buying power to invest in a total of two contracts, whether at prices
+L1, L2, or F. Let's compare the three different methods of entry:
+
+ I. All-in at L1:We invest all our capital when the price reaches L1, not car-
+    ing whether it will go lower to L2.
+
+                                 F
+       1-p
+
+L1         1
+
+    p  L2
+
+FIGURE 3.4 Two Possible Paths of Mean
+Reversion. Path 1 (with probability p) has price
+drops further from L1 to L2 before reverting to F.
+Path 2 (with probability 1 - p) has price imme-
+diately reverts to F. (Note that mean reversion is
+guaranteed one way or the other in this example.)
+                     II. All-in at L2: We wait until the price reaches L2 before investing all our
+                         capital. (Therefore, we invest nothing and earn zero returns if the price
+                         never reaches L2.)
+
+                     III. Average-in:We invest in one contract when the price reaches L1, and in
+                         another contract if the price reaches L2.
+
+                     In all cases, we exit all contracts only when the price reaches F (so no aver-
+                     age-out, even if there is average-in). What are the expected profits of each
+                     alternative? The expected profits in points are:
+
+                      I. 2(F - L1)
+                     II. 2p(F - L2)
+                     III. p[(F - L1) + (F - L2)] + (1 - p)(F - L1) = (F - L1) + p(F - L2)
+
+                     Obviously, if p = 0, method I is the most profitable. If p = 1, method II is the
+
+                     most profitable. In fact, there is a transition probability p^ = (F - L1) / (F - L2)
+                     such that if p < p^, method I is more profitable than II, and vice versa if p > p^.
+
+                     It is also easy to show that if p < p^, method I is also more profitable than III,
+
+                     and if p > ^p, method II is more profitable than III. So there is no situation
+
+                     where the average-in strategy is the most profitable one!
+
+74                   So does that mean the whole idea of scaling-in/averaging-in has been
+
+ALGORITHMIC TRADING  debunked? Not necessarily. Notice the implicit assumption made in my
+
+                     illustration: the probability of deviating to L2 before reverting to F is
+                     constant throughout time. In real life, we may or may not find this prob-
+
+                     ability to be constant. In fact, volatility is usually not constant, which
+
+                     means that p will not be constant either. In this circumstance, scaling-in
+
+                     is likely to result in a better realized Sharpe ratio if not profits. Another
+
+                     way to put it is that even though you will find that scaling-in is never op-
+
+                     timal in-sample, you may well find that it outperforms the all-in method
+
+                     out-of-sample.
+
+                      Kalman Filter as Dynamic
+                        Linear Regression
+
+                     For a pair of truly cointegrating price series, determination of the hedge
+                     ratio is quite easy: just take as much historical data as you can find, and use
+                     ordinary least square (OLS) for a regression fit or use the Johansen test to
+                     find the eigenvectors. But as we have emphasized before, stationarity and
+                     cointegration are ideals that few real price series can achieve. So how best to
+estimate the current hedge ratio for a pair of real price series when it can varyIMPLEMENTING MEAN REVERSION STRATEGIES
+with time? In all the mean-reverting strategies we have discussed so far, we
+just took a moving look-back period and computed the regression coefficient
+or Johansen eigenvector over data in that period only.This has the disadvan-
+tage that if the look-back period is short, the deletion of the earliest bar and
+the inclusion of the latest bar as time moves forward can have an abrupt and
+artificial impact on the hedge ratio.We face the same problem if we use mov-
+ing averages or moving standard deviations to calculate the current mean and
+standard deviation of a price series. In all cases, we may be able to improve
+the estimate by using a weighting scheme that gives more weight to the latest
+data, and less weight to the earlier data, without an arbitrary cutoff point.The
+familiar exponential moving average (EMA) is one such weighting scheme,
+but it is not clear why an exponential decrease in weights is optimal either.
+Here, we will describe a scheme of updating the hedge ratio using the Kal-
+man filter that avoids the problem of picking a weighting scheme arbitrarily
+(Montana,Triantafyllopoulos, andTsagaris, 2009).
+
+   Kalman filter is an optimal linear algorithm that updates the expected
+value of a hidden variable based on the latest value of an observable variable.
+(For a good exposition of this topic, see Kleeman, 2007.) It is linear because
+it assumes that the observable variable is a linear function of the hidden 75
+variable with noise. It also assumes the hidden variable at time t is a linear
+function of itself at time t - 1 with noise, and that the noises present in these
+functions have Gaussian distributions (and hence can be specified with an
+evolving covariance matrix, assuming their means to be zero.) Because of
+all these linear relations, the expected value of the hidden variable at time
+t is also a linear function of its expected value prior to the observation at
+t, as well as a linear function of the value of the observed variable at t.The
+Kalman filter is optimal in the sense that it is the best estimator available if
+we assume that the noises are Gaussian, and it minimizes the mean square
+error of the estimated variables.
+
+   For every application of Kalman filtering, we need to first figure out what
+these variables and matrices are:
+
+ Observable variable (vector)
+
+ Hidden variable (vector)
+
+ State transition model (matrix)
+
+ Observation model (matrix)
+                     This is actually the only creative part of the application because once these
+                     quantities are specified, the rest is just a robotic application of an existing
+                     algorithm. As traders, we don't need to know how to derive the relation-
+                     ships between these quantities--we only need to know where to find a good
+                     software package that gives us the right answer.
+
+                        In our application where the focus is to find the hedge ratio and the aver-
+                     age mean and volatility of the spread, the observable variable is one of the price
+                     series y, and the hidden variable is the hedge ratio .The linear function that
+                     relates y and  is, of course,
+
+                     y(t) = x(t) (t) + (t), ("Measurement equation") (3.5)
+                     
+
+                                                                        
+                                           
+        where x is the price series of the other asset, and is a Gaussian noise with
+        variance V . As we typically allow the spread between x and y to have aALGORITHMIC TRADING
+        nonzero mean, we will use a 2 × 1 vector  to denote both the intercept 
+        and the slope of the linear relation between x and y, and we will augment
+        x(t) with a column vector of ones to create an N × 2 array to allow for the
+        constant offset between x and y. x actually serves as the observation model in
+        the Kalman filter lingo.
+
+           It may seem strange that we regard only y(t) as an observable but not x(t),
+76 but this is just a mathematical trick, as every variable in the Kalman filter
+
+        equations is observable except for the hidden variable and the noises, and so
+        we have the freedom to designate which variable is the "observable" (y) and
+        which one is the "observation model" (x). Next, we make a crucial assump-
+        tion that the regression coefficient (our hidden variable) at time t is the same
+        as that at time t - 1 plus noise
+
+                     (t) = (t - 1) + (t - 1), ("State transition")        (3.6)
+
+                     where  is also a Gaussian noise but with covariance V. In other words, the
+                     state transition model here is just the identity matrix.
+
+                        Given the specification of the four important quantities in italics, Kalman
+                     filtering can now iteratively generate the expected value of the hidden variable
+                      given an observation at t. One noteworthy benefit of using the Kalman filter
+                     to find  is that not only do we obtain a dynamic hedge ratio between the two
+                     assets, we also simultaneously obtain what we used to call "the moving average"
+                     of the spread. This is because, as we mentioned,  includes both the slope and
+                     the intercept between y and x.The best current estimate of the intercept is used
+                     in place of the moving average of the spread. But, as your telemarketer often
+                     reminds you, that's not all! As a by-product, it also generates an estimate of the
+standard deviation of the forecast error of the observable variable, which we
+can use in place of the moving standard deviation of a Bollinger band.
+
+   Despite the linearity of Kalman filtering, the matrix relations relating
+various quantities may seem quite complex, so I relegate them to Box 3.1
+here for the patient reader to peruse.
+
+   Actually, besides the iterative equations, we also need to specify the (co)
+variances V and V of the measurement and state transition equations.These
+specifications will be included in Box 3.1 as well.
+
+BOX 3.1  The Iterative Equations of the Kalman Filter
+
+         We denote the expected value of  at t given observation at t - 1 by ^ (t | t - 1),
+         the expected value of  given observation at t by ^ (t | t), and the expected
+         value of y(t) given the observation at t - 1 by y^ (t | t - 1). Given the quantities
+         ^ (t - 1 | t - 1) and R(t - 1 | t - 1) at time t - 1, we can make the one-step
+
+         predictions
+
+           ^ (t | t - 1) = ^ (t - 1 | t - 1) ("State prediction")    (3.7)
+
+         R(t | t - 1) = R(t - 1 | t - 1) + Vw ("State covariance prediction") (3.8)
+
+           y^ (t) = x(t)^ (t | t - 1) ("Measurement prediction")     (3.9)
+
+         Q(t) = x(t)´R(t | t - 1)x(t) + Ve ("Measurement variance prediction") (3.10)                                  77
+
+         where R(t | t - 1) is cov((t) - ^ (t | t - 1)), measuring the covariance of the error of                      IMPLEMENTING MEAN REVERSION STRATEGIES
+         the hidden variable estimates. (It is a covariance instead of a variance because
+          has two independent components.) Similarly, R(t | t) is cov((t) - ^ (t | t)).
+         Remembering that the hidden variable consists of both the mean of the
+         spread as well as the hedge ratio, R is a 2 × 2 matrix. e(t) = y(t) - x(t)^ (t | t - 1)
+         is the forecast error for y(t) given observation at t - 1, and Q(t) is var(e(t)),
+         measuring the variance of the forecast error.
+
+            After observing the measurement at time t, the famous Kalman filter state
+         estimate update and covariance update equations are
+
+           ^ (t | t) = ^ (t | t - 1) + K(t) * e(t) ("State update")  (3.11)
+
+         R(t | t) = R(t | t - 1) - K(t) * x(t) * R(t | t - 1) ("State covariance update") (3.12)
+
+         where K(t) is called the Kalman gain and is given by
+
+           K(t) = R(t | t - 1) * x(t)/Q(t)                           (3.13)
+
+            To start off these recursions, we assume ^ (1 | 0) = 0, R(0 | 0) = 0. But what
+         about Vw and Ve? There is a method to estimate these variances from data
+         called autocovariance least squares developed by Rajamani and Rawlings
+         (2007, 2009). There is even a free Matlab/Octave package for implementing
+
+                                                                                                         (Continued )
+                     BOX 3.1 (Continued )  this method at http://jbrwww.che.wisc.edu/software/als. But for simplicity,
+
+                                           we  will  follow  Montana  and  assume  v  =      I  ,  where    is  a  parameter
+                                                                                         1-
+
+                                           between 0 and 1, and I is a 2 × 2 identity matrix. If  = 0, this means (t) =
+
+                                           (t - 1), which reduces the Kalman filter to ordinary least square regression
+                                           with a fixed offset and slope. If  = 1, this means the estimated  will fluctuate
+                                           wildly based on the latest observation. The optimal , just like the optimal
+
+                                           lookback in a moving linear regression, can be obtained using training data.
+                                           With the benefit of hindsight, we pick  = 0.0001. With the same hindsight,
+
+                                           we also pick Ve = 0.001.
+
+                        In Example 3.3, we describe the actual implementation of using the
+                     Kalman filter to estimate a dynamic  for the EWA-EWC pair we discussed
+                     in Example 2.7.
+
+                                           Example 3.3: Kalman Filter Mean Reversion Strategy
+
+                     We will now implement the Kalman filter equations 3.5 through 3.13
+
+78                   and apply them to the EWA-EWC pair.The code can be downloaded
+
+ALGORITHMIC TRADING  as KF_beta_EWA_EWC.m.We assume the price series of EWA is stored
+
+                     in a Tx1 array x, and that of EWC is stored in a Tx1 array y.
+
+                                           % Augment x with ones to accommodate possible offset in the
+                                                  % regression
+
+                                           % between y vs x.
+                                           x=[x ones(size(x))];
+
+                                           delta=0.0001; % delta=0 allows no change (like traditional
+                                              % linear regression).
+
+                                           yhat=NaN(size(y)); % measurement prediction
+                                           e=NaN(size(y)); % measurement prediction error
+                                           Q=NaN(size(y)); % measurement prediction error variance
+
+                                           % For clarity, we denote R(t|t) by P(t).
+                                           % initialize P and beta.
+                                           P=zeros(2);
+                                           beta=NaN(2, size(x, 1));
+                                           Vw=delta/(1-delta)*diag(ones(2, 1));
+                                           Ve=0.001;
+
+                                           % Initialize beta(:, 1) to zero
+                                           beta(:, 1)=0;
+                     Example 3.3 (Continued)
+
+for t=1:length(y)
+        if (t > 1)
+                beta(:, t)=beta(:, t-1); % state prediction.
+                   % Equation 3.7
+                R=P+Vw; % state covariance prediction. Equation 3.8
+        end
+
+        yhat(t)=x(t, :)*beta(:, t); % measurement prediction.
+           % Equation 3.9
+
+        Q(t)=x(t, :)*R*x(t, :)'+Ve; % measurement variance
+           % prediction. Equation 3.10
+
+     % Observe y(t)
+     e(t)=y(t)-yhat(t); % measurement prediction error
+
+     K=R*x(t, :)'/Q(t); % Kalman gain
+
+     beta(:, t)=beta(:, t)+K*e(t); % State update.
+        % Equation 3.11
+
+     P=R-K*x(t, :)*R; % State covariance update. Euqation 3.12
+
+End                                                                   79
+
+   We can see from Figure 3.5 that with  = 0.0001, the Kalman-        IMPLEMENTING MEAN REVERSION STRATEGIES
+updated slope (1, t) of a linear fit between EWC (y) and EWA (x)
+oscillates around 1.
+
+     FIGURE 3.5 Kalman Filter Estimate of the Slope     (Continued )
+     between EWC (y) and EWA (x)
+                     Example 3.3 (Continued)
+
+                     FIGURE 3.6 Kalman Filter Estimate of the Intercept
+                     between EWC (y) and EWA (x)
+
+                     We can also see from Figure 3.6 that the Kalman-updated
+
+                     intercept (2, t) increases monotonically with time.
+
+80                   We can utilize these and other quantities computed from the
+
+ALGORITHMIC TRADING  Kalman filter to create a mean-reverting strategy.The measurement
+
+                     prediction error e(t) (previously called the forecast error for y(t)
+
+                     given observation at t - 1) is none other than the deviation of the
+
+                     spread EWC-EWA from its predicted mean value, and we will buy
+
+                     this spread when the deviation is very negative, and vice versa if
+
+                     it is very positive. How negative or positive? That depends on the
+
+                     predicted standard deviation of e(t), which is none other than Q (t).
+
+                     We can plot e(t) and Q (t) on the same chart (Figure 3.7) to see
+
+                     that Q (t) changes quite slowly given our small .
+
+                     The Matlab code for determining the entry and exit signals follows.
+
+                     y2=[x(:, 1) y];
+
+                     longsEntry=e < -sqrt(Q); % a long position means we should
+                        % buy EWC
+
+                     longsExit=e > -sqrt(Q);
+
+                     shortsEntry=e > sqrt(Q);
+                     shortsExit=e < sqrt(Q);
+                        Example 3.3 (Continued)                                        IMPLEMENTING MEAN REVERSION STRATEGIES
+   Once the entry and exit signals are determined, the rest of the
+code is the same as bollinger.m--just substitute beta(1, :) in place of
+hedgeRatio. It has a reasonable APR of 26.2 percent and a Sharpe ratio
+of 2.4. Its cumulative returns are plotted on Figure 3.8.
+
+                                                                                     81
+
+            FIGURE 3.7 Measurement Prediction Error e(t) and
+            Standard Deviation of e(t)
+
+FIGURE 3.8 Cumulative Returns of Kalman Filter Strategy on
+
+EWA-EWC                                                     (Continued )
+                                             Example 3.3 (Continued)
+
+                        Instead of coding the Kalman filter yourself as we demonstrated,
+                     you can also use many free open-source MATLAB codes available.
+                     One such package can be found at www.cs.ubc.ca/~murphyk
+                     /Software/Kalman/kalman.html. Kalman filters are also available
+                     from MATLAB's Control System Toolbox.
+
+                      Kalman Filter as Market-Making Model
+
+                     There is another noteworthy application of Kalman filter to a mean-
+                     reverting strategy. In this application we are concerned with only one
+                     mean-reverting price series; we are not concerned with finding the hedge
+                     ratio between two cointegrating price series. However, as before, we still
+                     want to find the mean price and the standard deviation of the price series
+                     for our mean reversion trading. So the mean price m(t) is the hidden vari-
+                     able here, and the price y(t) is the observable variable. The measurement
+                     equation in this case is trivial:
+
+82                   y(t) = m(t) + (t),                           ("Measurement equation") (3.14)
+
+ALGORITHMIC TRADING  with the same state transition equation
+
+                                 m(t) = m(t - 1) + (t - 1).       ("State transition") (3.15)
+                     So the state update equation 3.11 is just
+
+                     m(t | t) = m(t | t - 1) + K(t)( y(t) - m(t | t - 1)). ("State update") (3.16)
+
+                     (This may be the time to review Box 3.1 if you skipped it on first reading.)
+                     The variance of the forecast error is
+
+                                          Q(t) = Var(m(t)) + Ve.                  (3.17)
+                     The Kalman gain is
+
+                                        K(t) = R(t | t - 1)/(R(t | t - 1) + Ve),  (3.18)
+                     and the state variance update is                             (3.19)
+
+                                          R(t | t) = (1 - K(t))R(t | t - 1).
+Why are these equations worth highlighting? Because this is a favorite
+
+model for market makers to update their estimate of the mean price of an
+
+asset, as Euan Sinclair pointed out (Sinclair, 2010).To make these equations
+
+more practical, practitioners make further assumptions about the measure-
+
+ment error Ve, which, as you may recall, measures the uncertainty of the ob-
+served transaction price. But how can there be uncertainty in the observed
+
+transaction price? It turns out that we can interpret the uncertainty in such
+
+a way that if the trade size is large (compared to some benchmark), then the
+
+uncertainty is small, and vice versa. So Ve in this case becomes a function of t
+
+as well. If we denote the trade size as T and the benchmark trade size as Tmax,
+
+then Ve can have the form
+
+Ve                       =  R(t  |  t  -  1)    T        (3.20)
+                                                     -1
+                                               Tmax
+                                                       
+
+   So you can see that if T = Tmax, there is no uncertainty in the observed
+price, and the Kalman gain is 1, and hence the new estimate of the mean
+
+price m(t) is exactly equal to the observed price! But what should Tmax be? It
+can be some fraction of the total trading volume of the previous day, for ex-
+
+ample, where the exact fraction is to be optimized with some training data.
+
+   Note the similarity of this approach to the so-called volume-weighted
+average price (VWAP) approach to determine the mean price, or fair value 83
+
+of an asset. In the Kalman filter approach, not only are we giving more           IMPLEMENTING MEAN REVERSION STRATEGIES
+
+weights to trades with larger trade sizes, we are also giving more weights to
+
+more recent trade prices. So one might compare this to volume and time-
+
+weighted average price.
+
+ The Danger of Data Errors
+
+Data errors have a particularly insidious effect on both backtesting and ex-
+ecuting mean-reverting strategies.
+
+   If there are errors, or "outliers," in the historical data used for back-
+testing, then these errors usually inflate the backtest performance of
+mean-reverting strategies. For example, if the actual trade prices of a
+stock at 11:00, 11:01, and 11:02 were $100, $100, and $100, but the
+historical data erroneously recorded them as $100, $110, $100, then
+your mean-reverting strategy's backtest is likely to have shorted the
+stock at 11:01 ($110), and then covered the position at 11:02 ($100)
+and made a tidy but fictitious profit of $10.You can see that data quality
+is particularly important for intraday data, because they present much
+ALGORITHMIC TRADINGmore numerous opportunities for such errors.That's why reputable data
+        vendors took great care in incorporating the exchange-provided cancel-
+        and-correct codes to correct any trades that may have been canceled due
+        to transaction prices that are too far from "normal." (What constitutes a
+        "normal" price is solely determined, sometimes on a case-by-case basis,
+        by the relevant exchange.) Thomas Falkenberry (2002) has written more
+        on data cleansing issues.
+
+           However, this type of data error will suppress the backtest performance
+        of momentum strategies, so it is not as dangerous. In the preceding ex-
+        ample, a momentum strategy will likely buy the stock at 11:01 ($110) in
+        backtest, and may be stopped out at a loss at 11:02 ($100).
+
+           The same kind of errors will, of course, trigger wrong trades in live trad-
+        ing as well, often resulting in real-life losses. In the preceding example, if the
+        prices were bid prices, and we have the erroneous bid at $110 at 11:02, then
+        our execution program may have sent a short market sell order at that time,
+        which unfortunately will be filled at $100 instead since there was actually
+        no bid at $110.
+
+           This problem with erroneous live bid/ask quotes is particularly dan-
+        gerous when trading pairs or other arbitrage strategies, because in these
+84 strategies we often depend on the differences of the price quotes from
+        various instruments to trigger trading signals. The difference of a pair of
+        quotes is usually of much smaller magnitude than the quotes themselves,
+        so any error in the quotes results in a much bigger percentage error in the
+        spread. For example, if we are trading a pair of stocks X and Y, and X has
+        a true bid price of $100 andY has a true ask price of $105, so the spread
+        Y-X is $5, which may be too small to trigger an market order to buy X
+        and sell Y. But if data error causes Y to display an ask price of $106, then
+        the erroneous spread becomes $6, an increase of 20 percent over the real
+        spread of $5, and this may be enough to trigger an erroneous order to buy
+        X and sellY.
+
+           I have seen this problem in live trading when I used a broker's data feed
+        to drive an equities pair-trading strategy.That data feed quite regularly trig-
+        gered losing trades that I could not explain, until I switched the data feed
+        to a third-party provider (nothing fancier thanYahoo! real-time quotes) and
+        the bad trades stopped. Later on, I had access to Bloomberg's live data feed,
+        and it didn't trigger any of these bad trades either.
+
+           Bad ticks in live data will also cause momentum strategies to send
+        wrong orders. So they are equally loss-inducing to the execution of those
+        strategies.
+KEY POINTS
+
+· Do you want to construct a mean-reverting portfolio with a fixed number
+
+of shares during the duration of a trade? Use price series to determine the
+hedge ratios.
+
+· Do you want to construct a mean-reverting portfolio with fixed market
+   values for each constituent during the duration of a trade? Use log price
+
+series to determine the hedge ratios.
+
+· Ratio, instead of spreads, is often a good indicator for trading currency
+
+pairs.
+
+· Afraid that the hedge ratio, mean, and standard deviation of a spread may
+   vary in the future? Use a moving look-back period or the Kalman filter.
+
+· A practical implementation of a linear trading strategy is the Bollinger bands
+   with scaling-in.
+
+· Scaling-in may not be optimal in backtests but is often useful for live trading
+
+where volatilities and probabilities do change.
+
+· Do you want to dynamically update the expected price of an instrument
+
+based on its latest trade (price and size)? Use the Kalman filter.
+
+· Data errors can inflate the backtest results of mean-reverting strategies but
+
+not momentum strategies.
+
+· Strategies based on spreads are particularly sensitive to small data errors,     85
+
+whether in backtest or live trading.
+
+                                                                                   IMPLEMENTING MEAN REVERSION STRATEGIES
+                                                        CHAPTER 4
+
+Mean Reversion of
+Stocks and ETFs
+
+The stock market is, in a sense, the most fertile ground for finding mean-        87
+     reverting instruments and for the application of those basic mean rever-
+sion trading techniques described in the previous two chapters. In theory,
+
+we can form pairs of stocks belonging to any sector and expect them to
+
+cointegrate due to their exposure to many common economic factors.Their
+
+number is large, so diversification is easy. In practice, though, there are some
+
+serious difficulties with applying these generic techniques to trading stocks
+
+and ETFs.This chapter will examine issues specific to stocks and ETFs. I will
+
+also demonstrate that simple mean-reverting strategies actually work better
+
+for ETF pairs and triplets.
+
+But we need not limit ourselves to those strategies described in Chap-
+
+ter 3 when looking for mean reversion in stocks or ETFs. We find that
+
+in the short term, most stocks exhibit mean-reverting properties under
+
+normal circumstances. (Normal circumstance means there isn't any news
+
+on the stock, a topic that is taken up in Chapter 7.) This is despite the
+
+fact that stock prices follow geometric random walks over the long term.
+
+We will build a strategy to exploit this short-term, or "seasonal," mean
+
+reversion.
+
+Index arbitrage is another familiar mean reversion strategy. In this
+
+case, we are counting on the cointegration of stocks versus futures or
+                     stocks versus ETFs. Because little profit is left using the traditional
+
+                     implementation of index arbitrage, we give an example of a modified
+
+                     strategy.
+
+                     As mentioned before, in addition to the familiar time series mean
+
+                     reversion to which we have devoted all our attention so far, there is the
+
+                     phenomenon of cross-sectional mean reversion, which is prevalent in
+
+                     baskets of stocks. Recall that in time series mean reversion, the prices
+
+                     are reverting to a mean determined by their own historical prices, while
+
+                     cross-sectional mean reversion means that the cumulative returns of the
+
+                     instruments in a basket will revert to the cumulative return of the bas-
+
+                     ket. The statistical tests for time series mean reversion are largely irrel-
+
+                     evant for cross-sectional mean reversion. This additional type of mean
+
+                     reversion makes creating any sort of mean-reverting strategy for stocks
+
+                     even easier.
+
+                     Because of this ease of finding mean-reverting patterns, the stock market
+
+                     attracts a large number of traders, often called statistical arbitrageurs, to ex-
+
+                     ploit such patterns. As a result, the returns in such strategies have generally
+
+                     decreased. We discuss a few simple tricks that can boost their otherwise
+
+                     declining performances.
+
+88                   Once again, we emphasize that the backtesting results in this book
+
+ALGORITHMIC TRADING  do not include transaction costs. One reason for this omission is that
+
+                     transaction costs can depend quite sensitively on the exact execution
+
+                     method used and the exact stock universe chosen for the stock models.
+
+                     A more specific pitfall included in the backtesting of the stock models
+
+                     is the use of data with survivorship bias, since survivorship bias-free
+
+                     data is more cumbersome and expensive to assemble. The hope is that
+
+                     the results are not too unrealistic, at least for results in the past year
+
+                     or two. If you intend to redo the backtests with survivorship bias­free
+
+                     databases, you should remember that the chosen stock index (typically
+
+                     Standard & Poor's [S&P] 500) has a changing composition throughout
+
+                     its history, too. To do this properly, you would need a database contain-
+
+                     ing the historical daily index compositions. Remember also the issue of
+
+                     primary versus consolidated stock prices discussed in Chapter 1. The
+
+                     historical prices used here are all consolidated opens and closes. But if
+
+                     you implement some of these strategies using market-on-open (MOO)
+
+                     or limit-on-open (LOO) orders, or similarly market-on-close (MOC)
+
+                     or limit-on-close (LOC) orders, you will be filled at the primary ex-
+
+                     change open or close. Usually, this means that the actual returns will be
+
+                     lower than those reported here.
+ The Difficulties of Trading Stock Pairs                                          MEAN REVERSION OF STOCKS AND ETFS
+
+Pair trading of stocks is the first type of algorithmic mean reversion strategy
+institutional traders invented, reportedly by Gerry Bamberger at Morgan
+Stanley (Patterson, 2010). Yet nowadays it can be surprisingly difficult to
+squeeze profits out of it.
+
+   If we test the daily price series of individual stocks, they almost never
+meet the definition of stationarity as defined in Chapter 2. The geometric
+random walk describes their behaviors fairly well: once they walked away,
+they seldom returned to their starting points. (Their intraday and seasonal
+mean-reverting properties are special cases to be discussed later on.)
+
+   Even if you pair them up in some sensible way (e.g., Exxon versus Chev-
+ron, or Citibank versus Bank of America), they are seldom cointegrating out-of-
+sample. I emphasize out-of-sample because it is quite easy to find cointegrating
+stock pairs in any chosen period of time, but they can just as easily lose cointe-
+gration in the subsequent out-of-sample period.The reason for this difficulty
+is that the fortunes of one company can change very quickly depending on
+management decisions and the competition.The fact that two companies are in
+the same industry sector does not guarantee that they will be subjected to the
+same fortune (think AAPL versus BBRY).The upshot is that it is difficult to be 89
+consistently profitable in trading a single pair of stocks using a mean-reverting
+strategy unless you have a fundamental understanding of each of the companies
+and can exit a position in time before bad news on one of them becomes public.
+
+   What if we trade a large number of pairs of stocks, so that occasional de-
+railment of some pairs would not affect the profitability of the entire port-
+folio? The law of large numbers will only work in our favor if the expected
+return of an individual pair in the out-of-sample period is positive, but I have
+not found this to be the case for stock pairs. Apparently, the small profits
+gained by the "good" pairs have been completely overwhelmed by the large
+losses of the pairs that have gone "bad."
+
+   Other than these fundamental problems with stock pairs trading, there
+are two additional technical difficulties.
+
+   The first difficulty is short-sale constraint. It is particularly dangerous for
+a stock pair that involves shorting a hard-to-borrow stock, because even if
+your position is ultimately profitable, you may be forced to liquidate it at
+the most unprofitable and inopportune time.This may happen when you are
+short this stock and it suddenly jumps up in value due to some unexpected
+good news, and many lenders of this stock are eager to sell them. In this
+case, your borrowed stock may be recalled, and you will be forced to buy
+ALGORITHMIC TRADINGto cover this position at a big loss, while selling the long position on the
+        other leg.This is called the short squeeze.
+
+           Under the same heading of short-sale constraint, the new alternative uptick
+        rule in effect in the U.S. stock markets since 2010 also creates uncertainty in
+        both backtesting and live executions of stock pairs strategy. Once the circuit
+        breaker is triggered, we are essentially forbidden to send short market orders.
+
+           The second difficulty arises in the intraday trading of stock pairs. Since the
+        profit margins in stock pairs trading have been decreasing through the years,
+        it becomes imperative to enter and exit positions intraday to capture the best
+        prices. Also, if traders refrain from taking overnight positions in stock pairs,
+        they may be able to avoid the changes in fundamental corporate valuations
+        that plague longer-term positions mentioned above. However, intraday pair
+        trading of stocks runs into the problem that the national best bid and offer
+        (NBBO) quote sizes for stocks (and for ETFs) have become very small.This
+        may be due to the prevalence of using dark pools or undisplayed "iceberg"
+        orders by institutional traders, the breaking up of large orders into very small
+        child orders by smart execution algorithms, the advent of high-frequency
+        traders submitting small orders that they can cancel and replace frequently,
+        and, finally, the reluctance of market makers to display large order sizes to
+90 avoid being taken advantage of by high-frequency traders.
+
+           For example, it is not unusual for AAPL to have an NBBO size of just
+        100 shares!Therefore, backtesting a stock pair­trading strategy using either
+        trade or quote prices is not very realistic unless you trade only 100 shares
+        or if you include a substantial transaction cost.The same phenomenon leads
+        to difficulties in live execution also. If we were to submit market orders for
+        both sides after a trading signal was triggered by the NBBO prices, we could
+        have suffered a substantial slippage. We are forced to send limit orders for
+        one side (or for both sides with small fractions of an order and suffer tem-
+        porary small unhedged positions) and actively manage the possible cancella-
+        tions and resubmissions of this order in case they are not fully filled.
+
+           Why was pair trading stocks so profitable in the past? One general reason
+        is that the market was much more inefficient back then, so the normal profits
+        from the pairs that do mean-revert are large enough to cover those losses from
+        pairs that don't.This is, of course, a common plague for any profitable strate-
+        gies, but it is particularly acute for such well-known strategies as pair trading
+        of stocks. One specific reason for the decline in profits of stock pairs trading is
+        the decimalization of U.S. stock prices. Decimalization caused bid-ask spreads
+        to dramatically narrow, so pair traders, who act as a type of market makers,
+        find that their market-making profits decrease also (Serge, 2008).
+   Of course, the fact that pair trading of stocks is not very profitable in theMEAN REVERSION OF STOCKS AND ETFS
+highly efficient U.S. markets does not mean that they are not profitable in
+other countries. But for the U.S. market, we have the alternative of profit-
+ably pair trading ETFs instead.
+
+ Trading ETF Pairs (and Triplets)
+
+The one advantage of trading ETF pairs instead of stock pairs is that, once
+found to be cointegrating, ETF pairs are less likely to fall apart in out-
+of-sample data. That is because the fundamental economics of a basket of
+stocks changes much more slowly than that of a single company. For ex-
+ample, since both Australia and Canada are commodity-based economies,
+EWA and EWC (their respective stock index ETFs) are good candidates
+for cointegration tests. And, indeed, we confirmed their cointegration in
+Chapter 3. I mentioned this pair back in 2009 on my blog (http://epchan
+.blogspot.com/2009/11/in-praise-of-etfs.html?showComment=125743
+4002472#c1235760260813269054), and their cointegration continues as
+of this writing (November 2012). The pair selection process for ETFs is
+quite easy: we need to find ETFs that are exposed to common econom-
+ic factors. Besides country ETFs, sector ETFs are another fertile ground 91
+for finding cointegrated instruments. For example, the retail fund RTH
+cointegrates with the consumer staples fund XLP.With the proliferation of
+ETFs tracking more or less the same sector, pair-trading opportunities are
+steadily increasing.
+
+   Another favorite ETF pairing of mine is between a commodity ETF and
+an ETF of companies that produce that commodity. The gold fund GLD
+versus the gold miners fund GDX is a good example. The rationale is that
+since the main asset of a gold-mining company is gold, their values should
+cointegrate with gold spot prices. And, indeed, they have done so--until
+July 14, 2008, or thereabout. If we test for cointegration of GLD versus
+GDX between May 23, 2006, and July 14, 2008, using the Johansen test,
+we find that they cointegrate with 99 percent probability, but if we test over
+the period July 15, 2008, to April 9, 2012, they have lost the cointegration.
+What happened on July 14, 2008? That's when oil (the West Texas Interme-
+diate flavor) price peaked at around $145 per barrel, an all-time high.What
+has oil price got to do with the cointegration between gold price and gold
+miners' share prices? A lot, apparently. It turns out that when oil prices are
+expensive, it costs a lot more to mine gold, and therefore the profits of gold
+ALGORITHMIC TRADINGminers are reduced, leading to the underperformance of their share prices
+        relative to gold spot prices ("The Wacky World of Gold," 2011).
+
+           To gather empirical support for this explanation, we can introduce the
+        oil fund USO into the portfolio and see if this triplet cointegrates over the
+        entire period from 2006 to 2012. The Johansen test shows that they do,
+        with a 99 percent probability that there exists one cointegrating relation-
+        ship. Hence, instead of just trading GLD and GDX, we can trade this port-
+        folio of triplets instead. Even if you find trading a triplet too cumbersome,
+        you should at least have a rule in place to cease trading GLD versus GDX
+        whenever oil price exceeds a certain threshold.
+
+           This example has particular significance.When scientists first come upon
+        an unexplained phenomenon, they form a hunch about its cause, and then
+        they find ways to test this hunch empirically. We should adopt the same
+        scientific process in approaching trading. When a trading strategy stops
+        working, we should form a hypothesis of the reason, and then test empiri-
+        cally whether that hypothesis is supported by data.The outcome of this pro-
+        cess is often a modified strategy that regains profitability.
+
+           One might think that the oil fund USO versus the energy sector fund
+        XLE is another example of a commodity versus commodity producer pair,
+92 but there is a problem with this pairing. While GLD owns gold, and thus
+        reflects the gold spot price, USO doesn't actually own oil. It invests in oil
+        futures contracts. As we will discuss in Chapter 5, futures price of a com-
+        modity differs from its spot price. Even if XLE cointegrates with the spot
+        price of oil, it may not necessarily cointegrate with USO. Of course, this
+        problem plagues any commodity futures fund versus commodity producer
+        fund. Mean reversion trading of such pairs would be much less risky if the
+        commodity fund holds the actual commodity rather than the futures.
+
+           The mechanics of trading ETF pairs is the same as trading stock pairs.The
+        old uptick rule exempted ETFs, but the new alternative uptick rule covers
+        all securities traded on U.S. stock exchanges. However, the NBBO sizes for
+        ETFs are certainly much larger than that for stocks. For example, on a typi-
+        cal day, the NBBO sizes for EWC can be around 5,000 shares.
+
+        Intraday Mean Reversion: Buy-on-Gap Model
+
+        Stock prices follow geometric random walks, as many financial scholars
+        have tirelessly reminded us (Malkiel, 2008). But this is true only if we test
+        their price series for mean reversion strictly at regular intervals (such as
+using their daily closes). Our job as traders is to find special conditions, or
+special periods, such that mean reversion occurs with regularity, while at
+the same time avoiding data-snooping bias. As the following strategy will
+show, there may indeed be seasonal mean reversion occurring at the intraday
+time frame even for stocks.
+
+   The rules for the strategy are:
+
+1. Select all stocks near the market open whose returns from their
+    previous day's lows to today's opens are lower than one standard
+    deviation. The standard deviation is computed using the daily close-
+    to-close returns of the last 90 days.These are the stocks that "gapped
+    down."
+
+2. Narrow down this list of stocks by requiring their open prices to be
+    higher than the 20-day moving average of the closing prices.
+
+3. Buy the 10 stocks within this list that have the lowest returns from their
+    previous day's lows. If the list has fewer than 10 stocks, then buy the
+    entire list.
+
+4. Liquidate all positions at the market close.
+
+The rationale for this strategy is that on days when the stock index futures
+
+are down before the open, certain stocks suffer disproportionately due to        93
+panic selling at the open. But once this panic selling is over, the stock will
+                                                                                 MEAN REVERSION OF STOCKS AND ETFS
+gradually appreciate over the course of the day.
+
+Rule 2 is often very useful in mean-reverting strategies: it is basically a
+
+momentum filter superimposed on a mean-reverting strategy, a technique
+
+that we will reprise often. Usually, those stocks that dropped "just a little"
+
+have a better chance of reversal than those that dropped "a lot" because the
+
+latter are often the ones that have negative news such as poor earnings an-
+
+nouncements. Drops caused by negative news are less likely to revert. We
+
+can actually develop momentum strategies based on such breaking news
+
+(more on this in Chapter 7). Furthermore, the fact that a stock is higher
+
+than a long-term moving average attracts selling pressure from larger play-
+
+ers such as long-only funds, whose trading horizons tend to be longer.This
+
+demand for liquidity at the open may exaggerate the downward pressure
+
+on the price, but price moves due to liquidity demands are more likely to
+
+revert when such demands vanish than price moves due to a shift in the
+
+fundamental economics of the stock. Therefore, this strategy can succeed
+
+in a news-heavy environment where traditional interday stock pairs trading
+
+will likely fail.
+
+The MATLAB code to backtest this strategy is displayed in Example 4.1.
+                     Example 4.1: Buy-on-Gap Model on SPX Stocks
+
+                     This code, which backtests the Buy-on-Gap model, can be
+                     downloaded as bog.m. It requires as input three T × N arrays, op, lo,
+                     and cl, where T is the number of days, N is the number of stocks in
+                     the universe, and op contains the daily open prices, lo contains the
+                     daily lows, and cl the daily closes.The stock universe we used to
+                     backtest is the S&P 500, but one that has survivorship bias.
+
+                         topN=10; % Max number of positions
+
+                         entryZscore=1;
+
+                         lookback=20; % for MA
+
+                     stdretC2C90d=backshift(1, smartMovingStd(calculateReturns ...
+                        (cl, 1), 90));
+
+                     buyPrice=backshift(1, lo).*(1-entryZscore*stdretC2C90d);
+
+                     retGap=op-backshift(1, lo))./backshift(1, lo);
+
+                     pnl=zeros(length(tday), 1);
+
+                     positionTable=zeros(size(cl));
+
+94                   ma=backshift(1, smartMovingAvg(cl, lookback));
+
+ALGORITHMIC TRADING  for t=2:size(cl, 1)
+
+                                 hasData=find(isfinite(retGap(t, :)) & op(t, :) ...
+                                    < buyPrice(t, :) & op(t, :) > ma(t, :));
+
+                                 [foo idxSort]=sort(retGap(t, hasData), `ascend');
+                                 positionTable(t, hasData(idxSort(1:min(topN, ...
+
+                                    length(idxSort)))))=1;
+                     end
+
+                     retO2C=(cl-op)./op;
+                     pnl=smartsum(positionTable.*(retO2C), 2);
+                     ret=pnl/topN;
+                     ret(isnan(ret))=0;
+
+                        This strategy has an annual percentage rate (APR) of 8.7 percent and a
+                     Sharpe ratio of 1.5 from May 11, 2006, to April 24, 2012. The cumulative
+                     returns curve is depicted in Figure 4.1.
+
+                        I have traded a version of it quite profitably in my personal ac-
+                     count as well as in a fund that I comanaged. Unfortunately, that version
+                FIGURE 4.1 Cumulative Returns of Buy-on-Gap Model              MEAN REVERSION OF STOCKS AND ETFS
+
+does not include rule 2, and it suffered from diminishing returns from
+2009 onward. The long-only nature of the strategy also presents some
+risk management challenges. Finally, the number of stocks traded each day
+is quite small, which means that the strategy does not have a large capacity.
+
+   The astute reader may wonder how we can use open prices to determine 95
+the trading signals for entry at the open and be filled at the official open
+prices. The short answer is, of course: We can't! We can, however, use the
+preopen prices (for example, at ARCA) to determine the trading signals.
+The signals thus determined will not exactly match the ones determined
+by the actual open prices, but the hope is that the difference will not be so
+large as to wipe out the returns.We can call this difference signal noise.Also,
+note the pitfall of backtesting this strategy using consolidated prices versus
+primary exchange prices, as explained in Chapter 1.
+
+   What about the mirror image of this strategy? Can we short stocks
+that gap up a standard deviation but are still lower than their 20-day mov-
+ing average? Yes, we can. The APR is 46 percent and the Sharpe ratio is
+1.27 over the same period. Despite the seemingly higher return than the
+long-only strategy, the short-only one does have steeper drawdown (see
+Figure 4.2), and it suffered from the same short-sale constraint pitfall
+discussed before.
+
+   This strategy is actually quite well known among traders, and there are
+many variations on the same theme. For example, you can obviously trade
+both the long-only and short-only versions simultaneously. Or you can trade
+a hedged version that is long stocks but short stock index futures.You can
+ALGORITHMIC TRADING       FIGURE 4.2 Cumulative Returns of Short-on-Gap Model
+
+        buy a larger number of stocks, but restricting the number of stocks within
+        the same sector.You can extend the buying period beyond the market open.
+        You can impose intraday profit caps. But the important message is: Price
+96 series that do not exhibit mean reversion when sampled with daily bars can
+        exhibit strong mean reversion during specific periods.This is seasonality at
+        work at a short time scale.
+
+        Arbitrage between an ETF and Its
+           Component Stocks
+
+        Many readers would be familiar with the strategy of "index arbitrage,"
+        which trades on the difference in value between a portfolio of stocks
+        constituting an index and the futures on that index. If the stocks are
+        weighted in the same way used to construct the index, then the market
+        value of the portfolio will cointegrate very tightly with the index fu-
+        tures. Maybe too tightly--unfortunately, this is such a well-known strat-
+        egy that the difference in market values has become extremely small
+        (Reverre, 2001). All but the most sophisticated traders can profit from
+        this strategy, and it most certainly needs to be traded intraday, perhaps
+        at high frequency (see Box 4.1). In order to increase this difference, we
+        can select only a subset of the stocks in the index to form the portfolio.
+        The same concept can be applied to the arbitrage between a portfolio
+          High-Frequency Index ArbitrageBOX 4.1
+
+          High-frequency traders have been able to exploit two deficiencies in the        MEAN REVERSION OF STOCKS AND ETFS
+          intraday computations of the indices and arbitrage between the futures
+          tracking these indices versus the component stocks. The first deficiency is
+          that many major indices including Dow Jones, S&P, Nasdaq, and Russell
+          are computed using only the primary exchange trades data (see Chapter 1
+          on primary versus consolidated stock prices), which represent less than
+          30 percent of all shares traded on those stocks (Arnuk and Saluzzi, 2012). The
+          second deficiency is that the index is updated only once every few seconds.
+          Both deficiencies lead to a discrepancy between the true, most up-to-date
+          market value of a basket of component stocks and the index value itself. As a
+          result, the index future value can be expected to lag the instantaneous market
+          value of the stocks. If the index future value is higher than the instantaneous
+          market value, we can simply short the future and vice versa. Where can we
+          get this true, instantaneous market value of the stocks? We would, of course,
+          need to subscribe to the direct data feed of every U.S. stock exchange and
+          ECN (and not the SIAC feed) and monitor the trade prices for all the stocks
+          in the index with millisecond latency in all these venues. Nobody said high-
+          frequency trading is easy!
+
+                                                                                        97
+of stocks constituting an ETF and the ETF itself. In this case, we choose
+just a proper subset of the constituent stocks to form the portfolio. One
+selection method is to just pick all the stocks that cointegrate individu-
+ally with the ETF. We will demonstrate the method by using the most
+famous ETF of all: SPY.
+
+   We will pick one year of data (in our example, January 1, 2007, to De-
+cember 31, 2007) as a training set and look for all the stocks that cointe-
+grate with SPY with at least 90 percent probability using the Johansen test.
+Then we form a portfolio of these stocks with equal capital on each stock,
+and confirm using the Johansen test again that this long-only portfolio still
+cointegrates with SPY. This step is necessary because an arbitrary assign-
+ment of equal capital weight to each stock does not necessarily produce a
+portfolio price series that cointegrates with that of SPY, even if each of the
+constituent stocks is cointegrating with SPY.We are using log price in this
+second test because we expect to rebalance this portfolio every day so that
+the capital on each stock is constant. (See the discussions in Chapter 3.)
+After confirming cointegration, we can then backtest the linear mean re-
+version strategy described in Chapter 2. The MATLAB source codes are
+displayed in Example 4.2.
+                     Example 4.2: Arbitrage between SPY and Its
+                                    Component Stocks
+
+                     This code can be downloaded as indexArb.m. It requires as input a TxN
+                     array cl, where T is the number of days, N is the number of stocks in
+                     the universe, and cl the daily closes.The stock universe we used to
+                     backtest is the same as that used in Example 4.1, and the symbols it
+                     contains are in a cell array stocks. All these arrays are packaged in a
+                     structure stks. In addition, we need a Tx1 array cl for the daily closes
+                     of SPY.These are packaged in a structure etf. Of course, we must
+                     ensure that dates for stks and etf match.The common trading dates are
+                     contained in a Tx1 array tday.We will run the Johansen test on only
+                     the first part of this data: January 1, 2007, to December 31, 2007.
+                     This is designated as the training set.
+
+                         trainDataIdx=find(tday>=20070101 & tday<=20071231);
+
+                         testDataIdx=find(tday > 20071231);
+
+                     isCoint=false(size(stks.stocks));
+
+                     for s=1:length(stks.stocks)
+
+98                   % Combine the two time series into a matrix y2 for
+                        % input into Johansen test
+
+ALGORITHMIC TRADING  y2=[stks.cl(trainDataIdx, s), etf.cl(trainDataIdx)];
+
+                     badData=any(isnan(y2), 2);
+
+                     y2(badData, :)=[]; % remove any missing data
+
+                                 if (size(y2, 1) > 250)
+                                           results=johansen(y2, 0, 1); % johansen test
+                                              % with non-zero offset but zero drift, and with
+                                              % the lag k=1.
+                                           if (results.lr1(1) > results.cvt(1, 1))
+                                                   isCoint(s)=true;
+                                           end
+
+                                 end
+                     end
+
+                     length(find(isCoint))
+
+                        Based on the Johansen test between each stock in SPX with SPY
+                     over the training set, we find that there are 98 stocks that cointegrate
+                     (each separately) with SPY. Now we can form a long-only portfolio
+                     with all stocks that cointegrate with SPY, with equal capital allocation.
+                     We must then test the cointegration of this portfolio with SPY.
+              Example 4.2 (Continued)
+
+yN=stks.cl(trainDataIdx, isCoint);
+logMktVal_long=sum(log(yN), 2); % The net market value of
+
+   the long-only portfolio is same as the "spread"
+
+% Confirm that the portfolio cointegrates with SPY
+ytest=[logMktVal_long, log(etf.cl(trainDataIdx))];
+results=johansen(ytest, 0, 1); % johansen test with non-zero
+
+   offset but zero drift, and with the lag k=1.
+prt(results);
+
+% Output:
+
+% Johansen MLE estimates
+
+% NULL:       Trace Statistic Crit 90%   Crit 95% Crit 99%
+                                            15.494 19.935
+% r <= 0 variable 1       15.869 13.429       3.841 6.635
+
+% r <= 1 variable 2       6.197  2.705   Crit 95% Crit 99%
+                                            14.264 18.520
+%                                             3.841 6.635
+
+% NULL:       Eigen Statistic Crit 90%
+
+% r <= 0 variable 1       9.671 12.297
+
+% r <= 1 variable 2       6.197  2.705
+
+results.evec                                                                         99
+
+%
+
+% ans =                                                                              MEAN REVERSION OF STOCKS AND ETFS
+
+%
+
+%  1.0939            -0.2799
+
+% -105.5600          56.0933
+
+   The Johansen test indicates that the long-only portfolio does
+cointegrate with SPY with better than 95 percent probability. So
+we can form a long-short stationary portfolio comprising both the
+stocks and SPY, using the Johansen eigenvector to determine the
+weights of SPY versus that of the stock portfolio. (There are, in
+fact, two cointegrating relations, but we will pick the one with the
+largest eigenvalue--the first column of the eigenmatrix--to form
+this stationary portfolio.) As the Johansen test was performed on
+the log prices, the hedge ratios (represented by the weights array) on
+the stocks or SPY represent dollar capital allocation, not number of
+shares, as explained in Chapter 3. (The weight on each individual
+stock is, of course, the same, due to our assumption of equal capital
+allocation, but it differs from the weight on SPY.)
+
+                                                                       (Continued )
+                     Example 4.2 (Continued)
+
+                        We then apply the linear mean reversion strategy on this portfolio
+                     over the test period January 2, 2008, to April 9, 2012, much in the
+                     same way as Example 2.8, except that in the current program we
+                     have fixed the look-back used for calculating the moving average and
+                     standard deviations of the portfolio market value to be 5, with the
+                     benefit of hindsight.
+
+                             % Apply linear mean-reversion model on test set
+
+                         yNplus=[stks.cl(testDataIdx, isCoint), etf.cl(testDataIdx)]; ...
+                            % Array of stock and ETF prices
+
+                         weights=[repmat(results.evec(1, 1), size(stks.cl(testDataIdx,
+                            isCoint))), ...
+
+                                 repmat(results.evec(2, 1), size(etf.cl(testDataIdx)))]; ...
+                                    % capital allocation among the stocks and SPY.
+
+                     logMktVal=smartsum(weights.*log(yNplus), 2); % Log market
+                        % value of long-short portfolio
+
+100                  lookback=5;
+
+ALGORITHMIC TRADING  numUnits=-(logMktVal-movingAvg(logMktVal, lookback)) ...
+                        ./movingStd(logMktVal, lookback);
+                        positions=repmat(numUnits, [1 size(weights, 2)]).*weights;
+                        % positions is the dollar capital in each stock or SPY.
+
+                     pnl=smartsum(lag(positions, 1).*(log(yNplus)- ...
+                        lag(log(yNplus), 1)), 2);
+                        ret=pnl./smartsum(abs(lag(positions, 1)), 2);
+                        ret(isnan(ret))=0;
+
+                        The APR of this strategy is 4.5 percent, and the Sharpe ratio is
+                     1.3. As you can see from the cumulative returns chart (Figure 4.3),
+                     the performance decreases as time goes on, partly because we have
+                     not retrained the model periodically to select new constituent stocks
+                     with new hedge ratios. In a more complete backtest, we can add this
+                     dynamic updating of the hedge ratios.
+
+                        The same methodology can, of course, be applied to any ETFs,
+                     indices, or subindices you like. Furthermore, we can use a future instead
+                     of an ETF if such a future exists that tracks that index or subindex,
+                     although in this case one has to be careful that the prices of the future
+                     used in backtest are contemporaneous with the closing prices for the
+                     stocks. (This was pointed out as a potential pitfall in Chapter 1.)
+                           Example 4.2 (Continued)                              MEAN REVERSION OF STOCKS AND ETFS
+
+                     FIGURE 4.3 Cumulative Returns of Arbitrage
+                     between SPY and Its Component Stocks
+
+   You may wonder why we didn't just directly run a Johansen cointegration
+test on all 500 stocks in SPX plus SPY, and let the algorithm automatically 101
+find an eigenvector of cointegrating instruments that include the SPY. (Not
+all cointegrating relations from the stocks+SPY universe necessarily include
+SPY, but we need only pick one that does.) The problem with this approach
+is twofold:
+1. The Johansen test implementation that I know of can accept a maximum
+
+    of 12 symbols only (LeSage, 1998).
+ 2. The eigenvectors will usually involve both long and short stock posi-
+
+    tions.This means that we can't have a long-only portfolio of stocks that
+    is hedged with a short SPY position or vice versa. This is a problem
+    because if we have short positions in the stock portfolio and a short SPY
+    position simultaneously, we would be double short on some stocks even
+    when we are long the stock portfolio, increasing our specific risks.
+   There is an alternative method of constructing a long-only portfolio of
+stocks.We can still use Johansen test to individually test each stock in SPX for
+cointegration with SPY. After this subset of stocks is found, we include them
+in a stock portfolio and then use a constrained optimization method (e.g.,
+genetic algorithm or simulated annealing) to minimize the average absolute
+ALGORITHMIC TRADINGdifference between this stock portfolio price series and the SPY price series.
+         The variables that we want to optimize in this case are the hedge ratios of
+         the stocks, and the constraints are that all hedge ratios must be positive.The
+         MATLAB Global Optimization Toolbox provides functions for either genetic
+         algorithm or simulated annealing for this constrained optimization task.
+
+            This strategy suffers from the same short-sale constraint that plagued any
+         strategies involving short stock positions. However, the problem is not too
+         serious here because the stock portfolio is quite diversified with about 98
+         stocks. If a few stocks have to be removed due to the short-sale constraint,
+         the impact should be limited.
+
+         Cross-Sectional Mean Reversion: A Linear
+           Long-Short Model
+
+         In mean reversion trading based on cointegration, we form a portfolio with
+         a fixed set of instruments and with either a fixed number of shares or a fixed
+         dollar capital for each instrument.This fixed number may be determined by
+         fiat (as in Example 4.2), linear regression, the Johansen test, or constrained
+         optimization. But there is no reason why the portfolio has to consist of the
+102 same fixed set of instruments or the same weightings over this set of in-
+         struments every day. For many portfolio stock-trading strategies, the edge
+         comes precisely from the intelligent daily selection or reweighting of stocks.
+
+            In this type of so-called "cross-sectional" mean reversion strategy, the in-
+         dividual stock (and this type of strategy most commonly involves stocks, not
+         futures or currencies) price does not necessarily revert to its own historical
+         mean. Rather, the focus is on their short-term relative returns, and we rely
+         on the serial anti-correlation of these relative returns to generate profits. In
+         most cases, the relative returns are computed as a stock's return minus the
+         average returns of all the stocks in a particular universe. So we expect the
+         underperformance of a stock to be followed by overperformance, and vice
+         versa. Since we are measuring only relative return, it is quite possible that
+         we will short a stock even though its previous (absolute) return is negative,
+         as long as it is not as negative as the average return across all stocks in the
+         universe.
+
+            One interesting feature of cross-sectional strategies is that, in contrast to
+         "time series" strategies, we should not expect profits from every individual
+         stock, as some of them may serve as "hedges" on some days. Rather, profits
+         can be obtained only in the aggregate across all the stocks.
+   I described in my previous book just such a strategy proposed by Khan-
+dani and Lo (Example 3.7 of Chan, 2009; original paper is Khandani and Lo,
+2007).With this strategy, we invest in every stock from some favorite index
+such as S&P 500, S&P 1500, or Russell 2000, but with different capital al-
+location per stock. Near the market close of each day, we will determine the
+long or short capital wi allocated to the ith stock as
+
+ wi = -(ri - rj)/ k |rk - rj|                                (4.1)
+
+where ri is the daily return of the ith stock, and rj is the average daily return
+of all the stocks in the index. In other words, if a stock has a very positive
+return relative to its peers, we will short lots of it, and if it has a very nega-
+tive return relative to its peers, we will buy lots of it. Note that we always
+invest the same total gross capital of $1 to the portfolio every day because of
+the normalization factor in the denominator. The MATLAB code fragment
+for this is displayed in Example 4.3.
+
+Example 4.3: Linear Long-Short Model on Stocks
+
+The implementation of Equation 4.1 in MATLAB is very compact.
+
+We assume an input T × N array cl of daily closing prices,                           103
+
+where as usual T is the number of trading days and N is the                          MEAN REVERSION OF STOCKS AND ETFS
+
+number of stocks in the SPX.This code can be downloaded as
+
+andrewlo_2007_2012.m.
+
+ret=(cl-lag(cl, 1))./lag(cl, 1); % daily returns
+
+marketRet=smartmean(ret, 2); % equal weighted market index
+   % return
+
+weights=-(ret-repmat(marketRet, [1 size(ret, 2)]));
+
+weights=weights./repmat(smartsum(abs(weights), 2), ...
+   [1 size(weights, 2)]);
+
+    dailyret=smartsum(backshift(1, weights).*ret, 2); % Capital
+       % is always one
+
+   It has an APR of 13.7 percent and Sharpe ratio of 1.3 from January
+2, 2007, to December 30, 2011, even if we backtest on the SPX.
+(Usually, backtesting on a smaller cap universe will generate even
+higher returns.) The cumulative returns are plotted in Figure 4.4.
+
+                                                                       (Continued )
+                     Example 4.3 (Continued)
+
+                     FIGURE 4.4 Cumulative Returns of Linear Long-Short Model
+
+                     The notable feature of this strategy is that it is completely linear,
+
+                     has no parameters, and is almost perfectly dollar neutral.What
+
+104                  strategy can be simpler than this? And remarkably, it achieved an APR
+                     of 30 percent in 2008, the year of Lehman Brothers' bankruptcy, and
+ALGORITHMIC TRADING
+                     an APR of 11 percent in 2011, a year filled with high anxiety about
+
+                     the U.S. federal debt rating downgrade and the Greek default. (Its
+
+                     performance since the beginning of 2008 is a true out-of-sample test,
+
+                     as the strategy was published in 2007.)
+
+                        In my previous book, I also suggested that we may enhance the returns
+                     of this strategy by using the return from the previous close to today's open
+                     to determine the weights for entry at the open. All the positions will be
+                     liquidated at the market close, thus turning it into an intraday strategy.The
+                     modified MATLAB code fragment is displayed in Example 4.4.
+
+                        There are possibly other variables (also called "factors") that are better at
+                     predicting cross-sectional mean reversion of stock prices than the relative
+                     returns that we have used in Examples 4.3 and 4.4. One popular variable
+                     that traders use to rank stocks is the price-earnings (P/E) ratio, where the
+                     earnings may be that of the last quarter, or they may be projected earnings
+                     estimated by the analysts or the companies themselves.The reasoning is that
+Example 4.4: Intraday Linear Long-Short
+               Model on Stocks
+
+In addition to the inputs required in Example 4.3, we need also the
+T × N array op, which contains the daily open prices of the stocks.
+
+    ret=(op-backshift(1, cl))./backshift(1, cl); % daily returns
+
+    marketRet=smartmean(ret, 2); % equal weighted market index
+       % return
+
+    weights=-(ret-repmat(marketRet, [1 size(ret, 2)]));
+    weights=weights./repmat(smartsum(abs(weights), 2), ...
+
+       [1 size(weights, 2)]);
+    dailyret=smartsum(weights.*(cl-op)./op, 2) ...
+
+       ./smartsum(abs(weights), 2);
+
+The APR and Sharpe ratio over the same period are 73 percent
+
+and 4.7, respectively. Despite such seemly stellar performance, the
+
+open-to-close version suffers from a few drawbacks that the close-to-
+
+close version does not have.
+
+First, the transaction costs (not included in our backtests) will
+
+be doubled, because we are trading twice a day instead of just once
+
+a day. Second, since this strategy also has to use "open" prices to            105
+
+determine the trading signals for entry at the open, it is subject to the      MEAN REVERSION OF STOCKS AND ETFS
+
+same trading signal noise that I mentioned in the Buy-on-Gap Model
+
+in Example 4.1.
+
+Actually, even for the close-to-close strategy, we also can't use
+
+the exact closing price to determine the weights and then enter at
+
+exactly those prices. But in that case, the prices just a few seconds
+
+before the close are typically much closer to the actual official
+
+(primary exchange) closing prices because these preclose prices are
+
+printed when the primary market is open and has high liquidity.
+
+stock prices will drift toward a new equilibrium value if there are earning
+announcements or estimates changes. So a stock that experiences a posi-
+tive change in earnings estimates will likely enjoy a positive return, and we
+should not expect the price to mean-revert if this return is in line with the
+percent change in its earnings estimates. We can therefore avoid shorting
+such a stock if we use P/E ratio to rank the stocks.
+                     KEY POINTS
+
+                     · Are you tempted to trade pairs of stocks because of the enormous number
+                        of choices? Beware of changes in companies' fundamentals that can
+
+                     render out-of-sample performance quite poor despite stellar backtest
+                     results.
+
+                     · Trading a portfolio of cointegrating ETFs can be better than pair-trading
+                        stocks.
+
+                     · Are you pair trading ETFs that hold futures? Beware of the role of roll returns
+
+                     in determining total returns of futures.
+
+                     · Seasonal or intraday mean reversion is hard to detect with usual stationarity
+
+                     or cointegration tests, but can be very profitable.
+
+                     · Imposing momentum filter on mean-reversal strategies typically improves
+
+                     their consistency.
+
+                     · Do you think that index arbitrage between stocks and futures is no longer
+                        profitable? Try selecting only a subset of the stocks in the index.
+
+                     · Cross-sectional mean reversion strategies can be implemented very easily
+                        with a linear long-short strategy.
+
+                     · The variable used for ranking stocks in a cross-sectional mean reversion
+
+                     strategy is typically relative return, but it can be other fundamental factors
+
+106                  such as P/E ratio.
+
+ALGORITHMIC TRADING
+                                                        CHAPTER 5
+
+Mean Reversion
+of Currencies
+and Futures
+
+Conventional wisdom tells us that currencies and futures are the domain         107
+     of momentum traders, and conventional wisdom is right about this.
+Indeed, most CTAs (Commodities Trading Advisors) are momentum based.
+
+It is also true that most currency or future pairs would not cointegrate, and
+
+most portfolios of currencies or futures do not exhibit cross-sectional mean
+
+reversion. So opportunities for mean reversion strategies in currencies and
+
+futures are limited, but not nonexistent.This chapter will guide the reader
+
+toward those situations where mean reversion is the exception rather than
+
+the rule, such as the trading of futures calendar spreads. In particular, we
+
+will discuss a trading strategy for one unique futures intermarket spread: the
+
+volatility future versus the stock index future.
+
+In the course of exploring mean reversion in futures, we will also discuss
+
+a simple mathematical model of futures prices that will illuminate concepts
+
+such as spot versus roll returns and backwardation versus contango. Un-
+
+derstanding this model will also help suggest new futures trading strategies
+
+without resorting to ad hoc technical indicators.
+
+Trading currencies has certain nuances that are foreign to stock trad-
+
+ers. Care must be taken when testing for cointegration of currencies or
+
+when computing the returns of a portfolio of currencies by making sure
+
+that a point move in one currency pair has the same dollar value as a
+ALGORITHMIC TRADINGpoint move in another currency pair; otherwise, the results will not make
+         sense. Furthermore, rollover interests might sometimes play an impor-
+         tant role in determining total returns. These nuances will be covered in
+         this chapter.
+
+         Trading Currency Cross-Rates
+
+         The basic idea in forming a stationary portfolio of foreign currencies is very
+         similar to the trading of stock index ETF pairs from different countries:
+         we need to find countries that have similar economic fundamentals. Since
+         we found, for example, that EWA (Australian stock index ETF) and EWC
+         (Canadian stock index ETF) cointegrate, we might expect to find AUD
+         (Australian dollar) to cointegrate with CAD (Canadian dollar) as well. In
+         addition, because both Australia and South Africa have major mining rev-
+         enues, we might expect AUD to cointegrate with ZAR (South African rand).
+         In fact, traders have called these and other currencies such as the Norwegian
+         krone commodity currencies.
+
+            Trading currency pairs has a number of advantages compared to trad-
+         ing their corresponding stock index ETF pairs. Usually, liquidity in curren-
+108 cies is higher (especially for best bid/ask sizes), thus lowering transaction
+         costs.The leverage that can be employed for currencies is also much higher,
+         though this can be a double-edged sword of course.There are no short-sale
+         constraints for currencies. Finally, currency trading can be done around the
+         clock, at least five days a week from 5:00 p.m. ET on Sunday to 5:00 p.m.
+         ET on Friday. (ET can be either EDT or EST; i.e., it is either GMT-4 or
+         GMT-5.) This means that we have a lot more trading opportunities in cur-
+         rencies, and we can also employ stop losses in a meaningful way. (If a market
+         is closed for a long period, stop losses are useless as the market can gap up
+         or down when it reopens.)
+
+            Despite the conceptual similarity with trading ETF pairs, the mechanics
+         of currency trading is quite different. Let's start with some basic terminol-
+         ogy. If we are trading the cross-rate AUD.ZAR, then AUD is called the base
+         currency, and ZAR is the quote currency. (My personal mnemonic for this:
+         B is ahead of Q alphabetically, so the order is B.Q.) If AUD.ZAR is quoted
+         at 9.58, it takes 9.58 South African rand to buy 1 Australian dollar. Buying
+         100,000 AUD.ZAR means buying 100,000 Australian dollars, while sell-
+         ing the equivalent amount (100,000 × 9.58 = 958,000 at the preceding
+         quote) of South African rand. However, few brokers actually offer AUD.
+ZAR as a cross-rate. So usually we have to buy X units of B.ZAR and sell X        MEAN REVERSION OF CURRENCIES AND FUTURES
+units of B.AUD to effectively buy X Australian dollar worth of AUD.ZAR,
+where B is some other base currency.We usually choose a very liquid base
+currency such as USD or EUR for this operation. We can denote such a
+synthetic pair as USD.ZAR/USD.AUD, since the quote of AUD.ZAR will
+be exactly equal to this ratio of quotes. When we actually trade this syn-
+thetic pair live, the realized profit and loss (P&L) will be denominated in
+both ZAR and AUD. In general, when we compute the returns of a strat-
+egy trading B.Q, we are assuming that the profits are denominated in our
+local currency (USD for U.S. investors), which may be neither B nor Q. So
+in order for our actual realized P&L to conform to our backtest P&L, we
+need to regularly convert B and Q into our local currency. For example, if
+our local currency is USD, and we have realized profits of X units of AUD
+and Y units of ZAR after a round trip trade, we need to buy X units of
+ZAR.USD and Y units of ZAR.AUD. If we don't do this regularly, a large
+accumulated P&L in AUD and ZAR may cause significant deviation from
+our backtest results.
+
+   Even when a cross-rate such as AUD.CAD is ready-made for trading, we
+may sometimes find it advantageous to weigh the two currencies differently
+by trading AUD.USD versus USD.CAD separately.The code in Example 5.1 109
+illustrates such a strategy. In this strategy we use the Johansen test to find out
+the best hedge ratio of capital, or capital weights, between AUD.USD versus
+CAD.USD.Why not use the conventional quote USD.CAD instead of CAD.
+USD? That's because in order to interpret the eigenvector from the Johan-
+sen test as capital weights, the two price series must have the same quote
+currency. Otherwise, the point moves of the two presumptive cointegrating
+instruments would not have the same value, rendering the Johansen test
+meaningless. Using CAD.USD in our backtest program doesn't make live
+trading any more difficult:Whenever the program sends an order to "Buy 1
+unit of CAD.USD," we should just "Sell 1/y of USD.CAD," provided y is the
+current quote for USD.CAD.
+
+   In Example 5.1, we focus on trading two currencies that can ultimate-
+ly be reduced to a pair with a common quote currency USD: B1.USD -
+B2.USD. So the returns of a portfolio with n1 units of B1.USD and n2 units
+of B2.USD is
+
+          n  y1,U (t)r1(t + 1) + n  y  ,  (t)r2(t + 1)  (5.1)
+r(t + 1) =
+             |n | y1,U (t) + |n2| y , (t)
+                     as displayed in the last line of the MATLAB code in the example. Here ri is
+                     the return of Bi.USD:
+
+                            ri(t + 1) = ( yi,U(t + 1) - yi,U(t))/yi,U(t)                     (5.2)
+
+                     where yi,U(t) and yi,U(t + 1) are the quotes for Bi.USD at t and t + 1 respec-
+                     tively.This is because one unit of Bi.USD is worth yi,U in U.S. dollars.
+
+                        However, if a portfolio has n1´ units of USD.Q1 and n2´ units of USD.Q2
+                     instead, then the return can be written more simply as
+
+                            r (t +1) = n1r1( ) 2 2 )                                         (5.3)
+                            |n1|+|n2 |
+
+                     where
+
+                            ri(t + 1) = ( yU,i(t + 1) - yU,i(t))/yU,i(t)                     (5.4)
+
+ALGORITHMIC TRADINGand yU, i(t) and yU, i(t + 1) are the quotes for USD.Q i at t and t + 1, respec-
+         tively.This is because one unit of USD.Q i is worth exactly one U.S. dollar.
+
+            Let me immediately say that Equations 5.2 and 5.4 are not strictly cor-
+110 rect, as we have ignored the rollover interests, which we will discuss in the
+
+         next section. But the impact of rollover interests is usually not large for
+         short-term strategies like the one I describe in Example 5.1, so we have
+         omitted them here for simplicity.
+
+                                 Example 5.1: Pair Trading USD.AUD versus
+                                 USD.CAD Using the Johansen Eigenvector
+
+                     This is a classic linear mean-reverting strategy similar to the one in
+                     Example 3.1 (PriceSpread.m). Previously, we used a look-back of 20
+                     days to compute the hedge ratio, while here we use a fixed training
+                     set of 250 days (which gives better results in hindsight), though
+                     we are still using a look-back of 20 days for computing the moving
+                     average and standard deviation. However, our current strategy
+                     is very different from a typical forex strategy such as the one in
+                     Example 2.5. Here, the hedge ratio between the two currencies is
+                     not one, so we cannot trade it as one cross-rate AUD.CAD. Instead
+                   Example 5.1 (Continued)
+
+of running the Johansen test on USD.AUD versus USD.CAD, we
+actually should run it on AUD.USD and CAD.USD, so that the dollar
+value of a point move in each instrument is the same. Intuitively, this
+also makes sense, since in a mean-reverting strategy we want to buy
+CAD if CAD.USD is much lower than AUD.USD.
+
+   We assume the input to be two T × 1 arrays usdcad and usdaud,
+both daily price series.The T × 1 array yport is the market value of a
+unit portfolio of AUD.USD and CAD.USD expressed in USD, while
+numUnits is the number of units of this unit portfolio our strategy asks
+us to own.The T × 2 array positions denote the market values in USD
+of AUD.USD and CAD.USD that we should own. Naturally, the P&L
+(in USD again) is just the sum of the market value of each instrument
+times their returns, and the daily return of the portfolio is the P&L
+divided by the total gross market value of the portfolio at the end of
+the previous day.
+
+The code can be downloaded as AUDCAD_unequal.m.
+
+cad=1./usdcad.cl;                                                                 111
+aud=audusd.cl;
+
+y=[ aud cad ];                                                                    MEAN REVERSION OF CURRENCIES AND FUTURES
+trainlen=250;
+lookback=20;
+hedgeRatio=NaN(size(y));
+numUnits=NaN(size(y, 1), 1);
+for t=trainlen+1:size(y, 1)
+
+    res=johansen(log(y(t-trainlen:t-1, :)), 0, 1);
+    hedgeRatio(t, :)=res.evec(:, 1)';
+    yport=sum(y(t-lookback+1:t, :).* ...
+
+       repmat(hedgeRatio(t, :), [lookback 1]), 2);
+    ma=mean(yport);
+    mstd=std(yport);
+    zScore=(yport(end)-ma)/mstd;
+    numUnits(t)=-(yport(end)-ma)/mstd;
+end
+
+positions=repmat(numUnits, [1 size(y, 2)]).*hedgeRatio.*y;
+pnl=sum(lag(positions, 1).*(y-lag(y, 1))./lag(y, 1), 2);
+ret=pnl./sum(abs(lag(positions, 1)), 2);
+
+                                                                    (Continued )
+                                             Example 5.1 (Continued)
+
+                        Taking care to exclude the first 250 days of rolling training
+                     data when computing the strategy performance, the APR is 11
+                     percent and the Sharpe ratio is 1.6, for the period December 18,
+                     2009, to April 26, 2012.The cumulative returns curve is plotted in
+                     Figure 5.1.
+
+112ALGORITHMIC TRADING
+
+                           FIGURE 5.1 Cumulative Returns of USD.AUD versus
+                           USD.CAD Strategy
+
+                        You may sometimes find profitable opportunities trading two pairs of
+
+                     entirely different cross-rates against each other: B1.Q1 versus B2.Q2. If the
+                     strategy calls for a portfolio of n1 units of B1.Q1 and n2 units of B2.Q2, the
+                     daily return (in the presumed local currency of USD) of the portfolio is
+
+                     given by the same Equation 5.1.The ri there will be the return of Bi.Qi, so
+                     Equation 5.2 is replaced by
+
+                     ri(t + 1) = {log ( yi,Qi(t + 1)) - log( yi,Qi(t))}                  (5.5)
+
+                     where yi,Qi(t) is the quote for Bi.Qi. The same equations, 5.1 through 5.5,
+                     are valid if we had used EUR or any other currency instead of USD as the
+                     local currency for computing returns.
+
+                        As you can see, the key difficulty in backtesting currency arbitrage strat-
+                     egies is not the complexity of the strategies, but the right way to prepare
+the data series for cointegration tests, and the right formula to measure          MEAN REVERSION OF CURRENCIES AND FUTURES
+returns!
+
+ Rollover Interests in Currency Trading
+
+A feature of trading currency cross-rate is the differential interest rate earned
+or paid if the cross-rate position is held overnight. Note that "overnight" in
+currency trading means holding a position untill or beyond 5:00 p.m. ET. If
+we are long a pair B.Q overnight, the interest differential is iB - iQ, where iB
+and iQ are the daily interest rates of currency B and Q, respectively. If iQ >
+iB, then this interest differential, also called a rollover interest, is actually a
+debit interest (i.e., your account will be debited). Actually, for reasons that
+have to do with the T + 2 day settlement system, if a position was held past
+the 5 p.m. ET close on day T, and day T + 3 is a weekend or holiday for either
+currency of the cross-rate, the rollover interest accrued on that position will
+be multiplied by one plus the number of days the market remains closed. So
+if a position was held past 5 p.m. ET on Wednesday, the rollover interest is
+three times the daily rate since the market is closed on Saturday and Sunday.
+A further exception to this rule applies when we are trading USD.CAD or
+USD.MXN, where the settlement occurs on day T + 1, so we only multiply 113
+the rollover interest by one plus the number of nontrading days if day T + 2
+is a weekend or holiday. (Thus, only if a position was held past 5:00 p.m. ET
+on Thursday will the rollover interest be three times the daily rate.) All these
+considerations impinge on the accuracy of a backtest of strategies that hold
+overnight positions.
+
+   When we calculate the Sharpe ratio for any strategy, we need to calculate
+the excess return, because the Sharpe ratio is the ratio of the average excess
+return divided by the standard deviation of the excess returns, suitably an-
+nualized. The excess return is the return of the positions that the strategy
+holds minus the financing cost of those positions. So if we have only intraday
+positions, the financing cost is zero. If we are trading a long-short dollar
+neutral equity portfolio, we can assume the financing cost is close to zero,
+even though the credit interest is usually slightly less than the absolute value
+of the debit interest. For futures positions, the financing cost is also zero,
+because futures positions are just contracts, not assets that require cash to
+finance. (We do not count the margin cash requirement, since that cash gen-
+erates interest in the account.) In the case of currency cross-rates, we can
+again set the financing cost to be zero, as long as we are careful to add the
+                     rollover interest to the percent change of the cross-rate.That is, we need to
+                     modify Equation 5.5 so that the excess return rt+1 from holding a cross-rate
+                     position POSB.Q from day t to day t + 1 is
+
+                     r(t + 1) = {log ( yB.Q(t + 1)) - log( yB.Q(t)) + log(1 + iB(t)) - log(1 + iQ(t))}
+
+                                                                                                 (5.6)
+
+                     where y(t) and y(t + 1) are the quotes for BQ at t and t + 1, respectively
+                     (Dueker, 2006).
+
+                        In Example 5.2, we see how we can take into account rollover interests in
+                     backtesting the linear mean-reverting strategy on AUD.CAD.
+
+                     Example 5.2: Pair Trading AUD.CAD
+                             with Rollover Interests
+
+                     We continue to use the linear mean-reverting strategy in this example,
+
+                     but in contrast to Example 5.1 and in the interest of simplicity, we
+
+114                  trade the ready-made pair AUD.CAD, not USD.CAD versus AUD.
+
+ALGORITHMIC TRADING  USD separately.We will take into account the overnight rollover
+
+                     interest rates because this strategy holds beyond 5 p.m. ET.We assume
+
+                     the daily closing prices of AUD.CAD are contained in a T × 1 array
+
+                     dailyCl and the corresponding trading dates in the T × 1 array tday.
+
+                     The historical interest rates are taken from the Reserve Bank of
+
+                     Australia website's money market rate, www.rba.gov.au/statistics/
+
+                     tables/#interest_rates, and the Bank of Canada web site's overnight
+
+                     money market financing rates, www.bankofcanada.ca/wp-content/
+
+                     uploads/2010/09/selected_historical_page33.pdf.The daily AUD
+
+                     and CAD interest rates are assumed to be two T × 1 arrays aud_
+
+                     dailyRates and cad_dailyRates respectively, matching the dates in tday.
+
+                     The source code can be downloaded as AUDCAD_daily.m
+
+                     lookback=20;
+
+                     % Triple rollover interest on Wednesdays for AUD
+                     isWednesday=weekday(datenum(num2str(tday), `yyyymmdd'))==4;
+                     aud_dailyRates(isWednesday)=3*aud_dailyRates(isWednesday);
+
+                     cad_dailyRates=zeros(size(tday));
+                     % Triple rollover interest on Thursdays for CAD
+

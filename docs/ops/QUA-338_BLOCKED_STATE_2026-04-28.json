@@ -1,0 +1,24 @@
+{
+  "issue": "QUA-338",
+  "timestamp_utc": "2026-04-28T08:33:00Z",
+  "status": "blocked",
+  "scope": "P1 implementation: SRC02_S01 cointegration pair MR EA scaffold + compile evidence",
+  "blocker": {
+    "id": "missing_ea_id_allocation",
+    "description": "No ea_id row for strategy_id SRC02_S01 in framework/registry/ea_id_registry.csv",
+    "verified_locations": [
+      "C:/QM/repo/framework/registry/ea_id_registry.csv",
+      "C:/QM/worktrees/cto/framework/registry/ea_id_registry.csv",
+      "C:/QM/worktrees/development/framework/registry/ea_id_registry.csv",
+      "C:/QM/worktrees/qua-296-cto/framework/registry/ea_id_registry.csv"
+    ]
+  },
+  "unblock": {
+    "owner": "CTO (with CEO per allocation policy)",
+    "required_action": [
+      "Append SRC02_S01 allocation row to framework/registry/ea_id_registry.csv",
+      "Confirm canonical EA path slug normalization for implementation dispatch"
+    ]
+  },
+  "next_action_after_unblock": "Implement QM5_<ea_id>_chan_pairs_stat_arb scaffold and produce strict compile evidence"
+}

@@ -1,0 +1,101 @@
+{
+  "ts_utc": "2026-04-27T16:27:38Z",
+  "issue": "QUA-260",
+  "required_marketplace_checks": [
+    {
+      "key": "anthropics/skills/skill-creator",
+      "id": "fd65a626-b083-439c-aeff-232c9ccf9a46",
+      "sourceRef": "5128e1865d670f5d6c9cef000e6dfc4e951fb5b9",
+      "expectedPin": "5128e1865d670f5d6c9cef000e6dfc4e951fb5b9",
+      "pinMatch": true
+    },
+    {
+      "key": "anthropics/skills/pdf",
+      "id": "c7d78b7c-3ac4-4552-bd5e-a4ed08771cc9",
+      "sourceRef": "5128e1865d670f5d6c9cef000e6dfc4e951fb5b9",
+      "expectedPin": "5128e1865d670f5d6c9cef000e6dfc4e951fb5b9",
+      "pinMatch": true
+    },
+    {
+      "key": "anthropics/skills/xlsx",
+      "id": "0181de35-ed78-42f8-9384-6a3a6eda9a19",
+      "sourceRef": "5128e1865d670f5d6c9cef000e6dfc4e951fb5b9",
+      "expectedPin": "5128e1865d670f5d6c9cef000e6dfc4e951fb5b9",
+      "pinMatch": true
+    },
+    {
+      "key": "obra/superpowers/verification-before-completion",
+      "id": "f5840842-5d86-4aa6-bff4-caac6bd8022c",
+      "sourceRef": "6efe32c9e2dd002d0c394e861e0529675d1ab32e",
+      "expectedPin": "6efe32c9e2dd002d0c394e861e0529675d1ab32e",
+      "pinMatch": true
+    },
+    {
+      "key": "obra/superpowers/using-git-worktrees",
+      "id": "20870060-7213-45d6-aba9-258be8f33883",
+      "sourceRef": "6efe32c9e2dd002d0c394e861e0529675d1ab32e",
+      "expectedPin": "6efe32c9e2dd002d0c394e861e0529675d1ab32e",
+      "pinMatch": true
+    },
+    {
+      "key": "obra/superpowers/test-driven-development",
+      "id": "ddaefb4e-bf18-4010-91d8-c963003207ed",
+      "sourceRef": "6efe32c9e2dd002d0c394e861e0529675d1ab32e",
+      "expectedPin": "6efe32c9e2dd002d0c394e861e0529675d1ab32e",
+      "pinMatch": true
+    },
+    {
+      "key": "obra/superpowers/systematic-debugging",
+      "id": "5e3306a2-b892-42f1-9b3f-6546ed18529e",
+      "sourceRef": "6efe32c9e2dd002d0c394e861e0529675d1ab32e",
+      "expectedPin": "6efe32c9e2dd002d0c394e861e0529675d1ab32e",
+      "pinMatch": true
+    }
+  ],
+  "custom_skill_checks": [
+    {
+      "slug": "qm-validate-custom-symbol",
+      "present": true,
+      "id": "6c6af12e-d338-4187-93cc-5a65e8161d66",
+      "key": "local/14deb1f7f6/qm-validate-custom-symbol",
+      "sourceLocator": "C:\\QM\\repo\\skills\\qm\\qm-validate-custom-symbol"
+    },
+    {
+      "slug": "qm-strategy-card-extraction",
+      "present": true,
+      "id": "dc3eae17-2e95-457b-9de5-6dc4b4e3890d",
+      "key": "local/f2d3aacb68/qm-strategy-card-extraction",
+      "sourceLocator": "C:\\QM\\repo\\skills\\qm\\qm-strategy-card-extraction"
+    },
+    {
+      "slug": "qm-build-ea-from-card",
+      "present": true,
+      "id": "1edcde22-fbac-4a2b-b5bc-f6f33e66c4a3",
+      "key": "local/2f6ae344eb/qm-build-ea-from-card",
+      "sourceLocator": "C:\\QM\\repo\\skills\\qm\\qm-build-ea-from-card"
+    },
+    {
+      "slug": "qm-run-pipeline-phase",
+      "present": true,
+      "id": "20e72b36-75e4-45b7-9387-624c8d2cfb90",
+      "key": "local/e648fac822/qm-run-pipeline-phase",
+      "sourceLocator": "C:\\QM\\repo\\skills\\qm\\qm-run-pipeline-phase"
+    },
+    {
+      "slug": "qm-t6-deploy-verification",
+      "present": true,
+      "id": "8f2caaa0-11a5-44c8-8b55-e105f8c636d2",
+      "key": "local/65cba7a111/qm-t6-deploy-verification",
+      "sourceLocator": "C:\\QM\\repo\\skills\\qm\\qm-t6-deploy-verification"
+    },
+    {
+      "slug": "qm-zero-trades-recovery",
+      "present": true,
+      "id": "b8d2a0d0-a3f7-4cd8-8ad0-2f087582e40d",
+      "key": "local/80b1b4d510/qm-zero-trades-recovery",
+      "sourceLocator": "C:\\QM\\repo\\skills\\qm\\qm-zero-trades-recovery"
+    }
+  ],
+  "required_all_match": true,
+  "custom_all_present": true
+}

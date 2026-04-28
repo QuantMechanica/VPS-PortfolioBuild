@@ -5,7 +5,14 @@ param(
     [string]$ScriptRelativePath = "infra\monitoring\Invoke-PaperclipStaleLockWatchdog.ps1",
     [int]$MinuteOffset = 3,
     [int]$StaleAfterMinutes = 15,
+    [int]$RunningLockMaxMinutes = 90,
+    [string]$PaperclipApiUrl = $(if ($env:PAPERCLIP_API_URL) { $env:PAPERCLIP_API_URL } else { "" }),
+    [string]$CompanyId = $(if ($env:PAPERCLIP_COMPANY_ID) { $env:PAPERCLIP_COMPANY_ID } else { "" }),
+    [string]$AssigneeAgentId = $(if ($env:PAPERCLIP_AGENT_ID) { $env:PAPERCLIP_AGENT_ID } else { "" }),
+    [string]$OutPath = "C:\QM\logs\infra\health\paperclip_stale_lock_watchdog_latest.json",
+    [switch]$AllowMissingPaperclipContext,
     [switch]$FailOnFinding,
+    [switch]$PreviewOnly,
     [switch]$RunNow
 )
 
@@ -23,7 +30,26 @@ if ($startBoundary -le (Get-Date)) {
     $startBoundary = $startBoundary.AddMinutes(15)
 }
 
-$actionArgs = "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`" -StaleAfterMinutes $StaleAfterMinutes"
+$missingContext = @()
+if ([string]::IsNullOrWhiteSpace($PaperclipApiUrl)) { $missingContext += 'PaperclipApiUrl' }
+if ([string]::IsNullOrWhiteSpace($CompanyId)) { $missingContext += 'CompanyId' }
+if ($missingContext.Count -gt 0 -and -not $AllowMissingPaperclipContext.IsPresent) {
+    throw ("Missing required Paperclip context for scheduler action: {0}. Pass explicit values or set -AllowMissingPaperclipContext." -f ($missingContext -join ', '))
+}
+
+$actionArgs = "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`" -StaleAfterMinutes $StaleAfterMinutes -RunningLockMaxMinutes $RunningLockMaxMinutes"
+if (-not [string]::IsNullOrWhiteSpace($PaperclipApiUrl)) {
+    $actionArgs += " -PaperclipApiUrl `"$PaperclipApiUrl`""
+}
+if (-not [string]::IsNullOrWhiteSpace($CompanyId)) {
+    $actionArgs += " -CompanyId `"$CompanyId`""
+}
+if (-not [string]::IsNullOrWhiteSpace($AssigneeAgentId)) {
+    $actionArgs += " -AssigneeAgentId `"$AssigneeAgentId`""
+}
+if (-not [string]::IsNullOrWhiteSpace($OutPath)) {
+    $actionArgs += " -OutPath `"$OutPath`""
+}
 if ($FailOnFinding.IsPresent) {
     $actionArgs += " -FailOnFinding"
 }
@@ -39,6 +65,15 @@ $settings = New-ScheduledTaskSettingsSet `
     -ExecutionTimeLimit (New-TimeSpan -Minutes 5)
 
 $task = New-ScheduledTask -Action $action -Trigger $trigger -Principal $principal -Settings $settings
+if ($PreviewOnly.IsPresent) {
+    Write-Host "PreviewOnly: no scheduler mutations applied."
+    Write-Host "TaskName: $TaskName"
+    Write-Host "StartBoundary: $($startBoundary.ToString('o'))"
+    Write-Host "Action: powershell.exe $actionArgs"
+    Write-Host "Principal: SYSTEM, MultipleInstances=IgnoreNew, Repetition=15m"
+    exit 0
+}
+
 Register-ScheduledTask -TaskName $TaskName -InputObject $task -Force | Out-Null
 
 $taskInfo = Get-ScheduledTaskInfo -TaskName $TaskName

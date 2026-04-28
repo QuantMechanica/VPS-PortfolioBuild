@@ -2,10 +2,14 @@
 param(
     [string]$RepoRoot = "C:\QM\repo",
     [string]$PythonExe = "python",
+    [string]$DwxRoutineInstallerScript = "C:\QM\repo\infra\scripts\Install-DwxHourlyRoutine.ps1",
+    [switch]$EnableLegacyDwxTask,
     [string]$DwxHourlyScript = "C:\QM\repo\infra\scripts\dwx_hourly_check.py",
     [string]$AggregatorScript = "C:\QM\repo\scripts\aggregator\standalone_aggregator_loop.py",
     [string]$SnapshotScript = "C:\QM\repo\scripts\export_public_snapshot.ps1",
     [string]$HealthScript = "C:\QM\repo\infra\monitoring\Invoke-InfraHealthCheck.ps1",
+    [string]$DriveGitExclusionScript = "C:\QM\repo\infra\monitoring\Test-DriveGitExclusion.ps1",
+    [string]$DriveGitExclusionOutputPath = "C:\QM\logs\infra\health\drive_git_exclusion_latest.json",
     [string]$GitIndexLockMonitorScript = "C:\QM\repo\infra\monitoring\Invoke-GitIndexLockMonitor.ps1",
     [string]$StaleLockWatchdogScript = "C:\QM\repo\infra\monitoring\Invoke-PaperclipStaleLockWatchdog.ps1",
     [string]$Qua207RuntimeHeartbeatScript = "C:\QM\repo\infra\scripts\Run-QUA207RuntimeCompletionHeartbeat.ps1",
@@ -68,21 +72,31 @@ Register-DesiredTask `
     -Description "Exports public-data snapshot JSON hourly and publishes if changed." `
     -WorkingDirectory $RepoRoot
 
-# DWX hourly orchestrator, only if source script exists
-if (Test-Path -LiteralPath $DwxHourlyScript) {
-    $dwxTrigger = New-RepeatingTriggerFromToday `
-        -AtTime (Get-Date "00:11") `
-        -Interval (New-TimeSpan -Hours 1) `
-        -Duration (New-TimeSpan -Days 3650)
-    Register-DesiredTask `
-        -TaskName "QM_DWX_HourlyCheck" `
-        -Executable $PythonExe `
-        -Arguments "`"$DwxHourlyScript`"" `
-        -Trigger $dwxTrigger `
-        -Description "Runs DWX import orchestrator hourly."
+# DWX hourly orchestrator runs via Paperclip routine (primary scheduler path)
+if (Test-Path -LiteralPath $DwxRoutineInstallerScript) {
+    Write-Host "DWX hourly scheduler is Paperclip routine-based. Converge with:"
+    Write-Host "  powershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$DwxRoutineInstallerScript`" -Apply"
 }
 else {
-    Write-Warning "DWX orchestrator script missing; skipped QM_DWX_HourlyCheck registration."
+    Write-Warning "DWX routine installer script missing; cannot print convergence command."
+}
+
+if ($EnableLegacyDwxTask.IsPresent) {
+    if (Test-Path -LiteralPath $DwxHourlyScript) {
+        $dwxTrigger = New-RepeatingTriggerFromToday `
+            -AtTime (Get-Date "00:11") `
+            -Interval (New-TimeSpan -Hours 1) `
+            -Duration (New-TimeSpan -Days 3650)
+        Register-DesiredTask `
+            -TaskName "QM_DWX_HourlyCheck" `
+            -Executable $PythonExe `
+            -Arguments "`"$DwxHourlyScript`"" `
+            -Trigger $dwxTrigger `
+            -Description "Runs DWX import orchestrator hourly (legacy fallback; routine is primary)."
+    }
+    else {
+        Write-Warning "DWX orchestrator script missing; skipped legacy QM_DWX_HourlyCheck registration."
+    }
 }
 
 # Aggregator state writer every minute, only if source script exists
@@ -129,6 +143,23 @@ if (Test-Path -LiteralPath $GitIndexLockMonitorScript) {
 }
 else {
     Write-Warning "Git index lock monitor script missing; skipped QM_GitIndexLockMonitor_10min registration."
+}
+
+# Drive/git exclusion hard-fence verification every 15 minutes (PC1-00)
+if (Test-Path -LiteralPath $DriveGitExclusionScript) {
+    $driveFenceTrigger = New-RepeatingTriggerFromToday `
+        -AtTime (Get-Date "00:06") `
+        -Interval (New-TimeSpan -Minutes 15) `
+        -Duration (New-TimeSpan -Days 3650)
+    Register-DesiredTask `
+        -TaskName "QM_DriveGitExclusion_15min" `
+        -Executable "powershell.exe" `
+        -Arguments "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$DriveGitExclusionScript`" -PrimaryRepoForWorktrees `"$RepoRoot`" -IncludeGitWorktrees -OutputPath `"$DriveGitExclusionOutputPath`"" `
+        -Trigger $driveFenceTrigger `
+        -Description "Verifies repo/.git paths remain outside Drive sync roots (PC1-00 hard fence)."
+}
+else {
+    Write-Warning "Drive/git exclusion script missing; skipped QM_DriveGitExclusion_15min registration."
 }
 
 # Paperclip stale-lock watchdog every 15 minutes, only if source script exists.

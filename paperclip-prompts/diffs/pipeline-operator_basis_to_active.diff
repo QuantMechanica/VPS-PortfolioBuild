@@ -1,0 +1,74 @@
+# Pipeline-Operator BASIS → live AGENTS.md diff
+#
+# Source A (BASIS): paperclip-prompts/pipeline-operator.md (entire markdown file).
+# Source B (live): C:\QM\paperclip\data\instances\default\companies\03d4dcc8-4cea-4133-9f68-90c0d99628fb\agents\46fc11e5-7fc2-43f4-9a34-bde29e5dee3b\instructions\AGENTS.md (entire file).
+# Captured: 2026-04-27 by Documentation-KM (QUA-237 — Wave 1 catch-up under DL-027) — capture-only.
+#
+# Live agent ID: 46fc11e5-7fc2-43f4-9a34-bde29e5dee3b (sole Pipeline-Operator agent per
+# `GET /api/companies/03d4dcc8.../agents`).
+#
+# ============================================================================
+# HIRE-TIME ANOMALY (worth flagging for OWNER + CEO)
+# ============================================================================
+#
+# Diff result: the live AGENTS.md is BYTE-IDENTICAL to the entire `paperclip-prompts/pipeline-operator.md`
+# BASIS file. Verified via `diff` — no differences (97 lines == 97 lines, no output).
+#
+# This means at hire-time, the running prompt was assembled from the entire BASIS markdown file rather
+# than from the system-prompt body alone. As a result, the Pipeline-Operator's live running prompt
+# includes content that was NOT intended to be part of the runtime prompt:
+#
+#   1. Role metadata header at the top:
+#        # Pipeline-Operator Agent — System Prompt
+#        > **V5 Source:** Notion `Paperclip V2 Company Design` → ...
+#        > **Migrated to repo:** 2026-04-26
+#        > **Status:** V5 BASIS for Wave 1 hire.
+#        **Role:** ...
+#        **Adapter:** claude_local
+#        **Heartbeat:** 10min (with no-op skip logic)
+#        **Reports to:** CEO + CTO
+#        **Manages:** ...
+#        ## System Prompt
+#
+#   2. Literal markdown fence markers (```text and ``` lines) appearing inline in the running prompt.
+#
+#   3. The hire-time briefing material that is supposed to live OUTSIDE the running prompt:
+#        - `## V1 → V5 Changes` table
+#        - `## First Issues on Spawn` list (numbered 1–3)
+#
+#   4. NO `## Paperclip operating contract (Pipeline-Operator)` block was appended at activation.
+#      Other Wave 0/1 agents (CTO, Research, Documentation-KM, DevOps) all had a role-tailored operating
+#      contract appended below a `---` separator. Pipeline-Operator did not receive one — meaning the
+#      live prompt is missing the heartbeat cadence policy, child-issue API patterns, X-Paperclip-Run-Id
+#      header rule, request_confirmation interaction guidance, and "do not idle-poll when blocked"
+#      guidance that the other Wave 0/1 hires received.
+#
+# This is exactly the silent-drift class DL-027 (BASIS→active diff propagation rule) is designed to
+# expose. Capture-only here per the QUA-237 brief; OWNER + CEO can decide remediation:
+#
+#   - propagation path `re_hire`: re-hire Pipeline-Operator with proper system-prompt extraction +
+#     operating-contract append, OR
+#   - propagation path `config_patch`: hand-patch `instructions/AGENTS.md` to remove the metadata /
+#     fence markers / V1→V5 table / First Issues, and append a Pipeline-Operator-tailored Paperclip
+#     operating contract block.
+#
+# DL-027 does NOT mandate either path. The decision lies with OWNER + CEO under DL-014 (two-layer hire
+# model) and the propagation-path rule of DL-027.
+
+--- paperclip-prompts/pipeline-operator.md (BASIS, full markdown file)
++++ instructions/AGENTS.md (live, full file)
+(no differences — files are byte-identical)
+
+# Expected diff (had hire-time followed the same convention as CTO/Research/Documentation-KM/DevOps):
+#
+# - Lines 1-13 of BASIS (metadata header + "## System Prompt" subhead) would NOT appear in live.
+# - Line 14 of BASIS (```text fence open) would NOT appear in live.
+# - Line 81 of BASIS (``` fence close) would NOT appear in live.
+# - Lines 83-91 of BASIS (V1 → V5 Changes table) would NOT appear in live.
+# - Lines 93-97 of BASIS (First Issues on Spawn) would NOT appear in live.
+# - A "---" separator + "## Paperclip operating contract (Pipeline-Operator)" block, role-tailored
+#   (10-min heartbeat with no-op skip, factory-only T1-T5 scope, T6 OFF LIMITS, escalation list,
+#   filesystem-truth + NO_REPORT-vs-EA-weakness disambiguation already in body, child-issue API
+#   pattern, X-Paperclip-Run-Id header rule), would be appended below the body.
+#
+# None of those expected differences are present. The live prompt is the raw BASIS file.

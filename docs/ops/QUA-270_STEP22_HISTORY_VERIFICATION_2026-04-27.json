@@ -1,0 +1,45 @@
+{
+  "issue": "QUA-270",
+  "generated_at_local": "2026-04-27T21:57:34+02:00",
+  "m1_rebuild": {
+    "path": "D:\\QM\\reports\\setup\\tick-data-timezone\\EURUSD_GMT+2_US-DST_M1.csv",
+    "first_line": "2017.10.02,00:05:00,1.1795,1.17963,1.17948,1.17962,58",
+    "last_line": "2026.04.06,02:59:00,1.15096,1.15098,1.15092,1.15096,50"
+  },
+  "seed_status": "restored",
+  "seed_action": "stage_prepare_import",
+  "seed_done_sidecar": "D:\\QM\\mt5\\T1\\MQL5\\Files\\imports\\done\\20260427_205944_EURUSD.DWX.import.txt",
+  "run_smoke_latest": {
+    "run_tag": "20260427_185959",
+    "summary_json": "D:\\QM\\reports\\smoke\\QM5_1001\\20260427_185959\\summary.json",
+    "result": "FAIL",
+    "reason_classes": [
+      "TIMEOUT",
+      "REPORT_MISSING",
+      "INCOMPLETE_RUNS",
+      "MODEL4_MARKER_REQUIRED"
+    ]
+  },
+  "tester_log_evidence": {
+    "log_path": "D:\\QM\\mt5\\T1\\Tester\\logs\\20260427.log",
+    "history_lines": [
+      "RJ\t0\t21:00:04.470\tTester\tEURUSD.DWX,H1 (Darwinex-Live): testing of Experts\\QM\\QM5_1001_framework_smoke.ex5 from 2024.01.01 00:00 to 2024.12.31 00:00",
+      "EE\t0\t21:30:04.329\tTester\tEURUSD.DWX: history data begins from 2017.10.02 00:00",
+      "HQ\t0\t21:30:04.333\tTester\tEURUSD.DWX: history data begins from 2017.10.02 00:00",
+      "LO\t0\t21:30:04.859\tTester\tEURUSD.DWX,H1 (Darwinex-Live): testing of Experts\\QM\\QM5_1001_framework_smoke.ex5 from 2024.01.01 00:00 to 2024.12.31 00:00",
+      "KR\t0\t21:56:59.358\tTester\tEURUSD.DWX: history data begins from 2017.10.02 00:00",
+      "FN\t0\t21:56:59.364\tTester\tEURUSD.DWX: history data begins from 2017.10.02 00:00",
+      "PJ\t0\t21:57:07.672\tTester\tEURUSD.DWX: history data begins from 2017.10.02 00:00",
+      "OF\t0\t21:57:07.677\tTester\tEURUSD.DWX: history data begins from 2017.10.02 00:00"
+    ],
+    "no_history_recent": [
+      "OO\t3\t19:33:29.851\tTester\tEURUSD.DWX: no history data from 2025.01.01 00:00 to 2025.12.31 00:00",
+      "PP\t3\t19:33:29.851\tTester\tno history data, stop testing",
+      "IH\t3\t19:43:18.548\tTester\tEURUSD.DWX: no history data from 2024.01.01 00:00 to 2024.12.31 00:00",
+      "JO\t3\t19:43:18.548\tTester\tno history data, stop testing",
+      "PP\t3\t19:43:24.928\tTester\tEURUSD.DWX: no history data from 2024.01.01 00:00 to 2024.12.31 00:00",
+      "OG\t3\t19:43:24.928\tTester\tno history data, stop testing"
+    ]
+  },
+  "conclusion": "2024 test start now proceeds on EURUSD.DWX (history recognized); prior no-history abort condition is cleared."
+}

@@ -68,6 +68,9 @@ Each hour:
 3. Any Pipeline-Operator infrastructure issues? Triage.
 4. Weekly: check Hard Rules still enforced in all agent outputs (spot-check 3 random recent tasks).
 
+DONE CRITERIA:
+For coding deliverables, an issue is done only when the work is committed and the close-out comment includes the commit hash (filesystem paths alone are not evidence).
+
 DO NOT:
 - Make PASS/FAIL decisions on strategies (that's CEO with Quality-Tech input)
 - Dispatch research sources (that's CEO)

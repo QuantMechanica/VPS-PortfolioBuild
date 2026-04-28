@@ -10,8 +10,10 @@ param(
     [int]$AggregatorSilentMinutes = 15,
     [string]$DriveLogDir = 'C:\ProgramData\Google\DriveFS\Logs',
     [int]$DriveSilentMinutes = 60,
+    [string]$DriveGitExclusionScript = 'C:\QM\repo\infra\monitoring\Test-DriveGitExclusion.ps1',
     [string[]]$GitRepoRoots = @('C:\QM\repo', 'C:\QM\paperclip'),
     [int]$StaleIndexLockMinutes = 10,
+    [string]$GitIndexLockMonitorScript = 'C:\QM\repo\infra\monitoring\Invoke-GitIndexLockMonitor.ps1',
     [string]$PaperclipProcessPattern = 'paperclip',
     [string]$Qua95TaskName = 'QM_QUA95_BlockerRefresh',
     [string]$Qua95TaskHealthTaskName = 'QM_QUA95_TaskHealth_15min',
@@ -211,28 +213,62 @@ else {
     }
 }
 
-# stale index.lock scan
-$staleLocks = @()
-foreach ($repoRoot in $GitRepoRoots) {
-    if (-not (Test-Path -LiteralPath $repoRoot)) {
-        continue
+# Drive/git exclusion hard-fence check (PC1-00)
+if (-not (Test-Path -LiteralPath $DriveGitExclusionScript)) {
+    Add-Check -Name 'drive_git_exclusion' -Status 'warn' -Meta @{
+        reason = 'check_script_missing'
+        path = $DriveGitExclusionScript
     }
-
-    $lockPath = Join-Path $repoRoot '.git\index.lock'
-    if (-not (Test-Path -LiteralPath $lockPath)) {
-        continue
-    }
-
-    $ageMin = [math]::Round(((Get-Date) - (Get-Item -LiteralPath $lockPath).LastWriteTime).TotalMinutes, 2)
-    if ($ageMin -ge $StaleIndexLockMinutes) {
-        $staleLocks += [pscustomobject]@{ path = $lockPath; age_minutes = $ageMin }
+}
+else {
+    $driveFenceArgs = @(
+        '-NoProfile',
+        '-ExecutionPolicy', 'Bypass',
+        '-File', $DriveGitExclusionScript,
+        '-PrimaryRepoForWorktrees', 'C:\QM\repo',
+        '-IncludeGitWorktrees'
+    )
+    $driveFenceOut = & powershell @driveFenceArgs 2>&1
+    $driveFenceCode = $LASTEXITCODE
+    $driveFenceText = ($driveFenceOut | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
+    $driveFenceStatus = if ($driveFenceCode -eq 0) { 'ok' } elseif ($driveFenceCode -eq 1) { 'warn' } else { 'critical' }
+    Add-Check -Name 'drive_git_exclusion' -Status $driveFenceStatus -Meta @{
+        exit_code = $driveFenceCode
+        output = $driveFenceText
     }
 }
 
-$staleLockStatus = if ($staleLocks.Count -gt 0) { 'critical' } else { 'ok' }
-Add-Check -Name 'stale_git_index_lock' -Status $staleLockStatus -Meta @{
-    threshold_minutes = $StaleIndexLockMinutes
-    stale_locks = @($staleLocks)
+# stale index.lock scan (delegated to canonical monitor script)
+if (-not (Test-Path -LiteralPath $GitIndexLockMonitorScript)) {
+    Add-Check -Name 'stale_git_index_lock' -Status 'warn' -Meta @{
+        reason = 'monitor_script_missing'
+        path = $GitIndexLockMonitorScript
+        threshold_minutes = $StaleIndexLockMinutes
+        repo_roots = @($GitRepoRoots)
+    }
+}
+else {
+    $monitorOut = & $GitIndexLockMonitorScript -RepoRoots $GitRepoRoots -StaleAfterMinutes $StaleIndexLockMinutes 2>&1
+    $monitorCode = $LASTEXITCODE
+    $monitorText = ($monitorOut | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
+    $monitorStatus = if ($monitorCode -eq 0) { 'ok' } elseif ($monitorCode -eq 1) { 'warn' } else { 'critical' }
+    $monitorJson = $null
+    try {
+        if ($monitorText) {
+            $monitorJson = $monitorText | ConvertFrom-Json -ErrorAction Stop
+        }
+    }
+    catch {
+        $monitorJson = $null
+    }
+
+    Add-Check -Name 'stale_git_index_lock' -Status $monitorStatus -Meta @{
+        exit_code = $monitorCode
+        threshold_minutes = $StaleIndexLockMinutes
+        repo_roots = @($GitRepoRoots)
+        output = $monitorText
+        monitor = $monitorJson
+    }
 }
 
 # QUA-95 blocker task health

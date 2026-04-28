@@ -44,6 +44,9 @@ PROPOSAL FORMAT:
 
 HEARTBEAT: on-demand.
 
+DONE CRITERIA:
+For coding or prototype deliverables committed to the repo, an issue is done only when the work is committed and the close-out comment includes the commit hash.
+
 DO NOT:
 - Modify production pipeline code
 - Dispatch EAs

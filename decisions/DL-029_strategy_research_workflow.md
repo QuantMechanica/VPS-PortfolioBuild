@@ -1,0 +1,62 @@
+---
+name: DL-029 — Strategy Research Workflow (Source → Strategy → Pipeline)
+description: V5 binding workflow for taking a research resource (book/paper/blog/video) through extraction → Strategy Cards → end-to-end pipeline. Sequential, low-parallel, per-resource issue tree; one source / one strategy actively worked at a time; same-source enhancement = `_v2`, different-source = new card.
+type: decision-log
+---
+
+# DL-029 — Strategy Research Workflow (Source → Strategy → Pipeline)
+
+Date: 2026-04-27
+Source directive: OWNER conversation, 2026-04-27 ~14:30 local (relayed by Board Advisor on QUA-236, ~14:35 local).
+Ratifying issue: [QUA-236](/QUA/issues/QUA-236)
+Recording issue (this entry): [QUA-247](/QUA/issues/QUA-247)
+Owner: CEO (`7795b4b0-8ecd-46da-ab22-06def7c8fa2d`)
+Recorder: CEO; mirror to Notion handed off to Documentation-KM (`8c85f83f-db7e-4414-8b85-aa558987a13e`).
+Supersedes: any improvised research flow that CEO + Research had spun up between Wave 0 and 2026-04-27 ~14:30 local.
+Status: Active.
+
+## Decision
+
+V5 executes the research-to-live arc through a structured, sequential, low-parallel workflow whose shape, card discipline, enhancement loop, and lineage rules are binding. The pattern is opinionated by design — to save tokens, keep focus on one thing at a time, and reuse V4's prior taxonomy.
+
+### Rule statement
+
+1. **Per-resource issue tree.** One parent Issue per resource (`SRC<NN> — <citation>`). One sub-Issue per strategy found in that resource (`SRC<NN>_S<n> — <slug>`). All sub-issues created `blocked` except the first (`todo`). The next sub-issue unblocks only when the prior strategy completes its end-to-end pipeline (Programmer → P1 Build → P2..P8 backtest gates → Quality-Tech sign-off → ready-or-killed verdict). Parent source-issue closes when ALL sub-issues close. ONE source actively worked at a time. ONE strategy from that source actively worked at a time.
+2. **Strategy Card discipline.** One `.md` per strategy at `strategy-seeds/cards/<slug>_card.md` (slug allocated at extraction; `ea_id` allocated at APPROVED → IN_BUILD; not in filename). Mandatory new fields per QUA-243 schema: `source_citations: []` (multi, list-of-objects with `role: primary | supplement`), `strategy_type_flags: []` (multi, controlled vocabulary at `strategy-seeds/strategy_type_flags.md`), `framework_alignment` section (`modules_used` map of 4 hooks + `hard_rules_at_risk` controlled list of 13 V5 hard rules + `at_risk_explanation`), and a Pipeline History block (one row per `_v<n>` rebuild).
+3. **Strategy lineage = source linkage.** Same source + in-pipeline learning = `_v2` of same `strategy_id` (same card, new row in Pipeline History). Different source = new sub-issue under the new source's parent (different `strategy_id`, different card). Test: *where did the insight come from?*, not *does the new EA look similar to the old one?*
+4. **Enhancement loop.** Backtest with zero trades = automatic send-back to programmer. Each enhancement = new file version `_v2`, `_v3`, …. A `_v2` is treated as a NEW EA: re-runs the full P1 → P8 pipeline from scratch. Strategy Card lineage is preserved — only the Pipeline History block grows. Same logic for any "must re-test from P1" failure (input-rule change, parameter-set change beyond sweep, news-mode change).
+5. **Pipeline-Operator load balancing across T1-T5.** Pipeline-Op distributes backtest runs across the five factory terminals to maximise throughput; T6 OFF LIMITS. No double-work: dedup tuple `(ea_id, version, symbol, phase, sub_gate_config)` is enforced by the registry at `D:\QM\reports\state\factory_run_dedup_v1.csv`. Allocation policy is least-loaded round-robin with symbol-affinity tie-break (Pipeline-Op's choice, codified in process 15).
+6. **V4 prior taxonomy reuse.** Strategy-type flag controlled vocabulary is **mined from V4 archives**, not invented in V5. New flags can only be added via Research issue + V4 source citation + CEO/CTO ratification. The vocabulary is at `strategy-seeds/strategy_type_flags.md` (QUA-244 first cut).
+
+### Scope
+
+- **In scope:** any research-to-live arc starting from a book / paper / blog / video / forum-post source. Applies to V5 from 2026-04-27 forward.
+- **Out of scope:** T6 live operations (separate boundary per DL-025); V4 archive mining as a research output (the V4 archives are a *source* for taxonomy, not a target for new extraction).
+- **No parallel-source extraction.** Mirrors `paperclip-prompts/research.md` § THE CORE RULE.
+
+## Authority basis
+
+DL-023 § Broadened CEO authority class 4 (internal process choices → research workflow rules). OWNER ratified the directive directly on 2026-04-27 ~14:30 local; CEO records under DL-023 authority.
+
+## Operational artifacts
+
+Committed (on main as of this DL):
+
+- `processes/13-strategy-research.md` — workflow shape + card discipline + lineage rules. [QUA-242](/QUA/issues/QUA-242), commit `346cb05`.
+- `strategy-seeds/cards/_TEMPLATE.md` — V5 card schema with new mandatory fields. [QUA-243](/QUA/issues/QUA-243), commit `5d2d7a0`.
+- `strategy-seeds/strategy_type_flags.md` — controlled vocabulary mined from V4 archives. [QUA-244](/QUA/issues/QUA-244), Research clean commit `5505b20` re-added to main at `b1bf7f1` after CEO/CTO ratification (QUA-244 currently `in_review` for ratification close-out only; the file content is on main).
+
+Forward-linked (committed in agent worktrees, not yet on main as of this DL — will land via fast-forward under their own close-outs):
+
+- `processes/14-ea-enhancement-loop.md` — `_v<n>` versioning + zero-trades → programmer + Pipeline History row mechanics. [QUA-245](/QUA/issues/QUA-245), Doc-KM commit `bae51d3` on `agents/docs-km`.
+- `processes/15-pipeline-op-load-balancing.md` — T1-T5 allocation + dedup + queue. [QUA-246](/QUA/issues/QUA-246), Pipeline-Op commit `09f0792` on `agents/pipeline-operator` + Doc-KM mirror commit `55b9243` on `agents/docs-km`; canonical-prompt addendum `7b7ca3a` on `paperclip-prompts/pipeline-operator.md`.
+
+## Cross-links
+
+- **DL-023 ↔ DL-029.** DL-029 is recorded under the DL-023 broadened-authority waiver (class 4: internal process choices → research workflow rules). DL-029 cites DL-023 as its authority basis.
+- **DL-025 ↔ DL-029.** DL-029 explicitly carries forward DL-025's T6 boundary — strategy research and pipeline-op load balancing are factory-only (T1-T5).
+- **QUA-236 ↔ DL-029.** Forward link: QUA-236 → DL-029 (recorded via QUA-247). Reverse link: this file cites QUA-236 as the parent ratifying directive. Children QUA-242 / 243 / 244 / 245 / 246 / 247 are the operationalisation cohort.
+
+## Wave 2 hire trigger update
+
+Pre-DL-029, the Wave 2 hire trigger (Quality-Tech / Development / Quality-Business) required Research to land "first card" on SRC01 Ernest Chan. DL-029 supersedes that with: **first card written under the new `_TEMPLATE.md` schema** (i.e., includes populated `source_citations`, `strategy_type_flags`, `framework_alignment`). Cards written before QUA-243's commit `5d2d7a0` do not satisfy the trigger.

@@ -48,6 +48,18 @@ pages:
     direction: notion-to-mirror
     note: "Per CEO 2026-04-27 mapping decision (QUA-151 comment 2e2f2b1f) — closest match for BASIS 'Process Roadmap'."
 
+  - notion_id: "34f47da58f4a81649744ff5aa2046426"
+    notion_title: "V5 Projects Hierarchy"
+    slug: "v5_projects_hierarchy"
+    direction: notion-to-mirror
+    note: "Notion mirror of the Goal → 4 Projects → Issues hierarchy formalised in DL-031 (QUA-256). Git-canonical sources: processes/process_registry.md § Issue Routing + decisions/DL-031_projects_formalization_and_routing_convention.md."
+
+  - notion_id: "34f47da58f4a814b9df7f6e4f8e661d1"
+    notion_title: "DL-031 — Projects Formalization + Issue Routing Convention (Decision Log)"
+    slug: "dl_031_projects_formalization"
+    direction: notion-to-mirror
+    note: "Notion mirror of DL-031 (QUA-254 / QUA-256). Git-canonical: decisions/DL-031_projects_formalization_and_routing_convention.md."
+
 # BASIS-listed but skipped:
 #   - "Agent Skill Matrix" — Git-canonical (docs/ops/AGENT_SKILL_MATRIX.md). No
 #     Notion source page surfaced in the V5 hub. Per CEO 2026-04-27, do not

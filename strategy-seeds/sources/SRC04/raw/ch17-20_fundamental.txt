@@ -1,0 +1,821 @@
+                                                                CHAPTER 17
+
+Fundamental
+Trading Strategy:
+Pairing Strong with
+Weak
+
+                                                                                                  149
+
+One of the best ways to approach currency trading on a fundamental basis
+      is to pair the strongest currency with the weakest. Of course finding that
+pairing is rarely simple because it is not just about which countries are the strongest
+or weakest right now but instead which ones will become strong or weak going
+forward. Finding these currencies can also be challenging because we live in a global
+economy where the health of one major economy will affect the outlook of another.
+Yet buying a weak currency and selling a strong one unknowingly can be a big
+mistake that translates into large losses, so it is extremely important for forex traders
+to learn how to pair strong with weak to maximize returns. After doing so you can
+use technical analysis to help identify points of entry in the direction of the trend.
+
+   In 2015, for example, the European Central Bank introduced quantitative easing
+(QE) as a last ditch effort to boost inflation and stimulate growth. We know that
+QE lowers interest rates and erodes the value of a currency but selling euros blindly
+on March 9, 2015, when the central bank started buying bonds for the very first
+time, yielded only a short-lived decline in the currency. Instead it would have been
+smarter to look for opportunities to sell the currency against a strong one on rallies.
+FUNDAMENTAL TRADING STRATEGY: PAIRING STRONG WITH WEAKFIGURE 17.1 EURGBP Daily Chart--Quantitative Easing
+                                  Source: eSignal
+
+150
+
+                               FIGURE 17.2 NZDCAD Daily Chart--Oil
+                                  Source: eSignal
+One good candidate at the time was the British pound, which was benefiting from                     FUNDAMENTAL TRADING STRATEGY: PAIRING STRONG WITH WEAK
+economic improvements and had a central bank that was moving closer to raising
+rates. Figure 17.1 shows how there was a lot of consolidation in EURGBP near
+74 cents prior to the launch of Eurozone quantitative easing. This level proved to
+be resistance when the pair rallied in late March. Traders could have sold them,
+assuming that resistance would hold, or waited for the pair to revisit that level in
+April and May.
+
+   Another way to pair strong with weak is to follow the direction of commodity
+prices. Oil prices bottomed at $43.46 in early 2015, having traded above $100 a
+barrel only 8 months earlier and started to turn higher in March. As a major oil
+producer, Canada would stand to benefit from stabilization in crude prices. At the
+time U.S. policy makers were talking about raising interest rates, the Australian
+dollar was benefitting from improving domestic conditions, and sterling soared on
+positive data and a victory by the incumbent during the 2015 general election.
+Selling any of these currencies and buying the Canadian dollar would have been a
+risky endeavor. Instead the best bet at the time was to sell the New Zealand dollar
+and buy the Canadian dollar or the NZDCAD pair because New Zealand reported
+extremely weak labor data that prompted policy makers to talk about easing. As
+you can see in Figure 17.2, NZDCAD started to turn lower just as oil prices moved
+higher in March.
+
+                                                                                                 151
+
+FIGURE 17.3 EURUSD Daily Chart
+Source: eSignal
+                             The best way to gauge strong versus weak is to monitor economic data surprises.
+                          While the ECB was buying bonds and implementing quantitative easing, Eurozone
+                          data started to improve and U.S. data started to weaken. The market had not
+                          anticipated this shift in dynamic as they had been looking for weak Eurozone data to
+                          reinforce QE and stronger U.S. data to push the Fed to tighten. This unexpected
+                          change drove EURUSD sharply higher, and buying breakouts in April and May as
+                          shown in Figure 17.3 would have been good bets.
+
+152
+
+FUNDAMENTAL TRADING STRATEGY: PAIRING STRONG WITH WEAK
+                                                                CHAPTER 18
+
+Fundamental
+Trading Strategy:
+The Leveraged
+Carry Trade
+
+                                                                                                  153
+
+The leverage carry trade strategy is the quintessential global macro trade that
+     has long been one of the favorite strategies of hedge funds and investment
+banks. On its most fundamental level, the carry trade strategy involves buying
+a high-yielding currency and funding it with the sale of a low-yielding currency.
+Aggressive speculators will leave the trade unhedged with the hope that the high
+yielding currency will appreciate in value relative to the lower yielding currency,
+allowing them to earn the interest rate differential on top of the capital appreciation.
+More conservative investors may choose to hedge the exchange rate component,
+earning only the interest rate differential. Although the differentials tend to be small,
+usually 1 to 3 percent if the position is leveraged 5 to 10 times, the profits from
+interest rates alone can be substantial. Of course it is important to remember that
+while leverage can magnify profits, it can also exacerbate losses. Capital appreciation
+generally occurs when a number of traders identify profit opportunities and pile into
+the same trade, driving up the value of the currency pair.
+
+   In foreign exchange trading, the carry trade is a popular way to take advantage
+of the notion that money flows in and out of different markets, driven by the law
+of supply and demand: with markets offering higher rates of return on investment
+                                                         attracting the most capital. Countries are no different--in the world of international
+                                                         capital flows, nations that offer the highest interest rates will generally attract more
+                                                         investment creating greater demand for their currencies. This helps to fuel the
+                                                         carry trade. The carry trade strategy is simple to master, but like all strategies,
+                                                         it contains risk. Carry trades performed extremely well between 2000 and 2007,
+                                                         failed miserably between 2008 and 2009, and recovered between late 2012 into
+                                                         2015. The chance of loss can be great if you do not understand how, why, and when
+                                                         carry trades work best.
+
+                                                          How Do Carry Trades Work?
+
+                                                         To understand carry trading, it is important to first understand that currencies are
+
+                                                         always traded in pairs, so taking a carry trade involves buying a currency that offers
+
+                                                         a high interest rate and simultaneously selling a currency that offers a low interest
+
+                                                         rate. Carry trades are profitable when the exchange rate remains unchanged in
+
+                                                         value and investors are able to earn the difference in interest--or spread--between
+
+                                                         the two currencies, or when it appreciates in value, allowing the investor to earn
+
+                                                         the spread along with capital appreciation. If the exchange rate falls by more than
+
+                                                         the spread on the interest rate, it becomes a net loss for the investor.
+
+154                                                      Let's take a look at an example: Assume that the Australian dollar offers an
+
+                                                         interest rate of 4.75%, while the Swiss franc offers an interest rate of 0.25%. To
+
+FUNDAMENTAL TRADING STRATEGY: THE LEVERAGED CARRY TRADE  execute the carry trade, an investor buys the Australian dollar and sells the Swiss
+
+                                                         franc. In doing so, he or she can earn a profit of 4.50% (2.75% in interest earned
+
+                                                         minus 0.25% in interest paid), as long as the exchange rate between Australian
+
+                                                         dollars and Swiss francs do not change. Figure 18.1 shows exactly how an investor
+
+                                                         would execute the carry trade.
+
+                                                           Long                   Investor            Short
+
+                                                         Buy AUD  Enters long AUD/USD trade:        Sell CHF
+                                                           4.75%                                     0.25%
+                                                                  Receives: 4.75% from long AUD
+                                                                  position
+
+                                                                  Pays: 0.25% through short USD
+                                                                  funding position
+
+                                                                  Profit: 4.50% in interest rate
+                                                                  spread, assuming spot rate is
+                                                                  constant
+
+                                                         FIGURE 18.1 Leveraged Carry Trade Example
+                  To summarize: A carry trade involves buying a currency that offers a high interest    FUNDAMENTAL TRADING STRATEGY: THE LEVERAGED CARRY TRADE
+               rate while selling a currency that offers a low interest rate.
+
+ Why Do Carry Trades Work?
+
+               Interest rates are very important: Carry trades work because of the constant
+               movement of capital into and out of different countries in search of the highest yield.
+               Interest rates are the main reason why some countries attract more investment
+               than others. There are three reasons why a country can pay a higher interest rate.
+               First, if a country's economy is doing well (high growth, high productivity, low
+               unemployment, rising incomes, etc.), it will be able to offer those who invest in the
+               country a higher rate of return. Second, central banks can raise interest rates on fast
+               growing economies with rising inflation. Third, countries with high debt to GDP
+               ratios, low credit ratings, and/or inherent growth problems may also need to pay a
+               higher interest rate to attract investment.
+
+                  Investors prefer to earn higher interest rates: Investors who are interested in
+               maximizing their profits will naturally look for investments that offer them the
+               highest rate of return. When making a decision to invest in a particular currency, an
+               investor is more likely to choose one that offers the highest rate of return, or in this
+               case, interest rate. If several investors make this exact same decision, the country 155
+               will experience an inflow of capital from those seeking to earn a high rate of return,
+               and the currency should appreciate.
+
+                  What about countries that are not doing well economically? Countries that have
+               low growth and low productivity will not be able to offer investors a high rate of
+               return unless they have a very poor credit rating and are forced to offer a higher
+               rate to compensate for the risk of holding the country's bond or currency. With
+               major economies, however, there will be times where growth is so weak that
+               interest rates are brought to zero, providing investors with no meaningful return.
+               The difference between countries that offer high interest rates versus countries that
+               offer low interest rates is what makes carry trades possible.
+
+                  Let's take another look at the carry trade example above in more detail.
+                  Imagine an investor in Switzerland who is earning an interest rate of 0.25% per
+               year on her bank deposit in Swiss francs. At the time, a bank in Australia is offering
+               4.75% per year on a deposit of Australian dollars. Seeing that interest rates are much
+               higher with the Australian bank, this investor would like to find a way to earn this
+               higher rate of interest on her money.
+                  Now imagine that the investor could somehow trade her deposit of Swiss francs
+               by paying 0.25% for a deposit of Australian dollars paying 4.75%. What she has
+               effectively done is to ``sell'' her Swiss franc deposit and use those funds to ``buy'' an
+               Australian dollar deposit. With this transaction, she now owns an Australian dollar
+                                                         Value   Australia              Capital                  Switzerland     Value
+                                                           of                           Flows                                      of
+                                                                Interest rate:                                   Interest rate:
+                                                         AUD        4.75%                                            0.25%       CHF
+
+                                                         FIGURE 18.2 AUDCHF Carry Trade Example 1
+
+                                                         deposit that pays her 4.75% in interest per year, 4.50% more than she was earning
+
+                                                         with her Swiss franc deposit.
+
+                                                         This investor has essentially just done a carry trade by ``buying'' an Australian
+
+                                                         dollar deposit, and ``selling'' a Swiss franc deposit.
+
+                                                         The net effect of millions of people doing this transaction is that capital flows out of
+
+                                                         Switzerland and into Australia, as investors take their Swiss francs and convert them
+
+                                                         into Australian dollars. Australia attracts more capital because of the higher rates it
+
+                                                         offers. This inflow of capital increases the value of the currency (see Figure 18.2).
+
+                                                         To summarize: Carry trades are made possible by the differences in interest rates
+
+                                                         between countries. Because they prefer to earn higher interest rates, investors will
+
+156                                                      look to buy and hold high interest rate paying currencies.
+
+FUNDAMENTAL TRADING STRATEGY: THE LEVERAGED CARRY TRADE   When Will Carry Trades Work Best?
+
+                                                                        There will be times when carry trades work better than others. In fact, carry trades
+                                                                        are the most profitable when there is a very specific attitude toward risk.
+
+                                                          How Much Risk Are You Willing to Take?
+
+                                                                        The moods of people in general change over time--sometimes they may feel more
+                                                                        daring and willing to take chances; other times they may be more timid and prone to
+                                                                        conservativeness. Investors, as a group, are no different. Sometimes they are willing
+                                                                        to make investments that involve a good amount of risk; other times they are more
+                                                                        fearful of losses and look to invest in safer assets.
+
+                                                                           In financial jargon, when investors as a whole are willing to take on risk, we
+                                                                        call this low risk aversion, which means they are in risk-seeking mode. Alternatively,
+                                                                        when investors are drawn to more conservative investments and less willing to take
+                                                                        on risk, we describe them as risk-averse.
+
+                                                                           Carry trades are the most profitable when investors have low risk aversion. This
+                                                                        notion makes sense when you consider what a carry trade involves. Remember, a
+               carry trade involves buying a currency that pays a high interest rate while selling a    FUNDAMENTAL TRADING STRATEGY: THE LEVERAGED CARRY TRADE
+               currency that pays a low interest rate. In buying the high interest rate currency, the
+               investor is taking a risk because it is believed that a country needs to offer a higher
+               interest rate to offset the risk of holding the currency. Also, while high interest rates
+               attract investment, they can also hurt growth by raising the cost of borrowing. This
+               creates uncertainty around whether the economy of the country will continue to
+               perform well and be able to pay not just high but even higher interest rates. This
+               risk is something a carry trade investor must be willing to take.
+
+                  If investors as a whole were not willing to take on this risk, then capital would
+               never move from one country to another, and the carry trade opportunity would
+               not exist. Therefore, in order to return, carry trades require that investors as a
+               group have low risk aversion, or be willing to bear the risk of investing in the higher
+               interest rate currency.
+
+                  To summarize: Carry trades will be the most profitable when investors are willing
+               to bear the risk of investing in high interest paying currencies.
+
+ When Will Carry Trades Not Work?
+
+               So far, we have shown that a carry trade will work best when investors have low
+               risk aversion. What happens when investors have high risk aversion?
+
+                  Carry trades are the least profitable when investors have high risk aversion. When 157
+               investors have high risk aversion, they are less willing as a group to take chances
+               with their investments. This means they would be less willing to invest in riskier
+               currencies that offer higher interest rates. Instead, when investors have high risk
+               aversion they would actually prefer to put their money in ``safe haven'' currencies
+               that pay lower interest rates. During this time, they may also opt to close or unwind
+               their carry trades. In doing so, they would be buying the currency with the low
+               interest rate and selling the currency with the high interest rate.
+
+                  Returning to our earlier example, let's assume the investor suddenly feels
+               uncomfortable holding the foreign currency, the Australian dollar. Now, instead of
+               looking for the higher interest rate, she is more interested in keeping her investment
+               safe. As a result, she swaps her Australian dollars for more familiar Swiss francs.
+
+                  The net effect of millions of people doing this transaction is that capital flows
+               out of Australia and into Switzerland as investors take their Australian dollars and
+               convert them into Swiss francs. During this period of risk aversion, Switzerland
+               attracts more capital due to the perceived safety of its currency, and the inflow of
+               capital increases the value of the Swiss franc (see Figure18.3).
+
+                  When investors have high risk aversion, they prefer to avoid the riskier high
+               interest rate paying currency and instead invest in the safer, lower interest rate
+               paying currency, which is the opposite of a carry trade.
+                                                         Value          Australia      Capital     Switzerland                  Value
+                                                           of                          Flows                                      of
+                                                                       Interest rate:              Interest rate:
+                                                         AUD               4.75%                       0.25%                    CHF
+
+                                                         FIGURE 18.3 AUDCHF Carry Trade Example 2
+
+                                                            To summarize: Carry trades will be the least profitable in periods of uncertainty
+                                                         when investors are unwilling to bear the risk of investing in high interest paying
+                                                         currencies.
+
+                                                          The Importance of Risk Aversion
+
+                                                         Carry trades will generally be profitable when investors have low risk aversion, and
+
+                                                         unprofitable when investors have high risk aversion. So before placing a carry trade
+
+                                                         it is important to understand the risk environment--whether investors as a whole
+
+                                                         have high or low risk aversion--and when it changes.
+
+158                                                      Rising risk aversion is generally beneficial for low interest rate paying currencies:
+
+                                                         Sometimes the mood of investors will change rapidly, and investors' willingness
+
+FUNDAMENTAL TRADING STRATEGY: THE LEVERAGED CARRY TRADE  to make risky trades can change dramatically from one moment to the next.
+
+                                                         Often, these large shifts are caused by significant global events. When periods
+
+                                                         of risk aversion occur quickly, the result is generally a large capital inflow into
+
+                                                         low-interest-rate-paying ``safe haven'' currencies (see Figure 18.2).
+
+                                                         For example, in the summer of 1998 the Japanese yen appreciated against the
+
+                                                         dollar by more than 20% over the span of two months, due to the Russian debt
+
+                                                         crisis and LTCM hedge fund bailout. Similarly, just after the September 11 terrorist
+
+                                                         attacks the Swiss franc rose by more than 7% against the dollar over a 10-day period.
+
+                                                         During the global financial crisis in 2008, we also saw big gains in the yen and the
+
+                                                         Swiss franc.
+
+                                                         These sharp movements in currency values often occur when risk aversion quickly
+
+                                                         changes from low to high. As a result, when risk aversion shifts, a carry trade can
+
+                                                         turn from being profitable to unprofitable very quickly.
+
+                                                         Risk Aversion and Carry Trade Profitability
+
+                                                         As investor risk aversion goes from high to low, carry trades become more profitable
+                                                         as detailed in Figure 18.4.
+
+                                                            How do you know if investors as a whole have high or low risk aversion?
+                                                         Unfortunately, it is difficult to measure investor risk aversion with a single number.
+Carry Trade Profitability              Risk                                     (+)
+               (­)                     Neutral
+                                                Low Risk Aversion
+High Risk Aversion
+                                                1. Investors more willing to
+1. Investors less willing to                    take greater risks
+take risks, remove funds                        2. Capital flows away from
+from risky currencies                           low-interest currencies and
+2. Capital flows out of riskier                 into those that pay higher
+high-interest currencies and                    interest rates
+into low interest safe-haven                    3. Low-interest currencies
+currencies                                      tend to remain weak, used in
+3. Low-interest currencies                      financing risky trades
+appreciate as investors get
+out of risky trades
+
+FIGURE 18.4 Carry Trade Profitability
+
+One way to get a broad idea of risk aversion levels is to look at bond yields. The                  FUNDAMENTAL TRADING STRATEGY: THE LEVERAGED CARRY TRADE
+wider the spread between the yields of bonds from different countries with similar
+credit ratings, the higher the investor risk aversion. Bond yields are readily available
+on major financial websites such as Bloomberg.com and Reuters.com. In addition,
+several large banks have developed their own measures of risk aversion that signal
+when investors are willing to take risk and when they are not.
+
+                                                                                                 159
+Other Things to Bear in Mind When Considering a Carry Trade
+
+While risk aversion is one of the most important things to consider before making
+a carry trade, it is not the only one. The following are some additional issues to be
+aware of.
+
+Low Interest Rate Currency Appreciation
+
+By entering into a carry trade, an investor is able to earn a profit from the interest
+rate difference, or spread, between a high interest rate currency and a low interest
+rate currency. However, the carry trade can turn unprofitable if for some reason
+(like the risk aversion examples earlier), the low interest rate currency appreciates
+by a significant amount.
+
+   Aside from rising risk aversion, improving economic conditions within a low
+interest paying country can also cause its currency to appreciate. An ideal carry trade
+will involve a low interest currency whose economy is weak and has low expectations
+for growth. If the economy were to improve, however, the country might then be
+able to offer investors a higher rate of return through increased interest rates. If this
+were to occur--again, using the previous example, say that Switzerland increased
+the interest rates it offered--then investors may take advantage of these higher rates
+by investing in Swiss francs. As seen in Figure 18.3, an appreciation of the Swiss franc
+                                                         would negatively affect the profitability of the Australian dollar­Swiss franc carry
+                                                         trade. (At the very least, higher interest rates in Switzerland would negatively affect
+                                                         the carry trade's profitability by lowering the interest rate spread.)
+
+                                                            This same sequence of events may currently be unfolding for the Japanese yen.
+                                                         Given its zero interest rates, the Japanese yen has for a very long time been an
+                                                         ideal low interest rate currency to use in carry trades (known as yen carry trades).
+                                                         This situation however, may be changing. Increased optimism about the Japanese
+                                                         economy has recently led to an increase in the Japanese stock market. Increased
+                                                         investor demand for Japanese stocks and currency has caused the yen to appreciate,
+                                                         and this yen appreciation negatively affects the profitability of carry trades like
+                                                         Australian dollar (high interest rate) versus Japanese yen.
+
+                                                            If investors continue to buy the yen, the yen carry trade could start to become
+                                                         unprofitable. This further illustrates the fact that when the low interest rate currency
+                                                         in a carry trade (the currency being sold) appreciates, it negatively affects the
+                                                         profitability of the overall carry trade position.
+
+                                                         Trade Balances
+
+                                                         A country's trade balance (the difference between imports and exports) can also
+
+                                                         affect the profitability of a carry trade. We know that when investors have low
+
+160                                                      risk aversion or are risk seeking, capital will flow from the low interest rate paying
+
+                                                         currency to the high interest rate paying currency (see Figure 18.2) but this does
+
+FUNDAMENTAL TRADING STRATEGY: THE LEVERAGED CARRY TRADE  not always happen.
+
+                                                         One reason is because countries with large trade surplus can still see their
+
+                                                         currencies appreciate in low risk environments because running a trade surplus
+
+                                                         means that the country exports more than it imports. This creates naturally demand
+
+                                                         for the currency.
+
+                                                         The point of this example is to show that even when investors have low risk
+
+                                                         aversion, large trade imbalances can cause a low interest rate currency to appreciate
+
+                                                         (as in Figure 18.3). And when the low interest rate currency in a carry trade (the
+
+                                                         currency being sold) appreciates, it negatively affects the profitability of the carry
+
+                                                         trade.
+
+                                                         Time Horizon
+
+                                                         In general, a carry trade is a long-term strategy. Before entering into a carry trade,
+                                                         an investor should be willing to commit to a time-horizon of at least six months. This
+                                                         commitment helps to make sure that the trade will not be affected by the ``noise''
+                                                         of shorter-term currency price movements.
+
+                                                            To summarize: Carry trade investors should be aware of factors such as currency
+                                                         appreciation, trade balances, and time horizon before placing a trade. Any or all of
+                                                         these factors can cause a seemingly profitable carry trade to become unprofitable.
+                                                                CHAPTER 19
+
+Fundamental
+Trading Strategy:
+Macro Event Driven
+Trade
+
+                                                                                                  161
+
+Short-term traders are generally focused only on the economic release of the
+   week and how it will impact their day trading activities. This works well for
+many traders, but it is also important not to lose sight of the big macro events
+that may be brewing in the economy or the world for that matter. Large-scale
+macroeconomic events will move markets and will move them in very big ways.
+Their impact goes beyond a simple one- or two-day price change because depending
+on their size and scope, these occurrences have the potential to reshape the
+fundamental perception toward a currency for months or even years at a time.
+Events such as wars, political uncertainly, natural disasters, and major international
+meetings or monetary policy changes are so potent due to their irregularity that they
+can have widespread psychological and physical impacts on the currency market.
+With these events come both currencies that appreciate vastly and currencies that
+depreciate just as dramatically. Therefore, keeping on top of global developments,
+understanding the underlying direction of market sentiment before and after these
+events occur and anticipating them could be very profitable, or at least can help
+prevent significant losses.
+                                                         Know When Big Events Occur: Here Is a List
+                                                           of a Few Important Ones
+
+                                                                        Significant G7 finance ministers meetings
+                                                                        Presidential elections
+                                                                        Important summits
+                                                                        Major Central Bank meetings
+                                                                        Potential changes to currency regimes
+                                                                        Possible debt defaults by large countries
+                                                                        Possible wars as a result of rising geopolitical tensions
+                                                                        Federal Reserve chairman's semiannual testimony on economy
+
+                                                                          The best way to highlight the significance of these events is look at a few notable
+                                                                       macroeconomic examples from the past two decades.
+
+                                                        2014 Ukraine­Russia Crisis
+
+                                                        The 2014 Ukraine­Russia crisis was one of the biggest geopolitical events of the
+
+162                                                     past decade. The crisis began in 2013 but didn't really hit its peak until March
+
+FUNDAMENTAL TRADING STRATEGY: MACRO EVENT DRIVEN TRADE  2014 when Russia signed a bill to absorb Crimea. Leading up to the announcement,
+
+                                                        the uncertainty put significant pressure on the EURUSD in January 2014 with the
+
+                                                        currency pair dropping sharply on March 18, 2014, the day that Russia declared that
+
+                                                        Crimea was now officially apart of their country. This led to a few more weeks of
+
+                                                        downward pressure for the EURUSD as shown in Figure 19.1 as investors awaited
+
+                                                        the world's response. Many nations declared their support for Ukraine and war was
+
+                                                        feared, but eventually Russia was only hit with sanctions, and a few months later,
+
+                                                        the Ukraine crisis moved to the back burner.
+
+                                                        European Sovereign Debt Crisis (2009­2013)
+
+                                                        The European Sovereign Debt Crisis started in 2009 and lasted into 2013 with the bulk
+                                                        of the damage being done by February 2012. It was a multiyear debt crisis that was
+                                                        sparked by the inability of many member nations to meet their debt obligations after
+                                                        the global financial crisis. Their banking sectors and economies suffered significant
+                                                        losses, and persistently negative growth prospects made it impossible for countries
+                                                        such as Greece, Ireland, Portugal, and Cyprus to repay or refinance their government
+                                                        debt. Between 2010 and 2012, all of these nations required bailouts or some form
+                                                        of support from the Troika, composed of the ECB, IMF and European Commission.
+                                                        While the problems were concentrated in smaller Eurozone nations, there was fear
+163  FUNDAMENTAL TRADING STRATEGY: MACRO EVENT DRIVEN TRADE
+
+     FIGURE 19.1 EURUSD Ukraine Crisis
+         Source: eSignal
+                                                        FIGURE 19.2 EURUSD Sovereign Debt Crisis
+                                                        Source: eSignal
+
+164                                                     of contagion for the major economies. The country of Spain did not require a bailout
+
+                                                        but in 2012, a number of banks required additional funding. The crisis posed caused
+
+FUNDAMENTAL TRADING STRATEGY: MACRO EVENT DRIVEN TRADE  significant volatility for the euro. Figure 19.2 shows two long periods of EURUSD
+
+                                                        weakness that were caused by bailouts, downgrades, and other negative headlines.
+
+                                                        Global Financial Crisis (2007­2009), Subprime
+
+                                                        One of the most important macroeconomic events of the twenty-first century was
+                                                        the 2007 to 2009 subprime/global financial crisis. It was triggered by a sharp slide
+                                                        in house prices, default on mortgages, and blowup of subprime mortgage backed
+                                                        securities and collateralized debt obligations. This, in turn, caused massive losses for
+                                                        banks and financial institutions, leading the failure of major firms such as Lehman
+                                                        Brothers, Merrill Lynch, and Bear Stearns. The impact on the financial market and
+                                                        the economy was staggering, with many countries falling into recession. During this
+                                                        period, the stock market lost more than 50% of its value with the S&P 500, falling
+                                                        from a high of 1,565 in October 2007 to a low of 676 in March 2009. As shown in
+                                                        Figure 19.3, USDJPY dropped from a high of 116.47 in October 2007 to a low of
+                                                        87.13 in January 2009. This was only the beginning of a multiyear decline for the
+                                                        currency pair. EURUSD had a delayed reaction, rallying strongly between October
+                                                        2007 and April 2008 as money flowed out of the U.S. economy, and then falling
+                                                        sharply between July 2008 and October 2008 as the risk aversion and crisis spread
+                                                        to Europe.
+FIGURE 19.3 USDJPY Global Financial Crisis
+Source: eSignal
+
+Political Uncertainty: 2004 U.S. Presidential Election                                  165
+
+Another example of major events impacting the currency market is the 2004 U.S.          FUNDAMENTAL TRADING STRATEGY: MACRO EVENT DRIVEN TRADE
+
+presidential elections. In general, political instability causes perceived weakness
+
+in currencies. The hotly contested presidential election in November of 2004,
+
+combined with the differences in the candidates' stance on the growing budget
+
+deficit, resulted in overall dollar bearishness. The sentiment was exacerbated even
+
+further, given the lack of international support for the incumbent President (Bush)
+
+due to the administration's decision to overthrow Saddam Hussein. As a result, in
+
+the three weeks leading up to the election, the euro rose 600 pips against the U.S.
+
+dollar. This can be seen in Figure 19.4. With a Bush victory becoming increasingly
+
+clear and later confirmed, the dollar sold off against the majors as the market looked
+
+ahead to what would probably end up being the maintenance of status quo. On the
+
+day following the election, the EURUSD rose another 200 pips and then continued
+
+to rise an additional 700 pips before peaking out six weeks later. This entire move
+
+took place over the course of two months, which may seem like an eternity for
+
+many, but this macroeconomic event really shaped the markets and for those who
+
+were following it, big profits could have been made. However, this is important
+
+even for short-term traders because given that the market was bearish dollars in
+
+general leading up to the U.S. presidential election, a more prudent trade would be
+
+to look for opportunities to buy the EURUSD on dips rather than trying sell rallies
+
+and look for tops.
+                                                                                     Post Election -
+                                                                                     Another 700
+                                                                                     Pip Rally
+
+                                                        600 Pip Rally
+                                                        Pre Election
+
+                                                        2004 Election
+                                                        Night
+
+                                                        FIGURE 19.4 EURUSD Election Trade
+                                                        Source: eSignal
+
+166                                                     G7 Meeting Dubai September 2003
+
+FUNDAMENTAL TRADING STRATEGY: MACRO EVENT DRIVEN TRADE  The G7 finance ministers meeting on September 22, 2003, was a very important
+
+                                                        turning point for the markets. The dollar collapsed significantly following the meeting
+
+                                                        at which the G7 finance ministers wanted to see ``more flexibility in exchange rates.''
+
+                                                        Despite the rather tame nature of these words, the market interpreted this line to be
+
+                                                        a major shift in policy. The last time changes to this degree had been made was back in
+
+                                                        2000. Taking a step back, the countries that constitute the G7 are the United States,
+
+                                                        United Kingdom, Japan, Canada, Italy, Germany, and France. Collectively, these
+
+                                                        countries account for two-thirds of the world's total economic output. Not all G7
+
+                                                        meetings are important. The only time the market really hones in on the G7 finance
+
+                                                        ministers meeting is when they expect big changes to be made to the statement. In
+
+                                                        2000, the market paid particular attention to the upcoming meeting because there
+
+                                                        was strong intervention in the EURUSD the day before the meeting. The meeting
+
+                                                        in September 2003 was also important because the U.S. trade deficit was ballooning
+
+                                                        and becoming a huge issue. The EURUSD bore the brunt of the dollar depreciation
+
+                                                        while Japan and China were intervening aggressively in their currencies. As a result,
+
+                                                        it was widely expected that the G7 finance ministers as a whole would issue a
+
+                                                        statement that was highly critical of Japan and China's intervention policies. Leading
+
+                                                        up to the meeting, the U.S. dollar had already begun to sell off as indicated by the
+
+                                                        chart. At the time of the announcement, the EURUSD shot up 150 pips. Though
+
+                                                        this initial move was not very substantial, between September 2003 and February
+           6% Rally
+
+14% Rally
+
+                                               Sept 22, 2003                         FUNDAMENTAL TRADING STRATEGY: MACRO EVENT DRIVEN TRADE
+                                               G7 Meeting
+
+FIGURE 19.5 EURUSD G7 Meeting
+Source: eSignal
+
+2004 (which was the next G7 meeting), the dollar fell 8% on a trade-weighted 167
+basis, 9% against the British pound, 11% against the euro, 7% against the yen,
+and 1.5% against the Canadian dollar. To put the percentages into perspective, a
+move of 11% is equivalent to approximately 1100 pips. Therefore, the longer-term
+impact is much more significant than the immediate impact as the event itself has the
+significance to change the overall sentiment in the market. Figure 19.5 is a weekly
+chart of the EURUSD that illustrates how the currency pair performed following
+the September 22, 2003 G7 meeting.
+
+U.S. War Against Iraq
+
+Geopolitical risks such as wars can also have a pronounced impact on the currency
+market. Figure 19.6 shows that between December 2002 and February 2003, the
+dollar depreciated 9% against the Swiss franc (USDCHF) in the months leading up
+to war. The dollar sold off because the war itself was incredibly unpopular among
+the international community. The Swiss franc was one of the primary beneficiaries
+due to the country's political neutrality and safe-haven status. Between February
+and March, traders began to believe that the inevitable war would turn into a quick
+and decisive U.S. victory, so they began to unwind the war trade. This eventually
+led to a 3% rally in USDCHF as investors exited their short dollar positions.
+
+   Each of these events caused large-scale movements in the currency market. Such
+events are clearly important to follow for all types of traders. Keeping abreast of
+                                                        FIGURE 19.6 USDCHF Iraq War
+                                                        Source: eSignal
+
+168                                                     broad macroeconomic events can help traders make smarter decisions and prevent
+
+                                                        them from fading large factors that may be brewing in the background. Most of
+
+FUNDAMENTAL TRADING STRATEGY: MACRO EVENT DRIVEN TRADE  these events are talked about, debated, and anticipated many months in advance by
+
+                                                        economists, currency analysts, and the international community in general.
+                                                                CHAPTER 20
+
+Quantitative Easing
+and Its Impact on
+Forex
+
+                                                                                                  169
+
+Quantitative easing is such an important topic that it deserves its own chapter.
+      After the global financial crisis many countries fell into recession, and in
+response central banks around the world lowered interest rates to record lows.
+When rates could not fall any lower, they had to resort to unprecedented measures,
+the most powerful of which was quantitative easing (QE). Between 2007 and 2015,
+the Bank of Japan, Federal Reserve, Bank of England, European Central Bank, and
+the Swedish National Bank all resorted to QE, and their decision had a significant
+impact on their currencies on both a short- and long-term basis.
+
+   The goal of quantitative easing is to keep yields low and to flood the market
+with liquidity. To do so, a central bank would create money by buying financial
+assets such as government bonds from banks using electronic cash. This basically
+``creates new money.'' It also keeps yields low because bond prices have an inverse
+relationship with yields and in giving banks money, the hope is that it will encourage
+lending and in turn lead to more economic activity. The jury is out on how
+much QE really helped these economies, but the influence on currencies was
+undeniable.
+QUANTITATIVE EASING AND ITS IMPACT ON FOREX U.S. Quantitative Easing
+
+                          After the financial crisis, the first major central bank to respond with quantitative
+                          easing was the U.S. Federal Reserve. In November 2008, the central bank launched
+                          a $600 billion bond-buying program. The program was initially effective as the
+                          economy improved, prompting the Fed to temporarily halt bond purchases.
+                          However, the economy never gained additional momentum and as such, the central
+                          bank returned with a second round of QE (dubbed QE2) in November 2010. The
+                          size of the program matched the first round. Unfortunately, more bond buys were
+                          needed, and QE3 was launched in September 2012. Unlike QE1 and QE2, QE3
+                          was an open-ended program. The central bank announced plans to purchase $40
+                          billion in assets every month, and in December 2012, that amount was increased
+                          to $85 billion per month. The program lasted for five years, and purchases were
+                          finally halted in October 2014. Figure 20.1 shows how each round of quantitative
+                          easing impacted the EURUSD. As you can see, each round triggered a sharp rise in
+                          EURUSD and--another way to look at it--weakness in the U.S. dollar. In 2008,
+                          the month that QE1 was announced, EURUSD surged 17% from high to low.
+                          When QE2 was announced, the EURUSD began a rally that took the pair up more
+                          than 20%. QE3 led to a similar uptrend with gains extended when the program
+                          was increased.
+170
+
+          UK Quantitative Easing
+
+                          Quantitative easing was launched by the Bank of England in March 2009. At the
+                          time, the BoE pledged to spend 75 billion pounds over a three-month period buying
+                          UK assets, but the program continued and between March 2009 and January 2010,
+                          the central bank had spent 200 billion pounds. In October 2011, growth started to
+                          slow more dramatically with the economy facing a double dip recession. In response
+                          policymakers voted to increase the QE program by another 75 billion. In February
+                          2012, the central bank added another 50 billion and the same increase was made in
+                          July 2012, bringing the total program to 375 billion pounds. Figure 20.2 shows how
+                          GBPUSD responded to each round of QE. What is interesting is that the sterling
+                          fell sharply in the run up to the March 2009 announcement. It extended lower
+                          afterward but rebounded in the months that followed. In 2011, 2012, and 2013,
+                          the sterling rallied the month that QE was announced. One important thing to
+                          remember is that the Federal Reserve was also buying bonds and expanding its own
+                          QE program at the time, so the two offset each other to some degree, limiting the
+                          reaction in GBPUSD. More importantly, investors interpreted each round of BoE
+                          QE as positive for the currency because they hoped that the central bank's efforts
+                          would help to turn around the economy.
+                              171
+
+FIGURE 20.1 EURUSD US Fed QE  QUANTITATIVE EASING AND ITS IMPACT ON FOREX
+Source: eSignal
+QUANTITATIVE EASING AND ITS IMPACT ON FOREX172
+
+                       FIGURE 20.2 GBPUSD UK BoE QE
+                          Source: eSignal
+                                 173
+
+FIGURE 20.3 USDJPY Japan BoJ QE  QUANTITATIVE EASING AND ITS IMPACT ON FOREX
+Source: eSignal
+QUANTITATIVE EASING AND ITS IMPACT ON FOREX174
+
+                       FIGURE 20.4 EURUSD EZ ECB QE
+                          Source: eSignal
+ Japan Quantitative Easing                                                                             QUANTITATIVE EASING AND ITS IMPACT ON FOREX
+
+               The phrase quantitative easing was first used by the Bank of Japan in 2001. At the time,
+               they did not believe that the program was effective but after the financial crisis, they
+               said they would examine their asset purchase program. In October 2011 the Bank of
+               Japan increased the program by 5 trillion yen which was a small sum (approximately
+               USD$66 billion) compared to the staggering amounts that other countries were
+               purchasing. Then in April 2013, they announced a bold and aggressive plan to
+               buy 60 trillion to 70 trillion yen a year as part of Prime Minister Abe's economic
+               policies. This program was later expanded to 80 billion yen a year. Unlike other
+               countries where the effectiveness of QE was debated, Japan's bond buying program
+               played a large role in turning around the economy. It also had a significant impact
+               on the currency. In Figure 20.3 we show how the first program yielded a very small
+               response in USDJPY but when the Bank of Japan came out in size, USDJPY reacted
+               quickly and aggressively with a move that extended even further when the program
+               was expanded.
+
+ Eurozone Quantitative Easing
+
+               The European Central Bank was the last major central bank to roll out quantitative 175
+               easing. They were reluctant to do so for a very long time because structurally the
+               Eurozone is not set up for quantitative easing. Since there is no euro-bond, some
+               critics felt that it was not in line with the central bank's mandate. However faced
+               with sluggish growth, stubbornly low inflation, and an interest rate already at zero,
+               the ECB had very few options. They publicly discussed the option months before the
+               actual decision, giving the market plenty of opportunity to discount the move. In
+               January 2015, the ECB announced that they would spend 60 billion euros per month
+               buying private and public bonds. In March 2015, ECB President Draghi unveiled
+               an aggressive 1 trillion quantitative easing program. As shown in Figure 20.4, both
+               announcements had a significant impact on the currency, but EURUSD stabilized
+               after the second announcement (but only after falling 500 pips) because investors
+               hoped that the aggressive program by the central bank would help turn around
+               the economy.
+
+                  While no additional quantitative easing programs are expected as of mid-2015,
+               the unwinding of these unprecedented measures in the coming years should have
+               just as much impact on currencies as the initial announcement itself, providing an
+               opportunity for forex traders.
