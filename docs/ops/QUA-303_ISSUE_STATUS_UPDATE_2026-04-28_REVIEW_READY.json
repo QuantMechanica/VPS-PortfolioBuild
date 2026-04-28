@@ -1,0 +1,26 @@
+{
+  "issue": "QUA-303",
+  "timestamp_utc": "2026-04-28T00:00:00Z",
+  "status_update": {
+    "status": "in_progress",
+    "reason": "development_complete_waiting_cto_review_only_gate",
+    "execution_policy": "review_only",
+    "reviewer": "CTO",
+    "next_action_owner": "CTO",
+    "next_action": "Perform card-vs-code review for SRC01_S02 and dispatch the next pipeline gate.",
+    "delivery": {
+      "ea_id": 1006,
+      "ea_path": "framework/EAs/QM5_1006_davey_eu_day/QM5_1006_davey_eu_day.mq5",
+      "card_path": "strategy-seeds/cards/davey-eu-day_card.md",
+      "implementation_commit": "6f14e7f",
+      "resubmission_commit": "f6afcae",
+      "closeout_commit": "e0f05d3",
+      "strict_compile": {
+        "result": "PASS",
+        "errors": 0,
+        "warnings": 0,
+        "log": "framework/build/compile/20260428_045402/QM5_1006_davey_eu_day.compile.log"
+      }
+    }
+  }
+}
