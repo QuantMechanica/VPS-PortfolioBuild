@@ -6,11 +6,11 @@ status: scaffold_first_heartbeat
 authored-by: Research Agent
 last-updated: 2026-04-28
 budget_tracking:
-  heartbeats_used: 1                          # h1 scaffold + PDF text extract + per-chapter validation read; SRC03 ceiling 5 heartbeats / 14 cards
-  cards_drafted: 0
+  heartbeats_used: 2                          # h1 scaffold + PDF text extract + per-chapter validation read; h2 first-pass extraction (S02a + S02b + S03 — 3 cards). SRC03 ceiling 5 heartbeats / 14 cards.
+  cards_drafted: 3                            # SRC04_S02a (lien-dbb-pick-tops), SRC04_S02b (lien-dbb-trend-join), SRC04_S03 (lien-fade-double-zeros)
   cards_passed_g0: 0
   cards_killed_pre_p1: 0
-extraction_pass_status: scaffold              # source.md + raw text extracted; per-chapter validation read complete (§ 6.5); first-pass card drafting begins next heartbeat
+extraction_pass_status: first_pass_partial    # h2 closed first three high-prediction technical cards (Ch 9 split + Ch 10); remaining first-pass S05 (Inside Days), S07 (20-Day Breakout) pulled into h3
 completion_report: pending                    # authored after all SRC04_S* sub-issues close
 
 ---
@@ -133,8 +133,9 @@ Per QUA-333 acceptance: "Each candidate that survives V5 v0_filter becomes a SRC
 | Slot | Strategy slug | Card path | Sub-issue | Status | Source location | Notes |
 |---|---|---|---|---|---|---|
 | S01 | `lien-multi-time-frame` | TBD | TBD | TBD | Ch 8 | Multi-time-frame trade construction; **may be methodology not standalone strategy** — extraction verdict TBD. |
-| S02 | `lien-double-bb` | TBD | TBD | TBD | Ch 9 | Double Bollinger Bands trend-vs-mean-reversion classifier + entry; mechanical, V5-clean prediction. |
-| S03 | `lien-fade-double-zeros` | TBD | TBD | TBD | Ch 10 | Fading round-number psychological levels (e.g., 1.3000); needs explicit ATR/range qualifier. |
+| S02a | `lien-dbb-pick-tops` | `cards/lien-dbb-pick-tops_card.md` | TBD | DRAFT (h2) | Ch 9 PDF pp. 103-107 | Double BB **range-mode** mean-reversion entry (close back across 1st-σ band after outer-band-zone dwell). Vocab gap: proposes `bband-reclaim` flag. |
+| S02b | `lien-dbb-trend-join` | `cards/lien-dbb-trend-join_card.md` | TBD | DRAFT (h2) | Ch 9 PDF pp. 107-110 | Double BB **trend-mode** trend-join entry (close back across 1st-σ band after K-bar opposite-side dwell). Sibling of S02a; shares proposed `bband-reclaim` flag with `precondition_mode=n-bars-opposite-1sigma`. Co-regime-fire suppression vs S02a documented in card § 6. |
+| S03 | `lien-fade-double-zeros` | `cards/lien-fade-double-zeros_card.md` | TBD | DRAFT (h2) | Ch 10 PDF pp. 112-115 | Round-number psychological-level fade (M15, 20MA counter-trend filter, 10-15-pip entry offset, 20-pip stop). Vocab gap: proposes `round-num-fade` flag. |
 | S04 | `lien-waiting-deal` | TBD | TBD | TBD | Ch 11 | Patience-based pullback / better-price entry pattern. |
 | S05 | `lien-inside-day-breakout` | TBD | TBD | TBD | Ch 12 | Inside-day → next-day breakout in trend direction. May fold with V4 inside-day flag if existing. |
 | S06 | `lien-fader` | TBD | TBD | TBD | Ch 13 | Counter-trend fade strategy with specific setup; potentially overlaps with Williams S10 (failed-breakout-fade). |
@@ -150,7 +151,15 @@ Per QUA-333 acceptance: "Each candidate that survives V5 v0_filter becomes a SRC
 | S16 | `lien-option-vols` | TBD | TBD | TBD | Ch 24 | Option-implied-volatility timing; **`darwinex_native_data_only` flag risk**. Likely KILL_PRE_P1. |
 | S17 | `lien-intervention` | TBD | TBD | TBD | Ch 25 | Central-bank intervention trades; **likely escalate non-mechanical** — rare-event discretionary. |
 
-Slot count finalized at first-pass survey: **17 candidates**. Cards-vs-fold and ESCALATE_NO_CARD verdicts pending per-chapter extraction (initial verdicts crystallized in § 6.5 below following h1 chapter validation read).
+Slot count finalized at first-pass survey: **17 candidates** (with S02 splitting into S02a + S02b → 18 candidate cards possible). Cards-vs-fold and ESCALATE_NO_CARD verdicts pending per-chapter extraction (initial verdicts crystallized in § 6.5 below following h1 chapter validation read).
+
+### h2 progress log (2026-04-28)
+
+First-pass extraction batch closed the highest-rule-density technical chapters — **3 cards drafted** in h2 vs the 1.0-1.5 cards/heartbeat target stated in QUA-333 (matching the heartbeat budget pace). S02 split into S02a + S02b confirmed (Lien Ch 9 has explicitly distinct rule lists for the range-mode and trend-join variants — see § 6.5.1 prediction validated at extraction). Cards committed:
+
+- **SRC04_S02a** `lien-dbb-pick-tops` (Ch 9 PDF pp. 103-107 § "Pick Tops and Bottoms") — range-mode mean-reversion. Long stop 50 pips below 1st-σ band; short stop 30 pips above (Lien's verbatim asymmetry preserved as P3 sweep axis since the worked example uses 30 pips for both).
+- **SRC04_S02b** `lien-dbb-trend-join` (Ch 9 PDF pp. 107-110 § "Join a New Trend") — trend-join breakout. Fixed 65-pip initial stop, 50-pip TP1, 195-pip TP2 (3.0R fat-tail TM).
+- **SRC04_S03** `lien-fade-double-zeros` (Ch 10 PDF pp. 112-115) — round-number psychological-level fade with 20-period SMA counter-trend filter on M15. `scalping_p5b_latency` flagged for IMPL despite M15 bar size (tight 20-pip stops are latency-sensitive).
 
 ## 6.5 Survey-pass observations (per-chapter validation read 2026-04-28 h1)
 
@@ -267,6 +276,17 @@ Extraction sequence:
 7. **Sub-issue creation.** When all candidate cards drafted to DRAFT, open one sub-issue per surviving strategy under QUA-333 — first as `todo`, rest as `blocked`. Submit for CEO + Quality-Business G0 review per process 13.
 
 Per-pass progress comments posted to QUA-333 at pass-boundary granularity. No noise comments on individual cards within a pass.
+
+## 8.5 Vocabulary-gap proposals (batched at SRC04 closeout)
+
+Per QUA-333 process-13 binding constraint and DL-033 Rule 1, all `strategy_type_flags` vocabulary additions surfaced during SRC04 extraction are **batched at closeout** for CEO ratification. Per-card § 16 captures the canonical proposal; this section is the running roll-up for closeout convenience.
+
+| # | Proposed flag | Section | First card | Definition (1-line) | V4 evidence | SRC02/03 disambiguation |
+|---|---|---|---|---|---|---|
+| 1 | `bband-reclaim` | A. Entry-mechanism | SRC04_S02a `lien-dbb-pick-tops` (also S02b `lien-dbb-trend-join`) | Close back ACROSS N·σ Bollinger band after multi-bar dwell on the OUTER side of the band (price was between Nσ and 2Nσ outer envelope OR below/above Nσ band for K bars, then closes back across the Nσ band). Card-level `precondition_mode ∈ {outer-band-zone, n-bars-opposite-1sigma}` distinguishes the range-MR vs trend-join variants. | None — V4 had no Bollinger-Band-band-reclaim EAs per `strategy_type_flags.md` Mining-provenance table. | Distinct from `zscore-band-reversion` (entry on band CROSS OUT — opposite mechanic; reclaim triggers on RETURN INTO inner zone); `n-period-min-reversion` (uses N-bar minimum extreme, not moving-stdev band). |
+| 2 | `round-num-fade` | A. Entry-mechanism | SRC04_S03 `lien-fade-double-zeros` | Stop-buy/stop-sell at fixed pip offset (10-15) from a PSYCHOLOGICAL ROUND-NUMBER price (xx.00 / x.x000), conditioned on counter-trend MA-position filter. Reference price is an ABSOLUTE round-number anchor independent of prior bar's range, prior N-bar extreme, or candle shape. | None — V4 had no round-number-anchored stop-entry EAs per `strategy_type_flags.md` Mining-provenance table. | Distinct from `vol-expansion-breakout` (relative range anchor, not round-number); `gap-fade-stop-entry` (calendar-pattern + gap-through reference); `n-period-min-reversion` (N-bar minimum, not absolute level); `narrow-range-breakout`, `rejection-bar-stop-entry`, `failed-breakout-fade` (each requires bar-internal or multi-bar pattern, not psychological-level anchor). |
+
+Roll-up updates after each subsequent SRC04 heartbeat; closeout batches all surfaced gaps for single CEO + CTO ratification gate (matching the SRC02 / SRC03 pattern).
 
 ## 9. Completion report contract
 
