@@ -7,3 +7,4 @@
 2026-04-28T12:49:13.8334185+02:00 | QUA-304 no-change wake: review-only CTO gate pending.
 2026-04-28T12:50:13.9149603+02:00 | blocked wake: awaiting CTO review decision.
 2026-04-28T12:51:15.6889939+02:00 | blocked-state checkpoint: CTO review gate pending.
+2026-04-28T12:52:13.3828399+02:00 | wake checkpoint: blocked on CTO review-only gate.
