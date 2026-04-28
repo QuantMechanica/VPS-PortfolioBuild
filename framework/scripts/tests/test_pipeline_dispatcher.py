@@ -31,7 +31,7 @@ class PipelineDispatcherTests(unittest.TestCase):
 
         decision = dispatch_job(job, state, max_per_terminal=3)
         self.assertEqual(decision["status"], "duplicate")
-        self.assertIsNone(decision["terminal"])
+        self.assertEqual(decision["terminal"], "T1")
 
 
     def test_dispatch_respects_three_cap(self) -> None:

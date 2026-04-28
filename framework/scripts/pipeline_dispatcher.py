@@ -65,7 +65,8 @@ def dispatch_job(
     key = dedup_key(job)
     dedup = state.setdefault("dedup", {})
     if key in dedup:
-        return {"dedup_key": key, "status": "duplicate", "terminal": None}
+        existing = dedup.get(key, {})
+        return {"dedup_key": key, "status": "duplicate", "terminal": existing.get("terminal")}
 
     running = state.setdefault("running", {name: 0 for name in TERMINALS})
     eligible = [name for name in TERMINALS if int(running.get(name, 0)) < max_per_terminal]
