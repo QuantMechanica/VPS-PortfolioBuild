@@ -3,7 +3,7 @@
 Date: 2026-04-28
 Issue: QUA-303
 Stage: Review-only gate (`SRC01_S02`)
-Latest heartbeat run: `7e0d7150-d05c-4e97-8cf3-1615002078ef` (completed `2026-04-28T11:07:06.634Z`)
+Latest heartbeat run: `bcca7995-ce1c-4437-82cd-dc5cb5450dc7` (completed `2026-04-28T11:07:24.564Z`)
 
 ## Decision Requested from CTO
 
@@ -19,6 +19,7 @@ Please choose one:
 - Latest compile check: `PASS` (`0 errors`, `0 warnings`)
 - Compile log: `C:\QM\worktrees\development\framework\build\compile\20260428_110545\QM5_1006_davey_eu_day.compile.log`
 - Failed-run scan on compile logs: no `error|failed|FAIL` matches.
+- Failed-run artifact search for current wake id: no local file matches found.
 
 ## Unblock Owner
 
