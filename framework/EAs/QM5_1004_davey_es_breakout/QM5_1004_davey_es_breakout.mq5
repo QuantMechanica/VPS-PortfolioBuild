@@ -24,7 +24,7 @@ input int    qm_friday_close_hour_broker  = 21;
 
 input group "Strategy"
 input int    breakout_lookback            = 20;   // Card §6
-input int    atr_period                   = 14;   // Card §6
+input int    strategy_atr_period                   = 14;   // Card §6
 input double atr_stop_mult                = 2.0;  // Card §4/§6
 
 CTrade   g_trade;
@@ -72,7 +72,7 @@ bool GetOurPosition(ENUM_POSITION_TYPE &ptype, double &price_open, ulong &ticket
 double ResolveStopDistancePrice()
   {
    double atr_value = 0.0;
-   if(!QM_StopRulesReadATRValue(_Symbol, atr_period, 1, atr_value))
+   if(!QM_StopRulesReadATRValue(_Symbol, strategy_atr_period, 1, atr_value))
       return 0.0;
 
    // Card §4: protective ATR stop from entry.
