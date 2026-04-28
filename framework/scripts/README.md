@@ -22,6 +22,8 @@ Each runner emits deterministic JSON under `D:\QM\reports\pipeline\<ea_id>\<phas
 - `framework/calibrations/VPS_SLIPPAGE_LATENCY_CALIBRATION_V2.json` is intentionally scaffolded as `PENDING_MEASUREMENT`; Pipeline-Operator must replace it with measured T1 Darwinex data before production P5/P5b decisions.
 - `p5b_calibrated_noise.py` accepts V5 defaults from `PIPELINE_V5_SUB_GATE_SPEC.md` (`--paths`, `--seed`, `--reject-rate-floor`, `--compliance-thresholds`, `--breach-rules`) and reports floor/limit checks when optional trial columns are present.
 - `deploy_ea_to_all_terminals.ps1` idempotently deploys a single `.ex5` to `T1..T5\MQL5\Experts\QM`, creates missing directories, rejects T6 scope, and verifies SHA256 convergence on every target.
+- `gen_setfile.ps1` idempotently creates/updates per-symbol set files in `framework/EAs/QM5_<id>_<slug>/sets/` using `QM5_<id>_<SYMBOL>_<TF>_<ENV>.set` naming and emits `setfile_sha256`.
+- `resolve_backtest_target.py` rejects start dispatch without a resolvable `job.setfile_path` using `BACKTEST_REJECTED_NO_SETFILE`.
 
 ## Pipeline-Op Matrix Dispatch (36 .DWX Symbols)
 

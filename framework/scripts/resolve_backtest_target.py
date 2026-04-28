@@ -26,6 +26,29 @@ from framework.scripts.pipeline_dispatcher import (
     save_dispatch_state,
 )
 
+BACKTEST_SETFILE_ERROR = "BACKTEST_REJECTED_NO_SETFILE"
+
+
+def _reject_missing_setfile(job: dict[str, Any]) -> dict[str, Any] | None:
+    setfile_path = job.get("setfile_path")
+    if not isinstance(setfile_path, str) or not setfile_path.strip():
+        return {
+            "status": "rejected",
+            "error_code": BACKTEST_SETFILE_ERROR,
+            "message": "Dispatch requires job.setfile_path for backtest runs.",
+        }
+    setfile = Path(setfile_path.strip())
+    if not setfile.is_absolute():
+        setfile = (REPO_ROOT / setfile).resolve()
+    if not setfile.exists():
+        return {
+            "status": "rejected",
+            "error_code": BACKTEST_SETFILE_ERROR,
+            "message": f"Dispatch set file not found: {setfile}",
+            "setfile_path": str(setfile),
+        }
+    return None
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Resolve target terminal for a backtest job.")
@@ -86,6 +109,11 @@ def main() -> int:
         )
         should_save = decision.get("status") == "released"
     else:
+        rejected = _reject_missing_setfile(job)
+        if rejected is not None:
+            decision = rejected
+            print(json.dumps(decision, sort_keys=True))
+            return 0
         if isinstance(job.get("symbols"), list):
             jobs = build_matrix_jobs(job)
             results = []
