@@ -42,3 +42,7 @@ $result = [ordered]@{
 $outPath = Join-Path $RepoRoot "artifacts/qua-408/readiness_latest.json"
 $result | ConvertTo-Json -Depth 5 | Set-Content $outPath
 Write-Output $outPath
+if ($ready) {
+  exit 0
+}
+exit 2

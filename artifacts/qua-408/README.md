@@ -14,6 +14,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\artifacts\qua-408
 
 - `C:\QM\repo\artifacts\qua-408\readiness_latest.json`
 
+## Exit Codes
+
+- `0`: ready (all gates satisfied)
+- `2`: blocked (one or more gates missing)
+
 ## Ready Condition
 
 `ready=true` only when all are true:
