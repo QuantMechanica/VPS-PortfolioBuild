@@ -870,6 +870,7 @@
   - principal: `SYSTEM` (highest)
   - output: `C:\QM\logs\infra\health\runtime_health_scan_latest.json`
 - Requires `-PostgresUrl` (or `PAPERCLIP_POSTGRES_URL`) unless `-AllowApiFallback` is explicitly set.
+- Use `-UseMachineEnvPostgresUrl` to resolve `PAPERCLIP_POSTGRES_URL` from Machine environment at task runtime (avoids embedding connection string into task args).
 - Preview mode:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-RuntimeHealthScanTask.ps1 -PreviewOnly`
 

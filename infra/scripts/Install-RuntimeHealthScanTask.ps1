@@ -5,6 +5,8 @@ param(
     [string]$ScriptRelativePath = "infra\scripts\Run-RuntimeHealthScan.ps1",
     [string]$OutputPath = "C:\QM\logs\infra\health\runtime_health_scan_latest.json",
     [string]$PostgresUrl = $(if ($env:PAPERCLIP_POSTGRES_URL) { $env:PAPERCLIP_POSTGRES_URL } else { "" }),
+    [string]$PostgresUrlEnvVarName = "PAPERCLIP_POSTGRES_URL",
+    [switch]$UseMachineEnvPostgresUrl,
     [switch]$AllowApiFallback,
     [int]$MinuteOffset = 1,
     [int]$EveryMinutes = 15,
@@ -25,7 +27,7 @@ $scriptPath = Join-Path $RepoRoot $ScriptRelativePath
 if (-not (Test-Path -LiteralPath $scriptPath)) {
     throw "Runtime health scan script not found: $scriptPath"
 }
-if ([string]::IsNullOrWhiteSpace($PostgresUrl) -and -not $AllowApiFallback) {
+if ([string]::IsNullOrWhiteSpace($PostgresUrl) -and -not $UseMachineEnvPostgresUrl -and -not $AllowApiFallback) {
     throw "PostgresUrl is required for scheduled execution unless -AllowApiFallback is explicitly set."
 }
 
@@ -35,11 +37,19 @@ if ($startBoundary -le (Get-Date)) {
     $startBoundary = $startBoundary.AddMinutes($EveryMinutes)
 }
 
-$args = "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`" -OutputPath `"$OutputPath`""
-if (-not [string]::IsNullOrWhiteSpace($PostgresUrl)) { $args += " -PostgresUrl `"$PostgresUrl`"" }
-if ($AllowApiFallback.IsPresent) { $args += " -AllowApiFallback" }
-if ($FailOnFinding.IsPresent) { $args += " -FailOnFinding" }
-if ($DryRun.IsPresent) { $args += " -DryRun" }
+if ($UseMachineEnvPostgresUrl.IsPresent) {
+    $allowArg = if ($AllowApiFallback.IsPresent) { " -AllowApiFallback" } else { "" }
+    $failArg = if ($FailOnFinding.IsPresent) { " -FailOnFinding" } else { "" }
+    $dryArg = if ($DryRun.IsPresent) { " -DryRun" } else { "" }
+    $cmd = "`$pg=[Environment]::GetEnvironmentVariable('$PostgresUrlEnvVarName','Machine'); if([string]::IsNullOrWhiteSpace(`$pg)) { throw '$PostgresUrlEnvVarName not set in Machine env.' }; & `"$scriptPath`" -OutputPath `"$OutputPath`" -PostgresUrl `$pg$allowArg$failArg$dryArg"
+    $args = "-NoProfile -ExecutionPolicy Bypass -Command `"$cmd`""
+} else {
+    $args = "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`" -OutputPath `"$OutputPath`""
+    if (-not [string]::IsNullOrWhiteSpace($PostgresUrl)) { $args += " -PostgresUrl `"$PostgresUrl`"" }
+    if ($AllowApiFallback.IsPresent) { $args += " -AllowApiFallback" }
+    if ($FailOnFinding.IsPresent) { $args += " -FailOnFinding" }
+    if ($DryRun.IsPresent) { $args += " -DryRun" }
+}
 
 $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument $args -WorkingDirectory $RepoRoot
 $trigger = New-ScheduledTaskTrigger -Once -At $startBoundary -RepetitionInterval (New-TimeSpan -Minutes $EveryMinutes)
