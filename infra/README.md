@@ -484,6 +484,7 @@ Notes:
 - Uses `PAPERCLIP_API_URL` (or `PAPERCLIP_RUNTIME_API_URL`) automatically when `-BaseUrl` is omitted.
 - Accepts either `PAPERCLIP_API_TOKEN` or `PAPERCLIP_API_KEY`.
 - Uses two-step API flow: `PATCH /api/issues/{id}` then `POST /api/issues/{id}/comments`.
+- Posts closeout comment with `resume=false` to avoid reopening completed issues.
 
 ## Non-goals
 

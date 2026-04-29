@@ -75,7 +75,7 @@ $headers = @{
 $statusResponse = Invoke-RestMethod -Method Patch -Uri $statusUri -Headers $headers -Body $statusBody
 $commentPayload = @{
     body = $commentBody
-    resume = $true
+    resume = $false
 } | ConvertTo-Json -Depth 4
 $commentResponse = Invoke-RestMethod -Method Post -Uri $commentUri -Headers $headers -Body $commentPayload
 
