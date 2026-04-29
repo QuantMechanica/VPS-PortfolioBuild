@@ -10,7 +10,11 @@ param(
     [int]$CriticalThresholdPct = 95,
     [int]$FetchLimit = 2000,
     [string]$SnapshotDirectory = "D:\QM\reports\ops",
+    [datetime]$AsOfUtc = [datetime]::UtcNow,
     [string]$InputRunsPath = "",
+    [string]$PsqlExe = $(if ($env:PSQL_EXE) { $env:PSQL_EXE } else { "psql" }),
+    [string]$DatabaseUrl = $(if ($env:PAPERCLIP_DB_URL) { $env:PAPERCLIP_DB_URL } else { "" }),
+    [switch]$UseApiFallback,
     [switch]$NoWriteSnapshot,
     [switch]$NoWriteMarkdownSummary
 )
@@ -84,7 +88,24 @@ function Get-TokenCountFromRun {
     return 0
 }
 
-$now = [datetime]::UtcNow
+function Invoke-PsqlText {
+    param(
+        [string]$Exe,
+        [string]$Conn,
+        [string]$Sql,
+        [switch]$Csv
+    )
+    $args = @($Conn, "-v", "ON_ERROR_STOP=1", "-q")
+    if ($Csv.IsPresent) { $args += "--csv" } else { $args += @("-A", "-t") }
+    $args += @("-c", $Sql)
+    $raw = & $Exe @args 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        throw ("psql query failed: {0}" -f ($raw | Out-String).Trim())
+    }
+    return ($raw | Out-String)
+}
+
+$now = $AsOfUtc.ToUniversalTime()
 $dayStart = $now.Date
 $window24h = $now.AddHours(-24)
 $window7d = $now.AddDays(-7)
@@ -119,27 +140,86 @@ if ($InputRunsPath) {
     $runs = Flatten-Runs -Raw $raw
 }
 else {
-    $missing = @()
-    if (-not $ApiKey) { $missing += "ApiKey/PAPERCLIP_API_KEY" }
-    if (-not $CompanyId) { $missing += "CompanyId/PAPERCLIP_COMPANY_ID" }
-    if ($missing.Count -gt 0) {
-        $result.status = "critical"
-        $result.message = "Missing required token-cost monitor configuration."
-        $result["missing"] = $missing
-        Emit-Result -Payload $result -ExitCode 2
+    $loadedFromPsql = $false
+    if (-not [string]::IsNullOrWhiteSpace($DatabaseUrl)) {
+        try {
+            $colSql = "select column_name from information_schema.columns where table_schema='public' and table_name='cost_events';"
+            $colText = Invoke-PsqlText -Exe $PsqlExe -Conn $DatabaseUrl -Sql $colSql
+            $cols = @($colText -split "`r?`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+            if ($cols.Count -eq 0) { throw "cost_events table not found or has no columns." }
+
+            $tsCol = if ($cols -contains "created_at") { "created_at" } elseif ($cols -contains "createdAt") { "`"createdAt`"" } elseif ($cols -contains "timestamp") { "timestamp" } else { throw "No supported timestamp column found in cost_events." }
+            $agentExpr = if ($cols -contains "agent_id") { "coalesce(agent_id::text,'unknown')" } elseif ($cols -contains "agentId") { "coalesce(`"agentId`"::text,'unknown')" } elseif ($cols -contains "agent") { "coalesce(agent::text,'unknown')" } else { "'unknown'" }
+
+            $tokenExpr = @()
+            if ($cols -contains "total_tokens") { $tokenExpr += "total_tokens" }
+            if ($cols -contains "totalTokens") { $tokenExpr += "`"totalTokens`"" }
+            if ($cols -contains "token_count") { $tokenExpr += "token_count" }
+            if ($cols -contains "tokenCount") { $tokenExpr += "`"tokenCount`"" }
+            $promptExpr = if ($cols -contains "prompt_tokens") { "prompt_tokens" } elseif ($cols -contains "promptTokens") { "`"promptTokens`"" } else { "" }
+            $completionExpr = if ($cols -contains "completion_tokens") { "completion_tokens" } elseif ($cols -contains "completionTokens") { "`"completionTokens`"" } else { "" }
+            $inputExpr = if ($cols -contains "input_tokens") { "input_tokens" } elseif ($cols -contains "inputTokens") { "`"inputTokens`"" } else { "" }
+            $outputExpr = if ($cols -contains "output_tokens") { "output_tokens" } elseif ($cols -contains "outputTokens") { "`"outputTokens`"" } else { "" }
+
+            $tokenParts = @()
+            foreach ($expr in $tokenExpr) { $tokenParts += $expr }
+            if ($promptExpr -and $completionExpr) { $tokenParts += "($promptExpr + $completionExpr)" }
+            if ($inputExpr -and $outputExpr) { $tokenParts += "($inputExpr + $outputExpr)" }
+            if ($tokenParts.Count -eq 0) { throw "No supported token columns found in cost_events." }
+            $tokenCase = "coalesce(" + ($tokenParts -join ", ") + ", 0)"
+
+            $sql = @"
+select
+  $agentExpr as agent_id,
+  to_char(($tsCol at time zone 'UTC'),'YYYY-MM-DD""T""HH24:MI:SS""Z""') as created_at_utc,
+  $tokenCase as total_tokens
+from cost_events
+where $tsCol >= (date_trunc('month', now() at time zone 'UTC') - interval '7 days');
+"@
+            $csv = Invoke-PsqlText -Exe $PsqlExe -Conn $DatabaseUrl -Sql $sql -Csv
+            $rows = @($csv | ConvertFrom-Csv)
+            foreach ($row in $rows) {
+                $runs += [pscustomobject]@{
+                    agentId = $row.agent_id
+                    createdAt = $row.created_at_utc
+                    totalTokens = [int64]$row.total_tokens
+                }
+            }
+            $loadedFromPsql = $true
+        }
+        catch {
+            if (-not $UseApiFallback.IsPresent) {
+                $result.status = "critical"
+                $result.message = "Failed loading token usage from cost_events via psql."
+                $result["error"] = $_.Exception.Message
+                Emit-Result -Payload $result -ExitCode 2
+            }
+        }
     }
 
-    $headers = @{ Authorization = "Bearer $ApiKey" }
-    $uri = "$($ApiUrl.TrimEnd('/'))/api/companies/$CompanyId/heartbeat-runs?limit=$FetchLimit"
-    try {
-        $rawRuns = Invoke-RestMethod -Method Get -Uri $uri -Headers $headers
-        $runs = Flatten-Runs -Raw $rawRuns
-    }
-    catch {
-        $result.status = "critical"
-        $result.message = "Failed to query heartbeat runs for token-cost monitor."
-        $result["error"] = $_.Exception.Message
-        Emit-Result -Payload $result -ExitCode 2
+    if (-not $loadedFromPsql) {
+        $missing = @()
+        if (-not $ApiKey) { $missing += "ApiKey/PAPERCLIP_API_KEY" }
+        if (-not $CompanyId) { $missing += "CompanyId/PAPERCLIP_COMPANY_ID" }
+        if ($missing.Count -gt 0) {
+            $result.status = "critical"
+            $result.message = "Missing required token-cost monitor configuration."
+            $result["missing"] = $missing
+            Emit-Result -Payload $result -ExitCode 2
+        }
+
+        $headers = @{ Authorization = "Bearer $ApiKey" }
+        $uri = "$($ApiUrl.TrimEnd('/'))/api/companies/$CompanyId/heartbeat-runs?limit=$FetchLimit"
+        try {
+            $rawRuns = Invoke-RestMethod -Method Get -Uri $uri -Headers $headers
+            $runs = Flatten-Runs -Raw $rawRuns
+        }
+        catch {
+            $result.status = "critical"
+            $result.message = "Failed to query heartbeat runs for token-cost monitor."
+            $result["error"] = $_.Exception.Message
+            Emit-Result -Payload $result -ExitCode 2
+        }
     }
 }
 

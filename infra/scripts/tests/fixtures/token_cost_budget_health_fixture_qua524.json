@@ -1,0 +1,44 @@
+[
+  {
+    "id": "a1",
+    "agentId": "agent-alpha",
+    "createdAt": "2026-04-29T08:00:00Z",
+    "totalTokens": 24000
+  },
+  {
+    "id": "a2",
+    "agentId": "agent-beta",
+    "createdAt": "2026-04-28T12:00:00Z",
+    "totalTokens": 23000
+  },
+  {
+    "id": "a3",
+    "agentId": "agent-alpha",
+    "createdAt": "2026-04-27T10:00:00Z",
+    "totalTokens": 22000
+  },
+  {
+    "id": "a4",
+    "agentId": "agent-beta",
+    "createdAt": "2026-04-26T09:00:00Z",
+    "totalTokens": 21000
+  },
+  {
+    "id": "a5",
+    "agentId": "agent-alpha",
+    "createdAt": "2026-04-25T09:00:00Z",
+    "totalTokens": 20000
+  },
+  {
+    "id": "a6",
+    "agentId": "agent-beta",
+    "createdAt": "2026-04-24T09:00:00Z",
+    "totalTokens": 19000
+  },
+  {
+    "id": "a7",
+    "agentId": "agent-alpha",
+    "createdAt": "2026-04-23T09:00:00Z",
+    "totalTokens": 18000
+  }
+]
