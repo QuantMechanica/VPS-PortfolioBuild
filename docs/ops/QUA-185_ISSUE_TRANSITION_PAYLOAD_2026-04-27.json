@@ -1,0 +1,27 @@
+{
+    "issue_id":  "QUA-185",
+    "updated_at_local":  "2026-04-27T16:36:12.1267010+02:00",
+    "target_status":  "in_review",
+    "reason":  "pc1_00_drive_git_hard_fence_operationalized",
+    "summary":  "Drive-sync exclusion hard fence is implemented for repo + worktree git pointers with recurring task wiring, evidence path, and failure alert routing.",
+    "evidence":  {
+                     "closeout_markdown":  "docs/ops/QUA-185_CLOSEOUT_2026-04-27.md",
+                     "runbook":  "infra/drive-git-exclusion-runbook.md",
+                     "runtime_json_path":  "C:\\QM\\logs\\infra\\health\\drive_git_exclusion_latest.json",
+                     "snapshot_markdown":  "docs/ops/PC1-00_DRIVE_GIT_HARD_FENCE_EVIDENCE_2026-04-27.md"
+                 },
+    "commits":  [
+                    "bc9c382",
+                    "d5efef3",
+                    "905a20b",
+                    "491f5d4",
+                    "c563004",
+                    "bb11060",
+                    "e76124c",
+                    "4f07534"
+                ],
+    "notes":  [
+                  "Install-DriveGitExclusionTask.ps1 supports PreviewOnly mode for non-mutating validation.",
+                  "Cleanup commits removed accidental non-infra staged-file carryover from early QUA-185 commits."
+              ]
+}

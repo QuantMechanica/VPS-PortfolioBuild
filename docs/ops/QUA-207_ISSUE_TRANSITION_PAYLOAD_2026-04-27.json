@@ -1,6 +1,6 @@
 ﻿{
     "issue":  "QUA-207",
-    "generated_at_local":  "2026-04-27T15:22:10+02:00",
+    "generated_at_local":  "2026-04-28T00:07:48+02:00",
     "recommended_transition":  {
                                    "status":  "in_review",
                                    "reason":  "runtime_owner_scope_completed",

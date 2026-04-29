@@ -1,0 +1,28 @@
+{
+    "status":  "BLOCKED",
+    "issue":  "QUA-415",
+    "unblock_owner":  "Pipeline-Operator",
+    "unblock_action":  "Post workflow confirmation commit hash proving active setfile_path dispatch consumption.",
+    "recent_matches":  [
+                           "3d6c790 QUA-304: heartbeat helper tick",
+                           "5b1a33c docs(qua-403): isolated readiness evidence refresh",
+                           "a19ad7a chore(qua-409): refresh blocked readiness evidence",
+                           "f58ce33 docs: update QUA-303 unblock note wake 119b508d",
+                           "52425ea infra: add safe single-file QUA-415 snapshot commit helper",
+                           "deef432 docs(ops): append QUA-407 recheck 14:48:15",
+                           "2ab8d91 docs(ops): refresh QUA-404 readiness snapshot",
+                           "3bfa6e9 QUA-304: heartbeat helper tick",
+                           "62e9adb docs(qua-403): isolated readiness evidence refresh",
+                           "db337be chore(qua-409): refresh blocked readiness evidence",
+                           "2a6971d docs(ops): refresh QUA-404 readiness snapshot",
+                           "51cfeb0 chore(qua-408): refresh blocked gate evidence",
+                           "3e9e2bf docs: update QUA-303 unblock note wake 7c8d3e9e",
+                           "a2491d9 docs(ops): append QUA-407 recheck 14:47:45",
+                           "10cfb8c docs(ops): add QUA-415 co-owner monitor snapshot 2026-04-28T1247xxZ",
+                           "8a238b3 QUA-304: heartbeat helper tick",
+                           "827fab0 docs: update QUA-303 unblock note wake 4361035a",
+                           "f522b28 QUA-304: heartbeat helper tick",
+                           "705db53 docs(ops): add QUA-415 co-owner monitor snapshot post-cleanup",
+                           "d37f793 docs(ops): refresh QUA-404 readiness snapshot"
+                       ]
+}

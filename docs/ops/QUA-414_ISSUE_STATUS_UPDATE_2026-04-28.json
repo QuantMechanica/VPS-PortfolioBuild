@@ -1,0 +1,23 @@
+{
+  "issue": "QUA-414",
+  "requested_at_utc": "2026-04-28T12:00:00Z",
+  "target_status": "in_review",
+  "summary": "QUA-414 implementation completed: 36-symbol .DWX matrix dispatcher, fail-fast schema, per-phase verdict tally, and dedup_index schema persistence.",
+  "evidence": {
+    "closeout_comment_markdown": "docs/ops/QUA-414_ISSUE_CLOSEOUT_COMMENT_2026-04-28.md",
+    "heartbeat_markdown": "docs/ops/QUA-414_HEARTBEAT_UPDATE_2026-04-28.md",
+    "continuation_markdown": "docs/ops/QUA-414_CONTINUATION_UPDATE_2026-04-28.md",
+    "liveness_markdown": "docs/ops/QUA-414_LIVENESS_CONTINUATION_2026-04-28.md",
+    "dedup_schema_markdown": "docs/ops/QUA-414_DEDUP_INDEX_SCHEMA_UPDATE_2026-04-28.md"
+  },
+  "verification": {
+    "unit_tests": "python -m unittest framework/scripts/tests/test_pipeline_dispatcher.py",
+    "last_result": "Ran 21 tests ... OK",
+    "cli_help": "python framework/scripts/resolve_backtest_target.py --help"
+  },
+  "commits": ["05578f8", "eea803e"],
+  "scope_boundary": {
+    "factory_terminals": ["T1","T2","T3","T4","T5"],
+    "t6_touched": false
+  }
+}

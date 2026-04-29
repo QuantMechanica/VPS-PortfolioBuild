@@ -72,6 +72,63 @@ Source-of-truth roster snapshot (live agent list authoritative: `paperclipai age
 
 Wave-plan status (per [`decisions/2026-04-27_v5_org_proposal.md`](../decisions/2026-04-27_v5_org_proposal.md) § 6 + the [DL-039](../decisions/2026-04-28_quality_business_hire.md) one-time override): **Wave 0** (CEO/CTO/Research/Documentation-KM) + **Wave 1** (DevOps/Pipeline-Operator) + **Wave 2** (Quality-Tech/Development/Quality-Business) all live. Pending: Wave 3 (Controlling, Observability-SRE), Wave 4 (LiveOps), Wave 5 (R-and-D). Chief of Staff is deferred indefinitely per `docs/ops/PHASE_FINAL_FOUNDER_COMMS.md`.
 
+## Recently added
+
+- 2026-04-28 — [`processes/16-backtest-execution-discipline.md`](16-backtest-execution-discipline.md) (Documentation-KM authoring; Pipeline-Operator owns Rules 1-4, 7; DevOps owns Rule 5 + co-owns Rule 7; Research owns Rule 6; CTO owns Rule 5 review-pass) — codifies the seven OWNER 2026-04-28 binding backtest rules (`.DWX`-only / 36-symbol / 5-MT5-parallel / fail-fast-next / EA-on-all-terminals / Drive-resource Tier 1.5 / fixed-risk set file). Binding source: [QUA-400](/QUA/issues/QUA-400) → [DL-038](../decisions/2026-04-28_seven_backtest_rules.md). Authored under [QUA-418](/QUA/issues/QUA-418).
+
+## CEO Authority Boundaries
+
+Per [DL-017](../decisions/REGISTRY.md) (hires) + [DL-023](../decisions/2026-04-27_ceo_autonomy_waiver_v2.md) (technical / operational / process v2) + [DL-032](../decisions/2026-04-27_ceo_autonomy_waiver_v3.md) (research source-queue ordering v3): CEO acts unilaterally on the classes listed below. OWNER's stated preference is bias to action, fewer interrupts. When ambiguous, CEO **acts**, then retroactively raises via successor DL-NNN if the call needs ratification.
+
+### CEO-autonomous (no OWNER surfacing required)
+
+1. **Hires** — DL-017. `requireBoardApprovalForNewAgents=false`.
+2. **Technical implementation choices within the framework spec** — adapter choices, library structure, internal scripts, test harness shape, gitignore / artifact retention policy, Notion ↔ Git mirror layout, scheduler choice (Paperclip routine vs Windows Task), Linux / PowerShell tooling decisions.
+3. **Operational decisions for non-T6 deploys** — file paths, scheduler windows, log rotation policy, retention windows, agent confirmation cadence, worktree layout, lock-file monitoring, bookkeeping cleanups (orphan-run cancellations, stuck-process terminations).
+4. **Internal process choices** — heartbeat cadence, issue-tree shape, sub-issue spawning patterns, agent-vs-agent escalation rules, parallel-run rules.
+5. **Research source-queue ordering** — which source Research extracts next within an already-ratified queue (Davey vs Chan first, JBM batch 3 vs 4, etc.). DL-032.
+6. **Source-survey ratification** — accepting / rejecting / re-scoping a source-survey deliverable produced under DL-029. DL-032.
+7. **SRC0N parent creation** — opening the next `SRC0N` parent issue when the current closes, including its child cohort skeleton. DL-032.
+8. **Per-batch T3 source approval** — approving the per-batch T3 source bundle that hands off to Pipeline-Operator under DL-029's binding-sequential workflow. DL-032.
+
+### Still requires OWNER surfacing (escalation list, v3-reframed)
+
+1. **T6 anything** — OFF LIMITS without explicit OWNER approval (no code, no read, no inference). V5 hard rule.
+2. **Live deploy** — first T6 deploy manifest, AutoTrading toggle, live-account credential touches, live capital exposure changes.
+3. **True strategic direction** — kill V5 entirely, pivot to a different broker, change the goal-tier strategic outcome. (Source-queue ordering is *not* strategic direction; that's CEO's lane per DL-032.)
+4. **Compliance / legal** — news-compliance variants (FTMO / 5ers / DXZ blackouts), broker-of-record changes, account-class transitions.
+5. **Brand application** to public-facing artifacts that OWNER personally approves (logo, mascot, episode pack).
+6. **Budget step-changes** — anything materially raising monthly token / compute spend beyond the existing operating envelope.
+7. **V5 hard-rule boundary changes** — ML ban, Model 4, .DWX suffix, Friday Close default, magic-formula registry.
+
+### Pre-flight rule for `paperclip-prompts/*.md` patches (DL-032)
+
+When a prompt patch under `paperclip-prompts/*.md` aligns with an **existing** DL-NNN, the workflow is **either** pre-flight a `request_confirmation` to OWNER on the patch, **or** treat the commit as DL-aligned routine work that CEO can ship under broadened authority, citing the DL-NNN in the commit body. **Never commit-then-ask-after.** Once committed, hot-reload propagates the change to every wake of the affected agent and a retroactive confirmation is no longer a confirmation but a notification.
+
+This rule applies only when a DL-NNN already exists. Brand-new prompt changes not yet covered by a DL stay in their existing surfacing path. OWNER manages the BASIS source-of-truth in either case.
+
+## Issue Routing
+
+Per [DL-031](../decisions/DL-031_projects_formalization_and_routing_convention.md): every new issue is created with `projectId` set. Authoritative goal-project hierarchy:
+
+| Project | id | Status | Scope |
+|---|---|---|---|
+| **V5 Framework Implementation** | `71b6d994-70ba-4a28-bd62-732b42a9ea58` | in_progress | MQL5 framework + pipeline runners + build/test harness; repo-only (`C:\QM\repo`) |
+| **V5 Pipeline Operations** | `ac8daa03-00ae-49fd-bd4a-f1283a075f83` | in_progress | T1-T5 factory: backtest runs, evidence, NO_REPORT, calibration, mirror integrity |
+| **V5 Strategy Research** | `b2adcc7f-064f-47c7-8563-d1c917639231` | in_progress | Source extraction + Strategy Card authoring per DL-029 |
+| **T6 Live Operations** | `2603d13a-8152-4514-987c-d9abee1c948f` | backlog | DXZ live deploy of approved EAs; OWNER-gated (manifest + AutoTrading-OFF) |
+
+Goal: `4662e91e-8e9b-458e-9383-b1f67751965b` ("Build-in-public quant research factory"). All 4 projects roll up to it.
+
+Heuristic — pick the project whose path the issue's deliverable touches:
+
+- `framework/`, `infra/`, `paperclip-prompts/`, `decisions/`, `processes/`, `docs/`, `lessons-learned/`, `governance/`, agent prompt/instruction edits, learning-candidates → **V5 Framework Implementation**
+- `D:\QM\mt5\T1`-T5, `D:\QM\reports\pipeline\`, `D:\QM\reports\ops\`, calibration JSON, runner outputs, NO_REPORT, .DWX symbol verification, silent-run / stale-lock recovery → **V5 Pipeline Operations**
+- `strategy-seeds/`, source extraction, Strategy Card authoring → **V5 Strategy Research**
+- `C:\QM\mt5\T6_Live`, deploy manifests, AutoTrading-OFF discipline → **T6 Live Operations** (OWNER-gated)
+
+Cross-functional issues split: parent in primary project, children scoped to their owners' projects. If genuinely ambiguous, route to **V5 Framework Implementation** as meta-default and let the assignee re-route on triage. Authority: CEO unilateral on routing per DL-023.
+
 ## Execution Policies
 
 Per [DL-030](../decisions/2026-04-27_execution_policies_v1.md): every issue created in scope of a stakes-bearing flow MUST carry an `executionPolicy` block at creation time (or via PATCH before `in_progress`). The runtime — not the agent — enforces the `in_progress → done` interception. The full JSON snippets (with concrete reviewer/approver participant identifiers) live in DL-030; this registry section is the role-level convention.
@@ -98,22 +155,60 @@ For the full JSON shape per class (including reviewer/approver participant ident
 ## Factory Setup Standards
 
 - MT5 factory terminals `T1`-`T5` must include an install-root `portable.txt` marker file (empty file) to prevent AppData split-brain when launched without explicit `/portable`.
+- Canonical factory compile path: `D:\QM\mt5\T1\MetaEditor64.exe` (fallback: `D:\QM\mt5\T2\MetaEditor64.exe`). Consumers should use `framework/scripts/metaeditor_path.txt` or `infra/scripts/Resolve-MetaEditorPath.ps1` and avoid PATH-based discovery.
 
-## Concurrent-Write Discipline / Worktree Isolation
+## Skills
 
-Canonical decision: [DL-028](../decisions/DL-028_per_agent_worktree_isolation.md). Narrative source of record: [`lessons-learned/2026-04-27_pc1-00_live_incident_qua-167.md`](../lessons-learned/2026-04-27_pc1-00_live_incident_qua-167.md).
+V5 adopts Paperclip's Skills system per OWNER directive 2026-04-27 (see `decisions/2026-04-27_skills_adoption_v1.md`). Skills are reusable, token-efficient instruction bundles loaded on demand by agents. They do **not** override agent prompts in `paperclip-prompts/*.md` — they augment them. Hard rules stay in `CLAUDE.md` + agent prompts; skills are how-tos.
 
-- Agents writing to `framework/`, `infra/`, or any other path under concurrent multi-agent write contention run from `C:\QM\worktrees\<agent-key>\` on branch `agents/<agent-key>`, **not** from the shared `C:\QM\repo\` root.
-- All `git add` / `git commit` / `git push` on `C:\QM\repo\` go through `infra/scripts/Invoke-GitWithMutex.ps1` (Windows named mutex serializes across worktrees).
-- Stale `index.lock` files older than 20 min are surfaced by scheduled task `QM_GitIndexLockMonitor_10min` (every 10 min); see `infra/monitoring/Invoke-GitIndexLockMonitor.ps1`.
-- Worktree creation/repair is idempotent via `infra/scripts/Ensure-AgentWorktree.ps1`.
-- Race detection: if an agent observes mid-edit on-disk drift, it **safety-stops** and posts an issue comment offering merge / use-existing / overwrite options (Stop-digging Hard Rule).
+### Custom V5 Skills (authored by Doc-KM)
 
-Out of scope for this rule: `T6_Live` (governed by DL-025 + `CLAUDE.md` § Hard Boundaries) and `paperclip-prompts/*.md` (OWNER-managed; agent prompts are Git-canonical). Exceptions to the worktree rule require a successor DL-NNN.
+| Skill | Folder | Owner | Reviewer | Required for |
+|---|---|---|---|---|
+| `qm-validate-custom-symbol` | `skills/qm/qm-validate-custom-symbol/` | DevOps + Pipeline-Operator | Quality-Tech | Required: DevOps, Pipeline-Operator |
+| `qm-strategy-card-extraction` | `skills/qm/qm-strategy-card-extraction/` | Research | CEO + Quality-Business | Required: Research |
+| `qm-build-ea-from-card` | `skills/qm/qm-build-ea-from-card/` | Development (Codex) | CTO | Required: Development; Optional: CTO |
+| `qm-run-pipeline-phase` | `skills/qm/qm-run-pipeline-phase/` | Pipeline-Operator | Quality-Tech | Required: Pipeline-Operator |
+| `qm-t6-deploy-verification` | `skills/qm/qm-t6-deploy-verification/` | LiveOps (DevOps interim) | OWNER | Required: LiveOps; Optional: DevOps |
+| `qm-zero-trades-recovery` | `skills/qm/qm-zero-trades-recovery/` | Strategy-Analyst + R-and-D + CEO + CTO | Quality-Tech | Required: Strategy-Analyst, R-and-D, CEO, CTO |
 
-## Strategy Research Workflow
+### Marketplace Skills (pinned external)
 
-Canonical spec: [13-strategy-research.md](13-strategy-research.md). Parent directive: QUA-236 (OWNER 2026-04-27).
+Pinned per `skills/marketplace/INDEX.md`. Each entry has source provenance + commit hash + assignment.
+
+**Required (CTO to fill `commit_pin` on review):**
+
+| Skill | Source | Assigned to |
+|---|---|---|
+| `anthropics/skills/skill-creator` | anthropics/skills | Documentation-KM, CTO |
+| `anthropics/skills/pdf` | anthropics/skills | Research |
+| `anthropics/skills/xlsx` | anthropics/skills | Pipeline-Operator, CTO |
+| `obra/superpowers/verification-before-completion` | obra/superpowers | CEO, CTO, DevOps |
+| `obra/superpowers/using-git-worktrees` | obra/superpowers | CTO, DevOps |
+| `obra/superpowers/test-driven-development` | obra/superpowers | CTO, Development |
+| `obra/superpowers/systematic-debugging` | obra/superpowers | DevOps |
+
+**Optional (assign on demand):** see `skills/marketplace/INDEX.md` § Optional.
+
+### Governance
+
+- **Doc-KM** authors and maintains the inventory.
+- **CTO** reviews each skill body for technical correctness before pin.
+- **CEO** ratifies the assignment matrix.
+- **OWNER** has veto on any external pin via request_confirmation.
+
+### Pin lifecycle
+
+A marketplace skill is **registered in Paperclip** only after:
+1. CTO has filled `commit_pin: <SHA>` + `reviewed_at` + `reviewed_by: CTO`
+2. CEO has ratified the assignment in the `INDEX.md` matrix
+3. (For sensitive sources) OWNER has accepted a `request_confirmation` interaction
+
+Until then, the entry sits in `INDEX.md` with `commit_pin: TBD` and is not visible to agents.
+
+## Strategy Research Workflow (DL-029)
+
+Canonical spec: [13-strategy-research.md](13-strategy-research.md). Ratifying decision: [DL-029](../decisions/DL-029_strategy_research_workflow.md). Extraction-discipline addendum: [DL-033](../decisions/DL-033_no_strategy_prioritization_and_canonical_lifecycle.md).
 
 - Source → Strategy → Pipeline issue tree is binding. One parent per resource (`SRC<NN> — <citation>`); one sub-issue per strategy (`SRC<NN>_S<n> — <slug>`). First sub `todo`, rest `blocked`. Next sub unblocks only when the prior closes with a ready-or-killed verdict (P1 → P8 + Quality-Tech sign-off).
 - One source actively worked at a time; one strategy from that source actively worked at a time. No parallel-source extraction.
@@ -176,4 +271,4 @@ Canonical decision: [DL-036](../decisions/2026-04-28_ea_review_gate.md). Recordi
 - **Relationship to DL-030 Class 3:** DL-036 is **additive**. DL-030 Class 3 catches `_v[0-9]+` enhancement rebuilds; DL-036 catches the first `_v1` baseline run for an APPROVED card. Together they close the loop on every EA → backtest pathway.
 - **In-flight enforcement (2026-04-28):** 5 PATCHes already applied by CEO this heartbeat — QUA-277 / 278 / 279 / 280 / 281.
 
-> **Reconciliation note.** The full DL-030 Execution Policies section (Classes 1–4) is now merged into this branch above (under "Execution Policies"); see QUA-441 for the merge commit. The parallel content from `main` (CEO Authority Boundaries, Issue Routing) is still pending merge into `agents/docs-km` and tracked separately. This DL-036 subsection stays inline as the canonical reference for the EA Review gate; on a future reconciliation pass, DL-036 can fold into the Execution Policies table as **Class 5** (or extend Class 3's scope test) — whichever is cleaner at the time.
+> **Reconciliation note.** The DL-036 EA Review Gate inline subsection above stays as the canonical reference; on a future hygiene pass, DL-036 can fold into the Execution Policies table as **Class 5** (or extend Class 3's scope test) — whichever is cleaner at the time. CEO Authority Boundaries / Issue Routing / Execution Policies / Skills sections are merged in above; DL-029 / DL-038 / DL-039 process sections live below the Skills section.

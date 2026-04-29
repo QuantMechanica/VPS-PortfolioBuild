@@ -1,0 +1,4 @@
+POST comment: fail
+Response status code does not indicate success: 400 (Bad Request).
+PATCH status-only: fail
+Response status code does not indicate success: 400 (Bad Request).

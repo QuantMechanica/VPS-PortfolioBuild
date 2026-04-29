@@ -8,7 +8,7 @@ Phase 0 workstream: `P0-26` in `docs/ops/PHASE0_EXECUTION_BOARD.md`.
 
 ## Status
 
-**Design phase.** Code does not yet exist. Codex (laptop or VPS-CTO agent) implements `framework/include/`, `framework/templates/`, `framework/scripts/` against the design spec once OWNER + CTO confirm the open questions in `V5_FRAMEWORK_DESIGN.md` § Open Questions.
+Framework implementation is in progress and includes committed scripts under `framework/scripts/` plus smoke fixtures under `framework/tests/smoke/`.
 
 ## Layout
 
@@ -37,6 +37,24 @@ To build a new V5 EA:
 5. `framework/scripts/compile_one.ps1 -EAPath ...` must pass strict
 6. `framework/scripts/run_smoke.ps1 -EAId NNNN ...` runs P1 Build Validation
 7. Continue through pipeline per `docs/ops/PIPELINE_PHASE_SPEC.md`
+
+Minimal backtest smoke scaffold (fixture path for infra reproducibility):
+
+```powershell
+pwsh -File framework/scripts/run_backtest_smoke.ps1 -Year 2024 -Terminal any
+```
+
+`-Terminal any` resolves to `T1..T5` via `framework/scripts/resolve_backtest_target.py` using state at `D:\QM\Reports\pipeline\dispatch_state.json`.
+
+Factory deploy helpers (idempotent):
+
+```powershell
+pwsh -File framework/scripts/deploy_ea_to_all_terminals.ps1 -EaPath D:\QM\mt5\T1\MQL5\Experts\QM\QM5_1002_davey-eu-night.ex5
+pwsh -File framework/scripts/deploy_ea_manifest_to_all_terminals.ps1 -EvidenceJsonPath C:\QM\repo\docs\ops\QUA-411_DEPLOY_MANIFEST_T1_T5_2026-04-28.json
+```
+
+Single-EA helper success line format:
+`T<n> OK <sha256> <dst path>`.
 
 ## Inheritance From V4
 

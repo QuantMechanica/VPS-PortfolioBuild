@@ -1,0 +1,39 @@
+{
+  "issue": "QUA-304",
+  "timestamp_utc": "2026-04-28T10:35:00Z",
+  "phase": "P1_Development",
+  "state": "implementation_complete_pending_cto_review",
+  "ea": {
+    "ea_id": 1003,
+    "slug": "davey-baseline-3bar",
+    "path": "framework/EAs/QM5_1003_davey_baseline_3bar/QM5_1003_davey_baseline_3bar.mq5"
+  },
+  "compile": {
+    "strict_pass": true,
+    "errors": 0,
+    "warnings": 0,
+    "metaeditor_exit_code": 1,
+    "log": "C:/QM/repo/framework/build/compile/20260428_103323/QM5_1003_davey_baseline_3bar.compile.log"
+  },
+  "hard_rules": {
+    "includes_qm_common": true,
+    "magic_via_qm": true,
+    "risk_fixed_and_percent": true,
+    "friday_close_enabled": true,
+    "news_compatible": true,
+    "no_hardcoded_symbol": true,
+    "ml_used": false
+  },
+  "unblock": {
+    "owner": "CTO",
+    "action": "review-only gate decision"
+  },
+  "key_commits": [
+    "5764b45",
+    "10a84f5",
+    "0346abb",
+    "1da2e9a",
+    "5797758",
+    "3a078aa"
+  ]
+}

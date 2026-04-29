@@ -1,5 +1,101 @@
 # Infra Scripts Notes
 
+## `Verify-QUA415Readiness.ps1`
+
+- Single-command PASS/FAIL gate for QUA-415 closeout readiness.
+- Validates presence of:
+  - worked example set file
+  - dispatch-gate evidence artifact
+  - changeset manifest
+- Asserts dispatch behavior captured in evidence:
+  - reject code is `BACKTEST_REJECTED_NO_SETFILE`
+  - with setfile status is `scheduled`
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Verify-QUA415Readiness.ps1`
+
+## `Test-QUA415CoOwnerCloseout.ps1`
+
+- Reports QUA-415 co-owner closeout state from recent git commits.
+- Returns `READY` only when a setfile/dispatch related commit appears outside the known DevOps QUA-415 commit chain.
+- Returns `BLOCKED` with unblock owner/action otherwise.
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA415CoOwnerCloseout.ps1`
+
+## `Deploy-QM5SmokeExpertToT1.ps1`
+
+- Idempotent T1 smoke-expert deploy helper for `QM5_1001_framework_smoke.ex5`.
+- Default source:
+  - `C:\QM\repo\framework\tests\smoke\QM5_1001_framework_smoke.ex5`
+- Default destination:
+  - `D:\QM\mt5\T1\MQL5\Experts\QM\QM5_1001_framework_smoke.ex5`
+- Behavior:
+  - SHA256 check-then-act copy (`created` / `updated` / `unchanged`)
+  - refuses T6-target paths
+  - optional durable JSON evidence via `-EvidenceJsonPath`
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Deploy-QM5SmokeExpertToT1.ps1 -EvidenceJsonPath C:\QM\repo\docs\ops\QUA-269_DEPLOY_QM5_1001_FRAMEWORK_SMOKE_2026-04-27.json`
+
+## `deploy_ea_to_all_terminals.ps1`
+
+- Idempotent factory EA sync helper for QUA-413 (extends QUA-411 rollout).
+- Canonical source:
+  - `D:\QM\mt5\T1\MQL5\Experts\QM`
+- Default target scope:
+  - `D:\QM\mt5\T2`
+  - `D:\QM\mt5\T3`
+  - `D:\QM\mt5\T4`
+  - `D:\QM\mt5\T5`
+- Fixed allowlist (4 binaries):
+  - `EA_Skeleton.ex5`
+  - `QM5_1001_framework_smoke.ex5`
+  - `QM5_1002_davey-eu-night.ex5`
+  - `QM5_SRC04_S03_lien_fade_double_zeros.ex5`
+- Behavior:
+  - SHA256 check-then-act copy (`created` / `updated` / `unchanged`) per target/file
+  - auto-creates missing target `MQL5\Experts\QM` directory
+  - refuses T6 paths for source and targets
+  - fails fast when any required source binary is missing
+  - optional durable JSON evidence via `-EvidenceJsonPath`
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\deploy_ea_to_all_terminals.ps1 -EvidenceJsonPath C:\QM\repo\docs\ops\QUA-413_DEPLOY_EAS_T2_T3_T4_T5_2026-04-28.json`
+
+## `Invoke-QUA413IssueTransition.ps1`
+
+- Applies the QUA-413 issue transition in one PATCH call with inline comment and required `X-Paperclip-Run-Id`.
+- Preview-by-default; mutates only with `-Apply`.
+- Uses:
+  - `docs/ops/QUA-413_ISSUE_STATUS_UPDATE_2026-04-28.json`
+  - `docs/ops/QUA-413_ISSUE_COMMENT_2026-04-28.md`
+
+## `Seed-DwxSymbolHistory.ps1`
+
+- Idempotent single-symbol DWX seed/repair helper for T1-T5 custom-symbol history.
+- Default scope targets QUA-270 (`EURUSD` -> `EURUSD.DWX` on `D:\QM\mt5\T1`).
+- Behavior:
+  - probes runtime visibility (`probe_custom_symbol_visibility.py`) before acting
+  - no-op when target bars are already visible
+  - check-then-act queue staging (`prepare_import.py`) with duplicate queue guard
+  - optional `-AllowDeleteReimport` fallback for "symbol exists but no bars visible" recovery
+  - waits for queue convergence, then runs symbol-scoped `verify_import.py`
+  - emits durable JSON + markdown evidence outputs under `docs\ops\`
+- Safety:
+  - refuses T6 paths
+  - requires stable CSV inputs (default `30` minutes) before staging
+  - delete+reimport path is opt-in only (`-AllowDeleteReimport`)
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Seed-DwxSymbolHistory.ps1 -IssueId QUA-270 -SourceSymbol EURUSD -OutEvidenceJson docs\ops\QUA-270_T1_EURUSD_DWX_SEED_2026-04-27.json -OutSummaryMd docs\ops\QUA-270_T1_EURUSD_DWX_SEED_2026-04-27.md`
+
+## `rebuild_m1_from_ticks.py`
+
+- Streaming converter to rebuild TDM-style `_M1.csv` from full tick CSV.
+- Purpose: recover missing M1 history windows (for example 2024) when tick CSV is full-span but sidecar M1 is truncated.
+- Behavior:
+  - constant-memory minute aggregation (open/high/low/close/tick_count from bid)
+  - atomic write via `*.tmp` then replace
+  - SHA256 compare to avoid unnecessary file replacement
+- Example:
+  - `python C:\QM\repo\infra\scripts\rebuild_m1_from_ticks.py --tick-csv D:\QM\reports\setup\tick-data-timezone\EURUSD_GMT+2_US-DST.csv --m1-csv D:\QM\reports\setup\tick-data-timezone\EURUSD_GMT+2_US-DST_M1.csv`
+
 ## `dwx_hourly_check.py`
 
 - `spec_ok` is now evaluated by one shared helper (`is_symbol_spec_ok`) for both:
@@ -51,6 +147,23 @@
   - `3`: empty tails
 - Example:
   - `python C:\QM\repo\infra\scripts\check_dwx_csv_tail_alignment.py --symbol XAUUSD --max-gap-hours 1 --json-out C:\QM\repo\lessons-learned\evidence\2026-04-27_qua93_xauusd_tail_alignment_check.json`
+
+## `Install-PaperclipStaleLockWatchdogTask.ps1`
+
+- Idempotently installs scheduler task `QM_PaperclipStaleLockWatchdog_15min` as `SYSTEM`.
+- Task action runs:
+  - `monitoring\Invoke-PaperclipStaleLockWatchdog.ps1 -StaleAfterMinutes <n> -RunningLockMaxMinutes <n> [-PaperclipApiUrl <url>] [-CompanyId <id>] [-AssigneeAgentId <id>] [-OutPath <json>] [-FailOnFinding]`
+- Behavior:
+  - explicit stale thresholds are embedded into the scheduled action at install time
+  - optional explicit Paperclip endpoint/company values can be embedded to avoid environment drift in `SYSTEM` context
+  - optional assignee scope can be embedded to avoid environment-variable dependency in `SYSTEM` context
+  - optional output path can be embedded so each run writes JSON status to a stable health artifact path
+  - fails fast when endpoint/company context is missing unless `-AllowMissingPaperclipContext` is explicitly provided
+  - overlap-safe (`MultipleInstances=IgnoreNew`)
+- Preview mode (no task registration/mutation):
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-PaperclipStaleLockWatchdogTask.ps1 -StaleAfterMinutes 15 -RunningLockMaxMinutes 90 -PreviewOnly`
+- Install/update mode (idempotent):
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-PaperclipStaleLockWatchdogTask.ps1 -StaleAfterMinutes 15 -RunningLockMaxMinutes 90 -AssigneeAgentId <agent-id> -FailOnFinding`
 
 ## `verify_import_candidate.py`
 
@@ -824,11 +937,24 @@
 
 - Guardrail for staged-file safety before committing in noisy worktrees.
 - Reads `git diff --cached --name-only` and fails when staged files fall outside allowed path prefixes.
+- Supports both prefix (`-AllowedPaths`) and exact-file (`-AllowedExactPaths`) allowlists.
 - Typical usage:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Assert-CommitAllowlist.ps1 -AllowedPaths infra/scripts/ docs/ops/QUA-207_`
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Assert-CommitAllowlist.ps1 -AllowedExactPaths docs/ops/QUA-304_HEARTBEAT_LOG_2026-04-28.md`
 - Exit codes:
   - `0`: staged set is allowed
   - `2`: staged files violate allowlist
+
+## `Commit-HeartbeatCheckpoint.ps1`
+
+- Safe heartbeat-checkpoint commit helper for noisy repos/worktrees.
+- Hard guards:
+  - refuses commits from shared main worktree `C:/QM/repo` (requires per-agent worktree)
+  - stages only one explicit repo-relative path (`-CheckpointPath`)
+  - commits with pathspec `-- <checkpoint-path>` so unrelated staged files are not absorbed
+  - enforces exact-file staged allowlist through `Invoke-GitWithMutex.ps1` + `Assert-CommitAllowlist.ps1`
+- Typical usage:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Commit-HeartbeatCheckpoint.ps1 -RepoRoot C:\QM\worktrees\development -IssueId QUA-304 -CheckpointPath docs/ops/QUA-304_HEARTBEAT_LOG_2026-04-28.md -ExpectedTopLevel C:\QM\worktrees\development`
 
 ## `Restore-QUA95RuntimeBars.ps1`
 

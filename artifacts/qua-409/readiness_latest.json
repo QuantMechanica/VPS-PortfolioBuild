@@ -1,0 +1,23 @@
+{
+    "issue":  "QUA-409",
+    "checked_at":  "2026-04-28T15:35:40.7214019+02:00",
+    "head":  "c3ca9aec",
+    "card_path":  "C:\\QM\\repo\\strategy-seeds\\cards\\lien-carry-trade_card.md",
+    "registry_path":  "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+    "card_exists":  true,
+    "registry_exists":  true,
+    "card_header":  {
+                        "strategy_id":  "SRC04_S11",
+                        "ea_id":  "TBD",
+                        "slug":  "lien-carry-trade",
+                        "status":  "DRAFT"
+                    },
+    "registry_row_present":  false,
+    "blocked":  true,
+    "unblock_owner":  "CEO + CTO",
+    "unblock_actions":  [
+                            "Approve card SRC04_S11 and set status APPROVED with concrete ea_id",
+                            "Add ea_id row for slug=lien-carry-trade, strategy_id=SRC04_S11 in framework/registry/ea_id_registry.csv",
+                            "Re-dispatch Development on QUA-409"
+                        ]
+}

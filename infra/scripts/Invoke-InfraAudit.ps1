@@ -221,7 +221,14 @@ if (-not (Test-Path -LiteralPath $DriveGitExclusionScript)) {
     }
 }
 else {
-    $driveFenceOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $DriveGitExclusionScript 2>&1
+    $driveFenceArgs = @(
+        '-NoProfile',
+        '-ExecutionPolicy', 'Bypass',
+        '-File', $DriveGitExclusionScript,
+        '-PrimaryRepoForWorktrees', 'C:\QM\repo',
+        '-IncludeGitWorktrees'
+    )
+    $driveFenceOut = & powershell @driveFenceArgs 2>&1
     $driveFenceCode = $LASTEXITCODE
     $driveFenceText = ($driveFenceOut | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
     $driveFenceStatus = if ($driveFenceCode -eq 0) { 'ok' } elseif ($driveFenceCode -eq 1) { 'warn' } else { 'critical' }

@@ -1,0 +1,20 @@
+{
+  "issue_id": "QUA-413",
+  "target_status": "in_review",
+  "reason": "devops_deploy_complete",
+  "summary": "Framework deploy script implemented and verified for 4 approved ex5 across T1-T5 with SHA256 convergence and T6 guard proof.",
+  "evidence": [
+    "docs/ops/QUA-413_CLOSEOUT_2026-04-28.md",
+    "docs/ops/QUA-413_DEPLOY_VERIFY_T1_T5_2026-04-28.txt",
+    "docs/ops/QUA-413_EA_Skeleton.ex5_DEPLOY_EVIDENCE_2026-04-28.json",
+    "docs/ops/QUA-413_QM5_1001_framework_smoke.ex5_DEPLOY_EVIDENCE_2026-04-28.json",
+    "docs/ops/QUA-413_QM5_1002_davey-eu-night.ex5_DEPLOY_EVIDENCE_2026-04-28.json",
+    "docs/ops/QUA-413_QM5_SRC04_S03_lien_fade_double_zeros.ex5_DEPLOY_EVIDENCE_2026-04-28.json"
+  ],
+  "commits": [
+    "bd52db0",
+    "47cd6d0",
+    "097df4c"
+  ],
+  "generated_at_local": "2026-04-28T13:51:23.4938044+02:00"
+}

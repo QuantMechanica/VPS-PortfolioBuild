@@ -1,0 +1,71 @@
+{
+  "source_path": "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_1002_davey-eu-night.ex5",
+  "file_name": "QM5_1002_davey-eu-night.ex5",
+  "deployed_at_local": "2026-04-28T13:49:20.2273621+02:00",
+  "terminal_roots": [
+    "D:\\QM\\mt5\\T1",
+    "D:\\QM\\mt5\\T2",
+    "D:\\QM\\mt5\\T3",
+    "D:\\QM\\mt5\\T4",
+    "D:\\QM\\mt5\\T5"
+  ],
+  "status_counts": [
+    {
+      "status": "unchanged",
+      "count": 5
+    }
+  ],
+  "files": [
+    {
+      "terminal": "T1",
+      "status": "unchanged",
+      "source_path": "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_1002_davey-eu-night.ex5",
+      "destination_path": "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_1002_davey-eu-night.ex5",
+      "source_hash_sha256": "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+      "destination_hash_before_sha256": "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+      "destination_hash_after_sha256": "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+      "hash_match": true
+    },
+    {
+      "terminal": "T2",
+      "status": "unchanged",
+      "source_path": "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_1002_davey-eu-night.ex5",
+      "destination_path": "D:\\QM\\mt5\\T2\\MQL5\\Experts\\QM\\QM5_1002_davey-eu-night.ex5",
+      "source_hash_sha256": "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+      "destination_hash_before_sha256": "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+      "destination_hash_after_sha256": "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+      "hash_match": true
+    },
+    {
+      "terminal": "T3",
+      "status": "unchanged",
+      "source_path": "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_1002_davey-eu-night.ex5",
+      "destination_path": "D:\\QM\\mt5\\T3\\MQL5\\Experts\\QM\\QM5_1002_davey-eu-night.ex5",
+      "source_hash_sha256": "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+      "destination_hash_before_sha256": "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+      "destination_hash_after_sha256": "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+      "hash_match": true
+    },
+    {
+      "terminal": "T4",
+      "status": "unchanged",
+      "source_path": "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_1002_davey-eu-night.ex5",
+      "destination_path": "D:\\QM\\mt5\\T4\\MQL5\\Experts\\QM\\QM5_1002_davey-eu-night.ex5",
+      "source_hash_sha256": "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+      "destination_hash_before_sha256": "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+      "destination_hash_after_sha256": "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+      "hash_match": true
+    },
+    {
+      "terminal": "T5",
+      "status": "unchanged",
+      "source_path": "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_1002_davey-eu-night.ex5",
+      "destination_path": "D:\\QM\\mt5\\T5\\MQL5\\Experts\\QM\\QM5_1002_davey-eu-night.ex5",
+      "source_hash_sha256": "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+      "destination_hash_before_sha256": "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+      "destination_hash_after_sha256": "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+      "hash_match": true
+    }
+  ],
+  "all_hashes_match": true
+}

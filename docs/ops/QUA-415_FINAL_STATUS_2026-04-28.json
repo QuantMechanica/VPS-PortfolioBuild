@@ -1,0 +1,28 @@
+{
+  "issue": "QUA-415",
+  "ts_utc": "2026-04-28T12:03:56Z",
+  "devops_status": "complete",
+  "co_owner_status": "pending_pipeline_operator_closeout",
+  "readiness": "PASS",
+  "readiness_script": "infra/scripts/Verify-QUA415Readiness.ps1",
+  "devops_commits": [
+    "21cc3e6",
+    "fc52012",
+    "591e9af",
+    "a19c7cf",
+    "f28df74",
+    "61699e2",
+    "bc87ec0",
+    "b655daa",
+    "4139caf"
+  ],
+  "blocked_owner": "Pipeline-Operator",
+  "unblock_action": "Post workflow confirmation commit hash to QUA-415 issue thread",
+  "evidence": [
+    "docs/ops/QUA-415_SETFILE_WORKED_EXAMPLE_2026-04-28.md",
+    "docs/ops/QUA-415_DISPATCH_GATE_EVIDENCE_2026-04-28.json",
+    "docs/ops/QUA-415_CHANGESET_MANIFEST_2026-04-28.json",
+    "docs/ops/QUA-415_PIPELINEOP_HANDOFF_2026-04-28.md",
+    "docs/ops/QUA-415_BLOCKED_ON_PIPELINEOP_2026-04-28.md"
+  ]
+}

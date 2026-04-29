@@ -1,0 +1,43 @@
+{
+  "issue": "QUA-307",
+  "date_utc": "2026-04-28",
+  "status": "ready_to_close",
+  "objective": "T1-T5 load-balanced dispatch for backtests with dedup, affinity, lifecycle release, and bounded state growth.",
+  "implementation_commits": [
+    "9287ff1",
+    "24ddff7",
+    "2e987c3",
+    "a3ed74f",
+    "492961e",
+    "c18ea1f",
+    "2a91255",
+    "91c5ee7",
+    "4b71a77",
+    "89503ef",
+    "850e4e6"
+  ],
+  "verification": {
+    "unit_tests_command": "python -m unittest C:\\QM\\repo\\framework\\scripts\\tests\\test_pipeline_dispatcher.py",
+    "unit_tests_result": "Ran 11 tests ... OK",
+    "dry_run_command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:\\QM\\repo\\framework\\scripts\\run_backtest_smoke.ps1 -Terminal any -DryRun",
+    "dry_run_signals": [
+      "run_backtest_smoke.dispatch_status=duplicate",
+      "run_backtest_smoke.dispatch_terminal=T1"
+    ]
+  },
+  "runtime": {
+    "state_path": "D:\\QM\\Reports\\pipeline\\dispatch_state.json",
+    "retention_config_flag": "--retention-seconds",
+    "default_retention_seconds": 172800
+  },
+  "boundaries": {
+    "t6_touched": false,
+    "factory_scope": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5"
+    ]
+  }
+}

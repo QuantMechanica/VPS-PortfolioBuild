@@ -1,0 +1,184 @@
+{
+  "generated_at_local": "2026-04-28T13:52:56.5433236+02:00",
+  "terminals": [
+    "T1",
+    "T2",
+    "T3",
+    "T4",
+    "T5"
+  ],
+  "files": [
+    "EA_Skeleton.ex5",
+    "QM5_1001_framework_smoke.ex5",
+    "QM5_1002_davey-eu-night.ex5",
+    "QM5_SRC04_S03_lien_fade_double_zeros.ex5"
+  ],
+  "summary": [
+    {
+      "file": "EA_Skeleton.ex5",
+      "all_terminals_present": true,
+      "unique_hash_count": 1,
+      "all_hashes_equal": true
+    },
+    {
+      "file": "QM5_1001_framework_smoke.ex5",
+      "all_terminals_present": true,
+      "unique_hash_count": 1,
+      "all_hashes_equal": true
+    },
+    {
+      "file": "QM5_1002_davey-eu-night.ex5",
+      "all_terminals_present": true,
+      "unique_hash_count": 1,
+      "all_hashes_equal": true
+    },
+    {
+      "file": "QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+      "all_terminals_present": true,
+      "unique_hash_count": 1,
+      "all_hashes_equal": true
+    }
+  ],
+  "entries": [
+    {
+      "terminal": "T1",
+      "file": "EA_Skeleton.ex5",
+      "path": "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\EA_Skeleton.ex5",
+      "sha256": "934484A074ADE8314D95E557C0E8C5C79D21017B5E645B804D3E89ACAEE39D5C",
+      "exists": true
+    },
+    {
+      "terminal": "T1",
+      "file": "QM5_1001_framework_smoke.ex5",
+      "path": "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_1001_framework_smoke.ex5",
+      "sha256": "2795DBEA6E49ED2CEA4DED4A03096BCFA40278F114689A83D030071920CB500B",
+      "exists": true
+    },
+    {
+      "terminal": "T1",
+      "file": "QM5_1002_davey-eu-night.ex5",
+      "path": "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_1002_davey-eu-night.ex5",
+      "sha256": "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+      "exists": true
+    },
+    {
+      "terminal": "T1",
+      "file": "QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+      "path": "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+      "sha256": "75A71F06C5AF87AD5BE1C8EDA58FB39A9B698FD5B034677BB0E71240405A6D19",
+      "exists": true
+    },
+    {
+      "terminal": "T2",
+      "file": "EA_Skeleton.ex5",
+      "path": "D:\\QM\\mt5\\T2\\MQL5\\Experts\\QM\\EA_Skeleton.ex5",
+      "sha256": "934484A074ADE8314D95E557C0E8C5C79D21017B5E645B804D3E89ACAEE39D5C",
+      "exists": true
+    },
+    {
+      "terminal": "T2",
+      "file": "QM5_1001_framework_smoke.ex5",
+      "path": "D:\\QM\\mt5\\T2\\MQL5\\Experts\\QM\\QM5_1001_framework_smoke.ex5",
+      "sha256": "2795DBEA6E49ED2CEA4DED4A03096BCFA40278F114689A83D030071920CB500B",
+      "exists": true
+    },
+    {
+      "terminal": "T2",
+      "file": "QM5_1002_davey-eu-night.ex5",
+      "path": "D:\\QM\\mt5\\T2\\MQL5\\Experts\\QM\\QM5_1002_davey-eu-night.ex5",
+      "sha256": "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+      "exists": true
+    },
+    {
+      "terminal": "T2",
+      "file": "QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+      "path": "D:\\QM\\mt5\\T2\\MQL5\\Experts\\QM\\QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+      "sha256": "75A71F06C5AF87AD5BE1C8EDA58FB39A9B698FD5B034677BB0E71240405A6D19",
+      "exists": true
+    },
+    {
+      "terminal": "T3",
+      "file": "EA_Skeleton.ex5",
+      "path": "D:\\QM\\mt5\\T3\\MQL5\\Experts\\QM\\EA_Skeleton.ex5",
+      "sha256": "934484A074ADE8314D95E557C0E8C5C79D21017B5E645B804D3E89ACAEE39D5C",
+      "exists": true
+    },
+    {
+      "terminal": "T3",
+      "file": "QM5_1001_framework_smoke.ex5",
+      "path": "D:\\QM\\mt5\\T3\\MQL5\\Experts\\QM\\QM5_1001_framework_smoke.ex5",
+      "sha256": "2795DBEA6E49ED2CEA4DED4A03096BCFA40278F114689A83D030071920CB500B",
+      "exists": true
+    },
+    {
+      "terminal": "T3",
+      "file": "QM5_1002_davey-eu-night.ex5",
+      "path": "D:\\QM\\mt5\\T3\\MQL5\\Experts\\QM\\QM5_1002_davey-eu-night.ex5",
+      "sha256": "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+      "exists": true
+    },
+    {
+      "terminal": "T3",
+      "file": "QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+      "path": "D:\\QM\\mt5\\T3\\MQL5\\Experts\\QM\\QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+      "sha256": "75A71F06C5AF87AD5BE1C8EDA58FB39A9B698FD5B034677BB0E71240405A6D19",
+      "exists": true
+    },
+    {
+      "terminal": "T4",
+      "file": "EA_Skeleton.ex5",
+      "path": "D:\\QM\\mt5\\T4\\MQL5\\Experts\\QM\\EA_Skeleton.ex5",
+      "sha256": "934484A074ADE8314D95E557C0E8C5C79D21017B5E645B804D3E89ACAEE39D5C",
+      "exists": true
+    },
+    {
+      "terminal": "T4",
+      "file": "QM5_1001_framework_smoke.ex5",
+      "path": "D:\\QM\\mt5\\T4\\MQL5\\Experts\\QM\\QM5_1001_framework_smoke.ex5",
+      "sha256": "2795DBEA6E49ED2CEA4DED4A03096BCFA40278F114689A83D030071920CB500B",
+      "exists": true
+    },
+    {
+      "terminal": "T4",
+      "file": "QM5_1002_davey-eu-night.ex5",
+      "path": "D:\\QM\\mt5\\T4\\MQL5\\Experts\\QM\\QM5_1002_davey-eu-night.ex5",
+      "sha256": "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+      "exists": true
+    },
+    {
+      "terminal": "T4",
+      "file": "QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+      "path": "D:\\QM\\mt5\\T4\\MQL5\\Experts\\QM\\QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+      "sha256": "75A71F06C5AF87AD5BE1C8EDA58FB39A9B698FD5B034677BB0E71240405A6D19",
+      "exists": true
+    },
+    {
+      "terminal": "T5",
+      "file": "EA_Skeleton.ex5",
+      "path": "D:\\QM\\mt5\\T5\\MQL5\\Experts\\QM\\EA_Skeleton.ex5",
+      "sha256": "934484A074ADE8314D95E557C0E8C5C79D21017B5E645B804D3E89ACAEE39D5C",
+      "exists": true
+    },
+    {
+      "terminal": "T5",
+      "file": "QM5_1001_framework_smoke.ex5",
+      "path": "D:\\QM\\mt5\\T5\\MQL5\\Experts\\QM\\QM5_1001_framework_smoke.ex5",
+      "sha256": "2795DBEA6E49ED2CEA4DED4A03096BCFA40278F114689A83D030071920CB500B",
+      "exists": true
+    },
+    {
+      "terminal": "T5",
+      "file": "QM5_1002_davey-eu-night.ex5",
+      "path": "D:\\QM\\mt5\\T5\\MQL5\\Experts\\QM\\QM5_1002_davey-eu-night.ex5",
+      "sha256": "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+      "exists": true
+    },
+    {
+      "terminal": "T5",
+      "file": "QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+      "path": "D:\\QM\\mt5\\T5\\MQL5\\Experts\\QM\\QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+      "sha256": "75A71F06C5AF87AD5BE1C8EDA58FB39A9B698FD5B034677BB0E71240405A6D19",
+      "exists": true
+    }
+  ]
+}

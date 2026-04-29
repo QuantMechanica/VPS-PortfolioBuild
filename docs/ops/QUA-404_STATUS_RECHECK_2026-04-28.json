@@ -1,0 +1,23 @@
+{
+  "issue": "QUA-404",
+  "generated_at_local": "2026-04-28T15:49:00+02:00",
+  "status": "blocked",
+  "reason": "still_waiting_for_card_approval_and_ea_id",
+  "recheck": {
+    "card": {
+      "path": "strategy-seeds/cards/lien-inside-day-breakout_card.md",
+      "strategy_id": "SRC04_S05",
+      "status": "DRAFT",
+      "ea_id": "TBD"
+    },
+    "registry": {
+      "path": "framework/registry/ea_id_registry.csv",
+      "has_src04_s05": false
+    }
+  },
+  "unblock": {
+    "owner": "CEO + CTO",
+    "action": "Approve SRC04_S05 card and allocate ea_id row, then re-dispatch Development"
+  },
+  "resume": true
+}

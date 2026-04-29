@@ -1,0 +1,33 @@
+# Deploy Manifest — Template
+# OWNER signs this file by setting `approved_by: OWNER` and a non-null `approved_at`.
+# Agents never edit `approved_by` / `approved_at` — those are OWNER-only fields.
+
+manifest_id: DEPLOY-YYYY-MM-DD-NNN          # incrementing sequence per day
+environment: live_burn_in                    # live_burn_in | live_full (DXZ has no demo)
+terminal: T6                                 # T6 only — T1-T5 never trade live
+approved_by: TBD                             # OWNER fills
+approved_at: null                            # OWNER fills with ISO 8601 UTC
+
+account:
+  broker: DarwinexZero
+  account_type: live                         # DXZ is live-only; "demo" is not a valid value
+
+global_limits:
+  max_risk_per_trade_pct: 0.50
+  daily_loss_halt_pct: 3.0
+  portfolio_dd_alarm_pct: 5.0
+  portfolio_dd_halt_pct: 10.0
+
+placements:
+  - ea_id: QM5_<NNNN>                        # V5 ea_id (1000-4999 production)
+    ea_file: QM5_<NNNN>_<slug>.ex5
+    symbol: <SYMBOL>                         # .DWX stripped at deploy packaging
+    timeframe: <M1|M5|M15|M30|H1|H4|D1>
+    setfile: QM5_<NNNN>_<SYMBOL>_<TF>_live.set
+    setfile_hash: <SHA256>                   # MUST be filled — qm-t6-deploy-verification compares this
+    magic: <ea_id * 10000 + symbol_slot>     # must match magic_numbers.csv row
+    risk_percent: 0.25                       # P10 minimum-lot value; expansion needs new manifest
+    source_card: SRC<NNN>_S<NN>              # links back to Strategy Card
+
+# Position-size expansion past P10 minimum-lot requires a SEPARATE manifest per increment.
+# OWNER signs each increment. Agents do not auto-expand.

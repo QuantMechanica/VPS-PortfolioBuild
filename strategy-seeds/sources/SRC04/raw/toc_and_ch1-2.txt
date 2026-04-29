@@ -1,0 +1,805 @@
+                                                                 CHAPTER 1
+
+Foreign Exchange--
+The Fastest Growing
+Market of Our Time
+
+                                                                                                   1
+
+The foreign exchange market is the largest and fastest growing market in the
+     world. Traditionally, it is the platform through which governments, businesses,
+investors, travelers, and other interested parties convert or ``exchange'' currency.
+At its most fundamental level, the foreign exchange market is an over-the-counter
+(OTC) market with no central exchange and clearing house where orders are
+matched. FX dealers and market makers around the world are linked to each other
+around-the-clock via telephone, computer, and fax, creating one cohesive market.
+Through the years, this has changed with many institutions offering exchange traded
+FX instruments, but all of the prices are still derived from the underlying or spot
+forex market.
+
+   In the past two decades, foreign exchange, also known as forex or FX, became
+available to trade by individual retail investors, and this access caused the market
+to explode in popularity. In the early 2000s, the Bank of International Settlements
+reported a 57% increase in volume between April 2001 and 2004. At the time more
+than $1.9 trillion were changing hands on a daily basis. After the financial crisis in
+2008, the pace of growth eased to a still-respectable 32% between 2010 and 2013,
+but the actual volume that changed hands was significantly larger at an average of
+$5.3 trillion per day. To put this into perspective, it is 50 times greater than the
+daily trading volume of the New York Stock Exchange and the NASDAQ combined.
+                                                 While the growth of the retail foreign exchange market contributed to this surge
+                                              in volume, an increase in volatility over the past few years also made investors
+                                              more aware of how currency movements can impact the equity and bond markets.
+                                              If stocks, bonds, and commodity traders want to make more educated trading
+                                              decisions, it is important for them to also follow forex movements. What follows
+                                              are some of the examples of how currency fluctuations impacted stock and bond
+                                              market movements in past years.
+
+                                               EURUSD and Corporate Profitability
+
+                                              For stock market traders, particularly those who invest in European corporations that
+
+                                              export a tremendous amount of goods to the United States, monitoring exchange
+
+                                              rates are essential to predicting earnings and corporate profitability. Throughout 2003
+
+                                              and 2004, European manufacturers complained extensively about the rapid rise in the
+
+                                              euro and the weakness in the U.S. dollar. The main culprit for the dollar's selloff at
+
+                                              the time was the country's rapidly growing trade and budget deficits. This caused the
+
+                                              EURUSD exchange rate to surge, which took a significant toll on the profitability of
+
+                                              European corporations because a higher exchange rate makes the goods of European
+
+                                              exporters more expensive to U.S. consumers. In 2003, inadequate hedging shaved
+
+2                                             approximately EUR$1 billion euros from Volkswagen's profits, while DSM, a Dutch
+
+                                              chemicals group, warned that a 1% move in the EURUSD rate would reduce profits
+
+FOREIGN EXCHANGE--THE FASTEST GROWING MARKET  by EUR$7 million to EUR$11 million. Unfortunately, inadequate hedging is still a
+
+                                              reality in Europe, which makes monitoring the EURUSD exchange rate even more
+
+                                              important in forecasting the earnings and profitability of European exporters.
+
+                                               Nikkei and U.S. Dollar
+
+                                                             Traders exposed to Japanese equities also need to be aware of the developments
+                                                             that are occurring in the U.S. dollar and how that affects the Nikkei rally. Japan
+                                                             recently came out of 10 years of stagnation. During this time, mutual funds and
+                                                             hedge funds were grossly underweight Japanese equities. When the economy began
+                                                             to turn around, global macro funds rushed to make changes to their portfolios in fear
+                                                             of missing out on a great opportunity to take advantage of Japan's recovery. Hedge
+                                                             funds borrowed significant amount of dollars to pay for increased exposure, but the
+                                                             problem was that their borrowings were very sensitive to U.S. interest rates and the
+                                                             Fed's monetary policy tightening cycle. Increased borrowing costs for the dollar could
+                                                             derail the Nikkei's rally because higher rates will raise the dollar's financing costs. Yet
+                                                             with the huge current account deficit, the Fed might need to continue raising rates
+                                                             to increase the attractiveness of dollar-denominated assets. Therefore, continual
+rate hikes, coupled with slowing growth in Japan, may make it less profitable for
+funds to be overleveraged and overly exposed to Japanese stocks. As a result, how
+the U.S. dollar moves also plays a role on the future direction of the Nikkei.
+
+ George Soros
+
+Known as ``the man who broke the Bank of England,'' George Soros is one of
+
+the most well-known traders in the FX market. We discuss his adventures in
+
+more detail in Chapter 2, but in a nutshell, in 1990, England decided to join
+
+the Exchange Rate Mechanism (ERM) system because it wanted to take part in
+
+the stable and low-inflation environment created by the Bundesbank, the central
+
+bank of Germany. This alliance tied the pound to the deutschmark, which meant
+
+that the United Kingdom was subject to the monetary policies enforced by the
+
+Bundesbank. In the early 1990s, Germany aggressively increased interest rates to
+
+avoid the inflationary effects related to German reunification. However, national
+
+pride and the commitment of fixing exchange rates within the ERM prevented
+
+England from devaluing the pound. On Wednesday, September 16, also known as
+
+Black Wednesday, George Soros leveraged the entire value of his fund ($1 billion) and
+
+sold $10 billion worth of pounds to bet against the ERM. This essentially ``broke''
+
+the Bank of England and forced it to devalue the pound. In a matter of 24 hours, the                     3
+
+British pound fell approximately 5%, or 5000 pips. The Bank of England promised
+
+to raise rates in order to tempt speculators to buy pounds. As a result, this caused                     FOREIGN EXCHANGE--THE FASTEST GROWING MARKET
+
+tremendous volatility in the bond markets, with 1-month UK LIBOR rates rising
+
+1% and then retracing those gains over the next 24 hours. If bond traders were
+
+completed oblivious to what was going on in the currency markets, they would have
+
+probably found themselves dumbstruck in face of such rapid gyration in yields.
+
+ Chinese Yuan Revaluation and Bonds
+
+               For Treasury traders, there's another currency-related issue that is important to
+               follow and that is the gradual revaluation of the Chinese yuan. For most of its history,
+               the yuan or renminbi (RMB) was pegged to the U.S. dollar. In the 1980s, the RMB
+               was devalued to promote growth in China's economy, and between 1997 and 2005
+               the People's Bank of China artificially maintained a USDRMB rate of 8.27. At the
+               time, it received significant criticism because keeping the peg meant that the Chinese
+               government would artificially weaken its currency to make Chinese goods more
+               competitive. To maintain the band, the Chinese government had to sell the yuan and
+               buy U.S. dollars each time their currency appreciated above the band's upper limit.
+               These dollars were then used to purchase U.S. Treasuries, and this practice turned
+                                              China into the world's largest holder of U.S. Treasuries. In 2005, however, China
+                                              ended its dollar peg and linked the value of the yuan to a basket of currencies and
+                                              allowed it to fluctuate within a narrow band that was reset every day. While the exact
+                                              percentage of the basket is unknown, it is largely dominated by the U.S. dollar and
+                                              includes other currencies such as the euro, Japanese yen, South Korean won, British
+                                              pound, Thai baht, Russian ruble, and Australian, Canadian, and Singapore dollar.
+
+                                                 Through the years China has gradually widened the band that the yuan can trade
+                                              in, but if China were to end the float and allow the RMB to trade freely on the
+                                              global foreign exchange market, the impact on the fixed-income markets would be
+                                              significant because it would reduce the government's need to purchase Treasuries
+                                              and other fixed-income securities. An announcement of this sort would send yields
+                                              soaring and prices tumbling. While it could be years before this happens, it will be
+                                              important for bond investors to follow these developments if they want to effectively
+                                              manage the risk.
+
+                                               Comparing the FX Market with Futures
+                                                 and Equities
+
+                                              The foreign exchange market has not always been a popular market to trade because
+
+4                                             for many decades, it was restricted to hedge funds, commodity trading advisers who
+
+FOREIGN EXCHANGE--THE FASTEST GROWING MARKET  manage large amounts of capital, major corporations, and institutional investors
+
+                                              due to regulation, capital requirements, and technology. Yet it was the market
+
+                                              of choice for many of these large players because the risk was fully customizable.
+
+                                              Trader A could use a 50 times leverage, and Trader B could trade cash on cash.
+
+                                              When the market opened up to retail traders, many brokerage firms swept in to
+
+                                              provide leveraged trading along with free instantaneous execution platforms, charts,
+
+                                              and real-time news. This access to low-cost information helped foreign exchange
+
+                                              trading surge in popularity, increasing its attractiveness as an alternative asset class
+
+                                              to trade.
+
+                                              Many equity and futures traders also turned to currencies, adding the asset class
+
+                                              to their trading portfolios. Before you choose to do so, however, it is important to
+
+                                              understand some of the key differences between the forex and equity markets.
+
+                                              Characteristics of FX Markets
+
+                                              1. It is the largest market in the world with growing liquidity.
+                                              2. The market is open 24 hours, 5.5 days a week for trading.
+                                              3. Profits can be made in both bull and bear markets.
+                                              4. There are no trading curbs, and short selling is permitted without an uptick.
+                                              5. Instant executable trading platform minimizes slippage and errors.
+                                              6. Leverage can be extremely high, which can magnify profits as well as losses.
+Characteristics of Equities Market
+1. There is decent market liquidity, but that can depend on a stock's daily volume.
+2. The market is only available for trading 9:30am to 5pm NY Time, with limited
+
+    after-hours trading.
+3. The existence of exchange fees results in higher costs and commissions.
+4. There is an uptick rule to short stocks, which many day traders find frustrating.
+5. The number of steps involved in completing a trade can increase slippage and
+
+    error.
+
+   As one of the most liquid markets in the world, the volume and liquidity present in
+the FX markets has allowed traders to access a 24-hour market with low transaction
+costs, high leverage, the ability to profit in both bull and bear markets, minimized
+error rates, limited slippage, and no trading curbs or uptick rules. Oftentimes, traders
+can use the same strategies for analyzing the equity markets in the FX market. Funda-
+mental traders will find that countries can be analyzed like stocks. Technical traders
+will find that the FX market is perfect for their style of analysis because of the abun-
+dance of tick data and because it is already one of the most commonly used analysis
+tools by professional traders. Now let's take a closer look at the individual attributes
+of the FX market to really understand why this is such an attractive market to trade!
+
+24-Hour Market                                                                               5
+
+One of the primary reasons why the FX market is popular is because for active                FOREIGN EXCHANGE--THE FASTEST GROWING MARKET
+
+traders, it is the ideal market to trade. It's 24-hour nature offers traders instant access
+
+to the markets at all hours of the day for immediate response to global developments.
+
+This characteristic also gives traders the added flexibility of determining their own
+
+trading day. Active day traders no longer have to wait for the equities market to
+
+open at 9:30am NY Time to begin trading. If there is a significant announcement or
+
+development either domestically or overseas between 4pm NY Time and 9:30am
+
+NY Time, most day traders will have to wait for the exchanges to open at 9:30am
+
+to place trades. In all likelihood, by that time, unless you have access to electronic
+
+communication networks (ECNs) such as Instinet for premarket trading, the market
+
+would have gapped up or gapped down against your favor. This is particularly
+
+frustrating when important data are released at 8:30am NY Time, such as nonfarm
+
+payrolls. Professionals would have already priced in the outcome before the average
+
+trader can even access to market.
+
+In addition, many people who want to trade also have a full-time job during
+
+the day. The ability to trade after hours makes the FX market a much more
+
+convenient market for all traders. Different times of the day will offer different
+
+trading opportunities, as the global financial centers around the world are all actively
+
+involved in foreign exchange. With the FX market, trading after hours with a large
+
+online FX broker provides the same liquidity and spread as any other time of day.
+                                                 As a guideline, at 5pm Sunday NY Time, trading begins as the markets open in
+                                              Sydney, Australia. Then, the Tokyo markets open at 7 pm NY Time. Next, Singapore
+                                              and Hong Kong open at 9 pm NY Time followed by the European markets in Frankfurt
+                                              (2am) and then London (3am). By 4am the European markets are in full swing, and
+                                              Asia has concluded their trading day. The U.S. markets open first in New York around
+                                              8am Monday as Europe winds down. By 5pm, Sydney is set to reopen once again.
+
+                                                 The majority of trading activity happens when the markets overlap; for example,
+                                              Asia and Europe trading overlaps between 12am to approximately 2am, Europe and
+                                              the United States overlaps between 8am to approximately 12pm NY Time, while
+                                              the United States and Asia overlap between 5pm and 9pm. During New York and
+                                              London hours, all currency pairs trade actively. During the Asian hours, however,
+                                              the trading activity for pairs such as the GBPJPY and AUDJPY tend to peak.
+
+                                              Lower Transaction Costs
+
+                                              Lower transaction costs also makes forex an attractive asset class to trade. In the
+
+                                              equity market, traders must pay a spread and/or a commission and with online
+
+                                              equity brokers, commissions can run upwards of $20 per trade. This means that for
+
+                                              positions of $100,000, average roundtrip commissions could be as high as $120.
+
+                                              The over the counter (OTC) structure of the FX market eliminates exchange and
+
+                                              clearing fees, which, in turn, lowers transaction costs. Costs are further reduced
+
+6                                             by the efficiencies created by a purely electronic market place that allows clients to
+
+FOREIGN EXCHANGE--THE FASTEST GROWING MARKET  deal directly with the market maker, eliminating both ticket costs and middlemen.
+
+                                              Because the currency market offers round-the-clock liquidity, traders receive tight
+
+                                              competitive spreads day and night. Equity traders are more vulnerable to liquidity
+
+                                              risk and typically receive wider dealing spreads, especially during after-hours trading.
+
+                                              Low transaction costs make online FX trading the best market to trade for
+
+                                              short-term traders. For an active equity trader who typically places 30 trades a day,
+
+                                              at $20 commission per trade, you would have to up to pay $600 in daily transaction
+
+                                              costs. This is a significant amount of money that could take a large cut out of profits
+
+                                              or deepen losses. The reason why costs are so high is because there are a lot of
+
+                                              people involved in an equity transaction. More specifically, for each trade, there is
+
+                                              a broker, the exchange, and the specialist. All of these parties need to be paid, and
+
+                                              their payment comes in the form of commission and clearing fees. In the FX market,
+
+                                              because it is decentralized with no exchange or clearinghouse (everything is taken
+
+                                              care of by the market maker), these fees are not applicable.
+
+                                              Customizable Leverage
+
+                                              Even though many people realize that higher leverage comes with risks, traders are
+                                              humans, and few of them find it easy to turn away the opportunity to trade on
+someone else's money. The FX market caters perfectly to these traders by offering
+the highest leverage available for any market. Most online currency firms offer 50
+times leverage on regular-sized accounts and up to 200 times leverage on miniature
+accounts (abroad leverage can be as high as 400 times). Compare that to the 2 times
+leverage offered to the average equity investor and the 10 times capital that is
+typically offered to the professional trader, and you can see why many traders have
+turned to the foreign exchange market. The margin deposit for leverage in the FX
+market is not seen as a down payment on a purchase of equity, as many perceive
+margins to be in the stock markets. Rather, the margin is a performance bond, or
+good-faith deposit, to ensure against trading losses. This is very useful to short-term
+day traders who need the enhancement in capital to generate quick returns. For the
+more risk-averse investor, leverage is completely customizable, which means that
+if they only feel comfortable with 10 or 20 times leverage or no leverage at all,
+they can elect to do so. It is extremely important to understand that leverage is a
+double-edged sword--it can magnify profits but also losses.
+
+Profit in Both Bull and Bear Markets
+
+In the FX market, profit potentials exist in both bull and bear markets. Since
+
+currency trading always involves buying one currency and selling another, there
+
+is no structural bias to the market. Therefore, if you are long one currency, you         7
+
+are at the same time short another. As a result, equal profit potential exists in
+
+both upward-trending and downward-trending markets. This is different from the            FOREIGN EXCHANGE--THE FASTEST GROWING MARKET
+
+equities market, where most traders go long instead of short stocks, so the general
+
+equity investment community tends to suffer in a bear market.
+
+No Trading Curbs or Uptick Rule
+
+The FX market is the largest market in the world, forcing market makers to offer
+very competitive prices. Unlike the equities market, there is never a time in the
+FX markets when trading curbs would take into effect and trading would be halted,
+only to gap when reopened. This eliminates missed profits due to archaic exchange
+regulations. In the FX market, traders would be able to place trades 24 hours a day
+with virtually no disruptions.
+
+   One of the biggest annoyances for day trades in the equity market is the fact
+that traders are prohibited from shorting a stock in a downtrend unless there is an
+uptick. This can be very frustrating as traders wait to join short sellers, but are only
+left with continually watching the stock trend down before an uptick occurs. In the
+FX market, there is no such rule. If you want to short a currency pair, you can do
+so immediately; this allows for instant and efficient execution.
+                                              Online Trading Reducing Error Rates
+
+                                              A shorter trade process minimizes errors. Online currency trading is typically a
+                                              three-step process. A trader would place an order on the platform, the FX dealing
+                                              desk would automatically execute it electronically, and the order confirmation
+                                              would be posted or logged onto the trader's trading station. Typically, these three
+                                              steps would be completed in a matter of seconds. For an equities trade on the other
+                                              hand, there is generally a five-step process. The client would call his broker to place
+                                              an order, the broker sends the order to the exchange floor, the specialist on the
+                                              floor tries to match up orders (the broker competes with other brokers to get the
+                                              best fill for the client), the specialist executes the trade, and the client receives a
+                                              confirmation from the broker. The elimination of a middleman minimizes the error
+                                              rates in currency trades and increases the efficiency of each transaction.
+
+                                              Limited Slippage
+
+                                              Unlike the equity markets, many online FX market makers provide instantaneous
+
+                                              execution from real-time, two-way quotes. These quotes are the prices where the
+
+                                              firms are willing to buy or sell the quoted currency, rather than vague indications
+
+                                              of where the market is trading, which may or may not be honored. Orders are
+
+                                              executed and confirmed within seconds. Robust systems would never request the
+
+8                                             size of a trader's potential order, or which side of the market he's trading, before
+
+                                              giving him a bid/offer quote. Inefficient dealers determine whether the investor is a
+
+FOREIGN EXCHANGE--THE FASTEST GROWING MARKET  buyer or a seller, and shade the price to increase their own profit on the transaction.
+
+                                              The equity market typically operates under a ``next best order'' system, under
+
+                                              which you may not get executed at the price you wish, but rather at the next best
+
+                                              price available. For example, let's say Microsoft is trading at $52.50. If you enter a
+
+                                              buy order at this rate, by the time it reaches the specialist on the exchange floor, the
+
+                                              price may have risen to $53.25. In this case, you will not get executed at $52.50;
+
+                                              you will get executed at $53.25, which is essentially a loss of 34 of a point. The
+
+                                              price transparency provided by the some of the better market makers assures that
+
+                                              traders always receive a fair price.
+
+                                              Perfect Market for Technical Analysis
+
+                                              For technical analysts, currencies rarely spend much time in tight trading ranges and
+                                              have the tendency to develop strong trends. Over 80% of volume is speculative in
+                                              nature and as a result, the market frequently overshoots and then corrects itself.
+                                              Hence, technical analysis works well for the FX market, and a technically trained
+                                              trader can easily identify new trends and breakouts, which provide multiple oppor-
+                                              tunities to enter and exit positions. Charts and indicators are used by all professional
+                                              FX market traders, and candle charts are available on most charting packages. In addi-
+                                              tion, the most commonly used indicators such as Fibonacci retracements, stochastics,
+MACD, moving averages, RSI, and support/resistance levels have proven valid in
+many instances.
+
+   In the USDJPY chart shown in Figure 1.1, it is clear that Fibonacci retracements,
+moving averages, and stochastics have at one point or another given successful
+trading signals. For example, the 61.8% retracement level served as resistance for
+USDJPY in December 2014, January 2015, and February 2015. The moving-average
+crossovers of the 10- and 20-day simple moving averages also successfully forecasted
+the rally in USDJPY in late October, along with the decline in early January. Equity
+traders who focus on technical analysis have the easiest transition, since they can
+implement the same technical strategies that they use in the equities market into the
+FX market.
+
+Analyze Stocks Like Countries
+
+Trading currencies is not a big challenge for fundamental traders either, because
+
+countries can be analyzed like stocks. For example, if you analyze growth rates of
+
+stocks, you can use gross domestic product (GDP) to analyze the growth rate of
+
+countries. If you analyze inventory and production ratios, you can follow industrial
+
+production (IP) or durable goods data. If you follow sales figures, you can analyze
+
+retail sales data. As with a stock investment, it is better to invest in the currency of a
+
+country that is growing faster and fund it with a currency of a country that is growing     9
+
+slower. Currency prices reflect the balance of supply and demand for currencies.            FOREIGN EXCHANGE--THE FASTEST GROWING MARKET
+
+Two of the primary factors affecting supply and demand of currencies are interest
+
+rates and the overall strength of the economy. Economic indicators such as GDP,
+
+foreign investment, and the trade balance reflect the general health of an economy
+
+and are therefore responsible for the underlying shifts in supply and demand for
+
+that currency. There is a tremendous amount of data released at regular intervals,
+
+some of which are more important than others. Data related to interest rates and
+
+international trade is the most closely followed.
+
+If there is uncertainty regarding the direction of interest rates, any bit of news
+
+on monetary policy can directly affect how the currency trades. Traditionally,
+
+if a country raises its interest rate, the currency of that country will strengthen
+
+in relation to other countries as investors shift assets to that country to gain a
+
+higher return. In contrast, an interest rates hike is generally bad news for stocks
+
+because it means that borrowing costs have risen. In response, some investors will
+
+transfer money out of a country's stock market when interest rates are increased,
+
+causing the country's currency to weaken. Determining which effect dominates can
+
+be tricky, but generally there is an advance consensus on how interest rates will
+
+move. Indicators that have the biggest impact on interest rates are producer prices,
+
+consumer prices, employment, spending, and GDP. Most of the time monetary
+
+policy announcements are known in advance with meeting dates by the Bank of
+FOREIGN EXCHANGE--THE FASTEST GROWING MARKET10
+
+    FIGURE 1.1 USDJPY Chart
+Source: eSignal
+England (BoE), the Federal Reserve (FED), European Central Bank (ECB), Bank
+of Japan (BoJ), and other central banks posted on their respective websites.
+
+   Another piece of data that can impact how currencies move is the trade balance,
+which shows the net difference over a period of time between a nation's exports and
+imports. When a country imports more than it exports, the trade balance will show
+a deficit, which is generally considered unfavorable. For example, if U.S. dollars are
+sold for other domestic national currencies (to pay for imports), the flow of dollars
+outside the country will depreciate the value of the dollar. Similarly, if trade figures
+show an increase in exports, dollars will flow into the United States and appreciate
+the value of the dollar. From the standpoint of a national economy, a deficit in and of
+itself is not necessarily a bad thing. If the deficit is greater than market expectations
+however, it can trigger a negative price movement.
+
+ FX versus Futures
+
+Trading spot forex is also different from trading futures, and like equity traders,
+many futures traders have also added currency spot trading into their portfolios. We
+know that the spot forex market has the following attributes:
+
+Characteristics of FX Markets
+
+1. It is the largest market in the world with growing liquidity.                           11
+
+2. The market is open 24 hours, 5.5 days a week for trading.
+
+3. Profits can be made in both bull and bear markets.                                      FOREIGN EXCHANGE--THE FASTEST GROWING MARKET
+
+4. There are no trading curbs and short selling is permitted without an uptick.
+
+5. Instant executable trading platform minimizes slippage and errors.
+
+6. Leverage can be extremely high, which can magnify profits as well as losses.
+
+Characteristics of Futures Markets
+1. There is limited market liquidity depending on the month of contract trades.
+2. The presence of exchange fees results in more costs and commissions.
+3. Market hours for futures trading are much shorter than spot and are dependent
+
+    on the product traded; each product may have different open and closing hours,
+    and there is limited after-hours trading.
+4. Futures leverage is higher than equities, but still only a fraction of the leverage
+    offered in FX.
+5. There tends to be prolonged bear markets.
+6. Pit trading structure increases error and slippage.
+
+   Like in the equities market, traders can implement the same strategies they use
+in analyzing the futures markets in the FX market. Most future traders are technical
+traders, and the FX market is perfect for technical analysis. In fact, it is the most
+popular analysis technique used by professional FX traders. Taking a closer look at
+how the futures market stacks up, we see the following.
+                                              Comparing Market Hours and Liquidity
+
+                                              The volume traded in the FX market is estimated to be over five times that of the
+                                              futures market. The FX market is open for trading 24 hours a day, but the futures
+                                              market has confusing market hours which vary based on the product traded. For
+                                              example, if you traded gold futures, it is only open for trading between 7:20am
+                                              and 1:30pm on the COMEX. If you traded crude oil futures on the New York
+                                              Mercantile Exchange, trading would only be open between 8:30am. and 2:10pm.
+                                              These varying hours not only create confusion but also makes it difficult to act on
+                                              breakthrough announcements throughout the reminder of the day.
+
+                                                 In addition, if you have a day job and can only trade after hours, futures would be
+                                              a very inconvenient market product to trade. You would basically be placing orders
+                                              based on past prices that are not current market prices. This lack of transparency
+                                              makes trading very cumbersome. In addition, each time zone has its own unique
+                                              news and developments that could move specific currency pairs, and with futures it
+                                              can difficult to act on breaking overnight news.
+
+                                              Low to Zero Transaction Costs
+
+                                              In the equity market, traders must pay a spread and/or a commission. With future
+
+                                              brokers, average commissions can run close to $160 per trade on positions of
+
+12                                            $100,000 or greater. The OTC structure of the FX market eliminates exchange and
+
+FOREIGN EXCHANGE--THE FASTEST GROWING MARKET  clearing fees, which can in turn lowers transaction costs. Costs are further reduced
+
+                                              by the efficiencies created by a purely electronic market place that allows clients to
+
+                                              deal directly with the market maker, eliminating both ticket costs and middlemen.
+
+                                              Because the currency market offers round-the-clock liquidity, traders receive tight,
+
+                                              competitive spreads day and night. Futures traders are more vulnerable to liquidity
+
+                                              risk and typically receive wider dealing spreads, especially during after-hours trading.
+
+                                              Low to zero transaction costs make online FX trading the best market to trade
+
+                                              for short-term traders. If you are an active futures trader who typically places 20
+
+                                              trades a day, at $100 commission per trade, you would have to pay $2,000 in daily
+
+                                              transaction costs. A typical futures trade involves a broker, a future commissions
+
+                                              merchant (FCM) order desk, a clerk on the exchange floor, a runner, and a pit
+
+                                              trader. All of these parties need to be paid, and their payment comes in the form of
+
+                                              commission and clearing fees, whereas the electronic nature of the market minimizes
+
+                                              these costs.
+
+                                              No Limit Up or Down Rules/Profit in Both Bull and Bear Markets
+
+                                              Unlike the tight restriction on the futures market, there is no limit down or limit
+                                              up rule in the FX market. For example, on the S&P index futures, if the contract
+                                              value falls more than 5% from the previous day's close, limit down rules will come
+in effect, whereby on a 5% move, the index would only be allowed to trade at
+or above this level for the next 10 minutes. For a 20% decline, trading would be
+completely halted. Due to the decentralized nature of the FX market, there are no
+exchange-enforced restrictions on daily activity, which can help eliminate missed
+opportunities caused by archaic exchange regulations.
+
+Execution Quality and Speed/Low Error Rates
+
+The futures market is also known for inconsistent execution, both in terms of pricing
+and execution time. Every futures trader has, at some point in time, experienced
+a half hour or so wait for a market order to be filled, only to find that the order
+has been executed at a price far away from where the market was trading when
+the initial order was placed. Even with electronic trading and limited guarantees of
+execution speed, the price for fills on market orders is far from certain. The reason
+for this inefficiency is the number of steps that are involved in placing a futures
+trade. A futures trade is typically a seven-step process:
+
+1. The client calls his broker and places his trade (or places it online).
+
+2. The trading desk receives the order, processes it, and routes it to the FCM
+
+order desk on the exchange floor.
+
+3. The FCM order desk passes the order to the order clerk.
+
+4. The order clerk hands the order to a runner or signals it to the pit.               13
+
+5. The trading clerk goes to the pit to execute the trade.                             FOREIGN EXCHANGE--THE FASTEST GROWING MARKET
+
+6. The trade confirmation goes to the runner or is signaled to the order clerk and
+
+processed by the FCM order desk.
+
+7. The broker receives the trade confirmation and passes it on to the client.
+
+   An FX trade in comparison is typically only a three-step process. A trader would
+place an order on the platform, the FX dealing desk would automatically execute
+it electronically, and the order confirmation would be posted or logged on the
+trader's trading station. The elimination of the involvement of these additional
+parties increases the speed of the trade execution and decreases errors.
+
+   In addition, the futures market typically operates under a ``next best order''
+system, under which your trades frequently do not get executed at the initial market
+order price, but rather, at the next best price available. For example, let's say a
+client is long 5 March Dow Jones futures contracts at 8800. If the client enters a
+stop order at 8700, when the rate reaches this level, the client will most likely be
+executed at 8690. This 10-point difference would be attributed to slippage, which
+is very common in the futures market.
+
+   On most FX trading stations, traders execute directly off of real-time streaming
+prices. Barring any unforeseen circumstances, there is generally no discrepancy
+between the displayed price and the execution price. This holds true even during
+                                              volatile times and fast-moving markets. In the futures market, execution is uncertain
+                                              because all orders must be done on the exchange. This creates a situation where
+                                              liquidity is limited by the number of participants, which, in turn, limits quantities
+                                              that can be traded at a given price. Real-time streaming prices ensure that market
+                                              orders, stops, and limits are executed with minimal slippage and no partial fills.
+
+                                               Who Are the Players in the FX Market?
+
+                                              Since the foreign exchange market is an OTC market without a centralized exchange,
+
+                                              competition between market makers prohibits monopolistic pricing strategies. If
+
+                                              one market maker attempts to drastically skew the price, then traders simply have
+
+                                              the option to find another market maker. Moreover, spreads are closely watched to
+
+                                              ensure market makers are not whimsically altering the cost of the trade. Many equity
+
+                                              markets, on the other hand, operate in a completely different fashion; the New York
+
+                                              Stock Exchange, for instance, is the sole place where companies listed on the NYSE
+
+                                              can have their stocks traded. Centralized markets are operated by what are referred
+
+                                              to as specialists. Market makers, on the other hand, is the term used in reference to
+
+                                              decentralized marketplaces. Since the NYSE is a centralized market, a stock traded
+
+                                              on the NYSE can only have one bid­ask quote at all times. Decentralized markets,
+
+14                                            such as foreign exchange, can have multiple market makers--all of whom have the
+
+                                              right to quote different prices. Here is an illustration of how both centralized and
+
+FOREIGN EXCHANGE--THE FASTEST GROWING MARKET  decentralized markets operate.
+
+                                              Centralized Markets
+
+                                              By their very nature, centralized markets tend to be monopolistic: With a single
+                                              specialist controlling the market, prices can easily be skewed to accommodate the
+                                              interests of the specialist, not those of the traders (see Figure 1.2). If, for example,
+                                              the market is filled with sellers that the specialists must buy from but no prospective
+                                              buyers on the other side, the specialist may simply widen the spread, thereby
+
+                                                Buyers                           Specialist          Sellers
+
+                                              Can buy only                    Unites buyers and   Can sell only to
+                                                from one                      sellers; maintains   one specialist
+                                                specialist                    sole control over
+
+                                                                                   the spread
+
+                                              FIGURE 1.2 Centralized Market Structure
+increasing the cost of the trade and preventing additional participants from entering
+the market. Or, specialists can drastically alter the quotes they are offering, thus
+manipulating the price to accommodate their own risk tolerance.
+
+Hierarchy of Participants
+
+While the foreign exchange market is decentralized, and hence employs multiple
+
+market makers rather than a single specialist, participants in the FX market are
+
+organized into a hierarchy; those with superior credit access, volume transacted,
+
+and sophistication receive priority pricing in the market (see Figure 1.3). At the
+
+top of the food chain is the interbank market, which trades the highest volume per
+
+day in relatively few currencies. In the interbank market, the largest banks can deal
+
+with each other directly, via interbank brokers, or through electronic brokering
+
+systems like EBS or Reuters. The interbank market is a credit-approved system,
+
+where banks trade based solely on the credit relationships they have established
+
+with one another. The banks can see the rates everyone is dealing at, but each bank
+
+must have a specific credit relationship with that bank in order to trade at the rates
+
+being offered. Other institutions such as online FX market makers, hedge funds,
+
+and corporations must trade FX through these banks, although some have created
+
+their own liquidity pools through the years. Many banks (e.g., small community
+
+banks or banks in emerging markets), corporations, and institutional investors do       15
+not have access to these rates because they have no established credit lines with
+
+big banks. This forces smaller participants to deal through just one bank for their     FOREIGN EXCHANGE--THE FASTEST GROWING MARKET
+
+Retail Clients  Online Trading                   Interbank Market
+    Trader
+
+                                           Bank                    Bank
+
+Trader          Online FX
+Trader            Market
+                 Makers
+
+                                                 EBS and
+                                                 Reuters
+
+Trader                                     Bank                    Bank
+
+FIGURE 1.3 Decentralized Market Structure
+                                              foreign exchange needs, and oftentimes this means much less competitive rates for
+                                              the participants further down the participant hierarchy. Those receiving the least
+                                              competitive rates are customers of banks and physical currency exchange companies.
+                                              Recently, technology has broken down the barriers that used to stand between the
+                                              end-users of foreign exchange services and the interbank market. The online trading
+                                              revolution opened its doors to retail clientele by connecting market makers and
+                                              market participants in an efficient, low-cost manner. In essence, online trading
+                                              platforms serve as a gateway to the liquid FX market. Average traders can now
+                                              trade alongside the biggest banks in the world, with virtually similar pricing and
+                                              execution. What used to be a game dominated and controlled by the ``big boys'' is
+                                              slowly becoming a level playing field where individuals can profit and take advantage
+                                              of the same opportunities as big banks. FX is no longer an old boys club, which
+                                              means opportunities abound for aspiring online currency traders.
+
+                                              Dealing Stations--Interbank Market
+
+                                              For serious traders who want to know more about the interbank market, the
+
+                                              majority of FX volume is actually transacted primarily through the interbank
+
+                                              market. The leading banks of the world trade with each other electronically
+
+                                              over two platforms--the EBS and Reuters, dealing 3000-spot matching. Both
+
+16                                            platforms offer trading in the major currency pairs; however, certain currency
+                                              pairs are more liquid and generally more frequently traded over one versus the
+
+FOREIGN EXCHANGE--THE FASTEST GROWING MARKET  other. Some cross-currency pairs are traded over these platforms as well, but
+
+                                              others are calculated from the rates of the major currency pairs and are then offset
+
+                                              using the ``legs.'' For example, if an interbank trader had a client who wanted to
+
+                                              go long NZDCAD, the trader would most likely buy NZDUSD and USDCAD
+
+                                              separately. The trader would then multiply these rates and provide the client with
+
+                                              the respective NZDCAD rate, creating a synthetic quote and trade.
+                                                                 CHAPTER 2
+
+Historical Events in

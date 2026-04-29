@@ -1,0 +1,19 @@
+﻿{
+    "issue":  "QUA-350",
+    "target_status":  "in_review",
+    "reason":  "inventory_check_complete_disposition_ready",
+    "resume":  true,
+    "summary":  "Darwinex bond-CFD inventory check completed; US10Y and DE10Y both missing; disposition requires external-data shim or defer.",
+    "evidence":  [
+                     "infra/reports/darwinex_bond_inventory_latest.md",
+                     "docs/ops/QUA-350_BOND_CFD_INVENTORY_RESULT_2026-04-28.md",
+                     "docs/ops/QUA-350_BOND_CFD_INVENTORY_RESULT_2026-04-28.json"
+                 ],
+    "commits":  [
+                    "5f9cb2d",
+                    "8ff676a",
+                    "29cd688",
+                    "5d75abf",
+                    "6b61bce"
+                ]
+}

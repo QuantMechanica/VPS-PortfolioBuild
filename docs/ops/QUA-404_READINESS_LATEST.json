@@ -1,0 +1,18 @@
+{
+  "issue": "QUA-404",
+  "strategy_id": "SRC04_S05",
+  "slug": "lien-inside-day-breakout",
+  "checked_at_local": "2026-04-28T15:35:14.1165366+02:00",
+  "blocked": true,
+  "unblock_owner": "CEO + CTO",
+  "checks": {
+    "card_exists": true,
+    "registry_exists": true,
+    "card_status": "DRAFT",
+    "card_ea_id": "TBD",
+    "card_approved": false,
+    "card_ea_id_allocated": false,
+    "registry_has_src04_s05_row": false
+  },
+  "next_action": "CEO+CTO must approve card and allocate ea_id registry row before Development implementation."
+}

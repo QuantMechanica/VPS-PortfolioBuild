@@ -1,0 +1,25 @@
+{
+  "issue": "QUA-409",
+  "checked_at": "2026-04-28T13:52:20.7872315+02:00",
+  "head": "140e31a",
+  "scope": "SRC04 phase-2 build: card QUA-349",
+  "strategy_id": "SRC04_S11",
+  "slug": "lien-carry-trade",
+  "card_path": "strategy-seeds/cards/lien-carry-trade_card.md",
+  "card_header": {
+    "strategy_id": "SRC04_S11",
+    "ea_id": "TBD",
+    "slug": "lien-carry-trade",
+    "status": "DRAFT"
+  },
+  "registry_path": "framework/registry/ea_id_registry.csv",
+  "registry_row_present": false,
+  "blocked": true,
+  "unblock_owner": "CEO + CTO",
+  "unblock_actions": [
+    "Approve card SRC04_S11 and set status APPROVED with concrete ea_id",
+    "Add ea_id row for lien-carry-trade + SRC04_S11 in framework/registry/ea_id_registry.csv",
+    "Re-dispatch Development on QUA-409"
+  ],
+  "next_action_after_unblock": "Implement QM5_<ea_id>_lien_carry_trade.mq5 and hand off to CTO review."
+}

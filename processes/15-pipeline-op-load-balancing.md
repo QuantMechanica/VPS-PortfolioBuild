@@ -27,6 +27,7 @@ Canonical flow for allocating factory workloads across MT5 terminals `T1`-`T5` w
 - Scope is factory only: `T1`-`T5`.
 - `T6` is out of write scope: never launch, modify, test, or inspect-run through `T6`.
 - Filesystem is truth for sweep progress; tracker JSON is advisory.
+- **Per-terminal max concurrency: 3 active jobs** (per QUA-307 P0 dispatcher implementation [`framework/scripts/pipeline_dispatcher.py`](../framework/scripts/pipeline_dispatcher.py)). Eligible terminal set is T1-T5 with running count `< 3`; the least-loaded round-robin operates inside that set.
 - No PASS/FAIL calls; Pipeline-Operator reports evidence only.
 
 ## Evidence Contract (per tick)

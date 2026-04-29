@@ -1,0 +1,44 @@
+{
+  "issue": "QUA-304",
+  "timestamp_utc": "2026-04-28T10:39:15.2603128Z",
+  "snapshot": "docs/ops/QUA-304_INTEGRITY_SNAPSHOT_2026-04-28.sha256",
+  "all_match": true,
+  "checked": [
+    {
+      "path": "framework/EAs/QM5_1003_davey_baseline_3bar/QM5_1003_davey_baseline_3bar.mq5",
+      "status": "match",
+      "expected": "500C0F8439DC1E3F505FD9586D89B5A764F5FE0120C8271254BA8B22610EFA48",
+      "actual": "500C0F8439DC1E3F505FD9586D89B5A764F5FE0120C8271254BA8B22610EFA48"
+    },
+    {
+      "path": "framework/EAs/QM5_1003_davey_baseline_3bar/QM5_1003_davey_baseline_3bar.ex5",
+      "status": "match",
+      "expected": "DBBDAA9176EFAFD0E4A00A59550BA152CFC69A0265DCC5F7DB95C2E9B83C95BD",
+      "actual": "DBBDAA9176EFAFD0E4A00A59550BA152CFC69A0265DCC5F7DB95C2E9B83C95BD"
+    },
+    {
+      "path": "framework/scripts/compile_one.ps1",
+      "status": "match",
+      "expected": "549715991224A874D7C2E1A8503D8B26F8078488F2D34E95A2B00384CB04B12E",
+      "actual": "549715991224A874D7C2E1A8503D8B26F8078488F2D34E95A2B00384CB04B12E"
+    },
+    {
+      "path": "docs/ops/QUA-304_CLOSEOUT_READINESS_2026-04-28.md",
+      "status": "match",
+      "expected": "D0A60D16C20A8FD0C241EB117EE1AC826314F97BBD13DBC88DA88A4C2CC0BE59",
+      "actual": "D0A60D16C20A8FD0C241EB117EE1AC826314F97BBD13DBC88DA88A4C2CC0BE59"
+    },
+    {
+      "path": "docs/ops/QUA-304_STATUS_2026-04-28.json",
+      "status": "match",
+      "expected": "60527413E7DCB90E847FCD47626B72DB07C0C9771DE37F523E81DC68E5074C69",
+      "actual": "60527413E7DCB90E847FCD47626B72DB07C0C9771DE37F523E81DC68E5074C69"
+    },
+    {
+      "path": "docs/ops/QUA-304_DEVELOPMENT_SENTINEL_2026-04-28.md",
+      "status": "match",
+      "expected": "303F0426A2FAC54041871C9621D6CD2374E10BC82E4418FD38535DBB08C17FD7",
+      "actual": "303F0426A2FAC54041871C9621D6CD2374E10BC82E4418FD38535DBB08C17FD7"
+    }
+  ]
+}

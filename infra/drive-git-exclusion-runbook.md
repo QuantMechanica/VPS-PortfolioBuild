@@ -13,7 +13,7 @@ Purpose: verify and continuously enforce that repository roots and git metadata 
 Run:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\monitoring\Test-DriveGitExclusion.ps1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\monitoring\Test-DriveGitExclusion.ps1 -PrimaryRepoForWorktrees C:\QM\repo -IncludeGitWorktrees
 ```
 
 Exit codes:
@@ -22,12 +22,22 @@ Exit codes:
 - `1` = `warn` (limited check scope or non-required repo missing)
 - `2` = `critical` (hard fence violated)
 
+Evidence artifact written on each run:
+
+- `C:\QM\logs\infra\health\drive_git_exclusion_latest.json`
+
 ## Recurring Scheduler Check (Idempotent)
 
 Install/converge task:
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-DriveGitExclusionTask.ps1 -EveryMinutes 15
+```
+
+Preview without scheduler mutation:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-DriveGitExclusionTask.ps1 -PreviewOnly
 ```
 
 Task name:
@@ -40,6 +50,11 @@ Quick validation:
 Get-ScheduledTask -TaskName QM_DriveGitExclusion_15min | Format-List TaskName,State
 Get-ScheduledTaskInfo -TaskName QM_DriveGitExclusion_15min | Format-List LastRunTime,LastTaskResult,NextRunTime
 ```
+
+## Alert Routing
+
+- The monitor posts failures to `QM_ALERT_WEBHOOK_URL` when configured.
+- Keep webhook routing aligned with CEO + Obs-SRE destination policy.
 
 ## Incident Response (Critical)
 

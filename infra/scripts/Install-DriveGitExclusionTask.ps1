@@ -3,8 +3,13 @@ param(
     [string]$TaskName = "QM_DriveGitExclusion_15min",
     [string]$RepoRoot = "C:\QM\repo",
     [string]$ScriptRelativePath = "infra\monitoring\Test-DriveGitExclusion.ps1",
+    [string]$PrimaryRepoForWorktrees = "C:\QM\repo",
+    [string]$OutputPath = "C:\QM\logs\infra\health\drive_git_exclusion_latest.json",
+    [bool]$IncludeGitWorktrees = $true,
+    [string]$AlertWebhookUrl = "",
     [int]$MinuteOffset = 6,
     [int]$EveryMinutes = 15,
+    [switch]$PreviewOnly,
     [switch]$RunNow
 )
 
@@ -26,7 +31,9 @@ if ($startBoundary -le (Get-Date)) {
     $startBoundary = $startBoundary.AddMinutes($EveryMinutes)
 }
 
-$args = "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`""
+$args = "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`" -PrimaryRepoForWorktrees `"$PrimaryRepoForWorktrees`" -OutputPath `"$OutputPath`""
+if ($IncludeGitWorktrees) { $args += " -IncludeGitWorktrees" }
+if ($AlertWebhookUrl) { $args += " -AlertWebhookUrl `"$AlertWebhookUrl`"" }
 $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument $args -WorkingDirectory $RepoRoot
 $trigger = New-ScheduledTaskTrigger -Once -At $startBoundary -RepetitionInterval (New-TimeSpan -Minutes $EveryMinutes)
 $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -RunLevel Highest -LogonType ServiceAccount
@@ -38,6 +45,22 @@ $settings = New-ScheduledTaskSettingsSet `
     -ExecutionTimeLimit (New-TimeSpan -Minutes 5)
 
 $task = New-ScheduledTask -Action $action -Trigger $trigger -Principal $principal -Settings $settings
+
+if ($PreviewOnly.IsPresent) {
+    [pscustomobject]@{
+        preview = $true
+        task_name = $TaskName
+        execute = "powershell.exe"
+        arguments = $args
+        working_directory = $RepoRoot
+        start_boundary_local = $startBoundary.ToString("o")
+        repetition_minutes = $EveryMinutes
+        principal = "SYSTEM"
+        run_level = "Highest"
+    } | ConvertTo-Json -Depth 5
+    exit 0
+}
+
 Register-ScheduledTask -TaskName $TaskName -InputObject $task -Force | Out-Null
 
 $taskInfo = Get-ScheduledTaskInfo -TaskName $TaskName

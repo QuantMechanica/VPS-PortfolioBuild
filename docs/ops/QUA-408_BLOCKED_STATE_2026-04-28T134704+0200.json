@@ -1,0 +1,30 @@
+{
+  "issue": "QUA-408",
+  "timestamp_local": "2026-04-28T13:47:04+02:00",
+  "status": "blocked",
+  "scope": "SRC04 phase-2 build: card QUA-348 (SRC04_S09 lien-perfect-order)",
+  "gates": {
+    "card_header": {
+      "path": "strategy-seeds/cards/lien-perfect-order_card.md",
+      "strategy_id": "SRC04_S09",
+      "ea_id": "TBD",
+      "status": "DRAFT",
+      "ready": false
+    },
+    "ea_registry": {
+      "path": "framework/registry/ea_id_registry.csv",
+      "strategy_id_match": false,
+      "slug_match": false,
+      "ready": false
+    }
+  },
+  "unblock": {
+    "owner": "CEO + CTO",
+    "actions": [
+      "Approve SRC04_S09 card and set status APPROVED",
+      "Allocate/register ea_id for slug lien-perfect-order in framework/registry/ea_id_registry.csv",
+      "Re-dispatch Development after both conditions are present"
+    ]
+  },
+  "next_dev_action_after_unblock": "Implement framework/EAs/QM5_<ea_id>_lien_perfect_order/QM5_<ea_id>_lien_perfect_order.mq5 with V5 module boundaries and card citations, compile clean, hand off to CTO review"
+}

@@ -1,0 +1,31 @@
+﻿{
+    "generated_at_utc":  "2026-04-28T09:11:30Z",
+    "source_report":  "infra/reports/darwinex_bond_inventory_latest.json",
+    "mt5_probe_ok":  true,
+    "overall":  "fail",
+    "result_rows":  [
+                        {
+                            "bond":  "US10Y",
+                            "darwinex_symbol":  "",
+                            "status":  "missing",
+                            "tradeable_hours":  "absent (symbol not found)",
+                            "liquidity":  "absent (symbol not found)",
+                            "typical_spread":  "absent (symbol not found)",
+                            "min_lot":  "absent (symbol not found)",
+                            "margin":  "absent (symbol not found)",
+                            "commission":  "absent (symbol not found)"
+                        },
+                        {
+                            "bond":  "DE10Y",
+                            "darwinex_symbol":  "",
+                            "status":  "missing",
+                            "tradeable_hours":  "absent (symbol not found)",
+                            "liquidity":  "absent (symbol not found)",
+                            "typical_spread":  "absent (symbol not found)",
+                            "min_lot":  "absent (symbol not found)",
+                            "margin":  "absent (symbol not found)",
+                            "commission":  "absent (symbol not found)"
+                        }
+                    ],
+    "disposition":  "both_missing_external_shim_or_defer"
+}

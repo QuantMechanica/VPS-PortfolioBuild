@@ -2,7 +2,7 @@
 AUTO-GENERATED MIRROR — DO NOT EDIT.
 Source: Notion page 34947da58f4a81c28045ebec3ad6d78a
 Title: Paperclip Company Operating System & Process Roadmap
-Mirrored: 2026-04-28T23:00:00Z by Documentation-KM (QUA-151)
+Mirrored: 2026-04-28T23:00:00Z by Documentation-KM (QUA-151 nightly sync; previous refresh 2026-04-27T15:05:00Z under QUA-256)
 Editing surface: Notion. Direct edits will be overwritten by the next sync.
 Manifest: infra/notion-sync/manifest.yaml
 Mapping note: BASIS lists "Process Roadmap"; per CEO 2026-04-27 (QUA-151
@@ -118,13 +118,16 @@ The same hourly VPS Task Scheduler export job writes `public-data/process-roadma
 
 It must not expose credentials, internal paths, account IDs, RDP details, or raw broker logs.
 
-<page url="https://www.notion.so/34f47da58f4a8157a2d2cc7ef5442891">13 — Strategy Research Workflow</page>
-<page url="https://www.notion.so/34f47da58f4a8127920ef24e8f896d58">15 — Pipeline-Operator Load Balancing (T1-T5)</page>
-<page url="https://www.notion.so/34f47da58f4a81819b0dd9614646db81">DL-029 — Strategy Research Workflow (Decision Log)</page>
-<page url="https://www.notion.so/34f47da58f4a81c79564c26244d745eb">DL-023 — CEO Autonomy Waiver, Broadened Scope v2 (Decision Log)</page>
-<page url="https://www.notion.so/34f47da58f4a815cb2effa452a74c0bd">DL-024 — CEO Scheduled Heartbeat Enablement 3600s (Decision Log)</page>
-<page url="https://www.notion.so/34f47da58f4a810fad87cacf506238b8">DL-025 — T6 Deploy Boundary Refinement (Decision Log)</page>
-<page url="https://www.notion.so/34f47da58f4a81cdae66d3247a934215">DL-026 — Commit-Hash-In-Close-Out Rule (Decision Log)</page>
-<page url="https://www.notion.so/34f47da58f4a813f9c8eee045c2cf4c4">DL-027 — BASIS→active Diff Propagation Rule (Decision Log)</page>
-<page url="https://www.notion.so/34f47da58f4a810fabbae254ab710778">DL-028 — Per-Agent Worktree Isolation Standard (Decision Log)</page>
-<page url="https://www.notion.so/34f47da58f4a814b9df7f6e4f8e661d1">DL-031 — Projects Formalization + Issue Routing Convention (Decision Log)</page>
+## Sub-pages (Notion-side decision logs)
+
+- [13 — Strategy Research Workflow](https://www.notion.so/34f47da58f4a8157a2d2cc7ef5442891)
+- [15 — Pipeline-Operator Load Balancing (T1-T5)](https://www.notion.so/34f47da58f4a8127920ef24e8f896d58)
+- [DL-029 — Strategy Research Workflow (Decision Log)](https://www.notion.so/34f47da58f4a81819b0dd9614646db81)
+- [DL-023 — CEO Autonomy Waiver, Broadened Scope v2 (Decision Log)](https://www.notion.so/34f47da58f4a81c79564c26244d745eb)
+- [DL-024 — CEO Scheduled Heartbeat Enablement 3600s (Decision Log)](https://www.notion.so/34f47da58f4a815cb2effa452a74c0bd)
+- [DL-025 — T6 Deploy Boundary Refinement (Decision Log)](https://www.notion.so/34f47da58f4a810fad87cacf506238b8)
+- [DL-026 — Commit-Hash-In-Close-Out Rule (Decision Log)](https://www.notion.so/34f47da58f4a81cdae66d3247a934215)
+- [DL-027 — BASIS→active Diff Propagation Rule (Decision Log)](https://www.notion.so/34f47da58f4a813f9c8eee045c2cf4c4)
+- [DL-028 — Per-Agent Worktree Isolation Standard (Decision Log)](https://www.notion.so/34f47da58f4a810fabbae254ab710778)
+- [DL-031 — Projects Formalization + Issue Routing Convention (Decision Log)](https://www.notion.so/34f47da58f4a814b9df7f6e4f8e661d1)
+- DL-032 — CEO Autonomy Waiver, Research Source-Queue Ordering v3 (Decision Log) — `decisions/2026-04-27_ceo_autonomy_waiver_v3.md` (Notion URL pending nightly sync)

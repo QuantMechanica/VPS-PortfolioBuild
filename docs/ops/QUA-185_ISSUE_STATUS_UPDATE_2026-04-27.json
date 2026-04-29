@@ -1,0 +1,9 @@
+{
+    "issue_id":  "QUA-185",
+    "updated_at_local":  "2026-04-27T16:37:41.5351268+02:00",
+    "issue_update":  {
+                         "status":  "in_review"
+                     },
+    "reason":  "qua185_transition_payload_applied",
+    "source_transition_payload":  "QUA-185_ISSUE_TRANSITION_PAYLOAD_2026-04-27.json"
+}

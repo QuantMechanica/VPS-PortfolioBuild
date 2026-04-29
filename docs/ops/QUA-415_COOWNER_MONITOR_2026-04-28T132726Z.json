@@ -1,0 +1,28 @@
+{
+    "status":  "BLOCKED",
+    "issue":  "QUA-415",
+    "unblock_owner":  "Pipeline-Operator",
+    "unblock_action":  "Post workflow confirmation commit hash proving active setfile_path dispatch consumption.",
+    "recent_matches":  [
+                           "1ea685ff QUA-304: heartbeat helper tick",
+                           "29edf763 chore(qua-408): refresh blocked readiness checkpoint",
+                           "a43fd547 chore(qua-403): refresh readiness evidence heartbeat",
+                           "f5116320 docs(ops): refresh QUA-404 readiness snapshot",
+                           "3a7d3f5c docs(ops): append QUA-407 recheck 15:27:01",
+                           "de920f93 docs(ops): add QUA-415 co-owner monitor snapshot (safe helper)",
+                           "88b45fc3 docs: update QUA-303 unblock note wake 582cfa5d",
+                           "7395ca3b QUA-304: heartbeat helper tick",
+                           "61e78c2c chore(qua-408): refresh blocked readiness checkpoint",
+                           "8f764eb4 chore(qua-409): refresh blocked readiness evidence",
+                           "bda32c54 docs(ops): add QUA-415 co-owner monitor snapshot (safe helper)",
+                           "9a80d36e docs(ops): append QUA-407 recheck 15:26:33",
+                           "701b09e3 docs(ops): refresh QUA-404 readiness snapshot",
+                           "c942139d fix(qua-403): clean blocked transition request formatting",
+                           "df49a724 chore(qua-403): refresh blocked transition request",
+                           "359c47c8 docs: update QUA-303 unblock note wake 010089c0",
+                           "8a62139b docs(ops): add QUA-415 co-owner monitor snapshot (safe helper)",
+                           "3c99bd69 chore(qua-408): refresh blocked readiness checkpoint",
+                           "b49320bb QUA-304: heartbeat helper tick",
+                           "3b6fdf20 docs(ops): add QUA-415 co-owner monitor snapshot (safe helper)"
+                       ]
+}

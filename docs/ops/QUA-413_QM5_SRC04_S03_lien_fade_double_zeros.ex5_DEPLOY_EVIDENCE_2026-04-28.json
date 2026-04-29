@@ -1,0 +1,71 @@
+{
+  "source_path": "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+  "file_name": "QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+  "deployed_at_local": "2026-04-28T13:49:20.2545147+02:00",
+  "terminal_roots": [
+    "D:\\QM\\mt5\\T1",
+    "D:\\QM\\mt5\\T2",
+    "D:\\QM\\mt5\\T3",
+    "D:\\QM\\mt5\\T4",
+    "D:\\QM\\mt5\\T5"
+  ],
+  "status_counts": [
+    {
+      "status": "unchanged",
+      "count": 5
+    }
+  ],
+  "files": [
+    {
+      "terminal": "T1",
+      "status": "unchanged",
+      "source_path": "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+      "destination_path": "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+      "source_hash_sha256": "75A71F06C5AF87AD5BE1C8EDA58FB39A9B698FD5B034677BB0E71240405A6D19",
+      "destination_hash_before_sha256": "75A71F06C5AF87AD5BE1C8EDA58FB39A9B698FD5B034677BB0E71240405A6D19",
+      "destination_hash_after_sha256": "75A71F06C5AF87AD5BE1C8EDA58FB39A9B698FD5B034677BB0E71240405A6D19",
+      "hash_match": true
+    },
+    {
+      "terminal": "T2",
+      "status": "unchanged",
+      "source_path": "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+      "destination_path": "D:\\QM\\mt5\\T2\\MQL5\\Experts\\QM\\QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+      "source_hash_sha256": "75A71F06C5AF87AD5BE1C8EDA58FB39A9B698FD5B034677BB0E71240405A6D19",
+      "destination_hash_before_sha256": "75A71F06C5AF87AD5BE1C8EDA58FB39A9B698FD5B034677BB0E71240405A6D19",
+      "destination_hash_after_sha256": "75A71F06C5AF87AD5BE1C8EDA58FB39A9B698FD5B034677BB0E71240405A6D19",
+      "hash_match": true
+    },
+    {
+      "terminal": "T3",
+      "status": "unchanged",
+      "source_path": "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+      "destination_path": "D:\\QM\\mt5\\T3\\MQL5\\Experts\\QM\\QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+      "source_hash_sha256": "75A71F06C5AF87AD5BE1C8EDA58FB39A9B698FD5B034677BB0E71240405A6D19",
+      "destination_hash_before_sha256": "75A71F06C5AF87AD5BE1C8EDA58FB39A9B698FD5B034677BB0E71240405A6D19",
+      "destination_hash_after_sha256": "75A71F06C5AF87AD5BE1C8EDA58FB39A9B698FD5B034677BB0E71240405A6D19",
+      "hash_match": true
+    },
+    {
+      "terminal": "T4",
+      "status": "unchanged",
+      "source_path": "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+      "destination_path": "D:\\QM\\mt5\\T4\\MQL5\\Experts\\QM\\QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+      "source_hash_sha256": "75A71F06C5AF87AD5BE1C8EDA58FB39A9B698FD5B034677BB0E71240405A6D19",
+      "destination_hash_before_sha256": "75A71F06C5AF87AD5BE1C8EDA58FB39A9B698FD5B034677BB0E71240405A6D19",
+      "destination_hash_after_sha256": "75A71F06C5AF87AD5BE1C8EDA58FB39A9B698FD5B034677BB0E71240405A6D19",
+      "hash_match": true
+    },
+    {
+      "terminal": "T5",
+      "status": "unchanged",
+      "source_path": "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+      "destination_path": "D:\\QM\\mt5\\T5\\MQL5\\Experts\\QM\\QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+      "source_hash_sha256": "75A71F06C5AF87AD5BE1C8EDA58FB39A9B698FD5B034677BB0E71240405A6D19",
+      "destination_hash_before_sha256": "75A71F06C5AF87AD5BE1C8EDA58FB39A9B698FD5B034677BB0E71240405A6D19",
+      "destination_hash_after_sha256": "75A71F06C5AF87AD5BE1C8EDA58FB39A9B698FD5B034677BB0E71240405A6D19",
+      "hash_match": true
+    }
+  ],
+  "all_hashes_match": true
+}

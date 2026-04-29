@@ -1,0 +1,17 @@
+{
+  "issue": "QUA-304",
+  "timestamp_utc": "2026-04-28T11:20:00Z",
+  "state": "blocked_review_gate",
+  "execution_policy": "review-only",
+  "development_status": "implementation_complete",
+  "stale_instruction_filter": {
+    "ignore_phrase": "Inspect the failed run, fix the cause",
+    "enabled": true,
+    "reason": "No active failure after verified remediation and clean compile evidence"
+  },
+  "unblock": {
+    "owner": "CTO",
+    "action": "Provide review decision or request scoped deltas"
+  },
+  "next_action": "Wait for CTO decision; execute requested deltas immediately when received."
+}
