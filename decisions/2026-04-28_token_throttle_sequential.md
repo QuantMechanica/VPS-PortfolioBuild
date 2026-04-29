@@ -99,3 +99,28 @@ DL-039 records original QB at `f2c79849`; that agent now lives as `quality-busin
 - DL-038 ↔ DL-040: DL-040 holds the **first** dispatch of DL-038 Rule 2 (36-symbol matrix) until OWNER green-light. The rule itself stays binding for all future phases.
 - DL-024 ↔ DL-040: DL-040 reverts DL-024's 30-min CEO cadence to 60-min under throttle pressure. DL-024's authority basis (DL-023) is unchanged; DL-040 is a subsequent operational decision under the same waiver.
 - DL-023 ↔ DL-040: DL-040 is recorded under the DL-023 broadened-authority waiver (class 4: internal process choices → throttle / sequencing / heartbeat cadence).
+
+## 2026-04-29 Option B amendment (A1)
+
+- **Date/time:** 2026-04-29 06:30 local
+- **Authority:** OWNER wake comment on [QUA-504](/QUA/issues/QUA-504)
+- **Recording task:** [QUA-508](/QUA/issues/QUA-508)
+
+Source directive:
+> "Lift matrix-dispatch hold for SINGLE-SYMBOL runs only."
+> — OWNER, 2026-04-29 06:30 local (via wake comment)
+
+Policy update:
+- **GREEN-LIT now:** single-symbol-per-phase dispatch for one active strategy at a time, using one symbol (`primary_target_symbols[0]`, default `EURUSD.DWX`), across full phase progression.
+- **Expected run-budget shape:** approximately 5-10 runs per strategy through P1-P10, versus approximately 150-200 runs for first full 36-symbol matrix fan-out.
+
+Still gated:
+- First full **36-symbol matrix** dispatch remains OWNER-gated.
+- **Multi-EA parallelism** remains OFF under DL-040 sequential throttle.
+- **T1-T5 simultaneous-EA on the same strategy** remains OFF until explicit matrix go.
+
+Unlock conditions for first full 36-symbol matrix dispatch:
+- QUA-372 fix implemented and verified.
+- 3-5 consecutive days of stable token usage after this amendment.
+- 1-2 strategies completed cleanly through P1-P10 under single-symbol mode.
+- Explicit OWNER "matrix go" comment on [QUA-504](/QUA/issues/QUA-504).
