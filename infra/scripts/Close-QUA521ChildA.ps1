@@ -71,17 +71,19 @@ $comment = @"
 Runtime health scan task shipped and verified.
 
 Commits:
-- 1b272551ee9ace1b5fca6e0afb12c250a8525762
-- 5327e1e99d5ac7ff0dbb42a614616a8358d159c3
-- 34cc18884f2f670c117a989286a4f8e1c3fad1ab
+- 8af831a9
+- 9eab9d78
+- 08726513
+- 8352a945
+- 74df4615
 
 Proof artifact:
 - docs/ops/QUA-521_RUNTIME_HEALTH_TASK_PROOF_2026-04-29.md
 
 Scheduler:
-- QM_RuntimeHealthScan_15min active every 15 minutes
-- action runs without -DryRun
-- output writes to C:\QM\logs\infra\health\runtime_health_scan_latest.json
+- Install path verified with -PreviewOnly and SYSTEM-compatible machine-env postgres mode.
+- Pending live registration on target host after CTO/Platform Ops sets machine PAPERCLIP_POSTGRES_URL.
+- output path: C:\QM\logs\infra\health\runtime_health_scan_latest.json
 "@
 
 $payload = @{ status = 'in_review'; comment = $comment; resume = $false }
