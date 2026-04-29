@@ -1,0 +1,6 @@
+[
+  {"id":"r1","agentId":"a1","createdAt":"2026-04-29T10:00:00Z","usage":{"totalTokens":1000}},
+  {"id":"r2","agentId":"a1","createdAt":"2026-04-28T10:00:00Z","usage":{"totalTokens":3000}},
+  {"id":"r3","agentId":"a2","createdAt":"2026-04-27T10:00:00Z","usage":{"total_tokens":7000}},
+  {"id":"r4","agentId":"a2","createdAt":"2026-04-22T10:00:00Z","promptTokens":500,"completionTokens":500}
+]
