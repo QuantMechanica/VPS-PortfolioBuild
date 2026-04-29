@@ -1,6 +1,7 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_1002 Davey Euro Night (SRC01_S01) baseline build"
+// Strategy Card: SRC01_S01 (davey-eu-night), CEO G0 APPROVED 2026-04-27.
 
 #include <QM/QM_Common.mqh>
 #include <Trade/Trade.mqh>
@@ -15,7 +16,7 @@ input double RISK_FIXED         = 1000.0;
 input double PORTFOLIO_WEIGHT   = 1.0;
 
 input group "News"
-input QM_NewsMode news_mode     = QM_NEWS_OFF;
+input QM_NewsMode news_mode     = QM_NEWS_PAUSE;
 
 input group "Friday Close"
 input bool   friday_close_enabled     = true;
@@ -251,36 +252,47 @@ void RefreshOpenPositionTargets()
      }
   }
 
-void EvaluateEntryOnNewBar(const datetime now_time)
+bool Strategy_EntrySignal(const datetime now_time, QM_EntryRequest &req)
   {
+   ZeroMemory(req);
+   req.symbol_slot = magic_slot_offset;
+   req.reason = "davey_eu_night_entry";
+   req.expiration_seconds = PeriodSeconds(_Period);
+
+   // Card §4/§6: entries are only evaluated inside FirstTime..LastTime.
    const int hhmm = HHMM(now_time);
    if(!InWindowHHMM(hhmm, FirstTime, LastTime))
-      return;
+      return false;
 
    MqlDateTime dt;
    TimeToStruct(now_time, dt);
+   // Card §12 (Framework Alignment): block Friday evening entries to preserve Friday close semantics.
    if(block_friday_entry && dt.day_of_week == 5)
-      return;
+      return false;
 
+   // Card §6: one trade per day (EntriesToday(Date) < 1 equivalent).
    const int day_key = DayKey(now_time);
    if(day_key == g_last_entry_day_key)
-      return;
+      return false;
 
    const int magic = FrameworkMagic();
    if(magic <= 0)
-      return;
+      return false;
+   // Card §6/§7: flat-only entry, no pyramiding/scaling while orders/positions exist.
    if(HasOpenPositionForMagic(magic) || HasPendingOrderForMagic(magic))
-      return;
+      return false;
 
    const double avg_high = IndicatorValue(g_h_ma_high, 1);
    const double avg_low  = IndicatorValue(g_h_ma_low, 1);
    const double atr_val  = IndicatorValue(g_h_atr, 1);
    const double close_1  = iClose(_Symbol, _Period, 1);
    if(avg_high <= 0.0 || avg_low <= 0.0 || atr_val <= 0.0 || close_1 <= 0.0)
-      return;
+      return false;
 
+   // Card §4: LongPrice/ShortPrice from average high/low +/- ATRmult*ATR(NATR).
    const double long_price  = avg_high - ATRmult * atr_val;
    const double short_price = avg_low + ATRmult * atr_val;
+   // Card §4: place only the side closer to current close.
    const bool use_long = (MathAbs(close_1 - long_price) <= MathAbs(close_1 - short_price));
 
    const double stop_delta = StoploPriceDelta();
@@ -288,13 +300,9 @@ void EvaluateEntryOnNewBar(const datetime now_time)
    if(tr_prev <= 0.0)
       tr_prev = atr_val;
    if(stop_delta <= 0.0 || tr_prev <= 0.0)
-      return;
+      return false;
 
-   QM_EntryRequest req;
-   ZeroMemory(req);
-   req.symbol_slot = magic_slot_offset;
-   req.reason = "davey_eu_night_entry";
-   req.expiration_seconds = PeriodSeconds(_Period);
+   // Card §5: fixed stop + TRmult*TrueRange[1]-style target.
    if(use_long)
      {
       req.type  = QM_BUY_LIMIT;
@@ -309,11 +317,33 @@ void EvaluateEntryOnNewBar(const datetime now_time)
       req.sl    = NormalizeDouble(req.price + stop_delta, _Digits);
       req.tp    = NormalizeDouble(req.price - TRmult * tr_prev, _Digits);
      }
+   return true;
+  }
+
+void Strategy_ManageOpenPosition()
+  {
+   // Card §7: no trailing/partial/BE rules; only keep fixed SL/TP mechanics synchronized.
+   RefreshOpenPositionTargets();
+  }
+
+bool Strategy_ExitSignal(const datetime now_time)
+  {
+   // Card §5: time exit via session close flatting.
+   ForceFlatAtSessionClose(now_time);
+   return false;
+  }
+
+void EvaluateEntryOnNewBar(const datetime now_time)
+  {
+   QM_EntryRequest req;
+   if(!Strategy_EntrySignal(now_time, req))
+      return;
 
    ulong ticket = 0;
    const QM_EntryResult result = QM_Entry(req, ticket);
+   // Card §6: update one-trade-per-day latch only after accepted entry order.
    if(result == QM_ENTRY_OK)
-      g_last_entry_day_key = day_key;
+      g_last_entry_day_key = DayKey(now_time);
   }
 
 bool IsNewBar()
@@ -374,11 +404,12 @@ void OnTick()
    if(now_time <= 0)
       return;
 
-   ForceFlatAtSessionClose(now_time);
+   if(Strategy_ExitSignal(now_time))
+      return;
    if(!IsNewBar())
       return;
 
-   RefreshOpenPositionTargets();
+   Strategy_ManageOpenPosition();
    EvaluateEntryOnNewBar(now_time);
   }
 
