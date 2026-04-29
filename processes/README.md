@@ -16,16 +16,16 @@ Each process file follows the same structure:
 |---|---------|------|---------------|-----------------|
 | 1 | EA Life-Cycle (L0 → L10) | [01-ea-lifecycle.md](01-ea-lifecycle.md) | [CTO](/QUA/agents/cto) | **V5-refreshed 2026-04-27** (label collision resolved; lifecycle = L0..L10, pipeline = G0..P10) |
 | 2 | ZT / NO_REPORT Recovery | [02-zt-recovery.md](02-zt-recovery.md) | TBD (V5) | Needs full V5 rewrite — see QUA-213 audit |
-| 3 | V-Portfolio Deploy | [03-v-portfolio-deploy.md](03-v-portfolio-deploy.md) | [Pipeline-Operator](/QUA/agents/pipeline-operator) | Needs role-rename pass |
-| 4 | Incident Response | [04-incident-response.md](04-incident-response.md) | [DevOps](/QUA/agents/devops) (interim until Obs-SRE Wave 3) | Needs role-rename pass |
+| 3 | V-Portfolio Deploy | [03-v-portfolio-deploy.md](03-v-portfolio-deploy.md) | [Pipeline-Operator](/QUA/agents/pipeline-operator) | **V5 role-rename done 2026-04-29** (QUA-213 child — `/QUAA/` → `/QUA/`, Wave annotations) |
+| 4 | Incident Response | [04-incident-response.md](04-incident-response.md) | [DevOps](/QUA/agents/devops) (interim until Obs-SRE Wave 3) | **V5 role-rename done 2026-04-29** (QUA-213 child — `/QUAA/` → `/QUA/`, Wave annotations) |
 | 5 | Dashboard Refresh Cadence | [05-dashboard-refresh.md](05-dashboard-refresh.md) | TBD (V5) | Needs full V5 rewrite — V4 mechanism (Strategy-Analyst routine + processes.html) is obsolete |
-| 6 | Issue Triage | [06-issue-triage.md](06-issue-triage.md) | [CEO](/QUA/agents/ceo) | Needs role-rename pass |
-| 7 | Cross-Strand CEO ↔ CTO Dialectic | [07-ceo-cto-dialectic.md](07-ceo-cto-dialectic.md) | [CEO](/QUA/agents/ceo) + [CTO](/QUA/agents/cto) | Needs role-rename pass |
+| 6 | Issue Triage | [06-issue-triage.md](06-issue-triage.md) | [CEO](/QUA/agents/ceo) | **V5 role-rename done 2026-04-29** (QUA-213 child — `/QUAA/` → `/QUA/`, Strategy-Analyst V4-folded, project-routing note added per DL-031) |
+| 7 | Cross-Strand CEO ↔ CTO Dialectic | [07-ceo-cto-dialectic.md](07-ceo-cto-dialectic.md) | [CEO](/QUA/agents/ceo) + [CTO](/QUA/agents/cto) | **V5 role-rename done 2026-04-29** (QUA-213 child — `/QUAA/` → `/QUA/`, V4 issue refs marked historical) |
 | 8 | Daily Operating Rhythm | [08-daily-operating-rhythm.md](08-daily-operating-rhythm.md) | [Documentation-KM](/QUA/agents/documentation-km) | Needs full V5 rewrite — V4 13-agent rhythm is obsolete |
-| 9 | Disaster Recovery | [09-disaster-recovery.md](09-disaster-recovery.md) | [DevOps](/QUA/agents/devops) | Needs role-rename pass |
-| 10 | Agent Re-scope | [10-agent-rescope.md](10-agent-rescope.md) | [CEO](/QUA/agents/ceo) | Needs role-rename pass |
-| 11 | Disk-Management and Drive-Sync-Maintenance | [11-disk-and-sync.md](11-disk-and-sync.md) | [DevOps](/QUA/agents/devops) (interim until Obs-SRE Wave 3) | Needs role-rename pass |
-| 12 | Board Escalation Contract | [12-board-escalation.md](12-board-escalation.md) | [Documentation-KM](/QUA/agents/documentation-km) | Needs role-rename pass |
+| 9 | Disaster Recovery | [09-disaster-recovery.md](09-disaster-recovery.md) | [DevOps](/QUA/agents/devops) | **V5 role-rename done 2026-04-29** (QUA-213 child — `/QUAA/` → `/QUA/`, Obs-SRE Wave 3 annotation) |
+| 10 | Agent Re-scope | [10-agent-rescope.md](10-agent-rescope.md) | [CEO](/QUA/agents/ceo) | **V5 role-rename done 2026-04-29** (QUA-213 child — `/QUAA/` → `/QUA/`, V4 prompt path flagged obsolete, LiveOps Wave 4) |
+| 11 | Disk-Management and Drive-Sync-Maintenance | [11-disk-and-sync.md](11-disk-and-sync.md) | [DevOps](/QUA/agents/devops) (interim until Obs-SRE Wave 3) | **V5 role-rename done 2026-04-29** (QUA-213 child — `/QUAA/` → `/QUA/`, Obs-SRE Wave 3 annotation) |
+| 12 | Board Escalation Contract | [12-board-escalation.md](12-board-escalation.md) | [Documentation-KM](/QUA/agents/documentation-km) | **V5 role-rename done 2026-04-29** (QUA-213 child — `/QUAA/` → `/QUA/`, LiveOps Wave 4, class 4 prose unchanged pending 02-zt-recovery rewrite) |
 | 13 | Strategy Research Workflow | [13-strategy-research.md](13-strategy-research.md) | [Documentation-KM](/QUA/agents/documentation-km) | **V5-authored 2026-04-27** (QUA-242 — codifies OWNER directive on source/strategy/version tree) |
 | 14 | EA Enhancement Loop (`_v2` versioning) | [14-ea-enhancement-loop.md](14-ea-enhancement-loop.md) | [Documentation-KM](/QUA/agents/documentation-km) | **V5-authored 2026-04-27** (QUA-245 — closed trigger list, fresh P1→P8 on `_v<n>`, single canonical card) |
 | 15 | Pipeline-Op Load Balancing (T1-T5) | [15-pipeline-op-load-balancing.md](15-pipeline-op-load-balancing.md) | [Pipeline-Operator](/QUA/agents/pipeline-operator) | **V5-authored 2026-04-27** (QUA-246 — least-loaded round-robin + symbol-affinity, `(ea_id, version, symbol, phase, sub_gate_config)` de-dup registry, queue mechanics, post-restart gate); **2026-04-28 P0 update** (QUA-307 — 3-cap concurrency added) |
