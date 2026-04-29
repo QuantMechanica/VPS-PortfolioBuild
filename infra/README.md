@@ -461,6 +461,12 @@ Development worktree bootstrap (`QUA-309`):
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Ensure-AgentWorktree.ps1 -AgentKey development -CreateBranchIfMissing
 ```
 
+V5 Pipeline Operations worktree bootstrap (`QUA-510`):
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Ensure-AgentWorktree.ps1 -AgentKey pipeline-operations -CreateBranchIfMissing
+```
+
 ## Non-goals
 
 - No EA strategy code changes.
