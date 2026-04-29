@@ -2,6 +2,7 @@
 
 ## Recently added
 
+- 2026-04-29 — [`processes/17-agent-runtime-health.md`](17-agent-runtime-health.md) (CEO detection + first-line; Documentation-KM post-incident codification) — covers hot-poll loops, stuck Codex/Claude sessions, bottleneck agents (≥2 P0 + low run rate), token-budget pressure, recursive self-wake. Authored by Board Advisor 2026-04-29 after Development recursive-wake incident; companion lesson `lessons-learned/2026-04-29_development_recursive_wake.md`. New escalation Class 6 added to [`12-board-escalation.md`](12-board-escalation.md). New "Paperclip platform semantics" knowledge-base section added below.
 - 2026-04-28 — [`processes/16-backtest-execution-discipline.md`](16-backtest-execution-discipline.md) (Documentation-KM authoring; Pipeline-Operator owns Rules 1-4, 7; DevOps owns Rule 5 + co-owns Rule 7; Research owns Rule 6; CTO owns Rule 5 review-pass) — codifies the seven OWNER 2026-04-28 binding backtest rules (`.DWX`-only / 36-symbol / 5-MT5-parallel / fail-fast-next / EA-on-all-terminals / Drive-resource Tier 1.5 / fixed-risk set file). Binding source: [QUA-400](/QUA/issues/QUA-400) → [DL-038](../decisions/2026-04-28_seven_backtest_rules.md). Authored under [QUA-418](/QUA/issues/QUA-418).
 
 ## CEO Authority Boundaries
@@ -131,3 +132,46 @@ A marketplace skill is **registered in Paperclip** only after:
 3. (For sensitive sources) OWNER has accepted a `request_confirmation` interaction
 
 Until then, the entry sits in `INDEX.md` with `commit_pin: TBD` and is not visible to agents.
+
+## Paperclip platform semantics
+
+Knowledge-base entries for non-obvious Paperclip orchestrator behavior, captured from incidents. Update when a new platform quirk is observed.
+
+### Heartbeat / cooldown / wake
+
+| Field | What it does | What it does NOT do |
+|---|---|---|
+| `runtime_config.heartbeat.enabled` | Gates the **timer** heartbeat. `false` = no scheduled wake. | Does NOT prevent `wakeOnDemand` events from firing the agent. |
+| `runtime_config.heartbeat.intervalSec` | Period of the timer heartbeat (when `enabled=true`). | Does NOT throttle event-driven wakes. |
+| `runtime_config.heartbeat.cooldownSec` | Minimum gap between **timer** heartbeat fires. | Does NOT coalesce `wakeOnDemand` events. **Repeated wake-on-demand events fire the agent regardless of cooldown.** Verified 2026-04-29 against Development hot-poll incident. |
+| `runtime_config.heartbeat.wakeOnDemand` | When `true`, agent wakes on issue-assignment, comment-event, or explicit `/wakeup` API call. | None of the cooldown / interval fields throttle these events. The only way to fully block event-driven wake is `wakeOnDemand: false` OR full agent `/pause`. |
+| `runtime_config.heartbeat.maxConcurrentRuns` | Caps the number of simultaneous in-flight runs for the agent. | Does NOT prevent serial repeated runs from the same wake-event source. |
+
+**Implication for hot-poll mitigation** (per `lessons-learned/2026-04-29_development_recursive_wake.md`):
+
+- If an agent is recursively self-waking via its own comment posts, **lowering `cooldownSec` will not help**.
+- Effective controls: `wakeOnDemand: false` (kills all event wake), `/pause` (full stop), or fix the recursive-wake source (comment-dedup + self-author filter).
+
+### Agent lifecycle
+
+| Action | API | Effect | Reversibility |
+|---|---|---|---|
+| `/pause` | `POST /api/agents/<id>/pause` | Cancels active runs, blocks new wakes (timer + on-demand). | `/resume` restores to prior runtime config. |
+| `/resume` | `POST /api/agents/<id>/resume` | Lifts the pause. Agent resumes normal heartbeat behavior. | — |
+| `/wakeup` | `POST /api/agents/<id>/wakeup` body `{source: 'on_demand'|'timer'|'assignment'|'automation', reason: '...'}` | Forces an immediate run if not paused and no active run for that agent. | One-shot. |
+| Terminate | `PATCH /api/agents/<id>` with `status='terminated'` (or via `paperclip-terminate-agent` skill) | Marks agent retired. Heartbeats stop. History preserved (foreign-key constraints prevent hard-delete). | Re-hire creates a new agent with a new ID. |
+
+### Confirmation interactions
+
+- `kind='request_confirmation'` requires **board-only** auth to accept/reject (`assertBoard(req)` in routes). CEO cannot accept on OWNER's behalf via API. Board Advisor (`local-board` user) can.
+- `kind='suggest_tasks'` accept can specify `selectedClientKeys: [...]` to pick which sub-tasks to spawn. Reject takes optional `reason: '...'`.
+- Resolved interactions are immutable. To change a decision after acceptance, open a new interaction or DL-NNN.
+
+### Issue ↔ Project routing
+
+- Every new issue created from this point forward should carry `projectId` per [DL-031](../decisions/DL-031_projects_formalization_and_routing_convention.md).
+- Project IDs in the registry: V5 Framework Implementation `71b6d994`, V5 Pipeline Operations `ac8daa03`, V5 Strategy Research `b2adcc7f`, T6 Live Operations `2603d13a`, Portfolio Factory V5 (umbrella) `26cdd201`.
+
+### PC1-00 worktree-isolation pattern
+
+Per `lessons-learned/2026-04-27_pc1-00_live_incident_qua-167.md`: any agent touching `framework/`, `infra/`, `processes/`, or other concurrent-write paths uses a per-agent worktree under `C:\QM\worktrees\<agent>\`. Board Advisor commits docs directly to `main` when no agent contention is expected (single-author edits).

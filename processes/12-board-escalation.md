@@ -61,6 +61,14 @@ Two channels exist. Use the one named in the per-class section below; do not pic
 - **Response SLA** — board at own cadence; no auto-timeout. Agents do not deploy on silence.
 - **Follow-up contract** — on approval, [Pipeline-Operator](/QUAA/agents/pipeline-operator) hands off to [LiveOps](/QUAA/agents/liveops) / [DevOps](/QUAA/agents/devops) for VPS file-copy per [03-v-portfolio-deploy.md](03-v-portfolio-deploy.md); on reject, CEO records the objection verbatim on the deploy-gate issue and re-queues the gap for the next cycle.
 
+### 6. Agent runtime pathology (added 2026-04-29)
+
+- **Trigger** — Per [17-agent-runtime-health.md](17-agent-runtime-health.md) § Trigger, the runtime detector fires twice within 24h on the same agent without CEO autonomous resolution. Classes covered: hot-poll loops, stuck Codex/Claude session, bottleneck agent (≥2 P0 in_progress AND <5 runs/4h), token-budget pressure (>90% provider cap forecast), recursive self-wake.
+- **Channel** — **Direct Fabian ping** for first occurrence of any new pattern class; **Paperclip `request_board_approval`** for repeated pattern classes already seen and codified.
+- **Required payload** — agent name + ID, trigger class, evidence (run-rate count, stuck-time, P0 issue list, cost forecast, or recursive-comment fingerprint), Board Advisor / CEO actions already taken (PATCH heartbeat, /pause, /resume, terminate-rehire), proposed remediation, and the specific decision OWNER is asked to confirm (continue mitigation / authorize re-hire / authorize budget top-up / accept role pause).
+- **Response SLA** — same business day for first occurrence; ≤ 4h for repeat occurrences (the pattern is now known and the cost of inaction is clearer).
+- **Follow-up contract** — Documentation-KM authors `lessons-learned/<date>_<agent>_<pattern>.md` per [17-agent-runtime-health.md](17-agent-runtime-health.md) § Exits. CEO updates the affected agent's BASIS prompt if the pattern is filterable at prompt level (e.g. self-author check). Board Advisor reverts any emergency runtime overrides (heartbeat throttle, pause, etc.) once stability is proven.
+
 ## Steps (flow overview)
 
 ```mermaid
@@ -71,11 +79,13 @@ flowchart TD
     B -- CEO-triage dispute --> S2[request_board_approval on triaged issue]
     B -- ZT >5 business days --> S3[request_board_approval on dispatch parent<br/>+ direct ping if high-value]
     B -- Deploy / launch --> S4[Direct Fabian ping with decision packet]
+    B -- Agent runtime pathology --> S5[Direct ping if first-of-class<br/>request_board_approval if repeat]
     S0 --> R[Board responds]
     S1 --> R
     S2 --> R
     S3 --> R
     S4 --> R
+    S5 --> R
     R --> F[Owner applies follow-up contract<br/>per class section]
     F --> D[Documentation-KM captures decision trail]
 ```
@@ -95,6 +105,7 @@ flowchart TD
 | 3. CEO-triage dispute | `request_board_approval` | same business day |
 | 4. ZT > 5 business days | `request_board_approval` (+ ping for high-value) | ≤ 2 business days |
 | 5. Deploy / launch | Direct ping | Board cadence (no auto-timeout) |
+| 6. Agent runtime pathology | Direct ping (first-of-class) / `request_board_approval` (repeat) | Same business day (first) / ≤ 4 h (repeat) |
 
 ## References
 
