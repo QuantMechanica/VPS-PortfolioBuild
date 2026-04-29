@@ -1,10 +1,12 @@
 ---
 title: Board Escalation Contract
 owner: Documentation-KM
-last-updated: 2026-04-19
+last-updated: 2026-04-29
 ---
 
 # 12 — Board Escalation Contract
+
+> **V5 audit (2026-04-29, [QUA-213](/QUA/issues/QUA-213) → consolidated role-rename child).** Namespace `/QUAA/` → `/QUA/`. LiveOps annotated as Wave 4 deferred (class 5 follow-up contract). V4 issue references (QUAA-189, QUAA-177) kept as historical examples. **Class 4 prose left unchanged** because it cross-references `02-zt-recovery.md` (full-rewrite scope under sister child of QUA-213) — class 4 will be re-synced when the ZT-recovery rewrite lands. Class 6 (agent runtime pathology) was added 2026-04-29 in commit `2d37da30` — see [DL-042](../decisions/2026-04-29_runtime_health_doc_propagation.md).
 
 Canonical index of every path that puts the human board (Fabian) on the hook. Consolidates rules already living in processes 02/04/06/07 and the root `CLAUDE.md` / `RECOVERY.md` — **this doc does not invent new escalation rules**, it names the contract so agents don't have to re-derive it from five source files.
 
@@ -27,7 +29,7 @@ Two channels exist. Use the one named in the per-class section below; do not pic
 - **Channel** — **Direct Fabian ping.** An ALERT file (`Company/Observability/ALERT_*.md`) is written first; Obs-SRE then signals out-of-band. Paperclip approval is skipped — the board is being *informed*, not asked.
 - **Required payload** — severity tag, affected surface (terminal IDs / EAs / infra), current state snapshot (`last_check_state.json` excerpt or equivalent), automated mitigation already in-flight, specific decision the board is asked to confirm (halt / resume / roll back).
 - **Response SLA** — immediate initial response; ≤ 1 h mitigation target per [04-incident-response.md](04-incident-response.md) § SLA (Sev-0 row).
-- **Follow-up contract** — Obs-SRE owns the post-mortem; [Documentation-KM](/QUAA/agents/documentation-km) archives it per [04-incident-response.md](04-incident-response.md) § Exits.
+- **Follow-up contract** — Obs-SRE owns the post-mortem; [Documentation-KM](/QUA/agents/documentation-km) archives it per [04-incident-response.md](04-incident-response.md) § Exits.
 
 ### 2. CEO ↔ CTO second-round disagreement
 
@@ -35,7 +37,7 @@ Two channels exist. Use the one named in the per-class section below; do not pic
 - **Channel** — **Paperclip `request_board_approval`** on the disputed issue.
 - **Required payload** — both CEO and CTO position comments already on the issue (no hidden state), the specific trade-off being arbitrated (named in one sentence), the two options the board is choosing between, and the downstream executor that will be unblocked by the decision.
 - **Response SLA** — board decision ≤ 3 business days from approval request (matches the auto-escalate clock in [07-ceo-cto-dialectic.md](07-ceo-cto-dialectic.md) § SLA).
-- **Follow-up contract** — CEO records the board verdict as an issue comment, reassigns the issue to the executor named in the payload; [Documentation-KM](/QUAA/agents/documentation-km) captures the decision per [07-ceo-cto-dialectic.md](07-ceo-cto-dialectic.md) § Steps (node O).
+- **Follow-up contract** — CEO records the board verdict as an issue comment, reassigns the issue to the executor named in the payload; [Documentation-KM](/QUA/agents/documentation-km) captures the decision per [07-ceo-cto-dialectic.md](07-ceo-cto-dialectic.md) § Steps (node O).
 
 ### 3. CEO-dispute on triaged issue
 
@@ -51,7 +53,7 @@ Two channels exist. Use the one named in the per-class section below; do not pic
 - **Channel** — **Paperclip `request_board_approval`** on the ZT Recovery dispatch parent issue; simultaneous direct Fabian ping if the EA is in V5 / V6 sleeve or top-20 PF (the high-value gate).
 - **Required payload** — dispatch parent ID, linked `ZT_RootCause` and any partial `v1_vs_v2` artefacts, specific blocker identified (Research / R-and-D / Development / Pipeline-Operator), the board's decision options (extend budget / force kill / down-prioritise the EA), and a one-line justification for any budget extension requested.
 - **Response SLA** — board decision ≤ 2 business days from escalation (the 5-day budget already represents the soft limit; the board is the hard limit).
-- **Follow-up contract** — CEO updates the dispatch parent with the verdict and either reassigns the unblocking task or closes the parent per the chosen outcome. If killed, [Documentation-KM](/QUAA/agents/documentation-km) archives learnings per [02-zt-recovery.md](02-zt-recovery.md) § Exits (Kill).
+- **Follow-up contract** — CEO updates the dispatch parent with the verdict and either reassigns the unblocking task or closes the parent per the chosen outcome. If killed, [Documentation-KM](/QUA/agents/documentation-km) archives learnings per [02-zt-recovery.md](02-zt-recovery.md) § Exits (Kill).
 
 ### 5. Deploy / launch decision
 
@@ -59,7 +61,7 @@ Two channels exist. Use the one named in the per-class section below; do not pic
 - **Channel** — **Direct Fabian ping.** Per `RECOVERY.md` the board holds sole authority here; Paperclip-CEO prepares the decision packet but does **not** use `request_board_approval` as a substitute for the human conversation.
 - **Required payload** — gate-readiness evidence (P7 stats, P9 portfolio construction output, P9b checklist), V-portfolio deploy preconditions per [03-v-portfolio-deploy.md](03-v-portfolio-deploy.md), risk cap reminder (≤ 0.50 % per `CLAUDE.md` anchors), and the explicit ask ("deploy V5 sleeve of 5 EAs to DarwinexZero Demo").
 - **Response SLA** — board at own cadence; no auto-timeout. Agents do not deploy on silence.
-- **Follow-up contract** — on approval, [Pipeline-Operator](/QUAA/agents/pipeline-operator) hands off to [LiveOps](/QUAA/agents/liveops) / [DevOps](/QUAA/agents/devops) for VPS file-copy per [03-v-portfolio-deploy.md](03-v-portfolio-deploy.md); on reject, CEO records the objection verbatim on the deploy-gate issue and re-queues the gap for the next cycle.
+- **Follow-up contract** — on approval, [Pipeline-Operator](/QUA/agents/pipeline-operator) hands off to [LiveOps](/QUA/agents/liveops) *(Wave 4 deferred — interim: OWNER + [DevOps](/QUA/agents/devops) manual)* / [DevOps](/QUA/agents/devops) for VPS file-copy per [03-v-portfolio-deploy.md](03-v-portfolio-deploy.md); on reject, CEO records the objection verbatim on the deploy-gate issue and re-queues the gap for the next cycle.
 
 ### 6. Agent runtime pathology (added 2026-04-29)
 
@@ -117,4 +119,4 @@ flowchart TD
 - [11-disk-and-sync.md](11-disk-and-sync.md) — repeat-incident structural escalation
 - `CLAUDE.md` §13 — CEO is final decision authority for PASS/FAIL/REJECT and priorities
 - `RECOVERY.md` — board (Fabian) is sole authority for deploy/launch; Paperclip-CEO prepares the packet
-- Parent issue: [QUAA-189](/QUAA/issues/QUAA-189); grandparent audit: [QUAA-177](/QUAA/issues/QUAA-177)
+- Parent issue: [QUAA-189](/QUAA/issues/QUAA-189); grandparent audit: [QUAA-177](/QUAA/issues/QUAA-177) — *both V4 historical examples; V5 escalation governance lives under [QUA-213](/QUA/issues/QUA-213) and successors*

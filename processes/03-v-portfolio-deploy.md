@@ -1,10 +1,12 @@
 ---
 title: V-Portfolio Deploy Flow
 owner: Pipeline-Operator
-last-updated: 2026-04-19
+last-updated: 2026-04-29
 ---
 
 # 03 — V-Portfolio Deploy Flow
+
+> **V5 audit (2026-04-29, [QUA-213](/QUA/issues/QUA-213) → consolidated role-rename child).** Namespace `/QUAA/` → `/QUA/`. Non-V5 role mentions annotated inline with their V5 wave / interim owner per [`decisions/2026-04-27_v5_org_proposal.md`](../decisions/2026-04-27_v5_org_proposal.md) § 6 and [`processes/process_registry.md`](process_registry.md) § "Active agents". V4 issue references kept as historical examples (no auto-rewrite). Flow content NOT changed — substantive rewrites tracked under sister children of QUA-213.
 
 Promotes a ZT-validated candidate into the virtual portfolio (V-Portfolio) and onto the live VPS trading environment.
 
@@ -14,12 +16,12 @@ Promotes a ZT-validated candidate into the virtual portfolio (V-Portfolio) and o
 
 ## Actors
 
-- [Pipeline-Operator](/QUAA/agents/pipeline-operator) — primary deploy owner
-- [Quality-Business](/QUAA/agents/quality-business) — FTMO / compliance gate
-- [CTO](/QUAA/agents/cto) — V-Portfolio entry approval
-- [DevOps](/QUAA/agents/devops) — VPS provisioning + deploy automation
-- [Observability-SRE](/QUAA/agents/observability-sre) — monitoring hook-up
-- [Controlling](/QUAA/agents/controlling) — sizing + allocation
+- [Pipeline-Operator](/QUA/agents/pipeline-operator) — primary deploy owner
+- [Quality-Business](/QUA/agents/quality-business) — FTMO / compliance gate (Wave 2 LIVE per [DL-039](../decisions/2026-04-28_quality_business_hire.md))
+- [CTO](/QUA/agents/cto) — V-Portfolio entry approval
+- [DevOps](/QUA/agents/devops) — VPS provisioning + deploy automation
+- [Observability-SRE](/QUA/agents/observability-sre) — monitoring hook-up *(Wave 3 deferred — interim: [DevOps](/QUA/agents/devops))*
+- [Controlling](/QUA/agents/controlling) — sizing + allocation *(Wave 3 deferred — interim: [CEO](/QUA/agents/ceo))*
 
 ## Steps
 

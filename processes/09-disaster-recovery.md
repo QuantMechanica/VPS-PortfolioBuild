@@ -1,10 +1,12 @@
 ---
 title: Disaster Recovery
 owner: DevOps
-last-updated: 2026-04-19
+last-updated: 2026-04-29
 ---
 
 # 09 — Disaster Recovery
+
+> **V5 audit (2026-04-29, [QUA-213](/QUA/issues/QUA-213) → consolidated role-rename child).** Namespace `/QUAA/` → `/QUA/`. Observability-SRE annotated as Wave 3 deferred (interim: DevOps absorbs detection role until hire). V4 issue references kept as historical examples (no auto-rewrite). Flow content NOT changed.
 
 How QuantMechanica detects, contains, and recovers from infrastructure-level failures that exceed the scope of normal incident response.
 
@@ -24,10 +26,10 @@ Any of the following events that cannot auto-heal within one Obs-SRE heartbeat:
 
 | Role | Responsibility |
 |------|---------------|
-| [Observability-SRE](/QUAA/agents/observability-sre) | Detection via `ALERT_<ts>_DR_*.md`; severity classification; liveness re-probing during and after restore |
-| [DevOps](/QUAA/agents/devops) | **Primary owner** — infra restore (VPS console, Tailscale, Paperclip daemon, disk cleanup, Drive-sync repair) |
-| [Pipeline-Operator](/QUAA/agents/pipeline-operator) | Halts active pipeline runs on DR trigger; resumes only after DevOps + Obs-SRE sign-off |
-| [CEO](/QUAA/agents/ceo) | Halt/rollback decision on wide-impact failures (Sev-0/Sev-1); cross-agent coordination |
+| [Observability-SRE](/QUA/agents/observability-sre) *(Wave 3 deferred — interim: [DevOps](/QUA/agents/devops))* | Detection via `ALERT_<ts>_DR_*.md`; severity classification; liveness re-probing during and after restore |
+| [DevOps](/QUA/agents/devops) | **Primary owner** — infra restore (VPS console, Tailscale, Paperclip daemon, disk cleanup, Drive-sync repair) |
+| [Pipeline-Operator](/QUA/agents/pipeline-operator) | Halts active pipeline runs on DR trigger; resumes only after DevOps + Obs-SRE sign-off |
+| [CEO](/QUA/agents/ceo) | Halt/rollback decision on wide-impact failures (Sev-0/Sev-1); cross-agent coordination |
 | Human board (Fabian) | **Sev-0: always notified** — final authority for any live-capital halt, VPS restore, or rollback affecting real money |
 
 ## Steps
@@ -73,7 +75,7 @@ flowchart TD
 
 ## Exits
 
-- **Success:** All liveness signals green; Obs-SRE files `ALERT_<ts>_RECOVERED.md`; Pipeline-Operator confirms resume; post-mortem archived by [Documentation-KM](/QUAA/agents/documentation-km).
+- **Success:** All liveness signals green; Obs-SRE files `ALERT_<ts>_RECOVERED.md`; Pipeline-Operator confirms resume; post-mortem archived by [Documentation-KM](/QUA/agents/documentation-km).
 - **Escalation:** Sev-0 always reaches human board before any live-capital halt or rollback. CEO must confirm restore before Pipeline-Operator resumes.
 - **Fallback (Paperclip total failure):** Activate the manual runbook at `RECOVERY.md` — Pipeline-Operator role reverts to this Claude Code session; CEO tasks handled directly via the assistant chat until Paperclip is restored.
 
@@ -96,6 +98,6 @@ flowchart TD
 - Manual runbook (Paperclip-total-failure fallback): `RECOVERY.md` at repo root
 - Incident response (live-trading anomalies): [04-incident-response.md](04-incident-response.md)
 - Alert schema: `Company/Observability/ALERT_<ts>_<type>.md` — fields: `severity`, `target`, `measurement`, `source`, `suggested-owner`, `consequence`, `evidence`, `recommended-action`, `dedupe-policy`
-- Disk-pressure auto-pause policy: `paused_disk_constraint` — see `Company/state/pipeline_v2_orchestrator_state.json` and [QUAA-145](/QUAA/issues/QUAA-145)
+- Disk-pressure auto-pause policy: `paused_disk_constraint` — see `Company/state/pipeline_v2_orchestrator_state.json` and [QUAA-145](/QUAA/issues/QUAA-145) *(V4 historical example)*
 - Delegation model: `CLAUDE.md` rule 15 — cheap-reader/expensive-closer; Obs-SRE is the cheap reader (broad liveness probes), DevOps + CEO are the expensive closers (restore decisions and execution)
 - Git as canonical truth: `CLAUDE.md` rule 16 — during Drive sync loss, git HEAD is the authoritative state for `Company/` artefacts; restore validates SHA-256 against it

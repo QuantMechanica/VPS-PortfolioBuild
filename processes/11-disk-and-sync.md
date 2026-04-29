@@ -1,24 +1,26 @@
 ---
 title: Disk-Management and Drive-Sync-Maintenance
-owner: Observability-SRE
-last-updated: 2026-04-19
+owner: Observability-SRE (Wave 3 deferred — interim: DevOps)
+last-updated: 2026-04-29
 ---
 
 # 11 — Disk-Management and Drive-Sync-Maintenance
+
+> **V5 audit (2026-04-29, [QUA-213](/QUA/issues/QUA-213) → consolidated role-rename child).** Namespace `/QUAA/` → `/QUA/`. Observability-SRE annotated as Wave 3 deferred (interim: [DevOps](/QUA/agents/devops) absorbs disk-tier polling and ALERT emission until hire). V4 issue references (QUAA-142/144/145) kept as historical examples. Flow content NOT changed.
 
 How disk pressure on the local workstation (C: drive) and oversize artefacts on Google Drive are detected, throttled, and cleaned up to keep the pipeline running.
 
 ## Trigger
 
-- [Observability-SRE](/QUAA/agents/observability-sre) heartbeat detects C: free GB falling below a tier threshold
-- [Pipeline-Operator](/QUAA/agents/pipeline-operator) state-writer emits `paused_disk_constraint` in `last_check_state.json` (`t3_disk_pause_policy.active = true`)
-- [DevOps](/QUAA/agents/devops) Drive-sync scan detects a single artefact exceeding 500 MB or a Drive write-delta exceeding 2 GB in 1 h
+- [Observability-SRE](/QUA/agents/observability-sre) *(Wave 3 deferred — interim: [DevOps](/QUA/agents/devops))* heartbeat detects C: free GB falling below a tier threshold
+- [Pipeline-Operator](/QUA/agents/pipeline-operator) state-writer emits `paused_disk_constraint` in `last_check_state.json` (`t3_disk_pause_policy.active = true`)
+- [DevOps](/QUA/agents/devops) Drive-sync scan detects a single artefact exceeding 500 MB or a Drive write-delta exceeding 2 GB in 1 h
 
 ## Actors
 
-- [Observability-SRE](/QUAA/agents/observability-sre) — threshold polling, `ALERT_*.md` emission, escalation decisions, recovery closure and post-mortem
-- [Pipeline-Operator](/QUAA/agents/pipeline-operator) — enforces `paused_disk_constraint` policy on T3; evaluates T2 in-flight kills at warning tier; unpauses T3 when sustained recovery is met
-- [DevOps](/QUAA/agents/devops) — Google Drive sync health; identifies and removes oversize artefacts (smoke test packages, bulk `.htm` report dumps); structural cleanup on repeat incidents
+- [Observability-SRE](/QUA/agents/observability-sre) *(Wave 3 deferred — interim: [DevOps](/QUA/agents/devops))* — threshold polling, `ALERT_*.md` emission, escalation decisions, recovery closure and post-mortem
+- [Pipeline-Operator](/QUA/agents/pipeline-operator) — enforces `paused_disk_constraint` policy on T3; evaluates T2 in-flight kills at warning tier; unpauses T3 when sustained recovery is met
+- [DevOps](/QUA/agents/devops) — Google Drive sync health; identifies and removes oversize artefacts (smoke test packages, bulk `.htm` report dumps); structural cleanup on repeat incidents
 - Human board — final call when disk < 5 GB and automated recovery paths are unavailable
 
 ## Disk Tiers
@@ -82,7 +84,7 @@ Known high-risk artefact classes:
 - **Warning resolved:** C: free recovers above 20 GB. DISK_CRITICAL alert closed. T2/T3 runs resume per normal policy.
 - **Sev-0 resolved:** All terminals restarted, C: free > 20 GB, human board confirms clear. Post-mortem required (see [04-incident-response.md](04-incident-response.md)).
 - **Drive cleanup resolved:** Oversize artefact removed, Drive write-delta normal, cleanup issue closed.
-- **Repeat-incident escalation:** Three or more Sev-1 DISK_CRITICAL alerts in any 24 h window → Obs-SRE opens a structural root-cause issue assigned to [CTO](/QUAA/agents/cto) (pattern: QUAA-142/144/145).
+- **Repeat-incident escalation:** Three or more Sev-1 DISK_CRITICAL alerts in any 24 h window → Obs-SRE opens a structural root-cause issue assigned to [CTO](/QUA/agents/cto) (pattern: QUAA-142/144/145).
 
 ## SLA
 
@@ -99,6 +101,6 @@ Known high-risk artefact classes:
 - `last_check_state.json` (`t3_disk_pause_policy` block) — live T3 pause state, thresholds, eval timestamps
 - `Company/Observability/ALERT_*.md` — historical disk-critical alert record
 - [04-incident-response.md](04-incident-response.md) — severity framework, post-mortem protocol
-- QUAA-142 — `paused_disk_constraint` policy (Pipeline-Operator system-prompt update)
-- QUAA-144 — T3-orphan suppression rule (Obs-SRE)
-- QUAA-145 — State-writer `paused_disk_constraint` field (Development)
+- QUAA-142 — `paused_disk_constraint` policy (Pipeline-Operator system-prompt update) — *V4 historical example*
+- QUAA-144 — T3-orphan suppression rule (Obs-SRE) — *V4 historical example*
+- QUAA-145 — State-writer `paused_disk_constraint` field (Development) — *V4 historical example*

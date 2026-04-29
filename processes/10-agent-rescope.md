@@ -1,10 +1,12 @@
 ---
 title: Agent Re-scope
 owner: CEO
-last-updated: 2026-04-19
+last-updated: 2026-04-29
 ---
 
 # 10 — Agent Re-scope
+
+> **V5 audit (2026-04-29, [QUA-213](/QUA/issues/QUA-213) → consolidated role-rename child).** Namespace `/QUAA/` → `/QUA/`. **V4 prompt path `Company/Agents/<role>/system_prompt.md` is obsolete in V5** — V5 prompts live at `paperclip-prompts/<role>.md` and are OWNER-managed; Doc-KM does NOT edit them (per [`paperclip-prompts/documentation-km.md`](../paperclip-prompts/documentation-km.md) § "DO NOT"). Two-layer hire pattern (BASIS prompt + first-issue brief) per [DL-014](../decisions/REGISTRY.md). LiveOps annotated as Wave 4 deferred. V4 issue references kept as historical examples (no auto-rewrite). Flow content NOT changed — substantive rewrite (V4 path drift, scope_confirmation.md mechanism) tracked under sister children of QUA-213.
 
 How QuantMechanica proposes, reviews, applies, and — if needed — rolls back a change to an agent's scope, system-prompt, adapter, heartbeat cadence, or write-authority.
 
@@ -14,9 +16,9 @@ How QuantMechanica proposes, reviews, applies, and — if needed — rolls back 
 
 Any of the following conditions, raised by CEO or surfaced by an agent to its chain-of-command:
 
-- **Workload imbalance** — one agent has ≥ 3 open tasks while a peer is idle across two consecutive CEO heartbeats (e.g. QUAA-68 CTO-strand rebalancing).
-- **Role drift** — an agent has been doing work outside its documented mandate for > 1 business day and the pattern is expected to recur (e.g. QUAA-70 Research re-scope).
-- **System-prompt defect** — Quality-Tech, Documentation-KM, or the agent itself identifies that the live prompt contradicts `AGENTS.md`, `CLAUDE.md` rules, or the org spec (e.g. QUAA-132 ZT-Recovery edits, QUAA-142 Pipeline-Operator prompt update).
+- **Workload imbalance** — one agent has ≥ 3 open tasks while a peer is idle across two consecutive CEO heartbeats (e.g. QUAA-68 CTO-strand rebalancing — *V4 historical example*).
+- **Role drift** — an agent has been doing work outside its documented mandate for > 1 business day and the pattern is expected to recur (e.g. QUAA-70 Research re-scope — *V4 historical example*).
+- **System-prompt defect** — Quality-Tech, Documentation-KM, or the agent itself identifies that the live prompt contradicts `AGENTS.md`, `CLAUDE.md` rules, or the org spec (e.g. QUAA-132 ZT-Recovery edits, QUAA-142 Pipeline-Operator prompt update — *V4 historical examples*).
 - **Adapter change** — cost, quota, latency, or model-capability reason to move an agent between claude_local / codex_local / other adapters.
 - **Write-authority collision** — two agents claiming authority over the same artefact (must be resolved to exactly one owner per the write-authority matrix).
 - **Heartbeat-cadence mismatch** — observed cadence deviates > 50 % from documented cadence for > 1 day, or a new constraint (quota, disk, cost) requires a durable cadence change.
@@ -25,12 +27,12 @@ Any of the following conditions, raised by CEO or surfaced by an agent to its ch
 
 | Role | Responsibility |
 |------|---------------|
-| [CEO](/QUAA/agents/ceo) | **Primary owner** — proposes the re-scope, opens the QUAA issue, chooses the target state, approves merge, signs rollback if triggered |
-| [Documentation-KM](/QUAA/agents/documentation-km) | Captures the change: updates `Company/Agents/<role>/system_prompt.md`, `AGENTS.md` deltas, write-authority matrix, and the agent row in `RECOVERY.md`; archives superseded prompt to `Archive/` with date stamp |
-| [Quality-Tech](/QUAA/agents/quality-tech) | Reviews the system-prompt delta for contradictions against `CLAUDE.md` hard rules, the org spec, and the model-diversity constraint (QA-Tech adapter MUST differ from Codex-driven roles); files review comment before merge |
+| [CEO](/QUA/agents/ceo) | **Primary owner** — proposes the re-scope, opens the QUAA issue, chooses the target state, approves merge, signs rollback if triggered |
+| [Documentation-KM](/QUA/agents/documentation-km) | Captures the change: updates `Company/Agents/<role>/system_prompt.md`, `AGENTS.md` deltas, write-authority matrix, and the agent row in `RECOVERY.md`; archives superseded prompt to `Archive/` with date stamp |
+| [Quality-Tech](/QUA/agents/quality-tech) | Reviews the system-prompt delta for contradictions against `CLAUDE.md` hard rules, the org spec, and the model-diversity constraint (QA-Tech adapter MUST differ from Codex-driven roles); files review comment before merge |
 | Subject agent | Acknowledges the new scope by writing `Company/Agents/<role>/scope_confirmation.md` on its next heartbeat after the prompt is live — following the [Observability-SRE baseline pattern](../Agents/Observability-SRE/scope_confirmation.md) (mandate quote, targets probed, gaps flagged) |
-| [CTO](/QUAA/agents/cto) | Reviews re-scopes that affect technical agents (CTO-strand) or that change adapter / heartbeat cadence with runtime cost impact |
-| Human board (Fabian) | Notified on any re-scope of CEO itself, any adapter swap touching live-capital agents (LiveOps, Pipeline-Operator in deploy window), or any write-authority change affecting `Company/state/*.json` |
+| [CTO](/QUA/agents/cto) | Reviews re-scopes that affect technical agents (CTO-strand) or that change adapter / heartbeat cadence with runtime cost impact |
+| Human board (OWNER) | Notified on any re-scope of CEO itself, any adapter swap touching live-capital agents (LiveOps — *Wave 4 deferred; interim: OWNER + DevOps manual*, Pipeline-Operator in deploy window), or any write-authority change affecting `Company/state/*.json` |
 
 ## Steps
 
@@ -86,7 +88,7 @@ flowchart TD
 - Org spec (channels, write-authority, model-diversity): `Company/QUANTMECHANICA_ORG_SPEC_v1.2.md`
 - Process-audit mandate for this doc: `Company/Analysis/Process_Audit_20260419.md` + `Company/Analysis/process_audit/ws3_synthesis.md` §Agent Re-scope / System-prompt Update Flow
 - Scope-confirmation templates: [`Company/Agents/Observability-SRE/scope_confirmation.md`](../Agents/Observability-SRE/scope_confirmation.md), [`Company/Agents/Development/scope_confirmation.md`](../Agents/Development/scope_confirmation.md)
-- Prior re-scope instances: QUAA-68 (CTO rebalancing), QUAA-70 (Research), QUAA-132 (ZT-Recovery), QUAA-142 (Pipeline-Operator)
+- Prior re-scope instances: QUAA-68 (CTO rebalancing), QUAA-70 (Research), QUAA-132 (ZT-Recovery), QUAA-142 (Pipeline-Operator) — *all V4 historical examples; V5 issue tree is independent*
 - Creating a new agent (out of scope here): `paperclip-create-agent` skill
 - Delegation model: `CLAUDE.md` rule 15 (cheap-reader / expensive-closer) — Documentation-KM is the cheap reader (captures + archives), CEO + Quality-Tech + subject agent are the expensive closers (decide, review, acknowledge)
 - Git as canonical truth: `CLAUDE.md` rule 16 — the merged `system_prompt.md` on `main` is authoritative; a prompt that exists in Paperclip runtime but not on `main` is a drift Documentation-KM must reconcile

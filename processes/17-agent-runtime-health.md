@@ -44,11 +44,11 @@ The five rules above catch the canonical failures, but the following adjacent pa
 
 ## Actors
 
-- [CEO](/QUAA/agents/ceo) — primary detector + first-line action
-- [Board Advisor](/QUAA/agents/board-advisor) — second-line if CEO can't resolve, OR direct-action authority for emergency throttle / pause
+- [CEO](/QUA/agents/ceo) — primary detector + first-line action
+- [Board Advisor](/QUA/agents/board-advisor) — second-line if CEO can't resolve, OR direct-action authority for emergency throttle / pause
 - Affected agent — itself the subject; not the resolver
-- [Documentation-KM](/QUAA/agents/documentation-km) — post-incident lessons + Notion mirror
-- [DevOps](/QUAA/agents/devops) — when fix involves Paperclip-platform behavior (e.g. orchestrator quirks)
+- [Documentation-KM](/QUA/agents/documentation-km) — post-incident lessons + Notion mirror
+- [DevOps](/QUA/agents/devops) — when fix involves Paperclip-platform behavior (e.g. orchestrator quirks)
 
 ## Steps
 

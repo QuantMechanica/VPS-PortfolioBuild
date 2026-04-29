@@ -1,26 +1,28 @@
 ---
 title: Incident Response Flow
-owner: Observability-SRE
-last-updated: 2026-04-19
+owner: Observability-SRE (Wave 3 deferred — interim: DevOps)
+last-updated: 2026-04-29
 ---
 
 # 04 — Incident Response Flow
+
+> **V5 audit (2026-04-29, [QUA-213](/QUA/issues/QUA-213) → consolidated role-rename child).** Namespace `/QUAA/` → `/QUA/`. Non-V5 role mentions annotated inline with their V5 wave / interim owner per [`decisions/2026-04-27_v5_org_proposal.md`](../decisions/2026-04-27_v5_org_proposal.md) § 6 and [`processes/process_registry.md`](process_registry.md) § "Active agents". V4 issue references kept as historical examples (no auto-rewrite). Flow content NOT changed — substantive rewrites tracked under sister children of QUA-213.
 
 How a live-trading anomaly travels from detection to resolution.
 
 ## Trigger
 
-- [Observability-SRE](/QUAA/agents/observability-sre) heartbeat detects a threshold breach (drawdown, heartbeat gap, error rate, broker disconnect)
+- [Observability-SRE](/QUA/agents/observability-sre) *(Wave 3 deferred — interim: [DevOps](/QUA/agents/devops))* heartbeat detects a threshold breach (drawdown, heartbeat gap, error rate, broker disconnect)
 - Manual report from board (human-observed anomaly)
 - Automated alert from VPS / broker integration
 
 ## Actors
 
-- [Observability-SRE](/QUAA/agents/observability-sre) — detection, triage, post-mortem
-- [Pipeline-Operator](/QUAA/agents/pipeline-operator) — live-system hands-on fix
-- [DevOps](/QUAA/agents/devops) — infra-side fix (VPS, network, broker adapter)
-- [CEO](/QUAA/agents/ceo) — cross-team coordination if impact is wide
-- Human board — final call for kill / halt / roll-back of wide-impact incidents
+- [Observability-SRE](/QUA/agents/observability-sre) — detection, triage, post-mortem *(Wave 3 deferred — interim: [DevOps](/QUA/agents/devops))*
+- [Pipeline-Operator](/QUA/agents/pipeline-operator) — live-system hands-on fix
+- [DevOps](/QUA/agents/devops) — infra-side fix (VPS, network, broker adapter)
+- [CEO](/QUA/agents/ceo) — cross-team coordination if impact is wide
+- Human board (OWNER) — final call for kill / halt / roll-back of wide-impact incidents
 
 ## Steps
 
@@ -36,7 +38,7 @@ flowchart TD
     F --> H
     G --> H
     H --> I{Cause?}
-    I -- strategy --> J[R-and-D patch]
+    I -- strategy --> J[R-and-D patch — Wave 5 deferred; interim: CTO + Research]
     I -- infra --> K[DevOps fix]
     I -- data / broker --> L[DevOps + broker escalation]
     J --> M[Deploy fix]
@@ -52,9 +54,9 @@ flowchart TD
 
 ## Exits
 
-- **Success:** EAs stable for 1h after fix, incident closed, post-mortem archived by [Documentation-KM](/QUAA/agents/documentation-km).
-- **Escalation:** Sev-0 always goes to human board; Sev-1+ also auto-escalates to [CEO](/QUAA/agents/ceo).
-- **Kill:** Repeated incidents on the same EA within a review window (owned by [Controlling](/QUAA/agents/controlling)) trigger retirement via P10 in [01-ea-lifecycle.md](01-ea-lifecycle.md).
+- **Success:** EAs stable for 1h after fix, incident closed, post-mortem archived by [Documentation-KM](/QUA/agents/documentation-km).
+- **Escalation:** Sev-0 always goes to human board; Sev-1+ also auto-escalates to [CEO](/QUA/agents/ceo).
+- **Kill:** Repeated incidents on the same EA within a review window (owned by [Controlling](/QUA/agents/controlling) — *Wave 3 deferred; interim: [CEO](/QUA/agents/ceo)*) trigger retirement via P10 in [01-ea-lifecycle.md](01-ea-lifecycle.md).
 
 ## SLA
 

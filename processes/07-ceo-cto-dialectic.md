@@ -1,12 +1,14 @@
 ---
 title: Cross-Strand CEO ↔ CTO Dialectic
 owner: CEO + CTO
-last-updated: 2026-04-19
+last-updated: 2026-04-29
 ---
 
 # 07 — Cross-Strand CEO ↔ CTO Dialectic
 
-How strategic and technical decisions are reconciled across the two top strands. Current shape per [QUAA-68](/QUAA/issues/QUAA-68) (Option E — CTO strand rebalancing, CEO retains strategic framing).
+> **V5 audit (2026-04-29, [QUA-213](/QUA/issues/QUA-213) → consolidated role-rename child).** Namespace `/QUAA/` → `/QUA/`. Strategy-Analyst annotated as V4-only / folded. V4 issue references kept as historical examples (no auto-rewrite). Flow content NOT changed.
+
+How strategic and technical decisions are reconciled across the two top strands. Current shape per [QUAA-68](/QUAA/issues/QUAA-68) *(V4 historical example — V5 issue tree is independent)* (Option E — CTO strand rebalancing, CEO retains strategic framing).
 
 ## Trigger
 
@@ -17,9 +19,9 @@ How strategic and technical decisions are reconciled across the two top strands.
 
 ## Actors
 
-- [CEO](/QUAA/agents/ceo) — strategic framing, final arbitration, cross-team budget
-- [CTO](/QUAA/agents/cto) — technical feasibility, adapter / tool strategy, delivery shape
-- Specialist advisors pulled in ad-hoc ([Strategy-Analyst](/QUAA/agents/strategy-analyst), [Quality-Tech](/QUAA/agents/quality-tech), [Research](/QUAA/agents/research))
+- [CEO](/QUA/agents/ceo) — strategic framing, final arbitration, cross-team budget
+- [CTO](/QUA/agents/cto) — technical feasibility, adapter / tool strategy, delivery shape
+- Specialist advisors pulled in ad-hoc (~~Strategy-Analyst~~ *V4-only / folded into Research + Quality-Tech*, [Quality-Tech](/QUA/agents/quality-tech) *Wave 2 LIVE*, [Research](/QUA/agents/research))
 - Board — approves only when escalated or budget threshold exceeded
 
 ## Steps
@@ -59,11 +61,11 @@ flowchart TD
 
 ## Notes
 
-- The CTO strand was rebalanced in [QUAA-68](/QUAA/issues/QUAA-68) to diversify away from a Codex monoculture and to offload design / reasoning work. When the CTO is overloaded, CEO may route directly to specialist agents for technical review; the CTO is still consulted but not blocking on low-risk items.
-- See the related research re-scope proposal in [QUAA-70](/QUAA/issues/QUAA-70).
+- The CTO strand was rebalanced in [QUAA-68](/QUAA/issues/QUAA-68) *(V4 historical example)* to diversify away from a Codex monoculture and to offload design / reasoning work. When the CTO is overloaded, CEO may route directly to specialist agents for technical review; the CTO is still consulted but not blocking on low-risk items.
+- See the related research re-scope proposal in [QUAA-70](/QUAA/issues/QUAA-70) *(V4 historical example)*.
 
 ## References
 
-- Source issue: [QUAA-68](/QUAA/issues/QUAA-68)
-- Research re-scope: [QUAA-70](/QUAA/issues/QUAA-70)
+- Source issue: [QUAA-68](/QUAA/issues/QUAA-68) *(V4 historical example)*
+- Research re-scope: [QUAA-70](/QUAA/issues/QUAA-70) *(V4 historical example)*
 - Issue triage: [06-issue-triage.md](06-issue-triage.md)
