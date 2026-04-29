@@ -59,6 +59,7 @@ function Get-TokenCountFromRun {
     $candidatePaths = @(
         @("totalTokens"), @("total_tokens"), @("tokenCount"), @("token_count"),
         @("usage", "totalTokens"), @("usage", "total_tokens"), @("usage", "tokenCount"),
+        @("usageJson", "totalTokens"), @("usageJson", "total_tokens"),
         @("metrics", "totalTokens"), @("metrics", "total_tokens"),
         @("modelUsage", "totalTokens"), @("model_usage", "total_tokens")
     )
@@ -73,11 +74,13 @@ function Get-TokenCountFromRun {
     if ($null -eq $prompt) { $prompt = Try-GetPathValue -Object $Run -Path @("prompt_tokens") }
     if ($null -eq $prompt) { $prompt = Try-GetPathValue -Object $Run -Path @("usage", "promptTokens") }
     if ($null -eq $prompt) { $prompt = Try-GetPathValue -Object $Run -Path @("usage", "prompt_tokens") }
+    if ($null -eq $prompt) { $prompt = Try-GetPathValue -Object $Run -Path @("usageJson", "inputTokens") }
 
     $completion = Try-GetPathValue -Object $Run -Path @("completionTokens")
     if ($null -eq $completion) { $completion = Try-GetPathValue -Object $Run -Path @("completion_tokens") }
     if ($null -eq $completion) { $completion = Try-GetPathValue -Object $Run -Path @("usage", "completionTokens") }
     if ($null -eq $completion) { $completion = Try-GetPathValue -Object $Run -Path @("usage", "completion_tokens") }
+    if ($null -eq $completion) { $completion = Try-GetPathValue -Object $Run -Path @("usageJson", "outputTokens") }
 
     $promptVal = if ($prompt -is [ValueType]) { [double]$prompt } else { 0 }
     $completionVal = if ($completion -is [ValueType]) { [double]$completion } else { 0 }
