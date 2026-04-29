@@ -74,6 +74,7 @@ Wave-plan status (per [`decisions/2026-04-27_v5_org_proposal.md`](../decisions/2
 
 ## Recently added
 
+- 2026-04-29 — [`processes/17-agent-runtime-health.md`](17-agent-runtime-health.md) (CEO detection + first-line; Documentation-KM post-incident codification) — covers hot-poll loops, stuck Codex/Claude sessions, bottleneck agents (≥2 P0 + low run rate), token-budget pressure, recursive self-wake. Authored by Board Advisor 2026-04-29 after Development recursive-wake incident; companion lesson `lessons-learned/2026-04-29_development_recursive_wake.md`. New escalation Class 6 added to [`12-board-escalation.md`](12-board-escalation.md). New "Paperclip platform semantics" knowledge-base section added below.
 - 2026-04-28 — [`processes/16-backtest-execution-discipline.md`](16-backtest-execution-discipline.md) (Documentation-KM authoring; Pipeline-Operator owns Rules 1-4, 7; DevOps owns Rule 5 + co-owns Rule 7; Research owns Rule 6; CTO owns Rule 5 review-pass) — codifies the seven OWNER 2026-04-28 binding backtest rules (`.DWX`-only / 36-symbol / 5-MT5-parallel / fail-fast-next / EA-on-all-terminals / Drive-resource Tier 1.5 / fixed-risk set file). Binding source: [QUA-400](/QUA/issues/QUA-400) → [DL-038](../decisions/2026-04-28_seven_backtest_rules.md). Authored under [QUA-418](/QUA/issues/QUA-418).
 
 ## CEO Authority Boundaries
@@ -272,3 +273,50 @@ Canonical decision: [DL-036](../decisions/2026-04-28_ea_review_gate.md). Recordi
 - **In-flight enforcement (2026-04-28):** 5 PATCHes already applied by CEO this heartbeat — QUA-277 / 278 / 279 / 280 / 281.
 
 > **Reconciliation note.** The DL-036 EA Review Gate inline subsection above stays as the canonical reference; on a future hygiene pass, DL-036 can fold into the Execution Policies table as **Class 5** (or extend Class 3's scope test) — whichever is cleaner at the time. CEO Authority Boundaries / Issue Routing / Execution Policies / Skills sections are merged in above; DL-029 / DL-038 / DL-039 process sections live below the Skills section.
+
+## Paperclip platform semantics
+
+Knowledge-base entries for non-obvious Paperclip orchestrator behavior, captured from incidents. Update when a new platform quirk is observed.
+
+### Heartbeat / cooldown / wake
+
+| Field | What it does | What it does NOT do |
+|---|---|---|
+| `runtime_config.heartbeat.enabled` | Gates the **timer** heartbeat. `false` = no scheduled wake. | Does NOT prevent `wakeOnDemand` events from firing the agent. |
+| `runtime_config.heartbeat.intervalSec` | Period of the timer heartbeat (when `enabled=true`). Consumed by `app/server/src/services/heartbeat.ts:7486-7491` (skips tick if `elapsedMs < intervalSec * 1000`). | Does NOT throttle event-driven wakes. |
+| `runtime_config.heartbeat.cooldownSec` | **Stored but not consumed by the orchestrator runtime.** Field is accepted by the agent-config schema and shown in the AgentConfigForm UI, but a code search of `app/server/src/services/heartbeat.ts` and `app/server/src/routes/` finds no live consumer (the only server-side reference is the company-portability default at `services/company-portability.ts:588`). Refined 2026-04-29 by Doc-KM on QUA-514 — the original 2d37da30 row implied timer-fire throttling that the runtime does not actually perform. **The recursive-wake mitigation conclusion is unchanged: PATCHing `cooldownSec` does nothing in either the timer or the wakeOnDemand path.** | Does NOT throttle anything as of code revision examined 2026-04-29. |
+| `runtime_config.heartbeat.wakeOnDemand` | When `true`, agent wakes on issue-assignment, comment-event, or explicit `/wakeup` API call. Single gate at `services/heartbeat.ts:6395` (`if (source !== "timer" && !policy.wakeOnDemand)`) covers all event sources uniformly. | None of the cooldown / interval fields throttle these events. The only way to fully block event-driven wake is `wakeOnDemand: false` OR full agent `/pause`. |
+| `runtime_config.heartbeat.maxConcurrentRuns` | Caps the number of simultaneous in-flight runs for the agent. | Does NOT prevent serial repeated runs from the same wake-event source. |
+
+**Implication for hot-poll mitigation** (per `lessons-learned/2026-04-29_development_recursive_wake.md`):
+
+- If an agent is recursively self-waking via its own comment posts, **lowering `cooldownSec` will not help** — and it will not help in the timer path either, since the field has no live consumer in the orchestrator (verified 2026-04-29).
+- Effective controls: `wakeOnDemand: false` (kills all event wake), `/pause` (full stop), or fix the recursive-wake source (comment-dedup + self-author filter at the agent-prompt level).
+
+### Agent lifecycle
+
+| Action | API | Effect | Reversibility |
+|---|---|---|---|
+| `/pause` | `POST /api/agents/<id>/pause` | Cancels active runs, blocks new wakes (timer + on-demand). Verified at `routes/agents.ts:2188-2212` (calls `heartbeat.cancelActiveForAgent`) and `services/heartbeat.ts:6382-6387` (rejects wakeup if `agent.status === "paused"`). | `/resume` restores to prior runtime config. |
+| `/resume` | `POST /api/agents/<id>/resume` | Lifts the pause. Agent resumes normal heartbeat behavior. | — |
+| `/wakeup` | `POST /api/agents/<id>/wakeup` body validated by `validators/agent.ts:105-115` — `source: z.enum(["timer", "assignment", "on_demand", "automation"])` (optional, defaults to `"on_demand"`); `reason: z.string().optional().nullable()`; additional optional fields `triggerDetail`, `payload`, `idempotencyKey`, `forceFreshSession`. | Forces an immediate run if not paused and no active run for that agent. | One-shot. |
+| Terminate | `PATCH /api/agents/<id>` with `status='terminated'` (or via `paperclip-terminate-agent` skill) | Marks agent retired. Heartbeats stop. History preserved (foreign-key constraints prevent hard-delete). | Re-hire creates a new agent with a new ID. |
+
+### Confirmation interactions
+
+- `kind='request_confirmation'` requires **board-only** auth to accept/reject (`assertBoard(req)` at `routes/issues.ts:2904`). CEO cannot accept on OWNER's behalf via API. Board Advisor (`local-board` user) can.
+- `kind='suggest_tasks'` accept can specify `selectedClientKeys: [...]` to pick which sub-tasks to spawn. Reject takes optional `reason: '...'`.
+- Resolved interactions are immutable. To change a decision after acceptance, open a new interaction or DL-NNN.
+
+### Comment-event → wake path
+
+Per `routes/issues.ts:2524-2551`: posting a comment on an issue calls `addWakeup()` with `source: "automation"`, which flows through the `wakeOnDemand` gate at `services/heartbeat.ts:6395`. **Implication:** if an agent posts a comment on an issue assigned to itself (or that wakes itself via assignee-broadcast), and the agent has `wakeOnDemand: true`, that comment will trigger its own next wake. This is the mechanical basis of the 2026-04-29 Development recursive-wake incident; the only stable in-prompt mitigation is a self-author + comment-dedup guard before posting (see `lessons-learned/2026-04-29_development_recursive_wake.md` § "Proper fix path").
+
+### Issue ↔ Project routing
+
+- Every new issue created from this point forward should carry `projectId` per [DL-031](../decisions/DL-031_projects_formalization_and_routing_convention.md).
+- Project IDs in the registry: V5 Framework Implementation `71b6d994`, V5 Pipeline Operations `ac8daa03`, V5 Strategy Research `b2adcc7f`, T6 Live Operations `2603d13a`, Portfolio Factory V5 (umbrella) `26cdd201`.
+
+### PC1-00 worktree-isolation pattern
+
+Per `lessons-learned/2026-04-27_pc1-00_live_incident_qua-167.md`: any agent touching `framework/`, `infra/`, `processes/`, or other concurrent-write paths uses a per-agent worktree under `C:\QM\worktrees\<agent>\`. Board Advisor commits docs directly to `main` when no agent contention is expected (single-author edits).

@@ -1,0 +1,64 @@
+{
+  "dedup": {
+    "QM5_SRC04_S03_lien_fade_double_zeros|v5|EURUSD.DWX|P2|H1-2024": {
+      "symbol": "EURUSD.DWX",
+      "terminal": "T1",
+      "ts": 1777392339
+    }
+  },
+  "jobs": [],
+  "last_rr_index": 0,
+  "phase_matrix_index": {
+    "QM5_SRC04_S03_lien_fade_double_zeros_v5_P2": {
+      "matrix": [
+        {
+          "evidence": null,
+          "symbol": "EURUSD.DWX",
+          "terminal": "T1",
+          "verdict": null
+        }
+      ],
+      "next_strategy_unblocked": null,
+      "phase_verdict": null
+    }
+  },
+  "recent_runs": {
+    "T1": [
+      1777392339
+    ],
+    "T2": [],
+    "T3": [],
+    "T4": [],
+    "T5": []
+  },
+  "running": {
+    "T1": 1,
+    "T2": 0,
+    "T3": 0,
+    "T4": 0,
+    "T5": 0
+  },
+  "symbol_affinity": {
+    "EURUSD.DWX": {
+      "terminal": "T1",
+      "ts": 1777392339
+    }
+  },
+  "terminals": {
+    "T1": {
+      "running": 0
+    },
+    "T2": {
+      "running": 0
+    },
+    "T3": {
+      "running": 0
+    },
+    "T4": {
+      "running": 0
+    },
+    "T5": {
+      "running": 0
+    }
+  }
+}

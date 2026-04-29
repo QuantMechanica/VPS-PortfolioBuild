@@ -1,0 +1,27 @@
+{
+  "issue_id": "QUA-510",
+  "updated_at_local": "2026-04-29T06:30:00+02:00",
+  "target_status": "done",
+  "reason": "ceo_approved_dual_path_bootstrap_complete",
+  "summary": "Provisioned and validated dual-path workspace coverage (project workspace + pipeline-operations worktree) while preserving Pipeline-Op runtime cwd and WIP in pipeline-operator. CEO approved closure and unblock.",
+  "unblock": {
+    "issue": "QUA-509",
+    "workspace_path": "C:\\QM\\paperclip\\data\\instances\\default\\projects\\03d4dcc8-4cea-4133-9f68-90c0d99628fb\\ac8daa03-00ae-49fd-bd4a-f1283a075f83\\_default",
+    "branch": "agents/pipeline-operations-project",
+    "verification": "Ensure-ProjectWorkspaceWorktree.ps1 returns status=ok action=already_present"
+  },
+  "evidence": {
+    "script": "infra/scripts/Ensure-ProjectWorkspaceWorktree.ps1",
+    "runbook": "infra/README.md",
+    "closeout_doc": "docs/ops/QUA-510_CLOSEOUT_2026-04-29.md",
+    "bootstrap_doc": "docs/ops/QUA-510_PIPELINE_OPERATIONS_WORKTREE_BOOTSTRAP_2026-04-29.md"
+  },
+  "commits": [
+    "df2f4a3c",
+    "f90960f3"
+  ],
+  "followup_evidence": [
+    "docs/ops/QUA-509_REDIRECT_NOTE_2026-04-29.md",
+    "docs/ops/QUA-510_FINAL_VERIFICATION_2026-04-29.json"
+  ]
+}

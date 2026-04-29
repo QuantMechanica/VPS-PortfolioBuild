@@ -1,0 +1,6 @@
+{
+  "issue": "QUA-70",
+  "target_status": "done",
+  "resume": true,
+  "reason": "DEVOPS-010 cleanup completed: orphan folder deleted after retention window; DL-032 logged; commit hash attached in closeout comment."
+}

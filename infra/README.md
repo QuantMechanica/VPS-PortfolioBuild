@@ -461,6 +461,31 @@ Development worktree bootstrap (`QUA-309`):
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Ensure-AgentWorktree.ps1 -AgentKey development -CreateBranchIfMissing
 ```
 
+V5 Pipeline Operations worktree bootstrap (`QUA-510`):
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Ensure-AgentWorktree.ps1 -AgentKey pipeline-operations -CreateBranchIfMissing
+```
+
+Paperclip project workspace bootstrap (exact issue workspace path, idempotent):
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Ensure-ProjectWorkspaceWorktree.ps1 -RepoRoot C:\QM\repo -ProjectWorkspacePath C:\QM\paperclip\data\instances\default\projects\03d4dcc8-4cea-4133-9f68-90c0d99628fb\ac8daa03-00ae-49fd-bd4a-f1283a075f83\_default -BranchName agents/pipeline-operations-project
+```
+
+QUA-510 done transition helper (preview first, then apply):
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Invoke-QUA510DoneTransition.ps1 -WhatIfOnly
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Invoke-QUA510DoneTransition.ps1
+```
+
+Notes:
+- Uses `PAPERCLIP_API_URL` (or `PAPERCLIP_RUNTIME_API_URL`) automatically when `-BaseUrl` is omitted.
+- Accepts either `PAPERCLIP_API_TOKEN` or `PAPERCLIP_API_KEY`.
+- Uses two-step API flow: `PATCH /api/issues/{id}` then `POST /api/issues/{id}/comments`.
+- Posts closeout comment with `resume=false` to avoid reopening completed issues.
+
 ## Non-goals
 
 - No EA strategy code changes.
