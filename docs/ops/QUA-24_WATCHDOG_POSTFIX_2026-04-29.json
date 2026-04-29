@@ -1,0 +1,16 @@
+﻿{
+    "check":  "paperclip_stale_lock_watchdog",
+    "generated_at_utc":  "2026-04-29T20:09:22.2633654Z",
+    "status":  "ok",
+    "message":  "No stale Paperclip issue locks detected.",
+    "details":  {
+                    "statuses":  [
+                                     "in_progress"
+                                 ],
+                    "running_lock_max_minutes":  90,
+                    "stale_after_minutes":  15,
+                    "allowed_assignee_agent_ids":  [
+                                                       "46fc11e5-7fc2-43f4-9a34-bde29e5dee3b"
+                                                   ]
+                }
+}
