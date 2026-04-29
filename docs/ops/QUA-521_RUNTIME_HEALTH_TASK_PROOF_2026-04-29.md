@@ -2,8 +2,11 @@
 
 ## Commits
 
-- `1b272551ee9ace1b5fca6e0afb12c250a8525762` - initial task + wiring + docs
-- `5327e1e99d5ac7ff0dbb42a614616a8358d159c3` - runtime execution fix (`ArgumentException` path removed)
+- `8af831a9` - initial task + wiring + docs
+- `9eab9d78` - runtime execution fix (`ArgumentException` path removed)
+- `08726513` - scheduler/install and execution-path hardening
+- `8352a945` - detector/action flow adjustments
+- `74df4615` - closeout evidence sync
 
 ## Scheduler state
 

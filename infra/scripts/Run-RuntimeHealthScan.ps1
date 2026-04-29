@@ -237,7 +237,7 @@ foreach ($agent in $agents) {
 
 $p0Buckets = $issuesInProgress | Where-Object {
     $p = ([string](GetProp $_ 'priority')).ToLowerInvariant()
-    $p -eq 'high' -or $p -eq 'p0'
+    $p -eq 'p0'
 } | Group-Object { [string](GetProp $_ 'assigneeAgentId') }
 
 foreach ($bucket in $p0Buckets) {
