@@ -11,7 +11,8 @@
                              "symbol":  "XTIUSD.DWX",
                              "verdict":  "FAIL_spec",
                              "bars_got":  99911,
-                             "tail_shortfall_seconds":  7141.322,
+                             "tail_delta_ms":  -323,
+                             "tail_shortfall_seconds":  0.323,
                              "disposition":  "clear"
                          },
     "unblock_owners":  [
@@ -30,6 +31,6 @@
                             "sha256":  "docs/ops/QUA-95_XTIUSD_VERIFIER_HANDOFF_2026-04-27.sha256"
                         },
     "last_checked_local":  "2026-04-27T22:01:01+02:00",
-    "last_evidence_path":  "lessons-learned\\evidence\\2026-04-27_qua95_xtiusd_rerun_evidence.json",
+    "last_evidence_path":  "lessons-learned\\evidence\\2026-04-27_qua95_xtiusd_direct_verify_rerun.json",
     "last_verify_exit_code":  1
 }
