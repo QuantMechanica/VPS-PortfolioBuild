@@ -7,6 +7,7 @@
 - `08726513` - scheduler/install and execution-path hardening
 - `8352a945` - detector/action flow adjustments
 - `74df4615` - closeout evidence sync
+- `bf7ec8e5` - review-requested fixes (P0-only bottleneck + commit-list alignment)
 
 ## Scheduler state
 
