@@ -1,0 +1,18 @@
+{
+  "issue_id": "QUA-510",
+  "verified_at_utc": "2026-04-29T04:31:00Z",
+  "project_workspace": {
+    "path": "C:\\QM\\paperclip\\data\\instances\\default\\projects\\03d4dcc8-4cea-4133-9f68-90c0d99628fb\\ac8daa03-00ae-49fd-bd4a-f1283a075f83\\_default",
+    "toplevel": "C:/QM/paperclip/data/instances/default/projects/03d4dcc8-4cea-4133-9f68-90c0d99628fb/ac8daa03-00ae-49fd-bd4a-f1283a075f83/_default",
+    "branch": "agents/pipeline-operations-project",
+    "status_porcelain_line_count": 0
+  },
+  "pipeline_operator_runtime": {
+    "path": "C:\\QM\\worktrees\\pipeline-operator",
+    "toplevel": "C:/QM/worktrees/pipeline-operator",
+    "branch": "agents/pipeline-operator",
+    "wip_preserved": true,
+    "routing_decision": "Option A"
+  },
+  "result": "ready_to_close_qua_510_and_unblock_qua_509"
+}
