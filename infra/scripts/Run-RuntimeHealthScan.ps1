@@ -16,7 +16,6 @@ param(
     [switch]$FailOnFinding
 )
 
-Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 function Normalize-ApiBase {
@@ -302,7 +301,7 @@ foreach ($k in $commentsByIssue.Keys) {
     $count = [int]$commentsByIssue[$k]
     if ($count -lt $RecursiveWakeMinIdenticalComments) { continue }
 
-    $parts = $k.Split('|', 3)
+    $parts = $k -split '\|', 3
     $issueId = $parts[0]
     $agentId = $parts[1]
     $body = $parts[2]
@@ -313,22 +312,28 @@ foreach ($k in $commentsByIssue.Keys) {
 }
 
 $overall = if ($findings.Count -gt 0) { 'alert' } else { 'ok' }
-$result = [ordered]@{
-    check = 'runtime_health_scan'
-    generated_at_utc = $now.ToString('o')
-    overall_status = $overall
-    dry_run = [bool]$DryRun
-    detectors = @{
-        hot_poll = @($findings | Where-Object { $_.detector -eq 'hot_poll' })
-        stuck_session = @($findings | Where-Object { $_.detector -eq 'stuck_session' })
-        bottleneck = @($findings | Where-Object { $_.detector -eq 'bottleneck' })
-        token_budget = @($findings | Where-Object { $_.detector -eq 'token_budget' })
-        recursive_wake = @($findings | Where-Object { $_.detector -eq 'recursive_wake' })
-    }
-    findings_count = $findings.Count
-    actions_count = $actions.Count
-    actions = @($actions)
-}
+$hotPollFindings = @($findings | Where-Object { $_.detector -eq 'hot_poll' })
+$stuckFindings = @($findings | Where-Object { $_.detector -eq 'stuck_session' })
+$bottleneckFindings = @($findings | Where-Object { $_.detector -eq 'bottleneck' })
+$tokenBudgetFindings = @($findings | Where-Object { $_.detector -eq 'token_budget' })
+$recursiveWakeFindings = @($findings | Where-Object { $_.detector -eq 'recursive_wake' })
+
+$detectors = @{}
+$detectors['hot_poll'] = $hotPollFindings
+$detectors['stuck_session'] = $stuckFindings
+$detectors['bottleneck'] = $bottleneckFindings
+$detectors['token_budget'] = $tokenBudgetFindings
+$detectors['recursive_wake'] = $recursiveWakeFindings
+
+$result = @{}
+$result['check'] = 'runtime_health_scan'
+$result['generated_at_utc'] = $now.ToString('o')
+$result['overall_status'] = $overall
+$result['dry_run'] = $DryRun.IsPresent
+$result['detectors'] = $detectors
+$result['findings_count'] = $findings.Count
+$result['actions_count'] = $actions.Count
+$result['actions'] = $actions.ToArray()
 
 Ensure-DirForFile -Path $OutputPath
 $result | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $OutputPath -Encoding UTF8
