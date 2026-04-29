@@ -108,7 +108,8 @@ double StoploPriceDelta()
 
 int FrameworkMagic()
   {
-   return QM_MagicChecked(ea_id, magic_slot_offset, _Symbol);
+   // V5 hard rule: resolve via QM_Magic(ea_id, slot), never hand-compute.
+   return QM_Magic(ea_id, magic_slot_offset);
   }
 
 bool HasOpenPositionForMagic(const int magic)
