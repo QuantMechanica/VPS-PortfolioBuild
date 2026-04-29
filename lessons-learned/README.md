@@ -4,6 +4,10 @@ Kept / changed / discarded entries from incidents, gate reviews, and retrospecti
 
 Entries (newest first):
 
+## 2026-04-29
+
+- `2026-04-29_development_recursive_wake.md` - Development agent (`ebefc3a6`) recursive self-wake hot-poll: comment-event handler woke the agent on its own no-op heartbeat comments, sustaining ~225-237 successful runs/hour with no `done` throughput before detection and pause. Mechanism is mechanical (no external trigger needed); detection delay ~24h between first observation and quantified diagnosis (474 runs/2h on Development vs 6/9 for CTO/CEO). Codified into [`processes/17-agent-runtime-health.md`](../processes/17-agent-runtime-health.md) trigger #5 (recursive-wake) and Class 6 board-escalation. Going-forward: agents must not post no-op heartbeat comments when no work is assigned; `wakeOnDemand` semantics must distinguish self-authored vs external comment events.
+
 ## 2026-04-27
 
 - `2026-04-27_pipeline_op_process_loss_pattern.md` - Pipeline-Operator 18% headline failure rate (QUA-211) decomposed into adapter-usage-limit cascade (7/11, historical) + `process_lost` recovered retries (4/11, all auto-retried). Workaround `Test-PipelineOperatorRunHealth.ps1` (commit `de1fa8f`) separates classes; core 30-min grace-window patch (`paperclip/app` commit `6692bace`, server/src/services/heartbeat.ts) defers `process_lost` for detached-alive children. Validated on 26 runs / 0 failures after the 2026-04-27T07:22:27Z batch-reap cut. Pilot validation of QUA-263 + QUA-140 lifecycle follow-ups remain open.
