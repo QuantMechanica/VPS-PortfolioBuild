@@ -849,10 +849,12 @@
   - hot-poll loop
   - stuck-session sentinel
   - bottleneck signal
-  - token-budget pressure
+  - token-budget pressure (`weekly_run_count * 4 > 90% provider cap`)
   - recursive self-wake
-- Pulls runtime data from Paperclip API and emits machine-readable output:
+- Pulls runtime data via `psql` from Paperclip Postgres (`PAPERCLIP_POSTGRES_URL`) and emits machine-readable output:
   - `C:\QM\logs\infra\health\runtime_health_scan_latest.json`
+- API fallback is available only with `-AllowApiFallback`.
+- Bottleneck detector counts successful runs only (`succeeded|success|completed`) in the 4h window.
 - Exit codes:
   - `0`: all checks `ok`
   - `1`: one or more checks `warn` and no `critical`

@@ -5,6 +5,9 @@ param(
     [string]$CompanyId = $(if ($env:PAPERCLIP_COMPANY_ID) { $env:PAPERCLIP_COMPANY_ID } else { "" }),
     [string]$RunId = $(if ($env:PAPERCLIP_RUN_ID) { $env:PAPERCLIP_RUN_ID } else { "runtime-health-scan-manual" }),
     [string]$OutputPath = "C:\QM\logs\infra\health\runtime_health_scan_latest.json",
+    [string]$PostgresUrl = $(if ($env:PAPERCLIP_POSTGRES_URL) { $env:PAPERCLIP_POSTGRES_URL } else { "" }),
+    [string]$PsqlPath = $(if ($env:PSQL_PATH) { $env:PSQL_PATH } else { "psql" }),
+    [switch]$AllowApiFallback,
     [int]$HotPollRunThreshold = 50,
     [int]$HotPollDoneThreshold = 5,
     [int]$StuckErrorMinutes = 30,
@@ -64,6 +67,21 @@ function SafeGet([string]$path) {
     try { return @(ApiCall -method 'GET' -path $path) } catch { return @() }
 }
 
+function InvokePsqlJson([string]$sql) {
+    $cmd = @(
+        '-X', '-A', '-t', '--no-psqlrc',
+        '-d', $PostgresUrl,
+        '-c', $sql
+    )
+    $raw = & $PsqlPath @cmd 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        throw "psql failed: $raw"
+    }
+    $text = ($raw | Out-String).Trim()
+    if ([string]::IsNullOrWhiteSpace($text)) { return @() }
+    return @($text | ConvertFrom-Json)
+}
+
 function RoleAgentId([object[]]$agents, [string]$roleOrKey) {
     $m = @($agents | Where-Object {
         ([string](GetProp $_ 'role')).ToLowerInvariant() -eq $roleOrKey.ToLowerInvariant() -or
@@ -82,19 +100,83 @@ function NewIssue([string]$title, [string]$desc, [string]$assigneeId, [string]$p
 
 if ([string]::IsNullOrWhiteSpace($ApiKey)) { throw 'PAPERCLIP_API_KEY (or -ApiKey) is required.' }
 if ([string]::IsNullOrWhiteSpace($CompanyId)) { throw 'PAPERCLIP_COMPANY_ID (or -CompanyId) is required.' }
+if ([string]::IsNullOrWhiteSpace($PostgresUrl) -and -not $AllowApiFallback) {
+    throw 'PAPERCLIP_POSTGRES_URL (or -PostgresUrl) is required unless -AllowApiFallback is set.'
+}
 
 $script:base = ApiBase $PaperclipApiUrl
 $script:key = $ApiKey
 $script:runId = $RunId
 $now = [datetime]::UtcNow
 
-$agents = SafeGet "/companies/$CompanyId/agents"
-$issuesInProgress = SafeGet "/companies/$CompanyId/issues?status=in_progress&limit=500"
-$issuesDone = SafeGet "/companies/$CompanyId/issues?status=done&limit=500"
-$activity = SafeGet "/companies/$CompanyId/activity?limit=2000"
-$runs = SafeGet "/companies/$CompanyId/runs?limit=2000"
-$summary = @((SafeGet "/companies/$CompanyId/costs/summary"))
-$companySummary = if ($summary.Count -gt 0) { $summary[0] } else { $null }
+$dbLoaded = $false
+if (-not [string]::IsNullOrWhiteSpace($PostgresUrl)) {
+    try {
+        $companyEsc = $CompanyId.Replace("'", "''")
+        $agents = InvokePsqlJson @"
+select coalesce(json_agg(t), '[]'::json)
+from (
+  select id, name, role, "nameKey", status, "lastHeartbeatAt", "errorAt", "runtimeConfig"
+  from "Agent"
+  where "companyId" = '$companyEsc'
+) t;
+"@
+        $issuesInProgress = InvokePsqlJson @"
+select coalesce(json_agg(t), '[]'::json)
+from (
+  select id, "assigneeAgentId", priority
+  from "Issue"
+  where "companyId" = '$companyEsc' and status = 'in_progress'
+) t;
+"@
+        $issuesDone = InvokePsqlJson @"
+select coalesce(json_agg(t), '[]'::json)
+from (
+  select id, "assigneeAgentId", "completedAt"
+  from "Issue"
+  where "companyId" = '$companyEsc' and status = 'done'
+) t;
+"@
+        $activity = InvokePsqlJson @"
+select coalesce(json_agg(t), '[]'::json)
+from (
+  select "entityId", "actorAgentId", action, "entityType", "createdAt", details
+  from "ActivityEvent"
+  where "companyId" = '$companyEsc'
+    and "createdAt" > (now() at time zone 'utc') - interval '60 minutes'
+) t;
+"@
+        $runs = InvokePsqlJson @"
+select coalesce(json_agg(t), '[]'::json)
+from (
+  select id, "agentId", "issueId", status, "startedAt"
+  from "Run"
+  where "companyId" = '$companyEsc'
+    and "startedAt" > (now() at time zone 'utc') - interval '7 days'
+) t;
+"@
+        $companySummary = InvokePsqlJson @"
+select json_build_object(
+  'weekly_run_count', coalesce((select count(*) from "Run" r where r."companyId" = '$companyEsc' and r."startedAt" > (now() at time zone 'utc') - interval '7 days'), 0),
+  'provider_run_cap', coalesce((select ("runtimeBudget"->>'providerRunCapWeekly')::numeric from "Company" c where c.id = '$companyEsc' limit 1), 0)
+);
+"@
+        $dbLoaded = $true
+    } catch {
+        if (-not $AllowApiFallback) { throw }
+    }
+}
+if (-not $dbLoaded) {
+    $agents = SafeGet "/companies/$CompanyId/agents"
+    $issuesInProgress = SafeGet "/companies/$CompanyId/issues?status=in_progress&limit=500"
+    $issuesDone = SafeGet "/companies/$CompanyId/issues?status=done&limit=500"
+    $activity = SafeGet "/companies/$CompanyId/activity?limit=2000"
+    $runs = SafeGet "/companies/$CompanyId/runs?limit=2000"
+    $summary = @((SafeGet "/companies/$CompanyId/costs/summary"))
+    $companySummary = if ($summary.Count -gt 0) { $summary[0] } else { $null }
+} else {
+    $companySummary = if ($companySummary.Count -gt 0) { $companySummary[0] } else { $null }
+}
 
 $ceoId = RoleAgentId -agents $agents -roleOrKey 'ceo'
 $ctoId = RoleAgentId -agents $agents -roleOrKey 'cto'
@@ -167,6 +249,7 @@ foreach ($bucket in $p0Buckets) {
     $runsLast4h = @($runs | Where-Object {
         ([string](GetProp $_ 'agentId')) -eq $agentId -and
         ($t = AsUtc (GetProp $_ 'startedAt')) -and $t -gt $now.AddHours(-4) -and
+        @('succeeded','success','completed') -contains ([string](GetProp $_ 'status')).ToLowerInvariant() -and
         ($issueIds -contains [string](GetProp $_ 'issueId'))
     }).Count
 
@@ -182,12 +265,15 @@ foreach ($bucket in $p0Buckets) {
 }
 
 if ($null -ne $companySummary) {
-    $spent = [double](GetProp $companySummary 'spentMonthlyCents')
-    $budget = [double](GetProp $companySummary 'budgetMonthlyCents')
-    if ($budget -gt 0) {
-        $util = $spent / $budget
-        if ($util -ge $TokenBudgetThreshold) {
-            $entry = @{ detector='token_budget'; utilization=[math]::Round($util,4); spent_monthly_cents=$spent; budget_monthly_cents=$budget }
+    $weeklyRunCount = [double](GetProp $companySummary 'weekly_run_count')
+    if ($weeklyRunCount -le 0) { $weeklyRunCount = [double](GetProp $companySummary 'weeklyRunCount') }
+    $providerCap = [double](GetProp $companySummary 'provider_run_cap')
+    if ($providerCap -le 0) { $providerCap = [double](GetProp $companySummary 'providerRunCapWeekly') }
+    if ($providerCap -gt 0) {
+        $projectedMonthlyRuns = $weeklyRunCount * 4
+        $thresholdRuns = $providerCap * $TokenBudgetThreshold
+        if ($projectedMonthlyRuns -gt $thresholdRuns) {
+            $entry = @{ detector='token_budget'; weekly_run_count=$weeklyRunCount; projected_monthly_runs=$projectedMonthlyRuns; provider_run_cap=$providerCap; threshold_runs=$thresholdRuns }
             $findings.Add($entry) | Out-Null
             $tokenBudgetFindings.Add($entry) | Out-Null
             foreach ($agent in $agents) {
