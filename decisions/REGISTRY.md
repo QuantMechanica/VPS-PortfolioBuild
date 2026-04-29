@@ -24,6 +24,7 @@ Conventions:
 | DL-023 | 2026-04-27 | CEO Autonomy Waiver, broadened scope (v2) — additive to DL-017 | [`2026-04-27_ceo_autonomy_waiver_v2.md`](./2026-04-27_ceo_autonomy_waiver_v2.md) | [QUA-188](https://paperclip.local/QUA/issues/QUA-188) (directive) / [QUA-192](https://paperclip.local/QUA/issues/QUA-192) (recording) |
 | DL-024 | 2026-04-27 | CEO scheduled heartbeat enablement (3600s) — under DL-023 authority | [`2026-04-27_ceo_scheduled_heartbeat.md`](./2026-04-27_ceo_scheduled_heartbeat.md) | [QUA-210](https://paperclip.local/QUA/issues/QUA-210) (change) / [QUA-214](https://paperclip.local/QUA/issues/QUA-214) (recording) |
 | DL-025 | 2026-04-27 | T6 Deploy Boundary Refinement — deploy of approved EAs/setfiles/templates/profiles under manifest in scope; AutoTrading toggle stays manual OWNER | [`DL-025_t6_deploy_boundary_refinement.md`](./DL-025_t6_deploy_boundary_refinement.md) | [QUA-209](https://paperclip.local/QUA/issues/QUA-209) (parent) / [QUA-226](https://paperclip.local/QUA/issues/QUA-226) (recording) |
+| DL-040 | 2026-04-28 (A1/A2 amended 2026-04-29) | Token-Discipline Throttle — Single-Active-Strategy + Single-Active-Source + Heartbeat Tuning + First-Matrix-Dispatch Hold; A1 briefly allowed Option B single-symbol lift, then A2 reversed A1 and OWNER green-lit first full 36-symbol matrix dispatch while preserving sequential throttles. | [`2026-04-28_token_throttle_sequential.md`](./2026-04-28_token_throttle_sequential.md) | [QUA-504](/QUA/issues/QUA-504) (parent directive + recording) / [QUA-508](/QUA/issues/QUA-508) (A1 amendment) / [QUA-512](/QUA/issues/QUA-512) (A2 amendment) |
 
 ## Cross-links
 
@@ -32,6 +33,8 @@ Conventions:
 - **DL-023 ↔ DL-024.** DL-024 is the first concrete operational change recorded under the DL-023 broadened-authority waiver (class 4: internal process choices → heartbeat cadence). DL-024 cites DL-023 as its authority basis.
 - **QUA-210 ↔ DL-024.** Forward link: QUA-210 → DL-024 (recorded via QUA-214). Reverse link: [`2026-04-27_ceo_scheduled_heartbeat.md`](./2026-04-27_ceo_scheduled_heartbeat.md) cites QUA-210 as the source change.
 - **QUA-209 ↔ DL-025.** Forward link: QUA-209 → DL-025 (recorded via QUA-226). Reverse link: [`DL-025_t6_deploy_boundary_refinement.md`](./DL-025_t6_deploy_boundary_refinement.md) cites QUA-209 as the parent recording task. DL-025 is an OWNER directive on V5 hard rules and is independent of DL-017 / DL-023 (which govern CEO unilateral authority).
+- **DL-038 ↔ DL-040.** DL-040 originally held first full 36-symbol matrix dispatch until OWNER green-light; A1 introduced a temporary Option B single-symbol lift; A2 reversed A1 and restored canonical first full 36-symbol matrix dispatch under OWNER green-light, without re-enabling cross-strategy or cross-source parallelism.
+- **QUA-504 / QUA-508 / QUA-512 ↔ DL-040.** QUA-504 is the originating directive recorded by DL-040; QUA-508 records A1 (2026-04-29 06:30); QUA-512 records A2 (2026-04-29 07:35).
 
 ## Backfilling External entries
 
