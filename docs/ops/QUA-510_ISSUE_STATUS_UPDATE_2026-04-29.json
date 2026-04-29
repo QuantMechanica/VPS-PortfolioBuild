@@ -1,9 +1,9 @@
 {
   "issue_id": "QUA-510",
   "updated_at_local": "2026-04-29T06:30:00+02:00",
-  "target_status": "in_review",
+  "target_status": "closed",
   "reason": "pipeline_operations_project_workspace_bootstrapped",
-  "summary": "Provisioned and validated V5 Pipeline Operations project workspace worktree at the exact Paperclip path required by QUA-509; added idempotent convergence script and runbook docs.",
+  "summary": "Provisioned and validated V5 Pipeline Operations project workspace worktree at the exact Paperclip path required by QUA-509; adopted Option A routing (Pipeline-Op remains on C:\\QM\\worktrees\\pipeline-operator) and preserved existing WIP evidence.",
   "unblock": {
     "issue": "QUA-509",
     "workspace_path": "C:\\QM\\paperclip\\data\\instances\\default\\projects\\03d4dcc8-4cea-4133-9f68-90c0d99628fb\\ac8daa03-00ae-49fd-bd4a-f1283a075f83\\_default",
@@ -13,7 +13,8 @@
   "evidence": {
     "script": "infra/scripts/Ensure-ProjectWorkspaceWorktree.ps1",
     "runbook": "infra/README.md",
-    "closeout_doc": "docs/ops/QUA-510_PIPELINE_OPERATIONS_WORKTREE_BOOTSTRAP_2026-04-29.md"
+    "closeout_doc": "docs/ops/QUA-510_CLOSEOUT_2026-04-29.md",
+    "bootstrap_doc": "docs/ops/QUA-510_PIPELINE_OPERATIONS_WORKTREE_BOOTSTRAP_2026-04-29.md"
   },
   "commits": [
     "df2f4a3c",
