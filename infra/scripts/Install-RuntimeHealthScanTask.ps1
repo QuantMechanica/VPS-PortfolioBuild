@@ -4,6 +4,8 @@ param(
     [string]$RepoRoot = "C:\QM\repo",
     [string]$ScriptRelativePath = "infra\scripts\Run-RuntimeHealthScan.ps1",
     [string]$OutputPath = "C:\QM\logs\infra\health\runtime_health_scan_latest.json",
+    [string]$PostgresUrl = $(if ($env:PAPERCLIP_POSTGRES_URL) { $env:PAPERCLIP_POSTGRES_URL } else { "" }),
+    [switch]$AllowApiFallback,
     [int]$MinuteOffset = 1,
     [int]$EveryMinutes = 15,
     [switch]$FailOnFinding,
@@ -22,6 +24,9 @@ $scriptPath = Join-Path $RepoRoot $ScriptRelativePath
 if (-not (Test-Path -LiteralPath $scriptPath)) {
     throw "Runtime health scan script not found: $scriptPath"
 }
+if ([string]::IsNullOrWhiteSpace($PostgresUrl) -and -not $AllowApiFallback) {
+    throw "PostgresUrl is required for scheduled execution unless -AllowApiFallback is explicitly set."
+}
 
 $minuteOffset = [Math]::Max(0, [Math]::Min(59, $MinuteOffset))
 $startBoundary = (Get-Date).Date.AddHours((Get-Date).Hour).AddMinutes($minuteOffset)
@@ -30,6 +35,8 @@ if ($startBoundary -le (Get-Date)) {
 }
 
 $args = "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`" -OutputPath `"$OutputPath`""
+if (-not [string]::IsNullOrWhiteSpace($PostgresUrl)) { $args += " -PostgresUrl `"$PostgresUrl`"" }
+if ($AllowApiFallback.IsPresent) { $args += " -AllowApiFallback" }
 if ($FailOnFinding.IsPresent) { $args += " -FailOnFinding" }
 if ($DryRun.IsPresent) { $args += " -DryRun" }
 
