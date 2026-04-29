@@ -467,6 +467,12 @@ V5 Pipeline Operations worktree bootstrap (`QUA-510`):
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Ensure-AgentWorktree.ps1 -AgentKey pipeline-operations -CreateBranchIfMissing
 ```
 
+Paperclip project workspace bootstrap (exact issue workspace path, idempotent):
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Ensure-ProjectWorkspaceWorktree.ps1 -RepoRoot C:\QM\repo -ProjectWorkspacePath C:\QM\paperclip\data\instances\default\projects\03d4dcc8-4cea-4133-9f68-90c0d99628fb\ac8daa03-00ae-49fd-bd4a-f1283a075f83\_default -BranchName agents/pipeline-operations-project
+```
+
 ## Non-goals
 
 - No EA strategy code changes.
