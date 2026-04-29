@@ -10,6 +10,7 @@ param(
     [int]$EveryMinutes = 15,
     [switch]$FailOnFinding,
     [switch]$DryRun,
+    [switch]$PreviewOnly,
     [switch]$RunNow
 )
 
@@ -51,6 +52,19 @@ $settings = New-ScheduledTaskSettingsSet `
     -ExecutionTimeLimit (New-TimeSpan -Minutes 10)
 
 $task = New-ScheduledTask -Action $action -Trigger $trigger -Principal $principal -Settings $settings
+if ($PreviewOnly.IsPresent) {
+    [pscustomobject]@{
+        task_name = $TaskName
+        script_path = $scriptPath
+        args = $args
+        repo_root = $RepoRoot
+        every_minutes = $EveryMinutes
+        start_boundary = $startBoundary.ToString('o')
+        principal = 'SYSTEM'
+        run_now = [bool]$RunNow
+    } | ConvertTo-Json -Depth 6
+    exit 0
+}
 Register-ScheduledTask -TaskName $TaskName -InputObject $task -Force | Out-Null
 
 $taskInfo = Get-ScheduledTaskInfo -TaskName $TaskName
