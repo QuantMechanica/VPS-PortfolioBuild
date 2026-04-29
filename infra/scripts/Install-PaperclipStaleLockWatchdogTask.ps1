@@ -8,6 +8,7 @@ param(
     [int]$RunningLockMaxMinutes = 90,
     [string]$PaperclipApiUrl = $(if ($env:PAPERCLIP_API_URL) { $env:PAPERCLIP_API_URL } else { "" }),
     [string]$CompanyId = $(if ($env:PAPERCLIP_COMPANY_ID) { $env:PAPERCLIP_COMPANY_ID } else { "" }),
+    [string]$ApiKey = $(if ($env:PAPERCLIP_API_KEY) { $env:PAPERCLIP_API_KEY } else { "" }),
     [string]$AssigneeAgentId = $(if ($env:PAPERCLIP_AGENT_ID) { $env:PAPERCLIP_AGENT_ID } else { "" }),
     [string]$OutPath = "C:\QM\logs\infra\health\paperclip_stale_lock_watchdog_latest.json",
     [switch]$AllowMissingPaperclipContext,
@@ -33,6 +34,7 @@ if ($startBoundary -le (Get-Date)) {
 $missingContext = @()
 if ([string]::IsNullOrWhiteSpace($PaperclipApiUrl)) { $missingContext += 'PaperclipApiUrl' }
 if ([string]::IsNullOrWhiteSpace($CompanyId)) { $missingContext += 'CompanyId' }
+if ([string]::IsNullOrWhiteSpace($ApiKey)) { $missingContext += 'ApiKey' }
 if ($missingContext.Count -gt 0 -and -not $AllowMissingPaperclipContext.IsPresent) {
     throw ("Missing required Paperclip context for scheduler action: {0}. Pass explicit values or set -AllowMissingPaperclipContext." -f ($missingContext -join ', '))
 }

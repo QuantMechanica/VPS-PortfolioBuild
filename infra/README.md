@@ -70,7 +70,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `scripts/Install-PaperclipStaleLockWatchdogTask.ps1`
   - Registers Task Scheduler job `QM_PaperclipStaleLockWatchdog_15min` as `SYSTEM`.
   - Runs `monitoring/Invoke-PaperclipStaleLockWatchdog.ps1 -StaleAfterMinutes 15 -RunningLockMaxMinutes 90 [-PaperclipApiUrl <url>] [-CompanyId <id>] [-AssigneeAgentId <id>] [-OutPath <json>] -FailOnFinding` every 15 minutes (monitor-only).
-  - Fails fast when `-PaperclipApiUrl`/`-CompanyId` are missing unless `-AllowMissingPaperclipContext` is explicitly set.
+  - Fails fast when `-PaperclipApiUrl`/`-CompanyId` or `PAPERCLIP_API_KEY` are missing unless `-AllowMissingPaperclipContext` is explicitly set.
   - Supports `-PreviewOnly` to print resolved task config without registering.
   - Safe to re-run (`Register-ScheduledTask -Force`) and overlap-safe (`MultipleInstances=IgnoreNew`).
 - `scripts/Install-QUA95BlockerRefreshTask.ps1`
