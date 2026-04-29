@@ -1,0 +1,24 @@
+[
+  {
+    "id": "run-1",
+    "createdAt": "2026-04-29T05:00:00Z",
+    "status": "succeeded",
+    "usage": {
+      "total_cost_usd": 3.5,
+      "total_tokens": 25000,
+      "input_tokens": 15000,
+      "output_tokens": 10000
+    }
+  },
+  {
+    "id": "run-2",
+    "createdAt": "2026-04-29T07:00:00Z",
+    "status": "failed",
+    "usage": {
+      "total_cost_usd": 3.8,
+      "total_tokens": 28000,
+      "input_tokens": 17000,
+      "output_tokens": 11000
+    }
+  }
+]
