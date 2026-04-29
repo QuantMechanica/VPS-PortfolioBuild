@@ -6,7 +6,7 @@ last-updated: 2026-04-29
 
 # 05 — Dashboard Refresh Cadence (V5)
 
-> **V5 audit (2026-04-29, [QUA-213](/QUA/issues/QUA-213) → full V5 rewrite under [QUA-230](/QUA/issues/QUA-230)).** This file was rewritten end-to-end. The V4 mechanism (Strategy-Analyst routine `5d3aed1c` + V4 `project_dashboard.html` + Windows Scheduled Task `QM_ProcessesHtml_Build` rebuilding `Processes/processes.html`) is **retired** in V5 — Strategy-Analyst is not a V5 role and the local PowerShell scheduled task was disabled 2026-04-21 to stop popups. **Pending CEO ack before merge** per QUA-213 § Boundary reminder (architectural change — mechanism replacement).
+> **V5 audit (2026-04-29, [QUA-213](/QUA/issues/QUA-213) → full V5 rewrite under [QUA-230](/QUA/issues/QUA-230)).** This file was rewritten end-to-end. The V4 mechanism (Strategy-Analyst routine `5d3aed1c` + V4 `project_dashboard.html` + Windows Scheduled Task `QM_ProcessesHtml_Build` rebuilding `Processes/processes.html`) is **retired** in V5 — Strategy-Analyst is not a V5 role and the local PowerShell scheduled task was disabled 2026-04-21 to stop popups. **CEO acked 2026-04-29** (DL-017 / QUA-188 broadened authority; QUA-230 thread) — architectural mechanism replacement under the boundary reminder of QUA-213.
 
 How the public QuantMechanica dashboard at quantmechanica.com (and adjacent internal surfaces) stays current via an hourly VPS export → public-data JSON → Netlify rebuild path. Source-of-truth spec: [`docs/ops/WEBSITE_DASHBOARD_PAPERCLIP_STYLE.md`](../docs/ops/WEBSITE_DASHBOARD_PAPERCLIP_STYLE.md).
 
