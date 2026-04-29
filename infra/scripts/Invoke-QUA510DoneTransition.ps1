@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [string]$BaseUrl = "http://localhost:3000",
+    [string]$BaseUrl = "",
     [string]$IssueId = "QUA-510",
     [string]$StatusPayloadPath = "C:\QM\repo\docs\ops\QUA-510_ISSUE_STATUS_UPDATE_2026-04-29.json",
     [string]$CommentPath = "C:\QM\repo\docs\ops\QUA-510_DONE_COMMENT_2026-04-29.md",
@@ -31,12 +31,21 @@ if ($statusDoc.target_status -ne "done") {
 
 $statusBody = @{
     status = "done"
-    comment = @{
-        body = $commentBody
-    }
+    comment = $commentBody
 } | ConvertTo-Json -Depth 6
 
+if ([string]::IsNullOrWhiteSpace($BaseUrl)) {
+    if (-not [string]::IsNullOrWhiteSpace($env:PAPERCLIP_API_URL)) {
+        $BaseUrl = $env:PAPERCLIP_API_URL
+    } elseif (-not [string]::IsNullOrWhiteSpace($env:PAPERCLIP_RUNTIME_API_URL)) {
+        $BaseUrl = $env:PAPERCLIP_RUNTIME_API_URL
+    } else {
+        $BaseUrl = "http://localhost:3000"
+    }
+}
+
 $statusUri = "$BaseUrl/api/issues/$IssueId"
+$commentUri = "$BaseUrl/api/issues/$IssueId/comments"
 
 if ($WhatIfOnly.IsPresent) {
     [ordered]@{
@@ -51,7 +60,10 @@ if ($WhatIfOnly.IsPresent) {
 
 $token = $env:PAPERCLIP_API_TOKEN
 if ([string]::IsNullOrWhiteSpace($token)) {
-    throw "Missing PAPERCLIP_API_TOKEN environment variable."
+    $token = $env:PAPERCLIP_API_KEY
+}
+if ([string]::IsNullOrWhiteSpace($token)) {
+    throw "Missing PAPERCLIP_API_TOKEN / PAPERCLIP_API_KEY environment variable."
 }
 
 $headers = @{
@@ -60,12 +72,18 @@ $headers = @{
     "X-Paperclip-Run-Id" = $runId
 }
 
-$response = Invoke-RestMethod -Method Patch -Uri $statusUri -Headers $headers -Body $statusBody
+$statusResponse = Invoke-RestMethod -Method Patch -Uri $statusUri -Headers $headers -Body $statusBody
+$commentPayload = @{
+    body = $commentBody
+    resume = $true
+} | ConvertTo-Json -Depth 4
+$commentResponse = Invoke-RestMethod -Method Post -Uri $commentUri -Headers $headers -Body $commentPayload
 
 [ordered]@{
     check = "qua510_done_transition"
     issue_id = $IssueId
     status = "done"
     run_id = $runId
-    response = $response
+    status_response = $statusResponse
+    comment_response = $commentResponse
 } | ConvertTo-Json -Depth 8
