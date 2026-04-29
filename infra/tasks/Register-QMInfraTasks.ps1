@@ -12,8 +12,12 @@ param(
     [string]$DriveGitExclusionOutputPath = "C:\QM\logs\infra\health\drive_git_exclusion_latest.json",
     [string]$GitIndexLockMonitorScript = "C:\QM\repo\infra\monitoring\Invoke-GitIndexLockMonitor.ps1",
     [string]$Class2ExecutionPolicySentinelScript = "C:\QM\repo\infra\monitoring\Test-Class2ExecutionPolicySentinel.ps1",
+    [string]$TokenCostBudgetScript = "C:\QM\repo\infra\monitoring\Test-TokenCostBudget.ps1",
     [string]$StaleLockWatchdogScript = "C:\QM\repo\infra\monitoring\Invoke-PaperclipStaleLockWatchdog.ps1",
     [string]$Qua207RuntimeHeartbeatScript = "C:\QM\repo\infra\scripts\Run-QUA207RuntimeCompletionHeartbeat.ps1",
+    [string]$TokenCostBudgetHealthScript = "C:\QM\repo\infra\monitoring\Test-TokenCostBudgetHealth.ps1",
+    [int64]$DailyTokenBudget = 2500000,
+    [string]$RuntimeHealthScanScript = "C:\QM\repo\infra\scripts\Run-RuntimeHealthScan.ps1",
     [string]$BackupScript = "C:\QM\repo\infra\backup.ps1",
     [string]$RecoveryOrphanCleanupScript = "C:\QM\repo\infra\scripts\Remove-RecoveryOrphans.ps1"
 )
@@ -129,6 +133,20 @@ Register-DesiredTask `
     -Trigger $healthTrigger `
     -Description "Checks infra health: disk, MT5 heartbeat, Paperclip daemon, Drive sync, stale index.lock."
 
+# Daily token-cost budget snapshot (also emits 70/80/95% threshold status)
+if (Test-Path -LiteralPath $TokenCostBudgetScript) {
+    $tokenCostDailyTrigger = New-ScheduledTaskTrigger -Daily -At "00:05"
+    Register-DesiredTask `
+        -TaskName "QM_TokenCostSnapshot_Daily_0005" `
+        -Executable "powershell.exe" `
+        -Arguments "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$TokenCostBudgetScript`"" `
+        -Trigger $tokenCostDailyTrigger `
+        -Description "Writes daily token-cost snapshot and threshold state (70/80/95%)."
+}
+else {
+    Write-Warning "Token cost budget script missing; skipped QM_TokenCostSnapshot_Daily_0005 registration."
+}
+
 # Git index lock monitor every 10 minutes (PC1-00)
 if (Test-Path -LiteralPath $GitIndexLockMonitorScript) {
     $gitLockTrigger = New-RepeatingTriggerFromToday `
@@ -212,6 +230,48 @@ if (Test-Path -LiteralPath $Qua207RuntimeHeartbeatScript) {
 }
 else {
     Write-Warning "QUA-207 runtime heartbeat script missing; skipped QM_QUA207_RuntimeHeartbeat_30min registration."
+}
+
+# Token-cost observability alarm every 15 minutes + daily snapshot
+if (Test-Path -LiteralPath $TokenCostBudgetHealthScript) {
+    $tokenCostAlarmTrigger = New-RepeatingTriggerFromToday `
+        -AtTime (Get-Date "00:09") `
+        -Interval (New-TimeSpan -Minutes 15) `
+        -Duration (New-TimeSpan -Days 3650)
+    Register-DesiredTask `
+        -TaskName "QM_TokenCostBudgetHealth_15min" `
+        -Executable "powershell.exe" `
+        -Arguments "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$TokenCostBudgetHealthScript`" -DailyTokenBudget $DailyTokenBudget" `
+        -Trigger $tokenCostAlarmTrigger `
+        -Description "Monitors daily token budget usage with 70/80/95 percent thresholds."
+
+    $tokenCostDailySnapshotTrigger = New-ScheduledTaskTrigger -Daily -At "00:10"
+    Register-DesiredTask `
+        -TaskName "QM_TokenCostBudgetDailySnapshot_0010" `
+        -Executable "powershell.exe" `
+        -Arguments "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$TokenCostBudgetHealthScript`" -DailyTokenBudget $DailyTokenBudget" `
+        -Trigger $tokenCostDailySnapshotTrigger `
+        -Description "Writes daily token-cost snapshot artifacts."
+}
+else {
+    Write-Warning "Token-cost monitor script missing; skipped token-cost observability task registration."
+}
+
+# Agent runtime health scan every 15 minutes (5 runtime-pathology detectors)
+if (Test-Path -LiteralPath $RuntimeHealthScanScript) {
+    $runtimeHealthTrigger = New-RepeatingTriggerFromToday `
+        -AtTime (Get-Date "00:05") `
+        -Interval (New-TimeSpan -Minutes 15) `
+        -Duration (New-TimeSpan -Days 3650)
+    Register-DesiredTask `
+        -TaskName "QM_RuntimeHealthScan_15min" `
+        -Executable "powershell.exe" `
+        -Arguments "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$RuntimeHealthScanScript`"" `
+        -Trigger $runtimeHealthTrigger `
+        -Description "Runs agent runtime health scan detectors (hot-poll, stuck-session, bottleneck, budget pressure, recursive self-wake)."
+}
+else {
+    Write-Warning "Runtime health scan script missing; skipped QM_RuntimeHealthScan_15min registration."
 }
 
 # Daily backup at 02:15

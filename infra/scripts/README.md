@@ -843,6 +843,33 @@
 - Preview mode:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-QUA207RuntimeHeartbeatTask.ps1 -PreviewOnly`
 
+## `Run-RuntimeHealthScan.ps1`
+
+- Runs the 5 runtime-pathology detectors defined in `processes/17-agent-runtime-health.md`:
+  - hot-poll loop
+  - stuck-session sentinel
+  - bottleneck signal
+  - token-budget pressure
+  - recursive self-wake
+- Pulls runtime data from Paperclip API and emits machine-readable output:
+  - `C:\QM\logs\infra\health\runtime_health_scan_latest.json`
+- Exit codes:
+  - `0`: all checks `ok`
+  - `1`: one or more checks `warn` and no `critical`
+  - `2`: one or more checks `critical`
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Run-RuntimeHealthScan.ps1`
+
+## `Install-RuntimeHealthScanTask.ps1`
+
+- Idempotently installs scheduler task `QM_RuntimeHealthScan_15min`.
+- Defaults:
+  - interval: `15` minutes
+  - principal: `SYSTEM` (highest)
+  - output: `C:\QM\logs\infra\health\runtime_health_scan_latest.json`
+- Preview mode:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-RuntimeHealthScanTask.ps1 -PreviewOnly`
+
 ## `Remove-QUA207RuntimeHeartbeatTask.ps1`
 
 - Idempotently removes scheduler task `QM_QUA207_RuntimeHeartbeat_30min`.

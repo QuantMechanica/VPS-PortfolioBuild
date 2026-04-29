@@ -46,6 +46,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
     - aggregator freshness
     - Google Drive sync freshness
     - Pipeline-Operator heartbeat run health (`process_loss` recovered vs unrecovered)
+    - Token-cost daily budget observability (`monitoring/Test-TokenCostBudget.ps1`) with 70/80/95% threshold alarms + daily snapshot artifacts
     - stale `.git/index.lock` detection (delegated to `monitoring/Invoke-GitIndexLockMonitor.ps1` for canonical lock logic)
     - QUA-95 blocker refresh task health (`QM_QUA95_BlockerRefresh`)
     - QUA-95 task-health action wiring (`QM_QUA95_TaskHealth_15min` args)
@@ -67,6 +68,13 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Registers Task Scheduler job `QM_AggregatorState_1min` as `SYSTEM`.
   - Runs `scripts/aggregator/standalone_aggregator_loop.py --once` every minute.
   - Safe to re-run (`Register-ScheduledTask -Force`) and overlap-safe (`MultipleInstances=IgnoreNew`).
+- `monitoring/Test-TokenCostBudget.ps1`
+  - Computes current UTC-day token spend from heartbeat runs and compares against `DailyBudgetUsd` (default `25`, env override `QM_TOKEN_DAILY_BUDGET_USD`).
+  - Emits threshold state at 70% / 80% / 95% and exits with monitor semantics (`ok=0`, `warn=1`, `critical=2`).
+  - Writes snapshots:
+    - `C:\QM\logs\infra\health\token_cost_daily_snapshot_latest.json`
+    - `C:\QM\logs\infra\health\token_cost_daily\token_cost_YYYY-MM-DD.json`
+  - Supports deterministic fixture mode via `-InputRunsJsonPath` for local verification.
 - `scripts/Install-PaperclipStaleLockWatchdogTask.ps1`
   - Registers Task Scheduler job `QM_PaperclipStaleLockWatchdog_15min` as `SYSTEM`.
   - Runs `monitoring/Invoke-PaperclipStaleLockWatchdog.ps1 -StaleAfterMinutes 15 -RunningLockMaxMinutes 90 [-PaperclipApiUrl <url>] [-CompanyId <id>] [-AssigneeAgentId <id>] [-OutPath <json>] -FailOnFinding` every 15 minutes (monitor-only).
@@ -172,6 +180,13 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Classifies Pipeline-Operator 24h failures into recovered/unrecovered `process_loss`.
   - Flags `critical` only for unrecovered `process_loss` runs and keeps recovered retries as non-critical.
   - Emits `warn` for elevated non-process-loss failure-rate drift (for example adapter usage-limit spikes).
+- `monitoring/Test-TokenCostBudgetHealth.ps1`
+  - Computes daily token usage from Paperclip heartbeat runs and applies threshold alarms at `70%`, `80%`, and `95%` of `-DailyTokenBudget`.
+  - Writes snapshots to `infra/reports/token-cost/token_cost_budget_latest.json` plus dated daily files.
+  - Exits with `0/1/2` for `ok/warn/critical` to support scheduler-driven alerting.
+- `scripts/Install-TokenCostObservabilityTasks.ps1`
+  - Registers `QM_TokenCostBudgetHealth_15min` (alarm monitor) and `QM_TokenCostBudgetDailySnapshot_0010` (daily snapshot) as `SYSTEM`.
+  - Safe to re-run (`Register-ScheduledTask -Force`) and overlap-safe (`MultipleInstances=IgnoreNew`).
 - `monitoring/Test-BackupSmoke.ps1`
   - Runs backup workflow in an isolated temp workspace and asserts manifest/artifacts.
 - `monitoring/Invoke-PaperclipStaleLockWatchdog.ps1`
@@ -264,6 +279,18 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `scripts/Install-QUA207RuntimeHeartbeatTask.ps1`
   - Registers scheduler task `QM_QUA207_RuntimeHeartbeat_30min` to run the QUA-207 runtime heartbeat runner as `SYSTEM`.
   - Safe to re-run (`Register-ScheduledTask -Force`).
+- `scripts/Run-RuntimeHealthScan.ps1`
+  - Runs 5 agent-runtime detectors from `processes/17-agent-runtime-health.md`:
+    - hot-poll loop
+    - stuck-session sentinel
+    - bottleneck signal
+    - token-budget pressure
+    - recursive self-wake suspicion
+  - Writes machine-readable output to `C:\QM\logs\infra\health\runtime_health_scan_latest.json`.
+- `scripts/Install-RuntimeHealthScanTask.ps1`
+  - Registers scheduler task `QM_RuntimeHealthScan_15min` as `SYSTEM` (15-minute cadence).
+  - Supports `-PreviewOnly` and explicit API context flags for deterministic task action wiring.
+  - Safe to re-run (`Register-ScheduledTask -Force`).
 - `scripts/Remove-QUA207RuntimeHeartbeatTask.ps1`
   - Removes `QM_QUA207_RuntimeHeartbeat_30min` idempotently (`ok` when already absent).
 - `scripts/Run-QUA207OpsBundle.ps1`
@@ -275,6 +302,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Generates `docs/ops/QUA-207_ISSUE_STATUS_UPDATE_2026-04-27.json` for deterministic issue-state mutation (`blocked` while waiting on verifier owner).
 - `tasks/Register-QMInfraTasks.ps1`
   - Also converges `QM_QUA207_RuntimeHeartbeat_30min` when `Run-QUA207RuntimeCompletionHeartbeat.ps1` is present.
+  - Also converges `QM_RuntimeHealthScan_15min` when `Run-RuntimeHealthScan.ps1` is present.
 - `scripts/New-QUA207IssueComment.ps1`
   - Generates `docs/ops/QUA-207_ISSUE_COMMENT_2026-04-27.md` from live transition + evidence artifacts.
 - `scripts/Invoke-QUA350IssueTransition.ps1`
@@ -389,6 +417,12 @@ Class-2 execution-policy sentinel (every 60 minutes, DL-030):
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-Class2ExecutionPolicySentinelTask.ps1 -EveryMinutes 60 -FailOnFinding
 ```
 
+Token-cost observability (70/80/95 budget alarms + daily snapshot):
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-TokenCostObservabilityTasks.ps1 -DailyTokenBudget 2500000
+```
+
 Drive/git hard-fence verification (every 15 minutes, PC1-00):
 
 ```powershell
@@ -423,6 +457,12 @@ QUA-95 runtime bars restore task (every 15 minutes):
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-QUA95RuntimeRestoreTask.ps1 -EveryMinutes 15
+```
+
+Runtime health scan task (every 15 minutes):
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-RuntimeHealthScanTask.ps1 -EveryMinutes 15
 ```
 
 Recovery orphan cleanup (daily schedule is managed by `tasks/Register-QMInfraTasks.ps1`):
