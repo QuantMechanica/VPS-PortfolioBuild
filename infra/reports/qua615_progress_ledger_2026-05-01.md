@@ -12,6 +12,16 @@
 - 81c224d3 - fix QUA-93 blocker refresh start boundary
 - 3ef704fb - normalize DWX hourly task start boundary
 
+## Preview-Mode Standardization Commits
+- 4dda3650 - add PreviewOnly to Install-AggregatorStateTask
+- f2c815c9 - add PreviewOnly to Install-GitIndexLockMonitorTask
+- f1146ef6 - add PreviewOnly to Install-DwxHourlyTask
+- 71a47aac - add PreviewOnly to Install-TokenCostObservabilityTasks
+- e2c5c904 - add PreviewOnly to Install-MainArtifactPreCommitHook
+- 1c9fc7e3 - add PreviewOnly to Install-DwxSpecPatchRunner
+- 1c54e291 - add explicit PreviewOnly to Install-DwxHourlyRoutine
+- 5d0b2493 - refresh coverage report to PreviewOnly 17/17
+
 ## Tracking and Evidence Commits
 - a98f4f0b - add `infra/monitoring/Invoke-GitIndexLockMonitor.ps1`
 - 7c4fba71 - add `infra/scripts/Commit-HeartbeatCheckpoint.ps1`
@@ -23,6 +33,7 @@
 - 77b6747a - refresh bond inventory markdown timestamp
 - c5032b60 - document main-branch artifact guard workflow
 
-## Policy Constraint
-- `artifacts/*` commits on `main` are guarded (`main_artifact_policy_violation`).
-- Evidence fallback path: `infra/reports/*` with explicit artifact references.
+## Current State
+- Installer PreviewOnly coverage: 17/17
+- Main-branch artifact policy: `artifacts/*` commits may be blocked (`main_artifact_policy_violation`)
+- Evidence fallback path for blocked artifact commits: `infra/reports/*`
