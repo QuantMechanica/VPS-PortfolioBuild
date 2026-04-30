@@ -24,9 +24,12 @@ if (-not (Test-Path -LiteralPath $scriptPath)) {
 }
 
 $minuteOffset = [Math]::Max(0, [Math]::Min(59, $MinuteOffset))
-$startBoundary = (Get-Date).Date.AddHours((Get-Date).Hour).AddMinutes($minuteOffset)
-if ($startBoundary -le (Get-Date)) {
-    $startBoundary = $startBoundary.AddMinutes($EveryMinutes)
+$now = Get-Date
+$startBoundary = $now.Date.AddHours($now.Hour).AddMinutes($minuteOffset)
+if ($startBoundary -le $now) {
+    do {
+        $startBoundary = $startBoundary.AddMinutes($EveryMinutes)
+    } while ($startBoundary -le $now)
 }
 
 $args = "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`""
