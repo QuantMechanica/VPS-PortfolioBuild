@@ -2,7 +2,11 @@
 param(
     [string]$RepoRoot = 'C:\QM\repo',
     [string[]]$AllowedPaths = @(),
-    [switch]$AllowNothingWhenEmpty
+    [string[]]$AllowedExactPaths = @(),
+    [switch]$AllowNothingWhenEmpty,
+    [switch]$FailOnUntracked,
+    [string[]]$AllowedUntrackedPaths = @(),
+    [string[]]$AllowedUntrackedExactPaths = @()
 )
 
 Set-StrictMode -Version Latest
@@ -10,6 +14,43 @@ $ErrorActionPreference = 'Stop'
 
 if (-not (Test-Path -LiteralPath (Join-Path $RepoRoot '.git'))) {
     throw "Not a git repository root: $RepoRoot"
+}
+
+$normalizedAllowedUntrackedPrefixes = @($AllowedUntrackedPaths | ForEach-Object { $_.Replace('\', '/').TrimStart('./') })
+$normalizedAllowedUntrackedExact = @($AllowedUntrackedExactPaths | ForEach-Object { $_.Replace('\', '/').TrimStart('./') })
+
+if ($FailOnUntracked) {
+    $untrackedRaw = & git -C $RepoRoot ls-files --others --exclude-standard
+    $untracked = @($untrackedRaw | ForEach-Object { $_.Trim() } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    $untrackedViolations = @()
+
+    foreach ($f in $untracked) {
+        $n = $f.Replace('\', '/').TrimStart('./')
+        $allowed = $false
+        foreach ($exact in $normalizedAllowedUntrackedExact) {
+            if ($n.Equals($exact, [System.StringComparison]::OrdinalIgnoreCase)) {
+                $allowed = $true
+                break
+            }
+        }
+        if (-not $allowed) {
+            foreach ($prefix in $normalizedAllowedUntrackedPrefixes) {
+                if ($n.StartsWith($prefix, [System.StringComparison]::OrdinalIgnoreCase)) {
+                    $allowed = $true
+                    break
+                }
+            }
+        }
+        if (-not $allowed) {
+            $untrackedViolations += $f
+        }
+    }
+
+    if (@($untrackedViolations).Count -gt 0) {
+        Write-Host ("status=critical reason=untracked_files_present untracked_count={0} violation_count={1}" -f @($untracked).Count, @($untrackedViolations).Count)
+        foreach ($f in $untrackedViolations) { Write-Host ("untracked_violation={0}" -f $f) }
+        exit 3
+    }
 }
 
 $stagedRaw = & git -C $RepoRoot diff --cached --name-only --diff-filter=ACMRTUXB
@@ -20,7 +61,7 @@ if (@($staged).Count -eq 0) {
     exit 0
 }
 
-if (@($AllowedPaths).Count -eq 0) {
+if ((@($AllowedPaths).Count -eq 0) -and (@($AllowedExactPaths).Count -eq 0)) {
     if ($AllowNothingWhenEmpty) {
         Write-Host ("status=critical reason=allowlist_empty staged_count={0}" -f @($staged).Count)
         foreach ($f in $staged) { Write-Host ("staged_file={0}" -f $f) }
@@ -30,16 +71,25 @@ if (@($AllowedPaths).Count -eq 0) {
     exit 0
 }
 
-$normalizedAllowed = @($AllowedPaths | ForEach-Object { $_.Replace('\', '/').TrimStart('./') })
+$normalizedAllowedPrefixes = @($AllowedPaths | ForEach-Object { $_.Replace('\', '/').TrimStart('./') })
+$normalizedAllowedExact = @($AllowedExactPaths | ForEach-Object { $_.Replace('\', '/').TrimStart('./') })
 $violations = @()
 
 foreach ($f in $staged) {
     $n = $f.Replace('\', '/').TrimStart('./')
     $allowed = $false
-    foreach ($prefix in $normalizedAllowed) {
-        if ($n.StartsWith($prefix, [System.StringComparison]::OrdinalIgnoreCase)) {
+    foreach ($exact in $normalizedAllowedExact) {
+        if ($n.Equals($exact, [System.StringComparison]::OrdinalIgnoreCase)) {
             $allowed = $true
             break
+        }
+    }
+    if (-not $allowed) {
+        foreach ($prefix in $normalizedAllowedPrefixes) {
+            if ($n.StartsWith($prefix, [System.StringComparison]::OrdinalIgnoreCase)) {
+                $allowed = $true
+                break
+            }
         }
     }
     if (-not $allowed) {
@@ -53,5 +103,5 @@ if (@($violations).Count -gt 0) {
     exit 2
 }
 
-Write-Host ("status=ok staged_count={0} allow_prefix_count={1}" -f @($staged).Count, @($normalizedAllowed).Count)
+Write-Host ("status=ok staged_count={0} allow_prefix_count={1} allow_exact_count={2} fail_on_untracked={3}" -f @($staged).Count, @($normalizedAllowedPrefixes).Count, @($normalizedAllowedExact).Count, $FailOnUntracked.IsPresent.ToString().ToLowerInvariant())
 exit 0

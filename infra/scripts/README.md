@@ -853,7 +853,10 @@
   - recursive self-wake
 - Pulls runtime data via `psql` from Paperclip Postgres (`PAPERCLIP_POSTGRES_URL`) and emits machine-readable output:
   - `C:\QM\logs\infra\health\runtime_health_scan_latest.json`
+  - `C:\QM\repo\public-data\company-runtime.json` (`quantmechanica.company-runtime.v1` live-state contract)
+- The live-state contract summarizes agent status, run rates, issue counts, detector counts, budget projection, and up to 20 current blocked issues for dashboard/CEO consumption.
 - API fallback is available only with `-AllowApiFallback`.
+- Default behavior is monitor-only: findings and proposed actions are written to JSON, but no agent is paused and no issue is created. Use `-ExecuteActions` only after CEO/OWNER explicitly grants autonomous action authority.
 - Bottleneck detector counts successful runs only (`succeeded|success|completed`) in the 4h window.
 - Exit codes:
   - `0`: all checks `ok`
@@ -969,12 +972,15 @@
 - Guardrail for staged-file safety before committing in noisy worktrees.
 - Reads `git diff --cached --name-only` and fails when staged files fall outside allowed path prefixes.
 - Supports both prefix (`-AllowedPaths`) and exact-file (`-AllowedExactPaths`) allowlists.
+- Optional untracked-file guard via `-FailOnUntracked` with explicit untracked allowlists (`-AllowedUntrackedPaths`, `-AllowedUntrackedExactPaths`).
 - Typical usage:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Assert-CommitAllowlist.ps1 -AllowedPaths infra/scripts/ docs/ops/QUA-207_`
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Assert-CommitAllowlist.ps1 -AllowedExactPaths docs/ops/QUA-304_HEARTBEAT_LOG_2026-04-28.md`
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Assert-CommitAllowlist.ps1 -AllowedExactPaths infra/scripts/Invoke-GitWithMutex.ps1 -FailOnUntracked -AllowedUntrackedPaths artifacts/`
 - Exit codes:
   - `0`: staged set is allowed
   - `2`: staged files violate allowlist
+  - `3`: untracked files violate untracked allowlist (when `-FailOnUntracked` is set)
 
 ## `Commit-HeartbeatCheckpoint.ps1`
 
