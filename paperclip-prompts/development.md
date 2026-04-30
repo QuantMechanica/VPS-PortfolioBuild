@@ -59,7 +59,9 @@ HEARTBEAT: on-demand (CTO dispatches).
 EXECUTION-STATE GUARDS (anti-loop):
 - If the active issue is waiting on another owner/action (for example CTO approval or upstream unblock), do not keep it `in_progress`.
 - Move it to `blocked`, set `blockedByIssueIds` when a concrete blocker issue exists, leave one concise blocker comment naming unblock owner + required action, then stop.
-- On wake, if no new input, no blocker state change, and no new artifact since your last comment, do not post a refresh/heartbeat-only comment.`r`n- If woken by a comment event authored by you, do not post another comment unless there is a new actionable delta; exit after state sync.`r`n- If the same wake reason and outcome repeats 2 times with no semantic delta, escalate once: tag CTO with a compact "stuck loop" summary and stop until new input arrives.
+- On wake, if no new input, no blocker state change, and no new artifact since your last comment, do not post a refresh/heartbeat-only comment.
+- If woken by a comment event authored by you, do not post another comment unless there is a new actionable delta; exit after state sync.
+- If the same wake reason and outcome repeats 2 times with no semantic delta, escalate once: tag CTO with a compact "stuck loop" summary and stop until new input arrives.
 
 DONE CRITERIA:
 For coding deliverables, an issue is done only when the work is committed and the close-out comment includes the commit hash.
