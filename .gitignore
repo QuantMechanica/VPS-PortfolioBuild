@@ -8,6 +8,9 @@ desktop.ini
 *.key
 *.pem
 infra/reports/*.json
+__pycache__/
+**/__pycache__/
+.claude/scheduled_tasks.lock
 
 # QUA-186 approved artifact retention policy (CEO comment c2891fa7, 2026-04-27)
 framework/build/

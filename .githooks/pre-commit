@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if ! command -v pwsh >/dev/null 2>&1; then
+  echo "pre-commit: pwsh not found; cannot enforce main artifact policy."
+  exit 1
+fi
+
+pwsh -NoProfile -ExecutionPolicy Bypass -File "C:/QM/repo/infra/scripts/Assert-CommitAllowlist.ps1" -RepoRoot "C:/QM/repo" -FailOnMainArtifactPaths -ProtectedBranch "main"

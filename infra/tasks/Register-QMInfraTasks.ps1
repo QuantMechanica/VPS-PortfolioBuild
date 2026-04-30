@@ -12,6 +12,7 @@ param(
     [string]$DriveGitExclusionOutputPath = "C:\QM\logs\infra\health\drive_git_exclusion_latest.json",
     [string]$GitIndexLockMonitorScript = "C:\QM\repo\infra\monitoring\Invoke-GitIndexLockMonitor.ps1",
     [string]$Class2ExecutionPolicySentinelScript = "C:\QM\repo\infra\monitoring\Test-Class2ExecutionPolicySentinel.ps1",
+    [string]$MainArtifactEnforcerScript = "C:\QM\repo\infra\monitoring\Test-MainArtifactEnforcer.ps1",
     [string]$TokenCostBudgetScript = "C:\QM\repo\infra\monitoring\Test-TokenCostBudget.ps1",
     [string]$StaleLockWatchdogScript = "C:\QM\repo\infra\monitoring\Invoke-PaperclipStaleLockWatchdog.ps1",
     [string]$Qua207RuntimeHeartbeatScript = "C:\QM\repo\infra\scripts\Run-QUA207RuntimeCompletionHeartbeat.ps1",
@@ -195,6 +196,23 @@ if (Test-Path -LiteralPath $Class2ExecutionPolicySentinelScript) {
 }
 else {
     Write-Warning "Class-2 execution-policy sentinel script missing; skipped QM_Class2ExecutionPolicySentinel_60min registration."
+}
+
+# Main-branch artifact enforcer every 15 minutes (QUA-616)
+if (Test-Path -LiteralPath $MainArtifactEnforcerScript) {
+    $mainArtifactTrigger = New-RepeatingTriggerFromToday `
+        -AtTime (Get-Date "00:13") `
+        -Interval (New-TimeSpan -Minutes 15) `
+        -Duration (New-TimeSpan -Days 3650)
+    Register-DesiredTask `
+        -TaskName "QM_MainArtifactEnforcer_15min" `
+        -Executable "powershell.exe" `
+        -Arguments "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$MainArtifactEnforcerScript`" -RepoRoot `"$RepoRoot`" -ProtectedBranch main" `
+        -Trigger $mainArtifactTrigger `
+        -Description "Detects forbidden QUA-* artifact paths on main checkout."
+}
+else {
+    Write-Warning "Main artifact enforcer script missing; skipped QM_MainArtifactEnforcer_15min registration."
 }
 
 # Drive/git exclusion hard-fence verification every 15 minutes (PC1-00)

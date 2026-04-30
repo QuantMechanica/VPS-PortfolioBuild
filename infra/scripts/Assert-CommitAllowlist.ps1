@@ -7,7 +7,9 @@ param(
     [switch]$FailOnRepoRootZeroByte,
     [switch]$FailOnUntracked,
     [string[]]$AllowedUntrackedPaths = @(),
-    [string[]]$AllowedUntrackedExactPaths = @()
+    [string[]]$AllowedUntrackedExactPaths = @(),
+    [switch]$FailOnMainArtifactPaths,
+    [string]$ProtectedBranch = 'main'
 )
 
 Set-StrictMode -Version Latest
@@ -66,6 +68,29 @@ if ($FailOnUntracked) {
 
 $stagedRaw = & git -C $RepoRoot diff --cached --name-only --diff-filter=ACMRTUXB
 $staged = @($stagedRaw | ForEach-Object { $_.Trim() } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+
+if ($FailOnMainArtifactPaths) {
+    $currentBranch = (& git -C $RepoRoot rev-parse --abbrev-ref HEAD).Trim()
+    if ($currentBranch.Equals($ProtectedBranch, [System.StringComparison]::OrdinalIgnoreCase)) {
+        $mainArtifactViolations = @()
+        foreach ($f in $staged) {
+            $n = $f.Replace('\', '/').TrimStart('./')
+            if ($n -match '^docs/ops/QUA-[^/]+_[^/]+\.(md|json|sha256|txt)$' -or
+                $n -match '^QUA-[^/]+_[^/]+\.(md|json|sha256|txt)$' -or
+                $n -match '^artifacts/qua-[^/]+/.+' -or
+                $n -match '(^|/)__pycache__(/|$)' -or
+                $n.Equals('.claude/scheduled_tasks.lock', [System.StringComparison]::OrdinalIgnoreCase)) {
+                $mainArtifactViolations += $f
+            }
+        }
+
+        if (@($mainArtifactViolations).Count -gt 0) {
+            Write-Host ("status=critical reason=main_artifact_policy_violation branch={0} staged_count={1} violation_count={2}" -f $currentBranch, @($staged).Count, @($mainArtifactViolations).Count)
+            foreach ($f in $mainArtifactViolations) { Write-Host ("main_artifact_violation={0}" -f $f) }
+            exit 5
+        }
+    }
+}
 
 if (@($staged).Count -eq 0) {
     Write-Host 'status=ok staged_count=0'
