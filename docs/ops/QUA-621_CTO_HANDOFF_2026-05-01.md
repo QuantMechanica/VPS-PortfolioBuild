@@ -34,8 +34,17 @@ Confirm the Development claim of phase-runner artifacts routed from QUA-614/QUA-
 ## Decision request
 - Approve merge of the above claim commits into the integration branch used for QUA-589 sweep closure.
 
+## CTO review commands
+```powershell
+git show --stat --name-only 847dabad
+git show --stat --name-only 482c01ef
+git show --stat --name-only 3a4ecb4c
+git show --stat --name-only 2f22f1d9
+git show --stat --name-only e5fd84a2
+```
+
 ## Blocker status (updated 2026-05-01)
 - Status: BLOCKED
-- Blocked on: CTO review/decision for commits `847dabad`, `482c01ef`, `3a4ecb4c`, `2f22f1d9`
+- Blocked on: CTO review/decision for commits `847dabad`, `482c01ef`, `3a4ecb4c`, `2f22f1d9`, `e5fd84a2`
 - Unblock owner: CTO
-- Unblock action: Approve (or request changes on) the four commits so Development can proceed with integration/closure steps on QUA-621.
+- Unblock action: Approve (or request changes on) the five commits so Development can proceed with integration/closure steps on QUA-621.
