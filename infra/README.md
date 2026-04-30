@@ -87,6 +87,10 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Action chain: verifier rerun -> blocker sync -> blocked summary -> handoff integrity check.
   - Uses now-relative first-run trigger boundary (`Get-Date).AddMinutes(1)`) to avoid past-time registration drift.
   - Safe to re-run (`Register-ScheduledTask -Force`).
+- `scripts/Install-QUA93BlockerRefreshTask.ps1`
+  - Registers Task Scheduler job `QM_QUA93_BlockerRefresh` as `SYSTEM` (hourly by default).
+  - Uses now-relative first-run trigger boundary (`Get-Date).AddMinutes(1)`) to avoid past-time registration drift.
+  - Safe to re-run (`Register-ScheduledTask -Force`).
 - `scripts/Install-QUA95TaskHealthTask.ps1`
   - Registers Task Scheduler job `QM_QUA95_TaskHealth_15min` as `SYSTEM`.
   - Runs `monitoring/Test-QUA95BlockerTaskHealth.ps1` on a 15-minute cadence.
