@@ -2,7 +2,7 @@
 AUTO-GENERATED MIRROR — DO NOT EDIT.
 Source: Notion page 34947da58f4a81c28045ebec3ad6d78a
 Title: Paperclip Company Operating System & Process Roadmap
-Mirrored: 2026-04-28T23:00:00Z by Documentation-KM (QUA-151 nightly sync; previous refresh 2026-04-27T15:05:00Z under QUA-256)
+Mirrored: 2026-04-30T22:00:00Z by Documentation-KM (QUA-545 nightly sync; previous refresh 2026-04-28T23:00:00Z under QUA-151)
 Editing surface: Notion. Direct edits will be overwritten by the next sync.
 Manifest: infra/notion-sync/manifest.yaml
 Mapping note: BASIS lists "Process Roadmap"; per CEO 2026-04-27 (QUA-151
@@ -122,12 +122,20 @@ It must not expose credentials, internal paths, account IDs, RDP details, or raw
 
 - [13 — Strategy Research Workflow](https://www.notion.so/34f47da58f4a8157a2d2cc7ef5442891)
 - [15 — Pipeline-Operator Load Balancing (T1-T5)](https://www.notion.so/34f47da58f4a8127920ef24e8f896d58)
-- [DL-029 — Strategy Research Workflow (Decision Log)](https://www.notion.so/34f47da58f4a81819b0dd9614646db81)
 - [DL-023 — CEO Autonomy Waiver, Broadened Scope v2 (Decision Log)](https://www.notion.so/34f47da58f4a81c79564c26244d745eb)
 - [DL-024 — CEO Scheduled Heartbeat Enablement 3600s (Decision Log)](https://www.notion.so/34f47da58f4a815cb2effa452a74c0bd)
 - [DL-025 — T6 Deploy Boundary Refinement (Decision Log)](https://www.notion.so/34f47da58f4a810fad87cacf506238b8)
 - [DL-026 — Commit-Hash-In-Close-Out Rule (Decision Log)](https://www.notion.so/34f47da58f4a81cdae66d3247a934215)
 - [DL-027 — BASIS→active Diff Propagation Rule (Decision Log)](https://www.notion.so/34f47da58f4a813f9c8eee045c2cf4c4)
 - [DL-028 — Per-Agent Worktree Isolation Standard (Decision Log)](https://www.notion.so/34f47da58f4a810fabbae254ab710778)
+- [DL-029 — Strategy Research Workflow (Decision Log)](https://www.notion.so/34f47da58f4a81819b0dd9614646db81)
+- [DL-030 — Execution Policies v1 (Decision Log)](https://www.notion.so/35147da58f4a8160b37afcf3f0588520)
 - [DL-031 — Projects Formalization + Issue Routing Convention (Decision Log)](https://www.notion.so/34f47da58f4a814b9df7f6e4f8e661d1)
-- DL-032 — CEO Autonomy Waiver, Research Source-Queue Ordering v3 (Decision Log) — `decisions/2026-04-27_ceo_autonomy_waiver_v3.md` (Notion URL pending nightly sync)
+- [DL-032 — CEO Autonomy Waiver, Research Source-Queue Ordering v3 (Decision Log)](https://www.notion.so/35147da58f4a81aeb47ac5c8442c2fb1)
+- [DL-033 — No Strategy-Level Prioritization + Canonical Lifecycle (Decision Log)](https://www.notion.so/35147da58f4a811c9087d26fb45d5d3f)
+- [DL-034 — CEO Heartbeat 30 min (1800s) (Decision Log)](https://www.notion.so/35147da58f4a81d1af55ed7d3e0e6de5)
+- [DL-035 — Pipeline-Operator Load-Balancing Dispatch Convention (Decision Log)](https://www.notion.so/35147da58f4a81d28adee80e0b74b5fb)
+- [DL-036 — EA Review Gate Codification (Decision Log)](https://www.notion.so/35147da58f4a81789b47d794c17742df)
+- [DL-037 — Stage B CSV Cleanup (Tick-Data-Timezone Source CSVs Removed) (Decision Log)](https://www.notion.so/35147da58f4a81378958d79fbf967c97)
+- [DL-038 — Seven Binding Backtest Rules (OWNER 2026-04-28) (Decision Log)](https://www.notion.so/35147da58f4a81198b9ad2d705b66fb2)
+- [DL-039 — Quality-Business Hire (9th-agent OWNER override of Wave-2 8-cap) (Decision Log)](https://www.notion.so/35147da58f4a816bab78fc09cbbd7a46)
