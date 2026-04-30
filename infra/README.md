@@ -226,6 +226,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `scripts/Install-GitIndexLockMonitorTask.ps1`
   - Registers Task Scheduler job `QM_GitIndexLockMonitor_10min` as `SYSTEM`.
   - Runs `monitoring/Invoke-GitIndexLockMonitor.ps1 -StaleAfterMinutes 20 -FailOnFinding`.
+  - Normalizes trigger start boundary to the next future slot to avoid stale/past start times on re-run.
   - Safe to re-run (`Register-ScheduledTask -Force`) and overlap-safe (`MultipleInstances=IgnoreNew`).
 - `scripts/Install-Class2ExecutionPolicySentinelTask.ps1`
   - Registers Task Scheduler job `QM_Class2ExecutionPolicySentinel_60min` as `SYSTEM`.
