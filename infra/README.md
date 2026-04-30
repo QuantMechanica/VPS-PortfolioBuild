@@ -360,6 +360,9 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Uses:
     - `docs/ops/QUA-350_ISSUE_STATUS_UPDATE_2026-04-28.json`
     - `docs/ops/QUA-350_ISSUE_COMMENT_2026-04-28.md`
+- `scripts/Run-QUA615InReviewTransition.ps1`
+  - Preview-by-default helper for applying QUA-615 status transition to `in_review` with required `X-Paperclip-Run-Id`.
+  - Mutates only with `-Apply`; emits request payload/URI in preview mode.
 - `scripts/Assert-CommitAllowlist.ps1`
   - Pre-commit guard that fails when staged files are outside explicit allowlist prefixes.
   - Use to prevent accidental mixed commits in shared/dirty worktrees.
