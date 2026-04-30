@@ -20,7 +20,7 @@ if (-not (Test-Path -LiteralPath $heartbeatScript)) {
 
 $args = "-NoProfile -ExecutionPolicy Bypass -File `"$heartbeatScript`" -RepoRoot `"$RepoRoot`""
 $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument $args
-$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).Date.AddMinutes(3) `
+$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(3) `
     -RepetitionInterval (New-TimeSpan -Minutes $EveryMinutes) `
     -RepetitionDuration (New-TimeSpan -Days 3650)
 $settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -MultipleInstances IgnoreNew

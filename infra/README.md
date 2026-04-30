@@ -131,11 +131,13 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `scripts/Install-QUA95RuntimeRestoreTask.ps1`
   - Registers Task Scheduler job `QM_QUA95_RuntimeRestore_15min` as `SYSTEM` (15-minute cadence by default).
   - Runs `Restore-QUA95RuntimeBars.ps1` with explicit bounded retry parameters.
+  - Uses now-relative first-run trigger boundary (`Get-Date).AddMinutes(2)`) to avoid past-time registration drift.
   - Safe to re-run (`Register-ScheduledTask -Force`).
 - `scripts/Update-QUA95BlockedAssertion.ps1`
   - Regenerates blocked-state assertion markdown from canonical gate + blocker JSON.
 - `scripts/Install-QUA95BlockedHeartbeatTask.ps1`
   - Registers a dedicated `SYSTEM` scheduler task for the blocked-heartbeat wrapper.
+  - Uses now-relative first-run trigger boundary (`Get-Date).AddMinutes(3)`) to avoid past-time registration drift.
   - Safe to re-run (`Register-ScheduledTask -Force`).
 - `scripts/Install-DwxSpecPatchRunner.ps1`
   - Converges a non-interactive MT5 startup INI from one patch version to another (default: `v2 -> v3`).
@@ -296,6 +298,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Writes `docs/ops/QUA-207_RUNTIME_HEARTBEAT_2026-04-27.json`.
 - `scripts/Install-QUA207RuntimeHeartbeatTask.ps1`
   - Registers scheduler task `QM_QUA207_RuntimeHeartbeat_30min` to run the QUA-207 runtime heartbeat runner as `SYSTEM`.
+  - Uses now-relative first-run trigger boundary (`Get-Date).AddMinutes(4)`) to avoid past-time registration drift.
   - Safe to re-run (`Register-ScheduledTask -Force`).
 - `scripts/Run-RuntimeHealthScan.ps1`
   - Runs 5 agent-runtime detectors from `processes/17-agent-runtime-health.md`:

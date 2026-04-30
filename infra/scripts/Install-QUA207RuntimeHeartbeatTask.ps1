@@ -20,7 +20,7 @@ if (-not (Test-Path -LiteralPath $runner)) {
 
 $args = "-NoProfile -ExecutionPolicy Bypass -File `"$runner`" -RepoRoot `"$RepoRoot`""
 $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument $args
-$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).Date.AddMinutes(4) `
+$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(4) `
     -RepetitionInterval (New-TimeSpan -Minutes $EveryMinutes) `
     -RepetitionDuration (New-TimeSpan -Days 3650)
 $settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -MultipleInstances IgnoreNew
