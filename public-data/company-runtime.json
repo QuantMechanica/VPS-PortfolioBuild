@@ -1,0 +1,467 @@
+﻿{
+    "schema":  "quantmechanica.company-runtime.v1",
+    "generated_at_utc":  "2026-04-30T22:31:01.8560538Z",
+    "company_id":  "03d4dcc8-4cea-4133-9f68-90c0d99628fb",
+    "data_source":  "postgres",
+    "overall_status":  "alert",
+    "autonomy_mode":  "monitor_only",
+    "agents":  {
+                   "total":  14,
+                   "active":  9,
+                   "paused":  5,
+                   "rows":  [
+                                {
+                                    "id":  "0e8f04e5-4019-45b0-951f-ca248cf82849",
+                                    "name":  "DevOps 2",
+                                    "role":  "devops",
+                                    "name_key":  "devops",
+                                    "status":  "paused",
+                                    "last_heartbeat_at":  "2026-04-29T21:19:23.373+02:00",
+                                    "error_at":  "",
+                                    "heartbeat_enabled":  false,
+                                    "wake_on_demand":  false,
+                                    "interval_min":  null,
+                                    "runs_last_hour":  0,
+                                    "runs_last_4h":  0,
+                                    "issues_done_last_hour":  0,
+                                    "in_progress_assigned":  0,
+                                    "blocked_assigned":  0,
+                                    "active_findings":  [
+
+                                                        ]
+                                },
+                                {
+                                    "id":  "7aef7a17-d010-4f6e-a198-4a8dc5deb40d",
+                                    "name":  "Research",
+                                    "role":  "researcher",
+                                    "name_key":  "researcher",
+                                    "status":  "idle",
+                                    "last_heartbeat_at":  "2026-04-28T22:53:22.332+02:00",
+                                    "error_at":  "",
+                                    "heartbeat_enabled":  false,
+                                    "wake_on_demand":  true,
+                                    "interval_min":  null,
+                                    "runs_last_hour":  0,
+                                    "runs_last_4h":  0,
+                                    "issues_done_last_hour":  0,
+                                    "in_progress_assigned":  0,
+                                    "blocked_assigned":  2,
+                                    "active_findings":  [
+
+                                                        ]
+                                },
+                                {
+                                    "id":  "d53f62f7-f5b1-4df2-a00c-788aea16a274",
+                                    "name":  "FoundingEngineer",
+                                    "role":  "engineer",
+                                    "name_key":  "engineer",
+                                    "status":  "terminated",
+                                    "last_heartbeat_at":  "2026-04-26T19:29:21.179+02:00",
+                                    "error_at":  "",
+                                    "heartbeat_enabled":  false,
+                                    "wake_on_demand":  true,
+                                    "interval_min":  null,
+                                    "runs_last_hour":  0,
+                                    "runs_last_4h":  0,
+                                    "issues_done_last_hour":  0,
+                                    "in_progress_assigned":  0,
+                                    "blocked_assigned":  0,
+                                    "active_findings":  [
+
+                                                        ]
+                                },
+                                {
+                                    "id":  "12c5c03f-12d6-4593-bb5d-bfa3bc951602",
+                                    "name":  "DevOps",
+                                    "role":  "devops",
+                                    "name_key":  "devops",
+                                    "status":  "terminated",
+                                    "last_heartbeat_at":  "",
+                                    "error_at":  "",
+                                    "heartbeat_enabled":  true,
+                                    "wake_on_demand":  true,
+                                    "interval_min":  null,
+                                    "runs_last_hour":  0,
+                                    "runs_last_4h":  0,
+                                    "issues_done_last_hour":  0,
+                                    "in_progress_assigned":  0,
+                                    "blocked_assigned":  0,
+                                    "active_findings":  [
+
+                                                        ]
+                                },
+                                {
+                                    "id":  "9f2e41f3-0b3d-45f7-b13d-e9b71da43051",
+                                    "name":  "DevOps 2 (RETIRED 2026-04-29 - duplicate of 86015301)",
+                                    "role":  "devops",
+                                    "name_key":  "devops",
+                                    "status":  "terminated",
+                                    "last_heartbeat_at":  "",
+                                    "error_at":  "",
+                                    "heartbeat_enabled":  false,
+                                    "wake_on_demand":  false,
+                                    "interval_min":  null,
+                                    "runs_last_hour":  0,
+                                    "runs_last_4h":  0,
+                                    "issues_done_last_hour":  0,
+                                    "in_progress_assigned":  0,
+                                    "blocked_assigned":  0,
+                                    "active_findings":  [
+
+                                                        ]
+                                },
+                                {
+                                    "id":  "0ab3d743-e3fb-44e5-8d35-c05d0d78715d",
+                                    "name":  "Quality-Business",
+                                    "role":  "qa",
+                                    "name_key":  "qa",
+                                    "status":  "idle",
+                                    "last_heartbeat_at":  "2026-04-29T22:25:37.668+02:00",
+                                    "error_at":  "",
+                                    "heartbeat_enabled":  false,
+                                    "wake_on_demand":  true,
+                                    "interval_min":  null,
+                                    "runs_last_hour":  0,
+                                    "runs_last_4h":  0,
+                                    "issues_done_last_hour":  0,
+                                    "in_progress_assigned":  0,
+                                    "blocked_assigned":  0,
+                                    "active_findings":  [
+
+                                                        ]
+                                },
+                                {
+                                    "id":  "7795b4b0-8ecd-46da-ab22-06def7c8fa2d",
+                                    "name":  "CEO",
+                                    "role":  "ceo",
+                                    "name_key":  "ceo",
+                                    "status":  "running",
+                                    "last_heartbeat_at":  "2026-05-01T00:27:42.943+02:00",
+                                    "error_at":  "",
+                                    "heartbeat_enabled":  true,
+                                    "wake_on_demand":  true,
+                                    "interval_min":  null,
+                                    "runs_last_hour":  16,
+                                    "runs_last_4h":  17,
+                                    "issues_done_last_hour":  4,
+                                    "in_progress_assigned":  1,
+                                    "blocked_assigned":  17,
+                                    "active_findings":  [
+
+                                                        ]
+                                },
+                                {
+                                    "id":  "ebefc3a6-4a11-43a7-bd5d-c0baf50eb1f9",
+                                    "name":  "Development",
+                                    "role":  "engineer",
+                                    "name_key":  "engineer",
+                                    "status":  "running",
+                                    "last_heartbeat_at":  "2026-04-29T12:08:12.312+02:00",
+                                    "error_at":  "",
+                                    "heartbeat_enabled":  false,
+                                    "wake_on_demand":  true,
+                                    "interval_min":  null,
+                                    "runs_last_hour":  0,
+                                    "runs_last_4h":  0,
+                                    "issues_done_last_hour":  0,
+                                    "in_progress_assigned":  0,
+                                    "blocked_assigned":  12,
+                                    "active_findings":  [
+                                                            "stuck_session"
+                                                        ]
+                                },
+                                {
+                                    "id":  "c1f90ba8-d637-46d9-8895-ead705bb4933",
+                                    "name":  "Quality-Tech",
+                                    "role":  "qa",
+                                    "name_key":  "qa",
+                                    "status":  "idle",
+                                    "last_heartbeat_at":  "2026-05-01T00:01:18.454+02:00",
+                                    "error_at":  "",
+                                    "heartbeat_enabled":  false,
+                                    "wake_on_demand":  true,
+                                    "interval_min":  null,
+                                    "runs_last_hour":  1,
+                                    "runs_last_4h":  1,
+                                    "issues_done_last_hour":  0,
+                                    "in_progress_assigned":  0,
+                                    "blocked_assigned":  0,
+                                    "active_findings":  [
+
+                                                        ]
+                                },
+                                {
+                                    "id":  "f2c79849-a19e-4bc0-8737-438dd50ada64",
+                                    "name":  "Quality-Business (RETIRED 2026-04-28)",
+                                    "role":  "qa",
+                                    "name_key":  "qa",
+                                    "status":  "terminated",
+                                    "last_heartbeat_at":  "2026-04-28T15:03:16.948+02:00",
+                                    "error_at":  "",
+                                    "heartbeat_enabled":  false,
+                                    "wake_on_demand":  false,
+                                    "interval_min":  null,
+                                    "runs_last_hour":  0,
+                                    "runs_last_4h":  0,
+                                    "issues_done_last_hour":  0,
+                                    "in_progress_assigned":  0,
+                                    "blocked_assigned":  0,
+                                    "active_findings":  [
+
+                                                        ]
+                                },
+                                {
+                                    "id":  "241ccf3c-ab68-40d6-b8eb-e03917795878",
+                                    "name":  "CTO",
+                                    "role":  "cto",
+                                    "name_key":  "cto",
+                                    "status":  "idle",
+                                    "last_heartbeat_at":  "2026-05-01T00:21:43.706+02:00",
+                                    "error_at":  "",
+                                    "heartbeat_enabled":  true,
+                                    "wake_on_demand":  true,
+                                    "interval_min":  null,
+                                    "runs_last_hour":  40,
+                                    "runs_last_4h":  43,
+                                    "issues_done_last_hour":  10,
+                                    "in_progress_assigned":  0,
+                                    "blocked_assigned":  11,
+                                    "active_findings":  [
+
+                                                        ]
+                                },
+                                {
+                                    "id":  "8c85f83f-db7e-4414-8b85-aa558987a13e",
+                                    "name":  "Documentation-KM",
+                                    "role":  "general",
+                                    "name_key":  "general",
+                                    "status":  "idle",
+                                    "last_heartbeat_at":  "2026-05-01T00:14:09.26+02:00",
+                                    "error_at":  "",
+                                    "heartbeat_enabled":  true,
+                                    "wake_on_demand":  true,
+                                    "interval_min":  null,
+                                    "runs_last_hour":  7,
+                                    "runs_last_4h":  7,
+                                    "issues_done_last_hour":  2,
+                                    "in_progress_assigned":  0,
+                                    "blocked_assigned":  1,
+                                    "active_findings":  [
+
+                                                        ]
+                                },
+                                {
+                                    "id":  "86015301-1a40-4216-9ded-398f09f02d26",
+                                    "name":  "DevOps",
+                                    "role":  "devops",
+                                    "name_key":  "devops",
+                                    "status":  "running",
+                                    "last_heartbeat_at":  "2026-05-01T00:14:24.851+02:00",
+                                    "error_at":  "",
+                                    "heartbeat_enabled":  true,
+                                    "wake_on_demand":  true,
+                                    "interval_min":  null,
+                                    "runs_last_hour":  3,
+                                    "runs_last_4h":  3,
+                                    "issues_done_last_hour":  3,
+                                    "in_progress_assigned":  0,
+                                    "blocked_assigned":  4,
+                                    "active_findings":  [
+
+                                                        ]
+                                },
+                                {
+                                    "id":  "46fc11e5-7fc2-43f4-9a34-bde29e5dee3b",
+                                    "name":  "Pipeline-Operator",
+                                    "role":  "engineer",
+                                    "name_key":  "engineer",
+                                    "status":  "idle",
+                                    "last_heartbeat_at":  "2026-05-01T00:27:57.39+02:00",
+                                    "error_at":  "",
+                                    "heartbeat_enabled":  true,
+                                    "wake_on_demand":  true,
+                                    "interval_min":  null,
+                                    "runs_last_hour":  9,
+                                    "runs_last_4h":  9,
+                                    "issues_done_last_hour":  0,
+                                    "in_progress_assigned":  0,
+                                    "blocked_assigned":  7,
+                                    "active_findings":  [
+
+                                                        ]
+                                }
+                            ]
+               },
+    "issues":  {
+                   "status_counts":  {
+                                         "blocked":  68,
+                                         "done":  408,
+                                         "cancelled":  62,
+                                         "todo":  13,
+                                         "in_review":  19,
+                                         "in_progress":  1,
+                                         "backlog":  15
+                                     },
+                   "in_progress_loaded":  1,
+                   "blocked_loaded":  68
+               },
+    "runtime_health":  {
+                           "findings_count":  1,
+                           "actions_count":  1,
+                           "detectors":  {
+                                             "hot_poll":  0,
+                                             "stuck_session":  1,
+                                             "bottleneck":  0,
+                                             "token_budget":  0,
+                                             "recursive_wake":  0
+                                         }
+                       },
+    "budget":  {
+                   "weekly_run_count":  14656,
+                   "projected_monthly_runs":  58624,
+                   "provider_run_cap":  0,
+                   "threshold_ratio":  0.9
+               },
+    "blockers":  [
+                     {
+                         "id":  "75eb46b4-efa9-4237-9294-086e86b38af5",
+                         "identifier":  "QUA-225",
+                         "title":  "Phase 2b ΓÇö P5c Crisis Slices runner (p5c_crisis_slices.py) ΓÇö DEFERRED P1",
+                         "assignee_agent_id":  "241ccf3c-ab68-40d6-b8eb-e03917795878",
+                         "priority":  "low"
+                     },
+                     {
+                         "id":  "358d0c60-c827-4632-85d6-cfce8c59670c",
+                         "identifier":  "QUA-316",
+                         "title":  "SRC03_S03 ΓÇö williams-hidden-oops: Hidden OOPS! ΓÇö projected H/L formula `(H+L+C)/3 ├ù 2` gap-fade",
+                         "assignee_agent_id":  "",
+                         "priority":  "medium"
+                     },
+                     {
+                         "id":  "cfe5c207-750a-4e18-97c6-a7f503329900",
+                         "identifier":  "QUA-236",
+                         "title":  "Strategy research workflow + EA enhancement loop + Pipeline-Op load balancing ΓÇö OWNER directive 2026-04-27",
+                         "assignee_agent_id":  "7795b4b0-8ecd-46da-ab22-06def7c8fa2d",
+                         "priority":  "high"
+                     },
+                     {
+                         "id":  "d4b34f6f-42cf-4594-be1b-c7e1c0cdf530",
+                         "identifier":  "QUA-211",
+                         "title":  "Pipeline-Operator process_loss failure pattern ΓÇö 18% fail rate over 24h",
+                         "assignee_agent_id":  "86015301-1a40-4216-9ded-398f09f02d26",
+                         "priority":  "medium"
+                     },
+                     {
+                         "id":  "9a996680-f0e7-4350-872f-9fdf2bac0ae9",
+                         "identifier":  "QUA-318",
+                         "title":  "SRC03_S05 ΓÇö williams-tdom-bias: Trade Day of Month bias ΓÇö positive-TDOM open-buy, consolidates dozens of best-day tabulations",
+                         "assignee_agent_id":  "",
+                         "priority":  "medium"
+                     },
+                     {
+                         "id":  "4d110f66-2786-491c-9d16-1f63029a95df",
+                         "identifier":  "QUA-212",
+                         "title":  "Phase 2b ΓÇö pipeline runner scripts (P3.5/P5/P5b/P5c/P6/P7/P8) + calibration JSON",
+                         "assignee_agent_id":  "241ccf3c-ab68-40d6-b8eb-e03917795878",
+                         "priority":  "high"
+                     },
+                     {
+                         "id":  "3a860522-44b4-4099-866d-8bea1c720a22",
+                         "identifier":  "QUA-319",
+                         "title":  "SRC03_S06 ΓÇö williams-holiday-trd: National Holiday Trades ΓÇö 8 federal holidays ├ù specific buy/sell open/close on N-th TD before/after",
+                         "assignee_agent_id":  "",
+                         "priority":  "medium"
+                     },
+                     {
+                         "id":  "8e83c40f-122b-42a1-b201-c21f318cb2c5",
+                         "identifier":  "QUA-323",
+                         "title":  "SRC03_S10 ΓÇö williams-spec-trap: Specialist Trap ΓÇö failed-breakout fade after 6-20 day box from established trend",
+                         "assignee_agent_id":  "",
+                         "priority":  "medium"
+                     },
+                     {
+                         "id":  "7cecdbb4-02e7-4f87-8611-807f0b9476c4",
+                         "identifier":  "QUA-277",
+                         "title":  "SRC01_S1 ΓÇö davey-eu-night (APPROVED card ΓåÆ P1..P10 pipeline run)",
+                         "assignee_agent_id":  "241ccf3c-ab68-40d6-b8eb-e03917795878",
+                         "priority":  "medium"
+                     },
+                     {
+                         "id":  "7d95eb01-a2e4-45ea-a502-03f07c767f7b",
+                         "identifier":  "QUA-278",
+                         "title":  "SRC01_S2 ΓÇö davey-eu-day (APPROVED card ΓåÆ P1..P10 pipeline run)",
+                         "assignee_agent_id":  "7795b4b0-8ecd-46da-ab22-06def7c8fa2d",
+                         "priority":  "medium"
+                     },
+                     {
+                         "id":  "e12818e2-7aac-47f7-aa23-fb26718a1a69",
+                         "identifier":  "QUA-224",
+                         "title":  "Phase 2b ΓÇö VPS slippage/latency calibration JSON (Pipeline-Op measurement)",
+                         "assignee_agent_id":  "46fc11e5-7fc2-43f4-9a34-bde29e5dee3b",
+                         "priority":  "high"
+                     },
+                     {
+                         "id":  "6bffddab-a1bd-44d3-8c60-f677f17cfd79",
+                         "identifier":  "QUA-324",
+                         "title":  "SRC03_S11 ΓÇö williams-8wk-box: 8-Week Box Congestion Breakout ΓÇö go-with-breakout in pre-box-trend direction; KEEP_SWINGING multi-attempt",
+                         "assignee_agent_id":  "",
+                         "priority":  "medium"
+                     },
+                     {
+                         "id":  "3a3a6f7a-0947-4d77-be12-af6fa87d5a20",
+                         "identifier":  "QUA-326",
+                         "title":  "SRC03_S14 ΓÇö williams-cdc-pattern: Consecutive Down Closes ΓÇö 2-3 down closes + range-shrinking + trend filter; entry at open + (H-C)",
+                         "assignee_agent_id":  "",
+                         "priority":  "medium"
+                     },
+                     {
+                         "id":  "1f3733ee-f868-4a47-9854-0da566ccfca5",
+                         "identifier":  "QUA-258",
+                         "title":  "Pipeline-Op ΓÇö confirm first real run uses dedup queue (QUA-236 acceptance gate)",
+                         "assignee_agent_id":  "46fc11e5-7fc2-43f4-9a34-bde29e5dee3b",
+                         "priority":  "medium"
+                     },
+                     {
+                         "id":  "91b31218-09dd-448c-9f8e-c5c4d0918302",
+                         "identifier":  "QUA-390",
+                         "title":  "Build SRC04 EAs ΓÇö V5 EA implementation pathway for 10 Lien strategy cards",
+                         "assignee_agent_id":  "241ccf3c-ab68-40d6-b8eb-e03917795878",
+                         "priority":  "high"
+                     },
+                     {
+                         "id":  "0ac02c1b-8cc2-4e00-bd7b-05802b19406d",
+                         "identifier":  "QUA-281",
+                         "title":  "SRC01_S5 ΓÇö davey-worldcup (APPROVED card ΓåÆ P1..P10 pipeline run)",
+                         "assignee_agent_id":  "7795b4b0-8ecd-46da-ab22-06def7c8fa2d",
+                         "priority":  "medium"
+                     },
+                     {
+                         "id":  "fcd3ab1b-81d2-47b8-9939-78a41762be45",
+                         "identifier":  "QUA-282",
+                         "title":  "SRC01 follow-up ΓÇö back-port strategy_type_flags to controlled vocabulary across 5 Davey cards",
+                         "assignee_agent_id":  "7aef7a17-d010-4f6e-a198-4a8dc5deb40d",
+                         "priority":  "low"
+                     },
+                     {
+                         "id":  "5b361588-9a46-47df-996a-5a274c9402c0",
+                         "identifier":  "QUA-285",
+                         "title":  "SRC02_S02 ΓÇö chan-bollinger-es: single-symbol M5 Bollinger ┬▒2╧â MR on E-mini S\u0026P",
+                         "assignee_agent_id":  "",
+                         "priority":  "medium"
+                     },
+                     {
+                         "id":  "32ba5daa-fc14-4653-9d83-72e777abb294",
+                         "identifier":  "QUA-402",
+                         "title":  "SRC04 phase-2 build: card QUA-342",
+                         "assignee_agent_id":  "241ccf3c-ab68-40d6-b8eb-e03917795878",
+                         "priority":  "high"
+                     },
+                     {
+                         "id":  "eb0ea7e3-4240-4982-8852-51f0d81e1819",
+                         "identifier":  "QUA-315",
+                         "title":  "SRC03_S02 ΓÇö williams-monday-oops: Monday OOPS! ΓÇö gap-below-Friday\u0027s-TRUE-LOW fade with stop entry at Friday\u0027s low",
+                         "assignee_agent_id":  "",
+                         "priority":  "medium"
+                     }
+                 ]
+}

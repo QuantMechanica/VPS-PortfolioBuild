@@ -1,12 +1,10 @@
 ---
 title: V-Portfolio Deploy Flow
 owner: Pipeline-Operator
-last-updated: 2026-04-29
+last-updated: 2026-04-27
 ---
 
 # 03 — V-Portfolio Deploy Flow
-
-> **V5 audit (2026-04-29, [QUA-213](/QUA/issues/QUA-213) → consolidated role-rename child).** Namespace `/QUAA/` → `/QUA/`. Non-V5 role mentions annotated inline with their V5 wave / interim owner per [`decisions/2026-04-27_v5_org_proposal.md`](../decisions/2026-04-27_v5_org_proposal.md) § 6 and [`processes/process_registry.md`](process_registry.md) § "Active agents". V4 issue references kept as historical examples (no auto-rewrite). Flow content NOT changed — substantive rewrites tracked under sister children of QUA-213.
 
 Promotes a ZT-validated candidate into the virtual portfolio (V-Portfolio) and onto the live VPS trading environment.
 
@@ -14,14 +12,32 @@ Promotes a ZT-validated candidate into the virtual portfolio (V-Portfolio) and o
 
 - EA passes G4 ZT validation and reaches P5 (candidate) in [01-ea-lifecycle.md](01-ea-lifecycle.md)
 
+## T6 Deploy Authority (interim, pre-LiveOps)
+
+Per OWNER 2026-04-27 (codified in [DL-024](../decisions/DL-024_t6_deploy_boundary_refinement.md)) the T6 file-deploy operations defined in [`docs/ops/LIVE_T6_AUTOMATION_RUNBOOK.md`](../docs/ops/LIVE_T6_AUTOMATION_RUNBOOK.md) are now in scope for agents under an OWNER-approved deploy manifest, with **AutoTrading toggle remaining manual OWNER**.
+
+Routing until the LiveOps role is hired (Wave 4 per `paperclip-prompts/README.md`):
+
+- **LiveOps (target owner, post-hire)** — full end-to-end T6 deploy + verification, except AutoTrading toggle.
+- **DevOps (interim owner, pre-LiveOps)** — executes T6 file-deploy steps (`.ex5` / `.set` / templates / profiles) and chart attach with AutoTrading-OFF verification, only under an explicit OWNER-approved deploy-manifest ticket.
+- **Pipeline-Operator** — **never touches T6**, even during the interim. Pipeline-Op preserves the factory-isolation rule (T1-T5 only) and remains primary deploy owner for backtest / sweep / V-Portfolio prep work; T6 execution-deploy steps below are picked up by LiveOps (or DevOps interim) once a manifest exists.
+
+Boundary reminders (non-negotiable, regardless of owner):
+
+- AutoTrading verified OFF before and after every T6 placement; abort if ON without OWNER action.
+- No T6 broker-credential, account-login, or live-config touches by any agent.
+- No Strategy Tester or optimization on T6.
+- Manifest discipline + screenshot evidence + Experts/Journal logs captured per the runbook's Verification Contract.
+
 ## Actors
 
-- [Pipeline-Operator](/QUA/agents/pipeline-operator) — primary deploy owner
-- [Quality-Business](/QUA/agents/quality-business) — FTMO / compliance gate (Wave 2 LIVE per [DL-039](../decisions/2026-04-28_quality_business_hire.md))
-- [CTO](/QUA/agents/cto) — V-Portfolio entry approval
-- [DevOps](/QUA/agents/devops) — VPS provisioning + deploy automation
-- [Observability-SRE](/QUA/agents/observability-sre) — monitoring hook-up *(Wave 3 deferred — interim: [DevOps](/QUA/agents/devops))*
-- [Controlling](/QUA/agents/controlling) — sizing + allocation *(Wave 3 deferred — interim: [CEO](/QUA/agents/ceo))*
+- [Pipeline-Operator](/QUAA/agents/pipeline-operator) — primary deploy owner (T1-T5 only — see § T6 Deploy Authority)
+- [Quality-Business](/QUAA/agents/quality-business) — FTMO / compliance gate
+- [CTO](/QUAA/agents/cto) — V-Portfolio entry approval
+- [DevOps](/QUAA/agents/devops) — VPS provisioning + deploy automation; **interim T6 file-deploy owner pre-LiveOps**
+- [LiveOps](/QUAA/agents/liveops) — T6 execution-deploy owner (Wave 4 hire; not yet seated)
+- [Observability-SRE](/QUAA/agents/observability-sre) — monitoring hook-up
+- [Controlling](/QUAA/agents/controlling) — sizing + allocation
 
 ## Steps
 

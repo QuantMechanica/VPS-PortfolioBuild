@@ -1,0 +1,150 @@
+﻿{
+    "generated_at":  "2026-04-30T16:20:27.0364711Z",
+    "status":  "draft",
+    "roles":  [
+                  {
+                      "role":  "CEO",
+                      "status":  "live",
+                      "primary_skill":  "delegation and gate decisions",
+                      "model_tier":  "strong",
+                      "heartbeat":  "30min timer"
+                  },
+                  {
+                      "role":  "Chief of Staff / OS Controller",
+                      "status":  "hire_now",
+                      "primary_skill":  "AI-native org routing and token efficiency",
+                      "model_tier":  "mid/strong",
+                      "heartbeat":  "light timer plus on-demand"
+                  },
+                  {
+                      "role":  "Token Controller",
+                      "status":  "planned",
+                      "primary_skill":  "token budget accounting",
+                      "model_tier":  "lightweight",
+                      "heartbeat":  "covered by Chief of Staff until justified"
+                  },
+                  {
+                      "role":  "Research Lead",
+                      "status":  "live",
+                      "primary_skill":  "source-to-strategy extraction",
+                      "model_tier":  "strong",
+                      "heartbeat":  "event-driven"
+                  },
+                  {
+                      "role":  "PDF Researcher",
+                      "status":  "on_demand",
+                      "primary_skill":  "PDF extraction",
+                      "model_tier":  "strong on demand",
+                      "heartbeat":  "none"
+                  },
+                  {
+                      "role":  "Video Researcher",
+                      "status":  "on_demand",
+                      "primary_skill":  "video transcript analysis",
+                      "model_tier":  "mid/strong",
+                      "heartbeat":  "none"
+                  },
+                  {
+                      "role":  "Data Environment Steward",
+                      "status":  "on_demand",
+                      "primary_skill":  ".DWX symbol verification",
+                      "model_tier":  "lightweight/Codex",
+                      "heartbeat":  "none until recurring failures"
+                  },
+                  {
+                      "role":  "Pipeline-Operator",
+                      "status":  "live",
+                      "primary_skill":  "T1-T5 backtest dispatch",
+                      "model_tier":  "Codex mid",
+                      "heartbeat":  "work-queue driven"
+                  },
+                  {
+                      "role":  "Visualization Controller",
+                      "status":  "planned",
+                      "primary_skill":  "project dashboard and OWNER high-altitude view",
+                      "model_tier":  "lightweight/mid",
+                      "heartbeat":  "hourly after dashboard feed is wired"
+                  },
+                  {
+                      "role":  "Gmail Intake",
+                      "status":  "planned",
+                      "primary_skill":  "mail link triage",
+                      "model_tier":  "lightweight",
+                      "heartbeat":  "manual/on-demand until volume justifies timer"
+                  }
+              ],
+    "operating_principles":  [
+                                 "Paperclip runs as a control tower plus capability cells, not as a human org chart.",
+                                 "One primary skill per agent.",
+                                 "Hire persistent agents only against a measured recurring bottleneck.",
+                                 "Research remains one approved source at a time.",
+                                 "T1-T5 factory work is load-balanced and deduplicated.",
+                                 "Lessons learned must feed a process, checklist, prompt proposal, or explicit no-change decision.",
+                                 "Public dashboard reads redacted JSON snapshots, not private Paperclip state directly."
+                             ],
+    "dashboard_sections":  [
+                               {
+                                   "id":  "project-dashboard",
+                                   "title":  "Project Dashboard",
+                                   "source":  "public-data/public-snapshot.json and public-data/company-runtime.json",
+                                   "status":  "active"
+                               },
+                               {
+                                   "id":  "company-operating-model",
+                                   "title":  "Company Operating Model",
+                                   "source":  "public-data/company-operating-model.json",
+                                   "status":  "draft"
+                               },
+                               {
+                                   "id":  "process-roadmap",
+                                   "title":  "Process Roadmap",
+                                   "source":  "public-data/process-roadmap.json",
+                                   "status":  "active"
+                               }
+                           ],
+    "process_links":  [
+                          {
+                              "id":  "company-operating-system",
+                              "path":  "processes/18-company-operating-system.md"
+                          },
+                          {
+                              "id":  "agent-runtime-health",
+                              "path":  "processes/17-agent-runtime-health.md"
+                          },
+                          {
+                              "id":  "pipeline-load-balancing",
+                              "path":  "processes/15-pipeline-op-load-balancing.md"
+                          },
+                          {
+                              "id":  "strategy-research",
+                              "path":  "processes/13-strategy-research.md"
+                          }
+                      ],
+    "first_48h_actions":  [
+                              {
+                                  "owner":  "CEO",
+                                  "action":  "Create and approve Chief of Staff / OS Controller hire issue.",
+                                  "status":  "todo"
+                              },
+                              {
+                                  "owner":  "Chief of Staff / OS Controller",
+                                  "action":  "Produce AI-native control tower map, model-tier map, token-control policy.",
+                                  "status":  "todo"
+                              },
+                              {
+                                  "owner":  "Video Researcher",
+                                  "action":  "Analyze YouTube source UIdH5Ac1Db8 and brief Chief of Staff.",
+                                  "status":  "todo"
+                              },
+                              {
+                                  "owner":  "Data Environment Steward",
+                                  "action":  "Audit T1-T5 .DWX symbol coverage and backtest readiness.",
+                                  "status":  "todo"
+                              },
+                              {
+                                  "owner":  "Visualization Controller / DevOps interim",
+                                  "action":  "Wire Company Operating Model into dashboard/menu data.",
+                                  "status":  "todo"
+                              }
+                          ]
+}

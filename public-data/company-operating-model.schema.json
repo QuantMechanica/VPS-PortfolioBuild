@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "QuantMechanica Company Operating Model Snapshot",
+  "type": "object",
+  "required": [
+    "generated_at",
+    "status",
+    "roles",
+    "operating_principles",
+    "dashboard_sections",
+    "process_links",
+    "first_48h_actions"
+  ],
+  "properties": {
+    "generated_at": { "type": "string", "format": "date-time" },
+    "status": { "type": "string", "enum": ["draft", "active", "paused"] },
+    "roles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["role", "status", "primary_skill", "model_tier", "heartbeat"],
+        "properties": {
+          "role": { "type": "string" },
+          "status": { "type": "string", "enum": ["live", "hire_now", "on_demand", "planned", "deferred"] },
+          "primary_skill": { "type": "string" },
+          "model_tier": { "type": "string" },
+          "heartbeat": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "operating_principles": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "dashboard_sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "source", "status"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "source": { "type": "string" },
+          "status": { "type": "string", "enum": ["draft", "active", "planned"] }
+        },
+        "additionalProperties": false
+      }
+    },
+    "process_links": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "path"],
+        "properties": {
+          "id": { "type": "string" },
+          "path": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "first_48h_actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["owner", "action", "status"],
+        "properties": {
+          "owner": { "type": "string" },
+          "action": { "type": "string" },
+          "status": { "type": "string", "enum": ["todo", "in_progress", "done", "blocked"] }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
+
