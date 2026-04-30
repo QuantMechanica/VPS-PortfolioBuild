@@ -216,6 +216,9 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Serializes git writes per-repo via a global named mutex (`Global\QM_GIT_REPO_MUTEX_<hash>`).
   - Use as wrapper for commit/push automation to enforce one writer process per repo.
   - Safe to re-run and side-effect free beyond the wrapped git command.
+- `scripts/Commit-HeartbeatCheckpoint.ps1`
+  - Commits a single explicit heartbeat checkpoint file path through mutex-guarded git add/commit flow.
+  - Enforces allowlist-scoped commit boundaries and refuses shared `C:/QM/repo` main worktree usage.
 - `monitoring/Invoke-GitIndexLockMonitor.ps1`
   - Dedicated stale `.git/index.lock` detector for PC1-00.
   - Optional guarded cleanup mode (`-AutoCleanup`) only removes stale lock when no `git.exe` process references the repo.
