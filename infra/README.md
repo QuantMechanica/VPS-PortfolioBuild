@@ -255,6 +255,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Safe to re-run (`Register-ScheduledTask -Force`) and overlap-safe (`MultipleInstances=IgnoreNew`).
 - `scripts/Install-MainArtifactPreCommitHook.ps1`
   - Idempotently installs `.githooks/pre-commit` and configures `core.hooksPath=.githooks`.
+  - Supports `-PreviewOnly` for non-mutating hook/config plan output.
   - Hook enforces `Assert-CommitAllowlist.ps1 -FailOnMainArtifactPaths` to block forbidden QUA-* artifact commits on `main`.
 - `scripts/Ensure-AgentWorktree.ps1`
   - Converges per-agent worktree paths under `C:\QM\worktrees\` for CWD isolation.

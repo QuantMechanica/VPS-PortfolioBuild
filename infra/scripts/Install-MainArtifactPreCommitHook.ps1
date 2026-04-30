@@ -1,7 +1,8 @@
 [CmdletBinding()]
 param(
     [string]$RepoRoot = 'C:\QM\repo',
-    [string]$ProtectedBranch = 'main'
+    [string]$ProtectedBranch = 'main',
+    [switch]$PreviewOnly
 )
 
 Set-StrictMode -Version Latest
@@ -34,14 +35,32 @@ $existing = ''
 if (Test-Path -LiteralPath $hookPath) {
     $existing = Get-Content -LiteralPath $hookPath -Raw
 }
-if ($existing -ne $hookBody) {
+$coreHooksPath = (& git -C $RepoRoot config --get core.hooksPath).Trim()
+$needsHookWrite = ($existing -ne $hookBody)
+$needsHooksPathUpdate = ([string]::IsNullOrWhiteSpace($coreHooksPath) -or ($coreHooksPath -ne '.githooks'))
+
+if ($PreviewOnly.IsPresent) {
+    [pscustomobject]@{
+        preview = $true
+        repo_root = $RepoRoot
+        protected_branch = $ProtectedBranch
+        hook_path = $hookPath
+        hooks_dir = $hooksDir
+        would_write_hook = $needsHookWrite
+        current_core_hooks_path = $coreHooksPath
+        would_update_core_hooks_path = $needsHooksPathUpdate
+        target_core_hooks_path = '.githooks'
+    } | ConvertTo-Json -Depth 5
+    exit 0
+}
+
+if ($needsHookWrite) {
     $normalized = $hookBody -replace "`r`n", "`n"
     $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
     [System.IO.File]::WriteAllText($hookPath, $normalized, $utf8NoBom)
 }
 
-$coreHooksPath = (& git -C $RepoRoot config --get core.hooksPath)
-if ([string]::IsNullOrWhiteSpace($coreHooksPath) -or ($coreHooksPath.Trim() -ne '.githooks')) {
+if ($needsHooksPathUpdate) {
     & git -C $RepoRoot config core.hooksPath .githooks
 }
 
