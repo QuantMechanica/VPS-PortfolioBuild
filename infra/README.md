@@ -186,6 +186,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Exits with `0/1/2` for `ok/warn/critical` to support scheduler-driven alerting.
 - `scripts/Install-TokenCostObservabilityTasks.ps1`
   - Registers `QM_TokenCostBudgetHealth_15min` (alarm monitor) and `QM_TokenCostBudgetDailySnapshot_0010` (daily snapshot) as `SYSTEM`.
+  - Normalizes repeating monitor trigger start boundary to the next future slot to avoid stale/past start times on re-run.
   - Safe to re-run (`Register-ScheduledTask -Force`) and overlap-safe (`MultipleInstances=IgnoreNew`).
 - `monitoring/Test-BackupSmoke.ps1`
   - Runs backup workflow in an isolated temp workspace and asserts manifest/artifacts.

@@ -25,9 +25,12 @@ if (-not (Test-Path -LiteralPath $scriptPath)) {
 }
 
 $offset = [Math]::Max(0, [Math]::Min(59, $MinuteOffset))
-$startBoundary = (Get-Date).Date.AddHours((Get-Date).Hour).AddMinutes($offset)
-if ($startBoundary -le (Get-Date)) {
-    $startBoundary = $startBoundary.AddMinutes($EveryMinutes)
+$now = Get-Date
+$startBoundary = $now.Date.AddHours($now.Hour).AddMinutes($offset)
+if ($startBoundary -le $now) {
+    do {
+        $startBoundary = $startBoundary.AddMinutes($EveryMinutes)
+    } while ($startBoundary -le $now)
 }
 
 $baseArgs = "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`" -DailyTokenBudget $DailyTokenBudget -WarnThresholdPct $WarnThresholdPct -HighWarnThresholdPct $HighWarnThresholdPct -CriticalThresholdPct $CriticalThresholdPct"
