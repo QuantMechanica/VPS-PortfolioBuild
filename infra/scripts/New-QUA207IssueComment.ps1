@@ -25,10 +25,11 @@ $custom = Get-Content -LiteralPath $customFull -Raw | ConvertFrom-Json
 $targetRange = [int]$custom.target_probe.rates_range_m1_count
 $targetPos = [int]$custom.target_probe.rates_from_pos_m1_count
 $isolatedFailure = [bool]$custom.isolated_custom_bars_visibility_failure
-$statusLine = if ($transition.recommended_transition.status -eq 'in_review') {
-    'runtime owner scope completed (ready for review)'
-} else {
-    'runtime restore still in progress'
+$statusValue = [string]$transition.recommended_transition.status
+$statusLine = switch ($statusValue) {
+    'done' { 'closure recommended (resolved via upstream DEVOPS-004 family final pass)' ; break }
+    'in_review' { 'runtime owner scope completed (ready for review)' ; break }
+    default { 'runtime restore still in progress' ; break }
 }
 $nextOwner = [string]$transition.handoff.next_owner
 $nextAction = [string]$transition.handoff.next_action
@@ -40,7 +41,7 @@ $lines = @(
     ('- `target rates_range_m1_count={0}`' -f $targetRange),
     ('- `target rates_from_pos_m1_count={0}`' -f $targetPos),
     ('- `isolated_custom_bars_visibility_failure={0}`' -f $isolatedFailure),
-    ('- Recommended transition status: `{0}`' -f $transition.recommended_transition.status),
+    ('- Recommended transition status: `{0}`' -f $statusValue),
     ('- Remaining owner: `{0}`' -f $nextOwner),
     ('- Next action: {0}' -f $nextAction),
     '',

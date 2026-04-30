@@ -2,7 +2,9 @@
 param(
     [string]$RepoRoot = 'C:\QM\repo',
     [string]$CustomVisibilityEvidencePath = 'lessons-learned\evidence\2026-04-27_qua95_xtiusd_custom_visibility_probe_rerun.json',
-    [string]$OutPath = 'docs\ops\QUA-207_ISSUE_TRANSITION_PAYLOAD_2026-04-27.json'
+    [string]$OutPath = 'docs\ops\QUA-207_ISSUE_TRANSITION_PAYLOAD_2026-04-27.json',
+    [string]$ForceStatus,
+    [string]$ForceReason
 )
 
 Set-StrictMode -Version Latest
@@ -25,6 +27,25 @@ $runtimeCompleted = ($targetBarsVisible -and -not $isolatedFailure)
 $status = if ($runtimeCompleted) { 'in_review' } else { 'blocked' }
 $reason = if ($runtimeCompleted) { 'runtime_owner_scope_completed' } else { 'runtime_visibility_not_restored' }
 
+if (-not [string]::IsNullOrWhiteSpace($ForceStatus)) {
+    $status = $ForceStatus
+}
+if (-not [string]::IsNullOrWhiteSpace($ForceReason)) {
+    $reason = $ForceReason
+}
+
+$nextOwner = if ($runtimeCompleted) { 'verifier_implementation_owner' } else { 'runtime_custom_symbol_owner' }
+$nextAction = if ($runtimeCompleted) {
+    'Rerun/fix verifier acceptance path for XTIUSD.DWX (bars_got > 0 and tail aligned), then rerun transition chain.'
+} else {
+    'Restore runtime custom-symbol bars visibility and rerun custom visibility proof.'
+}
+
+if ($status -eq 'done') {
+    $nextOwner = 'none'
+    $nextAction = 'No remaining runtime restore work. Keep artifacts for audit traceability.'
+}
+
 $payload = [ordered]@{
     issue = 'QUA-207'
     generated_at_local = (Get-Date).ToString('yyyy-MM-ddTHH:mm:ssK')
@@ -42,15 +63,11 @@ $payload = [ordered]@{
     }
     owner_state = [ordered]@{
         runtime_custom_symbol_owner = if ($runtimeCompleted) { 'completed' } else { 'pending' }
-        verifier_implementation_owner = if ($runtimeCompleted) { 'pending' } else { 'blocked_by_runtime' }
+        verifier_implementation_owner = if ($status -eq 'done') { 'n/a' } elseif ($runtimeCompleted) { 'pending' } else { 'blocked_by_runtime' }
     }
     handoff = [ordered]@{
-        next_owner = if ($runtimeCompleted) { 'verifier_implementation_owner' } else { 'runtime_custom_symbol_owner' }
-        next_action = if ($runtimeCompleted) {
-            'Rerun/fix verifier acceptance path for XTIUSD.DWX (bars_got > 0 and tail aligned), then rerun transition chain.'
-        } else {
-            'Restore runtime custom-symbol bars visibility and rerun custom visibility proof.'
-        }
+        next_owner = $nextOwner
+        next_action = $nextAction
     }
     supporting_docs = @(
         'docs/ops/QUA-207_CLOSEOUT_PACKET_2026-04-27.md',
