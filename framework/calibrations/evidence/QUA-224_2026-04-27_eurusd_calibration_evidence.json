@@ -1,0 +1,48 @@
+{
+  "issue": "QUA-224",
+  "generated_at_utc": "2026-04-27T13:17:00Z",
+  "symbol": "EURUSD.DWX",
+  "measurement_scope": {
+    "terminal": "D:/QM/mt5/T1/terminal64.exe",
+    "broker_symbol": "EURUSD",
+    "window_utc": {
+      "start": "2026-03-09T00:00:00Z",
+      "end": "2026-04-03T23:59:00Z"
+    }
+  },
+  "commission_cents_per_lot": {
+    "value": 500.0,
+    "source_path": "D:/QM/mt5/T1/MQL5/Profiles/Tester/Groups/Darwinex-Live_real.txt",
+    "source_lines": [
+      "CommissionSymbol=Custom\\Forex\\*",
+      "CommissionCharge=2",
+      "CommissionValue=2.5000"
+    ],
+    "method": "USD 2.50 per side interpreted as USD 5.00 round-turn per lot"
+  },
+  "latency_ms": {
+    "sample_count": 38,
+    "avg": 33.07,
+    "p95": 33.07,
+    "source_path": "D:/QM/mt5/T1/logs/20260427.log",
+    "regex": "ping:\\s*([0-9]+(?:\\.[0-9]+)?)\\s*ms"
+  },
+  "spread_points": {
+    "sample_count": 4226280,
+    "median": 3.0,
+    "p95": 5.0,
+    "source": "MetaTrader5.copy_ticks_range(EURUSD)",
+    "formula": "(ask - bid) / point"
+  },
+  "slippage_points_proxy": {
+    "avg": 1.0,
+    "p95": 6.0,
+    "source_path": "D:/QM/reports/setup/tick-data-timezone/REPORT_2026-04-25_test_eurusd_dst_match.md",
+    "source_values": {
+      "median_open_delta_pips": 0.10,
+      "p95_open_delta_pips": 0.60
+    },
+    "conversion": "1 pip = 10 points for EURUSD",
+    "reason": "No live-fill slippage sample set available on T1 during this heartbeat"
+  }
+}
