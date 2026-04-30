@@ -17,7 +17,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `scripts/Install-DwxHourlyRoutine.ps1`
   - Converges Paperclip routine `DWX import hourly check` and its schedule trigger (`7 * * * *`, `UTC`) to desired state.
   - Idempotent API check-then-act: create/patch routine, create/patch trigger, optional legacy task disable.
-  - Safe preview mode by default; mutate only with `-Apply`.
+  - Safe preview mode by default; mutate only with `-Apply`; explicit `-PreviewOnly` flag is also supported.
 - `scripts/Install-DwxHourlyTask.ps1`
   - Registers Task Scheduler job `QM_DWX_HourlyCheck` as `SYSTEM` (legacy fallback only).
   - Normalizes trigger start boundary to the next future hourly slot when needed.

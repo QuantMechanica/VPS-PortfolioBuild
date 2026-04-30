@@ -19,11 +19,16 @@ param(
     [switch]$DisableLegacyTask,
     [string]$LegacyTaskName = 'QM_DWX_HourlyCheck',
     [switch]$RunNow,
+    [switch]$PreviewOnly,
     [switch]$Apply
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+
+if ($Apply.IsPresent -and $PreviewOnly.IsPresent) {
+    throw "Use either -Apply or -PreviewOnly (not both)."
+}
 
 function Normalize-ApiBaseUrl {
     param([Parameter(Mandatory = $true)] [string]$Url)
@@ -94,6 +99,7 @@ $actions = New-Object System.Collections.Generic.List[string]
 $result = [ordered]@{
     generated_at_utc = [datetime]::UtcNow.ToString('o')
     apply = $Apply.IsPresent
+    preview_only = $PreviewOnly.IsPresent
     api_base_url = $apiRoot
     company_id = $CompanyId
     assignee_agent_id = $AssigneeAgentId
@@ -276,4 +282,3 @@ if ($RunNow.IsPresent) {
 }
 
 $result | ConvertTo-Json -Depth 10
-
