@@ -1,0 +1,7 @@
+{
+  "sample_size": 312,
+  "pbo": 0.034,
+  "dsr": 0.22,
+  "mc_pvalue": 0.011,
+  "fdr_qvalue": 0.072
+}
