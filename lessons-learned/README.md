@@ -2,6 +2,31 @@
 
 Kept / changed / discarded entries from incidents, gate reviews, and retrospectives. Owned by Documentation-KM.
 
+## Lessons → process loop
+
+The four-step loop is canonical at [`processes/18-company-operating-system.md`](../processes/18-company-operating-system.md) § Continuous Improvement Loop. Summary:
+
+1. **Lesson candidate** — any agent files a `learning-candidate` issue when work fails / repeats / wastes tokens. Same heartbeat; no batching.
+2. **Normalize** — Documentation-KM rewrites the candidate into the entry format below (Learning → V1 Behavior → V5 Behavior → Why) with source citation. SLA < 24h.
+3. **Routing / model / skill decision** — Chief of Staff (interim CEO until CoS hire lands) picks one of: route change, model change, skill change, process change, checklist change, prompt-proposal, or explicit no-change. SLA < 72h.
+4. **CEO approval** — comment + DL-NNN if class-2+. SLA < 1 CEO heartbeat.
+
+### Closure rule (binding)
+
+> **No lesson is `done` until its issue links to at least one of: a process change ([`processes/NN-*.md`](../processes/)), a checklist change ([`checklists/*.md`](../checklists/)), a prompt-proposal ([`paperclip-prompts/<role>.md`](../paperclip-prompts/) — OWNER-managed), each with the commit hash, OR an explicit no-change DL-NNN / CEO comment naming the future condition that would re-open the lesson.**
+
+Documentation-KM is the closure-rule sentinel. Weekly sweep PATCHes any lesson at step 4 without a closure artifact back to `in_progress` and pings the owner. Ratifying source: [`docs/ops/PAPERCLIP_COMPANY_REBOOT_PLAN_2026-04-30.md`](../docs/ops/PAPERCLIP_COMPANY_REBOOT_PLAN_2026-04-30.md) § Continuous Improvement Loop. Authored under [QUA-595](/QUA/issues/QUA-595) (QUA-588 F5b).
+
+## Entry format
+
+Every normalized entry (step 2 output) follows:
+
+- **Learning** — one-paragraph statement of what was learned.
+- **V1 Behavior** — what the agent / process did before.
+- **V5 Behavior** — what it must do going forward.
+- **Why** — root cause + evidence link (incident issue, commit, dashboard panel).
+- **Closure link** — process / checklist / prompt-proposal commit OR no-change DL/comment (added at step 4 close-out; without this the lesson stays open).
+
 Entries (newest first):
 
 ## 2026-04-29

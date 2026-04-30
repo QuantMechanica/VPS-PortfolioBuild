@@ -74,6 +74,7 @@ Wave-plan status (per [`decisions/2026-04-27_v5_org_proposal.md`](../decisions/2
 
 ## Recently added
 
+- 2026-05-01 — [`processes/18-company-operating-system.md`](18-company-operating-system.md) (Chief of Staff [deferred — interim CEO] + Documentation-KM closure-rule sentinel) — canonical anchor for the **lessons-to-process loop** (4 accountable steps: any-agent candidate → Doc-KM normalize → CoS routing/model/skill decision → CEO approval) with binding **closure rule**: no lesson `done` until ≥1 process / checklist / prompt-proposal change OR explicit no-change DL-NNN / CEO comment. Also covers hiring gate, token-tier routing, weekly bottleneck review, and `public-data/company-operating-model.json` dashboard contract. Ratifying source: [`docs/ops/PAPERCLIP_COMPANY_REBOOT_PLAN_2026-04-30.md`](../docs/ops/PAPERCLIP_COMPANY_REBOOT_PLAN_2026-04-30.md). Authored under [QUA-595](/QUA/issues/QUA-595) (QUA-588 F5b reboot child). Cross-linked from [`lessons-learned/README.md`](../lessons-learned/README.md), [`processes/README.md`](README.md), [`processes/17-agent-runtime-health.md`](17-agent-runtime-health.md).
 - 2026-04-29 — [`processes/17-agent-runtime-health.md`](17-agent-runtime-health.md) (CEO detection + first-line; Documentation-KM post-incident codification) — covers hot-poll loops, stuck Codex/Claude sessions, bottleneck agents (≥2 P0 + low run rate), token-budget pressure, recursive self-wake. Authored by Board Advisor 2026-04-29 after Development recursive-wake incident; companion lesson `lessons-learned/2026-04-29_development_recursive_wake.md`. New escalation Class 6 added to [`12-board-escalation.md`](12-board-escalation.md). New "Paperclip platform semantics" knowledge-base section added below.
 - 2026-04-28 — [`processes/16-backtest-execution-discipline.md`](16-backtest-execution-discipline.md) (Documentation-KM authoring; Pipeline-Operator owns Rules 1-4, 7; DevOps owns Rule 5 + co-owns Rule 7; Research owns Rule 6; CTO owns Rule 5 review-pass) — codifies the seven OWNER 2026-04-28 binding backtest rules (`.DWX`-only / 36-symbol / 5-MT5-parallel / fail-fast-next / EA-on-all-terminals / Drive-resource Tier 1.5 / fixed-risk set file). Binding source: [QUA-400](/QUA/issues/QUA-400) → [DL-038](../decisions/2026-04-28_seven_backtest_rules.md). Authored under [QUA-418](/QUA/issues/QUA-418).
 
@@ -273,6 +274,19 @@ Canonical decision: [DL-036](../decisions/2026-04-28_ea_review_gate.md). Recordi
 - **In-flight enforcement (2026-04-28):** 5 PATCHes already applied by CEO this heartbeat — QUA-277 / 278 / 279 / 280 / 281.
 
 > **Reconciliation note.** The DL-036 EA Review Gate inline subsection above stays as the canonical reference; on a future hygiene pass, DL-036 can fold into the Execution Policies table as **Class 5** (or extend Class 3's scope test) — whichever is cleaner at the time. CEO Authority Boundaries / Issue Routing / Execution Policies / Skills sections are merged in above; DL-029 / DL-038 / DL-039 process sections live below the Skills section.
+
+## Continuous Improvement Loop (lessons → process)
+
+Canonical spec: [18-company-operating-system.md](18-company-operating-system.md) § Continuous Improvement Loop. Ratifying source: [`docs/ops/PAPERCLIP_COMPANY_REBOOT_PLAN_2026-04-30.md`](../docs/ops/PAPERCLIP_COMPANY_REBOOT_PLAN_2026-04-30.md). Authored under [QUA-595](/QUA/issues/QUA-595) (QUA-588 F5b).
+
+Four accountable steps (binding):
+
+1. **Lesson candidate** — any agent files a `learning-candidate`-tagged issue when work fails / repeats / wastes tokens. Same heartbeat the failure is observed; no batching.
+2. **Normalize** — Documentation-KM rewrites the candidate into the canonical [`lessons-learned/<date>_<slug>.md`](../lessons-learned/) shape (Learning → V1 Behavior → V5 Behavior → Why) with source citation. SLA < 24h.
+3. **Routing / model / skill decision** — Chief of Staff (interim CEO until CoS hire lands) decides one of: route change, model change, skill change, process change, checklist change, prompt-proposal, or explicit no-change with reason. SLA < 72h.
+4. **CEO approval** — comment + DL-NNN if class-2+. SLA < 1 CEO heartbeat.
+
+**Closure rule (binding):** No lesson is `done` until its issue links to ≥1 process / checklist / prompt-proposal change (with commit hash) OR an explicit no-change DL-NNN / CEO comment naming the future condition that would re-open the lesson. Documentation-KM is the closure-rule sentinel — weekly sweep PATCHes any step-4-without-closure lesson back to `in_progress` and pings the owner.
 
 ## Paperclip platform semantics
 
