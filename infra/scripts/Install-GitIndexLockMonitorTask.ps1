@@ -8,6 +8,7 @@ param(
     [int]$StaleAfterMinutes = 20,
     [switch]$FailOnFinding,
     [switch]$AutoCleanup,
+    [switch]$PreviewOnly,
     [switch]$RunNow
 )
 
@@ -47,6 +48,20 @@ $settings = New-ScheduledTaskSettingsSet `
     -ExecutionTimeLimit (New-TimeSpan -Minutes 5)
 
 $task = New-ScheduledTask -Action $action -Trigger $trigger -Principal $principal -Settings $settings
+if ($PreviewOnly.IsPresent) {
+    [pscustomobject]@{
+        preview = $true
+        task_name = $TaskName
+        execute = "powershell.exe"
+        arguments = $args
+        working_directory = $RepoRoot
+        start_boundary_local = $startBoundary.ToString("o")
+        repetition_minutes = $EveryMinutes
+        principal = "SYSTEM"
+        run_level = "Highest"
+    } | ConvertTo-Json -Depth 5
+    exit 0
+}
 Register-ScheduledTask -TaskName $TaskName -InputObject $task -Force | Out-Null
 
 $taskInfo = Get-ScheduledTaskInfo -TaskName $TaskName
