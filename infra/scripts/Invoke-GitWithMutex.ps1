@@ -53,7 +53,8 @@ try {
             "-NoProfile",
             "-ExecutionPolicy", "Bypass",
             "-File", $allowlistScript,
-            "-RepoRoot", $resolvedRepo
+            "-RepoRoot", $resolvedRepo,
+            "-FailOnRepoRootZeroByte"
         )
         foreach ($allowedPath in $CommitAllowedPaths) {
             $allowArgs += @("-AllowedPaths", $allowedPath)

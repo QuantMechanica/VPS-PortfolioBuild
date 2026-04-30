@@ -972,6 +972,7 @@
 - Guardrail for staged-file safety before committing in noisy worktrees.
 - Reads `git diff --cached --name-only` and fails when staged files fall outside allowed path prefixes.
 - Supports both prefix (`-AllowedPaths`) and exact-file (`-AllowedExactPaths`) allowlists.
+- Optional repo-root garbage guard via `-FailOnRepoRootZeroByte` to block zero-byte files at repo root and emit a DL-028 worktree-discipline reference.
 - Optional untracked-file guard via `-FailOnUntracked` with explicit untracked allowlists (`-AllowedUntrackedPaths`, `-AllowedUntrackedExactPaths`).
 - Typical usage:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Assert-CommitAllowlist.ps1 -AllowedPaths infra/scripts/ docs/ops/QUA-207_`
@@ -981,6 +982,7 @@
   - `0`: staged set is allowed
   - `2`: staged files violate allowlist
   - `3`: untracked files violate untracked allowlist (when `-FailOnUntracked` is set)
+  - `4`: repo-root zero-byte file present (when `-FailOnRepoRootZeroByte` is set)
 
 ## `Commit-HeartbeatCheckpoint.ps1`
 

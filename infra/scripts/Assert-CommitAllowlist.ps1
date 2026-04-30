@@ -4,6 +4,7 @@ param(
     [string[]]$AllowedPaths = @(),
     [string[]]$AllowedExactPaths = @(),
     [switch]$AllowNothingWhenEmpty,
+    [switch]$FailOnRepoRootZeroByte,
     [switch]$FailOnUntracked,
     [string[]]$AllowedUntrackedPaths = @(),
     [string[]]$AllowedUntrackedExactPaths = @()
@@ -14,6 +15,16 @@ $ErrorActionPreference = 'Stop'
 
 if (-not (Test-Path -LiteralPath (Join-Path $RepoRoot '.git'))) {
     throw "Not a git repository root: $RepoRoot"
+}
+
+if ($FailOnRepoRootZeroByte) {
+    $rootZeroByteFiles = @(Get-ChildItem -LiteralPath $RepoRoot -File -ErrorAction Stop | Where-Object { $_.Length -eq 0 })
+    if (@($rootZeroByteFiles).Count -gt 0) {
+        Write-Host ("status=critical reason=repo_root_zero_byte_file_present count={0}" -f @($rootZeroByteFiles).Count)
+        Write-Host "action=remove_root_garbage_and_retry ref=DL-028(worktree_discipline)"
+        foreach ($f in $rootZeroByteFiles) { Write-Host ("root_zero_byte_violation={0}" -f $f.Name) }
+        exit 4
+    }
 }
 
 $normalizedAllowedUntrackedPrefixes = @($AllowedUntrackedPaths | ForEach-Object { $_.Replace('\', '/').TrimStart('./') })
@@ -103,5 +114,5 @@ if (@($violations).Count -gt 0) {
     exit 2
 }
 
-Write-Host ("status=ok staged_count={0} allow_prefix_count={1} allow_exact_count={2} fail_on_untracked={3}" -f @($staged).Count, @($normalizedAllowedPrefixes).Count, @($normalizedAllowedExact).Count, $FailOnUntracked.IsPresent.ToString().ToLowerInvariant())
+Write-Host ("status=ok staged_count={0} allow_prefix_count={1} allow_exact_count={2} fail_on_untracked={3} fail_on_root_zero_byte={4}" -f @($staged).Count, @($normalizedAllowedPrefixes).Count, @($normalizedAllowedExact).Count, $FailOnUntracked.IsPresent.ToString().ToLowerInvariant(), $FailOnRepoRootZeroByte.IsPresent.ToString().ToLowerInvariant())
 exit 0

@@ -76,6 +76,14 @@ Known high-risk artefact classes:
 - Bulk `.htm` baseline report dumps not yet pruned by `pipeline_feed_guard.py`
 - Stale `ex5` compiled binaries from cancelled sweeps
 
+## Repo-Root Garbage Sentinel (DL-028)
+
+- DevOps commit path MUST enforce a repo-root zero-byte guard before `git commit`.
+- Guard implementation: `infra/scripts/Invoke-GitWithMutex.ps1` calls `infra/scripts/Assert-CommitAllowlist.ps1 -FailOnRepoRootZeroByte`.
+- On detection, the guard exits non-zero and prints `ref=DL-028(worktree_discipline)` to force cleanup before commit.
+- Operator probe command:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Assert-CommitAllowlist.ps1 -RepoRoot C:\QM\repo -FailOnRepoRootZeroByte`
+
 ## Exits
 
 - **Constrained resolved:** C: free ≥ 80 GB sustained for 1800 s. Pipeline-Operator unpauses T3 and updates `last_check_state.json` (`t3_disk_pause_policy.active = false`). Obs-SRE logs recovery note.
