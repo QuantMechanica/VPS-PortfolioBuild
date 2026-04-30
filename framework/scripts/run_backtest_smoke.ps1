@@ -47,6 +47,7 @@ if ($Terminal -ieq "any") {
         phase = "P1"
         sub_gate_config_hash = "{0}-{1}" -f $Period, $Year
         target_terminal = "any"
+        setfile_path = $setFile
     } | ConvertTo-Json -Depth 4
     Set-Content -LiteralPath $jobPath -Value $job -Encoding utf8
     try {
@@ -55,11 +56,15 @@ if ($Terminal -ieq "any") {
             throw "resolve_backtest_target.py exited with code $LASTEXITCODE"
         }
         $decision = $raw | ConvertFrom-Json
-        if (-not $decision.terminal) {
-            throw "Terminal resolution returned no terminal. status=$($decision.status)"
+        $decisionStatus = if ($decision.PSObject.Properties.Name -contains "status") { [string]$decision.status } else { "" }
+        $decisionTerminal = if ($decision.PSObject.Properties.Name -contains "terminal") { [string]$decision.terminal } else { "" }
+        if ([string]::IsNullOrWhiteSpace($decisionTerminal)) {
+            $message = if ($decision.PSObject.Properties.Name -contains "message") { [string]$decision.message } else { "No message." }
+            $errorCode = if ($decision.PSObject.Properties.Name -contains "error_code") { [string]$decision.error_code } else { "none" }
+            throw "Terminal resolution returned no terminal. status=$decisionStatus error_code=$errorCode message=$message"
         }
-        $resolvedTerminal = [string]$decision.terminal
-        Write-Output ("run_backtest_smoke.dispatch_status={0}" -f $decision.status)
+        $resolvedTerminal = $decisionTerminal
+        Write-Output ("run_backtest_smoke.dispatch_status={0}" -f $decisionStatus)
         Write-Output ("run_backtest_smoke.dispatch_terminal={0}" -f $resolvedTerminal)
     } finally {
         if (Test-Path -LiteralPath $jobPath) {
