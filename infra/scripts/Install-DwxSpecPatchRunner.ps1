@@ -4,7 +4,8 @@ param(
     [string]$FromVersion = "v2",
     [string]$ToVersion = "v3",
     [string]$SourceIniPath = "",
-    [string]$TargetIniPath = ""
+    [string]$TargetIniPath = "",
+    [switch]$PreviewOnly
 )
 
 Set-StrictMode -Version Latest
@@ -122,6 +123,23 @@ if (Test-Path -LiteralPath $targetIni) {
     if ((Normalize-Text -Value $existing) -eq (Normalize-Text -Value $targetContent)) {
         $shouldWrite = $false
     }
+}
+
+if ($PreviewOnly.IsPresent) {
+    [pscustomobject]@{
+        preview = $true
+        terminal_root = $TerminalRoot
+        source_ini = $sourceIni
+        target_ini = $targetIni
+        from_version = $from
+        to_version = $to
+        from_script = $fromScript
+        to_script = $toScript
+        target_exists = (Test-Path -LiteralPath $targetIni)
+        would_write_target = $shouldWrite
+        run_command = "$terminalExe /portable /config:$targetIni"
+    } | ConvertTo-Json -Depth 5
+    exit 0
 }
 
 if ($shouldWrite) {

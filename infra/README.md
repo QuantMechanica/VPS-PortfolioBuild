@@ -149,6 +149,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `scripts/Install-DwxSpecPatchRunner.ps1`
   - Converges a non-interactive MT5 startup INI from one patch version to another (default: `v2 -> v3`).
   - Check-then-act writes: updates target only when content differs.
+  - Supports `-PreviewOnly` for non-mutating convergence/run-command plan output.
   - Enforces `ShutdownTerminal=1` and refuses T6 paths by default.
 - `scripts/Ensure-Mt5PortableMarker.ps1`
   - Idempotently converges `portable.txt` marker files for factory terminals (`T1`-`T5`).
