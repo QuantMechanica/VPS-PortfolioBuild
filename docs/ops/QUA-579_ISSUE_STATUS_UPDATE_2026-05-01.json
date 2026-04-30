@@ -1,0 +1,6 @@
+{
+  "issue": "QUA-579",
+  "target_status": "done",
+  "run_date": "2026-05-01",
+  "summary": "Applied WAKE FILTER wording update in paperclip-prompts/observability-sre.md: now uses verbatim comment_added event line."
+}
