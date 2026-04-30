@@ -5,7 +5,7 @@ Owner of this file: OWNER + Claude Board Advisor
 Refresh cadence: every meaningful state change (new commit / new decision / phase boundary)
 Source of truth: filesystem + this file. Phase-0 detail in `docs/ops/PHASE0_EXECUTION_BOARD.md`.
 
-This file is the single backlog across all phases of V5. It exists because the existing per-doc workstream lists assume Paperclip is online with full agent roster — and **Paperclip is not installed yet**. Today the only active actors on the VPS are OWNER and Claude Board Advisor (this instance). Codex on the laptop is a read-only research helper.
+This file is the single backlog across all phases of V5. It was created on 2026-04-26 when Paperclip was not yet installed and the only actors were OWNER + Board Advisor. As of 2026-05-01, Paperclip is online, Wave 0 is hired, and the org has expanded into Wave 1+ ahead of strict bootstrap order — the live picture lives in § Today's Reality below and the canonical machine-readable runtime source is [`public-data/company-runtime.json`](public-data/company-runtime.json) (postgres-backed snapshot, regenerated hourly). Per-item "Today's owner: Board Advisor" annotations later in this file are stale and tracked for cleanup under QUA-588 follow-ups.
 
 ## Specification Density Principle (2026-04-26)
 
@@ -29,16 +29,69 @@ When Paperclip is online and asks "what should I do here?", the answer is usuall
 
 ## Today's Reality
 
-| Actor | Status | Can do |
-|---|---|---|
-| OWNER (Fabian) | active | gate decisions, MT5 operations, Paperclip install, sign-offs, real-money approvals |
-| Board Advisor Claude (this instance, on VPS) | active | docs, repo work, scripts, validation walkthroughs, evidence capture, brand work |
-| Codex (laptop) | read-only | filesystem search, copy to Drive pack, source verification — no VPS write, no GitHub write |
-| Paperclip CEO / CTO / Research / Documentation-KM (Wave 0) | **NOT INSTALLED** | nothing — these agents do not exist yet |
-| Paperclip Wave 1+ (DevOps, Pipeline-Operator, Development, Quality-Tech, Quality-Business, Controlling, Observability-SRE, LiveOps, R-and-D) | **NOT INSTALLED** | nothing — these agents do not exist yet |
-| Chief of Staff (Wave 6 / Phase Final) | **NOT INSTALLED** | nothing — this is the explicitly-deferred final phase |
+_Last refreshed: 2026-05-01 (W. Europe). Canonical runtime source: [`public-data/company-runtime.json`](public-data/company-runtime.json) — postgres-backed snapshot, regenerated hourly. Numbers in this section must match that file ± one refresh window; if they drift, this file is wrong, not the JSON._
 
-Any backlog item assigned to a Paperclip role is **blocked on Paperclip Bootstrap** unless explicitly re-assignable to OWNER + Board Advisor as a manual interim.
+Paperclip is installed and operating in `monitor_only` autonomy with `overall_status = alert` (per the snapshot at 2026-04-30T22:31 UTC). 14 agents in roster, 9 active, 5 terminated/paused.
+
+### Phase status
+
+| Phase | Status | What's true on 2026-05-01 |
+|---|---|---|
+| Phase 0 — VPS Foundation + Specs | 🟡 partial | Most P0 specs migrated. Open: T1-T5 + T6 isolation proof, P0-21 TDM verification, VPS slippage/latency calibration JSON. |
+| Phase 1 — Paperclip Bootstrap | 🟡 partial | Paperclip company exists; Wave 0 hired (CEO, CTO, Documentation-KM live; Research idle since 2026-04-28). PC1-00 (Drive `.git/` exclusion) closed. Org has expanded into Wave 1+ (DevOps, Pipeline-Operator, Development, Quality-Tech, Quality-Business) ahead of strict bootstrap order. |
+| Phase 2 — V5 Framework Implementation | ⬜ not yet executed | Smoke EA gate not cleared. Operating under DL-040 sequential model — single SRC + single strategy + first-matrix-hold; first matrix dispatch OWNER-gated. |
+| Phases 3–6 | ⬜ blocked | Sequential gating per phase map below. |
+| Phase Final — Founder-Comms | 🚫 deferred | per `docs/ops/PHASE_FINAL_FOUNDER_COMMS.md`. |
+
+### Agent roster (14 total · 9 active · 5 terminated/paused)
+
+#### Live — heartbeat enabled, producing runs
+
+| Agent | Role | Cadence | Snapshot status | In-flight / blocked |
+|---|---|---|---|---|
+| CEO | ceo | ~12 runs/h | running | 1 in_progress, 17 blocked |
+| CTO | cto | ~32 runs/h | idle (heartbeat-on) | 0 in_progress, 11 blocked |
+| Documentation-KM | general | ~7 runs/h | idle (heartbeat-on) | 0 in_progress, 1 blocked |
+| DevOps (`86015301`) | devops | ~3 runs/h | running | 0 in_progress, 4 blocked |
+| Pipeline-Operator | engineer | ~9 runs/h, throttled | idle (heartbeat-on) | 0 in_progress, 7 blocked — first-matrix-hold per DL-040 |
+
+#### Wake-on-demand — heartbeat off, fires only on assignment
+
+| Agent | Role | Last heartbeat | Snapshot status | Notes |
+|---|---|---|---|---|
+| Research | researcher | 2026-04-28 | idle | 2 blocked; awaiting OWNER reboot decision (QUA-588 F5/F7) |
+| Quality-Tech | qa | 2026-05-01 | idle | 0 blocked |
+| Quality-Business | qa | 2026-04-29 | idle | 0 blocked |
+| Development | engineer | 2026-04-29 | running flag, `stuck_session` finding | 12 blocked; **effectively paused** — runtime stuck-session detector active, no real runs in 50h. Treat as paused for planning. |
+
+#### Paused / terminated (5)
+
+| Agent | Role | State | Notes |
+|---|---|---|---|
+| DevOps 2 (`0e8f04e5`) | devops | paused | Pause set 2026-04-29 |
+| DevOps (`12c5c03f`) | devops | terminated | Superseded by `86015301` |
+| DevOps 2 (`9f2e41f3`) | devops | terminated | Duplicate retirement 2026-04-29 |
+| FoundingEngineer | engineer | terminated | Superseded by Development + CTO split |
+| Quality-Business (`f2c79849`) | qa | terminated | Retired 2026-04-28, replaced by `0ab3d743` |
+
+OWNER (Fabian) remains the gate decision-maker (real-money approval, T6 ops, manifest sign-off, agent hire/fire, DL-040 first-matrix release). Codex on the laptop is no longer a routing actor — the VPS Paperclip CTO agent now owns CTO duties.
+
+### Live initiatives
+
+- **Reboot plan landing (QUA-588 F5):** `docs/ops/PAPERCLIP_COMPANY_REBOOT_PLAN_2026-04-30.md` and `_ISSUES_2026-04-30.md` exist on disk but are untracked in git. CEO-level GO/NO-GO decision pending. **Link will go live here once F5 GO is recorded;** until then, treat the plan as proposal-only.
+- **DL-040 sequential operating model in effect:** single SRC + single strategy + first-matrix-hold; 36-symbol parallelism only within one phase on one strategy; first matrix dispatch OWNER-gated. Pipeline-Operator + Development are deliberately throttled until OWNER lifts the hold. See `decisions/DL-040_*` and the QUA-588 audit transcript.
+- **PROJECT_BACKLOG.md realignment (QUA-588 F1–F8):** this F4 commit closes one of eight follow-ups against the 2026-05-01 Board Advisor audit. The other seven (worktree-discipline sweep, garbage-file cleanup, DL-029 limbo, reboot GO, token-burn triage, Research pause vs build-queue, T1-T5 parallel dispatch evidence) are tracked under QUA-588 sub-issues.
+
+### Burn rate
+
+| Metric | 2026-05-01 value | Trend target |
+|---|---|---|
+| Weekly run count | ≈14,656 runs/week (audit baseline ≈14,639) | Hold or decline |
+| Projected monthly | ≈58,624 runs/month | Below 60k until Phase 2 closes |
+| Provider run cap | 0 (not configured) | n/a — threshold ratio 0.9 |
+| Throughput vs spend | 14k+ runs/week, **zero V5 EAs through P10** | Trend down once QUA-211 (Pipeline-Op process_loss) and QUA-372 (Development hot-poll) close |
+
+Any backlog item assigned to a Paperclip role below routes to that agent's worktree branch (`agents/<role>`). The legacy "Today's owner: OWNER + Board Advisor" annotations in Phase 0–6 sections predate Paperclip and are being cleaned up under QUA-588 follow-ups; until then, re-route by reading the role name, not the actor name.
 
 ## Phase Map (the real sequence)
 
