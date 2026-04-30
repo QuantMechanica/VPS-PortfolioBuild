@@ -19,7 +19,11 @@ Adopt a two-layer guard to prevent QUA-generated artifacts from accumulating on 
 - `docs/ops/QUA-*_*.{md,json,sha256,txt}`
 - Root `QUA-*_*.{md,json,sha256,txt}`
 - `artifacts/qua-*/...`
+- `decisions/2026-*_self_author_*.md`
+- `framework/EAs/*.ex5`
 - `**/__pycache__/`
+- `**/*.pyc`
+- `.claude/`
 - `.claude/scheduled_tasks.lock`
 
 ## Additional hygiene

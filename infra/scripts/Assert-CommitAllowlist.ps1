@@ -77,8 +77,12 @@ if ($FailOnMainArtifactPaths) {
             $n = $f.Replace('\', '/').TrimStart('./')
             if ($n -match '^docs/ops/QUA-[^/]+_[^/]+\.(md|json|sha256|txt)$' -or
                 $n -match '^QUA-[^/]+_[^/]+\.(md|json|sha256|txt)$' -or
+                $n -match '^decisions/2026-[^/]*_self_author_[^/]*\.md$' -or
                 $n -match '^artifacts/qua-[^/]+/.+' -or
+                $n -match '^framework/EAs/.+\.ex5$' -or
                 $n -match '(^|/)__pycache__(/|$)' -or
+                $n -match '\.pyc$' -or
+                $n.StartsWith('.claude/', [System.StringComparison]::OrdinalIgnoreCase) -or
                 $n.Equals('.claude/scheduled_tasks.lock', [System.StringComparison]::OrdinalIgnoreCase)) {
                 $mainArtifactViolations += $f
             }

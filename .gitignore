@@ -1,4 +1,5 @@
 .private/
+.claude/
 .claude/settings.local.json
 *.log
 Thumbs.db
@@ -10,6 +11,8 @@ desktop.ini
 infra/reports/*.json
 __pycache__/
 **/__pycache__/
+*.pyc
+**/*.pyc
 .claude/scheduled_tasks.lock
 
 # QUA-186 approved artifact retention policy (CEO comment c2891fa7, 2026-04-27)
