@@ -336,6 +336,18 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Repeating task triggers are normalized to the next future run slot when the nominal HH:MM boundary is already in the past.
 - `scripts/New-QUA207IssueComment.ps1`
   - Generates `docs/ops/QUA-207_ISSUE_COMMENT_2026-04-27.md` from live transition + evidence artifacts.
+- `scripts/Test-QUA346Readiness.ps1`
+  - Evaluates QUA-346 readiness checks and emits deterministic JSON status.
+- `scripts/New-QUA346IssueComment.ps1`
+  - Renders QUA-346 issue-comment markdown from readiness/check artifacts.
+- `scripts/Run-QUA346StatusRefresh.ps1`
+  - Regenerates readiness + issue-comment artifacts and emits consolidated status JSON with blocker fingerprint.
+- `scripts/Update-QUA346FingerprintState.ps1`
+  - Maintains persisted blocker-fingerprint state for no-change heartbeat suppression.
+- `scripts/Run-QUA346HeartbeatTick.ps1`
+  - Runs one QUA-346 heartbeat tick and updates no-change tracking state.
+- `scripts/Run-QUA346BlockedHeartbeat.ps1`
+  - Wrapper for blocked-state heartbeat operation with deterministic output artifacts.
 - `scripts/Invoke-QUA350IssueTransition.ps1`
   - Applies QUA-350 status transition to Paperclip with required inline comment + `X-Paperclip-Run-Id` in a single PATCH call.
   - Preview-by-default; mutates only with `-Apply`.
