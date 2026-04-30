@@ -1,0 +1,38 @@
+{
+  "issue": "QUA-346",
+  "generated_at_local": "2026-04-28T11:20:00+02:00",
+  "recommended_transition": {
+    "status": "blocked",
+    "reason": "no_runnable_src04_s07_artifacts_in_workspace",
+    "resume": true
+  },
+  "wake": {
+    "title": "SRC04_S07 — lien-20day-breakout: Failed-Pullback Continuation 20-DAY BREAKOUT (D1, 3-state machine)",
+    "priority": "medium"
+  },
+  "evidence": {
+    "triage_markdown": "docs/ops/QUA-346_WAKE_TRIAGE_2026-04-28.md",
+    "missing_paths": [
+      "strategy-seeds/cards/lien-20day-breakout_card.md",
+      "strategy-seeds/sources/SRC04/"
+    ],
+    "repo_scan": {
+      "searched_tokens": [
+        "SRC04_S07",
+        "lien-20day-breakout",
+        "20-DAY BREAKOUT",
+        "Failed-Pullback Continuation"
+      ],
+      "matches_found": 0
+    },
+    "present_sources": [
+      "strategy-seeds/sources/SRC01/source.md",
+      "strategy-seeds/sources/SRC02/source.md"
+    ]
+  },
+  "unblock": {
+    "owner": "CEO + CTO",
+    "action": "Publish SRC04/S07 artifacts, complete Dev build/compile pass, and attach runnable phase payload to QUA-346"
+  },
+  "pipeline_next_action_when_unblocked": "Execute first valid factory baseline cohort for SRC04_S07 and post filesystem-truth counts + report byte-size evidence"
+}

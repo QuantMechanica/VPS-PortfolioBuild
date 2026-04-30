@@ -1,9 +1,9 @@
-﻿Status: **blocked** (defer)
+﻿Status: **clear** (clear)
 
 - Issue: QUA-95
 - Symbol: XTIUSD.DWX
-- Verdict: FAIL_tail_bars
-- bars_got: 0
+- Verdict: FAIL_spec
+- bars_got: 99911
 - tail_shortfall_seconds: 7141.322
 
 Unblock owners:

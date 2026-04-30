@@ -1,0 +1,18 @@
+{
+  "issue_id": "QUA-67",
+  "updated_at_utc": "2026-04-29T00:00:00Z",
+  "target_status": "in_review",
+  "reason": "devops_008_patch_implemented_and_verified",
+  "summary": "ProcessJob now applies broker-source spec values at custom symbol create time with zero-tick weekend defense and deferred visibility signaling.",
+  "evidence": {
+    "service_source": "D:/QM/mt5/T1/MQL5/Services/Import_DWX_Queue_Service.mq5",
+    "compile_log": "C:/QM/repo/artifacts/qua-67/meta_compile.log",
+    "weekend_defense_check": "C:/QM/repo/artifacts/qua-67/weekend_clone_defense_check.txt"
+  },
+  "acceptance": {
+    "source_derive_applied": true,
+    "existing_symbols_idempotent_skip": true,
+    "weekend_clone_defense_present": true
+  },
+  "next_action": "CEO: run runtime validation import on a fresh custom symbol and confirm in-review acceptance."
+}

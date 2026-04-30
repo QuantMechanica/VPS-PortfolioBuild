@@ -1,0 +1,21 @@
+{
+  "issue": "QUA-348",
+  "generated_at_local": "2026-04-28T12:21:16+02:00",
+  "recommended_transition": {
+    "status": "blocked",
+    "reason": "missing_src04_s09_ea_mapping_or_build_artifact",
+    "resume": true
+  },
+  "wake_delta_handling": {
+    "continuation_mode": "implementation",
+    "refresh_script_ran": true,
+    "build_handoff_validator_last_result": "INVALID",
+    "readiness_last_result": "NOT_READY",
+    "tick_bundle_generated": "C:\\QM\\repo\\artifacts\\qua-348\\tick_bundle_20260428_122116.json"
+  },
+  "unblock": {
+    "owner": "CTO (with Dev if build pending)",
+    "action": "Provide concrete EAName/SetfilePath via apply helper until validator=VALID and readiness=READY"
+  },
+  "pipeline_next_action_when_unblocked": "Execute first valid factory baseline cohort for SRC04_S09 and post filesystem-truth counters plus report-size evidence"
+}

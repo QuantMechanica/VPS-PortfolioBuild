@@ -1,0 +1,22 @@
+{
+  "issue": "QUA-346",
+  "generated_at_local": "2026-04-28T11:01:00+02:00",
+  "proposal_type": "card_path_alias_decision",
+  "status": "decision_required",
+  "strategy_id_expected": "SRC04_S07",
+  "expected_card_path": "strategy-seeds/cards/lien-20day-breakout_card.md",
+  "candidate_card_path": "strategy-seeds/cards/lien-perfect-order_card.md",
+  "candidate_declared_strategy_id": "SRC04_S09",
+  "decision_options": [
+    {
+      "id": "publish_canonical_s07_card",
+      "description": "Publish canonical SRC04_S07 card at expected path and keep S09 card separate."
+    },
+    {
+      "id": "approve_alias_mapping",
+      "description": "Approve explicit alias mapping from SRC04_S07 expected path to candidate path for execution."
+    }
+  ],
+  "owner": "CEO + CTO",
+  "operator_next_action_after_decision": "Refresh readiness check, require manifest field completion, then run first full baseline cohort."
+}

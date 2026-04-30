@@ -1,6 +1,6 @@
 ﻿{
     "issue":  "QUA-95",
-    "generated_at_local":  "2026-04-27T15:18:29+02:00",
+    "generated_at_local":  "2026-04-28T10:52:05+02:00",
     "refresh_executed":  false,
     "refresh_exit_code":  null,
     "audit_executed":  false,
@@ -11,7 +11,7 @@
                  "disposition":  "clear",
                  "bars_got":  99911,
                  "tail_shortfall_seconds":  7141.322,
-                 "last_checked_local":  "2026-04-27T15:17:19+02:00"
+                 "last_checked_local":  "2026-04-27T22:01:01+02:00"
              },
     "infra_audit":  {
                         "overall_status":  "critical",

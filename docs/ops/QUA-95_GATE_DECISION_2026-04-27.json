@@ -3,7 +3,7 @@
     "recommended_state":  "clear",
     "reason":  "acceptance_met",
     "disposition":  "clear",
-    "last_checked_local":  "2026-04-27T15:06:26+02:00",
+    "last_checked_local":  "2026-04-27T22:01:01+02:00",
     "bars_got":  99911,
     "tail_shortfall_seconds":  7141.322,
     "runtime_visibility_recovered":  true,

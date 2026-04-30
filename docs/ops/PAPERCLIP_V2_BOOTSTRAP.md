@@ -13,7 +13,7 @@ New company, new project, new issue tree. Old QUAA content is archive and learni
 - Public repo: `https://github.com/QuantMechanica/VPS-PortfolioBuild`
 - Operating language: English
 - Public narrative: Build in Public on YouTube
-- Human final authority: Fabian
+- Human final authority: OWNER
 - Board reviewers: Claude-Assistant, Codex
 
 ## First Agents

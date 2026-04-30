@@ -1,0 +1,37 @@
+{
+  "issue": "QUA-342",
+  "captured_at_utc": "2026-04-28T08:55:30Z",
+  "status": "blocked",
+  "reason": "missing_source_and_card_artifacts",
+  "required_paths": [
+    {
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\lien-fade-double-zeros_card.md",
+      "exists": false
+    },
+    {
+      "path": "C:\\QM\\repo\\strategy-seeds\\sources\\SRC04\\raw\\ch08-12_technical.txt",
+      "exists": false
+    },
+    {
+      "path": "C:\\QM\\repo\\strategy-seeds\\sources\\SRC04",
+      "exists": false
+    }
+  ],
+  "registry_snapshot": {
+    "path": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+    "src04_present": false,
+    "rows": [
+      "1001,breakout-atr,TBD,active,CTO,2026-04-27",
+      "1002,davey-eu-night,SRC01_S01,active,CTO,2026-04-27",
+      "1003,davey-baseline-3bar,SRC01_S03,active,Development,2026-04-28",
+      "1004,davey-es-breakout,SRC01_S04,active,Development,2026-04-28",
+      "1005,davey-worldcup,SRC01_S05,active,CTO,2026-04-28",
+      "1006,davey-eu-day,SRC01_S02,active,Development,2026-04-28"
+    ]
+  },
+  "unblock": {
+    "owner": "CTO",
+    "action": "Publish SRC04 source + card artifacts and provide executable run payload (symbols, date window, terminal allocation, setfile/EA mapping)."
+  },
+  "next_action_after_unblock": "Launch smallest valid factory baseline for SRC04_S03 and publish report count + size evidence under artifacts/qua-342."
+}

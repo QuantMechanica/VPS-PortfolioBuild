@@ -243,7 +243,7 @@ Paperclip can manage the live portfolio operationally if the permissions are str
 - LiveOps executes approved deploy manifests.
 - Observability-SRE watches health and pages on risk.
 - Controlling publishes public and private KPIs.
-- Fabian remains final authority for live-money P9 and emergency restart after halt.
+- OWNER remains final authority for live-money P9 and emergency restart after halt.
 
 Paperclip should not have unlimited discretionary trading authority. It can run the operating system, but every money-at-risk action must be traceable to a manifest and an approval event.
 

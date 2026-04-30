@@ -1,0 +1,46 @@
+{
+  "issue": "QUA-177",
+  "date_utc": "2026-04-27",
+  "step": 25,
+  "title": "Quality-Tech framework review handoff",
+  "decision": "REJECT",
+  "evidence": {
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260427_113512.json",
+    "compile_log": "C:/QM/repo/framework/build/compile/20260427_113512/EA_Skeleton.compile.log",
+    "handoff_markdown": "docs/ops/QUA-177_STEP25_QUALITY_TECH_HANDOFF_2026-04-27.md"
+  },
+  "findings": [
+    {
+      "severity": "critical",
+      "id": "compile_warnings_not_clean",
+      "rule": "compile_check_no_warnings",
+      "summary": "build_check strict gate failed due to 19 warnings in EA_Skeleton compile output"
+    },
+    {
+      "severity": "critical",
+      "id": "four_module_boundary_incomplete",
+      "rule": "v5_4_module_modularity",
+      "summary": "No explicit QM_NoTrade module and no full TradeManagement/TradeClose wiring at framework boundary"
+    },
+    {
+      "severity": "high",
+      "id": "env_risk_enforcement_missing",
+      "rule": "backtest_fixed_live_percent_env_enforced",
+      "summary": "EA_INPUT_RISK_MODE_MISMATCH path defined but not enforced in framework init"
+    },
+    {
+      "severity": "medium",
+      "id": "script_contract_drift",
+      "rule": "spec_fidelity",
+      "summary": "compile_all.ps1 and validate_setfile.ps1 standalone scripts absent vs design contract"
+    }
+  ],
+  "next_action": {
+    "owner": "Development (implementation) + CTO (re-review)",
+    "required_for_unblock": [
+      "build_check pass with zero warnings",
+      "4-module boundary complete",
+      "env risk mode enforcement implemented"
+    ]
+  }
+}

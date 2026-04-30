@@ -1,0 +1,9 @@
+{
+  "issue": "QUA-348",
+  "captured_at_local": "2026-04-28T12:12:00+02:00",
+  "check": "ma_stack_entry_presence_controlled_vocabulary",
+  "status": "present",
+  "path": "C:\\QM\\repo\\strategy-seeds\\strategy_type_flags.md",
+  "match": "### ma-stack-entry",
+  "operator_note": "Vocabulary gap resolved in active checkout. Execution now blocked only by missing runnable cohort payload."
+}

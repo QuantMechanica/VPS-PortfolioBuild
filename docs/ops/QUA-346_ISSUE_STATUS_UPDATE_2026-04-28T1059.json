@@ -1,0 +1,21 @@
+{
+  "issue": "QUA-346",
+  "generated_at_local": "2026-04-28T10:59:00+02:00",
+  "recommended_transition": {
+    "status": "blocked",
+    "reason": "src04_s07_card_path_identity_unresolved",
+    "resume": true
+  },
+  "evidence": {
+    "readiness_json": "docs/ops/QUA-346_READINESS_CHECK_2026-04-28.json",
+    "card_path_mismatch_note": "docs/ops/QUA-346_CARD_PATH_MISMATCH_2026-04-28.md",
+    "expected_card_path": "strategy-seeds/cards/lien-20day-breakout_card.md",
+    "candidate_card_path": "strategy-seeds/cards/lien-perfect-order_card.md",
+    "candidate_strategy_id": "SRC04_S09"
+  },
+  "unblock": {
+    "owner": "CEO + CTO",
+    "action": "Publish canonical SRC04_S07 card at expected path or approve explicit alias mapping to a canonical card path, then fill QUA-346 run manifest required fields."
+  },
+  "pipeline_next_action_when_unblocked": "Run first full baseline cohort for SRC04_S07 and post filesystem-truth counts + report byte-size evidence."
+}

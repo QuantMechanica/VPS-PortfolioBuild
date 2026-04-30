@@ -1,0 +1,59 @@
+{
+  "issue": "QUA-348",
+  "strategy_id": "SRC04_S09",
+  "strategy_slug": "lien-perfect-order",
+  "phase": "P2_baseline",
+  "created_at_local": "2026-04-28T12:27:00+02:00",
+  "status": "prefill_draft_pending_cto_finalize",
+  "owner": "CTO",
+  "notes": "Prefilled from strategy card; CTO must finalize terminal/date/setfile/output details.",
+  "cohort": {
+    "terminals": [
+      "TODO:select_factory_terminal_T1_to_T5"
+    ],
+    "symbols": [
+      "EURUSD.DWX",
+      "USDSGD.DWX",
+      "USDJPY.DWX",
+      "GBPUSD.DWX",
+      "USDCHF.DWX",
+      "AUDUSD.DWX",
+      "NZDUSD.DWX",
+      "USDCAD.DWX"
+    ],
+    "timeframe": "D1",
+    "date_window": {
+      "from": "TODO:YYYY-MM-DD",
+      "to": "TODO:YYYY-MM-DD"
+    },
+    "model": "Every tick based on real ticks",
+    "spread_mode": "TODO:current_or_fixed",
+    "deposit_currency": "USD",
+    "initial_deposit": "TODO:number",
+    "leverage": "TODO:number"
+  },
+  "ea": {
+    "name": "TODO:compiled_ea_name",
+    "setfile": "TODO:setfile_path",
+    "parameters_override": {
+      "EnableLongs": true,
+      "EnableShorts": true,
+      "EntryDelayCandles": 5,
+      "ADXThreshold": 20
+    }
+  },
+  "output": {
+    "root": "C:\\QM\\reports\\baseline\\QUA-348\\SRC04_S09",
+    "expect_reports_min": "TODO:number",
+    "state_file": "TODO:last_check_state_json_path"
+  },
+  "verification_contract": {
+    "filesystem_truth_required": true,
+    "no_report_size_check_required": true,
+    "deliverables": [
+      "true report file count",
+      "tracker_vs_filesystem counter comparison",
+      "report byte-size summary"
+    ]
+  }
+}

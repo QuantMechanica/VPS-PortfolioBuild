@@ -1,0 +1,52 @@
+{
+  "issue": "QUA-348",
+  "strategy_id": "SRC04_S09",
+  "strategy_slug": "lien-perfect-order",
+  "phase": "P2_baseline",
+  "created_at_local": "2026-04-28T12:20:00+02:00",
+  "status": "template_pending_cto_values",
+  "owner": "CTO",
+  "instructions": "Fill all TODO fields, then hand back to Pipeline-Operator for execution.",
+  "cohort": {
+    "terminals": [
+      "TODO:T1|T2|T3|T4|T5"
+    ],
+    "symbols": [
+      "TODO:EURUSD.DWX",
+      "TODO:USDJPY.DWX"
+    ],
+    "timeframe": "D1",
+    "date_window": {
+      "from": "TODO:YYYY-MM-DD",
+      "to": "TODO:YYYY-MM-DD"
+    },
+    "model": "Every tick based on real ticks",
+    "spread_mode": "current_or_fixed_per_cto",
+    "deposit_currency": "USD",
+    "initial_deposit": "TODO:number",
+    "leverage": "TODO:number"
+  },
+  "ea": {
+    "name": "TODO:compiled_ea_name",
+    "setfile": "TODO:relative_or_absolute_setfile_path",
+    "parameters_override": {
+      "EnableLongs": true,
+      "EnableShorts": true,
+      "TODO": "add only if overriding card defaults"
+    }
+  },
+  "output": {
+    "root": "TODO:C:\\QM\\reports\\baseline\\QUA-348\\SRC04_S09",
+    "expect_reports_min": "TODO:number",
+    "state_file": "TODO:last_check_state_json_path"
+  },
+  "verification_contract": {
+    "filesystem_truth_required": true,
+    "no_report_size_check_required": true,
+    "deliverables": [
+      "true report file count",
+      "tracker_vs_filesystem counter comparison",
+      "report byte-size summary"
+    ]
+  }
+}

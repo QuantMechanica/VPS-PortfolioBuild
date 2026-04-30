@@ -1,0 +1,21 @@
+{
+  "issue": "QUA-207",
+  "generated_at_local": "2026-04-28T06:39:50+02:00",
+  "source_log": "D:\\QM\\mt5\\T1\\MQL5\\logs\\20260427.log",
+  "evidence_lines": [
+    {
+      "line": 1754,
+      "text": "LL\t0\t08:39:01.764\tFix_DWX_Spec_v3 (EURUSD,M1)\tROW|custom=XTIUSD.DWX|source=XTIUSD|broker_tv=10.00000000|custom_tv=10.00000000|rel_err=0.000000|swap_long(src=171.400000,dst=171.400000)|swap_short(src=-258.400000,dst=-258.400000)|contract(src=1000.0000,dst=1000.0000)|spec_ok=OK|swap_ok=OK|contract_ok=OK|reason=no_change"
+    },
+    {
+      "line": 1755,
+      "text": "NK\t0\t08:39:01.764\tFix_DWX_Spec_v3 (EURUSD,M1)\t=== Fix_DWX_Spec_v3: done expected=36 matched=36 patched=0 unchanged=36 failed=0 ==="
+    }
+  ],
+  "board_directive": "OWNER stale-blocked sweep 2026-04-28",
+  "recommendation": {
+    "resume": true,
+    "reason": "devops_004_family_resolved_via_fix_dwx_spec_v3_final_pass",
+    "status": "done"
+  }
+}

@@ -1,0 +1,11 @@
+﻿{
+    "issue":  "QUA-346",
+    "generated_at_local":  "2026-04-28T12:21:13+02:00",
+    "readiness_checked_at_local":  "2026-04-28T12:21:13+02:00",
+    "ready":  false,
+    "blocker_fingerprint_sha256":  "63a191f7ef9e725d89bdbb84a2e8dc75396ef93c8b7a0acc9e3303482a7605d2",
+    "readiness_exit_code":  1,
+    "comment_exit_code":  0,
+    "readiness_json":  "C:\\QM\\repo\\docs\\ops\\QUA-346_READINESS_CHECK_2026-04-28.json",
+    "issue_comment_md":  "C:\\QM\\repo\\docs\\ops\\QUA-346_ISSUE_COMMENT_2026-04-28.md"
+}

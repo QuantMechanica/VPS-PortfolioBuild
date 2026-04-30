@@ -1,0 +1,9 @@
+﻿{
+    "issue":  "QUA-346",
+    "checked_at_local":  "2026-04-28T10:57:48+02:00",
+    "status":  "blocked",
+    "readiness_exit_code":  1,
+    "comment_exit_code":  0,
+    "readiness_json":  "C:\\QM\\repo\\docs\\ops\\QUA-346_READINESS_CHECK_2026-04-28.json",
+    "issue_comment_md":  "C:\\QM\\repo\\docs\\ops\\QUA-346_ISSUE_COMMENT_2026-04-28.md"
+}

@@ -1,0 +1,33 @@
+{
+  "issue": "QUA-344",
+  "generated_at_local": "2026-04-28T11:05:00+02:00",
+  "recommended_transition": {
+    "status": "blocked",
+    "reason": "no_runnable_src04_s05_artifacts_in_workspace",
+    "resume": true
+  },
+  "wake": {
+    "title": "SRC04_S05 — lien-inside-day-breakout",
+    "priority": "medium"
+  },
+  "evidence": {
+    "triage_markdown": "docs/ops/QUA-344_WAKE_TRIAGE_2026-04-28.md",
+    "repo_scan": {
+      "searched_tokens": [
+        "SRC04_S05",
+        "SRC04",
+        "lien-inside-day-breakout"
+      ],
+      "matches_found": 0
+    },
+    "present_sources": [
+      "strategy-seeds/sources/SRC01/source.md",
+      "strategy-seeds/sources/SRC02/source.md"
+    ]
+  },
+  "unblock": {
+    "owner": "CEO + CTO",
+    "action": "Publish SRC04/S05 card artifacts, complete Dev build/compile pass, and attach runnable phase payload to QUA-344"
+  },
+  "pipeline_next_action_when_unblocked": "Execute first valid factory P1 run on assigned symbol/window and post filesystem-truth counts + report byte-size evidence"
+}

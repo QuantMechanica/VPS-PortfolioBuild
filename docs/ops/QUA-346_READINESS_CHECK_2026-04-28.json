@@ -1,0 +1,45 @@
+﻿{
+    "issue":  "QUA-346",
+    "strategy_id":  "SRC04_S07",
+    "checked_at_local":  "2026-04-28T12:21:13+02:00",
+    "ready":  false,
+    "checks":  [
+                   {
+                       "name":  "card_exists",
+                       "path":  "C:\\QM\\repo\\strategy-seeds\\cards\\lien-20day-breakout_card.md",
+                       "ok":  true
+                   },
+                   {
+                       "name":  "source_exists",
+                       "path":  "C:\\QM\\repo\\strategy-seeds\\sources\\SRC04\\raw\\ch13-16_technical.txt",
+                       "ok":  true
+                   },
+                   {
+                       "name":  "manifest_exists",
+                       "path":  "C:\\QM\\repo\\artifacts\\qua-346\\src04_s07_run_manifest_template.json",
+                       "ok":  true
+                   }
+               ],
+    "manifest_ready":  false,
+    "manifest_missing_fields":  [
+                                    "required_fields.from",
+                                    "required_fields.to",
+                                    "required_fields.ea_name",
+                                    "required_fields.setfile_path"
+                                ],
+    "card_candidates":  [
+                            "C:\\QM\\repo\\strategy-seeds\\cards\\lien-20day-breakout_card.md",
+                            "C:\\QM\\repo\\strategy-seeds\\cards\\lien-carry-trade_card.md",
+                            "C:\\QM\\repo\\strategy-seeds\\cards\\lien-channels_card.md",
+                            "C:\\QM\\repo\\strategy-seeds\\cards\\lien-dbb-pick-tops_card.md",
+                            "C:\\QM\\repo\\strategy-seeds\\cards\\lien-dbb-trend-join_card.md",
+                            "C:\\QM\\repo\\strategy-seeds\\cards\\lien-fade-double-zeros_card.md",
+                            "C:\\QM\\repo\\strategy-seeds\\cards\\lien-fader_card.md",
+                            "C:\\QM\\repo\\strategy-seeds\\cards\\lien-inside-day-breakout_card.md",
+                            "C:\\QM\\repo\\strategy-seeds\\cards\\lien-perfect-order_card.md",
+                            "C:\\QM\\repo\\strategy-seeds\\cards\\lien-waiting-deal_card.md"
+                        ],
+    "unblock_owner":  "CEO + CTO",
+    "unblock_action":  "fill required manifest fields.",
+    "next_action_when_ready":  "Run first full baseline cohort and publish filesystem-truth + report-size evidence."
+}
