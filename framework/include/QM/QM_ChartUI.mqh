@@ -143,7 +143,6 @@ double QM_ChartUIOpenPnL(const long magic)
 
       pnl += PositionGetDouble(POSITION_PROFIT);
       pnl += PositionGetDouble(POSITION_SWAP);
-      pnl += PositionGetDouble(POSITION_COMMISSION);
      }
    return pnl;
   }
