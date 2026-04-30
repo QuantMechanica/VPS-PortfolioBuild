@@ -1,6 +1,6 @@
 ﻿# Darwinex Bond-CFD Inventory (US10Y + DE10Y)
 
-- generated_at_utc: 2026-04-28T09:10:32Z
+- generated_at_utc: 2026-04-29T04:24:42Z
 - terminal_path: D:\QM\mt5\T1\terminal64.exe
 - mt5_probe_ok: True
 - overall: fail
