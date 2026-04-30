@@ -845,9 +845,10 @@
 
 ## `Run-RuntimeHealthScan.ps1`
 
-- Runs the 5 runtime-pathology detectors defined in `processes/17-agent-runtime-health.md`:
+- Runs the 6 runtime-pathology detectors defined in `processes/17-agent-runtime-health.md`:
   - hot-poll loop
   - stuck-session sentinel
+  - heartbeat-silence watchdog (`>=24h` since last heartbeat for active agent)
   - bottleneck signal
   - token-budget pressure (`weekly_run_count * 4 > 90% provider cap`)
   - recursive self-wake

@@ -291,7 +291,7 @@ else {
     Write-Warning "Token-cost monitor script missing; skipped token-cost observability task registration."
 }
 
-# Agent runtime health scan every 15 minutes (5 runtime-pathology detectors)
+# Agent runtime health scan every 15 minutes (6 runtime-pathology detectors)
 if (Test-Path -LiteralPath $RuntimeHealthScanScript) {
     $runtimeHealthTrigger = New-RepeatingTriggerFromToday `
         -AtTime (Get-Date "00:05") `
@@ -302,7 +302,7 @@ if (Test-Path -LiteralPath $RuntimeHealthScanScript) {
         -Executable "powershell.exe" `
         -Arguments "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -Command `"`$line=Select-String -Path '$PaperclipInstanceEnvFile' -Pattern '^DATABASE_URL=' | Select-Object -First 1; if(`$null -eq `$line) { throw 'DATABASE_URL not found in Paperclip instance env file.' }; `$pg=`$line.Line -replace '^DATABASE_URL=',''; & '$RuntimeHealthScanScript' -CompanyId '$RuntimeHealthCompanyId' -PostgresUrl `$pg`"" `
         -Trigger $runtimeHealthTrigger `
-        -Description "Runs agent runtime health scan detectors (hot-poll, stuck-session, bottleneck, budget pressure, recursive self-wake)."
+        -Description "Runs agent runtime health scan detectors (hot-poll, stuck-session, >=24h heartbeat silence, bottleneck, budget pressure, recursive self-wake)."
 }
 else {
     Write-Warning "Runtime health scan script missing; skipped QM_RuntimeHealthScan_15min registration."

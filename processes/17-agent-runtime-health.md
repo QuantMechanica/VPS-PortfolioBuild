@@ -14,6 +14,7 @@ Patterns this process covers:
 
 - **Hot-poll loops** — agent runs >50× per hour with no commensurate `done` issue throughput
 - **Stuck Codex/Claude session** — agent in `error` state >30 min OR last successful run >2h while `wakeOnDemand=true`
+- **Heartbeat-silence watchdog** — active agent has no heartbeat for >=24h (independent of error-state)
 - **Bottleneck agent** — agent has ≥2 P0 issues `in_progress` AND <5 successful runs in 4h on those issues
 - **Token-budget pressure** — projected monthly run cost > 90% of provider cap
 - **Recursive self-wake** — agent posts comments that trigger its own next wake without external event
@@ -26,9 +27,10 @@ Any of:
 
 1. **Run-rate anomaly** — `heartbeat_runs` count for one agent in last hour > 50 AND issues marked `done` by that agent in same window < 5
 2. **Stuck-session sentinel** — agent's `status='error'` for >30 min, or `last_heartbeat_at` >2h while `runtime_config.heartbeat.wakeOnDemand=true`
-3. **Bottleneck signal** — agent has 2+ issues with `priority='high'` in `status='in_progress'` AND <5 runs in last 4h targeting those issue IDs
-4. **Cost-forecast alarm** — current week's run rate × 4 > 0.9 × provider monthly cap
-5. **Recursive-wake suspicion** — agent has posted ≥10 byte-identical comments on the same issue in any rolling 60-min window
+3. **Heartbeat-silence watchdog** — agent heartbeat missing for >=24h while runtime heartbeat is enabled or wake-on-demand is enabled
+4. **Bottleneck signal** — agent has 2+ issues with `priority='high'` in `status='in_progress'` AND <5 runs in last 4h targeting those issue IDs
+5. **Cost-forecast alarm** — current week's run rate × 4 > 0.9 × provider monthly cap
+6. **Recursive-wake suspicion** — agent has posted ≥10 byte-identical comments on the same issue in any rolling 60-min window
 
 CEO scans for these on each scheduled heartbeat. If any fires, runs the matching response below.
 
@@ -59,6 +61,11 @@ flowchart TD
     I -- no --> J[CEO terminates agent + re-hires from BASIS prompt]
     J --> CL
 
+    B -- Heartbeat-silence --> HS[CEO opens recovery issue + /wakeup check]
+    HS --> HSI{Any run lands?}
+    HSI -- yes --> CL
+    HSI -- no --> J
+
     B -- Bottleneck --> K[CEO posts sharper comment on each P0 issue]
     K --> L[CEO wakes target agent on-demand]
     L --> M{Run output in next heartbeat?}
@@ -76,7 +83,7 @@ flowchart TD
 ## Exits
 
 - **Success:** trigger no longer fires for 4 consecutive hours post-fix; lessons-learned authored; agent restored to normal runtime config.
-- **Escalation:** any of the 5 triggers fires twice within 24h without resolution → Board Advisor takes direct action (PATCH heartbeat config, force-pause, terminate-rehire) and posts to OWNER per `12-board-escalation.md` § Class 6.
+- **Escalation:** any of the 6 triggers fires twice within 24h without resolution → Board Advisor takes direct action (PATCH heartbeat config, force-pause, terminate-rehire) and posts to OWNER per `12-board-escalation.md` § Class 6.
 - **Kill:** if an agent role can't be made stable after 2 fix iterations, CEO retires the agent (rename `<Role> (RETIRED <date>)`) and either re-hires fresh OR pauses the role indefinitely. Precedent: Quality-Business retire/rehire (2026-04-28), DevOps terminate+rehire (2026-04-29).
 
 ## SLA
@@ -85,6 +92,7 @@ flowchart TD
 |---|---|---|
 | Hot-poll | < 5 min from CEO detection (or Board Advisor direct if CEO offline) | Fix shipped < 4 h |
 | Stuck-session | < 15 min | Recovered or re-hired < 1 h |
+| Heartbeat-silence watchdog (>=24h) | < 30 min | Recovered run < 1 h or terminate+rehire |
 | Bottleneck | < 30 min (sharper comment) | First useful run < 2 h or escalate |
 | Cost-forecast | < 1 h | Throttle applied + OWNER notification < 4 h |
 | Recursive-wake | < 5 min (pause first, fix later) | Pattern broken < 4 h, fix shipped < 8 h |
