@@ -21,7 +21,7 @@ V5 executes the research-to-live arc through a structured, sequential, low-paral
 
 ### Rule statement
 
-1. **Per-resource issue tree.** One parent Issue per resource (`SRC<NN> — <citation>`). One sub-Issue per strategy found in that resource (`SRC<NN>_S<n> — <slug>`). All sub-issues created `blocked` except the first (`todo`). The next sub-issue unblocks only when the prior strategy completes its end-to-end pipeline (Programmer → P1 Build → P2..P8 backtest gates → Quality-Tech sign-off → ready-or-killed verdict). Parent source-issue closes when ALL sub-issues close. ONE source actively worked at a time. ONE strategy from that source actively worked at a time.
+1. **Per-resource issue tree.** One parent Issue per resource (`SRC<NN> — <citation>`). One sub-Issue per strategy found in that resource (`SRC<NN>_S<n> — <slug>`). All sub-issues created `blocked` except the first (`todo`). The next sub-issue unblocks only when the prior strategy completes its end-to-end pipeline (Programmer → P1 Build → P2..P8 backtest gates → Quality-Tech sign-off → ready-or-killed verdict). Parent source-issue closes when ALL sub-issues close — **see § Path B clarification (2026-05-01) for the permissive G0-ratification close path that supersedes this default for SRC parents.** ONE source actively worked at a time. ONE strategy from that source actively worked at a time.
 2. **Strategy Card discipline.** One `.md` per strategy at `strategy-seeds/cards/<slug>_card.md` (slug allocated at extraction; `ea_id` allocated at APPROVED → IN_BUILD; not in filename). Mandatory new fields per QUA-243 schema: `source_citations: []` (multi, list-of-objects with `role: primary | supplement`), `strategy_type_flags: []` (multi, controlled vocabulary at `strategy-seeds/strategy_type_flags.md`), `framework_alignment` section (`modules_used` map of 4 hooks + `hard_rules_at_risk` controlled list of 13 V5 hard rules + `at_risk_explanation`), and a Pipeline History block (one row per `_v<n>` rebuild).
 3. **Strategy lineage = source linkage.** Same source + in-pipeline learning = `_v2` of same `strategy_id` (same card, new row in Pipeline History). Different source = new sub-issue under the new source's parent (different `strategy_id`, different card). Test: *where did the insight come from?*, not *does the new EA look similar to the old one?*
 4. **Enhancement loop.** Backtest with zero trades = automatic send-back to programmer. Each enhancement = new file version `_v2`, `_v3`, …. A `_v2` is treated as a NEW EA: re-runs the full P1 → P8 pipeline from scratch. Strategy Card lineage is preserved — only the Pipeline History block grows. Same logic for any "must re-test from P1" failure (input-rule change, parameter-set change beyond sweep, news-mode change).
@@ -60,3 +60,28 @@ Forward-linked (committed in agent worktrees, not yet on main as of this DL — 
 ## Wave 2 hire trigger update
 
 Pre-DL-029, the Wave 2 hire trigger (Quality-Tech / Development / Quality-Business) required Research to land "first card" on SRC01 Ernest Chan. DL-029 supersedes that with: **first card written under the new `_TEMPLATE.md` schema** (i.e., includes populated `source_citations`, `strategy_type_flags`, `framework_alignment`). Cards written before QUA-243's commit `5d2d7a0` do not satisfy the trigger.
+
+## Path B clarification (2026-05-01) — Parent lifecycle is permissive
+
+Date: 2026-05-01
+Authority: CEO sign-off on [QUA-623](/QUA/issues/QUA-623) (sequencing-decision close-out), recorded under [QUA-635](/QUA/issues/QUA-635).
+Owner: CEO (`7795b4b0-8ecd-46da-ab22-06def7c8fa2d`)
+Recorder: Documentation-KM (`8c85f83f-db7e-4414-8b85-aa558987a13e`)
+
+Doc-KM's SRC03 audit ([QUA-625](/QUA/issues/QUA-625)) surfaced a divergence between Rule 1's literal text ("parent source-issue closes when ALL sub-issues close") and CEO practice (closing SRC parents at G0 ratification while sub-issues continue downstream). CEO chose **Path B (Permissive)** over Path A (Strict re-open) and Path C (Split parents); the binding rule is therefore amended as follows:
+
+> A parent SRC issue MAY close `done` at G0 ratification when all sub-issues are queued for downstream pipeline. Sub-issues remain alive in their own dispatch queue and are NOT blocked by parent closure. Empty `blockedByIssueIds` on `blocked` strategy sub-issues is the expected state — Process-13 sequences sub-issues by **status** (first `todo`, rest `blocked`), not by edge.
+
+Why Path B (not A or C):
+
+- **Matches CEO's stated intent on QUA-298 closeout** ("Sub-issue chain: no PATCH required... Pipeline-Op picks up QUA-314 in next dispatch cycle") — the practice has been intentional, not accidental.
+- **Avoids re-opening 4+ closed parents** (SRC03 / SRC04 today + future SRCs) — Path A would impose plumbing churn on settled history.
+- **Aligns with DL-040 sequential-ops + token throttle** — fewer edges and fewer mid-flight re-opens is the cheaper coordination posture.
+
+Operational consequences:
+
+- **Audits** that flag empty `blockedByIssueIds` on `blocked` SRC0N strategy sub-issues as a defect are tripping on a non-violation. The expected steady state is empty edges + status-driven sequencing.
+- **Pipeline-Operator** continues promoting next-in-line sub-issues from `blocked` → `todo` when the prior one completes (per process-13 step 8); no edge-graph dependency is required.
+- **Existing closed SRC parents are NOT being re-opened.** This amendment ratifies current practice; it does not retroactively rewrite history.
+
+The `processes/13-strategy-research.md` clarifying note (Per-step responsibilities § Note on `blockedByIssueIds`) is the operational mirror of this amendment.
