@@ -25,6 +25,7 @@ The V5 framework is V4's **best patterns professionalized**, not a clean redesig
 |---|---|
 | **Friday Close** | Default exit trigger. `QM_Exit` reason `QM_EXIT_FRIDAY_CLOSE` fires at configured cut-off (default `Friday 21:00 broker time`). Each EA can disable via input but the default is on. |
 | **Risk-Mode Convention** | **Backtest = `RISK_FIXED` (default $1K). Live = `RISK_PERCENT`.** Both inputs always present per L-K-02. The set-file ENV (`backtest` / `demo` / `shadow` / `live`) determines which mode is active by default; the other input must be 0. Hard-fail per `EA_INPUT_RISK_MODE_MISMATCH` if mode does not match ENV. |
+| **Backtest Deposit Convention** | **If `RISK_FIXED=1000`, MT5 tester deposit is always `100000` USD.** Smoke, baseline, matrix, WF, stress, and multi-seed runs must write `Deposit=100000` unless an approved risk decision changes both fixed risk and deposit convention together. |
 | **`.DWX` suffix discipline** | Symbols carry `.DWX` in research and backtest, stripped only at deploy packaging. `framework/scripts/strip_dwx_at_deploy.ps1` is the only sanctioned stripper. |
 | **Model 4 Every Real Tick** | All baseline / sweep / WF / stress / multi-seed runs use Model 4. `framework/scripts/run_smoke.ps1` and downstream runners refuse to launch with Model 1 / 2. |
 | **Magic schema `ea_id * 10000 + symbol_slot`** | `QM_MagicResolver` per § QM_MagicResolver above. V5 ea_id namespace 1000-9999 leaves V4 SM_XXX (1-~770) reserved as legacy. |

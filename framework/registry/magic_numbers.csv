@@ -1,6 +1,12 @@
 ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1001,breakout-atr,0,EURUSD.DWX,10010000,2026-04-27,CTO,active
-1002,davey-eu-night,0,EURUSD.DWX,10020000,2026-04-27,CTO,active
-1007,lien-dbb-pick-tops,0,EURUSD.DWX,10070000,2026-04-28,CTO,active
-1008,lien-dbb-trend-join,0,EURUSD.DWX,10080000,2026-04-28,CTO,active
-9999,framework-skeleton,0,EURUSD.DWX,99990000,2026-04-27,CTO,active
+40303,lien-fade-double-zeros,0,EURUSD.DWX,403030000,2026-04-28,Pipeline-Operator,active
+40303,lien-fade-double-zeros,1,GBPUSD.DWX,403030001,2026-04-28,Pipeline-Operator,active
+40303,lien-fade-double-zeros,2,USDJPY.DWX,403030002,2026-04-28,Pipeline-Operator,active
+40303,lien-fade-double-zeros,3,USDCAD.DWX,403030003,2026-04-28,Pipeline-Operator,active
+40303,lien-fade-double-zeros,4,AUDUSD.DWX,403030004,2026-04-28,Pipeline-Operator,active
+4303,lien-fade-double-zeros,0,EURUSD.DWX,43030000,2026-04-28,Pipeline-Operator,active
+4303,lien-fade-double-zeros,1,GBPUSD.DWX,43030001,2026-04-28,Pipeline-Operator,active
+4303,lien-fade-double-zeros,2,USDJPY.DWX,43030002,2026-04-28,Pipeline-Operator,active
+4303,lien-fade-double-zeros,3,USDCAD.DWX,43030003,2026-04-28,Pipeline-Operator,active
+4303,lien-fade-double-zeros,4,AUDUSD.DWX,43030004,2026-04-28,Pipeline-Operator,active
