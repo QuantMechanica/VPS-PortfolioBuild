@@ -1,0 +1,16 @@
+{
+  "issue": "QUA-590",
+  "status": "done",
+  "reason": "completed",
+  "summary": "Deleted root zero-byte garbage files from workspace; added commit-path untracked/root-zero-byte guard with DL-028 reference; documented and verified with synthetic probe.",
+  "evidence": {
+    "closeout_doc": "docs/ops/QUA-590_CLOSEOUT_2026-05-01.md",
+    "commits": [
+      "10e8a64f",
+      "4f8081ce",
+      "14aa605b",
+      "d2ea9db3",
+      "515eb045"
+    ]
+  }
+}
