@@ -37,8 +37,8 @@ Confirm the Development claim of phase-runner artifacts routed from QUA-614/QUA-
 ## CTO review commands
 ```powershell
 # Full chain (single command):
-git log --oneline --reverse 847dabad^..20eb0df4
-git show --stat --name-only 847dabad^..20eb0df4
+git log --oneline --reverse 847dabad^..HEAD
+git show --stat --name-only 847dabad^..HEAD
 
 # Per-commit detail:
 git show --stat --name-only 847dabad
