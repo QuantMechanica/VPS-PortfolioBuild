@@ -80,6 +80,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Runs `monitoring/Invoke-PaperclipStaleLockWatchdog.ps1 -StaleAfterMinutes 15 -RunningLockMaxMinutes 90 [-PaperclipApiUrl <url>] [-CompanyId <id>] [-AssigneeAgentId <id>] [-OutPath <json>] -FailOnFinding` every 15 minutes (monitor-only).
   - Fails fast when `-PaperclipApiUrl`/`-CompanyId` or `PAPERCLIP_API_KEY` are missing unless `-AllowMissingPaperclipContext` is explicitly set.
   - Supports `-PreviewOnly` to print resolved task config without registering.
+  - Normalizes trigger start boundary to the next future slot to avoid stale/past start times on re-run.
   - Safe to re-run (`Register-ScheduledTask -Force`) and overlap-safe (`MultipleInstances=IgnoreNew`).
 - `scripts/Install-QUA95BlockerRefreshTask.ps1`
   - Registers Task Scheduler job `QM_QUA95_BlockerRefresh` as `SYSTEM` (hourly by default).
@@ -175,6 +176,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Registers Task Scheduler job `QM_DriveGitExclusion_15min` as `SYSTEM`.
   - Runs `monitoring/Test-DriveGitExclusion.ps1 -IncludeGitWorktrees` every 15 minutes.
   - Supports `-PreviewOnly` to print resolved task config without registering.
+  - Normalizes trigger start boundary to the next future slot to avoid stale/past start times on re-run.
   - Safe to re-run (`Register-ScheduledTask -Force`) and overlap-safe (`MultipleInstances=IgnoreNew`).
 - `monitoring/Test-PipelineOperatorRunHealth.ps1`
   - Classifies Pipeline-Operator 24h failures into recovered/unrecovered `process_loss`.
