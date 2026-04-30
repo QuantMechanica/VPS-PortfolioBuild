@@ -3,7 +3,7 @@
 Status: complete, ready for `done`.
 
 - Applied WAKE FILTER verbatim wording in `paperclip-prompts/observability-sre.md`.
-- Required line now present: `When woken via `comment_added` event, check the source comment's author.`
+- Required line now present: "When woken via `comment_added` event, check the source comment's author."
 - Verification: WAKE FILTER block confirmed at lines 70-73, including self-author exit clause.
 - Commit: `5f1132e2` (`prompts: apply WAKE FILTER comment_added wording for observability-sre (QUA-579)`).
 
