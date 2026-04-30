@@ -85,12 +85,14 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `scripts/Install-QUA95BlockerRefreshTask.ps1`
   - Registers Task Scheduler job `QM_QUA95_BlockerRefresh` as `SYSTEM` (hourly by default).
   - Action chain: verifier rerun -> blocker sync -> blocked summary -> handoff integrity check.
+  - Uses now-relative first-run trigger boundary (`Get-Date).AddMinutes(1)`) to avoid past-time registration drift.
   - Safe to re-run (`Register-ScheduledTask -Force`).
 - `scripts/Install-QUA95TaskHealthTask.ps1`
   - Registers Task Scheduler job `QM_QUA95_TaskHealth_15min` as `SYSTEM`.
   - Runs `monitoring/Test-QUA95BlockerTaskHealth.ps1` on a 15-minute cadence.
   - Passes explicit `-TransitionPayloadCheckScript`, `-UnblockReadinessCheckScript`, `-AuditSignalCheckScript`, `-UnblockOwnerConsistencyCheckScript`, `-CanonicalSnapshotCheckScript`, `-CanonicalSnapshotFreshnessCheckScript`, `-DirectVerifierProofCheckScript`, `-CustomVisibilityProofCheckScript`, `-EvidenceCohesionCheckScript`, `-FailureSignatureCheckScript`, `-BlockerRefreshActionWiringCheckScript`, and `-HeartbeatCustomVisibilityCheckScript` paths to avoid hidden default/path drift.
   - Propagates `-MaxAgeMinutes` into canonical-snapshot freshness and direct/custom proof freshness checks during live task-health evaluation.
+  - Uses now-relative first-run trigger boundary (`Get-Date).AddMinutes(2)`) to avoid past-time registration drift.
   - Safe to re-run (`Register-ScheduledTask -Force`).
 - `scripts/Run-QUA95BlockerRefresh.ps1`
   - Scheduled runner used by `QM_QUA95_BlockerRefresh`.

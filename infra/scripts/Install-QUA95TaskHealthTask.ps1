@@ -117,7 +117,7 @@ if (-not (Test-Path -LiteralPath $HeartbeatCustomVisibilityCheckScript)) {
 
 $args = "-NoProfile -ExecutionPolicy Bypass -File `"$checkScript`" -MaxAgeMinutes $MaxAgeMinutes -TransitionPayloadCheckScript `"$TransitionPayloadCheckScript`" -UnblockReadinessCheckScript `"$UnblockReadinessCheckScript`" -AuditSignalCheckScript `"$AuditSignalCheckScript`" -UnblockOwnerConsistencyCheckScript `"$UnblockOwnerConsistencyCheckScript`" -CanonicalSnapshotCheckScript `"$CanonicalSnapshotCheckScript`" -CanonicalSnapshotFreshnessCheckScript `"$CanonicalSnapshotFreshnessCheckScript`" -DirectVerifierProofCheckScript `"$DirectVerifierProofCheckScript`" -CustomVisibilityProofCheckScript `"$CustomVisibilityProofCheckScript`" -EvidenceCohesionCheckScript `"$EvidenceCohesionCheckScript`" -FailureSignatureCheckScript `"$FailureSignatureCheckScript`" -BlockerRefreshActionWiringCheckScript `"$BlockerRefreshActionWiringCheckScript`" -HeartbeatCustomVisibilityCheckScript `"$HeartbeatCustomVisibilityCheckScript`""
 $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument $args
-$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).Date.AddMinutes(2) `
+$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(2) `
     -RepetitionInterval (New-TimeSpan -Minutes $EveryMinutes) `
     -RepetitionDuration (New-TimeSpan -Days 3650)
 $settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -MultipleInstances IgnoreNew
