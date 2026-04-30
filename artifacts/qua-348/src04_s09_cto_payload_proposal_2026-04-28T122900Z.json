@@ -1,0 +1,41 @@
+{
+  "issue": "QUA-348",
+  "strategy_id": "SRC04_S09",
+  "strategy_slug": "lien-perfect-order",
+  "execution_mode": "baseline_sweep",
+  "status": "proposal_inferred_defaults",
+  "assumptions": {
+    "timeframe": "D1",
+    "from": "2017.01.01",
+    "to": "2022.12.31",
+    "model": "Every tick based on real ticks"
+  },
+  "symbols_proposed": [
+    "EURUSD.DWX",
+    "USDSGD.DWX",
+    "USDJPY.DWX",
+    "GBPUSD.DWX",
+    "USDCHF.DWX",
+    "AUDUSD.DWX",
+    "NZDUSD.DWX",
+    "USDCAD.DWX"
+  ],
+  "terminal_allocation_proposed": {
+    "T1": "EURUSD.DWX",
+    "T2": "USDJPY.DWX",
+    "T3": "GBPUSD.DWX",
+    "T4": "AUDUSD.DWX",
+    "T5": "USDCAD.DWX"
+  },
+  "ea_name": "<CTO_FILL_REQUIRED>",
+  "setfile_path": "<CTO_FILL_REQUIRED>",
+  "required_cto_confirmation": [
+    "Final symbol basket",
+    "Terminal routing",
+    "Compiled EA name",
+    "Setfile path",
+    "Output root path"
+  ],
+  "output_root": "D:\\QM\\reports\\baseline\\QUA-348\\SRC04_S09",
+  "next_operator_action_after_confirmation": "Launch smallest valid baseline cohort and publish filesystem-truth + report-size evidence"
+}

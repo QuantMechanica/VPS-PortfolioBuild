@@ -1,0 +1,7 @@
+{
+    "issue":  "QUA-342",
+    "tick_utc":  "2026-04-28T10:21:15Z",
+    "consecutive_unchanged_blocked_ticks":  23,
+    "blocked":  true,
+    "state_changed":  false
+}

@@ -1,0 +1,31 @@
+{
+  "issue": "QUA-342",
+  "timestamp_utc": "2026-04-28T09:13:24Z",
+  "change_detected": true,
+  "previous_blocker": {
+    "missing_card": true,
+    "missing_source": true,
+    "missing_ea_name": true,
+    "missing_setfile_path": true
+  },
+  "current_blocker": {
+    "missing_card": false,
+    "missing_source": false,
+    "missing_ea_name": true,
+    "missing_setfile_path": true,
+    "card_status": "DRAFT",
+    "card_ea_id": "TBD"
+  },
+  "evidence": {
+    "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\lien-fade-double-zeros_card.md",
+    "source_path": "C:\\QM\\repo\\strategy-seeds\\sources\\SRC04\\raw\\ch08-12_technical.txt",
+    "card_exists": true,
+    "source_exists": true,
+    "known_setfiles": [
+      "C:\\QM\\repo\\framework\\tests\\smoke\\QM5_1001_framework_smoke.set"
+    ]
+  },
+  "unblock_owner": "CTO",
+  "unblock_action": "Assign EA ID + expert name for SRC04_S03, produce strategy-specific .set file path, and approve card from DRAFT to executable state.",
+  "next_action_after_unblock": "Run baseline cohort immediately using existing terminal routing and publish filesystem-truth + NO_REPORT size checks."
+}

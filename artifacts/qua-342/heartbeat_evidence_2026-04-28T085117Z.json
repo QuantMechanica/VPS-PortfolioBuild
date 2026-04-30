@@ -1,0 +1,44 @@
+{
+  "issue": "QUA-342",
+  "strategy_id": "SRC04_S03",
+  "strategy_slug": "lien-fade-double-zeros",
+  "captured_at_utc": "2026-04-28T08:51:17Z",
+  "terminal64": [
+    {"terminal": "T1", "pid": 36480, "path": "D:\\QM\\mt5\\T1\\terminal64.exe"},
+    {"terminal": "T2", "pid": 43768, "path": "D:\\QM\\mt5\\T2\\terminal64.exe"},
+    {"terminal": "T3", "pid": 34984, "path": "D:\\QM\\mt5\\T3\\terminal64.exe"},
+    {"terminal": "T4", "pid": 41164, "path": "D:\\QM\\mt5\\T4\\terminal64.exe"},
+    {"terminal": "T5", "pid": 71600, "path": "D:\\QM\\mt5\\T5\\terminal64.exe"}
+  ],
+  "t6_touched": false,
+  "aggregator": {
+    "pid": 10228,
+    "command_contains": "scripts\\aggregator\\standalone_aggregator_loop.py",
+    "state_file": "D:\\QM\\reports\\state\\last_check_state.json",
+    "state_last_write_local": "2026-04-28 10:50:22"
+  },
+  "filesystem_truth_check": {
+    "reports_root": "D:\\QM\\reports",
+    "htm_count_filesystem": 11,
+    "report_htm_total_tracker": 11,
+    "mismatch": false
+  },
+  "disk_free_gb": {
+    "C": 371.98,
+    "D": 545.64,
+    "G": 353.38,
+    "H": 353.38
+  },
+  "risk_flags": {
+    "disk_below_80gb": false,
+    "disk_below_60gb": false,
+    "terminal_respawn_needed": false,
+    "aggregator_restart_needed": false,
+    "no_report_rate_over_30pct": false
+  },
+  "notes": [
+    "No active BL sweep detected in bl_progress (all T1-T5 current/total = 0/0).",
+    "Latest report age is stale (>15h), so no in-flight cohort to evaluate this tick.",
+    "No filesystem-vs-tracker discrepancy observed; no state reset applied."
+  ]
+}

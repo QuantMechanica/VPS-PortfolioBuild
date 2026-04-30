@@ -1,0 +1,56 @@
+{
+    "issue":  "QUA-342",
+    "tick_utc":  "2026-04-28T08:55:02Z",
+    "blocked":  true,
+    "readiness":  {
+                      "issue":  "QUA-342",
+                      "checked_at_utc":  "2026-04-28T08:55:02Z",
+                      "required_artifacts":  {
+                                                 "card_path":  "C:\\QM\\repo\\strategy-seeds\\cards\\lien-fade-double-zeros_card.md",
+                                                 "card_exists":  false,
+                                                 "source_path":  "C:\\QM\\repo\\strategy-seeds\\sources\\SRC04\\raw\\ch08-12_technical.txt",
+                                                 "source_exists":  false,
+                                                 "cto_payload_path":  "C:\\QM\\repo\\artifacts\\qua-342\\src04_s03_cto_payload_proposal_2026-04-28T085344Z.json",
+                                                 "cto_payload_exists":  true
+                                             },
+                      "payload_readiness":  {
+                                                "payload_ready":  false,
+                                                "missing_fields":  [
+                                                                       "ea_name",
+                                                                       "setfile_path"
+                                                                   ]
+                                            },
+                      "dispatch_ready":  false,
+                      "unblock_owner":  "CTO",
+                      "unblock_action":  "Provide SRC04 artifacts and fill ea_name/setfile_path in proposal payload"
+                  },
+    "infra":  {
+                  "terminal_count":  5,
+                  "terminal_pids":  [
+                                        34436,
+                                        34984,
+                                        36480,
+                                        41164,
+                                        71600
+                                    ],
+                  "aggregator_pid":  [
+                                         10228
+                                     ],
+                  "state_file":  "D:\\QM\\reports\\state\\last_check_state.json",
+                  "tracker_htm_total":  11,
+                  "filesystem_htm_total":  11,
+                  "fs_tracker_mismatch":  false,
+                  "disk_free_gb":  [
+                                       {
+                                           "Name":  "C",
+                                           "FreeGB":  371.96
+                                       },
+                                       {
+                                           "Name":  "D",
+                                           "FreeGB":  545.64
+                                       }
+                                   ]
+              },
+    "unblock_owner":  "CTO",
+    "unblock_action":  "Provide SRC04 card/source + ea_name + setfile_path"
+}

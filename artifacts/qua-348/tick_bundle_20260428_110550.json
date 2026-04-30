@@ -1,0 +1,41 @@
+{
+  "issue": "QUA-348",
+  "generated_at_local": "2026-04-28T11:05:50+02:00",
+  "blocker": {
+    "owner": "CTO (with Dev if build pending)",
+    "reason": "missing_src04_s09_ea_mapping_or_build_artifact",
+    "unblock_action": "Run apply_src04_s09_payload.ps1 with concrete EAName/SetfilePath and ensure VALID+READY"
+  },
+  "manifest": {
+    "path": "C:\\QM\\repo\\artifacts\\qua-348\\src04_s09_cto_payload_proposal_2026-04-28T122900Z.json",
+    "ea_name": "<CTO_FILL_REQUIRED>",
+    "setfile_path": "<CTO_FILL_REQUIRED>"
+  },
+  "build_handoff_validation": {
+    "issue": "QUA-348",
+    "strategy_id": "SRC04_S09",
+    "checked_at_local": "2026-04-28T11:04:23+02:00",
+    "valid": false,
+    "missing": [
+      "ea_name",
+      "setfile_path"
+    ],
+    "manifest_path": "C:\\QM\\repo\\artifacts\\qua-348\\src04_s09_cto_payload_proposal_2026-04-28T122900Z.json",
+    "discovered": {},
+    "unblock_when_valid": "Pipeline-Operator can execute baseline cohort once valid=true and readiness check is READY"
+  },
+  "readiness": {
+    "issue": "QUA-348",
+    "strategy_id": "SRC04_S09",
+    "checked_at_local": "2026-04-28T11:02:15+02:00",
+    "ready": false,
+    "missing": [
+      "ea_name",
+      "setfile_path"
+    ],
+    "manifest_path": "C:\\QM\\repo\\artifacts\\qua-348\\src04_s09_cto_payload_proposal_2026-04-28T122900Z.json",
+    "out_path": "C:\\QM\\repo\\artifacts\\qua-348\\src04_s09_readiness_latest.json",
+    "next_action_when_ready": "Run first valid baseline cohort and publish filesystem-truth + report-size evidence"
+  },
+  "next_action_when_unblocked": "Execute first valid baseline cohort and publish filesystem-truth + report-size evidence"
+}

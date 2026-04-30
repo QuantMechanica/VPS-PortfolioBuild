@@ -1,0 +1,34 @@
+{
+  "issue": "QUA-348",
+  "strategy_id": "SRC04_S09",
+  "strategy_slug": "lien-perfect-order",
+  "execution_mode": "baseline_sweep",
+  "status": "awaiting_cto_fill",
+  "required_fields": {
+    "symbols": [],
+    "timeframe": "D1",
+    "from": "",
+    "to": "",
+    "ea_name": "",
+    "setfile_path": "",
+    "terminal_allocation": {
+      "T1": null,
+      "T2": null,
+      "T3": null,
+      "T4": null,
+      "T5": null
+    },
+    "signal_rules": {
+      "ma_periods": [10, 20, 50, 100, 200],
+      "entry_delay_candles": 5,
+      "adx_threshold": 20,
+      "exit_trigger": "first_adjacent_pair_break"
+    },
+    "output_root": "D:\\QM\\reports\\baseline\\QUA-348\\SRC04_S09"
+  },
+  "operator_notes": [
+    "Use trigger symbols + full BL window; do not substitute smoke symbol/window.",
+    "Apply NO_REPORT disambiguation via file size before EA weakness claims.",
+    "Filesystem truth check must precede any stall declaration."
+  ]
+}

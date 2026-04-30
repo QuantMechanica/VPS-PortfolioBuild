@@ -1,0 +1,13 @@
+{
+  "issue": "QUA-348",
+  "strategy_id": "SRC04_S09",
+  "checked_at_local": "2026-04-28T12:21:16+02:00",
+  "valid": false,
+  "missing": [
+    "ea_name",
+    "setfile_path"
+  ],
+  "manifest_path": "C:\\QM\\repo\\artifacts\\qua-348\\src04_s09_cto_payload_proposal_2026-04-28T122900Z.json",
+  "discovered": {},
+  "unblock_when_valid": "Pipeline-Operator can execute baseline cohort once valid=true and readiness check is READY"
+}

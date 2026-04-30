@@ -1,0 +1,35 @@
+{
+  "issue": "QUA-342",
+  "strategy_id": "SRC04_S03",
+  "strategy_slug": "lien-fade-double-zeros",
+  "execution_mode": "baseline_sweep",
+  "status": "awaiting_cto_fill",
+  "required_fields": {
+    "symbols": [],
+    "timeframe": "M15",
+    "from": "",
+    "to": "",
+    "ea_name": "",
+    "setfile_path": "",
+    "terminal_allocation": {
+      "T1": null,
+      "T2": null,
+      "T3": null,
+      "T4": null,
+      "T5": null
+    },
+    "risk_rules": {
+      "entry_offset_pips_min": 10,
+      "entry_offset_pips_max": 15,
+      "stop_pips": 20,
+      "counter_trend_filter": "20MA",
+      "level_type": "double_zeros"
+    },
+    "output_root": "D:\\QM\\reports\\baseline\\QUA-342\\SRC04_S03"
+  },
+  "operator_notes": [
+    "Use trigger symbol + full BL window; do not substitute smoke symbol/window.",
+    "Apply NO_REPORT disambiguation via file size before EA weakness claims.",
+    "Filesystem truth check must precede any stall declaration."
+  ]
+}

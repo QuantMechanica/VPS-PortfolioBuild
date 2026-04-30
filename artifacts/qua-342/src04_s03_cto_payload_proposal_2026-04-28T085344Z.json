@@ -1,0 +1,53 @@
+{
+  "issue": "QUA-342",
+  "strategy_id": "SRC04_S03",
+  "strategy_slug": "lien-fade-double-zeros",
+  "proposal_status": "ready_for_cto_confirmation",
+  "generated_at_utc": "2026-04-28T08:53:44Z",
+  "assumptions": [
+    "Symbol candidates inferred from worked examples in continuation summary.",
+    "Baseline window defaulted to DEV baseline policy (2017-01-01 to 2022-12-31).",
+    "Model defaults to 4 (Every tick based on real ticks).",
+    "Execution remains blocked until CTO confirms card/source artifacts and EA/setfile mapping."
+  ],
+  "proposed_payload": {
+    "execution_mode": "baseline_sweep",
+    "symbols": ["USDJPY.DWX", "GBPUSD.DWX", "USDCAD.DWX"],
+    "timeframe": "M15",
+    "from": "2017.01.01",
+    "to": "2022.12.31",
+    "model": 4,
+    "risk_rules": {
+      "entry_offset_pips_min": 10,
+      "entry_offset_pips_max": 15,
+      "stop_pips": 20,
+      "counter_trend_filter": "20MA",
+      "level_type": "double_zeros",
+      "tp1_rule": "1R partial + BE",
+      "trail_rule": "2-bar trail"
+    },
+    "terminal_allocation": {
+      "T1": "USDJPY.DWX",
+      "T2": "GBPUSD.DWX",
+      "T3": "USDCAD.DWX",
+      "T4": null,
+      "T5": null
+    },
+    "ea_name": "<CTO_FILL_REQUIRED>",
+    "setfile_path": "<CTO_FILL_REQUIRED>",
+    "output_root": "D:\\QM\\reports\\baseline\\QUA-342\\SRC04_S03"
+  },
+  "blocking_gaps": [
+    "strategy-seeds/cards/lien-fade-double-zeros_card.md missing",
+    "strategy-seeds/sources/SRC04/raw/ch08-12_technical.txt missing",
+    "EA binary/expert path not assigned",
+    "setfile path not assigned"
+  ],
+  "cto_required_confirmation": [
+    "Approve/replace symbols",
+    "Approve/replace BL date window",
+    "Provide EA expert name and setfile path",
+    "Confirm terminal allocation"
+  ],
+  "next_action_after_confirmation": "Pipeline-Operator dispatches run and publishes filesystem-truth + NO_REPORT size evidence bundle"
+}

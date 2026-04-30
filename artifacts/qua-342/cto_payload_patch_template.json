@@ -1,0 +1,16 @@
+{
+  "issue": "QUA-342",
+  "strategy": "SRC04_S03",
+  "action": "fill_missing_mapping_fields",
+  "required_updates": {
+    "ea_id": "<CONCRETE_EA_ID>",
+    "ea_name": "<CONCRETE_EA_NAME>",
+    "setfile_path": "<ABSOLUTE_OR_REPO_PATH_TO_SETFILE>"
+  },
+  "validation_expectation": {
+    "dispatch_ready": true,
+    "payload_ready": true,
+    "missing_fields": []
+  },
+  "notes": "Replace placeholders and apply to the source payload used by src04_s03 readiness checks."
+}

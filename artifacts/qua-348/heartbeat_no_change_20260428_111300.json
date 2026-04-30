@@ -1,0 +1,15 @@
+{
+  "issue": "QUA-348",
+  "generated_at_local": "2026-04-28T11:12:54+02:00",
+  "heartbeat_type": "no_change",
+  "blocker_owner": "CTO (with Dev if build pending)",
+  "blocker_reason": "missing_src04_s09_ea_mapping_or_build_artifact",
+  "validator": "INVALID",
+  "readiness": "NOT_READY",
+  "missing_fields": [
+    "ea_name",
+    "setfile_path"
+  ],
+  "latest_tick_bundle": "C:\\QM\\repo\\artifacts\\qua-348\\tick_bundle_20260428_111226.json",
+  "next_action_when_unblocked": "Execute first valid baseline cohort and publish filesystem-truth/report-size evidence"
+}

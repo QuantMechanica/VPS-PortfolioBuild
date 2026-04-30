@@ -1,0 +1,20 @@
+{
+  "issue": "QUA-342",
+  "strategy": "SRC04_S03",
+  "generated_at_utc": "2026-04-28T10:08:07Z",
+  "blocked": true,
+  "dispatch_ready": false,
+  "state_changed": false,
+  "missing_fields": [
+    "ea_name",
+    "setfile_path"
+  ],
+  "ea_id": "TBD",
+  "unblock_owner": "CTO",
+  "unblock_action": "Assign executable mapping fields in payload (ea_name, setfile_path) and set strategy EA ID from TBD to concrete mapping",
+  "evidence": {
+    "cto_note_latest": "C:\\QM\\repo\\artifacts\\qua-342\\cto_unblock_request_latest.md",
+    "readiness_latest": "C:\\QM\\repo\\artifacts\\qua-342\\src04_s03_readiness_latest.json",
+    "tick_bundle_latest": "C:\\QM\\repo\\artifacts\\qua-342\\tick_bundle_latest.json"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "issue": "QUA-348",
+  "captured_at_local": "2026-04-28T12:56:00+02:00",
+  "check": "ea_artifact_presence_for_src04_s09",
+  "framework_ea_matches_count": 0,
+  "framework_ea_matches": [],
+  "inferred_status": "no_matching_ea_artifact_found",
+  "required_unblock_action": "CTO/Dev provide concrete ea_name + setfile_path for SRC04_S09 (build may be pending)"
+}

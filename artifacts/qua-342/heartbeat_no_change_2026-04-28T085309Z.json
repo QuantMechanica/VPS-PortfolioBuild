@@ -1,0 +1,25 @@
+{
+  "issue": "QUA-342",
+  "heartbeat_utc": "2026-04-28T08:53:09Z",
+  "status": "blocked_no_change",
+  "blocker": {
+    "owner": "CTO",
+    "action": "Publish SRC04 card/source artifacts and executable run payload"
+  },
+  "artifact_presence": {
+    "strategy-seeds/cards/lien-fade-double-zeros_card.md": false,
+    "strategy-seeds/sources/SRC04/raw/ch08-12_technical.txt": false,
+    "strategy-seeds/sources/SRC04": false
+  },
+  "infra": {
+    "terminal_count": 5,
+    "terminal_pids": [34436,34984,36480,41164,71600],
+    "aggregator_pid": 10228,
+    "state_last_write_local": "2026-04-28T10:52:24+02:00",
+    "filesystem_htm": 11,
+    "tracker_htm": 11,
+    "fs_tracker_mismatch": false,
+    "disk_free_gb": {"C": 371.97, "D": 545.64}
+  },
+  "next_action_after_unblock": "Run smallest valid SRC04_S03 baseline cohort and publish count+size evidence"
+}

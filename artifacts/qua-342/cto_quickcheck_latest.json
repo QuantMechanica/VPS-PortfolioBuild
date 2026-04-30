@@ -1,0 +1,22 @@
+{
+    "issue":  "QUA-342",
+    "tick_utc":  "2026-04-28T10:20:17Z",
+    "blocked":  true,
+    "dispatch_ready":  false,
+    "escalate_now":  true,
+    "consecutive_unchanged_blocked_ticks":  21,
+    "unblock_owner":  "CTO",
+    "unblock_action":  "Assign executable mapping fields in payload (ea_name, setfile_path) and set strategy EA ID from TBD to concrete mapping",
+    "payload_validation_exit_code":  2,
+    "payload_validation_output":  [
+                                      "{",
+                                      "    \"payload_path\":  \"C:\\\\QM\\\\repo\\\\artifacts\\\\qua-342\\\\cto_payload_patch_template.json\",",
+                                      "    \"valid\":  false,",
+                                      "    \"errors\":  [",
+                                      "                   \"ea_id missing or placeholder\",",
+                                      "                   \"ea_name missing or placeholder\",",
+                                      "                   \"setfile_path missing or placeholder\"",
+                                      "               ]",
+                                      "}"
+                                  ]
+}

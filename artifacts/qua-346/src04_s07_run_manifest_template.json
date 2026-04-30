@@ -1,0 +1,53 @@
+{
+  "issue": "QUA-346",
+  "strategy_id": "SRC04_S07",
+  "strategy_slug": "lien-20day-breakout",
+  "execution_mode": "baseline_sweep",
+  "status": "awaiting_cto_fill",
+  "required_fields": {
+    "symbols": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "USDJPY.DWX",
+      "USDCHF.DWX",
+      "AUDUSD.DWX",
+      "NZDUSD.DWX",
+      "USDCAD.DWX",
+      "EURGBP.DWX",
+      "EURJPY.DWX",
+      "GBPJPY.DWX",
+      "AUDNZD.DWX"
+    ],
+    "timeframe": "D1",
+    "from": "",
+    "to": "",
+    "ea_name": "",
+    "setfile_path": "",
+    "terminal_allocation": {
+      "T1": null,
+      "T2": null,
+      "T3": null,
+      "T4": null,
+      "T5": null
+    },
+    "rule_overrides": {
+      "donchian_lookback_days": 20,
+      "pullback_window_bars": 1,
+      "rebreak_window_bars": 3,
+      "rebreak_offset_pips": 5,
+      "tp1_r_multiple": 1.0,
+      "trail_extreme_bars": 2
+    },
+    "output_root": "D:\\QM\\reports\\baseline\\QUA-346\\SRC04_S07"
+  },
+  "operator_notes": [
+    "Use trigger symbol and full baseline window; do not substitute portable smoke symbols/windows.",
+    "Apply NO_REPORT disambiguation with report byte-size checks before labeling EA weakness.",
+    "Enforce filesystem-truth check (actual .htm count vs tracker counters) before stall/dead claims."
+  ],
+  "field_hints": {
+    "ea_name_hint": "QM5_<ea_id>_lien_20day_breakout",
+    "setfile_path_hint": "C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_<ea_id>_lien_20day_breakout\\\\QM5_<ea_id>_lien_20day_breakout.set",
+    "date_window_hint": "Use CTO-approved full baseline window for SRC04_S07 (no smoke window substitution)."
+  }
+}

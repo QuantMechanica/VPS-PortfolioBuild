@@ -1,0 +1,11 @@
+{
+  "issue": "QUA-348",
+  "checked_at_local": "2026-04-28T12:21:16+02:00",
+  "source_path": "C:\\QM\\repo\\docs\\ops\\QUA-348_ISSUE_STATUS_UPDATE_2026-04-28.json",
+  "mirror_path": "C:\\QM\\repo\\artifacts\\qua-348\\latest_status.json",
+  "source_exists": true,
+  "mirror_exists": true,
+  "source_sha256": "9260AD657106039AFFF94BA654BEC4E3991EB248B2725F1B8F413A602B2B1331",
+  "mirror_sha256": "9260AD657106039AFFF94BA654BEC4E3991EB248B2725F1B8F413A602B2B1331",
+  "in_sync": true
+}

@@ -1,0 +1,17 @@
+{
+    "issue":  "QUA-342",
+    "tick_utc":  "2026-04-28T10:21:15Z",
+    "blocked":  true,
+    "dispatch_ready":  false,
+    "state_changed":  false,
+    "missing_fields":  [
+                           "ea_name",
+                           "setfile_path"
+                       ],
+    "unblock_owner":  "CTO",
+    "unblock_action":  "Assign executable mapping fields in payload (ea_name, setfile_path) and set strategy EA ID from TBD to concrete mapping",
+    "consecutive_unchanged_blocked_ticks":  23,
+    "escalation_threshold":  5,
+    "escalate_now":  true,
+    "latest_tick_bundle":  "C:\\QM\\repo\\artifacts\\\\qua-342\\\\tick_bundle_20260428_102115.json"
+}
