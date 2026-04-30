@@ -4,9 +4,12 @@ param(
     [string]$RepoRoot = "C:\QM\repo",
     [string]$ScriptRelativePath = "infra\scripts\Run-RuntimeHealthScan.ps1",
     [string]$OutputPath = "C:\QM\logs\infra\health\runtime_health_scan_latest.json",
+    [string]$CompanyId = $(if ($env:PAPERCLIP_COMPANY_ID) { $env:PAPERCLIP_COMPANY_ID } else { "03d4dcc8-4cea-4133-9f68-90c0d99628fb" }),
     [string]$PostgresUrl = $(if ($env:PAPERCLIP_POSTGRES_URL) { $env:PAPERCLIP_POSTGRES_URL } else { "" }),
     [string]$PostgresUrlEnvVarName = "PAPERCLIP_POSTGRES_URL",
     [switch]$UseMachineEnvPostgresUrl,
+    [string]$InstanceEnvFile = "C:\QM\paperclip\data\instances\default\.env",
+    [switch]$UseInstanceEnvFilePostgresUrl,
     [switch]$AllowApiFallback,
     [int]$MinuteOffset = 1,
     [int]$EveryMinutes = 15,
@@ -27,24 +30,39 @@ $scriptPath = Join-Path $RepoRoot $ScriptRelativePath
 if (-not (Test-Path -LiteralPath $scriptPath)) {
     throw "Runtime health scan script not found: $scriptPath"
 }
-if ([string]::IsNullOrWhiteSpace($PostgresUrl) -and -not $UseMachineEnvPostgresUrl -and -not $AllowApiFallback) {
-    throw "PostgresUrl is required for scheduled execution unless -AllowApiFallback is explicitly set."
+if ([string]::IsNullOrWhiteSpace($CompanyId)) {
+    throw "CompanyId is required for scheduled execution."
+}
+if ([string]::IsNullOrWhiteSpace($PostgresUrl) -and -not $UseMachineEnvPostgresUrl -and -not $UseInstanceEnvFilePostgresUrl -and -not $AllowApiFallback) {
+    throw "PostgresUrl is required for scheduled execution unless -UseMachineEnvPostgresUrl, -UseInstanceEnvFilePostgresUrl, or -AllowApiFallback is explicitly set."
 }
 
 $minuteOffset = [Math]::Max(0, [Math]::Min(59, $MinuteOffset))
-$startBoundary = (Get-Date).Date.AddHours((Get-Date).Hour).AddMinutes($minuteOffset)
-if ($startBoundary -le (Get-Date)) {
-    $startBoundary = $startBoundary.AddMinutes($EveryMinutes)
+$now = Get-Date
+$startBoundary = $now.Date.AddHours($now.Hour).AddMinutes($minuteOffset)
+if ($startBoundary -le $now) {
+    do {
+        $startBoundary = $startBoundary.AddMinutes($EveryMinutes)
+    } while ($startBoundary -le $now)
 }
 
 if ($UseMachineEnvPostgresUrl.IsPresent) {
     $allowArg = if ($AllowApiFallback.IsPresent) { " -AllowApiFallback" } else { "" }
     $failArg = if ($FailOnFinding.IsPresent) { " -FailOnFinding" } else { "" }
     $dryArg = if ($DryRun.IsPresent) { " -DryRun" } else { "" }
-    $cmd = "`$pg=[Environment]::GetEnvironmentVariable('$PostgresUrlEnvVarName','Machine'); if([string]::IsNullOrWhiteSpace(`$pg)) { throw '$PostgresUrlEnvVarName not set in Machine env.' }; & `"$scriptPath`" -OutputPath `"$OutputPath`" -PostgresUrl `$pg$allowArg$failArg$dryArg"
+    $cmd = "`$pg=[Environment]::GetEnvironmentVariable('$PostgresUrlEnvVarName','Machine'); if([string]::IsNullOrWhiteSpace(`$pg)) { throw '$PostgresUrlEnvVarName not set in Machine env.' }; & `"$scriptPath`" -CompanyId `"$CompanyId`" -OutputPath `"$OutputPath`" -PostgresUrl `$pg$allowArg$failArg$dryArg"
+    $args = "-NoProfile -ExecutionPolicy Bypass -Command `"$cmd`""
+} elseif ($UseInstanceEnvFilePostgresUrl.IsPresent) {
+    if (-not (Test-Path -LiteralPath $InstanceEnvFile)) {
+        throw "Instance env file not found: $InstanceEnvFile"
+    }
+    $allowArg = if ($AllowApiFallback.IsPresent) { " -AllowApiFallback" } else { "" }
+    $failArg = if ($FailOnFinding.IsPresent) { " -FailOnFinding" } else { "" }
+    $dryArg = if ($DryRun.IsPresent) { " -DryRun" } else { "" }
+    $cmd = "`$line=Select-String -Path `"$InstanceEnvFile`" -Pattern '^DATABASE_URL=' | Select-Object -First 1; if(`$null -eq `$line) { throw 'DATABASE_URL not found in instance env file.' }; `$pg=`$line.Line -replace '^DATABASE_URL=',''; & `"$scriptPath`" -CompanyId `"$CompanyId`" -OutputPath `"$OutputPath`" -PostgresUrl `$pg$allowArg$failArg$dryArg"
     $args = "-NoProfile -ExecutionPolicy Bypass -Command `"$cmd`""
 } else {
-    $args = "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`" -OutputPath `"$OutputPath`""
+    $args = "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`" -CompanyId `"$CompanyId`" -OutputPath `"$OutputPath`""
     if (-not [string]::IsNullOrWhiteSpace($PostgresUrl)) { $args += " -PostgresUrl `"$PostgresUrl`"" }
     if ($AllowApiFallback.IsPresent) { $args += " -AllowApiFallback" }
     if ($FailOnFinding.IsPresent) { $args += " -FailOnFinding" }

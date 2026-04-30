@@ -213,6 +213,14 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - DL-030 Class-2 sentinel for Strategy Card issues in V5 Strategy Research.
   - Detects child issues missing `executionPolicy` and writes machine-readable output to `C:\QM\logs\infra\health\class2_execution_policy_sentinel_latest.json`.
   - Preview-safe by default (detect-only); optional `-ApplyMissingPolicy` performs PATCH with required `X-Paperclip-Run-Id`.
+- `monitoring/Test-MainArtifactEnforcer.ps1`
+  - Main-checkout artifact sentinel for QUA-589/QUA-616.
+  - On protected branch (`main` by default), fails if repo contains forbidden paths:
+    - `docs/ops/QUA-*_*.{md,json,sha256,txt}`
+    - root `QUA-*_*.{md,json,sha256,txt}`
+    - `artifacts/qua-*/...`
+    - `**/__pycache__/`
+    - `.claude/scheduled_tasks.lock`
 - `monitoring/Invoke-InfraHealthCheck.ps1`
   - Delegates `git_index_lock` evaluation to `monitoring/Invoke-GitIndexLockMonitor.ps1` when present, with inline stale-lock scan fallback only if the monitor script is missing.
 - `scripts/Install-GitIndexLockMonitorTask.ps1`
@@ -224,6 +232,9 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Runs `monitoring/Test-Class2ExecutionPolicySentinel.ps1 -FailOnFinding` every 60 minutes.
   - Supports `-PreviewOnly` for non-mutating task-plan output.
   - Safe to re-run (`Register-ScheduledTask -Force`) and overlap-safe (`MultipleInstances=IgnoreNew`).
+- `scripts/Install-MainArtifactPreCommitHook.ps1`
+  - Idempotently installs `.githooks/pre-commit` and configures `core.hooksPath=.githooks`.
+  - Hook enforces `Assert-CommitAllowlist.ps1 -FailOnMainArtifactPaths` to block forbidden QUA-* artifact commits on `main`.
 - `scripts/Ensure-AgentWorktree.ps1`
   - Converges per-agent worktree paths under `C:\QM\worktrees\` for CWD isolation.
   - Refuses non-empty non-worktree target paths and supports idempotent re-runs.
@@ -290,6 +301,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `scripts/Install-RuntimeHealthScanTask.ps1`
   - Registers scheduler task `QM_RuntimeHealthScan_15min` as `SYSTEM` (15-minute cadence).
   - Supports `-PreviewOnly` and explicit API context flags for deterministic task action wiring.
+  - Normalizes trigger start boundary to the next future slot to avoid immediate stale/past start times on re-run.
   - Safe to re-run (`Register-ScheduledTask -Force`).
 - `scripts/Remove-QUA207RuntimeHeartbeatTask.ps1`
   - Removes `QM_QUA207_RuntimeHeartbeat_30min` idempotently (`ok` when already absent).
@@ -416,6 +428,18 @@ Class-2 execution-policy sentinel (every 60 minutes, DL-030):
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-Class2ExecutionPolicySentinelTask.ps1 -EveryMinutes 60 -FailOnFinding
+```
+
+Main artifact enforcer (every 15 minutes, QUA-616):
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\monitoring\Test-MainArtifactEnforcer.ps1 -RepoRoot C:\QM\repo -ProtectedBranch main
+```
+
+Main artifact pre-commit hook install (idempotent):
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-MainArtifactPreCommitHook.ps1 -RepoRoot C:\QM\repo -ProtectedBranch main
 ```
 
 Token-cost observability (70/80/95 budget alarms + daily snapshot):
