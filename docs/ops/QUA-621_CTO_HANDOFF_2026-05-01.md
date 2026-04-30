@@ -11,6 +11,7 @@ Confirm the Development claim of phase-runner artifacts routed from QUA-614/QUA-
 1. `847dabad` — `_phase_utils.py` + `p*.py` phase runners
 2. `482c01ef` — `aggregate_phase_results.py` + `run_phase.ps1`
 3. `3a4ecb4c` — closeout evidence note
+4. `2f22f1d9` — CTO handoff packet
 
 ## Expected file set
 - `framework/scripts/_phase_utils.py`
@@ -32,3 +33,9 @@ Confirm the Development claim of phase-runner artifacts routed from QUA-614/QUA-
 
 ## Decision request
 - Approve merge of the above claim commits into the integration branch used for QUA-589 sweep closure.
+
+## Blocker status (updated 2026-05-01)
+- Status: BLOCKED
+- Blocked on: CTO review/decision for commits `847dabad`, `482c01ef`, `3a4ecb4c`, `2f22f1d9`
+- Unblock owner: CTO
+- Unblock action: Approve (or request changes on) the four commits so Development can proceed with integration/closure steps on QUA-621.
