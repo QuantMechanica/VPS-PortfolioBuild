@@ -10,6 +10,7 @@ param(
     [int]$WarnThresholdPct = 70,
     [int]$HighWarnThresholdPct = 80,
     [int]$CriticalThresholdPct = 95,
+    [switch]$PreviewOnly,
     [switch]$RunNow
 )
 
@@ -46,6 +47,22 @@ $settings = New-ScheduledTaskSettingsSet `
     -ExecutionTimeLimit (New-TimeSpan -Minutes 5)
 
 $healthTask = New-ScheduledTask -Action $healthAction -Trigger $healthTrigger -Principal $principal -Settings $settings
+if ($PreviewOnly.IsPresent) {
+    [pscustomobject]@{
+        preview = $true
+        task_name = $TaskName
+        daily_snapshot_task_name = $DailySnapshotTaskName
+        execute = "powershell.exe"
+        arguments = $baseArgs
+        working_directory = $RepoRoot
+        start_boundary_local = $startBoundary.ToString("o")
+        repetition_minutes = $EveryMinutes
+        daily_snapshot_at = "00:10"
+        principal = "SYSTEM"
+        run_level = "Highest"
+    } | ConvertTo-Json -Depth 5
+    exit 0
+}
 Register-ScheduledTask -TaskName $TaskName -InputObject $healthTask -Force | Out-Null
 
 $snapshotArgs = $baseArgs
