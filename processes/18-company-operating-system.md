@@ -138,8 +138,9 @@ Do not expose raw Paperclip issue links, credentials, private mailbox contents, 
 
 ## References
 
-- `docs/ops/PAPERCLIP_COMPANY_REBOOT_PLAN_2026-04-30.md`
-- `docs/ops/PAPERCLIP_COMPANY_REBOOT_ISSUES_2026-04-30.md`
+- [`decisions/2026-05-01_reboot_plan_go_phased.md`](../decisions/2026-05-01_reboot_plan_go_phased.md) (DL-043) — **GO (phased) decision in force**: Phase A active (Chief of Staff hire [QUA-594](/QUA/issues/QUA-594), Doc-KM lessons-loop [QUA-595](/QUA/issues/QUA-595)); Phase B gated on F6 trend + first V5 EA in P7; Phase C deferred until Gmail volume justifies. Doc-KM heartbeat picker reads this DL for Phase A scope and gate-met evidence on every 2h tick.
+- `docs/ops/PAPERCLIP_COMPANY_REBOOT_PLAN_2026-04-30.md` — source plan (input to DL-043)
+- `docs/ops/PAPERCLIP_COMPANY_REBOOT_ISSUES_2026-04-30.md` — source issue packet (Phase A.1 + Phase A.2 issues land from here)
 - `processes/17-agent-runtime-health.md`
 - `processes/process_registry.md`
 - `docs/ops/AGENT_SKILL_MATRIX.md`
