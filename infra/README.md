@@ -21,6 +21,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `scripts/Install-DwxHourlyTask.ps1`
   - Registers Task Scheduler job `QM_DWX_HourlyCheck` as `SYSTEM` (legacy fallback only).
   - Normalizes trigger start boundary to the next future hourly slot when needed.
+  - Supports `-PreviewOnly` for non-mutating task-plan output.
   - Safe to re-run (`Register-ScheduledTask -Force`).
   - Uses `MultipleInstances=IgnoreNew` to prevent concurrent overlap.
 - `scripts/Test-DarwinexCommodityInventory.ps1`

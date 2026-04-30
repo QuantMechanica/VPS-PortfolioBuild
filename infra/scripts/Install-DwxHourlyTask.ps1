@@ -4,6 +4,7 @@ param(
     [string]$RepoRoot = 'C:\QM\repo',
     [string]$ScriptRelativePath = 'infra\scripts\Invoke-DwxHourlyCheck.ps1',
     [int]$MinuteOffset = 7,
+    [switch]$PreviewOnly,
     [switch]$RunNow
 )
 
@@ -36,6 +37,20 @@ $settings = New-ScheduledTaskSettingsSet `
     -ExecutionTimeLimit (New-TimeSpan -Minutes 55)
 
 $task = New-ScheduledTask -Action $action -Trigger $trigger -Principal $principal -Settings $settings
+if ($PreviewOnly.IsPresent) {
+    [pscustomobject]@{
+        preview = $true
+        task_name = $TaskName
+        execute = "powershell.exe"
+        arguments = $actionArgs
+        working_directory = $RepoRoot
+        start_boundary_local = $startBoundary.ToString("o")
+        repetition_minutes = 60
+        principal = "SYSTEM"
+        run_level = "Highest"
+    } | ConvertTo-Json -Depth 5
+    exit 0
+}
 Register-ScheduledTask -TaskName $TaskName -InputObject $task -Force | Out-Null
 
 $registered = Get-ScheduledTask -TaskName $TaskName
