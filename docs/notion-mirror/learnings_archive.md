@@ -2,7 +2,7 @@
 AUTO-GENERATED MIRROR — DO NOT EDIT.
 Source: Notion page 34947da58f4a8136a6a8ee48fe47fc7d
 Title: Learnings Archive — What We Keep vs. Change
-Mirrored: 2026-04-27T11:24:00Z by Documentation-KM (QUA-151)
+Mirrored: 2026-04-30T23:00:00Z by Documentation-KM (QUA-622 nightly sync; previous refresh 2026-04-27T11:24:00Z under QUA-151)
 Editing surface: Notion. Direct edits will be overwritten by the next sync.
 Manifest: infra/notion-sync/manifest.yaml
 NOTE: lessons-learned/ in the repo is the Git-canonical operational lessons
@@ -279,3 +279,7 @@ At each phase boundary, Codex audits:
 - [ ] No DISCARDED item was silently re-introduced
 - [ ] Any new learning from the latest phase has an entry here
 - [ ] Contradictions between Notion pages flagged
+
+## Sub-pages (Notion-side)
+
+- [2026-04-29 — Development recursive self-wake hot-poll](https://www.notion.so/35247da58f4a81c595cdd3f1ba6d62c3)

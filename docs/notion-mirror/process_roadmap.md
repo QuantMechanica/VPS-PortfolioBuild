@@ -2,7 +2,7 @@
 AUTO-GENERATED MIRROR — DO NOT EDIT.
 Source: Notion page 34947da58f4a81c28045ebec3ad6d78a
 Title: Paperclip Company Operating System & Process Roadmap
-Mirrored: 2026-04-30T22:00:00Z by Documentation-KM (QUA-545 nightly sync; previous refresh 2026-04-28T23:00:00Z under QUA-151)
+Mirrored: 2026-04-30T23:00:00Z by Documentation-KM (QUA-622 nightly sync; previous refresh 2026-04-30T22:00:00Z under QUA-545)
 Editing surface: Notion. Direct edits will be overwritten by the next sync.
 Manifest: infra/notion-sync/manifest.yaml
 Mapping note: BASIS lists "Process Roadmap"; per CEO 2026-04-27 (QUA-151
@@ -139,3 +139,6 @@ It must not expose credentials, internal paths, account IDs, RDP details, or raw
 - [DL-037 — Stage B CSV Cleanup (Tick-Data-Timezone Source CSVs Removed) (Decision Log)](https://www.notion.so/35147da58f4a81378958d79fbf967c97)
 - [DL-038 — Seven Binding Backtest Rules (OWNER 2026-04-28) (Decision Log)](https://www.notion.so/35147da58f4a81198b9ad2d705b66fb2)
 - [DL-039 — Quality-Business Hire (9th-agent OWNER override of Wave-2 8-cap) (Decision Log)](https://www.notion.so/35147da58f4a816bab78fc09cbbd7a46)
+- [12 — Board Escalation Contract](https://www.notion.so/35247da58f4a81a9ad20d26ef1232b5e)
+- [17 — Agent Runtime Health](https://www.notion.so/35247da58f4a81b092d7fb887a223873)
+- [Process Registry](https://www.notion.so/35247da58f4a811daef2fa1a78608ff6)
