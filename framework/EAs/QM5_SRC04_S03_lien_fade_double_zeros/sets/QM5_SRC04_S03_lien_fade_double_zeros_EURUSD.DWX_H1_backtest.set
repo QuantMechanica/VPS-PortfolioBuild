@@ -1,0 +1,22 @@
+﻿; QuantMechanica V5 generated set file
+; Generator=framework/scripts/gen_setfile.ps1
+; ea_id:             4303
+; ea_slug:           QM5_SRC04_S03_lien_fade_double_zeros
+; ea_version:        v1
+; set_version:       v1
+; symbol:            EURUSD.DWX
+; timeframe:         H1
+; environment:       backtest
+; magic_slot:        0
+; risk_mode:         fixed
+; portfolio_weight:  1
+; build_hash:   3449c40de8f64372cf14a9b11b9855a4b90fbd43f0bd83278e06ad1b7c0084f9
+; author:            Pipeline-Operator
+; date:              2026-04-29
+ENV=backtest
+qm_ea_id=4303
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card must be appended below this line

@@ -29,7 +29,8 @@ function Get-ReportFiles {
         return @(Get-Item -LiteralPath $targetPath)
     }
 
-    $files = Get-ChildItem -LiteralPath $targetPath -File -Include "*.htm", "*.html" -Recurse:$Recursive.IsPresent
+    $files = Get-ChildItem -LiteralPath $targetPath -File -Recurse:$Recursive.IsPresent |
+        Where-Object { $_.Extension.ToLowerInvariant() -in @(".htm", ".html") }
     return @($files)
 }
 
@@ -139,6 +140,14 @@ function Inject-Branding {
 
     $styleBlock = "<style id=`"qm-brand-report-css-v1`">`n$CssBlock`n</style>"
     $banner = '<div class="qm-brand-report-banner"><span class="qm-left">Quant</span><span class="qm-right">Mechanica</span> <span>V5</span></div>'
+
+    $alreadyStyled = $Html -match '(?is)<style\s+id=["'']qm-brand-report-css-v1["'']'
+    $alreadyBannered = $Html -match '(?is)<div\s+class=["'']qm-brand-report-banner["'']'
+    $alreadyBodyClassed = $Html -match '(?is)<body[^>]*class\s*=\s*["''][^"'']*\bqm-brand-report\b[^"'']*["'']'
+    if ($alreadyStyled -and $alreadyBannered -and $alreadyBodyClassed) {
+        return $Html
+    }
+
     $result = $Html -replace "`r`n", "`n"
 
     $existingStyleRegex = '(?is)<style\s+id=["'']qm-brand-report-css-v1["''][^>]*>.*?</style>'
@@ -239,9 +248,5 @@ Write-Output "brand_report.updated=$updated"
 Write-Output "brand_report.skipped=$skipped"
 Write-Output "brand_report.token_path=$TokenPath"
 Write-Output "brand_report.report_path=$ReportPath"
-
-if ($updated -eq 0) {
-    exit 2
-}
-
+Write-Output ("brand_report.result={0}" -f ($(if ($updated -gt 0) { "updated" } else { "no_change" })))
 exit 0
