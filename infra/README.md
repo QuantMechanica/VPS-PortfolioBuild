@@ -68,6 +68,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `scripts/Install-AggregatorStateTask.ps1`
   - Registers Task Scheduler job `QM_AggregatorState_1min` as `SYSTEM`.
   - Runs `scripts/aggregator/standalone_aggregator_loop.py --once` every minute.
+  - Supports `-PreviewOnly` for non-mutating task-plan output.
   - Safe to re-run (`Register-ScheduledTask -Force`) and overlap-safe (`MultipleInstances=IgnoreNew`).
 - `monitoring/Test-TokenCostBudget.ps1`
   - Computes current UTC-day token spend from heartbeat runs and compares against `DailyBudgetUsd` (default `25`, env override `QM_TOKEN_DAILY_BUDGET_USD`).
