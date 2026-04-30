@@ -303,6 +303,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `tasks/Register-QMInfraTasks.ps1`
   - Also converges `QM_QUA207_RuntimeHeartbeat_30min` when `Run-QUA207RuntimeCompletionHeartbeat.ps1` is present.
   - Also converges `QM_RuntimeHealthScan_15min` when `Run-RuntimeHealthScan.ps1` is present.
+  - Repeating task triggers are normalized to the next future run slot when the nominal HH:MM boundary is already in the past.
 - `scripts/New-QUA207IssueComment.ps1`
   - Generates `docs/ops/QUA-207_ISSUE_COMMENT_2026-04-27.md` from live transition + evidence artifacts.
 - `scripts/Invoke-QUA350IssueTransition.ps1`

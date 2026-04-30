@@ -18,6 +18,8 @@ param(
     [string]$TokenCostBudgetHealthScript = "C:\QM\repo\infra\monitoring\Test-TokenCostBudgetHealth.ps1",
     [int64]$DailyTokenBudget = 2500000,
     [string]$RuntimeHealthScanScript = "C:\QM\repo\infra\scripts\Run-RuntimeHealthScan.ps1",
+    [string]$RuntimeHealthCompanyId = "03d4dcc8-4cea-4133-9f68-90c0d99628fb",
+    [string]$PaperclipInstanceEnvFile = "C:\QM\paperclip\data\instances\default\.env",
     [string]$BackupScript = "C:\QM\repo\infra\backup.ps1",
     [string]$RecoveryOrphanCleanupScript = "C:\QM\repo\infra\scripts\Remove-RecoveryOrphans.ps1"
 )
@@ -60,8 +62,22 @@ function New-RepeatingTriggerFromToday {
         [Parameter(Mandatory = $true)] [timespan]$Duration
     )
 
-    $todayStart = (Get-Date).Date.AddHours($AtTime.Hour).AddMinutes($AtTime.Minute)
-    return New-ScheduledTaskTrigger -Once -At $todayStart -RepetitionInterval $Interval -RepetitionDuration $Duration
+    if ($Interval.TotalMinutes -lt 1) {
+        throw "Interval must be at least 1 minute."
+    }
+    if ($Duration.TotalMinutes -lt $Interval.TotalMinutes) {
+        throw "Duration must be greater than or equal to Interval."
+    }
+
+    $now = Get-Date
+    $startBoundary = $now.Date.AddHours($AtTime.Hour).AddMinutes($AtTime.Minute)
+    if ($startBoundary -le $now) {
+        do {
+            $startBoundary = $startBoundary.Add($Interval)
+        } while ($startBoundary -le $now)
+    }
+
+    return New-ScheduledTaskTrigger -Once -At $startBoundary -RepetitionInterval $Interval -RepetitionDuration $Duration
 }
 
 # Hourly public snapshot export at HH:07
@@ -266,7 +282,7 @@ if (Test-Path -LiteralPath $RuntimeHealthScanScript) {
     Register-DesiredTask `
         -TaskName "QM_RuntimeHealthScan_15min" `
         -Executable "powershell.exe" `
-        -Arguments "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$RuntimeHealthScanScript`"" `
+        -Arguments "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -Command `"`$line=Select-String -Path '$PaperclipInstanceEnvFile' -Pattern '^DATABASE_URL=' | Select-Object -First 1; if(`$null -eq `$line) { throw 'DATABASE_URL not found in Paperclip instance env file.' }; `$pg=`$line.Line -replace '^DATABASE_URL=',''; & '$RuntimeHealthScanScript' -CompanyId '$RuntimeHealthCompanyId' -PostgresUrl `$pg`"" `
         -Trigger $runtimeHealthTrigger `
         -Description "Runs agent runtime health scan detectors (hot-poll, stuck-session, bottleneck, budget pressure, recursive self-wake)."
 }
