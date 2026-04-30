@@ -572,6 +572,11 @@ Notes:
 - No T6 live automation mutations.
 - No secret material in repo.
 
+## Main Branch Artifact Guard
+
+- On `main`, commits to `artifacts/*` may be blocked by repository policy (`main_artifact_policy_violation`).
+- For DevOps evidence capture under this constraint, write durable summaries to `infra/reports/` and reference the blocked artifact path in the report.
+
 ## T1 DWX spec patch runner (operational)
 
 Converge current patch launcher (`v3` baseline) from prior known-good launcher (`v2`):
