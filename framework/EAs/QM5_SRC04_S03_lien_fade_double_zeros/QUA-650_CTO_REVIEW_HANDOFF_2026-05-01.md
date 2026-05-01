@@ -42,3 +42,11 @@ Excerpt:
 ## Policy
 - No pipeline dispatch performed by Development.
 - Next action: CTO review-only gate.
+
+## CTO Gate Checklist (Ready)
+- [x] EA source implemented in V5 framework module pattern
+- [x] `qm_ea_id=1009` and registry row present for `SRC04_S03`
+- [x] Risk dual-input contract present (`RISK_PERCENT`, `RISK_FIXED`)
+- [x] Friday close hook enabled by default and wired in tick flow
+- [x] Strict compile evidence attached (`0 errors`, `0 warnings`)
+- [x] No Development pipeline dispatch
