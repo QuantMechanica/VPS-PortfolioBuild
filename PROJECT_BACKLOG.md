@@ -5,7 +5,25 @@ Owner of this file: OWNER + Claude Board Advisor
 Refresh cadence: every meaningful state change (new commit / new decision / phase boundary)
 Source of truth: filesystem + this file. Phase-0 detail in `docs/ops/PHASE0_EXECUTION_BOARD.md`.
 
-This file is the single backlog across all phases of V5. It started (2026-04-26) when Paperclip was not yet installed. **As of 2026-04-27, Wave 0 is LIVE** (CEO, CTO, Research, Documentation-KM hired); **Phase 1 closed** under DL-024; **Phase 2 closed** 2026-05-01 (QUA-639 + `decisions/2026-05-01_phase2_acceptance.md`); **Phase 3 in flight** (QM5_1003 baseline, QUA-660). For the live phase pointer (current phase + closure criterion + current blocker + delegation target + ETA), see `paperclip/governance/PHASE_STATE.md`. CEO updates that file every heartbeat per DL-053.
+This file is the single backlog across all phases of V5. It started (2026-04-26) when Paperclip was not yet installed. **As of 2026-04-27, Wave 0 is LIVE** (CEO, CTO, Research, Documentation-KM hired); **Phase 1 closed** under DL-024; **Phase 2 closed** 2026-05-01 (QUA-639 + `decisions/2026-05-01_phase2_acceptance.md`); **Phase 3 in flight** (QM5_1003 baseline, QUA-660), currently blocked on Codex token-quota outage (recovery Tue 2026-05-05 07:30 W. Europe).
+
+**State pointers:**
+- Live phase pointer (refreshed every CEO heartbeat per DL-053): `paperclip/governance/PHASE_STATE.md`.
+- Tuesday restart runbook (single-sheet, 9 steps): `docs/ops/TUESDAY_RESTART_RUNBOOK_2026-05-05.md`.
+- 2026-05-01 progress (this date's deliverables — see "Today's wins" below).
+
+## Today's wins (2026-05-01) — durable changes landed
+
+- **Phase 0 P0-21 remediated** — v2 bar compilation script forced `CustomRatesUpdate` for 33 missing-history `.DWX` symbols, T1 53M bars total written then propagated byte-identical to T2-T5 (`docs/ops/QUA-684_D2_BAR_COMPILATION_AUDIT_2026-05-01.md`, `framework/scripts/mt5/Compile_Custom_Bars_QM_v2.mq5`).
+- **DL-054** anti-theater pass criteria — five binding gates a `(ea_id, phase, symbol)` run must pass before `verdict=PASS` may land in `report.csv`. Companion `framework/registry/tester_defaults.json` codifies OWNER's 100k deposit + 1000 fixed-risk.
+- **DL-054 gate library** + standalone CLI runner — `framework/scripts/dl054_gates.py` + `dl054_gate_runner.py` (smoke-tested across canonical / non-canonical / stub-only / v2-recompiled symbols). CTO splices Tuesday per `framework/scripts/dl054_integration.md`.
+- **QUA-662 phantom-PASS matrix invalidated** — 36/36 PASS rows quarantined; full audit + DL-054 + tester_defaults addresses every concurrent failure mode.
+- **DL-055** token-burn watch ownership — CEO chose option (b) DevOps + QUA-527.
+- **DL-056** Chief-of-Staff (OS-Controller scope) hired — Claude Sonnet, narrow scope (roster hygiene + token-burn watch + model-selection oversight), distinct from Wave-6 founder-comms CoS.
+- **DL-057** Research-resume gate amended — was "first V5 EA reaches P7"; now "no EA queued for baseline test" (queue-empty-gated, hours-day cadence, not weeks).
+- **Cost reduction**: Doc-KM + Quality-Business moved Opus 4.7 → Sonnet 4.6 (matches laptop pattern); 4 Codex agents heartbeat-disabled until Tuesday Codex restore.
+- **Roster hygiene**: 6 orphan agent dirs moved to `.retired_2026-05-01/`; CEO stale memory archived; skills directory populated with 9 laptop-validated skills + `_VPS_PATHS_TRANSLATION.md` companion.
+- **DevOps QUA-671 churn stopped** — 4 scheduled tasks disabled (`QM_AggregatorState_1min`, `QM_QUA95_BlockerRefresh`, `QM_RuntimeHealthScan_15min`, `QM_InfraHealthCheck_5min`), agent paused.
 
 ## Specification Density Principle (2026-04-26)
 
@@ -98,7 +116,7 @@ Anchor doc: `docs/ops/PHASE0_EXECUTION_BOARD.md` (rows P0-01 to P0-29).
 
 - ⬜ **P0-04 / P0-05 MT5 T1-T5 + T6 install + isolation proof** — OWNER walks the install, Board Advisor scripts the validation. Today's owner: OWNER + Board Advisor.
 - ⬜ **P0-06 DarwinexZero / MT5 access confirmation** — OWNER confirms Demo + Live login work. Today's owner: OWNER.
-- 🔴 **P0-21 Verify Tick Data Manager DarwinexZero GMT/DST settings + install Custom Tick Data — REOPENED 2026-05-01 per QUA-684 D1.** Previously stamped `verdict=READY` 2026-04-27 09:48Z; the same `D:\QM\mt5\T1\dwx_import\logs\hourly_2026-04-27.log` run emitted `FAIL_tail_bars` / `FAIL_tail_mid_bars` (`bars_one_shot=0`, `bars_one_shot_err=(-2,'Terminal: Invalid params')`, `bars_drift=-100,000`) on ~21 of 36 imported `.DWX` symbols. The READY stamp was premature. Status: **INCOMPLETE pending root-cause** of `bars_one_shot=0` / `Terminal: Invalid params` on imported `.DWX` symbols; canonical name discipline (`NDXm.DWX` vs `NDX.DWX`, `GDAXIm.DWX` vs `GDAXI.DWX`); hallucinated symbols (`XBRUSD.DWX` not in import log). Evidence + audit: `docs/ops/QUA-662_PHANTOM_PASS_AUDIT_2026-05-01.md`. New acceptance: all 36 `.DWX` symbols either pass DL-054 Gate 1 in regenerated `T1_READINESS_REPORT.md` or are explicitly named UNAVAILABLE with reason. Today's owner: CTO + Pipeline-Op (per QUA-684 D2). Per `docs/ops/TICK_DATA_MANAGER_DARWINEX_TIME.md`.
+- ✅ **P0-21 REMEDIATED 2026-05-01** — bar compilation forced via `framework/scripts/mt5/Compile_Custom_Bars_QM_v2.mq5` (manual aggregation: ticks → M1 OHLC → `CustomRatesUpdate`). Run finished 2026-05-01 ~14:00Z: **33 OK + 2 SKIP, 0 FAIL = 35/35 symbols**, **53,397,265 bars** total written. Propagation T1 → T2-T5 byte-identical (3.8 GB each, 0 mismatched symbols, 0 robocopy errors after terminals closed). The earlier 2026-04-27 09:48Z `verdict=READY` stamp had been premature — the same log emitted `FAIL_tail_bars` / `bars_one_shot=0` / `Terminal: Invalid params` on ~21 of 36 imported `.DWX` symbols because import only wrote ticks, not bars (root cause confirmed in `docs/ops/QUA-684_D2_BAR_COMPILATION_AUDIT_2026-05-01.md`). v2 fix: aggregate ticks → M1 in MQL5 + `CustomRatesUpdate` per-month. New canonical-name discipline gate codified at DL-054 Gate 5 (catches `NDXm.DWX` vs `NDX.DWX`, `GDAXIm.DWX` vs `GDAXI.DWX`). Pipeline-Op enforces DL-054 Gate 1 on every launch — `framework/scripts/dl054_gates.py`. Acceptance: 35/35 hcc files compiled across T1-T5 byte-identical ✅. Per `docs/ops/TICK_DATA_MANAGER_DARWINEX_TIME.md`.
 - ⬜ **P0-13 T6 deploy manifest schema** — schema.yaml exists in `LIVE_T6_AUTOMATION_RUNBOOK.md`; needs first dry-run validation. Today's owner: Board Advisor (spec review), deferred for execution to Phase 5 LiveOps.
 - ⬜ **P0-15 Public expense log v0** — CSV + repo. Today's owner: OWNER (data) + Board Advisor (format).
 - ⬜ **P0-16 quantmechanica.com dashboard snapshot schema** — already specced in `docs/ops/WEBSITE_DASHBOARD_PAPERCLIP_STYLE.md`. JSON contract needs first version. Today's owner: Board Advisor.
@@ -121,15 +139,15 @@ Phase 0 closes when: T1-T5 + T6 isolation proven, Paperclip V5 company exists wi
 
 ---
 
-## Phase 1 — Paperclip Bootstrap
+## Phase 1 — Paperclip Bootstrap ✅ CLOSED 2026-04-27 (DL-024)
 
 **Goal:** install Paperclip on the VPS, hire Wave 0 (CEO, CTO, Research, Documentation-KM), prove the agent runtime works.
 
-**Anchor doc:** `docs/ops/PAPERCLIP_V2_BOOTSTRAP.md` (this is the canonical plan — do not invent a new bootstrap sequence).
+**Anchor doc:** `docs/ops/PAPERCLIP_V2_BOOTSTRAP.md`.
 
-**Today's owner:** OWNER (install + agent prompt approval) + Board Advisor (validation + evidence capture).
+**Closure:** Wave 0 LIVE 2026-04-27; Wave 1 LIVE by 2026-04-29 (DevOps `86015301`, Pipeline-Operator `46fc11e5`, Development `ebefc3a6`); Wave 2 early-trigger LIVE 2026-04-28 (QT `c1f90ba8` per DL-045, QB2 `0ab3d743` per DL-039); CoS-OS-Controller LIVE 2026-05-01 (`38f933cd` per DL-056, narrowly scoped — distinct from deferred Wave 6 founder-comms CoS).
 
-**Prerequisite from Phase 0:** P0-21 Custom Tick Data verification must pass. CTO + Pipeline-Operator agents cannot do useful Phase 2 work without verified TDM data.
+**Prerequisite from Phase 0:** P0-21 Custom Tick Data verification — REMEDIATED 2026-05-01 (see Phase 0 § Done above).
 
 ### Workstream
 
@@ -148,13 +166,13 @@ Wave 0 agents online and producing heartbeats. CEO has produced first org propos
 
 ---
 
-## Phase 2 — V5 Framework Implementation
+## Phase 2 — V5 Framework Implementation ✅ CLOSED 2026-05-01 (QUA-639 + ADR `decisions/2026-05-01_phase2_acceptance.md`)
 
-**Goal:** Codex (now hired as Paperclip CTO agent) implements the 25-step framework spec, producing compilable shared library + EA template + harness.
+**Goal:** Codex (CTO agent) implements the 25-step framework spec, producing compilable shared library + EA template + harness.
 
 **Anchor doc:** `framework/V5_FRAMEWORK_DESIGN.md` § Implementation Order (steps 1–25).
 
-**Today's owner:** blocked on Phase 1 close (need CTO-Codex agent).
+**Closure:** Step 25 PASS via Quality-Tech first review (QUA-643), all 16 includes + EA_Skeleton.mq5 + 5 PowerShell scripts + smoke fixture compiled and evidenced. Conditional pass bullets B1..B5 are tracked as Phase 3 follow-ups (sub-gate calibration after first real distributions land).
 
 ### Workstream
 
@@ -174,7 +192,7 @@ Smoke EA in `framework/tests/smoke/` compiles + runs + leaves expected evidence 
 
 **Anchor docs:** `docs/ops/PIPELINE_PHASE_SPEC.md`, `docs/ops/PIPELINE_V5_SUB_GATE_SPEC.md`, `processes/01-ea-lifecycle.md`.
 
-**Today's owner:** blocked on Phase 2 close + Wave 1-2 hire (Pipeline-Operator + Development + Quality-Tech + Quality-Business).
+**Today's owner (2026-05-01):** blocked on **Codex token-quota outage** (4 codex_local agents — CTO/DevOps/Development/Pipeline-Op — heartbeat-disabled until recovery Tue 2026-05-05 07:30 W. Europe). Tuesday morning restart sequenced in `docs/ops/TUESDAY_RESTART_RUNBOOK_2026-05-05.md` — 9 steps from Codex-restored to first DL-054-gated clean P2 baseline kicked off. Pre-staged artifacts (gate library, integration plan, model-fit recommendation in QUA-684 comment `92a65482`) cut CTO's Tuesday work from "design + write + test" to "review + apply".
 
 ### Workstream
 
