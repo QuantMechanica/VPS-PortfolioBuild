@@ -1,10 +1,12 @@
 {
   "issue": "QUA-621",
   "state": "BLOCKED_ON_CTO",
-  "as_of": "2026-05-01T10:49:35+02:00",
+  "as_of": "2026-05-01T11:44:10+02:00",
   "blocker_anchor_commit": "701363b4",
   "blocked_reason": "CTO decision pending on review range",
   "review_range": "847dabad^..HEAD",
+  "review_range_count": "438",
+  "head": "3a4fe5d0",
   "ready_for_done_marker": "docs/ops/QUA-621_READY_FOR_DONE_2026-05-01.json",
   "transition_packet": "docs/ops/QUA-621_TRANSITION_PACKET_2026-05-01.md",
   "unblock_owner": "CTO",
