@@ -19,3 +19,6 @@ Run a new implementation heartbeat only when one of the following occurs:
 
 ## Verification Command (when trigger occurs)
 `git rev-list --count 847dabad^..HEAD`
+
+## Full Blocked-State Validation
+`powershell -ExecutionPolicy Bypass -File docs/ops/validate_qua621_blocked_state.ps1`

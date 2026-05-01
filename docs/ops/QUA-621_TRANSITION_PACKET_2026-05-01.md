@@ -24,3 +24,6 @@ Set `QUA-621` from `in_progress` to `done`.
 ## Operator Note
 
 No additional QUA-621 keepalive evidence refresh commits are required unless CTO requests new review evidence.
+
+Blocked-state validation command:
+`powershell -ExecutionPolicy Bypass -File docs/ops/validate_qua621_blocked_state.ps1`
