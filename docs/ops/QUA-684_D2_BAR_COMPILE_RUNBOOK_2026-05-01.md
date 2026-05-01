@@ -2,7 +2,9 @@
 
 **Author:** Board Advisor at OWNER explicit directive.
 **Audit:** `QUA-684_D2_BAR_COMPILATION_AUDIT_2026-05-01.md`.
-**Tooling:** `D:\QM\mt5\T1\MQL5\Scripts\Compile_Custom_Bars_QM.mq5`.
+**Tooling (USE THIS ONE):** `D:\QM\mt5\T1\MQL5\Scripts\Compile_Custom_Bars_QM_v2.mq5`.
+
+> **v1 → v2 update (2026-05-01 13:50Z):** v1 used `CopyRates` to "trigger" lazy bar synthesis. **It does NOT work.** Confirmed empirically on T1: `CopyRates` only reads pre-existing `.hcc` files; it never builds bars from ticks. v1 logged 22 of 23 symbols as `rates=0` despite 200M–600M ticks loaded per symbol. The only "OK" (JPN225) was just reading its existing 2026 stub. v2 replaces the approach: aggregate ticks → M1 OHLC → `CustomRatesUpdate` (the same API the original `Import_DWX_From_Bin.mq5` used). Month-by-month chunks keep memory bounded.
 
 ## What this fixes
 
@@ -28,17 +30,21 @@ Verify `D:\QM\mt5\T1\MQL5\Scripts\Compile_Custom_Bars_QM.ex5` exists.
 
 In T1 MetaTrader 5:
 
-1. Open any chart (any symbol is fine — script doesn't trade).
-2. From the Navigator pane, expand **Scripts**.
-3. Drag `Compile_Custom_Bars_QM` onto the chart.
-4. Accept default inputs (`Symbols` = full 33-symbol list; `FromDate` = 2017-01-01; `ToDate` = 2026-05-01).
+1. Open any chart (any symbol — script doesn't trade).
+2. From Navigator → expand **Scripts**.
+3. Drag **`Compile_Custom_Bars_QM_v2`** onto the chart. (NOT v1 — v1 is broken.)
+4. Defaults are fine: `YearFrom = 2017`, `YearTo = 2024`, `MinBarsToSkip = 50000`, `DryRun = false`.
 5. Click OK.
 
-The script iterates through 33 symbols. Each iteration: `SymbolSelect`, `CopyTicksRange` (forces tick load), `CopyRates` (forces bar synthesis from ticks). Expected runtime: ~2–10 minutes depending on disk speed.
+The script iterates 35 missing-history symbols. Per symbol → per year → per month: `CopyTicksRange` → aggregate ticks to M1 OHLC → `CustomRatesUpdate`. Symbols that already have ≥ 50K bars are skipped (e.g. EURUSD/WS30/XTIUSD).
+
+**Expected runtime: ~70–150 minutes total.** Long but bounded memory per chunk (~3M ticks → 50K bars per month).
 
 Output:
-- Tab `Experts` shows progress lines `[OK] USDCAD.DWX: ticks=N rates=M Bars=K first=YYYY.MM.DD last=YYYY.MM.DD`.
-- Log file at `D:\QM\mt5\T1\MQL5\Files\compile_custom_bars_<TIMESTAMP>.log`.
+- Experts tab: `[OK] USDCAD.DWX wrote=N bars Bars()=M in Ts`.
+- Log: `D:\QM\mt5\T1\MQL5\Files\compile_custom_bars_v2_<TIMESTAMP>.log`.
+
+Run with `DryRun=true` first if you want to confirm the symbol list / years before any disk write.
 
 ### 3. Verify on T1
 
