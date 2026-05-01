@@ -29,6 +29,7 @@ from typing import Iterable
 REPO_ROOT = Path(r"C:\QM\repo")
 TESTER_DEFAULTS_PATH = REPO_ROOT / "framework" / "registry" / "tester_defaults.json"
 DWX_IMPORT_LOGS = Path(r"D:\QM\mt5\T1\dwx_import\logs")
+T1_BASES_HISTORY = Path(r"D:\QM\mt5\T1\bases\Custom\history")
 
 REJECTED_JOURNAL_LINES = (
     "no history data, stop testing",
@@ -105,60 +106,97 @@ def gate1_verify_data_access(
     window_start: datetime,
     window_end: datetime,
     import_logs_dir: Path = DWX_IMPORT_LOGS,
+    history_dir: Path = T1_BASES_HISTORY,
 ) -> GateResult:
-    """G1 — symbol's latest verify block is OK and history covers ≥95% of window."""
-    log_path = latest_hourly_log(import_logs_dir)
-    if log_path is None:
+    """G1 — tester can serve M1 bars covering ≥95% of the requested window.
+
+    Two-stage check:
+    1. Primary: filesystem `<terminal>/bases/Custom/history/<sym>/YYYY.hcc` —
+       count years of compiled bar history; bar history is what the tester
+       actually reads. If the symbol has multi-year hcc files spanning the
+       window, G1 passes regardless of verify-log content.
+    2. Secondary: hourly verify log — if a recent verify block exists and
+       contains FAIL_tail_bars / Terminal: Invalid params for this symbol,
+       fail (even if hcc files exist; they may be unreadable).
+
+    Symbols that never had a FAIL verify line (because they were always OK)
+    won't appear in the verify log. That's expected; filesystem covers them.
+    """
+    sym_dir = history_dir / symbol
+    if not sym_dir.is_dir():
         return GateResult(
             "G1", "tester data access verified", False,
-            "no_hourly_log",
-            f"no hourly_*.log found in {import_logs_dir}",
+            "no_history_dir",
+            f"no {history_dir}/{symbol} dir — symbol not present in MT5 custom-symbol storage",
         )
-
-    text = log_path.read_text(encoding="utf-8", errors="replace")
-
-    # Find the latest verify line for this symbol.
-    pattern = re.compile(r"\[\s*(?P<verdict>\w+(?:_\w+)*)\]\s+" + re.escape(symbol) + r":(?P<rest>[^\n]+)")
-    matches = list(pattern.finditer(text))
-    if not matches:
+    hcc_files = sorted(p.name for p in sym_dir.glob("*.hcc"))
+    if not hcc_files:
         return GateResult(
             "G1", "tester data access verified", False,
-            "symbol_not_in_verify_log",
-            f"no verify line for {symbol} in {log_path.name}",
+            "no_hcc_files",
+            f"{sym_dir} has no .hcc files — bars not compiled",
         )
-    last = matches[-1]
-    verdict_token = last.group("verdict")
-    rest = last.group("rest")
-
-    if any(token in (verdict_token + rest) for token in VERIFY_FAILURE_TOKENS):
+    # Determine year coverage from hcc filenames (e.g. 2017.hcc, 2024.hcc).
+    years = []
+    for f in hcc_files:
+        try:
+            years.append(int(f.replace(".hcc", "")))
+        except ValueError:
+            continue
+    if not years:
         return GateResult(
             "G1", "tester data access verified", False,
-            "verify_block_failed",
-            f"latest verify for {symbol} contains failure token: {verdict_token} + {rest[:200]}",
+            "hcc_filenames_unparseable",
+            f"could not parse year from {hcc_files}",
+        )
+    avail_first = datetime(min(years), 1, 1, tzinfo=timezone.utc)
+    avail_last = datetime(max(years) + 1, 1, 1, tzinfo=timezone.utc)
+
+    # Window coverage check.
+    window_total = (window_end - window_start).total_seconds()
+    overlap = max(0.0, (min(avail_last, window_end) - max(avail_first, window_start)).total_seconds())
+    if window_total <= 0 or overlap / window_total < 0.95:
+        return GateResult(
+            "G1", "tester data access verified", False,
+            "window_coverage_below_95pct",
+            f"hcc years {years} → avail {avail_first.year}..{max(years)} covers "
+            f"{overlap / max(1.0, window_total):.0%} of requested {window_start.year}..{window_end.year}",
         )
 
-    # Check history coverage. The verify line includes head_ms / tail_ms.
-    head_match = re.search(r"head_ms expected=(?P<head>\d+)/got=(?P<got_head>\d+)", rest)
-    tail_match = re.search(r"tail_ms expected=(?P<tail>\d+)/got=(?P<got_tail>\d+)", rest)
-    if head_match and tail_match:
-        got_head_ms = int(head_match.group("got_head"))
-        got_tail_ms = int(tail_match.group("got_tail"))
-        avail_start = datetime.fromtimestamp(got_head_ms / 1000, tz=timezone.utc)
-        avail_end = datetime.fromtimestamp(got_tail_ms / 1000, tz=timezone.utc)
-        window_total = (window_end - window_start).total_seconds()
-        overlap_start = max(avail_start, window_start)
-        overlap_end = min(avail_end, window_end)
-        overlap = max(0.0, (overlap_end - overlap_start).total_seconds())
-        if window_total <= 0 or overlap / window_total < 0.95:
-            return GateResult(
-                "G1", "tester data access verified", False,
-                "window_coverage_below_95pct",
-                f"overlap {overlap / max(1.0, window_total):.2%} < 95% — avail {avail_start} → {avail_end}, "
-                f"requested {window_start} → {window_end}",
+    # Secondary check: only consider verify-log failure tokens NEWER than the
+    # latest hcc mtime — older tokens may predate the most recent compilation
+    # (e.g. before the v2 bar-compilation script forced CustomRatesUpdate).
+    if import_logs_dir.is_dir() and hcc_files:
+        try:
+            latest_hcc_mtime = max(
+                (sym_dir / f).stat().st_mtime for f in hcc_files
             )
-    # else: head/tail not parseable; treat as pass (verify block was OK overall)
+        except OSError:
+            latest_hcc_mtime = 0.0
+        for log_path in sorted(import_logs_dir.glob("hourly_*.log"), reverse=True):
+            try:
+                log_mtime = log_path.stat().st_mtime
+            except OSError:
+                continue
+            if log_mtime <= latest_hcc_mtime:
+                # Log predates current hcc state; its failure tokens are stale.
+                continue
+            text = log_path.read_text(encoding="utf-8", errors="replace")
+            sym_lines = [
+                line for line in text.splitlines()
+                if symbol in line and any(token in line for token in VERIFY_FAILURE_TOKENS)
+            ]
+            if sym_lines:
+                return GateResult(
+                    "G1", "tester data access verified", False,
+                    "verify_log_failure_token",
+                    f"{log_path.name} contains failure token for {symbol} (post-hcc-mtime): {sym_lines[0][:200]}",
+                )
 
-    return GateResult("G1", "tester data access verified", True, "")
+    return GateResult(
+        "G1", "tester data access verified", True, "",
+        f"hcc {len(years)} files covering {min(years)}..{max(years)}",
+    )
 
 
 # -------------------------------------------------------------------------
@@ -312,7 +350,6 @@ def gate4_trade_evidence(report_path: Path, ea_id: str, symbol: str) -> GateResu
 # -------------------------------------------------------------------------
 
 CANONICAL_SYMBOL_PATTERN = re.compile(r"\b([A-Z][A-Za-z0-9]+\.DWX)\b")
-T1_BASES_HISTORY = Path(r"D:\QM\mt5\T1\bases\Custom\history")
 
 
 def canonical_symbols_from_filesystem(history_dir: Path = T1_BASES_HISTORY) -> set[str]:
