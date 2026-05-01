@@ -109,6 +109,14 @@ function Validate-JsonAgainstSchema {
                 if ($item.visibility -notin @("public", "private_redacted")) { throw "Invalid strategy visibility '$($item.visibility)' in $Name." }
             }
         }
+        "company-operating-model" {
+            foreach ($key in @("schema", "updated_at", "cache_ttl_minutes", "menu", "dashboard")) {
+                if (-not (Test-ObjectHasKey -Target $Object -Key $key)) { throw "Missing key '$key' in $Name." }
+            }
+            if ($Object.schema -ne "quantmechanica.company-operating-model.v1") { throw "Invalid schema value in $Name." }
+            if ($Object.cache_ttl_minutes -lt 1) { throw "Invalid cache_ttl_minutes in $Name." }
+            if ($null -eq $Object.dashboard.stale_data_behavior.ui_label_template) { throw "Missing stale_data_behavior.ui_label_template in $Name." }
+        }
         default {
             throw "No fallback validator implemented for $Name."
         }
@@ -226,10 +234,17 @@ $publicSnapshot = [ordered]@{
 $publicSchemaPath = Join-Path $PublicDataDir "public-snapshot.schema.json"
 $roadmapSchemaPath = Join-Path $PublicDataDir "process-roadmap.schema.json"
 $archiveSchemaPath = Join-Path $PublicDataDir "strategy-archive.schema.json"
+$companyModelSchemaPath = Join-Path $PublicDataDir "company-operating-model.schema.json"
+$companyModelPath = Join-Path $PublicDataDir "company-operating-model.json"
+$companyOperatingModel = Read-JsonFile -Path $companyModelPath
+if ($null -eq $companyOperatingModel) {
+    throw "Missing required file: $companyModelPath"
+}
 
 Validate-JsonAgainstSchema -Object $publicSnapshot -SchemaPath $publicSchemaPath -Name "public-snapshot"
 Validate-JsonAgainstSchema -Object $processRoadmap -SchemaPath $roadmapSchemaPath -Name "process-roadmap"
 Validate-JsonAgainstSchema -Object $strategyArchive -SchemaPath $archiveSchemaPath -Name "strategy-archive"
+Validate-JsonAgainstSchema -Object $companyOperatingModel -SchemaPath $companyModelSchemaPath -Name "company-operating-model"
 
 $changedFiles = New-Object System.Collections.Generic.List[string]
 
@@ -239,6 +254,7 @@ $roadmapPath = Join-Path $PublicDataDir "process-roadmap.json"
 if (Write-JsonIfChanged -Path $roadmapPath -Object $processRoadmap) { $changedFiles.Add($roadmapPath) }
 $archivePath = Join-Path $PublicDataDir "strategy-archive.json"
 if (Write-JsonIfChanged -Path $archivePath -Object $strategyArchive) { $changedFiles.Add($archivePath) }
+if (Write-JsonIfChanged -Path $companyModelPath -Object $companyOperatingModel) { $changedFiles.Add($companyModelPath) }
 
 if ($changedFiles.Count -eq 0) {
     Write-Host "No snapshot changes."
@@ -252,7 +268,7 @@ if ($NoGit) { exit 0 }
 
 Push-Location $RepoRoot
 try {
-    git add public-data/public-snapshot.json public-data/process-roadmap.json public-data/strategy-archive.json
+    git add public-data/public-snapshot.json public-data/process-roadmap.json public-data/strategy-archive.json public-data/company-operating-model.json
     $diff = git diff --cached --name-only
     if (-not $diff) {
         Write-Host "No git-staged snapshot diff."

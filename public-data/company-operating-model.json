@@ -1,0 +1,141 @@
+﻿{
+    "schema":  "quantmechanica.company-operating-model.v1",
+    "updated_at":  "2026-05-01T05:11:29.826Z",
+    "cache_ttl_minutes":  90,
+    "menu":  [
+                 {
+                     "id":  "operating-model",
+                     "label":  "Operating Model",
+                     "section":  "company_operating_model"
+                 },
+                 {
+                     "id":  "control-tower",
+                     "label":  "Control Tower",
+                     "section":  "company_operating_model"
+                 },
+                 {
+                     "id":  "capability-cells",
+                     "label":  "Capability Cells",
+                     "section":  "company_operating_model"
+                 },
+                 {
+                     "id":  "process-loop",
+                     "label":  "Process Loop",
+                     "section":  "company_operating_model"
+                 },
+                 {
+                     "id":  "first-48h",
+                     "label":  "First 48h",
+                     "section":  "company_operating_model"
+                 }
+             ],
+    "dashboard":  {
+                      "control_tower":  {
+                                            "title":  "Control Tower",
+                                            "summary":  "CEO sets sequence and gate direction, CTO enforces technical quality, and capability cells execute in bounded scopes.",
+                                            "signals":  [
+                                                            "Current phase and gate",
+                                                            "Active blockers and unblock owners",
+                                                            "Runtime health and stale-data status"
+                                                        ]
+                                        },
+                      "capability_cells":  [
+                                               {
+                                                   "id":  "infrastructure-cell",
+                                                   "name":  "Infrastructure Cell",
+                                                   "mission":  "Own deploy, backup, monitoring, and website export reliability."
+                                               },
+                                               {
+                                                   "id":  "build-cell",
+                                                   "name":  "Build Cell",
+                                                   "mission":  "Convert approved strategy cards into tested EA builds."
+                                               },
+                                               {
+                                                   "id":  "quality-cell",
+                                                   "name":  "Quality Cell",
+                                                   "mission":  "Run technical and business review gates with evidence."
+                                               },
+                                               {
+                                                   "id":  "operations-cell",
+                                                   "name":  "Operations Cell",
+                                                   "mission":  "Operate pipeline dispatch and runtime observability."
+                                               }
+                                           ],
+                      "process_loop":  [
+                                           {
+                                               "step":  1,
+                                               "title":  "Prioritize",
+                                               "description":  "Select one active strategy path and define the next gate."
+                                           },
+                                           {
+                                               "step":  2,
+                                               "title":  "Build",
+                                               "description":  "Implement bounded deliverables with evidence-first verification."
+                                           },
+                                           {
+                                               "step":  3,
+                                               "title":  "Review",
+                                               "description":  "Validate against acceptance criteria and public-safety boundaries."
+                                           },
+                                           {
+                                               "step":  4,
+                                               "title":  "Publish",
+                                               "description":  "Export redacted dashboard data and refresh website state."
+                                           },
+                                           {
+                                               "step":  5,
+                                               "title":  "Learn",
+                                               "description":  "Capture lessons, update process docs, and tighten controls."
+                                           }
+                                       ],
+                      "sections":  [
+                                       {
+                                           "id":  "control_tower",
+                                           "title":  "Control Tower",
+                                           "purpose":  "Explain command flow, gate ownership, and status signals."
+                                       },
+                                       {
+                                           "id":  "capability_cells",
+                                           "title":  "Capability Cells",
+                                           "purpose":  "Show delivery ownership across infrastructure, build, quality, and operations."
+                                       },
+                                       {
+                                           "id":  "process_loop",
+                                           "title":  "Process Loop",
+                                           "purpose":  "Describe the recurring plan-build-review-publish-learn cycle."
+                                       },
+                                       {
+                                           "id":  "first_48h_actions",
+                                           "title":  "First 48h Actions",
+                                           "purpose":  "List startup actions that stabilize execution and visibility."
+                                       }
+                                   ],
+                      "first_48h_actions":  [
+                                                {
+                                                    "order":  1,
+                                                    "action":  "Confirm sequencing issue and active gate owner.",
+                                                    "owner":  "CEO"
+                                                },
+                                                {
+                                                    "order":  2,
+                                                    "action":  "Verify runtime health scan and stale-lock monitors are green.",
+                                                    "owner":  "Infrastructure Cell"
+                                                },
+                                                {
+                                                    "order":  3,
+                                                    "action":  "Load current blockers and assign explicit unblock actions.",
+                                                    "owner":  "Control Tower"
+                                                },
+                                                {
+                                                    "order":  4,
+                                                    "action":  "Run public snapshot export and validate JSON contracts.",
+                                                    "owner":  "Infrastructure Cell"
+                                                }
+                                            ],
+                      "stale_data_behavior":  {
+                                                  "ui_label_template":  "As of {updated_at}",
+                                                  "ttl_note":  "Snapshot cache TTL is 90 minutes.",
+                                                  "when_stale":  "If now minus updated_at exceeds cache_ttl_minutes, render a stale warning state and keep the last valid payload visible."
+                                              }
+                  }
+}

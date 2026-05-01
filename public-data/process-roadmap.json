@@ -1,6 +1,6 @@
 ﻿{
-    "generated_at":  "2026-04-29T19:07:01.7337637Z",
-    "total":  19,
+    "generated_at":  "2026-05-01T05:13:22.9765556Z",
+    "total":  18,
     "items":  [
                   {
                       "id":  "01-ea-lifecycle",
@@ -18,7 +18,7 @@
                       "id":  "03-v-portfolio-deploy",
                       "title":  "03-v-portfolio-deploy",
                       "status":  "active",
-                      "last_updated_utc":  "2026-04-27T13:03:29.4424160Z"
+                      "last_updated_utc":  "2026-04-30T22:45:34.3586064Z"
                   },
                   {
                       "id":  "04-incident-response",
@@ -66,7 +66,7 @@
                       "id":  "11-disk-and-sync",
                       "title":  "11-disk-and-sync",
                       "status":  "active",
-                      "last_updated_utc":  "2026-04-25T14:21:56.4019311Z"
+                      "last_updated_utc":  "2026-04-30T22:40:51.0008051Z"
                   },
                   {
                       "id":  "12-board-escalation",
@@ -96,25 +96,19 @@
                       "id":  "17-agent-runtime-health",
                       "title":  "17-agent-runtime-health",
                       "status":  "active",
-                      "last_updated_utc":  "2026-04-29T11:15:26.2254362Z"
+                      "last_updated_utc":  "2026-04-30T22:54:30.5278769Z"
                   },
                   {
                       "id":  "process_registry",
                       "title":  "process_registry",
                       "status":  "active",
-                      "last_updated_utc":  "2026-04-29T11:17:36.6276853Z"
-                  },
-                  {
-                      "id":  "qb_reputable_source_criteria",
-                      "title":  "qb_reputable_source_criteria",
-                      "status":  "active",
-                      "last_updated_utc":  "2026-04-28T13:14:11.7497673Z"
+                      "last_updated_utc":  "2026-04-30T23:12:49.9709895Z"
                   },
                   {
                       "id":  "README",
                       "title":  "README",
                       "status":  "active",
-                      "last_updated_utc":  "2026-04-28T04:41:12.3057308Z"
+                      "last_updated_utc":  "2026-04-30T22:45:34.3586064Z"
                   }
               ]
 }

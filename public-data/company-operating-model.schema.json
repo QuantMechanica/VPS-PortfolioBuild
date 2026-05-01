@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "QuantMechanica Company Operating Model",
+  "type": "object",
+  "required": [
+    "schema",
+    "updated_at",
+    "cache_ttl_minutes",
+    "menu",
+    "dashboard"
+  ],
+  "properties": {
+    "schema": {
+      "type": "string",
+      "const": "quantmechanica.company-operating-model.v1"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "cache_ttl_minutes": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1440
+    },
+    "menu": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "section"],
+        "properties": {
+          "id": { "type": "string" },
+          "label": { "type": "string" },
+          "section": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "dashboard": {
+      "type": "object",
+      "required": [
+        "control_tower",
+        "capability_cells",
+        "process_loop",
+        "sections",
+        "first_48h_actions",
+        "stale_data_behavior"
+      ],
+      "properties": {
+        "control_tower": {
+          "type": "object",
+          "required": ["title", "summary", "signals"],
+          "properties": {
+            "title": { "type": "string" },
+            "summary": { "type": "string" },
+            "signals": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          },
+          "additionalProperties": false
+        },
+        "capability_cells": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "name", "mission"],
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "mission": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "process_loop": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["step", "title", "description"],
+            "properties": {
+              "step": { "type": "integer", "minimum": 1 },
+              "title": { "type": "string" },
+              "description": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "title", "purpose"],
+            "properties": {
+              "id": { "type": "string" },
+              "title": { "type": "string" },
+              "purpose": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "first_48h_actions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["order", "action", "owner"],
+            "properties": {
+              "order": { "type": "integer", "minimum": 1 },
+              "action": { "type": "string" },
+              "owner": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "stale_data_behavior": {
+          "type": "object",
+          "required": ["ui_label_template", "ttl_note", "when_stale"],
+          "properties": {
+            "ui_label_template": { "type": "string" },
+            "ttl_note": { "type": "string" },
+            "when_stale": { "type": "string" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
