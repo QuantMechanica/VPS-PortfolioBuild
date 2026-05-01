@@ -244,11 +244,6 @@ try {
             throw "Strict compile failed with $warningCount warnings."
         }
 
-        if ($proc.ExitCode -ne 0 -and $Strict.IsPresent -and $warningCount -eq 0) {
-            $reasonClass = "METAEDITOR_NONZERO_EXIT"
-            throw "MetaEditor exited with code $($proc.ExitCode) without explicit compile errors in log."
-        }
-
         if (-not (Test-Path -LiteralPath $ex5Path)) {
             $reasonClass = "NO_REPORT_EX5_MISSING"
             throw "Compile did not produce expected output file: $ex5Path"
@@ -258,6 +253,13 @@ try {
         if ($ex5File.Length -le 0) {
             $reasonClass = "NO_REPORT_EX5_EMPTY"
             throw "Compile produced empty output file: $ex5Path"
+        }
+
+        # Some MetaEditor builds return non-zero even when the compile log reports
+        # 0 errors / 0 warnings and a valid EX5 was produced.
+        # Treat that specific shape as a pass so strict mode reflects actual compile quality.
+        if ($proc.ExitCode -ne 0 -and $Strict.IsPresent -and $warningCount -eq 0 -and $errorCount -eq 0) {
+            $reasonClass = "OK_METAEDITOR_NONZERO_EXIT_WITH_VALID_EX5"
         }
 
         break
