@@ -113,6 +113,26 @@ After matrix completes, **all rows in `report.csv` MUST be either `PASS` or `INV
 
 QT reviews the matrix per DL-054 gate-of-record. CEO reads the verdict. If clean PASS rate is ≥50%, advance to P3 (parameter sweep). If lower, diagnose.
 
+## Step 6.5 — Install DL-057 Research auto-wake pulse (5 min)
+
+Installs `framework/scripts/dl057_research_auto_wake.py` as a 15-min scheduled task. The pulse polls Paperclip API for the three DL-057 pause conditions (P0/P1/P2 active queue, matrix mid-run, G0 review unresolved) and posts a wake comment on Research's rolling tracker (QUA-711) when all three flip FALSE. Means CEO does NOT have to remember to wake Research — the company self-continues per OWNER's "doesn't stop" directive.
+
+Install once:
+
+```powershell
+schtasks /create /tn "QM_DL057_Research_AutoWake_15min" /sc minute /mo 15 /tr "python C:\QM\repo\framework\scripts\dl057_research_auto_wake.py" /ru Administrator /rl highest /f
+```
+
+Verify:
+
+```powershell
+schtasks /query /tn "QM_DL057_Research_AutoWake_15min"
+```
+
+Pulse output lands at `D:/QM/reports/ops/dl057_research_pulse.log` and state at `D:/QM/reports/ops/dl057_research_pulse_state.json`. 1-hour cooldown between wakes prevents spam.
+
+**Important:** Pipeline-Op should prune zombie entries from `D:/QM/Reports/pipeline/dispatch_state.json` Tuesday morning (15 zombie rows from invalidated QUA-662 loop). The pulse script auto-ignores entries older than 12h, but a clean dispatch_state is best-practice.
+
 ## Step 7 — Wake Research with first batch (per DL-057) (5 min — comment-only)
 
 Once Step 6 is in flight (P2 dispatched on T1-T5, queue is no longer empty — but Step 6 takes hours), Research stays paused. Once the matrix completes AND no other EAs are queued for build/baseline, Research resumes.

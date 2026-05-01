@@ -1,0 +1,9 @@
+{
+  "timestamp_utc": "2026-05-01T09:05:58Z",
+  "compile_pass": true,
+  "compile_errors_zero": true,
+  "compile_warnings_zero": true,
+  "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260501_090554\\QM5_1004_davey_es_breakout.compile.log",
+  "review_gate": "DL-036",
+  "state": "READY_FOR_CTO_REVIEW"
+}

@@ -1,0 +1,14 @@
+{
+  "timestamp_utc": "2026-05-01T09:03:43Z",
+  "ea": "QM5_1004_davey_es_breakout",
+  "strategy_id": "SRC01_S04",
+  "ea_id": 1004,
+  "compile_pass": true,
+  "compile_errors_zero": true,
+  "compile_warnings_zero": true,
+  "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260501_090340\\QM5_1004_davey_es_breakout.compile.log",
+  "card_status_approved": true,
+  "card_g0_issue": true,
+  "review_gate": "DL-036",
+  "state": "READY_FOR_CTO_REVIEW"
+}

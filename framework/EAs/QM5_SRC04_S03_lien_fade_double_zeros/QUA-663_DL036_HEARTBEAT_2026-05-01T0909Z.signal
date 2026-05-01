@@ -1,0 +1,9 @@
+timestamp_utc=2026-05-01T09:09:52Z
+issue=QUA-663
+ea=QM5_SRC04_S03_lien_fade_double_zeros
+compile_pass=True
+errors_zero=True
+warnings_zero=True
+compile_log=C:\QM\repo\framework\build\compile\20260501_090948\QM5_SRC04_S03_lien_fade_double_zeros.compile.log
+state=READY_FOR_CTO_REVIEW
+review_gate=DL-036

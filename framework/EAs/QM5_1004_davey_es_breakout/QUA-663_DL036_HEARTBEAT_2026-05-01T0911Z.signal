@@ -1,0 +1,9 @@
+timestamp_utc=2026-05-01T09:11:47Z
+issue=QUA-663
+ea=QM5_1004_davey_es_breakout
+compile_pass=True
+errors_zero=True
+warnings_zero=True
+compile_log=C:\QM\repo\framework\build\compile\20260501_091144\QM5_1004_davey_es_breakout.compile.log
+state=READY_FOR_CTO_REVIEW
+review_gate=DL-036

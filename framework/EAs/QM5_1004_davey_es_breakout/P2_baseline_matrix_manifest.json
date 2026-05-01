@@ -1,0 +1,67 @@
+{
+  "_purpose": "Candidate P2 baseline matrix manifest for QM5_1004 davey-es-breakout (SRC01_S04). Slots in after QM5_1003 P2 closes per DL-057 single-run discipline. Pipeline-Op picks up from queue once QM5_1003 verdict lands.",
+  "_authored_by": "Board Advisor 2026-05-01 — Tuesday-prep pre-stage",
+  "_authority": "DL-038 (36-symbol matrix per phase) + DL-054 (5-gate enforcement) + DL-057 (single-run discipline)",
+  "_status": "DRAFT — gated on CTO DL-036 EA Review Gate clearance (in progress per QUA-663 review handoff). Pipeline-Op dispatches Tuesday once CTO ratifies + QM5_1003 P2 finishes.",
+
+  "ea_id": "QM5_1004",
+  "version": "v1",
+  "phase": "P2",
+  "sub_gate_config_hash": "TBD_set_at_dispatch",
+  "setfile_dir": "framework/EAs/QM5_1004_davey_es_breakout/sets",
+  "setfile_pattern": "QM5_1004_davey_es_breakout_{symbol}_H1_backtest.set",
+
+  "window": {
+    "from": "2017-10-02",
+    "to": "2024-12-31",
+    "_note": "Same window as QM5_1003 P2. Per PIPELINE_PHASE_SPEC.md § P2."
+  },
+
+  "tester": {
+    "_note": "From framework/registry/tester_defaults.json (DL-054 Gate 2).",
+    "initial_deposit": 100000,
+    "deposit_currency": "USD",
+    "leverage": 100,
+    "tick_model": 4
+  },
+
+  "symbols": [
+    "AUDCAD.DWX", "AUDCHF.DWX", "AUDJPY.DWX", "AUDNZD.DWX", "AUDUSD.DWX",
+    "CADCHF.DWX", "CADJPY.DWX", "CHFJPY.DWX",
+    "EURAUD.DWX", "EURCAD.DWX", "EURCHF.DWX", "EURGBP.DWX", "EURJPY.DWX", "EURNZD.DWX", "EURUSD.DWX",
+    "GBPAUD.DWX", "GBPCAD.DWX", "GBPCHF.DWX", "GBPJPY.DWX", "GBPNZD.DWX", "GBPUSD.DWX",
+    "GDAXIm.DWX", "NDXm.DWX", "UK100.DWX", "WS30.DWX",
+    "NZDCAD.DWX", "NZDCHF.DWX", "NZDJPY.DWX", "NZDUSD.DWX",
+    "USDCAD.DWX", "USDCHF.DWX", "USDJPY.DWX",
+    "XAGUSD.DWX", "XAUUSD.DWX", "XNGUSD.DWX", "XTIUSD.DWX"
+  ],
+  "_symbols_count": 36,
+
+  "output": {
+    "report_csv": "D:/QM/reports/pipeline/QM5_1004/P2_clean_<TIMESTAMP>/report.csv",
+    "evidence_root": "D:/QM/reports/pipeline/QM5_1004/P2_clean_<TIMESTAMP>/"
+  },
+
+  "gate_enforcement": {
+    "library": "framework/scripts/dl054_gates.py",
+    "cli_runner": "framework/scripts/dl054_gate_runner.py",
+    "integration_plan": "framework/scripts/dl054_integration.md",
+    "pre_launch_gates": ["G1", "G2", "G5"],
+    "post_launch_gates": ["G3", "G4"]
+  },
+
+  "preconditions": [
+    "QM5_1003 P2 baseline must finish (per DL-057 R-057-4 single-run discipline + DL-040)",
+    "CTO DL-036 EA Review Gate ratified for QM5_1004 (handoff at QUA-663_CTO_REVIEW_HANDOFF_2026-05-01.md)",
+    "Magic-numbers row exists for ea_id=1004 in framework/registry/magic_numbers.csv (verify Tuesday)"
+  ],
+
+  "_cross_references": [
+    "DL-036 — EA Review Gate (CTO ratifies before Pipeline-Op P2 dispatch)",
+    "DL-038 — Seven Binding Backtest Rules",
+    "DL-054 — Anti-Theater Pass Criteria",
+    "DL-057 — Research-resume on baseline-queue-empty (this EA queued behind QM5_1003)",
+    "framework/EAs/QM5_1004_davey_es_breakout/QUA-663_DL036_CHECKLIST_2026-05-01T0906Z.md — review checklist",
+    "strategy-seeds/cards/davey-es-breakout_card.md — strategy card source"
+  ]
+}

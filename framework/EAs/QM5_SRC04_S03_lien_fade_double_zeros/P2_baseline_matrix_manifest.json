@@ -1,0 +1,67 @@
+{
+  "_purpose": "Candidate P2 baseline matrix manifest for QM5_SRC04_S03 lien-fade-double-zeros (ea_id=1009). Queues behind QM5_1003 + QM5_1004 per DL-057 single-run discipline.",
+  "_authored_by": "Board Advisor 2026-05-01 — Tuesday-prep pre-stage",
+  "_authority": "DL-038 + DL-054 + DL-057",
+  "_status": "DRAFT — gated on CTO DL-036 EA Review Gate clearance (review handoff at QUA-650_CTO_REVIEW_HANDOFF_2026-05-01.md). Queues behind QM5_1003 + QM5_1004.",
+
+  "ea_id": "QM5_SRC04_S03",
+  "_ea_id_numeric": "1009",
+  "version": "v1",
+  "phase": "P2",
+  "sub_gate_config_hash": "TBD_set_at_dispatch",
+  "setfile_dir": "framework/EAs/QM5_SRC04_S03_lien_fade_double_zeros/sets",
+  "setfile_pattern": "QM5_SRC04_S03_lien_fade_double_zeros_{symbol}_H1_backtest.set",
+
+  "window": {
+    "from": "2017-10-02",
+    "to": "2024-12-31",
+    "_note": "Standard P2 window. Lien strategy may need parameter adjustment per CTO review."
+  },
+
+  "tester": {
+    "initial_deposit": 100000,
+    "deposit_currency": "USD",
+    "leverage": 100,
+    "tick_model": 4
+  },
+
+  "symbols": [
+    "AUDCAD.DWX", "AUDCHF.DWX", "AUDJPY.DWX", "AUDNZD.DWX", "AUDUSD.DWX",
+    "CADCHF.DWX", "CADJPY.DWX", "CHFJPY.DWX",
+    "EURAUD.DWX", "EURCAD.DWX", "EURCHF.DWX", "EURGBP.DWX", "EURJPY.DWX", "EURNZD.DWX", "EURUSD.DWX",
+    "GBPAUD.DWX", "GBPCAD.DWX", "GBPCHF.DWX", "GBPJPY.DWX", "GBPNZD.DWX", "GBPUSD.DWX",
+    "GDAXIm.DWX", "NDXm.DWX", "UK100.DWX", "WS30.DWX",
+    "NZDCAD.DWX", "NZDCHF.DWX", "NZDJPY.DWX", "NZDUSD.DWX",
+    "USDCAD.DWX", "USDCHF.DWX", "USDJPY.DWX",
+    "XAGUSD.DWX", "XAUUSD.DWX", "XNGUSD.DWX", "XTIUSD.DWX"
+  ],
+  "_symbols_count": 36,
+
+  "output": {
+    "report_csv": "D:/QM/reports/pipeline/QM5_SRC04_S03/P2_clean_<TIMESTAMP>/report.csv",
+    "evidence_root": "D:/QM/reports/pipeline/QM5_SRC04_S03/P2_clean_<TIMESTAMP>/"
+  },
+
+  "gate_enforcement": {
+    "library": "framework/scripts/dl054_gates.py",
+    "cli_runner": "framework/scripts/dl054_gate_runner.py",
+    "pre_launch_gates": ["G1", "G2", "G5"],
+    "post_launch_gates": ["G3", "G4"]
+  },
+
+  "preconditions": [
+    "QM5_1003 P2 baseline must finish (per DL-057 R-057-4 single-run discipline)",
+    "QM5_1004 P2 baseline must finish OR be skipped",
+    "CTO DL-036 EA Review Gate ratified for QM5_SRC04_S03 (handoff at QUA-650_CTO_REVIEW_HANDOFF_2026-05-01.md, currently QUA-650_BLOCKED_ON_CTO_REVIEW)",
+    "Magic-numbers row exists for ea_id=1009 in framework/registry/magic_numbers.csv (verify Tuesday)"
+  ],
+
+  "_cross_references": [
+    "DL-036 — EA Review Gate",
+    "DL-038 — Seven Binding Backtest Rules",
+    "DL-054 — Anti-Theater Pass Criteria",
+    "DL-057 — Single-run discipline; this EA waits in queue",
+    "framework/EAs/QM5_SRC04_S03_lien_fade_double_zeros/QUA-663_DL036_CHECKLIST_2026-05-01T0918Z.md — review checklist",
+    "strategy-seeds/cards/lien-fade-double-zeros_card.md — strategy card source"
+  ]
+}
