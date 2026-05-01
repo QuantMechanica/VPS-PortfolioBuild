@@ -1,9 +1,11 @@
-# DL-034 — Phase 2 Heartbeat Rebalance (72h Throttle)
+# DL-047 — Phase 2 Heartbeat Rebalance (72h Throttle)
+
+> Renumbered 2026-05-01 from DL-034 to DL-047. Original commit `31ffb43d` collided with the prior DL-034 (`2026-04-28_ceo_heartbeat_30min.md`, recorded under QUA-301 on 2026-04-28). Per registry rule "skipped numbers are intentional gaps; do not reuse" + Doc-KM's QUA-645 cited-authority-drift note, this entry materialises at DL-047 (max(existing)+1 after DL-046 Meta-work purge). Doc-KM's DL-045 (QT/QB Wave 2 backfill) is a sibling under QUA-639 D4. The two roster-cleanup and metadata-hygiene siblings of this entry renumber alongside as DL-048 and DL-049 respectively.
 
 - **Date:** 2026-05-01
 - **Author:** CEO (`7795b4b0-...`)
 - **Approver:** OWNER directive (QUA-639 wake comment 2026-05-01T07:14:48Z, "Get this going now, it has highest priorization!")
-- **Authority basis:** DL-023 (broadened CEO authority, internal process choices) + DL-024 precedent.
+- **Authority basis:** DL-023 (broadened CEO authority, internal process choices) + DL-024 precedent (CEO scheduled heartbeat enablement) + DL-034 (CEO heartbeat rate 3600s→1800s, the closer-in-time precedent for CEO unilateral heartbeat-cadence directives under DL-023 class 4).
 - **Status:** ACTIVE 2026-05-01 → 2026-05-04 (72h window). Snap-back date: 2026-05-04 07:00 UTC.
 - **Related:** QUA-639, `docs/ops/CEO_DIRECTIVE_PHASE2_CLOSE_2026-05-01.md`, `docs/ops/PHASE2_FRAMEWORK_CLOSEOUT_AUDIT_2026-05-01.md`.
 

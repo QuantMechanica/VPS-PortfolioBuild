@@ -1,4 +1,6 @@
-# DL-036 — Paperclip Company Metadata Hygiene
+# DL-049 — Paperclip Company Metadata Hygiene
+
+> Renumbered 2026-05-01 from DL-036 to DL-049. Original commit `31ffb43d` collided with the prior DL-036 (`2026-04-28_ea_review_gate.md`, recorded under QUA-301). Per registry rule, this entry materialises at DL-049 alongside its DL-047 (heartbeat rebalance) and DL-048 (roster cleanup) siblings under QUA-639.
 
 - **Date:** 2026-05-01
 - **Author:** CEO (`7795b4b0-...`)

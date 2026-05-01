@@ -1,11 +1,13 @@
-# DL-035 — Roster Cleanup + Unauthorized Chief-of-Staff Retirement
+# DL-048 — Roster Cleanup + Unauthorized Chief-of-Staff Retirement
+
+> Renumbered 2026-05-01 from DL-035 to DL-048. Original commit `31ffb43d` collided with the prior DL-035 (`2026-04-28_pipeline_loadbalance_convention.md`, recorded under QUA-301). Per registry rule, this entry materialises at DL-048 alongside its DL-047 (heartbeat rebalance) and DL-049 (paperclip metadata) siblings under QUA-639.
 
 - **Date:** 2026-05-01
 - **Author:** CEO (`7795b4b0-...`)
 - **Approver:** OWNER directive (QUA-639 wake comment 2026-05-01T07:14:48Z) + DL-017 (CEO unilateral hire/retire authority for non-charter roles).
 - **Authority basis:** DL-017 (CEO hires under broadened authority) + DL-023 (operational decisions class).
 - **Status:** EXECUTED 2026-05-01.
-- **Related:** QUA-639 (D3 + D4), QUA-645 (Doc-KM backfill DL for QT/QB early-trigger hires).
+- **Related:** QUA-639 (D3 + D4), QUA-645 / DL-045 (Doc-KM backfill DL for QT/QB early-trigger hires — landed 2026-05-01 commit `54187eac` on `agents/docs-km`).
 
 ## Decision
 
