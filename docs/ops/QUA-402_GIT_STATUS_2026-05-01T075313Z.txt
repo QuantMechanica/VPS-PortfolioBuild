@@ -1,0 +1,9 @@
+TIMESTAMP_UTC=2026-05-01T075313Z
+HEAD=d8df0b38b467f35b1b601bafff368e73b27527b1
+
+GIT_STATUS_PORCELAIN:
+?? framework/EAs/QM5_1006_davey_eu_day/QM5_1006_davey_eu_day.ex5
+?? framework/EAs/QM5_1007_lien_dbb_pick_tops/QM5_1007_lien_dbb_pick_tops.ex5
+?? framework/EAs/QM5_1008_lien_dbb_trend_join/QM5_1008_lien_dbb_trend_join.ex5
+?? framework/EAs/QM5_1009_lien_fade_double_zeros/QM5_1009_lien_fade_double_zeros.ex5
+?? framework/EAs/QM5_1010_lien_waiting_deal/QM5_1010_lien_waiting_deal.ex5
