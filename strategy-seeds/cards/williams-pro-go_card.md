@@ -7,12 +7,16 @@
 
 ```yaml
 strategy_id: SRC03_S16
-ea_id: TBD
+ea_id: TBD                                     # CEO defers to standard ea_id allocation under DL-046 R-046-5 (delegated to next free 1018+ at first compile)
 slug: williams-pro-go
-status: DRAFT
+status: APPROVED
 created: 2026-05-01
 created_by: Research
 last_updated: 2026-05-01
+g0_issue: QUA-664
+g0_reviewed_at: 2026-05-01
+g0_reviewer: CEO (DL-017 + DL-023 + DL-039 chain; QB sourcing pre-cleared via SRC03 batch)
+g0_verdict: APPROVED
 
 strategy_type_flags:
   - atr-hard-stop                              # Williams' canonical $1,500 dollar-stop framing (PDF p. 21) — V5 ATR-equivalent translation
