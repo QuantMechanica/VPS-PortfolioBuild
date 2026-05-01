@@ -1,0 +1,12 @@
+{
+  "issue": "QUA-402",
+  "card": "QUA-342",
+  "status": "blocked_pending_review",
+  "blocked_since_utc": "2026-05-01T08:19:20Z",
+  "owner": "CTO",
+  "unblock_action": "CTO_APPROVAL_FOR_PIPELINE_DISPATCH",
+  "pipeline_dispatch_allowed": false,
+  "dev_action_required": false,
+  "head_commit": "6bd204aae0caee21b1fe7a20fe522645eb9ad3ca"
+}
+
