@@ -1,0 +1,17 @@
+ea_id,slug,strategy_id,status,owner,created_at
+1001,breakout-atr,TBD,active,CTO,2026-04-27
+1002,davey-eu-night,SRC01_S01,active,CTO,2026-04-27
+1003,davey-baseline-3bar,SRC01_S03,active,Development,2026-04-28
+1004,davey-es-breakout,SRC01_S04,active,Development,2026-04-28
+1005,davey-worldcup,SRC01_S05,active,CTO,2026-04-28
+1006,davey-eu-day,SRC01_S02,active,Development,2026-04-28
+1007,lien-dbb-pick-tops,SRC04_S02a,active,CTO,2026-04-28
+1008,lien-dbb-trend-join,SRC04_S02b,active,CTO,2026-04-28
+1009,lien-fade-double-zeros,SRC04_S03,active,CTO,2026-05-01
+1010,lien-waiting-deal,SRC04_S04,active,CTO,2026-05-01
+1011,lien-inside-day-breakout,SRC04_S05,active,CTO,2026-05-01
+1012,lien-fader,SRC04_S06,active,CTO,2026-05-01
+1013,lien-20day-breakout,SRC04_S07,active,CTO,2026-05-01
+1014,lien-channels,SRC04_S08,active,CTO,2026-05-01
+1015,lien-perfect-order,SRC04_S09,active,CTO,2026-05-01
+1016,lien-carry-trade,SRC04_S11,active,CTO,2026-05-01
