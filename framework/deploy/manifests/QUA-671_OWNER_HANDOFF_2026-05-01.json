@@ -1,0 +1,11 @@
+{
+  "issue": "QUA-671",
+  "status": "blocked_pending_owner_approval",
+  "unblock_owner": "OWNER",
+  "unblock_action": "Approve P0-13 T6 manifest dry-run evidence and authorize status transition to done.",
+  "execution_policy": "Class-1",
+  "artifacts_verified": true,
+  "hash_manifest_verified": true,
+  "last_heartbeat_utc": "2026-05-01T09:50:14Z",
+  "commit_refs": ["4a9e39eb", "e675829e", "3648377a", "1fcbf59c"]
+}
