@@ -9,7 +9,8 @@ param(
     [switch]$SkipMagicCheck,
     [switch]$SkipSetValidation,
     [switch]$SkipLoggerSchema,
-    [switch]$SkipForbiddenScan
+    [switch]$SkipForbiddenScan,
+    [switch]$SkipInputGroupCheck
 )
 
 Set-StrictMode -Version Latest
@@ -523,6 +524,41 @@ function Invoke-ForbiddenScan {
     }
 }
 
+function Invoke-InputGroupCheck {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ResolvedRepoRoot
+    )
+
+    $eaRoot = Join-Path $ResolvedRepoRoot "framework\EAs"
+    if (-not (Test-Path -LiteralPath $eaRoot)) {
+        return
+    }
+
+    $eaFiles = Get-ChildItem -LiteralPath $eaRoot -Recurse -File -Include *.mq5 -ErrorAction SilentlyContinue |
+               Where-Object { $_.Name -notmatch 'smoke|unit|test' }
+
+    $requiredGroups = @(
+        'QuantMechanica V5 Framework',
+        'Risk',
+        'News',
+        'Friday Close',
+        'Strategy'
+    )
+
+    foreach ($file in $eaFiles) {
+        $content = Get-Content -Raw -Path $file.FullName -ErrorAction SilentlyContinue
+        if (-not $content) { continue }
+
+        foreach ($group in $requiredGroups) {
+            $pattern = [regex]::Escape("input group `"$group`"")
+            if ($content -notmatch $pattern) {
+                Add-Failure "EA_INPUT_GROUP_MISSING: $($file.Name) is missing required input group `"$group`"."
+            }
+        }
+    }
+}
+
 function Write-GateEvidence {
     param(
         [Parameter(Mandatory = $true)]
@@ -571,6 +607,9 @@ if (-not $SkipLoggerSchema.IsPresent) {
 }
 if (-not $SkipForbiddenScan.IsPresent) {
     Invoke-ForbiddenScan -ResolvedRepoRoot $resolvedRepoRoot
+}
+if (-not $SkipInputGroupCheck.IsPresent) {
+    Invoke-InputGroupCheck -ResolvedRepoRoot $resolvedRepoRoot
 }
 
 Write-GateEvidence -ResolvedReportRoot $ReportRoot

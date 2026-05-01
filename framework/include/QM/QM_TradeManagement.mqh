@@ -5,58 +5,10 @@
 #include "QM_StopRules.mqh"
 #include "QM_TradeContext.mqh"
 #include "QM_Logger.mqh"
+#include "QM_Entry.mqh"
+#include "QM_Exit.mqh"
 
 #define QM_TM_DEFAULT_DEVIATION_POINTS 20
-
-// Step-14 compatibility shim: QM_Entry/QM_Exit may land in adjacent implementation steps.
-#ifndef QM_ENTRY_REQUEST_DEFINED
-#define QM_ENTRY_REQUEST_DEFINED
-struct QM_EntryRequest
-  {
-   string       symbol;
-   QM_OrderType side;
-   double       lots;
-   double       price;
-   double       sl;
-   double       tp;
-   int          deviation_points;
-   long         magic;
-   string       comment;
-  };
-#endif
-
-#ifndef QM_EXIT_REASON_DEFINED
-#define QM_EXIT_REASON_DEFINED
-enum QM_ExitReason
-  {
-   QM_EXIT_SIGNAL = 0,
-   QM_EXIT_STOP_LOSS = 1,
-   QM_EXIT_TAKE_PROFIT = 2,
-   QM_EXIT_TIME = 3,
-   QM_EXIT_FRIDAY_CLOSE = 4,
-   QM_EXIT_KILL_SWITCH = 5,
-   QM_EXIT_MANUAL = 6,
-   QM_EXIT_PARTIAL = 7,
-   QM_EXIT_UNKNOWN = 8
-  };
-#endif
-
-string QM_ExitReasonToString(const QM_ExitReason reason)
-  {
-   switch(reason)
-     {
-      case QM_EXIT_SIGNAL:       return "QM_EXIT_SIGNAL";
-      case QM_EXIT_STOP_LOSS:    return "QM_EXIT_STOP_LOSS";
-      case QM_EXIT_TAKE_PROFIT:  return "QM_EXIT_TAKE_PROFIT";
-      case QM_EXIT_TIME:         return "QM_EXIT_TIME";
-      case QM_EXIT_FRIDAY_CLOSE: return "QM_EXIT_FRIDAY_CLOSE";
-      case QM_EXIT_KILL_SWITCH:  return "QM_EXIT_KILL_SWITCH";
-      case QM_EXIT_MANUAL:       return "QM_EXIT_MANUAL";
-      case QM_EXIT_PARTIAL:      return "QM_EXIT_PARTIAL";
-      case QM_EXIT_UNKNOWN:      return "QM_EXIT_UNKNOWN";
-     }
-   return "QM_EXIT_UNKNOWN";
-  }
 
 bool QM_TM_SelectPosition(const ulong ticket)
   {

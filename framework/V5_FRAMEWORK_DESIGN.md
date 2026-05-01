@@ -781,7 +781,7 @@ When this design is approved, Codex implements in strict order:
 22. **`scripts/run_smoke.ps1`** — must run a smoke pass on T1 with the skeleton.
 23. **`scripts/brand_report.ps1`** — post-process MT5 .htm reports with QM brand CSS.
 24. **`tests/smoke/`** — a smoke EA + set file + expected output, used as regression gate.
-25. **Quality-Tech review** of full framework before any V5 strategy EA is built.
+25. **Quality-Tech review** of full framework before any V5 strategy EA is built. → ADR: `decisions/2026-05-01_phase2_acceptance.md` (CONDITIONAL PASS; fixes applied 2026-05-01).
 
 Each step writes its own evidence note under `D:\QM\reports\framework\<step>/`.
 

@@ -1,7 +1,7 @@
 #ifndef QM_STOPRULES_MQH
 #define QM_STOPRULES_MQH
 
-#include <QM/QM_OrderTypes.mqh>
+#include "QM_OrderTypes.mqh"
 
 double QM_StopRulesNormalizePrice(const string symbol, const double price)
   {

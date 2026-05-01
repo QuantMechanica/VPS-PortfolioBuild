@@ -13,6 +13,7 @@
 #include "QM_Entry.mqh"
 #include "QM_Exit.mqh"
 #include "QM_StopRules.mqh"
+#include "QM_TradeManagement.mqh"
 #include "QM_TradeContext.mqh"
 #include "QM_ChartUI.mqh"
 
