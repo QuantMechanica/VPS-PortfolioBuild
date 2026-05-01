@@ -240,6 +240,10 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
     - `artifacts/qua-*/...`
     - `**/__pycache__/`
     - `.claude/scheduled_tasks.lock`
+- `monitoring/Test-PublicCompanyOperatingModel.ps1`
+  - Validates `public-data/company-operating-model.json` render contract and public-safety constraints.
+  - Enforces required dashboard sections (`control_tower`, `capability_cells`, `process_loop`, `sections`, `first_48h_actions`, `stale_data_behavior`) and non-empty `menu`.
+  - Fails on private/internal URL patterns, credential-like strings, or GUID-like identifiers in payload.
 - `monitoring/Invoke-InfraHealthCheck.ps1`
   - Delegates `git_index_lock` evaluation to `monitoring/Invoke-GitIndexLockMonitor.ps1` when present, with inline stale-lock scan fallback only if the monitor script is missing.
 - `scripts/Install-GitIndexLockMonitorTask.ps1`
