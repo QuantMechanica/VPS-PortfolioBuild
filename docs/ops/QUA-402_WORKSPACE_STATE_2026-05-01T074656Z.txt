@@ -1,0 +1,18 @@
+TIMESTAMP_UTC=2026-05-01T074656Z
+HEAD=94911ea6753b9ef5902b4ac157367db1ce3879f9
+
+RECENT_COMMITS:
+94911ea6 docs: add QUA-402 consolidated artifact manifest 2026-05-01T074628Z
+f53bb9cb docs(qua-652): acknowledge DL-040 dependency block on QUA-650
+48e5f993 docs: mark QUA-402 CTO review requested status
+a3aaf5a6 fix: accept MetaEditor false-negative nonzero exit and record QUA-402 strict compile pass
+cb634710 docs: record QUA-402 compile harness anomaly evidence 2026-05-01T074428Z
+0e716c1f feat(ea): add QM5_1010 lien-waiting-deal (SRC04_S04)
+349e969d feat(ea): implement QM5_1011 lien inside-day breakout from SRC04_S05 (QUA-652)
+36329e6f docs: add QUA-402 ready-for-CTO flag
+
+KEY_FILES:
+framework/EAs/QM5_1009_lien_fade_double_zeros/QM5_1009_lien_fade_double_zeros.mq5
+docs/ops/QUA-402_CTO_REVIEW_REQUESTED.status
+docs/ops/QUA-402_READY_FOR_CTO_REVIEW.flag
+docs/ops/QUA-402_GATE_STATUS_*.json
