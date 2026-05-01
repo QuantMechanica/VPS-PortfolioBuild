@@ -1,0 +1,9 @@
+compile_one.result=PASS
+compile_one.reason_class=OK
+compile_one.errors=0
+compile_one.warnings=0
+compile_one.include_sync_root=
+compile_one.include_sync_targets=D:\QM\mt5\T1\MQL5\Include;C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\23F4CC3F82E1F778FB3B989B9A7959AF\MQL5\Include;C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\4DB55D150BE7C77D719910E6167F98D9\MQL5\Include;C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\5BC264D6982E3750B5E72ADD672A4CB1\MQL5\Include;C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\838D42D8C9CA97A8C8A40FAE3BFC3C4C\MQL5\Include;C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\AE0A37E2EC2BC870ED414E4143BA21BF\MQL5\Include;C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\BAAC8BF158EA0E0000BD124AA5FD8744\MQL5\Include;C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\FC8706F6EB4F26C35F2BD4B6DA170EF6\MQL5\Include
+compile_one.log=C:\QM\worktrees\development\framework\build\compile\20260501_075842\QM5_1009_lien_fade_double_zeros.compile.log
+compile_one.summary=D:\QM\reports\compile\20260501_075842\summary.csv
+compile_one.ex5=C:\QM\worktrees\development\framework\EAs\QM5_1009_lien_fade_double_zeros\QM5_1009_lien_fade_double_zeros.ex5
