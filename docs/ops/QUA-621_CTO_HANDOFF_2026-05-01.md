@@ -63,6 +63,6 @@ git show --stat --name-only 3c3d6280
 
 ## Blocker status (updated 2026-05-01)
 - Status: BLOCKED
-- Blocked on: CTO review/decision for range `847dabad^..HEAD` (12 commits; current tip `36e8e062`)
+- Blocked on: CTO review/decision for range `847dabad^..HEAD`
 - Unblock owner: CTO
 - Unblock action: Approve (or request changes on) `847dabad^..HEAD` so Development can proceed with integration/closure steps on QUA-621.
