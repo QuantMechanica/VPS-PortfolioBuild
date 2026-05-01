@@ -18,6 +18,7 @@ Confirm the Development claim of phase-runner artifacts routed from QUA-614/QUA-
 8. `20eb0df4` — single-command full-chain review path
 9. `05c1b386` — review command refresh to current tip
 10. `75641e18` — tip-agnostic review command update
+11. `3c3d6280` — sync handoff with full blocked review range
 
 ## Expected file set
 - `framework/scripts/_phase_utils.py`
@@ -57,10 +58,11 @@ git show --stat --name-only 1740b021
 git show --stat --name-only 20eb0df4
 git show --stat --name-only 05c1b386
 git show --stat --name-only 75641e18
+git show --stat --name-only 3c3d6280
 ```
 
 ## Blocker status (updated 2026-05-01)
 - Status: BLOCKED
-- Blocked on: CTO review/decision for range `847dabad^..HEAD` (10 commits; current tip `75641e18`)
+- Blocked on: CTO review/decision for range `847dabad^..HEAD` (11 commits; current tip `3c3d6280`)
 - Unblock owner: CTO
 - Unblock action: Approve (or request changes on) `847dabad^..HEAD` so Development can proceed with integration/closure steps on QUA-621.
