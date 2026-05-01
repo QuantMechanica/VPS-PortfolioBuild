@@ -1,11 +1,11 @@
 {
   "issue": "QUA-621",
   "status": "BLOCKED",
-  "timestamp": "2026-05-01T07:34:02.6138191+02:00",
+  "timestamp": "2026-05-01T07:34:50.0296777+02:00",
   "branch": "agents/development",
-  "head": "c85ec43b",
+  "head": "962be718",
   "review_range": "847dabad^..HEAD",
-  "review_range_commit_count": 96,
+  "review_range_commit_count": 97,
   "unblock_owner": "CTO",
   "unblock_action": "review/approve or request changes on 847dabad^..HEAD in agents/development"
 }
