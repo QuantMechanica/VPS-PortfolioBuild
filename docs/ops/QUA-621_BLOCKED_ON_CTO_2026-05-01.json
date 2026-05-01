@@ -1,8 +1,8 @@
 {
   "issue": "QUA-621",
   "state": "BLOCKED_ON_CTO",
-  "as_of": "2026-05-01T10:48:35+02:00",
-  "head": "d5b36bef",
+  "as_of": "2026-05-01T10:49:35+02:00",
+  "blocker_anchor_commit": "701363b4",
   "blocked_reason": "CTO decision pending on review range",
   "review_range": "847dabad^..HEAD",
   "ready_for_done_marker": "docs/ops/QUA-621_READY_FOR_DONE_2026-05-01.json",
