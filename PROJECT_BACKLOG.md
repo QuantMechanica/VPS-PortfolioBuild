@@ -29,40 +29,55 @@ When Paperclip is online and asks "what should I do here?", the answer is usuall
 
 ## Today's Reality
 
-_Last refreshed: 2026-05-01 (W. Europe). Canonical runtime source: [`public-data/company-runtime.json`](public-data/company-runtime.json) — postgres-backed snapshot, regenerated hourly. Numbers in this section must match that file ± one refresh window; if they drift, this file is wrong, not the JSON._
+_Last refreshed: 2026-05-01 (W. Europe; QUA-665 D1 / QUA-668 cross-check against live `/api/companies/<id>/agent-configurations` + per-agent `/api/agents/<id>` for `pausedAt`). Canonical runtime source: [`public-data/company-runtime.json`](public-data/company-runtime.json) — postgres-backed snapshot, regenerated hourly. Numbers in this section must match that file ± one refresh window; if they drift, this file is wrong, not the JSON. **Live API is authoritative over `docs/ops/ORG_CHART*.md`** — org-chart drifts; live roster does not._
 
-Paperclip is installed and operating in `monitor_only` autonomy with `overall_status = alert` (per the snapshot at 2026-04-30T22:31 UTC). 14 agents in roster, 9 active, 5 terminated/paused.
+Paperclip is installed and operating in `monitor_only` autonomy with `overall_status = alert` (per the snapshot at 2026-04-30T22:31 UTC). 14 agents in roster historically, 9 currently exposed by `/agent-configurations`, 5 archived/superseded retirees no longer surfacing in the configurations endpoint. **Wave 0 LIVE since 2026-04-27** (CEO `7795b4b0`, CTO `241ccf3c`, Research `7aef7a17`, Documentation-KM `8c85f83f`). **Wave 1 partial:** DevOps `86015301` running; Pipeline-Operator `46fc11e5` paused 2026-04-29T20:21Z; Development `ebefc3a6` paused 2026-04-29T10:08Z. **Wave 2 early-trigger** per [DL-045](decisions/2026-05-01_qt_qb_wave2_early_trigger.md): Quality-Tech `c1f90ba8` hired 2026-04-28; Quality-Business `0ab3d743` hired 2026-04-28 (replaced same-day terminated `f2c79849` under [DL-039](decisions/2026-04-28_quality_business_hire.md) 9th-agent waiver).
 
 ### Phase status
 
 | Phase | Status | What's true on 2026-05-01 |
 |---|---|---|
 | Phase 0 — VPS Foundation + Specs | 🟡 partial | Most P0 specs migrated. Open: T1-T5 + T6 isolation proof, P0-21 TDM verification, VPS slippage/latency calibration JSON. |
-| Phase 1 — Paperclip Bootstrap | 🟡 partial | Paperclip company exists; Wave 0 hired (CEO, CTO, Documentation-KM live; Research idle since 2026-04-28). PC1-00 (Drive `.git/` exclusion) closed. Org has expanded into Wave 1+ (DevOps, Pipeline-Operator, Development, Quality-Tech, Quality-Business) ahead of strict bootstrap order. |
+| Phase 1 — Paperclip Bootstrap | 🟡 partial | Paperclip company exists; Wave 0 LIVE since 2026-04-27 (CEO `7795b4b0`, CTO `241ccf3c`, Research `7aef7a17`, Documentation-KM `8c85f83f`). Research currently in DL-044 wake-on-demand pause (resume gate: first V5 EA reaches P7). PC1-00 (Drive `.git/` exclusion) closed. Org has expanded into Wave 1 (DevOps `86015301`; Pipeline-Operator `46fc11e5` + Development `ebefc3a6` both paused 2026-04-29 under DL-040 hold) and Wave 2 early-trigger (Quality-Tech `c1f90ba8` + Quality-Business `0ab3d743`, both hired 2026-04-28 per DL-045 backfill). |
 | Phase 2 — V5 Framework Implementation | ⬜ not yet executed | Smoke EA gate not cleared. Operating under DL-040 sequential model — single SRC + single strategy + first-matrix-hold; first matrix dispatch OWNER-gated. |
 | Phases 3–6 | ⬜ blocked | Sequential gating per phase map below. |
 | Phase Final — Founder-Comms | 🚫 deferred | per `docs/ops/PHASE_FINAL_FOUNDER_COMMS.md`. |
 
 ### Agent roster (14 total · 9 active · 5 terminated/paused)
 
-#### Live — heartbeat enabled, producing runs
+#### Live — heartbeat enabled, producing runs (live API: `pausedAt=null`, status `running`/`idle`)
 
-| Agent | Role | Cadence | Snapshot status | In-flight / blocked |
+| Agent | ID | Role | Hired | Snapshot status | In-flight / blocked |
+|---|---|---|---|---|---|
+| CEO | `7795b4b0` | ceo | 2026-04-27 | running, last hb 2026-05-01T08:49Z | 1 in_progress, 17 blocked |
+| CTO | `241ccf3c` | cto | 2026-04-27 | idle, last hb 2026-05-01T08:57Z | 0 in_progress, 11 blocked |
+| Documentation-KM | `8c85f83f` | general | 2026-04-27 | running, last hb 2026-05-01T08:35Z | 0 in_progress, 1 blocked |
+| DevOps | `86015301` | devops | 2026-04-29 (rehire per [DL-041](decisions/REGISTRY.md)) | running, last hb 2026-05-01T08:58Z | 0 in_progress, 4 blocked |
+| Quality-Tech | `c1f90ba8` | qa | 2026-04-28 (DL-045 early-trigger) | running, last hb 2026-05-01T07:31Z | 0 blocked |
+| Quality-Business | `0ab3d743` | qa | 2026-04-28 (DL-039 9th-agent waiver + DL-045 early-trigger) | idle, last hb 2026-05-01T07:41Z | 0 blocked |
+
+#### Wake-on-demand — heartbeat-on but role-paused
+
+| Agent | ID | Role | Notes |
+|---|---|---|---|
+| Research | `7aef7a17` | researcher | `pausedAt=null` but operationally paused per [DL-044](decisions/2026-05-01_research_pause_dl044.md); resumes when first V5 EA reaches P7. Already-extracted SRC02/03/04 cards parked. |
+
+#### Paused (live API: `pausedAt` set)
+
+| Agent | ID | Role | Pause set | Notes |
 |---|---|---|---|---|
-| CEO | ceo | ~12 runs/h | running | 1 in_progress, 17 blocked |
-| CTO | cto | ~32 runs/h | idle (heartbeat-on) | 0 in_progress, 11 blocked |
-| Documentation-KM | general | ~7 runs/h | idle (heartbeat-on) | 0 in_progress, 1 blocked |
-| DevOps (`86015301`) | devops | ~3 runs/h | running | 0 in_progress, 4 blocked |
-| Pipeline-Operator | engineer | ~9 runs/h, throttled | idle (heartbeat-on) | 0 in_progress, 7 blocked — first-matrix-hold per DL-040 |
+| Pipeline-Operator | `46fc11e5` | engineer | 2026-04-29T20:21Z | first-matrix-hold per DL-040; resumes when OWNER releases first matrix dispatch. |
+| Development | `ebefc3a6` | engineer | 2026-04-29T10:08Z | stuck-session detector triggered; held under DL-040 hold. |
 
-#### Wake-on-demand — heartbeat off, fires only on assignment
+#### Archived / superseded (no longer in `/agent-configurations` API surface)
 
-| Agent | Role | Last heartbeat | Snapshot status | Notes |
+| Agent | ID | Role | State | Notes |
 |---|---|---|---|---|
-| Research | researcher | 2026-04-28 | idle | 2 blocked; awaiting OWNER reboot decision (QUA-588 F5/F7) |
-| Quality-Tech | qa | 2026-05-01 | idle | 0 blocked |
-| Quality-Business | qa | 2026-04-29 | idle | 0 blocked |
-| Development | engineer | 2026-04-29 | running flag, `stuck_session` finding | 12 blocked; **effectively paused** — runtime stuck-session detector active, no real runs in 50h. Treat as paused for planning. |
+| DevOps 2 | `0e8f04e5` | devops | paused | Pause set 2026-04-29 |
+| DevOps | `12c5c03f` | devops | terminated | Superseded by `86015301` |
+| DevOps 2 | `9f2e41f3` | devops | terminated | Duplicate retirement 2026-04-29 |
+| FoundingEngineer | (legacy) | engineer | terminated | Superseded by Development + CTO split |
+| Quality-Business | `f2c79849` | qa | terminated | Retired 2026-04-28 (cwd path-mangle bug at hire), replaced by `0ab3d743` |
 
 #### Paused / terminated (5)
 
@@ -78,9 +93,11 @@ OWNER (Fabian) remains the gate decision-maker (real-money approval, T6 ops, man
 
 ### Live initiatives
 
-- **Reboot plan landing (QUA-588 F5):** `docs/ops/PAPERCLIP_COMPANY_REBOOT_PLAN_2026-04-30.md` and `_ISSUES_2026-04-30.md` exist on disk but are untracked in git. CEO-level GO/NO-GO decision pending. **Link will go live here once F5 GO is recorded;** until then, treat the plan as proposal-only.
-- **DL-040 sequential operating model in effect:** single SRC + single strategy + first-matrix-hold; 36-symbol parallelism only within one phase on one strategy; first matrix dispatch OWNER-gated. Pipeline-Operator + Development are deliberately throttled until OWNER lifts the hold. See `decisions/DL-040_*` and the QUA-588 audit transcript.
-- **PROJECT_BACKLOG.md realignment (QUA-588 F1–F8):** this F4 commit closes one of eight follow-ups against the 2026-05-01 Board Advisor audit. The other seven (worktree-discipline sweep, garbage-file cleanup, DL-029 limbo, reboot GO, token-burn triage, Research pause vs build-queue, T1-T5 parallel dispatch evidence) are tracked under QUA-588 sub-issues.
+- **Reboot plan GO recorded ([DL-043](decisions/2026-05-01_reboot_plan_go_phased.md), 2026-05-01):** Phase A.1 (Chief of Staff hire — QUA-594) + Phase A.2 (lessons-loop process — QUA-595) open. Phase B (org/token review, Video Researcher YouTube, T1-T5 .DWX audit, Company Operating Model dashboard) gated on first V5 EA reaching P7 + weekly run-rate trending down. Phase C (Gmail intake) deferred until OWNER reports recurring volume.
+- **Research pause recorded ([DL-044](decisions/2026-05-01_research_pause_dl044.md), 2026-05-01):** Research agent stays wake-on-demand; SRC05+ unopened until first V5 EA reaches P7. SRC02/03/04 cards parked behind their build queues.
+- **Wave 2 early-trigger backfill ([DL-045](decisions/2026-05-01_qt_qb_wave2_early_trigger.md), 2026-05-01):** audit-trail DL recording that QT + QB hires (both 2026-04-28) preceded their role-specific design-intent triggers (`first report.csv` for QT; `first QT PASS` for QB) under DL-029 collective trigger + DL-039 cap waiver authority.
+- **DL-040 sequential operating model in effect:** single SRC + single strategy + first-matrix-hold; 36-symbol parallelism only within one phase on one strategy; first matrix dispatch OWNER-gated. Pipeline-Operator + Development are deliberately paused until OWNER lifts the hold (per memory `paperclip_token_throttle_dl040.md`).
+- **State-truth refresh ([DL-046](decisions/2026-05-01_project_backlog_state_refresh.md), 2026-05-01):** QUA-665 D1 / QUA-668 — this section + milestones.md M0/M1/M2 brought into line with live API roster.
 
 ### Burn rate
 
