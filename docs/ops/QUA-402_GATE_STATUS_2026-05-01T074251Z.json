@@ -1,0 +1,22 @@
+{
+  "issue": "QUA-402",
+  "card": "QUA-342",
+  "strategy_id": "SRC04_S03",
+  "ea_id": 1009,
+  "status": "ready_for_cto_review",
+  "pipeline_dispatch_allowed": false,
+  "evidence_commits": [
+    "e32dbaf8",
+    "7773dc3a",
+    "ae6b554d",
+    "aace5297"
+  ],
+  "evidence_files": [
+    "framework/EAs/QM5_1009_lien_fade_double_zeros/QM5_1009_lien_fade_double_zeros.mq5",
+    "docs/ops/QUA-402_PRE_CTO_VALIDATION_2026-05-01T074006Z.txt",
+    "docs/ops/QUA-402_HARD_RULE_SCAN_2026-05-01T074108Z.txt",
+    "docs/ops/QUA-402_IMPL_DIFF_2026-05-01T074202Z.patch",
+    "docs/ops/QUA-402_CTO_REVIEW_CHECKLIST_2026-05-01T074202Z.md"
+  ],
+  "generated_at_utc": "2026-05-01T074251Z"
+}
