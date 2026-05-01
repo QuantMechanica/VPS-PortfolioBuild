@@ -4,3 +4,4 @@ ea_id,slug,strategy_id,status,owner,created_at
 1003,davey-baseline-3bar,SRC01_S03,active,Development,2026-04-28
 1004,davey-es-breakout,SRC01_S04,active,Development,2026-04-28
 1017,chan-pairs-stat-arb,SRC02_S01,active,CTO,2026-05-01
+1009,lien-fade-double-zeros,SRC04_S03,active,Development,2026-05-01
