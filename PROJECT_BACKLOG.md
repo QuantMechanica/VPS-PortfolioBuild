@@ -5,7 +5,7 @@ Owner of this file: OWNER + Claude Board Advisor
 Refresh cadence: every meaningful state change (new commit / new decision / phase boundary)
 Source of truth: filesystem + this file. Phase-0 detail in `docs/ops/PHASE0_EXECUTION_BOARD.md`.
 
-This file is the single backlog across all phases of V5. It exists because the existing per-doc workstream lists assume Paperclip is online with full agent roster — and **Paperclip is not installed yet**. Today the only active actors on the VPS are OWNER and Claude Board Advisor (this instance). Codex on the laptop is a read-only research helper.
+This file is the single backlog across all phases of V5. It started (2026-04-26) when Paperclip was not yet installed. **As of 2026-04-27, Wave 0 is LIVE** (CEO, CTO, Research, Documentation-KM hired); **Phase 1 closed** under DL-024; **Phase 2 closed** 2026-05-01 (QUA-639 + `decisions/2026-05-01_phase2_acceptance.md`); **Phase 3 in flight** (QM5_1003 baseline, QUA-660). For the live phase pointer (current phase + closure criterion + current blocker + delegation target + ETA), see `paperclip/governance/PHASE_STATE.md`. CEO updates that file every heartbeat per DL-053.
 
 ## Specification Density Principle (2026-04-26)
 
@@ -27,18 +27,30 @@ What this file deliberately leaves to Paperclip Wave 0+:
 
 When Paperclip is online and asks "what should I do here?", the answer is usually: *what do you propose, given the constraints?* — not *here is the answer pre-baked*.
 
-## Today's Reality
+## Today's Reality (refreshed 2026-05-01 per QUA-677 D2 / DL-053)
 
-| Actor | Status | Can do |
-|---|---|---|
-| OWNER (Fabian) | active | gate decisions, MT5 operations, Paperclip install, sign-offs, real-money approvals |
-| Board Advisor Claude (this instance, on VPS) | active | docs, repo work, scripts, validation walkthroughs, evidence capture, brand work |
-| Codex (laptop) | read-only | filesystem search, copy to Drive pack, source verification — no VPS write, no GitHub write |
-| Paperclip CEO / CTO / Research / Documentation-KM (Wave 0) | **NOT INSTALLED** | nothing — these agents do not exist yet |
-| Paperclip Wave 1+ (DevOps, Pipeline-Operator, Development, Quality-Tech, Quality-Business, Controlling, Observability-SRE, LiveOps, R-and-D) | **NOT INSTALLED** | nothing — these agents do not exist yet |
-| Chief of Staff (Wave 6 / Phase Final) | **NOT INSTALLED** | nothing — this is the explicitly-deferred final phase |
+Live phase pointer: see `paperclip/governance/PHASE_STATE.md`. Updated every CEO heartbeat per DL-053.
 
-Any backlog item assigned to a Paperclip role is **blocked on Paperclip Bootstrap** unless explicitly re-assignable to OWNER + Board Advisor as a manual interim.
+Current phase: **Phase 3 — First V5 EA Through Pipeline**. Phase 1 (Paperclip Bootstrap) closed 2026-04-27 under DL-024. Phase 2 (V5 Framework) closed 2026-05-01 under QUA-639.
+
+| Actor | Agent ID | Status | Can do |
+|---|---|---|---|
+| OWNER (the human) | `local-board` | active | gate decisions, MT5 operations, sign-offs, real-money approvals, T6 toggles, charter changes |
+| Board Advisor Claude (on VPS) | n/a | active | docs, repo work, scripts, validation walkthroughs, evidence capture, brand work |
+| CEO | `7795b4b0` | LIVE since 2026-04-27 | strategy, hiring, delegation, phase progression, DL ratification under DL-023 / DL-032 waivers |
+| CTO | `241ccf3c` | LIVE since 2026-04-27 | framework + EA review (DL-036 gate), infra/code sign-off, build/compile validation |
+| Research | `7aef7a17` | LIVE (paused per DL-044 — wake-on-demand only until first V5 EA reaches P7) | Strategy Card extraction (G0), source survey, V5 hard-rule filter |
+| Documentation-KM | `8c85f83f` | LIVE since 2026-04-27 | DL recording, lessons-learned, process registry, Notion mirror, runtime-health docs, **PHASE_STATE.md ownership (per QUA-677 D1)** |
+| DevOps | `86015301` | LIVE since 2026-04-29 | T1-T5 infra, worktree isolation, scheduler, log rotation, PC1-00 mitigation |
+| Pipeline-Operator | `46fc11e5` | LIVE | T1-T5 backtest dispatch, 36-symbol matrix, P0..P10 phase runner, RISK_FIXED setfile generation |
+| Development | `ebefc3a6` | LIVE | EA implementation from APPROVED Strategy Cards (CTO DL-036 gate before P2) |
+| Quality-Tech | `c1f90ba8` | LIVE since 2026-04-28 (DL-045 early trigger) | sub-gate calibration, Step 25 framework gate, CTO peer review |
+| Quality-Business | `0ab3d743` | LIVE since 2026-04-28 (DL-045 early trigger + DL-039 8-cap waiver) | G1 verdict on Strategy Cards, P9 portfolio composition review |
+| Codex (laptop) | n/a | read-only | filesystem search, copy to Drive pack, source verification — no VPS write, no GitHub write |
+| Paperclip Wave 3+ (Controlling, Observability-SRE, LiveOps, R&D) | n/a | NOT YET HIRED | trigger when role-specific design-intent gate fires (per `paperclip/agents/wave_plan.md`) |
+| Chief of Staff (Wave 6 / Phase Final / founder-comms) | n/a | DEFERRED | Phase Final only; per DL-052 distinct from the retired OS-Controller variant (DL-048) |
+
+The 2026-04-26 framing of "any backlog item assigned to a Paperclip role is blocked on Paperclip Bootstrap" is **superseded**. Wave 0 + Wave 1 + Wave 2 are live; backlog items below are now actively dispatched to live agents. Items still showing 🚫 in the workstream lists below refer to upstream cause (cards not yet APPROVED, calibration JSON missing, etc.), not to "Paperclip not installed".
 
 ## Phase Map (the real sequence)
 
