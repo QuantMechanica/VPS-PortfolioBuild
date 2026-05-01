@@ -1,0 +1,28 @@
+{
+  "_authored_by": "Board Advisor at OWNER direction (2026-05-01)",
+  "_authority": "OWNER 2026-05-01 directive + DL-038 Seven Binding Backtest Rules + DL-054 anti-theater pass criteria",
+  "_purpose": "Canonical tester defaults for V5 pipeline runs. Pipeline-Operator MUST load these on every tester launch. Set-files MAY override per-EA values but MUST cite a per-EA ADR.",
+  "_origin_evidence": "Tester journal 2026-05-01 11:40Z showed 'initial deposit 10000.00 USD' — wrong by factor 10x. OWNER had stated the 100k/1000 decision multiple times but it was never codified to disk. This file is that codification.",
+  "version": 1,
+  "initial_deposit": 100000,
+  "deposit_currency": "USD",
+  "leverage": 100,
+  "leverage_note": "Matches tester journal default (1:100). OWNER override authoritative if changed.",
+  "fixed_risk": {
+    "amount": 1000,
+    "unit": "USD",
+    "applies_via": "RISK_FIXED set-file per DL-038 Rule 7"
+  },
+  "anti_theater_gates": {
+    "min_trade_count": 1,
+    "min_trade_count_exception": "Per-symbol zero-trade ADR with named cause (e.g. broker-blocked window). 'no history data, stop testing' is NEVER a valid zero-trade outcome — it is a setup failure.",
+    "deposit_match_required": true,
+    "rejected_journal_lines": [
+      "no history data, stop testing",
+      "cannot get history",
+      "no data synchronized",
+      "Terminal: Invalid params"
+    ],
+    "see_also": "DL-054 anti-theater pass criteria"
+  }
+}
