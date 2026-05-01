@@ -1,0 +1,17 @@
+manifest_id: T6-DRYRUN-2026-05-01-001
+environment: live_burn_in
+terminal: T6
+approved_by: OWNER
+approved_at: null
+account:
+  broker: DarwinexZero
+  account_type: live
+placements:
+  - ea_id: EA_DRYRUN_PROBE
+    ea_file: EA_DRYRUN_PROBE.ex5
+    symbol: EURUSD
+    timeframe: M15
+    setfile: framework/deploy/manifests/EA_DRYRUN_PROBE.set
+    magic: 5999001
+    risk_percent: 0.01
+    source_card: SRC00_S00
