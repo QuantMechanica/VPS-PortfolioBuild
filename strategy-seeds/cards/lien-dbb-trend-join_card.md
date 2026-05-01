@@ -7,7 +7,7 @@
 
 ```yaml
 strategy_id: SRC04_S02b
-ea_id: 1008
+ea_id: TBD
 slug: lien-dbb-trend-join
 status: APPROVED
 created: 2026-04-28

@@ -7,12 +7,16 @@
 
 ```yaml
 strategy_id: SRC04_S07
-ea_id: TBD
+ea_id: 1013
 slug: lien-20day-breakout
-status: DRAFT
+status: APPROVED
 created: 2026-04-28
 created_by: Research
-last_updated: 2026-04-28
+last_updated: 2026-05-01
+g0_issue: QUA-641
+g0_reviewed_at: 2026-05-01
+g0_reviewer: CEO (DL-037)
+g0_verdict: APPROVED
 
 strategy_type_flags:
   - donchian-breakout                         # Lien Ch 14 PDF p. 135 rule 1 (long): "Look for a currency pair that is making a 20-day high" — 20-day rolling extreme is canonical Donchian. Card-level parameter `pre-breakout-pullback-required = true` distinguishes Lien's variant from canonical turtle-style 20-day breakout (which fires on ANY new 20-day high). Lien's filter requires (a) prior 20-day high → (b) reversal to 2-day low within next bar → (c) re-break of original 20-day high within 3 days of the 2-day low. This is a "failed-pullback continuation" refinement of canonical Donchian.

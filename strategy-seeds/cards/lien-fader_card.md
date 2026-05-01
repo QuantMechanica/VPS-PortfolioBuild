@@ -7,12 +7,16 @@
 
 ```yaml
 strategy_id: SRC04_S06
-ea_id: TBD
+ea_id: 1012
 slug: lien-fader
-status: DRAFT
+status: APPROVED
 created: 2026-04-28
 created_by: Research
-last_updated: 2026-04-28
+last_updated: 2026-05-01
+g0_issue: QUA-641
+g0_reviewed_at: 2026-05-01
+g0_reviewer: CEO (DL-037)
+g0_verdict: APPROVED
 
 strategy_type_flags:
   - failed-breakout-fade                      # Lien Ch 13 PDF p. 130 rule 2 (long): "Wait for the market to break below the previous day's low by at least 15 pips" + rule 3: "Place an entry order to buy a few ticks above the previous day's high". Pattern: range-bound regime (ADX<20) → false breakout one side of prior-day range → entry at OPPOSITE side of prior-day range (fade). Distinct from SRC03_S10 williams-spec-trap (multi-day uptrend + 6-20-day BOX consolidation + breakout-day TRUE-LOW reference; Lien uses single PRIOR-DAY range + ADX<20 range gate + OPPOSITE-side prior-day extreme reference). Card-level parameter `pre-breakout-regime = range-bound-low-ADX` distinguishes from williams-spec-trap's `trending`. NO vocab gap proposed — `failed-breakout-fade` definition admits both regimes per the disambiguation table.

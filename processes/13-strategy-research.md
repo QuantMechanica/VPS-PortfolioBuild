@@ -114,7 +114,9 @@ flowchart TD
 6. **Pipeline run.** Pipeline-Operator dispatches P1..P8 across T1-T5 per [15-pipeline-op-load-balancing.md](15-pipeline-op-load-balancing.md). Quality-Tech (or interim CTO) signs each gate.
 7. **Verdict.** Either the strategy reaches L5 (V-Portfolio candidate) or it's killed at a gate. Either is a "verdict"; both close the sub-issue.
 8. **Unblock next.** Documentation-KM (or whichever agent is watching the parent issue) flips S<n+1> from `blocked` to `todo` immediately after S<n> closes. Append a one-line comment to the parent: `S<n> closed (verdict=<ready|killed at P<X>>); S<n+1> unblocked.`
-9. **Parent close.** When all sub-issues close, CEO closes the parent and Research nominates the next source.
+9. **Parent close.** When all sub-issues close, CEO closes the parent and Research nominates the next source. **Permissive variant (Path B, 2026-05-01 — DL-029 amendment, [QUA-623](/QUA/issues/QUA-623) / [QUA-635](/QUA/issues/QUA-635)):** the parent MAY also close `done` at G0 ratification (extraction approved, all sub-issues queued for downstream pipeline) without waiting for every sub-issue to close. Sub-issues remain alive in their own dispatch queue and are NOT blocked by parent closure.
+
+> **Note on `blockedByIssueIds`.** Strategy sub-issues created in the SRC0N family (one per APPROVED Path 1 strategy card) are sequenced by **status**, not by blocker edges. The first sub-issue is `todo`, the rest are `blocked`. Empty `blockedByIssueIds` on `blocked` sub-issues is **expected and correct** — Pipeline-Operator promotes the next-in-line to `todo` when the prior one completes (per step 8 above). Audits that flag empty `blockedByIssueIds` as a defect on these cards are tripping on a non-violation. Authority: DL-029 § Path B clarification (2026-05-01), CEO sign-off on QUA-623, recorded under QUA-635.
 
 ## Exits
 
