@@ -150,67 +150,15 @@ bool QM_TM_CloseByVolume(const ulong ticket,
 
 bool QM_TM_OpenPosition(const QM_EntryRequest &req, ulong &out_ticket)
   {
-   out_ticket = 0;
-   const string symbol = (StringLen(req.symbol) > 0) ? req.symbol : _Symbol;
-   const double lots = QM_TM_NormalizeVolume(symbol, req.lots);
-   if(lots <= 0.0)
-      return false;
-
-   const bool is_pending = (QM_OrderTypeIsLimit(req.side) || QM_OrderTypeIsStop(req.side));
-
-   MqlTradeRequest request;
-   ZeroMemory(request);
-   request.action = is_pending ? TRADE_ACTION_PENDING : TRADE_ACTION_DEAL;
-   request.symbol = symbol;
-   request.type = QM_OrderTypeToMT5(req.side);
-   request.volume = lots;
-   request.magic = req.magic;
-   request.deviation = (req.deviation_points > 0) ? req.deviation_points : QM_TM_DEFAULT_DEVIATION_POINTS;
-   request.comment = (StringLen(req.comment) > 0) ? req.comment : "qm_tm_open";
-
-   if(is_pending)
-     {
-      request.price = QM_TM_NormalizePrice(symbol, req.price);
-      request.type_time = ORDER_TIME_GTC;
-      if(request.price <= 0.0)
-         return false;
-     }
-   else
-     {
-      if(req.price > 0.0)
-         request.price = QM_TM_NormalizePrice(symbol, req.price);
-      else
-        {
-         const bool is_buy = QM_OrderTypeIsBuy(req.side);
-         request.price = QM_TM_NormalizePrice(symbol, is_buy ? SymbolInfoDouble(symbol, SYMBOL_ASK)
-                                                             : SymbolInfoDouble(symbol, SYMBOL_BID));
-        }
-      if(request.price <= 0.0)
-         return false;
-     }
-
-   request.sl = (req.sl > 0.0) ? QM_TM_NormalizePrice(symbol, req.sl) : 0.0;
-   request.tp = (req.tp > 0.0) ? QM_TM_NormalizePrice(symbol, req.tp) : 0.0;
-
-   MqlTradeResult result;
-   string error_class = BROKER_OTHER;
-   const bool ok = QM_TradeContextSend(request, result, error_class);
-   if(ok)
-      out_ticket = (result.order > 0) ? result.order : result.deal;
-
+   const QM_EntryResult result = QM_Entry(req, out_ticket);
+   const bool ok = (result == QM_ENTRY_OK);
    const string payload = StringFormat(
-      "{\"symbol\":\"%s\",\"side\":\"%s\",\"lots\":%.8f,\"price\":%.8f,\"sl\":%.8f,\"tp\":%.8f,\"magic\":%I64d,\"ok\":%s,\"ticket\":%I64u,\"retcode\":%u,\"retcode_class\":\"%s\"}",
-      QM_LoggerEscapeJson(symbol),
-      QM_LoggerEscapeJson(QM_OrderTypeToString(req.side)),
-      lots,
-      request.price,
-      request.sl,
-      request.tp,
-      request.magic,
+      "{\"symbol\":\"%s\",\"type\":\"%s\",\"ok\":%s,\"ticket\":%I64u,\"entry_result\":\"%s\"}",
+      QM_LoggerEscapeJson(_Symbol),
+      QM_LoggerEscapeJson(QM_OrderTypeToString(req.type)),
       ok ? "true" : "false",
       out_ticket,
-      result.retcode,
-      QM_LoggerEscapeJson(error_class)
+      QM_LoggerEscapeJson(QM_EntryResultToString(result))
    );
    QM_LogEvent(ok ? QM_INFO : QM_WARN, "TM_OPEN", payload);
    return ok;
@@ -367,19 +315,14 @@ bool QM_TM_AddToPosition(const ulong existing_ticket, const QM_EntryRequest &add
       return false;
 
    const string symbol = PositionGetString(POSITION_SYMBOL);
-   const long magic = PositionGetInteger(POSITION_MAGIC);
    const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
    const bool is_buy_position = (position_type == POSITION_TYPE_BUY);
 
-   if((is_buy_position && !QM_OrderTypeIsBuy(add_req.side)) ||
-      (!is_buy_position && QM_OrderTypeIsBuy(add_req.side)))
+   if((is_buy_position && !QM_OrderTypeIsBuy(add_req.type)) ||
+      (!is_buy_position && QM_OrderTypeIsBuy(add_req.type)))
       return false;
 
    QM_EntryRequest local_req = add_req;
-   if(StringLen(local_req.symbol) == 0)
-      local_req.symbol = symbol;
-   if(local_req.magic == 0)
-      local_req.magic = magic;
 
    ulong added_ticket = 0;
    const bool ok = QM_TM_OpenPosition(local_req, added_ticket);
@@ -387,7 +330,7 @@ bool QM_TM_AddToPosition(const ulong existing_ticket, const QM_EntryRequest &add
       "{\"existing_ticket\":%I64u,\"added_ticket\":%I64u,\"symbol\":\"%s\",\"ok\":%s}",
       existing_ticket,
       added_ticket,
-      QM_LoggerEscapeJson(local_req.symbol),
+      QM_LoggerEscapeJson(symbol),
       ok ? "true" : "false"
    );
    QM_LogEvent(ok ? QM_INFO : QM_WARN, "TM_ADD", payload);
@@ -438,7 +381,6 @@ double QM_TM_OpenPnL(const int magic)
          continue;
       pnl += PositionGetDouble(POSITION_PROFIT);
       pnl += PositionGetDouble(POSITION_SWAP);
-      pnl += PositionGetDouble(POSITION_COMMISSION);
      }
    return pnl;
   }
