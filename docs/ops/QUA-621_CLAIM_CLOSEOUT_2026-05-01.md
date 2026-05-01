@@ -30,4 +30,8 @@ Claim completed on `agents/development` with two commits.
 
 ## Notes
 - Unrelated untracked EA build artifacts (`*.ex5`) in `framework/EAs/` were intentionally not modified.
-- Next owner action: CTO review / merge decision for the two commits above.
+- Blocker status (as of 2026-05-01T05:59:49+02:00):
+  - `BLOCKED`
+  - Current branch/head: `agents/development` @ `714047a3`
+  - CTO review range: `847dabad^..HEAD` (`14` commits)
+  - Unblock owner/action: CTO to review/approve or request changes on `847dabad^..HEAD`.
