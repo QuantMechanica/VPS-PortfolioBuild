@@ -3,4 +3,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1002,davey-eu-night,0,EURUSD.DWX,10020000,2026-04-27,CTO,active
 1007,lien-dbb-pick-tops,0,EURUSD.DWX,10070000,2026-04-28,CTO,active
 1008,lien-dbb-trend-join,0,EURUSD.DWX,10080000,2026-04-28,CTO,active
+1009,lien-fade-double-zeros,0,EURUSD.DWX,10090000,2026-05-01,CTO,active
 9999,framework-skeleton,0,EURUSD.DWX,99990000,2026-04-27,CTO,active

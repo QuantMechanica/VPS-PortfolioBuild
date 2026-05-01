@@ -22,7 +22,7 @@ input double RISK_FIXED                   = 1000.0;
 input double PORTFOLIO_WEIGHT             = 1.0;
 
 input group "News"
-input QM_NewsMode qm_news_mode            = QM_NEWS_OFF;
+input QM_NewsMode qm_news_mode            = QM_NEWS_PAUSE;
 
 input group "Friday Close"
 input bool   qm_friday_close_enabled      = true;
