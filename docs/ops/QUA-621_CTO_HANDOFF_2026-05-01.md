@@ -12,6 +12,12 @@ Confirm the Development claim of phase-runner artifacts routed from QUA-614/QUA-
 2. `482c01ef` — `aggregate_phase_results.py` + `run_phase.ps1`
 3. `3a4ecb4c` — closeout evidence note
 4. `2f22f1d9` — CTO handoff packet
+5. `e5fd84a2` — handoff completeness update
+6. `1d7400ab` — handoff command block expansion
+7. `1740b021` — command alignment to full gated set
+8. `20eb0df4` — single-command full-chain review path
+9. `05c1b386` — review command refresh to current tip
+10. `75641e18` — tip-agnostic review command update
 
 ## Expected file set
 - `framework/scripts/_phase_utils.py`
@@ -47,10 +53,14 @@ git show --stat --name-only 3a4ecb4c
 git show --stat --name-only 2f22f1d9
 git show --stat --name-only e5fd84a2
 git show --stat --name-only 1d7400ab
+git show --stat --name-only 1740b021
+git show --stat --name-only 20eb0df4
+git show --stat --name-only 05c1b386
+git show --stat --name-only 75641e18
 ```
 
 ## Blocker status (updated 2026-05-01)
 - Status: BLOCKED
-- Blocked on: CTO review/decision for commits `847dabad`, `482c01ef`, `3a4ecb4c`, `2f22f1d9`, `e5fd84a2`, `1d7400ab`
+- Blocked on: CTO review/decision for range `847dabad^..HEAD` (10 commits; current tip `75641e18`)
 - Unblock owner: CTO
-- Unblock action: Approve (or request changes on) the six commits so Development can proceed with integration/closure steps on QUA-621.
+- Unblock action: Approve (or request changes on) `847dabad^..HEAD` so Development can proceed with integration/closure steps on QUA-621.
