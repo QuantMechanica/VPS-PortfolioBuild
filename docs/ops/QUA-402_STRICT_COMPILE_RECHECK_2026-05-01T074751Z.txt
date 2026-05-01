@@ -1,0 +1,7 @@
+STRICT_COMPILE=PASS
+EA=QM5_1009_lien_fade_double_zeros
+ERRORS=0
+WARNINGS=0
+LOG=framework/build/compile/20260501_074742/QM5_1009_lien_fade_double_zeros.compile.log
+SUMMARY=D:/QM/reports/compile/20260501_074742/summary.csv
+TIMESTAMP_UTC=2026-05-01T074751Z
