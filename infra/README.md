@@ -491,11 +491,6 @@ Token-cost observability (70/80/95 budget alarms + daily snapshot):
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-TokenCostObservabilityTasks.ps1 -DailyTokenBudget 2500000
 ```
 
-Dedup behavior (QUA-692):
-- While `cap_is_placeholder=true` and cap-review issues (`QUA-542` / `QUA-543`) are open, daily runs do not open a new `Token budget alarm ...` issue for the same threshold/month.
-- The monitor posts a comment update on the existing open monthly threshold alarm instead.
-- Snapshot JSON + markdown summary are still written on each run.
-
 Drive/git hard-fence verification (every 15 minutes, PC1-00):
 
 ```powershell

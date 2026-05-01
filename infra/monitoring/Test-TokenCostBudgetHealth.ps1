@@ -14,11 +14,9 @@ param(
     [string]$InputRunsPath = "",
     [string]$PsqlExe = $(if ($env:PSQL_EXE) { $env:PSQL_EXE } else { "psql" }),
     [string]$DatabaseUrl = $(if ($env:PAPERCLIP_DB_URL) { $env:PAPERCLIP_DB_URL } else { "" }),
-    [string]$OwnerAgentId = $(if ($env:QM_TOKEN_ALARM_OWNER_AGENT_ID) { $env:QM_TOKEN_ALARM_OWNER_AGENT_ID } else { "7795b4b0-8ecd-46da-ab22-06def7c8fa2d" }),
     [switch]$UseApiFallback,
     [switch]$NoWriteSnapshot,
-    [switch]$NoWriteMarkdownSummary,
-    [switch]$NoCreateAlarmIssue
+    [switch]$NoWriteMarkdownSummary
 )
 
 Set-StrictMode -Version Latest
@@ -108,118 +106,6 @@ function Invoke-PsqlText {
         throw ("psql query failed: {0}" -f ($raw | Out-String).Trim())
     }
     return ($raw | Out-String)
-}
-
-function Ensure-AlarmIssue {
-    param(
-        [string]$ApiRoot,
-        [string]$Token,
-        [string]$Company,
-        [string]$OwnerId,
-        [string]$DateUtc,
-        [string]$AlarmLevel,
-        [int]$ThresholdPct,
-        [double]$ForecastPct,
-        [int64]$ForecastTokens,
-        [string]$SnapshotPath,
-        [bool]$CapIsPlaceholder = $true,
-        [bool]$CapReviewPending = $true,
-        [string[]]$CapReviewIssueIdentifiers = @("QUA-542", "QUA-543")
-    )
-
-    if ([string]::IsNullOrWhiteSpace($Token) -or [string]::IsNullOrWhiteSpace($Company) -or [string]::IsNullOrWhiteSpace($OwnerId)) {
-        return $null
-    }
-
-    $title = "Token budget alarm {0}% ({1}) - {2}" -f $ThresholdPct, $AlarmLevel, $DateUtc
-    $headers = @{ Authorization = "Bearer $Token" }
-    if ($env:PAPERCLIP_RUN_ID) {
-        $headers["X-Paperclip-Run-Id"] = $env:PAPERCLIP_RUN_ID
-    }
-
-    try {
-        $listUri = "$($ApiRoot.TrimEnd('/'))/api/companies/$Company/issues?limit=200"
-        $issues = Invoke-RestMethod -Method Get -Uri $listUri -Headers $headers
-        $existing = @($issues | Where-Object { $_.title -eq $title } | Select-Object -First 1)
-        if ($existing.Count -gt 0) {
-            return $existing[0]
-        }
-        if ($CapIsPlaceholder -and $CapReviewPending) {
-            $openIssues = @($issues | Where-Object { ([string]$_.status).ToLowerInvariant() -notin @('done', 'cancelled') })
-            $capReviewOpen = @(
-                $openIssues | Where-Object {
-                    $id = [string]$_.identifier
-                    $CapReviewIssueIdentifiers -contains $id
-                } | Select-Object -First 1
-            ).Count -gt 0
-
-            if ($capReviewOpen) {
-                $dateObj = [datetime]::ParseExact($DateUtc, "yyyy-MM-dd", [System.Globalization.CultureInfo]::InvariantCulture)
-                $monthPrefix = $dateObj.ToString("yyyy-MM")
-                $thresholdRegex = "^Token budget alarm $ThresholdPct% \(.+\) - $monthPrefix-\d{2}$"
-                $monthlyExisting = @(
-                    $openIssues | Where-Object {
-                        ([string]$_.title) -match $thresholdRegex
-                    } | Select-Object -First 1
-                )
-                if ($monthlyExisting.Count -gt 0) {
-                    try {
-                        $commentUri = "$($ApiRoot.TrimEnd('/'))/api/issues/$([string]$monthlyExisting[0].id)/comments"
-                        $commentPayload = @{
-                            body = @"
-Token budget alarm update (placeholder-cap mode; dedup active).
-
-- Date (UTC): $DateUtc
-- Alarm level: $AlarmLevel
-- Breached threshold: $ThresholdPct%
-- Forecast usage pct: $ForecastPct
-- Monthly forecast tokens: $ForecastTokens
-- Snapshot: $SnapshotPath
-- cap_is_placeholder=true
-- cap_review_pending=true
-"@
-                        } | ConvertTo-Json -Depth 4
-                        Invoke-RestMethod -Method Post -Uri $commentUri -Headers $headers -ContentType "application/json" -Body $commentPayload | Out-Null
-                    }
-                    catch {}
-                    return $monthlyExisting[0]
-                }
-            }
-        }
-    }
-    catch {
-        return $null
-    }
-
-    $desc = @"
-Auto-generated token budget alarm from Test-TokenCostBudgetHealth.ps1.
-
-- Date (UTC): $DateUtc
-- Alarm level: $AlarmLevel
-- Breached threshold: $ThresholdPct%
-- Forecast usage pct: $ForecastPct
-- Monthly forecast tokens: $ForecastTokens
-- Snapshot: $SnapshotPath
-- cap_is_placeholder=true
-- cap_review_pending=true
-
-DL-055 escalation hook: OWNER review required.
-"@
-    $payload = @{
-        title = $title
-        description = $desc
-        priority = "high"
-        status = "todo"
-        assigneeAgentId = $OwnerId
-    } | ConvertTo-Json -Depth 6
-
-    try {
-        $createUri = "$($ApiRoot.TrimEnd('/'))/api/companies/$Company/issues"
-        return Invoke-RestMethod -Method Post -Uri $createUri -Headers $headers -ContentType "application/json" -Body $payload
-    }
-    catch {
-        return $null
-    }
 }
 
 $now = $AsOfUtc.ToUniversalTime()
@@ -439,33 +325,6 @@ if (-not $NoWriteSnapshot.IsPresent) {
         ) -join "`r`n"
         $md | Set-Content -LiteralPath $mdPath -Encoding ASCII
         $result.output.markdown_path = $mdPath
-    }
-}
-
-$result["alarm_issue"] = $null
-if (-not $NoCreateAlarmIssue.IsPresent -and $result.alarm.level -ne "ok" -and $result.alarm.breached_threshold_pct) {
-    $capIsPlaceholder = [bool]$result.caps.cap_is_placeholder
-    $capReviewPending = $capIsPlaceholder
-    $alarmIssue = Ensure-AlarmIssue `
-        -ApiRoot $ApiUrl `
-        -Token $ApiKey `
-        -Company $CompanyId `
-        -OwnerId $OwnerAgentId `
-        -DateUtc $result.date_utc `
-        -AlarmLevel $result.alarm.level `
-        -ThresholdPct ([int]$result.alarm.breached_threshold_pct) `
-        -ForecastPct ([double]$result.totals.monthly_cap_usage_pct_forecast) `
-        -ForecastTokens ([int64]$result.totals.monthly_forecast_linear) `
-        -SnapshotPath $result.output.json_path `
-        -CapIsPlaceholder $capIsPlaceholder `
-        -CapReviewPending $capReviewPending
-    if ($alarmIssue) {
-        $result["alarm_issue"] = [ordered]@{
-            identifier = $alarmIssue.identifier
-            id = $alarmIssue.id
-            title = $alarmIssue.title
-            assignee_agent_id = $alarmIssue.assigneeAgentId
-        }
     }
 }
 

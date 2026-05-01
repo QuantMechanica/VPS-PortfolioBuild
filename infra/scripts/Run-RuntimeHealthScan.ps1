@@ -109,16 +109,6 @@ function NewIssue([string]$title, [string]$desc, [string]$assigneeId, [string]$p
     return ApiCall -method 'POST' -path "/companies/$CompanyId/issues" -body $payload
 }
 
-function Find-OpenIssueByTitle([string]$title) {
-    $issues = SafeGet "/companies/$CompanyId/issues?limit=500"
-    return @(
-        $issues | Where-Object {
-            $_.title -eq $title -and
-            ([string]$_.status).ToLowerInvariant() -notin @('done', 'cancelled')
-        } | Select-Object -First 1
-    )
-}
-
 if ([string]::IsNullOrWhiteSpace($ApiKey) -and ($ExecuteActions -or $AllowApiFallback)) {
     throw 'PAPERCLIP_API_KEY (or -ApiKey) is required when -ExecuteActions or -AllowApiFallback is used.'
 }
@@ -374,17 +364,7 @@ if ($null -ne $companySummary) {
                 (GetProp $newRuntime 'heartbeat').intervalMin = $new
                 $actions.Add((ApiCall -method 'PATCH' -path "/agents/$agentId" -body @{ runtimeConfig = $newRuntime })) | Out-Null
             }
-            $capIsPlaceholder = $true
-            $capReviewPending = $true
-            $tokenIssueTitle = 'OWNER notice: token budget pressure'
-            if ($capIsPlaceholder -and $capReviewPending) {
-                $existingBudgetIssue = Find-OpenIssueByTitle -title $tokenIssueTitle
-                if ($existingBudgetIssue.Count -eq 0) {
-                    $actions.Add((NewIssue -title $tokenIssueTitle -desc 'RuntimeHealthScan throttled timer heartbeats due to budget pressure. cap_is_placeholder=true; cap_review_pending=true.' -assigneeId $ownerId)) | Out-Null
-                }
-            } else {
-                $actions.Add((NewIssue -title $tokenIssueTitle -desc 'RuntimeHealthScan throttled timer heartbeats due to budget pressure.' -assigneeId $ownerId)) | Out-Null
-            }
+            $actions.Add((NewIssue -title 'OWNER notice: token budget pressure' -desc 'RuntimeHealthScan throttled timer heartbeats due to budget pressure.' -assigneeId $ownerId)) | Out-Null
         }
     }
 }
