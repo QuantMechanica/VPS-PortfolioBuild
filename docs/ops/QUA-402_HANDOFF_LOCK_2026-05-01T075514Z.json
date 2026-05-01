@@ -1,0 +1,15 @@
+{
+  "issue": "QUA-402",
+  "locked_at_utc": "2026-05-01T075514Z",
+  "head_commit": "aa1040c94b09483b6d9e7e04cafc3cd17c075b00",
+  "status": "awaiting_cto_review",
+  "pipeline_dispatch_allowed": false,
+  "latest_gate_check": "docs/ops/QUA-402_CONSOLIDATED_GATE_CHECK_2026-05-01T075449Z.txt",
+  "evidence_commits": [
+    "e32dbaf8",
+    "a3aaf5a6",
+    "c8fd1c4d",
+    "aa1040c9"
+  ],
+  "bundle": "docs/ops/QUA-402_CTO_HANDOFF_BUNDLE_2026-05-01T0750Z.zip"
+}
