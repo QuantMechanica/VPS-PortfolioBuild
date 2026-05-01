@@ -1,0 +1,35 @@
+TIMESTAMP_UTC=2026-05-01T074817Z
+MATCH_COUNT=30
+RESULT=
+INFO_REFERENCES_FOUND
+
+docs/ops\QUA-392_BRANCH_VISIBILITY_NOTE_2026-04-28.md:26:No Pipeline-Operator dispatch before explicit CTO PASS.
+docs/ops\QUA-392_BLOCKER_STATE.json:12:  "dispatch_constraint": "No Pipeline-Operator dispatch until CTO approval",
+docs/ops\QUA-392_BLOCKED_GOVERNANCE_2026-04-28.md:36:3. Re-submit to CTO review gate (no Pipeline-Operator dispatch until CTO approval).
+docs/ops\QUA-392_BLOCKED_GOVERNANCE_2026-04-28.md:64:- Next state: CTO re-submission ready; still no Pipeline-Operator dispatch until CTO approval.
+docs/ops\QUA-391_BLOCKED_REVIEW_GATE_2026-04-28.md:21:No pipeline dispatch executed by Development.
+docs/ops\QUA-391_CTO_PASS_2026-04-28.md:22:CTO approves this EA for downstream pipeline dispatch sequencing under parent `QUA-390`.
+docs/ops\QUA-391_DONE_CRITERIA_MET_2026-04-28.md:28:## Criterion 5: CTO handoff completed (no pipeline dispatch)
+docs/ops\QUA-392_READY_FOR_CTO_RERUN_2026-04-28.md:18:No Pipeline-Operator dispatch is authorized in this handoff; dispatch remains contingent on explicit CTO approval.
+docs/ops\QUA-392_CTO_RESUBMISSION_CHECKLIST_2026-04-28.md:24:- Confirmed in Development handoff artifacts: no Pipeline-Operator dispatch is requested or authorized before explicit CTO approval.
+docs/ops\QUA-402_CTO_REVIEW_REQUEST_2026-05-01T073939Z.md:21:- No Pipeline-Operator dispatch performed.
+docs/ops\QUA-402_CTO_REVIEW_REQUEST_2026-05-01T073939Z.md:25:Per gate policy, Pipeline-Operator dispatch will remain blocked until CTO approval is recorded.
+docs/ops\QUA-392_HEARTBEAT_UPDATE_2026-04-28T1045Z.md:40:Implement `QM5_<ea_id>_lien_dbb_trend_join.mq5` using V5 framework modular structure with card-cited inline references, then produce CTO review handoff (no pipeline dispatch).
+docs/ops\QUA-392_CTO_RECONCILIATION_NOTE_2026-04-28.md:29:No Pipeline-Operator dispatch is requested here; dispatch remains gated on explicit CTO approval.
+docs/ops\QUA-392_DEVELOPMENT_HOLD_MARKER_2026-04-28.md:15:No Pipeline-Operator dispatch from Development on this issue before explicit CTO approval.
+docs/ops\QUA-402_CTO_REVIEW_CHECKLIST_2026-05-01T074202Z.md:12:- Confirm no Pipeline-Operator dispatch has occurred.
+docs/ops\QUA-402_CTO_REVIEW_CHECKLIST_2026-05-01T074202Z.md:15:- Awaiting explicit CTO EA-vs-Card pass on QUA-402 before any pipeline dispatch.
+docs/ops\QUA-392_CTO_RESUBMISSION_DELTA_EAID_FIX_2026-04-28.md:23:No Pipeline-Operator dispatch before explicit CTO PASS.
+docs/ops\QUA-392_CTO_CANONICAL_GOVERNANCE_PROOF_2026-04-28.md:27:No Pipeline-Operator dispatch is requested or authorized in this artifact.
+docs/ops\QUA-402_COMPILE_ANOMALY_2026-05-01T074428Z.md:16:- CTO review can proceed for EA-vs-Card; pipeline dispatch remains blocked by policy until CTO pass.
+docs/ops\QUA-392_CLOSEOUT_2026-04-28.md:32:- Awaiting CTO EA-vs-Card review disposition before any Pipeline-Operator dispatch.
+docs/ops\QUA-402_ARTIFACT_MANIFEST_2026-05-01T074628Z.md:19:- CTO review required before any Pipeline-Operator dispatch.
+docs/ops\QUA-392_UNBLOCK_REQUEST_CEO_RESEARCH_2026-04-28.md:33:"CEO waiver for `QUA-392`: execution and CTO re-review of `SRC04_S02b` (`lien-dbb-trend-join`) is authorized from DRAFT card state for this issue only. No Pipeline-Operator dispatch is permitted until CTO approval is granted."
+docs/ops\QUA-392_WAITING_CTO_REVIEW_GATE_2026-04-28T1059Z.md:8:Development implementation is complete and compile-verified. Remaining work requires CTO review-only decision before any pipeline dispatch.
+docs/ops\QUA-402_BLOCKED_CONTINUATION_2026-04-28.md:21:Implement EA file in required V5 naming/module structure, compile clean, and submit CTO review packet (no Pipeline-Operator dispatch).
+docs/ops\QUA-406_ISSUE_COMMENT_TEMPLATE_2026-04-28.md:27:Implement `framework/EAs/QM5_<ea_id>_lien_20day_breakout/QM5_<ea_id>_lien_20day_breakout.mq5`, then handoff to CTO EA-vs-Card review (no pipeline dispatch before CTO pass).
+docs/ops\QUA-406_UNBLOCK_PAYLOAD_TEMPLATE_2026-04-28.md:59:After implementation: CTO EA-vs-Card review must pass on `QUA-406` before any Pipeline-Operator dispatch.
+docs/ops\QUA-406_BLOCKED_CONTINUATION_2026-04-28.md:37:Implement `framework/EAs/QM5_<ea_id>_<slug>/QM5_<ea_id>_<slug>.mq5` with V5 4-module functions and card-section inline citations, then hand off to CTO review (no Pipeline-Operator dispatch).
+docs/ops\QUA-405_UNBLOCK_REQUEST_2026-04-28.md:45:- Compile clean; submit to CTO review gate (no Pipeline-Operator dispatch)
+docs/ops\QUA-402_PROTOTYPE_DELTA_2026-04-28.md:48:4. Produce CTO EA-vs-Card handoff; no pipeline dispatch.
+docs/ops\QUA-402_CHANGE_SUMMARY_2026-05-01T074716Z.md:17:- CTO EA-vs-Card review required before any Pipeline-Operator dispatch.
