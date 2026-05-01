@@ -1,0 +1,3 @@
+PASS hard-rule scan 2026-05-01T074108Z
+EA=framework/EAs/QM5_1009_lien_fade_double_zeros/QM5_1009_lien_fade_double_zeros.mq5
+INFO=No recent pipeline-dispatch commit message signals
