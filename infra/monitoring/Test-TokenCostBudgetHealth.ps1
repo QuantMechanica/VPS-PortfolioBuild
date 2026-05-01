@@ -121,7 +121,9 @@ function Ensure-AlarmIssue {
         [int]$ThresholdPct,
         [double]$ForecastPct,
         [int64]$ForecastTokens,
-        [string]$SnapshotPath
+        [string]$SnapshotPath,
+        [bool]$CapIsPlaceholder = $true,
+        [bool]$CapReviewPending = $true
     )
 
     if ([string]::IsNullOrWhiteSpace($Token) -or [string]::IsNullOrWhiteSpace($Company) -or [string]::IsNullOrWhiteSpace($OwnerId)) {
@@ -141,6 +143,19 @@ function Ensure-AlarmIssue {
         if ($existing.Count -gt 0) {
             return $existing[0]
         }
+        if ($CapIsPlaceholder -and $CapReviewPending) {
+            $placeholderExisting = @(
+                $issues | Where-Object {
+                    $_.title -like 'Token budget alarm *' -and
+                    ([string]$_.status).ToLowerInvariant() -notin @('done', 'cancelled') -and
+                    ([string]$_.description) -match 'cap_is_placeholder=true' -and
+                    ([string]$_.description) -match 'cap_review_pending=true'
+                } | Select-Object -First 1
+            )
+            if ($placeholderExisting.Count -gt 0) {
+                return $placeholderExisting[0]
+            }
+        }
     }
     catch {
         return $null
@@ -155,6 +170,8 @@ Auto-generated token budget alarm from Test-TokenCostBudgetHealth.ps1.
 - Forecast usage pct: $ForecastPct
 - Monthly forecast tokens: $ForecastTokens
 - Snapshot: $SnapshotPath
+- cap_is_placeholder=true
+- cap_review_pending=true
 
 DL-055 escalation hook: OWNER review required.
 "@
@@ -397,6 +414,8 @@ if (-not $NoWriteSnapshot.IsPresent) {
 
 $result["alarm_issue"] = $null
 if (-not $NoCreateAlarmIssue.IsPresent -and $result.alarm.level -ne "ok" -and $result.alarm.breached_threshold_pct) {
+    $capIsPlaceholder = [bool]$result.caps.cap_is_placeholder
+    $capReviewPending = $capIsPlaceholder
     $alarmIssue = Ensure-AlarmIssue `
         -ApiRoot $ApiUrl `
         -Token $ApiKey `
@@ -407,7 +426,9 @@ if (-not $NoCreateAlarmIssue.IsPresent -and $result.alarm.level -ne "ok" -and $r
         -ThresholdPct ([int]$result.alarm.breached_threshold_pct) `
         -ForecastPct ([double]$result.totals.monthly_cap_usage_pct_forecast) `
         -ForecastTokens ([int64]$result.totals.monthly_forecast_linear) `
-        -SnapshotPath $result.output.json_path
+        -SnapshotPath $result.output.json_path `
+        -CapIsPlaceholder $capIsPlaceholder `
+        -CapReviewPending $capReviewPending
     if ($alarmIssue) {
         $result["alarm_issue"] = [ordered]@{
             identifier = $alarmIssue.identifier
