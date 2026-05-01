@@ -7,12 +7,16 @@
 
 ```yaml
 strategy_id: SRC04_S09
-ea_id: TBD
+ea_id: 1015
 slug: lien-perfect-order
-status: DRAFT
+status: APPROVED
 created: 2026-04-28
 created_by: Research
-last_updated: 2026-04-28
+last_updated: 2026-05-01
+g0_issue: QUA-641
+g0_reviewed_at: 2026-05-01
+g0_reviewer: CEO (DL-037)
+g0_verdict: APPROVED
 
 strategy_type_flags:
   - ma-stack-entry                            # vocabulary-gap PROPOSED — entry trigger: K consecutive moving averages of increasing periods are in MONOTONIC SEQUENTIAL ORDER (long: SMA(P1) > SMA(P2) > ... > SMA(PK) for P1 < P2 < ... < PK; short mirror). Lien's perfect-order canonical case: K=5 with periods (10, 20, 50, 100, 200). Entry fires N candles AFTER initial formation if stack still holds. Distinct from `trend-filter-ma` (single MA filter, e.g., Close > SMA(200), used as overlay rather than entry trigger); distinct from `cross-sectional-decile-sort` (universe-ranked relative-strength, not single-instrument MA stack); distinct from `vol-regime-gate` (vol-bucket classifier, not MA-based). V4 had no MA-stack-entry EA per `strategy_type_flags.md` Mining-provenance table — 5-MA sequential-stack as ENTRY trigger is net-new with SRC04 Lien Ch 16. Flagged at § 16; batch-ratified at SRC04 closeout.

@@ -7,12 +7,16 @@
 
 ```yaml
 strategy_id: SRC04_S04
-ea_id: TBD
+ea_id: 1010
 slug: lien-waiting-deal
-status: DRAFT
+status: APPROVED
 created: 2026-04-28
 created_by: Research
-last_updated: 2026-04-28
+last_updated: 2026-05-01
+g0_issue: QUA-641
+g0_reviewed_at: 2026-05-01
+g0_reviewer: CEO (DL-037)
+g0_verdict: APPROVED
 
 strategy_type_flags:
   - intraday-session-pattern                  # Lien Ch 11 PDF p. 117: "exploits the common perception that UK traders are notorious stop hunters" — entry exploits a known intraday micro-pattern within the London-open session window. V4 precedent: SM_221 SilverBullet (NY 10:00-11:00 liquidity grab) + SM_419 ProGo (pivot break-and-go). Lien's variant is a London-open false-breakout-fade (range defined 06:00-07:00 GMT during Frankfurt-London power hour; entry on post-07:00 spike-through-and-reverse pattern).

@@ -7,12 +7,16 @@
 
 ```yaml
 strategy_id: SRC04_S08
-ea_id: TBD
+ea_id: 1014
 slug: lien-channels
-status: DRAFT
+status: APPROVED
 created: 2026-04-28
 created_by: Research
-last_updated: 2026-04-28
+last_updated: 2026-05-01
+g0_issue: QUA-641
+g0_reviewed_at: 2026-05-01
+g0_reviewer: CEO (DL-037)
+g0_verdict: APPROVED
 
 strategy_type_flags:
   - narrow-range-breakout                     # Lien Ch 15 PDF p. 139 rule 1: "First, identify a channel on either an intraday or daily chart. The price should be contained within a narrow range." Lien's verbatim framing references "trendline" + "parallel line" implying SLOPED channels, but all 3 worked examples (USDCAD / EURGBP / EURUSD on M15) use HORIZONTAL n-bar high/low ranges. Card-level parameter `range_definition = "n-bar-horizontal-range"` (default; matches all 3 worked examples) vs `linear-regression-channel` (P3 variant; matches the trendline framing). This is the SECOND `narrow-range-breakout` card in SRC04 alongside SRC04_S05 inside-day-breakout, distinguished by `range_contraction_pattern` parameter (`n-bar-horizontal-range` here vs `consecutive-inside-days` for S05).

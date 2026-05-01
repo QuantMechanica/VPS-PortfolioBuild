@@ -7,12 +7,16 @@
 
 ```yaml
 strategy_id: SRC04_S05
-ea_id: TBD
+ea_id: 1011
 slug: lien-inside-day-breakout
-status: DRAFT
+status: APPROVED
 created: 2026-04-28
 created_by: Research
-last_updated: 2026-04-28
+last_updated: 2026-05-01
+g0_issue: QUA-641
+g0_reviewed_at: 2026-05-01
+g0_reviewer: CEO (DL-037)
+g0_verdict: APPROVED
 
 strategy_type_flags:
   - narrow-range-breakout                     # Lien Ch 12 PDF p. 123: "An inside day is defined as a day where the daily range has been contained within the prior day's trading range" — multi-inside-day pattern is the strictest form of range-contraction precondition. Disambiguates from `donchian-breakout` (no contraction precondition, fires on any N-bar extreme) and from `vol-expansion-breakout` (uses single prior-bar range scaled by N%, no containment requirement). Card-level parameter `range_contraction_pattern = "consecutive-inside-days"` distinguishes from canonical NR4/NR7 (Crabel) variants — inside-day requires strict containment (today H ≤ prior H AND today L ≥ prior L), NR-N requires today's range to be the narrowest of past N bars without strict containment.

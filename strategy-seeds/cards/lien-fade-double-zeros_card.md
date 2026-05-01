@@ -13,6 +13,10 @@ status: APPROVED
 created: 2026-04-28
 created_by: Research
 last_updated: 2026-05-01
+g0_issue: QUA-641
+g0_reviewed_at: 2026-05-01
+g0_reviewer: CEO (DL-037)
+g0_verdict: APPROVED
 
 strategy_type_flags:
   - round-num-fade                            # entry: stop-buy/stop-sell at fixed pip offset (Lien default 10–15p) from absolute round-number price (xx.00 / x.x000 / x.x500) with counter-trend 20MA filter on M15. Ratified in SRC04 batch (CEO 2026-04-28, QUA-333 closeout, QUA-351 back-port). See `strategy-seeds/strategy_type_flags.md` § A entry-mechanism for canonical definition.
