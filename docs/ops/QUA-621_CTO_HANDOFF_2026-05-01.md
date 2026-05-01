@@ -67,10 +67,11 @@ git show --stat --name-only 3c3d6280
 - Unblock owner: CTO
 - Unblock action: Approve (or request changes on) `847dabad^..HEAD` so Development can proceed with integration/closure steps on QUA-621.
 
-## Heartbeat refresh (2026-05-01T05:58:53+02:00)
+## Heartbeat refresh (dynamic)
 - Current branch: `agents/development`
-- Current head: `714047a3`
+- Current head: `HEAD`
 - Current review range: `847dabad^..HEAD` (count is dynamic while blocker-evidence commits are appended).
+- Current review range count command: `git rev-list --count 847dabad^..HEAD`
 - Unexpected worktree artifacts detected (non-claimed outputs, untracked only):
   - `framework/EAs/QM5_1006_davey_eu_day/QM5_1006_davey_eu_day.ex5` (94730 bytes, created 2026-04-28 06:44:58, modified 2026-04-28 13:05:47)
   - `framework/EAs/QM5_1007_lien_dbb_pick_tops/QM5_1007_lien_dbb_pick_tops.ex5` (97570 bytes, created 2026-04-28 12:41:26, modified 2026-04-28 12:43:54)
