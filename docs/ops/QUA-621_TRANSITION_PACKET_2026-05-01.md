@@ -12,9 +12,9 @@ Set `QUA-621` from `in_progress` to `done`.
 - Closeout anchor:
   - `docs/ops/QUA-621_CLOSEOUT_2026-05-01.md`
 - Final blocker snapshot anchor:
-  - `a48072fe` with `HEAD=d2fbb273`, `RANGE=847dabad^..HEAD`, `COUNT=428`
+  - `docs/ops/QUA-621_BLOCKED_ON_CTO_2026-05-01.json` (`head=HEAD`, `review_range=847dabad^..HEAD`, `review_range_count_cmd=git rev-list --count 847dabad^..HEAD`)
 - Freeze clarification:
-  - `3678fb1f` marks blocker evidence snapshot as final until CTO review/decision.
+  - `docs/ops/QUA-621_BLOCKED_FREEZE_2026-05-01.md` defines re-entry triggers while CTO decision is pending.
 
 ## Unblock Ownership
 
