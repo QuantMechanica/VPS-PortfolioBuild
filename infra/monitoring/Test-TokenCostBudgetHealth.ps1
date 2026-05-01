@@ -123,7 +123,8 @@ function Ensure-AlarmIssue {
         [int64]$ForecastTokens,
         [string]$SnapshotPath,
         [bool]$CapIsPlaceholder = $true,
-        [bool]$CapReviewPending = $true
+        [bool]$CapReviewPending = $true,
+        [string[]]$CapReviewIssueIdentifiers = @("QUA-542", "QUA-543")
     )
 
     if ([string]::IsNullOrWhiteSpace($Token) -or [string]::IsNullOrWhiteSpace($Company) -or [string]::IsNullOrWhiteSpace($OwnerId)) {
@@ -144,16 +145,45 @@ function Ensure-AlarmIssue {
             return $existing[0]
         }
         if ($CapIsPlaceholder -and $CapReviewPending) {
-            $placeholderExisting = @(
-                $issues | Where-Object {
-                    $_.title -like 'Token budget alarm *' -and
-                    ([string]$_.status).ToLowerInvariant() -notin @('done', 'cancelled') -and
-                    ([string]$_.description) -match 'cap_is_placeholder=true' -and
-                    ([string]$_.description) -match 'cap_review_pending=true'
+            $openIssues = @($issues | Where-Object { ([string]$_.status).ToLowerInvariant() -notin @('done', 'cancelled') })
+            $capReviewOpen = @(
+                $openIssues | Where-Object {
+                    $id = [string]$_.identifier
+                    $CapReviewIssueIdentifiers -contains $id
                 } | Select-Object -First 1
-            )
-            if ($placeholderExisting.Count -gt 0) {
-                return $placeholderExisting[0]
+            ).Count -gt 0
+
+            if ($capReviewOpen) {
+                $dateObj = [datetime]::ParseExact($DateUtc, "yyyy-MM-dd", [System.Globalization.CultureInfo]::InvariantCulture)
+                $monthPrefix = $dateObj.ToString("yyyy-MM")
+                $thresholdRegex = "^Token budget alarm $ThresholdPct% \(.+\) - $monthPrefix-\d{2}$"
+                $monthlyExisting = @(
+                    $openIssues | Where-Object {
+                        ([string]$_.title) -match $thresholdRegex
+                    } | Select-Object -First 1
+                )
+                if ($monthlyExisting.Count -gt 0) {
+                    try {
+                        $commentUri = "$($ApiRoot.TrimEnd('/'))/api/issues/$([string]$monthlyExisting[0].id)/comments"
+                        $commentPayload = @{
+                            body = @"
+Token budget alarm update (placeholder-cap mode; dedup active).
+
+- Date (UTC): $DateUtc
+- Alarm level: $AlarmLevel
+- Breached threshold: $ThresholdPct%
+- Forecast usage pct: $ForecastPct
+- Monthly forecast tokens: $ForecastTokens
+- Snapshot: $SnapshotPath
+- cap_is_placeholder=true
+- cap_review_pending=true
+"@
+                        } | ConvertTo-Json -Depth 4
+                        Invoke-RestMethod -Method Post -Uri $commentUri -Headers $headers -ContentType "application/json" -Body $commentPayload | Out-Null
+                    }
+                    catch {}
+                    return $monthlyExisting[0]
+                }
             }
         }
     }
