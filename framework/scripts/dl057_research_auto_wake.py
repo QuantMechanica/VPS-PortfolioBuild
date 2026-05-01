@@ -48,7 +48,11 @@ RESEARCH_AGENT_ID = "7aef7a17-d010-4f6e-a198-4a8dc5deb40d"
 BASELINE_QUEUE_PHASES = ("P0", "P1", "P2")
 
 # Statuses that count as "active" for queue purposes.
-ACTIVE_STATUSES = ("todo", "in_progress", "in_review")
+# `blocked` is included because a blocked P0/P1/P2 issue is still pipeline work
+# in flight (just waiting for an upstream unblock — typical case during the
+# Codex outage). Per DL-057 R-057-1, baseline queue is non-empty if any EA is
+# in P0/P1/P2 regardless of why it can't currently progress.
+ACTIVE_STATUSES = ("todo", "in_progress", "in_review", "blocked")
 
 STATE_FILE = Path(r"D:\QM\reports\ops\dl057_research_pulse_state.json")
 LOG_FILE = Path(r"D:\QM\reports\ops\dl057_research_pulse.log")
@@ -114,19 +118,25 @@ def is_baseline_queue_active(issues: list[dict]) -> tuple[bool, list[dict]]:
     return bool(matches), matches
 
 
-def is_g0_review_unresolved(issues: list[dict]) -> tuple[bool, list[dict]]:
-    """Strategy Card G0 review not yet resolved.
+QB_AGENT_ID = "0ab3d743-e3fb-44e5-8d35-c05d0d78715d"
 
-    Heuristic: title contains 'G0' or 'Strategy Card' AND status in {in_progress,
-    in_review, todo} AND title implies review (not just creation).
+
+def is_g0_review_unresolved(issues: list[dict]) -> tuple[bool, list[dict]]:
+    """Strategy Card G0 review (DL-030 Class 2) not yet resolved.
+
+    Tight heuristic: assignee is Quality-Business AND title contains 'G0' or
+    'Strategy Card' (verdict / review). Excludes DL-036 EA Review Gate issues
+    which are CTO-assigned and a different review class.
     """
     matches = []
     for issue in issues:
         if str(issue.get("status", "")).lower() not in ACTIVE_STATUSES:
             continue
+        if issue.get("assigneeAgentId") != QB_AGENT_ID:
+            continue
         title = (issue.get("title") or "").upper()
         is_g0 = " G0 " in f" {title} " or "G0/" in title or " G0:" in title
-        is_card = "STRATEGY CARD" in title or "STRATEGY-CARD" in title or "_S0" in title
+        is_card = "STRATEGY CARD" in title or "STRATEGY-CARD" in title or " — APPROVED CARD " in title
         is_review = "REVIEW" in title or "VERDICT" in title or "G0" in title
         if (is_g0 or is_card) and is_review:
             matches.append(issue)
