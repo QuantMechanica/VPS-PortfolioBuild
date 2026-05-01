@@ -23,4 +23,4 @@ Implemented D4 canonical matrix rebuild from `D:\QM\mt5\T1\dwx_import\logs\hourl
 
 ## Commit hash
 
-- `<INSERT_COMMIT_HASH_AFTER_COMMIT>`
+- `960a3f30`
