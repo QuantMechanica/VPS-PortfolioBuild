@@ -1,0 +1,83 @@
+{
+  "_purpose": "Candidate P2 baseline matrix manifest for QM5_1003. Pipeline-Op consumes this Tuesday post-Codex-restore. Validates against framework/scripts/pipeline_dispatcher.py validate_matrix_payload() schema.",
+  "_authored_by": "Board Advisor 2026-05-01 — Tuesday-prep pre-stage",
+  "_authority": "DL-038 (36-symbol matrix per phase) + DL-054 (5-gate enforcement) + DL-057 (single-run discipline)",
+  "_status": "DRAFT — CTO + Pipeline-Op validate Tuesday before dispatch",
+
+  "ea_id": "QM5_1003",
+  "version": "v1",
+  "phase": "P2",
+  "sub_gate_config_hash": "TBD_set_at_dispatch",
+  "setfile_dir": "framework/EAs/QM5_1003_davey_baseline_3bar/sets",
+  "setfile_pattern": "QM5_1003_davey_baseline_3bar_{symbol}_H1_backtest.set",
+
+  "window": {
+    "from": "2017-10-02",
+    "to": "2024-12-31",
+    "_note": "Per PIPELINE_PHASE_SPEC.md § P2 — DEV 2017-2022 + HOLDOUT 2023-2024. CTO confirms exact window splits Tuesday."
+  },
+
+  "tester": {
+    "_note": "From framework/registry/tester_defaults.json (DL-054 Gate 2). Pipeline-Op MUST load these.",
+    "initial_deposit": 100000,
+    "deposit_currency": "USD",
+    "leverage": 100,
+    "tick_model": 4,
+    "_tick_model_note": "4 = every tick, real ticks (production grade per skills/quaa138/mt5-backtesting/SKILL.md)"
+  },
+
+  "symbols": [
+    "AUDCAD.DWX", "AUDCHF.DWX", "AUDJPY.DWX", "AUDNZD.DWX", "AUDUSD.DWX",
+    "CADCHF.DWX", "CADJPY.DWX", "CHFJPY.DWX",
+    "EURAUD.DWX", "EURCAD.DWX", "EURCHF.DWX", "EURGBP.DWX", "EURJPY.DWX", "EURNZD.DWX", "EURUSD.DWX",
+    "GBPAUD.DWX", "GBPCAD.DWX", "GBPCHF.DWX", "GBPJPY.DWX", "GBPNZD.DWX", "GBPUSD.DWX",
+    "GDAXIm.DWX", "NDXm.DWX", "UK100.DWX", "WS30.DWX",
+    "NZDCAD.DWX", "NZDCHF.DWX", "NZDJPY.DWX", "NZDUSD.DWX",
+    "USDCAD.DWX", "USDCHF.DWX", "USDJPY.DWX",
+    "XAGUSD.DWX", "XAUUSD.DWX", "XNGUSD.DWX", "XTIUSD.DWX"
+  ],
+  "_symbols_count": 36,
+  "_symbols_source": "framework/scripts/dl054_gates.py canonical_symbols_from_filesystem() output 2026-05-01 — matches DL-038 Rule 2 36-symbol matrix exactly",
+  "_symbols_excluded": {
+    "JPN225.DWX": "single 2026 stub hcc only — broker tick history starts 2026-02-02; insufficient for P2 DEV window",
+    "XBRUSD.DWX": "single 2026 stub hcc only — broker tick history starts 2026-02-02; insufficient for P2 DEV window",
+    "GDAXI.DWX": "non-canonical name; canonical is GDAXIm.DWX (broker `m` suffix)",
+    "NDX.DWX": "non-canonical name; canonical is NDXm.DWX (broker `m` suffix)"
+  },
+
+  "output": {
+    "report_csv": "D:/QM/reports/pipeline/QM5_1003/P2_clean_<TIMESTAMP>/report.csv",
+    "evidence_root": "D:/QM/reports/pipeline/QM5_1003/P2_clean_<TIMESTAMP>/",
+    "_invalidation_notice_template": "D:/QM/reports/pipeline/QM5_1003/P2/INVALIDATION_NOTICE.md (the previous broken matrix's notice; new run goes to P2_clean_<TIMESTAMP>, not P2)"
+  },
+
+  "gate_enforcement": {
+    "library": "framework/scripts/dl054_gates.py",
+    "cli_runner": "framework/scripts/dl054_gate_runner.py",
+    "integration_plan": "framework/scripts/dl054_integration.md",
+    "pre_launch_gates": ["G1", "G2", "G5"],
+    "post_launch_gates": ["G3", "G4"],
+    "_invariant": "Every report.csv row MUST have verdict in {PASS, INVALID, FAIL, ZERO_TRADE}. Bare PASS without all 5 gates = DL-054 violation, QT enforcer authority to reject."
+  },
+
+  "tuesday_dispatch_steps": [
+    "1. Verify framework/registry/tester_defaults.json exists and matches expected (initial_deposit=100000, fixed_risk.amount=1000)",
+    "2. Run python framework/scripts/dl054_gates.py — expect 36 canonical symbols + tester_defaults loaded clean",
+    "3. For each symbol: python framework/scripts/dl054_gate_runner.py prelaunch ... — collect prelaunch verdicts",
+    "4. For symbols with verdict=PRELAUNCH_OK: dispatch tester per pipeline_dispatcher.py (T1-T5 load-balanced per DL-035)",
+    "5. For symbols with verdict=INVALID: write INVALID row to report.csv, do NOT launch tester",
+    "6. After tester completes: python framework/scripts/dl054_gate_runner.py postlaunch ... — collect post verdicts",
+    "7. python framework/scripts/dl054_gate_runner.py writerow ... — append final verdict to report.csv",
+    "8. QT reviews matrix per DL-054 gate-of-record",
+    "9. CEO consumes verdict; on phase_verdict=PASS advance to P3 (sweep); on FAIL diagnose"
+  ],
+
+  "_cross_references": [
+    "DL-038 — Seven Binding Backtest Rules",
+    "DL-054 — Anti-Theater Pass Criteria",
+    "DL-057 — Research-resume on baseline-queue-empty",
+    "docs/ops/TUESDAY_RESTART_RUNBOOK_2026-05-05.md — single-sheet step sequence",
+    "docs/ops/QUA-684_D2_BAR_COMPILATION_AUDIT_2026-05-01.md — why P0-21 was reopened + remediated",
+    "docs/ops/QUA-662_PHANTOM_PASS_AUDIT_2026-05-01.md — failure mode this manifest exists to prevent"
+  ]
+}

@@ -293,22 +293,36 @@ ZERO_TRADE_ADR_DIR = REPO_ROOT / "decisions"
 
 
 def parse_trade_count(report_path: Path) -> int | None:
-    """Parse MT5 tester report.htm/xml for total trades. Returns None if unparseable."""
+    """Parse MT5 tester report.htm/xml for total trades. Returns None if unparseable.
+
+    Validated against MT5 build 5833 report.htm shape (sample on T1 2026-04-30):
+        `<td nowrap colspan="3">Total Trades:</td>  <td nowrap><b>0</b></td>`
+    Reports are UTF-16 LE encoded.
+    """
     if not report_path.exists():
         return None
     try:
         text = report_path.read_text(encoding="utf-16-le", errors="replace")
     except Exception:
         text = report_path.read_text(encoding="utf-8", errors="replace")
-    # MT5 HTML tester report typically has "Total Trades" or "Total Net Profit / Trades"
-    # We try a few patterns; CTO refines on Tuesday with the actual report shape.
-    patterns = [
+
+    # Primary pattern (validated 2026-05-01 against real MT5 build 5833 report.htm).
+    primary = re.compile(
+        r"Total\s*Trades\s*:\s*</td>\s*<td[^>]*>\s*<b>\s*(\d+)\s*</b>",
+        re.IGNORECASE,
+    )
+    m = primary.search(text)
+    if m:
+        return int(m.group(1))
+
+    # Fallback patterns (older MT5 builds, XML reports, JSON exports).
+    fallbacks = [
+        r"Total\s*Trades:?\s*</td>\s*<td[^>]*>\s*(?:<b>\s*)?(\d+)",
         r"Total\s*[Tt]rades\D+(\d+)",
-        r"(?:Total|Trades)\s*</td>\s*<td[^>]*>\s*(\d+)",
         r'"trades_total"\s*:\s*(\d+)',
         r"<TotalTrades>(\d+)</TotalTrades>",
     ]
-    for pat in patterns:
+    for pat in fallbacks:
         m = re.search(pat, text)
         if m:
             return int(m.group(1))
