@@ -1,0 +1,52 @@
+{
+  "_authored_by": "Board Advisor 2026-05-01 — derived from CoS draft on QUA-699 first-heartbeat audit; ratified by OWNER directive Tuesday-prep + companion to DL-055 (DevOps token-burn watch) and DL-056 (CoS).",
+  "_purpose": "Per-adapter token budget guards. CoS reads this on every audit to compute per-agent forecast vs cap; if forecast hits alarm or hard-stop threshold within escalation_window_days, CoS escalates to CEO via QUA-699 rolling tracker.",
+  "_origin_evidence": "Codex token quota exhausted 2026-05-01 ~12:00 UTC with zero days warning — this file is the corrective so future exhaustions are forecast 4+ days early.",
+  "version": 1,
+  "adapters": {
+    "claude_local": {
+      "per_agent_monthly_budget_cents": 5000,
+      "_per_agent_monthly_budget_note": "$50/agent/month. Sonnet roles (CoS, Doc-KM, QB, QT) typically much lower; Opus roles (CEO, Research) higher. Adjust per-agent in companion overrides if needed.",
+      "alarm_threshold_pct": 75,
+      "hard_stop_pct": 95
+    },
+    "codex_local": {
+      "per_agent_monthly_budget_cents": 3000,
+      "_per_agent_monthly_budget_note": "$30/agent/month — note Codex API spend is NOT captured in Paperclip API spentMonthlyCents field today; tracker has to read provider-side billing.",
+      "alarm_threshold_pct": 75,
+      "hard_stop_pct": 95
+    }
+  },
+  "company": {
+    "monthly_budget_cents": 30000,
+    "_monthly_budget_note": "$300/month total cap. Verify against actual provider statements; this is a starter ceiling.",
+    "alarm_threshold_pct": 70,
+    "hard_stop_pct": 90
+  },
+  "escalation_window_days": 4,
+  "_escalation_window_note": "If forecast says exhaustion within 4 days at current run-rate, CoS escalates THIS heartbeat per DL-056. Avoids the 0-day-warning failure mode (Codex 2026-05-01).",
+  "alarm_actions": {
+    "alarm_threshold_pct": "post anomaly comment on QUA-699; CoS daily rollup includes per-agent burn rate",
+    "hard_stop_pct": "escalate to CEO with WHAT/WHY/IMPACT/TRADEOFF/RECOMMENDED-DECISION; CEO decides agent pause, model downgrade, or budget bump"
+  },
+  "per_agent_overrides": {
+    "_note": "If a specific agent has different cap (e.g. CEO needs more for strategic decisions), override here. Empty by default; CoS+CEO populate as patterns emerge.",
+    "7795b4b0-8ecd-46da-ab22-06def7c8fa2d": {
+      "_role": "CEO",
+      "monthly_budget_cents": 8000,
+      "_note": "CEO Opus runs more tokens for strategic work; +60% over default."
+    },
+    "7aef7a17-d010-4f6e-a198-4a8dc5deb40d": {
+      "_role": "Research",
+      "monthly_budget_cents": 6000,
+      "_note": "Research Opus extracts cards from sources; reading-heavy; +20%."
+    }
+  },
+  "_cross_references": [
+    "DL-055 — DevOps token-burn watch via QUA-527 (data producer)",
+    "DL-056 — CoS hire (data consumer + interpreter; reads this file every heartbeat)",
+    "DL-046 — anti-theater (alarm spam forbidden; comment on rolling tracker, not new issues)",
+    "QUA-699 — CoS rolling tracker (where alarms surface)",
+    "Codex 2026-05-01 outage — the failure mode this file exists to prevent"
+  ]
+}

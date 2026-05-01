@@ -1,14 +1,16 @@
 ---
 title: Backtest Execution Discipline (V5 binding)
 owner: Documentation-KM
-last-updated: 2026-04-28
-authored-by: QUA-418 (Doc-KM)
-parent-directive: QUA-400 (OWNER 2026-04-28 ~11:15 local) → DL-038
+last-updated: 2026-05-01
+authored-by: QUA-418 (Doc-KM); DL-054 amend by Board Advisor 2026-05-01
+parent-directive: QUA-400 (OWNER 2026-04-28 ~11:15 local) → DL-038; QUA-684 + OWNER 2026-05-01 → DL-054
 ---
 
 # 16 — Backtest Execution Discipline (V5 binding)
 
 > **Binding source:** OWNER consolidated directive 2026-04-28 ~11:15 local, captured verbatim in [QUA-400](/QUA/issues/QUA-400). CEO ratified all seven rules under [DL-038](../decisions/2026-04-28_seven_backtest_rules.md) (recording task: [QUA-422](/QUA/issues/QUA-422); commit `90ada5e4` on `agents/ceo`, pending merge to main). Operationalizing children: [QUA-413](/QUA/issues/QUA-413) (DevOps deploy), [QUA-414](/QUA/issues/QUA-414) (Pipeline-Op matrix dispatcher) + [QUA-421](/QUA/issues/QUA-421) (matrix dispatcher follow-up), [QUA-415](/QUA/issues/QUA-415) (set-file generator) + [QUA-419](/QUA/issues/QUA-419) (dispatch-gate rollout), [QUA-416](/QUA/issues/QUA-416) (Research Tier 1.5) + [QUA-423](/QUA/issues/QUA-423) (survey-pass), [QUA-417](/QUA/issues/QUA-417) (CTO review enforcement) + [QUA-424](/QUA/issues/QUA-424) (retroactive QM5_SRC04_S03 review), [QUA-418](/QUA/issues/QUA-418) (this doc) + [QUA-426](/QUA/issues/QUA-426) (DL-number mirror), [QUA-422](/QUA/issues/QUA-422) (CEO DL recording).
+
+> **DL-054 amend (2026-05-01):** the seven rules are necessary but not sufficient. The QUA-662 phantom-PASS matrix (36/36 PASS while Pipeline-Op's own zero_trade_audit_20260501.json showed 36/36 zero-trade) demonstrated that DL-038 alone does not prevent theatrical PASS labels. **DL-054 codifies five binding gates** a `(ea_id, phase, symbol)` run must pass before `verdict=PASS` may land in `report.csv`: G1 tester data access verified (filesystem hcc + ≥95% window coverage); G2 tester defaults loaded (deposit 100k + RISK_FIXED setfile per Rule 7); G3 tester journal clean (no "no history data" / "cannot get history" / "Terminal: Invalid params"); G4 trade evidence (`trade_count >= 1` OR per-symbol zero-trade ADR); G5 symbol-name canonical (`NDXm.DWX` not `NDX.DWX`). Any gate fail forces `verdict=INVALID` with `invalidation_reason`; Quality-Tech is gate-of-record on every matrix review. See [DL-054](../decisions/DL-054_anti_theater_pass_criteria.md), gate library `framework/scripts/dl054_gates.py`, CLI runner `framework/scripts/dl054_gate_runner.py`, integration plan `framework/scripts/dl054_integration.md`. **CTO Tuesday work** (post-Codex-restore): splice gate calls into `pipeline_dispatcher.py` per integration plan §A and into per-phase runners per §B; extend `report.csv` schema with `invalidation_reason` + `evidence` columns per §C.
 
 The seven rules below define how V5 dispatches a strategy across the T1-T5 factory. Together they replace any improvised backtest workflow. Pipeline-Operator refuses to dispatch a run that violates any of them; DevOps refuses to deploy an EA that violates Rule 5; Research refuses to ingest a Tier-1.5 strategy that violates Rule 6.
 
