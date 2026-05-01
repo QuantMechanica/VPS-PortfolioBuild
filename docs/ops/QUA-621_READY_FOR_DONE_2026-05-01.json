@@ -1,0 +1,15 @@
+{
+  "issue": "QUA-621",
+  "state": "READY_FOR_DONE",
+  "as_of": "2026-05-01T10:46:55+02:00",
+  "head": "4fe41cf4",
+  "recommended_transition": "done",
+  "evidence": {
+    "closeout": "docs/ops/QUA-621_CLOSEOUT_2026-05-01.md",
+    "transition_packet": "docs/ops/QUA-621_TRANSITION_PACKET_2026-05-01.md",
+    "blocker_status": "docs/ops/QUA-621_BLOCKED_STATUS_2026-05-01.json",
+    "blocker_runlog": "docs/ops/QUA-621_BLOCKED_RUNLOG_2026-05-01.md"
+  },
+  "unblock_owner": "CTO",
+  "unblock_action": "review/approve or request changes on 847dabad^..HEAD"
+}
