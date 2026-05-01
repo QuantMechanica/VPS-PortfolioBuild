@@ -1,6 +1,1 @@
-issue: QUA-671
-status: blocked_pending_owner_approval
-unblock_owner: OWNER
-unblock_action: Approve P0-13 T6 manifest dry-run evidence and authorize status transition to done.
-policy_gate: Class-1 executionPolicy
-updated_at_utc: 2026-05-01T09:04:30Z
+issue: QUA-671status: blocked_pending_owner_approvalunblock_owner: OWNERunblock_action: Approve P0-13 T6 manifest dry-run evidence and authorize status transition to done.policy_gate: Class-1 executionPolicyupdated_at_utc: 2026-05-01T09:50:43Z
