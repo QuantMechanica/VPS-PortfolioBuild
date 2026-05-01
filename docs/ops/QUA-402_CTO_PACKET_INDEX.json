@@ -1,0 +1,13 @@
+{
+  "issue": "QUA-402",
+  "card": "QUA-342",
+  "ea": "QM5_1009_lien_fade_double_zeros",
+  "strict_compile": "PASS",
+  "pipeline_dispatch_allowed": false,
+  "waiting_on": "CTO_EA_VS_CARD_REVIEW",
+  "bundle": "docs/ops/QUA-402_EVIDENCE_ARCHIVE_2026-05-01T0800Z.zip",
+  "bundle_integrity": "docs/ops/QUA-402_EVIDENCE_ARCHIVE_2026-05-01T0800Z.integrity_2026-05-01T080042Z.txt",
+  "next_action": "docs/ops/QUA-402_NEXT_ACTION.txt",
+  "wait_state": "docs/ops/QUA-402_WAIT_STATE_UNTIL_CTO.txt",
+  "generated_at_utc": "2026-05-01T080125Z"
+}
