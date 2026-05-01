@@ -1,0 +1,3 @@
+185b9eb81b30ee0b6c6dd92bfcd9ba4bf688b88a4a1410121fc9a246f49f12f1  framework/deploy/manifests/T6_DRYRUN_v0.yaml
+198367c199d0e333162686cd4c2be5a35e64e6214c713ac467953ff8f43e095c  framework/deploy/scripts/manifest_dryrun.ps1
+e0c8f71ce113c247c410c1169017eba2ff0d092dd74ebe6b7f98e82e6b4c0a30  docs/ops/P0-13_T6_MANIFEST_DRYRUN_2026-05-01.md
