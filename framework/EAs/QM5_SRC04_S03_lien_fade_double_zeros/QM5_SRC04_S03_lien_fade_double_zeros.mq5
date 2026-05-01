@@ -7,7 +7,7 @@
 #include <Trade/Trade.mqh>
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                     = 4303;
+input int    qm_ea_id                     = 1009;
 input int    qm_magic_slot_offset         = 0;
 
 input group "Risk"
@@ -161,7 +161,8 @@ void CancelOurPendingOrders()
       req.action = TRADE_ACTION_REMOVE;
       req.order = ticket;
       req.magic = magic;
-      OrderSend(req, res);
+      if(!OrderSend(req, res))
+         continue;
      }
   }
 
