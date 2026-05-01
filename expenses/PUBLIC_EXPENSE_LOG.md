@@ -23,13 +23,15 @@
 
 ## Detailed Log
 
-| Date | Item | Vendor | Amount (EUR) | Category | Note | EP# |
-|---|---|---|---:|---|---|---|
-| 2026-04-21 | Hetzner AX42-U setup fee (one-time) | Hetzner | 128.40 | Infrastructure | Order B20260421-3420195-2995101, HEL1, customized AX42-U with 1 TB extra NVMe; server delivered 2026-04-22 in Rescue System | EP02 |
-| 2026-04-21 | Hetzner AX42-U first month | Hetzner | 75.60 | Infrastructure | Monthly server cost incl. primary IPv4 and 1 TB NVMe add-on; billed monthly | EP02 |
-| Month 5 (planned) | Windows Server 2022 Standard 16-Core ESD | MyOEM | 99.90 | Software licenses | Eval used first 180d, key purchased in Month 5 with APRIL15 code | EPxx |
-| pending | Darwinex account funding (minimum) | Darwinex | 0 | Data & feeds | DXZ fresh account, zero history | EP04 |
-| ~2026-05-05 | Tick Data Suite renewal (decision pending) | eareview.net | 32.90 / 189 / 549 | Software licenses | Existing license expires mid-May. Monthly €32.90 / Yearly €189 (best value 12-mo) / Lifetime €549 | EPxx |
+> Schema mirrors `expenses/expenses.csv`. Private SKU / order / server-ID detail lives in `.private/VPS_SERVER_RECORD.md` and is intentionally not republished here.
+
+| Date | Item | Vendor | Category | Amount (EUR) | Note | Evidence | EP# |
+|---|---|---|---|---:|---|---|---|
+| 2026-04-21 | Hetzner AX42-U setup fee (one-time) | Hetzner | Infrastructure | 128.40 | Customized AX42-U dedicated server with 1 TB NVMe add-on; private SKU + order detail held internally. | `.private/VPS_SERVER_RECORD.md` | EP02 |
+| 2026-04-21 | Hetzner AX42-U first month | Hetzner | Infrastructure | 75.60 | Monthly server cost including primary IPv4 and 1 TB NVMe add-on; billed monthly. | `.private/VPS_SERVER_RECORD.md` | EP02 |
+| Month 5 (planned) | Windows Server 2022 Standard 16-Core ESD | MyOEM | Software licenses | 99.90 | Eval used first 180d, key purchased in Month 5. | — | EPxx |
+| pending | Darwinex account funding (minimum) | Darwinex | Data & feeds | 0 | DXZ fresh account, zero history. | — | EP04 |
+| ~2026-05-05 | Tick Data Suite renewal (decision pending) | eareview.net | Software licenses | 32.90 / 189 / 549 | Existing license expires mid-May. Monthly €32.90 / Yearly €189 / Lifetime €549. | — | EPxx |
 
 ## Planned Additional Costs (12-mo Forecast)
 

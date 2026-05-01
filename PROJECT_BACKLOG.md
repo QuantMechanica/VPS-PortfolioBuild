@@ -127,6 +127,7 @@ Anchor doc: `docs/ops/PHASE0_EXECUTION_BOARD.md` (rows P0-01 to P0-29).
 - ✅ P0-25 V4 news-impact tooling decision (RUNNER NOT PRESENT — V5 builds new) (2026-04-26)
 - ✅ P0-27 V5 sub-gate spec reconstructed (`docs/ops/PIPELINE_V5_SUB_GATE_SPEC.md`) (2026-04-26)
 - ✅ P0-28 Brand system migrated + V5 brand guide (`branding/`) (2026-04-26)
+- ✅ P0-15 Public expense log v0 — `expenses/expenses.csv` (Hetzner setup + first month), `expenses/PUBLIC_EXPENSE_LOG.md` summary, `docs/ops/EXPENSE_LOG_FORMAT.md` schema doc. Closed via QUA-672 (2026-05-01)
 
 ### In progress (today's actual owner = OWNER and/or Board Advisor)
 
@@ -141,7 +142,6 @@ Anchor doc: `docs/ops/PHASE0_EXECUTION_BOARD.md` (rows P0-01 to P0-29).
 - ⬜ **P0-06 DarwinexZero / MT5 access confirmation** — OWNER confirms Demo + Live login work. Today's owner: OWNER.
 - 🟡 **P0-21 Verify Tick Data Manager DarwinexZero GMT/DST settings + install Custom Tick Data** — **CURRENT ACTIVE TASK per OWNER 2026-04-26.** Per `docs/ops/TICK_DATA_MANAGER_DARWINEX_TIME.md`. Pflicht-Voraussetzung vor jedem Backtest UND vor sinnvollem Paperclip-Bootstrap (Wave 0 CTO/Pipeline-Operator brauchen funktionierende TDM). Today's owner: OWNER + Board Advisor (script) + manual MT5 walkthrough. Evidence target: `D:\QM\reports\setup\tick-data-timezone\`. *This is the bridge between Phase 0 closeout and Phase 1 (Paperclip Bootstrap).*
 - ⬜ **P0-13 T6 deploy manifest schema** — schema.yaml exists in `LIVE_T6_AUTOMATION_RUNBOOK.md`; needs first dry-run validation. Today's owner: Board Advisor (spec review), deferred for execution to Phase 5 LiveOps.
-- ⬜ **P0-15 Public expense log v0** — CSV + repo. Today's owner: OWNER (data) + Board Advisor (format).
 - ⬜ **P0-16 quantmechanica.com dashboard snapshot schema** — already specced in `docs/ops/WEBSITE_DASHBOARD_PAPERCLIP_STYLE.md`. JSON contract needs first version. Today's owner: Board Advisor.
 - ⬜ **P0-17 Process registry + roadmap** — process docs migrated; public-facing roadmap surface still TBD. Today's owner: Board Advisor (draft) + OWNER (sign-off).
 - ⬜ **P0-19 Buy-me-a-coffee + get-in-contact website CTA contract** — copy + page spec. Today's owner: OWNER (decision) + Board Advisor (spec).
