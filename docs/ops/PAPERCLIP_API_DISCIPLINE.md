@@ -81,7 +81,7 @@ print(len(recent))
 "
 ```
 
-If the count meets or exceeds the budget for your tier (see `processes/issue_discipline.md` § 2), stop creating issues for this heartbeat. Use comments instead.
+If the count meets or exceeds the budget for your tier (see `processes/21-issue-discipline.md` § 2), stop creating issues for this heartbeat. Use comments instead.
 
 ---
 
