@@ -155,19 +155,36 @@ def dispatch_or_invalidate(
     report_csv_path: str | None = None,
     max_per_terminal: int = 3,
     now_epoch: int | None = None,
-) -> dict[str, Any]:
-    return dispatch_job(
-        job,
-        state,
-        max_per_terminal=max_per_terminal,
-        now_epoch=now_epoch,
-        enforce_dl054_prelaunch=True,
-        terminal_for_gate=terminal,
-        window_start=window_start,
-        window_end=window_end,
+) -> Any | None:
+    normalized_job = validate_job(job)
+    pre = apply_pre_launch_gates(
+        ea_id=normalized_job["ea_id"],
+        phase=normalized_job["phase"],
+        symbol=normalized_job["symbol"],
+        terminal=terminal,
+        window_start=_coerce_utc_datetime(window_start),
+        window_end=_coerce_utc_datetime(window_end),
         launch_config=launch_config,
-        report_csv_path=report_csv_path,
     )
+    if pre.verdict == "INVALID":
+        _, bucket = _ensure_matrix_bucket(state, normalized_job)
+        row = _upsert_matrix_row(bucket, symbol=normalized_job["symbol"], terminal=terminal)
+        row["verdict"] = "INVALID"
+        row["invalidation_reason"] = pre.invalidation_reason
+        row["evidence"] = "pipeline_dispatcher.py:prelaunch"
+        _append_report_csv_row(
+            report_csv_path,
+            ea_id=normalized_job["ea_id"],
+            phase=normalized_job["phase"],
+            symbol=normalized_job["symbol"],
+            terminal=terminal,
+            verdict="INVALID",
+            invalidation_reason=pre.invalidation_reason,
+            evidence="pipeline_dispatcher.py:prelaunch",
+        )
+        _refresh_phase_verdict(bucket, pass_threshold=1, fail_phase_label=None)
+        return None
+    return pre
 
 
 def _ensure_matrix_bucket(state: dict[str, Any], job: dict[str, Any]) -> tuple[str, dict[str, Any]]:
@@ -240,7 +257,7 @@ def dispatch_job(
     state: dict[str, Any],
     max_per_terminal: int = 3,
     now_epoch: int | None = None,
-    enforce_dl054_prelaunch: bool = False,
+    enforce_dl054_prelaunch: bool = True,
     terminal_for_gate: str = "T1",
     window_start: Any = None,
     window_end: Any = None,
@@ -332,7 +349,13 @@ def resolve_target_terminal(
     target = str(job.get("target_terminal", "any")).upper()
     if target in TERMINALS:
         return {"status": "pinned", "terminal": target, "dedup_key": dedup_key(job)}
-    return dispatch_job(job, state, max_per_terminal=max_per_terminal, now_epoch=now_epoch)
+    return dispatch_job(
+        job,
+        state,
+        max_per_terminal=max_per_terminal,
+        now_epoch=now_epoch,
+        enforce_dl054_prelaunch=False,
+    )
 
 
 def release_job(
@@ -368,10 +391,14 @@ def release_job(
     row = _upsert_matrix_row(bucket, symbol=str(record.get("symbol", job.get("symbol", ""))), terminal=terminal or None)
     post_invalidation_reason: str | None = None
     final_verdict = verdict
-    if pre_verdict is not None and journal_path and report_path:
-        post = apply_post_launch_gates(pre_verdict, journal_path=Path(journal_path), report_path=Path(report_path))
-        final_verdict = post.verdict
-        post_invalidation_reason = post.invalidation_reason or None
+    if pre_verdict is not None:
+        if not journal_path or not report_path:
+            final_verdict = "INVALID"
+            post_invalidation_reason = "G3:post_launch_artifacts_missing"
+        else:
+            post = apply_post_launch_gates(pre_verdict, journal_path=Path(journal_path), report_path=Path(report_path))
+            final_verdict = post.verdict
+            post_invalidation_reason = post.invalidation_reason or None
     if final_verdict is not None:
         row["verdict"] = final_verdict
     row["invalidation_reason"] = post_invalidation_reason

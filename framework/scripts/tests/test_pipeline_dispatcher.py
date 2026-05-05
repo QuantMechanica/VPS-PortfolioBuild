@@ -3,12 +3,14 @@ from __future__ import annotations
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from framework.scripts.pipeline_dispatcher import (
     TERMINALS,
     MATRIX_SYMBOL_COUNT,
     build_matrix_jobs,
     dedup_key,
+    dispatch_or_invalidate,
     dispatch_job,
     export_phase_matrix_index,
     load_dedup_index,
@@ -110,7 +112,7 @@ class PipelineDispatcherTests(unittest.TestCase):
             "symbol_affinity": {},
         }
 
-        decision = dispatch_job(job, state, max_per_terminal=3)
+        decision = dispatch_job(job, state, max_per_terminal=3, enforce_dl054_prelaunch=False)
         self.assertEqual(decision["status"], "duplicate")
         self.assertEqual(decision["terminal"], "T1")
 
@@ -124,7 +126,7 @@ class PipelineDispatcherTests(unittest.TestCase):
             "symbol_affinity": {},
         }
 
-        decision = dispatch_job(job, state, max_per_terminal=3)
+        decision = dispatch_job(job, state, max_per_terminal=3, enforce_dl054_prelaunch=False)
         self.assertEqual(decision["status"], "scheduled")
         self.assertEqual(decision["terminal"], "T3")
         self.assertEqual(state["running"]["T3"], 3)
@@ -139,7 +141,7 @@ class PipelineDispatcherTests(unittest.TestCase):
             "symbol_affinity": {"US500.DWX": {"terminal": "T2", "ts": 1000}},
         }
 
-        decision = dispatch_job(job, state, max_per_terminal=3, now_epoch=1001)
+        decision = dispatch_job(job, state, max_per_terminal=3, now_epoch=1001, enforce_dl054_prelaunch=False)
         self.assertEqual(decision["status"], "scheduled")
         self.assertEqual(decision["terminal"], "T2")
 
@@ -152,7 +154,7 @@ class PipelineDispatcherTests(unittest.TestCase):
             "symbol_affinity": {"XAUUSD.DWX": {"terminal": "T2", "ts": 0}},
         }
 
-        decision = dispatch_job(job, state, max_per_terminal=3, now_epoch=90000)
+        decision = dispatch_job(job, state, max_per_terminal=3, now_epoch=90000, enforce_dl054_prelaunch=False)
         self.assertEqual(decision["status"], "scheduled")
         self.assertEqual(decision["terminal"], "T1")
 
@@ -166,7 +168,7 @@ class PipelineDispatcherTests(unittest.TestCase):
             "recent_runs": {"T1": [990, 995], "T2": [999]},
         }
 
-        decision = dispatch_job(job, state, max_per_terminal=3, now_epoch=1000)
+        decision = dispatch_job(job, state, max_per_terminal=3, now_epoch=1000, enforce_dl054_prelaunch=False)
         self.assertEqual(decision["status"], "scheduled")
         self.assertEqual(decision["terminal"], "T2")
 
@@ -190,6 +192,49 @@ class PipelineDispatcherTests(unittest.TestCase):
         decision = resolve_target_terminal(job, state, now_epoch=1000)
         self.assertEqual(decision["status"], "scheduled")
         self.assertEqual(decision["terminal"], "T1")
+
+    def test_dispatch_enforces_dl054_prelaunch_by_default(self) -> None:
+        state = {"dedup": {}, "last_rr_index": -1, "running": {name: 0 for name in TERMINALS}, "symbol_affinity": {}}
+        with self.assertRaisesRegex(ValueError, r"launch_config is required"):
+            dispatch_job(base_job(), state)
+
+    @patch("framework.scripts.pipeline_dispatcher.apply_pre_launch_gates")
+    def test_dispatch_or_invalidate_returns_prelaunch_verdict(self, mock_apply_pre) -> None:
+        class _Verdict:
+            verdict = "PRELAUNCH_OK"
+            invalidation_reason = ""
+
+        mock_apply_pre.return_value = _Verdict()
+        state = {"phase_matrix_index": {}}
+        pre = dispatch_or_invalidate(
+            base_job(),
+            state,
+            terminal="T1",
+            window_start="2025-01-01T00:00:00Z",
+            window_end="2025-12-31T00:00:00Z",
+            launch_config={"initial_deposit": 10000, "deposit_currency": "USD", "leverage": 100, "setfile_path": "x"},
+        )
+        self.assertEqual(pre.verdict, "PRELAUNCH_OK")
+
+    @patch("framework.scripts.pipeline_dispatcher.apply_post_launch_gates")
+    def test_release_job_fails_closed_when_post_launch_artifacts_missing(self, mock_apply_post) -> None:
+        class _PreVerdict:
+            verdict = "PRELAUNCH_OK"
+            invalidation_reason = ""
+
+        job = base_job()
+        key = dedup_key(job)
+        state = {
+            "dedup": {key: {"terminal": "T2", "symbol": "EURUSD.DWX", "ts": 1000}},
+            "running": {"T1": 0, "T2": 1, "T3": 0, "T4": 0, "T5": 0},
+        }
+        result = release_job(job, state, now_epoch=1002, pre_verdict=_PreVerdict(), report_csv_path=None)
+        self.assertEqual(result["status"], "released")
+        self.assertEqual(result["invalidation_reason"], "G3:post_launch_artifacts_missing")
+        bucket = state["phase_matrix_index"]["QM5_1001_v1_P1"]
+        row = next(item for item in bucket["matrix"] if item["symbol"] == "EURUSD.DWX")
+        self.assertEqual(row["verdict"], "INVALID")
+        mock_apply_post.assert_not_called()
 
     def test_release_job_decrements_running_and_marks_complete(self) -> None:
         job = base_job()
