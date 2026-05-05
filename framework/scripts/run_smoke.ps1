@@ -450,7 +450,7 @@ $effectiveTerminal = Resolve-DispatchTerminal -TargetTerminal $Terminal -EAIdVal
 $terminalRoot = Resolve-TerminalRoot -TerminalName $effectiveTerminal
 $terminalExe = Resolve-TerminalExecutable -TerminalRoot $terminalRoot
 
-if (-not $AllowRunningTerminal.IsPresent) {
+if (($Terminal -ine "any") -and (-not $AllowRunningTerminal.IsPresent)) {
     if (Test-TerminalAlreadyRunning -TerminalRoot $terminalRoot) {
         throw "Terminal instance is already running for $terminalRoot. Stop it first or pass -AllowRunningTerminal."
     }
