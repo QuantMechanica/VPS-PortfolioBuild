@@ -5,8 +5,11 @@ from __future__ import annotations
 
 import time
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+from framework.scripts.dl054_gates import apply_post_launch_gates, apply_pre_launch_gates
 
 TERMINALS = ("T1", "T2", "T3", "T4", "T5")
 REQUIRED_JOB_FIELDS = ("ea_id", "version", "symbol", "phase", "sub_gate_config_hash", "setfile_path")
@@ -85,9 +88,86 @@ def _upsert_matrix_row(bucket: dict[str, Any], symbol: str, terminal: str | None
             if terminal:
                 row["terminal"] = terminal
             return row
-    row = {"symbol": symbol, "terminal": terminal, "verdict": None, "evidence": None}
+    row = {
+        "symbol": symbol,
+        "terminal": terminal,
+        "verdict": None,
+        "invalidation_reason": None,
+        "evidence": None,
+    }
     rows.append(row)
     return row
+
+
+def _coerce_utc_datetime(value: Any) -> datetime:
+    if isinstance(value, datetime):
+        if value.tzinfo is None:
+            return value.replace(tzinfo=timezone.utc)
+        return value.astimezone(timezone.utc)
+    if isinstance(value, str) and value.strip():
+        text = value.strip().replace("Z", "+00:00")
+        dt = datetime.fromisoformat(text)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.astimezone(timezone.utc)
+    raise ValueError("window_start/window_end must be datetime or ISO-8601 string")
+
+
+def _append_report_csv_row(
+    report_csv_path: str | None,
+    *,
+    ea_id: str,
+    phase: str,
+    symbol: str,
+    terminal: str,
+    verdict: str,
+    invalidation_reason: str = "",
+    evidence: str = "",
+) -> None:
+    if not report_csv_path:
+        return
+    path = Path(report_csv_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    needs_header = (not path.exists()) or path.stat().st_size == 0
+    with path.open("a", encoding="utf-8", newline="\n") as handle:
+        if needs_header:
+            handle.write("ea_id,phase,symbol,terminal,verdict,invalidation_reason,evidence\n")
+        fields = [
+            ea_id,
+            phase,
+            symbol,
+            terminal,
+            verdict,
+            (invalidation_reason or "").replace(",", ";").replace("\n", " "),
+            evidence or "",
+        ]
+        handle.write(",".join(fields) + "\n")
+
+
+def dispatch_or_invalidate(
+    job: dict[str, Any],
+    state: dict[str, Any],
+    *,
+    terminal: str,
+    window_start: Any,
+    window_end: Any,
+    launch_config: dict[str, Any],
+    report_csv_path: str | None = None,
+    max_per_terminal: int = 3,
+    now_epoch: int | None = None,
+) -> dict[str, Any]:
+    return dispatch_job(
+        job,
+        state,
+        max_per_terminal=max_per_terminal,
+        now_epoch=now_epoch,
+        enforce_dl054_prelaunch=True,
+        terminal_for_gate=terminal,
+        window_start=window_start,
+        window_end=window_end,
+        launch_config=launch_config,
+        report_csv_path=report_csv_path,
+    )
 
 
 def _ensure_matrix_bucket(state: dict[str, Any], job: dict[str, Any]) -> tuple[str, dict[str, Any]]:
@@ -160,13 +240,58 @@ def dispatch_job(
     state: dict[str, Any],
     max_per_terminal: int = 3,
     now_epoch: int | None = None,
+    enforce_dl054_prelaunch: bool = False,
+    terminal_for_gate: str = "T1",
+    window_start: Any = None,
+    window_end: Any = None,
+    launch_config: dict[str, Any] | None = None,
+    report_csv_path: str | None = None,
 ) -> dict[str, Any]:
     now = int(now_epoch if now_epoch is not None else time.time())
+    normalized_job = validate_job(job)
     key = dedup_key(job)
     dedup = state.setdefault("dedup", {})
     if key in dedup:
         existing = dedup.get(key, {})
         return {"dedup_key": key, "status": "duplicate", "terminal": existing.get("terminal")}
+
+    if enforce_dl054_prelaunch:
+        if launch_config is None:
+            raise ValueError("launch_config is required when enforce_dl054_prelaunch=True")
+        if window_start is None or window_end is None:
+            raise ValueError("window_start/window_end are required when enforce_dl054_prelaunch=True")
+        pre = apply_pre_launch_gates(
+            ea_id=normalized_job["ea_id"],
+            phase=normalized_job["phase"],
+            symbol=normalized_job["symbol"],
+            terminal=terminal_for_gate,
+            window_start=_coerce_utc_datetime(window_start),
+            window_end=_coerce_utc_datetime(window_end),
+            launch_config=launch_config,
+        )
+        if pre.verdict == "INVALID":
+            _, bucket = _ensure_matrix_bucket(state, normalized_job)
+            row = _upsert_matrix_row(bucket, symbol=normalized_job["symbol"], terminal=terminal_for_gate)
+            row["verdict"] = "INVALID"
+            row["invalidation_reason"] = pre.invalidation_reason
+            row["evidence"] = "pipeline_dispatcher.py:prelaunch"
+            _append_report_csv_row(
+                report_csv_path,
+                ea_id=normalized_job["ea_id"],
+                phase=normalized_job["phase"],
+                symbol=normalized_job["symbol"],
+                terminal=terminal_for_gate,
+                verdict="INVALID",
+                invalidation_reason=pre.invalidation_reason,
+                evidence="pipeline_dispatcher.py:prelaunch",
+            )
+            _refresh_phase_verdict(bucket, pass_threshold=1, fail_phase_label=None)
+            return {
+                "dedup_key": key,
+                "status": "invalid_prelaunch",
+                "terminal": terminal_for_gate,
+                "invalidation_reason": pre.invalidation_reason,
+            }
 
     running = state.setdefault("running", {name: 0 for name in TERMINALS})
     eligible = [name for name in TERMINALS if int(running.get(name, 0)) < max_per_terminal]
@@ -176,7 +301,7 @@ def dispatch_job(
     min_load = min(int(running.get(name, 0)) for name in eligible)
     least_loaded = [name for name in eligible if int(running.get(name, 0)) == min_load]
 
-    symbol = str(job.get("symbol", ""))
+    symbol = normalized_job["symbol"]
     affinity = state.setdefault("symbol_affinity", {})
     preferred = _affinity_terminal(symbol, affinity, now)
     if preferred in least_loaded:
@@ -193,7 +318,7 @@ def dispatch_job(
     affinity[symbol] = {"terminal": selected, "ts": now}
     state.setdefault("recent_runs", {}).setdefault(selected, []).append(now)
     dedup[key] = {"symbol": symbol, "terminal": selected, "ts": now}
-    _, bucket = _ensure_matrix_bucket(state, job)
+    _, bucket = _ensure_matrix_bucket(state, normalized_job)
     _upsert_matrix_row(bucket, symbol=symbol, terminal=selected)
     return {"dedup_key": key, "status": "scheduled", "terminal": selected}
 
@@ -219,6 +344,9 @@ def release_job(
     pass_threshold: int = 1,
     fail_phase_label: str | None = None,
     next_strategy_unblocked: str | None = None,
+    pre_verdict: Any = None,
+    journal_path: str | None = None,
+    report_path: str | None = None,
 ) -> dict[str, Any]:
     now = int(now_epoch if now_epoch is not None else time.time())
     key = dedup_key(job)
@@ -234,16 +362,27 @@ def release_job(
         running[terminal] = max(current - 1, 0)
     record["status"] = "complete"
     record["completed_ts"] = now
-    _, bucket = _ensure_matrix_bucket(state, job)
+    normalized_job = validate_job(job)
+    _, bucket = _ensure_matrix_bucket(state, normalized_job)
     row = _upsert_matrix_row(bucket, symbol=str(record.get("symbol", job.get("symbol", ""))), terminal=terminal or None)
-    if verdict is not None:
-        row["verdict"] = verdict
+    post_invalidation_reason: str | None = None
+    final_verdict = verdict
+    if pre_verdict is not None and journal_path and report_path:
+        post = apply_post_launch_gates(pre_verdict, journal_path=Path(journal_path), report_path=Path(report_path))
+        final_verdict = post.verdict
+        post_invalidation_reason = post.invalidation_reason or None
+    if final_verdict is not None:
+        row["verdict"] = final_verdict
+    row["invalidation_reason"] = post_invalidation_reason
     if evidence is not None:
         row["evidence"] = evidence
     if next_strategy_unblocked is not None:
         bucket["next_strategy_unblocked"] = next_strategy_unblocked
     _refresh_phase_verdict(bucket, pass_threshold=pass_threshold, fail_phase_label=fail_phase_label)
-    return {"dedup_key": key, "status": "released", "terminal": terminal or None}
+    response: dict[str, Any] = {"dedup_key": key, "status": "released", "terminal": terminal or None}
+    if post_invalidation_reason:
+        response["invalidation_reason"] = post_invalidation_reason
+    return response
 
 
 def prune_state(
