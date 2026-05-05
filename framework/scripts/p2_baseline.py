@@ -27,6 +27,7 @@ import argparse
 import csv
 import json
 import re
+import shutil
 import subprocess
 import sys
 import threading
@@ -95,6 +96,23 @@ def load_symbols(ea_dir: Path, period: str) -> list[str]:
 
 def setfile_for(ea_dir: Path, symbol: str, period: str) -> Path:
     return ea_dir / "sets" / f"{ea_dir.name}_{symbol}_{period}_backtest.set"
+
+
+def ensure_expert_binary_deployed(ea_dir: Path, terminal_roots: list[Path]) -> None:
+    """Ensure EA .ex5 exists under each terminal's Experts/QM path.
+
+    run_smoke writes Expert=QM\\<ea_dir.name> and MT5 resolves that to:
+      <terminal>/MQL5/Experts/QM/<ea_dir.name>.ex5
+    """
+    src_ex5 = ea_dir / f"{ea_dir.name}.ex5"
+    if not src_ex5.exists():
+        raise SystemExit(f"[FATAL] missing EA binary for tester deployment: {src_ex5}")
+
+    for root in terminal_roots:
+        dest_dir = root / "MQL5" / "Experts" / "QM"
+        dest_dir.mkdir(parents=True, exist_ok=True)
+        dest = dest_dir / src_ex5.name
+        shutil.copy2(src_ex5, dest)
 
 
 def parse_summary(summary_path: Path) -> dict:
@@ -270,6 +288,8 @@ def main() -> int:
 
     ea_dir = find_ea_dir(args.ea)
     ea_id = derive_numeric_ea_id(args.ea, ea_dir)
+    terminal_roots = [Path(r"D:\QM\mt5") / t for t in TERMINALS]
+    ensure_expert_binary_deployed(ea_dir, terminal_roots)
 
     if args.symbols:
         symbols = [s.strip() for s in args.symbols.split(",") if s.strip()]
