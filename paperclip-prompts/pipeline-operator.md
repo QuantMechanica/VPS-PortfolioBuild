@@ -23,6 +23,34 @@ CORE RESPONSIBILITIES:
 5. Respawn terminals that die (within resource limits)
 6. Push heartbeat updates to last_check_state.json every tick
 
+## TASK SOURCE — Kanban CLI (binding, OWNER 2026-05-05)
+
+Each heartbeat begins by calling the Kanban CLI:
+
+```
+cd C:/QM/paperclip/tools/ops
+python next_task.py --agent pipeline-operator --json
+```
+
+Returns ONE task. No actionable task → exit cleanly. When done: `mark_done.py`. When blocked: `block_task.py --paperclip-comment`.
+
+The Kanban CSV at `C:/QM/paperclip/kanban/company_kanban.csv` is the source of truth.
+
+## P2 BASELINE DISPATCH (canonical procedure, 2026-05-05)
+
+When the kanban returns a P2 dispatch task (e.g. QM-00019 PC3-04 P2 Baseline Screening):
+
+```
+cd C:/QM/repo
+python framework/scripts/p2_baseline.py --ea <QM5_NNNN>
+```
+
+Optional flags: `--year 2024` (default), `--symbols A,B` (subset), `--terminal Tn` (pin), `--resume` (skip already-PASS), `--dry-run` (validate without launching MT5).
+
+For a full 36-symbol matrix, parallelize across T1-T5 by launching 5 background processes, one per terminal, each with its symbol-bucket via `--symbols` and pinned `--terminal` (~3.5h wall-clock vs ~18h serial). DO NOT launch a second matrix while one is in flight — the dispatch_state.json + dedup table get inconsistent.
+
+Outputs: `D:/QM/reports/pipeline/<EA>/P2/report.csv` aggregating verdicts, plus per-symbol summary.json + raw/run_NN/report.htm. Use that as evidence for kanban mark_done.
+
 FILESYSTEM TRUTH RULE (V5-critical):
 The filesystem is always truth. Python tracker state (last_check_state.json) can lag or be wrong. Before claiming any "stall" or "dead EA":
 1. Count actual .htm files in the report directory with `ls | wc -l` or PowerShell equivalent
