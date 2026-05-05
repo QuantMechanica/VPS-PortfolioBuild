@@ -347,6 +347,7 @@ def release_job(
     pre_verdict: Any = None,
     journal_path: str | None = None,
     report_path: str | None = None,
+    report_csv_path: str | None = None,
 ) -> dict[str, Any]:
     now = int(now_epoch if now_epoch is not None else time.time())
     key = dedup_key(job)
@@ -376,6 +377,17 @@ def release_job(
     row["invalidation_reason"] = post_invalidation_reason
     if evidence is not None:
         row["evidence"] = evidence
+    if final_verdict is not None:
+        _append_report_csv_row(
+            report_csv_path,
+            ea_id=normalized_job["ea_id"],
+            phase=normalized_job["phase"],
+            symbol=normalized_job["symbol"],
+            terminal=terminal or "",
+            verdict=final_verdict,
+            invalidation_reason=post_invalidation_reason or "",
+            evidence=evidence or "",
+        )
     if next_strategy_unblocked is not None:
         bucket["next_strategy_unblocked"] = next_strategy_unblocked
     _refresh_phase_verdict(bucket, pass_threshold=pass_threshold, fail_phase_label=fail_phase_label)
