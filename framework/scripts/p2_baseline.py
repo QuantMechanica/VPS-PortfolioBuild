@@ -162,7 +162,10 @@ def invoke_run_smoke(ea_id: int, symbol: str, year: int, terminal: str, period: 
     ]
     if allow_running_terminal:
         arglist.append("-AllowRunningTerminal")
-    proc = subprocess.run(arglist, capture_output=True, text=True, timeout=timeout_sec + 60)
+    # run_smoke executes up to `runs` sequential tester runs, each bounded by timeout_sec.
+    # Keep wrapper timeout safely above aggregate budget to avoid false no-summary invalids.
+    wrapper_timeout = (timeout_sec * max(1, runs)) + 60
+    proc = subprocess.run(arglist, capture_output=True, text=True, timeout=wrapper_timeout)
     return proc.returncode, proc.stdout or "", proc.stderr or ""
 
 
