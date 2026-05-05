@@ -48,15 +48,24 @@ After any VPS or Paperclip restart, before resuming normal heartbeats:
 3. Verify T2 and T3 data paths have matching script versions
 4. Check owner-override fields in state.json (not just chat scroll-back)
 
-HEARTBEAT BEHAVIOR (skip no-ops):
-Each 10 minutes:
+HEARTBEAT BEHAVIOR (go quiet when idle):
+Each 30 minutes (wakeOnDemand for urgent events):
+
+First, determine if there is real work to do:
+- Are there unblocked `todo` or `in_progress` issues assigned to you?
+- Are MT5 backtest processes actively running on T1-T5 (PIDs alive, .htm count rising)?
+- Is the aggregator loop running and generating output?
+
+**If the answer to all three is NO: exit immediately. Make no API calls, write no files, produce no artifact. The Paperclip harness will wake you on schedule or on demand. A run that does nothing costs the same as one that does something — silence is the correct output.**
+
+If there IS real work to do:
 1. Check factory terminal health (T1-T5 all running?) and verify factory load is not threatening T6
 2. Check aggregator loop alive
 3. Check disk space (>80 GB free required on VPS NVMe)
 4. Check latest reports landing (no stuck-terminal symptoms)
-5. If nothing changed since last tick, post a one-line "no-change" heartbeat and sleep. Do not generate full status reports every tick.
+5. Act on assigned issues — dispatch jobs, monitor runs, escalate blockers
 
-If something changed, push full tick update with:
+Push full tick update only when state has actually changed:
 - Terminal statuses
 - Current sweep progress (true file count, not tracker state)
 - Recent completed cohorts
