@@ -256,6 +256,22 @@ function Write-TesterIni {
         [string]$SetFilePath
     )
 
+    # Load canonical tester defaults (DL-054 G2 source of truth).
+    # Origin: framework/registry/tester_defaults.json — codified 2026-05-01 after
+    # tester journal showed 'initial deposit 10000.00 USD' (wrong by 10x).
+    $localRepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
+    $defaultsPath = Join-Path $localRepoRoot "framework\registry\tester_defaults.json"
+    if (-not (Test-Path -LiteralPath $defaultsPath -PathType Leaf)) {
+        throw "tester_defaults.json missing at $defaultsPath — cannot launch backtest without canonical defaults (DL-054 G2)."
+    }
+    $defaults = Get-Content -LiteralPath $defaultsPath -Raw | ConvertFrom-Json
+    $deposit = [int]$defaults.initial_deposit
+    $currency = [string]$defaults.deposit_currency
+    $leverage = [int]$defaults.leverage
+    if ($deposit -le 0 -or [string]::IsNullOrWhiteSpace($currency) -or $leverage -le 0) {
+        throw "tester_defaults.json invalid: initial_deposit=$deposit currency=$currency leverage=$leverage"
+    }
+
     $lines = @(
         "[Tester]",
         "Expert=$ExpertPath",
@@ -268,10 +284,10 @@ function Write-TesterIni {
         "FromDate=$FromDate",
         "ToDate=$ToDate",
         "ForwardMode=0",
-        "Deposit=10000",
-        "Currency=USD",
+        "Deposit=$deposit",
+        "Currency=$currency",
         "ProfitInPips=0",
-        "Leverage=100",
+        "Leverage=$leverage",
         "UseLocal=1",
         "Visual=0",
         "Replace=1",
