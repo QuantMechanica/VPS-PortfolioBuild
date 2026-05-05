@@ -105,7 +105,9 @@ function Resolve-DispatchTerminal {
         [Parameter(Mandatory = $true)]
         [string]$PeriodName,
         [Parameter(Mandatory = $true)]
-        [int]$YearValue
+        [int]$YearValue,
+        [Parameter(Mandatory = $true)]
+        [string]$SetFilePath
     )
 
     if ($TargetTerminal -ine 'any') {
@@ -125,6 +127,7 @@ function Resolve-DispatchTerminal {
         phase = "P1"
         sub_gate_config_hash = "{0}-{1}" -f $PeriodName, $YearValue
         target_terminal = "any"
+        setfile_path = $SetFilePath
     } | ConvertTo-Json -Depth 4
     Set-Content -LiteralPath $jobPath -Value $job -Encoding utf8
 
@@ -134,12 +137,16 @@ function Resolve-DispatchTerminal {
             throw "resolve_backtest_target.py exited with code $LASTEXITCODE"
         }
         $decision = $raw | ConvertFrom-Json
-        if (-not $decision.terminal) {
-            throw "Terminal resolution returned no terminal. status=$($decision.status)"
+        $decisionStatus = if ($decision.PSObject.Properties.Name -contains "status") { [string]$decision.status } else { "" }
+        $decisionTerminal = if ($decision.PSObject.Properties.Name -contains "terminal") { [string]$decision.terminal } else { "" }
+        if ([string]::IsNullOrWhiteSpace($decisionTerminal)) {
+            $message = if ($decision.PSObject.Properties.Name -contains "message") { [string]$decision.message } else { "No message." }
+            $errorCode = if ($decision.PSObject.Properties.Name -contains "error_code") { [string]$decision.error_code } else { "none" }
+            throw "Terminal resolution returned no terminal. status=$decisionStatus error_code=$errorCode message=$message"
         }
-        Write-Output ("run_smoke.dispatch_status={0}" -f $decision.status)
-        Write-Output ("run_smoke.dispatch_terminal={0}" -f $decision.terminal)
-        return [string]$decision.terminal
+        Write-Host ("run_smoke.dispatch_status={0}" -f $decisionStatus)
+        Write-Host ("run_smoke.dispatch_terminal={0}" -f $decisionTerminal)
+        return $decisionTerminal
     } finally {
         if (Test-Path -LiteralPath $jobPath) {
             Remove-Item -LiteralPath $jobPath -Force
@@ -158,7 +165,9 @@ function Invoke-DispatchCompletion {
         [Parameter(Mandatory = $true)]
         [string]$PeriodName,
         [Parameter(Mandatory = $true)]
-        [int]$YearValue
+        [int]$YearValue,
+        [Parameter(Mandatory = $true)]
+        [string]$SetFilePath
     )
 
     if ($OriginalTargetTerminal -ine 'any') {
@@ -180,15 +189,16 @@ function Invoke-DispatchCompletion {
         phase = "P1"
         sub_gate_config_hash = "{0}-{1}" -f $PeriodName, $YearValue
         target_terminal = "any"
+        setfile_path = $SetFilePath
     } | ConvertTo-Json -Depth 4
     Set-Content -LiteralPath $jobPath -Value $job -Encoding utf8
     try {
         $raw = & python $resolverPath --job-json $jobPath --state-json $statePath --event complete --prune-completed
         if ($LASTEXITCODE -eq 0 -and $raw) {
             $decision = $raw | ConvertFrom-Json
-            Write-Output ("run_smoke.dispatch_complete_status={0}" -f $decision.status)
+            Write-Host ("run_smoke.dispatch_complete_status={0}" -f $decision.status)
             if ($decision.terminal) {
-                Write-Output ("run_smoke.dispatch_complete_terminal={0}" -f $decision.terminal)
+                Write-Host ("run_smoke.dispatch_complete_terminal={0}" -f $decision.terminal)
             }
         } else {
             Write-Warning "run_smoke.dispatch_complete failed (exit=$LASTEXITCODE)"
@@ -414,12 +424,14 @@ function Wait-ForReportExport {
             return $true
         }
 
+        # Do not early-return when metatester is gone: report export can lag
+        # process exit under filesystem contention.
         $activeMetaTesters = @(Get-MetaTesterProcessesForTerminalRoot -TerminalRoot $TerminalRoot)
-        if (@($activeMetaTesters).Count -eq 0) {
-            return (Test-Path -LiteralPath $ReportPath -PathType Leaf)
+        if (@($activeMetaTesters).Count -gt 0) {
+            Start-Sleep -Milliseconds 500
+        } else {
+            Start-Sleep -Milliseconds 250
         }
-
-        Start-Sleep -Milliseconds 500
     } while ((Get-Date).ToUniversalTime() -lt $deadline)
 
     return (Test-Path -LiteralPath $ReportPath -PathType Leaf)
@@ -434,7 +446,7 @@ function Convert-RunMetricsToFingerprint {
     return "{0}|{1}|{2}|{3}" -f $Metrics.total_trades_raw, $Metrics.profit_factor_raw, $Metrics.drawdown_raw, $Metrics.net_profit_raw
 }
 
-$effectiveTerminal = Resolve-DispatchTerminal -TargetTerminal $Terminal -EAIdValue $EAId -SymbolName $Symbol -PeriodName $Period -YearValue $Year
+$effectiveTerminal = Resolve-DispatchTerminal -TargetTerminal $Terminal -EAIdValue $EAId -SymbolName $Symbol -PeriodName $Period -YearValue $Year -SetFilePath $SetFile
 $terminalRoot = Resolve-TerminalRoot -TerminalName $effectiveTerminal
 $terminalExe = Resolve-TerminalExecutable -TerminalRoot $terminalRoot
 
@@ -529,7 +541,7 @@ for ($i = 1; $i -le $Runs; $i++) {
         continue
     }
 
-    $reportMaterialized = Wait-ForReportExport -ReportPath $sourceReportPath -TerminalRoot $terminalRoot -MaxWaitSeconds 30
+    $reportMaterialized = Wait-ForReportExport -ReportPath $sourceReportPath -TerminalRoot $terminalRoot -MaxWaitSeconds 90
     if (-not $reportMaterialized) {
         $reasonClasses.Add("REPORT_MISSING")
         $globalRealTicksMarker = $false
@@ -773,7 +785,7 @@ Write-Output "run_smoke.summary=$summaryPath"
 Write-Output "run_smoke.report_dir=$reportDir"
 Write-Output "run_smoke.evidence=$evidencePath"
 
-Invoke-DispatchCompletion -OriginalTargetTerminal $Terminal -EAIdValue $EAId -SymbolName $Symbol -PeriodName $Period -YearValue $Year
+    Invoke-DispatchCompletion -OriginalTargetTerminal $Terminal -EAIdValue $EAId -SymbolName $Symbol -PeriodName $Period -YearValue $Year -SetFilePath $SetFile
 
 if (-not $passed) {
     exit 1
