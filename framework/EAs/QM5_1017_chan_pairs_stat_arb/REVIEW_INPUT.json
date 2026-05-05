@@ -1,0 +1,9 @@
+{
+  "timestamp_utc": "2026-05-05T17:15:12Z",
+  "compile_pass": true,
+  "compile_errors_zero": true,
+  "compile_warnings_zero": true,
+  "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260501_090243\\QM5_1017_chan_pairs_stat_arb.compile.log",
+  "review_gate": "DL-036",
+  "state": "READY_FOR_CTO_REVIEW"
+}
