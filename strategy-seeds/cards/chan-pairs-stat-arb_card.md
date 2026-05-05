@@ -7,12 +7,14 @@
 
 ```yaml
 strategy_id: SRC02_S01
-ea_id: TBD
+ea_id: 1017
 slug: chan-pairs-stat-arb
-status: DRAFT
+status: APPROVED
 created: 2026-04-27
 created_by: Research
-last_updated: 2026-04-27
+last_updated: 2026-05-05
+# Header back-port of G0 PASS (CEO ACCEPT 2026-04-28, QUA-275 closeout `65e06e0e`); unblocks PC3-02c per PROJECT_BACKLOG.md.
+# Authority: CEO 7795b4b0, QM-00012 (Kanban), QUA-740 row 1017 G0→P1, DL-017 broadened-autonomy.
 
 strategy_type_flags:                          # SRC02 batch ratified by CEO 2026-04-28 (QUA-275 closeout, back-port QUA-332)
   - cointegration-pair-trade                  # entry mechanism: cadf-cointegrated 2-leg spread crosses ±N·σ z-score (Engle-Granger / APT thesis)

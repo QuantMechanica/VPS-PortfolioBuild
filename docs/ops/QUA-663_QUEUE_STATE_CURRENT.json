@@ -1,0 +1,42 @@
+{
+  "issue": "QUA-663",
+  "timestamp_utc": "2026-05-01T09:18:19Z",
+  "queue": [
+    {
+      "order": 1,
+      "ea": "QM5_1004_davey_es_breakout",
+      "state": "READY_FOR_CTO_REVIEW",
+      "compile_log": "framework/build/compile/20260501_091707/QM5_1004_davey_es_breakout.compile.log",
+      "review_artifacts": [
+        "framework/EAs/QM5_1004_davey_es_breakout/QUA-663_DL036_REVIEW_INPUT_2026-05-01T0906Z.json",
+        "framework/EAs/QM5_1004_davey_es_breakout/QUA-663_DL036_CHECKLIST_2026-05-01T0906Z.md",
+        "framework/EAs/QM5_1004_davey_es_breakout/QUA-663_DL036_HEARTBEAT_2026-05-01T0908Z.signal",
+        "framework/EAs/QM5_1004_davey_es_breakout/QUA-663_DL036_HEARTBEAT_2026-05-01T0910Z.signal",
+        "framework/EAs/QM5_1004_davey_es_breakout/QUA-663_DL036_HEARTBEAT_2026-05-01T0911Z.signal",
+        "framework/EAs/QM5_1004_davey_es_breakout/QUA-663_DL036_HEARTBEAT_2026-05-01T0913Z.signal",
+        "framework/EAs/QM5_1004_davey_es_breakout/QUA-663_DL036_HEARTBEAT_2026-05-01T0914Z.signal"
+      ]
+    },
+    {
+      "order": 2,
+      "ea": "QM5_SRC04_S03_lien_fade_double_zeros",
+      "state": "READY_FOR_CTO_REVIEW",
+      "compile_log": "framework/build/compile/20260501_091819/QM5_SRC04_S03_lien_fade_double_zeros.compile.log",
+      "review_artifacts": [
+        "framework/EAs/QM5_SRC04_S03_lien_fade_double_zeros/QUA-663_DL036_REVIEW_INPUT_2026-05-01T0905Z.json",
+        "framework/EAs/QM5_SRC04_S03_lien_fade_double_zeros/QUA-663_DL036_HEARTBEAT_2026-05-01T0909Z.signal",
+        "framework/EAs/QM5_SRC04_S03_lien_fade_double_zeros/QUA-663_DL036_CHECKLIST_2026-05-01T0918Z.md"
+      ]
+    },
+    {
+      "order": 3,
+      "ea": "QM5_1017_chan_pairs_stat_arb",
+      "state": "READY_FOR_CTO_REVIEW",
+      "compile_log": "framework/build/compile/20260501_090243/QM5_1017_chan_pairs_stat_arb.compile.log",
+      "unblocked_at": "2026-05-05T17:30Z",
+      "unblocked_by": "CEO 7795b4b0 (QM-00012, QUA-740)",
+      "unblock_evidence": "strategy-seeds/cards/chan-pairs-stat-arb_card.md (status:APPROVED, ea_id:1017)",
+      "review_artifacts": "TBD — Pipeline-Op/Dev to generate DL036 REVIEW_INPUT.json + CHECKLIST.md once picked up via Kanban"
+    }
+  ]
+}
