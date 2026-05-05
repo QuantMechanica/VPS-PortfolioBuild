@@ -7,23 +7,34 @@
 
 ---
 
-## QM5_1003 — 5 Stale Dedup Entries (BLOCKING)
+## QM5_1003 — All Smoke P1 Runs Infrastructure Failures + NO_REAL_TICKS_MARKER
 
-**Finding:** 5 of 6 QM5_1003 smoke P1 dedup entries are stale. They were dispatched 2026-05-05T17:20Z and have no `status=complete` after 24+ hours. No corresponding run directories from that dispatch window exist in the P2 report tree for those symbols.
+**ADDENDUM (2026-05-06 next heartbeat):** The 5 stale dedup entries marked in the original finding completed overnight (all entries now status=complete). However, inspection of the underlying runs confirms infrastructure failure throughout.
 
-| Dedup Key | Terminal | Dispatch ts | Status |
+**Original finding (superseded by addendum):** 5 of 6 entries were dispatched 2026-05-05T17:20Z with no completion for 24+ hours. Those runs did eventually complete — all with TIMEOUT/METATESTER_HUNG.
+
+**Full smoke P1 outcome:**
+
+| Symbol | Run Time | Result | Reason |
 |---|---|---|---|
-| QM5_1003\|smoke\|EURAUD.DWX\|P1\|H1-2024 | T1 | 2026-05-05T17:20:28Z | NO_STATUS |
-| QM5_1003\|smoke\|GBPAUD.DWX\|P1\|H1-2024 | T2 | 2026-05-05T17:20:29Z | NO_STATUS |
-| QM5_1003\|smoke\|NDXm.DWX\|P1\|H1-2024 | T4 | 2026-05-05T17:20:29Z | NO_STATUS |
-| QM5_1003\|smoke\|NZDCAD.DWX\|P1\|H1-2024 | T5 | 2026-05-05T17:20:30Z | NO_STATUS |
-| QM5_1003\|smoke\|USDCHF.DWX\|P1\|H1-2024 | T2 | 2026-05-05T17:20:31Z | NO_STATUS |
+| AUDCAD.DWX | 20260505_172639 | FAIL | REPORT_MISSING, INCOMPLETE_RUNS |
+| EURAUD.DWX | 20260505_222139, 222543 | FAIL × 2 | TIMEOUT, METATESTER_HUNG |
+| GBPAUD.DWX | 20260505_222945, 223348 | FAIL × 2 | TIMEOUT, METATESTER_HUNG |
+| NDXm.DWX | 20260505_223750, 224154 | FAIL × 2 | TIMEOUT, METATESTER_HUNG |
+| NZDCAD.DWX | 20260505_224556, 224959 | FAIL × 2 | TIMEOUT, METATESTER_HUNG |
+| USDCHF.DWX | 20260505_225401, 225805 | FAIL × 2 | TIMEOUT, METATESTER_HUNG |
+| AUDCAD.DWX | 20260505_232144 | FAIL | **NO_REAL_TICKS_MARKER**, MIN_TRADES_NOT_MET (0 trades) |
 
-The 6th entry (AUDCAD.DWX, T3) is status=complete (ran at 17:20:20Z, summary at ~17:29Z with INCOMPLETE_RUNS).
+Final p2_result.json: `PASS=0, FAIL=1, finished_at=2026-05-05T23:25:11Z`.
 
-**Impact:** The dispatcher's dedup table blocks re-dispatch for these 5 symbols. A re-smoke attempt would return DRY:5 until these entries are cleared.
+**Additional concern — NO_REAL_TICKS_MARKER on AUDCAD:** The final AUDCAD run (20260505_232144) ran deterministically but without the model4 (real ticks) log marker. Under DL-054 G1 (`model4_log_marker_detected=true` required), this run would INVALID. If the AUDCAD tester configuration for QM5_1003 is missing real tick data for H1-2024, or the setfile forces a non-real-ticks model, this will block G1 even after QUA-747 fixes the TIMEOUT issues.
 
-**Required Pipeline-Op action:** After QUA-747 toolchain fixes land, clear dedup keys matching `QM5_1003|smoke|*|P1|H1-2024` (all 6) and re-dispatch QM5_1003 smoke P1. Reference: same pattern as QUA-737/QUA-739 dedup clear procedure.
+**Impact:** Dedup shows all 6 complete, but no valid smoke output exists. All terminal runs were infrastructure failures or non-real-ticks failures.
+
+**Required Pipeline-Op action:** After QUA-747 toolchain fixes land:
+1. Clear dedup keys matching `QM5_1003|smoke|*|P1|H1-2024` (all 6)
+2. Verify real tick data is available on the target terminal for all 6 smoke symbols
+3. Re-dispatch QM5_1003 smoke P1 and confirm `model4_log_marker_detected=true` in all summaries
 
 ---
 
@@ -61,7 +72,7 @@ Latest QM5_1004 p2_result.json: `PASS=0, FAIL=1, finished_at=2026-05-05T22:12:33
 
 | EA | Smoke P1 State | Action Required |
 |---|---|---|
-| QM5_1003 | 5/6 stale dedup, 1/6 infra-fail | Clear dedup + re-dispatch after QUA-747 |
+| QM5_1003 | 6/6 dedup complete, 0 valid reports (TIMEOUT+NO_REAL_TICKS) | Clear dedup + verify real tick data + re-dispatch after QUA-747 |
 | QM5_1004 | 6/6 dedup complete, 0 valid reports | Clear dedup + re-dispatch after QUA-747 |
 | QM5_1009 | 10/10 complete, 0 trades all symbols | v2 build per ZT root cause; fix NON_DET check |
 | QM5_1017 | 3/3 complete, 0 trades (expected) | No action — ADRs cover G4 |
