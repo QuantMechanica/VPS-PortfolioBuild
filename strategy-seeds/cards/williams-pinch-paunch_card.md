@@ -21,7 +21,7 @@ g0_verdict: APPROVED
 strategy_type_flags:
   - atr-hard-stop                              # Williams' canonical $1,500 dollar-stop framing (PDF p. 21) — V5 ATR-equivalent translation
   - symmetric-long-short                       # Williams: Pinch/Paunch rules stated as symmetric pair (sell on top divergence, buy on bottom divergence)
-  - friday-close-flatten                       # V5 default; Williams calls Paunch a "buy point of LASTING DURATION" (PDF p. 8) — multi-week-to-multi-month hold typical; STRONG `friday_close` waiver candidate; default applies, CEO decision at G0
+  - friday-close-flatten                       # OVERRIDDEN per CEO ratification 2026-05-06 (QUA-759 → option (d) hold-cap K=8 weeks). V5 default force-flat does not apply; position holds across weekends until first Friday after K calendar weeks. Williams' "buy point of LASTING DURATION" (PDF p. 8) thesis honored; weekend-gap tail risk bounded by K=8 ceiling. P3 sweep axis K∈{4, 8, 12} retained.
   - signal-reversal-exit                       # Williams: "Additionally, it will pay to wait a turn down in the index to signal the trend move is over" (PDF p. 8) — ADX-turn-down is the natural exit
   # PROPOSED NEW VOCAB GAP (entry-mechanism): `momentum-strength-divergence` — see § 16 Lessons + future-vocab-watches
 ```
@@ -176,19 +176,23 @@ EACH-BAR (in position):
   if SHORT and adx[t] < adx[t-1] for ADX_TURNDOWN_BARS consecutive bars: CLOSE_SHORT at next-bar open
    // Williams' "turn down in the index" signals trend-move-end; symmetric for both sides per workshop framing.
 
-FRIDAY CLOSE: V5 default applies (force-flat at Friday 21:00 broker time). Williams CALLS the
-refined-Paunch a "buy point of LASTING DURATION" (PDF p. 8) — typical hold may span multiple
-weeks-to-months. This is the STRONGEST `friday_close` waiver case in SRC03 (stronger than
-SRC04_S09 lien-perfect-order MA-stack which got a conditional waiver candidacy). CEO decision
-at G0:
-  (a) accept default Friday-close as-is and let pipeline measure the impact (will likely
-      produce many premature mid-week / first-Friday closures and degrade PF severely);
-  (b) grant unconditional waiver based on Williams' "lasting duration" thesis;
-  (c) grant conditional waiver tied to ADX-still-rising state (only HOLD over weekend if ADX
-      is still trending in the position direction);
-  (d) set a hold-cap (e.g., close at first Friday after K weeks held).
-This card defaults to (a) per V5 standard and surfaces the case for review; no waiver asserted
-unilaterally by Research.
+FRIDAY CLOSE: CEO ratified option (d) hold-cap K=8 weeks per QUA-759 closeout (2026-05-06).
+V5 default Friday force-flat is OVERRIDDEN. Position is held across weekends if and only if
+(Friday 21:00 broker time - position_open_time) < K weeks. On the first Friday close where
+the position has been held for ≥ K weeks, force-flat at 21:00 broker time. K = 8 default,
+P3 sweep axis K ∈ {4, 8, 12} per § 8. All other V5 default protections remain active
+(kill-switch, news filter, MAX_DD trip, magic-formula registry, .DWX suffix discipline).
+
+CEO rationale (verbatim from QUA-759): single integer parameter; honors Williams' "lasting
+duration" thesis (allows multi-week-to-multi-month holds); bounds weekend-gap tail risk with
+hard ceiling (~K weekend gaps max per trade). Rejected paths kept as iteration backstops:
+  (a) accept default — REJECTED (wasteful; running pipeline to confirm what we already know).
+  (b) unconditional waiver — REJECTED (uncapped weekend-gap tail risk).
+  (c) ADX-rising conditional — REJECTED for now, kept open as iteration path if (d) measurement
+      shows weekend-gap dominates inside the K-window. Failure mode: ADX-rising on Friday
+      close but trend reverses Monday open → locked into gap loss with none of the upside.
+  (d) hold-cap K=8 — APPROVED. Iteration path: tighten to K=4 if weekend-gap losses dominate;
+      loosen to K=12 / option (b) if K=8 boundary is clipping upside.
 ```
 
 ## 6. Filters (No-Trade module)
@@ -277,7 +281,10 @@ unilaterally by Research.
   sweep_range: [off, sentiment_extreme, cot_12mo, ANY_2_AGREE]
 - name: max_hold_weeks
   default: off
-  sweep_range: [off, 12, 26, 52]               # cap for "lasting duration" thesis sanity
+  sweep_range: [off, 12, 26, 52]               # cap for "lasting duration" thesis sanity (any-bar trigger; distinct from friday_close_hold_cap_weeks)
+- name: friday_close_hold_cap_weeks
+  default: 8                                   # CEO ratification 2026-05-06 (QUA-759 → option (d) hold-cap K=8 weeks). Force-flat at first Friday 21:00 broker time where (Friday 21:00 - position_open_time) >= K weeks. V5 default friday-close-flatten OVERRIDDEN below this boundary.
+  sweep_range: [4, 8, 12]                      # iteration brackets per CEO rationale: tighten if weekend-gap losses dominate; loosen toward unconditional waiver if K=8 boundary clips upside
 ```
 
 P3.5 (CSR) axis: re-run on Darwinex symbol cohort. Pinch/Paunch is generic across markets per Williams' "ON DAILY CHARTS TOO" multi-market framing. CSR validates whether the divergence + ADX-cross-40 edge survives across:
@@ -367,7 +374,7 @@ modules_used:
 ```yaml
 hard_rules_at_risk:
   - dwx_suffix_discipline                      # Williams' deployment is futures (S&P / T-Bonds / commodities). V5 maps to .DWX CFDs / spot FX. Per-symbol map at G0 + CSR (P3.5) to validate generalization — Pinch/Paunch indicators (ADX + Stochastic) are universal-symbol-applicable but the empirical edge may be CME-microstructure-dependent.
-  - friday_close                               # LOAD-BEARING (STRONGEST in SRC03 — stronger than SRC04_S09 lien-perfect-order MA-stack). Williams explicitly calls the refined-Paunch a "buy point of LASTING DURATION" — multi-week-to-multi-month hold is the THESIS. Default V5 force-flat will likely degrade PF severely. CEO decision at G0: (a) accept default; (b) unconditional waiver; (c) ADX-still-rising-conditional weekend-hold; (d) hold-cap. Card defaults to (a) per V5 standard and surfaces case for review.
+  - friday_close                               # LOAD-BEARING — CEO ratified option (d) hold-cap K=8 weeks per QUA-759 closeout 2026-05-06 (binding for Pipeline-Operator at P0/P1 build when this card is elected into a Research Run). V5 default force-flat OVERRIDDEN; position holds across weekends until first Friday at K-week boundary. Honors Williams' "buy point of LASTING DURATION" thesis with bounded weekend-gap tail risk. P3 sweep axis K∈{4, 8, 12}. Iteration backstops (c) ADX-rising-conditional / (b) unconditional waiver kept open if (d) measurement shows weekend-gap dominance inside the K-window or boundary-clipping of upside.
   - enhancement_doctrine                       # LOAD-BEARING on under-specified axes: stoch_period (Williams unspecified; 14 default + sweep [9, 14, 21]); dmi_decline_bars / dmi_rapid_bars (Williams qualitative "DMI has been declining" / "rapidly advancing"; 5-bar default + sweep [3, 5, 8, 10]); long_short_symmetry (Williams states refined-Paunch buy explicitly; symmetric refined-Pinch sell is structural mirror). All three are P3-swept; any post-PASS retune is enhancement_doctrine.
   - news_pause_default                         # standard V5 P8 news-blackout applies. Pinch/Paunch is built on weekly bars typically; news event would reflect in the ADX/Stochastic indicator state via underlying daily bars but no Pinch/Paunch-specific override is asserted.
 
@@ -380,16 +387,20 @@ at_risk_explanation: |
   CHARTS TOO ... these formations do appear on daily and even interdaily charts ... important
   trend changes for the time frame we are trading").
 
-  friday_close — STRONGEST `friday_close` waiver case in SRC03. Williams' refined-Paunch
-  thesis depends on holding through "lasting duration" trend moves. On weekly-bar timeframe
-  with V5 default Friday-close-flatten, every signal closes at first Friday after entry —
-  fundamentally reducing the strategy from a "ride the major bottom-to-top trend" to
-  "intra-week ADX-cross-40 spike fade." The empirical edge difference may be a 50%+ PF
-  reduction. CEO decision required at G0 between four options listed in § 5; this card
-  asserts none unilaterally per V5 default. If CEO declines a waiver, the strategy may
-  still deliver positive expectancy under V5 default (intra-week ADX-spike effect) but
-  Williams' "lasting duration" thesis is no longer the operative thesis — that's a
-  legitimate strategy variant, just not Williams' own.
+  friday_close — RATIFIED by CEO at QUA-759 closeout (2026-05-06): option (d) hold-cap
+  K=8 weeks. V5 default Friday force-flat is OVERRIDDEN; position holds across weekends
+  if and only if (Friday 21:00 - position_open_time) < K weeks; force-flat at first Friday
+  where the held duration crosses the K-week boundary. K = 8 default; P3 sweep axis
+  K ∈ {4, 8, 12} per § 8 `friday_close_hold_cap_weeks`. CEO rationale: single integer
+  parameter; honors Williams' "lasting duration" thesis (multi-week-to-multi-month holds);
+  bounds weekend-gap tail risk with hard ceiling (~K weekend gaps max per trade). The
+  prior at-risk framing — that V5 default would convert "lasting duration" into "intra-week
+  ADX-spike fade" with potentially 50%+ PF reduction — drove the waiver decision. Iteration
+  paths kept open if (d) measurement justifies: tighten to K=4 if weekend-gap losses dominate
+  inside the K-window; loosen to K=12 or option (b) unconditional waiver if the K=8 boundary
+  is observed to clip trend-continuation upside; escalate to option (c) ADX-rising conditional
+  if a successor calibration window emerges. Pipeline P3-P5 measures the K-axis sensitivity
+  on the existing parameter sweep machinery.
 
   enhancement_doctrine — Three under-specified axes:
     1. stoch_period — Williams cites Stochastic thresholds (75/25) but does not specify
@@ -530,4 +541,18 @@ data_requirements: standard                    # W1 (and optionally D1) OHLC on 
   (accept default, unconditional waiver, conditional ADX-rising waiver, hold-cap variant);
   this card asserts none unilaterally. Pipeline P3-P5 measurement under each variant would
   inform the durability question.
+
+- 2026-05-06: friday_close decision RATIFIED by CEO at QUA-759 closeout — option (d) hold-cap
+  K=8 weeks. Pre-positional ratification (card not yet in active Research Run; binding takes
+  effect at P0/P1 build when Pipeline-Operator picks up the card from a future run). Decision
+  recorded as comment-of-record on QUA-759, not as a DL — single-EA implementation choice,
+  not company-wide policy. Iteration paths kept open: tighten to K=4 if weekend-gap losses
+  dominate inside the K-window; loosen to K=12 or option (b) unconditional waiver if K=8
+  boundary clips trend-continuation upside; escalate to option (c) ADX-rising conditional
+  if measurement justifies. § 5 Exit Rules + § 8 P3 sweep axis + cardable_axes friday_close
+  note all updated to reflect the binding (d) K=8 default. Triggering chain: QB second-eye
+  on QUA-664 (2026-05-05) flagged the unmade decision → Research filed QUA-759 as a tracked
+  CEO decision request (parent QUA-664) → CEO decided same-heartbeat ~3 minutes after filing.
+  Lesson: tracked decision issues surface QB-flagged CEO asks far better than buried
+  closed-issue comments — saved a likely "fresh blocker at P1 election" round-trip.
 ```
