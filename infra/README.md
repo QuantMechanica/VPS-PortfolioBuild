@@ -124,6 +124,10 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Registers Task Scheduler job `QM_GitIndexLockMonitor_10min` as `SYSTEM`.
   - Runs `monitoring/Invoke-GitIndexLockMonitor.ps1 -StaleAfterMinutes 20 -FailOnFinding`.
   - Safe to re-run (`Register-ScheduledTask -Force`) and overlap-safe (`MultipleInstances=IgnoreNew`).
+- `scripts/Install-PythonRuntimeHealthTask.ps1`
+  - Registers Task Scheduler job `QM_PythonRuntimeHealth_10min` as `SYSTEM`.
+  - Runs `monitoring/Test-PythonRuntimeHealth.ps1` on cadence (default every 10 minutes).
+  - Safe to re-run (`Register-ScheduledTask -Force`) and overlap-safe (`MultipleInstances=IgnoreNew`).
 - `scripts/Ensure-AgentWorktree.ps1`
   - Converges per-agent worktree paths under `C:\QM\worktrees\` for CWD isolation.
   - Refuses non-empty non-worktree target paths and supports idempotent re-runs.
@@ -226,6 +230,12 @@ Git index-lock monitor (every 10 minutes, PC1-00):
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-GitIndexLockMonitorTask.ps1 -EveryMinutes 10 -StaleAfterMinutes 20 -FailOnFinding
+```
+
+Python runtime health monitor (every 10 minutes):
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-PythonRuntimeHealthTask.ps1 -EveryMinutes 10
 ```
 
 Aggregator state writer (every minute):

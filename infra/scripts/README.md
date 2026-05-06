@@ -29,6 +29,18 @@
 - Default run:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Repair-Python311FromNuget.ps1`
 
+## `Install-PythonRuntimeHealthTask.ps1`
+
+- Idempotently installs a Windows Scheduled Task for Python runtime health checks.
+- Default task:
+  - `QM_PythonRuntimeHealth_10min`
+- Default cadence:
+  - every 10 minutes
+- Default action:
+  - runs `infra\monitoring\Test-PythonRuntimeHealth.ps1` as `SYSTEM`
+- Preview mode (no registration):
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-PythonRuntimeHealthTask.ps1 -PreviewOnly`
+
 ## `dwx_hourly_check.py`
 
 - `spec_ok` is now evaluated by one shared helper (`is_symbol_spec_ok`) for both:
