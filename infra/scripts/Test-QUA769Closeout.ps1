@@ -21,8 +21,9 @@ if ($issues.Count -eq 0) {
     $closeout = Get-Content -Raw -LiteralPath $closeoutJson | ConvertFrom-Json
     $transition = Get-Content -Raw -LiteralPath $transitionJson | ConvertFrom-Json
 
-    if ($closeout.status -ne "ready_to_close") {
-        $issues += "closeout_status_not_ready_to_close"
+    $validCloseoutStatuses = @("ready_to_close", "closed_done_completed")
+    if ($validCloseoutStatuses -notcontains [string]$closeout.status) {
+        $issues += "closeout_status_invalid"
     }
     if ($transition.recommended_state -ne "done") {
         $issues += "transition_state_not_done"

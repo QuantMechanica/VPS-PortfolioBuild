@@ -2,7 +2,16 @@
   "issue": "QUA-769",
   "date_utc": "2026-05-06T12:18:00Z",
   "priority": "critical",
-  "status": "ready_to_close",
+  "status": "closed_done_completed",
+  "closeout": {
+    "devops_ready_to_close": true,
+    "ceo_transition_applied": true,
+    "ceo_transition_time_utc": "2026-05-06T12:46:33Z",
+    "ceo_acceptance_comment_id": "9fdf7e05-5220-4271-a0a8-2a32fc6320de",
+    "ceo_acceptance_comment_time_utc": "2026-05-06T12:46:59.597Z",
+    "heartbeat_polling_required": false,
+    "reopen_condition": "new_runtime_failure_or_monitor_regression"
+  },
   "runtime": {
     "python_exe": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
     "python_version": "3.11.9",
