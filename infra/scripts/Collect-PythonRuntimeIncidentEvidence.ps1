@@ -2,7 +2,7 @@ param(
     [datetime]$StartUtc = (Get-Date).ToUniversalTime().AddHours(-6),
     [datetime]$EndUtc = (Get-Date).ToUniversalTime(),
     [string]$PythonRoot = "C:\Users\Administrator\AppData\Local\Programs\Python\Python311",
-    [string]$DriveLogDir = "C:\ProgramData\Google\DriveFS\Logs",
+    [string]$DriveLogDir = "",
     [string]$OutDir = "C:\QM\repo\lessons-learned\evidence"
 )
 
@@ -11,6 +11,25 @@ $ErrorActionPreference = "Stop"
 New-Item -ItemType Directory -Path $OutDir -Force | Out-Null
 $stamp = (Get-Date).ToString("yyyy-MM-dd_HHmmss")
 $outJson = Join-Path $OutDir ("python_runtime_incident_evidence_{0}.json" -f $stamp)
+
+$candidateDriveLogDirs = @()
+if (-not [string]::IsNullOrWhiteSpace($DriveLogDir)) {
+    $candidateDriveLogDirs += $DriveLogDir
+}
+$candidateDriveLogDirs += @(
+    "C:\ProgramData\Google\DriveFS\Logs",
+    "C:\ProgramData\Google\DriveFS",
+    "C:\Users\Administrator\AppData\Local\Google\DriveFS\Logs",
+    "C:\Users\Administrator\AppData\Local\Google\DriveFS"
+)
+
+$resolvedDriveLogDir = $null
+foreach ($cand in ($candidateDriveLogDirs | Select-Object -Unique)) {
+    if (Test-Path -LiteralPath $cand) {
+        $resolvedDriveLogDir = $cand
+        break
+    }
+}
 
 $result = [ordered]@{
     collected_at_utc = (Get-Date).ToUniversalTime().ToString("o")
@@ -27,6 +46,8 @@ $result = [ordered]@{
     defender_events = @()
     defender_query_error = $null
     defender_events_count = 0
+    drive_log_dir_requested = $DriveLogDir
+    drive_log_dir_resolved = $resolvedDriveLogDir
     drive_logs = @()
     drive_logs_count = 0
 }
@@ -79,9 +100,9 @@ try {
     }
 }
 
-if (Test-Path -LiteralPath $DriveLogDir) {
+if ($resolvedDriveLogDir -and (Test-Path -LiteralPath $resolvedDriveLogDir)) {
     $result.drive_logs = @(
-        Get-ChildItem -LiteralPath $DriveLogDir -File -ErrorAction SilentlyContinue |
+        Get-ChildItem -LiteralPath $resolvedDriveLogDir -File -ErrorAction SilentlyContinue |
             Where-Object { $_.LastWriteTimeUtc -ge $StartUtc -and $_.LastWriteTimeUtc -le $EndUtc } |
             Select-Object Name, FullName, LastWriteTimeUtc, Length
     )

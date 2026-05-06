@@ -66,6 +66,12 @@
   - Security event `4663` entries matching Python root path
   - Defender Operational log entries matching Python path/runtime terms
   - DriveFS log file inventory in the same time window
+- DriveFS log path handling:
+  - auto-discovers first existing path from common candidates
+    (`C:\ProgramData\Google\DriveFS\Logs`, `C:\ProgramData\Google\DriveFS`,
+    `C:\Users\Administrator\AppData\Local\Google\DriveFS\Logs`,
+    `C:\Users\Administrator\AppData\Local\Google\DriveFS`)
+  - optional `-DriveLogDir` overrides candidate priority
 - Output:
   - `lessons-learned/evidence/python_runtime_incident_evidence_<timestamp>.json`
 - Example:

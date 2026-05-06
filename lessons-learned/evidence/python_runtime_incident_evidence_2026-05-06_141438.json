@@ -1,0 +1,114 @@
+{
+    "collected_at_utc":  "2026-05-06T12:14:38.7970659Z",
+    "window_utc":  {
+                       "start":  "2026-05-06T11:45:00.0000000+02:00",
+                       "end":  "2026-05-06T13:40:00.0000000+02:00"
+                   },
+    "python_root":  "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311",
+    "python_root_exists":  true,
+    "python_root_snapshot":  [
+                                 {
+                                     "Name":  "DLLs",
+                                     "FullName":  "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\DLLs",
+                                     "LastWriteTimeUtc":  "\/Date(1778068717985)\/",
+                                     "Length":  null,
+                                     "Mode":  "d-----"
+                                 },
+                                 {
+                                     "Name":  "include",
+                                     "FullName":  "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\include",
+                                     "LastWriteTimeUtc":  "\/Date(1778068718111)\/",
+                                     "Length":  null,
+                                     "Mode":  "d-----"
+                                 },
+                                 {
+                                     "Name":  "Lib",
+                                     "FullName":  "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\Lib",
+                                     "LastWriteTimeUtc":  "\/Date(1778068725072)\/",
+                                     "Length":  null,
+                                     "Mode":  "d-----"
+                                 },
+                                 {
+                                     "Name":  "libs",
+                                     "FullName":  "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\libs",
+                                     "LastWriteTimeUtc":  "\/Date(1778068719566)\/",
+                                     "Length":  null,
+                                     "Mode":  "d-----"
+                                 },
+                                 {
+                                     "Name":  "Tools",
+                                     "FullName":  "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\Tools",
+                                     "LastWriteTimeUtc":  "\/Date(1778068719574)\/",
+                                     "Length":  null,
+                                     "Mode":  "d-----"
+                                 },
+                                 {
+                                     "Name":  "LICENSE.txt",
+                                     "FullName":  "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\LICENSE.txt",
+                                     "LastWriteTimeUtc":  "\/Date(1712054566000)\/",
+                                     "Length":  36874,
+                                     "Mode":  "-a----"
+                                 },
+                                 {
+                                     "Name":  "python.exe",
+                                     "FullName":  "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+                                     "LastWriteTimeUtc":  "\/Date(1712054568000)\/",
+                                     "Length":  103192,
+                                     "Mode":  "-a----"
+                                 },
+                                 {
+                                     "Name":  "python3.dll",
+                                     "FullName":  "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python3.dll",
+                                     "LastWriteTimeUtc":  "\/Date(1712054568000)\/",
+                                     "Length":  67352,
+                                     "Mode":  "-a----"
+                                 },
+                                 {
+                                     "Name":  "python311.dll",
+                                     "FullName":  "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python311.dll",
+                                     "LastWriteTimeUtc":  "\/Date(1712054568000)\/",
+                                     "Length":  5800216,
+                                     "Mode":  "-a----"
+                                 },
+                                 {
+                                     "Name":  "pythonw.exe",
+                                     "FullName":  "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe",
+                                     "LastWriteTimeUtc":  "\/Date(1712054568000)\/",
+                                     "Length":  101656,
+                                     "Mode":  "-a----"
+                                 },
+                                 {
+                                     "Name":  "vcruntime140.dll",
+                                     "FullName":  "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\vcruntime140.dll",
+                                     "LastWriteTimeUtc":  "\/Date(1712054566000)\/",
+                                     "Length":  119192,
+                                     "Mode":  "-a----"
+                                 },
+                                 {
+                                     "Name":  "vcruntime140_1.dll",
+                                     "FullName":  "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\vcruntime140_1.dll",
+                                     "LastWriteTimeUtc":  "\/Date(1712054566000)\/",
+                                     "Length":  49528,
+                                     "Mode":  "-a----"
+                                 }
+                             ],
+    "security_delete_events":  [
+
+                               ],
+    "security_query_error":  {
+                                 "code":  "security_log_unavailable_or_access_denied",
+                                 "detail":  "No events were found that match the specified selection criteria."
+                             },
+    "security_delete_events_count":  0,
+    "defender_events":  [
+
+                        ],
+    "defender_query_error":  null,
+    "defender_events_count":  0,
+    "drive_log_dir_requested":  "",
+    "drive_log_dir_resolved":  "C:\\Users\\Administrator\\AppData\\Local\\Google\\DriveFS",
+    "drive_logs":  [
+
+                   ],
+    "drive_logs_count":  0
+}

@@ -41,4 +41,13 @@ Required next follow-up (owner: DevOps):
   - `infra/scripts/Set-ObjectAccessAuditPolicy.ps1`
 - Verification:
   - `infra/monitoring/Test-ObjectAccessAuditPolicy.ps1 -RequireSuccess` => `status=ok`
-  - `Invoke-InfraAudit` check `object_access_audit_policy` => `status=ok`
+- `Invoke-InfraAudit` check `object_access_audit_policy` => `status=ok`
+
+## DriveFS Path Discovery (2026-05-06)
+
+- Collector rerun artifact:
+  - `lessons-learned/evidence/python_runtime_incident_evidence_2026-05-06_141438.json`
+- Resolved DriveFS path:
+  - `C:\Users\Administrator\AppData\Local\Google\DriveFS`
+- In-window file matches at resolved path:
+  - `drive_logs_count = 0`
