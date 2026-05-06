@@ -98,6 +98,18 @@
 - Example:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\New-QUA769IssueTransitionPayload.ps1`
 
+## `Test-QUA769Closeout.ps1`
+
+- Validates required QUA-769 closeout artifacts and key fields:
+  - closeout JSON status (`ready_to_close`)
+  - transition payload state (`done/completed`)
+  - key checks (`python_runtime=pass`, `object_access_audit_policy=ok`)
+- Exit codes:
+  - `0`: closeout bundle valid
+  - `2`: missing artifact or failed closeout condition
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA769Closeout.ps1`
+
 ## `dwx_hourly_check.py`
 
 - `spec_ok` is now evaluated by one shared helper (`is_symbol_spec_ok`) for both:
