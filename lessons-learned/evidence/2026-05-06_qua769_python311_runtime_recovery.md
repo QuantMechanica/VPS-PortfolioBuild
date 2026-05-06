@@ -58,6 +58,16 @@
 - Manual run result:
   - `Last Result: 0` (successful execution)
 
+## Unblock Verification (2026-05-06)
+
+- Runtime check:
+  - `python -V` => `Python 3.11.9`
+  - `python -c "import encodings,ssl,sqlite3"` => success
+- Pipeline entrypoint smoke:
+  - `python C:\QM\repo\framework\scripts\p2_baseline.py --help` => success (usage displayed, exit code `0`)
+- Notes:
+  - `next_task.py` / `mark_done.py` were not present in current repo paths during this verification run.
+
 ## Residual Risk / Follow-up
 
 - Suspected root causes remain open:
