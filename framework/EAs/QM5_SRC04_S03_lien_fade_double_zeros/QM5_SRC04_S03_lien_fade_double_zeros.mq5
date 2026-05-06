@@ -33,10 +33,15 @@ input group "Strategy"
 input int    trend_ma_period              = 20;   // Card Sec 4 (15m, 20SMA trend filter), PDF p.113
 input double entry_offset_pips            = 12.0; // Card Sec 4 (10-15 pip stop-entry offset), PDF p.113
 input double stop_offset_pips             = 20.0; // Card Sec 4/Sec 5 (20 pip stop from figure), PDF p.113
-input double stage_max_distance_pips      = 50.0; // Card Sec 4 (staging proximity bound chosen for implementation)
+input double stage_max_distance_pips      = 50.0;  // Card Sec 4 (staging proximity bound chosen for implementation)
 input bool   triple_zero_only             = false; // Card Sec 6/Sec 8 optional triple-zero optimization, PDF p.113/p.115
 input bool   use_ma_trail_variant         = false; // Card Sec 5 alt trailing variant (MA+offset), PDF p.114
 input int    order_expiration_minutes     = 60;    // Card Sec 4 staged stop-order lifecycle
+input bool   relaxed_entry_logic          = false; // Variant: allow round-level staging without MA-side gate.
+input double trigger_offset_scale         = 0.25;  // Variant: tighten trigger construction vs static 12 pip offset.
+input bool   directional_round_selection  = false; // Variant-3: select directional round levels instead of nearest.
+input bool   use_half_step_levels         = false; // Variant-4: denser trigger grid for more frequent staging.
+input bool   entry_at_round_mode          = false; // Variant-5: stage directly at round level (no breakout offset).
 
 CTrade   g_trade;
 datetime g_last_bar_time = 0;
@@ -96,6 +101,26 @@ double NearestRound(const double price)
    if(step <= 0.0)
       return 0.0;
    return MathRound(price / step) * step;
+  }
+
+double RoundAbove(const double price)
+  {
+   double step = RoundStep();
+   if(use_half_step_levels)
+      step *= 0.5;
+   if(step <= 0.0)
+      return 0.0;
+   return MathCeil(price / step) * step;
+  }
+
+double RoundBelow(const double price)
+  {
+   double step = RoundStep();
+   if(use_half_step_levels)
+      step *= 0.5;
+   if(step <= 0.0)
+      return 0.0;
+   return MathFloor(price / step) * step;
   }
 
 bool GetOurPosition(ulong &ticket)
@@ -194,24 +219,37 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(pip <= 0.0)
       return false;
 
-   const double round_px = NearestRound(close1);
-   if(round_px <= 0.0)
+   const double round_mid = NearestRound(close1);
+   if(round_mid <= 0.0)
       return false;
 
-   const double dist_pips = MathAbs(close1 - round_px) / pip;
+   const double dist_pips = MathAbs(close1 - round_mid) / pip;
    if(dist_pips > stage_max_distance_pips)
       return false;
 
-   const double entry_buy = round_px + (entry_offset_pips * pip);
-   const double sl_buy = round_px - (stop_offset_pips * pip);
+   const double trigger_offset_pips = relaxed_entry_logic
+                                      ? MathMax(2.0, entry_offset_pips * trigger_offset_scale)
+                                      : entry_offset_pips;
+
+   const double long_round = directional_round_selection ? RoundAbove(close1) : round_mid;
+   const double short_round = directional_round_selection ? RoundBelow(close1) : round_mid;
+   if(long_round <= 0.0 || short_round <= 0.0)
+      return false;
+
+   const double entry_buy = entry_at_round_mode ? long_round : (long_round + (trigger_offset_pips * pip));
+   const double sl_buy = long_round - (stop_offset_pips * pip);
    const double tp_buy = entry_buy + MathAbs(entry_buy - sl_buy); // Card Sec 5 TP1 at 1R
 
-   const double entry_sell = round_px - (entry_offset_pips * pip);
-   const double sl_sell = round_px + (stop_offset_pips * pip);
+   const double entry_sell = entry_at_round_mode ? short_round : (short_round - (trigger_offset_pips * pip));
+   const double sl_sell = short_round + (stop_offset_pips * pip);
    const double tp_sell = entry_sell - MathAbs(sl_sell - entry_sell); // Card Sec 5 TP1 at 1R
 
-   // Card Sec 4 long: price below MA, stage buy-stop above figure.
-   if(close1 < ma1 && close1 < round_px)
+   // Variant path: when enabled, require round-level side only (MA still calculated for management/trail context).
+   const bool allow_long = relaxed_entry_logic ? (close1 < long_round) : (close1 < ma1 && close1 < long_round);
+   const bool allow_short = relaxed_entry_logic ? (close1 > short_round) : (close1 > ma1 && close1 > short_round);
+
+   // Card Sec 4 long: price below MA (or relaxed variant), stage buy-stop above figure.
+   if(allow_long)
      {
       req.type = QM_BUY_STOP;
       req.price = entry_buy;
@@ -221,8 +259,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return true;
      }
 
-   // Card Sec 4 short: price above MA, stage sell-stop below figure.
-   if(close1 > ma1 && close1 > round_px)
+   // Card Sec 4 short: price above MA (or relaxed variant), stage sell-stop below figure.
+   if(allow_short)
      {
       req.type = QM_SELL_STOP;
       req.price = entry_sell;
