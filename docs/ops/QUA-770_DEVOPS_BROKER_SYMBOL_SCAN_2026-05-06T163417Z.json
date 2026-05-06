@@ -1,0 +1,50 @@
+{
+  "generated_at_utc": "2026-05-06T16:34:26.037374+00:00",
+  "results": [
+    {
+      "terminal": "T1",
+      "init": true,
+      "error": null,
+      "matching_symbols": [
+        "NDX"
+      ],
+      "total_symbols": 859
+    },
+    {
+      "terminal": "T2",
+      "init": true,
+      "error": null,
+      "matching_symbols": [
+        "NDX"
+      ],
+      "total_symbols": 846
+    },
+    {
+      "terminal": "T3",
+      "init": true,
+      "error": null,
+      "matching_symbols": [
+        "NDX"
+      ],
+      "total_symbols": 846
+    },
+    {
+      "terminal": "T4",
+      "init": true,
+      "error": null,
+      "matching_symbols": [
+        "NDX"
+      ],
+      "total_symbols": 846
+    },
+    {
+      "terminal": "T5",
+      "init": true,
+      "error": null,
+      "matching_symbols": [
+        "NDX"
+      ],
+      "total_symbols": 846
+    }
+  ]
+}
