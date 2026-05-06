@@ -1,0 +1,43 @@
+{
+  "issue": "QUA-769",
+  "date_utc": "2026-05-06T12:18:00Z",
+  "priority": "critical",
+  "status": "ready_to_close",
+  "runtime": {
+    "python_exe": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+    "python_version": "3.11.9",
+    "stdlib_import_check": "pass",
+    "p2_baseline_help_check": "pass"
+  },
+  "monitoring": {
+    "runtime_health_task_name": "\\QM_PythonRuntimeHealth_10min",
+    "runtime_health_task_last_manual_result": 0,
+    "object_access_audit_policy_check": "ok"
+  },
+  "forensics": {
+    "collector_script": "infra/scripts/Collect-PythonRuntimeIncidentEvidence.ps1",
+    "drive_log_dir_resolved": "C:\\Users\\Administrator\\AppData\\Local\\Google\\DriveFS",
+    "incident_window_security_delete_events_count": 0,
+    "incident_window_drive_logs_count": 0
+  },
+  "artifacts": [
+    "docs/ops/QUA-769_CLOSEOUT_2026-05-06.md",
+    "lessons-learned/evidence/2026-05-06_qua769_python311_runtime_recovery.md",
+    "lessons-learned/evidence/2026-05-06_qua769_forensics_followup.md",
+    "lessons-learned/evidence/python_runtime_incident_evidence_2026-05-06_141438.json"
+  ],
+  "commits": [
+    "052af89",
+    "727bfef",
+    "003aa96",
+    "a6260f3",
+    "54519f7",
+    "546922b",
+    "c5a3622",
+    "d81697f",
+    "2915fb3",
+    "86d7c32",
+    "47601ea",
+    "b77d34d"
+  ]
+}
