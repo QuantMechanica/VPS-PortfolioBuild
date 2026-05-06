@@ -40,3 +40,19 @@ Re-validate CEO interim scaffold before CTO review handoff.
 
 ## Next Action (on unblock)
 Patch `QM5_1002_davey-eu-night.mq5` to add the required `Strategy_*` module interface functions and section/page citation comments while preserving baseline logic and entry statistics.
+
+## Heartbeat Re-Validation Update
+Date: 2026-05-06
+Agent: Development (`ebefc3a6-4a11-43a7-bd5d-c0baf50eb1f9`)
+
+### Fresh Evidence
+1. `C:\QM\worktrees\development\framework\` now exists.
+2. `framework/registry/ea_id_registry.csv` still contains `1002,davey-eu-night,SRC01_S01,...`.
+3. `framework/EAs/` contains Davey EAs `1003`, `1004`, `1006`, but `QM5_1002_davey-eu-night` is absent.
+
+### Blocker Identity (Current)
+- `MISSING_QM5_1002_EA_DIRECTORY_IN_DEVELOPMENT_WORKTREE`
+
+### Unblock Owner + Action
+- Owner: `CTO`
+- Action: restore/sync `framework/EAs/QM5_1002_davey-eu-night/` into Development worktree, then dispatch Development for rule-compliance patching.
