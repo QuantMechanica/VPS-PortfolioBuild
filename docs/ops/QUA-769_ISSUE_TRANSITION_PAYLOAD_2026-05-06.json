@@ -1,0 +1,20 @@
+{
+  "issue": "QUA-769",
+  "recommended_state": "done",
+  "state_reason": "completed",
+  "resume": true,
+  "summary": "Python 3.11 runtime recovered; monitoring and forensics controls implemented; unblock verification passed.",
+  "evidence": {
+    "closeout_md": "docs/ops/QUA-769_CLOSEOUT_2026-05-06.md",
+    "closeout_json": "docs/ops/QUA-769_CLOSEOUT_2026-05-06.json",
+    "runtime_recovery": "lessons-learned/evidence/2026-05-06_qua769_python311_runtime_recovery.md",
+    "forensics_followup": "lessons-learned/evidence/2026-05-06_qua769_forensics_followup.md"
+  },
+  "checks": {
+    "python_runtime": "ok",
+    "p2_baseline_entrypoint": "ok",
+    "python_runtime_health_task": "ok",
+    "object_access_audit_policy": "ok"
+  },
+  "commit_head": "7e0f39d"
+}
