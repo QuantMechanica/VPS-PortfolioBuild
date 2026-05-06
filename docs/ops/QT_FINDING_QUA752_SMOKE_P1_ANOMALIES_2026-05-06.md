@@ -7,7 +7,7 @@
 
 ---
 
-## QM5_1003 — All Smoke P1 Runs Infrastructure Failures + NO_REAL_TICKS_MARKER
+## QM5_1003 — All Smoke P1 Runs Infrastructure Failures + NO_REAL_TICKS_MARKER + ZT (QUA-662 root cause)
 
 **ADDENDUM (2026-05-06 next heartbeat):** The 5 stale dedup entries marked in the original finding completed overnight (all entries now status=complete). However, inspection of the underlying runs confirms infrastructure failure throughout.
 
@@ -31,10 +31,13 @@ Final p2_result.json: `PASS=0, FAIL=1, finished_at=2026-05-05T23:25:11Z`.
 
 **Impact:** Dedup shows all 6 complete, but no valid smoke output exists. All terminal runs were infrastructure failures or non-real-ticks failures.
 
+**ADDENDUM 2 (next heartbeat):** QM5_1003 smoke P1 has been expanded to 17 symbols (13 complete, 4 in-flight). Today's clean runs (det=True, real_ticks=True) still show 0 trades. The HTML report confirms `Total Trades: 0` — this is not a parser bug. Root cause connects to `D:/QM/reports/pipeline/QM5_1003/P2/INVALIDATION_NOTICE.md` (QUA-662 fallout, 2026-05-01): tester read-access broken for ~21 imported DWX symbols and QM5_1003 has not had a clean smoke run since. The NO_REAL_TICKS_MARKER on 7 today's runs is consistent with the same broken-import issue (zero tick data = no model4 marker). The 7 symbols with NO_REAL_TICKS_MARKER in today's smoke P1 are likely the same symbols flagged in the INVALIDATION_NOTICE root cause #1.
+
 **Required Pipeline-Op action:** After QUA-747 toolchain fixes land:
-1. Clear dedup keys matching `QM5_1003|smoke|*|P1|H1-2024` (all 6)
-2. Verify real tick data is available on the target terminal for all 6 smoke symbols
-3. Re-dispatch QM5_1003 smoke P1 and confirm `model4_log_marker_detected=true` in all summaries
+1. Clear dedup keys matching `QM5_1003|smoke|*|P1|H1-2024` (all 17, expanded set)
+2. Verify tester read-access for all 36 symbols per INVALIDATION_NOTICE prerequisite list
+3. Confirm `model4_log_marker_detected=true` in all summaries before accepting smoke results
+4. Note: QM5_1003 may also have genuine ZT on cross pairs once data is fixed — separate evaluation needed
 
 ---
 
