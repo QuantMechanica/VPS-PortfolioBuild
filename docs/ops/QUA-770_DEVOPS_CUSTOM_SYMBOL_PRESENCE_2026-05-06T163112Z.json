@@ -1,0 +1,186 @@
+﻿{
+    "generated_at_utc":  "2026-05-06T16:31:12.9477559Z",
+    "mt5_root":  "D:\\QM\\mt5",
+    "terminals":  [
+                      "T1",
+                      "T2",
+                      "T3",
+                      "T4",
+                      "T5"
+                  ],
+    "symbols":  [
+                    "US500.DWX",
+                    "NAS100.DWX",
+                    "NDXm.DWX"
+                ],
+    "total_checks":  15,
+    "missing_checks":  11,
+    "present_checks":  4,
+    "results":  [
+                    {
+                        "terminal":  "T1",
+                        "symbol":  "US500.DWX",
+                        "history_exists":  false,
+                        "ticks_exists":  false,
+                        "history_file_count":  0,
+                        "ticks_file_count":  0,
+                        "status":  "missing",
+                        "history_path":  "D:\\QM\\mt5\\T1\\Bases\\Custom\\history\\US500.DWX",
+                        "ticks_path":  "D:\\QM\\mt5\\T1\\Bases\\Custom\\ticks\\US500.DWX"
+                    },
+                    {
+                        "terminal":  "T1",
+                        "symbol":  "NAS100.DWX",
+                        "history_exists":  false,
+                        "ticks_exists":  false,
+                        "history_file_count":  0,
+                        "ticks_file_count":  0,
+                        "status":  "missing",
+                        "history_path":  "D:\\QM\\mt5\\T1\\Bases\\Custom\\history\\NAS100.DWX",
+                        "ticks_path":  "D:\\QM\\mt5\\T1\\Bases\\Custom\\ticks\\NAS100.DWX"
+                    },
+                    {
+                        "terminal":  "T1",
+                        "symbol":  "NDXm.DWX",
+                        "history_exists":  false,
+                        "ticks_exists":  false,
+                        "history_file_count":  0,
+                        "ticks_file_count":  0,
+                        "status":  "missing",
+                        "history_path":  "D:\\QM\\mt5\\T1\\Bases\\Custom\\history\\NDXm.DWX",
+                        "ticks_path":  "D:\\QM\\mt5\\T1\\Bases\\Custom\\ticks\\NDXm.DWX"
+                    },
+                    {
+                        "terminal":  "T2",
+                        "symbol":  "US500.DWX",
+                        "history_exists":  false,
+                        "ticks_exists":  false,
+                        "history_file_count":  0,
+                        "ticks_file_count":  0,
+                        "status":  "missing",
+                        "history_path":  "D:\\QM\\mt5\\T2\\Bases\\Custom\\history\\US500.DWX",
+                        "ticks_path":  "D:\\QM\\mt5\\T2\\Bases\\Custom\\ticks\\US500.DWX"
+                    },
+                    {
+                        "terminal":  "T2",
+                        "symbol":  "NAS100.DWX",
+                        "history_exists":  false,
+                        "ticks_exists":  false,
+                        "history_file_count":  0,
+                        "ticks_file_count":  0,
+                        "status":  "missing",
+                        "history_path":  "D:\\QM\\mt5\\T2\\Bases\\Custom\\history\\NAS100.DWX",
+                        "ticks_path":  "D:\\QM\\mt5\\T2\\Bases\\Custom\\ticks\\NAS100.DWX"
+                    },
+                    {
+                        "terminal":  "T2",
+                        "symbol":  "NDXm.DWX",
+                        "history_exists":  true,
+                        "ticks_exists":  true,
+                        "history_file_count":  8,
+                        "ticks_file_count":  95,
+                        "status":  "present",
+                        "history_path":  "D:\\QM\\mt5\\T2\\Bases\\Custom\\history\\NDXm.DWX",
+                        "ticks_path":  "D:\\QM\\mt5\\T2\\Bases\\Custom\\ticks\\NDXm.DWX"
+                    },
+                    {
+                        "terminal":  "T3",
+                        "symbol":  "US500.DWX",
+                        "history_exists":  false,
+                        "ticks_exists":  false,
+                        "history_file_count":  0,
+                        "ticks_file_count":  0,
+                        "status":  "missing",
+                        "history_path":  "D:\\QM\\mt5\\T3\\Bases\\Custom\\history\\US500.DWX",
+                        "ticks_path":  "D:\\QM\\mt5\\T3\\Bases\\Custom\\ticks\\US500.DWX"
+                    },
+                    {
+                        "terminal":  "T3",
+                        "symbol":  "NAS100.DWX",
+                        "history_exists":  false,
+                        "ticks_exists":  false,
+                        "history_file_count":  0,
+                        "ticks_file_count":  0,
+                        "status":  "missing",
+                        "history_path":  "D:\\QM\\mt5\\T3\\Bases\\Custom\\history\\NAS100.DWX",
+                        "ticks_path":  "D:\\QM\\mt5\\T3\\Bases\\Custom\\ticks\\NAS100.DWX"
+                    },
+                    {
+                        "terminal":  "T3",
+                        "symbol":  "NDXm.DWX",
+                        "history_exists":  true,
+                        "ticks_exists":  true,
+                        "history_file_count":  8,
+                        "ticks_file_count":  95,
+                        "status":  "present",
+                        "history_path":  "D:\\QM\\mt5\\T3\\Bases\\Custom\\history\\NDXm.DWX",
+                        "ticks_path":  "D:\\QM\\mt5\\T3\\Bases\\Custom\\ticks\\NDXm.DWX"
+                    },
+                    {
+                        "terminal":  "T4",
+                        "symbol":  "US500.DWX",
+                        "history_exists":  false,
+                        "ticks_exists":  false,
+                        "history_file_count":  0,
+                        "ticks_file_count":  0,
+                        "status":  "missing",
+                        "history_path":  "D:\\QM\\mt5\\T4\\Bases\\Custom\\history\\US500.DWX",
+                        "ticks_path":  "D:\\QM\\mt5\\T4\\Bases\\Custom\\ticks\\US500.DWX"
+                    },
+                    {
+                        "terminal":  "T4",
+                        "symbol":  "NAS100.DWX",
+                        "history_exists":  false,
+                        "ticks_exists":  false,
+                        "history_file_count":  0,
+                        "ticks_file_count":  0,
+                        "status":  "missing",
+                        "history_path":  "D:\\QM\\mt5\\T4\\Bases\\Custom\\history\\NAS100.DWX",
+                        "ticks_path":  "D:\\QM\\mt5\\T4\\Bases\\Custom\\ticks\\NAS100.DWX"
+                    },
+                    {
+                        "terminal":  "T4",
+                        "symbol":  "NDXm.DWX",
+                        "history_exists":  true,
+                        "ticks_exists":  true,
+                        "history_file_count":  8,
+                        "ticks_file_count":  96,
+                        "status":  "present",
+                        "history_path":  "D:\\QM\\mt5\\T4\\Bases\\Custom\\history\\NDXm.DWX",
+                        "ticks_path":  "D:\\QM\\mt5\\T4\\Bases\\Custom\\ticks\\NDXm.DWX"
+                    },
+                    {
+                        "terminal":  "T5",
+                        "symbol":  "US500.DWX",
+                        "history_exists":  false,
+                        "ticks_exists":  false,
+                        "history_file_count":  0,
+                        "ticks_file_count":  0,
+                        "status":  "missing",
+                        "history_path":  "D:\\QM\\mt5\\T5\\Bases\\Custom\\history\\US500.DWX",
+                        "ticks_path":  "D:\\QM\\mt5\\T5\\Bases\\Custom\\ticks\\US500.DWX"
+                    },
+                    {
+                        "terminal":  "T5",
+                        "symbol":  "NAS100.DWX",
+                        "history_exists":  false,
+                        "ticks_exists":  false,
+                        "history_file_count":  0,
+                        "ticks_file_count":  0,
+                        "status":  "missing",
+                        "history_path":  "D:\\QM\\mt5\\T5\\Bases\\Custom\\history\\NAS100.DWX",
+                        "ticks_path":  "D:\\QM\\mt5\\T5\\Bases\\Custom\\ticks\\NAS100.DWX"
+                    },
+                    {
+                        "terminal":  "T5",
+                        "symbol":  "NDXm.DWX",
+                        "history_exists":  true,
+                        "ticks_exists":  true,
+                        "history_file_count":  8,
+                        "ticks_file_count":  95,
+                        "status":  "present",
+                        "history_path":  "D:\\QM\\mt5\\T5\\Bases\\Custom\\history\\NDXm.DWX",
+                        "ticks_path":  "D:\\QM\\mt5\\T5\\Bases\\Custom\\ticks\\NDXm.DWX"
+                    }
+                ]
+}
