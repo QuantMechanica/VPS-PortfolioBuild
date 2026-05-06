@@ -1,0 +1,12 @@
+{
+  "issue": "QUA-769",
+  "implementation_status": "complete",
+  "validator_status": "ok",
+  "remaining_blocker": {
+    "owner": "OWNER/board-operator",
+    "action": "Apply issue transition to done/completed using docs/ops/QUA-769_ISSUE_TRANSITION_PAYLOAD_2026-05-06.json",
+    "reason": "No further DevOps code/infrastructure work remains; administrative state transition pending."
+  },
+  "payload_sha256": "A85B6623F1AF3287A0AA495DCDC3CC80EF1F344CFA0146C35806A083960BDCF1",
+  "ready_at_utc": "2026-05-06T12:24:00Z"
+}
