@@ -1,0 +1,15 @@
+{
+  "generated_at_utc": "2026-05-06T12:21:24.0799933Z",
+  "payload_regen": {
+    "output": "wrote_payload=C:\\QM\\worktrees\\devops\\docs\\ops\\QUA-769_ISSUE_TRANSITION_PAYLOAD_2026-05-06.json",
+    "exit_code": 0
+  },
+  "closeout_validator": {
+    "output": "{\r\n    \"issue\":  \"QUA-769\",\r\n    \"status\":  \"ok\",\r\n    \"issues\":  [\r\n\r\n               ]\r\n}",
+    "exit_code": 0
+  },
+  "runtime_health_task_query": {
+    "output": "\r\nFolder: \\\r\nHostName:                             WIN-B95G5LPSJ1O\r\nTaskName:                             \\QM_PythonRuntimeHealth_10min\r\nNext Run Time:                        5/6/2026 2:26:00 PM\r\nStatus:                               Ready\r\nLogon Mode:                           Interactive/Background\r\nLast Run Time:                        5/6/2026 2:16:01 PM\r\nLast Result:                          0\r\nAuthor:                               WIN-B95G5LPSJ1O\\qm-admin\r\nTask To Run:                          powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\\QM\\tasks\\QM_PythonRuntimeHealth_10min.ps1\r\nStart In:                             N/A\r\nComment:                              N/A\r\nScheduled Task State:                 Enabled\r\nIdle Time:                            Disabled\r\nPower Management:                     Stop On Battery Mode, No Start On Batteries\r\nRun As User:                          SYSTEM\r\nDelete Task If Not Rescheduled:       Disabled\r\nStop Task If Runs X Hours and X Mins: 72:00:00\r\nSchedule:                             Scheduling data is not available in this format.\r\nSchedule Type:                        One Time Only, Minute \r\nStart Time:                           2:06:00 PM\r\nStart Date:                           5/6/2026\r\nEnd Date:                             N/A\r\nDays:                                 N/A\r\nMonths:                               N/A\r\nRepeat: Every:                        0 Hour(s), 10 Minute(s)\r\nRepeat: Until: Time:                  None\r\nRepeat: Until: Duration:              Disabled\r\nRepeat: Stop If Still Running:        Disabled",
+    "exit_code": 0
+  }
+}
