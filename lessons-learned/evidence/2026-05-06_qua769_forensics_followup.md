@@ -22,3 +22,15 @@ Required next follow-up (owner: DevOps):
 1. Validate/enable file object-access audit policy for deletions (Security 4663 visibility).
 2. Confirm effective DriveFS log path on this host and update collector defaults if needed.
 3. Re-run collector immediately after any recurrence, preserving same UTC-window methodology.
+
+## Follow-up Execution (2026-05-06)
+
+- Ran:
+  - `infra/monitoring/Test-ObjectAccessAuditPolicy.ps1 -RequireSuccess`
+- Result:
+  - `status=critical`
+  - `missing_state:File System`
+  - `missing_state:Handle Manipulation`
+- Infra audit integration now surfaces this as:
+  - check name: `object_access_audit_policy`
+  - status: `critical`

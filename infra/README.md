@@ -25,6 +25,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
     - T6 live/demo isolation signal
     - Paperclip daemon process health
     - Python 3.11 runtime integrity (`Lib` presence + stdlib import + pip probe + prefix mapping)
+    - Object-access audit policy readiness (Security 4663 attribution prerequisites)
     - aggregator freshness
     - Google Drive sync freshness
     - stale `.git/index.lock` detection
@@ -108,6 +109,9 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `monitoring/Test-PythonRuntimeHealth.ps1`
   - Validates Python 3.11 runtime integrity for pipeline tooling (expected prefix, `Lib` directory presence, stdlib imports, optional pip probe).
   - Returns non-zero when runtime is corrupted/misrouted (for example missing `encodings` / broken launcher mapping).
+- `monitoring/Test-ObjectAccessAuditPolicy.ps1`
+  - Validates object-access audit subcategory settings (`File System`, `Handle Manipulation`) used for deletion attribution.
+  - Returns non-zero when required success/failure audit modes are missing.
 - `monitoring/Invoke-PaperclipStaleLockWatchdog.ps1`
   - Detects stale Paperclip execution locks (`executionLockedAt` stale while `activeRun=null`) on targeted assignees/issues.
   - Default mode is monitor-only (no mutations); optional `-AutoRecover` performs PATCH-only assignee-cycle recovery.

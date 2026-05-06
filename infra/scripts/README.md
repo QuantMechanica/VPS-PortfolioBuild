@@ -15,6 +15,20 @@
 - Example:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\monitoring\Test-PythonRuntimeHealth.ps1`
 
+## `../monitoring/Test-ObjectAccessAuditPolicy.ps1`
+
+- Validates audit policy subcategories needed for file-delete attribution:
+  - `File System`
+  - `Handle Manipulation`
+- Supports required-mode checks:
+  - `-RequireSuccess`
+  - `-RequireFailure`
+- Exit codes:
+  - `0`: required policy modes present
+  - `2`: missing/insufficient policy settings
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\monitoring\Test-ObjectAccessAuditPolicy.ps1 -RequireSuccess`
+
 ## `Repair-Python311FromNuget.ps1`
 
 - Idempotent recovery script for Python 3.11 runtime corruption incidents on Windows hosts.

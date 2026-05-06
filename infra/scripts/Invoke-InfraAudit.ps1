@@ -15,6 +15,7 @@ param(
     [string]$PythonRuntimeHealthScript = 'C:\QM\repo\infra\monitoring\Test-PythonRuntimeHealth.ps1',
     [string]$PythonExePath = 'C:\Users\Administrator\AppData\Local\Programs\Python\Python311\python.exe',
     [string]$PythonExpectedPrefix = 'C:\Users\Administrator\AppData\Local\Programs\Python\Python311',
+    [string]$ObjectAccessAuditPolicyScript = 'C:\QM\repo\infra\monitoring\Test-ObjectAccessAuditPolicy.ps1',
     [string]$Qua95TaskName = 'QM_QUA95_BlockerRefresh',
     [string]$Qua95TaskHealthTaskName = 'QM_QUA95_TaskHealth_15min',
     [int]$Qua95TaskMaxAgeMinutes = 125,
@@ -160,6 +161,24 @@ else {
         expected_prefix = $PythonExpectedPrefix
         exit_code = $pyHealthCode
         output = $pyHealthText
+    }
+}
+
+# Object-access audit policy readiness (for deletion attribution / Security 4663)
+if (-not (Test-Path -LiteralPath $ObjectAccessAuditPolicyScript)) {
+    Add-Check -Name 'object_access_audit_policy' -Status 'warn' -Meta @{
+        reason = 'health_script_missing'
+        path = $ObjectAccessAuditPolicyScript
+    }
+}
+else {
+    $auditPolicyOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $ObjectAccessAuditPolicyScript -RequireSuccess 2>&1
+    $auditPolicyCode = $LASTEXITCODE
+    $auditPolicyText = ($auditPolicyOut | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
+    $auditPolicyStatus = if ($auditPolicyCode -eq 0) { 'ok' } else { 'critical' }
+    Add-Check -Name 'object_access_audit_policy' -Status $auditPolicyStatus -Meta @{
+        exit_code = $auditPolicyCode
+        output = $auditPolicyText
     }
 }
 
