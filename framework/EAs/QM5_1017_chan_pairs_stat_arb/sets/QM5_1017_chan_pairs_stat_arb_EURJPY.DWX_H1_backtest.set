@@ -1,0 +1,16 @@
+; QuantMechanica V5 generated set file
+; Generator=Pipeline-Operator QUA-750 matrix scaffold
+ENV=backtest
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+pair_symbol_1=EURJPY.DWX
+pair_symbol_2=NZDUSD.DWX
+cadf_gate_enabled=true
+cointegration_significance=0.05
+training_lookback=252
+ols_hedge_lookback=252
+entry_z=2.0
+exit_z=1.0
+ou_halflife_cap_days=30
+time_stop_multiplier=1.0

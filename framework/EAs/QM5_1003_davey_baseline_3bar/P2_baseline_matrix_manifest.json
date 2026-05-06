@@ -31,7 +31,7 @@
     "CADCHF.DWX", "CADJPY.DWX", "CHFJPY.DWX",
     "EURAUD.DWX", "EURCAD.DWX", "EURCHF.DWX", "EURGBP.DWX", "EURJPY.DWX", "EURNZD.DWX", "EURUSD.DWX",
     "GBPAUD.DWX", "GBPCAD.DWX", "GBPCHF.DWX", "GBPJPY.DWX", "GBPNZD.DWX", "GBPUSD.DWX",
-    "GDAXIm.DWX", "NDXm.DWX", "UK100.DWX", "WS30.DWX",
+    "GDAXI.DWX", "NDX.DWX", "UK100.DWX", "WS30.DWX",
     "NZDCAD.DWX", "NZDCHF.DWX", "NZDJPY.DWX", "NZDUSD.DWX",
     "USDCAD.DWX", "USDCHF.DWX", "USDJPY.DWX",
     "XAGUSD.DWX", "XAUUSD.DWX", "XNGUSD.DWX", "XTIUSD.DWX"
@@ -41,8 +41,8 @@
   "_symbols_excluded": {
     "JPN225.DWX": "single 2026 stub hcc only — broker tick history starts 2026-02-02; insufficient for P2 DEV window",
     "XBRUSD.DWX": "single 2026 stub hcc only — broker tick history starts 2026-02-02; insufficient for P2 DEV window",
-    "GDAXI.DWX": "non-canonical name; canonical is GDAXIm.DWX (broker `m` suffix)",
-    "NDX.DWX": "non-canonical name; canonical is NDXm.DWX (broker `m` suffix)"
+    "GDAXI.DWX": "non-canonical name; canonical is GDAXI.DWX (broker `m` suffix)",
+    "NDX.DWX": "non-canonical name; canonical is NDX.DWX (broker `m` suffix)"
   },
 
   "output": {
