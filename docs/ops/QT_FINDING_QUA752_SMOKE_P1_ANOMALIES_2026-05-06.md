@@ -39,6 +39,25 @@ Final p2_result.json: `PASS=0, FAIL=1, finished_at=2026-05-05T23:25:11Z`.
 3. Confirm `model4_log_marker_detected=true` in all summaries before accepting smoke results
 4. Note: QM5_1003 may also have genuine ZT on cross pairs once data is fixed — separate evaluation needed
 
+**ADDENDUM 3 (post-QUA-747, 2026-05-06 ~09:30Z):** With QUA-747 now done and Pipeline-Op (QUA-753) dedup cleared, QM5_1003 smoke has re-run across 35/36 symbols (GBPAUD still in-flight on T1). Full latest-row breakdown:
+
+| Category | Count | Symbols |
+|---|---|---|
+| **False-positive PASS** | 2 | AUDCHF.DWX, EURNZD.DWX |
+| NO_REAL_TICKS_MARKER (QUA-662) | 18 | GBPAUD, USDCHF, NZDCAD, AUDJPY, AUDUSD, UK100, CADCHF, EURUSD, GBPCAD, GBPJPY, GBPNZD, USDJPY, USDCAD, GBPUSD, GDAXIm, NZDCHF, NZDUSD, XTIUSD |
+| Pure infra modal (residual) | 5 | AUDCAD, XAGUSD, EURJPY, GBPCHF, NZDJPY |
+| MIN_TRADES_NOT_MET (clean) | 11 | AUDNZD, CADJPY, CHFJPY, EURAUD, EURCAD, EURCHF, EURGBP, NDXm, WS30, XAUUSD, XNGUSD |
+
+**False-positive PASS finding:** Both AUDCHF and EURNZD show `verdict=PASS` in report.csv, but their summary.json files have `model4_log_marker_detected=False`, `total_trades=None`, `verdict=None`, and `reason_classes=['NO_REAL_TICKS_MARKER']`. Under DL-054 G1 (`model4_log_marker_detected=true` required), both are G1 INVALID. The tester log for EURNZD (run_01/20260506.log) shows the QM5_1017 EA running on EURNZD — the shared MT5 tester log was captured with overlapping session content. p2_baseline.py appears to write PASS when `verdict=None` without enforcing G1. This is a toolchain bug (CTO action required).
+
+**Post-QUA-747 modal rate for QM5_1003:** 5/35 pure infra + 18/35 NO_REAL_TICKS = 23/35 failures. QUA-662 (broken tester read-access for imported DWX symbols) is the dominant root cause. The 5 residual pure infra failures (EURJPY, GBPCHF, NZDJPY, AUDCAD, XAGUSD) ran post-fix but still fail with REPORT_MISSING/TIMEOUT — likely QUA-662 manifestation where broken read-access causes tester hang rather than NO_REAL_TICKS marker.
+
+**Updated Pipeline-Op action (supersedes prior list):**
+1. QUA-662 (broken tester read-access on ~18 imported DWX symbols) must be resolved before QM5_1003 can produce valid smoke results
+2. CTO to fix p2_baseline.py false-positive PASS: enforce G1 gate (`model4_log_marker_detected=true`) before writing PASS verdict to report.csv
+3. After QUA-662 fix: clear QM5_1003 dedup (all 36 keys) and re-dispatch from scratch
+4. QM5_1003 may have genuine ZT on some cross pairs once data is fixed — 11 clean MIN_TRADES symbols suggest strategy is selective by pair
+
 ---
 
 ## QM5_1004 — All Smoke P1 Runs Infrastructure Failures
@@ -75,7 +94,7 @@ Latest QM5_1004 p2_result.json: `PASS=0, FAIL=1, finished_at=2026-05-05T22:12:33
 
 | EA | Smoke P1 State | Action Required |
 |---|---|---|
-| QM5_1003 | 6/6 dedup complete, 0 valid reports (TIMEOUT+NO_REAL_TICKS) | Clear dedup + verify real tick data + re-dispatch after QUA-747 |
+| QM5_1003 | 35/36 re-smoked post-QUA-747: 2 false-PASS, 18 NO_REAL_TICKS, 5 infra, 11 clean ZT | Fix QUA-662 + p2_baseline G1 bug + re-dispatch |
 | QM5_1004 | 6/6 dedup complete, 0 valid reports | Clear dedup + re-dispatch after QUA-747 |
 | QM5_1009 | 10/10 complete, 0 trades all symbols | v2 build per ZT root cause; fix NON_DET check |
 | QM5_1017 | 3/3 complete, 0 trades (expected) | No action — ADRs cover G4 |
