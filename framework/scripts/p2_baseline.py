@@ -49,6 +49,7 @@ EA_ROOT = REPO_ROOT / "framework" / "EAs"
 RUN_SMOKE_PS1 = REPO_ROOT / "framework" / "scripts" / "run_smoke.ps1"
 TERMINALS = ["T1", "T2", "T3", "T4", "T5"]
 DEFAULT_OUT_PREFIX = Path(r"D:\QM\reports\pipeline")
+REGISTRY_DIR = REPO_ROOT / "framework" / "registry"
 
 
 def find_ea_dir(ea_label: str) -> Path:
@@ -113,6 +114,45 @@ def ensure_expert_binary_deployed(ea_dir: Path, terminal_roots: list[Path]) -> N
         dest_dir.mkdir(parents=True, exist_ok=True)
         dest = dest_dir / src_ex5.name
         shutil.copy2(src_ex5, dest)
+
+
+def ensure_magic_registry_contains_ea(ea_id: int) -> None:
+    """Fail fast when magic registry does not include active rows for the EA."""
+    registry_csv = REGISTRY_DIR / "magic_numbers.csv"
+    if not registry_csv.exists():
+        raise SystemExit(f"[FATAL] missing registry file: {registry_csv}")
+    with registry_csv.open(encoding="utf-8-sig", newline="") as f:
+        rows = list(csv.DictReader(f))
+    matches = []
+    for row in rows:
+        try:
+            row_ea_id = int(str(row.get("ea_id", "")).strip())
+        except ValueError:
+            continue
+        status = str(row.get("status", "")).strip().lower()
+        if row_ea_id == ea_id and status != "retired":
+            matches.append(row)
+    if not matches:
+        raise SystemExit(
+            f"[FATAL] EA {ea_id} has no active magic_numbers.csv row; "
+            "compile/run would hit EA_MAGIC_NOT_REGISTERED."
+        )
+
+
+def ensure_framework_registry_deployed(terminal_roots: list[Path]) -> None:
+    """Deploy framework registry CSV files into each terminal's MQL5/Files/registry."""
+    src_files = [
+        REGISTRY_DIR / "magic_numbers.csv",
+        REGISTRY_DIR / "ea_id_registry.csv",
+    ]
+    for src in src_files:
+        if not src.exists():
+            raise SystemExit(f"[FATAL] missing registry file for deployment: {src}")
+    for root in terminal_roots:
+        dest_dir = root / "MQL5" / "Files" / "registry"
+        dest_dir.mkdir(parents=True, exist_ok=True)
+        for src in src_files:
+            shutil.copy2(src, dest_dir / src.name)
 
 
 def parse_summary(summary_path: Path) -> dict:
@@ -194,6 +234,37 @@ def parse_run_smoke_summary_path(output_text: str) -> Path | None:
     return Path(m.group(1).strip())
 
 
+def find_fallback_summary_path(report_root_phase: Path, *, ea_id: int, symbol: str, year: int, terminal: str) -> Path | None:
+    """Find a recent run_smoke summary when stdout marker is missing.
+
+    This mitigates intermittent rc=0/rc=1 paths where run_smoke finished
+    but the `run_smoke.summary=...` line was not captured.
+    """
+    ea_label = f"QM5_{ea_id}"
+    base = report_root_phase / ea_label
+    if not base.exists():
+        return None
+    candidates = sorted(base.glob("*/summary.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+    for summary_path in candidates[:8]:
+        try:
+            summary = parse_summary(summary_path)
+        except Exception:
+            continue
+        if str(summary.get("symbol", "")) != symbol:
+            continue
+        if int(summary.get("year", 0) or 0) != year:
+            continue
+        summary_terminal = str(summary.get("terminal", ""))
+        # In P2 runs, run_smoke is invoked with terminal='any' and dispatches internally.
+        if terminal == "any":
+            if summary_terminal not in ("T1", "T2", "T3", "T4", "T5", "any"):
+                continue
+        elif summary_terminal != terminal:
+            continue
+        return summary_path
+    return None
+
+
 def run_one_symbol(ea_id: int, ea_dir: Path, ea_label: str, symbol: str, year: int,
                    period: str, runs: int, terminal: str, report_root_phase: Path,
                    report_csv: Path, min_trades: int, timeout_sec: int, dry_run: bool,
@@ -240,7 +311,20 @@ def run_one_symbol(ea_id: int, ea_dir: Path, ea_label: str, symbol: str, year: i
         combined_output = stdout + ("\n" + stderr if stderr else "")
         summary_path = parse_run_smoke_summary_path(combined_output)
         if not summary_path or not summary_path.exists():
+            summary_path = find_fallback_summary_path(
+                report_root_phase,
+                ea_id=ea_id,
+                symbol=symbol,
+                year=year,
+                terminal=terminal,
+            )
+        if not summary_path or not summary_path.exists():
             msg = f"no_summary_json:rc={rc}"
+            if attempt < max_attempts:
+                safe_print(f"[RETRY] {symbol} ({terminal}) {elapsed:.0f}s reason={msg} -> retrying once")
+                attempt += 1
+                time.sleep(2)
+                continue
             safe_print(f"[INVALID] {symbol} ({terminal}): {msg} ({elapsed:.0f}s)")
             if stderr:
                 safe_print(f"  stderr: {stderr[:300]}")
@@ -289,7 +373,9 @@ def main() -> int:
     ea_dir = find_ea_dir(args.ea)
     ea_id = derive_numeric_ea_id(args.ea, ea_dir)
     terminal_roots = [Path(r"D:\QM\mt5") / t for t in TERMINALS]
+    ensure_magic_registry_contains_ea(ea_id)
     ensure_expert_binary_deployed(ea_dir, terminal_roots)
+    ensure_framework_registry_deployed(terminal_roots)
 
     if args.symbols:
         symbols = [s.strip() for s in args.symbols.split(",") if s.strip()]

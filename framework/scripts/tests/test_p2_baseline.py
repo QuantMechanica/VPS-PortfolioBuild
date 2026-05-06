@@ -3,6 +3,7 @@ from __future__ import annotations
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+import json
 from unittest.mock import patch
 
 from framework.scripts import p2_baseline
@@ -90,6 +91,91 @@ class P2BaselineTests(unittest.TestCase):
                     ea_dir=ea_dir,
                     terminal_roots=[t1],
                 )
+
+    def test_ensure_magic_registry_contains_ea_raises_when_missing(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            reg = root / "framework" / "registry"
+            reg.mkdir(parents=True)
+            (reg / "magic_numbers.csv").write_text(
+                "ea_id,ea_slug,symbol,status,symbol_slot,magic\n"
+                "1001,QM5_1001_framework_smoke,EURUSD.DWX,active,0,10010000\n",
+                encoding="utf-8",
+            )
+            with patch.object(p2_baseline, "REGISTRY_DIR", reg):
+                with self.assertRaises(SystemExit):
+                    p2_baseline.ensure_magic_registry_contains_ea(1004)
+
+    def test_ensure_framework_registry_deployed_copies_csvs(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            reg = root / "framework" / "registry"
+            reg.mkdir(parents=True)
+            (reg / "magic_numbers.csv").write_text("h1\nv1\n", encoding="utf-8")
+            (reg / "ea_id_registry.csv").write_text("h2\nv2\n", encoding="utf-8")
+            t1 = root / "mt5" / "T1"
+            t1.mkdir(parents=True)
+            with patch.object(p2_baseline, "REGISTRY_DIR", reg):
+                p2_baseline.ensure_framework_registry_deployed([t1])
+            self.assertTrue((t1 / "MQL5" / "Files" / "registry" / "magic_numbers.csv").exists())
+            self.assertTrue((t1 / "MQL5" / "Files" / "registry" / "ea_id_registry.csv").exists())
+
+    def test_find_fallback_summary_path_matches_symbol_and_year(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            report_root = root / "QM5_1004" / "P2"
+            run_dir = report_root / "QM5_1004" / "20260506_100000"
+            run_dir.mkdir(parents=True)
+            summary_path = run_dir / "summary.json"
+            summary_path.write_text(json.dumps({
+                "symbol": "AUDCAD.DWX",
+                "year": 2024,
+                "terminal": "T2",
+            }), encoding="utf-8")
+
+            found = p2_baseline.find_fallback_summary_path(
+                report_root,
+                ea_id=1004,
+                symbol="AUDCAD.DWX",
+                year=2024,
+                terminal="any",
+            )
+            self.assertEqual(found, summary_path)
+
+    @patch("framework.scripts.p2_baseline.invoke_run_smoke")
+    @patch("framework.scripts.p2_baseline.setfile_for")
+    def test_run_one_symbol_retries_once_on_no_summary_json(self, mock_setfile_for, mock_invoke_run_smoke) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            ea_dir = root / "framework" / "EAs" / "QM5_1004_davey_es_breakout"
+            ea_dir.mkdir(parents=True)
+            report_root_phase = root / "reports" / "QM5_1004" / "P2"
+            report_csv = report_root_phase / "report.csv"
+
+            sf = ea_dir / "sets" / "x.set"
+            sf.parent.mkdir(parents=True)
+            sf.write_text("ok", encoding="utf-8")
+            mock_setfile_for.return_value = sf
+
+            # no summary marker in stdout/stderr => first attempt retries, second invalid
+            mock_invoke_run_smoke.return_value = (1, "stdout-without-summary", "")
+            verdict = p2_baseline.run_one_symbol(
+                ea_id=1004,
+                ea_dir=ea_dir,
+                ea_label="QM5_1004",
+                symbol="AUDCAD.DWX",
+                year=2024,
+                period="H1",
+                runs=2,
+                terminal="any",
+                report_root_phase=report_root_phase,
+                report_csv=report_csv,
+                min_trades=20,
+                timeout_sec=120,
+                dry_run=False,
+            )
+            self.assertEqual(verdict, "INVALID")
+            self.assertEqual(mock_invoke_run_smoke.call_count, 2)
 
 
 if __name__ == "__main__":
