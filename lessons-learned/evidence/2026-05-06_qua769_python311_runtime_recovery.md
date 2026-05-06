@@ -39,11 +39,24 @@
   - `infra/monitoring/Test-PythonRuntimeHealth.ps1`
 - Infra audit integration:
   - `infra/scripts/Invoke-InfraAudit.ps1` includes `python_runtime_health` check
+- Scheduled monitoring installer:
+  - `infra/scripts/Install-PythonRuntimeHealthTask.ps1`
+  - uses launcher script under `C:\QM\tasks\` to avoid Windows `schtasks /TR` 261-char limit
 
 ## Commits
 
 - `052af89` — add idempotent Python 3.11 NuGet recovery script + docs
 - `727bfef` — add Python runtime health monitor + infra audit wiring + docs
+- `a6260f3` — add scheduled Python runtime health task installer + docs
+
+## Runtime Monitoring Activation Proof
+
+- Registered task:
+  - `\QM_PythonRuntimeHealth_10min`
+- Task action:
+  - `powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\tasks\QM_PythonRuntimeHealth_10min.ps1`
+- Manual run result:
+  - `Last Result: 0` (successful execution)
 
 ## Residual Risk / Follow-up
 

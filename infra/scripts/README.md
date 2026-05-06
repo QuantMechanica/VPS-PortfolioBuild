@@ -38,6 +38,9 @@
   - every 10 minutes
 - Default action:
   - runs `infra\monitoring\Test-PythonRuntimeHealth.ps1` as `SYSTEM`
+- Implementation note:
+  - writes a launcher script under `C:\QM\tasks\` and schedules that launcher to avoid
+    the Windows `schtasks /TR` command-length limit (261 chars).
 - Preview mode (no registration):
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-PythonRuntimeHealthTask.ps1 -PreviewOnly`
 

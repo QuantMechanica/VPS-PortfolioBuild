@@ -5,6 +5,7 @@ param(
     [string]$MonitorScript = "",
     [string]$PythonExe = "C:\Users\Administrator\AppData\Local\Programs\Python\Python311\python.exe",
     [string]$ExpectedPrefix = "C:\Users\Administrator\AppData\Local\Programs\Python\Python311",
+    [string]$TaskScriptsRoot = "C:\QM\tasks",
     [switch]$SkipPip,
     [switch]$PreviewOnly
 )
@@ -25,15 +26,25 @@ if ($EveryMinutes -lt 1) {
 
 $skipPipArg = if ($SkipPip.IsPresent) { " -SkipPip" } else { "" }
 $psArgs = "-NoProfile -ExecutionPolicy Bypass -File `"$MonitorScript`" -PythonExe `"$PythonExe`" -ExpectedPrefix `"$ExpectedPrefix`"$skipPipArg"
+$safeTaskName = ($TaskName -replace '[^A-Za-z0-9._-]', '_')
+$launcherPath = Join-Path $TaskScriptsRoot ("{0}.ps1" -f $safeTaskName)
+$launcherBody = @(
+    '$ErrorActionPreference = ''Stop'''
+    ('& powershell.exe {0}' -f $psArgs)
+)
 
 if ($PreviewOnly.IsPresent) {
     Write-Host ("preview_task_name={0}" -f $TaskName)
     Write-Host ("preview_schedule_minutes={0}" -f $EveryMinutes)
     Write-Host ("preview_action=powershell.exe {0}" -f $psArgs)
+    Write-Host ("preview_launcher_path={0}" -f $launcherPath)
     exit 0
 }
 
-$taskCmd = "powershell.exe $psArgs"
+New-Item -ItemType Directory -Path $TaskScriptsRoot -Force | Out-Null
+$launcherBody | Set-Content -LiteralPath $launcherPath -Encoding ASCII
+
+$taskCmd = "powershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$launcherPath`""
 $createArgs = @(
     '/Create',
     '/TN', $TaskName,
@@ -56,4 +67,5 @@ if ($LASTEXITCODE -ne 0) {
 
 Write-Host ("installed_task={0}" -f $TaskName)
 Write-Host ("schedule_minutes={0}" -f $EveryMinutes)
-Write-Host ("action=powershell.exe {0}" -f $psArgs)
+Write-Host ("launcher={0}" -f $launcherPath)
+Write-Host ("action={0}" -f $taskCmd)
