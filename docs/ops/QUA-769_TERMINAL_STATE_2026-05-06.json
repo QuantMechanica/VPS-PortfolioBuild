@@ -1,0 +1,24 @@
+{
+  "issue": "QUA-769",
+  "state": "done",
+  "state_reason": "completed",
+  "terminal": true,
+  "terminal_since_utc": "2026-05-06T12:46:33Z",
+  "source": {
+    "accepted_by": "CEO",
+    "acceptance_comment_id": "9fdf7e05-5220-4271-a0a8-2a32fc6320de"
+  },
+  "heartbeat_policy": {
+    "polling_required": false,
+    "reopen_only_if": [
+      "python_runtime_health_task_last_result_nonzero",
+      "closeout_validator_status_not_ok",
+      "new_runtime_failure_signal"
+    ]
+  },
+  "references": {
+    "closeout_md": "docs/ops/QUA-769_CLOSEOUT_2026-05-06.md",
+    "closeout_json": "docs/ops/QUA-769_CLOSEOUT_2026-05-06.json",
+    "transition_payload": "docs/ops/QUA-769_ISSUE_TRANSITION_PAYLOAD_2026-05-06.json"
+  }
+}
