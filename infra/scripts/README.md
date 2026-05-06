@@ -1,5 +1,20 @@
 # Infra Scripts Notes
 
+## `../monitoring/Test-PythonRuntimeHealth.ps1`
+
+- Read-only Python runtime integrity check for infra/pipeline hosts.
+- Verifies:
+  - `python.exe` exists
+  - `Lib` directory exists
+  - `sys.prefix` matches expected installation root
+  - stdlib imports (`encodings`, `ssl`, `sqlite3`, `pathlib`, `site`)
+  - optional `pip --version` probe
+- Exit codes:
+  - `0`: healthy
+  - `2`: critical runtime issue detected
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\monitoring\Test-PythonRuntimeHealth.ps1`
+
 ## `Repair-Python311FromNuget.ps1`
 
 - Idempotent recovery script for Python 3.11 runtime corruption incidents on Windows hosts.

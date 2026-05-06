@@ -12,6 +12,9 @@ param(
     [string[]]$GitRepoRoots = @('C:\QM\repo', 'C:\QM\paperclip'),
     [int]$StaleIndexLockMinutes = 10,
     [string]$PaperclipProcessPattern = 'paperclip',
+    [string]$PythonRuntimeHealthScript = 'C:\QM\repo\infra\monitoring\Test-PythonRuntimeHealth.ps1',
+    [string]$PythonExePath = 'C:\Users\Administrator\AppData\Local\Programs\Python\Python311\python.exe',
+    [string]$PythonExpectedPrefix = 'C:\Users\Administrator\AppData\Local\Programs\Python\Python311',
     [string]$Qua95TaskName = 'QM_QUA95_BlockerRefresh',
     [string]$Qua95TaskHealthTaskName = 'QM_QUA95_TaskHealth_15min',
     [int]$Qua95TaskMaxAgeMinutes = 125,
@@ -138,6 +141,26 @@ $paperclipStatus = if ($paperclipCandidates.Count -gt 0) { 'ok' } else { 'critic
 Add-Check -Name 'paperclip_daemon_health' -Status $paperclipStatus -Meta @{
     match_pattern = $PaperclipProcessPattern
     pids = @($paperclipCandidates | ForEach-Object { $_.ProcessId })
+}
+
+# Python runtime health
+if (-not (Test-Path -LiteralPath $PythonRuntimeHealthScript)) {
+    Add-Check -Name 'python_runtime_health' -Status 'warn' -Meta @{
+        reason = 'health_script_missing'
+        path = $PythonRuntimeHealthScript
+    }
+}
+else {
+    $pyHealthOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $PythonRuntimeHealthScript -PythonExe $PythonExePath -ExpectedPrefix $PythonExpectedPrefix 2>&1
+    $pyHealthCode = $LASTEXITCODE
+    $pyHealthText = ($pyHealthOut | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
+    $pyHealthStatus = if ($pyHealthCode -eq 0) { 'ok' } else { 'critical' }
+    Add-Check -Name 'python_runtime_health' -Status $pyHealthStatus -Meta @{
+        python_exe = $PythonExePath
+        expected_prefix = $PythonExpectedPrefix
+        exit_code = $pyHealthCode
+        output = $pyHealthText
+    }
 }
 
 # Aggregator silence check

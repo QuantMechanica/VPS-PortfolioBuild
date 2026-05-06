@@ -24,6 +24,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
     - T1-T5 terminal liveness
     - T6 live/demo isolation signal
     - Paperclip daemon process health
+    - Python 3.11 runtime integrity (`Lib` presence + stdlib import + pip probe + prefix mapping)
     - aggregator freshness
     - Google Drive sync freshness
     - stale `.git/index.lock` detection
@@ -104,6 +105,9 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Verifies repo path is outside known Google Drive sync roots (PC1-00 guard).
 - `monitoring/Test-BackupSmoke.ps1`
   - Runs backup workflow in an isolated temp workspace and asserts manifest/artifacts.
+- `monitoring/Test-PythonRuntimeHealth.ps1`
+  - Validates Python 3.11 runtime integrity for pipeline tooling (expected prefix, `Lib` directory presence, stdlib imports, optional pip probe).
+  - Returns non-zero when runtime is corrupted/misrouted (for example missing `encodings` / broken launcher mapping).
 - `monitoring/Invoke-PaperclipStaleLockWatchdog.ps1`
   - Detects stale Paperclip execution locks (`executionLockedAt` stale while `activeRun=null`) on targeted assignees/issues.
   - Default mode is monitor-only (no mutations); optional `-AutoRecover` performs PATCH-only assignee-cycle recovery.
