@@ -27,12 +27,15 @@ if (Test-Path -LiteralPath $statePath) {
 $changed = ($currentPipeline -ne $previousPipeline) -or ($currentCeo -ne $previousCeo)
 $shouldFinalize = $changed -and ($currentPipeline -ne "MISSING") -and ($currentCeo -ne "MISSING")
 
-$stateObj = [ordered]@{
-    timestamp_utc = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
-    pipeline_signal = $currentPipeline
-    ceo_signal = $currentCeo
+$stateMissing = -not (Test-Path -LiteralPath $statePath)
+if ($stateMissing -or $changed) {
+    $stateObj = [ordered]@{
+        timestamp_utc = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+        pipeline_signal = $currentPipeline
+        ceo_signal = $currentCeo
+    }
+    $stateObj | ConvertTo-Json | Set-Content -LiteralPath $statePath -Encoding UTF8
 }
-$stateObj | ConvertTo-Json | Set-Content -LiteralPath $statePath -Encoding UTF8
 
 Write-Output ("pipeline_signal=" + $currentPipeline)
 Write-Output ("ceo_signal=" + $currentCeo)
