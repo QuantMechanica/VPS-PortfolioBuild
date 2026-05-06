@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [string]$TokenPath,
-    [string]$OutputPath
+    [string[]]$OutputPaths
 )
 
 Set-StrictMode -Version Latest
@@ -56,8 +56,11 @@ $repoRootPath = Resolve-RepoRoot
 if (-not $TokenPath) {
     $TokenPath = Join-Path $repoRootPath "branding\brand_tokens.json"
 }
-if (-not $OutputPath) {
-    $OutputPath = Join-Path $repoRootPath "framework\include\QM_Branding.mqh"
+if (-not $OutputPaths -or $OutputPaths.Count -eq 0) {
+    $OutputPaths = @(
+        (Join-Path $repoRootPath "framework\include\QM_Branding.mqh"),
+        (Join-Path $repoRootPath "framework\include\QM\QM_Branding.mqh")
+    )
 }
 
 $tokenJson = Get-Content -Raw -Path $TokenPath | ConvertFrom-Json
@@ -112,22 +115,24 @@ $generated = @(
 )
 
 $newContent = $generated -join "`n"
-$outputDir = Split-Path -Parent $OutputPath
-if (-not (Test-Path $outputDir)) {
-    New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
-}
+foreach ($OutputPath in $OutputPaths) {
+    $outputDir = Split-Path -Parent $OutputPath
+    if (-not (Test-Path $outputDir)) {
+        New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
+    }
 
-$changed = $true
-if (Test-Path $OutputPath) {
-    $existing = Get-Content -Raw -Path $OutputPath
-    $changed = $existing -ne $newContent
-}
+    $changed = $true
+    if (Test-Path $OutputPath) {
+        $existing = Get-Content -Raw -Path $OutputPath
+        $changed = $existing -ne $newContent
+    }
 
-if ($changed) {
-    [System.IO.File]::WriteAllText($OutputPath, $newContent, [System.Text.UTF8Encoding]::new($false))
-}
+    if ($changed) {
+        [System.IO.File]::WriteAllText($OutputPath, $newContent, [System.Text.UTF8Encoding]::new($false))
+    }
 
-$result = if ($changed) { "updated" } else { "no_change" }
-Write-Output "sync_brand_tokens: $result"
-Write-Output "token_path=$TokenPath"
-Write-Output "output_path=$OutputPath"
+    $result = if ($changed) { "updated" } else { "no_change" }
+    Write-Output "sync_brand_tokens: $result"
+    Write-Output "token_path=$TokenPath"
+    Write-Output "output_path=$OutputPath"
+}
