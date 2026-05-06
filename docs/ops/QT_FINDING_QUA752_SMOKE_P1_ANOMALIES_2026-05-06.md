@@ -60,15 +60,21 @@ Final p2_result.json: `PASS=0, FAIL=1, finished_at=2026-05-05T23:25:11Z`.
 
 ---
 
-## QM5_1004 — All Smoke P1 Runs Infrastructure Failures
+## QM5_1004 — Infrastructure Fixed, Strategy ZT Revealed
 
-**Finding:** All 6 QM5_1004 smoke P1 dedup entries show `status=complete`, but every underlying run produced `REPORT_MISSING` or `METATESTER_HUNG` (INCOMPLETE_RUNS). No clean tester output exists for QM5_1004 smoke P1.
+**Original finding:** All 6 smoke P1 entries produced REPORT_MISSING/METATESTER_HUNG. Root cause: EA_MAGIC_NOT_REGISTERED on OnInit (magic_numbers.csv not deployed to tester). See `QT_FINDING_QM5_1004_ZT_ONINT_FAIL_2026-05-06.md`.
 
-Latest QM5_1004 p2_result.json: `PASS=0, FAIL=1, finished_at=2026-05-05T22:12:33Z`. All summary runs show REPORT_MISSING.
+**ADDENDUM (post-QUA-747, 2026-05-06 ~09:30Z):** QUA-747 fix (`b935e03f`) deployed magic_numbers.csv and ea_id_registry.csv to all tester terminals. QM5_1004 re-smoked with full cohort (36 symbols).
 
-**Impact:** The smoke P1 "pass" in the dedup is a false completion — there are no valid backtest reports. QM5_1004 cannot advance through the pipeline without a clean smoke run.
+**Post-fix results (36 symbols):**
+- 35/36: `FAIL — MIN_TRADES_NOT_MET` | model4=True, det=True, total_trades=None
+- 1/36 (EURAUD.DWX): `FAIL — REPORT_MISSING;METATESTER_HUNG;INCOMPLETE_RUNS` (residual infra)
 
-**Context:** QUA-747 (P2 toolchain infra) is in_progress and likely will fix the REPORT_MISSING failure mode. QM5_1004 smoke dedup must be cleared and re-dispatched after QUA-747 resolves.
+**Confirmed:** `model4_log_marker_detected=True` on all MIN_TRADES runs — OnInit succeeds, real ticks used. The magic registry fix is verified.
+
+**New blocking issue — Strategy ZT:** 35/36 symbols including EURUSD, GBPUSD, USDJPY all produce 0 trades with real ticks. For a 20-bar breakout strategy, 0 trades on major pairs across H1 2024 is anomalous. Likely root cause: `QM_StopRulesReadATRValue()` returning false for DWX custom symbols in the tester context → `stop_distance=0.0` → `Strategy_EntrySignal` returns false on every bar → no entries ever staged. CTO investigation required.
+
+**QT position:** Code review verdict (LIKELY AGREE from QUA-749) stands — the code logic is correct per card §3/§4. This is a runtime/config issue, not a code defect. The setfile gap (missing breakout_lookback, strategy_atr_period, atr_stop_mult params — card §4/§6) is secondary to the ZT root cause but must be resolved before any smoke result is meaningful.
 
 ---
 
@@ -95,7 +101,7 @@ Latest QM5_1004 p2_result.json: `PASS=0, FAIL=1, finished_at=2026-05-05T22:12:33
 | EA | Smoke P1 State | Action Required |
 |---|---|---|
 | QM5_1003 | 35/36 re-smoked post-QUA-747: 2 false-PASS, 18 NO_REAL_TICKS, 5 infra, 11 clean ZT | Fix QUA-662 + p2_baseline G1 bug + re-dispatch |
-| QM5_1004 | 6/6 dedup complete, 0 valid reports | Clear dedup + re-dispatch after QUA-747 |
+| QM5_1004 | Magic fix confirmed, 35/36 strategy ZT (no trades on EURUSD/GBPUSD/USDJPY) | CTO: investigate QM_StopRulesReadATRValue ZT root cause |
 | QM5_1009 | 10/10 complete, 0 trades all symbols | v2 build per ZT root cause; fix NON_DET check |
 | QM5_1017 | 3/3 complete, 0 trades (expected) | No action — ADRs cover G4 |
 
