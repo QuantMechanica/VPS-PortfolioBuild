@@ -25,11 +25,11 @@ The V5 framework is V4's **best patterns professionalized**, not a clean redesig
 |---|---|
 | **Friday Close** | Default exit trigger. `QM_Exit` reason `QM_EXIT_FRIDAY_CLOSE` fires at configured cut-off (default `Friday 21:00 broker time`). Each EA can disable via input but the default is on. |
 | **Risk-Mode Convention** | **Backtest = `RISK_FIXED` (default $1K). Live = `RISK_PERCENT`.** Both inputs always present per L-K-02. The set-file ENV (`backtest` / `demo` / `shadow` / `live`) determines which mode is active by default; the other input must be 0. Hard-fail per `EA_INPUT_RISK_MODE_MISMATCH` if mode does not match ENV. |
-| **`.DWX` suffix discipline** | Symbols carry `.DWX` in research and backtest, stripped only at deploy packaging. `framework/scripts/strip_dwx_at_deploy.ps1` is the only sanctioned stripper. |
-| **Model 4 Every Real Tick** | All baseline / sweep / WF / stress / multi-seed runs use Model 4. `framework/scripts/run_smoke.ps1` and downstream runners refuse to launch with Model 1 / 2. |
+| **`.DWX` suffix discipline** | Symbols carry `.DWX` in research and backtest, stripped only at deploy packaging. `framework/scripts/strip_dwx_at_deploy.ps1` **[SPEC ONLY — NOT IMPLEMENTED]** is the only sanctioned stripper. |
+| **Model 4 Every Real Tick** | All baseline / sweep / WF / stress / multi-seed runs use Model 4. `framework/scripts/run_smoke.ps1` **[SPEC ONLY — NOT IMPLEMENTED]** and downstream runners refuse to launch with Model 1 / 2. |
 | **Magic schema `ea_id * 10000 + symbol_slot`** | `QM_MagicResolver` per § QM_MagicResolver above. V5 ea_id namespace 1000-9999 leaves V4 SM_XXX (1-~770) reserved as legacy. |
 | **Enhancement Doctrine** | Exit-only modifications preserve prior PASS evidence; entry-filter modifications invalidate prior PASS and require full pipeline re-run. `QM_TradeManagement.AddToPosition`, `QM_TM_TrailATR`, `QM_TM_MoveToBreakEven` are exit-side and OK; any change to `QM_Entry` parameters invalidates pipeline state. |
-| **Darwinex MT5 native data only** | No external market-data API calls in framework or any EA. `framework/scripts/build_check.ps1` greps for forbidden imports / WebRequest URLs and blocks the build. |
+| **Darwinex MT5 native data only** | No external market-data API calls in framework or any EA. `framework/scripts/build_check.ps1` **[SPEC ONLY — NOT IMPLEMENTED]** greps for forbidden imports / WebRequest URLs and blocks the build. |
 
 ## Strategy Allowability (from V5 Hub)
 
@@ -42,7 +42,7 @@ Three explicit V5 stances on strategy class:
 | **Scalping** | Allowed | Standard gates plus P5b stress with VPS-realistic latency calibration mandatory before P9. |
 | **Machine Learning** | **NOT allowed in V5** | Source collection allowed (research only). No ML-predicted entries / exits / sizing in V5 EAs. May reconsider in V6. |
 
-`framework/scripts/build_check.ps1` greps for ML-library imports (`tensorflow`, `torch`, `sklearn`, `keras`, `onnx`, ML-runtime DLLs) and blocks the build with `EA_ML_FORBIDDEN`.
+`framework/scripts/build_check.ps1` **[SPEC ONLY — NOT IMPLEMENTED]** greps for ML-library imports (`tensorflow`, `torch`, `sklearn`, `keras`, `onnx`, ML-runtime DLLs) and blocks the build with `EA_ML_FORBIDDEN`.
 
 ## Modularity — 4-Module Pattern
 
@@ -130,11 +130,11 @@ framework/
     magic_numbers.csv          # ea_id, ea_slug, symbol_slot, symbol, magic, reserved_at
     ea_id_registry.csv         # ea_id, slug, status, owner, created_at
   scripts/
-    compile_one.ps1            # compiles a single EA via metaeditor.exe
-    compile_all.ps1            # iterates EAs/, summary report
-    build_check.ps1            # pre-commit: compile + magic-collision + setfile-schema
-    run_smoke.ps1              # P1 smoke harness wrapper around MT5 tester
-    validate_setfile.ps1       # schema check on a .set file
+    compile_one.ps1            # [SPEC ONLY — NOT IMPLEMENTED] compiles a single EA via metaeditor.exe
+    compile_all.ps1            # [SPEC ONLY — NOT IMPLEMENTED] iterates EAs/, summary report
+    build_check.ps1            # [SPEC ONLY — NOT IMPLEMENTED] pre-commit: compile + magic-collision + setfile-schema
+    run_smoke.ps1              # [SPEC ONLY — NOT IMPLEMENTED] P1 smoke harness wrapper around MT5 tester
+    validate_setfile.ps1       # [SPEC ONLY — NOT IMPLEMENTED] schema check on a .set file
   conventions/
     SET_FILE_FORMAT.md
     NAMING_CONVENTIONS.md
@@ -207,7 +207,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 
 ### Validation
 
-`framework/scripts/build_check.ps1` runs at every compile:
+`framework/scripts/build_check.ps1` **[SPEC ONLY — NOT IMPLEMENTED]** runs at every compile:
 
 1. parse every EA's call to `QM_Magic(ea_id, symbol_slot)`
 2. confirm each (ea_id, symbol_slot) pair exists in `magic_numbers.csv` with `status=active`
@@ -291,7 +291,7 @@ Standard MT5 `.set` plus a mandatory header comment block:
 ; magic_slot:   0
 ; risk_mode:    PERCENT
 ; portfolio_weight: 1.00
-; build_hash:   <set by build_check.ps1>
+; build_hash:   <set by build_check.ps1 [SPEC ONLY — NOT IMPLEMENTED]>
 ; author:       CTO
 ; date:         2026-04-26
 ;==========================================================
@@ -299,7 +299,7 @@ Standard MT5 `.set` plus a mandatory header comment block:
 
 ### Required inputs
 
-Every set file must explicitly set every EA input — no "default" values. `validate_setfile.ps1` rejects set files that omit any input declared in the EA's `OnInit` schema export.
+Every set file must explicitly set every EA input — no "default" values. `validate_setfile.ps1` **[SPEC ONLY — NOT IMPLEMENTED]** rejects set files that omit any input declared in the EA's `OnInit` schema export.
 
 ### Storage
 
@@ -397,7 +397,7 @@ Three independent kill paths, each can shut the EA down:
 
 ### QM_Branding.mqh
 
-V5 brand colour constants for MQL5 chart objects, indicators, and UI elements. Sourced from `branding/brand_tokens.json` (auto-generated by `framework/scripts/sync_brand_tokens.ps1` per `branding/QM_BRANDING_GUIDE.md` § 10 default).
+V5 brand colour constants for MQL5 chart objects, indicators, and UI elements. Sourced from `branding/brand_tokens.json` (auto-generated by `framework/scripts/sync_brand_tokens.ps1` **[SPEC ONLY — NOT IMPLEMENTED]** per `branding/QM_BRANDING_GUIDE.md` § 10 default).
 
 ```mql5
 // Surface
@@ -422,7 +422,7 @@ V5 brand colour constants for MQL5 chart objects, indicators, and UI elements. S
 #define QM_FONT_MONO       "Consolas"
 ```
 
-EAs and indicators reference `QM_CLR_*` constants only; no hard-coded `clr*` ints anywhere else in V5 MQL5 code. `framework/scripts/build_check.ps1` greps for hard-coded `clr` constants in `framework/EAs/` and warns.
+EAs and indicators reference `QM_CLR_*` constants only; no hard-coded `clr*` ints anywhere else in V5 MQL5 code. `framework/scripts/build_check.ps1` **[SPEC ONLY — NOT IMPLEMENTED]** greps for hard-coded `clr` constants in `framework/EAs/` and warns.
 
 ### QM_OrderTypes.mqh
 
@@ -696,7 +696,7 @@ double OnTester() {
 
 ## Compile + Smoke Harness
 
-### compile_one.ps1
+### compile_one.ps1 [SPEC ONLY — NOT IMPLEMENTED]
 
 ```
 compile_one.ps1 -EAPath framework/EAs/QM5_1001_breakout-atr -Strict
@@ -708,13 +708,13 @@ compile_one.ps1 -EAPath framework/EAs/QM5_1001_breakout-atr -Strict
 - writes summary row to `D:\QM\reports\compile\<datetime>\summary.csv`
 - exit code 0 on full PASS, non-zero with reason class
 
-### compile_all.ps1
+### compile_all.ps1 [SPEC ONLY — NOT IMPLEMENTED]
 
 - iterates `framework/EAs/`
 - runs `compile_one` for each
 - summary report under `D:\QM\reports\compile\<datetime>\`
 
-### build_check.ps1
+### build_check.ps1 [SPEC ONLY — NOT IMPLEMENTED]
 
 Pre-commit / pre-merge gate. Runs:
 
@@ -725,7 +725,7 @@ Pre-commit / pre-merge gate. Runs:
 
 Exit non-zero blocks the commit (Husky hook or CI step).
 
-### run_smoke.ps1
+### run_smoke.ps1 [SPEC ONLY — NOT IMPLEMENTED]
 
 ```
 run_smoke.ps1 -EAId 1001 -Symbol EURUSD -Year 2024 -Terminal T1
@@ -736,7 +736,7 @@ run_smoke.ps1 -EAId 1001 -Symbol EURUSD -Year 2024 -Terminal T1
 - writes `D:\QM\reports\smoke\QM5_1001\<datetime>\` with raw + JSON summary
 - P1 PASS criteria: ≥ 20 trades, no `OnInit` failure, deterministic across two re-runs
 
-### validate_setfile.ps1
+### validate_setfile.ps1 [SPEC ONLY — NOT IMPLEMENTED]
 
 - parses set file
 - compares input list against the EA's `OnInit` exported schema (Codex extracts this at compile time and writes `framework/EAs/QM5_NNNN_<slug>/inputs.schema.json`)
@@ -758,7 +758,7 @@ run_smoke.ps1 -EAId 1001 -Symbol EURUSD -Year 2024 -Terminal T1
 When this design is approved, Codex implements in strict order:
 
 1. **`QM_Errors.mqh`** — named error codes only, no logic. Compiles in isolation.
-2. **`QM_Branding.mqh`** — colour + font constants. Standalone, no dependencies. Generated by `scripts/sync_brand_tokens.ps1` from `branding/brand_tokens.json`.
+2. **`QM_Branding.mqh`** — colour + font constants. Standalone, no dependencies. Generated by `scripts/sync_brand_tokens.ps1` **[SPEC ONLY — NOT IMPLEMENTED]** from `branding/brand_tokens.json`.
 3. **`QM_Logger.mqh`** — JSON-line logger. Standalone test EA in `tests/unit/log_smoke.mq5`.
 4. **`QM_MagicResolver.mqh`** + `registry/magic_numbers.csv` (with one test row).
 5. **`QM_RiskSizer.mqh`** — pure math, unit-testable.
@@ -775,11 +775,11 @@ When this design is approved, Codex implements in strict order:
 16. **`QM_Common.mqh`** — umbrella include + `QM_FrameworkInit` / `QM_FrameworkShutdown` / `OnTimer` orchestration.
 17. **`templates/EA_Skeleton.mq5`** — must compile clean, must run a one-tick smoke without errors, must render `QM_ChartUI` correctly.
 18. **`templates/chart_template.tpl`** — MT5 chart template with QM brand colours (background, grid, candle, MA defaults).
-19. **`scripts/sync_brand_tokens.ps1`** — generates `QM_Branding.mqh` from `branding/brand_tokens.json`.
-20. **`scripts/compile_one.ps1`** — must compile EA_Skeleton successfully.
-21. **`scripts/build_check.ps1`** — must run end-to-end on the skeleton.
-22. **`scripts/run_smoke.ps1`** — must run a smoke pass on T1 with the skeleton.
-23. **`scripts/brand_report.ps1`** — post-process MT5 .htm reports with QM brand CSS.
+19. **`scripts/sync_brand_tokens.ps1`** **[SPEC ONLY — NOT IMPLEMENTED]** — generates `QM_Branding.mqh` from `branding/brand_tokens.json`.
+20. **`scripts/compile_one.ps1`** **[SPEC ONLY — NOT IMPLEMENTED]** — must compile EA_Skeleton successfully.
+21. **`scripts/build_check.ps1`** **[SPEC ONLY — NOT IMPLEMENTED]** — must run end-to-end on the skeleton.
+22. **`scripts/run_smoke.ps1`** **[SPEC ONLY — NOT IMPLEMENTED]** — must run a smoke pass on T1 with the skeleton.
+23. **`scripts/brand_report.ps1`** **[SPEC ONLY — NOT IMPLEMENTED]** — post-process MT5 .htm reports with QM brand CSS.
 24. **`tests/smoke/`** — a smoke EA + set file + expected output, used as regression gate.
 25. **Quality-Tech review** of full framework before any V5 strategy EA is built. → ADR: `decisions/2026-05-01_phase2_acceptance.md` (CONDITIONAL PASS; fixes applied 2026-05-01).
 
@@ -793,7 +793,7 @@ OWNER asked for a defaults proposal; below are the binding choices. Each line is
 
 - Path: `<MT5 data folder>/MQL5/Logs/QM/QM5_NNNN_<slug>.log`, JSON-line, one file per EA per terminal.
 - Rejected: single shared rotating file. Reason: V5 runs many EAs in parallel on T1-T5; lock contention on a shared file under tester load creates real corruption risk, and grep-by-EA is the dominant query pattern.
-- Operational: a daily zero-overhead rollover script under `framework/scripts/rotate_logs.ps1` archives any log > 100 MB into `<dir>/archive/<date>/`.
+- Operational: a daily zero-overhead rollover script under `framework/scripts/rotate_logs.ps1` **[SPEC ONLY — NOT IMPLEMENTED]** archives any log > 100 MB into `<dir>/archive/<date>/`.
 
 ### 2. `PORTFOLIO_WEIGHT` > 1.0 → **hard fail with `EA_INPUT_PORTFOLIO_WEIGHT_OUT_OF_RANGE`**
 
@@ -821,9 +821,9 @@ OWNER asked for a defaults proposal; below are the binding choices. Each line is
 
 ### 6. Compile tool → **`metaeditor.exe`** (not `terminal64.exe /compile`)
 
-- All `compile_one.ps1` calls invoke `metaeditor.exe /compile:<path>.mq5 /log:<build/path>.log`.
+- All `compile_one.ps1` calls invoke `metaeditor.exe /compile:<path>.mq5 /log:<build/path>.log`. **[SPEC ONLY — NOT IMPLEMENTED]**
 - Rejected: `terminal64.exe /compile`. Reason: `metaeditor.exe` produces a cleaner machine-parseable log (line / column / severity / code), and does not require a running terminal context. Terminal-mode compile leaves more side-effects in the data folder.
-- Strict mode default in `build_check.ps1`: 0 errors, 0 warnings. Per-EA override possible via `framework/EAs/QM5_NNNN_<slug>/.compile-warnings-allowed` (a file listing tolerated warning codes), but use is logged and CEO + CTO sign-off required to add a code.
+- Strict mode default in `build_check.ps1`: 0 errors, 0 warnings. **[SPEC ONLY — NOT IMPLEMENTED]** Per-EA override possible via `framework/EAs/QM5_NNNN_<slug>/.compile-warnings-allowed` (a file listing tolerated warning codes), but use is logged and CEO + CTO sign-off required to add a code.
 
 ### What this unblocks
 
