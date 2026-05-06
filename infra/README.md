@@ -145,6 +145,8 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `scripts/Set-ObjectAccessAuditPolicy.ps1`
   - Enforces object-access audit subcategories (`File System`, `Handle Manipulation`) for deletion-attribution readiness.
   - Post-set verification uses `monitoring/Test-ObjectAccessAuditPolicy.ps1`.
+- `scripts/New-QUA769IssueTransitionPayload.ps1`
+  - Generates deterministic QUA-769 issue transition payload JSON from closeout artifacts.
 - `monitoring/Test-QUA95BlockerTaskHealth.ps1`
   - Validates task existence, enabled state, last result, and staleness window for `QM_QUA95_BlockerRefresh`.
   - Validates QUA-95 transition payload consistency via `scripts/Test-QUA95IssueTransitionPayload.ps1`.

@@ -90,6 +90,14 @@
 - Example:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Set-ObjectAccessAuditPolicy.ps1`
 
+## `New-QUA769IssueTransitionPayload.ps1`
+
+- Generates `docs/ops/QUA-769_ISSUE_TRANSITION_PAYLOAD_2026-05-06.json`
+  from `docs/ops/QUA-769_CLOSEOUT_2026-05-06.json`.
+- Preserves deterministic structure for board/API state transitions.
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\New-QUA769IssueTransitionPayload.ps1`
+
 ## `dwx_hourly_check.py`
 
 - `spec_ok` is now evaluated by one shared helper (`is_symbol_spec_ok`) for both:
