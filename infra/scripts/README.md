@@ -44,6 +44,19 @@
 - Preview mode (no registration):
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-PythonRuntimeHealthTask.ps1 -PreviewOnly`
 
+## `Collect-PythonRuntimeIncidentEvidence.ps1`
+
+- Collects incident forensics for Python runtime corruption in a UTC time window.
+- Captures:
+  - current Python install-root directory snapshot
+  - Security event `4663` entries matching Python root path
+  - Defender Operational log entries matching Python path/runtime terms
+  - DriveFS log file inventory in the same time window
+- Output:
+  - `lessons-learned/evidence/python_runtime_incident_evidence_<timestamp>.json`
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Collect-PythonRuntimeIncidentEvidence.ps1 -StartUtc "2026-05-06T09:45:00Z" -EndUtc "2026-05-06T11:40:00Z"`
+
 ## `dwx_hourly_check.py`
 
 - `spec_ok` is now evaluated by one shared helper (`is_symbol_spec_ok`) for both:

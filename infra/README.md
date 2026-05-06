@@ -135,6 +135,9 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Idempotent Python 3.11 runtime recovery for host incidents where stdlib/launcher state is corrupted.
   - Uses official NuGet package (`python/<version>`) to restore `C:\Users\Administrator\AppData\Local\Programs\Python\Python311`.
   - Converges `HKCU\Software\Python\PythonCore\3.11\InstallPath` launcher mapping and validates stdlib imports + pip.
+- `scripts/Collect-PythonRuntimeIncidentEvidence.ps1`
+  - Captures forensics for Python runtime corruption incidents (filesystem snapshot, Security 4663 events, Defender operational events, DriveFS log file inventory in a UTC window).
+  - Writes machine-readable evidence JSON to `lessons-learned/evidence/`.
 - `monitoring/Test-QUA95BlockerTaskHealth.ps1`
   - Validates task existence, enabled state, last result, and staleness window for `QM_QUA95_BlockerRefresh`.
   - Validates QUA-95 transition payload consistency via `scripts/Test-QUA95IssueTransitionPayload.ps1`.
