@@ -123,6 +123,10 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `scripts/Ensure-AgentWorktree.ps1`
   - Converges per-agent worktree paths under `C:\QM\worktrees\` for CWD isolation.
   - Refuses non-empty non-worktree target paths and supports idempotent re-runs.
+- `scripts/Repair-Python311FromNuget.ps1`
+  - Idempotent Python 3.11 runtime recovery for host incidents where stdlib/launcher state is corrupted.
+  - Uses official NuGet package (`python/<version>`) to restore `C:\Users\Administrator\AppData\Local\Programs\Python\Python311`.
+  - Converges `HKCU\Software\Python\PythonCore\3.11\InstallPath` launcher mapping and validates stdlib imports + pip.
 - `monitoring/Test-QUA95BlockerTaskHealth.ps1`
   - Validates task existence, enabled state, last result, and staleness window for `QM_QUA95_BlockerRefresh`.
   - Validates QUA-95 transition payload consistency via `scripts/Test-QUA95IssueTransitionPayload.ps1`.

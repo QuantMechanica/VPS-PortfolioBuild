@@ -1,5 +1,19 @@
 # Infra Scripts Notes
 
+## `Repair-Python311FromNuget.ps1`
+
+- Idempotent recovery script for Python 3.11 runtime corruption incidents on Windows hosts.
+- Default target:
+  - `C:\Users\Administrator\AppData\Local\Programs\Python\Python311`
+- Behavior:
+  - health-check existing `python.exe` by importing core stdlib modules
+  - if healthy, converges launcher registry and exits cleanly
+  - if unhealthy (or `-ForceReinstall`), downloads official NuGet package
+    `https://www.nuget.org/api/v2/package/python/<version>`, restores `tools/*`,
+    fixes launcher registry keys, then re-validates runtime + pip.
+- Default run:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Repair-Python311FromNuget.ps1`
+
 ## `dwx_hourly_check.py`
 
 - `spec_ok` is now evaluated by one shared helper (`is_symbol_spec_ok`) for both:
