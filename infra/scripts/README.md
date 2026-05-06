@@ -71,6 +71,19 @@
 - Example:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Collect-PythonRuntimeIncidentEvidence.ps1 -StartUtc "2026-05-06T09:45:00Z" -EndUtc "2026-05-06T11:40:00Z"`
 
+## `Set-ObjectAccessAuditPolicy.ps1`
+
+- Enforces object-access audit policy subcategories needed for file-delete attribution:
+  - `File System`
+  - `Handle Manipulation`
+- Defaults:
+  - enables success auditing
+- Optional:
+  - `-EnableFailure` to also enable failure auditing
+- Always runs post-set verification via `monitoring/Test-ObjectAccessAuditPolicy.ps1`.
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Set-ObjectAccessAuditPolicy.ps1`
+
 ## `dwx_hourly_check.py`
 
 - `spec_ok` is now evaluated by one shared helper (`is_symbol_spec_ok`) for both:

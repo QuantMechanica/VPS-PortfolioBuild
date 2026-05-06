@@ -142,6 +142,9 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `scripts/Collect-PythonRuntimeIncidentEvidence.ps1`
   - Captures forensics for Python runtime corruption incidents (filesystem snapshot, Security 4663 events, Defender operational events, DriveFS log file inventory in a UTC window).
   - Writes machine-readable evidence JSON to `lessons-learned/evidence/`.
+- `scripts/Set-ObjectAccessAuditPolicy.ps1`
+  - Enforces object-access audit subcategories (`File System`, `Handle Manipulation`) for deletion-attribution readiness.
+  - Post-set verification uses `monitoring/Test-ObjectAccessAuditPolicy.ps1`.
 - `monitoring/Test-QUA95BlockerTaskHealth.ps1`
   - Validates task existence, enabled state, last result, and staleness window for `QM_QUA95_BlockerRefresh`.
   - Validates QUA-95 transition payload consistency via `scripts/Test-QUA95IssueTransitionPayload.ps1`.

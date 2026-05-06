@@ -7,18 +7,23 @@ $ErrorActionPreference = "Stop"
 
 function Get-SubcategoryState {
     param([string]$Subcategory)
-    $line = (auditpol /get /subcategory:"$Subcategory" /r) | Select-Object -Skip 1 | Select-Object -First 1
-    if (-not $line) {
+    $raw = (auditpol /get /subcategory:"$Subcategory" /r | Out-String).Trim()
+    if ([string]::IsNullOrWhiteSpace($raw)) {
         return $null
     }
-    $parts = $line -split ','
-    if ($parts.Count -lt 3) {
+    $csv = $raw | ConvertFrom-Csv
+    if (-not $csv) {
         return $null
+    }
+    $row = @($csv)[0]
+    $setting = $row.'Inclusion Setting'
+    if ([string]::IsNullOrWhiteSpace($setting)) {
+        $setting = $row.Setting
     }
     return [pscustomobject]@{
-        machine_name = $parts[0]
-        subcategory = $parts[1]
-        setting = $parts[2]
+        machine_name = $row.'Machine Name'
+        subcategory = $row.Subcategory
+        setting = $setting
     }
 }
 

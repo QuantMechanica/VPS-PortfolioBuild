@@ -34,3 +34,11 @@ Required next follow-up (owner: DevOps):
 - Infra audit integration now surfaces this as:
   - check name: `object_access_audit_policy`
   - status: `critical`
+
+## Remediation Execution (2026-05-06)
+
+- Applied:
+  - `infra/scripts/Set-ObjectAccessAuditPolicy.ps1`
+- Verification:
+  - `infra/monitoring/Test-ObjectAccessAuditPolicy.ps1 -RequireSuccess` => `status=ok`
+  - `Invoke-InfraAudit` check `object_access_audit_policy` => `status=ok`
