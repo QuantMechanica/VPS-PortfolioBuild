@@ -22,8 +22,13 @@ $result = [ordered]@{
     python_root_exists = (Test-Path -LiteralPath $PythonRoot)
     python_root_snapshot = @()
     security_delete_events = @()
+    security_query_error = $null
+    security_delete_events_count = 0
     defender_events = @()
+    defender_query_error = $null
+    defender_events_count = 0
     drive_logs = @()
+    drive_logs_count = 0
 }
 
 if (Test-Path -LiteralPath $PythonRoot) {
@@ -46,13 +51,12 @@ try {
             Where-Object { $_.Message -like "*$PythonRoot*" } |
             Select-Object TimeCreated, Id, ProviderName, LevelDisplayName, Message
     )
+    $result.security_delete_events_count = @($result.security_delete_events).Count
 } catch {
-    $result.security_delete_events = @(
-        [pscustomobject]@{
-            error = "security_log_unavailable_or_access_denied"
-            detail = $_.Exception.Message
-        }
-    )
+    $result.security_query_error = [pscustomobject]@{
+        code = "security_log_unavailable_or_access_denied"
+        detail = $_.Exception.Message
+    }
 }
 
 try {
@@ -67,13 +71,12 @@ try {
             Where-Object { $_.Message -like "*$PythonRoot*" -or $_.Message -like "*python311*" } |
             Select-Object TimeCreated, Id, ProviderName, LevelDisplayName, Message
     )
+    $result.defender_events_count = @($result.defender_events).Count
 } catch {
-    $result.defender_events = @(
-        [pscustomobject]@{
-            error = "defender_log_unavailable"
-            detail = $_.Exception.Message
-        }
-    )
+    $result.defender_query_error = [pscustomobject]@{
+        code = "defender_log_unavailable"
+        detail = $_.Exception.Message
+    }
 }
 
 if (Test-Path -LiteralPath $DriveLogDir) {
@@ -82,6 +85,7 @@ if (Test-Path -LiteralPath $DriveLogDir) {
             Where-Object { $_.LastWriteTimeUtc -ge $StartUtc -and $_.LastWriteTimeUtc -le $EndUtc } |
             Select-Object Name, FullName, LastWriteTimeUtc, Length
     )
+    $result.drive_logs_count = @($result.drive_logs).Count
 }
 
 $result | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $outJson -Encoding ASCII
