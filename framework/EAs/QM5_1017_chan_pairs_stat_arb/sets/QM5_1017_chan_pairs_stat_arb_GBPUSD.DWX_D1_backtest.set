@@ -1,0 +1,16 @@
+; QuantMechanica V5 generated set file
+; Generator=framework/scripts/gen_setfile.ps1
+ENV=backtest
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\chan-pairs-stat-arb_card.md
+training_lookback=252
+entry_z=2.0
+exit_z=1.0
+cointegration_significance=0.05
+deployment_halflife_cap_days=30
+time_stop_multiplier=1.0
+pair_symbol_1=GBPUSD.DWX
+pair_symbol_2=EURUSD.DWX
