@@ -8,6 +8,10 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Builds canonical P2 matrix payloads from a validated symbol source.
   - Optional preflight `--verify-setfiles` fails fast when any per-symbol setfile is missing.
   - Optional `--missing-setfiles-json <path>` writes machine-readable missing-setfile evidence for issue comments and unblock handoffs.
+- `scripts/ops/qua744_post_unblock_packet.ps1`
+  - Builds a ready-to-post QUA-744 unblock packet comment with commit/evidence references.
+  - Default mode is preview-only and writes deterministic markdown + JSON payload artifacts.
+  - Optional `-Apply` posts the comment to `/api/issues/{id}/comments` with `X-Paperclip-Run-Id`.
 
 ## Day-1 assets (QUA-11)
 
