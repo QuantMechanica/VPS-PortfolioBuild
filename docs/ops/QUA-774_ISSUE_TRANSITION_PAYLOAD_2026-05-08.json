@@ -1,14 +1,14 @@
 ﻿{
     "issue_id":  "QUA-774",
-    "generated_at_utc":  "2026-05-08T06:39:30.6677164Z",
+    "generated_at_utc":  "2026-05-08T06:40:40.3573537Z",
     "transition":  {
                        "state":  "blocked",
                        "state_reason":  "not_planned"
                    },
-    "comment":  "QUA-774 blocker refresh:\n- gate.status: blocked\n- verdict: FAIL\n- failure_flags: REPORT_MISSING;INCOMPLETE_RUNS\n- missing_terminals: T1,T2,T3,T4,T5\n- missing_timeframes: H1,H4,D1\n- unblock_owner: DWX source acquisition + import pipeline owner\n- unblock_action: Import US500.DWX history+ticks into T1 custom symbols. | Sync US500.DWX from T1 to T2-T5 using infra/scripts/Sync-CustomSymbolData.ps1. | Re-run QM5_1004 US500 P2 redeploy and regenerate reports. | Re-run infra/scripts/Test-P2RedeploySummary.ps1 until verdict=PASS.\n- evidence: QUA-774_P2_REDEPLOY_SUMMARY_20260508T063929Z.json",
+    "comment":  "QUA-774 blocker refresh:\n- gate.status: blocked\n- verdict: FAIL\n- failure_flags: REPORT_MISSING;INCOMPLETE_RUNS\n- missing_terminals: T1,T2,T3,T4,T5\n- missing_timeframes: H1,H4,D1\n- unblock_owner: DWX source acquisition + import pipeline owner\n- unblock_action: Import US500.DWX history+ticks into T1 custom symbols. | Sync US500.DWX from T1 to T2-T5 using infra/scripts/Sync-CustomSymbolData.ps1. | Re-run QM5_1004 US500 P2 redeploy and regenerate reports. | Re-run infra/scripts/Test-P2RedeploySummary.ps1 until verdict=PASS.\n- evidence: QUA-774_P2_REDEPLOY_SUMMARY_CURRENT.json",
     "resume":  false,
     "source":  {
                    "blocker_status":  "C:\\QM\\worktrees\\devops\\docs\\ops\\QUA-774_BLOCKER_STATUS_2026-05-08.json",
-                   "evidence_file_name":  "QUA-774_P2_REDEPLOY_SUMMARY_20260508T063929Z.json"
+                   "evidence_file_name":  "QUA-774_P2_REDEPLOY_SUMMARY_CURRENT.json"
                }
 }

@@ -20,6 +20,7 @@ This command runs:
 ## Artifacts refreshed by heartbeat
 
 - `docs/ops/QUA-774_P2_REDEPLOY_SUMMARY_<UTCSTAMP>.json`
+- `docs/ops/QUA-774_P2_REDEPLOY_SUMMARY_CURRENT.json` (canonical rolling pointer)
 - `docs/ops/QUA-774_BLOCKER_STATUS_2026-05-08.json`
 - `docs/ops/QUA-774_ISSUE_TRANSITION_PAYLOAD_2026-05-08.json`
 - `docs/ops/QUA-774_BLOCKED_COMMENT_2026-05-08.md`

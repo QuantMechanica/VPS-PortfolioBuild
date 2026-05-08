@@ -10,7 +10,9 @@ $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $globPath = Join-Path $repoRoot $EvidenceGlob
 $outPath = Join-Path $repoRoot $OutJson
 
-$candidates = Get-ChildItem -Path $globPath -File -ErrorAction SilentlyContinue | Sort-Object LastWriteTimeUtc -Descending
+$candidates = @(
+    Get-ChildItem -Path $globPath -File -ErrorAction SilentlyContinue | Sort-Object LastWriteTimeUtc -Descending
+)
 if (-not $candidates -or $candidates.Count -eq 0) {
     throw "No QUA-774 evidence files matched: $globPath"
 }
