@@ -1,6 +1,6 @@
 ---
 name: qm-build-ea-from-card
-description: Use when Development is implementing an APPROVED Strategy Card into an `.mq5` EA under the V5 framework. Don't use without an `ea_id` allocated by CEO + CTO, and don't use on a card that is not in `status: APPROVED`. This is build-only — it does not run any pipeline phase.
+description: "Use when Development is implementing an APPROVED Strategy Card into an `.mq5` EA under the V5 framework. Don't use without an `ea_id` allocated by CEO + CTO, and don't use on a card that is not in `status: APPROVED`. This is build-only — it does not run any pipeline phase."
 owner: Development (Codex)
 reviewer: CTO
 last-updated: 2026-04-27
