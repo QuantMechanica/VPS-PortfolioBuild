@@ -1,5 +1,19 @@
 # Infra Scripts Notes
 
+## `Resolve-YouTubeAnalystUnblock.ps1`
+
+- QUA-914 unblock helper for YouTube Analyst routing.
+- Preview-by-default decision output:
+  - `claude_video_mcp` when `QM_CLAUDE_VIDEO_MCP_AVAILABLE=1`
+  - `transcript_fallback` otherwise (or with `-ForceFallback`)
+- Apply mode (`-Apply`) runs transcript fallback via `yt-dlp` and writes:
+  - `docs\ops\youtube-transcripts\<video_id>\transcript_<video_id>.txt`
+- Idempotent behavior:
+  - check-then-act output directory creation
+  - no-op when transcript already exists (unless `-ForceRefresh`)
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Resolve-YouTubeAnalystUnblock.ps1 -VideoUrl https://www.youtube.com/watch?v=<id>`
+
 ## `Verify-QUA415Readiness.ps1`
 
 - Single-command PASS/FAIL gate for QUA-415 closeout readiness.

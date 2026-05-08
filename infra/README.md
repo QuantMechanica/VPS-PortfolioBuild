@@ -12,6 +12,11 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Builds a ready-to-post QUA-744 unblock packet comment with commit/evidence references.
   - Default mode is preview-only and writes deterministic markdown + JSON payload artifacts.
   - Optional `-Apply` posts the comment to `/api/issues/{id}/comments` with `X-Paperclip-Run-Id`.
+- `scripts/Resolve-YouTubeAnalystUnblock.ps1`
+  - QUA-914 unblock helper for YouTube Analyst routing.
+  - Preview-by-default path decision (`claude_video_mcp` vs `transcript_fallback`).
+  - Apply mode runs `yt-dlp` subtitle extraction fallback and writes canonical transcript text under `docs/ops/youtube-transcripts/<video_id>/`.
+  - Idempotent check-then-act behavior (skip when transcript already exists unless `-ForceRefresh`).
 
 ## Day-1 assets (QUA-11)
 
