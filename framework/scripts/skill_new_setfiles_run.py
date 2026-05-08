@@ -18,7 +18,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate and validate backtest setfiles")
     parser.add_argument("--ea-label", required=True, help="EA folder label, e.g. QM5_1003_davey_baseline_3bar")
     parser.add_argument("--period", default="H1", help="MT5 period token")
-    parser.add_argument("--expected-count", type=int, default=37, help="Expected output file count in sets/")
+    parser.add_argument("--expected-count", type=int, default=None, help="Expected output file count in sets/ (defaults to discovered seed count)")
     parser.add_argument("--dry-run", action="store_true", help="Validate inputs only")
     return parser.parse_args()
 
@@ -97,9 +97,10 @@ def main() -> int:
                 )
                 return proc.returncode
 
+    expected_count = args.expected_count if args.expected_count is not None else len(symbols)
     setfiles = sorted(sets_dir.glob(f"{args.ea_label}_*_{args.period}_backtest.set"))
     output = {
-        "status": "ok" if len(setfiles) >= args.expected_count else "warning",
+        "status": "ok" if len(setfiles) >= expected_count else "warning",
         "checks": checks,
         "dry_run": args.dry_run,
         "generation_command_template": [
@@ -117,11 +118,11 @@ def main() -> int:
         "symbols_regenerated": symbols if not args.dry_run else [],
         "seed_symbol_count": len(symbols),
         "setfile_count": len(setfiles),
-        "expected_count": args.expected_count,
+        "expected_count": expected_count,
         "excluded_symbols": sorted(EXCLUDED_SYMBOLS),
         "sets_dir": str(sets_dir),
         "sample_files": [p.name for p in setfiles[:5]],
-        "next_action": "run_qm_p2_baseline" if len(setfiles) >= args.expected_count else "inspect_setfile_generation",
+        "next_action": "run_qm_p2_baseline" if len(setfiles) >= expected_count else "inspect_setfile_generation",
     }
     print(json.dumps(output, indent=2))
     return 0 if output["status"] in {"ok", "warning"} else 1
