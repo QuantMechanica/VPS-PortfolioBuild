@@ -44,7 +44,7 @@ PHASE_RUNNERS = {
     "P2": ("python", "framework/scripts/p2_baseline.py", ["--ea"]),
     "P3": ("python", "framework/scripts/p3_param_sweep.py", ["--ea"]),  # not built yet
     "P3.5": ("pwsh", "framework/scripts/run_phase.ps1", ["-EAId", "-Phase", "P3.5"]),
-    "P4": ("python", "framework/scripts/p4_walk_forward.py", ["--ea"]),  # not built yet
+    "P4": ("python", "framework/scripts/p4_walk_forward.py", ["--ea"]),
     "P5": ("pwsh", "framework/scripts/run_phase.ps1", ["-EAId", "-Phase", "P5"]),
     "P5b": ("pwsh", "framework/scripts/run_phase.ps1", ["-EAId", "-Phase", "P5b"]),
     "P5c": ("pwsh", "framework/scripts/run_phase.ps1", ["-EAId", "-Phase", "P5c"]),
