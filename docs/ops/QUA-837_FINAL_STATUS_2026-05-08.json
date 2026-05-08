@@ -1,7 +1,7 @@
 {
   "issue": "QUA-837",
   "timestamp": "2026-05-08",
-  "status": "devops_scope_complete",
+  "status": "ready_for_close",
   "commits": [
     "f5b6137b",
     "9bfe9a0a",
