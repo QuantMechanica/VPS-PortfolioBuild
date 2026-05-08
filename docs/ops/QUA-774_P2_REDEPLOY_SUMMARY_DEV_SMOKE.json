@@ -1,0 +1,103 @@
+﻿{
+    "generated_at_utc":  "2026-05-08T06:25:44.5155178Z",
+    "strategy_id":  "QM5_1004",
+    "symbol":  "US500.DWX",
+    "timeframes":  [
+                       "H1",
+                       "H4",
+                       "D1"
+                   ],
+    "terminals":  [
+                      "T1",
+                      "T2",
+                      "T3",
+                      "T4",
+                      "T5"
+                  ],
+    "mt5_root":  "C:\\QM\\worktrees\\devops\\artifacts\\mt5",
+    "report_root":  "C:\\QM\\worktrees\\devops\\artifacts",
+    "min_reports_per_timeframe":  1,
+    "verdict":  "FAIL",
+    "failure_flags":  [
+                          "REPORT_MISSING",
+                          "INCOMPLETE_RUNS"
+                      ],
+    "custom_symbol_presence":  [
+                                   {
+                                       "terminal":  "T1",
+                                       "history_exists":  false,
+                                       "ticks_exists":  false,
+                                       "history_file_count":  0,
+                                       "ticks_file_count":  0,
+                                       "status":  "missing",
+                                       "history_path":  "C:\\QM\\worktrees\\devops\\artifacts\\mt5\\T1\\Bases\\Custom\\history\\US500.DWX",
+                                       "ticks_path":  "C:\\QM\\worktrees\\devops\\artifacts\\mt5\\T1\\Bases\\Custom\\ticks\\US500.DWX"
+                                   },
+                                   {
+                                       "terminal":  "T2",
+                                       "history_exists":  false,
+                                       "ticks_exists":  false,
+                                       "history_file_count":  0,
+                                       "ticks_file_count":  0,
+                                       "status":  "missing",
+                                       "history_path":  "C:\\QM\\worktrees\\devops\\artifacts\\mt5\\T2\\Bases\\Custom\\history\\US500.DWX",
+                                       "ticks_path":  "C:\\QM\\worktrees\\devops\\artifacts\\mt5\\T2\\Bases\\Custom\\ticks\\US500.DWX"
+                                   },
+                                   {
+                                       "terminal":  "T3",
+                                       "history_exists":  false,
+                                       "ticks_exists":  false,
+                                       "history_file_count":  0,
+                                       "ticks_file_count":  0,
+                                       "status":  "missing",
+                                       "history_path":  "C:\\QM\\worktrees\\devops\\artifacts\\mt5\\T3\\Bases\\Custom\\history\\US500.DWX",
+                                       "ticks_path":  "C:\\QM\\worktrees\\devops\\artifacts\\mt5\\T3\\Bases\\Custom\\ticks\\US500.DWX"
+                                   },
+                                   {
+                                       "terminal":  "T4",
+                                       "history_exists":  false,
+                                       "ticks_exists":  false,
+                                       "history_file_count":  0,
+                                       "ticks_file_count":  0,
+                                       "status":  "missing",
+                                       "history_path":  "C:\\QM\\worktrees\\devops\\artifacts\\mt5\\T4\\Bases\\Custom\\history\\US500.DWX",
+                                       "ticks_path":  "C:\\QM\\worktrees\\devops\\artifacts\\mt5\\T4\\Bases\\Custom\\ticks\\US500.DWX"
+                                   },
+                                   {
+                                       "terminal":  "T5",
+                                       "history_exists":  false,
+                                       "ticks_exists":  false,
+                                       "history_file_count":  0,
+                                       "ticks_file_count":  0,
+                                       "status":  "missing",
+                                       "history_path":  "C:\\QM\\worktrees\\devops\\artifacts\\mt5\\T5\\Bases\\Custom\\history\\US500.DWX",
+                                       "ticks_path":  "C:\\QM\\worktrees\\devops\\artifacts\\mt5\\T5\\Bases\\Custom\\ticks\\US500.DWX"
+                                   }
+                               ],
+    "report_coverage":  [
+                            {
+                                "timeframe":  "H1",
+                                "reports_found":  0,
+                                "min_required":  1,
+                                "status":  "REPORT_MISSING",
+                                "latest_report_path":  null,
+                                "latest_report_utc":  null
+                            },
+                            {
+                                "timeframe":  "H4",
+                                "reports_found":  0,
+                                "min_required":  1,
+                                "status":  "REPORT_MISSING",
+                                "latest_report_path":  null,
+                                "latest_report_utc":  null
+                            },
+                            {
+                                "timeframe":  "D1",
+                                "reports_found":  0,
+                                "min_required":  1,
+                                "status":  "REPORT_MISSING",
+                                "latest_report_path":  null,
+                                "latest_report_utc":  null
+                            }
+                        ]
+}

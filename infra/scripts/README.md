@@ -1,5 +1,17 @@
 # Infra Scripts Notes
 
+## `Test-P2RedeploySummary.ps1`
+
+- Read-only P2 redeploy preflight/post-run summary for one strategy + symbol.
+- Checks in one pass:
+  - custom symbol presence (history/ticks exists and non-empty) on T1-T5
+  - report coverage for required timeframes (default `H1,H4,D1`) under `D:\QM\reports`
+- Emits deterministic failure flags used in issue triage:
+  - `REPORT_MISSING` (any required timeframe below minimum report count)
+  - `INCOMPLETE_RUNS` (missing timeframe reports and/or symbol presence gap)
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-P2RedeploySummary.ps1 -StrategyId QM5_1004 -Symbol US500.DWX -JsonOut C:\QM\repo\docs\ops\QUA-774_P2_REDEPLOY_SUMMARY.json`
+
 ## `../monitoring/Test-PythonRuntimeHealth.ps1`
 
 - Read-only Python runtime integrity check for infra/pipeline hosts.
