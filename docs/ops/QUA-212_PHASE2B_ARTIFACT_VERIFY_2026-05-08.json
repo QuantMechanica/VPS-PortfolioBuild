@@ -1,0 +1,55 @@
+{
+  "issue": "QUA-212",
+  "artifact_index": "C:\\QM\\repo\\docs\\ops\\QUA-212_PHASE2B_ARTIFACT_INDEX_2026-05-08.json",
+  "artifact_count": 7,
+  "all_ok": true,
+  "artifacts": [
+    {
+      "path": "C:\\QM\\repo\\docs\\ops\\QUA-212_PHASE2B_HANDOFF_2026-05-08.md",
+      "exists": true,
+      "bytes": 1237
+    },
+    {
+      "path": "C:\\QM\\repo\\docs\\ops\\QUA-212_PATCHSET_PATHS_2026-05-08.md",
+      "exists": true,
+      "bytes": 828
+    },
+    {
+      "path": "C:\\QM\\repo\\docs\\ops\\QUA-212_PATCHSET_DRYRUN_2026-05-08.md",
+      "exists": true,
+      "bytes": 615
+    },
+    {
+      "path": "C:\\QM\\repo\\docs\\ops\\QUA-212_PHASE2B_PATCHSET_2026-05-08.diff",
+      "exists": true,
+      "bytes": 29419
+    },
+    {
+      "path": "C:\\QM\\repo\\docs\\ops\\QUA-212_PHASE2B_PATCHSET_2026-05-08.sha256.txt",
+      "exists": true,
+      "bytes": 108
+    },
+    {
+      "path": "C:\\QM\\repo\\docs\\ops\\QUA-212_PHASE2B_HANDOFF_BUNDLE_2026-05-08.zip",
+      "exists": true,
+      "bytes": 7534
+    },
+    {
+      "path": "C:\\QM\\repo\\docs\\ops\\QUA-212_PHASE2B_HANDOFF_BUNDLE_2026-05-08.sha256.txt",
+      "exists": true,
+      "bytes": 113
+    }
+  ],
+  "sha_target_checks": [
+    {
+      "sha_file": "C:\\QM\\repo\\docs\\ops\\QUA-212_PHASE2B_PATCHSET_2026-05-08.sha256.txt",
+      "target": "C:\\QM\\repo\\docs\\ops\\QUA-212_PHASE2B_PATCHSET_2026-05-08.diff",
+      "target_exists": true
+    },
+    {
+      "sha_file": "C:\\QM\\repo\\docs\\ops\\QUA-212_PHASE2B_HANDOFF_BUNDLE_2026-05-08.sha256.txt",
+      "target": "C:\\QM\\repo\\docs\\ops\\QUA-212_PHASE2B_HANDOFF_BUNDLE_2026-05-08.zip",
+      "target_exists": true
+    }
+  ]
+}

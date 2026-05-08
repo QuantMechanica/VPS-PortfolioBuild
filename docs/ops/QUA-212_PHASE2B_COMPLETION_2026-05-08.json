@@ -1,0 +1,12 @@
+{
+  "issue": "QUA-212",
+  "ts_utc": "2026-05-08T14:04:36Z",
+  "completion_state": "COMPLETE",
+  "close_ready": true,
+  "evidence": {
+    "ready_status": "C:\\QM\\repo\\docs\\ops\\QUA-212_PHASE2B_READY_STATUS_2026-05-08.json",
+    "artifact_verify": "C:\\QM\\repo\\docs\\ops\\QUA-212_PHASE2B_ARTIFACT_VERIFY_2026-05-08.json",
+    "stability_rerun": "C:\\QM\\repo\\docs\\ops\\QUA-212_PHASE2B_STABILITY_RERUN_2026-05-08.json"
+  },
+  "next_action": "owner review and close or merge path-scoped patchset"
+}

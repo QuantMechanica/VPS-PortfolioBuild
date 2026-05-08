@@ -1,0 +1,7 @@
+{
+  "issue": "QUA-212",
+  "ts_utc": "2026-05-08T14:03:59Z",
+  "type": "stability_rerun",
+  "exit_code": 0,
+  "pass": true
+}
