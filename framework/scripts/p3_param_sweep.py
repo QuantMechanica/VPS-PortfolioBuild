@@ -11,13 +11,22 @@ import json
 import re
 import subprocess
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
+
+from framework.scripts.pipeline_dispatcher import (
+    load_dispatch_state,
+    release_job,
+    resolve_target_terminal,
+    save_dispatch_state,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 EA_ROOT = REPO_ROOT / "framework" / "EAs"
 RUN_SMOKE_PS1 = REPO_ROOT / "framework" / "scripts" / "run_smoke.ps1"
 DEFAULT_OUT_PREFIX = Path(r"D:\QM\reports\pipeline")
+DEFAULT_DISPATCH_STATE = Path(r"D:\QM\Reports\pipeline\dispatch_state.json")
 
 
 def find_ea_dir(ea_label: str) -> Path:
@@ -64,13 +73,25 @@ def write_temp_setfile(source: Path, out_dir: Path, run_id: str, overrides: dict
     return target
 
 
-def invoke_run_smoke(*, ea_id: int, symbol: str, year: int, period: str, setfile: Path, report_root: Path, timeout_sec: int) -> tuple[int, str, str]:
+def invoke_run_smoke(
+    *,
+    ea_id: int,
+    ea_expert: str,
+    symbol: str,
+    year: int,
+    period: str,
+    setfile: Path,
+    report_root: Path,
+    timeout_sec: int,
+    terminal: str,
+) -> subprocess.Popen[str]:
     args = [
         "pwsh.exe", "-NoProfile", "-File", str(RUN_SMOKE_PS1),
         "-EAId", str(ea_id),
+        "-Expert", ea_expert,
         "-Symbol", symbol,
         "-Year", str(year),
-        "-Terminal", "any",
+        "-Terminal", terminal,
         "-Period", period,
         "-Runs", "2",
         "-MinTrades", "20",
@@ -80,8 +101,56 @@ def invoke_run_smoke(*, ea_id: int, symbol: str, year: int, period: str, setfile
         "-AllowMissingRealTicksLogMarker",
         "-TimeoutSeconds", str(timeout_sec),
     ]
-    proc = subprocess.run(args, capture_output=True, text=True, timeout=(timeout_sec * 2) + 60)
-    return proc.returncode, proc.stdout or "", proc.stderr or ""
+    return subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+
+def reserve_terminal(
+    *,
+    ea_id: int,
+    symbol: str,
+    period: str,
+    setfile: Path,
+    state_path: Path,
+    run_id: str = "p3",
+) -> str | None:
+    state = load_dispatch_state(state_path)
+    job = {
+        "ea_id": str(ea_id),
+        "version": "p3_sweep",
+        "symbol": symbol,
+        "phase": "P3",
+        "sub_gate_config_hash": f"{period}_{run_id}",
+        "setfile_path": str(setfile),
+        "target_terminal": "any",
+    }
+    decision = resolve_target_terminal(job, state, max_per_terminal=1)
+    save_dispatch_state(state, state_path)
+    if decision.get("status") in {"scheduled", "pinned"}:
+        return str(decision.get("terminal") or "")
+    return None
+
+
+def release_terminal(
+    *,
+    ea_id: int,
+    symbol: str,
+    period: str,
+    setfile: Path,
+    state_path: Path,
+    run_id: str,
+    verdict: str,
+) -> None:
+    state = load_dispatch_state(state_path)
+    job = {
+        "ea_id": str(ea_id),
+        "version": "p3_sweep",
+        "symbol": symbol,
+        "phase": "P3",
+        "sub_gate_config_hash": f"{period}_{run_id}",
+        "setfile_path": str(setfile),
+    }
+    release_job(job, state, verdict=verdict, evidence=f"p3_param_sweep:{run_id}")
+    save_dispatch_state(state, state_path)
 
 
 def append_report_row(report_csv: Path, row: dict[str, str], seen_run_ids: set[str] | None = None) -> bool:
@@ -126,12 +195,16 @@ def main() -> int:
     ap.add_argument("--year", type=int, default=2024)
     ap.add_argument("--out-prefix", default=str(DEFAULT_OUT_PREFIX))
     ap.add_argument("--max-runs", type=int, default=24)
+    ap.add_argument("--max-parallel", type=int, default=5)
     ap.add_argument("--timeout", type=int, default=1800)
+    ap.add_argument("--dispatch-state", default=str(DEFAULT_DISPATCH_STATE))
+    ap.add_argument("--poll-seconds", type=float, default=1.0)
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
 
     ea_dir = find_ea_dir(args.ea)
     ea_id = derive_numeric_ea_id(args.ea)
+    ea_expert = f"QM\\{ea_dir.name}"
     mq5_path = ea_dir / f"{ea_dir.name}.mq5"
     available = parse_input_names(mq5_path)
 
@@ -150,10 +223,12 @@ def main() -> int:
     report_root_phase = Path(args.out_prefix) / args.ea / "P3"
     report_csv = report_root_phase / "report.csv"
     temp_set_root = report_root_phase / "temp_setfiles"
+    dispatch_state_path = Path(args.dispatch_state)
     completed_run_ids = load_completed_run_ids(report_csv)
     summary = {"PASS": 0, "FAIL": 0, "DRY": 0}
     started = datetime.now(timezone.utc).isoformat()
 
+    pending: list[tuple[str, str, str, dict[str, float | int], Path]] = []
     run_count = 0
     for symbol in symbols:
         for period in periods:
@@ -202,37 +277,91 @@ def main() -> int:
                     summary["DRY"] += 1
                     continue
                 temp_set = write_temp_setfile(base_set, temp_set_root, run_id, params)
-                rc, stdout, stderr = invoke_run_smoke(
-                    ea_id=ea_id,
-                    symbol=symbol,
-                    year=args.year,
-                    period=period,
-                    setfile=temp_set,
-                    report_root=report_root_phase,
-                    timeout_sec=args.timeout,
-                )
-                verdict = "PASS" if rc == 0 else "FAIL"
-                summary[verdict] += 1
-                marker = "run_smoke.summary=" if "run_smoke.summary=" in stdout else "missing_summary_marker"
-                append_report_row(
-                    report_csv,
-                    {
-                        "ea_id": str(ea_id),
-                        "phase": "P3",
-                        "symbol": symbol,
-                        "period": period,
-                        "run_id": run_id,
-                        "verdict": verdict,
-                        "params": json.dumps(params, sort_keys=True),
-                        "summary_marker": marker,
-                        "stderr_tail": (stderr or "")[-240:],
-                    },
-                    seen_run_ids=completed_run_ids,
-                )
+                pending.append((run_id, symbol, period, params, temp_set))
             if run_count >= args.max_runs:
                 break
         if run_count >= args.max_runs:
             break
+
+    active: dict[str, dict[str, object]] = {}
+    while pending or active:
+        while pending and len(active) < max(1, min(args.max_parallel, 5)):
+            run_id, symbol, period, params, temp_set = pending[0]
+            terminal = reserve_terminal(
+                ea_id=ea_id,
+                symbol=symbol,
+                period=period,
+                setfile=temp_set,
+                state_path=dispatch_state_path,
+                run_id=run_id,
+            )
+            if not terminal:
+                break
+            pending.pop(0)
+            proc = invoke_run_smoke(
+                ea_id=ea_id,
+                ea_expert=ea_expert,
+                symbol=symbol,
+                year=args.year,
+                period=period,
+                setfile=temp_set,
+                report_root=report_root_phase,
+                timeout_sec=args.timeout,
+                terminal=terminal,
+            )
+            active[run_id] = {
+                "proc": proc,
+                "symbol": symbol,
+                "period": period,
+                "params": params,
+                "setfile": temp_set,
+            }
+
+        done_ids: list[str] = []
+        for run_id, meta in active.items():
+            proc = meta["proc"]
+            assert isinstance(proc, subprocess.Popen)
+            if proc.poll() is None:
+                continue
+            stdout, stderr = proc.communicate()
+            rc = int(proc.returncode or 1)
+            symbol = str(meta["symbol"])
+            period = str(meta["period"])
+            params = meta["params"]
+            setfile = meta["setfile"]
+            assert isinstance(setfile, Path)
+            verdict = "PASS" if rc == 0 else "FAIL"
+            summary[verdict] += 1
+            marker = "run_smoke.summary=" if "run_smoke.summary=" in (stdout or "") else "missing_summary_marker"
+            append_report_row(
+                report_csv,
+                {
+                    "ea_id": str(ea_id),
+                    "phase": "P3",
+                    "symbol": symbol,
+                    "period": period,
+                    "run_id": run_id,
+                    "verdict": verdict,
+                    "params": json.dumps(params, sort_keys=True),
+                    "summary_marker": marker,
+                    "stderr_tail": (stderr or "")[-240:],
+                },
+                seen_run_ids=completed_run_ids,
+            )
+            release_terminal(
+                ea_id=ea_id,
+                symbol=symbol,
+                period=period,
+                setfile=setfile,
+                state_path=dispatch_state_path,
+                run_id=run_id,
+                verdict=verdict,
+            )
+            done_ids.append(run_id)
+        for run_id in done_ids:
+            active.pop(run_id, None)
+        if active and (not done_ids):
+            time.sleep(max(0.1, float(args.poll_seconds)))
 
     result = {
         "ea": args.ea,
