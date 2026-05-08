@@ -51,11 +51,13 @@ REPO = Path(r"C:\QM\repo")
 EA_REG = REPO / "framework" / "registry" / "ea_id_registry.csv"
 MAGIC = REPO / "framework" / "registry" / "magic_numbers.csv"
 CARDS_DIR = REPO / "strategy-seeds" / "cards"
+DEFAULT_WIKI_VAULT = Path(r"G:\My Drive\09 Strategy Wiki")
 
 
 @dataclass
 class CardSummary:
     path: Path
+    source: str = "card"
     slug: str = ""
     strategy_id: str = ""
     author: str = ""
@@ -83,7 +85,7 @@ def read_magic_registry() -> list[dict]:
 
 def parse_card_frontmatter(card_path: Path) -> CardSummary:
     """Extract slug / strategy_id / author / mechanic / status / ea_id from card."""
-    cs = CardSummary(path=card_path)
+    cs = CardSummary(path=card_path, source="card")
     if not card_path.exists():
         return cs
     text = card_path.read_text(encoding="utf-8", errors="replace")
@@ -122,6 +124,40 @@ def scan_cards() -> list[CardSummary]:
     for p in sorted(CARDS_DIR.glob("*.md")):
         cards.append(parse_card_frontmatter(p))
     return cards
+
+
+def scan_wiki_strategies(vault: Path) -> list[CardSummary]:
+    strategies_dir = vault / "strategies"
+    if not strategies_dir.is_dir():
+        return []
+    strategies: list[CardSummary] = []
+    for path in sorted(strategies_dir.glob("*.md")):
+        cs = CardSummary(path=path, source="wiki")
+        text = path.read_text(encoding="utf-8", errors="replace")
+        m = re.match(r"^---\s*\n(.+?)\n---", text, re.DOTALL)
+        fm_block = m.group(1) if m else text[:1000]
+        for line in fm_block.splitlines():
+            if ":" not in line:
+                continue
+            k, _, v = line.partition(":")
+            k = k.strip().lower()
+            v = v.strip().strip('"').strip("'")
+            if k in ("slug", "name", "strategy_slug"):
+                cs.slug = v.lower()
+            elif k in ("strategy_id", "src_id", "id"):
+                cs.strategy_id = v.upper()
+            elif k in ("author", "source_author", "researcher"):
+                cs.author = v
+            elif k in ("mechanic", "strategy_mechanic", "type", "strategy_type"):
+                cs.mechanic = v.lower()
+            elif k == "status":
+                cs.status = v.upper()
+            elif k == "ea_id":
+                cs.ea_id = v
+        if not cs.slug:
+            cs.slug = path.stem.lower()
+        strategies.append(cs)
+    return strategies
 
 
 def normalize_slug(slug: str) -> str:
@@ -181,12 +217,15 @@ def cmd_check(args: argparse.Namespace) -> int:
 
     # 2. existing cards
     cards = scan_cards()
+    wiki_cards = scan_wiki_strategies(args.vault)
+    all_candidates = cards + wiki_cards
     print()
     print(f"### strategy-seeds/cards/ — {len(cards)} cards scanned")
+    print(f"### 09 Strategy Wiki/strategies/ — {len(wiki_cards)} nodes scanned")
     fuzzy_hits = []
-    for card in cards:
+    for card in all_candidates:
         if card.is_dup_of(slug, strategy_id):
-            print(f"  EXACT DUPLICATE: {card.path.name} ({card.slug} / {card.strategy_id})")
+            print(f"  EXACT DUPLICATE: [{card.source}] {card.path} ({card.slug} / {card.strategy_id})")
             print()
             print("VERDICT: DUPLICATE — link as _v<n> enhancement per DL-029/033, NOT new ea_id")
             return 2
@@ -218,7 +257,8 @@ def cmd_check(args: argparse.Namespace) -> int:
 def cmd_list(args: argparse.Namespace) -> int:
     ea_rows = read_ea_registry()
     cards = scan_cards()
-    print(f"## Known slugs / strategy_ids ({len(ea_rows)} EAs, {len(cards)} cards)")
+    wiki_cards = scan_wiki_strategies(args.vault)
+    print(f"## Known slugs / strategy_ids ({len(ea_rows)} EAs, {len(cards)} cards, {len(wiki_cards)} wiki)")
     print()
     print("### From ea_id_registry.csv:")
     for row in ea_rows:
@@ -227,6 +267,10 @@ def cmd_list(args: argparse.Namespace) -> int:
     print("### From strategy-seeds/cards/:")
     for card in cards:
         print(f"  {card.path.name:50} slug={card.slug:35} sid={card.strategy_id:12} status={card.status:10} ea_id={card.ea_id or '-'}")
+    print()
+    print("### From 09 Strategy Wiki/strategies/:")
+    for card in wiki_cards:
+        print(f"  {card.path.name:50} slug={card.slug:35} sid={card.strategy_id:12} status={card.status:10} ea_id={card.ea_id or '-'}")
     return 0
 
 
@@ -234,7 +278,7 @@ def cmd_audit(args: argparse.Namespace) -> int:
     """Cross-check ea_id_registry vs magic_numbers vs filesystem cards."""
     ea_rows = read_ea_registry()
     magic_rows = read_magic_registry()
-    cards = scan_cards()
+    cards = scan_cards() + scan_wiki_strategies(args.vault)
 
     issues = []
 
@@ -284,12 +328,15 @@ def main(argv: list[str] | None = None) -> int:
     check.add_argument("--strategy-id", required=True, help="candidate strategy_id, e.g. SRC03_S02")
     check.add_argument("--author", help="card author (for fuzzy matching)")
     check.add_argument("--mechanic", help="strategy mechanic short tag (for fuzzy matching)")
+    check.add_argument("--vault", type=Path, default=DEFAULT_WIKI_VAULT, help=f"Wiki vault root (default: {DEFAULT_WIKI_VAULT})")
     check.set_defaults(func=cmd_check)
 
     listp = sub.add_parser("list", help="List all known slugs/strategy_ids from registries + cards")
+    listp.add_argument("--vault", type=Path, default=DEFAULT_WIKI_VAULT, help=f"Wiki vault root (default: {DEFAULT_WIKI_VAULT})")
     listp.set_defaults(func=cmd_list)
 
     audit = sub.add_parser("audit", help="Cross-check ea_id_registry vs magic_numbers vs cards")
+    audit.add_argument("--vault", type=Path, default=DEFAULT_WIKI_VAULT, help=f"Wiki vault root (default: {DEFAULT_WIKI_VAULT})")
     audit.set_defaults(func=cmd_audit)
 
     args = p.parse_args(argv)
