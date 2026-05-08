@@ -145,6 +145,22 @@
 - Example:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\New-QUA774ExternalUnblockChildPayload.ps1`
 
+## `Write-QUA774ExternalUnblockEscalation.ps1`
+
+- Renders a concise escalation markdown note for external unblock ownership.
+- Reads:
+  - `docs\ops\QUA-774_BLOCKER_STATUS_2026-05-08.json`
+  - `docs\ops\QUA-774_EXTERNAL_UNBLOCK_CHILD_PAYLOAD_2026-05-08.json`
+- Writes:
+  - `docs\ops\QUA-774_EXTERNAL_UNBLOCK_ESCALATION_2026-05-08.md`
+- Includes:
+  - current gate state + failure flags
+  - unblock owner and required actions
+  - child-issue payload reference
+  - explicit external signal resume contract
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Write-QUA774ExternalUnblockEscalation.ps1`
+
 ## `../monitoring/Test-PythonRuntimeHealth.ps1`
 
 - Read-only Python runtime integrity check for infra/pipeline hosts.
