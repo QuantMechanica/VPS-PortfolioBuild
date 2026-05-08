@@ -85,6 +85,18 @@
 - Example:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Invoke-QUA774BlockedHeartbeat.ps1`
 
+## `Install-QUA774BlockedHeartbeatTask.ps1`
+
+- Idempotently installs a Windows Scheduled Task for the QUA-774 blocked heartbeat wrapper.
+- Defaults:
+  - task name: `QM_QUA774_BlockedHeartbeat_60min`
+  - interval: every `60` minutes
+  - principal: `SYSTEM` (highest)
+- Writes launcher:
+  - `C:\QM\tasks\run_qua774_blocked_heartbeat.ps1`
+- Preview mode (no registration):
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-QUA774BlockedHeartbeatTask.ps1 -PreviewOnly`
+
 ## `../monitoring/Test-PythonRuntimeHealth.ps1`
 
 - Read-only Python runtime integrity check for infra/pipeline hosts.
