@@ -1,0 +1,12 @@
+; QuantMechanica V5 generated set file
+; Generator=framework/scripts/gen_setfile.ps1
+ENV=backtest
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\davey-baseline-3bar_card.md
+ssl1=0.75
+ssl=2000
+ATR_period=14
+nContracts=1
