@@ -1,0 +1,20 @@
+{
+  "generated_at_utc": "2026-05-08T14:00:00Z",
+  "org_spent_cents": 25000,
+  "org_daily_delta_cents": 2000,
+  "agentsById": {
+    "a1": { "spent_cents": 11700, "daily_delta_cents": 800 },
+    "a2": { "spent_cents": 9400, "daily_delta_cents": 1100 },
+    "a3": { "spent_cents": 5900, "daily_delta_cents": 400 },
+    "a4": { "spent_cents": 800, "daily_delta_cents": 100 }
+  },
+  "history": [
+    { "generated_at_utc": "2026-05-02T00:00:00Z", "org_daily_delta_cents": 1800 },
+    { "generated_at_utc": "2026-05-03T00:00:00Z", "org_daily_delta_cents": 1900 },
+    { "generated_at_utc": "2026-05-04T00:00:00Z", "org_daily_delta_cents": 2100 },
+    { "generated_at_utc": "2026-05-05T00:00:00Z", "org_daily_delta_cents": 2200 },
+    { "generated_at_utc": "2026-05-06T00:00:00Z", "org_daily_delta_cents": 2300 },
+    { "generated_at_utc": "2026-05-07T00:00:00Z", "org_daily_delta_cents": 2400 }
+  ]
+}
+
