@@ -1,18 +1,18 @@
 {
-    "generated_at": "2026-05-08T11:30:37Z",
+    "generated_at": "2026-05-08T13:42:31Z",
     "phase": "Wave 1 Pipeline: P2-P8 Active",
     "agents": {
-        "online": 16,
-        "offline": 1,
+        "online": 18,
+        "offline": 0,
         "blocked": 0
     },
     "pipeline": {
         "strategy_cards": 6,
-        "eas_built": 6,
+        "eas_built": 7,
         "by_phase": {
             "G0": 0,
             "P1": 0,
-            "P2": 4,
+            "P2": 5,
             "P3": 0,
             "P3_5": 1,
             "P4": 0,
