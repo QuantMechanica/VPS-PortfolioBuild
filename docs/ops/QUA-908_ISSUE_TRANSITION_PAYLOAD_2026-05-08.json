@@ -1,0 +1,19 @@
+{
+  "issue": "QUA-908",
+  "recommended_state": "done",
+  "resume": true,
+  "summary": "P4 walk-forward driver implemented and verified; acceptance criteria satisfied (6 folds across 2017-2022, DEV->HO embargo, fold consistency aggregation, verdict CSV/JSON outputs, and command docs updated).",
+  "commits": [
+    "1c552848",
+    "cbe0b394"
+  ],
+  "evidence": {
+    "closeout_note": "docs/ops/QUA-908_P4_WALK_FORWARD_CLOSEOUT_2026-05-08.md",
+    "runner": "framework/scripts/p4_walk_forward.py",
+    "pipeline_doc": "docs/ops/03 Pipeline/P4 Walk-Forward.md"
+  },
+  "checks": {
+    "unit_tests": "python -m unittest framework/scripts/tests/test_p4_walk_forward.py framework/scripts/tests/test_phase_runners_idempotence.py",
+    "result": "OK (2 tests passed)"
+  }
+}
