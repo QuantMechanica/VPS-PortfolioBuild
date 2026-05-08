@@ -12,6 +12,20 @@
 - Example:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-P2RedeploySummary.ps1 -StrategyId QM5_1004 -Symbol US500.DWX -JsonOut C:\QM\repo\docs\ops\QUA-774_P2_REDEPLOY_SUMMARY.json`
 
+## `Update-QUA774BlockerStatus.ps1`
+
+- Idempotently derives canonical issue blocker state from latest QUA-774 summary JSON.
+- Reads newest file matching:
+  - `docs\ops\QUA-774_P2_REDEPLOY_SUMMARY_*.json`
+- Writes:
+  - `docs\ops\QUA-774_BLOCKER_STATUS_2026-05-08.json`
+- Output includes:
+  - `gate.status` (`blocked|ready`)
+  - failure flags, missing terminals, missing timeframes
+  - explicit unblock owner + required actions
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Update-QUA774BlockerStatus.ps1`
+
 ## `../monitoring/Test-PythonRuntimeHealth.ps1`
 
 - Read-only Python runtime integrity check for infra/pipeline hosts.

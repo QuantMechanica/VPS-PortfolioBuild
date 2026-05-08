@@ -1,0 +1,41 @@
+﻿{
+    "issue_id":  "QUA-774",
+    "generated_at_utc":  "2026-05-08T06:27:37.0533968Z",
+    "source_evidence":  {
+                            "file":  "C:\\QM\\worktrees\\devops\\docs\\ops\\QUA-774_P2_REDEPLOY_SUMMARY_20260508T062626Z.json",
+                            "file_name":  "QUA-774_P2_REDEPLOY_SUMMARY_20260508T062626Z.json",
+                            "file_last_write_utc":  "2026-05-08T06:26:26.9741657Z",
+                            "strategy_id":  "QM5_1004",
+                            "symbol":  "US500.DWX",
+                            "verdict":  "FAIL"
+                        },
+    "gate":  {
+                 "status":  "blocked",
+                 "blocker_reason":  "P2 redeploy summary still failing REPORT_MISSING;INCOMPLETE_RUNS for required H1/H4/D1 checks.",
+                 "failure_flags":  [
+                                       "REPORT_MISSING",
+                                       "INCOMPLETE_RUNS"
+                                   ],
+                 "missing_terminals":  [
+                                           "T1",
+                                           "T2",
+                                           "T3",
+                                           "T4",
+                                           "T5"
+                                       ],
+                 "missing_timeframes":  [
+                                            "H1",
+                                            "H4",
+                                            "D1"
+                                        ]
+             },
+    "unblock":  {
+                    "owner":  "DWX source acquisition + import pipeline owner",
+                    "required_action":  [
+                                            "Import US500.DWX history+ticks into T1 custom symbols.",
+                                            "Sync US500.DWX from T1 to T2-T5 using infra/scripts/Sync-CustomSymbolData.ps1.",
+                                            "Re-run QM5_1004 US500 P2 redeploy and regenerate reports.",
+                                            "Re-run infra/scripts/Test-P2RedeploySummary.ps1 until verdict=PASS."
+                                        ]
+                }
+}
