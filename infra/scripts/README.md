@@ -97,6 +97,20 @@
 - Preview mode (no registration):
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-QUA774BlockedHeartbeatTask.ps1 -PreviewOnly`
 
+## `Test-QUA774HandoffIntegrity.ps1`
+
+- Verifies SHA256 manifest for the QUA-774 blocked package.
+- Manifest:
+  - `docs\ops\QUA-774_BLOCKED_PACKAGE_2026-05-08.sha256`
+- Output:
+  - per-file `status=ok|critical`
+  - final `summary=ok|fail checked=<n> failed=<n>`
+- Exit code:
+  - `0` on full match
+  - `2` on missing/malformed/mismatch
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA774HandoffIntegrity.ps1`
+
 ## `../monitoring/Test-PythonRuntimeHealth.ps1`
 
 - Read-only Python runtime integrity check for infra/pipeline hosts.
