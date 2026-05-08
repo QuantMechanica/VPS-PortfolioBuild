@@ -1,0 +1,90 @@
+[
+  {
+    "terminal": "T2",
+    "symbol": "NDX.DWX",
+    "rc": 1,
+    "result": "run_smoke.result=FAIL",
+    "reason": "run_smoke.reason_classes=REPORT_MISSING;INCOMPLETE_RUNS",
+    "summary": "run_smoke.summary=D:\\QM\\reports\\smoke\\qua842\\QM5_1001\\20260508_113801\\summary.json",
+    "report": "run_smoke.report_dir=D:\\QM\\reports\\smoke\\qua842\\QM5_1001\\20260508_113801",
+    "evidence": "run_smoke.evidence=D:\\QM\\reports\\framework\\22\\20260508_113801_QM5_1001_run_smoke.md",
+    "tail": "run_smoke.result=FAIL\nrun_smoke.reason_classes=REPORT_MISSING;INCOMPLETE_RUNS\nrun_smoke.summary=D:\\QM\\reports\\smoke\\qua842\\QM5_1001\\20260508_113801\\summary.json\nrun_smoke.report_dir=D:\\QM\\reports\\smoke\\qua842\\QM5_1001\\20260508_113801\nrun_smoke.evidence=D:\\QM\\reports\\framework\\22\\20260508_113801_QM5_1001_run_smoke.md"
+  },
+  {
+    "terminal": "T2",
+    "symbol": "GDAXI.DWX",
+    "rc": 1,
+    "result": "run_smoke.result=FAIL",
+    "reason": "run_smoke.reason_classes=REPORT_MISSING;INCOMPLETE_RUNS",
+    "summary": "run_smoke.summary=D:\\QM\\reports\\smoke\\qua842\\QM5_1001\\20260508_114115\\summary.json",
+    "report": "run_smoke.report_dir=D:\\QM\\reports\\smoke\\qua842\\QM5_1001\\20260508_114115",
+    "evidence": "run_smoke.evidence=D:\\QM\\reports\\framework\\22\\20260508_114115_QM5_1001_run_smoke.md",
+    "tail": "run_smoke.result=FAIL\nrun_smoke.reason_classes=REPORT_MISSING;INCOMPLETE_RUNS\nrun_smoke.summary=D:\\QM\\reports\\smoke\\qua842\\QM5_1001\\20260508_114115\\summary.json\nrun_smoke.report_dir=D:\\QM\\reports\\smoke\\qua842\\QM5_1001\\20260508_114115\nrun_smoke.evidence=D:\\QM\\reports\\framework\\22\\20260508_114115_QM5_1001_run_smoke.md"
+  },
+  {
+    "terminal": "T3",
+    "symbol": "NDX.DWX",
+    "rc": 1,
+    "result": "run_smoke.result=FAIL",
+    "reason": "run_smoke.reason_classes=REPORT_MISSING;INCOMPLETE_RUNS",
+    "summary": "run_smoke.summary=D:\\QM\\reports\\smoke\\qua842\\QM5_1001\\20260508_114426\\summary.json",
+    "report": "run_smoke.report_dir=D:\\QM\\reports\\smoke\\qua842\\QM5_1001\\20260508_114426",
+    "evidence": "run_smoke.evidence=D:\\QM\\reports\\framework\\22\\20260508_114426_QM5_1001_run_smoke.md",
+    "tail": "run_smoke.result=FAIL\nrun_smoke.reason_classes=REPORT_MISSING;INCOMPLETE_RUNS\nrun_smoke.summary=D:\\QM\\reports\\smoke\\qua842\\QM5_1001\\20260508_114426\\summary.json\nrun_smoke.report_dir=D:\\QM\\reports\\smoke\\qua842\\QM5_1001\\20260508_114426\nrun_smoke.evidence=D:\\QM\\reports\\framework\\22\\20260508_114426_QM5_1001_run_smoke.md"
+  },
+  {
+    "terminal": "T3",
+    "symbol": "GDAXI.DWX",
+    "rc": 1,
+    "result": "run_smoke.result=FAIL",
+    "reason": "run_smoke.reason_classes=REPORT_MISSING;INCOMPLETE_RUNS",
+    "summary": "run_smoke.summary=D:\\QM\\reports\\smoke\\qua842\\QM5_1001\\20260508_114741\\summary.json",
+    "report": "run_smoke.report_dir=D:\\QM\\reports\\smoke\\qua842\\QM5_1001\\20260508_114741",
+    "evidence": "run_smoke.evidence=D:\\QM\\reports\\framework\\22\\20260508_114741_QM5_1001_run_smoke.md",
+    "tail": "run_smoke.result=FAIL\nrun_smoke.reason_classes=REPORT_MISSING;INCOMPLETE_RUNS\nrun_smoke.summary=D:\\QM\\reports\\smoke\\qua842\\QM5_1001\\20260508_114741\\summary.json\nrun_smoke.report_dir=D:\\QM\\reports\\smoke\\qua842\\QM5_1001\\20260508_114741\nrun_smoke.evidence=D:\\QM\\reports\\framework\\22\\20260508_114741_QM5_1001_run_smoke.md"
+  },
+  {
+    "terminal": "T4",
+    "symbol": "NDX.DWX",
+    "rc": 1,
+    "result": "run_smoke.result=FAIL",
+    "reason": "run_smoke.reason_classes=REPORT_MISSING;INCOMPLETE_RUNS",
+    "summary": "run_smoke.summary=D:\\QM\\reports\\smoke\\qua842\\QM5_1001\\20260508_115054\\summary.json",
+    "report": "run_smoke.report_dir=D:\\QM\\reports\\smoke\\qua842\\QM5_1001\\20260508_115054",
+    "evidence": "run_smoke.evidence=D:\\QM\\reports\\framework\\22\\20260508_115054_QM5_1001_run_smoke.md",
+    "tail": "run_smoke.result=FAIL\nrun_smoke.reason_classes=REPORT_MISSING;INCOMPLETE_RUNS\nrun_smoke.summary=D:\\QM\\reports\\smoke\\qua842\\QM5_1001\\20260508_115054\\summary.json\nrun_smoke.report_dir=D:\\QM\\reports\\smoke\\qua842\\QM5_1001\\20260508_115054\nrun_smoke.evidence=D:\\QM\\reports\\framework\\22\\20260508_115054_QM5_1001_run_smoke.md"
+  },
+  {
+    "terminal": "T4",
+    "symbol": "GDAXI.DWX",
+    "rc": 1,
+    "result": "run_smoke.result=FAIL",
+    "reason": "run_smoke.reason_classes=REPORT_MISSING;INCOMPLETE_RUNS",
+    "summary": "run_smoke.summary=D:\\QM\\reports\\smoke\\qua842\\QM5_1001\\20260508_115406\\summary.json",
+    "report": "run_smoke.report_dir=D:\\QM\\reports\\smoke\\qua842\\QM5_1001\\20260508_115406",
+    "evidence": "run_smoke.evidence=D:\\QM\\reports\\framework\\22\\20260508_115406_QM5_1001_run_smoke.md",
+    "tail": "run_smoke.result=FAIL\nrun_smoke.reason_classes=REPORT_MISSING;INCOMPLETE_RUNS\nrun_smoke.summary=D:\\QM\\reports\\smoke\\qua842\\QM5_1001\\20260508_115406\\summary.json\nrun_smoke.report_dir=D:\\QM\\reports\\smoke\\qua842\\QM5_1001\\20260508_115406\nrun_smoke.evidence=D:\\QM\\reports\\framework\\22\\20260508_115406_QM5_1001_run_smoke.md"
+  },
+  {
+    "terminal": "T5",
+    "symbol": "NDX.DWX",
+    "rc": 1,
+    "result": "run_smoke.result=FAIL",
+    "reason": "run_smoke.reason_classes=REPORT_MISSING;INCOMPLETE_RUNS",
+    "summary": "run_smoke.summary=D:\\QM\\reports\\smoke\\qua842\\QM5_1001\\20260508_115717\\summary.json",
+    "report": "run_smoke.report_dir=D:\\QM\\reports\\smoke\\qua842\\QM5_1001\\20260508_115717",
+    "evidence": "run_smoke.evidence=D:\\QM\\reports\\framework\\22\\20260508_115717_QM5_1001_run_smoke.md",
+    "tail": "run_smoke.result=FAIL\nrun_smoke.reason_classes=REPORT_MISSING;INCOMPLETE_RUNS\nrun_smoke.summary=D:\\QM\\reports\\smoke\\qua842\\QM5_1001\\20260508_115717\\summary.json\nrun_smoke.report_dir=D:\\QM\\reports\\smoke\\qua842\\QM5_1001\\20260508_115717\nrun_smoke.evidence=D:\\QM\\reports\\framework\\22\\20260508_115717_QM5_1001_run_smoke.md"
+  },
+  {
+    "terminal": "T5",
+    "symbol": "GDAXI.DWX",
+    "rc": 1,
+    "result": "run_smoke.result=FAIL",
+    "reason": "run_smoke.reason_classes=REPORT_MISSING;INCOMPLETE_RUNS",
+    "summary": "run_smoke.summary=D:\\QM\\reports\\smoke\\qua842\\QM5_1001\\20260508_120034\\summary.json",
+    "report": "run_smoke.report_dir=D:\\QM\\reports\\smoke\\qua842\\QM5_1001\\20260508_120034",
+    "evidence": "run_smoke.evidence=D:\\QM\\reports\\framework\\22\\20260508_120034_QM5_1001_run_smoke.md",
+    "tail": "run_smoke.result=FAIL\nrun_smoke.reason_classes=REPORT_MISSING;INCOMPLETE_RUNS\nrun_smoke.summary=D:\\QM\\reports\\smoke\\qua842\\QM5_1001\\20260508_120034\\summary.json\nrun_smoke.report_dir=D:\\QM\\reports\\smoke\\qua842\\QM5_1001\\20260508_120034\nrun_smoke.evidence=D:\\QM\\reports\\framework\\22\\20260508_120034_QM5_1001_run_smoke.md"
+  }
+]
