@@ -64,8 +64,9 @@ Executed and passed:
 
 Sample output artifacts generated from deterministic fixtures:
 
-- `infra/reports/qua913_qm_token_monitor_sample_2026-05-08.json`
-- `infra/reports/qua913_qm_token_monitor_sample_2026-05-08.md`
+- `artifacts/qua-913/qua913_qm_token_monitor_sample_2026-05-08.json`
+- `artifacts/qua-913/qua913_qm_token_monitor_sample_2026-05-08.md`
+- `artifacts/qua-913/qua913_qm_token_monitor_sample_state_2026-05-08.json`
 
 ## Commit chain
 
