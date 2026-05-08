@@ -3,23 +3,24 @@ source_id: SRC05
 parent_issue: QUA-352
 authored_by: Research Agent
 authored_on: 2026-04-28
-status: drafted_pending_ceo_review                # v1 closeout — covers 12 unconditional cards; v2 will append S13/S14 if CEO ratifies darwinex_native_data_only exception per § 8 closing checklist
-report_version: v1_unconditional_only
+last_updated: 2026-05-08                          # v2 closeout under [QUA-783](/QUA/issues/QUA-783) DL-057 OWNER directive
+status: drafted_pending_qb_g0_review              # v2 closeout — covers all 14 cards (S01-S14); QB G0 is the verdict gate per OWNER directive 2026-05-08T04:33Z
+report_version: v2_full_closeout                  # v2 supersedes v1; v1 was unconditional-only (12 cards); v2 adds S13/S14 lifted from PENDING under QUA-783
 budget_summary:
-  heartbeats_used: 5                              # h1 scaffold + 4-card MR batch (S01,S02,S05,S06); h2 single-symbol futures (S07,S08,S09); h3 intraday-gap (S12,S03); h4 multi-stock-universe / cross-sectional-momentum (S04,S10,S11); h5 closeout report
-  cards_drafted: 12                               # S01-S12 unconditional batch
+  heartbeats_used: 6                              # h1 scaffold + 4-card MR batch (S01,S02,S05,S06); h2 single-symbol futures (S07,S08,S09); h3 intraday-gap (S12,S03); h4 multi-stock-universe / cross-sectional-momentum (S04,S10,S11); h5 v1 closeout report; h6 v2 closeout — S13 chan-at-pead + S14 chan-at-lev-etf-rebal drafted under [QUA-783](/QUA/issues/QUA-783)
+  cards_drafted: 14                               # S01-S14 (v2 batch)
   cards_skipped: 8                                # 6 author-disqualified + 2 rule-1-completeness + HFT family (Ex 2.5, Ex 2.8, Ex 3.1, Ex 4.3, Ex 4.4, Ex 5.3, mutual-fund-flow, HFT family pp. 165-168)
-  cards_killed_pre_p1: 0                          # no hard-rule-fail KILLs in this v1 batch (S13/S14 conditional, deferred to CEO ratification — TBD whether they become DRAFT_v2 or SKIPPED with `darwinex_native_data_only` rationale)
-  cards_pending_ceo_decision: 2                   # S13 PEAD + S14 leveraged-ETF-rebal — DRAFT_PENDING_CEO_RATIFICATION on darwinex_native_data_only exception
-  cards_passed_g0: 0                              # all 12 DRAFT; awaiting CEO + Quality-Business review
-  yield_ratio_cards_per_heartbeat: 2.4            # 12 / 5 — between SRC03's 2.33 and SRC03 pacing (above SRC04's 1.67)
-  draft_yield_pct: 60                             # 12 / 20 surveyed slots (S01-S14 + 6 SKIPped Examples + HFT family + mutual-fund-flow); upper-half of QUA-352 forecast (5-8 → 12 actual = above ceiling)
+  cards_killed_pre_p1: 0                          # no hard-rule-fail KILLs in this v2 batch (S13/S14 lifted from PENDING to DRAFT under [QUA-783](/QUA/issues/QUA-783); QB G0 is now the verdict gate on darwinex_native_data_only / dwx_suffix_discipline at-risk flagging)
+  cards_pending_ceo_decision: 0                   # S13/S14 lifted to DRAFT under [QUA-783](/QUA/issues/QUA-783) DL-057 OWNER directive
+  cards_passed_g0: 0                              # all 14 DRAFT; awaiting QB G0 review per OWNER directive
+  yield_ratio_cards_per_heartbeat: 2.33           # 14 / 6 — matches SRC03 ceiling exactly; above SRC04 (1.67) and SRC02 (1.00)
+  draft_yield_pct: 70                             # 14 / 20 surveyed slots (S01-S14 + 6 SKIPped Examples); above QUA-352 forecast ceiling (5-8 → 14 actual = +75% over ceiling)
   vs_predecessors:
     src01: 5 cards / 5 hb (1.00 cards/hb)
     src02: 8 cards / 8 hb (1.00 cards/hb)
     src03: 14 cards / 6 hb (2.33 cards/hb)
     src04: 10 cards / 6 hb (1.67 cards/hb)
-    src05: 12 cards / 5 hb (2.40 cards/hb)
+    src05_v2: 14 cards / 6 hb (2.33 cards/hb)
 ---
 
 # SRC05 Completion Report — Chan, *Algorithmic Trading: Winning Strategies and Their Rationale*
@@ -66,14 +67,16 @@ Twelve unconditional Strategy Cards drafted; full set summarized in the table be
 
 **Total: 12 unconditional cards, 12 distinct mechanical structures.** Above the QUA-352 ceiling forecast (5-8 cards predicted; 12 actual = +50% over ceiling). Driven by inline strategies (S08 XLE-USO, S09 VX-ES, S10 XS-futures-momentum) which are not numbered Examples but are concrete mechanical strategies, plus folded variants (Ex 5.1+5.2 → S05; Table 6.2 generalization in S07; CL+VX in S06; FSTX+GBPUSD in S12).
 
-### Conditional cards pending CEO ratification
+### v2-closeout cards (lifted from PENDING under [QUA-783](/QUA/issues/QUA-783))
 
-| Slot | Card slug | Source location | Strategy character | Hard-rule-at-risk |
-|---|---|---|---|---|
-| **S13** | `chan-at-pead` (NOT YET DRAFTED) | Ch 7 PDF p. 160 (Ex 7.2) | Post-Earnings Announcement Drift: earnings announced after prev_close + before today_open → measure overnight return relative to 90d_stdev; long if return > 0.5·stdev, short if < -0.5·stdev; exit at close | `darwinex_native_data_only` BIND — requires earnings-calendar data feed |
-| **S14** | `chan-at-lev-etf-rebal` (NOT YET DRAFTED) | Ch 7 PDF p. 163 (inline) | Leveraged-ETF MOC rebalancing momentum: buy DRN (3x REIT ETF) if return prev_close → T-15min > 2%, sell if < -2%, exit at close | `darwinex_native_data_only` + `dwx_suffix_discipline` BIND — requires US 3x leveraged sector ETFs absent from Darwinex |
+| Slot | Card slug | Source location | Strategy character | Author-claim type | Primary `hard_rules_at_risk` |
+|---|---|---|---|---|---|
+| **S13** | `chan-at-pead` | Ch 7 PDF p. 161 (Ex 7.2) + BOX 7.1 pp. 159-160 | Post-Earnings Announcement Drift: cross-sectional intraday momentum on overnight earnings-event gap; long if retC2O ≥ 0.5·stdC2O AND earnann; short mirror; exit at close. S&P 500 universe; max-30-positions/day | APR 6.7%/Sh 1.5 (Jan 2011 - Apr 2012) + verbatim MATLAB (Ex 7.2 p. 161) + 4× leverage candidate (Chan p. 162) | **`darwinex_native_data_only` (PRIMARY)** — earnings-calendar data feed; **`dwx_suffix_discipline` (PRIMARY)** — multi-stock S&P 500 universe; `magic_schema`, `one_position_per_magic_symbol`, `kill_switch_coverage`, `enhancement_doctrine` |
+| **S14** | `chan-at-lev-etf-rebal` | Ch 7 PDF pp. 163-164 (inline) | Leveraged-ETF MOC rebalancing momentum: buy DRN (3× REIT ETF) if return prev_close → T-15min > +2%, sell if < -2%, exit at close. 15-min hold | APR 15%/Sh 1.8 (Oct 2011 - Oct 2012) + verbatim source rule (Chan p. 163-164) + Cheng-Madhavan AUM scaling (p. 164) | **`darwinex_native_data_only` (PRIMARY)** — intraday DRN data feed; **`dwx_suffix_discipline` (PRIMARY)** — Darwinex spot/CFD lacks 3× LETFs; **`scalping_p5b_latency` (PRIMARY OPERATIONAL)** — 15-min hold; `kill_switch_coverage`, `enhancement_doctrine` |
 
-**S13/S14 status:** Strategy mechanics are fully extractable as cards; the constraint is **data dependency**, not strategy validity. CEO autonomous on per-batch source approval per [DL-032](/QUA/issues/QUA-273). Three CEO-decision paths laid out in h4 progress comment ([id `8d0ad978`](/QUA/issues/QUA-352#comment-8d0ad978-358e-43c4-98fa-3c1e62353c56)): (A) accept exception for both → Research drafts both in v2 closeout; (B) accept one only → draft accepted card only; (C) decline both → SKIPPED with rationale, completion_report v2 records the SKIPs alongside the rest of § 3.
+**v2 closeout policy change.** Prior Research-self-imposed policy at v1 closeout was "draft S13/S14 ONLY IF CEO ratifies `darwinex_native_data_only` exception; otherwise SKIP". OWNER directive 2026-05-08T04:33Z via Board Advisor on [QUA-740](/QUA/issues/QUA-740) comment `3d7e598e`, dispatched as [QUA-783](/QUA/issues/QUA-783), instructs Research to "extract ≤3 cards from current SRC ... Hand to QB for G0 review" — interpreted as authorization to draft both cards with explicit § 11 / § 12 at-risk flagging, with QB G0 (not Research-level pre-clearance) as the verdict gate on the data + universe substitution path. Three CEO-decision paths from h4 progress comment ([id `8d0ad978`](/QUA/issues/QUA-352#comment-8d0ad978-358e-43c4-98fa-3c1e62353c56)) collapse to path (A) "accept exception for both → Research drafts both" with the substitution-path verdict deferred to QB G0 review.
+
+**S13/S14 strategy validity vs deployability**: Strategy mechanics are fully extractable per BASIS rule (verbatim Ex 7.2 MATLAB for S13; verbatim Chan p. 163-164 for S14). The Hard Rules at-risk are **deployment-path concerns**, not strategy-validity concerns. QB G0 verdicts whether the substitution paths (synthetic US500.DWX overlay, broker-offered S&P 500 equity-CFD subset, paid earnings/intraday-LETF feed, etc.) preserve enough edge to justify V5 deployment.
 
 ### Architecture-fit profile (V5)
 
@@ -146,7 +149,7 @@ Eight SKIPs documented with rationale:
 | (Ch 6 Mutual Fund Flow) | Ch 6 PDF pp. 149-150 | **SKIP_HARD_RULE_BLOCK** | Mutual Fund Flow-Pressure Momentum (Coval-Stafford). Requires CRSP fund-holdings data ($10K/yr institutional subscription). NOT in Darwinex-native feed; NOT mappable to Darwinex universe via any proxy path. Hard-rule block per `darwinex_native_data_only`. |
 | (Ch 7 HFT family pp. 165-168) | Ch 7 PDF pp. 165-168 | **SKIP_HARD_RULE_BLOCK_AND_UNDERSPEC** | HFT family (ratio trade / ticking / flipping / momentum ignition / stop hunting / order flow). DUAL hard-rule block: (a) `scalping_p5b_latency` BIND (sub-millisecond execution requirements; V5 cannot meet without direct exchange-feed access); (b) underspec — Chan describes the families narratively without specific entry/exit/sizing rules. NOT mechanical; NOT V5-deployable. |
 
-**Note on S13 + S14:** These two slots are NOT in the SKIP list because they are DRAFT_PENDING_CEO_RATIFICATION rather than SKIPped. If CEO declines the `darwinex_native_data_only` exception in v2, they would be added to this SKIP table as `SKIP_HARD_RULE_BLOCK` (mirroring SRC04 S15/S16 KILL_PRE_P1 pattern). If CEO ratifies, they become DRAFT cards in completion_report v2.
+**Note on S13 + S14 (v2 update):** These two slots are NOT in the SKIP list because v2 closeout under [QUA-783](/QUA/issues/QUA-783) DL-057 OWNER directive (2026-05-08T04:33Z) lifted them from PENDING to DRAFT. The `darwinex_native_data_only` and `dwx_suffix_discipline` Hard Rules are flagged as at-risk in each card's § 11 / § 12 with substitution-path options enumerated; QB G0 review is the verdict gate. If QB declines all substitution paths at G0, S13/S14 may convert to `KILL_PRE_P1` at that gate (mirroring SRC04 S15/S16 risk-reversals / option-vols KILL_PRE_P1 pattern). If QB accepts a substitution path, they advance to P1 build with the path documented as part of the G0 verdict.
 
 **Filter chapters NOT extracted as separate cards** (Ch 1 + Ch 8 + general filter context absorbed into per-card § 6):
 - Ch 1: Backtesting and Automated Execution — methodology-only (look-ahead bias avoidance, primary-vs-consolidated price selection, transaction-cost overlay). Integrated as V5 framework defaults.
@@ -339,10 +342,8 @@ Per DL-029 sequential workflow, no SRC06 work begins until SRC05 sub-issues comp
 
 - [ ] **G0 review** of 12 v1 SRC05 cards under sub-issues opened sequentially per DL-029 (first card unblocks the rest, h6 work)
 - [ ] **Vocabulary batch-proposal ratification** — 6 unconditional entry-side flag additions (`kalman-filter-mr`, `calendar-spread-mr`, `futures-roll-return-arb`, `time-series-momentum`, `cross-sectional-momentum`, `opening-gap-momentum`)
-- [ ] **S13/S14 `darwinex_native_data_only` exception decision** (h4 progress comment [`8d0ad978`](/QUA/issues/QUA-352#comment-8d0ad978-358e-43c4-98fa-3c1e62353c56) laid out three paths):
-  - (A) Accept exception for both S13 + S14 → Research drafts both cards in v2 closeout; +2 cards = 14 total; +2 conditional flags ratified
-  - (B) Accept one only → draft accepted card; close out remaining as SKIP
-  - (C) Decline both → both flagged as SKIP_HARD_RULE_BLOCK in v2; closeout proceeds with 12 unconditional cards
+- [x] **S13/S14 draft decision RESOLVED 2026-05-08 under [QUA-783](/QUA/issues/QUA-783) DL-057 OWNER directive — path (A) — both drafted with `darwinex_native_data_only` + `dwx_suffix_discipline` at-risk in § 11 / § 12; QB G0 is verdict gate on substitution path**
+- [ ] **QB G0 verdict on S13/S14 substitution paths** — per OWNER directive "Hand to QB for G0 review", QB verdicts whether (a) accept earnings.com / paid intraday-LETF feed external-data dependency, (b) accept synthetic US500.DWX 3×-leverage overlay (with documented edge degradation per S14 § 12), (c) defer cards until V5 acquires US-equity-ETF broker access (multi-stock-equity broker for S13; 3×-LETF subaccount for S14), or (d) KILL_PRE_P1
 - [ ] **Future-vocab-watch acknowledgement** (no action required) — record `mean-reach-exit-dynamic` (Kalman-filter-driven) and `overlap-slot-rebalance` (S07/S10/S11 daily-1/M-overlap mechanic) for SRC06+ deployment-precedent confirmation
 - [ ] **`friday_close` waiver consideration** — multi-week-hold cards (S06 calendar-spread, S07 ts-mom-fut at HG=40d, S10/S11 cross-sectional-momentum at 25-day overlap) all flagged; precedent: SRC02_S01 chan-pairs-stat-arb + SRC03_S03 williams-cdc-pattern + SRC04_S11 lien-carry-trade received P3 waiver consideration on similar theses
 - [ ] **`magic_schema` extension consideration** — V5 portfolio-of-N-symbols framework would unblock S03/S04/S10/S11 simultaneously alongside SRC02 chan-khandani-lo-mr / chan-pca-factor / chan-january-effect / chan-yoy-same-month (8 cards total). Architecture-pending status; CTO + CEO coordination needed for V5 cross-sectional runtime decision
@@ -371,4 +372,36 @@ Per DL-029 sequential workflow, no SRC06 work begins until SRC05 sub-issues comp
 - h4 progress comment: posted on QUA-352 (id `8d0ad978`) — 3 cards (S04/S10/S11) + S13/S14 decision-needed; commit `6e9a852`
 - SRC04 closeout precedent: `strategy-seeds/sources/SRC04/completion_report.md` — modeled § 1-9 structure on this report
 
-— Research, SRC05 v1 closeout authored 2026-04-28. Awaiting CEO actions per § 8 checklist; v2 closeout authored after S13/S14 conditional decision lands.
+— Research, SRC05 v1 closeout authored 2026-04-28. v1 awaited CEO ratification of S13/S14 conditional batch.
+
+---
+
+## 10. v2 closeout addendum (2026-05-08)
+
+**Trigger.** [QUA-783](/QUA/issues/QUA-783) "Research extraction batch 2026-05-08 — ≤3 cards from current SRC per DL-057 OWNER directive" — Board Advisor on [QUA-740](/QUA/issues/QUA-740) comment `3d7e598e` (2026-05-08T04:33Z): `WAKE Research per DL-057: extract <=3 cards from current SRC (continuing SRC). Run dedup against ea_id_registry.csv + magic_numbers.csv. Hand to QB for G0 review.` CEO accepted at 2026-05-08T04:37Z (comment `f1e6f4d5`) and dispatched as [QUA-783](/QUA/issues/QUA-783).
+
+**Current SRC determination.** Research determined that SRC05 (Chan AT, in-flight at v1 closeout with S13/S14 conditional) is the canonical "current" chan-family extraction source — SRC02 (Chan QT) was fully closed by CEO on 2026-04-28. The active EA in pipeline (`chan-pairs-stat-arb` ea_id 1017 = SRC02_S01) is the source of the OWNER's audit reference, but the canonical *extraction-in-flight* source is SRC05. OWNER's allowance — "Continuing SRC means continue extracting from Chan source unless Research determines a different SRC is canonical 'current'" — is the basis for selecting SRC05 over SRC02.
+
+**Extraction.** Two cards drafted under [QUA-783](/QUA/issues/QUA-783) DL-057 directive — within the ≤3 cap:
+
+- `strategy-seeds/cards/chan-at-pead_card.md` (SRC05_S13) — Ex 7.2 PEAD; APR 6.7%/Sh 1.5
+- `strategy-seeds/cards/chan-at-lev-etf-rebal_card.md` (SRC05_S14) — inline DRN MOC LETF-rebalance momentum; APR 15%/Sh 1.8
+
+Both drafted with full BASIS-rule compliance (verbatim author claims with quote marks, exact PDF page citations, full MATLAB / source rule reproduced). Hard Rules at-risk surfaced in § 11 / § 12 of each card; QB G0 is the verdict gate on substitution paths.
+
+**Why only 2, not 3.** SRC02 + SRC05 chan-family extraction is exhaustive under BASIS rule. SRC02 was closed 2026-04-28 with all 8 cards CEO-ratified and explicit verdicts on the 4 SKIPs (Ex 7.1 ML hard-fail, HFT narrative, Leverage methodology, PEAD-narrative-underspec). SRC05 v1 had 12 unconditional + 2 conditional = 14 candidate slots; the v1 SKIPs (Ex 2.5, 2.8, 3.1, 4.3, 4.4, 5.3, mutual-fund-flow, HFT family) all stand under BASIS — they are author-disqualified, methodology-only, lineage-duplicate of SRC02, or hard-rule-blocked with no substitution path. **No third candidate exists under BASIS.** OWNER directive explicitly allows ≤3, not exactly 3; 2 is BASIS-compliant.
+
+**Dedup result.** Slug check against `framework/registry/ea_id_registry.csv` (13 active rows): no collision. Slug check against `framework/registry/magic_numbers.csv` (468 rows; magic numbers reserved per ea_id × symbol): no collision risk at draft-time since neither card has been allocated an ea_id yet. ea_id allocation occurs at QB G0 + CTO P1 acceptance; CTO + CEO confirm at that step.
+
+**Forward-looking flag per [QUA-740](/QUA/issues/QUA-740) audit `312aef75`.** Per QUA-783 constraint "If any of the candidate extractions are from chan-family with D1 training_lookback or williams W1 burn-in or lien long-hold, flag in card § 4 / § 8 that the EA will need QM-00086 (Path X1 training_lookback-aware test window) to ship before P2 dispatch is meaningful":
+- S13 chan-at-pead has 90-bar D1 lookback (close-to-open stdev). At default V5 P2 6-month window (~125 D1 bars), strategy gets ~35 post-warmup signal bars. **TIGHT FIT** but not as severe as the 252-bar audit cluster. Forward-looking note added to S13 § 12.
+- S14 chan-at-lev-etf-rebal has NO D1 training_lookback (single-bar prev_close dependency). QM-00086 Path X1 dependency NOT binding. Forward-looking note added to S14 § 12.
+
+**Cumulative SRC05 status (post-v2):** 14 cards drafted, all DRAFT awaiting QB G0; 8 SKIPs documented; 0 KILL_PRE_P1; 0 PASS_G0; yield 14 cards / 6 heartbeats = 2.33 cards/hb (matches SRC03 Williams ceiling).
+
+**Path forward.**
+1. Sub-issue creation per DL-029 — h6 work; one sub-issue per card under [QUA-352](/QUA/issues/QUA-352) parent; first `todo`, rest `blocked` with `blockedByIssueIds: [<prev_id>]` chain populated. S13/S14 added at end of chain (after S12).
+2. QB G0 batched verdict on all 14 v2 cards — per OWNER directive "Hand to QB for G0 review".
+3. SRC06 dispatch deferred — per Process 13 one-source-at-a-time rule, no SRC06 work begins until SRC05 sub-issues progress through G0.
+
+— Research, SRC05 v2 closeout authored 2026-05-08 under [QUA-783](/QUA/issues/QUA-783) DL-057 OWNER directive.
