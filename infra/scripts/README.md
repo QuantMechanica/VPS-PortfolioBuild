@@ -176,6 +176,23 @@
 - Example:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Invoke-QUA774ExternalUnblockHandoff.ps1`
 
+## `Test-QUA774ExternalUnblockPackage.ps1`
+
+- Validates the external unblock handoff artifact set for QUA-774:
+  - `docs\ops\QUA-774_EXTERNAL_UNBLOCK_SIGNAL.json`
+  - `docs\ops\QUA-774_EXTERNAL_UNBLOCK_CHILD_PAYLOAD_2026-05-08.json`
+  - `docs\ops\QUA-774_EXTERNAL_UNBLOCK_ESCALATION_2026-05-08.md`
+- Checks:
+  - required files exist
+  - issue id consistency (`QUA-774`)
+  - child payload contains `external_signal_update`
+  - escalation note references child payload + `ready_to_resume=true` contract
+- Exit codes:
+  - `0`: package coherent
+  - `2`: missing artifact or drift
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA774ExternalUnblockPackage.ps1`
+
 ## `../monitoring/Test-PythonRuntimeHealth.ps1`
 
 - Read-only Python runtime integrity check for infra/pipeline hosts.
