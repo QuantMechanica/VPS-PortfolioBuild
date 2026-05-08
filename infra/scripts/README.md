@@ -73,6 +73,18 @@
 - Example:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA774BlockedPackage.ps1`
 
+## `Invoke-QUA774BlockedHeartbeat.ps1`
+
+- One-command blocked heartbeat flow for QUA-774.
+- Runs in order:
+  1. `Run-QUA774BlockerRefresh.ps1`
+  2. `New-QUA774IssueTransitionPayload.ps1`
+  3. `Test-QUA774BlockedPackage.ps1`
+- Returns a consolidated object with `refresh`, `payload`, and `verify` sections.
+- Use this as the default heartbeat command while the issue remains blocked.
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Invoke-QUA774BlockedHeartbeat.ps1`
+
 ## `../monitoring/Test-PythonRuntimeHealth.ps1`
 
 - Read-only Python runtime integrity check for infra/pipeline hosts.
