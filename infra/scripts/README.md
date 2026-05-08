@@ -200,6 +200,19 @@
 - Example:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA774ExternalUnblockPackage.ps1`
 
+## `Test-QUA774ExternalUnblockHandoffCache.ps1`
+
+- Validates anti-polling cache behavior in `Invoke-QUA774ExternalUnblockHandoff.ps1`.
+- Runs wrapper three times against a test cache path:
+  1. normal run (expected `skipped=false`)
+  2. immediate rerun (expected `skipped=true`, `reason=signal_unchanged_still_blocked`)
+  3. forced rerun (`-Force`, expected `skipped=false`)
+- Exit codes:
+  - `0`: behavior is correct
+  - `2`: cache/force behavior drift detected
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA774ExternalUnblockHandoffCache.ps1`
+
 ## `../monitoring/Test-PythonRuntimeHealth.ps1`
 
 - Read-only Python runtime integrity check for infra/pipeline hosts.
