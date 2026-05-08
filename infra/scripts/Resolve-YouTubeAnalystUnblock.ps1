@@ -123,6 +123,48 @@ except Exception as exc:
     }
 }
 
+function Invoke-YoutubeScriptsMirrorFallback {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$VideoId,
+        [Parameter(Mandatory = $true)]
+        [string]$OutTxtPath
+    )
+
+    $mirrorUrl = "https://www.youtube-scripts.com/t/$VideoId"
+    try {
+        $resp = Invoke-WebRequest -Uri $mirrorUrl -UseBasicParsing -TimeoutSec 45
+    }
+    catch {
+        return [ordered]@{ ok = $false; reason = "mirror_fetch_failed"; error = $_.Exception.Message; url = $mirrorUrl }
+    }
+
+    $pat = '\{\\"text\\":\\"(.*?)\\",\\"offset\\":'
+    $matches = [regex]::Matches($resp.Content, $pat)
+    if ($matches.Count -le 0) {
+        return [ordered]@{ ok = $false; reason = "mirror_no_segments"; url = $mirrorUrl }
+    }
+
+    $lines = New-Object System.Collections.Generic.List[string]
+    foreach ($m in $matches) {
+        $t = $m.Groups[1].Value
+        $t = $t.Replace('\u0026#39;', "'")
+        $t = $t.Replace('\u0026quot;', '"')
+        $t = $t.Replace('\u0026amp;', '&')
+        $t = $t.Replace('\n', ' ')
+        $t = [System.Net.WebUtility]::HtmlDecode($t)
+        if (-not [string]::IsNullOrWhiteSpace($t)) {
+            $lines.Add($t.Trim())
+        }
+    }
+    if ($lines.Count -le 0) {
+        return [ordered]@{ ok = $false; reason = "mirror_segments_empty"; url = $mirrorUrl }
+    }
+
+    [string]::Join(' ', $lines) | Set-Content -LiteralPath $OutTxtPath -Encoding UTF8
+    return [ordered]@{ ok = $true; segments = $lines.Count; url = $mirrorUrl }
+}
+
 $videoId = Get-VideoId -Url $VideoUrl
 $stamp = (Get-Date).ToString("yyyy-MM-ddTHHmmss")
 $targetDir = Join-Path $OutputRoot $videoId
@@ -221,7 +263,15 @@ else {
         $result["fallback_details"] = $apiFallback
     }
     else {
-        throw "Transcript fallback failed: yt-dlp exit=$ytDlpExit; transcript-api reason=$($apiFallback.reason); error=$($apiFallback.error)"
+        $mirrorFallback = Invoke-YoutubeScriptsMirrorFallback -VideoId $videoId -OutTxtPath $txtPath
+        if ($mirrorFallback.ok -eq $true -and (Test-Path -LiteralPath $txtPath)) {
+            $result["status"] = "transcript_fallback_generated"
+            $result["fallback_engine"] = "youtube-scripts-mirror"
+            $result["fallback_details"] = $mirrorFallback
+        }
+        else {
+            throw "Transcript fallback failed: yt-dlp exit=$ytDlpExit; transcript-api reason=$($apiFallback.reason); mirror reason=$($mirrorFallback.reason)"
+        }
     }
 }
 $result | ConvertTo-Json -Depth 8

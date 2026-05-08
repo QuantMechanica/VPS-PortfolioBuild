@@ -17,6 +17,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Preview-by-default path decision (`claude_video_mcp` vs `transcript_fallback`).
   - Apply mode runs `yt-dlp` subtitle extraction fallback and writes canonical transcript text under `docs/ops/youtube-transcripts/<video_id>/`.
   - On `yt-dlp` failure, attempts secondary fallback via `youtube-transcript-api`.
+  - On secondary failure (cloud-IP block class), attempts tertiary extraction via public mirror `youtube-scripts.com/t/<video_id>`.
   - Supports `-YtDlpExtraArgs` for cookie-authenticated fallback when anonymous YouTube subtitle fetch is blocked.
   - Idempotent check-then-act behavior (skip when transcript already exists unless `-ForceRefresh`).
 - `scripts/Test-YouTubeDataMcpReadiness.ps1`
