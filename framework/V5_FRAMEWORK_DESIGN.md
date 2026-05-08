@@ -141,6 +141,7 @@ framework/
     INPUT_STANDARD.md
     LOG_SCHEMA.md
     ERROR_TAXONOMY.md
+    P8_NEWS_DRIVER_AND_CALENDAR_SPEC.md
   build/                       # compile output (gitignored)
   tests/
     smoke/                     # smoke EA + set + expected-output
