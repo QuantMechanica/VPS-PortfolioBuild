@@ -1,0 +1,6 @@
+issue=QUA-671
+status=blocked_pending_owner_approval
+owner=OWNER
+unblock_action=Approve P0-13 T6 manifest dry-run evidence and authorize transition to done.
+set_utc=2026-05-08T06:32:21Z
+refresh_ref=2026-05-08T063221Z
