@@ -233,6 +233,11 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Supports `-PreviewOnly` for non-mutating task-plan output.
   - Normalizes repeating monitor trigger start boundary to the next future slot to avoid stale/past start times on re-run.
   - Safe to re-run (`Register-ScheduledTask -Force`) and overlap-safe (`MultipleInstances=IgnoreNew`).
+- `scripts/Install-QmTokenMonitorTask.ps1`
+  - Registers `QM_TokenBurnWatch_60min` as `SYSTEM` for deterministic `qm-token-monitor` hourly snapshots.
+  - Wires explicit script/action arguments (API URL, company id, output/state paths, token budget path).
+  - Supports `-PreviewOnly` for non-mutating task-plan output.
+  - Safe to re-run (`Register-ScheduledTask -Force`) and overlap-safe (`MultipleInstances=IgnoreNew`).
 - `monitoring/Test-BackupSmoke.ps1`
   - Runs backup workflow in an isolated temp workspace and asserts manifest/artifacts.
 - `monitoring/Invoke-PaperclipStaleLockWatchdog.ps1`
@@ -519,6 +524,12 @@ Token-cost observability (70/80/95 budget alarms + daily snapshot):
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-TokenCostObservabilityTasks.ps1 -DailyTokenBudget 2500000
+```
+
+QM token-burn watch (hourly `QUA-913` closeout JSON + markdown):
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-QmTokenMonitorTask.ps1 -EveryMinutes 60
 ```
 
 Dedup behavior (QUA-692):
