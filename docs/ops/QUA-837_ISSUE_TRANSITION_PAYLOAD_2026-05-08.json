@@ -1,0 +1,25 @@
+{
+  "issue": "QUA-837",
+  "recommended_state": "done",
+  "resume": false,
+  "summary": "Strategy Wiki tooling is implemented and verified: deterministic lint script for wiki graph integrity, research dedup extension across cards and wiki strategies, runtime checks and unit tests passing, and tools index registration completed.",
+  "commits": [
+    "f5b6137b",
+    "e497396f",
+    "28472360",
+    "1168b6af"
+  ],
+  "evidence": {
+    "closeout_note": "docs/ops/QUA-837_CLOSEOUT_EVIDENCE_2026-05-08.md",
+    "final_receipt": "docs/ops/QUA-837_FINAL_RECEIPT_2026-05-08.md",
+    "final_status": "docs/ops/QUA-837_FINAL_STATUS_2026-05-08.json",
+    "tools_index": "docs/ops/06 Infrastructure/Tools and Scripts.md",
+    "lint_script": "framework/scripts/lint_strategy_wiki.py",
+    "dedup_script": "framework/scripts/research_dedup_check.py"
+  },
+  "checks": {
+    "unit_tests": "python -m unittest framework.scripts.tests.test_lint_strategy_wiki framework.scripts.tests.test_research_dedup_check -v",
+    "result": "OK (5 tests passed)",
+    "status_marker": "ready_for_close"
+  }
+}
