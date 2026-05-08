@@ -28,11 +28,12 @@ Hire **Chief of Staff (OS-Controller scope)** as a new live agent. UUID: `38f933
 
 ## Scope (binding, narrow)
 
-Three responsibilities only:
+Four responsibilities (extended 2026-05-08 per QUA-854 — see Amendment 2026-05-08 below):
 
 1. **Agent roster hygiene** — placeholder/orphan/duplicate/stale-running detection. Recommend cleanups; CEO acts.
 2. **Token-burn watch** — per-agent spend, daily run-rate, exhaustion forecast. Hard rule: forecast within 4 days = escalate this heartbeat.
 3. **Model-selection oversight** — weekly audit of per-agent model fit; recommend changes to CEO.
+4. **Stale-work watchdog (DL-056 amendment 2026-05-08, QUA-854)** — every-heartbeat scan for stale `in_progress` issues (>2h since `updatedAt` with no active checkout, or unanswered direction-request comments >30min) and work-done-not-closed issues (last comment contains commit hash + no follow-up >1h). Detect and escalate only; CoS never PATCHes to `done`. Closeout stays with assignee or CEO.
 
 ## Hard constraints (binding)
 
@@ -72,3 +73,33 @@ This is a watch role: structured reporting, deterministic forecasting, anomaly d
 - First heartbeat after this commit lands should produce: roster audit (catching the 4 known stale dirs `bf24c2ae` / `d53f62f7` / duplicate DevOps `0e8f04e5` / `12c5c03f` / `9f2e41f3`), per-agent spend snapshot, forecast.
 
 — Authored by Board Advisor at OWNER explicit directive, 2026-05-01.
+
+## Amendment 2026-05-08 — Stale-work watchdog (QUA-854)
+
+**Authority:** OWNER directive in QUA-854 comment `e05adab6-dd23-4d9a-82a3-c7de6d1878df`, 2026-05-08T13:24Z. CEO-applied under broadened-authority waiver v2/v3 (DL-aligned prompt patch).
+
+**Scope additions to §4 (Stale-work watchdog):**
+
+- **Check A — Stale `in_progress` scan (every heartbeat):**
+  - Flag any `in_progress` issue with `updatedAt` >2h ago AND no active `checkoutRunId`.
+  - Flag any `in_progress` issue whose last comment contains direction-request keywords (`choose one` / `option 1` / `option a` / `direction needed` / etc., case-insensitive) AND no reply within 30min.
+  - For each flagged issue: post ONE comment tagging assignee + CEO; PATCH to `blocked` with `blockedReason` set to `stale-in_progress (CoS watchdog)` or `unanswered-question (CoS watchdog)`. Never PATCH to `done`.
+- **Check B — Work-done detector (every heartbeat):**
+  - Scan `in_progress` issues whose last comment contains a commit hash (`\b[0-9a-f]{8,40}\b`) AND has no follow-up activity for 1h.
+  - For each: post ONE comment tagging CEO with the hash + timestamp; PATCH to `in_review`. CEO confirms closeout. Never PATCH to `done`.
+- **Thresholds (initial; recalibrate after first week per OWNER):** A=2h, A-unanswered=30min, B=1h.
+- **Anti-spam:** one watchdog flag per issue per 6h window.
+
+**Originating evidence (recurring pattern, 2026-05-08):**
+- QUA-598 — work done 2026-04-30, closed 2026-05-08 (8 days stale).
+- QUA-845 — work done 11:35Z, still `in_progress` at 13:00Z (same-day stale).
+- QUA-837 — DevOps direction-request 11:31Z, no reply for 2h.
+- QUA-792 — root cause of the 29-issue stale-blocked freeze 2026-05-06.
+
+**Leitprinzip:** CoS detects and escalates; never closes. PATCH-to-`done` authority remains with assignees and CEO. This amendment does NOT relax DL-051 issue-creation gate (watchdog mutations on existing issues are not new-issue creation).
+
+**Files updated under this amendment:**
+- `paperclip-prompts/chief-of-staff.md` (BASIS prompt; §4 added).
+- Runtime AGENTS.md at `paperclip/data/instances/default/companies/03d4dcc8-.../agents/38f933cd-.../instructions/AGENTS.md` (live prompt; §4 added).
+- This DL-056 (scope text + amendment block).
+
