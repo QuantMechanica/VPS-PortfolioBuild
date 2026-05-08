@@ -1,10 +1,10 @@
 ﻿{
     "issue_id":  "QUA-774",
-    "generated_at_utc":  "2026-05-08T06:27:37.0533968Z",
+    "generated_at_utc":  "2026-05-08T06:29:29.8257696Z",
     "source_evidence":  {
-                            "file":  "C:\\QM\\worktrees\\devops\\docs\\ops\\QUA-774_P2_REDEPLOY_SUMMARY_20260508T062626Z.json",
-                            "file_name":  "QUA-774_P2_REDEPLOY_SUMMARY_20260508T062626Z.json",
-                            "file_last_write_utc":  "2026-05-08T06:26:26.9741657Z",
+                            "file":  "C:\\QM\\worktrees\\devops\\docs\\ops\\QUA-774_P2_REDEPLOY_SUMMARY_20260508T062929Z.json",
+                            "file_name":  "QUA-774_P2_REDEPLOY_SUMMARY_20260508T062929Z.json",
+                            "file_last_write_utc":  "2026-05-08T06:29:29.7941142Z",
                             "strategy_id":  "QM5_1004",
                             "symbol":  "US500.DWX",
                             "verdict":  "FAIL"

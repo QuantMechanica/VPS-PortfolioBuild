@@ -26,6 +26,21 @@
 - Example:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Update-QUA774BlockerStatus.ps1`
 
+## `Run-QUA774BlockerRefresh.ps1`
+
+- One-command QUA-774 refresh wrapper.
+- Runs in order:
+  1. `Test-P2RedeploySummary.ps1` (writes timestamped summary JSON)
+  2. `Update-QUA774BlockerStatus.ps1` (refreshes canonical blocker status)
+- Appends execution lines to:
+  - `infra\smoke\qua774_blocker_refresh_task.log`
+- Defaults:
+  - strategy `QM5_1004`
+  - symbol `US500.DWX`
+  - timeframes `H1,H4,D1`
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Run-QUA774BlockerRefresh.ps1`
+
 ## `../monitoring/Test-PythonRuntimeHealth.ps1`
 
 - Read-only Python runtime integrity check for infra/pipeline hosts.
