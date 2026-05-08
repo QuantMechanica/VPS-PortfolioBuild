@@ -10,7 +10,8 @@
   ],
   "artifacts": [
     "docs/ops/QUA-837_CLOSEOUT_2026-05-08.md",
-    "docs/ops/QUA-837_DOC_KM_HANDOFF_2026-05-08.md"
+    "docs/ops/QUA-837_DOC_KM_HANDOFF_2026-05-08.md",
+    "docs/ops/QUA-837_CLOSE_RECOMMENDATION_2026-05-08.md"
   ],
   "checks": {
     "lint_strategy_wiki_empty_tree_under_5s": true,
