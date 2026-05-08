@@ -56,3 +56,12 @@
   - shows `--vault` with default `G:\My Drive\09 Strategy Wiki`
 - `python framework/scripts/research_dedup_check.py --help`
   - shows subcommands: `check`, `list`, `audit`
+
+## Additional Duplicate Reproduction (2026-05-08, heartbeat follow-up)
+- Command:
+  - `python framework/scripts/research_dedup_check.py check --slug hb91-slug --strategy-id SRC05_S05 --vault %TEMP%\\qua837_empty_vault`
+- Result:
+  - `EXACT DUPLICATE: [card] ...\\chan-at-fx-coint-pair_card.md (chan-at-fx-coint-pair / SRC05_S05)`
+  - `VERDICT: DUPLICATE — link as _v<n> enhancement per DL-029/033, NOT new ea_id`
+
+This provides runtime proof that duplicate verdict paths are active, not only clean verdict paths.
