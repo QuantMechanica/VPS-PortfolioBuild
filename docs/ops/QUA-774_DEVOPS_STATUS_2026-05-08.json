@@ -1,0 +1,30 @@
+{
+  "issue_id": "QUA-774",
+  "generated_at_utc": "2026-05-08T06:45:00Z",
+  "devops_state": "blocked_waiting_external_unblock",
+  "gate_state": "blocked",
+  "failure_flags": [
+    "REPORT_MISSING",
+    "INCOMPLETE_RUNS"
+  ],
+  "canonical_evidence": {
+    "summary_current": "docs/ops/QUA-774_P2_REDEPLOY_SUMMARY_CURRENT.json",
+    "blocker_status": "docs/ops/QUA-774_BLOCKER_STATUS_2026-05-08.json",
+    "transition_payload": "docs/ops/QUA-774_ISSUE_TRANSITION_PAYLOAD_2026-05-08.json",
+    "blocked_comment": "docs/ops/QUA-774_BLOCKED_COMMENT_2026-05-08.md",
+    "manifest": "docs/ops/QUA-774_BLOCKED_PACKAGE_2026-05-08.sha256",
+    "runbook": "docs/ops/QUA-774_BLOCKED_HEARTBEAT_RUNBOOK_2026-05-08.md",
+    "unblock_request": "docs/ops/QUA-774_UNBLOCK_REQUEST_2026-05-08.json"
+  },
+  "unblock_owner": "DWX source acquisition + import pipeline owner",
+  "unblock_action": [
+    "Import US500.DWX history and ticks to T1 custom symbols.",
+    "Sync US500.DWX from T1 to T2-T5.",
+    "Re-run QM5_1004 US500 P2 redeploy and emit H1/H4/D1 reports.",
+    "Re-run Invoke-QUA774BlockedHeartbeat.ps1 and confirm PASS with empty failure flags."
+  ],
+  "latest_devops_commits": [
+    "2b37d229",
+    "c96f15d5"
+  ]
+}
