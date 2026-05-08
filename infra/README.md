@@ -16,6 +16,8 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - QUA-914 unblock helper for YouTube Analyst routing.
   - Preview-by-default path decision (`claude_video_mcp` vs `transcript_fallback`).
   - Apply mode runs `yt-dlp` subtitle extraction fallback and writes canonical transcript text under `docs/ops/youtube-transcripts/<video_id>/`.
+  - On `yt-dlp` failure, attempts secondary fallback via `youtube-transcript-api`.
+  - Supports `-YtDlpExtraArgs` for cookie-authenticated fallback when anonymous YouTube subtitle fetch is blocked.
   - Idempotent check-then-act behavior (skip when transcript already exists unless `-ForceRefresh`).
 
 ## Day-1 assets (QUA-11)
