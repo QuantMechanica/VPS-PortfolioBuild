@@ -26,16 +26,22 @@ Provide copy-ready entries for Doc-KM to register two new tooling scripts in:
 
 2. `framework/scripts/research_dedup_check.py` (extended)
 - Existing CLI preserved (`check`, `list`, `audit`)
-- New behavior: now ingests both sources
+- New behavior: ingests both sources
   - `strategy-seeds/cards/*.md`
   - `09 Strategy Wiki/strategies/*.md` (via `--vault`, default above)
-- Cross-source duplicate detection now reports source tag (e.g. `[wiki]`)
+- Cross-source duplicate detection reports source tag (e.g. `[wiki]`, `[card]`)
 
 ## Implementation evidence
 
 - Main implementation commit: `f5b6137b`
-- Closeout evidence commit: `9bfe9a0a`
-- Closeout artifact: `docs/ops/QUA-837_CLOSEOUT_2026-05-08.md`
+- Evidence commits:
+  - `49dc3455` (closeout + CLI proof)
+  - `df2b064a` (duplicate-verdict runtime proof)
+  - `c3a6967c` (lint runtime <5s proof)
+  - `67c0b605` (final receipt with acceptance mapping)
+- Evidence artifacts:
+  - `docs/ops/QUA-837_CLOSEOUT_EVIDENCE_2026-05-08.md`
+  - `docs/ops/QUA-837_FINAL_RECEIPT_2026-05-08.md`
 
 ## Suggested Doc-KM markdown snippet
 
