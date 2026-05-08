@@ -1,0 +1,6 @@
+ready_to_close=true
+issue=QUA-913
+date_utc=2026-05-08
+latest_evidence_manifest=artifacts/qua-913/qua913_artifact_manifest_2026-05-08.sha256
+latest_done_payload=artifacts/qua-913/qua913_issue_status_update_payload_2026-05-08.json
+
