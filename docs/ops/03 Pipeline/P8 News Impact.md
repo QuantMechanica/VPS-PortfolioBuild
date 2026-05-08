@@ -36,6 +36,16 @@ python framework/scripts/p8_news_driver.py \
   --mode all
 ```
 
+PowerShell phase wrapper (opt-in integration):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File framework/scripts/run_phase.ps1 `
+  -EAId QM5_1001 `
+  -Phase P8 `
+  -UseP8NewsDriver `
+  -RunnerArgs @('--news-matrix','framework/scripts/tests/fixtures/p8_matrix.csv','--calendar-csv','D:/QM/data/news_calendar/news_calendar.csv','--mode','all')
+```
+
 Supported `--mode` profiles:
 - `full`
 - `ftmo`

@@ -5,7 +5,8 @@ param(
     [string]$OutputRoot = "C:\QM\repo\docs\ops\youtube-transcripts",
     [switch]$Apply,
     [switch]$ForceFallback,
-    [switch]$ForceRefresh
+    [switch]$ForceRefresh,
+    [string[]]$YtDlpExtraArgs = @()
 )
 
 Set-StrictMode -Version Latest
@@ -51,6 +52,75 @@ function Convert-VttToText {
         $clean.Add($trim)
     }
     $clean | Set-Content -LiteralPath $OutTxtPath -Encoding UTF8
+}
+
+function Resolve-YtDlpRunner {
+    $ytDlpCmd = Get-Command yt-dlp -ErrorAction SilentlyContinue
+    if ($null -ne $ytDlpCmd) {
+        return [ordered]@{
+            Kind = "exe"
+            Command = $ytDlpCmd.Source
+            ArgsPrefix = @()
+        }
+    }
+
+    $pythonCmd = Get-Command python -ErrorAction SilentlyContinue
+    if ($null -ne $pythonCmd) {
+        return [ordered]@{
+            Kind = "python_module"
+            Command = $pythonCmd.Source
+            ArgsPrefix = @("-m", "yt_dlp")
+        }
+    }
+
+    return $null
+}
+
+function Invoke-TranscriptApiFallback {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$VideoId,
+        [Parameter(Mandatory = $true)]
+        [string]$OutTxtPath
+    )
+
+    $pythonCmd = Get-Command python -ErrorAction SilentlyContinue
+    if ($null -eq $pythonCmd) {
+        return [ordered]@{ ok = $false; reason = "python_missing" }
+    }
+
+    $script = @'
+import json
+import sys
+
+try:
+    from youtube_transcript_api import YouTubeTranscriptApi
+except Exception as exc:
+    print(json.dumps({"ok": False, "reason": "module_missing", "error": str(exc)}))
+    sys.exit(0)
+
+video_id = sys.argv[1]
+out_path = sys.argv[2]
+try:
+    api = YouTubeTranscriptApi()
+    rows = api.fetch(video_id, languages=["en"])
+    with open(out_path, "w", encoding="utf-8") as handle:
+        for row in rows:
+            text = (row.get("text") or "").strip()
+            if text:
+                handle.write(text + "\n")
+    print(json.dumps({"ok": True, "segments": len(rows)}))
+except Exception as exc:
+    print(json.dumps({"ok": False, "reason": "fetch_failed", "error": str(exc)}))
+'@
+
+    $raw = $script | & $pythonCmd.Source - $VideoId $OutTxtPath
+    try {
+        return ($raw | ConvertFrom-Json)
+    }
+    catch {
+        return [ordered]@{ ok = $false; reason = "invalid_python_output"; output = ($raw -join "`n") }
+    }
 }
 
 $videoId = Get-VideoId -Url $VideoUrl
@@ -106,9 +176,9 @@ if ((Test-Path -LiteralPath $txtPath) -and -not $ForceRefresh) {
     exit 0
 }
 
-$ytDlp = Get-Command yt-dlp -ErrorAction SilentlyContinue
-if ($null -eq $ytDlp) {
-    throw "yt-dlp is required for transcript fallback but is not installed."
+$ytDlpRunner = Resolve-YtDlpRunner
+if ($null -eq $ytDlpRunner) {
+    throw "yt-dlp is required for transcript fallback but is not installed (executable or python module)."
 }
 
 $outTemplate = Join-Path $targetDir ($videoId + ".%(ext)s")
@@ -121,21 +191,37 @@ $args = @(
     "-o", $outTemplate,
     $VideoUrl
 )
-
-& $ytDlp.Source @args | Out-Null
-if ($LASTEXITCODE -ne 0) {
-    throw "yt-dlp transcript extraction failed with exit code $LASTEXITCODE"
+if ($YtDlpExtraArgs.Count -gt 0) {
+    $args += $YtDlpExtraArgs
 }
 
-$vtt = Get-ChildItem -LiteralPath $targetDir -File -Filter "*.vtt" |
-    Sort-Object LastWriteTime -Descending |
-    Select-Object -First 1
-if ($null -eq $vtt) {
-    throw "Transcript fallback completed but no .vtt subtitle file was produced."
+$invokeArgs = @()
+$invokeArgs += $ytDlpRunner.ArgsPrefix
+$invokeArgs += $args
+& $ytDlpRunner.Command @invokeArgs | Out-Null
+$ytDlpExit = $LASTEXITCODE
+if ($ytDlpExit -eq 0) {
+    $vtt = Get-ChildItem -LiteralPath $targetDir -File -Filter "*.vtt" |
+        Sort-Object LastWriteTime -Descending |
+        Select-Object -First 1
+    if ($null -eq $vtt) {
+        throw "Transcript fallback completed but no .vtt subtitle file was produced."
+    }
+
+    Convert-VttToText -VttPath $vtt.FullName -OutTxtPath $txtPath
+    $result["status"] = "transcript_fallback_generated"
+    $result["output"]["subtitle_vtt"] = $vtt.FullName
+    $result["fallback_engine"] = "yt-dlp"
 }
-
-Convert-VttToText -VttPath $vtt.FullName -OutTxtPath $txtPath
-
-$result["status"] = "transcript_fallback_generated"
-$result["output"]["subtitle_vtt"] = $vtt.FullName
+else {
+    $apiFallback = Invoke-TranscriptApiFallback -VideoId $videoId -OutTxtPath $txtPath
+    if ($apiFallback.ok -eq $true -and (Test-Path -LiteralPath $txtPath)) {
+        $result["status"] = "transcript_fallback_generated"
+        $result["fallback_engine"] = "youtube-transcript-api"
+        $result["fallback_details"] = $apiFallback
+    }
+    else {
+        throw "Transcript fallback failed: yt-dlp exit=$ytDlpExit; transcript-api reason=$($apiFallback.reason); error=$($apiFallback.error)"
+    }
+}
 $result | ConvertTo-Json -Depth 8

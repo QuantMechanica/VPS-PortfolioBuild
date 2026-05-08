@@ -8,6 +8,8 @@
   - `transcript_fallback` otherwise (or with `-ForceFallback`)
 - Apply mode (`-Apply`) runs transcript fallback via `yt-dlp` and writes:
   - `docs\ops\youtube-transcripts\<video_id>\transcript_<video_id>.txt`
+- Secondary fallback attempts `python -m youtube_transcript_api` when `yt-dlp` retrieval fails.
+- Optional `-YtDlpExtraArgs` allows authenticated/cookie-based extraction flags when YouTube anti-bot blocks anonymous caption fetch.
 - Idempotent behavior:
   - check-then-act output directory creation
   - no-op when transcript already exists (unless `-ForceRefresh`)

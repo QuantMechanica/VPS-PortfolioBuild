@@ -19,6 +19,7 @@ Each runner emits deterministic JSON under `D:\QM\reports\pipeline\<ea_id>\<phas
 - `python framework/scripts/p7_statval.py --ea QM5_1001 --sweep-pass-rows framework/scripts/tests/fixtures/p7_sweep_pass_rows.csv --multiseed-rows framework/scripts/tests/fixtures/p7_multiseed_rows.csv`
 - `python framework/scripts/p8_news_impact.py --ea QM5_1001 --news-matrix framework/scripts/tests/fixtures/p8_matrix.csv --modes OFF,PAUSE,SKIP_DAY,FTMO_PAUSE,5ers_PAUSE,no_news,news_only`
 - `python framework/scripts/p8_news_driver.py --ea QM5_1001 --news-matrix framework/scripts/tests/fixtures/p8_matrix.csv --calendar-csv D:/QM/data/news_calendar/news_calendar.csv --mode all`
+- `powershell -ExecutionPolicy Bypass -File framework/scripts/run_phase.ps1 -EAId QM5_1001 -Phase P8 -UseP8NewsDriver -RunnerArgs @('--news-matrix','framework/scripts/tests/fixtures/p8_matrix.csv','--calendar-csv','D:/QM/data/news_calendar/news_calendar.csv','--mode','all')`
 - `powershell -Command \"$a=@('--baseline-csv','framework/scripts/tests/fixtures/p35_baseline.csv','--csr-results-csv','framework/scripts/tests/fixtures/p35_csr.csv'); & framework/scripts/run_phase.ps1 -EAId QM5_1001 -Phase P3.5 -Symbols EURUSD.DWX -RunnerArgs $a\"`
 - `python framework/scripts/aggregate_phase_results.py --ea QM5_1001 --input-root D:/QM/reports/pipeline --output-root D:/QM/reports/pipeline`
 - `powershell -ExecutionPolicy Bypass -File framework/scripts/validate_phase2b.ps1 -EvidencePath docs/ops/QUA-212_PHASE2B_VALIDATION_RECEIPT.json`
