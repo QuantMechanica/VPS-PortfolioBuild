@@ -44,7 +44,9 @@ $json = $payload | ConvertTo-Json -Depth 8
 $shouldWrite = $true
 if (Test-Path -LiteralPath $outFull -PathType Leaf) {
     $existing = Get-Content -LiteralPath $outFull -Raw
-    if ($existing -eq $json) {
+    $existingNormalized = $existing.TrimEnd("`r", "`n")
+    $jsonNormalized = $json.TrimEnd("`r", "`n")
+    if ($existingNormalized -eq $jsonNormalized) {
         $shouldWrite = $false
     }
 }
