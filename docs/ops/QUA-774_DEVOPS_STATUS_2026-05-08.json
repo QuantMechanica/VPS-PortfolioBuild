@@ -1,6 +1,6 @@
 {
   "issue_id": "QUA-774",
-  "generated_at_utc": "2026-05-08T06:47:00Z",
+  "generated_at_utc": "2026-05-08T06:48:00Z",
   "devops_state": "blocked_waiting_external_unblock",
   "gate_state": "blocked",
   "failure_flags": [
@@ -24,7 +24,7 @@
     "Re-run Invoke-QUA774BlockedHeartbeat.ps1 and confirm PASS with empty failure flags."
   ],
   "latest_devops_commits": [
-    "1a511da8",
-    "5c212f38"
+    "25623abe",
+    "0a0141ee"
   ]
 }
