@@ -71,6 +71,7 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
     - Google Drive sync freshness
     - Pipeline-Operator heartbeat run health (`process_loss` recovered vs unrecovered)
     - Token-cost daily budget observability (`monitoring/Test-TokenCostBudget.ps1`) with 70/80/95% threshold alarms + daily snapshot artifacts
+    - QUA-913 deterministic token-burn watch (`monitoring/Invoke-QmTokenMonitor.ps1`) for org-cap proximity, burn trend, top consumers, and anomaly detection
     - stale `.git/index.lock` detection (delegated to `monitoring/Invoke-GitIndexLockMonitor.ps1` for canonical lock logic)
     - QUA-95 blocker refresh task health (`QM_QUA95_BlockerRefresh`)
     - QUA-95 task-health action wiring (`QM_QUA95_TaskHealth_15min` args)
