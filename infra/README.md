@@ -19,6 +19,9 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - On `yt-dlp` failure, attempts secondary fallback via `youtube-transcript-api`.
   - Supports `-YtDlpExtraArgs` for cookie-authenticated fallback when anonymous YouTube subtitle fetch is blocked.
   - Idempotent check-then-act behavior (skip when transcript already exists unless `-ForceRefresh`).
+- `scripts/Test-YouTubeDataMcpReadiness.ps1`
+  - QUA-914 readiness gate for YouTube Data MCP lane.
+  - Deterministically reports `blocked` when `YOUTUBE_API_KEY` is missing and names unblock owner/action.
 
 ## Day-1 assets (QUA-11)
 
@@ -216,6 +219,15 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Computes daily token usage from Paperclip heartbeat runs and applies threshold alarms at `70%`, `80%`, and `95%` of `-DailyTokenBudget`.
   - Writes snapshots to `infra/reports/token-cost/token_cost_budget_latest.json` plus dated daily files.
   - Exits with `0/1/2` for `ok/warn/critical` to support scheduler-driven alerting.
+- `monitoring/Invoke-QmTokenMonitor.ps1`
+  - Deterministic org token-burn watch for `QUA-913` (`qm-token-monitor` lane).
+  - Reads company agents (`spentMonthlyCents`, `lastHeartbeatAt`) plus `framework/registry/token_budget.json` company cap.
+  - Emits standardized closeout fields for dashboard/CoS consumption: `spent_cents`, `daily_delta`, `org_cap_pct_used`, `top3_agents`, `anomalies[]`.
+  - Persists baseline state at `C:\QM\logs\infra\health\qm_token_monitor_state.json` for delta/trend calculations.
+  - Writes machine-readable and markdown outputs:
+    - `C:\QM\logs\infra\health\qm_token_monitor_latest.json`
+    - `C:\QM\logs\infra\health\qm_token_monitor_latest.md`
+  - Exit semantics: `ok=0`, `warn=1`, `critical=2`.
 - `scripts/Install-TokenCostObservabilityTasks.ps1`
   - Registers `QM_TokenCostBudgetHealth_15min` (alarm monitor) and `QM_TokenCostBudgetDailySnapshot_0010` (daily snapshot) as `SYSTEM`.
   - Supports `-PreviewOnly` for non-mutating task-plan output.

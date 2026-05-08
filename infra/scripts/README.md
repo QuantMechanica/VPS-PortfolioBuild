@@ -16,6 +16,17 @@
 - Example:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Resolve-YouTubeAnalystUnblock.ps1 -VideoUrl https://www.youtube.com/watch?v=<id>`
 
+## `Test-YouTubeDataMcpReadiness.ps1`
+
+- QUA-914 readiness gate for YouTube Data API MCP lane.
+- Preview-safe prerequisite check for:
+  - `node`
+  - `npm`
+  - `YOUTUBE_API_KEY`
+- Exit contract:
+  - `0`: `status=ready`
+  - `1`: `status=blocked` with `unblock_owner=OWNER/CTO` and exact missing prerequisites
+
 ## `Verify-QUA415Readiness.ps1`
 
 - Single-command PASS/FAIL gate for QUA-415 closeout readiness.
