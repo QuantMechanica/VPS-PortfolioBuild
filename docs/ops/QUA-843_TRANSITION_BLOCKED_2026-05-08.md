@@ -25,3 +25,12 @@ This heartbeat run id differs, so PATCH close is rejected.
 
 - Closeout packet: `docs/ops/QUA-843_CLOSEOUT_PACKET_2026-05-08.md`
 - Ready-to-close packet: `docs/ops/QUA-843_READY_TO_CLOSE_2026-05-08.md`
+
+## Retry Attempt (2026-05-08T11:47Z)
+
+- `apply_issue_transition_payload.py --payload docs/ops/QUA-843_ISSUE_TRANSITION_PAYLOAD_2026-05-08.json` failed again with `HTTP 409`.
+- New conflicting owner run id reported by Paperclip: `8558e3d8-638d-4d49-ad72-f46060846b4e`.
+- Dry-run confirms target transition remains:
+  - issue `QUA-843`
+  - target_status `done`
+  - closeout comment body + evidence paths are valid.
