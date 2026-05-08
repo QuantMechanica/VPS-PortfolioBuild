@@ -1,40 +1,40 @@
 {
-  "generated_at": "2026-05-08T13:07:03.6166434Z",
-  "phase": "P0 Foundation",
+  "generated_at": "2026-05-08T13:49:08.000Z",
+  "phase": "Wave 1 P2-P8 Active",
   "agents": {
-    "offline": 0,
-    "online": 0,
-    "blocked": 0
+    "blocked": 0,
+    "online": 18,
+    "offline": 0
   },
   "pipeline": {
-    "strategy_cards": 0,
     "by_phase": {
-      "P2": 0,
-      "P1": 0,
-      "P8": 0,
-      "P10": 0,
-      "P6": 0,
-      "P3_5": 0,
-      "P5c": 0,
-      "P7": 0,
-      "P9": 0,
       "G0": 0,
-      "P5b": 0,
+      "P1": 0,
+      "P2": 5,
       "P3": 0,
-      "P5": 0,
+      "P3_5": 1,
       "P4": 0,
-      "P9b": 0
+      "P5": 0,
+      "P5b": 0,
+      "P5c": 0,
+      "P6": 0,
+      "P7": 0,
+      "P8": 1,
+      "P9": 0,
+      "P9b": 0,
+      "P10": 0
     },
-    "eas_built": 0
+    "eas_built": 7,
+    "strategy_cards": 13
   },
   "t6": {
+    "risk_state": "green",
     "autotrading": false,
-    "status": "offline",
-    "risk_state": "green"
+    "status": "offline"
   },
   "expenses": {
-    "budget_eur": 1850,
     "entries": 2,
-    "spent_eur": 204.0
+    "spent_eur": 204.0,
+    "budget_eur": 1850
   }
 }
