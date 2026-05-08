@@ -299,6 +299,17 @@
 - Preview mode (no registration):
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-QUA774ExternalUnblockOpsSuiteTask.ps1 -PreviewOnly`
 
+## `Run-QUA774ExternalBlockedRefresh.ps1`
+
+- One-command blocked-mode external refresh flow for QUA-774.
+- Runs in order:
+  1. `Write-QUA774ExternalUnblockStatusSnapshot.ps1`
+  2. `Test-QUA774ExternalUnblockOpsSuite.ps1`
+  3. `Test-QUA774ExternalUnblockStatusTask.ps1`
+- Returns consolidated output with `status_snapshot`, `ops_suite`, and `status_task_check`.
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Run-QUA774ExternalBlockedRefresh.ps1`
+
 ## `../monitoring/Test-PythonRuntimeHealth.ps1`
 
 - Read-only Python runtime integrity check for infra/pipeline hosts.
