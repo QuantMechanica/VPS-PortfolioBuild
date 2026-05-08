@@ -16,6 +16,7 @@ This command runs:
 1. `Run-QUA774BlockerRefresh.ps1`
 2. `New-QUA774IssueTransitionPayload.ps1`
 3. `Test-QUA774BlockedPackage.ps1`
+4. `Test-QUA774HandoffIntegrity.ps1`
 
 ## Artifacts refreshed by heartbeat
 
@@ -24,6 +25,8 @@ This command runs:
 - `docs/ops/QUA-774_BLOCKER_STATUS_2026-05-08.json`
 - `docs/ops/QUA-774_ISSUE_TRANSITION_PAYLOAD_2026-05-08.json`
 - `docs/ops/QUA-774_BLOCKED_COMMENT_2026-05-08.md`
+- `docs/ops/QUA-774_BLOCKED_PACKAGE_2026-05-08.sha256`
+- `docs/ops/QUA-774_UNBLOCK_REQUEST_2026-05-08.json`
 
 ## Scheduler install (optional)
 
