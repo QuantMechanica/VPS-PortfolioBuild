@@ -4,13 +4,26 @@
   "status": "ready_for_close",
   "commits": [
     "f5b6137b",
-    "9bfe9a0a",
-    "1bf978ac",
-    "e55ddf88"
+    "49dc3455",
+    "df2b064a",
+    "c3a6967c",
+    "67c0b605",
+    "387fc177",
+    "36ea645f",
+    "ba96d3fc",
+    "47aa943f",
+    "baee776e",
+    "e497396f",
+    "28472360"
   ],
   "artifacts": [
-    "docs/ops/QUA-837_CLOSEOUT_2026-05-08.md",
+    "docs/ops/QUA-837_CLOSEOUT_EVIDENCE_2026-05-08.md",
+    "docs/ops/QUA-837_FINAL_RECEIPT_2026-05-08.md",
     "docs/ops/QUA-837_DOC_KM_HANDOFF_2026-05-08.md",
+    "docs/ops/QUA-837_EVIDENCE_SHA256_2026-05-08.txt",
+    "docs/ops/QUA-837_BLOCK_RECOMMENDATION_2026-05-08.json",
+    "docs/ops/QUA-837_NON_SCOPE_AUDIT_NOTE_2026-05-08.md",
+    "docs/ops/06 Infrastructure/Tools and Scripts.md",
     "docs/ops/QUA-837_CLOSE_RECOMMENDATION_2026-05-08.md"
   ],
   "checks": {
