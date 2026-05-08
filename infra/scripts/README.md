@@ -161,6 +161,18 @@
 - Example:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Write-QUA774ExternalUnblockEscalation.ps1`
 
+## `Invoke-QUA774ExternalUnblockHandoff.ps1`
+
+- One-command external unblock handoff bundle for QUA-774.
+- Runs in order:
+  1. `New-QUA774ExternalUnblockChildPayload.ps1`
+  2. `Write-QUA774ExternalUnblockEscalation.ps1`
+  3. `Test-QUA774ExternalUnblockSignal.ps1`
+- Returns a consolidated object with `child_payload`, `escalation_note`, and `signal_check`.
+- Signal-check exit `3` (`waiting_external_signal`) is treated as expected while blocked.
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Invoke-QUA774ExternalUnblockHandoff.ps1`
+
 ## `../monitoring/Test-PythonRuntimeHealth.ps1`
 
 - Read-only Python runtime integrity check for infra/pipeline hosts.
