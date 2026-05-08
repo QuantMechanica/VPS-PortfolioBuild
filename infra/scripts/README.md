@@ -227,6 +227,18 @@
 - Example:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Write-QUA774ExternalUnblockStatusSnapshot.ps1`
 
+## `Install-QUA774ExternalUnblockStatusTask.ps1`
+
+- Idempotently installs a Windows Scheduled Task for QUA-774 external-unblock status snapshots.
+- Default task:
+  - `QM_QUA774_ExternalUnblockStatus_60min`
+- Default cadence:
+  - every `60` minutes
+- Script executed by launcher:
+  - `infra\scripts\Write-QUA774ExternalUnblockStatusSnapshot.ps1`
+- Preview mode (no registration):
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-QUA774ExternalUnblockStatusTask.ps1 -PreviewOnly`
+
 ## `../monitoring/Test-PythonRuntimeHealth.ps1`
 
 - Read-only Python runtime integrity check for infra/pipeline hosts.
