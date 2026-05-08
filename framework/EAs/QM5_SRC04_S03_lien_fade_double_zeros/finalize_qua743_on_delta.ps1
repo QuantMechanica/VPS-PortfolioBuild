@@ -1,3 +1,7 @@
+param(
+    [bool]$SilentOnNoDelta = $true
+)
+
 $ErrorActionPreference = "Stop"
 
 $eaDir = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -23,12 +27,19 @@ foreach ($line in $deltaOut) {
     }
 }
 
+$signalDelta = $kv["signal_delta"]
+$shouldFinalize = $kv["should_finalize"]
+
+if ($signalDelta -ne "TRUE" -and $SilentOnNoDelta) {
+    exit 0
+}
+
 Write-Output ("pipeline_signal=" + $kv["pipeline_signal"])
 Write-Output ("ceo_signal=" + $kv["ceo_signal"])
-Write-Output ("signal_delta=" + $kv["signal_delta"])
-Write-Output ("should_finalize=" + $kv["should_finalize"])
+Write-Output ("signal_delta=" + $signalDelta)
+Write-Output ("should_finalize=" + $shouldFinalize)
 
-if ($kv["should_finalize"] -ne "TRUE") {
+if ($shouldFinalize -ne "TRUE") {
     Write-Output "run_status=SKIP"
     Write-Output "reason=no_semantic_delta_or_incomplete_signals"
     exit 0

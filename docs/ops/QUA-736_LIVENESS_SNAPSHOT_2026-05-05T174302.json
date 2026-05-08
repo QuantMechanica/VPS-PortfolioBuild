@@ -1,0 +1,23 @@
+{
+  "bucket": "QM5_1003_v1_P2",
+  "dispatch_result_path": "D:\\QM\\reports\\pipeline\\QM5_1003\\P2_clean_20260505_174302\\dispatch_start_result.json",
+  "dispatch_state_path": "D:\\QM\\Reports\\pipeline\\dispatch_state.json",
+  "generated_utc": "2026-05-05T15:43:14.111518Z",
+  "has_GDAXI": false,
+  "has_GDAXIm": true,
+  "has_NDX": false,
+  "has_NDXm": true,
+  "issue": "QUA-736",
+  "none_verdict_rows": 36,
+  "pass_rows": 0,
+  "phase_verdict": null,
+  "rows": 36,
+  "run_dir": "D:\\QM\\reports\\pipeline\\QM5_1003\\P2_clean_20260505_174302",
+  "running": {
+    "T1": 3,
+    "T2": 3,
+    "T3": 3,
+    "T4": 3,
+    "T5": 3
+  }
+}

@@ -1,17 +1,18 @@
 ﻿{
     "issue":  "QUA-95",
-    "generated_at_local":  "2026-04-27T15:18:29+02:00",
-    "overall_status":  "ok",
+    "generated_at_local":  "2026-05-06T14:02:32+02:00",
+    "overall_status":  "critical",
     "checks":  [
                    {
                        "task_name":  "QM_QUA95_BlockerRefresh",
-                       "status":  "ok",
+                       "status":  "critical",
                        "max_age_minutes":  125,
-                       "last_run_local":  "2026-04-27T15:01:01.0000000+02:00",
+                       "last_run_local":  "2026-05-01T15:01:01.0000000+02:00",
                        "last_result":  1,
-                       "age_minutes":  17.47,
+                       "age_minutes":  7141.52,
                        "issues":  [
-
+                                      "disabled",
+                                      "stale_minutes=7141.52"
                                   ]
                    },
                    {

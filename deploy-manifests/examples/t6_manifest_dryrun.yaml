@@ -1,0 +1,22 @@
+manifest_id: DEPLOY-DRYRUN-2026-05-08-001
+environment: live_burn_in
+terminal: T6
+approved_by: OWNER
+approved_at: null
+account:
+  broker: DarwinexZero
+  account_type: live
+global_limits:
+  max_risk_per_trade_pct: 0.50
+  daily_loss_halt_pct: 3.0
+  portfolio_dd_alarm_pct: 5.0
+  portfolio_dd_halt_pct: 10.0
+placements:
+  - ea_id: EA_DRYRUN_PROBE
+    ea_file: EA_DRYRUN_PROBE.ex5
+    symbol: EURUSD
+    timeframe: M15
+    setfile: EA_DRYRUN_PROBE_EURUSD_M15.set
+    magic: 9000001
+    risk_percent: 0.0
+    source_card: DRYRUN_PLACEHOLDER

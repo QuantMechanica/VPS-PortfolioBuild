@@ -1,0 +1,42 @@
+{
+  "packet": "C:\\QM\\repo\\framework\\EAs\\QM5_1003_davey_baseline_3bar\\QUA-649_HANDOFF_PACKET_20260501T105350Z.json",
+  "checked_utc": "2026-05-01T10:54:52.1616309Z",
+  "overall": "PASS",
+  "checks": [
+    {
+      "key": "handoff_md",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1003_davey_baseline_3bar\\QUA-649_BLOCKED_GATE_HANDOFF_2026-05-01.md",
+      "exists": true
+    },
+    {
+      "key": "evidence_index",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1003_davey_baseline_3bar\\QUA-649_EVIDENCE_INDEX_2026-05-01.md",
+      "exists": true
+    },
+    {
+      "key": "unblock_runbook",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1003_davey_baseline_3bar\\QUA-649_UNBLOCK_RUNBOOK_2026-05-01.md",
+      "exists": true
+    },
+    {
+      "key": "integrity_manifest",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1003_davey_baseline_3bar\\QUA-649_EVIDENCE_SHA256_20260501T104900Z.json",
+      "exists": true
+    },
+    {
+      "key": "contention_snapshot",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1003_davey_baseline_3bar\\QUA-649_T1_CONTENTION_SNAPSHOT_20260501T104730Z.json",
+      "exists": true
+    },
+    {
+      "key": "artifact_delta",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1003_davey_baseline_3bar\\QUA-649_ARTIFACT_VALIDATION_DIFF_2026-05-01.md",
+      "exists": true
+    },
+    {
+      "key": "no_polling_marker",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1003_davey_baseline_3bar\\QUA-649_NO_POLLING_UNTIL_UNBLOCK.signal",
+      "exists": true
+    }
+  ]
+}

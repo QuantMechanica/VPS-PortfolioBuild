@@ -1,0 +1,97 @@
+{
+  "generated_utc": "20260505T154634Z",
+  "backup": "D:\\QM\\Reports\\pipeline\\dispatch_state.json.bak_qua736_release_20260505T154634Z",
+  "count": 15,
+  "results": [
+    {
+      "key": "QM5_1003|v1|AUDCAD.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|AUDCAD.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T3\"}",
+      "stderr": ""
+    },
+    {
+      "key": "QM5_1003|v1|AUDCHF.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|AUDCHF.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T5\"}",
+      "stderr": ""
+    },
+    {
+      "key": "QM5_1003|v1|AUDJPY.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|AUDJPY.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T4\"}",
+      "stderr": ""
+    },
+    {
+      "key": "QM5_1003|v1|AUDNZD.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|AUDNZD.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T1\"}",
+      "stderr": ""
+    },
+    {
+      "key": "QM5_1003|v1|AUDUSD.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|AUDUSD.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T2\"}",
+      "stderr": ""
+    },
+    {
+      "key": "QM5_1003|v1|CADCHF.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|CADCHF.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T3\"}",
+      "stderr": ""
+    },
+    {
+      "key": "QM5_1003|v1|CADJPY.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|CADJPY.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T5\"}",
+      "stderr": ""
+    },
+    {
+      "key": "QM5_1003|v1|CHFJPY.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|CHFJPY.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T4\"}",
+      "stderr": ""
+    },
+    {
+      "key": "QM5_1003|v1|EURAUD.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|EURAUD.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T1\"}",
+      "stderr": ""
+    },
+    {
+      "key": "QM5_1003|v1|EURCAD.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|EURCAD.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T2\"}",
+      "stderr": ""
+    },
+    {
+      "key": "QM5_1003|v1|EURCHF.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|EURCHF.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T3\"}",
+      "stderr": ""
+    },
+    {
+      "key": "QM5_1003|v1|EURGBP.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|EURGBP.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T5\"}",
+      "stderr": ""
+    },
+    {
+      "key": "QM5_1003|v1|EURJPY.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|EURJPY.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T4\"}",
+      "stderr": ""
+    },
+    {
+      "key": "QM5_1003|v1|EURNZD.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|EURNZD.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T1\"}",
+      "stderr": ""
+    },
+    {
+      "key": "QM5_1003|v1|GBPAUD.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|GBPAUD.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T2\"}",
+      "stderr": ""
+    }
+  ]
+}

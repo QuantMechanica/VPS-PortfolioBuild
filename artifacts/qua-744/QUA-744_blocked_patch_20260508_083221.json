@@ -1,0 +1,415 @@
+{
+  "id": "2e8a432b-6851-49c4-a206-8212be6852f2",
+  "companyId": "03d4dcc8-4cea-4133-9f68-90c0d99628fb",
+  "projectId": "71b6d994-70ba-4a28-bd62-732b42a9ea58",
+  "projectWorkspaceId": null,
+  "goalId": "4662e91e-8e9b-458e-9383-b1f67751965b",
+  "parentId": "09db50f4-ebe2-4f5f-a272-313e02369a24",
+  "title": "QM5_1017 chan_pairs_stat_arb — full pipeline G0..P10",
+  "description": "# QM5_1017 chan_pairs_stat_arb\n\n- **ea_id:** 1017\n- **strategy slug:** chan_pairs_stat_arb\n- **Source card:** strategy-seeds/cards/chan-pairs-stat-arb_card.md\n- **Repo paths:** `framework/EAs/QM5_1017_chan_pairs_stat_arb/`\n- **Builder:** CTO\n- **Reviewer (DL-036):** CTO + Quality-Tech (interim Board Advisor)\n- **Parent:** [QUA-740](/QUA/issues/QUA-740) Research Run 2026-05\n\n## Phase ledger\n\n| phase | child issue | status | evidence | promoted at |\n|---|---|---|---|---|\n| G0 (card unblock) | (kanban QM-00012, CEO) | **done** | commit `7928335d` (card `DRAFT → APPROVED`, `ea_id: TBD → 1017`); queue-state JSON 1017 → `READY_FOR_CTO_REVIEW`; governance signal removed; `PROJECT_BACKLOG.md` PC3-02c row updated; comment `9813c044` | 2026-05-05T17:00Z |\n| P1 build / DL-036 review | (kanban QM-00051, CTO) | **done** | commit `56bc634e` (CTO DL-036 PASS); compile PASS at `framework/build/compile/20260501_090243/QM5_1017_chan_pairs_stat_arb.compile.log`; comment `c30d8fc0` | 2026-05-05T17:19Z |\n| P2 baseline screening | [QUA-748](/QUA/issues/QUA-748) | **done — FAIL (structural)** | `D:/QM/reports/pipeline/QM5_1017/P2/report.csv` 0 PASS / 36 FAIL / 0 INVALID; modal 48× `MIN_TRADES_NOT_MET`; root cause is strategy/baseline mismatch (chan-pairs is 2-leg cointegration; P2 harness is single-symbol) | 2026-05-06T00:25Z |\n| P3..P10 | — | **HALTED** | gated on Research/EA-owner strategy decision (QM-00076): kill / re-route via P3.5 / EA rebuild | — |\n\n## Notes\n\n- G0 unblocked by CEO on 2026-05-05 (clerical back-port of already-decided G0 PASS 2026-04-28 — [QUA-275](/QUA/issues/QUA-275) closeout `65e06e0e`, friday_close Hard Rule waiver granted).\n- P2 36/36 FAIL is **NOT a toolchain bug** (toolchain proven clean by [QUA-747](/QUA/issues/QUA-747) close-out 2026-05-05T23:43Z and the matching 1004 P2 rerun in flight). It is the *expected output* of running a 2-leg cointegration strategy through a 1-leg P2 baseline harness — see latest P2 FAIL comment for the full structural diagnosis and three-paths-forward analysis.\n\n**Currently blocked on:** Research/EA-owner picking up Kanban QM-00076 (or OWNER strategic directive) to decide A/B/C path. CTO triage QM-00075 is misrouted (failure mode is strategy-design, not code-bug); CTO can close QM-00075 with that finding. Research is paused per DL-057 R-057-1 — queue-empty unblock or OWNER manual unpause needed.\n\n## Original description\n\n(superseded by phase-ledger above; keep for trace)\n\n> G0 unblock is the CEO's next non-architectural Kanban task (QM-00012). On flip to APPROVED + ea_id=1017, CTO promotes P1 grandchild for build + DL-036.\n",
+  "status": "blocked",
+  "priority": "high",
+  "assigneeAgentId": "86015301-1a40-4216-9ded-398f09f02d26",
+  "assigneeUserId": null,
+  "checkoutRunId": null,
+  "executionRunId": null,
+  "executionAgentNameKey": null,
+  "executionLockedAt": null,
+  "createdByAgentId": null,
+  "createdByUserId": "local-board",
+  "issueNumber": 744,
+  "identifier": "QUA-744",
+  "originKind": "manual",
+  "originId": null,
+  "originRunId": null,
+  "originFingerprint": "default",
+  "requestDepth": 0,
+  "billingCode": null,
+  "assigneeAdapterOverrides": null,
+  "executionPolicy": null,
+  "executionState": null,
+  "executionWorkspaceId": null,
+  "executionWorkspacePreference": null,
+  "executionWorkspaceSettings": null,
+  "startedAt": "2026-05-08T06:25:43.148Z",
+  "completedAt": null,
+  "cancelledAt": null,
+  "hiddenAt": null,
+  "createdAt": "2026-05-05T16:57:56.235Z",
+  "updatedAt": "2026-05-08T06:32:21.824Z",
+  "labels": [],
+  "labelIds": [],
+  "relatedWork": {
+    "outbound": [
+      {
+        "issue": {
+          "id": "158685c9-03d3-4ee1-93bc-c50dc5cc99de",
+          "identifier": "QUA-748",
+          "title": "QM5_1017 P2 baseline screening (chan_pairs_stat_arb)",
+          "status": "done",
+          "priority": "high",
+          "assigneeAgentId": "46fc11e5-7fc2-43f4-9a34-bde29e5dee3b",
+          "assigneeUserId": null
+        },
+        "mentionCount": 6,
+        "sources": [
+          {
+            "kind": "description",
+            "sourceRecordId": null,
+            "label": "description",
+            "matchedText": "QUA-748"
+          },
+          {
+            "kind": "comment",
+            "sourceRecordId": "1558d245-5579-42d8-b993-3fb75a392ae8",
+            "label": "comment",
+            "matchedText": "QUA-748"
+          },
+          {
+            "kind": "comment",
+            "sourceRecordId": "3b9464a2-1d79-4457-8d24-fae5d987411b",
+            "label": "comment",
+            "matchedText": "QUA-748"
+          },
+          {
+            "kind": "comment",
+            "sourceRecordId": "c30d8fc0-7c1f-4f45-b0b8-12e5590bbc64",
+            "label": "comment",
+            "matchedText": "QUA-748"
+          },
+          {
+            "kind": "comment",
+            "sourceRecordId": "d65a17a6-3dfd-43df-8f2e-d76554c47e16",
+            "label": "comment",
+            "matchedText": "QUA-748"
+          },
+          {
+            "kind": "comment",
+            "sourceRecordId": "f61fefe8-cdf5-45f6-bcfa-8e13b33bb6c5",
+            "label": "comment",
+            "matchedText": "QUA-748"
+          }
+        ]
+      },
+      {
+        "issue": {
+          "id": "0e3c4b48-717d-40f1-9766-16dae7a9f1e6",
+          "identifier": "QUA-747",
+          "title": "P2 baseline toolchain infra: universal REPORT_MISSING/METATESTER_HUNG/INCOMPLETE_RUNS modal failure (blocks Phase 3 closure)",
+          "status": "done",
+          "priority": "critical",
+          "assigneeAgentId": "241ccf3c-ab68-40d6-b8eb-e03917795878",
+          "assigneeUserId": null
+        },
+        "mentionCount": 4,
+        "sources": [
+          {
+            "kind": "description",
+            "sourceRecordId": null,
+            "label": "description",
+            "matchedText": "QUA-747"
+          },
+          {
+            "kind": "comment",
+            "sourceRecordId": "c30d8fc0-7c1f-4f45-b0b8-12e5590bbc64",
+            "label": "comment",
+            "matchedText": "QUA-747"
+          },
+          {
+            "kind": "comment",
+            "sourceRecordId": "d65a17a6-3dfd-43df-8f2e-d76554c47e16",
+            "label": "comment",
+            "matchedText": "QUA-747"
+          },
+          {
+            "kind": "comment",
+            "sourceRecordId": "f61fefe8-cdf5-45f6-bcfa-8e13b33bb6c5",
+            "label": "comment",
+            "matchedText": "QUA-747"
+          }
+        ]
+      },
+      {
+        "issue": {
+          "id": "649bc849-d7e4-4291-bd25-8ea479517852",
+          "identifier": "QUA-275",
+          "title": "SRC02 - Ernest P. Chan, Quantitative Trading: How to Build Your Own Algorithmic Trading Business",
+          "status": "done",
+          "priority": "high",
+          "assigneeAgentId": "7aef7a17-d010-4f6e-a198-4a8dc5deb40d",
+          "assigneeUserId": null
+        },
+        "mentionCount": 2,
+        "sources": [
+          {
+            "kind": "description",
+            "sourceRecordId": null,
+            "label": "description",
+            "matchedText": "QUA-275"
+          },
+          {
+            "kind": "comment",
+            "sourceRecordId": "9813c044-6c1a-45b3-8e74-c8a3303ff7c0",
+            "label": "comment",
+            "matchedText": "QUA-275"
+          }
+        ]
+      },
+      {
+        "issue": {
+          "id": "bc8f8d41-44b4-4514-8c77-b7f500840adc",
+          "identifier": "QUA-741",
+          "title": "QM5_1003 davey_baseline_3bar — full pipeline G0..P10",
+          "status": "blocked",
+          "priority": "high",
+          "assigneeAgentId": "86015301-1a40-4216-9ded-398f09f02d26",
+          "assigneeUserId": null
+        },
+        "mentionCount": 2,
+        "sources": [
+          {
+            "kind": "comment",
+            "sourceRecordId": "1558d245-5579-42d8-b993-3fb75a392ae8",
+            "label": "comment",
+            "matchedText": "QUA-741"
+          },
+          {
+            "kind": "comment",
+            "sourceRecordId": "d65a17a6-3dfd-43df-8f2e-d76554c47e16",
+            "label": "comment",
+            "matchedText": "QUA-741"
+          }
+        ]
+      },
+      {
+        "issue": {
+          "id": "1ff49ccf-f5a5-4f82-8703-e8060efaf2f6",
+          "identifier": "QUA-743",
+          "title": "QM5_SRC04_S03 lien_fade_double_zeros (ea_id 1009) — full pipeline G0..P10",
+          "status": "cancelled",
+          "priority": "high",
+          "assigneeAgentId": "46fc11e5-7fc2-43f4-9a34-bde29e5dee3b",
+          "assigneeUserId": null
+        },
+        "mentionCount": 2,
+        "sources": [
+          {
+            "kind": "comment",
+            "sourceRecordId": "4cfbf21b-71a5-4a7c-9391-fde4333d11dc",
+            "label": "comment",
+            "matchedText": "QUA-743"
+          },
+          {
+            "kind": "comment",
+            "sourceRecordId": "9813c044-6c1a-45b3-8e74-c8a3303ff7c0",
+            "label": "comment",
+            "matchedText": "QUA-743"
+          }
+        ]
+      },
+      {
+        "issue": {
+          "id": "d9660952-9c45-4ce6-9c8a-69c71ad0d52b",
+          "identifier": "QUA-699",
+          "title": "CoS rolling tracker — agent roster + token burn + model fit (daily)",
+          "status": "blocked",
+          "priority": "medium",
+          "assigneeAgentId": "38f933cd-557b-41ff-8498-30db273273ef",
+          "assigneeUserId": null
+        },
+        "mentionCount": 1,
+        "sources": [
+          {
+            "kind": "comment",
+            "sourceRecordId": "66701352-407a-4fa4-907d-3190993fe7aa",
+            "label": "comment",
+            "matchedText": "QUA-699"
+          }
+        ]
+      },
+      {
+        "issue": {
+          "id": "09db50f4-ebe2-4f5f-a272-313e02369a24",
+          "identifier": "QUA-740",
+          "title": "Research Run 2026-05 — active EAs: 1003, 1004, 1009, 1017",
+          "status": "in_progress",
+          "priority": "high",
+          "assigneeAgentId": "7795b4b0-8ecd-46da-ab22-06def7c8fa2d",
+          "assigneeUserId": null
+        },
+        "mentionCount": 1,
+        "sources": [
+          {
+            "kind": "description",
+            "sourceRecordId": null,
+            "label": "description",
+            "matchedText": "QUA-740"
+          }
+        ]
+      },
+      {
+        "issue": {
+          "id": "2e3011df-1a3b-4eb0-bde1-ca2aa435f2f9",
+          "identifier": "QUA-742",
+          "title": "QM5_1004 davey_es_breakout — full pipeline G0..P10",
+          "status": "cancelled",
+          "priority": "high",
+          "assigneeAgentId": "241ccf3c-ab68-40d6-b8eb-e03917795878",
+          "assigneeUserId": null
+        },
+        "mentionCount": 1,
+        "sources": [
+          {
+            "kind": "comment",
+            "sourceRecordId": "9813c044-6c1a-45b3-8e74-c8a3303ff7c0",
+            "label": "comment",
+            "matchedText": "QUA-742"
+          }
+        ]
+      },
+      {
+        "issue": {
+          "id": "46cab777-f192-47f1-b110-f3f8f0c487e5",
+          "identifier": "QUA-745",
+          "title": "QM5_1004 P2 baseline screening",
+          "status": "cancelled",
+          "priority": "high",
+          "assigneeAgentId": "46fc11e5-7fc2-43f4-9a34-bde29e5dee3b",
+          "assigneeUserId": null
+        },
+        "mentionCount": 1,
+        "sources": [
+          {
+            "kind": "comment",
+            "sourceRecordId": "c30d8fc0-7c1f-4f45-b0b8-12e5590bbc64",
+            "label": "comment",
+            "matchedText": "QUA-745"
+          }
+        ]
+      },
+      {
+        "issue": {
+          "id": "d46ecd5c-f44c-47e9-ae54-eafe2fdb1df0",
+          "identifier": "QUA-746",
+          "title": "QM5_SRC04_S03 P2 baseline screening (ea_id 1009)",
+          "status": "cancelled",
+          "priority": "high",
+          "assigneeAgentId": "46fc11e5-7fc2-43f4-9a34-bde29e5dee3b",
+          "assigneeUserId": null
+        },
+        "mentionCount": 1,
+        "sources": [
+          {
+            "kind": "comment",
+            "sourceRecordId": "c30d8fc0-7c1f-4f45-b0b8-12e5590bbc64",
+            "label": "comment",
+            "matchedText": "QUA-746"
+          }
+        ]
+      }
+    ],
+    "inbound": [
+      {
+        "issue": {
+          "id": "09db50f4-ebe2-4f5f-a272-313e02369a24",
+          "identifier": "QUA-740",
+          "title": "Research Run 2026-05 — active EAs: 1003, 1004, 1009, 1017",
+          "status": "in_progress",
+          "priority": "high",
+          "assigneeAgentId": "7795b4b0-8ecd-46da-ab22-06def7c8fa2d",
+          "assigneeUserId": null
+        },
+        "mentionCount": 4,
+        "sources": [
+          {
+            "kind": "comment",
+            "sourceRecordId": "18c274b3-cde4-4d5c-b9be-bda2d834eca2",
+            "label": "comment",
+            "matchedText": "QUA-744"
+          },
+          {
+            "kind": "comment",
+            "sourceRecordId": "20179742-d432-4d25-9693-0142e35706e2",
+            "label": "comment",
+            "matchedText": "QUA-744"
+          },
+          {
+            "kind": "comment",
+            "sourceRecordId": "312aef75-ed22-441a-876c-74adedf920c3",
+            "label": "comment",
+            "matchedText": "QUA-744"
+          },
+          {
+            "kind": "comment",
+            "sourceRecordId": "f1e6f4d5-6ee4-49a3-8407-0e4837109f54",
+            "label": "comment",
+            "matchedText": "QUA-744"
+          }
+        ]
+      },
+      {
+        "issue": {
+          "id": "a6a79b9f-60e9-4c22-afe7-4d8c6f4bee9f",
+          "identifier": "QUA-737",
+          "title": "CEO: stop recovery cascade + design Research-Run hierarchy (architecture)",
+          "status": "done",
+          "priority": "critical",
+          "assigneeAgentId": "7795b4b0-8ecd-46da-ab22-06def7c8fa2d",
+          "assigneeUserId": null
+        },
+        "mentionCount": 1,
+        "sources": [
+          {
+            "kind": "comment",
+            "sourceRecordId": "8fe2ce20-fa3c-463b-b573-0924930acc69",
+            "label": "comment",
+            "matchedText": "QUA-744"
+          }
+        ]
+      },
+      {
+        "issue": {
+          "id": "0e3c4b48-717d-40f1-9766-16dae7a9f1e6",
+          "identifier": "QUA-747",
+          "title": "P2 baseline toolchain infra: universal REPORT_MISSING/METATESTER_HUNG/INCOMPLETE_RUNS modal failure (blocks Phase 3 closure)",
+          "status": "done",
+          "priority": "critical",
+          "assigneeAgentId": "241ccf3c-ab68-40d6-b8eb-e03917795878",
+          "assigneeUserId": null
+        },
+        "mentionCount": 1,
+        "sources": [
+          {
+            "kind": "comment",
+            "sourceRecordId": "30a9d25d-61b7-41d9-b20d-75c04984507b",
+            "label": "comment",
+            "matchedText": "QUA-744"
+          }
+        ]
+      }
+    ]
+  },
+  "referencedIssueIdentifiers": [
+    "QUA-748",
+    "QUA-747",
+    "QUA-275",
+    "QUA-741",
+    "QUA-743",
+    "QUA-699",
+    "QUA-740",
+    "QUA-742",
+    "QUA-745",
+    "QUA-746"
+  ],
+  "comment": {
+    "id": "9af66669-97ab-4230-80b7-ceaa608b71a6",
+    "companyId": "03d4dcc8-4cea-4133-9f68-90c0d99628fb",
+    "issueId": "2e8a432b-6851-49c4-a206-8212be6852f2",
+    "authorAgentId": "86015301-1a40-4216-9ded-398f09f02d26",
+    "authorUserId": null,
+    "createdByRunId": "d6658dfe-d21b-4c57-927a-4cfa158b4f7e",
+    "body": "DevOps heartbeat closeout (QUA-744)\n\nInfra deliverables are complete:\n- commit `6e917fb0` (P2 setfile preflight + missing-setfiles evidence)\n- commit `68dbba73` (reusable unblock-packet posting helper)\n- unblock packet comment posted (response id `9ec15377-3232-49c4-9a89-9408b65eb9dc`)\n- evidence: `C:/QM/repo/artifacts/qua-744/p2_matrix_d1_full_missing.json` (`missing_count=29`)\n\nStatus recommendation: `blocked`.\nUnblock owner: OWNER + CTO.\nUnblock action: choose one path and trigger follow-up run\n1) generate missing 29 D1 setfiles for QM5_1017 then rerun D1/full cohort, or\n2) ratify intentional 7-symbol D1 scope and rerun with explicit restricted symbol list.",
+    "createdAt": "2026-05-08T06:32:21.841Z",
+    "updatedAt": "2026-05-08T06:32:21.841Z"
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "generated_utc": "20260505T154753Z",
+  "backup": "D:\\QM\\Reports\\pipeline\\dispatch_state.json.bak_qua736_release_wave2_20260505T154753Z",
+  "count": 15,
+  "results": [
+    {
+      "key": "QM5_1003|v1|EURUSD.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|EURUSD.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T3\"}",
+      "stderr": ""
+    },
+    {
+      "key": "QM5_1003|v1|GBPCAD.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|GBPCAD.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T5\"}",
+      "stderr": ""
+    },
+    {
+      "key": "QM5_1003|v1|GBPCHF.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|GBPCHF.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T4\"}",
+      "stderr": ""
+    },
+    {
+      "key": "QM5_1003|v1|GBPJPY.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|GBPJPY.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T1\"}",
+      "stderr": ""
+    },
+    {
+      "key": "QM5_1003|v1|GBPNZD.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|GBPNZD.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T2\"}",
+      "stderr": ""
+    },
+    {
+      "key": "QM5_1003|v1|GBPUSD.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|GBPUSD.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T3\"}",
+      "stderr": ""
+    },
+    {
+      "key": "QM5_1003|v1|GDAXIm.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|GDAXIm.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T5\"}",
+      "stderr": ""
+    },
+    {
+      "key": "QM5_1003|v1|NDXm.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|NDXm.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T4\"}",
+      "stderr": ""
+    },
+    {
+      "key": "QM5_1003|v1|NZDCAD.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|NZDCAD.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T1\"}",
+      "stderr": ""
+    },
+    {
+      "key": "QM5_1003|v1|NZDCHF.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|NZDCHF.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T2\"}",
+      "stderr": ""
+    },
+    {
+      "key": "QM5_1003|v1|NZDJPY.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|NZDJPY.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T3\"}",
+      "stderr": ""
+    },
+    {
+      "key": "QM5_1003|v1|NZDUSD.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|NZDUSD.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T5\"}",
+      "stderr": ""
+    },
+    {
+      "key": "QM5_1003|v1|UK100.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|UK100.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T4\"}",
+      "stderr": ""
+    },
+    {
+      "key": "QM5_1003|v1|USDCAD.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|USDCAD.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T1\"}",
+      "stderr": ""
+    },
+    {
+      "key": "QM5_1003|v1|USDCHF.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|USDCHF.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T2\"}",
+      "stderr": ""
+    }
+  ]
+}

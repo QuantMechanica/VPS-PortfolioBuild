@@ -1,0 +1,11 @@
+{
+  "issue": "QUA-782",
+  "ts_local": "2026-05-08T08:29:18.1429686+02:00",
+  "probe_output": [
+    "status=BLOCKED missing=2",
+    "missing_setfile=C:\\QM\\repo\\framework\\EAs\\QM5_1003_davey_baseline_3bar\\sets\\QM5_1003_davey_baseline_3bar_AUDCHF.DWX_M15_backtest.set",
+    "missing_setfile=C:\\QM\\repo\\framework\\EAs\\QM5_1003_davey_baseline_3bar\\sets\\QM5_1003_davey_baseline_3bar_EURNZD.DWX_M15_backtest.set"
+  ],
+  "status": "BLOCKED",
+  "next_action": "await_cto_setfiles_or_h1_only_approval"
+}

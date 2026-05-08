@@ -1,0 +1,16 @@
+{
+    "ts_utc":  "2026-05-08T12:30:42Z",
+    "checker":  "scripts/ops/check_kanban_dispatch_gap.py",
+    "issue":  "QUA-212",
+    "assignee":  "cto",
+    "result":  {
+                   "issue":  "QUA-212",
+                   "assignee":  "cto",
+                   "match_count":  0,
+                   "actionable_count":  0,
+                   "matches":  [
+
+                               ],
+                   "status":  "FAIL"
+               }
+}

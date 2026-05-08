@@ -1,0 +1,43 @@
+{
+  "generated_utc": "20260505T154939Z",
+  "backup": "D:\\QM\\Reports\\pipeline\\dispatch_state.json.bak_qua736_release_wave3_20260505T154939Z",
+  "count": 6,
+  "results": [
+    {
+      "key": "QM5_1003|v1|USDJPY.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|USDJPY.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T3\"}",
+      "stderr": ""
+    },
+    {
+      "key": "QM5_1003|v1|WS30.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|WS30.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T5\"}",
+      "stderr": ""
+    },
+    {
+      "key": "QM5_1003|v1|XAGUSD.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|XAGUSD.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T4\"}",
+      "stderr": ""
+    },
+    {
+      "key": "QM5_1003|v1|XAUUSD.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|XAUUSD.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T1\"}",
+      "stderr": ""
+    },
+    {
+      "key": "QM5_1003|v1|XNGUSD.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|XNGUSD.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T2\"}",
+      "stderr": ""
+    },
+    {
+      "key": "QM5_1003|v1|XTIUSD.DWX|P2|H1-2024",
+      "rc": 0,
+      "stdout": "{\"dedup_key\": \"QM5_1003|v1|XTIUSD.DWX|P2|H1-2024\", \"status\": \"released\", \"terminal\": \"T3\"}",
+      "stderr": ""
+    }
+  ]
+}

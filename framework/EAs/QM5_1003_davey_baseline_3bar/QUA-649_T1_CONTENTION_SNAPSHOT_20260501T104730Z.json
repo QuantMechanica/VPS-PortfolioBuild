@@ -1,0 +1,21 @@
+{
+  "issue": "QUA-649",
+  "timestamp_utc": "2026-05-01T10:47:46.3146847Z",
+  "contention_root": "D:\\QM\\mt5\\T1",
+  "processes": [
+    {
+      "Name": "terminal64.exe",
+      "ProcessId": 69208,
+      "CreationDate": "2026-05-01T12:45:24.667091+02:00",
+      "ExecutablePath": "D:\\QM\\mt5\\T1\\terminal64.exe",
+      "CommandLine": "\"D:\\QM\\mt5\\T1\\terminal64.exe\" /portable /config:D:\\QM\\reports\\pipeline\\QM5_1003\\P2_isolated_retry_guard\\QM5_1003\\20260501_104524\\raw\\run_01\\tester.ini"
+    },
+    {
+      "Name": "metatester64.exe",
+      "ProcessId": 42228,
+      "CreationDate": "2026-05-01T12:45:28.430084+02:00",
+      "ExecutablePath": "D:\\QM\\mt5\\T1\\metatester64.exe",
+      "CommandLine": "\"D:\\QM\\mt5\\T1\\metatester64.exe\" /local /address:127.0.0.1:3000 /password:U-M8StVs /portable"
+    }
+  ]
+}

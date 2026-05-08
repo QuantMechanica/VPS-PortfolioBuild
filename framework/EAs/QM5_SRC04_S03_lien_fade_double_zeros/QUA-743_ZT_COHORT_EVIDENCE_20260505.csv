@@ -1,0 +1,6 @@
+"symbol","period","verdict","invalidation_reason","run1_trades","run2_trades","all_zero","reason_classes","summary_json"
+"EURUSD.DWX","M15","FAIL","run_smoke_fail:MIN_TRADES_NOT_MET","0","0","True","MIN_TRADES_NOT_MET","D:\QM\reports\pipeline\QM5_SRC04_S03\P2\QM5_1009\20260505_173138\summary.json"
+"GBPUSD.DWX","M15","FAIL","run_smoke_fail:MIN_TRADES_NOT_MET","0","0","True","MIN_TRADES_NOT_MET","D:\QM\reports\pipeline\QM5_SRC04_S03\P2\QM5_1009\20260505_173156\summary.json"
+"USDJPY.DWX","M15","FAIL","run_smoke_fail:MIN_TRADES_NOT_MET","0","0","True","MIN_TRADES_NOT_MET","D:\QM\reports\pipeline\QM5_SRC04_S03\P2\QM5_1009\20260505_173215\summary.json"
+"XAUUSD.DWX","M15","FAIL","run_smoke_fail:MIN_TRADES_NOT_MET","0","0","True","MIN_TRADES_NOT_MET","D:\QM\reports\pipeline\QM5_SRC04_S03\P2\QM5_1009\20260505_173234\summary.json"
+"AUDUSD.DWX","M15","FAIL","run_smoke_fail:MIN_TRADES_NOT_MET","0","0","True","MIN_TRADES_NOT_MET","D:\QM\reports\pipeline\QM5_SRC04_S03\P2\QM5_1009\20260505_173254\summary.json"

@@ -1,0 +1,4 @@
+symbol,breach_count,reject_rate,remaining_cushion_pct,recovery_fraction
+EURUSD.DWX,0,0.02,0.40,0.30
+EURUSD.DWX,0,0.03,0.35,0.45
+EURUSD.DWX,0,0.05,0.50,0.20

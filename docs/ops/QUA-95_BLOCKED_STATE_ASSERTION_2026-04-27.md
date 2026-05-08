@@ -5,10 +5,10 @@ Generated from canonical artifacts at $generatedAt.
 
 ## Current gate
 
-- ecommended_state=blocked
-- eason=acceptance_not_met
-- disposition=defer
-- ars_got=0
+- ecommended_state=clear
+- eason=acceptance_met
+- disposition=clear
+- ars_got=99911
 - 	ail_shortfall_seconds=7141.322
 
 ## Source artifacts

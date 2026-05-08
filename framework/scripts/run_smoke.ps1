@@ -7,6 +7,8 @@ param(
     [Parameter(Mandatory = $true)]
     [ValidateRange(2000, 2100)]
     [int]$Year,
+    [string]$FromDate,
+    [string]$ToDate,
     [ValidateSet("any", "T1", "T2", "T3", "T4", "T5")]
     [string]$Terminal = "T1",
     [string]$Expert,
@@ -272,7 +274,7 @@ function Write-TesterIni {
     $localRepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
     $defaultsPath = Join-Path $localRepoRoot "framework\registry\tester_defaults.json"
     if (-not (Test-Path -LiteralPath $defaultsPath -PathType Leaf)) {
-        throw "tester_defaults.json missing at $defaultsPath — cannot launch backtest without canonical defaults (DL-054 G2)."
+        throw "tester_defaults.json missing at $defaultsPath - cannot launch backtest without canonical defaults (DL-054 G2)."
     }
     $defaults = Get-Content -LiteralPath $defaultsPath -Raw | ConvertFrom-Json
     $deposit = [int]$defaults.initial_deposit
@@ -330,6 +332,30 @@ function Get-RelativeReportFileName {
         $sanitizedSymbol = "symbol"
     }
     return "{0}_{1}_{2}_{3}.htm" -f $EaLabel, $sanitizedSymbol, $RunTag, $RunName
+}
+
+function Use-LegacyRelativeReportExport {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$TerminalRoot,
+        [Parameter(Mandatory = $true)]
+        [string]$AbsoluteReportPath,
+        [Parameter(Mandatory = $true)]
+        [string]$LegacyRelativePath
+    )
+
+    if (Test-Path -LiteralPath $AbsoluteReportPath -PathType Leaf) {
+        return $false
+    }
+    if (-not (Test-Path -LiteralPath $LegacyRelativePath -PathType Leaf)) {
+        return $false
+    }
+    try {
+        Copy-Item -LiteralPath $LegacyRelativePath -Destination $AbsoluteReportPath -Force
+        return (Test-Path -LiteralPath $AbsoluteReportPath -PathType Leaf)
+    } catch {
+        return $false
+    }
 }
 
 function Get-LatestTesterLog {
@@ -473,8 +499,8 @@ $frameworkEvidenceDir = "D:\QM\reports\framework\22"
 New-Item -ItemType Directory -Path $rawDir -Force | Out-Null
 New-Item -ItemType Directory -Path $frameworkEvidenceDir -Force | Out-Null
 
-$fromDate = "{0}.01.01" -f $Year
-$toDate = "{0}.12.31" -f $Year
+$fromDate = if ($FromDate) { $FromDate } else { "{0}.01.01" -f $Year }
+$toDate = if ($ToDate) { $ToDate } else { "{0}.12.31" -f $Year }
 
 $runResults = @()
 $globalOnInitFailure = $false
@@ -490,11 +516,12 @@ for ($i = 1; $i -le $Runs; $i++) {
     $iniPath = Join-Path $runDir "tester.ini"
     $reportHtmPath = Join-Path $runDir "report.htm"
     $relativeReportFile = Get-RelativeReportFileName -EaLabel $eaLabel -SymbolName $Symbol -RunTag $runTag -RunName $runName
-    $sourceReportPath = Join-Path $terminalRoot $relativeReportFile
+    $legacyRelativeSourcePath = Join-Path $terminalRoot $relativeReportFile
+    $sourceReportPath = $legacyRelativeSourcePath
     $runStartUtc = (Get-Date).ToUniversalTime()
 
-    if (Test-Path -LiteralPath $sourceReportPath -PathType Leaf) {
-        Remove-Item -LiteralPath $sourceReportPath -Force
+    if (Test-Path -LiteralPath $legacyRelativeSourcePath -PathType Leaf) {
+        Remove-Item -LiteralPath $legacyRelativeSourcePath -Force
     }
     if (Test-Path -LiteralPath $reportHtmPath -PathType Leaf) {
         Remove-Item -LiteralPath $reportHtmPath -Force
@@ -541,10 +568,25 @@ for ($i = 1; $i -le $Runs; $i++) {
         continue
     }
 
-    $reportMaterialized = Wait-ForReportExport -ReportPath $sourceReportPath -TerminalRoot $terminalRoot -MaxWaitSeconds 90
+    # MT5 report writes can lag significantly under terminal contention; allow a longer settle window
+    # before classifying as infra REPORT_MISSING.
+    $reportMaterialized = Wait-ForReportExport -ReportPath $sourceReportPath -TerminalRoot $terminalRoot -MaxWaitSeconds 240
+    if (-not $reportMaterialized) {
+        $reportMaterialized = Use-LegacyRelativeReportExport -TerminalRoot $terminalRoot -AbsoluteReportPath $reportHtmPath -LegacyRelativePath $legacyRelativeSourcePath
+    }
     if (-not $reportMaterialized) {
         $reasonClasses.Add("REPORT_MISSING")
         $globalRealTicksMarker = $false
+        $testerLog = Get-LatestTesterLog -TerminalRoot $terminalRoot -SinceUtc $runStartUtc
+        if (-not $testerLog) {
+            $logsDir = Join-Path $terminalRoot "Tester\\logs"
+            if (Test-Path -LiteralPath $logsDir -PathType Container) {
+                $testerLog = Get-ChildItem -LiteralPath $logsDir -File |
+                    Sort-Object LastWriteTimeUtc -Descending |
+                    Select-Object -First 1
+            }
+        }
+        $testerLogPath = if ($testerLog) { $testerLog.FullName } else { $null }
         $lingeringMeta = @(Get-MetaTesterProcessesForTerminalRoot -TerminalRoot $terminalRoot)
         if (@($lingeringMeta).Count -gt 0) {
             $reasonClasses.Add("METATESTER_HUNG")
@@ -559,12 +601,12 @@ for ($i = 1; $i -le $Runs; $i++) {
             run = $runName
             status = "FAIL"
             failure = "REPORT_MISSING"
-            error = "Strategy tester did not produce report file at relative export path."
+            error = "Strategy tester did not produce report file at canonical or legacy relative export path."
             exit_code = $exitCode
             report_source_path = $sourceReportPath
             report_canonical_path = $reportHtmPath
             report_size_bytes = 0
-            tester_log_path = $null
+            tester_log_path = $testerLogPath
         }
         continue
     }
@@ -578,24 +620,6 @@ for ($i = 1; $i -le $Runs; $i++) {
             status = "FAIL"
             failure = "REPORT_EMPTY"
             error = "Strategy tester produced size-0 report file (infra NO_REPORT)."
-            exit_code = $exitCode
-            report_source_path = $sourceReportPath
-            report_canonical_path = $reportHtmPath
-            report_size_bytes = [int64]$sourceInfo.Length
-            tester_log_path = $null
-        }
-        continue
-    }
-
-    Copy-Item -LiteralPath $sourceReportPath -Destination $reportHtmPath -Force
-    if (-not (Test-Path -LiteralPath $reportHtmPath -PathType Leaf)) {
-        $reasonClasses.Add("REPORT_COPY_FAILED")
-        $globalRealTicksMarker = $false
-        $runResults += [pscustomobject]@{
-            run = $runName
-            status = "FAIL"
-            failure = "REPORT_COPY_FAILED"
-            error = "Post-copy to canonical evidence path failed."
             exit_code = $exitCode
             report_source_path = $sourceReportPath
             report_canonical_path = $reportHtmPath
@@ -747,7 +771,7 @@ $summary = [ordered]@{
     oninit_failure_detected = $globalOnInitFailure
     model4_log_marker_detected = $globalRealTicksMarker
     report_dir = $reportDir
-    report_export_mode = "relative_report_plus_postcopy"
+    report_export_mode = "relative_with_absolute_fallback"
     runs = $runResults
 }
 
@@ -769,7 +793,7 @@ $evidenceLines = @(
     "- reason_classes: $([string]::Join(', ', $summary.reason_classes))",
     "- summary_json: $summaryPath",
     "- report_dir: $reportDir",
-    "- report_export_mode: relative_report_plus_postcopy",
+    "- report_export_mode: relative_with_absolute_fallback",
     "",
     "## Report Chain Evidence"
 )

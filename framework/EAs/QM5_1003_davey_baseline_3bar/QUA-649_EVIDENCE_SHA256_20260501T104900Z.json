@@ -1,0 +1,52 @@
+[
+  {
+    "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1003_davey_baseline_3bar\\QUA-649_BLOCKED_GATE_HANDOFF_2026-05-01.md",
+    "sha256": "EF3A84CD657BE6C94D3A97EC0C753759914831717D4AE695A147BE9D96134F06",
+    "size": 8374
+  },
+  {
+    "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1003_davey_baseline_3bar\\QUA-649_EVIDENCE_INDEX_2026-05-01.md",
+    "sha256": "8206C46CBE616F3B2F7AC5C9B7350F0F66F99A31FF6C294117CF87A492777FA5",
+    "size": 1053
+  },
+  {
+    "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1003_davey_baseline_3bar\\QUA-649_STATUS_SNAPSHOT_20260501T104020Z.json",
+    "sha256": "90EE53D5AA704750FD64458CE31C8BC3836A6F6BC18CB6C41134654C9FC8EA55",
+    "size": 1146
+  },
+  {
+    "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1003_davey_baseline_3bar\\QUA-649_T1_CONTENTION_SNAPSHOT_20260501T104730Z.json",
+    "sha256": "5D79EC02922C52261556BF31F05260DD891EC1368663990D73BD578A08378BAE",
+    "size": 849
+  },
+  {
+    "path": "D:\\QM\\reports\\smoke\\QM5_1004\\20260501_104125\\summary.json",
+    "sha256": "37E137915FB69FC0B8B67C1C3A5DF6E43DCFF36DD15450F1EBB1842A12E9C79A",
+    "size": 1651
+  },
+  {
+    "path": "D:\\QM\\reports\\smoke\\QM5_1003\\20260501_104253\\summary.json",
+    "sha256": "43AC056BB2C8345C3E236F224BE74F1B028C5D68110BE2CCDC132F1C42BF2433",
+    "size": 1651
+  },
+  {
+    "path": "D:\\QM\\reports\\framework\\22\\20260501_104125_QM5_1004_run_smoke.md",
+    "sha256": "8C3B66957EE850A7B1B4423951DD2ABF94BF446D3EBB0CAD9BFCD5E9EA23D87C",
+    "size": 851
+  },
+  {
+    "path": "D:\\QM\\reports\\framework\\22\\20260501_104253_QM5_1003_run_smoke.md",
+    "sha256": "98C1FAE961AC5E8D5383733B09D8FCBE024F76CA51844E88FABAA618B30183AF",
+    "size": 851
+  },
+  {
+    "path": "C:\\QM\\repo\\framework\\build\\compile\\20260501_103832\\QM5_1004_davey_es_breakout.compile.log",
+    "sha256": "24317EE4F8A5A6591EF2FBEA99303C21C61887746280E0F222172AA42620DD0C",
+    "size": 16620
+  },
+  {
+    "path": "C:\\QM\\repo\\framework\\build\\compile\\20260501_103843\\QM5_1003_davey_baseline_3bar.compile.log",
+    "sha256": "C56E6B7ED364365EAB5B85910A3E0FEFAF88BF71B38A307FA3EFA3F120456B79",
+    "size": 16644
+  }
+]

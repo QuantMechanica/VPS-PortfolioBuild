@@ -1,0 +1,3 @@
+[P2] EA=QM5_1003 ea_id=1003 period=H1 year=2024 runs=2
+[P2] symbols=1 report_csv=D:\QM\reports\pipeline\QM5_1003\P2\report.csv
+[RUN] AUDCAD.DWX -> any (QM5_1003_davey_baseline_3bar_AUDCAD.DWX_H1_backtest.set) attempt=1/2

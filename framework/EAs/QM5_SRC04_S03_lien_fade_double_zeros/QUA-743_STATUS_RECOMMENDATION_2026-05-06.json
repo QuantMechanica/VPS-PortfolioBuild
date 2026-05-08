@@ -1,0 +1,11 @@
+{
+  "issue": "QUA-743",
+  "ea_id": 1009,
+  "recommended_status": "cancelled_at_p2",
+  "recommended_phase": "P2",
+  "rationale": "Persistent MIN_TRADES_NOT_MET across baseline and variants 1..5",
+  "decided_by": "CTO",
+  "decided_at_utc": "2026-05-05T23:50:02Z",
+  "next_owner": "Pipeline-Operator/CEO",
+  "action": "apply governance closure and stop promotion"
+}

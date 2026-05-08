@@ -1,0 +1,9 @@
+{
+  "setfile_path": "C:\\QM\\repo\\framework\\tests\\smoke\\QM5_1001_framework_smoke.set",
+  "version": "smoke",
+  "target_terminal": "any",
+  "phase": "P1",
+  "symbol": "ZZZTEST.DWX",
+  "ea_id": "QM5_1001",
+  "sub_gate_config_hash": "H1-2024"
+}

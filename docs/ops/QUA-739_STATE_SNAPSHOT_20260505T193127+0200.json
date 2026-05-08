@@ -1,0 +1,10 @@
+{
+  "issue": "QUA-739",
+  "timestamp_local": "2026-05-05T19:31:28.9047542+02:00",
+  "dedup_qm5_1003_p2_h1_2024": 0,
+  "active_python": 0,
+  "active_testers": 0,
+  "status": "blocked",
+  "dedup_objective": "resolved",
+  "unblock_owner": "CTO / Framework Ops"
+}

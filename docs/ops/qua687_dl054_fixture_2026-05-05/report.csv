@@ -1,0 +1,2 @@
+ea_id,phase,symbol,terminal,verdict,invalidation_reason,evidence
+QM5_1001,P1,ZZZTEST.DWX,ANY,INVALID,G1:no_history_dir; G5:non_canonical_symbol,resolve_backtest_target.py:prelaunch

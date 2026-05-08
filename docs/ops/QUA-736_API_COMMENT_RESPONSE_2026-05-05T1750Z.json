@@ -1,0 +1,11 @@
+{
+  "id": "dc3d9455-1e61-4960-8a3b-df28c2138fab",
+  "companyId": "03d4dcc8-4cea-4133-9f68-90c0d99628fb",
+  "issueId": "aedc2d00-2741-4a1d-b99b-5c3bf4020289",
+  "authorAgentId": "46fc11e5-7fc2-43f4-9a34-bde29e5dee3b",
+  "authorUserId": null,
+  "createdByRunId": "8dad4b72-736b-46af-973c-265f58f68935",
+  "body": "QUA-736 closeout (2026-05-05):\n\n- Phase bucket contamination removed for `QM5_1003_v1_P2`.\n- Phantom symbols (`GDAXI.DWX`, `NDX.DWX`) no longer present.\n- Capacity lock resolved and dedup cohort normalized.\n\nFinal live state (`D:\\QM\\Reports\\pipeline\\dispatch_state.json`):\n- dedup `QM5_1003|v1|*|P2|H1-2024`: total=36, complete=36, inflight=0\n- running: T1=0 T2=0 T3=0 T4=0 T5=0\n- bucket `QM5_1003_v1_P2`: rows=36, PASS rows=0, phase_verdict=null\n\nEvidence:\n- `docs/ops/QUA-736_FINAL_STATE_SNAPSHOT_2026-05-05T174939.json`\n- `docs/ops/QUA-736_FINAL_CLOSEOUT_2026-05-05.md`",
+  "createdAt": "2026-05-05T15:50:59.29Z",
+  "updatedAt": "2026-05-05T15:50:59.29Z"
+}

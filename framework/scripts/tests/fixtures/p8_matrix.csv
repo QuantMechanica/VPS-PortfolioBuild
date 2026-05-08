@@ -1,0 +1,4 @@
+symbol,mode,pf,trades,sharpe,drawdown_pct,compliance_5ers,compliance_ftmo,compliance_news_only,compliance_no_news
+EURUSD.DWX,OFF,1.05,50,0.9,8,true,true,false,true
+EURUSD.DWX,PAUSE,1.10,48,1.0,7,true,true,true,true
+EURUSD.DWX,SKIP_DAY,0.95,40,0.7,9,false,true,false,false

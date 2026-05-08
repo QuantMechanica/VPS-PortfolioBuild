@@ -10,6 +10,7 @@ $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repoRoot = Split-Path -Parent (Split-Path -Parent $scriptDir)
 
 $tests = @(
+    "framework/scripts/tests/test_phase_backtest_drivers.py",
     "framework/scripts/tests/test_phase_runners_contract.py",
     "framework/scripts/tests/test_phase_verdict_semantics.py",
     "framework/scripts/tests/test_phase_runners_idempotence.py",

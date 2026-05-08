@@ -1,0 +1,30 @@
+{
+  "issue": "QUA-212",
+  "ts_utc": "2026-05-08T14:05:42Z",
+  "commit": "a15857ac",
+  "header": [
+    "a15857ac327dcc803f781d8da67d5f17546d7d1e",
+    "QUA-212: harden phase2b runner validation and package handoff artifacts",
+    "QuantMechanica",
+    "Fri May 8 16:05:17 2026 +0200"
+  ],
+  "files": [
+    "docs/ops/QUA-212_FAILED_RUN_INSPECTION_2026-05-08.json",
+    "docs/ops/QUA-212_PATCHSET_DRYRUN_2026-05-08.md",
+    "docs/ops/QUA-212_PATCHSET_PATHS_2026-05-08.md",
+    "docs/ops/QUA-212_PHASE2B_ARTIFACT_INDEX_2026-05-08.json",
+    "docs/ops/QUA-212_PHASE2B_ARTIFACT_VERIFY_2026-05-08.json",
+    "docs/ops/QUA-212_PHASE2B_COMPLETION_2026-05-08.json",
+    "docs/ops/QUA-212_PHASE2B_HANDOFF_2026-05-08.md",
+    "docs/ops/QUA-212_PHASE2B_HANDOFF_BUNDLE_2026-05-08.sha256.txt",
+    "docs/ops/QUA-212_PHASE2B_HANDOFF_BUNDLE_2026-05-08.zip",
+    "docs/ops/QUA-212_PHASE2B_PATCHSET_2026-05-08.diff",
+    "docs/ops/QUA-212_PHASE2B_PATCHSET_2026-05-08.sha256.txt",
+    "docs/ops/QUA-212_PHASE2B_READY_STATUS_2026-05-08.json",
+    "docs/ops/QUA-212_PHASE2B_STABILITY_RERUN_2026-05-08.json",
+    "framework/scripts/tests/test_phase_runners_contract.py",
+    "framework/scripts/tests/test_phase_verdict_semantics.py",
+    "framework/scripts/validate_phase2b.ps1"
+  ],
+  "shortstat": "16 files changed, 1610 insertions(+)"
+}

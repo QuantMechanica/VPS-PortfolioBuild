@@ -1,0 +1,9 @@
+{
+  "issue": "QUA-212",
+  "ts_utc": "2026-05-08T14:10:04Z",
+  "state": "awaiting_owner_close",
+  "technical_changes_complete": true,
+  "commit": "a15857ac",
+  "next_owner_action": "close issue",
+  "failed_run_detected": false
+}

@@ -1,0 +1,22 @@
+{
+  "issue": "QUA-743",
+  "ea_id": 1009,
+  "ea_slug": "QM5_SRC04_S03_lien_fade_double_zeros",
+  "strategy_card": "strategy-seeds/cards/lien-fade-double-zeros_card.md",
+  "date_utc": "2026-05-05",
+  "phase_state": {
+    "g0": "done",
+    "p1": "done",
+    "p2": "zt_recovery_triggered",
+    "p3_to_p10": "gated"
+  },
+  "zt_recovery": {
+    "cohort_threshold_met": true,
+    "cohort_size": 5,
+    "cohort_zt_count": 5,
+    "verdict_class": "MIN_TRADES_NOT_MET",
+    "proposed_v2_change": "order_expiration_minutes 60 -> 240"
+  },
+  "next_action_owner": "R-and-D then CEO",
+  "next_action": "Record R-and-D verdict and CEO dispatch decision; start CTO v2 build only after both."
+}

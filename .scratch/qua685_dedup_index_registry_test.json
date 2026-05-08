@@ -1,0 +1,98 @@
+{
+  "QM5_1003_v1_P2": {
+    "matrix": [
+      {
+        "evidence": null,
+        "symbol": "AUDCAD.DWX",
+        "terminal": "T1",
+        "verdict": null
+      },
+      {
+        "evidence": null,
+        "symbol": "AUDCHF.DWX",
+        "terminal": "T3",
+        "verdict": null
+      },
+      {
+        "evidence": null,
+        "symbol": "AUDJPY.DWX",
+        "terminal": "T2",
+        "verdict": null
+      },
+      {
+        "evidence": null,
+        "symbol": "AUDNZD.DWX",
+        "terminal": "T4",
+        "verdict": null
+      },
+      {
+        "evidence": null,
+        "symbol": "AUDUSD.DWX",
+        "terminal": "T5",
+        "verdict": null
+      },
+      {
+        "evidence": null,
+        "symbol": "CADCHF.DWX",
+        "terminal": "T1",
+        "verdict": null
+      },
+      {
+        "evidence": null,
+        "symbol": "CADJPY.DWX",
+        "terminal": "T3",
+        "verdict": null
+      },
+      {
+        "evidence": null,
+        "symbol": "CHFJPY.DWX",
+        "terminal": "T2",
+        "verdict": null
+      },
+      {
+        "evidence": null,
+        "symbol": "EURAUD.DWX",
+        "terminal": "T4",
+        "verdict": null
+      },
+      {
+        "evidence": null,
+        "symbol": "EURCAD.DWX",
+        "terminal": "T5",
+        "verdict": null
+      },
+      {
+        "evidence": null,
+        "symbol": "EURCHF.DWX",
+        "terminal": "T1",
+        "verdict": null
+      },
+      {
+        "evidence": null,
+        "symbol": "EURGBP.DWX",
+        "terminal": "T3",
+        "verdict": null
+      },
+      {
+        "evidence": null,
+        "symbol": "EURJPY.DWX",
+        "terminal": "T2",
+        "verdict": null
+      },
+      {
+        "evidence": null,
+        "symbol": "EURNZD.DWX",
+        "terminal": "T4",
+        "verdict": null
+      },
+      {
+        "evidence": null,
+        "symbol": "EURUSD.DWX",
+        "terminal": "T5",
+        "verdict": null
+      }
+    ],
+    "next_strategy_unblocked": null,
+    "phase_verdict": null
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "dedup_complete": 30,
+  "dedup_inflight": 6,
+  "dedup_total": 36,
+  "generated_utc": "2026-05-05T15:48:15.876083Z",
+  "issue": "QUA-736",
+  "phase_verdict": null,
+  "running": {
+    "T1": 1,
+    "T2": 1,
+    "T3": 2,
+    "T4": 1,
+    "T5": 1
+  }
+}

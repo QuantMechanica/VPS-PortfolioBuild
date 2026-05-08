@@ -1,0 +1,9 @@
+﻿{
+    "issue":  "QUA-744",
+    "issue_id":  "2e8a432b-6851-49c4-a206-8212be6852f2",
+    "commit":  "6e917fb0",
+    "evidence_path":  "C:\\QM\\repo\\artifacts\\qua-744\\p2_matrix_d1_full_missing.json",
+    "run_id":  "3c98d356-e197-4bfb-a51f-544ff22a0ccf",
+    "comment_path":  "C:\\QM\\repo\\docs\\ops\\QUA-744_UNBLOCK_PACKET_2026-05-08T083104+0200.md",
+    "apply":  false
+}

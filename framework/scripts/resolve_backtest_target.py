@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -17,16 +18,95 @@ from framework.scripts.pipeline_dispatcher import (
     DEFAULT_COMPLETED_RETENTION_SECONDS,
     build_matrix_jobs,
     export_phase_matrix_index,
+    initialize_matrix_bucket_for_symbols,
     load_dedup_index,
     load_dispatch_state,
+    matrix_bucket_key,
     prune_state,
     release_job,
     resolve_target_terminal,
     save_dedup_index,
     save_dispatch_state,
 )
+from framework.scripts.dl054_gates import apply_pre_launch_gates
 
 BACKTEST_SETFILE_ERROR = "BACKTEST_REJECTED_NO_SETFILE"
+
+
+def _drain_pending_matrix_jobs(state: dict[str, Any], max_per_terminal: int) -> dict[str, int]:
+    pending_root = state.setdefault("pending_matrix_jobs", {})
+    if not isinstance(pending_root, dict):
+        state["pending_matrix_jobs"] = {}
+        pending_root = state["pending_matrix_jobs"]
+    summary = {"scheduled": 0, "duplicate": 0, "no_capacity": 0}
+    keys = list(pending_root.keys())
+    for key in keys:
+        queued = pending_root.get(key)
+        if not isinstance(queued, list) or not queued:
+            pending_root.pop(key, None)
+            continue
+        blocked_index: int | None = None
+        for idx, job in enumerate(queued):
+            result = resolve_target_terminal(job, state, max_per_terminal=max_per_terminal)
+            status = str(result.get("status", ""))
+            if status == "scheduled":
+                summary["scheduled"] += 1
+            elif status == "duplicate":
+                summary["duplicate"] += 1
+            else:
+                summary["no_capacity"] += 1
+                blocked_index = idx
+                break
+        if blocked_index is not None:
+            pending_root[key] = queued[blocked_index:]
+        else:
+            pending_root.pop(key, None)
+    return summary
+
+
+def _append_report_csv_row(
+    *,
+    report_csv_path: str | None,
+    ea_id: str,
+    phase: str,
+    symbol: str,
+    terminal: str,
+    verdict: str,
+    invalidation_reason: str,
+    evidence: str = "",
+) -> None:
+    if not report_csv_path:
+        return
+    path = Path(report_csv_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    write_header = not path.exists() or path.stat().st_size == 0
+    with path.open("a", encoding="utf-8", newline="") as handle:
+        if write_header:
+            handle.write("ea_id,phase,symbol,terminal,verdict,invalidation_reason,evidence\n")
+        row = (
+            ea_id,
+            phase,
+            symbol,
+            terminal,
+            verdict,
+            (invalidation_reason or "").replace(",", ";").replace("\n", " "),
+            evidence or "",
+        )
+        handle.write(",".join(row) + "\n")
+
+
+def _window_bounds_from_job(job: dict[str, Any]) -> tuple[datetime, datetime]:
+    year = None
+    raw_hash = str(job.get("sub_gate_config_hash", ""))
+    if "-" in raw_hash:
+        maybe_year = raw_hash.rsplit("-", 1)[-1]
+        if maybe_year.isdigit():
+            year = int(maybe_year)
+    if year is None:
+        year = int(datetime.now(tz=timezone.utc).year)
+    start = datetime(year, 1, 1, tzinfo=timezone.utc)
+    end = datetime(year, 12, 31, 23, 59, 59, tzinfo=timezone.utc)
+    return start, end
 
 
 def _reject_missing_setfile(job: dict[str, Any]) -> dict[str, Any] | None:
@@ -78,6 +158,16 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--prune-completed", action="store_true", help="Prune stale completed dedup records.")
     parser.add_argument(
+        "--enforce-dl054-prelaunch",
+        action="store_true",
+        help="Run DL-054 prelaunch gates (G1/G2/G5) before scheduling.",
+    )
+    parser.add_argument(
+        "--report-csv",
+        default=None,
+        help="Optional report.csv path for INVALID gate rows.",
+    )
+    parser.add_argument(
         "--retention-seconds",
         type=int,
         default=DEFAULT_COMPLETED_RETENTION_SECONDS,
@@ -108,24 +198,77 @@ def main() -> int:
             next_strategy_unblocked=args.next_strategy_unblocked,
         )
         should_save = decision.get("status") == "released"
+        if should_save:
+            drained = _drain_pending_matrix_jobs(state, args.max_per_terminal)
+            if any(v > 0 for v in drained.values()):
+                decision["pending_recovery"] = drained
     else:
         rejected = _reject_missing_setfile(job)
         if rejected is not None:
             decision = rejected
             print(json.dumps(decision, sort_keys=True))
             return 0
+        if args.enforce_dl054_prelaunch:
+            terminal_label = str(job.get("target_terminal", "any")).upper()
+            window_start, window_end = _window_bounds_from_job(job)
+            launch_config = {
+                "initial_deposit": 100000,
+                "deposit_currency": "USD",
+                "leverage": 100,
+                "setfile_path": str(job.get("setfile_path", "")),
+            }
+            pre = apply_pre_launch_gates(
+                ea_id=str(job.get("ea_id", "")),
+                phase=str(job.get("phase", "")),
+                symbol=str(job.get("symbol", "")),
+                terminal=terminal_label,
+                window_start=window_start,
+                window_end=window_end,
+                launch_config=launch_config,
+            )
+            if pre.verdict == "INVALID":
+                _append_report_csv_row(
+                    report_csv_path=args.report_csv,
+                    ea_id=pre.ea_id,
+                    phase=pre.phase,
+                    symbol=pre.symbol,
+                    terminal=pre.terminal,
+                    verdict="INVALID",
+                    invalidation_reason=pre.invalidation_reason,
+                    evidence="resolve_backtest_target.py:prelaunch",
+                )
+                decision = {
+                    "status": "invalid_prelaunch",
+                    "verdict": "INVALID",
+                    "invalidation_reason": pre.invalidation_reason,
+                    "terminal": None,
+                }
+                print(json.dumps(decision, sort_keys=True))
+                return 0
         if isinstance(job.get("symbols"), list):
             jobs = build_matrix_jobs(job)
+            initialize_matrix_bucket_for_symbols(state, jobs)
+            should_save = True
             results = []
+            pending_jobs: list[dict[str, Any]] = []
             for matrix_job in jobs:
                 result = resolve_target_terminal(matrix_job, state, max_per_terminal=args.max_per_terminal)
                 results.append(result)
                 if result.get("status") == "scheduled":
                     should_save = True
+                elif result.get("status") == "no_capacity":
+                    pending_jobs.append(matrix_job)
+            pending_root = state.setdefault("pending_matrix_jobs", {})
+            bucket = matrix_bucket_key(jobs[0]) if jobs else "unknown"
+            if pending_jobs:
+                pending_root[bucket] = pending_jobs
+            else:
+                pending_root.pop(bucket, None)
             summary = {
                 "scheduled": sum(1 for item in results if item.get("status") == "scheduled"),
                 "duplicate": sum(1 for item in results if item.get("status") == "duplicate"),
                 "no_capacity": sum(1 for item in results if item.get("status") == "no_capacity"),
+                "pending": len(pending_jobs),
             }
             decision = {
                 "status": "matrix_dispatch_complete",

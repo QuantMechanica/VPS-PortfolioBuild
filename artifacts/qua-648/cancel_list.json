@@ -1,0 +1,702 @@
+[
+  {
+    "identifier": "QUA-571",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-570",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-140",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-787",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-781",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-767",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-764",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-761",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-760",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-758",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-730",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-694",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-683",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-430",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-399",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-328",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-268",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-265",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-262",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-142",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-141",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-114",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-139",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-56",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-102",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-138",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-137",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-136",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-135",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-134",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-132",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-133",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-131",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-130",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-129",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-128",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-126",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-125",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-124",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-123",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-122",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-121",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-120",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-119",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-118",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-116",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-117",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-111",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-113",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-106",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-112",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-110",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-109",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-108",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-107",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-104",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-105",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-103",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-101",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-100",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-99",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-98",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-97",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-96",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-89",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-88",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-87",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-86",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-85",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-84",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-83",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-82",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-81",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-80",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-79",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-78",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-77",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-76",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-75",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-72",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-74",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-71",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-68",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-63",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-64",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-62",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-61",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-60",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-59",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-58",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-57",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-55",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-54",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-53",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-52",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-51",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-50",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-49",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-48",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-47",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-46",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-45",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-44",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-43",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-42",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-41",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-40",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-39",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-38",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-37",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-36",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-35",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-34",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-32",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-31",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-30",
+    "category": "silent_run",
+    "reason": "stale_active_run_evaluation auto-monitor artifact, no review owner"
+  },
+  {
+    "identifier": "QUA-206",
+    "category": "test_dummy",
+    "reason": "test issue with no acceptance criteria"
+  },
+  {
+    "identifier": "QUA-205",
+    "category": "test_dummy",
+    "reason": "test issue with no acceptance criteria"
+  },
+  {
+    "identifier": "QUA-204",
+    "category": "test_dummy",
+    "reason": "test issue with no acceptance criteria"
+  },
+  {
+    "identifier": "QUA-199",
+    "category": "test_dummy",
+    "reason": "test issue with no acceptance criteria"
+  },
+  {
+    "identifier": "QUA-727",
+    "category": "stale_routine",
+    "reason": "routine_execution from 2026-05-05 not picked up; daily routines auto-respawn"
+  },
+  {
+    "identifier": "QUA-777",
+    "category": "stale_routine",
+    "reason": "routine_execution from 2026-05-07 not picked up; daily routines auto-respawn"
+  },
+  {
+    "identifier": "QUA-776",
+    "category": "stale_routine",
+    "reason": "routine_execution from 2026-05-06 not picked up; daily routines auto-respawn"
+  },
+  {
+    "identifier": "QUA-762",
+    "category": "stale_routine",
+    "reason": "routine_execution from 2026-05-06 not picked up; daily routines auto-respawn"
+  },
+  {
+    "identifier": "QUA-755",
+    "category": "stale_routine",
+    "reason": "routine_execution from 2026-05-05 not picked up; daily routines auto-respawn"
+  },
+  {
+    "identifier": "QUA-728",
+    "category": "stale_routine",
+    "reason": "routine_execution from 2026-05-05 not picked up; daily routines auto-respawn"
+  },
+  {
+    "identifier": "QUA-725",
+    "category": "stale_routine",
+    "reason": "routine_execution from 2026-05-04 not picked up; daily routines auto-respawn"
+  },
+  {
+    "identifier": "QUA-723",
+    "category": "stale_routine",
+    "reason": "routine_execution from 2026-05-04 not picked up; daily routines auto-respawn"
+  },
+  {
+    "identifier": "QUA-721",
+    "category": "stale_routine",
+    "reason": "routine_execution from 2026-05-04 not picked up; daily routines auto-respawn"
+  },
+  {
+    "identifier": "QUA-720",
+    "category": "stale_routine",
+    "reason": "routine_execution from 2026-05-03 not picked up; daily routines auto-respawn"
+  },
+  {
+    "identifier": "QUA-718",
+    "category": "stale_routine",
+    "reason": "routine_execution from 2026-05-03 not picked up; daily routines auto-respawn"
+  },
+  {
+    "identifier": "QUA-717",
+    "category": "stale_routine",
+    "reason": "routine_execution from 2026-05-02 not picked up; daily routines auto-respawn"
+  },
+  {
+    "identifier": "QUA-715",
+    "category": "stale_routine",
+    "reason": "routine_execution from 2026-05-02 not picked up; daily routines auto-respawn"
+  },
+  {
+    "identifier": "QUA-713",
+    "category": "stale_routine",
+    "reason": "routine_execution from 2026-05-01 not picked up; daily routines auto-respawn"
+  },
+  {
+    "identifier": "QUA-630",
+    "category": "stale_routine",
+    "reason": "routine_execution from 2026-04-30 not picked up; daily routines auto-respawn"
+  },
+  {
+    "identifier": "QUA-629",
+    "category": "stale_routine",
+    "reason": "routine_execution from 2026-04-30 not picked up; daily routines auto-respawn"
+  },
+  {
+    "identifier": "QUA-622",
+    "category": "stale_routine",
+    "reason": "routine_execution from 2026-04-30 not picked up; daily routines auto-respawn"
+  },
+  {
+    "identifier": "QUA-545",
+    "category": "stale_routine",
+    "reason": "routine_execution from 2026-04-29 not picked up; daily routines auto-respawn"
+  },
+  {
+    "identifier": "QUA-505",
+    "category": "stale_routine",
+    "reason": "routine_execution from 2026-04-28 not picked up; daily routines auto-respawn"
+  },
+  {
+    "identifier": "QUA-292",
+    "category": "stale_routine",
+    "reason": "routine_execution from 2026-04-27 not picked up; daily routines auto-respawn"
+  }
+]

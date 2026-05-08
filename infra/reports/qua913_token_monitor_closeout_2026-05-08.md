@@ -62,6 +62,11 @@ Executed and passed:
 3. `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\tests\Test-InfraAuditQmTokenMonitorWiring.ps1`
 4. `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\tests\Test-QmTokenMonitorOutputContract.ps1`
 
+Final regression fix (post-initial closeout):
+
+- Fixed Markdown top-consumer row rendering in `Invoke-QmTokenMonitor.ps1` so agent IDs render as literal ``(`id`)``.
+- Added output-contract guard to fail if Markdown leaks PowerShell object interpolation syntax (e.g. `$(@{...})`).
+
 Sample output artifacts generated from deterministic fixtures:
 
 - `artifacts/qua-913/qua913_qm_token_monitor_sample_2026-05-08.json`

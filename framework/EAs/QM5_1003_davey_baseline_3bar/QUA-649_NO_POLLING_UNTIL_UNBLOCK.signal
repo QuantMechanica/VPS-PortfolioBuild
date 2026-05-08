@@ -1,0 +1,8 @@
+issue=QUA-649
+state=BLOCKED_EXTERNAL
+owner=CTO/Framework Operations
+blocker=Smoke/runtime harness contention and report materialization failure
+resume_condition=Framework Ops confirms isolated T1 ownership and non-empty report.htm + tester log for QM5_1003 and QM5_1004 smoke runs
+next_local_action=Rerun Stage A for QM5_1003 + QM5_1004, then baseline backtests
+packet_validation=PASS
+written_utc=2026-05-01T11:01:19.7326466Z

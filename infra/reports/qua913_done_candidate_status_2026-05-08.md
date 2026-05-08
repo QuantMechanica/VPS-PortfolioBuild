@@ -34,6 +34,8 @@ Lane: DevOps/CTO — Token-Burn Watch Tooling (`qm-token-monitor`)
    - `Test-QmTokenMonitorOutputContract.ps1`
    - `Test-QmTokenMonitorTaskInstall.ps1`
    - `Test-InfraAuditQmTokenMonitorWiring.ps1`
+8. Final output-format fix delivered:
+   - Markdown top-consumer rows now render literal agent IDs as ``(`id`)`` without object interpolation leakage.
 
 ## Evidence bundle
 
@@ -52,8 +54,8 @@ Lane: DevOps/CTO — Token-Burn Watch Tooling (`qm-token-monitor`)
 5. `32d286fc` — output contract test hardening
 6. `06189875` — sample output evidence linkage
 7. `462fd762` — committed JSON/state sample evidence
+8. `(working tree)` — Markdown output rendering fix + output-contract regression assertion + refreshed sample artifacts
 
 ## Recommended next action
 
 - Reviewer/owner can close `QUA-913` after validating this done-candidate report and referenced artifacts.
-
