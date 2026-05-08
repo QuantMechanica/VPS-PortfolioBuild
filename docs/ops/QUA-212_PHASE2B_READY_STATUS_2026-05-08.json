@@ -1,0 +1,8 @@
+{
+  "issue": "QUA-212",
+  "ts_utc": "2026-05-08T14:02:10Z",
+  "phase2b_validator_exit": 0,
+  "phase2b_validator_pass": true,
+  "artifact_verify_all_ok": true,
+  "ready_to_handoff": true
+}

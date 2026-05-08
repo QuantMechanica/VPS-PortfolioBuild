@@ -1,0 +1,12 @@
+{
+  "issue": "QUA-212",
+  "ts_utc": "2026-05-08T14:02:48Z",
+  "inspection": {
+    "ready_file_exists": true,
+    "phase2b_validator_pass": true,
+    "artifact_verify_all_ok": true,
+    "ready_to_handoff": true,
+    "failed_run_detected": false
+  },
+  "conclusion": "no active failure detected"
+}

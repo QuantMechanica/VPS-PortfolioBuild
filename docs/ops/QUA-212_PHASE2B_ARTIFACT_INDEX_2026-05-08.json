@@ -1,0 +1,41 @@
+{
+  "issue": "QUA-212",
+  "generated_utc": "2026-05-08T14:00:06Z",
+  "artifacts": [
+    {
+      "path": "C:/QM/repo/docs/ops/QUA-212_PHASE2B_HANDOFF_2026-05-08.md",
+      "bytes": 1237,
+      "last_write_utc": "2026-05-08T13:54:54Z"
+    },
+    {
+      "path": "C:/QM/repo/docs/ops/QUA-212_PATCHSET_PATHS_2026-05-08.md",
+      "bytes": 828,
+      "last_write_utc": "2026-05-08T13:55:42Z"
+    },
+    {
+      "path": "C:/QM/repo/docs/ops/QUA-212_PATCHSET_DRYRUN_2026-05-08.md",
+      "bytes": 615,
+      "last_write_utc": "2026-05-08T13:56:36Z"
+    },
+    {
+      "path": "C:/QM/repo/docs/ops/QUA-212_PHASE2B_PATCHSET_2026-05-08.diff",
+      "bytes": 29419,
+      "last_write_utc": "2026-05-08T13:57:20Z"
+    },
+    {
+      "path": "C:/QM/repo/docs/ops/QUA-212_PHASE2B_PATCHSET_2026-05-08.sha256.txt",
+      "bytes": 108,
+      "last_write_utc": "2026-05-08T13:58:06Z"
+    },
+    {
+      "path": "C:/QM/repo/docs/ops/QUA-212_PHASE2B_HANDOFF_BUNDLE_2026-05-08.zip",
+      "bytes": 7534,
+      "last_write_utc": "2026-05-08T13:58:54Z"
+    },
+    {
+      "path": "C:/QM/repo/docs/ops/QUA-212_PHASE2B_HANDOFF_BUNDLE_2026-05-08.sha256.txt",
+      "bytes": 113,
+      "last_write_utc": "2026-05-08T13:59:19Z"
+    }
+  ]
+}
