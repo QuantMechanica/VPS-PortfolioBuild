@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-05-08T00:00:00Z",
+  "total": 1,
+  "items": [
+    {
+      "slug": "example",
+      "source": "strategy-seeds/specs",
+      "visibility": "internal_only",
+      "last_updated_utc": "2026-05-08T00:00:00Z"
+    }
+  ]
+}

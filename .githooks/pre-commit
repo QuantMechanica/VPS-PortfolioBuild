@@ -7,3 +7,4 @@ if ! command -v pwsh >/dev/null 2>&1; then
 fi
 
 pwsh -NoProfile -ExecutionPolicy Bypass -File "C:/QM/repo/infra/scripts/Assert-CommitAllowlist.ps1" -RepoRoot "C:/QM/repo" -FailOnMainArtifactPaths -ProtectedBranch "main"
+pwsh -NoProfile -ExecutionPolicy Bypass -File "C:/QM/repo/scripts/validate_public_snapshot.ps1" -RepoRoot "C:/QM/repo"

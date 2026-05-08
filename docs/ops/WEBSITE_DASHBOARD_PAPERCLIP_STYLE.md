@@ -235,6 +235,40 @@ Create a public snapshot file:
 }
 ```
 
+### EXPORT_CONTRACT_V1
+
+Version lock:
+- Snapshot schema family is pinned at `schema_version: 1`.
+- Public schema IDs are versioned (`.../v1.json`); additive fields require a new `v2` schema and producer update.
+
+Scheduling contract:
+- Primary trigger: Windows Task Scheduler hourly at `HH:07` local server time with tolerance window `+- 2 minutes`.
+- Producer command: `C:\QM\repo\scripts\export_public_snapshot.ps1`.
+
+Payload contract:
+- Every `public-data/*.json` payload includes `schema_version: 1`.
+- `generated_at` / `updated_at` values are UTC ISO-8601 (`Z` suffix).
+- Producer must validate each payload against its schema before any file write.
+- Missing or mismatched `schema_version` is a hard failure.
+
+Write/commit contract:
+- Write only if content hash changed (no-op on byte-identical payloads).
+- Commit/push only when snapshot files changed.
+
+Freshness contract:
+- Public UI stale state threshold: 90 minutes from `generated_at`.
+- If stale, keep last valid payload visible and render stale warning.
+
+Public-safety invariants:
+- Never publish account IDs, tokens, credentials, broker server auth material.
+- Never publish local filesystem paths (`C:\`, `D:\`, `/home/...`) or raw private logs.
+- Public snapshots are aggregate/redacted views only.
+
+Future v2 candidates (deferred):
+- Live KPI expansion (per-sleeve drift blocks, gate rollups).
+- Deploy ledger shape extensions.
+- Episode artifact snapshot schema integration.
+
 ## Paperclip Live Portfolio Autonomy
 
 Paperclip can manage the live portfolio operationally if the permissions are structured correctly:
