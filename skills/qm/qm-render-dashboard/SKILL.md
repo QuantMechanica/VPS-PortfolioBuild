@@ -1,85 +1,44 @@
 ---
 name: qm-render-dashboard
-description: Use when DevOps needs to regenerate the Paperclip operations dashboard (current.html) or the strategy archive page (strategies.html) after pipeline state changes. Don't use during active backtest runs — wait for the run to complete. Don't use to modify dashboard code; that is CTO + DevOps work.
+description: Use when DevOps must refresh Paperclip dashboard artifacts after state changes. Deterministic runner first.
 owner: DevOps
 reviewer: CEO
 last-updated: 2026-05-08
-basis: paperclip/tools/ops/render_dashboard.py + paperclip/tools/ops/render_strategies.py
+basis: framework/scripts/skill_render_dashboard_run.py
 ---
 
 # qm-render-dashboard
 
-Procedure for regenerating the local operations dashboard and strategy archive page. These are static HTML files used for daily status overview.
+## Use when
 
-## When to use
+- Kanban/pipeline state changed and dashboard is stale.
+- OWNER/CEO requests refresh.
 
-- Kanban or pipeline state has changed and dashboard is stale
-- New EA entered or exited a pipeline phase
-- Strategy archive (`public-data/strategy-archive.json`) was updated
-- OWNER or CEO requested a dashboard refresh
+## Do not use when
 
-## When NOT to use
+- Active backtests are still producing state you depend on.
+- You are changing dashboard code (separate engineering task).
 
-- Active backtest run in progress (wait for completion to get accurate counts)
-- Modifying dashboard code (that is a CTO/DevOps code task, not a render task)
+## Deterministic execution
 
-## Dashboard files
-
-| File | Purpose |
-|------|---------|
-| `C:\QM\paperclip\dashboards\current.html` | Main ops dashboard: Kanban state, EA pipeline lifecycle, issue summary |
-| `C:\QM\paperclip\dashboards\strategies.html` | Strategy archive: all researched strategies with results and symbol charts |
-
-## Procedure
-
-### Step 1: Regenerate main dashboard
+Main dashboard only:
 
 ```bash
-cd C:/QM/paperclip/tools/ops
-python render_dashboard.py
+python C:/QM/repo/framework/scripts/skill_render_dashboard_run.py
 ```
 
-Output: `C:\QM\paperclip\dashboards\current.html`
-
-### Step 2: Regenerate strategy archive (if strategy-archive.json changed)
+Main + strategies:
 
 ```bash
-cd C:/QM/paperclip/tools/ops
-python render_strategies.py
+python C:/QM/repo/framework/scripts/skill_render_dashboard_run.py --include-strategies
 ```
 
-Output: `C:\QM\paperclip\dashboards\strategies.html`
+The script runs renderers and emits JSON with:
+- command return codes
+- artifact existence
+- artifact size sanity check
+- `next_action`
 
-### Step 3: Verify output
+## LLM-only judgment
 
-Open in browser (or check file size > 10 KB as a minimum sanity check):
-```bash
-ls -la C:/QM/paperclip/dashboards/current.html
-ls -la C:/QM/paperclip/dashboards/strategies.html
-```
-
-Check for obvious rendering errors by looking at the file head:
-```bash
-head -5 C:/QM/paperclip/dashboards/current.html
-```
-
-### Step 4: No commit needed
-
-Dashboard HTML files are generated artifacts — they are not committed to git.  
-`public-data/` JSON files (the source data) ARE committed when updated.
-
-## Key paths
-
-- Dashboard renderer: `C:\QM\paperclip\tools\ops\render_dashboard.py`
-- Strategy renderer: `C:\QM\paperclip\tools\ops\render_strategies.py`
-- Kanban source: `C:\QM\paperclip\kanban\company_kanban.csv`
-- Strategy data: `C:\QM\repo\public-data\strategy-archive.json`
-- EA pipeline reports: `D:\QM\reports\pipeline\`
-- Dashboard output: `C:\QM\paperclip\dashboards\`
-
-## References
-
-- `C:\QM\paperclip\tools\ops\render_dashboard.py` — dashboard renderer source
-- `C:\QM\paperclip\tools\ops\render_strategies.py` — strategy archive renderer source
-- `public-data/strategy-archive.json` — strategy feed (public data, committed to git)
-- `public-data/public-snapshot.json` — ops snapshot (committed to git)
+- If output is `warning`, decide whether stale upstream source data or render failure needs escalation.
