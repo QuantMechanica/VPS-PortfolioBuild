@@ -165,6 +165,9 @@ def derive_verdict(summary: dict, min_trades: int) -> tuple[str, str, str]:
     if summary.get("result") != "PASS":
         reasons = summary.get("reason_classes") or ["UNKNOWN"]
         return "FAIL", "run_smoke_fail:" + ";".join(reasons), summary.get("report_dir", "")
+    # DL-054 G1: model4 real-ticks log marker is mandatory; INVALID beats all other gates.
+    if not summary.get("model4_log_marker_detected"):
+        return "INVALID", "G1_NO_REAL_TICKS", summary.get("report_dir", "")
     runs = summary.get("runs") or []
     if not runs:
         return "INVALID", "no_runs_in_summary", summary.get("report_dir", "")

@@ -177,6 +177,55 @@ class P2BaselineTests(unittest.TestCase):
             self.assertEqual(verdict, "INVALID")
             self.assertEqual(mock_invoke_run_smoke.call_count, 2)
 
+    def test_infer_warmup_bars_prefers_max_warmup(self) -> None:
+        warmup = p2_baseline.infer_warmup_bars(
+            {"training_lookback": "252", "max_warmup": "90"},
+            {"training_lookback": 300, "max_warmup": 120},
+        )
+        self.assertEqual(warmup, 90)
+
+    def test_infer_warmup_bars_falls_back_to_training_lookback(self) -> None:
+        warmup = p2_baseline.infer_warmup_bars(
+            {"training_lookback": "252"},
+            {},
+        )
+        self.assertEqual(warmup, 252)
+
+    def test_derive_window_dates_default_half_year_when_no_warmup(self) -> None:
+        start, end = p2_baseline.derive_window_dates(2024, "H1", 0)
+        self.assertEqual(start, "2024-07-01")
+        self.assertEqual(end, "2024-12-31")
+
+    def test_derive_window_dates_extends_for_d1_warmup(self) -> None:
+        start, end = p2_baseline.derive_window_dates(2024, "D1", 252)
+        self.assertEqual(start, "2023-06-19")
+        self.assertEqual(end, "2024-12-31")
+
+    def test_derive_verdict_g1_fail_is_invalid_regardless_of_trades(self) -> None:
+        # QUA-765: model4_log_marker_detected=False must yield INVALID, not PASS.
+        summary = {
+            "result": "PASS",
+            "model4_log_marker_detected": False,
+            "reason_classes": ["NO_REAL_TICKS_MARKER"],
+            "runs": [{"total_trades": 50}],
+            "report_dir": "/tmp/report",
+        }
+        verdict, reason, _ = p2_baseline.derive_verdict(summary, min_trades=20)
+        self.assertEqual(verdict, "INVALID")
+        self.assertEqual(reason, "G1_NO_REAL_TICKS")
+
+    def test_derive_verdict_pass_requires_g1_marker(self) -> None:
+        summary = {
+            "result": "PASS",
+            "model4_log_marker_detected": True,
+            "reason_classes": ["OK"],
+            "runs": [{"total_trades": 50}],
+            "report_dir": "/tmp/report",
+        }
+        verdict, reason, _ = p2_baseline.derive_verdict(summary, min_trades=20)
+        self.assertEqual(verdict, "PASS")
+        self.assertEqual(reason, "")
+
 
 if __name__ == "__main__":
     unittest.main()
