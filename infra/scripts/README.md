@@ -271,6 +271,22 @@
 - Example:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA774ExternalUnblockStatusTask.ps1`
 
+## `Test-QUA774ExternalUnblockOpsSuite.ps1`
+
+- Single-command QUA-774 external-unblock automation suite.
+- Runs:
+  1. `Test-QUA774ExternalUnblockPackage.ps1`
+  2. `Test-QUA774ExternalUnblockSignal.ps1` (allows exit `3` while blocked)
+  3. `Test-QUA774ExternalUnblockHandoffCache.ps1`
+  4. `Test-QUA774ExternalUnblockStatusTask.ps1`
+  5. `Write-QUA774ExternalUnblockStatusSnapshot.ps1`
+- Returns consolidated check outputs with overall `status=ok|critical`.
+- Exit codes:
+  - `0`: suite passed
+  - `2`: at least one critical check failed
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA774ExternalUnblockOpsSuite.ps1`
+
 ## `../monitoring/Test-PythonRuntimeHealth.ps1`
 
 - Read-only Python runtime integrity check for infra/pipeline hosts.
