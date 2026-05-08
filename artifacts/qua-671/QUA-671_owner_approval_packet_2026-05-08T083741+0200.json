@@ -1,0 +1,9 @@
+﻿{
+    "issue":  "QUA-671",
+    "issue_id":  "b41d6066-a3a5-4f79-9453-829144815f71",
+    "commit":  "bebe63d2",
+    "evidence_path":  "C:\\QM\\repo\\docs\\ops\\QUA-671_API_STATE_SNAPSHOT_2026-05-08T063647Z.json",
+    "run_id":  "e727b60a-5325-41c1-a9fe-86d6bbb606ba",
+    "comment_path":  "C:\\QM\\repo\\docs\\\\ops\\\\QUA-671_OWNER_APPROVAL_PACKET_2026-05-08T083741+0200.md",
+    "apply":  true
+}
