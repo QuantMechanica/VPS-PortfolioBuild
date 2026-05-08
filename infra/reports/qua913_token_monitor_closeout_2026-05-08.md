@@ -62,6 +62,11 @@ Executed and passed:
 3. `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\tests\Test-InfraAuditQmTokenMonitorWiring.ps1`
 4. `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\tests\Test-QmTokenMonitorOutputContract.ps1`
 
+Sample output artifacts generated from deterministic fixtures:
+
+- `infra/reports/qua913_qm_token_monitor_sample_2026-05-08.json`
+- `infra/reports/qua913_qm_token_monitor_sample_2026-05-08.md`
+
 ## Commit chain
 
 1. `da00303f` — add deterministic qm token monitor + contract fixtures/tests
