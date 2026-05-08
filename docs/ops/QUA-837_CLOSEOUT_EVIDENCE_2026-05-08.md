@@ -65,3 +65,11 @@
   - `VERDICT: DUPLICATE — link as _v<n> enhancement per DL-029/033, NOT new ea_id`
 
 This provides runtime proof that duplicate verdict paths are active, not only clean verdict paths.
+
+## Performance Evidence (<5s criterion)
+- Command:
+  - `Measure-Command { python framework/scripts/lint_strategy_wiki.py --vault %TEMP%\\qua837_empty_vault }`
+- Result:
+  - `LINT_SECONDS=0.102`
+- Interpretation:
+  - Passes acceptance threshold (<5s on empty wiki tree).
