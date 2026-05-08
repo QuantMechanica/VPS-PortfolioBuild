@@ -1,0 +1,21 @@
+{
+  "issue": "QUA-843",
+  "requested_at_utc": "2026-05-08T11:46:00Z",
+  "requested_state": "closed",
+  "state_reason": "completed",
+  "summary": "Determinism-first skill refactor complete for all 13 QM skills; deterministic script wrappers added; SKILL length reduced 87.5% with closeout evidence committed.",
+  "evidence": {
+    "audit_markdown": "docs/ops/SKILL_REFACTOR_AUDIT_2026-05.md",
+    "closeout_markdown": "docs/ops/QUA-843_CLOSEOUT_PACKET_2026-05-08.md",
+    "ready_to_close_markdown": "docs/ops/QUA-843_READY_TO_CLOSE_2026-05-08.md"
+  },
+  "verification": {
+    "script_syntax": "python -m py_compile framework/scripts/skill_*.py",
+    "smoke_help": "python framework/scripts/skill_new_setfiles_run.py --help (and other guards)",
+    "last_result": "All Wave 1-3 deterministic scripts: py_compile PASS and --help PASS"
+  },
+  "scope_boundary": {
+    "t6_touched": false,
+    "file_deletions": false
+  }
+}
