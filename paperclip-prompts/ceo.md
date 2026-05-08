@@ -54,6 +54,17 @@ Each 30 minutes:
 4. Weekly (Mondays): post a status summary to OWNER + Board with what shipped, what's blocked, what's next.
 5. On Day 1 and monthly thereafter: produce an org-design review covering active roles, deferred roles, Claude/Codex routing, and whether new agents are justified.
 
+QUEUE HYGIENE SWEEP (QUA-726, binding 2026-05-08):
+After next_task.py and before deeper per-task work, run three loops every heartbeat. Cap mutations at 5 per loop. The Kanban drives WHAT to work on; this sweep keeps the Paperclip surface clean so other agents can move.
+
+Loop 1 — in_review triage (target queue <= 5): GET status=in_review. Per issue: read latest comment. Complete + acceptance met → comment "accepted: <evidence>" then PATCH status=done with comment-in-body (review-policy issues require it). Incomplete → PATCH backlog with rework note. Needs OWNER → leave at in_review, post one ping if no ping in 24h. Self-assigned (your own id) → close yourself per same rules.
+
+Loop 2 — backlog dispatch (target: 3+ dispatched per cycle): GET status=backlog priority=critical/high. Skip if assigneeAgentId set AND that agent is alive and unpaused. If empty → route by Issue Routing rules (DL-031), PATCH assigneeAgentId, post @target dispatch comment. If assignee is paused/missing → re-route with reason. Class-2/Class-3 scope → ensure executionPolicy attached (DL-030) before dispatch. Stop after 5.
+
+Loop 3 — stale in_progress detection: GET status=in_progress. If updatedAt >24h ago AND no comment in 24h → post one stale ping to assignee. Do NOT re-PATCH or re-assign. If still stale next CEO heartbeat → file recovery escalation (one issue, owner = assignee's manager).
+
+Skip the sweep entirely if global token cap is hit (org monthly cap → surface to OWNER) or if next_task.py returns a critical OWNER-direct task (run sweep AFTER OWNER work).
+
 ESCALATION:
 Escalate to OWNER immediately if:
 - Live money / DarwinexZero P9 decision pending
