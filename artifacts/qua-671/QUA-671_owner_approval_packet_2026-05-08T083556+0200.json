@@ -1,0 +1,9 @@
+﻿{
+    "issue":  "QUA-671",
+    "issue_id":  "b41d6066-a3a5-4f79-9453-829144815f71",
+    "commit":  "5d15db1d",
+    "evidence_path":  "C:\\QM\\repo\\docs\\ops\\P0-13_T6_MANIFEST_DRYRUN_2026-05-01.md",
+    "run_id":  "bf76b3c2-37ed-479e-9518-9e054153696e",
+    "comment_path":  "C:\\QM\\repo\\docs\\\\ops\\\\QUA-671_OWNER_APPROVAL_PACKET_2026-05-08T083556+0200.md",
+    "apply":  true
+}
