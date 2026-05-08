@@ -2,7 +2,7 @@
 
 - issue: `QUA-774`
 - task_name: `QM_QUA774_ExternalUnblockOpsSuite_60min`
-- checked_at_local: `2026-05-08 10:36` (Europe/Berlin)
+- checked_at_local: `2026-05-08 10:40` (Europe/Berlin)
 
 ## Launcher/suite execution
 
@@ -15,10 +15,11 @@
 
 ## Task schedule state
 
-- `NextRunTime`: present (`2026-05-08 10:36:36` local)
+- `LastRunTime`: `2026-05-08 10:40:40` (local)
+- `LastTaskResult`: `0`
+- `NextRunTime`: present (`2026-05-08 11:36:36` local)
 - `NumberOfMissedRuns`: `0`
-- note:
-  - `LastRunTime=1999-11-30` and `LastTaskResult=267011` were observed before first scheduler-triggered cycle; launcher/manual suite execution validates the runtime path now.
+- task was explicitly triggered once with `Start-ScheduledTask` and completed successfully.
 
 ## Log check
 
