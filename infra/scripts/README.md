@@ -83,8 +83,12 @@
   4. `Test-QUA774HandoffIntegrity.ps1`
 - Returns a consolidated object with `refresh`, `payload`, `verify`, and `handoff_integrity` sections.
 - Use this as the default heartbeat command while the issue remains blocked.
+- Optional `-RequireExternalSignal`:
+  - runs `Test-QUA774ExternalUnblockSignal.ps1` first
+  - short-circuits with `skipped=true` when no external unblock signal is present
 - Example:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Invoke-QUA774BlockedHeartbeat.ps1`
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Invoke-QUA774BlockedHeartbeat.ps1 -RequireExternalSignal`
 
 ## `Install-QUA774BlockedHeartbeatTask.ps1`
 
@@ -111,6 +115,19 @@
   - `2` on missing/malformed/mismatch
 - Example:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA774HandoffIntegrity.ps1`
+
+## `Test-QUA774ExternalUnblockSignal.ps1`
+
+- Guards QUA-774 heartbeats against blind polling while blocked.
+- Reads:
+  - `docs\ops\QUA-774_EXTERNAL_UNBLOCK_SIGNAL.json`
+- Contract:
+  - exit `0` when `ready_to_resume=true`
+  - exit `3` when signal file is missing or `ready_to_resume=false`
+- Use with:
+  - `Invoke-QUA774BlockedHeartbeat.ps1 -RequireExternalSignal`
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA774ExternalUnblockSignal.ps1`
 
 ## `../monitoring/Test-PythonRuntimeHealth.ps1`
 

@@ -1,0 +1,8 @@
+{
+  "issue_id": "QUA-774",
+  "ready_to_resume": false,
+  "updated_at_utc": "2026-05-08T07:30:00Z",
+  "unblock_owner": "DWX import owner",
+  "unblock_action": "Import/sync US500.DWX on T1..T5 and rerun QM5_1004 P2 for H1/H4/D1 reports",
+  "notes": "Set ready_to_resume=true only after external unblock actions are complete and evidence is available."
+}
