@@ -1,40 +1,40 @@
-﻿{
-    "generated_at":  "2026-05-08T07:07:07.4603847Z",
-    "phase":  "P0 Foundation",
-    "agents":  {
-                   "offline":  0,
-                   "online":  0,
-                   "blocked":  0
-               },
-    "pipeline":  {
-                     "eas_built":  0,
-                     "by_phase":  {
-                                      "P1":  0,
-                                      "P8":  0,
-                                      "G0":  0,
-                                      "P4":  0,
-                                      "P9b":  0,
-                                      "P5b":  0,
-                                      "P3":  0,
-                                      "P5c":  0,
-                                      "P10":  0,
-                                      "P6":  0,
-                                      "P7":  0,
-                                      "P3_5":  0,
-                                      "P2":  0,
-                                      "P9":  0,
-                                      "P5":  0
-                                  },
-                     "strategy_cards":  0
-                 },
-    "t6":  {
-               "status":  "offline",
-               "risk_state":  "green",
-               "autotrading":  false
-           },
-    "expenses":  {
-                     "entries":  2,
-                     "budget_eur":  1850,
-                     "spent_eur":  204
-                 }
+{
+    "generated_at": "2026-05-08T11:19:04Z",
+    "phase": "Wave 1 Pipeline: P2-P8 Active",
+    "agents": {
+        "online": 16,
+        "offline": 1,
+        "blocked": 0
+    },
+    "pipeline": {
+        "strategy_cards": 6,
+        "eas_built": 6,
+        "by_phase": {
+            "G0": 0,
+            "P1": 0,
+            "P2": 4,
+            "P3": 0,
+            "P3_5": 1,
+            "P4": 0,
+            "P5": 0,
+            "P5b": 0,
+            "P5c": 0,
+            "P6": 0,
+            "P7": 0,
+            "P8": 1,
+            "P9": 0,
+            "P9b": 0,
+            "P10": 0
+        }
+    },
+    "t6": {
+        "status": "offline",
+        "autotrading": false,
+        "risk_state": "green"
+    },
+    "expenses": {
+        "spent_eur": 204.0,
+        "budget_eur": 1850.0,
+        "entries": 2
+    }
 }
