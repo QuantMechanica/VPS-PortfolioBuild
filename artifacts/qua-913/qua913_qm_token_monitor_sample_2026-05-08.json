@@ -1,0 +1,63 @@
+﻿{
+    "check":  "qm_token_monitor",
+    "status":  "critical",
+    "generated_at_utc":  "2026-05-08T15:20:53.7556130Z",
+    "company_id":  "03d4dcc8-4cea-4133-9f68-90c0d99628fb",
+    "spent_cents":  28800,
+    "daily_delta":  17800.64,
+    "org_cap_cents":  30000,
+    "org_cap_pct_used":  96,
+    "burn_trend":  {
+                       "daily_delta_24h_cents":  17800.64,
+                       "daily_delta_7d_avg_cents":  4357.23
+                   },
+    "days_to_exhaust":  0.07,
+    "top3_agents":  [
+                        {
+                            "agent_id":  "a1",
+                            "agent_name":  "CEO",
+                            "adapter":  "claude_local",
+                            "status":  "active",
+                            "spent_cents":  12000,
+                            "daily_delta_cents":  5340.19,
+                            "last_heartbeat_at_utc":  "2026-05-08T14:58:00.0000000Z"
+                        },
+                        {
+                            "agent_id":  "a2",
+                            "agent_name":  "DevOps",
+                            "adapter":  "codex_local",
+                            "status":  "active",
+                            "spent_cents":  9800,
+                            "daily_delta_cents":  7120.26,
+                            "last_heartbeat_at_utc":  "2026-05-08T14:59:00.0000000Z"
+                        },
+                        {
+                            "agent_id":  "a3",
+                            "agent_name":  "CTO",
+                            "adapter":  "codex_local",
+                            "status":  "active",
+                            "spent_cents":  6100,
+                            "daily_delta_cents":  3560.13,
+                            "last_heartbeat_at_utc":  "2026-05-08T14:57:00.0000000Z"
+                        }
+                    ],
+    "anomalies":  [
+                      {
+                          "code":  "ORG_CAP_CRITICAL",
+                          "severity":  "critical",
+                          "detail":  "Org spend reached hard-stop threshold.",
+                          "org_cap_pct_used":  96,
+                          "threshold_pct":  90
+                      },
+                      {
+                          "code":  "ORG_EXHAUSTION_LEQ_4D",
+                          "severity":  "critical",
+                          "detail":  "Projected exhaustion window is within 4 days.",
+                          "days_to_exhaust":  0.07
+                      }
+                  ],
+    "source":  {
+                   "mode":  "fixture",
+                   "token_budget_path":  "C:\\QM\\repo\\framework\\registry\\token_budget.json"
+               }
+}

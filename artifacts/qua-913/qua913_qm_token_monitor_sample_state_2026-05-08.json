@@ -1,0 +1,53 @@
+﻿{
+    "generated_at_utc":  "2026-05-08T15:20:53.7556130Z",
+    "org_spent_cents":  28800,
+    "org_daily_delta_cents":  17800.64,
+    "agentsById":  {
+                       "a1":  {
+                                  "spent_cents":  12000,
+                                  "daily_delta_cents":  5340.19
+                              },
+                       "a2":  {
+                                  "spent_cents":  9800,
+                                  "daily_delta_cents":  7120.26
+                              },
+                       "a3":  {
+                                  "spent_cents":  6100,
+                                  "daily_delta_cents":  3560.13
+                              },
+                       "a4":  {
+                                  "spent_cents":  900,
+                                  "daily_delta_cents":  1780.06
+                              }
+                   },
+    "history":  [
+                    {
+                        "generated_at_utc":  "2026-05-02T00:00:00Z",
+                        "org_daily_delta_cents":  1800
+                    },
+                    {
+                        "generated_at_utc":  "2026-05-03T00:00:00Z",
+                        "org_daily_delta_cents":  1900
+                    },
+                    {
+                        "generated_at_utc":  "2026-05-04T00:00:00Z",
+                        "org_daily_delta_cents":  2100
+                    },
+                    {
+                        "generated_at_utc":  "2026-05-05T00:00:00Z",
+                        "org_daily_delta_cents":  2200
+                    },
+                    {
+                        "generated_at_utc":  "2026-05-06T00:00:00Z",
+                        "org_daily_delta_cents":  2300
+                    },
+                    {
+                        "generated_at_utc":  "2026-05-07T00:00:00Z",
+                        "org_daily_delta_cents":  2400
+                    },
+                    {
+                        "generated_at_utc":  "2026-05-08T15:20:53.7556130Z",
+                        "org_daily_delta_cents":  17800.64
+                    }
+                ]
+}
