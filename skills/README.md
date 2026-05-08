@@ -9,15 +9,36 @@ Reusable instruction documents that QuantMechanica V5 agents load on demand. Per
 ```
 skills/
   qm/                        # Custom QM-authored skills (V5 procedural how-tos)
-    qm-validate-custom-symbol/
-    qm-strategy-card-extraction/
-    qm-build-ea-from-card/
-    qm-run-pipeline-phase/
-    qm-t6-deploy-verification/
-    qm-zero-trades-recovery/
+    qm-g0-review/              # G0 gate: CEO reviews Strategy Card (R1-R4)
+    qm-strategy-card-extraction/  # Research extracts cards from approved sources
+    qm-build-ea-from-card/     # Development builds .mq5 EA from APPROVED card
+    qm-new-setfiles/           # Pipeline-Operator generates backtest .set files
+    qm-p2-baseline/            # Pipeline-Operator runs P2 baseline sweep
+    qm-p3-sweep/               # Research + Pipeline-Operator run P3 parameter sweep
+    qm-run-pipeline-phase/     # Pipeline-Operator runs P3.5/P5/P5b/P5c/P6/P7/P8
+    qm-p4-montecarlo/          # Research + CTO run P4 Monte Carlo validation
+    qm-t6-deploy-verification/ # LiveOps verifies T6 deploy under OWNER manifest
+    qm-zero-trades-recovery/   # Pipeline-Operator diagnoses cohort zero-trade events
+    qm-validate-custom-symbol/ # DevOps validates custom symbols vs broker feed
+    qm-pipeline-status/        # CEO/DevOps checks current pipeline state
+    qm-render-dashboard/       # DevOps regenerates ops dashboard HTML
   marketplace/               # Pinned external skills (anthropics/skills, obra/superpowers, etc.)
     INDEX.md                 # Provenance + commit pins + assignment matrix
 ```
+
+## Pipeline Coverage
+
+| Gate | Phase | Skill |
+|------|-------|-------|
+| G0 | Research intake | `qm-g0-review` (CEO verdict) + `qm-strategy-card-extraction` (Research) |
+| P1 | EA build | `qm-build-ea-from-card` (Development/CTO) + `qm-new-setfiles` (Pipeline-Op) |
+| P2 | Baseline sweep | `qm-p2-baseline` (Pipeline-Operator) |
+| P3 | Parameter sweep | `qm-p3-sweep` (Research + Pipeline-Op) |
+| P3.5 | Walk-forward | `qm-run-pipeline-phase` (Pipeline-Operator) |
+| P4 | Monte Carlo | `qm-p4-montecarlo` (Research + CTO) |
+| P5-P8 | Stress/Stats/News | `qm-run-pipeline-phase` (Pipeline-Operator) |
+| P9-P10 | Live shadow/deploy | `qm-t6-deploy-verification` (LiveOps/DevOps interim) |
+| Ops | Cross-cutting | `qm-pipeline-status`, `qm-render-dashboard`, `qm-validate-custom-symbol`, `qm-zero-trades-recovery` |
 
 Each `skills/qm/<skill-name>/` folder contains a `SKILL.md` (frontmatter routing + body) and an optional `references/` subfolder for support material.
 
