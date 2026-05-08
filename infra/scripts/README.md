@@ -258,6 +258,19 @@
 - Preview mode (no registration):
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-QUA774ExternalUnblockStatusTask.ps1 -PreviewOnly`
 
+## `Test-QUA774ExternalUnblockStatusTask.ps1`
+
+- Validates QUA-774 external-unblock status task health/wiring.
+- Checks:
+  - scheduled task exists
+  - action arguments reference expected launcher path
+  - `LastTaskResult == 0`
+- Exit codes:
+  - `0`: task wiring/health check passes
+  - `2`: missing task or wiring/health mismatch
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA774ExternalUnblockStatusTask.ps1`
+
 ## `../monitoring/Test-PythonRuntimeHealth.ps1`
 
 - Read-only Python runtime integrity check for infra/pipeline hosts.
