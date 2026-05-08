@@ -213,6 +213,20 @@
 - Example:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA774ExternalUnblockHandoffCache.ps1`
 
+## `Write-QUA774ExternalUnblockStatusSnapshot.ps1`
+
+- Writes a consolidated machine-readable blocked-state snapshot for QUA-774.
+- Reads from `Invoke-QUA774ExternalUnblockHandoff.ps1` and persists:
+  - signal/package status
+  - `ready_to_resume`
+  - cache short-circuit state (`handoff_skipped`, reason)
+  - signal fingerprint + probe cache path
+  - explicit external unblock owner/actions
+- Default output:
+  - `docs\ops\QUA-774_EXTERNAL_UNBLOCK_STATUS_2026-05-08.json`
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Write-QUA774ExternalUnblockStatusSnapshot.ps1`
+
 ## `../monitoring/Test-PythonRuntimeHealth.ps1`
 
 - Read-only Python runtime integrity check for infra/pipeline hosts.
