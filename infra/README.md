@@ -135,6 +135,10 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `scripts/Ensure-AgentWorktree.ps1`
   - Converges per-agent worktree paths under `C:\QM\worktrees\` for CWD isolation.
   - Refuses non-empty non-worktree target paths and supports idempotent re-runs.
+- `scripts/install-claude-video-mcp.sh`
+  - Idempotent Linux/VPS installer for the `claude-video` MCP server.
+  - Converges runtime user/group, app directory, npm package state, env file, and systemd service.
+  - Safe to re-run; service unit updates trigger `daemon-reload` only when content changes.
 - `scripts/Repair-Python311FromNuget.ps1`
   - Idempotent Python 3.11 runtime recovery for host incidents where stdlib/launcher state is corrupted.
   - Uses official NuGet package (`python/<version>`) to restore `C:\Users\Administrator\AppData\Local\Programs\Python\Python311`.
@@ -284,6 +288,20 @@ Agent worktree isolation (idempotent, per agent key):
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Ensure-AgentWorktree.ps1 -AgentKey devops -CreateBranchIfMissing
+```
+
+claude-video MCP server deploy (Linux VPS with systemd):
+
+```bash
+sudo bash /opt/quantmechanica/repo/infra/scripts/install-claude-video-mcp.sh
+sudo systemctl status claude-video-mcp --no-pager
+```
+
+Optional package override:
+
+```bash
+sudo MCP_PACKAGE='claude-video-mcp@latest' START_CMD='npx -y claude-video-mcp' \
+  bash /opt/quantmechanica/repo/infra/scripts/install-claude-video-mcp.sh
 ```
 
 ## Non-goals

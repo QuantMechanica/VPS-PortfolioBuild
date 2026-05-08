@@ -22,7 +22,12 @@ same state.
    - `QM_DWX_HourlyCheck` (if DWX pipeline exists on host)
    - `QM_InfraHealthCheck_5min`
    - `QM_Backup_Daily_0215`
-6. Monitoring outputs written to:
+6. MCP runtime service installed for YouTube analyst tooling:
+   - `claude-video-mcp` systemd service converged via
+     `infra/scripts/install-claude-video-mcp.sh`
+   - runtime env file at `/etc/default/claude-video-mcp` populated with required keys
+   - service health validated with `systemctl status claude-video-mcp`
+7. Monitoring outputs written to:
    - `C:\QM\logs\infra\health\`
    - `C:\QM\logs\infra\backup\`
 
@@ -32,6 +37,8 @@ same state.
 2. `powershell -File C:\QM\repo\infra\backup.ps1 -WhatIf` for dry-run check
 3. `powershell -File C:\QM\repo\infra\monitoring\Invoke-InfraHealthCheck.ps1`
 4. `powershell -File C:\QM\repo\scripts\export_public_snapshot.ps1 -NoGit`
+5. `sudo bash /opt/quantmechanica/repo/infra/scripts/install-claude-video-mcp.sh`
+6. `sudo systemctl status claude-video-mcp --no-pager`
 
 ## Drive/Git Safety Rules (PC1-00)
 

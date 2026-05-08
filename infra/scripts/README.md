@@ -1,5 +1,24 @@
 # Infra Scripts Notes
 
+## `install-claude-video-mcp.sh`
+
+- Idempotent Linux/VPS installer for `claude-video` MCP server.
+- Converges:
+  - service account/group (`qm-mcp` by default)
+  - install root (`/opt/quantmechanica/claude-video-mcp`)
+  - npm package state (`claude-video-mcp@latest` by default)
+  - environment file (`/etc/default/claude-video-mcp`)
+  - systemd unit (`claude-video-mcp.service`)
+- Re-run behavior:
+  - package reinstall is safe and converges to the requested package tag/version
+  - `systemctl daemon-reload` only runs when unit content changes
+- Default run:
+  - `sudo bash /opt/quantmechanica/repo/infra/scripts/install-claude-video-mcp.sh`
+- Optional overrides:
+  - `MCP_PACKAGE=<name@version>`
+  - `START_CMD='<server launch command>'`
+  - `HEALTHCHECK_CMD='<post-start command>'`
+
 ## `Test-P2RedeploySummary.ps1`
 
 - Read-only P2 redeploy preflight/post-run summary for one strategy + symbol.
