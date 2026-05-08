@@ -73,3 +73,12 @@ This provides runtime proof that duplicate verdict paths are active, not only cl
   - `LINT_SECONDS=0.102`
 - Interpretation:
   - Passes acceptance threshold (<5s on empty wiki tree).
+
+## Wiki-Source Duplicate Reproduction (correct vault-root structure)
+- Note: `research_dedup_check.py` expects `--vault` to point directly at the wiki root containing `strategies/`.
+- Command:
+  - `python framework/scripts/research_dedup_check.py check --slug hb94-slug --strategy-id QUA837_WIKI_ONLY --vault %TEMP%\\qua837_wiki_root`
+- Result:
+  - `### 09 Strategy Wiki/strategies/ — 1 nodes scanned`
+  - `EXACT DUPLICATE: [wiki] ...\\strategies\\dup_wiki_only.md (qua837-wiki-only-slug / QUA837_WIKI_ONLY)`
+  - `VERDICT: DUPLICATE — link as _v<n> enhancement per DL-029/033, NOT new ea_id`
