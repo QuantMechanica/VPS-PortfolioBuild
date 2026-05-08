@@ -41,6 +41,22 @@
 - Example:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Run-QUA774BlockerRefresh.ps1`
 
+## `New-QUA774IssueTransitionPayload.ps1`
+
+- Builds deterministic issue-update artifacts from canonical blocker status:
+  - transition payload JSON
+  - ready-to-post blocked comment markdown
+- Reads:
+  - `docs\ops\QUA-774_BLOCKER_STATUS_2026-05-08.json`
+- Writes:
+  - `docs\ops\QUA-774_ISSUE_TRANSITION_PAYLOAD_2026-05-08.json`
+  - `docs\ops\QUA-774_BLOCKED_COMMENT_2026-05-08.md`
+- Transition behavior:
+  - `gate.status=blocked` -> state `blocked`
+  - `gate.status=ready` -> state `in_review`
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\New-QUA774IssueTransitionPayload.ps1`
+
 ## `../monitoring/Test-PythonRuntimeHealth.ps1`
 
 - Read-only Python runtime integrity check for infra/pipeline hosts.
