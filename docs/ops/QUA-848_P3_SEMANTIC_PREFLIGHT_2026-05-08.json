@@ -1,0 +1,63 @@
+{
+  "issue": "QUA-848",
+  "timestamp_utc": "2026-05-08T11:57:25.935846+00:00",
+  "commit": "f64994c0",
+  "script": "framework/scripts/p3_param_sweep.py",
+  "ea": "framework/EAs/QM5_1003_davey_baseline_3bar/QM5_1003_davey_baseline_3bar.mq5",
+  "card": "strategy-seeds/cards/davey-baseline-3bar_card.md#section-8-parameters-to-test-p3-sweep",
+  "sweep_axes": {
+    "ssl1": [
+      "0.5",
+      "0.75",
+      "1.0",
+      "1.25",
+      "1.5",
+      "2.0"
+    ],
+    "ssl_usd_cap": [
+      "1000",
+      "2000",
+      "3000",
+      "5000"
+    ],
+    "strategy_atr_period": [
+      "10",
+      "14",
+      "20",
+      "30"
+    ]
+  },
+  "ea_inputs_detected": [
+    "PORTFOLIO_WEIGHT",
+    "RISK_FIXED",
+    "RISK_PERCENT",
+    "qm_ea_id",
+    "qm_friday_close_enabled",
+    "qm_friday_close_hour_broker",
+    "qm_magic_slot_offset",
+    "qm_news_mode",
+    "ssl1",
+    "ssl_usd_cap",
+    "strategy_atr_period"
+  ],
+  "matched_axes": [
+    "ssl1",
+    "ssl_usd_cap",
+    "strategy_atr_period"
+  ],
+  "matched_axes_count": 3,
+  "semantic_preflight": {
+    "status": "ok",
+    "p2_pass_symbol_count": 3,
+    "pass_symbols": [
+      "EURNZD.DWX",
+      "AUDCHF.DWX",
+      "AUDJPY.DWX"
+    ]
+  },
+  "bounded_dry_run": {
+    "command": "python framework/scripts/p3_param_sweep.py --ea QM5_1003 --symbols AUDCHF.DWX --periods H1 --year 2024 --max-runs 1 --dry-run",
+    "report_csv": "D:\\QM\\reports\\pipeline\\QM5_1003\\P3\\report.csv",
+    "last_report_row": "1003,P3,AUDCHF.DWX,H1,AUDCHF.DWX_H1_013,DRY,\"{\"\"ssl1\"\": 0.5, \"\"ssl_usd_cap\"\": 5000, \"\"strategy_atr_period\"\": 10}\",dry_run,"
+  }
+}
