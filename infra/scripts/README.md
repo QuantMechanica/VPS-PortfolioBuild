@@ -170,8 +170,9 @@
 - Runs in order:
   1. `New-QUA774ExternalUnblockChildPayload.ps1`
   2. `Write-QUA774ExternalUnblockEscalation.ps1`
-  3. `Test-QUA774ExternalUnblockSignal.ps1`
-- Returns a consolidated object with `child_payload`, `escalation_note`, and `signal_check`.
+  3. `Test-QUA774ExternalUnblockPackage.ps1`
+  4. `Test-QUA774ExternalUnblockSignal.ps1`
+- Returns a consolidated object with `child_payload`, `escalation_note`, `package_check`, and `signal_check`.
 - Signal-check exit `3` (`waiting_external_signal`) is treated as expected while blocked.
 - Example:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Invoke-QUA774ExternalUnblockHandoff.ps1`

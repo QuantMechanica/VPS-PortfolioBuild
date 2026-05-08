@@ -1,7 +1,8 @@
 param(
     [string]$ChildPayloadScript = 'infra\scripts\New-QUA774ExternalUnblockChildPayload.ps1',
     [string]$EscalationScript = 'infra\scripts\Write-QUA774ExternalUnblockEscalation.ps1',
-    [string]$SignalCheckScript = 'infra\scripts\Test-QUA774ExternalUnblockSignal.ps1'
+    [string]$SignalCheckScript = 'infra\scripts\Test-QUA774ExternalUnblockSignal.ps1',
+    [string]$PackageCheckScript = 'infra\scripts\Test-QUA774ExternalUnblockPackage.ps1'
 )
 
 Set-StrictMode -Version Latest
@@ -11,8 +12,9 @@ $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $childFull = Join-Path $repoRoot $ChildPayloadScript
 $escalationFull = Join-Path $repoRoot $EscalationScript
 $signalFull = Join-Path $repoRoot $SignalCheckScript
+$packageFull = Join-Path $repoRoot $PackageCheckScript
 
-foreach ($p in @($childFull, $escalationFull, $signalFull)) {
+foreach ($p in @($childFull, $escalationFull, $signalFull, $packageFull)) {
     if (-not (Test-Path -LiteralPath $p -PathType Leaf)) {
         throw "Required script missing: $p"
     }
@@ -20,6 +22,7 @@ foreach ($p in @($childFull, $escalationFull, $signalFull)) {
 
 $child = & $childFull
 $escalation = & $escalationFull
+$package = & $packageFull
 
 $signal = $null
 $savedPreference = $ErrorActionPreference
@@ -39,5 +42,6 @@ finally {
     generated_at_utc = (Get-Date).ToUniversalTime().ToString('o')
     child_payload = $child
     escalation_note = $escalation
+    package_check = $package
     signal_check = $signal
 }
