@@ -1,0 +1,11 @@
+{
+  "captured_utc": "2026-05-08T06:36:47Z",
+  "issue_id": "b41d6066-a3a5-4f79-9453-829144815f71",
+  "issue_status": "in_progress",
+  "issue_priority": "high",
+  "pending_comments": null,
+  "latest_comment_id": "de268c66-c6a6-465b-acb4-529661d3fc68",
+  "comment_count": 576,
+  "latest_comment_preview": "Blocked on commit finalization for `QUA-671`: git reports an existing lock file at `C:\\QM\\repo\\.git\\index.lock`, so I could not stage/commit the new manifest artifacts yet.\n\nImplemented and verified locally:\n- `deploy-manifests/schema.yaml`\n- `deploy-manifests/examples/t6_manifest_dryrun.yaml`\n- `infra/scripts/Test-T6DeployManifestSchema.ps1`\n- `docs/ops/QUA-671_T6_DEPLOY_MANIFEST_DRYRUN_2026-05-01.md`\n- `docs/ops/QUA-671_T6_MANIFEST_DRYRUN_2026-05-01.log`\n- updated `deploy-manifests/README.md`\n\nDry-run result:\n- `schema_check_result=PASS`\n- no live-trading path touched (schema-only validation)\n\n`AGENTS.md` done criteria requires a commit hash in closeout, so I need your direction on the lock-file conflict:\n1. Remove stale `C:\\QM\\repo\\.git\\index.lock` and continue with commit.\n2. Leave repo untouched and stop here for manual git recovery."
+}
+
