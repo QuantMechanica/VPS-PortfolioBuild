@@ -287,6 +287,18 @@
 - Example:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA774ExternalUnblockOpsSuite.ps1`
 
+## `Install-QUA774ExternalUnblockOpsSuiteTask.ps1`
+
+- Idempotently installs a Windows Scheduled Task for the QUA-774 external-unblock ops suite.
+- Default task:
+  - `QM_QUA774_ExternalUnblockOpsSuite_60min`
+- Default cadence:
+  - every `60` minutes
+- Script executed by launcher:
+  - `infra\scripts\Test-QUA774ExternalUnblockOpsSuite.ps1`
+- Preview mode (no registration):
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-QUA774ExternalUnblockOpsSuiteTask.ps1 -PreviewOnly`
+
 ## `../monitoring/Test-PythonRuntimeHealth.ps1`
 
 - Read-only Python runtime integrity check for infra/pipeline hosts.
