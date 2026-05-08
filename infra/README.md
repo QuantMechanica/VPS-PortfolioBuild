@@ -2,13 +2,6 @@
 
 Idempotent infrastructure scripts for QuantMechanica V5. Re-running these scripts must converge to the same desired state.
 
-## P2 dispatch tooling
-
-- `scripts/build_p2_dispatch_matrix.py`
-  - Builds canonical P2 matrix payloads from a validated symbol source.
-  - Optional preflight `--verify-setfiles` fails fast when any per-symbol setfile is missing.
-  - Optional `--missing-setfiles-json <path>` writes machine-readable missing-setfile evidence for issue comments and unblock handoffs.
-
 ## Day-1 assets (QUA-11)
 
 - `scripts/Invoke-DwxHourlyCheck.ps1`

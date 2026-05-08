@@ -51,10 +51,6 @@ def _load_symbols_from_csv(path: Path) -> list[str]:
     return symbols
 
 
-def _resolve_setfile_paths(template: str, symbols: list[str]) -> list[Path]:
-    return [Path(template.format(symbol=symbol)) for symbol in symbols]
-
-
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--symbols-file", help="Path to canonical .DWX symbol list (txt)")
@@ -70,15 +66,6 @@ def main() -> int:
         help="Setfile template. Use {symbol} placeholder.",
     )
     ap.add_argument("--expected-count", type=int, default=36)
-    ap.add_argument(
-        "--verify-setfiles",
-        action="store_true",
-        help="Fail fast if any per-symbol setfile path does not exist.",
-    )
-    ap.add_argument(
-        "--missing-setfiles-json",
-        help="Optional JSON output path for missing setfile evidence.",
-    )
     args = ap.parse_args()
 
     default_matrix_csv = Path("framework/registry/dwx_symbol_matrix.csv")
@@ -93,40 +80,12 @@ def main() -> int:
     if len(symbols) != args.expected_count:
         raise ValueError(f"expected {args.expected_count} symbols, got {len(symbols)}")
 
-    setfile_paths = _resolve_setfile_paths(args.setfile_template, symbols)
-    missing_setfiles = [str(path) for path in setfile_paths if not path.exists()]
-
-    if args.missing_setfiles_json:
-        missing_out = Path(args.missing_setfiles_json)
-        missing_out.parent.mkdir(parents=True, exist_ok=True)
-        missing_out.write_text(
-            json.dumps(
-                {
-                    "ea_id": args.ea_id,
-                    "phase": args.phase,
-                    "expected_count": args.expected_count,
-                    "symbols_count": len(symbols),
-                    "setfile_template": args.setfile_template,
-                    "missing_count": len(missing_setfiles),
-                    "missing_setfiles": missing_setfiles,
-                },
-                indent=2,
-            )
-            + "\n",
-            encoding="utf-8",
-        )
-
-    if args.verify_setfiles and missing_setfiles:
-        raise ValueError(
-            f"missing {len(missing_setfiles)} setfile(s) for template {args.setfile_template}"
-        )
-
     payload = {
         "ea_id": args.ea_id,
         "version": args.version,
         "phase": args.phase,
         "sub_gate_config_hash": args.sub_gate_config_hash,
-        "setfile_path": str(setfile_paths[0]),
+        "setfile_path": args.setfile_template.format(symbol=symbols[0]),
         "symbols": symbols,
     }
 
