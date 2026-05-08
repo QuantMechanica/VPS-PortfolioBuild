@@ -60,6 +60,7 @@ Executed and passed:
 1. `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\tests\Test-QmTokenMonitor.ps1`
 2. `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\tests\Test-QmTokenMonitorTaskInstall.ps1`
 3. `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\tests\Test-InfraAuditQmTokenMonitorWiring.ps1`
+4. `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\tests\Test-QmTokenMonitorOutputContract.ps1`
 
 ## Commit chain
 
@@ -72,4 +73,3 @@ Executed and passed:
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-QmTokenMonitorTask.ps1 -EveryMinutes 60
 ```
-
