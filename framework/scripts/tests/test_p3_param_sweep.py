@@ -3,6 +3,7 @@ from __future__ import annotations
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
 from framework.scripts import p3_param_sweep
 
@@ -51,6 +52,48 @@ class P3ParamSweepTests(unittest.TestCase):
             self.assertIn("AUDCHF.DWX_H1_001", got)
             self.assertIn("AUDCHF.DWX_H1_002", got)
             self.assertNotIn("AUDCHF.DWX_H1_003", got)
+
+    @patch("framework.scripts.p3_param_sweep.save_dispatch_state")
+    @patch("framework.scripts.p3_param_sweep.resolve_target_terminal")
+    @patch("framework.scripts.p3_param_sweep.load_dispatch_state")
+    def test_reserve_terminal_returns_selected_terminal(
+        self,
+        mock_load: unittest.mock.MagicMock,
+        mock_resolve: unittest.mock.MagicMock,
+        mock_save: unittest.mock.MagicMock,
+    ) -> None:
+        mock_load.return_value = {"dedup": {}, "running": {}}
+        mock_resolve.return_value = {"status": "scheduled", "terminal": "T3"}
+        got = p3_param_sweep.reserve_terminal(
+            ea_id=1003,
+            symbol="AUDCHF.DWX",
+            period="H1",
+            setfile=Path("C:/tmp/run.set"),
+            state_path=Path("C:/tmp/dispatch_state.json"),
+        )
+        self.assertEqual(got, "T3")
+        mock_save.assert_called_once()
+
+    @patch("framework.scripts.p3_param_sweep.save_dispatch_state")
+    @patch("framework.scripts.p3_param_sweep.resolve_target_terminal")
+    @patch("framework.scripts.p3_param_sweep.load_dispatch_state")
+    def test_reserve_terminal_returns_none_when_no_capacity(
+        self,
+        mock_load: unittest.mock.MagicMock,
+        mock_resolve: unittest.mock.MagicMock,
+        mock_save: unittest.mock.MagicMock,
+    ) -> None:
+        mock_load.return_value = {"dedup": {}, "running": {}}
+        mock_resolve.return_value = {"status": "no_capacity", "terminal": None}
+        got = p3_param_sweep.reserve_terminal(
+            ea_id=1003,
+            symbol="AUDCHF.DWX",
+            period="H1",
+            setfile=Path("C:/tmp/run.set"),
+            state_path=Path("C:/tmp/dispatch_state.json"),
+        )
+        self.assertIsNone(got)
+        mock_save.assert_called_once()
 
 
 if __name__ == "__main__":
