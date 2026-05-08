@@ -38,38 +38,84 @@ def main() -> int:
         print(json.dumps({"status": "error", "checks": checks}, indent=2))
         return 2
 
-    command = [
-        "pwsh",
-        str(GEN_PS1),
-        "-EALabel",
-        args.ea_label,
-        "-Period",
-        args.period,
-    ]
+    pattern = f"{args.ea_label}_*_{args.period}_backtest.set"
+    existing = sorted(sets_dir.glob(pattern))
+    symbols = []
+    for setfile in existing:
+        prefix = f"{args.ea_label}_"
+        suffix = f"_{args.period}_backtest.set"
+        name = setfile.name
+        if not name.startswith(prefix) or not name.endswith(suffix):
+            continue
+        symbol = name[len(prefix) : -len(suffix)]
+        if symbol and symbol not in EXCLUDED_SYMBOLS:
+            symbols.append(symbol)
+
+    if not symbols:
+        print(
+            json.dumps(
+                {
+                    "status": "error",
+                    "checks": checks,
+                    "reason": "no_seed_setfiles",
+                    "pattern": pattern,
+                    "sets_dir": str(sets_dir),
+                },
+                indent=2,
+            )
+        )
+        return 2
 
     if not args.dry_run:
-        proc = subprocess.run(command, cwd=REPO_ROOT, capture_output=True, text=True)
-        if proc.returncode != 0:
-            print(
-                json.dumps(
-                    {
-                        "status": "error",
-                        "checks": checks,
-                        "command": command,
-                        "stderr": proc.stderr[-4000:],
-                        "stdout": proc.stdout[-4000:],
-                    },
-                    indent=2,
+        for symbol in symbols:
+            command = [
+                "pwsh",
+                str(GEN_PS1),
+                "-EaSlug",
+                args.ea_label,
+                "-Symbol",
+                symbol,
+                "-TF",
+                args.period,
+                "-Env",
+                "backtest",
+            ]
+            proc = subprocess.run(command, cwd=REPO_ROOT, capture_output=True, text=True)
+            if proc.returncode != 0:
+                print(
+                    json.dumps(
+                        {
+                            "status": "error",
+                            "checks": checks,
+                            "command": command,
+                            "symbol": symbol,
+                            "stderr": proc.stderr[-4000:],
+                            "stdout": proc.stdout[-4000:],
+                        },
+                        indent=2,
+                    )
                 )
-            )
-            return proc.returncode
+                return proc.returncode
 
     setfiles = sorted(sets_dir.glob(f"{args.ea_label}_*_{args.period}_backtest.set"))
     output = {
         "status": "ok" if len(setfiles) >= args.expected_count else "warning",
         "checks": checks,
         "dry_run": args.dry_run,
-        "command": command,
+        "generation_command_template": [
+            "pwsh",
+            str(GEN_PS1),
+            "-EaSlug",
+            args.ea_label,
+            "-Symbol",
+            "<SYMBOL>",
+            "-TF",
+            args.period,
+            "-Env",
+            "backtest",
+        ],
+        "symbols_regenerated": symbols if not args.dry_run else [],
+        "seed_symbol_count": len(symbols),
         "setfile_count": len(setfiles),
         "expected_count": args.expected_count,
         "excluded_symbols": sorted(EXCLUDED_SYMBOLS),
