@@ -132,6 +132,19 @@
 - Example:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA774ExternalUnblockSignal.ps1`
 
+## `New-QUA774ExternalUnblockChildPayload.ps1`
+
+- Generates a machine-readable child-issue handoff payload for the external unblock owner.
+- Output (default):
+  - `docs\ops\QUA-774_EXTERNAL_UNBLOCK_CHILD_PAYLOAD_2026-05-08.json`
+- Includes:
+  - recommended child issue title/owner/priority
+  - unblock acceptance criteria
+  - required external evidence artifacts
+  - required `QUA-774_EXTERNAL_UNBLOCK_SIGNAL.json` update (`ready_to_resume=true`)
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\New-QUA774ExternalUnblockChildPayload.ps1`
+
 ## `../monitoring/Test-PythonRuntimeHealth.ps1`
 
 - Read-only Python runtime integrity check for infra/pipeline hosts.

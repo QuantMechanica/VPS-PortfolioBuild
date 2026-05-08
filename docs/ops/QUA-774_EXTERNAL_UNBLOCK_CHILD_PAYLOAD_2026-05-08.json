@@ -1,0 +1,27 @@
+﻿{
+    "parent_issue_id":  "QUA-774",
+    "child_issue_recommendation":  {
+                                       "title":  "QUA-774 external unblock: US500.DWX import/sync + P2 rerun evidence",
+                                       "owner_role":  "DWX source acquisition + import pipeline owner",
+                                       "priority":  "high",
+                                       "status":  "todo",
+                                       "unblock_required_for":  "QUA-774",
+                                       "acceptance_criteria":  [
+                                                                   "US500.DWX imported on T1 with non-empty history/ticks",
+                                                                   "US500.DWX synced from T1 to T2..T5",
+                                                                   "QM5_1004 P2 rerun completed with H1/H4/D1 reports present",
+                                                                   "Evidence paths attached for import/sync and P2 report outputs"
+                                                               ],
+                                       "required_artifacts":  [
+                                                                  "Evidence proving US500.DWX availability on T1..T5",
+                                                                  "P2 redeploy report files for H1/H4/D1",
+                                                                  "Timestamped execution log for import and rerun actions"
+                                                              ],
+                                       "external_signal_update":  {
+                                                                      "file":  "docs/ops/QUA-774_EXTERNAL_UNBLOCK_SIGNAL.json",
+                                                                      "set_ready_to_resume":  true,
+                                                                      "note":  "Set only after all acceptance criteria are met."
+                                                                  }
+                                   },
+    "generated_at_utc":  "2026-05-08T07:34:06.9168765Z"
+}
