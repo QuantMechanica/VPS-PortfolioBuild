@@ -173,6 +173,12 @@
   3. `Test-QUA774ExternalUnblockPackage.ps1`
   4. `Test-QUA774ExternalUnblockSignal.ps1`
 - Returns a consolidated object with `child_payload`, `escalation_note`, `package_check`, and `signal_check`.
+- Anti-polling behavior:
+  - caches last probe state in `artifacts\ops\QUA-774_EXTERNAL_UNBLOCK_LAST_PROBE.json`
+  - if `QUA-774_EXTERNAL_UNBLOCK_SIGNAL.json` is unchanged and prior result was `waiting_external_signal`, the script short-circuits with:
+    - `skipped=true`
+    - `reason=signal_unchanged_still_blocked`
+  - use `-Force` to bypass cache short-circuit and run all checks immediately
 - Signal-check exit `3` (`waiting_external_signal`) is treated as expected while blocked.
 - Example:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Invoke-QUA774ExternalUnblockHandoff.ps1`
