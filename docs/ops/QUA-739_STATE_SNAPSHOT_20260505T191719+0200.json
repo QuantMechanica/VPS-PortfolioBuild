@@ -1,0 +1,10 @@
+{
+  "issue": "QUA-739",
+  "timestamp_local": "2026-05-05T19:17:20.5051524+02:00",
+  "status": "blocked",
+  "dedup_qm5_1003_p2_h1_2024": 0,
+  "active_python": 5,
+  "active_testers": 5,
+  "unblock_owner": "CTO / Framework Ops",
+  "unblock_action": "Fix MT5/run_smoke materialization and confirm sentinel PASS before canonical rerun"
+}

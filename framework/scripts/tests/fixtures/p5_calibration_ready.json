@@ -1,0 +1,11 @@
+{
+  "measurement_status": "MEASURED",
+  "symbols": {
+    "EURUSD.DWX": {
+      "commission_cents_per_lot": 700,
+      "latency_ms": {"avg": 42, "p95": 95},
+      "slippage_points": {"avg": 0.7, "p95": 1.8},
+      "spread_points": {"median": 10, "p95": 18}
+    }
+  }
+}

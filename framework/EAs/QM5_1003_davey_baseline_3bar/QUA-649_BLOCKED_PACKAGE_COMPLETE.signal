@@ -1,0 +1,6 @@
+issue=QUA-649
+status=BLOCKED_PACKAGE_COMPLETE
+packet=C:\QM\repo\framework\EAs\QM5_1003_davey_baseline_3bar\QUA-649_HANDOFF_PACKET_20260501T105350Z.json
+guard_consistency=C:\QM\repo\framework\EAs\QM5_1003_davey_baseline_3bar\QUA-649_GUARD_CONSISTENCY_20260501T105805Z.json
+resume_only_when=CTO/Framework Operations confirms isolated smoke runtime and successful artifact materialization for QM5_1003 and QM5_1004
+written_utc=2026-05-01T11:05:16.0492631Z

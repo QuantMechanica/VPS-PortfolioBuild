@@ -1,0 +1,21 @@
+{
+  "checked_utc": "2026-05-01T10:59:47.9961965Z",
+  "overall": "PASS",
+  "checks": [
+    {
+      "name": "signal",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1003_davey_baseline_3bar\\QUA-649_BLOCKED_PACKAGE_COMPLETE.signal",
+      "exists": true
+    },
+    {
+      "name": "packet",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1003_davey_baseline_3bar\\QUA-649_HANDOFF_PACKET_20260501T105350Z.json",
+      "exists": true
+    },
+    {
+      "name": "packet_validation",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1003_davey_baseline_3bar\\QUA-649_HANDOFF_PACKET_VALIDATION_20260501T105430Z.json",
+      "exists": true
+    }
+  ]
+}

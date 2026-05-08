@@ -5,3 +5,14 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\lien-fade-double-zeros_card.md
+BAR=M15
+trend_ma_period=20
+entry_offset_pips=12
+stop_offset_pips=20
+ROUND_NUMBER_GRID=double_zero
+round_grid_tier=double_zero
+proximity_pips=50
+trail_method=two_bar_low
+confluence_filter=off
+tf=M15

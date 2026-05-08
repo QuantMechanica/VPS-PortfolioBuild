@@ -1,0 +1,89 @@
+{
+  "source_log": "D:\\QM\\mt5\\T1\\dwx_import\\logs\\hourly_2026-04-27.log",
+  "generated_csv": "D:\\QM\\reports\\setup\\T1_GATE1_READ_ACCESS.csv",
+  "expected_symbol_count": 36,
+  "pass_count": 0,
+  "fail_count": 36,
+  "first_10_rows": [
+    {
+      "symbol": "AUDCAD.DWX",
+      "gate1_verdict": "FAIL",
+      "reason": "missing_verify_row",
+      "verdict_raw": "",
+      "bars_one_shot": "",
+      "bars_drift": ""
+    },
+    {
+      "symbol": "AUDCHF.DWX",
+      "gate1_verdict": "FAIL",
+      "reason": "missing_verify_row",
+      "verdict_raw": "",
+      "bars_one_shot": "",
+      "bars_drift": ""
+    },
+    {
+      "symbol": "AUDJPY.DWX",
+      "gate1_verdict": "FAIL",
+      "reason": "missing_verify_row",
+      "verdict_raw": "",
+      "bars_one_shot": "",
+      "bars_drift": ""
+    },
+    {
+      "symbol": "AUDNZD.DWX",
+      "gate1_verdict": "FAIL",
+      "reason": "missing_verify_row",
+      "verdict_raw": "",
+      "bars_one_shot": "",
+      "bars_drift": ""
+    },
+    {
+      "symbol": "AUDUSD.DWX",
+      "gate1_verdict": "FAIL",
+      "reason": "missing_verify_row",
+      "verdict_raw": "",
+      "bars_one_shot": "",
+      "bars_drift": ""
+    },
+    {
+      "symbol": "CADCHF.DWX",
+      "gate1_verdict": "FAIL",
+      "reason": "missing_verify_row",
+      "verdict_raw": "",
+      "bars_one_shot": "",
+      "bars_drift": ""
+    },
+    {
+      "symbol": "CADJPY.DWX",
+      "gate1_verdict": "FAIL",
+      "reason": "missing_verify_row",
+      "verdict_raw": "",
+      "bars_one_shot": "",
+      "bars_drift": ""
+    },
+    {
+      "symbol": "CHFJPY.DWX",
+      "gate1_verdict": "FAIL",
+      "reason": "missing_verify_row",
+      "verdict_raw": "",
+      "bars_one_shot": "",
+      "bars_drift": ""
+    },
+    {
+      "symbol": "EURAUD.DWX",
+      "gate1_verdict": "FAIL",
+      "reason": "missing_verify_row",
+      "verdict_raw": "",
+      "bars_one_shot": "",
+      "bars_drift": ""
+    },
+    {
+      "symbol": "EURCAD.DWX",
+      "gate1_verdict": "FAIL",
+      "reason": "missing_verify_row",
+      "verdict_raw": "",
+      "bars_one_shot": "",
+      "bars_drift": ""
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "ea_id": "QM5_1017",
+  "phase": "P2",
+  "expected_count": 7,
+  "symbols_count": 7,
+  "setfile_template": "C:/QM/repo/framework/EAs/QM5_1017_chan_pairs_stat_arb/sets/QM5_1017_chan_pairs_stat_arb_{symbol}_D1_backtest.set",
+  "missing_count": 0,
+  "missing_setfiles": []
+}

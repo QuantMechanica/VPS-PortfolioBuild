@@ -1,0 +1,14 @@
+{
+  "snapshot_utc": "2026-05-01T15:50:00Z",
+  "agent": "38f933cd-557b-41ff-8498-30db273273ef",
+  "roster": { "live_count": 10, "anomaly_count": 2 },
+  "token_burn": { "elapsed_since_t0_min": 170, "all_agents_spent_cents": 0 },
+  "qua671_churn": { "status": "RESOLVED", "last_commit_hash": "ced09c0e", "minutes_since_stop": 149 },
+  "model_audit": {
+    "completed_utc": "2026-05-01T15:20:00Z",
+    "cos_patched": "claude-sonnet-4-6",
+    "pending_owner_action": ["QB→sonnet", "QT→sonnet", "DocKM→sonnet", "CEO→opus-confirm", "Research→opus-confirm"],
+    "last_comment_id": "a6990f8e"
+  },
+  "next_comment": "2026-05-02T08:00 W.Europe OR anomaly threshold OR OWNER/CEO response"
+}

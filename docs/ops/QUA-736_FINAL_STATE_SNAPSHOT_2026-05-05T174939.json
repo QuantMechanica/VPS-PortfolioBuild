@@ -1,0 +1,21 @@
+{
+  "bucket_pass_rows": 0,
+  "bucket_rows": 36,
+  "dedup_complete": 36,
+  "dedup_inflight": 0,
+  "dedup_total": 36,
+  "generated_utc": "2026-05-05T15:49:54.037576Z",
+  "has_GDAXI": false,
+  "has_GDAXIm": true,
+  "has_NDX": false,
+  "has_NDXm": true,
+  "issue": "QUA-736",
+  "phase_verdict": null,
+  "running": {
+    "T1": 0,
+    "T2": 0,
+    "T3": 0,
+    "T4": 0,
+    "T5": 0
+  }
+}

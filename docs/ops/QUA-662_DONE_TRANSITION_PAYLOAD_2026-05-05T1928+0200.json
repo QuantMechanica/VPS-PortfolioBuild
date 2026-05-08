@@ -1,0 +1,9 @@
+{
+  "issue": "QUA-662",
+  "target_status": "done",
+  "evidence": {
+    "report_csv": "D:/QM/reports/pipeline/QM5_1003/P2/report.csv",
+    "coverage_note": "C:/QM/repo/docs/ops/QUA-662_P2_COVERAGE_COMPLETE_2026-05-05T1926+0200.md",
+    "canonical_coverage": "36/36"
+  }
+}

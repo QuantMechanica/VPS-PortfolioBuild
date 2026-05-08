@@ -1,0 +1,23 @@
+{
+  "timestamp_local": "2026-05-05T19:12:56.2014964+02:00",
+  "issue": "QUA-739",
+  "dedup_qm5_1003_p2_h1_2024": 0,
+  "active_python_count": 1,
+  "active_tester_count": 2,
+  "active_python_pids": [
+    45508
+  ],
+  "active_tester_pids": [
+    19424,
+    48436
+  ],
+  "latest_result_path": "D:\\QM\\reports\\pipeline\\QM5_1003\\P2\\p2_QM5_1003_result.json",
+  "latest_result_counts": {
+    "PASS": 0,
+    "FAIL": 0,
+    "INVALID": 0,
+    "DRY": 36
+  },
+  "latest_result_started_at": "2026-05-05T19:12:16.801877+02:00",
+  "latest_result_finished_at": "2026-05-05T19:12:16.803882+02:00"
+}

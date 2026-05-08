@@ -1,0 +1,22 @@
+{
+  "issue": "QUA-750",
+  "timestamp_utc": "2026-05-05T20:26:00Z",
+  "recommended_state": "in_review",
+  "resume": true,
+  "summary": "G4 ADR prerequisite satisfied; smoke dispatch path validated; runtime REPORT_MISSING fixed via expert deployment on T1-T5; live runs now produce non-zero reports with zero trades (scaffold-consistent).",
+  "classification": "scaffold_zero_trade_non_pass",
+  "evidence": {
+    "execution_update": "C:/QM/repo/docs/ops/QUA-750_EXECUTION_UPDATE_2026-05-05T2015Z.md",
+    "review_packet": "C:/QM/repo/docs/ops/QUA-750_READY_FOR_REVIEW_2026-05-05.md",
+    "final_state_json": "C:/QM/repo/docs/ops/QUA-750_FINAL_STATE_2026-05-05T2025Z.json",
+    "report_csv": "D:/QM/reports/pipeline/QM5_1017/P2/report.csv"
+  },
+  "requested_reviewers": [
+    "CTO",
+    "Quality-Tech"
+  ],
+  "required_actions": [
+    "CTO: confirm Card §7/§12 two-slot-per-pair convention in checklist",
+    "QT: gate-of-record verdict on ZERO_TRADE handling and non-PASS classification"
+  ]
+}

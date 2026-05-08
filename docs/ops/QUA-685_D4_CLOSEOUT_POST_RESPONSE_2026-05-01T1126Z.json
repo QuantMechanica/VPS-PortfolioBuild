@@ -1,0 +1,16 @@
+{
+  "posted_at": "2026-05-01T13:25:01.2685243+02:00",
+  "run_id": "36e39cec-71c0-4dff-a7de-25551eaea2fb",
+  "response": {
+    "id": "81993981-a603-4b29-bf1f-1d737ece8c04",
+    "companyId": "03d4dcc8-4cea-4133-9f68-90c0d99628fb",
+    "issueId": "ad22f9b7-f396-4c38-a074-b6e5dc537ee1",
+    "authorAgentId": "46fc11e5-7fc2-43f4-9a34-bde29e5dee3b",
+    "authorUserId": null,
+    "createdByRunId": "36e39cec-71c0-4dff-a7de-25551eaea2fb",
+    "body": "# QUA-685 D4 — Close-out Comment Draft (2026-05-01)\r\n\r\nImplemented D4 canonical matrix rebuild from `D:\\QM\\mt5\\T1\\dwx_import\\logs\\hourly_2026-04-27.log`.\r\n\r\n## Delivered\r\n\r\n- `framework/registry/dwx_symbol_matrix.csv`\r\n- `infra/scripts/build_dwx_symbol_matrix.py`\r\n- `docs/ops/QUA-685_D4_MATRIX_BUILD_SUMMARY_2026-05-01.md`\r\n\r\n## Cross-check\r\n\r\n- Symbol count: `36` (DL-038 Rule 2 target met)\r\n- Canonical naming:\r\n  - present: `NDXm.DWX`, `GDAXIm.DWX`\r\n  - absent: `NDX.DWX`, `GDAXI.DWX`, `XBRUSD.DWX`\r\n\r\n## Evidence traceability model\r\n\r\n- Rows with explicit `path=Custom/...` in source log: `21`\r\n- Rows with `skip ... already in MT5 as <SYMBOL>.DWX` evidence only: `15`\r\n- CSV now carries `evidence_source` per row (`path` or `skip_as`) and stores the source log line in `evidence_line`.\r\n\r\n## Commit hash\r\n\r\n- `960a3f30`\r\n",
+    "createdAt": "2026-05-01T11:25:01.23Z",
+    "updatedAt": "2026-05-01T11:25:01.23Z"
+  },
+  "issue_id": "ad22f9b7-f396-4c38-a074-b6e5dc537ee1"
+}

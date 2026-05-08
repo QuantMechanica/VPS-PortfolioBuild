@@ -1,0 +1,6 @@
+issue=QUA-649
+status=BLOCKED
+owner=CTO/Framework Operations
+reason=build_check input-group gate + smoke harness/runtime unresolved
+next_action=rerun Stage A for QM5_1003 and QM5_1004 after framework fix confirmation
+utc=20260501T103744Z

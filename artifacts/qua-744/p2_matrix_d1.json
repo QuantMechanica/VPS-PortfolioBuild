@@ -1,0 +1,16 @@
+{
+  "ea_id": "QM5_1017",
+  "version": "v1",
+  "phase": "P2",
+  "sub_gate_config_hash": "H1-2024",
+  "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1017_chan_pairs_stat_arb\\sets\\QM5_1017_chan_pairs_stat_arb_AUDCAD.DWX_D1_backtest.set",
+  "symbols": [
+    "AUDCAD.DWX",
+    "AUDUSD.DWX",
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "NZDUSD.DWX",
+    "XAGUSD.DWX",
+    "XAUUSD.DWX"
+  ]
+}

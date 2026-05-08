@@ -194,6 +194,60 @@ def _ensure_matrix_bucket(state: dict[str, Any], job: dict[str, Any]) -> tuple[s
     return key, bucket
 
 
+def initialize_matrix_bucket_for_symbols(state: dict[str, Any], jobs: list[dict[str, Any]]) -> None:
+    """Reset matrix rows to current symbol cohort and clear matching stale dedup keys."""
+    if not jobs:
+        return
+    normalized_jobs = [validate_job(job) for job in jobs]
+    _, bucket = _ensure_matrix_bucket(state, normalized_jobs[0])
+    cohort = normalized_jobs[0]
+    cohort_ea = cohort["ea_id"].strip().lower()
+    cohort_version = cohort["version"].strip().lower()
+    cohort_phase = cohort["phase"].strip().upper()
+    cohort_symbols = {job["symbol"].strip().upper() for job in normalized_jobs}
+    dedup = state.setdefault("dedup", {})
+    remove_keys: list[str] = []
+    for key in dedup:
+        parts = key.split("|")
+        if len(parts) != 5:
+            continue
+        ea_id, version, symbol, phase, _hash = parts
+        key_ea = ea_id.strip().lower()
+        key_version = version.strip().lower()
+        key_symbol = symbol.strip().upper()
+        key_phase = phase.strip().upper()
+        if (
+            key_ea == cohort_ea
+            and key_version == cohort_version
+            and key_phase == cohort_phase
+            and key_symbol in cohort_symbols
+        ):
+            remove_keys.append(key)
+    for key in remove_keys:
+        dedup.pop(key, None)
+    existing_rows = {
+        str(row.get("symbol", "")): row
+        for row in bucket.get("matrix", [])
+        if isinstance(row, dict) and isinstance(row.get("symbol"), str)
+    }
+    refreshed_rows: list[dict[str, Any]] = []
+    for normalized in normalized_jobs:
+        symbol = normalized["symbol"]
+        prior = existing_rows.get(symbol, {})
+        refreshed_rows.append(
+            {
+                "symbol": symbol,
+                "terminal": prior.get("terminal"),
+                "verdict": None,
+                "invalidation_reason": None,
+                "evidence": None,
+            }
+        )
+    bucket["matrix"] = refreshed_rows
+    bucket["phase_verdict"] = None
+    bucket["next_strategy_unblocked"] = None
+
+
 def _refresh_phase_verdict(bucket: dict[str, Any], pass_threshold: int = 1, fail_phase_label: str | None = None) -> None:
     rows = list(bucket.get("matrix", []))
     verdicts = [str(row.get("verdict")) for row in rows if row.get("verdict") is not None]
@@ -334,7 +388,7 @@ def dispatch_job(
     state["last_rr_index"] = TERMINALS.index(selected)
     affinity[symbol] = {"terminal": selected, "ts": now}
     state.setdefault("recent_runs", {}).setdefault(selected, []).append(now)
-    dedup[key] = {"symbol": symbol, "terminal": selected, "ts": now}
+    dedup[key] = {"symbol": symbol, "terminal": selected, "ts": now, "job": dict(normalized_job)}
     _, bucket = _ensure_matrix_bucket(state, normalized_job)
     _upsert_matrix_row(bucket, symbol=symbol, terminal=selected)
     return {"dedup_key": key, "status": "scheduled", "terminal": selected}

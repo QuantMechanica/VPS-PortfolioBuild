@@ -13,6 +13,7 @@ import argparse
 import json
 import os
 import subprocess
+import sys
 import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -30,6 +31,8 @@ ALLOWED_TERMINAL_STATUS = {
     "scanner_missing_recent_reports",
     "idle_or_stalled",
 }
+DISPATCH_STATE_PATH = Path(r"D:\QM\Reports\pipeline\dispatch_state.json")
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 @dataclass(frozen=True)
@@ -270,6 +273,61 @@ def detect_terminal_pids(
     return out
 
 
+def count_scheduled_p2_jobs(dispatch_state_path: Path) -> int:
+    data = parse_json_file(dispatch_state_path)
+    dedup = data.get("dedup", {})
+    if not isinstance(dedup, dict):
+        return 0
+    count = 0
+    for key, row in dedup.items():
+        if not isinstance(row, dict):
+            continue
+        if "|P2|" not in key:
+            continue
+        if str(row.get("status", "")).lower() == "complete":
+            continue
+        count += 1
+    return count
+
+
+def detect_consumer_pids() -> list[int]:
+    rows = run_powershell_json(
+        "Get-CimInstance Win32_Process | "
+        "Where-Object { $_.Name -match '^python' -and $_.CommandLine -match 'full_baseline_scan.py' } | "
+        "Select-Object ProcessId | ConvertTo-Json -Compress"
+    )
+    out: list[int] = []
+    for row in rows:
+        pid = safe_int(row.get("ProcessId"), 0)
+        if pid > 0:
+            out.append(pid)
+    return out
+
+
+def ensure_consumer_worker() -> dict[str, Any]:
+    scheduled = count_scheduled_p2_jobs(DISPATCH_STATE_PATH)
+    pids = detect_consumer_pids()
+    if scheduled <= 0:
+        return {"scheduled_p2": 0, "consumer_pids": pids, "action": "none"}
+    if pids:
+        return {"scheduled_p2": scheduled, "consumer_pids": pids, "action": "already_running"}
+
+    worker = REPO_ROOT / "framework" / "scripts" / "full_baseline_scan.py"
+    if not worker.exists():
+        return {"scheduled_p2": scheduled, "consumer_pids": [], "action": "missing_worker_script"}
+
+    flags = 0x00000008 | 0x00000200 | 0x08000000
+    proc = subprocess.Popen(
+        [sys.executable, str(worker), "--poll-sec", "20", "--max-jobs", "1", "--timeout-sec", "300"],
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        creationflags=flags,
+        close_fds=True,
+    )
+    return {"scheduled_p2": scheduled, "consumer_pids": [proc.pid], "action": "launched"}
+
+
 def file_age_seconds(path: Path) -> float:
     return max(0.0, time.time() - path.stat().st_mtime)
 
@@ -381,6 +439,7 @@ def build_state(
 
     scanner_map = detect_scanner_pids(terminals, disable_process_detection)
     terminal_map = detect_terminal_pids(terminals, excluded_roots, disable_process_detection)
+    consumer = ensure_consumer_worker() if not disable_process_detection else {"action": "disabled"}
 
     bl: dict[str, Any] = {}
     for item in terminals:
@@ -416,6 +475,7 @@ def build_state(
             f"[{datetime.now().strftime('%H:%M')}] standalone loop "
             + " ".join(f"{item.name}:{bl[item.name]['current']}/{bl[item.name]['total']}:{bl[item.name]['status']}" for item in terminals)
         ),
+        "consumer_guard": consumer,
     }
     return state
 

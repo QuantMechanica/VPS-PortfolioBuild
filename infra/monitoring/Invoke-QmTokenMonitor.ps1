@@ -267,7 +267,7 @@ if (-not $NoWriteOutputFiles.IsPresent) {
         "|---|---:|---:|---|"
     )
     foreach ($a in $top3) {
-        $lines += "| $($a.agent_name) (`$($a.agent_id)`) | $($a.spent_cents) | $($a.daily_delta_cents) | $($a.last_heartbeat_at_utc) |"
+        $lines += ('| {0} (`{1}`) | {2} | {3} | {4} |' -f $a.agent_name, $a.agent_id, $a.spent_cents, $a.daily_delta_cents, $a.last_heartbeat_at_utc)
     }
     if (@($anomalies).Count -gt 0) {
         $lines += ""
@@ -283,4 +283,3 @@ $output | ConvertTo-Json -Depth 12
 if ($statusValue -eq "critical") { exit 2 }
 if ($statusValue -eq "warn") { exit 1 }
 exit 0
-

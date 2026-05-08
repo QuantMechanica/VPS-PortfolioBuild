@@ -33,6 +33,7 @@ if (-not (Test-Path -LiteralPath $runSmokePath -PathType Leaf)) {
 }
 
 $resolvedTerminal = $Terminal
+$reportCsvPath = Join-Path $ReportRoot "report.csv"
 if ($Terminal -ieq "any") {
     $resolverPath = Join-Path $PSScriptRoot "resolve_backtest_target.py"
     if (-not (Test-Path -LiteralPath $resolverPath -PathType Leaf)) {
@@ -51,12 +52,17 @@ if ($Terminal -ieq "any") {
     } | ConvertTo-Json -Depth 4
     Set-Content -LiteralPath $jobPath -Value $job -Encoding utf8
     try {
-        $raw = & python $resolverPath --job-json $jobPath --state-json $statePath --max-per-terminal 3
+        $raw = & python $resolverPath --job-json $jobPath --state-json $statePath --max-per-terminal 3 --enforce-dl054-prelaunch --report-csv $reportCsvPath
         if ($LASTEXITCODE -ne 0) {
             throw "resolve_backtest_target.py exited with code $LASTEXITCODE"
         }
         $decision = $raw | ConvertFrom-Json
         $decisionStatus = if ($decision.PSObject.Properties.Name -contains "status") { [string]$decision.status } else { "" }
+        $decisionVerdict = if ($decision.PSObject.Properties.Name -contains "verdict") { [string]$decision.verdict } else { "" }
+        if ($decisionVerdict -eq "INVALID") {
+            $reason = if ($decision.PSObject.Properties.Name -contains "invalidation_reason") { [string]$decision.invalidation_reason } else { "unspecified" }
+            throw "DL054_PRELAUNCH_INVALID: $reason"
+        }
         $decisionTerminal = if ($decision.PSObject.Properties.Name -contains "terminal") { [string]$decision.terminal } else { "" }
         if ([string]::IsNullOrWhiteSpace($decisionTerminal)) {
             $message = if ($decision.PSObject.Properties.Name -contains "message") { [string]$decision.message } else { "No message." }

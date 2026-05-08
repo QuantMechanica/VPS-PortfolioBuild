@@ -1,0 +1,43 @@
+{
+    "phase2b_validation":  {
+                               "ts_utc":  "2026-05-08T18:57:21Z",
+                               "overall":  "PASS",
+                               "tests":  [
+                                             {
+                                                 "test":  "framework/scripts/tests/test_phase_backtest_drivers.py",
+                                                 "exit_code":  0,
+                                                 "status":  "PASS"
+                                             },
+                                             {
+                                                 "test":  "framework/scripts/tests/test_phase_runners_contract.py",
+                                                 "exit_code":  0,
+                                                 "status":  "PASS"
+                                             },
+                                             {
+                                                 "test":  "framework/scripts/tests/test_phase_verdict_semantics.py",
+                                                 "exit_code":  0,
+                                                 "status":  "PASS"
+                                             },
+                                             {
+                                                 "test":  "framework/scripts/tests/test_phase_runners_idempotence.py",
+                                                 "exit_code":  0,
+                                                 "status":  "PASS"
+                                             },
+                                             {
+                                                 "test":  "framework/scripts/tests/test_phase_end_to_end_dryrun.py",
+                                                 "exit_code":  0,
+                                                 "status":  "PASS"
+                                             },
+                                             {
+                                                 "test":  "framework/scripts/tests/test_phase_runner_log_schema.py",
+                                                 "exit_code":  0,
+                                                 "status":  "PASS"
+                                             },
+                                             {
+                                                 "test":  "framework/scripts/tests/test_calibration_contract.py",
+                                                 "exit_code":  0,
+                                                 "status":  "PASS"
+                                             }
+                                         ]
+                           }
+}

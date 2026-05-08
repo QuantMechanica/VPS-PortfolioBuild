@@ -1,0 +1,193 @@
+{
+  "transitioned_at": "2026-05-01T13:25:30.0985219+02:00",
+  "issue_id": "ad22f9b7-f396-4c38-a074-b6e5dc537ee1",
+  "run_id": "46cf211b-3a41-4f2f-ae38-d5089156ac1b",
+  "response": {
+    "id": "ad22f9b7-f396-4c38-a074-b6e5dc537ee1",
+    "companyId": "03d4dcc8-4cea-4133-9f68-90c0d99628fb",
+    "projectId": "26cdd201-24a8-446d-93c3-34a7012a8b76",
+    "projectWorkspaceId": "f374e471-5adc-43a9-9bc5-367070658176",
+    "goalId": "4662e91e-8e9b-458e-9383-b1f67751965b",
+    "parentId": "a291d32c-a449-4116-9e69-01b03efb36b5",
+    "title": "QUA-684 D4 — Sanitize .DWX symbol matrix from canonical import log",
+    "description": "See first comment for full directive (per long-description workaround). Pipeline-Op-owned. Parent QUA-684 D4 (QUA-662 phantom-PASS recovery).",
+    "status": "done",
+    "priority": "high",
+    "assigneeAgentId": "46fc11e5-7fc2-43f4-9a34-bde29e5dee3b",
+    "assigneeUserId": null,
+    "checkoutRunId": null,
+    "executionRunId": null,
+    "executionAgentNameKey": null,
+    "executionLockedAt": null,
+    "createdByAgentId": "7795b4b0-8ecd-46da-ab22-06def7c8fa2d",
+    "createdByUserId": null,
+    "issueNumber": 685,
+    "identifier": "QUA-685",
+    "originKind": "manual",
+    "originId": null,
+    "originRunId": null,
+    "originFingerprint": "default",
+    "requestDepth": 0,
+    "billingCode": null,
+    "assigneeAdapterOverrides": null,
+    "executionPolicy": null,
+    "executionState": null,
+    "executionWorkspaceId": null,
+    "executionWorkspacePreference": null,
+    "executionWorkspaceSettings": null,
+    "startedAt": "2026-05-01T11:13:04.299Z",
+    "completedAt": "2026-05-01T11:25:29.953Z",
+    "cancelledAt": null,
+    "hiddenAt": null,
+    "createdAt": "2026-05-01T11:13:04.03Z",
+    "updatedAt": "2026-05-01T11:25:29.953Z",
+    "labels": [],
+    "labelIds": [],
+    "relatedWork": {
+      "outbound": [
+        {
+          "issue": {
+            "id": "a291d32c-a449-4116-9e69-01b03efb36b5",
+            "identifier": "QUA-684",
+            "title": "QUA-662 phantom-PASS recovery: halt, fix tester access, wire DL-054, decide token watch",
+            "status": "blocked",
+            "priority": "critical",
+            "assigneeAgentId": "7795b4b0-8ecd-46da-ab22-06def7c8fa2d",
+            "assigneeUserId": null
+          },
+          "mentionCount": 3,
+          "sources": [
+            {
+              "kind": "title",
+              "sourceRecordId": null,
+              "label": "title",
+              "matchedText": "QUA-684"
+            },
+            {
+              "kind": "description",
+              "sourceRecordId": null,
+              "label": "description",
+              "matchedText": "QUA-684"
+            },
+            {
+              "kind": "comment",
+              "sourceRecordId": "b273b9c7-ec06-42c2-95ec-4418e2e74edb",
+              "label": "comment",
+              "matchedText": "QUA-684"
+            }
+          ]
+        },
+        {
+          "issue": {
+            "id": "29bb311e-7f6e-4caf-8838-e9a238b1c4a0",
+            "identifier": "QUA-662",
+            "title": "QUA-660 D1 — QM5_1003 P0..P10 baseline (first V5 report.csv)",
+            "status": "in_progress",
+            "priority": "critical",
+            "assigneeAgentId": "46fc11e5-7fc2-43f4-9a34-bde29e5dee3b",
+            "assigneeUserId": null
+          },
+          "mentionCount": 2,
+          "sources": [
+            {
+              "kind": "description",
+              "sourceRecordId": null,
+              "label": "description",
+              "matchedText": "QUA-662"
+            },
+            {
+              "kind": "comment",
+              "sourceRecordId": "b273b9c7-ec06-42c2-95ec-4418e2e74edb",
+              "label": "comment",
+              "matchedText": "QUA-662"
+            }
+          ]
+        },
+        {
+          "issue": {
+            "id": "20c707ae-236c-4989-a574-1815d00af415",
+            "identifier": "QUA-686",
+            "title": "QUA-684 D2 — Fix tester read-access on 36 .DWX symbols (per-symbol PASS/FAIL CSV against DL-054 Gate 1)",
+            "status": "in_review",
+            "priority": "high",
+            "assigneeAgentId": "241ccf3c-ab68-40d6-b8eb-e03917795878",
+            "assigneeUserId": null
+          },
+          "mentionCount": 1,
+          "sources": [
+            {
+              "kind": "comment",
+              "sourceRecordId": "b273b9c7-ec06-42c2-95ec-4418e2e74edb",
+              "label": "comment",
+              "matchedText": "QUA-686"
+            }
+          ]
+        }
+      ],
+      "inbound": [
+        {
+          "issue": {
+            "id": "1fe10f93-df9a-4c07-869f-c1ac25dfcf00",
+            "identifier": "QUA-687",
+            "title": "QUA-684 D3 — Wire DL-054 5-gate enforcement into Pipeline-Op tester launcher",
+            "status": "blocked",
+            "priority": "high",
+            "assigneeAgentId": "241ccf3c-ab68-40d6-b8eb-e03917795878",
+            "assigneeUserId": null
+          },
+          "mentionCount": 2,
+          "sources": [
+            {
+              "kind": "comment",
+              "sourceRecordId": "c0521b8a-e41d-4ccc-97d6-45524e81d7bd",
+              "label": "comment",
+              "matchedText": "QUA-685"
+            },
+            {
+              "kind": "comment",
+              "sourceRecordId": "fecd40db-6089-41db-a50d-6b754ac5536d",
+              "label": "comment",
+              "matchedText": "QUA-685"
+            }
+          ]
+        },
+        {
+          "issue": {
+            "id": "a291d32c-a449-4116-9e69-01b03efb36b5",
+            "identifier": "QUA-684",
+            "title": "QUA-662 phantom-PASS recovery: halt, fix tester access, wire DL-054, decide token watch",
+            "status": "blocked",
+            "priority": "critical",
+            "assigneeAgentId": "7795b4b0-8ecd-46da-ab22-06def7c8fa2d",
+            "assigneeUserId": null
+          },
+          "mentionCount": 1,
+          "sources": [
+            {
+              "kind": "comment",
+              "sourceRecordId": "a9cf0b00-b281-46cd-a2ed-efd30c058998",
+              "label": "comment",
+              "matchedText": "QUA-685"
+            }
+          ]
+        }
+      ]
+    },
+    "referencedIssueIdentifiers": [
+      "QUA-684",
+      "QUA-662",
+      "QUA-686"
+    ],
+    "comment": {
+      "id": "ebca8012-c446-4911-8454-68795e8a349c",
+      "companyId": "03d4dcc8-4cea-4133-9f68-90c0d99628fb",
+      "issueId": "ad22f9b7-f396-4c38-a074-b6e5dc537ee1",
+      "authorAgentId": "46fc11e5-7fc2-43f4-9a34-bde29e5dee3b",
+      "authorUserId": null,
+      "createdByRunId": "46cf211b-3a41-4f2f-ae38-d5089156ac1b",
+      "body": "QUA-685 D4 complete.\n\n- Canonical matrix committed: framework/registry/dwx_symbol_matrix.csv\n- Source log: D:\\QM\\mt5\\T1\\dwx_import\\logs\\hourly_2026-04-27.log\n- Commit(s): 960a3f30 (implementation), a86eebd7 (closeout hash update)\n- Cross-check: symbol_count=36; NDXm/GDAXIm present; NDX/GDAXI/XBRUSD absent.\n- Closeout comment posted: 81993981-a603-4b29-bf1f-1d737ece8c04",
+      "createdAt": "2026-05-01T11:25:29.972Z",
+      "updatedAt": "2026-05-01T11:25:29.972Z"
+    }
+  }
+}

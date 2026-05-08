@@ -1,0 +1,263 @@
+{
+  "generated_utc": "2026-05-01T11:23:38.473077Z",
+  "symbols_tested": 21,
+  "rows": [
+    {
+      "symbol": "GBPAUD.DWX",
+      "import_file": "D:\\QM\\mt5\\T1\\MQL5\\Files\\imports\\done\\20260427_063314_GBPAUD.DWX.import.txt",
+      "ticks_ok": true,
+      "ticks_len": 20,
+      "rates_ok": false,
+      "rates_len": 0,
+      "last_error": [
+        1,
+        "Success"
+      ]
+    },
+    {
+      "symbol": "GBPCAD.DWX",
+      "import_file": "D:\\QM\\mt5\\T1\\MQL5\\Files\\imports\\done\\20260427_063828_GBPCAD.DWX.import.txt",
+      "ticks_ok": true,
+      "ticks_len": 20,
+      "rates_ok": false,
+      "rates_len": 0,
+      "last_error": [
+        1,
+        "Success"
+      ]
+    },
+    {
+      "symbol": "GBPCHF.DWX",
+      "import_file": "D:\\QM\\mt5\\T1\\MQL5\\Files\\imports\\done\\20260427_064544_GBPCHF.DWX.import.txt",
+      "ticks_ok": true,
+      "ticks_len": 20,
+      "rates_ok": false,
+      "rates_len": 0,
+      "last_error": [
+        1,
+        "Success"
+      ]
+    },
+    {
+      "symbol": "GBPJPY.DWX",
+      "import_file": "D:\\QM\\mt5\\T1\\MQL5\\Files\\imports\\done\\20260427_065530_GBPJPY.DWX.import.txt",
+      "ticks_ok": true,
+      "ticks_len": 20,
+      "rates_ok": false,
+      "rates_len": 0,
+      "last_error": [
+        1,
+        "Success"
+      ]
+    },
+    {
+      "symbol": "GBPNZD.DWX",
+      "import_file": "D:\\QM\\mt5\\T1\\MQL5\\Files\\imports\\done\\20260427_070149_GBPNZD.DWX.import.txt",
+      "ticks_ok": true,
+      "ticks_len": 20,
+      "rates_ok": false,
+      "rates_len": 0,
+      "last_error": [
+        1,
+        "Success"
+      ]
+    },
+    {
+      "symbol": "GBPUSD.DWX",
+      "import_file": "D:\\QM\\mt5\\T1\\MQL5\\Files\\imports\\done\\20260427_070647_GBPUSD.DWX.import.txt",
+      "ticks_ok": true,
+      "ticks_len": 20,
+      "rates_ok": false,
+      "rates_len": 0,
+      "last_error": [
+        1,
+        "Success"
+      ]
+    },
+    {
+      "symbol": "GDAXIm.DWX",
+      "import_file": "D:\\QM\\mt5\\T1\\MQL5\\Files\\imports\\done\\20260427_070848_GDAXIm.DWX.import.txt",
+      "ticks_ok": true,
+      "ticks_len": 20,
+      "rates_ok": false,
+      "rates_len": 0,
+      "last_error": [
+        1,
+        "Success"
+      ]
+    },
+    {
+      "symbol": "NDXm.DWX",
+      "import_file": "D:\\QM\\mt5\\T1\\MQL5\\Files\\imports\\done\\20260427_072134_NDXm.DWX.import.txt",
+      "ticks_ok": true,
+      "ticks_len": 20,
+      "rates_ok": false,
+      "rates_len": 0,
+      "last_error": [
+        1,
+        "Success"
+      ]
+    },
+    {
+      "symbol": "NZDCAD.DWX",
+      "import_file": "D:\\QM\\mt5\\T1\\MQL5\\Files\\imports\\done\\20260427_072419_NZDCAD.DWX.import.txt",
+      "ticks_ok": true,
+      "ticks_len": 20,
+      "rates_ok": false,
+      "rates_len": 0,
+      "last_error": [
+        1,
+        "Success"
+      ]
+    },
+    {
+      "symbol": "NZDCHF.DWX",
+      "import_file": "D:\\QM\\mt5\\T1\\MQL5\\Files\\imports\\done\\20260427_072649_NZDCHF.DWX.import.txt",
+      "ticks_ok": true,
+      "ticks_len": 20,
+      "rates_ok": false,
+      "rates_len": 0,
+      "last_error": [
+        1,
+        "Success"
+      ]
+    },
+    {
+      "symbol": "NZDJPY.DWX",
+      "import_file": "D:\\QM\\mt5\\T1\\MQL5\\Files\\imports\\done\\20260427_073105_NZDJPY.DWX.import.txt",
+      "ticks_ok": true,
+      "ticks_len": 20,
+      "rates_ok": false,
+      "rates_len": 0,
+      "last_error": [
+        1,
+        "Success"
+      ]
+    },
+    {
+      "symbol": "NZDUSD.DWX",
+      "import_file": "D:\\QM\\mt5\\T1\\MQL5\\Files\\imports\\done\\20260427_073334_NZDUSD.DWX.import.txt",
+      "ticks_ok": true,
+      "ticks_len": 20,
+      "rates_ok": false,
+      "rates_len": 0,
+      "last_error": [
+        1,
+        "Success"
+      ]
+    },
+    {
+      "symbol": "UK100.DWX",
+      "import_file": "D:\\QM\\mt5\\T1\\MQL5\\Files\\imports\\done\\20260427_073544_UK100.DWX.import.txt",
+      "ticks_ok": true,
+      "ticks_len": 20,
+      "rates_ok": false,
+      "rates_len": 0,
+      "last_error": [
+        1,
+        "Success"
+      ]
+    },
+    {
+      "symbol": "USDCAD.DWX",
+      "import_file": "D:\\QM\\mt5\\T1\\MQL5\\Files\\imports\\done\\20260427_073917_USDCAD.DWX.import.txt",
+      "ticks_ok": true,
+      "ticks_len": 20,
+      "rates_ok": false,
+      "rates_len": 0,
+      "last_error": [
+        1,
+        "Success"
+      ]
+    },
+    {
+      "symbol": "USDCHF.DWX",
+      "import_file": "D:\\QM\\mt5\\T1\\MQL5\\Files\\imports\\done\\20260427_074157_USDCHF.DWX.import.txt",
+      "ticks_ok": true,
+      "ticks_len": 20,
+      "rates_ok": false,
+      "rates_len": 0,
+      "last_error": [
+        1,
+        "Success"
+      ]
+    },
+    {
+      "symbol": "USDJPY.DWX",
+      "import_file": "D:\\QM\\mt5\\T1\\MQL5\\Files\\imports\\done\\20260427_074648_USDJPY.DWX.import.txt",
+      "ticks_ok": true,
+      "ticks_len": 20,
+      "rates_ok": false,
+      "rates_len": 0,
+      "last_error": [
+        1,
+        "Success"
+      ]
+    },
+    {
+      "symbol": "WS30.DWX",
+      "import_file": "D:\\QM\\mt5\\T1\\MQL5\\Files\\imports\\done\\20260427_075056_WS30.DWX.import.txt",
+      "ticks_ok": true,
+      "ticks_len": 20,
+      "rates_ok": false,
+      "rates_len": 0,
+      "last_error": [
+        1,
+        "Success"
+      ]
+    },
+    {
+      "symbol": "XAGUSD.DWX",
+      "import_file": "D:\\QM\\mt5\\T1\\MQL5\\Files\\imports\\done\\20260427_075348_XAGUSD.DWX.import.txt",
+      "ticks_ok": true,
+      "ticks_len": 20,
+      "rates_ok": false,
+      "rates_len": 0,
+      "last_error": [
+        1,
+        "Success"
+      ]
+    },
+    {
+      "symbol": "XAUUSD.DWX",
+      "import_file": "D:\\QM\\mt5\\T1\\MQL5\\Files\\imports\\done\\20260427_080755_XAUUSD.DWX.import.txt",
+      "ticks_ok": true,
+      "ticks_len": 20,
+      "rates_ok": false,
+      "rates_len": 0,
+      "last_error": [
+        1,
+        "Success"
+      ]
+    },
+    {
+      "symbol": "XNGUSD.DWX",
+      "import_file": "D:\\QM\\mt5\\T1\\MQL5\\Files\\imports\\done\\20260427_080814_XNGUSD.DWX.import.txt",
+      "ticks_ok": true,
+      "ticks_len": 20,
+      "rates_ok": false,
+      "rates_len": 0,
+      "last_error": [
+        1,
+        "Success"
+      ]
+    },
+    {
+      "symbol": "XTIUSD.DWX",
+      "import_file": "D:\\QM\\mt5\\T1\\MQL5\\Files\\imports\\done\\20260427_150152_XTIUSD.DWX.import.txt",
+      "ticks_ok": true,
+      "ticks_len": 20,
+      "rates_ok": false,
+      "rates_len": 0,
+      "last_error": [
+        1,
+        "Success"
+      ]
+    }
+  ],
+  "summary": {
+    "ticks_ok_count": 21,
+    "rates_ok_count": 0,
+    "ticks_ok_rates_fail_count": 21
+  }
+}

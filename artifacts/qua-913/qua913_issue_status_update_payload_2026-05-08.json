@@ -3,6 +3,5 @@
   "target_status": "done",
   "state_reason": "completed",
   "resume": false,
-  "comment": "QUA-913 implementation complete and verification passed. Commits: da00303f, 824ac170, fee236fa, fdc436df, 32d286fc, 06189875, 462fd762, 4a9e10fe, 5e325745. Tests: Test-QmTokenMonitor, Test-QmTokenMonitorOutputContract, Test-QmTokenMonitorTaskInstall, Test-InfraAuditQmTokenMonitorWiring (all PASS). Evidence: infra/reports/qua913_token_monitor_closeout_2026-05-08.md, infra/reports/qua913_done_candidate_status_2026-05-08.md, artifacts/qua-913/qua913_done_candidate_status_2026-05-08.json."
+  "comment": "QUA-913 implementation complete and verification passed. Final fix included: Markdown top-consumer rows now render literal agent IDs (`id`) without object interpolation leakage; regression assertion added to output-contract test. Tests: Test-QmTokenMonitor, Test-QmTokenMonitorOutputContract, Test-QmTokenMonitorTaskInstall, Test-InfraAuditQmTokenMonitorWiring (all PASS). Evidence: infra/reports/qua913_token_monitor_closeout_2026-05-08.md, infra/reports/qua913_done_candidate_status_2026-05-08.md, artifacts/qua-913/qua913_done_candidate_status_2026-05-08.json, artifacts/qua-913/qua913_qm_token_monitor_sample_2026-05-08.md."
 }
-

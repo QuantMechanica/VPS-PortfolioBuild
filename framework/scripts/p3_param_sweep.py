@@ -84,7 +84,10 @@ def invoke_run_smoke(*, ea_id: int, symbol: str, year: int, period: str, setfile
     return proc.returncode, proc.stdout or "", proc.stderr or ""
 
 
-def append_report_row(report_csv: Path, row: dict[str, str]) -> None:
+def append_report_row(report_csv: Path, row: dict[str, str], seen_run_ids: set[str] | None = None) -> bool:
+    run_id = (row.get("run_id") or "").strip()
+    if seen_run_ids is not None and run_id and run_id in seen_run_ids:
+        return False
     report_csv.parent.mkdir(parents=True, exist_ok=True)
     write_header = not report_csv.exists()
     with report_csv.open("a", encoding="utf-8", newline="") as handle:
@@ -95,6 +98,9 @@ def append_report_row(report_csv: Path, row: dict[str, str]) -> None:
         if write_header:
             writer.writeheader()
         writer.writerow(row)
+    if seen_run_ids is not None and run_id:
+        seen_run_ids.add(run_id)
+    return True
 
 
 def load_completed_run_ids(report_csv: Path) -> set[str]:
@@ -166,6 +172,7 @@ def main() -> int:
                         "summary_marker": "setfile_missing",
                         "stderr_tail": str(base_set),
                     },
+                    seen_run_ids=completed_run_ids,
                 )
                 summary["FAIL"] += 1
                 continue
@@ -190,6 +197,7 @@ def main() -> int:
                             "summary_marker": "dry_run",
                             "stderr_tail": "",
                         },
+                        seen_run_ids=completed_run_ids,
                     )
                     summary["DRY"] += 1
                     continue
@@ -219,6 +227,7 @@ def main() -> int:
                         "summary_marker": marker,
                         "stderr_tail": (stderr or "")[-240:],
                     },
+                    seen_run_ids=completed_run_ids,
                 )
             if run_count >= args.max_runs:
                 break

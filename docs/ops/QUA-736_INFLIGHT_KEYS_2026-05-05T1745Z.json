@@ -1,0 +1,81 @@
+{
+  "generated_utc": "2026-05-05T15:45:10.891325Z",
+  "count": 15,
+  "keys": [
+    {
+      "key": "QM5_1003|v1|AUDCAD.DWX|P2|H1-2024",
+      "terminal": "T3",
+      "ts": 1777990924
+    },
+    {
+      "key": "QM5_1003|v1|AUDCHF.DWX|P2|H1-2024",
+      "terminal": "T5",
+      "ts": 1777990924
+    },
+    {
+      "key": "QM5_1003|v1|AUDJPY.DWX|P2|H1-2024",
+      "terminal": "T4",
+      "ts": 1777990924
+    },
+    {
+      "key": "QM5_1003|v1|AUDNZD.DWX|P2|H1-2024",
+      "terminal": "T1",
+      "ts": 1777990924
+    },
+    {
+      "key": "QM5_1003|v1|AUDUSD.DWX|P2|H1-2024",
+      "terminal": "T2",
+      "ts": 1777990924
+    },
+    {
+      "key": "QM5_1003|v1|CADCHF.DWX|P2|H1-2024",
+      "terminal": "T3",
+      "ts": 1777990924
+    },
+    {
+      "key": "QM5_1003|v1|CADJPY.DWX|P2|H1-2024",
+      "terminal": "T5",
+      "ts": 1777990924
+    },
+    {
+      "key": "QM5_1003|v1|CHFJPY.DWX|P2|H1-2024",
+      "terminal": "T4",
+      "ts": 1777990924
+    },
+    {
+      "key": "QM5_1003|v1|EURAUD.DWX|P2|H1-2024",
+      "terminal": "T1",
+      "ts": 1777990924
+    },
+    {
+      "key": "QM5_1003|v1|EURCAD.DWX|P2|H1-2024",
+      "terminal": "T2",
+      "ts": 1777990924
+    },
+    {
+      "key": "QM5_1003|v1|EURCHF.DWX|P2|H1-2024",
+      "terminal": "T3",
+      "ts": 1777990924
+    },
+    {
+      "key": "QM5_1003|v1|EURGBP.DWX|P2|H1-2024",
+      "terminal": "T5",
+      "ts": 1777990924
+    },
+    {
+      "key": "QM5_1003|v1|EURJPY.DWX|P2|H1-2024",
+      "terminal": "T4",
+      "ts": 1777990924
+    },
+    {
+      "key": "QM5_1003|v1|EURNZD.DWX|P2|H1-2024",
+      "terminal": "T1",
+      "ts": 1777990924
+    },
+    {
+      "key": "QM5_1003|v1|GBPAUD.DWX|P2|H1-2024",
+      "terminal": "T2",
+      "ts": 1777990924
+    }
+  ]
+}

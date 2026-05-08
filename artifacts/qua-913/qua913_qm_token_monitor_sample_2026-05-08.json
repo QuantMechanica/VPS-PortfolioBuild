@@ -1,17 +1,17 @@
 ﻿{
     "check":  "qm_token_monitor",
     "status":  "critical",
-    "generated_at_utc":  "2026-05-08T15:20:53.7556130Z",
+    "generated_at_utc":  "2026-05-08T18:47:52.7602857Z",
     "company_id":  "03d4dcc8-4cea-4133-9f68-90c0d99628fb",
     "spent_cents":  28800,
-    "daily_delta":  17800.64,
+    "daily_delta":  5002.1,
     "org_cap_cents":  30000,
     "org_cap_pct_used":  96,
     "burn_trend":  {
-                       "daily_delta_24h_cents":  17800.64,
-                       "daily_delta_7d_avg_cents":  4357.23
+                       "daily_delta_24h_cents":  5002.1,
+                       "daily_delta_7d_avg_cents":  2528.87
                    },
-    "days_to_exhaust":  0.07,
+    "days_to_exhaust":  0.24,
     "top3_agents":  [
                         {
                             "agent_id":  "a1",
@@ -19,7 +19,7 @@
                             "adapter":  "claude_local",
                             "status":  "active",
                             "spent_cents":  12000,
-                            "daily_delta_cents":  5340.19,
+                            "daily_delta_cents":  1500.63,
                             "last_heartbeat_at_utc":  "2026-05-08T14:58:00.0000000Z"
                         },
                         {
@@ -28,7 +28,7 @@
                             "adapter":  "codex_local",
                             "status":  "active",
                             "spent_cents":  9800,
-                            "daily_delta_cents":  7120.26,
+                            "daily_delta_cents":  2000.84,
                             "last_heartbeat_at_utc":  "2026-05-08T14:59:00.0000000Z"
                         },
                         {
@@ -37,7 +37,7 @@
                             "adapter":  "codex_local",
                             "status":  "active",
                             "spent_cents":  6100,
-                            "daily_delta_cents":  3560.13,
+                            "daily_delta_cents":  1000.42,
                             "last_heartbeat_at_utc":  "2026-05-08T14:57:00.0000000Z"
                         }
                     ],
@@ -53,11 +53,11 @@
                           "code":  "ORG_EXHAUSTION_LEQ_4D",
                           "severity":  "critical",
                           "detail":  "Projected exhaustion window is within 4 days.",
-                          "days_to_exhaust":  0.07
+                          "days_to_exhaust":  0.24
                       }
                   ],
     "source":  {
                    "mode":  "fixture",
-                   "token_budget_path":  "C:\\QM\\repo\\framework\\registry\\token_budget.json"
+                   "token_budget_path":  "framework\\registry\\token_budget.json"
                }
 }

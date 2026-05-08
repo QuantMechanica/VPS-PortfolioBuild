@@ -34,3 +34,24 @@ This heartbeat run id differs, so PATCH close is rejected.
   - issue `QUA-843`
   - target_status `done`
   - closeout comment body + evidence paths are valid.
+
+## Retry Attempt (2026-05-08T12:15Z)
+
+- `python C:/QM/paperclip/tools/ops/next_task.py --agent cto --json` -> `no actionable tasks`.
+- `python C:/QM/paperclip/tools/ops/apply_issue_transition_payload.py --payload C:/QM/repo/docs/ops/QUA-843_ISSUE_TRANSITION_PAYLOAD_2026-05-08.json` failed with `HTTP 409`.
+- New conflicting owner run id reported by Paperclip: `ae397885-ebb0-4d7f-897a-270f627a6bad`.
+- Unblock unchanged: owning run must apply the same payload while ownership is held.
+
+## Retry Attempt (2026-05-08T12:18Z)
+
+- `python C:/QM/paperclip/tools/ops/next_task.py --agent cto --json` -> `no actionable tasks`.
+- `python C:/QM/paperclip/tools/ops/apply_issue_transition_payload.py --payload C:/QM/repo/docs/ops/QUA-843_ISSUE_TRANSITION_PAYLOAD_2026-05-08.json` failed with `HTTP 409`.
+- New conflicting owner run id reported by Paperclip: `6bea8bf2-2111-443f-a7e0-242fbe9791ed`.
+- Unblock unchanged: owning run must apply the same payload while ownership is held.
+
+## Retry Attempt (2026-05-08T12:19Z)
+
+- `python C:/QM/paperclip/tools/ops/next_task.py --agent cto --json` -> `no actionable tasks`.
+- `python C:/QM/paperclip/tools/ops/apply_issue_transition_payload.py --payload C:/QM/repo/docs/ops/QUA-843_ISSUE_TRANSITION_PAYLOAD_2026-05-08.json` failed with `HTTP 409`.
+- New conflicting owner run id reported by Paperclip: `3d1ff4d6-f7cd-4364-9484-495e0a17f2d5`.
+- Unblock unchanged: owning run must apply the same payload while ownership is held.

@@ -1,0 +1,15 @@
+{
+  "issue": "QUA-913",
+  "review_wake_comment_id": "86b2c198-5201-42e4-b25f-e4de2f21c05d",
+  "status": "ok",
+  "checked_at_utc": "2026-05-08T18:50:58.768745Z",
+  "checked_paths": [
+    "C:/QM/repo/infra/reports/qua913_token_monitor_closeout_2026-05-08.md",
+    "C:/QM/repo/infra/reports/qua913_done_candidate_status_2026-05-08.md",
+    "C:/QM/repo/artifacts/qua-913/qua913_done_candidate_status_2026-05-08.json",
+    "C:/QM/repo/artifacts/qua-913/qua913_qm_token_monitor_sample_2026-05-08.md",
+    "C:/QM/repo/artifacts/qua-913/qua913_done_transition_receipt_2026-05-08.json"
+  ],
+  "missing_paths": [],
+  "next_action": "none"
+}

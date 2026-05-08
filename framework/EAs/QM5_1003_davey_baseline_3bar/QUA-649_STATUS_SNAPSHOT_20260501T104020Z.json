@@ -1,0 +1,30 @@
+{
+  "issue": "QUA-649",
+  "timestamp_utc": "2026-05-01T10:40:20.1332943Z",
+  "stage": "Phase3_kickoff",
+  "compile": {
+    "qm5_1003": {
+      "result": "PASS",
+      "log": "C:\\QM\\repo\\framework\\build\\compile\\20260501_103843\\QM5_1003_davey_baseline_3bar.compile.log"
+    },
+    "qm5_1004": {
+      "result": "PASS",
+      "log": "C:\\QM\\repo\\framework\\build\\compile\\20260501_103832\\QM5_1004_davey_es_breakout.compile.log"
+    }
+  },
+  "registry": {
+    "ea_1003": "active",
+    "ea_1004": "active",
+    "source": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv"
+  },
+  "artifacts": {
+    "qm5_1003_ex5": "C:\\QM\\repo\\framework\\EAs\\QM5_1003_davey_baseline_3bar\\QM5_1003_davey_baseline_3bar.ex5",
+    "qm5_1004_ex5": "C:\\QM\\repo\\framework\\EAs\\QM5_1004_davey_es_breakout\\QM5_1004_davey_es_breakout.ex5"
+  },
+  "blocked": {
+    "status": true,
+    "owner": "CTO / Framework Operations",
+    "reason": "Stage A framework-gate and smoke-harness defects external to EA source",
+    "resume_trigger": "After gate/harness fix confirmation, rerun Stage A then execute baseline backtests"
+  }
+}

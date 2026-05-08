@@ -203,8 +203,13 @@ def append_csv_row(report_csv: Path, row: dict) -> None:
 def invoke_run_smoke(ea_id: int, symbol: str, year: int, terminal: str, period: str,
                      runs: int, expert: str, setfile: Path, report_root: Path,
                      min_trades: int, timeout_sec: int,
-                     allow_running_terminal: bool = False) -> tuple[int, str, str]:
-    """Returns (exit_code, stdout, stderr). Captures full output."""
+                     allow_running_terminal: bool = False,
+                     heartbeat_interval_sec: int = 60) -> tuple[int, str, str]:
+    """Returns (exit_code, stdout, stderr). Captures full output.
+
+    Emits periodic liveness lines while run_smoke is executing so long-running
+    symbols do not look like silent hangs to external run monitors.
+    """
     arglist = [
         "pwsh.exe", "-NoProfile", "-File", str(RUN_SMOKE_PS1),
         "-EAId", str(ea_id),
@@ -226,8 +231,33 @@ def invoke_run_smoke(ea_id: int, symbol: str, year: int, terminal: str, period: 
     # run_smoke executes up to `runs` sequential tester runs, each bounded by timeout_sec.
     # Keep wrapper timeout safely above aggregate budget to avoid false no-summary invalids.
     wrapper_timeout = (timeout_sec * max(1, runs)) + 60
-    proc = subprocess.run(arglist, capture_output=True, text=True, timeout=wrapper_timeout)
-    return proc.returncode, proc.stdout or "", proc.stderr or ""
+    started = time.monotonic()
+    next_heartbeat = started + max(1, heartbeat_interval_sec)
+    proc = subprocess.Popen(
+        arglist,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    while True:
+        rc = proc.poll()
+        now = time.monotonic()
+        if rc is not None:
+            break
+        elapsed = now - started
+        if now >= next_heartbeat:
+            safe_print(
+                f"[RUNNING] {symbol} ({terminal}) elapsed={int(elapsed)}s timeout={wrapper_timeout}s"
+            )
+            next_heartbeat = now + max(1, heartbeat_interval_sec)
+        if elapsed > wrapper_timeout:
+            proc.kill()
+            stdout, stderr = proc.communicate()
+            raise subprocess.TimeoutExpired(arglist, wrapper_timeout, output=stdout, stderr=stderr)
+        time.sleep(1)
+
+    stdout, stderr = proc.communicate()
+    return int(proc.returncode or 0), stdout or "", stderr or ""
 
 
 def parse_run_smoke_summary_path(output_text: str) -> Path | None:

@@ -1,0 +1,3 @@
+{
+  "body": "# QUA-662 DONE comment draft (2026-05-05T19:27:21+02:00)\n\nQUA-662 completion update:\n\n- P2 baseline execution for QM5_1003 is complete at canonical coverage gate.\n- Canonical symbol coverage: 36/36 (remaining \u0000).\n- Final report artifact:\n  - D:\\QM\\reports\\pipeline\\QM5_1003\\P2\\report.csv\n- Coverage-complete evidence note:\n  - C:\\QM\\repo\\docs\\ops\\QUA-662_P2_COVERAGE_COMPLETE_2026-05-05T1926+0200.md\n\nImportant context:\n- \report.csv has more than 36 data rows due retries/background runners and explicit reconcile rows.\n- Gate-of-record used for completion: canonical symbol coverage (36/36) is satisfied.\n\nRequested transition:\n- Mark QUA-662 as done and keep this report path as the completion artifact of record.\r\n"
+}

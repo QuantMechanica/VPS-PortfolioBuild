@@ -71,5 +71,12 @@ foreach ($anomaly in @($obj.anomalies)) {
 if (-not (Test-Path -LiteralPath $tmpOutJson)) { throw "Expected output JSON file missing." }
 if (-not (Test-Path -LiteralPath $tmpOutMd)) { throw "Expected output markdown file missing." }
 
-Write-Host "PASS Test-QmTokenMonitorOutputContract"
+$mdText = Get-Content -Raw -LiteralPath $tmpOutMd
+if ($mdText -match '\$\(@\{') {
+    throw "Markdown top3 agent rendering leaked object interpolation syntax."
+}
+if ($mdText -notmatch '\| CEO \(`a1`\) \|') {
+    throw "Markdown top3 row format mismatch; expected literal agent id marker."
+}
 
+Write-Host "PASS Test-QmTokenMonitorOutputContract"

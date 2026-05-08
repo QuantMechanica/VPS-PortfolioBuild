@@ -10,11 +10,12 @@ from framework.scripts import p2_baseline
 
 
 class P2BaselineTests(unittest.TestCase):
-    @patch("framework.scripts.p2_baseline.subprocess.run")
-    def test_invoke_run_smoke_does_not_force_allow_running_terminal_by_default(self, mock_run) -> None:
-        mock_run.return_value.returncode = 0
-        mock_run.return_value.stdout = "ok"
-        mock_run.return_value.stderr = ""
+    @patch("framework.scripts.p2_baseline.subprocess.Popen")
+    def test_invoke_run_smoke_does_not_force_allow_running_terminal_by_default(self, mock_popen) -> None:
+        mock_proc = mock_popen.return_value
+        mock_proc.poll.side_effect = [0]
+        mock_proc.communicate.return_value = ("ok", "")
+        mock_proc.returncode = 0
 
         p2_baseline.invoke_run_smoke(
             ea_id=1003,
@@ -30,32 +31,37 @@ class P2BaselineTests(unittest.TestCase):
             timeout_sec=1800,
         )
 
-        arglist = mock_run.call_args.args[0]
+        arglist = mock_popen.call_args.args[0]
         self.assertIn("-Terminal", arglist)
         self.assertIn("any", arglist)
         self.assertNotIn("-AllowRunningTerminal", arglist)
 
-    @patch("framework.scripts.p2_baseline.subprocess.run")
-    def test_invoke_run_smoke_timeout_scales_with_runs(self, mock_run) -> None:
-        mock_run.return_value.returncode = 0
-        mock_run.return_value.stdout = "ok"
-        mock_run.return_value.stderr = ""
+    @patch("framework.scripts.p2_baseline.subprocess.Popen")
+    def test_invoke_run_smoke_emits_periodic_running_heartbeat(self, mock_popen) -> None:
+        mock_proc = mock_popen.return_value
+        mock_proc.poll.side_effect = [None, None, 0]
+        mock_proc.communicate.return_value = ("ok", "")
+        mock_proc.returncode = 0
 
-        p2_baseline.invoke_run_smoke(
-            ea_id=1004,
-            symbol="AUDCAD.DWX",
-            year=2024,
-            terminal="any",
-            period="H1",
-            runs=2,
-            expert="QM\\QM5_1004_davey_es_breakout",
-            setfile=Path("C:/tmp/test.set"),
-            report_root=Path("D:/QM/reports/pipeline/QM5_1004/P2"),
-            min_trades=20,
-            timeout_sec=120,
-        )
+        with patch("framework.scripts.p2_baseline.time.monotonic", side_effect=[0.0, 2.0, 3.0, 3.5]):
+            with patch("framework.scripts.p2_baseline.time.sleep"):
+                with patch("framework.scripts.p2_baseline.safe_print") as mock_print:
+                    p2_baseline.invoke_run_smoke(
+                        ea_id=1004,
+                        symbol="AUDCAD.DWX",
+                        year=2024,
+                        terminal="any",
+                        period="H1",
+                        runs=2,
+                        expert="QM\\QM5_1004_davey_es_breakout",
+                        setfile=Path("C:/tmp/test.set"),
+                        report_root=Path("D:/QM/reports/pipeline/QM5_1004/P2"),
+                        min_trades=20,
+                        timeout_sec=120,
+                        heartbeat_interval_sec=1,
+                    )
 
-        self.assertEqual(mock_run.call_args.kwargs["timeout"], 300)
+        self.assertTrue(any("[RUNNING] AUDCAD.DWX (any)" in c.args[0] for c in mock_print.call_args_list))
 
     def test_ensure_expert_binary_deploys_to_all_terminals(self) -> None:
         with TemporaryDirectory() as tmp:

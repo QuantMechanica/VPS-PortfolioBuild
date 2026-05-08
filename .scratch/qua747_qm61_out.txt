@@ -1,0 +1,10 @@
+[P2] EA=QM5_1004 ea_id=1004 period=H1 year=2024 runs=2
+[P2] symbols=1 report_csv=D:\QM\reports\pipeline\QM5_1004\P2\report.csv
+[RUN] AUDCAD.DWX -> any (QM5_1004_davey_es_breakout_AUDCAD.DWX_H1_backtest.set) attempt=1/2
+[INVALID] AUDCAD.DWX (any): no_summary_json:rc=1 (1s)
+  stderr: [31;1mException: [0mC:\QM\repo\framework\scripts\run_smoke.ps1:455[0m
+[31;1m[0m[36;1mLine |[0m
+[31;1m[0m[36;1m[36;1m 455 | [0m         [36;1mthrow "Terminal instance is already running for $terminalRoot[0m …[0m
+[31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m     | [31;1m         ~~
+
+[P2 DONE] {'PASS': 0, 'FAIL': 0, 'INVALID': 1, 'DRY': 0}  summary=D:\QM\reports\pipeline\QM5_1004\P2\p2_QM5_1004_result.json

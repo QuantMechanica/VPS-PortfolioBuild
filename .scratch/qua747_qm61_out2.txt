@@ -1,0 +1,6 @@
+[P2] EA=QM5_1004 ea_id=1004 period=H1 year=2024 runs=2
+[P2] symbols=1 report_csv=D:\QM\reports\pipeline\QM5_1004\P2\report.csv
+[RUN] AUDCAD.DWX -> any (QM5_1004_davey_es_breakout_AUDCAD.DWX_H1_backtest.set) attempt=1/2
+[TIMEOUT] AUDCAD.DWX (any): exceeded 60s after 120s
+
+[P2 DONE] {'PASS': 0, 'FAIL': 0, 'INVALID': 1, 'DRY': 0}  summary=D:\QM\reports\pipeline\QM5_1004\P2\p2_QM5_1004_result.json

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QuantMechanica Project Dashboard</title>
+  <style>
+    :root {
+      --bg: #090f13;
+      --panel: #111a20;
+      --panel2: #16242c;
+      --border: #243946;
+      --text: #e7f1f6;
+      --muted: #9eb3bf;
+      --ok: #14b87a;
+      --warn: #f3b13f;
+      --bad: #ea5f63;
+      --chip: #1f313c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "IBM Plex Sans", system-ui, sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at top right, #16303c, var(--bg) 55%);
+    }
+    .wrap { max-width: 1280px; margin: 0 auto; padding: 24px; }
+    h1 { margin: 0 0 6px; font-size: 30px; }
+    .sub { color: var(--muted); margin-bottom: 20px; }
+    .alert { border: 1px solid var(--warn); background: rgba(243,177,63,.1); color: #ffd692; padding: 10px 12px; border-radius: 10px; margin-bottom: 16px; display: none; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap: 12px; margin-bottom: 16px; }
+    .card { background: linear-gradient(160deg, var(--panel2), var(--panel)); border: 1px solid var(--border); border-radius: 12px; padding: 12px; }
+    .k { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+    .v { font-size: 28px; font-weight: 700; }
+    table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
+    th { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; background: #0f171d; }
+    tr:last-child td { border-bottom: none; }
+    .section { margin-top: 18px; }
+    .section h2 { font-size: 15px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; }
+    .chip { display: inline-block; padding: 3px 8px; border-radius: 999px; font-size: 11px; text-transform: uppercase; background: var(--chip); border: 1px solid var(--border); }
+    .ok { color: #89f3ce; border-color: rgba(20,184,122,.4); background: rgba(20,184,122,.14); }
+    .warn { color: #ffd692; border-color: rgba(243,177,63,.4); background: rgba(243,177,63,.14); }
+    .bad { color: #ffb9bb; border-color: rgba(234,95,99,.4); background: rgba(234,95,99,.14); }
+    @media (max-width: 780px) {
+      .v { font-size: 22px; }
+      th, td { padding: 8px 9px; font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>QuantMechanica Project Dashboard</h1>
+    <div id="subtitle" class="sub">Loading public snapshot…</div>
+    <div id="stale" class="alert"></div>
+
+    <div class="grid" id="kpis"></div>
+
+    <div class="section">
+      <h2>Pipeline Phase Distribution</h2>
+      <table><thead><tr><th>Phase</th><th>Count</th></tr></thead><tbody id="phases"></tbody></table>
+    </div>
+
+    <div class="section">
+      <h2>Process Roadmap</h2>
+      <table><thead><tr><th>ID</th><th>Title</th><th>Status</th><th>Updated</th></tr></thead><tbody id="roadmap"></tbody></table>
+    </div>
+
+    <div class="section">
+      <h2>Strategy Archive</h2>
+      <table><thead><tr><th>Slug</th><th>Source</th><th>Visibility</th><th>Updated</th></tr></thead><tbody id="archive"></tbody></table>
+    </div>
+  </div>
+
+  <script>
+    const staleMinutes = 90;
+    const chipClass = (s) => s === "green" || s === "public" || s === "active" ? "ok" : (s === "offline" ? "bad" : "warn");
+    const fmtDate = (v) => v ? new Date(v).toISOString().replace("T", " ").replace(".000Z", "Z") : "-";
+    async function fetchJsonWithFallback(absPath, relPath) {
+      const absRes = await fetch(absPath, { cache: "no-store" });
+      if (absRes.ok) { return absRes.json(); }
+      const relRes = await fetch(relPath, { cache: "no-store" });
+      if (relRes.ok) { return relRes.json(); }
+      throw new Error(`Fetch failed for ${absPath} and ${relPath}`);
+    }
+
+    async function load() {
+      const [pub, roadmap, archive] = await Promise.all([
+        fetchJsonWithFallback("/public-data/public-snapshot.json", "public-data/public-snapshot.json"),
+        fetchJsonWithFallback("/public-data/process-roadmap.json", "public-data/process-roadmap.json"),
+        fetchJsonWithFallback("/public-data/strategy-archive.json", "public-data/strategy-archive.json")
+      ]);
+
+      const generated = new Date(pub.generated_at);
+      const ageMin = (Date.now() - generated.getTime()) / 60000;
+      document.getElementById("subtitle").textContent = `Generated ${fmtDate(pub.generated_at)} | Phase ${pub.phase}`;
+
+      if (ageMin > staleMinutes) {
+        const el = document.getElementById("stale");
+        el.style.display = "block";
+        el.textContent = `Snapshot stale: ${Math.floor(ageMin)} minutes old (threshold ${staleMinutes}m).`;
+      }
+
+      const budget = Number(pub.expenses?.budget_eur || 0);
+      const spent = Number(pub.expenses?.spent_eur || 0);
+      const burn = budget > 0 ? `${Math.round((spent / budget) * 100)}%` : "n/a";
+      const t6Chip = `<span class="chip ${chipClass(pub.t6?.status)}">${pub.t6?.status || "unknown"}</span>`;
+
+      document.getElementById("kpis").innerHTML = [
+        ["Agents Online", pub.agents?.online ?? 0],
+        ["Agents Blocked", pub.agents?.blocked ?? 0],
+        ["Strategy Cards", pub.pipeline?.strategy_cards ?? 0],
+        ["EAs Built", pub.pipeline?.eas_built ?? 0],
+        ["T6 Status", t6Chip],
+        ["Expenses", `EUR ${spent} / ${budget} (${burn})`]
+      ].map(([k, v]) => `<div class="card"><div class="k">${k}</div><div class="v">${v}</div></div>`).join("");
+
+      const phases = Object.entries(pub.pipeline?.by_phase || {}).sort((a,b) => a[0].localeCompare(b[0]));
+      document.getElementById("phases").innerHTML = phases.map(([p, c]) => `<tr><td>${p}</td><td>${c}</td></tr>`).join("");
+
+      document.getElementById("roadmap").innerHTML = (roadmap.items || []).map(i => `<tr><td>${i.id}</td><td>${i.title}</td><td><span class="chip ${chipClass(i.status)}">${i.status}</span></td><td>${fmtDate(i.last_updated_utc)}</td></tr>`).join("");
+
+      document.getElementById("archive").innerHTML = (archive.items || []).map(i => `<tr><td>${i.slug}</td><td>${i.source}</td><td><span class="chip ${chipClass(i.visibility)}">${i.visibility}</span></td><td>${fmtDate(i.last_updated_utc)}</td></tr>`).join("");
+    }
+
+    load().catch(err => {
+      document.getElementById("subtitle").textContent = `Dashboard load failed: ${err.message}`;
+    });
+  </script>
+</body>
+</html>

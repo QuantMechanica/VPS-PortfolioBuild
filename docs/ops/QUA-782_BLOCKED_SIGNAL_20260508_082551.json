@@ -1,0 +1,31 @@
+{
+  "issue": "QUA-782",
+  "status": "blocked",
+  "blocked_at_local": "2026-05-08T08:25:51.1230149+02:00",
+  "blocked_owner": "CTO/EA-owner",
+  "unblock_action": "Provide QM5_1003 M15 setfiles for AUDCHF.DWX and EURNZD.DWX, or approve H1-only closure",
+  "blockers": [
+    {
+      "period": "M15",
+      "symbol": "AUDCHF.DWX",
+      "expected_setfile": "framework/EAs/QM5_1003_davey_baseline_3bar/sets/QM5_1003_davey_baseline_3bar_AUDCHF.DWX_M15_backtest.set",
+      "code": "SETFILE_MISSING"
+    },
+    {
+      "period": "M15",
+      "symbol": "EURNZD.DWX",
+      "expected_setfile": "framework/EAs/QM5_1003_davey_baseline_3bar/sets/QM5_1003_davey_baseline_3bar_EURNZD.DWX_M15_backtest.set",
+      "code": "SETFILE_MISSING"
+    }
+  ],
+  "evidence": {
+    "result_json": "D:/QM/reports/pipeline/QM5_1003/P3/p3_QM5_1003_result.json",
+    "h1_unique_cells_exhausted": [
+      "AUDCHF.DWX:H1:12/12",
+      "EURNZD.DWX:H1:12/12"
+    ],
+    "latest_heartbeat": "docs/ops/QUA-782_HEARTBEAT_20260508_082512.md",
+    "report_csv": "D:/QM/reports/pipeline/QM5_1003/P3/report.csv"
+  },
+  "next_action": "Pause reruns; resume immediately when unblock action lands"
+}

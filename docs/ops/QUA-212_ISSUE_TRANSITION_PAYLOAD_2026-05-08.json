@@ -1,0 +1,15 @@
+{
+  "issue": "QUA-212",
+  "requested_state": "in_review",
+  "reason": "phase2b_runner_and_calibration_validation_passed_owner_review_gate",
+  "summary": "Phase 2b pipeline runners and calibration contract validated; moved to in_review for owner close decision.",
+  "evidence": {
+    "closeout_note": "docs/ops/QUA-212_CLOSE_RECOMMENDATION_2026-05-08.md",
+    "validation_artifact": "artifacts/qua-212/phase2b_validation_2026-05-08T1546Z.json",
+    "dispatch_status": "docs/ops/QUA-212_KANBAN_DISPATCH_STATUS_20260508T185805Z.json",
+    "dispatch_latest": "docs/ops/QUA-212_KANBAN_DISPATCH_STATUS_latest.json",
+    "heartbeat_log": "docs/ops/QUA-212_HEARTBEAT_LOG.csv"
+  },
+  "generated_at_utc": "2026-05-08T18:59:07Z",
+  "status_marker": "ready_for_owner_close"
+}

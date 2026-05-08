@@ -1,0 +1,51 @@
+{
+  "timestamp_utc": "2026-05-05T20:25:00Z",
+  "issue": "QUA-750",
+  "ea_id": "QM5_1017",
+  "status": "ready_for_cto_qt_review",
+  "objective": {
+    "g4_adr_required": true,
+    "g4_adr_satisfied": true,
+    "notes": "Per-symbol ADR files exist for canonical symbols; G4 checks pass on produced zero-trade reports."
+  },
+  "runtime": {
+    "expert_deployed_t1_t5": true,
+    "report_missing_resolved": true,
+    "evidence": [
+      "D:/QM/reports/pipeline/QM5_1017/P2_direct/QM5_1017/20260505_202003/summary.json",
+      "D:/QM/reports/pipeline/QM5_1017/P2/report.csv"
+    ]
+  },
+  "latest_live_results": [
+    {
+      "symbol": "AUDUSD.DWX",
+      "runner_reason": "MIN_TRADES_NOT_MET",
+      "total_trades": 0,
+      "report_size_bytes": 29600,
+      "g4_passed": true
+    },
+    {
+      "symbol": "EURUSD.DWX",
+      "runner_reason": "MIN_TRADES_NOT_MET",
+      "total_trades": 0,
+      "report_size_bytes": 29600,
+      "g4_passed": true
+    },
+    {
+      "symbol": "XAUUSD.DWX",
+      "runner_reason": "MIN_TRADES_NOT_MET",
+      "total_trades": 0,
+      "report_size_bytes": 29600,
+      "g4_passed": true
+    }
+  ],
+  "classification": "scaffold_zero_trade_non_pass",
+  "required_review_actions": [
+    "CTO: confirm Card §7/§12 two-slot-per-pair convention in checklist",
+    "QT: gate-of-record review of zero-trade handling and non-PASS classification"
+  ],
+  "artifacts": [
+    "C:/QM/repo/docs/ops/QUA-750_EXECUTION_UPDATE_2026-05-05T2015Z.md",
+    "C:/QM/repo/docs/ops/QUA-750_READY_FOR_REVIEW_2026-05-05.md"
+  ]
+}

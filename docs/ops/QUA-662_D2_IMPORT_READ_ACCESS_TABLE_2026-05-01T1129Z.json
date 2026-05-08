@@ -1,0 +1,154 @@
+{
+  "source_log": "D:\\QM\\mt5\\T1\\dwx_import\\logs\\hourly_2026-04-27.log",
+  "generated_utc": "2026-05-01T11:20:23.9986948Z",
+  "failing_symbols": 21,
+  "rows": [
+    {
+      "symbol": "GBPAUD.DWX",
+      "status": "FAIL_tail_mid_bars",
+      "bars_one_shot": "0",
+      "bars_one_shot_err": "-2, 'Terminal: Invalid params'",
+      "bars_drift": "-100,000"
+    },
+    {
+      "symbol": "GBPCAD.DWX",
+      "status": "FAIL_tail_bars",
+      "bars_one_shot": "0",
+      "bars_one_shot_err": "-2, 'Terminal: Invalid params'",
+      "bars_drift": "-100,000"
+    },
+    {
+      "symbol": "GBPCHF.DWX",
+      "status": "FAIL_tail_mid_bars",
+      "bars_one_shot": "0",
+      "bars_one_shot_err": "-2, 'Terminal: Invalid params'",
+      "bars_drift": "-100,000"
+    },
+    {
+      "symbol": "GBPJPY.DWX",
+      "status": "FAIL_tail_mid_bars",
+      "bars_one_shot": "0",
+      "bars_one_shot_err": "-2, 'Terminal: Invalid params'",
+      "bars_drift": "-100,000"
+    },
+    {
+      "symbol": "GBPNZD.DWX",
+      "status": "FAIL_tail_mid_bars",
+      "bars_one_shot": "0",
+      "bars_one_shot_err": "-2, 'Terminal: Invalid params'",
+      "bars_drift": "-100,000"
+    },
+    {
+      "symbol": "GBPUSD.DWX",
+      "status": "FAIL_tail_mid_bars",
+      "bars_one_shot": "0",
+      "bars_one_shot_err": "-2, 'Terminal: Invalid params'",
+      "bars_drift": "-100,000"
+    },
+    {
+      "symbol": "GDAXIm.DWX",
+      "status": "FAIL_tail_mid_bars",
+      "bars_one_shot": "0",
+      "bars_one_shot_err": "-2, 'Terminal: Invalid params'",
+      "bars_drift": "-100,000"
+    },
+    {
+      "symbol": "NDXm.DWX",
+      "status": "FAIL_tail_mid_bars",
+      "bars_one_shot": "0",
+      "bars_one_shot_err": "-2, 'Terminal: Invalid params'",
+      "bars_drift": "-100,000"
+    },
+    {
+      "symbol": "NZDCAD.DWX",
+      "status": "FAIL_tail_mid_bars",
+      "bars_one_shot": "0",
+      "bars_one_shot_err": "-2, 'Terminal: Invalid params'",
+      "bars_drift": "-100,000"
+    },
+    {
+      "symbol": "NZDCHF.DWX",
+      "status": "FAIL_tail_bars",
+      "bars_one_shot": "0",
+      "bars_one_shot_err": "-2, 'Terminal: Invalid params'",
+      "bars_drift": "-100,000"
+    },
+    {
+      "symbol": "NZDJPY.DWX",
+      "status": "FAIL_tail_mid_bars",
+      "bars_one_shot": "0",
+      "bars_one_shot_err": "-2, 'Terminal: Invalid params'",
+      "bars_drift": "-100,000"
+    },
+    {
+      "symbol": "NZDUSD.DWX",
+      "status": "FAIL_tail_mid_bars",
+      "bars_one_shot": "0",
+      "bars_one_shot_err": "-2, 'Terminal: Invalid params'",
+      "bars_drift": "-100,000"
+    },
+    {
+      "symbol": "UK100.DWX",
+      "status": "FAIL_tail_bars",
+      "bars_one_shot": "0",
+      "bars_one_shot_err": "-2, 'Terminal: Invalid params'",
+      "bars_drift": "-100,000"
+    },
+    {
+      "symbol": "USDCAD.DWX",
+      "status": "FAIL_tail_bars",
+      "bars_one_shot": "0",
+      "bars_one_shot_err": "-2, 'Terminal: Invalid params'",
+      "bars_drift": "-100,000"
+    },
+    {
+      "symbol": "USDCHF.DWX",
+      "status": "FAIL_tail_bars",
+      "bars_one_shot": "0",
+      "bars_one_shot_err": "-2, 'Terminal: Invalid params'",
+      "bars_drift": "-100,000"
+    },
+    {
+      "symbol": "USDJPY.DWX",
+      "status": "FAIL_tail_mid_bars",
+      "bars_one_shot": "0",
+      "bars_one_shot_err": "-2, 'Terminal: Invalid params'",
+      "bars_drift": "-100,000"
+    },
+    {
+      "symbol": "WS30.DWX",
+      "status": "FAIL_tail",
+      "bars_one_shot": "0",
+      "bars_one_shot_err": "-2, 'Terminal: Invalid params'",
+      "bars_drift": "-100"
+    },
+    {
+      "symbol": "XAGUSD.DWX",
+      "status": "FAIL_tail_bars",
+      "bars_one_shot": "0",
+      "bars_one_shot_err": "-2, 'Terminal: Invalid params'",
+      "bars_drift": "-100,000"
+    },
+    {
+      "symbol": "XAUUSD.DWX",
+      "status": "FAIL_tail_mid_bars",
+      "bars_one_shot": "0",
+      "bars_one_shot_err": "-2, 'Terminal: Invalid params'",
+      "bars_drift": "-100,000"
+    },
+    {
+      "symbol": "XNGUSD.DWX",
+      "status": "FAIL_tail_mid_bars",
+      "bars_one_shot": "0",
+      "bars_one_shot_err": "-2, 'Terminal: Invalid params'",
+      "bars_drift": "-100,000"
+    },
+    {
+      "symbol": "XTIUSD.DWX",
+      "status": "FAIL_tail_bars",
+      "bars_one_shot": "0",
+      "bars_one_shot_err": "-2, 'Terminal: Invalid params'",
+      "bars_drift": "-100,000"
+    }
+  ]
+}

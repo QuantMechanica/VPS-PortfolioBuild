@@ -1,0 +1,16 @@
+{
+  "bucket": "QM5_1003_v1_P2",
+  "generated_utc": "2026-05-05T15:47:00.944825Z",
+  "issue": "QUA-736",
+  "none_verdict_rows": 36,
+  "pass_rows": 0,
+  "phase_verdict": null,
+  "rows": 36,
+  "running": {
+    "T1": 3,
+    "T2": 3,
+    "T3": 3,
+    "T4": 3,
+    "T5": 3
+  }
+}

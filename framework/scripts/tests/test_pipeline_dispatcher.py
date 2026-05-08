@@ -13,6 +13,7 @@ from framework.scripts.pipeline_dispatcher import (
     dispatch_or_invalidate,
     dispatch_job,
     export_phase_matrix_index,
+    initialize_matrix_bucket_for_symbols,
     load_dedup_index,
     prune_state,
     release_job,
@@ -324,6 +325,83 @@ class PipelineDispatcherTests(unittest.TestCase):
         state = {"phase_matrix_index": {"QM5_1001_v1_P2": {"matrix": [], "phase_verdict": None, "next_strategy_unblocked": None}}}
         exported = export_phase_matrix_index(state)
         self.assertIn("QM5_1001_v1_P2", exported)
+
+    def test_initialize_matrix_bucket_for_symbols_clears_stale_verdicts(self) -> None:
+        payload = {
+            "ea_id": "QM5_1001",
+            "version": "v1",
+            "phase": "P2",
+            "setfile_path": "framework/EAs/QM5_1001_example/sets/QM5_1001_example_EURUSD.DWX_H1_backtest.set",
+            "sub_gate_config_hash": "cfg001",
+            "symbols": [f"S{i:02d}.DWX" for i in range(MATRIX_SYMBOL_COUNT)],
+        }
+        jobs = build_matrix_jobs(payload)
+        state = {
+            "phase_matrix_index": {
+                "QM5_1001_v1_P2": {
+                    "matrix": [
+                        {"symbol": "S00.DWX", "terminal": "T1", "verdict": "PASS", "evidence": "old"},
+                        {"symbol": "LEGACY.DWX", "terminal": "T2", "verdict": "PASS", "evidence": "legacy"},
+                    ],
+                    "phase_verdict": "PASS",
+                    "next_strategy_unblocked": "SRC04_S2",
+                }
+            }
+        }
+        initialize_matrix_bucket_for_symbols(state, jobs)
+        bucket = state["phase_matrix_index"]["QM5_1001_v1_P2"]
+        self.assertEqual(len(bucket["matrix"]), MATRIX_SYMBOL_COUNT)
+        self.assertTrue(all(row["verdict"] is None for row in bucket["matrix"]))
+        self.assertTrue(all(row["evidence"] is None for row in bucket["matrix"]))
+        self.assertEqual(bucket["phase_verdict"], None)
+        self.assertEqual(bucket["next_strategy_unblocked"], None)
+        self.assertFalse(any(row["symbol"] == "LEGACY.DWX" for row in bucket["matrix"]))
+
+    def test_initialize_matrix_bucket_for_symbols_clears_matching_dedup_keys(self) -> None:
+        payload = {
+            "ea_id": "QM5_1001",
+            "version": "v1",
+            "phase": "P2",
+            "setfile_path": "framework/EAs/QM5_1001_example/sets/QM5_1001_example_EURUSD.DWX_H1_backtest.set",
+            "sub_gate_config_hash": "cfg001",
+            "symbols": [f"S{i:02d}.DWX" for i in range(MATRIX_SYMBOL_COUNT)],
+        }
+        jobs = build_matrix_jobs(payload)
+        matching_key = dedup_key(jobs[0])
+        different_phase_key = dedup_key({**jobs[0], "phase": "P3"})
+        different_symbol_key = dedup_key({**jobs[0], "symbol": "OTHER.DWX"})
+        state = {
+            "dedup": {
+                matching_key: {"symbol": jobs[0]["symbol"], "terminal": "T1", "ts": 1000},
+                different_phase_key: {"symbol": jobs[0]["symbol"], "terminal": "T2", "ts": 1000},
+                different_symbol_key: {"symbol": "OTHER.DWX", "terminal": "T3", "ts": 1000},
+            },
+            "phase_matrix_index": {"QM5_1001_v1_P2": {"matrix": [], "phase_verdict": None, "next_strategy_unblocked": None}},
+        }
+        initialize_matrix_bucket_for_symbols(state, jobs)
+        self.assertNotIn(matching_key, state["dedup"])
+        self.assertIn(different_phase_key, state["dedup"])
+        self.assertIn(different_symbol_key, state["dedup"])
+
+    def test_initialize_matrix_bucket_for_symbols_clears_normalized_dedup_keys(self) -> None:
+        payload = {
+            "ea_id": "QM5_1001",
+            "version": "v1",
+            "phase": "P2",
+            "setfile_path": "framework/EAs/QM5_1001_example/sets/QM5_1001_example_EURUSD.DWX_H1_backtest.set",
+            "sub_gate_config_hash": "cfg001",
+            "symbols": [f"S{i:02d}.DWX" for i in range(MATRIX_SYMBOL_COUNT)],
+        }
+        jobs = build_matrix_jobs(payload)
+        normalized_match = " qm5_1001 | V1 | s00.dwx | p2 | cfg-old "
+        state = {
+            "dedup": {
+                normalized_match: {"symbol": "s00.dwx", "terminal": "T1", "ts": 1000},
+            },
+            "phase_matrix_index": {"QM5_1001_v1_P2": {"matrix": [], "phase_verdict": None, "next_strategy_unblocked": None}},
+        }
+        initialize_matrix_bucket_for_symbols(state, jobs)
+        self.assertNotIn(normalized_match, state["dedup"])
 
     def test_save_and_load_dedup_index_round_trip(self) -> None:
         payload = {"QM5_1001_v1_P2": {"matrix": [{"symbol": "EURUSD.DWX", "terminal": "T1", "verdict": None, "evidence": None}], "phase_verdict": None, "next_strategy_unblocked": None}}
