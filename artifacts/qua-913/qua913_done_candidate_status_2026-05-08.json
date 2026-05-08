@@ -1,0 +1,43 @@
+{
+  "issue": "QUA-913",
+  "date_utc": "2026-05-08",
+  "status": "done_candidate",
+  "objective_covered": true,
+  "required_fields": [
+    "spent_cents",
+    "daily_delta",
+    "org_cap_pct_used",
+    "top3_agents",
+    "anomalies[]"
+  ],
+  "deliverables": [
+    "infra/monitoring/Invoke-QmTokenMonitor.ps1",
+    "infra/scripts/Install-QmTokenMonitorTask.ps1",
+    "infra/scripts/Invoke-InfraAudit.ps1"
+  ],
+  "tests_passed": [
+    "infra/scripts/tests/Test-QmTokenMonitor.ps1",
+    "infra/scripts/tests/Test-QmTokenMonitorOutputContract.ps1",
+    "infra/scripts/tests/Test-QmTokenMonitorTaskInstall.ps1",
+    "infra/scripts/tests/Test-InfraAuditQmTokenMonitorWiring.ps1"
+  ],
+  "evidence": [
+    "infra/reports/qua913_token_monitor_closeout_2026-05-08.md",
+    "infra/reports/qua913_done_candidate_status_2026-05-08.md",
+    "artifacts/qua-913/qua913_qm_token_monitor_sample_2026-05-08.json",
+    "artifacts/qua-913/qua913_qm_token_monitor_sample_2026-05-08.md",
+    "artifacts/qua-913/qua913_qm_token_monitor_sample_state_2026-05-08.json"
+  ],
+  "commit_chain": [
+    "da00303f",
+    "824ac170",
+    "fee236fa",
+    "fdc436df",
+    "32d286fc",
+    "06189875",
+    "462fd762",
+    "4a9e10fe"
+  ],
+  "next_action": "Reviewer/owner can close QUA-913 after sign-off."
+}
+
