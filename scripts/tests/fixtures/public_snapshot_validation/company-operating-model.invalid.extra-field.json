@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "schema": "quantmechanica.company-operating-model.v1",
+  "updated_at": "2026-05-08T00:00:00Z",
+  "cache_ttl_minutes": 90,
+  "menu": [
+    {"id":"operating-model","label":"Operating Model","section":"company_operating_model"}
+  ],
+  "dashboard": {
+    "control_tower": {"title":"Control Tower","summary":"x","signals":["x"]},
+    "capability_cells": [{"id":"infrastructure-cell","name":"Infrastructure Cell","mission":"x"}],
+    "process_loop": [{"step":1,"title":"Prioritize","description":"x"}],
+    "sections": [{"id":"control_tower","title":"Control Tower","purpose":"x"}],
+    "first_48h_actions": [{"order":1,"action":"x","owner":"CEO"}],
+    "stale_data_behavior": {"ui_label_template":"As of {updated_at}","ttl_note":"x","when_stale":"x"}
+  },
+  "leak_path": "C:/QM/private/secret.txt"
+}

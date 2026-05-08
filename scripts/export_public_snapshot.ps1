@@ -8,6 +8,7 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+$SchemaVersionV1 = 1
 
 function Read-JsonFile {
     param([string]$Path)
@@ -67,10 +68,11 @@ function Validate-JsonAgainstSchema {
     # Windows PowerShell 5.x fallback validation (schema-aligned checks).
     switch ($Name) {
         "public-snapshot" {
-            $requiredTop = @("generated_at", "phase", "agents", "pipeline", "t6", "expenses")
+            $requiredTop = @("schema_version", "generated_at", "phase", "agents", "pipeline", "t6", "expenses")
             foreach ($key in $requiredTop) {
                 if (-not (Test-ObjectHasKey -Target $Object -Key $key)) { throw "Missing key '$key' in $Name." }
             }
+            if ($Object.schema_version -ne $SchemaVersionV1) { throw "Invalid schema_version in $Name." }
             foreach ($k in @("online", "offline", "blocked")) {
                 if ($null -eq $Object.agents.$k -or $Object.agents.$k -lt 0) { throw "Invalid agents.$k in $Name." }
             }
@@ -86,9 +88,10 @@ function Validate-JsonAgainstSchema {
             if ($Object.expenses.spent_eur -lt 0 -or $Object.expenses.budget_eur -lt 0 -or $Object.expenses.entries -lt 0) { throw "Invalid expenses fields in $Name." }
         }
         "process-roadmap" {
-            foreach ($key in @("generated_at", "total", "items")) {
+            foreach ($key in @("schema_version", "generated_at", "total", "items")) {
                 if (-not (Test-ObjectHasKey -Target $Object -Key $key)) { throw "Missing key '$key' in $Name." }
             }
+            if ($Object.schema_version -ne $SchemaVersionV1) { throw "Invalid schema_version in $Name." }
             if ($Object.total -lt 0) { throw "Invalid total in $Name." }
             foreach ($item in $Object.items) {
                 foreach ($k in @("id", "title", "status", "last_updated_utc")) {
@@ -98,9 +101,10 @@ function Validate-JsonAgainstSchema {
             }
         }
         "strategy-archive" {
-            foreach ($key in @("generated_at", "total", "items")) {
+            foreach ($key in @("schema_version", "generated_at", "total", "items")) {
                 if (-not (Test-ObjectHasKey -Target $Object -Key $key)) { throw "Missing key '$key' in $Name." }
             }
+            if ($Object.schema_version -ne $SchemaVersionV1) { throw "Invalid schema_version in $Name." }
             if ($Object.total -lt 0) { throw "Invalid total in $Name." }
             foreach ($item in $Object.items) {
                 foreach ($k in @("slug", "source", "visibility", "last_updated_utc")) {
@@ -110,9 +114,10 @@ function Validate-JsonAgainstSchema {
             }
         }
         "company-operating-model" {
-            foreach ($key in @("schema", "updated_at", "cache_ttl_minutes", "menu", "dashboard")) {
+            foreach ($key in @("schema_version", "schema", "updated_at", "cache_ttl_minutes", "menu", "dashboard")) {
                 if (-not (Test-ObjectHasKey -Target $Object -Key $key)) { throw "Missing key '$key' in $Name." }
             }
+            if ($Object.schema_version -ne $SchemaVersionV1) { throw "Invalid schema_version in $Name." }
             if ($Object.schema -ne "quantmechanica.company-operating-model.v1") { throw "Invalid schema value in $Name." }
             if ($Object.cache_ttl_minutes -lt 1) { throw "Invalid cache_ttl_minutes in $Name." }
             if ($null -eq $Object.dashboard.stale_data_behavior.ui_label_template) { throw "Missing stale_data_behavior.ui_label_template in $Name." }
@@ -160,6 +165,7 @@ function Get-ProcessRoadmap {
             }
     }
     return [ordered]@{
+        schema_version = $SchemaVersionV1
         generated_at = [datetime]::UtcNow.ToString("o")
         total = $items.Count
         items = $items
@@ -182,6 +188,7 @@ function Get-StrategyArchiveSnapshot {
             }
     }
     return [ordered]@{
+        schema_version = $SchemaVersionV1
         generated_at = [datetime]::UtcNow.ToString("o")
         total = $items.Count
         items = $items
@@ -195,6 +202,7 @@ $processRoadmap = Get-ProcessRoadmap -ProcessesDir (Join-Path $RepoRoot "process
 $strategyArchive = Get-StrategyArchiveSnapshot -StrategySeedSpecsDir (Join-Path $RepoRoot "strategy-seeds\specs")
 
 $publicSnapshot = [ordered]@{
+    schema_version = $SchemaVersionV1
     generated_at = [datetime]::UtcNow.ToString("o")
     phase = "P0 Foundation"
     agents = @{
@@ -239,6 +247,12 @@ $companyModelPath = Join-Path $PublicDataDir "company-operating-model.json"
 $companyOperatingModel = Read-JsonFile -Path $companyModelPath
 if ($null -eq $companyOperatingModel) {
     throw "Missing required file: $companyModelPath"
+}
+if (-not (Test-ObjectHasKey -Target $companyOperatingModel -Key "schema_version")) {
+    throw "Missing required key 'schema_version' in $companyModelPath"
+}
+if ([int]$companyOperatingModel.schema_version -ne $SchemaVersionV1) {
+    throw "Invalid schema_version in $companyModelPath. Expected $SchemaVersionV1."
 }
 
 Validate-JsonAgainstSchema -Object $publicSnapshot -SchemaPath $publicSchemaPath -Name "public-snapshot"

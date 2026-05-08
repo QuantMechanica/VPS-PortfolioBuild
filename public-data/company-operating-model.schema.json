@@ -1,8 +1,10 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantmechanica.com/schemas/company-operating-model/v1.json",
   "title": "QuantMechanica Company Operating Model",
   "type": "object",
   "required": [
+    "schema_version",
     "schema",
     "updated_at",
     "cache_ttl_minutes",
@@ -10,6 +12,10 @@
     "dashboard"
   ],
   "properties": {
+    "schema_version": {
+      "type": "integer",
+      "enum": [1]
+    },
     "schema": {
       "type": "string",
       "const": "quantmechanica.company-operating-model.v1"

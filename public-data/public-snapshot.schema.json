@@ -1,8 +1,10 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantmechanica.com/schemas/public-snapshot/v1.json",
   "title": "QuantMechanica Public Snapshot",
   "type": "object",
   "required": [
+    "schema_version",
     "generated_at",
     "phase",
     "agents",
@@ -11,6 +13,10 @@
     "expenses"
   ],
   "properties": {
+    "schema_version": {
+      "type": "integer",
+      "enum": [1]
+    },
     "generated_at": {
       "type": "string",
       "format": "date-time"

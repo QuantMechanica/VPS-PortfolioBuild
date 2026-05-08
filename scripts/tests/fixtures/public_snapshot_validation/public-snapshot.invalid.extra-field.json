@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-05-08T00:00:00Z",
+  "phase": "P0 Foundation",
+  "agents": {"online": 0, "offline": 0, "blocked": 0},
+  "pipeline": {
+    "strategy_cards": 0,
+    "eas_built": 0,
+    "by_phase": {"G0":0,"P1":0,"P2":0,"P3":0,"P3_5":0,"P4":0,"P5":0,"P5b":0,"P5c":0,"P6":0,"P7":0,"P8":0,"P9":0,"P9b":0,"P10":0}
+  },
+  "t6": {"status":"offline","autotrading":false,"risk_state":"green"},
+  "expenses": {"spent_eur":0,"budget_eur":1850,"entries":0},
+  "unexpected": true
+}
