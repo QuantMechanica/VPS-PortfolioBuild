@@ -97,8 +97,11 @@
   - task name: `QM_QUA774_BlockedHeartbeat_60min`
   - interval: every `60` minutes
   - principal: `SYSTEM` (highest)
+  - external signal gate: enabled (launcher passes `-RequireExternalSignal`)
 - Writes launcher:
   - `C:\QM\tasks\run_qua774_blocked_heartbeat.ps1`
+- Optional:
+  - `-DisableExternalSignalGate` to run heartbeat without signal gating
 - Preview mode (no registration):
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-QUA774BlockedHeartbeatTask.ps1 -PreviewOnly`
 

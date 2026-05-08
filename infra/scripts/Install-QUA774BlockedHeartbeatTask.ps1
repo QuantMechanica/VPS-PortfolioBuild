@@ -2,6 +2,7 @@ param(
     [string]$TaskName = 'QM_QUA774_BlockedHeartbeat_60min',
     [int]$IntervalMinutes = 60,
     [string]$RepoRoot = 'C:\QM\repo',
+    [switch]$DisableExternalSignalGate,
     [switch]$PreviewOnly
 )
 
@@ -23,9 +24,10 @@ if (-not (Test-Path -LiteralPath $taskDir)) {
 }
 
 $launcherPath = Join-Path $taskDir 'run_qua774_blocked_heartbeat.ps1'
+$invokeArgs = if ($DisableExternalSignalGate) { '' } else { ' -RequireExternalSignal' }
 $launcher = @"
 `$ErrorActionPreference = 'Stop'
-powershell -NoProfile -ExecutionPolicy Bypass -File "$scriptPath" *> "C:\QM\logs\qua774_blocked_heartbeat.log"
+powershell -NoProfile -ExecutionPolicy Bypass -File "$scriptPath"${invokeArgs} *> "C:\QM\logs\qua774_blocked_heartbeat.log"
 "@
 Set-Content -LiteralPath $launcherPath -Value $launcher -Encoding UTF8
 
@@ -36,6 +38,7 @@ if ($PreviewOnly) {
         interval_minutes = $IntervalMinutes
         launcher_path = $launcherPath
         invoke_script = $scriptPath
+        external_signal_gate_enabled = (-not $DisableExternalSignalGate)
     }
     exit 0
 }
@@ -63,4 +66,5 @@ $null = Register-ScheduledTask `
     interval_minutes = $IntervalMinutes
     launcher_path = $launcherPath
     invoke_script = $scriptPath
+    external_signal_gate_enabled = (-not $DisableExternalSignalGate)
 }
