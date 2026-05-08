@@ -142,6 +142,9 @@
   - unblock acceptance criteria
   - required external evidence artifacts
   - required `QUA-774_EXTERNAL_UNBLOCK_SIGNAL.json` update (`ready_to_resume=true`)
+- Deterministic output:
+  - omits volatile timestamps
+  - rewrites file only when payload content changes
 - Example:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\New-QUA774ExternalUnblockChildPayload.ps1`
 

@@ -38,15 +38,23 @@ $payload = [ordered]@{
             note = 'Set only after all acceptance criteria are met.'
         }
     }
-    generated_at_utc = (Get-Date).ToUniversalTime().ToString('o')
 }
 
 $json = $payload | ConvertTo-Json -Depth 8
-Set-Content -LiteralPath $outFull -Value $json -Encoding UTF8
+$shouldWrite = $true
+if (Test-Path -LiteralPath $outFull -PathType Leaf) {
+    $existing = Get-Content -LiteralPath $outFull -Raw
+    if ($existing -eq $json) {
+        $shouldWrite = $false
+    }
+}
+if ($shouldWrite) {
+    Set-Content -LiteralPath $outFull -Value $json -Encoding UTF8
+}
 
 [pscustomobject]@{
     issue_id = $IssueId
     output_path = $OutPath
     child_issue_title = $payload.child_issue_recommendation.title
-    generated_at_utc = $payload.generated_at_utc
+    written = $shouldWrite
 }
