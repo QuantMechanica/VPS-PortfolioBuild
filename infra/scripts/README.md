@@ -57,6 +57,22 @@
 - Example:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\New-QUA774IssueTransitionPayload.ps1`
 
+## `Test-QUA774BlockedPackage.ps1`
+
+- Validates QUA-774 blocked artifact coherence across:
+  - blocker status JSON
+  - issue transition payload JSON
+  - blocked comment markdown
+- Fails (`exit 2`) when:
+  - files are missing
+  - issue id mismatches
+  - transition state disagrees with gate status (`blocked` vs `in_review`)
+  - evidence file names drift between status and payload/comment
+- Success output:
+  - `status=ok issue=QUA-774 gate=<...> transition=<...> evidence=<...>`
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Test-QUA774BlockedPackage.ps1`
+
 ## `../monitoring/Test-PythonRuntimeHealth.ps1`
 
 - Read-only Python runtime integrity check for infra/pipeline hosts.
