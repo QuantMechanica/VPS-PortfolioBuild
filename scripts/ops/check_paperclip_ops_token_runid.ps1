@@ -1,7 +1,8 @@
 param(
     [string]$EnvPath = "C:/QM/paperclip/tools/ops/.env",
     [string]$ExpectedRunId = "",
-    [string]$OutPath = ""
+    [string]$OutPath = "",
+    [switch]$PreferProcessEnvToken = $true
 )
 
 Set-StrictMode -Version Latest
@@ -34,8 +35,22 @@ function Decode-JwtPayload {
 }
 
 $envMap = Get-EnvMap -Path $EnvPath
-$token = $envMap["PAPERCLIP_BEARER_TOKEN"]
-if (-not $token) { throw "missing_token_in_env_file" }
+$token = $null
+$tokenSource = $null
+
+if ($PreferProcessEnvToken -and $env:PAPERCLIP_BEARER_TOKEN) {
+    $token = [string]$env:PAPERCLIP_BEARER_TOKEN
+    $tokenSource = "process_env"
+}
+
+if (-not $token) {
+    $token = $envMap["PAPERCLIP_BEARER_TOKEN"]
+    if ($token) {
+        $tokenSource = "env_file"
+    }
+}
+
+if (-not $token) { throw "missing_token_in_process_env_and_env_file" }
 
 $payload = Decode-JwtPayload -Token $token
 $tokenRunId = [string]$payload.run_id
@@ -48,6 +63,7 @@ if ($ExpectedRunId -ne "") {
 $result = [ordered]@{
     ts_utc = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
     env_path = $EnvPath
+    token_source = $tokenSource
     expected_run_id = $ExpectedRunId
     token_run_id = $tokenRunId
     match = $isMatch
