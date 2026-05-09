@@ -3,8 +3,8 @@ name: qm-p4-montecarlo
 description: Use for P4 robustness only after confirmed P3.5 PASS. Deterministic guard first.
 owner: Research
 reviewer: CTO
-last-updated: 2026-05-08
-basis: framework/scripts/skill_p4_montecarlo_guard.py
+last-updated: 2026-05-09
+basis: framework/scripts/skill_process_adapter.py + framework/scripts/skill_p4_montecarlo_guard.py
 ---
 
 # qm-p4-montecarlo
@@ -17,7 +17,7 @@ basis: framework/scripts/skill_p4_montecarlo_guard.py
 ## Deterministic preflight
 
 ```bash
-python C:/QM/repo/framework/scripts/skill_p4_montecarlo_guard.py --ea-id QM5_<NNNN>
+python C:/QM/repo/framework/scripts/skill_process_adapter.py --skill qm-p4-montecarlo-guard -- --ea-id QM5_<NNNN>
 ```
 
 Guard output includes:
