@@ -12,3 +12,5 @@ ea_id,slug,strategy_id,status,owner,created_at
 1014,lien-channels,SRC04_S08,active,CTO,2026-05-01
 1015,lien-perfect-order,SRC04_S09,active,CTO,2026-05-01
 1016,lien-carry-trade,SRC04_S11,active,CTO,2026-05-01
+1018,williams-pro-go,SRC03_S16,active,CTO,2026-05-09
+1019,williams-pinch-paunch,SRC03_S17,active,CTO,2026-05-09
