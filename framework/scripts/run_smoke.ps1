@@ -19,6 +19,8 @@ param(
     [int]$Model = 4,
     [ValidateRange(60, 7200)]
     [int]$TimeoutSeconds = 1800,
+    [ValidateRange(0, 120)]
+    [int]$ReportSettleSeconds = 15,
     [string]$SetFile,
     [string]$ReportRoot = "D:\QM\reports\smoke",
     [switch]$AllowRunningTerminal,
@@ -234,6 +236,25 @@ function Convert-RunMetricsToFingerprint {
     return "{0}|{1}|{2}|{3}" -f $Metrics.total_trades_raw, $Metrics.profit_factor_raw, $Metrics.drawdown_raw, $Metrics.net_profit_raw
 }
 
+function Test-EmptyReportSentinel {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Html
+    )
+
+    if ([regex]::IsMatch($Html, '(?is)Period:\s*M0\s*\(\s*1970\.01\.01\s*-\s*1970\.01\.01\s*\)')) {
+        return $true
+    }
+
+    $barsZero = [regex]::IsMatch($Html, '(?is)Bars:\s*0\b')
+    $ticksZero = [regex]::IsMatch($Html, '(?is)Ticks:\s*0\b')
+    if ($barsZero -and $ticksZero) {
+        return $true
+    }
+
+    return $false
+}
+
 $terminalRoot = Resolve-TerminalRoot -TerminalName $Terminal
 $terminalExe = Resolve-TerminalExecutable -TerminalRoot $terminalRoot
 
@@ -276,6 +297,12 @@ for ($i = 1; $i -le $Runs; $i++) {
 
     $iniPath = Join-Path $runDir "tester.ini"
     $reportHtmPath = Join-Path $runDir "report.htm"
+    $symbolSlug = ($Symbol -replace '[^A-Za-z0-9]+', '_').Trim('_')
+    if (-not $symbolSlug) {
+        $symbolSlug = "SYMBOL"
+    }
+    $reportExportName = "QM5_{0}_{1}_{2}_{3}.htm" -f $EAId, $symbolSlug, $runTag, $runName
+    $reportSourcePath = Join-Path $terminalRoot $reportExportName
     $runStartUtc = (Get-Date).ToUniversalTime()
 
     Write-TesterIni -Path $iniPath `
@@ -285,7 +312,7 @@ for ($i = 1; $i -le $Runs; $i++) {
         -ModelMode $Model `
         -FromDate $fromDate `
         -ToDate $toDate `
-        -ReportPath $reportHtmPath `
+        -ReportPath $reportExportName `
         -SetFilePath $SetFile
 
     $exitCode = $null
@@ -307,6 +334,33 @@ for ($i = 1; $i -le $Runs; $i++) {
         continue
     }
 
+    # Capture the freshest tester log even when report.htm is missing so hang triage has evidence.
+    $testerLog = Get-LatestTesterLog -TerminalRoot $terminalRoot -SinceUtc $runStartUtc
+    $testerLogPath = $null
+    $testerLogTail = ""
+    if ($testerLog) {
+        $testerLogPath = Join-Path $runDir $testerLog.Name
+        Copy-Item -LiteralPath $testerLog.FullName -Destination $testerLogPath -Force
+        $testerLogTail = ((Get-Content -LiteralPath $testerLogPath | Select-Object -Last 800) -join [Environment]::NewLine)
+    }
+
+    if ((-not (Test-Path -LiteralPath $reportHtmPath -PathType Leaf)) -and (Test-Path -LiteralPath $reportSourcePath -PathType Leaf)) {
+        Copy-Item -LiteralPath $reportSourcePath -Destination $reportHtmPath -Force
+    }
+
+    if (-not (Test-Path -LiteralPath $reportHtmPath -PathType Leaf) -and $ReportSettleSeconds -gt 0) {
+        $deadline = (Get-Date).AddSeconds($ReportSettleSeconds)
+        while ((Get-Date) -lt $deadline) {
+            if ((-not (Test-Path -LiteralPath $reportHtmPath -PathType Leaf)) -and (Test-Path -LiteralPath $reportSourcePath -PathType Leaf)) {
+                Copy-Item -LiteralPath $reportSourcePath -Destination $reportHtmPath -Force
+            }
+            if (Test-Path -LiteralPath $reportHtmPath -PathType Leaf) {
+                break
+            }
+            Start-Sleep -Milliseconds 250
+        }
+    }
+
     if (-not (Test-Path -LiteralPath $reportHtmPath -PathType Leaf)) {
         $reasonClasses.Add("REPORT_MISSING")
         $globalRealTicksMarker = $false
@@ -317,12 +371,28 @@ for ($i = 1; $i -le $Runs; $i++) {
             error = "Strategy tester did not produce report file."
             exit_code = $exitCode
             report_path = $reportHtmPath
-            tester_log_path = $null
+            report_source_path = $reportSourcePath
+            tester_log_path = $testerLogPath
         }
         continue
     }
 
     $reportHtml = Get-Content -Raw -LiteralPath $reportHtmPath
+
+    if (Test-EmptyReportSentinel -Html $reportHtml) {
+        $reasonClasses.Add("EMPTY_REPORT")
+        $globalRealTicksMarker = $false
+        $runResults += [pscustomobject]@{
+            run = $runName
+            status = "FAIL"
+            failure = "EMPTY_REPORT"
+            error = "Tester produced an empty/template report (no real EA execution evidence)."
+            exit_code = $exitCode
+            report_path = $reportHtmPath
+            tester_log_path = $null
+        }
+        continue
+    }
 
     $totalTradesRaw = Get-ReportMetricValue -Html $reportHtml -Label "Total Trades"
     $profitFactorRaw = Get-ReportMetricValue -Html $reportHtml -Label "Profit Factor"
@@ -333,15 +403,6 @@ for ($i = 1; $i -le $Runs; $i++) {
     $profitFactor = Convert-ReportNumber -Value $profitFactorRaw
     $drawdown = Convert-ReportNumber -Value $drawdownRaw
     $netProfit = Convert-ReportNumber -Value $netProfitRaw
-
-    $testerLog = Get-LatestTesterLog -TerminalRoot $terminalRoot -SinceUtc $runStartUtc
-    $testerLogPath = $null
-    $testerLogTail = ""
-    if ($testerLog) {
-        $testerLogPath = Join-Path $runDir $testerLog.Name
-        Copy-Item -LiteralPath $testerLog.FullName -Destination $testerLogPath -Force
-        $testerLogTail = ((Get-Content -LiteralPath $testerLogPath | Select-Object -Last 800) -join [Environment]::NewLine)
-    }
 
     $onInitFailure = $false
     if ($testerLogTail) {
@@ -401,7 +462,8 @@ if ($completedRuns.Count -eq $Runs) {
             net_profit_raw = $_.net_profit_raw
         }
     }
-    $deterministic = (($fingerprints | Select-Object -Unique).Count -eq 1)
+    $uniqueFingerprints = @($fingerprints | Select-Object -Unique)
+    $deterministic = ($uniqueFingerprints.Count -eq 1)
     if (-not $deterministic) {
         $reasonClasses.Add("NON_DETERMINISTIC")
     }

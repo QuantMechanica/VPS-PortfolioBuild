@@ -259,7 +259,10 @@ def invoke_run_smoke(ea_id: int, symbol: str, year: int, terminal: str, period: 
         "-TimeoutSeconds", str(timeout_sec),
     ]
     if allow_running_terminal:
-        arglist.append("-AllowRunningTerminal")
+        safe_print(
+            f"[WARN] --allow-running-terminal ignored for P2 baseline ({symbol} {terminal}); "
+            "enforcing exclusive terminal usage."
+        )
     # run_smoke executes up to `runs` sequential tester runs, each bounded by timeout_sec.
     # Keep wrapper timeout safely above aggregate budget to avoid false no-summary invalids.
     wrapper_timeout = (timeout_sec * max(1, runs)) + 60
@@ -384,6 +387,15 @@ def run_one_symbol(ea_id: int, ea_dir: Path, ea_label: str, symbol: str, year: i
                 terminal=terminal,
             )
         if not summary_path or not summary_path.exists():
+            busy_msg = "Terminal instance is already running"
+            if busy_msg in combined_output:
+                msg = "terminal_busy"
+                safe_print(f"[INVALID] {symbol} ({terminal}): {msg} ({elapsed:.0f}s)")
+                append_csv_row(report_csv, {
+                    "ea_id": ea_id, "phase": "P2", "symbol": symbol, "terminal": terminal,
+                    "verdict": "INVALID", "invalidation_reason": msg, "evidence": busy_msg,
+                })
+                return "INVALID"
             msg = f"no_summary_json:rc={rc}"
             if attempt < max_attempts:
                 safe_print(f"[RETRY] {symbol} ({terminal}) {elapsed:.0f}s reason={msg} -> retrying once")
@@ -432,7 +444,7 @@ def main() -> int:
     ap.add_argument("--resume", action="store_true", help="skip symbols already verdict=PASS in report.csv")
     ap.add_argument("--terminal", help="pin all runs to one terminal (default: round-robin T1..T5)")
     ap.add_argument("--allow-running-terminal", action="store_true",
-                    help="pass through -AllowRunningTerminal to run_smoke (off by default)")
+                    help="deprecated/no-op in P2 baseline; exclusive terminal usage is always enforced")
     ap.add_argument("--max-parallel", type=int, default=5, help="max concurrent symbol runs when terminal is not pinned")
     args = ap.parse_args()
 
