@@ -92,7 +92,8 @@ def _run_smoke_parallel(
     while queue or running:
         while queue and len(running) < max(1, max_parallel):
             job = queue.pop(0)
-            terminal = str(job["terminal"]) if job.get("terminal") else next(terminals)
+            pinned_terminal = str(job.get("terminal", "")).strip()
+            terminal = next(terminals) if pinned_terminal.lower() in ("", "any") else pinned_terminal
             cmd = [
                 "pwsh",
                 "-NoProfile",
@@ -164,7 +165,7 @@ def main() -> int:
     ap.add_argument("--symbols", default="")
     ap.add_argument("--year", type=int, required=True)
     ap.add_argument("--period", default="H1")
-    ap.add_argument("--terminal", default="T1")
+    ap.add_argument("--terminal", default="any")
     ap.add_argument("--runs", type=int, default=2)
     ap.add_argument("--min-trades", type=int, default=20)
     ap.add_argument("--calibration-json", required=True)
