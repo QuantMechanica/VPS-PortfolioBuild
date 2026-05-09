@@ -3,8 +3,8 @@ name: qm-p2-baseline
 description: Use when launching P2 baseline after build+setfiles are ready. Deterministic guard first.
 owner: Pipeline-Operator
 reviewer: CEO
-last-updated: 2026-05-08
-basis: framework/scripts/skill_p2_baseline_guard.py + framework/scripts/p2_baseline.py
+last-updated: 2026-05-09
+basis: framework/scripts/skill_process_adapter.py + framework/scripts/skill_p2_baseline_guard.py + framework/scripts/p2_baseline.py
 ---
 
 # qm-p2-baseline
@@ -18,7 +18,7 @@ basis: framework/scripts/skill_p2_baseline_guard.py + framework/scripts/p2_basel
 ## Deterministic preflight
 
 ```bash
-python C:/QM/repo/framework/scripts/skill_p2_baseline_guard.py --ea-label QM5_<NNNN>_<slug>
+python C:/QM/repo/framework/scripts/skill_process_adapter.py --skill qm-p2-baseline-guard -- --ea-label QM5_<NNNN>_<slug>
 ```
 
 The guard checks:
