@@ -1,0 +1,33 @@
+{
+  "ea_id": 1014,
+  "strategy_id": "SRC04_S08",
+  "slug": "lien-channels",
+  "card_path": "strategy-seeds/cards/lien-channels_card.md",
+  "source_file": "framework/EAs/QM5_1014_lien_channels/QM5_1014_lien_channels.mq5",
+  "compiled_file": "framework/EAs/QM5_1014_lien_channels/QM5_1014_lien_channels.ex5",
+  "compile_pass": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "state": "READY_FOR_CTO_REVIEW",
+  "built_by": "Development-Claude",
+  "built_at": "2026-05-09T13:03:00Z",
+  "framework_version": "5.0",
+  "input_groups": [
+    "QuantMechanica V5 Framework",
+    "Risk",
+    "News",
+    "Friday Close",
+    "Strategy"
+  ],
+  "strategy_inputs": [
+    "channel_lookback",
+    "channel_max_pips",
+    "channel_min_pips",
+    "entry_offset_pips",
+    "management_mode",
+    "tp1_rr",
+    "tp_full_rr",
+    "trail_method"
+  ],
+  "notes": "Bracket entry (BUY_STOP + SELL_STOP) via CTrade; cancel unfilled side on fill. Conservative management default: TP1 at 1R partial close + BE + 2-bar trail. 2R full exit variant exposed via management_mode=1."
+}
