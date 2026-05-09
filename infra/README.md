@@ -407,6 +407,10 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
 - `scripts/Assert-CommitAllowlist.ps1`
   - Pre-commit guard that fails when staged files are outside explicit allowlist prefixes.
   - Use to prevent accidental mixed commits in shared/dirty worktrees.
+- `scripts/Move-QuaArtifactsOutOfEASourceDirs.ps1`
+  - QUA-1027 source-dirs hygiene mover for `framework/EAs/**/QUA-*` artifacts.
+  - Idempotent check-then-act: move missing files, remove duplicate source files when destination hash matches, fail fast on hash conflicts.
+  - Writes deterministic move report JSON to `docs/ops/QUA-archived/qua-1027_move_report_latest.json`.
 - `scripts/New-QUA185IssueTransitionPayload.ps1`
   - Generates deterministic issue-transition payload for QUA-185 from closeout + runbook + snapshot artifacts.
   - Writes `docs/ops/QUA-185_ISSUE_TRANSITION_PAYLOAD_2026-04-27.json` with `target_status=in_review`.
