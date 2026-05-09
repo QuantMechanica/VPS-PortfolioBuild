@@ -7,3 +7,4 @@ ea_id,slug,strategy_id,status,owner,created_at
 1006,davey-eu-day,SRC01_S02,active,Development,2026-04-28
 40303,lien-fade-double-zeros,SRC04_S03,active,Pipeline-Operator,2026-04-28
 4303,lien-fade-double-zeros,SRC04_S03,active,Pipeline-Operator,2026-04-28
+1014,lien-channels,SRC04_S08,active,Development-Claude,2026-05-09

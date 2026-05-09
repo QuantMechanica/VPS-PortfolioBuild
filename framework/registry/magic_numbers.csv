@@ -10,3 +10,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 4303,lien-fade-double-zeros,2,USDJPY.DWX,43030002,2026-04-28,Pipeline-Operator,active
 4303,lien-fade-double-zeros,3,USDCAD.DWX,43030003,2026-04-28,Pipeline-Operator,active
 4303,lien-fade-double-zeros,4,AUDUSD.DWX,43030004,2026-04-28,Pipeline-Operator,active
+1014,lien-channels,0,EURUSD.DWX,10140000,2026-05-09,CTO,active
