@@ -1,16 +1,16 @@
 {
-  "captured_at_utc": "2026-05-09T09:34:05.847584+00:00",
+  "captured_at_utc": "2026-05-09T09:37:29.517091+00:00",
   "issueId": "9f8cbeb6-4267-4770-ae3f-ab2923ee8a6e",
   "identifier": "QUA-1063",
   "status": "in_progress",
   "assigneeAgentId": "241ccf3c-ab68-40d6-b8eb-e03917795878",
-  "checkoutRunId": "e9b27f3d-79c1-48b6-9629-fbfcc0901a37",
-  "executionRunId": "e9b27f3d-79c1-48b6-9629-fbfcc0901a37",
+  "checkoutRunId": "7f5b7860-f806-4d1b-bf3f-b2bf52d7e983",
+  "executionRunId": "7f5b7860-f806-4d1b-bf3f-b2bf52d7e983",
   "mutation_test": "failed",
   "error": {
     "status": 409,
     "url": "http://127.0.0.1:3100/api/issues/9f8cbeb6-4267-4770-ae3f-ab2923ee8a6e",
-    "body": "{\"error\":\"Issue run ownership conflict\",\"details\":{\"issueId\":\"9f8cbeb6-4267-4770-ae3f-ab2923ee8a6e\",\"status\":\"in_progress\",\"assigneeAgentId\":\"241ccf3c-ab68-40d6-b8eb-e03917795878\",\"checkoutRunId\":\"e9b27f3d-79c1-48b6-9629-fbfcc0901a37\",\"executionRunId\":\"e9b27f3d-79c1-48b6-9629-fbfcc0901a37\",\"actorAgentId\":\"241ccf3c-ab68-40d6-b8eb-e03917795878\",\"actorRunId\":\"4f8f7b9f-8400-4a90-a659-ec388646416e\"}}"
+    "body": "{\"error\":\"Issue run ownership conflict\",\"details\":{\"issueId\":\"9f8cbeb6-4267-4770-ae3f-ab2923ee8a6e\",\"status\":\"in_progress\",\"assigneeAgentId\":\"241ccf3c-ab68-40d6-b8eb-e03917795878\",\"checkoutRunId\":\"7f5b7860-f806-4d1b-bf3f-b2bf52d7e983\",\"executionRunId\":\"7f5b7860-f806-4d1b-bf3f-b2bf52d7e983\",\"actorAgentId\":\"241ccf3c-ab68-40d6-b8eb-e03917795878\",\"actorRunId\":\"4f8f7b9f-8400-4a90-a659-ec388646416e\"}}"
   },
   "token_source": "C:/QM/paperclip/tools/ops/.env",
   "token_run_id": "4f8f7b9f-8400-4a90-a659-ec388646416e",
