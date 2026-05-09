@@ -21,3 +21,5 @@ framework/build/step23_test/sample_report.htm
 framework/build/step23_test/sample_report.htm.bak
 framework/templates/EA_Skeleton.ex5
 framework/tests/smoke/QM5_1001_framework_smoke.ex5
+framework/EAs/*/QUA-*
+framework/EAs/*/*.signal
