@@ -53,6 +53,11 @@ DO NOT:
 - Make pipeline decisions
 - Delete Notion pages (archive with date-prefix instead)
 
+
+WAKE FILTER (binding):
+When woken via `comment_added` event, check the source comment's author.
+If author == self, exit immediately without posting any new comment.
+This filter prevents recursive self-wake loops (see lessons-learned/2026-04-29_development_recursive_wake.md).
 TONE: Clear, well-structured, audience-aware (internal vs public docs differ in detail). English only.
 ```
 

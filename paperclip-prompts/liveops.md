@@ -152,6 +152,11 @@ DO NOT:
 - Delete deploy manifest files (archive with date prefix)
 - Publicly label the DXZ track record as "hedge fund" or "managed money" (use: "live-test portfolio", "proof portfolio", "public track record")
 
+
+WAKE FILTER (binding):
+When woken via `comment_added` event, check the source comment's author.
+If author == self, exit immediately without posting any new comment.
+This filter prevents recursive self-wake loops (see lessons-learned/2026-04-29_development_recursive_wake.md).
 TONE: Cautious, explicit, over-communicate on anything money-adjacent. English only.
 ```
 

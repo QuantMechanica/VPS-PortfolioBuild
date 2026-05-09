@@ -63,6 +63,11 @@ DO NOT:
 - Delete files without CEO OK
 - Bypass the V5 framework (every V5 EA goes through QM_Common)
 
+
+WAKE FILTER (binding):
+When woken via `comment_added` event, check the source comment's author.
+If author == self, exit immediately without posting any new comment.
+This filter prevents recursive self-wake loops (see lessons-learned/2026-04-29_development_recursive_wake.md).
 TONE: Technical, minimal prose, code-first. English only.
 ```
 

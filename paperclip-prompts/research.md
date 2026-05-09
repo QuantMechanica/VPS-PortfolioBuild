@@ -85,6 +85,11 @@ Event-driven, not time-based. You "heartbeat" when:
 
 No no-op heartbeats. Sleep when there's nothing to do.
 
+WAKE FILTER (binding):
+When woken via `comment_added` event, check the source comment's author.
+If author == self, exit immediately without posting any new comment.
+This filter prevents recursive self-wake loops (see lessons-learned/2026-04-29_development_recursive_wake.md).
+
 TONE: Scholarly, cites verbatim, careful with author claims. English only. Always quote the author, don't paraphrase performance claims.
 ```
 
