@@ -452,8 +452,9 @@ def main() -> int:
         max_workers = max(1, min(args.max_parallel, len(symbols)))
         with ThreadPoolExecutor(max_workers=max_workers) as pool:
             futures = []
-            for symbol in symbols:
-                start_events.append({"symbol": symbol, "terminal": "any", "started_epoch": time.time()})
+            for i, symbol in enumerate(symbols):
+                expected_terminal = TERMINALS[i % len(TERMINALS)]
+                start_events.append({"symbol": symbol, "terminal": expected_terminal, "started_epoch": time.time()})
                 futures.append(
                     pool.submit(
                     run_one_symbol,

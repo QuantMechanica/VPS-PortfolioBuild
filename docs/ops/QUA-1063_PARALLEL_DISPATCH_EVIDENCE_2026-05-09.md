@@ -40,7 +40,7 @@ Pattern target: dispatcher-style non-blocking launch (`Popen` pool / bounded par
 - Config: `--dry-run --max-parallel 5 --symbols EURUSD.DWX,GBPUSD.DWX,USDJPY.DWX,AUDUSD.DWX,USDCAD.DWX`
 - Measured start spread: `0.002s`
 - Starts captured: `5`
-- Terminal field observed in this dry-run: `any`
+- Expected RR terminal mapping captured: `T1,T2,T3,T4,T5`
 
 ## Notes
 
