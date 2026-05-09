@@ -54,6 +54,17 @@ If filesystem conflicts with notes, trust filesystem and report the inconsistenc
 
 Phase 1 closed under DL-024 (2026-04-27); Phase 2 closed 2026-05-01 (QUA-639); **Phase 3 in flight** as of 2026-05-08.
 
+**DL-061 Endausbaustufe-Modus (2026-05-09):** no company-level Phase 1/2/3 gating; all workstreams run continuous parallel. Mission baseline: DXZ €100k, 5% daily / 20% total DD, ≥20% p.a. target, MT5-saturation = primary success metric, no ML, side-income (no deadline). See `G:\My Drive\QuantMechanica - Company Reference\08 Current State\Mission Baseline.md`.
+
+## Heartbeat Protocol — read watchdog first
+
+Each heartbeat begins by reading the pipeline-health watchdog state, before any drafting / dashboard / advisory work:
+
+1. `cat C:/QM/paperclip/tools/ops/docs/ops/pipeline_health/latest.json` — last 4-detector run
+2. Latest comment on **QUA-1160** (rolling watchdog tracker) — alarm summary
+
+Watchdog runs every 15 min via Windows Task `QM_PipelineHealth_Watchdog` and alarms on: MT5 saturation < 2/3, backtest fail-rate ≥ 50%, sub-agent idle > 2h, HoP loop > 15 runs/hour. **If any alarm is firing, address it before starting unrelated work.** Lesson from 2026-05-09: 90 min HoP serial-probing with 16/20 REPORT_MISSING went unnoticed because Board Advisor was deep in dashboard-redesign — that failure mode is what the watchdog exists to prevent.
+
 ## Infrastructure Constants
 
 - Repo: `C:\QM\repo` · Paperclip: `C:\QM\paperclip` · Live terminal: `C:\QM\mt5\T6_Live` · Factory: `D:\QM\mt5\T1..T5`
@@ -79,7 +90,13 @@ When OWNER asks for something *or* you proactively spot something that should be
 2. Otherwise: draft a CEO issue. Use the structure from `Desktop/PAPERCLIP_RESTART.md` (Aufgabe / Was zu tun / Leitprinzipien / Pfade)
 3. Identify the agent role that really owns the work — but route through **CEO** (`agent_id 7795b4b0`) unless OWNER specifies otherwise; CEO does the dispatching
 4. Cross-agent operational PATCHes (model swap, heartbeat config, hire / pause / unpause) are OWNER-class — same drafting pattern, hand to OWNER
-5. Read-only checks via `.claude/commands/`: `/pipeline-status`, `/paperclip-status`, `/check-gates`, `/check-mt5`, `/render-dashboard` — safe to run yourself
+5. Read-only checks via `.claude/commands/` — safe to run yourself:
+   - `/pipeline-status` — current EA in each phase, blockers
+   - `/paperclip-status` — agent fleet, run health, token-burn
+   - `/check-gates` — DL-054 anti-theater gate audit
+   - `/check-mt5` — terminal count, backtest processes, phase assignment
+   - `/render-dashboard` — regenerate public dashboard from latest snapshot
+   - `/g0-review`, `/p1-compile`, `/p2-launch`, `/p2-report`, `/p3-launch`, `/p3-report`, `/p3-5-walkforward`, `/p4-montecarlo`, `/promote-ea`, `/new-setfiles`, `/paperclip-unblock` — phase-specific helpers
 
 **Proposing issues without explicit OWNER request is part of the job.** Don't wait to be told if you see drift.
 
@@ -111,6 +128,32 @@ decisions/   DL-NNN architectural decisions; immutable once dated.
 processes/   Process templates (Paperclip-maintained).
 .private/    VPS_SERVER_RECORD + secrets-adjacent (never published).
 ```
+
+## Ops Scripts (read-only, safe to run)
+
+Most live under `C:\QM\paperclip\tools\ops\` (outside repo, scheduled via Windows Task Scheduler):
+
+- `pipeline_health_watchdog.py` — 4-detector watchdog (MT5 saturation / backtest fail-rate / sub-agent idle / HoP loop). Posts alarms to QUA-1160. Task: `QM_PipelineHealth_Watchdog` (15 min).
+- `render_dashboard.py` + `render_strategies.py` — Mission Hero + Strategy Archive. Task: `QM_DashboardRender_Hourly`.
+- `extract_backtest_charts.py` — MT5 report parser (UTF-16) → `stats.json` + equity-curve PNG under `C:/QM/paperclip/dashboards/charts/<EA>/<phase>/<symbol>/`.
+- `daily_status_mail.py` — daily HTML status mail to OWNER. Task: `QM_DailyStatusMail`.
+
+In-repo:
+- `scripts/export_public_snapshot.ps1` — public website snapshot exporter (hourly, schema-validated, optional git push + Netlify Build Hook).
+- `scripts/aggregator/standalone_aggregator_loop.py` — V5 state writer for `last_check_state.json` (T1–T5 process detection, T6 hard exclusion).
+- `framework/scripts/aggregate_phase_results.py` — phase result aggregation.
+- `framework/scripts/build_check.ps1` — V5 framework gate (no ML, no V4-Erbnamen, RISK_FIXED + RISK_PERCENT both present).
+
+## Paperclip API Quick Reference
+
+API runs at `http://127.0.0.1:3100/api` in `local_trusted` mode:
+
+- **Loopback bypasses bearer** — curl without `Authorization` works on `127.0.0.1` for `/api/*`. Use this when curl-bearer hits 403 on cross-agent PATCH.
+- **Comment bodies need forward slashes** — `D:/QM/...` works; `D:\\QM\\...` 500s.
+- **Long markdown 500s on issue create** — workaround: minimal create, then full body as first comment via `--data-binary @file.md`.
+- **`blockedReason` has no DB persistence** — silently dropped. Use `blockedByIssueIds` (PATCH /api/issues/{id}) for machine-visible blocker-of-record + comment thread for the prose.
+- **Agent lifecycle (pause/resume) is OWNER-class** — bearer-PATCH `pausedAt=null` is a silent no-op; only loopback or `local-board` token works.
+- **Subscription billing returns `spentMonthlyCents=0` by design** — heartbeat.ts:1038 zeros out `subscription_included` agents. For real burn use `GET /costs/quota-windows`.
 
 ## Worktree Discipline (DL-028)
 
