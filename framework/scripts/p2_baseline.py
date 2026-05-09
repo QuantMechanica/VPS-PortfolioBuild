@@ -432,9 +432,11 @@ def main() -> int:
         print(f"[P2] DRY RUN (no MT5 launches)")
 
     counts = {"PASS": 0, "FAIL": 0, "INVALID": 0, "DRY": 0}
+    start_events: list[dict[str, str | float]] = []
     started_at = datetime.now(timezone.utc).isoformat()
     if args.terminal:
         for symbol in symbols:
+            start_events.append({"symbol": symbol, "terminal": args.terminal, "started_epoch": time.time()})
             verdict = run_one_symbol(
                 ea_id=ea_id, ea_dir=ea_dir, ea_label=args.ea, symbol=symbol,
                 year=args.year, period=args.period, runs=args.runs, terminal=args.terminal,
@@ -446,15 +448,17 @@ def main() -> int:
     else:
         max_workers = max(1, min(args.max_parallel, len(symbols)))
         with ThreadPoolExecutor(max_workers=max_workers) as pool:
-            futures = [
-                pool.submit(
+            futures = []
+            for symbol in symbols:
+                start_events.append({"symbol": symbol, "terminal": "any", "started_epoch": time.time()})
+                futures.append(
+                    pool.submit(
                     run_one_symbol,
                     ea_id, ea_dir, args.ea, symbol, args.year,
                     args.period, args.runs, "any", report_root_phase, report_csv,
                     args.min_trades, args.timeout, args.dry_run, args.allow_running_terminal,
                 )
-                for symbol in symbols
-            ]
+                )
             for fut in as_completed(futures):
                 verdict = fut.result()
                 counts[verdict] = counts.get(verdict, 0) + 1
@@ -468,6 +472,8 @@ def main() -> int:
     summary_path = report_root_phase / f"p2_{args.ea}_result.json"
     summary_path.parent.mkdir(parents=True, exist_ok=True)
     summary_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    timing_path = report_root_phase / "p2_parallel_timing.json"
+    timing_path.write_text(json.dumps({"starts": start_events, "max_parallel": int(args.max_parallel)}, indent=2) + "\n", encoding="utf-8")
     print(f"\n[P2 DONE] {counts}  summary={summary_path}")
 
     return 0 if counts.get("FAIL", 0) == 0 and counts.get("INVALID", 0) == 0 else 1
