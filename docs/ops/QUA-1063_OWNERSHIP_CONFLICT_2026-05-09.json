@@ -1,15 +1,15 @@
 {
-  "captured_at_utc": "2026-05-09T09:31:18.743561+00:00",
+  "captured_at_utc": "2026-05-09T09:32:05.248444+00:00",
   "issueId": "9f8cbeb6-4267-4770-ae3f-ab2923ee8a6e",
   "identifier": "QUA-1063",
   "status": "in_progress",
   "assigneeAgentId": "241ccf3c-ab68-40d6-b8eb-e03917795878",
-  "checkoutRunId": "7d72d4c7-aa09-48b1-ac81-b25b192578e0",
-  "executionRunId": "7d72d4c7-aa09-48b1-ac81-b25b192578e0",
+  "checkoutRunId": "b97065ff-15c8-46e9-9f38-e48587d7b008",
+  "executionRunId": "b97065ff-15c8-46e9-9f38-e48587d7b008",
   "mutation_test": "failed",
   "error": {
     "status": 409,
-    "body": "{\"error\":\"Issue run ownership conflict\",\"details\":{\"issueId\":\"9f8cbeb6-4267-4770-ae3f-ab2923ee8a6e\",\"status\":\"in_progress\",\"assigneeAgentId\":\"241ccf3c-ab68-40d6-b8eb-e03917795878\",\"checkoutRunId\":\"7d72d4c7-aa09-48b1-ac81-b25b192578e0\",\"executionRunId\":\"7d72d4c7-aa09-48b1-ac81-b25b192578e0\",\"actorAgentId\":\"241ccf3c-ab68-40d6-b8eb-e03917795878\",\"actorRunId\":\"4f8f7b9f-8400-4a90-a659-ec388646416e\"}}",
+    "body": "{\"error\":\"Issue run ownership conflict\",\"details\":{\"issueId\":\"9f8cbeb6-4267-4770-ae3f-ab2923ee8a6e\",\"status\":\"in_progress\",\"assigneeAgentId\":\"241ccf3c-ab68-40d6-b8eb-e03917795878\",\"checkoutRunId\":\"b97065ff-15c8-46e9-9f38-e48587d7b008\",\"executionRunId\":\"b97065ff-15c8-46e9-9f38-e48587d7b008\",\"actorAgentId\":\"241ccf3c-ab68-40d6-b8eb-e03917795878\",\"actorRunId\":\"4f8f7b9f-8400-4a90-a659-ec388646416e\"}}",
     "url": "http://127.0.0.1:3100/api/issues/9f8cbeb6-4267-4770-ae3f-ab2923ee8a6e/comments"
   }
 }
