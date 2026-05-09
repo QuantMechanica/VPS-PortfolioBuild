@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-05-09T09:07:04.3602859Z",
-  "total": 18,
+  "generated_at": "2026-05-09T10:07:02.6042210Z",
+  "total": 19,
   "items": [
     {
       "id": "01-ea-lifecycle",
@@ -80,6 +80,12 @@
       "title": "13-strategy-research",
       "status": "active",
       "last_updated_utc": "2026-04-27T14:24:09.7144725Z"
+    },
+    {
+      "id": "14-ea-enhancement-loop",
+      "title": "14-ea-enhancement-loop",
+      "status": "active",
+      "last_updated_utc": "2026-05-09T09:24:20.9869618Z"
     },
     {
       "id": "15-pipeline-op-load-balancing",
