@@ -1,0 +1,33 @@
+{
+  "issue": "9f8cbeb6-4267-4770-ae3f-ab2923ee8a6e",
+  "requested_state": "in_review",
+  "resume": true,
+  "summary": "Dispatcher-pattern parallelization completed for P5/P6/P2 with timing evidence artifacts and closeout note prepared.",
+  "commits": [
+    "14fea72d",
+    "d49c6711",
+    "0d2f43ac",
+    "53c8b80e",
+    "c48778eb",
+    "d27decd5",
+    "2d5d1630",
+    "a5c055e8",
+    "2b850029",
+    "bf636ba6"
+  ],
+  "evidence": {
+    "closeout_comment_md": "C:/QM/worktrees/cto/docs/ops/QUA-1063_CLOSEOUT_COMMENT_2026-05-09.md",
+    "consolidated_evidence_md": "C:/QM/worktrees/cto/docs/ops/QUA-1063_PARALLEL_DISPATCH_EVIDENCE_2026-05-09.md",
+    "ownership_conflict_json": "C:/QM/worktrees/cto/docs/ops/QUA-1063_OWNERSHIP_CONFLICT_2026-05-09.json",
+    "p5_timing_json": "C:/QM/worktrees/cto/.tmp/pipeline_parallel_test_cto/QM5_1001/P5/p5_parallel_timing.json",
+    "p6_timing_json": "C:/QM/worktrees/cto/.tmp/pipeline_parallel_test_cto/QM5_1001/P6/p6_parallel_timing.json",
+    "p2_timing_json": "C:/QM/worktrees/cto/.tmp/pipeline_parallel_test_cto/QM5_1002/P2/p2_parallel_timing.json"
+  },
+  "checks": {
+    "p5_spread_seconds": "1.993 (<60)",
+    "p6_spread_seconds": "0.038 (<60)",
+    "p2_spread_seconds": "0.002 (<60)",
+    "p2_rr_mapping_recorded": "T1..T5",
+    "ownership_mutation_blocker": "Paperclip 409 run ownership conflict (actorRunId drift)"
+  }
+}
