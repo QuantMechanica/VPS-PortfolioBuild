@@ -6,13 +6,56 @@
 strategy_id: SRC06_S15
 ea_id: TBD
 slug: singh-guppy-burst
-status: DRAFT
+status: APPROVED
 created: 2026-05-09
 created_by: Research
 last_updated: 2026-05-09
 
+# Dual-gate verdict (sourced from QUA-1059 thread, run 9713f33a, 2026-05-09;
+# canonical QB record at processes/strategy_cards/g1_approved_2026-05-09.md sec 4)
+g0_issue: QUA-1059
+g0_reviewed_at: 2026-05-09
+g0_reviewer: "CEO (per QUA-1110 directive; QUA-1059 disposition 2026-05-09T11:21:53Z accepting QB G1 batch + treating QUA-1059 thread as g0 source-of-truth)"
+g0_verdict: APPROVED
+g1_issue: QUA-1059
+g1_reviewed_at: 2026-05-09
+g1_reviewer: "Quality-Business (R1-R4 reputable-source check, batch-wide PASS for SRC06)"
+g1_verdict: APPROVED
+g1_verdict_record: "processes/strategy_cards/g1_approved_2026-05-09.md (sec 4)"
+
 strategy_type_flags: [breakout, time-of-day, range-bracket]
 ```
+## Verdict Trail (QUA-1059)
+
+QB G0 advisory + R1-R4 verdict rendered in QUA-1059 thread (run 9713f33a, 2026-05-09; QB comment 2026-05-09T11:02:19Z).
+CEO G0 ratification recorded in QUA-1059 disposition (2026-05-09T11:21:53Z) and reaffirmed by QUA-1110 (this commit's authority).
+Canonical QB record on origin/main: `processes/strategy_cards/g1_approved_2026-05-09.md` (sec 4), commit `07c2d2f9`.
+
+### Source-level R1-R4 (batch-wide, applies to all 14 SRC06 cards)
+
+- **R1 author identifiable**: PASS - Mario Singh, named author, Wiley-published (Wiley Trading series, ISBN 978-1-118-38551-7), CNBC-featured (Squawk Box / Capital Connection / Worldwide Exchange), founder FX1 Academy and Fullerton Markets.
+- **R2 source verifiable**: PASS - ISBN confirmed; PDF on OWNER Google Drive (text-clean via pdftotext, 26.5 MB, 9187 lines); per-card page numbers cited verbatim from source.
+- **R3 mechanical clarity**: PASS - each card has explicit Long/Short Trade Setup extracted verbatim from book's structured chapters; SL/TP/entry all rule-specified.
+- **R4 no paywall bypass**: PASS - OWNER-supplied commercial PDF; no piracy.
+
+Source verdict: **REPUTABLE** (T1 Tier B per `processes/qb_reputable_source_criteria.md`).
+Author-claim band: **author-claimed**.
+
+### Per-card verdict (verbatim QB excerpt from QUA-1059)
+
+> **singh-guppy-burst (SRC06_S15 - M5 GBPJPY, NY-close-to-Asia-open range bracket)**
+> 
+> APPROVED
+> Edge mechanism: session-transition liquidity asymmetry bracket on the most volatile major FX pair; OCA pending-order structure is mechanically clean
+> Portfolio fit: FIRST time-of-day bracket EA in pipeline; adds GBPJPY yen-cross exposure; M5 time-window limits capital commitment
+> Author claim: "30-40 pip ranges typical" - author-claimed illustrative
+> 
+> DST handling for 17:00 NY reference (EST vs. EDT clock-shift) = P0 implementation concern, not G0 blocker.
+
+### Flags carried forward
+
+- P0 implementation concern (CTO): DST handling for 17:00 NY reference (EST vs EDT clock-shift). Not a G0 blocker.
+
 
 ## 1. Source
 
