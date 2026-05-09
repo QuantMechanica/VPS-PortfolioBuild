@@ -407,9 +407,12 @@ def main() -> int:
     ea_dir = find_ea_dir(args.ea)
     ea_id = derive_numeric_ea_id(args.ea, ea_dir)
     terminal_roots = [Path(r"D:\QM\mt5") / t for t in TERMINALS]
-    ensure_magic_registry_contains_ea(ea_id)
-    ensure_expert_binary_deployed(ea_dir, terminal_roots)
-    ensure_framework_registry_deployed(terminal_roots)
+    if args.dry_run:
+        safe_print("[DRY] skipping registry/deployment preflight gates (no MT5 launch will occur)")
+    else:
+        ensure_magic_registry_contains_ea(ea_id)
+        ensure_expert_binary_deployed(ea_dir, terminal_roots)
+        ensure_framework_registry_deployed(terminal_roots)
 
     if args.symbols:
         symbols = [s.strip() for s in args.symbols.split(",") if s.strip()]
