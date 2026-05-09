@@ -1,0 +1,312 @@
+[
+  {
+    "Name": "QM_AggregatorState_1min",
+    "State": "Ready",
+    "QUA": null,
+    "LastRun": "2026-05-09T21:12:12+02:00",
+    "NextRun": "2026-05-09T21:13:13+02:00",
+    "LastResult": 2147942402,
+    "Execute": "python",
+    "Args": "\"C:\\QM\\repo\\scripts\\aggregator\\standalone_aggregator_loop.py\" --once"
+  },
+  {
+    "Name": "QM_Backup_Daily_0215",
+    "State": "Ready",
+    "QUA": null,
+    "LastRun": "2026-05-09T02:15:15+02:00",
+    "NextRun": "2026-05-10T02:15:15+02:00",
+    "LastResult": 1,
+    "Execute": "powershell.exe",
+    "Args": "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \"C:\\QM\\paperclip\\data\\instances\\default\\projects\\03d4dcc8-4cea-4133-9f68-90c0d99628fb\\ac8daa03-00ae-49fd-bd4a-f1283a075f83\\_default\\infra\\backup.ps1\""
+  },
+  {
+    "Name": "QM_Class2ExecutionPolicySentinel_60min",
+    "State": "Ready",
+    "QUA": null,
+    "LastRun": "2026-05-09T21:08:08+02:00",
+    "NextRun": "2026-05-09T22:08:08+02:00",
+    "LastResult": 2,
+    "Execute": "powershell.exe",
+    "Args": "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \"C:\\QM\\paperclip\\data\\instances\\default\\projects\\03d4dcc8-4cea-4133-9f68-90c0d99628fb\\ac8daa03-00ae-49fd-bd4a-f1283a075f83\\_default\\infra\\monitoring\\Test-Class"
+  },
+  {
+    "Name": "QM_DailyStatusMail",
+    "State": "Ready",
+    "QUA": null,
+    "LastRun": "1999-11-30T00:00:00+01:00",
+    "NextRun": "2026-05-09T23:00:00+02:00",
+    "LastResult": 267011,
+    "Execute": "\"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python.exe\"",
+    "Args": "\"C:\\QM\\repo\\paperclip\\tools\\ops\\daily_status_mail.py\""
+  },
+  {
+    "Name": "QM_DashboardRender_Hourly",
+    "State": "Ready",
+    "QUA": null,
+    "LastRun": "1999-11-30T00:00:00+01:00",
+    "NextRun": "2026-05-09T22:00:00+02:00",
+    "LastResult": 267011,
+    "Execute": "C:\\QM\\paperclip\\tools\\ops\\render_all_dashboards.bat",
+    "Args": ""
+  },
+  {
+    "Name": "QM_DriveGitExclusion_15min",
+    "State": "Ready",
+    "QUA": null,
+    "LastRun": "2026-05-09T21:06:06+02:00",
+    "NextRun": "2026-05-09T21:21:21+02:00",
+    "LastResult": 1,
+    "Execute": "powershell.exe",
+    "Args": "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \"C:\\QM\\paperclip\\data\\instances\\default\\projects\\03d4dcc8-4cea-4133-9f68-90c0d99628fb\\ac8daa03-00ae-49fd-bd4a-f1283a075f83\\_default\\infra\\monitoring\\Test-Drive"
+  },
+  {
+    "Name": "QM_DWX_HourlyCheck",
+    "State": "Disabled",
+    "QUA": null,
+    "LastRun": "2026-05-09T07:11:11+02:00",
+    "NextRun": "2026-05-09T22:11:11+02:00",
+    "LastResult": 2147942402,
+    "Execute": "python",
+    "Args": "\"C:\\QM\\repo\\infra\\scripts\\dwx_hourly_check.py\""
+  },
+  {
+    "Name": "QM_DWX_WS30Gate_15min",
+    "State": "Ready",
+    "QUA": null,
+    "LastRun": "2026-05-09T20:58:58+02:00",
+    "NextRun": "2026-05-09T21:13:13+02:00",
+    "LastResult": 1,
+    "Execute": "powershell.exe",
+    "Args": "-NoProfile -ExecutionPolicy Bypass -File \"C:\\QM\\paperclip\\data\\instances\\default\\projects\\03d4dcc8-4cea-4133-9f68-90c0d99628fb\\ac8daa03-00ae-49fd-bd4a-f1283a075f83\\_default\\infra\\monitoring\\Test-DwxWs30Gate.ps1\" -CsvSour"
+  },
+  {
+    "Name": "QM_InfraHealthCheck_5min",
+    "State": "Ready",
+    "QUA": null,
+    "LastRun": "2026-05-09T21:10:10+02:00",
+    "NextRun": "2026-05-09T21:15:15+02:00",
+    "LastResult": 2,
+    "Execute": "powershell.exe",
+    "Args": "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \"C:\\QM\\paperclip\\data\\instances\\default\\projects\\03d4dcc8-4cea-4133-9f68-90c0d99628fb\\ac8daa03-00ae-49fd-bd4a-f1283a075f83\\_default\\infra\\monitoring\\Invoke-Inf"
+  },
+  {
+    "Name": "QM_PaperclipStaleLockWatchdog_15min",
+    "State": "Ready",
+    "QUA": null,
+    "LastRun": "2026-05-09T21:03:03+02:00",
+    "NextRun": "2026-05-09T21:18:18+02:00",
+    "LastResult": 2,
+    "Execute": "powershell.exe",
+    "Args": "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \"C:\\QM\\paperclip\\data\\instances\\default\\projects\\03d4dcc8-4cea-4133-9f68-90c0d99628fb\\ac8daa03-00ae-49fd-bd4a-f1283a075f83\\_default\\infra\\monitoring\\Invoke-Pap"
+  },
+  {
+    "Name": "QM_Phase_Orchestrator",
+    "State": "Disabled",
+    "QUA": null,
+    "LastRun": "2026-05-09T11:23:23+02:00",
+    "NextRun": "2026-05-09T21:23:23+02:00",
+    "LastResult": 2147942402,
+    "Execute": "python",
+    "Args": "C:\\QM\\repo\\framework\\scripts\\phase_orchestrator.py"
+  },
+  {
+    "Name": "QM_PipelineHealth_Watchdog",
+    "State": "Ready",
+    "QUA": null,
+    "LastRun": "2026-05-09T21:00:00+02:00",
+    "NextRun": "2026-05-09T21:15:15+02:00",
+    "LastResult": 0,
+    "Execute": "\"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python.exe\"",
+    "Args": "\"C:\\QM\\paperclip\\tools\\ops\\pipeline_health_watchdog.py\""
+  },
+  {
+    "Name": "QM_Public_Snapshot_Hourly",
+    "State": "Ready",
+    "QUA": null,
+    "LastRun": "2026-05-09T21:07:07+02:00",
+    "NextRun": "2026-05-09T22:07:07+02:00",
+    "LastResult": 0,
+    "Execute": "pwsh",
+    "Args": "-NoProfile -File C:\\QM\\repo\\scripts\\export_public_snapshot.ps1"
+  },
+  {
+    "Name": "QM_PublicSnapshot_Export_Hourly",
+    "State": "Ready",
+    "QUA": null,
+    "LastRun": "2026-05-09T21:07:07+02:00",
+    "NextRun": "2026-05-09T22:07:07+02:00",
+    "LastResult": 0,
+    "Execute": "powershell.exe",
+    "Args": "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \"C:\\QM\\paperclip\\data\\instances\\default\\projects\\03d4dcc8-4cea-4133-9f68-90c0d99628fb\\ac8daa03-00ae-49fd-bd4a-f1283a075f83\\_default\\scripts\\export_public_snaps"
+  },
+  {
+    "Name": "QM_PublicSnapshot_Health_15min",
+    "State": "Ready",
+    "QUA": null,
+    "LastRun": "2026-05-09T21:09:09+02:00",
+    "NextRun": "2026-05-09T21:24:24+02:00",
+    "LastResult": 0,
+    "Execute": "powershell.exe",
+    "Args": "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \"C:\\QM\\paperclip\\data\\instances\\default\\projects\\03d4dcc8-4cea-4133-9f68-90c0d99628fb\\ac8daa03-00ae-49fd-bd4a-f1283a075f83\\_default\\infra\\scripts\\Test-QMPublic"
+  },
+  {
+    "Name": "QM_PythonRuntimeHealth_10min",
+    "State": "Ready",
+    "QUA": null,
+    "LastRun": "2026-05-09T21:06:06+02:00",
+    "NextRun": "2026-05-09T21:16:16+02:00",
+    "LastResult": 0,
+    "Execute": "powershell.exe",
+    "Args": "-NoProfile -ExecutionPolicy Bypass -File C:\\QM\\tasks\\QM_PythonRuntimeHealth_10min.ps1"
+  },
+  {
+    "Name": "QM_QUA1006_OpsCycle_15min",
+    "State": "Ready",
+    "QUA": "QUA-1006",
+    "LastRun": "2026-05-09T21:01:01+02:00",
+    "NextRun": "2026-05-09T21:16:16+02:00",
+    "LastResult": 0,
+    "Execute": "powershell.exe",
+    "Args": "-NoProfile -ExecutionPolicy Bypass -Command \"Set-Location -LiteralPath 'C:\\QM\\paperclip\\data\\instances\\default\\projects\\03d4dcc8-4cea-4133-9f68-90c0d99628fb\\ac8daa03-00ae-49fd-bd4a-f1283a075f83\\_default'; & 'C:\\QM\\paperc"
+  },
+  {
+    "Name": "QM_QUA1016_OpsCycle_15min",
+    "State": "Ready",
+    "QUA": "QUA-1016",
+    "LastRun": "2026-05-09T21:01:01+02:00",
+    "NextRun": "2026-05-09T21:16:16+02:00",
+    "LastResult": 0,
+    "Execute": "powershell.exe",
+    "Args": "-NoProfile -ExecutionPolicy Bypass -Command \"Set-Location -LiteralPath 'C:\\QM\\paperclip\\data\\instances\\default\\projects\\03d4dcc8-4cea-4133-9f68-90c0d99628fb\\ac8daa03-00ae-49fd-bd4a-f1283a075f83\\_default'; & 'C:\\QM\\paperc"
+  },
+  {
+    "Name": "QM_QUA1023_OpsCycle_15min",
+    "State": "Ready",
+    "QUA": "QUA-1023",
+    "LastRun": "2026-05-09T21:01:01+02:00",
+    "NextRun": "2026-05-09T21:16:16+02:00",
+    "LastResult": 0,
+    "Execute": "powershell.exe",
+    "Args": "-NoProfile -ExecutionPolicy Bypass -Command \"Set-Location -LiteralPath 'C:\\QM\\paperclip\\data\\instances\\default\\projects\\03d4dcc8-4cea-4133-9f68-90c0d99628fb\\ac8daa03-00ae-49fd-bd4a-f1283a075f83\\_default'; & 'C:\\QM\\paperc"
+  },
+  {
+    "Name": "QM_QUA207_RuntimeHeartbeat_30min",
+    "State": "Ready",
+    "QUA": "QUA-207",
+    "LastRun": "2026-05-09T21:04:04+02:00",
+    "NextRun": "2026-05-09T21:34:34+02:00",
+    "LastResult": 0,
+    "Execute": "powershell.exe",
+    "Args": "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \"C:\\QM\\paperclip\\data\\instances\\default\\projects\\03d4dcc8-4cea-4133-9f68-90c0d99628fb\\ac8daa03-00ae-49fd-bd4a-f1283a075f83\\_default\\infra\\scripts\\Run-QUA207Run"
+  },
+  {
+    "Name": "QM_QUA774_ExternalUnblockOpsSuite_60min",
+    "State": "Ready",
+    "QUA": "QUA-774",
+    "LastRun": "2026-05-09T20:36:36+02:00",
+    "NextRun": "2026-05-09T21:36:36+02:00",
+    "LastResult": 0,
+    "Execute": "powershell.exe",
+    "Args": "-NoProfile -ExecutionPolicy Bypass -File \"C:\\QM\\tasks\\run_qua774_external_unblock_ops_suite.ps1\""
+  },
+  {
+    "Name": "QM_QUA774_ExternalUnblockStatus_60min",
+    "State": "Ready",
+    "QUA": "QUA-774",
+    "LastRun": "2026-05-09T20:31:31+02:00",
+    "NextRun": "2026-05-09T21:31:31+02:00",
+    "LastResult": 0,
+    "Execute": "powershell.exe",
+    "Args": "-NoProfile -ExecutionPolicy Bypass -File \"C:\\QM\\tasks\\run_qua774_external_unblock_status.ps1\""
+  },
+  {
+    "Name": "QM_QUA945_BlockedHeartbeat_30min",
+    "State": "Ready",
+    "QUA": "QUA-945",
+    "LastRun": "2026-05-09T21:05:05+02:00",
+    "NextRun": "2026-05-09T21:35:35+02:00",
+    "LastResult": 1,
+    "Execute": "powershell.exe",
+    "Args": "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \"C:\\QM\\paperclip\\data\\instances\\default\\projects\\03d4dcc8-4cea-4133-9f68-90c0d99628fb\\ac8daa03-00ae-49fd-bd4a-f1283a075f83\\_default\\infra\\scripts\\Run-QUA945Blo"
+  },
+  {
+    "Name": "QM_QUA95_BlockerRefresh",
+    "State": "Disabled",
+    "QUA": "QUA-95",
+    "LastRun": "2026-05-01T15:01:01+02:00",
+    "NextRun": "2026-05-09T22:01:01+02:00",
+    "LastResult": 1,
+    "Execute": "powershell.exe",
+    "Args": "-NoProfile -ExecutionPolicy Bypass -File \"C:\\QM\\repo\\infra\\scripts\\Run-QUA95BlockerRefresh.ps1\" -RepoRoot \"C:\\QM\\repo\" -LogPath \"C:\\QM\\repo\\infra\\smoke\\qua95_blocker_refresh_task.log\" -TaskName \"QM_QUA95_BlockerRefresh\" "
+  },
+  {
+    "Name": "QM_QUA95_TaskHealth_15min",
+    "State": "Ready",
+    "QUA": "QUA-95",
+    "LastRun": "2026-05-09T21:02:02+02:00",
+    "NextRun": "2026-05-09T21:17:17+02:00",
+    "LastResult": 2,
+    "Execute": "powershell.exe",
+    "Args": "-NoProfile -ExecutionPolicy Bypass -File \"C:\\QM\\repo\\infra\\monitoring\\Test-QUA95BlockerTaskHealth.ps1\" -MaxAgeMinutes 125 -TransitionPayloadCheckScript \"C:\\QM\\repo\\infra\\scripts\\Test-QUA95IssueTransitionPayload.ps1\" -Unb"
+  },
+  {
+    "Name": "QM_RecoveryOrphans_Cleanup_Daily_0310",
+    "State": "Ready",
+    "QUA": null,
+    "LastRun": "2026-05-09T03:10:10+02:00",
+    "NextRun": "2026-05-10T03:10:10+02:00",
+    "LastResult": 0,
+    "Execute": "powershell.exe",
+    "Args": "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \"C:\\QM\\paperclip\\data\\instances\\default\\projects\\03d4dcc8-4cea-4133-9f68-90c0d99628fb\\ac8daa03-00ae-49fd-bd4a-f1283a075f83\\_default\\infra\\scripts\\Remove-Recove"
+  },
+  {
+    "Name": "QM_Research_Wake_Check",
+    "State": "Ready",
+    "QUA": null,
+    "LastRun": "2026-05-09T06:00:00+02:00",
+    "NextRun": "2026-05-10T06:00:00+02:00",
+    "LastResult": 0,
+    "Execute": "cmd",
+    "Args": "/c python \"C:\\QM\\repo\\framework\\scripts\\research_wake_check.py\" --execute --json >> \"D:\\QM\\reports\\ops\\research_wake\\daily.log\" 2>&1"
+  },
+  {
+    "Name": "QM_RuntimeHealthScan_15min",
+    "State": "Disabled",
+    "QUA": null,
+    "LastRun": "2026-05-01T15:16:16+02:00",
+    "NextRun": "2026-05-09T21:16:16+02:00",
+    "LastResult": 1,
+    "Execute": "powershell.exe",
+    "Args": "-NoProfile -ExecutionPolicy Bypass -Command \"$line=Select-String -Path \"C:\\QM\\paperclip\\data\\instances\\default\\.env\" -Pattern '^DATABASE_URL=' | Select-Object -First 1; if($null -eq $line) { throw 'DATABASE_URL not found"
+  },
+  {
+    "Name": "QM_SubscriptionGuardian_5m",
+    "State": "Ready",
+    "QUA": null,
+    "LastRun": "2026-05-09T21:10:10+02:00",
+    "NextRun": "2026-05-09T21:15:15+02:00",
+    "LastResult": 0,
+    "Execute": "cmd.exe",
+    "Args": "/c \"C:\\QM\\paperclip\\tools\\ops\\cron\\subscription_guardian_5m.bat\""
+  },
+  {
+    "Name": "QM_TokenCostBudgetDailySnapshot_0010",
+    "State": "Ready",
+    "QUA": null,
+    "LastRun": "2026-05-09T00:10:10+02:00",
+    "NextRun": "2026-05-10T00:10:10+02:00",
+    "LastResult": 2,
+    "Execute": "powershell.exe",
+    "Args": "-NoProfile -ExecutionPolicy Bypass -File \"C:\\QM\\repo\\infra\\monitoring\\Test-TokenCostBudgetHealth.ps1\" -DailyTokenBudget 2500000 -WarnThresholdPct 70 -HighWarnThresholdPct 80 -CriticalThresholdPct 95"
+  },
+  {
+    "Name": "QM_TokenCostBudgetHealth_15min",
+    "State": "Ready",
+    "QUA": null,
+    "LastRun": "2026-05-09T21:05:05+02:00",
+    "NextRun": "2026-05-09T21:20:20+02:00",
+    "LastResult": 2,
+    "Execute": "powershell.exe",
+    "Args": "-NoProfile -ExecutionPolicy Bypass -File \"C:\\QM\\repo\\infra\\monitoring\\Test-TokenCostBudgetHealth.ps1\" -DailyTokenBudget 2500000 -WarnThresholdPct 70 -HighWarnThresholdPct 80 -CriticalThresholdPct 95"
+  }
+]
