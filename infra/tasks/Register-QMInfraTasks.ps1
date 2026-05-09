@@ -9,7 +9,8 @@ param(
     [string]$GitIndexLockMonitorScript = "C:\QM\repo\infra\monitoring\Invoke-GitIndexLockMonitor.ps1",
     [string]$StaleLockWatchdogScript = "C:\QM\repo\infra\monitoring\Invoke-PaperclipStaleLockWatchdog.ps1",
     [string]$BackupScript = "C:\QM\repo\infra\backup.ps1",
-    [string]$RecoveryOrphanCleanupScript = "C:\QM\repo\infra\scripts\Remove-RecoveryOrphans.ps1"
+    [string]$RecoveryOrphanCleanupScript = "C:\QM\repo\infra\scripts\Remove-RecoveryOrphans.ps1",
+    [string]$CompanyDailyReportScript = "C:\QM\repo\infra\scripts\Invoke-CompanyDailyReport.ps1"
 )
 
 Set-StrictMode -Version Latest
@@ -164,3 +165,17 @@ Register-DesiredTask `
     -Arguments "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$RecoveryOrphanCleanupScript`"" `
     -Trigger $recoveryCleanupTrigger `
     -Description "Cleans D:\\QM\\_recovery_orphans_* directories older than 24h."
+
+# Daily company report: Obsidian vault snapshot + Paperclip routine trigger at 23:00 local server time
+if (Test-Path -LiteralPath $CompanyDailyReportScript) {
+    $companyReportTrigger = New-ScheduledTaskTrigger -Daily -At "23:00"
+    Register-DesiredTask `
+        -TaskName "QM_CompanyReport_Daily_2300" `
+        -Executable "powershell.exe" `
+        -Arguments "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$CompanyDailyReportScript`"" `
+        -Trigger $companyReportTrigger `
+        -Description "Creates daily Obsidian vault snapshot and triggers Paperclip company-report routine."
+}
+else {
+    Write-Warning "Company daily report script missing; skipped QM_CompanyReport_Daily_2300 registration."
+}

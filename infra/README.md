@@ -132,6 +132,11 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Registers Task Scheduler job `QM_PythonRuntimeHealth_10min` as `SYSTEM`.
   - Runs `monitoring/Test-PythonRuntimeHealth.ps1` on cadence (default every 10 minutes).
   - Safe to re-run (`Register-ScheduledTask -Force`) and overlap-safe (`MultipleInstances=IgnoreNew`).
+- `scripts/Invoke-CompanyDailyReport.ps1`
+  - Creates a daily zipped Obsidian vault snapshot (default `C:\QM\obsidian\QuantMechanica` -> `C:\QM\backups\obsidian-vault`).
+  - Optional Paperclip routine trigger via `PAPERCLIP_DAILY_REPORT_ROUTINE_URL` webhook.
+  - Per-local-day idempotency guard via state file (`C:\QM\state\company_daily_report_state.json`) with `-Force` override.
+  - Retention cleanup for old snapshot ZIPs (default 14 days).
 - `scripts/Ensure-AgentWorktree.ps1`
   - Converges per-agent worktree paths under `C:\QM\worktrees\` for CWD isolation.
   - Refuses non-empty non-worktree target paths and supports idempotent re-runs.
@@ -258,6 +263,19 @@ Aggregator state writer (every minute):
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Install-AggregatorStateTask.ps1
+```
+
+Company daily report job (daily 23:00 local server time, `W. Europe Standard Time`):
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\tasks\Register-QMInfraTasks.ps1
+```
+
+Routine trigger wiring (optional):
+
+```powershell
+$env:PAPERCLIP_DAILY_REPORT_ROUTINE_URL = "https://<paperclip-host>/api/routines/<id>/trigger"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\infra\scripts\Invoke-CompanyDailyReport.ps1
 ```
 
 QUA-95 blocker refresh task (hourly):
