@@ -50,6 +50,8 @@ RUN_SMOKE_PS1 = REPO_ROOT / "framework" / "scripts" / "run_smoke.ps1"
 TERMINALS = ["T1", "T2", "T3", "T4", "T5"]
 DEFAULT_OUT_PREFIX = Path(r"D:\QM\reports\pipeline")
 REGISTRY_DIR = REPO_ROOT / "framework" / "registry"
+P2_MIN_PROFIT_FACTOR = 1.30
+P2_MAX_DRAWDOWN_PCT = 12.0
 
 
 def find_ea_dir(ea_label: str) -> Path:
@@ -174,7 +176,38 @@ def derive_verdict(summary: dict, min_trades: int) -> tuple[str, str, str]:
     trades = [int(r.get("total_trades", 0) or 0) for r in runs]
     if any(t < min_trades for t in trades):
         return "FAIL", f"trade_count_below_min:got={trades}:min={min_trades}", summary.get("report_dir", "")
+    pf_values = [float(r.get("profit_factor", 0.0) or 0.0) for r in runs]
+    if any(pf < P2_MIN_PROFIT_FACTOR for pf in pf_values):
+        return "FAIL", f"pf_below_gate:got={pf_values}:min={P2_MIN_PROFIT_FACTOR}", summary.get("report_dir", "")
+    dd_pcts = [_extract_drawdown_pct(r) for r in runs]
+    if any(dd is None for dd in dd_pcts):
+        return "INVALID", "drawdown_pct_missing", summary.get("report_dir", "")
+    dd_numeric = [float(dd or 0.0) for dd in dd_pcts]
+    if any(dd > P2_MAX_DRAWDOWN_PCT for dd in dd_numeric):
+        return "FAIL", f"dd_above_gate:got={dd_numeric}:max={P2_MAX_DRAWDOWN_PCT}", summary.get("report_dir", "")
     return "PASS", "", summary.get("report_dir", "")
+
+
+def _extract_drawdown_pct(run: dict) -> float | None:
+    value = run.get("drawdown_pct")
+    if value is not None:
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return None
+    raw = str(run.get("drawdown_raw", "") or "")
+    m = re.search(r"\(([-+]?[0-9][0-9\s,\.]*)%\)", raw)
+    if not m:
+        return None
+    token = m.group(1).replace(" ", "")
+    if "." in token and "," in token:
+        token = token.replace(",", "")
+    elif "," in token and "." not in token:
+        token = token.replace(",", ".")
+    try:
+        return float(token)
+    except ValueError:
+        return None
 
 
 def read_existing_passes(report_csv: Path) -> set[str]:
