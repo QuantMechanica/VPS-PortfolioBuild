@@ -223,7 +223,6 @@ def invoke_run_smoke(ea_id: int, symbol: str, year: int, terminal: str, period: 
         "-Expert", expert,
         "-SetFile", str(setfile),
         "-ReportRoot", str(report_root),
-        "-AllowMissingRealTicksLogMarker",
         "-TimeoutSeconds", str(timeout_sec),
     ]
     if allow_running_terminal:
