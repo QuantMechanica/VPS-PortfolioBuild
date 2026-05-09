@@ -1,0 +1,10 @@
+{
+  "title": "P7 (QUA-1024) Migrate deterministic skills to process-adapter (>=3 skills)",
+  "description": "## Goal\n\nMore Python, less AI. Paperclip already ships an 86-LOC pure-shell adapter (`app/server/src/adapters/process/execute.ts`) designed exactly for this: skill body runs as subprocess with env vars `PAPERCLIP_API_URL/AGENT_ID/RUN_ID/TASK_ID/WAKE_REASON`, idle heartbeat costs ~0 tokens. Spec: `app/doc/SPEC-implementation.md:571-584`, `app/doc/GOAL.md:46-49`.\n\n## Skills to migrate (priority order)\n\n1. **`qm-token-monitor`** — body GET /agents -> diff baseline -> write JSON. Zero reasoning.\n2. **`Invoke-DwxHourlyCheck.ps1`** — PowerShell heartbeat check. Already deterministic.\n3. **`kanban_archive_daily`** — CSV rotation per DL-060.\n4. **Notion->Git nightly mirror** — manifest-driven file copy.\n5. **`dl054_gate_runner.py`** — already deterministic at lines 106-115; just needs the adapter swap.\n\n## Patch plan (per skill)\n\n- `PATCH /api/agents/{id}` with `adapterType: 'process'` and `adapterConfig.command/args/cwd`.\n- For agents that need both deterministic and LLM modes (e.g. wake on mention vs scheduled run), build custom plugin-adapter `qm-process-or-llm` per `app/adapter-plugin.md` that routes by `wakeReason`.\n\n## Acceptance\n\n- >=3 skills running in production on the process adapter.\n- `heartbeat-runs` for those agents shows `outcome=completed` with `tokensIn=0/tokensOut=0` and no LLM cost.\n- Same skills still respond to mention-wakes via the LLM path when needed.\n\n## References\n\n- Parent: QUA-1024.\n- Process adapter source: `app/server/src/adapters/process/execute.ts`.\n- Token monitor skill: `C:/QM/worktrees/chief-of-staff/skills/qm/qm-token-monitor/SKILL.md`.\n- DL-031 routing: V5 Framework Implementation.",
+  "type": "task",
+  "priority": "medium",
+  "status": "todo",
+  "projectId": "71b6d994-70ba-4a28-bd62-732b42a9ea58",
+  "goalId": "4662e91e-8e9b-458e-9383-b1f67751965b",
+  "parentId": "2c054213-8e26-4623-b8d3-2f788ed5a5ab"
+}

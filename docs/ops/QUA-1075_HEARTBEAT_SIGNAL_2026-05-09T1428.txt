@@ -1,0 +1,4 @@
+issue=QUA-1075
+state=in_progress_operationally_blocked
+heartbeat_ts=2026-05-09T14:29:25+02:00
+note=handoff_integrity_verified_no_runtime_change

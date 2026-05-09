@@ -1,0 +1,23 @@
+{
+  "parent_issue": "QUA-1075",
+  "proposed_child_title": "Stabilize QM5_1014 P2 report-chain and metatester reliability",
+  "priority": "high",
+  "owner": "DevOps/CTO",
+  "created_at": "2026-05-09T14:24:28+02:00",
+  "problem": "P2 baseline for QM5_1014 remains non-passing with mixed infra/strategy failures and no clean all-symbol finalized run",
+  "done_criteria": [
+    "No residual p2_baseline workers after run completion",
+    "Fresh M15 8-symbol matrix completes with finalized rows for all symbols",
+    "No REPORT_MISSING/no_summary_json infrastructure-class failures in that clean run",
+    "If failures remain, they are strategy-level only (e.g., MIN_TRADES_NOT_MET) with complete evidence"
+  ],
+  "evidence": [
+    "D:/QM/reports/pipeline/QM5_1014/P2/report.csv",
+    "D:/QM/reports/pipeline/QM5_1014/P2/QM5_1014/20260509_121838/summary.json",
+    "C:/QM/repo/framework/scripts/run_smoke.ps1",
+    "C:/QM/repo/framework/scripts/p2_matrix_launcher.py",
+    "C:/QM/repo/docs/ops/QUA-1075_P2_STATE_SNAPSHOT_2026-05-09T1421.json",
+    "C:/QM/repo/docs/ops/QUA-1075_P2_CLEAN_HANDOFF_2026-05-09T1423.json"
+  ],
+  "notes": "run_smoke canonical-copy crash fixed; remaining work is clean rerun stability + deterministic closure"
+}

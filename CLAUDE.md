@@ -60,7 +60,7 @@ Phase 1 closed under DL-024 (2026-04-27); Phase 2 closed 2026-05-01 (QUA-639); *
 
 Each heartbeat begins by reading the pipeline-health watchdog state, before any drafting / dashboard / advisory work:
 
-1. `cat C:/QM/paperclip/tools/ops/docs/ops/pipeline_health/latest.json` — last 4-detector run
+1. `cat C:/QM/repo/docs/ops/pipeline_health/latest.json` — last 4-detector run
 2. Latest comment on **QUA-1160** (rolling watchdog tracker) — alarm summary
 
 Watchdog runs every 15 min via Windows Task `QM_PipelineHealth_Watchdog` and alarms on: MT5 saturation < 2/3, backtest fail-rate ≥ 50%, sub-agent idle > 2h, HoP loop > 15 runs/hour. **If any alarm is firing, address it before starting unrelated work.** Lesson from 2026-05-09: 90 min HoP serial-probing with 16/20 REPORT_MISSING went unnoticed because Board Advisor was deep in dashboard-redesign — that failure mode is what the watchdog exists to prevent.
