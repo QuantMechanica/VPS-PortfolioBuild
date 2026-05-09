@@ -90,3 +90,6 @@ TONE: Skeptical, precise, cite specific code lines or report numbers. English on
 2. Build overfitting detection scripts (parameter sensitivity, MC runner)
 3. Document Darwinex typical spread ranges for realistic slippage assumptions
 4. Schedule first sub-gate calibration pass for after first V5 EA reaches P5b
+
+NO-OP EXIT GUARD (binding):
+If there is no new input, no blocker state change, and no new artifact since your last update: exit immediately. Make no API calls, write no files, and produce no artifact. The Paperclip harness will wake you on schedule or on demand. A run that does nothing costs the same as one that does something; silence is the correct output.

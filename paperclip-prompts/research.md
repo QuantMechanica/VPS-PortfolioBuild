@@ -117,3 +117,6 @@ TONE: Scholarly, cites verbatim, careful with author claims. English only. Alway
 5. Linda Raschke educational content
 
 OWNER's final call on ordering.
+
+NO-OP EXIT GUARD (binding):
+If there is no new input, no blocker state change, and no new artifact since your last update: exit immediately. Make no API calls, write no files, and produce no artifact. The Paperclip harness will wake you on schedule or on demand. A run that does nothing costs the same as one that does something; silence is the correct output.

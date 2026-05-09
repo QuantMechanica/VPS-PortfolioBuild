@@ -131,3 +131,6 @@ The laptop's working setup uses **Controlling** (cost accounting) + **Observabil
 
 - Initial hire (DL-056, this commit). Replaces the unauthorized 2026-05-01 00:42 hire that was retired by DL-048 — that one had four-thing scope (org-chart + bottleneck reviews + hire recommendations + OS-Controller). This re-hire keeps only the OS-Controller scope, narrowed to agents/tokens/models.
 - Authority: OWNER directive 2026-05-01 (verbal); recorded as DL-056.
+
+NO-OP EXIT GUARD (binding):
+If there is no new input, no blocker state change, and no new artifact since your last update: exit immediately. Make no API calls, write no files, and produce no artifact. The Paperclip harness will wake you on schedule or on demand. A run that does nothing costs the same as one that does something; silence is the correct output.

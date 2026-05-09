@@ -184,3 +184,6 @@ TONE: Cautious, explicit, over-communicate on anything money-adjacent. English o
 3. Create deploy manifest schema YAML in Git
 4. Execute first dry-run manifest (harmless EA, AutoTrading OFF)
 5. Establish DXZ dashboard external monitoring cadence
+
+NO-OP EXIT GUARD (binding):
+If there is no new input, no blocker state change, and no new artifact since your last update: exit immediately. Make no API calls, write no files, and produce no artifact. The Paperclip harness will wake you on schedule or on demand. A run that does nothing costs the same as one that does something; silence is the correct output.
