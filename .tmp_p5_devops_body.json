@@ -1,0 +1,11 @@
+{
+  "title": "P5 (QUA-1024) EA source-dirs hygiene — move QUA-* artifacts out of framework/EAs/",
+  "description": "## Root cause\n\n`framework/EAs/QM5_1003_davey_baseline_3bar/` (and likely the other EA dirs) contains ~20 files matching `QUA-649_*.{md,json,signal,csv}` mixed in with `.mq5/.ex5/.set/.mqh`. Codex globs the directory on every edit, polluting context by 20–40%.\n\n## Patch plan\n\n1. `git mv framework/EAs/*/QUA-* docs/ops/QUA-archived/` (preserve under-issue grouping; mirror the per-EA tree if useful for forensics).\n2. Add `.gitignore` rules:\n   - `framework/EAs/*/QUA-*`\n   - `framework/EAs/*/*.signal`\n3. Optional pre-commit hook that rejects `framework/EAs/*/QUA-*` paths so this does not regress.\n\n## Acceptance\n\n- `find framework/EAs -name 'QUA-*'` returns empty.\n- EA source dirs contain only `.mq5/.mqh/.ex5/.set`, JSON parameter cards, and run outputs that belong there.\n- A subsequent Codex edit to any EA `.mq5` file does not pull QUA-* files into context.\n\n## Why this matters\n\nMeta:Work commit ratio is 313:1 since 2026-05-05 (audit). Reducing per-edit context size also lowers token spend on every EA touch — compounds with P4 and P6 reductions.\n\n## References\n\n- Parent: QUA-1024 (Board Advisor token-burn audit 2026-05-09)\n- DL-031 routing: V5 Framework Implementation project (framework/* hygiene).",
+  "type": "task",
+  "priority": "medium",
+  "status": "todo",
+  "assigneeId": "86015301-1a40-4216-9ded-398f09f02d26",
+  "projectId": "71b6d994-70ba-4a28-bd62-732b42a9ea58",
+  "goalId": "4662e91e-8e9b-458e-9383-b1f67751965b",
+  "parentId": "2c054213-8e26-4623-b8d3-2f788ed5a5ab"
+}
