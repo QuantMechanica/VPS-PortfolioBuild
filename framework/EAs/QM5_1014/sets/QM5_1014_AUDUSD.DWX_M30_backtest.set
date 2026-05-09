@@ -1,0 +1,20 @@
+; QuantMechanica V5 generated set file
+; Generator=framework/scripts/gen_setfile.ps1
+ENV=backtest
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\lien-channels_card.md
+channel_definition=n-bar-horizontal-range
+entry_offset_pips=10
+arm_only_during=always
+channel_max_pips=30
+channel_lookback=16
+management_mode=conservative
+tp1_rr=1.0
+channel_min_pips=10
+trail_method=two_bar_extreme
+tp_full_rr=2.0
+tf=M15
+BAR=M15

@@ -1,0 +1,12 @@
+{
+  "issue": "QUA-1075",
+  "ea": "QM5_1014",
+  "captured_at": "2026-05-09T14:23:53+02:00",
+  "active_qm51014_p2_python_workers": 0,
+  "report_rows": 17,
+  "verdict_counts": {
+    "INVALID": 8,
+    "FAIL": 9
+  },
+  "status": "non_running_clean_handoff"
+}

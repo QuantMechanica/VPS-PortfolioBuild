@@ -23,6 +23,9 @@ param(
     [int]$TimeoutSeconds = 1800,
     [string]$SetFile,
     [string]$ReportRoot = "D:\QM\reports\smoke",
+    [string]$DispatchPhase = "P1",
+    [string]$DispatchVersion = "smoke",
+    [string]$DispatchSubGateHash,
     [switch]$AllowRunningTerminal,
     [switch]$AllowMissingRealTicksLogMarker
 )
@@ -109,7 +112,14 @@ function Resolve-DispatchTerminal {
         [Parameter(Mandatory = $true)]
         [int]$YearValue,
         [Parameter(Mandatory = $true)]
-        [string]$SetFilePath
+        [string]$SetFilePath,
+        [Parameter(Mandatory = $true)]
+        [string]$DispatchPhaseValue,
+        [Parameter(Mandatory = $true)]
+        [string]$DispatchVersionValue
+        ,
+        [Parameter(Mandatory = $true)]
+        [string]$DispatchSubGateHashValue
     )
 
     if ($TargetTerminal -ine 'any') {
@@ -124,10 +134,10 @@ function Resolve-DispatchTerminal {
     $statePath = "D:\QM\Reports\pipeline\dispatch_state.json"
     $job = [ordered]@{
         ea_id = "QM5_{0}" -f $EAIdValue
-        version = "smoke"
+        version = $DispatchVersionValue
         symbol = $SymbolName
-        phase = "P1"
-        sub_gate_config_hash = "{0}-{1}" -f $PeriodName, $YearValue
+        phase = $DispatchPhaseValue
+        sub_gate_config_hash = $DispatchSubGateHashValue
         target_terminal = "any"
         setfile_path = $SetFilePath
     } | ConvertTo-Json -Depth 4
@@ -169,7 +179,14 @@ function Invoke-DispatchCompletion {
         [Parameter(Mandatory = $true)]
         [int]$YearValue,
         [Parameter(Mandatory = $true)]
-        [string]$SetFilePath
+        [string]$SetFilePath,
+        [Parameter(Mandatory = $true)]
+        [string]$DispatchPhaseValue,
+        [Parameter(Mandatory = $true)]
+        [string]$DispatchVersionValue
+        ,
+        [Parameter(Mandatory = $true)]
+        [string]$DispatchSubGateHashValue
     )
 
     if ($OriginalTargetTerminal -ine 'any') {
@@ -186,10 +203,10 @@ function Invoke-DispatchCompletion {
     $statePath = "D:\QM\Reports\pipeline\dispatch_state.json"
     $job = [ordered]@{
         ea_id = "QM5_{0}" -f $EAIdValue
-        version = "smoke"
+        version = $DispatchVersionValue
         symbol = $SymbolName
-        phase = "P1"
-        sub_gate_config_hash = "{0}-{1}" -f $PeriodName, $YearValue
+        phase = $DispatchPhaseValue
+        sub_gate_config_hash = $DispatchSubGateHashValue
         target_terminal = "any"
         setfile_path = $SetFilePath
     } | ConvertTo-Json -Depth 4
@@ -472,7 +489,11 @@ function Convert-RunMetricsToFingerprint {
     return "{0}|{1}|{2}|{3}" -f $Metrics.total_trades_raw, $Metrics.profit_factor_raw, $Metrics.drawdown_raw, $Metrics.net_profit_raw
 }
 
-$effectiveTerminal = Resolve-DispatchTerminal -TargetTerminal $Terminal -EAIdValue $EAId -SymbolName $Symbol -PeriodName $Period -YearValue $Year -SetFilePath $SetFile
+if ([string]::IsNullOrWhiteSpace($DispatchSubGateHash)) {
+    $DispatchSubGateHash = "{0}-{1}" -f $Period, $Year
+}
+
+$effectiveTerminal = Resolve-DispatchTerminal -TargetTerminal $Terminal -EAIdValue $EAId -SymbolName $Symbol -PeriodName $Period -YearValue $Year -SetFilePath $SetFile -DispatchPhaseValue $DispatchPhase -DispatchVersionValue $DispatchVersion -DispatchSubGateHashValue $DispatchSubGateHash
 $terminalRoot = Resolve-TerminalRoot -TerminalName $effectiveTerminal
 $terminalExe = Resolve-TerminalExecutable -TerminalRoot $terminalRoot
 
@@ -620,6 +641,29 @@ for ($i = 1; $i -le $Runs; $i++) {
             status = "FAIL"
             failure = "REPORT_EMPTY"
             error = "Strategy tester produced size-0 report file (infra NO_REPORT)."
+            exit_code = $exitCode
+            report_source_path = $sourceReportPath
+            report_canonical_path = $reportHtmPath
+            report_size_bytes = [int64]$sourceInfo.Length
+            tester_log_path = $null
+        }
+        continue
+    }
+
+    if (-not (Test-Path -LiteralPath $reportHtmPath -PathType Leaf)) {
+        try {
+            Copy-Item -LiteralPath $sourceReportPath -Destination $reportHtmPath -Force
+        } catch {
+        }
+    }
+    if (-not (Test-Path -LiteralPath $reportHtmPath -PathType Leaf)) {
+        $reasonClasses.Add("REPORT_MISSING")
+        $globalRealTicksMarker = $false
+        $runResults += [pscustomobject]@{
+            run = $runName
+            status = "FAIL"
+            failure = "REPORT_MISSING"
+            error = "Report source exists but canonical copy could not be created."
             exit_code = $exitCode
             report_source_path = $sourceReportPath
             report_canonical_path = $reportHtmPath
@@ -809,7 +853,7 @@ Write-Output "run_smoke.summary=$summaryPath"
 Write-Output "run_smoke.report_dir=$reportDir"
 Write-Output "run_smoke.evidence=$evidencePath"
 
-    Invoke-DispatchCompletion -OriginalTargetTerminal $Terminal -EAIdValue $EAId -SymbolName $Symbol -PeriodName $Period -YearValue $Year -SetFilePath $SetFile
+    Invoke-DispatchCompletion -OriginalTargetTerminal $Terminal -EAIdValue $EAId -SymbolName $Symbol -PeriodName $Period -YearValue $Year -SetFilePath $SetFile -DispatchPhaseValue $DispatchPhase -DispatchVersionValue $DispatchVersion -DispatchSubGateHashValue $DispatchSubGateHash
 
 if (-not $passed) {
     exit 1

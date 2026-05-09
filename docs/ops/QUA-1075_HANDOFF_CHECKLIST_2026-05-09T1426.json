@@ -1,0 +1,15 @@
+{
+  "captured_at": "2026-05-09T14:26:47+02:00",
+  "issue": "QUA-1075",
+  "checklist": {
+    "ea_dir": true,
+    "ex5": true,
+    "sets_dir": true,
+    "p2_report": true,
+    "p2_rollup": true,
+    "status_packet": true,
+    "clean_handoff": true,
+    "child_draft": true,
+    "active_qm51014_p2_workers": 0
+  }
+}

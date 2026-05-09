@@ -1,0 +1,55 @@
+{
+  "max_parallel": 5,
+  "starts": [
+    {
+      "job_id": "EURUSD.DWX:clean",
+      "started_epoch": 1778318366.2483835,
+      "terminal": "T1"
+    },
+    {
+      "job_id": "GBPUSD.DWX:clean",
+      "started_epoch": 1778318366.2573755,
+      "terminal": "T2"
+    },
+    {
+      "job_id": "USDJPY.DWX:clean",
+      "started_epoch": 1778318366.2665036,
+      "terminal": "T3"
+    },
+    {
+      "job_id": "AUDUSD.DWX:clean",
+      "started_epoch": 1778318366.2755191,
+      "terminal": "T4"
+    },
+    {
+      "job_id": "USDCAD.DWX:clean",
+      "started_epoch": 1778318366.2845428,
+      "terminal": "T5"
+    },
+    {
+      "job_id": "EURUSD.DWX:stress",
+      "started_epoch": 1778318368.2208622,
+      "terminal": "T1"
+    },
+    {
+      "job_id": "GBPUSD.DWX:stress",
+      "started_epoch": 1778318368.2318912,
+      "terminal": "T2"
+    },
+    {
+      "job_id": "USDJPY.DWX:stress",
+      "started_epoch": 1778318368.2419171,
+      "terminal": "T3"
+    },
+    {
+      "job_id": "AUDUSD.DWX:stress",
+      "started_epoch": 1778318368.252946,
+      "terminal": "T4"
+    },
+    {
+      "job_id": "USDCAD.DWX:stress",
+      "started_epoch": 1778318368.262972,
+      "terminal": "T5"
+    }
+  ]
+}
