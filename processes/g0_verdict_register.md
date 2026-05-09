@@ -2,6 +2,7 @@
 title: G0 Verdict Register — QB running record
 authored_by: Quality-Business
 last_updated: 2026-05-09
+updated_by: Quality-Business (QUA-1059 SRC06 Singh sweep)
 ---
 
 # QB G0 Verdict Register
@@ -84,7 +85,23 @@ dual-sign-off per charter; QB verdict here is the second-eye advisory only.
 | chan-at-pead (S13) | QUA-791 | APPROVED-with-blockers | 2026-05-09 (QUA-983) — CEO+CTO instrument-sub pending |
 | chan-at-lev-etf-rebal (S14) | QUA-784 | NEEDS_CLARIFICATION→resolved | 2026-05-09 (QUA-983) |
 
-## Pending — new SRC from QUA-1058 Research expansion
+## SRC06 Singh
 
-Blocked on QUA-1058 (Research G0 expansion, in_progress 2026-05-09). No new card issues
-created yet. Will update this register as Research routes cards for QB review.
+Source: Mario Singh, *17 Proven Currency Trading Strategies: How to Profit in the Forex Market* (Wiley Trading 2013, ISBN 978-1-118-38551-7). 14 cards extracted under [QUA-1058](/QUA/issues/fbff8194-f84d-4fac-be34-a2fdba5e555a); 3 skipped (S05 Gawk the Talk, S06 Balk the Talk, S14 Siamese Twins — news/fundamental data hard-rule fails). QB R1-R4: PASS source-level. Verdicts posted in [QUA-1059](/QUA/issues/5ba6a56e-c579-42bf-9e69-d9df6141c45a) 2026-05-09.
+
+| Card | Issue | QB Verdict | Date | Notes |
+|---|---|---|---|---|
+| singh-rapid-fire (S01) | QUA-1059 | APPROVED | 2026-05-09 | scalping_p5b_latency flag; inverted R:R (SL 15pip > TP 10pip) |
+| singh-piranha (S02) | QUA-1059 | APPROVED | 2026-05-09 | scalping_p5b_latency flag; inverted R:R (SL 10pip > TP 5pip); regime filter mandatory |
+| singh-fade-break (S03) | QUA-1059 | APPROVED | 2026-05-09 | first counter-breakout archetype |
+| singh-trade-break (S04) | QUA-1059 | APPROVED | 2026-05-09 | breakout continuation; complements S03 |
+| singh-trend-rider (S07) | QUA-1059 | APPROVED | 2026-05-09 | distinct from lien-perfect-order (EMA-cross vs. perfect-order); ADX open-ended exit |
+| singh-trend-bouncer (S08) | QUA-1059 | APPROVED | 2026-05-09 | BB(12,2) pullback; not a dup of lien-dbb (different param family + thesis) |
+| singh-fifth-element (S09) | QUA-1059 | APPROVED | 2026-05-09 | MT4 MACD impl required; 5th-bar specificity = P7 overfit flag |
+| singh-power-ranger (S10) | QUA-1059 | APPROVED | 2026-05-09 | stoch(10,3,3); first stochastic-based EA in pipeline |
+| singh-pendulum (S11) | QUA-1059 | APPROVED | 2026-05-09 | range 10%-bounce; mechanizable with N-bar high/low |
+| singh-swap-fly (S12) | QUA-1059 | APPROVED | 2026-05-09 | friday_close=false exception needed (CEO+OWNER); P9 correlation vs lien-carry-trade |
+| singh-cmd-corr (S13) | QUA-1059 | APPROVED | 2026-05-09 | first intermarket EA; WTI.cash.DWX + USDX.f availability = P0 blocker |
+| singh-guppy-burst (S15) | QUA-1059 | APPROVED | 2026-05-09 | NY-close-to-Asia-open bracket; DST handling = P0 impl concern |
+| singh-eng-bk-tea (S16) | QUA-1059 | APPROVED | 2026-05-09 | London-open fade; well-documented microstructure edge |
+| singh-gd-morn-asia (S17) | QUA-1059 | APPROVED | 2026-05-09 | inverted R:R (2:1 adverse); thin thesis — P3/P7 must validate positive expectancy |
