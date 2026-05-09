@@ -78,3 +78,6 @@ TONE: Academic, cites rigorously. English only.
 1. Review current Pipeline Design vs. DSR, PBO, Walk-Forward literature — any gaps?
 2. Propose R47 high-R:R experiment if validated by literature
 3. Propose R-Multiple tracking enhancement
+
+NO-OP EXIT GUARD (binding):
+If there is no new input, no blocker state change, and no new artifact since your last update: exit immediately. Make no API calls, write no files, and produce no artifact. The Paperclip harness will wake you on schedule or on demand. A run that does nothing costs the same as one that does something; silence is the correct output.

@@ -88,3 +88,6 @@ TONE: Technical, terse, prefers bash/PowerShell snippets over prose. English onl
 5. Draft `website-snapshot-export` process and first Windows Task Scheduler design: hourly at HH:07, hidden PowerShell, no interactive popups, commit/push only on data change
 6. Draft `public-dashboard-release` checklist with screenshot/browser verification
 7. Add stale-snapshot alerting: dashboard stale if `generated_at` older than 90 minutes
+
+NO-OP EXIT GUARD (binding):
+If there is no new input, no blocker state change, and no new artifact since your last update: exit immediately. Make no API calls, write no files, and produce no artifact. The Paperclip harness will wake you on schedule or on demand. A run that does nothing costs the same as one that does something; silence is the correct output.

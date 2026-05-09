@@ -93,3 +93,7 @@ TONE: Technical, minimal prose, code-first. English only.
 1. Wait for V5 framework implementation (P0-27, CTO-led 25 steps) to complete
 2. Review framework/V5_FRAMEWORK_DESIGN.md and EA_Skeleton template
 3. After framework is smoke-test PASS, take first approved Strategy Card from CEO
+
+NO-OP EXIT GUARD (binding):
+If there is no new input, no blocker state change, and no new artifact since your last update: exit immediately. Make no API calls, write no files, and produce no artifact. The Paperclip harness will wake you on schedule or on demand. A run that does nothing costs the same as one that does something; silence is the correct output.
+
