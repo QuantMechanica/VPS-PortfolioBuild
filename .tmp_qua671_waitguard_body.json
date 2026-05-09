@@ -1,0 +1,11 @@
+{
+  "title": "QUA-671 cleanup — stop wait_guard polling, freeze WAIT_GUARD writes until OWNER signoff",
+  "description": "## Context\n\nParent issue QUA-671 (P0-13 T6 deploy manifest dry-run) just flipped to `blocked` (DL-046 enforcement, durable record on the parent). Concurrently, the audit (Board Advisor 2026-05-09) found `scripts/ops/qua671_wait_guard.ps1` running in 6 worktrees simultaneously and producing 2,069 WAIT_GUARD-JSON files in `docs/ops/`.\n\nUntil OWNER signs off the manifest, no new WAIT_GUARD files should be written. The comment thread on QUA-671 is the durable record.\n\n## Action\n\n1. Locate every running instance of `scripts/ops/qua671_wait_guard.ps1` across the `agents/*` and other worktrees. Stop all but one (keep at most one canonical instance, ideally none).\n2. Confirm via process listing that no new `qua671_wait_guard.ps1` invocation is fired by any cron/task/routine.\n3. Add a guard at the top of the script: if `QUA-671.status == 'blocked'`, exit 0 with a single log line (no JSON write). This makes the script DL-046-compliant if it is reactivated later.\n4. Sweep `docs/ops/QUA-671_WAIT_GUARD_*.json` from before the cutoff into `docs/ops/QUA-archived/QUA-671/` to keep the active ops dir clean. Do NOT delete (forensic value retained).\n\n## Acceptance\n\n- `Get-Process | Where-Object {$_.CommandLine -match 'qua671_wait_guard'}` returns at most one row.\n- No new `docs/ops/QUA-671_WAIT_GUARD_*.json` file with mtime after the cutoff.\n- Script has the `status==blocked → no-op` guard committed.\n\n## References\n\n- Parent: QUA-1024 (Board Advisor audit, P1)\n- Related: QUA-671 (the issue being polled)\n- DL-046 (status, not comments, drives the briefing)\n- Memory `feedback_blocked_reason_schema_gap`: blockedReason persistence is partial, comment thread is the durable record.",
+  "type": "task",
+  "priority": "high",
+  "status": "todo",
+  "assigneeId": "86015301-1a40-4216-9ded-398f09f02d26",
+  "projectId": "71b6d994-70ba-4a28-bd62-732b42a9ea58",
+  "goalId": "4662e91e-8e9b-458e-9383-b1f67751965b",
+  "parentId": "2c054213-8e26-4623-b8d3-2f788ed5a5ab"
+}
