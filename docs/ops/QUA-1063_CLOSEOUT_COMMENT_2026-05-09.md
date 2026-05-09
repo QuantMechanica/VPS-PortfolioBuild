@@ -35,6 +35,7 @@ Implementation complete for dispatcher-style parallelization of `P5_stress`, `P6
   - `.tmp/pipeline_parallel_test_cto/QM5_1001/P6/p6_parallel_timing.json`
 - P2 timing spread: `0.002s` (`5` starts, dry-run)
   - `.tmp/pipeline_parallel_test_cto/QM5_1002/P2/p2_parallel_timing.json`
+  - expected RR terminal mapping in artifact: `T1..T5`
 
 ## Commits
 
@@ -43,6 +44,8 @@ Implementation complete for dispatcher-style parallelization of `P5_stress`, `P6
 - `0d2f43ac` feat(p2): emit parallel start timing artifact for dispatcher evidence
 - `53c8b80e` fix(p2): allow dry-run timing evidence without registry deployment gates
 - `c48778eb` docs(qua-1063): add consolidated parallel dispatch timing evidence
+- `d27decd5` docs(qua-1063): add ready-to-post closeout issue comment
+- `2d5d1630` fix(qua-1063): record expected RR terminals in p2 timing evidence
 
 ## Note
 
