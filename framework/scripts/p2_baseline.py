@@ -26,6 +26,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -44,7 +45,11 @@ def safe_print(msg: str) -> None:
     with PRINT_LOCK:
         print(msg, flush=True)
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+# Canonical source of truth for EAs, setfiles, and run_smoke. Always main repo,
+# never a worktree, regardless of where this script is invoked from. Load-bearing
+# for cross-worktree consistency: DL-062 (Single Wake Source) + DL-028 (Worktree
+# Isolation). Override via QM_REPO_ROOT env var for testing only.
+REPO_ROOT = Path(os.environ.get("QM_REPO_ROOT", r"C:\QM\repo"))
 EA_ROOT = REPO_ROOT / "framework" / "EAs"
 RUN_SMOKE_PS1 = REPO_ROOT / "framework" / "scripts" / "run_smoke.ps1"
 TERMINALS = ["T1", "T2", "T3", "T4", "T5"]
@@ -391,7 +396,7 @@ def main() -> int:
     ap.add_argument("--ea", required=True, help="EA label, e.g. QM5_1003 or QM5_SRC04_S03")
     ap.add_argument("--year", type=int, default=2024)
     ap.add_argument("--period", default="H1")
-    ap.add_argument("--runs", type=int, default=2, help="run count per symbol (run_smoke -Runs)")
+    ap.add_argument("--runs", type=int, default=2, help="run count per symbol (run_smoke -Runs, min 2)")
     ap.add_argument("--symbols", help="comma-separated subset; default = all setfiles")
     ap.add_argument("--out-prefix", default=str(DEFAULT_OUT_PREFIX))
     ap.add_argument("--min-trades", type=int, default=20, help="trade-count gate (P2 spec: >200, lower default for early validation)")
@@ -403,6 +408,8 @@ def main() -> int:
                     help="pass through -AllowRunningTerminal to run_smoke (off by default)")
     ap.add_argument("--max-parallel", type=int, default=5, help="max concurrent symbol runs when terminal is not pinned")
     args = ap.parse_args()
+    if args.runs < 2:
+        raise SystemExit("[FATAL] --runs must be >= 2 (run_smoke requires at least 2).")
 
     ea_dir = find_ea_dir(args.ea)
     ea_id = derive_numeric_ea_id(args.ea, ea_dir)

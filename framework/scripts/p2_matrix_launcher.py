@@ -15,13 +15,18 @@ symbols round-robin across T1-T5.
 from __future__ import annotations
 
 import argparse
+import os
 import re
 import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+# Canonical source of truth for EAs, setfiles, and the p2_baseline runner. Always
+# main repo, never a worktree, regardless of where this script is invoked from.
+# Load-bearing for cross-worktree consistency: DL-062 + DL-028. Override via
+# QM_REPO_ROOT env var for testing only.
+REPO_ROOT = Path(os.environ.get("QM_REPO_ROOT", r"C:\QM\repo"))
 EA_ROOT = REPO_ROOT / "framework" / "EAs"
 P2_RUNNER = REPO_ROOT / "framework" / "scripts" / "p2_baseline.py"
 TERMINALS = ["T1", "T2", "T3", "T4", "T5"]
@@ -65,7 +70,8 @@ def filter_full_data_symbols(symbols: list[str], year: int, threshold_bytes: int
 
 
 def launch_worker(ea_label: str, year: int, period: str, runs: int, terminal: str,
-                  symbols: list[str], log_dir: Path, timeout_sec: int) -> int:
+                  symbols: list[str], log_dir: Path, timeout_sec: int,
+                  allow_running_terminal: bool) -> int:
     """Launch one p2_baseline.py worker, return its PID. Truly detached."""
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     log_path = log_dir / f"p2_launcher_{terminal}_{ts}.log"
@@ -84,6 +90,8 @@ def launch_worker(ea_label: str, year: int, period: str, runs: int, terminal: st
         "--timeout", str(timeout_sec),
         "--resume",
     ]
+    if allow_running_terminal:
+        args.append("--allow-running-terminal")
 
     log_f = log_path.open("w", encoding="utf-8")
     err_f = err_path.open("w", encoding="utf-8")
@@ -111,6 +119,8 @@ def main() -> int:
     ap.add_argument("--filter-full-data", action="store_true",
                     help=f"only keep symbols with .hcc >= 1MB for the requested year")
     ap.add_argument("--log-dir", default=r"D:\QM\reports\pipeline\p2_launcher")
+    ap.add_argument("--allow-running-terminal", action="store_true",
+                    help="pass --allow-running-terminal through to p2_baseline workers")
     args = ap.parse_args()
 
     symbols = discover_symbols(args.ea, args.period)
@@ -135,7 +145,17 @@ def main() -> int:
     for t in TERMINALS:
         if not buckets[t]:
             continue
-        pid = launch_worker(args.ea, args.year, args.period, args.runs, t, buckets[t], log_dir, args.timeout)
+        pid = launch_worker(
+            args.ea,
+            args.year,
+            args.period,
+            args.runs,
+            t,
+            buckets[t],
+            log_dir,
+            args.timeout,
+            args.allow_running_terminal,
+        )
         pids[t] = pid
 
     print()
