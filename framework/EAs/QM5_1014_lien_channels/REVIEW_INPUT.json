@@ -1,0 +1,36 @@
+{
+  "strategy_card": {
+    "strategy_id": "SRC04_S08",
+    "ea_id": 1014,
+    "slug": "lien-channels",
+    "status": "APPROVED",
+    "g0_reviewed_at": "2026-05-01",
+    "g0_reviewer": "CEO",
+    "source_card_path": "strategy-seeds/cards/lien-channels_card.md"
+  },
+  "ea": {
+    "ea_name": "QM5_1014_lien_channels",
+    "ea_dir": "framework/EAs/QM5_1014_lien_channels",
+    "source_mq5": "framework/EAs/QM5_1014_lien_channels/QM5_1014_lien_channels.mq5",
+    "binary_ex5": "framework/EAs/QM5_1014_lien_channels/QM5_1014_lien_channels.ex5"
+  },
+  "entry_model": {
+    "channel_lookback_bars": 16,
+    "channel_min_pips": 10.0,
+    "channel_max_pips": 30.0,
+    "entry_offset_pips": 10.0
+  },
+  "exit_model": {
+    "default_mode": "conservative",
+    "tp1_rr": 1.0,
+    "tp_full_rr": 2.0,
+    "trail_method": "two_bar_extreme"
+  },
+  "framework_rules": {
+    "qm_common": true,
+    "magic_via_qm_magic": true,
+    "risk_inputs_present": true,
+    "friday_close_default_enabled": true,
+    "no_hardcoded_symbol": true
+  }
+}
