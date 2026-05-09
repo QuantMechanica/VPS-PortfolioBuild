@@ -1,0 +1,14 @@
+{
+  "captured_utc": "2026-05-09T00:36:59Z",
+  "issue_id": "b41d6066-a3a5-4f79-9453-829144815f71",
+  "issue_status": "in_progress",
+  "pending_comments": 0,
+  "latest_comment_id": "de268c66-c6a6-465b-acb4-529661d3fc68",
+  "hours_since_last_heartbeat": 19.953,
+  "quiet_hours_threshold": 24,
+  "unblock_owner": "OWNER",
+  "unblock_action": "Approve P0-13 T6 manifest dry-run evidence and authorize transition to done.",
+  "decision": "DEFER_NO_POLLING",
+  "connectivity_error": null
+}
+

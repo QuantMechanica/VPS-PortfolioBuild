@@ -172,5 +172,26 @@ class ReadinessTests(unittest.TestCase):
         self.assertEqual(row["bars_expected"], 383654)
         self.assertEqual(row["bars_got"], 0)
 
+    def test_summarize_verify_failures_parses_sidecar_bars_format(self):
+        output = (
+            "[ FAIL_tail_bars] AUDCAD.DWX: source=AUDCAD; custom_tv=0.731149; broker_tv=0.731272; "
+            "rel_err=0.0002; head_ms expected=1506902700032/got=1506902700032; "
+            "tail_ms expected=1775444399967/got=1775437257643; tail_basis=sidecar; "
+            "tail_ref_ms=1775444399967; tail_delta_ms=-7142324; mid_ticks_5min=2; "
+            "bars_sidecar_expected=446,800; bars_one_shot=0; bars_one_shot_err=(-2, 'Terminal: Invalid params'); "
+            "bars_from_pos=0; bars_chunked=0; bars_basis=range; maxbars=100,000; "
+            "bars_expected_accessible=100,000; bars_drift=-100,000; bad_chunks=0; "
+            "path=Custom\\Forex\\AUDCAD.DWX"
+        )
+        summary = self.mod.summarize_verify_failures(output)
+        self.assertEqual(summary["fail_count"], 1)
+        self.assertFalse(summary["systemic_zero_bars"])
+        row = summary["fail_rows"][0]
+        self.assertEqual(row["symbol"], "AUDCAD.DWX")
+        self.assertEqual(row["verdict"], "FAIL_tail_bars")
+        self.assertEqual(row["mid_ticks_5min"], 2)
+        self.assertEqual(row["bars_expected"], 446800)
+        self.assertEqual(row["bars_got"], 0)
+
 if __name__ == "__main__":
     unittest.main()

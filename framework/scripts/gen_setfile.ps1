@@ -180,6 +180,41 @@ function Parse-CardDefaults {
     return $out
 }
 
+function Normalize-CardDefaultsForSetfile {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$EaSlug,
+        [Parameter(Mandatory = $true)]
+        [hashtable]$Defaults
+    )
+
+    $normalized = [ordered]@{}
+    foreach ($k in $Defaults.Keys) {
+        $normalized[$k] = $Defaults[$k]
+    }
+
+    # Compatibility mapping for cards that use source-level variable names instead of EA input names.
+    if ($EaSlug -eq 'QM5_1003_davey_baseline_3bar') {
+        if ($normalized.Contains('ssl') -and -not $normalized.Contains('ssl_usd_cap')) {
+            $normalized['ssl_usd_cap'] = $normalized['ssl']
+        }
+        if ($normalized.Contains('ATR_period') -and -not $normalized.Contains('strategy_atr_period')) {
+            $normalized['strategy_atr_period'] = $normalized['ATR_period']
+        }
+        if ($normalized.Contains('nContracts')) {
+            $normalized.Remove('nContracts')
+        }
+        if ($normalized.Contains('ssl')) {
+            $normalized.Remove('ssl')
+        }
+        if ($normalized.Contains('ATR_period')) {
+            $normalized.Remove('ATR_period')
+        }
+    }
+
+    return $normalized
+}
+
 if ($EaSlug -notmatch '^QM5_[A-Za-z0-9_]+$') {
     throw "EaSlug must start with QM5_ and contain only letters, digits, and underscores. Got: $EaSlug"
 }
@@ -215,6 +250,7 @@ $lines = @(
 $cardPath = Find-CardPath -CardsRoot $cardsRoot -EaSlug $EaSlug
 if ($cardPath) {
     $defaults = Parse-CardDefaults -CardPath $cardPath
+    $defaults = Normalize-CardDefaultsForSetfile -EaSlug $EaSlug -Defaults $defaults
     if ($defaults.Count -gt 0) {
         $lines += "; card_defaults_source=$cardPath"
         foreach ($k in $defaults.Keys) {

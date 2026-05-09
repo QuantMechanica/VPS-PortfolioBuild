@@ -65,7 +65,12 @@ MAX_CSV_TAIL_GAP_HOURS = 1.0
 VERIFY_FAIL_PATTERN = re.compile(
     r"^\[\s*(?P<verdict>[^\]]+)\]\s+(?P<symbol>[^:]+):.*?"
     r"mid_ticks_5min=(?P<mid_ticks>\d+);.*?"
-    r"bars expected=(?P<bars_expected>[0-9,]+)/got=(?P<bars_got>[0-9,]+)\b",
+    r"(?:"
+    r"bars expected=(?P<bars_expected_legacy>[0-9,]+)/got=(?P<bars_got_legacy>[0-9,]+)\b"
+    r"|"
+    r"bars_sidecar_expected=(?P<bars_expected_sidecar>[0-9,]+);.*?"
+    r"bars_one_shot=(?P<bars_got_sidecar>[0-9,]+)\b"
+    r")",
     re.IGNORECASE,
 )
 
@@ -119,13 +124,23 @@ def summarize_verify_failures(output: str) -> dict[str, object]:
         verdict = m.group("verdict").strip()
         if not verdict.upper().startswith("FAIL"):
             continue
+        bars_expected_raw = (
+            m.group("bars_expected_legacy")
+            or m.group("bars_expected_sidecar")
+            or "0"
+        )
+        bars_got_raw = (
+            m.group("bars_got_legacy")
+            or m.group("bars_got_sidecar")
+            or "0"
+        )
         fail_rows.append(
             {
                 "symbol": m.group("symbol").strip(),
                 "verdict": verdict,
                 "mid_ticks_5min": int(m.group("mid_ticks")),
-                "bars_expected": int(m.group("bars_expected").replace(",", "")),
-                "bars_got": int(m.group("bars_got").replace(",", "")),
+                "bars_expected": int(bars_expected_raw.replace(",", "")),
+                "bars_got": int(bars_got_raw.replace(",", "")),
             }
         )
 
