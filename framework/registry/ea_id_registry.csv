@@ -12,3 +12,4 @@ ea_id,slug,strategy_id,status,owner,created_at
 1014,lien-channels,SRC04_S08,active,CTO,2026-05-01
 1015,lien-perfect-order,SRC04_S09,active,CTO,2026-05-01
 1016,lien-carry-trade,SRC04_S11,active,CTO,2026-05-01
+1005,davey-worldcup,SRC01_S05,active,Development,2026-05-09
