@@ -28,6 +28,7 @@ foreach ($f in $all) {
         $n -match '^QUA-[^/]+_[^/]+\.(md|json|sha256|txt)$' -or
         $n -match '^decisions/2026-[^/]*_self_author_[^/]*\.md$' -or
         $n -match '^artifacts/qua-[^/]+/.+' -or
+        $n -match '^framework/EAs/.+/QUA-[^/]+$' -or
         $n -match '^framework/EAs/.+\.ex5$' -or
         $n -match '(^|/)__pycache__(/|$)' -or
         $n -match '\.pyc$' -or
