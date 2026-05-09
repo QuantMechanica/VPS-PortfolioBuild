@@ -32,7 +32,7 @@ import subprocess
 import sys
 import threading
 import time
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -401,6 +401,7 @@ def main() -> int:
     ap.add_argument("--terminal", help="pin all runs to one terminal (default: round-robin T1..T5)")
     ap.add_argument("--allow-running-terminal", action="store_true",
                     help="pass through -AllowRunningTerminal to run_smoke (off by default)")
+    ap.add_argument("--max-parallel", type=int, default=5, help="max concurrent symbol runs when terminal is not pinned")
     args = ap.parse_args()
 
     ea_dir = find_ea_dir(args.ea)
@@ -432,19 +433,31 @@ def main() -> int:
 
     counts = {"PASS": 0, "FAIL": 0, "INVALID": 0, "DRY": 0}
     started_at = datetime.now(timezone.utc).isoformat()
-    for i, symbol in enumerate(symbols):
-        if args.terminal:
-            terminal = args.terminal
-        else:
-            terminal = "any"
-        verdict = run_one_symbol(
-            ea_id=ea_id, ea_dir=ea_dir, ea_label=args.ea, symbol=symbol,
-            year=args.year, period=args.period, runs=args.runs, terminal=terminal,
-            report_root_phase=report_root_phase, report_csv=report_csv,
-            min_trades=args.min_trades, timeout_sec=args.timeout, dry_run=args.dry_run,
-            allow_running_terminal=args.allow_running_terminal,
-        )
-        counts[verdict] = counts.get(verdict, 0) + 1
+    if args.terminal:
+        for symbol in symbols:
+            verdict = run_one_symbol(
+                ea_id=ea_id, ea_dir=ea_dir, ea_label=args.ea, symbol=symbol,
+                year=args.year, period=args.period, runs=args.runs, terminal=args.terminal,
+                report_root_phase=report_root_phase, report_csv=report_csv,
+                min_trades=args.min_trades, timeout_sec=args.timeout, dry_run=args.dry_run,
+                allow_running_terminal=args.allow_running_terminal,
+            )
+            counts[verdict] = counts.get(verdict, 0) + 1
+    else:
+        max_workers = max(1, min(args.max_parallel, len(symbols)))
+        with ThreadPoolExecutor(max_workers=max_workers) as pool:
+            futures = [
+                pool.submit(
+                    run_one_symbol,
+                    ea_id, ea_dir, args.ea, symbol, args.year,
+                    args.period, args.runs, "any", report_root_phase, report_csv,
+                    args.min_trades, args.timeout, args.dry_run, args.allow_running_terminal,
+                )
+                for symbol in symbols
+            ]
+            for fut in as_completed(futures):
+                verdict = fut.result()
+                counts[verdict] = counts.get(verdict, 0) + 1
 
     finished_at = datetime.now(timezone.utc).isoformat()
     summary = {
