@@ -421,6 +421,9 @@ int OnInit()
       return INIT_FAILED;
      }
 
+   // Card S4 lines 101-103: recover wait state from deal history on restart
+   RefreshWaitState();
+
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"SRC01_S05\",\"ea\":\"QM5_1005_davey_worldcup\"}");
    return INIT_SUCCEEDED;
   }
