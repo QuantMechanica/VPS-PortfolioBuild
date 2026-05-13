@@ -1,1 +1,1 @@
-2026-05-09 PARTIAL - tracking issue absent, first wake ping sent
+2026-05-13 SOFT-FAILS - tick gap May11->13, broker time unverifiable, terminals offline. All 36 symbols PASS on T1-T5. Tracking issue + symbols_seen.txt still absent. Rollup posted QUA-798 comment f45afc17.
