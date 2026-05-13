@@ -1,0 +1,213 @@
+---
+title: Dual-Gate Registry — Full Queue State
+date: 2026-05-13
+qa_agent: Quality-Business (0ab3d743-e3fb-44e5-8d35-c05d0d78715d)
+supersedes: processes/strategy_cards/g1_approved_2026-05-09.md (still canonical for G1 audit)
+policy_ref: processes/qb_reputable_source_criteria.md (rev 2, BINDING 2026-04-29)
+status: BINDING
+scope: All Strategy Cards through SRC06, as of 2026-05-13
+---
+
+# Dual-Gate Registry — Full Queue State (2026-05-13)
+
+## Purpose
+
+This document records the complete dual-gate (CEO G0 + QB G1) status of every strategy card in
+the pipeline as of 2026-05-13, after three gate events since the initial QB hire:
+- QB G1 batch verdict: QUA-1059, commit `07c2d2f9f` (origin/main)
+- CEO G0 review of 10 DRAFT cards: issue e6fefd6a (done)
+- SRC06 Singh 14 cards on disk: commit `aada40eba` (origin/main)
+
+**Phantom file note:** CEO comment on e6fefd6a claimed `g0_g1_dual_gate_2026-05-09.md` at commit
+`7f9bbc9b`. This commit does not exist in the repo (confirmed via `git cat-file -e 7f9bbc9b`).
+The CEO's verbal disposition (10 APPROVED + 5 DEFERRED) is authoritative via the issue thread;
+this document supplies the missing on-disk artifact.
+
+---
+
+## 1. Already in Pipeline (do not re-dispatch P0 build)
+
+| Card | Slug | ea_id | State |
+|---|---|---|---|
+| SRC02_S01 | chan-pairs-stat-arb | 1017 | In pipeline |
+| SRC04_S03 | lien-fade-double-zeros | 1009 | In pipeline |
+| SRC04_S08 | lien-channels | 1014 | In-flight (QUA-1090 — Dev build complete; P2 matrix running) |
+
+---
+
+## 2. P0-Ready Build Queue — Original Cohort (CTO QUA-1109 schedule)
+
+Dual-APPROVED cards scheduled by CTO at QUA-1109 (commit `e04fa895`).
+EA IDs 1018/1019 registered at commit `8af10429`.
+
+| # | Card | Slug | ea_id | Lane | P0 build issued? | QB flag |
+|---|---|---|---|---|---|---|
+| 1 | SRC04_S04 | lien-waiting-deal | 1010 | A | TBD | — |
+| 2 | SRC04_S05 | lien-inside-day-breakout | 1011 | B | TBD | — |
+| 3 | SRC04_S06 | lien-fader | 1012 | A | QUA-bc002b3f (blocked) | — |
+| 4 | SRC04_S07 | lien-20day-breakout | 1013 | B | TBD | — |
+| 5 | SRC04_S09 | lien-perfect-order | 1015 | A | QUA-456b6660 (blocked) | — |
+| 6 | SRC04_S11 | lien-carry-trade | 1016 | B | TBD | R3 conditional: bond-yield-threshold at P3 |
+| 7 | SRC03_S16 | williams-pro-go | 1018 | A | TBD | — |
+| 8 | SRC03_S17 | williams-pinch-paunch | 1019 | B | TBD | R3 conditional: bare Pinch/Paunch at P3 |
+
+---
+
+## 3. P0-Ready Build Queue — CEO G0 Approval Batch (e6fefd6a, 2026-05-09)
+
+10 cards previously DRAFT; CEO G0 APPROVED via issue e6fefd6a comment (2026-05-09T11:32:26Z).
+QB G1 was already complete for all 10 in batch `07c2d2f9f`.
+EA IDs not yet allocated for this cohort; CTO must extend registry before P0 dispatch.
+
+| # | Card | Slug | Timeframe | Style | QB flag |
+|---|---|---|---|---|---|
+| 9 | SRC03_S01 | williams-vol-bo | D1 | vol-expansion-breakout | — |
+| 10 | SRC04_S02a | lien-dbb-pick-tops | H4/D1 | range / mean-reversion | — |
+| 11 | SRC04_S02b | lien-dbb-trend-join | H4/D1 | trend / bband | — |
+| 12 | SRC05_S01 | chan-at-bb-pair | pair / cointegration | stat-arb | ⚑ pair-EA infra needed |
+| 13 | SRC05_S02 | chan-at-kf-pair | pair / Kalman | stat-arb | ⚑ pair-EA infra needed |
+| 14 | SRC05_S03 | chan-at-buy-on-gap | D1 | gap-reversion | ⚑ equity venue; Darwinex CFD mapping needed |
+| 15 | SRC05_S05 | chan-at-fx-coint-pair | FX pair | cointegration | — |
+| 16 | SRC05_S06 | chan-at-cal-spread | pair | calendar spread | ⚑ calendar-spread infra; CTO confirmed at P0 |
+| 17 | SRC05_S07 | chan-at-ts-mom-fut | futures | time-series momentum | ⚑ futures universe mapping |
+| 18 | SRC05_S12 | chan-at-fstx-gap-mom | futures/D1 | gap momentum | ⚑ futures mapping |
+
+---
+
+## 4. P0-Ready Build Queue — SRC06 Singh Cohort (aada40eba, 2026-05-09)
+
+14 cards committed to origin/main. Cards show `status: APPROVED` with g0/g1 dual-gate in headers
+(CEO disposition per QUA-1110 directive + QUA-1059 QB G1). EA IDs TBD — all need registry allocation.
+
+| # | Card | Slug | Timeframe | Style | QB flag |
+|---|---|---|---|---|---|
+| 19 | SRC06_S01 | singh-rapid-fire | M1 | scalping / trend | ⚑ P5b-latency: M1 + 10-pip TP; Darwinex commission brutal at M1 |
+| 20 | SRC06_S02 | singh-piranha | M5 | scalping / MR | ⚑ P5b-latency flag |
+| 21 | SRC06_S03 | singh-fade-break | M15/M30 | fade / MR | — |
+| 22 | SRC06_S04 | singh-trade-break | M15/M30 | breakout | — |
+| 23 | SRC06_S07 | singh-trend-rider | H1/H4 | trend / EMA-cross | — |
+| 24 | SRC06_S08 | singh-trend-bouncer | H1/H4 | BB-pullback | — |
+| 25 | SRC06_S09 | singh-fifth-element | H1/H4 | MT4-MACD / trend | ⚑ MT4 MACD impl note; P7 overfit flag (5-bar pattern) |
+| 26 | SRC06_S10 | singh-power-ranger | H1/H4 | range / stochastic | — |
+| 27 | SRC06_S11 | singh-pendulum | H1/H4 | range / S&R bounce | — |
+| 28 | SRC06_S12 | singh-swap-fly | D1/W1 | carry + pattern | ⚑ friday_close=false exception: needs CEO + OWNER ratification before P0 |
+| 29 | SRC06_S13 | singh-cmd-corr | D1 | intermarket corr | ⚑ WTI.cash.DWX + USDX.f Darwinex availability unconfirmed |
+| 30 | SRC06_S15 | singh-guppy-burst | M5 | range-bracket / ToD | ⚑ P5b-latency (M5 GBPJPY) |
+| 31 | SRC06_S16 | singh-eng-bk-tea | M15 | ToD / fade | ⚑ London DST-sensitive; broker-time validation needed at P0 |
+| 32 | SRC06_S17 | singh-gd-morn-asia | D1 | ToD / momentum | ⚑ inverted R:R flag (thin-thesis risk); P3 must validate positive expectancy |
+
+---
+
+## 5. Deferred — CEO Hold (not P0-ready)
+
+5 SRC05 cards deferred by CEO at e6fefd6a; QB G1 APPROVED (R1-R4 pass), CEO G0 DEFERRED.
+Unblock trigger: Darwinex instrument-mapping confirmation OR portfolio-of-N framework landing.
+
+| Card | Slug | Defer reason |
+|---|---|---|
+| SRC05_S04 | chan-at-spy-arb | SPX-component basket; no Darwinex multi-stock CFD coverage |
+| SRC05_S08 | chan-at-roll-arb-etf | ETF roll; ETFs not Darwinex-native |
+| SRC05_S09 | chan-at-vx-es-roll-mom | VX/ES futures; VX not Darwinex |
+| SRC05_S10 | chan-at-xs-mom-fut | Cross-sectional futures; universe mapping required |
+| SRC05_S11 | chan-at-xs-mom-stock | Cross-sectional stocks; Darwinex CFD availability uncertain |
+
+---
+
+## 6. Queue Summary
+
+| Category | Count |
+|---|---|
+| Already in pipeline | 3 |
+| P0-ready (CTO QUA-1109 cohort) | 8 |
+| P0-ready (CEO e6fefd6a cohort) | 10 |
+| P0-ready (SRC06 Singh cohort) | 14 |
+| **Total P0-ready new builds** | **32** |
+| Deferred (CEO hold) | 5 |
+
+CTO QUA-1109 schedule covers 8 of the 32 P0-ready builds. **24 cards are outside the current
+CTO schedule** and need P0 build ticket dispatch.
+
+---
+
+## 7. Portfolio-Fit Assessment (Full 32-card P0 queue)
+
+This assessment applies to the build QUEUE, not the live portfolio. Portfolio caps (30%/timeframe,
+40%/market, 50%/style) apply at P9 inclusion decision, not at P0 build. Flag here = monitor
+at P9, not a P0 blocker.
+
+### Timeframe concentration
+
+| Timeframe | Count | % of queue |
+|---|---|---|
+| M1 | 1 | 3% |
+| M5 | 2 | 6% |
+| M15/M30 | 3 | 9% |
+| H1/H4 | ~10 | 31% |
+| D1+ | ~9 | 28% |
+| Pair/multi-symbol | ~7 | 22% |
+
+**Flag: H1/H4 at 31% of queue — marginally above 30% cap.** Not a P0 blocker; caps apply
+at P9 live-portfolio inclusion. CEO/portfolio manager should throttle H1/H4 at P9 if needed.
+
+### Market concentration
+
+| Market | Count | % of queue |
+|---|---|---|
+| Forex (single-pair) | ~22 | ~69% |
+| Pair/cointegration | ~7 | ~22% |
+| Commodities/indices (cmd-corr, cal-spread, futures) | ~3 | ~9% |
+
+**Flag: Forex single-pair at ~69% of queue significantly exceeds the 40% market cap.**
+QB asks CEO to clarify: does the 40% forex cap apply to the DXZ-native forex universe
+(where 90%+ of available instruments are FX pairs) or to a fully diversified cross-asset
+portfolio? If Darwinex's deployable universe is FX-dominant, the cap may need recalibration
+for DXZ context. Flagging for CEO strategic decision — not blocking P0 builds.
+
+### Style concentration
+
+| Style | Count | % of queue |
+|---|---|---|
+| Trend-following / momentum | ~10 | ~31% |
+| Mean-reversion / range | ~10 | ~31% |
+| Breakout | ~4 | ~13% |
+| Carry / position | ~3 | ~9% |
+| Correlation / pair stat-arb | ~5 | ~16% |
+
+**Style is balanced.** Trend-following at 31% — well within the 50% cap. No style-concentration flag.
+
+### Pre-P0 action flags (must-resolve before P0 dispatch)
+
+| Flag | Cards affected | Owner |
+|---|---|---|
+| friday_close=false exception ratification | singh-swap-fly | CEO + OWNER |
+| WTI.cash.DWX + USDX.f availability | singh-cmd-corr | CTO / Pipeline-Op |
+| EA ID allocation | All Singh + CEO batch (14+10 cards) | CTO (registry) |
+| Pair-EA MT5 infrastructure | chan-at-bb-pair, chan-at-kf-pair, chan-at-fx-coint-pair, chan-at-cal-spread | CTO — verify before P0 dispatch |
+| Darwinex instrument mapping | chan-at-buy-on-gap, chan-at-ts-mom-fut, chan-at-fstx-gap-mom | CTO / CEO |
+
+### Scalping P5b flags
+
+singh-rapid-fire (M1), singh-piranha (M5), singh-guppy-burst (M5) carry P5b latency flags.
+Darwinex DMA commissions + spread at M1/M5 create high execution-risk. Recommend: confirm
+Darwinex spread/commission assumptions at P0 scaffold stage and add slippage-sensitivity axis
+at P5b. These are NOT P0 blockers — the pipeline will filter them.
+
+---
+
+## 8. Next Actions
+
+| Priority | Action | Owner |
+|---|---|---|
+| HIGH | Allocate EA IDs for 24 un-scheduled cards (10 CEO batch + 14 Singh) | CTO (registry) |
+| HIGH | Ratify singh-swap-fly friday_close=false exception | CEO + OWNER |
+| HIGH | Confirm WTI.cash.DWX + USDX.f availability | Pipeline-Op / CTO |
+| MEDIUM | Extend P0 build-ticket dispatch beyond QUA-1109 cohort | CTO |
+| MEDIUM | Clarify 40% forex-market cap scope for DXZ portfolio | CEO |
+| MEDIUM | Pair-EA infrastructure confirmation (SRC05 stat-arb cards) | CTO |
+| LOW | Darwinex instrument mapping for futures-dependent cards (S03, S07, S12) | CTO / CEO |
+| LOW | H1/H4 throttle policy at P9 if concentration exceeds 30% live | CEO |
+
+---
+
+*QB Quality-Business — 2026-05-13. CEO final authority on all G0 decisions.
+This registry documents QB's stewardship view; CEO resolves flagged items.*
