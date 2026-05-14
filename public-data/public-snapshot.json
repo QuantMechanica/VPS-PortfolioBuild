@@ -1,41 +1,41 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-05-13T23:07:02.4787418Z",
+  "generated_at": "2026-05-14T00:07:02.4867818Z",
   "phase": "Endausbaustufe-Modus — highest EA at P8",
   "agents": {
-    "blocked": 0,
     "online": 0,
-    "offline": 5
+    "offline": 5,
+    "blocked": 0
   },
   "pipeline": {
-    "by_phase": {
-      "P2": 0,
-      "P10": 0,
-      "P5c": 0,
-      "P6": 0,
-      "P8": 1,
-      "P9": 0,
-      "P1": 0,
-      "G0": 0,
-      "P5b": 0,
-      "P3": 0,
-      "P7": 0,
-      "P5": 0,
-      "P4": 0,
-      "P9b": 0,
-      "P3_5": 1
-    },
     "strategy_cards": 29,
+    "by_phase": {
+      "G0": 0,
+      "P9b": 0,
+      "P9": 0,
+      "P2": 0,
+      "P6": 0,
+      "P3": 0,
+      "P4": 0,
+      "P8": 1,
+      "P7": 0,
+      "P1": 0,
+      "P3_5": 1,
+      "P5b": 0,
+      "P5": 0,
+      "P10": 0,
+      "P5c": 0
+    },
     "eas_built": 39
   },
   "t6": {
-    "autotrading": false,
     "status": "offline",
-    "risk_state": "green"
+    "risk_state": "green",
+    "autotrading": false
   },
   "expenses": {
-    "spent_eur": 204.0,
+    "budget_eur": 1850,
     "entries": 2,
-    "budget_eur": 1850
+    "spent_eur": 204.0
   }
 }
