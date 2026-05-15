@@ -1,0 +1,13 @@
+{
+  "issueKey": "QUA-1597",
+  "status": "in_review",
+  "assigneeRole": "CEO_or_QB",
+  "reason": "P0 build complete; ready for G1 compliance audit",
+  "evidence": {
+    "buildCommit": "41a109ff1",
+    "closeoutCommits": ["788ad14f6", "0f0423087", "9199f4aef"],
+    "compileLog": "C:\\QM\\worktrees\\development\\framework\\build\\compile\\20260515_133513\\QM5_1006_davey-eu-day.compile.log",
+    "setfile": "framework/EAs/QM5_1006_davey-eu-day/sets/QM5_1006_davey-eu-day.set",
+    "magic": "10060000"
+  }
+}
