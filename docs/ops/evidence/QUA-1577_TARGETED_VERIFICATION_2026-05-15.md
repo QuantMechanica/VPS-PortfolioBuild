@@ -8,10 +8,11 @@ python -m unittest framework/scripts/tests/test_qua1577_worker_pool.py
 
 Observed:
 
-- `Ran 2 tests ... OK`
+- `Ran 3 tests ... OK`
 
 Coverage in this test module:
 
 1. Queue schema bootstrap creates `jobs` and `worker_heartbeat`.
 2. Required job indexes exist: `idx_jobs_status`, `idx_jobs_claimed_by` (partial), `idx_jobs_dedup`.
 3. `mt5_worker.py --terminal T6` returns exit code `2` and prints `[REFUSED] T6 is OFF LIMITS`.
+4. `mt5_worker.py --once` claims a queued row and writes failed verdict metadata back to SQLite (`status=failed`, `claimed_by=T1`, `verdict=INVALID`) in a deterministic temp MT5 root harness.

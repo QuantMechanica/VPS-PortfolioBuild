@@ -58,6 +58,77 @@ class QUA1577WorkerPoolTests(unittest.TestCase):
         self.assertIn("[REFUSED] T6 is OFF LIMITS", stdout)
         self.assertIn('"reason": "terminal_out_of_policy"', stdout)
 
+    def test_mt5_worker_once_claims_and_writes_failed_result(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            db_path = root / "mt5_queue.db"
+            mt5_root = root / "mt5"
+            t1 = mt5_root / "T1"
+            (t1 / "MQL5" / "Profiles" / "Tester" / "Groups").mkdir(parents=True, exist_ok=True)
+            (t1 / "MQL5" / "Experts" / "QM").mkdir(parents=True, exist_ok=True)
+            (t1 / "terminal64.exe").write_text("", encoding="utf-8")
+            ((t1 / "MQL5" / "Profiles" / "Tester" / "Groups") / "dummy.txt").write_text("ok", encoding="utf-8")
+            ((t1 / "MQL5" / "Experts" / "QM") / "QM5_1003.ex5").write_text("", encoding="utf-8")
+
+            conn = sqlite3.connect(str(db_path))
+            try:
+                ensure_schema(conn)
+                conn.execute(
+                    """
+                    INSERT INTO jobs(
+                      job_id,ea_id,version,symbol,period,year,phase,sub_gate_config_hash,setfile_path,
+                      status,enqueued_at,enqueued_by
+                    ) VALUES (?,?,?,?,?,?,?,?,?,?,strftime('%Y-%m-%dT%H:%M:%fZ','now'),?)
+                    """,
+                    (
+                        "job-1",
+                        "QM5_1003",
+                        "v1",
+                        "EURUSD.DWX",
+                        "H1",
+                        2024,
+                        "P2",
+                        "k1",
+                        str(root / "missing.set"),
+                        "queued",
+                        "manual",
+                    ),
+                )
+                conn.commit()
+            finally:
+                conn.close()
+
+            proc = subprocess.run(
+                [
+                    "python",
+                    "framework/scripts/mt5_worker.py",
+                    "--terminal",
+                    "T1",
+                    "--sqlite",
+                    str(db_path),
+                    "--mt5-root",
+                    str(mt5_root),
+                    "--once",
+                ],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(proc.returncode, 0)
+            self.assertIn('"status": "failed"', proc.stdout)
+            self.assertIn('"job_id": "job-1"', proc.stdout)
+
+            conn = sqlite3.connect(str(db_path))
+            try:
+                row = conn.execute(
+                    "SELECT status,claimed_by,verdict,invalidation_reason FROM jobs WHERE job_id='job-1'"
+                ).fetchone()
+            finally:
+                conn.close()
+            self.assertEqual(row[0], "failed")
+            self.assertEqual(row[1], "T1")
+            self.assertEqual(row[2], "INVALID")
+            self.assertIn("deploy_missing:", str(row[3]))
+
 
 if __name__ == "__main__":
     unittest.main()
