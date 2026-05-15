@@ -205,6 +205,7 @@ def main() -> int:
     args = parse_args()
     terminal = str(args.terminal).upper()
     if terminal not in {"T1", "T2", "T3", "T4", "T5"}:
+        print("[REFUSED] T6 is OFF LIMITS")
         print(json.dumps({"status": "error", "reason": "terminal_out_of_policy", "terminal": terminal}))
         return 2
 
