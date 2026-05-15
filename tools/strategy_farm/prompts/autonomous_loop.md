@@ -19,49 +19,29 @@ das autonom läuft, bis wir ein Portfolio an erfolgreichen EAs beisammen haben".
 Run `python C:/QM/repo/tools/strategy_farm/farmctl.py status` to see state.
 Walk the steps in order. At the first match, do the work, commit, log, exit.
 
-### Step 1 — Source needs research
+**Each wake fires the FIRST step that has work, then STOPS.** Cheap pipeline-
+advancing steps come before expensive new-front steps so existing work drains
+before opening new fronts. At most ONE "expensive" step (research, Codex
+build, EA review) per wake; cheap chains within a step are OK.
 
-If `active_sources` has an entry whose status is `active` AND
-`D:/QM/strategy_farm/artifacts/source_notes/<source_id>.md` does NOT exist:
+### Step 1 — EA review (medium, chains to enqueue)
 
-- Open the rendered research prompt at
-  `D:/QM/strategy_farm/queue/claude_research_<source_id>.md`.
-- Follow `tools/strategy_farm/prompts/claude_research_source.md` — depth-first,
-  one source only, mechanical strategies only, R1-R4 ready.
-- Write source notes to `D:/QM/strategy_farm/artifacts/source_notes/<source_id>.md`.
-- Write 0-N draft cards to
-  `D:/QM/strategy_farm/artifacts/cards_draft/QM5_<NNNN>_<slug>.md` per the
-  Strategy Wiki `_TEMPLATE Strategy.md` format, with `g0_status: PENDING`.
-- Allocate NEW EA IDs starting from the next free `QM5_<NNNN>` in
-  `framework/registry/ea_id_registry.csv`. Do NOT collide.
-- Run: `python tools/strategy_farm/farmctl.py set-source-status <source-id> notes_ready --notes-path "<notes-path>"`
+If any `build_ea` task has `status='done'` AND no matching `ea_review` task
+exists for the same `card_id`:
+
+- `farmctl claude-review-prompt --build-task-id <oldest-such-task-id>`
+- READ the rendered prompt + the card + the `.mq5` + the codex result.
+- Apply the six-section checklist from `prompts/claude_review_ea.md` literally.
+- Write the JSON verdict to the `verdict_path`.
+- `farmctl record-review --task-id <review-task-id> --result-file "<verdict-path>"`
+- **If the verdict is `APPROVE_FOR_BACKTEST`, in the SAME wake also call**
+  `farmctl enqueue-backtest --review-task-id <review-task-id> --phase P2`.
+  This cheap chain advances the EA to the MT5 fleet immediately.
 - STOP this wake.
 
-### Step 2 — Draft card needs G0 verdict
+### Step 2 — Codex build (expensive)
 
-Else if `D:/QM/strategy_farm/artifacts/cards_draft/` has a `.md` with
-`g0_status: PENDING` (or unset) in frontmatter:
-
-- For ONE card (oldest first): apply R1-R4 verdict per the canonical
-  `C:/QM/repo/processes/qb_reputable_source_criteria.md`.
-- **OWNER 2026-05-15 — relaxed criteria** (G0 is a wide net, the pipeline filters):
-  - **R1**: source link exists → PASS. Anonymous forum handles OK if linked.
-    Only REJECT if no source attribution at all.
-  - **R2**: directional entry + exit rules exist → PASS. Gaps in side-params
-    (ATR multiplier, exact lookback) OK; Codex fills defaults. Only REJECT if
-    fully discretionary, no rules.
-  - **R3**: testable on ≥1 DWX instrument **after porting** → PASS. Crypto /
-    equity / options strategies port to Forex/CFDs and are valid. Only REJECT
-    if it fundamentally needs a non-CFD feature (options chain, ETF flows).
-  - **R4 (binding HR14)**: no ML / no neural / no adaptive / no grid-without-
-    bounded-worst-case. Strict. No exceptions without OWNER written approval.
-- All four PASS → `farmctl approve-card --card "<path>" --reasoning "<one line>"`
-- Any FAIL → `farmctl reject-card --card "<path>" --reason "<which R + why>"`
-- STOP this wake.
-
-### Step 3 — Approved card has no build_ea task
-
-Else if `artifacts/cards_approved/QM5_*.md` exists and no `tasks` row has
+Else if an `artifacts/cards_approved/QM5_*.md` exists and no `tasks` row has
 `kind='build_ea' AND card_id=<that ea_id>`:
 
 - `farmctl build-ea --card "<approved-card-path>"` — renders the Codex prompt.
@@ -74,34 +54,83 @@ Else if `artifacts/cards_approved/QM5_*.md` exists and no `tasks` row has
 - `farmctl record-build --task-id <task-id> --result-file "<build_result_path>"`
 - STOP this wake.
 
-### Step 4 — Build done, no review
+### Step 3 — G0 batch verdict (cheap, up to 5 cards per wake)
 
-Else if a `build_ea` task has `status='done'` and no `tasks` row has
-`kind='ea_review' AND card_id=<same ea_id>`:
+Else if `artifacts/cards_draft/` has cards with `g0_status: PENDING` (or unset):
 
-- `farmctl claude-review-prompt --build-task-id <task-id>` — renders review prompt.
-- READ the rendered prompt + the card + the `.mq5` + the codex result.
-- Apply the six-section checklist from `prompts/claude_review_ea.md` literally.
-- Write the JSON verdict to the `verdict_path`.
-- `farmctl record-review --task-id <review-task-id> --result-file "<verdict-path>"`
+- For **up to 5** cards (oldest first), apply R1-R4 per the canonical
+  `C:/QM/repo/processes/qb_reputable_source_criteria.md`:
+  - **R1**: source link or PDF title exists? Anon-handle + linked URL = OK,
+    local PDF + title = OK. REJECT only if no source attribution at all.
+  - **R2**: directional Entry+Exit rules exist? Side-param gaps OK
+    (Codex fills defaults). REJECT only if fully discretionary, no rules.
+  - **R3**: testable on ≥1 DWX instrument after porting? Crypto / equity /
+    options that port to Forex/CFDs = OK. REJECT only if fundamentally
+    requires non-CFD feature (options chain, ETF flows).
+  - **R4 (binding HR14)**: no ML / no neural / no adaptive / no grid-without-
+    bounded-worst-case. Strict. No exceptions without OWNER written approval.
+- For each card:
+  - All four PASS → `farmctl approve-card --card "<path>" --reasoning "<one line>"`
+  - Any FAIL → `farmctl reject-card --card "<path>" --reason "<which R + why>"`
 - STOP this wake.
 
-### Step 5 — Review APPROVE_FOR_BACKTEST, no backtest enqueued
+### Step 4 — Mining resume (cheap, deterministic)
 
-Else if an `ea_review` task has `status='done'` and verdict
-`APPROVE_FOR_BACKTEST` and no `tasks` row has
-`kind='backtest_p2' AND card_id=<same ea_id>`:
+Else run `python tools/strategy_farm/farmctl.py resume-mining`. The command
+walks all sources with `status='cards_ready'`, checks whether ALL of their
+drafted cards have reached pipeline-end (rejected at G0 OR build failed OR
+backtest_p2 done in either direction), and flips eligible sources back to
+`status='active'`. Returns a JSON summary.
 
-- `farmctl enqueue-backtest --review-task-id <review-task-id> --phase P2`
-- STOP this wake. The Windows task `QM_StrategyFarm_Tick_5min` will dispatch
-  this within 5 min.
+- If the JSON shows any source got `resumed` → STOP this wake. Step 5
+  next wake will continue research on the resumed source's next batch.
+- If nothing got resumed, continue to Step 5.
 
-### Step 6 — Source done, claim next
+### Step 5 — Source research (expensive, batch of up to 5)
 
-Else if no source is `active` and pending sources exist:
+Else if any source is `status='active'` AND either:
+- no `source_notes/<source_id>.md` file exists yet (first-batch case), OR
+- the source was resumed from `cards_ready` (Step 4 just flipped it back —
+  next batch case; the existing notes file gets appended-to with a new
+  `## Batch N — <utc-iso>` section)
 
-- `farmctl claim-source` — activates the next pending source.
-- STOP this wake. Step 1 fires next wake.
+Then mine the source per `tools/strategy_farm/prompts/claude_research_source.md`:
+
+- Open the rendered research prompt at
+  `D:/QM/strategy_farm/queue/claude_research_<source_id>.md`.
+- Work depth-first on this one source only.
+- Write **up to 5** new draft cards (next batch) to
+  `D:/QM/strategy_farm/artifacts/cards_draft/QM5_<NNNN>_<slug>.md` per the
+  Strategy Wiki `_TEMPLATE Strategy.md` format, with `g0_status: PENDING`
+  AND `source_id: <source-uuid>` in frontmatter.
+- Allocate NEW EA IDs starting from the next free `QM5_<NNNN>` in
+  `framework/registry/ea_id_registry.csv`. Do NOT collide with existing IDs.
+- Append to (or create) source notes at
+  `D:/QM/strategy_farm/artifacts/source_notes/<source_id>.md`. Each batch
+  gets its own section header.
+- **At end of session, judge the source's exhaustion:**
+  - **5 cards drafted AND clearly more strategies findable** in this source
+    (forum has many more relevant threads, journal has many more papers,
+    book has many more chapters, archive has many more PDFs) →
+    `farmctl set-source-status <source-id> cards_ready --notes-path "<notes-path>"`.
+    The source is **paused** until the 5 EAs flow through the pipeline.
+    Step 4 resume-mining will flip it back to active automatically.
+  - **<5 cards drafted OR source exhausted** (you searched thoroughly and
+    don't see remaining high-value mechanical strategies) →
+    `farmctl set-source-status <source-id> done --notes-path "<notes-path>"`.
+    The source is permanently done; Step 6 next wake claims the next pending.
+- STOP this wake.
+
+### Step 6 — Claim next source
+
+Else if NO source is `active` AND NO source is `cards_ready` (because all
+paused sources are still waiting for their batch to flow through the pipeline)
+AND pending sources exist:
+
+- `farmctl claim-source` — activates the next pending source (lowest priority
+  numeric value first).
+- `farmctl claude-prompt` — renders the research prompt for the new active source.
+- STOP this wake. Step 5 fires next wake (first batch on the new source).
 
 ### Step 7 — Discover new sources
 

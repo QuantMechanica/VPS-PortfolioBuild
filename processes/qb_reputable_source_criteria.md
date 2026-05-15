@@ -9,24 +9,27 @@ statistical) is the real quality filter. R4 (HR14, NO ML) stays binding.
 
 ## The four criteria
 
-### R1 — Source attribution (link)
+### R1 — Source attribution (link or title)
 
-**PASS** if the card cites a **verifiable URL or canonical reference** for the
-source. That's it.
+**PASS** if the card cites **any** verifiable reference for the source. That's it.
 
 Examples that PASS:
-- Forum thread URL (ForexFactory, BabyPips, Elite Trader)
+- Forum thread URL (ForexFactory, BabyPips, Elite Trader) — incl. anon handles
 - Article URL (MQL5 Articles, named-author blog post)
 - Paper DOI / arXiv / SSRN URL
-- Book ISBN + chapter reference
+- Book ISBN + chapter reference (or just author + title)
 - Video URL + timestamp
+- **Local PDF on disk: filename / title is enough** (no URL needed) —
+  e.g. `Davey - Building Algorithmic Trading Systems.pdf, ch. 7`
+- **Local archive folder: path + title** —
+  e.g. `G:/My Drive/QuantMechanica/research/lien_day_trading.pdf`
 
 **REJECT** only if there is **no source attribution at all** — pure invention,
 unverifiable claim, "a friend told me".
 
 **Author track record is NOT required.** Anonymous forum handles are OK
-provided the post is linked. The strategy will pass or fail on its own data
-in P2–P7.
+provided the post is linked. PDFs on disk only need their title. The
+strategy will pass or fail on its own data in P2-P7.
 
 ### R2 — Implementable mechanically (gaps OK)
 
@@ -107,6 +110,26 @@ change applies only to **new** G0 verdicts.
 - ForexFactory and BabyPips threads with linked URLs are now valid sources.
   Anonymous handles welcome.
 - MQL5 CodeBase EAs (often anonymous) are valid.
+- Local PDFs need only a title (no URL); folder + filename is enough.
 - Crypto / equity / options strategies port to forex/CFDs and are valid.
 - Pure discretion still REJECTs (no rules to implement).
 - ML / neural / adaptive still REJECTs (Hard Rule 14).
+
+## Mining policy (OWNER 2026-05-15)
+
+Sources are mined **broadly and incrementally**:
+
+1. Extract **up to 5 cards** per research session (one wake).
+2. After a batch, set source `status = cards_ready` (mining paused — NOT done).
+3. The 5 EAs flow through the pipeline (build → review → P2 backtest → verdict).
+4. When **all 5 EAs have reached pipeline-end** (DEAD via reject/fail OR LIVE via portfolio),
+   `farmctl resume-mining` flips the source back to `status = active`.
+5. Next wake continues research on the **same source**, drafts next batch of ≤5.
+6. Loop until Claude judges the source genuinely exhausted → `status = done`.
+
+This keeps the pipeline narrow (HR16 spirit — bounded EA-in-flight count) while
+mining each source to depth. Forums (with subpages) will cycle this loop many
+times before exhaustion. Books and papers will exhaust faster.
+
+Per card frontmatter, the source UUID is embedded as `source_id: <uuid>` so
+resume-mining can trace card → source lineage without filename parsing.
