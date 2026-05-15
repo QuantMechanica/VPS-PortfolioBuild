@@ -269,6 +269,81 @@ class GateEvaluatorTests(unittest.TestCase):
             payload = req.data.decode("utf-8")
             self.assertIn("ZT QM5_1003 P2 EURUSD.DWX job-zt-template", payload)
 
+    def test_infra_fail_marks_failed_terminal_at_retry_cap(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            db = Path(td) / "mt5_queue.db"
+            conn = sqlite3.connect(str(db))
+            _create_jobs_table(conn)
+            _insert_job(
+                conn,
+                job_id="job-retry-cap",
+                verdict="INVALID",
+                invalidation_reason="REPORT_MISSING",
+                retry_count=2,
+                phase="P2",
+            )
+            conn.close()
+
+            res = evaluate(
+                sqlite_path=db,
+                max_retries=3,
+                limit=50,
+                paperclip_base="http://127.0.0.1:3100",
+                company_id="cid",
+                project_id="pid",
+                parent_issue_id=None,
+                tester_defaults_path=Path(td) / "tester_defaults.json",
+                zero_trades_template_path=Path(td) / "missing_template.md",
+                dry_run=False,
+            )
+            self.assertEqual(res.failed_terminal_count, 1)
+            conn2 = sqlite3.connect(str(db))
+            row = conn2.execute(
+                "SELECT status, retry_count, verdict_processed_at FROM jobs WHERE job_id='job-retry-cap'"
+            ).fetchone()
+            conn2.close()
+            assert row is not None
+            self.assertEqual(row[0], "failed_terminal")
+            self.assertEqual(row[1], 3)
+            self.assertTrue(bool(row[2]))
+
+    def test_pass_row_marks_failed_terminal_when_rollforward_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            db = Path(td) / "mt5_queue.db"
+            summary = Path(td) / "summary.json"
+            summary.write_text('{"trade_count": 5}', encoding="utf-8")
+            defaults = Path(td) / "tester_defaults.json"
+            defaults.write_text('{"anti_theater_gates":{"min_trade_count":1}}', encoding="utf-8")
+            conn = sqlite3.connect(str(db))
+            _create_jobs_table(conn)
+            _insert_job(conn, job_id="job-roll-fail", verdict="PASS", phase="P2", result_path=str(summary))
+            conn.close()
+
+            with patch("framework.scripts.gate_evaluator.run_rollforward_scripts", return_value=(False, "deploy_failed")):
+                res = evaluate(
+                    sqlite_path=db,
+                    max_retries=3,
+                    limit=50,
+                    paperclip_base="http://127.0.0.1:3100",
+                    company_id="cid",
+                    project_id="pid",
+                    parent_issue_id=None,
+                    tester_defaults_path=defaults,
+                    zero_trades_template_path=Path(td) / "missing_template.md",
+                    dry_run=False,
+                )
+            self.assertEqual(res.rollforward_failed_count, 1)
+            conn2 = sqlite3.connect(str(db))
+            row = conn2.execute(
+                "SELECT status, invalidation_reason FROM jobs WHERE job_id='job-roll-fail'"
+            ).fetchone()
+            cnt = conn2.execute("SELECT COUNT(*) FROM jobs").fetchone()
+            conn2.close()
+            assert row is not None and cnt is not None
+            self.assertEqual(row[0], "failed_terminal")
+            self.assertEqual(row[1], "deploy_failed")
+            self.assertEqual(cnt[0], 1)
+
 
 if __name__ == "__main__":
     unittest.main()
