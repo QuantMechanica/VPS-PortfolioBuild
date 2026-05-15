@@ -7,9 +7,9 @@
 
 ```yaml
 strategy_id: SRC01_S06
-ea_id: TBD
+ea_id: 4319
 slug: davey-3bar-eu-h4
-status: DRAFT
+status: APPROVED
 created: 2026-05-15
 created_by: Research
 last_updated: 2026-05-15
