@@ -4,7 +4,7 @@ ea_id,slug,strategy_id,status,owner,created_at
 1003,davey-baseline-3bar,SRC01_S03,active,Development,2026-04-28
 1004,davey-es-breakout,SRC01_S04,active,Development,2026-04-28
 1005,davey-worldcup,SRC01_S05,active,CTO,2026-04-28
-1006,davey-eu-day,SRC01_S02,active,Development,2026-04-28
+1006,davey-eu-day,SRC01_S02,active,Development,2026-05-15
 1007,lien-dbb-pick-tops,SRC04_S02a,active,CTO,2026-04-28
 1008,lien-dbb-trend-join,SRC04_S02b,active,CTO,2026-04-28
 1009,lien-fade-double-zeros,SRC04_S03,active,CTO,2026-05-01
