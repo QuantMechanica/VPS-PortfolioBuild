@@ -2,6 +2,7 @@
 param(
     [string]$RepoRoot = "C:\QM\repo",
     [string]$RunAsUser = "",
+    [string]$PythonExe = "python",
     [bool]$IncludeGateEvaluator = $true,
     [switch]$WhatIf
 )
@@ -57,6 +58,19 @@ if (-not (Test-Path -LiteralPath $taskXmlDir)) {
 $resolvedUser = Resolve-RunAsUser -ExplicitUser $RunAsUser
 Write-Host "Using RunAs account: $resolvedUser"
 
+$resolvedPythonExe = $PythonExe
+if (-not [System.IO.Path]::IsPathRooted($resolvedPythonExe)) {
+    $pyCmd = Get-Command -Name $resolvedPythonExe -CommandType Application -ErrorAction SilentlyContinue
+    if ($null -eq $pyCmd -or [string]::IsNullOrWhiteSpace($pyCmd.Source)) {
+        throw "Python executable '$PythonExe' is not resolvable to an absolute path. Pass -PythonExe explicitly."
+    }
+    $resolvedPythonExe = $pyCmd.Source
+}
+if (-not (Test-Path -LiteralPath $resolvedPythonExe -PathType Leaf)) {
+    throw "Python executable not found: $resolvedPythonExe"
+}
+Write-Host "Using Python executable: $resolvedPythonExe"
+
 $tempDir = Join-Path $env:TEMP ("qm_mt5_worker_xml_" + [guid]::NewGuid().ToString("N"))
 New-Item -Path $tempDir -ItemType Directory -Force | Out-Null
 
@@ -66,6 +80,7 @@ function Register-TaskFromXml {
         [string]$SourceXml,
         [string]$RenderedXml,
         [string]$RunAsUser,
+        [string]$PythonExe,
         [switch]$WhatIf
     )
 
@@ -75,6 +90,7 @@ function Register-TaskFromXml {
 
     $content = Get-Content -LiteralPath $SourceXml -Raw
     $content = $content.Replace("__RUN_AS_USER__", $RunAsUser)
+    $content = $content.Replace("__PYTHON_EXE__", $PythonExe)
     Set-Content -LiteralPath $RenderedXml -Value $content -Encoding Unicode
 
     $taskPath = "\" + $TaskName
@@ -100,14 +116,14 @@ try {
         $taskName = "QM_MT5_Worker_T$terminal"
         $sourceXml = Join-Path $taskXmlDir "$taskName.xml"
         $renderedXml = Join-Path $tempDir "$taskName.xml"
-        Register-TaskFromXml -TaskName $taskName -SourceXml $sourceXml -RenderedXml $renderedXml -RunAsUser $resolvedUser -WhatIf:$WhatIf.IsPresent
+        Register-TaskFromXml -TaskName $taskName -SourceXml $sourceXml -RenderedXml $renderedXml -RunAsUser $resolvedUser -PythonExe $resolvedPythonExe -WhatIf:$WhatIf.IsPresent
     }
 
     if ($IncludeGateEvaluator) {
         $gateTaskName = "QM_GateEvaluator_5min"
         $gateSourceXml = Join-Path $taskXmlDir "$gateTaskName.xml"
         $gateRenderedXml = Join-Path $tempDir "$gateTaskName.xml"
-        Register-TaskFromXml -TaskName $gateTaskName -SourceXml $gateSourceXml -RenderedXml $gateRenderedXml -RunAsUser $resolvedUser -WhatIf:$WhatIf.IsPresent
+        Register-TaskFromXml -TaskName $gateTaskName -SourceXml $gateSourceXml -RenderedXml $gateRenderedXml -RunAsUser $resolvedUser -PythonExe $resolvedPythonExe -WhatIf:$WhatIf.IsPresent
     }
 }
 finally {

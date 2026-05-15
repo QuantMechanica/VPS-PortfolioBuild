@@ -1,0 +1,10 @@
+{
+  "ea_id": "QM5_1003",
+  "version": "v1",
+  "phase": "P2",
+  "symbol": "USDJPY.DWX",
+  "sub_gate_config_hash": "cfgX",
+  "setfile_path": "framework/EAs/QM5_1003_example/sets/QM5_1003_example_USDJPY.DWX_H1_backtest.set",
+  "target_terminal": "any",
+  "priority": 7
+}

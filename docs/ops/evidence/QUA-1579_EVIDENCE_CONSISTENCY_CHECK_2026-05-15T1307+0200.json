@@ -1,0 +1,14 @@
+{
+  "manifest_file": "QUA-1579_EVIDENCE_MANIFEST_2026-05-15T1303+0200.json",
+  "inventory_file": "QUA-1579_EVIDENCE_INVENTORY_2026-05-15T1306+0200.csv",
+  "manifest_count": 9,
+  "inventory_count": 12,
+  "missing_in_inventory": [],
+  "extra_in_inventory": [
+    "QUA-1579_DONE_MARKER_2026-05-15T1305+0200.json",
+    "QUA-1579_EVIDENCE_MANIFEST_2026-05-15T1303+0200.json",
+    "QUA-1579_EVIDENCE_MANIFEST_2026-05-15T1303+0200.sha256"
+  ],
+  "counts_match": false,
+  "sets_match": false
+}

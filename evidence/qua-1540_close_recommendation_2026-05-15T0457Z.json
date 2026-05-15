@@ -1,0 +1,15 @@
+{
+  "issue": "QUA-1540",
+  "timestamp_utc": "2026-05-15T04:57:30Z",
+  "ready_to_close": true,
+  "rationale": [
+    "Deterministic scheduler adapter implemented and wired into hourly ops path",
+    "Production liveness proven with queued_scanned>0 and scheduled>0 evidence",
+    "Malformed dispatch_state recovery implemented and regression-tested",
+    "One-shot evidence capture command documented and validated",
+    "Evidence index integrity check passed with zero missing paths"
+  ],
+  "evidence_index": "C:/QM/repo/evidence/qua-1540_evidence_index_2026-05-15T0456Z.json",
+  "integrity_manifest": "C:/QM/repo/evidence/qua-1540_evidence_index_integrity_2026-05-15T0457Z.json",
+  "latest_runtime_evidence": "D:/QM/reports/pipeline/mt5_saturation_evidence_once_20260515_0456Z.json"
+}

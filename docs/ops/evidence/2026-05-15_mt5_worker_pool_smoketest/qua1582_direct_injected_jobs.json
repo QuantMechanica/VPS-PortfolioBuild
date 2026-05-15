@@ -1,0 +1,50 @@
+[
+  {
+    "job_id": "0442742f-89a5-4c94-a1aa-f6ee377b8ac3",
+    "symbol": "GBPUSD.DWX",
+    "status": "queued",
+    "enqueued_at": "2026-05-15T10:43:38Z"
+  },
+  {
+    "job_id": "49951276-c93b-432c-9daa-5b1597a4bb69",
+    "symbol": "EURUSD.DWX",
+    "status": "queued",
+    "enqueued_at": "2026-05-15T10:43:38Z"
+  },
+  {
+    "job_id": "633ec2e5-24d3-484a-9e86-885a534e8ff3",
+    "symbol": "USDCHF.DWX",
+    "status": "queued",
+    "enqueued_at": "2026-05-15T10:43:38Z"
+  },
+  {
+    "job_id": "6ee2cc91-aad0-4baf-9e37-f10203348db4",
+    "symbol": "NZDUSD.DWX",
+    "status": "queued",
+    "enqueued_at": "2026-05-15T10:43:38Z"
+  },
+  {
+    "job_id": "8d5a2819-2991-4fc3-820b-4a390a9b3b6b",
+    "symbol": "AUDUSD.DWX",
+    "status": "queued",
+    "enqueued_at": "2026-05-15T10:43:38Z"
+  },
+  {
+    "job_id": "9fab2c0e-59e2-41be-8451-e028c8375689",
+    "symbol": "USDCAD.DWX",
+    "status": "queued",
+    "enqueued_at": "2026-05-15T10:43:38Z"
+  },
+  {
+    "job_id": "af9ac1fa-adbc-4453-b8d3-6afa4735354a",
+    "symbol": "EURJPY.DWX",
+    "status": "queued",
+    "enqueued_at": "2026-05-15T10:43:38Z"
+  },
+  {
+    "job_id": "eea6101b-ddb0-4107-92ea-e74363189628",
+    "symbol": "USDJPY.DWX",
+    "status": "queued",
+    "enqueued_at": "2026-05-15T10:43:38Z"
+  }
+]

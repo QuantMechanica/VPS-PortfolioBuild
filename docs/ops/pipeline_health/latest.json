@@ -1,5 +1,5 @@
 {
-  "ts_utc": "2026-05-09T20:15:03.175401+00:00",
+  "ts_utc": "2026-05-15T11:45:01.686176+00:00",
   "mt5": {
     "active": 0,
     "total": 1
@@ -46,15 +46,29 @@
     }
   ],
   "hop": {
-    "runs_last_hour": 0,
-    "top_issues": [],
-    "loop_alarm": false
+    "runs_last_hour": 30,
+    "top_issues": [
+      [
+        "d4b6b278-d170-4335-8212-48d05ba6f8cb",
+        25
+      ],
+      [
+        "3861e076-3fcc-490b-a3f5-e76870ebe974",
+        5
+      ]
+    ],
+    "loop_alarm": true
   },
   "alarms": [
     {
       "kind": "sub_agents_unutilized",
       "severity": "medium",
       "message": "5 sub-agents idle >2h: P2-Baseline-Runner, Phase-Runner-P3plus, Setfile-Engineer, Zero-Trades-Specialist, Framework-Guardian. HoP/CTO not delegating."
+    },
+    {
+      "kind": "hop_loop",
+      "severity": "high",
+      "message": "HoP loop detected: 25 runs on issue d4b6b278 in last hour"
     }
   ]
 }

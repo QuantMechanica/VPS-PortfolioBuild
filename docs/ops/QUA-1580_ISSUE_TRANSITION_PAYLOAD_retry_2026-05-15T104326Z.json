@@ -1,0 +1,10 @@
+{
+  "issue": "QUA-1580",
+  "requested_state": "done",
+  "recommended_state": "done",
+  "resume": true,
+  "summary": "terminal retry: enforce done state for completed QUA-1580 closeout.",
+  "evidence": {
+    "acceptance_receipt": "C:/QM/repo/docs/ops/evidence/QUA-1580_phase_orchestrator_producer_acceptance_2026-05-15T104033Z.md"
+  }
+}
