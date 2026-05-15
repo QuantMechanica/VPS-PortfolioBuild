@@ -274,3 +274,13 @@ powershell -ExecutionPolicy Bypass -File framework/scripts/register_qm_gate_eval
 
 Expected output:
 - JSON payload with `task_name`, `state`, `last_run_time`, `last_task_result`, and effective command line.
+
+Dry-run preflight (no task registration/update):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File framework/scripts/register_qm_gate_evaluator_task.ps1 `
+  -TaskName QM_GateEvaluator_5min `
+  -RepoRoot C:\QM\repo `
+  -QueueDbPath D:\QM\reports\pipeline\mt5_queue.db `
+  -DryRun
+```

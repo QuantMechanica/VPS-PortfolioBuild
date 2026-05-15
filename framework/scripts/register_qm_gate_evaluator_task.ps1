@@ -8,7 +8,8 @@ param(
     [string]$CompanyId = '03d4dcc8-4cea-4133-9f68-90c0d99628fb',
     [string]$ProjectId = '71b6d994-70ba-4a28-bd62-732b42a9ea58',
     [int]$MaxRetries = 3,
-    [int]$Limit = 200
+    [int]$Limit = 200,
+    [switch]$DryRun
 )
 
 Set-StrictMode -Version Latest
@@ -34,6 +35,19 @@ $action = New-ScheduledTaskAction -Execute $pythonCmd -Argument $arguments -Work
 $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Minutes 5) -RepetitionDuration ([TimeSpan]::MaxValue)
 $settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
 $principal = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\$env:USERNAME" -LogonType S4U -RunLevel Highest
+
+if ($DryRun) {
+    [pscustomobject]@{
+        dry_run = $true
+        task_name = $TaskName
+        execute = $pythonCmd
+        arguments = $arguments
+        working_directory = $RepoRoot
+        repetition_minutes = 5
+        logon_type = 'S4U'
+    } | ConvertTo-Json -Depth 4
+    exit 0
+}
 
 Register-ScheduledTask -TaskName $TaskName -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Force | Out-Null
 
