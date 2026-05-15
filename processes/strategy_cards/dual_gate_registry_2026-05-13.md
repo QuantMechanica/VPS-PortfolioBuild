@@ -10,6 +10,9 @@ scope: All Strategy Cards through SRC06, as of 2026-05-13
 changelog:
   - 2026-05-15: singh-cmd-corr DEFERRED (WTI.cash.DWX + USDX.f unavailable; no Darwinex USD-index equivalent; QUA-1537 c5c3b3c1)
   - 2026-05-15: queue count updated 32 → 31 P0-ready (singh-cmd-corr moved to Deferred)
+  - 2026-05-15: singh-swap-fly friday_close=false ratification DONE (OWNER approved QUA-1527); P0 build QUA-1563 dispatched to Dev-Codex
+  - 2026-05-15: QUA-1562 master directive active; 3 corrected-v2 cards G0/G1 approved and P0 builds dispatched (SRC01_S06, SRC02_S09, SRC04_S18)
+  - 2026-05-15: QB G1 compliance audit queue open for QUA-1571/1572/1573/1574/1563 (pending Dev-Codex builds)
 ---
 
 # Dual-Gate Registry — Full Queue State (2026-05-13)
@@ -194,7 +197,7 @@ non-forex, non-D1 diversity into the build queue.
 
 | Flag | Cards affected | Owner | Status |
 |---|---|---|---|
-| friday_close=false exception ratification | singh-swap-fly | CEO + OWNER | open (QUA-1527) |
+| friday_close=false exception ratification | singh-swap-fly | CEO + OWNER | **RESOLVED 2026-05-15** — OWNER approved (QUA-1527 done); P0 build dispatched (QUA-1563 todo→Dev-Codex) |
 | WTI.cash.DWX + USDX.f availability | singh-cmd-corr | CTO / Pipeline-Op | **RESOLVED 2026-05-15** — both unavailable; USDX.f no Darwinex equivalent → card DEFERRED |
 | EA ID allocation | All Singh + CEO batch (13+10 cards) | CTO (registry) | open |
 | Pair-EA MT5 infrastructure | chan-at-bb-pair, chan-at-kf-pair, chan-at-fx-coint-pair, chan-at-cal-spread | CTO | open (QUA-1465 chain blocked) |
@@ -214,7 +217,7 @@ at P5b. These are NOT P0 blockers — the pipeline will filter them.
 | Priority | Action | Owner | Status |
 |---|---|---|---|
 | HIGH | Allocate EA IDs for 23 un-scheduled cards (10 CEO batch + 13 Singh) | CTO (registry) | open |
-| HIGH | Ratify singh-swap-fly friday_close=false exception | CEO + OWNER | open (QUA-1527) |
+| ~~HIGH~~ | ~~Ratify singh-swap-fly friday_close=false exception~~ | ~~CEO + OWNER~~ | **DONE 2026-05-15** — OWNER approved; P0 build on QUA-1563 |
 | ~~HIGH~~ | ~~Confirm WTI.cash.DWX + USDX.f availability~~ | ~~CTO~~ | **DONE 2026-05-15** — both unavailable; singh-cmd-corr DEFERRED |
 | MEDIUM | Extend P0 build-ticket dispatch beyond QUA-1109 cohort | CTO | open |
 | MEDIUM | Clarify 40% forex-market cap scope for DXZ portfolio | CEO | open |
@@ -236,3 +239,19 @@ This registry documents QB's stewardship view; CEO resolves flagged items.*
 | 2026-05-15 | QUA-1460 cancelled (stat-arb infra runaway loop) | QM5_1017 pair pipeline stalled; SRC05 stat-arb cards (⚑ pair infra) blocked |
 | 2026-05-15 | P2 verdicts final: QM5_1014 BASELINE_ACCURATE_FAILED; QM5_1003/1004/1017/SRC04_S03 STRATEGY_DRIFT | No new PASS at P2; 5 EAs in recovery or failed |
 | 2026-05-15 | singh-cmd-corr DEFERRED — WTI.cash.DWX + USDX.f both unavailable; no USD-index equivalent on Darwinex | Build queue: 32 → 31 cards; forex concentration: ~69% → ~71% |
+| 2026-05-15 | QUA-1527 DONE — OWNER ratified singh-swap-fly `friday_close=false` exception | Pre-P0 flag cleared; P0 build QUA-1563 dispatched (singh-swap-fly, D1/W1 carry, Dev-Codex) |
+| 2026-05-15 | QUA-1562 master directive: continuous pipeline loop active; CEO + QB G0/G1 gate | New operating model: Research → G0/G1 → P0 → G1 compliance audit → P1-P7 |
+| 2026-05-15 | 3 corrected-v2 cards G0/G1 dual-APPROVED; P0 builds dispatched | SRC01_S06 (davey-3bar-eu-h4, EURUSD H4) → QUA-1571+QUA-1574; SRC02_S09 (chan-audcad-mr, AUDCAD D1) → QUA-1572; SRC04_S18 (lien-fade-00-asia, EURUSD Asian) → QUA-1573; all Forex single-pair |
+| 2026-05-15 | QB G1 compliance audit queue: 5 P0 build issues pending Dev-Codex completion | QUA-1571/1574 (SRC01_S06), QUA-1572 (SRC02_S09), QUA-1573 (SRC04_S18), QUA-1563 (SRC06_S12) |
+
+### Portfolio-fit note: new P0 builds are all Forex
+
+All 4 EAs currently being built are Forex single-pair (EURUSD H4, AUDCAD D1, EURUSD Asian, singh-swap-fly FX-carry).
+Combined with the ~71% forex concentration already in the build queue, QB flags this for OWNER/CEO awareness at P9.
+Caps apply at P9 live-portfolio inclusion (not at P0 build) — no action needed now; flag for P9 portfolio inclusion decisions.
+
+### Duplicate P0 build flag: QUA-1571 vs QUA-1574
+
+Both QUA-1571 and QUA-1574 are P0 builds for the same strategy (SRC01_S06 davey-3bar-eu-h4, same card file).
+QUA-1571 was dispatched by CEO from QUA-1562; QUA-1574 was opened during QUA-1566 G0 closure.
+CEO/CTO should cancel one to avoid dual EA binary deployment. QB flags this for CEO resolution — not QB's scope.
