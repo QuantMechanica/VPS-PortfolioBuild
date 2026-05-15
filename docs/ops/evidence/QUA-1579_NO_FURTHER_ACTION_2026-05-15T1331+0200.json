@@ -1,8 +1,0 @@
-{
-  "issue": "QUA-1579",
-  "kind": "no_further_action",
-  "captured_at_local": "2026-05-15T13:18:13.2840527+02:00",
-  "head_full": "eed3acc4311d13a57e84496bf33c0f48ee0803b4",
-  "close_request_artifact": "docs/ops/evidence/QUA-1579_CLOSE_REQUEST_2026-05-15T1329+0200.md",
-  "statement": "Development scope complete; await CTO/Ops issue state transition to done."
-}
