@@ -372,10 +372,10 @@ def evaluate(
                             UPDATE jobs
                             SET status='queued', retry_count=?, claimed_by=NULL, claimed_at=NULL,
                                 started_at=NULL, finished_at=NULL, verdict=NULL, invalidation_reason=NULL,
-                                result_path=NULL, verdict_processed_at=?
+                                result_path=NULL, verdict_processed_at=NULL
                             WHERE job_id=?
                             """,
-                            (retries, now, row["job_id"]),
+                            (retries, row["job_id"]),
                         )
                     result.requeued_count += 1
                 else:

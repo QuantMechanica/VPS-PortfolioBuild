@@ -138,7 +138,7 @@ class GateEvaluatorTests(unittest.TestCase):
 
             conn2 = sqlite3.connect(str(db))
             row = conn2.execute(
-                "SELECT status, retry_count, verdict, invalidation_reason FROM jobs WHERE job_id='job-retry'"
+                "SELECT status, retry_count, verdict, invalidation_reason, verdict_processed_at FROM jobs WHERE job_id='job-retry'"
             ).fetchone()
             conn2.close()
             assert row is not None
@@ -146,6 +146,7 @@ class GateEvaluatorTests(unittest.TestCase):
             self.assertEqual(row[1], 2)
             self.assertIsNone(row[2])
             self.assertIsNone(row[3])
+            self.assertIsNone(row[4])
 
     @patch("framework.scripts.gate_evaluator.create_zero_trades_issue")
     def test_min_trades_fail_blocks_and_escalates(self, mock_issue: object) -> None:
