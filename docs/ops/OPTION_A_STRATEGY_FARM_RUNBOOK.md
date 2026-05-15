@@ -47,24 +47,31 @@ C:\QM\repo\tools\strategy_farm\
 
 ## Agent Responsibilities
 
-Claude:
-- Read one source at a time.
-- Produce source notes and draft Strategy Cards.
-- Reject discretionary, incomplete, black-box, martingale/grid, or non-codeable ideas.
+Per OWNER 2026-05-15 — division of labor:
+
+Claude (bookends — research + EA review + final gates):
+- Read one source at a time. Produce source notes and draft Strategy Cards.
+- Reject discretionary, incomplete, black-box, martingale/grid, non-codeable ideas.
+- **Review Codex-built EAs** against the card (mechanical match, HR14 no-ML,
+  HR4 risk model, HR5 magic, framework architecture). Verdict:
+  `APPROVE_FOR_BACKTEST` or `REJECT_REWORK` with explicit rework directives.
+- Apply gate verdicts at G0 (R1-R4) and at the final pre-T6 step.
 - Never enqueue builds or touch MT5.
 
-Codex:
-- Build EAs only from approved cards.
+Codex (middle — EA build + middle-pipeline phases):
+- Build EAs only from cards with `g0_status: APPROVED`.
 - Compile, deploy to T1-T5, generate setfiles, enqueue backtests.
+- Rework EAs based on Claude review `rework_directives`.
 - Fix tooling when deterministic checks fail.
 - Never choose the next source.
 
-Controller:
+Controller (`farmctl.py`):
 - Select the next runnable item.
-- Enforce one active source lane at a time.
+- Enforce one active source lane at a time (HR16, DB constraint).
 - Maintain SQLite state and file artifacts.
-- Launch Claude/Codex jobs with explicit prompts.
-- Launch MT5 workers/backtests.
+- Render Claude/Codex prompts with all bindings substituted.
+- Record returned JSON artifacts back into task state.
+- Launch MT5 workers/backtests (Phase C, in progress).
 - Classify outputs and advance state.
 
 ## Initial Source Order
@@ -94,30 +101,101 @@ Controller:
   - `STRATEGY_FAIL`
   - `REJECTED`
 
-## Bootstrap Sequence
+## Phase A — Source/Research (DONE 2026-05-15)
 
-1. Keep Paperclip and old QM scheduled jobs disabled.
-2. Create `D:\QM\strategy_farm` directories.
-3. Initialize `farm_state.sqlite`.
-4. Seed `sources.jsonl` with the ordered source list.
-5. Implement `farmctl.py` commands:
-   - `init`
-   - `status`
-   - `next`
-   - `claim`
-   - `complete`
-   - `enqueue-backtest`
-   - `classify`
-6. Start with a dry-run controller loop before allowing Claude/Codex subprocess execution.
+Implemented commands: `init`, `seed-sources`, `status`, `next`, `claim-source`,
+`set-source-status`, `events`, `claude-prompt`.
+
+Lifecycle (one active source at a time, DB-enforced):
+
+```text
+pending → active → notes_ready → cards_ready → approved / rejected → done
+```
+
+## Phase B — Codex Build + Claude Review (DONE 2026-05-15)
+
+Implemented commands: `build-ea`, `record-build`, `claude-review-prompt`, `record-review`.
+
+Task kinds in the `tasks` table:
+
+- `build_ea` — Codex implementation step. `pending → done/failed/blocked`.
+- `ea_review` — Claude review step. `pending → done` (verdict in payload).
+
+### Build & Review Loop
+
+For each APPROVED Strategy Card (`g0_status: APPROVED` in frontmatter):
+
+```powershell
+# 1. Create build_ea task + render Codex prompt
+python tools/strategy_farm/farmctl.py build-ea --card <path-to-card.md>
+# → returns task_id, prompt_path, build_result_path, suggested codex command
+
+# 2. Run Codex against the prompt
+codex exec --model gpt-5-codex --cd C:/QM/repo "$(Get-Content -Raw <prompt-path>)"
+# → Codex writes JSON to build_result_path
+
+# 3. Record Codex's result
+python tools/strategy_farm/farmctl.py record-build `
+  --task-id <task_id> --result-file <build_result_path>
+# → task transitions to done / failed / blocked
+
+# 4. If done: create ea_review task + render Claude review prompt
+python tools/strategy_farm/farmctl.py claude-review-prompt --build-task-id <task_id>
+# → returns review_task_id, prompt_path, verdict_path
+
+# 5. Run Claude review (Board Advisor on heartbeat, or claude CLI)
+# → Claude writes verdict JSON to verdict_path
+
+# 6. Record verdict
+python tools/strategy_farm/farmctl.py record-review `
+  --task-id <review_task_id> --result-file <verdict_path>
+# → APPROVE_FOR_BACKTEST: ready for Phase C dispatch
+# → REJECT_REWORK: re-render Codex prompt with rework_directives
+```
+
+The two prompt templates live at:
+
+- `tools/strategy_farm/prompts/codex_build_ea.md`
+- `tools/strategy_farm/prompts/claude_review_ea.md`
+
+Both produce structured JSON only (no prose). The controller validates the
+expected schema and transitions tasks accordingly. HR7 `NO_REPORT ≠ EA-Schwäche`
+is honored — `smoke_result: zero_trades` still proceeds to review.
+
+## Phase C — MT5 Backtest Dispatch + Classify (TODO)
+
+Not yet implemented. Planned commands:
+
+- `enqueue-backtest --review-task-id <id> --phase P2`
+- `mt5-slots` — show free T1-T5 slots from process scan
+- `dispatch-tick` — pull next backtest_* task, assign to free slot
+- `classify --task-id <id>` — read `.htm` report, write verdict
+  (`PASS | ZERO_TRADES | INFRA_FAIL | STRATEGY_FAIL`)
+
+Wired to existing phase scripts: `phase_orchestrator.py`,
+`pipeline_dispatcher.py`, `p2_baseline.py`..`p8_news_impact.py`,
+`aggregate_phase_results.py`.
+
+## Phase D — Driver Loop (TODO)
+
+Single `farmctl tick` command that advances state by one step
+(no daemon, no heartbeat). Wired to Windows Task Scheduler at 5-min
+interval once Phase C is stable.
 
 ## First Acceptance Test
 
 The first farm acceptance test is not profit. It is deterministic motion:
 
 1. Controller selects exactly one source.
-2. Claude produces one source note or card.
-3. Codex receives one approved card and produces one EA artifact set.
-4. Controller deploys and enqueues one MT5 backtest.
-5. A result lands in `artifacts\verdicts`.
-6. `farmctl status` shows the next action without relying on Paperclip.
+2. Claude produces one source note + draft card(s).
+3. OWNER (or Board Advisor) flips `g0_status: APPROVED` on one card.
+4. `farmctl build-ea` creates build_ea task + Codex prompt.
+5. Codex builds, compiles, smokes → writes JSON.
+6. `farmctl record-build` records result; task → done.
+7. `farmctl claude-review-prompt` creates ea_review task + Claude prompt.
+8. Claude reviews → writes verdict JSON.
+9. `farmctl record-review` records `APPROVE_FOR_BACKTEST`.
+10. (Phase C) Controller deploys and enqueues one MT5 backtest.
+11. A result lands in `artifacts\verdicts`.
+12. `farmctl status` shows the next action without relying on Paperclip.
 
