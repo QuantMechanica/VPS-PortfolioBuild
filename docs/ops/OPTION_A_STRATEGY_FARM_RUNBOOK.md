@@ -218,33 +218,95 @@ Reads `p2_baseline.py`'s report.csv (columns `ea_id, phase, symbol, terminal, ve
 P3..P8 classifiers will be added as those phases are wired in. Wired via the
 `PHASE_CLASSIFIERS` dict in `farmctl.py`.
 
-## Phase D — Single tick command + scheduler (TODO)
+## Phase D — Single tick command + scheduler (DONE 2026-05-15, v1 = wrapper)
 
-Plan: `farmctl tick` invokes (in order) `dispatch-tick` for backtests, plus
-future advance-on-classification (when a backtest is classified PASS, enqueue
-the next-phase backtest automatically; on FAIL, mark EA DEAD and emit a
-lessons-learned stub). Then wire to Windows Task Scheduler at 5-10 min
-interval. No daemons, just scheduled ticks.
+Implemented: `farmctl tick` — currently a thin wrapper over `dispatch-tick`.
+Future revisions will add post-classify chaining (PASS → enqueue next phase /
+FAIL → mark EA DEAD) and post-review auto-enqueue
+(`APPROVE_FOR_BACKTEST` → P2 enqueue). For now the chain stays manual
+between the LLM-gated steps; only the deterministic dispatch step is
+auto-ticked.
 
-## Phase E — Dashboards (TODO, location decided 2026-05-15)
+Windows Scheduled Task XML drafted: `tools/strategy_farm/scheduled_task_tick.xml`.
+
+**Install** (when OWNER decides to enable autonomy):
+
+```powershell
+Register-ScheduledTask -Xml (Get-Content `
+  'C:\QM\repo\tools\strategy_farm\scheduled_task_tick.xml' -Raw) `
+  -TaskName 'QM_StrategyFarm_Tick_5min'
+```
+
+Runs `python C:\QM\repo\tools\strategy_farm\farmctl.py tick` every 5 min.
+Working dir = `C:\QM\repo`. 10 min execution limit. IgnoreNew on overlap.
+
+Not yet installed — first run a few manual `farmctl tick` to verify behavior
+before flipping autonomy on.
+
+## Phase E — Dashboards (DONE 2026-05-15)
 
 The old `C:/QM/paperclip/dashboards/{current.html, strategies.html}` are dead
-along with Paperclip. Replacement layout:
+along with Paperclip. v1 layout (stdlib Python, no Jinja2):
 
-- **Render script + Jinja templates** (committed): `tools/strategy_farm/dashboards/`
-  - `render_dashboards.py`
-  - `templates/current.html.j2` (project progress / Mission Hero)
-  - `templates/strategies.html.j2` (Strategy Archive — also published online)
-- **Rendered HTML output** (generated, not committed, served locally):
-  `D:/QM/strategy_farm/dashboards/{current.html, strategies.html}`
-- **Public publication** (Strategy Archive only, for quantmechanica.com): reuse
-  existing `scripts/export_public_snapshot.ps1` pattern — schema-validated
-  JSON + HTML pushed to `public-data/`.
-- **Scheduler:** hourly Windows Task `QM_StrategyFarm_Dashboard_Hourly`.
+- **Source** (committed): `tools/strategy_farm/dashboards/`
+  - `render_dashboards.py` — single stdlib-only script (no deps)
+  - `style.css` — brand design system (copied from paperclip 2026-05-15, 417 lines)
+- **Rendered output** (generated, not committed, served locally via `file://`):
+  - `D:/QM/strategy_farm/dashboards/current.html` — project progress one-pager
+  - `D:/QM/strategy_farm/dashboards/strategies.html` — Strategy Archive
+  - `D:/QM/strategy_farm/dashboards/style.css` — synced from source on render
+- **Public publication** (Strategy Archive, deferred): reuse existing
+  `scripts/export_public_snapshot.ps1` pattern — schema-validated JSON + HTML
+  pushed to `public-data/` for quantmechanica.com/strategy.
+- **Scheduler:** hourly Windows Task (not yet installed — same pattern as `tick`).
+
+### Project Progress one-pager — sections, in scroll order
+
+Designed per OWNER 2026-05-15 feedback ("show me visual progress, drop the
+Paperclip noise"). Bewusst raus: Issue-Listen, Agent-Fleet, Token-Burn,
+Heartbeat-Status, Recovery-Cycles. Drin:
+
+1. **Header** — title + UTC timestamp + mission tagline.
+2. **HERO** — Portfolio dots (1/5 EAs live) + Heureka phase bar G0..P10 for
+   the leading active EA + name of the active EA. The single most important
+   "where are we" view, top of page.
+3. **MT5 Fleet** (left column card) — running terminal64.exe count, 5 slots
+   visualized (busy = emerald glow, idle = greyed), saturation %, MISSION-FAILURE
+   signal flag when count = 0 per Mission Baseline 2026-05-09.
+4. **Throughput 7d** (right column card) — Unicode sparklines for sources
+   claimed / task transitions / total events, with weekday labels and totals.
+5. **Pipeline table** — top 10 EAs by recency. Per EA: id, slug, mini phase
+   bar (15 segments G0..P10 colored done/current/failed), current phase, status
+   pill (FLOW / LIVE / DEAD).
+6. **Blockers** — what is NOT moving: blocked sources, blocked/failed tasks,
+   MT5 idle. Severity-coded left border.
+7. **Recent Events** — last 15 from `events` table.
 
 Data sources: `D:/QM/strategy_farm/state/farm_state.sqlite` (sources, tasks,
-events) + `artifacts/` (cards, builds, verdicts) + `D:/QM/reports/pipeline/`
-(backtest reports) + `mt5-slots` output (live fleet saturation).
+events) + tasklist scan for MT5 + `artifacts/` for evidence paths.
+
+### Strategy Archive — sections
+
+1. **Hero** — title + transparency sub-headline.
+2. **Lane summary** — Live / In Flow / Dead counts (3 tiles).
+3. **Transparency banner** — DEAD EAs not hidden; failure data is part of the public record.
+4. **EA card grid** — auto-fill cards, one per EA, each showing id, slug,
+   mini phase bar, current phase, completed phases, last updated, evidence path.
+5. **Footer** — generation provenance + future export_public_snapshot link.
+
+### Running it
+
+```powershell
+# Render both dashboards (writes to D:/QM/strategy_farm/dashboards/)
+python C:\QM\repo\tools\strategy_farm\dashboards\render_dashboards.py
+
+# View locally
+start file:///D:/QM/strategy_farm/dashboards/current.html
+start file:///D:/QM/strategy_farm/dashboards/strategies.html
+```
+
+Empty state handled gracefully — first run with 0 EAs still produces valid HTML
+with informative "no candidates yet" placeholders.
 
 ## Phase D — Driver Loop (TODO)
 
