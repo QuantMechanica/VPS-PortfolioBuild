@@ -1,0 +1,23 @@
+; QuantMechanica V5 generated set file
+; ea_id:             1039
+; ea_slug:           QM5_1039_singh_swap_fly
+; ea_version:        v1
+; set_version:       v1
+; environment:       backtest
+; risk_mode:         fixed
+ENV=backtest
+qm_ea_id=1039
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_news_mode=1
+qm_friday_close_enabled=false
+qm_friday_close_hour_broker=21
+strategy_tf=16408
+pattern_body_pct_min=0.50
+sl_lookback_bars=10
+be_trigger_rr=1.0
+full_exit_rr=3.0
+swap_min_pips_per_day=1.0
+enable_full_exit_rr=true
