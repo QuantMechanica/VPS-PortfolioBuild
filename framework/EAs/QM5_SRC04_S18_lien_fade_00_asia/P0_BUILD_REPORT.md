@@ -24,3 +24,12 @@
 - Required script `deploy_ea_to_all_terminals.ps1` was not found in this workspace.
 - Checked paths: `framework/scripts`, `infra/scripts` (and filename grep under both trees).
 - Current state: deployment step blocked pending script location/provision from CTO/DevOps owner.
+
+### Dispatch Step 4 Status (`build_check.ps1`)
+
+- `framework/scripts/build_check.ps1` currently has no per-EA scope option and compiles all `framework/EAs/**/*.mq5`.
+- In this workspace snapshot, unrelated EA outputs/setfiles are already modified outside `QM5_SRC04_S18_lien_fade_00_asia`.
+- Result: full repository `build_check.ps1` cannot be used as an issue-local acceptance proof for QUA-1573 without cross-issue contamination risk.
+- Unblock owner/action: CTO to approve one of:
+  - run full-repo `build_check.ps1` in a clean coordinated baseline window, or
+  - provide/approve a scoped build-check path for single-EA dispatch validation.
