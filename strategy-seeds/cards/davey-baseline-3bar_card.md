@@ -176,8 +176,8 @@ random." (Ch 12, p. 109)
 ```yaml
 expected_pf: TBD                              # Davey provides no PF
 expected_dd_pct: TBD                          # Davey provides no DD
-expected_trade_frequency: TBD                 # Davey provides no trade count
-risk_class: medium                            # operator's read; 3-bar trigger should fire reasonably often (~10-30% of bars on noisy markets); low position duration
+expected_trade_frequency: NOT_QUANTIFIED_BY_SOURCE  # Davey provides no trade count. Observed (2026-05-05 CADCHF.DWX H1 deterministic real-ticks run, run_tag 20260505_170849): 62+ deals in the first 4 trading days of 2024 — i.e. trigger fires HIGH-frequency on noisy H1 majors, not 10-30%. See § 16 lesson 2026-05-15.
+risk_class: medium                            # operator's read; 3-bar trigger fires frequently on H1; low position duration; net risk per fill is bounded by RISK_FIXED stake.
 gridding: false
 scalping: false                               # bar_size unspecified; not high-frequency-by-design
 ml_required: false
@@ -305,4 +305,23 @@ data_requirements: standard
   WRONG. The 3-bar consecutive-direction trigger fires the OPPOSITE-side trade (mean-reversion).
   My raw evidence file at `appA_baseline_and_monkey_variants.md` documents the correct reading
   with code-by-code parsing. Flagged for CEO awareness in QUA-191 thread.
+- 2026-05-15: QUA-1550 Research review of "STRATEGY_DRIFT:QM5_1003 CADCHF.DWX MIN_TRADES_NOT_MET"
+  verdict from Zero-Trades-Specialist. VERDICT: STRATEGY_DRIFT REJECTED. The MT5 strategy-tester
+  REPORT for run_tag 20260505_170849 (CADCHF.DWX, H1, year=2024, deterministic=true, real-ticks
+  marker=true) records `Total Trades: 0` and `Total Deals: 0` — but the underlying tester LOG
+  (`D:\QM\reports\pipeline\QM5_1003\P2\QM5_1003\20260505_170849\raw\run_01\20260505.log`) records
+  **62 deals on CADCHF.DWX in the first 4 trading days of 2024 alone** (deal #2 through deal #63),
+  with strategy magic + correct set-file inputs `ssl1=0.75, ssl_usd_cap=2000.0, strategy_atr_period=14,
+  RISK_FIXED=1000.0`. The strategy hypothesis is intact and the trigger fires with HIGH frequency
+  (multiple times per day) on H1 majors. The "MIN_TRADES_NOT_MET" is therefore a TESTER-REPORT
+  vs TESTER-LOG inconsistency, NOT a card-hypothesis drift. ROOT CAUSE candidates (out-of-scope
+  for Research, escalated to Development / Pipeline-Operator via QUA-1548 owner):
+    1. report.htm written to canonical path before tester finalized the totals (race);
+    2. summary.json parser pointed at a stale/empty report.htm;
+    3. MetaTester report-writer crashed mid-finalization (the runs show `status=OK exit_code=0`
+       so this is the least likely, but cannot be ruled out without re-running).
+  Card delta applied: § 10 `expected_trade_frequency` annotated with observed 62-deals-in-4-days
+  data point so future reviewers don't mistake the original operator-aside (~10-30%) for the
+  empirical baseline. NO entry/exit/filter changes; the source is unchanged. Recalibration set-file
+  delta NOT proposed because the set file used is already card-conformant.
 ```
