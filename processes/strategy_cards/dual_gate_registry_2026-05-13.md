@@ -13,6 +13,9 @@ changelog:
   - 2026-05-15: singh-swap-fly friday_close=false ratification DONE (OWNER approved QUA-1527); P0 build QUA-1563 dispatched to Dev-Codex
   - 2026-05-15: QUA-1562 master directive active; 3 corrected-v2 cards G0/G1 approved and P0 builds dispatched (SRC01_S06, SRC02_S09, SRC04_S18)
   - 2026-05-15: QB G1 compliance audit queue open for QUA-1571/1572/1573/1574/1563 (pending Dev-Codex builds)
+  - 2026-05-15: QUA-1571 cancelled — SRC01_S06 duplicate P0 build resolved; QUA-1574 retained as the active build
+  - 2026-05-15: QUA-1592 Davey PDF intake done — SRC01_S01 (davey-eu-night/1002) corroborated (pre-existing build); SRC01_S02 (davey-eu-day/1006) new P0 dispatched (QUA-1597, Dev-Codex)
+  - 2026-05-15: QB retroactive G0 portfolio-fit — SRC01_S01 PASS (affirm CEO R1-R4 Tier A; intraday overnight EURUSD; P1 PASS, P2 MODEL4_MARKER_REQUIRED infra issue); SRC01_S02 PASS (proactive; intraday day EURUSD H1; non-overlapping session with SRC01_S01)
 ---
 
 # Dual-Gate Registry — Full Queue State (2026-05-13)
@@ -36,6 +39,7 @@ this document supplies the missing on-disk artifact.
 
 | Card | Slug | ea_id | State |
 |---|---|---|---|
+| SRC01_S01 | davey-eu-night | 1002 | In pipeline (P1 PASS 2026-04-29; P2 MODEL4_MARKER_REQUIRED infra-issue — CTO review needed before re-enqueue; QB G0 retroactive PASS 2026-05-15) |
 | SRC02_S01 | chan-pairs-stat-arb | 1017 | In pipeline |
 | SRC04_S03 | lien-fade-double-zeros | 1009 | In pipeline |
 | SRC04_S08 | lien-channels | 1014 | In-flight (QUA-1090 — Dev build complete; P2 matrix running) |
@@ -128,7 +132,7 @@ Unblock trigger: Darwinex adds USD-index instrument (USD futures, DXY CFD, or eq
 
 | Category | Count | Notes |
 |---|---|---|
-| Already in pipeline | 3 | |
+| Already in pipeline | 4 | +1 SRC01_S01 davey-eu-night (P1 PASS; P2 infra issue) |
 | P0-ready (CTO QUA-1109 cohort) | 8 | |
 | P0-ready (CEO e6fefd6a cohort) | 10 | |
 | P0-ready (SRC06 Singh cohort) | 13 | singh-cmd-corr DEFERRED 2026-05-15 |
@@ -243,12 +247,23 @@ This registry documents QB's stewardship view; CEO resolves flagged items.*
 | 2026-05-15 | QUA-1562 master directive: continuous pipeline loop active; CEO + QB G0/G1 gate | New operating model: Research → G0/G1 → P0 → G1 compliance audit → P1-P7 |
 | 2026-05-15 | 3 corrected-v2 cards G0/G1 dual-APPROVED; P0 builds dispatched | SRC01_S06 (davey-3bar-eu-h4, EURUSD H4) → QUA-1571+QUA-1574; SRC02_S09 (chan-audcad-mr, AUDCAD D1) → QUA-1572; SRC04_S18 (lien-fade-00-asia, EURUSD Asian) → QUA-1573; all Forex single-pair |
 | 2026-05-15 | QB G1 compliance audit queue: 5 P0 build issues pending Dev-Codex completion | QUA-1571/1574 (SRC01_S06), QUA-1572 (SRC02_S09), QUA-1573 (SRC04_S18), QUA-1563 (SRC06_S12) |
+| 2026-05-15 | QUA-1571 CANCELLED — SRC01_S06 duplicate P0 build resolved by CEO/CTO | QUA-1574 retained; G1 audit queue: 4 builds remaining (QUA-1574/1572/1573/1563) |
+| 2026-05-15 | QUA-1592 done: Davey PDF intake delivered Euro Night (SRC01_S01/1002) corroboration + Euro Day (SRC01_S02/1006) new card | QM5_1002 pre-existing in pipeline; QM5_1006 P0 build dispatched (QUA-1597, Dev-Codex) |
+| 2026-05-15 | QB retroactive G0 portfolio-fit issued: SRC01_S01 PASS + SRC01_S02 PASS | Both EURUSD intraday (overnight vs day session; non-overlapping); H1 and M105 timeframes; within all concentration caps; CTO flags noted in cards |
 
 ### Portfolio-fit note: new P0 builds are all Forex
 
 All 4 EAs currently being built are Forex single-pair (EURUSD H4, AUDCAD D1, EURUSD Asian, singh-swap-fly FX-carry).
 Combined with the ~71% forex concentration already in the build queue, QB flags this for OWNER/CEO awareness at P9.
 Caps apply at P9 live-portfolio inclusion (not at P0 build) — no action needed now; flag for P9 portfolio inclusion decisions.
+
+### Portfolio-fit note: Davey intraday pair (SRC01_S01 + SRC01_S02) — session diversification positive
+
+Both Davey session strategies (Euro Night M105 overnight + Euro Day H1 day) deploy on EURUSD.DWX.
+Key mitigant: sessions are non-overlapping — Euro Night entry window 18:00-23:59 chart time; Euro Day 07:00-15:00 ET.
+QB assessment: while both add to EURUSD exposure, simultaneous position risk is zero (session-flat by design).
+These are counted as 2 EURUSD single-pair cards for concentration tracking but with low intra-pair correlation at P9 assessment.
+CTO pre-P1 flag: SRC01_S01 requires M105 bar aggregation path confirmation; SRC01_S02 requires ET/CT timezone clarification.
 
 ### Duplicate P0 build flag: QUA-1571 vs QUA-1574
 
