@@ -137,8 +137,8 @@ def _parse_summary_path(text: str) -> Path | None:
     return Path(match.group(1).strip())
 
 
-def run_job(job: dict[str, Any], *, terminal: str, report_root: Path) -> tuple[str, str, str]:
-    terminal_root = Path(r"D:/QM/mt5") / terminal
+def run_job(job: dict[str, Any], *, terminal: str, report_root: Path, mt5_root: Path) -> tuple[str, str, str]:
+    terminal_root = mt5_root / terminal
     terminal_exe = terminal_root / "terminal64.exe"
     if not terminal_exe.exists():
         raise FileNotFoundError(f"deploy_missing:{terminal_exe}")
@@ -196,6 +196,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--terminal", required=True, help="Terminal id (T1..T5).")
     parser.add_argument("--sqlite", default=str(DEFAULT_SQLITE), help="Path to mt5_queue.db.")
     parser.add_argument("--report-root", default=str(DEFAULT_REPORT_ROOT), help="Report output root.")
+    parser.add_argument("--mt5-root", default=r"D:/QM/mt5", help="MT5 terminals root (contains T1..T5).")
     parser.add_argument("--poll-sec", type=int, default=30, help="Sleep when queue is empty.")
     parser.add_argument("--once", action="store_true", help="Run one claim cycle and exit.")
     return parser.parse_args()
@@ -211,6 +212,7 @@ def main() -> int:
 
     sqlite_path = Path(args.sqlite)
     sqlite_path.parent.mkdir(parents=True, exist_ok=True)
+    mt5_root = Path(args.mt5_root)
 
     while True:
         conn = sqlite3.connect(str(sqlite_path))
@@ -234,7 +236,12 @@ def main() -> int:
             conn.commit()
 
             try:
-                verdict, result_path, reason = run_job(job, terminal=terminal, report_root=Path(args.report_root))
+                verdict, result_path, reason = run_job(
+                    job,
+                    terminal=terminal,
+                    report_root=Path(args.report_root),
+                    mt5_root=mt5_root,
+                )
                 mark_done(conn, job_id=job["job_id"], verdict=verdict, result_path=result_path, invalidation_reason=reason)
                 heartbeat(conn, terminal=terminal, current_job_id=None, last_error=None)
                 conn.commit()
