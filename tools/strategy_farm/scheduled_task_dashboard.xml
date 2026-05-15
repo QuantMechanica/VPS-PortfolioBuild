@@ -38,8 +38,8 @@
   </Settings>
   <Actions>
     <Exec>
-      <Command>python</Command>
-      <Arguments>C:\QM\repo\tools\strategy_farm\dashboards\render_dashboards.py</Arguments>
+      <Command>C:\Windows\py.exe</Command>
+      <Arguments>-3 C:\QM\repo\tools\strategy_farm\dashboards\render_dashboards.py</Arguments>
       <WorkingDirectory>C:\QM\repo</WorkingDirectory>
     </Exec>
   </Actions>
