@@ -1,0 +1,34 @@
+{
+  "issue": "QUA-1579",
+  "captured_at": "2026-05-15T13:35:14.0794288+02:00",
+  "summary": {
+    "done_total": 2,
+    "done_unprocessed": 0,
+    "reason": "All done rows already have verdict_processed_at, so gate_evaluator skips them by design."
+  },
+  "rows": [
+    {
+      "job_id": "cb284374-aa7b-448b-bd73-3a3c38da23ca",
+      "phase": "P2",
+      "ea_id": "QM5_1003",
+      "symbol": "EURUSD.DWX",
+      "verdict": "FAIL",
+      "retry_count": 0,
+      "verdict_processed_at": "2026-05-15T11:20:24.764130+00:00",
+      "invalidation_reason": "run_smoke_fail",
+      "result_path": "D:\\QM\\reports\\pipeline\\QM5_1003\\20260515_111802\\summary.json"
+    },
+    {
+      "job_id": "21741ee0-f7ea-4216-aa57-4600d72dc2b7",
+      "phase": "P2",
+      "ea_id": "QM5_1003",
+      "symbol": "EURUSD.DWX",
+      "verdict": "FAIL",
+      "retry_count": 0,
+      "verdict_processed_at": "2026-05-15T11:10:56.946977+00:00",
+      "invalidation_reason": "run_smoke_fail",
+      "result_path": "D:\\QM\\reports\\pipeline\\QM5_1003\\20260515_110526\\summary.json"
+    }
+  ]
+}
+
