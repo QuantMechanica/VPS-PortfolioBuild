@@ -31,9 +31,21 @@ URI: `{{uri}}`
 - Do not run backtests.
 - Do not create Paperclip issues.
 - Do not use MQL5 Marketplace.
-- If the source is a forum, treat it as idea-mining until R1 can be established.
-- Reject or mark PENDING any strategy that is discretionary, anonymous-only, black-box, ML/neural, grid/martingale without bounded worst-case, or impossible on Darwinex CFD symbols.
-- Preserve attribution: URL, author/handle, post/article title, date if visible, and exact source location.
+- Reject or mark PENDING (per relaxed criteria 2026-05-15, see
+  `C:/QM/repo/processes/qb_reputable_source_criteria.md`):
+  - **No source link / unattributable** (R1 fail)
+  - **Purely discretionary with NO rules at all** (R2 fail). Gaps in
+    side-parameters are OK — Codex fills defaults.
+  - **Fundamentally untestable on any DWX instrument even after porting**
+    (R3 fail). Crypto / equity / options strategies that PORT to Forex or
+    CFDs are valid — note the porting plan in the card.
+  - **ML / neural net / adaptive parameters / grid-without-bounded-worst-case**
+    (R4 / HR14, binding)
+- **Anonymous forum handles are OK** as long as you link the source URL.
+  The strategy will pass or fail on its own data in P2-P7. R1 used to require
+  author track record — that was dropped 2026-05-15.
+- Preserve attribution: URL, author/handle (anon OK), post/article title, date
+  if visible, and exact source location.
 
 ## Required Output Files
 
