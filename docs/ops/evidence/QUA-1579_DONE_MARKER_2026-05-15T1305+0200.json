@@ -1,0 +1,9 @@
+{
+  "issue": "QUA-1579",
+  "status": "done_marker",
+  "captured_at_local": "2026-05-15T13:03:58.8911761+02:00",
+  "latest_commit_short": "f5ade6527633",
+  "latest_commit_full": "f5ade652763364732f447e282d07503da8ec3df8",
+  "manifest_sha256_line": "8f79e0a6a40577b2872568dd3848eec17c279dd3bafd48bdb33bc26b99216d8b  QUA-1579_EVIDENCE_MANIFEST_2026-05-15T1303+0200.json",
+  "manifest_path": "docs/ops/evidence/QUA-1579_EVIDENCE_MANIFEST_2026-05-15T1303+0200.json"
+}
