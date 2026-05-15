@@ -60,7 +60,7 @@ def _insert_job(conn: sqlite3.Connection, **kw: object) -> None:
             kw.get("status", "done"),
             kw.get("verdict", "PASS"),
             kw.get("invalidation_reason", ""),
-            "D:/QM/reports/pipeline/x/summary.json",
+            str(kw.get("result_path", "D:/QM/reports/pipeline/x/summary.json")),
             kw.get("retry_count", 0),
             "2026-05-15T00:00:00Z",
             "phase_orchestrator",
@@ -74,21 +74,27 @@ class GateEvaluatorTests(unittest.TestCase):
     def test_pass_row_enqueues_next_phase_job(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             db = Path(td) / "mt5_queue.db"
+            summary = Path(td) / "summary.json"
+            summary.write_text('{"trade_count": 5}', encoding="utf-8")
+            defaults = Path(td) / "tester_defaults.json"
+            defaults.write_text('{"anti_theater_gates":{"min_trade_count":1}}', encoding="utf-8")
             conn = sqlite3.connect(str(db))
             _create_jobs_table(conn)
-            _insert_job(conn, job_id="job-pass", verdict="PASS", phase="P2")
+            _insert_job(conn, job_id="job-pass", verdict="PASS", phase="P2", result_path=str(summary))
             conn.close()
 
-            res = evaluate(
-                sqlite_path=db,
-                max_retries=3,
-                limit=50,
-                paperclip_base="http://127.0.0.1:3100",
-                company_id="cid",
-                project_id="pid",
-                parent_issue_id=None,
-                dry_run=False,
-            )
+            with patch("framework.scripts.gate_evaluator.run_rollforward_scripts", return_value=(True, "")):
+                res = evaluate(
+                    sqlite_path=db,
+                    max_retries=3,
+                    limit=50,
+                    paperclip_base="http://127.0.0.1:3100",
+                    company_id="cid",
+                    project_id="pid",
+                    parent_issue_id=None,
+                    tester_defaults_path=defaults,
+                    dry_run=False,
+                )
             self.assertEqual(res.pass_count, 1)
 
             conn2 = sqlite3.connect(str(db))
@@ -123,6 +129,7 @@ class GateEvaluatorTests(unittest.TestCase):
                 company_id="cid",
                 project_id="pid",
                 parent_issue_id=None,
+                tester_defaults_path=Path(td) / "tester_defaults.json",
                 dry_run=False,
             )
             self.assertEqual(res.requeued_count, 1)
@@ -163,6 +170,7 @@ class GateEvaluatorTests(unittest.TestCase):
                 company_id="cid",
                 project_id="pid",
                 parent_issue_id=None,
+                tester_defaults_path=Path(td) / "tester_defaults.json",
                 dry_run=False,
             )
             self.assertEqual(res.blocked_strategy_count, 1)
@@ -176,6 +184,37 @@ class GateEvaluatorTests(unittest.TestCase):
             self.assertEqual(row[0], "blocked_strategy")
             self.assertEqual(row[1], "QUA-9999")
             self.assertTrue(bool(row[2]))
+
+    def test_pass_row_becomes_invalid_when_trade_count_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            db = Path(td) / "mt5_queue.db"
+            summary = Path(td) / "summary.json"
+            summary.write_text('{"profit_factor": 1.2}', encoding="utf-8")
+            defaults = Path(td) / "tester_defaults.json"
+            defaults.write_text('{"anti_theater_gates":{"min_trade_count":1}}', encoding="utf-8")
+            conn = sqlite3.connect(str(db))
+            _create_jobs_table(conn)
+            _insert_job(conn, job_id="job-pass-bad", verdict="PASS", phase="P2", result_path=str(summary))
+            conn.close()
+
+            res = evaluate(
+                sqlite_path=db,
+                max_retries=3,
+                limit=50,
+                paperclip_base="http://127.0.0.1:3100",
+                company_id="cid",
+                project_id="pid",
+                parent_issue_id=None,
+                tester_defaults_path=defaults,
+                dry_run=False,
+            )
+            self.assertEqual(res.pass_gate_failed_count, 1)
+            conn2 = sqlite3.connect(str(db))
+            row = conn2.execute("SELECT status, verdict FROM jobs WHERE job_id='job-pass-bad'").fetchone()
+            conn2.close()
+            assert row is not None
+            self.assertEqual(row[0], "invalid")
+            self.assertEqual(row[1], "INVALID")
 
 
 if __name__ == "__main__":
