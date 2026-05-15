@@ -1,0 +1,12 @@
+{
+  "issue": "QUA-1579",
+  "kind": "scheduler_health_ping",
+  "captured_at_local": "2026-05-15T13:08:54.6369753+02:00",
+  "task": {
+    "task_name": "QM_GateEvaluator_5min",
+    "state": "Ready",
+    "last_run_time": "2026-05-15T13:05:05.0000000+02:00",
+    "last_task_result": 0,
+    "next_run_time": "2026-05-15T13:10:10.0000000+02:00"
+  }
+}
