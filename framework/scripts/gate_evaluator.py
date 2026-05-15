@@ -56,6 +56,8 @@ def ensure_columns(conn: sqlite3.Connection) -> None:
         conn.execute("ALTER TABLE jobs ADD COLUMN verdict_processed_at TEXT")
     if not _column_exists(conn, "jobs", "escalation_issue_id"):
         conn.execute("ALTER TABLE jobs ADD COLUMN escalation_issue_id TEXT")
+    if not _column_exists(conn, "jobs", "source_issue_id"):
+        conn.execute("ALTER TABLE jobs ADD COLUMN source_issue_id TEXT")
     conn.commit()
 
 
@@ -303,17 +305,59 @@ def create_zero_trades_issue(
     return str(response.get("id") or response.get("identifier") or "")
 
 
+def reopen_issue_and_comment(
+    *,
+    base_url: str,
+    issue_id: str,
+    verifier_payload: dict[str, Any],
+    dry_run: bool,
+) -> bool:
+    issue_key = str(issue_id or "").strip()
+    if not issue_key:
+        return False
+    if dry_run:
+        return True
+    patch_req = urllib.request.Request(
+        f"{base_url.rstrip('/')}/api/issues/{issue_key}",
+        data=json.dumps({"status": "in_progress"}).encode("utf-8"),
+        method="PATCH",
+        headers={"Content-Type": "application/json"},
+    )
+    comment_body = (
+        "build_deployment_verifier failed for completed P0 job.\n\n"
+        "```json\n"
+        f"{json.dumps(verifier_payload, ensure_ascii=False, indent=2)}\n"
+        "```"
+    )
+    comment_req = urllib.request.Request(
+        f"{base_url.rstrip('/')}/api/issues/{issue_key}/comments",
+        data=json.dumps({"body": comment_body}).encode("utf-8"),
+        method="POST",
+        headers={"Content-Type": "application/json"},
+    )
+    try:
+        with urllib.request.urlopen(patch_req, timeout=10):
+            pass
+        with urllib.request.urlopen(comment_req, timeout=10):
+            pass
+        return True
+    except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError):
+        return False
+
+
 def _fetch_ready_rows(conn: sqlite3.Connection, limit: int) -> list[dict[str, Any]]:
     has_vpa = _column_exists(conn, "jobs", "verdict_processed_at")
     has_eid = _column_exists(conn, "jobs", "escalation_issue_id")
+    has_sid = _column_exists(conn, "jobs", "source_issue_id")
     select_vpa = "verdict_processed_at" if has_vpa else "NULL AS verdict_processed_at"
     select_eid = "escalation_issue_id" if has_eid else "'' AS escalation_issue_id"
+    select_sid = "source_issue_id" if has_sid else "'' AS source_issue_id"
     where_vpa = "AND verdict_processed_at IS NULL" if has_vpa else ""
     rows = conn.execute(
         f"""
         SELECT
           job_id, ea_id, version, symbol, period, year, phase, sub_gate_config_hash,
-          setfile_path, status, verdict, invalidation_reason, retry_count, result_path, {select_eid}, {select_vpa}
+          setfile_path, status, verdict, invalidation_reason, retry_count, result_path, {select_eid}, {select_sid}, {select_vpa}
         FROM jobs
         WHERE status='done' {where_vpa}
         ORDER BY finished_at ASC, enqueued_at ASC
@@ -340,7 +384,8 @@ def _fetch_ready_rows(conn: sqlite3.Connection, limit: int) -> list[dict[str, An
                 "retry_count": int(row[12] or 0),
                 "result_path": str(row[13] or ""),
                 "escalation_issue_id": str(row[14] or ""),
-                "verdict_processed_at": str(row[15] or ""),
+                "source_issue_id": str(row[15] or ""),
+                "verdict_processed_at": str(row[16] or ""),
             }
         )
     return payload
@@ -406,6 +451,13 @@ def evaluate(
                         dry_run=dry_run,
                     )
                     if not verify_ok:
+                        source_issue_id = str(row.get("source_issue_id") or "").strip()
+                        reopen_issue_and_comment(
+                            base_url=paperclip_base,
+                            issue_id=source_issue_id,
+                            verifier_payload=verify_payload,
+                            dry_run=dry_run,
+                        )
                         if not dry_run:
                             conn.execute(
                                 "UPDATE jobs SET status='invalid', verdict=?, invalidation_reason=?, result_path=?, verdict_processed_at=? WHERE job_id=?",

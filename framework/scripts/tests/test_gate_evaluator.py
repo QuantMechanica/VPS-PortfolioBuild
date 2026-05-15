@@ -36,6 +36,7 @@ def _create_jobs_table(conn: sqlite3.Connection) -> None:
           result_path TEXT,
           retry_count INTEGER NOT NULL DEFAULT 0,
           escalation_issue_id TEXT,
+          source_issue_id TEXT,
           enqueued_at TEXT NOT NULL,
           enqueued_by TEXT NOT NULL
         )
@@ -49,8 +50,8 @@ def _insert_job(conn: sqlite3.Connection, **kw: object) -> None:
         """
         INSERT INTO jobs
         (job_id, ea_id, version, symbol, period, year, phase, sub_gate_config_hash, setfile_path,
-         status, verdict, invalidation_reason, result_path, retry_count, escalation_issue_id, enqueued_at, enqueued_by, finished_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         status, verdict, invalidation_reason, result_path, retry_count, escalation_issue_id, source_issue_id, enqueued_at, enqueued_by, finished_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             kw["job_id"],
@@ -68,6 +69,7 @@ def _insert_job(conn: sqlite3.Connection, **kw: object) -> None:
             str(kw.get("result_path", "D:/QM/reports/pipeline/x/summary.json")),
             kw.get("retry_count", 0),
             str(kw.get("escalation_issue_id", "")),
+            str(kw.get("source_issue_id", "")),
             "2026-05-15T00:00:00Z",
             "phase_orchestrator",
             "2026-05-15T00:10:00Z",
@@ -241,13 +243,15 @@ class GateEvaluatorTests(unittest.TestCase):
             self.assertTrue(bool(src and src[0]))
 
     @patch("framework.scripts.gate_evaluator.run_build_deployment_verifier")
-    def test_p0_pass_is_blocked_when_build_verifier_fails(self, mock_verify: object) -> None:
+    @patch("framework.scripts.gate_evaluator.reopen_issue_and_comment")
+    def test_p0_pass_is_blocked_when_build_verifier_fails(self, mock_reopen: object, mock_verify: object) -> None:
         mock_verify.return_value = (False, "build_verify:GHOST_BUILD:rc=1", {"verdict": "GHOST_BUILD"})
+        mock_reopen.return_value = True
         with tempfile.TemporaryDirectory() as td:
             db = Path(td) / "mt5_queue.db"
             conn = sqlite3.connect(str(db))
             _create_jobs_table(conn)
-            _insert_job(conn, job_id="job-p0-ghost", verdict="PASS", phase="P0")
+            _insert_job(conn, job_id="job-p0-ghost", verdict="PASS", phase="P0", source_issue_id="QUA-1000")
             conn.close()
 
             res = evaluate(
@@ -275,6 +279,7 @@ class GateEvaluatorTests(unittest.TestCase):
             self.assertEqual(row[1], "GHOST_BUILD")
             self.assertIn("build_verify:GHOST_BUILD", row[2])
             self.assertEqual(queued[0], 0)
+            mock_reopen.assert_called_once()
 
     def test_infra_fail_requeues_before_retry_cap(self) -> None:
         with tempfile.TemporaryDirectory() as td:
