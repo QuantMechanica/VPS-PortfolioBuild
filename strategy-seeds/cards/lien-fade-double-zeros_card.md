@@ -434,4 +434,27 @@ data_requirements: standard                   # M15 OHLC on Darwinex .DWX FX sym
   multi-leg / multi-stock / cointegration architecture concerns. Round-number grid logic adds
   modest LOC but is straightforward arithmetic. Expected G0 yield CLEAN with `scalping_p5b_latency`
   flagged for IMPL-time stress validation.
+
+- 2026-05-15 (QUA-1553, P2 baseline screening on QM5_1009 EA / 2024 / M15):
+  USDCHF.DWX produced 0 trades with card-default parameters (trend_ma_period=20, entry_offset_pips=12,
+  stop_offset_pips=20, stage_max_distance_pips=50, triple_zero_only=false, use_half_step_levels=false).
+  EA ran deterministically across 2 runs, real-ticks marker present, no OnInit failure on USDCHF leg.
+  Root cause: USDCHF spent 2024 in a narrow range (~0.85-0.94) where double-zero levels (0.8500,
+  0.9000) are visited only sporadically. With proximity filter at 50 pips, staging windows are rare.
+  This is consistent with — not contradictory to — Lien's verbatim claim that the strategy works for
+  "currency pairs with tighter trading ranges" (PDF p. 113): Lien's "tighter trading ranges"
+  selectivity bias refers to per-bar volatility (so the 20-pip stop has room), NOT to multi-month
+  range envelopes (which determine round-number visit frequency). The default `stage_max_distance_pips=50`
+  is an out-of-source extrapolation ("Lien rule does not specify a max distance; default 50 pips;
+  sweep [25, 50, 100]" per § 4) and is therefore the legitimate target of sub-gate-conformant
+  recalibration. Card § 8 P3 sweep `proximity_pips` already includes [25, 50, 100, 200, no_limit].
+  Verdict CONFIRM STRATEGY_DRIFT (vs BASELINE_ACCURATE_FAILED). Approved recalibration: bump
+  `stage_max_distance_pips` from 50 → 200 (still inside documented sweep range). Lien-verbatim
+  parameters (trend_ma_period=20, entry_offset_pips=12, stop_offset_pips=20, round_grid_tier=double_zero)
+  are preserved. If post-recalibration trade count still < min, USDCHF 2024 is genuinely outside
+  the strategy's natural symbol-period scope and should be filtered at P3.5 CSR cohort step rather
+  than flagged as a strategy-hypothesis failure. Sibling note: the same `proximity_pips=50` default
+  is likely the root cause for STRATEGY_DRIFT verdicts on other narrow-range majors / crosses
+  (CADCHF/QM5_1003, AUDNZD/QM5_1004, AUDUSD/QM5_1017 per the same 2026-05-15 Zero-Trades preflight),
+  though those strategies are reviewed under their own Research issues.
 ```
