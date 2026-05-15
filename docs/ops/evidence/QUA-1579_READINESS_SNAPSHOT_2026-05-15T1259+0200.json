@@ -1,0 +1,21 @@
+{
+  "issue": "QUA-1579",
+  "captured_at_local": "2026-05-15T12:57:27.1924848+02:00",
+  "task": {
+    "task_name": "QM_GateEvaluator_5min",
+    "state": "Ready",
+    "last_run_time": "2026-05-15T12:55:55.0000000+02:00",
+    "last_task_result": 0,
+    "next_run_time": "2026-05-15T13:00:00.0000000+02:00",
+    "logon_type": "S4U"
+  },
+  "schema": {
+    "has_verdict_processed_at": true,
+    "has_escalation_issue_id": true,
+    "jobs_column_count": 22
+  },
+  "queue_counts_by_status": {
+    "failed": 17,
+    "running": 1
+  }
+}
