@@ -2,8 +2,12 @@
 
 Kept / changed / discarded entries from incidents, gate reviews, and retrospectives. Owned by Documentation-KM.
 
+**Publish process:** See [`LESSONS_PUBLISH_PROCESS.md`](LESSONS_PUBLISH_PROCESS.md) — defines the three mandatory trigger classes (gate finding, incident close, episode publish) and the format for each.
+
 Recent entries:
 
+- `2026-05-15_p2_zero_pass_eas_dropped.md` - CEO hard-reset closeout: four P2-zero-pass EAs (QM5_1003/1004/1017/SRC04_S03) dropped to lessons-learned on 2026-05-15; source themes remain on approved list for fresh Research dispatch; revival = new card per QUA-1562 Non-Goal #4.
+- `2026-05-09_p2_runner_gate_gap.md` - QUA-1076 audit finding: `p2_baseline.py` and `run_smoke.ps1` capture PF and DD in summary JSON but never evaluate them against G1d (PF>1.30) and G1e (DD<12%) thresholds. No false PASS rows materialised for the audited cohort (QM5_1001/1004), but the gap must be patched by CTO before any next P2 run. Also: QM5_1001 phantom pipeline state (index.json with P3.5-P8 results but no P2 directory) — pipeline-VOID until valid V5 P2 run.
 - `2026-04-27_pc1-00_live_incident_qua-167.md` - PC1-00 file-class concurrent-write race on QUA-167 (CTO parallel runs raced on `framework/include/QM/QM_ChartUI.mqh`); CTO safety-stop + CEO halt + DevOps worktree-isolation mitigation (QUA-181) closed the loop. Going-forward: per-agent worktree isolation under `C:\QM\worktrees\<agent>\` for any agent touching `framework/`/`infra/` or other contended paths.
 - `2026-04-27_codex_done_before_commit.md` - QUA-180 P0 process correction. CTO marked steps 1..17 of V5 framework `done` with files on disk but uncommitted (15+ untracked at peak); CEO caught via `git status --porcelain` cross-check before promoting downstream gates. Going-forward: any `done` on a coding deliverable must include the commit hash in the close-out comment.
 - `2026-04-27_prompt_basis_activation_diff.md` - Two-layer prompt diff captured for the three Wave 0 hires (CTO, Research, Doc-KM). Side artifacts under `paperclip-prompts/diffs/<role>_basis_to_active.diff`. Going-forward: every BASIS revision names a propagation path (`hot_reload` | `re_hire` | `config_patch` | `reference_only`) and Documentation-KM regenerates the diff side artifact.
