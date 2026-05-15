@@ -344,6 +344,46 @@ class GateEvaluatorTests(unittest.TestCase):
             self.assertEqual(row[1], "deploy_failed")
             self.assertEqual(cnt[0], 1)
 
+    def test_dry_run_does_not_mutate_rows(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            db = Path(td) / "mt5_queue.db"
+            summary = Path(td) / "summary.json"
+            summary.write_text('{"trade_count": 5}', encoding="utf-8")
+            defaults = Path(td) / "tester_defaults.json"
+            defaults.write_text('{"anti_theater_gates":{"min_trade_count":1}}', encoding="utf-8")
+            conn = sqlite3.connect(str(db))
+            _create_jobs_table(conn)
+            _insert_job(conn, job_id="job-dry", verdict="PASS", phase="P2", result_path=str(summary))
+            before = conn.execute(
+                "SELECT status, verdict, retry_count FROM jobs WHERE job_id='job-dry'"
+            ).fetchone()
+            conn.close()
+
+            with patch("framework.scripts.gate_evaluator.run_rollforward_scripts", return_value=(True, "")):
+                res = evaluate(
+                    sqlite_path=db,
+                    max_retries=3,
+                    limit=50,
+                    paperclip_base="http://127.0.0.1:3100",
+                    company_id="cid",
+                    project_id="pid",
+                    parent_issue_id=None,
+                    tester_defaults_path=defaults,
+                    zero_trades_template_path=Path(td) / "missing_template.md",
+                    dry_run=True,
+                )
+            self.assertEqual(res.processed, 1)
+
+            conn2 = sqlite3.connect(str(db))
+            after = conn2.execute(
+                "SELECT status, verdict, retry_count FROM jobs WHERE job_id='job-dry'"
+            ).fetchone()
+            count = conn2.execute("SELECT COUNT(*) FROM jobs").fetchone()
+            conn2.close()
+            self.assertEqual(before, after)
+            assert count is not None
+            self.assertEqual(count[0], 1)
+
 
 if __name__ == "__main__":
     unittest.main()
