@@ -95,12 +95,42 @@ Else if no source is `active` and pending sources exist:
 - `farmctl claim-source` — activates the next pending source.
 - STOP this wake. Step 1 fires next wake.
 
-### Step 7 — Idle
+### Step 7 — Discover new sources
 
-Else there is nothing to do:
+Else if no source is `active` AND no pending sources exist
+(this is the "queue empty" state — without discovery we'd be stuck IDLE forever
+even though strategy ideas don't run out in the real world):
+
+- Run a source-discovery scan via WebSearch + WebFetch. Look for:
+  - **Academic**: `site:arxiv.org abs q-fin algorithmic OR trading OR strategy`,
+    `site:ssrn.com finance trading rule mechanical`
+  - **Curated quant**: `quantpedia.com strategy`, established systematic-trading
+    blogs (Allocate Smartly, AlphaArchitect, QuantStart, Robot Wealth)
+  - **Books**: recently published quant / systematic-trading titles (Wiley
+    Trading series, Pardo, Davey backlist, Lien/Schlossberg follow-ups)
+  - **Forums**: thread-rich subforums on Elite Trader, BabyPips advanced, MQL5
+    Articles (different from MQL5 CodeBase which is already seeded)
+- For each candidate apply **source-level R-check** before adding:
+  - Reputable attribution (author named, history available)
+  - Mechanical strategies likely (not pure discretionary commentary)
+  - No marketing fluff / signal-selling / paid-course front-loads
+  - Not MQL5 marketplace (Hard Rule scope)
+  - Not anonymous-only forum threads
+  - Dedup against existing `sources` rows by URI substring
+- For 1-3 candidates that pass: `farmctl add-source --uri <...> --title "<...>" --source-type <book|paper|web_forum|web_blog|video> --lane discovery --priority 80`
+- Append a `DISCOVER` line to `autonomous_wakes.log` listing what got added.
+- STOP this wake. Step 6 next wake will claim one of them.
+
+Discovery is a "soft Step 1" — it's an expensive step (counts against the
+per-wake budget). Do at most one discovery scan per wake. If you add nothing
+(everything filtered), still log `DISCOVER none filtered=<reasons>` and exit.
+
+### Step 8 — Idle (truly nothing)
+
+Reached only if Step 7 yielded zero candidates AND no other pending work:
 
 - Append `<utc-iso> WAKE_IDLE` to `D:/QM/strategy_farm/logs/autonomous_wakes.log`.
-- Exit cleanly. No work.
+- Exit cleanly. The next wake re-tries discovery (web changes over time).
 
 ## Hard boundaries (cannot violate)
 
