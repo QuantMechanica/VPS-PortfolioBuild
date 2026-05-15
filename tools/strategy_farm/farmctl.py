@@ -945,10 +945,144 @@ def render_codex_build_prompt(root: Path, card_path_str: str, out_path: str | No
         "prompt_path": str(target),
         "build_result_path": str(build_result_path),
         "suggested_command": (
-            "codex exec --model gpt-5-codex "
-            f"--cd \"{REPO_ROOT}\" "
+            # ChatGPT-account Codex (v0.130+): default gpt-5.5 works.
+            # gpt-5-codex / gpt-5-codex-mini / gpt-5 are 400 on ChatGPT auth.
+            f"codex exec --cd \"{REPO_ROOT}\" "
             f"\"$(Get-Content -Raw '{target}')\""
         ),
+    }
+
+
+def update_card_frontmatter(card_path: Path, updates: dict[str, str]) -> None:
+    """Patch flat key:value pairs in a card's YAML frontmatter, in-place.
+
+    Replaces existing keys; appends new ones at the end of the frontmatter block.
+    Preserves the rest of the file verbatim.
+    """
+    text = card_path.read_text(encoding="utf-8")
+    m = re.match(r"^(---\s*\n)(.*?)(\n---)", text, re.DOTALL)
+    if not m:
+        raise ValueError(f"No YAML frontmatter found in {card_path}")
+    fm_block = m.group(2)
+    lines = fm_block.split("\n")
+    handled: set[str] = set()
+    for i, line in enumerate(lines):
+        for key, value in updates.items():
+            if key in handled:
+                continue
+            if re.match(rf"^{re.escape(key)}\s*:", line):
+                lines[i] = f"{key}: {value}"
+                handled.add(key)
+    for key, value in updates.items():
+        if key not in handled:
+            lines.append(f"{key}: {value}")
+    new_fm = "\n".join(lines)
+    new_text = m.group(1) + new_fm + m.group(3) + text[m.end():]
+    card_path.write_text(new_text, encoding="utf-8", newline="\n")
+
+
+def approve_card(root: Path, card_path_str: str, reasoning: str) -> dict[str, Any]:
+    """Set g0_status: APPROVED in the card frontmatter, move draft → approved."""
+    init_db(root)
+    card_path = Path(card_path_str).resolve()
+    if not card_path.exists():
+        return {"approved": False, "reason": f"Card not found: {card_path}"}
+    if not reasoning:
+        return {"approved": False, "reason": "reasoning is required"}
+
+    fm = parse_card_frontmatter(card_path)
+    ea_id = fm.get("ea_id")
+    if not ea_id:
+        return {"approved": False, "reason": "Card frontmatter missing ea_id"}
+
+    today = dt.datetime.now(dt.UTC).strftime("%Y-%m-%d")
+    quoted = '"' + reasoning.replace('"', "'").replace("\n", " ").strip()[:300] + '"'
+    update_card_frontmatter(card_path, {
+        "g0_status": "APPROVED",
+        "g0_approval_reasoning": quoted,
+        "last_updated": today,
+    })
+
+    target_dir = root / "artifacts" / "cards_approved"
+    target_dir.mkdir(parents=True, exist_ok=True)
+    target = target_dir / card_path.name
+    if target.exists():
+        return {
+            "approved": False,
+            "reason": f"Approved card already at {target} — manual reconciliation needed",
+        }
+
+    # Move only if the source is in cards_draft/. Otherwise leave in place (already-approved card).
+    src_in_draft = "cards_draft" in card_path.parts
+    if src_in_draft:
+        import shutil
+        shutil.move(str(card_path), str(target))
+        final_path = target
+    else:
+        final_path = card_path
+
+    with connect(root) as conn:
+        event(conn, "card", ea_id, "approved", {
+            "card_path": str(final_path),
+            "reasoning": reasoning[:300],
+        })
+
+    return {
+        "approved": True,
+        "ea_id": ea_id,
+        "card_path": str(final_path),
+        "reasoning": reasoning,
+        "next_action_hint": f"python tools/strategy_farm/farmctl.py build-ea --card \"{final_path}\"",
+    }
+
+
+def reject_card(root: Path, card_path_str: str, reason: str) -> dict[str, Any]:
+    """Set g0_status: REJECTED in the card frontmatter, move draft → rejected."""
+    init_db(root)
+    card_path = Path(card_path_str).resolve()
+    if not card_path.exists():
+        return {"rejected": False, "reason": f"Card not found: {card_path}"}
+    if not reason:
+        return {"rejected": False, "reason": "reason is required"}
+
+    fm = parse_card_frontmatter(card_path)
+    ea_id = fm.get("ea_id", "UNKNOWN")
+
+    today = dt.datetime.now(dt.UTC).strftime("%Y-%m-%d")
+    quoted = '"' + reason.replace('"', "'").replace("\n", " ").strip()[:300] + '"'
+    update_card_frontmatter(card_path, {
+        "g0_status": "REJECTED",
+        "g0_rejection_reason": quoted,
+        "last_updated": today,
+    })
+
+    target_dir = root / "artifacts" / "cards_rejected"
+    target_dir.mkdir(parents=True, exist_ok=True)
+    target = target_dir / card_path.name
+    if target.exists():
+        return {
+            "rejected": False,
+            "reason": f"Rejected card already at {target} — manual reconciliation needed",
+        }
+
+    if "cards_draft" in card_path.parts:
+        import shutil
+        shutil.move(str(card_path), str(target))
+        final_path = target
+    else:
+        final_path = card_path
+
+    with connect(root) as conn:
+        event(conn, "card", ea_id, "rejected", {
+            "card_path": str(final_path),
+            "reason": reason[:300],
+        })
+
+    return {
+        "rejected": True,
+        "ea_id": ea_id,
+        "card_path": str(final_path),
+        "reason": reason,
     }
 
 
@@ -1169,9 +1303,23 @@ def build_parser() -> argparse.ArgumentParser:
 
     tick = sub.add_parser(
         "tick",
-        help="Single farm tick — runs dispatch-tick (and in future: post-classify chaining)",
+        help="Single farm tick - runs dispatch-tick (and in future: post-classify chaining)",
     )
     tick.add_argument("--timeout-hours", type=float, default=6.0)
+
+    approve = sub.add_parser(
+        "approve-card",
+        help="Set g0_status: APPROVED + move draft to approved + emit event",
+    )
+    approve.add_argument("--card", required=True, help="Path to the draft card .md")
+    approve.add_argument("--reasoning", required=True, help="One-line R1-R4 rationale")
+
+    reject = sub.add_parser(
+        "reject-card",
+        help="Set g0_status: REJECTED + move draft to rejected + emit event",
+    )
+    reject.add_argument("--card", required=True, help="Path to the draft card .md")
+    reject.add_argument("--reason", required=True, help="One-line rejection reason")
     return parser
 
 
@@ -1218,6 +1366,10 @@ def main(argv: list[str] | None = None) -> int:
             "tick_at": utc_now(),
             "dispatch": dispatch_tick(root, timeout_hours=args.timeout_hours),
         })
+    elif args.command == "approve-card":
+        print_json(approve_card(root, args.card, args.reasoning))
+    elif args.command == "reject-card":
+        print_json(reject_card(root, args.card, args.reason))
     else:
         raise AssertionError(args.command)
     return 0
