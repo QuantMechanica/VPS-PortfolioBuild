@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import json
 import sqlite3
+import subprocess
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
@@ -24,6 +25,7 @@ PHASE_SEQUENCE = ["P1", "P2", "P3", "P3.5", "P4", "P5", "P5b", "P5c", "P6", "P7"
 INFRA_RETRY_TOKENS = ("no_summary_json:rc=1", "REPORT_MISSING")
 ZERO_TRADES_TOKEN = "MIN_TRADES_NOT_MET"
 ZERO_TRADES_AGENT_ID = "8ba981d2"
+DEFAULT_TESTER_DEFAULTS = Path(r"C:\QM\repo\framework\registry\tester_defaults.json")
 
 
 @dataclass
@@ -34,6 +36,8 @@ class EvalResult:
     failed_terminal_count: int = 0
     blocked_strategy_count: int = 0
     escalations_created: int = 0
+    pass_gate_failed_count: int = 0
+    rollforward_failed_count: int = 0
 
 
 def utc_now_iso() -> str:
@@ -71,6 +75,107 @@ def is_infra_retry_reason(text: str) -> bool:
 
 def is_zero_trades_reason(text: str) -> bool:
     return ZERO_TRADES_TOKEN in str(text or "")
+
+
+def load_tester_defaults(path: Path) -> dict[str, Any]:
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def _extract_metric(summary: dict[str, Any], keys: list[str]) -> float | None:
+    for key in keys:
+        if key in summary:
+            try:
+                return float(summary[key])
+            except Exception:
+                return None
+    return None
+
+
+def evaluate_pass_gate(summary_path: str, tester_defaults: dict[str, Any]) -> tuple[bool, str]:
+    if not summary_path:
+        return False, "gate_eval:no_summary_path"
+    p = Path(summary_path)
+    if p.is_dir():
+        p = p / "summary.json"
+    if not p.exists():
+        return False, "gate_eval:summary_missing"
+    try:
+        summary = json.loads(p.read_text(encoding="utf-8"))
+    except Exception:
+        return False, "gate_eval:summary_unparseable"
+
+    anti = tester_defaults.get("anti_theater_gates", {}) if isinstance(tester_defaults, dict) else {}
+    min_trades = int(anti.get("min_trade_count", 1))
+    trades = _extract_metric(summary, ["trade_count", "trades", "total_trades", "num_trades"])
+    if trades is None:
+        return False, "gate_eval:trade_count_missing"
+    if trades < min_trades:
+        return False, f"gate_eval:trades_below_min:{int(trades)}<{min_trades}"
+
+    # Optional stricter thresholds if present in tester_defaults.json.
+    # This keeps compatibility with current file while allowing future PF/DD constraints.
+    criteria = tester_defaults.get("phase_gate_criteria", {}) if isinstance(tester_defaults, dict) else {}
+    min_pf = criteria.get("min_profit_factor")
+    max_dd = criteria.get("max_drawdown_pct")
+    if min_pf is not None:
+        pf = _extract_metric(summary, ["profit_factor", "pf"])
+        if pf is None:
+            return False, "gate_eval:profit_factor_missing"
+        if pf < float(min_pf):
+            return False, f"gate_eval:pf_below_min:{pf:.4f}<{float(min_pf):.4f}"
+    if max_dd is not None:
+        dd = _extract_metric(summary, ["max_drawdown_pct", "drawdown_pct", "max_dd_pct"])
+        if dd is None:
+            return False, "gate_eval:max_drawdown_missing"
+        if dd > float(max_dd):
+            return False, f"gate_eval:dd_above_max:{dd:.4f}>{float(max_dd):.4f}"
+
+    return True, ""
+
+
+def run_rollforward_scripts(*, ea_id: str, symbol: str, period: str, next_phase: str, dry_run: bool) -> tuple[bool, str]:
+    if dry_run:
+        return True, ""
+    # Script names/params are deterministic; if wrappers evolve, keep this as the call boundary.
+    gen_cmd = [
+        "powershell",
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        r"C:\QM\repo\framework\scripts\gen_setfile.ps1",
+        "-EaSlug",
+        ea_id,
+        "-Symbol",
+        symbol,
+        "-TF",
+        period,
+        "-Env",
+        "backtest",
+    ]
+    dep_cmd = [
+        "powershell",
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        r"C:\QM\repo\framework\scripts\deploy_ea_to_all_terminals.ps1",
+        "-Ea",
+        ea_id,
+    ]
+    try:
+        gen = subprocess.run(gen_cmd, capture_output=True, text=True, check=False)
+        if int(gen.returncode) != 0:
+            return False, f"rollforward:setfile_failed:rc={gen.returncode}"
+        dep = subprocess.run(dep_cmd, capture_output=True, text=True, check=False)
+        if int(dep.returncode) != 0:
+            return False, f"rollforward:deploy_failed:rc={dep.returncode}"
+    except Exception as exc:
+        return False, f"rollforward:exception:{exc}"
+    return True, ""
 
 
 def create_zero_trades_issue(
@@ -188,21 +293,50 @@ def evaluate(
     company_id: str,
     project_id: str,
     parent_issue_id: str | None,
+    tester_defaults_path: Path,
     dry_run: bool,
 ) -> EvalResult:
     result = EvalResult()
     conn = sqlite3.connect(str(sqlite_path))
     try:
         ensure_columns(conn)
+        tester_defaults = load_tester_defaults(tester_defaults_path)
         rows = _fetch_ready_rows(conn, limit)
         now = utc_now_iso()
         for row in rows:
             verdict = row["verdict"].upper()
             reason = row["invalidation_reason"]
             if verdict == "PASS":
+                pass_ok, pass_reason = evaluate_pass_gate(row.get("result_path", ""), tester_defaults)
+                if not pass_ok:
+                    if not dry_run:
+                        conn.execute(
+                            "UPDATE jobs SET status='invalid', verdict='INVALID', invalidation_reason=?, verdict_processed_at=? WHERE job_id=?",
+                            (pass_reason, now, row["job_id"]),
+                        )
+                    result.pass_gate_failed_count += 1
+                    result.processed += 1
+                    continue
                 nxt = next_phase(row["phase"])
-                if nxt is not None and not dry_run:
-                    _enqueue_next_job(conn, row, nxt, now)
+                if nxt is not None:
+                    ok, roll_reason = run_rollforward_scripts(
+                        ea_id=row["ea_id"],
+                        symbol=row["symbol"],
+                        period=row["period"],
+                        next_phase=nxt,
+                        dry_run=dry_run,
+                    )
+                    if not ok:
+                        if not dry_run:
+                            conn.execute(
+                                "UPDATE jobs SET status='failed_terminal', invalidation_reason=?, verdict_processed_at=? WHERE job_id=?",
+                                (roll_reason, now, row["job_id"]),
+                            )
+                        result.rollforward_failed_count += 1
+                        result.processed += 1
+                        continue
+                    if not dry_run:
+                        _enqueue_next_job(conn, row, nxt, now)
                 if not dry_run:
                     conn.execute(
                         "UPDATE jobs SET verdict_processed_at=? WHERE job_id=?",
@@ -277,6 +411,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--company-id", default="03d4dcc8-4cea-4133-9f68-90c0d99628fb")
     parser.add_argument("--project-id", default="71b6d994-70ba-4a28-bd62-732b42a9ea58")
     parser.add_argument("--parent-issue-id", default="", help="Optional parent issue for escalation issues")
+    parser.add_argument("--tester-defaults", default=str(DEFAULT_TESTER_DEFAULTS))
     parser.add_argument("--dry-run", action="store_true")
     return parser.parse_args()
 
@@ -291,6 +426,7 @@ def main() -> int:
         company_id=str(args.company_id),
         project_id=str(args.project_id),
         parent_issue_id=str(args.parent_issue_id or "") or None,
+        tester_defaults_path=Path(str(args.tester_defaults)),
         dry_run=bool(args.dry_run),
     )
     print(json.dumps(summary.__dict__, sort_keys=True))
