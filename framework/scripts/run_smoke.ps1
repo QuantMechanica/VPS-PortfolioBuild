@@ -130,7 +130,7 @@ function Resolve-DispatchTerminal {
     if (-not (Test-Path -LiteralPath $resolverPath -PathType Leaf)) {
         throw "resolve_backtest_target.py not found at $resolverPath"
     }
-    $jobPath = Join-Path $env:TEMP ("qua307_dispatch_job_{0}.json" -f [guid]::NewGuid().ToString("N"))
+    $jobPath = Join-Path (Get-QmTempDirectory) ("qua307_dispatch_job_{0}.json" -f [guid]::NewGuid().ToString("N"))
     $statePath = "D:\QM\Reports\pipeline\dispatch_state.json"
     $job = [ordered]@{
         ea_id = "QM5_{0}" -f $EAIdValue
@@ -199,7 +199,7 @@ function Invoke-DispatchCompletion {
         return
     }
 
-    $jobPath = Join-Path $env:TEMP ("qua307_dispatch_job_{0}.json" -f [guid]::NewGuid().ToString("N"))
+    $jobPath = Join-Path (Get-QmTempDirectory) ("qua307_dispatch_job_{0}.json" -f [guid]::NewGuid().ToString("N"))
     $statePath = "D:\QM\Reports\pipeline\dispatch_state.json"
     $job = [ordered]@{
         ea_id = "QM5_{0}" -f $EAIdValue
@@ -487,6 +487,26 @@ function Convert-RunMetricsToFingerprint {
     )
 
     return "{0}|{1}|{2}|{3}" -f $Metrics.total_trades_raw, $Metrics.profit_factor_raw, $Metrics.drawdown_raw, $Metrics.net_profit_raw
+}
+
+function Get-QmTempDirectory {
+    $candidates = @(
+        $env:TEMP,
+        $env:TMP,
+        [System.IO.Path]::GetTempPath(),
+        "D:\QM\tmp",
+        "C:\QM\tmp"
+    )
+    foreach ($candidate in $candidates) {
+        if (-not [string]::IsNullOrWhiteSpace($candidate)) {
+            $resolved = $candidate.Trim()
+            if (-not (Test-Path -LiteralPath $resolved -PathType Container)) {
+                New-Item -ItemType Directory -Path $resolved -Force | Out-Null
+            }
+            return $resolved
+        }
+    }
+    throw "Unable to resolve writable temp directory."
 }
 
 if ([string]::IsNullOrWhiteSpace($DispatchSubGateHash)) {
