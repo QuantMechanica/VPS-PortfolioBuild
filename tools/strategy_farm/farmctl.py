@@ -981,6 +981,78 @@ def update_card_frontmatter(card_path: Path, updates: dict[str, str]) -> None:
     card_path.write_text(new_text, encoding="utf-8", newline="\n")
 
 
+VALID_SOURCE_TYPES = (
+    "book", "paper", "web_forum", "web_blog",
+    "mql5_codebase", "mql5_articles", "video", "local_archive",
+)
+VALID_LANES = ("research", "recovery", "legacy", "discovery")
+
+
+def add_source(
+    root: Path,
+    uri: str,
+    title: str,
+    source_type: str,
+    lane: str = "research",
+    priority: int = 70,
+) -> dict[str, Any]:
+    """Add a new source to the queue (e.g. discovered by autonomous source-scan)."""
+    init_db(root)
+    if source_type not in VALID_SOURCE_TYPES:
+        return {
+            "added": False,
+            "reason": f"source_type must be one of {VALID_SOURCE_TYPES}",
+        }
+    if lane not in VALID_LANES:
+        return {"added": False, "reason": f"lane must be one of {VALID_LANES}"}
+    if not uri or not title:
+        return {"added": False, "reason": "uri and title are required"}
+
+    sid = source_id({"source_type": source_type, "uri": uri})
+    now = utc_now()
+    with connect(root) as conn:
+        existing = conn.execute("SELECT id, status FROM sources WHERE id = ?", (sid,)).fetchone()
+        if existing is not None:
+            return {
+                "added": False,
+                "reason": "Source with same (source_type, uri) already exists",
+                "existing_id": existing["id"],
+                "existing_status": existing["status"],
+            }
+        try:
+            conn.execute(
+                """
+                INSERT INTO sources(
+                    id, priority, lane, source_type, uri, title, status,
+                    notes_path, created_at, updated_at
+                )
+                VALUES (?, ?, ?, ?, ?, ?, 'pending', NULL, ?, ?)
+                """,
+                (sid, priority, lane, source_type, uri, title, now, now),
+            )
+            event(conn, "source", sid, "added", {
+                "priority": priority,
+                "lane": lane,
+                "source_type": source_type,
+                "uri": uri,
+                "title": title,
+            })
+        except sqlite3.IntegrityError as exc:
+            return {"added": False, "reason": f"IntegrityError: {exc}"}
+
+    write_sources_jsonl(root)
+    return {
+        "added": True,
+        "source_id": sid,
+        "priority": priority,
+        "lane": lane,
+        "source_type": source_type,
+        "uri": uri,
+        "title": title,
+        "next_action_hint": "python tools/strategy_farm/farmctl.py status",
+    }
+
+
 def approve_card(root: Path, card_path_str: str, reasoning: str) -> dict[str, Any]:
     """Set g0_status: APPROVED in the card frontmatter, move draft → approved."""
     init_db(root)
@@ -1320,6 +1392,23 @@ def build_parser() -> argparse.ArgumentParser:
     )
     reject.add_argument("--card", required=True, help="Path to the draft card .md")
     reject.add_argument("--reason", required=True, help="One-line rejection reason")
+
+    add_src = sub.add_parser(
+        "add-source",
+        help="Add a new source to the queue (used by autonomous source-discovery)",
+    )
+    add_src.add_argument("--uri", required=True, help="Canonical URI or path of the source")
+    add_src.add_argument("--title", required=True, help="Human-readable title")
+    add_src.add_argument(
+        "--source-type", required=True,
+        choices=list(VALID_SOURCE_TYPES),
+        help="Source category",
+    )
+    add_src.add_argument(
+        "--lane", default="research", choices=list(VALID_LANES),
+        help="Routing lane",
+    )
+    add_src.add_argument("--priority", type=int, default=70, help="Lower = earlier")
     return parser
 
 
@@ -1370,6 +1459,15 @@ def main(argv: list[str] | None = None) -> int:
         print_json(approve_card(root, args.card, args.reasoning))
     elif args.command == "reject-card":
         print_json(reject_card(root, args.card, args.reason))
+    elif args.command == "add-source":
+        print_json(add_source(
+            root,
+            uri=args.uri,
+            title=args.title,
+            source_type=args.source_type,
+            lane=args.lane,
+            priority=args.priority,
+        ))
     else:
         raise AssertionError(args.command)
     return 0
