@@ -101,6 +101,44 @@ class GateEvaluatorTests(unittest.TestCase):
         self.assertIn("-EaPath", deploy_cmd)
         self.assertIn(r"C:\QM\repo\framework\EAs\QM5_1003_davey_baseline_3bar\QM5_1003_davey_baseline_3bar.ex5", deploy_cmd)
 
+    def test_done_row_with_missing_verdict_is_requeued(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            db = Path(td) / "mt5_queue.db"
+            conn = sqlite3.connect(str(db))
+            _create_jobs_table(conn)
+            _insert_job(
+                conn,
+                job_id="job-missing-verdict",
+                verdict="",
+                invalidation_reason="",
+                retry_count=0,
+                phase="P2",
+            )
+            conn.close()
+            res = evaluate(
+                sqlite_path=db,
+                max_retries=3,
+                limit=50,
+                paperclip_base="http://127.0.0.1:3100",
+                company_id="cid",
+                project_id="pid",
+                parent_issue_id=None,
+                tester_defaults_path=Path(td) / "tester_defaults.json",
+                zero_trades_template_path=Path(td) / "missing_template.md",
+                dry_run=False,
+            )
+            self.assertEqual(res.requeued_count, 1)
+            conn2 = sqlite3.connect(str(db))
+            row = conn2.execute(
+                "SELECT status, retry_count, verdict, invalidation_reason FROM jobs WHERE job_id='job-missing-verdict'"
+            ).fetchone()
+            conn2.close()
+            assert row is not None
+            self.assertEqual(row[0], "queued")
+            self.assertEqual(row[1], 1)
+            self.assertIsNone(row[2])
+            self.assertIsNone(row[3])
+
     def test_pass_row_enqueues_next_phase_job(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             db = Path(td) / "mt5_queue.db"

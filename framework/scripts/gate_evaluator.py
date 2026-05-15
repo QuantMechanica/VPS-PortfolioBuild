@@ -22,7 +22,7 @@ from typing import Any
 
 
 PHASE_SEQUENCE = ["P1", "P2", "P3", "P3.5", "P4", "P5", "P5b", "P5c", "P6", "P7", "P8"]
-INFRA_RETRY_TOKENS = ("no_summary_json:rc=1", "REPORT_MISSING")
+INFRA_RETRY_TOKENS = ("no_summary_json:rc=1", "REPORT_MISSING", "missing_verdict")
 ZERO_TRADES_TOKEN = "MIN_TRADES_NOT_MET"
 ZERO_TRADES_AGENT_ID = "8ba981d2-a750-4566-9681-e237fa66261f"
 DEFAULT_TESTER_DEFAULTS = Path(r"C:\QM\repo\framework\registry\tester_defaults.json")
@@ -340,6 +340,9 @@ def evaluate(
         for row in rows:
             verdict = row["verdict"].upper()
             reason = row["invalidation_reason"]
+            if not verdict:
+                reason = reason or "missing_verdict"
+                verdict = "INVALID"
             if verdict == "PASS":
                 pass_ok, pass_reason = evaluate_pass_gate(row.get("result_path", ""), tester_defaults)
                 if not pass_ok:
