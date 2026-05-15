@@ -22,13 +22,13 @@ if (-not (Test-Path -LiteralPath $scriptPath -PathType Leaf)) {
 
 $pythonCmd = (Get-Command $PythonExe -ErrorAction Stop).Source
 $arguments = @(
-    ('"' + $scriptPath + '"'),
-    '--sqlite', ('"' + $QueueDbPath + '"'),
+    $scriptPath,
+    '--sqlite', $QueueDbPath,
     '--max-retries', $MaxRetries,
     '--limit', $Limit,
-    '--paperclip-base', ('"' + $PaperclipBase + '"'),
-    '--company-id', ('"' + $CompanyId + '"'),
-    '--project-id', ('"' + $ProjectId + '"')
+    '--paperclip-base', $PaperclipBase,
+    '--company-id', $CompanyId,
+    '--project-id', $ProjectId
 ) -join ' '
 
 $action = New-ScheduledTaskAction -Execute $pythonCmd -Argument $arguments -WorkingDirectory $RepoRoot
