@@ -139,6 +139,23 @@ Notes:
 - `--terminal` accepts `T1..T5` only (`T6` is rejected with exit code `2`).
 - Worker updates `worker_heartbeat`, claims the next `jobs.status='queued'` row atomically, then marks `done`/`failed`.
 
+## MT5 Queue Status Snapshot (worker heartbeat surface)
+
+Read a compact status snapshot from `mt5_queue.db`:
+
+```powershell
+python framework/scripts/mt5_queue_status.py `
+  --sqlite D:\QM\reports\pipeline\mt5_queue.db `
+  --limit 5
+```
+
+Expected output keys:
+- `schema`: `worker_pool` (canonical `jobs + worker_heartbeat`) or `legacy_saturation` (`mt5_job_queue` fallback).
+- `counts`: grouped job counts by `status`.
+- `queued_top`: top queued rows.
+- `dispatched_top`: active claimed/running rows (worker schema) or dispatched rows (legacy schema).
+- `worker_heartbeat_top`: latest worker heartbeats (`terminal_id`, `last_seen_utc`, `current_job_id`, `jobs_completed`, `last_error`) when worker schema is present.
+
 ## Enqueue MT5 Queue Rows (deterministic producer helper)
 
 Use this when `mt5_queue.db` has no queued rows and you need to drive a scheduler tick without manual SQL.
@@ -151,6 +168,48 @@ python framework/scripts/mt5_queue_enqueue.py `
 
 Expected output:
 - JSON summary with `status=ok`, `inserted`, and `inserted_ids`.
+
+## Phase Orchestrator Producer (P2 -> jobs queue)
+
+`phase_orchestrator.py` is the producer for worker-pool phases. For `P2`, `--execute`
+now enqueues rows into the canonical `jobs` table in `mt5_queue.db` (worker schema),
+instead of launching `p2_baseline.py` directly.
+
+```powershell
+python framework/scripts/phase_orchestrator.py `
+  --ea QM5_1003 `
+  --execute `
+  --dispatch-state D:\QM\Reports\pipeline\dispatch_state.json `
+  --queue-sqlite D:\QM\reports\pipeline\mt5_queue.db `
+  --json
+```
+
+Deterministic dry-run (no queue writes):
+
+```powershell
+python framework/scripts/phase_orchestrator.py `
+  --ea QM5_1003 `
+  --dry-run `
+  --dispatch-state D:\QM\Reports\pipeline\dispatch_state.json `
+  --queue-sqlite D:\QM\reports\pipeline\mt5_queue.db `
+  --json
+```
+
+Optional override for evidence-root decisions (testing / controlled ops):
+
+```powershell
+python framework/scripts/phase_orchestrator.py `
+  --ea QM5_1003 `
+  --execute `
+  --dispatch-state D:\QM\Reports\pipeline\dispatch_state.json `
+  --pipeline-root D:\QM\reports\pipeline `
+  --queue-sqlite D:\QM\reports\pipeline\mt5_queue.db `
+  --json
+```
+
+Phase selection source-of-truth:
+- Orchestrator reads `dispatch_state.json -> phase_matrix_index` first for per-EA progression (`PASS` / `FAIL_*`).
+- If no usable dispatch verdict exists for the EA, it falls back to report/result-file verdict discovery under `pipeline-root`.
 
 ## One-shot MT5 Saturation Evidence Bundle
 
@@ -167,3 +226,37 @@ Expected artifact keys:
 - `before`
 - `tick`
 - `after`
+
+## Gate Evaluator (worker-pool verdict processor)
+
+Evaluates `jobs` rows where `status='done'` and `verdict_processed_at IS NULL`, then performs:
+- PASS gate checks from `framework/registry/tester_defaults.json`
+- PASS roll-forward (`gen_setfile.ps1` + `deploy_ea_to_all_terminals.ps1`) + next-phase enqueue
+- infra FAIL/INVALID retry handling (`no_summary_json:rc=1`, `REPORT_MISSING`, `missing_verdict`)
+- strategy FAIL (`MIN_TRADES_NOT_MET`) escalation issue for Zero-Trades-Specialist
+
+```powershell
+python framework/scripts/gate_evaluator.py `
+  --sqlite D:\QM\reports\pipeline\mt5_queue.db `
+  --max-retries 3 `
+  --limit 200 `
+  --paperclip-base http://127.0.0.1:3100 `
+  --company-id 03d4dcc8-4cea-4133-9f68-90c0d99628fb `
+  --project-id 71b6d994-70ba-4a28-bd62-732b42a9ea58
+```
+
+Dry-run (no DB writes, no issue creation, no roll-forward side effects):
+
+```powershell
+python framework/scripts/gate_evaluator.py `
+  --sqlite D:\QM\reports\pipeline\mt5_queue.db `
+  --dry-run
+```
+
+Template override for zero-trades dispatch body:
+
+```powershell
+python framework/scripts/gate_evaluator.py `
+  --sqlite D:\QM\reports\pipeline\mt5_queue.db `
+  --zero-trades-template C:\QM\repo\framework\registry\zero_trades_dispatch_template.md
+```
