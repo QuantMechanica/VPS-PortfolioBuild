@@ -261,7 +261,7 @@ def _fetch_ready_rows(conn: sqlite3.Connection, limit: int) -> list[dict[str, An
         """
         SELECT
           job_id, ea_id, version, symbol, period, year, phase, sub_gate_config_hash,
-          setfile_path, status, verdict, invalidation_reason, retry_count, result_path
+          setfile_path, status, verdict, invalidation_reason, retry_count, result_path, escalation_issue_id
         FROM jobs
         WHERE status='done' AND verdict_processed_at IS NULL
         ORDER BY finished_at ASC, enqueued_at ASC
@@ -287,6 +287,7 @@ def _fetch_ready_rows(conn: sqlite3.Connection, limit: int) -> list[dict[str, An
                 "invalidation_reason": str(row[11] or ""),
                 "retry_count": int(row[12] or 0),
                 "result_path": str(row[13] or ""),
+                "escalation_issue_id": str(row[14] or ""),
             }
         )
     return payload
@@ -410,19 +411,21 @@ def evaluate(
                 continue
 
             if verdict == "FAIL" and is_zero_trades_reason(reason):
-                issue_id = create_zero_trades_issue(
-                    base_url=paperclip_base,
-                    company_id=company_id,
-                    project_id=project_id,
-                    parent_issue_id=parent_issue_id,
-                    job=row,
-                    template_path=zero_trades_template_path,
-                    dry_run=dry_run,
-                )
+                issue_id = row.get("escalation_issue_id") or ""
+                if not issue_id:
+                    issue_id = create_zero_trades_issue(
+                        base_url=paperclip_base,
+                        company_id=company_id,
+                        project_id=project_id,
+                        parent_issue_id=parent_issue_id,
+                        job=row,
+                        template_path=zero_trades_template_path,
+                        dry_run=dry_run,
+                    ) or ""
                 if not dry_run:
                     conn.execute(
                         "UPDATE jobs SET status='blocked_strategy', escalation_issue_id=?, verdict_processed_at=? WHERE job_id=?",
-                        (issue_id or "", now, row["job_id"]),
+                        (issue_id, now, row["job_id"]),
                     )
                 result.blocked_strategy_count += 1
                 if issue_id:
