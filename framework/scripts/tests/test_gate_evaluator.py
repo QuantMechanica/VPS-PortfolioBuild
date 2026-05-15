@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from framework.scripts.gate_evaluator import evaluate
+from framework.scripts.gate_evaluator import evaluate, infer_ea_slug, run_rollforward_scripts
 
 
 def _create_jobs_table(conn: sqlite3.Connection) -> None:
@@ -71,6 +71,36 @@ def _insert_job(conn: sqlite3.Connection, **kw: object) -> None:
 
 
 class GateEvaluatorTests(unittest.TestCase):
+    def test_infer_ea_slug_from_setfile_path(self) -> None:
+        slug = infer_ea_slug(
+            setfile_path=r"C:\QM\repo\framework\EAs\QM5_1003_davey_baseline_3bar\sets\QM5_1003_XAUUSD.DWX_H1_backtest.set",
+            ea_id="1003",
+        )
+        self.assertEqual(slug, "QM5_1003_davey_baseline_3bar")
+
+    @patch("subprocess.run")
+    def test_run_rollforward_uses_deploy_eapath(self, mock_run: object) -> None:
+        class _R:
+            returncode = 0
+            stdout = ""
+            stderr = ""
+
+        mock_run.return_value = _R()
+        ok, reason = run_rollforward_scripts(
+            ea_id="1003",
+            setfile_path=r"C:\QM\repo\framework\EAs\QM5_1003_davey_baseline_3bar\sets\QM5_1003_XAUUSD.DWX_H1_backtest.set",
+            symbol="XAUUSD.DWX",
+            period="H1",
+            next_phase="P3",
+            dry_run=False,
+        )
+        self.assertTrue(ok)
+        self.assertEqual(reason, "")
+        self.assertGreaterEqual(len(mock_run.call_args_list), 2)
+        deploy_cmd = mock_run.call_args_list[1][0][0]
+        self.assertIn("-EaPath", deploy_cmd)
+        self.assertIn(r"C:\QM\repo\framework\EAs\QM5_1003_davey_baseline_3bar\QM5_1003_davey_baseline_3bar.ex5", deploy_cmd)
+
     def test_pass_row_enqueues_next_phase_job(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             db = Path(td) / "mt5_queue.db"
