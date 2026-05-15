@@ -1,0 +1,12 @@
+{
+  "issue": "QUA-1579",
+  "kind": "head_pointer",
+  "captured_at_local": "2026-05-15T13:15:24.6573452+02:00",
+  "head_short": "42fdf9b8756a",
+  "head_full": "42fdf9b8756ad7628936c9d627f4f58161aa4e0b",
+  "latest_status_md": "docs/ops/evidence/QUA-1579_LATEST_STATUS_2026-05-15T1316+0200.md",
+  "latest_now_check_json": "docs/ops/evidence/QUA-1579_NOW_CHECK_2026-05-15T1322+0200.json",
+  "terminal_receipt_json": "docs/ops/evidence/QUA-1579_TERMINAL_RECEIPT_2026-05-15T1320+0200.json",
+  "final_ready_json": "docs/ops/evidence/QUA-1579_FINAL_READY_2026-05-15T1310+0200.json",
+  "manifest_json": "docs/ops/evidence/QUA-1579_EVIDENCE_MANIFEST_2026-05-15T1308+0200.json"
+}
