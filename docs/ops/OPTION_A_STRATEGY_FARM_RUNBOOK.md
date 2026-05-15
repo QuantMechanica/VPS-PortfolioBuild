@@ -218,30 +218,53 @@ Reads `p2_baseline.py`'s report.csv (columns `ea_id, phase, symbol, terminal, ve
 P3..P8 classifiers will be added as those phases are wired in. Wired via the
 `PHASE_CLASSIFIERS` dict in `farmctl.py`.
 
-## Phase D — Single tick command + scheduler (DONE 2026-05-15, v1 = wrapper)
+## Phase D — Autonomy primitives (DONE + INSTALLED 2026-05-15)
 
-Implemented: `farmctl tick` — currently a thin wrapper over `dispatch-tick`.
-Future revisions will add post-classify chaining (PASS → enqueue next phase /
-FAIL → mark EA DEAD) and post-review auto-enqueue
-(`APPROVE_FOR_BACKTEST` → P2 enqueue). For now the chain stays manual
-between the LLM-gated steps; only the deterministic dispatch step is
-auto-ticked.
+OWNER 2026-05-15: full autonomy on, hourly Claude wake on subscription.
+Three scheduled tasks live on the VPS:
 
-Windows Scheduled Task XML drafted: `tools/strategy_farm/scheduled_task_tick.xml`.
+| Task | Cadence | Purpose | LLM cost |
+|---|---|---|---|
+| `QM_StrategyFarm_Tick_5min` | every 5 min | `farmctl tick` — advances backtest tasks (start pending, poll active, classify P2 reports). | none |
+| `QM_StrategyFarm_Dashboard_Hourly` | hourly :00 | `render_dashboards.py` — regenerates `current.html` + `strategies.html`. | none |
+| `QM_StrategyFarm_AutonomousWake_Hourly` | hourly :17 | `autonomous_wake.ps1` → spawns `claude -p` with bootstrap prompt → reads `prompts/autonomous_loop.md` → executes one wake step. | yes (subscription) |
 
-**Install** (when OWNER decides to enable autonomy):
+**farmctl `tick`** is currently a thin wrapper over `dispatch-tick`. Future
+revisions will add post-classify chaining (PASS → enqueue next phase / FAIL
+→ mark EA DEAD) and post-review auto-enqueue (`APPROVE_FOR_BACKTEST` → P2)
+inside `tick`. Until then the chaining happens in the autonomous wake.
+
+The autonomous wake follows the decision tree in
+`tools/strategy_farm/prompts/autonomous_loop.md` — exactly one productive
+step per wake (research / G0 verdict / Codex build / EA review / enqueue),
+hard boundaries on HR16 + HR14 + T6 + agent lifecycle, structured log to
+`D:/QM/strategy_farm/logs/autonomous_wakes.log`.
+
+### Task management
 
 ```powershell
-Register-ScheduledTask -Xml (Get-Content `
-  'C:\QM\repo\tools\strategy_farm\scheduled_task_tick.xml' -Raw) `
-  -TaskName 'QM_StrategyFarm_Tick_5min'
+# List
+Get-ScheduledTask -TaskName 'QM_StrategyFarm_*' | Format-Table TaskName, State
+
+# Pause autonomy (LLM wake)
+Disable-ScheduledTask -TaskName 'QM_StrategyFarm_AutonomousWake_Hourly'
+
+# Resume
+Enable-ScheduledTask -TaskName 'QM_StrategyFarm_AutonomousWake_Hourly'
+
+# Trigger one wake on demand
+Start-ScheduledTask -TaskName 'QM_StrategyFarm_AutonomousWake_Hourly'
+
+# Uninstall
+Unregister-ScheduledTask -TaskName 'QM_StrategyFarm_AutonomousWake_Hourly' -Confirm:$false
 ```
 
-Runs `python C:\QM\repo\tools\strategy_farm\farmctl.py tick` every 5 min.
-Working dir = `C:\QM\repo`. 10 min execution limit. IgnoreNew on overlap.
+### Wake log
 
-Not yet installed — first run a few manual `farmctl tick` to verify behavior
-before flipping autonomy on.
+Two log streams:
+- `D:/QM/strategy_farm/logs/autonomous_wakes_invocation.log` — every PS1 invocation (WAKE_INVOKED / WAKE_EXITED) with exit code.
+- `D:/QM/strategy_farm/logs/autonomous_wakes.log` — one structured line per wake from the claude session itself (what it actually DID).
+- `D:/QM/strategy_farm/logs/autonomous_wake_<utc-iso>.log` — full session output per wake.
 
 ## Phase E — Dashboards (DONE 2026-05-15)
 
