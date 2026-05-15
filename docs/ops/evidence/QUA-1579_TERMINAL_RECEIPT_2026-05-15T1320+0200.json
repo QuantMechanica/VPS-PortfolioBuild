@@ -1,0 +1,32 @@
+{
+  "issue": "QUA-1579",
+  "kind": "terminal_receipt",
+  "captured_at_local": "2026-05-15T13:13:34.7300537+02:00",
+  "head_pointer_file": "QUA-1579_HEAD_POINTER_2026-05-15T1318+0200.json",
+  "pointer_targets": {
+    "latest_status_md": {
+      "path": "docs/ops/evidence/QUA-1579_LATEST_STATUS_2026-05-15T1316+0200.md",
+      "exists": true
+    },
+    "final_ready_json": {
+      "path": "docs/ops/evidence/QUA-1579_FINAL_READY_2026-05-15T1310+0200.json",
+      "exists": true
+    },
+    "final_ready_validation_json": {
+      "path": "docs/ops/evidence/QUA-1579_FINAL_READY_VALIDATION_2026-05-15T1311+0200.json",
+      "exists": true
+    },
+    "manifest_json": {
+      "path": "docs/ops/evidence/QUA-1579_EVIDENCE_MANIFEST_2026-05-15T1308+0200.json",
+      "exists": true
+    }
+  },
+  "all_pointer_targets_exist": true,
+  "task_health": {
+    "state": "Ready",
+    "last_task_result": 0,
+    "last_run_time": "2026-05-15T13:10:10.0000000+02:00",
+    "next_run_time": "2026-05-15T13:15:15.0000000+02:00"
+  },
+  "task_healthy": true
+}
