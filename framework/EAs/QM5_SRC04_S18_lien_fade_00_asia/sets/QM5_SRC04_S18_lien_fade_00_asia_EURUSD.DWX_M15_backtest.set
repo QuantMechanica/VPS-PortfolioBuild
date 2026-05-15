@@ -1,0 +1,34 @@
+; QuantMechanica V5 generated set file
+; Generator=framework/scripts/gen_setfile.ps1
+; ea_id:             4318
+; ea_slug:           QM5_SRC04_S18_lien_fade_00_asia
+; ea_version:        v1
+; set_version:       v1
+; symbol:            EURUSD.DWX
+; timeframe:         M15
+; environment:       backtest
+; magic_slot:        0
+; risk_mode:         fixed
+; portfolio_weight:  1
+; build_hash:        pending
+; author:            Development
+; date:              2026-05-15
+ENV=backtest
+qm_ea_id=4318
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card must be appended below this line
+trend_ma_period=20
+entry_offset_pips=12.0
+stop_offset_pips=20.0
+stage_max_distance_pips=50.0
+adx_period=14
+adx_max=20.0
+session_start_hour_gmt=0
+session_end_hour_gmt=4
+time_stop_bars=16
+triple_zero_only=false
+use_ma_trail_variant=false
+order_expiration_minutes=60

@@ -4,4 +4,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1007,lien-dbb-pick-tops,0,EURUSD.DWX,10070000,2026-04-28,CTO,active
 1008,lien-dbb-trend-join,0,EURUSD.DWX,10080000,2026-04-28,CTO,active
 1009,lien-fade-double-zeros,0,EURUSD.DWX,10090000,2026-05-01,CTO,active
+4318,lien-fade-00-asia,0,EURUSD.DWX,43180000,2026-05-15,Development,active
+4318,lien-fade-00-asia,1,USDJPY.DWX,43180001,2026-05-15,Development,active
+4318,lien-fade-00-asia,2,AUDUSD.DWX,43180002,2026-05-15,Development,active
 9999,framework-skeleton,0,EURUSD.DWX,99990000,2026-04-27,CTO,active
