@@ -257,13 +257,18 @@ def create_zero_trades_issue(
 
 
 def _fetch_ready_rows(conn: sqlite3.Connection, limit: int) -> list[dict[str, Any]]:
+    has_vpa = _column_exists(conn, "jobs", "verdict_processed_at")
+    has_eid = _column_exists(conn, "jobs", "escalation_issue_id")
+    select_vpa = "verdict_processed_at" if has_vpa else "NULL AS verdict_processed_at"
+    select_eid = "escalation_issue_id" if has_eid else "'' AS escalation_issue_id"
+    where_vpa = "AND verdict_processed_at IS NULL" if has_vpa else ""
     rows = conn.execute(
-        """
+        f"""
         SELECT
           job_id, ea_id, version, symbol, period, year, phase, sub_gate_config_hash,
-          setfile_path, status, verdict, invalidation_reason, retry_count, result_path, escalation_issue_id
+          setfile_path, status, verdict, invalidation_reason, retry_count, result_path, {select_eid}, {select_vpa}
         FROM jobs
-        WHERE status='done' AND verdict_processed_at IS NULL
+        WHERE status='done' {where_vpa}
         ORDER BY finished_at ASC, enqueued_at ASC
         LIMIT ?
         """,
@@ -288,6 +293,7 @@ def _fetch_ready_rows(conn: sqlite3.Connection, limit: int) -> list[dict[str, An
                 "retry_count": int(row[12] or 0),
                 "result_path": str(row[13] or ""),
                 "escalation_issue_id": str(row[14] or ""),
+                "verdict_processed_at": str(row[15] or ""),
             }
         )
     return payload
@@ -334,7 +340,8 @@ def evaluate(
     result = EvalResult()
     conn = sqlite3.connect(str(sqlite_path))
     try:
-        ensure_columns(conn)
+        if not dry_run:
+            ensure_columns(conn)
         tester_defaults = load_tester_defaults(tester_defaults_path)
         rows = _fetch_ready_rows(conn, limit)
         now = utc_now_iso()

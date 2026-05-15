@@ -489,9 +489,11 @@ class GateEvaluatorTests(unittest.TestCase):
             after = conn2.execute(
                 "SELECT status, verdict, retry_count FROM jobs WHERE job_id='job-dry'"
             ).fetchone()
+            cols = [str(r[1]) for r in conn2.execute("PRAGMA table_info(jobs)").fetchall()]
             count = conn2.execute("SELECT COUNT(*) FROM jobs").fetchone()
             conn2.close()
             self.assertEqual(before, after)
+            self.assertNotIn("verdict_processed_at", cols)
             assert count is not None
             self.assertEqual(count[0], 1)
 
