@@ -1166,6 +1166,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Advance backtest tasks one step: start one pending, poll active, classify completed",
     )
     dispatch.add_argument("--timeout-hours", type=float, default=6.0)
+
+    tick = sub.add_parser(
+        "tick",
+        help="Single farm tick — runs dispatch-tick (and in future: post-classify chaining)",
+    )
+    tick.add_argument("--timeout-hours", type=float, default=6.0)
     return parser
 
 
@@ -1204,6 +1210,14 @@ def main(argv: list[str] | None = None) -> int:
         print_json(enqueue_backtest(root, args.review_task_id, args.phase))
     elif args.command == "dispatch-tick":
         print_json(dispatch_tick(root, timeout_hours=args.timeout_hours))
+    elif args.command == "tick":
+        # v1 tick: just dispatch-tick. Future ticks will chain post-classify
+        # advance (PASS → enqueue next phase / FAIL → mark EA DEAD) and
+        # post-review auto-enqueue (APPROVE_FOR_BACKTEST → enqueue P2).
+        print_json({
+            "tick_at": utc_now(),
+            "dispatch": dispatch_tick(root, timeout_hours=args.timeout_hours),
+        })
     else:
         raise AssertionError(args.command)
     return 0
