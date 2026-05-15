@@ -162,19 +162,89 @@ Both produce structured JSON only (no prose). The controller validates the
 expected schema and transitions tasks accordingly. HR7 `NO_REPORT ≠ EA-Schwäche`
 is honored — `smoke_result: zero_trades` still proceeds to review.
 
-## Phase C — MT5 Backtest Dispatch + Classify (TODO)
+## Phase C — MT5 Backtest Dispatch + Classify (DONE 2026-05-15, v1 = P2 only)
 
-Not yet implemented. Planned commands:
+Implemented commands: `mt5-slots`, `enqueue-backtest`, `dispatch-tick`.
 
-- `enqueue-backtest --review-task-id <id> --phase P2`
-- `mt5-slots` — show free T1-T5 slots from process scan
-- `dispatch-tick` — pull next backtest_* task, assign to free slot
-- `classify --task-id <id>` — read `.htm` report, write verdict
-  (`PASS | ZERO_TRADES | INFRA_FAIL | STRATEGY_FAIL`)
+The dispatcher wraps the existing `framework/scripts/p2_baseline.py` (which
+already self-distributes across T1-T5 via ThreadPoolExecutor). farmctl owns
+the high-level orchestration; the phase script owns MT5-slot management.
 
-Wired to existing phase scripts: `phase_orchestrator.py`,
-`pipeline_dispatcher.py`, `p2_baseline.py`..`p8_news_impact.py`,
-`aggregate_phase_results.py`.
+Task kinds:
+
+- `backtest_p2` (and later `backtest_p3`, etc.) — `pending → active → done/failed`.
+  Status `done` is set both for PASS and non-PASS classifications; the actual
+  verdict lives in `payload.classification.verdict`.
+
+### Backtest Dispatch Loop
+
+After Claude review returns `APPROVE_FOR_BACKTEST`:
+
+```powershell
+# 1. Create backtest_p2 task from approved review
+python tools/strategy_farm/farmctl.py enqueue-backtest `
+  --review-task-id <ea_review-id> --phase P2
+# → task_id of the backtest_p2 task
+
+# 2. Advance state — starts pending, polls active, classifies completed
+python tools/strategy_farm/farmctl.py dispatch-tick
+# Returns an actions[] array: started / still_running / classified / timeout / no_runner
+
+# 3. Show MT5 fleet status (any time)
+python tools/strategy_farm/farmctl.py mt5-slots
+```
+
+### dispatch-tick semantics
+
+1. Poll all `active` backtest tasks. If the expected `report.csv` exists →
+   classify and mark `done`. If the task is older than `--timeout-hours`
+   (default 6h) with no report → mark `failed` with `timeout_reason`.
+2. If no task is `still_running` after polling, start the oldest pending
+   one: subprocess.Popen the phase runner detached (Windows: `CREATE_NEW_PROCESS_GROUP | DETACHED_PROCESS`), record PID + log_path + cmd.
+
+HR16 enforcement (v1): exactly one backtest task `active` at any time across
+the whole farm. Multi-EA saturation across T1-T5 is a future config flag.
+
+### P2 hard-number gate (`classify_p2`)
+
+Reads `p2_baseline.py`'s report.csv (columns `ea_id, phase, symbol, terminal, verdict, invalidation_reason, evidence`) and applies:
+
+- ≥1 PASS symbol → `verdict: PASS` (advance EA — Portfolio-Kandidat = min. 1 Symbol durch)
+- All FAIL with `trade_count_below_min` reason → `verdict: ZERO_TRADES` (HR7
+  NO_REPORT ≠ EA-Schwäche; investigate filters/window before declaring strategy fail)
+- ≥50% INVALID → `verdict: INFRA_FAIL` (G1 / real-ticks / Model 4 setup problem)
+- Otherwise → `verdict: STRATEGY_FAIL`
+
+P3..P8 classifiers will be added as those phases are wired in. Wired via the
+`PHASE_CLASSIFIERS` dict in `farmctl.py`.
+
+## Phase D — Single tick command + scheduler (TODO)
+
+Plan: `farmctl tick` invokes (in order) `dispatch-tick` for backtests, plus
+future advance-on-classification (when a backtest is classified PASS, enqueue
+the next-phase backtest automatically; on FAIL, mark EA DEAD and emit a
+lessons-learned stub). Then wire to Windows Task Scheduler at 5-10 min
+interval. No daemons, just scheduled ticks.
+
+## Phase E — Dashboards (TODO, location decided 2026-05-15)
+
+The old `C:/QM/paperclip/dashboards/{current.html, strategies.html}` are dead
+along with Paperclip. Replacement layout:
+
+- **Render script + Jinja templates** (committed): `tools/strategy_farm/dashboards/`
+  - `render_dashboards.py`
+  - `templates/current.html.j2` (project progress / Mission Hero)
+  - `templates/strategies.html.j2` (Strategy Archive — also published online)
+- **Rendered HTML output** (generated, not committed, served locally):
+  `D:/QM/strategy_farm/dashboards/{current.html, strategies.html}`
+- **Public publication** (Strategy Archive only, for quantmechanica.com): reuse
+  existing `scripts/export_public_snapshot.ps1` pattern — schema-validated
+  JSON + HTML pushed to `public-data/`.
+- **Scheduler:** hourly Windows Task `QM_StrategyFarm_Dashboard_Hourly`.
+
+Data sources: `D:/QM/strategy_farm/state/farm_state.sqlite` (sources, tasks,
+events) + `artifacts/` (cards, builds, verdicts) + `D:/QM/reports/pipeline/`
+(backtest reports) + `mt5-slots` output (live fleet saturation).
 
 ## Phase D — Driver Loop (TODO)
 
