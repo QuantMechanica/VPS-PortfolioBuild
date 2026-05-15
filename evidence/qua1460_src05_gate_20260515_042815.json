@@ -1,0 +1,41 @@
+{
+    "utc_now":  "2026-05-15T04:28:15.2664479Z",
+    "fresh_minutes":  30,
+    "active":  false,
+    "factory_terminal_count":  5,
+    "factory_terminals":  [
+                              {
+                                  "Id":  800,
+                                  "Path":  "D:\\QM\\mt5\\T5\\terminal64.exe",
+                                  "StartTime":  "\/Date(1778809394833)\/"
+                              },
+                              {
+                                  "Id":  1380,
+                                  "Path":  "D:\\QM\\mt5\\T1\\terminal64.exe",
+                                  "StartTime":  "\/Date(1778483762085)\/"
+                              },
+                              {
+                                  "Id":  7984,
+                                  "Path":  "D:\\QM\\mt5\\T4\\terminal64.exe",
+                                  "StartTime":  "\/Date(1778809394637)\/"
+                              },
+                              {
+                                  "Id":  12204,
+                                  "Path":  "D:\\QM\\mt5\\T3\\terminal64.exe",
+                                  "StartTime":  "\/Date(1778809394458)\/"
+                              },
+                              {
+                                  "Id":  16072,
+                                  "Path":  "D:\\QM\\mt5\\T2\\terminal64.exe",
+                                  "StartTime":  "\/Date(1778809394277)\/"
+                              }
+                          ],
+    "has_recent_htm":  false,
+    "has_recent_csv":  false,
+    "latest_htm_path":  "none_within_window",
+    "latest_htm_mtime_local":  "",
+    "latest_htm_size":  0,
+    "latest_csv_path":  "none_within_window",
+    "latest_csv_mtime_local":  "",
+    "latest_csv_size":  0
+}

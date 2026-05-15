@@ -1,0 +1,84 @@
+param(
+  [int]$FreshMinutes = 30,
+  [string]$PipelineRoot = 'D:\QM\reports\pipeline\QM5_1017',
+  [switch]$Json,
+  [switch]$RequireRecentArtifact  # legacy behavior: active=true requires both factory + recent artifact
+)
+
+$now = Get-Date
+$cutoff = $now.AddMinutes(-1 * $FreshMinutes)
+$proc = Get-Process terminal64 -ErrorAction SilentlyContinue
+$activeFactory = @($proc | Where-Object { $_.Path -like 'D:\QM\mt5\T*\terminal64.exe' -and $_.Path -notlike '*T6*' })
+$hasFactoryActivity = $activeFactory.Count -gt 0
+
+$recentHtm = $null
+$recentCsv = $null
+if(Test-Path $PipelineRoot){
+  $recentHtm = Get-ChildItem -Path $PipelineRoot -Recurse -File -Filter report.htm |
+    Where-Object { $_.LastWriteTime -ge $cutoff } |
+    Sort-Object LastWriteTime -Descending |
+    Select-Object -First 1
+  $recentCsv = Get-ChildItem -Path $PipelineRoot -Recurse -File -Filter report.csv |
+    Where-Object { $_.LastWriteTime -ge $cutoff } |
+    Sort-Object LastWriteTime -Descending |
+    Select-Object -First 1
+}
+$hasRecentHtm = $null -ne $recentHtm
+$hasRecentCsv = $null -ne $recentCsv
+$hasRecentArtifact = $hasRecentHtm -or $hasRecentCsv
+
+# Bootstrap fix (Board Advisor 2026-05-15): the old gate `active = factory AND recent_artifact`
+# was a chicken-and-egg deadlock — could never bootstrap from an idle state because no recent
+# artifact existed without a prior dispatch, and no dispatch was allowed without a recent artifact.
+# New semantics: `active = factory_ready_for_work`. Recent-artifact is still computed and emitted
+# for observability (downstream may use `has_recent_artifact` to detect in-flight backtests),
+# but no longer gates `active`. Pass -RequireRecentArtifact to restore the old behavior.
+if($RequireRecentArtifact){
+  $active = $hasFactoryActivity -and $hasRecentArtifact
+} else {
+  $active = $hasFactoryActivity
+}
+
+$payload = [ordered]@{
+  utc_now = $now.ToUniversalTime().ToString('o')
+  fresh_minutes = $FreshMinutes
+  active = $active
+  factory_terminal_count = $activeFactory.Count
+  factory_terminals = @($activeFactory | Select-Object Id,Path,StartTime)
+  has_recent_htm = $hasRecentHtm
+  has_recent_csv = $hasRecentCsv
+  latest_htm_path = if($recentHtm){$recentHtm.FullName}else{'none_within_window'}
+  latest_htm_mtime_local = if($recentHtm){$recentHtm.LastWriteTime.ToString('yyyy-MM-dd HH:mm:ss')}else{''}
+  latest_htm_size = if($recentHtm){$recentHtm.Length}else{0}
+  latest_csv_path = if($recentCsv){$recentCsv.FullName}else{'none_within_window'}
+  latest_csv_mtime_local = if($recentCsv){$recentCsv.LastWriteTime.ToString('yyyy-MM-dd HH:mm:ss')}else{''}
+  latest_csv_size = if($recentCsv){$recentCsv.Length}else{0}
+}
+
+if($Json){
+  $payload | ConvertTo-Json -Depth 4
+} else {
+  "UTC_NOW=$($payload.utc_now)"
+  "FRESH_MINUTES=$($payload.fresh_minutes)"
+  "ACTIVE=$($payload.active)"
+  "FACTORY_TERMINAL_COUNT=$($payload.factory_terminal_count)"
+  if($activeFactory.Count -gt 0){
+    $activeFactory | Select-Object Id,Path,StartTime | Format-Table -AutoSize
+  }
+  if($hasRecentHtm){
+    "LATEST_HTM=$($payload.latest_htm_path)"
+    "LATEST_HTM_MTIME_LOCAL=$($payload.latest_htm_mtime_local)"
+    "LATEST_HTM_SIZE=$($payload.latest_htm_size)"
+  } else {
+    "LATEST_HTM=none_within_window"
+  }
+  if($hasRecentCsv){
+    "LATEST_CSV=$($payload.latest_csv_path)"
+    "LATEST_CSV_MTIME_LOCAL=$($payload.latest_csv_mtime_local)"
+    "LATEST_CSV_SIZE=$($payload.latest_csv_size)"
+  } else {
+    "LATEST_CSV=none_within_window"
+  }
+}
+
+if($active){ exit 0 } else { exit 3 }

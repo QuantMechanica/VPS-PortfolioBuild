@@ -1,0 +1,11 @@
+{
+  "available_slots_after": 23,
+  "available_slots_before": 25,
+  "dry_run": false,
+  "duplicate": 0,
+  "invalid": 0,
+  "no_capacity": 0,
+  "queued_scanned": 2,
+  "scheduled": 2,
+  "status": "ok"
+}

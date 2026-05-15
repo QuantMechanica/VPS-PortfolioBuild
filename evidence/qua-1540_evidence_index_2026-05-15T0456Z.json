@@ -1,0 +1,29 @@
+{
+  "issue": "QUA-1540",
+  "timestamp_utc": "2026-05-15T04:56:30Z",
+  "code_artifacts": [
+    "C:/QM/repo/framework/scripts/mt5_saturation_scheduler.py",
+    "C:/QM/paperclip/tools/ops/multi_ea_scheduler.py",
+    "C:/QM/repo/framework/scripts/mt5_queue_enqueue.py",
+    "C:/QM/repo/framework/scripts/mt5_queue_status.py",
+    "C:/QM/repo/framework/scripts/mt5_saturation_evidence_once.py"
+  ],
+  "tests": [
+    "C:/QM/repo/framework/scripts/tests/test_mt5_saturation_scheduler.py",
+    "C:/QM/repo/framework/scripts/tests/test_mt5_queue_enqueue.py",
+    "C:/QM/repo/framework/scripts/tests/test_mt5_queue_status.py",
+    "C:/QM/repo/framework/scripts/tests/test_mt5_saturation_evidence_once.py",
+    "C:/QM/paperclip/tools/ops/tests/test_multi_ea_scheduler.py"
+  ],
+  "ops_wiring": [
+    "C:/QM/paperclip/tools/ops/cron/hourly_status.bat",
+    "C:/QM/paperclip/tools/ops/routine_commands.json",
+    "C:/QM/paperclip/tools/ops/README.md",
+    "C:/QM/repo/framework/scripts/README.md"
+  ],
+  "latest_runtime_artifacts": [
+    "D:/QM/reports/pipeline/mt5_saturation_evidence_once_20260515_0456Z.json",
+    "D:/QM/reports/pipeline/mt5_saturation_scheduler_summary_prod_20260515_liveness1_retry.json",
+    "D:/QM/reports/pipeline/mt5_queue.db"
+  ]
+}
