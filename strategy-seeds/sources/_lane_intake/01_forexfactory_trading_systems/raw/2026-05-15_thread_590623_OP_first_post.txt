@@ -1,0 +1,184 @@
+"Now, 2 patterns of market behavior happen on a regular basis:
+ 1) the price breaks to new high's (or low's)
+ 2) the price reverses from new high's (or low's)
+ They happen regardless of time frame.
+ They are phenomena that can be exploited without the fear if found out by others, that they might cease to exist." - H. Rearden
+
+ Price Action  #advancedalientrading
+
+ 1) Price will either breakout of the high, low or both of the previous bar
+ 2) Price will not breakout of the previous bar.
+ 3) Price will either close above a level (line) or not.
+
+ HIGHEST OPEN / LOWEST OPEN TRADE
+
+ Place a line at the highest H1 open and lowest H1 open for the current day.
+
+ Sell short at the highest H1 open after price goes up through it and comes back down.
+
+ Buy at the lowest H1 open after price goes down through it and comes back up.
+
+ Stop loss is the current daily high or current daily low.
+ Adjust your position size accordingly.
+
+ Take profit by moving stop.
+ When trade is +5 or more, move stop to BE+1.
+ When trade is +10 or more, move to to BE+5, or switch to trailing stop.
+ Optional exit is to exit part of trade position with a profit to bank it, move stop to BE+1 and watch the market.
+
+ NOTE:
+
+ Do not wait for the bar to close to enter a trade.
+
+ WARNING
+
+ When price breaks through yesterday's high or low or makes a new high or low today, that is a breakout!
+ Trade the reversal with caution.
+
+ To the NO voters in the poll. Please post the reason you believe this is not simple. Thank you.
+
+ "Perfection is not when you have nothing more to add, but when you have nothing more to take away." - Antoine De Saint Exupery
+
+ "It is not about adding on, but taking away. The less technique, the better you are." - Bruce Lee
+
+Please understand none of this is original or new and this is presented for EDUCATIONAL PURPOSES ONLY. You may find your results may differ. Please check with an accredited financial specialist before using real money. FOREX trading can be risky. YOU HAVE BEEN WARNED! 
+
+ ADDED MAY 20, 2016:
+
+Let me see if I can address areas of confusion.
+
+First, read the rules.
+
+Do not add anything to the rules.
+
+Do not subtract anything from the rules.
+
+Do not modify the rules.
+
+Read the rules, again.
+
+The first line: Place a line at the highest H1 open and lowest H1 open for the current day.
+
+Current day means today according to your broker.
+
+My broker starts a new day at 5PM NY time which means when it is 5PM, I have to move the lines.
+
+The second line: Sell short at the highest H1 open after price goes up through it and comes back down.
+
+Price has to GO UP FIRST.
+
+Price has to GO ABOVE the highest H1 open.
+
+AFTER, price has risen above the highest H1 open, THEN AND ONLY THEN, do you enter a short trade when price falls back down to the highest H1 open.
+
+The third line: Buy at the lowest H1 open after price goes down through it and comes back up.
+
+Price has to GO DOWN FIRST.
+
+Price has to GO BELOW the lowest H1 open.
+
+AFTER, price has dropped below the lowest H1 open, THEN AND ONLY THEN, do you enter a long trade when price rises back up to the lowest H1 open.
+
+The most difficult thing about this method is you have to WAIT.
+
+For many traders, waiting does not come naturally.
+
+Failure to wait, will in most cases, result in losses.
+
+I suggest you literally sit on your hands while you wait to avoid entering a trade too soon.
+
+There is no "trick" to this method.
+
+No gimmicks.
+
+Let me suggest at the end of the trading day you post your marked up charts here.
+
+We can see how many days price closes above the highest H1 open and below the lowest H1 open.
+
+Zero will mean there would not have been a loss when the rules were followed.
+
+Many traders ask how I know when the highest open and lowest open occur during the day because the next bar may make a new high/low.
+
+I do not know.
+
+No one knows.
+
+What we know, from the previous count, is the close is usually below the highest H1 open and above the lowest H1 open.
+
+This is our "edge".
+
+This is what allows us to bank pips on a daily basis.
+
+ ADDED MAY 27, 2016:
+
+ This may help those who are trigger happy to wait:
+
+ M15 bar must open below the lowest H1 open before you can enter.
+
+ M15 bar must open above the highest H1 open before you can enter.
+
+ Price will be moving in your direction when you enter the trade.
+
+ ADDED FEBRUARY 6. 2017. 
+
+ See attached HOLO PDF.
+
+ ATR EXPLANATION: https://www.forexfactory.com/thread/...6#post13921836
+
+ EXAMPLES:
+
+ http://www.forexfactory.com/showthre...45#post8952745
+
+ Great visual explanation: http://www.forexfactory.com/showthre...58#post9007658
+
+ CHALLENGE
+
+ Trade 0.01 lots for 10 trades.
+ Follow the rules exactly.
+ Stick with the same pair for all 10 trades.
+ Post your results.
+ NOTE:
+
+ Do not wait for the bar to close to enter a trade.
+
+ To get the latest indicator and template file click on the attachment icon, paperclip, for this thread.
+
+ Please do not discuss or mention EAs in this thread.
+ EAs are not welcome here.
+
+EAs distract from the method.
+
+You have been warned.
+
+ If you want to post code in this thread post the MQ4 files. 
+ Posting only EX4 files is not welcome.
+
+You may wonder why.
+
+EX4 files could contain something harmful.
+
+MQ4 files are compiled on your computer so you can feel relatively safe.
+
+If the coder "vanishes" then the code can not be updated if/when it fails and the code can not be improved or enhanced.
+
+Who wants to be a the mercy of some unseen coder?
+
+ Newcomers to the thread, if you want a question answered then copy/paste the following message when you ask your question:
+
+ I HAVE READ POST #1 AND THE EXAMPLE LINKS BUT I STILL HAVE A QUESTION    Attached Image(s) (click to enlarge)  
+
+    Attached File(s)   HoLo.pdf 
+
+623 KB
+            |
+            27,638 downloads
+|
+Uploaded Feb 6, 2017 2:58pm
+    smHiLoOpen Lines_v1.2.mq4 
+
+40 KB
+            |
+            1,922 downloads
+|
+Uploaded Jan 23, 2025 4:25pm
+       My Threads: Trading is as simple as 1-2-3, Highest Open / Lowest Open Trade
