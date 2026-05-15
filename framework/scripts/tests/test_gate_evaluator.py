@@ -89,12 +89,13 @@ class GateEvaluatorTests(unittest.TestCase):
                     max_retries=3,
                     limit=50,
                     paperclip_base="http://127.0.0.1:3100",
-                    company_id="cid",
-                    project_id="pid",
-                    parent_issue_id=None,
-                    tester_defaults_path=defaults,
-                    dry_run=False,
-                )
+                company_id="cid",
+                project_id="pid",
+                parent_issue_id=None,
+                tester_defaults_path=defaults,
+                zero_trades_template_path=Path(td) / "missing_template.md",
+                dry_run=False,
+            )
             self.assertEqual(res.pass_count, 1)
 
             conn2 = sqlite3.connect(str(db))
@@ -130,6 +131,7 @@ class GateEvaluatorTests(unittest.TestCase):
                 project_id="pid",
                 parent_issue_id=None,
                 tester_defaults_path=Path(td) / "tester_defaults.json",
+                zero_trades_template_path=Path(td) / "missing_template.md",
                 dry_run=False,
             )
             self.assertEqual(res.requeued_count, 1)
@@ -171,6 +173,7 @@ class GateEvaluatorTests(unittest.TestCase):
                 project_id="pid",
                 parent_issue_id=None,
                 tester_defaults_path=Path(td) / "tester_defaults.json",
+                zero_trades_template_path=Path(td) / "missing_template.md",
                 dry_run=False,
             )
             self.assertEqual(res.blocked_strategy_count, 1)
@@ -206,6 +209,7 @@ class GateEvaluatorTests(unittest.TestCase):
                 project_id="pid",
                 parent_issue_id=None,
                 tester_defaults_path=defaults,
+                zero_trades_template_path=Path(td) / "missing_template.md",
                 dry_run=False,
             )
             self.assertEqual(res.pass_gate_failed_count, 1)
@@ -215,6 +219,54 @@ class GateEvaluatorTests(unittest.TestCase):
             assert row is not None
             self.assertEqual(row[0], "invalid")
             self.assertEqual(row[1], "INVALID")
+
+    @patch("urllib.request.urlopen")
+    def test_zero_trades_uses_template_when_available(self, mock_urlopen: object) -> None:
+        class _Resp:
+            def __enter__(self) -> "_Resp":
+                return self
+
+            def __exit__(self, exc_type: object, exc: object, tb: object) -> bool:
+                return False
+
+            def read(self) -> bytes:
+                return b'{"id":"ISSUE-1"}'
+
+        mock_urlopen.return_value = _Resp()
+        with tempfile.TemporaryDirectory() as td:
+            db = Path(td) / "mt5_queue.db"
+            template = Path(td) / "zero_trades_dispatch_template.md"
+            template.write_text("ZT {ea_id} {phase} {symbol} {source_job_id}", encoding="utf-8")
+            conn = sqlite3.connect(str(db))
+            _create_jobs_table(conn)
+            _insert_job(
+                conn,
+                job_id="job-zt-template",
+                verdict="FAIL",
+                invalidation_reason="run_smoke_fail:MIN_TRADES_NOT_MET",
+                retry_count=0,
+                phase="P2",
+            )
+            conn.close()
+
+            _ = evaluate(
+                sqlite_path=db,
+                max_retries=3,
+                limit=50,
+                paperclip_base="http://127.0.0.1:3100",
+                company_id="cid",
+                project_id="pid",
+                parent_issue_id=None,
+                tester_defaults_path=Path(td) / "tester_defaults.json",
+                zero_trades_template_path=template,
+                dry_run=False,
+            )
+
+            call_args = mock_urlopen.call_args
+            self.assertIsNotNone(call_args)
+            req = call_args[0][0]
+            payload = req.data.decode("utf-8")
+            self.assertIn("ZT QM5_1003 P2 EURUSD.DWX job-zt-template", payload)
 
 
 if __name__ == "__main__":

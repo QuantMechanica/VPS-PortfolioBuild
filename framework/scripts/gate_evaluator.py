@@ -24,8 +24,9 @@ from typing import Any
 PHASE_SEQUENCE = ["P1", "P2", "P3", "P3.5", "P4", "P5", "P5b", "P5c", "P6", "P7", "P8"]
 INFRA_RETRY_TOKENS = ("no_summary_json:rc=1", "REPORT_MISSING")
 ZERO_TRADES_TOKEN = "MIN_TRADES_NOT_MET"
-ZERO_TRADES_AGENT_ID = "8ba981d2"
+ZERO_TRADES_AGENT_ID = "8ba981d2-a750-4566-9681-e237fa66261f"
 DEFAULT_TESTER_DEFAULTS = Path(r"C:\QM\repo\framework\registry\tester_defaults.json")
+DEFAULT_ZERO_TRADES_TEMPLATE = Path(r"C:\QM\repo\framework\registry\zero_trades_dispatch_template.md")
 
 
 @dataclass
@@ -185,10 +186,11 @@ def create_zero_trades_issue(
     project_id: str,
     parent_issue_id: str | None,
     job: dict[str, Any],
+    template_path: Path,
     dry_run: bool,
 ) -> str | None:
     title = f"Zero-Trades recovery: {job['ea_id']} {job['phase']} {job['symbol']}"
-    body = (
+    inline_body = (
         "Auto-created by gate_evaluator.py after strategy-level FAIL.\n\n"
         f"- ea_id: {job['ea_id']}\n"
         f"- phase: {job['phase']}\n"
@@ -197,6 +199,20 @@ def create_zero_trades_issue(
         f"- result_path: {job.get('result_path') or ''}\n"
         f"- source_job_id: {job['job_id']}\n"
     )
+    body = inline_body
+    if template_path.exists():
+        try:
+            tmpl = template_path.read_text(encoding="utf-8")
+            body = (
+                tmpl.replace("{ea_id}", str(job["ea_id"]))
+                .replace("{phase}", str(job["phase"]))
+                .replace("{symbol}", str(job["symbol"]))
+                .replace("{reason}", str(job.get("invalidation_reason") or job.get("verdict") or ""))
+                .replace("{result_path}", str(job.get("result_path") or ""))
+                .replace("{source_job_id}", str(job["job_id"]))
+            )
+        except Exception:
+            body = inline_body
     if dry_run:
         return "DRY_RUN"
     payload: dict[str, Any] = {
@@ -294,6 +310,7 @@ def evaluate(
     project_id: str,
     parent_issue_id: str | None,
     tester_defaults_path: Path,
+    zero_trades_template_path: Path,
     dry_run: bool,
 ) -> EvalResult:
     result = EvalResult()
@@ -378,6 +395,7 @@ def evaluate(
                     project_id=project_id,
                     parent_issue_id=parent_issue_id,
                     job=row,
+                    template_path=zero_trades_template_path,
                     dry_run=dry_run,
                 )
                 if not dry_run:
@@ -412,6 +430,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--project-id", default="71b6d994-70ba-4a28-bd62-732b42a9ea58")
     parser.add_argument("--parent-issue-id", default="", help="Optional parent issue for escalation issues")
     parser.add_argument("--tester-defaults", default=str(DEFAULT_TESTER_DEFAULTS))
+    parser.add_argument("--zero-trades-template", default=str(DEFAULT_ZERO_TRADES_TEMPLATE))
     parser.add_argument("--dry-run", action="store_true")
     return parser.parse_args()
 
@@ -427,6 +446,7 @@ def main() -> int:
         project_id=str(args.project_id),
         parent_issue_id=str(args.parent_issue_id or "") or None,
         tester_defaults_path=Path(str(args.tester_defaults)),
+        zero_trades_template_path=Path(str(args.zero_trades_template)),
         dry_run=bool(args.dry_run),
     )
     print(json.dumps(summary.__dict__, sort_keys=True))
