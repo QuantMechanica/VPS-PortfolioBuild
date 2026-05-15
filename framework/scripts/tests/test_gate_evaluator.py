@@ -73,6 +73,65 @@ def _insert_job(conn: sqlite3.Connection, **kw: object) -> None:
 
 
 class GateEvaluatorTests(unittest.TestCase):
+    def test_legacy_schema_without_optional_columns_is_supported(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            db = Path(td) / "mt5_queue.db"
+            conn = sqlite3.connect(str(db))
+            conn.execute(
+                """
+                CREATE TABLE jobs (
+                  job_id TEXT PRIMARY KEY,
+                  ea_id TEXT NOT NULL,
+                  version TEXT NOT NULL,
+                  symbol TEXT NOT NULL,
+                  period TEXT NOT NULL,
+                  year INTEGER NOT NULL,
+                  phase TEXT NOT NULL,
+                  sub_gate_config_hash TEXT NOT NULL,
+                  setfile_path TEXT NOT NULL,
+                  status TEXT NOT NULL,
+                  verdict TEXT,
+                  invalidation_reason TEXT,
+                  claimed_by TEXT,
+                  claimed_at TEXT,
+                  started_at TEXT,
+                  finished_at TEXT,
+                  result_path TEXT,
+                  retry_count INTEGER NOT NULL DEFAULT 0,
+                  enqueued_at TEXT NOT NULL,
+                  enqueued_by TEXT NOT NULL
+                )
+                """
+            )
+            conn.execute(
+                """
+                INSERT INTO jobs
+                (job_id, ea_id, version, symbol, period, year, phase, sub_gate_config_hash, setfile_path,
+                 status, verdict, invalidation_reason, result_path, retry_count, enqueued_at, enqueued_by, finished_at)
+                VALUES
+                ('legacy-1','QM5_1003','baseline','EURUSD.DWX','H1',2024,'P2','cfg001','C:/tmp/x.set',
+                 'done','INVALID','REPORT_MISSING','D:/QM/reports/pipeline/x/summary.json',0,
+                 '2026-05-15T00:00:00Z','phase_orchestrator','2026-05-15T00:10:00Z')
+                """
+            )
+            conn.commit()
+            conn.close()
+
+            res = evaluate(
+                sqlite_path=db,
+                max_retries=3,
+                limit=50,
+                paperclip_base="http://127.0.0.1:3100",
+                company_id="cid",
+                project_id="pid",
+                parent_issue_id=None,
+                tester_defaults_path=Path(td) / "tester_defaults.json",
+                zero_trades_template_path=Path(td) / "missing_template.md",
+                dry_run=True,
+            )
+            self.assertEqual(res.processed, 1)
+            self.assertEqual(res.requeued_count, 1)
+
     def test_infer_ea_slug_from_setfile_path(self) -> None:
         slug = infer_ea_slug(
             setfile_path=r"C:\QM\repo\framework\EAs\QM5_1003_davey_baseline_3bar\sets\QM5_1003_XAUUSD.DWX_H1_backtest.set",
