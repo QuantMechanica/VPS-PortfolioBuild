@@ -21,12 +21,13 @@ from pathlib import Path
 from typing import Any
 
 
-PHASE_SEQUENCE = ["P1", "P2", "P3", "P3.5", "P4", "P5", "P5b", "P5c", "P6", "P7", "P8"]
+PHASE_SEQUENCE = ["P0", "P1", "P2", "P3", "P3.5", "P4", "P5", "P5b", "P5c", "P6", "P7", "P8"]
 INFRA_RETRY_TOKENS = ("no_summary_json:rc=1", "REPORT_MISSING", "missing_verdict")
 ZERO_TRADES_TOKEN = "MIN_TRADES_NOT_MET"
 ZERO_TRADES_AGENT_ID = "8ba981d2-a750-4566-9681-e237fa66261f"
 DEFAULT_TESTER_DEFAULTS = Path(r"C:\QM\repo\framework\registry\tester_defaults.json")
 DEFAULT_ZERO_TRADES_TEMPLATE = Path(r"C:\QM\repo\framework\registry\zero_trades_dispatch_template.md")
+VERIFY_BUILD_DEPLOYMENT_SCRIPT = Path(r"C:\QM\repo\framework\scripts\verify_build_deployment.py")
 
 
 @dataclass
@@ -182,6 +183,52 @@ def run_rollforward_scripts(
     except Exception as exc:
         return False, f"rollforward:exception:{exc}"
     return True, ""
+
+
+def _normalize_ea_numeric_id(ea_id: str) -> str:
+    raw = str(ea_id or "").strip()
+    if raw.startswith("QM5_"):
+        parts = raw.split("_", 2)
+        if len(parts) >= 2:
+            return parts[1]
+    return raw
+
+
+def run_build_deployment_verifier(
+    *,
+    ea_id: str,
+    setfile_path: str,
+    dry_run: bool,
+) -> tuple[bool, str, dict[str, Any]]:
+    if dry_run:
+        return True, "", {"verdict": "PASS", "exit_code": 0, "dry_run": True}
+    if not VERIFY_BUILD_DEPLOYMENT_SCRIPT.exists():
+        return False, "build_verify:script_missing", {"verdict": "VERIFY_SCRIPT_MISSING"}
+    ea_slug = infer_ea_slug(setfile_path=setfile_path, ea_id=ea_id)
+    ea_dir_glob = f"{ea_slug}*"
+    cmd = [
+        "python",
+        str(VERIFY_BUILD_DEPLOYMENT_SCRIPT),
+        "--json",
+        "--ea-id",
+        _normalize_ea_numeric_id(ea_id),
+        "--ea-dir-glob",
+        ea_dir_glob,
+    ]
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True, check=False)
+    except Exception as exc:
+        return False, f"build_verify:exception:{exc}", {"verdict": "VERIFY_EXCEPTION"}
+    payload: dict[str, Any]
+    try:
+        payload = json.loads(proc.stdout or "{}")
+    except Exception:
+        payload = {"stdout": (proc.stdout or "")[:1000], "stderr": (proc.stderr or "")[:1000]}
+    verdict = str(payload.get("verdict") or "").strip().upper()
+    if int(proc.returncode) == 0 and verdict == "PASS":
+        return True, "", payload
+    reason = f"build_verify:{verdict or 'FAILED'}:rc={int(proc.returncode)}"
+    return False, reason, payload
 
 
 def infer_ea_slug(setfile_path: str, ea_id: str) -> str:
@@ -352,16 +399,38 @@ def evaluate(
                 reason = reason or "missing_verdict"
                 verdict = "INVALID"
             if verdict == "PASS":
-                pass_ok, pass_reason = evaluate_pass_gate(row.get("result_path", ""), tester_defaults)
-                if not pass_ok:
-                    if not dry_run:
-                        conn.execute(
-                            "UPDATE jobs SET status='invalid', verdict='INVALID', invalidation_reason=?, verdict_processed_at=? WHERE job_id=?",
-                            (pass_reason, now, row["job_id"]),
-                        )
-                    result.pass_gate_failed_count += 1
-                    result.processed += 1
-                    continue
+                if row["phase"] == "P0":
+                    verify_ok, verify_reason, verify_payload = run_build_deployment_verifier(
+                        ea_id=row["ea_id"],
+                        setfile_path=row["setfile_path"],
+                        dry_run=dry_run,
+                    )
+                    if not verify_ok:
+                        if not dry_run:
+                            conn.execute(
+                                "UPDATE jobs SET status='invalid', verdict=?, invalidation_reason=?, result_path=?, verdict_processed_at=? WHERE job_id=?",
+                                (
+                                    str(verify_payload.get("verdict") or "GHOST_BUILD"),
+                                    verify_reason,
+                                    json.dumps(verify_payload, ensure_ascii=False),
+                                    now,
+                                    row["job_id"],
+                                ),
+                            )
+                        result.pass_gate_failed_count += 1
+                        result.processed += 1
+                        continue
+                if row["phase"] != "P0":
+                    pass_ok, pass_reason = evaluate_pass_gate(row.get("result_path", ""), tester_defaults)
+                    if not pass_ok:
+                        if not dry_run:
+                            conn.execute(
+                                "UPDATE jobs SET status='invalid', verdict='INVALID', invalidation_reason=?, verdict_processed_at=? WHERE job_id=?",
+                                (pass_reason, now, row["job_id"]),
+                            )
+                        result.pass_gate_failed_count += 1
+                        result.processed += 1
+                        continue
                 nxt = next_phase(row["phase"])
                 if nxt is not None:
                     ok, roll_reason = run_rollforward_scripts(

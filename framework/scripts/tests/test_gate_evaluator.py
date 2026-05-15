@@ -6,7 +6,11 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from framework.scripts.gate_evaluator import evaluate, infer_ea_slug, run_rollforward_scripts
+from framework.scripts.gate_evaluator import (
+    evaluate,
+    infer_ea_slug,
+    run_rollforward_scripts,
+)
 
 
 def _create_jobs_table(conn: sqlite3.Connection) -> None:
@@ -235,6 +239,42 @@ class GateEvaluatorTests(unittest.TestCase):
             self.assertEqual(rows[1][1], "P3")
             self.assertEqual(rows[1][2], "queued")
             self.assertTrue(bool(src and src[0]))
+
+    @patch("framework.scripts.gate_evaluator.run_build_deployment_verifier")
+    def test_p0_pass_is_blocked_when_build_verifier_fails(self, mock_verify: object) -> None:
+        mock_verify.return_value = (False, "build_verify:GHOST_BUILD:rc=1", {"verdict": "GHOST_BUILD"})
+        with tempfile.TemporaryDirectory() as td:
+            db = Path(td) / "mt5_queue.db"
+            conn = sqlite3.connect(str(db))
+            _create_jobs_table(conn)
+            _insert_job(conn, job_id="job-p0-ghost", verdict="PASS", phase="P0")
+            conn.close()
+
+            res = evaluate(
+                sqlite_path=db,
+                max_retries=3,
+                limit=50,
+                paperclip_base="http://127.0.0.1:3100",
+                company_id="cid",
+                project_id="pid",
+                parent_issue_id=None,
+                tester_defaults_path=Path(td) / "tester_defaults.json",
+                zero_trades_template_path=Path(td) / "missing_template.md",
+                dry_run=False,
+            )
+            self.assertEqual(res.pass_gate_failed_count, 1)
+
+            conn2 = sqlite3.connect(str(db))
+            row = conn2.execute(
+                "SELECT status, verdict, invalidation_reason FROM jobs WHERE job_id='job-p0-ghost'"
+            ).fetchone()
+            queued = conn2.execute("SELECT COUNT(*) FROM jobs WHERE status='queued'").fetchone()
+            conn2.close()
+            assert row is not None and queued is not None
+            self.assertEqual(row[0], "invalid")
+            self.assertEqual(row[1], "GHOST_BUILD")
+            self.assertIn("build_verify:GHOST_BUILD", row[2])
+            self.assertEqual(queued[0], 0)
 
     def test_infra_fail_requeues_before_retry_cap(self) -> None:
         with tempfile.TemporaryDirectory() as td:
