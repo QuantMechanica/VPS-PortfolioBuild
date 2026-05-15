@@ -112,10 +112,11 @@ def mark_done(conn: sqlite3.Connection, *, job_id: str, verdict: str, result_pat
 
 
 def _ea_numeric(ea_id: str) -> str:
-    match = re.search(r"(\d+)", ea_id)
-    if not match:
+    tokens = re.findall(r"(\d+)", ea_id)
+    if not tokens:
         raise ValueError(f"ea_id has no numeric component: {ea_id}")
-    return match.group(1)
+    # Use the trailing numeric token so QM5_1003 resolves to 1003.
+    return tokens[-1]
 
 
 def _resolve_ex5_name(job: dict[str, Any], terminal_root: Path) -> Path:
@@ -137,7 +138,9 @@ def _parse_summary_path(text: str) -> Path | None:
     return Path(match.group(1).strip())
 
 
-def run_job(job: dict[str, Any], *, terminal: str, report_root: Path, mt5_root: Path) -> tuple[str, str, str]:
+def run_job(
+    job: dict[str, Any], *, terminal: str, report_root: Path, mt5_root: Path, timeout_seconds: int
+) -> tuple[str, str, str]:
     terminal_root = mt5_root / terminal
     terminal_exe = terminal_root / "terminal64.exe"
     if not terminal_exe.exists():
@@ -177,6 +180,9 @@ def run_job(job: dict[str, Any], *, terminal: str, report_root: Path, mt5_root: 
         str(setfile),
         "-ReportRoot",
         str(report_root),
+        "-TimeoutSeconds",
+        str(int(timeout_seconds)),
+        "-AllowRunningTerminal",
     ]
     proc = subprocess.run(cmd, capture_output=True, text=True)
     output = (proc.stdout or "") + "\n" + (proc.stderr or "")
@@ -198,6 +204,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--report-root", default=str(DEFAULT_REPORT_ROOT), help="Report output root.")
     parser.add_argument("--mt5-root", default=r"D:/QM/mt5", help="MT5 terminals root (contains T1..T5).")
     parser.add_argument("--poll-sec", type=int, default=30, help="Sleep when queue is empty.")
+    parser.add_argument("--timeout-seconds", type=int, default=60, help="run_smoke timeout seconds per run.")
     parser.add_argument("--once", action="store_true", help="Run one claim cycle and exit.")
     return parser.parse_args()
 
@@ -241,6 +248,7 @@ def main() -> int:
                     terminal=terminal,
                     report_root=Path(args.report_root),
                     mt5_root=mt5_root,
+                    timeout_seconds=max(60, int(args.timeout_seconds)),
                 )
                 mark_done(conn, job_id=job["job_id"], verdict=verdict, result_path=result_path, invalidation_reason=reason)
                 heartbeat(conn, terminal=terminal, current_job_id=None, last_error=None)
