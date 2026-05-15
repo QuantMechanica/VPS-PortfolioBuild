@@ -6,6 +6,7 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from framework.scripts import phase_orchestrator as po
 
@@ -29,6 +30,16 @@ class PhaseOrchestratorProducerTests(unittest.TestCase):
             self.assertEqual(second["status"], "enqueued")
             self.assertEqual(second["inserted"], 0)
             self.assertGreater(second["skipped_duplicate"], 0)
+
+    @patch("framework.scripts.phase_orchestrator._verify_build_deployment_for_ea")
+    def test_launch_phase_p2_is_blocked_when_verifier_fails(self, mock_verify: object) -> None:
+        mock_verify.return_value = (False, "build_verify:GHOST_BUILD:rc=1", {"verdict": "GHOST_BUILD"})
+        with tempfile.TemporaryDirectory() as tmp:
+            queue_db = Path(tmp) / "mt5_queue.db"
+            result = po.launch_phase("QM5_1003", "P2", dry_run=False, queue_sqlite=queue_db)
+            self.assertEqual(result["status"], "blocked_ghost_build")
+            self.assertIn("build_verify:GHOST_BUILD", result["reason"])
+            self.assertEqual(result["verifier"]["verdict"], "GHOST_BUILD")
 
     def test_find_next_phase_uses_pipeline_pass_state(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

@@ -42,6 +42,7 @@ PIPELINE_ROOT = Path(r"D:\QM\reports\pipeline")
 EA_ROOT = REPO_ROOT / "framework" / "EAs"
 DEFAULT_QUEUE_SQLITE = Path(r"D:\QM\reports\pipeline\mt5_queue.db")
 DEFAULT_DISPATCH_STATE = DEFAULT_STATE_PATH
+VERIFY_BUILD_DEPLOYMENT_SCRIPT = REPO_ROOT / "framework" / "scripts" / "verify_build_deployment.py"
 
 # Phase order per PIPELINE_PHASE_SPEC.md
 PHASE_ORDER = ["G0", "P1", "P2", "P3", "P3.5", "P4", "P5", "P5b", "P5c", "P6", "P7", "P8", "P9", "P9b", "P10"]
@@ -107,6 +108,43 @@ def _setfile_path_for_symbol(ea: str, symbol: str, period: str = "H1") -> str | 
     if not setfile.exists():
         return None
     return str(setfile)
+
+
+def _normalize_ea_numeric_id(ea: str) -> str:
+    label = str(ea or "").strip()
+    if label.startswith("QM5_"):
+        parts = label.split("_", 2)
+        if len(parts) >= 2:
+            return parts[1]
+    return label
+
+
+def _verify_build_deployment_for_ea(ea: str, dry_run: bool) -> tuple[bool, str, dict]:
+    if dry_run:
+        return True, "", {"verdict": "PASS", "dry_run": True}
+    if not VERIFY_BUILD_DEPLOYMENT_SCRIPT.exists():
+        return False, "build_verify:script_missing", {"verdict": "VERIFY_SCRIPT_MISSING"}
+    cmd = [
+        sys.executable,
+        str(VERIFY_BUILD_DEPLOYMENT_SCRIPT),
+        "--json",
+        "--ea-id",
+        _normalize_ea_numeric_id(ea),
+        "--ea-dir-glob",
+        f"{ea}_*",
+    ]
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True, check=False)
+    except Exception as exc:
+        return False, f"build_verify:exception:{exc}", {"verdict": "VERIFY_EXCEPTION"}
+    try:
+        payload = json.loads(proc.stdout or "{}")
+    except Exception:
+        payload = {"stdout": (proc.stdout or "")[:1000], "stderr": (proc.stderr or "")[:1000]}
+    verdict = str(payload.get("verdict") or "").strip().upper()
+    if int(proc.returncode) == 0 and verdict == "PASS":
+        return True, "", payload
+    return False, f"build_verify:{verdict or 'FAILED'}:rc={int(proc.returncode)}", payload
 
 
 def _enqueue_phase_jobs(
@@ -404,6 +442,15 @@ def append_orchestration_log(ea: str, decision: dict) -> None:
 
 def launch_phase(ea: str, phase: str, dry_run: bool, queue_sqlite: Path) -> dict:
     """Dispatch the runner for a phase. Returns dict with status."""
+    if phase == "P2":
+        verify_ok, verify_reason, verify_payload = _verify_build_deployment_for_ea(ea, dry_run=dry_run)
+        if not verify_ok:
+            return {
+                "status": "blocked_ghost_build",
+                "phase": phase,
+                "reason": verify_reason,
+                "verifier": verify_payload,
+            }
     if phase in QUEUE_PHASES:
         if dry_run:
             symbols, err = _discover_phase_symbols(ea, phase)
