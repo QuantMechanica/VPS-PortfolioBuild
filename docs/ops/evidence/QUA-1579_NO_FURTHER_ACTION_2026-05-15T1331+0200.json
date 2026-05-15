@@ -1,0 +1,7 @@
+{
+  "issue": "QUA-1579",
+  "kind": "no_further_action",
+  "captured_at_local": "2026-05-15T13:31:00+02:00",
+  "statement": "Development scope complete; await CTO/Ops transition to done.",
+  "close_request_artifact": "docs/ops/evidence/QUA-1579_CLOSE_REQUEST_2026-05-15T1329+0200.md"
+}
