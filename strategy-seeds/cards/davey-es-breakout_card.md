@@ -271,7 +271,7 @@ data_requirements: standard                    # Darwinex US500.DWX daily bars
 
 | version | date | rebuild reason | P-stage reached | verdict |
 |---|---|---|---|---|
-| _v1 | TBD | initial build | TBD | TBD |
+| _v1 | 2026-05-15 | initial build | P2 (37 symbols, 2024 H1) | STRATEGY_DRIFT (symbol-universe drift; see § 16 entry 2026-05-15) |
 
 ## 15. Pipeline Phase Status (current `_v<n>`)
 
@@ -279,7 +279,7 @@ data_requirements: standard                    # Darwinex US500.DWX daily bars
 |---|---|---|---|
 | G0 Research Intake | 2026-04-27 | DRAFT | this card |
 | P1 Build Validation | TBD | TBD | TBD |
-| P2 Baseline Screening | TBD | TBD | TBD |
+| P2 Baseline Screening | 2026-05-15 | STRATEGY_DRIFT | `D:/QM/reports/pipeline/QM5_1004/P2/report.csv`; verdict in `docs/ops/evidence/2026-05-15_zero_trades_p2_baseline_verdicts.csv`; Research review at `strategy-seeds/sources/SRC01/QUA-1551_drift_verdict.md` |
 | P3 Parameter Sweep | TBD | TBD | TBD |
 | P3.5 CSR | TBD | TBD | TBD |
 | P4 Walk-Forward | TBD | TBD | TBD |
@@ -322,4 +322,29 @@ data_requirements: standard                    # Darwinex US500.DWX daily bars
 - 2026-04-27: ES futures vs Darwinex US500.DWX CFD: contract-size and tick-size differ enough
   that Davey's $600 stop won't transfer mechanically. CTO sanity-check at G0 produces the
   correct mapping; P3 sweep re-optimizes from scratch.
+
+- 2026-05-15 (QUA-1551, P2 drift verdict): P2 dispatch for QM5_1004 fanned out over 37 symbols
+  (AUDCAD/AUDCHF/AUDJPY/AUDNZD/AUDUSD/EURUSD/GBPUSD/USDJPY/USDCAD/NZDUSD/XAUUSD/XAGUSD/EURJPY/
+  GBPJPY/EURGBP/NDXm/EURAUD/GBPAUD/USDCHF/NZDCAD/UK100/CADCHF/CHFJPY/EURCAD/EURCHF/EURNZD/...) on
+  2024 H1, and reported 0 trades on all of them (MIN_TRADES_NOT_MET). VERDICT: STRATEGY_DRIFT
+  driven by **symbol-universe drift**, NOT parameter drift and NOT BASELINE_ACCURATE_FAILED.
+  The card's § 3 declares `primary_target_symbols: US500.DWX` (S&P 500 CFD as Darwinex proxy
+  for the @ES futures Davey deploys on); the FX/metals/cross-index universe was never authorised
+  by Research, and a daily-bar countertrend-on-fresh-N-day-extreme rule calibrated on US equity
+  index volatility (X=9, Y=5, Z=$600 = ~12 S&P points) doesn't transfer to AUDNZD, AUDCAD, etc.
+  without re-derivation. Corrective card delta — **P2 symbol universe for QM5_1004 is restricted
+  to {US500.DWX}** as the sole primary target. NDXm.DWX and UK100.DWX are NOT approved as
+  proxies here (different index, different vol regime). No FX, no metals, no crypto. Recommended
+  next step for Zero-Trades-Specialist: re-dispatch P2 on US500.DWX only, full 1-year 2024
+  window (not just H1), with the EA explicitly on D1 timeframe (Davey p. 117: "We will use
+  daily bars"). If that single-symbol/full-year run still produces 0 trades, the verdict
+  escalates to BASELINE_ACCURATE_FAILED because Davey's own walk-forward windows show
+  ~5-10 trades/year on @ES daily — zero trades on a year of US500.DWX daily would indicate a
+  build-side bug, not a strategy-hypothesis problem (since the source explicitly quantifies
+  the hypothesis as flat-to-down rather than untradeable). If it produces a small number of
+  trades (~5-15/year) consistent with author Table 13.1, and the cumulative result is
+  flat-to-negative, that REPRODUCES Davey's reported -$9,938 cumulative OOS 2005-2010 and
+  the card has discharged its purpose as the "expected fail" calibration specimen; the V5
+  P2 gate can then kill it cleanly per the prior at § 6 (entry 2026-04-27) and the strategy
+  is retired (not rebuilt).
 ```
