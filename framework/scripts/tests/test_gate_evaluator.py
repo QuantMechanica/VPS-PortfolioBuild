@@ -31,6 +31,7 @@ def _create_jobs_table(conn: sqlite3.Connection) -> None:
           finished_at TEXT,
           result_path TEXT,
           retry_count INTEGER NOT NULL DEFAULT 0,
+          escalation_issue_id TEXT,
           enqueued_at TEXT NOT NULL,
           enqueued_by TEXT NOT NULL
         )
@@ -44,8 +45,8 @@ def _insert_job(conn: sqlite3.Connection, **kw: object) -> None:
         """
         INSERT INTO jobs
         (job_id, ea_id, version, symbol, period, year, phase, sub_gate_config_hash, setfile_path,
-         status, verdict, invalidation_reason, result_path, retry_count, enqueued_at, enqueued_by, finished_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         status, verdict, invalidation_reason, result_path, retry_count, escalation_issue_id, enqueued_at, enqueued_by, finished_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             kw["job_id"],
@@ -62,6 +63,7 @@ def _insert_job(conn: sqlite3.Connection, **kw: object) -> None:
             kw.get("invalidation_reason", ""),
             str(kw.get("result_path", "D:/QM/reports/pipeline/x/summary.json")),
             kw.get("retry_count", 0),
+            str(kw.get("escalation_issue_id", "")),
             "2026-05-15T00:00:00Z",
             "phase_orchestrator",
             "2026-05-15T00:10:00Z",
@@ -336,6 +338,47 @@ class GateEvaluatorTests(unittest.TestCase):
             req = call_args[0][0]
             payload = req.data.decode("utf-8")
             self.assertIn("ZT QM5_1003 P2 EURUSD.DWX job-zt-template", payload)
+
+    @patch("framework.scripts.gate_evaluator.create_zero_trades_issue")
+    def test_zero_trades_skips_duplicate_issue_when_escalation_present(self, mock_create: object) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            db = Path(td) / "mt5_queue.db"
+            conn = sqlite3.connect(str(db))
+            _create_jobs_table(conn)
+            _insert_job(
+                conn,
+                job_id="job-zt-existing",
+                verdict="FAIL",
+                invalidation_reason="run_smoke_fail:MIN_TRADES_NOT_MET",
+                escalation_issue_id="QUA-1234",
+                retry_count=0,
+                phase="P2",
+            )
+            conn.close()
+
+            res = evaluate(
+                sqlite_path=db,
+                max_retries=3,
+                limit=50,
+                paperclip_base="http://127.0.0.1:3100",
+                company_id="cid",
+                project_id="pid",
+                parent_issue_id=None,
+                tester_defaults_path=Path(td) / "tester_defaults.json",
+                zero_trades_template_path=Path(td) / "missing_template.md",
+                dry_run=False,
+            )
+            self.assertEqual(res.blocked_strategy_count, 1)
+            mock_create.assert_not_called()
+
+            conn2 = sqlite3.connect(str(db))
+            row = conn2.execute(
+                "SELECT status, escalation_issue_id FROM jobs WHERE job_id='job-zt-existing'"
+            ).fetchone()
+            conn2.close()
+            assert row is not None
+            self.assertEqual(row[0], "blocked_strategy")
+            self.assertEqual(row[1], "QUA-1234")
 
     def test_infra_fail_marks_failed_terminal_at_retry_cap(self) -> None:
         with tempfile.TemporaryDirectory() as td:
