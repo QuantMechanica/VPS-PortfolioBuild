@@ -88,3 +88,82 @@ python framework/scripts/resolve_backtest_target.py `
 Expected matrix state path after completion:
 - `dispatch_state.json -> phase_matrix_index["<ea_id>_<version>_<phase>"]`
 - Fields: `matrix[]`, `phase_verdict`, `next_strategy_unblocked`
+
+## MT5 Multi-EA Saturation Scheduler (SQLite queue adapter)
+
+Deterministic one-tick scheduler that reads `mt5_job_queue` rows with `status='queued'` and dispatches into available T1-T5 capacity via `resolve_target_terminal` / `dispatch_state.json`.
+
+```powershell
+python framework/scripts/mt5_saturation_scheduler.py `
+  --sqlite D:\QM\reports\pipeline\mt5_queue.db `
+  --dispatch-state D:\QM\Reports\pipeline\dispatch_state.json `
+  --max-per-terminal 3 `
+  --scan-limit 500
+```
+
+Dry-run mode (no DB/state writes):
+
+```powershell
+python framework/scripts/mt5_saturation_scheduler.py `
+  --sqlite D:\QM\reports\pipeline\mt5_queue.db `
+  --dispatch-state D:\QM\Reports\pipeline\dispatch_state.json `
+  --dry-run
+```
+
+Queue rows scheduled successfully are marked `status='dispatched'` with `assigned_terminal`, `dispatch_decision`, and `dedup_key`.
+
+## MT5 Worker-Pool Queue Init (jobs + heartbeat schema)
+
+Create/update the worker-pool queue schema idempotently:
+
+```powershell
+python framework/scripts/queue_init.py `
+  --sqlite D:\QM\reports\pipeline\mt5_queue.db
+```
+
+Expected output:
+- JSON summary with `status=ok` and `sqlite=<path>`.
+
+## MT5 Single Worker Prototype (claim-based)
+
+Run one deterministic claim/execute cycle on a specific terminal:
+
+```powershell
+python framework/scripts/mt5_worker.py `
+  --terminal T1 `
+  --sqlite D:\QM\reports\pipeline\mt5_queue.db `
+  --once
+```
+
+Notes:
+- `--terminal` accepts `T1..T5` only (`T6` is rejected with exit code `2`).
+- Worker updates `worker_heartbeat`, claims the next `jobs.status='queued'` row atomically, then marks `done`/`failed`.
+
+## Enqueue MT5 Queue Rows (deterministic producer helper)
+
+Use this when `mt5_queue.db` has no queued rows and you need to drive a scheduler tick without manual SQL.
+
+```powershell
+python framework/scripts/mt5_queue_enqueue.py `
+  --sqlite D:\QM\reports\pipeline\mt5_queue.db `
+  --job-json C:\QM\repo\.scratch\job_qm5_1003_p2.json
+```
+
+Expected output:
+- JSON summary with `status=ok`, `inserted`, and `inserted_ids`.
+
+## One-shot MT5 Saturation Evidence Bundle
+
+Capture `before -> scheduler tick -> after` queue state in one artifact:
+
+```powershell
+python framework/scripts/mt5_saturation_evidence_once.py `
+  --sqlite D:\QM\reports\pipeline\mt5_queue.db `
+  --dispatch-state D:\QM\Reports\pipeline\dispatch_state.json `
+  --out D:\QM\reports\pipeline\mt5_saturation_evidence_once_<timestamp>.json
+```
+
+Expected artifact keys:
+- `before`
+- `tick`
+- `after`

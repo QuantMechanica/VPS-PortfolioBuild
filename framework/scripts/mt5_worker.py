@@ -1,0 +1,255 @@
+#!/usr/bin/env python3
+"""Single-terminal MT5 queue worker prototype (claim-based, deterministic)."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import re
+import sqlite3
+import subprocess
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+if __package__ is None or __package__ == "":
+    import sys
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
+from framework.scripts.queue_init import ensure_schema
+
+REPO_ROOT = Path(r"C:/QM/repo")
+DEFAULT_SQLITE = Path(r"D:/QM/reports/pipeline/mt5_queue.db")
+DEFAULT_REPORT_ROOT = Path(r"D:/QM/reports/pipeline")
+RUN_SMOKE = REPO_ROOT / "framework" / "scripts" / "run_smoke.ps1"
+
+
+def utc_now() -> str:
+    return datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def heartbeat(conn: sqlite3.Connection, *, terminal: str, current_job_id: str | None, last_error: str | None) -> None:
+    conn.execute(
+        """
+        INSERT INTO worker_heartbeat(terminal_id, pid, last_seen_utc, current_job_id, jobs_completed, last_error)
+        VALUES(?, ?, ?, ?, 0, ?)
+        ON CONFLICT(terminal_id) DO UPDATE SET
+          pid=excluded.pid,
+          last_seen_utc=excluded.last_seen_utc,
+          current_job_id=excluded.current_job_id,
+          last_error=excluded.last_error
+        """,
+        (terminal, os.getpid(), utc_now(), current_job_id, last_error),
+    )
+
+
+def claim_one(conn: sqlite3.Connection, *, terminal: str) -> dict[str, Any] | None:
+    row = conn.execute(
+        """
+        WITH next_job AS (
+          SELECT job_id
+          FROM jobs
+          WHERE status='queued'
+          ORDER BY enqueued_at ASC, job_id ASC
+          LIMIT 1
+        )
+        UPDATE jobs
+        SET status='claimed', claimed_by=?, claimed_at=?
+        WHERE job_id=(SELECT job_id FROM next_job)
+        RETURNING job_id, ea_id, version, symbol, period, year, phase, setfile_path
+        """,
+        (terminal, utc_now()),
+    ).fetchone()
+    if row is None:
+        return None
+    return {
+        "job_id": str(row[0]),
+        "ea_id": str(row[1]),
+        "version": str(row[2]),
+        "symbol": str(row[3]),
+        "period": str(row[4]),
+        "year": int(row[5]),
+        "phase": str(row[6]),
+        "setfile_path": str(row[7]),
+    }
+
+
+def mark_failed(conn: sqlite3.Connection, *, job_id: str, reason: str) -> None:
+    conn.execute(
+        """
+        UPDATE jobs
+        SET status='failed', verdict='INVALID', invalidation_reason=?, finished_at=?
+        WHERE job_id=?
+        """,
+        (reason, utc_now(), job_id),
+    )
+
+
+def mark_running(conn: sqlite3.Connection, *, job_id: str) -> None:
+    conn.execute("UPDATE jobs SET status='running', started_at=? WHERE job_id=?", (utc_now(), job_id))
+
+
+def mark_done(conn: sqlite3.Connection, *, job_id: str, verdict: str, result_path: str, invalidation_reason: str) -> None:
+    conn.execute(
+        """
+        UPDATE jobs
+        SET status='done', verdict=?, result_path=?, invalidation_reason=?, finished_at=?
+        WHERE job_id=?
+        """,
+        (verdict, result_path, invalidation_reason or None, utc_now(), job_id),
+    )
+    conn.execute(
+        """
+        UPDATE worker_heartbeat
+        SET jobs_completed=jobs_completed+1
+        WHERE terminal_id=(SELECT claimed_by FROM jobs WHERE job_id=?)
+        """,
+        (job_id,),
+    )
+
+
+def _ea_numeric(ea_id: str) -> str:
+    match = re.search(r"(\d+)", ea_id)
+    if not match:
+        raise ValueError(f"ea_id has no numeric component: {ea_id}")
+    return match.group(1)
+
+
+def _resolve_ex5_name(job: dict[str, Any], terminal_root: Path) -> Path:
+    experts = terminal_root / "MQL5" / "Experts" / "QM"
+    ea_id = job["ea_id"]
+    direct = experts / f"{ea_id}.ex5"
+    if direct.exists():
+        return direct
+    prefixed = sorted(experts.glob(f"{ea_id}_*.ex5"))
+    if len(prefixed) == 1:
+        return prefixed[0]
+    raise FileNotFoundError(f"deploy_missing: unable to resolve .ex5 for {ea_id} under {experts}")
+
+
+def _parse_summary_path(text: str) -> Path | None:
+    match = re.search(r"run_smoke\.summary=(\S+)", text)
+    if not match:
+        return None
+    return Path(match.group(1).strip())
+
+
+def run_job(job: dict[str, Any], *, terminal: str, report_root: Path) -> tuple[str, str, str]:
+    terminal_root = Path(r"D:/QM/mt5") / terminal
+    terminal_exe = terminal_root / "terminal64.exe"
+    if not terminal_exe.exists():
+        raise FileNotFoundError(f"deploy_missing:{terminal_exe}")
+
+    profile = terminal_root / "MQL5" / "Profiles" / "Tester" / "Groups"
+    if not profile.exists() or not any(profile.glob("*.txt")):
+        raise FileNotFoundError(f"missing_commission_profile:{profile}")
+
+    ex5_path = _resolve_ex5_name(job, terminal_root)
+    setfile = Path(job["setfile_path"])
+    if not setfile.exists():
+        raise FileNotFoundError(f"deploy_missing:{setfile}")
+
+    cmd = [
+        "pwsh.exe",
+        "-NoProfile",
+        "-File",
+        str(RUN_SMOKE),
+        "-EAId",
+        _ea_numeric(job["ea_id"]),
+        "-Symbol",
+        job["symbol"],
+        "-Year",
+        str(job["year"]),
+        "-Terminal",
+        terminal,
+        "-Period",
+        job["period"],
+        "-Runs",
+        "2",
+        "-Model",
+        "4",
+        "-Expert",
+        f"QM\\{ex5_path.stem}",
+        "-SetFile",
+        str(setfile),
+        "-ReportRoot",
+        str(report_root),
+    ]
+    proc = subprocess.run(cmd, capture_output=True, text=True)
+    output = (proc.stdout or "") + "\n" + (proc.stderr or "")
+    summary = _parse_summary_path(output)
+
+    if summary is None or not summary.exists():
+        raise RuntimeError(f"no_summary_json:rc={proc.returncode}")
+
+    payload = json.loads(summary.read_text(encoding="utf-8-sig"))
+    verdict = "PASS" if payload.get("result") == "PASS" else "FAIL"
+    reason = "" if verdict == "PASS" else "run_smoke_fail"
+    return verdict, str(summary), reason
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="MT5 claim-based worker prototype.")
+    parser.add_argument("--terminal", required=True, help="Terminal id (T1..T5).")
+    parser.add_argument("--sqlite", default=str(DEFAULT_SQLITE), help="Path to mt5_queue.db.")
+    parser.add_argument("--report-root", default=str(DEFAULT_REPORT_ROOT), help="Report output root.")
+    parser.add_argument("--poll-sec", type=int, default=30, help="Sleep when queue is empty.")
+    parser.add_argument("--once", action="store_true", help="Run one claim cycle and exit.")
+    return parser.parse_args()
+
+
+def main() -> int:
+    args = parse_args()
+    terminal = str(args.terminal).upper()
+    if terminal not in {"T1", "T2", "T3", "T4", "T5"}:
+        print(json.dumps({"status": "error", "reason": "terminal_out_of_policy", "terminal": terminal}))
+        return 2
+
+    sqlite_path = Path(args.sqlite)
+    sqlite_path.parent.mkdir(parents=True, exist_ok=True)
+
+    while True:
+        conn = sqlite3.connect(str(sqlite_path))
+        conn.row_factory = sqlite3.Row
+        try:
+            ensure_schema(conn)
+            heartbeat(conn, terminal=terminal, current_job_id=None, last_error=None)
+            job = claim_one(conn, terminal=terminal)
+            conn.commit()
+            if job is None:
+                heartbeat(conn, terminal=terminal, current_job_id=None, last_error=None)
+                conn.commit()
+                if args.once:
+                    print(json.dumps({"status": "idle", "terminal": terminal}, sort_keys=True))
+                    return 0
+                time.sleep(max(1, int(args.poll_sec)))
+                continue
+
+            heartbeat(conn, terminal=terminal, current_job_id=job["job_id"], last_error=None)
+            mark_running(conn, job_id=job["job_id"])
+            conn.commit()
+
+            try:
+                verdict, result_path, reason = run_job(job, terminal=terminal, report_root=Path(args.report_root))
+                mark_done(conn, job_id=job["job_id"], verdict=verdict, result_path=result_path, invalidation_reason=reason)
+                heartbeat(conn, terminal=terminal, current_job_id=None, last_error=None)
+                conn.commit()
+                print(json.dumps({"status": "done", "terminal": terminal, "job_id": job["job_id"], "verdict": verdict}, sort_keys=True))
+            except Exception as exc:  # noqa: BLE001
+                reason = str(exc)
+                mark_failed(conn, job_id=job["job_id"], reason=reason)
+                heartbeat(conn, terminal=terminal, current_job_id=None, last_error=reason)
+                conn.commit()
+                print(json.dumps({"status": "failed", "terminal": terminal, "job_id": job["job_id"], "reason": reason}, sort_keys=True))
+
+            if args.once:
+                return 0
+        finally:
+            conn.close()
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
