@@ -39,7 +39,7 @@ exists for the same `card_id`:
   This cheap chain advances the EA to the MT5 fleet immediately.
 - STOP this wake.
 
-### Step 2 — Codex build (expensive)
+### Step 2 — Codex build (expensive, chains to review + enqueue when smoke passes)
 
 Else if an `artifacts/cards_approved/QM5_*.md` exists and no `tasks` row has
 `kind='build_ea' AND card_id=<that ea_id>`:
@@ -52,6 +52,21 @@ Else if an `artifacts/cards_approved/QM5_*.md` exists and no `tasks` row has
   ```
 - Codex writes JSON to `build_result_path`. Read it; verify schema.
 - `farmctl record-build --task-id <task-id> --result-file "<build_result_path>"`
+- **CHAIN — in the SAME wake, if the build_ea task ended `status='done'`
+  (smoke `passed` or `zero_trades`):**
+  1. `farmctl claude-review-prompt --build-task-id <build-task-id>`
+  2. READ the rendered prompt + card + `.mq5` + codex result.
+  3. Apply the six-section checklist from `prompts/claude_review_ea.md` literally.
+  4. Write the JSON verdict to the `verdict_path`.
+  5. `farmctl record-review --task-id <review-task-id> --result-file "<verdict-path>"`
+  6. If the verdict is `APPROVE_FOR_BACKTEST`, also call
+     `farmctl enqueue-backtest --review-task-id <review-task-id> --phase P2`.
+  Total chain budget: build (~5-15 min Codex) + review (~1-3 min) + enqueue
+  (cheap) ≤ 20 min, well under the 45 min ExecutionTimeLimit.
+- If the build_ea task ended `status='failed'` or `'blocked'`, **skip the
+  chain** — Step 1 next wake will handle next card's review if any built EA
+  is awaiting review, otherwise next wake's Step 2 will tackle the next
+  approved card.
 - STOP this wake.
 
 ### Step 3 — G0 batch verdict (cheap, up to 5 cards per wake)
