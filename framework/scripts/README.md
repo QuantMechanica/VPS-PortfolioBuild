@@ -235,6 +235,8 @@ Evaluates `jobs` rows where `status='done'` and `verdict_processed_at IS NULL`, 
 - infra FAIL/INVALID retry handling (`no_summary_json:rc=1`, `REPORT_MISSING`, `missing_verdict`)
 - strategy FAIL (`MIN_TRADES_NOT_MET`) escalation issue for Zero-Trades-Specialist
 
+Scheduled Task target (ops): `QM_GateEvaluator_5min` (S4U), every 5 minutes.
+
 ```powershell
 python framework/scripts/gate_evaluator.py `
   --sqlite D:\QM\reports\pipeline\mt5_queue.db `
