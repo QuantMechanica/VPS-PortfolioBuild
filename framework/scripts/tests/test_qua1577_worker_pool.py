@@ -38,6 +38,54 @@ class QUA1577WorkerPoolTests(unittest.TestCase):
             finally:
                 conn.close()
 
+    def test_queue_init_schema_columns_match_contract(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db_path = Path(tmpdir) / "mt5_queue.db"
+            conn = sqlite3.connect(str(db_path))
+            try:
+                ensure_schema(conn)
+                jobs_cols = [row[1] for row in conn.execute("PRAGMA table_info('jobs')").fetchall()]
+                heartbeat_cols = [row[1] for row in conn.execute("PRAGMA table_info('worker_heartbeat')").fetchall()]
+            finally:
+                conn.close()
+
+            self.assertEqual(
+                jobs_cols,
+                [
+                    "job_id",
+                    "ea_id",
+                    "version",
+                    "symbol",
+                    "period",
+                    "year",
+                    "phase",
+                    "sub_gate_config_hash",
+                    "setfile_path",
+                    "status",
+                    "verdict",
+                    "invalidation_reason",
+                    "claimed_by",
+                    "claimed_at",
+                    "started_at",
+                    "finished_at",
+                    "result_path",
+                    "retry_count",
+                    "enqueued_at",
+                    "enqueued_by",
+                ],
+            )
+            self.assertEqual(
+                heartbeat_cols,
+                [
+                    "terminal_id",
+                    "pid",
+                    "last_seen_utc",
+                    "current_job_id",
+                    "jobs_completed",
+                    "last_error",
+                ],
+            )
+
     def test_mt5_worker_refuses_t6_with_required_log_and_exit_code(self) -> None:
         script_path = Path("framework/scripts/mt5_worker.py")
         proc = subprocess.run(
