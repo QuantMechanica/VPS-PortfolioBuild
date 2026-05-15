@@ -42,13 +42,21 @@ If `active_sources` has an entry whose status is `active` AND
 Else if `D:/QM/strategy_farm/artifacts/cards_draft/` has a `.md` with
 `g0_status: PENDING` (or unset) in frontmatter:
 
-- For ONE card (oldest first): apply R1-R4 verdict per
-  `processes/qb_reputable_source_criteria.md` +
-  `04 Processes/Research Methodology.md` +
-  `03 Pipeline/G0 Research Intake.md`.
-- All R1-R4 PASS → `farmctl approve-card --card "<path>" --reasoning "<one line>"`
-- Any FAIL → `farmctl reject-card --card "<path>" --reason "<one line>"`
-- HR14 absolute: any mention of ML/NN/adaptive parameters → REJECT.
+- For ONE card (oldest first): apply R1-R4 verdict per the canonical
+  `C:/QM/repo/processes/qb_reputable_source_criteria.md`.
+- **OWNER 2026-05-15 — relaxed criteria** (G0 is a wide net, the pipeline filters):
+  - **R1**: source link exists → PASS. Anonymous forum handles OK if linked.
+    Only REJECT if no source attribution at all.
+  - **R2**: directional entry + exit rules exist → PASS. Gaps in side-params
+    (ATR multiplier, exact lookback) OK; Codex fills defaults. Only REJECT if
+    fully discretionary, no rules.
+  - **R3**: testable on ≥1 DWX instrument **after porting** → PASS. Crypto /
+    equity / options strategies port to Forex/CFDs and are valid. Only REJECT
+    if it fundamentally needs a non-CFD feature (options chain, ETF flows).
+  - **R4 (binding HR14)**: no ML / no neural / no adaptive / no grid-without-
+    bounded-worst-case. Strict. No exceptions without OWNER written approval.
+- All four PASS → `farmctl approve-card --card "<path>" --reasoning "<one line>"`
+- Any FAIL → `farmctl reject-card --card "<path>" --reason "<which R + why>"`
 - STOP this wake.
 
 ### Step 3 — Approved card has no build_ea task
