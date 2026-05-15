@@ -8,11 +8,14 @@ back into the filesystem.
 from __future__ import annotations
 
 import argparse
+import csv
 import datetime as dt
+import glob
 import json
 import os
 import re
 import sqlite3
+import subprocess
 import sys
 import uuid
 from pathlib import Path
@@ -27,6 +30,9 @@ PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
 CLAUDE_RESEARCH_TEMPLATE = PROMPTS_DIR / "claude_research_source.md"
 CODEX_BUILD_TEMPLATE = PROMPTS_DIR / "codex_build_ea.md"
 CLAUDE_REVIEW_TEMPLATE = PROMPTS_DIR / "claude_review_ea.md"
+
+PIPELINE_REPORT_ROOT = Path(r"D:\QM\reports\pipeline")
+SUPPORTED_BACKTEST_PHASES = ("P2",)  # v1 — extend as phases come online
 
 RUNTIME_DIRS = [
     "queue",
@@ -520,6 +526,364 @@ def render_claude_prompt(root: Path, source_id_arg: str | None, out_path: str | 
     }
 
 
+def get_mt5_status() -> dict[str, Any]:
+    """Return MT5 fleet status via tasklist scan of terminal64.exe.
+
+    v1 is intentionally coarse — counts running terminals and lists their PIDs +
+    window titles. Per-slot (T1..T5) attribution requires cwd inspection that
+    tasklist alone cannot do; future revisions can swap in psutil for that.
+    """
+    scan_at = utc_now()
+    try:
+        result = subprocess.run(
+            ["tasklist", "/V", "/FO", "CSV", "/FI", "IMAGENAME eq terminal64.exe"],
+            capture_output=True,
+            text=True,
+            timeout=15,
+        )
+    except Exception as exc:
+        return {"scanned_at": scan_at, "error": f"tasklist failed: {exc}"}
+
+    lines = [l for l in result.stdout.splitlines() if "terminal64.exe" in l]
+    processes: list[dict[str, str]] = []
+    for line in lines:
+        # CSV cols: ImageName, PID, SessionName, Session#, MemUsage, Status, UserName, CpuTime, WindowTitle
+        try:
+            reader = csv.reader([line])
+            cols = next(reader)
+            if len(cols) >= 9:
+                processes.append({
+                    "pid": cols[1].strip('"'),
+                    "status": cols[5].strip('"'),
+                    "window_title": cols[8].strip('"'),
+                })
+        except Exception:
+            continue
+
+    return {
+        "scanned_at": scan_at,
+        "terminal64_running_count": len(processes),
+        "processes": processes,
+        "note": "v1 scan — per-slot T1..T5 attribution requires cwd inspection (see future psutil swap)",
+    }
+
+
+def classify_p2(report_csv_path: Path) -> dict[str, Any]:
+    """Apply the P2 phase gate to a p2_baseline report.csv.
+
+    Verdict logic per Pipeline Overview + HR7:
+    - >=1 PASS symbol  -> PASS, advance EA (Portfolio-Kandidat = mindestens 1 Symbol durch).
+    - All FAIL with trade_count_below_min reason  -> ZERO_TRADES (HR7: setup, not strategy fail).
+    - >=50% INVALID  -> INFRA_FAIL (G1 / real-ticks / model4 setup problem).
+    - Otherwise  -> STRATEGY_FAIL.
+    """
+    if not report_csv_path.exists():
+        return {
+            "verdict": "INFRA_FAIL",
+            "reason": "report.csv missing",
+            "evidence_path": str(report_csv_path),
+        }
+
+    rows: list[dict[str, str]] = []
+    try:
+        with report_csv_path.open(encoding="utf-8") as f:
+            rows = list(csv.DictReader(f))
+    except Exception as exc:
+        return {
+            "verdict": "INFRA_FAIL",
+            "reason": f"report.csv unreadable: {exc}",
+            "evidence_path": str(report_csv_path),
+        }
+
+    if not rows:
+        return {
+            "verdict": "INFRA_FAIL",
+            "reason": "report.csv has no data rows",
+            "evidence_path": str(report_csv_path),
+        }
+
+    surviving = [r["symbol"] for r in rows if r.get("verdict") == "PASS"]
+    fails = [r for r in rows if r.get("verdict") == "FAIL"]
+    invalids = [r for r in rows if r.get("verdict") == "INVALID"]
+    zero_trade_syms = [
+        r["symbol"] for r in fails
+        if "trade_count_below_min" in (r.get("invalidation_reason") or "")
+    ]
+    strategy_fail_syms = [r["symbol"] for r in fails if r["symbol"] not in zero_trade_syms]
+
+    counts: dict[str, int] = {}
+    for r in rows:
+        v = r.get("verdict", "MISSING")
+        counts[v] = counts.get(v, 0) + 1
+
+    base = {
+        "evidence_path": str(report_csv_path),
+        "counts_by_verdict": counts,
+        "surviving_symbols": surviving,
+        "zero_trade_symbols": zero_trade_syms,
+        "invalid_symbols": [r["symbol"] for r in invalids],
+        "strategy_fail_symbols": strategy_fail_syms,
+    }
+
+    if surviving:
+        return {**base, "verdict": "PASS"}
+    if zero_trade_syms and not strategy_fail_syms:
+        return {
+            **base,
+            "verdict": "ZERO_TRADES",
+            "advice": "Per HR7 NO_REPORT != EA-Schwaeche. Investigate filters/window before declaring strategy fail.",
+        }
+    if invalids and len(invalids) >= 0.5 * len(rows):
+        return {
+            **base,
+            "verdict": "INFRA_FAIL",
+            "advice": "Majority INVALID — check G1 real-ticks marker, Model 4 setup, tester defaults.",
+        }
+    return {**base, "verdict": "STRATEGY_FAIL"}
+
+
+PHASE_CLASSIFIERS = {
+    "P2": classify_p2,
+}
+
+
+def classify_backtest(phase: str, report_csv_path: Path) -> dict[str, Any]:
+    fn = PHASE_CLASSIFIERS.get(phase)
+    if fn is None:
+        return {
+            "verdict": "UNSUPPORTED",
+            "reason": f"no classifier registered for phase {phase}",
+            "evidence_path": str(report_csv_path),
+        }
+    return fn(report_csv_path)
+
+
+def enqueue_backtest(root: Path, review_task_id: str, phase: str) -> dict[str, Any]:
+    """Create a backtest_<phase> task from an APPROVE_FOR_BACKTEST ea_review task."""
+    if phase not in SUPPORTED_BACKTEST_PHASES:
+        return {
+            "enqueued": False,
+            "reason": f"Phase {phase} not yet supported. Supported: {SUPPORTED_BACKTEST_PHASES}",
+        }
+    init_db(root)
+    with connect(root) as conn:
+        review_row = conn.execute("SELECT * FROM tasks WHERE id = ?", (review_task_id,)).fetchone()
+        if review_row is None:
+            return {"enqueued": False, "reason": f"Review task not found: {review_task_id}"}
+        if review_row["kind"] != "ea_review":
+            return {
+                "enqueued": False,
+                "reason": f"Task {review_task_id} kind={review_row['kind']!r}, expected ea_review",
+            }
+
+        review_payload = json.loads(review_row["payload_json"])
+        verdict_doc = review_payload.get("verdict") or {}
+        if verdict_doc.get("verdict") != "APPROVE_FOR_BACKTEST":
+            return {
+                "enqueued": False,
+                "reason": f"Review verdict was {verdict_doc.get('verdict')!r}, not APPROVE_FOR_BACKTEST",
+            }
+
+        ea_id = review_payload.get("ea_id")
+        if not ea_id:
+            return {"enqueued": False, "reason": "Review payload missing ea_id"}
+
+        # p2_baseline writes to D:/QM/reports/pipeline/<ea_dir_name>/P2/report.csv
+        # We don't know ea_dir_name a priori, so store a glob and resolve at poll time.
+        expected_glob = str(PIPELINE_REPORT_ROOT / f"{ea_id}_*" / phase / "report.csv")
+
+        task_id = create_task(
+            conn,
+            kind=f"backtest_{phase.lower()}",
+            source_id=review_row["source_id"],
+            card_id=review_row["card_id"],
+            payload={
+                "phase": phase,
+                "ea_id": ea_id,
+                "review_task_id": review_task_id,
+                "expected_report_glob": expected_glob,
+            },
+        )
+
+    return {
+        "enqueued": True,
+        "task_id": task_id,
+        "ea_id": ea_id,
+        "phase": phase,
+        "expected_report_glob": expected_glob,
+        "next_action_hint": "python tools/strategy_farm/farmctl.py dispatch-tick",
+    }
+
+
+def _resolve_report(payload: dict[str, Any]) -> Path | None:
+    """Resolve the report.csv path for a backtest task — direct path or glob."""
+    direct = payload.get("expected_report_path")
+    if direct and Path(direct).exists():
+        return Path(direct)
+    glob_pat = payload.get("expected_report_glob")
+    if glob_pat:
+        matches = glob.glob(glob_pat)
+        if matches:
+            return Path(matches[0])
+    return None
+
+
+def _phase_runner_cmd(phase: str, ea_id: str) -> list[str] | None:
+    """Return the subprocess argv for the runner of a given phase, or None."""
+    if phase == "P2":
+        return [
+            sys.executable,
+            str(REPO_ROOT / "framework" / "scripts" / "p2_baseline.py"),
+            "--ea",
+            ea_id,
+        ]
+    return None
+
+
+def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
+    """One-step advance for backtest_* tasks.
+
+    Order of operations:
+    1. Poll all active backtest tasks — if report.csv exists, classify and finalize.
+       If older than timeout_hours with no report, mark failed.
+    2. If no backtest task is active after polling, start the oldest pending one
+       by Popen-ing the phase runner detached.
+
+    HR16 enforcement: at most one backtest task active at any time (factory-wide).
+    Saturation across EAs comes in a later flag once v1 is stable.
+    """
+    init_db(root)
+    actions: list[dict[str, Any]] = []
+    started_iso = utc_now()
+
+    with connect(root) as conn:
+        active_rows = conn.execute(
+            "SELECT * FROM tasks WHERE kind LIKE 'backtest_%' AND status = 'active' "
+            "ORDER BY created_at"
+        ).fetchall()
+
+        for row in active_rows:
+            payload = json.loads(row["payload_json"])
+            phase = payload.get("phase", "?")
+            report = _resolve_report(payload)
+            if report is not None and report.exists():
+                classification = classify_backtest(phase, report)
+                update_task(
+                    conn,
+                    row["id"],
+                    status="done" if classification.get("verdict") == "PASS" else "done",
+                    # Both PASS and non-PASS terminate the backtest task as done;
+                    # downstream phase advance / EA-DEAD decision is based on the
+                    # classification.verdict in payload, not on task status.
+                    payload_merge={
+                        "classification": classification,
+                        "completed_at_iso": started_iso,
+                        "expected_report_path": str(report),
+                    },
+                )
+                actions.append({
+                    "task_id": row["id"],
+                    "action": "classified",
+                    "phase": phase,
+                    "verdict": classification.get("verdict"),
+                    "surviving_symbols": classification.get("surviving_symbols", []),
+                })
+                continue
+
+            start_iso = payload.get("started_at_iso")
+            if start_iso:
+                try:
+                    start_dt = dt.datetime.fromisoformat(start_iso.replace("Z", "+00:00"))
+                    now_dt = dt.datetime.now(dt.UTC)
+                    age_hours = (now_dt - start_dt).total_seconds() / 3600.0
+                except Exception:
+                    age_hours = 0.0
+                if age_hours > timeout_hours:
+                    update_task(
+                        conn,
+                        row["id"],
+                        status="failed",
+                        payload_merge={
+                            "timeout_reason": f"no report after {age_hours:.2f}h (limit {timeout_hours}h)",
+                            "completed_at_iso": started_iso,
+                        },
+                    )
+                    actions.append({
+                        "task_id": row["id"],
+                        "action": "timeout",
+                        "phase": phase,
+                        "age_hours": round(age_hours, 2),
+                    })
+                    continue
+
+            actions.append({
+                "task_id": row["id"],
+                "action": "still_running",
+                "phase": phase,
+                "pid": payload.get("pid"),
+            })
+
+        still_running = any(a["action"] == "still_running" for a in actions)
+        if not still_running:
+            pending_row = conn.execute(
+                "SELECT * FROM tasks WHERE kind LIKE 'backtest_%' AND status = 'pending' "
+                "ORDER BY created_at LIMIT 1"
+            ).fetchone()
+            if pending_row is not None:
+                payload = json.loads(pending_row["payload_json"])
+                phase = payload.get("phase")
+                ea_id = payload.get("ea_id")
+                cmd = _phase_runner_cmd(phase, ea_id)
+                if cmd is None:
+                    update_task(
+                        conn,
+                        pending_row["id"],
+                        status="failed",
+                        payload_merge={"failure_reason": f"no runner for phase {phase}"},
+                    )
+                    actions.append({
+                        "task_id": pending_row["id"],
+                        "action": "no_runner",
+                        "phase": phase,
+                    })
+                else:
+                    log_path = root / "logs" / f"dispatch_{pending_row['id']}.log"
+                    log_path.parent.mkdir(parents=True, exist_ok=True)
+                    creationflags = 0
+                    if sys.platform == "win32":
+                        creationflags = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS  # type: ignore[attr-defined]
+                    log_fh = open(log_path, "w", encoding="utf-8")
+                    proc = subprocess.Popen(
+                        cmd,
+                        cwd=str(REPO_ROOT),
+                        stdout=log_fh,
+                        stderr=subprocess.STDOUT,
+                        creationflags=creationflags,
+                        close_fds=True,
+                    )
+                    update_task(
+                        conn,
+                        pending_row["id"],
+                        status="active",
+                        payload_merge={
+                            "started_at_iso": started_iso,
+                            "pid": proc.pid,
+                            "log_path": str(log_path),
+                            "cmd": cmd,
+                        },
+                    )
+                    actions.append({
+                        "task_id": pending_row["id"],
+                        "action": "started",
+                        "phase": phase,
+                        "ea_id": ea_id,
+                        "pid": proc.pid,
+                        "log_path": str(log_path),
+                    })
+
+    return {"scanned_at": started_iso, "actions": actions}
+
+
 def render_codex_build_prompt(root: Path, card_path_str: str, out_path: str | None) -> dict[str, Any]:
     """Validate an APPROVED card, create a build_ea task, render the Codex prompt."""
     init_db(root)
@@ -787,6 +1151,21 @@ def build_parser() -> argparse.ArgumentParser:
     record_review = sub.add_parser("record-review", help="Record Claude review verdict JSON into the ea_review task")
     record_review.add_argument("--task-id", required=True, help="ea_review task id")
     record_review.add_argument("--result-file", required=True, help="Path to Claude's verdict JSON")
+
+    sub.add_parser("mt5-slots", help="Show MT5 terminal process scan (running terminal64.exe count + window titles)")
+
+    enqueue_bt = sub.add_parser(
+        "enqueue-backtest",
+        help="Create a backtest_<phase> task from an APPROVE_FOR_BACKTEST ea_review task",
+    )
+    enqueue_bt.add_argument("--review-task-id", required=True)
+    enqueue_bt.add_argument("--phase", default="P2", choices=list(SUPPORTED_BACKTEST_PHASES))
+
+    dispatch = sub.add_parser(
+        "dispatch-tick",
+        help="Advance backtest tasks one step: start one pending, poll active, classify completed",
+    )
+    dispatch.add_argument("--timeout-hours", type=float, default=6.0)
     return parser
 
 
@@ -819,6 +1198,12 @@ def main(argv: list[str] | None = None) -> int:
         print_json(render_claude_review_prompt(root, args.build_task_id, args.out))
     elif args.command == "record-review":
         print_json(record_review_result(root, args.task_id, args.result_file))
+    elif args.command == "mt5-slots":
+        print_json(get_mt5_status())
+    elif args.command == "enqueue-backtest":
+        print_json(enqueue_backtest(root, args.review_task_id, args.phase))
+    elif args.command == "dispatch-tick":
+        print_json(dispatch_tick(root, timeout_hours=args.timeout_hours))
     else:
         raise AssertionError(args.command)
     return 0
