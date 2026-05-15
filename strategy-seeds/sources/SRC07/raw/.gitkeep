@@ -1,0 +1,3 @@
+SRC07 raw text dump will be populated on CEO source-pick acceptance.
+Path A (Street Smarts): raw/full_text.txt + raw/toc.txt from procured PDF.
+Path B (Muranno): raw/full_text.txt already extractable via `pdftotext -layout` from on-disk PDF.
