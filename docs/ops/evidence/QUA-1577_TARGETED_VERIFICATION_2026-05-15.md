@@ -8,7 +8,7 @@ python -m unittest framework/scripts/tests/test_qua1577_worker_pool.py
 
 Observed:
 
-- `Ran 3 tests ... OK`
+- `Ran 4 tests ... OK`
 
 Coverage in this test module:
 
@@ -16,3 +16,4 @@ Coverage in this test module:
 2. Required job indexes exist: `idx_jobs_status`, `idx_jobs_claimed_by` (partial), `idx_jobs_dedup`.
 3. `mt5_worker.py --terminal T6` returns exit code `2` and prints `[REFUSED] T6 is OFF LIMITS`.
 4. `mt5_worker.py --once` claims a queued row and writes failed verdict metadata back to SQLite (`status=failed`, `claimed_by=T1`, `verdict=INVALID`) in a deterministic temp MT5 root harness.
+5. Atomic claim ordering: with two queued rows (`job-oldest`, `job-newer`) and one `--once` execution, only `job-oldest` is claimed/processed; `job-newer` remains `queued`.
