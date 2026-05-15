@@ -1,0 +1,75 @@
+﻿{
+    "source_path":  "C:\\QM\\repo\\framework\\EAs\\QM5_1002_davey_eu_night\\QM5_1002_davey-eu-night.ex5",
+    "file_name":  "QM5_1002_davey-eu-night.ex5",
+    "deployed_at_local":  "2026-05-15T08:49:25.4787821+02:00",
+    "terminal_roots":  [
+                           "D:\\QM\\mt5\\T1",
+                           "D:\\QM\\mt5\\T2",
+                           "D:\\QM\\mt5\\T3",
+                           "D:\\QM\\mt5\\T4",
+                           "D:\\QM\\mt5\\T5"
+                       ],
+    "status_counts":  [
+                          {
+                              "status":  "unchanged",
+                              "count":  1
+                          },
+                          {
+                              "status":  "updated",
+                              "count":  4
+                          }
+                      ],
+    "files":  [
+                  {
+                      "terminal":  "T1",
+                      "status":  "unchanged",
+                      "source_path":  "C:\\QM\\repo\\framework\\EAs\\QM5_1002_davey_eu_night\\QM5_1002_davey-eu-night.ex5",
+                      "destination_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_1002_davey-eu-night.ex5",
+                      "source_hash_sha256":  "11C9A63438696FD7C7672DAC8C81F210CD4AB51C0DD0B288F92ECF25552EC62F",
+                      "destination_hash_before_sha256":  "11C9A63438696FD7C7672DAC8C81F210CD4AB51C0DD0B288F92ECF25552EC62F",
+                      "destination_hash_after_sha256":  "11C9A63438696FD7C7672DAC8C81F210CD4AB51C0DD0B288F92ECF25552EC62F",
+                      "hash_match":  true
+                  },
+                  {
+                      "terminal":  "T2",
+                      "status":  "updated",
+                      "source_path":  "C:\\QM\\repo\\framework\\EAs\\QM5_1002_davey_eu_night\\QM5_1002_davey-eu-night.ex5",
+                      "destination_path":  "D:\\QM\\mt5\\T2\\MQL5\\Experts\\QM\\QM5_1002_davey-eu-night.ex5",
+                      "source_hash_sha256":  "11C9A63438696FD7C7672DAC8C81F210CD4AB51C0DD0B288F92ECF25552EC62F",
+                      "destination_hash_before_sha256":  "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+                      "destination_hash_after_sha256":  "11C9A63438696FD7C7672DAC8C81F210CD4AB51C0DD0B288F92ECF25552EC62F",
+                      "hash_match":  true
+                  },
+                  {
+                      "terminal":  "T3",
+                      "status":  "updated",
+                      "source_path":  "C:\\QM\\repo\\framework\\EAs\\QM5_1002_davey_eu_night\\QM5_1002_davey-eu-night.ex5",
+                      "destination_path":  "D:\\QM\\mt5\\T3\\MQL5\\Experts\\QM\\QM5_1002_davey-eu-night.ex5",
+                      "source_hash_sha256":  "11C9A63438696FD7C7672DAC8C81F210CD4AB51C0DD0B288F92ECF25552EC62F",
+                      "destination_hash_before_sha256":  "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+                      "destination_hash_after_sha256":  "11C9A63438696FD7C7672DAC8C81F210CD4AB51C0DD0B288F92ECF25552EC62F",
+                      "hash_match":  true
+                  },
+                  {
+                      "terminal":  "T4",
+                      "status":  "updated",
+                      "source_path":  "C:\\QM\\repo\\framework\\EAs\\QM5_1002_davey_eu_night\\QM5_1002_davey-eu-night.ex5",
+                      "destination_path":  "D:\\QM\\mt5\\T4\\MQL5\\Experts\\QM\\QM5_1002_davey-eu-night.ex5",
+                      "source_hash_sha256":  "11C9A63438696FD7C7672DAC8C81F210CD4AB51C0DD0B288F92ECF25552EC62F",
+                      "destination_hash_before_sha256":  "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+                      "destination_hash_after_sha256":  "11C9A63438696FD7C7672DAC8C81F210CD4AB51C0DD0B288F92ECF25552EC62F",
+                      "hash_match":  true
+                  },
+                  {
+                      "terminal":  "T5",
+                      "status":  "updated",
+                      "source_path":  "C:\\QM\\repo\\framework\\EAs\\QM5_1002_davey_eu_night\\QM5_1002_davey-eu-night.ex5",
+                      "destination_path":  "D:\\QM\\mt5\\T5\\MQL5\\Experts\\QM\\QM5_1002_davey-eu-night.ex5",
+                      "source_hash_sha256":  "11C9A63438696FD7C7672DAC8C81F210CD4AB51C0DD0B288F92ECF25552EC62F",
+                      "destination_hash_before_sha256":  "8039728E5A4B80A61D0EB17007BE5BB114B69B82AA0CDEF7DAE1757A4FE981E0",
+                      "destination_hash_after_sha256":  "11C9A63438696FD7C7672DAC8C81F210CD4AB51C0DD0B288F92ECF25552EC62F",
+                      "hash_match":  true
+                  }
+              ],
+    "all_hashes_match":  true
+}
