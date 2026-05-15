@@ -137,9 +137,14 @@ def evaluate_pass_gate(summary_path: str, tester_defaults: dict[str, Any]) -> tu
     return True, ""
 
 
-def run_rollforward_scripts(*, ea_id: str, symbol: str, period: str, next_phase: str, dry_run: bool) -> tuple[bool, str]:
+def run_rollforward_scripts(
+    *, ea_id: str, setfile_path: str, symbol: str, period: str, next_phase: str, dry_run: bool
+) -> tuple[bool, str]:
     if dry_run:
         return True, ""
+    # Best-effort EA slug resolution from setfile path or ea_id.
+    ea_slug = infer_ea_slug(setfile_path=setfile_path, ea_id=ea_id)
+    ex5_path = rf"C:\QM\repo\framework\EAs\{ea_slug}\{ea_slug}.ex5"
     # Script names/params are deterministic; if wrappers evolve, keep this as the call boundary.
     gen_cmd = [
         "powershell",
@@ -149,7 +154,7 @@ def run_rollforward_scripts(*, ea_id: str, symbol: str, period: str, next_phase:
         "-File",
         r"C:\QM\repo\framework\scripts\gen_setfile.ps1",
         "-EaSlug",
-        ea_id,
+        ea_slug,
         "-Symbol",
         symbol,
         "-TF",
@@ -164,8 +169,8 @@ def run_rollforward_scripts(*, ea_id: str, symbol: str, period: str, next_phase:
         "Bypass",
         "-File",
         r"C:\QM\repo\framework\scripts\deploy_ea_to_all_terminals.ps1",
-        "-Ea",
-        ea_id,
+        "-EaPath",
+        ex5_path,
     ]
     try:
         gen = subprocess.run(gen_cmd, capture_output=True, text=True, check=False)
@@ -177,6 +182,18 @@ def run_rollforward_scripts(*, ea_id: str, symbol: str, period: str, next_phase:
     except Exception as exc:
         return False, f"rollforward:exception:{exc}"
     return True, ""
+
+
+def infer_ea_slug(setfile_path: str, ea_id: str) -> str:
+    text = str(setfile_path or "")
+    norm = text.replace("\\", "/")
+    parts = [p for p in norm.split("/") if p]
+    for part in parts:
+        if part.startswith("QM5_"):
+            return part
+    if str(ea_id).startswith("QM5_"):
+        return str(ea_id)
+    return f"QM5_{str(ea_id)}"
 
 
 def create_zero_trades_issue(
@@ -338,6 +355,7 @@ def evaluate(
                 if nxt is not None:
                     ok, roll_reason = run_rollforward_scripts(
                         ea_id=row["ea_id"],
+                        setfile_path=row["setfile_path"],
                         symbol=row["symbol"],
                         period=row["period"],
                         next_phase=nxt,
