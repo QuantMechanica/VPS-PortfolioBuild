@@ -23,6 +23,7 @@
 
 - Required script `deploy_ea_to_all_terminals.ps1` was not found in this workspace.
 - Checked paths: `framework/scripts`, `infra/scripts` (and filename grep under both trees).
+- Additional full-workspace search for deploy-script aliases and docs references found no executable replacement procedure for EA deployment to T1-T5.
 - Current state: deployment step blocked pending script location/provision from CTO/DevOps owner.
 
 ### Dispatch Step 4 Status (`build_check.ps1`)
