@@ -1,11 +1,15 @@
 ---
 title: Dual-Gate Registry — Full Queue State
 date: 2026-05-13
+last_updated: 2026-05-15
 qa_agent: Quality-Business (0ab3d743-e3fb-44e5-8d35-c05d0d78715d)
 supersedes: processes/strategy_cards/g1_approved_2026-05-09.md (still canonical for G1 audit)
 policy_ref: processes/qb_reputable_source_criteria.md (rev 2, BINDING 2026-04-29)
 status: BINDING
 scope: All Strategy Cards through SRC06, as of 2026-05-13
+changelog:
+  - 2026-05-15: singh-cmd-corr DEFERRED (WTI.cash.DWX + USDX.f unavailable; no Darwinex USD-index equivalent; QUA-1537 c5c3b3c1)
+  - 2026-05-15: queue count updated 32 → 31 P0-ready (singh-cmd-corr moved to Deferred)
 ---
 
 # Dual-Gate Registry — Full Queue State (2026-05-13)
@@ -91,40 +95,44 @@ EA IDs not yet allocated for this cohort; CTO must extend registry before P0 dis
 | 26 | SRC06_S10 | singh-power-ranger | H1/H4 | range / stochastic | — |
 | 27 | SRC06_S11 | singh-pendulum | H1/H4 | range / S&R bounce | — |
 | 28 | SRC06_S12 | singh-swap-fly | D1/W1 | carry + pattern | ⚑ friday_close=false exception: needs CEO + OWNER ratification before P0 |
-| 29 | SRC06_S13 | singh-cmd-corr | D1 | intermarket corr | ⚑ WTI.cash.DWX + USDX.f Darwinex availability unconfirmed |
+| ~~29~~ | ~~SRC06_S13~~ | ~~singh-cmd-corr~~ | ~~D1~~ | ~~intermarket corr~~ | **DEFERRED 2026-05-15** — WTI.cash.DWX unavailable; USDX.f unavailable with no Darwinex equivalent (QUA-1537) |
 | 30 | SRC06_S15 | singh-guppy-burst | M5 | range-bracket / ToD | ⚑ P5b-latency (M5 GBPJPY) |
 | 31 | SRC06_S16 | singh-eng-bk-tea | M15 | ToD / fade | ⚑ London DST-sensitive; broker-time validation needed at P0 |
 | 32 | SRC06_S17 | singh-gd-morn-asia | D1 | ToD / momentum | ⚑ inverted R:R flag (thin-thesis risk); P3 must validate positive expectancy |
 
 ---
 
-## 5. Deferred — CEO Hold (not P0-ready)
+## 5. Deferred — Instrument Unavailable or CEO Hold (not P0-ready)
 
 5 SRC05 cards deferred by CEO at e6fefd6a; QB G1 APPROVED (R1-R4 pass), CEO G0 DEFERRED.
 Unblock trigger: Darwinex instrument-mapping confirmation OR portfolio-of-N framework landing.
 
-| Card | Slug | Defer reason |
-|---|---|---|
-| SRC05_S04 | chan-at-spy-arb | SPX-component basket; no Darwinex multi-stock CFD coverage |
-| SRC05_S08 | chan-at-roll-arb-etf | ETF roll; ETFs not Darwinex-native |
-| SRC05_S09 | chan-at-vx-es-roll-mom | VX/ES futures; VX not Darwinex |
-| SRC05_S10 | chan-at-xs-mom-fut | Cross-sectional futures; universe mapping required |
-| SRC05_S11 | chan-at-xs-mom-stock | Cross-sectional stocks; Darwinex CFD availability uncertain |
+1 SRC06 card deferred by QB portfolio-fit verdict 2026-05-15 (instrument unavailability confirmed):
+Unblock trigger: Darwinex adds USD-index instrument (USD futures, DXY CFD, or equivalent).
+
+| Card | Slug | Defer reason | Source |
+|---|---|---|---|
+| SRC05_S04 | chan-at-spy-arb | SPX-component basket; no Darwinex multi-stock CFD coverage | CEO hold (e6fefd6a) |
+| SRC05_S08 | chan-at-roll-arb-etf | ETF roll; ETFs not Darwinex-native | CEO hold (e6fefd6a) |
+| SRC05_S09 | chan-at-vx-es-roll-mom | VX/ES futures; VX not Darwinex | CEO hold (e6fefd6a) |
+| SRC05_S10 | chan-at-xs-mom-fut | Cross-sectional futures; universe mapping required | CEO hold (e6fefd6a) |
+| SRC05_S11 | chan-at-xs-mom-stock | Cross-sectional stocks; Darwinex CFD availability uncertain | CEO hold (e6fefd6a) |
+| SRC06_S13 | singh-cmd-corr | USDX.f unavailable + no Darwinex USD-index equivalent confirmed (QUA-1537); crude substitute XTIUSD.DWX exists but USD-index leg fatal to intermarket thesis | QB verdict 2026-05-15 (c5c3b3c1) |
 
 ---
 
 ## 6. Queue Summary
 
-| Category | Count |
-|---|---|
-| Already in pipeline | 3 |
-| P0-ready (CTO QUA-1109 cohort) | 8 |
-| P0-ready (CEO e6fefd6a cohort) | 10 |
-| P0-ready (SRC06 Singh cohort) | 14 |
-| **Total P0-ready new builds** | **32** |
-| Deferred (CEO hold) | 5 |
+| Category | Count | Notes |
+|---|---|---|
+| Already in pipeline | 3 | |
+| P0-ready (CTO QUA-1109 cohort) | 8 | |
+| P0-ready (CEO e6fefd6a cohort) | 10 | |
+| P0-ready (SRC06 Singh cohort) | 13 | singh-cmd-corr DEFERRED 2026-05-15 |
+| **Total P0-ready new builds** | **31** | was 32; singh-cmd-corr removed |
+| Deferred (instrument unavailable or CEO hold) | 6 | +1 singh-cmd-corr vs 2026-05-13 |
 
-CTO QUA-1109 schedule covers 8 of the 32 P0-ready builds. **24 cards are outside the current
+CTO QUA-1109 schedule covers 8 of the 31 P0-ready builds. **23 cards are outside the current
 CTO schedule** and need P0 build ticket dispatch.
 
 ---
@@ -153,15 +161,22 @@ at P9 live-portfolio inclusion. CEO/portfolio manager should throttle H1/H4 at P
 
 | Market | Count | % of queue |
 |---|---|---|
-| Forex (single-pair) | ~22 | ~69% |
-| Pair/cointegration | ~7 | ~22% |
-| Commodities/indices (cmd-corr, cal-spread, futures) | ~3 | ~9% |
+| Forex (single-pair) | ~22 | ~71% |
+| Pair/cointegration | ~7 | ~23% |
+| Commodities/indices (cal-spread, futures-mapped) | ~2 | ~6% |
 
-**Flag: Forex single-pair at ~69% of queue significantly exceeds the 40% market cap.**
+**Update 2026-05-15:** singh-cmd-corr (the primary commodity/intermarket card) removed (DEFERRED).
+Forex concentration rises slightly from ~69% to ~71% as the non-forex D1 intermarket card exits.
+
+**Flag: Forex single-pair at ~71% of queue significantly exceeds the 40% market cap.**
 QB asks CEO to clarify: does the 40% forex cap apply to the DXZ-native forex universe
 (where 90%+ of available instruments are FX pairs) or to a fully diversified cross-asset
 portfolio? If Darwinex's deployable universe is FX-dominant, the cap may need recalibration
 for DXZ context. Flagging for CEO strategic decision — not blocking P0 builds.
+
+**Concentration pressure:** Removing singh-cmd-corr makes the SRC07 diversity-offset rule
+([QUA-1533](/QUA/issues/QUA-1533)) more critical — it is now the primary mechanism for introducing
+non-forex, non-D1 diversity into the build queue.
 
 ### Style concentration
 
@@ -177,13 +192,13 @@ for DXZ context. Flagging for CEO strategic decision — not blocking P0 builds.
 
 ### Pre-P0 action flags (must-resolve before P0 dispatch)
 
-| Flag | Cards affected | Owner |
-|---|---|---|
-| friday_close=false exception ratification | singh-swap-fly | CEO + OWNER |
-| WTI.cash.DWX + USDX.f availability | singh-cmd-corr | CTO / Pipeline-Op |
-| EA ID allocation | All Singh + CEO batch (14+10 cards) | CTO (registry) |
-| Pair-EA MT5 infrastructure | chan-at-bb-pair, chan-at-kf-pair, chan-at-fx-coint-pair, chan-at-cal-spread | CTO — verify before P0 dispatch |
-| Darwinex instrument mapping | chan-at-buy-on-gap, chan-at-ts-mom-fut, chan-at-fstx-gap-mom | CTO / CEO |
+| Flag | Cards affected | Owner | Status |
+|---|---|---|---|
+| friday_close=false exception ratification | singh-swap-fly | CEO + OWNER | open (QUA-1527) |
+| WTI.cash.DWX + USDX.f availability | singh-cmd-corr | CTO / Pipeline-Op | **RESOLVED 2026-05-15** — both unavailable; USDX.f no Darwinex equivalent → card DEFERRED |
+| EA ID allocation | All Singh + CEO batch (13+10 cards) | CTO (registry) | open |
+| Pair-EA MT5 infrastructure | chan-at-bb-pair, chan-at-kf-pair, chan-at-fx-coint-pair, chan-at-cal-spread | CTO | open (QUA-1465 chain blocked) |
+| Darwinex instrument mapping | chan-at-buy-on-gap, chan-at-ts-mom-fut, chan-at-fstx-gap-mom | CTO / CEO | open |
 
 ### Scalping P5b flags
 
@@ -196,18 +211,28 @@ at P5b. These are NOT P0 blockers — the pipeline will filter them.
 
 ## 8. Next Actions
 
-| Priority | Action | Owner |
-|---|---|---|
-| HIGH | Allocate EA IDs for 24 un-scheduled cards (10 CEO batch + 14 Singh) | CTO (registry) |
-| HIGH | Ratify singh-swap-fly friday_close=false exception | CEO + OWNER |
-| HIGH | Confirm WTI.cash.DWX + USDX.f availability | Pipeline-Op / CTO |
-| MEDIUM | Extend P0 build-ticket dispatch beyond QUA-1109 cohort | CTO |
-| MEDIUM | Clarify 40% forex-market cap scope for DXZ portfolio | CEO |
-| MEDIUM | Pair-EA infrastructure confirmation (SRC05 stat-arb cards) | CTO |
-| LOW | Darwinex instrument mapping for futures-dependent cards (S03, S07, S12) | CTO / CEO |
-| LOW | H1/H4 throttle policy at P9 if concentration exceeds 30% live | CEO |
+| Priority | Action | Owner | Status |
+|---|---|---|---|
+| HIGH | Allocate EA IDs for 23 un-scheduled cards (10 CEO batch + 13 Singh) | CTO (registry) | open |
+| HIGH | Ratify singh-swap-fly friday_close=false exception | CEO + OWNER | open (QUA-1527) |
+| ~~HIGH~~ | ~~Confirm WTI.cash.DWX + USDX.f availability~~ | ~~CTO~~ | **DONE 2026-05-15** — both unavailable; singh-cmd-corr DEFERRED |
+| MEDIUM | Extend P0 build-ticket dispatch beyond QUA-1109 cohort | CTO | open |
+| MEDIUM | Clarify 40% forex-market cap scope for DXZ portfolio | CEO | open |
+| MEDIUM | Pair-EA infrastructure confirmation (SRC05 stat-arb cards) | CTO | open (QUA-1465 chain blocked) |
+| LOW | Darwinex instrument mapping for futures-dependent cards (S03, S07, S12) | CTO / CEO | open |
+| LOW | H1/H4 throttle policy at P9 if concentration exceeds 30% live | CEO | open |
 
 ---
 
-*QB Quality-Business — 2026-05-13. CEO final authority on all G0 decisions.
+*QB Quality-Business — 2026-05-13, updated 2026-05-15. CEO final authority on all G0 decisions.
 This registry documents QB's stewardship view; CEO resolves flagged items.*
+
+---
+
+## Appendix: Post-2026-05-13 Pipeline Events (QB monitoring)
+
+| Date | Event | Impact |
+|---|---|---|
+| 2026-05-15 | QUA-1460 cancelled (stat-arb infra runaway loop) | QM5_1017 pair pipeline stalled; SRC05 stat-arb cards (⚑ pair infra) blocked |
+| 2026-05-15 | P2 verdicts final: QM5_1014 BASELINE_ACCURATE_FAILED; QM5_1003/1004/1017/SRC04_S03 STRATEGY_DRIFT | No new PASS at P2; 5 EAs in recovery or failed |
+| 2026-05-15 | singh-cmd-corr DEFERRED — WTI.cash.DWX + USDX.f both unavailable; no USD-index equivalent on Darwinex | Build queue: 32 → 31 cards; forex concentration: ~69% → ~71% |
