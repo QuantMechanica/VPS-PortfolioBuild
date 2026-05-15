@@ -357,7 +357,7 @@ data_requirements: standard                   # M15+ OHLC on Darwinex FX symbols
 |---|---|---|---|
 | G0 Research Intake | 2026-04-28 | DRAFT (awaiting CEO + Quality-Business review) | this card |
 | P1 Build Validation | TBD | TBD | TBD |
-| P2 Baseline Screening | TBD | TBD | TBD |
+| P2 Baseline Screening | 2026-05-09 / 2026-05-15 | NO-TRADES (cohort 8 sym M15 2024; 3 MIN_TRADES_NOT_MET + 5 INFRA failures; below 5/8 zero-trade-recovery threshold per skill_zero_trades_triage); disposition NO-ACTION at P2 → advance to P3 (see § 16) | `D:/QM/reports/pipeline/QM5_1014/P2/report.csv` |
 | P3 Parameter Sweep | TBD | TBD | TBD |
 | P3.5 CSR | TBD | TBD | TBD |
 | P4 Walk-Forward | TBD | TBD | TBD |
@@ -421,4 +421,82 @@ data_requirements: standard                   # M15+ OHLC on Darwinex FX symbols
   computation is trivial; bracket-order management is standard. Expected G0 yield CLEAN
   with `news_pause_default` interaction flagged for CEO-decision on the pre-news variant
   axis and `scalping_p5b_latency` flagged for IMPL-time stress validation.
+
+- 2026-05-15 (parent QUA-1593 zero-trades P2 cohort triage; child issue
+  4e83c12b-04ea-467b-be87-35da9a7e7497 "Document symbol-noise disposition for QM5_1014
+  P2 zero-trade cohort", EURGBP.DWX focus): P2 baseline of QM5_1014 (EA built from this
+  card) on cohort `EURGBP/EURUSD/AUDUSD/NZDUSD/USDCAD/USDCHF/USDJPY/GBPUSD .DWX` 2024
+  M15 produced 0/8 PASS. Cohort breakdown (`D:/QM/reports/pipeline/QM5_1014/P2/report.csv`):
+  3 verified MIN_TRADES_NOT_MET zero-trade outcomes (EURGBP, USDCHF, USDJPY) with
+  `real_ticks_marker=true`, `oninit_failure_detected=false`, and `total_trades=0` in
+  both runs of each pair (per
+  `D:/QM/reports/pipeline/QM5_1014/P2/QM5_1014/{20260509_143124,20260509_143208,20260509_142744}/summary.json`);
+  5 infrastructure failures (EURUSD/NZDUSD `no_summary_json`, AUDUSD/USDCAD/GBPUSD
+  `REPORT_MISSING;INCOMPLETE_RUNS`). Deterministic triage
+  (`framework/scripts/skill_zero_trades_triage.py --threshold 5`) reported
+  `zero_trade_count=2`, `dispatch_recovery=false`, `next_action=document_symbol_noise`
+  — note that the triage counter equates `verdict in {INVALID,NO_REPORT}` with zero-trades,
+  so the "2" maps to EURUSD+NZDUSD `no_summary_json` rows (which are infra failures, not
+  strategy zero-trades); the genuine zero-trade signal is the 3 MIN_TRADES_NOT_MET pairs
+  EURGBP/USDCHF/USDJPY.
+
+  Verdict for the EURGBP.DWX zero-trade observation: **NO-ACTION** (no symbol-broadening,
+  no P2 re-run, no v2 strategy lineage). Rationale:
+
+  1. EURGBP.DWX is not exotic noise — it is one of Lien's three named worked examples
+     for this very strategy (PDF pp. 140-141, Fig 15.2: 12-pip channel @ 0.7148/0.7160,
+     long fill @ 0.7170, stop @ 0.7160 for 10-pip risk, target @ 2R = +20p) and is
+     listed as a primary target symbol in card § 3. A "broadened-symbol retry" frame
+     does not apply — the strategy was conceived ON EURGBP.
+
+  2. 0 trades under card-default parameters on a 1-year M15 window is consistent with
+     the **already-flagged `enhancement_doctrine` risk** in card § 12: "Lien's verbatim
+     10-pip entry offset and 10-30-pip channel-width thresholds are calibrated for
+     major-FX intraday volatility. Cross-pair generalization ... may require ATR-scaled
+     offsets. P3 sweep tests this." Lien's 12-pip EURGBP channel was a hand-picked
+     Asian-session windowing, not a representative continuous statistic — over 12 months
+     of continuous M15 evaluation with `CHANNEL_LOOKBACK=16` (≈4h), the rolling
+     `[CHANNEL_MIN_PIPS=10, CHANNEL_MAX_PIPS=30]` width filter intentionally rejects
+     both sub-10p quiet-Asian windows and >30p London/NY-session windows. The same
+     mechanism explains USDCHF.DWX (range often outside the cap) and USDJPY.DWX (4h
+     ranges routinely exceed 30 pips). This is *expected* behaviour of the documented
+     filter, not a strategy defect — and not consistent with `STRATEGY_DRIFT` (no
+     out-of-source extrapolation is misbehaving; the in-source pip thresholds are
+     simply narrow).
+
+  3. The correct next phase is P3 parameter sweep, which is already provisioned in
+     card § 8 with the exact axes that resolve this: `channel_max_pips` ∈ [10, 15, 20,
+     30, 50, 75, 100, no_cap], `channel_min_pips` ∈ [5, 10, 15, 20], `channel_lookback`
+     ∈ [8, 12, 16, 20, 30, 50, 100], `entry_offset_pips` ∈ [5, 10, 15, 20], `tf` ∈
+     [M15, M30, H1, H4, D1]. A P2 retry under defaults will produce identical 0 trades;
+     a v2 strategy lineage is not warranted because no source-fidelity issue has been
+     identified.
+
+  4. The EURGBP `NON_DETERMINISTIC` flag on top of `MIN_TRADES_NOT_MET` is a **false
+     positive** caused by tester-report raw-string formatting drift across runs (run_01
+     reported `net_profit_raw="0.00"` / `drawdown_raw="0.00 (0.00%)"`; run_02 reported
+     `net_profit_raw="0"` / `drawdown_raw="0 (0%)"`). Both runs produced
+     `total_trades=0` and `profit_factor=0.0`; the underlying strategy behaviour is
+     deterministic. USDCHF.DWX and USDJPY.DWX (same EA, same 0-trade outcome) returned
+     `deterministic=true` because their raw strings happened to match. This is a
+     pipeline determinism-check sensitivity bug (raw-string equality on trivially-zero
+     fields) that should be raised separately on the run-smoke check rather than fixed
+     on this card.
+
+  5. The 5/8 infra failures (`REPORT_MISSING;INCOMPLETE_RUNS` / `no_summary_json`) on
+     EURUSD/AUDUSD/NZDUSD/USDCAD/GBPUSD are out of scope for this strategy disposition
+     — they are pipeline-infra issues for the P2-Baseline-Runner / Pipeline-Operator
+     to investigate independently. Without those runs completing, we cannot say
+     whether the wider EURUSD / GBPUSD / USDCAD / AUDUSD / NZDUSD legs would also have
+     yielded 0 trades under defaults; the prior on the same mechanism is yes (same
+     filter calibration concern), but evidence is missing.
+
+  Recommended next action: keep EA QM5_1014 on the P2-pass-through track (no rebuild,
+  no v2 lineage, no symbol broadening), and advance it to P3 parameter sweep when
+  pipeline capacity allows. P3 is the gate that will confirm whether the strategy's
+  edge is in the source-stated pip envelope (Lien's narrow-channel regime) or whether
+  it generalises with wider/ATR-scaled width thresholds. Sibling pipeline-infra
+  observations (NON_DETERMINISTIC false-positive on raw-string equality; 5/8 infra
+  failures in the cohort) are referenced for Pipeline-Operator but are not blockers
+  on the strategy verdict.
 ```
