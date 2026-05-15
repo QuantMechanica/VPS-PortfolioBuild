@@ -129,6 +129,104 @@ class QUA1577WorkerPoolTests(unittest.TestCase):
             self.assertEqual(row[2], "INVALID")
             self.assertIn("deploy_missing:", str(row[3]))
 
+    def test_mt5_worker_once_claims_oldest_queued_row_only(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            db_path = root / "mt5_queue.db"
+            mt5_root = root / "mt5"
+            t1 = mt5_root / "T1"
+            (t1 / "MQL5" / "Profiles" / "Tester" / "Groups").mkdir(parents=True, exist_ok=True)
+            (t1 / "MQL5" / "Experts" / "QM").mkdir(parents=True, exist_ok=True)
+            (t1 / "terminal64.exe").write_text("", encoding="utf-8")
+            ((t1 / "MQL5" / "Profiles" / "Tester" / "Groups") / "dummy.txt").write_text("ok", encoding="utf-8")
+            ((t1 / "MQL5" / "Experts" / "QM") / "QM5_1003.ex5").write_text("", encoding="utf-8")
+
+            conn = sqlite3.connect(str(db_path))
+            try:
+                ensure_schema(conn)
+                conn.execute(
+                    """
+                    INSERT INTO jobs(
+                      job_id,ea_id,version,symbol,period,year,phase,sub_gate_config_hash,setfile_path,
+                      status,enqueued_at,enqueued_by
+                    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+                    """,
+                    (
+                        "job-oldest",
+                        "QM5_1003",
+                        "v1",
+                        "EURUSD.DWX",
+                        "H1",
+                        2024,
+                        "P2",
+                        "k-oldest",
+                        str(root / "missing_oldest.set"),
+                        "queued",
+                        "2026-01-01T00:00:00Z",
+                        "manual",
+                    ),
+                )
+                conn.execute(
+                    """
+                    INSERT INTO jobs(
+                      job_id,ea_id,version,symbol,period,year,phase,sub_gate_config_hash,setfile_path,
+                      status,enqueued_at,enqueued_by
+                    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+                    """,
+                    (
+                        "job-newer",
+                        "QM5_1003",
+                        "v1",
+                        "GBPUSD.DWX",
+                        "H1",
+                        2024,
+                        "P2",
+                        "k-newer",
+                        str(root / "missing_newer.set"),
+                        "queued",
+                        "2026-01-01T00:00:01Z",
+                        "manual",
+                    ),
+                )
+                conn.commit()
+            finally:
+                conn.close()
+
+            proc = subprocess.run(
+                [
+                    "python",
+                    "framework/scripts/mt5_worker.py",
+                    "--terminal",
+                    "T1",
+                    "--sqlite",
+                    str(db_path),
+                    "--mt5-root",
+                    str(mt5_root),
+                    "--once",
+                ],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(proc.returncode, 0)
+            self.assertIn('"job_id": "job-oldest"', proc.stdout)
+
+            conn = sqlite3.connect(str(db_path))
+            try:
+                oldest = conn.execute(
+                    "SELECT status,claimed_by,verdict FROM jobs WHERE job_id='job-oldest'"
+                ).fetchone()
+                newer = conn.execute(
+                    "SELECT status,claimed_by,verdict FROM jobs WHERE job_id='job-newer'"
+                ).fetchone()
+            finally:
+                conn.close()
+            self.assertEqual(oldest[0], "failed")
+            self.assertEqual(oldest[1], "T1")
+            self.assertEqual(oldest[2], "INVALID")
+            self.assertEqual(newer[0], "queued")
+            self.assertIsNone(newer[1])
+            self.assertIsNone(newer[2])
+
 
 if __name__ == "__main__":
     unittest.main()
