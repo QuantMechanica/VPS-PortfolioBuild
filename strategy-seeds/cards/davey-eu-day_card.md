@@ -7,12 +7,17 @@
 
 ```yaml
 strategy_id: SRC01_S02
-ea_id: TBD
+ea_id: 1006                                   # reused from agents/cto allocation (commit 6f14e7fc3 QM5_1006 davey-eu-day)
 slug: davey-eu-day
-status: DRAFT
+status: APPROVED                              # G0 APPROVED for all 5 SRC01 Davey cards (commit 4568297ef, QUA-276) + QUA-1592 PDF-Intake corroboration (QUA-1596)
 created: 2026-04-27
 created_by: Research
-last_updated: 2026-04-27
+last_updated: 2026-05-15                      # QUA-1596: ea_id 1006 allocated, Build Notes added, P0 dispatched to Dev-Codex
+corroborated_by:
+  - "QUA-1592 PDF-Intake-Agent re-extraction 2026-05-15 — raw: strategy-seeds/sources/SRC01/raw/qua1592_euro_day_reextraction.md"
+prior_build_attempts:
+  - "QM5_1006_davey-eu-day on agents/cto branch (commits 6f14e7fc3, d93037e33) — never merged to main; P0 dispatch in QUA-1596 child will rebuild from scratch under current registry/framework conventions"
+canonical_archive_status: "NOT yet on origin/main as of 2026-05-15. P0 build dispatched to Dev-Codex via QUA-1596 child issue."
 
 strategy_type_flags:
   - mean-reversion                            # Davey: "this makes these strategies a type of mean reversion" (Ch 18 p. 158)
@@ -307,6 +312,63 @@ estimated_complexity: small                   # ~50 lines of EasyLanguage; mecha
 estimated_test_runtime: TBD
 data_requirements: standard                   # Darwinex EURUSD.DWX 60-minute bars; standard P3 grid
 ```
+
+## Build Notes — Futures → Spot Translation (Dev-Codex P0 reference)
+
+> This section consolidates the @EC futures → EURUSD.DWX spot mapping requirements that
+> Dev-Codex needs when porting Davey's EasyLanguage code to MQL5. Sourced from PDF-Intake-Agent
+> (QUA-1592) re-extraction and the existing § 12 hard_rules_at_risk discussion above.
+
+### Tick → Pip / Point Conversion
+- @EC tick value: $12.50 per tick per contract; tick size = 0.0001 (one pip of EURUSD).
+- 1 @EC tick ≈ 1 pip on EURUSD.DWX (within rounding).
+- Davey's `Stopl = 225–425` (USD per contract, walk-forward range) maps to **18–34 pips** on EURUSD.DWX.
+- Davey's `setstoploss` (TradeStation: dollars per contract) → MQL5 fixed-distance SL in points (10 points = 1 pip on 5-digit broker).
+
+### $5K Profit-Target → Price-Target Translation
+- Davey's `proft = $5000` per contract = **400 pips on EURUSD.DWX**.
+- Author's explicit intent: "there has never been a $5,000 intraday move in euro… effectively saying, 'Go for as much profit as you can, and hold until the end of the trading session.'" (Ch 18 p. 157).
+- MQL5 implementation: do NOT use `OrderModify` with a 400-pip TP — the real exit is **session-close at 15:00 ET**. The $5000 is a hard-cap safety only.
+- Two valid implementations: (a) set TP at 400 pips above/below entry as theoretical cap, primary exit driven by time-flat; or (b) omit TP entirely, rely on stop + time-flat.
+- **P3 should NOT sweep `proft` below 5000** — sweeping below converts the strategy from "ride to session close" to "explicit fixed-target". Hold at 5000 USD = 400 pips constant.
+
+### pipadd Limit-Order Offset
+- Davey's `pipadd = 1–11` (pip offset beyond breakout). In TradeStation code: `(high + pipadd/10000)`.
+- On EURUSD.DWX 5-digit broker: pipadd=8 → entry offset = 0.00080 = 8 pips. Direct translation.
+
+### Session Timezone Mapping (ET → Broker Server Time)
+- Davey: entry window 07:00–14:59 ET (chart time), session ends 15:00 ET (`time < 1500`).
+- DarwinexZero MT5 broker time: **NY-close convention, GMT+2 outside US DST, GMT+3 during US DST** (per `docs/ops/TICK_DATA_MANAGER_DARWINEX_TIME.md`).
+- 07:00 ET → broker time: 13:00 (+7h year-round under NY-close convention).
+- 14:59 ET → broker time: 20:59.
+- Session-close target 15:00 ET → broker time: 21:00.
+- **Coincidence note**: V5 Friday-close mandate is 21:00 broker time = 15:00 ET = Euro Day session close. No Friday-close conflict — strategy already flat at framework's hard-flat moment.
+
+### 60-Minute Bar Alignment
+- MT5 PERIOD_H1 = 60 minutes; native support, no aggregation needed.
+- Davey's `highest(high, xb)`, `lowest(low, xb)`, `close[xb2]` map to `iHighest()`, `iLowest()`, `iClose(symbol, PERIOD_H1, xb2)` in MQL5.
+- Bar alignment: Darwinex H1 bars align to broker hour boundaries (XX:00). 07:00 ET = 13:00 broker = clean H1 bar start. No 105-min emulation problem.
+
+### Limit-Order + Session-Reset Semantics
+- TradeStation `sellshort next bar at high+pipadd/10000 limit` = pending SellLimit order valid for one bar.
+- MQL5: place `ORDER_TYPE_SELL_LIMIT` at price = High[0]+pipadd*Point*10 (5-digit broker); cancel at bar close if unfilled.
+- `tradestoday` flag: reset on new H1 bar that starts a new session (broker 13:00). Use `iTime(symbol, PERIOD_H1, 0)` to detect session-start; reset `tradestoday=0` at that bar; set `tradestoday=1` on order send.
+
+### SetExitOnClose Translation
+- TradeStation `setexitonclose` = automatic flat at chart-session end (15:00 ET = 21:00 broker).
+- MQL5: explicit `PositionClose()` for all positions of this magic at TimeCurrent() ≥ 21:00 broker time.
+- This collapses with V5 Friday-close at 21:00 broker — same closure moment year-round on Fridays.
+
+### Walk-Forward Parameter Block (V5 P3 baseline)
+Use Davey's FINAL walk-forward window (2013-08-12 → 2014-01-01) as P3 starting baseline:
+- `xb = 5`, `xb2 = 80`, `pipadd = 8`, `Stopl = 425` (=34 pips on EURUSD.DWX), `proft = 5000` (=400 pips, effectively never), `time_cutoff = 1500`.
+- These were discovered on @EC futures; expect re-optimization on EURUSD.DWX spot.
+
+### Build Status
+- **No current canonical EA on disk under repo working tree** (separate from `framework/EAs/QM5_1002_davey-eu-night/` which exists).
+- `QM5_1006_davey-eu-day` was built on agents/cto branch (commits 6f14e7fc3, d93037e33) but **never merged to origin/main** — Dev-Codex P0 should build fresh under current registry/framework conventions rather than relying on the stale agents/cto branch artifact.
+- ea_id 1006 reserved for this strategy (matching agents/cto allocation pattern, no conflict on origin/main registry).
+- Outstanding for CTO at P0 acceptance: land card + EA artifact + registry row 1006 on `origin/main`.
 
 ## 14. Pipeline History (per `_v<n>` rebuild)
 

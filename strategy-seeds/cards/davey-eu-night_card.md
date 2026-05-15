@@ -7,12 +7,16 @@
 
 ```yaml
 strategy_id: SRC01_S01
-ea_id: TBD
+ea_id: 1002
 slug: davey-eu-night
-status: DRAFT
+status: APPROVED                              # G0 APPROVED for all 5 SRC01 Davey cards (commit 4568297ef, QUA-276)
 created: 2026-04-27
 created_by: Research
-last_updated: 2026-04-27
+last_updated: 2026-05-15                      # QUA-1596: PDF-Intake re-extraction corroborated; Build Notes added
+corroborated_by:
+  - "QUA-1592 PDF-Intake-Agent re-extraction 2026-05-15 — raw: strategy-seeds/sources/SRC01/raw/qua1592_euro_night_reextraction.md"
+built_as: QM5_1002_davey-eu-night.ex5         # built on agents/cto branch; .ex5 + .mq5 on disk at framework/EAs/QM5_1002_davey-eu-night/
+canonical_archive_status: "NOT yet on origin/main — card + EA live only on agents/research + agents/cto branches as of 2026-05-15. CTO must land registry row 1002 + card + EA artifacts on main before live P-pipeline can run."
 
 strategy_type_flags:
   - mean-reversion                            # Davey's own term: "this makes these strategies a type of mean reversion" (Ch 18)
@@ -316,6 +320,57 @@ estimated_complexity: small                   # ~80 lines of EasyLanguage; mecha
 estimated_test_runtime: TBD
 data_requirements: standard                   # Darwinex EURUSD.DWX 105-minute bars; standard P3 grid
 ```
+
+## Build Notes — Futures → Spot Translation (Dev-Codex P0 reference)
+
+> This section consolidates the @EC futures → EURUSD.DWX spot mapping requirements that
+> Dev-Codex needs when porting Davey's EasyLanguage code to MQL5. Sourced from PDF-Intake-Agent
+> (QUA-1592) re-extraction and the existing § 12 hard_rules_at_risk discussion above.
+
+### Tick → Pip / Point Conversion
+- @EC tick value: $12.50 per tick per contract; tick size = 0.0001 (one pip of EURUSD).
+- 1 @EC tick ≈ 1 pip on EURUSD.DWX (within rounding).
+- Davey's `Stoplo = 275–425` (USD per contract, walk-forward range) maps to **22–34 pips** on EURUSD.DWX.
+- Davey's `setstoploss` (TradeStation: dollars per contract) → MQL5 fixed-distance SL in points (10 points = 1 pip on 5-digit broker).
+
+### Profit-Target Translation
+- Davey's `TRmult * TrueRange[1]` is unit-agnostic (multiplier of recent True Range) — translates directly to MQL5 using `iATR(symbol, PERIOD_CURRENT, 1, 1)` or `High[1]-Low[1]` adjusted for true-range gaps.
+- No fixed-dollar target on Euro Night (unlike Euro Day's $5000 placeholder).
+
+### Session Timezone Mapping (ET → Broker Server Time)
+- Davey: entry window 18:00–23:59 ET (chart time CT per TradeStation default = America/Chicago).
+- DarwinexZero MT5 broker time: **NY-close convention, GMT+2 outside US DST, GMT+3 during US DST** (per `docs/ops/TICK_DATA_MANAGER_DARWINEX_TIME.md`).
+- 18:00 ET → broker time: 00:00 (winter, ET=UTC-5 → broker=UTC+2 ⇒ +7h) / 00:00 (summer, ET=UTC-4 → broker=UTC+3 ⇒ +7h). Convenient: 18:00 ET = 00:00 broker year-round.
+- 23:59 ET → broker time: 05:59 (winter and summer).
+- Session-close target 07:00 ET → broker time: 13:00.
+- **DST handling**: confirm Dev-Codex uses TimeCurrent() + broker offset, not server-machine local time. Reference: `docs/ops/TICK_DATA_MANAGER_DARWINEX_TIME.md`.
+
+### 105-Minute Bar Emulation
+- MT5 standard timeframes do not include 105-minute. Two options for Dev-Codex:
+  1. **PERIOD_M5 aggregator** (preferred): read M5 bars and aggregate every 21 bars (5 × 21 = 105) into synthetic bars; manage Open/High/Low/Close in EA state. Cleaner alignment with broker session boundaries.
+  2. **PERIOD_M15 aggregator**: 7 × 15 = 105 min; coarser, may miss limit-fill nuances.
+- Davey's `Average(High, Nb)`, `AvgTrueRange(NATR)`, and `TrueRange[1]` all reference the 105-minute series — emulator must produce these arrays at 105-min granularity, not bar-by-bar M5.
+- Reference implementation hint: `framework/utils/CustomBarSeries.mqh` if it exists, else Dev-Codex builds it.
+
+### Limit-Order Semantics
+- TradeStation `Buy ... next bar at LongPrice limit` = pending BuyLimit order at LongPrice; if price reaches LongPrice the next bar, fill at LongPrice or better.
+- MQL5 equivalent: `OrderSend()` with `ORDER_TYPE_BUY_LIMIT`, price = LongPrice, time-in-force = TIME_GTC, expiration = next bar close.
+- TradeStation auto-cancels limit if not filled by the bar's end; MQL5 EA must explicitly delete the limit at bar-open if still pending and re-place with updated LongPrice/ShortPrice.
+
+### SetExitOnClose Translation
+- TradeStation `SetExitOnClose` = automatic flat at chart-session end.
+- MQL5 equivalent: explicit time-based flat at 07:00 ET (= 13:00 broker time year-round). EA must `OrderClose()` / `PositionClose()` for all open positions of its magic at the session-end timestamp.
+- Friday-close override: V5 framework forces flat at 21:00 broker Friday — earlier than the session-close exit. Strategy must either (a) skip Friday-evening entries entirely or (b) accept the earlier framework-mandated flat. **Decision deferred to CEO + CTO** per § 12.
+
+### Walk-Forward Parameter Block (V5 P3 baseline)
+Use Davey's FINAL walk-forward window (2013-08-26 → 2014-01-01) as P3 starting baseline:
+- `Nb = 14`, `NATR = 93`, `ATRmult = 2.55`, `TRmult = 0.71`, `Stoplo = 425` (=34 pips on EURUSD.DWX), `FirstTime = 1800`, `LastTime = 2359`.
+- These were discovered on @EC futures; expect re-optimization on EURUSD.DWX spot.
+
+### Build Status
+- QM5_1002_davey-eu-night.ex5 already exists on disk at `framework/EAs/QM5_1002_davey-eu-night/` (built on agents/cto branch). **Skip P0 build** per directive case (a).
+- Filesystem hash referenced by directive: 0999E40F (T1–T5 deployed copy).
+- Outstanding for CTO: land card + EA + registry row 1002 on `origin/main` so canonical archive reflects deployed reality.
 
 ## 14. Pipeline History (per `_v<n>` rebuild)
 
