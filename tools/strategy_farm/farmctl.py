@@ -1108,6 +1108,151 @@ def approve_card(root: Path, card_path_str: str, reasoning: str) -> dict[str, An
     }
 
 
+def _find_cards_by_source_id(root: Path, target_source_id: str) -> dict[str, list[Path]]:
+    """Find all cards across draft/approved/rejected dirs whose frontmatter source_id matches."""
+    result: dict[str, list[Path]] = {"draft": [], "approved": [], "rejected": []}
+    for state, subdir in [
+        ("draft", "cards_draft"),
+        ("approved", "cards_approved"),
+        ("rejected", "cards_rejected"),
+    ]:
+        d = root / "artifacts" / subdir
+        if not d.exists():
+            continue
+        for card_path in d.glob("*.md"):
+            try:
+                fm = parse_card_frontmatter(card_path)
+            except Exception:
+                continue
+            if fm.get("source_id") == target_source_id:
+                result[state].append(card_path)
+    return result
+
+
+def _card_pipeline_state(conn: sqlite3.Connection, card_path: Path, state: str) -> str:
+    """Return 'done' (reached pipeline-end) or 'in_flight'.
+
+    Rules (v1 — until P3+ classifiers wired):
+    - card in cards_rejected/ → 'done' (REJECTED at G0)
+    - card in cards_draft/ → 'in_flight' (awaiting G0 verdict)
+    - card in cards_approved/:
+        - no build_ea task → 'in_flight' (awaiting Codex)
+        - build_ea status='failed' or 'blocked' → 'done' (DEAD before backtest)
+        - build_ea status='done' but no ea_review → 'in_flight'
+        - ea_review status='done' with REJECT_REWORK → 'in_flight' (rework pending)
+        - ea_review status='done' with APPROVE_FOR_BACKTEST + no backtest_p2 task → 'in_flight'
+        - backtest_p2 status='pending' or 'active' → 'in_flight'
+        - backtest_p2 status='done' or 'failed' → 'done' (terminal at P2 in v1)
+    """
+    if state == "rejected":
+        return "done"
+    if state == "draft":
+        return "in_flight"
+    fm = parse_card_frontmatter(card_path)
+    ea_id = fm.get("ea_id")
+    if not ea_id:
+        return "in_flight"
+
+    rows = conn.execute(
+        "SELECT kind, status, payload_json FROM tasks WHERE card_id = ? ORDER BY created_at ASC",
+        (ea_id,),
+    ).fetchall()
+    if not rows:
+        return "in_flight"  # approved but no build task yet
+
+    build_task = next((r for r in rows if r["kind"] == "build_ea"), None)
+    review_task = next((r for r in rows if r["kind"] == "ea_review"), None)
+    backtest_task = next((r for r in rows if r["kind"].startswith("backtest_")), None)
+
+    if build_task is None:
+        return "in_flight"
+    if build_task["status"] in ("failed", "blocked"):
+        return "done"
+    if build_task["status"] != "done":
+        return "in_flight"
+    # build_ea done — need review
+    if review_task is None:
+        return "in_flight"
+    if review_task["status"] != "done":
+        return "in_flight"
+    # review done — read verdict
+    review_payload = json.loads(review_task["payload_json"] or "{}")
+    verdict_doc = review_payload.get("verdict") or {}
+    if verdict_doc.get("verdict") != "APPROVE_FOR_BACKTEST":
+        # REJECT_REWORK or unknown — Codex rework pending
+        return "in_flight"
+    # APPROVE — need backtest
+    if backtest_task is None:
+        return "in_flight"
+    if backtest_task["status"] in ("done", "failed", "blocked"):
+        return "done"
+    return "in_flight"
+
+
+def resume_mining(root: Path) -> dict[str, Any]:
+    """Walk all sources with status='cards_ready'; flip back to 'active' for any whose
+    drafted card batch has fully reached pipeline-end. Returns summary of actions taken."""
+    init_db(root)
+    scan_at = utc_now()
+    results: list[dict[str, Any]] = []
+    with connect(root) as conn:
+        paused = conn.execute(
+            "SELECT id, title, priority FROM sources "
+            "WHERE status = 'cards_ready' ORDER BY priority"
+        ).fetchall()
+        for src in paused:
+            cards = _find_cards_by_source_id(root, src["id"])
+            states: list[str] = []
+            for state, paths in cards.items():
+                for p in paths:
+                    states.append(_card_pipeline_state(conn, p, state))
+            total = len(states)
+            done = sum(1 for s in states if s == "done")
+            in_flight = total - done
+
+            if total == 0:
+                results.append({
+                    "source_id": src["id"],
+                    "title": src["title"],
+                    "action": "skipped_no_cards",
+                    "reason": "no cards with this source_id — possible missing frontmatter field",
+                })
+                continue
+
+            if in_flight == 0:
+                conn.execute(
+                    "UPDATE sources SET status = 'active', updated_at = ? WHERE id = ?",
+                    (scan_at, src["id"]),
+                )
+                event(conn, "source", src["id"], "resumed", {
+                    "previous_status": "cards_ready",
+                    "cards_in_batch": total,
+                    "reason": "all batch cards reached pipeline-end",
+                })
+                results.append({
+                    "source_id": src["id"],
+                    "title": src["title"],
+                    "action": "resumed",
+                    "cards_in_batch": total,
+                })
+            else:
+                results.append({
+                    "source_id": src["id"],
+                    "title": src["title"],
+                    "action": "still_waiting",
+                    "cards_in_batch": total,
+                    "done": done,
+                    "in_flight": in_flight,
+                })
+
+    return {
+        "scanned_at": scan_at,
+        "checked_sources": len(results),
+        "resumed_count": sum(1 for r in results if r["action"] == "resumed"),
+        "results": results,
+    }
+
+
 def reject_card(root: Path, card_path_str: str, reason: str) -> dict[str, Any]:
     """Set g0_status: REJECTED in the card frontmatter, move draft → rejected."""
     init_db(root)
@@ -1393,6 +1538,11 @@ def build_parser() -> argparse.ArgumentParser:
     reject.add_argument("--card", required=True, help="Path to the draft card .md")
     reject.add_argument("--reason", required=True, help="One-line rejection reason")
 
+    sub.add_parser(
+        "resume-mining",
+        help="Check cards_ready sources; flip back to active if their card batch is pipeline-done",
+    )
+
     add_src = sub.add_parser(
         "add-source",
         help="Add a new source to the queue (used by autonomous source-discovery)",
@@ -1459,6 +1609,8 @@ def main(argv: list[str] | None = None) -> int:
         print_json(approve_card(root, args.card, args.reasoning))
     elif args.command == "reject-card":
         print_json(reject_card(root, args.card, args.reason))
+    elif args.command == "resume-mining":
+        print_json(resume_mining(root))
     elif args.command == "add-source":
         print_json(add_source(
             root,

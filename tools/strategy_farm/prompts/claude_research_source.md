@@ -47,17 +47,63 @@ URI: `{{uri}}`
 - Preserve attribution: URL, author/handle (anon OK), post/article title, date
   if visible, and exact source location.
 
+## Output policy — batch of up to 5 cards per session
+
+OWNER 2026-05-15 mining policy: extract **up to 5** new draft cards per
+research session. After the batch, decide whether the source has more
+material (paused as `cards_ready`) or is exhausted (`done`).
+
 ## Required Output Files
 
-Write a source note:
-
+### Source notes
 `D:\QM\strategy_farm\artifacts\source_notes\{{source_id}}.md`
 
-Write draft strategy cards, if any are found:
+If the file already exists (this is a resumed-mining 2nd/3rd/Nth batch),
+**append** a new section `## Batch N — <utc-iso>` rather than overwriting.
+Each batch documents what you mined this session.
 
+### Draft strategy cards (up to 5)
 `D:\QM\strategy_farm\artifacts\cards_draft\QM5_<NNNN>_<slug>.md`
 
-Use the Strategy Card format from the research methodology. Leave `g0_status: PENDING` unless all R1-R4 evidence is already strong enough for review.
+Use the Strategy Wiki `_TEMPLATE Strategy.md` format. **Mandatory frontmatter
+fields for autonomous workflow:**
+
+```yaml
+---
+ea_id: QM5_<NNNN>
+slug: <descriptive-slug>
+type: strategy
+source_id: {{source_id}}                   # REQUIRED — for resume-mining trace
+sources:
+  - "[[sources/<source-slug>]]"            # human-readable wiki backlink
+g0_status: PENDING                          # Step 3 G0 batch sets this
+last_updated: <YYYY-MM-DD>
+---
+```
+
+Allocate NEW EA IDs starting from the next free `QM5_<NNNN>` in
+`C:/QM/repo/framework/registry/ea_id_registry.csv`. Do NOT collide.
+
+## Final state decision (end of session)
+
+After writing the batch (≤ 5 cards) and updating notes, decide:
+
+- **5 cards AND source has more material** (forum has many more relevant
+  threads, journal has many more papers, book has many more chapters, archive
+  has many more PDFs not yet mined):
+  ```
+  farmctl set-source-status {{source_id}} cards_ready --notes-path "<notes path>"
+  ```
+  Source is **paused** — your 5 EAs flow through G0 → build → P2.
+  When all 5 reach pipeline-end, Step 4 resume-mining flips back to active
+  and you return to this source for the next batch.
+
+- **<5 cards drafted OR source genuinely exhausted** (you searched thoroughly
+  and don't see remaining high-value mechanical strategies):
+  ```
+  farmctl set-source-status {{source_id}} done --notes-path "<notes path>"
+  ```
+  Source is **permanently done**. Step 6 next wake claims the next pending.
 
 ## Source Note Structure
 
@@ -88,6 +134,7 @@ researcher: Claude
 Return only:
 
 - source note path
-- draft card paths
-- rejected count
+- draft card paths (this batch — up to 5)
+- rejected/skipped count (with one-line reason each)
+- source final state: `cards_ready` (paused for pipeline) or `done` (exhausted)
 - open questions, if any
