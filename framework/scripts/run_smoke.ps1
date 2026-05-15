@@ -320,7 +320,6 @@ for ($i = 1; $i -le $Runs; $i++) {
         $exitCode = Start-TesterRun -TerminalExe $terminalExe -IniPath $iniPath -TimeoutSec $TimeoutSeconds
     } catch {
         $globalTimeoutFailure = $true
-        $globalRealTicksMarker = $false
         $reasonClasses.Add("TIMEOUT")
         $runResults += [pscustomobject]@{
             run = $runName
@@ -363,7 +362,6 @@ for ($i = 1; $i -le $Runs; $i++) {
 
     if (-not (Test-Path -LiteralPath $reportHtmPath -PathType Leaf)) {
         $reasonClasses.Add("REPORT_MISSING")
-        $globalRealTicksMarker = $false
         $runResults += [pscustomobject]@{
             run = $runName
             status = "FAIL"
@@ -381,7 +379,6 @@ for ($i = 1; $i -le $Runs; $i++) {
 
     if (Test-EmptyReportSentinel -Html $reportHtml) {
         $reasonClasses.Add("EMPTY_REPORT")
-        $globalRealTicksMarker = $false
         $runResults += [pscustomobject]@{
             run = $runName
             status = "FAIL"
@@ -471,8 +468,9 @@ if ($completedRuns.Count -eq $Runs) {
     $reasonClasses.Add("INCOMPLETE_RUNS")
 }
 
-$realTicksGatePassed = $globalRealTicksMarker -or $AllowMissingRealTicksLogMarker.IsPresent
-if (-not $realTicksGatePassed -and -not $AllowMissingRealTicksLogMarker.IsPresent) {
+$realTicksGateApplicable = ($completedRuns.Count -gt 0)
+$realTicksGatePassed = (-not $realTicksGateApplicable) -or $globalRealTicksMarker -or $AllowMissingRealTicksLogMarker.IsPresent
+if ($realTicksGateApplicable -and -not $realTicksGatePassed -and -not $AllowMissingRealTicksLogMarker.IsPresent) {
     $reasonClasses.Add("MODEL4_MARKER_REQUIRED")
 }
 
