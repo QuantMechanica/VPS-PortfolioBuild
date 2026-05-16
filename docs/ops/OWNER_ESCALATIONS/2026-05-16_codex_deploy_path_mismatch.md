@@ -185,3 +185,54 @@ missing to clear or reroute this task.
 The other still-blocked build_ea tasks (QM5_1044 perf rework,
 QM5_1045 SPY-permanently-unavailable) are correctly classified and
 not affected by this fix.
+
+## Amendment 2026-05-16T14:51Z (Board Advisor observe wake)
+
+### New evidence: option B (perf rework) is ruled out for QM5_1046
+
+Ran the new `Invoke-PerfStaticCheck` from `build_check.ps1` (added in
+commit `f6a32965`) against `framework/EAs/QM5_1046_maroy-intraday-vwap-exit/`
+on pwsh 7:
+
+```
+build_check.result=PASS
+build_check.failures=0
+build_check.warnings=0
+```
+
+So the EA has no local `IsNewBar` redefinition, no raw `iATR/iMA/...` calls,
+no ungated `CopyRates/CopyBuffer/Copy*`, no manual `IndicatorRelease`. The
+QM5_1044-class perf-wall pattern is NOT present.
+
+That rules out option **B** (reclassify as perf rework). The remaining call
+is between option **A** (manual smoke re-run with the post-`891b04c4`
+canonical-deploy harness, ~10 min, Test-Environment Ownership) and option
+**C** (just flip to `pending` and let the next autonomous wake rebuild +
+smoke, ~15 min of Codex tokens). Board Advisor still leans **A** since
+the EA dir is already on disk and a clean rebuild adds no new information
+about the TIMEOUT root cause.
+
+### Side fix — build_check.ps1 parser break under Windows PowerShell 5
+
+The new `Invoke-PerfStaticCheck` block in `f6a32965` introduced em-dash
+characters (UTF-8 `E2 80 94`) inside double-quoted strings. The file is
+saved without BOM, so Windows PowerShell 5 (the `powershell` binary)
+reads the bytes as Win-1252 (`â€"`), and the embedded `"` prematurely
+terminates the string literal, producing cascading "Missing closing '}'"
+parser errors at lines 602/654. PowerShell 7 (`pwsh`, default UTF-8) is
+unaffected.
+
+The strategy_farm pipeline always invokes `build_check.ps1` via
+`pwsh -File ...` (per `codex_build_ea.md` line 254), so operational flow
+is **not broken**. The break only surfaces on manual gate-verification
+with the `powershell` binary (which is how I tripped over it).
+
+Fix landed: replaced all 8 em-dashes in `build_check.ps1` with ASCII `-`.
+Verified PASS under both `powershell` and `pwsh`. Committed via this
+observe wake.
+
+### Disposition
+
+- Option B ruled out — perf-static-check PASS.
+- Side-channel fix (build_check.ps1 em-dash parse break) landed.
+- Option A vs C decision still pending OWNER. Escalation stays open.
