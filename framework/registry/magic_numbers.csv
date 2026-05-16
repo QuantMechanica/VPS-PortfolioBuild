@@ -486,3 +486,13 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1049,mcconnell-turn-of-month,1,WS30.DWX,10490001,2026-05-16,Development,active
 1049,mcconnell-turn-of-month,2,GDAXI.DWX,10490002,2026-05-16,Development,active
 1049,mcconnell-turn-of-month,3,UK100.DWX,10490003,2026-05-16,Development,active
+1044,vpmacd-us-indices,0,NDX.DWX,10440000,2026-05-16,Development,active
+1044,vpmacd-us-indices,1,WS30.DWX,10440001,2026-05-16,Development,active
+1045,zarattini-spy-intraday-momentum,0,NDX.DWX,10450000,2026-05-16,Development,active
+1045,zarattini-spy-intraday-momentum,1,WS30.DWX,10450001,2026-05-16,Development,active
+1051,cc-3ducks-sma60-mtf,0,EURUSD.DWX,10510000,2026-05-16,Development,active
+1051,cc-3ducks-sma60-mtf,1,GBPUSD.DWX,10510001,2026-05-16,Development,active
+1051,cc-3ducks-sma60-mtf,2,USDJPY.DWX,10510002,2026-05-16,Development,active
+1051,cc-3ducks-sma60-mtf,3,AUDUSD.DWX,10510003,2026-05-16,Development,active
+1051,cc-3ducks-sma60-mtf,4,USDCAD.DWX,10510004,2026-05-16,Development,active
+1051,cc-3ducks-sma60-mtf,5,EURJPY.DWX,10510005,2026-05-16,Development,active
