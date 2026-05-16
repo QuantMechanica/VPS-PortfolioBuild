@@ -32,6 +32,7 @@ CLAUDE_RESEARCH_TEMPLATE = PROMPTS_DIR / "claude_research_source.md"
 CODEX_BUILD_TEMPLATE = PROMPTS_DIR / "codex_build_ea.md"
 CODEX_RESEARCH_TEMPLATE = PROMPTS_DIR / "codex_research_source.md"
 CLAUDE_REVIEW_TEMPLATE = PROMPTS_DIR / "claude_review_ea.md"
+CODEX_REVIEW_TEMPLATE = PROMPTS_DIR / "codex_review_ea.md"
 
 PIPELINE_REPORT_ROOT = Path(r"D:\QM\reports\pipeline")
 SUPPORTED_BACKTEST_PHASES = ("P2", "P3")  # P3 added 2026-05-16 for end-to-end pipeline flow
@@ -1294,6 +1295,155 @@ def _claim_research_source_codex(root: Path) -> dict[str, Any]:
     }
 
 
+def _spawn_codex_for_review(root: Path, build_task_row: sqlite3.Row) -> dict[str, Any]:
+    """Spawn Codex CLI to mechanically pre-review one done build_ea task.
+
+    Codex runs BEFORE Claude review (cheaper, deterministic). Codex's verdict
+    JSON appears at `verdict_path`; if PASS → pump spawns Claude review; if
+    FAIL → pump blocks the build with reason='codex_review_fail' so retry
+    logic can re-run build (rework).
+
+    Idempotent: if a codex_review task already exists for this build, skip.
+    Creates a separate codex_review task row (distinct kind from ea_review)
+    with payload.build_task_id + payload.verdict_path.
+    """
+    build_task_id = build_task_row["id"]
+    with connect(root) as conn:
+        existing = conn.execute(
+            "SELECT id, status FROM tasks WHERE kind='codex_review' AND payload_json LIKE ?",
+            (f"%\"build_task_id\": \"{build_task_id}\"%",),
+        ).fetchone()
+    if existing:
+        return {
+            "spawned": False,
+            "reason": f"codex_review task exists status={existing['status']}",
+            "codex_review_task_id": existing["id"],
+        }
+
+    payload_build = json.loads(build_task_row["payload_json"])
+    codex_result = payload_build.get("codex_result") or {}
+    mq5_path = codex_result.get("mq5_path") or ""
+    ex5_path = codex_result.get("ex5_path") or ""
+    smoke_report_path = codex_result.get("smoke_report_path") or ""
+
+    with connect(root) as conn:
+        review_task_id = create_task(
+            conn,
+            kind="codex_review",
+            source_id=build_task_row["source_id"],
+            card_id=build_task_row["card_id"],
+            payload={
+                "build_task_id": build_task_id,
+                "ea_id": payload_build.get("ea_id"),
+                "card_path": payload_build.get("card_path"),
+                "mq5_path": mq5_path,
+                "ex5_path": ex5_path,
+                "smoke_report_path": smoke_report_path,
+                "build_result_path": str(root / "artifacts" / "builds" / f"{build_task_id}.json"),
+            },
+        )
+    verdict_path = root / "artifacts" / "verdicts" / f"codex_review_{review_task_id}.json"
+    verdict_path.parent.mkdir(parents=True, exist_ok=True)
+    with connect(root) as conn:
+        # Persist verdict_path back to payload so record-review can find it
+        row = conn.execute("SELECT payload_json FROM tasks WHERE id=?", (review_task_id,)).fetchone()
+        p = json.loads(row["payload_json"])
+        p["verdict_path"] = str(verdict_path)
+        conn.execute("UPDATE tasks SET payload_json=? WHERE id=?", (json.dumps(p), review_task_id))
+        conn.commit()
+
+    template = CODEX_REVIEW_TEMPLATE.read_text(encoding="utf-8")
+    for k, v in [
+        ("review_task_id", review_task_id),
+        ("build_task_id", build_task_id),
+        ("ea_id", payload_build.get("ea_id") or ""),
+        ("card_path", payload_build.get("card_path") or ""),
+        ("mq5_path", mq5_path),
+        ("ex5_path", ex5_path),
+        ("smoke_report_path", smoke_report_path),
+        ("build_result_path", str(root / "artifacts" / "builds" / f"{build_task_id}.json")),
+        ("verdict_path", str(verdict_path)),
+    ]:
+        template = template.replace("{{" + k + "}}", str(v))
+
+    prompt_path = root / "queue" / f"codex_review_{review_task_id}.md"
+    prompt_path.parent.mkdir(parents=True, exist_ok=True)
+    prompt_path.write_text(template, encoding="utf-8", newline="\n")
+
+    import shutil as _shutil
+    codex_path = _shutil.which("codex.cmd") or _shutil.which("codex") or "codex"
+    live_log = root / "logs" / f"codex_review_{review_task_id}.live.log"
+    live_log.parent.mkdir(parents=True, exist_ok=True)
+
+    creationflags = 0
+    if sys.platform == "win32":
+        creationflags = subprocess.CREATE_NEW_CONSOLE  # type: ignore[attr-defined]
+    stdin_f = open(prompt_path, "rb")
+    stdout_f = open(live_log, "wb")
+    proc = subprocess.Popen(
+        [codex_path, "exec", "-s", "danger-full-access", "--cd", str(REPO_ROOT)],
+        cwd=str(REPO_ROOT),
+        stdin=stdin_f,
+        stdout=stdout_f,
+        stderr=subprocess.STDOUT,
+        shell=True,
+        creationflags=creationflags,
+        close_fds=False,
+    )
+    return {
+        "spawned": True,
+        "codex_review_task_id": review_task_id,
+        "build_task_id": build_task_id,
+        "ea_id": payload_build.get("ea_id"),
+        "verdict_path": str(verdict_path),
+        "live_log": str(live_log),
+        "pid": proc.pid,
+    }
+
+
+def _record_codex_review_result(root: Path, review_task_id: str, verdict_path: str) -> dict[str, Any]:
+    """Read a completed codex_review verdict, mark the task done, return the verdict.
+
+    Pump uses the returned verdict to decide whether to spawn claude_review
+    (PASS) or block the build (FAIL).
+    """
+    vp = Path(verdict_path)
+    if not vp.exists() or vp.stat().st_size == 0:
+        return {"recorded": False, "reason": "verdict not yet written"}
+    try:
+        v = json.loads(vp.read_text(encoding="utf-8"))
+    except Exception as exc:
+        return {"recorded": False, "reason": f"verdict json invalid: {exc}"}
+    verdict = (v.get("verdict") or "").upper()
+    if verdict not in ("PASS", "FAIL"):
+        return {"recorded": False, "reason": f"verdict must be PASS|FAIL, got {verdict!r}"}
+    with connect(root) as conn:
+        row = conn.execute("SELECT payload_json FROM tasks WHERE id=?", (review_task_id,)).fetchone()
+        if not row:
+            return {"recorded": False, "reason": "review task not found"}
+        payload = json.loads(row["payload_json"])
+        payload["verdict"] = verdict
+        payload["findings"] = v.get("findings") or []
+        payload["sections"] = v.get("sections") or {}
+        conn.execute(
+            "UPDATE tasks SET status='done', payload_json=?, updated_at=? WHERE id=?",
+            (json.dumps(payload), utc_now(), review_task_id),
+        )
+        event(conn, "task", review_task_id, "codex_review_recorded", {
+            "verdict": verdict,
+            "findings_count": len(payload["findings"]),
+            "build_task_id": payload.get("build_task_id"),
+        })
+        conn.commit()
+    return {
+        "recorded": True,
+        "review_task_id": review_task_id,
+        "verdict": verdict,
+        "build_task_id": payload.get("build_task_id"),
+        "findings_count": len(payload["findings"]),
+    }
+
+
 def _spawn_codex_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]:
     """Spawn Codex CLI as a detached process for a pending build_ea task.
 
@@ -1577,9 +1727,69 @@ def pump(root: Path) -> dict[str, Any]:
             rec = record_build_result(root, row["id"], brp)
             result["build_records"].append({"task_id": row["id"], "recorded": rec})
 
-    # 5. Spawn Claude review for ONE done build_ea without ea_review yet.
-    #    Bounded at 1 per pump cycle to cap claude token burn. Detached
-    #    process; verdict JSON appears at verdict_path when review completes.
+    # 5a. CODEX pre-review for done build_ea without codex_review yet.
+    #     Codex catches mechanical bugs (Framework Corset, INTRADAY DISCIPLINE,
+    #     magic collisions, 0-trade smoke) BEFORE Claude burns tokens on
+    #     policy review. PASS → Claude proceeds. FAIL → build → blocked.
+    result["codex_review_spawns"] = []
+    with connect(root) as conn:
+        builds_needing_codex_review = conn.execute(
+            """
+            SELECT b.* FROM tasks b
+            WHERE b.kind='build_ea' AND b.status='done'
+              AND NOT EXISTS (
+                SELECT 1 FROM tasks r
+                WHERE r.kind='codex_review'
+                  AND r.payload_json LIKE '%"build_task_id": "' || b.id || '"%'
+              )
+            ORDER BY b.updated_at ASC LIMIT 3
+            """
+        ).fetchall()
+    for b in builds_needing_codex_review:
+        # Respect total-codex cap: builds + reviews + research (all share the pool)
+        builds_now = len([s for s in (result.get("codex_spawns_all") or []) if isinstance(s, dict) and s.get("spawned")])
+        reviews_now = len([s for s in result["codex_review_spawns"] if isinstance(s, dict) and s.get("spawned")])
+        if (active_codex + builds_now + reviews_now) >= MAX_PARALLEL_CODEX:
+            break
+        sp = _spawn_codex_for_review(root, b)
+        result["codex_review_spawns"].append(sp)
+
+    # 5b. Record completed codex_review verdicts.
+    result["codex_review_records"] = []
+    with connect(root) as conn:
+        pending_codex_reviews = conn.execute(
+            "SELECT * FROM tasks WHERE kind='codex_review' AND status='pending'"
+        ).fetchall()
+    for cr in pending_codex_reviews:
+        p = json.loads(cr["payload_json"])
+        vp = p.get("verdict_path")
+        if not vp:
+            continue
+        rec = _record_codex_review_result(root, cr["id"], vp)
+        if rec.get("recorded"):
+            result["codex_review_records"].append(rec)
+            # If Codex says FAIL → block the build for rework, skip Claude
+            if rec["verdict"] == "FAIL":
+                build_id = rec["build_task_id"]
+                with connect(root) as conn:
+                    brow = conn.execute("SELECT payload_json FROM tasks WHERE id=?", (build_id,)).fetchone()
+                    if brow:
+                        bp = json.loads(brow["payload_json"])
+                        bp["codex_review_findings"] = p.get("findings") or []
+                        bp["blocked_reason"] = "codex_review_fail"
+                        bp["attempt"] = int(bp.get("attempt", 0)) + 1
+                        conn.execute(
+                            "UPDATE tasks SET status='blocked', payload_json=?, updated_at=? WHERE id=?",
+                            (json.dumps(bp), utc_now(), build_id),
+                        )
+                        event(conn, "task", build_id, "build_blocked_by_codex_review", {
+                            "findings_count": len(bp["codex_review_findings"]),
+                        })
+                        conn.commit()
+
+    # 5c. Spawn Claude review ONLY for builds that have a PASSING codex_review
+    #     AND no ea_review yet. This is the cost-saver: Claude tokens only
+    #     burn on builds Codex already cleared as mechanically sound.
     try:
         active_claude_count = int(subprocess.run(
             ["powershell.exe", "-NoProfile", "-Command",
@@ -1589,18 +1799,19 @@ def pump(root: Path) -> dict[str, Any]:
     except Exception:
         active_claude_count = 0
     result["claude_active_before"] = active_claude_count
-    # MAX is high enough to allow 1 review + 1 research per pump cycle even
-    # when 1-3 "ambient" claude sessions are running (dev terminals, the
-    # hourly autonomous_wake, the BoardAdvisor wake). Token budget is the
-    # real cap, not concurrency.
     MAX_PARALLEL_CLAUDE = 6
     if active_claude_count < MAX_PARALLEL_CLAUDE:
         with connect(root) as conn:
-            # Done build_ea without matching ea_review
             done_no_review = conn.execute(
                 """
                 SELECT b.* FROM tasks b
                 WHERE b.kind='build_ea' AND b.status='done'
+                  AND EXISTS (
+                    SELECT 1 FROM tasks cr
+                    WHERE cr.kind='codex_review' AND cr.status='done'
+                      AND cr.payload_json LIKE '%"build_task_id": "' || b.id || '"%'
+                      AND cr.payload_json LIKE '%"verdict": "PASS"%'
+                  )
                   AND NOT EXISTS (
                     SELECT 1 FROM tasks r
                     WHERE r.kind='ea_review'
@@ -1660,7 +1871,8 @@ def pump(root: Path) -> dict[str, Any]:
     # haven't hit the build cap. active_codex was set earlier in this pump for
     # the build dispatch; refresh it cheaply by adding the builds we just spawned.
     builds_spawned_this_cycle = len([s for s in (result.get("codex_spawns_all") or []) if isinstance(s, dict) and s.get("spawned")])
-    if codex_research_fresh < 1 and (active_codex + builds_spawned_this_cycle) < MAX_PARALLEL_CODEX:
+    reviews_spawned_this_cycle = len([s for s in (result.get("codex_review_spawns") or []) if isinstance(s, dict) and s.get("spawned")])
+    if codex_research_fresh < 1 and (active_codex + builds_spawned_this_cycle + reviews_spawned_this_cycle) < MAX_PARALLEL_CODEX:
         result["codex_research_spawn"] = _claim_research_source_codex(root)
 
     # 10. Parameter ablation: for any new P2-PASS work_item that isn't itself
