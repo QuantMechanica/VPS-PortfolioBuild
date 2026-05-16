@@ -176,6 +176,41 @@ def init_db(root: Path) -> None:
                 event TEXT NOT NULL,
                 detail_json TEXT NOT NULL
             );
+
+            -- Per-(EA × symbol × phase × setfile) work units. One bundled
+            -- `backtest_p<n>` task in `tasks` fans out into N rows here, one
+            -- per setfile in the EA's sets/ dir. MT5 dispatcher claims rows
+            -- one-by-one per free terminal — fail of one symbol no longer
+            -- blocks the other 3, and the DB shows per-symbol state directly.
+            -- Per OWNER 2026-05-16 vision: "endlose Liste, pro EA pro
+            -- Symbol pro Phase, MT5 zieht raus, fail → ans Ende".
+            CREATE TABLE IF NOT EXISTS work_items (
+                id TEXT PRIMARY KEY,
+                kind TEXT NOT NULL,             -- 'backtest' (more kinds later)
+                phase TEXT NOT NULL,            -- 'P2', 'P3', etc.
+                ea_id TEXT NOT NULL,            -- 'QM5_1049'
+                symbol TEXT NOT NULL,           -- 'EURUSD.DWX'
+                setfile_path TEXT NOT NULL,
+                status TEXT NOT NULL CHECK (
+                    status IN ('pending', 'active', 'done', 'failed')
+                ),
+                verdict TEXT,                   -- PASS/FAIL/INVALID (NULL until done)
+                attempt_count INTEGER NOT NULL DEFAULT 0,
+                parent_task_id TEXT,            -- FK to tasks(id) — the bundled backtest task
+                evidence_path TEXT,             -- path to smoke summary.json
+                claimed_by TEXT,                -- terminal name (T1..T5) when active
+                payload_json TEXT NOT NULL,     -- extra context
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                FOREIGN KEY(parent_task_id) REFERENCES tasks(id)
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_work_items_status_kind
+                ON work_items(status, kind);
+            CREATE INDEX IF NOT EXISTS idx_work_items_parent
+                ON work_items(parent_task_id);
+            CREATE INDEX IF NOT EXISTS idx_work_items_ea_phase
+                ON work_items(ea_id, phase);
             """
         )
 
@@ -354,6 +389,117 @@ def status(root: Path) -> dict[str, Any]:
         "next_pending_source": dict(next_pending) if next_pending else None,
         "task_counts": task_counts,
     }
+
+
+def work_items_view(root: Path, status_filter: str | None = None,
+                    ea_filter: str | None = None) -> dict[str, Any]:
+    """Per-symbol queue view — answers "which (EA × symbol × phase)
+    units are pending/active/done/failed right now?"
+
+    Output is the work_items table with optional filters.
+    """
+    init_db(root)
+    query = "SELECT id, kind, phase, ea_id, symbol, status, verdict, attempt_count, parent_task_id, evidence_path, claimed_by, created_at, updated_at FROM work_items"
+    where = []
+    params: list[Any] = []
+    if status_filter:
+        where.append("status = ?")
+        params.append(status_filter)
+    if ea_filter:
+        where.append("ea_id = ?")
+        params.append(ea_filter)
+    if where:
+        query += " WHERE " + " AND ".join(where)
+    query += " ORDER BY ea_id, phase, symbol"
+    with connect(root) as conn:
+        rows = rows_as_dicts(conn.execute(query, params).fetchall())
+    summary: dict[str, dict[str, int]] = {}
+    for r in rows:
+        key = f"{r['phase']}_{r['status']}"
+        if r.get('verdict'):
+            key += f"_{r['verdict']}"
+        summary[key] = summary.get(key, 0) + 1
+    return {"items": rows, "summary": summary, "count": len(rows)}
+
+
+def backfill_work_items(root: Path) -> dict[str, Any]:
+    """One-shot: for every existing backtest_<phase> task in tasks, create
+    matching work_items in the new table. Idempotent — skips parent_task_ids
+    that already have work_items.
+
+    For done tasks, also seed verdicts from the per-symbol report.csv rows
+    so the work_items table reflects historical state.
+    """
+    init_db(root)
+    created = 0
+    skipped = 0
+    seeded_verdicts = 0
+    with connect(root) as conn:
+        rows = conn.execute(
+            "SELECT id, kind, status, payload_json FROM tasks WHERE kind LIKE 'backtest_%'"
+        ).fetchall()
+        for r in rows:
+            existing = conn.execute(
+                "SELECT COUNT(*) FROM work_items WHERE parent_task_id = ?",
+                (r["id"],),
+            ).fetchone()[0]
+            if existing:
+                skipped += 1
+                continue
+            payload = json.loads(r["payload_json"]) if r["payload_json"] else {}
+            ea_id = payload.get("ea_id")
+            phase = payload.get("phase") or r["kind"].replace("backtest_", "").upper()
+            if not ea_id:
+                continue
+            surviving = payload.get("surviving_symbols")
+            new_items = _create_backtest_work_items(
+                conn, parent_task_id=r["id"], ea_id=ea_id, phase=phase,
+                surviving_symbols=surviving,
+            )
+            created += len(new_items)
+            # Seed verdicts from report.csv if task done
+            if r["status"] == "done":
+                report_csv = None
+                erp = payload.get("expected_report_path")
+                if erp and Path(erp).exists():
+                    report_csv = Path(erp)
+                else:
+                    glob_pat = payload.get("expected_report_glob")
+                    if glob_pat:
+                        ms = glob.glob(glob_pat)
+                        if ms:
+                            report_csv = Path(ms[0])
+                sym_to_verdict = {}
+                sym_to_evidence = {}
+                if report_csv and report_csv.exists():
+                    try:
+                        with report_csv.open(encoding="utf-8") as f:
+                            for csv_row in csv.DictReader(f):
+                                sym = csv_row.get("symbol")
+                                if sym and csv_row.get("verdict"):
+                                    sym_to_verdict[sym] = csv_row["verdict"]
+                                    sym_to_evidence[sym] = csv_row.get("evidence", "")
+                    except Exception:
+                        pass
+                for item in new_items:
+                    v = sym_to_verdict.get(item["symbol"])
+                    if v:
+                        conn.execute(
+                            "UPDATE work_items SET status='done', verdict=?, evidence_path=?, updated_at=? WHERE id=?",
+                            (v, sym_to_evidence.get(item["symbol"]) or "", utc_now(), item["id"]),
+                        )
+                        seeded_verdicts += 1
+                    else:
+                        # Parent task is done but per-symbol verdict can't be
+                        # recovered from report.csv (file moved, format change,
+                        # etc.). Mark work_item done with INVALID so the new
+                        # per-symbol dispatcher doesn't try to re-run it.
+                        conn.execute(
+                            "UPDATE work_items SET status='done', verdict='INVALID', payload_json=?, updated_at=? WHERE id=?",
+                            (json.dumps({"backfill_note": "parent_done_no_per_symbol_data"}), utc_now(), item["id"]),
+                        )
+        conn.commit()
+    return {"created": created, "skipped_parents": skipped, "seeded_verdicts": seeded_verdicts}
 
 
 def pipeline_view(root: Path) -> dict[str, Any]:
@@ -985,6 +1131,64 @@ def classify_backtest(phase: str, report_csv_path: Path) -> dict[str, Any]:
     return fn(report_csv_path)
 
 
+def _find_ea_setfiles(ea_id: str, phase: str) -> list[tuple[str, str]]:
+    """Return [(symbol, setfile_path)] for the EA's sets/ dir.
+
+    Picks setfiles matching the period detected from the dir (single-period
+    EAs are the norm). For P3+, restrict to the surviving_symbols supplied
+    by the caller (filter applied externally).
+    """
+    ea_root = REPO_ROOT / "framework" / "EAs"
+    candidates = [p for p in ea_root.glob(f"{ea_id}_*") if p.is_dir()]
+    if not candidates:
+        return []
+    ea_dir = candidates[0]
+    sets_dir = ea_dir / "sets"
+    if not sets_dir.is_dir():
+        return []
+    period = _detect_ea_period(ea_id)
+    pat = re.compile(rf"^{re.escape(ea_dir.name)}_(?P<sym>.+?)_{re.escape(period)}_backtest\.set$")
+    out: list[tuple[str, str]] = []
+    for f in sorted(sets_dir.iterdir()):
+        m = pat.match(f.name)
+        if m:
+            out.append((m.group("sym"), str(f.resolve())))
+    return out
+
+
+def _create_backtest_work_items(conn: sqlite3.Connection, parent_task_id: str,
+                                 ea_id: str, phase: str,
+                                 surviving_symbols: list[str] | None) -> list[dict[str, str]]:
+    """Fan out a backtest task into per-(symbol, setfile) work_items.
+
+    For P2: every setfile in EA's sets/ dir.
+    For P3+: only setfiles whose symbol is in surviving_symbols (subset).
+    Returns list of created {id, symbol, setfile_path} for the response.
+    """
+    setfiles = _find_ea_setfiles(ea_id, phase)
+    if not setfiles:
+        return []
+    if surviving_symbols:
+        symbol_set = set(surviving_symbols)
+        setfiles = [(s, p) for s, p in setfiles if s in symbol_set]
+    out: list[dict[str, str]] = []
+    now = utc_now()
+    for sym, setfile_path in setfiles:
+        wid = str(uuid.uuid4())
+        conn.execute(
+            """
+            INSERT INTO work_items
+              (id, kind, phase, ea_id, symbol, setfile_path, status,
+               attempt_count, parent_task_id, payload_json, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, 'pending', 0, ?, ?, ?, ?)
+            """,
+            (wid, "backtest", phase, ea_id, sym, setfile_path, parent_task_id,
+             json.dumps({}, sort_keys=True), now, now),
+        )
+        out.append({"id": wid, "symbol": sym, "setfile_path": setfile_path})
+    return out
+
+
 def enqueue_backtest(root: Path, review_task_id: str, phase: str) -> dict[str, Any]:
     """Create a backtest_<phase> task.
 
@@ -1059,11 +1263,24 @@ def enqueue_backtest(root: Path, review_task_id: str, phase: str) -> dict[str, A
             payload=payload,
         )
 
+        # NEW 2026-05-16: also fan out work_items per (ea × symbol × setfile)
+        # for the per-symbol queue model. The bundled `tasks` row above stays
+        # as the high-level lifecycle anchor; work_items are what the MT5
+        # dispatcher actually claims one-by-one.
+        work_items_created = _create_backtest_work_items(
+            conn,
+            parent_task_id=task_id,
+            ea_id=ea_id,
+            phase=phase,
+            surviving_symbols=surviving_symbols,
+        )
+
     return {
         "enqueued": True,
         "task_id": task_id,
         "ea_id": ea_id,
         "phase": phase,
+        "work_items_created": work_items_created,
         "expected_report_glob": expected_glob,
         "next_action_hint": "python tools/strategy_farm/farmctl.py dispatch-tick",
     }
@@ -2128,6 +2345,10 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("status", help="Show source/task state")
     sub.add_parser("pipeline", help="Per-EA lifecycle view (where does each EA stand?)")
     sub.add_parser("pump", help="Continuous deterministic worker: dispatch MT5 + auto-spawn Codex + record builds. Run every 5 min.")
+    work_items_p = sub.add_parser("work-items", help="Per-(EA × symbol × phase) work_items view")
+    work_items_p.add_argument("--status", choices=["pending", "active", "done", "failed"], help="Filter by status")
+    work_items_p.add_argument("--ea", help="Filter by ea_id (e.g. QM5_1049)")
+    sub.add_parser("backfill-work-items", help="One-shot: populate work_items table from existing backtest tasks + report.csv")
     sub.add_parser("next", help="Show the deterministic next action")
     sub.add_parser("claim-source", help="Activate the next pending source if no source is active")
 
@@ -2237,6 +2458,10 @@ def main(argv: list[str] | None = None) -> int:
         print_json(pipeline_view(root))
     elif args.command == "pump":
         print_json(pump(root))
+    elif args.command == "work-items":
+        print_json(work_items_view(root, status_filter=args.status, ea_filter=args.ea))
+    elif args.command == "backfill-work-items":
+        print_json(backfill_work_items(root))
     elif args.command == "next":
         print_json(next_action(root))
     elif args.command == "claim-source":
