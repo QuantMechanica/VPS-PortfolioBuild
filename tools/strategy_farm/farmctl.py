@@ -1875,21 +1875,24 @@ def pump(root: Path) -> dict[str, Any]:
     if codex_research_fresh < 1 and (active_codex + builds_spawned_this_cycle + reviews_spawned_this_cycle) < MAX_PARALLEL_CODEX:
         result["codex_research_spawn"] = _claim_research_source_codex(root)
 
-    # 10. Parameter ablation: for any new P2-PASS work_item that isn't itself
-    #     an ablation child AND hasn't been ablated yet, generate N variant
-    #     setfiles + insert N new pending P2 work_items. OWNER 2026-05-16:
-    #     "Ablation auf Gewinner statt Greenfield". Default N=5, ±25%.
-    #     is_ablation flag in payload prevents grandchildren (depth-1 only).
+    # 10. Parameter ablation — phase-aware:
+    #     - P2-PASS (exploration): 5 random ±25% mutations to find a viable
+    #       region. OWNER 2026-05-16 "Ablation auf Gewinner statt Greenfield".
+    #     - P3-PASS (exploitation): 50 systematic grid points ±30% across the
+    #       top numeric strategy_* inputs (cartesian product). OWNER 2026-05-17
+    #       "für jeden P3-PASS 50 Ablations spawnen (parameter-grid)".
+    #     Ablation children themselves never re-ablate (is_ablation=0 filter).
     try:
         from ablate import spawn_ablation_workitems
     except ImportError:
-        # Module installed at tools/strategy_farm/ — same dir as this file
         import sys as _sys
         _sys.path.insert(0, str(Path(__file__).resolve().parent))
         from ablate import spawn_ablation_workitems
     result["ablation_children"] = []
+
+    # §10a P2-PASS → 5 random
     with connect(root) as conn:
-        pass_to_ablate = conn.execute(
+        p2_pass = conn.execute(
             """
             SELECT * FROM work_items
             WHERE status='done' AND verdict='PASS' AND phase='P2'
@@ -1898,16 +1901,42 @@ def pump(root: Path) -> dict[str, Any]:
             ORDER BY updated_at ASC LIMIT 5
             """
         ).fetchall()
-        for wi in pass_to_ablate:
+        for wi in p2_pass:
             try:
                 report = spawn_ablation_workitems(
                     conn, dict(wi), FRAMEWORK_EAS_DIR,
-                    n_variants=5, perturb_pct=0.25,
+                    n_variants=5, perturb_pct=0.25, method="random",
                 )
                 result["ablation_children"].append(report)
             except Exception as exc:
                 result["ablation_children"].append({
                     "parent_id": wi["id"], "ea_id": wi["ea_id"],
+                    "method": "random",
+                    "children_count": 0, "reason": f"error: {exc!r}",
+                })
+
+    # §10b P3-PASS → 50 grid (one parent per pump cycle — 50 children is a lot)
+    with connect(root) as conn:
+        p3_pass = conn.execute(
+            """
+            SELECT * FROM work_items
+            WHERE status='done' AND verdict='PASS' AND phase='P3'
+              AND COALESCE(json_extract(payload_json, '$.is_ablation'), 0)=0
+              AND COALESCE(json_extract(payload_json, '$.ablated_at'), '')=''
+            ORDER BY updated_at ASC LIMIT 1
+            """
+        ).fetchall()
+        for wi in p3_pass:
+            try:
+                report = spawn_ablation_workitems(
+                    conn, dict(wi), FRAMEWORK_EAS_DIR,
+                    n_variants=50, perturb_pct=0.30, method="grid",
+                )
+                result["ablation_children"].append(report)
+            except Exception as exc:
+                result["ablation_children"].append({
+                    "parent_id": wi["id"], "ea_id": wi["ea_id"],
+                    "method": "grid",
                     "children_count": 0, "reason": f"error: {exc!r}",
                 })
 
