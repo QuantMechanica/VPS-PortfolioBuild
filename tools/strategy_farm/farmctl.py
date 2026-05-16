@@ -957,7 +957,10 @@ def render_codex_build_prompt(root: Path, card_path_str: str, out_path: str | No
             # arg makes codex print "Reading additional input from stdin..." and
             # hang waiting for stdin EOF that the inherited claude pipe never
             # delivers (observed 2026-05-16: 18 min hang, codex CPU=0s).
-            f"cat '{target}' | codex exec -s danger-full-access --cd \"{REPO_ROOT}\""
+            # Output is tee'd to a per-build live log so OWNER can Get-Content -Wait
+            # without depending on the buffered wake session log.
+            f"cat '{target}' | codex exec -s danger-full-access --cd \"{REPO_ROOT}\" 2>&1 "
+            f"| tee 'D:/QM/strategy_farm/logs/codex_build_{task_id}.live.log'"
         ),
     }
 
