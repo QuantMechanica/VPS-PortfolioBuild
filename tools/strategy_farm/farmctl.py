@@ -983,6 +983,76 @@ def _spawn_claude_for_review(root: Path, build_task_row: sqlite3.Row) -> dict[st
     }
 
 
+def _spawn_claude_for_g0_batch(root: Path) -> dict[str, Any]:
+    """Spawn Claude for G0 review of up to 5 draft cards.
+
+    Identical pattern to research/review spawns: render focused prompt,
+    invoke claude CLI with -p, claude reads cards + qb_reputable_source_criteria.md
+    + applies R1-R4 + runs farmctl approve-card / reject-card for each, exits.
+
+    Bounded at 5 cards per spawn to cap token burn and avoid long sessions.
+    Skips if cards_draft/ is empty.
+    """
+    import shutil as _shutil
+    drafts_dir = root / "artifacts" / "cards_draft"
+    if not drafts_dir.is_dir():
+        return {"spawned": False, "reason": "no cards_draft dir"}
+    drafts = sorted([f for f in drafts_dir.glob("QM5_*.md") if f.is_file()],
+                    key=lambda p: p.stat().st_mtime)
+    if not drafts:
+        return {"spawned": False, "reason": "no draft cards"}
+    batch = drafts[:5]
+    batch_paths = "\n".join(f"- {f}" for f in batch)
+
+    claude_path = _shutil.which("claude.cmd") or _shutil.which("claude") or "claude"
+    live_log = root / "logs" / f"claude_g0_{dt.datetime.utcnow().strftime('%Y%m%dT%H%M%S')}.live.log"
+    live_log.parent.mkdir(parents=True, exist_ok=True)
+    if live_log.exists() and (time.time() - live_log.stat().st_mtime) < 60:
+        return {"spawned": False, "reason": "claude g0 live log active < 60s"}
+
+    bootstrap = (
+        "You are doing focused QM G0 reviews. Read "
+        "C:\\QM\\repo\\processes\\qb_reputable_source_criteria.md to refresh "
+        "R1-R4 criteria. Then for each draft card in this batch:\n\n"
+        f"{batch_paths}\n\n"
+        "Apply R1 (source link/attribution), R2 (mechanical Entry+Exit rules), "
+        "R3 (testable on >=1 DWX symbol after porting), R4 (no ML / binding HR14). "
+        "For each card:\n"
+        "  - All four PASS  -> run `python C:\\QM\\repo\\tools\\strategy_farm\\farmctl.py "
+        "approve-card --card \"<path>\" --reasoning \"<R1-R4 one-line rationale>\"`\n"
+        "  - Any FAIL       -> run `python C:\\QM\\repo\\tools\\strategy_farm\\farmctl.py "
+        "reject-card --card \"<path>\" --reason \"<which R + why>\"`\n\n"
+        "Use farmctl --help if argument names differ. SP500.DWX is now backtest-only "
+        "available (2026-05-16T19:15Z) — R3 PASS with T6-caveat is acceptable. "
+        "Process all cards in the batch, then exit cleanly."
+    )
+
+    creationflags = 0
+    if sys.platform == "win32":
+        creationflags = subprocess.CREATE_NEW_CONSOLE  # type: ignore[attr-defined]
+    stdout_f = open(live_log, "wb")
+    proc = subprocess.Popen(
+        [claude_path, "-p", bootstrap,
+         "--permission-mode", "bypassPermissions",
+         "--add-dir", "C:\\QM\\repo",
+         "--add-dir", "D:\\QM\\strategy_farm"],
+        cwd=str(REPO_ROOT),
+        stdout=stdout_f,
+        stderr=subprocess.STDOUT,
+        stdin=subprocess.DEVNULL,
+        shell=True,
+        creationflags=creationflags,
+        close_fds=False,
+    )
+    return {
+        "spawned": True,
+        "batch_size": len(batch),
+        "cards": [f.stem for f in batch],
+        "live_log": str(live_log),
+        "pid": proc.pid,
+    }
+
+
 def _claim_research_source(root: Path) -> dict[str, Any]:
     """Find next research work and spawn Claude.
 
@@ -1366,9 +1436,17 @@ def pump(root: Path) -> dict[str, Any]:
             except Exception as e:
                 result["review_records"].append({"task_id": row["id"], "error": str(e)})
 
-    # 7. Spawn Claude research if no review spawn happened and budget allows.
+    # 7. Spawn Claude G0 review of draft cards (drain the backlog before
+    #    starting more research). Bounded at 5 cards per spawn.
+    spawned_other = bool(result.get("claude_review_spawn"))
+    if active_claude_count < MAX_PARALLEL_CLAUDE and not spawned_other:
+        result["claude_g0_spawn"] = _spawn_claude_for_g0_batch(root)
+        if result["claude_g0_spawn"].get("spawned"):
+            spawned_other = True
+
+    # 8. Spawn Claude research if no other claude spawn happened and budget allows.
     #    Continuous research per OWNER 2026-05-16 "weiter mit Research".
-    if active_claude_count < MAX_PARALLEL_CLAUDE and not result.get("claude_review_spawn"):
+    if active_claude_count < MAX_PARALLEL_CLAUDE and not spawned_other:
         result["claude_research_spawn"] = _claim_research_source(root)
 
     return result
