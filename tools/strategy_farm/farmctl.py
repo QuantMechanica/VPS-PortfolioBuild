@@ -1342,7 +1342,11 @@ def pump(root: Path) -> dict[str, Any]:
     #    file level: CSV append is atomic line-by-line, update_resolver is
     #    idempotent (reads current CSV state, regenerates .mqh deterministically).
     #    OWNER 2026-05-16: explicit ok to parallelize.
-    MAX_PARALLEL_CODEX = 3
+    MAX_PARALLEL_CODEX = 6
+    # OWNER 2026-05-16: token budget plenty, push more parallelism. 6 matches
+    # the 5 MT5 terminals + 1 buffer for the smoke-MT5 each codex spawns
+    # transiently. Higher would risk MT5-tester contention with the per-symbol
+    # work_item dispatcher claiming terminals for live backtests.
     # Check how many codex/node procs already running externally (from prior
     # pump cycles or hourly wake). Don't pile on if at limit.
     try:
