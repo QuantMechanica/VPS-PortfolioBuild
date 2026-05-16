@@ -39,12 +39,17 @@ URI: `{{uri}}`
   - **Fundamentally untestable on any DWX instrument even after porting**
     (R3 fail). Crypto / equity / options strategies that PORT to Forex,
     indices, or CFDs are valid — note the porting plan in the card.
-    Special case: **SP500/SPX500/SPY/ES are permanently unavailable in the
-    DWX feed (no tick data)**. If a card's edge specifically requires SPY
-    intraday cash-session microstructure (e.g. opening-range breakouts
-    tuned to NYSE microstructure), and no port to WS30 (Dow) or NDX
-    (Nasdaq) preserves the edge → R3 REJECT at G0. If the concept ports
-    cleanly to WS30/NDX → R3 PASS with port plan documented.
+    Special case: **SP500 → SP500.DWX (Custom Symbol, backtest-only,
+    OWNER-provided ticks 2018-07→2026-05).** Available since 2026-05-16T19:15Z
+    on T1-T5. R3 PASS for SPY/SPX-intraday-specific edges. Card MUST note
+    in `## R3` section: "Live promotion T6 gate: SP500.DWX is not
+    broker-routable. If the EA passes P0-P9 on SP500.DWX only, T6 deploy
+    requires a parallel-validation on NDX.DWX or WS30.DWX before
+    AutoTrading enable." This is Board Advisor's T6-gate enforcement, not
+    yours — but the card must flag it so it doesn't surprise anyone at P10.
+    Other US-equity instruments (SPY ETF, ES futures, individual stocks)
+    remain unavailable — port them to SP500.DWX / NDX.DWX / WS30.DWX per
+    the card edge.
   - **ML / neural net / adaptive parameters / grid-without-bounded-worst-case**
     (R4 / HR14, binding)
 - **Anonymous forum handles are OK** as long as you link the source URL.
