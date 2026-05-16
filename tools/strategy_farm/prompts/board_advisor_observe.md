@@ -54,6 +54,14 @@ real failures worth acting on:
   import sqlite3, json
   with sqlite3.connect(r'D:/QM/strategy_farm/state/farm_state.sqlite') as c:
       c.row_factory = sqlite3.Row
+      # Self-heal filter — exclude blocked/failed rows that are forensic
+      # tombstones rather than live problems:
+      #   (a) same-kind done sibling exists for the same card (retry succeeded)
+      #   (b) payload carries an explicit `superseded_by` marker
+      #   (c) build_ea blocked but pipeline already advanced past it — i.e. a
+      #       downstream ea_review/backtest task is done for the same card.
+      #       Happens when the autonomous wake's pump_record_build path
+      #       creates a fresh ea_review without a successful build_ea row.
       rows = list(c.execute("""
           SELECT t.* FROM tasks t
           WHERE t.status IN ('failed','blocked')
@@ -65,9 +73,18 @@ real failures worth acting on:
                   AND t2.id != t.id
             )
             AND t.payload_json NOT LIKE '%superseded_by%'
+            AND NOT (
+                t.kind = 'build_ea'
+                AND EXISTS (
+                    SELECT 1 FROM tasks t3
+                    WHERE t3.card_id = t.card_id
+                      AND t3.status = 'done'
+                      AND (t3.kind = 'ea_review' OR t3.kind LIKE 'backtest_%')
+                )
+            )
       """))
       if not rows:
-          print('All failed/blocked tasks are self-healed (sibling done or superseded). No action.')
+          print('All failed/blocked tasks are self-healed (sibling done, superseded, or downstream-progressed). No action.')
       for r in rows:
           pj = json.loads(r['payload_json'])
           cr = pj.get('codex_result') or {}
