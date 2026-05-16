@@ -532,7 +532,12 @@ if (($Terminal -ine "any") -and (-not $AllowRunningTerminal.IsPresent)) {
 
 if (-not $Expert) {
     if ($EALabel) {
-        $Expert = "$EALabel\$EALabel"
+        # Canonical V5 convention: tester resolves to <terminal>/MQL5/Experts/QM/<EALabel>.ex5,
+        # so Expert path is "QM\<EALabel>". Earlier "EALabel\EALabel" form depended on a
+        # nested Experts/<EALabel>/<EALabel>.ex5 layout that nothing in the pipeline
+        # actually deploys to, causing REPORT_MISSING. p2_baseline.py
+        # (ensure_expert_binary_deployed) writes to QM\<EALabel> already.
+        $Expert = "QM\$EALabel"
     } else {
         $Expert = "QM\QM5_{0}" -f $EAId
     }
