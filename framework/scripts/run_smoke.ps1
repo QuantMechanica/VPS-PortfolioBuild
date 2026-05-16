@@ -106,6 +106,60 @@ function Resolve-TerminalRoot {
     return (Resolve-Path -LiteralPath $root).Path
 }
 
+function Deploy-ExpertBinaryToAllTerminals {
+    # Make run_smoke self-contained: copy the EA .ex5 from the repo into each
+    # T1..T5 Experts subdir before invoking the tester. Without this, Codex
+    # build → compile → smoke chains fail with "Experts\QM\<EA>.ex5 not found"
+    # because nothing else deploys between compile and smoke (only
+    # p2_baseline.py's ensure_expert_binary_deployed handles deploy, and that
+    # runs at a later pipeline stage).
+    #
+    # ExpertPath format: "<subdir>\<EaLabel>" (e.g. "QM\QM5_1047_halloween-...").
+    # Repo source: C:\QM\repo\framework\EAs\<EaLabel>\<EaLabel>.ex5
+    # Destination: D:\QM\mt5\<Tn>\MQL5\Experts\<subdir>\<EaLabel>.ex5
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ExpertPath
+    )
+
+    if ([string]::IsNullOrWhiteSpace($ExpertPath)) {
+        return
+    }
+    $parts = $ExpertPath -split '[\\/]', 2
+    if ($parts.Count -ne 2) {
+        Write-Host ("run_smoke.deploy_skip=non_canonical_expert_path expert='{0}'" -f $ExpertPath)
+        return
+    }
+    $subdir  = $parts[0]
+    $eaLabel = $parts[1]
+
+    $repoSource = Join-Path "C:\QM\repo\framework\EAs" (Join-Path $eaLabel "$eaLabel.ex5")
+    if (-not (Test-Path -LiteralPath $repoSource -PathType Leaf)) {
+        # No source .ex5 — let the tester surface the missing-binary error so the
+        # smoke summary reasoner can classify it. Don't throw here; sometimes the
+        # caller passes -Expert pointing at a pre-deployed legacy EA that lives
+        # only under MQL5/Experts (e.g. framework smoke).
+        Write-Host ("run_smoke.deploy_skip=source_missing source='{0}'" -f $repoSource)
+        return
+    }
+
+    $deployedTo = New-Object System.Collections.Generic.List[string]
+    foreach ($t in @("T1","T2","T3","T4","T5")) {
+        $destDir  = Join-Path "D:\QM\mt5" (Join-Path $t (Join-Path "MQL5" (Join-Path "Experts" $subdir)))
+        if (-not (Test-Path -LiteralPath $destDir -PathType Container)) {
+            New-Item -ItemType Directory -Path $destDir -Force | Out-Null
+        }
+        $destFile = Join-Path $destDir "$eaLabel.ex5"
+        try {
+            Copy-Item -LiteralPath $repoSource -Destination $destFile -Force -ErrorAction Stop
+            $deployedTo.Add($t) | Out-Null
+        } catch {
+            Write-Host ("run_smoke.deploy_warn terminal={0} dest='{1}' err='{2}'" -f $t, $destFile, $_.Exception.Message)
+        }
+    }
+    Write-Host ("run_smoke.deploy_ok ea_label={0} subdir={1} terminals=[{2}] source='{3}'" -f $eaLabel, $subdir, ($deployedTo -join ","), $repoSource)
+}
+
 function Resolve-DispatchTerminal {
     param(
         [Parameter(Mandatory = $true)]
@@ -542,6 +596,13 @@ if (-not $Expert) {
         $Expert = "QM\QM5_{0}" -f $EAId
     }
 }
+
+# Fail-safe deploy: copy the EA .ex5 from the repo to all 5 terminal Experts
+# subdirs before the tester runs. Idempotent (overwrite). Without this,
+# Codex build → compile → smoke chains failed at "Experts\QM\<EA>.ex5 not
+# found" because only p2_baseline.py deployed binaries — run_smoke had no
+# self-deploy step. 2026-05-16 QM5_1046 build hit exactly this.
+Deploy-ExpertBinaryToAllTerminals -ExpertPath $Expert
 
 if ($SetFile) {
     $SetFile = (Resolve-Path -LiteralPath $SetFile).Path
