@@ -909,6 +909,188 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
     }
 
 
+def _spawn_claude_for_review(root: Path, build_task_row: sqlite3.Row) -> dict[str, Any]:
+    """Spawn Claude CLI to review one done build_ea task.
+
+    Renders the review prompt via render_claude_review_prompt, then invokes
+    claude detached with -p pointing at the rendered prompt. The Claude
+    process writes the verdict JSON to verdict_path itself per
+    claude_review_ea.md output contract. Next pump cycle picks up the
+    verdict and calls record-review.
+
+    Idempotent: if an ea_review task already exists for this build, skip.
+    """
+    build_task_id = build_task_row["id"]
+    # Check if review already exists
+    with connect(root) as conn:
+        existing = conn.execute(
+            "SELECT id FROM tasks WHERE kind='ea_review' AND payload_json LIKE ?",
+            (f"%\"build_task_id\": \"{build_task_id}\"%",),
+        ).fetchone()
+    if existing:
+        return {"spawned": False, "reason": "ea_review task already exists", "review_task_id": existing[0]}
+
+    # Render the prompt — also creates the ea_review task row
+    rendered = render_claude_review_prompt(root, build_task_id, None)
+    if not rendered.get("written"):
+        return {"spawned": False, "reason": f"render failed: {rendered.get('reason')}"}
+    prompt_path = rendered.get("prompt_path")
+    review_task_id = rendered.get("review_task_id")
+    verdict_path = rendered.get("verdict_path")
+
+    import shutil as _shutil
+    claude_path = _shutil.which("claude.cmd") or _shutil.which("claude") or "claude"
+    live_log = root / "logs" / f"claude_review_{review_task_id}.live.log"
+    live_log.parent.mkdir(parents=True, exist_ok=True)
+
+    # Read prompt to embed as the -p argument (claude CLI doesn't accept stdin
+    # for -p mode; the prompt is a single string arg with non-interactive output).
+    prompt_text = Path(prompt_path).read_text(encoding="utf-8") if prompt_path else ""
+    bootstrap = (
+        "You are a focused QM EA reviewer. Read the prompt I pass + the referenced "
+        "files (mq5, card, build_result, smoke_summary). Apply checklist sections "
+        f"§0-§7 from claude_review_ea.md. Write the JSON verdict EXACTLY to "
+        f"'{verdict_path}'. Then exit cleanly. No prose, no commentary outside "
+        f"the JSON file.\n\nReview Prompt:\n\n{prompt_text}"
+    )
+
+    creationflags = 0
+    if sys.platform == "win32":
+        creationflags = subprocess.CREATE_NEW_CONSOLE  # type: ignore[attr-defined]
+    stdout_f = open(live_log, "wb")
+    proc = subprocess.Popen(
+        [claude_path, "-p", bootstrap,
+         "--permission-mode", "bypassPermissions",
+         "--add-dir", "C:\\QM\\repo",
+         "--add-dir", "D:\\QM\\strategy_farm",
+         "--add-dir", "D:\\QM\\reports"],
+        cwd=str(REPO_ROOT),
+        stdout=stdout_f,
+        stderr=subprocess.STDOUT,
+        stdin=subprocess.DEVNULL,
+        shell=True,
+        creationflags=creationflags,
+        close_fds=False,
+    )
+    return {
+        "spawned": True,
+        "review_task_id": review_task_id,
+        "build_task_id": build_task_id,
+        "ea_id": rendered.get("ea_id"),
+        "verdict_path": verdict_path,
+        "live_log": str(live_log),
+        "pid": proc.pid,
+    }
+
+
+def _claim_research_source(root: Path) -> dict[str, Any]:
+    """Find next research work and spawn Claude.
+
+    Priority:
+      1. Any source with status='active' (continue mining its next batch)
+      2. Any source with status='cards_ready' that is eligible to resume
+         (its drafted cards have all reached pipeline-end)
+      3. Any source with status='notes_ready' (cards can be drafted from notes)
+      4. Claim oldest pending source (lowest priority numeric value)
+    """
+    import shutil as _shutil
+    claude_path = _shutil.which("claude.cmd") or _shutil.which("claude") or "claude"
+
+    # Skip if a Claude is already running for research
+    with connect(root) as conn:
+        active_src = conn.execute(
+            "SELECT id, lane, source_type, uri, title, status, notes_path "
+            "FROM sources WHERE status='active' LIMIT 1"
+        ).fetchone()
+    target_source = None
+    research_action = None
+    if active_src:
+        target_source = dict(active_src)
+        research_action = "continue_active"
+    else:
+        with connect(root) as conn:
+            # try notes_ready first (cards waiting to be drafted)
+            nr = conn.execute(
+                "SELECT id, lane, source_type, uri, title, status, notes_path "
+                "FROM sources WHERE status='notes_ready' LIMIT 1"
+            ).fetchone()
+        if nr:
+            target_source = dict(nr)
+            research_action = "draft_cards_from_notes"
+        else:
+            with connect(root) as conn:
+                pend = conn.execute(
+                    "SELECT id, lane, source_type, uri, title, status, notes_path "
+                    "FROM sources WHERE status='pending' "
+                    "ORDER BY priority ASC, created_at ASC LIMIT 1"
+                ).fetchone()
+            if pend:
+                # Claim it first
+                conn = sqlite3.connect(str(db_path(root)))
+                try:
+                    conn.execute(
+                        "UPDATE sources SET status='active', updated_at=? WHERE id=?",
+                        (utc_now(), pend["id"]),
+                    )
+                    conn.commit()
+                finally:
+                    conn.close()
+                target_source = dict(pend)
+                target_source["status"] = "active"
+                research_action = "claim_pending_first_batch"
+    if not target_source:
+        return {"spawned": False, "reason": "no research work available"}
+
+    src_id = target_source["id"]
+    live_log = root / "logs" / f"claude_research_{src_id}.live.log"
+    live_log.parent.mkdir(parents=True, exist_ok=True)
+    if live_log.exists() and (time.time() - live_log.stat().st_mtime) < 60:
+        return {"spawned": False, "reason": "claude research live log active < 60s", "source_id": src_id}
+
+    bootstrap = (
+        "You are a focused QM strategy researcher. Read "
+        "C:\\QM\\repo\\tools\\strategy_farm\\prompts\\claude_research_source.md "
+        "AND C:\\QM\\repo\\processes\\qb_reputable_source_criteria.md . "
+        f"Mine source `{src_id}` ({target_source.get('title')}). "
+        "Action: " + (research_action or "draft_cards") + ". "
+        "Draft UP TO 5 new strategy cards into "
+        "D:\\QM\\strategy_farm\\artifacts\\cards_draft\\QM5_<NNNN>_<slug>.md per the "
+        "Strategy Wiki _TEMPLATE Strategy.md format with g0_status: PENDING. "
+        "Allocate fresh QM5_<NNNN> IDs starting after the highest existing in "
+        "framework/registry/ea_id_registry.csv. Append notes to "
+        f"D:\\QM\\strategy_farm\\artifacts\\source_notes\\{src_id}.md. "
+        "At end: if <5 cards or exhausted, run `farmctl set-source-status "
+        f"{src_id} done`. If 5 cards + more findable, run `farmctl "
+        f"set-source-status {src_id} cards_ready`. Exit cleanly."
+    )
+    creationflags = 0
+    if sys.platform == "win32":
+        creationflags = subprocess.CREATE_NEW_CONSOLE  # type: ignore[attr-defined]
+    stdout_f = open(live_log, "wb")
+    proc = subprocess.Popen(
+        [claude_path, "-p", bootstrap,
+         "--permission-mode", "bypassPermissions",
+         "--add-dir", "C:\\QM\\repo",
+         "--add-dir", "D:\\QM\\strategy_farm",
+         "--add-dir", "G:\\My Drive\\QuantMechanica - Company Reference"],
+        cwd=str(REPO_ROOT),
+        stdout=stdout_f,
+        stderr=subprocess.STDOUT,
+        stdin=subprocess.DEVNULL,
+        shell=True,
+        creationflags=creationflags,
+        close_fds=False,
+    )
+    return {
+        "spawned": True,
+        "source_id": src_id,
+        "title": target_source.get("title"),
+        "research_action": research_action,
+        "live_log": str(live_log),
+        "pid": proc.pid,
+    }
+
+
 def _spawn_codex_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]:
     """Spawn Codex CLI as a detached process for a pending build_ea task.
 
@@ -1131,6 +1313,63 @@ def pump(root: Path) -> dict[str, Any]:
         if brp and Path(brp).exists() and Path(brp).stat().st_size > 0:
             rec = record_build_result(root, row["id"], brp)
             result["build_records"].append({"task_id": row["id"], "recorded": rec})
+
+    # 5. Spawn Claude review for ONE done build_ea without ea_review yet.
+    #    Bounded at 1 per pump cycle to cap claude token burn. Detached
+    #    process; verdict JSON appears at verdict_path when review completes.
+    try:
+        active_claude_count = int(subprocess.run(
+            ["powershell.exe", "-NoProfile", "-Command",
+             "(Get-Process -Name claude -ErrorAction SilentlyContinue).Count"],
+            capture_output=True, text=True, timeout=10,
+        ).stdout.strip() or "0")
+    except Exception:
+        active_claude_count = 0
+    result["claude_active_before"] = active_claude_count
+    # MAX is high enough to allow 1 review + 1 research per pump cycle even
+    # when 1-3 "ambient" claude sessions are running (dev terminals, the
+    # hourly autonomous_wake, the BoardAdvisor wake). Token budget is the
+    # real cap, not concurrency.
+    MAX_PARALLEL_CLAUDE = 6
+    if active_claude_count < MAX_PARALLEL_CLAUDE:
+        with connect(root) as conn:
+            # Done build_ea without matching ea_review
+            done_no_review = conn.execute(
+                """
+                SELECT b.* FROM tasks b
+                WHERE b.kind='build_ea' AND b.status='done'
+                  AND NOT EXISTS (
+                    SELECT 1 FROM tasks r
+                    WHERE r.kind='ea_review'
+                      AND r.payload_json LIKE '%"build_task_id": "' || b.id || '"%'
+                  )
+                ORDER BY b.updated_at ASC LIMIT 1
+                """
+            ).fetchone()
+        if done_no_review:
+            result["claude_review_spawn"] = _spawn_claude_for_review(root, done_no_review)
+
+    # 6. Record completed Claude reviews — look for verdict JSONs that
+    #    correspond to ea_review tasks NOT yet recorded.
+    with connect(root) as conn:
+        unreviewed = conn.execute(
+            "SELECT * FROM tasks WHERE kind='ea_review' AND status='pending'"
+        ).fetchall()
+    result["review_records"] = []
+    for row in unreviewed:
+        payload = json.loads(row["payload_json"])
+        vp = payload.get("verdict_path") or (str(root / "artifacts" / "verdicts" / f"review_{row['id']}.json"))
+        if vp and Path(vp).exists() and Path(vp).stat().st_size > 0:
+            try:
+                rec = record_review_result(root, row["id"], vp)
+                result["review_records"].append({"task_id": row["id"], "recorded": rec})
+            except Exception as e:
+                result["review_records"].append({"task_id": row["id"], "error": str(e)})
+
+    # 7. Spawn Claude research if no review spawn happened and budget allows.
+    #    Continuous research per OWNER 2026-05-16 "weiter mit Research".
+    if active_claude_count < MAX_PARALLEL_CLAUDE and not result.get("claude_review_spawn"):
+        result["claude_research_spawn"] = _claim_research_source(root)
 
     return result
 
