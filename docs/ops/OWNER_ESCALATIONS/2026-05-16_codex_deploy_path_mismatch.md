@@ -236,3 +236,111 @@ observe wake.
 - Option B ruled out — perf-static-check PASS.
 - Side-channel fix (build_check.ps1 em-dash parse break) landed.
 - Option A vs C decision still pending OWNER. Escalation stays open.
+
+## Amendment 2026-05-16T15:55Z (Board Advisor observe wake — Option A executed)
+
+### Manual smoke re-run on T5 — TIMEOUT reproduces, not a deploy residual
+
+Invoked `run_smoke.ps1` directly against the on-disk EA (post-canonical-deploy
+fix `891b04c4`):
+
+```
+pwsh -File run_smoke.ps1 -EALabel QM5_1046_maroy-intraday-vwap-exit
+  -Symbol NDX.DWX -Year 2024 -Terminal T5
+  -Expert QM\QM5_1046_maroy-intraday-vwap-exit -Period M30
+  -Runs 2 -MinTrades 1 -Model 4 -TimeoutSeconds 240
+  -SetFile <NDX.DWX M30 backtest setfile>
+```
+
+Summary: `D:\QM\reports\smoke\QM5_1046\20260516_155207\summary.json`
+
+```
+result: FAIL
+reason_classes: TIMEOUT, METATESTER_HUNG, INCOMPLETE_RUNS, MODEL4_MARKER_REQUIRED
+run_01: TIMEOUT after 240 s, exit_code=null, report_size_bytes=0
+run_02: TIMEOUT after 240 s, exit_code=null, report_size_bytes=0
+```
+
+T5 tester log (UTF-16 LE, `D:\QM\mt5\T5\Tester\logs\20260516.log`) confirms
+each run actually loaded the EA and started executing:
+
+```
+17:52:11.233 Tester  NDX.DWX,M30 (Darwinex-Live): testing of
+  Experts\QM\QM5_1046_maroy-intraday-vwap-exit.ex5 from 2024.01.01 to 2024.12.31
+17:56:09.277 Tester  Cloud servers switched off   (= killed by 240 s timeout)
+17:56:11.559 Tester  NDX.DWX,M30 ... testing of ... (run_02 start)
+```
+
+No `framework_error` in tester output, no OnInit failure, no `.ex5` load
+failure. The EA simply did not finish a full-year 2024 NDX.DWX M30 model=4
+backtest inside 240 s. Same outcome as Codex's 13:20 smoke (300 s timeout)
+and the earlier 13:05 smoke (REPORT_MISSING from deploy bug, since fixed).
+
+### Root cause finally pinned
+
+The TIMEOUT is **not a code-level perf bug** (static check PASS, no per-tick
+recompute hotspot) and **not a deploy-residual** (canonical layout
+`MQL5/Experts/QM/<ea>.ex5` is now in place on all T1-T5 and the tester
+clearly loaded it). It is a **smoke-budget vs strategy-class mismatch**:
+
+- `run_smoke.ps1` parameter default: `[int]$TimeoutSeconds = 1800`
+  (30-min per-run budget — generous, would likely have completed).
+- Actual invocation budget observed in failing runs: 240-300 s
+  (i.e., the caller is passing `-TimeoutSeconds` well below the default
+  for tick-dense intraday + model=4 + full-year + NDX-class workloads).
+- Reference: same harness at GDAXI.DWX Daily 2024 completed in 14.6 s
+  (`32.5M total ticks, test passed in 0:00:14.600`, log line at
+  16:57:42.187). M30 model=4 NDX intraday is on the order of 50-100x more
+  work — within 1800 s but well above 300 s.
+
+Codex's invocation chain (per `codex_build_ea.md` step 8) doesn't specify
+`-TimeoutSeconds`, so it falls through to the script default 1800 s — yet
+the failing 13:20 run timed out at exactly 300 s. That points to either
+(a) Codex itself was running inside a 300 s sandbox limit and killed the
+child terminal externally, or (b) a separate dispatcher path (e.g. the
+prior observe wake's invocation, or `farmctl tick`/`p2_baseline.py`)
+overrode the default. I did NOT trace this further in this wake — the
+overriding caller is the next thing to identify if OWNER wants a clean
+end-to-end fix.
+
+### What this wake did NOT do
+
+- Did not flip task `57ee887a-...` to `done` — TIMEOUT means the harness
+  never produced a passing smoke result; doing so would forge evidence.
+- Did not flip to `pending` — that would re-burn Codex tokens with no
+  expected change.
+- Did not bump `run_smoke.ps1` default timeout — the default is already
+  1800 s; the issue is upstream from the script defaults.
+
+### Recommended next step (OWNER decision)
+
+Two cheap, equivalent paths:
+
+D. **Identify and fix the upstream 300 s cap.** Trace which caller (Codex
+   sandbox wrapper? farmctl-dispatched wake? something in
+   `pipeline_dispatcher.py`?) is passing `-TimeoutSeconds 300` (or
+   killing the terminal at 300 s externally), and bump it to 900-1200 s
+   for tick-dense intraday + model=4. Then SQL-flip `tasks.57ee887a-...`
+   `blocked` → `pending` and let the next Codex build cycle re-smoke
+   with the wider budget.
+
+E. **Manual one-off smoke at the script default (1800 s) to confirm
+   the EA actually passes.** Board Advisor invokes
+   `run_smoke.ps1 ... -TimeoutSeconds 1800` (~30 min walltime, two runs
+   ~60 min total). If smoke PASSES, hand-update `tasks.57ee887a-...` to
+   `done` with the resulting summary path. If TIMEOUT still reproduces
+   at 1800 s, escalate to actual EA-rework. (Did not run this in the
+   current observe wake — would exceed the 30-min observe budget.)
+
+Board Advisor leans **D** — fixing the upstream cap is a one-time
+investment that unblocks every future tick-dense intraday EA. (E) only
+unblocks QM5_1046 individually.
+
+### Quick state snapshot
+
+- QM5_1046 EA dir on disk: `C:/QM/repo/framework/EAs/QM5_1046_maroy-intraday-vwap-exit/`
+- QM5_1046 .ex5 deployed canonical to T1-T5: yes, 116 386 B, mtime 13:05:23Z
+- QM5_1046 setfiles in place: yes, NDX.DWX_M30 + WS30.DWX_M30
+- QM5_1046 build task `57ee887a-...`: status=blocked (unchanged)
+- Other still-blocked tasks (1044 perf, 1045 SPY-unavailable): correctly
+  classified, not affected by this work
