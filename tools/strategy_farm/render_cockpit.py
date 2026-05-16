@@ -42,6 +42,53 @@ CARDS_APPROVED = ROOT / "artifacts" / "cards_approved"
 PIPELINE_STAGES = ["Card", "Build", "Review", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "Live"]
 
 
+def claude_token_usage() -> dict:
+    """Sum input/output/cache tokens across all claude streams in 5h window.
+
+    Claude's rate_limit_event only has allowed/blocked status, no usage
+    percentage. To estimate budget consumption: aggregate `usage` blocks
+    from every assistant message in autonomous_wake_*.jsonl AND
+    claude_*.live.log files modified in the last 5 hours.
+
+    Returns: {events, input, output, cache_create, cache_read, total,
+    billable} where billable = input+output+cache_create (cache_read is
+    Anthropic-discounted ~10x).
+    """
+    now = dt.datetime.now().timestamp()
+    five_hr_start = now - 5 * 3600
+    totals = {"input": 0, "output": 0, "cache_create": 0, "cache_read": 0, "events": 0}
+    streams = (
+        list(LOG_DIR.glob("autonomous_wake_*.jsonl"))
+        + list(LOG_DIR.glob("claude_research_*.live.log"))
+        + list(LOG_DIR.glob("claude_review_*.live.log"))
+        + list(LOG_DIR.glob("claude_g0_*.live.log"))
+    )
+    for f in streams:
+        try:
+            if f.stat().st_mtime < five_hr_start:
+                continue
+            for line in f.read_text(encoding="utf-8", errors="ignore").splitlines():
+                if '"type":"assistant"' not in line or '"usage"' not in line:
+                    continue
+                try:
+                    o = json.loads(line)
+                except Exception:
+                    continue
+                usage = (o.get("message") or {}).get("usage") or {}
+                if not usage:
+                    continue
+                totals["input"]        += int(usage.get("input_tokens") or 0)
+                totals["output"]       += int(usage.get("output_tokens") or 0)
+                totals["cache_read"]   += int(usage.get("cache_read_input_tokens") or 0)
+                totals["cache_create"] += int(usage.get("cache_creation_input_tokens") or 0)
+                totals["events"]       += 1
+        except Exception:
+            continue
+    totals["total"] = totals["input"] + totals["output"] + totals["cache_read"] + totals["cache_create"]
+    totals["billable"] = totals["input"] + totals["output"] + totals["cache_create"]
+    return totals
+
+
 def claude_quota() -> dict:
     """Parse latest rate_limit_event from claude jsonl streams.
 
@@ -507,6 +554,7 @@ def main() -> int:
     pipeline = compute_pipeline()
     heureka = compute_heureka_leader(pipeline)
     claude_q = claude_quota()
+    claude_usage = claude_token_usage()
     codex_q = codex_quota()
 
     severity, msg = diagnose_bottleneck(procs, q, claude_workers, codex_workers)
@@ -764,6 +812,19 @@ def main() -> int:
     claude_reset = f'{cq.get("reset_in_min", "?")} min' if cq.get("reset_in_min") is not None else "?"
     claude_status_class = "ok" if cq.get("status") == "allowed" else "fail"
     codex_tokens_k = f'{cxq["total_tokens_5h"]//1000}K' if cxq["total_tokens_5h"] else "0"
+    cu = claude_usage
+    billable_m = cu["billable"] / 1_000_000  # millions
+    cache_read_m = cu["cache_read"] / 1_000_000
+    # Heuristic budget thresholds — Anthropic doesn't publish exact 5h Pro/Max
+    # limits, but observation: Claude Pro ~225K-450K billable / 5h, Max 5x
+    # ~1-2M, Max 20x ~5-10M. OWNER has subscription Abo.
+    # Color tiers based on billable absolute:
+    if billable_m > 8.0:
+        billable_class = "fail"
+    elif billable_m > 3.0:
+        billable_class = "warn"
+    else:
+        billable_class = "ok"
     tokens_html = f"""
 <div class="tokens">
   <div class="token-card">
@@ -772,7 +833,12 @@ def main() -> int:
     <div class="token-sub">{html.escape(str(cq.get("rateLimitType","?")))} · resets in {claude_reset}</div>
   </div>
   <div class="token-card">
-    <div class="token-label">Codex · tokens (5h)</div>
+    <div class="token-label">Claude · 5h billable</div>
+    <div class="token-value {billable_class}">{billable_m:.2f}M</div>
+    <div class="token-sub">{cu['events']} events · cache_read {cache_read_m:.1f}M (≈free)</div>
+  </div>
+  <div class="token-card">
+    <div class="token-label">Codex · 5h tokens</div>
     <div class="token-value ok">{codex_tokens_k}</div>
     <div class="token-sub">{cxq["builds_5h"]} builds · avg {cxq["avg_tokens_per_build"]//1000 if cxq['avg_tokens_per_build'] else 0}K each</div>
   </div>
@@ -781,11 +847,15 @@ def main() -> int:
     <div class="token-value">{cxq["builds_24h"]}</div>
     <div class="token-sub">incl. failed/blocked</div>
   </div>
-  <div class="token-card">
-    <div class="token-label">Claude · overage</div>
-    <div class="token-value {'fail' if cq.get('isUsingOverage') else 'ok'}">{html.escape(str(cq.get('overageStatus','?')))}</div>
-    <div class="token-sub">overage {'using' if cq.get('isUsingOverage') else 'not used'}</div>
-  </div>
+</div>
+<div class="token-detail">
+  Claude 5h: input <code>{cu['input']:,}</code> · output <code>{cu['output']:,}</code> ·
+  cache_create <code>{cu['cache_create']:,}</code> · cache_read <code>{cu['cache_read']:,}</code> ·
+  TOTAL <code>{cu['total']:,}</code> tokens.
+  Color: <span style="color:var(--em)">≤3M ok</span> ·
+  <span style="color:var(--promising)">3-8M warn</span> ·
+  <span style="color:var(--fail)">&gt;8M risk</span>
+  (heuristic; resets at {dt.datetime.fromtimestamp(cq.get('resetsAt',0)).strftime('%H:%M') if cq.get('resetsAt') else '?'})
 </div>"""
 
     # === Final HTML ===
@@ -1067,6 +1137,16 @@ tr:last-child td {{ border-bottom: none; }}
 .token-sub {{
   font-family: var(--font-mono); font-size: 10px;
   color: var(--qm-text-muted); margin-top: 4px;
+}}
+.token-detail {{
+  font-family: var(--font-mono); font-size: 10.5px;
+  color: var(--qm-text-muted); padding: 8px 14px;
+  border: 1px dashed var(--qm-border);
+  border-radius: 6px; margin-bottom: 18px;
+}}
+.token-detail code {{
+  background: var(--qm-surface-0); padding: 1px 4px;
+  border-radius: 3px; color: var(--qm-text-dim);
 }}
 </style></head>
 <body>
