@@ -278,6 +278,22 @@ ONE_PAGER_CSS = """
 .hero-active .slug{color:var(--qm-text-muted)}
 .hero-active-empty{color:var(--qm-text-muted);font-style:italic}
 
+.heureka-meter{margin-left:8px;font-family:var(--font-mono,'Source Code Pro',monospace);font-weight:600;letter-spacing:.5px;text-transform:none}
+.heureka-meter-num{color:var(--em);font-size:13px}
+.heureka-meter-tot{color:var(--qm-text-muted);font-size:11px}
+.heureka-meter-pct{color:var(--qm-text-dim);font-size:11px;margin-left:6px}
+
+.heureka-leader{margin-top:14px;padding-top:14px;border-top:.5px solid var(--qm-border);font-family:var(--font-mono,'Source Code Pro',monospace);font-size:12px;color:var(--qm-text-dim);display:flex;flex-direction:column;gap:6px}
+.heureka-leader-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.heureka-leader-label{font-size:9px;text-transform:uppercase;letter-spacing:1.2px;color:var(--qm-text-muted);font-weight:600;min-width:50px}
+.heureka-leader-ea{color:var(--em);font-weight:600;font-size:13px}
+.heureka-leader-slug{color:var(--qm-text-muted);font-size:12px}
+.heureka-leader-phase{color:var(--qm-live);font-size:14px;font-weight:600}
+.heureka-leader-arrow{color:var(--qm-text-faint)}
+.heureka-leader-next{color:var(--qm-text-dim);font-size:12px}
+.heureka-leader-next strong{color:var(--em);font-weight:600}
+.heureka-leader-empty{color:var(--qm-text-muted);font-style:italic;font-size:12px}
+
 .phase-bar{display:flex;gap:5px;flex-wrap:wrap}
 .phase-dot{width:38px;height:38px;border-radius:8px;border:1px solid var(--qm-border);display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(15,23,42,0.5);transition:all .2s}
 .phase-sym{font-size:13px;font-weight:600;color:var(--qm-text-subtle);line-height:1}
@@ -392,28 +408,49 @@ def render_hero(state: dict) -> str:
     completed_total = len(live_eas)
     progress_pct = int(completed_total / target * 100)
 
-    if leader:
-        leader_html = (
-            f'<div class="hero-active">Active: <code>{e(leader["ea_id"])}</code> '
-            f'<span class="slug">{e(leader["slug"])}</span> · '
-            f'in <strong>{e(leader["current_phase"])}</strong></div>'
-        )
-        phases_html = render_phase_dots(leader["completed_phases"], leader["current_phase"], leader.get("failed_at"))
-    else:
-        leader_html = (
-            '<div class="hero-active hero-active-empty">'
-            'No EA in flight yet. Research a source → approve a card → Codex builds the first EA.'
-            '</div>'
-        )
-        phases_html = render_phase_dots([], None, None)
-
     portfolio_dots = "".join(
         f'<span class="port-dot {"filled" if i < completed_total else ""}"></span>'
         for i in range(target)
     )
 
-    heureka_completed = len(leader["completed_phases"]) if leader else 0
     heureka_total = len(PHASE_ORDER)
+
+    if leader:
+        heureka_completed = len(leader["completed_phases"])
+        heureka_pct = int(100 * heureka_completed / heureka_total) if heureka_total else 0
+        # Compute next gate label from PHASE_ORDER
+        current_idx = None
+        try:
+            current_idx = PHASE_ORDER.index(leader["current_phase"])
+        except (ValueError, KeyError):
+            current_idx = None
+        next_gate = "live"
+        if current_idx is not None and current_idx + 1 < heureka_total:
+            next_gate = PHASE_ORDER[current_idx + 1]
+        phases_html = render_phase_dots(leader["completed_phases"], leader["current_phase"], leader.get("failed_at"))
+        heureka_leader_block = f"""
+      <div class="heureka-leader">
+        <div class="heureka-leader-row">
+          <span class="heureka-leader-label">Active</span>
+          <code class="heureka-leader-ea">{e(leader["ea_id"])}</code>
+          <span class="heureka-leader-slug">{e(leader["slug"])}</span>
+        </div>
+        <div class="heureka-leader-row">
+          <span class="heureka-leader-label">Current</span>
+          <strong class="heureka-leader-phase">{e(leader["current_phase"])}</strong>
+          <span class="heureka-leader-arrow">→</span>
+          <span class="heureka-leader-next">next: <strong>{e(next_gate)}</strong></span>
+        </div>
+      </div>"""
+    else:
+        heureka_completed = 0
+        heureka_pct = 0
+        phases_html = render_phase_dots([], None, None)
+        heureka_leader_block = (
+            '<div class="heureka-leader heureka-leader-empty">'
+            'no EA in flight · pump research → G0 approve → Codex build'
+            '</div>'
+        )
 
     return f"""
 <section class="hero">
@@ -424,11 +461,13 @@ def render_hero(state: dict) -> str:
       <div class="hero-count"><strong>{completed_total}</strong> / {target} live · {progress_pct}%</div>
     </div>
     <div class="hero-heureka">
-      <div class="hero-label">Heureka — leader EA progress G0..P10 ({heureka_completed}/{heureka_total})</div>
+      <div class="hero-label">Heureka · leader EA progress
+        <span class="heureka-meter"><span class="heureka-meter-num">{heureka_completed}</span><span class="heureka-meter-tot">/{heureka_total}</span><span class="heureka-meter-pct">· {heureka_pct}%</span></span>
+      </div>
       <div class="phase-bar">{phases_html}</div>
+      {heureka_leader_block}
     </div>
   </div>
-  {leader_html}
 </section>
 """
 
