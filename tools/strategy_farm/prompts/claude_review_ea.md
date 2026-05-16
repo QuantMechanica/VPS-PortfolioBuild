@@ -91,6 +91,38 @@ note that filter/window investigation is deferred to P2 setfile generation.
 If `smoke_result` is `compile_failed` or `build_check_failed`: that is an automatic
 `REJECT_REWORK` with the specific compile log line as rework directive.
 
+### 7. Runtime Performance Discipline (NEW 2026-05-16 — was missed)
+
+Codex's own smoke gate catches the worst per-tick-recompute cases (QM5_1044
+2026-05-16: smoke killed at 10 min wall-clock, blocked_reason populated). But
+a marginal-runtime EA may slip through smoke and then explode in P2 multi-
+period sweeps. Inspect the `.mq5` defensively for these patterns:
+
+- **Per-tick full-window recompute.** Open the `.mq5`. Search for indicator-
+  computation functions (custom EMA / MACD / RSI / etc.). For each, check
+  whether it is called from `OnTick` unconditionally:
+  - If the function loops `for (shift = warmup; shift >= 1; shift--)` or
+    calls `CopyRates(..., warmup)` and is invoked on every tick (not gated
+    by `IsNewBar` or equivalent new-closed-bar detection): `block` severity,
+    REJECT_REWORK with directive "cache indicator state across ticks; advance
+    incrementally on new-bar detection, do not recompute warmup window on
+    every OnTick".
+  - Nested calls of this pattern (function A loops over function B which
+    loops over function C, each recomputing warmup) compound the cost
+    multiplicatively. Same `block` finding, same directive.
+- **Per-tick logging.** If `OnTick` (or any function reachable from it
+  unconditionally per tick) emits `Print()` / log statements that are not
+  gated by `IsNewBar`, `closed > 0`, or a wall-clock rate limit: `warn`
+  unless inside a clearly closed-bar branch. Per-tick INFO logging in the
+  Friday-close window produces ~16K entries per Friday alone.
+- **Smoke wall-time.** If `smoke_result: passed` but the smoke report's
+  wall-time field is >10 min (1-year D1 backtest): `warn`, note "investigate
+  per-tick cost before P3 — P2 multi-period sweep budget is per-period
+  ≤ 10 min".
+
+These checks complement Codex's smoke-runtime guardrail; the smoke gate is
+not sufficient on its own because marginal runtime explodes in P2 sweeps.
+
 ## Output Contract
 
 Write **exactly one JSON object** to `{{verdict_path}}` AND echo to stdout. Schema:

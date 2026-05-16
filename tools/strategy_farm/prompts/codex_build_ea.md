@@ -94,6 +94,41 @@ setfiles via `gen_setfile.ps1` (see workflow step 9) inherit this pattern.
   - **NEVER** register a symbol that isn't in `dwx_symbol_matrix.csv`. If no
     acceptable port exists, set `blocked_reason` and stop. No phantom symbols.
 
+## PERFORMANCE DISCIPLINE (strict — smoke runtime is bounded)
+
+Codex EAs are silently failing smoke on per-tick recompute patterns (QM5_1044
+vpmacd, 2026-05-16: 214K ops per entry-signal call killed smoke at 10 min wall-
+clock having advanced only 5 broker-days into a 1-year backtest). These rules
+exist to prevent that class of bug.
+
+- **Incremental indicator state, NOT full recompute on every OnTick.** If your
+  EA uses any indicator that depends on historical bars (EMA, MACD, RSI,
+  Bollinger, custom averages, smoothed/iterative state of any kind):
+  - On `OnInit`, seed the state once by walking `shift = warmup..1` to fill
+    `ema_fast / ema_slow / signal / etc.` Persist as file-scope state variables
+    plus `datetime last_processed_bar_time`.
+  - On every `OnTick`, detect new closed bar via
+    `iTime(_Symbol, period, 0) != last_processed_bar_time`. If NO new bar →
+    reuse cached state, skip the indicator recompute. If a new bar closed →
+    advance state by ONE step using the new closed bar's value
+    (e.g. EMA: `ema = alpha * price + (1 - alpha) * ema`).
+  - Never call `CopyRates` over the full warmup window on every tick. The
+    smoke runner's wall-clock budget is ~10 min for a 1-year D1 backtest.
+- **Bounded nested loops.** If your entry-signal call chain has nested loops
+  whose product exceeds ~1000 inner ops per tick, the smoke test will time
+  out. Cache the innermost terms once per new-bar instead of recomputing them
+  on every outer-loop iteration.
+- **Logging discipline.** No `Print()` / INFO / DEBUG logging inside `OnTick`
+  on the per-tick code path. Gate logs by `IsNewBar` or rate-limit to at most
+  once per broker-time hour. In particular, per-tick logging during Friday-
+  close windows (21:00-23:59) produces ~16K log lines per day and is a smoke-
+  runtime killer in its own right.
+- **Smoke runtime budget.** A correctly-architected EA should finish a 1-year
+  D1 backtest smoke in well under 10 min wall-clock. If smoke wall-time
+  >10 min, that is a perf bug, not "the strategy is slow": set
+  `blocked_reason: "smoke runtime infeasible — <root cause>"`, populate
+  `rework_directives` with imperative file-scoped fixes, and stop.
+
 ## Workflow
 
 1. Read `{{card_path}}` fully. Extract Entry, Exit, Stop Loss, Position Sizing,
