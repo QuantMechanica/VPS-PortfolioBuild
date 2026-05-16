@@ -42,6 +42,14 @@ Apply each rule literally. If a rule is violated → severity `block`. If unclea
   `C:/QM/repo/framework/registry/dwx_symbol_matrix.csv`. A registered symbol
   not in the matrix = `block` finding REJECT_REWORK (port to nearest DWX or
   block with reason).
+- **P2 saturation (NEW 2026-05-16)** — `len(symbols_registered)` must equal the
+  number of DWX symbols listed in the card's R3 PASS row. If the R3 row names
+  4 portable symbols (e.g. NDX/WS30/GDAXI/UK100) and the build registered only
+  1, that's a `block` finding REJECT_REWORK with directive "register the FULL
+  portable basket per card R3 row; P2 saturation rule in codex_build_ea.md".
+  Exception: card Implementation Notes explicitly say "single-symbol baseline"
+  or "do not expand to other symbols" — then 1 is OK (mark `warn`, note the
+  restriction).
 
 ### 1. Mechanical Match (Card ↔ .mq5)
 

@@ -94,6 +94,37 @@ setfiles via `gen_setfile.ps1` (see workflow step 9) inherit this pattern.
   - **NEVER** register a symbol that isn't in `dwx_symbol_matrix.csv`. If no
     acceptable port exists, set `blocked_reason` and stop. No phantom symbols.
 
+## P2 SATURATION RULE (strict — register the FULL portable basket)
+
+**Register ALL portable symbols listed in the card's R3 PASS section, not just
+the "primary" symbol.** This rule is load-bearing for pipeline throughput.
+
+Why: `p2_baseline.py` distributes symbols across T1-T5 round-robin. Single-symbol
+registration means 4 of 5 terminals sit idle during P2 — directly violating the
+Mission Baseline 2026-05-09 "MT5 idle = mission-failure-signal" principle.
+
+How to apply:
+
+1. Read the card's `## R1-R4 Bewertung` table, specifically the R3 row.
+2. R3 row narrates the portable DWX basket (e.g. "DXZ feed limitation 2026-05-16:
+   SPX500.DWX has no tick data. Available index basket reduces to **NDX.DWX
+   (Nasdaq 100), WS30.DWX (Dow 30), GDAXI.DWX (DAX 40), UK100.DWX (FTSE 100)** —
+   four major liquid country indices.").
+3. Register ALL four (or however many R3 names) in `magic_numbers.csv` with
+   distinct symbol slots (e.g. NDX slot 0, WS30 slot 1, GDAXI slot 2, UK100 slot 3).
+4. Generate a P2 setfile (via `gen_setfile.ps1` step 9) for EACH registered symbol
+   at the card's primary timeframe.
+5. Smoke can still run on a single symbol (smoke is bounded by design).
+
+Exception — the card explicitly says "single-symbol baseline" or "do not expand"
+in its Implementation Notes: respect that and register only the named symbol. Then
+note in `open_questions`: "card forbids multi-symbol; P2 will use 1 terminal".
+
+If the card's Implementation Notes say "primary X, expand to Y, Z in P3" (the
+common pattern), interpret that as a P3 PARAMETER-SWEEP statement (different
+configs per symbol), not a P2 RESTRICTION. P2 baseline still registers all
+portable symbols — P3 then sweeps params per symbol on the already-built EA.
+
 ## PERFORMANCE DISCIPLINE (strict — smoke runtime is bounded)
 
 Codex EAs are silently failing smoke on per-tick recompute patterns (QM5_1044
