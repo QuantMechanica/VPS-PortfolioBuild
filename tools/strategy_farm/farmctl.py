@@ -689,9 +689,10 @@ def enqueue_backtest(root: Path, review_task_id: str, phase: str) -> dict[str, A
         if not ea_id:
             return {"enqueued": False, "reason": "Review payload missing ea_id"}
 
-        # p2_baseline writes to D:/QM/reports/pipeline/<ea_dir_name>/P2/report.csv
-        # We don't know ea_dir_name a priori, so store a glob and resolve at poll time.
-        expected_glob = str(PIPELINE_REPORT_ROOT / f"{ea_id}_*" / phase / "report.csv")
+        # p2_baseline writes to D:/QM/reports/pipeline/<args.ea>/P2/report.csv where
+        # args.ea is the short EA label (e.g. "QM5_1047"), not the dir name with slug.
+        # Glob matches both QM5_1047 (short) and QM5_1047_<slug> (long, for older runs).
+        expected_glob = str(PIPELINE_REPORT_ROOT / f"{ea_id}*" / phase / "report.csv")
 
         task_id = create_task(
             conn,
