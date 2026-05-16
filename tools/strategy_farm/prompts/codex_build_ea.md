@@ -125,35 +125,61 @@ common pattern), interpret that as a P3 PARAMETER-SWEEP statement (different
 configs per symbol), not a P2 RESTRICTION. P2 baseline still registers all
 portable symbols — P3 then sweeps params per symbol on the already-built EA.
 
+## FRAMEWORK CORSET (strict — use the modules, do not reimplement)
+
+The V5 framework provides the entire per-tick scaffold. Your `.mq5` should be
+just **5 strategy hooks + input params**. Start from
+`framework/templates/EA_Skeleton.mq5` — it has all framework wiring already.
+Touch only:
+
+- `input` declarations for strategy-specific params
+- Body of `Strategy_NoTradeFilter`, `Strategy_EntrySignal`,
+  `Strategy_ManageOpenPosition`, `Strategy_ExitSignal`, `Strategy_NewsFilterHook`
+
+Use these framework helpers — DO NOT reimplement them:
+
+| Need                              | Use                                                                |
+|-----------------------------------|--------------------------------------------------------------------|
+| Closed-bar gate                   | `QM_IsNewBar()` or `QM_IsNewBar(sym, tf)`                          |
+| ATR / EMA / SMA / RSI             | `QM_ATR(sym, tf, period, shift=1)` etc. (`QM_Indicators.mqh`)      |
+| MACD                              | `QM_MACD_Main(...)`, `QM_MACD_Signal(...)`                         |
+| ADX + DI                          | `QM_ADX`, `QM_ADX_PlusDI`, `QM_ADX_MinusDI`                        |
+| Bollinger                         | `QM_BB_Upper / Middle / Lower`                                     |
+| Open / close / partial position   | `QM_TM_OpenPosition` / `ClosePosition` / `PartialClose`            |
+| SL/TP modify, BE, trailing        | `QM_TM_MoveSL/MoveTP/MoveToBreakEven/TrailATR/TrailStep`           |
+| Stop distance from ATR/structure  | `QM_StopATR / QM_StopStructure / QM_StopVolatility / QM_StopFixedPips` |
+| Lot sizing from SL points         | `QM_LotsForRisk(symbol, sl_points)`                                |
+| News gate                         | `QM_NewsAllowsTrade(symbol, broker_time, qm_news_mode)`            |
+| Kill-switch / Friday-close        | `QM_KillSwitchCheck` / `QM_FrameworkHandleFridayClose`             |
+
+Forbidden patterns (Claude review will `REJECT_REWORK` on any):
+- Per-EA `IsNewBar()` function — use `QM_IsNewBar()`
+- Direct `iATR / iMA / iRSI / iMACD / iADX / iBands` calls — use the `QM_*` readers
+- `CopyBuffer` on raw handles — the readers do it for you
+- File-scope `g_atr_handle` / `IndicatorRelease` — handles are pooled
+- `CopyRates` over warmup window on every tick
+
 ## PERFORMANCE DISCIPLINE (strict — smoke runtime is bounded)
 
-Codex EAs are silently failing smoke on per-tick recompute patterns (QM5_1044
-vpmacd, 2026-05-16: 214K ops per entry-signal call killed smoke at 10 min wall-
-clock having advanced only 5 broker-days into a 1-year backtest). These rules
-exist to prevent that class of bug.
+Following the Framework Corset above eliminates ~all known perf-failure
+patterns. The remaining rules cover custom math the framework can't help with:
 
-- **Incremental indicator state, NOT full recompute on every OnTick.** If your
-  EA uses any indicator that depends on historical bars (EMA, MACD, RSI,
-  Bollinger, custom averages, smoothed/iterative state of any kind):
-  - On `OnInit`, seed the state once by walking `shift = warmup..1` to fill
-    `ema_fast / ema_slow / signal / etc.` Persist as file-scope state variables
-    plus `datetime last_processed_bar_time`.
-  - On every `OnTick`, detect new closed bar via
-    `iTime(_Symbol, period, 0) != last_processed_bar_time`. If NO new bar →
-    reuse cached state, skip the indicator recompute. If a new bar closed →
-    advance state by ONE step using the new closed bar's value
-    (e.g. EMA: `ema = alpha * price + (1 - alpha) * ema`).
-  - Never call `CopyRates` over the full warmup window on every tick. The
-    smoke runner's wall-clock budget is ~10 min for a 1-year D1 backtest.
 - **Bounded nested loops.** If your entry-signal call chain has nested loops
   whose product exceeds ~1000 inner ops per tick, the smoke test will time
   out. Cache the innermost terms once per new-bar instead of recomputing them
   on every outer-loop iteration.
+- **Closed-bar gate** for any non-trivial computation. Wrap with
+  `if(!QM_IsNewBar()) return;` so the work runs once per closed bar, not per
+  tick.
+- **Custom bar arrays.** If you genuinely need raw OHLC arrays (e.g. for
+  custom seasonality math), call `CopyRates` ONCE inside a `QM_IsNewBar` gate
+  and cache the result in file-scope variables. Never call it unconditionally
+  from `OnTick`.
 - **Logging discipline.** No `Print()` / INFO / DEBUG logging inside `OnTick`
-  on the per-tick code path. Gate logs by `IsNewBar` or rate-limit to at most
-  once per broker-time hour. In particular, per-tick logging during Friday-
-  close windows (21:00-23:59) produces ~16K log lines per day and is a smoke-
-  runtime killer in its own right.
+  on the per-tick code path. Gate logs by `QM_IsNewBar` or rate-limit to at
+  most once per broker-time hour. In particular, per-tick logging during
+  Friday-close windows (21:00-23:59) produces ~16K log lines per day and is a
+  smoke-runtime killer in its own right.
 - **Smoke runtime budget.** A correctly-architected EA should finish a 1-year
   D1 backtest smoke in well under 10 min wall-clock. If smoke wall-time
   >10 min, that is a perf bug, not "the strategy is slow": set
@@ -203,22 +229,27 @@ build_result JSON is more valuable than masking it with a hopeful rewrite.
    card is symbol-agnostic), reserve a slot in `magic_numbers.csv`. One row per
    `(ea_id, symbol, magic)`. HARD ABORT on collision.
 
-3a. **Refresh `framework\include\QM\QM_MagicResolver.mqh`** so the baked static array
-    contains EVERY row from `magic_numbers.csv` whose `ea_id` is referenced by an
-    EA dir currently present in `framework/EAs/QM5_*` (i.e. NOT under
-    `framework/EAs/_obsolete_*`). NEVER drop existing rows when adding new ones —
-    read the current array first, append (or merge in canonical ea_id order), then
-    rewrite. Also bump `QM_MAGIC_REGISTRY_ROWS` and update `QM_MAGIC_REGISTRY_SHA256`
-    to the SHA-256 of the post-edit `magic_numbers.csv` bytes
-    (`python -c "import hashlib;print(hashlib.sha256(open(r'C:/QM/repo/framework/registry/magic_numbers.csv','rb').read()).hexdigest().upper())"`).
-    Without this step the smoke run fails with
-    `EA_MAGIC_NOT_REGISTERED ... OnInit returns non-zero code 1` even though the row
-    is in the CSV.
+3a. **Regenerate `framework\include\QM\QM_MagicResolver.mqh`** by running the
+    idempotent regenerator:
+    ```powershell
+    python C:\QM\repo\framework\scripts\update_magic_resolver.py
+    ```
+    The script reads `magic_numbers.csv` + scans active EA dirs and rewrites
+    the `.mqh` with the full, canonical row set + bumped `QM_MAGIC_REGISTRY_ROWS`
+    + updated `QM_MAGIC_REGISTRY_SHA256`. DO NOT hand-edit the `.mqh` — past
+    builds that did so silently dropped rows from other EAs (QM5_1050 build
+    2026-05-16 dropped the 1047 rows → QM5_1047 smoke failed with
+    `EA_MAGIC_NOT_REGISTERED`). The script is the only sanctioned mutation
+    path. Run it after every CSV change, before compile.
 
-4. Create directory `{{ea_dir}}`.
+4. Create directory `{{ea_dir}}`. Copy `framework/templates/EA_Skeleton.mq5`
+   to `{{ea_dir}}/{{ea_id}}_{{slug}}.mq5` as a starting point — it has the
+   framework wiring + 5 Strategy_ hook stubs pre-populated.
 
-5. Write `{{ea_id}}_{{slug}}.mq5` implementing the card mechanically against the
-   framework architecture.
+5. Edit `{{ea_id}}_{{slug}}.mq5` to fill the 5 Strategy_ hooks against the
+   card's Entry/Exit/Stop/Sizing/Filters sections. Use ONLY the framework
+   helpers listed in the Framework Corset section above — no per-EA
+   `IsNewBar`, no raw `iATR / iMA / iRSI / iMACD / iADX / iBands` calls.
 
 6. Run `pwsh -File C:\QM\repo\framework\scripts\build_check.ps1 -EALabel {{ea_id}}_{{slug}}`.
    Must pass.

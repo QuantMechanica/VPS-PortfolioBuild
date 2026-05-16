@@ -16,6 +16,7 @@
 #include "QM_TradeManagement.mqh"
 #include "QM_TradeContext.mqh"
 #include "QM_ChartUI.mqh"
+#include "QM_Indicators.mqh"
 
 int  g_qm_fw_ea_id            = 0;
 int  g_qm_fw_magic_slot       = 0;
@@ -185,6 +186,7 @@ void QM_FrameworkShutdown()
      }
 
    QM_ChartUI_Shutdown();
+   QM_IndicatorsShutdown();
    if(g_qm_fw_initialized)
       QM_LogEvent(QM_INFO, "DEINIT", "{}");
    g_qm_fw_initialized = false;
