@@ -496,3 +496,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1051,cc-3ducks-sma60-mtf,3,AUDUSD.DWX,10510003,2026-05-16,Development,active
 1051,cc-3ducks-sma60-mtf,4,USDCAD.DWX,10510004,2026-05-16,Development,active
 1051,cc-3ducks-sma60-mtf,5,EURJPY.DWX,10510005,2026-05-16,Development,active
+1052,sidus-ema-method-v2,0,EURUSD.DWX,10520000,2026-05-16,Development,active
+1052,sidus-ema-method-v2,1,GBPUSD.DWX,10520001,2026-05-16,Development,active
+1052,sidus-ema-method-v2,2,USDJPY.DWX,10520002,2026-05-16,Development,active
+1052,sidus-ema-method-v2,3,AUDUSD.DWX,10520003,2026-05-16,Development,active
+1052,sidus-ema-method-v2,4,EURJPY.DWX,10520004,2026-05-16,Development,active
