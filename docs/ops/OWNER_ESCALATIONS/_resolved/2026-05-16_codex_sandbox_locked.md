@@ -97,3 +97,43 @@ The :47 Board Advisor observe wake is unaffected (it doesn't invoke Codex).
 - `D:/QM/strategy_farm/artifacts/builds/ad4eeb34-c502-4007-a93a-0e1c9d06b7c7.json`
 - `D:/QM/strategy_farm/artifacts/builds/076cab30-3b2a-41d1-a430-02c596e6bcad.json`
 - `D:/QM/strategy_farm/logs/autonomous_wakes_invocation.log` (gap pattern: 07:17Z and 08:17Z without WAKE_EXITED)
+
+---
+
+## RESOLVED 2026-05-16 by Board Advisor (per OWNER directive)
+
+Applied Option B from the escalation:
+- Backed up ~/.codex/config.toml to .bak-2026-05-16-pre-sandbox-unlock
+- Removed `[windows] sandbox = "elevated"` block from ~/.codex/config.toml
+- Updated `tools/strategy_farm/prompts/autonomous_loop.md` Step 2: invocation
+  now passes `-s danger-full-access` (workspace-write rejected pwsh subprocess
+  calls by codex policy even though it allows file writes; danger-full-access
+  is the only mode that permits the build_check / compile / gen_setfile /
+  run_smoke subprocess chain Codex needs).
+- Updated `farmctl.py render_codex_build_prompt` suggested_command accordingly.
+
+Smoketests:
+- `codex exec "Reply OK"` → returned OK (auth works)
+- `codex exec "Run pwsh Get-Date"` → FAILED with CreateProcessWithLogonW 1326
+  BEFORE the config change (reproducing the original symptom)
+- Same command AFTER the config change → still blocked-by-policy on default
+  sandbox (read-only) and workspace-write
+- Same command with `-s danger-full-access` → succeeded, returned the time
+
+Trade-off: Codex now has full subprocess access during the build wake. This
+is acceptable because Codex's behavior is externally constrained by
+`codex_build_ea.md` + `build_check.ps1` + Claude review §0; the elevated
+Windows sandbox added OS-isolation that we don't actually need for the
+factory pipeline.
+
+DB cleanup: deleted 2 blocked build_ea tasks (ad4eeb34 QM5_1046, 076cab30
+QM5_1047) that failed purely due to the sandbox lockout. They will rebuild
+on the next autonomous wake with the working Codex invocation.
+
+EAs that stay blocked legitimately:
+- 7a1a9e9d QM5_1044 (perf rework, real bug — has rework_directives)
+- ff2e7934 QM5_1045 (Zarattini SPY-intraday — needs separate port decision)
+
+Next autonomous wake (11:17Z local) is expected to: rebuild QM5_1046 (already
+patched to NDX.DWX primary by the 08:17Z wake), or pick QM5_1048 / QM5_1049
+which never had build attempts.

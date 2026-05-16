@@ -947,7 +947,13 @@ def render_codex_build_prompt(root: Path, card_path_str: str, out_path: str | No
         "suggested_command": (
             # ChatGPT-account Codex (v0.130+): default gpt-5.5 works.
             # gpt-5-codex / gpt-5-codex-mini / gpt-5 are 400 on ChatGPT auth.
-            f"codex exec --cd \"{REPO_ROOT}\" "
+            # -s danger-full-access required: workspace-write blocks pwsh subprocess
+            # commands by codex policy, even though it permits file writes. Codex
+            # needs to invoke pwsh for build_check / compile_one / gen_setfile /
+            # run_smoke. Constrained externally by the build prompt + build_check.ps1.
+            # [windows] sandbox = "elevated" was removed from ~/.codex/config.toml
+            # 2026-05-16 (lockout incident) — Codex now uses cross-platform sandbox.
+            f"codex exec -s danger-full-access --cd \"{REPO_ROOT}\" "
             f"\"$(Get-Content -Raw '{target}')\""
         ),
     }
