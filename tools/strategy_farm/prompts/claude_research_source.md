@@ -37,8 +37,14 @@ URI: `{{uri}}`
   - **Purely discretionary with NO rules at all** (R2 fail). Gaps in
     side-parameters are OK — Codex fills defaults.
   - **Fundamentally untestable on any DWX instrument even after porting**
-    (R3 fail). Crypto / equity / options strategies that PORT to Forex or
-    CFDs are valid — note the porting plan in the card.
+    (R3 fail). Crypto / equity / options strategies that PORT to Forex,
+    indices, or CFDs are valid — note the porting plan in the card.
+    Special case: **SP500/SPX500/SPY/ES are permanently unavailable in the
+    DWX feed (no tick data)**. If a card's edge specifically requires SPY
+    intraday cash-session microstructure (e.g. opening-range breakouts
+    tuned to NYSE microstructure), and no port to WS30 (Dow) or NDX
+    (Nasdaq) preserves the edge → R3 REJECT at G0. If the concept ports
+    cleanly to WS30/NDX → R3 PASS with port plan documented.
   - **ML / neural net / adaptive parameters / grid-without-bounded-worst-case**
     (R4 / HR14, binding)
 - **Anonymous forum handles are OK** as long as you link the source URL.

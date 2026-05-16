@@ -74,19 +74,25 @@ setfiles via `gen_setfile.ps1` (see workflow step 9) inherit this pattern.
 ## DWX SYMBOL DISCIPLINE (strict)
 
 - Before registering ANY symbol in `magic_numbers.csv`, verify it appears in
-  `C:/QM/repo/framework/registry/dwx_symbol_matrix.csv`.
-- If the card targets symbols not in the matrix, **port to the nearest
-  available DWX equivalent** and document the choice in `open_questions`:
-  - SPX500 / SPY / S&P 500 → use **WS30.DWX** (Dow 30) AND/OR **NDX.DWX**
-    (Nasdaq 100) as the closest available US large-cap index proxies.
-  - Russell 2000 / IWM → fall back to **WS30.DWX** if no Russell CFD.
+  `C:/QM/repo/framework/registry/dwx_symbol_matrix.csv`. The matrix is the
+  full set; the broker does NOT provide tick data for anything outside it.
+- **Permanently unavailable from Darwinex (no tick data, confirmed OWNER 2026-05-16)**:
+  - **SP500 / SPX500 / SPX / SPY / ES futures** — these CANNOT be backtested
+    on this VPS, period. Do NOT register `SPX500.DWX`, `SPY.DWX`, etc.
+  - If a card requires SPY/SPX intraday cash-session microstructure
+    specifically (no port preserves the strategy edge): set
+    `blocked_reason: "SP500/SPY required; permanently unavailable in DWX feed"`.
+  - If a card's concept ports cleanly: use **WS30.DWX** (Dow 30) +
+    **NDX.DWX** (Nasdaq 100) as the available US large-cap index proxies.
+- Other "card-stated symbol not in matrix" cases — port to nearest available
+  DWX equivalent and document the choice in `open_questions`:
+  - Russell 2000 / IWM → fall back to **WS30.DWX** (no Russell CFD).
   - Sector ETFs (XLK, XLF, etc.) → fall back to **NDX.DWX** or **WS30.DWX**.
   - DAX / FTSE / Nikkei → use **DE30.DWX**, **UK100.DWX**, **JP225.DWX** if
     present in the matrix (verify first).
   - Forex pairs: use exact match if present, else closest correlated pair.
-  - **NEVER** register a symbol like `SPX500.DWX` that isn't in the matrix.
-- If no acceptable port exists, set `blocked_reason` and stop. Do NOT register
-  a phantom symbol.
+  - **NEVER** register a symbol that isn't in `dwx_symbol_matrix.csv`. If no
+    acceptable port exists, set `blocked_reason` and stop. No phantom symbols.
 
 ## Workflow
 
