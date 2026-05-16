@@ -835,27 +835,40 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
 
             report = _resolve_report(payload)
             if report is not None and report.exists():
-                classification = classify_backtest(phase, report)
-                update_task(
-                    conn,
-                    row["id"],
-                    status="done",
-                    payload_merge={
-                        "classification": classification,
-                        "completed_at_iso": started_iso,
-                        "expected_report_path": str(report),
-                    },
-                )
-                actions.append({
-                    "task_id": row["id"],
-                    "action": "classified",
-                    "phase": phase,
-                    "ea_id": ea_id,
-                    "terminal_released": assigned_terminal,
-                    "verdict": classification.get("verdict"),
-                    "surviving_symbols": classification.get("surviving_symbols", []),
-                })
-                continue
+                # report.csv exists, but p2_baseline.py appends rows live during
+                # the run — classifying as soon as the file appears means we
+                # see only the first symbol's row. QM5_1049 16:20: STRATEGY_FAIL
+                # locked in after only NDX (FAIL) had been written; WS30/UK100/
+                # GDAXI (all PASS) arrived seconds later, too late. Gate
+                # classification on the sentinel JSON `p2_<ea>_result.json`
+                # that p2_baseline writes ONLY after all symbols finish.
+                sentinel = report.parent / f"p2_{ea_id}_result.json"
+                if not sentinel.exists():
+                    # Still running — fall through to age/timeout check below.
+                    pass
+                else:
+                    classification = classify_backtest(phase, report)
+                    update_task(
+                        conn,
+                        row["id"],
+                        status="done",
+                        payload_merge={
+                            "classification": classification,
+                            "completed_at_iso": started_iso,
+                            "expected_report_path": str(report),
+                            "p2_sentinel_path": str(sentinel),
+                        },
+                    )
+                    actions.append({
+                        "task_id": row["id"],
+                        "action": "classified",
+                        "phase": phase,
+                        "ea_id": ea_id,
+                        "terminal_released": assigned_terminal,
+                        "verdict": classification.get("verdict"),
+                        "surviving_symbols": classification.get("surviving_symbols", []),
+                    })
+                    continue
 
             start_iso = payload.get("started_at_iso")
             age_hours = 0.0
