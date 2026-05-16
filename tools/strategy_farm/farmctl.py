@@ -1369,14 +1369,14 @@ def pump(root: Path) -> dict[str, Any]:
         seen_eas: set[str] = set()
         pending_builds = []
         for row in all_pending:
+            if len(pending_builds) >= spawn_budget:
+                break
             payload = json.loads(row["payload_json"])
             ea_id = payload.get("ea_id")
             if ea_id in seen_eas:
                 continue
             seen_eas.add(ea_id)
             pending_builds.append(row)
-            if len(pending_builds) >= spawn_budget:
-                break
     spawns = []
     for pending_build in pending_builds:
         sp = _spawn_codex_for_build(root, pending_build)
