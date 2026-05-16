@@ -1728,10 +1728,14 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
     busy_terminals: set[str] = set()
 
     with connect(root) as conn:
-        # Phase 1 — poll all active backtest tasks
+        # Phase 1 — poll all active backtest tasks. Tasks that have
+        # work_items are owned by dispatch_work_items; this legacy path
+        # only handles bundled tasks without per-symbol fan-out.
         active_rows = conn.execute(
-            "SELECT * FROM tasks WHERE kind LIKE 'backtest_%' AND status = 'active' "
-            "ORDER BY created_at"
+            "SELECT t.* FROM tasks t "
+            "WHERE t.kind LIKE 'backtest_%' AND t.status = 'active' "
+            "AND NOT EXISTS (SELECT 1 FROM work_items wi WHERE wi.parent_task_id = t.id) "
+            "ORDER BY t.created_at"
         ).fetchall()
 
         for row in active_rows:
@@ -1911,11 +1915,15 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
                 "age_hours": round(age_hours, 2),
             })
 
-        # Phase 2 — pick dispatch mode based on pending count + fleet state
+        # Phase 2 — pick dispatch mode based on pending count + fleet state.
+        # Same back-compat filter: skip tasks that have work_items (those
+        # belong to dispatch_work_items).
         free_terminals = [t for t in MT5_TERMINALS if t not in busy_terminals]
         pending_rows = conn.execute(
-            "SELECT * FROM tasks WHERE kind LIKE 'backtest_%' AND status = 'pending' "
-            "ORDER BY created_at"
+            "SELECT t.* FROM tasks t "
+            "WHERE t.kind LIKE 'backtest_%' AND t.status = 'pending' "
+            "AND NOT EXISTS (SELECT 1 FROM work_items wi WHERE wi.parent_task_id = t.id) "
+            "ORDER BY t.created_at"
         ).fetchall()
 
         # Hybrid: single-EA-in-flight + idle fleet → ALL mode (full saturation
