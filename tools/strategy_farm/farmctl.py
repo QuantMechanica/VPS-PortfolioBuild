@@ -33,6 +33,7 @@ CLAUDE_REVIEW_TEMPLATE = PROMPTS_DIR / "claude_review_ea.md"
 
 PIPELINE_REPORT_ROOT = Path(r"D:\QM\reports\pipeline")
 SUPPORTED_BACKTEST_PHASES = ("P2",)  # v1 — extend as phases come online
+MT5_TERMINALS = ("T1", "T2", "T3", "T4", "T5")  # factory fleet, used by dispatch-tick for per-EA terminal assignment
 
 RUNTIME_DIRS = [
     "queue",
@@ -728,35 +729,57 @@ def _resolve_report(payload: dict[str, Any]) -> Path | None:
     return None
 
 
-def _phase_runner_cmd(phase: str, ea_id: str) -> list[str] | None:
-    """Return the subprocess argv for the runner of a given phase, or None."""
+def _phase_runner_cmd(phase: str, ea_id: str, terminal: str | None = None) -> list[str] | None:
+    """Return the subprocess argv for the runner of a given phase, or None.
+
+    When `terminal` is given (e.g. "T1"), pins p2_baseline.py to that single
+    terminal — used by Achse B multi-EA saturation (one EA per terminal,
+    p2_baseline runs all the EA's symbols sequentially on its assigned
+    terminal). When `terminal` is None, p2_baseline distributes symbols
+    across all T1-T5 in its own ThreadPoolExecutor (legacy single-EA mode).
+    """
     if phase == "P2":
-        return [
+        cmd = [
             sys.executable,
             str(REPO_ROOT / "framework" / "scripts" / "p2_baseline.py"),
-            "--ea",
-            ea_id,
+            "--ea", ea_id,
         ]
+        if terminal:
+            cmd.extend(["--terminal", terminal])
+        return cmd
     return None
 
 
 def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
-    """One-step advance for backtest_* tasks.
+    """Multi-EA saturated dispatch (Achse B, OWNER 2026-05-16).
+
+    Assigns one EA per free MT5 terminal — up to 5 concurrent backtest tasks
+    across T1-T5. When a terminal's EA finishes (report.csv lands), the
+    terminal is released for the next pending task on the next tick.
+
+    Per-EA: all symbols run sequentially on its assigned terminal (p2_baseline
+    --terminal Tn mode). Per-fleet: up to 5 EAs run in parallel.
 
     Order of operations:
-    1. Poll all active backtest tasks — if report.csv exists, classify and finalize.
-       If older than timeout_hours with no report, mark failed.
-    2. If no backtest task is active after polling, start the oldest pending one
-       by Popen-ing the phase runner detached.
+    1. Poll every active backtest task. If its report.csv exists, classify
+       and mark done. If older than timeout_hours with no report, mark failed.
+       Released terminals (from done/failed/timeout) become available.
+    2. For each remaining free terminal, find the oldest pending backtest
+       task. Spawn the phase runner with --terminal Tn pinning, record the
+       assignment in task payload.
 
-    HR16 enforcement: at most one backtest task active at any time (factory-wide).
-    Saturation across EAs comes in a later flag once v1 is stable.
+    HR16-saturate (supersedes the original HR16-strict "one EA at a time"):
+    multiple EAs can be in P2 concurrently as long as each is pinned to a
+    distinct terminal. EA-level sequencing within a source-mining batch is
+    no longer the bottleneck; throughput scales with terminal count.
     """
     init_db(root)
     actions: list[dict[str, Any]] = []
     started_iso = utc_now()
+    busy_terminals: set[str] = set()
 
     with connect(root) as conn:
+        # Phase 1 — poll all active backtest tasks
         active_rows = conn.execute(
             "SELECT * FROM tasks WHERE kind LIKE 'backtest_%' AND status = 'active' "
             "ORDER BY created_at"
@@ -765,16 +788,16 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
         for row in active_rows:
             payload = json.loads(row["payload_json"])
             phase = payload.get("phase", "?")
+            ea_id = payload.get("ea_id")
+            assigned_terminal = payload.get("assigned_terminal")
+
             report = _resolve_report(payload)
             if report is not None and report.exists():
                 classification = classify_backtest(phase, report)
                 update_task(
                     conn,
                     row["id"],
-                    status="done" if classification.get("verdict") == "PASS" else "done",
-                    # Both PASS and non-PASS terminate the backtest task as done;
-                    # downstream phase advance / EA-DEAD decision is based on the
-                    # classification.verdict in payload, not on task status.
+                    status="done",
                     payload_merge={
                         "classification": classification,
                         "completed_at_iso": started_iso,
@@ -785,103 +808,128 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
                     "task_id": row["id"],
                     "action": "classified",
                     "phase": phase,
+                    "ea_id": ea_id,
+                    "terminal_released": assigned_terminal,
                     "verdict": classification.get("verdict"),
                     "surviving_symbols": classification.get("surviving_symbols", []),
                 })
                 continue
 
             start_iso = payload.get("started_at_iso")
+            age_hours = 0.0
             if start_iso:
                 try:
                     start_dt = dt.datetime.fromisoformat(start_iso.replace("Z", "+00:00"))
-                    now_dt = dt.datetime.now(dt.UTC)
-                    age_hours = (now_dt - start_dt).total_seconds() / 3600.0
+                    age_hours = (dt.datetime.now(dt.UTC) - start_dt).total_seconds() / 3600.0
                 except Exception:
                     age_hours = 0.0
-                if age_hours > timeout_hours:
-                    update_task(
-                        conn,
-                        row["id"],
-                        status="failed",
-                        payload_merge={
-                            "timeout_reason": f"no report after {age_hours:.2f}h (limit {timeout_hours}h)",
-                            "completed_at_iso": started_iso,
-                        },
-                    )
-                    actions.append({
-                        "task_id": row["id"],
-                        "action": "timeout",
-                        "phase": phase,
-                        "age_hours": round(age_hours, 2),
-                    })
-                    continue
+            if age_hours > timeout_hours:
+                update_task(
+                    conn,
+                    row["id"],
+                    status="failed",
+                    payload_merge={
+                        "timeout_reason": f"no report after {age_hours:.2f}h (limit {timeout_hours}h)",
+                        "completed_at_iso": started_iso,
+                    },
+                )
+                actions.append({
+                    "task_id": row["id"],
+                    "action": "timeout",
+                    "phase": phase,
+                    "ea_id": ea_id,
+                    "terminal_released": assigned_terminal,
+                    "age_hours": round(age_hours, 2),
+                })
+                continue
 
+            # Still running — terminal stays busy
+            if assigned_terminal:
+                busy_terminals.add(assigned_terminal)
             actions.append({
                 "task_id": row["id"],
                 "action": "still_running",
                 "phase": phase,
+                "ea_id": ea_id,
+                "terminal": assigned_terminal,
                 "pid": payload.get("pid"),
+                "age_hours": round(age_hours, 2),
             })
 
-        still_running = any(a["action"] == "still_running" for a in actions)
-        if not still_running:
-            pending_row = conn.execute(
-                "SELECT * FROM tasks WHERE kind LIKE 'backtest_%' AND status = 'pending' "
-                "ORDER BY created_at LIMIT 1"
-            ).fetchone()
-            if pending_row is not None:
-                payload = json.loads(pending_row["payload_json"])
-                phase = payload.get("phase")
-                ea_id = payload.get("ea_id")
-                cmd = _phase_runner_cmd(phase, ea_id)
-                if cmd is None:
-                    update_task(
-                        conn,
-                        pending_row["id"],
-                        status="failed",
-                        payload_merge={"failure_reason": f"no runner for phase {phase}"},
-                    )
-                    actions.append({
-                        "task_id": pending_row["id"],
-                        "action": "no_runner",
-                        "phase": phase,
-                    })
-                else:
-                    log_path = root / "logs" / f"dispatch_{pending_row['id']}.log"
-                    log_path.parent.mkdir(parents=True, exist_ok=True)
-                    creationflags = 0
-                    if sys.platform == "win32":
-                        creationflags = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS  # type: ignore[attr-defined]
-                    log_fh = open(log_path, "w", encoding="utf-8")
-                    proc = subprocess.Popen(
-                        cmd,
-                        cwd=str(REPO_ROOT),
-                        stdout=log_fh,
-                        stderr=subprocess.STDOUT,
-                        creationflags=creationflags,
-                        close_fds=True,
-                    )
-                    update_task(
-                        conn,
-                        pending_row["id"],
-                        status="active",
-                        payload_merge={
-                            "started_at_iso": started_iso,
-                            "pid": proc.pid,
-                            "log_path": str(log_path),
-                            "cmd": cmd,
-                        },
-                    )
-                    actions.append({
-                        "task_id": pending_row["id"],
-                        "action": "started",
-                        "phase": phase,
-                        "ea_id": ea_id,
-                        "pid": proc.pid,
-                        "log_path": str(log_path),
-                    })
+        # Phase 2 — assign pending tasks to free terminals (up to 5 concurrent)
+        free_terminals = [t for t in MT5_TERMINALS if t not in busy_terminals]
+        pending_rows = conn.execute(
+            "SELECT * FROM tasks WHERE kind LIKE 'backtest_%' AND status = 'pending' "
+            "ORDER BY created_at"
+        ).fetchall()
 
-    return {"scanned_at": started_iso, "actions": actions}
+        for terminal in free_terminals:
+            if not pending_rows:
+                break
+            pending_row = pending_rows.pop(0)
+            payload = json.loads(pending_row["payload_json"])
+            phase = payload.get("phase")
+            ea_id = payload.get("ea_id")
+            cmd = _phase_runner_cmd(phase, ea_id, terminal=terminal)
+            if cmd is None:
+                update_task(
+                    conn,
+                    pending_row["id"],
+                    status="failed",
+                    payload_merge={"failure_reason": f"no runner for phase {phase}"},
+                )
+                actions.append({
+                    "task_id": pending_row["id"],
+                    "action": "no_runner",
+                    "phase": phase,
+                    "ea_id": ea_id,
+                })
+                continue
+
+            log_path = root / "logs" / f"dispatch_{pending_row['id']}.log"
+            log_path.parent.mkdir(parents=True, exist_ok=True)
+            creationflags = 0
+            if sys.platform == "win32":
+                creationflags = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS  # type: ignore[attr-defined]
+            log_fh = open(log_path, "w", encoding="utf-8")
+            proc = subprocess.Popen(
+                cmd,
+                cwd=str(REPO_ROOT),
+                stdout=log_fh,
+                stderr=subprocess.STDOUT,
+                creationflags=creationflags,
+                close_fds=True,
+            )
+            update_task(
+                conn,
+                pending_row["id"],
+                status="active",
+                payload_merge={
+                    "started_at_iso": started_iso,
+                    "pid": proc.pid,
+                    "log_path": str(log_path),
+                    "cmd": cmd,
+                    "assigned_terminal": terminal,
+                },
+            )
+            busy_terminals.add(terminal)
+            actions.append({
+                "task_id": pending_row["id"],
+                "action": "started",
+                "phase": phase,
+                "ea_id": ea_id,
+                "terminal": terminal,
+                "pid": proc.pid,
+                "log_path": str(log_path),
+            })
+
+    return {
+        "scanned_at": started_iso,
+        "actions": actions,
+        "busy_terminals": sorted(busy_terminals),
+        "free_terminals": sorted([t for t in MT5_TERMINALS if t not in busy_terminals]),
+        "mode": "saturated_per_terminal",
+    }
 
 
 def render_codex_build_prompt(root: Path, card_path_str: str, out_path: str | None) -> dict[str, Any]:

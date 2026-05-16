@@ -215,8 +215,12 @@ Reached only if Step 7 yielded zero candidates AND no other pending work:
 
 ## Hard boundaries (cannot violate)
 
-- **HR16 sequence** — exactly ONE active source. DB-enforced. If you see >1, abort
-  and write an escalation note to `docs/ops/OWNER_ESCALATIONS/<utc-date>.md`.
+- **HR16 sequence (source-level only — saturated for EA-level since 2026-05-16)**
+  — exactly ONE active source at the research level. DB-enforced. If you see >1
+  active source, abort and write an escalation note. **BUT** at the EA-level
+  (backtest dispatch), Achse B saturate mode is active: dispatch-tick assigns
+  one EA per free terminal (up to 5 concurrent backtest_p2 tasks on T1-T5).
+  This is intentional throughput scaling, not an HR16 violation.
 - **HR14 NO ML** — any card touching ML/NN/adaptive/retraining → REJECT in Step 2.
 - **HR4/5 risk + magic** — Codex enforces during build; you verify in Step 4 review.
 - **T6 AutoTrading toggle** — NEVER. P10 Live Burn-In requires OWNER + Board Advisor in a real session, not a cron wake. If a task ever reaches P10, write
