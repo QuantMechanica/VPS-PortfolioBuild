@@ -44,3 +44,6 @@ ea_id,slug,strategy_id,status,owner,created_at
 1049,mcconnell-turn-of-month,SRC08_S05,active,Development,2026-05-16
 1050,mql5-smc-order-blocks,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Development,2026-05-16
 1046,maroy-intraday-vwap-exit,afab7a6f-c3c8-51ae-a609-f376744beb8e,active,Development,2026-05-16
+1044,vpmacd-us-indices,189848dd-bc95-53ff-b379-eb617715d38d,active,Development,2026-05-16
+1045,zarattini-spy-intraday-momentum,afab7a6f-c3c8-51ae-a609-f376744beb8e,active,Development,2026-05-16
+1051,cc-3ducks-sma60-mtf,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Development,2026-05-16
