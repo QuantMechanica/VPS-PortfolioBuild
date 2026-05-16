@@ -53,9 +53,18 @@ Valid porting examples:
 - Mean-reversion on US equities → port to forex pairs or indices
 - Momentum on commodity futures → port to XAUUSD or oil CFD
 
-**REJECT** only if the strategy fundamentally requires a feature unavailable
-in CFD trading — e.g., options chain pricing, ETF order flow, exchange-
-specific microstructure with no analog in CFDs.
+**Permanently unavailable from Darwinex (no tick data, OWNER 2026-05-16):**
+- **SP500 / SPX500 / SPX / SPY / ES futures**. Not in `dwx_symbol_matrix.csv`,
+  cannot be added — broker doesn't supply tick data. US large-cap exposure is
+  available only via **WS30.DWX** (Dow 30) and **NDX.DWX** (Nasdaq 100).
+- R3 REJECT if the strategy's edge specifically depends on SPY/SPX intraday
+  cash-session microstructure with no port to WS30 or NDX that preserves
+  the edge (e.g., opening-range breakouts tuned to NYSE-specific structure).
+- R3 PASS if the concept ports cleanly to WS30 / NDX — document the port plan.
+
+**REJECT** otherwise only if the strategy fundamentally requires a feature
+unavailable in CFD trading — e.g., options chain pricing, ETF order flow,
+exchange-specific microstructure with no analog in CFDs.
 
 ### R4 — No ML, 1-pos-per-magic (Hard Rule 14, BINDING)
 
