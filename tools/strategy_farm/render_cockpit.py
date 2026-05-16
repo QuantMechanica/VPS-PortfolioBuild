@@ -38,6 +38,7 @@ LOG_DIR = ROOT / "logs"
 WAKES_LOG = LOG_DIR / "autonomous_wakes.log"
 CARDS_DRAFT = ROOT / "artifacts" / "cards_draft"
 CARDS_APPROVED = ROOT / "artifacts" / "cards_approved"
+QUOTA_SNAPSHOT = ROOT / "state" / "quota_snapshot.json"
 
 PIPELINE_STAGES = ["Card", "Build", "Review", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "Live"]
 
@@ -142,6 +143,162 @@ def claude_quota() -> dict:
                 return out
         except Exception:
             continue
+    return out
+
+
+def _parse_codex_text(text: str) -> dict:
+    """Extract usage from chatgpt.com codex analytics page text.
+
+    DOM is German (e.g. '5 Stunden Nutzungsgrenze 96 % verbleibend
+    Zuruecksetzungen 17.05.2026 2:23'). Codex reports REMAINING %, not used.
+    We invert to %used so cockpit traffic-lighting stays consistent.
+    """
+    out = {}
+    # 5h: tolerate both German ('5 Stunden') and English ('5-hour' / '5 hour')
+    m = re.search(
+        r"(?:5\s*Stunden|5[-\s]?hour|hourly)[^%]{0,80}?(\d+(?:\.\d+)?)\s*%\s*(verbleibend|remaining)",
+        text, re.IGNORECASE,
+    )
+    if m:
+        out["hour_pct"] = 100.0 - float(m.group(1))
+    else:
+        m = re.search(
+            r"(?:5\s*Stunden|5[-\s]?hour|hourly)[^%]{0,80}?(\d+(?:\.\d+)?)\s*%\s*(verwendet|used)",
+            text, re.IGNORECASE,
+        )
+        if m:
+            out["hour_pct"] = float(m.group(1))
+    # Weekly
+    m = re.search(
+        r"(?:W(?:o|ö)chentlich|weekly|week)[^%]{0,80}?(\d+(?:\.\d+)?)\s*%\s*(verbleibend|remaining)",
+        text, re.IGNORECASE,
+    )
+    if m:
+        out["week_pct"] = 100.0 - float(m.group(1))
+    else:
+        m = re.search(
+            r"(?:W(?:o|ö)chentlich|weekly|week)[^%]{0,80}?(\d+(?:\.\d+)?)\s*%\s*(verwendet|used)",
+            text, re.IGNORECASE,
+        )
+        if m:
+            out["week_pct"] = float(m.group(1))
+    # Reset timestamps (e.g. '17.05.2026 2:23')
+    m = re.search(
+        r"5\s*Stunden\s*Nutzungsgrenze\s*\d+\s*%\s*verbleibend\s*Zur(?:u|ü)cksetzungen?\s*([\d.]+\s*[\d:]+)",
+        text, re.IGNORECASE,
+    )
+    if m:
+        out["hour_reset"] = m.group(1).strip()
+    m = re.search(
+        r"W(?:o|ö)chentlich(?:e)?\s*Nutzungsgrenze\s*\d+\s*%\s*verbleibend\s*Zur(?:u|ü)cksetzungen?\s*([\d.]+\s*[\d:]+)",
+        text, re.IGNORECASE,
+    )
+    if m:
+        out["week_reset"] = m.group(1).strip()
+    return out
+
+
+def _parse_claude_text(text: str) -> dict:
+    """Extract usage from claude.ai/settings/usage page text.
+
+    DOM is German (e.g. 'Aktuelle Sitzung Zuruecksetzung in 3 Std. 2 Min.
+    12 % verwendet Woechentliche Limits ... Alle Modelle ... 16 % verwendet').
+    Claude reports USED %, no inversion needed.
+    """
+    out = {}
+    # Plan label
+    m = re.search(r"Plan-?Nutzungslimits\s+(Max\s*\([\d]+x\)|Max|Pro|Team|Enterprise|Free)", text, re.IGNORECASE)
+    if m:
+        out["plan"] = m.group(1).strip()
+    # 5-hour: "Aktuelle Sitzung ... XX % verwendet" (German) or "Current session ... XX % used"
+    m = re.search(
+        r"(?:Aktuelle\s+Sitzung|Current\s+session)[^%]{0,200}?(\d+(?:\.\d+)?)\s*%\s*(verwendet|used)",
+        text, re.IGNORECASE,
+    )
+    if m:
+        out["hour_pct"] = float(m.group(1))
+    # Weekly all models: "Alle Modelle ... XX % verwendet"
+    m = re.search(
+        r"(?:Alle\s+Modelle|All\s+models)[^%]{0,200}?(\d+(?:\.\d+)?)\s*%\s*(verwendet|used)",
+        text, re.IGNORECASE,
+    )
+    if m:
+        out["week_pct"] = float(m.group(1))
+    # Sonnet-only weekly (informational)
+    m = re.search(
+        r"(?:Nur\s+Sonnet|Sonnet\s+only)[^%]{0,200}?(\d+(?:\.\d+)?)\s*%\s*(verwendet|used)",
+        text, re.IGNORECASE,
+    )
+    if m:
+        out["sonnet_pct"] = float(m.group(1))
+    # 5h reset (e.g. "Zuruecksetzung in 3 Std. 2 Min.")
+    m = re.search(
+        r"(?:Aktuelle\s+Sitzung|Current\s+session)\s*Zur(?:u|ü)cksetzung\s+in\s+([^.\n]+?)\s*(\d+\s*%|\.)",
+        text, re.IGNORECASE,
+    )
+    if m:
+        out["hour_reset"] = m.group(1).strip().rstrip(",")
+    # Weekly reset (e.g. "Zuruecksetzung Fr., 00:00")
+    m = re.search(
+        r"(?:Alle\s+Modelle|All\s+models)\s*Zur(?:u|ü)cksetzung\s+([^\d]+\d{1,2}:\d{2})",
+        text, re.IGNORECASE,
+    )
+    if m:
+        out["week_reset"] = m.group(1).strip()
+    return out
+
+
+def quota_snapshot() -> dict:
+    """Read Tampermonkey-scraped quota snapshot from D:/QM/.../quota_snapshot.json.
+
+    Browser userscripts (tools/strategy_farm/userscripts/*.user.js) scrape the
+    authenticated chatgpt.com + claude.ai usage pages every 60s and POST to the
+    local receiver (tools/strategy_farm/quota_receiver.py @ 127.0.0.1:9090).
+    The receiver merges per source.
+
+    Parsing happens here (Python side) on the rendered DOM text, so we can
+    fix patterns without users having to reinstall Tampermonkey scripts.
+
+    Returns per-source dicts: {fresh, age_sec, hour_pct, week_pct, plan,
+    hour_reset, week_reset, meters, matches, url}.
+    """
+    out: dict = {}
+    try:
+        if not QUOTA_SNAPSHOT.exists():
+            return out
+        snap = json.loads(QUOTA_SNAPSHOT.read_text(encoding="utf-8"))
+    except Exception:
+        return out
+    now = dt.datetime.now(dt.timezone.utc)
+    for src in ("codex", "claude"):
+        s = snap.get(src) or {}
+        if not s:
+            continue
+        received_at = s.get("received_at") or s.get("scraped_at")
+        age_sec = None
+        if received_at:
+            try:
+                t = dt.datetime.fromisoformat(received_at.replace("Z", "+00:00"))
+                age_sec = int((now - t).total_seconds())
+            except Exception:
+                age_sec = None
+        data = s.get("data") or {}
+        matches = data.get("matches") or {}
+        text = data.get("full_text_head") or ""
+        parsed = _parse_codex_text(text) if src == "codex" else _parse_claude_text(text)
+        out[src] = {
+            "fresh": age_sec is not None and age_sec <= 300,
+            "age_sec": age_sec,
+            "hour_pct": parsed.get("hour_pct"),
+            "week_pct": parsed.get("week_pct"),
+            "hour_reset": parsed.get("hour_reset"),
+            "week_reset": parsed.get("week_reset"),
+            "sonnet_pct": parsed.get("sonnet_pct"),
+            "plan": parsed.get("plan") or matches.get("plan_label"),
+            "meters": data.get("meters") or [],
+            "matches": matches,
+            "url": data.get("url"),
+        }
     return out
 
 
@@ -556,6 +713,7 @@ def main() -> int:
     claude_q = claude_quota()
     claude_usage = claude_token_usage()
     codex_q = codex_quota()
+    qsnap = quota_snapshot()
 
     severity, msg = diagnose_bottleneck(procs, q, claude_workers, codex_workers)
 
@@ -825,7 +983,64 @@ def main() -> int:
         billable_class = "warn"
     else:
         billable_class = "ok"
+    # --- Real-quota overlay row (from Tampermonkey snapshot if fresh) ---
+    def _pct_class(p):
+        if p is None: return "ok"
+        if p >= 85: return "fail"
+        if p >= 60: return "warn"
+        return "ok"
+    def _snap_card(src_key: str, label: str) -> str:
+        s = qsnap.get(src_key)
+        if not s:
+            return (
+                f'<div class="token-card snap-stale">'
+                f'<div class="token-label">{label} · live %</div>'
+                f'<div class="token-value muted">—</div>'
+                f'<div class="token-sub">install Tampermonkey scraper</div>'
+                f'</div>'
+            )
+        hp, wp = s.get("hour_pct"), s.get("week_pct")
+        age = s.get("age_sec")
+        fresh = s.get("fresh")
+        fresh_label = (
+            f'{age}s ago' if (age is not None and age < 90)
+            else (f'{age//60}m ago' if age is not None else 'no ts')
+        )
+        if hp is None and wp is None:
+            body_val = '<span class="muted">no %</span>'
+            sub = f'snapshot present · {fresh_label} · DOM scrape did not match'
+        else:
+            parts = []
+            if hp is not None:
+                parts.append(f'<span class="{_pct_class(hp)}">{hp:.0f}%</span><span class="muted"> /5h</span>')
+            if wp is not None:
+                parts.append(f'<span class="{_pct_class(wp)}">{wp:.0f}%</span><span class="muted"> /wk</span>')
+            body_val = ' · '.join(parts)
+            sub_bits = []
+            if s.get("plan"):
+                sub_bits.append(html.escape(s["plan"]))
+            if s.get("hour_reset"):
+                sub_bits.append(f'5h→{html.escape(str(s["hour_reset"]))}')
+            if s.get("week_reset"):
+                sub_bits.append(f'wk→{html.escape(str(s["week_reset"]))}')
+            sub_bits.append(fresh_label + ('' if fresh else ' · stale'))
+            sub = ' · '.join(sub_bits)
+        return (
+            f'<div class="token-card{"" if fresh else " snap-stale"}">'
+            f'<div class="token-label">{label} · live %</div>'
+            f'<div class="token-value">{body_val}</div>'
+            f'<div class="token-sub">{sub}</div>'
+            f'</div>'
+        )
+    snap_row = (
+        '<div class="tokens snap-row">'
+        + _snap_card("claude", "Claude")
+        + _snap_card("codex", "Codex")
+        + '</div>'
+    )
+
     tokens_html = f"""
+{snap_row}
 <div class="tokens">
   <div class="token-card">
     <div class="token-label">Claude · status</div>
@@ -1148,6 +1363,24 @@ tr:last-child td {{ border-bottom: none; }}
   background: var(--qm-surface-0); padding: 1px 4px;
   border-radius: 3px; color: var(--qm-text-dim);
 }}
+.tokens.snap-row {{
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: 10px;
+}}
+.tokens.snap-row .token-card {{
+  border-color: var(--em);
+  background: linear-gradient(180deg, var(--em-s) 0%, var(--qm-surface-1) 60%);
+}}
+.tokens.snap-row .token-card.snap-stale {{
+  border-color: var(--qm-border);
+  background: var(--qm-surface-1);
+  opacity: 0.65;
+}}
+.tokens.snap-row .token-value {{ font-size: 22px; }}
+.tokens.snap-row .token-value .ok {{ color: var(--em); }}
+.tokens.snap-row .token-value .warn {{ color: var(--promising); }}
+.tokens.snap-row .token-value .fail {{ color: var(--fail); }}
+.tokens.snap-row .token-value .muted {{ color: var(--qm-text-muted); font-size: 12px; font-weight: 400; }}
 </style></head>
 <body>
 
