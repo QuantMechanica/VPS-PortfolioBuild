@@ -172,7 +172,6 @@ function Resolve-DispatchTerminal {
         [string]$PeriodName,
         [Parameter(Mandatory = $true)]
         [int]$YearValue,
-        [Parameter(Mandatory = $true)]
         [string]$SetFilePath,
         [Parameter(Mandatory = $true)]
         [string]$DispatchPhaseValue,
@@ -185,6 +184,14 @@ function Resolve-DispatchTerminal {
 
     if ($TargetTerminal -ine 'any') {
         return $TargetTerminal
+    }
+    # $SetFilePath only required for any-terminal resolution; specific-terminal
+    # early-return above. Codex strategy_farm builds invoke run_smoke without
+    # -SetFile (the smoke pass runs against EA-internal defaults, setfiles are
+    # generated AFTER smoke), and PowerShell Mandatory rejects empty strings
+    # at bind time before the early-return executes (QM5_1045 build 2026-05-16).
+    if ([string]::IsNullOrWhiteSpace($SetFilePath)) {
+        throw "Resolve-DispatchTerminal requires -SetFilePath when -TargetTerminal='any'."
     }
 
     $resolverPath = Join-Path $PSScriptRoot "resolve_backtest_target.py"
@@ -239,7 +246,6 @@ function Invoke-DispatchCompletion {
         [string]$PeriodName,
         [Parameter(Mandatory = $true)]
         [int]$YearValue,
-        [Parameter(Mandatory = $true)]
         [string]$SetFilePath,
         [Parameter(Mandatory = $true)]
         [string]$DispatchPhaseValue,
@@ -251,6 +257,10 @@ function Invoke-DispatchCompletion {
     )
 
     if ($OriginalTargetTerminal -ine 'any') {
+        return
+    }
+    if ([string]::IsNullOrWhiteSpace($SetFilePath)) {
+        Write-Warning "run_smoke.dispatch_complete skipped; SetFilePath empty for any-terminal completion."
         return
     }
 
