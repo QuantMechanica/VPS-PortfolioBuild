@@ -300,12 +300,48 @@ No prose around it. Schema:
 `ea_id` in the response MUST be the FULL card-frontmatter value (e.g.
 `"QM5_1044"`), not the numeric suffix only. Same for paths.
 
-- `smoke_result: "zero_trades"` means the EA compiled and ran but produced no trades
-  in the smoke window. Per HR7 NO_REPORT ≠ EA-Schwäche — record it, don't fake `passed`.
-- `smoke_result: "compile_failed"` — `.ex5` was not produced; include the compile log
-  path under `smoke_report_path`.
-- `blocked_reason` non-null → set ALL boolean success fields to `false` and zero the
-  paths. Do not pretend the build worked.
+**Each field reports ITS OWN stage's truth, independently.** A later failure
+does NOT retroactively null prior successes — downstream (Claude review,
+farmctl) routes work based on per-stage truth.
+
+| Field                  | Truth source                                                                      |
+|------------------------|-----------------------------------------------------------------------------------|
+| `mq5_path`             | absolute path of `.mq5` if it was written to disk, else `null`                    |
+| `ex5_path`             | absolute path of `.ex5` if `compile_one` emitted it, else `null`                  |
+| `build_check_passed`   | `true` iff `build_check.result=PASS`, regardless of compile/smoke outcome         |
+| `compile_succeeded`    | `true` iff `compile_one.result=PASS` AND `ex5_path` exists, regardless of smoke   |
+| `smoke_result`         | one of `passed` / `zero_trades` / `compile_failed` / `build_check_failed` / `framework_error` |
+| `smoke_report_path`    | path to `summary.json` from `run_smoke` if smoke ran at all, else `null`          |
+| `setfiles_generated`   | absolute paths actually written by `gen_setfile.ps1` (could be partial)           |
+| `symbols_registered`   | symbols you actually appended to `magic_numbers.csv` (could be partial)           |
+| `blocked_reason`       | one-line diagnostic for the FIRST failing stage, else `null`                      |
+| `open_questions`       | items the reviewer needs to know (e.g. card ambiguities resolved)                 |
+
+Examples of correct honesty:
+
+- `build_check` PASS + compile PASS + smoke=framework_error →
+  `build_check_passed: true, compile_succeeded: true, mq5_path: "<real>",
+  ex5_path: "<real>", smoke_result: "framework_error",
+  blocked_reason: "framework_error <classes> ..."`
+  (do NOT null mq5_path / ex5_path; downstream needs them for review)
+- `build_check` PASS + compile FAIL (errors>0) + smoke skipped →
+  `build_check_passed: true, compile_succeeded: false, ex5_path: null,
+  smoke_result: "compile_failed", blocked_reason: "compile errors=N ..."`
+- `build_check` FAIL + nothing else ran →
+  `build_check_passed: false, compile_succeeded: false, mq5_path: "<real>",
+  ex5_path: null, smoke_result: "build_check_failed",
+  blocked_reason: "build_check.result=FAIL ..."`
+  (mq5_path still real — you wrote the .mq5 before build_check ran)
+
+`smoke_result: "zero_trades"` is NOT a failure (per HR7 NO_REPORT ≠
+EA-Schwäche) — set `build_check_passed: true, compile_succeeded: true,
+blocked_reason: null` and let the reviewer apply HR7.
+
+Lying or pessimistic-pauschal-zeroing the success fields blocks the
+review→backtest pipeline (Claude review reads these flags to decide
+APPROVE vs REJECT_REWORK). QM5_1046 build 2026-05-16 13:13 zeroed
+mq5_path / ex5_path / compile_succeeded even though all three were real,
+and we lost a review cycle.
 
 ## Final Response Rule
 
