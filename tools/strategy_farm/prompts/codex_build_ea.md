@@ -58,6 +58,36 @@ Build artifact target: `{{build_result_path}}`
   - Trade Close
   - News Filter Hook (callable for P8 News Impact phase)
 
+## CANONICAL NAMING (strict — Claude review will reject on any drift)
+
+- Directory: **`{{ea_dir}}`** — use this EXACT path. Do NOT strip the `QM5_` prefix.
+  The directory name must be `QM5_<NNNN>_<slug>` (e.g. `QM5_1044_vpmacd-us-indices`),
+  NOT `<NNNN>_<slug>` (e.g. `1044_vpmacd-us-indices`).
+- `.mq5` file: **`{{ea_id}}_{{slug}}.mq5`** (e.g. `QM5_1044_vpmacd-us-indices.mq5`)
+- `.ex5` file: same basename with `.ex5` extension after compile.
+- Setfile naming: **`{{ea_id}}_{{slug}}_<SYMBOL>_<TF>_<env>.set`**
+  (e.g. `QM5_1044_vpmacd-us-indices_WS30.DWX_H1_backtest.set`).
+
+If you generate the smoke setfile manually, name it per the convention above. P2
+setfiles via `gen_setfile.ps1` (see workflow step 9) inherit this pattern.
+
+## DWX SYMBOL DISCIPLINE (strict)
+
+- Before registering ANY symbol in `magic_numbers.csv`, verify it appears in
+  `C:/QM/repo/framework/registry/dwx_symbol_matrix.csv`.
+- If the card targets symbols not in the matrix, **port to the nearest
+  available DWX equivalent** and document the choice in `open_questions`:
+  - SPX500 / SPY / S&P 500 → use **WS30.DWX** (Dow 30) AND/OR **NDX.DWX**
+    (Nasdaq 100) as the closest available US large-cap index proxies.
+  - Russell 2000 / IWM → fall back to **WS30.DWX** if no Russell CFD.
+  - Sector ETFs (XLK, XLF, etc.) → fall back to **NDX.DWX** or **WS30.DWX**.
+  - DAX / FTSE / Nikkei → use **DE30.DWX**, **UK100.DWX**, **JP225.DWX** if
+    present in the matrix (verify first).
+  - Forex pairs: use exact match if present, else closest correlated pair.
+  - **NEVER** register a symbol like `SPX500.DWX` that isn't in the matrix.
+- If no acceptable port exists, set `blocked_reason` and stop. Do NOT register
+  a phantom symbol.
+
 ## Workflow
 
 1. Read `{{card_path}}` fully. Extract Entry, Exit, Stop Loss, Position Sizing,
@@ -86,8 +116,18 @@ Build artifact target: `{{build_result_path}}`
 8. Run `pwsh -File C:\QM\repo\framework\scripts\run_smoke.ps1 -EALabel {{ea_id}}_{{slug}}`.
    Must yield ≥1 trade for `smoke_result: passed`.
 
-Do not generate full P2 set files at this stage — that is the next phase via
-`gen_setfile.ps1`. A minimal smoke set is acceptable.
+9. **Generate P2 setfiles for ALL registered symbols** using `gen_setfile.ps1`.
+   For each symbol in `symbols_registered`, invoke:
+   ```powershell
+   pwsh -File C:\QM\repo\framework\scripts\gen_setfile.ps1 `
+     -EaSlug {{ea_id}}_{{slug}} -Symbol <SYMBOL.DWX> -TF H1 -Env backtest
+   ```
+   This populates `framework/EAs/{{ea_id}}_{{slug}}/sets/` with one setfile per
+   symbol named `{{ea_id}}_{{slug}}_<SYMBOL>_H1_backtest.set`. Without these the
+   P2 phase runner exits FATAL ("no setfiles match pattern").
+
+   If the card targets timeframes other than H1, generate one setfile per
+   (symbol × TF) combination.
 
 ## Required Output Contract
 
@@ -103,6 +143,7 @@ No prose around it. Schema:
   "ex5_path": "<absolute path or null if compile failed>",
   "magic_base": <int>,
   "symbols_registered": ["EURUSD.DWX", "..."],
+  "setfiles_generated": ["<absolute paths to .set files in sets/>"],
   "build_check_passed": true,
   "compile_succeeded": true,
   "smoke_result": "passed" | "zero_trades" | "compile_failed" | "build_check_failed" | "framework_error",
@@ -111,6 +152,9 @@ No prose around it. Schema:
   "open_questions": []
 }
 ```
+
+`ea_id` in the response MUST be the FULL card-frontmatter value (e.g.
+`"QM5_1044"`), not the numeric suffix only. Same for paths.
 
 - `smoke_result: "zero_trades"` means the EA compiled and ran but produced no trades
   in the smoke window. Per HR7 NO_REPORT ≠ EA-Schwäche — record it, don't fake `passed`.
