@@ -30,6 +30,7 @@ FRAMEWORK_EAS_DIR = REPO_ROOT / "framework" / "EAs"
 PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
 CLAUDE_RESEARCH_TEMPLATE = PROMPTS_DIR / "claude_research_source.md"
 CODEX_BUILD_TEMPLATE = PROMPTS_DIR / "codex_build_ea.md"
+CODEX_RESEARCH_TEMPLATE = PROMPTS_DIR / "codex_research_source.md"
 CLAUDE_REVIEW_TEMPLATE = PROMPTS_DIR / "claude_review_ea.md"
 
 PIPELINE_REPORT_ROOT = Path(r"D:\QM\reports\pipeline")
@@ -213,6 +214,14 @@ def init_db(root: Path) -> None:
                 ON work_items(ea_id, phase);
             """
         )
+        # --- migrations (idempotent) ---
+        # 2026-05-16: per OWNER, Codex also does research in parallel with
+        # Claude. assigned_worker disambiguates active sources so both workers
+        # never claim the same row. Old rows have NULL = treat as 'claude'.
+        try:
+            conn.execute("ALTER TABLE sources ADD COLUMN assigned_worker TEXT")
+        except sqlite3.OperationalError:
+            pass  # already exists
 
 
 def event(conn: sqlite3.Connection, entity_type: str, entity_id: str, name: str, detail: dict[str, Any]) -> None:
@@ -1066,11 +1075,13 @@ def _claim_research_source(root: Path) -> dict[str, Any]:
     import shutil as _shutil
     claude_path = _shutil.which("claude.cmd") or _shutil.which("claude") or "claude"
 
-    # Skip if a Claude is already running for research
+    # Skip if a Claude is already running for research.
+    # assigned_worker IS NULL = legacy/pre-codex rows → treat as 'claude'.
     with connect(root) as conn:
         active_src = conn.execute(
             "SELECT id, lane, source_type, uri, title, status, notes_path "
-            "FROM sources WHERE status='active' LIMIT 1"
+            "FROM sources WHERE status='active' "
+            "AND (assigned_worker IS NULL OR assigned_worker='claude') LIMIT 1"
         ).fetchone()
     target_source = None
     research_action = None
@@ -1085,9 +1096,18 @@ def _claim_research_source(root: Path) -> dict[str, Any]:
                 "FROM sources WHERE status='notes_ready' LIMIT 1"
             ).fetchone()
         if nr:
-            target_source = dict(nr)
-            research_action = "draft_cards_from_notes"
-        else:
+            with connect(root) as conn:
+                cur = conn.execute(
+                    "UPDATE sources SET status='active', assigned_worker='claude', updated_at=? "
+                    "WHERE id=? AND status='notes_ready'",
+                    (utc_now(), nr["id"]),
+                )
+                conn.commit()
+                claimed = cur.rowcount == 1
+            if claimed:
+                target_source = dict(nr)
+                research_action = "draft_cards_from_notes"
+        if not target_source:
             with connect(root) as conn:
                 pend = conn.execute(
                     "SELECT id, lane, source_type, uri, title, status, notes_path "
@@ -1095,19 +1115,18 @@ def _claim_research_source(root: Path) -> dict[str, Any]:
                     "ORDER BY priority ASC, created_at ASC LIMIT 1"
                 ).fetchone()
             if pend:
-                # Claim it first
-                conn = sqlite3.connect(str(db_path(root)))
-                try:
-                    conn.execute(
-                        "UPDATE sources SET status='active', updated_at=? WHERE id=?",
+                with connect(root) as conn:
+                    cur = conn.execute(
+                        "UPDATE sources SET status='active', assigned_worker='claude', updated_at=? "
+                        "WHERE id=? AND status='pending'",
                         (utc_now(), pend["id"]),
                     )
                     conn.commit()
-                finally:
-                    conn.close()
-                target_source = dict(pend)
-                target_source["status"] = "active"
-                research_action = "claim_pending_first_batch"
+                    claimed = cur.rowcount == 1
+                if claimed:
+                    target_source = dict(pend)
+                    target_source["status"] = "active"
+                    research_action = "claim_pending_first_batch"
     if not target_source:
         return {"spawned": False, "reason": "no research work available"}
 
@@ -1157,6 +1176,120 @@ def _claim_research_source(root: Path) -> dict[str, Any]:
         "title": target_source.get("title"),
         "research_action": research_action,
         "live_log": str(live_log),
+        "pid": proc.pid,
+    }
+
+
+def _claim_research_source_codex(root: Path) -> dict[str, Any]:
+    """Codex twin of `_claim_research_source`.
+
+    Both workers use `status='active'`; the `assigned_worker` column
+    ('claude' | 'codex' | NULL→claude) disambiguates so neither claims the
+    other's source. The claim UPDATE is conditional on the prior status to
+    avoid races when both pump cycles run close together.
+
+    Priority:
+      1. status='active' AND assigned_worker='codex' → continue mining
+      2. status='notes_ready' (shared with Claude — first claim wins)
+      3. status='pending'     (shared with Claude — first claim wins)
+    """
+    import shutil as _shutil
+    codex_path = _shutil.which("codex.cmd") or _shutil.which("codex") or "codex"
+
+    target_source = None
+    research_action = None
+    # Step 1: continue an active source already assigned to codex
+    with connect(root) as conn:
+        active_src = conn.execute(
+            "SELECT id, lane, source_type, uri, title, status, notes_path "
+            "FROM sources WHERE status='active' AND assigned_worker='codex' LIMIT 1"
+        ).fetchone()
+    if active_src:
+        target_source = dict(active_src)
+        research_action = "continue_active"
+    else:
+        # Step 2: try to claim a notes_ready source
+        with connect(root) as conn:
+            nr = conn.execute(
+                "SELECT id, lane, source_type, uri, title, status, notes_path "
+                "FROM sources WHERE status='notes_ready' LIMIT 1"
+            ).fetchone()
+        if nr:
+            with connect(root) as conn:
+                cur = conn.execute(
+                    "UPDATE sources SET status='active', assigned_worker='codex', updated_at=? "
+                    "WHERE id=? AND status='notes_ready'",
+                    (utc_now(), nr["id"]),
+                )
+                conn.commit()
+                claimed = cur.rowcount == 1
+            if claimed:
+                target_source = dict(nr)
+                research_action = "draft_cards_from_notes"
+        if not target_source:
+            # Step 3: claim pending oldest
+            with connect(root) as conn:
+                pend = conn.execute(
+                    "SELECT id, lane, source_type, uri, title, status, notes_path "
+                    "FROM sources WHERE status='pending' "
+                    "ORDER BY priority ASC, created_at ASC LIMIT 1"
+                ).fetchone()
+            if pend:
+                with connect(root) as conn:
+                    cur = conn.execute(
+                        "UPDATE sources SET status='active', assigned_worker='codex', updated_at=? "
+                        "WHERE id=? AND status='pending'",
+                        (utc_now(), pend["id"]),
+                    )
+                    conn.commit()
+                    claimed = cur.rowcount == 1
+                if claimed:
+                    target_source = dict(pend)
+                    research_action = "claim_pending_first_batch"
+    if not target_source:
+        return {"spawned": False, "reason": "no research work available for codex"}
+
+    src_id = target_source["id"]
+    live_log = root / "logs" / f"codex_research_{src_id}.live.log"
+    live_log.parent.mkdir(parents=True, exist_ok=True)
+    if live_log.exists() and (time.time() - live_log.stat().st_mtime) < 60:
+        return {"spawned": False, "reason": "codex research live log active < 60s", "source_id": src_id}
+
+    # Render bootstrap prompt from template
+    prompt_path = root / "queue" / f"codex_research_{src_id}.md"
+    prompt_path.parent.mkdir(parents=True, exist_ok=True)
+    template = CODEX_RESEARCH_TEMPLATE.read_text(encoding="utf-8")
+    for k, v in [
+        ("source_id", src_id),
+        ("title", target_source.get("title") or ""),
+        ("uri", target_source.get("uri") or ""),
+        ("action", research_action or ""),
+    ]:
+        template = template.replace("{{" + k + "}}", str(v))
+    prompt_path.write_text(template, encoding="utf-8", newline="\n")
+
+    creationflags = 0
+    if sys.platform == "win32":
+        creationflags = subprocess.CREATE_NEW_CONSOLE  # type: ignore[attr-defined]
+    stdin_f = open(prompt_path, "rb")
+    stdout_f = open(live_log, "wb")
+    proc = subprocess.Popen(
+        [codex_path, "exec", "-s", "danger-full-access", "--cd", str(REPO_ROOT)],
+        cwd=str(REPO_ROOT),
+        stdin=stdin_f,
+        stdout=stdout_f,
+        stderr=subprocess.STDOUT,
+        shell=True,
+        creationflags=creationflags,
+        close_fds=False,
+    )
+    return {
+        "spawned": True,
+        "source_id": src_id,
+        "title": target_source.get("title"),
+        "research_action": research_action,
+        "live_log": str(live_log),
+        "prompt_path": str(prompt_path),
         "pid": proc.pid,
     }
 
@@ -1342,11 +1475,11 @@ def pump(root: Path) -> dict[str, Any]:
     #    file level: CSV append is atomic line-by-line, update_resolver is
     #    idempotent (reads current CSV state, regenerates .mqh deterministically).
     #    OWNER 2026-05-16: explicit ok to parallelize.
-    MAX_PARALLEL_CODEX = 6
-    # OWNER 2026-05-16: token budget plenty, push more parallelism. 6 matches
-    # the 5 MT5 terminals + 1 buffer for the smoke-MT5 each codex spawns
-    # transiently. Higher would risk MT5-tester contention with the per-symbol
-    # work_item dispatcher claiming terminals for live backtests.
+    MAX_PARALLEL_CODEX = 10
+    # OWNER 2026-05-16 (post Tampermonkey quota live): Codex at 4%/5h 1%/wk
+    # — push to 10. MT5 contention is the bottleneck not Codex tokens; codex
+    # builds queue inside themselves for the brief smoke-test phase, which is
+    # fine since builds spend most wall-clock generating code, not running MT5.
     # Check how many codex/node procs already running externally (from prior
     # pump cycles or hourly wake). Don't pile on if at limit.
     try:
@@ -1508,6 +1641,27 @@ def pump(root: Path) -> dict[str, Any]:
     #    Continuous research per OWNER 2026-05-16 "weiter mit Research".
     if active_claude_count < MAX_PARALLEL_CLAUDE and not spawned_other:
         result["claude_research_spawn"] = _claim_research_source(root)
+
+    # 9. Spawn Codex research IN ADDITION when codex has spare capacity.
+    #    OWNER 2026-05-16: "Codex kann auch Research, wir verbrauchen Codex
+    #    Token langsamer als Claude Token". Codex research runs in parallel
+    #    with Claude research on a DIFFERENT source (status='active_codex' vs
+    #    'active' so they don't claim the same row). Cap research-by-codex at 1
+    #    at a time for now — primary codex budget stays reserved for builds.
+    try:
+        codex_research_fresh = 0
+        for log in (root / "logs").glob("codex_research_*.live.log"):
+            if time.time() - log.stat().st_mtime < 60:
+                codex_research_fresh += 1
+    except Exception:
+        codex_research_fresh = 0
+    result["codex_research_active"] = codex_research_fresh
+    # Only spawn if no codex-research already running AND total codex procs
+    # haven't hit the build cap. active_codex was set earlier in this pump for
+    # the build dispatch; refresh it cheaply by adding the builds we just spawned.
+    builds_spawned_this_cycle = len([s for s in (result.get("codex_spawns_all") or []) if isinstance(s, dict) and s.get("spawned")])
+    if codex_research_fresh < 1 and (active_codex + builds_spawned_this_cycle) < MAX_PARALLEL_CODEX:
+        result["codex_research_spawn"] = _claim_research_source_codex(root)
 
     return result
 
