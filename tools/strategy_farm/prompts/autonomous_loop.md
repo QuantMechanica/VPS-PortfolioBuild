@@ -46,9 +46,15 @@ Else if an `artifacts/cards_approved/QM5_*.md` exists and no `tasks` row has
 
 - `farmctl build-ea --card "<approved-card-path>"` — renders the Codex prompt.
 - Note the `prompt_path` and `build_result_path` from the JSON output.
-- Invoke Codex (default model `gpt-5.5` works on ChatGPT-account; other models 400):
+- Invoke Codex (default model `gpt-5.5` works on ChatGPT-account; other models 400).
+  **MUST pass `-s danger-full-access`** — Codex's `read-only` (default after
+  the 2026-05-16 elevated-sandbox removal) and `workspace-write` modes both
+  reject the pwsh subprocess calls Codex needs for `build_check.ps1`,
+  `compile_one.ps1`, `gen_setfile.ps1`, and `run_smoke.ps1`. The build is
+  externally constrained by `codex_build_ea.md` + `build_check.ps1` +
+  Claude review §0, so the wider sandbox is acceptable here:
   ```powershell
-  codex exec --cd C:/QM/repo "$(Get-Content -Raw '<prompt-path>')"
+  codex exec -s danger-full-access --cd C:/QM/repo "$(Get-Content -Raw '<prompt-path>')"
   ```
 - Codex writes JSON to `build_result_path`. Read it; verify schema.
 - `farmctl record-build --task-id <task-id> --result-file "<build_result_path>"`
