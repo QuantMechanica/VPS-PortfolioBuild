@@ -91,3 +91,97 @@ The Board Advisor did NOT manually copy the .ex5 to the canonical path and
 re-run smoke — that path crosses into Pipeline-Operator scope and breaks the
 one-pass build discipline (commit `69bafe7f`). Better to fix the flow once
 than patch each EA by hand.
+
+## Update — 2026-05-16T13:47Z (observe wake)
+
+**Fix candidate 2 has been landed** as commit `891b04c4 fix(run_smoke):
+self-deploy .ex5 to all T1-T5 before invoking tester` (committed 13:24Z by
+the previous autonomous wake). The run_smoke harness now drives the canonical
+deploy itself.
+
+Verified state on disk: `QM5_1046_maroy-intraday-vwap-exit.ex5` (116386 bytes)
+present at `D:/QM/mt5/T{1,2,3,4,5}/MQL5/Experts/QM/` with mtime
+2026-05-16T13:05:23Z. Legacy nested copy still lingers at
+`T1/MQL5/Experts/QM5_1046_maroy-intraday-vwap-exit/` (109436 bytes, mtime
+09:24Z, stale from earlier sandbox-locked build attempt) — cosmetic only,
+not load-path-resolved by the post-`5fdc3169` tester invocation.
+
+Verification that the fix works end-to-end: the next autonomous wake at
+13:34Z successfully built and smoked **QM5_1048 estrada-lazy-6m-rotation**
+(`smoke=zero_trades  review=APPROVE_FOR_BACKTEST`, p2_task=7f3b8801) using
+the new canonical-deploy path. So fix candidate 2 is operationally proven.
+
+### New evidence on QM5_1046 — TIMEOUT, distinct from the deploy bug
+
+A second smoke run for QM5_1046 captured at
+`D:/QM/reports/smoke/QM5_1046/20260516_132039/summary.json` (timestamp
+2026-05-16T13:30:39Z, terminal=`any`/T5) shows a **different** failure mode:
+
+```
+result: FAIL
+reason_classes: TIMEOUT, METATESTER_HUNG, INCOMPLETE_RUNS
+run_01: TIMEOUT after 300 s, exit_code=null
+run_02: TIMEOUT after 300 s, exit_code=null
+report_size_bytes: 0 (both runs)
+```
+
+This is **not** REPORT_MISSING / exit `-1000012355` (file not found). The
+tester subprocess was killed by the 300 s wall-clock, suggesting the EA
+loaded and started executing but didn't reach end-of-period inside the
+budget. NDX.DWX 2024 M30 with `model=4` (every real tick) is tick-dense; a
+year-long backtest can plausibly exceed 300 s on a heavier EA.
+
+A quick read of `QM5_1046_maroy-intraday-vwap-exit.mq5` doesn't show an
+obvious per-tick recompute hotspot like QM5_1044's full-EMA-warmup
+(line 244 `UpdateSessionVwap()` is gated by `QM_IsNewBar(_Symbol,
+PERIOD_M5)`; `Strategy_EntrySignal` is gated by `QM_IsNewBar()`). The
+TIMEOUT may simply be "model=4 + NDX intraday + 1 yr" being inherently
+slow at smoke budget — not a code bug.
+
+### Why this wake did NOT flip the task to `pending`
+
+The escalation originally recommended SQL-flipping `tasks.57ee887a-…`
+from `blocked` → `pending` once the fix lands. Two reasons not to do that
+unilaterally now:
+
+1. **Codex-token cost.** Flipping `build_ea` → `pending` re-runs the full
+   Codex build cycle (new .mq5 + compile + smoke), not just smoke retry.
+   Codex sandbox already burned tokens for QM5_1046 once; a rebuild
+   spends them again with no expected change to the .mq5 (the EA dir is
+   on disk and unmodified).
+2. **TIMEOUT is unresolved evidence.** Even after the deploy fix, the
+   13:20 smoke timed out. We don't know whether that was: (a) the 13:20
+   run executed before the canonical-deploy fix landed (commit hadn't
+   been merged yet at 13:20:39), or (b) a genuine EA/symbol perf issue
+   that will reproduce on every retry. Without disambiguation, flipping
+   to `pending` risks an infinite retry/block loop.
+
+### Recommended next step (OWNER decision)
+
+Pick one — they're cheap to differentiate:
+
+A. **Manual smoke re-run only** (Test-Environment Ownership, ~10 min):
+   invoke `framework/scripts/run_smoke.ps1` directly against the existing
+   `framework/EAs/QM5_1046_maroy-intraday-vwap-exit/` to disambiguate
+   deploy-bug-residual vs real-perf-issue. If smoke now passes →
+   SQL-update `tasks.57ee887a-…` to `done` with the success summary.
+   If TIMEOUT reproduces → move to (B).
+
+B. **Reclassify as perf rework**, parallel to QM5_1044's
+   `project_qm5_1044_perf_rework_2026-05-16.md` memory. Don't flip the
+   task; add a `blocked_reason` update via direct SQL and let it stay
+   blocked until Codex (or CTO) reviews the OnTick path. Likely actually
+   fine — but documenting it forces the next look.
+
+C. **Just flip to `pending`** and let Codex eat the rebuild tokens. If
+   smoke passes, free win; if TIMEOUT reproduces, we get a fresh
+   `build_result.json` with current-fix data and the next observe wake
+   can pivot to (B). Cheapest in human-attention, dearest in tokens.
+
+Board Advisor leans toward **A**: it's in the Test-Environment Ownership
+zone, costs no Codex, and the new evidence is the only thing actually
+missing to clear or reroute this task.
+
+The other still-blocked build_ea tasks (QM5_1044 perf rework,
+QM5_1045 SPY-permanently-unavailable) are correctly classified and
+not affected by this fix.
