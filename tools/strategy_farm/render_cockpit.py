@@ -42,6 +42,100 @@ CARDS_APPROVED = ROOT / "artifacts" / "cards_approved"
 PIPELINE_STAGES = ["Card", "Build", "Review", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "Live"]
 
 
+def claude_quota() -> dict:
+    """Parse latest rate_limit_event from claude jsonl streams.
+
+    Reads the newest claude jsonl (autonomous_wake, claude_research,
+    claude_review, claude_g0) and extracts the most recent rate_limit_event.
+    Returns: {status, resetsAt (epoch), reset_in_min, rateLimitType,
+    isUsingOverage, source_log}.
+    """
+    out = {"status": "unknown", "source_log": None}
+    candidates = sorted(
+        list(LOG_DIR.glob("autonomous_wake_*.jsonl"))
+        + list(LOG_DIR.glob("claude_research_*.live.log"))
+        + list(LOG_DIR.glob("claude_review_*.live.log"))
+        + list(LOG_DIR.glob("claude_g0_*.live.log")),
+        key=lambda p: p.stat().st_mtime if p.exists() else 0,
+        reverse=True,
+    )
+    for p in candidates[:5]:
+        try:
+            text = p.read_text(encoding="utf-8", errors="ignore")
+            # Scan lines reverse — pick the LAST rate_limit_event
+            for line in reversed(text.splitlines()):
+                if "rate_limit_event" not in line:
+                    continue
+                # Extract the embedded JSON
+                idx = line.find("{")
+                if idx < 0:
+                    continue
+                try:
+                    obj = json.loads(line[idx:])
+                except Exception:
+                    continue
+                rl = obj.get("rate_limit_info") or {}
+                if not rl:
+                    continue
+                resets_at = rl.get("resetsAt")
+                reset_in = None
+                if isinstance(resets_at, (int, float)):
+                    delta = int(resets_at) - int(dt.datetime.now().timestamp())
+                    reset_in = max(0, delta) // 60
+                out = {
+                    "status": rl.get("status", "?"),
+                    "resetsAt": resets_at,
+                    "reset_in_min": reset_in,
+                    "rateLimitType": rl.get("rateLimitType", "?"),
+                    "isUsingOverage": rl.get("isUsingOverage", False),
+                    "overageStatus": rl.get("overageStatus", "?"),
+                    "source_log": p.name,
+                    "event_age_sec": int(dt.datetime.now().timestamp() - p.stat().st_mtime),
+                }
+                return out
+        except Exception:
+            continue
+    return out
+
+
+def codex_quota() -> dict:
+    """Estimate codex token burn from recent codex_build live logs.
+
+    Each codex build emits a final `tokens used\\nN,NNN` line. Aggregate
+    over codex_build_*.live.log files modified in the last 5 hours (the
+    Codex ChatGPT subscription window). Returns: {total_tokens_5h,
+    builds_5h, builds_24h, avg_tokens_per_build}.
+    """
+    out = {"total_tokens_5h": 0, "builds_5h": 0, "builds_24h": 0, "avg_tokens_per_build": 0}
+    now = dt.datetime.now().timestamp()
+    five_hr = now - 5 * 3600
+    one_day = now - 24 * 3600
+    builds_5h_tokens: list[int] = []
+    builds_24h = 0
+    for log in LOG_DIR.glob("codex_build_*.live.log"):
+        try:
+            mtime = log.stat().st_mtime
+            if mtime < one_day:
+                continue
+            builds_24h += 1
+            if mtime < five_hr:
+                continue
+            text = log.read_text(encoding="utf-8", errors="ignore")
+            # Find "tokens used\nN" pattern
+            m = re.search(r"tokens\s+used\s*\n\s*([\d,]+)", text)
+            if m:
+                n = int(m.group(1).replace(",", ""))
+                builds_5h_tokens.append(n)
+        except Exception:
+            continue
+    if builds_5h_tokens:
+        out["total_tokens_5h"] = sum(builds_5h_tokens)
+        out["builds_5h"] = len(builds_5h_tokens)
+        out["avg_tokens_per_build"] = sum(builds_5h_tokens) // len(builds_5h_tokens)
+    out["builds_24h"] = builds_24h
+    return out
+
+
 # === Data collection ===
 
 def db_rows(query: str, params: tuple = ()) -> list[dict]:
@@ -274,6 +368,47 @@ def queue_snapshot() -> dict:
     return out
 
 
+def compute_heureka_leader(pipeline: list[dict]) -> dict | None:
+    """Pick the most-advanced still-alive EA as the Heureka leader.
+
+    Rank by current_stage position in PIPELINE_STAGES, skipping failed/blocked.
+    Returns dict with ea_id, slug, current_stage, completed_count, next_stage,
+    pct (0-100), failed flag.
+    """
+    if not pipeline:
+        return None
+    stage_idx = {s: i for i, s in enumerate(PIPELINE_STAGES)}
+    # Map current_stage prefix → which Stage it belongs to
+    def stage_for(entry: dict) -> tuple[int, bool]:
+        st = entry.get("stage") or "Card"
+        if st in stage_idx:
+            return stage_idx[st], entry.get("stage_status") == "failed"
+        return 0, False
+    alive = [e for e in pipeline if "failed" not in (e.get("stage_status") or "")
+             and "blocked" not in (e.get("stage_status") or "")]
+    if not alive:
+        # fall back to anything
+        candidates = pipeline
+    else:
+        candidates = alive
+    leader = max(candidates, key=lambda e: stage_for(e)[0])
+    cur_idx, failed = stage_for(leader)
+    next_stage = PIPELINE_STAGES[cur_idx + 1] if cur_idx + 1 < len(PIPELINE_STAGES) else "live"
+    pct = int(100 * cur_idx / max(1, len(PIPELINE_STAGES) - 1))
+    return {
+        "ea_id": leader["ea_id"],
+        "slug": leader.get("slug", ""),
+        "current_stage": leader.get("stage", "Card"),
+        "current_stage_idx": cur_idx,
+        "completed_count": cur_idx,
+        "total_stages": len(PIPELINE_STAGES),
+        "next_stage": next_stage,
+        "pct": pct,
+        "failed": failed,
+        "stage_status": leader.get("stage_status", ""),
+    }
+
+
 def compute_pipeline() -> list[dict]:
     rows = db_rows(
         "SELECT id, kind, status, payload_json, updated_at "
@@ -370,6 +505,9 @@ def main() -> int:
     mt5_work = mt5_active_work()
     q = queue_snapshot()
     pipeline = compute_pipeline()
+    heureka = compute_heureka_leader(pipeline)
+    claude_q = claude_quota()
+    codex_q = codex_quota()
 
     severity, msg = diagnose_bottleneck(procs, q, claude_workers, codex_workers)
 
@@ -579,6 +717,77 @@ def main() -> int:
     except Exception:
         commits_html = ""
 
+    # === Heureka tile HTML ===
+    if heureka:
+        # Render 11 stages with done/current/idle styling
+        stages_chips = []
+        for i, st in enumerate(PIPELINE_STAGES):
+            cls = ""
+            if i < heureka["current_stage_idx"]:
+                cls = "done"
+            elif i == heureka["current_stage_idx"]:
+                cls = "current"
+            stages_chips.append(f'<div class="heureka-stage {cls}">{st}</div>')
+        stages_html_inner = "".join(stages_chips)
+        leader_inner = (
+            f'<span class="muted">Active</span> '
+            f'<code>{html.escape(heureka["ea_id"])}</code> '
+            f'<span class="slug">{html.escape(heureka["slug"][:36])}</span> '
+            f'<span class="arrow">·</span> '
+            f'<span>at <strong style="color:var(--live)">{html.escape(heureka["current_stage"])}</strong></span> '
+            f'<span class="arrow">→</span> '
+            f'<span class="next">next <strong>{html.escape(heureka["next_stage"])}</strong></span>'
+        )
+        heureka_html = f"""
+<div class="heureka">
+  <div class="heureka-head">
+    <span class="heureka-title">Heureka · first live EA</span>
+    <span class="heureka-meter">
+      <span class="num">{heureka["completed_count"]}</span><span class="tot">/{heureka["total_stages"]}</span>
+      <span class="pct">· {heureka["pct"]}%</span>
+    </span>
+  </div>
+  <div class="heureka-stages">{stages_html_inner}</div>
+  <div class="heureka-leader">{leader_inner}</div>
+</div>"""
+    else:
+        heureka_html = (
+            '<div class="heureka"><div class="heureka-head">'
+            '<span class="heureka-title">Heureka · first live EA</span></div>'
+            '<div class="heureka-leader heureka-leader-empty">'
+            'no EA in flight · pump research → G0 approve → Codex build</div></div>'
+        )
+
+    # === Tokens panel HTML ===
+    cq = claude_q
+    cxq = codex_q
+    claude_reset = f'{cq.get("reset_in_min", "?")} min' if cq.get("reset_in_min") is not None else "?"
+    claude_status_class = "ok" if cq.get("status") == "allowed" else "fail"
+    codex_tokens_k = f'{cxq["total_tokens_5h"]//1000}K' if cxq["total_tokens_5h"] else "0"
+    tokens_html = f"""
+<div class="tokens">
+  <div class="token-card">
+    <div class="token-label">Claude · status</div>
+    <div class="token-value {claude_status_class}">{html.escape(str(cq.get("status","?")).upper())}</div>
+    <div class="token-sub">{html.escape(str(cq.get("rateLimitType","?")))} · resets in {claude_reset}</div>
+  </div>
+  <div class="token-card">
+    <div class="token-label">Codex · tokens (5h)</div>
+    <div class="token-value ok">{codex_tokens_k}</div>
+    <div class="token-sub">{cxq["builds_5h"]} builds · avg {cxq["avg_tokens_per_build"]//1000 if cxq['avg_tokens_per_build'] else 0}K each</div>
+  </div>
+  <div class="token-card">
+    <div class="token-label">Codex · builds 24h</div>
+    <div class="token-value">{cxq["builds_24h"]}</div>
+    <div class="token-sub">incl. failed/blocked</div>
+  </div>
+  <div class="token-card">
+    <div class="token-label">Claude · overage</div>
+    <div class="token-value {'fail' if cq.get('isUsingOverage') else 'ok'}">{html.escape(str(cq.get('overageStatus','?')))}</div>
+    <div class="token-sub">overage {'using' if cq.get('isUsingOverage') else 'not used'}</div>
+  </div>
+</div>"""
+
     # === Final HTML ===
     html_doc = f"""<!DOCTYPE html>
 <html lang="en"><head>
@@ -768,6 +977,97 @@ tr:last-child td {{ border-bottom: none; }}
   font-size: 10px; color: var(--qm-text-subtle);
   font-family: var(--font-mono); letter-spacing: 0.04em;
 }}
+
+/* === Heureka tile === */
+.heureka {{
+  background: linear-gradient(135deg, rgba(16,185,129,0.06) 0%, rgba(15,23,42,0.5) 100%);
+  border: 1px solid rgba(16,185,129,0.2);
+  border-radius: 14px;
+  padding: 18px 22px;
+  margin: 16px 0 14px 0;
+  position: relative;
+  overflow: hidden;
+}}
+.heureka::before {{
+  content:''; position:absolute; top:-50%; right:-15%;
+  width:300px; height:300px; border-radius:50%;
+  background: radial-gradient(circle, var(--em-glow) 0%, transparent 65%);
+  filter: blur(70px); pointer-events: none;
+}}
+.heureka-head {{
+  display: flex; align-items: baseline; gap: 12px;
+  margin-bottom: 12px; position: relative; z-index: 1;
+}}
+.heureka-title {{
+  font-size: 10px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.12em; color: var(--em);
+}}
+.heureka-meter {{
+  font-family: var(--font-mono); font-weight: 600;
+  letter-spacing: 0.5px;
+}}
+.heureka-meter .num {{ color: var(--em); font-size: 14px; }}
+.heureka-meter .tot {{ color: var(--qm-text-muted); font-size: 11px; }}
+.heureka-meter .pct {{ color: var(--qm-text-dim); font-size: 11px; margin-left: 6px; }}
+.heureka-stages {{
+  display: flex; gap: 4px; margin-bottom: 12px;
+  position: relative; z-index: 1;
+}}
+.heureka-stage {{
+  flex: 1; min-width: 40px; padding: 7px 4px;
+  border: 1px solid var(--qm-border); border-radius: 6px;
+  background: rgba(15,23,42,0.5);
+  text-align: center; font-size: 9px; font-weight: 600;
+  color: var(--qm-text-subtle); text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-family: var(--font-mono);
+}}
+.heureka-stage.done {{
+  background: var(--em-s); border-color: rgba(16,185,129,0.45);
+  color: var(--em);
+}}
+.heureka-stage.current {{
+  background: rgba(6,182,212,0.12); border-color: rgba(6,182,212,0.5);
+  color: var(--live); box-shadow: 0 0 8px rgba(6,182,212,0.3);
+}}
+.heureka-leader {{
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  font-family: var(--font-mono); font-size: 12px;
+  color: var(--qm-text-dim); position: relative; z-index: 1;
+  padding-top: 10px; border-top: 1px solid var(--qm-border);
+}}
+.heureka-leader code {{ color: var(--em); font-weight: 600; font-size: 13px; }}
+.heureka-leader .slug {{ color: var(--qm-text-muted); }}
+.heureka-leader .arrow {{ color: var(--qm-text-faint); }}
+.heureka-leader .next strong {{ color: var(--em); }}
+.heureka-leader-empty {{
+  font-style: italic; color: var(--qm-text-muted); font-size: 12px;
+}}
+
+/* === Token panel === */
+.tokens {{
+  display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 12px; margin-bottom: 18px;
+}}
+.token-card {{
+  background: var(--qm-surface-1); border: 1px solid var(--qm-border);
+  border-radius: 8px; padding: 10px 14px;
+}}
+.token-label {{
+  font-size: 9px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--qm-text-muted); margin-bottom: 6px;
+}}
+.token-value {{
+  font-family: var(--font-mono); font-size: 18px; font-weight: 600;
+  color: var(--qm-text); letter-spacing: -0.01em;
+}}
+.token-value.ok {{ color: var(--em); }}
+.token-value.warn {{ color: var(--promising); }}
+.token-value.fail {{ color: var(--fail); }}
+.token-sub {{
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--qm-text-muted); margin-top: 4px;
+}}
 </style></head>
 <body>
 
@@ -777,6 +1077,10 @@ tr:last-child td {{ border-bottom: none; }}
   <span class="sev-msg">{html.escape(msg)}</span>
   <span class="sev-tag">{sev_label}</span>
 </div>
+
+{heureka_html}
+
+{tokens_html}
 
 <div class="hero">
   {hero_claude}
