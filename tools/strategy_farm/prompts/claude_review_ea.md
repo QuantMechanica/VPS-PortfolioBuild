@@ -29,6 +29,20 @@ Verdict target: `{{verdict_path}}`
 
 Apply each rule literally. If a rule is violated → severity `block`. If unclear → `warn`.
 
+### 0. Canonical naming + setfile coverage (NEW 2026-05-16 — was missed)
+
+- **Directory** is `framework/EAs/QM5_<NNNN>_<slug>/` (with `QM5_` prefix). NOT
+  `framework/EAs/<NNNN>_<slug>/`. Stripped-prefix dir = `block` finding,
+  REJECT_REWORK with directive "rename directory to include `QM5_` prefix".
+- **`.mq5` and `.ex5`** filenames match the directory basename exactly.
+- **Setfiles in `sets/`** exist for ALL `symbols_registered` from the build
+  result, named `QM5_<NNNN>_<slug>_<SYMBOL>_<TF>_backtest.set`. Missing
+  setfiles = `block` finding (P2 phase runner needs them).
+- **`symbols_registered`** are ALL present in
+  `C:/QM/repo/framework/registry/dwx_symbol_matrix.csv`. A registered symbol
+  not in the matrix = `block` finding REJECT_REWORK (port to nearest DWX or
+  block with reason).
+
 ### 1. Mechanical Match (Card ↔ .mq5)
 
 - Entry rule in `.mq5` matches the **Entry** section of the card exactly

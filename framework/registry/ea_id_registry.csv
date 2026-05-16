@@ -39,8 +39,6 @@ ea_id,slug,strategy_id,status,owner,created_at
 1042,singh-eng-bk-tea,SRC06_S16,active,CTO,2026-05-13
 1043,singh-gd-morn-asia,SRC06_S17,active,CTO,2026-05-13
 1006,davey-eu-day,SRC01_S02,active,Development,2026-05-15
-1044,vpmacd-us-indices,SRC07_S01,active,Development,2026-05-15
-1045,zarattini-spy-intraday-momentum,SRC08_S01,active,Development,2026-05-16
 1046,maroy-intraday-vwap-exit,SRC08_S02,active,Development,2026-05-16
 1047,halloween-sell-in-may-idx,SRC08_S03,active,Development,2026-05-16
 1048,estrada-lazy-6m-rotation,SRC08_S04,active,Development,2026-05-16
