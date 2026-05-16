@@ -476,3 +476,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1050,mql5-smc-order-blocks,2,USDJPY.DWX,10500002,2026-05-16,Development,active
 1050,mql5-smc-order-blocks,3,AUDUSD.DWX,10500003,2026-05-16,Development,active
 1050,mql5-smc-order-blocks,4,USDCAD.DWX,10500004,2026-05-16,Development,active
+1046,maroy-intraday-vwap-exit,0,NDX.DWX,10460000,2026-05-16,Development,active
+1046,maroy-intraday-vwap-exit,1,WS30.DWX,10460001,2026-05-16,Development,active
