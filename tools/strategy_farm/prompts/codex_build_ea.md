@@ -159,6 +159,34 @@ Use these framework helpers — DO NOT reimplement them:
 | News gate                         | `QM_NewsAllowsTrade(symbol, broker_time, qm_news_mode)`            |
 | Kill-switch / Friday-close        | `QM_KillSwitchCheck` / `QM_FrameworkHandleFridayClose`             |
 
+### Optional Signal Mixins (`QM_Signals.mqh`)
+
+Each returns `+1` / `0` / `-1` so you can compose patterns without re-doing
+the indicator math. **Use when they fit. Skip for novel / structural logic
+(Order Blocks, Heiken Ashi sequences, custom regime).** Include with
+`#include <QM/QM_Signals.mqh>`.
+
+| Helper                                                       | Returns                                |
+|--------------------------------------------------------------|----------------------------------------|
+| `QM_Sig_MA_Position(sym, tf, fast, slow, shift)`             | +1 fast>slow / -1 fast<slow / 0 equal  |
+| `QM_Sig_MA_Cross(sym, tf, fast, slow, shift)`                | +1 bullish cross / -1 bearish cross    |
+| `QM_Sig_Price_Above_MA(sym, tf, period, deadband_pts, shift)`| price-vs-MA with deadband              |
+| `QM_Sig_Range_Breakout(sym, tf, lookback, shift)`            | +1 break above N-bar high              |
+| `QM_Sig_RSI_Reversal(sym, tf, period, lo, hi, shift)`        | +1 oversold reversal up / -1 inverse   |
+| `QM_Sig_ADX_Strong(sym, tf, period, threshold, shift)`       | 1 trending / 0 ranging                 |
+| `QM_Sig_BB_MeanRev(sym, tf, period, devs, shift)`            | +1 below lower band / -1 above upper   |
+| `QM_Sig_TurnOfMonth(broker_now, day_from_end, day_into_next)`| 1 inside ToM window                    |
+| `QM_Sig_DayOfWeek(broker_now, bool day_enabled[7])`          | 1 if today enabled (Mon=0..Sun=6)      |
+| `QM_Sig_Session(broker_now, start_h, end_h)`                 | 1 inside hour window (wrap-safe)       |
+
+Composition example for a trend-pullback long:
+```mql5
+if(QM_Sig_MA_Position(_Symbol, PERIOD_H4, 50, 200, 1) > 0 &&
+   QM_Sig_ADX_Strong(_Symbol, PERIOD_H4, 14, 25.0, 1) > 0 &&
+   QM_Sig_RSI_Reversal(_Symbol, PERIOD_H1, 14, 30.0, 70.0, 1) > 0)
+   { /* build LONG req */ return true; }
+```
+
 Forbidden patterns (Claude review will `REJECT_REWORK` on any):
 - Per-EA `IsNewBar()` function — use `QM_IsNewBar()`
 - Direct `iATR / iMA / iRSI / iMACD / iADX / iBands` calls — use the `QM_*` readers
