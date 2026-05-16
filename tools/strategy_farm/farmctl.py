@@ -953,8 +953,11 @@ def render_codex_build_prompt(root: Path, card_path_str: str, out_path: str | No
             # run_smoke. Constrained externally by the build prompt + build_check.ps1.
             # [windows] sandbox = "elevated" was removed from ~/.codex/config.toml
             # 2026-05-16 (lockout incident) — Codex now uses cross-platform sandbox.
-            f"codex exec -s danger-full-access --cd \"{REPO_ROOT}\" "
-            f"\"$(Get-Content -Raw '{target}')\""
+            # Prompt MUST be piped via stdin, NOT passed as a CLI arg: passing as
+            # arg makes codex print "Reading additional input from stdin..." and
+            # hang waiting for stdin EOF that the inherited claude pipe never
+            # delivers (observed 2026-05-16: 18 min hang, codex CPU=0s).
+            f"cat '{target}' | codex exec -s danger-full-access --cd \"{REPO_ROOT}\""
         ),
     }
 

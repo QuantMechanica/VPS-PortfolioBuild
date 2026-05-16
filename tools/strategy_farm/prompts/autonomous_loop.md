@@ -52,9 +52,18 @@ Else if an `artifacts/cards_approved/QM5_*.md` exists and no `tasks` row has
   reject the pwsh subprocess calls Codex needs for `build_check.ps1`,
   `compile_one.ps1`, `gen_setfile.ps1`, and `run_smoke.ps1`. The build is
   externally constrained by `codex_build_ea.md` + `build_check.ps1` +
-  Claude review §0, so the wider sandbox is acceptable here:
+  Claude review §0, so the wider sandbox is acceptable here.
+  **MUST pipe prompt via stdin, NOT pass as CLI arg.** Passing the multi-KB
+  build prompt as a CLI arg causes codex to write `"Reading additional input
+  from stdin..."` then deadlock waiting for stdin EOF that never comes from
+  the inherited claude pipe (observed 2026-05-16: 18 min hang, codex CPU=0s).
+  Piping closes stdin cleanly:
+  ```bash
+  cat '<prompt-path>' | codex exec -s danger-full-access --cd C:/QM/repo
+  ```
+  or in PowerShell:
   ```powershell
-  codex exec -s danger-full-access --cd C:/QM/repo "$(Get-Content -Raw '<prompt-path>')"
+  Get-Content -Raw '<prompt-path>' | codex exec -s danger-full-access --cd C:/QM/repo
   ```
 - Codex writes JSON to `build_result_path`. Read it; verify schema.
 - `farmctl record-build --task-id <task-id> --result-file "<build_result_path>"`
