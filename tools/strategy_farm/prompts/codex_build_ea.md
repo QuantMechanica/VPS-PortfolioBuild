@@ -193,6 +193,81 @@ patterns. The remaining rules cover custom math the framework can't help with:
   `blocked_reason: "smoke runtime infeasible — <root cause>"`, populate
   `rework_directives` with imperative file-scoped fixes, and stop.
 
+## INTRADAY DISCIPLINE (strict — for cards with `intraday: true` or `closed_bar_cache_required: true`)
+
+QM5_1044 (VPMACD), QM5_1046 (VWAP intraday), QM5_1050 (SMC Order Blocks) all
+hit METATESTER_HUNG smoke timeouts because the EA recomputed strategy state
+(EMA warmup / VWAP session / order-block list / structure pivots) on every
+OnTick. MT5's Model-4 ticks fire thousands of times per bar — recomputing
+N-bar-deep state per tick costs O(N × ticks_per_bar × bars_total).
+
+**Intraday EAs MUST cache strategy state per closed bar.** Pattern:
+
+```mq5
+// File-scope cached state (advanced once per new bar)
+double  g_session_vwap = 0.0;
+double  g_upper_band = 0.0;
+double  g_lower_band = 0.0;
+datetime g_last_advanced_bar = 0;
+
+void AdvanceState_OnNewBar()
+  {
+   // Called ONCE per new closed bar from OnTick (gated by QM_IsNewBar).
+   // Reads the LAST closed bar's data, updates cumulative state by ONE step,
+   // recomputes bands. Never loops back further than necessary.
+   double close_last = iClose(_Symbol, _Period, 1);
+   double volume_last = (double)iVolume(_Symbol, _Period, 1);
+   g_session_vwap = /* cumulative VWAP advance — one bar's contribution */ ;
+   g_upper_band  = /* close + rolling_avg_range * mult */ ;
+   g_lower_band  = /* close - rolling_avg_range * mult */ ;
+  }
+
+bool Strategy_EntrySignal(QM_EntryRequest &req)
+  {
+   // Called every OnTick. ONLY reads cached state + current Bid/Ask.
+   // NO CopyRates loops. NO iATR/iMA recomputes (use QM_ATR(...) which
+   // is handle-pooled). NO order-block detection scans.
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(bid > g_upper_band && /* per-tick cheap check */) {
+       /* fill req → return true */
+   }
+   return false;
+  }
+
+void OnTick()
+  {
+   if(!QM_FrameworkInit_OK) return;
+   // ... framework guards ...
+   if(QM_IsNewBar())            // FIRST: advance closed-bar state
+       AdvanceState_OnNewBar();
+   // Per-tick path below — must be O(1):
+   Strategy_ManageOpenPosition();  // reads cached state only
+   if(Strategy_ExitSignal()) ...;
+   if(Strategy_EntrySignal(req)) ...;
+  }
+```
+
+**Forbidden in OnTick (per-tick path):**
+- `CopyRates(_Symbol, ..., 1, N)` where N > 1
+- VWAP or moving-average re-summing from session-open / N bars back
+- Loop over `iClose / iHigh / iLow` for arbitrary N bars
+- Order-block / pivot / structure detection that scans history
+- Any `for` loop bounded by lookback length
+
+**Allowed in OnTick (per-tick path):**
+- `SymbolInfoDouble(_Symbol, SYMBOL_BID/ASK)` — single tick read
+- Comparison of current tick to file-scope cached values
+- `QM_*` indicator readers from `QM_Indicators.mqh` (handles pooled, copy_buffer single shift)
+- Trade management via `QM_TM_*` helpers
+- `if(!QM_IsNewBar()) return;` early exit to skip per-bar work
+
+If the card carries `intraday: true` or `closed_bar_cache_required: true`
+in its frontmatter, you MUST follow this pattern. If you cannot express the
+strategy's edge in cached-per-bar form, set `blocked_reason: "intraday
+strategy requires per-tick lookback that exceeds smoke budget — needs card
+redesign"` and stop. Claude review will REJECT_REWORK if any forbidden
+pattern is found inside `OnTick` (post-`QM_IsNewBar`-gate is fine).
+
 ## ONE-PASS BUILD DISCIPLINE (strict — do NOT iterate on smoke result)
 
 Observed 2026-05-16 (QM5_1046): Codex emitted a working .mq5, ran smoke 1 which
