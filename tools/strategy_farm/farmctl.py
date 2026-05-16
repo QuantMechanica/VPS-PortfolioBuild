@@ -1357,15 +1357,71 @@ def pump(root: Path) -> dict[str, Any]:
         active_codex = 0
     spawn_budget = max(0, MAX_PARALLEL_CODEX - active_codex)
     with connect(root) as conn:
-        pending_builds = conn.execute(
+        # Dedupe by ea_id — never spawn 2 codex builds for the same EA at
+        # once (race on EA dir + magic_numbers.csv + resolver regeneration).
+        # When multiple build_ea tasks exist for the same ea_id (e.g. retry
+        # races), pick the oldest pending and ignore the others until that
+        # one settles.
+        all_pending = conn.execute(
             "SELECT * FROM tasks WHERE kind='build_ea' AND status='pending' "
-            "ORDER BY updated_at ASC LIMIT ?",
-            (spawn_budget,),
+            "ORDER BY updated_at ASC"
         ).fetchall()
+        seen_eas: set[str] = set()
+        pending_builds = []
+        for row in all_pending:
+            payload = json.loads(row["payload_json"])
+            ea_id = payload.get("ea_id")
+            if ea_id in seen_eas:
+                continue
+            seen_eas.add(ea_id)
+            pending_builds.append(row)
+            if len(pending_builds) >= spawn_budget:
+                break
     spawns = []
     for pending_build in pending_builds:
         sp = _spawn_codex_for_build(root, pending_build)
         spawns.append(sp)
+
+    # 3b. Auto-create build_ea tasks for newly-approved cards. Without this,
+    #    pump can't reach Codex on cards that haven't yet been touched by
+    #    autonomous_wake's Step 2 — the hourly cadence becomes the real
+    #    bottleneck for fresh approved cards. Bounded by spawn_budget so we
+    #    don't pile up backlog faster than we can build it.
+    result["auto_created_builds"] = []
+    # Count actually-spawned (not skipped-due-to-fresh-log)
+    actually_spawned = sum(1 for s in spawns if s.get("spawned"))
+    if actually_spawned < spawn_budget:
+        cards_approved_dir = root / "artifacts" / "cards_approved"
+        if cards_approved_dir.is_dir():
+            with connect(root) as conn:
+                have_task = {
+                    json.loads(r["payload_json"]).get("ea_id")
+                    for r in conn.execute("SELECT payload_json FROM tasks WHERE kind='build_ea'").fetchall()
+                }
+            cards_without_task = []
+            for f in sorted(cards_approved_dir.glob("QM5_*.md")):
+                parts = f.stem.split("_")
+                if len(parts) < 2:
+                    continue
+                ea_id = f"{parts[0]}_{parts[1]}"
+                if ea_id not in have_task:
+                    cards_without_task.append((ea_id, f))
+            slots_left = spawn_budget - actually_spawned
+            for ea_id, card_path in cards_without_task[:slots_left]:
+                br = render_codex_build_prompt(root, str(card_path), None)
+                if br.get("written"):
+                    result["auto_created_builds"].append({
+                        "ea_id": ea_id,
+                        "task_id": br.get("task_id"),
+                    })
+                    # Now spawn Codex for it immediately
+                    with connect(root) as conn:
+                        new_row = conn.execute(
+                            "SELECT * FROM tasks WHERE id=?", (br["task_id"],)
+                        ).fetchone()
+                    if new_row:
+                        sp = _spawn_codex_for_build(root, new_row)
+                        spawns.append(sp)
     result["codex_spawn"] = spawns[0] if spawns else None
     result["codex_spawns_all"] = spawns
     result["codex_active_before"] = active_codex
