@@ -44,17 +44,40 @@ autonomous wake is stuck. Action:
 py -3 C:/QM/repo/tools/strategy_farm/farmctl.py status
 ```
 
-If `task_counts` shows any `status=failed` or `status=blocked`:
+If `task_counts` shows any `status=failed` or `status=blocked`, run the
+self-heal filter first — many failed/blocked rows are forensic records of
+attempts the autonomous wake already retried or superseded. Only rows
+without a `done` sibling and without a `superseded_by` payload field are
+real failures worth acting on:
 
-- Query the failed task payload directly:
   ```python
   import sqlite3, json
   with sqlite3.connect(r'D:/QM/strategy_farm/state/farm_state.sqlite') as c:
       c.row_factory = sqlite3.Row
-      for r in c.execute("SELECT * FROM tasks WHERE status IN ('failed','blocked')"):
-          print(r['kind'], r['card_id'], json.loads(r['payload_json']).get('codex_result', {}).get('blocked_reason') or json.loads(r['payload_json']).get('failure_reason'))
+      rows = list(c.execute("""
+          SELECT t.* FROM tasks t
+          WHERE t.status IN ('failed','blocked')
+            AND NOT EXISTS (
+                SELECT 1 FROM tasks t2
+                WHERE t2.card_id = t.card_id
+                  AND t2.kind = t.kind
+                  AND t2.status = 'done'
+                  AND t2.id != t.id
+            )
+            AND t.payload_json NOT LIKE '%superseded_by%'
+      """))
+      if not rows:
+          print('All failed/blocked tasks are self-healed (sibling done or superseded). No action.')
+      for r in rows:
+          pj = json.loads(r['payload_json'])
+          cr = pj.get('codex_result') or {}
+          print(r['kind'], r['card_id'], cr.get('blocked_reason') or pj.get('failure_reason'))
   ```
-- Categorize the failure:
+
+If the filter returns **zero real failures**, treat Check 2 as PASS and
+continue to Check 3 (do not stop here).
+
+If the filter returns one or more real failures, categorize each:
   - **Codex prompt issue** (drift, missing constraint, naming bug) → fix prompt
     in `tools/strategy_farm/prompts/codex_build_ea.md` + commit
   - **Claude review missed a class of issue** → tighten checklist in
