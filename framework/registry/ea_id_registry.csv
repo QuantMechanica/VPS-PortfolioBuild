@@ -38,4 +38,5 @@ ea_id,slug,strategy_id,status,owner,created_at
 1041,singh-guppy-burst,SRC06_S15,active,CTO,2026-05-13
 1042,singh-eng-bk-tea,SRC06_S16,active,CTO,2026-05-13
 1043,singh-gd-morn-asia,SRC06_S17,active,CTO,2026-05-13
-1044,vpmacd-us-indices,SRC07_S01,draft,Research,2026-05-15
+1006,davey-eu-day,SRC01_S02,active,Development,2026-05-15
+1044,vpmacd-us-indices,SRC07_S01,active,Development,2026-05-15

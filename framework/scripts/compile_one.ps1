@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory = $true)]
     [string]$EAPath,
+    [string]$EALabel,
     [switch]$Strict,
     [string]$MetaEditorPath,
     [string]$ReportRoot = "D:\QM\reports\compile",
@@ -79,7 +79,7 @@ function Resolve-Mq5Path {
         return $targetPath
     }
 
-    $mq5Files = Get-ChildItem -LiteralPath $targetPath -Filter "*.mq5" -File
+    $mq5Files = @(Get-ChildItem -LiteralPath $targetPath -Filter "*.mq5" -File)
     if ($mq5Files.Count -eq 1) {
         return $mq5Files[0].FullName
     }
@@ -94,6 +94,22 @@ function Resolve-Mq5Path {
     }
 
     throw "EAPath directory contains multiple .mq5 files; pass a single file path explicitly: $targetPath"
+}
+
+function Resolve-EAPathFromLabel {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Label,
+        [Parameter(Mandatory = $true)]
+        [string]$ResolvedRepoRoot
+    )
+
+    $candidate = Join-Path $ResolvedRepoRoot "framework\EAs\$Label"
+    if (Test-Path -LiteralPath $candidate) {
+        return (Resolve-Path -LiteralPath $candidate).Path
+    }
+
+    throw "EALabel '$Label' does not resolve under framework\EAs."
 }
 
 function Parse-CompileCounts {
@@ -170,6 +186,13 @@ function Write-SummaryRow {
 $repoRoot = Resolve-RepoRoot
 if (-not $BuildRoot) {
     $BuildRoot = Join-Path $repoRoot "framework\build"
+}
+
+if (-not $EAPath) {
+    if (-not $EALabel) {
+        throw "Provide -EAPath or -EALabel."
+    }
+    $EAPath = Resolve-EAPathFromLabel -Label $EALabel -ResolvedRepoRoot $repoRoot
 }
 
 $mq5Path = Resolve-Mq5Path -InputPath $EAPath

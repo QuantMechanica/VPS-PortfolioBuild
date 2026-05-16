@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory = $true)]
-    [int]$EAId,
+    [int]$EAId = 0,
+    [string]$EALabel,
     [Parameter(Mandatory = $true)]
     [string]$Symbol,
     [Parameter(Mandatory = $true)]
@@ -32,6 +32,13 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+
+if ($EAId -le 0) {
+    if ([string]::IsNullOrWhiteSpace($EALabel) -or $EALabel -notmatch '^(?:QM5_)?(?<id>\d{4})') {
+        throw "Provide -EAId or an -EALabel beginning with a four-digit EA id."
+    }
+    $EAId = [int]$Matches["id"]
+}
 
 function Convert-HtmlEntityText {
     param(
@@ -524,7 +531,11 @@ if (($Terminal -ine "any") -and (-not $AllowRunningTerminal.IsPresent)) {
 }
 
 if (-not $Expert) {
-    $Expert = "QM\QM5_{0}" -f $EAId
+    if ($EALabel) {
+        $Expert = "$EALabel\$EALabel"
+    } else {
+        $Expert = "QM\QM5_{0}" -f $EAId
+    }
 }
 
 if ($SetFile) {
