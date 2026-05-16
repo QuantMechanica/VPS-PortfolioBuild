@@ -597,6 +597,318 @@ def pipeline_view(root: Path) -> dict[str, Any]:
     return {"eas": out, "summary": summary, "count": len(out)}
 
 
+def _derive_verdict_from_summary(summary: dict[str, Any], min_trades: int = 5) -> tuple[str, str]:
+    """Single-symbol verdict from a run_smoke summary.json. Returns (verdict, reason).
+
+    Mirrors p2_baseline's derive_verdict: PASS if at least one run had
+    ≥min_trades, else FAIL with reason. INVALID if model4 marker absent.
+    """
+    if summary.get("result") != "PASS":
+        reasons = summary.get("reason_classes") or ["UNKNOWN"]
+        return "FAIL", "run_smoke_fail:" + ";".join(reasons)
+    if not summary.get("model4_log_marker_detected"):
+        return "INVALID", "G1_NO_REAL_TICKS"
+    runs = summary.get("runs") or []
+    if not runs:
+        return "INVALID", "no_runs_in_summary"
+    trades = [int(r.get("total_trades", 0) or 0) for r in runs]
+    if any(t >= min_trades for t in trades):
+        return "PASS", ""
+    return "FAIL", "MIN_TRADES_NOT_MET"
+
+
+def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
+                                    terminal: str) -> dict[str, Any]:
+    """Spawn run_smoke.ps1 for one work_item, pinned to a specific terminal.
+
+    Returns dict with spawn metadata. The PID + log_path + expected_summary
+    dir are stored in the work_item payload so the next dispatch cycle can
+    find the result.
+    """
+    ea_id = item_row["ea_id"]  # e.g. QM5_1049
+    symbol = item_row["symbol"]
+    setfile_path = item_row["setfile_path"]
+    phase = item_row["phase"]
+
+    # Resolve full EA dir name (with slug) for the -EALabel arg
+    ea_root_dir = REPO_ROOT / "framework" / "EAs"
+    candidates = [p for p in ea_root_dir.glob(f"{ea_id}_*") if p.is_dir()]
+    if not candidates:
+        return {"spawned": False, "reason": f"no EA dir for {ea_id}"}
+    ea_dir_name = candidates[0].name
+    period = _detect_ea_period(ea_id)
+    numeric_id = int(re.match(r"^QM5_(\d+)$", ea_id).group(1))
+
+    # Per-work-item report root keeps summaries discoverable
+    report_root = Path(r"D:\QM\reports\work_items") / item_row["id"]
+    report_root.mkdir(parents=True, exist_ok=True)
+    log_path = root / "logs" / f"work_item_{item_row['id']}.log"
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # Multi-year window for P2; single-year 2024 for others (until p3+
+    # have their own windowing). Min-trades=5 lowered from 20 like P2.
+    from_date = "2022.01.01" if phase == "P2" else None
+    to_date = "2024.12.31" if phase == "P2" else None
+    year = 2024
+
+    cmd = [
+        "pwsh.exe", "-NoProfile", "-File",
+        str(REPO_ROOT / "framework" / "scripts" / "run_smoke.ps1"),
+        "-EAId", str(numeric_id),
+        "-EALabel", ea_dir_name,
+        "-Symbol", symbol,
+        "-Year", str(year),
+        "-Terminal", terminal,
+        "-Period", period,
+        "-Runs", "2",
+        "-MinTrades", "5",
+        "-Model", "4",
+        "-SetFile", setfile_path,
+        "-ReportRoot", str(report_root),
+        "-AllowMissingRealTicksLogMarker",
+        "-TimeoutSeconds", "1800",
+    ]
+    if from_date:
+        cmd.extend(["-FromDate", from_date])
+    if to_date:
+        cmd.extend(["-ToDate", to_date])
+
+    log_fh = open(log_path, "w", encoding="utf-8")
+    creationflags = 0
+    if sys.platform == "win32":
+        creationflags = subprocess.CREATE_NEW_CONSOLE  # type: ignore[attr-defined]
+    proc = subprocess.Popen(
+        cmd,
+        cwd=str(REPO_ROOT),
+        stdout=log_fh,
+        stderr=subprocess.STDOUT,
+        stdin=subprocess.DEVNULL,
+        creationflags=creationflags,
+        close_fds=False,
+    )
+    return {
+        "spawned": True,
+        "pid": proc.pid,
+        "log_path": str(log_path),
+        "report_root": str(report_root),
+        "ea_dir_name": ea_dir_name,
+    }
+
+
+def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, Any]:
+    """Per-(symbol, setfile) dispatcher. Replaces bundled p2_baseline fan-out.
+
+    Phase 1: poll active work_items. If their report_root has a summary.json,
+             parse + derive verdict + mark done. If too old, mark failed (auto-
+             retry up to MAX_WORK_ITEM_RETRIES).
+    Phase 2: claim pending work_items, one per free terminal, spawn run_smoke.
+    Phase 3: aggregate — when ALL work_items for a parent_task_id are done,
+             classify the bundled parent task and auto-enqueue next phase.
+    """
+    init_db(root)
+    actions: list[dict[str, Any]] = []
+    started_iso = utc_now()
+    busy_terminals: set[str] = set()
+    MAX_WORK_ITEM_RETRIES = 3
+
+    # --- Phase 1: process active work_items ---
+    with connect(root) as conn:
+        active = conn.execute(
+            "SELECT * FROM work_items WHERE status='active' ORDER BY updated_at"
+        ).fetchall()
+    for item in active:
+        payload = json.loads(item["payload_json"]) if item["payload_json"] else {}
+        report_root = payload.get("report_root")
+        ea_dir_name = payload.get("ea_dir_name")
+        terminal = item["claimed_by"]
+        if terminal:
+            busy_terminals.add(terminal)
+        # Find newest summary.json under report_root
+        summary_path = None
+        if report_root and Path(report_root).is_dir():
+            cands = sorted(
+                Path(report_root).rglob("summary.json"),
+                key=lambda p: p.stat().st_mtime,
+                reverse=True,
+            )
+            if cands:
+                summary_path = cands[0]
+        if summary_path and summary_path.exists():
+            try:
+                summary = json.loads(summary_path.read_text(encoding="utf-8-sig"))
+            except Exception as e:
+                summary = None
+            if summary:
+                verdict, reason = _derive_verdict_from_summary(summary, min_trades=5)
+                with connect(root) as conn2:
+                    conn2.execute(
+                        "UPDATE work_items SET status='done', verdict=?, evidence_path=?, payload_json=?, updated_at=? WHERE id=?",
+                        (verdict, str(summary_path),
+                         json.dumps({**payload, "verdict_reason": reason}, sort_keys=True),
+                         started_iso, item["id"]),
+                    )
+                    conn2.commit()
+                busy_terminals.discard(terminal)
+                actions.append({"action": "classified_item", "item_id": item["id"],
+                               "ea_id": item["ea_id"], "symbol": item["symbol"],
+                               "verdict": verdict, "reason": reason,
+                               "terminal_released": terminal})
+                continue
+        # Still running — check timeout
+        started = payload.get("started_at_iso")
+        age_min = 0.0
+        if started:
+            try:
+                age_min = (dt.datetime.now(dt.UTC) - dt.datetime.fromisoformat(started.replace("Z", "+00:00"))).total_seconds() / 60.0
+            except Exception:
+                age_min = 0.0
+        if age_min > timeout_minutes:
+            attempt = item["attempt_count"] + 1
+            if attempt < MAX_WORK_ITEM_RETRIES:
+                with connect(root) as conn2:
+                    conn2.execute(
+                        "UPDATE work_items SET status='pending', attempt_count=?, claimed_by=NULL, payload_json=?, updated_at=? WHERE id=?",
+                        (attempt, json.dumps({"prior_timeout": started}, sort_keys=True),
+                         started_iso, item["id"]),
+                    )
+                    conn2.commit()
+                busy_terminals.discard(terminal)
+                actions.append({"action": "retry_timeout", "item_id": item["id"], "attempt": attempt})
+            else:
+                with connect(root) as conn2:
+                    conn2.execute(
+                        "UPDATE work_items SET status='failed', verdict='INVALID', payload_json=?, updated_at=? WHERE id=?",
+                        (json.dumps({**payload, "final_failure": "retries_exhausted"}, sort_keys=True),
+                         started_iso, item["id"]),
+                    )
+                    conn2.commit()
+                busy_terminals.discard(terminal)
+                actions.append({"action": "failed_final", "item_id": item["id"]})
+
+    # --- Phase 2: claim pending work_items per free terminal ---
+    free_terminals = [t for t in MT5_TERMINALS if t not in busy_terminals]
+    if free_terminals:
+        with connect(root) as conn:
+            pending = conn.execute(
+                "SELECT * FROM work_items WHERE status='pending' "
+                "ORDER BY updated_at ASC, created_at ASC"
+            ).fetchall()
+        for item in pending:
+            if not free_terminals:
+                break
+            terminal = free_terminals.pop(0)
+            spawn = _spawn_run_smoke_for_work_item(root, item, terminal)
+            if not spawn.get("spawned"):
+                # Mark failed if spawn impossible
+                with connect(root) as conn2:
+                    conn2.execute(
+                        "UPDATE work_items SET status='failed', verdict='INVALID', updated_at=? WHERE id=?",
+                        (started_iso, item["id"]),
+                    )
+                    conn2.commit()
+                actions.append({"action": "spawn_failed", "item_id": item["id"], "reason": spawn.get("reason")})
+                free_terminals.insert(0, terminal)  # give terminal back
+                continue
+            new_payload = {
+                "started_at_iso": started_iso,
+                "pid": spawn["pid"],
+                "log_path": spawn["log_path"],
+                "report_root": spawn["report_root"],
+                "ea_dir_name": spawn["ea_dir_name"],
+                "terminal": terminal,
+            }
+            with connect(root) as conn2:
+                conn2.execute(
+                    "UPDATE work_items SET status='active', claimed_by=?, payload_json=?, updated_at=? WHERE id=?",
+                    (terminal, json.dumps(new_payload, sort_keys=True), started_iso, item["id"]),
+                )
+                conn2.commit()
+            actions.append({
+                "action": "claimed",
+                "item_id": item["id"],
+                "ea_id": item["ea_id"],
+                "symbol": item["symbol"],
+                "terminal": terminal,
+                "pid": spawn["pid"],
+            })
+
+    # --- Phase 3: aggregate completed parents ---
+    with connect(root) as conn:
+        # Find parent_task_ids that have all work_items done but parent is still active/pending
+        parent_summaries = conn.execute(
+            """
+            SELECT parent_task_id,
+                   COUNT(*) AS total,
+                   SUM(CASE WHEN status='done' OR status='failed' THEN 1 ELSE 0 END) AS finished,
+                   SUM(CASE WHEN verdict='PASS' THEN 1 ELSE 0 END) AS passes
+            FROM work_items
+            WHERE parent_task_id IS NOT NULL
+            GROUP BY parent_task_id
+            HAVING total = finished
+            """
+        ).fetchall()
+        for ps in parent_summaries:
+            parent_id = ps["parent_task_id"]
+            if not parent_id:
+                continue
+            parent_row = conn.execute("SELECT * FROM tasks WHERE id=?", (parent_id,)).fetchone()
+            if not parent_row or parent_row["status"] == "done":
+                continue
+            # Build classification from work_items
+            wis = conn.execute("SELECT * FROM work_items WHERE parent_task_id=?", (parent_id,)).fetchall()
+            surviving = [w["symbol"] for w in wis if w["verdict"] == "PASS"]
+            phase = parent_row["kind"].replace("backtest_", "").upper()
+            verdict = "PASS" if surviving else "STRATEGY_FAIL"
+            classification = {
+                "verdict": verdict,
+                "surviving_symbols": surviving,
+                "counts_by_verdict": {
+                    v: sum(1 for w in wis if w["verdict"] == v)
+                    for v in ("PASS", "FAIL", "INVALID")
+                },
+                "source": "work_items_aggregate",
+            }
+            parent_payload = json.loads(parent_row["payload_json"]) if parent_row["payload_json"] else {}
+            parent_payload["classification"] = classification
+            parent_payload["completed_at_iso"] = started_iso
+            conn.execute(
+                "UPDATE tasks SET status='done', payload_json=?, updated_at=? WHERE id=?",
+                (json.dumps(parent_payload), started_iso, parent_id),
+            )
+            conn.commit()
+            # Auto-enqueue next phase on PASS
+            auto_next = None
+            if verdict == "PASS":
+                next_map = {"P2": "P3"}
+                npp = next_map.get(phase)
+                if npp and npp in SUPPORTED_BACKTEST_PHASES:
+                    existing = conn.execute(
+                        "SELECT id FROM tasks WHERE kind=? AND payload_json LIKE ?",
+                        (f"backtest_{npp.lower()}", f"%\"ea_id\": \"{parent_payload.get('ea_id')}\"%"),
+                    ).fetchone()
+                    if not existing:
+                        enq = enqueue_backtest(root, parent_id, npp)
+                        if enq.get("enqueued"):
+                            auto_next = {"phase": npp, "task_id": enq.get("task_id"),
+                                        "work_items_created": len(enq.get("work_items_created", []))}
+            actions.append({
+                "action": "parent_classified",
+                "parent_task_id": parent_id,
+                "ea_id": parent_payload.get("ea_id"),
+                "phase": phase,
+                "verdict": verdict,
+                "surviving_symbols": surviving,
+                "auto_next": auto_next,
+            })
+
+    return {
+        "actions": actions,
+        "busy_terminals": sorted(busy_terminals),
+        "free_terminals": [t for t in MT5_TERMINALS if t not in busy_terminals],
+        "scanned_at": started_iso,
+    }
+
+
 def _spawn_codex_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]:
     """Spawn Codex CLI as a detached process for a pending build_ea task.
 
@@ -709,7 +1021,13 @@ def pump(root: Path) -> dict[str, Any]:
         "build_retries": [],
     }
 
-    # 1. MT5 dispatch (existing logic incl. auto-enqueue next phase)
+    # 1a. Per-symbol work_items dispatch (NEW — pump consumes work_items as
+    #     the unit of MT5 work, one per free terminal, replacing the bundled
+    #     p2_baseline fan-out). Aggregates parent task verdicts on completion.
+    result["dispatch_work_items"] = dispatch_work_items(root)
+    # 1b. Legacy bundled-task dispatch — handles any backtest_<phase> tasks
+    #     created WITHOUT matching work_items (e.g. older runs). Will become
+    #     a no-op once all enqueues create work_items.
     result["dispatch"] = dispatch_tick(root)
 
     # 2. Retry blocked builds — OWNER 2026-05-16 "Fail → ans Ende der
