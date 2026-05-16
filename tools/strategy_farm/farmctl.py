@@ -1084,14 +1084,40 @@ def pump(root: Path) -> dict[str, Any]:
             "last_blocked_reason": (payload.get("blocked_reason") or "")[:120],
         })
 
-    # 3. Codex build for ONE pending build_ea task (oldest first = FIFO).
+    # 3. Codex builds for up to MAX_PARALLEL_CODEX pending build_ea tasks.
+    #    Each Codex builds a DIFFERENT EA — races on shared writes (CSV
+    #    appends + update_magic_resolver.py rewrite) are resolved at the
+    #    file level: CSV append is atomic line-by-line, update_resolver is
+    #    idempotent (reads current CSV state, regenerates .mqh deterministically).
+    #    OWNER 2026-05-16: explicit ok to parallelize.
+    MAX_PARALLEL_CODEX = 3
+    # Check how many codex/node procs already running externally (from prior
+    # pump cycles or hourly wake). Don't pile on if at limit.
+    try:
+        import shutil as _shutil
+        ps_out = subprocess.run(
+            ["powershell.exe", "-NoProfile", "-Command",
+             "(Get-Process -Name codex -ErrorAction SilentlyContinue).Count"],
+            capture_output=True, text=True, timeout=10,
+        )
+        active_codex = int((ps_out.stdout or "0").strip() or "0")
+    except Exception:
+        active_codex = 0
+    spawn_budget = max(0, MAX_PARALLEL_CODEX - active_codex)
     with connect(root) as conn:
-        pending_build = conn.execute(
+        pending_builds = conn.execute(
             "SELECT * FROM tasks WHERE kind='build_ea' AND status='pending' "
-            "ORDER BY updated_at ASC LIMIT 1"
-        ).fetchone()
-    if pending_build:
-        result["codex_spawn"] = _spawn_codex_for_build(root, pending_build)
+            "ORDER BY updated_at ASC LIMIT ?",
+            (spawn_budget,),
+        ).fetchall()
+    spawns = []
+    for pending_build in pending_builds:
+        sp = _spawn_codex_for_build(root, pending_build)
+        spawns.append(sp)
+    result["codex_spawn"] = spawns[0] if spawns else None
+    result["codex_spawns_all"] = spawns
+    result["codex_active_before"] = active_codex
+    result["codex_spawn_budget"] = spawn_budget
 
     # 4. Record completed Codex builds — any pending build_ea whose
     #    build_result JSON exists and isn't empty.
