@@ -751,27 +751,34 @@ def _phase_runner_cmd(phase: str, ea_id: str, terminal: str | None = None) -> li
 
 
 def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
-    """Multi-EA saturated dispatch (Achse B, OWNER 2026-05-16).
+    """Hybrid saturated dispatch (Achse B v2, OWNER 2026-05-16).
 
-    Assigns one EA per free MT5 terminal — up to 5 concurrent backtest tasks
-    across T1-T5. When a terminal's EA finishes (report.csv lands), the
-    terminal is released for the next pending task on the next tick.
+    Single-EA case (1 pending task, idle fleet) → run that EA on ALL T1-T5
+    via p2_baseline.py without --terminal arg (legacy mode, p2_baseline
+    distributes symbols across T1-T5 in its own ThreadPoolExecutor). This
+    saturates the fleet WITHIN one EA.
 
-    Per-EA: all symbols run sequentially on its assigned terminal (p2_baseline
-    --terminal Tn mode). Per-fleet: up to 5 EAs run in parallel.
+    Multi-EA case (≥2 pending tasks, or some terminals already busy) → assign
+    one EA per free terminal up to 5 concurrent. Each EA runs its symbols
+    sequentially on its assigned terminal (p2_baseline --terminal Tn). This
+    saturates the fleet ACROSS EAs.
+
+    Two complementary modes cover the throughput spectrum:
+    - Pipeline starting up / single-EA-in-flight → ALL mode (5x faster per EA)
+    - Pipeline saturated / many EAs queued → per-terminal mode (5x EAs in parallel)
 
     Order of operations:
     1. Poll every active backtest task. If its report.csv exists, classify
        and mark done. If older than timeout_hours with no report, mark failed.
-       Released terminals (from done/failed/timeout) become available.
-    2. For each remaining free terminal, find the oldest pending backtest
-       task. Spawn the phase runner with --terminal Tn pinning, record the
-       assignment in task payload.
+       For ALL-mode tasks, mark all 5 terminals busy while running.
+    2. Decide mode:
+       - If exactly 1 pending task AND 0 busy terminals → spawn in ALL mode
+       - Else → assign one task per free terminal
+       Spawn the phase runner accordingly, record assignment in task payload.
 
-    HR16-saturate (supersedes the original HR16-strict "one EA at a time"):
-    multiple EAs can be in P2 concurrently as long as each is pinned to a
-    distinct terminal. EA-level sequencing within a source-mining batch is
-    no longer the bottleneck; throughput scales with terminal count.
+    HR16-saturate: at the EA level, multiple EAs can be in P2 concurrently
+    via per-terminal mode. HR16-strict still holds at the source-research
+    level (one active source for mining).
     """
     init_db(root)
     actions: list[dict[str, Any]] = []
@@ -844,7 +851,10 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
                 continue
 
             # Still running — terminal stays busy
-            if assigned_terminal:
+            # ALL mode: this task occupies the whole fleet
+            if assigned_terminal == "ALL":
+                busy_terminals.update(MT5_TERMINALS)
+            elif assigned_terminal:
                 busy_terminals.add(assigned_terminal)
             actions.append({
                 "task_id": row["id"],
@@ -856,21 +866,29 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
                 "age_hours": round(age_hours, 2),
             })
 
-        # Phase 2 — assign pending tasks to free terminals (up to 5 concurrent)
+        # Phase 2 — pick dispatch mode based on pending count + fleet state
         free_terminals = [t for t in MT5_TERMINALS if t not in busy_terminals]
         pending_rows = conn.execute(
             "SELECT * FROM tasks WHERE kind LIKE 'backtest_%' AND status = 'pending' "
             "ORDER BY created_at"
         ).fetchall()
 
-        for terminal in free_terminals:
-            if not pending_rows:
-                break
-            pending_row = pending_rows.pop(0)
+        # Hybrid: single-EA-in-flight + idle fleet → ALL mode (full saturation
+        # within one EA, p2_baseline distributes its symbols across T1-T5).
+        # Else: per-terminal mode (multi-EA saturates across EAs).
+        use_all_mode = (
+            len(pending_rows) == 1
+            and len(busy_terminals) == 0
+            and len(free_terminals) == len(MT5_TERMINALS)
+        )
+        dispatch_mode = "single_ea_all_terminals" if use_all_mode else "per_terminal"
+
+        if use_all_mode:
+            pending_row = pending_rows[0]
             payload = json.loads(pending_row["payload_json"])
             phase = payload.get("phase")
             ea_id = payload.get("ea_id")
-            cmd = _phase_runner_cmd(phase, ea_id, terminal=terminal)
+            cmd = _phase_runner_cmd(phase, ea_id, terminal=None)  # no --terminal = all-T1-T5
             if cmd is None:
                 update_task(
                     conn,
@@ -884,51 +902,115 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
                     "phase": phase,
                     "ea_id": ea_id,
                 })
-                continue
-
-            log_path = root / "logs" / f"dispatch_{pending_row['id']}.log"
-            log_path.parent.mkdir(parents=True, exist_ok=True)
-            creationflags = 0
-            if sys.platform == "win32":
-                creationflags = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS  # type: ignore[attr-defined]
-            log_fh = open(log_path, "w", encoding="utf-8")
-            proc = subprocess.Popen(
-                cmd,
-                cwd=str(REPO_ROOT),
-                stdout=log_fh,
-                stderr=subprocess.STDOUT,
-                creationflags=creationflags,
-                close_fds=True,
-            )
-            update_task(
-                conn,
-                pending_row["id"],
-                status="active",
-                payload_merge={
-                    "started_at_iso": started_iso,
+            else:
+                log_path = root / "logs" / f"dispatch_{pending_row['id']}.log"
+                log_path.parent.mkdir(parents=True, exist_ok=True)
+                creationflags = 0
+                if sys.platform == "win32":
+                    creationflags = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS  # type: ignore[attr-defined]
+                log_fh = open(log_path, "w", encoding="utf-8")
+                proc = subprocess.Popen(
+                    cmd,
+                    cwd=str(REPO_ROOT),
+                    stdout=log_fh,
+                    stderr=subprocess.STDOUT,
+                    creationflags=creationflags,
+                    close_fds=True,
+                )
+                update_task(
+                    conn,
+                    pending_row["id"],
+                    status="active",
+                    payload_merge={
+                        "started_at_iso": started_iso,
+                        "pid": proc.pid,
+                        "log_path": str(log_path),
+                        "cmd": cmd,
+                        "assigned_terminal": "ALL",
+                        "dispatch_mode": "single_ea_all_terminals",
+                    },
+                )
+                busy_terminals.update(MT5_TERMINALS)
+                actions.append({
+                    "task_id": pending_row["id"],
+                    "action": "started",
+                    "phase": phase,
+                    "ea_id": ea_id,
+                    "terminal": "ALL",
+                    "mode": "single_ea_all_terminals",
                     "pid": proc.pid,
                     "log_path": str(log_path),
-                    "cmd": cmd,
-                    "assigned_terminal": terminal,
-                },
-            )
-            busy_terminals.add(terminal)
-            actions.append({
-                "task_id": pending_row["id"],
-                "action": "started",
-                "phase": phase,
-                "ea_id": ea_id,
-                "terminal": terminal,
-                "pid": proc.pid,
-                "log_path": str(log_path),
-            })
+                })
+        else:
+            # Per-terminal mode: 1 EA per free terminal
+            for terminal in free_terminals:
+                if not pending_rows:
+                    break
+                pending_row = pending_rows.pop(0)
+                payload = json.loads(pending_row["payload_json"])
+                phase = payload.get("phase")
+                ea_id = payload.get("ea_id")
+                cmd = _phase_runner_cmd(phase, ea_id, terminal=terminal)
+                if cmd is None:
+                    update_task(
+                        conn,
+                        pending_row["id"],
+                        status="failed",
+                        payload_merge={"failure_reason": f"no runner for phase {phase}"},
+                    )
+                    actions.append({
+                        "task_id": pending_row["id"],
+                        "action": "no_runner",
+                        "phase": phase,
+                        "ea_id": ea_id,
+                    })
+                    continue
+
+                log_path = root / "logs" / f"dispatch_{pending_row['id']}.log"
+                log_path.parent.mkdir(parents=True, exist_ok=True)
+                creationflags = 0
+                if sys.platform == "win32":
+                    creationflags = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS  # type: ignore[attr-defined]
+                log_fh = open(log_path, "w", encoding="utf-8")
+                proc = subprocess.Popen(
+                    cmd,
+                    cwd=str(REPO_ROOT),
+                    stdout=log_fh,
+                    stderr=subprocess.STDOUT,
+                    creationflags=creationflags,
+                    close_fds=True,
+                )
+                update_task(
+                    conn,
+                    pending_row["id"],
+                    status="active",
+                    payload_merge={
+                        "started_at_iso": started_iso,
+                        "pid": proc.pid,
+                        "log_path": str(log_path),
+                        "cmd": cmd,
+                        "assigned_terminal": terminal,
+                        "dispatch_mode": "per_terminal",
+                    },
+                )
+                busy_terminals.add(terminal)
+                actions.append({
+                    "task_id": pending_row["id"],
+                    "action": "started",
+                    "phase": phase,
+                    "ea_id": ea_id,
+                    "terminal": terminal,
+                    "mode": "per_terminal",
+                    "pid": proc.pid,
+                    "log_path": str(log_path),
+                })
 
     return {
         "scanned_at": started_iso,
         "actions": actions,
         "busy_terminals": sorted(busy_terminals),
         "free_terminals": sorted([t for t in MT5_TERMINALS if t not in busy_terminals]),
-        "mode": "saturated_per_terminal",
+        "mode": dispatch_mode if pending_rows or actions else "idle",
     }
 
 
