@@ -57,14 +57,28 @@ Else if an `artifacts/cards_approved/QM5_*.md` exists and no `tasks` row has
   build prompt as a CLI arg causes codex to write `"Reading additional input
   from stdin..."` then deadlock waiting for stdin EOF that never comes from
   the inherited claude pipe (observed 2026-05-16: 18 min hang, codex CPU=0s).
-  Piping closes stdin cleanly:
+  Piping closes stdin cleanly.
+
+  **MUST also tee output to per-build live log** so OWNER can `Get-Content -Wait`
+  in real time without depending on the wake session log (which buffers until
+  wake exits via Tee-Object). The tee path is
+  `D:/QM/strategy_farm/logs/codex_build_<task_id>.live.log`:
+
   ```bash
-  cat '<prompt-path>' | codex exec -s danger-full-access --cd C:/QM/repo
+  cat '<prompt-path>' | codex exec -s danger-full-access --cd C:/QM/repo 2>&1 \
+    | tee 'D:/QM/strategy_farm/logs/codex_build_<task_id>.live.log'
   ```
-  or in PowerShell:
+
+  PowerShell equivalent (use only if calling from PS directly, not via Bash):
   ```powershell
-  Get-Content -Raw '<prompt-path>' | codex exec -s danger-full-access --cd C:/QM/repo
+  Get-Content -Raw '<prompt-path>' |
+    & codex exec -s danger-full-access --cd C:/QM/repo 2>&1 |
+    Tee-Object -FilePath 'D:/QM/strategy_farm/logs/codex_build_<task_id>.live.log'
   ```
+
+  After codex completes, the build JSON has already been written by codex to
+  `build_result_path` (per the codex_build_ea.md output contract). Read THAT
+  file for the result, not the tee log — the tee log is for live observation.
 - Codex writes JSON to `build_result_path`. Read it; verify schema.
 - `farmctl record-build --task-id <task-id> --result-file "<build_result_path>"`
 - **CHAIN — in the SAME wake, if the build_ea task ended `status='done'`
