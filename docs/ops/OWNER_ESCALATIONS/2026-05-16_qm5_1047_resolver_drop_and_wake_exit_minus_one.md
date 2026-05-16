@@ -53,3 +53,7 @@ Recommended action: have the next autonomous wake's bookkeeping step audit `git 
 - Resolver source + Codex prompt: FIXED + committed (`84e61a51`).
 - QM5_1047 .ex5 rebuild + task unblock: deferred to operator.
 - Wake exit=-1 root cause + uncommitted-artifacts hygiene: deferred to OWNER for autonomous_loop redesign discussion.
+
+## Amendment 2026-05-16T11:48Z (Board Advisor observe wake)
+
+`QM_StrategyFarm_AutonomousWake_Hourly` is now `State: Disabled` with `NumberOfMissedRuns: 2` (10:17Z + 11:17Z fires skipped). LastTaskResult=0 at 09:38Z so the wrapper exited cleanly even though the wake-internal exit was -1. Assuming this is an intentional OWNER pause pending the autonomous_loop redesign — no re-enable performed per observe-wake boundaries. Two long-lived `claude.exe` orphans (PIDs 27508 from 2026-05-15T10:38Z and 8940 from 2026-05-15T18:21Z) noted but left alone (predate strategy_farm and prior observe wakes accepted them).
