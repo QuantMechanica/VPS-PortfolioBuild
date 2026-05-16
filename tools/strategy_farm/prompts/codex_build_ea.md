@@ -160,6 +160,35 @@ exist to prevent that class of bug.
   `blocked_reason: "smoke runtime infeasible — <root cause>"`, populate
   `rework_directives` with imperative file-scoped fixes, and stop.
 
+## ONE-PASS BUILD DISCIPLINE (strict — do NOT iterate on smoke result)
+
+Observed 2026-05-16 (QM5_1046): Codex emitted a working .mq5, ran smoke 1 which
+hit OnInit-failure, then iterated — rewrote .mq5, smoke 2 deadlocked MT5
+tester (init OK, test never produced trades, MT5 process at 0.3% CPU for 11 min
+before being killed). The iteration converted a clean OnInit-failure into an
+infinite-loop deadlock.
+
+**You build the EA EXACTLY ONCE.** Smoke is a single non-iterative pass:
+
+- If smoke `passed` or `zero_trades` → emit build_result JSON, exit cleanly.
+  Per HR7 NO_REPORT ≠ EA-Schwäche — zero_trades is OK at this stage, P2 baseline
+  on the full IS window will surface trade-frequency issues.
+- If smoke `compile_failed` or `build_check_failed` — emit JSON with the
+  failure reason in `blocked_reason`, exit. Claude review will REJECT_REWORK
+  with directives. **You** do not retry the build; the next wake reads the
+  rework directives from the verdict file.
+- If smoke `framework_error` (tester crashed, REPORT_MISSING, OnInit-failure,
+  setup data mismatch per HR8) — emit JSON with diagnostic in
+  `blocked_reason`. Do NOT rewrite the .mq5 hoping the next smoke succeeds.
+  Setup errors aren't strategy errors and re-running won't fix them.
+
+**Why one-pass:** the autonomous chain (wake → build → review → enqueue) is
+designed around a SINGLE build result. Multiple smoke runs per wake compound
+wake duration risk (45 min ExecutionTimeLimit), risk MT5-tester deadlocks
+from buggy iteration variants, and burn Codex tokens that downstream review
+already accounts for. If your initial .mq5 has a bug, surfacing it in the
+build_result JSON is more valuable than masking it with a hopeful rewrite.
+
 ## Workflow
 
 1. Read `{{card_path}}` fully. Extract Entry, Exit, Stop Loss, Position Sizing,

@@ -99,6 +99,18 @@ note that filter/window investigation is deferred to P2 setfile generation.
 If `smoke_result` is `compile_failed` or `build_check_failed`: that is an automatic
 `REJECT_REWORK` with the specific compile log line as rework directive.
 
+If `smoke_result` is `framework_error` (tester crashed, REPORT_MISSING,
+OnInit-failure, HR8 setup-data-mismatch): per the 2026-05-16 one-pass build
+discipline, Codex did NOT iterate (correctly). The build_result blocked_reason
+should contain the diagnostic. Decide:
+- If diagnostic looks like a clean strategy/code bug (e.g. OnInit returns 1
+  because params are misconfigured, off-by-one in entry logic) →
+  `REJECT_REWORK` with imperative directive (e.g. "fix OnInit to return
+  INIT_SUCCEEDED when [condition]").
+- If diagnostic looks like setup/data (HR8: timezone mismatch, missing ticks,
+  wrong period for symbol) → `REJECT_REWORK` with directive narrowing to the
+  setup field, NOT the .mq5.
+
 ### 7. Runtime Performance Discipline (NEW 2026-05-16 — was missed)
 
 Codex's own smoke gate catches the worst per-tick-recompute cases (QM5_1044
