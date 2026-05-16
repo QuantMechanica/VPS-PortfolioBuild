@@ -3,6 +3,9 @@
 
 from __future__ import annotations
 
+import os
+import random
+import tempfile
 import time
 import json
 from datetime import datetime, timezone
@@ -496,18 +499,74 @@ def prune_state(
     return len(remove_keys)
 
 
+def _load_json_with_retry(path: Path, default_factory):
+    """Read a JSON file, tolerating concurrent writers.
+
+    On Windows, os.replace() during a save can briefly race with readers
+    (PermissionError) or — if the writer is killed mid-write — leave
+    garbage in the file. Retry with jitter for both cases. Return
+    default_factory() if all retries exhausted.
+    """
+    last_err = None
+    for attempt in range(8):
+        try:
+            with path.open("r", encoding="utf-8") as handle:
+                return json.load(handle)
+        except (PermissionError, json.JSONDecodeError, OSError) as e:
+            last_err = e
+            time.sleep(0.05 + random.uniform(0, 0.1) * (attempt + 1))
+    # Final fallback: return default rather than crashing the resolver.
+    return default_factory()
+
+
+def _save_json_atomic(payload: dict[str, Any], path: Path) -> None:
+    """Atomic write: write to tempfile in same dir, then os.replace().
+
+    Avoids partial-write corruption that crashes concurrent readers.
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp_fd, tmp_path = tempfile.mkstemp(
+        prefix=path.name + ".",
+        suffix=".tmp",
+        dir=str(path.parent),
+    )
+    try:
+        with os.fdopen(tmp_fd, "w", encoding="utf-8", newline="\n") as handle:
+            json.dump(payload, handle, indent=2, sort_keys=True)
+            handle.write("\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        # os.replace is atomic on Windows + POSIX
+        for attempt in range(5):
+            try:
+                os.replace(tmp_path, str(path))
+                tmp_path = None
+                return
+            except PermissionError:
+                # Another process has the file open momentarily; retry briefly.
+                time.sleep(0.05 + random.uniform(0, 0.1) * (attempt + 1))
+        # Last-resort: try once more, let exception propagate this time.
+        os.replace(tmp_path, str(path))
+        tmp_path = None
+    finally:
+        if tmp_path and os.path.exists(tmp_path):
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
+
+
 def load_dispatch_state(path: Path = DEFAULT_STATE_PATH) -> dict[str, Any]:
     if not path.exists():
         return {"dedup": {}, "last_rr_index": -1, "recent_runs": {}, "running": {}, "symbol_affinity": {}}
-    with path.open("r", encoding="utf-8") as handle:
-        return json.load(handle)
+    return _load_json_with_retry(
+        path,
+        lambda: {"dedup": {}, "last_rr_index": -1, "recent_runs": {}, "running": {}, "symbol_affinity": {}},
+    )
 
 
 def save_dispatch_state(state: dict[str, Any], path: Path = DEFAULT_STATE_PATH) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8", newline="\n") as handle:
-        json.dump(state, handle, indent=2, sort_keys=True)
-        handle.write("\n")
+    _save_json_atomic(state, path)
 
 
 def export_phase_matrix_index(state: dict[str, Any]) -> dict[str, Any]:
@@ -520,15 +579,11 @@ def export_phase_matrix_index(state: dict[str, Any]) -> dict[str, Any]:
 def load_dedup_index(path: Path = DEFAULT_DEDUP_INDEX_PATH) -> dict[str, Any]:
     if not path.exists():
         return {}
-    with path.open("r", encoding="utf-8") as handle:
-        data = json.load(handle)
+    data = _load_json_with_retry(path, lambda: {})
     if not isinstance(data, dict):
         return {}
     return data
 
 
 def save_dedup_index(index: dict[str, Any], path: Path = DEFAULT_DEDUP_INDEX_PATH) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8", newline="\n") as handle:
-        json.dump(index, handle, indent=2, sort_keys=True)
-        handle.write("\n")
+    _save_json_atomic(index, path)

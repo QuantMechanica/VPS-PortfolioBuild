@@ -729,6 +729,31 @@ def _resolve_report(payload: dict[str, Any]) -> Path | None:
     return None
 
 
+def _detect_ea_period(ea_id: str) -> str:
+    """Infer setfile period (D1/H1/M30/...) from existing setfile names.
+
+    p2_baseline.py needs --period to match the setfile pattern. Default H1
+    fails for any EA built on a different timeframe (e.g. QM5_1047 Halloween
+    on D1). Inspect framework/EAs/<ea_id>_*/sets/ and pick the unique period.
+    """
+    ea_root = REPO_ROOT / "framework" / "EAs"
+    candidates = [p for p in ea_root.glob(f"{ea_id}_*") if p.is_dir()]
+    if not candidates:
+        return "H1"
+    sets_dir = candidates[0] / "sets"
+    if not sets_dir.is_dir():
+        return "H1"
+    periods: set[str] = set()
+    pat = re.compile(r"_([A-Za-z0-9]+)_backtest\.set$")
+    for f in sets_dir.iterdir():
+        m = pat.search(f.name)
+        if m:
+            periods.add(m.group(1))
+    if len(periods) == 1:
+        return periods.pop()
+    return "H1"
+
+
 def _phase_runner_cmd(phase: str, ea_id: str, terminal: str | None = None) -> list[str] | None:
     """Return the subprocess argv for the runner of a given phase, or None.
 
@@ -739,10 +764,12 @@ def _phase_runner_cmd(phase: str, ea_id: str, terminal: str | None = None) -> li
     across all T1-T5 in its own ThreadPoolExecutor (legacy single-EA mode).
     """
     if phase == "P2":
+        period = _detect_ea_period(ea_id)
         cmd = [
             sys.executable,
             str(REPO_ROOT / "framework" / "scripts" / "p2_baseline.py"),
             "--ea", ea_id,
+            "--period", period,
         ]
         if terminal:
             cmd.extend(["--terminal", terminal])
