@@ -355,6 +355,101 @@ def status(root: Path) -> dict[str, Any]:
     }
 
 
+def pipeline_view(root: Path) -> dict[str, Any]:
+    """Per-EA lifecycle table — answers "where does each EA stand RIGHT NOW?"
+
+    Aggregates state across the tasks table for every EA seen in build_ea +
+    backtest_<phase> + ea_review rows. Output is one row per EA with columns:
+      ea_id, slug (from build payload), card_status (approved/etc.),
+      build_status, build_smoke, review_verdict, p2_verdict, p3_verdict, ...
+      attempts (sum across tasks), terminal_state (which phase is active).
+
+    Designed to be the single command OWNER runs to see the whole farm.
+    """
+    init_db(root)
+    eas: dict[str, dict[str, Any]] = {}
+    with connect(root) as conn:
+        rows = conn.execute(
+            "SELECT id, kind, status, payload_json, created_at, updated_at "
+            "FROM tasks ORDER BY created_at"
+        ).fetchall()
+    for r in rows:
+        payload = json.loads(r["payload_json"]) if r["payload_json"] else {}
+        ea_id = payload.get("ea_id") or r["id"]
+        if not ea_id:
+            continue
+        entry = eas.setdefault(ea_id, {
+            "ea_id": ea_id,
+            "slug": payload.get("slug") or "",
+            "build": None,
+            "review": None,
+            "phases": {},          # phase_label → {status, verdict, attempts, surviving_symbols}
+            "current_stage": "card",
+            "total_attempts": 0,
+            "last_activity": r["updated_at"],
+        })
+        if not entry["slug"] and payload.get("slug"):
+            entry["slug"] = payload["slug"]
+        if r["updated_at"] > entry["last_activity"]:
+            entry["last_activity"] = r["updated_at"]
+        entry["total_attempts"] += int(payload.get("attempt_count", 0))
+
+        kind = r["kind"]
+        if kind == "build_ea":
+            entry["build"] = {
+                "task_id": r["id"],
+                "status": r["status"],
+                "smoke": (payload.get("build_result") or {}).get("smoke_result") or payload.get("smoke_result"),
+                "blocked_reason": payload.get("blocked_reason"),
+            }
+            if r["status"] == "pending":
+                entry["current_stage"] = "build_pending"
+            elif r["status"] == "active":
+                entry["current_stage"] = "building"
+            elif r["status"] in ("done",):
+                entry["current_stage"] = "built"
+            elif r["status"] in ("failed", "blocked"):
+                entry["current_stage"] = f"build_{r['status']}"
+        elif kind == "ea_review":
+            verdict_doc = payload.get("verdict") or {}
+            entry["review"] = {
+                "task_id": r["id"],
+                "status": r["status"],
+                "verdict": verdict_doc.get("verdict"),
+            }
+            if r["status"] == "done":
+                if verdict_doc.get("verdict") == "APPROVE_FOR_BACKTEST":
+                    entry["current_stage"] = "review_approved"
+                else:
+                    entry["current_stage"] = f"review_{verdict_doc.get('verdict','?').lower()}"
+        elif kind.startswith("backtest_"):
+            phase = payload.get("phase") or kind.replace("backtest_", "").upper()
+            classification = payload.get("classification") or {}
+            entry["phases"][phase] = {
+                "task_id": r["id"],
+                "status": r["status"],
+                "verdict": classification.get("verdict"),
+                "attempts": int(payload.get("attempt_count", 0)),
+                "surviving_symbols": classification.get("surviving_symbols", []),
+            }
+            if r["status"] == "pending":
+                entry["current_stage"] = f"{phase}_pending"
+            elif r["status"] == "active":
+                entry["current_stage"] = f"{phase}_running"
+            elif r["status"] == "done":
+                entry["current_stage"] = f"{phase}_{(classification.get('verdict') or '?').lower()}"
+
+    # Order: by ea_id ascending
+    out = sorted(eas.values(), key=lambda e: e["ea_id"])
+    summary = {
+        "by_stage": {},
+    }
+    for e in out:
+        s = e["current_stage"]
+        summary["by_stage"][s] = summary["by_stage"].get(s, 0) + 1
+    return {"eas": out, "summary": summary, "count": len(out)}
+
+
 def next_action(root: Path) -> dict[str, Any]:
     current = status(root)
     active = current["active_sources"]
@@ -932,6 +1027,36 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
                     pass
                 else:
                     classification = classify_backtest(phase, report)
+                    verdict = classification.get("verdict")
+                    attempt = int(payload.get("attempt_count", 0)) + 1
+                    MAX_BACKTEST_RETRIES = 3
+                    # INFRA_FAIL = setup/data problem (not strategy fail);
+                    # safe + valuable to retry. STRATEGY_FAIL/PASS are
+                    # terminal verdicts — keep done.
+                    if verdict == "INFRA_FAIL" and attempt < MAX_BACKTEST_RETRIES:
+                        update_task(
+                            conn,
+                            row["id"],
+                            status="pending",
+                            payload_merge={
+                                "attempt_count": attempt,
+                                "last_infra_fail_at": started_iso,
+                                "last_infra_fail_classification": classification,
+                                "pid": None,
+                                "started_at_iso": None,
+                                "assigned_terminal": None,
+                                "dispatch_mode": None,
+                                "log_path": None,
+                            },
+                        )
+                        actions.append({
+                            "task_id": row["id"],
+                            "action": "retry_infra_fail",
+                            "phase": phase,
+                            "ea_id": ea_id,
+                            "attempt_count": attempt,
+                        })
+                        continue
                     update_task(
                         conn,
                         row["id"],
@@ -941,6 +1066,7 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
                             "completed_at_iso": started_iso,
                             "expected_report_path": str(report),
                             "p2_sentinel_path": str(sentinel),
+                            "attempt_count": attempt,
                         },
                     )
                     actions.append({
@@ -949,7 +1075,7 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
                         "phase": phase,
                         "ea_id": ea_id,
                         "terminal_released": assigned_terminal,
-                        "verdict": classification.get("verdict"),
+                        "verdict": verdict,
                         "surviving_symbols": classification.get("surviving_symbols", []),
                     })
                     continue
@@ -963,23 +1089,57 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
                 except Exception:
                     age_hours = 0.0
             if age_hours > timeout_hours:
-                update_task(
-                    conn,
-                    row["id"],
-                    status="failed",
-                    payload_merge={
-                        "timeout_reason": f"no report after {age_hours:.2f}h (limit {timeout_hours}h)",
-                        "completed_at_iso": started_iso,
-                    },
-                )
-                actions.append({
-                    "task_id": row["id"],
-                    "action": "timeout",
-                    "phase": phase,
-                    "ea_id": ea_id,
-                    "terminal_released": assigned_terminal,
-                    "age_hours": round(age_hours, 2),
-                })
+                # OWNER 2026-05-16 "Wenn etwas scheitert, solls hinten
+                # angereiht werden an die Liste." Auto-retry: increment
+                # attempt_count, re-queue to pending (= back of FIFO by
+                # updated_at). Cap retries at MAX_BACKTEST_RETRIES so we
+                # don't loop forever on a genuinely broken job.
+                attempt = int(payload.get("attempt_count", 0)) + 1
+                MAX_BACKTEST_RETRIES = 3
+                if attempt < MAX_BACKTEST_RETRIES:
+                    update_task(
+                        conn,
+                        row["id"],
+                        status="pending",
+                        payload_merge={
+                            "attempt_count": attempt,
+                            "last_timeout_at": started_iso,
+                            "last_timeout_reason": f"no report after {age_hours:.2f}h",
+                            # Clear dispatch metadata so re-dispatch is clean
+                            "pid": None,
+                            "started_at_iso": None,
+                            "assigned_terminal": None,
+                            "dispatch_mode": None,
+                            "log_path": None,
+                        },
+                    )
+                    actions.append({
+                        "task_id": row["id"],
+                        "action": "retry",
+                        "phase": phase,
+                        "ea_id": ea_id,
+                        "attempt_count": attempt,
+                        "age_hours": round(age_hours, 2),
+                    })
+                else:
+                    update_task(
+                        conn,
+                        row["id"],
+                        status="failed",
+                        payload_merge={
+                            "timeout_reason": f"no report after {age_hours:.2f}h (limit {timeout_hours}h)",
+                            "completed_at_iso": started_iso,
+                            "attempt_count": attempt,
+                            "final_failure": "retries_exhausted",
+                        },
+                    )
+                    actions.append({
+                        "task_id": row["id"],
+                        "action": "failed_final",
+                        "phase": phase,
+                        "ea_id": ea_id,
+                        "attempts": attempt,
+                    })
                 continue
 
             # Still running — terminal stays busy
@@ -1748,6 +1908,7 @@ def build_parser() -> argparse.ArgumentParser:
     seed.add_argument("--force", action="store_true", help="Replace current sources/tasks before seeding")
 
     sub.add_parser("status", help="Show source/task state")
+    sub.add_parser("pipeline", help="Per-EA lifecycle view (where does each EA stand?)")
     sub.add_parser("next", help="Show the deterministic next action")
     sub.add_parser("claim-source", help="Activate the next pending source if no source is active")
 
@@ -1853,6 +2014,8 @@ def main(argv: list[str] | None = None) -> int:
         print_json(seed_sources(root, force=args.force))
     elif args.command == "status":
         print_json(status(root))
+    elif args.command == "pipeline":
+        print_json(pipeline_view(root))
     elif args.command == "next":
         print_json(next_action(root))
     elif args.command == "claim-source":
