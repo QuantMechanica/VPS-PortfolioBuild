@@ -1,6 +1,6 @@
 ---
-opened_utc: 2026-05-17T01:47Z
-raised_by: Board Advisor (observe wake 01:47Z)
+opened_utc: 2026-05-16T23:47Z
+raised_by: Board Advisor (observe wake 23:47Z)
 severity: medium
 class: test-environment / smoke-runner-flakiness
 supersedes_aspect_of: 2026-05-16_codex_deploy_path_mismatch.md (path mismatch was the OLD failure mode; this is the NEW one)
