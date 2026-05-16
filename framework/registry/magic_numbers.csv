@@ -478,3 +478,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1050,mql5-smc-order-blocks,4,USDCAD.DWX,10500004,2026-05-16,Development,active
 1046,maroy-intraday-vwap-exit,0,NDX.DWX,10460000,2026-05-16,Development,active
 1046,maroy-intraday-vwap-exit,1,WS30.DWX,10460001,2026-05-16,Development,active
+1048,estrada-lazy-6m-rotation,0,NDX.DWX,10480000,2026-05-16,Development,active
+1048,estrada-lazy-6m-rotation,1,WS30.DWX,10480001,2026-05-16,Development,active
+1048,estrada-lazy-6m-rotation,2,GDAXI.DWX,10480002,2026-05-16,Development,active
+1048,estrada-lazy-6m-rotation,3,UK100.DWX,10480003,2026-05-16,Development,active
