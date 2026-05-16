@@ -76,14 +76,19 @@ setfiles via `gen_setfile.ps1` (see workflow step 9) inherit this pattern.
 - Before registering ANY symbol in `magic_numbers.csv`, verify it appears in
   `C:/QM/repo/framework/registry/dwx_symbol_matrix.csv`. The matrix is the
   full set; the broker does NOT provide tick data for anything outside it.
-- **Permanently unavailable from Darwinex (no tick data, confirmed OWNER 2026-05-16)**:
-  - **SP500 / SPX500 / SPX / SPY / ES futures** — these CANNOT be backtested
-    on this VPS, period. Do NOT register `SPX500.DWX`, `SPY.DWX`, etc.
-  - If a card requires SPY/SPX intraday cash-session microstructure
-    specifically (no port preserves the strategy edge): set
-    `blocked_reason: "SP500/SPY required; permanently unavailable in DWX feed"`.
-  - If a card's concept ports cleanly: use **WS30.DWX** (Dow 30) +
-    **NDX.DWX** (Nasdaq 100) as the available US large-cap index proxies.
+- **SP500.DWX is available as a Custom Symbol on T1-T5 since 2026-05-16T19:15Z**
+  (OWNER-provided ticks 2018-07→2026-05, 9.4GB; evidence=`docs/ops/evidence/2026-05-16T191500Z_sp500_dwx_custom_symbol_t2_t5_rollout.md`).
+  It is **backtest-only**: the broker does NOT route orders on SP500, so live
+  promotion to T6 is forbidden for SP500.DWX-only EAs — that's a Board Advisor
+  T6-gate concern, not yours. At build time: SP500.DWX is a valid
+  `magic_numbers.csv` registration target exactly like NDX.DWX or WS30.DWX.
+  Use it when the card calls for SP500/SPX/SPY.
+- **Permanently unavailable** (still): `SPX500.DWX`, `SPY.DWX`, `ES.DWX`, etc.
+  — these are NOT the canonical Custom Symbol name. The single available
+  Custom Symbol for the S&P 500 is `SP500.DWX`. Do not invent variants.
+- For US large-cap exposure, the available basket is now: **SP500.DWX**
+  (S&P 500, backtest-only), **NDX.DWX** (Nasdaq 100, live-tradable), **WS30.DWX**
+  (Dow 30, live-tradable).
 - Other "card-stated symbol not in matrix" cases — port to nearest available
   DWX equivalent and document the choice in `open_questions`:
   - Russell 2000 / IWM → fall back to **WS30.DWX** (no Russell CFD).
@@ -106,10 +111,12 @@ Mission Baseline 2026-05-09 "MT5 idle = mission-failure-signal" principle.
 How to apply:
 
 1. Read the card's `## R1-R4 Bewertung` table, specifically the R3 row.
-2. R3 row narrates the portable DWX basket (e.g. "DXZ feed limitation 2026-05-16:
-   SPX500.DWX has no tick data. Available index basket reduces to **NDX.DWX
-   (Nasdaq 100), WS30.DWX (Dow 30), GDAXI.DWX (DAX 40), UK100.DWX (FTSE 100)** —
-   four major liquid country indices.").
+2. R3 row narrates the portable DWX basket. With SP500.DWX now available
+   (backtest-only since 2026-05-16T19:15Z), the US large-cap basket is
+   **SP500.DWX (S&P 500), NDX.DWX (Nasdaq 100), WS30.DWX (Dow 30)**.
+   Add **GDAXI.DWX (DAX 40), UK100.DWX (FTSE 100)** for global multi-index
+   baskets. Example R3: "Available indices basket: SP500/NDX/WS30 US +
+   GDAXI/UK100 EU — five major liquid country indices."
 3. Register ALL four (or however many R3 names) in `magic_numbers.csv` with
    distinct symbol slots (e.g. NDX slot 0, WS30 slot 1, GDAXI slot 2, UK100 slot 3).
 4. Generate a P2 setfile (via `gen_setfile.ps1` step 9) for EACH registered symbol
