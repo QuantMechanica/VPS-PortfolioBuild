@@ -43,3 +43,4 @@ ea_id,slug,strategy_id,status,owner,created_at
 1048,estrada-lazy-6m-rotation,SRC08_S04,active,Development,2026-05-16
 1049,mcconnell-turn-of-month,SRC08_S05,active,Development,2026-05-16
 1050,mql5-smc-order-blocks,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Development,2026-05-16
+1046,maroy-intraday-vwap-exit,afab7a6f-c3c8-51ae-a609-f376744beb8e,active,Development,2026-05-16
