@@ -482,3 +482,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1048,estrada-lazy-6m-rotation,1,WS30.DWX,10480001,2026-05-16,Development,active
 1048,estrada-lazy-6m-rotation,2,GDAXI.DWX,10480002,2026-05-16,Development,active
 1048,estrada-lazy-6m-rotation,3,UK100.DWX,10480003,2026-05-16,Development,active
+1049,mcconnell-turn-of-month,0,NDX.DWX,10490000,2026-05-16,Development,active
+1049,mcconnell-turn-of-month,1,WS30.DWX,10490001,2026-05-16,Development,active
+1049,mcconnell-turn-of-month,2,GDAXI.DWX,10490002,2026-05-16,Development,active
+1049,mcconnell-turn-of-month,3,UK100.DWX,10490003,2026-05-16,Development,active
