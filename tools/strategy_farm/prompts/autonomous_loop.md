@@ -16,6 +16,36 @@ das autonom läuft, bis wir ein Portfolio an erfolgreichen EAs beisammen haben".
 
 ## Decision tree — execute the FIRST step that has work, then STOP
 
+### Step 0 — Phase advancement (cheapest, instant)
+
+If any `backtest_p<n>` task has `status='done'` AND `classification.verdict='PASS'`
+AND no successor `backtest_p<n+1>` task exists for the same EA AND a
+supported next phase exists (P2 → P3 wired today, P3 → P3.5/P4 coming):
+
+- `farmctl enqueue-backtest --review-task-id <done-task-id> --phase P3`
+  (the function accepts a done backtest task as predecessor for P3+,
+  reads its `surviving_symbols` and seeds the new task with them).
+- Then a dispatch-tick runs automatically on the next 5min cron, OR
+  call `farmctl tick` in the same wake for immediate dispatch.
+- STOP this wake.
+
+### Step 0b — Claim pending build_ea (recovery)
+
+If any `build_ea` task has `status='pending'` (it was enqueued by an
+earlier wake but never executed — Codex crash, sandbox lockout, etc.):
+
+- Read the task payload via sqlite: `select payload_json from tasks where id='<task>'`.
+  The payload contains `prompt_path` and `build_result_path` from the
+  earlier `farmctl build-ea` invocation.
+- Invoke Codex against `prompt_path` with the same stdin-pipe + tee + danger-
+  full-access pattern as Step 2. Codex will write fresh JSON to
+  `build_result_path`.
+- `farmctl record-build --task-id <task-id> --result-file "<build_result_path>"`
+- Chain to review + enqueue per Step 2's chain logic.
+- STOP this wake.
+
+
+
 Run `python C:/QM/repo/tools/strategy_farm/farmctl.py status` to see state.
 Walk the steps in order. At the first match, do the work, commit, log, exit.
 

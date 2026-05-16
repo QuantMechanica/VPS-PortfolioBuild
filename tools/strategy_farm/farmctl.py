@@ -32,7 +32,7 @@ CODEX_BUILD_TEMPLATE = PROMPTS_DIR / "codex_build_ea.md"
 CLAUDE_REVIEW_TEMPLATE = PROMPTS_DIR / "claude_review_ea.md"
 
 PIPELINE_REPORT_ROOT = Path(r"D:\QM\reports\pipeline")
-SUPPORTED_BACKTEST_PHASES = ("P2",)  # v1 — extend as phases come online
+SUPPORTED_BACKTEST_PHASES = ("P2", "P3")  # P3 added 2026-05-16 for end-to-end pipeline flow
 MT5_TERMINALS = ("T1", "T2", "T3", "T4", "T5")  # factory fleet, used by dispatch-tick for per-EA terminal assignment
 
 RUNTIME_DIRS = [
@@ -643,7 +643,43 @@ def classify_p2(report_csv_path: Path) -> dict[str, Any]:
     return {**base, "verdict": "STRATEGY_FAIL"}
 
 
+def classify_p3(report_csv_path: Path) -> dict[str, Any]:
+    """Classify a P3 parameter sweep.
+
+    Verdict logic:
+    - >=1 PASS row  -> PASS (at least one param combo survived; advance to P3.5).
+    - All rows present but 0 PASS  -> STRATEGY_FAIL.
+    - report missing / unreadable / empty  -> INFRA_FAIL.
+
+    p3_param_sweep.py rows are keyed by run_id (=symbol_period_NNN) with a
+    verdict column. surviving_params is the list of param dicts that passed.
+    """
+    if not report_csv_path.exists():
+        return {"verdict": "INFRA_FAIL", "reason": "report.csv missing", "evidence_path": str(report_csv_path)}
+    try:
+        with report_csv_path.open(encoding="utf-8") as f:
+            rows = list(csv.DictReader(f))
+    except Exception as exc:
+        return {"verdict": "INFRA_FAIL", "reason": f"report.csv unreadable: {exc}", "evidence_path": str(report_csv_path)}
+    if not rows:
+        return {"verdict": "INFRA_FAIL", "reason": "report.csv has no data rows", "evidence_path": str(report_csv_path)}
+
+    passes = [r for r in rows if r.get("verdict") == "PASS"]
+    fails = [r for r in rows if r.get("verdict") == "FAIL"]
+    counts = {"PASS": len(passes), "FAIL": len(fails), "TOTAL": len(rows)}
+    base = {
+        "evidence_path": str(report_csv_path),
+        "counts_by_verdict": counts,
+        "surviving_params": [r.get("params", "") for r in passes][:10],
+        "surviving_run_ids": [r.get("run_id", "") for r in passes][:10],
+    }
+    if passes:
+        return {**base, "verdict": "PASS"}
+    return {**base, "verdict": "STRATEGY_FAIL"}
+
+
 PHASE_CLASSIFIERS = {
+    "P3": classify_p3,
     "P2": classify_p2,
 }
 
@@ -660,7 +696,13 @@ def classify_backtest(phase: str, report_csv_path: Path) -> dict[str, Any]:
 
 
 def enqueue_backtest(root: Path, review_task_id: str, phase: str) -> dict[str, Any]:
-    """Create a backtest_<phase> task from an APPROVE_FOR_BACKTEST ea_review task."""
+    """Create a backtest_<phase> task.
+
+    For phase P2: predecessor is an APPROVE_FOR_BACKTEST ea_review task.
+    For phase P3+: predecessor is a done backtest_<prev_phase> task with
+    classification.verdict == 'PASS'. The review_task_id argument is then
+    actually the previous backtest task id (kept name for back-compat).
+    """
     if phase not in SUPPORTED_BACKTEST_PHASES:
         return {
             "enqueued": False,
@@ -668,43 +710,63 @@ def enqueue_backtest(root: Path, review_task_id: str, phase: str) -> dict[str, A
         }
     init_db(root)
     with connect(root) as conn:
-        review_row = conn.execute("SELECT * FROM tasks WHERE id = ?", (review_task_id,)).fetchone()
-        if review_row is None:
-            return {"enqueued": False, "reason": f"Review task not found: {review_task_id}"}
-        if review_row["kind"] != "ea_review":
-            return {
-                "enqueued": False,
-                "reason": f"Task {review_task_id} kind={review_row['kind']!r}, expected ea_review",
-            }
+        pred_row = conn.execute("SELECT * FROM tasks WHERE id = ?", (review_task_id,)).fetchone()
+        if pred_row is None:
+            return {"enqueued": False, "reason": f"Predecessor task not found: {review_task_id}"}
 
-        review_payload = json.loads(review_row["payload_json"])
-        verdict_doc = review_payload.get("verdict") or {}
-        if verdict_doc.get("verdict") != "APPROVE_FOR_BACKTEST":
-            return {
-                "enqueued": False,
-                "reason": f"Review verdict was {verdict_doc.get('verdict')!r}, not APPROVE_FOR_BACKTEST",
-            }
+        # P2 predecessor must be ea_review APPROVE_FOR_BACKTEST.
+        # P3+ predecessor must be backtest_<prev>:done with verdict=PASS.
+        if phase == "P2":
+            if pred_row["kind"] != "ea_review":
+                return {"enqueued": False, "reason": f"Task {review_task_id} kind={pred_row['kind']!r}, expected ea_review for P2"}
+            review_payload = json.loads(pred_row["payload_json"])
+            verdict_doc = review_payload.get("verdict") or {}
+            if verdict_doc.get("verdict") != "APPROVE_FOR_BACKTEST":
+                return {"enqueued": False, "reason": f"Review verdict was {verdict_doc.get('verdict')!r}, not APPROVE_FOR_BACKTEST"}
+            ea_id = review_payload.get("ea_id")
+            surviving_symbols = None
+            surviving_params = None
+        else:
+            # P3+: predecessor is a done backtest task with PASS verdict.
+            if not pred_row["kind"].startswith("backtest_"):
+                return {"enqueued": False, "reason": f"Task {review_task_id} kind={pred_row['kind']!r}, expected backtest_<prev> for {phase}"}
+            if pred_row["status"] != "done":
+                return {"enqueued": False, "reason": f"Predecessor backtest task status={pred_row['status']!r}, expected 'done'"}
+            pred_payload = json.loads(pred_row["payload_json"])
+            classification = pred_payload.get("classification") or {}
+            if classification.get("verdict") != "PASS":
+                return {"enqueued": False, "reason": f"Predecessor verdict was {classification.get('verdict')!r}, not PASS"}
+            ea_id = pred_payload.get("ea_id")
+            surviving_symbols = classification.get("surviving_symbols", [])
+            surviving_params = classification.get("surviving_params", [])
 
-        ea_id = review_payload.get("ea_id")
         if not ea_id:
-            return {"enqueued": False, "reason": "Review payload missing ea_id"}
+            return {"enqueued": False, "reason": "Predecessor payload missing ea_id"}
 
-        # p2_baseline writes to D:/QM/reports/pipeline/<args.ea>/P2/report.csv where
-        # args.ea is the short EA label (e.g. "QM5_1047"), not the dir name with slug.
-        # Glob matches both QM5_1047 (short) and QM5_1047_<slug> (long, for older runs).
+        # Each runner writes to D:/QM/reports/pipeline/<args.ea>/<PHASE>/report.csv
+        # Glob matches both short (QM5_NNNN) and long (QM5_NNNN_<slug>) forms.
         expected_glob = str(PIPELINE_REPORT_ROOT / f"{ea_id}*" / phase / "report.csv")
+
+        payload = {
+            "phase": phase,
+            "ea_id": ea_id,
+            "predecessor_task_id": review_task_id,
+            "expected_report_glob": expected_glob,
+        }
+        if surviving_symbols is not None:
+            payload["surviving_symbols"] = surviving_symbols
+        if surviving_params is not None:
+            payload["surviving_params"] = surviving_params
+        # Back-compat alias
+        if phase == "P2":
+            payload["review_task_id"] = review_task_id
 
         task_id = create_task(
             conn,
             kind=f"backtest_{phase.lower()}",
-            source_id=review_row["source_id"],
-            card_id=review_row["card_id"],
-            payload={
-                "phase": phase,
-                "ea_id": ea_id,
-                "review_task_id": review_task_id,
-                "expected_report_glob": expected_glob,
-            },
+            source_id=pred_row["source_id"],
+            card_id=pred_row["card_id"],
+            payload=payload,
         )
 
     return {
@@ -755,14 +817,13 @@ def _detect_ea_period(ea_id: str) -> str:
     return "H1"
 
 
-def _phase_runner_cmd(phase: str, ea_id: str, terminal: str | None = None) -> list[str] | None:
+def _phase_runner_cmd(phase: str, ea_id: str, terminal: str | None = None,
+                       surviving_symbols: list[str] | None = None) -> list[str] | None:
     """Return the subprocess argv for the runner of a given phase, or None.
 
-    When `terminal` is given (e.g. "T1"), pins p2_baseline.py to that single
-    terminal — used by Achse B multi-EA saturation (one EA per terminal,
-    p2_baseline runs all the EA's symbols sequentially on its assigned
-    terminal). When `terminal` is None, p2_baseline distributes symbols
-    across all T1-T5 in its own ThreadPoolExecutor (legacy single-EA mode).
+    P2 takes all setfiles in the EA dir; P3+ runs only on `surviving_symbols`
+    from the predecessor phase (P2 PASS symbols). When `terminal` is given
+    (P2-only path), pins p2_baseline to one terminal for fleet saturation.
     """
     if phase == "P2":
         period = _detect_ea_period(ea_id)
@@ -782,6 +843,27 @@ def _phase_runner_cmd(phase: str, ea_id: str, terminal: str | None = None) -> li
         if terminal:
             cmd.extend(["--terminal", terminal])
         return cmd
+
+    if phase == "P3":
+        period = _detect_ea_period(ea_id)
+        symbols = surviving_symbols or []
+        if not symbols:
+            return None  # P3 without surviving symbols is meaningless
+        # p3_param_sweep imports `framework.scripts.pipeline_dispatcher`, so we
+        # invoke via `python -m framework.scripts.p3_param_sweep` with the repo
+        # root on sys.path. The PYTHONPATH env var is set by the dispatcher
+        # when it spawns the subprocess (see dispatch_tick).
+        cmd = [
+            sys.executable, "-m", "framework.scripts.p3_param_sweep",
+            "--ea", ea_id,
+            "--symbols", ",".join(symbols),
+            "--periods", period,
+            "--year", "2024",
+            "--max-runs", "24",
+            "--max-parallel", "5",
+        ]
+        return cmd
+
     return None
 
 
@@ -835,14 +917,16 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
 
             report = _resolve_report(payload)
             if report is not None and report.exists():
-                # report.csv exists, but p2_baseline.py appends rows live during
-                # the run — classifying as soon as the file appears means we
-                # see only the first symbol's row. QM5_1049 16:20: STRATEGY_FAIL
-                # locked in after only NDX (FAIL) had been written; WS30/UK100/
-                # GDAXI (all PASS) arrived seconds later, too late. Gate
-                # classification on the sentinel JSON `p2_<ea>_result.json`
-                # that p2_baseline writes ONLY after all symbols finish.
-                sentinel = report.parent / f"p2_{ea_id}_result.json"
+                # report.csv exists, but the runners (p2_baseline / p3_param_sweep
+                # / etc.) append rows live during the run — classifying as soon
+                # as the file appears means we see only the first row.
+                # QM5_1049 16:20: STRATEGY_FAIL locked in after only NDX FAIL
+                # had been written; WS30/UK100/GDAXI (all PASS) arrived later.
+                # Gate classification on the sentinel JSON
+                # `<phase_lower>_<ea>_result.json` that each runner writes
+                # ONLY after all rows finish.
+                phase_lower = phase.lower().replace(".", "")  # P3.5 → p35
+                sentinel = report.parent / f"{phase_lower}_{ea_id}_result.json"
                 if not sentinel.exists():
                     # Still running — fall through to age/timeout check below.
                     pass
@@ -936,7 +1020,8 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
             payload = json.loads(pending_row["payload_json"])
             phase = payload.get("phase")
             ea_id = payload.get("ea_id")
-            cmd = _phase_runner_cmd(phase, ea_id, terminal=None)  # no --terminal = all-T1-T5
+            surviving_symbols = payload.get("surviving_symbols")
+            cmd = _phase_runner_cmd(phase, ea_id, terminal=None, surviving_symbols=surviving_symbols)  # no --terminal = all-T1-T5
             if cmd is None:
                 update_task(
                     conn,
@@ -957,6 +1042,7 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
                 if sys.platform == "win32":
                     creationflags = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS  # type: ignore[attr-defined]
                 log_fh = open(log_path, "w", encoding="utf-8")
+                env = {**os.environ, "PYTHONPATH": str(REPO_ROOT)}
                 proc = subprocess.Popen(
                     cmd,
                     cwd=str(REPO_ROOT),
@@ -964,6 +1050,7 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
                     stderr=subprocess.STDOUT,
                     creationflags=creationflags,
                     close_fds=True,
+                    env=env,
                 )
                 update_task(
                     conn,
@@ -998,7 +1085,8 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
                 payload = json.loads(pending_row["payload_json"])
                 phase = payload.get("phase")
                 ea_id = payload.get("ea_id")
-                cmd = _phase_runner_cmd(phase, ea_id, terminal=terminal)
+                surviving_symbols = payload.get("surviving_symbols")
+                cmd = _phase_runner_cmd(phase, ea_id, terminal=terminal, surviving_symbols=surviving_symbols)
                 if cmd is None:
                     update_task(
                         conn,
@@ -1020,6 +1108,7 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
                 if sys.platform == "win32":
                     creationflags = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS  # type: ignore[attr-defined]
                 log_fh = open(log_path, "w", encoding="utf-8")
+                env = {**os.environ, "PYTHONPATH": str(REPO_ROOT)}
                 proc = subprocess.Popen(
                     cmd,
                     cwd=str(REPO_ROOT),
@@ -1027,6 +1116,7 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
                     stderr=subprocess.STDOUT,
                     creationflags=creationflags,
                     close_fds=True,
+                    env=env,
                 )
                 update_task(
                     conn,
