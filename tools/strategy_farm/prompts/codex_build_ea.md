@@ -203,6 +203,18 @@ build_result JSON is more valuable than masking it with a hopeful rewrite.
    card is symbol-agnostic), reserve a slot in `magic_numbers.csv`. One row per
    `(ea_id, symbol, magic)`. HARD ABORT on collision.
 
+3a. **Refresh `framework\include\QM\QM_MagicResolver.mqh`** so the baked static array
+    contains EVERY row from `magic_numbers.csv` whose `ea_id` is referenced by an
+    EA dir currently present in `framework/EAs/QM5_*` (i.e. NOT under
+    `framework/EAs/_obsolete_*`). NEVER drop existing rows when adding new ones —
+    read the current array first, append (or merge in canonical ea_id order), then
+    rewrite. Also bump `QM_MAGIC_REGISTRY_ROWS` and update `QM_MAGIC_REGISTRY_SHA256`
+    to the SHA-256 of the post-edit `magic_numbers.csv` bytes
+    (`python -c "import hashlib;print(hashlib.sha256(open(r'C:/QM/repo/framework/registry/magic_numbers.csv','rb').read()).hexdigest().upper())"`).
+    Without this step the smoke run fails with
+    `EA_MAGIC_NOT_REGISTERED ... OnInit returns non-zero code 1` even though the row
+    is in the CSV.
+
 4. Create directory `{{ea_dir}}`.
 
 5. Write `{{ea_id}}_{{slug}}.mq5` implementing the card mechanically against the

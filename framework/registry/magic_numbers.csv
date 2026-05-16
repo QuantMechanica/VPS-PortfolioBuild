@@ -467,3 +467,12 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1016,lien-carry-trade,34,XNGUSD.DWX,10160034,2026-05-01,Board-Advisor,active
 1016,lien-carry-trade,35,XTIUSD.DWX,10160035,2026-05-01,Board-Advisor,active
 1006,davey-eu-day,0,EURUSD.DWX,10060000,2026-05-15,Development,active
+1047,halloween-sell-in-may-idx,0,NDX.DWX,10470000,2026-05-16,Development,active
+1047,halloween-sell-in-may-idx,1,WS30.DWX,10470001,2026-05-16,Development,active
+1047,halloween-sell-in-may-idx,2,GDAXI.DWX,10470002,2026-05-16,Development,active
+1047,halloween-sell-in-may-idx,3,UK100.DWX,10470003,2026-05-16,Development,active
+1050,mql5-smc-order-blocks,0,EURUSD.DWX,10500000,2026-05-16,Development,active
+1050,mql5-smc-order-blocks,1,GBPUSD.DWX,10500001,2026-05-16,Development,active
+1050,mql5-smc-order-blocks,2,USDJPY.DWX,10500002,2026-05-16,Development,active
+1050,mql5-smc-order-blocks,3,AUDUSD.DWX,10500003,2026-05-16,Development,active
+1050,mql5-smc-order-blocks,4,USDCAD.DWX,10500004,2026-05-16,Development,active
