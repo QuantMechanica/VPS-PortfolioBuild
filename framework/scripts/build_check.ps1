@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param(
     [switch]$Strict = $true,
+    [string]$EALabel,
     [string]$RepoRoot,
     [string]$CompileScriptPath,
     [string]$ReportRoot = "D:\QM\reports\framework\21",
@@ -49,6 +50,19 @@ function Get-CompileCandidates {
     )
 
     $candidates = New-Object System.Collections.Generic.List[string]
+    if ($EALabel) {
+        $target = Join-Path $ResolvedRepoRoot "framework\EAs\$EALabel"
+        if (-not (Test-Path -LiteralPath $target)) {
+            Add-Failure "BUILD_CHECK_EA_LABEL_NOT_FOUND: $EALabel."
+            return $candidates
+        }
+        $mq5Files = @(Get-ChildItem -LiteralPath $target -File -Filter "*.mq5")
+        foreach ($mq5 in $mq5Files) {
+            $candidates.Add($mq5.FullName)
+        }
+        return $candidates
+    }
+
     $easRoot = Join-Path $ResolvedRepoRoot "framework\EAs"
     if (Test-Path -LiteralPath $easRoot) {
         $eaFiles = Get-ChildItem -LiteralPath $easRoot -Recurse -File -Filter "*.mq5" | Sort-Object FullName
@@ -330,7 +344,14 @@ function Invoke-SetValidation {
     $setFiles = @()
     $easRoot = Join-Path $ResolvedRepoRoot "framework\EAs"
     if (Test-Path -LiteralPath $easRoot) {
-        $setFiles = @(Get-ChildItem -LiteralPath $easRoot -Recurse -File -Filter "*.set" | Sort-Object FullName)
+        if ($EALabel) {
+            $targetRoot = Join-Path $easRoot $EALabel
+            if (Test-Path -LiteralPath $targetRoot) {
+                $setFiles = @(Get-ChildItem -LiteralPath $targetRoot -Recurse -File -Filter "*.set" | Sort-Object FullName)
+            }
+        } else {
+            $setFiles = @(Get-ChildItem -LiteralPath $easRoot -Recurse -File -Filter "*.set" | Sort-Object FullName)
+        }
     }
     if (-not $setFiles -or $setFiles.Count -eq 0) {
         Add-Warning "BUILD_CHECK_SETFILE_NONE_FOUND: no .set files found."
@@ -449,6 +470,11 @@ function Invoke-LoggerSchemaValidation {
         }
         $effectivePath = (Resolve-Path -LiteralPath $SamplePath).Path
         $lines = Get-Content -LiteralPath $effectivePath
+    } elseif ($EALabel) {
+        $effectivePath = "<embedded-sample>"
+        $lines = @(
+            '{"ts_utc":"2026-04-26T14:23:01.234Z","ts_broker":"2026-04-26T16:23:01","level":"INFO","ea_id":1044,"slug":"vpmacd-us-indices","symbol":"WS30.DWX","tf":"H1","magic":10440001,"event":"ENTRY","payload":{"side":"BUY","lot":0.12}}'
+        )
     } else {
         $candidate = Get-ChildItem -LiteralPath $ResolvedRepoRoot -Recurse -File -Filter "*.jsonl" |
             Where-Object { $_.FullName -match '(?i)log|logger|smoke' } |
@@ -497,6 +523,14 @@ function Invoke-ForbiddenScan {
         (Join-Path $ResolvedRepoRoot "framework\EAs")
     ) | Where-Object { Test-Path -LiteralPath $_ }
 
+    if ($EALabel) {
+        $targetEaRoot = Join-Path $ResolvedRepoRoot "framework\EAs\$EALabel"
+        $scanRoots = @(
+            (Join-Path $ResolvedRepoRoot "framework\include"),
+            $targetEaRoot
+        ) | Where-Object { Test-Path -LiteralPath $_ }
+    }
+
     $mqlFiles = New-Object System.Collections.Generic.List[string]
     foreach ($scanRoot in $scanRoots) {
         $files = Get-ChildItem -LiteralPath $scanRoot -Recurse -File -Include *.mq5,*.mqh
@@ -535,8 +569,13 @@ function Invoke-InputGroupCheck {
         return
     }
 
-    $eaFiles = Get-ChildItem -LiteralPath $eaRoot -Recurse -File -Include *.mq5 -ErrorAction SilentlyContinue |
-               Where-Object { $_.Name -notmatch 'smoke|unit|test' }
+    if ($EALabel) {
+        $targetEaRoot = Join-Path $eaRoot $EALabel
+        $eaFiles = Get-ChildItem -LiteralPath $targetEaRoot -File -Filter *.mq5 -ErrorAction SilentlyContinue
+    } else {
+        $eaFiles = Get-ChildItem -LiteralPath $eaRoot -Recurse -File -Include *.mq5 -ErrorAction SilentlyContinue |
+                   Where-Object { $_.Name -notmatch 'smoke|unit|test' }
+    }
 
     $requiredGroups = @(
         'QuantMechanica V5 Framework',

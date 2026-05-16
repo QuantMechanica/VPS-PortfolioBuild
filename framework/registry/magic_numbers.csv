@@ -466,3 +466,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1016,lien-carry-trade,33,XAUUSD.DWX,10160033,2026-05-01,Board-Advisor,active
 1016,lien-carry-trade,34,XNGUSD.DWX,10160034,2026-05-01,Board-Advisor,active
 1016,lien-carry-trade,35,XTIUSD.DWX,10160035,2026-05-01,Board-Advisor,active
+1006,davey-eu-day,0,EURUSD.DWX,10060000,2026-05-15,Development,active
+1044,vpmacd-us-indices,0,NDX.DWX,10440000,2026-05-16,Development,active
+1044,vpmacd-us-indices,1,WS30.DWX,10440001,2026-05-16,Development,active

@@ -1,0 +1,34 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1044
+; ea_slug:      vpmacd-us-indices
+; ea_version:   v5.0
+; set_version:  s2026-05-16-smoke
+; symbol:       WS30.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1.00
+; build_hash:   bb5b5378653cd393657b30117f375f0c6088c1903708b85e674a5af760217ca4
+; author:       Development
+; date:         2026-05-16
+;==========================================================
+qm_ea_id=1044
+qm_magic_slot_offset=1
+RISK_PERCENT=0.0
+RISK_FIXED=1000.0
+PORTFOLIO_WEIGHT=1.0
+qm_news_mode=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+strategy_fast_ema=12
+strategy_slow_ema=26
+strategy_signal_ema=9
+strategy_lambda=0.86
+strategy_atr_period=14
+strategy_atr_mult=2.5
+strategy_m5_vol_period=14
+strategy_cash_open_hhmm=1530
+strategy_cash_close_hhmm=2200
+strategy_max_spread_points=5000
