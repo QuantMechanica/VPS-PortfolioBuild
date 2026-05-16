@@ -209,11 +209,17 @@ def invoke_run_smoke(ea_id: int, symbol: str, year: int, terminal: str, period: 
                      runs: int, expert: str, setfile: Path, report_root: Path,
                      min_trades: int, timeout_sec: int,
                      allow_running_terminal: bool = False,
-                     heartbeat_interval_sec: int = 60) -> tuple[int, str, str]:
+                     heartbeat_interval_sec: int = 60,
+                     from_date: str | None = None,
+                     to_date: str | None = None) -> tuple[int, str, str]:
     """Returns (exit_code, stdout, stderr). Captures full output.
 
     Emits periodic liveness lines while run_smoke is executing so long-running
     symbols do not look like silent hangs to external run monitors.
+
+    `from_date` / `to_date` ("YYYY.MM.DD") override the single-year window
+    derived from `year`. Used for multi-year P2 windows (e.g. 2022.01.01 →
+    2024.12.31) so annual-cycle EAs like Halloween produce enough trades.
     """
     arglist = [
         "pwsh.exe", "-NoProfile", "-File", str(RUN_SMOKE_PS1),
@@ -231,6 +237,10 @@ def invoke_run_smoke(ea_id: int, symbol: str, year: int, terminal: str, period: 
         "-AllowMissingRealTicksLogMarker",
         "-TimeoutSeconds", str(timeout_sec),
     ]
+    if from_date:
+        arglist.extend(["-FromDate", from_date])
+    if to_date:
+        arglist.extend(["-ToDate", to_date])
     if allow_running_terminal:
         arglist.append("-AllowRunningTerminal")
     # run_smoke executes up to `runs` sequential tester runs, each bounded by timeout_sec.
@@ -306,7 +316,9 @@ def find_fallback_summary_path(report_root_phase: Path, *, ea_id: int, symbol: s
 def run_one_symbol(ea_id: int, ea_dir: Path, ea_label: str, symbol: str, year: int,
                    period: str, runs: int, terminal: str, report_root_phase: Path,
                    report_csv: Path, min_trades: int, timeout_sec: int, dry_run: bool,
-                   allow_running_terminal: bool = False) -> str:
+                   allow_running_terminal: bool = False,
+                   from_date: str | None = None,
+                   to_date: str | None = None) -> str:
     """Returns the verdict string."""
     setfile = setfile_for(ea_dir, symbol, period)
     if not setfile.exists():
@@ -334,6 +346,7 @@ def run_one_symbol(ea_id: int, ea_dir: Path, ea_label: str, symbol: str, year: i
                 runs=runs, expert=expert, setfile=setfile, report_root=report_root_phase,
                 min_trades=min_trades, timeout_sec=timeout_sec,
                 allow_running_terminal=allow_running_terminal,
+                from_date=from_date, to_date=to_date,
             )
         except subprocess.TimeoutExpired:
             elapsed = time.time() - t0
@@ -394,7 +407,12 @@ def run_one_symbol(ea_id: int, ea_dir: Path, ea_label: str, symbol: str, year: i
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--ea", required=True, help="EA label, e.g. QM5_1003 or QM5_SRC04_S03")
-    ap.add_argument("--year", type=int, default=2024)
+    ap.add_argument("--year", type=int, default=2024,
+                    help="single-year window (legacy). Overridden by --from-year/--to-year.")
+    ap.add_argument("--from-year", type=int, default=None,
+                    help="multi-year window start (inclusive). Default 2022 when neither --year nor --from-year given.")
+    ap.add_argument("--to-year", type=int, default=None,
+                    help="multi-year window end (inclusive). Default 2024.")
     ap.add_argument("--period", default="H1")
     ap.add_argument("--runs", type=int, default=2, help="run count per symbol (run_smoke -Runs, min 2)")
     ap.add_argument("--symbols", help="comma-separated subset; default = all setfiles")
@@ -408,6 +426,23 @@ def main() -> int:
                     help="pass through -AllowRunningTerminal to run_smoke (off by default)")
     ap.add_argument("--max-parallel", type=int, default=5, help="max concurrent symbol runs when terminal is not pinned")
     args = ap.parse_args()
+
+    # Multi-year window resolution: --from-year/--to-year override the single
+    # --year window (which becomes a back-compat default). Annual-cycle EAs
+    # (Halloween, Estrada 6m-rotation, McConnell turn-of-month) need >1 year
+    # to satisfy min-trades. Default window 2022-2024 = 3 years.
+    if args.from_year is not None or args.to_year is not None:
+        from_year = args.from_year if args.from_year is not None else args.year
+        to_year = args.to_year if args.to_year is not None else args.year
+        if to_year < from_year:
+            raise SystemExit(f"[FATAL] --to-year ({to_year}) < --from-year ({from_year})")
+        from_date = f"{from_year}.01.01"
+        to_date = f"{to_year}.12.31"
+        window_label = f"{from_year}-{to_year}"
+    else:
+        from_date = None
+        to_date = None
+        window_label = str(args.year)
     if args.runs < 2:
         raise SystemExit("[FATAL] --runs must be >= 2 (run_smoke requires at least 2).")
 
@@ -433,7 +468,7 @@ def main() -> int:
         symbols = [s for s in symbols if s not in already]
         print(f"[RESUME] {len(already)} PASS already; skipping. {len(symbols)}/{before} remain.")
 
-    print(f"[P2] EA={args.ea} ea_id={ea_id} period={args.period} year={args.year} runs={args.runs}")
+    print(f"[P2] EA={args.ea} ea_id={ea_id} period={args.period} window={window_label} runs={args.runs}")
     print(f"[P2] symbols={len(symbols)} report_csv={report_csv}")
     if args.dry_run:
         print(f"[P2] DRY RUN (no MT5 launches)")
@@ -448,6 +483,7 @@ def main() -> int:
                 report_root_phase=report_root_phase, report_csv=report_csv,
                 min_trades=args.min_trades, timeout_sec=args.timeout, dry_run=args.dry_run,
                 allow_running_terminal=args.allow_running_terminal,
+                from_date=from_date, to_date=to_date,
             )
             counts[verdict] = counts.get(verdict, 0) + 1
     else:
@@ -459,6 +495,7 @@ def main() -> int:
                     ea_id, ea_dir, args.ea, symbol, args.year,
                     args.period, args.runs, "any", report_root_phase, report_csv,
                     args.min_trades, args.timeout, args.dry_run, args.allow_running_terminal,
+                    from_date, to_date,
                 )
                 for symbol in symbols
             ]

@@ -766,11 +766,18 @@ def _phase_runner_cmd(phase: str, ea_id: str, terminal: str | None = None) -> li
     """
     if phase == "P2":
         period = _detect_ea_period(ea_id)
+        # Multi-year window: annual-cycle EAs (Halloween, Estrada 6m-rotation,
+        # McConnell turn-of-month) cannot hit min-trades on a single calendar
+        # year. 2022-2024 = 3 years is enough for monthly strategies and
+        # covers ≥3 cycles for annual ones (HR7 still applies as fallback).
         cmd = [
             sys.executable,
             str(REPO_ROOT / "framework" / "scripts" / "p2_baseline.py"),
             "--ea", ea_id,
             "--period", period,
+            "--from-year", "2022",
+            "--to-year", "2024",
+            "--min-trades", "5",  # lowered from 20 for low-frequency strategies; sub-gates apply higher bars
         ]
         if terminal:
             cmd.extend(["--terminal", terminal])
