@@ -17,6 +17,7 @@ import re
 import sqlite3
 import subprocess
 import sys
+import time
 import uuid
 from pathlib import Path
 from typing import Any
@@ -448,6 +449,200 @@ def pipeline_view(root: Path) -> dict[str, Any]:
         s = e["current_stage"]
         summary["by_stage"][s] = summary["by_stage"].get(s, 0) + 1
     return {"eas": out, "summary": summary, "count": len(out)}
+
+
+def _spawn_codex_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]:
+    """Spawn Codex CLI as a detached process for a pending build_ea task.
+
+    Idempotent: if a codex_build_<task_id>.live.log is being actively
+    written (size growing) → consider already-running and skip. Otherwise
+    spawn fresh. The Codex process writes the build_result JSON itself per
+    the codex_build_ea.md output contract; subsequent pump cycles will see
+    the build_ea row transition to done via record-build (called by the
+    hourly wake or a future Claude-worker pump cycle).
+    """
+    payload = json.loads(task_row["payload_json"])
+    ea_id = payload.get("ea_id")
+    slug = payload.get("slug")
+    card_path = payload.get("card_path")
+    prompt_path = payload.get("prompt_path")
+    if not prompt_path:
+        # Render now via build-ea logic (it'll create a NEW task — but we
+        # already have one. So re-derive prompt path manually).
+        if not card_path:
+            return {"spawned": False, "reason": "no card_path in payload"}
+        prompt_path = str(root / "queue" / f"codex_build_{task_row['id']}.md")
+        # Render prompt
+        build_result_path = str(root / "artifacts" / "builds" / f"{task_row['id']}.json")
+        Path(prompt_path).parent.mkdir(parents=True, exist_ok=True)
+        Path(build_result_path).parent.mkdir(parents=True, exist_ok=True)
+        template = CODEX_BUILD_TEMPLATE.read_text(encoding="utf-8")
+        for k, v in [
+            ("task_id", task_row["id"]),
+            ("ea_id", ea_id),
+            ("slug", slug or ""),
+            ("card_path", card_path or ""),
+            ("source_id", ""),
+            ("ea_dir", str(FRAMEWORK_EAS_DIR / f"{ea_id}_{slug}")),
+            ("build_result_path", build_result_path),
+        ]:
+            template = template.replace("{{" + k + "}}", str(v))
+        Path(prompt_path).write_text(template, encoding="utf-8", newline="\n")
+        # Persist back to task payload
+        payload["prompt_path"] = prompt_path
+        payload["build_result_path"] = build_result_path
+        with connect(root) as conn:
+            conn.execute("UPDATE tasks SET payload_json=? WHERE id=?", (json.dumps(payload), task_row["id"]))
+            conn.commit()
+
+    live_log = root / "logs" / f"codex_build_{task_row['id']}.live.log"
+    live_log.parent.mkdir(parents=True, exist_ok=True)
+    # Check if already running (live log growing in last 60s)
+    if live_log.exists():
+        age_sec = time.time() - live_log.stat().st_mtime
+        if age_sec < 60:
+            return {"spawned": False, "reason": "live log activity within 60s — codex likely still running", "task_id": task_row["id"]}
+
+    # Spawn: cat prompt | codex exec -s danger-full-access --cd C:/QM/repo 2>&1 | tee live_log
+    # We do this through a shell wrapper to chain cat+tee on Windows.
+    # Detached so pump doesn't wait.
+    # Direct Popen — codex.cmd is an npm batch shim; subprocess can exec it
+    # via shell=True. stdin piped from prompt file, stdout/stderr to live_log.
+    import shutil as _shutil
+    codex_path = _shutil.which("codex.cmd") or _shutil.which("codex") or "codex"
+    creationflags = 0
+    if sys.platform == "win32":
+        # CREATE_NEW_CONSOLE gives the child its own console (separate from
+        # farmctl's). Codex needs a console for its TUI even when run with
+        # `exec` (non-interactive). DETACHED_PROCESS removed because it makes
+        # codex.cmd's batch shim exit immediately without running node.
+        creationflags = subprocess.CREATE_NEW_CONSOLE  # type: ignore[attr-defined]
+    stdin_f = open(prompt_path, "rb")
+    stdout_f = open(live_log, "wb")
+    proc = subprocess.Popen(
+        [codex_path, "exec", "-s", "danger-full-access", "--cd", str(REPO_ROOT)],
+        cwd=str(REPO_ROOT),
+        stdin=stdin_f,
+        stdout=stdout_f,
+        stderr=subprocess.STDOUT,
+        shell=True,
+        creationflags=creationflags,
+        close_fds=False,
+    )
+    return {
+        "spawned": True,
+        "task_id": task_row["id"],
+        "ea_id": ea_id,
+        "pid": proc.pid,
+        "live_log": str(live_log),
+    }
+
+
+def pump(root: Path) -> dict[str, Any]:
+    """Continuous deterministic worker — run every 5 min.
+
+    Does the no-LLM-needed work that previously waited for hourly Claude
+    wakes:
+      - MT5 backtest dispatch (was: separate `tick` command)
+      - Auto-enqueue next phase on PASS verdicts (now inside dispatch_tick)
+      - Spawn Codex for ONE pending build_ea task per pump call (bounded —
+        Codex builds take 5-15 min, don't pile up multiple)
+      - Record build results when Codex's build_result JSON appears
+      - (Future) spawn Claude for ONE pending ea_review task
+
+    Bounded per pump cycle to avoid resource overrun. Idempotent — checks
+    live_log freshness so re-runs while Codex is still going don't
+    double-spawn.
+    """
+    init_db(root)
+    result: dict[str, Any] = {
+        "pumped_at": utc_now(),
+        "dispatch": None,
+        "codex_spawn": None,
+        "build_records": [],
+        "build_retries": [],
+    }
+
+    # 1. MT5 dispatch (existing logic incl. auto-enqueue next phase)
+    result["dispatch"] = dispatch_tick(root)
+
+    # 2. Retry blocked builds — OWNER 2026-05-16 "Fail → ans Ende der
+    #    Liste". A blocked build means the previous attempt hit
+    #    framework_error / compile_failed / smoke_failed. Re-queue up to
+    #    MAX_BUILD_RETRIES so framework fixes (deploy, perf, etc.) get a
+    #    fresh swing.
+    MAX_BUILD_RETRIES = 3
+    with connect(root) as conn:
+        blocked_builds = conn.execute(
+            "SELECT * FROM tasks WHERE kind='build_ea' AND status='blocked' "
+            "ORDER BY updated_at ASC"
+        ).fetchall()
+    for row in blocked_builds:
+        payload = json.loads(row["payload_json"])
+        attempt = int(payload.get("attempt_count", 0)) + 1
+        if attempt > MAX_BUILD_RETRIES:
+            continue
+        # Archive stale build_result so the next pump cycle doesn't re-record
+        # the OLD outcome as a "fresh" build. Codex writes a new file on the
+        # next run. Also archive live log so a fresh one gets created.
+        brp = payload.get("build_result_path")
+        if brp:
+            brp_path = Path(brp)
+            if brp_path.exists() and brp_path.stat().st_size > 0:
+                archive = brp_path.with_suffix(f".attempt_{attempt-1}.json")
+                try:
+                    brp_path.rename(archive)
+                except OSError:
+                    pass
+        live_log = root / "logs" / f"codex_build_{row['id']}.live.log"
+        if live_log.exists():
+            try:
+                live_log.rename(live_log.with_suffix(f".attempt_{attempt-1}.log"))
+            except OSError:
+                pass
+
+        update_payload = dict(payload)
+        update_payload["attempt_count"] = attempt
+        update_payload["last_blocked_reason"] = payload.get("blocked_reason") or payload.get("build_result", {}).get("blocked_reason")
+        # Clear stale dispatch metadata so the fresh Codex run starts clean
+        for k in ("pid", "started_at_iso", "log_path", "build_result", "blocked_reason"):
+            update_payload.pop(k, None)
+        with connect(root) as conn2:
+            conn2.execute(
+                "UPDATE tasks SET status='pending', payload_json=?, updated_at=? WHERE id=?",
+                (json.dumps(update_payload), utc_now(), row["id"]),
+            )
+            conn2.commit()
+        result["build_retries"].append({
+            "task_id": row["id"],
+            "ea_id": payload.get("ea_id"),
+            "attempt": attempt,
+            "last_blocked_reason": (payload.get("blocked_reason") or "")[:120],
+        })
+
+    # 3. Codex build for ONE pending build_ea task (oldest first = FIFO).
+    with connect(root) as conn:
+        pending_build = conn.execute(
+            "SELECT * FROM tasks WHERE kind='build_ea' AND status='pending' "
+            "ORDER BY updated_at ASC LIMIT 1"
+        ).fetchone()
+    if pending_build:
+        result["codex_spawn"] = _spawn_codex_for_build(root, pending_build)
+
+    # 4. Record completed Codex builds — any pending build_ea whose
+    #    build_result JSON exists and isn't empty.
+    with connect(root) as conn:
+        rows = conn.execute(
+            "SELECT * FROM tasks WHERE kind='build_ea' AND status='pending'"
+        ).fetchall()
+    for row in rows:
+        payload = json.loads(row["payload_json"])
+        brp = payload.get("build_result_path")
+        if brp and Path(brp).exists() and Path(brp).stat().st_size > 0:
+            rec = record_build_result(root, row["id"], brp)
+            result["build_records"].append({"task_id": row["id"], "recorded": rec})
+
+    return result
 
 
 def next_action(root: Path) -> dict[str, Any]:
@@ -1069,6 +1264,28 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
                             "attempt_count": attempt,
                         },
                     )
+                    auto_enqueued = None
+                    # Auto-advance: PASS → enqueue next phase as a NEW pending
+                    # task. Only when next phase is supported AND no successor
+                    # already exists for the same EA. Saves the wait for the
+                    # next hourly wake + manual enqueue.
+                    if verdict == "PASS":
+                        next_phase_map = {"P2": "P3"}  # extend as adapters come online
+                        next_phase = next_phase_map.get(phase)
+                        if next_phase and next_phase in SUPPORTED_BACKTEST_PHASES:
+                            existing_next = conn.execute(
+                                "SELECT id FROM tasks WHERE kind = ? AND payload_json LIKE ?",
+                                (f"backtest_{next_phase.lower()}", f"%\"ea_id\": \"{ea_id}\"%"),
+                            ).fetchone()
+                            if not existing_next:
+                                # Need to commit current update first so enqueue sees it
+                                conn.commit()
+                                enq_result = enqueue_backtest(root, row["id"], next_phase)
+                                if enq_result.get("enqueued"):
+                                    auto_enqueued = {
+                                        "next_phase": next_phase,
+                                        "next_task_id": enq_result.get("task_id"),
+                                    }
                     actions.append({
                         "task_id": row["id"],
                         "action": "classified",
@@ -1077,6 +1294,7 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
                         "terminal_released": assigned_terminal,
                         "verdict": verdict,
                         "surviving_symbols": classification.get("surviving_symbols", []),
+                        "auto_enqueued_next": auto_enqueued,
                     })
                     continue
 
@@ -1909,6 +2127,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     sub.add_parser("status", help="Show source/task state")
     sub.add_parser("pipeline", help="Per-EA lifecycle view (where does each EA stand?)")
+    sub.add_parser("pump", help="Continuous deterministic worker: dispatch MT5 + auto-spawn Codex + record builds. Run every 5 min.")
     sub.add_parser("next", help="Show the deterministic next action")
     sub.add_parser("claim-source", help="Activate the next pending source if no source is active")
 
@@ -2016,6 +2235,8 @@ def main(argv: list[str] | None = None) -> int:
         print_json(status(root))
     elif args.command == "pipeline":
         print_json(pipeline_view(root))
+    elif args.command == "pump":
+        print_json(pump(root))
     elif args.command == "next":
         print_json(next_action(root))
     elif args.command == "claim-source":
