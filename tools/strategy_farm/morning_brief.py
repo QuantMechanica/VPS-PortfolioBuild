@@ -43,6 +43,10 @@ def _utc_now() -> dt.datetime:
     return dt.datetime.now(dt.timezone.utc)
 
 
+def _utc_now_iso() -> str:
+    return _utc_now().strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
 def _connect() -> sqlite3.Connection:
     con = sqlite3.connect(str(DB))
     con.row_factory = sqlite3.Row
@@ -120,10 +124,66 @@ def _load_quota() -> dict:
         return {}
 
 
+def _trend_series(con: sqlite3.Connection, days_back: int = 7) -> dict:
+    """Return last-N-day series for the 4 trend metrics shown in cockpit."""
+    out: dict[str, list[int]] = {
+        "approved": [], "p2_pass": [], "p3_pass": [], "blocked": [],
+    }
+    today_local = dt.date.today()
+    day_list = [(today_local - dt.timedelta(days=i)).isoformat()
+                for i in range(days_back - 1, -1, -1)]
+    rows = list(con.execute(
+        "SELECT DATE(ts) d, event, COUNT(*) c FROM events "
+        "WHERE ts >= date('now', ?) GROUP BY d, event",
+        (f"-{days_back} days",),
+    ))
+    by_day: dict[str, dict[str, int]] = {}
+    for r in rows:
+        by_day.setdefault(r["d"], {})[r["event"]] = r["c"]
+    pp = list(con.execute(
+        "SELECT DATE(updated_at) d, COUNT(*) c FROM work_items "
+        "WHERE phase='P2' AND status='done' AND verdict='PASS' "
+        "AND updated_at >= date('now', ?) GROUP BY d",
+        (f"-{days_back} days",),
+    ))
+    for r in pp:
+        by_day.setdefault(r["d"], {})["__p2_pass"] = r["c"]
+    p3 = list(con.execute(
+        "SELECT DATE(updated_at) d, COUNT(*) c FROM work_items "
+        "WHERE phase='P3' AND status='done' AND verdict='PASS' "
+        "AND updated_at >= date('now', ?) GROUP BY d",
+        (f"-{days_back} days",),
+    ))
+    for r in p3:
+        by_day.setdefault(r["d"], {})["__p3_pass"] = r["c"]
+    for d in day_list:
+        dd = by_day.get(d) or {}
+        out["approved"].append(int(dd.get("approved", 0)))
+        out["p2_pass"].append(int(dd.get("__p2_pass", 0)))
+        out["p3_pass"].append(int(dd.get("__p3_pass", 0)))
+        out["blocked"].append(int(dd.get("build_blocked_by_codex_review", 0)))
+    out["_days"] = day_list  # type: ignore[assignment]
+    return out
+
+
+def _ascii_bar(values: list[int], width: int = 8) -> str:
+    """Tiny ASCII histogram using Unicode block characters. ▁▂▃▄▅▆▇█."""
+    if not values:
+        return ""
+    max_v = max(values) if values else 0
+    if max_v == 0:
+        return "─" * len(values)
+    blocks = "▁▂▃▄▅▆▇█"
+    out = []
+    for v in values:
+        idx = int(round((v / max_v) * (len(blocks) - 1)))
+        out.append(blocks[idx] if v > 0 else "·")
+    return "".join(out)
+
+
 def _format_brief() -> str:
     con = _connect()
     try:
-        # Current state
         sources_pending  = _count(con, "SELECT COUNT(*) FROM sources WHERE status='pending'")
         sources_cr       = _count(con, "SELECT COUNT(*) FROM sources WHERE status='cards_ready'")
         sources_done     = _count(con, "SELECT COUNT(*) FROM sources WHERE status='done'")
@@ -133,117 +193,232 @@ def _format_brief() -> str:
         wi_pending       = _count(con, "SELECT COUNT(*) FROM work_items WHERE status='pending'")
         wi_active        = _count(con, "SELECT COUNT(*) FROM work_items WHERE status='active'")
         p2_pass_total    = _count(con, "SELECT COUNT(*) FROM work_items WHERE phase='P2' AND verdict='PASS'")
+        p2_fail_total    = _count(con, "SELECT COUNT(*) FROM work_items WHERE phase='P2' AND verdict='FAIL'")
         p3_pass_total    = _count(con, "SELECT COUNT(*) FROM work_items WHERE phase='P3' AND verdict='PASS'")
+        p3_fail_total    = _count(con, "SELECT COUNT(*) FROM work_items WHERE phase='P3' AND verdict='FAIL'")
         delta            = _delta_since(con, 12)
         winners          = _winners(con)
+        trend            = _trend_series(con, days_back=7)
     finally:
         con.close()
 
     cards_draft = len(os.listdir(CARDS_DRAFT)) if CARDS_DRAFT.exists() else 0
     cards_approved = len(os.listdir(CARDS_APPROVED)) if CARDS_APPROVED.exists() else 0
-
     health = _load_health()
     quota = _load_quota()
 
-    # Headline
-    if p3_pass_total > 0:
-        headline = f"**{p3_pass_total} P3-PASS EA(s)** — Heureka horizon visible."
-    elif p2_pass_total > 0:
-        headline = (f"**{p2_pass_total} P2-PASSes** holding; "
-                    f"{len(winners)} winner EA(s); P3 next gate (0/{p3_pass_total or '?'})")
-    else:
-        headline = "no PASSes yet — pipeline upstream still warming up."
+    p2_pass_rate = (100.0 * p2_pass_total / max(1, p2_pass_total + p2_fail_total))
+    p3_pass_rate = (100.0 * p3_pass_total / max(1, p3_pass_total + p3_fail_total))
+    today_h = dt.datetime.now().strftime("%A · %d %B %Y")
+    today_iso = dt.datetime.now().strftime("%Y-%m-%d")
 
-    # Health section
-    health_lines = []
+    # ── Headline tier ────────────────────────────────────────────
+    if p3_pass_total > 0:
+        status_word = "HEUREKA HORIZON"
+        headline_body = (
+            f"**{p3_pass_total} EA(s) made it through P3** — "
+            f"P4 walk-forward OOS is the next gate. "
+            f"Live-deployment within reach if any survives the OOS window."
+        )
+    elif p2_pass_total >= 10:
+        status_word = "MOMENTUM BUILDING"
+        headline_body = (
+            f"**{p2_pass_total} P2-PASSes** across **{len(winners)} winner EA(s)**. "
+            f"P3 gate still 0/0 — synthetic variants + ablations are the engine "
+            f"to push something over the line."
+        )
+    elif p2_pass_total > 0:
+        status_word = "EARLY SIGNAL"
+        headline_body = (
+            f"**{p2_pass_total} P2-PASSes** from {len(winners)} EA(s). "
+            f"Need more depth before any candidate reaches P3."
+        )
+    else:
+        status_word = "WARMING UP"
+        headline_body = (
+            "No PASSes yet — research + build pipeline is filling the funnel. "
+            "First gate (P2) won't fire until we have testable EAs."
+        )
+
+    # ── Health status word ───────────────────────────────────────
+    health_word = "?"
+    health_color_label = "?"
     if health:
         ov = health.get("overall", "?")
-        summary = health.get("summary", {})
-        if ov == "FAIL":
-            health_lines.append(
-                f"### Health: **{ov}** — "
-                f"{summary.get('fail',0)} FAIL / {summary.get('warn',0)} WARN / {summary.get('ok',0)} OK")
-            for c in (health.get("checks") or []):
-                if c.get("status") == "FAIL":
-                    health_lines.append(f"- **{c['name']}**: {c['detail']}")
-                    if c.get("action_hint"):
-                        health_lines.append(f"  - hint: {c['action_hint']}")
-        elif ov == "WARN":
-            health_lines.append(
-                f"### Health: {ov} — {summary.get('warn',0)} WARN / {summary.get('ok',0)} OK")
-            for c in (health.get("checks") or []):
-                if c.get("status") == "WARN":
-                    health_lines.append(f"- **{c['name']}**: {c['detail']}")
-        else:
-            health_lines.append(
-                f"### Health: **OK** — all {summary.get('ok',0)} invariants green "
-                f"(last check {health.get('checked_at','?')})")
-    else:
-        health_lines.append("### Health: no snapshot yet (watchdog not run)")
+        health_word = {"OK": "ALL GREEN", "WARN": "WATCH", "FAIL": "ATTENTION"}.get(ov, ov)
+        health_color_label = ov
 
-    # Delta section
-    delta_lines = ["### 12h delta",
-                   f"- Cards: +{delta['new_draft_cards']} drafted, +{delta['new_approved_cards']} approved",
-                   f"- Builds: +{delta['builds_done']} done, +{delta['builds_failed']} failed/blocked",
-                   f"- P2 backtests: +{delta['p2_pass']} PASS, +{delta['p2_fail']} FAIL",
-                   f"- P3 backtests: +{delta['p3_pass']} PASS, +{delta['p3_fail']} FAIL"]
+    # ── 12h delta table ──────────────────────────────────────────
+    delta_table = [
+        "| metric | last 12h |",
+        "| --- | ---: |",
+        f"| cards drafted | +{delta['new_draft_cards']} |",
+        f"| cards approved | +{delta['new_approved_cards']} |",
+        f"| builds done | +{delta['builds_done']} |",
+        f"| builds failed/blocked | +{delta['builds_failed']} |",
+        f"| P2 PASS / FAIL | +{delta['p2_pass']} / +{delta['p2_fail']} |",
+        f"| P3 PASS / FAIL | +{delta['p3_pass']} / +{delta['p3_fail']} |",
+    ]
 
-    # Winners section
-    winner_lines = ["### Winners (EAs with ≥1 PASS)"]
+    # ── Funnel table ─────────────────────────────────────────────
+    funnel_table = [
+        "| stage | active | pending | done |",
+        "| --- | ---: | ---: | ---: |",
+        f"| Sources | — | {sources_pending} | {sources_done} |",
+        f"| Cards (draft → approved) | {cards_draft} | — | {cards_approved} |",
+        f"| Builds | — | {builds_pending} | {builds_done} |",
+        f"| Backtest work_items | {wi_active} | {wi_pending} | {p2_pass_total + p2_fail_total + p3_pass_total + p3_fail_total} |",
+    ]
+
+    # ── PASS rates ───────────────────────────────────────────────
+    pass_table = [
+        "| phase | PASS | FAIL | PASS-rate |",
+        "| --- | ---: | ---: | ---: |",
+        f"| P2 (in-sample) | **{p2_pass_total}** | {p2_fail_total} | {p2_pass_rate:.0f}% |",
+        f"| P3 (param sweep) | **{p3_pass_total}** | {p3_fail_total} | {p3_pass_rate:.0f}% |",
+    ]
+
+    # ── 7-day mini histograms ────────────────────────────────────
+    trend_table = [
+        "```",
+        f"  Cards approved   {_ascii_bar(trend['approved'])}   ({sum(trend['approved'])})",
+        f"  P2 PASS          {_ascii_bar(trend['p2_pass'])}   ({sum(trend['p2_pass'])})",
+        f"  P3 PASS          {_ascii_bar(trend['p3_pass'])}   ({sum(trend['p3_pass'])})",
+        f"  Codex pre-blocks {_ascii_bar(trend['blocked'])}   ({sum(trend['blocked'])})",
+        "  " + " " * 17 + "←7d──────today",
+        "```",
+    ]
+
+    # ── Winners ──────────────────────────────────────────────────
     if winners:
+        winner_table = [
+            "| EA | P2-PASS | P3-PASS | status |",
+            "| --- | ---: | ---: | --- |",
+        ]
         for w in winners:
-            winner_lines.append(f"- **{w['ea_id']}**: P2-PASS×{w['p2_pass']}, P3-PASS×{w['p3_pass']}")
+            if w["p3_pass"] > 0:
+                stat = "**P3 cleared — P3.5 next**"
+            elif w["p2_pass"] >= 5:
+                stat = "**strong edge — synth burst eligible**"
+            elif w["p2_pass"] >= 3:
+                stat = "candidate"
+            else:
+                stat = "early"
+            winner_table.append(f"| **{w['ea_id']}** | {w['p2_pass']} | {w['p3_pass']} | {stat} |")
     else:
-        winner_lines.append("- (none yet — first PASS pending)")
+        winner_table = ["_no winners yet — first P2-PASS will appear here._"]
 
-    # Quota section
-    quota_lines = ["### Token quota (live from Chrome scraper)"]
+    # ── Health detail ────────────────────────────────────────────
+    health_detail = []
+    if health:
+        fails = [c for c in (health.get("checks") or []) if c.get("status") == "FAIL"]
+        warns = [c for c in (health.get("checks") or []) if c.get("status") == "WARN"]
+        if fails:
+            health_detail.append("**Red invariants:**")
+            for c in fails:
+                health_detail.append(f"- `{c['name']}` — {c['detail']}")
+                if c.get("action_hint"):
+                    health_detail.append(f"  > {c['action_hint']}")
+        if warns:
+            health_detail.append("")
+            health_detail.append("**Yellow invariants:**")
+            for c in warns:
+                health_detail.append(f"- `{c['name']}` — {c['detail']}")
+        if not fails and not warns:
+            health_detail.append("_All 10 invariants green._")
+    else:
+        health_detail.append("_Watchdog has not run yet._")
+
+    # ── Quota ────────────────────────────────────────────────────
+    quota_lines = []
     if quota:
         for src in ("codex", "claude"):
             s = quota.get(src) or {}
-            ra = s.get("received_at", "?")
-            quota_lines.append(f"- **{src.capitalize()}**: last scraped {ra}")
+            ra = s.get("received_at")
+            age_str = "?"
+            if ra:
+                try:
+                    t = dt.datetime.fromisoformat(ra.replace("Z", "+00:00"))
+                    delta_sec = (_utc_now() - t).total_seconds()
+                    age_str = (f"{int(delta_sec)}s ago" if delta_sec < 90
+                               else f"{int(delta_sec / 60)}m ago")
+                except Exception:
+                    age_str = ra
+            quota_lines.append(f"- **{src.capitalize()}** scraper last reported {age_str}")
     else:
-        quota_lines.append("- no quota snapshot")
+        quota_lines.append("_No quota snapshot — Tampermonkey tabs likely closed._")
 
-    # Current state section
-    state_lines = ["### Current state",
-                   f"- Sources: {sources_pending} pending, {sources_cr} cards_ready, {sources_done} done",
-                   f"- Cards: {cards_draft} draft, {cards_approved} approved",
-                   f"- Builds: {builds_done} done, {builds_pending} pending, {builds_blocked} blocked",
-                   f"- Work items: {wi_active} active, {wi_pending} pending",
-                   f"- Total P2-PASSes: {p2_pass_total} · Total P3-PASSes: {p3_pass_total}"]
-
-    # Action items — derived from health
+    # ── Action items ─────────────────────────────────────────────
     action_lines = []
     if health and health.get("overall") in ("FAIL", "WARN"):
         for c in (health.get("checks") or []):
             if c.get("status") in ("FAIL", "WARN") and c.get("action_hint"):
-                action_lines.append(f"- [{c['status']}] {c['name']}: {c['action_hint']}")
+                tag = c["status"]
+                action_lines.append(f"- **[{tag}]** `{c['name']}` → {c['action_hint']}")
     if not action_lines:
-        action_lines.append("- nothing red — pipeline healthy, let it run")
+        action_lines.append("_Nothing red. Pipeline can keep running unattended._")
 
-    parts = []
-    parts.append(f"# QM Strategy Farm — Morning Brief")
-    parts.append(f"_Generated {_utc_now().strftime('%Y-%m-%d %H:%M UTC')}_")
-    parts.append("")
-    parts.append(headline)
-    parts.append("")
-    parts.extend(health_lines)
-    parts.append("")
-    parts.extend(delta_lines)
-    parts.append("")
-    parts.extend(winner_lines)
-    parts.append("")
-    parts.extend(state_lines)
-    parts.append("")
-    parts.extend(quota_lines)
-    parts.append("")
-    parts.append("### What needs action today")
-    parts.extend(action_lines)
-    parts.append("")
-    parts.append("---")
-    parts.append("Cockpit: `file:///D:/QM/strategy_farm/dashboards/cockpit.html`")
+    # ── Assemble ─────────────────────────────────────────────────
+    parts = [
+        f"# QuantMechanica · Morning Brief",
+        f"### {today_h}",
+        "",
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+        f"## ▶ {status_word}",
+        "",
+        headline_body,
+        "",
+        f"**Pipeline health: {health_word}**" + (
+            f" · {len([c for c in (health.get('checks') or []) if c.get('status') == 'FAIL'])} red · "
+            f"{len([c for c in (health.get('checks') or []) if c.get('status') == 'WARN'])} yellow · "
+            f"{len([c for c in (health.get('checks') or []) if c.get('status') == 'OK'])} green"
+            if health else ""
+        ),
+        "",
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+        "",
+        "## Funnel (current)",
+        "",
+        *funnel_table,
+        "",
+        "## PASS rates",
+        "",
+        *pass_table,
+        "",
+        "## Winners",
+        "",
+        *winner_table,
+        "",
+        "## Last 12h",
+        "",
+        *delta_table,
+        "",
+        "## 7-day trend",
+        "",
+        *trend_table,
+        "",
+        "## Pipeline health detail",
+        "",
+        *health_detail,
+        "",
+        "## Token quota",
+        "",
+        *quota_lines,
+        "",
+        "## What needs action today",
+        "",
+        *action_lines,
+        "",
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+        "",
+        "**Quick links**",
+        "",
+        f"- Cockpit: `file:///D:/QM/strategy_farm/dashboards/cockpit.html`",
+        f"- Vault archive: `G:/My Drive/QuantMechanica - Company Reference/10 Morning Briefing/`",
+        "",
+        f"_Generated {_utc_now().strftime('%Y-%m-%d %H:%M UTC')} · "
+        f"checked watchdog state at {health.get('checked_at', '?') if health else '?'}_",
+    ]
     return "\n".join(parts) + "\n"
 
 
