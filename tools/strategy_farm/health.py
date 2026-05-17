@@ -66,10 +66,17 @@ def _is_codex_auth_broken(con) -> bool:
     import time as _t
     import re as _re
     pattern = _re.compile(rb"401 Unauthorized")
+    auth_path = Path(r"C:/Users/Administrator/.codex/auth.json")
+    auth_mtime = auth_path.stat().st_mtime if auth_path.exists() else 0.0
     n_401 = 0
     for log in LOG_DIR.glob("codex_*.live.log"):
         try:
-            if _t.time() - log.stat().st_mtime > 900:
+            log_mtime = log.stat().st_mtime
+            if _t.time() - log_mtime > 900:
+                continue
+            # Stale 401: log last touched before the most recent `codex login`.
+            # Those 401s are pre-login and don't reflect current auth state.
+            if log_mtime < auth_mtime:
                 continue
             with open(log, "rb") as fh:
                 fh.seek(max(0, log.stat().st_size - 8192))
@@ -78,11 +85,10 @@ def _is_codex_auth_broken(con) -> bool:
                 n_401 += 1
         except OSError:
             continue
-    auth_path = Path(r"C:/Users/Administrator/.codex/auth.json")
     auth_age_h = None
     if auth_path.exists():
         try:
-            auth_age_h = (_t.time() - auth_path.stat().st_mtime) / 3600
+            auth_age_h = (_t.time() - auth_mtime) / 3600
         except OSError:
             pass
     try:
@@ -416,11 +422,18 @@ def chk_codex_auth_broken(con) -> dict:
     import time as _t
     import re as _re
     pattern = _re.compile(rb"401 Unauthorized")
+    auth_path = Path(r"C:/Users/Administrator/.codex/auth.json")
+    auth_mtime = auth_path.stat().st_mtime if auth_path.exists() else 0.0
     n_401 = 0
     for log in LOG_DIR.glob("codex_*.live.log"):
         try:
-            age = _t.time() - log.stat().st_mtime
+            log_mtime = log.stat().st_mtime
+            age = _t.time() - log_mtime
             if age > 900:
+                continue
+            # Stale 401: log last touched before the most recent `codex login`.
+            # Those 401s are pre-login and don't reflect current auth state.
+            if log_mtime < auth_mtime:
                 continue
             with open(log, "rb") as fh:
                 fh.seek(max(0, log.stat().st_size - 8192))
@@ -431,11 +444,10 @@ def chk_codex_auth_broken(con) -> dict:
             continue
 
     # Signal (b): auth.json stale + pipeline silent on codex
-    auth_path = Path(r"C:/Users/Administrator/.codex/auth.json")
     auth_age_h: float | None = None
     if auth_path.exists():
         try:
-            auth_age_h = (_t.time() - auth_path.stat().st_mtime) / 3600
+            auth_age_h = (_t.time() - auth_mtime) / 3600
         except OSError:
             pass
     try:

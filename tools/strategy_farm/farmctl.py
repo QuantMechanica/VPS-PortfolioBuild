@@ -1831,10 +1831,17 @@ def pump(root: Path) -> dict[str, Any]:
     try:
         import re as _re, time as _t
         pat = _re.compile(rb"401 Unauthorized")
+        from pathlib import Path as _P
+        _auth = _P(r"C:/Users/Administrator/.codex/auth.json")
+        auth_mtime = _auth.stat().st_mtime if _auth.exists() else 0.0
         n_401 = 0
         for log in (root / "logs").glob("codex_*.live.log"):
             try:
-                if _t.time() - log.stat().st_mtime > 900:
+                log_mtime = log.stat().st_mtime
+                if _t.time() - log_mtime > 900:
+                    continue
+                # Skip 401s from logs older than the most recent `codex login`.
+                if log_mtime < auth_mtime:
                     continue
                 size = log.stat().st_size
                 with open(log, "rb") as fh:
