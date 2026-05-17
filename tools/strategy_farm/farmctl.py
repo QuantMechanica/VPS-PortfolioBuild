@@ -35,7 +35,7 @@ CLAUDE_REVIEW_TEMPLATE = PROMPTS_DIR / "claude_review_ea.md"
 CODEX_REVIEW_TEMPLATE = PROMPTS_DIR / "codex_review_ea.md"
 
 PIPELINE_REPORT_ROOT = Path(r"D:\QM\reports\pipeline")
-SUPPORTED_BACKTEST_PHASES = ("P2", "P3")  # P3 added 2026-05-16 for end-to-end pipeline flow
+SUPPORTED_BACKTEST_PHASES = ("P2", "P3", "P3.5", "P4")  # 2026-05-17: extend chain to P3.5 (cross-symbol robustness) + P4 (walk-forward OOS)
 MT5_TERMINALS = ("T1", "T2", "T3", "T4", "T5")  # factory fleet, used by dispatch-tick for per-EA terminal assignment
 
 RUNTIME_DIRS = [
@@ -796,12 +796,32 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 actions.append({"action": "failed_final", "item_id": item["id"]})
 
     # --- Phase 2: claim pending work_items per free terminal ---
+    # OWNER 2026-05-17 priority queue (replaces FIFO):
+    #   1. Highest phase first (P4 > P3.5 > P3 > P2) — promotions get priority
+    #      because they're already known winners advancing toward Live.
+    #   2. EA-of-a-known-winner before greenfield (ea_id with prior PASSes).
+    #   3. Then FIFO within tier (updated_at ASC).
+    # The CASE WHEN encodes the priority. Lower number = sooner.
     free_terminals = [t for t in MT5_TERMINALS if t not in busy_terminals]
     if free_terminals:
         with connect(root) as conn:
             pending = conn.execute(
-                "SELECT * FROM work_items WHERE status='pending' "
-                "ORDER BY updated_at ASC, created_at ASC"
+                """
+                SELECT w.*,
+                  CASE w.phase
+                    WHEN 'P4'   THEN 0
+                    WHEN 'P3.5' THEN 1
+                    WHEN 'P3'   THEN 2
+                    WHEN 'P2'   THEN 3
+                    ELSE 9 END AS _phase_rank,
+                  CASE WHEN EXISTS (
+                    SELECT 1 FROM work_items wp
+                    WHERE wp.ea_id=w.ea_id AND wp.status='done' AND wp.verdict='PASS'
+                  ) THEN 0 ELSE 1 END AS _winner_rank
+                FROM work_items w
+                WHERE w.status='pending'
+                ORDER BY _phase_rank ASC, _winner_rank ASC, w.updated_at ASC, w.created_at ASC
+                """
             ).fetchall()
         for item in pending:
             if not free_terminals:
@@ -889,12 +909,13 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
             # Auto-enqueue next phase on PASS
             auto_next = None
             if verdict == "PASS":
-                next_map = {"P2": "P3"}
+                next_map = {"P2": "P3", "P3": "P3.5", "P3.5": "P4"}
                 npp = next_map.get(phase)
                 if npp and npp in SUPPORTED_BACKTEST_PHASES:
+                    npp_kind = npp.lower().replace(".", "")  # P3.5 → 'p35' for task kind
                     existing = conn.execute(
                         "SELECT id FROM tasks WHERE kind=? AND payload_json LIKE ?",
-                        (f"backtest_{npp.lower()}", f"%\"ea_id\": \"{parent_payload.get('ea_id')}\"%"),
+                        (f"backtest_{npp_kind}", f"%\"ea_id\": \"{parent_payload.get('ea_id')}\"%"),
                     ).fetchone()
                     if not existing:
                         enq = enqueue_backtest(root, parent_id, npp)
@@ -1901,9 +1922,12 @@ def pump(root: Path) -> dict[str, Any]:
     # 9. Spawn Codex research IN ADDITION when codex has spare capacity.
     #    OWNER 2026-05-16: "Codex kann auch Research, wir verbrauchen Codex
     #    Token langsamer als Claude Token". Codex research runs in parallel
-    #    with Claude research on a DIFFERENT source (status='active_codex' vs
-    #    'active' so they don't claim the same row). Cap research-by-codex at 1
-    #    at a time for now — primary codex budget stays reserved for builds.
+    #    with Claude research on a DIFFERENT source. Each codex_research
+    #    claims one source as assigned_worker='codex' so no double-claim.
+    #    OWNER 2026-05-17 (Hebel A): lift research parallelism from 1 to 3 —
+    #    Codex quota at 4%/5h, massive headroom; serial-1 mining was wasting
+    #    research throughput (only 4 sources mined per 8h overnight).
+    MAX_PARALLEL_CODEX_RESEARCH = 3
     try:
         codex_research_fresh = 0
         for log in (root / "logs").glob("codex_research_*.live.log"):
@@ -1912,13 +1936,26 @@ def pump(root: Path) -> dict[str, Any]:
     except Exception:
         codex_research_fresh = 0
     result["codex_research_active"] = codex_research_fresh
-    # Only spawn if no codex-research already running AND total codex procs
-    # haven't hit the build cap. active_codex was set earlier in this pump for
-    # the build dispatch; refresh it cheaply by adding the builds we just spawned.
+    # active_codex was measured before this pump's build/review spawns.
+    # Refresh by adding what we just spawned, so total cap stays at MAX_PARALLEL_CODEX.
     builds_spawned_this_cycle = len([s for s in (result.get("codex_spawns_all") or []) if isinstance(s, dict) and s.get("spawned")])
     reviews_spawned_this_cycle = len([s for s in (result.get("codex_review_spawns") or []) if isinstance(s, dict) and s.get("spawned")])
-    if codex_research_fresh < 1 and (active_codex + builds_spawned_this_cycle + reviews_spawned_this_cycle) < MAX_PARALLEL_CODEX:
-        result["codex_research_spawn"] = _claim_research_source_codex(root)
+    result["codex_research_spawns"] = []
+    # Spawn up to (MAX_PARALLEL_CODEX_RESEARCH - codex_research_fresh) new
+    # research sessions, respecting the total codex cap.
+    research_to_spawn = max(0, MAX_PARALLEL_CODEX_RESEARCH - codex_research_fresh)
+    for _ in range(research_to_spawn):
+        total_now = (active_codex + builds_spawned_this_cycle + reviews_spawned_this_cycle
+                     + len(result["codex_research_spawns"]))
+        if total_now >= MAX_PARALLEL_CODEX:
+            break
+        spawn = _claim_research_source_codex(root)
+        result["codex_research_spawns"].append(spawn)
+        if not spawn.get("spawned"):
+            break  # no more research work available — stop trying
+    # Back-compat: keep the singular field pointing to the first spawn
+    result["codex_research_spawn"] = (result["codex_research_spawns"][0]
+                                       if result["codex_research_spawns"] else None)
 
     # 10. Parameter ablation — phase-aware:
     #     - P2-PASS (exploration): 5 random ±25% mutations to find a viable
@@ -2040,6 +2077,21 @@ def pump(root: Path) -> dict[str, Any]:
             })
         if result["p3_promotions"]:
             conn.commit()
+
+    # §10d Synthetic variants for proven winners — EAs with ≥3 P2-PASSes
+    # get a one-shot 30-variant burst exploring symbol family + bool flips +
+    # ±30% on top-2 numerics. Triggers ONCE per EA (idempotent via
+    # synthetic_variants_spawned_at on build_ea task).
+    try:
+        from synth_variants import auto_spawn_for_winners
+    except ImportError:
+        import sys as _sys
+        _sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from synth_variants import auto_spawn_for_winners
+    with connect(root) as conn:
+        result["synthetic_variants"] = auto_spawn_for_winners(
+            conn, FRAMEWORK_EAS_DIR, min_pass_count=3, max_variants_per_ea=30,
+        )
 
     # §10b P3-PASS → 50 grid (one parent per pump cycle — 50 children is a lot)
     # Same setfile_path lineage check as §10a (see comment above).
@@ -2537,7 +2589,7 @@ def enqueue_backtest(root: Path, review_task_id: str, phase: str) -> dict[str, A
 
         task_id = create_task(
             conn,
-            kind=f"backtest_{phase.lower()}",
+            kind=f"backtest_{phase.lower().replace('.', '')}",  # P3.5 → 'backtest_p35'
             source_id=pred_row["source_id"],
             card_id=pred_row["card_id"],
             payload=payload,
@@ -2614,18 +2666,19 @@ def _phase_runner_cmd(phase: str, ea_id: str, terminal: str | None = None,
     """
     if phase == "P2":
         period = _detect_ea_period(ea_id)
-        # Multi-year window: annual-cycle EAs (Halloween, Estrada 6m-rotation,
-        # McConnell turn-of-month) cannot hit min-trades on a single calendar
-        # year. 2022-2024 = 3 years is enough for monthly strategies and
-        # covers ≥3 cycles for annual ones (HR7 still applies as fallback).
+        # P2 = LONG in-sample window. OWNER 2026-05-17: 2022-2024 was too
+        # short (3y) — strategies that only PASS on recent bull-run noise
+        # would slip through. 2017-2022 = 6 years covers GFC echo, COVID
+        # crash, post-COVID rally, 2022 inflation regime — much harder to
+        # curve-fit. Walk-forward 2023+ stays as the OOS gate (P4).
         cmd = [
             sys.executable,
             str(REPO_ROOT / "framework" / "scripts" / "p2_baseline.py"),
             "--ea", ea_id,
             "--period", period,
-            "--from-year", "2022",
-            "--to-year", "2024",
-            "--min-trades", "5",  # lowered from 20 for low-frequency strategies; sub-gates apply higher bars
+            "--from-year", "2017",
+            "--to-year", "2022",
+            "--min-trades", "10",  # raised from 5 — 6y covers more cycles; demand more data points
         ]
         if terminal:
             cmd.extend(["--terminal", terminal])
@@ -2635,19 +2688,57 @@ def _phase_runner_cmd(phase: str, ea_id: str, terminal: str | None = None,
         period = _detect_ea_period(ea_id)
         symbols = surviving_symbols or []
         if not symbols:
-            return None  # P3 without surviving symbols is meaningless
-        # p3_param_sweep imports `framework.scripts.pipeline_dispatcher`, so we
-        # invoke via `python -m framework.scripts.p3_param_sweep` with the repo
-        # root on sys.path. The PYTHONPATH env var is set by the dispatcher
-        # when it spawns the subprocess (see dispatch_tick).
+            return None
+        # P3 = parameter sweep on SAME in-sample window as P2 to test
+        # parameter-robustness (Sharpe stable across nearby param values).
+        # OWNER 2026-05-17: this is NOT an OOS test — that's P3.5/P4.
+        # Same year flag still (single-year sweep is fast); but we can
+        # expand once we see how runtimes pan out.
         cmd = [
             sys.executable, "-m", "framework.scripts.p3_param_sweep",
             "--ea", ea_id,
             "--symbols", ",".join(symbols),
             "--periods", period,
-            "--year", "2024",
+            "--year", "2022",  # last year of P2 window — same in-sample regime
             "--max-runs", "24",
             "--max-parallel", "5",
+        ]
+        return cmd
+
+    if phase == "P3.5":
+        # P3.5 = cross-symbol robustness on the SAME in-sample window.
+        # Does the edge generalize across multiple DWX symbols? Different
+        # from P4 walk-forward (which is true OOS in time).
+        period = _detect_ea_period(ea_id)
+        symbols = surviving_symbols or []
+        if not symbols:
+            return None
+        cmd = [
+            sys.executable, "-m", "framework.scripts.p35_csr_runner",
+            "--ea", ea_id,
+            "--symbols", ",".join(symbols),
+            "--period", period,
+            "--from-year", "2017",
+            "--to-year", "2022",
+        ]
+        return cmd
+
+    if phase == "P4":
+        # P4 = true OOS Walk-Forward on 2023-now data.
+        # Train on rolling 5y windows ending pre-2023, test 6 months OOS.
+        period = _detect_ea_period(ea_id)
+        symbols = surviving_symbols or []
+        if not symbols:
+            return None
+        cmd = [
+            sys.executable, "-m", "framework.scripts.p4_walk_forward",
+            "--ea", ea_id,
+            "--symbols", ",".join(symbols),
+            "--period", period,
+            "--train-from-year", "2017",
+            "--train-to-year", "2022",
+            "--oos-from-year", "2023",
+            "--oos-to-year", "2025",
         ]
         return cmd
 
@@ -2771,12 +2862,13 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
                     # already exists for the same EA. Saves the wait for the
                     # next hourly wake + manual enqueue.
                     if verdict == "PASS":
-                        next_phase_map = {"P2": "P3"}  # extend as adapters come online
+                        next_phase_map = {"P2": "P3", "P3": "P3.5", "P3.5": "P4"}  # extend as adapters come online
                         next_phase = next_phase_map.get(phase)
                         if next_phase and next_phase in SUPPORTED_BACKTEST_PHASES:
+                            next_phase_kind = next_phase.lower().replace(".", "")  # P3.5 → 'p35'
                             existing_next = conn.execute(
                                 "SELECT id FROM tasks WHERE kind = ? AND payload_json LIKE ?",
-                                (f"backtest_{next_phase.lower()}", f"%\"ea_id\": \"{ea_id}\"%"),
+                                (f"backtest_{next_phase_kind}", f"%\"ea_id\": \"{ea_id}\"%"),
                             ).fetchone()
                             if not existing_next:
                                 # Need to commit current update first so enqueue sees it
