@@ -724,6 +724,46 @@ def main() -> int:
     except Exception:
         health = {}
 
+    # 7-day trend chart data — counts per day of key events
+    def _trend_data() -> dict:
+        try:
+            con = sqlite3.connect(str(DB))
+            con.row_factory = sqlite3.Row
+            rows = list(con.execute("""
+                SELECT DATE(ts) day, event, COUNT(*) c FROM events
+                WHERE ts >= date('now', '-7 days')
+                GROUP BY day, event
+            """))
+            con.close()
+        except Exception:
+            return {}
+        days: dict[str, dict[str, int]] = {}
+        for r in rows:
+            days.setdefault(r["day"], {})[r["event"]] = r["c"]
+        # P2-PASS counts per day from work_items (more reliable signal)
+        try:
+            con = sqlite3.connect(str(DB))
+            con.row_factory = sqlite3.Row
+            for r in con.execute("""
+                SELECT DATE(updated_at) day, COUNT(*) c FROM work_items
+                WHERE phase='P2' AND status='done' AND verdict='PASS'
+                  AND updated_at >= date('now', '-7 days')
+                GROUP BY day
+            """):
+                days.setdefault(r["day"], {})["_p2_pass"] = r["c"]
+            for r in con.execute("""
+                SELECT DATE(updated_at) day, COUNT(*) c FROM work_items
+                WHERE phase='P3' AND status='done' AND verdict='PASS'
+                  AND updated_at >= date('now', '-7 days')
+                GROUP BY day
+            """):
+                days.setdefault(r["day"], {})["_p3_pass"] = r["c"]
+            con.close()
+        except Exception:
+            pass
+        return days
+    trend = _trend_data()
+
     severity, msg = diagnose_bottleneck(procs, q, claude_workers, codex_workers)
 
     # === HTML ===
@@ -1047,6 +1087,44 @@ def main() -> int:
         + _snap_card("codex", "Codex")
         + '</div>'
     )
+
+    # 7-day trend chart — small inline SVG histogram per metric
+    def _trend_bars(metric_key: str, label: str, color: str) -> str:
+        # Build last-7-day series
+        today_local = dt.date.today()
+        days = [(today_local - dt.timedelta(days=i)).isoformat() for i in range(6, -1, -1)]
+        values = [int((trend.get(d) or {}).get(metric_key, 0)) for d in days]
+        max_v = max(values) if values else 0
+        bars = []
+        for i, (d, v) in enumerate(zip(days, values)):
+            h = max(2, int(36 * v / max_v)) if max_v > 0 else 2
+            day_label = d[-2:]  # last 2 chars of date "DD"
+            bars.append(
+                f'<div class="trend-bar-wrap" title="{html.escape(d)}: {v}">'
+                f'<div class="trend-bar" style="height:{h}px;background:{color}"></div>'
+                f'<div class="trend-bar-num">{v}</div>'
+                f'<div class="trend-bar-day">{day_label}</div>'
+                f'</div>'
+            )
+        total = sum(values)
+        return (
+            f'<div class="trend-card">'
+            f'<div class="trend-label">{label}</div>'
+            f'<div class="trend-row">{"".join(bars)}</div>'
+            f'<div class="trend-foot">7-day total: <b>{total}</b></div>'
+            f'</div>'
+        )
+    if trend:
+        trend_html = (
+            '<div class="trends">'
+            + _trend_bars("approved", "Cards approved/day", "#10b981")
+            + _trend_bars("_p2_pass", "P2 PASS/day", "#06b6d4")
+            + _trend_bars("_p3_pass", "P3 PASS/day", "#34d399")
+            + _trend_bars("build_blocked_by_codex_review", "Codex pre-review blocks/day", "#f59e0b")
+            + '</div>'
+        )
+    else:
+        trend_html = '<div class="trends-empty">no trend data yet</div>'
 
     # Health banner — reads state/health.json written by farmctl health.
     # If overall=FAIL → red banner with list of FAILing checks + action hints.
@@ -1471,6 +1549,42 @@ tr:last-child td {{ border-bottom: none; }}
 .health-name {{ color: var(--qm-text); font-weight: 600; }}
 .health-detail {{ color: var(--qm-text-dim); }}
 .health-hint {{ color: var(--qm-text-muted); font-style: italic; }}
+
+/* === 7-day trend dashboard === */
+.trends {{
+  display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 10px; margin: 0 0 18px 0;
+}}
+.trend-card {{
+  background: var(--qm-surface-1); border: 1px solid var(--qm-border);
+  border-radius: 8px; padding: 10px 12px;
+}}
+.trend-label {{
+  font-size: 9px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--qm-text-muted); margin-bottom: 8px;
+}}
+.trend-row {{
+  display: flex; align-items: flex-end; gap: 4px; height: 56px;
+}}
+.trend-bar-wrap {{
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+}}
+.trend-bar {{
+  width: 100%; border-radius: 2px 2px 0 0; min-height: 2px;
+}}
+.trend-bar-num {{
+  font-family: var(--font-mono); font-size: 9px;
+  color: var(--qm-text-muted); margin-top: 2px;
+}}
+.trend-bar-day {{
+  font-family: var(--font-mono); font-size: 8px;
+  color: var(--qm-text-subtle);
+}}
+.trend-foot {{
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--qm-text-muted); margin-top: 6px;
+}}
+.trends-empty {{ font-size: 10px; color: var(--qm-text-muted); margin-bottom: 18px; }}
 </style></head>
 <body>
 
@@ -1482,6 +1596,8 @@ tr:last-child td {{ border-bottom: none; }}
 </div>
 
 {health_banner_html}
+
+{trend_html}
 
 {heureka_html}
 
