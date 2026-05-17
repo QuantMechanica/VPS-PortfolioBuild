@@ -74,3 +74,4 @@ ea_id,slug,strategy_id,status,owner,created_at
 1056,moskowitz-tsmom-multiasset,7ede58dd-d184-5099-9d48-7a65de230853,active,Development,2026-05-17
 1057,asness-xsmom-rank,7ede58dd-d184-5099-9d48-7a65de230853,active,Development,2026-05-17
 1058,gatev-fx-pairs-zscore,7ede58dd-d184-5099-9d48-7a65de230853,active,Development,2026-05-17
+1059,jegadeesh-stm-reversal-indices,7ede58dd-d184-5099-9d48-7a65de230853,active,Development,2026-05-17
