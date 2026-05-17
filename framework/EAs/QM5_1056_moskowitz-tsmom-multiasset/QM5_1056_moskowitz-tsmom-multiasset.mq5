@@ -26,6 +26,9 @@ input int    strategy_atr_period          = 20;
 input double strategy_atr_sl_mult         = 4.0;
 input int    strategy_spread_median_days  = 20;
 input double strategy_spread_mult         = 3.0;
+input int    strategy_entry_offset_from_month_end = -1;
+input int    strategy_exit_offset_from_month_end  = -1;
+input bool   strategy_exit_on_session_close       = true;
 
 const int STRATEGY_UNIVERSE_SIZE = 10;
 string    g_universe_symbols[10] =
@@ -52,19 +55,107 @@ int Strategy_RebalanceKey(const datetime t)
    return dt.year * 100 + dt.mon;
   }
 
-bool Strategy_IsMonthEndClosedBar()
+int MonthOf(const datetime t)
   {
-   const datetime closed_bar = iTime(_Symbol, PERIOD_D1, 1);
-   const datetime current_bar = iTime(_Symbol, PERIOD_D1, 0);
-   if(closed_bar <= 0 || current_bar <= 0)
+   MqlDateTime dt;
+   TimeToStruct(t, dt);
+   return dt.mon;
+  }
+
+datetime DateFloor(const datetime t)
+  {
+   MqlDateTime dt;
+   TimeToStruct(t, dt);
+   dt.hour = 0;
+   dt.min = 0;
+   dt.sec = 0;
+   return StructToTime(dt);
+  }
+
+bool HasScheduledTradeSession(const datetime date_time)
+  {
+   MqlDateTime dt;
+   TimeToStruct(date_time, dt);
+
+   datetime session_from = 0;
+   datetime session_to = 0;
+   for(uint session = 0; session < 10; ++session)
+     {
+      if(SymbolInfoSessionTrade(_Symbol, (ENUM_DAY_OF_WEEK)dt.day_of_week, session, session_from, session_to))
+         return true;
+     }
+
+   return (dt.day_of_week >= 1 && dt.day_of_week <= 5);
+  }
+
+bool IsFirstTradingSessionOfMonth()
+  {
+   const datetime current_d1 = iTime(_Symbol, PERIOD_D1, 0);
+   const datetime prior_d1 = iTime(_Symbol, PERIOD_D1, 1);
+   if(current_d1 <= 0 || prior_d1 <= 0)
       return false;
 
-   MqlDateTime closed_dt;
-   MqlDateTime current_dt;
-   TimeToStruct(closed_bar, closed_dt);
-   TimeToStruct(current_bar, current_dt);
+   return (MonthOf(current_d1) != MonthOf(prior_d1));
+  }
 
-   return (closed_dt.mon != current_dt.mon || closed_dt.year != current_dt.year);
+datetime NextScheduledTradingDayAfter(const datetime bar_time)
+  {
+   const datetime day_start = DateFloor(bar_time);
+   for(int day = 1; day <= 10; ++day)
+     {
+      const datetime candidate = day_start + day * 86400;
+      if(HasScheduledTradeSession(candidate))
+         return candidate;
+     }
+
+   return 0;
+  }
+
+bool IsNearD1SessionClose(const datetime current_d1)
+  {
+   const datetime next_d1 = NextScheduledTradingDayAfter(current_d1);
+   if(next_d1 <= 0)
+      return false;
+
+   return (TimeCurrent() >= next_d1 - 60);
+  }
+
+bool IsLastScheduledTradingDayOfMonth(const datetime current_d1)
+  {
+   const int current_month = MonthOf(current_d1);
+   const datetime day_start = DateFloor(current_d1);
+   for(int day = 1; day <= 10; ++day)
+     {
+      const datetime candidate = day_start + day * 86400;
+      if(MonthOf(candidate) != current_month)
+         return true;
+
+      if(HasScheduledTradeSession(candidate))
+         return false;
+     }
+
+   return false;
+  }
+
+bool IsLastTradingSessionBeforeMonthChange(const bool require_session_close)
+  {
+   const datetime current_d1 = iTime(_Symbol, PERIOD_D1, 0);
+   if(current_d1 <= 0)
+      return false;
+
+   if(!IsLastScheduledTradingDayOfMonth(current_d1))
+      return false;
+
+   return (!require_session_close || IsNearD1SessionClose(current_d1));
+  }
+
+bool Strategy_IsMonthEndTimingWindow(const int offset_from_month_end, const bool require_session_close)
+  {
+   const int offset = MathMax(-1, MathMin(1, offset_from_month_end));
+   if(offset > 0)
+      return IsFirstTradingSessionOfMonth();
+
+   return IsLastTradingSessionBeforeMonthChange(offset < 0 && require_session_close);
   }
 
 int Strategy_TsmomDirection()
@@ -168,10 +259,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!Strategy_IsMonthEndClosedBar())
+   if(!Strategy_IsMonthEndTimingWindow(strategy_entry_offset_from_month_end, strategy_exit_on_session_close))
       return false;
 
-   const int rebalance_key = Strategy_RebalanceKey(iTime(_Symbol, PERIOD_D1, 1));
+   const datetime rebalance_bar = (strategy_entry_offset_from_month_end > 0) ? iTime(_Symbol, PERIOD_D1, 1) : iTime(_Symbol, PERIOD_D1, 0);
+   const int rebalance_key = Strategy_RebalanceKey(rebalance_bar);
    if(rebalance_key <= 0 || rebalance_key == g_last_entry_rebalance_key)
       return false;
    g_last_entry_rebalance_key = rebalance_key;
@@ -214,12 +306,13 @@ bool Strategy_ExitSignal()
   {
    if(_Period != PERIOD_D1)
       return false;
-   if(!Strategy_IsMonthEndClosedBar())
+   if(!Strategy_IsMonthEndTimingWindow(strategy_exit_offset_from_month_end, strategy_exit_on_session_close))
       return false;
    if(!Strategy_HasOpenPosition())
       return false;
 
-   const int rebalance_key = Strategy_RebalanceKey(iTime(_Symbol, PERIOD_D1, 1));
+   const datetime rebalance_bar = (strategy_exit_offset_from_month_end > 0) ? iTime(_Symbol, PERIOD_D1, 1) : iTime(_Symbol, PERIOD_D1, 0);
+   const int rebalance_key = Strategy_RebalanceKey(rebalance_bar);
    if(rebalance_key <= 0 || rebalance_key == g_last_exit_rebalance_key)
       return false;
    if(rebalance_key == g_last_entry_rebalance_key)
@@ -291,15 +384,15 @@ void OnTick()
         }
      }
 
-   if(!QM_IsNewBar())
-      return;
-
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
       QM_TM_OpenPosition(req, out_ticket);
      }
+
+   if(!QM_IsNewBar())
+      return;
   }
 
 void OnTimer()
