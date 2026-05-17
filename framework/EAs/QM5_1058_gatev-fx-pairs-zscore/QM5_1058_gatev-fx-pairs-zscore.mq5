@@ -27,7 +27,6 @@ input double strategy_exit_z             = 0.5;
 input double strategy_hard_stop_z        = 4.0;
 input double strategy_min_corr           = 0.6;
 input int    strategy_time_stop_bars     = 20;
-input int    strategy_price_sl_points    = 400;
 input int    strategy_max_spread_points  = 50;
 
 const int STRATEGY_PAIR_COUNT = 2;
@@ -74,6 +73,54 @@ bool Strategy_HasOpenPosition()
       return true;
      }
    return false;
+  }
+
+int Strategy_PairSlot(const int pair_index, const bool leg_a)
+  {
+   if(pair_index < 0 || pair_index >= STRATEGY_PAIR_COUNT)
+      return qm_magic_slot_offset;
+   return leg_a ? g_pair_slot_a[pair_index] : g_pair_slot_b[pair_index];
+  }
+
+bool Strategy_IsPairLegPosition(const int pair_index)
+  {
+   if(pair_index < 0 || pair_index >= STRATEGY_PAIR_COUNT)
+      return false;
+
+   const string symbol = PositionGetString(POSITION_SYMBOL);
+   const int magic = (int)PositionGetInteger(POSITION_MAGIC);
+   if(symbol == g_pair_a[pair_index] && magic == QM_Magic(qm_ea_id, Strategy_PairSlot(pair_index, true)))
+      return true;
+   if(symbol == g_pair_b[pair_index] && magic == QM_Magic(qm_ea_id, Strategy_PairSlot(pair_index, false)))
+      return true;
+   return false;
+  }
+
+int Strategy_OpenPairLegCount(const int pair_index)
+  {
+   int count = 0;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(Strategy_IsPairLegPosition(pair_index))
+         ++count;
+     }
+   return count;
+  }
+
+void Strategy_CloseOpenPairLegs(const int pair_index)
+  {
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(!Strategy_IsPairLegPosition(pair_index))
+         continue;
+      QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+     }
   }
 
 bool Strategy_ReadLogPrices(const string sym_a,
@@ -269,12 +316,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    const double entry = (req.type == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
                                              : SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(entry <= 0.0 || point <= 0.0 || strategy_price_sl_points <= 0)
+   if(entry <= 0.0)
       return false;
 
-   req.sl = (req.type == QM_BUY) ? entry - (double)strategy_price_sl_points * point
-                                 : entry + (double)strategy_price_sl_points * point;
+   req.sl = 0.0;
    req.reason = (spread_direction > 0) ? "QM5_1058_LONG_PAIR_Z_LT_NEG2" : "QM5_1058_SHORT_PAIR_Z_GT_POS2";
    return true;
   }
@@ -286,7 +331,11 @@ void Strategy_ManageOpenPosition()
 
 bool Strategy_ExitSignal()
   {
-   if(!Strategy_HasOpenPosition())
+   const int pair_index = Strategy_PairIndex();
+   const int open_legs = Strategy_OpenPairLegCount(pair_index);
+   if(open_legs == 1)
+      return true;
+   if(open_legs <= 0)
       return false;
 
    double z = 0.0;
@@ -359,16 +408,7 @@ void OnTick()
 
    if(Strategy_ExitSignal())
      {
-      const int magic = QM_FrameworkMagic();
-      for(int i = PositionsTotal() - 1; i >= 0; --i)
-        {
-         const ulong ticket = PositionGetTicket(i);
-         if(!PositionSelectByTicket(ticket))
-            continue;
-         if(PositionGetInteger(POSITION_MAGIC) != magic)
-            continue;
-         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
-        }
+      Strategy_CloseOpenPairLegs(Strategy_PairIndex());
      }
 
    QM_EntryRequest req;
