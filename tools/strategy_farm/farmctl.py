@@ -2895,6 +2895,17 @@ def _detect_ea_period(ea_id: str) -> str:
     p2_baseline.py needs --period to match the setfile pattern. Default H1
     fails for any EA built on a different timeframe (e.g. QM5_1047 Halloween
     on D1). Inspect framework/EAs/<ea_id>_*/sets/ and pick the unique period.
+
+    BUG fix 2026-05-17: original regex `_([A-Za-z0-9]+)_backtest\\.set$` had
+    two issues — (a) didn't match ablation children which end in
+    `_ablation_NN.set` not `_backtest.set`, (b) DID match synth children
+    `_D1_synth_000_backtest.set` capturing `000` as a fake period. Result:
+    QM5_1049 D1-only setfiles polluted by synth's `000`/`001`/... → no
+    unique period → fallback H1 → McConnell-D1 backtest tried on H1 →
+    METATESTER_HUNG. That blocked 11 P3 runs.
+
+    Fix: match ONLY canonical MT5 timeframe tokens. Order matters
+    (longest first) so H4 doesn't get partial-matched by H.
     """
     ea_root = REPO_ROOT / "framework" / "EAs"
     candidates = [p for p in ea_root.glob(f"{ea_id}_*") if p.is_dir()]
@@ -2903,14 +2914,23 @@ def _detect_ea_period(ea_id: str) -> str:
     sets_dir = candidates[0] / "sets"
     if not sets_dir.is_dir():
         return "H1"
+    VALID_TFS = ("MN1", "W1", "D1", "H12", "H8", "H6", "H4", "H3", "H2", "H1",
+                 "M30", "M20", "M15", "M12", "M10", "M6", "M5", "M4", "M3", "M2", "M1")
+    pat = re.compile(r"_(" + "|".join(VALID_TFS) + r")_")
     periods: set[str] = set()
-    pat = re.compile(r"_([A-Za-z0-9]+)_backtest\.set$")
     for f in sets_dir.iterdir():
+        if not f.name.endswith(".set"):
+            continue
         m = pat.search(f.name)
         if m:
             periods.add(m.group(1))
     if len(periods) == 1:
         return periods.pop()
+    # Multiple TFs (rare — mixed-TF strategies) OR none detected → conservative default
+    if periods:
+        # Prefer the longest TF (most strategies are D1/H4 not M1)
+        order = {tf: i for i, tf in enumerate(VALID_TFS)}
+        return sorted(periods, key=lambda p: order.get(p, 999))[0]
     return "H1"
 
 
