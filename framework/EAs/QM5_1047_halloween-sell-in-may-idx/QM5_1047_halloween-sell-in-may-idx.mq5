@@ -4,44 +4,47 @@
 
 #include <QM/QM_Common.mqh>
 
+// =============================================================================
+// QuantMechanica V5 EA SKELETON
+// -----------------------------------------------------------------------------
+// Strategy card: QM5_1047, Halloween / Sell-in-May Equity Index Seasonality.
+// Long last trading day of October, flatten last trading day of April.
+// =============================================================================
+
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                     = 1047;
-input int    qm_magic_slot_offset         = 0;
+input int    qm_ea_id                    = 1047;
+input int    qm_magic_slot_offset        = 0;
 
 input group "Risk"
-input double RISK_PERCENT                 = 0.0;
-input double RISK_FIXED                   = 1000.0;
-input double PORTFOLIO_WEIGHT             = 1.0;
+input double RISK_PERCENT                = 0.0;
+input double RISK_FIXED                  = 1000.0;
+input double PORTFOLIO_WEIGHT            = 1.0;
 
 input group "News"
-input QM_NewsMode qm_news_mode            = QM_NEWS_OFF;
+input QM_NewsMode qm_news_mode           = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled      = false;
-input int    qm_friday_close_hour_broker  = 21;
+input bool   qm_friday_close_enabled     = false;
+input int    qm_friday_close_hour_broker = 21;
 
 input group "Strategy"
-input int    strategy_entry_month         = 10;
-input int    strategy_exit_month          = 4;
-input int    strategy_atr_period          = 14;
-input double strategy_atr_stop_mult       = 4.0;
-input bool   strategy_momentum_overlay    = false;
-input int    strategy_momentum_months     = 6;
+input int    strategy_entry_month        = 10;
+input int    strategy_exit_month         = 4;
+input int    strategy_atr_period         = 14;
+input double strategy_atr_stop_mult      = 4.0;
+input bool   strategy_momentum_overlay   = false;
+input int    strategy_momentum_d1_bars   = 126;
+input int    strategy_entry_offset_from_month_end = -1;
+input int    strategy_exit_offset_from_month_end  = -1;
+input bool   strategy_exit_on_session_close       = true;
+input int    strategy_max_spread_points  = 0;
 
-datetime g_last_bar_time = 0;
-datetime g_last_signal_bar_time = 0;
-int      g_atr_handle = INVALID_HANDLE;
+// -----------------------------------------------------------------------------
+// Strategy hooks
+// -----------------------------------------------------------------------------
 
-bool IsNewBar()
-  {
-   const datetime t0 = iTime(_Symbol, _Period, 0);
-   if(t0 <= 0)
-      return false;
-   if(t0 == g_last_bar_time)
-      return false;
-   g_last_bar_time = t0;
-   return true;
-  }
+datetime g_last_entry_d1_bar = 0;
+datetime g_last_exit_d1_bar  = 0;
 
 int MonthOf(const datetime t)
   {
@@ -50,90 +53,129 @@ int MonthOf(const datetime t)
    return dt.mon;
   }
 
-bool MonthTransitionFrom(const int prior_month)
+datetime DateFloor(const datetime t)
   {
-   const datetime current_bar = iTime(_Symbol, _Period, 0);
-   const datetime prior_bar = iTime(_Symbol, _Period, 1);
-   if(current_bar <= 0 || prior_bar <= 0)
-      return false;
-   if(current_bar == g_last_signal_bar_time)
-      return false;
-   if(MonthOf(prior_bar) != prior_month)
-      return false;
-   if(MonthOf(current_bar) == prior_month)
-      return false;
-   return true;
+   MqlDateTime dt;
+   TimeToStruct(t, dt);
+   dt.hour = 0;
+   dt.min = 0;
+   dt.sec = 0;
+   return StructToTime(dt);
   }
 
-void MarkSignalProcessed()
+bool HasScheduledTradeSession(const datetime date_time)
   {
-   g_last_signal_bar_time = iTime(_Symbol, _Period, 0);
+   MqlDateTime dt;
+   TimeToStruct(date_time, dt);
+
+   datetime session_from = 0;
+   datetime session_to = 0;
+   for(uint session = 0; session < 10; ++session)
+     {
+      if(SymbolInfoSessionTrade(_Symbol, (ENUM_DAY_OF_WEEK)dt.day_of_week, session, session_from, session_to))
+         return true;
+     }
+
+   return (dt.day_of_week >= 1 && dt.day_of_week <= 5);
   }
 
-bool ReadATR(const int shift, double &atr_value)
+bool GetOurPosition()
   {
-   atr_value = 0.0;
-   if(g_atr_handle == INVALID_HANDLE)
-      return false;
-
-   double buffer[1];
-   if(CopyBuffer(g_atr_handle, 0, shift, 1, buffer) != 1)
-      return false;
-   if(buffer[0] <= 0.0)
-      return false;
-
-   atr_value = buffer[0];
-   return true;
-  }
-
-bool MomentumOverlayAllowsEntry()
-  {
-   if(!strategy_momentum_overlay)
-      return true;
-
-   const int lookback_bars = MathMax(1, strategy_momentum_months) * 21;
-   const double recent_close = iClose(_Symbol, PERIOD_D1, 1);
-   const double past_close = iClose(_Symbol, PERIOD_D1, 1 + lookback_bars);
-   if(recent_close <= 0.0 || past_close <= 0.0)
-      return false;
-
-   return (recent_close > past_close);
-  }
-
-bool GetOurPosition(ulong &ticket)
-  {
-   ticket = 0;
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
       return false;
 
-   const int total = PositionsTotal();
-   for(int i = 0; i < total; ++i)
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
-      const ulong t = PositionGetTicket(i);
-      if(t == 0 || !PositionSelectByTicket(t))
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
          continue;
       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
-
-      ticket = t;
       return true;
      }
 
    return false;
   }
 
+datetime NextScheduledTradingDayAfter(const datetime bar_time)
+  {
+   const datetime day_start = DateFloor(bar_time);
+   for(int day = 1; day <= 10; ++day)
+     {
+      const datetime candidate = day_start + day * 86400;
+      if(HasScheduledTradeSession(candidate))
+         return candidate;
+     }
+
+   return 0;
+  }
+
+bool IsNearD1SessionClose(const datetime current_d1)
+  {
+   const datetime next_d1 = NextScheduledTradingDayAfter(current_d1);
+   if(next_d1 <= 0)
+      return false;
+
+   return (TimeCurrent() >= next_d1 - 60);
+  }
+
+bool IsLastScheduledTradingDayOfMonth(const datetime current_d1)
+  {
+   const int current_month = MonthOf(current_d1);
+   const datetime day_start = DateFloor(current_d1);
+   for(int day = 1; day <= 10; ++day)
+     {
+      const datetime candidate = day_start + day * 86400;
+      if(MonthOf(candidate) != current_month)
+         return true;
+
+      if(HasScheduledTradeSession(candidate))
+         return false;
+     }
+
+   return false;
+  }
+
+bool IsFirstTradingSessionAfterMonth(const datetime current_d1, const int target_month)
+  {
+   const datetime prior_d1 = iTime(_Symbol, PERIOD_D1, 1);
+   if(current_d1 <= 0 || prior_d1 <= 0)
+      return false;
+
+   return (MonthOf(prior_d1) == target_month && MonthOf(current_d1) != target_month);
+  }
+
+bool IsMonthEndTimingWindow(const int target_month, const int offset_from_month_end, const bool require_session_close)
+  {
+   const datetime current_d1 = iTime(_Symbol, PERIOD_D1, 0);
+   if(current_d1 <= 0)
+      return false;
+
+   const int offset = MathMax(-1, MathMin(1, offset_from_month_end));
+   if(offset > 0)
+      return IsFirstTradingSessionAfterMonth(current_d1, target_month);
+
+   if(MonthOf(current_d1) != target_month)
+      return false;
+   if(!IsLastScheduledTradingDayOfMonth(current_d1))
+      return false;
+
+   return (!require_session_close || IsNearD1SessionClose(current_d1));
+  }
+
 // No Trade Filter (time, spread, news)
 bool Strategy_NoTradeFilter()
   {
-   if(!QM_KillSwitchCheck())
-      return true;
-   if(!QM_NewsAllowsTrade(_Symbol, TimeCurrent(), qm_news_mode))
-      return true;
-   if(QM_FrameworkHandleFridayClose())
-      return true;
+   if(strategy_max_spread_points > 0)
+     {
+      const long spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+      if(spread > strategy_max_spread_points)
+         return true;
+     }
+
    return false;
   }
 
@@ -148,27 +190,43 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!MonthTransitionFrom(strategy_entry_month))
+   const datetime current_d1 = iTime(_Symbol, PERIOD_D1, 0);
+   if(current_d1 <= 0 || current_d1 == g_last_entry_d1_bar)
       return false;
-   if(!MomentumOverlayAllowsEntry())
+
+   if(GetOurPosition())
+      return false;
+
+   if(!IsMonthEndTimingWindow(strategy_entry_month,
+                              strategy_entry_offset_from_month_end,
+                              strategy_exit_on_session_close))
+      return false;
+
+   if(strategy_momentum_overlay)
      {
-      MarkSignalProcessed();
-      return false;
+      const int lookback = MathMax(1, strategy_momentum_d1_bars);
+      const double recent_close = iClose(_Symbol, PERIOD_D1, 1);
+      const double past_close = iClose(_Symbol, PERIOD_D1, 1 + lookback);
+      if(recent_close <= 0.0 || past_close <= 0.0 || recent_close <= past_close)
+         return false;
      }
 
-   double atr = 0.0;
-   if(!ReadATR(1, atr))
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(ask <= 0.0 || point <= 0.0)
       return false;
 
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   if(ask <= 0.0)
+   const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   if(atr <= 0.0 || strategy_atr_stop_mult <= 0.0)
       return false;
 
    req.price = ask;
    req.sl = ask - (atr * strategy_atr_stop_mult);
    req.tp = 0.0;
    req.reason = "HALLOWEEN_LONG_NOV_APR";
-   return (req.sl > 0.0 && req.sl < ask);
+
+   g_last_entry_d1_bar = current_d1;
+   return (req.sl > 0.0 && req.sl < ask && ((ask - req.sl) / point) > 0.0);
   }
 
 // Trade Management
@@ -180,32 +238,34 @@ void Strategy_ManageOpenPosition()
 // Trade Close
 bool Strategy_ExitSignal()
   {
-   if(!MonthTransitionFrom(strategy_exit_month))
+   const datetime current_d1 = iTime(_Symbol, PERIOD_D1, 0);
+   if(current_d1 <= 0 || current_d1 == g_last_exit_d1_bar)
       return false;
 
-   ulong ticket = 0;
-   if(!GetOurPosition(ticket))
-     {
-      MarkSignalProcessed();
+   if(!GetOurPosition())
       return false;
-     }
 
-   MarkSignalProcessed();
-   return QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+   if(!IsMonthEndTimingWindow(strategy_exit_month,
+                              strategy_exit_offset_from_month_end,
+                              strategy_exit_on_session_close))
+      return false;
+
+   g_last_exit_d1_bar = current_d1;
+   return true;
   }
 
 // News Filter Hook (callable for P8 News Impact phase)
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return QM_NewsAllowsTrade(_Symbol, broker_time, qm_news_mode);
+   return false;
   }
+
+// -----------------------------------------------------------------------------
+// Framework wiring
+// -----------------------------------------------------------------------------
 
 int OnInit()
   {
-   g_atr_handle = iATR(_Symbol, PERIOD_D1, strategy_atr_period);
-   if(g_atr_handle == INVALID_HANDLE)
-      return INIT_FAILED;
-
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
                         RISK_PERCENT,
@@ -222,42 +282,51 @@ int OnInit()
 
 void OnDeinit(const int reason)
   {
-   if(g_atr_handle != INVALID_HANDLE)
-     {
-      IndicatorRelease(g_atr_handle);
-      g_atr_handle = INVALID_HANDLE;
-     }
-
    QM_LogEvent(QM_INFO, "DEINIT", StringFormat("{\"reason\":%d}", reason));
    QM_FrameworkShutdown();
   }
 
 void OnTick()
   {
+   if(!QM_KillSwitchCheck())
+      return;
+
+   const datetime broker_now = TimeCurrent();
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+   if(!QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode))
+      return;
+   if(QM_FrameworkHandleFridayClose())
+      return;
+
    if(Strategy_NoTradeFilter())
       return;
 
-   ulong ticket = 0;
-   const bool has_position = GetOurPosition(ticket);
-   if(has_position)
-      Strategy_ManageOpenPosition();
-
-   if(!IsNewBar())
-      return;
+   Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
-      return;
-
-   if(has_position)
-      return;
+     {
+      const int magic = QM_FrameworkMagic();
+      for(int i = PositionsTotal() - 1; i >= 0; --i)
+        {
+         const ulong ticket = PositionGetTicket(i);
+         if(!PositionSelectByTicket(ticket))
+            continue;
+         if(PositionGetInteger(POSITION_MAGIC) != magic)
+            continue;
+         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+        }
+     }
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
       QM_TM_OpenPosition(req, out_ticket);
-      MarkSignalProcessed();
      }
+
+   if(!QM_IsNewBar())
+      return;
   }
 
 void OnTimer()
