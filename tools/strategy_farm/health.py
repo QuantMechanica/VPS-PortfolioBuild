@@ -61,27 +61,67 @@ def _check(name: str, status: str, value, threshold, detail: str, hint: str) -> 
 
 
 def chk_codex_review_fail_rate(con) -> dict:
-    """If > 80% of codex_review verdicts in last 1h are FAIL, the §E prompt
-    or the build pipeline is broken — none of these reach Claude review."""
+    """Codex review FAIL rate. Distinguish two classes:
+
+    SYSTEM FAIL — phantom field check, schema drift, prompt-vs-producer
+      mismatch. Fire RED. Example past incident: build_result missing
+      `status` field that didn't exist.
+
+    STRATEGY QUALITY — smoke_sanity 0-trade etc. The review IS doing its
+      job catching weak strategy ideas. Pump §4b short-circuits these
+      before codex_review is even spawned, but if some leak through that's
+      not a system bug, just normal upstream noise. WARN/OK, not FAIL.
+
+    Method: count FAILs by section. If section_fails are dominated by
+    smoke_sanity (≥80% of FAILs touch it and no other section), call it
+    strategy-quality. Else system.
+    """
     cutoff = (_utc_now() - dt.timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
     rows = con.execute(
         "SELECT payload_json FROM tasks WHERE kind='codex_review' AND status='done' "
         "AND updated_at >= ?", (cutoff,)
     ).fetchall()
     n = len(rows)
-    n_fail = sum(1 for r in rows if '"verdict": "FAIL"' in r["payload_json"])
+    n_fail = 0
+    fails_smoke_only = 0
+    fails_other = 0
+    for r in rows:
+        try:
+            p = json.loads(r["payload_json"])
+        except Exception:
+            continue
+        if (p.get("verdict") or "").upper() != "FAIL":
+            continue
+        n_fail += 1
+        secs = p.get("sections") or {}
+        failed_secs = {k for k, v in secs.items() if v == "FAIL"}
+        # Strategy-quality classification: ONLY smoke_sanity (or smoke + build_result
+        # which co-fail when smoke had 0 trades) failed
+        if failed_secs and failed_secs.issubset({"smoke_sanity", "build_result"}):
+            fails_smoke_only += 1
+        else:
+            fails_other += 1
     rate = n_fail / n if n > 0 else 0
-    if n >= 3 and rate >= 0.8:
+    if n < 3:
+        return _check("codex_review_fail_rate_1h", "OK", round(rate, 2), 0.8,
+                      f"{n_fail}/{n} FAIL (low volume)", "")
+    if fails_other >= 2:
         return _check("codex_review_fail_rate_1h", "FAIL", round(rate, 2), 0.8,
-                      f"{n_fail}/{n} codex_reviews FAIL in last hour",
-                      "Inspect verdict JSONs in artifacts/verdicts/codex_review_*.json; "
-                      "likely a prompt-schema mismatch or systematic build defect")
-    if n >= 3 and rate >= 0.5:
-        return _check("codex_review_fail_rate_1h", "WARN", round(rate, 2), 0.5,
-                      f"{n_fail}/{n} codex_reviews FAIL in last hour",
-                      "Look at common findings — early sign of regression")
+                      f"{fails_other}/{n} system-class FAILs in last hour",
+                      "Inspect verdicts that FAIL on framework_corset, magic_registry, "
+                      "or forbidden_grep — those indicate Codex producing bad code or "
+                      "a schema drift, NOT just strategy quality")
+    if rate >= 0.8 and fails_smoke_only >= 3:
+        # All FAILs are strategy-quality (0-trade). Pump §4b should be
+        # short-circuiting most of these BEFORE codex_review now, so this
+        # rate should drop. Surface as WARN.
+        return _check("codex_review_fail_rate_1h", "WARN", round(rate, 2), 0.8,
+                      f"{fails_smoke_only}/{n} FAIL all on smoke_sanity (strategy quality)",
+                      "Strategies producing 0 trades. Pump §4b will short-circuit "
+                      "future ones before codex_review spawns. Watch the pattern — "
+                      "if persists, consider tightening G0 trade-frequency check.")
     return _check("codex_review_fail_rate_1h", "OK", round(rate, 2), 0.8,
-                  f"{n_fail}/{n} FAIL", "")
+                  f"{n_fail}/{n} FAIL ({fails_smoke_only} strategy-quality, {fails_other} system)", "")
 
 
 def chk_cards_ready_stagnation(con) -> dict:
