@@ -39,6 +39,35 @@ PIPELINE_REPORT_ROOT = Path(r"D:\QM\reports\pipeline")
 SUPPORTED_BACKTEST_PHASES = ("P2", "P3", "P3.5", "P4")  # 2026-05-17: extend chain to P3.5 (cross-symbol robustness) + P4 (walk-forward OOS)
 MT5_TERMINALS = ("T1", "T2", "T3", "T4", "T5")  # factory fleet, used by dispatch-tick for per-EA terminal assignment
 
+# Known-good fallback paths for codex.cmd / claude.cmd. Required because
+# scheduled tasks run as SYSTEM user, which has a minimal PATH that doesn't
+# include npm globals (where these CLIs live). shutil.which() returns None
+# under SYSTEM → spawned subprocesses fail with "'codex' is not recognized
+# as an internal or external command". Try shutil.which first, then fall
+# back to these.
+_CODEX_FALLBACK = Path(r"C:\Users\Administrator\AppData\Roaming\npm\codex.cmd")
+_CLAUDE_FALLBACK = Path(r"C:\Users\Administrator\AppData\Roaming\npm\claude.cmd")
+
+
+def _resolve_codex() -> str:
+    import shutil as _shutil
+    p = _shutil.which("codex.cmd") or _shutil.which("codex")
+    if p:
+        return p
+    if _CODEX_FALLBACK.exists():
+        return str(_CODEX_FALLBACK)
+    return "codex"  # let subprocess fail with a clear error
+
+
+def _resolve_claude() -> str:
+    import shutil as _shutil
+    p = _shutil.which("claude.cmd") or _shutil.which("claude")
+    if p:
+        return p
+    if _CLAUDE_FALLBACK.exists():
+        return str(_CLAUDE_FALLBACK)
+    return "claude"
+
 RUNTIME_DIRS = [
     "queue",
     "state/locks",
@@ -1016,7 +1045,7 @@ def _spawn_claude_for_review(root: Path, build_task_row: sqlite3.Row) -> dict[st
     verdict_path = rendered.get("verdict_path")
 
     import shutil as _shutil
-    claude_path = _shutil.which("claude.cmd") or _shutil.which("claude") or "claude"
+    claude_path = _resolve_claude()
     live_log = root / "logs" / f"claude_review_{review_task_id}.live.log"
     live_log.parent.mkdir(parents=True, exist_ok=True)
 
@@ -1127,7 +1156,7 @@ def _spawn_claude_for_g0_batch(root: Path) -> dict[str, Any]:
         return {"spawned": False, "reason": "all candidates lost race to Codex"}
     batch_paths = "\n".join(f"- {f}" for f in batch)
 
-    claude_path = _shutil.which("claude.cmd") or _shutil.which("claude") or "claude"
+    claude_path = _resolve_claude()
     live_log = root / "logs" / f"claude_g0_{dt.datetime.utcnow().strftime('%Y%m%dT%H%M%S')}.live.log"
     live_log.parent.mkdir(parents=True, exist_ok=True)
     if live_log.exists() and (time.time() - live_log.stat().st_mtime) < 60:
@@ -1202,7 +1231,7 @@ def _spawn_codex_for_g0_batch(root: Path) -> dict[str, Any]:
         return {"spawned": False, "reason": "all candidates already claimed"}
     batch_paths = "\n".join(f"- {f}" for f in batch)
 
-    codex_path = _shutil.which("codex.cmd") or _shutil.which("codex") or "codex"
+    codex_path = _resolve_codex()
     ts = dt.datetime.utcnow().strftime("%Y%m%dT%H%M%S")
     live_log = root / "logs" / f"codex_g0_{ts}.live.log"
     live_log.parent.mkdir(parents=True, exist_ok=True)
@@ -1249,7 +1278,7 @@ def _claim_research_source(root: Path) -> dict[str, Any]:
       4. Claim oldest pending source (lowest priority numeric value)
     """
     import shutil as _shutil
-    claude_path = _shutil.which("claude.cmd") or _shutil.which("claude") or "claude"
+    claude_path = _resolve_claude()
 
     # Skip if a Claude is already running for research.
     # assigned_worker IS NULL = legacy/pre-codex rows → treat as 'claude'.
@@ -1392,7 +1421,7 @@ def _claim_research_source_codex(root: Path) -> dict[str, Any]:
       3. status='pending'     (shared with Claude — first claim wins)
     """
     import shutil as _shutil
-    codex_path = _shutil.which("codex.cmd") or _shutil.which("codex") or "codex"
+    codex_path = _resolve_codex()
 
     target_source = None
     research_action = None
@@ -1591,7 +1620,7 @@ def _spawn_codex_for_review(root: Path, build_task_row: sqlite3.Row) -> dict[str
     prompt_path.write_text(template, encoding="utf-8", newline="\n")
 
     import shutil as _shutil
-    codex_path = _shutil.which("codex.cmd") or _shutil.which("codex") or "codex"
+    codex_path = _resolve_codex()
     live_log = root / "logs" / f"codex_review_{review_task_id}.live.log"
     live_log.parent.mkdir(parents=True, exist_ok=True)
 
@@ -1722,7 +1751,7 @@ def _spawn_codex_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]:
     # Direct Popen — codex.cmd is an npm batch shim; subprocess can exec it
     # via shell=True. stdin piped from prompt file, stdout/stderr to live_log.
     import shutil as _shutil
-    codex_path = _shutil.which("codex.cmd") or _shutil.which("codex") or "codex"
+    codex_path = _resolve_codex()
     creationflags = 0
     if sys.platform == "win32":
         # CREATE_NEW_CONSOLE gives the child its own console (separate from
