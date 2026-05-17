@@ -1891,12 +1891,20 @@ def pump(root: Path) -> dict[str, Any]:
     result["ablation_children"] = []
 
     # §10a P2-PASS → 5 random
+    #
+    # NOTE: depth-1 filter uses setfile_path pattern, NOT payload flag.
+    # The MT5 worker overwrites payload_json with its own runtime fields
+    # (terminal, pid, started_at, etc.) — any is_ablation flag we set at
+    # work_item-insertion time is GONE by the time the verdict comes in.
+    # The setfile name (`*_ablation_NN.set` / `*_grid_NNN.set`) is the only
+    # reliable lineage marker that survives worker overwrites.
     with connect(root) as conn:
         p2_pass = conn.execute(
             """
             SELECT * FROM work_items
             WHERE status='done' AND verdict='PASS' AND phase='P2'
-              AND COALESCE(json_extract(payload_json, '$.is_ablation'), 0)=0
+              AND setfile_path NOT LIKE '%_ablation_%'
+              AND setfile_path NOT LIKE '%_grid_%'
               AND COALESCE(json_extract(payload_json, '$.ablated_at'), '')=''
             ORDER BY updated_at ASC LIMIT 5
             """
@@ -1916,12 +1924,14 @@ def pump(root: Path) -> dict[str, Any]:
                 })
 
     # §10b P3-PASS → 50 grid (one parent per pump cycle — 50 children is a lot)
+    # Same setfile_path lineage check as §10a (see comment above).
     with connect(root) as conn:
         p3_pass = conn.execute(
             """
             SELECT * FROM work_items
             WHERE status='done' AND verdict='PASS' AND phase='P3'
-              AND COALESCE(json_extract(payload_json, '$.is_ablation'), 0)=0
+              AND setfile_path NOT LIKE '%_ablation_%'
+              AND setfile_path NOT LIKE '%_grid_%'
               AND COALESCE(json_extract(payload_json, '$.ablated_at'), '')=''
             ORDER BY updated_at ASC LIMIT 1
             """
