@@ -135,3 +135,29 @@ then unblock the 4 EAs above.
   attempt=3 limbo; QM5_1060 attempt=1 blocked). Both-runs-fail cluster grew
   from 1 → 2 EAs. Escalation severity unchanged (medium); fix candidates
   unchanged.
+
+- **2026-05-17T07:48Z (observe wake)** — sixth EA hit. **QM5_1065**
+  (`unger-friday-close-reversal-fx`, EURUSD.DWX H1) failed `build_ea` smoke
+  at attempt 1 with `REPORT_MISSING;METATESTER_HUNG;INCOMPLETE_RUNS` on
+  **both** `-Runs 2` invocations. Summary:
+  `D:/QM/reports/smoke/QM5_1065/20260517_065351/summary.json` —
+  `model4_log_marker_detected: false` on both runs, `exit_code: 0`,
+  `report_size_bytes: 0`. Joins QM5_1046 + QM5_1060 in the both-runs-fail
+  cluster (now 3 EAs) — METATESTER_HUNG variant of the failure mode rather
+  than the cold-warm asymmetry seen on QM5_1045/1050/1055.
+
+  T1 was the smoke runner (per summary.json `terminal: "T1"`). The T1
+  tester log `D:/QM/mt5/T1/Tester/logs/20260517.log` shows EURUSD.DWX ticks
+  synchronizing and trades executing on `Core 01` at local 09:39:48 (≈ same
+  time as the build_ea blocked update at UTC 07:39:18Z), confirming the EA
+  itself runs — only the report export fails, consistent with HR7
+  `NO_REPORT ≠ EA-Schwäche`.
+
+  Autonomous wake at 2026-05-17T07:17Z handled QM5_1065 via the same
+  short-circuit pattern: pump-record-build marked it `blocked` at attempt 1
+  rather than wasting 3 retries. No retry-exhaustion churn this round.
+
+  Net: 6 EAs blocked on this issue (QM5_1045 terminal; QM5_1046/1050/1055
+  attempt=3 limbo; QM5_1060 attempt=1 blocked; QM5_1065 attempt=1 blocked).
+  Both-runs-fail cluster grew from 2 → 3 EAs. Escalation severity unchanged
+  (medium); fix candidates unchanged.
