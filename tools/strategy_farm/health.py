@@ -44,6 +44,18 @@ CODEX_BRIDGE_HEARTBEAT = ROOT / "state" / "codex_bridge_heartbeat.txt"
 ZERO_TRADE_DEAD_THRESHOLD = 0.80
 ZERO_TRADE_DEAD_MIN_DONE = 5
 ZERO_TRADE_REWORK_DEDUP_HOURS = 6
+PHASE_ACTIVE_TIMEOUT_MIN = {
+    "P2": 8,
+    "P3": 60,
+    "P3.5": 30,
+    "P4": 30,
+    "P5": 30,
+    "P5b": 30,
+    "P5c": 30,
+    "P6": 30,
+    "P7": 30,
+    "P8": 30,
+}
 
 
 def _utc_now() -> dt.datetime:
@@ -364,6 +376,58 @@ def chk_mt5_dispatch_idle(con) -> dict:
                   f"{fresh_wi_logs} fresh logs — workers dead",
                   "Stranded active work_items. Inline PID check should "
                   "release them next pump cycle.")
+
+
+def _parse_utc_datetime(value: str | None) -> dt.datetime | None:
+    if not value:
+        return None
+    text = str(value).strip()
+    try:
+        if text.endswith("Z"):
+            text = text[:-1] + "+00:00"
+        parsed = dt.datetime.fromisoformat(text)
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=dt.timezone.utc)
+        return parsed.astimezone(dt.timezone.utc)
+    except ValueError:
+        try:
+            return dt.datetime.strptime(text, "%Y-%m-%d %H:%M:%S").replace(tzinfo=dt.timezone.utc)
+        except ValueError:
+            return None
+
+
+def chk_active_row_age(con) -> dict:
+    rows = con.execute(
+        """
+        SELECT id, phase, ea_id, symbol, claimed_by, updated_at
+        FROM work_items
+        WHERE status='active'
+        """
+    ).fetchall()
+    now = _utc_now()
+    offenders = []
+    for r in rows:
+        phase = str(r["phase"] or "")
+        timeout_min = PHASE_ACTIVE_TIMEOUT_MIN.get(phase)
+        if timeout_min is None:
+            continue
+        updated = _parse_utc_datetime(r["updated_at"])
+        if updated is None:
+            continue
+        age_min = (now - updated).total_seconds() / 60.0
+        if age_min > timeout_min:
+            offenders.append((age_min, timeout_min, r))
+    if not offenders:
+        return _check("active_row_age", "OK", 0, 1, "no active rows beyond phase timeout", "")
+    worst_age, worst_timeout, worst = max(offenders, key=lambda x: x[0])
+    status = "FAIL" if worst_age > (2 * worst_timeout) else "WARN"
+    detail = (
+        f"{len(offenders)} active rows exceed phase timeout; worst "
+        f"{worst['ea_id']} {worst['symbol']} {worst['phase']} "
+        f"terminal={worst['claimed_by']} age={worst_age:.1f}m timeout={worst_timeout}m"
+    )
+    return _check("active_row_age", status, round(worst_age, 1), worst_timeout,
+                  detail, "Run farmctl pump; active_timeouts should fail hung rows and release MT5 slots")
 
 
 def chk_codex_zero_activity(con) -> dict:
@@ -750,6 +814,7 @@ ALL_CHECKS = [
     ("ablation_grandchildren", chk_ablation_grandchildren, True),
     ("claude_review_starved",  chk_claude_review_starved,  True),
     ("mt5_dispatch_idle",      chk_mt5_dispatch_idle,      True),
+    ("active_row_age",         chk_active_row_age,         True),
     ("codex_zero_activity",    chk_codex_zero_activity,    True),
     ("source_pool",            chk_source_pool,            True),
     ("zerotrade_rework_backlog", chk_zerotrade_rework_backlog, True),

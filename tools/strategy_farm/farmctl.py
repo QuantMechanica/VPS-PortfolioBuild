@@ -42,6 +42,18 @@ MT5_TERMINALS = ("T1", "T2", "T3", "T4", "T5")  # factory fleet, used by dispatc
 ZERO_TRADE_DEAD_THRESHOLD = 0.80
 ZERO_TRADE_DEAD_MIN_DONE = 5
 ZERO_TRADE_REWORK_DEDUP_HOURS = 6
+PHASE_ACTIVE_TIMEOUT_MIN = {
+    "P2": 8,
+    "P3": 60,
+    "P3.5": 30,
+    "P4": 30,
+    "P5": 30,
+    "P5b": 30,
+    "P5c": 30,
+    "P6": 30,
+    "P7": 30,
+    "P8": 30,
+}
 
 # Known-good fallback paths for codex.cmd / claude.cmd. Required because
 # scheduled tasks run as SYSTEM user, which has a minimal PATH that doesn't
@@ -871,6 +883,49 @@ def _stop_pid(pid: Any) -> bool:
         return False
 
 
+def _stop_terminal_slot(terminal: str | None) -> bool:
+    if not terminal or terminal not in MT5_TERMINALS:
+        return False
+    terminal_exe = str(Path(r"D:\QM\mt5") / terminal / "terminal64.exe")
+    try:
+        proc = subprocess.run(
+            [
+                "powershell.exe",
+                "-NoProfile",
+                "-Command",
+                (
+                    "Get-CimInstance Win32_Process -Filter \"Name='terminal64.exe'\" "
+                    f"| Where-Object {{ $_.ExecutablePath -ieq '{terminal_exe}' }} "
+                    "| ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }"
+                ),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=15,
+        )
+        return proc.returncode == 0
+    except Exception:
+        return False
+
+
+def _parse_utc_datetime(value: str | None) -> dt.datetime | None:
+    if not value:
+        return None
+    text = str(value).strip()
+    try:
+        if text.endswith("Z"):
+            text = text[:-1] + "+00:00"
+        parsed = dt.datetime.fromisoformat(text)
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=dt.UTC)
+        return parsed.astimezone(dt.UTC)
+    except ValueError:
+        try:
+            return dt.datetime.strptime(str(value), "%Y-%m-%d %H:%M:%S").replace(tzinfo=dt.UTC)
+        except ValueError:
+            return None
+
+
 def _acquire_dispatch_lock(root: Path) -> tuple[int, Path] | None:
     locks = root / "state" / "locks"
     locks.mkdir(parents=True, exist_ok=True)
@@ -905,6 +960,72 @@ def _release_dispatch_lock(lock: tuple[int, Path] | None) -> None:
         lock_path.unlink()
     except OSError:
         pass
+
+
+def _detect_active_age_timeout(con: sqlite3.Connection) -> list[dict[str, Any]]:
+    now_dt = dt.datetime.now(dt.UTC)
+    now = now_dt.replace(microsecond=0).isoformat()
+    rows = con.execute(
+        """
+        SELECT id, phase, ea_id, symbol, claimed_by, payload_json, updated_at
+        FROM work_items
+        WHERE status='active'
+        """
+    ).fetchall()
+    flagged: list[dict[str, Any]] = []
+    for r in rows:
+        phase = str(r["phase"] or "")
+        timeout_min = PHASE_ACTIVE_TIMEOUT_MIN.get(phase)
+        if timeout_min is None:
+            continue
+        updated = _parse_utc_datetime(r["updated_at"])
+        if updated is None:
+            continue
+        age_min = (now_dt - updated).total_seconds() / 60.0
+        if age_min < float(timeout_min):
+            continue
+        payload = json.loads(r["payload_json"] or "{}")
+        reason_classes = payload.get("reason_classes") or []
+        if "ACTIVE_TIMEOUT" not in [str(x).upper() for x in reason_classes]:
+            reason_classes.append("ACTIVE_TIMEOUT")
+        worker_pid = payload.get("pid")
+        terminal = r["claimed_by"]
+        worker_stopped = _stop_pid(worker_pid)
+        terminal_stopped = _stop_terminal_slot(terminal)
+        payload.update({
+            "reason_classes": reason_classes,
+            "verdict_reason": "ACTIVE_TIMEOUT",
+            "timeout_min": timeout_min,
+            "active_age_min": round(age_min, 2),
+            "killed_at": now,
+            "worker_pid": worker_pid,
+            "worker_stopped": worker_stopped,
+            "terminal_stopped": terminal_stopped,
+        })
+        con.execute(
+            """
+            UPDATE work_items
+            SET status='failed', verdict='FAIL', claimed_by=NULL,
+                payload_json=?, updated_at=?
+            WHERE id=? AND status='active'
+            """,
+            (json.dumps(payload, sort_keys=True), now, r["id"]),
+        )
+        flagged.append({
+            "id": r["id"],
+            "ea_id": r["ea_id"],
+            "symbol": r["symbol"],
+            "phase": phase,
+            "terminal": terminal,
+            "age_min": round(age_min, 2),
+            "timeout_min": timeout_min,
+            "worker_pid": worker_pid,
+            "worker_stopped": worker_stopped,
+            "terminal_stopped": terminal_stopped,
+        })
+    if flagged:
+        con.commit()
+    return flagged
 
 
 def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, Any]:
@@ -2033,6 +2154,19 @@ def _is_zero_trade_failure_payload(payload_json: str | None, evidence_path: str 
         return False
 
 
+def _is_active_timeout_payload(payload_json: str | None) -> bool:
+    if not payload_json or "ACTIVE_TIMEOUT" not in payload_json:
+        return False
+    try:
+        data = json.loads(payload_json)
+        reason_classes = data.get("reason_classes") or []
+        if any(str(r).upper() == "ACTIVE_TIMEOUT" for r in reason_classes):
+            return True
+        return str(data.get("verdict_reason") or data.get("reason") or "").upper() == "ACTIVE_TIMEOUT"
+    except Exception:
+        return "ACTIVE_TIMEOUT" in payload_json
+
+
 def _recent_zero_trade_rework_exists(con: sqlite3.Connection, ea_id: str) -> bool:
     cutoff = (dt.datetime.now(dt.UTC) - dt.timedelta(hours=ZERO_TRADE_REWORK_DEDUP_HOURS)).replace(microsecond=0).isoformat()
     row = con.execute(
@@ -2040,6 +2174,21 @@ def _recent_zero_trade_rework_exists(con: sqlite3.Connection, ea_id: str) -> boo
         SELECT id FROM tasks
         WHERE card_id=? AND kind='build_ea'
           AND payload_json LIKE '%ZERO_TRADE_RECURRENT%'
+          AND created_at >= ?
+        ORDER BY created_at DESC LIMIT 1
+        """,
+        (ea_id, cutoff),
+    ).fetchone()
+    return row is not None
+
+
+def _recent_hang_rework_exists(con: sqlite3.Connection, ea_id: str) -> bool:
+    cutoff = (dt.datetime.now(dt.UTC) - dt.timedelta(hours=ZERO_TRADE_REWORK_DEDUP_HOURS)).replace(microsecond=0).isoformat()
+    row = con.execute(
+        """
+        SELECT id FROM tasks
+        WHERE card_id=? AND kind='build_ea'
+          AND payload_json LIKE '%STRATEGY_HANG_RECURRENT%'
           AND created_at >= ?
         ORDER BY created_at DESC LIMIT 1
         """,
@@ -2124,6 +2273,64 @@ Same shape as task #019 diagnosis: identify the specific rejecting test and prop
     return target
 
 
+def _write_strategy_hang_rework_codex_task(
+    root: Path,
+    ea_id: str,
+    ratio: float,
+    samples: int,
+    timeouts: int,
+    task_id: str,
+    evidence_paths: list[str],
+) -> Path:
+    inbox = root / "codex_inbox"
+    inbox.mkdir(parents=True, exist_ok=True)
+
+    stamp = dt.datetime.now(dt.UTC).replace(microsecond=0).strftime("%Y%m%dT%H%M%SZ")
+    md_task_id = f"auto-rework-{ea_id}-hang-{stamp}"
+    target = inbox / f"{md_task_id}.md"
+
+    card_path = _find_first_path([
+        (root / "artifacts" / "cards_approved", f"{ea_id}_*.md"),
+        (root / "artifacts" / "cards_draft", f"{ea_id}_*.md"),
+    ])
+    source_path = _find_first_path([(FRAMEWORK_EAS_DIR, f"{ea_id}_*/{ea_id}_*.mq5")])
+    evidence_md = "\n".join(f"- {p}" for p in (evidence_paths[:5] or ["<none recorded>"]))
+
+    body = f"""---
+task_id: {md_task_id}
+priority: high
+created: {dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat()}
+auto_generated: true
+trigger: STRATEGY_HANG_RECURRENT
+db_task_id: {task_id}
+---
+
+# Auto-detected strategy hang rework: {ea_id}
+
+Pump detected that {ea_id} has {ratio:.0%} ACTIVE_TIMEOUT ratio ({timeouts}/{samples} finished P2 samples). Strategy logic likely hangs or triggers pathological tester runtime.
+
+## Files to investigate
+
+- Card: {card_path if card_path else '<card not found>'}
+- Source: {source_path if source_path else '<source not found>'}
+- Timeout evidence:
+{evidence_md}
+
+## What to do
+
+Identify the infinite loop / pathological data wait / tester hang cause. Do not deploy to T6. No commit / no push.
+
+## Output
+
+`D:/QM/strategy_farm/codex_outbox/{md_task_id}_result.md`
+"""
+
+    tmp = target.with_suffix(target.suffix + ".tmp")
+    tmp.write_text(body, encoding="utf-8", newline="\n")
+    tmp.replace(target)
+    return target
+
+
 def _detect_zerotrade_dead_eas(con: sqlite3.Connection, root: Path = DEFAULT_ROOT) -> list[dict[str, Any]]:
     """
     Find EAs where >=80% of done P2 work_items are FAILs caused by
@@ -2134,17 +2341,21 @@ def _detect_zerotrade_dead_eas(con: sqlite3.Connection, root: Path = DEFAULT_ROO
         """
         SELECT ea_id, verdict, payload_json, evidence_path, updated_at
         FROM work_items
-        WHERE phase='P2' AND status='done'
+        WHERE phase='P2' AND status IN ('done', 'failed')
         """
     ).fetchall()
 
     grouped: dict[str, dict[str, Any]] = {}
     for r in rows:
         ea_id = r["ea_id"]
-        bucket = grouped.setdefault(ea_id, {"done": 0, "zt": 0, "evidence": []})
+        bucket = grouped.setdefault(ea_id, {"done": 0, "zt": 0, "timeouts": 0, "evidence": []})
         bucket["done"] += 1
         if (r["verdict"] or "").upper() == "FAIL" and _is_zero_trade_failure_payload(r["payload_json"], r["evidence_path"]):
             bucket["zt"] += 1
+            if r["evidence_path"]:
+                bucket["evidence"].append(r["evidence_path"])
+        if _is_active_timeout_payload(r["payload_json"]):
+            bucket["timeouts"] += 1
             if r["evidence_path"]:
                 bucket["evidence"].append(r["evidence_path"])
 
@@ -2152,7 +2363,55 @@ def _detect_zerotrade_dead_eas(con: sqlite3.Connection, root: Path = DEFAULT_ROO
     for ea_id, stats in sorted(grouped.items()):
         done = int(stats["done"])
         zt = int(stats["zt"])
+        timeouts = int(stats["timeouts"])
         if done < ZERO_TRADE_DEAD_MIN_DONE:
+            continue
+        timeout_ratio = timeouts / done if done else 0.0
+        if timeout_ratio > 0.50:
+            if _recent_hang_rework_exists(con, ea_id):
+                continue
+            card_path = _find_first_path([
+                (root / "artifacts" / "cards_approved", f"{ea_id}_*.md"),
+                (root / "artifacts" / "cards_draft", f"{ea_id}_*.md"),
+            ])
+            frontmatter: dict[str, Any] = {}
+            slug = ""
+            if card_path:
+                try:
+                    frontmatter = parse_card_frontmatter(card_path)
+                    slug = str(frontmatter.get("slug") or "")
+                except Exception:
+                    frontmatter = {}
+            ea_dir = _find_first_path([(FRAMEWORK_EAS_DIR, f"{ea_id}_*")])
+            payload = {
+                "rework_reason": "STRATEGY_HANG_RECURRENT",
+                "ea_id": ea_id,
+                "slug": slug,
+                "card_path": str(card_path) if card_path else "",
+                "ea_dir": str(ea_dir) if ea_dir else "",
+                "frontmatter": frontmatter,
+                "active_timeout_ratio": timeout_ratio,
+                "active_timeout_failures": timeouts,
+                "sample_size": done,
+                "trigger_ts": utc_now(),
+            }
+            task_id = create_task(con, kind="build_ea", source_id=None, card_id=ea_id, payload=payload)
+            md_path = _write_strategy_hang_rework_codex_task(
+                root, ea_id, timeout_ratio, done, timeouts, task_id, list(stats["evidence"])
+            )
+            con.execute(
+                "UPDATE tasks SET payload_json=?, updated_at=? WHERE id=?",
+                (json.dumps({**payload, "codex_inbox_task_path": str(md_path)}, sort_keys=True), utc_now(), task_id),
+            )
+            flagged.append({
+                "ea_id": ea_id,
+                "rework_reason": "STRATEGY_HANG_RECURRENT",
+                "active_timeout_ratio": timeout_ratio,
+                "active_timeout_failures": timeouts,
+                "sample_size": done,
+                "task_id": task_id,
+                "codex_inbox_task_path": str(md_path),
+            })
             continue
         ratio = zt / done if done else 0.0
         if ratio < ZERO_TRADE_DEAD_THRESHOLD:
@@ -2838,6 +3097,8 @@ def pump(root: Path) -> dict[str, Any]:
     # 1a. Per-symbol work_items dispatch (NEW — pump consumes work_items as
     #     the unit of MT5 work, one per free terminal, replacing the bundled
     #     p2_baseline fan-out). Aggregates parent task verdicts on completion.
+    with connect(root) as conn:
+        result["active_timeouts"] = _detect_active_age_timeout(conn)
     result["dispatch_work_items"] = dispatch_work_items(root)
     # 1b. Legacy bundled-task dispatch — handles any backtest_<phase> tasks
     #     created WITHOUT matching work_items (e.g. older runs). Will become
