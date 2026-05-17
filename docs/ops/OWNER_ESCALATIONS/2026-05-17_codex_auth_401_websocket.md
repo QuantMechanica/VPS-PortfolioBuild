@@ -151,3 +151,46 @@ next observe wake (12:17Z by the hourly task) will append again.
 **Board-Advisor-side mitigation taken this wake: documentation update
 only.** No state mutations, no pump changes, no agent lifecycle. The
 pump's MAX_BUILD_RETRIES=3 cap remains the safety net.
+
+## 2026-05-17T11:55Z update — Board Advisor observe wake
+
+**Cycle still active — second refresh-then-restale observed; OWNER action
+still required.**
+
+Timeline since previous update:
+- 10:50:35Z `~/.codex/auth.json` mtime bumped (second auto-refresh of the
+  morning, ~30 min after the 10:20Z one).
+- 11:17:01Z autonomous wake REVIEW of QM5_1064 succeeded → Codex working
+  (single successful spawn ≈ 27 min after the refresh).
+- **11:34Z — third 401 storm**: 6 Codex spawns
+  (`codex_research_eb97a148`, `codex_g0_20260517T113419`,
+  `codex_build_da29849a`, `codex_build_0eacd31d`, `codex_build_df0a8798`,
+  `codex_build_6bfbea88`) all died with the same `responses_websocket
+  401 Unauthorized` against `auth.json` that worked at 11:18Z. Each
+  live log carries 9 occurrences of "401 Unauthorized" (retry loop
+  inside a single spawn).
+
+Two refresh-then-restale cycles in ~70 minutes (10:20→10:44, 10:50→11:34)
+make the pattern definitive — this is not a one-off OAuth blip.
+ChatGPT-mode token TTL on this Codex CLI build is consistently shorter
+than the pump's effective spawn window. Each post-restale tick burns
+~5 `attempt_count` slots before the auto-refresh fires again.
+
+Downstream queue toll since the 10:50Z update: 4 new pending/failed
+build_ea rows added (QM5_1069 → failed attempt=3 at 10:07Z; QM5_1087,
+1090, 1091 → pending attempt=1; QM5_1090 hit the
+`terminal-already-running` preflight class from the smoke-flake
+escalation, others mix of auth-401 and framework_error from the
+smoke-runner cluster). Cumulative blocked-or-blocked-equivalent count
+across both escalations is now ~20 EAs.
+
+OWNER actions from the original section remain unchanged. Strong
+recommendation: pick **path 1 (codex logout / codex login)** at the
+next interactive touch — both auto-refreshes today have produced only
+a narrow working window before re-staling, suggesting the stored
+OAuth refresh token itself is the broken piece.
+
+**Board-Advisor-side mitigation taken this wake: documentation update
+only.** No state mutations, no pump changes, no agent lifecycle, no
+auth.json edits. Same envelope as the 10:50Z entry — this is the
+escalation's third recurrence log line, not a new escalation.
