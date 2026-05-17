@@ -1821,6 +1821,37 @@ def pump(root: Path) -> dict[str, Any]:
         "build_retries": [],
     }
 
+    # CIRCUIT BREAKER: if recent codex logs are full of 401 Unauthorized,
+    # Codex OAuth is broken. Each new spawn wastes 5 retries × ~30s before
+    # giving up + leaves a junk log + counts against codex quota. Don't
+    # spawn ANY codex work until auth is fixed (OWNER must run `codex login`
+    # interactively). Build/research/review/g0 all skipped; MT5 dispatch
+    # + Claude work continue normally.
+    codex_auth_broken = False
+    try:
+        import re as _re, time as _t
+        pat = _re.compile(rb"401 Unauthorized")
+        n_401 = 0
+        for log in (root / "logs").glob("codex_*.live.log"):
+            try:
+                if _t.time() - log.stat().st_mtime > 900:
+                    continue
+                size = log.stat().st_size
+                with open(log, "rb") as fh:
+                    fh.seek(max(0, size - 4096))
+                    tail = fh.read()
+                if pat.search(tail):
+                    n_401 += 1
+            except OSError:
+                continue
+        codex_auth_broken = n_401 >= 3
+        result["codex_auth_broken"] = {
+            "tripped": codex_auth_broken,
+            "n_401_recent_logs": n_401,
+        }
+    except Exception as exc:
+        result["codex_auth_broken"] = {"tripped": False, "error": repr(exc)}
+
     # 1a. Per-symbol work_items dispatch (NEW — pump consumes work_items as
     #     the unit of MT5 work, one per free terminal, replacing the bundled
     #     p2_baseline fan-out). Aggregates parent task verdicts on completion.
@@ -1891,11 +1922,14 @@ def pump(root: Path) -> dict[str, Any]:
     #    idempotent (reads current CSV state, regenerates .mqh deterministically).
     #    OWNER 2026-05-16: explicit ok to parallelize.
     MAX_PARALLEL_CODEX = 10
-    # OWNER 2026-05-17 reserve-slots fix: when build queue is large, builds
-    # consume all 10 slots and codex_research starves — leading to
-    # cards_ready_stagnation alarm. Reserve 3 slots for non-build work
-    # (research + g0 + review). Builds get max 7 of the 10.
     MAX_PARALLEL_CODEX_BUILDS = 7
+    # Circuit breaker: when codex auth is broken, force both caps to 0 so
+    # NO codex work spawns (research/review/build/g0 all gated through
+    # these caps). Prevents wasting 5×30s retries per spawn + leaving
+    # 401-junk logs that confuse later diagnosis.
+    if codex_auth_broken:
+        MAX_PARALLEL_CODEX = 0
+        MAX_PARALLEL_CODEX_BUILDS = 0
     try:
         import shutil as _shutil
         ps_out = subprocess.run(
