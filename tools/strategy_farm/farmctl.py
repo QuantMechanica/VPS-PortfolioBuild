@@ -1090,24 +1090,46 @@ def _claim_research_source(root: Path) -> dict[str, Any]:
         target_source = dict(active_src)
         research_action = "continue_active"
     else:
+        # Resume cards_ready first (source flagged "more findable") so sources
+        # actually reach 'done' instead of accumulating in cards_ready forever.
         with connect(root) as conn:
-            # try notes_ready first (cards waiting to be drafted)
-            nr = conn.execute(
+            cr = conn.execute(
                 "SELECT id, lane, source_type, uri, title, status, notes_path "
-                "FROM sources WHERE status='notes_ready' LIMIT 1"
+                "FROM sources WHERE status='cards_ready' "
+                "AND (assigned_worker IS NULL OR assigned_worker='claude') "
+                "ORDER BY priority ASC, updated_at ASC LIMIT 1"
             ).fetchone()
-        if nr:
+        if cr:
             with connect(root) as conn:
                 cur = conn.execute(
                     "UPDATE sources SET status='active', assigned_worker='claude', updated_at=? "
-                    "WHERE id=? AND status='notes_ready'",
-                    (utc_now(), nr["id"]),
+                    "WHERE id=? AND status='cards_ready'",
+                    (utc_now(), cr["id"]),
                 )
                 conn.commit()
                 claimed = cur.rowcount == 1
             if claimed:
-                target_source = dict(nr)
-                research_action = "draft_cards_from_notes"
+                target_source = dict(cr)
+                research_action = "resume_cards_ready"
+        if not target_source:
+            with connect(root) as conn:
+                # try notes_ready next (cards waiting to be drafted)
+                nr = conn.execute(
+                    "SELECT id, lane, source_type, uri, title, status, notes_path "
+                    "FROM sources WHERE status='notes_ready' LIMIT 1"
+                ).fetchone()
+            if nr:
+                with connect(root) as conn:
+                    cur = conn.execute(
+                        "UPDATE sources SET status='active', assigned_worker='claude', updated_at=? "
+                        "WHERE id=? AND status='notes_ready'",
+                        (utc_now(), nr["id"]),
+                    )
+                    conn.commit()
+                    claimed = cur.rowcount == 1
+                if claimed:
+                    target_source = dict(nr)
+                    research_action = "draft_cards_from_notes"
         if not target_source:
             with connect(root) as conn:
                 pend = conn.execute(
@@ -1209,26 +1231,49 @@ def _claim_research_source_codex(root: Path) -> dict[str, Any]:
         target_source = dict(active_src)
         research_action = "continue_active"
     else:
-        # Step 2: try to claim a notes_ready source
+        # Step 2: resume a cards_ready source ("more findable" was flagged
+        # by the prior run; we promised to come back and mine more).
+        # Without this, every source gets exactly one 5-card session then
+        # parked forever, and sources never reach 'done'.
         with connect(root) as conn:
-            nr = conn.execute(
+            cr = conn.execute(
                 "SELECT id, lane, source_type, uri, title, status, notes_path "
-                "FROM sources WHERE status='notes_ready' LIMIT 1"
+                "FROM sources WHERE status='cards_ready' "
+                "ORDER BY priority ASC, updated_at ASC LIMIT 1"
             ).fetchone()
-        if nr:
+        if cr:
             with connect(root) as conn:
                 cur = conn.execute(
                     "UPDATE sources SET status='active', assigned_worker='codex', updated_at=? "
-                    "WHERE id=? AND status='notes_ready'",
-                    (utc_now(), nr["id"]),
+                    "WHERE id=? AND status='cards_ready'",
+                    (utc_now(), cr["id"]),
                 )
                 conn.commit()
                 claimed = cur.rowcount == 1
             if claimed:
-                target_source = dict(nr)
-                research_action = "draft_cards_from_notes"
+                target_source = dict(cr)
+                research_action = "resume_cards_ready"
+        # Step 3: try to claim a notes_ready source
         if not target_source:
-            # Step 3: claim pending oldest
+            with connect(root) as conn:
+                nr = conn.execute(
+                    "SELECT id, lane, source_type, uri, title, status, notes_path "
+                    "FROM sources WHERE status='notes_ready' LIMIT 1"
+                ).fetchone()
+            if nr:
+                with connect(root) as conn:
+                    cur = conn.execute(
+                        "UPDATE sources SET status='active', assigned_worker='codex', updated_at=? "
+                        "WHERE id=? AND status='notes_ready'",
+                        (utc_now(), nr["id"]),
+                    )
+                    conn.commit()
+                    claimed = cur.rowcount == 1
+                if claimed:
+                    target_source = dict(nr)
+                    research_action = "draft_cards_from_notes"
+        if not target_source:
+            # Step 4: claim pending oldest
             with connect(root) as conn:
                 pend = conn.execute(
                     "SELECT id, lane, source_type, uri, title, status, notes_path "
