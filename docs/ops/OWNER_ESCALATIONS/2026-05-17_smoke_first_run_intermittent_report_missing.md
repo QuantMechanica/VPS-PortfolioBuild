@@ -161,3 +161,98 @@ then unblock the 4 EAs above.
   attempt=3 limbo; QM5_1060 attempt=1 blocked; QM5_1065 attempt=1 blocked).
   Both-runs-fail cluster grew from 2 → 3 EAs. Escalation severity unchanged
   (medium); fix candidates unchanged.
+
+- **2026-05-17T08:48Z (observe wake)** — **count jumped 6 → 16 EAs in one
+  hour; new failure modes emerged. Severity bumped to HIGH.**
+
+  New blocked since last entry (10 EAs): QM5_1052, QM5_1053, QM5_1058
+  (regression — was `done` at 03:25Z with `APPROVE_FOR_BACKTEST`, now
+  `blocked` at attempt=3), QM5_1059, QM5_1061, QM5_1062, QM5_1066, QM5_1067,
+  QM5_1068, QM5_1070. (QM5_1098 is also blocked but with
+  `MIN_TRADES_NOT_MET` — strategy-content failure, not part of this
+  escalation.)
+
+  **New failure mode 1 — terminal contention preflight failure.**
+  Multiple builds now block with `smoke preflight failed: Terminal
+  instance is already running for D:\QM\mt5\T1; no tester report produced`
+  (QM5_1058 latest attempt, QM5_1068, earlier QM5_1052 failed-row from
+  2026-05-16T19:45Z). This is **not** the cold-start asymmetry — the smoke
+  invocation never even starts because another process holds T1's lock.
+  Implicates concurrent Codex `build_ea` smoke runs racing each other,
+  and/or the backtest dispatcher (`farmctl tick`, Scheduled Task
+  `QM_StrategyFarm_Tick_5min`) competing with smoke for the same
+  terminal pool. Worth noting: at observe-wake time, `tasklist` showed
+  T1 (PID 5420) and T2 (PID 22240) both running (started 08:48:24Z /
+  08:48:27Z) — that's the dispatcher kicking off backtests during the
+  observe window. There is no documented mutex between smoke and
+  dispatcher.
+
+  **New failure mode 2 — T2 affected, run_02 failure (not run_01).**
+  QM5_1062 (`unger-inside-day-breakout`, GDAXI.DWX H1 2024) at
+  `D:/QM/reports/smoke/QM5_1062/20260517_075617/summary.json` shows
+  run_01 OK and run_02 FAIL REPORT_MISSING on **T2**. Reverses the
+  original cold-warm asymmetry hypothesis (warm second run is supposed
+  to be the reliable one) and extends the failure surface from T1-only
+  to T1+T2. The earlier `blocked_reason` for this row mentioned a 900s
+  timeout — confirming the wait window is sometimes blown entirely.
+
+  **Regression — QM5_1058.** Same `build_ea` task id (`829365e8`) that
+  the autonomous wake recorded `smoke=zero_trades / verdict=
+  APPROVE_FOR_BACKTEST` at 03:25Z went `done → blocked` after subsequent
+  pump retries (attempt_count now 3). The `backtest_p2` task
+  (`59e41aab`) enqueued from the earlier successful run is still
+  `pending`. This is an inconsistent state — pipeline shows a queued P2
+  for an EA whose underlying build is now marked failed. Either the P2
+  task should be cancelled or the build_ea row should be restored to
+  `done` (the EA artifact on disk presumably still works since it ran
+  green at 03:25Z).
+
+  **Updated count:** 16 EAs blocked on this issue.
+  - Cold-warm-asymmetry cluster (run_01 fails, run_02 succeeds):
+    QM5_1045 (terminal), QM5_1050, QM5_1055, plus likely subset of newly
+    blocked ones (need per-EA inspection)
+  - Both-runs-fail cluster: QM5_1046, QM5_1060, QM5_1065, QM5_1068,
+    QM5_1058-latest
+  - run_02-fails / T2-affected cluster: QM5_1062 (new sub-cluster, n=1)
+  - Preflight-already-running cluster: QM5_1058 latest, QM5_1068, plus
+    failed-state QM5_1052 from yesterday
+
+  **Updated fix candidates.** All four originals still apply, but
+  candidate (1) "add discard-first-run warm-up" no longer covers the
+  whole failure surface — would not have caught QM5_1062's run_02
+  failure or the preflight contention. Adding:
+
+  5. **Add terminal-pool mutex between smoke and dispatcher.** Smoke
+     and `farmctl dispatch-tick` should claim a `D:/QM/strategy_farm/state/terminal_locks/T<N>.lock`
+     file (or DB row) before touching `D:/QM/mt5/T<N>`. Whichever runs
+     second waits or fails-fast with a clean "terminal busy, defer"
+     reason that the pump treats as transient (no attempt_count
+     increment), not a framework_error. Eliminates the
+     "already running" preflight class and the mid-run interruption
+     class.
+
+  6. **Reserve T5 (or T0) as smoke-only.** Lower-effort variant of (5)
+     — change smoke runner to always use a specific terminal not in
+     the dispatcher pool. Dispatcher continues to use T1–T4. No mutex
+     needed, just disjoint resource pools.
+
+  (5) and (6) are about the contention dimension, (1)/(4) are about
+  the cold-start dimension. **Both dimensions need addressing**; one
+  alone won't unblock the queue.
+
+  **Recommended escalation path.**
+  - Severity now HIGH — the pipeline cannot land new EAs to backtest at
+    its current rate. 16 of the latest 30 build candidates are stuck
+    in `blocked` despite passing compile + content review.
+  - OWNER decision needed on: which fix candidate(s) to pick AND
+    whether to bulk-reset the 16 blocked rows once the fix lands.
+  - Suggest commissioning a one-off CTO/Development worktree task to
+    implement (1) + (6) together; (6) is the smallest diff and gives
+    immediate isolation, (1) hardens the smoke gate semantics.
+  - In the interim, the autonomous wake's pump short-circuit prevents
+    retry-churn (good — no wasted Codex calls on the same systemic
+    failure) but means no further EAs land in P2 queue until fixed.
+
+  No action this wake other than this recurrence-log update. Smoke
+  runner, codex_build_ea prompt, and farmctl all untouched per
+  Board-Advisor scope (framework + agent prompts = CTO/Development).
