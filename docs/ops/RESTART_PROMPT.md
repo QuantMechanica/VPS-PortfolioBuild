@@ -2,16 +2,15 @@
 
 Paste this whole file into a fresh Claude Code session on the VPS after a
 Windows-update reboot (or any unplanned VPS restart). Claude (Board Advisor
-role) then walks through the verification + kickstart steps below and
-reports back.
+role) walks through the verification + kickstart steps below and reports back.
 
 ---
 
 ## Context for Claude
 
 You are Claude Code on the QuantMechanica VPS, Board Advisor role. The VPS
-just rebooted (Windows Update / unscheduled). I (OWNER) need you to bring the
-strategy_farm pipeline back into a running state.
+just rebooted. I (OWNER) need you to bring the strategy_farm pipeline back
+into a running state.
 
 **Canonical references (read if unsure):**
 - `C:/QM/repo/CLAUDE.md` — your operating manual
@@ -19,18 +18,30 @@ strategy_farm pipeline back into a running state.
 - Memory file at `C:/Users/Administrator/.claude/projects/C--QM-repo/memory/MEMORY.md` —
   prior-conversation context (auto-loaded; you don't have to read it manually)
 
-**What the pipeline normally looks like when healthy:**
-- ~5 Codex builds and ~1 Codex research running in parallel
-- 1–2 Claude sessions (G0 batch / review / research)
-- 5 MT5 terminals (T1–T5) running for backtests
+**Pipeline architecture refresher (so you don't repeat the 2026-05-17 mistakes):**
+- **MT5 is TRANSIENT**, not a service. `run_smoke.ps1` launches a fresh
+  `terminal64.exe /portable /config:tester.ini` per backtest, waits for
+  exit, parses the report, writes `summary.json`. Do **NOT** manually
+  start `terminal64.exe` to "ensure terminals are running" — that just
+  creates idle ghost processes that waste RAM and help nothing.
+- **Pump-task uses explicit `python.exe`** path, not `py.exe -3`. The
+  Python launcher does not have a Python 3 registered under SYSTEM user
+  and silently exits with code 112. Already fixed; should survive reboot.
+- **5 layers of autonomous recovery** are running (see Step 1). Most
+  pre-2026-05-17 manual interventions are now handled by them.
+
+**What a healthy pipeline looks like:**
+- ~5–10 Codex builds + 0–3 Codex research + 0–3 Codex reviews + 0–1 Codex G0
+- ~1–3 Claude sessions (G0 batch / review / research)
+- 1–5 transient terminal64.exe procs (one per active backtest in flight)
 - `QM_StrategyFarm_QuotaReceiver` listening on 127.0.0.1:9090
 - Cockpit refreshing every 2 min at `D:/QM/strategy_farm/dashboards/cockpit.html`
+- Morning brief lands daily at 07:00 local in
+  `G:/My Drive/QuantMechanica - Company Reference/10 Morning Briefing/`
 
 ---
 
 ## Step 1 — Verify scheduled tasks (should auto-resume)
-
-These tasks should self-recover after reboot. Confirm state:
 
 ```powershell
 Get-ScheduledTask -TaskName 'QM_StrategyFarm_*' |
@@ -38,70 +49,48 @@ Get-ScheduledTask -TaskName 'QM_StrategyFarm_*' |
   Format-Table -AutoSize
 ```
 
-Expected:
-- `QM_StrategyFarm_QuotaReceiver`         → **Running** (AT STARTUP trigger)
-- `QM_StrategyFarm_Pump_5min`             → **Ready** (fires every 5 min)
-- `QM_StrategyFarm_Cockpit_2min`          → **Ready** (fires every 2 min)
-- `QM_StrategyFarm_AutonomousWake_Hourly` → **Ready**
-- `QM_StrategyFarm_BoardAdvisor_Hourly`   → **Ready**
-- `QM_StrategyFarm_Dashboard_Hourly`      → **Ready**
-- `QM_StrategyFarm_Tick_5min`             → **Ready**
+Expected — **all of these should be Ready or Running**:
 
-If any are **Disabled** that should be Ready/Running, re-enable:
+| Task                                       | Trigger          | Purpose                                |
+|--------------------------------------------|------------------|----------------------------------------|
+| `QM_StrategyFarm_QuotaReceiver`            | AT STARTUP       | Tampermonkey HTTP receiver on :9090    |
+| `QM_StrategyFarm_Pump_5min`                | every 5 min      | Continuous pipeline pump               |
+| `QM_StrategyFarm_Cockpit_2min`             | every 2 min      | Cockpit dashboard render               |
+| `QM_StrategyFarm_Health_15min`             | every 15 min     | 10-invariant watchdog → health.json    |
+| `QM_StrategyFarm_Repair_Hourly`            | every 1 h        | Auto-fix 5 stuck-state classes         |
+| `QM_StrategyFarm_GmailAlarm_Hourly`        | every 1 h        | Mail on FAIL transition (debounced)    |
+| `QM_StrategyFarm_MorningBrief_0700`        | daily 07:00      | Markdown brief → cockpit + Drive vault |
+| `QM_StrategyFarm_AutonomousWake_Hourly`    | hourly           | (legacy ad-hoc wake; OK if disabled)   |
+| `QM_StrategyFarm_BoardAdvisor_Hourly`      | hourly           | (legacy; OK if disabled)               |
+| `QM_StrategyFarm_Dashboard_Hourly`         | hourly           | Heureka dashboard render               |
+| `QM_StrategyFarm_Tick_5min`                | every 5 min      | Legacy dispatch tick (mostly no-op now)|
 
+If any **should-be-Ready** is `Disabled`, re-enable:
 ```powershell
 Enable-ScheduledTask -TaskName '<task name>'
 ```
 
-Confirm the receiver actually bound to port 9090:
-
+Confirm port 9090 is listening (receiver alive):
 ```powershell
 Get-NetTCPConnection -LocalPort 9090 -State Listen -ErrorAction SilentlyContinue
 ```
 
-If port not listening, start the receiver task manually:
-`Start-ScheduledTask -TaskName 'QM_StrategyFarm_QuotaReceiver'`
+If empty, start the receiver task manually:
+```powershell
+Start-ScheduledTask -TaskName 'QM_StrategyFarm_QuotaReceiver'
+```
 
 ---
 
-## Step 2 — Launch MT5 terminals T1–T5
+## Step 2 — Manual step for OWNER (Chrome tabs)
 
-MT5 does NOT auto-start on boot. Spawn all 5 factory terminals:
-
-```powershell
-foreach ($t in 'T1','T2','T3','T4','T5') {
-  Start-Process -FilePath "D:/QM/mt5/$t/terminal64.exe"
-}
-```
-
-**Do NOT touch** `C:/QM/mt5/T6_Live/terminal64.exe` — live trading, OWNER+Board
-Advisor only per CLAUDE.md hard rules.
-
-Wait 30 s, then confirm all 5 are up:
-
-```powershell
-Get-Process -Name terminal64 |
-  Select-Object Id, @{N='Path';E={$_.Path}} |
-  Format-Table -AutoSize
-```
-
-You should see 5 rows, one per T1–T5 path.
-
----
-
-## Step 3 — Manual step for OWNER (Chrome tabs)
-
-The Tampermonkey scrapers only tick while their Chrome tabs are open. After
-reboot, Chrome typically restores the previous session — but if not, OWNER
-should re-open these two tabs:
+The Tampermonkey scrapers only tick while their Chrome tabs are open.
+Chrome usually restores sessions on reboot; if not, OWNER should re-open:
 
 - https://chatgpt.com/codex/cloud/settings/analytics
 - https://claude.ai/settings/usage
 
-After 60–90 s, the quota snapshot at
-`D:/QM/strategy_farm/state/quota_snapshot.json` should have fresh
-`received_at` timestamps. Verify:
-
+After 60–90 s verify both have fresh `received_at` timestamps:
 ```bash
 curl -s http://127.0.0.1:9090/quota | python -c "import sys,json; d=json.load(sys.stdin); [print(k, d[k].get('received_at')) for k in d]"
 ```
@@ -110,89 +99,150 @@ If timestamps are older than 5 minutes, ask OWNER to refresh the two tabs.
 
 ---
 
-## Step 4 — Kick the pipeline
-
-Run one pump manually to immediately resume work (instead of waiting up to
-5 min for the scheduled trigger):
+## Step 3 — Kick the pipeline (so we don't wait 5 min for the first pump)
 
 ```bash
-cd C:/QM/repo && python tools/strategy_farm/farmctl.py pump 2>&1 | head -120
+cd C:/QM/repo && python tools/strategy_farm/farmctl.py pump > /tmp/pump.json 2>&1
+python -c "
+import json; d = json.load(open('/tmp/pump.json'))
+print('codex builds:  ', len([s for s in (d.get('codex_spawns_all') or []) if s.get('spawned')]))
+print('codex reviews: ', len([s for s in (d.get('codex_review_spawns') or []) if s.get('spawned')]))
+print('codex research:', len([s for s in (d.get('codex_research_spawns') or []) if s.get('spawned')]))
+print('codex g0:      ', 1 if (d.get('codex_g0_spawn') or {}).get('spawned') else 0)
+print('claude g0:     ', 1 if (d.get('claude_g0_spawn') or {}).get('spawned') else 0)
+print('claude review: ', 1 if (d.get('claude_review_spawn') or {}).get('spawned') else 0)
+print('claude research:',1 if (d.get('claude_research_spawn') or {}).get('spawned') else 0)
+dw = d.get('dispatch_work_items',{})
+print('MT5 dispatch:  ', len(dw.get('actions') or []), 'actions, busy', len(dw.get('busy_terminals') or []), '/ 5')
+"
 ```
 
-Read the JSON output. Expected:
-- `codex_spawns_all`: 0–10 entries (newly-spawned or "live log activity"-skipped)
-- `codex_research_spawn.spawned`: true (if no fresh codex_research log)
-- `claude_g0_spawn` / `claude_review_spawn` / `claude_research_spawn`: depending
-  on draft / done-no-review state
-- `build_records`: 0+ (completed builds the pump just recorded)
-- `dispatch`: MT5 work-item claims
+You should see at least: some codex spawns + a few dispatch claims.
+
+If `0 actions, busy 0 / 5` AND `work_items pending > 5` AND `0 codex spawns`,
+then something deeper is wrong — re-check Step 1 + run `farmctl health`.
 
 ---
 
-## Step 5 — Render cockpit + status snapshot
+## Step 4 — Refresh watchdog + repair pass
+
+```bash
+cd C:/QM/repo && python tools/strategy_farm/farmctl.py health 2>&1 | tail -2
+python tools/strategy_farm/farmctl.py repair 2>&1 | tail -2
+```
+
+These two are normally on scheduled tasks (15 min / 1 h) — running them
+now gives an immediate snapshot of red invariants and clears any stale
+state left over from the reboot.
+
+---
+
+## Step 5 — Render cockpit + write morning brief
 
 ```bash
 cd C:/QM/repo && python tools/strategy_farm/render_cockpit.py
-python tools/strategy_farm/farmctl.py status 2>&1 | head -40
+python tools/strategy_farm/morning_brief.py
 ```
 
 ---
 
 ## Step 6 — Brief OWNER
 
-Reply with a short status summary covering:
+Read `D:/QM/strategy_farm/dashboards/morning_brief.md` (or the freshly-
+written vault copy under `10 Morning Briefing/`). That file already
+contains the right summary structure. In your message:
 
-1. **Scheduled tasks:** all Ready/Running ✅ — or list which ones are off.
-2. **MT5 fleet:** 5/5 terminals up — or which are missing.
-3. **Quota receiver:** port 9090 listening, last codex/claude snapshot ages.
-4. **Pipeline state:** how many builds active, research in flight, draft
-   cards waiting on G0, approved cards on disk, pending sources.
-5. **First anomaly seen since reboot (if any):** failed builds, orphaned
-   procs, blocked tasks, stale work_items.
-6. **What OWNER needs to do:** typically just "re-open the 2 Chrome tabs
-   for Tampermonkey scrapers" — nothing else.
+1. Quote the headline + health line (e.g. "MOMENTUM BUILDING · Pipeline
+   health: ATTENTION · 2 red 1 yellow 7 green").
+2. Note any FAIL invariants that just appeared post-reboot — likely
+   `cards_ready_stagnation` (will clear in 2-3 pump cycles) or
+   `quota_snapshot_fresh` (tabs not yet open).
+3. State whether OWNER needs to do anything: usually just "re-open the
+   2 Chrome tabs for Tampermonkey scrapers".
+4. End with: `Cockpit: file:///D:/QM/strategy_farm/dashboards/cockpit.html`
 
-Format: 6–10 lines, no fluff. Cockpit link at the bottom:
-`file:///D:/QM/strategy_farm/dashboards/cockpit.html`
+Keep it 6–10 lines.
 
 ---
 
-## Common post-reboot anomalies
+## Common post-reboot anomalies (most are auto-recovered now)
 
 - **No fresh quota snapshot** → Chrome tabs not yet open. Tell OWNER.
-- **Stale codex/python procs leftover from pre-reboot** → unlikely (reboot
-  killed them), but if `Get-Process codex` shows procs with very old
-  StartTime, those are zombies — `Stop-Process -Id <pid> -Force` them.
-- **Stale `live_log` files marked < 60s but no actual process** → can
-  cause pump's "live log activity within 60s" skip. Touch them to reset,
-  OR just wait one more pump cycle and they'll age out.
-- **work_items stuck in 'active' with no terminal claimed** → orphan from
-  pre-reboot MT5 worker. `farmctl.py` has no built-in reset; check
-  `claimed_by` and clear via SQL if needed:
-  ```bash
-  python -c "
-  import sqlite3; c = sqlite3.connect(r'D:/QM/strategy_farm/state/farm_state.sqlite')
-  c.execute(\"UPDATE work_items SET status='pending', claimed_by=NULL WHERE status='active'\")
-  c.commit()
-  "
+  Watchdog `quota_snapshot_fresh` invariant already flags this.
+
+- **Many work_items "active" with no terminal64 procs** → expected for a
+  short window post-reboot. The pump's **inline worker-PID check**
+  releases them within 1 min of the next pump cycle. Repair `R5_dead_terminal`
+  catches anything that slips through within the hour. Do NOT manually
+  reset via SQL — let the layers do their job. Only intervene if
+  `farmctl repair` doesn't clear them after 2 cycles.
+
+- **Stranded `active` source (status='active', no codex/claude running)** →
+  Repair `R2` handles this. Sit tight; will clear within 1 hour.
+
+- **Codex review FAIL clustering** → if `farmctl health` shows
+  `codex_review_fail_rate_1h: FAIL`, inspect a recent verdict JSON in
+  `D:/QM/strategy_farm/artifacts/verdicts/codex_review_*.json` for the
+  finding pattern. If it's the phantom `status` field (regression),
+  the `prompts/SCHEMAS.md` got out of sync — DO check vs current
+  `build_result.json` schema before re-running.
+
+- **Pump task LastResult ≠ 0** → first check the action's `Execute` field:
+  ```powershell
+  (Get-ScheduledTask -TaskName 'QM_StrategyFarm_Pump_5min').Actions | Format-List
   ```
-- **Active source claimed by codex/claude with no live process** → similar
-  recovery. Check `sources WHERE status='active'` against running procs; if
-  no matching live_log activity within 5 min, reset:
-  ```bash
-  python -c "
-  import sqlite3; c = sqlite3.connect(r'D:/QM/strategy_farm/state/farm_state.sqlite')
-  c.execute(\"UPDATE sources SET status='pending', assigned_worker=NULL WHERE status='active'\")
-  c.commit()
-  "
-  ```
+  Should be `cmd.exe /c "C:\...\python.exe" "C:\QM\repo\tools\strategy_farm\farmctl.py" pump > C:\Windows\Temp\pump_task.log 2>&1`.
+  If `Execute = py.exe`, the SYSTEM-user Python launcher bug is back —
+  re-install with explicit python.exe path. Log content lives at
+  `C:/Windows/Temp/pump_task.log`.
+
+- **Watchdog Gmail alarm fires immediately after reboot** → expected; the
+  fingerprint state file was reset by the dead pump. It'll re-debounce
+  on next 1-hour cycle.
 
 ---
 
 ## Do NOT do these on restart
 
-- Re-install scheduled tasks (they survive reboots — only re-enable if Disabled)
-- Touch T6_Live MT5 terminal
-- git push / cherry-pick / branch swap unless OWNER explicitly asks
-- Delete `D:/QM/strategy_farm/state/farm_state.sqlite` (canonical pipeline state)
-- Clear `D:/QM/strategy_farm/logs/` (history needed for last_lines tail)
+- ❌ **Do NOT manually start `terminal64.exe`** to "ensure MT5 is running".
+  MT5 is transient (per-backtest spawn by run_smoke.ps1). Idle terminals
+  help nothing.
+- ❌ Re-install scheduled tasks. They survive reboots — only re-enable if
+  `Disabled`.
+- ❌ Touch `C:/QM/mt5/T6_Live/terminal64.exe` — live trading slot,
+  OWNER+Board Advisor only per CLAUDE.md hard rules.
+- ❌ `git push` / cherry-pick / branch swap unless OWNER explicitly asks.
+- ❌ Delete `D:/QM/strategy_farm/state/farm_state.sqlite` — canonical
+  pipeline state.
+- ❌ Clear `D:/QM/strategy_farm/logs/` — history needed by repair handler
+  freshness checks.
+- ❌ Manually SQL-reset stranded work_items unless pump's inline PID check
+  has failed to do it after 2 cycles.
+
+---
+
+## Useful one-liners (for during-day checks too)
+
+```bash
+# Where do we stand right now?
+cd C:/QM/repo && python tools/strategy_farm/farmctl.py status
+
+# What's pending?
+python tools/strategy_farm/farmctl.py work-items --status pending | head -30
+
+# Force a health check now
+python tools/strategy_farm/farmctl.py health
+
+# Force a repair pass now
+python tools/strategy_farm/farmctl.py repair
+
+# Force a pump now
+python tools/strategy_farm/farmctl.py pump > /tmp/pump.json
+
+# Show the brief
+cat D:/QM/strategy_farm/dashboards/morning_brief.md
+
+# Send fresh Gmail alarm (debounce-state reset)
+rm D:/QM/strategy_farm/state/gmail_alarm_state.json
+python tools/strategy_farm/gmail_alarm.py
+```
