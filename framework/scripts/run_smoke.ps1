@@ -119,7 +119,9 @@ function Deploy-ExpertBinaryToAllTerminals {
     # Destination: D:\QM\mt5\<Tn>\MQL5\Experts\<subdir>\<EaLabel>.ex5
     param(
         [Parameter(Mandatory = $true)]
-        [string]$ExpertPath
+        [string]$ExpertPath,
+        [Parameter(Mandatory = $false)]
+        [string]$TerminalName = ""
     )
 
     if ([string]::IsNullOrWhiteSpace($ExpertPath)) {
@@ -143,8 +145,19 @@ function Deploy-ExpertBinaryToAllTerminals {
         return
     }
 
+    # Per-terminal deploy when TerminalName is provided (single-terminal smoke),
+    # otherwise fall back to legacy all-terminal deploy. Per-terminal eliminates
+    # the file-lock contention that previously caused ~80% worker mortality when
+    # 5 parallel workers all tried to overwrite each terminal's .ex5 binary
+    # simultaneously while one terminal was already running it. See task #014
+    # diagnosis and #011 worker-mortality result.
+    $targets = if ([string]::IsNullOrWhiteSpace($TerminalName)) {
+        @("T1","T2","T3","T4","T5")
+    } else {
+        @($TerminalName)
+    }
     $deployedTo = New-Object System.Collections.Generic.List[string]
-    foreach ($t in @("T1","T2","T3","T4","T5")) {
+    foreach ($t in $targets) {
         $destDir  = Join-Path "D:\QM\mt5" (Join-Path $t (Join-Path "MQL5" (Join-Path "Experts" $subdir)))
         if (-not (Test-Path -LiteralPath $destDir -PathType Container)) {
             New-Item -ItemType Directory -Path $destDir -Force | Out-Null
@@ -612,7 +625,7 @@ if (-not $Expert) {
 # Codex build → compile → smoke chains failed at "Experts\QM\<EA>.ex5 not
 # found" because only p2_baseline.py deployed binaries — run_smoke had no
 # self-deploy step. 2026-05-16 QM5_1046 build hit exactly this.
-Deploy-ExpertBinaryToAllTerminals -ExpertPath $Expert
+Deploy-ExpertBinaryToAllTerminals -ExpertPath $Expert -TerminalName $effectiveTerminal
 
 if ($SetFile) {
     $SetFile = (Resolve-Path -LiteralPath $SetFile).Path
