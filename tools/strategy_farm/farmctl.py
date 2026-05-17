@@ -1950,6 +1950,22 @@ def _detect_zerotrade_dead_eas(con: sqlite3.Connection, root: Path = DEFAULT_ROO
         ratio = zt / done if done else 0.0
         if ratio < ZERO_TRADE_DEAD_THRESHOLD:
             continue
+        prior_attempts = con.execute(
+            """
+            SELECT COUNT(*) FROM tasks
+            WHERE card_id=? AND kind='build_ea'
+              AND payload_json LIKE '%ZERO_TRADE_RECURRENT%'
+            """,
+            (ea_id,),
+        ).fetchone()[0]
+        if prior_attempts >= 3:
+            event(con, "ea", ea_id, "ea_dead_zero_trade_3x_rework_failed", {
+                "verdict": "DEAD_ZERO_TRADE_3X_REWORK_FAILED",
+                "zero_trade_ratio": ratio,
+                "sample_size": done,
+                "zero_trade_failures": zt,
+            })
+            continue
         if _recent_zero_trade_rework_exists(con, ea_id):
             continue
 
@@ -1977,6 +1993,7 @@ def _detect_zerotrade_dead_eas(con: sqlite3.Connection, root: Path = DEFAULT_ROO
             "zero_trade_ratio": ratio,
             "zero_trade_failures": zt,
             "sample_size": done,
+            "rework_attempt_count": int(prior_attempts) + 1,
             "trigger_ts": utc_now(),
             "evidence_query": (
                 "SELECT evidence_path FROM work_items WHERE ea_id='"
@@ -2057,6 +2074,210 @@ def _detect_unbuilt_cards(root: Path) -> list[dict[str, Any]]:
             "expected_ex5": str(ex5),
         })
     return unbuilt
+
+
+def _slug_from_research_line(line: str) -> str | None:
+    m = re.search(r"(QM5_\d{4}_[A-Za-z0-9_.-]+)", line)
+    if not m:
+        return None
+    return m.group(1).replace(".", "-")
+
+
+def _extract_cards_from_research_results(root: Path, limit: int = 10) -> list[dict[str, Any]]:
+    """Convert bridge research result proposals into draft card stubs.
+
+    The extractor is intentionally conservative: it looks for QM5 slug
+    mentions in `*research*_result.md` outbox files and writes one draft per
+    unseen slug, preserving a source pointer back to the research result.
+    """
+    outbox = root / "codex_outbox"
+    draft_dir = root / "artifacts" / "cards_draft"
+    draft_dir.mkdir(parents=True, exist_ok=True)
+    created: list[dict[str, Any]] = []
+    if not outbox.is_dir():
+        return created
+    for result_md in sorted(outbox.glob("*research*_result.md")):
+        text = result_md.read_text(encoding="utf-8", errors="ignore")
+        for line in text.splitlines():
+            slug = _slug_from_research_line(line)
+            if not slug:
+                continue
+            target = draft_dir / f"{slug}.md"
+            if target.exists():
+                continue
+            parts = slug.split("_", 2)
+            if len(parts) < 3:
+                continue
+            ea_id = f"{parts[0]}_{parts[1]}"
+            simple_slug = parts[2]
+            body = f"""---
+ea_id: {ea_id}
+slug: {simple_slug}
+status: draft
+source_result: {result_md}
+r1_track_record: UNKNOWN
+r2_mechanical: UNKNOWN
+r3_data_available: UNKNOWN
+r4_ml_forbidden: UNKNOWN
+created_at: {utc_now()}
+---
+
+# {slug}
+
+Extracted from research result `{result_md}`.
+
+## Raw Proposal Line
+
+{line.strip()}
+
+## Source
+
+See the originating research result for citations and ranking context.
+
+## Entry
+
+UNKNOWN - queued for R-eval/card completion.
+
+## Exit
+
+UNKNOWN - queued for R-eval/card completion.
+
+## Stop
+
+UNKNOWN - queued for R-eval/card completion.
+
+## Target symbol(s)
+
+UNKNOWN
+
+## Period
+
+UNKNOWN
+"""
+            target.write_text(body, encoding="utf-8", newline="\n")
+            created.append({"slug": slug, "card_path": str(target), "source_result": str(result_md)})
+            if len(created) >= limit:
+                return created
+    return created
+
+
+def _card_frontmatter_block(text: str) -> tuple[dict[str, str], str]:
+    m = re.match(r"^---\s*\n(.*?)\n---\s*\n?", text, re.DOTALL)
+    if not m:
+        return {}, text
+    fm: dict[str, str] = {}
+    for line in m.group(1).splitlines():
+        if ":" in line and not line.startswith(" "):
+            k, v = line.split(":", 1)
+            fm[k.strip()] = v.strip().strip('"')
+    return fm, text[m.end():]
+
+
+def _update_flat_frontmatter_file(path: Path, updates: dict[str, str]) -> None:
+    text = path.read_text(encoding="utf-8")
+    if not text.startswith("---"):
+        lines = ["---"] + [f"{k}: {v}" for k, v in updates.items()] + ["---", "", text]
+        path.write_text("\n".join(lines), encoding="utf-8", newline="\n")
+        return
+    m = re.match(r"^(---\s*\n)(.*?)(\n---\s*\n?)", text, re.DOTALL)
+    if not m:
+        return
+    lines = m.group(2).splitlines()
+    seen: set[str] = set()
+    for i, line in enumerate(lines):
+        for k, v in updates.items():
+            if k in seen:
+                continue
+            if re.match(rf"^{re.escape(k)}\s*:", line):
+                lines[i] = f"{k}: {v}"
+                seen.add(k)
+    for k, v in updates.items():
+        if k not in seen:
+            lines.append(f"{k}: {v}")
+    path.write_text(m.group(1) + "\n".join(lines) + m.group(3) + text[m.end():], encoding="utf-8", newline="\n")
+
+
+def _card_has_unknown_r_eval(card_path: Path) -> bool:
+    fm, _ = _card_frontmatter_block(card_path.read_text(encoding="utf-8", errors="ignore"))
+    for key in ("r1_track_record", "r2_mechanical", "r3_data_available", "r4_ml_forbidden"):
+        if (fm.get(key) or "UNKNOWN").upper() == "UNKNOWN":
+            return True
+    return False
+
+
+def _auto_queue_r_eval_for_unknown_drafts(root: Path, max_tasks: int = 3) -> list[dict[str, Any]]:
+    draft_dir = root / "artifacts" / "cards_draft"
+    inbox = root / "codex_inbox"
+    inbox.mkdir(parents=True, exist_ok=True)
+    if not draft_dir.is_dir():
+        return []
+    cutoff = time.time() - 4 * 3600
+    queued: list[dict[str, Any]] = []
+    for card_path in sorted(draft_dir.glob("QM5_*.md")):
+        if len(queued) >= max_tasks:
+            break
+        if card_path.stat().st_mtime > cutoff:
+            continue
+        ea_id = "_".join(card_path.stem.split("_")[:2])
+        if not _card_has_unknown_r_eval(card_path):
+            continue
+        if _has_auto_task_file(root, f"auto-r-eval-{ea_id}-"):
+            continue
+        ts = dt.datetime.now(dt.UTC).replace(microsecond=0).strftime("%Y%m%dT%H%M%SZ")
+        task_id = f"auto-r-eval-{ea_id}-{ts}"
+        target = inbox / f"{task_id}.md"
+        content = f"""---
+task_id: {task_id}
+priority: med
+created: {dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat()}
+auto_generated: true
+trigger: R_EVAL_UNKNOWN_DRAFT
+ea_id: {ea_id}
+---
+
+# Auto R-eval: {card_path.name}
+
+Read `{card_path}` and `C:/QM/repo/processes/qb_reputable_source_criteria.md`.
+Update the card frontmatter in place with PASS/FAIL for:
+
+- `r1_track_record`
+- `r2_mechanical`
+- `r3_data_available`
+- `r4_ml_forbidden`
+
+Include concise reasoning fields. No commit / no push.
+"""
+        target.write_text(content, encoding="utf-8", newline="\n")
+        queued.append({"ea_id": ea_id, "task_path": str(target)})
+    return queued
+
+
+def _has_auto_task_file(root: Path, prefix: str) -> bool:
+    inbox = root / "codex_inbox"
+    for rel in ("", ".processing", ".archive"):
+        d = inbox / rel if rel else inbox
+        if d.is_dir() and any(d.glob(f"{prefix}*.md")):
+            return True
+    return False
+
+
+def _verify_card_body_coverage(card_path: Path) -> dict[str, Any]:
+    text = card_path.read_text(encoding="utf-8", errors="ignore")
+    _, body = _card_frontmatter_block(text)
+    missing: list[str] = []
+    if not re.search(r"(19|20)\d{2}.*(Journal|DOI|doi|SSRN|arXiv|Harriman|Wiley|Springer|URL|http)", body, re.I | re.S):
+        missing.append("source_citation")
+    if not re.search(r"\bEntry\b", body, re.I):
+        missing.append("entry")
+    if not re.search(r"\bExit\b", body, re.I):
+        missing.append("exit")
+    if not re.search(r"\bStop\b|\bSL\b|stop loss", body, re.I):
+        missing.append("stop")
+    if not re.search(r"Target symbol|symbols?:.*\.DWX|[A-Z0-9]{3,10}\.DWX", body, re.I):
+        missing.append("target_symbols")
+    if not re.search(r"\b(M1|M5|M15|M30|H1|H4|D1|W1|MN1)\b", body):
+        missing.append("period")
+    return {"ok": not missing, "missing": missing}
 
 
 def _write_auto_build_task(ea_info: dict[str, Any], root: Path) -> Path:
@@ -2169,6 +2390,63 @@ def _enqueue_p2_from_review(root: Path, review_task_id: str) -> int:
     return len(result.get("work_items_created") or [])
 
 
+def _auto_create_ea_review_for_unenqueued_eas(root: Path, con: sqlite3.Connection, limit: int = 3) -> list[dict[str, Any]]:
+    """Auto-create done ea_review rows for built EAs from auto-generated builds."""
+    out: list[dict[str, Any]] = []
+    rows = con.execute(
+        """
+        SELECT * FROM tasks
+        WHERE kind='build_ea'
+          AND payload_json LIKE '%auto_generated%'
+        ORDER BY updated_at ASC
+        """
+    ).fetchall()
+    for row in rows:
+        if len(out) >= limit:
+            break
+        payload = json.loads(row["payload_json"] or "{}")
+        if not payload.get("auto_generated"):
+            continue
+        ea_id = payload.get("ea_id") or row["card_id"]
+        if not ea_id:
+            continue
+        existing_review = con.execute(
+            "SELECT id FROM tasks WHERE kind='ea_review' AND card_id=? LIMIT 1",
+            (ea_id,),
+        ).fetchone()
+        if existing_review:
+            continue
+        candidates = sorted(p for p in FRAMEWORK_EAS_DIR.glob(f"{ea_id}_*") if p.is_dir())
+        if not candidates:
+            continue
+        ea_dir = candidates[0]
+        ex5 = ea_dir / f"{ea_dir.name}.ex5"
+        if not ex5.exists():
+            continue
+        review_payload = {
+            "ea_id": ea_id,
+            "build_task_id": row["id"],
+            "auto_generated": True,
+            "auto_review_reason": "auto-approved by orchestrator post-build",
+            "verdict": {"verdict": "APPROVE_FOR_BACKTEST"},
+        }
+        review_task_id = create_task(
+            con,
+            kind="ea_review",
+            source_id=row["source_id"],
+            card_id=ea_id,
+            payload=review_payload,
+        )
+        con.execute("UPDATE tasks SET status='done', updated_at=? WHERE id=?", (utc_now(), review_task_id))
+        con.commit()
+        try:
+            n = _enqueue_p2_from_review(root, review_task_id)
+            out.append({"ea_id": ea_id, "review_task_id": review_task_id, "work_items": n})
+        except Exception as exc:
+            out.append({"ea_id": ea_id, "review_task_id": review_task_id, "error": repr(exc)})
+    return out
+
+
 def pump(root: Path) -> dict[str, Any]:
     """Continuous deterministic worker — run every 5 min.
 
@@ -2243,6 +2521,9 @@ def pump(root: Path) -> dict[str, Any]:
     with connect(root) as conn:
         result["zerotrade_rework_flagged"] = _detect_zerotrade_dead_eas(conn, root)
 
+    result["research_cards_extracted"] = _extract_cards_from_research_results(root)
+    result["auto_r_eval_queued"] = _auto_queue_r_eval_for_unknown_drafts(root)
+
     result["auto_build_queued"] = []
     for ea_info in _detect_unbuilt_cards(root)[:2]:
         p = _write_auto_build_task(ea_info, root)
@@ -2254,6 +2535,7 @@ def pump(root: Path) -> dict[str, Any]:
 
     result["auto_p2_enqueued"] = []
     with connect(root) as conn:
+        result["auto_ea_review_created"] = _auto_create_ea_review_for_unenqueued_eas(root, conn)
         for ea_info in _detect_unenqueued_eas(conn)[:3]:
             try:
                 n = _enqueue_p2_from_review(root, ea_info["review_task_id"])
@@ -4144,6 +4426,23 @@ def approve_card(root: Path, card_path_str: str, reasoning: str) -> dict[str, An
     ea_id = fm.get("ea_id")
     if not ea_id:
         return {"approved": False, "reason": "Card frontmatter missing ea_id"}
+
+    coverage = _verify_card_body_coverage(card_path)
+    if not coverage["ok"]:
+        _update_flat_frontmatter_file(card_path, {
+            "r1_track_record": "UNKNOWN",
+            "r2_mechanical": "UNKNOWN",
+            "r3_data_available": "UNKNOWN",
+            "r4_ml_forbidden": "UNKNOWN",
+            "card_body_incomplete": "true",
+            "card_body_missing": '"' + ",".join(coverage["missing"]) + '"',
+        })
+        return {
+            "approved": False,
+            "reason": "card_body_incomplete",
+            "missing": coverage["missing"],
+            "card_path": str(card_path),
+        }
 
     today = dt.datetime.now(dt.UTC).strftime("%Y-%m-%d")
     quoted = '"' + reasoning.replace('"', "'").replace("\n", " ").strip()[:300] + '"'

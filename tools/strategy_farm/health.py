@@ -39,6 +39,7 @@ HEALTH_FILE = ROOT / "state" / "health.json"
 ALARMS_LOG = ROOT / "state" / "health_alarms.log"
 QUOTA_SNAPSHOT = ROOT / "state" / "quota_snapshot.json"
 LOG_DIR = ROOT / "logs"
+CODEX_BRIDGE_HEARTBEAT = ROOT / "state" / "codex_bridge_heartbeat.txt"
 ZERO_TRADE_DEAD_THRESHOLD = 0.80
 ZERO_TRADE_DEAD_MIN_DONE = 5
 ZERO_TRADE_REWORK_DEDUP_HOURS = 6
@@ -551,6 +552,25 @@ def chk_unenqueued_eas_count(con) -> dict:
     return _check("unenqueued_eas_count", "OK", n, 3, detail, "")
 
 
+def chk_codex_bridge_heartbeat(con) -> dict:
+    """Interactive bridge heartbeat freshness."""
+    if not CODEX_BRIDGE_HEARTBEAT.exists():
+        return _check("codex_bridge_heartbeat", "WARN", "missing", 300,
+                      "codex bridge heartbeat file missing",
+                      "Ensure the Codex /goal poller touches state/codex_bridge_heartbeat.txt each cycle.")
+    age = int((_utc_now().timestamp()) - CODEX_BRIDGE_HEARTBEAT.stat().st_mtime)
+    if age > 1800:
+        return _check("codex_bridge_heartbeat", "FAIL", age, 1800,
+                      f"heartbeat stale for {age}s",
+                      "Restart or inspect the interactive Codex bridge.")
+    if age > 300:
+        return _check("codex_bridge_heartbeat", "WARN", age, 300,
+                      f"heartbeat stale for {age}s",
+                      "Bridge may be idle or wedged; check Codex terminal.")
+    return _check("codex_bridge_heartbeat", "OK", age, 300,
+                  f"heartbeat age {age}s", "")
+
+
 def chk_codex_auth_broken(con) -> dict:
     """Detect Codex authentication failures.
 
@@ -680,6 +700,7 @@ ALL_CHECKS = [
     ("zerotrade_rework_backlog", chk_zerotrade_rework_backlog, True),
     ("unbuilt_cards_count",    chk_unbuilt_cards_count,    True),
     ("unenqueued_eas_count",   chk_unenqueued_eas_count,   True),
+    ("codex_bridge_heartbeat", chk_codex_bridge_heartbeat, True),
     ("quota_snapshot_fresh",   chk_quota_snapshot_fresh,   False),
     ("codex_auth_broken",      chk_codex_auth_broken,      True),
 ]
