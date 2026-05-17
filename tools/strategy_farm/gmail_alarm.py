@@ -27,6 +27,7 @@ import html
 import json
 import smtplib
 import sys
+import time
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from pathlib import Path
@@ -55,6 +56,7 @@ MONO_STACK = "'Source Code Pro', ui-monospace, 'SF Mono', Menlo, monospace"
 ROOT = Path(r"D:\QM\strategy_farm")
 HEALTH_FILE = ROOT / "state" / "health.json"
 STATE_FILE = ROOT / "state" / "gmail_alarm_state.json"
+DASHBOARDS_DIR = ROOT / "dashboards"
 SECRETS_DIR = Path(r"C:\QM\repo\.private\secrets")
 APP_PASSWORD_FILE = SECRETS_DIR / "gmail_app_password.txt"
 SENDER_FILE = SECRETS_DIR / "gmail_sender.txt"
@@ -282,6 +284,27 @@ def _send_mail(subject: str, text_body: str, html_body: str | None = None) -> di
     return {"sent": True, "subject": subject, "html": bool(html_body)}
 
 
+def _send_mail_with_retries(subject: str, text_body: str, html_body: str | None = None,
+                            attempts: int = 3, base_delay_sec: float = 2.0) -> dict:
+    last: dict = {"sent": False, "reason": "not attempted"}
+    for attempt in range(1, attempts + 1):
+        last = _send_mail(subject, text_body, html_body)
+        last["attempt"] = attempt
+        if last.get("sent"):
+            return last
+        if attempt < attempts:
+            time.sleep(base_delay_sec * (2 ** (attempt - 1)))
+    DASHBOARDS_DIR.mkdir(parents=True, exist_ok=True)
+    fail_flag = DASHBOARDS_DIR / f"HEUREKA_PIPELINE_GMAIL_FAILED_{dt.datetime.now(dt.timezone.utc).strftime('%Y%m%dT%H%M%SZ')}.md"
+    fail_flag.write_text(
+        "# Gmail Alarm Failed\n\n"
+        f"Subject: {subject}\n\n"
+        f"Last result: `{json.dumps(last, sort_keys=True)}`\n",
+        encoding="utf-8",
+    )
+    return {**last, "sent": False, "attempts": attempts, "fail_flag": str(fail_flag)}
+
+
 def main() -> int:
     health = _load_health()
     if not health:
@@ -334,7 +357,7 @@ def main() -> int:
     else:
         subject, text_body, html_body = _build_mail_body(health)
 
-    result = _send_mail(subject, text_body, html_body)
+    result = _send_mail_with_retries(subject, text_body, html_body)
     print(json.dumps(result, indent=2))
 
     # Update state regardless of send success — don't re-attempt failed sends
