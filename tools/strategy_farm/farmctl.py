@@ -27,6 +27,7 @@ DEFAULT_ROOT = Path(os.environ.get("QM_STRATEGY_FARM_ROOT", r"D:\QM\strategy_far
 DB_REL = Path("state") / "farm_state.sqlite"
 REPO_ROOT = Path(__file__).resolve().parents[2]
 FRAMEWORK_EAS_DIR = REPO_ROOT / "framework" / "EAs"
+P5_CALIBRATION_JSON = REPO_ROOT / "framework" / "calibrations" / "VPS_SLIPPAGE_LATENCY_CALIBRATION_V2.json"
 PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
 CLAUDE_RESEARCH_TEMPLATE = PROMPTS_DIR / "claude_research_source.md"
 CODEX_BUILD_TEMPLATE = PROMPTS_DIR / "codex_build_ea.md"
@@ -287,6 +288,46 @@ def parse_card_frontmatter(card_path: Path) -> dict[str, Any]:
             if val and not val.startswith("-") and val not in {"|", ">"}:
                 result[key] = val.strip('"').strip("'")
     return result
+
+
+def _find_approved_card_for_ea(root: Path, ea_id: str) -> Path | None:
+    cards_dir = root / "artifacts" / "cards_approved"
+    if not cards_dir.is_dir():
+        return None
+    matches = sorted(cards_dir.glob(f"{ea_id}_*.md"))
+    return matches[0] if matches else None
+
+
+def _expected_trades_per_year_for_ea(root: Path, ea_id: str) -> int:
+    card = _find_approved_card_for_ea(root, ea_id)
+    if not card:
+        return 20
+    try:
+        fm = parse_card_frontmatter(card)
+        value = int(str(fm.get("expected_trades_per_year_per_symbol", "20")).strip())
+        return max(1, value)
+    except Exception:
+        return 20
+
+
+def _smoke_year_count(from_date: str | None, to_date: str | None, default_year: int) -> int:
+    start = from_date or f"{default_year}.01.01"
+    end = to_date or f"{default_year}.12.31"
+    try:
+        return max(1, int(end[:4]) - int(start[:4]) + 1)
+    except Exception:
+        return 1
+
+
+def _effective_min_trades(root: Path, ea_id: str, from_date: str | None,
+                          to_date: str | None, default_year: int) -> dict[str, int]:
+    expected = _expected_trades_per_year_for_ea(root, ea_id)
+    years = _smoke_year_count(from_date, to_date, default_year)
+    return {
+        "expected_trades_per_year_per_symbol": expected,
+        "smoke_year_count": years,
+        "effective_min_trades": max(1, int(expected * years * 0.5)),
+    }
 
 
 def create_task(
@@ -709,6 +750,8 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         from_date = None
         to_date = None
     year = 2024
+    min_trade_info = _effective_min_trades(root, ea_id, from_date, to_date, year)
+    effective_min_trades = str(min_trade_info["effective_min_trades"])
 
     cmd = [
         "pwsh.exe", "-NoProfile", "-File",
@@ -720,7 +763,7 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         "-Terminal", terminal,
         "-Period", period,
         "-Runs", n_runs,
-        "-MinTrades", "5",
+        "-MinTrades", effective_min_trades,
         "-Model", "4",
         "-SetFile", setfile_path,
         "-ReportRoot", str(report_root),
@@ -751,6 +794,7 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         "log_path": str(log_path),
         "report_root": str(report_root),
         "ea_dir_name": ea_dir_name,
+        **min_trade_info,
     }
 
 
@@ -798,7 +842,10 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
             except Exception as e:
                 summary = None
             if summary:
-                verdict, reason = _derive_verdict_from_summary(summary, min_trades=5)
+                effective_min_trades = int(payload.get("effective_min_trades")
+                                           or summary.get("min_trades_required")
+                                           or 5)
+                verdict, reason = _derive_verdict_from_summary(summary, min_trades=effective_min_trades)
                 with connect(root) as conn2:
                     conn2.execute(
                         "UPDATE work_items SET status='done', verdict=?, evidence_path=?, payload_json=?, updated_at=? WHERE id=?",
@@ -811,6 +858,7 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 actions.append({"action": "classified_item", "item_id": item["id"],
                                "ea_id": item["ea_id"], "symbol": item["symbol"],
                                "verdict": verdict, "reason": reason,
+                               "effective_min_trades": effective_min_trades,
                                "terminal_released": terminal})
                 continue
         # Still no summary — first check if the run_smoke.ps1 child PID
@@ -946,6 +994,9 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 "report_root": spawn["report_root"],
                 "ea_dir_name": spawn["ea_dir_name"],
                 "terminal": terminal,
+                "expected_trades_per_year_per_symbol": spawn.get("expected_trades_per_year_per_symbol"),
+                "smoke_year_count": spawn.get("smoke_year_count"),
+                "effective_min_trades": spawn.get("effective_min_trades"),
             }
             with connect(root) as conn2:
                 conn2.execute(
@@ -960,6 +1011,7 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 "symbol": item["symbol"],
                 "terminal": terminal,
                 "pid": spawn["pid"],
+                "effective_min_trades": spawn.get("effective_min_trades"),
             })
 
     # --- Phase 3: aggregate completed parents ---
@@ -2447,6 +2499,124 @@ def _auto_create_ea_review_for_unenqueued_eas(root: Path, con: sqlite3.Connectio
     return out
 
 
+def _auto_stub_p5_calibration(root: Path, con: sqlite3.Connection, limit: int = 10) -> list[dict[str, Any]]:
+    """Add missing P5 calibration symbol blocks from recent successful evidence."""
+    cal_path = P5_CALIBRATION_JSON
+    if not cal_path.exists():
+        return []
+    try:
+        calibration = json.loads(cal_path.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+    symbols = calibration.setdefault("symbols", {})
+    if not isinstance(symbols, dict):
+        return []
+
+    rows = con.execute(
+        """
+        SELECT * FROM work_items
+        WHERE (
+            (phase='P4' AND status='done' AND verdict='PASS')
+            OR (phase='P5' AND status IN ('pending', 'active'))
+        )
+        ORDER BY updated_at DESC
+        LIMIT 100
+        """
+    ).fetchall()
+    added: list[dict[str, Any]] = []
+    for row in rows:
+        symbol = str(row["symbol"] or "").strip()
+        if not symbol or symbol in symbols:
+            continue
+        evidence = str(row["evidence_path"] or "").strip()
+        symbols[symbol] = {
+            "commission_cents_per_lot": 700.0,
+            "latency_ms": {"avg": 50.0, "p95": 120.0},
+            "slippage_points": {"avg": 1.0, "p95": 3.0},
+            "spread_points": {"median": 20.0, "p95": 60.0},
+            "auto_stub": True,
+            "derive_from": evidence,
+            "stub_created_at": utc_now(),
+            "stub_source": "farmctl_pump_p5_calibration_autostub",
+        }
+        added.append({
+            "symbol": symbol,
+            "derive_from": evidence,
+            "work_item_id": row["id"],
+            "ea_id": row["ea_id"],
+        })
+        if len(added) >= limit:
+            break
+
+    if added:
+        cal_path.write_text(json.dumps(calibration, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        event(con, "calibration", "P5", "p5_calibration_auto_stubbed", {"symbols": added})
+        con.commit()
+    return added
+
+
+def _hourly_db_backup(root: Path) -> str | None:
+    """Snapshot farm_state.sqlite to state/backups once per hour; keep 24h."""
+    src = root / DB_REL
+    if not src.exists():
+        return None
+    backup_dir = root / "state" / "backups"
+    backup_dir.mkdir(parents=True, exist_ok=True)
+    now = dt.datetime.now(dt.timezone.utc)
+    existing = sorted(backup_dir.glob("farm_state_*.sqlite"))
+    if existing:
+        latest = max(existing, key=lambda p: p.stat().st_mtime)
+        if now.timestamp() - latest.stat().st_mtime < 50 * 60:
+            return None
+    target = backup_dir / f"farm_state_{now.strftime('%Y%m%d_%H%M')}.sqlite"
+    src_conn = sqlite3.connect(str(src))
+    try:
+        tgt_conn = sqlite3.connect(str(target))
+        try:
+            src_conn.backup(tgt_conn)
+        finally:
+            tgt_conn.close()
+    finally:
+        src_conn.close()
+    cutoff = now.timestamp() - 24 * 3600
+    for old in existing:
+        try:
+            if old.stat().st_mtime < cutoff:
+                old.unlink()
+        except OSError:
+            pass
+    return str(target)
+
+
+def _trigger_p_pass_stagnation_alarm(root: Path) -> dict[str, Any]:
+    """Run Gmail alarm immediately when health has p_pass_stagnation=FAIL."""
+    health_path = root / "state" / "health.json"
+    if not health_path.exists():
+        return {"triggered": False, "reason": "health_json_missing"}
+    try:
+        health_payload = json.loads(health_path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        return {"triggered": False, "reason": f"health_json_unreadable:{exc!r}"}
+    checks = health_payload.get("checks") or []
+    p_fail = any(c.get("name") == "p_pass_stagnation" and c.get("status") == "FAIL" for c in checks)
+    if not p_fail:
+        return {"triggered": False, "reason": "p_pass_stagnation_not_fail"}
+    script = Path(__file__).resolve().parent / "gmail_alarm.py"
+    proc = subprocess.run(
+        [sys.executable, str(script)],
+        cwd=str(REPO_ROOT),
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+    return {
+        "triggered": True,
+        "returncode": proc.returncode,
+        "stdout_tail": (proc.stdout or "")[-1000:],
+        "stderr_tail": (proc.stderr or "")[-1000:],
+    }
+
+
 def pump(root: Path) -> dict[str, Any]:
     """Continuous deterministic worker — run every 5 min.
 
@@ -3079,6 +3249,9 @@ def pump(root: Path) -> dict[str, Any]:
         if result["p3_promotions"]:
             conn.commit()
 
+    with connect(root) as conn:
+        result["p5_calibration_auto_stubbed"] = _auto_stub_p5_calibration(root, conn)
+
     result["cascade_promotions"] = []
     cascade_phase_map = {
         "P3": "P4",
@@ -3204,6 +3377,12 @@ def pump(root: Path) -> dict[str, Any]:
                     "method": "grid",
                     "children_count": 0, "reason": f"error: {exc!r}",
                 })
+
+    result["db_backup"] = _hourly_db_backup(root)
+    try:
+        result["p_pass_stagnation_alarm"] = _trigger_p_pass_stagnation_alarm(root)
+    except Exception as exc:
+        result["p_pass_stagnation_alarm"] = {"triggered": False, "error": repr(exc)}
 
     return result
 

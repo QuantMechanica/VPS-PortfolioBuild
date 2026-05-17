@@ -92,6 +92,9 @@ def _fingerprint(health: dict) -> tuple[str, frozenset[str]]:
     """Reduce health.json to (overall, set_of_failing_check_names).
 
     Two alarms with the same fingerprint = no need to re-mail."""
+    # Generic by check name, so new resilience categories such as
+    # disk_free_gb and p_pass_stagnation automatically produce a new alarm
+    # fingerprint when they appear or clear.
     overall = health.get("overall", "?")
     fails = frozenset(
         c["name"] for c in (health.get("checks") or []) if c.get("status") == "FAIL"

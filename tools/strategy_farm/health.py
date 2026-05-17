@@ -27,6 +27,7 @@ import datetime as dt
 import json
 import os
 import re
+import shutil
 import sqlite3
 import subprocess
 from pathlib import Path
@@ -571,6 +572,60 @@ def chk_codex_bridge_heartbeat(con) -> dict:
                   f"heartbeat age {age}s", "")
 
 
+def chk_disk_free_space(con) -> dict:
+    """D: free-space watchdog for reports/log growth."""
+    free_gb = shutil.disk_usage("D:/").free / (1024 ** 3)
+    value = round(free_gb, 1)
+    if free_gb < 10:
+        return _check("disk_free_gb", "FAIL", value, 10,
+                      f"D: free {free_gb:.1f}GB < 10GB threshold",
+                      "Investigate D:/QM/reports + D:/QM/strategy_farm/logs for cleanup. "
+                      "NEVER delete state/farm_state.sqlite or cards_approved/.")
+    if free_gb < 25:
+        return _check("disk_free_gb", "WARN", value, 25,
+                      f"D: free {free_gb:.1f}GB < 25GB warn",
+                      "Consider rotating logs older than 30 days.")
+    return _check("disk_free_gb", "OK", value, 25,
+                  f"D: free {free_gb:.1f}GB", "")
+
+
+def chk_p_pass_stagnation(con) -> dict:
+    """Alert if no P3+ PASS verdicts arrive for 6h/12h."""
+    cutoff_6h = (_utc_now() - dt.timedelta(hours=6)).strftime("%Y-%m-%dT%H:%M:%S")
+    cutoff_12h = (_utc_now() - dt.timedelta(hours=12)).strftime("%Y-%m-%dT%H:%M:%S")
+    phases = ("P3", "P3.5", "P4", "P5", "P5b", "P5c", "P6", "P7", "P8")
+    placeholders = ",".join("?" for _ in phases)
+    n_recent_p3plus = con.execute(
+        f"""
+        SELECT COUNT(*) FROM work_items
+        WHERE phase IN ({placeholders})
+          AND verdict='PASS'
+          AND updated_at >= ?
+        """,
+        (*phases, cutoff_6h),
+    ).fetchone()[0]
+    if n_recent_p3plus == 0:
+        n_12h = con.execute(
+            f"""
+            SELECT COUNT(*) FROM work_items
+            WHERE phase IN ({placeholders})
+              AND verdict='PASS'
+              AND updated_at >= ?
+            """,
+            (*phases, cutoff_12h),
+        ).fetchone()[0]
+        if n_12h == 0:
+            return _check("p_pass_stagnation", "FAIL", n_12h, 1,
+                          "0 P3+ PASS verdicts in last 12h",
+                          "Pipeline stuck on infrastructure or strategy quality. "
+                          "Trigger Gmail alarm + check bridge_review_pending.md.")
+        return _check("p_pass_stagnation", "WARN", n_recent_p3plus, 1,
+                      "0 P3+ PASS in last 6h (had >=1 in last 12h)",
+                      "Watch for next cascade. If next iter still 0, escalate.")
+    return _check("p_pass_stagnation", "OK", n_recent_p3plus, 1,
+                  f"{n_recent_p3plus} P3+ PASS in last 6h", "")
+
+
 def chk_codex_auth_broken(con) -> dict:
     """Detect Codex authentication failures.
 
@@ -701,6 +756,8 @@ ALL_CHECKS = [
     ("unbuilt_cards_count",    chk_unbuilt_cards_count,    True),
     ("unenqueued_eas_count",   chk_unenqueued_eas_count,   True),
     ("codex_bridge_heartbeat", chk_codex_bridge_heartbeat, True),
+    ("disk_free_space",        chk_disk_free_space,        True),
+    ("p_pass_stagnation",      chk_p_pass_stagnation,      True),
     ("quota_snapshot_fresh",   chk_quota_snapshot_fresh,   False),
     ("codex_auth_broken",      chk_codex_auth_broken,      True),
 ]
