@@ -106,9 +106,9 @@ function Resolve-TerminalRoot {
     return (Resolve-Path -LiteralPath $root).Path
 }
 
-function Deploy-ExpertBinaryToAllTerminals {
-    # Make run_smoke self-contained: copy the EA .ex5 from the repo into each
-    # T1..T5 Experts subdir before invoking the tester. Without this, Codex
+function Deploy-ExpertBinaryToTerminal {
+    # Make run_smoke self-contained: copy the EA .ex5 from the repo into the
+    # selected terminal's Experts subdir before invoking the tester. Without this, Codex
     # build → compile → smoke chains fail with "Experts\QM\<EA>.ex5 not found"
     # because nothing else deploys between compile and smoke (only
     # p2_baseline.py's ensure_expert_binary_deployed handles deploy, and that
@@ -120,8 +120,8 @@ function Deploy-ExpertBinaryToAllTerminals {
     param(
         [Parameter(Mandatory = $true)]
         [string]$ExpertPath,
-        [Parameter(Mandatory = $false)]
-        [string]$TerminalName = ""
+        [Parameter(Mandatory = $true)]
+        [string]$TerminalName
     )
 
     if ([string]::IsNullOrWhiteSpace($ExpertPath)) {
@@ -145,32 +145,21 @@ function Deploy-ExpertBinaryToAllTerminals {
         return
     }
 
-    # Per-terminal deploy when TerminalName is provided (single-terminal smoke),
-    # otherwise fall back to legacy all-terminal deploy. Per-terminal eliminates
-    # the file-lock contention that previously caused ~80% worker mortality when
-    # 5 parallel workers all tried to overwrite each terminal's .ex5 binary
-    # simultaneously while one terminal was already running it. See task #014
-    # diagnosis and #011 worker-mortality result.
-    $targets = if ([string]::IsNullOrWhiteSpace($TerminalName)) {
-        @("T1","T2","T3","T4","T5")
-    } else {
-        @($TerminalName)
+    if ([string]::IsNullOrWhiteSpace($TerminalName)) {
+        throw "run_smoke.deploy_failed terminal=<empty> err='TerminalName is required for per-terminal deploy.'"
     }
-    $deployedTo = New-Object System.Collections.Generic.List[string]
-    foreach ($t in $targets) {
-        $destDir  = Join-Path "D:\QM\mt5" (Join-Path $t (Join-Path "MQL5" (Join-Path "Experts" $subdir)))
-        if (-not (Test-Path -LiteralPath $destDir -PathType Container)) {
-            New-Item -ItemType Directory -Path $destDir -Force | Out-Null
-        }
-        $destFile = Join-Path $destDir "$eaLabel.ex5"
-        try {
-            Copy-Item -LiteralPath $repoSource -Destination $destFile -Force -ErrorAction Stop
-            $deployedTo.Add($t) | Out-Null
-        } catch {
-            Write-Host ("run_smoke.deploy_warn terminal={0} dest='{1}' err='{2}'" -f $t, $destFile, $_.Exception.Message)
-        }
+
+    $destDir = Join-Path "D:\QM\mt5" (Join-Path $TerminalName (Join-Path "MQL5" (Join-Path "Experts" $subdir)))
+    if (-not (Test-Path -LiteralPath $destDir -PathType Container)) {
+        New-Item -ItemType Directory -Path $destDir -Force | Out-Null
     }
-    Write-Host ("run_smoke.deploy_ok ea_label={0} subdir={1} terminals=[{2}] source='{3}'" -f $eaLabel, $subdir, ($deployedTo -join ","), $repoSource)
+    $destFile = Join-Path $destDir "$eaLabel.ex5"
+    try {
+        Copy-Item -LiteralPath $repoSource -Destination $destFile -Force -ErrorAction Stop
+    } catch {
+        throw ("run_smoke.deploy_failed terminal={0} dest='{1}' err='{2}'" -f $TerminalName, $destFile, $_.Exception.Message)
+    }
+    Write-Host ("run_smoke.deploy_ok ea_label={0} subdir={1} terminal={2} source='{3}'" -f $eaLabel, $subdir, $TerminalName, $repoSource)
 }
 
 function Resolve-DispatchTerminal {
@@ -598,8 +587,10 @@ if ([string]::IsNullOrWhiteSpace($DispatchSubGateHash)) {
 }
 
 $effectiveTerminal = Resolve-DispatchTerminal -TargetTerminal $Terminal -EAIdValue $EAId -SymbolName $Symbol -PeriodName $Period -YearValue $Year -SetFilePath $SetFile -DispatchPhaseValue $DispatchPhase -DispatchVersionValue $DispatchVersion -DispatchSubGateHashValue $DispatchSubGateHash
+Write-Host ("run_smoke.stage=resolved_terminal terminal={0}" -f $effectiveTerminal)
 $terminalRoot = Resolve-TerminalRoot -TerminalName $effectiveTerminal
 $terminalExe = Resolve-TerminalExecutable -TerminalRoot $terminalRoot
+Write-Host ("run_smoke.stage=resolved_terminal_exe terminal={0} exe='{1}'" -f $effectiveTerminal, $terminalExe)
 
 if (($Terminal -ine "any") -and (-not $AllowRunningTerminal.IsPresent)) {
     if (Test-TerminalAlreadyRunning -TerminalRoot $terminalRoot) {
@@ -620,16 +611,17 @@ if (-not $Expert) {
     }
 }
 
-# Fail-safe deploy: copy the EA .ex5 from the repo to all 5 terminal Experts
-# subdirs before the tester runs. Idempotent (overwrite). Without this,
+# Fail-safe deploy: copy the EA .ex5 from the repo to the selected terminal's
+# Experts subdir before the tester runs. Idempotent (overwrite). Without this,
 # Codex build → compile → smoke chains failed at "Experts\QM\<EA>.ex5 not
 # found" because only p2_baseline.py deployed binaries — run_smoke had no
 # self-deploy step. 2026-05-16 QM5_1046 build hit exactly this.
-Deploy-ExpertBinaryToAllTerminals -ExpertPath $Expert -TerminalName $effectiveTerminal
+Deploy-ExpertBinaryToTerminal -ExpertPath $Expert -TerminalName $effectiveTerminal
 
 if ($SetFile) {
     $SetFile = (Resolve-Path -LiteralPath $SetFile).Path
 }
+Write-Host ("run_smoke.stage=resolved_setfile setfile='{0}'" -f $SetFile)
 
 $runTag = (Get-Date).ToUniversalTime().ToString("yyyyMMdd_HHmmss")
 $eaLabel = "QM5_{0}" -f $EAId
@@ -678,7 +670,14 @@ for ($i = 1; $i -le $Runs; $i++) {
         -ReportValue $relativeReportFile `
         -SetFilePath $SetFile
 
-    $runExec = Start-TesterRun -TerminalExe $terminalExe -IniPath $iniPath -TimeoutSec $TimeoutSeconds
+    Write-Host ("run_smoke.stage=ini_written run={0} ini='{1}'" -f $runName, $iniPath)
+    Write-Host ("run_smoke.stage=start_terminal terminal={0} run={1} ini='{2}'" -f $effectiveTerminal, $runName, $iniPath)
+    try {
+        $runExec = Start-TesterRun -TerminalExe $terminalExe -IniPath $iniPath -TimeoutSec $TimeoutSeconds
+    } catch {
+        Write-Host ("run_smoke.start_failed terminal={0} run={1} ini='{2}' err='{3}'" -f $effectiveTerminal, $runName, $iniPath, $_.Exception.Message)
+        throw
+    }
     $exitCode = $runExec.exit_code
 
     if ($runExec.timed_out) {
@@ -942,7 +941,11 @@ $summary = [ordered]@{
 $summaryPath = Join-Path $reportDir "summary.json"
 $summary | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $summaryPath -Encoding utf8
 
-$evidencePath = Join-Path $frameworkEvidenceDir ("{0}_{1}_{2}_{3}_run_smoke.md" -f $runTag, $eaLabel, $Symbol, $Terminal)
+$safeSymbol = ($Symbol -replace '[^A-Za-z0-9]+', '_').Trim('_')
+if ([string]::IsNullOrWhiteSpace($safeSymbol)) {
+    $safeSymbol = "symbol"
+}
+$evidencePath = Join-Path $frameworkEvidenceDir ("{0}_{1}_{2}_{3}_run_smoke.md" -f $runTag, $eaLabel, $effectiveTerminal, $safeSymbol)
 $evidenceLines = @(
     "# Step 22 Smoke Evidence",
     "",
@@ -969,6 +972,9 @@ try {
     Set-Content -LiteralPath $evidencePath -Value $evidenceLines -Encoding utf8 -ErrorAction Stop
 } catch {
     Write-Host ("run_smoke.evidence_write_failed path='{0}' err='{1}'" -f $evidencePath, $_.Exception.Message)
+    $fallbackEvidencePath = Join-Path $reportDir "run_smoke_evidence.md"
+    Set-Content -LiteralPath $fallbackEvidencePath -Value $evidenceLines -Encoding utf8
+    $evidencePath = $fallbackEvidencePath
 }
 
 Write-Output "run_smoke.result=$($summary.result)"
