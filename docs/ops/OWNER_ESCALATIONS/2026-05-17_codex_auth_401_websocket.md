@@ -112,3 +112,42 @@ Pick whichever is easiest:
   Codex build. That issue is unrelated to this auth failure but the
   same EAs (QM5_1045 etc.) appear in both — the smoke flake from
   yesterday is now buried under the auth break.
+
+## 2026-05-17T10:50Z update — Board Advisor observe wake
+
+**Auth recovery is unstable — refresh-then-restale cycle observed.**
+
+Timeline since original escalation:
+- 09:25Z escalation opened (last successful Codex run 09:09Z).
+- 10:20:28Z `~/.codex/auth.json` `last_refresh` bumped (token refresh fired).
+- 10:23–10:28Z **window of recovery** — 5 Codex spawns succeeded
+  (`codex_g0_20260517T102313`, `codex_review_842714c4`,
+  `codex_review_48c3fe57`, `codex_build_a26ef4aa`, `codex_build_add6e569`).
+- 10:17Z autonomous wake successfully completed REVIEW of QM5_1063 +
+  chained enqueue_p2.
+- **10:44:32Z — fresh 401 storm**: 10 Codex spawns (`codex_g0_20260517T104420`,
+  research, review, 6× build) all 401, ~24 min after the refresh, against
+  the same `auth.json` that just worked at 10:23Z.
+
+Pattern implication: ChatGPT OAuth token TTL is shorter than the pump's
+5-min spawn cadence × refresh interval. Each pump tick after the token
+goes stale burns ~5 `attempt_count` slots across pending tasks until
+either (a) `auth.json` refreshes again or (b) MAX_BUILD_RETRIES=3
+parks them blocked.
+
+OWNER actions from the original section remain valid. Additional
+diagnostic to run when re-logging:
+```powershell
+# Check whether codex CLI auto-refresh is wired up at all
+codex --version            # confirm v0.130.0+
+type "$HOME\.codex\auth.json" | Select-String last_refresh
+# If refresh interval looks long, force a fresh login (path 1)
+```
+
+The autonomous wake at 11:17Z will re-observe; if 401s have stopped by
+then it will resume normal Codex spawns. If the cycle continues, the
+next observe wake (12:17Z by the hourly task) will append again.
+
+**Board-Advisor-side mitigation taken this wake: documentation update
+only.** No state mutations, no pump changes, no agent lifecycle. The
+pump's MAX_BUILD_RETRIES=3 cap remains the safety net.
