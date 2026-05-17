@@ -831,6 +831,46 @@ def _pid_exists(pid: Any) -> bool:
         return True  # can't tell — assume alive, defer to timeout path
 
 
+def _running_mt5_terminals() -> set[str]:
+    try:
+        proc = subprocess.run(
+            [
+                "powershell.exe",
+                "-NoProfile",
+                "-Command",
+                (
+                    "Get-CimInstance Win32_Process -Filter \"Name='terminal64.exe'\" "
+                    "| ForEach-Object { if ($_.ExecutablePath -match '\\\\(T[1-5])\\\\terminal64\\.exe$') { $Matches[1] } }"
+                ),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=15,
+        )
+    except Exception:
+        return set(MT5_TERMINALS)
+    if proc.returncode != 0:
+        return set(MT5_TERMINALS)
+    return {line.strip() for line in (proc.stdout or "").splitlines() if line.strip() in MT5_TERMINALS}
+
+
+def _stop_pid(pid: Any) -> bool:
+    try:
+        pid_int = int(pid)
+    except (TypeError, ValueError):
+        return False
+    try:
+        proc = subprocess.run(
+            ["powershell.exe", "-NoProfile", "-Command", f"Stop-Process -Id {pid_int} -Force -ErrorAction SilentlyContinue"],
+            capture_output=True,
+            text=True,
+            timeout=8,
+        )
+        return proc.returncode == 0
+    except Exception:
+        return False
+
+
 def _acquire_dispatch_lock(root: Path) -> tuple[int, Path] | None:
     locks = root / "state" / "locks"
     locks.mkdir(parents=True, exist_ok=True)
@@ -895,6 +935,7 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
         _dispatch_diag("dispatch_skip_locked", result)
         return result
     _dispatch_diag("dispatch_start", {"timeout_minutes": timeout_minutes})
+    running_mt5_terminals = _running_mt5_terminals()
 
     # --- Phase 1: process active work_items ---
     with connect(root) as conn:
@@ -958,30 +999,40 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
             except Exception:
                 age_min = 0.0
 
-        # Fast-fail: PID gone + nothing produced + > 1 min (avoid races on spawn)
-        if not worker_alive and age_min > 1.0:
+        terminal_alive = (not terminal) or (terminal in running_mt5_terminals)
+        fast_failure = None
+        if not worker_alive:
+            fast_failure = "worker_died"
+        elif not terminal_alive and age_min > 1.0:
+            fast_failure = "terminal_died"
+            _stop_pid(worker_pid)
+
+        # Fast-fail: worker/terminal gone + nothing produced + > 1 min (avoid races on spawn)
+        if fast_failure and age_min > 1.0:
             attempt = item["attempt_count"] + 1
             if attempt < MAX_WORK_ITEM_RETRIES:
                 with connect(root) as conn2:
                     conn2.execute(
                         "UPDATE work_items SET status='pending', attempt_count=?, claimed_by=NULL, payload_json=?, updated_at=? WHERE id=?",
-                        (attempt, json.dumps({**payload, "prior_failure": "worker_died"}, sort_keys=True),
+                        (attempt, json.dumps({**payload, "prior_failure": fast_failure}, sort_keys=True),
                          started_iso, item["id"]),
                     )
                     conn2.commit()
                 busy_terminals.discard(terminal)
-                actions.append({"action": "retry_worker_died", "item_id": item["id"],
-                                "terminal_released": terminal, "attempt": attempt})
+                actions.append({"action": f"retry_{fast_failure}", "item_id": item["id"],
+                                "terminal_released": terminal, "attempt": attempt,
+                                "worker_pid": worker_pid})
             else:
                 with connect(root) as conn2:
                     conn2.execute(
                         "UPDATE work_items SET status='failed', verdict='INVALID', payload_json=?, updated_at=? WHERE id=?",
-                        (json.dumps({**payload, "final_failure": "worker_died_retries_exhausted"}, sort_keys=True),
+                        (json.dumps({**payload, "final_failure": f"{fast_failure}_retries_exhausted"}, sort_keys=True),
                          started_iso, item["id"]),
                     )
                     conn2.commit()
                 busy_terminals.discard(terminal)
-                actions.append({"action": "failed_worker_died", "item_id": item["id"]})
+                actions.append({"action": f"failed_{fast_failure}", "item_id": item["id"],
+                                "worker_pid": worker_pid})
             continue
 
         if age_min > timeout_minutes:
@@ -1161,6 +1212,7 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
         "free_terminals": [t for t in MT5_TERMINALS if t not in busy_terminals],
         "scanned_at": started_iso,
         "actually_launched_pids": launched_pids,
+        "running_mt5_terminals": sorted(running_mt5_terminals),
     }
     _dispatch_diag("dispatch_end", {
         "actions_count": len(actions),
@@ -1168,6 +1220,7 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
         "busy_terminals": result["busy_terminals"],
         "free_terminals": result["free_terminals"],
         "actually_launched_pids": launched_pids,
+        "running_mt5_terminals": result["running_mt5_terminals"],
     })
     _release_dispatch_lock(lock)
     return result
