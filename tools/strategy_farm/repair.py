@@ -300,6 +300,48 @@ def _running_mt5_terminals() -> set[str]:
     return live
 
 
+def repair_permanent_build_failures(con) -> list[dict]:
+    """R10: build_ea status='blocked' with attempt_count >= MAX_RETRIES has
+    nowhere to go — retry_blocked_builds skips it, so it pollutes the
+    blocked queue indefinitely. Mark as 'failed' terminal status so the
+    pipeline can move on.
+
+    Observed pattern 2026-05-17: 14 of 15 blocked builds had attempt_count=3
+    accumulating from bugs we'd already fixed (codex.cmd PATH issue,
+    phantom status-field check, etc.). After bugs were fixed, they were
+    stuck because nobody re-tried them. This handler closes the loop.
+
+    Threshold: attempt_count >= 3 (matches retry_blocked_builds
+    MAX_BUILD_RETRIES). Failures stay in DB as evidence — not deleted —
+    just transitioned from 'blocked' (limbo) to 'failed' (terminal).
+    """
+    out = []
+    MAX_BUILD_RETRIES = 3
+    rows = con.execute(
+        "SELECT id, payload_json FROM tasks WHERE kind='build_ea' AND status='blocked'"
+    ).fetchall()
+    for r in rows:
+        p = json.loads(r["payload_json"])
+        attempts = int(p.get("attempt_count", 0))
+        if attempts < MAX_BUILD_RETRIES:
+            continue
+        p["final_failure"] = "permanent_blocked_retries_exhausted"
+        p["failed_at"] = _utc_now()
+        con.execute(
+            "UPDATE tasks SET status='failed', payload_json=?, updated_at=? WHERE id=?",
+            (json.dumps(p), _utc_now(), r["id"]),
+        )
+        out.append({
+            "handler": "R10_permanent_build_failure",
+            "target": r["id"],
+            "action": "blocked → failed (retries exhausted)",
+            "detail": f"ea={p.get('ea_id')} attempts={attempts} last={(p.get('last_blocked_reason') or p.get('blocked_reason') or '?')[:80]}",
+        })
+    if out:
+        con.commit()
+    return out
+
+
 def repair_orphan_g0_claims(con) -> list[dict]:
     """R9: orphan .g0_claim files — card moved out of cards_draft/ (approved
     or rejected) but the claim lock got left behind. Or claim is older than
@@ -409,6 +451,7 @@ def run_all() -> dict:
         repair_stale_active_work_items,
         repair_stranded_codex_review_pending,
         repair_orphan_g0_claims,
+        repair_permanent_build_failures,
     ]
     try:
         for fn in handlers:
