@@ -194,3 +194,51 @@ OAuth refresh token itself is the broken piece.
 only.** No state mutations, no pump changes, no agent lifecycle, no
 auth.json edits. Same envelope as the 10:50Z entry — this is the
 escalation's third recurrence log line, not a new escalation.
+
+## 2026-05-17T13:50Z update — Board Advisor observe wake
+
+**Auto-refresh appears to have stopped entirely — escalates priority.**
+
+State at this observe wake:
+- `~/.codex/auth.json` mtime / `last_refresh` field both still
+  `2026-05-17T10:50:35.405710600Z` — **no refresh in 3h 00m** (prior
+  cycles refreshed every ~30 min).
+- Most recent Codex spawn batch (~13:39Z local-15:39): 4 logs sampled
+  (`codex_research_eb97a148`, `codex_review_d9576ad1`,
+  `codex_g0_20260517T133919`, `codex_build_3655d246`) — each carries
+  9× `responses_websocket 401 Unauthorized` with five reconnect
+  attempts. Same pattern as 11:34Z storm but the post-storm refresh
+  did not arrive.
+- Recent autonomous wakes (10:20Z, 11:18Z, 12:19Z, 13:17Z) all
+  succeeded on **Claude-only paths** (REVIEW, ENQUEUE_P4) — masking
+  the fact that Codex remains 100% non-functional. Any wake that
+  needs Codex (build / research / G0 / codex_review) will fail.
+- Total filter of `failed/blocked build_ea` rows without a self-heal
+  sibling: **13** (QM5_1045/1046/1050/1055/1060/1061/1062/1065/1066/
+  1067/1068/1069/1070). All within the 09:07Z / 10:07Z creation
+  window from the 401 cycle.
+
+Pattern change versus the 11:55Z entry: the auto-refresh worked
+twice (10:20Z, 10:50Z) and now appears to have stopped. Whatever
+local daemon / refresh hook was firing has either died or its retry
+budget is exhausted. This makes OWNER action (path 1 — `codex
+logout && codex login`) the only remaining unblock.
+
+OWNER actions from the original section remain unchanged. Same path
+1 recommendation. Adding diagnostic to capture before relogging:
+```powershell
+# After 3h+ without refresh, capture last working state for forensics
+Copy-Item "$HOME\.codex\auth.json" "$HOME\.codex\auth.json.stale-3h-20260517T1350Z"
+codex logout
+codex login
+# verify
+type "$HOME\.codex\auth.json" | Select-String last_refresh
+python C:/QM/repo/tools/strategy_farm/farmctl.py tick
+```
+
+**Board-Advisor-side mitigation taken this wake: documentation update
+only.** No state mutations, no pump changes, no agent lifecycle, no
+auth.json edits. The 13 dead build_ea tasks remain parked; they will
+re-attempt automatically once Codex auth is restored (pump tick
+re-runs failed builds with attempt_count < 3, and the parked-blocked
+ones can be hand-reset to pending after OWNER relogs).
