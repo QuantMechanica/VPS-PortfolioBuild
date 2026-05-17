@@ -762,3 +762,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1086,aa-dpm-tmom-ma_v2,110,USDCAD.DWX,10860110,2026-05-17,Development,active
 1086,aa-dpm-tmom-ma_v2,111,USDCHF.DWX,10860111,2026-05-17,Development,active
 1086,aa-dpm-tmom-ma_v2,112,NZDUSD.DWX,10860112,2026-05-17,Development,active
+1149,unger-dax-adx-low-breakout,0,GDAXI.DWX,11490000,2026-05-17,Development,active
+1080,as-sell-may,0,SP500.DWX,10800000,2026-05-17,Development,active
+1080,as-sell-may,1,NDX.DWX,10800001,2026-05-17,Development,active
+1080,as-sell-may,2,WS30.DWX,10800002,2026-05-17,Development,active
