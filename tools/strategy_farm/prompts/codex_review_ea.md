@@ -79,11 +79,21 @@ UNKNOWN if smoke report missing or unparseable. FAIL if 0 trades. Else PASS.
 ### §E build_result.json sanity
 Read `{{build_result_path}}` (JSON).
 
-- `status` is one of `done / compiled / pass / built`.
-- No nested `"error"` / `"blocked"` / `"failed"` field at top level.
-- `mq5_path` / `ex5_path` both reference existing files.
+The schema does NOT have a top-level `status` field. Check the actual fields
+written by `codex_build_ea`:
 
-PASS = status ok + files exist + no error markers.
+- `build_check_passed: true` (framework gate ran clean)
+- `compile_succeeded: true` (.ex5 compile worked)
+- No top-level `blocked_reason` field (or `blocked_reason: ""` empty).
+  Presence of a non-empty `blocked_reason` (e.g. `"framework_error
+  REPORT_MISSING"`, `"smoke runtime infeasible"`) → FAIL §E.
+- `mq5_path` and `ex5_path` both reference existing files on disk.
+- `smoke_result` may be `"ok"` / `"PASS"` / a verdict string. Treat
+  `"framework_error"` / `"METATESTER_HUNG"` / `"INCOMPLETE_RUNS"` as
+  build-infra issues → §D will already catch them via smoke report; §E
+  only fails if blocked_reason is present.
+
+PASS = both booleans true AND no blocked_reason AND mq5/ex5 files exist.
 
 ### §F Forbidden in code (catch-all)
 Grep the mq5 for:
