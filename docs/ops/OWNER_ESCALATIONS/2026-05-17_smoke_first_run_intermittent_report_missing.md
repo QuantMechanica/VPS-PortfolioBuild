@@ -290,3 +290,70 @@ then unblock the 4 EAs above.
   Severity remains HIGH but trending — patches are landing in real
   time. No Board-Advisor action other than this log entry. Smoke runner
   validation defers to next autonomous wake.
+
+- **2026-05-17T17:51Z (observe wake)** — **post-patch validation arrived;
+  smoke patches DID NOT fully resolve. New failure-mode emerged.**
+
+  Codex auth partially recovered since 15:50Z update — recent QM5_1121
+  (task `479fce87`) and QM5_1122 (task `d4cb37c0`) builds reached
+  attempt 2/3 with `compile_succeeded:true` and smoke summaries written
+  (`D:/QM/reports/smoke/QM5_1122/20260517_165513/summary.json` etc.),
+  proving Codex `responses_websocket` is currently working (some attempts
+  show 0× 401, others still hit 9× 401 — auth flapping). `auth.json`
+  `last_refresh` still pinned at `2026-05-17T10:50:35Z`; the silent token
+  renewal evidently bypasses that field. **OWNER `codex logout && codex
+  login` still recommended** to stabilize, but pipeline is now landing
+  fresh post-patch evidence for smoke-runner validation.
+
+  Two new real failures since the 16:49Z observe wake:
+
+  - **QM5_1121** (`unger-corn-trend-h4`, blocked attempt=3, updated
+    17:05:07Z) — `compile_one.result=FAIL reason=RUNTIME_EXCEPTION
+    errors=-1 file locked during include sync: QM_TradeManagement.mqh`.
+    **New failure mode not previously documented in this escalation.**
+    Implicates the per-terminal deploy patch (8deebf5c) — concurrent
+    builds now sync includes into T1..T5 MQL5 dirs in parallel and race
+    on shared include files. Compile fails before smoke ever runs.
+    Evidence: `D:/QM/strategy_farm/logs/codex_build_479fce87-b1b1-4660-a8e2-558fc95fe5b2.live.attempt_0.log`
+    (28 KB, the include-sync RUNTIME_EXCEPTION first attempt).
+
+  - **QM5_1122** (`unger-crude-donchian160`, failed attempt=3, updated
+    17:07:13Z) — `framework_error REPORT_MISSING;INCOMPLETE_RUNS
+    report_size_bytes=0 terminal=T1`. **Cold-warm-asymmetry pattern
+    continues post-patch.** Build artifacts landed
+    (`.ex5`, `.set`, registry rows OK) but smoke session produced no
+    report on T1. Evidence: smoke summary path above; codex live log
+    `codex_build_d4cb37c0-d36a-499a-adb8-46312942ae9f.live.log`
+    (336 KB, completed but classified framework_error).
+
+  Updated counts: **20 real `build_ea` failures** in self-heal filter
+  (was 16 at 14:50Z, 18 at 16:49Z with +QM5_1082/1101 preflight,
+  +QM5_1121/1122 this wake). Cluster composition:
+  - cold-warm-asymmetry (QM5_1045/1050/1055/1122 — QM5_1122 fresh
+    post-patch evidence)
+  - both-runs-fail (QM5_1046/1060/1065/1066/1067/1070)
+  - preflight-already-running (QM5_1068/1082/1101)
+  - worker-mortality / metatester-hung (QM5_1090/1091)
+  - NEW: file-lock-on-include-sync (QM5_1121) — affects compile, not
+    smoke
+  - other: QM5_1061/1069/1081 (REPORT_MISSING / NO_REAL_TICKS_MARKER)
+
+  **Fix candidate (7) added — gate include-sync behind a process-wide
+  lock.** Either reuse the terminal-pool mutex from candidate (5) so
+  only one build at a time syncs into each T<N>/MQL5/Include dir, or
+  share a single canonical include dir between terminals (mount/symlink
+  D:/QM/repo/framework/include into T1..T5 instead of copying). Without
+  this, the 8deebf5c per-terminal deploy patch will keep producing
+  RUNTIME_EXCEPTION include-sync races whenever two builds run within
+  the same 5-min tick window.
+
+  **Recommended escalation path unchanged** — severity remains HIGH.
+  OWNER decision on:
+  - which fix candidates to land next ((1) cold-start warm-up, (6) T5
+    smoke-only, (7) include-sync mutex)
+  - bulk-reset of the 20 blocked rows once stable
+
+  No Board-Advisor action this wake other than this log entry +
+  observe_wakes.log line per `no keepalive evidence churn` rule
+  (DL-046) — substantive new signal (new failure mode + post-patch
+  validation) earns one commit, not a heartbeat ack.
