@@ -538,3 +538,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1057,asness-xsmom-rank,8,NDX.DWX,10570008,2026-05-17,Development,active
 1057,asness-xsmom-rank,9,WS30.DWX,10570009,2026-05-17,Development,active
 1057,asness-xsmom-rank,10,GDAXI.DWX,10570010,2026-05-17,Development,active
+1058,gatev-fx-pairs-zscore,0,EURUSD.DWX,10580000,2026-05-17,Development,active
+1058,gatev-fx-pairs-zscore,1,GBPUSD.DWX,10580001,2026-05-17,Development,active
+1058,gatev-fx-pairs-zscore,2,AUDUSD.DWX,10580002,2026-05-17,Development,active
+1058,gatev-fx-pairs-zscore,3,NZDUSD.DWX,10580003,2026-05-17,Development,active
