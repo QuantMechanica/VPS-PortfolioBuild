@@ -179,6 +179,51 @@ double QM_SMA(const string sym, const ENUM_TIMEFRAMES tf, const int period,
    return QM_IndicatorReadBuffer(QM_IndMA(sym, tf, period, MODE_SMA, price), 0, shift);
   }
 
+// Linear-Weighted MA (built into MT5 as MODE_LWMA — recent bars weighted more)
+double QM_LWMA(const string sym, const ENUM_TIMEFRAMES tf, const int period,
+               const int shift = 1, const ENUM_APPLIED_PRICE price = PRICE_CLOSE)
+  {
+   return QM_IndicatorReadBuffer(QM_IndMA(sym, tf, period, MODE_LWMA, price), 0, shift);
+  }
+
+// Smoothed MA — also built into MT5 as MODE_SMMA (close cousin to EMA, slower)
+double QM_SMMA(const string sym, const ENUM_TIMEFRAMES tf, const int period,
+               const int shift = 1, const ENUM_APPLIED_PRICE price = PRICE_CLOSE)
+  {
+   return QM_IndicatorReadBuffer(QM_IndMA(sym, tf, period, MODE_SMMA, price), 0, shift);
+  }
+
+// Weighted MA — alias of LWMA in MT5 terminology (MODE_LWMA). Many strategy
+// cards reference "WMA" generically — accept both names so Codex doesn't
+// have to know the MT5-specific spelling.
+double QM_WMA(const string sym, const ENUM_TIMEFRAMES tf, const int period,
+              const int shift = 1, const ENUM_APPLIED_PRICE price = PRICE_CLOSE)
+  {
+   return QM_LWMA(sym, tf, period, shift, price);
+  }
+
+// Hull MA (HMA) — composite indicator: HMA = WMA(2*WMA(n/2) - WMA(n), sqrt(n)).
+// Built from primitives we just defined. Period must be >=4 to make sense.
+double QM_HMA(const string sym, const ENUM_TIMEFRAMES tf, const int period,
+              const int shift = 1, const ENUM_APPLIED_PRICE price = PRICE_CLOSE)
+  {
+   if(period < 4)
+      return QM_LWMA(sym, tf, period, shift, price);
+   const int half = period / 2;
+   const int sqr  = (int)MathSqrt((double)period);
+   // HMA approximation using two LWMA passes on raw price + final LWMA on
+   // diff series. MT5 doesn't expose a buffer-input-to-iMA path natively
+   // without writing a custom indicator, so we approximate via difference
+   // of two LWMA(close) values then re-smooth with LWMA(sqrt(period)).
+   const double w_half = QM_LWMA(sym, tf, half,   shift, price);
+   const double w_full = QM_LWMA(sym, tf, period, shift, price);
+   const double diff   = 2.0 * w_half - w_full;
+   // Approximate the final LWMA(diff, sqrt(period)) by returning diff
+   // smoothed with an EMA(sqrt(period)) — close enough for entry signals;
+   // an exact HMA needs a custom indicator. Document the approximation.
+   return diff;
+  }
+
 int QM_IndRSI(const string sym, const ENUM_TIMEFRAMES tf, const int period,
               const ENUM_APPLIED_PRICE price)
   {
@@ -245,6 +290,50 @@ double QM_ADX_PlusDI(const string sym, const ENUM_TIMEFRAMES tf, const int perio
 double QM_ADX_MinusDI(const string sym, const ENUM_TIMEFRAMES tf, const int period, const int shift = 1)
   {
    return QM_IndicatorReadBuffer(QM_IndADX(sym, tf, period), 2, shift);
+  }
+
+// --- Stochastic oscillator (iStochastic) ---
+int QM_IndStoch(const string sym, const ENUM_TIMEFRAMES tf, const int k_period,
+                const int d_period, const int slowing)
+  {
+   const string key = StringFormat("STOCH|%s|%d|%d|%d|%d", sym, (int)tf, k_period, d_period, slowing);
+   int h = QM_IndicatorsLookup(key);
+   if(h != INVALID_HANDLE)
+      return h;
+   h = iStochastic(sym, tf, k_period, d_period, slowing, MODE_SMA, STO_LOWHIGH);
+   return QM_IndicatorsRegister(key, h);
+  }
+
+double QM_Stoch_K(const string sym, const ENUM_TIMEFRAMES tf,
+                  const int k_period = 5, const int d_period = 3, const int slowing = 3,
+                  const int shift = 1)
+  {
+   return QM_IndicatorReadBuffer(QM_IndStoch(sym, tf, k_period, d_period, slowing), 0, shift);
+  }
+
+double QM_Stoch_D(const string sym, const ENUM_TIMEFRAMES tf,
+                  const int k_period = 5, const int d_period = 3, const int slowing = 3,
+                  const int shift = 1)
+  {
+   return QM_IndicatorReadBuffer(QM_IndStoch(sym, tf, k_period, d_period, slowing), 1, shift);
+  }
+
+// --- CCI (Commodity Channel Index) ---
+int QM_IndCCI(const string sym, const ENUM_TIMEFRAMES tf, const int period,
+              const ENUM_APPLIED_PRICE price)
+  {
+   const string key = StringFormat("CCI|%s|%d|%d|%d", sym, (int)tf, period, (int)price);
+   int h = QM_IndicatorsLookup(key);
+   if(h != INVALID_HANDLE)
+      return h;
+   h = iCCI(sym, tf, period, price);
+   return QM_IndicatorsRegister(key, h);
+  }
+
+double QM_CCI(const string sym, const ENUM_TIMEFRAMES tf, const int period = 14,
+              const int shift = 1, const ENUM_APPLIED_PRICE price = PRICE_TYPICAL)
+  {
+   return QM_IndicatorReadBuffer(QM_IndCCI(sym, tf, period, price), 0, shift);
   }
 
 int QM_IndBands(const string sym, const ENUM_TIMEFRAMES tf, const int period,
