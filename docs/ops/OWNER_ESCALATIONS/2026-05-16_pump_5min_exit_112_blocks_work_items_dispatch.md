@@ -134,3 +134,8 @@ farmctl-like SYSTEM-context Python command and returns 112 every cycle).
   EXIST. Pump task is installed but its XML is not in the repo.
 - `D:\QM\strategy_farm\state\farm_state.sqlite` — work_items state.
 - `D:\QM\strategy_farm\logs\pump_*.json` — historical manual pump output.
+
+## Recurrence log
+
+- 2026-05-16T18:51Z (filing wake) — Pump_5min LastResult=112; 6 work_items pending; manual pump dispatched all 6 to T1-T5.
+- 2026-05-17T04:50Z (observe wake) — Pump_5min still LastResult=112 (next run 06:50 local). 5 zombie work_items (QM5_1049, all 5 PIDs dead, log files showed completed runs but DB never advanced) + 44 fresh pending from autonomous wakes piling up; 0 terminal64.exe running. Manual `farmctl pump` under `PYTHONIOENCODING=utf-8 PYTHONUTF8=1` classified the 5 zombies + dispatched 5 fresh QM5_1049 work_items (UK100×3, WS30×2) to T1-T5; 4 terminal64.exe alive 30s post-pump. Pending dropped from 54 to 54 (offset by ablation_children expansion of QM5_1049 parents). Fix candidate (1) or (2) still unlanded — escalation remains open.
