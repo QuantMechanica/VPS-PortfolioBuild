@@ -38,6 +38,9 @@ CODEX_G0_TEMPLATE = PROMPTS_DIR / "codex_g0_review.md"
 PIPELINE_REPORT_ROOT = Path(r"D:\QM\reports\pipeline")
 SUPPORTED_BACKTEST_PHASES = ("P2", "P3", "P3.5", "P4")  # 2026-05-17: extend chain to P3.5 (cross-symbol robustness) + P4 (walk-forward OOS)
 MT5_TERMINALS = ("T1", "T2", "T3", "T4", "T5")  # factory fleet, used by dispatch-tick for per-EA terminal assignment
+ZERO_TRADE_DEAD_THRESHOLD = 0.80
+ZERO_TRADE_DEAD_MIN_DONE = 5
+ZERO_TRADE_REWORK_DEDUP_HOURS = 6
 
 # Known-good fallback paths for codex.cmd / claude.cmd. Required because
 # scheduled tasks run as SYSTEM user, which has a minimal PATH that doesn't
@@ -1802,6 +1805,370 @@ def _spawn_codex_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]:
     }
 
 
+def _is_zero_trade_failure_payload(payload_json: str | None, evidence_path: str | None) -> bool:
+    if payload_json and "MIN_TRADES_NOT_MET" in payload_json:
+        return True
+    if not evidence_path:
+        return False
+    try:
+        p = Path(evidence_path)
+        if not p.exists() or p.stat().st_size <= 0:
+            return False
+        text = p.read_text(encoding="utf-8", errors="ignore")
+        if "MIN_TRADES_NOT_MET" in text:
+            return True
+        data = json.loads(text)
+        reason_classes = data.get("reason_classes") or []
+        if any(str(r).upper() == "MIN_TRADES_NOT_MET" for r in reason_classes):
+            return True
+        return "MIN_TRADES_NOT_MET" in str(data.get("reason_class") or data.get("reason") or "")
+    except Exception:
+        return False
+
+
+def _recent_zero_trade_rework_exists(con: sqlite3.Connection, ea_id: str) -> bool:
+    cutoff = (dt.datetime.now(dt.UTC) - dt.timedelta(hours=ZERO_TRADE_REWORK_DEDUP_HOURS)).replace(microsecond=0).isoformat()
+    row = con.execute(
+        """
+        SELECT id FROM tasks
+        WHERE card_id=? AND kind='build_ea'
+          AND payload_json LIKE '%ZERO_TRADE_RECURRENT%'
+          AND created_at >= ?
+        ORDER BY created_at DESC LIMIT 1
+        """,
+        (ea_id, cutoff),
+    ).fetchone()
+    return row is not None
+
+
+def _find_first_path(patterns: list[tuple[Path, str]]) -> Path | None:
+    for base, pattern in patterns:
+        if not base.exists():
+            continue
+        matches = sorted(base.glob(pattern))
+        if matches:
+            return matches[0]
+    return None
+
+
+def _write_zerotrade_rework_codex_task(
+    root: Path,
+    ea_id: str,
+    ratio: float,
+    done: int,
+    zt: int,
+    task_id: str,
+    evidence_paths: list[str],
+) -> Path:
+    inbox = root / "codex_inbox"
+    inbox.mkdir(parents=True, exist_ok=True)
+
+    stamp = dt.datetime.now(dt.UTC).replace(microsecond=0).strftime("%Y%m%dT%H%M%SZ")
+    md_task_id = f"auto-rework-{ea_id}-{stamp}"
+    target = inbox / f"{md_task_id}.md"
+
+    card_path = _find_first_path([
+        (root / "artifacts" / "cards_approved", f"{ea_id}_*.md"),
+        (root / "artifacts" / "cards_draft", f"{ea_id}_*.md"),
+    ])
+    source_path = _find_first_path([(FRAMEWORK_EAS_DIR, f"{ea_id}_*/{ea_id}_*.mq5")])
+
+    evidence_lines = evidence_paths[:5] or ["<none recorded>"]
+    evidence_md = "\n".join(f"- {p}" for p in evidence_lines)
+
+    body = f"""---
+task_id: {md_task_id}
+priority: med
+created: {dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat()}
+auto_generated: true
+trigger: ZERO_TRADE_RECURRENT
+db_task_id: {task_id}
+---
+
+# Auto-detected zero-trade rework: {ea_id}
+
+Pump detected that {ea_id} has {ratio:.0%} zero-trade FAIL ratio ({zt}/{done} P2 done work_items returned MIN_TRADES_NOT_MET). Strategy logic likely has an entry-condition bug.
+
+## Files to investigate
+
+- Card: {card_path if card_path else '<card not found>'}
+- Source: {source_path if source_path else '<source not found>'}
+- 5 zero-trade summary.jsons:
+{evidence_md}
+
+## What to do
+
+Same shape as task #019 diagnosis: identify the specific rejecting test and propose a patch. Do not apply the patch; Claude reviews and commits.
+
+## Output
+
+`D:/QM/strategy_farm/codex_outbox/{md_task_id}_result.md`
+
+## Acceptance criteria
+
+- 3+ `.mq5:line` citations identifying the rejecting test
+- Patch proposal OR verdict: `DEAD`, `REWORK`, or `PROP_FIRM_INCOMPATIBLE`
+- No commit / no push
+"""
+
+    tmp = target.with_suffix(target.suffix + ".tmp")
+    tmp.write_text(body, encoding="utf-8", newline="\n")
+    tmp.replace(target)
+    return target
+
+
+def _detect_zerotrade_dead_eas(con: sqlite3.Connection, root: Path = DEFAULT_ROOT) -> list[dict[str, Any]]:
+    """
+    Find EAs where >=80% of done P2 work_items are FAILs caused by
+    MIN_TRADES_NOT_MET, with at least 5 done P2 samples. Create one fresh
+    build_ea retry task plus one bridge .md task, de-duped over 6 hours.
+    """
+    rows = con.execute(
+        """
+        SELECT ea_id, verdict, payload_json, evidence_path, updated_at
+        FROM work_items
+        WHERE phase='P2' AND status='done'
+        """
+    ).fetchall()
+
+    grouped: dict[str, dict[str, Any]] = {}
+    for r in rows:
+        ea_id = r["ea_id"]
+        bucket = grouped.setdefault(ea_id, {"done": 0, "zt": 0, "evidence": []})
+        bucket["done"] += 1
+        if (r["verdict"] or "").upper() == "FAIL" and _is_zero_trade_failure_payload(r["payload_json"], r["evidence_path"]):
+            bucket["zt"] += 1
+            if r["evidence_path"]:
+                bucket["evidence"].append(r["evidence_path"])
+
+    flagged: list[dict[str, Any]] = []
+    for ea_id, stats in sorted(grouped.items()):
+        done = int(stats["done"])
+        zt = int(stats["zt"])
+        if done < ZERO_TRADE_DEAD_MIN_DONE:
+            continue
+        ratio = zt / done if done else 0.0
+        if ratio < ZERO_TRADE_DEAD_THRESHOLD:
+            continue
+        if _recent_zero_trade_rework_exists(con, ea_id):
+            continue
+
+        card_path = _find_first_path([
+            (root / "artifacts" / "cards_approved", f"{ea_id}_*.md"),
+            (root / "artifacts" / "cards_draft", f"{ea_id}_*.md"),
+        ])
+        frontmatter: dict[str, Any] = {}
+        slug = ""
+        if card_path:
+            try:
+                frontmatter = parse_card_frontmatter(card_path)
+                slug = str(frontmatter.get("slug") or "")
+            except Exception:
+                frontmatter = {}
+        ea_dir = _find_first_path([(FRAMEWORK_EAS_DIR, f"{ea_id}_*")])
+
+        payload = {
+            "rework_reason": "ZERO_TRADE_RECURRENT",
+            "ea_id": ea_id,
+            "slug": slug,
+            "card_path": str(card_path) if card_path else "",
+            "ea_dir": str(ea_dir) if ea_dir else "",
+            "frontmatter": frontmatter,
+            "zero_trade_ratio": ratio,
+            "zero_trade_failures": zt,
+            "sample_size": done,
+            "trigger_ts": utc_now(),
+            "evidence_query": (
+                "SELECT evidence_path FROM work_items WHERE ea_id='"
+                + ea_id
+                + "' AND verdict='FAIL' AND payload_json LIKE '%MIN_TRADES_NOT_MET%' LIMIT 5"
+            ),
+        }
+        task_id = create_task(
+            con,
+            kind="build_ea",
+            source_id=None,
+            card_id=ea_id,
+            payload=payload,
+        )
+        md_path = _write_zerotrade_rework_codex_task(
+            root,
+            ea_id,
+            ratio,
+            done,
+            zt,
+            task_id,
+            list(stats["evidence"]),
+        )
+        con.execute(
+            "UPDATE tasks SET payload_json=?, updated_at=? WHERE id=?",
+            (json.dumps({**payload, "codex_inbox_task_path": str(md_path)}, sort_keys=True), utc_now(), task_id),
+        )
+        flagged.append({
+            "ea_id": ea_id,
+            "zero_trade_ratio": ratio,
+            "zero_trade_failures": zt,
+            "sample_size": done,
+            "task_id": task_id,
+            "codex_inbox_task_path": str(md_path),
+        })
+
+    if flagged:
+        con.commit()
+    return flagged
+
+
+def _has_auto_build_task_file(root: Path, ea_id: str) -> bool:
+    inbox = root / "codex_inbox"
+    for rel in ("", ".processing", ".archive"):
+        d = inbox / rel if rel else inbox
+        if d.is_dir() and any(d.glob(f"auto-build-{ea_id}-*.md")):
+            return True
+    return False
+
+
+def _detect_unbuilt_cards(root: Path) -> list[dict[str, Any]]:
+    """
+    Find approved cards where the matching EA .ex5 does not exist yet and
+    no bridge auto-build task has already been written.
+    """
+    cards_dir = root / "artifacts" / "cards_approved"
+    if not cards_dir.is_dir():
+        return []
+
+    unbuilt: list[dict[str, Any]] = []
+    for card_md in sorted(cards_dir.glob("QM5_*.md")):
+        m = re.match(r"(QM5_\d{4})_(.+)\.md$", card_md.name)
+        if not m:
+            continue
+        ea_id, slug = m.group(1), m.group(2)
+        label = f"{ea_id}_{slug}"
+        ea_dir = FRAMEWORK_EAS_DIR / label
+        ex5 = ea_dir / f"{label}.ex5"
+        if ex5.exists():
+            continue
+        if _has_auto_build_task_file(root, ea_id):
+            continue
+        unbuilt.append({
+            "ea_id": ea_id,
+            "slug": slug,
+            "label": label,
+            "card_path": str(card_md),
+            "expected_ex5": str(ex5),
+        })
+    return unbuilt
+
+
+def _write_auto_build_task(ea_info: dict[str, Any], root: Path) -> Path:
+    """Write an auto-build bridge task for an approved-but-unbuilt card."""
+    inbox = root / "codex_inbox"
+    inbox.mkdir(parents=True, exist_ok=True)
+    ts = dt.datetime.now(dt.UTC).replace(microsecond=0).strftime("%Y%m%dT%H%M%SZ")
+    task_id = f"auto-build-{ea_info['ea_id']}-{ts}"
+    label = ea_info["label"]
+    card_path = ea_info["card_path"]
+    content = f"""---
+task_id: {task_id}
+priority: high
+created: {dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat()}
+auto_generated: true
+trigger: UNBUILT_APPROVED_CARD
+ea_id: {ea_info['ea_id']}
+label: {label}
+---
+
+# Auto-build {ea_info['ea_id']} from approved card
+
+Pump detected that card `{card_path}` is approved but
+`framework/EAs/{label}/{label}.ex5` does not exist. Build the EA.
+
+## Files to read
+
+- Card: `{card_path}`
+- V5 framework spec: `C:/QM/repo/framework/V5_FRAMEWORK_DESIGN.md`
+- Template references: `QM5_1056`, `QM5_1099`, `QM5_1101` `.mq5` files for V5 boilerplate
+- Magic registry: `C:/QM/repo/framework/registry/magic_numbers.csv`
+- Known findings: `D:/QM/strategy_farm/codex_inbox/_KNOWN_FINDINGS.md`
+
+## What to do
+
+1. Read the card body for entry/exit rules and input specs.
+2. Create directory `framework/EAs/{label}/`.
+3. Write `{label}.mq5` implementing the card per V5 framework.
+4. Append rows to `magic_numbers.csv`, one per card-listed symbol.
+5. Regenerate `QM_MagicResolver.mqh` via `update_magic_resolver.py`.
+6. Run build_check / compile; both must pass with 0 errors and 0 warnings.
+7. Run smoke on the first card-listed symbol to confirm entry logic fires.
+8. Generate per-symbol `.set` files via `gen_setfile.ps1`.
+9. No commit / no push.
+
+## Output
+
+`D:/QM/strategy_farm/codex_outbox/{task_id}_result.md`
+
+## Acceptance criteria
+
+- [ ] `.mq5` and `.ex5` created
+- [ ] build_check PASS and compile 0/0
+- [ ] Smoke produces at least 1 trade OR documents the zero-trade reason
+- [ ] magic registry and resolver updated
+- [ ] `.set` files generated for card-listed symbols
+- [ ] No commit / no push
+"""
+    target = inbox / f"{task_id}.md"
+    tmp = target.with_suffix(target.suffix + ".tmp")
+    tmp.write_text(content, encoding="utf-8", newline="\n")
+    tmp.replace(target)
+    return target
+
+
+def _detect_unenqueued_eas(con: sqlite3.Connection) -> list[dict[str, Any]]:
+    """
+    Find reviewed, built EAs with no P2 work_items. These are ready for
+    automatic P2 enqueue.
+    """
+    rows = con.execute(
+        """
+        SELECT card_id, MAX(updated_at) latest_review_ts, id AS review_task_id
+        FROM tasks
+        WHERE kind='ea_review' AND status='done'
+        GROUP BY card_id
+        """
+    ).fetchall()
+    needs: list[dict[str, Any]] = []
+    for r in rows:
+        ea_id = r["card_id"]
+        if not ea_id:
+            continue
+        wi_count = con.execute(
+            "SELECT COUNT(*) FROM work_items WHERE ea_id=? AND phase='P2'",
+            (ea_id,),
+        ).fetchone()[0]
+        if wi_count > 0:
+            continue
+        candidates = sorted(p for p in FRAMEWORK_EAS_DIR.glob(f"{ea_id}_*") if p.is_dir())
+        if not candidates:
+            continue
+        ea_dir = candidates[0]
+        ex5 = ea_dir / f"{ea_dir.name}.ex5"
+        if not ex5.exists():
+            continue
+        needs.append({
+            "ea_id": ea_id,
+            "review_task_id": r["review_task_id"],
+            "ea_dir": str(ea_dir),
+            "ex5": str(ex5),
+        })
+    return needs
+
+
+def _enqueue_p2_from_review(root: Path, review_task_id: str) -> int:
+    result = enqueue_backtest(root, review_task_id, "P2")
+    if not result.get("enqueued"):
+        raise RuntimeError(str(result.get("reason") or result))
+    return len(result.get("work_items_created") or [])
+
+
 def pump(root: Path) -> dict[str, Any]:
     """Continuous deterministic worker — run every 5 min.
 
@@ -1873,6 +2240,34 @@ def pump(root: Path) -> dict[str, Any]:
     #     created WITHOUT matching work_items (e.g. older runs). Will become
     #     a no-op once all enqueues create work_items.
     result["dispatch"] = dispatch_tick(root)
+    with connect(root) as conn:
+        result["zerotrade_rework_flagged"] = _detect_zerotrade_dead_eas(conn, root)
+
+    result["auto_build_queued"] = []
+    for ea_info in _detect_unbuilt_cards(root)[:2]:
+        p = _write_auto_build_task(ea_info, root)
+        result["auto_build_queued"].append({
+            "ea_id": ea_info["ea_id"],
+            "label": ea_info["label"],
+            "task_path": str(p),
+        })
+
+    result["auto_p2_enqueued"] = []
+    with connect(root) as conn:
+        for ea_info in _detect_unenqueued_eas(conn)[:3]:
+            try:
+                n = _enqueue_p2_from_review(root, ea_info["review_task_id"])
+                result["auto_p2_enqueued"].append({
+                    "ea_id": ea_info["ea_id"],
+                    "work_items": n,
+                    "review_task_id": ea_info["review_task_id"],
+                })
+            except Exception as exc:
+                result["auto_p2_enqueued"].append({
+                    "ea_id": ea_info["ea_id"],
+                    "review_task_id": ea_info["review_task_id"],
+                    "error": repr(exc),
+                })
 
     # 2. Retry blocked builds — OWNER 2026-05-16 "Fail → ans Ende der
     #    Liste". A blocked build means the previous attempt hit
@@ -2005,6 +2400,8 @@ def pump(root: Path) -> dict[str, Any]:
                     continue
                 ea_id = f"{parts[0]}_{parts[1]}"
                 if ea_id not in have_task:
+                    if _has_auto_build_task_file(root, ea_id):
+                        continue
                     cards_without_task.append((ea_id, f))
             slots_left = spawn_budget - actually_spawned
             for ea_id, card_path in cards_without_task[:slots_left]:

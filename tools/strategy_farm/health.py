@@ -32,11 +32,16 @@ import subprocess
 from pathlib import Path
 
 ROOT = Path(r"D:\QM\strategy_farm")
+REPO_ROOT = Path(__file__).resolve().parents[2]
+FRAMEWORK_EAS_DIR = REPO_ROOT / "framework" / "EAs"
 DB = ROOT / "state" / "farm_state.sqlite"
 HEALTH_FILE = ROOT / "state" / "health.json"
 ALARMS_LOG = ROOT / "state" / "health_alarms.log"
 QUOTA_SNAPSHOT = ROOT / "state" / "quota_snapshot.json"
 LOG_DIR = ROOT / "logs"
+ZERO_TRADE_DEAD_THRESHOLD = 0.80
+ZERO_TRADE_DEAD_MIN_DONE = 5
+ZERO_TRADE_REWORK_DEDUP_HOURS = 6
 
 
 def _utc_now() -> dt.datetime:
@@ -409,6 +414,143 @@ def chk_source_pool(con) -> dict:
     return _check("source_pool_drained", "OK", n, 10, f"{n} pending sources", "")
 
 
+def chk_zerotrade_rework_backlog(con) -> dict:
+    """EAs with recurrent P2 zero-trade FAILs must have a recent rework task.
+
+    WARN if any EA crosses the 80% / 5-sample threshold without a rework
+    task in the last 6 hours. FAIL if more than 10 EAs are in that state,
+    which indicates a systemic build/strategy-class issue rather than a
+    single bad EA.
+    """
+    rows = con.execute(
+        """
+        SELECT ea_id,
+               SUM(CASE WHEN status='done' THEN 1 ELSE 0 END) AS done,
+               SUM(CASE WHEN status='done' AND verdict='FAIL'
+                         AND payload_json LIKE '%MIN_TRADES_NOT_MET%'
+                        THEN 1 ELSE 0 END) AS zt
+        FROM work_items
+        WHERE phase='P2'
+        GROUP BY ea_id
+        HAVING done >= ?
+           AND (zt * 1.0 / done) >= ?
+        ORDER BY ea_id
+        """,
+        (ZERO_TRADE_DEAD_MIN_DONE, ZERO_TRADE_DEAD_THRESHOLD),
+    ).fetchall()
+
+    cutoff = (_utc_now() - dt.timedelta(hours=ZERO_TRADE_REWORK_DEDUP_HOURS)).strftime("%Y-%m-%dT%H:%M:%S+00:00")
+    backlog = []
+    for r in rows:
+        ea_id = r["ea_id"]
+        existing = con.execute(
+            """
+            SELECT id FROM tasks
+            WHERE card_id=? AND kind='build_ea'
+              AND payload_json LIKE '%ZERO_TRADE_RECURRENT%'
+              AND created_at >= ?
+            ORDER BY created_at DESC LIMIT 1
+            """,
+            (ea_id, cutoff),
+        ).fetchone()
+        if existing:
+            continue
+        done = int(r["done"] or 0)
+        zt = int(r["zt"] or 0)
+        backlog.append(f"{ea_id}:{zt}/{done}")
+
+    n = len(backlog)
+    detail = ", ".join(backlog[:10]) if backlog else "no uncovered recurrent zero-trade EAs"
+    if n > 10:
+        return _check("zerotrade_rework_backlog", "FAIL", n, 10,
+                      f"{n} EAs need zero-trade rework tasks ({detail})",
+                      "Run farmctl pump; if backlog remains, inspect detector or widespread EA entry bugs.")
+    if n > 0:
+        return _check("zerotrade_rework_backlog", "WARN", n, 1,
+                      f"{n} EA(s) need zero-trade rework tasks ({detail})",
+                      "Next pump cycle should create build_ea + codex_inbox auto-rework tasks.")
+    return _check("zerotrade_rework_backlog", "OK", 0, 1, detail, "")
+
+
+def _has_auto_build_task_file(ea_id: str) -> bool:
+    inbox = ROOT / "codex_inbox"
+    for rel in ("", ".processing", ".archive"):
+        d = inbox / rel if rel else inbox
+        if d.is_dir() and any(d.glob(f"auto-build-{ea_id}-*.md")):
+            return True
+    return False
+
+
+def chk_unbuilt_cards_count(con) -> dict:
+    """Approved cards with no matching .ex5 and no bridge auto-build task."""
+    cards_dir = ROOT / "artifacts" / "cards_approved"
+    if not cards_dir.is_dir():
+        return _check("unbuilt_cards_count", "OK", 0, 3,
+                      "cards_approved missing or empty", "")
+    unbuilt = []
+    for card_md in sorted(cards_dir.glob("QM5_*.md")):
+        m = re.match(r"(QM5_\d{4})_(.+)\.md$", card_md.name)
+        if not m:
+            continue
+        ea_id, slug = m.group(1), m.group(2)
+        label = f"{ea_id}_{slug}"
+        ex5 = FRAMEWORK_EAS_DIR / label / f"{label}.ex5"
+        if ex5.exists() or _has_auto_build_task_file(ea_id):
+            continue
+        unbuilt.append(ea_id)
+    n = len(unbuilt)
+    detail = ", ".join(unbuilt[:10]) if unbuilt else "no approved cards waiting for auto-build task"
+    if n > 10:
+        return _check("unbuilt_cards_count", "FAIL", n, 10,
+                      f"{n} approved cards lack .ex5 and auto-build task ({detail})",
+                      "Run farmctl pump; it should emit up to 2 auto-build bridge tasks per cycle.")
+    if n > 3:
+        return _check("unbuilt_cards_count", "WARN", n, 3,
+                      f"{n} approved cards lack .ex5 and auto-build task ({detail})",
+                      "Next pump cycles should drain this via auto-build .md tasks.")
+    return _check("unbuilt_cards_count", "OK", n, 3, detail, "")
+
+
+def chk_unenqueued_eas_count(con) -> dict:
+    """Reviewed and built EAs that still have no P2 work_items."""
+    rows = con.execute(
+        """
+        SELECT card_id, id AS review_task_id
+        FROM tasks
+        WHERE kind='ea_review' AND status='done'
+        GROUP BY card_id
+        """
+    ).fetchall()
+    waiting = []
+    for r in rows:
+        ea_id = r["card_id"]
+        if not ea_id:
+            continue
+        wi_count = con.execute(
+            "SELECT COUNT(*) FROM work_items WHERE ea_id=? AND phase='P2'",
+            (ea_id,),
+        ).fetchone()[0]
+        if wi_count > 0:
+            continue
+        candidates = sorted(p for p in FRAMEWORK_EAS_DIR.glob(f"{ea_id}_*") if p.is_dir())
+        if not candidates:
+            continue
+        ex5 = candidates[0] / f"{candidates[0].name}.ex5"
+        if ex5.exists():
+            waiting.append(ea_id)
+    n = len(waiting)
+    detail = ", ".join(waiting[:10]) if waiting else "no reviewed built EAs waiting for P2 enqueue"
+    if n > 10:
+        return _check("unenqueued_eas_count", "FAIL", n, 10,
+                      f"{n} reviewed built EAs have no P2 work_items ({detail})",
+                      "Run farmctl pump; it should enqueue up to 3 EAs into P2 per cycle.")
+    if n > 3:
+        return _check("unenqueued_eas_count", "WARN", n, 3,
+                      f"{n} reviewed built EAs have no P2 work_items ({detail})",
+                      "Next pump cycles should enqueue P2 work_items.")
+    return _check("unenqueued_eas_count", "OK", n, 3, detail, "")
+
+
 def chk_codex_auth_broken(con) -> dict:
     """Detect Codex authentication failures.
 
@@ -535,6 +677,9 @@ ALL_CHECKS = [
     ("mt5_dispatch_idle",      chk_mt5_dispatch_idle,      True),
     ("codex_zero_activity",    chk_codex_zero_activity,    True),
     ("source_pool",            chk_source_pool,            True),
+    ("zerotrade_rework_backlog", chk_zerotrade_rework_backlog, True),
+    ("unbuilt_cards_count",    chk_unbuilt_cards_count,    True),
+    ("unenqueued_eas_count",   chk_unenqueued_eas_count,   True),
     ("quota_snapshot_fresh",   chk_quota_snapshot_fresh,   False),
     ("codex_auth_broken",      chk_codex_auth_broken,      True),
 ]
