@@ -1947,10 +1947,73 @@ def pump(root: Path) -> dict[str, Any]:
             rec = record_build_result(root, row["id"], brp)
             result["build_records"].append({"task_id": row["id"], "recorded": rec})
 
+    # 4b. ZERO-TRADE SHORT-CIRCUIT — observed 2026-05-17: 9/9 codex_reviews
+    #     in last hour FAIL on smoke_sanity (0 trades in smoke window). The
+    #     build_result.json already says smoke_result='MIN_TRADES_NOT_MET' —
+    #     spawning Codex to "verify" that is pure waste. Mark such builds
+    #     blocked with reason='zero_trade_smoke' BEFORE codex_review spawn.
+    result["zero_trade_blocks"] = []
+    with connect(root) as conn:
+        candidates = conn.execute(
+            """
+            SELECT b.* FROM tasks b
+            WHERE b.kind='build_ea' AND b.status='done'
+              AND NOT EXISTS (
+                SELECT 1 FROM tasks r WHERE r.kind='codex_review'
+                  AND r.payload_json LIKE '%"build_task_id": "' || b.id || '"%'
+              )
+              AND NOT EXISTS (
+                SELECT 1 FROM tasks rr WHERE rr.kind='ea_review'
+                  AND rr.payload_json LIKE '%"build_task_id": "' || b.id || '"%'
+              )
+            """
+        ).fetchall()
+        for b in candidates:
+            bp = json.loads(b["payload_json"])
+            br_path = bp.get("build_result_path")
+            if not br_path or not Path(br_path).exists():
+                continue
+            try:
+                br = json.loads(Path(br_path).read_text(encoding="utf-8"))
+            except Exception:
+                continue
+            sr = (br.get("smoke_result") or "").upper()
+            blocked_r = (br.get("blocked_reason") or "")
+            # Trigger conditions: explicit MIN_TRADES_NOT_MET, OR framework_error,
+            # OR known dead-end blocked_reason patterns
+            zero_trade = (
+                "MIN_TRADES_NOT_MET" in sr or
+                "MIN_TRADES_NOT_MET" in blocked_r or
+                sr == "FRAMEWORK_ERROR" or
+                "REPORT_MISSING" in blocked_r
+            )
+            if not zero_trade:
+                continue
+            bp["blocked_reason"] = bp.get("blocked_reason") or "zero_trade_smoke"
+            bp["attempt"] = int(bp.get("attempt", 0)) + 1
+            bp["zero_trade_short_circuit"] = True
+            conn.execute(
+                "UPDATE tasks SET status='blocked', payload_json=?, updated_at=? WHERE id=?",
+                (json.dumps(bp), utc_now(), b["id"]),
+            )
+            event(conn, "task", b["id"], "build_zero_trade_blocked", {
+                "smoke_result": sr,
+                "blocked_reason": blocked_r[:200],
+            })
+            result["zero_trade_blocks"].append({
+                "task_id": b["id"],
+                "ea_id": bp.get("ea_id"),
+                "smoke_result": sr,
+                "saved_codex_review_spawn": True,
+            })
+        conn.commit()
+
     # 5a. CODEX pre-review for done build_ea without codex_review yet.
     #     Codex catches mechanical bugs (Framework Corset, INTRADAY DISCIPLINE,
     #     magic collisions, 0-trade smoke) BEFORE Claude burns tokens on
     #     policy review. PASS → Claude proceeds. FAIL → build → blocked.
+    #     Zero-trade builds were already short-circuited in §4b — they
+    #     won't appear here.
     result["codex_review_spawns"] = []
     with connect(root) as conn:
         builds_needing_codex_review = conn.execute(
