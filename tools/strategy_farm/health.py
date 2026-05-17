@@ -245,44 +245,65 @@ def chk_claude_review_starved(con) -> dict:
 
 
 def chk_mt5_dispatch_idle(con) -> dict:
-    """Pending P2/P3 work_items > 5 but no dispatch actions in last 30min =
-    MT5 dispatcher is stuck."""
+    """Dispatch idle = pending queue piling up with no progress.
+
+    Smarter check than "is terminal64 alive right now" — MT5 spawns
+    transiently per backtest, so terminal64=0 between launches doesn't
+    mean idle. Look at:
+      (a) Pending count vs active rows — many pending, no active = idle.
+      (b) IF active rows exist, check pwsh.exe parents (run_smoke.ps1
+          workers) are alive — that's the real signal MT5 work is in
+          flight. terminal64 may be 0 just between runs.
+      (c) Per-work_item recent log activity also confirms progress.
+
+    Previous logic alarmed on "0 terminal64" — false-positive when pwsh
+    workers were mid-backtest with terminal64 transiently absent.
+    """
     n_pending = con.execute(
         "SELECT COUNT(*) FROM work_items WHERE status='pending'"
     ).fetchone()[0]
     if n_pending < 5:
         return _check("mt5_dispatch_idle", "OK", n_pending, 5,
                       f"{n_pending} pending (low queue)", "")
-    # Active work_items mean dispatch IS happening — but cross-check that
-    # the active ones aren't all stranded (claimed_by terminal with no live
-    # process). A stranded "active" is functionally the same as idle.
     rows = list(con.execute(
         "SELECT id, claimed_by, updated_at FROM work_items WHERE status='active'"
     ))
     if not rows:
         return _check("mt5_dispatch_idle", "FAIL", n_pending, 5,
                       f"{n_pending} pending, 0 active — dispatcher idle",
-                      "Run farmctl pump (or wait for next 5-min cycle). "
-                      "Inline worker-PID check should auto-release if MT5 died.")
-    # Active rows exist — count how many are bound to a still-running MT5
+                      "Run farmctl pump (or wait for next 5-min cycle).")
+    # Active rows exist. Check pwsh.exe worker procs (run_smoke.ps1 parents).
+    # They wrap terminal64.exe and outlive each terminal64 spawn.
     try:
         import subprocess as _sp
         out = _sp.run(
             ["powershell.exe", "-NoProfile", "-Command",
-             "(Get-Process -Name terminal64 -ErrorAction SilentlyContinue).Count"],
+             "(Get-Process -Name pwsh -ErrorAction SilentlyContinue).Count"],
             capture_output=True, text=True, timeout=10,
         )
-        n_mt5_alive = int((out.stdout or "0").strip() or "0")
+        n_pwsh = int((out.stdout or "0").strip() or "0")
     except Exception:
-        n_mt5_alive = -1
-    if n_mt5_alive == 0:
-        return _check("mt5_dispatch_idle", "FAIL", len(rows), 0,
-                      f"{n_pending} pending, {len(rows)} active rows but 0 terminal64 processes alive",
-                      "Stranded active work_items — pump's inline PID check "
-                      "will release them next cycle. If persisting, run "
-                      "`farmctl repair` manually.")
-    return _check("mt5_dispatch_idle", "OK", n_pending, 5,
-                  f"{n_pending} pending, {len(rows)} active, {n_mt5_alive} terminal64 alive", "")
+        n_pwsh = -1
+    # Also check work_item live_log activity in last 5 min — proves work is
+    # actually progressing, not just zombie pwsh.
+    fresh_wi_logs = 0
+    try:
+        import time as _t
+        for f in LOG_DIR.glob("work_item_*.log"):
+            if _t.time() - f.stat().st_mtime < 300:
+                fresh_wi_logs += 1
+    except Exception:
+        pass
+    if n_pwsh >= len(rows) or fresh_wi_logs >= 1:
+        return _check("mt5_dispatch_idle", "OK", n_pending, 5,
+                      f"{n_pending} pending, {len(rows)} active, {n_pwsh} pwsh workers, "
+                      f"{fresh_wi_logs} fresh work_item logs", "")
+    # Active rows but no pwsh workers AND no fresh logs → truly stranded
+    return _check("mt5_dispatch_idle", "FAIL", len(rows), 0,
+                  f"{n_pending} pending, {len(rows)} active, {n_pwsh} pwsh, "
+                  f"{fresh_wi_logs} fresh logs — workers dead",
+                  "Stranded active work_items. Inline PID check should "
+                  "release them next pump cycle.")
 
 
 def chk_codex_zero_activity(con) -> dict:
