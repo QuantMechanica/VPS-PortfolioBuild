@@ -929,7 +929,7 @@ $summary = [ordered]@{
 $summaryPath = Join-Path $reportDir "summary.json"
 $summary | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $summaryPath -Encoding utf8
 
-$evidencePath = Join-Path $frameworkEvidenceDir ("{0}_{1}_run_smoke.md" -f $runTag, $eaLabel)
+$evidencePath = Join-Path $frameworkEvidenceDir ("{0}_{1}_{2}_{3}_run_smoke.md" -f $runTag, $eaLabel, $Symbol, $Terminal)
 $evidenceLines = @(
     "# Step 22 Smoke Evidence",
     "",
@@ -952,7 +952,11 @@ $evidenceLines = @(
 foreach ($run in $runResults) {
     $evidenceLines += "- $($run.run): source=$($run.report_source_path) -> target=$($run.report_canonical_path) bytes=$($run.report_size_bytes) status=$($run.status)"
 }
-Set-Content -LiteralPath $evidencePath -Value $evidenceLines -Encoding utf8
+try {
+    Set-Content -LiteralPath $evidencePath -Value $evidenceLines -Encoding utf8 -ErrorAction Stop
+} catch {
+    Write-Host ("run_smoke.evidence_write_failed path='{0}' err='{1}'" -f $evidencePath, $_.Exception.Message)
+}
 
 Write-Output "run_smoke.result=$($summary.result)"
 Write-Output "run_smoke.reason_classes=$([string]::Join(';', $summary.reason_classes))"
