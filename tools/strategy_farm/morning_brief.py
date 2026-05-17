@@ -31,7 +31,10 @@ DB = ROOT / "state" / "farm_state.sqlite"
 HEALTH_FILE = ROOT / "state" / "health.json"
 QUOTA_FILE = ROOT / "state" / "quota_snapshot.json"
 DASH = ROOT / "dashboards"
-BRIEF_FILE = DASH / "morning_brief.md"
+BRIEF_FILE = DASH / "morning_brief.md"  # latest, cockpit-adjacent
+# Vault archive: per OWNER 2026-05-17 — daily timestamped copy in Drive vault
+# so OWNER has scrollable history of every brief, Drive-synced off-VPS.
+VAULT_BRIEF_DIR = Path(r"G:\My Drive\QuantMechanica - Company Reference\10 Morning Briefing")
 CARDS_DRAFT = ROOT / "artifacts" / "cards_draft"
 CARDS_APPROVED = ROOT / "artifacts" / "cards_approved"
 
@@ -249,6 +252,17 @@ def main() -> int:
     text = _format_brief()
     BRIEF_FILE.write_text(text, encoding="utf-8", newline="\n")
     print(f"morning brief written: {BRIEF_FILE}")
+    # Daily timestamped copy to Drive vault (Drive sync handles backup).
+    try:
+        VAULT_BRIEF_DIR.mkdir(parents=True, exist_ok=True)
+        today_local = dt.datetime.now().strftime("%Y-%m-%d")
+        vault_path = VAULT_BRIEF_DIR / f"{today_local}_morning_brief.md"
+        vault_path.write_text(text, encoding="utf-8", newline="\n")
+        print(f"vault archive written:  {vault_path}")
+    except Exception as exc:
+        # Don't fail the whole task if Drive mount has a hiccup; the local
+        # copy is still on disk.
+        print(f"vault write failed (non-fatal): {exc!r}")
     return 0
 
 
