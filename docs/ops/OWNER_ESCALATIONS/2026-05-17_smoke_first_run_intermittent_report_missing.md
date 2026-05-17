@@ -357,3 +357,68 @@ then unblock the 4 EAs above.
   observe_wakes.log line per `no keepalive evidence churn` rule
   (DL-046) — substantive new signal (new failure mode + post-patch
   validation) earns one commit, not a heartbeat ack.
+
+- **2026-05-17T20:47Z (observe wake)** — **cluster 20 → 25; one new
+  parser-variant joins the bucket list; autonomous wake pump-cap working
+  as designed.**
+
+  Five new real failures since the 17:51Z update, all at `attempt_count=3`
+  (terminal — pump cap reached) per task payloads, last touched
+  2026-05-17T20:40:14Z by the pump:
+
+  - **QM5_1117** (`unger-bund-momentum-pullback`, failed attempt=3,
+    updated 20:40:14Z) — `framework_error run_smoke report parsing
+    failed: no summary.json; parser hit empty Html while reading Expert
+    metric`. **New parser-side variant.** Smoke produced raw artifacts
+    `D:/QM/reports/smoke/QM5_1117/20260517_201442/raw/run_01/{tester.ini}`
+    (no report.htm — cold start empty) and `run_02/{20260517.log,
+    report.htm, tester.ini}` (warm run produced report). But the parser
+    itself raised reading the empty run_01 HTML instead of cleanly
+    classifying REPORT_MISSING, so `summary.json` never landed. This is
+    the SAME cold-warm asymmetry underneath but exposes a defensive-
+    coding gap in the report parser: it should emit REPORT_MISSING when
+    Expert-metric HTML is empty, not crash.
+  - **QM5_1118** — `REPORT_MISSING;METATESTER_HUNG;INCOMPLETE_RUNS;
+    MODEL4_MARKER_REQUIRED` → joins **worker-mortality / metatester-hung**
+    bucket.
+  - **QM5_1123** — `run_smoke aborted before tester launch: T1 terminal
+    instance already running` → joins **preflight-already-running**
+    bucket.
+  - **QM5_1149** — `REPORT_MISSING;INCOMPLETE_RUNS;MODEL4_MARKER_REQUIRED`
+    → joins **cold-warm-asymmetry** bucket.
+  - **QM5_1159** — `T1 terminal already running before tester launch` →
+    joins **preflight-already-running** bucket.
+
+  Updated counts: **25 real `build_ea` failures** in self-heal filter
+  (was 20 at 17:51Z). All five new entries hit pump cap at attempt=3
+  exactly as designed — `19:25Z` autonomous-wake summary already flagged
+  `1117/1118/1123/1149/1159` as "framework_error smoke … cycling via
+  pump section 2; pump will naturally cap at attempt>3", and that's
+  what happened. Pump self-limiting **confirmed functional**.
+
+  Cluster composition (cumulative, all attempt=3 terminal):
+  - cold-warm-asymmetry: QM5_1045/1050/1055/1122/**1149**
+  - both-runs-fail: QM5_1046/1060/1065/1066/1067/1070
+  - preflight-already-running: QM5_1068/1082/1101/**1123**/**1159**
+  - worker-mortality / metatester-hung: QM5_1090/1091/**1118**
+  - file-lock-on-include-sync: QM5_1121
+  - parser-empty-html-not-classified: **QM5_1117** *(new bucket)*
+  - other (REPORT_MISSING / NO_REAL_TICKS_MARKER): QM5_1061/1069/1081
+
+  **New fix candidate (8) — defensive parser fallback.** When
+  `run_smoke.ps1`'s report-parser encounters an empty Expert-metric
+  HTML cell, classify as `REPORT_MISSING` (or `EMPTY_REPORT`) rather
+  than raising. This is a one-file change (the parser script) that
+  doesn't require any concurrency/locking work and would cleanly fold
+  QM5_1117 into the existing REPORT_MISSING bucket the rest of the
+  pipeline already handles. Smallest blast radius of the 8 fix
+  candidates so far.
+
+  **Recommended escalation path unchanged** — severity remains HIGH but
+  cluster growth rate is slowing (4 new 14:50→16:49, 2 new 16:49→17:51,
+  5 new 17:51→20:47 over a longer window). OWNER decision on fix-pick
+  order still pending; this addendum exists to record the 25-card mark
+  + new parser variant + pump-cap confirmation, not to re-raise
+  severity. Per DL-046, no further keepalive churn until either (a) a
+  new failure-mode bucket emerges, (b) cluster crosses 30, or (c)
+  OWNER picks a fix candidate.
