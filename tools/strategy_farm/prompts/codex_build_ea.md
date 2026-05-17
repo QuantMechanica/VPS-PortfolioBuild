@@ -137,6 +137,11 @@ portable symbols — P3 then sweeps params per symbol on the already-built EA.
 The V5 framework provides the entire per-tick scaffold. Your `.mq5` should be
 just **5 strategy hooks + input params**. Start from
 `framework/templates/EA_Skeleton.mq5` — it has all framework wiring already.
+
+**OUTPUT SCHEMA:** Your final `build_result.json` MUST match the schema in
+`C:/QM/repo/tools/strategy_farm/prompts/SCHEMAS.md` § "build_result.json".
+If you add or rename a field, update SCHEMAS.md in the same change set —
+otherwise the downstream codex_review step will produce false FAILs.
 Touch only:
 
 - `input` declarations for strategy-specific params
