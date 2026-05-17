@@ -73,3 +73,4 @@ ea_id,slug,strategy_id,status,owner,created_at
 1085,chan-plat-gold-seasonal,fce67611-4e0f-5dce-8cff-c8b9dd84dd49,active,Research,2026-05-17
 1056,moskowitz-tsmom-multiasset,7ede58dd-d184-5099-9d48-7a65de230853,active,Development,2026-05-17
 1057,asness-xsmom-rank,7ede58dd-d184-5099-9d48-7a65de230853,active,Development,2026-05-17
+1058,gatev-fx-pairs-zscore,7ede58dd-d184-5099-9d48-7a65de230853,active,Development,2026-05-17
