@@ -256,3 +256,37 @@ then unblock the 4 EAs above.
   No action this wake other than this recurrence-log update. Smoke
   runner, codex_build_ea prompt, and farmctl all untouched per
   Board-Advisor scope (framework + agent prompts = CTO/Development).
+
+- **2026-05-17T14:50Z (observe wake)** — **fix commits landing; 3 new
+  blocks since previous wake but pre-patch.** No new escalation work.
+
+  Smoke-runner patches committed in the last hour, in chronological order:
+  - `bb09e964` (14:04Z) — `run_smoke evidence filename collision + try/catch wrap`
+  - `8deebf5c` (14:11Z) — `per-terminal deploy in run_smoke (eliminate .ex5 file-lock contention)`
+  - `82c9ce68` (14:28Z) — QM5_1087 build via autonomous wake (smoke still framework_error, T1 lock)
+  - `be009931` (14:45Z) — `run_smoke worker mortality — full task #014 patch`
+
+  Together these address fix-candidates (5) terminal-pool contention
+  and the worker-mortality root cause behind the `METATESTER_HUNG`
+  cluster. Per-terminal deploy eliminates the .ex5 file-lock race; the
+  worker mortality patch addresses the run_02 / metatester-leak class.
+
+  3 new builds blocked at 14:44:18Z (pre-`be009931` worker-mortality
+  patch by ~1 min): QM5_1090, QM5_1091, QM5_1101 — all
+  `framework_error REPORT_MISSING;METATESTER_HUNG;INCOMPLETE_RUNS;MODEL4_MARKER_REQUIRED`.
+  These were attempted under the partially-patched runner. The next
+  autonomous wake at 15:17Z will be the first validation of the full
+  patch stack on a fresh build.
+
+  Updated counts: 16 build_ea rows still match the self-heal filter as
+  real failures (was 16 at previous wake — net flat: QM5_1052/1053/1059/1098
+  now have downstream `ea_review`/`backtest_*` progress per filter clause
+  (c), and new rows QM5_1090/1091/1101 entered). Cluster composition:
+  cold-warm-asymmetry (QM5_1045/1050/1055), both-runs-fail
+  (QM5_1046/1060/1065/1066/1067/1068/1070), preflight-already-running
+  (QM5_1068 + new), worker-mortality / metatester-hung
+  (QM5_1090/1091/1101).
+
+  Severity remains HIGH but trending — patches are landing in real
+  time. No Board-Advisor action other than this log entry. Smoke runner
+  validation defers to next autonomous wake.
