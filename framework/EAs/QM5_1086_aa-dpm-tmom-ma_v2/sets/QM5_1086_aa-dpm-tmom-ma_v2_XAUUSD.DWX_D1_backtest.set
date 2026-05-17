@@ -1,0 +1,24 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1086
+; ea_slug:      aa-dpm-tmom-ma_v2
+; ea_version:   v5.0
+; set_version:  s20260517-001
+; symbol:       XAUUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   104
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   66f510188fa362ba1c5d63b37a6ea56fca4e5467111c642b03a54b6cd7c4a39d
+; author:       Development
+; date:         2026-05-17
+;==========================================================
+qm_magic_slot_offset=104
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=not_found
+
+
