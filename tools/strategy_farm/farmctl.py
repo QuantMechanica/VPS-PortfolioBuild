@@ -3633,6 +3633,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("status", help="Show source/task state")
     sub.add_parser("pipeline", help="Per-EA lifecycle view (where does each EA stand?)")
     sub.add_parser("pump", help="Continuous deterministic worker: dispatch MT5 + auto-spawn Codex + record builds. Run every 5 min.")
+    sub.add_parser("health", help="Run 10 pipeline invariants; write state/health.json + alarms log. Cockpit reads health.json for top banner.")
     work_items_p = sub.add_parser("work-items", help="Per-(EA × symbol × phase) work_items view")
     work_items_p.add_argument("--status", choices=["pending", "active", "done", "failed"], help="Filter by status")
     work_items_p.add_argument("--ea", help="Filter by ea_id (e.g. QM5_1049)")
@@ -3746,6 +3747,14 @@ def main(argv: list[str] | None = None) -> int:
         print_json(pipeline_view(root))
     elif args.command == "pump":
         print_json(pump(root))
+    elif args.command == "health":
+        try:
+            from health import run_all as _health_run_all
+        except ImportError:
+            import sys as _sys
+            _sys.path.insert(0, str(Path(__file__).resolve().parent))
+            from health import run_all as _health_run_all
+        print_json(_health_run_all())
     elif args.command == "work-items":
         print_json(work_items_view(root, status_filter=args.status, ea_filter=args.ea))
     elif args.command == "backfill-work-items":

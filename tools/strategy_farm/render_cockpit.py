@@ -715,6 +715,15 @@ def main() -> int:
     codex_q = codex_quota()
     qsnap = quota_snapshot()
 
+    # Pipeline health (written by `farmctl health`, scheduled every 15 min)
+    health_file = ROOT / "state" / "health.json"
+    health = {}
+    try:
+        if health_file.exists():
+            health = json.loads(health_file.read_text(encoding="utf-8"))
+    except Exception:
+        health = {}
+
     severity, msg = diagnose_bottleneck(procs, q, claude_workers, codex_workers)
 
     # === HTML ===
@@ -1038,6 +1047,58 @@ def main() -> int:
         + _snap_card("codex", "Codex")
         + '</div>'
     )
+
+    # Health banner — reads state/health.json written by farmctl health.
+    # If overall=FAIL → red banner with list of FAILing checks + action hints.
+    # If WARN → yellow banner.  If OK → green compact "all clear" pill.
+    if health.get("overall"):
+        ov = health["overall"]
+        summ = health.get("summary", {})
+        checks = health.get("checks", [])
+        checked_at = health.get("checked_at", "")
+        if ov == "FAIL":
+            fails = [c for c in checks if c.get("status") == "FAIL"]
+            fail_lines = "".join(
+                f'<div class="health-item"><span class="health-name">{html.escape(c["name"])}</span>: '
+                f'<span class="health-detail">{html.escape(c["detail"][:160])}</span>'
+                + (f' <span class="health-hint">→ {html.escape(c["action_hint"][:140])}</span>' if c.get("action_hint") else '')
+                + '</div>'
+                for c in fails
+            )
+            health_banner_html = (
+                f'<div class="health-banner health-fail">'
+                f'<div class="health-head">PIPELINE HEALTH · {summ.get("fail",0)} FAIL · {summ.get("warn",0)} WARN · {summ.get("ok",0)} OK'
+                f'<span class="health-ts">{html.escape(checked_at)}</span></div>'
+                f'{fail_lines}'
+                f'</div>'
+            )
+        elif ov == "WARN":
+            warns = [c for c in checks if c.get("status") == "WARN"]
+            lines = "".join(
+                f'<div class="health-item"><span class="health-name">{html.escape(c["name"])}</span>: '
+                f'<span class="health-detail">{html.escape(c["detail"][:160])}</span></div>'
+                for c in warns
+            )
+            health_banner_html = (
+                f'<div class="health-banner health-warn">'
+                f'<div class="health-head">PIPELINE HEALTH · {summ.get("warn",0)} WARN · {summ.get("ok",0)} OK'
+                f'<span class="health-ts">{html.escape(checked_at)}</span></div>'
+                f'{lines}'
+                f'</div>'
+            )
+        else:
+            health_banner_html = (
+                f'<div class="health-banner health-ok">'
+                f'PIPELINE HEALTH OK · all {summ.get("ok", 0)} invariants green '
+                f'<span class="health-ts">{html.escape(checked_at)}</span>'
+                f'</div>'
+            )
+    else:
+        health_banner_html = (
+            '<div class="health-banner health-warn">'
+            'PIPELINE HEALTH: no snapshot · run <code>farmctl health</code> or wait for next 15-min cycle'
+            '</div>'
+        )
 
     tokens_html = f"""
 {snap_row}
@@ -1381,6 +1442,35 @@ tr:last-child td {{ border-bottom: none; }}
 .tokens.snap-row .token-value .warn {{ color: var(--promising); }}
 .tokens.snap-row .token-value .fail {{ color: var(--fail); }}
 .tokens.snap-row .token-value .muted {{ color: var(--qm-text-muted); font-size: 12px; font-weight: 400; }}
+
+/* === Pipeline health banner === */
+.health-banner {{
+  border-radius: 8px; padding: 10px 14px; margin: 0 0 14px 0;
+  border: 1px solid var(--qm-border-strong); font-family: var(--font-mono);
+  font-size: 11px;
+}}
+.health-banner.health-fail {{
+  border-color: var(--fail); background: rgba(239,68,68,0.08);
+}}
+.health-banner.health-warn {{
+  border-color: var(--promising); background: rgba(245,158,11,0.06);
+}}
+.health-banner.health-ok {{
+  border-color: var(--em); background: rgba(16,185,129,0.06);
+  color: var(--em-l);
+}}
+.health-head {{
+  font-weight: 700; font-size: 11px; letter-spacing: 0.04em;
+  text-transform: uppercase; margin-bottom: 6px;
+  display: flex; justify-content: space-between; align-items: center;
+}}
+.health-fail .health-head {{ color: var(--fail); }}
+.health-warn .health-head {{ color: var(--promising); }}
+.health-ts {{ color: var(--qm-text-muted); font-weight: 400; }}
+.health-item {{ padding: 3px 0; line-height: 1.55; }}
+.health-name {{ color: var(--qm-text); font-weight: 600; }}
+.health-detail {{ color: var(--qm-text-dim); }}
+.health-hint {{ color: var(--qm-text-muted); font-style: italic; }}
 </style></head>
 <body>
 
@@ -1390,6 +1480,8 @@ tr:last-child td {{ border-bottom: none; }}
   <span class="sev-msg">{html.escape(msg)}</span>
   <span class="sev-tag">{sev_label}</span>
 </div>
+
+{health_banner_html}
 
 {heureka_html}
 
