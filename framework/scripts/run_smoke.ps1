@@ -13,7 +13,7 @@ param(
     [string]$Terminal = "T1",
     [string]$Expert,
     [string]$Period = "H1",
-    [ValidateRange(2, 10)]
+    [ValidateRange(1, 10)]
     [int]$Runs = 2,
     [ValidateRange(0, 1000000)]
     [int]$MinTrades = 20,
