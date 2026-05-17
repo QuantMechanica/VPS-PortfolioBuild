@@ -730,3 +730,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1117,hopwood-rsi-pullback-h1,4,USDCAD.DWX,11170004,2026-05-17,Development,active
 1117,hopwood-rsi-pullback-h1,5,EURJPY.DWX,11170005,2026-05-17,Development,active
 1142,usdjpy-time-range-breakout,0,USDJPY.DWX,11420000,2026-05-17,Development,active
+1143,carver-ewmac-indices-grid,0,NDX.DWX,11430000,2026-05-17,Development,active
+1143,carver-ewmac-indices-grid,1,WS30.DWX,11430001,2026-05-17,Development,active
+1143,carver-ewmac-indices-grid,2,GDAXI.DWX,11430002,2026-05-17,Development,active
+1143,carver-ewmac-indices-grid,3,UK100.DWX,11430003,2026-05-17,Development,active
+1143,carver-ewmac-indices-grid,4,SP500.DWX,11430004,2026-05-17,Development,active

@@ -1,0 +1,37 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        1143
+; ea_slug:      carver-ewmac-indices-grid
+; ea_version:   v5.0
+; set_version:  s20260517-021
+; symbol:       WS30.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1.0
+; build_hash:   4b12efa7f3bec3687d111a451ef374e984dc0f7fc68e30cf97544c8d04c63b22
+; author:       Development
+; date:         2026-05-17
+;==========================================================
+qm_ea_id=1143
+qm_magic_slot_offset=1
+RISK_PERCENT=0.0
+RISK_FIXED=1000.0
+PORTFOLIO_WEIGHT=1.0
+qm_news_mode=0
+qm_friday_close_enabled=false
+qm_friday_close_hour_broker=21
+strategy_fast_ema_period=32
+strategy_slow_ema_period=128
+strategy_vol_lookback_bars=10
+strategy_rebalance_period_bars=5
+strategy_signal_threshold_min=1.0
+strategy_signal_threshold_max=2.5
+strategy_target_vol_pct=0.18
+strategy_atr_period=20
+strategy_atr_stop_mult=4.0
+strategy_long_only=false
+strategy_regime_filter=false
+strategy_regime_sma_period=200
+strategy_max_spread_points=30
