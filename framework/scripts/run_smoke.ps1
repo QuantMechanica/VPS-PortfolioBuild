@@ -582,6 +582,47 @@ function Get-QmTempDirectory {
     throw "Unable to resolve writable temp directory."
 }
 
+function Get-ExpectedTradesPerYear {
+    param(
+        [Parameter(Mandatory = $true)]
+        [int]$EAIdValue
+    )
+
+    $cardsDir = "D:\QM\strategy_farm\artifacts\cards_approved"
+    if (-not (Test-Path -LiteralPath $cardsDir -PathType Container)) {
+        return $null
+    }
+    $prefix = "QM5_{0:d4}" -f $EAIdValue
+    $card = Get-ChildItem -LiteralPath $cardsDir -Filter "$prefix*.md" -File -ErrorAction SilentlyContinue | Select-Object -First 1
+    if (-not $card) {
+        return $null
+    }
+    $text = Get-Content -LiteralPath $card.FullName -Raw -Encoding UTF8
+    $m = [regex]::Match($text, "(?ms)^---\s*\r?\n(?<fm>.*?)\r?\n---")
+    if (-not $m.Success) {
+        return $null
+    }
+    $fm = $m.Groups["fm"].Value
+    $v = [regex]::Match($fm, "(?m)^expected_trades_per_year_per_symbol\s*:\s*(?<n>\d+)\s*$")
+    if (-not $v.Success) {
+        return $null
+    }
+    return [int]$v.Groups["n"].Value
+}
+
+function Get-SmokeYearCount {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$StartDate,
+        [Parameter(Mandatory = $true)]
+        [string]$EndDate
+    )
+
+    $startYear = [int]($StartDate.Substring(0, 4))
+    $endYear = [int]($EndDate.Substring(0, 4))
+    return [Math]::Max(1, ($endYear - $startYear + 1))
+}
+
 if ([string]::IsNullOrWhiteSpace($DispatchSubGateHash)) {
     $DispatchSubGateHash = "{0}-{1}" -f $Period, $Year
 }
@@ -634,6 +675,15 @@ New-Item -ItemType Directory -Path $frameworkEvidenceDir -Force | Out-Null
 
 $fromDate = if ($FromDate) { $FromDate } else { "{0}.01.01" -f $Year }
 $toDate = if ($ToDate) { $ToDate } else { "{0}.12.31" -f $Year }
+$expectedTradesPerYear = Get-ExpectedTradesPerYear -EAIdValue $EAId
+if ($null -ne $expectedTradesPerYear) {
+    $smokeYearCount = Get-SmokeYearCount -StartDate $fromDate -EndDate $toDate
+    $effectiveMinTrades = [Math]::Max(1, [int][Math]::Floor($expectedTradesPerYear * $smokeYearCount * 0.5))
+    if ($effectiveMinTrades -ne $MinTrades) {
+        Write-Host ("run_smoke.min_trades_override ea_id=QM5_{0:d4} expected_per_year={1} years={2} old={3} effective={4}" -f $EAId, $expectedTradesPerYear, $smokeYearCount, $MinTrades, $effectiveMinTrades)
+        $MinTrades = $effectiveMinTrades
+    }
+}
 
 $runResults = @()
 $globalOnInitFailure = $false
