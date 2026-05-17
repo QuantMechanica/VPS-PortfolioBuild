@@ -1875,12 +1875,11 @@ def pump(root: Path) -> dict[str, Any]:
     #    idempotent (reads current CSV state, regenerates .mqh deterministically).
     #    OWNER 2026-05-16: explicit ok to parallelize.
     MAX_PARALLEL_CODEX = 10
-    # OWNER 2026-05-16 (post Tampermonkey quota live): Codex at 4%/5h 1%/wk
-    # — push to 10. MT5 contention is the bottleneck not Codex tokens; codex
-    # builds queue inside themselves for the brief smoke-test phase, which is
-    # fine since builds spend most wall-clock generating code, not running MT5.
-    # Check how many codex/node procs already running externally (from prior
-    # pump cycles or hourly wake). Don't pile on if at limit.
+    # OWNER 2026-05-17 reserve-slots fix: when build queue is large, builds
+    # consume all 10 slots and codex_research starves — leading to
+    # cards_ready_stagnation alarm. Reserve 3 slots for non-build work
+    # (research + g0 + review). Builds get max 7 of the 10.
+    MAX_PARALLEL_CODEX_BUILDS = 7
     try:
         import shutil as _shutil
         ps_out = subprocess.run(
@@ -1891,7 +1890,9 @@ def pump(root: Path) -> dict[str, Any]:
         active_codex = int((ps_out.stdout or "0").strip() or "0")
     except Exception:
         active_codex = 0
-    spawn_budget = max(0, MAX_PARALLEL_CODEX - active_codex)
+    # Build budget capped at 7 OR (total cap - already active), whichever is lower.
+    # Non-build spawns (research/review/g0) can still use up to MAX_PARALLEL_CODEX-active.
+    spawn_budget = max(0, min(MAX_PARALLEL_CODEX_BUILDS, MAX_PARALLEL_CODEX - active_codex))
     with connect(root) as conn:
         # Dedupe by ea_id — never spawn 2 codex builds for the same EA at
         # once (race on EA dir + magic_numbers.csv + resolver regeneration).
