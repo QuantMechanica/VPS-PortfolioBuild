@@ -33,6 +33,7 @@ CODEX_BUILD_TEMPLATE = PROMPTS_DIR / "codex_build_ea.md"
 CODEX_RESEARCH_TEMPLATE = PROMPTS_DIR / "codex_research_source.md"
 CLAUDE_REVIEW_TEMPLATE = PROMPTS_DIR / "claude_review_ea.md"
 CODEX_REVIEW_TEMPLATE = PROMPTS_DIR / "codex_review_ea.md"
+CODEX_G0_TEMPLATE = PROMPTS_DIR / "codex_g0_review.md"
 
 PIPELINE_REPORT_ROOT = Path(r"D:\QM\reports\pipeline")
 SUPPORTED_BACKTEST_PHASES = ("P2", "P3", "P3.5", "P4")  # 2026-05-17: extend chain to P3.5 (cross-symbol robustness) + P4 (walk-forward OOS)
@@ -1059,25 +1060,71 @@ def _spawn_claude_for_review(root: Path, build_task_row: sqlite3.Row) -> dict[st
     }
 
 
+def _g0_claim_path(card_path: Path) -> Path:
+    """Lock path for atomic G0 claim. Lives next to the card in cards_draft/."""
+    return card_path.with_suffix(card_path.suffix + ".g0_claim")
+
+
+def _claim_g0_cards(card_paths: list[Path], reviewer: str, max_age_sec: int = 1800) -> list[Path]:
+    """Atomically claim cards for a G0 reviewer. Returns the actually-claimed
+    subset.
+
+    Uses O_CREAT|O_EXCL — first writer wins. Skips cards whose claim file
+    already exists AND is fresh (within max_age_sec, default 30 min).
+    Stale claim files (older than that) get overwritten — means a previous
+    spawn died mid-batch.
+    """
+    claimed: list[Path] = []
+    now = time.time()
+    for c in card_paths:
+        lock = _g0_claim_path(c)
+        if lock.exists():
+            try:
+                age = now - lock.stat().st_mtime
+                if age < max_age_sec:
+                    continue  # held by another reviewer
+            except OSError:
+                pass
+        # Try to claim atomically. O_EXCL fails if file exists (race);
+        # for stale locks we explicitly overwrite by rm + retry.
+        try:
+            if lock.exists():
+                lock.unlink()
+            fd = os.open(str(lock), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            try:
+                os.write(fd, f"reviewer={reviewer}\ntimestamp={utc_now()}\n".encode("utf-8"))
+            finally:
+                os.close(fd)
+            claimed.append(c)
+        except FileExistsError:
+            continue  # lost the race to another spawner
+        except OSError:
+            continue
+    return claimed
+
+
 def _spawn_claude_for_g0_batch(root: Path) -> dict[str, Any]:
     """Spawn Claude for G0 review of up to 5 draft cards.
 
-    Identical pattern to research/review spawns: render focused prompt,
-    invoke claude CLI with -p, claude reads cards + qb_reputable_source_criteria.md
-    + applies R1-R4 + runs farmctl approve-card / reject-card for each, exits.
+    OWNER 2026-05-17: Claude AND Codex both do G0 in parallel. Claim
+    mechanism (filesystem .g0_claim locks) prevents double-review.
 
-    Bounded at 5 cards per spawn to cap token burn and avoid long sessions.
-    Skips if cards_draft/ is empty.
+    Bounded at 5 cards per spawn to cap token burn.
     """
     import shutil as _shutil
     drafts_dir = root / "artifacts" / "cards_draft"
     if not drafts_dir.is_dir():
         return {"spawned": False, "reason": "no cards_draft dir"}
+    # Oldest first, skip already-claimed
     drafts = sorted([f for f in drafts_dir.glob("QM5_*.md") if f.is_file()],
                     key=lambda p: p.stat().st_mtime)
+    drafts = [d for d in drafts if not _g0_claim_path(d).exists() or
+              (time.time() - _g0_claim_path(d).stat().st_mtime) >= 1800]
     if not drafts:
-        return {"spawned": False, "reason": "no draft cards"}
-    batch = drafts[:5]
+        return {"spawned": False, "reason": "no unclaimed draft cards"}
+    batch = _claim_g0_cards(drafts[:5], reviewer="claude")
+    if not batch:
+        return {"spawned": False, "reason": "all candidates lost race to Codex"}
     batch_paths = "\n".join(f"- {f}" for f in batch)
 
     claude_path = _shutil.which("claude.cmd") or _shutil.which("claude") or "claude"
@@ -1125,6 +1172,68 @@ def _spawn_claude_for_g0_batch(root: Path) -> dict[str, Any]:
         "batch_size": len(batch),
         "cards": [f.stem for f in batch],
         "live_log": str(live_log),
+        "pid": proc.pid,
+    }
+
+
+def _spawn_codex_for_g0_batch(root: Path) -> dict[str, Any]:
+    """Spawn Codex for G0 review of up to 3 draft cards (smaller batch
+    than Claude — Codex iterates through farmctl subprocesses serially).
+
+    Runs IN PARALLEL with Claude G0 — claim mechanism prevents both
+    workers from grabbing the same card.
+    """
+    import shutil as _shutil
+    drafts_dir = root / "artifacts" / "cards_draft"
+    if not drafts_dir.is_dir():
+        return {"spawned": False, "reason": "no cards_draft dir"}
+    drafts = sorted([f for f in drafts_dir.glob("QM5_*.md") if f.is_file()],
+                    key=lambda p: p.stat().st_mtime)
+    drafts = [d for d in drafts if not _g0_claim_path(d).exists() or
+              (time.time() - _g0_claim_path(d).stat().st_mtime) >= 1800]
+    if not drafts:
+        return {"spawned": False, "reason": "no unclaimed draft cards"}
+    # Codex grabs from the OLDER end too but offset 5 ahead of Claude so they
+    # naturally pick different cards in low-pressure case; in high-pressure
+    # case the claim race breaks ties.
+    candidates = drafts[5:8] + drafts[:5]  # prefer older-but-not-Claude's-first-5
+    batch = _claim_g0_cards(candidates, reviewer="codex")[:3]
+    if not batch:
+        return {"spawned": False, "reason": "all candidates already claimed"}
+    batch_paths = "\n".join(f"- {f}" for f in batch)
+
+    codex_path = _shutil.which("codex.cmd") or _shutil.which("codex") or "codex"
+    ts = dt.datetime.utcnow().strftime("%Y%m%dT%H%M%S")
+    live_log = root / "logs" / f"codex_g0_{ts}.live.log"
+    live_log.parent.mkdir(parents=True, exist_ok=True)
+    prompt_path = root / "queue" / f"codex_g0_{ts}.md"
+    prompt_path.parent.mkdir(parents=True, exist_ok=True)
+
+    template = CODEX_G0_TEMPLATE.read_text(encoding="utf-8")
+    template = template.replace("{{batch_paths}}", batch_paths)
+    prompt_path.write_text(template, encoding="utf-8", newline="\n")
+
+    creationflags = 0
+    if sys.platform == "win32":
+        creationflags = subprocess.CREATE_NEW_CONSOLE  # type: ignore[attr-defined]
+    stdin_f = open(prompt_path, "rb")
+    stdout_f = open(live_log, "wb")
+    proc = subprocess.Popen(
+        [codex_path, "exec", "-s", "danger-full-access", "--cd", str(REPO_ROOT)],
+        cwd=str(REPO_ROOT),
+        stdin=stdin_f,
+        stdout=stdout_f,
+        stderr=subprocess.STDOUT,
+        shell=True,
+        creationflags=creationflags,
+        close_fds=False,
+    )
+    return {
+        "spawned": True,
+        "batch_size": len(batch),
+        "cards": [f.stem for f in batch],
+        "live_log": str(live_log),
+        "prompt_path": str(prompt_path),
         "pid": proc.pid,
     }
 
@@ -1958,6 +2067,18 @@ def pump(root: Path) -> dict[str, Any]:
         result["claude_g0_spawn"] = _spawn_claude_for_g0_batch(root)
         if result["claude_g0_spawn"].get("spawned"):
             spawned_other = True
+
+    # 7b. Spawn Codex G0 IN PARALLEL with Claude G0 — both review different
+    #     cards via the .g0_claim filesystem lock mechanism. OWNER 2026-05-17:
+    #     "Claude und Codex recherchieren beide, können auch beide G0-Review".
+    #     Pulls Claude-token pressure off the biggest single consumer (G0
+    #     batches with 5 cards × full strategy reasoning).
+    result["codex_g0_spawn"] = None
+    # Reserve budget vs total codex cap (build + review + research + g0 share pool)
+    g0_builds_now = len([s for s in (result.get("codex_spawns_all") or []) if isinstance(s, dict) and s.get("spawned")])
+    g0_reviews_now = len([s for s in (result.get("codex_review_spawns") or []) if isinstance(s, dict) and s.get("spawned")])
+    if (active_codex + g0_builds_now + g0_reviews_now) < MAX_PARALLEL_CODEX:
+        result["codex_g0_spawn"] = _spawn_codex_for_g0_batch(root)
 
     # 8. Spawn Claude research if no other claude spawn happened and budget allows.
     #    Continuous research per OWNER 2026-05-16 "weiter mit Research".

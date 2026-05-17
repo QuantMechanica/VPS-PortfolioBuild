@@ -213,18 +213,36 @@ def chk_mt5_dispatch_idle(con) -> dict:
     if n_pending < 5:
         return _check("mt5_dispatch_idle", "OK", n_pending, 5,
                       f"{n_pending} pending (low queue)", "")
-    # Active work_items mean dispatch IS happening
-    n_active = con.execute(
-        "SELECT COUNT(*) FROM work_items WHERE status='active'"
-    ).fetchone()[0]
-    if n_active >= 1:
-        return _check("mt5_dispatch_idle", "OK", n_pending, 5,
-                      f"{n_pending} pending, {n_active} active", "")
-    # No active + many pending = stuck
-    return _check("mt5_dispatch_idle", "FAIL", n_pending, 5,
-                  f"{n_pending} pending, 0 active — dispatcher idle",
-                  "Run farmctl pump (or dispatch-tick) manually; "
-                  "check MT5 terminals T1-T5 are running")
+    # Active work_items mean dispatch IS happening — but cross-check that
+    # the active ones aren't all stranded (claimed_by terminal with no live
+    # process). A stranded "active" is functionally the same as idle.
+    rows = list(con.execute(
+        "SELECT id, claimed_by, updated_at FROM work_items WHERE status='active'"
+    ))
+    if not rows:
+        return _check("mt5_dispatch_idle", "FAIL", n_pending, 5,
+                      f"{n_pending} pending, 0 active — dispatcher idle",
+                      "Run farmctl pump (or wait for next 5-min cycle). "
+                      "Inline worker-PID check should auto-release if MT5 died.")
+    # Active rows exist — count how many are bound to a still-running MT5
+    try:
+        import subprocess as _sp
+        out = _sp.run(
+            ["powershell.exe", "-NoProfile", "-Command",
+             "(Get-Process -Name terminal64 -ErrorAction SilentlyContinue).Count"],
+            capture_output=True, text=True, timeout=10,
+        )
+        n_mt5_alive = int((out.stdout or "0").strip() or "0")
+    except Exception:
+        n_mt5_alive = -1
+    if n_mt5_alive == 0:
+        return _check("mt5_dispatch_idle", "FAIL", len(rows), 0,
+                      f"{n_pending} pending, {len(rows)} active rows but 0 terminal64 processes alive",
+                      "Stranded active work_items — pump's inline PID check "
+                      "will release them next cycle. If persisting, run "
+                      "`farmctl repair` manually.")
+    return _check("mt5_dispatch_idle", "OK", n_pending, 5,
+                  f"{n_pending} pending, {len(rows)} active, {n_mt5_alive} terminal64 alive", "")
 
 
 def chk_codex_zero_activity(con) -> dict:
