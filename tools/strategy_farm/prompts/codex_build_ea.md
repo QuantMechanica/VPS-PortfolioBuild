@@ -154,9 +154,12 @@ Use these framework helpers — DO NOT reimplement them:
 |-----------------------------------|--------------------------------------------------------------------|
 | Closed-bar gate                   | `QM_IsNewBar()` or `QM_IsNewBar(sym, tf)`                          |
 | ATR / EMA / SMA / RSI             | `QM_ATR(sym, tf, period, shift=1)` etc. (`QM_Indicators.mqh`)      |
+| WMA / LWMA / SMMA / HMA           | `QM_WMA`, `QM_LWMA`, `QM_SMMA`, `QM_HMA` (all `(sym, tf, period, shift=1)`) |
 | MACD                              | `QM_MACD_Main(...)`, `QM_MACD_Signal(...)`                         |
 | ADX + DI                          | `QM_ADX`, `QM_ADX_PlusDI`, `QM_ADX_MinusDI`                        |
 | Bollinger                         | `QM_BB_Upper / Middle / Lower`                                     |
+| Stochastic                        | `QM_Stoch_K(sym, tf, k=5, d=3, slow=3)`, `QM_Stoch_D(...)`         |
+| CCI                               | `QM_CCI(sym, tf, period=14)`                                       |
 | Open / close / partial position   | `QM_TM_OpenPosition` / `ClosePosition` / `PartialClose`            |
 | SL/TP modify, BE, trailing        | `QM_TM_MoveSL/MoveTP/MoveToBreakEven/TrailATR/TrailStep`           |
 | Stop distance from ATR/structure  | `QM_StopATR / QM_StopStructure / QM_StopVolatility / QM_StopFixedPips` |
