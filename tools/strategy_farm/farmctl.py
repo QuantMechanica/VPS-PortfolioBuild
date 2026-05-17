@@ -798,6 +798,75 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
     }
 
 
+def _dispatch_diag_enabled() -> bool:
+    return os.environ.get("DISPATCH_DIAG", "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _dispatch_diag(evt: str, payload: dict[str, Any]) -> None:
+    if not _dispatch_diag_enabled():
+        return
+    entry = {"evt": evt, "ts": utc_now(), "pid": os.getpid(), **payload}
+    print(f"DISPATCH_DIAG {json.dumps(entry, sort_keys=True)}", flush=True)
+
+
+def _pid_exists(pid: Any) -> bool:
+    try:
+        pid_int = int(pid)
+    except (TypeError, ValueError):
+        return False
+    try:
+        _ps = subprocess.run(
+            [
+                "powershell.exe",
+                "-NoProfile",
+                "-Command",
+                f"if (Get-Process -Id {pid_int} -ErrorAction SilentlyContinue) {{'alive'}}",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=8,
+        )
+        return "alive" in (_ps.stdout or "")
+    except Exception:
+        return True  # can't tell — assume alive, defer to timeout path
+
+
+def _acquire_dispatch_lock(root: Path) -> tuple[int, Path] | None:
+    locks = root / "state" / "locks"
+    locks.mkdir(parents=True, exist_ok=True)
+    lock_path = locks / "dispatch_work_items.lock"
+    flags = os.O_CREAT | os.O_EXCL | os.O_WRONLY
+    try:
+        fd = os.open(str(lock_path), flags)
+    except FileExistsError:
+        try:
+            lock_data = json.loads(lock_path.read_text(encoding="utf-8"))
+            lock_pid = lock_data.get("pid")
+            age_sec = time.time() - lock_path.stat().st_mtime
+            if _pid_exists(lock_pid) and age_sec <= 1800:
+                return None
+            lock_path.unlink()
+            fd = os.open(str(lock_path), flags)
+        except (OSError, json.JSONDecodeError):
+            return None
+    os.write(fd, json.dumps({"pid": os.getpid(), "created_at": utc_now()}).encode("utf-8"))
+    return fd, lock_path
+
+
+def _release_dispatch_lock(lock: tuple[int, Path] | None) -> None:
+    if not lock:
+        return
+    fd, lock_path = lock
+    try:
+        os.close(fd)
+    except OSError:
+        pass
+    try:
+        lock_path.unlink()
+    except OSError:
+        pass
+
+
 def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, Any]:
     """Per-(symbol, setfile) dispatcher. Replaces bundled p2_baseline fan-out.
 
@@ -812,7 +881,20 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
     actions: list[dict[str, Any]] = []
     started_iso = utc_now()
     busy_terminals: set[str] = set()
+    launched_pids: list[int] = []
     MAX_WORK_ITEM_RETRIES = 3
+    lock = _acquire_dispatch_lock(root)
+    if lock is None:
+        result = {
+            "actions": [{"action": "dispatch_locked", "reason": "another dispatch_work_items is active"}],
+            "busy_terminals": [],
+            "free_terminals": [],
+            "scanned_at": started_iso,
+            "lock_skipped": True,
+        }
+        _dispatch_diag("dispatch_skip_locked", result)
+        return result
+    _dispatch_diag("dispatch_start", {"timeout_minutes": timeout_minutes})
 
     # --- Phase 1: process active work_items ---
     with connect(root) as conn:
@@ -866,19 +948,7 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
         # OS reboot, manual kill) we should release the terminal IMMEDIATELY
         # instead of waiting `timeout_minutes` for the slow path.
         worker_pid = payload.get("pid")
-        worker_alive = False
-        if worker_pid:
-            try:
-                _ps = subprocess.run(
-                    ["powershell.exe", "-NoProfile", "-Command",
-                     f"if (Get-Process -Id {int(worker_pid)} -ErrorAction SilentlyContinue) {{'alive'}}"],
-                    capture_output=True, text=True, timeout=8,
-                )
-                worker_alive = "alive" in (_ps.stdout or "")
-            except Exception:
-                worker_alive = True  # can't tell — assume alive, defer to timeout path
-        else:
-            worker_alive = True  # no PID recorded — defer to timeout path
+        worker_alive = _pid_exists(worker_pid) if worker_pid else True
 
         started = payload.get("started_at_iso")
         age_min = 0.0
@@ -1013,6 +1083,7 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 "pid": spawn["pid"],
                 "effective_min_trades": spawn.get("effective_min_trades"),
             })
+            launched_pids.append(int(spawn["pid"]))
 
     # --- Phase 3: aggregate completed parents ---
     with connect(root) as conn:
@@ -1084,12 +1155,22 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 "auto_next": auto_next,
             })
 
-    return {
+    result = {
         "actions": actions,
         "busy_terminals": sorted(busy_terminals),
         "free_terminals": [t for t in MT5_TERMINALS if t not in busy_terminals],
         "scanned_at": started_iso,
+        "actually_launched_pids": launched_pids,
     }
+    _dispatch_diag("dispatch_end", {
+        "actions_count": len(actions),
+        "dispatched": sum(1 for a in actions if a.get("action") == "claimed"),
+        "busy_terminals": result["busy_terminals"],
+        "free_terminals": result["free_terminals"],
+        "actually_launched_pids": launched_pids,
+    })
+    _release_dispatch_lock(lock)
+    return result
 
 
 def _spawn_claude_for_review(root: Path, build_task_row: sqlite3.Row) -> dict[str, Any]:
@@ -1858,7 +1939,21 @@ def _spawn_codex_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]:
 
 
 def _is_zero_trade_failure_payload(payload_json: str | None, evidence_path: str | None) -> bool:
+    invalid_report_reasons = {"NO_HISTORY", "NO_REAL_TICKS", "INVALID_REPORT"}
     if payload_json and "MIN_TRADES_NOT_MET" in payload_json:
+        try:
+            data = json.loads(payload_json)
+            reason_classes = data.get("reason_classes") or []
+            explicit_reasons = {
+                str(data.get("verdict_reason") or "").upper(),
+                str(data.get("reason_class") or "").upper(),
+                str(data.get("reason") or "").upper(),
+            }
+            explicit_reasons.update(str(r).upper() for r in reason_classes)
+            if explicit_reasons & invalid_report_reasons:
+                return False
+        except Exception:
+            pass
         return True
     if not evidence_path:
         return False
@@ -1868,12 +1963,19 @@ def _is_zero_trade_failure_payload(payload_json: str | None, evidence_path: str 
             return False
         text = p.read_text(encoding="utf-8", errors="ignore")
         if "MIN_TRADES_NOT_MET" in text:
+            if any(reason in text for reason in invalid_report_reasons):
+                return False
             return True
         data = json.loads(text)
         reason_classes = data.get("reason_classes") or []
+        if any(str(r).upper() in invalid_report_reasons for r in reason_classes):
+            return False
         if any(str(r).upper() == "MIN_TRADES_NOT_MET" for r in reason_classes):
             return True
-        return "MIN_TRADES_NOT_MET" in str(data.get("reason_class") or data.get("reason") or "")
+        reason = str(data.get("reason_class") or data.get("reason") or "").upper()
+        if reason in invalid_report_reasons:
+            return False
+        return "MIN_TRADES_NOT_MET" in reason
     except Exception:
         return False
 

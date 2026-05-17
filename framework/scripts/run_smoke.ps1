@@ -67,6 +67,52 @@ function Get-ReportMetricValue {
     return $value
 }
 
+function Get-ReportInvalidReasons {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Html,
+        [Parameter(Mandatory = $true)]
+        [string]$TesterLogTail,
+        [Parameter(Mandatory = $true)]
+        [bool]$HasRealTicksMarker
+    )
+
+    $reasons = New-Object System.Collections.Generic.List[string]
+    $expertValue = Get-ReportMetricValue -Html $Html -Label "Expert"
+    $symbolValue = Get-ReportMetricValue -Html $Html -Label "Symbol"
+    $periodValue = Get-ReportMetricValue -Html $Html -Label "Period"
+    $barsValue = Get-ReportMetricValue -Html $Html -Label "Bars"
+    $bars = [int](Convert-ReportNumber -Value $barsValue)
+
+    if ([string]::IsNullOrWhiteSpace($expertValue)) { $reasons.Add("EMPTY_EXPERT") }
+    if ([string]::IsNullOrWhiteSpace($symbolValue)) { $reasons.Add("EMPTY_SYMBOL") }
+    if ($periodValue -match "(?i)\bM0\b" -or $periodValue -match "1970\.01\.01\s*-\s*1970\.01\.01") { $reasons.Add("M0_1970_PERIOD") }
+    if ($bars -le 0) { $reasons.Add("BARS_ZERO") }
+    if ($TesterLogTail -match "(?im)no history data,\s*stop testing") { $reasons.Add("NO_HISTORY_LOG") }
+    if (($periodValue -match "(?i)\bM0\b" -or $bars -le 0) -and $TesterLogTail -match "(?im)\bhistory\b") { $reasons.Add("HISTORY_CONTEXT_INVALID") }
+    if ((-not $HasRealTicksMarker) -and $TesterLogTail -match "(?im)automatical testing finished") { $reasons.Add("NO_REAL_TICKS_MARKER_FAST_FINISH") }
+
+    return @($reasons)
+}
+
+function Resolve-InvalidReportVerdict {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string[]]$InvalidReasons
+    )
+
+    if ($InvalidReasons -contains "NO_HISTORY_LOG" -or $InvalidReasons -contains "HISTORY_CONTEXT_INVALID") {
+        return "NO_HISTORY"
+    }
+    if ($InvalidReasons -contains "NO_REAL_TICKS_MARKER_FAST_FINISH") {
+        return "NO_REAL_TICKS"
+    }
+    if (@($InvalidReasons).Count -gt 0) {
+        return "INVALID_REPORT"
+    }
+    return $null
+}
+
 function Convert-ReportNumber {
     param(
         [Parameter(Mandatory = $true)]
@@ -878,7 +924,12 @@ for ($i = 1; $i -le $Runs; $i++) {
     if ($testerLog) {
         $testerLogPath = Join-Path $runDir $testerLog.Name
         Copy-Item -LiteralPath $testerLog.FullName -Destination $testerLogPath -Force
-        $testerLogTail = ((Get-Content -LiteralPath $testerLogPath | Select-Object -Last 800) -join [Environment]::NewLine)
+        $logBytes = [System.IO.File]::ReadAllBytes($testerLogPath)
+        if ($logBytes.Length -ge 2 -and $logBytes[0] -eq 0xFF -and $logBytes[1] -eq 0xFE) {
+            $testerLogTail = ((Get-Content -LiteralPath $testerLogPath -Encoding Unicode | Select-Object -Last 800) -join [Environment]::NewLine)
+        } else {
+            $testerLogTail = ((Get-Content -LiteralPath $testerLogPath | Select-Object -Last 800) -join [Environment]::NewLine)
+        }
     }
 
     $onInitFailure = $false
@@ -890,6 +941,33 @@ for ($i = 1; $i -le $Runs; $i++) {
     $hasRealTicksMarker = $false
     if ($testerLogTail) {
         $hasRealTicksMarker = [regex]::IsMatch($testerLogTail, "(?im)generating based on real ticks")
+    }
+
+    $invalidReasons = Get-ReportInvalidReasons -Html $reportHtml -TesterLogTail $testerLogTail -HasRealTicksMarker $hasRealTicksMarker
+    $invalidVerdict = Resolve-InvalidReportVerdict -InvalidReasons $invalidReasons
+    if ($invalidVerdict) {
+        $reasonClasses.Add($invalidVerdict)
+        $globalRealTicksMarker = $globalRealTicksMarker -and $hasRealTicksMarker
+        $runResults += [pscustomobject]@{
+            run = $runName
+            status = "INVALID"
+            failure = $invalidVerdict
+            invalid_report_reasons = @($invalidReasons)
+            exit_code = $exitCode
+            report_source_path = $sourceReportPath
+            report_canonical_path = $reportHtmPath
+            report_size_bytes = [int64]$canonicalInfo.Length
+            tester_log_path = $testerLogPath
+            total_trades = $totalTrades
+            total_trades_raw = $totalTradesRaw
+            profit_factor = $profitFactor
+            profit_factor_raw = $profitFactorRaw
+            drawdown = $drawdown
+            drawdown_raw = $drawdownRaw
+            net_profit = $netProfit
+            net_profit_raw = $netProfitRaw
+        }
+        continue
     }
 
     if ($onInitFailure) {
