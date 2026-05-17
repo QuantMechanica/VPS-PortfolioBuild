@@ -300,6 +300,51 @@ def _running_mt5_terminals() -> set[str]:
     return live
 
 
+def repair_orphan_g0_claims(con) -> list[dict]:
+    """R9: orphan .g0_claim files — card moved out of cards_draft/ (approved
+    or rejected) but the claim lock got left behind. Or claim is older than
+    1h (G0 batch should be long done by then). Clean up so future spawners
+    aren't confused by stale state.
+    """
+    out = []
+    drafts_dir = ROOT / "artifacts" / "cards_draft"
+    if not drafts_dir.is_dir():
+        return out
+    now = time.time()
+    for lock in drafts_dir.glob("*.g0_claim"):
+        # Sibling card (strip the .g0_claim suffix)
+        card = lock.with_suffix("")  # removes .g0_claim → leaves <stem>.md
+        if not card.exists():
+            try:
+                lock.unlink()
+                out.append({
+                    "handler": "R9_orphan_g0_claim",
+                    "target": lock.name,
+                    "action": "deleted orphan (card moved out of cards_draft)",
+                    "detail": f"sibling {card.name} no longer exists",
+                })
+            except OSError:
+                pass
+            continue
+        # Card still present but claim is old → assume stale (spawn died)
+        try:
+            age = now - lock.stat().st_mtime
+        except OSError:
+            continue
+        if age > 3600:  # > 1h
+            try:
+                lock.unlink()
+                out.append({
+                    "handler": "R9_orphan_g0_claim",
+                    "target": lock.name,
+                    "action": "deleted stale (>1h old, card still draft)",
+                    "detail": f"age_h={age/3600:.1f}",
+                })
+            except OSError:
+                pass
+    return out
+
+
 # NOTE: There was a R8 MT5 auto-restart handler here. Removed 2026-05-17 —
 # MT5 is launched TRANSIENTLY by run_smoke.ps1 per backtest, NOT as a
 # persistent service. Auto-restarting idle terminal64.exe processes was
@@ -363,6 +408,7 @@ def run_all() -> dict:
         repair_grandchildren_setfiles,
         repair_stale_active_work_items,
         repair_stranded_codex_review_pending,
+        repair_orphan_g0_claims,
     ]
     try:
         for fn in handlers:
