@@ -542,3 +542,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1058,gatev-fx-pairs-zscore,1,GBPUSD.DWX,10580001,2026-05-17,Development,active
 1058,gatev-fx-pairs-zscore,2,AUDUSD.DWX,10580002,2026-05-17,Development,active
 1058,gatev-fx-pairs-zscore,3,NZDUSD.DWX,10580003,2026-05-17,Development,active
+1059,jegadeesh-stm-reversal-indices,0,NDX.DWX,10590000,2026-05-17,Development,active
+1059,jegadeesh-stm-reversal-indices,1,WS30.DWX,10590001,2026-05-17,Development,active
+1059,jegadeesh-stm-reversal-indices,2,GDAXI.DWX,10590002,2026-05-17,Development,active
+1059,jegadeesh-stm-reversal-indices,3,UK100.DWX,10590003,2026-05-17,Development,active
