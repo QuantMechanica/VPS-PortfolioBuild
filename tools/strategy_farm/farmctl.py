@@ -764,7 +764,25 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                                "verdict": verdict, "reason": reason,
                                "terminal_released": terminal})
                 continue
-        # Still running — check timeout
+        # Still no summary — first check if the run_smoke.ps1 child PID
+        # is still alive. If it died without writing a summary (MT5 crash,
+        # OS reboot, manual kill) we should release the terminal IMMEDIATELY
+        # instead of waiting `timeout_minutes` for the slow path.
+        worker_pid = payload.get("pid")
+        worker_alive = False
+        if worker_pid:
+            try:
+                _ps = subprocess.run(
+                    ["powershell.exe", "-NoProfile", "-Command",
+                     f"if (Get-Process -Id {int(worker_pid)} -ErrorAction SilentlyContinue) {{'alive'}}"],
+                    capture_output=True, text=True, timeout=8,
+                )
+                worker_alive = "alive" in (_ps.stdout or "")
+            except Exception:
+                worker_alive = True  # can't tell — assume alive, defer to timeout path
+        else:
+            worker_alive = True  # no PID recorded — defer to timeout path
+
         started = payload.get("started_at_iso")
         age_min = 0.0
         if started:
@@ -772,6 +790,33 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 age_min = (dt.datetime.now(dt.UTC) - dt.datetime.fromisoformat(started.replace("Z", "+00:00"))).total_seconds() / 60.0
             except Exception:
                 age_min = 0.0
+
+        # Fast-fail: PID gone + nothing produced + > 1 min (avoid races on spawn)
+        if not worker_alive and age_min > 1.0:
+            attempt = item["attempt_count"] + 1
+            if attempt < MAX_WORK_ITEM_RETRIES:
+                with connect(root) as conn2:
+                    conn2.execute(
+                        "UPDATE work_items SET status='pending', attempt_count=?, claimed_by=NULL, payload_json=?, updated_at=? WHERE id=?",
+                        (attempt, json.dumps({**payload, "prior_failure": "worker_died"}, sort_keys=True),
+                         started_iso, item["id"]),
+                    )
+                    conn2.commit()
+                busy_terminals.discard(terminal)
+                actions.append({"action": "retry_worker_died", "item_id": item["id"],
+                                "terminal_released": terminal, "attempt": attempt})
+            else:
+                with connect(root) as conn2:
+                    conn2.execute(
+                        "UPDATE work_items SET status='failed', verdict='INVALID', payload_json=?, updated_at=? WHERE id=?",
+                        (json.dumps({**payload, "final_failure": "worker_died_retries_exhausted"}, sort_keys=True),
+                         started_iso, item["id"]),
+                    )
+                    conn2.commit()
+                busy_terminals.discard(terminal)
+                actions.append({"action": "failed_worker_died", "item_id": item["id"]})
+            continue
+
         if age_min > timeout_minutes:
             attempt = item["attempt_count"] + 1
             if attempt < MAX_WORK_ITEM_RETRIES:
