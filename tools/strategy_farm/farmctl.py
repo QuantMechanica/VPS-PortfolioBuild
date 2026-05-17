@@ -900,10 +900,16 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 """
                 SELECT w.*,
                   CASE w.phase
-                    WHEN 'P4'   THEN 0
-                    WHEN 'P3.5' THEN 1
-                    WHEN 'P3'   THEN 2
-                    WHEN 'P2'   THEN 3
+                    WHEN 'P8'   THEN 0
+                    WHEN 'P7'   THEN 1
+                    WHEN 'P6'   THEN 2
+                    WHEN 'P5c'  THEN 3
+                    WHEN 'P5b'  THEN 4
+                    WHEN 'P5'   THEN 5
+                    WHEN 'P4'   THEN 6
+                    WHEN 'P3.5' THEN 7
+                    WHEN 'P3'   THEN 8
+                    WHEN 'P2'   THEN 9
                     ELSE 9 END AS _phase_rank,
                   CASE WHEN EXISTS (
                     SELECT 1 FROM work_items wp
@@ -2392,6 +2398,90 @@ def pump(root: Path) -> dict[str, Any]:
                 "reopened_parent": parent["id"] in reopened_parents and parent["status"] == "done",
             })
         if result["p3_promotions"]:
+            conn.commit()
+
+    result["cascade_promotions"] = []
+    cascade_phase_map = {
+        "P3": "P4",
+        "P4": "P5",
+        "P5": "P5b",
+        "P5b": "P5c",
+        "P5c": "P6",
+        "P6": "P7",
+        "P7": "P8",
+    }
+    cascade_pass_verdicts = {
+        "P3": {"PASS"},
+        "P4": {"PASS"},
+        "P5": {"PASS"},
+        "P5b": {"PASS"},
+        "P5c": {"PASS", "REPORT_ONLY"},
+        "P6": {"PASS", "MULTI_SEED_PASS", "MULTI_SEED_MIXED"},
+        "P7": {"PASS"},
+    }
+    with connect(root) as conn:
+        reopened_parents: set[str] = set()
+        for prev_phase, next_phase in cascade_phase_map.items():
+            verdicts = sorted(cascade_pass_verdicts[prev_phase])
+            placeholders = ",".join("?" for _ in verdicts)
+            promotable = conn.execute(
+                f"""
+                SELECT w.* FROM work_items w
+                WHERE w.status='done' AND w.phase=? AND w.verdict IN ({placeholders})
+                  AND NOT EXISTS (
+                    SELECT 1 FROM work_items w2
+                    WHERE w2.ea_id = w.ea_id
+                      AND w2.symbol = w.symbol
+                      AND w2.phase = ?
+                  )
+                ORDER BY w.updated_at ASC LIMIT 10
+                """,
+                (prev_phase, *verdicts, next_phase),
+            ).fetchall()
+            for wi in promotable:
+                next_kind = next_phase.lower().replace(".", "")
+                parent = conn.execute(
+                    "SELECT id, status FROM tasks WHERE kind=? "
+                    "AND payload_json LIKE ? ORDER BY created_at ASC LIMIT 1",
+                    (f"backtest_{next_kind}", f'%"ea_id": "{wi["ea_id"]}"%'),
+                ).fetchone()
+                parent_id = parent["id"] if parent else None
+                new_id = str(uuid.uuid4())
+                now = utc_now()
+                payload = {
+                    "promoted_from_phase": prev_phase,
+                    "promoted_from_work_item": wi["id"],
+                    "promotion_source": "pump_cascade",
+                }
+                conn.execute(
+                    """
+                    INSERT INTO work_items
+                      (id, kind, phase, ea_id, symbol, setfile_path, status,
+                       attempt_count, parent_task_id, payload_json, created_at, updated_at)
+                    VALUES (?, 'backtest', ?, ?, ?, ?, 'pending', 0, ?, ?, ?, ?)
+                    """,
+                    (new_id, next_phase, wi["ea_id"], wi["symbol"], wi["setfile_path"],
+                     parent_id, json.dumps(payload, sort_keys=True), now, now),
+                )
+                reopened_parent = False
+                if parent and parent["id"] not in reopened_parents and parent["status"] == "done":
+                    conn.execute(
+                        "UPDATE tasks SET status='pending', updated_at=? WHERE id=?",
+                        (now, parent["id"]),
+                    )
+                    reopened_parents.add(parent["id"])
+                    reopened_parent = True
+                result["cascade_promotions"].append({
+                    "work_item_id": new_id,
+                    "ea_id": wi["ea_id"],
+                    "symbol": wi["symbol"],
+                    "from_phase": prev_phase,
+                    "to_phase": next_phase,
+                    "from_work_item_id": wi["id"],
+                    "parent_task_id": parent_id,
+                    "reopened_parent": reopened_parent,
+                })
+        if result["cascade_promotions"]:
             conn.commit()
 
     # §10d Synthetic variants for proven winners — EAs with ≥3 P2-PASSes
