@@ -60,6 +60,47 @@ def _check(name: str, status: str, value, threshold, detail: str, hint: str) -> 
     }
 
 
+def _is_codex_auth_broken(con) -> bool:
+    """Shared helper: same logic as chk_codex_auth_broken, returns bool.
+    Used by downstream checks for cascade suppression."""
+    import time as _t
+    import re as _re
+    pattern = _re.compile(rb"401 Unauthorized")
+    n_401 = 0
+    for log in LOG_DIR.glob("codex_*.live.log"):
+        try:
+            if _t.time() - log.stat().st_mtime > 900:
+                continue
+            with open(log, "rb") as fh:
+                fh.seek(max(0, log.stat().st_size - 8192))
+                tail = fh.read()
+            if pattern.search(tail):
+                n_401 += 1
+        except OSError:
+            continue
+    auth_path = Path(r"C:/Users/Administrator/.codex/auth.json")
+    auth_age_h = None
+    if auth_path.exists():
+        try:
+            auth_age_h = (_t.time() - auth_path.stat().st_mtime) / 3600
+        except OSError:
+            pass
+    try:
+        import subprocess as _sp
+        out = _sp.run(
+            ["powershell.exe", "-NoProfile", "-Command",
+             "(Get-Process -Name codex -ErrorAction SilentlyContinue).Count"],
+            capture_output=True, text=True, timeout=10,
+        )
+        n_codex = int((out.stdout or "0").strip() or "0")
+    except Exception:
+        n_codex = -1
+    n_pending = con.execute(
+        "SELECT COUNT(*) FROM tasks WHERE kind='build_ea' AND status='pending'"
+    ).fetchone()[0]
+    return (n_401 >= 2) or (n_codex == 0 and n_pending >= 1 and auth_age_h is not None and auth_age_h > 12)
+
+
 def chk_codex_review_fail_rate(con) -> dict:
     """Codex review FAIL rate. Distinguish two classes:
 
@@ -125,14 +166,20 @@ def chk_codex_review_fail_rate(con) -> dict:
 
 
 def chk_cards_ready_stagnation(con) -> dict:
-    """Sources stuck in cards_ready > 4h without an active worker mining
-    them = mining-resume is broken."""
+    """Sources stuck in cards_ready > 4h. Suppressed when codex_auth_broken
+    is upstream (codex_research can't run if codex is gated)."""
+    auth_broken = _is_codex_auth_broken(con)
+
     cutoff = (_utc_now() - dt.timedelta(hours=4)).strftime("%Y-%m-%dT%H:%M:%SZ")
     rows = con.execute(
         "SELECT id, title, updated_at FROM sources "
         "WHERE status='cards_ready' AND updated_at < ?", (cutoff,)
     ).fetchall()
     n = len(rows)
+    if auth_broken and n >= 1:
+        return _check("cards_ready_stagnation", "WARN", n, 3,
+                      f"{n} sources cards_ready (codex_auth_broken upstream)",
+                      "Will resume once OWNER runs `codex login` and codex circuit breaker clears")
     if n >= 3:
         return _check("cards_ready_stagnation", "FAIL", n, 3,
                       f"{n} sources in cards_ready > 4h with no resume",
@@ -307,8 +354,15 @@ def chk_mt5_dispatch_idle(con) -> dict:
 
 
 def chk_codex_zero_activity(con) -> dict:
-    """Codex 0 active + build_ea pending > 0 + last build_ea created > 30min
-    ago. Means codex isn't spawning despite work being available."""
+    """Codex 0 active + build_ea pending > 0 = codex stuck.
+
+    Suppressed when codex_auth_broken is firing — that's the upstream
+    cause of 0 codex, not a separate problem. Same for cards_ready
+    stagnation downstream.
+    """
+    # Upstream check: codex auth broken takes precedence
+    auth_broken = _is_codex_auth_broken(con)
+
     try:
         out = subprocess.run(
             ["powershell.exe", "-NoProfile", "-Command",
@@ -321,6 +375,10 @@ def chk_codex_zero_activity(con) -> dict:
     n_pending_builds = con.execute(
         "SELECT COUNT(*) FROM tasks WHERE kind='build_ea' AND status='pending'"
     ).fetchone()[0]
+    if auth_broken and n_codex == 0:
+        return _check("codex_zero_activity", "WARN", n_codex, 1,
+                      f"0 codex (auth_broken upstream; circuit breaker active)",
+                      "Downstream of codex_auth_broken — will recover once OWNER runs `codex login`")
     if n_codex == 0 and n_pending_builds >= 3:
         return _check("codex_zero_activity", "FAIL", n_codex, 1,
                       f"0 codex procs but {n_pending_builds} pending build_ea tasks",
@@ -346,41 +404,70 @@ def chk_source_pool(con) -> dict:
 
 
 def chk_codex_auth_broken(con) -> dict:
-    """Detect Codex authentication failures in recent build/research logs.
+    """Detect Codex authentication failures.
 
-    Symptom: "ERROR: unexpected status 401 Unauthorized: Missing bearer or
-    basic authentication in header" in codex_*.live.log within last 15 min.
-    Means OAuth token expired and auto-refresh failed → OWNER must run
-    `codex login` interactively to refresh. Until then, every new codex
-    spawn wastes 5 retries × 30s each before giving up.
+    Two signals (either trips alarm):
+      a) Recent codex_*.live.log files contain 401 Unauthorized (auth
+         actively failing right now)
+      b) `auth.json` age > 12h AND there are pending build_ea tasks but
+         0 codex procs (pipeline silent because circuit breaker is
+         suppressing 401 spam, but auth is still stale)
     """
     import time as _t
     import re as _re
-    affected: list[str] = []
     pattern = _re.compile(rb"401 Unauthorized")
+    n_401 = 0
     for log in LOG_DIR.glob("codex_*.live.log"):
         try:
             age = _t.time() - log.stat().st_mtime
-            if age > 900:  # only check files touched < 15 min
+            if age > 900:
                 continue
             with open(log, "rb") as fh:
                 fh.seek(max(0, log.stat().st_size - 8192))
                 tail = fh.read()
             if pattern.search(tail):
-                affected.append(log.name)
+                n_401 += 1
         except OSError:
             continue
-    n = len(affected)
-    if n >= 2:
-        return _check("codex_auth_broken", "FAIL", n, 1,
-                      f"{n} recent codex_*.live.log files contain 401 Unauthorized errors",
-                      "Run `codex login` interactively on the VPS to refresh the OAuth "
-                      "token. New codex spawns will keep failing until OWNER does this.")
-    if n == 1:
-        return _check("codex_auth_broken", "WARN", n, 1,
-                      f"1 recent codex_*.live.log has 401 — could be transient",
-                      "Watch for more. If recurs, OWNER must `codex login` to refresh.")
-    return _check("codex_auth_broken", "OK", 0, 1, "no 401 errors in recent codex logs", "")
+
+    # Signal (b): auth.json stale + pipeline silent on codex
+    auth_path = Path(r"C:/Users/Administrator/.codex/auth.json")
+    auth_age_h: float | None = None
+    if auth_path.exists():
+        try:
+            auth_age_h = (_t.time() - auth_path.stat().st_mtime) / 3600
+        except OSError:
+            pass
+    try:
+        import subprocess as _sp
+        out = _sp.run(
+            ["powershell.exe", "-NoProfile", "-Command",
+             "(Get-Process -Name codex -ErrorAction SilentlyContinue).Count"],
+            capture_output=True, text=True, timeout=10,
+        )
+        n_codex = int((out.stdout or "0").strip() or "0")
+    except Exception:
+        n_codex = -1
+    n_pending = con.execute(
+        "SELECT COUNT(*) FROM tasks WHERE kind='build_ea' AND status='pending'"
+    ).fetchone()[0]
+    pipeline_silent_on_codex = (n_codex == 0 and n_pending >= 1
+                                and auth_age_h is not None and auth_age_h > 12)
+
+    if n_401 >= 2 or pipeline_silent_on_codex:
+        detail = (f"{n_401} recent 401-logs"
+                  + (f", auth_age={auth_age_h:.1f}h" if auth_age_h else "")
+                  + (f", {n_pending} builds pending with 0 codex" if pipeline_silent_on_codex else ""))
+        return _check("codex_auth_broken", "FAIL", n_401 or 1, 1,
+                      detail,
+                      "Run `codex login` interactively on the VPS. The pump circuit "
+                      "breaker is preventing new spawns until then.")
+    if n_401 == 1:
+        return _check("codex_auth_broken", "WARN", 1, 1,
+                      f"1 recent codex log has 401 — could be transient",
+                      "Watch for more. If recurs, OWNER must `codex login`.")
+    return _check("codex_auth_broken", "OK", 0, 1,
+                  f"no 401 errors; auth_age={auth_age_h:.1f}h" if auth_age_h else "no 401", "")
 
 
 def chk_quota_snapshot_fresh() -> dict:
