@@ -208,9 +208,23 @@ def repair_grandchildren_setfiles(con) -> list[dict]:
 
 
 def repair_stale_active_work_items(con) -> list[dict]:
-    """R5: work_items in 'active' status > 2h with no activity in their
-    log → reset to pending. Catches MT5 worker crashes."""
+    """R5: work_items in 'active' status with NO live MT5 terminal backing
+    them → reset to pending. Catches MT5 worker crashes immediately
+    (don't wait 2h for the stale-active path).
+
+    Two paths:
+      a) No work_item live_log activity in 30 min → reset (slow path)
+      b) claimed_by=Tn but no terminal64 process under D:/QM/mt5/Tn/ →
+         reset IMMEDIATELY (fast path; means MT5 crashed/closed)
+
+    OWNER 2026-05-17: the slow path missed a real crash because all
+    terminals went down within minutes of being claimed. Fast path
+    catches that case.
+    """
     out = []
+    # Map terminal name → True/False (is process running for that path?)
+    live_terminals = _running_mt5_terminals()
+
     rows = con.execute(
         "SELECT id, ea_id, symbol, updated_at, claimed_by, payload_json FROM work_items WHERE status='active'"
     ).fetchall()
@@ -219,14 +233,31 @@ def repair_stale_active_work_items(con) -> list[dict]:
             t = dt.datetime.fromisoformat(r["updated_at"].replace("Z", "+00:00"))
             age_sec = (dt.datetime.now(dt.timezone.utc) - t).total_seconds()
         except Exception:
+            age_sec = 0
+
+        # Fast path: terminal claimed but no process for that path
+        claimed = (r["claimed_by"] or "").upper()
+        if claimed and claimed not in live_terminals and age_sec > 60:
+            con.execute(
+                "UPDATE work_items SET status='pending', claimed_by=NULL, "
+                "attempt_count=COALESCE(attempt_count,0)+1, updated_at=? WHERE id=?",
+                (_utc_now(), r["id"]),
+            )
+            out.append({
+                "handler": "R5_dead_terminal_work_item",
+                "target": r["id"],
+                "action": f"reset active → pending (terminal {claimed} not running)",
+                "detail": f"ea={r['ea_id']} sym={r['symbol']} age_min={age_sec/60:.0f}",
+            })
             continue
-        if age_sec < 7200:  # < 2h
+
+        # Slow path: 2h old + no log activity → reset
+        if age_sec < 7200:
             continue
-        # Check work_item live_log activity
         log_path = LOG_DIR / f"work_item_{r['id']}.log"
         if log_path.exists():
             try:
-                if time.time() - log_path.stat().st_mtime < 1800:  # < 30 min
+                if time.time() - log_path.stat().st_mtime < 1800:
                     continue
             except OSError:
                 pass
@@ -244,6 +275,37 @@ def repair_stale_active_work_items(con) -> list[dict]:
     if out:
         con.commit()
     return out
+
+
+def _running_mt5_terminals() -> set[str]:
+    """Return set of terminal names ('T1'..'T5') that currently have a
+    terminal64.exe process tied to D:/QM/mt5/Tn/."""
+    import subprocess
+    try:
+        out = subprocess.run(
+            ["powershell.exe", "-NoProfile", "-Command",
+             "Get-Process -Name terminal64 -ErrorAction SilentlyContinue | "
+             "ForEach-Object { $_.Path } | Out-String"],
+            capture_output=True, text=True, timeout=15,
+        )
+        paths = (out.stdout or "").splitlines()
+    except Exception:
+        return set()
+    live: set[str] = set()
+    import re as _re
+    for p in paths:
+        m = _re.search(r"\\mt5\\(T[1-5])\\", p, _re.IGNORECASE)
+        if m:
+            live.add(m.group(1).upper())
+    return live
+
+
+# NOTE: There was a R8 MT5 auto-restart handler here. Removed 2026-05-17 —
+# MT5 is launched TRANSIENTLY by run_smoke.ps1 per backtest, NOT as a
+# persistent service. Auto-restarting idle terminal64.exe processes was
+# pure RAM waste. The real fix lives in dispatch_work_items: detect when
+# a work_item is "active" but its run_smoke.ps1 child has died, and reset
+# it to pending immediately. R5_dead_terminal handles that.
 
 
 def repair_stranded_codex_review_pending(con) -> list[dict]:
