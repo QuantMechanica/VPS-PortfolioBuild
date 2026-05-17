@@ -1968,6 +1968,79 @@ def pump(root: Path) -> dict[str, Any]:
                     "children_count": 0, "reason": f"error: {exc!r}",
                 })
 
+    # §10c Promote ablation/grid P2-PASS work_items into P3.
+    #
+    # Problem: the original P2→P3 auto-enqueue (in classify_aggregate) gates
+    # on "does a backtest_p3 task already exist for this ea_id". When the
+    # first 3 P2-PASSes for 1049 created a backtest_p3 task, that task only
+    # received work_items for the setfiles that existed at the time (3
+    # originals). The 8 ablation children that later passed P2 never got a
+    # corresponding P3 work_item because the gate sees "P3 task exists".
+    #
+    # Fix: directly insert P3 work_items per (ea_id, symbol, setfile) that
+    # passed P2 but has no P3 work_item yet. Re-open the parent P3 task back
+    # to 'pending' so classify_aggregate re-aggregates when new work_items
+    # finish. Skip rows where no parent P3 task exists yet (next cycle will
+    # catch them after the first PASS goes through normal auto-enqueue).
+    result["p3_promotions"] = []
+    with connect(root) as conn:
+        promotable = conn.execute(
+            """
+            SELECT w.* FROM work_items w
+            WHERE w.status='done' AND w.verdict='PASS' AND w.phase='P2'
+              AND (w.setfile_path LIKE '%_ablation_%' OR w.setfile_path LIKE '%_grid_%')
+              AND NOT EXISTS (
+                SELECT 1 FROM work_items w2
+                WHERE w2.ea_id = w.ea_id
+                  AND w2.symbol = w.symbol
+                  AND w2.setfile_path = w.setfile_path
+                  AND w2.phase = 'P3'
+              )
+            ORDER BY w.updated_at ASC LIMIT 10
+            """
+        ).fetchall()
+        reopened_parents: set[str] = set()
+        for wi in promotable:
+            parent = conn.execute(
+                "SELECT id, status FROM tasks WHERE kind='backtest_p3' "
+                "AND payload_json LIKE ? ORDER BY created_at ASC LIMIT 1",
+                (f'%"ea_id": "{wi["ea_id"]}"%',),
+            ).fetchone()
+            if not parent:
+                continue
+            new_id = str(uuid.uuid4())
+            now = utc_now()
+            payload = {"promoted_from_p2_work_item": wi["id"]}
+            conn.execute(
+                """
+                INSERT INTO work_items
+                  (id, kind, phase, ea_id, symbol, setfile_path, status,
+                   attempt_count, parent_task_id, payload_json, created_at, updated_at)
+                VALUES (?, 'backtest', 'P3', ?, ?, ?, 'pending', 0, ?, ?, ?, ?)
+                """,
+                (new_id, wi["ea_id"], wi["symbol"], wi["setfile_path"],
+                 parent["id"], json.dumps(payload), now, now),
+            )
+            # Re-open parent P3 task so classify_aggregate re-runs when this
+            # work_item finishes. No-op if already pending.
+            if parent["id"] not in reopened_parents and parent["status"] == "done":
+                conn.execute(
+                    "UPDATE tasks SET status='pending', updated_at=? WHERE id=?",
+                    (now, parent["id"]),
+                )
+                reopened_parents.add(parent["id"])
+            result["p3_promotions"].append({
+                "p3_work_item_id": new_id,
+                "ea_id": wi["ea_id"],
+                "symbol": wi["symbol"],
+                "setfile": Path(wi["setfile_path"]).name,
+                "parent_p2_work_item_id": wi["id"],
+                "parent_p3_task_id": parent["id"],
+                "reopened_parent": parent["id"] in reopened_parents and parent["status"] == "done",
+            })
+        if result["p3_promotions"]:
+            conn.commit()
+
     # §10b P3-PASS → 50 grid (one parent per pump cycle — 50 children is a lot)
     # Same setfile_path lineage check as §10a (see comment above).
     with connect(root) as conn:
