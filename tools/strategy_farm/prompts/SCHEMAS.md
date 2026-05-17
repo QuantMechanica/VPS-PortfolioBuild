@@ -48,26 +48,56 @@ must NOT check for one.
 
 ## smoke summary.json — written by smoke test runner per `{{smoke_report_path}}`
 
-Producer: `framework/scripts/p2_baseline.py` / smoke variant.  Consumer:
-codex_review §D, claude_review, pump record_build_result.
+Producer: `framework/scripts/smoke_*.ps1` (one summary per (ea, symbol, year)
+test session, with one or more `runs[]` entries).  Consumer: codex_review
+§D, claude_review, pump record_build_result.
 
-| Field            | Type     | Description                                           |
-|------------------|----------|-------------------------------------------------------|
-| `ea_id`          | string   | `QM5_NNNN`.                                           |
-| `symbol`         | string   | DWX symbol tested.                                    |
-| `from_date`      | string   | ISO date (e.g. `"2024-01-01"`).                       |
-| `to_date`        | string   | ISO date.                                             |
-| `total_trades`   | int      | Trade count over the smoke window.                    |
-| `net_profit`     | float    | Closed-PnL net of fees + swaps.                       |
-| `max_dd`         | float    | Max equity drawdown over the run.                     |
-| `final_balance`  | float    | End-state balance.                                    |
-| `bars_processed` | int      | Bar count the EA saw (sanity check).                  |
-| `result`         | string   | `"ok"`, `"FAIL"`, `"MIN_TRADES_NOT_MET"`, etc.        |
+Top-level fields:
 
-Sanity bar for §D:
-- `total_trades >= 1` (zero = entry logic broken on this symbol)
-- `bars_processed > 0` (smoke actually ran)
-- `final_balance > 0` (no broker-side NaN)
+| Field                   | Type           | Description                                          |
+|-------------------------|----------------|------------------------------------------------------|
+| `timestamp_utc`         | string (ISO)   | When the run kicked off.                             |
+| `run_tag`               | string         | YYYYMMDD_HHMMSS tag (also dir name under `smoke/`).  |
+| `result`                | string         | `"PASS"` or `"FAIL"` (overall).                      |
+| `reason_classes`        | list[string]   | If FAIL, the classes (e.g. `["MIN_TRADES_NOT_MET"]`).|
+| `ea_id`                 | int            | Numeric EA id (e.g. `1049`).                         |
+| `ea_label`              | string         | `QM5_NNNN`.                                          |
+| `expert`                | string         | Expert subpath used in tester.                       |
+| `symbol`                | string         | DWX/native symbol tested.                            |
+| `year`                  | int            | Backtest year (e.g. `2024`).                         |
+| `terminal`              | string         | `"T1"`..`"T5"`.                                       |
+| `model`                 | int            | Tick model (4=every-tick required).                  |
+| `period`                | string         | Timeframe (`"H1"`, `"D1"`, etc.).                    |
+| `min_trades_required`   | int            | Pass threshold for trade count.                      |
+| `deterministic`         | bool           | Re-run determinism check passed.                     |
+| `oninit_failure_detected`| bool          | EA OnInit returned INIT_FAILED in any run.           |
+| `model4_log_marker_detected`| bool       | Required marker present.                             |
+| `report_dir`            | string (path)  | Where raw run reports live.                          |
+| `runs`                  | list[object]   | Per-run results — see below.                         |
+
+Each `runs[i]` entry:
+
+| Field          | Type     | Description                                                |
+|----------------|----------|------------------------------------------------------------|
+| `run`          | string   | `"run_01"`, `"run_02"`.                                    |
+| `status`       | string   | `"PASS"` / `"FAIL"`.                                       |
+| `failure`      | string   | If FAIL, the class (`"REPORT_MISSING"`, etc.).             |
+| `error`        | string   | Human-readable error if any.                               |
+| `exit_code`    | int      | Tester process exit code.                                  |
+| `report_path`  | string   | Path to the report.htm (if produced).                      |
+| `total_trades` | int      | Trades in this run (when report parsed).                   |
+| `net_profit`   | float    | (when report parsed).                                      |
+| `max_dd`       | float    | (when report parsed).                                      |
+| `final_balance`| float    | (when report parsed).                                      |
+
+Sanity bar for codex_review §D (checks the TOP-LEVEL `result` field and
+the FIRST `runs[0]` entry):
+- Top-level `result == "PASS"` → §D PASS.
+- Top-level `result == "FAIL"` AND `reason_classes` contains
+  `"MIN_TRADES_NOT_MET"` → §D FAIL with finding "0 trades in smoke window".
+- Other failure classes (`"REPORT_MISSING"`, `"INCOMPLETE_RUNS"`,
+  `"MODEL4_MARKER_REQUIRED"`) are build-infra issues — §D PASSes (these
+  surface via §E `blocked_reason` instead).
 
 ---
 
