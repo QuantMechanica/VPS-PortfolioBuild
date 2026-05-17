@@ -685,10 +685,26 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
     log_path = root / "logs" / f"work_item_{item_row['id']}.log"
     log_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # Multi-year window for P2; single-year 2024 for others (until p3+
-    # have their own windowing). Min-trades=5 lowered from 20 like P2.
-    from_date = "2022.01.01" if phase == "P2" else None
-    to_date = "2024.12.31" if phase == "P2" else None
+    # OWNER 2026-05-17 iteration 7 throughput fix: backtests were taking
+    # 41-61 min each because of (a) 6-year P2 window + (b) 2-run determinism
+    # check. With 5 MT5 terminals, that's 5 work_items/hour. 64 pending →
+    # 13h drain. Crippling for ablation/synth exploration.
+    #
+    # Fast-path for EXPLORATION children (ablation / grid / synth):
+    #   - 1 run instead of 2 (skip determinism re-check; EA binary is same
+    #     across siblings, original setfile got its check)
+    #   - shorter window (2020-2022 = 3y instead of 2017-2022 = 6y)
+    # Full-path for FIRST P2 (canonical _backtest.set, no exploration suffix):
+    #   - Keep 2 runs + 6 years for rigor
+    is_exploration = ("_ablation_" in setfile_path or "_grid_" in setfile_path
+                      or "_synth_" in setfile_path)
+    n_runs = "1" if is_exploration else "2"
+    if phase == "P2":
+        from_date = "2020.01.01" if is_exploration else "2017.01.01"
+        to_date = "2022.12.31"
+    else:
+        from_date = None
+        to_date = None
     year = 2024
 
     cmd = [
@@ -700,7 +716,7 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         "-Year", str(year),
         "-Terminal", terminal,
         "-Period", period,
-        "-Runs", "2",
+        "-Runs", n_runs,
         "-MinTrades", "5",
         "-Model", "4",
         "-SetFile", setfile_path,

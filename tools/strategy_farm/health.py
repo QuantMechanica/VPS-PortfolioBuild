@@ -345,6 +345,44 @@ def chk_source_pool(con) -> dict:
     return _check("source_pool_drained", "OK", n, 10, f"{n} pending sources", "")
 
 
+def chk_codex_auth_broken(con) -> dict:
+    """Detect Codex authentication failures in recent build/research logs.
+
+    Symptom: "ERROR: unexpected status 401 Unauthorized: Missing bearer or
+    basic authentication in header" in codex_*.live.log within last 15 min.
+    Means OAuth token expired and auto-refresh failed → OWNER must run
+    `codex login` interactively to refresh. Until then, every new codex
+    spawn wastes 5 retries × 30s each before giving up.
+    """
+    import time as _t
+    import re as _re
+    affected: list[str] = []
+    pattern = _re.compile(rb"401 Unauthorized")
+    for log in LOG_DIR.glob("codex_*.live.log"):
+        try:
+            age = _t.time() - log.stat().st_mtime
+            if age > 900:  # only check files touched < 15 min
+                continue
+            with open(log, "rb") as fh:
+                fh.seek(max(0, log.stat().st_size - 8192))
+                tail = fh.read()
+            if pattern.search(tail):
+                affected.append(log.name)
+        except OSError:
+            continue
+    n = len(affected)
+    if n >= 2:
+        return _check("codex_auth_broken", "FAIL", n, 1,
+                      f"{n} recent codex_*.live.log files contain 401 Unauthorized errors",
+                      "Run `codex login` interactively on the VPS to refresh the OAuth "
+                      "token. New codex spawns will keep failing until OWNER does this.")
+    if n == 1:
+        return _check("codex_auth_broken", "WARN", n, 1,
+                      f"1 recent codex_*.live.log has 401 — could be transient",
+                      "Watch for more. If recurs, OWNER must `codex login` to refresh.")
+    return _check("codex_auth_broken", "OK", 0, 1, "no 401 errors in recent codex logs", "")
+
+
 def chk_quota_snapshot_fresh() -> dict:
     """Quota snapshot from Tampermonkey scrapers — stale = Chrome tabs closed
     or receiver dead."""
@@ -399,6 +437,7 @@ ALL_CHECKS = [
     ("codex_zero_activity",    chk_codex_zero_activity,    True),
     ("source_pool",            chk_source_pool,            True),
     ("quota_snapshot_fresh",   chk_quota_snapshot_fresh,   False),
+    ("codex_auth_broken",      chk_codex_auth_broken,      True),
 ]
 
 
