@@ -242,3 +242,50 @@ auth.json edits. The 13 dead build_ea tasks remain parked; they will
 re-attempt automatically once Codex auth is restored (pump tick
 re-runs failed builds with attempt_count < 3, and the parked-blocked
 ones can be hand-reset to pending after OWNER relogs).
+
+## 2026-05-17T15:50Z update — Board Advisor observe wake
+
+**Auto-refresh dead for 5h+; smoke-runner patch validation now cascade-blocked.**
+
+State at this observe wake:
+- `~/.codex/auth.json` `last_refresh` still `2026-05-17T10:50:35Z` —
+  **no refresh in 5h 00m**, confirming the 13:50Z "auto-refresh stopped
+  entirely" diagnosis. The two morning refreshes (10:20Z, 10:50Z) remain
+  the only ones today.
+- Sampled `codex_g0_20260517T154918.live.log` (15:49Z pump spawn):
+  `OpenAI Codex v0.130.0`, 7× `responses_websocket 401 Unauthorized`,
+  5/5 reconnect attempts exhausted, exit ~15s.
+- 8 fresh Codex spawn logs in the last 3 minutes (research / g0 / 5×
+  build) — pump tick still firing every 5 min, all 401.
+- Autonomous wake 15:17Z handled REVIEW of QM5_1098 (Claude-only path)
+  and explicitly skipped Codex retries:
+  *"codex_auth_401 still OWNER-pending so Step 0b retries skipped to
+  avoid attempt_count burn"* — pump short-circuit working as designed.
+- Self-heal filter: **16 real `build_ea` failures** (QM5_1045, 1046,
+  1050, 1055, 1060, 1061, 1062, 1065, 1066, 1067, 1068, 1069, 1070,
+  1081, 1090, 1091). Net +3 since 13:50Z update (QM5_1081 just added at
+  15:49:18Z from a pre-patch smoke at 14:30Z that pump finally classified).
+
+Cascade impact (new this wake): the three smoke-runner patches that
+landed at 14:04/14:11/14:45Z (bb09e964, 8deebf5c, be009931) are still
+unvalidated. The pump cannot land a fresh post-patch `build_ea` because
+every Codex compile spawn dies at 401 before producing an `.mq5`.
+Result: **no progress possible on either escalation until OWNER relogs
+Codex.** Smoke-runner escalation has no new data to log since 14:50Z.
+
+OWNER actions from the original section unchanged. Strong recommendation
+remains **path 1** (`codex logout && codex login`). The forensics copy
+suggested in the 13:50Z update is the right pre-relog step:
+```powershell
+Copy-Item "$HOME\.codex\auth.json" "$HOME\.codex\auth.json.stale-5h-20260517T1550Z"
+codex logout
+codex login
+type "$HOME\.codex\auth.json" | Select-String last_refresh
+python C:/QM/repo/tools/strategy_farm/farmctl.py tick
+```
+
+**Board-Advisor-side mitigation taken this wake: documentation update
+only.** No state mutations, no pump changes, no agent lifecycle, no
+auth.json edits. Sixteen `build_ea` rows remain parked; identical
+recovery path as prior entries (pump auto-retries those with
+`attempt_count < 3`, OWNER can hand-reset the cap-3 parked rows).
