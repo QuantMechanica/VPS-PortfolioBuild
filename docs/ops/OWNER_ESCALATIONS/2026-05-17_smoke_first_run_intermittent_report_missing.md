@@ -112,3 +112,26 @@ confirm the diagnosis before committing to (1) or (3).
 
 Pick one fix candidate, commit on `agents/cto/*` or as direct OWNER work,
 then unblock the 4 EAs above.
+
+## Recurrence log
+
+- **2026-05-17T05:47Z (observe wake)** — fifth EA hit. **QM5_1060**
+  (`george-hwang-52w-high`, EURUSD.DWX D1) failed `build_ea` smoke at
+  attempt 1 (no prior retries) with `REPORT_MISSING;INCOMPLETE_RUNS` on
+  **both** `-Runs 2` invocations (not just `run_01`). Summary:
+  `D:/QM/reports/smoke/QM5_1060/20260517_045418/summary.json`
+  — `model4_log_marker_detected: false` on both runs, `exit_code: 0`,
+  `report_size_bytes: 0`. Same failure mode as QM5_1046 (both-runs-fail
+  cluster) rather than the cold-warm asymmetry of QM5_1045/1050/1055.
+
+  Autonomous wake at 2026-05-17T05:17Z correctly identified the systemic
+  pattern and recorded the block on first attempt (`autonomous_wakes.log`
+  RECORD_BUILD entry: "REPORT_MISSING;INCOMPLETE_RUNS systemic tester-infra
+  … chain skipped per Step 2 (blocked)"). No retry exhaustion this time
+  — the autonomous wake's pump-record-build path now short-circuits when
+  the symptom matches the known systemic failure mode.
+
+  Net: 5 EAs blocked on this issue (QM5_1045 terminal; QM5_1046/1050/1055
+  attempt=3 limbo; QM5_1060 attempt=1 blocked). Both-runs-fail cluster grew
+  from 1 → 2 EAs. Escalation severity unchanged (medium); fix candidates
+  unchanged.
