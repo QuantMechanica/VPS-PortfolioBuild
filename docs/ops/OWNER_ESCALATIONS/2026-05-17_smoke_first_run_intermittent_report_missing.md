@@ -422,3 +422,104 @@ then unblock the 4 EAs above.
   severity. Per DL-046, no further keepalive churn until either (a) a
   new failure-mode bucket emerges, (b) cluster crosses 30, or (c)
   OWNER picks a fix candidate.
+
+- **2026-05-18T08:50Z (observe wake)** — **cluster 25 → 28; NEW bucket
+  `data-history-missing` emerges with QM5_1132 + QM5_1133 (regression);
+  parser-empty bucket grows by 2 (QM5_1119, QM5_1142).** Commit
+  trigger: condition (a) new failure-mode bucket.
+
+  Three new real failures since the 20:47Z update:
+
+  - **QM5_1132** (`qp-futures-weekly-reversal`, blocked attempt=3,
+    updated 08:44:18Z) — `framework_error NO_HISTORY;INCOMPLETE_RUNS on
+    EURUSD.DWX H1 2024 T1; Model 4 marker present, OnInit failure
+    false`. Smoke summary
+    `D:/QM/reports/smoke/QM5_1132/20260518_083922/summary.json` records
+    `model4_log_marker_detected: true`, `oninit_failure_detected:
+    false`, `report_size_bytes: 30438` (report actually exported!),
+    `runs[0].status: INVALID`, `invalid_report_reasons:
+    [NO_HISTORY_LOG]`, `total_trades: 0`. So unlike REPORT_MISSING
+    cluster — here the tester ran, the EA initialized, the report was
+    produced and parsed, but the parser's history-context check
+    rejected it. Note the symbol name is `qp-futures-weekly-reversal`:
+    on H1 chart, weekly-bar logic requires substantially more
+    lookback than the smoke window provides. Plausible root cause:
+    EA-side `Copy*` call for weekly bars returns insufficient bars
+    and the EA emits the log line that the smoke parser classifies as
+    `NO_HISTORY_LOG`.
+
+  - **QM5_1133** (`qp-country-etf-pairs`, blocked attempt=1, updated
+    08:44:18Z) — `framework_error smoke NO_HISTORY;INCOMPLETE_RUNS on
+    NDX.DWX D1 2024 T1; invalid_report_reasons=BARS_ZERO,
+    NO_HISTORY_LOG, HISTORY_CONTEXT_INVALID; OnInit failure=false;
+    Model4 marker=true`. **Regression** — same EA, same symbol/TF
+    successfully smoked at 2026-05-17T16:34:20Z (build_ea task
+    `done`, downstream ea_review + backtest_p2 both `done` as of
+    early today). Re-attempted today and now blocked. This rules out
+    "the EA structurally can't get its history" — yesterday's
+    successful smoke proves the data is loadable. The smoke summary
+    `D:/QM/reports/smoke/QM5_1133/20260518_083942/summary.json`
+    shows both runs of yesterday's pattern failing today with
+    NO_HISTORY_LOG. Both invocations within the same retry budget
+    failed identically — not the cold-warm asymmetry shape.
+
+  - **QM5_1119** (`pruitt-cl-volatility-breakout-h1`, failed
+    attempt=3, updated 08:43:06Z) — `framework_error run_smoke parser
+    failed after single Model 4 smoke: Get-ReportMetricValue Text
+    empty; raw report
+    D:\QM\reports\smoke\QM5_1119\20260518_080612\raw\run_01\report.htm`.
+    Same shape as QM5_1117 (parser-empty-html-not-classified bucket).
+
+  - **QM5_1142** (`unger-bund-volatility-pullback`, failed attempt=3,
+    updated 08:43:06Z) — `framework_error run_smoke parser crashed:
+    Get-ReportMetricValue Expert empty string; summary.json not
+    emitted`. Same shape as QM5_1117. Joins
+    parser-empty-html-not-classified bucket.
+
+  Updated counts: **28 real `build_ea` failures** in self-heal filter
+  (was 25 at 20:47Z, +3 net). Cluster composition:
+  - cold-warm-asymmetry: QM5_1045/1050/1055/1122/1149
+  - both-runs-fail: QM5_1046/1060/1065/1066/1067/1070
+  - preflight-already-running: QM5_1068/1082/1101/1123/1159
+  - worker-mortality / metatester-hung: QM5_1090/1091/1118
+  - file-lock-on-include-sync: QM5_1121
+  - parser-empty-html-not-classified: QM5_1117/**1119**/**1142**
+  - **data-history-missing**: **QM5_1132** / **QM5_1133** *(new bucket)*
+  - other (REPORT_MISSING / NO_REAL_TICKS_MARKER): QM5_1061/1069/1081
+
+  **New fix candidate (9) — handle NO_HISTORY_LOG separately from
+  framework_error.** Two distinct sub-cases the smoke runner cannot
+  currently distinguish:
+
+  - **9a EA-side request exceeds available history.** If the EA's
+    own `Copy*` (e.g. weekly-bar lookback on H1) returns
+    insufficient bars within the smoke window, that's an EA-design
+    flaw, not infrastructure flake. Smoke should classify it as
+    `EA_HISTORY_REQUIREMENT_EXCEEDS_SMOKE_WINDOW` and treat as a
+    permanent strategy-content reject (no retry), not `blocked`. QM5_1132
+    is the candidate here (weekly-reversal on H1 chart).
+  - **9b Tester state flake.** If the EA successfully smoked
+    previously on the same symbol/TF but later fails with
+    NO_HISTORY_LOG, classify as `TESTER_HISTORY_NOT_LOADED` and
+    retry on a different terminal. QM5_1133 (proven-good yesterday,
+    same symbol/TF NO_HISTORY today) is the candidate here.
+
+  The smoke parser already distinguishes
+  `invalid_report_reasons=[BARS_ZERO, NO_HISTORY_LOG,
+  HISTORY_CONTEXT_INVALID]` vs `[NO_HISTORY_LOG]` only — the
+  difference between QM5_1132 (one reason) and QM5_1133 (three
+  reasons including BARS_ZERO) is the signal. BARS_ZERO suggests
+  tester refused to load any bars (state flake); NO_HISTORY_LOG
+  alone with positive trade-search activity suggests EA-side
+  Copy* shortfall.
+
+  **Recommended escalation path.** Severity remains HIGH but trend
+  is stabilizing: cluster grew +3 over ~12h (vs +5 in the previous
+  3h window), and the autonomous wake's pump cap continues to
+  prevent retry churn. OWNER decision still pending on fix-pick
+  order — adding (9a/9b) to the candidate list does not change the
+  recommendation that (5) terminal-pool mutex + (1) cold-start
+  warm-up remain the highest-leverage two-fix bundle. Per DL-046,
+  no further keepalive churn until either (a) yet another new
+  bucket, (b) cluster crosses 30, or (c) OWNER picks a fix
+  candidate.
