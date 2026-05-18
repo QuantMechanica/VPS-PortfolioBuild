@@ -289,3 +289,51 @@ only.** No state mutations, no pump changes, no agent lifecycle, no
 auth.json edits. Sixteen `build_ea` rows remain parked; identical
 recovery path as prior entries (pump auto-retries those with
 `attempt_count < 3`, OWNER can hand-reset the cap-3 parked rows).
+
+## 2026-05-18T19:14Z update — Board Advisor observe wake (T+34h)
+
+**Escalation 34 hours open; auth.json refreshed once overnight but
+re-staled within 1h; no OWNER relogin yet.**
+
+State at this observe wake:
+- `~/.codex/auth.json` `last_refresh` = `2026-05-18T05:00:55Z` — exactly
+  one auto-refresh fired between 2026-05-17T10:50Z and now (≈18h gap,
+  then 14h+ stale since). JWT `exp` was `2026-05-18T06:00:54Z` per
+  hourly autonomous wake summaries, i.e. token was only valid for 1h
+  after refresh.
+- Hourly autonomous wake summaries 2026-05-18T07:26Z–18:17Z all show the
+  same `codex responses_websocket 401` cluster firing on every
+  build_ea / codex_review / research / g0 spawn; pump short-circuits
+  Codex retries each wake to avoid burning attempt_count.
+- Self-heal filter now returns **38 real build_ea failures** (was 16 at
+  2026-05-17T15:50Z, +22 in 28h). Dominant clusters: REPORT_MISSING +
+  MODEL4_MARKER_REQUIRED (~20 rows, half overlap the smoke-runner
+  escalation), `T1 terminal already running` preflight (~5 rows),
+  smoke-runner parser empty-string crashes (~4 rows).
+- 28 backtest_p2 tasks now pending against a single MT5 fleet — that
+  queue is independent of Codex auth (Phase C dispatch is Python-only)
+  but won't drain without sustained pump/dispatch progress.
+- Approved-card backlog is at 171+ per the 17:23Z wake summary; Claude
+  research/G0 paths keep adding ~5 cards/wake while Codex builds
+  remain blocked. Backlog growth is asymmetric.
+
+Auth auto-refresh remains effectively dead (1 refresh in 32 hours, 1h
+useful window). Pattern matches the 2026-05-17T13:50Z "auto-refresh
+appears to have stopped entirely" diagnosis — only OWNER `codex logout
+&& codex login` will unblock the build leg.
+
+OWNER actions from the original section unchanged. Same path-1
+recommendation. Forensic snapshot suggestion updated for the longer
+stale window:
+```powershell
+Copy-Item "$HOME\.codex\auth.json" "$HOME\.codex\auth.json.stale-34h-20260518T1914Z"
+codex logout
+codex login
+type "$HOME\.codex\auth.json" | Select-String last_refresh
+python C:/QM/repo/tools/strategy_farm/farmctl.py tick
+```
+
+**Board-Advisor-side mitigation taken this wake: documentation update
+only.** No state mutations, no pump changes, no agent lifecycle, no
+auth.json edits. The 38 parked build_ea rows recover via the same path
+as prior entries once OWNER relogs Codex.
