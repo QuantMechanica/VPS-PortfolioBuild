@@ -49,13 +49,14 @@ REAL_PHASE_RUNNER_PHASES = ("P3.5", "P4", "P5", "P5b", "P5c", "P6", "P7", "P8")
 PHASE_RUNNER_SCRIPTS = {
     "P3.5": "p35_csr_runner.py",
     "P4": "p4_walk_forward.py",
-    "P5": "p5_stress_runner.py",
-    "P5b": "p5b_noise_runner.py",
-    "P5c": "p5c_crisis_runner.py",
-    "P6": "p6_multiseed_runner.py",
-    "P7": "p7_stats_runner.py",
-    "P8": "p8_news_runner.py",
+    "P5": "p5_stress_driver.py",
+    "P5b": "p5b_noise_driver.py",
+    "P5c": "p5c_crisis_slices.py",
+    "P6": "p6_multiseed_driver.py",
+    "P7": "p7_statval.py",
+    "P8": "p8_news_driver.py",
 }
+NEWS_MATRIX_FALLBACK = Path(r"D:\QM\data\news_calendar\news_matrix.csv")
 P5_REQUIRED_OOS_FROM_YEAR = 2023
 P5_REQUIRED_OOS_TO_YEAR = 2025
 P5PLUS_MAX_DRAWDOWN_PCT = 20.0
@@ -872,7 +873,7 @@ def _derive_phase_runner_verdict(summary: dict[str, Any], min_trades: int = 5, p
     if verdict_upper in {"FAIL", "INVALID", "NO_PASS_BASELINE", "NO_ELIGIBLE_MODE", "MULTI_SEED_FAIL"}:
         return "FAIL", reason or raw_verdict or "phase_runner_fail"
     if verdict_upper in {"REPORT_ONLY"}:
-        return "PENDING_IMPLEMENTATION", reason or "report-only phase runner; no hard PASS verdict"
+        return "REPORT_ONLY", reason or "report-only phase runner; no hard PASS verdict"
     if verdict_upper in {"PASS", "AUTO_PASS", "MULTI_SEED_PASS", "MULTI_SEED_MIXED", "MODE_SELECTED"}:
         return "PASS", reason
 
@@ -893,6 +894,40 @@ def _derive_phase_runner_verdict(summary: dict[str, Any], min_trades: int = 5, p
         if net_profit is not None and float(net_profit) <= 0.0:
             return "FAIL", reason or "wf_oos_unprofitable"
         return "PASS", reason or "wf_oos_gates_met"
+
+    if phase_key.upper() == "P5":
+        clean = summary.get("clean_metrics") or {}
+        stress = summary.get("stress_metrics") or {}
+        stress_pf = float(stress.get("pf") or 0.0)
+        stress_trades = int(float(stress.get("trade_count") or stress.get("trades") or 0))
+        stress_profit = float(stress.get("net_profit") or 0.0)
+        clean_trades = int(float(clean.get("trade_count") or clean.get("trades") or 0))
+        if clean_trades < min_trades:
+            return "FAIL", reason or "p5_clean_min_trades_not_met"
+        if stress_trades < min_trades:
+            return "FAIL", reason or "p5_stress_min_trades_not_met"
+        if stress_pf < 1.0:
+            return "FAIL", reason or "p5_stress_pf_below_1"
+        if stress_profit <= 0.0:
+            return "FAIL", reason or "p5_stress_unprofitable"
+        return "PASS", reason or "p5_clean_stress_metrics_pass"
+
+    if phase_key.upper() == "P5B":
+        trials = int(summary.get("trial_count") or 0)
+        if trials <= 0:
+            return "FAIL", reason or "p5b_no_trials"
+        return "PASS", reason or "p5b_trials_generated"
+
+    if phase_key.upper() == "P6":
+        seed_count = int(summary.get("seed_count") or 0)
+        pass_count = int(summary.get("seed_pass_count") or 0)
+        if seed_count <= 0:
+            return "FAIL", reason or "p6_no_seed_rows"
+        if pass_count <= 0:
+            return "FAIL", reason or "p6_no_passing_seeds"
+        if pass_count < seed_count:
+            return "MULTI_SEED_MIXED", reason or f"p6_mixed:{pass_count}/{seed_count}"
+        return "PASS", reason or "p6_all_seeds_pass"
 
     return "FAIL", reason or f"unknown_phase_runner_verdict:{raw_verdict or 'missing'}"
 
@@ -1257,6 +1292,100 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
     }
 
 
+def _ea_pipeline_dir(ea_id: str) -> Path:
+    return PIPELINE_REPORT_ROOT / str(ea_id)
+
+
+def _ea_phase_dir(ea_id: str, phase: str) -> Path:
+    return _ea_pipeline_dir(ea_id) / str(phase)
+
+
+def _phase_runner_inputs(ea_id: str, phase: str) -> dict[str, Any]:
+    pipeline_dir = _ea_pipeline_dir(ea_id)
+    phase_key = str(phase or "").strip()
+    if phase_key == "P5":
+        inputs: dict[str, Path] = {"calibration_json": pipeline_dir / "P4" / "calibration.json"}
+    elif phase_key == "P5b":
+        inputs = {"calibration_json": pipeline_dir / "P4" / "calibration.json"}
+    elif phase_key == "P5c":
+        inputs = {"slices_csv": pipeline_dir / "P5" / "p5_slices.csv"}
+    elif phase_key == "P6":
+        inputs = {}
+    elif phase_key == "P7":
+        inputs = {
+            "sweep_pass_rows": pipeline_dir / "P3" / "sweep_pass_rows.csv",
+            "multiseed_rows": pipeline_dir / "P6" / "p6_seeds.csv",
+        }
+    elif phase_key == "P8":
+        pipeline_news = pipeline_dir / "P7" / "news_matrix.csv"
+        inputs = {"news_matrix": pipeline_news if pipeline_news.exists() else NEWS_MATRIX_FALLBACK}
+    else:
+        inputs = {}
+    missing = [str(path) for path in inputs.values() if not Path(path).exists()]
+    if missing:
+        return {**inputs, "missing": missing}
+    return inputs
+
+
+def _load_csv_dicts(path: Path) -> list[dict[str, str]]:
+    with path.open("r", encoding="utf-8-sig", newline="") as f:
+        return [dict(row) for row in csv.DictReader(f)]
+
+
+def _phase_artifact_summary(item_row: sqlite3.Row) -> tuple[Path, dict[str, Any]] | None:
+    """Build a classifier summary for phase drivers that do not write summary.json."""
+    phase = str(item_row["phase"])
+    ea_id = str(item_row["ea_id"])
+    phase_dir = _ea_phase_dir(ea_id, phase)
+    if phase == "P5":
+        clean_path = phase_dir / "p5_clean_metrics.json"
+        stress_path = phase_dir / "p5_stress_metrics.json"
+        if not clean_path.exists() or not stress_path.exists():
+            return None
+        clean = json.loads(clean_path.read_text(encoding="utf-8-sig"))
+        stress = json.loads(stress_path.read_text(encoding="utf-8-sig"))
+        symbol = str(item_row["symbol"])
+        def _symbol_metrics(block: dict[str, Any]) -> dict[str, Any]:
+            if str(block.get("symbol") or "") == symbol:
+                return block
+            for row in block.get("symbols") or []:
+                if isinstance(row, dict) and str(row.get("symbol") or "") == symbol:
+                    return row
+            return block
+        return stress_path, {
+            "phase": "P5",
+            "ea_id": ea_id,
+            "verdict": "",
+            "clean_metrics": _symbol_metrics(clean),
+            "stress_metrics": _symbol_metrics(stress),
+        }
+    if phase == "P5b":
+        trials_path = phase_dir / "p5b_trials.csv"
+        if not trials_path.exists():
+            return None
+        rows = _load_csv_dicts(trials_path)
+        return trials_path, {
+            "phase": "P5b",
+            "ea_id": ea_id,
+            "verdict": "",
+            "trial_count": len(rows),
+        }
+    if phase == "P6":
+        seeds_path = phase_dir / "p6_seeds.csv"
+        if not seeds_path.exists():
+            return None
+        rows = _load_csv_dicts(seeds_path)
+        pass_count = sum(1 for row in rows if str(row.get("seed_pass") or "").strip().upper() in {"PASS", "1", "TRUE", "YES"})
+        return seeds_path, {
+            "phase": "P6",
+            "ea_id": ea_id,
+            "verdict": "",
+            "seed_count": len(rows),
+            "seed_pass_count": pass_count,
+        }
+    return None
+
+
 def _phase_runner_script_path(phase: str) -> Path | None:
     script_name = PHASE_RUNNER_SCRIPTS.get(str(phase or "").strip())
     if not script_name:
@@ -1265,11 +1394,20 @@ def _phase_runner_script_path(phase: str) -> Path | None:
     return path if path.exists() else None
 
 
+def _remove_cmd_arg(cmd: list[str], flag: str) -> None:
+    while flag in cmd:
+        idx = cmd.index(flag)
+        del cmd[idx:idx + 2]
+
+
 def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
                                     report_root: Path) -> list[str] | None:
     phase = item_row["phase"]
     script_path = _phase_runner_script_path(phase)
     if script_path is None:
+        return None
+    inputs = _phase_runner_inputs(item_row["ea_id"], phase)
+    if inputs.get("missing"):
         return None
     ea_id = item_row["ea_id"]
     symbol = item_row["symbol"]
@@ -1294,20 +1432,68 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
             "--oos-to-year", "2025",
             "--min-folds", "6",
         ])
+    elif phase == "P5":
+        cmd.extend([
+            "--year", "2024",
+            "--calibration-json", str(inputs["calibration_json"]),
+            "--base-setfile", item_row["setfile_path"],
+        ])
+        _remove_cmd_arg(cmd, "--setfile")
+    elif phase == "P5b":
+        cmd.extend(["--calibration-json", str(inputs["calibration_json"])])
+        _remove_cmd_arg(cmd, "--period")
+        _remove_cmd_arg(cmd, "--setfile")
+    elif phase == "P5c":
+        cmd.extend(["--slices-csv", str(inputs["slices_csv"])])
+        _remove_cmd_arg(cmd, "--symbol")
+        _remove_cmd_arg(cmd, "--period")
+        _remove_cmd_arg(cmd, "--setfile")
     elif phase == "P6":
-        cmd.extend(["--seeds", "42,17,99,7,2026"])
+        cmd.extend([
+            "--year", "2024",
+            "--seeds", "42,17,99,7,2026",
+            "--base-setfile", item_row["setfile_path"],
+        ])
+        _remove_cmd_arg(cmd, "--setfile")
+    elif phase == "P7":
+        cmd.extend([
+            "--sweep-pass-rows", str(inputs["sweep_pass_rows"]),
+            "--multiseed-rows", str(inputs["multiseed_rows"]),
+        ])
+        _remove_cmd_arg(cmd, "--symbol")
+        _remove_cmd_arg(cmd, "--period")
+        _remove_cmd_arg(cmd, "--setfile")
     elif phase == "P8":
-        cmd.extend(["--modes", "OFF,PAUSE,SKIP_DAY,FTMO_PAUSE,5ers_PAUSE,no_news,news_only"])
+        cmd.extend(["--news-matrix", str(inputs["news_matrix"]), "--mode", "all"])
+        _remove_cmd_arg(cmd, "--symbol")
+        _remove_cmd_arg(cmd, "--period")
+        _remove_cmd_arg(cmd, "--setfile")
     return cmd
 
 
 def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
                                       terminal: str) -> dict[str, Any]:
     phase = item_row["phase"]
-    report_root = Path(r"D:\QM\reports\work_items") / item_row["id"]
+    report_root = PIPELINE_REPORT_ROOT
     report_root.mkdir(parents=True, exist_ok=True)
     log_path = root / "logs" / f"work_item_{item_row['id']}.log"
     log_path.parent.mkdir(parents=True, exist_ok=True)
+
+    inputs = _phase_runner_inputs(item_row["ea_id"], phase)
+    if inputs.get("missing"):
+        msg = f"waiting for required phase input(s): {', '.join(inputs['missing'])}"
+        with log_path.open("a", encoding="utf-8", newline="\n") as f:
+            f.write(f"{utc_now()} {phase}: {msg}\n")
+        return {
+            "spawned": False,
+            "waiting_input": True,
+            "reason": msg,
+            "missing_inputs": inputs["missing"],
+            "log_path": str(log_path),
+            "report_root": str(report_root),
+            "ea_dir_name": item_row["ea_id"],
+            "phase_runner": None,
+        }
 
     cmd = _phase_runner_cmd_for_work_item(root, item_row, report_root)
     if cmd is None:
@@ -1351,6 +1537,8 @@ def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
 
 def _spawn_work_item_runner(root: Path, item_row: sqlite3.Row,
                             terminal: str) -> dict[str, Any]:
+    if item_row["phase"] in REAL_PHASE_RUNNER_PHASES:
+        return _spawn_phase_runner_for_work_item(root, item_row, terminal)
     return _spawn_run_smoke_for_work_item(root, item_row, terminal)
 
 
@@ -1631,9 +1819,12 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
             busy_terminals.add(terminal)
         # Find newest summary.json under report_root
         summary_path = None
-        if report_root and Path(report_root).is_dir():
+        search_root = Path(report_root) if report_root else None
+        if item["phase"] in REAL_PHASE_RUNNER_PHASES:
+            search_root = _ea_phase_dir(item["ea_id"], item["phase"])
+        if search_root and search_root.is_dir():
             cands = sorted(
-                Path(report_root).rglob("summary.json"),
+                search_root.rglob("summary.json"),
                 key=lambda p: p.stat().st_mtime,
                 reverse=True,
             )
@@ -1668,11 +1859,46 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                                "effective_min_trades": effective_min_trades,
                                "terminal_released": terminal})
                 continue
+        worker_pid = payload.get("pid")
+        worker_alive_for_artifacts = _pid_exists(worker_pid) if worker_pid else True
+        if not summary_path and not worker_alive_for_artifacts and item["phase"] in {"P5", "P5b", "P6"}:
+            artifact_summary = _phase_artifact_summary(item)
+            if artifact_summary is not None:
+                artifact_path, summary = artifact_summary
+                effective_min_trades = int(payload.get("effective_min_trades") or 5)
+                verdict, reason = _derive_verdict_from_summary(
+                    summary,
+                    min_trades=effective_min_trades,
+                    phase=item["phase"],
+                )
+                with connect(root) as conn2:
+                    conn2.execute(
+                        "UPDATE work_items SET status='done', verdict=?, evidence_path=?, payload_json=?, updated_at=? WHERE id=?",
+                        (
+                            verdict,
+                            str(artifact_path),
+                            json.dumps({**payload, "verdict_reason": reason}, sort_keys=True),
+                            started_iso,
+                            item["id"],
+                        ),
+                    )
+                    conn2.commit()
+                busy_terminals.discard(terminal)
+                actions.append({
+                    "action": "classified_item",
+                    "item_id": item["id"],
+                    "ea_id": item["ea_id"],
+                    "symbol": item["symbol"],
+                    "verdict": verdict,
+                    "reason": reason,
+                    "evidence_path": str(artifact_path),
+                    "terminal_released": terminal,
+                })
+                continue
         # Still no summary — first check if the run_smoke.ps1 child PID
         # is still alive. If it died without writing a summary (MT5 crash,
         # OS reboot, manual kill) we should release the terminal IMMEDIATELY
         # instead of waiting `timeout_minutes` for the slow path.
-        worker_pid = payload.get("pid")
         worker_alive = _pid_exists(worker_pid) if worker_pid else True
 
         started = payload.get("started_at_iso")
@@ -1796,6 +2022,22 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
             terminal = free_terminals.pop(0)
             spawn = _spawn_work_item_runner(root, item, terminal)
             if not spawn.get("spawned"):
+                if spawn.get("waiting_input"):
+                    payload = {
+                        "verdict_reason": spawn.get("reason"),
+                        "missing_inputs": spawn.get("missing_inputs", []),
+                        "log_path": spawn.get("log_path"),
+                        "report_root": spawn.get("report_root"),
+                    }
+                    with connect(root) as conn2:
+                        conn2.execute(
+                            "UPDATE work_items SET status='done', verdict='WAITING_INPUT', payload_json=?, updated_at=? WHERE id=?",
+                            (json.dumps(payload, sort_keys=True), started_iso, item["id"]),
+                        )
+                        conn2.commit()
+                    actions.append({"action": "waiting_input", "item_id": item["id"], "phase": item["phase"], "reason": spawn.get("reason")})
+                    free_terminals.insert(0, terminal)
+                    continue
                 if spawn.get("pending_runner"):
                     payload = {
                         "verdict_reason": spawn.get("reason"),
@@ -5495,59 +5737,62 @@ def _phase_runner_cmd(phase: str, ea_id: str, terminal: str | None = None,
     if phase == "P5":
         symbols = surviving_symbols or []
         symbol = symbols[0] if symbols else ""
-        cmd = _runner_base("p5_stress_runner.py")
+        inputs = _phase_runner_inputs(ea_id, phase)
+        if inputs.get("missing"):
+            return None
+        cmd = _runner_base("p5_stress_driver.py")
         if symbol:
             cmd.extend(["--symbol", symbol])
+        cmd.extend(["--year", "2024", "--period", _detect_ea_period(ea_id), "--calibration-json", str(inputs["calibration_json"])])
         if setfile_path:
-            cmd.extend(["--setfile", setfile_path])
-        clean_metrics = PIPELINE_REPORT_ROOT / ea_id / "P5" / "p5_clean_metrics.json"
-        stress_metrics = PIPELINE_REPORT_ROOT / ea_id / "P5" / "p5_stress_metrics.json"
-        if P5_CALIBRATION_JSON.exists() and clean_metrics.exists() and stress_metrics.exists():
-            cmd.extend([
-                "--calibration-json", str(P5_CALIBRATION_JSON),
-                "--clean-metrics-json", str(clean_metrics),
-                "--stress-metrics-json", str(stress_metrics),
-                "--full-history-from", f"{P5_REQUIRED_OOS_FROM_YEAR}-01-01",
-                "--full-history-to", f"{P5_REQUIRED_OOS_TO_YEAR}-12-31",
-            ])
+            cmd.extend(["--base-setfile", setfile_path])
         return cmd
 
     if phase == "P5b":
         symbols = surviving_symbols or []
         symbol = symbols[0] if symbols else ""
-        cmd = _runner_base("p5b_noise_runner.py")
+        inputs = _phase_runner_inputs(ea_id, phase)
+        if inputs.get("missing"):
+            return None
+        cmd = _runner_base("p5b_noise_driver.py")
         if symbol:
             cmd.extend(["--symbol", symbol])
-        if setfile_path:
-            cmd.extend(["--setfile", setfile_path])
+        cmd.extend(["--calibration-json", str(inputs["calibration_json"])])
         return cmd
 
     if phase == "P5c":
-        cmd = _runner_base("p5c_crisis_runner.py")
-        if setfile_path:
-            cmd.extend(["--setfile", setfile_path])
+        inputs = _phase_runner_inputs(ea_id, phase)
+        if inputs.get("missing"):
+            return None
+        cmd = _runner_base("p5c_crisis_slices.py")
+        cmd.extend(["--slices-csv", str(inputs["slices_csv"])])
         return cmd
 
     if phase == "P6":
-        cmd = _runner_base("p6_multiseed_runner.py")
-        cmd.extend(["--seeds", "42,17,99,7,2026"])
+        symbols = surviving_symbols or []
+        symbol = symbols[0] if symbols else ""
+        cmd = _runner_base("p6_multiseed_driver.py")
+        if symbol:
+            cmd.extend(["--symbol", symbol])
+        cmd.extend(["--year", "2024", "--period", _detect_ea_period(ea_id), "--seeds", "42,17,99,7,2026"])
         if setfile_path:
-            cmd.extend(["--setfile", setfile_path])
+            cmd.extend(["--base-setfile", setfile_path])
         return cmd
 
     if phase == "P7":
-        cmd = _runner_base("p7_stats_runner.py")
-        if setfile_path:
-            cmd.extend(["--setfile", setfile_path])
+        inputs = _phase_runner_inputs(ea_id, phase)
+        if inputs.get("missing"):
+            return None
+        cmd = _runner_base("p7_statval.py")
+        cmd.extend(["--sweep-pass-rows", str(inputs["sweep_pass_rows"]), "--multiseed-rows", str(inputs["multiseed_rows"])])
         return cmd
 
     if phase == "P8":
-        cmd = _runner_base("p8_news_runner.py")
-        cmd.extend([
-            "--modes", "OFF,PAUSE,SKIP_DAY,FTMO_PAUSE,5ers_PAUSE,no_news,news_only",
-        ])
-        if setfile_path:
-            cmd.extend(["--setfile", setfile_path])
+        inputs = _phase_runner_inputs(ea_id, phase)
+        if inputs.get("missing"):
+            return None
+        cmd = _runner_base("p8_news_driver.py")
+        cmd.extend(["--news-matrix", str(inputs["news_matrix"]), "--mode", "all"])
         return cmd
 
     return None
