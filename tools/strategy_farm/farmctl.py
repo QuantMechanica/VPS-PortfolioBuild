@@ -38,6 +38,7 @@ CODEX_G0_TEMPLATE = PROMPTS_DIR / "codex_g0_review.md"
 
 PIPELINE_REPORT_ROOT = Path(r"D:\QM\reports\pipeline")
 SUPPORTED_BACKTEST_PHASES = ("P2", "P3", "P3.5", "P4")  # 2026-05-17: extend chain to P3.5 (cross-symbol robustness) + P4 (walk-forward OOS)
+CASCADE_BACKTEST_PHASES = ("P5", "P5b", "P5c", "P6", "P7", "P8")
 MT5_TERMINALS = ("T1", "T2", "T3", "T4", "T5")  # factory fleet, used by dispatch-tick for per-EA terminal assignment
 ZERO_TRADE_DEAD_THRESHOLD = 0.80
 ZERO_TRADE_DEAD_MIN_DONE = 5
@@ -4298,6 +4299,134 @@ def enqueue_backtest(root: Path, review_task_id: str, phase: str) -> dict[str, A
     }
 
 
+def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[str, Any]:
+    """Requeue or create a P5+ cascade work_item from the prior PASS phase.
+
+    P5+ phases are consumed by the work_item dispatcher/pump cascade, not the
+    older review-task enqueue path. This keeps the operator-facing command
+    idempotent and avoids duplicate EA/symbol/phase rows.
+    """
+    if phase not in CASCADE_BACKTEST_PHASES:
+        return {
+            "enqueued": False,
+            "reason": f"Phase {phase} is not a cascade phase. Supported cascade phases: {CASCADE_BACKTEST_PHASES}",
+        }
+    prev_phase_map = {
+        "P5": "P4",
+        "P5b": "P5",
+        "P5c": "P5b",
+        "P6": "P5c",
+        "P7": "P6",
+        "P8": "P7",
+    }
+    prev_pass_verdicts = {
+        "P4": {"PASS"},
+        "P5": {"PASS"},
+        "P5b": {"PASS"},
+        "P5c": {"PASS", "REPORT_ONLY"},
+        "P6": {"PASS", "MULTI_SEED_PASS", "MULTI_SEED_MIXED"},
+        "P7": {"PASS"},
+    }
+    prev_phase = prev_phase_map[phase]
+    verdicts = sorted(prev_pass_verdicts[prev_phase])
+    placeholders = ",".join("?" for _ in verdicts)
+    init_db(root)
+    now = utc_now()
+    created: list[dict[str, Any]] = []
+    requeued: list[dict[str, Any]] = []
+    skipped: list[dict[str, Any]] = []
+    with connect(root) as conn:
+        prev_rows = conn.execute(
+            f"""
+            SELECT * FROM work_items
+            WHERE ea_id=? AND phase=? AND status='done' AND verdict IN ({placeholders})
+            ORDER BY updated_at ASC
+            """,
+            (ea_id, prev_phase, *verdicts),
+        ).fetchall()
+        for prev in prev_rows:
+            existing = conn.execute(
+                """
+                SELECT * FROM work_items
+                WHERE ea_id=? AND phase=? AND symbol=?
+                ORDER BY created_at ASC LIMIT 1
+                """,
+                (ea_id, phase, prev["symbol"]),
+            ).fetchone()
+            payload = {
+                "promoted_from_phase": prev_phase,
+                "promoted_from_work_item": prev["id"],
+                "promotion_source": "farmctl_enqueue_backtest_ea",
+                "requeued_at": now,
+            }
+            if existing:
+                if existing["status"] in {"pending", "active"}:
+                    skipped.append({
+                        "id": existing["id"],
+                        "symbol": existing["symbol"],
+                        "status": existing["status"],
+                    })
+                    continue
+                conn.execute(
+                    """
+                    UPDATE work_items
+                    SET status='pending', verdict=NULL, attempt_count=0,
+                        evidence_path=NULL, claimed_by=NULL, payload_json=?,
+                        updated_at=?
+                    WHERE id=?
+                    """,
+                    (json.dumps(payload, sort_keys=True), now, existing["id"]),
+                )
+                requeued.append({"id": existing["id"], "symbol": existing["symbol"]})
+                continue
+            wid = str(uuid.uuid4())
+            conn.execute(
+                """
+                INSERT INTO work_items
+                  (id, kind, phase, ea_id, symbol, setfile_path, status,
+                   attempt_count, parent_task_id, payload_json, created_at, updated_at)
+                VALUES (?, 'backtest', ?, ?, ?, ?, 'pending', 0, NULL, ?, ?, ?)
+                """,
+                (
+                    wid,
+                    phase,
+                    ea_id,
+                    prev["symbol"],
+                    prev["setfile_path"],
+                    json.dumps(payload, sort_keys=True),
+                    now,
+                    now,
+                ),
+            )
+            created.append({"id": wid, "symbol": prev["symbol"], "setfile_path": prev["setfile_path"]})
+        if created or requeued:
+            event(
+                conn,
+                "work_items",
+                phase,
+                "cascade_backtest_enqueued",
+                {"ea_id": ea_id, "created": created, "requeued": requeued, "skipped": skipped},
+            )
+        conn.commit()
+    if not prev_rows:
+        return {
+            "enqueued": False,
+            "ea_id": ea_id,
+            "phase": phase,
+            "reason": f"No done {prev_phase} PASS work_items found for {ea_id}",
+        }
+    return {
+        "enqueued": bool(created or requeued or skipped),
+        "ea_id": ea_id,
+        "phase": phase,
+        "previous_phase": prev_phase,
+        "created": created,
+        "requeued": requeued,
+        "skipped": skipped,
+        "next_action_hint": "Pump/dispatch-tick will claim pending work_items.",
+    }
+
+
 def _resolve_report(payload: dict[str, Any]) -> Path | None:
     """Resolve the report.csv path for a backtest task — direct path or glob."""
     direct = payload.get("expected_report_path")
@@ -5489,8 +5618,9 @@ def build_parser() -> argparse.ArgumentParser:
         "enqueue-backtest",
         help="Create a backtest_<phase> task from an APPROVE_FOR_BACKTEST ea_review task",
     )
-    enqueue_bt.add_argument("--review-task-id", required=True)
-    enqueue_bt.add_argument("--phase", default="P2", choices=list(SUPPORTED_BACKTEST_PHASES))
+    enqueue_bt.add_argument("--review-task-id")
+    enqueue_bt.add_argument("--ea", help="EA label for P5+ cascade requeue, e.g. QM5_1056")
+    enqueue_bt.add_argument("--phase", default="P2", choices=list(SUPPORTED_BACKTEST_PHASES + CASCADE_BACKTEST_PHASES))
 
     dispatch = sub.add_parser(
         "dispatch-tick",
@@ -5598,7 +5728,12 @@ def main(argv: list[str] | None = None) -> int:
     elif args.command == "mt5-slots":
         print_json(get_mt5_status())
     elif args.command == "enqueue-backtest":
-        print_json(enqueue_backtest(root, args.review_task_id, args.phase))
+        if args.ea:
+            print_json(enqueue_cascade_backtest_for_ea(root, args.ea, args.phase))
+        elif args.review_task_id:
+            print_json(enqueue_backtest(root, args.review_task_id, args.phase))
+        else:
+            print_json({"enqueued": False, "reason": "Provide --review-task-id for P2-P4 or --ea for P5+ cascade phases."})
     elif args.command == "dispatch-tick":
         print_json(dispatch_tick(root, timeout_hours=args.timeout_hours))
     elif args.command == "tick":
