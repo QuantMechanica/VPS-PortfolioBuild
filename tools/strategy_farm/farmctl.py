@@ -3471,12 +3471,15 @@ def pump(root: Path) -> dict[str, Any]:
     except Exception as exc:
         result["codex_auth_broken"] = {"tripped": False, "error": repr(exc)}
 
-    # 1a. Per-symbol work_items dispatch (NEW — pump consumes work_items as
-    #     the unit of MT5 work, one per free terminal, replacing the bundled
-    #     p2_baseline fan-out). Aggregates parent task verdicts on completion.
+    # 1a. Per-symbol work_items dispatch is owned by the per-terminal daemon
+    #     fleet (tools/strategy_farm/terminal_worker.py). Pump-cron keeps the
+    #     active-timeout detector but no longer spawns MT5 work_items.
     with connect(root) as conn:
         result["active_timeouts"] = _detect_active_age_timeout(conn)
-    result["dispatch_work_items"] = dispatch_work_items(root)
+    result["dispatch_work_items"] = {
+        "disabled": True,
+        "reason": "per-terminal worker daemons own work_item dispatch",
+    }
     # 1b. Legacy bundled-task dispatch — handles any backtest_<phase> tasks
     #     created WITHOUT matching work_items (e.g. older runs). Will become
     #     a no-op once all enqueues create work_items.
