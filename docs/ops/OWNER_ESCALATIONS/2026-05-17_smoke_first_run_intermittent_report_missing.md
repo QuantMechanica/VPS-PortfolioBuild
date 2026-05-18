@@ -523,3 +523,66 @@ then unblock the 4 EAs above.
   no further keepalive churn until either (a) yet another new
   bucket, (b) cluster crosses 30, or (c) OWNER picks a fix
   candidate.
+
+- **2026-05-18T13:00Z (observe wake)** — **threshold-crossed: 28 →
+  32 rows / 31 distinct EAs (>30 gate met); three genuinely new
+  failures today at 12:07Z, QM5_1133 self-healed.**
+
+  Self-heal filter on `farm_state.sqlite` now returns 32 real
+  `build_ea` failure rows. Net delta vs the 08:50Z 28-tally:
+
+  - **+QM5_1093** (failed attempt=3, 2026-05-18T12:07:13Z) —
+    `framework_error REPORT_MISSING;METATESTER_HUNG;INCOMPLETE_RUNS`.
+    Joins **worker-mortality / metatester-hung** bucket.
+  - **+QM5_1094** (failed attempt=3, 2026-05-18T12:07:13Z) —
+    `smoke runtime infeasible — run_smoke produced no report or
+    summary.json under D:\QM\reports\smoke\QM5_1094\20260518_112813
+    within wall-time budget`. Joins **both-runs-fail** bucket.
+  - **+QM5_1095** (failed attempt=3, 2026-05-18T12:07:13Z) —
+    `framework_error REPORT_MISSING;INCOMPLETE_RUNS;MODEL4_MARKER_REQUIRED`.
+    Joins **both-runs-fail** bucket.
+  - **+QM5_1062** (failed attempt=3, 2026-05-17T09:07:13Z) — was
+    visible in earlier 16-count "run_02-fails / T2-affected" sub-
+    cluster but dropped from the 20/25/28 cluster compositions;
+    re-counted here under **other (REPORT_MISSING / timeout)**.
+    `framework_error smoke runtime timeout after 900s on GDAXI.DWX
+    H1 2024 T2; run_02 incomplete and no summary.json emitted`.
+  - **+QM5_1119** second row — fresh `framework_error
+    REPORT_MISSING;INCOMPLETE_RUNS;MODEL4_MARKER_REQUIRED` failed
+    attempt=3 at 12:07:13Z. The original parser-empty-html row
+    (08:43:06Z) is still in the filter; EA now exhibits two distinct
+    failure modes on consecutive attempts (parser → REPORT_MISSING).
+  - **−QM5_1133** — `done` sibling now exists (2026-05-17T16:34:20Z
+    attempt=1), so self-heal excludes both the failed (NO_HISTORY,
+    11:07Z) and pending (12:09Z) sibling rows. Removed from
+    cluster. The "data-history-missing" bucket reduces to QM5_1132
+    alone — confirming the (9b) "tester state flake" sub-case is
+    genuinely transient on this strategy / re-classify low-confidence.
+
+  Updated cluster composition (31 distinct EAs, 32 rows):
+  - cold-warm-asymmetry (5): QM5_1045/1050/1055/1122/1149
+  - both-runs-fail (8): QM5_1046/1060/1065/1066/1067/1070/**1094**/**1095**
+  - preflight-already-running (5): QM5_1068/1082/1101/1123/1159
+  - worker-mortality / metatester-hung (4): QM5_1090/1091/1118/**1093**
+  - file-lock-on-include-sync (1): QM5_1121
+  - parser-empty-html-not-classified (3): QM5_1117/1119/1142  *(1119 also contributes a second row in REPORT_MISSING bucket)*
+  - data-history-missing (1): QM5_1132  *(QM5_1133 self-healed)*
+  - other (REPORT_MISSING / timeout / NO_REAL_TICKS_MARKER) (4):
+    QM5_1061/1069/1081/**1062**
+
+  **No new failure-mode bucket.** All three additions land in the
+  two largest pre-existing buckets (both-runs-fail and
+  worker-mortality), reinforcing — not reshaping — the prioritization.
+  The (5) terminal-pool mutex + (1) cold-start warm-up two-fix
+  bundle remains the recommended highest-leverage intervention; no
+  re-ordering required.
+
+  Growth rate: cluster grew +3 distinct EAs over ~4h (28 → 31), a
+  modest acceleration vs the +3-in-12h preceding window. The pump
+  cap continues to hold (no retry-storm; all new failures landed at
+  attempt=3 in a single dispatcher tick at 12:07:13Z, then halted).
+
+  Per DL-046, this is the threshold-triggered update; next update
+  gated again until either (a) yet another new failure-mode bucket
+  beyond the eight listed, (b) cluster crosses 40 distinct EAs, or
+  (c) OWNER picks a fix candidate.
