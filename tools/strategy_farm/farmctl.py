@@ -627,8 +627,8 @@ def backfill_work_items(root: Path) -> dict[str, Any]:
             if not ea_id:
                 continue
             surviving = payload.get("surviving_symbols")
-            new_items = _create_backtest_work_items(
-                conn, parent_task_id=r["id"], ea_id=ea_id, phase=phase,
+            new_items, _skipped_items = _create_backtest_work_items(
+                conn, parent_task_id=r["id"], root=root, ea_id=ea_id, phase=phase,
                 surviving_symbols=surviving,
             )
             created += len(new_items)
@@ -874,6 +874,9 @@ def _derive_verdict_from_summary(summary: dict[str, Any], min_trades: int = 5, p
 
 
 P2_UNPROFITABLE_SYMBOL_REASON = "P2_UNPROFITABLE_SYMBOL"
+P2_SYMBOL_NO_HISTORY_REASON = "SYMBOL_NO_HISTORY_FOR_PERIOD"
+P2_DEFAULT_FROM_YEAR = 2017
+P2_DEFAULT_TO_YEAR = 2022
 
 
 def _summary_net_profit_total(summary: dict[str, Any]) -> float | None:
@@ -953,6 +956,91 @@ def _filter_p2_profitable_symbols(
     return filtered, skipped
 
 
+def _dwx_symbol_history_registry() -> dict[tuple[str, str], dict[str, Any]]:
+    registry_path = REPO_ROOT / "framework" / "registry" / "dwx_symbol_history_ranges.csv"
+    if not registry_path.exists():
+        return {}
+    out: dict[tuple[str, str], dict[str, Any]] = {}
+    with registry_path.open(encoding="utf-8-sig", newline="") as f:
+        for row in csv.DictReader(f):
+            symbol = (row.get("symbol") or "").strip().upper()
+            period = (row.get("period") or "").strip().upper()
+            if not symbol or not period:
+                continue
+            try:
+                first_year = int(str(row.get("first_year") or "").strip())
+                last_year = int(str(row.get("last_year") or "").strip())
+            except ValueError:
+                continue
+            out[(symbol, period)] = {
+                "first_year": first_year,
+                "last_year": last_year,
+                "source_terminals": (row.get("source_terminals") or "").strip(),
+            }
+    return out
+
+
+def _log_p2_history_filter(root: Path, message: str) -> None:
+    log_path = root / "logs" / "p2_history_range_filter.log"
+    try:
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        with log_path.open("a", encoding="utf-8", newline="\n") as f:
+            f.write(f"{utc_now()} {message}\n")
+    except OSError:
+        pass
+
+
+def _p2_history_window_for_symbol(
+    symbol: str,
+    period: str,
+    requested_from_year: int = P2_DEFAULT_FROM_YEAR,
+    requested_to_year: int = P2_DEFAULT_TO_YEAR,
+    registry: dict[tuple[str, str], dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    registry = _dwx_symbol_history_registry() if registry is None else registry
+    symbol_key = symbol.strip().upper()
+    period_key = period.strip().upper()
+    entry = registry.get((symbol_key, period_key))
+    if not entry:
+        return {
+            "skip": True,
+            "reason": P2_SYMBOL_NO_HISTORY_REASON,
+            "symbol": symbol_key,
+            "period": period_key,
+            "requested_from_year": requested_from_year,
+            "requested_to_year": requested_to_year,
+        }
+
+    first_year = int(entry["first_year"])
+    last_year = int(entry["last_year"])
+    if requested_to_year < first_year or requested_from_year > last_year:
+        return {
+            "skip": True,
+            "reason": P2_SYMBOL_NO_HISTORY_REASON,
+            "symbol": symbol_key,
+            "period": period_key,
+            "requested_from_year": requested_from_year,
+            "requested_to_year": requested_to_year,
+            "first_year": first_year,
+            "last_year": last_year,
+        }
+
+    from_year = max(requested_from_year, first_year)
+    to_year = min(requested_to_year, last_year)
+    return {
+        "skip": False,
+        "symbol": symbol_key,
+        "period": period_key,
+        "requested_from_year": requested_from_year,
+        "requested_to_year": requested_to_year,
+        "from_year": from_year,
+        "to_year": to_year,
+        "first_year": first_year,
+        "last_year": last_year,
+        "adjusted": (from_year, to_year) != (requested_from_year, requested_to_year),
+    }
+
+
 def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
                                     terminal: str) -> dict[str, Any]:
     """Spawn run_smoke.ps1 for one work_item, pinned to a specific terminal.
@@ -965,6 +1053,10 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
     symbol = item_row["symbol"]
     setfile_path = item_row["setfile_path"]
     phase = item_row["phase"]
+    try:
+        item_payload = json.loads(item_row["payload_json"] or "{}")
+    except json.JSONDecodeError:
+        item_payload = {}
 
     # Resolve full EA dir name (with slug) for the -EALabel arg
     ea_root_dir = REPO_ROOT / "framework" / "EAs"
@@ -996,8 +1088,11 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
                       or "_synth_" in setfile_path)
     n_runs = "1" if is_exploration else "2"
     if phase == "P2":
-        from_date = "2020.01.01" if is_exploration else "2017.01.01"
-        to_date = "2022.12.31"
+        default_from_year = 2020 if is_exploration else P2_DEFAULT_FROM_YEAR
+        from_year = int(item_payload.get("from_year") or default_from_year)
+        to_year = int(item_payload.get("to_year") or P2_DEFAULT_TO_YEAR)
+        from_date = f"{from_year}.01.01"
+        to_date = f"{to_year}.12.31"
     else:
         from_date = None
         to_date = None
@@ -4589,23 +4684,59 @@ def _ensure_p2_full_dwx_setfiles(root: Path, ea_id: str) -> list[tuple[str, str]
 def _create_backtest_work_items(conn: sqlite3.Connection, parent_task_id: str,
                                  root: Path,
                                  ea_id: str, phase: str,
-                                 surviving_symbols: list[str] | None) -> list[dict[str, str]]:
+                                 surviving_symbols: list[str] | None) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """Fan out a backtest task into per-(symbol, setfile) work_items.
 
     For P2: every DWX backtest symbol from dwx_symbol_matrix.csv, unless the
     card explicitly declares single_symbol_only.
     For P3+: only setfiles whose symbol is in surviving_symbols (subset).
-    Returns list of created {id, symbol, setfile_path} for the response.
+    Returns (created, skipped) for the response.
     """
     setfiles = _ensure_p2_full_dwx_setfiles(root, ea_id) if phase == "P2" else _find_ea_setfiles(ea_id, phase)
     if not setfiles:
-        return []
+        return [], []
     if surviving_symbols:
         symbol_set = set(surviving_symbols)
         setfiles = [(s, p) for s, p in setfiles if s in symbol_set]
-    out: list[dict[str, str]] = []
+    out: list[dict[str, Any]] = []
+    skipped: list[dict[str, Any]] = []
     now = utc_now()
+    period = _detect_ea_period(ea_id)
+    history_registry = _dwx_symbol_history_registry() if phase == "P2" else {}
     for sym, setfile_path in setfiles:
+        payload: dict[str, Any] = {}
+        if phase == "P2" and history_registry:
+            window = _p2_history_window_for_symbol(
+                sym,
+                period,
+                P2_DEFAULT_FROM_YEAR,
+                P2_DEFAULT_TO_YEAR,
+                history_registry,
+            )
+            if window["skip"]:
+                message = (
+                    f"skipping {sym}/{period} no history for "
+                    f"{P2_DEFAULT_FROM_YEAR}-{P2_DEFAULT_TO_YEAR}"
+                )
+                _log_p2_history_filter(root, message)
+                skipped.append({**window, "message": message})
+                continue
+            payload = {
+                "from_year": window["from_year"],
+                "to_year": window["to_year"],
+                "requested_from_year": P2_DEFAULT_FROM_YEAR,
+                "requested_to_year": P2_DEFAULT_TO_YEAR,
+                "history_first_year": window["first_year"],
+                "history_last_year": window["last_year"],
+            }
+            if window["adjusted"]:
+                message = (
+                    f"adjusted {sym} P2 from {P2_DEFAULT_FROM_YEAR}-{P2_DEFAULT_TO_YEAR} "
+                    f"to {window['from_year']}-{window['to_year']}"
+                )
+                _log_p2_history_filter(root, message)
+                payload["history_adjusted"] = True
+                payload["history_adjustment_message"] = message
         wid = str(uuid.uuid4())
         conn.execute(
             """
@@ -4615,10 +4746,10 @@ def _create_backtest_work_items(conn: sqlite3.Connection, parent_task_id: str,
             VALUES (?, ?, ?, ?, ?, ?, 'pending', 0, ?, ?, ?, ?)
             """,
             (wid, "backtest", phase, ea_id, sym, setfile_path, parent_task_id,
-             json.dumps({}, sort_keys=True), now, now),
+             json.dumps(payload, sort_keys=True), now, now),
         )
-        out.append({"id": wid, "symbol": sym, "setfile_path": setfile_path})
-    return out
+        out.append({"id": wid, "symbol": sym, "setfile_path": setfile_path, "payload": payload})
+    return out, skipped
 
 
 def _setfile_path_exists(setfile_path: str) -> bool:
@@ -4717,7 +4848,7 @@ def enqueue_backtest(root: Path, review_task_id: str, phase: str) -> dict[str, A
         # for the per-symbol queue model. The bundled `tasks` row above stays
         # as the high-level lifecycle anchor; work_items are what the MT5
         # dispatcher actually claims one-by-one.
-        work_items_created = _create_backtest_work_items(
+        work_items_created, p2_history_skipped = _create_backtest_work_items(
             conn,
             parent_task_id=task_id,
             root=root,
@@ -4732,7 +4863,7 @@ def enqueue_backtest(root: Path, review_task_id: str, phase: str) -> dict[str, A
         "ea_id": ea_id,
         "phase": phase,
         "work_items_created": work_items_created,
-        "work_items_skipped": p2_profit_filter_skipped if phase == "P3" else [],
+        "work_items_skipped": p2_history_skipped if phase == "P2" else (p2_profit_filter_skipped if phase == "P3" else []),
         "expected_report_glob": expected_glob,
         "next_action_hint": "python tools/strategy_farm/farmctl.py dispatch-tick",
     }
