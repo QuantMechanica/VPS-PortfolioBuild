@@ -1125,7 +1125,7 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
     log_fh = open(log_path, "w", encoding="utf-8")
     creationflags = 0
     if sys.platform == "win32":
-        creationflags = subprocess.CREATE_NEW_CONSOLE  # type: ignore[attr-defined]
+        creationflags = subprocess.CREATE_NO_WINDOW  # type: ignore[attr-defined]
     proc = subprocess.Popen(
         cmd,
         cwd=str(REPO_ROOT),
@@ -1767,7 +1767,7 @@ def _spawn_claude_for_review(root: Path, build_task_row: sqlite3.Row) -> dict[st
 
     creationflags = 0
     if sys.platform == "win32":
-        creationflags = subprocess.CREATE_NEW_CONSOLE  # type: ignore[attr-defined]
+        creationflags = subprocess.CREATE_NO_WINDOW  # type: ignore[attr-defined]
     stdout_f = open(live_log, "wb")
     proc = subprocess.Popen(
         [claude_path, "-p", bootstrap,
@@ -1886,7 +1886,7 @@ def _spawn_claude_for_g0_batch(root: Path) -> dict[str, Any]:
 
     creationflags = 0
     if sys.platform == "win32":
-        creationflags = subprocess.CREATE_NEW_CONSOLE  # type: ignore[attr-defined]
+        creationflags = subprocess.CREATE_NO_WINDOW  # type: ignore[attr-defined]
     stdout_f = open(live_log, "wb")
     proc = subprocess.Popen(
         [claude_path, "-p", bootstrap,
@@ -1949,7 +1949,7 @@ def _spawn_codex_for_g0_batch(root: Path) -> dict[str, Any]:
 
     creationflags = 0
     if sys.platform == "win32":
-        creationflags = subprocess.CREATE_NEW_CONSOLE  # type: ignore[attr-defined]
+        creationflags = subprocess.CREATE_NO_WINDOW  # type: ignore[attr-defined]
     stdin_f = open(prompt_path, "rb")
     stdout_f = open(live_log, "wb")
     proc = subprocess.Popen(
@@ -2086,7 +2086,7 @@ def _claim_research_source(root: Path) -> dict[str, Any]:
     )
     creationflags = 0
     if sys.platform == "win32":
-        creationflags = subprocess.CREATE_NEW_CONSOLE  # type: ignore[attr-defined]
+        creationflags = subprocess.CREATE_NO_WINDOW  # type: ignore[attr-defined]
     stdout_f = open(live_log, "wb")
     proc = subprocess.Popen(
         [claude_path, "-p", bootstrap,
@@ -2225,7 +2225,7 @@ def _claim_research_source_codex(root: Path) -> dict[str, Any]:
 
     creationflags = 0
     if sys.platform == "win32":
-        creationflags = subprocess.CREATE_NEW_CONSOLE  # type: ignore[attr-defined]
+        creationflags = subprocess.CREATE_NO_WINDOW  # type: ignore[attr-defined]
     stdin_f = open(prompt_path, "rb")
     stdout_f = open(live_log, "wb")
     proc = subprocess.Popen(
@@ -2331,7 +2331,7 @@ def _spawn_codex_for_review(root: Path, build_task_row: sqlite3.Row) -> dict[str
 
     creationflags = 0
     if sys.platform == "win32":
-        creationflags = subprocess.CREATE_NEW_CONSOLE  # type: ignore[attr-defined]
+        creationflags = subprocess.CREATE_NO_WINDOW  # type: ignore[attr-defined]
     stdin_f = open(prompt_path, "rb")
     stdout_f = open(live_log, "wb")
     proc = subprocess.Popen(
@@ -2459,11 +2459,11 @@ def _spawn_codex_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]:
     codex_path = _resolve_codex()
     creationflags = 0
     if sys.platform == "win32":
-        # CREATE_NEW_CONSOLE gives the child its own console (separate from
-        # farmctl's). Codex needs a console for its TUI even when run with
-        # `exec` (non-interactive). DETACHED_PROCESS removed because it makes
-        # codex.cmd's batch shim exit immediately without running node.
-        creationflags = subprocess.CREATE_NEW_CONSOLE  # type: ignore[attr-defined]
+        # CREATE_NO_WINDOW: child gets a console but it stays hidden (no popup
+        # on OWNER's desktop). DETACHED_PROCESS would make codex.cmd's batch
+        # shim exit immediately without running node, so we stay attached-but-
+        # hidden via CREATE_NO_WINDOW.
+        creationflags = subprocess.CREATE_NO_WINDOW  # type: ignore[attr-defined]
     stdin_f = open(prompt_path, "rb")
     stdout_f = open(live_log, "wb")
     proc = subprocess.Popen(
