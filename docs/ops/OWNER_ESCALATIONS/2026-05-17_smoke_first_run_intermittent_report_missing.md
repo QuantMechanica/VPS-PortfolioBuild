@@ -586,3 +586,108 @@ then unblock the 4 EAs above.
   gated again until either (a) yet another new failure-mode bucket
   beyond the eight listed, (b) cluster crosses 40 distinct EAs, or
   (c) OWNER picks a fix candidate.
+
+- **2026-05-18T15:47Z (observe wake)** — **NEW bucket (9)
+  `run_smoke_invocation_missing_params` emerges (QM5_1104);
+  distinct-EA count unchanged at 31; terminal64 spawn-watchdog patch
+  (4dbe855d, 15:20:53Z) landed but pre-validation window.** Commit
+  trigger: condition (a) new failure-mode bucket.
+
+  Nine `build_ea` rows updated since the 13:00Z snapshot (all
+  status=pending — these are pump retries that haven't yet hit
+  attempt cap, so the self-heal filter does not count them; cluster
+  remains 32 rows / 31 distinct EAs):
+
+  - **QM5_1104** (`qp-country-bab`, NDX.DWX H1 2024, attempt=3,
+    14:09:18Z) — `framework_error run_smoke.ps1 missing mandatory
+    parameters: Symbol Year`. **Not in any of the 8 documented
+    buckets.** The latest successful smoke artifact
+    `D:/QM/reports/smoke/QM5_1104/20260518_115826/summary.json` (at
+    12:02Z) shows the smoke harness was invoked correctly with
+    symbol/year and produced a NO_HISTORY result. The 14:09Z DB
+    update therefore reflects a later, separate invocation where the
+    pump dispatched `run_smoke.ps1` without `-Symbol`/`-Year`. This
+    is a deterministic invocation bug in the pump retry path — not
+    a tester flake — and retries will not self-heal it.
+
+  - **QM5_1103** (`qp-country-low-vol`, NDX.DWX, attempt=3,
+    14:09:18Z) and **QM5_1134** (re-attempt after yesterday's done
+    at 19:03Z, attempt=1 fresh pending row, 14:14:18Z) — both
+    `INVALID_REPORT;INCOMPLETE_RUNS REPORT_PARSE_ERROR despite
+    nonempty report files; total_trades=0` with `report_size_bytes`
+    ~22 KB. **Variant of bucket (6) parser-empty-html-not-
+    classified, but with NON-empty reports.** Parser still fails to
+    extract a metric but the underlying report HTML is present.
+    Treating as bucket (6) sub-variant rather than a new bucket
+    since the upstream fix is the same shape (defensive parser
+    fallback).
+
+  - **QM5_1133** (re-attempt at 14:09:18Z, NDX.DWX D1) — fresh
+    NO_HISTORY pending row; previously self-healed via done sibling
+    at 16:34:20Z 2026-05-17. Reinforces (9b) "tester state flake"
+    sub-case — same EA cycles between done and NO_HISTORY across
+    attempts.
+
+  - **QM5_1168** (attempt=2, 14:14:18Z) —
+    `REPORT_MISSING;METATESTER_HUNG;INCOMPLETE_RUNS;MODEL4_MARKER_REQUIRED`.
+    Joins **worker-mortality / metatester-hung** bucket.
+
+  - **QM5_1236** (attempt=1, 14:14:18Z) — `T1 terminal instance
+    already running; run_smoke refused to launch without
+    -AllowRunningTerminal`. **QM5_1237** (attempt=1, 14:14:18Z) —
+    `Terminal instance is already running for D:\QM\mt5\T1; smoke
+    harness aborted before tester launch`. Both join **preflight-
+    already-running** bucket. The "-AllowRunningTerminal" wording
+    is the new fail-fast message shape from commit `4dbe855d`
+    (15:20:53Z) — but these rows were updated at 14:14Z, ~66 min
+    BEFORE the commit landed, so they pre-date the watchdog patch.
+
+  - **QM5_1087**, **QM5_1119** — pump-resets with empty
+    failure_reason (re-queued for retry); not failure-mode signal.
+
+  **New fix candidate (10) — audit pump-retry path for
+  parameter-passing consistency.** Locate where `run_smoke.ps1` is
+  re-invoked by the autonomous wake's pump (likely
+  `pump_record_build` in `farmctl.py`) and verify that `-Symbol`
+  and `-Year` are pulled from the prior attempt's payload or the
+  card's `symbol_tf` field on every retry, not just the first
+  invocation. One-EA bucket today but the regression risk is real
+  because the missing-params message implies the call site reached
+  the script with a partial argument list — could affect any EA on
+  retry.
+
+  **Post-`4dbe855d` watchdog status: pre-validation.** The
+  terminal64 spawn-watchdog commit landed at 15:20:53Z, ~26 min
+  before this wake. No fresh smoke artifacts in
+  `D:/QM/reports/smoke/` have a `LastWriteTime > 15:21Z` yet (most
+  recent under the recently-failed EAs are 14:14Z or earlier).
+  Validation defers to the next autonomous wake at 16:17Z which
+  will be the first build attempt to run under the new watchdog.
+
+  Updated cluster composition (32 rows / 31 distinct EAs,
+  unchanged from 13:00Z; the new bucket (9) row is status=pending
+  and not yet in the self-heal filter):
+  - cold-warm-asymmetry (5): QM5_1045/1050/1055/1122/1149
+  - both-runs-fail (8): QM5_1046/1060/1065/1066/1067/1070/1094/1095
+  - preflight-already-running (5): QM5_1068/1082/1101/1123/1159
+    (1236/1237 retry-pending, not yet terminal)
+  - worker-mortality / metatester-hung (4): QM5_1090/1091/1118/1093
+    (1168 retry-pending, not yet terminal)
+  - file-lock-on-include-sync (1): QM5_1121
+  - parser-empty-html-not-classified (3): QM5_1117/1119/1142
+    (1103/1134-pending are non-empty-report variants of same bucket)
+  - data-history-missing (1): QM5_1132
+  - other (REPORT_MISSING / timeout / NO_REAL_TICKS_MARKER) (4):
+    QM5_1061/1069/1081/1062
+  - **(9) run_smoke_invocation_missing_params (NEW, retry-pending):
+    QM5_1104**
+
+  **Recommended escalation path unchanged.** Severity remains HIGH.
+  The two-fix bundle (5) terminal-pool mutex + (1) cold-start
+  warm-up plus newly-landed (4dbe855d) spawn-watchdog covers the
+  largest failure surface; (10) is a one-EA outlier that fits a
+  cleanup pass once the bundle lands. Per DL-046, next update
+  gated again until either (a) yet another new bucket beyond the
+  nine listed, (b) cluster crosses 40 distinct EAs, (c) post-
+  watchdog validation evidence (positive or negative) from the
+  next autonomous wake, or (d) OWNER picks a fix candidate.
