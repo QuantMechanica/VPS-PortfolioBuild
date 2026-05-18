@@ -3702,6 +3702,7 @@ def pump(root: Path) -> dict[str, Any]:
                     WHERE w2.ea_id = w.ea_id
                       AND w2.symbol = w.symbol
                       AND w2.phase = ?
+                      AND w2.setfile_path = w.setfile_path
                   )
                 ORDER BY w.updated_at ASC LIMIT 10
                 """,
@@ -4348,10 +4349,10 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
             existing = conn.execute(
                 """
                 SELECT * FROM work_items
-                WHERE ea_id=? AND phase=? AND symbol=?
+                WHERE ea_id=? AND phase=? AND symbol=? AND setfile_path=?
                 ORDER BY created_at ASC LIMIT 1
                 """,
-                (ea_id, phase, prev["symbol"]),
+                (ea_id, phase, prev["symbol"], prev["setfile_path"]),
             ).fetchone()
             payload = {
                 "promoted_from_phase": prev_phase,
