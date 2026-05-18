@@ -45,6 +45,17 @@ CODEX_G0_TEMPLATE = PROMPTS_DIR / "codex_g0_review.md"
 PIPELINE_REPORT_ROOT = Path(r"D:\QM\reports\pipeline")
 SUPPORTED_BACKTEST_PHASES = ("P2", "P3", "P3.5", "P4")  # 2026-05-17: extend chain to P3.5 (cross-symbol robustness) + P4 (walk-forward OOS)
 CASCADE_BACKTEST_PHASES = ("P5", "P5b", "P5c", "P6", "P7", "P8")
+REAL_PHASE_RUNNER_PHASES = ("P3.5", "P4", "P5", "P5b", "P5c", "P6", "P7", "P8")
+PHASE_RUNNER_SCRIPTS = {
+    "P3.5": "p35_csr_runner.py",
+    "P4": "p4_walk_forward.py",
+    "P5": "p5_stress_runner.py",
+    "P5b": "p5b_calibrated_noise.py",
+    "P5c": "p5c_crisis_slices.py",
+    "P6": "p6_multiseed.py",
+    "P7": "p7_statval.py",
+    "P8": "p8_news_impact.py",
+}
 P5_REQUIRED_OOS_FROM_YEAR = 2023
 P5_REQUIRED_OOS_TO_YEAR = 2025
 P5PLUS_MAX_DRAWDOWN_PCT = 20.0
@@ -849,12 +860,59 @@ def _derive_p5plus_metric_verdict(runs: list[dict[str, Any]]) -> tuple[str, str]
     return "PASS", ""
 
 
+def _derive_phase_runner_verdict(summary: dict[str, Any], min_trades: int = 5, phase: str | None = None) -> tuple[str, str]:
+    """Derive honest work_item verdicts from real phase-runner result JSON."""
+    raw_verdict = str(summary.get("verdict") or summary.get("result") or "").strip()
+    verdict_upper = raw_verdict.upper()
+    reason = str(summary.get("reason") or summary.get("criterion") or "").strip()
+    phase_key = str(phase or summary.get("phase") or "").strip()
+
+    if verdict_upper in {"PENDING_IMPLEMENTATION", "PENDING_RUNNER"}:
+        return verdict_upper, reason or "phase runner not implemented yet"
+    if verdict_upper in {"FAIL", "INVALID", "NO_PASS_BASELINE", "NO_ELIGIBLE_MODE", "MULTI_SEED_FAIL"}:
+        return "FAIL", reason or raw_verdict or "phase_runner_fail"
+    if verdict_upper in {"REPORT_ONLY"}:
+        return "PENDING_IMPLEMENTATION", reason or "report-only phase runner; no hard PASS verdict"
+    if verdict_upper in {"PASS", "AUTO_PASS", "MULTI_SEED_PASS", "MULTI_SEED_MIXED", "MODE_SELECTED"}:
+        return "PASS", reason
+
+    if phase_key.upper() == "P4":
+        folds = int(summary.get("wf_folds_completed") or summary.get("fold_count") or 0)
+        trades = int(summary.get("oos_total_trades") or summary.get("total_trades") or 0)
+        sharpe = summary.get("oos_sharpe")
+        max_dd = summary.get("oos_max_dd_pct")
+        net_profit = summary.get("oos_net_profit")
+        if folds < 6:
+            return "FAIL", reason or "wf_folds_below_6"
+        if trades < min_trades:
+            return "FAIL", reason or "MIN_TRADES_NOT_MET"
+        if sharpe is not None and float(sharpe) < P5PLUS_MIN_SHARPE:
+            return "FAIL", reason or "wf_oos_sharpe_below_gate"
+        if max_dd is not None and float(max_dd) > P5PLUS_MAX_DRAWDOWN_PCT:
+            return "FAIL", reason or "wf_oos_drawdown_exceeded"
+        if net_profit is not None and float(net_profit) <= 0.0:
+            return "FAIL", reason or "wf_oos_unprofitable"
+        return "PASS", reason or "wf_oos_gates_met"
+
+    return "FAIL", reason or f"unknown_phase_runner_verdict:{raw_verdict or 'missing'}"
+
+
 def _derive_verdict_from_summary(summary: dict[str, Any], min_trades: int = 5, phase: str | None = None) -> tuple[str, str]:
     """Single-symbol verdict from a run_smoke summary.json. Returns (verdict, reason).
 
     P2-P4 mirror p2_baseline's derive_verdict. P5+ additionally requires
     profitable OOS behavior and bounded drawdown when those metrics exist.
     """
+    phase_key = str(summary.get("phase") or phase or "").strip()
+    if phase_key in REAL_PHASE_RUNNER_PHASES:
+        verdict = str(summary.get("verdict") or "").strip()
+        reason = str(summary.get("reason") or summary.get("criterion") or "").strip()
+        if verdict:
+            return verdict, reason
+
+    if "phase" in summary and "runs" not in summary:
+        return _derive_phase_runner_verdict(summary, min_trades=min_trades, phase=phase)
+
     if summary.get("result") != "PASS":
         reasons = summary.get("reason_classes") or ["UNKNOWN"]
         return "FAIL", "run_smoke_fail:" + ";".join(reasons)
@@ -1058,6 +1116,65 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
     except json.JSONDecodeError:
         item_payload = {}
 
+    if phase in REAL_PHASE_RUNNER_PHASES:
+        report_root = Path(r"D:\QM\reports\work_items") / item_row["id"]
+        report_root.mkdir(parents=True, exist_ok=True)
+        timestamp = dt.datetime.now(dt.UTC).strftime("%Y%m%dT%H%M%SZ")
+        safe_phase = re.sub(r"[^A-Za-z0-9_.-]+", "_", str(phase)).replace(".", "_")
+        safe_symbol = re.sub(r"[^A-Za-z0-9_.-]+", "_", str(symbol))
+        log_path = root / "logs" / f"phase_runner_{safe_phase}_{ea_id}_{safe_symbol}_{timestamp}.log"
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+
+        cmd = _phase_runner_cmd(
+            phase,
+            ea_id,
+            terminal,
+            surviving_symbols=[symbol],
+            out_prefix=report_root,
+            setfile_path=setfile_path,
+        )
+        if cmd is None:
+            return {
+                "spawned": False,
+                "reason": "phase_runner_not_implemented",
+                "log_path": str(log_path),
+                "report_root": str(report_root),
+                "ea_dir_name": ea_id,
+                "phase_runner": None,
+            }
+
+        log_fh = open(log_path, "w", encoding="utf-8")
+        creationflags = 0
+        if sys.platform == "win32":
+            creationflags = subprocess.CREATE_NO_WINDOW  # type: ignore[attr-defined]
+        env = {**os.environ}
+        env["PYTHONPATH"] = os.pathsep.join(
+            [
+                str(REPO_ROOT / "framework" / "scripts"),
+                str(REPO_ROOT),
+                env.get("PYTHONPATH", ""),
+            ]
+        )
+        proc = subprocess.Popen(
+            cmd,
+            cwd=str(REPO_ROOT),
+            stdout=log_fh,
+            stderr=subprocess.STDOUT,
+            stdin=subprocess.DEVNULL,
+            creationflags=creationflags,
+            close_fds=False,
+            env=env,
+        )
+        return {
+            "spawned": True,
+            "pid": proc.pid,
+            "log_path": str(log_path),
+            "report_root": str(report_root),
+            "ea_dir_name": ea_id,
+            "phase_runner": cmd[1] if len(cmd) > 1 else None,
+            "effective_min_trades": 5,
+        }
+
     # Resolve full EA dir name (with slug) for the -EALabel arg
     ea_root_dir = REPO_ROOT / "framework" / "EAs"
     candidates = [p for p in ea_root_dir.glob(f"{ea_id}_*") if p.is_dir()]
@@ -1143,6 +1260,102 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         "ea_dir_name": ea_dir_name,
         **min_trade_info,
     }
+
+
+def _phase_runner_script_path(phase: str) -> Path | None:
+    script_name = PHASE_RUNNER_SCRIPTS.get(str(phase or "").strip())
+    if not script_name:
+        return None
+    path = REPO_ROOT / "framework" / "scripts" / script_name
+    return path if path.exists() else None
+
+
+def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
+                                    report_root: Path) -> list[str] | None:
+    phase = item_row["phase"]
+    script_path = _phase_runner_script_path(phase)
+    if script_path is None:
+        return None
+    ea_id = item_row["ea_id"]
+    symbol = item_row["symbol"]
+    period = _detect_ea_period(ea_id)
+    cmd = [
+        sys.executable,
+        str(script_path),
+        "--ea", ea_id,
+        "--out-prefix", str(report_root),
+        "--symbol", symbol,
+        "--period", period,
+        "--setfile", item_row["setfile_path"],
+    ]
+    if phase == "P3.5":
+        cmd.extend(["--symbols", symbol, "--from-year", "2017", "--to-year", "2022"])
+    elif phase == "P4":
+        cmd.extend([
+            "--symbols", symbol,
+            "--train-from-year", "2017",
+            "--train-to-year", "2022",
+            "--oos-from-year", "2023",
+            "--oos-to-year", "2025",
+            "--min-folds", "6",
+        ])
+    elif phase == "P6":
+        cmd.extend(["--seeds", "42,17,99,7,2026"])
+    elif phase == "P8":
+        cmd.extend(["--modes", "OFF,PAUSE,SKIP_DAY,FTMO_PAUSE,5ers_PAUSE,no_news,news_only"])
+    return cmd
+
+
+def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
+                                      terminal: str) -> dict[str, Any]:
+    phase = item_row["phase"]
+    report_root = Path(r"D:\QM\reports\work_items") / item_row["id"]
+    report_root.mkdir(parents=True, exist_ok=True)
+    log_path = root / "logs" / f"work_item_{item_row['id']}.log"
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+
+    cmd = _phase_runner_cmd_for_work_item(root, item_row, report_root)
+    if cmd is None:
+        msg = "phase runner not implemented yet -- skipping for now"
+        with log_path.open("a", encoding="utf-8", newline="\n") as f:
+            f.write(f"{utc_now()} {phase}: {msg}\n")
+        return {
+            "spawned": False,
+            "pending_runner": True,
+            "reason": msg,
+            "log_path": str(log_path),
+            "report_root": str(report_root),
+            "ea_dir_name": item_row["ea_id"],
+            "phase_runner": None,
+        }
+
+    log_fh = open(log_path, "w", encoding="utf-8")
+    creationflags = 0
+    if sys.platform == "win32":
+        creationflags = subprocess.CREATE_NO_WINDOW  # type: ignore[attr-defined]
+    proc = subprocess.Popen(
+        cmd,
+        cwd=str(REPO_ROOT),
+        stdout=log_fh,
+        stderr=subprocess.STDOUT,
+        stdin=subprocess.DEVNULL,
+        creationflags=creationflags,
+        close_fds=False,
+    )
+    return {
+        "spawned": True,
+        "pid": proc.pid,
+        "log_path": str(log_path),
+        "report_root": str(report_root),
+        "ea_dir_name": item_row["ea_id"],
+        "phase_runner": cmd[1],
+        "effective_min_trades": 5,
+    }
+
+
+def _spawn_work_item_runner(root: Path, item_row: sqlite3.Row,
+                            terminal: str) -> dict[str, Any]:
+    return _spawn_run_smoke_for_work_item(root, item_row, terminal)
 
 
 def _dispatch_diag_enabled() -> bool:
@@ -1581,8 +1794,23 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 })
                 continue
             terminal = free_terminals.pop(0)
-            spawn = _spawn_run_smoke_for_work_item(root, item, terminal)
+            spawn = _spawn_work_item_runner(root, item, terminal)
             if not spawn.get("spawned"):
+                if spawn.get("pending_runner"):
+                    payload = {
+                        "verdict_reason": spawn.get("reason"),
+                        "log_path": spawn.get("log_path"),
+                        "report_root": spawn.get("report_root"),
+                    }
+                    with connect(root) as conn2:
+                        conn2.execute(
+                            "UPDATE work_items SET status='done', verdict='PENDING_RUNNER', payload_json=?, updated_at=? WHERE id=?",
+                            (json.dumps(payload, sort_keys=True), started_iso, item["id"]),
+                        )
+                        conn2.commit()
+                    actions.append({"action": "pending_runner", "item_id": item["id"], "phase": item["phase"], "reason": spawn.get("reason")})
+                    free_terminals.insert(0, terminal)
+                    continue
                 # Mark failed if spawn impossible
                 with connect(root) as conn2:
                     conn2.execute(
@@ -1603,6 +1831,7 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 "expected_trades_per_year_per_symbol": spawn.get("expected_trades_per_year_per_symbol"),
                 "smoke_year_count": spawn.get("smoke_year_count"),
                 "effective_min_trades": spawn.get("effective_min_trades"),
+                "phase_runner": spawn.get("phase_runner"),
             }
             with connect(root) as conn2:
                 conn2.execute(
@@ -1617,6 +1846,7 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 "symbol": item["symbol"],
                 "terminal": terminal,
                 "pid": spawn["pid"],
+                "phase_runner": spawn.get("phase_runner"),
                 "effective_min_trades": spawn.get("effective_min_trades"),
             })
             launched_pids.append(int(spawn["pid"]))

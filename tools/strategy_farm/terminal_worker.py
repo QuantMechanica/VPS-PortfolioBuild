@@ -352,9 +352,33 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
         row = conn.execute("SELECT * FROM work_items WHERE id=?", (item["id"],)).fetchone()
     if not row:
         return {"action": "missing_item", "item_id": item["id"]}
-    spawn = farmctl._spawn_run_smoke_for_work_item(root, row, terminal)
+    spawn = farmctl._spawn_work_item_runner(root, row, terminal)
     now = farmctl.utc_now()
     if not spawn.get("spawned"):
+        if spawn.get("pending_runner"):
+            payload = _json_loads(row["payload_json"])
+            payload.update({
+                "verdict_reason": spawn.get("reason"),
+                "log_path": spawn.get("log_path"),
+                "report_root": spawn.get("report_root"),
+            })
+            with farmctl.connect(root) as conn:
+                conn.execute(
+                    """
+                    UPDATE work_items
+                    SET status='done', verdict='PENDING_RUNNER', claimed_by=NULL,
+                        payload_json=?, updated_at=?
+                    WHERE id=?
+                    """,
+                    (json.dumps(payload, sort_keys=True), now, item["id"]),
+                )
+                conn.commit()
+            return {
+                "action": "pending_runner",
+                "item_id": item["id"],
+                "reason": spawn.get("reason"),
+                "aggregate": _aggregate_finished_parent(root, row["parent_task_id"]),
+            }
         with farmctl.connect(root) as conn:
             conn.execute(
                 "UPDATE work_items SET status='failed', verdict='INVALID', claimed_by=NULL, updated_at=? WHERE id=?",
@@ -374,6 +398,7 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
         "expected_trades_per_year_per_symbol": spawn.get("expected_trades_per_year_per_symbol"),
         "smoke_year_count": spawn.get("smoke_year_count"),
         "effective_min_trades": spawn.get("effective_min_trades"),
+        "phase_runner": spawn.get("phase_runner"),
     })
     with farmctl.connect(root) as conn:
         conn.execute(
