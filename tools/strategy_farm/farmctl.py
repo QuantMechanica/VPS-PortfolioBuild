@@ -1120,7 +1120,7 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         report_root = Path(r"D:\QM\reports\work_items") / item_row["id"]
         report_root.mkdir(parents=True, exist_ok=True)
         timestamp = dt.datetime.now(dt.UTC).strftime("%Y%m%dT%H%M%SZ")
-        safe_phase = re.sub(r"[^A-Za-z0-9_.-]+", "_", str(phase)).replace(".", "_")
+        safe_phase = re.sub(r"[^A-Za-z0-9_.-]+", "_", str(phase))
         safe_symbol = re.sub(r"[^A-Za-z0-9_.-]+", "_", str(symbol))
         log_path = root / "logs" / f"phase_runner_{safe_phase}_{ea_id}_{safe_symbol}_{timestamp}.log"
         log_path.parent.mkdir(parents=True, exist_ok=True)
@@ -5365,13 +5365,36 @@ def _detect_ea_period(ea_id: str) -> str:
 
 
 def _phase_runner_cmd(phase: str, ea_id: str, terminal: str | None = None,
-                       surviving_symbols: list[str] | None = None) -> list[str] | None:
+                       surviving_symbols: list[str] | None = None,
+                       out_prefix: Path | None = None,
+                       setfile_path: str | None = None) -> list[str] | None:
     """Return the subprocess argv for the runner of a given phase, or None.
 
     P2 takes all setfiles in the EA dir; P3+ runs only on `surviving_symbols`
     from the predecessor phase (P2 PASS symbols). When `terminal` is given
     (P2-only path), pins p2_baseline to one terminal for fleet saturation.
     """
+    phase_aliases = {
+        "p3.5": "P3.5",
+        "p4": "P4",
+        "p5": "P5",
+        "p5b": "P5b",
+        "p5c": "P5c",
+        "p6": "P6",
+        "p7": "P7",
+        "p8": "P8",
+    }
+    phase = phase_aliases.get(str(phase or "").strip().lower(), str(phase or "").strip())
+
+    def _runner_base(script_name: str) -> list[str]:
+        cmd = [sys.executable, str(REPO_ROOT / "framework" / "scripts" / script_name), "--ea", ea_id]
+        if out_prefix is not None:
+            cmd.extend(["--out-prefix", str(out_prefix)])
+        return cmd
+
+    def _pipeline_file(phase_dir: str, filename: str) -> str:
+        return str(PIPELINE_REPORT_ROOT / ea_id / phase_dir / filename)
+
     if phase == "P2":
         period = _detect_ea_period(ea_id)
         # P2 = LONG in-sample window. OWNER 2026-05-17: 2022-2024 was too
@@ -5417,37 +5440,77 @@ def _phase_runner_cmd(phase: str, ea_id: str, terminal: str | None = None,
         # P3.5 = cross-symbol robustness on the SAME in-sample window.
         # Does the edge generalize across multiple DWX symbols? Different
         # from P4 walk-forward (which is true OOS in time).
-        period = _detect_ea_period(ea_id)
-        symbols = surviving_symbols or []
-        if not symbols:
-            return None
-        cmd = [
-            sys.executable, "-m", "framework.scripts.p35_csr_runner",
-            "--ea", ea_id,
-            "--symbols", ",".join(symbols),
-            "--period", period,
-            "--from-year", "2017",
-            "--to-year", "2022",
-        ]
+        cmd = _runner_base("p35_csr_runner.py")
+        cmd.extend(["--baseline-csv", _pipeline_file("P2", "report.csv")])
+        p3_report = PIPELINE_REPORT_ROOT / ea_id / "P3" / "report.csv"
+        if p3_report.exists():
+            cmd.extend(["--csr-results-csv", str(p3_report)])
         return cmd
 
     if phase == "P4":
         # P4 = true OOS Walk-Forward on 2023-now data.
         # Train on rolling 5y windows ending pre-2023, test 6 months OOS.
-        period = _detect_ea_period(ea_id)
+        cmd = _runner_base("p4_walk_forward.py")
+        cmd.extend(["--walk-forward-csv", _pipeline_file("P4", "walk_forward.csv")])
+        return cmd
+
+    if phase == "P5":
         symbols = surviving_symbols or []
-        if not symbols:
-            return None
-        cmd = [
-            sys.executable, "-m", "framework.scripts.p4_walk_forward",
-            "--ea", ea_id,
-            "--symbols", ",".join(symbols),
-            "--period", period,
-            "--train-from-year", "2017",
-            "--train-to-year", "2022",
-            "--oos-from-year", "2023",
-            "--oos-to-year", "2025",
-        ]
+        symbol = symbols[0] if symbols else ""
+        cmd = _runner_base("p5_stress_runner.py")
+        if symbol:
+            cmd.extend(["--symbol", symbol])
+        cmd.extend([
+            "--calibration-json", str(P5_CALIBRATION_JSON),
+            "--clean-metrics-json", _pipeline_file("P5", "p5_clean_metrics.json"),
+            "--stress-metrics-json", _pipeline_file("P5", "p5_stress_metrics.json"),
+            "--full-history-from", f"{P5_REQUIRED_OOS_FROM_YEAR}-01-01",
+            "--full-history-to", f"{P5_REQUIRED_OOS_TO_YEAR}-12-31",
+        ])
+        return cmd
+
+    if phase == "P5b":
+        symbols = surviving_symbols or []
+        symbol = symbols[0] if symbols else ""
+        cmd = _runner_base("p5b_calibrated_noise.py")
+        cmd.extend([
+            "--trials-csv", _pipeline_file("P5b", "p5b_trials.csv"),
+            "--calibration-json", str(P5_CALIBRATION_JSON),
+        ])
+        if symbol:
+            cmd.extend(["--symbol", symbol])
+        return cmd
+
+    if phase == "P5c":
+        cmd = _runner_base("p5c_crisis_slices.py")
+        cmd.extend([
+            "--slices-csv", _pipeline_file("P5c", "p5c_slices.csv"),
+            "--clean-metrics-json", _pipeline_file("P5", "p5_clean_metrics.json"),
+        ])
+        return cmd
+
+    if phase == "P6":
+        cmd = _runner_base("p6_multiseed.py")
+        cmd.extend([
+            "--seeds-csv", _pipeline_file("P6", "p6_seeds.csv"),
+            "--seeds", "42,17,99,7,2026",
+        ])
+        return cmd
+
+    if phase == "P7":
+        cmd = _runner_base("p7_statval.py")
+        cmd.extend([
+            "--sweep-pass-rows", _pipeline_file("P3", "report.csv"),
+            "--multiseed-rows", _pipeline_file("P6", "p6_seeds.csv"),
+        ])
+        return cmd
+
+    if phase == "P8":
+        cmd = _runner_base("p8_news_impact.py")
+        cmd.extend([
+            "--news-matrix", _pipeline_file("P8", "news_matrix.csv"),
+            "--modes", "OFF,PAUSE,SKIP_DAY,FTMO_PAUSE,5ers_PAUSE,no_news,news_only",
+        ])
         return cmd
 
     return None
