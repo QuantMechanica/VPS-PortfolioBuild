@@ -74,6 +74,12 @@ function Get-ReportInvalidReasons {
         [Parameter(Mandatory = $true)]
         [string]$TesterLogTail,
         [Parameter(Mandatory = $true)]
+        [string]$ExpectedSymbol,
+        [Parameter(Mandatory = $true)]
+        [string]$ExpectedFromDate,
+        [Parameter(Mandatory = $true)]
+        [string]$ExpectedToDate,
+        [Parameter(Mandatory = $true)]
         [bool]$HasRealTicksMarker
     )
 
@@ -88,11 +94,49 @@ function Get-ReportInvalidReasons {
     if ([string]::IsNullOrWhiteSpace($symbolValue)) { $reasons.Add("EMPTY_SYMBOL") }
     if ($periodValue -match "(?i)\bM0\b" -or $periodValue -match "1970\.01\.01\s*-\s*1970\.01\.01") { $reasons.Add("M0_1970_PERIOD") }
     if ($bars -le 0) { $reasons.Add("BARS_ZERO") }
-    if ($TesterLogTail -match "(?im)no history data,\s*stop testing") { $reasons.Add("NO_HISTORY_LOG") }
+    if (Test-TesterLogHasNoHistoryForRun -TesterLogTail $TesterLogTail -ExpectedSymbol $ExpectedSymbol -ExpectedFromDate $ExpectedFromDate -ExpectedToDate $ExpectedToDate) { $reasons.Add("NO_HISTORY_LOG") }
     if (($periodValue -match "(?i)\bM0\b" -or $bars -le 0) -and $TesterLogTail -match "(?im)\bhistory\b") { $reasons.Add("HISTORY_CONTEXT_INVALID") }
     if ((-not $HasRealTicksMarker) -and $TesterLogTail -match "(?im)automatical testing finished") { $reasons.Add("NO_REAL_TICKS_MARKER_FAST_FINISH") }
 
     return @($reasons)
+}
+
+function Test-TesterLogHasNoHistoryForRun {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$TesterLogTail,
+        [Parameter(Mandatory = $true)]
+        [string]$ExpectedSymbol,
+        [Parameter(Mandatory = $true)]
+        [string]$ExpectedFromDate,
+        [Parameter(Mandatory = $true)]
+        [string]$ExpectedToDate
+    )
+
+    if ([string]::IsNullOrWhiteSpace($TesterLogTail)) {
+        return $false
+    }
+
+    $symbolPattern = [regex]::Escape($ExpectedSymbol)
+    $fromPattern = [regex]::Escape($ExpectedFromDate)
+    $toPattern = [regex]::Escape($ExpectedToDate)
+    $runNoHistoryPattern = "(?i)\b${symbolPattern}:\s+no history data from\s+$fromPattern\s+00:00\s+to\s+$toPattern\s+00:00\b"
+    $stopPattern = "(?i)\bno history data,\s*stop testing\b"
+    $lines = $TesterLogTail -split "\r?\n"
+
+    for ($idx = 0; $idx -lt $lines.Count; $idx++) {
+        if ($lines[$idx] -notmatch $runNoHistoryPattern) {
+            continue
+        }
+        $lastContextLine = [Math]::Min($idx + 3, $lines.Count - 1)
+        for ($contextIdx = $idx; $contextIdx -le $lastContextLine; $contextIdx++) {
+            if ($lines[$contextIdx] -match $stopPattern) {
+                return $true
+            }
+        }
+    }
+
+    return $false
 }
 
 function Resolve-InvalidReportVerdict {
@@ -943,7 +987,7 @@ for ($i = 1; $i -le $Runs; $i++) {
         $hasRealTicksMarker = [regex]::IsMatch($testerLogTail, "(?im)generating based on real ticks")
     }
 
-    $invalidReasons = Get-ReportInvalidReasons -Html $reportHtml -TesterLogTail $testerLogTail -HasRealTicksMarker $hasRealTicksMarker
+    $invalidReasons = Get-ReportInvalidReasons -Html $reportHtml -TesterLogTail $testerLogTail -ExpectedSymbol $Symbol -ExpectedFromDate $fromDate -ExpectedToDate $toDate -HasRealTicksMarker $hasRealTicksMarker
     $invalidVerdict = Resolve-InvalidReportVerdict -InvalidReasons $invalidReasons
     if ($invalidVerdict) {
         $reasonClasses.Add($invalidVerdict)
