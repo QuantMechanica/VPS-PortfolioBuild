@@ -4476,16 +4476,128 @@ def _find_ea_setfiles(ea_id: str, phase: str) -> list[tuple[str, str]]:
     return out
 
 
+def _dwx_backtest_symbols() -> list[str]:
+    """Return all DWX symbols available for farm backtests.
+
+    The registry intentionally includes SP500.DWX even though it is T6
+    live-deploy restricted; P2 is a backtest gate, so custom backtest-only
+    symbols remain eligible here.
+    """
+    matrix = REPO_ROOT / "framework" / "registry" / "dwx_symbol_matrix.csv"
+    if not matrix.exists():
+        return []
+    symbols: list[str] = []
+    with matrix.open(encoding="utf-8-sig", newline="") as f:
+        for row in csv.DictReader(f):
+            symbol = (row.get("symbol") or "").strip().upper()
+            if not symbol.endswith(".DWX"):
+                continue
+            verified = (row.get("canonical_name_verified") or "true").strip().lower()
+            if verified in {"false", "0", "no"}:
+                continue
+            symbols.append(symbol)
+    return sorted(dict.fromkeys(symbols))
+
+
+def _truthy_card_value(value: Any) -> bool:
+    return str(value).strip().lower() in {"1", "true", "yes", "y"}
+
+
+def _card_single_symbol_only(root: Path, ea_id: str) -> bool:
+    card = _find_approved_card_for_ea(root, ea_id)
+    if not card:
+        return False
+    try:
+        fm = parse_card_frontmatter(card)
+        if _truthy_card_value(fm.get("single_symbol_only")):
+            return True
+        text = card.read_text(encoding="utf-8-sig", errors="ignore")
+    except OSError:
+        return False
+    return bool(re.search(r"\bsingle_symbol_only\s*:\s*(?:true|yes|1)\b", text, re.IGNORECASE))
+
+
+def _magic_slot_for_symbol(ea_id: str, symbol: str) -> int:
+    m = re.match(r"^QM5_(\d{4})$", ea_id)
+    if not m:
+        return 0
+    registry = REPO_ROOT / "framework" / "registry" / "magic_numbers.csv"
+    if not registry.exists():
+        return 0
+    with registry.open(encoding="utf-8-sig", newline="") as f:
+        for row in csv.DictReader(f):
+            if (
+                (row.get("ea_id") or "").strip() == str(int(m.group(1)))
+                and (row.get("symbol") or "").strip().upper() == symbol
+                and (row.get("status") or "").strip().lower() == "active"
+            ):
+                try:
+                    return int(str(row.get("symbol_slot") or "0").strip())
+                except ValueError:
+                    return 0
+    return 0
+
+
+def _retarget_setfile_template(template_text: str, symbol: str, magic_slot: int) -> str:
+    replacements = {
+        r"^; symbol:\s+.*$": f"; symbol:       {symbol}",
+        r"^; magic_slot:\s+.*$": f"; magic_slot:   {magic_slot}",
+        r"^qm_magic_slot_offset=.*$": f"qm_magic_slot_offset={magic_slot}",
+    }
+    text = template_text
+    for pattern, replacement in replacements.items():
+        text = re.sub(pattern, replacement, text, flags=re.MULTILINE)
+    return text
+
+
+def _ensure_p2_full_dwx_setfiles(root: Path, ea_id: str) -> list[tuple[str, str]]:
+    """Ensure P2 has a canonical setfile for every DWX backtest symbol."""
+    existing = _find_ea_setfiles(ea_id, "P2")
+    if not existing or _card_single_symbol_only(root, ea_id):
+        return existing
+
+    ea_root = REPO_ROOT / "framework" / "EAs"
+    candidates = [p for p in ea_root.glob(f"{ea_id}_*") if p.is_dir()]
+    if not candidates:
+        return existing
+    ea_dir = candidates[0]
+    sets_dir = ea_dir / "sets"
+    period = _detect_ea_period(ea_id)
+    by_symbol = {symbol: path for symbol, path in existing}
+    template_path = Path(existing[0][1])
+    try:
+        template_text = template_path.read_text(encoding="utf-8-sig")
+    except OSError:
+        return existing
+
+    for symbol in _dwx_backtest_symbols():
+        if symbol in by_symbol:
+            continue
+        target = sets_dir / f"{ea_dir.name}_{symbol}_{period}_backtest.set"
+        if not target.exists():
+            magic_slot = _magic_slot_for_symbol(ea_id, symbol)
+            target.write_text(
+                _retarget_setfile_template(template_text, symbol, magic_slot),
+                encoding="utf-8",
+                newline="\n",
+            )
+        by_symbol[symbol] = str(target.resolve())
+
+    return [(symbol, by_symbol[symbol]) for symbol in _dwx_backtest_symbols() if symbol in by_symbol]
+
+
 def _create_backtest_work_items(conn: sqlite3.Connection, parent_task_id: str,
+                                 root: Path,
                                  ea_id: str, phase: str,
                                  surviving_symbols: list[str] | None) -> list[dict[str, str]]:
     """Fan out a backtest task into per-(symbol, setfile) work_items.
 
-    For P2: every setfile in EA's sets/ dir.
+    For P2: every DWX backtest symbol from dwx_symbol_matrix.csv, unless the
+    card explicitly declares single_symbol_only.
     For P3+: only setfiles whose symbol is in surviving_symbols (subset).
     Returns list of created {id, symbol, setfile_path} for the response.
     """
-    setfiles = _find_ea_setfiles(ea_id, phase)
+    setfiles = _ensure_p2_full_dwx_setfiles(root, ea_id) if phase == "P2" else _find_ea_setfiles(ea_id, phase)
     if not setfiles:
         return []
     if surviving_symbols:
@@ -4608,6 +4720,7 @@ def enqueue_backtest(root: Path, review_task_id: str, phase: str) -> dict[str, A
         work_items_created = _create_backtest_work_items(
             conn,
             parent_task_id=task_id,
+            root=root,
             ea_id=ea_id,
             phase=phase,
             surviving_symbols=surviving_symbols,
