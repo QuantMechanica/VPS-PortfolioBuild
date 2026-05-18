@@ -78,3 +78,12 @@ ea_id,slug,strategy_id,status,owner,created_at
 1233,ict-silver-bullet,fa90d4d7-7a46-5439-9ff6-96ee841913b3,active,Research,2026-05-18
 1234,ict-golden-bullet,fa90d4d7-7a46-5439-9ff6-96ee841913b3,active,Research,2026-05-18
 1235,connors-rsi2,manual-owner-request-connors-rsi2,active,Research,2026-05-18
+1236,gh-donchian-55,1b906e79-c619-5a61-90db-ee19ac95a19f,active,Research,2026-05-18
+1237,tv-supertrend-atr,c84ae47e-8ea0-56f1-8b25-4436b6dda5b5,active,Research,2026-05-18
+1238,tv-vwap-rsi-cont,30591366-874b-5bee-b47c-da2fca20b728,active,Research,2026-05-18
+1239,raposa-ma-atr,d3c009d7-a8d6-5251-b572-4777b207c2b9,active,Research,2026-05-18
+1240,bandy-prank-mr,9ef19e06-5ca6-5b35-aa06-b8187aa0e016,active,Research,2026-05-18
+1241,mql5-macd-signal,3b3ec48a-0755-5187-9331-afb36e174175,active,Research,2026-05-18
+1242,connors-double7,ef14a5d7-e3f1-52be-910a-3ca6b736a152,active,Research,2026-05-18
+1243,carver-ewmac-lev,1a059d6d-84fa-5d0c-94c5-86dd0481637c,active,Research,2026-05-18
+1244,mql5-ma-trail,a120af9a-fb72-526c-bb80-d1d098a617b5,active,Research,2026-05-18
