@@ -2178,12 +2178,16 @@ def _is_active_timeout_payload(payload_json: str | None) -> bool:
 
 def _recent_zero_trade_rework_exists(con: sqlite3.Connection, ea_id: str) -> bool:
     cutoff = (dt.datetime.now(dt.UTC) - dt.timedelta(hours=ZERO_TRADE_REWORK_DEDUP_HOURS)).replace(microsecond=0).isoformat()
+    # Dedup if either (a) a rework of this kind was created within the dedup
+    # window, OR (b) any rework of this kind is still pending — otherwise a
+    # new pending duplicate gets stacked every cycle while the first one
+    # waits in queue (observed for QM5_1087/QM5_1119 2026-05-18).
     row = con.execute(
         """
         SELECT id FROM tasks
         WHERE card_id=? AND kind='build_ea'
           AND payload_json LIKE '%ZERO_TRADE_RECURRENT%'
-          AND created_at >= ?
+          AND (created_at >= ? OR status='pending')
         ORDER BY created_at DESC LIMIT 1
         """,
         (ea_id, cutoff),
@@ -2198,7 +2202,7 @@ def _recent_hang_rework_exists(con: sqlite3.Connection, ea_id: str) -> bool:
         SELECT id FROM tasks
         WHERE card_id=? AND kind='build_ea'
           AND payload_json LIKE '%STRATEGY_HANG_RECURRENT%'
-          AND created_at >= ?
+          AND (created_at >= ? OR status='pending')
         ORDER BY created_at DESC LIMIT 1
         """,
         (ea_id, cutoff),
