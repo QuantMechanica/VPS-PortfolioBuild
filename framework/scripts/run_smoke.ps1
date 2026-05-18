@@ -84,19 +84,23 @@ function Get-ReportInvalidReasons {
     )
 
     $reasons = New-Object System.Collections.Generic.List[string]
-    $expertValue = Get-ReportMetricValue -Html $Html -Label "Expert"
-    $symbolValue = Get-ReportMetricValue -Html $Html -Label "Symbol"
-    $periodValue = Get-ReportMetricValue -Html $Html -Label "Period"
-    $barsValue = Get-ReportMetricValue -Html $Html -Label "Bars"
-    $bars = [int](Convert-ReportNumber -Value $barsValue)
+    try {
+        $expertValue = Get-ReportMetricValue -Html $Html -Label "Expert"
+        $symbolValue = Get-ReportMetricValue -Html $Html -Label "Symbol"
+        $periodValue = Get-ReportMetricValue -Html $Html -Label "Period"
+        $barsValue = Get-ReportMetricValue -Html $Html -Label "Bars"
+        $bars = [int](Convert-ReportNumber -Value $barsValue)
 
-    if ([string]::IsNullOrWhiteSpace($expertValue)) { $reasons.Add("EMPTY_EXPERT") }
-    if ([string]::IsNullOrWhiteSpace($symbolValue)) { $reasons.Add("EMPTY_SYMBOL") }
-    if ($periodValue -match "(?i)\bM0\b" -or $periodValue -match "1970\.01\.01\s*-\s*1970\.01\.01") { $reasons.Add("M0_1970_PERIOD") }
-    if ($bars -le 0) { $reasons.Add("BARS_ZERO") }
-    if (Test-TesterLogHasNoHistoryForRun -TesterLogTail $TesterLogTail -ExpectedSymbol $ExpectedSymbol -ExpectedFromDate $ExpectedFromDate -ExpectedToDate $ExpectedToDate) { $reasons.Add("NO_HISTORY_LOG") }
-    if (($periodValue -match "(?i)\bM0\b" -or $bars -le 0) -and $TesterLogTail -match "(?im)\bhistory\b") { $reasons.Add("HISTORY_CONTEXT_INVALID") }
-    if ((-not $HasRealTicksMarker) -and $TesterLogTail -match "(?im)automatical testing finished") { $reasons.Add("NO_REAL_TICKS_MARKER_FAST_FINISH") }
+        if ([string]::IsNullOrWhiteSpace($expertValue)) { $reasons.Add("EMPTY_EXPERT") }
+        if ([string]::IsNullOrWhiteSpace($symbolValue)) { $reasons.Add("EMPTY_SYMBOL") }
+        if ($periodValue -match "(?i)\bM0\b" -or $periodValue -match "1970\.01\.01\s*-\s*1970\.01\.01") { $reasons.Add("M0_1970_PERIOD") }
+        if ($bars -le 0) { $reasons.Add("BARS_ZERO") }
+        if (Test-TesterLogHasNoHistoryForRun -TesterLogTail $TesterLogTail -ExpectedSymbol $ExpectedSymbol -ExpectedFromDate $ExpectedFromDate -ExpectedToDate $ExpectedToDate) { $reasons.Add("NO_HISTORY_LOG") }
+        if (($periodValue -match "(?i)\bM0\b" -or $bars -le 0) -and $TesterLogTail -match "(?im)\bhistory\b") { $reasons.Add("HISTORY_CONTEXT_INVALID") }
+        if ((-not $HasRealTicksMarker) -and $TesterLogTail -match "(?im)automatical testing finished") { $reasons.Add("NO_REAL_TICKS_MARKER_FAST_FINISH") }
+    } catch {
+        $reasons.Add("REPORT_PARSE_ERROR")
+    }
 
     return @($reasons)
 }
@@ -141,9 +145,12 @@ function Test-TesterLogHasNoHistoryForRun {
 
 function Resolve-InvalidReportVerdict {
     param(
-        [Parameter(Mandatory = $true)]
-        [string[]]$InvalidReasons
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
+        [string[]]$InvalidReasons = @()
     )
+
+    if ($null -eq $InvalidReasons) { $InvalidReasons = @() }
 
     if ($InvalidReasons -contains "NO_HISTORY_LOG" -or $InvalidReasons -contains "HISTORY_CONTEXT_INVALID") {
         return "NO_HISTORY"
