@@ -1243,6 +1243,15 @@ Write-Output "run_smoke.evidence=$evidencePath"
 
     Invoke-DispatchCompletion -OriginalTargetTerminal $Terminal -EAIdValue $EAId -SymbolName $Symbol -PeriodName $Period -YearValue $Year -SetFilePath $SetFile -DispatchPhaseValue $DispatchPhase -DispatchVersionValue $DispatchVersion -DispatchSubGateHashValue $DispatchSubGateHash
 
+try {
+    Start-Process -FilePath python -ArgumentList @(
+        'tools/strategy_farm/farmctl.py','pump'
+    ) -WorkingDirectory 'C:/QM/repo' -NoNewWindow -WindowStyle Hidden
+    Write-Output "run_smoke.stage=post_run_pump_triggered"
+} catch {
+    Write-Host "post-run pump trigger failed (non-fatal): $_"
+}
+
 if (-not $passed) {
     exit 1
 }
