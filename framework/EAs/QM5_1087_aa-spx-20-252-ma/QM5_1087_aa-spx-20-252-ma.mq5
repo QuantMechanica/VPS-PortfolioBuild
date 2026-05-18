@@ -35,19 +35,19 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 1087;
-input int    qm_magic_slot_offset       = 0;
+input int    qm_ea_id                    = 1087;
+input int    qm_magic_slot_offset        = 0;
 
 input group "Risk"
-input double RISK_PERCENT               = 0.0;
-input double RISK_FIXED                 = 1000.0;
-input double PORTFOLIO_WEIGHT           = 1.0;
+input double RISK_PERCENT                = 0.0;
+input double RISK_FIXED                  = 1000.0;
+input double PORTFOLIO_WEIGHT            = 1.0;
 
 input group "News"
-input QM_NewsMode qm_news_mode          = QM_NEWS_OFF;
+input QM_NewsMode qm_news_mode           = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled    = true;
+input bool   qm_friday_close_enabled     = true;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Strategy"
@@ -58,49 +58,6 @@ input int    strategy_atr_period         = 14;
 input double strategy_atr_sl_mult        = 1.5;
 input int    strategy_max_spread_points  = 0;
 
-bool Strategy_HasOpenPosition()
-  {
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      return true;
-     }
-
-   return false;
-  }
-
-bool Strategy_HasEnoughDailyBars()
-  {
-   const int required = MathMax(strategy_min_daily_bars,
-                                MathMax(strategy_fast_sma_days, strategy_slow_sma_days));
-   return (Bars(_Symbol, PERIOD_D1) >= required + 2);
-  }
-
-bool Strategy_RiskOn()
-  {
-   if(strategy_fast_sma_days <= 0 || strategy_slow_sma_days <= 0)
-      return false;
-   if(!Strategy_HasEnoughDailyBars())
-      return false;
-
-   const double sma_fast = QM_SMA(_Symbol, PERIOD_D1, strategy_fast_sma_days, 1);
-   const double sma_slow = QM_SMA(_Symbol, PERIOD_D1, strategy_slow_sma_days, 1);
-   if(sma_fast <= 0.0 || sma_slow <= 0.0)
-      return false;
-
-   return (sma_fast > sma_slow);
-  }
-
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -109,9 +66,11 @@ bool Strategy_RiskOn()
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
+   // Card: daily close evaluation only.
    if(_Period != PERIOD_D1)
       return true;
 
+   // Card: optional no-trade filter around extreme spread at daily close.
    if(strategy_max_spread_points > 0)
      {
       const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
@@ -137,17 +96,24 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(_Period != PERIOD_D1)
       return false;
-   if(Strategy_HasOpenPosition())
+   if(strategy_fast_sma_days <= 0 || strategy_slow_sma_days <= 0 || strategy_atr_period <= 0)
       return false;
-   if(!Strategy_RiskOn())
+
+   const int required_bars = MathMax(strategy_min_daily_bars,
+                                     MathMax(strategy_fast_sma_days, strategy_slow_sma_days));
+   if(Bars(_Symbol, PERIOD_D1) < required_bars + 2)
+      return false;
+
+   const double sma_fast = QM_SMA(_Symbol, PERIOD_D1, strategy_fast_sma_days, 1);
+   const double sma_slow = QM_SMA(_Symbol, PERIOD_D1, strategy_slow_sma_days, 1);
+   if(sma_fast <= 0.0 || sma_slow <= 0.0 || sma_fast <= sma_slow)
       return false;
 
    const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
-   if(entry <= 0.0 || atr <= 0.0 || strategy_atr_sl_mult <= 0.0)
+   if(entry <= 0.0)
       return false;
 
-   req.sl = QM_StopATRFromValue(_Symbol, QM_BUY, entry, atr, strategy_atr_sl_mult);
+   req.sl = QM_StopATR(_Symbol, QM_BUY, entry, strategy_atr_period, strategy_atr_sl_mult);
    if(req.sl <= 0.0 || req.sl >= entry)
       return false;
 
@@ -165,13 +131,39 @@ void Strategy_ManageOpenPosition()
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   if(!Strategy_HasOpenPosition())
-      return false;
    if(_Period != PERIOD_D1)
       return false;
-   if(!QM_IsNewBar(_Symbol, PERIOD_D1))
+   if(strategy_fast_sma_days <= 0 || strategy_slow_sma_days <= 0)
       return false;
-   return !Strategy_RiskOn();
+
+   bool has_position = false;
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(!PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      has_position = true;
+      break;
+     }
+   if(!has_position)
+      return false;
+
+   const int required_bars = MathMax(strategy_min_daily_bars,
+                                     MathMax(strategy_fast_sma_days, strategy_slow_sma_days));
+   if(Bars(_Symbol, PERIOD_D1) < required_bars + 2)
+      return false;
+
+   const double sma_fast = QM_SMA(_Symbol, PERIOD_D1, strategy_fast_sma_days, 1);
+   const double sma_slow = QM_SMA(_Symbol, PERIOD_D1, strategy_slow_sma_days, 1);
+   if(sma_fast <= 0.0 || sma_slow <= 0.0)
+      return false;
+
+   return (sma_fast <= sma_slow);
   }
 
 // Optional news-filter override. Return TRUE to suppress trading regardless
