@@ -3229,8 +3229,27 @@ def pump(root: Path) -> dict[str, Any]:
             "SELECT * FROM tasks WHERE kind='build_ea' AND status='blocked' "
             "ORDER BY updated_at ASC"
         ).fetchall()
+        # bb950e1f dedup'd the CREATE path so no new duplicate pending build_ea
+        # gets stacked. This loop is the RE-OPEN path — it must apply the same
+        # dedup, otherwise a freshly-blocked sibling gets re-unblocked the next
+        # tick and immediately stacks pending again (observed for QM5_1087 /
+        # QM5_1119 2026-05-18T10:44Z, 4 surplus pendings reincarnated post
+        # bb950e1f cleanup).
+        cards_with_pending_build = {
+            r[0] for r in conn.execute(
+                "SELECT DISTINCT card_id FROM tasks "
+                "WHERE kind='build_ea' AND status='pending'"
+            )
+        }
     for row in blocked_builds:
         payload = json.loads(row["payload_json"])
+        # Forensic tombstones — never retry.
+        if payload.get("superseded_by"):
+            continue
+        # Another pending build_ea already covers this card — re-unblocking
+        # would re-create the duplicate-pending stack bb950e1f eliminated.
+        if row["card_id"] in cards_with_pending_build:
+            continue
         attempt = int(payload.get("attempt_count", 0)) + 1
         if attempt > MAX_BUILD_RETRIES:
             continue
