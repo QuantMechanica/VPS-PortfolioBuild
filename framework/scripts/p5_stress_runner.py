@@ -58,10 +58,14 @@ def _read_metrics(path: Path, default_symbol: str) -> dict[str, object]:
     if not isinstance(metrics, dict):
         raise ValueError(f"Metrics JSON must be an object: {path}")
     symbol = str(metrics.get("symbol", default_symbol)).strip() or default_symbol
+    net_profit = None
+    if "net_profit" in metrics or "total_net_profit" in metrics:
+        net_profit = parse_float(metrics.get("net_profit", metrics.get("total_net_profit")))
     return {
         "symbol": symbol,
         "pf": parse_float(metrics.get("pf", metrics.get("profit_factor", 0.0))),
         "trade_count": parse_int(metrics.get("trade_count", metrics.get("trades", 0))),
+        "net_profit": net_profit,
     }
 
 
@@ -89,6 +93,8 @@ def main() -> int:
     stress_pf = float(stress["pf"])
     clean_trades = int(clean["trade_count"])
     stress_trades = int(stress["trade_count"])
+    clean_net_profit = clean["net_profit"]
+    stress_net_profit = stress["net_profit"]
 
     trade_retention_ratio = 0.0 if clean_trades <= 0 else float(stress_trades) / float(clean_trades)
     criterion = readiness_note
@@ -97,6 +103,8 @@ def main() -> int:
     if readiness_ok:
         if stress_pf <= 1.0:
             criterion = "Post-stress PF must be > 1.0."
+        elif stress_net_profit is not None and float(stress_net_profit) <= 0.0:
+            criterion = "Post-stress net profit must be > 0."
         elif trade_retention_ratio < 0.5:
             criterion = "Post-stress trade count must be >= 50% of clean-run trade count."
         else:
@@ -111,11 +119,16 @@ def main() -> int:
         evidence_path="",
         details={
             "symbol": symbol,
-            "clean_run": {"pf": clean_pf, "trade_count": clean_trades},
-            "stress_run": {"pf": stress_pf, "trade_count": stress_trades},
+            "clean_run": {"pf": clean_pf, "trade_count": clean_trades, "net_profit": clean_net_profit},
+            "stress_run": {"pf": stress_pf, "trade_count": stress_trades, "net_profit": stress_net_profit},
             "delta": {
                 "profit_factor": stress_pf - clean_pf,
                 "trade_count": stress_trades - clean_trades,
+                "net_profit": (
+                    float(stress_net_profit) - float(clean_net_profit)
+                    if stress_net_profit is not None and clean_net_profit is not None
+                    else None
+                ),
             },
             "trade_retention_ratio": trade_retention_ratio,
             "full_history_window": {"from": args.full_history_from, "to": args.full_history_to},

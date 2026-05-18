@@ -47,6 +47,8 @@ SUPPORTED_BACKTEST_PHASES = ("P2", "P3", "P3.5", "P4")  # 2026-05-17: extend cha
 CASCADE_BACKTEST_PHASES = ("P5", "P5b", "P5c", "P6", "P7", "P8")
 P5_REQUIRED_OOS_FROM_YEAR = 2023
 P5_REQUIRED_OOS_TO_YEAR = 2025
+P5PLUS_MAX_DRAWDOWN_PCT = 20.0
+P5PLUS_MIN_SHARPE = 0.6
 MT5_TERMINALS = ("T1", "T2", "T3", "T4", "T5")  # factory fleet, used by dispatch-tick for per-EA terminal assignment
 ZERO_TRADE_DEAD_THRESHOLD = 0.80
 ZERO_TRADE_DEAD_MIN_DONE = 5
@@ -770,11 +772,88 @@ def pipeline_view(root: Path) -> dict[str, Any]:
     return {"eas": out, "summary": summary, "count": len(out)}
 
 
-def _derive_verdict_from_summary(summary: dict[str, Any], min_trades: int = 5) -> tuple[str, str]:
+def _as_float_or_none(value: Any) -> float | None:
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    text = str(value).strip()
+    if not text:
+        return None
+    text = text.replace(",", "")
+    match = re.search(r"-?\d+(?:\.\d+)?", text)
+    if not match:
+        return None
+    try:
+        return float(match.group(0))
+    except ValueError:
+        return None
+
+
+def _run_metric(run: dict[str, Any], keys: tuple[str, ...]) -> float | None:
+    for key in keys:
+        value = _as_float_or_none(run.get(key))
+        if value is not None:
+            return value
+    return None
+
+
+def _run_drawdown_pct(run: dict[str, Any]) -> float | None:
+    explicit = _run_metric(run, ("max_drawdown_pct", "drawdown_pct", "max_dd_pct", "dd_pct"))
+    if explicit is not None:
+        return explicit
+    raw = str(run.get("drawdown_raw") or run.get("max_drawdown_raw") or "")
+    match = re.search(r"\(([-+]?\d+(?:\.\d+)?)%\)", raw)
+    if match:
+        return float(match.group(1))
+    if "%" in raw:
+        return _as_float_or_none(raw)
+    return None
+
+
+def _derive_p5plus_metric_verdict(runs: list[dict[str, Any]]) -> tuple[str, str]:
+    net_profits = [
+        value for value in (
+            _run_metric(r, ("net_profit", "total_net_profit", "profit"))
+            for r in runs
+        )
+        if value is not None
+    ]
+    if net_profits and sum(net_profits) <= 0.0:
+        return "FAIL", "STRATEGY_UNPROFITABLE:unprofitable"
+
+    stress_net_profit = None
+    for run in runs:
+        stress_net_profit = _run_metric(run, ("net_profit_stress", "stress_net_profit"))
+        if stress_net_profit is not None:
+            break
+    if stress_net_profit is not None and stress_net_profit <= 0.0:
+        return "FAIL", "STRATEGY_UNPROFITABLE:stress_unprofitable"
+
+    drawdowns = [value for value in (_run_drawdown_pct(r) for r in runs) if value is not None]
+    if drawdowns and max(drawdowns) > P5PLUS_MAX_DRAWDOWN_PCT:
+        return "FAIL", "DD_EXCEEDED:dd_exceeded"
+
+    sharpes = [
+        value for value in (
+            _run_metric(r, ("sharpe", "sharpe_ratio"))
+            for r in runs
+        )
+        if value is not None
+    ]
+    if sharpes and (sum(sharpes) / len(sharpes)) < P5PLUS_MIN_SHARPE:
+        return "FAIL", "SHARPE_INSUFFICIENT:sharpe_insufficient"
+
+    return "PASS", ""
+
+
+def _derive_verdict_from_summary(summary: dict[str, Any], min_trades: int = 5, phase: str | None = None) -> tuple[str, str]:
     """Single-symbol verdict from a run_smoke summary.json. Returns (verdict, reason).
 
-    Mirrors p2_baseline's derive_verdict: PASS if at least one run had
-    ≥min_trades, else FAIL with reason. INVALID if model4 marker absent.
+    P2-P4 mirror p2_baseline's derive_verdict. P5+ additionally requires
+    profitable OOS behavior and bounded drawdown when those metrics exist.
     """
     if summary.get("result") != "PASS":
         reasons = summary.get("reason_classes") or ["UNKNOWN"]
@@ -785,9 +864,13 @@ def _derive_verdict_from_summary(summary: dict[str, Any], min_trades: int = 5) -
     if not runs:
         return "INVALID", "no_runs_in_summary"
     trades = [int(r.get("total_trades", 0) or 0) for r in runs]
-    if any(t >= min_trades for t in trades):
-        return "PASS", ""
-    return "FAIL", "MIN_TRADES_NOT_MET"
+    is_p5plus = str(phase or "").upper() in {p.upper() for p in CASCADE_BACKTEST_PHASES}
+    trade_gate_passed = sum(trades) >= min_trades if is_p5plus else any(t >= min_trades for t in trades)
+    if not trade_gate_passed:
+        return "FAIL", "MIN_TRADES_NOT_MET"
+    if is_p5plus:
+        return _derive_p5plus_metric_verdict(runs)
+    return "PASS", ""
 
 
 def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
@@ -1166,7 +1249,11 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 effective_min_trades = int(payload.get("effective_min_trades")
                                            or summary.get("min_trades_required")
                                            or 5)
-                verdict, reason = _derive_verdict_from_summary(summary, min_trades=effective_min_trades)
+                verdict, reason = _derive_verdict_from_summary(
+                    summary,
+                    min_trades=effective_min_trades,
+                    phase=item["phase"],
+                )
                 with connect(root) as conn2:
                     conn2.execute(
                         "UPDATE work_items SET status='done', verdict=?, evidence_path=?, payload_json=?, updated_at=? WHERE id=?",

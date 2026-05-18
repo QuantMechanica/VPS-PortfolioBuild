@@ -20,6 +20,7 @@ def _read_smoke_summary(path: Path) -> dict:
     return {
         "pf": parse_float(first.get("profit_factor", 0.0)),
         "trade_count": parse_int(first.get("total_trades", 0)),
+        "net_profit": parse_float(first.get("net_profit", 0.0)),
         "summary_path": str(path),
     }
 
@@ -246,10 +247,20 @@ def main() -> int:
     stress_payload = {"symbols": []}
     for symbol in symbols:
         clean_payload["symbols"].append(
-            {"symbol": symbol, "pf": metrics_by_symbol[symbol]["clean"]["pf"], "trade_count": metrics_by_symbol[symbol]["clean"]["trade_count"]}
+            {
+                "symbol": symbol,
+                "pf": metrics_by_symbol[symbol]["clean"]["pf"],
+                "trade_count": metrics_by_symbol[symbol]["clean"]["trade_count"],
+                "net_profit": metrics_by_symbol[symbol]["clean"]["net_profit"],
+            }
         )
         stress_payload["symbols"].append(
-            {"symbol": symbol, "pf": metrics_by_symbol[symbol]["stress"]["pf"], "trade_count": metrics_by_symbol[symbol]["stress"]["trade_count"]}
+            {
+                "symbol": symbol,
+                "pf": metrics_by_symbol[symbol]["stress"]["pf"],
+                "trade_count": metrics_by_symbol[symbol]["stress"]["trade_count"],
+                "net_profit": metrics_by_symbol[symbol]["stress"]["net_profit"],
+            }
         )
     clean_path = out_dir / "p5_clean_metrics.json"
     stress_path = out_dir / "p5_stress_metrics.json"
@@ -260,6 +271,7 @@ def main() -> int:
                 "symbol": only,
                 "pf": metrics_by_symbol[only]["clean"]["pf"],
                 "trade_count": metrics_by_symbol[only]["clean"]["trade_count"],
+                "net_profit": metrics_by_symbol[only]["clean"]["net_profit"],
             }
         )
         stress_payload.update(
@@ -267,6 +279,7 @@ def main() -> int:
                 "symbol": only,
                 "pf": metrics_by_symbol[only]["stress"]["pf"],
                 "trade_count": metrics_by_symbol[only]["stress"]["trade_count"],
+                "net_profit": metrics_by_symbol[only]["stress"]["net_profit"],
             }
         )
     write_json(clean_path, clean_payload)
