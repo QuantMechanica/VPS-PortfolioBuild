@@ -1380,6 +1380,7 @@ def _pid_exists(pid: Any) -> bool:
             ],
             capture_output=True,
             text=True,
+            creationflags=(subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0),
             timeout=8,
         )
         return "alive" in (_ps.stdout or "")
@@ -1402,6 +1403,7 @@ def _running_mt5_terminals() -> set[str]:
             capture_output=True,
             text=True,
             timeout=15,
+            creationflags=(subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0),
         )
     except Exception:
         return set(MT5_TERMINALS)
@@ -1432,6 +1434,7 @@ def _stop_pid(pid: Any) -> bool:
             capture_output=True,
             text=True,
             timeout=8,
+            creationflags=(subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0),
         )
         return proc.returncode == 0
     except Exception:
@@ -1457,6 +1460,7 @@ def _stop_terminal_slot(terminal: str | None) -> bool:
             capture_output=True,
             text=True,
             timeout=15,
+            creationflags=(subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0),
         )
         return proc.returncode == 0
     except Exception:
@@ -3837,6 +3841,7 @@ def pump(root: Path) -> dict[str, Any]:
             ["powershell.exe", "-NoProfile", "-Command",
              "(Get-Process -Name codex -ErrorAction SilentlyContinue).Count"],
             capture_output=True, text=True, timeout=10,
+            creationflags=(subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0),
         )
         active_codex = int((ps_out.stdout or "0").strip() or "0")
     except Exception:
@@ -4061,6 +4066,7 @@ def pump(root: Path) -> dict[str, Any]:
             ["powershell.exe", "-NoProfile", "-Command",
              "(Get-Process -Name claude -ErrorAction SilentlyContinue).Count"],
             capture_output=True, text=True, timeout=10,
+            creationflags=(subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0),
         ).stdout.strip() or "0")
     except Exception:
         active_claude_count = 0
@@ -4648,6 +4654,7 @@ def get_mt5_status() -> dict[str, Any]:
             capture_output=True,
             text=True,
             timeout=15,
+            creationflags=(subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0),
         )
     except Exception as exc:
         return {"scanned_at": scan_at, "error": f"tasklist failed: {exc}"}
