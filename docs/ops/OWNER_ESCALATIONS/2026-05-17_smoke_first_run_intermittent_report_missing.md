@@ -691,3 +691,92 @@ then unblock the 4 EAs above.
   nine listed, (b) cluster crosses 40 distinct EAs, (c) post-
   watchdog validation evidence (positive or negative) from the
   next autonomous wake, or (d) OWNER picks a fix candidate.
+
+- **2026-05-18T19:40Z (observe wake)** — **post-watchdog validation:
+  partial-positive. Watchdog 4dbe855d eliminated preflight class for
+  new failures; REPORT_MISSING + METATESTER_HUNG persist unchanged.
+  Cluster 31 → 36 distinct EAs (32 → 38 rows), still under 40 gate.**
+  Commit trigger: condition (c) post-watchdog validation evidence.
+
+  Four terminal failures in the post-patch window (commit `4dbe855d`
+  landed 2026-05-17T15:20:53Z):
+
+  - **QM5_1104** (`qp-country-bab`) failed attempt=3 at
+    2026-05-18T16:59:03Z — `framework_error REPORT_MISSING;
+    INCOMPLETE_RUNS;MODEL4_MARKER_REQUIRED`. Previous bucket (9)
+    `run_smoke_invocation_missing_params` failure mode did NOT
+    recur; final terminal attempt landed in cold-warm-asymmetry
+    shape instead. Bucket (9) likely a one-shot pump-retry path bug
+    that the next retry naturally bypassed — fix candidate (10)
+    deferred from active hot list.
+  - **QM5_1168** failed attempt=3 at 17:49:03Z —
+    `REPORT_MISSING;METATESTER_HUNG;INCOMPLETE_RUNS;
+    MODEL4_MARKER_REQUIRED`. Joins worker-mortality bucket.
+  - **QM5_1236** failed attempt=3 at 18:19:03Z — same shape.
+    Notable: earlier attempt at 14:14Z (pre-patch) had `T1 already
+    running` preflight wording; final attempt post-patch is
+    METATESTER_HUNG, NOT preflight. Watchdog moved this row out of
+    preflight bucket into worker-mortality.
+  - **QM5_1237** failed attempt=3 at 18:19:03Z —
+    `REPORT_MISSING;INCOMPLETE_RUNS;MODEL4_MARKER_REQUIRED`.
+    Earlier attempt was preflight wording; final is cold-warm-
+    asymmetry shape. Same migration.
+
+  **Validation read.** Watchdog patch `4dbe855d` did its job for the
+  preflight class: zero new failures with "T1 already running" /
+  "AllowRunningTerminal" wording in the post-patch window. Builds
+  that previously aborted before tester launch now proceed past the
+  preflight gate. But the tester-side flakiness (cold-start
+  REPORT_MISSING + metatester process leak / worker mortality) is
+  unchanged — those EAs that the watchdog now lets through still
+  fail downstream at the report-export step. Net: watchdog converted
+  preflight-failures into worker-mortality / cold-warm-asymmetry
+  failures, did not eliminate the cluster.
+
+  **Confidence the watchdog is working, not just rotating buckets:**
+  observed counts since 15:21Z patch land — 4 terminal failures,
+  none with preflight wording (was the dominant class at 14:14Z
+  with QM5_1236/1237 both preflight-blocked then). Sample is small
+  but directionally consistent with the patch's intent.
+
+  Cluster composition (36 distinct EAs / 38 rows):
+  - cold-warm-asymmetry (6): QM5_1045/1050/1055/1122/1149/**1104**
+  - both-runs-fail (8): QM5_1046/1060/1065/1066/1067/1070/1094/1095
+  - preflight-already-running (5, all pre-patch terminations):
+    QM5_1068/1082/1101/1123/1159 — **no new entrants post-patch**
+  - worker-mortality / metatester-hung (6):
+    QM5_1090/1091/1118/1093/**1168**/**1236**
+  - file-lock-on-include-sync (1): QM5_1121
+  - parser-empty-html-not-classified (3): QM5_1117/1119/1142
+  - data-history-missing (1): QM5_1132
+  - REPORT_MISSING (other) (5):
+    QM5_1061/1069/1081/1062/**1237**
+  - (9) run_smoke_invocation_missing_params: empty (1104 migrated
+    out — see above; bucket effectively retired pending recurrence)
+
+  **Knock-on context.** Autonomous wakes 16:20→19:20Z all skipped
+  step0b/step2 because the separate `2026-05-17_codex_auth_401_
+  websocket.md` escalation is still firing (auth.json last_refresh
+  pinned at 2026-05-18T05:00:55Z >14h stale). No fresh builds
+  during this validation window — the 4 terminal failures are all
+  pump-retry exhaustion on pre-existing blocked EAs, not net-new
+  Codex builds. A clean post-watchdog validation pass on a fresh
+  build cohort awaits OWNER `codex login` per that escalation.
+
+  **HR16 dual-active-sources note.** `farmctl status` returns 2
+  `active` rows during this wake (Allocate-Smartly + ForexFactory).
+  Autonomous wake 19:20:00Z already flagged this as a benign
+  resume-mining pattern (`resume-mining` flips `cards_ready→active`
+  without emitting an `events` row, leaving the older `active`
+  ghost-row briefly until the next status transition catches it).
+  Not raising as separate escalation; recording here so it's not
+  re-discovered as drift by the next observe wake.
+
+  **Recommended escalation path unchanged.** Severity remains HIGH.
+  Two-fix bundle (5) terminal-pool mutex + (1) cold-start warm-up
+  still the highest-leverage intervention; (10) downgraded to
+  cleanup. Per DL-046, next update gated again until (a) yet
+  another new bucket beyond the eight currently active, (b)
+  cluster crosses 40 distinct EAs, (c) post-codex-auth-recovery
+  validation cohort (separate signal class from this watchdog
+  validation), or (d) OWNER picks a fix candidate.
