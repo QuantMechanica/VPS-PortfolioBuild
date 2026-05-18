@@ -573,11 +573,15 @@ function Start-TesterRun {
         [Parameter(Mandatory = $true)]
         [string]$IniPath,
         [Parameter(Mandatory = $true)]
-        [int]$TimeoutSec
+        [int]$TimeoutSec,
+        [string]$TerminalName = $TerminalExe
     )
 
     $args = @("/portable", "/config:$IniPath")
+    $spawnStartedAfter = Get-Date
     $proc = Start-Process -FilePath $TerminalExe -ArgumentList $args -PassThru
+    $childTerminal = Wait-TerminalSpawn -TerminalExe $TerminalExe -IniPath $IniPath -TerminalName $TerminalName -StartedAfter $spawnStartedAfter
+    Write-Host ("run_smoke.stage=terminal_spawn_confirmed terminal_pid={0} start_time='{1:o}'" -f $childTerminal.Id, $childTerminal.StartTime)
     $finished = $proc.WaitForExit($TimeoutSec * 1000)
     $timedOut = -not $finished
     if ($timedOut) {
@@ -590,8 +594,43 @@ function Start-TesterRun {
     return [pscustomobject]@{
         exit_code = $(if ($finished) { $proc.ExitCode } else { $null })
         timed_out = $timedOut
-        terminal_pid = $proc.Id
+        terminal_pid = $childTerminal.Id
     }
+}
+
+function Wait-TerminalSpawn {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$TerminalExe,
+        [Parameter(Mandatory = $true)]
+        [string]$IniPath,
+        [string]$TerminalName = $TerminalExe,
+        [int]$SpawnWaitSeconds = 30,
+        [int]$PollMilliseconds = 500,
+        [datetime]$StartedAfter = (Get-Date).AddSeconds(-30)
+    )
+
+    $spawnDeadline = (Get-Date).AddSeconds($SpawnWaitSeconds)
+    $childTerminal = $null
+    while ((Get-Date) -lt $spawnDeadline -and -not $childTerminal) {
+        Start-Sleep -Milliseconds $PollMilliseconds
+        $childTerminal = Get-Process -Name terminal64 -ErrorAction SilentlyContinue |
+            Where-Object {
+                try {
+                    $_.Path -eq $TerminalExe -and $_.StartTime -ge $StartedAfter
+                } catch {
+                    $false
+                }
+            } |
+            Sort-Object StartTime -Descending |
+            Select-Object -First 1
+    }
+
+    if (-not $childTerminal) {
+        throw "TERMINAL_SPAWN_FAILURE: terminal=$TerminalName exe=$TerminalExe did not appear within 30s; ini=$IniPath"
+    }
+
+    return $childTerminal
 }
 
 function Get-MetaTesterProcessesForTerminalRoot {
@@ -860,7 +899,7 @@ for ($i = 1; $i -le $Runs; $i++) {
     Write-Host ("run_smoke.stage=ini_written run={0} ini='{1}'" -f $runName, $iniPath)
     Write-Host ("run_smoke.stage=start_terminal terminal={0} run={1} ini='{2}'" -f $effectiveTerminal, $runName, $iniPath)
     try {
-        $runExec = Start-TesterRun -TerminalExe $terminalExe -IniPath $iniPath -TimeoutSec $TimeoutSeconds
+        $runExec = Start-TesterRun -TerminalExe $terminalExe -IniPath $iniPath -TimeoutSec $TimeoutSeconds -TerminalName $effectiveTerminal
     } catch {
         Write-Host ("run_smoke.start_failed terminal={0} run={1} ini='{2}' err='{3}'" -f $effectiveTerminal, $runName, $iniPath, $_.Exception.Message)
         throw
