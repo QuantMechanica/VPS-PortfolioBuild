@@ -50,7 +50,6 @@ P5_REQUIRED_OOS_TO_YEAR = 2025
 P5PLUS_MAX_DRAWDOWN_PCT = 20.0
 P5PLUS_MIN_SHARPE = 0.6
 MT5_TERMINALS = ("T1", "T2", "T3", "T4", "T5")  # factory fleet, used by dispatch-tick for per-EA terminal assignment
-INDEX_DWX_SYMBOLS = frozenset({"GDAXI.DWX", "NDX.DWX", "SP500.DWX", "UK100.DWX", "WS30.DWX"})
 ZERO_TRADE_DEAD_THRESHOLD = 0.80
 ZERO_TRADE_DEAD_MIN_DONE = 5
 ZERO_TRADE_REWORK_DEDUP_HOURS = 6
@@ -1202,21 +1201,15 @@ def _running_mt5_terminals() -> set[str]:
     return {line.strip() for line in (proc.stdout or "").splitlines() if line.strip() in MT5_TERMINALS}
 
 
-def _is_index_dwx_symbol(symbol: str | None) -> bool:
-    return str(symbol or "").upper() in INDEX_DWX_SYMBOLS
-
-
-def _active_index_dwx_symbols(conn: sqlite3.Connection) -> set[str]:
-    placeholders = ",".join("?" for _ in INDEX_DWX_SYMBOLS)
+def _active_work_item_symbols(conn: sqlite3.Connection) -> dict[str, str]:
     rows = conn.execute(
-        f"""
+        """
         SELECT DISTINCT symbol
         FROM work_items
-        WHERE status='active' AND symbol IN ({placeholders})
-        """,
-        tuple(sorted(INDEX_DWX_SYMBOLS)),
+        WHERE status='active' AND symbol IS NOT NULL AND symbol != ''
+        """
     ).fetchall()
-    return {row["symbol"] for row in rows}
+    return {str(row["symbol"]).upper(): row["symbol"] for row in rows}
 
 
 def _stop_pid(pid: Any) -> bool:
@@ -1546,7 +1539,7 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
     free_terminals = [t for t in MT5_TERMINALS if t not in busy_terminals]
     if free_terminals:
         with connect(root) as conn:
-            active_index_symbols = _active_index_dwx_symbols(conn)
+            active_symbol_keys = _active_work_item_symbols(conn)
             pending = conn.execute(
                 """
                 SELECT w.*,
@@ -1571,19 +1564,20 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 ORDER BY _phase_rank ASC, _winner_rank ASC, w.updated_at ASC, w.created_at ASC
                 """
             ).fetchall()
-        claimed_index_symbols = set(active_index_symbols)
+        claimed_symbol_keys = dict(active_symbol_keys)
         for item in pending:
             if not free_terminals:
                 break
             item_symbol = item["symbol"]
-            is_index_symbol = _is_index_dwx_symbol(item_symbol)
-            if is_index_symbol and claimed_index_symbols:
+            item_symbol_key = str(item_symbol or "").upper()
+            if item_symbol_key and item_symbol_key in claimed_symbol_keys:
                 actions.append({
-                    "action": "deferred_index_symbol_lock",
+                    "action": "deferred_symbol_lock",
+                    "reason": "symbol_already_active_on_other_terminal",
                     "item_id": item["id"],
                     "ea_id": item["ea_id"],
                     "symbol": item_symbol,
-                    "active_index_symbols": sorted(claimed_index_symbols),
+                    "active_symbol": claimed_symbol_keys[item_symbol_key],
                 })
                 continue
             terminal = free_terminals.pop(0)
@@ -1626,8 +1620,8 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 "effective_min_trades": spawn.get("effective_min_trades"),
             })
             launched_pids.append(int(spawn["pid"]))
-            if is_index_symbol:
-                claimed_index_symbols.add(item_symbol)
+            if item_symbol_key:
+                claimed_symbol_keys[item_symbol_key] = item_symbol
 
     # --- Phase 3: aggregate completed parents ---
     with connect(root) as conn:

@@ -13,17 +13,13 @@ import farmctl  # noqa: E402
 
 
 class IndexSymbolDispatchSerializationTests(unittest.TestCase):
-    def test_dispatch_claims_only_one_index_symbol_per_tick(self) -> None:
+    def _dispatch_symbols(self, symbols: list[str]) -> tuple[list[tuple[str, str]], dict[str, object], dict[str, str]]:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp) / "farm"
             farmctl.init_db(root)
             now = farmctl.utc_now()
             db = root / "state" / "farm_state.sqlite"
-            rows = [
-                ("wi-ndx", "QM5_9999", "NDX.DWX", now),
-                ("wi-gdaxi", "QM5_9999", "GDAXI.DWX", now),
-                ("wi-eurusd", "QM5_9999", "EURUSD.DWX", now),
-            ]
+            rows = [(f"wi-{index}", "QM5_9999", symbol, now) for index, symbol in enumerate(symbols, start=1)]
             with sqlite3.connect(db) as conn:
                 conn.executemany(
                     """
@@ -67,23 +63,53 @@ class IndexSymbolDispatchSerializationTests(unittest.TestCase):
                 farmctl._running_mt5_terminals = old_running
                 farmctl._spawn_run_smoke_for_work_item = old_spawn
 
-            self.assertEqual([item_id for item_id, _terminal in spawned], ["wi-ndx", "wi-eurusd"])
-            self.assertIn(
-                {
-                    "action": "deferred_index_symbol_lock",
-                    "item_id": "wi-gdaxi",
-                    "ea_id": "QM5_9999",
-                    "symbol": "GDAXI.DWX",
-                    "active_index_symbols": ["NDX.DWX"],
-                },
-                result["actions"],
-            )
-
             with sqlite3.connect(db) as conn:
                 statuses = dict(conn.execute("SELECT id, status FROM work_items").fetchall())
-            self.assertEqual(statuses["wi-ndx"], "active")
-            self.assertEqual(statuses["wi-eurusd"], "active")
-            self.assertEqual(statuses["wi-gdaxi"], "pending")
+            return spawned, result, statuses
+
+    def test_dispatch_defers_duplicate_index_symbol(self) -> None:
+        spawned, result, statuses = self._dispatch_symbols(["NDX.DWX", "NDX.DWX"])
+
+        self.assertEqual([item_id for item_id, _terminal in spawned], ["wi-1"])
+        self.assertIn(
+            {
+                "action": "deferred_symbol_lock",
+                "reason": "symbol_already_active_on_other_terminal",
+                "item_id": "wi-2",
+                "ea_id": "QM5_9999",
+                "symbol": "NDX.DWX",
+                "active_symbol": "NDX.DWX",
+            },
+            result["actions"],
+        )
+        self.assertEqual(statuses["wi-1"], "active")
+        self.assertEqual(statuses["wi-2"], "pending")
+
+    def test_dispatch_allows_different_index_symbols_in_parallel(self) -> None:
+        spawned, _result, statuses = self._dispatch_symbols(["NDX.DWX", "SP500.DWX", "GDAXI.DWX"])
+
+        self.assertEqual([item_id for item_id, _terminal in spawned], ["wi-1", "wi-2", "wi-3"])
+        self.assertEqual(statuses["wi-1"], "active")
+        self.assertEqual(statuses["wi-2"], "active")
+        self.assertEqual(statuses["wi-3"], "active")
+
+    def test_dispatch_defers_duplicate_forex_symbol(self) -> None:
+        spawned, result, statuses = self._dispatch_symbols(["EURUSD.DWX", "EURUSD.DWX"])
+
+        self.assertEqual([item_id for item_id, _terminal in spawned], ["wi-1"])
+        self.assertIn(
+            {
+                "action": "deferred_symbol_lock",
+                "reason": "symbol_already_active_on_other_terminal",
+                "item_id": "wi-2",
+                "ea_id": "QM5_9999",
+                "symbol": "EURUSD.DWX",
+                "active_symbol": "EURUSD.DWX",
+            },
+            result["actions"],
+        )
+        self.assertEqual(statuses["wi-1"], "active")
+        self.assertEqual(statuses["wi-2"], "pending")
 
 
 if __name__ == "__main__":

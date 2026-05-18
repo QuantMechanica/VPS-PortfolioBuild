@@ -100,3 +100,17 @@ Added a unit test covering mixed pending work:
 - `EURUSD.DWX` is still claimed in the same tick, preserving non-index parallelism.
 
 No pending or active production work items were edited. No T6 live action was taken.
+
+## Addendum: Per-Symbol Dispatch Lock
+
+The first dispatch fix serialized all known DWX index symbols farmwide. That was more conservative than the observed root cause required.
+
+The failing cluster was five simultaneous MT5 testers for the same symbol (`NDX.DWX`) across different terminals. Different custom symbols use different local history/cache files, so `NDX.DWX` on one terminal, `SP500.DWX` on another, and `GDAXI.DWX` on a third should not contend for the same symbol cache.
+
+Dispatch now serializes by normalized `symbol` for all work items:
+
+- If `NDX.DWX` is already active or has been claimed in the current dispatch tick, another pending `NDX.DWX` item remains pending with `reason='symbol_already_active_on_other_terminal'`.
+- Different index symbols can be claimed in parallel.
+- The same duplicate-symbol protection also applies to non-index symbols such as `EURUSD.DWX`.
+
+This keeps the crash guard on the identified cache-lock conflict while allowing safe parallelism across different symbols.
