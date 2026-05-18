@@ -704,7 +704,46 @@ function Get-ExpectedTradesPerYear {
     if (-not $v.Success) {
         return $null
     }
-    return [int]$v.Groups["n"].Value
+    $cardExpected = [int]$v.Groups["n"].Value
+    $universeLines = @($text -split "\r?\n" | Where-Object {
+        $_ -match "^\s*(?:Universe|Target symbol\(s\)|Target symbols?)\b"
+    })
+    $symbolSearchText = if ($universeLines.Count -gt 0) { $universeLines -join "`n" } else { $text }
+    $symbolMatches = [regex]::Matches(
+        $symbolSearchText,
+        "\b([A-Z]{3}USD|USD[A-Z]{3}|EURJPY|GBPJPY|AUDJPY|CADJPY|CHFJPY|NZDJPY|XAUUSD|XTIUSD|WTI|NDX|WS30|GDAXI|GER40|DAX|UK100|SP500)(?:\.DWX)?\b"
+    )
+    $symbols = New-Object 'System.Collections.Generic.HashSet[string]'
+    foreach ($match in $symbolMatches) {
+        $sym = $match.Groups[1].Value.ToUpperInvariant()
+        if ($sym.EndsWith(".DWX")) {
+            $sym = $sym.Substring(0, $sym.Length - 4)
+        }
+        switch ($sym) {
+            "DAX" { $sym = "GDAXI.DWX" }
+            "GER40" { $sym = "GDAXI.DWX" }
+            "WTI" { $sym = "XTIUSD.DWX" }
+            default {
+                if (-not $sym.EndsWith(".DWX")) {
+                    $sym = "$sym.DWX"
+                }
+            }
+        }
+        [void]$symbols.Add($sym)
+    }
+    $isBasket = ($symbols.Count -gt 1) -and ($text -match "(?i)multi[- ]asset|basket|universe")
+    $effectiveExpected = $cardExpected
+    $scope = "per_symbol_card"
+    if ($isBasket) {
+        $effectiveExpected = [Math]::Max(1, [int][Math]::Floor($cardExpected / $symbols.Count))
+        $scope = "basket_scaled_from_card"
+    }
+    return [pscustomobject]@{
+        ExpectedTradesPerYearPerSymbol = $effectiveExpected
+        ExpectedTradesPerYearCard = $cardExpected
+        CardUniverseSymbolCount = [Math]::Max(1, $symbols.Count)
+        MinTradeScope = $scope
+    }
 }
 
 function Get-SmokeYearCount {
@@ -772,12 +811,13 @@ New-Item -ItemType Directory -Path $frameworkEvidenceDir -Force | Out-Null
 
 $fromDate = if ($FromDate) { $FromDate } else { "{0}.01.01" -f $Year }
 $toDate = if ($ToDate) { $ToDate } else { "{0}.12.31" -f $Year }
-$expectedTradesPerYear = Get-ExpectedTradesPerYear -EAIdValue $EAId
-if ($null -ne $expectedTradesPerYear) {
+$expectedTradeInfo = Get-ExpectedTradesPerYear -EAIdValue $EAId
+if ($null -ne $expectedTradeInfo) {
+    $expectedTradesPerYear = [int]$expectedTradeInfo.ExpectedTradesPerYearPerSymbol
     $smokeYearCount = Get-SmokeYearCount -StartDate $fromDate -EndDate $toDate
     $effectiveMinTrades = [Math]::Max(1, [int][Math]::Floor($expectedTradesPerYear * $smokeYearCount * 0.5))
     if ($effectiveMinTrades -ne $MinTrades) {
-        Write-Host ("run_smoke.min_trades_override ea_id=QM5_{0:d4} expected_per_year={1} years={2} old={3} effective={4}" -f $EAId, $expectedTradesPerYear, $smokeYearCount, $MinTrades, $effectiveMinTrades)
+        Write-Host ("run_smoke.min_trades_override ea_id=QM5_{0:d4} expected_per_year={1} years={2} old={3} effective={4} scope={5} card_expected={6} card_symbols={7}" -f $EAId, $expectedTradesPerYear, $smokeYearCount, $MinTrades, $effectiveMinTrades, $expectedTradeInfo.MinTradeScope, $expectedTradeInfo.ExpectedTradesPerYearCard, $expectedTradeInfo.CardUniverseSymbolCount)
         $MinTrades = $effectiveMinTrades
     }
 }

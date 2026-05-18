@@ -319,16 +319,80 @@ def _find_approved_card_for_ea(root: Path, ea_id: str) -> Path | None:
     return matches[0] if matches else None
 
 
+def _normalise_card_symbol(symbol: str) -> str:
+    s = symbol.upper()
+    if s.endswith(".DWX"):
+        s = s[:-4]
+    aliases = {
+        "DAX": "GDAXI.DWX",
+        "GER40": "GDAXI.DWX",
+        "WTI": "XTIUSD.DWX",
+    }
+    if s in aliases:
+        return aliases[s]
+    return f"{s}.DWX"
+
+
+def _card_universe_symbols(card_text: str) -> set[str]:
+    universe_lines = [
+        line for line in card_text.splitlines()
+        if re.search(r"^\s*(?:Universe|Target symbol\(s\)|Target symbols?)\b", line, re.IGNORECASE)
+    ]
+    search_text = "\n".join(universe_lines) if universe_lines else card_text
+    symbol_re = re.compile(
+        r"\b("
+        r"[A-Z]{3}USD|USD[A-Z]{3}|EURJPY|GBPJPY|AUDJPY|CADJPY|CHFJPY|NZDJPY|"
+        r"XAUUSD|XTIUSD|WTI|NDX|WS30|GDAXI|GER40|DAX|UK100|SP500"
+        r")(?:\.DWX)?\b"
+    )
+    return {_normalise_card_symbol(m.group(0)) for m in symbol_re.finditer(search_text)}
+
+
+def _is_multi_asset_card(card_text: str, symbols: set[str]) -> bool:
+    if len(symbols) < 2:
+        return False
+    return bool(re.search(r"multi[- ]asset|basket|universe", card_text, re.IGNORECASE))
+
+
 def _expected_trades_per_year_for_ea(root: Path, ea_id: str) -> int:
+    return _expected_trade_frequency_for_ea(root, ea_id)["expected_trades_per_year_per_symbol"]
+
+
+def _expected_trade_frequency_for_ea(root: Path, ea_id: str) -> dict[str, int | str]:
     card = _find_approved_card_for_ea(root, ea_id)
     if not card:
-        return 20
+        return {
+            "expected_trades_per_year_per_symbol": 20,
+            "expected_trades_per_year_card": 20,
+            "card_universe_symbol_count": 1,
+            "min_trade_scope": "per_symbol_default",
+        }
     try:
+        card_text = card.read_text(encoding="utf-8-sig")
         fm = parse_card_frontmatter(card)
         value = int(str(fm.get("expected_trades_per_year_per_symbol", "20")).strip())
-        return max(1, value)
+        expected = max(1, value)
+        symbols = _card_universe_symbols(card_text)
+        if _is_multi_asset_card(card_text, symbols):
+            return {
+                "expected_trades_per_year_per_symbol": max(1, int(expected / len(symbols))),
+                "expected_trades_per_year_card": expected,
+                "card_universe_symbol_count": len(symbols),
+                "min_trade_scope": "basket_scaled_from_card",
+            }
+        return {
+            "expected_trades_per_year_per_symbol": expected,
+            "expected_trades_per_year_card": expected,
+            "card_universe_symbol_count": max(1, len(symbols)),
+            "min_trade_scope": "per_symbol_card",
+        }
     except Exception:
-        return 20
+        return {
+            "expected_trades_per_year_per_symbol": 20,
+            "expected_trades_per_year_card": 20,
+            "card_universe_symbol_count": 1,
+            "min_trade_scope": "per_symbol_default",
+        }
 
 
 def _smoke_year_count(from_date: str | None, to_date: str | None, default_year: int) -> int:
@@ -341,11 +405,15 @@ def _smoke_year_count(from_date: str | None, to_date: str | None, default_year: 
 
 
 def _effective_min_trades(root: Path, ea_id: str, from_date: str | None,
-                          to_date: str | None, default_year: int) -> dict[str, int]:
-    expected = _expected_trades_per_year_for_ea(root, ea_id)
+                          to_date: str | None, default_year: int) -> dict[str, int | str]:
+    freq = _expected_trade_frequency_for_ea(root, ea_id)
+    expected = int(freq["expected_trades_per_year_per_symbol"])
     years = _smoke_year_count(from_date, to_date, default_year)
     return {
         "expected_trades_per_year_per_symbol": expected,
+        "expected_trades_per_year_card": int(freq["expected_trades_per_year_card"]),
+        "card_universe_symbol_count": int(freq["card_universe_symbol_count"]),
+        "min_trade_scope": str(freq["min_trade_scope"]),
         "smoke_year_count": years,
         "effective_min_trades": max(1, int(expected * years * 0.5)),
     }
