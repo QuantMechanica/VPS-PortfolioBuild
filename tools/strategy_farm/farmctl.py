@@ -50,11 +50,11 @@ PHASE_RUNNER_SCRIPTS = {
     "P3.5": "p35_csr_runner.py",
     "P4": "p4_walk_forward.py",
     "P5": "p5_stress_runner.py",
-    "P5b": "p5b_calibrated_noise.py",
-    "P5c": "p5c_crisis_slices.py",
-    "P6": "p6_multiseed.py",
-    "P7": "p7_statval.py",
-    "P8": "p8_news_impact.py",
+    "P5b": "p5b_noise_runner.py",
+    "P5c": "p5c_crisis_runner.py",
+    "P6": "p6_multiseed_runner.py",
+    "P7": "p7_stats_runner.py",
+    "P8": "p8_news_runner.py",
 }
 P5_REQUIRED_OOS_FROM_YEAR = 2023
 P5_REQUIRED_OOS_TO_YEAR = 2025
@@ -903,13 +903,6 @@ def _derive_verdict_from_summary(summary: dict[str, Any], min_trades: int = 5, p
     P2-P4 mirror p2_baseline's derive_verdict. P5+ additionally requires
     profitable OOS behavior and bounded drawdown when those metrics exist.
     """
-    phase_key = str(summary.get("phase") or phase or "").strip()
-    if phase_key in REAL_PHASE_RUNNER_PHASES:
-        verdict = str(summary.get("verdict") or "").strip()
-        reason = str(summary.get("reason") or summary.get("criterion") or "").strip()
-        if verdict:
-            return verdict, reason
-
     if "phase" in summary and "runs" not in summary:
         return _derive_phase_runner_verdict(summary, min_trades=min_trades, phase=phase)
 
@@ -1136,7 +1129,8 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         if cmd is None:
             return {
                 "spawned": False,
-                "reason": "phase_runner_not_implemented",
+                "pending_runner": True,
+                "reason": "phase runner not implemented yet -- skipping for now",
                 "log_path": str(log_path),
                 "report_root": str(report_root),
                 "ea_dir_name": ea_id,
@@ -1165,6 +1159,7 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
             close_fds=False,
             env=env,
         )
+        log_fh.close()
         return {
             "spawned": True,
             "pid": proc.pid,
@@ -1342,6 +1337,7 @@ def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
         creationflags=creationflags,
         close_fds=False,
     )
+    log_fh.close()
     return {
         "spawned": True,
         "pid": proc.pid,
@@ -5386,8 +5382,16 @@ def _phase_runner_cmd(phase: str, ea_id: str, terminal: str | None = None,
     }
     phase = phase_aliases.get(str(phase or "").strip().lower(), str(phase or "").strip())
 
-    def _runner_base(script_name: str) -> list[str]:
-        cmd = [sys.executable, str(REPO_ROOT / "framework" / "scripts" / script_name), "--ea", ea_id]
+    if phase in REAL_PHASE_RUNNER_PHASES:
+        script_name = PHASE_RUNNER_SCRIPTS.get(phase)
+        if not script_name or not (REPO_ROOT / "framework" / "scripts" / script_name).exists():
+            return None
+    else:
+        script_name = None
+
+    def _runner_base(default_script_name: str) -> list[str]:
+        script = script_name or default_script_name
+        cmd = [sys.executable, str(REPO_ROOT / "framework" / "scripts" / script), "--ea", ea_id]
         if out_prefix is not None:
             cmd.extend(["--out-prefix", str(out_prefix)])
         return cmd
@@ -5440,8 +5444,20 @@ def _phase_runner_cmd(phase: str, ea_id: str, terminal: str | None = None,
         # P3.5 = cross-symbol robustness on the SAME in-sample window.
         # Does the edge generalize across multiple DWX symbols? Different
         # from P4 walk-forward (which is true OOS in time).
+        period = _detect_ea_period(ea_id)
+        symbols = surviving_symbols or []
         cmd = _runner_base("p35_csr_runner.py")
-        cmd.extend(["--baseline-csv", _pipeline_file("P2", "report.csv")])
+        cmd.extend([
+            "--symbols", ",".join(symbols),
+            "--period", period,
+            "--from-year", "2017",
+            "--to-year", "2022",
+        ])
+        if setfile_path:
+            cmd.extend(["--setfile", setfile_path])
+        p2_report = PIPELINE_REPORT_ROOT / ea_id / "P2" / "report.csv"
+        if p2_report.exists():
+            cmd.extend(["--baseline-csv", str(p2_report)])
         p3_report = PIPELINE_REPORT_ROOT / ea_id / "P3" / "report.csv"
         if p3_report.exists():
             cmd.extend(["--csr-results-csv", str(p3_report)])
@@ -5450,8 +5466,23 @@ def _phase_runner_cmd(phase: str, ea_id: str, terminal: str | None = None,
     if phase == "P4":
         # P4 = true OOS Walk-Forward on 2023-now data.
         # Train on rolling 5y windows ending pre-2023, test 6 months OOS.
+        period = _detect_ea_period(ea_id)
+        symbols = surviving_symbols or []
         cmd = _runner_base("p4_walk_forward.py")
-        cmd.extend(["--walk-forward-csv", _pipeline_file("P4", "walk_forward.csv")])
+        cmd.extend([
+            "--symbols", ",".join(symbols),
+            "--period", period,
+            "--train-from-year", "2017",
+            "--train-to-year", "2022",
+            "--oos-from-year", "2023",
+            "--oos-to-year", "2025",
+            "--min-folds", "6",
+        ])
+        if setfile_path:
+            cmd.extend(["--setfile", setfile_path])
+        walk_forward_csv = PIPELINE_REPORT_ROOT / ea_id / "P4" / "walk_forward.csv"
+        if walk_forward_csv.exists():
+            cmd.extend(["--walk-forward-csv", str(walk_forward_csv)])
         return cmd
 
     if phase == "P5":
@@ -5460,57 +5491,56 @@ def _phase_runner_cmd(phase: str, ea_id: str, terminal: str | None = None,
         cmd = _runner_base("p5_stress_runner.py")
         if symbol:
             cmd.extend(["--symbol", symbol])
-        cmd.extend([
-            "--calibration-json", str(P5_CALIBRATION_JSON),
-            "--clean-metrics-json", _pipeline_file("P5", "p5_clean_metrics.json"),
-            "--stress-metrics-json", _pipeline_file("P5", "p5_stress_metrics.json"),
-            "--full-history-from", f"{P5_REQUIRED_OOS_FROM_YEAR}-01-01",
-            "--full-history-to", f"{P5_REQUIRED_OOS_TO_YEAR}-12-31",
-        ])
+        if setfile_path:
+            cmd.extend(["--setfile", setfile_path])
+        clean_metrics = PIPELINE_REPORT_ROOT / ea_id / "P5" / "p5_clean_metrics.json"
+        stress_metrics = PIPELINE_REPORT_ROOT / ea_id / "P5" / "p5_stress_metrics.json"
+        if P5_CALIBRATION_JSON.exists() and clean_metrics.exists() and stress_metrics.exists():
+            cmd.extend([
+                "--calibration-json", str(P5_CALIBRATION_JSON),
+                "--clean-metrics-json", str(clean_metrics),
+                "--stress-metrics-json", str(stress_metrics),
+                "--full-history-from", f"{P5_REQUIRED_OOS_FROM_YEAR}-01-01",
+                "--full-history-to", f"{P5_REQUIRED_OOS_TO_YEAR}-12-31",
+            ])
         return cmd
 
     if phase == "P5b":
         symbols = surviving_symbols or []
         symbol = symbols[0] if symbols else ""
-        cmd = _runner_base("p5b_calibrated_noise.py")
-        cmd.extend([
-            "--trials-csv", _pipeline_file("P5b", "p5b_trials.csv"),
-            "--calibration-json", str(P5_CALIBRATION_JSON),
-        ])
+        cmd = _runner_base("p5b_noise_runner.py")
         if symbol:
             cmd.extend(["--symbol", symbol])
+        if setfile_path:
+            cmd.extend(["--setfile", setfile_path])
         return cmd
 
     if phase == "P5c":
-        cmd = _runner_base("p5c_crisis_slices.py")
-        cmd.extend([
-            "--slices-csv", _pipeline_file("P5c", "p5c_slices.csv"),
-            "--clean-metrics-json", _pipeline_file("P5", "p5_clean_metrics.json"),
-        ])
+        cmd = _runner_base("p5c_crisis_runner.py")
+        if setfile_path:
+            cmd.extend(["--setfile", setfile_path])
         return cmd
 
     if phase == "P6":
-        cmd = _runner_base("p6_multiseed.py")
-        cmd.extend([
-            "--seeds-csv", _pipeline_file("P6", "p6_seeds.csv"),
-            "--seeds", "42,17,99,7,2026",
-        ])
+        cmd = _runner_base("p6_multiseed_runner.py")
+        cmd.extend(["--seeds", "42,17,99,7,2026"])
+        if setfile_path:
+            cmd.extend(["--setfile", setfile_path])
         return cmd
 
     if phase == "P7":
-        cmd = _runner_base("p7_statval.py")
-        cmd.extend([
-            "--sweep-pass-rows", _pipeline_file("P3", "report.csv"),
-            "--multiseed-rows", _pipeline_file("P6", "p6_seeds.csv"),
-        ])
+        cmd = _runner_base("p7_stats_runner.py")
+        if setfile_path:
+            cmd.extend(["--setfile", setfile_path])
         return cmd
 
     if phase == "P8":
-        cmd = _runner_base("p8_news_impact.py")
+        cmd = _runner_base("p8_news_runner.py")
         cmd.extend([
-            "--news-matrix", _pipeline_file("P8", "news_matrix.csv"),
             "--modes", "OFF,PAUSE,SKIP_DAY,FTMO_PAUSE,5ers_PAUSE,no_news,news_only",
         ])
+        if setfile_path:
+            cmd.extend(["--setfile", setfile_path])
         return cmd
 
     return None

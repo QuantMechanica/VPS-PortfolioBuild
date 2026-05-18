@@ -73,15 +73,37 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Run P5 stress gate checks.")
     add_common_args(parser)
     parser.add_argument("--symbol", default="EURUSD.DWX")
-    parser.add_argument("--calibration-json", required=True)
-    parser.add_argument("--clean-metrics-json", required=True)
-    parser.add_argument("--stress-metrics-json", required=True)
+    parser.add_argument("--period", default="")
+    parser.add_argument("--setfile", default="")
+    parser.add_argument("--calibration-json")
+    parser.add_argument("--clean-metrics-json")
+    parser.add_argument("--stress-metrics-json")
     parser.add_argument("--full-history-from", default="")
     parser.add_argument("--full-history-to", default="")
     args = parser.parse_args()
 
     ea_id = args.ea
     out_dir = ensure_dir(Path(args.out_prefix) / ea_id / "P5")
+    if not args.calibration_json or not args.clean_metrics_json or not args.stress_metrics_json:
+        result = build_result(
+            phase="P5",
+            ea_id=ea_id,
+            verdict="PENDING_IMPLEMENTATION",
+            criterion="P5 stress runner is wired for cascade, but clean/stress evidence generation is pending.",
+            evidence_path="",
+            details={
+                "symbol": args.symbol,
+                "period": args.period,
+                "setfile": args.setfile,
+                "has_calibration_json": bool(args.calibration_json),
+                "has_clean_metrics_json": bool(args.clean_metrics_json),
+                "has_stress_metrics_json": bool(args.stress_metrics_json),
+            },
+        )
+        result_path, _ = write_phase_artifacts(out_dir=out_dir, phase="P5", ea_id=ea_id, result=result)
+        update_result_with_evidence_path(result_path, result)
+        print(result_path)
+        return 0
 
     calibration = load_json(Path(args.calibration_json))
     clean = _read_metrics(Path(args.clean_metrics_json), args.symbol)

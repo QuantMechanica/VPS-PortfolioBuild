@@ -45,11 +45,43 @@ def _check_clean_oos(row: dict[str, str]) -> tuple[bool, str]:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run P4 walk-forward gate checks.")
     add_common_args(parser)
-    parser.add_argument("--walk-forward-csv", required=True)
+    parser.add_argument("--walk-forward-csv")
+    parser.add_argument("--symbols", default="")
+    parser.add_argument("--symbol", default="")
+    parser.add_argument("--period", default="")
+    parser.add_argument("--setfile", default="")
+    parser.add_argument("--train-from-year", default="")
+    parser.add_argument("--train-to-year", default="")
+    parser.add_argument("--oos-from-year", default="")
+    parser.add_argument("--oos-to-year", default="")
+    parser.add_argument("--min-folds", type=int, default=6)
     args = parser.parse_args()
 
     ea_id = args.ea
     out_dir = ensure_dir(Path(args.out_prefix) / ea_id / "P4")
+    if not args.walk_forward_csv:
+        result = build_result(
+            phase="P4",
+            ea_id=ea_id,
+            verdict="PENDING_IMPLEMENTATION",
+            criterion="P4 walk-forward runner is wired for cascade, but fold generation is pending; no PASS can be issued without WF CSV evidence.",
+            evidence_path="",
+            details={
+                "symbols": args.symbols or args.symbol,
+                "period": args.period,
+                "setfile": args.setfile,
+                "train_from_year": args.train_from_year,
+                "train_to_year": args.train_to_year,
+                "oos_from_year": args.oos_from_year,
+                "oos_to_year": args.oos_to_year,
+                "min_folds": args.min_folds,
+            },
+        )
+        result_path, _ = write_phase_artifacts(out_dir=out_dir, phase="P4", ea_id=ea_id, result=result)
+        update_result_with_evidence_path(result_path, result)
+        print(result_path)
+        return 0
+
     rows = load_csv_rows(Path(args.walk_forward_csv))
 
     fold_count = len(rows)
