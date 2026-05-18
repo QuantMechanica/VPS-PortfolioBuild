@@ -572,6 +572,43 @@ def queue_snapshot() -> dict:
     return out
 
 
+def pipeline_backlog_snapshot() -> dict:
+    """Read-only backlog counters for the cockpit."""
+    out = {
+        "sources": {"pending": 0, "cards_ready": 0, "done": 0},
+        "pass_by_phase": [],
+        "pass_total": 0,
+        "work_active_by_phase": [],
+        "work_active_total": 0,
+        "top_sources": [],
+        "estimated_todo": 0,
+    }
+    try:
+        for r in db_rows("SELECT status, COUNT(*) AS c FROM sources GROUP BY status"):
+            out["sources"][r["status"]] = r["c"]
+        out["pass_by_phase"] = db_rows(
+            "SELECT phase, COUNT(DISTINCT ea_id) AS c FROM work_items "
+            "WHERE verdict='PASS' GROUP BY phase ORDER BY phase"
+        )
+        pass_total = db_rows(
+            "SELECT COUNT(DISTINCT ea_id) AS c FROM work_items WHERE verdict='PASS'"
+        )
+        out["pass_total"] = pass_total[0]["c"] if pass_total else 0
+        out["work_active_by_phase"] = db_rows(
+            "SELECT phase, COUNT(*) AS c FROM work_items "
+            "WHERE status IN ('active','pending','claimed') GROUP BY phase ORDER BY phase"
+        )
+        out["work_active_total"] = sum(r["c"] for r in out["work_active_by_phase"])
+        out["top_sources"] = db_rows(
+            "SELECT priority, title FROM sources "
+            "WHERE status='pending' ORDER BY priority DESC LIMIT 5"
+        )
+        out["estimated_todo"] = out["sources"].get("pending", 0) * 3
+    except Exception as exc:
+        out["error"] = str(exc)
+    return out
+
+
 def compute_heureka_leader(pipeline: list[dict]) -> dict | None:
     """Pick the most-advanced still-alive EA as the Heureka leader.
 
@@ -709,6 +746,7 @@ def main() -> int:
     mt5_work = mt5_active_work()
     q = queue_snapshot()
     pipeline = compute_pipeline()
+    backlog = pipeline_backlog_snapshot()
     heureka = compute_heureka_leader(pipeline)
     claude_q = claude_quota()
     claude_usage = claude_token_usage()
@@ -935,6 +973,67 @@ def main() -> int:
       {queue_card("Backtest queue", len(q["pending_backtests_list"]), "#f59e0b", bt_q_items)}
       {queue_card("Cards approved", q["cards_approved"], "#34d399",
                   [f'<div class="q-item muted">unbuild: {q["cards_approved"] - codex_count - q["builds_pending"]}</div>'])}
+    </div>'''
+
+    # --- Pipeline backlog ---
+    def metric_tile(label: str, value: int, sub: str = "", accent: str = "var(--qm-text)") -> str:
+        sub_html = f'<div class="backlog-sub">{html.escape(sub)}</div>' if sub else ""
+        return (
+            '<div class="backlog-metric">'
+            f'<div class="backlog-label">{html.escape(label)}</div>'
+            f'<div class="backlog-value mono" style="color:{accent}">{value}</div>'
+            f'{sub_html}</div>'
+        )
+
+    def phase_chips(rows: list[dict], empty_label: str) -> str:
+        if not rows:
+            return f'<div class="backlog-empty">{empty_label}</div>'
+        return '<div class="backlog-chips">' + "".join(
+            f'<span class="backlog-chip"><b>{html.escape(str(r.get("phase") or "?"))}</b>'
+            f'<span class="mono">{int(r.get("c") or 0)}</span></span>'
+            for r in rows
+        ) + '</div>'
+
+    sources = backlog["sources"]
+    top_sources = backlog["top_sources"]
+    if top_sources:
+        top_sources_html = '<div class="backlog-list">' + "".join(
+            f'<div class="backlog-source"><span class="mono prio">P{html.escape(str(s.get("priority") or 0))}</span>'
+            f'<span>{html.escape(str(s.get("title") or "?")[:90])}</span></div>'
+            for s in top_sources
+        ) + '</div>'
+    else:
+        top_sources_html = '<div class="backlog-empty">no pending sources</div>'
+
+    backlog_note = (
+        f'<div class="backlog-error">{html.escape(backlog["error"])}</div>'
+        if backlog.get("error") else ""
+    )
+    backlog_html = f'''
+    <div class="backlog">
+      <div class="backlog-grid">
+        {metric_tile("Sources pending", sources.get("pending", 0), "awaiting extraction", "var(--promising)")}
+        {metric_tile("Cards ready", sources.get("cards_ready", 0), "ready for EA build", "var(--em-l)")}
+        {metric_tile("Sources done", sources.get("done", 0), "completed source intake", "var(--qm-text-dim)")}
+        {metric_tile("EAs PASS", backlog["pass_total"], "distinct EAs across phases", "var(--em)")}
+        {metric_tile("Work items now", backlog["work_active_total"], "active / pending / claimed", "var(--live)")}
+        {metric_tile("Estimated TODO", backlog["estimated_todo"], "pending sources × 3 strategies", "var(--promising)")}
+      </div>
+      <div class="backlog-detail">
+        <div class="backlog-panel">
+          <div class="backlog-panel-title">PASS by phase</div>
+          {phase_chips(backlog["pass_by_phase"], "no PASS work_items")}
+        </div>
+        <div class="backlog-panel">
+          <div class="backlog-panel-title">Active / pending work_items by phase</div>
+          {phase_chips(backlog["work_active_by_phase"], "no active or pending work_items")}
+        </div>
+        <div class="backlog-panel">
+          <div class="backlog-panel-title">Top pending sources</div>
+          {top_sources_html}
+        </div>
+      </div>
+      {backlog_note}
     </div>'''
 
     # --- Pipeline EA table (full list) ---
@@ -1365,6 +1464,75 @@ body {{
 .q-item:last-child {{ border-bottom: none; }}
 .q-empty {{ font-style: italic; font-size: 11px; color: var(--qm-text-subtle); padding: 8px 0; }}
 
+/* ===== PIPELINE BACKLOG ===== */
+.backlog {{
+  background: var(--qm-surface-1);
+  border: 1px solid var(--qm-border);
+  border-radius: 8px;
+  padding: 12px 14px;
+}}
+.backlog-grid {{
+  display: grid; grid-template-columns: repeat(6, 1fr);
+  gap: 10px; margin-bottom: 12px;
+}}
+.backlog-metric {{
+  background: var(--qm-surface-0);
+  border: 1px solid var(--qm-border);
+  border-radius: 6px; padding: 10px 12px;
+}}
+.backlog-label, .backlog-panel-title {{
+  font-size: 9px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--qm-text-muted);
+}}
+.backlog-value {{
+  font-size: 24px; font-weight: 600; line-height: 1.1; margin-top: 5px;
+}}
+.backlog-sub {{
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--qm-text-subtle); margin-top: 3px;
+}}
+.backlog-detail {{
+  display: grid; grid-template-columns: 1fr 1.2fr 1.4fr;
+  gap: 10px;
+}}
+.backlog-panel {{
+  border-top: 1px solid var(--qm-border);
+  padding-top: 10px; min-width: 0;
+}}
+.backlog-panel-title {{ margin-bottom: 8px; }}
+.backlog-chips {{ display: flex; flex-wrap: wrap; gap: 5px; }}
+.backlog-chip {{
+  display: inline-flex; align-items: center; gap: 7px;
+  border: 1px solid var(--qm-border-strong);
+  border-radius: 4px; padding: 3px 7px;
+  background: var(--qm-surface-0);
+  font-size: 10px; color: var(--qm-text-dim);
+}}
+.backlog-chip b {{ color: var(--qm-text); font-weight: 600; }}
+.backlog-chip .mono {{ color: var(--em-l); }}
+.backlog-list {{ display: flex; flex-direction: column; gap: 4px; }}
+.backlog-source {{
+  display: grid; grid-template-columns: 38px minmax(0, 1fr);
+  gap: 8px; align-items: baseline;
+  font-size: 11px; color: var(--qm-text-dim);
+  border-bottom: 1px solid var(--qm-border);
+  padding-bottom: 4px;
+}}
+.backlog-source:last-child {{ border-bottom: none; }}
+.backlog-source span:last-child {{
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}}
+.backlog-source .prio {{ color: var(--promising); font-size: 10px; }}
+.backlog-empty {{
+  font-style: italic; font-size: 11px; color: var(--qm-text-subtle);
+}}
+.backlog-error {{
+  margin-top: 10px; padding: 7px 9px; border-radius: 4px;
+  border: 1px solid rgba(239,68,68,0.3);
+  background: rgba(239,68,68,0.06);
+  color: var(--fail); font-family: var(--font-mono); font-size: 10px;
+}}
+
 /* ===== DETAIL ===== */
 .detail-row {{ display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 14px; margin-top: 22px; }}
 .detail-card {{
@@ -1614,6 +1782,9 @@ tr:last-child td {{ border-bottom: none; }}
 
 <div class="section-title">Queues</div>
 {queue_html}
+
+<div class="section-title">Pipeline backlog</div>
+{backlog_html}
 
 <div class="detail-row">
 
