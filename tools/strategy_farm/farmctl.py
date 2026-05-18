@@ -22,12 +22,18 @@ import uuid
 from pathlib import Path
 from typing import Any
 
+try:
+    from cache_audit import has_ea_history_window
+except ModuleNotFoundError:
+    from tools.strategy_farm.cache_audit import has_ea_history_window
+
 
 DEFAULT_ROOT = Path(os.environ.get("QM_STRATEGY_FARM_ROOT", r"D:\QM\strategy_farm"))
 DB_REL = Path("state") / "farm_state.sqlite"
 REPO_ROOT = Path(__file__).resolve().parents[2]
 FRAMEWORK_EAS_DIR = REPO_ROOT / "framework" / "EAs"
 P5_CALIBRATION_JSON = REPO_ROOT / "framework" / "calibrations" / "VPS_SLIPPAGE_LATENCY_CALIBRATION_V2.json"
+MT5_ROOT = Path(os.environ.get("QM_MT5_ROOT", r"D:\QM\mt5"))
 PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
 CLAUDE_RESEARCH_TEMPLATE = PROMPTS_DIR / "claude_research_source.md"
 CODEX_BUILD_TEMPLATE = PROMPTS_DIR / "codex_build_ea.md"
@@ -39,6 +45,8 @@ CODEX_G0_TEMPLATE = PROMPTS_DIR / "codex_g0_review.md"
 PIPELINE_REPORT_ROOT = Path(r"D:\QM\reports\pipeline")
 SUPPORTED_BACKTEST_PHASES = ("P2", "P3", "P3.5", "P4")  # 2026-05-17: extend chain to P3.5 (cross-symbol robustness) + P4 (walk-forward OOS)
 CASCADE_BACKTEST_PHASES = ("P5", "P5b", "P5c", "P6", "P7", "P8")
+P5_REQUIRED_OOS_FROM_YEAR = 2023
+P5_REQUIRED_OOS_TO_YEAR = 2025
 MT5_TERMINALS = ("T1", "T2", "T3", "T4", "T5")  # factory fleet, used by dispatch-tick for per-EA terminal assignment
 ZERO_TRADE_DEAD_THRESHOLD = 0.80
 ZERO_TRADE_DEAD_MIN_DONE = 5
@@ -4367,6 +4375,16 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
     created: list[dict[str, Any]] = []
     requeued: list[dict[str, Any]] = []
     skipped: list[dict[str, Any]] = []
+    p5_has_history = True
+    p5_history_detail: dict[str, Any] | None = None
+    if phase == "P5":
+        p5_has_history, p5_history_detail = has_ea_history_window(
+            ea_id,
+            P5_REQUIRED_OOS_FROM_YEAR,
+            P5_REQUIRED_OOS_TO_YEAR,
+            repo_root=REPO_ROOT,
+            mt5_root=MT5_ROOT,
+        )
     with connect(root) as conn:
         prev_rows = conn.execute(
             f"""
@@ -4383,6 +4401,17 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
                     "symbol": prev["symbol"],
                     "setfile_path": prev["setfile_path"],
                     "reason": "missing_setfile",
+                })
+                continue
+            if phase == "P5" and not p5_has_history:
+                skipped.append({
+                    "id": prev["id"],
+                    "symbol": prev["symbol"],
+                    "setfile_path": prev["setfile_path"],
+                    "reason": "cache_history_below_required_oos_window",
+                    "verdict": "INVALID",
+                    "required_oos_window": f"{P5_REQUIRED_OOS_FROM_YEAR}-{P5_REQUIRED_OOS_TO_YEAR}",
+                    "history_detail": p5_history_detail,
                 })
                 continue
             existing = conn.execute(
@@ -4454,6 +4483,10 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
                     "skipped_missing_setfiles_count": sum(
                         1 for row in skipped if row.get("reason") == "missing_setfile"
                     ),
+                    "skipped_cache_history_count": sum(
+                        1 for row in skipped
+                        if row.get("reason") == "cache_history_below_required_oos_window"
+                    ),
                 },
             )
         conn.commit()
@@ -4475,6 +4508,9 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
         "skipped_count": len(skipped),
         "skipped_missing_setfiles_count": sum(
             1 for row in skipped if row.get("reason") == "missing_setfile"
+        ),
+        "skipped_cache_history_count": sum(
+            1 for row in skipped if row.get("reason") == "cache_history_below_required_oos_window"
         ),
         "next_action_hint": "Pump/dispatch-tick will claim pending work_items.",
     }
