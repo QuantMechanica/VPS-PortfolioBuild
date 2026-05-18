@@ -873,6 +873,86 @@ def _derive_verdict_from_summary(summary: dict[str, Any], min_trades: int = 5, p
     return "PASS", ""
 
 
+P2_UNPROFITABLE_SYMBOL_REASON = "P2_UNPROFITABLE_SYMBOL"
+
+
+def _summary_net_profit_total(summary: dict[str, Any]) -> float | None:
+    values: list[float] = []
+    for run in summary.get("runs") or []:
+        if not isinstance(run, dict):
+            continue
+        for key in ("net_profit", "total_net_profit", "profit"):
+            raw = run.get(key)
+            if raw is None or isinstance(raw, bool):
+                continue
+            if isinstance(raw, (int, float)):
+                values.append(float(raw))
+                break
+            text = str(raw).replace(",", "").strip()
+            match = re.search(r"-?\d+(?:\.\d+)?", text)
+            if match:
+                values.append(float(match.group(0)))
+                break
+    return sum(values) if values else None
+
+
+def _work_item_p2_net_profit(work_item: sqlite3.Row) -> float | None:
+    evidence_path = work_item["evidence_path"]
+    if not evidence_path:
+        return None
+    path = Path(evidence_path)
+    if not path.exists():
+        return None
+    try:
+        summary = json.loads(path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    return _summary_net_profit_total(summary)
+
+
+def _filter_p2_profitable_symbols(
+    conn: sqlite3.Connection,
+    p2_parent_task_id: str,
+    candidate_symbols: list[str],
+) -> tuple[list[str], list[dict[str, Any]]]:
+    """Return P2 PASS symbols whose summary.json net profit total is > 0."""
+    if not candidate_symbols:
+        return [], []
+    candidate_set = set(candidate_symbols)
+    rows = conn.execute(
+        """
+        SELECT * FROM work_items
+        WHERE parent_task_id=? AND phase='P2' AND status='done' AND verdict='PASS'
+        """,
+        (p2_parent_task_id,),
+    ).fetchall()
+    profit_by_symbol: dict[str, float] = {}
+    saw_symbol: set[str] = set()
+    for row in rows:
+        symbol = row["symbol"]
+        if symbol not in candidate_set:
+            continue
+        saw_symbol.add(symbol)
+        net_profit = _work_item_p2_net_profit(row)
+        if net_profit is not None:
+            profit_by_symbol[symbol] = profit_by_symbol.get(symbol, 0.0) + net_profit
+
+    filtered: list[str] = []
+    skipped: list[dict[str, Any]] = []
+    for symbol in candidate_symbols:
+        net_profit = profit_by_symbol.get(symbol)
+        if net_profit is not None and net_profit > 0.0:
+            filtered.append(symbol)
+        else:
+            skipped.append({
+                "symbol": symbol,
+                "reason": P2_UNPROFITABLE_SYMBOL_REASON,
+                "p2_net_profit": net_profit,
+                "p2_pass_work_item_found": symbol in saw_symbol,
+            })
+    return filtered, skipped
+
+
 def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
                                     terminal: str) -> dict[str, Any]:
     """Spawn run_smoke.ps1 for one work_item, pinned to a specific terminal.
@@ -1445,8 +1525,13 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 continue
             # Build classification from work_items
             wis = conn.execute("SELECT * FROM work_items WHERE parent_task_id=?", (parent_id,)).fetchall()
-            surviving = [w["symbol"] for w in wis if w["verdict"] == "PASS"]
             phase = parent_row["kind"].replace("backtest_", "").upper()
+            pass_symbols = [w["symbol"] for w in wis if w["verdict"] == "PASS"]
+            p2_profit_skipped: list[dict[str, Any]] = []
+            if phase == "P2":
+                surviving, p2_profit_skipped = _filter_p2_profitable_symbols(conn, parent_id, pass_symbols)
+            else:
+                surviving = pass_symbols
             verdict = "PASS" if surviving else "STRATEGY_FAIL"
             classification = {
                 "verdict": verdict,
@@ -1457,6 +1542,8 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 },
                 "source": "work_items_aggregate",
             }
+            if p2_profit_skipped:
+                classification["p2_p3_profit_filter_skipped"] = p2_profit_skipped
             parent_payload = json.loads(parent_row["payload_json"]) if parent_row["payload_json"] else {}
             parent_payload["classification"] = classification
             parent_payload["completed_at_iso"] = started_iso
@@ -3813,6 +3900,17 @@ def pump(root: Path) -> dict[str, Any]:
         ).fetchall()
         reopened_parents: set[str] = set()
         for wi in promotable:
+            p2_net_profit = _work_item_p2_net_profit(wi)
+            if p2_net_profit is None or p2_net_profit <= 0.0:
+                result["p3_promotions_skipped"].append({
+                    "ea_id": wi["ea_id"],
+                    "symbol": wi["symbol"],
+                    "setfile_path": wi["setfile_path"],
+                    "reason": P2_UNPROFITABLE_SYMBOL_REASON,
+                    "p2_net_profit": p2_net_profit,
+                    "parent_p2_work_item_id": wi["id"],
+                })
+                continue
             if not _setfile_path_exists(wi["setfile_path"]):
                 result["p3_promotions_skipped"].append({
                     "ea_id": wi["ea_id"],
@@ -4441,6 +4539,7 @@ def enqueue_backtest(root: Path, review_task_id: str, phase: str) -> dict[str, A
 
         # P2 predecessor must be ea_review APPROVE_FOR_BACKTEST.
         # P3+ predecessor must be backtest_<prev>:done with verdict=PASS.
+        p2_profit_filter_skipped: list[dict[str, Any]] = []
         if phase == "P2":
             if pred_row["kind"] != "ea_review":
                 return {"enqueued": False, "reason": f"Task {review_task_id} kind={pred_row['kind']!r}, expected ea_review for P2"}
@@ -4464,6 +4563,12 @@ def enqueue_backtest(root: Path, review_task_id: str, phase: str) -> dict[str, A
             ea_id = pred_payload.get("ea_id")
             surviving_symbols = classification.get("surviving_symbols", [])
             surviving_params = classification.get("surviving_params", [])
+            if phase == "P3":
+                surviving_symbols, p2_profit_filter_skipped = _filter_p2_profitable_symbols(
+                    conn,
+                    review_task_id,
+                    surviving_symbols,
+                )
 
         if not ea_id:
             return {"enqueued": False, "reason": "Predecessor payload missing ea_id"}
@@ -4482,6 +4587,8 @@ def enqueue_backtest(root: Path, review_task_id: str, phase: str) -> dict[str, A
             payload["surviving_symbols"] = surviving_symbols
         if surviving_params is not None:
             payload["surviving_params"] = surviving_params
+        if phase == "P3" and p2_profit_filter_skipped:
+            payload["p2_p3_profit_filter_skipped"] = p2_profit_filter_skipped
         # Back-compat alias
         if phase == "P2":
             payload["review_task_id"] = review_task_id
@@ -4512,6 +4619,7 @@ def enqueue_backtest(root: Path, review_task_id: str, phase: str) -> dict[str, A
         "ea_id": ea_id,
         "phase": phase,
         "work_items_created": work_items_created,
+        "work_items_skipped": p2_profit_filter_skipped if phase == "P3" else [],
         "expected_report_glob": expected_glob,
         "next_action_hint": "python tools/strategy_farm/farmctl.py dispatch-tick",
     }
