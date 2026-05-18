@@ -579,7 +579,7 @@ function Start-TesterRun {
 
     $args = @("/portable", "/config:$IniPath")
     $spawnStartedAfter = Get-Date
-    $proc = Start-Process -FilePath $TerminalExe -ArgumentList $args -PassThru
+    $proc = Start-Process -FilePath $TerminalExe -ArgumentList $args -PassThru -WindowStyle Hidden
     $childTerminal = Wait-TerminalSpawn -TerminalExe $TerminalExe -IniPath $IniPath -TerminalName $TerminalName -StartedAfter $spawnStartedAfter
     Write-Host ("run_smoke.stage=terminal_spawn_confirmed terminal_pid={0} start_time='{1:o}'" -f $childTerminal.Id, $childTerminal.StartTime)
     $finished = $proc.WaitForExit($TimeoutSec * 1000)

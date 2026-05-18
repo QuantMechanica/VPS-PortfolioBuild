@@ -37,11 +37,14 @@ foreach ($terminal in @("T1", "T2", "T3", "T4", "T5")) {
     }
 
     $logPath = Join-Path $logDir "terminal_worker_$terminal.log"
-    $command = "& python.exe -u `"$worker`" --terminal $terminal --root `"$FarmRoot`" *>> `"$logPath`""
-    $proc = Start-Process -FilePath "powershell.exe" `
-        -ArgumentList @("-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", $command) `
+    $pythonw = (Get-Command pythonw.exe -ErrorAction SilentlyContinue).Source
+    if (-not $pythonw) { $pythonw = (Get-Command python.exe).Source }
+    $proc = Start-Process -FilePath $pythonw `
+        -ArgumentList @("-u", $worker, "--terminal", $terminal, "--root", $FarmRoot) `
         -WorkingDirectory $RepoRoot `
         -WindowStyle Hidden `
+        -RedirectStandardOutput $logPath `
+        -RedirectStandardError "$logPath.err" `
         -PassThru
     $updated[$terminal] = $proc.Id
 }
