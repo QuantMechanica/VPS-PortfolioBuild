@@ -16,6 +16,12 @@ class CascadePromotionTests(unittest.TestCase):
     def test_enqueue_cascade_distinguishes_setfiles_for_same_symbol(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
+            sets_dir = root / "sets"
+            sets_dir.mkdir()
+            setfile_a = sets_dir / "a.set"
+            setfile_b = sets_dir / "b.set"
+            setfile_a.write_text("", encoding="utf-8")
+            setfile_b.write_text("", encoding="utf-8")
             farmctl.init_db(root)
             db = root / "state" / "farm_state.sqlite"
             now = farmctl.utc_now()
@@ -27,16 +33,16 @@ class CascadePromotionTests(unittest.TestCase):
                        verdict, attempt_count, payload_json, created_at, updated_at)
                     VALUES
                       ('p5-a', 'backtest', 'P5', 'QM5_9999', 'EURUSD.DWX',
-                       'C:/QM/repo/framework/EAs/QM5_9999/sets/a.set', 'done',
+                       ?, 'done',
                        'PASS', 0, '{}', ?, ?),
                       ('p5-b', 'backtest', 'P5', 'QM5_9999', 'EURUSD.DWX',
-                       'C:/QM/repo/framework/EAs/QM5_9999/sets/b.set', 'done',
+                       ?, 'done',
                        'PASS', 0, '{}', ?, ?),
                       ('p5b-a', 'backtest', 'P5b', 'QM5_9999', 'EURUSD.DWX',
-                       'C:/QM/repo/framework/EAs/QM5_9999/sets/a.set', 'pending',
+                       ?, 'pending',
                        NULL, 0, '{}', ?, ?)
                     """,
-                    (now, now, now, now, now, now),
+                    (str(setfile_a), now, now, str(setfile_b), now, now, str(setfile_a), now, now),
                 )
                 conn.commit()
 
@@ -44,14 +50,14 @@ class CascadePromotionTests(unittest.TestCase):
 
             self.assertTrue(result["enqueued"])
             self.assertEqual([row["symbol"] for row in result["created"]], ["EURUSD.DWX"])
-            self.assertEqual(result["created"][0]["setfile_path"], "C:/QM/repo/framework/EAs/QM5_9999/sets/b.set")
+            self.assertEqual(result["created"][0]["setfile_path"], str(setfile_b))
             with sqlite3.connect(db) as conn:
                 rows = conn.execute(
                     "SELECT setfile_path, payload_json FROM work_items WHERE phase='P5b' ORDER BY setfile_path"
                 ).fetchall()
             self.assertEqual([row[0] for row in rows], [
-                "C:/QM/repo/framework/EAs/QM5_9999/sets/a.set",
-                "C:/QM/repo/framework/EAs/QM5_9999/sets/b.set",
+                str(setfile_a),
+                str(setfile_b),
             ])
             payload = json.loads(rows[1][1])
             self.assertEqual(payload["promoted_from_work_item"], "p5-b")

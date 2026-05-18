@@ -3608,6 +3608,7 @@ def pump(root: Path) -> dict[str, Any]:
     # finish. Skip rows where no parent P3 task exists yet (next cycle will
     # catch them after the first PASS goes through normal auto-enqueue).
     result["p3_promotions"] = []
+    result["p3_promotions_skipped"] = []
     with connect(root) as conn:
         promotable = conn.execute(
             """
@@ -3626,6 +3627,15 @@ def pump(root: Path) -> dict[str, Any]:
         ).fetchall()
         reopened_parents: set[str] = set()
         for wi in promotable:
+            if not _setfile_path_exists(wi["setfile_path"]):
+                result["p3_promotions_skipped"].append({
+                    "ea_id": wi["ea_id"],
+                    "symbol": wi["symbol"],
+                    "setfile_path": wi["setfile_path"],
+                    "reason": "missing_setfile",
+                    "parent_p2_work_item_id": wi["id"],
+                })
+                continue
             parent = conn.execute(
                 "SELECT id, status FROM tasks WHERE kind='backtest_p3' "
                 "AND payload_json LIKE ? ORDER BY created_at ASC LIMIT 1",
@@ -3670,6 +3680,7 @@ def pump(root: Path) -> dict[str, Any]:
         result["p5_calibration_auto_stubbed"] = _auto_stub_p5_calibration(root, conn)
 
     result["cascade_promotions"] = []
+    result["cascade_promotions_skipped"] = []
     cascade_phase_map = {
         "P3": "P4",
         "P4": "P5",
@@ -3709,6 +3720,17 @@ def pump(root: Path) -> dict[str, Any]:
                 (prev_phase, *verdicts, next_phase),
             ).fetchall()
             for wi in promotable:
+                if not _setfile_path_exists(wi["setfile_path"]):
+                    result["cascade_promotions_skipped"].append({
+                        "ea_id": wi["ea_id"],
+                        "symbol": wi["symbol"],
+                        "setfile_path": wi["setfile_path"],
+                        "from_phase": prev_phase,
+                        "to_phase": next_phase,
+                        "from_work_item_id": wi["id"],
+                        "reason": "missing_setfile",
+                    })
+                    continue
                 next_kind = next_phase.lower().replace(".", "")
                 parent = conn.execute(
                     "SELECT id, status FROM tasks WHERE kind=? "
@@ -4203,6 +4225,15 @@ def _create_backtest_work_items(conn: sqlite3.Connection, parent_task_id: str,
     return out
 
 
+def _setfile_path_exists(setfile_path: str) -> bool:
+    path = Path(setfile_path)
+    if path.exists():
+        return True
+    if not path.is_absolute():
+        return (REPO_ROOT / path).exists()
+    return False
+
+
 def enqueue_backtest(root: Path, review_task_id: str, phase: str) -> dict[str, Any]:
     """Create a backtest_<phase> task.
 
@@ -4346,6 +4377,14 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
             (ea_id, prev_phase, *verdicts),
         ).fetchall()
         for prev in prev_rows:
+            if not _setfile_path_exists(prev["setfile_path"]):
+                skipped.append({
+                    "id": prev["id"],
+                    "symbol": prev["symbol"],
+                    "setfile_path": prev["setfile_path"],
+                    "reason": "missing_setfile",
+                })
+                continue
             existing = conn.execute(
                 """
                 SELECT * FROM work_items
@@ -4366,6 +4405,7 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
                         "id": existing["id"],
                         "symbol": existing["symbol"],
                         "status": existing["status"],
+                        "reason": "already_pending_or_active",
                     })
                     continue
                 conn.execute(
@@ -4400,13 +4440,21 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
                 ),
             )
             created.append({"id": wid, "symbol": prev["symbol"], "setfile_path": prev["setfile_path"]})
-        if created or requeued:
+        if created or requeued or skipped:
             event(
                 conn,
                 "work_items",
                 phase,
                 "cascade_backtest_enqueued",
-                {"ea_id": ea_id, "created": created, "requeued": requeued, "skipped": skipped},
+                {
+                    "ea_id": ea_id,
+                    "created": created,
+                    "requeued": requeued,
+                    "skipped": skipped,
+                    "skipped_missing_setfiles_count": sum(
+                        1 for row in skipped if row.get("reason") == "missing_setfile"
+                    ),
+                },
             )
         conn.commit()
     if not prev_rows:
@@ -4424,6 +4472,10 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
         "created": created,
         "requeued": requeued,
         "skipped": skipped,
+        "skipped_count": len(skipped),
+        "skipped_missing_setfiles_count": sum(
+            1 for row in skipped if row.get("reason") == "missing_setfile"
+        ),
         "next_action_hint": "Pump/dispatch-tick will claim pending work_items.",
     }
 
