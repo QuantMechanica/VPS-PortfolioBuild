@@ -27,11 +27,11 @@ if (Test-Path $pidFile) {
 
 $updated = @{}
 foreach ($terminal in @("T1", "T2", "T3", "T4", "T5")) {
-    $pid = $existing[$terminal]
-    if ($pid) {
-        $proc = Get-Process -Id $pid -ErrorAction SilentlyContinue
+    $workerPid = $existing[$terminal]
+    if ($workerPid) {
+        $proc = Get-Process -Id $workerPid -ErrorAction SilentlyContinue
         if ($proc) {
-            $updated[$terminal] = $pid
+            $updated[$terminal] = $workerPid
             continue
         }
     }
