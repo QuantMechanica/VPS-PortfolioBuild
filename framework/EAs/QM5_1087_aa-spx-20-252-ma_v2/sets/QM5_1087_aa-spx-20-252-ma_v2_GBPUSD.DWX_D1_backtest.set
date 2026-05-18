@@ -1,0 +1,22 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1087
+; ea_slug:      aa-spx-20-252-ma_v2
+; ea_version:   v5.0
+; set_version:  s20260518-002
+; symbol:       GBPUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   107
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   afbabc08cc8370fa28ff1e55ad9403883477ca9a8a5b88806a4c70c408dc6ac6
+; author:       Development
+; date:         2026-05-18
+;==========================================================
+qm_magic_slot_offset=107
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=alpha_architect_original_source
