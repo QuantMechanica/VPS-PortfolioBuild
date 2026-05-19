@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -18,6 +20,24 @@ def _run(cmd: list[str]) -> subprocess.CompletedProcess[str]:
     return subprocess.run(cmd, cwd=str(SCRIPT_DIR.parents[1]), capture_output=True, text=True, creationflags=creationflags)
 
 
+def _infer_parent_worker_terminal() -> str:
+    if sys.platform != "win32":
+        return ""
+    creationflags = subprocess.CREATE_NO_WINDOW
+    command = (
+        "$p=(Get-CimInstance Win32_Process -Filter \"ProcessId=%d\").CommandLine; "
+        "if($p){[Console]::Out.Write($p)}"
+    ) % os.getppid()
+    proc = subprocess.run(
+        ["powershell.exe", "-NoProfile", "-Command", command],
+        capture_output=True,
+        text=True,
+        creationflags=creationflags,
+    )
+    match = re.search(r"--terminal\s+(T(?:10|[1-9]))\b", proc.stdout or "", re.IGNORECASE)
+    return match.group(1).upper() if match else ""
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--ea", required=True)
@@ -27,9 +47,13 @@ def main() -> int:
     ap.add_argument("--calibration-json", required=True)
     ap.add_argument("--base-setfile", default="")
     ap.add_argument("--out-prefix", default="D:/QM/reports/pipeline")
+    ap.add_argument("--terminal", default="")
     ap.add_argument("--allow-running-terminal", action="store_true")
     ap.add_argument("--max-parallel", default="5")
     args = ap.parse_args()
+
+    inferred_terminal = args.terminal.strip() or _infer_parent_worker_terminal()
+    max_parallel = "1" if inferred_terminal else str(args.max_parallel)
 
     driver_cmd = [
         sys.executable,
@@ -40,11 +64,13 @@ def main() -> int:
         "--period", args.period,
         "--calibration-json", args.calibration_json,
         "--out-prefix", args.out_prefix,
-        "--max-parallel", str(args.max_parallel),
+        "--max-parallel", max_parallel,
     ]
+    if inferred_terminal:
+        driver_cmd.extend(["--terminal", inferred_terminal])
     if args.base_setfile:
         driver_cmd.extend(["--base-setfile", args.base_setfile])
-    if args.allow_running_terminal:
+    if args.allow_running_terminal and not inferred_terminal:
         driver_cmd.append("--allow-running-terminal")
 
     driver = _run(driver_cmd)

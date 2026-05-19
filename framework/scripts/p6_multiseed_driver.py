@@ -6,6 +6,8 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import os
+import re
 import subprocess
 import sys
 import time
@@ -15,6 +17,23 @@ from pathlib import Path
 from _phase_utils import ensure_dir, parse_float, parse_int
 
 TERMINALS = tuple(f"T{i}" for i in range(1, 11))
+
+
+def _infer_parent_worker_terminal() -> str:
+    if sys.platform != "win32":
+        return ""
+    command = (
+        "$p=(Get-CimInstance Win32_Process -Filter \"ProcessId=%d\").CommandLine; "
+        "if($p){[Console]::Out.Write($p)}"
+    ) % os.getppid()
+    proc = subprocess.run(
+        ["powershell.exe", "-NoProfile", "-Command", command],
+        capture_output=True,
+        text=True,
+        creationflags=subprocess.CREATE_NO_WINDOW,
+    )
+    match = re.search(r"--terminal\s+(T(?:10|[1-9]))\b", proc.stdout or "", re.IGNORECASE)
+    return match.group(1).upper() if match else ""
 
 
 def _run_smoke(
@@ -176,6 +195,12 @@ def main() -> int:
     ap.add_argument("--max-parallel", type=int, default=5)
     ap.add_argument("--mock-seeds-csv", default="")
     args = ap.parse_args()
+
+    inferred_terminal = _infer_parent_worker_terminal() if str(args.terminal).lower() in ("", "any") else ""
+    if inferred_terminal:
+        args.terminal = inferred_terminal
+        args.max_parallel = 1
+        args.allow_running_terminal = False
 
     out_dir = ensure_dir(Path(args.out_prefix) / args.ea / "P6")
     seeds = [int(tok.strip()) for tok in args.seeds.split(",") if tok.strip()]
