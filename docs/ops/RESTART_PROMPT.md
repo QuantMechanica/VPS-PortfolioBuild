@@ -209,7 +209,7 @@ Keep it 6–10 lines.
   help nothing.
 - ❌ Re-install scheduled tasks. They survive reboots — only re-enable if
   `Disabled`.
-- ❌ Touch `C:/QM/mt5/T6_Live/terminal64.exe` — live trading slot,
+- ❌ Touch `C:/QM/mt5/T_Live/terminal64.exe` — live trading slot,
   OWNER+Board Advisor only per CLAUDE.md hard rules.
 - ❌ `git push` / cherry-pick / branch swap unless OWNER explicitly asks.
 - ❌ Delete `D:/QM/strategy_farm/state/farm_state.sqlite` — canonical

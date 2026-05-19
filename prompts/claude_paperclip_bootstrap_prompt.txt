@@ -6,7 +6,7 @@ Prepare the Paperclip bootstrap plan and first implementation sequence for Quant
 Before proposing changes, read the local control docs and the onboarding summary you already produced.
 
 Constraints:
-- Do not touch T6_Live.
+- Do not touch T_Live.
 - Do not expose credentials.
 - Do not invent process structure without documenting rationale.
 - Keep filesystem evidence for every important step.

@@ -18,7 +18,7 @@ or
 
 Rules:
 - Filesystem is truth.
-- Do not touch T6_Live unless explicitly asked.
+- Do not touch T_Live unless explicitly asked.
 - Do not enable AutoTrading.
 - Do not store or expose credentials.
 - Do not assume DST, commission, or tester settings without evidence.

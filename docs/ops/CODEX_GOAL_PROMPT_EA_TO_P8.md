@@ -76,7 +76,7 @@ Fuer jede Source:
 2. Wenn strategy hat klare entry+exit+timeframe+symbol -> bau Strategy-Card
    nach D:/QM/strategy_farm/cards_approved/QM5_<next_id>_<slug>.md
 3. Falls Symbol/TF SP500.DWX intraday: SP500.DWX Custom Symbol existiert
-   T1-T5 (per OWNER's 2026-05-16T19:15Z Import), aber NICHT live-tradable.
+   T1-T10 (per OWNER's 2026-05-16T19:15Z Import), aber NICHT live-tradable.
    Backtest geht; OWNER-Approval fuer Live noch pending.
 4. Build EA per:
    - prompts/SCHEMAS.md (build_result.json — KEIN phantom `status` field)
@@ -94,7 +94,7 @@ und fix WARN/FAIL invariants per kleinem focused commit.
   (tester_defaults.json, MT5 broker ticker, oder explizit "STUB" markieren)
 - KEIN ML in Strategy-Code oder Calibration-Logik (Hard Rule 14)
 - KEIN `terminal64.exe` manuell starten (transient via run_smoke.ps1)
-- KEIN Touch auf C:/QM/mt5/T6_Live/ — OWNER+Board-Advisor only
+- KEIN Touch auf C:/QM/mt5/T_Live/ — OWNER+Board-Advisor only
 - KEIN force-push, NIEMALS main oder agents/board-advisor pushen
   Session-branch ist: agents/board-advisor-session-2026-05-17
 - KEIN `codex login` — bei 401 sofort exit + OWNER eskalieren
@@ -102,7 +102,7 @@ und fix WARN/FAIL invariants per kleinem focused commit.
 - Bei jedem commit: pathspec verwenden (git add <files>), NIEMALS `git add .`
 
 ## NICHT in scope
-- T6 deployment / Live trading (OWNER+BA decision)
+- T_Live deployment / Live trading (OWNER+BA decision)
 - Backtests starten (Pump dispatcht via run_smoke.ps1)
 - Phase-Promotion entscheiden (Phase-Scripts entscheiden via verdict)
 - Codex selbst restarten oder Auth toggeln

@@ -51,10 +51,8 @@ TERMINALS: tuple[TerminalSpec, ...] = (
 
 # Hard safety exclusion from CEO scope comment + CLAUDE.md.
 EXCLUDED_TERMINAL_ROOTS: tuple[Path, ...] = (
-    Path(r"C:\QM\mt5\T6_Live"),
-    Path(r"D:\QM\mt5\T6_Live"),
-    Path(r"C:\QM\mt5\T6_Demo"),
-    Path(r"D:\QM\mt5\T6_Demo"),
+    Path(r"C:\QM\mt5\T_Live"),
+    Path(r"D:\QM\mt5\T_Live"),
 )
 
 

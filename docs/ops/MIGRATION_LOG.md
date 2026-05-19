@@ -730,7 +730,7 @@ Added patterns: `desktop.ini`, `*.env`, `*.key`, `*.pem`. Existing patterns reta
 
 - No DST validation on T1.
 - No Paperclip install — `C:\QM\paperclip\` remains empty by design (Paperclip installer will create it).
-- No T6_Live access.
+- No T_Live access.
 - No strategy-seed bucket decisions — `strategy-seeds/` remains purpose-stub only.
 - No process/skill/checklist/decision/lesson/risk content authored.
 - No old-project assets from `G:\My Drive\QuantMechanica\` migrated — they remain on drive as reference material to be mined selectively when the relevant agent is assigned.

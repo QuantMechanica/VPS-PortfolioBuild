@@ -37,7 +37,7 @@
     "PIPELINE_FAILED":             { "phase": "any",    "verdict_when": "Any required phase verdict=FAIL/INVALID/BLOCKED; aggregate final_verdict=BLOCKED" },
     "READY_FOR_LIVE_REVIEW":       { "phase": "P9",     "verdict_when": "Pipeline passed AND queued for OWNER P9 portfolio-construction review (manual gate)" },
     "LIVE_ELIGIBLE":               { "phase": "P9b",    "verdict_when": "OWNER passed P9 + P9b operational-readiness sign-off; eligible for P10 burn-in" },
-    "LIVE_DEPLOYED":               { "phase": "P10",    "verdict_when": "EA deployed to T6_Live with AutoTrading enabled by OWNER+Board-Advisor (Hard Rule)" },
+    "LIVE_DEPLOYED":               { "phase": "P10",    "verdict_when": "EA deployed to T_Live with AutoTrading enabled by OWNER+Board-Advisor (Hard Rule)" },
     "REJECTED":                    { "phase": "any",    "verdict_when": "OWNER or QB explicitly rejected the EA card / strategy" },
     "REVIEW_REQUIRED":             { "phase": "any",    "verdict_when": "aggregate final_verdict=REVIEW_REQUIRED — human judgment needed on a verdict edge case" },
 

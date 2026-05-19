@@ -254,7 +254,7 @@ authorization.
 
 From `CLAUDE.md` 16 Hard Rules + lessons from today's bugfixes:
 
-- ❌ **Never enable AutoTrading on T6_Live**. Only OWNER + Board Advisor
+- ❌ **Never enable AutoTrading on T_Live**. Only OWNER + Board Advisor
   may flip that — and ONLY after manifest verification + decision-log.
 - ❌ **Never manually start `terminal64.exe`**. MT5 is transient
   (per-backtest spawn). Idle terminals waste RAM.
@@ -311,7 +311,7 @@ python tools/strategy_farm/gmail_alarm.py
   You unblock the pipeline; the pipeline decides.
 - **Not pushing to `agents/board-advisor`** — push to dated session
   branches. OWNER does the merge.
-- **Not deploying to T6_Live** — that's a separate OWNER+Board-Advisor
+- **Not deploying to T_Live** — that's a separate OWNER+Board-Advisor
   authorization moment, NOT this /goal's scope. This /goal stops at "P8
   PASS achieved", T6 is a follow-up decision.
 

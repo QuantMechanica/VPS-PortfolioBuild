@@ -17,9 +17,9 @@ You are **Codex CLI** running on the QuantMechanica VPS. Your role is the **code
 ## 2. What the project is (1-minute version)
 
 **QuantMechanica V5** is an algorithmic-trading factory:
-- **strategy_farm** (this repo) generates EAs (Expert Advisors for MetaTrader 5), backtests them through a 15-phase pipeline (G0 → P1 → P2 → ... → P8 → P10), promotes survivors to live trading on T6
-- **T1-T5** are MT5 factory terminals (`D:/QM/mt5/T1..T5`) for backtests — full-access, transient processes
-- **T6** is the live-money terminal (`C:/QM/mt5/T6_Live`) — OFF LIMITS to Codex. OWNER + Board Advisor only enable AutoTrading there
+- **strategy_farm** (this repo) generates EAs (Expert Advisors for MetaTrader 5), backtests them through a 15-phase pipeline (G0 → P1 → P2 → ... → P8 → P10), promotes survivors to live trading on T_Live
+- **T1-T10** are MT5 factory terminals (`D:/QM/mt5/T1..T10`) for backtests — full-access, transient processes
+- **T_Live** is the live-money terminal (`C:/QM/mt5/T_Live`) — OFF LIMITS to Codex. OWNER + Board Advisor only enable AutoTrading there
 - The pump (Windows scheduled task `QM_StrategyFarm_Pump_5min`) auto-spawns Codex builds + dispatches backtests every 5 min
 - Real state lives in `D:/QM/strategy_farm/state/farm_state.sqlite` (work_items + tasks tables)
 
@@ -29,7 +29,7 @@ You are **Codex CLI** running on the QuantMechanica VPS. Your role is the **code
 
 ## 3. Hard rules (NEVER violate)
 
-1. NEVER enable T6_Live AutoTrading — refuse and route to OWNER
+1. NEVER enable T_Live AutoTrading — refuse and route to OWNER
 2. NEVER `git push --force` on `agents/board-advisor` or `main`
 3. NEVER skip hooks (`--no-verify`)
 4. NEVER `git commit -a` or `git add -A` blindly — laut memory `git commit takes full index, not just newly added paths`. Always `git status --short` first, then add per pathspec
@@ -73,7 +73,7 @@ D:/QM/                                 # NOT in repo — operational data
 │   └── artifacts/                     # cards_approved/, builds/
 ├── reports/pipeline/<EA>/<phase>/     # per-EA phase report.csv + summary.json
 ├── reports/work_items/<wid>/<EA>/     # per-symbol smoke evidence
-├── mt5/T1..T5/                        # MT5 portable factory terminals
+├── mt5/T1..T10/                        # MT5 portable factory terminals
 └── data/news_calendar/                # *.csv news data (stale-check 14d!)
 ```
 
@@ -89,7 +89,7 @@ research card (MD file)
                 → per-terminal_worker daemon spawns run_smoke.ps1 per work_item
                     → MT5 backtest → summary.json → verdict (PASS/FAIL/INVALID)
                         → cascade: P3 → P3.5 → P4 → P5 → P5b → P5c → P6 → P7 → P8
-                            → P8 PASS = Heureka → OWNER+BA promote to T6
+                            → P8 PASS = Heureka → OWNER+BA promote to T_Live
 ```
 
 **State joins:**

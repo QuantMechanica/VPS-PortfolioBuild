@@ -21,9 +21,8 @@ param(
     ),
     [string]$FactoryPortableMarkerName = "portable.txt",
     [int]$FactoryMaxAgeMinutes = 10,
-    [string]$T6LiveHeartbeat = "D:\QM\mt5\T6_Live\MQL5\Files\terminal_heartbeat.txt",
-    [string]$T6DemoHeartbeat = "D:\QM\mt5\T6_Demo\MQL5\Files\terminal_heartbeat.txt",
-    [int]$T6MaxAgeMinutes = 5,
+    [string]$TLiveHeartbeat = "D:\QM\mt5\T_Live\MQL5\Files\terminal_heartbeat.txt",
+    [int]$TLiveMaxAgeMinutes = 5,
     [string]$DwxHeartbeatScript = "C:\QM\repo\infra\monitoring\Test-DwxHeartbeat.ps1",
     [string]$DriveGitExclusionScript = "C:\QM\repo\infra\monitoring\Test-DriveGitExclusion.ps1",
     [string]$GitIndexLockMonitorScript = "C:\QM\repo\infra\monitoring\Invoke-GitIndexLockMonitor.ps1",
@@ -126,26 +125,15 @@ for ($i = 0; $i -lt $FactoryHeartbeats.Count; $i++) {
     }
 }
 
-# T6 isolation + health
-$t6LiveAge = Get-FileAgeMinutes -Path $T6LiveHeartbeat
-$t6DemoAge = Get-FileAgeMinutes -Path $T6DemoHeartbeat
-$liveRoot = Split-Path -Path (Split-Path -Path $T6LiveHeartbeat -Parent) -Parent
-$demoRoot = Split-Path -Path (Split-Path -Path $T6DemoHeartbeat -Parent) -Parent
-if ($liveRoot -eq $demoRoot) {
-    $checks.Add((New-Check -Name "t6_isolation" -Status "critical" -Message "T6 Live/Demo path collision." -Details @{ live_root = $liveRoot; demo_root = $demoRoot }))
-} else {
-    $checks.Add((New-Check -Name "t6_isolation" -Status "ok" -Message "T6 Live and Demo roots are distinct." -Details @{ live_root = $liveRoot; demo_root = $demoRoot }))
-}
+# T_Live terminal health (T6_Demo retired 2026-05-19 — single live terminal model)
+$tLiveAge = Get-FileAgeMinutes -Path $TLiveHeartbeat
+$liveRoot = Split-Path -Path (Split-Path -Path $TLiveHeartbeat -Parent) -Parent
+$checks.Add((New-Check -Name "t_live_root" -Status "ok" -Message "T_Live root resolved." -Details @{ live_root = $liveRoot }))
 
-if ($null -eq $t6LiveAge -or $t6LiveAge -gt $T6MaxAgeMinutes) {
-    $checks.Add((New-Check -Name "t6_live_terminal" -Status "critical" -Message "T6 Live terminal heartbeat stale/missing." -Details @{ age_minutes = $t6LiveAge; max_age_minutes = $T6MaxAgeMinutes }))
+if ($null -eq $tLiveAge -or $tLiveAge -gt $TLiveMaxAgeMinutes) {
+    $checks.Add((New-Check -Name "t_live_terminal" -Status "critical" -Message "T_Live terminal heartbeat stale/missing." -Details @{ age_minutes = $tLiveAge; max_age_minutes = $TLiveMaxAgeMinutes }))
 } else {
-    $checks.Add((New-Check -Name "t6_live_terminal" -Status "ok" -Message "T6 Live terminal heartbeat fresh." -Details @{ age_minutes = $t6LiveAge }))
-}
-if ($null -eq $t6DemoAge -or $t6DemoAge -gt $T6MaxAgeMinutes) {
-    $checks.Add((New-Check -Name "t6_demo_terminal" -Status "critical" -Message "T6 Demo terminal heartbeat stale/missing." -Details @{ age_minutes = $t6DemoAge; max_age_minutes = $T6MaxAgeMinutes }))
-} else {
-    $checks.Add((New-Check -Name "t6_demo_terminal" -Status "ok" -Message "T6 Demo terminal heartbeat fresh." -Details @{ age_minutes = $t6DemoAge }))
+    $checks.Add((New-Check -Name "t_live_terminal" -Status "ok" -Message "T_Live terminal heartbeat fresh." -Details @{ age_minutes = $tLiveAge }))
 }
 
 # DarwinexZero DWX import service heartbeat
