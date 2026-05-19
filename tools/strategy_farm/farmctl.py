@@ -2722,6 +2722,70 @@ def _claim_research_source_codex(root: Path) -> dict[str, Any]:
 
 
 def _spawn_codex_for_review(root: Path, build_task_row: sqlite3.Row) -> dict[str, Any]:
+    """Spawn Codex CLI to perform the pump-compatible EA review.
+
+    This creates the same ea_review task/verdict contract as Claude:
+    record_review_result expects APPROVE_FOR_BACKTEST or REJECT_REWORK.
+    """
+    build_task_id = build_task_row["id"]
+    with connect(root) as conn:
+        existing = conn.execute(
+            "SELECT id FROM tasks WHERE kind='ea_review' AND payload_json LIKE ?",
+            (f"%\"build_task_id\": \"{build_task_id}\"%",),
+        ).fetchone()
+    if existing:
+        return {"spawned": False, "reason": "ea_review task already exists", "review_task_id": existing[0]}
+
+    rendered = render_claude_review_prompt(root, build_task_id, None)
+    if not rendered.get("written"):
+        return {"spawned": False, "reason": f"render failed: {rendered.get('reason')}"}
+    prompt_path = rendered.get("prompt_path")
+    review_task_id = rendered.get("review_task_id")
+    verdict_path = rendered.get("verdict_path")
+    if prompt_path:
+        prompt_file = Path(prompt_path)
+        prompt_text = prompt_file.read_text(encoding="utf-8")
+        prompt_file.write_text(
+            "You are Codex performing the QM EA policy review. Follow the "
+            "review prompt below exactly. Write the JSON verdict to the "
+            f"specified verdict_path ('{verdict_path}') and exit cleanly. "
+            "Do not write prose outside the JSON file.\n\n"
+            + prompt_text,
+            encoding="utf-8",
+            newline="\n",
+        )
+
+    codex_path = _resolve_codex()
+    live_log = root / "logs" / f"codex_ea_review_{review_task_id}.live.log"
+    live_log.parent.mkdir(parents=True, exist_ok=True)
+
+    creationflags = 0
+    if sys.platform == "win32":
+        creationflags = subprocess.CREATE_NO_WINDOW  # type: ignore[attr-defined]
+    stdin_f = open(prompt_path, "rb")
+    stdout_f = open(live_log, "wb")
+    proc = subprocess.Popen(
+        [codex_path, "exec", "-s", "danger-full-access", "--cd", str(REPO_ROOT)],
+        cwd=str(REPO_ROOT),
+        stdin=stdin_f,
+        stdout=stdout_f,
+        stderr=subprocess.STDOUT,
+        shell=True,
+        creationflags=creationflags,
+        close_fds=False,
+    )
+    return {
+        "spawned": True,
+        "review_task_id": review_task_id,
+        "build_task_id": build_task_id,
+        "ea_id": rendered.get("ea_id"),
+        "verdict_path": verdict_path,
+        "live_log": str(live_log),
+        "pid": proc.pid,
+    }
+
+
+def _spawn_codex_for_pre_review(root: Path, build_task_row: sqlite3.Row) -> dict[str, Any]:
     """Spawn Codex CLI to mechanically pre-review one done build_ea task.
 
     Codex runs BEFORE Claude review (cheaper, deterministic). Codex's verdict
@@ -4163,6 +4227,7 @@ def pump(root: Path) -> dict[str, Any]:
     result["codex_spawns_all"] = spawns
     result["codex_active_before"] = active_codex
     result["codex_spawn_budget"] = spawn_budget
+    MAX_PARALLEL_CODEX_REVIEW = 4
 
     # 4. Record completed Codex builds — any pending build_ea whose
     #    build_result JSON exists and isn't empty.
@@ -4240,8 +4305,8 @@ def pump(root: Path) -> dict[str, Any]:
 
     # 5a. CODEX pre-review for done build_ea without codex_review yet.
     #     Codex catches mechanical bugs (Framework Corset, INTRADAY DISCIPLINE,
-    #     magic collisions, 0-trade smoke) BEFORE Claude burns tokens on
-    #     policy review. PASS → Claude proceeds. FAIL → build → blocked.
+    #     magic collisions, 0-trade smoke) BEFORE final EA review burns
+    #     reviewer cycles. PASS → EA review proceeds. FAIL → build → blocked.
     #     Zero-trade builds were already short-circuited in §4b — they
     #     won't appear here.
     result["codex_review_spawns"] = []
@@ -4255,8 +4320,10 @@ def pump(root: Path) -> dict[str, Any]:
                 WHERE r.kind='codex_review'
                   AND r.payload_json LIKE '%"build_task_id": "' || b.id || '"%'
               )
-            ORDER BY b.updated_at ASC LIMIT 3
+            ORDER BY b.updated_at ASC LIMIT ?
             """
+            ,
+            (MAX_PARALLEL_CODEX_REVIEW,),
         ).fetchall()
     for b in builds_needing_codex_review:
         # Respect total-codex cap: builds + reviews + research (all share the pool)
@@ -4264,7 +4331,7 @@ def pump(root: Path) -> dict[str, Any]:
         reviews_now = len([s for s in result["codex_review_spawns"] if isinstance(s, dict) and s.get("spawned")])
         if (active_codex + builds_now + reviews_now) >= MAX_PARALLEL_CODEX:
             break
-        sp = _spawn_codex_for_review(root, b)
+        sp = _spawn_codex_for_pre_review(root, b)
         result["codex_review_spawns"].append(sp)
 
     # 5b. Record completed codex_review verdicts.
@@ -4300,9 +4367,9 @@ def pump(root: Path) -> dict[str, Any]:
                         })
                         conn.commit()
 
-    # 5c. Spawn Claude review ONLY for builds that have a PASSING codex_review
-    #     AND no ea_review yet. This is the cost-saver: Claude tokens only
-    #     burn on builds Codex already cleared as mechanically sound.
+    # 5c. Spawn final EA review ONLY for builds that have a PASSING codex_review
+    #     AND no ea_review yet. Default to Codex (subscription-included);
+    #     QM_PREFER_CLAUDE_REVIEW=1 keeps Claude available as emergency fallback.
     try:
         active_claude_count = int(subprocess.run(
             ["powershell.exe", "-NoProfile", "-Command",
@@ -4314,30 +4381,40 @@ def pump(root: Path) -> dict[str, Any]:
         active_claude_count = 0
     result["claude_active_before"] = active_claude_count
     MAX_PARALLEL_CLAUDE = 3  # OWNER 2026-05-19: 6->3 reduce API burn; prefer Codex for new spawns
-    if active_claude_count < MAX_PARALLEL_CLAUDE:
-        with connect(root) as conn:
-            done_no_review = conn.execute(
-                """
-                SELECT b.* FROM tasks b
-                WHERE b.kind='build_ea' AND b.status='done'
-                  AND EXISTS (
-                    SELECT 1 FROM tasks cr
-                    WHERE cr.kind='codex_review' AND cr.status='done'
-                      AND cr.payload_json LIKE '%"build_task_id": "' || b.id || '"%'
-                      AND cr.payload_json LIKE '%"verdict": "PASS"%'
-                  )
-                  AND NOT EXISTS (
-                    SELECT 1 FROM tasks r
-                    WHERE r.kind='ea_review'
-                      AND r.payload_json LIKE '%"build_task_id": "' || b.id || '"%'
-                  )
-                ORDER BY b.updated_at ASC LIMIT 1
-                """
-            ).fetchone()
-        if done_no_review:
-            result["claude_review_spawn"] = _spawn_claude_for_review(root, done_no_review)
+    prefer_claude_review = os.environ.get("QM_PREFER_CLAUDE_REVIEW") == "1"
+    result["prefer_claude_review"] = prefer_claude_review
+    with connect(root) as conn:
+        done_no_review = conn.execute(
+            """
+            SELECT b.* FROM tasks b
+            WHERE b.kind='build_ea' AND b.status='done'
+              AND EXISTS (
+                SELECT 1 FROM tasks cr
+                WHERE cr.kind='codex_review' AND cr.status='done'
+                  AND cr.payload_json LIKE '%"build_task_id": "' || b.id || '"%'
+                  AND cr.payload_json LIKE '%"verdict": "PASS"%'
+              )
+              AND NOT EXISTS (
+                SELECT 1 FROM tasks r
+                WHERE r.kind='ea_review'
+                  AND r.payload_json LIKE '%"build_task_id": "' || b.id || '"%'
+              )
+            ORDER BY b.updated_at ASC LIMIT 1
+            """
+        ).fetchone()
+    if done_no_review and prefer_claude_review and active_claude_count < MAX_PARALLEL_CLAUDE:
+        result["claude_review_spawn"] = _spawn_claude_for_review(root, done_no_review)
+    elif done_no_review and not prefer_claude_review:
+        builds_now = len([s for s in (result.get("codex_spawns_all") or []) if isinstance(s, dict) and s.get("spawned")])
+        pre_reviews_now = len([s for s in result["codex_review_spawns"] if isinstance(s, dict) and s.get("spawned")])
+        if (active_codex + builds_now + pre_reviews_now) < MAX_PARALLEL_CODEX:
+            result["codex_review_spawn"] = _spawn_codex_for_review(root, done_no_review)
+        else:
+            result["codex_review_spawn"] = {"spawned": False, "reason": "codex total cap reached"}
+    elif done_no_review and prefer_claude_review:
+        result["claude_review_spawn"] = {"spawned": False, "reason": "claude cap reached"}
 
-    # 6. Record completed Claude reviews — look for verdict JSONs that
+    # 6. Record completed EA reviews — look for verdict JSONs that
     #    correspond to ea_review tasks NOT yet recorded.
     with connect(root) as conn:
         unreviewed = conn.execute(
@@ -4354,25 +4431,31 @@ def pump(root: Path) -> dict[str, Any]:
             except Exception as e:
                 result["review_records"].append({"task_id": row["id"], "error": str(e)})
 
-    # 7. Spawn Claude G0 review of draft cards (drain the backlog before
-    #    starting more research). Bounded at 5 cards per spawn.
-    spawned_other = bool(result.get("claude_review_spawn"))
-    if active_claude_count < MAX_PARALLEL_CLAUDE and not spawned_other:
+    # 7. Spawn G0 review of draft cards. Default to Codex; Claude remains
+    #    available only when QM_PREFER_CLAUDE_REVIEW=1 is set.
+    claude_review_spawned = (
+        isinstance(result.get("claude_review_spawn"), dict)
+        and result["claude_review_spawn"].get("spawned")
+    )
+    codex_review_spawned = (
+        isinstance(result.get("codex_review_spawn"), dict)
+        and result["codex_review_spawn"].get("spawned")
+    )
+    spawned_other = bool(claude_review_spawned or codex_review_spawned)
+    result["codex_g0_spawn"] = None
+    g0_builds_now = len([s for s in (result.get("codex_spawns_all") or []) if isinstance(s, dict) and s.get("spawned")])
+    g0_reviews_now = (
+        len([s for s in (result.get("codex_review_spawns") or []) if isinstance(s, dict) and s.get("spawned")])
+        + (1 if codex_review_spawned else 0)
+    )
+    if prefer_claude_review and active_claude_count < MAX_PARALLEL_CLAUDE and not spawned_other:
         result["claude_g0_spawn"] = _spawn_claude_for_g0_batch(root)
         if result["claude_g0_spawn"].get("spawned"):
             spawned_other = True
-
-    # 7b. Spawn Codex G0 IN PARALLEL with Claude G0 — both review different
-    #     cards via the .g0_claim filesystem lock mechanism. OWNER 2026-05-17:
-    #     "Claude und Codex recherchieren beide, können auch beide G0-Review".
-    #     Pulls Claude-token pressure off the biggest single consumer (G0
-    #     batches with 5 cards × full strategy reasoning).
-    result["codex_g0_spawn"] = None
-    # Reserve budget vs total codex cap (build + review + research + g0 share pool)
-    g0_builds_now = len([s for s in (result.get("codex_spawns_all") or []) if isinstance(s, dict) and s.get("spawned")])
-    g0_reviews_now = len([s for s in (result.get("codex_review_spawns") or []) if isinstance(s, dict) and s.get("spawned")])
-    if (active_codex + g0_builds_now + g0_reviews_now) < MAX_PARALLEL_CODEX:
+    elif not prefer_claude_review and not spawned_other and (active_codex + g0_builds_now + g0_reviews_now) < MAX_PARALLEL_CODEX:
         result["codex_g0_spawn"] = _spawn_codex_for_g0_batch(root)
+        if result["codex_g0_spawn"].get("spawned"):
+            spawned_other = True
 
     # 8. Spawn Claude research if no other claude spawn happened and budget allows.
     #    Continuous research per OWNER 2026-05-16 "weiter mit Research".
@@ -4399,13 +4482,21 @@ def pump(root: Path) -> dict[str, Any]:
     # active_codex was measured before this pump's build/review spawns.
     # Refresh by adding what we just spawned, so total cap stays at MAX_PARALLEL_CODEX.
     builds_spawned_this_cycle = len([s for s in (result.get("codex_spawns_all") or []) if isinstance(s, dict) and s.get("spawned")])
-    reviews_spawned_this_cycle = len([s for s in (result.get("codex_review_spawns") or []) if isinstance(s, dict) and s.get("spawned")])
+    reviews_spawned_this_cycle = (
+        len([s for s in (result.get("codex_review_spawns") or []) if isinstance(s, dict) and s.get("spawned")])
+        + (1 if codex_review_spawned else 0)
+    )
+    g0_spawned_this_cycle = (
+        1
+        if isinstance(result.get("codex_g0_spawn"), dict) and result["codex_g0_spawn"].get("spawned")
+        else 0
+    )
     result["codex_research_spawns"] = []
     # Spawn up to (MAX_PARALLEL_CODEX_RESEARCH - codex_research_fresh) new
     # research sessions, respecting the total codex cap.
     research_to_spawn = max(0, MAX_PARALLEL_CODEX_RESEARCH - codex_research_fresh)
     for _ in range(research_to_spawn):
-        total_now = (active_codex + builds_spawned_this_cycle + reviews_spawned_this_cycle
+        total_now = (active_codex + builds_spawned_this_cycle + reviews_spawned_this_cycle + g0_spawned_this_cycle
                      + len(result["codex_research_spawns"]))
         if total_now >= MAX_PARALLEL_CODEX:
             break
