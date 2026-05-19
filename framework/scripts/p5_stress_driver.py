@@ -13,6 +13,8 @@ from pathlib import Path
 
 from _phase_utils import ensure_dir, load_json, normalize_symbol, parse_float, parse_int, write_json
 
+TERMINALS = tuple(f"T{i}" for i in range(1, 11))
+
 
 def _read_smoke_summary(path: Path) -> dict:
     data = load_json(path)
@@ -87,7 +89,7 @@ def _run_smoke_parallel(
     max_parallel: int,
     smoke_timeout_seconds: int,
 ) -> tuple[dict[str, Path], list[dict[str, str | int | float]]]:
-    terminals = cycle(["T1", "T2", "T3", "T4", "T5"])
+    terminals = cycle(TERMINALS)
     queue = list(jobs)
     running: dict[str, dict] = {}
     results: dict[str, Path] = {}

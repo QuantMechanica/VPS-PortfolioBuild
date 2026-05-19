@@ -283,7 +283,7 @@ def mt5_state() -> dict:
     data = read_json_safe(LAST_CHECK_FILE) or {}
     bl = data.get("bl_progress", {})
     out = {}
-    for tn in ("T1", "T2", "T3", "T4", "T5"):
+    for tn in (f"T{i}" for i in range(1, 11)):
         entry = bl.get(tn, {})
         pid = entry.get("terminal_pid")
         running = bool(pid and pid != "none")

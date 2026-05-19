@@ -7,8 +7,8 @@ V5 standalone state writer for `last_check_state.json`.
 - Writes state atomically with lock-file and stale-lock cleanup.
 - Writes heartbeat for monitoring (`C:\QM\logs\aggregator\heartbeat.txt`).
 - Scans `D:\QM\reports` recursively for `.htm` report directories and counts.
-- Detects scanner and terminal PIDs for T1-T5 only.
-- Hard-excludes T6 roots (`C:\QM\mt5\T6_*`, `D:\QM\mt5\T6_*`).
+- Detects scanner and terminal PIDs for T1-T10 only.
+- Hard-excludes T_Live roots (`C:\QM\mt5\T_Live`, `D:\QM\mt5\T_Live`).
 - No `push_status.py` integration.
 - No V4 T3 disk-pause policy block.
 

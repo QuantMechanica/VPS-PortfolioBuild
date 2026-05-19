@@ -10,5 +10,5 @@ No script here is run without a documented purpose in a process or checklist.
   quantmechanica.com (`public-data/*.json`), with schema validation, optional git
   commit/push, and Netlify Build Hook fallback.
 - `aggregator/standalone_aggregator_loop.py`: V5 standalone state writer for
-  `last_check_state.json` with atomic writes + lock handling, T1-T5 process
-  detection, report directory counting, and T6 hard exclusion.
+  `last_check_state.json` with atomic writes + lock handling, T1-T10 process
+  detection, report directory counting, and T_Live hard exclusion.

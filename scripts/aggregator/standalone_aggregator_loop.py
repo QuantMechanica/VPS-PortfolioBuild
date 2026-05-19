@@ -41,12 +41,8 @@ class TerminalSpec:
     root: Path
 
 
-TERMINALS: tuple[TerminalSpec, ...] = (
-    TerminalSpec("T1", Path(r"D:\QM\mt5\T1")),
-    TerminalSpec("T2", Path(r"D:\QM\mt5\T2")),
-    TerminalSpec("T3", Path(r"D:\QM\mt5\T3")),
-    TerminalSpec("T4", Path(r"D:\QM\mt5\T4")),
-    TerminalSpec("T5", Path(r"D:\QM\mt5\T5")),
+TERMINALS: tuple[TerminalSpec, ...] = tuple(
+    TerminalSpec(f"T{idx}", Path(rf"D:\QM\mt5\T{idx}")) for idx in range(1, 11)
 )
 
 # Hard safety exclusion from CEO scope comment + CLAUDE.md.
@@ -332,7 +328,7 @@ def file_age_seconds(path: Path) -> float:
 
 def maybe_terminal_from_path(path: Path) -> str | None:
     lower = str(path).lower()
-    for idx in range(1, 6):
+    for idx in range(1, 11):
         tag = f"t{idx}"
         if f"\\{tag}\\" in lower or f"_{tag}_" in lower or lower.endswith(f"_{tag}.htm"):
             return tag.upper()
