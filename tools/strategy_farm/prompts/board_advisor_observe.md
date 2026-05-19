@@ -58,7 +58,10 @@ real failures worth acting on:
       # tombstones rather than live problems:
       #   (a) same-kind done sibling exists for the same card (retry succeeded)
       #   (b) payload carries an explicit `superseded_by` marker
-      #   (c) build_ea blocked but pipeline already advanced past it — i.e. a
+      #   (c) payload carries an explicit `cancelled_reason` marker (admin
+      #       drains from prior observe/autonomous wakes — e.g.
+      #       `spawn_loop_drain_*`, `zombie_active_dead_pid_reaped_*`)
+      #   (d) build_ea blocked but pipeline already advanced past it — i.e. a
       #       downstream ea_review/backtest task is done for the same card.
       #       Happens when the autonomous wake's pump_record_build path
       #       creates a fresh ea_review without a successful build_ea row.
@@ -73,6 +76,7 @@ real failures worth acting on:
                   AND t2.id != t.id
             )
             AND t.payload_json NOT LIKE '%superseded_by%'
+            AND t.payload_json NOT LIKE '%cancelled_reason%'
             AND NOT (
                 t.kind = 'build_ea'
                 AND EXISTS (
