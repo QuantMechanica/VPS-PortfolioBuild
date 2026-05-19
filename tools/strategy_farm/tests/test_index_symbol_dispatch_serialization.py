@@ -111,6 +111,69 @@ class IndexSymbolDispatchSerializationTests(unittest.TestCase):
         self.assertEqual(statuses["wi-1"], "active")
         self.assertEqual(statuses["wi-2"], "pending")
 
+    def test_dispatch_worker_died_release_stops_terminal_slot(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp) / "farm"
+            farmctl.init_db(root)
+            now = farmctl.utc_now()
+            payload = {
+                "pid": 999999,
+                "started_at_iso": "2026-05-19T00:00:00+00:00",
+                "report_root": str(root / "reports" / "wi-dead"),
+            }
+            db = root / "state" / "farm_state.sqlite"
+            with sqlite3.connect(db) as conn:
+                conn.execute(
+                    """
+                    INSERT INTO work_items
+                      (id, kind, phase, ea_id, symbol, setfile_path, status, verdict,
+                       attempt_count, parent_task_id, evidence_path, claimed_by,
+                       payload_json, created_at, updated_at)
+                    VALUES
+                      ('wi-dead', 'backtest', 'P2', 'QM5_9999', 'EURUSD.DWX', 'dummy.set',
+                       'active', NULL, 0, NULL, NULL, 'T1', ?, ?, ?)
+                    """,
+                    (json.dumps(payload), now, now),
+                )
+                conn.commit()
+
+            stopped: list[str] = []
+            old_pid_exists = farmctl._pid_exists
+            old_running = farmctl._running_mt5_terminals
+            old_stop_terminal = farmctl._stop_terminal_slot
+            old_terminals = farmctl.MT5_TERMINALS
+            try:
+                farmctl._pid_exists = lambda _pid: False
+                farmctl._running_mt5_terminals = lambda: {"T1"}
+                farmctl._stop_terminal_slot = lambda terminal: stopped.append(terminal) or True
+                farmctl.MT5_TERMINALS = ()
+                result = farmctl.dispatch_work_items(root, timeout_minutes=8)
+            finally:
+                farmctl._pid_exists = old_pid_exists
+                farmctl._running_mt5_terminals = old_running
+                farmctl._stop_terminal_slot = old_stop_terminal
+                farmctl.MT5_TERMINALS = old_terminals
+
+            self.assertIn("T1", stopped)
+            self.assertIn(
+                {
+                    "action": "retry_worker_died",
+                    "item_id": "wi-dead",
+                    "terminal_released": "T1",
+                    "attempt": 1,
+                    "worker_pid": 999999,
+                    "terminal_stopped": True,
+                },
+                result["actions"],
+            )
+            with sqlite3.connect(db) as conn:
+                row = conn.execute("SELECT status, claimed_by, payload_json FROM work_items WHERE id='wi-dead'").fetchone()
+            self.assertEqual(row[0], "pending")
+            self.assertIsNone(row[1])
+            updated = json.loads(row[2])
+            self.assertEqual(updated["prior_failure"], "worker_died")
+            self.assertTrue(updated["terminal_stopped_on_release"])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -2319,53 +2319,61 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
         # Fast-fail: worker/terminal gone + nothing produced + > 1 min (avoid races on spawn)
         if fast_failure and age_min > 1.0:
             attempt = item["attempt_count"] + 1
+            terminal_stopped = _stop_terminal_slot(terminal)
+            updated_payload = {
+                **payload,
+                "prior_failure": fast_failure,
+                "terminal_stopped_on_release": terminal_stopped,
+            }
             if attempt < MAX_WORK_ITEM_RETRIES:
                 with connect(root) as conn2:
                     conn2.execute(
                         "UPDATE work_items SET status='pending', attempt_count=?, claimed_by=NULL, payload_json=?, updated_at=? WHERE id=?",
-                        (attempt, json.dumps({**payload, "prior_failure": fast_failure}, sort_keys=True),
-                         started_iso, item["id"]),
+                        (attempt, json.dumps(updated_payload, sort_keys=True), started_iso, item["id"]),
                     )
                     conn2.commit()
                 busy_terminals.discard(terminal)
                 actions.append({"action": f"retry_{fast_failure}", "item_id": item["id"],
                                 "terminal_released": terminal, "attempt": attempt,
-                                "worker_pid": worker_pid})
+                                "worker_pid": worker_pid,
+                                "terminal_stopped": terminal_stopped})
             else:
                 with connect(root) as conn2:
                     conn2.execute(
                         "UPDATE work_items SET status='failed', verdict='INVALID', payload_json=?, updated_at=? WHERE id=?",
-                        (json.dumps({**payload, "final_failure": f"{fast_failure}_retries_exhausted"}, sort_keys=True),
+                        (json.dumps({**updated_payload, "final_failure": f"{fast_failure}_retries_exhausted"}, sort_keys=True),
                          started_iso, item["id"]),
                     )
                     conn2.commit()
                 busy_terminals.discard(terminal)
                 actions.append({"action": f"failed_{fast_failure}", "item_id": item["id"],
-                                "worker_pid": worker_pid})
+                                "worker_pid": worker_pid,
+                                "terminal_stopped": terminal_stopped})
             continue
 
         if age_min > timeout_minutes:
             attempt = item["attempt_count"] + 1
+            terminal_stopped = _stop_terminal_slot(terminal)
             if attempt < MAX_WORK_ITEM_RETRIES:
                 with connect(root) as conn2:
                     conn2.execute(
                         "UPDATE work_items SET status='pending', attempt_count=?, claimed_by=NULL, payload_json=?, updated_at=? WHERE id=?",
-                        (attempt, json.dumps({"prior_timeout": started}, sort_keys=True),
+                        (attempt, json.dumps({**payload, "prior_timeout": started, "terminal_stopped_on_release": terminal_stopped}, sort_keys=True),
                          started_iso, item["id"]),
                     )
                     conn2.commit()
                 busy_terminals.discard(terminal)
-                actions.append({"action": "retry_timeout", "item_id": item["id"], "attempt": attempt})
+                actions.append({"action": "retry_timeout", "item_id": item["id"], "attempt": attempt, "terminal_stopped": terminal_stopped})
             else:
                 with connect(root) as conn2:
                     conn2.execute(
                         "UPDATE work_items SET status='failed', verdict='INVALID', payload_json=?, updated_at=? WHERE id=?",
-                        (json.dumps({**payload, "final_failure": "retries_exhausted"}, sort_keys=True),
+                        (json.dumps({**payload, "final_failure": "retries_exhausted", "terminal_stopped_on_release": terminal_stopped}, sort_keys=True),
                          started_iso, item["id"]),
                     )
                     conn2.commit()
                 busy_terminals.discard(terminal)
-                actions.append({"action": "failed_final", "item_id": item["id"]})
+                actions.append({"action": "failed_final", "item_id": item["id"], "terminal_stopped": terminal_stopped})
 
     # --- Phase 2: claim pending work_items per free terminal ---
     # OWNER 2026-05-17 priority queue (replaces FIFO):
