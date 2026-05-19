@@ -292,9 +292,10 @@ def collect_farm_state(root: Path) -> dict[str, Any]:
 def get_mt5_fleet_status() -> dict[str, Any]:
     scan_at = utc_now_iso()
     try:
+        creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
         result = subprocess.run(
             ["tasklist", "/V", "/FO", "CSV", "/FI", "IMAGENAME eq terminal64.exe"],
-            capture_output=True, text=True, timeout=15,
+            capture_output=True, text=True, timeout=15, creationflags=creationflags,
         )
     except Exception as exc:
         return {"scanned_at": scan_at, "error": str(exc), "processes": [], "running_count": 0}
@@ -1077,12 +1078,18 @@ def collect_ea_lead_kpis(root: Path, ea_ids: list[str]) -> dict[str, dict[str, A
         conn.row_factory = sqlite3.Row
         rows = list(conn.execute(
             f"SELECT ea_id, phase, symbol, verdict, payload_json, evidence_path, updated_at "
-            f"FROM work_items WHERE ea_id IN ({placeholders})",
+            f"FROM work_items WHERE ea_id IN ({placeholders}) "
+            f"ORDER BY ea_id, phase, symbol, updated_at DESC",
             ea_ids,
         ))
 
     by_ea: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    seen_work_items: set[tuple[str, str, str]] = set()
     for r in rows:
+        key = (r["ea_id"], r["phase"] or "?", r["symbol"] or "?")
+        if key in seen_work_items:
+            continue
+        seen_work_items.add(key)
         try:
             p = json.loads(r["payload_json"] or "{}")
         except Exception:
@@ -1092,7 +1099,7 @@ def collect_ea_lead_kpis(root: Path, ea_ids: list[str]) -> dict[str, dict[str, A
             "phase": r["phase"],
             "symbol": r["symbol"],
             "verdict": r["verdict"],
-            "net_profit": stats.get("net_profit"),
+            "net_profit": stats.get("net_profit") if r["verdict"] == "PASS" else None,
             "trades": stats.get("total_trades"),
             "drawdown": stats.get("max_dd") or stats.get("drawdown"),
             "updated_at": r["updated_at"],
