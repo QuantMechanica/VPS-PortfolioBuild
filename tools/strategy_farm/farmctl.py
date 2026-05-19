@@ -5166,7 +5166,8 @@ def pump(root: Path) -> dict[str, Any]:
     result["cascade_promotions"] = []
     result["cascade_promotions_skipped"] = []
     cascade_phase_map = {
-        "P3": "P4",
+        "P3": "P3.5",
+        "P3.5": "P4",
         "P4": "P5",
         "P5": "P5b",
         "P5b": "P5c",
@@ -5176,6 +5177,7 @@ def pump(root: Path) -> dict[str, Any]:
     }
     cascade_pass_verdicts = {
         "P3": {"PASS"},
+        "P3.5": {"PASS"},
         "P4": {"PASS"},
         "P5": {"PASS"},
         "P5b": {"PASS"},
