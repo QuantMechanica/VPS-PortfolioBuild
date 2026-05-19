@@ -5442,47 +5442,177 @@ def render_claude_prompt(root: Path, source_id_arg: str | None, out_path: str | 
     }
 
 
-def get_mt5_status() -> dict[str, Any]:
-    """Return MT5 fleet status via tasklist scan of terminal64.exe.
+def _terminal_from_path(path: str | None) -> str | None:
+    if not path:
+        return None
+    match = re.search(r"\\mt5\\(T[1-5])\\", str(path), re.IGNORECASE)
+    return match.group(1).upper() if match else None
 
-    v1 is intentionally coarse — counts running terminals and lists their PIDs +
-    window titles. Per-slot (T1..T5) attribution requires cwd inspection that
-    tasklist alone cannot do; future revisions can swap in psutil for that.
-    """
-    scan_at = utc_now()
+
+def _work_item_id_from_commandline(command_line: str | None) -> str | None:
+    if not command_line:
+        return None
+    match = re.search(r"\\work_items\\([^\\/\s\"]+)", str(command_line), re.IGNORECASE)
+    return match.group(1) if match else None
+
+
+def _scan_terminal64_processes() -> list[dict[str, Any]]:
+    ps = (
+        "Get-CimInstance Win32_Process -Filter \"Name='terminal64.exe'\" "
+        "| Select-Object ProcessId,ParentProcessId,ExecutablePath,CommandLine,CreationDate "
+        "| ConvertTo-Json -Depth 4"
+    )
     try:
         result = subprocess.run(
-            ["tasklist", "/V", "/FO", "CSV", "/FI", "IMAGENAME eq terminal64.exe"],
+            ["powershell.exe", "-NoProfile", "-Command", ps],
             capture_output=True,
             text=True,
             timeout=15,
             creationflags=(subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0),
         )
-    except Exception as exc:
-        return {"scanned_at": scan_at, "error": f"tasklist failed: {exc}"}
-
-    lines = [l for l in result.stdout.splitlines() if "terminal64.exe" in l]
-    processes: list[dict[str, str]] = []
-    for line in lines:
-        # CSV cols: ImageName, PID, SessionName, Session#, MemUsage, Status, UserName, CpuTime, WindowTitle
-        try:
-            reader = csv.reader([line])
-            cols = next(reader)
-            if len(cols) >= 9:
-                processes.append({
-                    "pid": cols[1].strip('"'),
-                    "status": cols[5].strip('"'),
-                    "window_title": cols[8].strip('"'),
-                })
-        except Exception:
+    except Exception:
+        return []
+    if result.returncode != 0 or not (result.stdout or "").strip():
+        return []
+    try:
+        raw = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        return []
+    rows = raw if isinstance(raw, list) else [raw]
+    processes: list[dict[str, Any]] = []
+    for row in rows:
+        if not isinstance(row, dict):
             continue
+        exe = str(row.get("ExecutablePath") or "")
+        cmd = str(row.get("CommandLine") or "")
+        terminal = _terminal_from_path(exe)
+        processes.append({
+            "pid": row.get("ProcessId"),
+            "parent_pid": row.get("ParentProcessId"),
+            "terminal": terminal,
+            "executable_path": exe,
+            "work_item_id": _work_item_id_from_commandline(cmd),
+            "pipeline_run": "\\reports\\pipeline\\" in cmd.lower(),
+            "command_line": cmd,
+            "creation_date": row.get("CreationDate"),
+        })
+    return processes
+
+
+def _scan_terminal_worker_processes() -> dict[str, list[int]]:
+    ps = (
+        "Get-CimInstance Win32_Process "
+        "| Where-Object { $_.CommandLine -match 'terminal_worker.py' } "
+        "| Select-Object ProcessId,CommandLine | ConvertTo-Json -Depth 4"
+    )
+    try:
+        result = subprocess.run(
+            ["powershell.exe", "-NoProfile", "-Command", ps],
+            capture_output=True,
+            text=True,
+            timeout=15,
+            creationflags=(subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0),
+        )
+    except Exception:
+        return {}
+    if result.returncode != 0 or not (result.stdout or "").strip():
+        return {}
+    try:
+        raw = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        return {}
+    rows = raw if isinstance(raw, list) else [raw]
+    workers: dict[str, list[int]] = {t: [] for t in MT5_TERMINALS}
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        match = re.search(r"--terminal\s+(T[1-5])\b", str(row.get("CommandLine") or ""), re.IGNORECASE)
+        if not match:
+            continue
+        try:
+            pid = int(row.get("ProcessId"))
+        except (TypeError, ValueError):
+            continue
+        workers.setdefault(match.group(1).upper(), []).append(pid)
+    return {terminal: pids for terminal, pids in workers.items() if pids}
+
+
+def get_mt5_status(root: Path | None = None) -> dict[str, Any]:
+    """Return MT5 fleet status with per-slot attribution."""
+    scan_at = utc_now()
+    processes = _scan_terminal64_processes()
+    workers = _scan_terminal_worker_processes()
+    work_item_status: dict[str, dict[str, Any]] = {}
+    if root is not None:
+        ids = sorted({p["work_item_id"] for p in processes if p.get("work_item_id")})
+        if ids:
+            with connect(root) as conn:
+                placeholders = ",".join("?" for _ in ids)
+                rows = conn.execute(
+                    f"SELECT id, status, phase, ea_id, symbol, claimed_by FROM work_items WHERE id IN ({placeholders})",
+                    ids,
+                ).fetchall()
+            work_item_status = {row["id"]: dict(row) for row in rows}
+    for proc_info in processes:
+        wi = proc_info.get("work_item_id")
+        proc_info["work_item_status"] = work_item_status.get(wi) if wi else None
+        proc_info["orphaned_work_item_process"] = bool(
+            wi and (wi not in work_item_status or work_item_status[wi].get("status") != "active")
+        )
+    terminals_running = sorted({p["terminal"] for p in processes if p.get("terminal")})
+    duplicate_workers = {terminal: pids for terminal, pids in workers.items() if len(pids) > 1}
 
     return {
         "scanned_at": scan_at,
         "terminal64_running_count": len(processes),
+        "running_mt5_terminals": terminals_running,
         "processes": processes,
-        "note": "v1 scan — per-slot T1..T5 attribution requires cwd inspection (see future psutil swap)",
+        "terminal_workers": workers,
+        "duplicate_terminal_workers": duplicate_workers,
+        "orphaned_terminal_processes": [p for p in processes if p.get("orphaned_work_item_process")],
     }
+
+
+def reconcile_mt5_slots(root: Path, fix_workers: bool = False, fix_orphan_terminals: bool = False) -> dict[str, Any]:
+    before = get_mt5_status(root)
+    actions: list[dict[str, Any]] = []
+    if fix_workers:
+        starter = REPO_ROOT / "tools" / "strategy_farm" / "start_terminal_workers.py"
+        cmd = [sys.executable, str(starter), "--repo-root", str(REPO_ROOT), "--farm-root", str(root), "--dedupe"]
+        result = subprocess.run(
+            cmd,
+            cwd=str(REPO_ROOT),
+            capture_output=True,
+            text=True,
+            timeout=30,
+            creationflags=(subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0),
+        )
+        actions.append({
+            "action": "start_terminal_workers_dedupe",
+            "returncode": result.returncode,
+            "stdout": (result.stdout or "").strip(),
+            "stderr": (result.stderr or "").strip(),
+        })
+    if fix_orphan_terminals:
+        for proc_info in before.get("orphaned_terminal_processes", []):
+            terminal = proc_info.get("terminal")
+            pid = proc_info.get("pid")
+            if terminal not in MT5_TERMINALS:
+                continue
+            status = (proc_info.get("work_item_status") or {}).get("status")
+            if status == "active":
+                continue
+            stopped = _stop_pid(pid)
+            actions.append({
+                "action": "stop_orphaned_terminal64",
+                "terminal": terminal,
+                "pid": pid,
+                "work_item_id": proc_info.get("work_item_id"),
+                "work_item_status": status,
+                "stopped": stopped,
+            })
+    after = get_mt5_status(root)
+    return {"scanned_at": utc_now(), "before": before, "actions": actions, "after": after}
 
 
 def classify_p2(report_csv_path: Path) -> dict[str, Any]:
@@ -7505,7 +7635,10 @@ def build_parser() -> argparse.ArgumentParser:
     record_review.add_argument("--task-id", required=True, help="ea_review task id")
     record_review.add_argument("--result-file", required=True, help="Path to Claude's verdict JSON")
 
-    sub.add_parser("mt5-slots", help="Show MT5 terminal process scan (running terminal64.exe count + window titles)")
+    sub.add_parser("mt5-slots", help="Show MT5 terminal process scan with per T1-T5 slot attribution")
+    reconcile_mt5 = sub.add_parser("reconcile-mt5", help="Report MT5/worker slot mismatches; optionally repair safe slot blockers")
+    reconcile_mt5.add_argument("--fix-workers", action="store_true", help="Stop duplicate terminal_worker.py daemons and start missing ones")
+    reconcile_mt5.add_argument("--fix-orphan-terminals", action="store_true", help="Stop T1-T5 terminal64.exe processes whose work_item is no longer active")
 
     enqueue_bt = sub.add_parser(
         "enqueue-backtest",
@@ -7619,7 +7752,9 @@ def main(argv: list[str] | None = None) -> int:
     elif args.command == "record-review":
         print_json(record_review_result(root, args.task_id, args.result_file))
     elif args.command == "mt5-slots":
-        print_json(get_mt5_status())
+        print_json(get_mt5_status(root))
+    elif args.command == "reconcile-mt5":
+        print_json(reconcile_mt5_slots(root, fix_workers=args.fix_workers, fix_orphan_terminals=args.fix_orphan_terminals))
     elif args.command == "enqueue-backtest":
         if args.ea:
             print_json(enqueue_cascade_backtest_for_ea(root, args.ea, args.phase))

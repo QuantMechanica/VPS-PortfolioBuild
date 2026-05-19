@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -33,6 +34,63 @@ def _pid_alive(pid: int) -> bool:
     return True
 
 
+def _scan_running_workers() -> dict[str, list[int]]:
+    if sys.platform != "win32":
+        return {}
+    command = (
+        "Get-CimInstance Win32_Process "
+        "| Where-Object { $_.CommandLine -match 'terminal_worker.py' } "
+        "| Select-Object ProcessId,CommandLine | ConvertTo-Json -Depth 3"
+    )
+    try:
+        result = subprocess.run(
+            ["powershell.exe", "-NoProfile", "-Command", command],
+            capture_output=True,
+            text=True,
+            timeout=15,
+            creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, "CREATE_NO_WINDOW") else 0,
+        )
+    except Exception:
+        return {}
+    if result.returncode != 0 or not (result.stdout or "").strip():
+        return {}
+    try:
+        rows = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        return {}
+    if isinstance(rows, dict):
+        rows = [rows]
+    found: dict[str, list[int]] = {t: [] for t in TERMINALS}
+    pattern = re.compile(r"--terminal\s+(T[1-5])\b", re.IGNORECASE)
+    for row in rows if isinstance(rows, list) else []:
+        cmd = str(row.get("CommandLine") or "")
+        match = pattern.search(cmd)
+        if not match:
+            continue
+        try:
+            pid = int(row.get("ProcessId"))
+        except (TypeError, ValueError):
+            continue
+        found.setdefault(match.group(1).upper(), []).append(pid)
+    return {terminal: pids for terminal, pids in found.items() if pids}
+
+
+def _stop_pid(pid: int) -> bool:
+    if pid <= 0 or sys.platform != "win32":
+        return False
+    try:
+        result = subprocess.run(
+            ["taskkill", "/PID", str(pid), "/T", "/F"],
+            capture_output=True,
+            text=True,
+            timeout=15,
+            creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, "CREATE_NO_WINDOW") else 0,
+        )
+        return result.returncode == 0
+    except Exception:
+        return False
+
+
 def _load_existing(pid_file: Path) -> dict[str, int]:
     if not pid_file.exists():
         return {}
@@ -55,6 +113,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Start strategy-farm terminal workers.")
     parser.add_argument("--repo-root", default=r"C:\QM\repo")
     parser.add_argument("--farm-root", default=r"D:\QM\strategy_farm")
+    parser.add_argument("--dedupe", action="store_true", help="Stop duplicate terminal_worker.py processes per terminal.")
     args = parser.parse_args()
 
     repo_root = Path(args.repo_root)
@@ -68,7 +127,9 @@ def main() -> int:
     log_dir.mkdir(parents=True, exist_ok=True)
 
     existing = _load_existing(pid_file)
+    discovered = _scan_running_workers()
     updated: dict[str, int] = {}
+    stopped_duplicates: dict[str, list[int]] = {}
     creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
 
     python_exe = Path(sys.executable)
@@ -78,9 +139,17 @@ def main() -> int:
             python_exe = pythonw
 
     for terminal in TERMINALS:
-        pid = existing.get(terminal, 0)
-        if _pid_alive(pid):
-            updated[terminal] = pid
+        candidates = [pid for pid in discovered.get(terminal, []) if _pid_alive(pid)]
+        existing_pid = existing.get(terminal, 0)
+        if existing_pid and _pid_alive(existing_pid) and existing_pid not in candidates:
+            candidates.insert(0, existing_pid)
+
+        if candidates:
+            keep = existing_pid if existing_pid in candidates else candidates[0]
+            updated[terminal] = keep
+            duplicates = [pid for pid in candidates if pid != keep]
+            if args.dedupe and duplicates:
+                stopped_duplicates[terminal] = [pid for pid in duplicates if _stop_pid(pid)]
             continue
 
         log_path = log_dir / f"terminal_worker_{terminal}.log"
@@ -109,7 +178,7 @@ def main() -> int:
         updated[terminal] = int(proc.pid)
 
     pid_file.write_text(json.dumps(updated, indent=2, sort_keys=True), encoding="utf-8")
-    print(json.dumps(updated, sort_keys=True))
+    print(json.dumps({"workers": updated, "stopped_duplicates": stopped_duplicates}, sort_keys=True))
     return 0
 
 
