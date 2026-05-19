@@ -417,6 +417,12 @@ def prebuild_validate_card(root: Path, card_path: Path, fm: dict[str, Any]) -> d
     for key in ("r1_track_record", "r2_mechanical", "r3_data_available", "r4_ml_forbidden"):
         if str(fm.get(key) or "").upper() != "PASS":
             errors.append(f"{key}_not_PASS:{fm.get(key)!r}")
+    try:
+        expected_trades = int(str(fm.get("expected_trades_per_year_per_symbol") or "").strip())
+        if expected_trades < 2:
+            errors.append(f"expected_trades_too_low:{expected_trades}")
+    except (TypeError, ValueError):
+        errors.append("expected_trades_per_year_per_symbol_missing")
 
     ea_rows = _read_csv_dicts_if_exists(REPO_ROOT / "framework" / "registry" / "ea_id_registry.csv")
     for row in ea_rows:
@@ -443,6 +449,53 @@ def prebuild_validate_card(root: Path, card_path: Path, fm: dict[str, Any]) -> d
         warnings.append(f"multiple_approved_cards_for_ea:{ea_id}:{[p.name for p in sibling_cards]}")
 
     return {"ok": not errors, "errors": errors, "warnings": warnings}
+
+
+def _infer_expected_trades_per_year_per_symbol(card_text: str) -> int | None:
+    """Conservative trade-frequency estimate from card text."""
+    patterns = [
+        r"expected_trades_per_year_per_symbol\s*:\s*(\d+)",
+        r"expected[_ -]?trades.*?(?:per[_ -]?symbol).*?(\d+)",
+        r"(\d+)\s*(?:trades|signals|entries)\s*(?:/|per)\s*(?:year|yr|annum)",
+    ]
+    for pat in patterns:
+        m = re.search(pat, card_text, re.IGNORECASE | re.DOTALL)
+        if m:
+            try:
+                return max(1, int(m.group(1)))
+            except ValueError:
+                pass
+    if re.search(r"\b(daily|every day|each day)\b", card_text, re.IGNORECASE):
+        return 100
+    if re.search(r"\b(weekly|week of month|day of week)\b", card_text, re.IGNORECASE):
+        return 40
+    if re.search(r"\b(monthly|turn of month|month[- ]end|month[- ]start)\b", card_text, re.IGNORECASE):
+        return 12
+    if re.search(r"\b(quarterly|quarter[- ]end|earnings)\b", card_text, re.IGNORECASE):
+        return 4
+    if re.search(r"\b(annual|yearly|sell in may|halloween)\b", card_text, re.IGNORECASE):
+        return 1
+    return None
+
+
+def _card_build_priority(root: Path, task_row: sqlite3.Row) -> tuple[int, int, str]:
+    """Higher quality / more actionable cards get built first."""
+    payload = json.loads(task_row["payload_json"] or "{}")
+    card_path = Path(str(payload.get("card_path") or ""))
+    fm = payload.get("frontmatter") if isinstance(payload.get("frontmatter"), dict) else {}
+    if card_path.exists():
+        try:
+            fm = parse_card_frontmatter(card_path)
+        except Exception:
+            pass
+    try:
+        expected = int(str(fm.get("expected_trades_per_year_per_symbol") or 0))
+    except (TypeError, ValueError):
+        expected = 0
+    r_passes = sum(1 for key in ("r1_track_record", "r2_mechanical", "r3_data_available", "r4_ml_forbidden")
+                   if str(fm.get(key) or "").upper() == "PASS")
+    # Negative because Python sorts ascending.
+    return (-r_passes, -expected, str(task_row["updated_at"] or ""))
 
 
 def _normalise_card_symbol(symbol: str) -> str:
@@ -2550,6 +2603,10 @@ def _spawn_claude_for_g0_batch(root: Path) -> dict[str, Any]:
         f"{batch_paths}\n\n"
         "Apply R1 (source link/attribution), R2 (mechanical Entry+Exit rules), "
         "R3 (testable on >=1 DWX symbol after porting), R4 (no ML / binding HR14). "
+        "R2 also requires a plausible trade-frequency estimate. Reject cards that "
+        "cannot support at least 2 expected trades/year/symbol unless they provide "
+        "defensible basket-level cadence; annual one-shot seasonal edges are too "
+        "sparse unless OWNER explicitly marked them approved. "
         "For each card:\n"
         "  - All four PASS  -> run `python C:\\QM\\repo\\tools\\strategy_farm\\farmctl.py "
         "approve-card --card \"<path>\" --reasoning \"<R1-R4 one-line rationale>\"`\n"
@@ -3865,6 +3922,8 @@ def _verify_card_body_coverage(card_path: Path) -> dict[str, Any]:
         missing.append("target_symbols")
     if not re.search(r"\b(M1|M5|M15|M30|H1|H4|D1|W1|MN1)\b", body):
         missing.append("period")
+    if _infer_expected_trades_per_year_per_symbol(text) is None:
+        missing.append("expected_trade_frequency")
     return {"ok": not missing, "missing": missing}
 
 
@@ -4401,6 +4460,7 @@ def pump(root: Path) -> dict[str, Any]:
             "SELECT * FROM tasks WHERE kind='build_ea' AND status='pending' "
             "ORDER BY updated_at ASC"
         ).fetchall()
+        all_pending = sorted(all_pending, key=lambda row: _card_build_priority(root, row))
         seen_eas: set[str] = set()
         pending_builds = []
         for row in all_pending:
@@ -6760,14 +6820,29 @@ def approve_card(root: Path, card_path_str: str, reasoning: str) -> dict[str, An
             "missing": coverage["missing"],
             "card_path": str(card_path),
         }
+    expected_trades = _infer_expected_trades_per_year_per_symbol(card_path.read_text(encoding="utf-8", errors="ignore"))
+    if expected_trades is None or expected_trades < 2:
+        _update_flat_frontmatter_file(card_path, {
+            "r2_mechanical": "UNKNOWN",
+            "card_body_incomplete": "true",
+            "card_body_missing": '"expected_trade_frequency"',
+        })
+        return {
+            "approved": False,
+            "reason": "expected_trade_frequency_too_low_or_unknown",
+            "expected_trades_per_year_per_symbol": expected_trades,
+            "card_path": str(card_path),
+        }
 
     today = dt.datetime.now(dt.UTC).strftime("%Y-%m-%d")
     quoted = '"' + reasoning.replace('"', "'").replace("\n", " ").strip()[:300] + '"'
-    update_card_frontmatter(card_path, {
+    updates = {
         "g0_status": "APPROVED",
         "g0_approval_reasoning": quoted,
         "last_updated": today,
-    })
+    }
+    updates["expected_trades_per_year_per_symbol"] = str(expected_trades)
+    update_card_frontmatter(card_path, updates)
 
     target_dir = root / "artifacts" / "cards_approved"
     target_dir.mkdir(parents=True, exist_ok=True)

@@ -42,7 +42,9 @@ D:/QM/strategy_farm/artifacts/cards_draft/QM5_<NNNN>_<slug>.md
 
 Per the `09 Strategy Wiki/_TEMPLATE Strategy.md` format. Frontmatter MUST
 include `g0_status: PENDING` (Claude G0 batch reviewer will later flip it
-to APPROVED or REJECTED).
+to APPROVED or REJECTED) and `expected_trades_per_year_per_symbol: <int>`.
+Estimate cadence conservatively from the mechanical rules; do not draft
+annual/one-shot seasonal ideas unless the source gives strong basket evidence.
 
 ID allocation: pick fresh `QM5_<NNNN>` IDs strictly higher than the highest
 row in `C:/QM/repo/framework/registry/ea_id_registry.csv`. Register each new

@@ -19,6 +19,12 @@ For each card in your batch (paths listed below):
    b. Apply R1 (reputable source link/attribution), R2 (mechanical Entry +
       Exit rules), R3 (testable on ≥1 DWX symbol after porting), R4 (no
       ML / binding HR14).
+      R2 must include a plausible trade-frequency estimate. Reject if the
+      card cannot support at least 2 expected trades/year/symbol, unless the
+      strategy is explicitly portfolio-basket based and the card gives a
+      defensible basket-level cadence. Purely annual/one-shot seasonal ideas
+      are too sparse for this factory unless OWNER explicitly marked them
+      approved.
    c. If ALL four PASS:
       ```
       python C:/QM/repo/tools/strategy_farm/farmctl.py approve-card \

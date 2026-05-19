@@ -88,12 +88,19 @@ source_id: {{source_id}}                   # REQUIRED — for resume-mining trac
 sources:
   - "[[sources/<source-slug>]]"            # human-readable wiki backlink
 g0_status: PENDING                          # Step 3 G0 batch sets this
+expected_trades_per_year_per_symbol: <int>   # conservative cadence estimate; annual one-shot edges are usually too sparse
 last_updated: <YYYY-MM-DD>
 ---
 ```
 
 Allocate NEW EA IDs starting from the next free `QM5_<NNNN>` in
 `C:/QM/repo/framework/registry/ea_id_registry.csv`. Do NOT collide.
+
+Trade-frequency discipline: estimate cadence conservatively from the rule
+mechanics and put it in frontmatter. Daily/session systems are usually 50+,
+weekly systems roughly 20-50, monthly/turn-of-month systems roughly 12,
+quarterly systems roughly 4. Do not draft annual/one-shot seasonal ideas
+unless the source gives strong multi-symbol/basket evidence.
 
 ## Final state decision (end of session)
 
