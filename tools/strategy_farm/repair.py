@@ -278,7 +278,7 @@ def repair_stale_active_work_items(con) -> list[dict]:
 
 
 def _running_mt5_terminals() -> set[str]:
-    """Return set of terminal names ('T1'..'T5') that currently have a
+    """Return set of factory terminal names ('T1'..'T10') that currently have a
     terminal64.exe process tied to D:/QM/mt5/Tn/."""
     import subprocess
     try:
@@ -294,7 +294,7 @@ def _running_mt5_terminals() -> set[str]:
     live: set[str] = set()
     import re as _re
     for p in paths:
-        m = _re.search(r"\\mt5\\(T[1-5])\\", p, _re.IGNORECASE)
+        m = _re.search(r"\\mt5\\(T(?:[1-9]|10))\\", p, _re.IGNORECASE)
         if m:
             live.add(m.group(1).upper())
     return live

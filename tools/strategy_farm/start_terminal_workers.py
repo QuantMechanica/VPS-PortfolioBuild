@@ -12,7 +12,8 @@ import sys
 from pathlib import Path
 
 
-TERMINALS = ("T1", "T2", "T3", "T4", "T5")
+TERMINALS = tuple(f"T{i}" for i in range(1, 11))
+FACTORY_TERMINAL_RE = re.compile(r"^T(?:[1-9]|10)$", re.IGNORECASE)
 
 
 def _pid_alive(pid: int) -> bool:
@@ -61,7 +62,7 @@ def _scan_running_workers() -> dict[str, list[int]]:
     if isinstance(rows, dict):
         rows = [rows]
     found: dict[str, list[int]] = {t: [] for t in TERMINALS}
-    pattern = re.compile(r"--terminal\s+(T[1-5])\b", re.IGNORECASE)
+    pattern = re.compile(r"--terminal\s+(T(?:[1-9]|10))\b", re.IGNORECASE)
     for row in rows if isinstance(rows, list) else []:
         cmd = str(row.get("CommandLine") or "")
         match = pattern.search(cmd)
@@ -73,6 +74,14 @@ def _scan_running_workers() -> dict[str, list[int]]:
             continue
         found.setdefault(match.group(1).upper(), []).append(pid)
     return {terminal: pids for terminal, pids in found.items() if pids}
+
+
+def _installed_terminals(mt5_root: Path) -> tuple[str, ...]:
+    return tuple(
+        terminal
+        for terminal in TERMINALS
+        if FACTORY_TERMINAL_RE.fullmatch(terminal) and (mt5_root / terminal / "terminal64.exe").exists()
+    )
 
 
 def _stop_pid(pid: int) -> bool:
@@ -113,11 +122,13 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Start strategy-farm terminal workers.")
     parser.add_argument("--repo-root", default=r"C:\QM\repo")
     parser.add_argument("--farm-root", default=r"D:\QM\strategy_farm")
+    parser.add_argument("--mt5-root", default=r"D:\QM\mt5")
     parser.add_argument("--dedupe", action="store_true", help="Stop duplicate terminal_worker.py processes per terminal.")
     args = parser.parse_args()
 
     repo_root = Path(args.repo_root)
     farm_root = Path(args.farm_root)
+    mt5_root = Path(args.mt5_root)
     state_dir = farm_root / "state"
     log_dir = farm_root / "logs"
     pid_file = state_dir / "worker_pids.json"
@@ -138,7 +149,8 @@ def main() -> int:
         if pythonw.exists():
             python_exe = pythonw
 
-    for terminal in TERMINALS:
+    terminals = _installed_terminals(mt5_root)
+    for terminal in terminals:
         candidates = [pid for pid in discovered.get(terminal, []) if _pid_alive(pid)]
         existing_pid = existing.get(terminal, 0)
         if existing_pid and _pid_alive(existing_pid) and existing_pid not in candidates:
@@ -178,7 +190,7 @@ def main() -> int:
         updated[terminal] = int(proc.pid)
 
     pid_file.write_text(json.dumps(updated, indent=2, sort_keys=True), encoding="utf-8")
-    print(json.dumps({"workers": updated, "stopped_duplicates": stopped_duplicates}, sort_keys=True))
+    print(json.dumps({"workers": updated, "stopped_duplicates": stopped_duplicates, "installed_terminals": list(terminals)}, sort_keys=True))
     return 0
 
 

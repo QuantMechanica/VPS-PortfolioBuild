@@ -66,7 +66,9 @@ P5_REQUIRED_OOS_FROM_YEAR = 2023
 P5_REQUIRED_OOS_TO_YEAR = 2025
 P5PLUS_MAX_DRAWDOWN_PCT = 20.0
 P5PLUS_MIN_SHARPE = 0.6
-MT5_TERMINALS = ("T1", "T2", "T3", "T4", "T5")  # factory fleet, used by dispatch-tick for per-EA terminal assignment
+FACTORY_TERMINAL_PATTERN = re.compile(r"^T(?:[1-9]|10)$", re.IGNORECASE)
+LIVE_TERMINAL_NAMES = {"T_LIVE", "T6_LIVE"}
+MT5_TERMINALS = tuple(f"T{i}" for i in range(1, 11))  # factory fleet, T_Live is never a factory slot
 ZERO_TRADE_DEAD_THRESHOLD = 0.80
 ZERO_TRADE_DEAD_MIN_DONE = 5
 ZERO_TRADE_REWORK_DEDUP_HOURS = 6
@@ -82,6 +84,25 @@ PHASE_ACTIVE_TIMEOUT_MIN = {
     "P7": 30,
     "P8": 30,
 }
+
+
+def is_factory_terminal_name(value: Any) -> bool:
+    terminal = str(value or "").upper()
+    return bool(FACTORY_TERMINAL_PATTERN.fullmatch(terminal)) and terminal not in LIVE_TERMINAL_NAMES
+
+
+def available_mt5_terminals(mt5_root: Path | None = None) -> tuple[str, ...]:
+    root = mt5_root or MT5_ROOT
+    terminals: list[str] = []
+    for terminal in MT5_TERMINALS:
+        if is_factory_terminal_name(terminal) and (root / terminal / "terminal64.exe").exists():
+            terminals.append(terminal)
+    return tuple(terminals)
+
+
+def active_mt5_terminals(mt5_root: Path | None = None) -> tuple[str, ...]:
+    installed = available_mt5_terminals(mt5_root)
+    return installed if installed else tuple(t for t in MT5_TERMINALS if is_factory_terminal_name(t))
 
 # Known-good fallback paths for codex.cmd / claude.cmd. Required because
 # scheduled tasks run as SYSTEM user, which has a minimal PATH that doesn't
@@ -323,7 +344,7 @@ def init_db(root: Path) -> None:
                 attempt_count INTEGER NOT NULL DEFAULT 0,
                 parent_task_id TEXT,            -- FK to tasks(id) — the bundled backtest task
                 evidence_path TEXT,             -- path to smoke summary.json
-                claimed_by TEXT,                -- terminal name (T1..T5) when active
+                claimed_by TEXT,                -- factory terminal name (T1..T10) when active
                 payload_json TEXT NOT NULL,     -- extra context
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL,
@@ -1974,6 +1995,7 @@ def _pid_exists(pid: Any) -> bool:
 
 
 def _running_mt5_terminals() -> set[str]:
+    allowed = set(active_mt5_terminals())
     try:
         proc = subprocess.run(
             [
@@ -1982,7 +2004,7 @@ def _running_mt5_terminals() -> set[str]:
                 "-Command",
                 (
                     "Get-CimInstance Win32_Process -Filter \"Name='terminal64.exe'\" "
-                    "| ForEach-Object { if ($_.ExecutablePath -match '\\\\(T[1-5])\\\\terminal64\\.exe$') { $Matches[1] } }"
+                    "| ForEach-Object { if ($_.ExecutablePath -match '\\\\(T(?:[1-9]|10))\\\\terminal64\\.exe$') { $Matches[1] } }"
                 ),
             ],
             capture_output=True,
@@ -1991,10 +2013,10 @@ def _running_mt5_terminals() -> set[str]:
             creationflags=(subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0),
         )
     except Exception:
-        return set(MT5_TERMINALS)
+        return set(allowed)
     if proc.returncode != 0:
-        return set(MT5_TERMINALS)
-    return {line.strip() for line in (proc.stdout or "").splitlines() if line.strip() in MT5_TERMINALS}
+        return set(allowed)
+    return {line.strip().upper() for line in (proc.stdout or "").splitlines() if line.strip().upper() in allowed}
 
 
 def _active_work_item_symbols(conn: sqlite3.Connection) -> dict[str, str]:
@@ -2027,9 +2049,10 @@ def _stop_pid(pid: Any) -> bool:
 
 
 def _stop_terminal_slot(terminal: str | None) -> bool:
-    if not terminal or terminal not in MT5_TERMINALS:
+    if not terminal or not is_factory_terminal_name(terminal):
         return False
-    terminal_exe = str(Path(r"D:\QM\mt5") / terminal / "terminal64.exe")
+    terminal = terminal.upper()
+    terminal_exe = str(MT5_ROOT / terminal / "terminal64.exe")
     try:
         proc = subprocess.run(
             [
@@ -2390,7 +2413,8 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
     #   2. EA-of-a-known-winner before greenfield (ea_id with prior PASSes).
     #   3. Then FIFO within tier (updated_at ASC).
     # The CASE WHEN encodes the priority. Lower number = sooner.
-    free_terminals = [t for t in MT5_TERMINALS if t not in busy_terminals]
+    factory_terminals = active_mt5_terminals()
+    free_terminals = [t for t in factory_terminals if t not in busy_terminals]
     if free_terminals:
         with connect(root) as conn:
             active_symbol_keys = _active_work_item_symbols(conn)
@@ -2590,7 +2614,7 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
     result = {
         "actions": actions,
         "busy_terminals": sorted(busy_terminals),
-        "free_terminals": [t for t in MT5_TERMINALS if t not in busy_terminals],
+        "free_terminals": [t for t in factory_terminals if t not in busy_terminals],
         "scanned_at": started_iso,
         "actually_launched_pids": launched_pids,
         "running_mt5_terminals": sorted(running_mt5_terminals),
@@ -5462,8 +5486,11 @@ def render_claude_prompt(root: Path, source_id_arg: str | None, out_path: str | 
 def _terminal_from_path(path: str | None) -> str | None:
     if not path:
         return None
-    match = re.search(r"\\mt5\\(T[1-5])\\", str(path), re.IGNORECASE)
-    return match.group(1).upper() if match else None
+    match = re.search(r"\\mt5\\(T(?:[1-9]|10))\\", str(path), re.IGNORECASE)
+    if not match:
+        return None
+    terminal = match.group(1).upper()
+    return terminal if is_factory_terminal_name(terminal) else None
 
 
 def _work_item_id_from_commandline(command_line: str | None) -> str | None:
@@ -5539,18 +5566,21 @@ def _scan_terminal_worker_processes() -> dict[str, list[int]]:
     except json.JSONDecodeError:
         return {}
     rows = raw if isinstance(raw, list) else [raw]
-    workers: dict[str, list[int]] = {t: [] for t in MT5_TERMINALS}
+    workers: dict[str, list[int]] = {t: [] for t in active_mt5_terminals()}
     for row in rows:
         if not isinstance(row, dict):
             continue
-        match = re.search(r"--terminal\s+(T[1-5])\b", str(row.get("CommandLine") or ""), re.IGNORECASE)
+        match = re.search(r"--terminal\s+(T(?:[1-9]|10))\b", str(row.get("CommandLine") or ""), re.IGNORECASE)
         if not match:
             continue
         try:
             pid = int(row.get("ProcessId"))
         except (TypeError, ValueError):
             continue
-        workers.setdefault(match.group(1).upper(), []).append(pid)
+        terminal = match.group(1).upper()
+        if not is_factory_terminal_name(terminal):
+            continue
+        workers.setdefault(terminal, []).append(pid)
     return {terminal: pids for terminal, pids in workers.items() if pids}
 
 
@@ -5614,7 +5644,7 @@ def reconcile_mt5_slots(root: Path, fix_workers: bool = False, fix_orphan_termin
         for proc_info in before.get("orphaned_terminal_processes", []):
             terminal = proc_info.get("terminal")
             pid = proc_info.get("pid")
-            if terminal not in MT5_TERMINALS:
+            if not is_factory_terminal_name(terminal):
                 continue
             status = (proc_info.get("work_item_status") or {}).get("status")
             if status == "active":
@@ -6528,22 +6558,22 @@ def _payload_assigned_terminal(payload: dict[str, Any]) -> str | None:
     terminal = payload.get("assigned_terminal") or payload.get("terminal")
     if terminal == "ALL":
         return "ALL"
-    if terminal in MT5_TERMINALS:
-        return str(terminal)
+    if is_factory_terminal_name(terminal):
+        return str(terminal).upper()
     cmd = payload.get("cmd")
     if isinstance(cmd, list):
         for index, part in enumerate(cmd[:-1]):
-            if str(part).lower() == "--terminal" and str(cmd[index + 1]) in MT5_TERMINALS:
-                return str(cmd[index + 1])
+            if str(part).lower() == "--terminal" and is_factory_terminal_name(cmd[index + 1]):
+                return str(cmd[index + 1]).upper()
     return None
 
 
 def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
     """Hybrid saturated dispatch (Achse B v2, OWNER 2026-05-16).
 
-    Single-EA case (1 pending task, idle fleet) → run that EA on ALL T1-T5
+    Single-EA case (1 pending task, idle fleet) → run that EA on ALL installed factory terminals
     via p2_baseline.py without --terminal arg (legacy mode, p2_baseline
-    distributes symbols across T1-T5 in its own ThreadPoolExecutor). This
+    distributes symbols across installed factory terminals in its own ThreadPoolExecutor). This
     saturates the fleet WITHIN one EA.
 
     Multi-EA case (≥2 pending tasks, or some terminals already busy) → assign
@@ -6572,6 +6602,7 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
     actions: list[dict[str, Any]] = []
     started_iso = utc_now()
     running_mt5_terminals = _running_mt5_terminals()
+    factory_terminals = active_mt5_terminals()
     busy_terminals: set[str] = set(running_mt5_terminals)
 
     with connect(root) as conn:
@@ -6750,7 +6781,7 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
             # Still running — terminal stays busy
             # ALL mode: this task occupies the whole fleet
             if assigned_terminal == "ALL":
-                busy_terminals.update(MT5_TERMINALS)
+                busy_terminals.update(factory_terminals)
             elif assigned_terminal:
                 busy_terminals.add(assigned_terminal)
             actions.append({
@@ -6766,7 +6797,7 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
         # Phase 2 — pick dispatch mode based on pending count + fleet state.
         # Same back-compat filter: skip tasks that have work_items (those
         # belong to dispatch_work_items).
-        free_terminals = [t for t in MT5_TERMINALS if t not in busy_terminals]
+        free_terminals = [t for t in factory_terminals if t not in busy_terminals]
         pending_rows = conn.execute(
             "SELECT t.* FROM tasks t "
             "WHERE t.kind LIKE 'backtest_%' AND t.status = 'pending' "
@@ -6775,12 +6806,13 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
         ).fetchall()
 
         # Hybrid: single-EA-in-flight + idle fleet → ALL mode (full saturation
-        # within one EA, p2_baseline distributes its symbols across T1-T5).
+        # within one EA, p2_baseline distributes its symbols across installed factory terminals).
         # Else: per-terminal mode (multi-EA saturates across EAs).
         use_all_mode = (
             len(pending_rows) == 1
             and len(busy_terminals) == 0
-            and len(free_terminals) == len(MT5_TERMINALS)
+            and len(free_terminals) == len(factory_terminals)
+            and len(factory_terminals) > 0
         )
         dispatch_mode = "single_ea_all_terminals" if use_all_mode else "per_terminal"
 
@@ -6790,7 +6822,7 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
             phase = payload.get("phase")
             ea_id = payload.get("ea_id")
             surviving_symbols = payload.get("surviving_symbols")
-            cmd = _phase_runner_cmd(phase, ea_id, terminal=None, surviving_symbols=surviving_symbols)  # no --terminal = all-T1-T5
+            cmd = _phase_runner_cmd(phase, ea_id, terminal=None, surviving_symbols=surviving_symbols)  # no --terminal = all installed factory terminals
             if cmd is None:
                 update_task(
                     conn,
@@ -6834,7 +6866,7 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
                         "dispatch_mode": "single_ea_all_terminals",
                     },
                 )
-                busy_terminals.update(MT5_TERMINALS)
+                busy_terminals.update(factory_terminals)
                 actions.append({
                     "task_id": pending_row["id"],
                     "action": "started",
@@ -6916,7 +6948,7 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
         "scanned_at": started_iso,
         "actions": actions,
         "busy_terminals": sorted(busy_terminals),
-        "free_terminals": sorted([t for t in MT5_TERMINALS if t not in busy_terminals]),
+        "free_terminals": sorted([t for t in factory_terminals if t not in busy_terminals]),
         "running_mt5_terminals": sorted(running_mt5_terminals),
         "mode": dispatch_mode if pending_rows or actions else "idle",
     }
@@ -7805,10 +7837,10 @@ def build_parser() -> argparse.ArgumentParser:
     record_review.add_argument("--task-id", required=True, help="ea_review task id")
     record_review.add_argument("--result-file", required=True, help="Path to Claude's verdict JSON")
 
-    sub.add_parser("mt5-slots", help="Show MT5 terminal process scan with per T1-T5 slot attribution")
+    sub.add_parser("mt5-slots", help="Show MT5 terminal process scan with per factory slot attribution")
     reconcile_mt5 = sub.add_parser("reconcile-mt5", help="Report MT5/worker slot mismatches; optionally repair safe slot blockers")
     reconcile_mt5.add_argument("--fix-workers", action="store_true", help="Stop duplicate terminal_worker.py daemons and start missing ones")
-    reconcile_mt5.add_argument("--fix-orphan-terminals", action="store_true", help="Stop T1-T5 terminal64.exe processes whose work_item is no longer active")
+    reconcile_mt5.add_argument("--fix-orphan-terminals", action="store_true", help="Stop factory terminal64.exe processes whose work_item is no longer active")
 
     enqueue_bt = sub.add_parser(
         "enqueue-backtest",

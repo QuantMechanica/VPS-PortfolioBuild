@@ -1,11 +1,11 @@
 """P2 Baseline runner — iterates an EA's symbol matrix and launches MT5 backtests.
 
-Wraps `run_smoke.ps1` per symbol, distributes across T1-T5 round-robin, and
+Wraps `run_smoke.ps1` per symbol, distributes across installed factory terminals, and
 produces a phase-level report.csv aggregating verdicts.
 
 Concurrency model: one worker thread per terminal. Symbols are partitioned
-across T1-T5 round-robin; each terminal works through its slice sequentially.
-With 36 symbols / 5 terminals ~ 7-8 per terminal, 5 terminals run in parallel.
+across installed factory terminals; each terminal works through its slice sequentially.
+With 36 symbols / 10 terminals ~ 3-4 per terminal when T1-T10 are installed.
 Wall-clock time = ceil(36/5) × per-symbol-time. CSV append uses a Lock.
 
 Usage:
@@ -52,9 +52,15 @@ def safe_print(msg: str) -> None:
 REPO_ROOT = Path(os.environ.get("QM_REPO_ROOT", r"C:\QM\repo"))
 EA_ROOT = REPO_ROOT / "framework" / "EAs"
 RUN_SMOKE_PS1 = REPO_ROOT / "framework" / "scripts" / "run_smoke.ps1"
-TERMINALS = ["T1", "T2", "T3", "T4", "T5"]
+MT5_ROOT = Path(os.environ.get("QM_MT5_ROOT", r"D:\QM\mt5"))
+TERMINALS = [f"T{i}" for i in range(1, 11)]
 DEFAULT_OUT_PREFIX = Path(r"D:\QM\reports\pipeline")
 REGISTRY_DIR = REPO_ROOT / "framework" / "registry"
+
+
+def installed_terminals() -> list[str]:
+    terminals = [terminal for terminal in TERMINALS if (MT5_ROOT / terminal / "terminal64.exe").exists()]
+    return terminals or list(TERMINALS)
 
 
 def find_ea_dir(ea_label: str) -> Path:
@@ -307,7 +313,7 @@ def find_fallback_summary_path(report_root_phase: Path, *, ea_id: int, symbol: s
         summary_terminal = str(summary.get("terminal", ""))
         # In P2 runs, run_smoke is invoked with terminal='any' and dispatches internally.
         if terminal == "any":
-            if summary_terminal not in ("T1", "T2", "T3", "T4", "T5", "any"):
+            if summary_terminal not in set(TERMINALS + ["any"]):
                 continue
         elif summary_terminal != terminal:
             continue
@@ -423,10 +429,10 @@ def main() -> int:
     ap.add_argument("--timeout", type=int, default=1800, help="per-symbol timeout seconds (run_smoke -TimeoutSeconds)")
     ap.add_argument("--dry-run", action="store_true", help="print plan, no MT5 launch")
     ap.add_argument("--resume", action="store_true", help="skip symbols already verdict=PASS in report.csv")
-    ap.add_argument("--terminal", help="pin all runs to one terminal (default: round-robin T1..T5)")
+    ap.add_argument("--terminal", help="pin all runs to one terminal (default: factory dispatcher over installed T1..T10)")
     ap.add_argument("--allow-running-terminal", action="store_true",
                     help="pass through -AllowRunningTerminal to run_smoke (off by default)")
-    ap.add_argument("--max-parallel", type=int, default=5, help="max concurrent symbol runs when terminal is not pinned")
+    ap.add_argument("--max-parallel", type=int, default=0, help="max concurrent symbol runs when terminal is not pinned; 0 = installed factory terminal count")
     args = ap.parse_args()
 
     # Multi-year window resolution: --from-year/--to-year override the single
@@ -450,7 +456,8 @@ def main() -> int:
 
     ea_dir = find_ea_dir(args.ea)
     ea_id = derive_numeric_ea_id(args.ea, ea_dir)
-    terminal_roots = [Path(r"D:\QM\mt5") / t for t in TERMINALS]
+    active_terminals = installed_terminals()
+    terminal_roots = [MT5_ROOT / t for t in active_terminals]
     ensure_magic_registry_contains_ea(ea_id)
     ensure_expert_binary_deployed(ea_dir, terminal_roots)
     ensure_framework_registry_deployed(terminal_roots)
@@ -489,7 +496,8 @@ def main() -> int:
             )
             counts[verdict] = counts.get(verdict, 0) + 1
     else:
-        max_workers = max(1, min(args.max_parallel, len(symbols)))
+        max_parallel = len(active_terminals) if args.max_parallel <= 0 else args.max_parallel
+        max_workers = max(1, min(max_parallel, len(symbols)))
         with ThreadPoolExecutor(max_workers=max_workers) as pool:
             futures = [
                 pool.submit(

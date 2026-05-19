@@ -221,7 +221,7 @@ def _find_summary(report_root: str | None) -> Path | None:
 
 
 def _stop_terminal_slot_for_release(root: Path, terminal: str | None) -> bool | None:
-    """Stop the T1-T5 MT5 process before a released work_item can orphan it."""
+    """Stop the factory MT5 process before a released work_item can orphan it."""
     if root.resolve() != farmctl.DEFAULT_ROOT.resolve():
         return None
     if not terminal:

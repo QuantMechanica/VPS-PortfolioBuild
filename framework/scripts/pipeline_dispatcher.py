@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Factory-only queue dispatcher for T1-T5 backtests."""
+"""Factory-only queue dispatcher for T1-T10 backtests."""
 
 from __future__ import annotations
 
@@ -14,7 +14,8 @@ from typing import Any
 
 from framework.scripts.dl054_gates import apply_post_launch_gates, apply_pre_launch_gates
 
-TERMINALS = ("T1", "T2", "T3", "T4", "T5")
+MT5_ROOT = Path(os.environ.get("QM_MT5_ROOT", r"D:\QM\mt5"))
+TERMINALS = tuple(f"T{i}" for i in range(1, 11))
 REQUIRED_JOB_FIELDS = ("ea_id", "version", "symbol", "phase", "sub_gate_config_hash", "setfile_path")
 MATRIX_REQUIRED_FIELDS = ("ea_id", "version", "phase", "sub_gate_config_hash", "setfile_path", "symbols")
 MATRIX_SYMBOL_COUNT = 36
@@ -23,6 +24,11 @@ RECENT_WINDOW_SECONDS = 24 * 60 * 60
 DEFAULT_STATE_PATH = Path(r"D:\QM\Reports\pipeline\dispatch_state.json")
 DEFAULT_DEDUP_INDEX_PATH = Path(r"D:\QM\Reports\pipeline\dedup_index.json")
 DEFAULT_COMPLETED_RETENTION_SECONDS = 48 * 60 * 60
+
+
+def active_terminals() -> tuple[str, ...]:
+    installed = tuple(terminal for terminal in TERMINALS if (MT5_ROOT / terminal / "terminal64.exe").exists())
+    return installed if installed else TERMINALS
 
 
 def _require_non_empty_string(value: Any, field_name: str) -> str:
@@ -367,8 +373,11 @@ def dispatch_job(
                 "invalidation_reason": pre.invalidation_reason,
             }
 
-    running = state.setdefault("running", {name: 0 for name in TERMINALS})
-    eligible = [name for name in TERMINALS if int(running.get(name, 0)) < max_per_terminal]
+    terminals = active_terminals()
+    running = state.setdefault("running", {name: 0 for name in terminals})
+    for name in terminals:
+        running.setdefault(name, 0)
+    eligible = [name for name in terminals if int(running.get(name, 0)) < max_per_terminal]
     if not eligible:
         return {"dedup_key": key, "status": "no_capacity", "terminal": None}
 
@@ -388,7 +397,7 @@ def dispatch_job(
         selected = rr[0]
 
     running[selected] = int(running.get(selected, 0)) + 1
-    state["last_rr_index"] = TERMINALS.index(selected)
+    state["last_rr_index"] = terminals.index(selected)
     affinity[symbol] = {"terminal": selected, "ts": now}
     state.setdefault("recent_runs", {}).setdefault(selected, []).append(now)
     dedup[key] = {"symbol": symbol, "terminal": selected, "ts": now, "job": dict(normalized_job)}
@@ -405,7 +414,9 @@ def resolve_target_terminal(
 ) -> dict[str, Any]:
     target = str(job.get("target_terminal", "any")).upper()
     if target in TERMINALS:
-        return {"status": "pinned", "terminal": target, "dedup_key": dedup_key(job)}
+        if target in active_terminals():
+            return {"status": "pinned", "terminal": target, "dedup_key": dedup_key(job)}
+        return {"status": "terminal_not_installed", "terminal": target, "dedup_key": dedup_key(job)}
     return dispatch_job(
         job,
         state,
@@ -438,7 +449,10 @@ def release_job(
     record = dedup[key]
     terminal = str(record.get("terminal", ""))
     if terminal in TERMINALS:
-        running = state.setdefault("running", {name: 0 for name in TERMINALS})
+        terminals = active_terminals()
+        running = state.setdefault("running", {name: 0 for name in terminals})
+        for name in terminals:
+            running.setdefault(name, 0)
         current = int(running.get(terminal, 0))
         running[terminal] = max(current - 1, 0)
     record["status"] = "complete"

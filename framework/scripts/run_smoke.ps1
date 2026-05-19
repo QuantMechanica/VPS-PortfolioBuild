@@ -9,7 +9,7 @@ param(
     [int]$Year,
     [string]$FromDate,
     [string]$ToDate,
-    [ValidateSet("any", "T1", "T2", "T3", "T4", "T5")]
+    [ValidateSet("any", "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10")]
     [string]$Terminal = "T1",
     [string]$Expert,
     [string]$Period = "H1",
@@ -234,6 +234,9 @@ function Resolve-TerminalRoot {
     )
 
     $root = Join-Path "D:\QM\mt5" $TerminalName
+    if ($TerminalName -notmatch '^T([1-9]|10)$') {
+        throw "Refusing non-factory terminal '$TerminalName'. Allowed factory terminals are T1..T10; T_Live is off limits."
+    }
     if (-not (Test-Path -LiteralPath $root -PathType Container)) {
         throw "Terminal root does not exist: $root"
     }

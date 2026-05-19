@@ -1,6 +1,7 @@
 param(
     [string]$RepoRoot = "C:\QM\repo",
-    [string]$FarmRoot = "D:\QM\strategy_farm"
+    [string]$FarmRoot = "D:\QM\strategy_farm",
+    [string]$Mt5Root = "D:\QM\mt5"
 )
 
 $ErrorActionPreference = "Stop"
@@ -26,7 +27,10 @@ if (Test-Path $pidFile) {
 }
 
 $updated = @{}
-foreach ($terminal in @("T1", "T2", "T3", "T4", "T5")) {
+$terminals = 1..10 | ForEach-Object { "T$_" } | Where-Object {
+    Test-Path -LiteralPath (Join-Path $Mt5Root (Join-Path $_ "terminal64.exe")) -PathType Leaf
+}
+foreach ($terminal in $terminals) {
     $workerPid = $existing[$terminal]
     if ($workerPid) {
         $proc = Get-Process -Id $workerPid -ErrorAction SilentlyContinue

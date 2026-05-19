@@ -2,7 +2,7 @@
 param(
     [ValidateRange(2000, 2100)]
     [int]$Year = 2024,
-    [ValidateSet("any", "T1", "T2", "T3", "T4", "T5")]
+    [ValidateSet("any", "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10")]
     [string]$Terminal = "T1",
     [string]$Symbol = "EURUSD.DWX",
     [string]$Period = "H1",

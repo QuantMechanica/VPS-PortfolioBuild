@@ -4,15 +4,15 @@
 Refuses to confirm a P0 build is complete unless:
  1. EA directory exists under framework/EAs/<dir>/
  2. .ex5 file exists at framework/EAs/<dir>/<file>.ex5, size > 50 KB
- 3. .ex5 deployed to D:/QM/mt5/T1..T5/MQL5/Experts/QM/<file>.ex5
- 4. SHA256 matches across framework + all 5 terminals
+ 3. .ex5 deployed to installed D:/QM/mt5/T1..T10/MQL5/Experts/QM/<file>.ex5
+ 4. SHA256 matches across framework + all installed factory terminals
  5. (Optional) at least one .set file exists under framework/EAs/<dir>/sets/
 
 Exit codes:
  0 = all checks passed
  1 = missing directory
  2 = missing build artifact (.ex5)
- 3 = deployment incomplete on T1..T5
+ 3 = deployment incomplete on installed factory terminals
  4 = SHA mismatch
  5 = no setfiles
 
@@ -34,9 +34,14 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 EA_ROOT = REPO_ROOT / "framework" / "EAs"
 MT5_TERMINAL_ROOT = Path("D:/QM/mt5")
-TERMINALS = ["T1", "T2", "T3", "T4", "T5"]
+TERMINALS = [f"T{i}" for i in range(1, 11)]
 MQL5_EXPERTS_REL = Path("MQL5/Experts/QM")
 MIN_EX5_BYTES = 50_000
+
+
+def installed_terminals() -> list[str]:
+    terminals = [terminal for terminal in TERMINALS if (MT5_TERMINAL_ROOT / terminal / "terminal64.exe").exists()]
+    return terminals or list(TERMINALS)
 
 
 def sha256_hex(p: Path) -> str:
@@ -109,11 +114,11 @@ def main() -> int:
     result["evidence"]["src_sha256"] = src_sha
     ex5_filename = candidate.name
 
-    # 3 + 4. Deployment + SHA across T1..T5
+    # 3 + 4. Deployment + SHA across installed factory terminals.
     per_terminal: dict[str, dict] = {}
     deploy_missing = []
     sha_mismatch = []
-    for t in TERMINALS:
+    for t in installed_terminals():
         target = MT5_TERMINAL_ROOT / t / MQL5_EXPERTS_REL / ex5_filename
         info: dict = {"path": str(target), "exists": target.exists()}
         if target.exists():

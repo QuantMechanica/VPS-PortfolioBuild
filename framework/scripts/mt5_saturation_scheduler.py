@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Deterministic cross-EA scheduler that keeps T1-T5 saturated from SQLite queue state."""
+"""Deterministic cross-EA scheduler that keeps installed T1-T10 saturated from SQLite queue state."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from typing import Any
 
 from framework.scripts.pipeline_dispatcher import (
     DEFAULT_STATE_PATH,
-    TERMINALS,
+    active_terminals,
     dedup_key,
     load_dispatch_state,
     resolve_target_terminal,
@@ -55,11 +55,12 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
 
 
 def _slots_available(state: dict[str, Any], max_per_terminal: int) -> int:
+    terminals = active_terminals()
     running = state.setdefault("running", {})
-    for terminal in TERMINALS:
+    for terminal in terminals:
         running.setdefault(terminal, 0)
     available = 0
-    for terminal in TERMINALS:
+    for terminal in terminals:
         current = int(running.get(terminal, 0))
         available += max(0, max_per_terminal - current)
     return available
@@ -220,7 +221,7 @@ def run_tick(
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="MT5 T1-T5 saturation scheduler (cross-EA, deterministic).")
+    parser = argparse.ArgumentParser(description="MT5 T1-T10 saturation scheduler (cross-EA, deterministic).")
     parser.add_argument("--sqlite", required=True, help="Path to SQLite queue DB.")
     parser.add_argument("--dispatch-state", default=str(DEFAULT_STATE_PATH), help="dispatch_state.json path.")
     parser.add_argument("--max-per-terminal", type=int, default=3, help="Max active runs per terminal.")

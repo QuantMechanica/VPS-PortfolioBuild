@@ -214,10 +214,10 @@ def run_job(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="MT5 claim-based worker prototype.")
-    parser.add_argument("--terminal", required=True, help="Terminal id (T1..T5).")
+    parser.add_argument("--terminal", required=True, help="Factory terminal id (T1..T10).")
     parser.add_argument("--sqlite", default=str(DEFAULT_SQLITE), help="Path to mt5_queue.db.")
     parser.add_argument("--report-root", default=str(DEFAULT_REPORT_ROOT), help="Report output root.")
-    parser.add_argument("--mt5-root", default=r"D:/QM/mt5", help="MT5 terminals root (contains T1..T5).")
+    parser.add_argument("--mt5-root", default=r"D:/QM/mt5", help="MT5 terminals root (contains T1..T10).")
     parser.add_argument("--poll-sec", type=int, default=30, help="Sleep when queue is empty.")
     parser.add_argument("--timeout-seconds", type=int, default=60, help="run_smoke timeout seconds per run.")
     parser.add_argument("--once", action="store_true", help="Run one claim cycle and exit.")
@@ -261,9 +261,12 @@ def release_terminal_lock(lock_path: Path) -> None:
 def main() -> int:
     args = parse_args()
     terminal = str(args.terminal).upper()
-    if terminal not in {"T1", "T2", "T3", "T4", "T5"}:
-        print("[REFUSED] T6 is OFF LIMITS")
+    if not re.fullmatch(r"T(?:[1-9]|10)", terminal):
+        print("[REFUSED] terminal is outside factory scope")
         print(json.dumps({"status": "error", "reason": "terminal_out_of_policy", "terminal": terminal}))
+        return 2
+    if not (Path(args.mt5_root) / terminal / "terminal64.exe").exists():
+        print(json.dumps({"status": "error", "reason": "terminal_not_installed", "terminal": terminal}))
         return 2
 
     sqlite_path = Path(args.sqlite)
