@@ -40,6 +40,8 @@ PHASE_LABEL_FROM_KIND = {
     "backtest_p7": "P7",
     "backtest_p8": "P8",
 }
+MT5_FLEET_TOTAL = 10
+MT5_FLEET_WARN_THRESHOLD = 7
 
 
 # ── Helpers ──────────────────────────────────────────────────────
@@ -664,13 +666,13 @@ def render_hero(state: dict) -> str:
 
 def render_fleet(mt5: dict) -> str:
     running = mt5["running_count"]
-    total = 5
+    total = MT5_FLEET_TOTAL
     pct = int(running / total * 100) if total else 0
 
-    if running >= 5:
+    if running >= total:
         cls = "fleet-saturated"
         signal = "Saturated · mission on-track"
-    elif running >= 3:
+    elif running >= MT5_FLEET_WARN_THRESHOLD:
         cls = "fleet-partial"
         signal = "Partial — push backlog"
     else:
@@ -678,7 +680,7 @@ def render_fleet(mt5: dict) -> str:
         signal = "MT5 idle — mission-failure signal"
 
     rows = []
-    for i in range(5):
+    for i in range(total):
         if i < running:
             rows.append(f'<div class="t-row t-busy"><span class="t-name">T{i+1}</span><span class="t-status">running</span></div>')
         else:
@@ -801,10 +803,10 @@ def render_blockers(state: dict, mt5: dict) -> str:
             "severity": "high",
             "text": "MT5 fleet completely idle — mission-failure signal (Mission Baseline 2026-05-09)."
         })
-    elif mt5["running_count"] < 5:
+    elif mt5["running_count"] < MT5_FLEET_WARN_THRESHOLD:
         blockers.append({
             "severity": "med",
-            "text": f"{5 - mt5['running_count']}/5 MT5 terminals idle — push more backlog through."
+            "text": f"{MT5_FLEET_TOTAL - mt5['running_count']}/{MT5_FLEET_TOTAL} MT5 terminals idle — push more backlog through."
         })
 
     if not blockers:

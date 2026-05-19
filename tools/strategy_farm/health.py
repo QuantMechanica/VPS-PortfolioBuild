@@ -58,6 +58,8 @@ PHASE_ACTIVE_TIMEOUT_MIN = {
     "P7": 30,
     "P8": 30,
 }
+FACTORY_TERMINALS = tuple(f"T{i}" for i in range(1, 11))
+MT5_SATURATION_MIN_WORKERS = 7
 
 
 def _utc_now() -> dt.datetime:
@@ -644,6 +646,54 @@ def chk_mt5_dispatch_idle(con) -> dict:
                   "release them next pump cycle.")
 
 
+def chk_mt5_worker_saturation(con) -> dict:
+    """At least 2/3 of the T1-T10 worker fleet should be alive.
+
+    The factory now has ten terminal_worker daemons. T_Live is deliberately
+    outside this regex and must never be counted as factory capacity.
+    """
+    try:
+        out = subprocess.run(
+            [
+                "powershell.exe",
+                "-NoProfile",
+                "-Command",
+                "Get-CimInstance Win32_Process | "
+                "Where-Object { $_.CommandLine -match 'terminal_worker.py' } | "
+                "Select-Object ProcessId,CommandLine | ConvertTo-Json -Compress",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=15,
+            creationflags=_creationflags_no_window(),
+        )
+        raw = (out.stdout or "").strip()
+        rows = json.loads(raw) if raw else []
+    except Exception as exc:
+        return _check("mt5_worker_saturation", "FAIL", 0, MT5_SATURATION_MIN_WORKERS,
+                      f"could not scan terminal_worker.py processes: {exc!r}",
+                      "Run tools/strategy_farm/start_terminal_workers.py --dedupe")
+    if isinstance(rows, dict):
+        rows = [rows]
+    running: set[str] = set()
+    for row in rows if isinstance(rows, list) else []:
+        cmd = str(row.get("CommandLine") or "")
+        match = re.search(r"--terminal\s+(T(?:[1-9]|10))\b", cmd, re.IGNORECASE)
+        if match:
+            running.add(match.group(1).upper())
+    count = len(running)
+    detail = f"{count}/{len(FACTORY_TERMINALS)} terminal_worker daemons alive ({', '.join(sorted(running)) or 'none'})"
+    if count < MT5_SATURATION_MIN_WORKERS:
+        return _check("mt5_worker_saturation", "FAIL", count, MT5_SATURATION_MIN_WORKERS,
+                      detail,
+                      "Run `python tools/strategy_farm/start_terminal_workers.py --dedupe`; inspect worker logs if any slot stays dark.")
+    if count < len(FACTORY_TERMINALS):
+        return _check("mt5_worker_saturation", "WARN", count, len(FACTORY_TERMINALS),
+                      detail,
+                      "Fleet is above 2/3 but not fully saturated; restart missing workers when convenient.")
+    return _check("mt5_worker_saturation", "OK", count, len(FACTORY_TERMINALS), detail, "")
+
+
 def _parse_utc_datetime(value: str | None) -> dt.datetime | None:
     if not value:
         return None
@@ -1119,6 +1169,7 @@ ALL_CHECKS = [
     ("ablation_grandchildren", chk_ablation_grandchildren, True),
     ("claude_review_starved",  chk_claude_review_starved,  True),
     ("mt5_dispatch_idle",      chk_mt5_dispatch_idle,      True),
+    ("mt5_worker_saturation",  chk_mt5_worker_saturation,  True),
     ("active_row_age",         chk_active_row_age,         True),
     ("codex_zero_activity",    chk_codex_zero_activity,    True),
     ("source_pool",            chk_source_pool,            True),

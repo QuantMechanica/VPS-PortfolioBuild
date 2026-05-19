@@ -256,9 +256,10 @@ def render_summary(date_str_target: str) -> str:
     ))
 
     # MT5 saturation
+    mt5_total = 10
     lines.append(section(
         "MT5 saturation",
-        f"- Terminals running: **{len(mt5_running)} / 5** ({', '.join(mt5_running) or 'none'})"
+        f"- Terminals running: **{len(mt5_running)} / {mt5_total}** ({', '.join(mt5_running) or 'none'})"
         f"\n- Terminals idle: **{', '.join(mt5_idle) or 'none'}**"
         f"\n- Sub-agents online (runs ≥1 in last 2h): **{agents_wd.get('online_count', 0)} / {agents_wd.get('total_count', 0)}**"
         f"\n- Sub-agents idle ≥2h: **{agents_wd.get('offline_count', 0)}**"
@@ -307,8 +308,8 @@ def render_summary(date_str_target: str) -> str:
     next_actions = []
     if state.get("agents_watchdog", {}).get("offline_count", 0) >= 3:
         next_actions.append("Re-engage sub-agents (Phase Orchestrator currently Disabled; OWNER decision required to re-enable).")
-    if len(mt5_running) < 5:
-        next_actions.append(f"Bring T2–T5 terminals online ({5 - len(mt5_running)} dark) for parallel backtests.")
+    if len(mt5_running) < 7:
+        next_actions.append(f"Bring factory terminals online ({mt5_total - len(mt5_running)} dark, target >=7/10) for parallel backtests.")
     if ready_count > 0:
         next_actions.append(f"OWNER P9 review for {ready_count} READY EA(s).")
     if any(ea.get("status") == "REVIEW_REQUIRED" for ea in state.get("per_ea", [])):
