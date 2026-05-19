@@ -141,6 +141,48 @@ def _work_item_p2_net_profit(row: sqlite3.Row) -> float | None:
     return _summary_net_profit_total(summary if isinstance(summary, dict) else {})
 
 
+def _is_zero_trade_failure_payload(payload_json: str | None, evidence_path: str | None) -> bool:
+    invalid_report_reasons = {"NO_HISTORY", "NO_REAL_TICKS", "INVALID_REPORT"}
+    if payload_json and "MIN_TRADES_NOT_MET" in payload_json:
+        data = _json_obj(payload_json)
+        reason_classes = data.get("reason_classes") or []
+        explicit_reasons = {
+            str(data.get("verdict_reason") or "").upper(),
+            str(data.get("reason_class") or "").upper(),
+            str(data.get("reason") or "").upper(),
+        }
+        explicit_reasons.update(str(r).upper() for r in reason_classes)
+        if explicit_reasons & invalid_report_reasons:
+            return False
+        return True
+    if not evidence_path:
+        return False
+    path = Path(evidence_path)
+    if not path.exists() or path.stat().st_size <= 0:
+        return False
+    try:
+        text = path.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        return False
+    if "MIN_TRADES_NOT_MET" in text:
+        return not any(reason in text for reason in invalid_report_reasons)
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError:
+        return False
+    if not isinstance(data, dict):
+        return False
+    reason_classes = data.get("reason_classes") or []
+    if any(str(r).upper() in invalid_report_reasons for r in reason_classes):
+        return False
+    if any(str(r).upper() == "MIN_TRADES_NOT_MET" for r in reason_classes):
+        return True
+    reason = str(data.get("reason_class") or data.get("reason") or "").upper()
+    if reason in invalid_report_reasons:
+        return False
+    return "MIN_TRADES_NOT_MET" in reason
+
+
 def _is_codex_auth_broken(con) -> bool:
     """Shared helper: same logic as chk_codex_auth_broken, returns bool.
     Used by downstream checks for cascade suppression."""
@@ -562,39 +604,52 @@ def chk_zerotrade_rework_backlog(con) -> dict:
     """
     rows = con.execute(
         """
-        SELECT ea_id,
-               SUM(CASE WHEN status='done' THEN 1 ELSE 0 END) AS done,
-               SUM(CASE WHEN status='done' AND verdict='FAIL'
-                         AND payload_json LIKE '%MIN_TRADES_NOT_MET%'
-                        THEN 1 ELSE 0 END) AS zt
+        SELECT ea_id, status, verdict, payload_json, evidence_path
         FROM work_items
-        WHERE phase='P2'
-        GROUP BY ea_id
-        HAVING done >= ?
-           AND (zt * 1.0 / done) >= ?
+        WHERE phase='P2' AND status IN ('done', 'failed')
         ORDER BY ea_id
-        """,
-        (ZERO_TRADE_DEAD_MIN_DONE, ZERO_TRADE_DEAD_THRESHOLD),
+        """
     ).fetchall()
+    grouped: dict[str, dict[str, int]] = {}
+    for row in rows:
+        ea_id = row["ea_id"]
+        bucket = grouped.setdefault(ea_id, {"done": 0, "zt": 0})
+        bucket["done"] += 1
+        if (
+            (row["verdict"] or "").upper() == "FAIL"
+            and _is_zero_trade_failure_payload(row["payload_json"], row["evidence_path"])
+        ):
+            bucket["zt"] += 1
 
-    cutoff = (_utc_now() - dt.timedelta(hours=ZERO_TRADE_REWORK_DEDUP_HOURS)).strftime("%Y-%m-%dT%H:%M:%S+00:00")
+    cutoff = (_utc_now() - dt.timedelta(hours=ZERO_TRADE_REWORK_DEDUP_HOURS)).replace(microsecond=0).isoformat()
     backlog = []
-    for r in rows:
-        ea_id = r["ea_id"]
+    for ea_id, stats in sorted(grouped.items()):
+        done = int(stats["done"] or 0)
+        zt = int(stats["zt"] or 0)
+        if done < ZERO_TRADE_DEAD_MIN_DONE or (zt / done) < ZERO_TRADE_DEAD_THRESHOLD:
+            continue
+        prior_attempts = con.execute(
+            """
+            SELECT COUNT(*) FROM tasks
+            WHERE card_id=? AND kind='build_ea'
+              AND payload_json LIKE '%ZERO_TRADE_RECURRENT%'
+            """,
+            (ea_id,),
+        ).fetchone()[0]
+        if prior_attempts >= 3:
+            continue
         existing = con.execute(
             """
             SELECT id FROM tasks
             WHERE card_id=? AND kind='build_ea'
               AND payload_json LIKE '%ZERO_TRADE_RECURRENT%'
-              AND created_at >= ?
+              AND (created_at >= ? OR status='pending')
             ORDER BY created_at DESC LIMIT 1
             """,
             (ea_id, cutoff),
         ).fetchone()
         if existing:
             continue
-        done = int(r["done"] or 0)
-        zt = int(r["zt"] or 0)
         backlog.append(f"{ea_id}:{zt}/{done}")
 
     n = len(backlog)
