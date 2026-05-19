@@ -1,0 +1,35 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        2007
+; ea_slug:      nnfx-rsi-macd-synergy
+; ea_version:   v5.0
+; set_version:  s20260519-001
+; symbol:       EURAUD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   8
+; risk_mode:    FIXED
+; portfolio_weight: 1.0
+; build_hash:   pending
+; author:       Development
+; date:         2026-05-19
+;==========================================================
+qm_ea_id=2007
+qm_magic_slot_offset=8
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1.0
+qm_news_mode=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+strategy_ema_period=50
+strategy_macd_fast=12
+strategy_macd_slow=26
+strategy_macd_signal=9
+strategy_rvi_period=10
+strategy_psar_step=0.02
+strategy_psar_max=0.2
+strategy_atr_period=14
+strategy_atr_sl_mult=1.5
+strategy_rr=1.5
+strategy_spread_cap_points=25
