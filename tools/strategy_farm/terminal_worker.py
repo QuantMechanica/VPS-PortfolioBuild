@@ -130,7 +130,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 conn.execute(
                     """
                     UPDATE work_items
-                    SET status='pending', claimed_by=NULL, payload_json=?, updated_at=?
+                    SET status='pending', verdict=NULL, claimed_by=NULL, payload_json=?, updated_at=?
                     WHERE id=? AND status='active' AND claimed_by=?
                     """,
                     (json.dumps(payload, sort_keys=True), now, active_terminal["id"], terminal),
@@ -198,7 +198,7 @@ def release_stale_claims_for_terminal(root: Path, terminal: str) -> list[str]:
                 conn.execute(
                     """
                     UPDATE work_items
-                    SET status='pending', claimed_by=NULL, payload_json=?, updated_at=?
+                    SET status='pending', verdict=NULL, claimed_by=NULL, payload_json=?, updated_at=?
                     WHERE id=? AND status='active' AND claimed_by=?
                     """,
                     (json.dumps(payload, sort_keys=True), now, row["id"], terminal),
@@ -340,7 +340,7 @@ def _finish_work_item(root: Path, item_id: str, exit_code: int | None) -> dict[s
                 conn.execute(
                     """
                     UPDATE work_items
-                    SET status='pending', attempt_count=?, claimed_by=NULL,
+                    SET status='pending', verdict=NULL, attempt_count=?, claimed_by=NULL,
                         payload_json=?, updated_at=?
                     WHERE id=?
                     """,

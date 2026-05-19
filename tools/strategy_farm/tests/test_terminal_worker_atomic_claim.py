@@ -184,7 +184,7 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             stopped_terminals: list[str] = []
             old_spawn = terminal_worker.farmctl._spawn_work_item_runner
             old_pid_exists = terminal_worker.farmctl._pid_exists
-            old_stop_pid = terminal_worker.farmctl._stop_pid
+            old_stop_pid_tree = terminal_worker.farmctl._stop_pid_tree
             old_default_root = terminal_worker.farmctl.DEFAULT_ROOT
             old_stop_terminal_slot = terminal_worker.farmctl._stop_terminal_slot
 
@@ -209,7 +209,7 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                     "phase_runner": "run_smoke.ps1",
                 }
                 terminal_worker.farmctl._pid_exists = fake_pid_exists
-                terminal_worker.farmctl._stop_pid = lambda pid: stopped_children.append(int(pid)) or True
+                terminal_worker.farmctl._stop_pid_tree = lambda pid: stopped_children.append(int(pid)) or True
                 terminal_worker.farmctl.DEFAULT_ROOT = root
                 terminal_worker.farmctl._stop_terminal_slot = lambda terminal: stopped_terminals.append(terminal) or True
 
@@ -222,7 +222,7 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             finally:
                 terminal_worker.farmctl._spawn_work_item_runner = old_spawn
                 terminal_worker.farmctl._pid_exists = old_pid_exists
-                terminal_worker.farmctl._stop_pid = old_stop_pid
+                terminal_worker.farmctl._stop_pid_tree = old_stop_pid_tree
                 terminal_worker.farmctl.DEFAULT_ROOT = old_default_root
                 terminal_worker.farmctl._stop_terminal_slot = old_stop_terminal_slot
 

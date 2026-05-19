@@ -2525,7 +2525,7 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
             if attempt < MAX_WORK_ITEM_RETRIES:
                 with connect(root) as conn2:
                     conn2.execute(
-                        "UPDATE work_items SET status='pending', attempt_count=?, claimed_by=NULL, payload_json=?, updated_at=? WHERE id=?",
+                        "UPDATE work_items SET status='pending', verdict=NULL, attempt_count=?, claimed_by=NULL, payload_json=?, updated_at=? WHERE id=?",
                         (attempt, json.dumps(updated_payload, sort_keys=True), started_iso, item["id"]),
                     )
                     conn2.commit()
@@ -2554,7 +2554,7 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
             if attempt < MAX_WORK_ITEM_RETRIES:
                 with connect(root) as conn2:
                     conn2.execute(
-                        "UPDATE work_items SET status='pending', attempt_count=?, claimed_by=NULL, payload_json=?, updated_at=? WHERE id=?",
+                        "UPDATE work_items SET status='pending', verdict=NULL, attempt_count=?, claimed_by=NULL, payload_json=?, updated_at=? WHERE id=?",
                         (attempt, json.dumps({**payload, "prior_timeout": started, "terminal_stopped_on_release": terminal_stopped}, sort_keys=True),
                          started_iso, item["id"]),
                     )
