@@ -5,9 +5,41 @@ import unittest
 from pathlib import Path
 
 from tools.strategy_farm import agent_router
+from tools.strategy_farm import farmctl
 
 
 class AgentRouterTests(unittest.TestCase):
+    def test_next_action_routes_active_research_away_from_disabled_claude(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            (root / "CLAUDE_DISABLED.flag").write_text("disabled\n", encoding="utf-8")
+            farmctl.init_db(root)
+            with farmctl.connect(root) as conn:
+                conn.execute(
+                    """
+                    INSERT INTO sources(id, source_type, uri, title, priority, lane, status, notes_path, created_at, updated_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        "src-1",
+                        "web_blog",
+                        "https://example.test/strategy",
+                        "Example source",
+                        10,
+                        "research",
+                        "active",
+                        None,
+                        farmctl.utc_now(),
+                        farmctl.utc_now(),
+                    ),
+                )
+                conn.commit()
+
+            action = farmctl.next_action(root)
+            self.assertEqual(action["action"], "research_active_source")
+            self.assertEqual(action["role"], "Codex")
+            self.assertIn("CLAUDE_DISABLED.flag", action["routing_reason"])
+
     def test_claude_disabled_flag_removes_claude_from_routing(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

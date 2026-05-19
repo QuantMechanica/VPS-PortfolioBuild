@@ -5491,9 +5491,12 @@ def next_action(root: Path) -> dict[str, Any]:
             "active_sources": active,
         }
     if active:
+        claude_disabled = (root / "CLAUDE_DISABLED.flag").exists()
         return {
             "action": "research_active_source",
-            "role": "Claude",
+            "role": "Codex" if claude_disabled else "Claude",
+            "required_capabilities": ["research", "strategy"],
+            "routing_reason": "CLAUDE_DISABLED.flag present; route research to Codex/Gemini-compatible workers" if claude_disabled else "legacy research role",
             "source": active[0],
             "expected_output": "source notes and draft strategy cards under artifacts/source_notes and artifacts/cards_draft",
         }
