@@ -1862,6 +1862,15 @@ def _remove_cmd_arg(cmd: list[str], flag: str) -> None:
         del cmd[idx:idx + 2]
 
 
+def _console_python_executable() -> str:
+    python_exe = Path(sys.executable)
+    if sys.platform == "win32" and python_exe.name.lower() == "pythonw.exe":
+        console_exe = python_exe.with_name("python.exe")
+        if console_exe.exists():
+            return str(console_exe)
+    return sys.executable
+
+
 def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
                                     report_root: Path,
                                     terminal: str | None = None) -> list[str] | None:
@@ -1876,7 +1885,7 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
     symbol = item_row["symbol"]
     period = _detect_ea_period(ea_id)
     cmd = [
-        sys.executable,
+        _console_python_executable(),
         str(script_path),
         "--ea", ea_id,
         "--out-prefix", str(report_root),
@@ -1983,7 +1992,9 @@ def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
             "phase_runner": None,
         }
 
-    log_fh = open(log_path, "w", encoding="utf-8")
+    log_fh = open(log_path, "a", encoding="utf-8")
+    log_fh.write(f"\n{utc_now()} spawning phase runner: {' '.join(cmd)}\n")
+    log_fh.flush()
     creationflags = 0
     if sys.platform == "win32":
         creationflags = subprocess.CREATE_NO_WINDOW  # type: ignore[attr-defined]
@@ -2049,6 +2060,57 @@ def _pid_exists(pid: Any) -> bool:
         return True  # can't tell — assume alive, defer to timeout path
 
 
+def _pid_tree_exists(pid: Any) -> bool:
+    """Return true if pid or any descendant process is still alive.
+
+    Phase drivers can spawn a short-lived Python parent which leaves a
+    run_smoke/pwsh child running. The terminal worker must treat that child as
+    the active run to avoid re-claiming the same terminal and starting a second
+    attempt while the first backtest is still in flight.
+    """
+    try:
+        pid_int = int(pid)
+    except (TypeError, ValueError):
+        return False
+    if _pid_exists(pid_int):
+        return True
+    if sys.platform != "win32":
+        return False
+    script = rf"""
+$target = {pid_int}
+$procs = Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId
+$children = @{{}}
+foreach ($p in $procs) {{
+  $pp = [int]$p.ParentProcessId
+  if (-not $children.ContainsKey($pp)) {{ $children[$pp] = @() }}
+  $children[$pp] += [int]$p.ProcessId
+}}
+$queue = New-Object System.Collections.Queue
+$seen = @{{}}
+$queue.Enqueue($target)
+while ($queue.Count -gt 0) {{
+  $cur = [int]$queue.Dequeue()
+  if ($seen.ContainsKey($cur)) {{ continue }}
+  $seen[$cur] = $true
+  if ($procs | Where-Object {{ [int]$_.ProcessId -eq $cur }}) {{ 'alive'; exit 0 }}
+  if ($children.ContainsKey($cur)) {{
+    foreach ($child in $children[$cur]) {{ $queue.Enqueue($child) }}
+  }}
+}}
+"""
+    try:
+        proc = subprocess.run(
+            ["powershell.exe", "-NoProfile", "-Command", script],
+            capture_output=True,
+            text=True,
+            creationflags=(subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0),
+            timeout=15,
+        )
+        return "alive" in (proc.stdout or "")
+    except Exception:
+        return True  # can't tell — assume alive, defer to timeout path
+
+
 def _running_mt5_terminals() -> set[str]:
     allowed = set(active_mt5_terminals())
     try:
@@ -2096,6 +2158,52 @@ def _stop_pid(pid: Any) -> bool:
             capture_output=True,
             text=True,
             timeout=8,
+            creationflags=(subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0),
+        )
+        return proc.returncode == 0
+    except Exception:
+        return False
+
+
+def _stop_pid_tree(pid: Any) -> bool:
+    try:
+        pid_int = int(pid)
+    except (TypeError, ValueError):
+        return False
+    if sys.platform != "win32":
+        return _stop_pid(pid_int)
+    script = rf"""
+$target = {pid_int}
+$procs = Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId
+$children = @{{}}
+foreach ($p in $procs) {{
+  $pp = [int]$p.ParentProcessId
+  if (-not $children.ContainsKey($pp)) {{ $children[$pp] = @() }}
+  $children[$pp] += [int]$p.ProcessId
+}}
+$queue = New-Object System.Collections.Queue
+$seen = @{{}}
+$order = New-Object System.Collections.ArrayList
+$queue.Enqueue($target)
+while ($queue.Count -gt 0) {{
+  $cur = [int]$queue.Dequeue()
+  if ($seen.ContainsKey($cur)) {{ continue }}
+  $seen[$cur] = $true
+  [void]$order.Add($cur)
+  if ($children.ContainsKey($cur)) {{
+    foreach ($child in $children[$cur]) {{ $queue.Enqueue($child) }}
+  }}
+}}
+for ($i = $order.Count - 1; $i -ge 0; $i--) {{
+  Stop-Process -Id ([int]$order[$i]) -Force -ErrorAction SilentlyContinue
+}}
+"""
+    try:
+        proc = subprocess.run(
+            ["powershell.exe", "-NoProfile", "-Command", script],
+            capture_output=True,
+            text=True,
+            timeout=15,
             creationflags=(subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0),
         )
         return proc.returncode == 0
@@ -2343,7 +2451,7 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                                "terminal_released": terminal})
                 continue
         worker_pid = payload.get("pid")
-        worker_alive_for_artifacts = _pid_exists(worker_pid) if worker_pid else True
+        worker_alive_for_artifacts = _pid_tree_exists(worker_pid) if worker_pid else True
         if not summary_path and not worker_alive_for_artifacts and item["phase"] in {"P5", "P5b", "P6"}:
             artifact_summary = _phase_artifact_summary(item)
             if artifact_summary is not None:
@@ -2387,7 +2495,7 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
         # is still alive. If it died without writing a summary (MT5 crash,
         # OS reboot, manual kill) we should release the terminal IMMEDIATELY
         # instead of waiting `timeout_minutes` for the slow path.
-        worker_alive = _pid_exists(worker_pid) if worker_pid else True
+        worker_alive = _pid_tree_exists(worker_pid) if worker_pid else True
 
         started = payload.get("started_at_iso")
         age_min = 0.0

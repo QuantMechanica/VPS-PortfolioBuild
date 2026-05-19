@@ -120,7 +120,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
             if active_terminal:
                 payload = _json_loads(active_terminal["payload_json"])
                 pid = payload.get("pid")
-                if pid and farmctl._pid_exists(pid):
+                if pid and farmctl._pid_tree_exists(pid):
                     conn.commit()
                     return {"claimed": False, "reason": "terminal_busy", "item_id": active_terminal["id"]}
                 payload["prior_failure"] = payload.get("prior_failure") or "worker_loop_released_stale_claim"
@@ -189,7 +189,7 @@ def release_stale_claims_for_terminal(root: Path, terminal: str) -> list[str]:
             for row in rows:
                 payload = _json_loads(row["payload_json"])
                 pid = payload.get("pid")
-                if pid and farmctl._pid_exists(pid):
+                if pid and farmctl._pid_tree_exists(pid):
                     continue
                 payload["prior_failure"] = payload.get("prior_failure") or "worker_restart_released_stale_claim"
                 terminal_stopped = _stop_terminal_slot_for_release(root, terminal)
@@ -221,13 +221,25 @@ def _find_summary(report_root: str | None) -> Path | None:
     return candidates[0] if candidates else None
 
 
-def _find_work_item_summary(item: sqlite3.Row, payload: dict[str, Any]) -> Path | None:
+def _find_work_item_summary_data(item: sqlite3.Row, payload: dict[str, Any]) -> tuple[Path, dict[str, Any]] | None:
     phase = str(item["phase"])
     if phase in farmctl.REAL_PHASE_RUNNER_PHASES:
         summary_path = farmctl._ea_phase_dir(str(item["ea_id"]), phase) / "summary.json"
         if summary_path.exists():
-            return summary_path
-    return _find_summary(payload.get("report_root"))
+            try:
+                summary = json.loads(summary_path.read_text(encoding="utf-8-sig"))
+            except (OSError, json.JSONDecodeError):
+                return None
+            return summary_path, summary
+        return farmctl._phase_artifact_summary(item)
+    summary_path = _find_summary(payload.get("report_root"))
+    if not summary_path:
+        return None
+    try:
+        summary = json.loads(summary_path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    return summary_path, summary
 
 
 def _smoke_terminal_exit_stalled(item: dict[str, Any], payload: dict[str, Any]) -> bool:
@@ -290,37 +302,33 @@ def _finish_work_item(root: Path, item_id: str, exit_code: int | None) -> dict[s
             if not item:
                 return {"finished": False, "reason": "missing_item"}
             payload = _json_loads(item["payload_json"])
-            summary_path = _find_work_item_summary(item, payload)
-            if summary_path:
-                try:
-                    summary = json.loads(summary_path.read_text(encoding="utf-8-sig"))
-                except (OSError, json.JSONDecodeError):
-                    summary = None
-                if summary:
-                    effective_min_trades = int(
-                        payload.get("effective_min_trades")
-                        or summary.get("min_trades_required")
-                        or 5
-                    )
-                    verdict, reason = farmctl._derive_verdict_from_summary(
-                        summary,
-                        min_trades=effective_min_trades,
-                        phase=item["phase"],
-                    )
-                    payload["verdict_reason"] = reason
-                    payload["run_smoke_exit_code"] = exit_code
-                    conn.execute(
-                        """
-                        UPDATE work_items
-                        SET status='done', verdict=?, evidence_path=?, claimed_by=NULL,
-                            payload_json=?, updated_at=?
-                        WHERE id=?
-                        """,
-                        (verdict, str(summary_path), json.dumps(payload, sort_keys=True), now, item_id),
-                    )
-                    conn.commit()
-                    aggregate = _aggregate_finished_parent(root, item["parent_task_id"])
-                    return {"finished": True, "status": "done", "verdict": verdict, "reason": reason, "aggregate": aggregate}
+            summary_data = _find_work_item_summary_data(item, payload)
+            if summary_data:
+                summary_path, summary = summary_data
+                effective_min_trades = int(
+                    payload.get("effective_min_trades")
+                    or summary.get("min_trades_required")
+                    or 5
+                )
+                verdict, reason = farmctl._derive_verdict_from_summary(
+                    summary,
+                    min_trades=effective_min_trades,
+                    phase=item["phase"],
+                )
+                payload["verdict_reason"] = reason
+                payload["run_smoke_exit_code"] = exit_code
+                conn.execute(
+                    """
+                    UPDATE work_items
+                    SET status='done', verdict=?, evidence_path=?, claimed_by=NULL,
+                        payload_json=?, updated_at=?
+                    WHERE id=?
+                    """,
+                    (verdict, str(summary_path), json.dumps(payload, sort_keys=True), now, item_id),
+                )
+                conn.commit()
+                aggregate = _aggregate_finished_parent(root, item["parent_task_id"])
+                return {"finished": True, "status": "done", "verdict": verdict, "reason": reason, "aggregate": aggregate}
 
             attempt = int(item["attempt_count"] or 0) + 1
             payload["run_smoke_exit_code"] = exit_code
@@ -505,12 +513,12 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
     _with_sqlite_retry(_record_spawn)
 
     deadline = time.monotonic() + timeout_seconds
-    while time.monotonic() < deadline and farmctl._pid_exists(spawn["pid"]):
+    while time.monotonic() < deadline and farmctl._pid_tree_exists(spawn["pid"]):
         if _STOP:
             return {"action": "shutdown_waiting_for_child", "item_id": item["id"], "pid": spawn["pid"]}
         ownership = _work_item_ownership(root, item["id"], terminal)
         if not ownership.get("owned"):
-            child_stopped = farmctl._stop_pid(spawn["pid"])
+            child_stopped = farmctl._stop_pid_tree(spawn["pid"])
             terminal_stopped = _stop_terminal_slot_for_release(root, terminal)
             return {
                 "action": "external_release_observed",
@@ -521,11 +529,11 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
                 **ownership,
             }
         if _smoke_terminal_exit_stalled(item, payload):
-            farmctl._stop_pid(spawn["pid"])
+            farmctl._stop_pid_tree(spawn["pid"])
             break
         time.sleep(2.0)
-    if farmctl._pid_exists(spawn["pid"]):
-        farmctl._stop_pid(spawn["pid"])
+    if farmctl._pid_tree_exists(spawn["pid"]):
+        farmctl._stop_pid_tree(spawn["pid"])
         exit_code = None
     else:
         exit_code = 0
@@ -554,7 +562,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--terminal", required=True, choices=farmctl.MT5_TERMINALS)
     parser.add_argument("--root", type=Path, default=farmctl.DEFAULT_ROOT)
-    parser.add_argument("--timeout-minutes", type=float, default=30.0)
+    parser.add_argument("--timeout-minutes", type=float, default=90.0)
     args = parser.parse_args(argv)
     return run_loop(args.root, args.terminal, int(args.timeout_minutes * 60))
 

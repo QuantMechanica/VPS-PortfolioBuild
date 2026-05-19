@@ -10,6 +10,7 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
 import time
 from itertools import cycle
 from pathlib import Path
@@ -36,6 +37,14 @@ def _infer_parent_worker_terminal() -> str:
     return match.group(1).upper() if match else ""
 
 
+def _ea_label_from_setfile(base_setfile: Path | None, ea: str) -> str:
+    if base_setfile:
+        for parent in [base_setfile.parent, *base_setfile.parents]:
+            if parent.name.startswith(f"{ea}_"):
+                return parent.name
+    return ea
+
+
 def _run_smoke(
     smoke_script: Path,
     *,
@@ -46,6 +55,7 @@ def _run_smoke(
     terminal: str,
     runs: int,
     min_trades: int,
+    ea_label: str,
     setfile: Path | None,
     allow_running_terminal: bool,
     smoke_timeout_seconds: int,
@@ -57,6 +67,8 @@ def _run_smoke(
         str(smoke_script),
         "-EAId",
         str(ea_id),
+        "-EALabel",
+        ea_label,
         "-Symbol",
         symbol,
         "-Year",
@@ -121,6 +133,8 @@ def _run_smoke_parallel(
                 str(smoke_script),
                 "-EAId",
                 str(job["ea_id"]),
+                "-EALabel",
+                str(job["ea_label"]),
                 "-Symbol",
                 str(job["symbol"]),
                 "-Year",
@@ -139,9 +153,16 @@ def _run_smoke_parallel(
             if job.get("allow_running_terminal"):
                 cmd.append("-AllowRunningTerminal")
             creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
-            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, creationflags=creationflags)
+            safe_job_id = re.sub(r"[^A-Za-z0-9_.-]+", "_", str(job["id"]))
+            log_dir = Path(str(job.get("log_dir") or Path(str(job.get("setfile") or tempfile.gettempdir())).parent))
+            log_dir.mkdir(parents=True, exist_ok=True)
+            log_path = log_dir / f"p6_run_smoke_{safe_job_id}.log"
+            log_fh = log_path.open("w", encoding="utf-8")
+            log_fh.write("cmd=" + " ".join(cmd) + "\n")
+            log_fh.flush()
+            proc = subprocess.Popen(cmd, stdout=log_fh, stderr=subprocess.STDOUT, text=True, creationflags=creationflags)
             starts.append({"job_id": str(job["id"]), "terminal": terminal, "started_epoch": time.time()})
-            running[str(job["id"])] = {"proc": proc, "job": job, "started": time.monotonic()}
+            running[str(job["id"])] = {"proc": proc, "job": job, "started": time.monotonic(), "log_fh": log_fh, "log_path": log_path}
         finished: list[str] = []
         for job_id, meta in list(running.items()):
             proc: subprocess.Popen[str] = meta["proc"]
@@ -149,17 +170,21 @@ def _run_smoke_parallel(
                 elapsed = time.monotonic() - float(meta["started"])
                 if elapsed > smoke_timeout_seconds:
                     proc.kill()
-                    stdout, stderr = proc.communicate()
-                    raise RuntimeError(f"run_smoke timed out after {smoke_timeout_seconds}s\nstdout={stdout}\nstderr={stderr}")
+                    proc.wait(timeout=30)
+                    meta["log_fh"].close()
+                    log_text = Path(meta["log_path"]).read_text(encoding="utf-8", errors="replace")
+                    raise RuntimeError(f"run_smoke timed out after {smoke_timeout_seconds}s\nlog={meta['log_path']}\n{log_text[-8000:]}")
                 continue
-            stdout, stderr = proc.communicate()
-            if proc.returncode != 0:
-                raise RuntimeError(f"run_smoke failed for {job_id}\nstdout={stdout}\nstderr={stderr}")
+            meta["log_fh"].close()
+            stdout = Path(meta["log_path"]).read_text(encoding="utf-8", errors="replace")
+            stderr = ""
             summary_line = ""
             for line in stdout.splitlines():
                 if line.startswith("run_smoke.summary="):
                     summary_line = line
             if not summary_line:
+                if proc.returncode != 0:
+                    raise RuntimeError(f"run_smoke failed for {job_id}\nlog={meta['log_path']}\nstdout={stdout}\nstderr={stderr}")
                 raise RuntimeError(f"run_smoke summary path missing for {job_id}\nstdout={stdout}\nstderr={stderr}")
             summary = json.loads(Path(summary_line.split("=", 1)[1].strip()).read_text(encoding="utf-8"))
             ok_runs = [r for r in summary.get("runs", []) if str(r.get("status", "")).upper() == "OK"]
@@ -211,9 +236,11 @@ def main() -> int:
         return 0
 
     ea_num = int(args.ea.split("_")[1])
+    base_setfile = Path(args.base_setfile) if args.base_setfile else None
+    ea_label = _ea_label_from_setfile(base_setfile, args.ea)
     base_lines: list[str] = []
     if args.base_setfile:
-        base_lines = Path(args.base_setfile).read_text(encoding="utf-8", errors="replace").splitlines()
+        base_lines = base_setfile.read_text(encoding="utf-8", errors="replace").splitlines()
 
     tmp_csv = out_dir / "p6_seeds.tmp.csv"
     setfiles: list[tuple[int, Path]] = []
@@ -227,6 +254,7 @@ def main() -> int:
         {
             "id": f"seed:{seed}",
             "ea_id": ea_num,
+            "ea_label": ea_label,
             "symbol": args.symbol,
             "year": args.year,
             "period": args.period,
@@ -234,6 +262,7 @@ def main() -> int:
             "runs": args.runs,
             "min_trades": args.min_trades,
             "setfile": set_path,
+            "log_dir": out_dir,
             "allow_running_terminal": args.allow_running_terminal,
         }
         for seed, set_path in setfiles

@@ -4,6 +4,28 @@ Stand: 2026-05-19 after OWNER directive to stop all Claude token burn.
 
 Use this prompt on Friday, 2026-05-22, when Claude quota is expected to be available again. Read this whole file first. Do not re-enable Claude automatically before confirming current quota and OWNER intent.
 
+## 0. Prompt To Start Friday Session
+
+```text
+Restart Prompt - Friday 2026-05-22 Claude Quota Reset
+
+Read C:/QM/repo/CLAUDE.md and this file first:
+C:/QM/repo/docs/ops/FRIDAY_RESTART_PROMPT_2026-05-22_CLAUDE_REENABLE.md
+
+Context: On Tuesday 2026-05-19, OWNER ordered all Claude background token burn stopped. Claude jobs were killed, Claude scheduled wakes were disabled, `MAX_PARALLEL_CLAUDE` was set to 0, Claude spawn lanes in farmctl were routed to Codex, and `D:\QM\strategy_farm\CLAUDE_DISABLED.flag` was installed as a wrapper kill-switch.
+
+Friday objective: Check whether Claude quota/OAuth is healthy again and ask OWNER before any Claude re-enable. If approved, restart from the current honest pipeline state with Codex still primary and Claude only as an explicitly capped fallback or selected lane. Do not assume "quota reset" means "turn everything back on".
+
+Before changing anything:
+1. Verify no Claude process is already running.
+2. Verify `QM_StrategyFarm_BoardAdvisor_Hourly` and `QM_StrategyFarm_AutonomousWake_Hourly` are still disabled.
+3. Verify `D:\QM\strategy_farm\CLAUDE_DISABLED.flag` still exists.
+4. Snapshot pipeline state and lead candidate.
+5. Confirm OWNER wants Claude re-enabled and at what cap.
+
+Hard rules: no T_Live AutoTrading enable, no manual `terminal64.exe` start, no `git push --force`, no `codex login`, no `claude login` unless OWNER explicitly requests the interactive OAuth flow.
+```
+
 ## 1. Current Guardrail
 
 As of 2026-05-19, all autonomous Claude spend is hard-disabled:
