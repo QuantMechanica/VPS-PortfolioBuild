@@ -141,6 +141,99 @@ def _json_obj(raw: str | None) -> dict:
     return data if isinstance(data, dict) else {}
 
 
+def _card_frontmatter(path: Path) -> dict[str, str]:
+    try:
+        text = path.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        return {}
+    if not text.startswith("---"):
+        return {}
+    parts = text.split("---", 2)
+    if len(parts) < 3:
+        return {}
+    fm: dict[str, str] = {}
+    for line in parts[1].splitlines():
+        if ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        fm[key.strip()] = value.strip().strip("\"'")
+    return fm
+
+
+def _cards_for_source(source_id: str) -> dict[str, list[Path]]:
+    found = {"draft": [], "approved": [], "rejected": []}
+    for state, subdir in (
+        ("draft", "cards_draft"),
+        ("approved", "cards_approved"),
+        ("rejected", "cards_rejected"),
+    ):
+        d = ROOT / "artifacts" / subdir
+        if not d.is_dir():
+            continue
+        for card_path in d.glob("*.md"):
+            if _card_frontmatter(card_path).get("source_id") == source_id:
+                found[state].append(card_path)
+    return found
+
+
+def _card_pipeline_done(con, card_path: Path, state: str) -> bool:
+    if state == "rejected":
+        return True
+    if state == "draft":
+        return False
+    fm = _card_frontmatter(card_path)
+    ea_id = fm.get("ea_id")
+    if not ea_id:
+        m = re.match(r"(QM5_\d{4})_", card_path.name)
+        ea_id = m.group(1) if m else ""
+    if not ea_id:
+        return False
+
+    rows = con.execute(
+        "SELECT kind, status, payload_json FROM tasks WHERE card_id=? ORDER BY created_at ASC",
+        (ea_id,),
+    ).fetchall()
+    build_task = next((r for r in rows if r["kind"] == "build_ea"), None)
+    review_task = next((r for r in rows if r["kind"] == "ea_review"), None)
+    backtest_task = next((r for r in rows if str(r["kind"]).startswith("backtest_")), None)
+
+    if build_task is None:
+        return False
+    if build_task["status"] in ("failed", "blocked"):
+        return True
+    if build_task["status"] != "done":
+        return False
+    if review_task is None or review_task["status"] != "done":
+        return False
+
+    review_payload = _json_obj(review_task["payload_json"])
+    verdict_doc = review_payload.get("verdict") or {}
+    if isinstance(verdict_doc, str):
+        verdict = verdict_doc
+    elif isinstance(verdict_doc, dict):
+        verdict = str(verdict_doc.get("verdict") or "")
+    else:
+        verdict = ""
+    if verdict != "APPROVE_FOR_BACKTEST":
+        return False
+
+    if backtest_task is None:
+        return False
+    return backtest_task["status"] in ("done", "failed", "blocked")
+
+
+def _cards_ready_resume_summary(con, source_id: str) -> dict[str, int]:
+    cards = _cards_for_source(source_id)
+    total = 0
+    done = 0
+    for state, paths in cards.items():
+        for card_path in paths:
+            total += 1
+            if _card_pipeline_done(con, card_path, state):
+                done += 1
+    return {"total": total, "done": done, "in_flight": total - done}
+
+
 def _summary_net_profit_total(summary: dict) -> float | None:
     runs = summary.get("runs")
     if isinstance(runs, list) and runs:
@@ -333,8 +426,13 @@ def chk_codex_review_fail_rate(con) -> dict:
 
 
 def chk_cards_ready_stagnation(con) -> dict:
-    """Sources stuck in cards_ready > 4h. Suppressed when codex_auth_broken
-    is upstream (codex_research can't run if codex is gated)."""
+    """Sources stuck in cards_ready > 4h.
+
+    `cards_ready` is an intentional pause while that source's current card
+    batch moves through G0/build/review/P2. Only alarm when the source has no
+    traceable cards or when all cards reached pipeline-end and resume-mining
+    still did not flip it back to active.
+    """
     auth_broken = _is_codex_auth_broken(con)
 
     cutoff = (_utc_now() - dt.timedelta(hours=4)).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -342,21 +440,32 @@ def chk_cards_ready_stagnation(con) -> dict:
         "SELECT id, title, updated_at FROM sources "
         "WHERE status='cards_ready' AND updated_at < ?", (cutoff,)
     ).fetchall()
-    n = len(rows)
+    actionable = []
+    waiting = 0
+    for r in rows:
+        summary = _cards_ready_resume_summary(con, r["id"])
+        if summary["total"] == 0 or summary["in_flight"] == 0:
+            actionable.append((r, summary))
+        else:
+            waiting += 1
+    n = len(actionable)
     if auth_broken and n >= 1:
         return _check("cards_ready_stagnation", "WARN", n, 3,
-                      f"{n} sources cards_ready (codex_auth_broken upstream)",
+                      f"{n} actionable cards_ready sources (codex_auth_broken upstream), {waiting} waiting on in-flight cards",
                       "Will resume once OWNER runs `codex login` and codex circuit breaker clears")
     if n >= 3:
         return _check("cards_ready_stagnation", "FAIL", n, 3,
-                      f"{n} sources in cards_ready > 4h with no resume",
-                      "Pump §_claim_research_source should pick these up; "
-                      "verify codex_research is spawning, check live_log activity")
+                      f"{n} actionable cards_ready sources need resume/reconciliation; {waiting} legitimately waiting",
+                      "Run `python tools/strategy_farm/farmctl.py resume-mining`; if still present, "
+                      "fix missing source_id frontmatter or stuck resume state.")
     if n >= 1:
         return _check("cards_ready_stagnation", "WARN", n, 1,
-                      f"{n} source(s) cards_ready > 4h",
-                      "Pump will pick them up next cycle")
-    return _check("cards_ready_stagnation", "OK", 0, 3, "no stagnation", "")
+                      f"{n} actionable cards_ready source(s), {waiting} waiting on in-flight cards",
+                      "Next resume-mining cycle should flip actionable sources back to active.")
+    detail = "no actionable stagnation"
+    if waiting:
+        detail = f"{waiting} old cards_ready source(s) waiting on in-flight cards"
+    return _check("cards_ready_stagnation", "OK", 0, 3, detail, "")
 
 
 def chk_pump_task_health() -> dict:
