@@ -191,10 +191,10 @@ Keep it 6–10 lines.
   ```powershell
   (Get-ScheduledTask -TaskName 'QM_StrategyFarm_Pump_5min').Actions | Format-List
   ```
-  Should be `cmd.exe /c "C:\...\python.exe" "C:\QM\repo\tools\strategy_farm\farmctl.py" pump > C:\Windows\Temp\pump_task.log 2>&1`.
+  Should be `C:\Users\Administrator\AppData\Local\Programs\Python\Python311\pythonw.exe "C:\QM\repo\tools\strategy_farm\run_pump_task.py"`.
   If `Execute = py.exe`, the SYSTEM-user Python launcher bug is back —
   re-install with explicit python.exe path. Log content lives at
-  `C:/Windows/Temp/pump_task.log`.
+  `D:/QM/strategy_farm/logs/pump_task_<UTC>.log`.
 
 - **Watchdog Gmail alarm fires immediately after reboot** → expected; the
   fingerprint state file was reset by the dead pump. It'll re-debounce
