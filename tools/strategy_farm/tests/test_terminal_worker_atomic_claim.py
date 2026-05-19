@@ -129,6 +129,44 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                 row = conn.execute("SELECT status, claimed_by FROM work_items WHERE id='stale-1'").fetchone()
             self.assertEqual(row, ("active", "T1"))
 
+    def test_summary_missing_release_stops_terminal_slot(self) -> None:
+        with self._root() as tmp:
+            root = (Path(tmp) / "farm").resolve()
+            report_root = root / "reports" / "wi-summary-missing"
+            report_root.mkdir(parents=True)
+            self._insert_work_item(
+                root,
+                "wi-summary-missing",
+                "AUDUSD.DWX",
+                phase="P2",
+                status="active",
+                claimed_by="T4",
+                payload={"report_root": str(report_root), "pid": 424242},
+            )
+
+            stopped: list[str] = []
+            old_default_root = terminal_worker.farmctl.DEFAULT_ROOT
+            old_stop_terminal_slot = terminal_worker.farmctl._stop_terminal_slot
+            try:
+                terminal_worker.farmctl.DEFAULT_ROOT = root
+                terminal_worker.farmctl._stop_terminal_slot = lambda terminal: stopped.append(terminal) or True
+                result = terminal_worker._finish_work_item(root, "wi-summary-missing", exit_code=0)
+            finally:
+                terminal_worker.farmctl.DEFAULT_ROOT = old_default_root
+                terminal_worker.farmctl._stop_terminal_slot = old_stop_terminal_slot
+
+            self.assertEqual(result["status"], "pending")
+            self.assertEqual(stopped, ["T4"])
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT status, claimed_by, payload_json FROM work_items WHERE id='wi-summary-missing'"
+                ).fetchone()
+            self.assertEqual(row[0], "pending")
+            self.assertIsNone(row[1])
+            payload = json.loads(row[2])
+            self.assertEqual(payload["prior_failure"], "summary_missing")
+            self.assertTrue(payload["terminal_stopped_on_release"])
+
 
 if __name__ == "__main__":
     unittest.main()

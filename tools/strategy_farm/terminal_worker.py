@@ -123,6 +123,9 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     conn.commit()
                     return {"claimed": False, "reason": "terminal_busy", "item_id": active_terminal["id"]}
                 payload["prior_failure"] = payload.get("prior_failure") or "worker_loop_released_stale_claim"
+                terminal_stopped = _stop_terminal_slot_for_release(root, terminal)
+                if terminal_stopped is not None:
+                    payload["terminal_stopped_on_release"] = terminal_stopped
                 conn.execute(
                     """
                     UPDATE work_items
@@ -188,6 +191,9 @@ def release_stale_claims_for_terminal(root: Path, terminal: str) -> list[str]:
                 if pid and farmctl._pid_exists(pid):
                     continue
                 payload["prior_failure"] = payload.get("prior_failure") or "worker_restart_released_stale_claim"
+                terminal_stopped = _stop_terminal_slot_for_release(root, terminal)
+                if terminal_stopped is not None:
+                    payload["terminal_stopped_on_release"] = terminal_stopped
                 conn.execute(
                     """
                     UPDATE work_items
@@ -212,6 +218,15 @@ def _find_summary(report_root: str | None) -> Path | None:
         return None
     candidates = sorted(root.rglob("summary.json"), key=lambda p: p.stat().st_mtime, reverse=True)
     return candidates[0] if candidates else None
+
+
+def _stop_terminal_slot_for_release(root: Path, terminal: str | None) -> bool | None:
+    """Stop the T1-T5 MT5 process before a released work_item can orphan it."""
+    if root.resolve() != farmctl.DEFAULT_ROOT.resolve():
+        return None
+    if not terminal:
+        return None
+    return farmctl._stop_terminal_slot(str(terminal))
 
 
 def _finish_work_item(root: Path, item_id: str, exit_code: int | None) -> dict[str, Any]:
@@ -257,6 +272,9 @@ def _finish_work_item(root: Path, item_id: str, exit_code: int | None) -> dict[s
             attempt = int(item["attempt_count"] or 0) + 1
             payload["run_smoke_exit_code"] = exit_code
             payload["prior_failure"] = payload.get("prior_failure") or "summary_missing"
+            terminal_stopped = _stop_terminal_slot_for_release(root, item["claimed_by"])
+            if terminal_stopped is not None:
+                payload["terminal_stopped_on_release"] = terminal_stopped
             if attempt < MAX_WORK_ITEM_RETRIES:
                 conn.execute(
                     """
