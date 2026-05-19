@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        1058
 ; ea_slug:      gatev-fx-pairs-zscore
@@ -10,7 +10,7 @@
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   f09a84496ae134d2a746b41914e4e773ab40c4576900bbf073ec08928b082ca9
 ; author:       Development
 ; date:         2026-05-17
 ;==========================================================

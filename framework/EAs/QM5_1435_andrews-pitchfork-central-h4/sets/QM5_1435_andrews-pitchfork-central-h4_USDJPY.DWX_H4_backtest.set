@@ -1,0 +1,22 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1435
+; ea_slug:      andrews-pitchfork-central-h4
+; ea_version:   v5.0
+; set_version:  s20260519-001
+; symbol:       USDJPY.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   2da604bdc394bc1960a4a6cb3e0e85829a862d9f78b2c34e2833479416af3ee6
+; author:       Development
+; date:         2026-05-19
+;==========================================================
+qm_magic_slot_offset=2
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=not_found

@@ -3,16 +3,16 @@
 ; ea_id:        1052
 ; ea_slug:      sidus-ema-method-v2
 ; ea_version:   v5.0
-; set_version:  s20260516-001
+; set_version:  s20260519-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   78f9a9a9a175e7e5f2b2d376919e9f8ca07a525c07af07630e16197771561faf
 ; author:       Development
-; date:         2026-05-16
+; date:         2026-05-19
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=1000

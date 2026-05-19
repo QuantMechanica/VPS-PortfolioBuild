@@ -4,116 +4,41 @@
 
 #include <QM/QM_Common.mqh>
 
-// =============================================================================
-// QuantMechanica V5 EA SKELETON
-// -----------------------------------------------------------------------------
-// Fill in only the five Strategy_* hooks below. Everything else is framework
-// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
-// risk + magic + news + Friday-close guard rails). The framework provides:
-//
-//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  — closed-bar gate
-//   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
-//     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
-//     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
-//   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
-//   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
-//   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
-//   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
-//   - QM_FrameworkHandleFridayClose / QM_KillSwitchCheck / QM_NewsAllowsTrade
-//
-// DO NOT
-//   - Write per-EA IsNewBar() — use QM_IsNewBar()
-//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
-//     use the QM_* readers above. The framework pools handles and releases them
-//     on shutdown.
-//   - CopyRates over warmup windows on every tick. If you genuinely need raw
-//     bar arrays, gate by QM_IsNewBar so the work runs once per closed bar.
-//   - Hand-edit framework/include/QM/QM_MagicResolver.mqh. After adding rows
-//     to magic_numbers.csv, run:
-//         python framework/scripts/update_magic_resolver.py
-//     This is idempotent and preserves all rows.
-// =============================================================================
-
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 1052;
-input int    qm_magic_slot_offset       = 0;
+input int    qm_ea_id                    = 1052;
+input int    qm_magic_slot_offset        = 0;
 
 input group "Risk"
-input double RISK_PERCENT               = 0.0;
-input double RISK_FIXED                 = 1000.0;
-input double PORTFOLIO_WEIGHT           = 1.0;
+input double RISK_PERCENT                = 0.0;
+input double RISK_FIXED                  = 1000.0;
+input double PORTFOLIO_WEIGHT            = 1.0;
 
 input group "News"
-input QM_NewsMode qm_news_mode          = QM_NEWS_OFF;
+input QM_NewsMode qm_news_mode           = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled    = true;
+input bool   qm_friday_close_enabled     = true;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Strategy"
-input int    strategy_wma_fast_period   = 5;
-input int    strategy_wma_slow_period   = 8;
-input int    strategy_ema_fast_period   = 18;
-input int    strategy_ema_slow_period   = 28;
-input int    strategy_sl_buffer_points  = 20;
-input double strategy_rr_take_profit    = 1.5;
-input bool   strategy_use_rr_tp         = true;
-input int    strategy_max_spread_points = 20;
+input int    strategy_wma_fast_period    = 5;
+input int    strategy_wma_slow_period    = 8;
+input int    strategy_ema_fast_period    = 18;
+input int    strategy_ema_slow_period    = 28;
+input int    strategy_sl_buffer_points   = 20;
+input double strategy_rr_take_profit     = 1.5;
+input bool   strategy_use_rr_tp          = true;
+input int    strategy_max_spread_points  = 20;
 input bool   strategy_session_filter_enabled = false;
 input int    strategy_session_start_hour_broker = 13;
 input int    strategy_session_end_hour_broker   = 17;
 
-double Strategy_WMA(const string sym, const ENUM_TIMEFRAMES tf, const int period, const int shift)
-  {
-   return QM_IndicatorReadBuffer(QM_IndMA(sym, tf, period, MODE_LWMA, PRICE_CLOSE), 0, shift);
-  }
-
-bool Strategy_GetOurPosition(ENUM_POSITION_TYPE &ptype)
-  {
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      return true;
-     }
-   return false;
-  }
-
-bool Strategy_BullCross()
-  {
-   const double wma_fast_prev = Strategy_WMA(_Symbol, _Period, strategy_wma_fast_period, 2);
-   const double wma_slow_prev = Strategy_WMA(_Symbol, _Period, strategy_wma_slow_period, 2);
-   const double wma_fast_sig = Strategy_WMA(_Symbol, _Period, strategy_wma_fast_period, 1);
-   const double wma_slow_sig = Strategy_WMA(_Symbol, _Period, strategy_wma_slow_period, 1);
-   if(wma_fast_prev <= 0.0 || wma_slow_prev <= 0.0 || wma_fast_sig <= 0.0 || wma_slow_sig <= 0.0)
-      return false;
-   return (wma_fast_prev <= wma_slow_prev && wma_fast_sig > wma_slow_sig);
-  }
-
-bool Strategy_BearCross()
-  {
-   const double wma_fast_prev = Strategy_WMA(_Symbol, _Period, strategy_wma_fast_period, 2);
-   const double wma_slow_prev = Strategy_WMA(_Symbol, _Period, strategy_wma_slow_period, 2);
-   const double wma_fast_sig = Strategy_WMA(_Symbol, _Period, strategy_wma_fast_period, 1);
-   const double wma_slow_sig = Strategy_WMA(_Symbol, _Period, strategy_wma_slow_period, 1);
-   if(wma_fast_prev <= 0.0 || wma_slow_prev <= 0.0 || wma_fast_sig <= 0.0 || wma_slow_sig <= 0.0)
-      return false;
-   return (wma_fast_prev >= wma_slow_prev && wma_fast_sig < wma_slow_sig);
-  }
-
 // -----------------------------------------------------------------------------
-// Strategy hooks — implement these against the card mechanically.
+// Strategy hooks - implemented mechanically from QM5_1052 Sidus Method v2.
 // -----------------------------------------------------------------------------
 
-// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
-// regime filter). Cheap O(1) checks only — runs on every tick.
+// No Trade Filter (time, spread, news): news is handled by Strategy_NewsFilterHook
+// plus QM_NewsAllowsTrade in framework wiring; this hook adds spread/session gates.
 bool Strategy_NoTradeFilter()
   {
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
@@ -137,9 +62,7 @@ bool Strategy_NoTradeFilter()
    return false;
   }
 
-// Populate `req` with entry order parameters and return TRUE if a NEW entry
-// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
-// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
+// Trade Entry: WMA(5/8) closed-bar cross gated by EMA(18/28) tunnel.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    req.type = QM_BUY;
@@ -154,75 +77,100 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(point <= 0.0)
       return false;
 
-   const double wma_fast = Strategy_WMA(_Symbol, _Period, strategy_wma_fast_period, 1);
-   const double wma_slow = Strategy_WMA(_Symbol, _Period, strategy_wma_slow_period, 1);
+   const double wma_fast_prev = QM_WMA(_Symbol, _Period, strategy_wma_fast_period, 2);
+   const double wma_slow_prev = QM_WMA(_Symbol, _Period, strategy_wma_slow_period, 2);
+   const double wma_fast_sig = QM_WMA(_Symbol, _Period, strategy_wma_fast_period, 1);
+   const double wma_slow_sig = QM_WMA(_Symbol, _Period, strategy_wma_slow_period, 1);
    const double ema_fast = QM_EMA(_Symbol, _Period, strategy_ema_fast_period, 1);
    const double ema_slow = QM_EMA(_Symbol, _Period, strategy_ema_slow_period, 1);
-   if(wma_fast <= 0.0 || wma_slow <= 0.0 || ema_fast <= 0.0 || ema_slow <= 0.0)
+   if(wma_fast_prev <= 0.0 || wma_slow_prev <= 0.0 ||
+      wma_fast_sig <= 0.0 || wma_slow_sig <= 0.0 ||
+      ema_fast <= 0.0 || ema_slow <= 0.0)
       return false;
 
-   const double buffer = strategy_sl_buffer_points * point;
+   const bool bull_cross = (wma_fast_prev <= wma_slow_prev && wma_fast_sig > wma_slow_sig);
+   const bool bear_cross = (wma_fast_prev >= wma_slow_prev && wma_fast_sig < wma_slow_sig);
+   const double buffer = (double)strategy_sl_buffer_points * point;
 
-   if(Strategy_BullCross() &&
-      wma_fast > ema_fast && wma_fast > ema_slow &&
-      wma_slow > ema_fast && wma_slow > ema_slow &&
+   if(bull_cross &&
+      wma_fast_sig > ema_fast && wma_fast_sig > ema_slow &&
+      wma_slow_sig > ema_fast && wma_slow_sig > ema_slow &&
       ema_fast > ema_slow)
      {
+      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       req.type = QM_BUY;
-      req.price = 0.0;
       req.sl = NormalizeDouble(ema_slow - buffer, _Digits);
-      req.tp = strategy_use_rr_tp ? QM_TakeRR(_Symbol, req.type, SymbolInfoDouble(_Symbol, SYMBOL_ASK), req.sl, strategy_rr_take_profit) : 0.0;
+      req.tp = strategy_use_rr_tp ? QM_TakeRR(_Symbol, req.type, entry, req.sl, strategy_rr_take_profit) : 0.0;
       req.reason = "SIDUS_WMA_CROSS_LONG";
-      return (req.sl > 0.0);
+      return (entry > 0.0 && req.sl > 0.0 && req.sl < entry);
      }
 
-   if(Strategy_BearCross() &&
-      wma_fast < ema_fast && wma_fast < ema_slow &&
-      wma_slow < ema_fast && wma_slow < ema_slow &&
+   if(bear_cross &&
+      wma_fast_sig < ema_fast && wma_fast_sig < ema_slow &&
+      wma_slow_sig < ema_fast && wma_slow_sig < ema_slow &&
       ema_fast < ema_slow)
      {
+      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       req.type = QM_SELL;
-      req.price = 0.0;
       req.sl = NormalizeDouble(ema_slow + buffer, _Digits);
-      req.tp = strategy_use_rr_tp ? QM_TakeRR(_Symbol, req.type, SymbolInfoDouble(_Symbol, SYMBOL_BID), req.sl, strategy_rr_take_profit) : 0.0;
+      req.tp = strategy_use_rr_tp ? QM_TakeRR(_Symbol, req.type, entry, req.sl, strategy_rr_take_profit) : 0.0;
       req.reason = "SIDUS_WMA_CROSS_SHORT";
-      return (req.sl > 0.0);
+      return (entry > 0.0 && req.sl > entry);
      }
 
    return false;
   }
 
-// Called every tick when an open position exists for this EA's magic.
-// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
+// Trade Management: card specifies no trailing, break-even, partial close, or pyramiding.
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies no trailing, break-even, partial close, or pyramiding.
   }
 
-// Return TRUE to close the open position now (e.g. opposite-signal exit,
-// max-hold-time exceeded, session end).
+// Trade Close: reverse WMA(5/8) cross closes the position.
 bool Strategy_ExitSignal()
   {
-   ENUM_POSITION_TYPE ptype;
-   if(!Strategy_GetOurPosition(ptype))
+   const int magic = QM_FrameworkMagic();
+   bool have_buy = false;
+   bool have_sell = false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      have_buy = have_buy || (ptype == POSITION_TYPE_BUY);
+      have_sell = have_sell || (ptype == POSITION_TYPE_SELL);
+     }
+
+   if(!have_buy && !have_sell)
       return false;
-   if(ptype == POSITION_TYPE_BUY && Strategy_BearCross())
-      return true;
-   if(ptype == POSITION_TYPE_SELL && Strategy_BullCross())
-      return true;
-   return false;
+
+   const double wma_fast_prev = QM_WMA(_Symbol, _Period, strategy_wma_fast_period, 2);
+   const double wma_slow_prev = QM_WMA(_Symbol, _Period, strategy_wma_slow_period, 2);
+   const double wma_fast_sig = QM_WMA(_Symbol, _Period, strategy_wma_fast_period, 1);
+   const double wma_slow_sig = QM_WMA(_Symbol, _Period, strategy_wma_slow_period, 1);
+   if(wma_fast_prev <= 0.0 || wma_slow_prev <= 0.0 || wma_fast_sig <= 0.0 || wma_slow_sig <= 0.0)
+      return false;
+
+   const bool bull_cross = (wma_fast_prev <= wma_slow_prev && wma_fast_sig > wma_slow_sig);
+   const bool bear_cross = (wma_fast_prev >= wma_slow_prev && wma_fast_sig < wma_slow_sig);
+   return ((have_buy && bear_cross) || (have_sell && bull_cross));
   }
 
-// Optional news-filter override. Return TRUE to suppress trading regardless
-// of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
-// custom high-impact-event handling beyond the central filter.
+// News Filter Hook: P8-callable hook; default P2 behavior is no custom override.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false; // defer to QM_NewsAllowsTrade(...)
+   return false;
   }
 
 // -----------------------------------------------------------------------------
-// Framework wiring — do NOT edit below this line unless you know why.
+// Framework wiring - do NOT edit below this line.
 // -----------------------------------------------------------------------------
 
 int OnInit()
@@ -263,10 +211,8 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
-   // Per-tick: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
-   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -281,9 +227,6 @@ void OnTick()
         }
      }
 
-   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
-   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
-   // call, not every incoming tick.
    if(!QM_IsNewBar())
       return;
 

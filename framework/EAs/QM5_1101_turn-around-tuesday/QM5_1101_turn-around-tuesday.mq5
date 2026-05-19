@@ -17,7 +17,7 @@ input group "News"
 input QM_NewsMode qm_news_mode              = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled        = false;
+input bool   qm_friday_close_enabled        = true;
 input int    qm_friday_close_hour_broker    = 21;
 
 input group "Strategy"
@@ -161,11 +161,13 @@ bool IsPreviousBarFirstTradingSessionAfterFriday()
    return ((DateFloor(signal_d1) - DateFloor(friday_d1)) > 86400);
   }
 
+// No Trade Filter (time, spread, news)
 bool Strategy_NoTradeFilter()
   {
    return (_Period != PERIOD_D1);
   }
 
+// Trade Entry
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    req.type = QM_BUY;
@@ -219,10 +221,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    return false;
   }
 
+// Trade Management
 void Strategy_ManageOpenPosition()
   {
   }
 
+// Trade Close
 bool Strategy_ExitSignal()
   {
    if(!HasOpenPositionForMagic())
@@ -244,6 +248,7 @@ bool Strategy_ExitSignal()
    return true;
   }
 
+// News Filter Hook (callable for P8 News Impact phase)
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
@@ -305,15 +310,15 @@ void OnTick()
         }
      }
 
+   if(!QM_IsNewBar())
+      return;
+
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
       QM_TM_OpenPosition(req, out_ticket);
      }
-
-   if(!QM_IsNewBar())
-      return;
   }
 
 void OnTimer()

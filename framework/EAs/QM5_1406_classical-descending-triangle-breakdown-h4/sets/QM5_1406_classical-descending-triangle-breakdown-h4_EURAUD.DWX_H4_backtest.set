@@ -1,0 +1,22 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1406
+; ea_slug:      classical-descending-triangle-breakdown-h4
+; ea_version:   v5.0
+; set_version:  s20260519-001
+; symbol:       EURAUD.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   b4906c9b5722f97292774a64dd16eea3bba853b6bc730fa23d5e0f00758d3d53
+; author:       Development
+; date:         2026-05-19
+;==========================================================
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=not_found

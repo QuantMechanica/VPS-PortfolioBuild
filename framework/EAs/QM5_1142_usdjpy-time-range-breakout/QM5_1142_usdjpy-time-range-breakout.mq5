@@ -26,7 +26,7 @@ input int    strategy_range_start_minute         = 0;
 input int    strategy_range_duration_minutes     = 240;
 input int    strategy_hold_minutes_max           = 480;
 input int    strategy_exit_hour_broker           = 22;
-input double strategy_atr_period                 = 14;
+input int    strategy_atr_period                 = 14;
 input double strategy_atr_stop_mult              = 2.0;
 input double strategy_atr_target_mult            = 0.0;
 input bool   strategy_long_only                  = false;
@@ -314,7 +314,7 @@ bool BuildEntryRequests(QM_EntryRequest &long_req,
    if(!ComputeRange(range_start, range_close, range_high, range_low))
       return false;
 
-   const int atr_period = MathMax(1, (int)MathRound(strategy_atr_period));
+   const int atr_period = MathMax(1, strategy_atr_period);
    const double atr = QM_ATR(_Symbol, PERIOD_M30, atr_period, 1);
    if(!ValidateRangeAgainstATR(range_high, range_low, atr))
       return false;

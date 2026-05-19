@@ -3,16 +3,16 @@
 ; ea_id:        1087
 ; ea_slug:      aa-spx-20-252-ma
 ; ea_version:   v5.0
-; set_version:  s20260518-001
+; set_version:  s20260519-001
 ; symbol:       NDX.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   2e751e9db4cbdebab1aab57810c194b76f1cf7ccc3d5c1150bf540586a4e1779
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-18
+; date:         2026-05-19
 ;==========================================================
 qm_magic_slot_offset=1
 RISK_FIXED=1000

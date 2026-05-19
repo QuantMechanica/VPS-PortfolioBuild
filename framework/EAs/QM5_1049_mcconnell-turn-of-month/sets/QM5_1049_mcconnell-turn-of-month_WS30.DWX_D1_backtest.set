@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        1049
 ; ea_slug:      mcconnell-turn-of-month
@@ -10,7 +10,7 @@
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   b9c52737da919e41de5a566051fa1be7f332c5c13f645f2fb6082b2ec2453b66
 ; author:       Development
 ; date:         2026-05-16
 ;==========================================================

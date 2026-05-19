@@ -1,0 +1,22 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1135
+; ea_slug:      qp-asset-mom-top3
+; ea_version:   v5.0
+; set_version:  s20260518-001
+; symbol:       XAUUSD.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   5
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   f2cc8daa860d2062821275e4b8e4f43e9eba6178d73c67d139d38548affd6740
+; author:       Development
+; date:         2026-05-18
+;==========================================================
+qm_magic_slot_offset=5
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=not_found

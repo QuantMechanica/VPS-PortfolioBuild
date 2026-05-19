@@ -3,16 +3,16 @@
 ; ea_id:        1087
 ; ea_slug:      aa-spx-20-252-ma
 ; ea_version:   v5.0
-; set_version:  s20260518-001
+; set_version:  s20260519-001
 ; symbol:       USDCHF.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   12
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   f833058eab8161cb7e6e6b063d6e4df8c2221d6c76f0f2814b340bf47cf3bded
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-18
+; date:         2026-05-19
 ;==========================================================
 qm_magic_slot_offset=12
 RISK_FIXED=1000

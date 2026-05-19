@@ -11,7 +11,7 @@ input int    qm_magic_slot_offset        = 0;
 input group "Risk"
 input double RISK_PERCENT                = 0.0;
 input double RISK_FIXED                  = 1000.0;
-input double PORTFOLIO_WEIGHT            = 1.0;
+input double PORTFOLIO_WEIGHT            = 0.5;
 
 input group "News"
 input QM_NewsMode qm_news_mode           = QM_NEWS_OFF;
@@ -27,10 +27,18 @@ input int    strategy_atr_period         = 14;
 input double strategy_atr_sl_mult        = 4.0;
 input bool   strategy_absolute_momentum  = false;
 
-const int    STRATEGY_UNIVERSE_SIZE = 4;
-string       g_universe_symbols[4] = {"NDX.DWX", "WS30.DWX", "GDAXI.DWX", "UK100.DWX"};
-int          g_universe_slots[4]   = {0, 1, 2, 3};
-int          g_last_rebalance_key  = 0;
+const int STRATEGY_UNIVERSE_SIZE = 4;
+string    g_universe_symbols[4] = {"NDX.DWX", "WS30.DWX", "GDAXI.DWX", "UK100.DWX"};
+int       g_universe_slots[4]   = {0, 1, 2, 3};
+int       g_last_entry_rebalance_key = 0;
+
+int Strategy_CurrentSymbolIndex()
+  {
+   for(int i = 0; i < STRATEGY_UNIVERSE_SIZE; ++i)
+      if(g_universe_symbols[i] == _Symbol)
+         return i;
+   return -1;
+  }
 
 int Strategy_RebalanceKey(const datetime t)
   {
@@ -62,26 +70,21 @@ double Strategy_TotalReturn6M(const string symbol)
   {
    if(strategy_lookback_d1_bars <= 0)
       return -DBL_MAX;
+
    SymbolSelect(symbol, true);
    const double recent_close = iClose(symbol, PERIOD_D1, 1);
    const double lookback_close = iClose(symbol, PERIOD_D1, 1 + strategy_lookback_d1_bars);
    if(recent_close <= 0.0 || lookback_close <= 0.0)
       return -DBL_MAX;
-   return (recent_close / lookback_close) - 1.0;
-  }
 
-int Strategy_CurrentSymbolIndex()
-  {
-   for(int i = 0; i < STRATEGY_UNIVERSE_SIZE; ++i)
-      if(g_universe_symbols[i] == _Symbol)
-         return i;
-   return -1;
+   return (recent_close / lookback_close) - 1.0;
   }
 
 bool Strategy_SymbolSelected(const string symbol)
   {
    double returns[4];
    int order[4];
+
    for(int i = 0; i < STRATEGY_UNIVERSE_SIZE; ++i)
      {
       returns[i] = Strategy_TotalReturn6M(g_universe_symbols[i]);
@@ -112,16 +115,22 @@ bool Strategy_SymbolSelected(const string symbol)
       const int idx = order[rank];
       if(g_universe_symbols[idx] != symbol)
          continue;
+      if(returns[idx] <= -DBL_MAX / 2.0)
+         return false;
       if(strategy_absolute_momentum && returns[idx] < 0.0)
          return false;
-      return (returns[idx] > -DBL_MAX / 2.0);
+      return true;
      }
+
    return false;
   }
 
 bool Strategy_HasOpenPosition()
   {
    const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -133,15 +142,14 @@ bool Strategy_HasOpenPosition()
          continue;
       return true;
      }
+
    return false;
   }
 
 // No Trade Filter (time, spread, news)
 bool Strategy_NoTradeFilter()
   {
-   if(Strategy_CurrentSymbolIndex() < 0)
-      return true;
-   return false;
+   return (Strategy_CurrentSymbolIndex() < 0);
   }
 
 // Trade Entry
@@ -161,9 +169,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const int rebalance_key = Strategy_RebalanceKey(iTime(_Symbol, PERIOD_D1, 1));
-   if(rebalance_key <= 0 || rebalance_key == g_last_rebalance_key)
+   if(rebalance_key <= 0 || rebalance_key == g_last_entry_rebalance_key)
       return false;
-   g_last_rebalance_key = rebalance_key;
+   g_last_entry_rebalance_key = rebalance_key;
 
    if(Strategy_HasOpenPosition())
       return false;
@@ -171,15 +179,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(entry <= 0.0 || point <= 0.0)
+   if(entry <= 0.0)
       return false;
 
    req.sl = QM_StopATR(_Symbol, QM_BUY, entry, strategy_atr_period, strategy_atr_sl_mult);
    if(req.sl <= 0.0 || req.sl >= entry)
       return false;
 
-   req.symbol_slot = qm_magic_slot_offset;
    return true;
   }
 
@@ -198,6 +204,7 @@ bool Strategy_ExitSignal()
       return false;
    if(!Strategy_HasOpenPosition())
       return false;
+
    return !Strategy_SymbolSelected(_Symbol);
   }
 
@@ -206,6 +213,10 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
   }
+
+// -----------------------------------------------------------------------------
+// Framework wiring - do NOT edit below this line unless you know why.
+// -----------------------------------------------------------------------------
 
 int OnInit()
   {
@@ -245,8 +256,10 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
+   // Per-tick: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
+   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -261,6 +274,9 @@ void OnTick()
         }
      }
 
+   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
+   // per-tick recompute mistakes - EntrySignal sees one new closed bar per
+   // call, not every incoming tick.
    if(!QM_IsNewBar())
       return;
 

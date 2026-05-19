@@ -72,9 +72,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(point <= 0.0 || ask <= 0.0 || bid <= 0.0)
       return false;
 
-   const double m5_close = iClose(_Symbol, PERIOD_M5, 1);
-   const double sma_h4 = QM_SMA(_Symbol, PERIOD_H4, strategy_sma_period, 1);
-   const double sma_h1 = QM_SMA(_Symbol, PERIOD_H1, strategy_sma_period, 1);
+   const double m5_close = QM_SMA(_Symbol, PERIOD_M5, 1, 1);
+   const double sma_h4 = QM_SMA(_Symbol, PERIOD_H4, strategy_sma_period, 0);
+   const double sma_h1 = QM_SMA(_Symbol, PERIOD_H1, strategy_sma_period, 0);
    const double sma_m5 = QM_SMA(_Symbol, PERIOD_M5, strategy_sma_period, 1);
    if(m5_close <= 0.0 || sma_h4 <= 0.0 || sma_h1 <= 0.0 || sma_m5 <= 0.0)
       return false;
@@ -115,7 +115,7 @@ bool Strategy_ExitSignal()
    if(strategy_sma_period <= 0)
       return false;
 
-   const double m5_close = iClose(_Symbol, PERIOD_M5, 1);
+   const double m5_close = QM_SMA(_Symbol, PERIOD_M5, 1, 1);
    const double sma_m5 = QM_SMA(_Symbol, PERIOD_M5, strategy_sma_period, 1);
    if(m5_close <= 0.0 || sma_m5 <= 0.0)
       return false;

@@ -3,16 +3,16 @@
 ; ea_id:        1087
 ; ea_slug:      aa-spx-20-252-ma
 ; ea_version:   v5.0
-; set_version:  s20260518-001
+; set_version:  s20260519-001
 ; symbol:       AUDUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   8
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   0d6790f5c00373bf25aa9520e28a355521e04a08bdacfb1f4bb98bd65f175428
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-18
+; date:         2026-05-19
 ;==========================================================
 qm_magic_slot_offset=8
 RISK_FIXED=1000

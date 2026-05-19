@@ -3,16 +3,16 @@
 ; ea_id:        1052
 ; ea_slug:      sidus-ema-method-v2
 ; ea_version:   v5.0
-; set_version:  s20260516-001
+; set_version:  s20260519-001
 ; symbol:       EURJPY.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   04a42044b1d56521c6f04e1d58b478d4dd8d389e6a32413f34719cb713858f7e
 ; author:       Development
-; date:         2026-05-16
+; date:         2026-05-19
 ;==========================================================
 qm_magic_slot_offset=4
 RISK_FIXED=1000

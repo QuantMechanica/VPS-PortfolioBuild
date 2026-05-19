@@ -21,17 +21,18 @@ input bool   qm_friday_close_enabled      = true;
 input int    qm_friday_close_hour_broker  = 21;
 
 input group "Strategy"
-input ENUM_TIMEFRAMES strategy_trend_tf       = PERIOD_H4;
-input int             strategy_ob_lookback    = 20;
-input int             strategy_bos_lookback   = 10;
-input int             strategy_atr_period     = 14;
+input ENUM_TIMEFRAMES strategy_trend_tf      = PERIOD_H4;
+input int             strategy_ob_lookback   = 20;
+input int             strategy_bos_lookback  = 10;
+input int             strategy_atr_period    = 14;
 input double          strategy_impulse_atr_mult = 1.5;
 input int             strategy_sl_offset_points = 10;
-input double          strategy_rr             = 4.0;
+input double          strategy_rr            = 4.0;
 input int             strategy_session_start_hour = 7;
 input int             strategy_session_end_hour   = 17;
 input int             strategy_max_spread_points  = 20;
-input bool            strategy_trailing_after_1r  = true;
+input bool            strategy_move_be_after_1r   = true;
+input int             strategy_state_max_age_bars = 48;
 
 struct SMC_OrderBlock
   {
@@ -41,6 +42,19 @@ struct SMC_OrderBlock
    double   low;
    datetime time;
   };
+
+datetime       g_last_advanced_bar = 0;
+int            g_cached_trend = 0;
+bool           g_cached_bos_up = false;
+bool           g_cached_bos_down = false;
+bool           g_cached_induce_up = false;
+bool           g_cached_induce_down = false;
+datetime       g_cached_bos_up_time = 0;
+datetime       g_cached_bos_down_time = 0;
+datetime       g_cached_induce_up_time = 0;
+datetime       g_cached_induce_down_time = 0;
+SMC_OrderBlock g_cached_bullish_ob;
+SMC_OrderBlock g_cached_bearish_ob;
 
 int HourOf(const datetime t)
   {
@@ -75,21 +89,55 @@ double LowestLowTF(const ENUM_TIMEFRAMES tf, const int start_shift, const int ba
    return lo;
   }
 
-bool ReadATR(const int shift, double &atr_value)
+void ClearCachedState()
   {
-   atr_value = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, shift);
-   if(atr_value <= 0.0)
-      return false;
-   return true;
+   g_cached_trend = 0;
+   g_cached_bos_up = false;
+   g_cached_bos_down = false;
+   g_cached_induce_up = false;
+   g_cached_induce_down = false;
+   g_cached_bos_up_time = 0;
+   g_cached_bos_down_time = 0;
+   g_cached_induce_up_time = 0;
+   g_cached_induce_down_time = 0;
+   g_cached_bullish_ob.valid = false;
+   g_cached_bearish_ob.valid = false;
   }
 
-int TrendDirection()
+bool StateExpired(const datetime state_time)
+  {
+   if(state_time <= 0)
+      return true;
+
+   const int max_age = MathMax(1, strategy_state_max_age_bars);
+   const int shift = iBarShift(_Symbol, _Period, state_time, true);
+   return (shift < 0 || shift > max_age);
+  }
+
+void PruneCachedState()
+  {
+   if(g_cached_bos_up && StateExpired(g_cached_bos_up_time))
+      g_cached_bos_up = false;
+   if(g_cached_bos_down && StateExpired(g_cached_bos_down_time))
+      g_cached_bos_down = false;
+   if(g_cached_induce_up && StateExpired(g_cached_induce_up_time))
+      g_cached_induce_up = false;
+   if(g_cached_induce_down && StateExpired(g_cached_induce_down_time))
+      g_cached_induce_down = false;
+   if(g_cached_bullish_ob.valid && StateExpired(g_cached_bullish_ob.time))
+      g_cached_bullish_ob.valid = false;
+   if(g_cached_bearish_ob.valid && StateExpired(g_cached_bearish_ob.time))
+      g_cached_bearish_ob.valid = false;
+  }
+
+int CachedTrendDirection()
   {
    const int n = MathMax(3, strategy_bos_lookback);
    const double recent_high = HighestHighTF(strategy_trend_tf, 1, n);
    const double prior_high = HighestHighTF(strategy_trend_tf, 1 + n, n);
    const double recent_low = LowestLowTF(strategy_trend_tf, 1, n);
    const double prior_low = LowestLowTF(strategy_trend_tf, 1 + n, n);
+
    if(recent_high <= 0.0 || prior_high <= 0.0 || recent_low <= 0.0 || prior_low <= 0.0)
       return 0;
    if(recent_high > prior_high && recent_low > prior_low)
@@ -97,40 +145,6 @@ int TrendDirection()
    if(recent_high < prior_high && recent_low < prior_low)
       return -1;
    return 0;
-  }
-
-bool BreakOfStructureUp()
-  {
-   const int n = MathMax(3, strategy_bos_lookback);
-   const double close1 = iClose(_Symbol, _Period, 1);
-   const double prior_high = HighestHighTF((ENUM_TIMEFRAMES)_Period, 2, n);
-   return (close1 > 0.0 && prior_high > 0.0 && close1 > prior_high);
-  }
-
-bool BreakOfStructureDown()
-  {
-   const int n = MathMax(3, strategy_bos_lookback);
-   const double close1 = iClose(_Symbol, _Period, 1);
-   const double prior_low = LowestLowTF((ENUM_TIMEFRAMES)_Period, 2, n);
-   return (close1 > 0.0 && prior_low > 0.0 && close1 < prior_low);
-  }
-
-bool HasBullishInducement()
-  {
-   const int n = MathMax(3, MathMin(strategy_bos_lookback, strategy_ob_lookback));
-   const double prior_low = LowestLowTF((ENUM_TIMEFRAMES)_Period, 3, n);
-   const double low2 = iLow(_Symbol, _Period, 2);
-   const double close2 = iClose(_Symbol, _Period, 2);
-   return (prior_low > 0.0 && low2 < prior_low && close2 > prior_low);
-  }
-
-bool HasBearishInducement()
-  {
-   const int n = MathMax(3, MathMin(strategy_bos_lookback, strategy_ob_lookback));
-   const double prior_high = HighestHighTF((ENUM_TIMEFRAMES)_Period, 3, n);
-   const double high2 = iHigh(_Symbol, _Period, 2);
-   const double close2 = iClose(_Symbol, _Period, 2);
-   return (prior_high > 0.0 && high2 > prior_high && close2 < prior_high);
   }
 
 bool FindOrderBlock(const bool bullish, SMC_OrderBlock &ob)
@@ -141,8 +155,8 @@ bool FindOrderBlock(const bool bullish, SMC_OrderBlock &ob)
    ob.low = 0.0;
    ob.time = 0;
 
-   double atr = 0.0;
-   if(!ReadATR(1, atr))
+   const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
+   if(atr <= 0.0)
       return false;
 
    const int lookback = MathMax(3, strategy_ob_lookback);
@@ -152,16 +166,15 @@ bool FindOrderBlock(const bool bullish, SMC_OrderBlock &ob)
       const double close = iClose(_Symbol, _Period, i);
       const double high = iHigh(_Symbol, _Period, i);
       const double low = iLow(_Symbol, _Period, i);
-      const double impulse_high = iHigh(_Symbol, _Period, i - 1);
-      const double impulse_low = iLow(_Symbol, _Period, i - 1);
       const double impulse_open = iOpen(_Symbol, _Period, i - 1);
       const double impulse_close = iClose(_Symbol, _Period, i - 1);
+      const double impulse_high = iHigh(_Symbol, _Period, i - 1);
+      const double impulse_low = iLow(_Symbol, _Period, i - 1);
       if(open <= 0.0 || close <= 0.0 || high <= 0.0 || low <= 0.0 ||
-         impulse_high <= 0.0 || impulse_low <= 0.0 || impulse_open <= 0.0 || impulse_close <= 0.0)
+         impulse_open <= 0.0 || impulse_close <= 0.0 || impulse_high <= 0.0 || impulse_low <= 0.0)
          continue;
 
-      const double impulse_range = impulse_high - impulse_low;
-      if(impulse_range < atr * strategy_impulse_atr_mult)
+      if((impulse_high - impulse_low) < atr * strategy_impulse_atr_mult)
          continue;
 
       if(bullish && close < open && impulse_close > impulse_open && impulse_close > high)
@@ -188,12 +201,74 @@ bool FindOrderBlock(const bool bullish, SMC_OrderBlock &ob)
    return false;
   }
 
+void AdvanceState_OnNewBar()
+  {
+   const datetime closed_bar = iTime(_Symbol, _Period, 1);
+   if(closed_bar <= 0 || closed_bar == g_last_advanced_bar)
+      return;
+
+   g_last_advanced_bar = closed_bar;
+   PruneCachedState();
+
+   const int n = MathMax(3, strategy_bos_lookback);
+   const double close1 = iClose(_Symbol, _Period, 1);
+   const double prior_high = HighestHighTF((ENUM_TIMEFRAMES)_Period, 2, n);
+   const double prior_low = LowestLowTF((ENUM_TIMEFRAMES)_Period, 2, n);
+   if(close1 <= 0.0 || prior_high <= 0.0 || prior_low <= 0.0)
+      return;
+
+   g_cached_trend = CachedTrendDirection();
+   if(close1 > prior_high)
+     {
+      g_cached_bos_up = true;
+      g_cached_bos_down = false;
+      g_cached_bos_up_time = closed_bar;
+      g_cached_bos_down_time = 0;
+     }
+   else if(close1 < prior_low)
+     {
+      g_cached_bos_down = true;
+      g_cached_bos_up = false;
+      g_cached_bos_down_time = closed_bar;
+      g_cached_bos_up_time = 0;
+     }
+
+   const int induce_lookback = MathMax(3, MathMin(strategy_bos_lookback, strategy_ob_lookback));
+   const double low2 = iLow(_Symbol, _Period, 2);
+   const double high2 = iHigh(_Symbol, _Period, 2);
+   const double close2 = iClose(_Symbol, _Period, 2);
+   const double induce_low = LowestLowTF((ENUM_TIMEFRAMES)_Period, 3, induce_lookback);
+   const double induce_high = HighestHighTF((ENUM_TIMEFRAMES)_Period, 3, induce_lookback);
+   if(induce_low > 0.0 && low2 < induce_low && close2 > induce_low)
+     {
+      g_cached_induce_up = true;
+      g_cached_induce_down = false;
+      g_cached_induce_up_time = iTime(_Symbol, _Period, 2);
+      g_cached_induce_down_time = 0;
+     }
+   else if(induce_high > 0.0 && high2 > induce_high && close2 < induce_high)
+     {
+      g_cached_induce_down = true;
+      g_cached_induce_up = false;
+      g_cached_induce_down_time = iTime(_Symbol, _Period, 2);
+      g_cached_induce_up_time = 0;
+     }
+
+   SMC_OrderBlock bullish_ob;
+   SMC_OrderBlock bearish_ob;
+   if(FindOrderBlock(true, bullish_ob))
+      g_cached_bullish_ob = bullish_ob;
+   if(FindOrderBlock(false, bearish_ob))
+      g_cached_bearish_ob = bearish_ob;
+  }
+
 bool GetOurPosition(ulong &ticket, double &open_price, double &sl, ENUM_POSITION_TYPE &ptype)
   {
    ticket = 0;
    open_price = 0.0;
    sl = 0.0;
    ptype = POSITION_TYPE_BUY;
+
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
       return false;
@@ -222,13 +297,6 @@ bool GetOurPosition(ulong &ticket, double &open_price, double &sl, ENUM_POSITION
 // No Trade Filter (time, spread, news)
 bool Strategy_NoTradeFilter()
   {
-   if(!QM_KillSwitchCheck())
-      return true;
-   if(!QM_NewsAllowsTrade(_Symbol, TimeCurrent(), qm_news_mode))
-      return true;
-   if(QM_FrameworkHandleFridayClose())
-      return true;
-
    const int hour = HourOf(TimeCurrent());
    if(hour < strategy_session_start_hour || hour >= strategy_session_end_hour)
       return true;
@@ -251,43 +319,36 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   const int trend = TrendDirection();
+   AdvanceState_OnNewBar();
+
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    const double close1 = iClose(_Symbol, _Period, 1);
    const double close2 = iClose(_Symbol, _Period, 2);
-   if(close1 <= 0.0 || close2 <= 0.0)
+   if(point <= 0.0 || ask <= 0.0 || bid <= 0.0 || close1 <= 0.0 || close2 <= 0.0 || strategy_rr <= 0.0)
       return false;
 
-   SMC_OrderBlock ob;
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(point <= 0.0)
-      return false;
-
-   if(trend > 0 && BreakOfStructureUp() && HasBullishInducement() && FindOrderBlock(true, ob))
+   if(g_cached_trend > 0 && g_cached_bos_up && g_cached_induce_up && g_cached_bullish_ob.valid)
      {
-      if(close2 >= ob.low && close2 <= ob.high && close1 > ob.high)
+      if(close2 >= g_cached_bullish_ob.low && close2 <= g_cached_bullish_ob.high && close1 > g_cached_bullish_ob.high)
         {
-         const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-         if(ask <= 0.0)
-            return false;
          req.type = QM_BUY;
          req.price = ask;
-         req.sl = ob.low - (strategy_sl_offset_points * point);
+         req.sl = g_cached_bullish_ob.low - (strategy_sl_offset_points * point);
          req.tp = ask + ((ask - req.sl) * strategy_rr);
          req.reason = "SMC_BULLISH_OB_BOS_INDUCEMENT";
          return (req.sl > 0.0 && req.sl < ask && req.tp > ask);
         }
      }
 
-   if(trend < 0 && BreakOfStructureDown() && HasBearishInducement() && FindOrderBlock(false, ob))
+   if(g_cached_trend < 0 && g_cached_bos_down && g_cached_induce_down && g_cached_bearish_ob.valid)
      {
-      if(close2 <= ob.high && close2 >= ob.low && close1 < ob.low)
+      if(close2 <= g_cached_bearish_ob.high && close2 >= g_cached_bearish_ob.low && close1 < g_cached_bearish_ob.low)
         {
-         const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-         if(bid <= 0.0)
-            return false;
          req.type = QM_SELL;
          req.price = bid;
-         req.sl = ob.high + (strategy_sl_offset_points * point);
+         req.sl = g_cached_bearish_ob.high + (strategy_sl_offset_points * point);
          req.tp = bid - ((req.sl - bid) * strategy_rr);
          req.reason = "SMC_BEARISH_OB_BOS_INDUCEMENT";
          return (req.sl > bid && req.tp > 0.0 && req.tp < bid);
@@ -300,7 +361,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Trade Management
 void Strategy_ManageOpenPosition()
   {
-   if(!strategy_trailing_after_1r)
+   if(!strategy_move_be_after_1r)
       return;
 
    ulong ticket = 0;
@@ -321,14 +382,14 @@ void Strategy_ManageOpenPosition()
       const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       const double risk = open_price - sl;
       if(risk > 0.0 && bid >= open_price + risk && sl < open_price)
-         QM_TM_MoveSL(ticket, NormalizeDouble(open_price + point, _Digits), "trail_after_1r");
+         QM_TM_MoveSL(ticket, NormalizeDouble(open_price + point, _Digits), "move_be_after_1r");
      }
    else if(ptype == POSITION_TYPE_SELL)
      {
       const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       const double risk = sl - open_price;
       if(risk > 0.0 && ask <= open_price - risk && sl > open_price)
-         QM_TM_MoveSL(ticket, NormalizeDouble(open_price - point, _Digits), "trail_after_1r");
+         QM_TM_MoveSL(ticket, NormalizeDouble(open_price - point, _Digits), "move_be_after_1r");
      }
   }
 
@@ -341,7 +402,7 @@ bool Strategy_ExitSignal()
 // News Filter Hook (callable for P8 News Impact phase)
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return QM_NewsAllowsTrade(_Symbol, broker_time, qm_news_mode);
+   return false;
   }
 
 int OnInit()
@@ -368,24 +429,37 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   if(!QM_KillSwitchCheck())
+      return;
+
+   const datetime broker_now = TimeCurrent();
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+   if(!QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode))
+      return;
+   if(QM_FrameworkHandleFridayClose())
+      return;
+
    if(Strategy_NoTradeFilter())
       return;
 
-   ulong ticket = 0;
-   double open_price = 0.0;
-   double sl = 0.0;
-   ENUM_POSITION_TYPE ptype = POSITION_TYPE_BUY;
-   const bool has_position = GetOurPosition(ticket, open_price, sl, ptype);
-   if(has_position)
-      Strategy_ManageOpenPosition();
-
-   if(!QM_IsNewBar())
-      return;
+   Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
-      return;
+     {
+      const int magic = QM_FrameworkMagic();
+      for(int i = PositionsTotal() - 1; i >= 0; --i)
+        {
+         const ulong ticket = PositionGetTicket(i);
+         if(!PositionSelectByTicket(ticket))
+            continue;
+         if(PositionGetInteger(POSITION_MAGIC) != magic)
+            continue;
+         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+        }
+     }
 
-   if(has_position)
+   if(!QM_IsNewBar())
       return;
 
    QM_EntryRequest req;

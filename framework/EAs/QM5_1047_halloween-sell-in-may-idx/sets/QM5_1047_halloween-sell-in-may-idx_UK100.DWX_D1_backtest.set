@@ -1,18 +1,18 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        1047
 ; ea_slug:      halloween-sell-in-may-idx
 ; ea_version:   v5.0
-; set_version:  s20260516-001
+; set_version:  s20260517-001
 ; symbol:       UK100.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   790835b5c3e6a6f02c11142f32fba44cd93e97d083260d7e7bca9d91a09877a2
 ; author:       Development
-; date:         2026-05-16
+; date:         2026-05-17
 ;==========================================================
 qm_magic_slot_offset=3
 RISK_FIXED=1000

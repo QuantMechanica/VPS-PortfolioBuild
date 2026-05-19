@@ -3,16 +3,16 @@
 ; ea_id:        1119
 ; ea_slug:      fps-toms-ma-rsi-h1
 ; ea_version:   v5.0
-; set_version:  s20260518-001
+; set_version:  s20260519-001
 ; symbol:       GBPCAD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   2770ca4a1bc861d44f731f7d1b92a744f8e05af136df15e2e933a656ab8646bd
 ; author:       Development
-; date:         2026-05-18
+; date:         2026-05-19
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=1000

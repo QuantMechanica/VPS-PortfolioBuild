@@ -3,16 +3,16 @@
 ; ea_id:        1087
 ; ea_slug:      aa-spx-20-252-ma
 ; ea_version:   v5.0
-; set_version:  s20260518-001
+; set_version:  s20260519-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   1bf93841acb5f609eb632ea698bc68f940639b2a0d34885be3dc0a1182b5b7de
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-18
+; date:         2026-05-19
 ;==========================================================
 qm_magic_slot_offset=3
 RISK_FIXED=1000

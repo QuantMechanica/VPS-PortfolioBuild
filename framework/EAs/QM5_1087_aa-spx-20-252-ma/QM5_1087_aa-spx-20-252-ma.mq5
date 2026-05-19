@@ -35,28 +35,28 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                    = 1087;
-input int    qm_magic_slot_offset        = 0;
+input int    qm_ea_id                   = 1087;
+input int    qm_magic_slot_offset       = 0;
 
 input group "Risk"
-input double RISK_PERCENT                = 0.0;
-input double RISK_FIXED                  = 1000.0;
-input double PORTFOLIO_WEIGHT            = 1.0;
+input double RISK_PERCENT               = 0.0;
+input double RISK_FIXED                 = 1000.0;
+input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsMode qm_news_mode           = QM_NEWS_OFF;
+input QM_NewsMode qm_news_mode          = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled     = true;
+input bool   qm_friday_close_enabled    = false;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Strategy"
-input int    strategy_fast_sma_days      = 20;
-input int    strategy_slow_sma_days      = 252;
-input int    strategy_min_daily_bars     = 252;
-input int    strategy_atr_period         = 14;
-input double strategy_atr_sl_mult        = 1.5;
-input int    strategy_max_spread_points  = 0;
+input int    strategy_fast_sma_days     = 20;
+input int    strategy_slow_sma_days     = 252;
+input int    strategy_min_daily_bars    = 252;
+input int    strategy_atr_period        = 14;
+input double strategy_atr_sl_mult       = 1.5;
+input int    strategy_max_spread_points = 0;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -66,11 +66,9 @@ input int    strategy_max_spread_points  = 0;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   // Card: daily close evaluation only.
    if(_Period != PERIOD_D1)
       return true;
 
-   // Card: optional no-trade filter around extreme spread at daily close.
    if(strategy_max_spread_points > 0)
      {
       const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
@@ -96,6 +94,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(_Period != PERIOD_D1)
       return false;
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+         return false;
+     }
    if(strategy_fast_sma_days <= 0 || strategy_slow_sma_days <= 0 || strategy_atr_period <= 0)
       return false;
 
@@ -135,20 +146,23 @@ bool Strategy_ExitSignal()
       return false;
    if(strategy_fast_sma_days <= 0 || strategy_slow_sma_days <= 0)
       return false;
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
 
    bool has_position = false;
-   const int magic = QM_FrameworkMagic();
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
          continue;
       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      has_position = true;
-      break;
+      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+        {
+         has_position = true;
+         break;
+        }
      }
    if(!has_position)
       return false;

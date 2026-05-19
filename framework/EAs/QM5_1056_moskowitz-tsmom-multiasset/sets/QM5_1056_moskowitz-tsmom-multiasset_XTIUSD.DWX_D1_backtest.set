@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        1056
 ; ea_slug:      moskowitz-tsmom-multiasset
@@ -10,7 +10,7 @@
 ; magic_slot:   6
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   586eee39c190ab271e17f524ebd4c523b3594c8449bc466fcd755dad992b6b07
 ; author:       Development
 ; date:         2026-05-17
 ;==========================================================

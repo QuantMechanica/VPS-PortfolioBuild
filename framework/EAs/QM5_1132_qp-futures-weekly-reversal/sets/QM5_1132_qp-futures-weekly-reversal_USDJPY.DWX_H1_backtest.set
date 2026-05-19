@@ -1,0 +1,22 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1132
+; ea_slug:      qp-futures-weekly-reversal
+; ea_version:   v5.0
+; set_version:  s20260518-001
+; symbol:       USDJPY.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   31
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   2d64e02f75929f6560dcaa87047c205388c56f1ca623b56cf2b69deb979e3b72
+; author:       Development
+; date:         2026-05-18
+;==========================================================
+qm_magic_slot_offset=31
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=not_found
