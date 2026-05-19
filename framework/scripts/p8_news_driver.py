@@ -30,6 +30,15 @@ REQUIRED_CALENDAR_COLUMNS = [
     "forecast",
     "previous",
 ]
+CALENDAR_ALIASES = {
+    "timestamp_utc": ("timestamp_utc", "datetime", "DateTime_UTC", "Date"),
+    "currency": ("currency", "Currency"),
+    "impact": ("impact", "Impact"),
+    "event": ("event", "event_name", "Event"),
+    "actual": ("actual", "Actual"),
+    "forecast": ("forecast", "Forecast"),
+    "previous": ("previous", "Previous"),
+}
 FALLBACK_SYMBOL = "ALL_SYMBOLS"
 
 MODE_ALIASES = {
@@ -70,7 +79,10 @@ def validate_calendar(path: Path) -> dict[str, object]:
     if not rows:
         raise ValueError(f"Calendar CSV has no rows: {path}")
     first = rows[0]
-    missing_cols = [col for col in REQUIRED_CALENDAR_COLUMNS if col not in first]
+    missing_cols = [
+        col for col in REQUIRED_CALENDAR_COLUMNS
+        if not any(alias in first for alias in CALENDAR_ALIASES[col])
+    ]
     if missing_cols:
         raise ValueError(f"Calendar CSV missing required columns: {', '.join(missing_cols)}")
 
@@ -79,19 +91,21 @@ def validate_calendar(path: Path) -> dict[str, object]:
     seen = set()
     duplicates = 0
     for row in rows:
-        ts = str(row.get("timestamp_utc", "")).strip()
+        ts = str(next((row.get(alias) for alias in CALENDAR_ALIASES["timestamp_utc"] if row.get(alias)), "")).strip()
         try:
             dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
-            if dt.utcoffset() is None or dt.utcoffset().total_seconds() != 0:
+            if dt.utcoffset() is not None and dt.utcoffset().total_seconds() != 0:
                 bad_ts += 1
         except ValueError:
             bad_ts += 1
 
-        impact = str(row.get("impact", "")).strip().lower()
+        impact = str(next((row.get(alias) for alias in CALENDAR_ALIASES["impact"] if row.get(alias)), "")).strip().lower()
         if impact not in {"low", "medium", "high"}:
             impact_bad += 1
 
-        key = (ts, str(row.get("currency", "")).strip().upper(), str(row.get("event", "")).strip())
+        currency = str(next((row.get(alias) for alias in CALENDAR_ALIASES["currency"] if row.get(alias)), "")).strip().upper()
+        event = str(next((row.get(alias) for alias in CALENDAR_ALIASES["event"] if row.get(alias)), "")).strip()
+        key = (ts, currency, event)
         if key in seen:
             duplicates += 1
         else:

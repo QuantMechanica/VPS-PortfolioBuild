@@ -49,14 +49,19 @@ REAL_PHASE_RUNNER_PHASES = ("P3.5", "P4", "P5", "P5b", "P5c", "P6", "P7", "P8")
 PHASE_RUNNER_SCRIPTS = {
     "P3.5": "p35_csr_runner.py",
     "P4": "p4_walk_forward.py",
-    "P5": "p5_stress_driver.py",
-    "P5b": "p5b_noise_driver.py",
+    "P5": "p5_stress_pipeline.py",
+    "P5b": "p5b_calibrated_noise.py",
     "P5c": "p5c_crisis_slices.py",
-    "P6": "p6_multiseed_driver.py",
+    "P6": "p6_multiseed.py",
     "P7": "p7_statval.py",
     "P8": "p8_news_driver.py",
 }
 NEWS_MATRIX_FALLBACK = Path(r"D:\QM\data\news_calendar\news_matrix.csv")
+NEWS_CALENDAR_CANDIDATES = (
+    Path(r"D:\QM\data\news_calendar\news_calendar.csv"),
+    Path(r"D:\QM\data\news_calendar\news_calendar_2015_2025.csv"),
+    Path(r"D:\QM\data\news_calendar\forex_factory_calendar_clean.csv"),
+)
 P5_REQUIRED_OOS_FROM_YEAR = 2023
 P5_REQUIRED_OOS_TO_YEAR = 2025
 P5PLUS_MAX_DRAWDOWN_PCT = 20.0
@@ -1551,11 +1556,14 @@ def _phase_runner_inputs(ea_id: str, phase: str) -> dict[str, Any]:
     if phase_key == "P5":
         inputs: dict[str, Path] = {"calibration_json": pipeline_dir / "P4" / "calibration.json"}
     elif phase_key == "P5b":
-        inputs = {"calibration_json": pipeline_dir / "P4" / "calibration.json"}
+        inputs = {
+            "calibration_json": pipeline_dir / "P4" / "calibration.json",
+            "trials_csv": pipeline_dir / "P5b" / "p5b_trials.csv",
+        }
     elif phase_key == "P5c":
         inputs = {"slices_csv": pipeline_dir / "P5" / "p5_slices.csv"}
     elif phase_key == "P6":
-        inputs = {}
+        inputs = {"seeds_csv": pipeline_dir / "P6" / "p6_seeds.csv"}
     elif phase_key == "P7":
         inputs = {
             "sweep_pass_rows": pipeline_dir / "P3" / "sweep_pass_rows.csv",
@@ -1570,6 +1578,123 @@ def _phase_runner_inputs(ea_id: str, phase: str) -> dict[str, Any]:
     if missing:
         return {**inputs, "missing": missing}
     return inputs
+
+
+def _run_phase_input_generator(cmd: list[str], log_path: Path) -> bool:
+    creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    with log_path.open("a", encoding="utf-8", newline="\n") as log:
+        log.write(f"{utc_now()} generator.cmd={' '.join(cmd)}\n")
+        proc = subprocess.run(
+            cmd,
+            cwd=str(REPO_ROOT),
+            stdout=log,
+            stderr=subprocess.STDOUT,
+            stdin=subprocess.DEVNULL,
+            creationflags=creationflags,
+            timeout=120,
+        )
+        log.write(f"{utc_now()} generator.exit={proc.returncode}\n")
+        return proc.returncode == 0
+
+
+def _ensure_phase_runner_inputs(root: Path, item_row: sqlite3.Row, log_path: Path) -> None:
+    ea_id = str(item_row["ea_id"])
+    phase = str(item_row["phase"])
+    symbol = str(item_row["symbol"] or "").strip()
+    phase_dir = _ea_pipeline_dir(ea_id)
+
+    if phase in {"P5", "P5b"} and not (phase_dir / "P4" / "calibration.json").exists():
+        if P5_CALIBRATION_JSON.exists() and symbol:
+            _run_phase_input_generator(
+                [
+                    sys.executable,
+                    str(REPO_ROOT / "framework" / "scripts" / "p5_calibration_extractor.py"),
+                    "--ea", ea_id,
+                    "--symbols", symbol,
+                    "--source-calibration", str(P5_CALIBRATION_JSON),
+                    "--out-prefix", str(PIPELINE_REPORT_ROOT),
+                ],
+                log_path,
+            )
+
+    if phase == "P5b" and not (phase_dir / "P5b" / "p5b_trials.csv").exists():
+        calibration = phase_dir / "P4" / "calibration.json"
+        if calibration.exists() and symbol:
+            _run_phase_input_generator(
+                [
+                    sys.executable,
+                    str(REPO_ROOT / "framework" / "scripts" / "p5b_noise_driver.py"),
+                    "--ea", ea_id,
+                    "--symbol", symbol,
+                    "--calibration-json", str(calibration),
+                    "--paths", "200",
+                    "--out-prefix", str(PIPELINE_REPORT_ROOT),
+                ],
+                log_path,
+            )
+
+    if phase == "P5c" and not (phase_dir / "P5" / "p5_slices.csv").exists():
+        cmd = [
+            sys.executable,
+            str(REPO_ROOT / "framework" / "scripts" / "p5c_slices_generator.py"),
+            "--ea", ea_id,
+            "--out-prefix", str(PIPELINE_REPORT_ROOT),
+        ]
+        clean = phase_dir / "P5" / "p5_clean_metrics.json"
+        stress = phase_dir / "P5" / "p5_stress_metrics.json"
+        if clean.exists():
+            cmd.extend(["--clean-metrics-json", str(clean)])
+        if stress.exists():
+            cmd.extend(["--stress-metrics-json", str(stress)])
+        _run_phase_input_generator(cmd, log_path)
+
+    if phase == "P7" and not (phase_dir / "P3" / "sweep_pass_rows.csv").exists():
+        p3_report = phase_dir / "P3" / "report.csv"
+        p2_report = phase_dir / "P2" / "report.csv"
+        if p3_report.exists():
+            cmd = [
+                sys.executable,
+                str(REPO_ROOT / "framework" / "scripts" / "p7_sweep_pass_rows_generator.py"),
+                "--ea", ea_id,
+                "--p3-report", str(p3_report),
+                "--out-prefix", str(PIPELINE_REPORT_ROOT),
+            ]
+            if p2_report.exists():
+                cmd.extend(["--p2-report", str(p2_report)])
+            _run_phase_input_generator(cmd, log_path)
+
+    if phase == "P6" and not (phase_dir / "P6" / "p6_seeds.csv").exists():
+        if symbol:
+            cmd = [
+                sys.executable,
+                str(REPO_ROOT / "framework" / "scripts" / "p6_multiseed_driver.py"),
+                "--ea", ea_id,
+                "--symbol", symbol,
+                "--year", "2024",
+                "--period", _detect_ea_period(ea_id),
+                "--seeds", "42,17,99,7,2026",
+                "--out-prefix", str(PIPELINE_REPORT_ROOT),
+                "--allow-running-terminal",
+                "--max-parallel", "5",
+            ]
+            setfile = str(item_row["setfile_path"] or "").strip()
+            if setfile:
+                cmd.extend(["--base-setfile", setfile])
+            _run_phase_input_generator(cmd, log_path)
+
+    if phase == "P8" and not (phase_dir / "P7" / "news_matrix.csv").exists():
+        cmd = [
+            sys.executable,
+            str(REPO_ROOT / "framework" / "scripts" / "p8_news_matrix_generator.py"),
+            "--ea", ea_id,
+            "--symbol", symbol or "ALL_SYMBOLS",
+            "--out-prefix", str(PIPELINE_REPORT_ROOT),
+        ]
+        metrics = phase_dir / "P5" / "p5_stress_metrics.json"
+        if metrics.exists():
+            cmd.extend(["--metrics-json", str(metrics)])
+        _run_phase_input_generator(cmd, log_path)
 
 
 def _load_csv_dicts(path: Path) -> list[dict[str, str]]:
@@ -1639,6 +1764,13 @@ def _phase_runner_script_path(phase: str) -> Path | None:
     return path if path.exists() else None
 
 
+def _news_calendar_csv() -> Path:
+    for path in NEWS_CALENDAR_CANDIDATES:
+        if path.exists():
+            return path
+    return NEWS_CALENDAR_CANDIDATES[0]
+
+
 def _remove_cmd_arg(cmd: list[str], flag: str) -> None:
     while flag in cmd:
         idx = cmd.index(flag)
@@ -1669,6 +1801,12 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
     ]
     if phase == "P3.5":
         cmd.extend(["--symbols", symbol, "--from-year", "2017", "--to-year", "2022"])
+        p2_report = _ea_pipeline_dir(ea_id) / "P2" / "report.csv"
+        p3_report = _ea_pipeline_dir(ea_id) / "P3" / "report.csv"
+        if p2_report.exists():
+            cmd.extend(["--baseline-csv", str(p2_report)])
+        if p3_report.exists():
+            cmd.extend(["--csr-results-csv", str(p3_report)])
     elif phase == "P4":
         cmd.extend([
             "--symbols", symbol,
@@ -1684,10 +1822,12 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
             "--year", "2024",
             "--calibration-json", str(inputs["calibration_json"]),
             "--base-setfile", item_row["setfile_path"],
+            "--allow-running-terminal",
+            "--max-parallel", "5",
         ])
         _remove_cmd_arg(cmd, "--setfile")
     elif phase == "P5b":
-        cmd.extend(["--calibration-json", str(inputs["calibration_json"])])
+        cmd.extend(["--trials-csv", str(inputs["trials_csv"]), "--calibration-json", str(inputs["calibration_json"])])
         _remove_cmd_arg(cmd, "--period")
         _remove_cmd_arg(cmd, "--setfile")
     elif phase == "P5c":
@@ -1697,10 +1837,11 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
         _remove_cmd_arg(cmd, "--setfile")
     elif phase == "P6":
         cmd.extend([
-            "--year", "2024",
+            "--seeds-csv", str(inputs["seeds_csv"]),
             "--seeds", "42,17,99,7,2026",
-            "--base-setfile", item_row["setfile_path"],
         ])
+        _remove_cmd_arg(cmd, "--symbol")
+        _remove_cmd_arg(cmd, "--period")
         _remove_cmd_arg(cmd, "--setfile")
     elif phase == "P7":
         cmd.extend([
@@ -1711,7 +1852,7 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
         _remove_cmd_arg(cmd, "--period")
         _remove_cmd_arg(cmd, "--setfile")
     elif phase == "P8":
-        cmd.extend(["--news-matrix", str(inputs["news_matrix"]), "--mode", "all"])
+        cmd.extend(["--news-matrix", str(inputs["news_matrix"]), "--calendar-csv", str(_news_calendar_csv()), "--mode", "all"])
         _remove_cmd_arg(cmd, "--symbol")
         _remove_cmd_arg(cmd, "--period")
         _remove_cmd_arg(cmd, "--setfile")
@@ -1726,6 +1867,7 @@ def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
     log_path = root / "logs" / f"work_item_{item_row['id']}.log"
     log_path.parent.mkdir(parents=True, exist_ok=True)
 
+    _ensure_phase_runner_inputs(root, item_row, log_path)
     inputs = _phase_runner_inputs(item_row["ea_id"], phase)
     if inputs.get("missing"):
         msg = f"waiting for required phase input(s): {', '.join(inputs['missing'])}"
