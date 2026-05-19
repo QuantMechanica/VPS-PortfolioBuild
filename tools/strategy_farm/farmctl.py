@@ -4313,7 +4313,7 @@ def pump(root: Path) -> dict[str, Any]:
     except Exception:
         active_claude_count = 0
     result["claude_active_before"] = active_claude_count
-    MAX_PARALLEL_CLAUDE = 6
+    MAX_PARALLEL_CLAUDE = 3  # OWNER 2026-05-19: 6->3 reduce API burn; prefer Codex for new spawns
     if active_claude_count < MAX_PARALLEL_CLAUDE:
         with connect(root) as conn:
             done_no_review = conn.execute(
