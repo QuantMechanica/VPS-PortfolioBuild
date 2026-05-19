@@ -3770,13 +3770,18 @@ def _enqueue_p2_from_review(root: Path, review_task_id: str) -> int:
 
 
 def _auto_create_ea_review_for_unenqueued_eas(root: Path, con: sqlite3.Connection, limit: int = 3) -> list[dict[str, Any]]:
-    """Auto-create done ea_review rows for built EAs from auto-generated builds."""
+    """Auto-create done ea_review rows for built EAs ready for P2."""
     out: list[dict[str, Any]] = []
     rows = con.execute(
         """
         SELECT * FROM tasks
         WHERE kind='build_ea'
-          AND payload_json LIKE '%auto_generated%'
+          AND status='done'
+          AND (
+            payload_json LIKE '%auto_generated%'
+            OR payload_json LIKE '%salvaged_2026-05-19%'
+            OR payload_json LIKE '%smoke_skipped_reason%'
+          )
         ORDER BY updated_at ASC
         """
     ).fetchall()
@@ -3784,7 +3789,12 @@ def _auto_create_ea_review_for_unenqueued_eas(root: Path, con: sqlite3.Connectio
         if len(out) >= limit:
             break
         payload = json.loads(row["payload_json"] or "{}")
-        if not payload.get("auto_generated"):
+        review_candidate = (
+            payload.get("auto_generated")
+            or payload.get("salvaged_2026-05-19")
+            or payload.get("smoke_skipped_reason")
+        )
+        if not review_candidate:
             continue
         ea_id = payload.get("ea_id") or row["card_id"]
         if not ea_id:
@@ -3807,6 +3817,9 @@ def _auto_create_ea_review_for_unenqueued_eas(root: Path, con: sqlite3.Connectio
             "build_task_id": row["id"],
             "auto_generated": True,
             "auto_review_reason": "auto-approved by orchestrator post-build",
+            "needs_p2_smoke_via_pump": bool(
+                payload.get("needs_p2_smoke_via_pump") or payload.get("smoke_skipped_reason")
+            ),
             "verdict": {"verdict": "APPROVE_FOR_BACKTEST"},
         }
         review_task_id = create_task(
@@ -4271,6 +4284,8 @@ def pump(root: Path) -> dict[str, Any]:
             try:
                 br = json.loads(Path(br_path).read_text(encoding="utf-8"))
             except Exception:
+                continue
+            if bp.get("needs_p2_smoke_via_pump") or bp.get("smoke_skipped_reason"):
                 continue
             sr = (br.get("smoke_result") or "").upper()
             blocked_r = (br.get("blocked_reason") or "")
@@ -6732,7 +6747,19 @@ def record_build_result(root: Path, task_id: str, result_file: str) -> dict[str,
 
     blocked = result.get("blocked_reason")
     smoke = result.get("smoke_result")
-    if blocked:
+    smoke_framework_error_after_good_build = (
+        result.get("build_check_passed") is True
+        and result.get("compile_succeeded") is True
+        and str(smoke or "").lower() == "framework_error"
+    )
+    payload_merge: dict[str, Any] = {"codex_result": result}
+    if smoke_framework_error_after_good_build:
+        new_status = "done"
+        payload_merge.update({
+            "smoke_skipped_reason": "framework_error_during_build_smoke_treated_as_done",
+            "needs_p2_smoke_via_pump": True,
+        })
+    elif blocked:
         new_status = "blocked"
     elif smoke in ("passed", "zero_trades"):
         # zero_trades per HR7 is a setup question, not a strategy fail — still proceed to review
@@ -6741,7 +6768,7 @@ def record_build_result(root: Path, task_id: str, result_file: str) -> dict[str,
         new_status = "failed"
 
     with connect(root) as conn:
-        updated = update_task(conn, task_id, status=new_status, payload_merge={"codex_result": result})
+        updated = update_task(conn, task_id, status=new_status, payload_merge=payload_merge)
     if updated is None:
         return {"recorded": False, "reason": f"Task not found: {task_id}"}
     return {
