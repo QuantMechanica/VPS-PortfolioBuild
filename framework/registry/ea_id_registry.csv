@@ -579,3 +579,8 @@ ea_id,slug,strategy_id,status,owner,created_at
 9242,mql5-fvg-retest,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Research,2026-05-19
 9243,mql5-astar-swing,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Research,2026-05-19
 9244,mql5-matrix-score,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Research,2026-05-19
+9260,mql5-force-ema,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Research,2026-05-19
+9261,mql5-rvi-ma-cross,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Research,2026-05-19
+9262,mql5-vidya-dual,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Research,2026-05-19
+9263,mql5-chaikin-zero,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Research,2026-05-19
+9264,mql5-demarker-div,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Research,2026-05-19
