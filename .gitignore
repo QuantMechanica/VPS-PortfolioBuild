@@ -23,3 +23,9 @@ framework/templates/EA_Skeleton.ex5
 framework/tests/smoke/QM5_1001_framework_smoke.ex5
 framework/EAs/*/QUA-*
 framework/EAs/*/*.signal
+
+# Generated optimizer/backtest setfile variants. Baseline *_backtest.set files
+# remain trackable; grid/synth/ablation variants belong in report storage.
+framework/EAs/*/sets/*_grid_*.set
+framework/EAs/*/sets/*_synth_*_backtest.set
+framework/EAs/*/sets/*_ablation_*.set
