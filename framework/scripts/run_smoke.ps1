@@ -658,6 +658,88 @@ function Start-TesterRun {
     }
 }
 
+function Set-IniValue {
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.Collections.ArrayList]$Lines,
+        [Parameter(Mandatory = $true)]
+        [string]$Section,
+        [Parameter(Mandatory = $true)]
+        [string]$Key,
+        [Parameter(Mandatory = $true)]
+        [string]$Value
+    )
+
+    $sectionHeader = "[$Section]"
+    $sectionIndex = -1
+    for ($i = 0; $i -lt $Lines.Count; $i++) {
+        if ($Lines[$i].Trim() -ieq $sectionHeader) {
+            $sectionIndex = $i
+            break
+        }
+    }
+
+    if ($sectionIndex -lt 0) {
+        [void]$Lines.Add($sectionHeader)
+        [void]$Lines.Add("$Key=$Value")
+        return
+    }
+
+    $insertIndex = $Lines.Count
+    for ($i = $sectionIndex + 1; $i -lt $Lines.Count; $i++) {
+        if ($Lines[$i] -match '^\s*\[.+\]\s*$') {
+            $insertIndex = $i
+            break
+        }
+        if ($Lines[$i] -match "^\s*$([regex]::Escape($Key))\s*=") {
+            $Lines[$i] = "$Key=$Value"
+            return
+        }
+    }
+
+    $Lines.Insert($insertIndex, "$Key=$Value")
+}
+
+function Set-BacktestTerminalConfig {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$TerminalRoot,
+        [Parameter(Mandatory = $true)]
+        [string]$TerminalName
+    )
+
+    $commonPath = Join-Path $TerminalRoot "config\common.ini"
+    if (-not (Test-Path -LiteralPath $commonPath -PathType Leaf)) {
+        return
+    }
+
+    $lines = [System.Collections.ArrayList]::new()
+    foreach ($line in (Get-Content -LiteralPath $commonPath)) {
+        [void]$lines.Add($line)
+    }
+
+    Set-IniValue -Lines $lines -Section "Common" -Key "Services" -Value "0"
+    Set-IniValue -Lines $lines -Section "Common" -Key "NewsEnable" -Value "0"
+    Set-IniValue -Lines $lines -Section "Charts" -Key "ProfileLast" -Value "QMBacktest"
+    Set-IniValue -Lines $lines -Section "Charts" -Key "PreloadCharts" -Value "0"
+
+    $current = (Get-Content -LiteralPath $commonPath -Raw)
+    $updated = ($lines -join [Environment]::NewLine) + [Environment]::NewLine
+    if ($current -ne $updated) {
+        Set-Content -LiteralPath $commonPath -Value $updated -Encoding ASCII
+        Write-Host ("run_smoke.stage=terminal_config_sanitized terminal={0} common_ini='{1}' services=0 news=0 profile=QMBacktest preload_charts=0" -f $TerminalName, $commonPath)
+    }
+
+    foreach ($profileRoot in @(
+        (Join-Path $TerminalRoot "MQL5\Profiles\Charts\QMBacktest"),
+        (Join-Path $TerminalRoot "Profiles\Charts\QMBacktest")
+    )) {
+        if (-not (Test-Path -LiteralPath $profileRoot -PathType Container)) {
+            New-Item -ItemType Directory -Path $profileRoot -Force | Out-Null
+        }
+    }
+}
+
 function Wait-TerminalSpawn {
     param(
         [Parameter(Mandatory = $true)]
@@ -900,6 +982,7 @@ Write-Host ("run_smoke.stage=resolved_terminal terminal={0}" -f $effectiveTermin
 $terminalRoot = Resolve-TerminalRoot -TerminalName $effectiveTerminal
 $terminalExe = Resolve-TerminalExecutable -TerminalRoot $terminalRoot
 Write-Host ("run_smoke.stage=resolved_terminal_exe terminal={0} exe='{1}'" -f $effectiveTerminal, $terminalExe)
+Set-BacktestTerminalConfig -TerminalRoot $terminalRoot -TerminalName $effectiveTerminal
 
 if (($Terminal -ine "any") -and (-not $AllowRunningTerminal.IsPresent)) {
     if (Test-TerminalAlreadyRunning -TerminalRoot $terminalRoot) {
