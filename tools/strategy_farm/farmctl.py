@@ -49,10 +49,10 @@ REAL_PHASE_RUNNER_PHASES = ("P3.5", "P4", "P5", "P5b", "P5c", "P6", "P7", "P8")
 PHASE_RUNNER_SCRIPTS = {
     "P3.5": "p35_csr_runner.py",
     "P4": "p4_walk_forward.py",
-    "P5": "p5_stress_pipeline.py",
-    "P5b": "p5b_calibrated_noise.py",
+    "P5": "p5_stress_driver.py",
+    "P5b": "p5b_noise_driver.py",
     "P5c": "p5c_crisis_slices.py",
-    "P6": "p6_multiseed.py",
+    "P6": "p6_multiseed_driver.py",
     "P7": "p7_statval.py",
     "P8": "p8_news_driver.py",
 }
@@ -1579,11 +1579,20 @@ def _ea_phase_dir(ea_id: str, phase: str) -> Path:
     return _ea_pipeline_dir(ea_id) / str(phase)
 
 
-def _phase_runner_inputs(ea_id: str, phase: str) -> dict[str, Any]:
+def _phase_runner_inputs(root: Path, ea_id: str, phase: str) -> dict[str, Any]:
     pipeline_dir = _ea_pipeline_dir(ea_id)
     phase_key = str(phase or "").strip()
-    if phase_key == "P5":
-        inputs: dict[str, Path] = {"calibration_json": pipeline_dir / "P4" / "calibration.json"}
+    if phase_key == "P3.5":
+        p2_report = _refresh_phase_report_from_work_items(root, ea_id, "P2") or (pipeline_dir / "P2" / "report.csv")
+        p3_report = _refresh_phase_report_from_work_items(root, ea_id, "P3") or (pipeline_dir / "P3" / "report.csv")
+        inputs: dict[str, Path] = {
+            "p2_report": p2_report,
+            "p3_report": p3_report,
+        }
+    elif phase_key == "P4":
+        inputs = {}  # P4 primarily uses setfile from work_item row
+    elif phase_key == "P5":
+        inputs = {"calibration_json": pipeline_dir / "P4" / "calibration.json"}
     elif phase_key == "P5b":
         inputs = {
             "calibration_json": pipeline_dir / "P4" / "calibration.json",
@@ -1592,7 +1601,7 @@ def _phase_runner_inputs(ea_id: str, phase: str) -> dict[str, Any]:
     elif phase_key == "P5c":
         inputs = {"slices_csv": pipeline_dir / "P5" / "p5_slices.csv"}
     elif phase_key == "P6":
-        inputs = {"seeds_csv": pipeline_dir / "P6" / "p6_seeds.csv"}
+        inputs = {}  # P6 driver creates p6_seeds.csv; do not require it before run.
     elif phase_key == "P7":
         inputs = {
             "sweep_pass_rows": pipeline_dir / "P3" / "sweep_pass_rows.csv",
@@ -1691,25 +1700,6 @@ def _ensure_phase_runner_inputs(root: Path, item_row: sqlite3.Row, log_path: Pat
             ]
             if p2_report.exists():
                 cmd.extend(["--p2-report", str(p2_report)])
-            _run_phase_input_generator(cmd, log_path)
-
-    if phase == "P6" and not (phase_dir / "P6" / "p6_seeds.csv").exists():
-        if symbol:
-            cmd = [
-                sys.executable,
-                str(REPO_ROOT / "framework" / "scripts" / "p6_multiseed_driver.py"),
-                "--ea", ea_id,
-                "--symbol", symbol,
-                "--year", "2024",
-                "--period", _detect_ea_period(ea_id),
-                "--seeds", "42,17,99,7,2026",
-                "--out-prefix", str(PIPELINE_REPORT_ROOT),
-                "--allow-running-terminal",
-                "--max-parallel", "5",
-            ]
-            setfile = str(item_row["setfile_path"] or "").strip()
-            if setfile:
-                cmd.extend(["--base-setfile", setfile])
             _run_phase_input_generator(cmd, log_path)
 
     if phase == "P8" and not (phase_dir / "P7" / "news_matrix.csv").exists():
@@ -1852,7 +1842,7 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
     script_path = _phase_runner_script_path(phase)
     if script_path is None:
         return None
-    inputs = _phase_runner_inputs(item_row["ea_id"], phase)
+    inputs = _phase_runner_inputs(root, item_row["ea_id"], phase)
     if inputs.get("missing"):
         return None
     ea_id = item_row["ea_id"]
@@ -1895,7 +1885,7 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
         ])
         _remove_cmd_arg(cmd, "--setfile")
     elif phase == "P5b":
-        cmd.extend(["--trials-csv", str(inputs["trials_csv"]), "--calibration-json", str(inputs["calibration_json"])])
+        cmd.extend(["--calibration-json", str(inputs["calibration_json"])])
         _remove_cmd_arg(cmd, "--period")
         _remove_cmd_arg(cmd, "--setfile")
     elif phase == "P5c":
@@ -1905,11 +1895,12 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
         _remove_cmd_arg(cmd, "--setfile")
     elif phase == "P6":
         cmd.extend([
-            "--seeds-csv", str(inputs["seeds_csv"]),
+            "--year", "2024",
             "--seeds", "42,17,99,7,2026",
+            "--base-setfile", str(item_row["setfile_path"] or ""),
+            "--allow-running-terminal",
+            "--max-parallel", "5",
         ])
-        _remove_cmd_arg(cmd, "--symbol")
-        _remove_cmd_arg(cmd, "--period")
         _remove_cmd_arg(cmd, "--setfile")
     elif phase == "P7":
         cmd.extend([
@@ -1936,7 +1927,7 @@ def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
     log_path.parent.mkdir(parents=True, exist_ok=True)
 
     _ensure_phase_runner_inputs(root, item_row, log_path)
-    inputs = _phase_runner_inputs(item_row["ea_id"], phase)
+    inputs = _phase_runner_inputs(root, item_row["ea_id"], phase)
     if inputs.get("missing"):
         msg = f"waiting for required phase input(s): {', '.join(inputs['missing'])}"
         with log_path.open("a", encoding="utf-8", newline="\n") as f:
@@ -6547,7 +6538,7 @@ def _phase_runner_cmd(phase: str, ea_id: str, terminal: str | None = None,
     if phase == "P5":
         symbols = surviving_symbols or []
         symbol = symbols[0] if symbols else ""
-        inputs = _phase_runner_inputs(ea_id, phase)
+        inputs = _phase_runner_inputs(DEFAULT_ROOT, ea_id, phase)
         if inputs.get("missing"):
             return None
         cmd = _runner_base("p5_stress_driver.py")
@@ -6561,7 +6552,7 @@ def _phase_runner_cmd(phase: str, ea_id: str, terminal: str | None = None,
     if phase == "P5b":
         symbols = surviving_symbols or []
         symbol = symbols[0] if symbols else ""
-        inputs = _phase_runner_inputs(ea_id, phase)
+        inputs = _phase_runner_inputs(DEFAULT_ROOT, ea_id, phase)
         if inputs.get("missing"):
             return None
         cmd = _runner_base("p5b_noise_driver.py")
@@ -6571,7 +6562,7 @@ def _phase_runner_cmd(phase: str, ea_id: str, terminal: str | None = None,
         return cmd
 
     if phase == "P5c":
-        inputs = _phase_runner_inputs(ea_id, phase)
+        inputs = _phase_runner_inputs(DEFAULT_ROOT, ea_id, phase)
         if inputs.get("missing"):
             return None
         cmd = _runner_base("p5c_crisis_slices.py")
@@ -6590,7 +6581,7 @@ def _phase_runner_cmd(phase: str, ea_id: str, terminal: str | None = None,
         return cmd
 
     if phase == "P7":
-        inputs = _phase_runner_inputs(ea_id, phase)
+        inputs = _phase_runner_inputs(DEFAULT_ROOT, ea_id, phase)
         if inputs.get("missing"):
             return None
         cmd = _runner_base("p7_statval.py")
@@ -6598,7 +6589,7 @@ def _phase_runner_cmd(phase: str, ea_id: str, terminal: str | None = None,
         return cmd
 
     if phase == "P8":
-        inputs = _phase_runner_inputs(ea_id, phase)
+        inputs = _phase_runner_inputs(DEFAULT_ROOT, ea_id, phase)
         if inputs.get("missing"):
             return None
         cmd = _runner_base("p8_news_driver.py")
