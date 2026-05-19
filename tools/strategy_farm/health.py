@@ -33,6 +33,11 @@ import subprocess
 import sys
 from pathlib import Path
 
+try:
+    import farmctl
+except ModuleNotFoundError:
+    from tools.strategy_farm import farmctl
+
 ROOT = Path(r"D:\QM\strategy_farm")
 REPO_ROOT = Path(__file__).resolve().parents[2]
 FRAMEWORK_EAS_DIR = REPO_ROOT / "framework" / "EAs"
@@ -46,18 +51,7 @@ CODEX_BRIDGE_HEARTBEAT = ROOT / "state" / "codex_bridge_heartbeat.txt"
 ZERO_TRADE_DEAD_THRESHOLD = 0.80
 ZERO_TRADE_DEAD_MIN_DONE = 5
 ZERO_TRADE_REWORK_DEDUP_HOURS = 6
-PHASE_ACTIVE_TIMEOUT_MIN = {
-    "P2": 8,
-    "P3": 60,
-    "P3.5": 30,
-    "P4": 30,
-    "P5": 30,
-    "P5b": 30,
-    "P5c": 30,
-    "P6": 30,
-    "P7": 30,
-    "P8": 30,
-}
+PHASE_ACTIVE_TIMEOUT_MIN = dict(farmctl.PHASE_ACTIVE_TIMEOUT_MIN)
 FACTORY_TERMINALS = tuple(f"T{i}" for i in range(1, 11))
 MT5_SATURATION_MIN_WORKERS = 7
 
