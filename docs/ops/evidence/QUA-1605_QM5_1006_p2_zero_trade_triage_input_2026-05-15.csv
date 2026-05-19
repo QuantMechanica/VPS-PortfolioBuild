@@ -1,0 +1,3 @@
+ea_id,phase,symbol,terminal,verdict,invalidation_reason,evidence
+QM5_1006,P2,EURUSD.DWX,T4,INVALID,MIN_TRADES_NOT_MET_zero_trades,D:/QM/reports/pipeline/QM5_1006/20260515_175817/summary.json
+QM5_1006,P2,EURUSD.DWX,T4,INVALID,MIN_TRADES_NOT_MET_zero_trades,D:/QM/reports/pipeline/QM5_1006/20260515_175817/summary.json

@@ -1,0 +1,25 @@
+timestamp_utc=2026-05-15T13:09:39.4705394Z
+host=WIN-B95G5LPSJ1O
+
+[Get-ScheduledTask QM_MT5_Worker_T*]
+task=QM_MT5_Worker_T1 state=Running
+task=QM_MT5_Worker_T2 state=Running
+task=QM_MT5_Worker_T3 state=Running
+task=QM_MT5_Worker_T4 state=Running
+task=QM_MT5_Worker_T5 state=Running
+
+[Get-ScheduledTaskInfo QM_MT5_Worker_T*]
+task=QM_MT5_Worker_T1 lastRun=2026-05-15T15:09:09.0000000+02:00 nextRun=2026-05-15T15:10:10.0000000+02:00 lastResult=2147946720
+task=QM_MT5_Worker_T2 lastRun=2026-05-15T15:09:09.0000000+02:00 nextRun=2026-05-15T15:10:10.0000000+02:00 lastResult=2147946720
+task=QM_MT5_Worker_T3 lastRun=2026-05-15T15:09:09.0000000+02:00 nextRun=2026-05-15T15:10:10.0000000+02:00 lastResult=2147946720
+task=QM_MT5_Worker_T4 lastRun=2026-05-15T15:09:09.0000000+02:00 nextRun=2026-05-15T15:10:10.0000000+02:00 lastResult=2147946720
+task=QM_MT5_Worker_T5 lastRun=2026-05-15T15:09:09.0000000+02:00 nextRun=2026-05-15T15:10:10.0000000+02:00 lastResult=2147946720
+
+[worker_heartbeat freshness from D:/QM/reports/pipeline/mt5_queue.db]
+row_count=5
+terminal=T1 age_sec=3 pid=7660 current_job_id=None jobs_completed=81 last_error=
+terminal=T2 age_sec=5 pid=28184 current_job_id=None jobs_completed=25 last_error=
+terminal=T3 age_sec=30 pid=15944 current_job_id=None jobs_completed=20 last_error=
+terminal=T4 age_sec=7 pid=8864 current_job_id=None jobs_completed=18 last_error=
+terminal=T5 age_sec=12 pid=17312 current_job_id=None jobs_completed=28 last_error=
+all_within_90s=True

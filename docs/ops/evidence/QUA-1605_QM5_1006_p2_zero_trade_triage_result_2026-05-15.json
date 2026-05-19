@@ -1,0 +1,7 @@
+{
+  "status": "ok",
+  "zero_trade_count": 2,
+  "threshold": 5,
+  "dispatch_recovery": false,
+  "next_action": "document_symbol_noise"
+}
