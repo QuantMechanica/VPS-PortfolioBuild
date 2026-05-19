@@ -5,6 +5,10 @@ from __future__ import annotations
 
 import argparse
 import csv
+import json
+import math
+import re
+import statistics
 from datetime import date
 from pathlib import Path
 
@@ -62,6 +66,45 @@ def _summary_verdict(summary_path: str) -> tuple[str, str]:
     if verdict == "PASS":
         return "PASS", str(data.get("reason") or "fold_summary_pass")
     return "FAIL", str(data.get("reason") or verdict or "fold_summary_not_pass")
+
+
+def _parse_drawdown_pct(run: dict[str, object]) -> float:
+    raw = str(run.get("drawdown_raw") or "")
+    match = re.search(r"\(([-+]?\d+(?:\.\d+)?)%\)", raw)
+    if match:
+        return float(match.group(1))
+    value = run.get("drawdown_pct")
+    if value not in (None, ""):
+        return float(value)
+    return 0.0
+
+
+def _first_ok_run(summary_path: str) -> dict[str, object] | None:
+    if not summary_path:
+        return None
+    path = Path(summary_path)
+    if not path.exists():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8", errors="replace"))
+    except Exception:
+        return None
+    runs = data.get("runs")
+    if isinstance(runs, list):
+        for run in runs:
+            if isinstance(run, dict) and str(run.get("status") or "").upper() == "OK":
+                return run
+    return None
+
+
+def _oos_sharpe_from_fold_profits(profits: list[float]) -> float:
+    if len(profits) < 2:
+        return 0.0
+    mean = statistics.fmean(profits)
+    stdev = statistics.pstdev(profits)
+    if stdev == 0:
+        return 999.0 if mean > 0 else 0.0
+    return mean / stdev * math.sqrt(len(profits))
 
 
 def _write_walk_forward_csv_from_manifest(manifest: dict[str, object], out_dir: Path) -> Path:
@@ -208,6 +251,11 @@ def main() -> int:
     details_folds: list[dict[str, object]] = []
     first_dev_start: date | None = None
     last_oos_end: date | None = None
+    summary_metric_rows = 0
+    oos_total_trades = 0
+    oos_net_profit = 0.0
+    oos_max_dd_pct = 0.0
+    oos_fold_profits: list[float] = []
 
     last_dev_end: date | None = None
     last_oos_start: date | None = None
@@ -255,6 +303,20 @@ def main() -> int:
             else:
                 issues.append(f"fold {fold_id}: OOS not clean ({clean_source})")
 
+        run = _first_ok_run(row.get("summary_path", ""))
+        fold_trades = None
+        fold_net_profit = None
+        fold_dd_pct = None
+        if run is not None:
+            summary_metric_rows += 1
+            fold_trades = int(float(run.get("total_trades") or 0))
+            fold_net_profit = float(run.get("net_profit") or 0.0)
+            fold_dd_pct = _parse_drawdown_pct(run)
+            oos_total_trades += fold_trades
+            oos_net_profit += fold_net_profit
+            oos_max_dd_pct = max(oos_max_dd_pct, fold_dd_pct)
+            oos_fold_profits.append(fold_net_profit)
+
         details_folds.append(
             {
                 "fold_id": fold_id,
@@ -264,6 +326,9 @@ def main() -> int:
                 "oos_start": str(oos_start),
                 "oos_end": str(oos_end),
                 "oos_clean": clean_ok,
+                "oos_trades": fold_trades,
+                "oos_net_profit": fold_net_profit,
+                "oos_drawdown_pct": fold_dd_pct,
             }
         )
 
@@ -276,6 +341,17 @@ def main() -> int:
         issues.append("walk-forward coverage must start in 2017 or earlier")
     if last_oos_end is None or last_oos_end < date(2022, 12, 31):
         issues.append("walk-forward coverage must extend through 2022-12-31")
+
+    oos_sharpe = _oos_sharpe_from_fold_profits(oos_fold_profits)
+    if summary_metric_rows:
+        if oos_total_trades < 30:
+            issues.append(f"OOS trades {oos_total_trades} below P8 objective minimum 30")
+        if oos_net_profit <= 0:
+            issues.append(f"OOS net profit {round(oos_net_profit, 2)} must be positive")
+        if oos_max_dd_pct > 20.0:
+            issues.append(f"OOS max drawdown {round(oos_max_dd_pct, 2)}% exceeds 20%")
+        if oos_sharpe < 0.6:
+            issues.append(f"OOS Sharpe proxy {round(oos_sharpe, 4)} below 0.6")
 
     if not issues:
         verdict = "PASS"
@@ -291,6 +367,11 @@ def main() -> int:
             "fold_count": fold_count,
             "folds": details_folds,
             "issues": issues,
+            "oos_metric_folds": summary_metric_rows,
+            "oos_total_trades": oos_total_trades if summary_metric_rows else None,
+            "oos_net_profit": round(oos_net_profit, 2) if summary_metric_rows else None,
+            "oos_max_dd_pct": round(oos_max_dd_pct, 4) if summary_metric_rows else None,
+            "oos_sharpe_proxy": round(oos_sharpe, 4) if summary_metric_rows else None,
         },
     )
 
