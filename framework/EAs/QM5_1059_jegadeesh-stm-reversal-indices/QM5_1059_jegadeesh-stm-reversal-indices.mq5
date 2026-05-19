@@ -31,7 +31,7 @@ input int    strategy_spread_median_bars  = 20;
 input double strategy_spread_mult         = 5.0;
 input int    strategy_min_rank_symbols    = 4;
 
-const int STRATEGY_UNIVERSE_SIZE = 4;
+#define STRATEGY_UNIVERSE_SIZE 4
 string g_strategy_symbols[STRATEGY_UNIVERSE_SIZE] = {
    "NDX.DWX",
    "WS30.DWX",
