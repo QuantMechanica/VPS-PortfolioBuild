@@ -51,6 +51,50 @@ Health check result:
 {"name":"mt5_worker_saturation","status":"OK","value":10,"threshold":10,"detail":"10/10 terminal_worker daemons alive (T1, T10, T2, T3, T4, T5, T6, T7, T8, T9)"}
 ```
 
+## Reboot / Session Restart Runbook
+
+The 2026-05-19 T1-T10 rollout exposed a Windows desktop-heap/session handle ceiling: only about 6 hidden MT5 terminals stayed alive in the current session; later slots logged `not enough handles to start the platform` and `MQL5.community authorization failed`.
+
+Applied OS setting:
+
+```text
+HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\SubSystems\Windows
+SharedSection=1024,32768,4096
+```
+
+Backup before the change:
+
+```text
+D:\QM\strategy_farm\state\windows_subsystems_before_mt5_t10_20260519.reg
+```
+
+This setting requires a fresh Windows session. Prefer a full VPS reboot over restarting individual MT5 terminals.
+
+After reboot the scheduled task should restart the worker daemons automatically:
+
+```powershell
+Get-ScheduledTaskInfo -TaskName QM_StrategyFarm_TerminalWorkers_AT_STARTUP
+python C:\QM\repo\tools\strategy_farm\farmctl.py mt5-slots
+python C:\QM\repo\tools\strategy_farm\farmctl.py work-items --status active
+```
+
+Manual worker restart if the scheduled task did not run:
+
+```powershell
+Start-ScheduledTask -TaskName QM_StrategyFarm_TerminalWorkers_AT_STARTUP
+# or:
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\QM\repo\tools\strategy_farm\start_terminal_workers.ps1
+# or:
+python C:\QM\repo\tools\strategy_farm\start_terminal_workers.py --dedupe
+```
+
+Expected shape after reboot:
+
+- `worker_pids.json` lists T1..T10.
+- `farmctl mt5-slots` reports 10 terminal workers.
+- `terminal64.exe` processes are transient, one per active backtest. If there is pending work, the fleet should climb toward 10 running MT5 processes; if no work is claimable, 0 visible `terminal64.exe` is valid.
+- `T_Live` remains off limits and must not be started by factory scripts.
+
 ## T6 Dry-Run Dispatch
 
 Command:
