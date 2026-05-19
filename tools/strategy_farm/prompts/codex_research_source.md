@@ -46,9 +46,15 @@ to APPROVED or REJECTED) and `expected_trades_per_year_per_symbol: <int>`.
 Estimate cadence conservatively from the mechanical rules; do not draft
 annual/one-shot seasonal ideas unless the source gives strong basket evidence.
 
-ID allocation: pick fresh `QM5_<NNNN>` IDs strictly higher than the highest
-row in `C:/QM/repo/framework/registry/ea_id_registry.csv`. Register each new
-ID by appending a row to that CSV (one row per drafted card).
+ID allocation: reserve fresh `QM5_<NNNN>` IDs only through the atomic guard:
+
+```powershell
+python C:/QM/repo/tools/strategy_farm/farmctl.py reserve-ea-ids --strategy-id {{source_id}} --slug <slug-1> --slug <slug-2>
+```
+
+Use the returned rows for card filenames/frontmatter. Do NOT hand-edit or append
+`C:/QM/repo/framework/registry/ea_id_registry.csv`. If reservation fails, stop
+and record the reason in the source notes.
 
 Append research notes (raw findings, rejected variants, citations) to:
 `D:/QM/strategy_farm/artifacts/source_notes/{{source_id}}.md`

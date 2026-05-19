@@ -93,8 +93,15 @@ last_updated: <YYYY-MM-DD>
 ---
 ```
 
-Allocate NEW EA IDs starting from the next free `QM5_<NNNN>` in
-`C:/QM/repo/framework/registry/ea_id_registry.csv`. Do NOT collide.
+Reserve NEW EA IDs with the atomic registry guard. Do NOT hand-edit or append
+`ea_id_registry.csv`.
+
+```powershell
+python C:/QM/repo/tools/strategy_farm/farmctl.py reserve-ea-ids --strategy-id {{source_id}} --slug <slug-1> --slug <slug-2>
+```
+
+Use the returned `ea_id` values in the card filenames/frontmatter. If the
+command returns `reserved: false`, stop and record the reason in source notes.
 
 Trade-frequency discipline: estimate cadence conservatively from the rule
 mechanics and put it in frontmatter. Daily/session systems are usually 50+,

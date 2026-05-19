@@ -394,6 +394,14 @@ def _read_csv_dicts_if_exists(path: Path) -> list[dict[str, str]]:
         return [dict(row) for row in csv.DictReader(handle)]
 
 
+def _read_csv_dicts_with_columns(path: Path) -> tuple[list[str], list[dict[str, str]]]:
+    if not path.exists():
+        return [], []
+    with path.open("r", encoding="utf-8-sig", newline="") as handle:
+        reader = csv.DictReader(handle)
+        return list(reader.fieldnames or []), [dict(row) for row in reader]
+
+
 def prebuild_validate_card(root: Path, card_path: Path, fm: dict[str, Any]) -> dict[str, Any]:
     """Hard gate before creating build_ea tasks.
 
@@ -2961,8 +2969,9 @@ def _claim_research_source(root: Path) -> dict[str, Any]:
         "Draft UP TO 5 new strategy cards into "
         "D:\\QM\\strategy_farm\\artifacts\\cards_draft\\QM5_<NNNN>_<slug>.md per the "
         "Strategy Wiki _TEMPLATE Strategy.md format with g0_status: PENDING. "
-        "Allocate fresh QM5_<NNNN> IDs starting after the highest existing in "
-        "framework/registry/ea_id_registry.csv. Append notes to "
+        "Reserve fresh QM5_<NNNN> IDs ONLY via `python C:\\QM\\repo\\tools\\strategy_farm\\farmctl.py "
+        "reserve-ea-ids --strategy-id " + str(src_id) + " --slug <slug> [--slug <slug2> ...]`; "
+        "never hand-edit or append framework/registry/ea_id_registry.csv. Append notes to "
         f"D:\\QM\\strategy_farm\\artifacts\\source_notes\\{src_id}.md. "
         "At end: if <5 cards or exhausted, run `farmctl set-source-status "
         f"{src_id} done`. If 5 cards + more findable, run `farmctl "
@@ -7605,6 +7614,135 @@ def print_json(payload: dict[str, Any]) -> None:
     print(json.dumps(payload, indent=2, sort_keys=True))
 
 
+def _registry_lock_path() -> Path:
+    return REPO_ROOT / "framework" / "registry" / ".ea_id_registry.lock"
+
+
+def _acquire_registry_lock(timeout_seconds: float = 30.0) -> tuple[int, Path] | None:
+    lock_path = _registry_lock_path()
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    deadline = time.monotonic() + timeout_seconds
+    flags = os.O_CREAT | os.O_EXCL | os.O_WRONLY
+    while time.monotonic() < deadline:
+        try:
+            fd = os.open(str(lock_path), flags)
+            os.write(fd, json.dumps({"pid": os.getpid(), "created_at": utc_now()}).encode("utf-8"))
+            return fd, lock_path
+        except FileExistsError:
+            try:
+                lock_data = json.loads(lock_path.read_text(encoding="utf-8"))
+                lock_pid = lock_data.get("pid")
+                age_sec = time.time() - lock_path.stat().st_mtime
+                if age_sec > 300 or not _pid_exists(lock_pid):
+                    lock_path.unlink()
+                    continue
+            except (OSError, json.JSONDecodeError):
+                try:
+                    lock_path.unlink()
+                    continue
+                except OSError:
+                    pass
+            time.sleep(0.5)
+    return None
+
+
+def _release_registry_lock(lock: tuple[int, Path] | None) -> None:
+    if not lock:
+        return
+    fd, lock_path = lock
+    try:
+        os.close(fd)
+    except OSError:
+        pass
+    try:
+        lock_path.unlink()
+    except OSError:
+        pass
+
+
+def _write_csv_atomic(path: Path, fieldnames: list[str], rows: list[dict[str, Any]]) -> None:
+    tmp = path.with_suffix(path.suffix + f".{os.getpid()}.tmp")
+    with tmp.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames, lineterminator="\n")
+        writer.writeheader()
+        for row in rows:
+            writer.writerow({key: row.get(key, "") for key in fieldnames})
+    tmp.replace(path)
+
+
+def reserve_ea_ids(
+    root: Path,
+    slugs: list[str],
+    *,
+    strategy_id: str,
+    owner: str = "Research",
+    status: str = "active",
+    created_at: str | None = None,
+    start_after: int | None = None,
+) -> dict[str, Any]:
+    """Atomically reserve EA IDs in ea_id_registry.csv.
+
+    This is the only safe path for autonomous Research allocation. It prevents
+    the historical race where parallel agents each read "highest ID" and append
+    colliding rows.
+    """
+    del root  # registry is repo-scoped, not runtime-root scoped.
+    cleaned_slugs = [str(slug).strip() for slug in slugs if str(slug).strip()]
+    if not cleaned_slugs:
+        return {"reserved": False, "reason": "no_slugs_provided"}
+    bad_slugs = [slug for slug in cleaned_slugs if not re.match(r"^[a-z0-9][a-z0-9-]*[a-z0-9]$", slug)]
+    if bad_slugs:
+        return {"reserved": False, "reason": "invalid_slug", "slugs": bad_slugs}
+    dup_request = sorted({slug for slug in cleaned_slugs if cleaned_slugs.count(slug) > 1})
+    if dup_request:
+        return {"reserved": False, "reason": "duplicate_slug_in_request", "slugs": dup_request}
+
+    registry = REPO_ROOT / "framework" / "registry" / "ea_id_registry.csv"
+    lock = _acquire_registry_lock()
+    if lock is None:
+        return {"reserved": False, "reason": "registry_lock_timeout", "lock_path": str(_registry_lock_path())}
+    try:
+        fieldnames, rows = _read_csv_dicts_with_columns(registry)
+        if not fieldnames:
+            fieldnames = ["ea_id", "slug", "strategy_id", "status", "owner", "created_at"]
+        existing_ids = {str(row.get("ea_id") or "").strip() for row in rows}
+        existing_slugs = {str(row.get("slug") or "").strip().lower() for row in rows}
+        slug_conflicts = [slug for slug in cleaned_slugs if slug.lower() in existing_slugs]
+        if slug_conflicts:
+            return {"reserved": False, "reason": "duplicate_slug", "slugs": slug_conflicts}
+
+        numeric_ids = [int(ea_id) for ea_id in existing_ids if ea_id.isdigit()]
+        next_id = max([start_after or 0, *numeric_ids], default=start_after or 0) + 1
+        created = created_at or dt.date.today().isoformat()
+        reserved_rows: list[dict[str, Any]] = []
+        for slug in cleaned_slugs:
+            while str(next_id) in existing_ids:
+                next_id += 1
+            row = {
+                "ea_id": str(next_id),
+                "slug": slug,
+                "strategy_id": strategy_id,
+                "status": status,
+                "owner": owner,
+                "created_at": created,
+            }
+            rows.append(row)
+            reserved_rows.append(row)
+            existing_ids.add(str(next_id))
+            existing_slugs.add(slug.lower())
+            next_id += 1
+
+        _write_csv_atomic(registry, fieldnames, rows)
+        return {
+            "reserved": True,
+            "registry": str(registry),
+            "rows": reserved_rows,
+            "count": len(reserved_rows),
+        }
+    finally:
+        _release_registry_lock(lock)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="QuantMechanica Option A strategy farm controller")
     parser.add_argument("--root", default=str(DEFAULT_ROOT), help="Runtime root. Default: %(default)s")
@@ -7626,6 +7764,14 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("backfill-work-items", help="One-shot: populate work_items table from existing backtest tasks + report.csv")
     sub.add_parser("next", help="Show the deterministic next action")
     sub.add_parser("claim-source", help="Activate the next pending source if no source is active")
+
+    reserve_ids = sub.add_parser("reserve-ea-ids", help="Atomically reserve one or more EA IDs in ea_id_registry.csv")
+    reserve_ids.add_argument("--slug", action="append", required=True, help="Strategy slug to reserve. Repeat for batches.")
+    reserve_ids.add_argument("--strategy-id", required=True, help="Source/strategy UUID or source identifier")
+    reserve_ids.add_argument("--owner", default="Research")
+    reserve_ids.add_argument("--status", default="active")
+    reserve_ids.add_argument("--created-at", help="YYYY-MM-DD; defaults to today")
+    reserve_ids.add_argument("--start-after", type=int, help="Optional lower bound for the first allocated numeric EA ID")
 
     set_status = sub.add_parser("set-source-status", help="Move one source to a new explicit status")
     set_status.add_argument("source_id")
@@ -7761,6 +7907,16 @@ def main(argv: list[str] | None = None) -> int:
         print_json(next_action(root))
     elif args.command == "claim-source":
         print_json(claim_source(root))
+    elif args.command == "reserve-ea-ids":
+        print_json(reserve_ea_ids(
+            root,
+            args.slug,
+            strategy_id=args.strategy_id,
+            owner=args.owner,
+            status=args.status,
+            created_at=args.created_at,
+            start_after=args.start_after,
+        ))
     elif args.command == "set-source-status":
         print_json(set_source_status(root, args.source_id, args.status, args.notes_path))
     elif args.command == "events":

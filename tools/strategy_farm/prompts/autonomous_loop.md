@@ -177,8 +177,10 @@ Then mine the source per `tools/strategy_farm/prompts/claude_research_source.md`
   `D:/QM/strategy_farm/artifacts/cards_draft/QM5_<NNNN>_<slug>.md` per the
   Strategy Wiki `_TEMPLATE Strategy.md` format, with `g0_status: PENDING`
   AND `source_id: <source-uuid>` in frontmatter.
-- Allocate NEW EA IDs starting from the next free `QM5_<NNNN>` in
-  `framework/registry/ea_id_registry.csv`. Do NOT collide with existing IDs.
+- Reserve NEW EA IDs only via the atomic guard:
+  `python C:/QM/repo/tools/strategy_farm/farmctl.py reserve-ea-ids --strategy-id <source-id> --slug <slug-1> --slug <slug-2>`.
+  Use the returned IDs in cards. Do NOT hand-edit or append
+  `framework/registry/ea_id_registry.csv`.
 - Append to (or create) source notes at
   `D:/QM/strategy_farm/artifacts/source_notes/<source_id>.md`. Each batch
   gets its own section header.
