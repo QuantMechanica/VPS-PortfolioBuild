@@ -5239,10 +5239,20 @@ def pump(root: Path) -> dict[str, Any]:
                       AND w2.symbol = w.symbol
                       AND w2.phase = ?
                       AND w2.setfile_path = w.setfile_path
+                      AND (
+                        w2.payload_json LIKE ?
+                        OR w2.payload_json LIKE ?
+                      )
                   )
                 ORDER BY w.updated_at ASC LIMIT 10
                 """,
-                (prev_phase, *verdicts, next_phase),
+                (
+                    prev_phase,
+                    *verdicts,
+                    next_phase,
+                    f'%"promoted_from_phase": "{prev_phase}"%',
+                    f'%"promoted_from_phase":"{prev_phase}"%',
+                ),
             ).fetchall()
             for wi in promotable:
                 if not _setfile_path_exists(wi["setfile_path"]):
