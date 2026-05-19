@@ -985,6 +985,84 @@ def _summary_net_profit_total(summary: dict[str, Any]) -> float | None:
     return sum(values) if values else None
 
 
+def _coerce_metric_float(value: Any) -> float | None:
+    if value is None or isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    text = str(value).replace("\xa0", "").replace(" ", "").replace(",", ".").strip()
+    match = re.search(r"-?\d+(?:\.\d+)?", text)
+    if not match:
+        return None
+    try:
+        return float(match.group(0))
+    except ValueError:
+        return None
+
+
+def _coerce_metric_int(value: Any) -> int | None:
+    numeric = _coerce_metric_float(value)
+    if numeric is None:
+        return None
+    return int(numeric)
+
+
+def _summary_recovered_stats(summary: dict[str, Any]) -> dict[str, Any]:
+    """Extract dashboard-compatible stats from a run_smoke/phase summary."""
+    metric_sources: list[dict[str, Any]] = []
+    if isinstance(summary, dict):
+        metric_sources.append(summary)
+    for run in summary.get("runs") or []:
+        if isinstance(run, dict):
+            metric_sources.append(run)
+
+    def first_float(*keys: str) -> float | None:
+        for source in metric_sources:
+            for key in keys:
+                value = _coerce_metric_float(source.get(key))
+                if value is not None:
+                    return value
+        return None
+
+    def first_int(*keys: str) -> int | None:
+        for source in metric_sources:
+            for key in keys:
+                value = _coerce_metric_int(source.get(key))
+                if value is not None:
+                    return value
+        return None
+
+    stats: dict[str, Any] = {}
+    net_profit = first_float("net_profit", "total_net_profit", "profit", "oos_net_profit")
+    total_trades = first_int("total_trades", "trades", "trade_count")
+    profit_factor = first_float("profit_factor", "pf")
+    drawdown = first_float("max_dd", "drawdown", "max_drawdown", "maximal_drawdown")
+
+    if net_profit is not None:
+        stats["net_profit"] = net_profit
+    if total_trades is not None:
+        stats["total_trades"] = total_trades
+    if profit_factor is not None:
+        stats["profit_factor"] = profit_factor
+    if drawdown is not None:
+        stats["max_dd"] = drawdown
+        stats["drawdown"] = drawdown
+    return stats
+
+
+def _payload_with_pass_recovered_stats(
+    payload: dict[str, Any],
+    verdict: str,
+    summary: dict[str, Any],
+) -> dict[str, Any]:
+    if verdict != "PASS":
+        return payload
+    stats = _summary_recovered_stats(summary)
+    if not stats:
+        return payload
+    return {**payload, "recovered_stats": stats}
+
+
 def _work_item_p2_net_profit(work_item: sqlite3.Row) -> float | None:
     evidence_path = work_item["evidence_path"]
     if not evidence_path:
@@ -1844,11 +1922,16 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                     min_trades=effective_min_trades,
                     phase=item["phase"],
                 )
+                updated_payload = _payload_with_pass_recovered_stats(
+                    {**payload, "verdict_reason": reason},
+                    verdict,
+                    summary,
+                )
                 with connect(root) as conn2:
                     conn2.execute(
                         "UPDATE work_items SET status='done', verdict=?, evidence_path=?, payload_json=?, updated_at=? WHERE id=?",
                         (verdict, str(summary_path),
-                         json.dumps({**payload, "verdict_reason": reason}, sort_keys=True),
+                         json.dumps(updated_payload, sort_keys=True),
                          started_iso, item["id"]),
                     )
                     conn2.commit()
@@ -1871,13 +1954,18 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                     min_trades=effective_min_trades,
                     phase=item["phase"],
                 )
+                updated_payload = _payload_with_pass_recovered_stats(
+                    {**payload, "verdict_reason": reason},
+                    verdict,
+                    summary,
+                )
                 with connect(root) as conn2:
                     conn2.execute(
                         "UPDATE work_items SET status='done', verdict=?, evidence_path=?, payload_json=?, updated_at=? WHERE id=?",
                         (
                             verdict,
                             str(artifact_path),
-                            json.dumps({**payload, "verdict_reason": reason}, sort_keys=True),
+                            json.dumps(updated_payload, sort_keys=True),
                             started_iso,
                             item["id"],
                         ),
