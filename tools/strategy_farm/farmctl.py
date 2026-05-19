@@ -69,7 +69,7 @@ PHASE_ACTIVE_TIMEOUT_MIN = {
     "P2": 8,
     "P3": 60,
     "P3.5": 30,
-    "P4": 30,
+    "P4": 240,
     "P5": 30,
     "P5b": 30,
     "P5c": 30,
@@ -331,6 +331,69 @@ def _find_approved_card_for_ea(root: Path, ea_id: str) -> Path | None:
         return None
     matches = sorted(cards_dir.glob(f"{ea_id}_*.md"))
     return matches[0] if matches else None
+
+
+def _read_csv_dicts_if_exists(path: Path) -> list[dict[str, str]]:
+    if not path.exists():
+        return []
+    with path.open("r", encoding="utf-8-sig", newline="") as handle:
+        return [dict(row) for row in csv.DictReader(handle)]
+
+
+def prebuild_validate_card(root: Path, card_path: Path, fm: dict[str, Any]) -> dict[str, Any]:
+    """Hard gate before creating build_ea tasks.
+
+    This prevents the expensive Codex/build/smoke path from discovering basic
+    identity and research-quality drift after artifacts have already been made.
+    """
+    errors: list[str] = []
+    warnings: list[str] = []
+    ea_id = str(fm.get("ea_id") or "").strip()
+    slug = str(fm.get("slug") or "").strip()
+
+    approved_dir = (root / "artifacts" / "cards_approved").resolve()
+    try:
+        card_resolved = card_path.resolve()
+        if approved_dir not in card_resolved.parents:
+            errors.append(f"card_not_in_approved_dir:{card_path}")
+    except Exception:
+        errors.append(f"card_path_unresolvable:{card_path}")
+
+    expected_prefix = f"{ea_id}_{slug}"
+    if ea_id and slug and not card_path.stem.startswith(expected_prefix):
+        errors.append(f"card_filename_mismatch:expected_prefix={expected_prefix}:actual={card_path.name}")
+
+    if fm.get("g0_status") != "APPROVED":
+        errors.append(f"g0_status_not_approved:{fm.get('g0_status')!r}")
+    for key in ("r1_track_record", "r2_mechanical", "r3_data_available", "r4_ml_forbidden"):
+        if str(fm.get(key) or "").upper() != "PASS":
+            errors.append(f"{key}_not_PASS:{fm.get(key)!r}")
+
+    ea_rows = _read_csv_dicts_if_exists(REPO_ROOT / "framework" / "registry" / "ea_id_registry.csv")
+    for row in ea_rows:
+        row_ea = str(row.get("ea_id") or row.get("id") or "").strip()
+        if row_ea != ea_id:
+            continue
+        row_slug = str(row.get("slug") or row.get("ea_slug") or "").strip()
+        if row_slug and slug and row_slug != slug:
+            errors.append(f"ea_id_registry_slug_mismatch:{ea_id}:registry={row_slug}:card={slug}")
+
+    magic_rows = _read_csv_dicts_if_exists(REPO_ROOT / "framework" / "registry" / "magic_numbers.csv")
+    seen_magic: dict[str, str] = {}
+    for row in magic_rows:
+        magic = str(row.get("magic") or "").strip()
+        owner = f"{row.get('ea_id') or ''}:{row.get('symbol_slot') or row.get('slot') or ''}:{row.get('symbol') or ''}"
+        if not magic:
+            continue
+        if magic in seen_magic and seen_magic[magic] != owner:
+            errors.append(f"magic_registry_duplicate:{magic}:{seen_magic[magic]}:{owner}")
+        seen_magic[magic] = owner
+
+    sibling_cards = sorted((root / "artifacts" / "cards_approved").glob(f"{ea_id}_*.md"))
+    if len(sibling_cards) > 1:
+        warnings.append(f"multiple_approved_cards_for_ea:{ea_id}:{[p.name for p in sibling_cards]}")
+
+    return {"ok": not errors, "errors": errors, "warnings": warnings}
 
 
 def _normalise_card_symbol(symbol: str) -> str:
@@ -870,6 +933,8 @@ def _derive_phase_runner_verdict(summary: dict[str, Any], min_trades: int = 5, p
 
     if verdict_upper in {"PENDING_IMPLEMENTATION", "PENDING_RUNNER"}:
         return verdict_upper, reason or "phase runner not implemented yet"
+    if verdict_upper == "WAITING_INPUT":
+        return verdict_upper, reason or "phase runner waiting for required input"
     if verdict_upper in {"FAIL", "INVALID", "NO_PASS_BASELINE", "NO_ELIGIBLE_MODE", "MULTI_SEED_FAIL"}:
         return "FAIL", reason or raw_verdict or "phase_runner_fail"
     if verdict_upper in {"REPORT_ONLY"}:
@@ -1479,7 +1544,8 @@ def _remove_cmd_arg(cmd: list[str], flag: str) -> None:
 
 
 def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
-                                    report_root: Path) -> list[str] | None:
+                                    report_root: Path,
+                                    terminal: str | None = None) -> list[str] | None:
     phase = item_row["phase"]
     script_path = _phase_runner_script_path(phase)
     if script_path is None:
@@ -1509,6 +1575,7 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
             "--oos-from-year", "2023",
             "--oos-to-year", "2025",
             "--min-folds", "6",
+            "--terminal", terminal or "T1",
         ])
     elif phase == "P5":
         cmd.extend([
@@ -1573,7 +1640,7 @@ def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
             "phase_runner": None,
         }
 
-    cmd = _phase_runner_cmd_for_work_item(root, item_row, report_root)
+    cmd = _phase_runner_cmd_for_work_item(root, item_row, report_root, terminal)
     if cmd is None:
         msg = "phase runner not implemented yet -- skipping for now"
         with log_path.open("a", encoding="utf-8", newline="\n") as f:
@@ -4299,6 +4366,7 @@ def pump(root: Path) -> dict[str, Any]:
     #    bottleneck for fresh approved cards. Bounded by spawn_budget so we
     #    don't pile up backlog faster than we can build it.
     result["auto_created_builds"] = []
+    result["auto_build_skipped"] = []
     # Count actually-spawned (not skipped-due-to-fresh-log)
     actually_spawned = sum(1 for s in spawns if s.get("spawned"))
     if actually_spawned < spawn_budget:
@@ -4335,6 +4403,13 @@ def pump(root: Path) -> dict[str, Any]:
                     if new_row:
                         sp = _spawn_codex_for_build(root, new_row)
                         spawns.append(sp)
+                else:
+                    result["auto_build_skipped"].append({
+                        "ea_id": ea_id,
+                        "card_path": str(card_path),
+                        "reason": br.get("reason"),
+                        "prebuild_errors": br.get("prebuild_errors", []),
+                    })
     result["codex_spawn"] = spawns[0] if spawns else None
     result["codex_spawns_all"] = spawns
     result["codex_active_before"] = active_codex
@@ -6413,11 +6488,17 @@ def render_codex_build_prompt(root: Path, card_path_str: str, out_path: str | No
     fm = parse_card_frontmatter(card_path)
     ea_id = fm.get("ea_id")
     slug = fm.get("slug")
-    g0_status = fm.get("g0_status")
     if not ea_id or not slug:
         return {"written": False, "reason": "Card missing ea_id or slug in frontmatter", "frontmatter": fm}
-    if g0_status != "APPROVED":
-        return {"written": False, "reason": f"Card g0_status must be APPROVED, got: {g0_status!r}"}
+    preflight = prebuild_validate_card(root, card_path, fm)
+    if not preflight["ok"]:
+        return {
+            "written": False,
+            "reason": "prebuild validation failed",
+            "frontmatter": fm,
+            "prebuild_errors": preflight["errors"],
+            "prebuild_warnings": preflight["warnings"],
+        }
 
     ea_dir = FRAMEWORK_EAS_DIR / f"{ea_id}_{slug}"
 
@@ -6433,6 +6514,7 @@ def render_codex_build_prompt(root: Path, card_path_str: str, out_path: str | No
                 "slug": slug,
                 "ea_dir": str(ea_dir),
                 "frontmatter": fm,
+                "prebuild_warnings": preflight["warnings"],
             },
         )
 

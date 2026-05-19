@@ -19,6 +19,9 @@ from _phase_utils import (
     write_phase_artifacts,
 )
 
+from p4_fold_dispatcher import dispatch_folds
+from p4_fold_generator import generate_folds
+
 
 def _parse_date(text: str, field: str) -> date:
     raw = (text or "").strip()
@@ -42,6 +45,112 @@ def _check_clean_oos(row: dict[str, str]) -> tuple[bool, str]:
     return False, "missing"
 
 
+def _summary_verdict(summary_path: str) -> tuple[str, str]:
+    if not summary_path:
+        return "FAIL", "missing_summary"
+    path = Path(summary_path)
+    if not path.exists():
+        return "FAIL", "summary_path_not_found"
+    try:
+        import json
+
+        data = json.loads(path.read_text(encoding="utf-8", errors="replace"))
+    except Exception as exc:
+        return "FAIL", f"summary_parse_error:{type(exc).__name__}"
+
+    verdict = str(data.get("verdict") or data.get("classification") or "").upper()
+    if verdict == "PASS":
+        return "PASS", str(data.get("reason") or "fold_summary_pass")
+    return "FAIL", str(data.get("reason") or verdict or "fold_summary_not_pass")
+
+
+def _write_walk_forward_csv_from_manifest(manifest: dict[str, object], out_dir: Path) -> Path:
+    rows = []
+    for fold in manifest.get("fold_results", []):
+        if not isinstance(fold, dict):
+            continue
+        verdict, reason = _summary_verdict(str(fold.get("summary_path") or ""))
+        rows.append(
+            {
+                "fold_id": str(fold.get("fold_id") or ""),
+                "regime": str(fold.get("regime") or "UNCLASSIFIED"),
+                "dev_start": str(fold.get("dev_start") or ""),
+                "dev_end": str(fold.get("dev_end") or ""),
+                "oos_start": str(fold.get("oos_start") or ""),
+                "oos_end": str(fold.get("oos_end") or ""),
+                "oos_clean": "true" if verdict == "PASS" else "false",
+                "verdict": verdict,
+                "summary_path": str(fold.get("summary_path") or ""),
+                "reason": reason,
+            }
+        )
+
+    csv_path = out_dir / "walk_forward.csv"
+    with csv_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=[
+                "fold_id",
+                "regime",
+                "dev_start",
+                "dev_end",
+                "oos_start",
+                "oos_end",
+                "oos_clean",
+                "verdict",
+                "summary_path",
+                "reason",
+            ],
+        )
+        writer.writeheader()
+        for row in rows:
+            writer.writerow(row)
+    return csv_path
+
+
+def _run_fold_vertical_slice(args: argparse.Namespace, out_dir: Path) -> Path:
+    folds = generate_folds(
+        ea_id=args.ea,
+        train_from_year=int(args.train_from_year or 2017),
+        oos_from_year=int(args.oos_from_year or 2023),
+        oos_to_year=int(args.oos_to_year or 2025),
+        fold_months=args.fold_months,
+        embargo_days=args.embargo_days,
+        min_folds=args.min_folds,
+    )
+    folds_csv = out_dir / "walk_forward_folds.csv"
+    with folds_csv.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=["ea_id", "fold_id", "regime", "dev_start", "dev_end", "oos_start", "oos_end"],
+        )
+        writer.writeheader()
+        for fold in folds:
+            writer.writerow(fold)
+
+    if not args.setfile:
+        raise ValueError("P4 fold dispatch requires --setfile when --walk-forward-csv is absent")
+    symbol = args.symbol or (args.symbols.split(",")[0].strip() if args.symbols else "")
+    if not symbol:
+        raise ValueError("P4 fold dispatch requires --symbol or --symbols when --walk-forward-csv is absent")
+
+    manifest = dispatch_folds(
+        ea_id=args.ea,
+        symbol=symbol,
+        period=args.period,
+        setfile=Path(args.setfile),
+        folds_csv=folds_csv,
+        out_prefix=Path(args.out_prefix),
+        terminal=args.terminal,
+        timeout_seconds=args.timeout_seconds,
+    )
+    fold_by_id = {fold["fold_id"]: fold for fold in folds}
+    for result in manifest.get("fold_results", []):
+        if isinstance(result, dict):
+            result.update(fold_by_id.get(str(result.get("fold_id") or ""), {}))
+    return _write_walk_forward_csv_from_manifest(manifest, out_dir)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run P4 walk-forward gate checks.")
     add_common_args(parser)
@@ -55,32 +164,40 @@ def main() -> int:
     parser.add_argument("--oos-from-year", default="")
     parser.add_argument("--oos-to-year", default="")
     parser.add_argument("--min-folds", type=int, default=6)
+    parser.add_argument("--fold-months", type=int, default=6)
+    parser.add_argument("--embargo-days", type=int, default=7)
+    parser.add_argument("--terminal", default="T1")
+    parser.add_argument("--timeout-seconds", type=int, default=1800)
     args = parser.parse_args()
 
     ea_id = args.ea
     out_dir = ensure_dir(Path(args.out_prefix) / ea_id / "P4")
     if not args.walk_forward_csv:
-        result = build_result(
-            phase="P4",
-            ea_id=ea_id,
-            verdict="PENDING_IMPLEMENTATION",
-            criterion="P4 walk-forward runner is wired for cascade, but fold generation is pending; no PASS can be issued without WF CSV evidence.",
-            evidence_path="",
-            details={
-                "symbols": args.symbols or args.symbol,
-                "period": args.period,
-                "setfile": args.setfile,
-                "train_from_year": args.train_from_year,
-                "train_to_year": args.train_to_year,
-                "oos_from_year": args.oos_from_year,
-                "oos_to_year": args.oos_to_year,
-                "min_folds": args.min_folds,
-            },
-        )
-        result_path, _ = write_phase_artifacts(out_dir=out_dir, phase="P4", ea_id=ea_id, result=result)
-        update_result_with_evidence_path(result_path, result)
-        print(result_path)
-        return 0
+        try:
+            args.walk_forward_csv = str(_run_fold_vertical_slice(args, out_dir))
+        except Exception as exc:
+            result = build_result(
+                phase="P4",
+                ea_id=ea_id,
+                verdict="WAITING_INPUT",
+                criterion="P4 could not run fold dispatch; required setup input is missing or invalid.",
+                evidence_path="",
+                details={
+                    "symbols": args.symbols or args.symbol,
+                    "period": args.period,
+                    "setfile": args.setfile,
+                    "train_from_year": args.train_from_year,
+                    "train_to_year": args.train_to_year,
+                    "oos_from_year": args.oos_from_year,
+                    "oos_to_year": args.oos_to_year,
+                    "min_folds": args.min_folds,
+                    "error": str(exc),
+                },
+            )
+            result_path, _ = write_phase_artifacts(out_dir=out_dir, phase="P4", ea_id=ea_id, result=result)
+            update_result_with_evidence_path(result_path, result)
+            print(result_path)
+            return 0
 
     rows = load_csv_rows(Path(args.walk_forward_csv))
 

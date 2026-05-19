@@ -1077,7 +1077,7 @@ def collect_ea_lead_kpis(root: Path, ea_ids: list[str]) -> dict[str, dict[str, A
     with sqlite3.connect(db) as conn:
         conn.row_factory = sqlite3.Row
         rows = list(conn.execute(
-            f"SELECT ea_id, phase, symbol, verdict, payload_json, evidence_path, updated_at "
+            f"SELECT ea_id, phase, symbol, status, verdict, payload_json, evidence_path, updated_at "
             f"FROM work_items WHERE ea_id IN ({placeholders}) "
             f"ORDER BY ea_id, phase, symbol, updated_at DESC",
             ea_ids,
@@ -1097,6 +1097,7 @@ def collect_ea_lead_kpis(root: Path, ea_ids: list[str]) -> dict[str, dict[str, A
         stats = p.get("recovered_stats") or {}
         item = {
             "phase": r["phase"],
+            "status": r["status"],
             "symbol": r["symbol"],
             "verdict": r["verdict"],
             "net_profit": stats.get("net_profit") if r["verdict"] == "PASS" else None,
@@ -1113,6 +1114,16 @@ def collect_ea_lead_kpis(root: Path, ea_ids: list[str]) -> dict[str, dict[str, A
         verdicts = [i["verdict"] for i in items if i.get("verdict")]
         n_pass = sum(1 for v in verdicts if v == "PASS")
         n_fail = sum(1 for v in verdicts if v == "FAIL")
+        pass_phases = {
+            i["phase"]
+            for i in items
+            if i.get("status") == "done" and i.get("verdict") == "PASS" and i.get("phase") in PHASE_ORDER
+        }
+        p4plus_pass = any(PHASE_ORDER.index(p) >= PHASE_ORDER.index("P4") for p in pass_phases)
+        p8_pass = "P8" in pass_phases
+        highest_pass_phase = None
+        if pass_phases:
+            highest_pass_phase = max(pass_phases, key=lambda p: PHASE_ORDER.index(p))
 
         best = max(nets, key=lambda x: x[0]) if nets else None
         # latest phase any work_item touched
@@ -1134,6 +1145,9 @@ def collect_ea_lead_kpis(root: Path, ea_ids: list[str]) -> dict[str, dict[str, A
             "n_symbols": len({i["symbol"] for i in items if i.get("symbol")}),
             "n_pass": n_pass,
             "n_fail": n_fail,
+            "highest_pass_phase": highest_pass_phase,
+            "p4plus_pass": p4plus_pass,
+            "p8_pass": p8_pass,
             "latest_phase": latest_phase,
             "work_item_count": len(items),
         }
@@ -1186,6 +1200,8 @@ def render_strategies(state: dict, root: Path) -> str:
                 ts_sort = 0.0
 
             cur_phase = e(ea.get("current_phase", "—"))
+            robust_label = "P8" if k.get("p8_pass") else ("P4+" if k.get("p4plus_pass") else (k.get("highest_pass_phase") or "—"))
+            robust_cls = "s-live" if k.get("p8_pass") else ("s-flow" if k.get("p4plus_pass") else "s-dead")
             n_sym = k.get("n_symbols") or 0
             sym_pass = f'{k.get("n_pass", 0)}/{k.get("n_fail", 0)+k.get("n_pass", 0)}' if k.get("n_pass") or k.get("n_fail") else "—"
 
@@ -1195,6 +1211,7 @@ def render_strategies(state: dict, root: Path) -> str:
   <td><span class="status-chip {status_cls}">{label}</span></td>
   <td>{_progress_bar_html(ea)}</td>
   <td>{cur_phase}</td>
+  <td><span class="status-chip {robust_cls}">{e(robust_label)}</span></td>
   <td class="col-num" data-sort="{best_sort}">{best_net_html}{best_meta}</td>
   <td class="col-num">{trades_html}</td>
   <td class="col-num" data-sort="{dd_sort}">{dd_html}</td>
@@ -1212,6 +1229,7 @@ def render_strategies(state: dict, root: Path) -> str:
       <th data-sort-col="status" data-sort-type="text">Status</th>
       <th>Progress · G0→P10</th>
       <th data-sort-col="phase" data-sort-type="text">Current</th>
+      <th data-sort-col="robust" data-sort-type="text">Real PASS</th>
       <th data-sort-col="net" data-sort-type="num" class="col-num">Best Net P&amp;L</th>
       <th data-sort-col="trades" data-sort-type="num" class="col-num">Trades</th>
       <th data-sort-col="dd" data-sort-type="num" class="col-num">Worst DD</th>

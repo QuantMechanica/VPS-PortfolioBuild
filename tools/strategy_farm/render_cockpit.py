@@ -578,6 +578,9 @@ def pipeline_backlog_snapshot() -> dict:
         "sources": {"pending": 0, "cards_ready": 0, "done": 0},
         "pass_by_phase": [],
         "pass_total": 0,
+        "p4plus_pass_total": 0,
+        "p8_pass_total": 0,
+        "p4_pending_implementation": 0,
         "work_active_by_phase": [],
         "work_active_total": 0,
         "top_sources": [],
@@ -594,6 +597,19 @@ def pipeline_backlog_snapshot() -> dict:
             "SELECT COUNT(DISTINCT ea_id) AS c FROM work_items WHERE verdict='PASS'"
         )
         out["pass_total"] = pass_total[0]["c"] if pass_total else 0
+        p4plus = db_rows(
+            "SELECT COUNT(DISTINCT ea_id) AS c FROM work_items "
+            "WHERE verdict='PASS' AND phase IN ('P4','P5','P5b','P5c','P6','P7','P8')"
+        )
+        out["p4plus_pass_total"] = p4plus[0]["c"] if p4plus else 0
+        p8 = db_rows(
+            "SELECT COUNT(DISTINCT ea_id) AS c FROM work_items WHERE verdict='PASS' AND phase='P8'"
+        )
+        out["p8_pass_total"] = p8[0]["c"] if p8 else 0
+        p4_pending = db_rows(
+            "SELECT COUNT(*) AS c FROM work_items WHERE phase='P4' AND verdict='PENDING_IMPLEMENTATION'"
+        )
+        out["p4_pending_implementation"] = p4_pending[0]["c"] if p4_pending else 0
         out["work_active_by_phase"] = db_rows(
             "SELECT phase, COUNT(*) AS c FROM work_items "
             "WHERE status IN ('active','pending','claimed') GROUP BY phase ORDER BY phase"
@@ -1015,9 +1031,11 @@ def main() -> int:
         {metric_tile("Sources pending", sources.get("pending", 0), "awaiting extraction", "var(--promising)")}
         {metric_tile("Cards ready", sources.get("cards_ready", 0), "ready for EA build", "var(--em-l)")}
         {metric_tile("Sources done", sources.get("done", 0), "completed source intake", "var(--qm-text-dim)")}
-        {metric_tile("EAs PASS", backlog["pass_total"], "distinct EAs across phases", "var(--em)")}
+        {metric_tile("Screening PASS", backlog["pass_total"], "distinct EAs with any PASS", "var(--em)")}
+        {metric_tile("P4+ PASS", backlog["p4plus_pass_total"], "OOS-or-later candidates", "var(--live)")}
+        {metric_tile("P8 PASS", backlog["p8_pass_total"], "portfolio-ready candidates", "var(--em-l)")}
+        {metric_tile("P4 blocked", backlog["p4_pending_implementation"], "pending implementation rows", "var(--promising)")}
         {metric_tile("Work items now", backlog["work_active_total"], "active / pending / claimed", "var(--live)")}
-        {metric_tile("Estimated TODO", backlog["estimated_todo"], "pending sources × 3 strategies", "var(--promising)")}
       </div>
       <div class="backlog-detail">
         <div class="backlog-panel">
