@@ -905,6 +905,17 @@ def chk_unenqueued_eas_count(con) -> dict:
 def chk_codex_bridge_heartbeat(con) -> dict:
     """Interactive bridge heartbeat freshness."""
     auth_broken = _is_codex_auth_broken(con)
+    direct_codex_active = False
+    try:
+        out = subprocess.run(
+            ["powershell.exe", "-NoProfile", "-Command",
+             "(Get-Process -Name codex -ErrorAction SilentlyContinue).Count"],
+            capture_output=True, text=True, timeout=10,
+            creationflags=_creationflags_no_window(),
+        )
+        direct_codex_active = int((out.stdout or "0").strip() or "0") > 0
+    except Exception:
+        direct_codex_active = False
     if not CODEX_BRIDGE_HEARTBEAT.exists():
         return _check("codex_bridge_heartbeat", "WARN", "missing", 300,
                       "codex bridge heartbeat file missing",
@@ -915,6 +926,10 @@ def chk_codex_bridge_heartbeat(con) -> dict:
                       f"heartbeat stale for {age}s (codex_auth_broken upstream)",
                       "Downstream of codex_auth_broken — restart bridge after OWNER refreshes Codex login.")
     if age > 1800:
+        if direct_codex_active:
+            return _check("codex_bridge_heartbeat", "WARN", age, 1800,
+                          f"legacy bridge heartbeat stale for {age}s; direct pump Codex is active",
+                          "Interactive /goal bridge appears unused. Restart only if relying on codex_inbox polling.")
         return _check("codex_bridge_heartbeat", "FAIL", age, 1800,
                       f"heartbeat stale for {age}s",
                       "Restart or inspect the interactive Codex bridge.")
