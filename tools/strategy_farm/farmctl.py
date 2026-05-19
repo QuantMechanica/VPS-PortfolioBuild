@@ -4307,6 +4307,16 @@ def pump(root: Path) -> dict[str, Any]:
         # Forensic tombstones — never retry.
         if payload.get("superseded_by"):
             continue
+        blocked_reason = str(
+            payload.get("blocked_reason")
+            or payload.get("build_result", {}).get("blocked_reason")
+            or ""
+        )
+        # Mechanical review failures are code-quality findings, not transient
+        # infra failures. Auto-retrying them burns Codex and can repeatedly
+        # recreate the same EA/framework-corset violation.
+        if blocked_reason == "codex_review_fail":
+            continue
         # Another pending build_ea already covers this card — re-unblocking
         # would re-create the duplicate-pending stack bb950e1f eliminated.
         if row["card_id"] in cards_with_pending_build:
@@ -4335,7 +4345,7 @@ def pump(root: Path) -> dict[str, Any]:
 
         update_payload = dict(payload)
         update_payload["attempt_count"] = attempt
-        update_payload["last_blocked_reason"] = payload.get("blocked_reason") or payload.get("build_result", {}).get("blocked_reason")
+        update_payload["last_blocked_reason"] = blocked_reason
         # Clear stale dispatch metadata so the fresh Codex run starts clean
         for k in ("pid", "started_at_iso", "log_path", "build_result", "blocked_reason"):
             update_payload.pop(k, None)
@@ -4349,7 +4359,7 @@ def pump(root: Path) -> dict[str, Any]:
             "task_id": row["id"],
             "ea_id": payload.get("ea_id"),
             "attempt": attempt,
-            "last_blocked_reason": (payload.get("blocked_reason") or "")[:120],
+            "last_blocked_reason": blocked_reason[:120],
         })
 
     # 3. Codex builds for up to MAX_PARALLEL_CODEX pending build_ea tasks.

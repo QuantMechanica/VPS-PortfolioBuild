@@ -386,6 +386,7 @@ def chk_codex_review_fail_rate(con) -> dict:
     n_fail = 0
     fails_smoke_only = 0
     fails_other = 0
+    system_fail_cards: set[str] = set()
     for r in rows:
         try:
             p = json.loads(r["payload_json"])
@@ -402,16 +403,22 @@ def chk_codex_review_fail_rate(con) -> dict:
             fails_smoke_only += 1
         else:
             fails_other += 1
+            card_id = str(p.get("ea_id") or p.get("card_id") or p.get("build_task_id") or "UNKNOWN")
+            system_fail_cards.add(card_id)
     rate = n_fail / n if n > 0 else 0
     if n < 3:
         return _check("codex_review_fail_rate_1h", "OK", round(rate, 2), 0.8,
                       f"{n_fail}/{n} FAIL (low volume)", "")
-    if fails_other >= 2:
+    if len(system_fail_cards) >= 2:
         return _check("codex_review_fail_rate_1h", "FAIL", round(rate, 2), 0.8,
-                      f"{fails_other}/{n} system-class FAILs in last hour",
+                      f"{fails_other}/{n} system-class FAILs across {len(system_fail_cards)} EAs in last hour",
                       "Inspect verdicts that FAIL on framework_corset, magic_registry, "
                       "or forbidden_grep — those indicate Codex producing bad code or "
                       "a schema drift, NOT just strategy quality")
+    if fails_other >= 1:
+        return _check("codex_review_fail_rate_1h", "WARN", round(rate, 2), 0.8,
+                      f"{fails_other}/{n} system-class FAIL(s) on one EA: {', '.join(sorted(system_fail_cards))}",
+                      "One EA is blocked for mechanical rework; watch for recurrence on a second EA.")
     if rate >= 0.8 and fails_smoke_only >= 3:
         # All FAILs are strategy-quality (0-trade). Pump §4b should be
         # short-circuiting most of these BEFORE codex_review now, so this

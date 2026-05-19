@@ -35,6 +35,9 @@ Reference: `framework/templates/EA_Skeleton.mq5` + `framework/include/QM/*.mqh`.
   / QM_ADX_* / QM_BB_*` from `QM_Indicators.mqh`. Direct `iATR / iMA / iRSI /
   iMACD / iADX / iBands` OR raw `CopyBuffer` calls = FAIL.
 - New-bar gating uses `QM_IsNewBar()` — per-EA reimplementation = FAIL.
+  Treat file-scope `g_last_*_bar` / `last_checked_bar` / `iTime(...)`
+  timestamp gates as per-EA reimplementations too, even when the function is
+  not literally named `IsNewBar`.
 - Position open / close uses `QM_TM_OpenPosition / QM_TM_ClosePosition` —
   raw `OrderSend` = FAIL.
 - Risk sizing uses `QM_LotsForRisk()` — hardcoded lots = FAIL.

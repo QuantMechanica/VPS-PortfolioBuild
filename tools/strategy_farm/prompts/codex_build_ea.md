@@ -197,6 +197,11 @@ if(QM_Sig_MA_Position(_Symbol, PERIOD_H4, 50, 200, 1) > 0 &&
 
 Forbidden patterns (Claude review will `REJECT_REWORK` on any):
 - Per-EA `IsNewBar()` function — use `QM_IsNewBar()`
+- File-scope `g_last_*_bar` / `last_checked_bar` / `iTime(...)` gating —
+  this is a per-EA new-bar reimplementation even if it is named differently.
+  If daily/weekly signals need closed-bar cadence, use the framework
+  `QM_IsNewBar(symbol, timeframe)` overload or read fixed closed-bar shifts
+  from `QM_*` helpers. Do not maintain your own timestamp gate.
 - Direct `iATR / iMA / iRSI / iMACD / iADX / iBands` calls — use the `QM_*` readers
 - `CopyBuffer` on raw handles — the readers do it for you
 - File-scope `g_atr_handle` / `IndicatorRelease` — handles are pooled
