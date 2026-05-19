@@ -5235,6 +5235,7 @@ def pump(root: Path) -> dict[str, Any]:
         "P7": {"PASS"},
     }
     with connect(root) as conn:
+        conn.execute("BEGIN IMMEDIATE")
         reopened_parents: set[str] = set()
         for prev_phase, next_phase in cascade_phase_map.items():
             verdicts = sorted(cascade_pass_verdicts[prev_phase])
