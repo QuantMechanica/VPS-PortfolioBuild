@@ -5338,6 +5338,7 @@ def pump(root: Path) -> dict[str, Any]:
                 w.setfile_path LIKE '%_ablation_%'
                 OR w.setfile_path LIKE '%_grid_%'
                 OR w.setfile_path LIKE '%_synth_%'
+                OR w.setfile_path LIKE '%_freq_%'
               )
               AND NOT EXISTS (
                 SELECT 1 FROM work_items w2
