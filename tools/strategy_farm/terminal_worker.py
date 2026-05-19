@@ -264,7 +264,9 @@ def _smoke_terminal_exit_stalled(item: dict[str, Any], payload: dict[str, Any]) 
         text = path.read_text(encoding="utf-8-sig", errors="ignore")
     except OSError:
         return False
-    return "run_smoke.stage=terminal_exit" in text
+    last_start = text.rfind("run_smoke.stage=terminal_start")
+    last_exit = text.rfind("run_smoke.stage=terminal_exit")
+    return last_exit >= 0 and last_start >= 0 and last_exit > last_start
 
 
 def _stop_terminal_slot_for_release(root: Path, terminal: str | None) -> bool | None:
