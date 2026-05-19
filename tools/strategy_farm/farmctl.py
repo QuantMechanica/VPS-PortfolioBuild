@@ -2358,6 +2358,23 @@ def _detect_active_age_timeout(con: sqlite3.Connection) -> list[dict[str, Any]]:
     return flagged
 
 
+def _normalize_pending_work_item_verdicts(con: sqlite3.Connection) -> int:
+    """Pending work_items are open queue entries; stale verdicts belong only to finished rows."""
+    now = utc_now()
+    cur = con.execute(
+        """
+        UPDATE work_items
+        SET verdict=NULL, updated_at=?
+        WHERE status='pending' AND verdict IS NOT NULL
+        """,
+        (now,),
+    )
+    changed = int(cur.rowcount or 0)
+    if changed:
+        con.commit()
+    return changed
+
+
 def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, Any]:
     """Per-(symbol, setfile) dispatcher. Replaces bundled p2_baseline fan-out.
 
@@ -4712,6 +4729,7 @@ def pump(root: Path) -> dict[str, Any]:
     #     active-timeout detector but no longer spawns MT5 work_items.
     with connect(root) as conn:
         result["active_timeouts"] = _detect_active_age_timeout(conn)
+        result["pending_verdicts_normalized"] = _normalize_pending_work_item_verdicts(conn)
     result["dispatch_work_items"] = {
         "disabled": True,
         "reason": "per-terminal worker daemons own work_item dispatch",
