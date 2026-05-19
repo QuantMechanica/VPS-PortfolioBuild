@@ -7,6 +7,7 @@ $ErrorActionPreference = "Continue"
 
 $promptFile = "C:\QM\repo\tools\strategy_farm\prompts\autonomous_loop.md"
 $logDir     = "D:\QM\strategy_farm\logs"
+$disableFlag = "D:\QM\strategy_farm\CLAUDE_DISABLED.flag"
 $stamp      = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH-mm-ssZ")
 
 New-Item -ItemType Directory -Force -Path $logDir | Out-Null
@@ -22,6 +23,10 @@ $sessJsonl  = Join-Path $logDir "autonomous_wake_$stamp.jsonl"
 $heartbeat  = Join-Path $logDir "autonomous_wake_current.heartbeat"
 
 $utcNow = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+if (Test-Path -LiteralPath $disableFlag) {
+    "$utcNow WAKE_SKIPPED claude_disabled_flag=$disableFlag" | Add-Content $wakeLog
+    exit 0
+}
 "$utcNow WAKE_INVOKED  prompt=$promptFile  session_log=$sessLog  jsonl=$sessJsonl" | Add-Content $wakeLog
 "$utcNow STARTED" | Set-Content $heartbeat
 

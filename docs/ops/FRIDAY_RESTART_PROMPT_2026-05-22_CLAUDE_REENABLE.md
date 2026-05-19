@@ -13,6 +13,8 @@ As of 2026-05-19, all autonomous Claude spend is hard-disabled:
 - `MAX_PARALLEL_CLAUDE = 0`.
 - `QM_PREFER_CLAUDE_REVIEW` is ignored by the pump while this patch is active.
 - `claude_review_spawn`, `claude_g0_spawn`, and `claude_research_spawn` return disabled/routed-to-Codex reasons.
+- `QM_StrategyFarm_BoardAdvisor_Hourly` and `QM_StrategyFarm_AutonomousWake_Hourly` were disabled because they directly invoke Claude.
+- `D:\QM\strategy_farm\CLAUDE_DISABLED.flag` blocks the Claude PS1 wrappers even if those tasks are accidentally re-enabled.
 
 This was intentional. Do not treat missing Claude activity as a bug before Friday.
 
@@ -43,6 +45,13 @@ python tools/strategy_farm/farmctl.py mt5-slots
 
 # Check exact current code gates.
 rg -n "MAX_PARALLEL_CLAUDE|claude disabled|prefer_claude_review|claude_research_spawn|claude_g0_spawn|claude_review_spawn" tools/strategy_farm/farmctl.py
+
+# Confirm task-level Claude wakes are still off.
+Get-ScheduledTask -TaskName QM_StrategyFarm_BoardAdvisor_Hourly,QM_StrategyFarm_AutonomousWake_Hourly |
+  Select-Object TaskName,State
+
+# Confirm the wrapper kill-switch is present.
+Test-Path D:\QM\strategy_farm\CLAUDE_DISABLED.flag
 ```
 
 ## 4. Re-enable Patch Target
@@ -53,6 +62,8 @@ If OWNER confirms re-enable, update `tools/strategy_farm/farmctl.py` around `pum
 - Restore `prefer_claude_review = os.environ.get("QM_PREFER_CLAUDE_REVIEW") == "1"` if Claude should only be fallback.
 - Restore Claude G0/research spawn branches only if OWNER wants dual Claude+Codex operation again.
 - Keep Codex as default unless OWNER explicitly says Claude should be primary.
+- Remove `D:\QM\strategy_farm\CLAUDE_DISABLED.flag`.
+- Re-enable `QM_StrategyFarm_BoardAdvisor_Hourly` and/or `QM_StrategyFarm_AutonomousWake_Hourly` only if OWNER wants those Claude wakes back.
 
 Recommended Friday default:
 

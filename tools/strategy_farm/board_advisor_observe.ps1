@@ -11,6 +11,7 @@ $ErrorActionPreference = "Continue"
 
 $promptFile = "C:\QM\repo\tools\strategy_farm\prompts\board_advisor_observe.md"
 $logDir     = "D:\QM\strategy_farm\logs"
+$disableFlag = "D:\QM\strategy_farm\CLAUDE_DISABLED.flag"
 $stamp      = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH-mm-ssZ")
 
 New-Item -ItemType Directory -Force -Path $logDir | Out-Null
@@ -18,6 +19,10 @@ $wakeLog = Join-Path $logDir "observe_wakes_invocation.log"
 $sessLog = Join-Path $logDir "observe_wake_$stamp.log"
 
 $utcNow = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+if (Test-Path -LiteralPath $disableFlag) {
+    "$utcNow OBSERVE_SKIPPED claude_disabled_flag=$disableFlag" | Add-Content $wakeLog
+    exit 0
+}
 "$utcNow OBSERVE_INVOKED  prompt=$promptFile  session_log=$sessLog" | Add-Content $wakeLog
 
 $bootstrap = @"
