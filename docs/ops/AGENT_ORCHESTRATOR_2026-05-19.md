@@ -66,6 +66,14 @@ The first implementation creates and routes tickets only. It does not spawn
 agents yet. Existing `farmctl.py pump` remains responsible for current Codex
 build/review spawning and real MT5 pipeline execution.
 
+## Research Replenish Policy
+
+OWNER directive 2026-05-19: research is not continuous while there is enough
+strategy/card/pipeline backlog to process. The orchestrator and pump may create
+new `research_strategy` work only when the combined strategy reservoir drops
+below 5. With the current reservoir above 1000, research stays paused and
+existing approved cards/builds/pipeline work have priority.
+
 Next integration step: have the pump call `agent_router.replenish()` and
 `route_once()` before the existing specialized spawn lanes, then replace those
 lanes one by one with artifact-driven `agent_tasks` transitions.
