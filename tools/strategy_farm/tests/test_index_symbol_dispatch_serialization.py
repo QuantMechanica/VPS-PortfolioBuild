@@ -174,6 +174,46 @@ class IndexSymbolDispatchSerializationTests(unittest.TestCase):
             self.assertEqual(updated["prior_failure"], "worker_died")
             self.assertTrue(updated["terminal_stopped_on_release"])
 
+    def test_legacy_dispatch_tick_respects_running_mt5_slots(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp) / "farm"
+            farmctl.init_db(root)
+            now = farmctl.utc_now()
+            db = root / "state" / "farm_state.sqlite"
+            with sqlite3.connect(db) as conn:
+                conn.execute(
+                    """
+                    INSERT INTO tasks
+                      (id, kind, status, source_id, card_id, payload_json, created_at, updated_at)
+                    VALUES
+                      ('task-p2', 'backtest_p2', 'pending', NULL, 'QM5_9999',
+                       ?, ?, ?)
+                    """,
+                    (json.dumps({"phase": "P2", "ea_id": "QM5_9999"}), now, now),
+                )
+                conn.commit()
+
+            old_terminals = farmctl.MT5_TERMINALS
+            old_running = farmctl._running_mt5_terminals
+            old_popen = farmctl.subprocess.Popen
+            try:
+                farmctl.MT5_TERMINALS = ("T1",)
+                farmctl._running_mt5_terminals = lambda: {"T1"}
+                farmctl.subprocess.Popen = lambda *_args, **_kwargs: self.fail("legacy dispatch used busy T1")
+
+                result = farmctl.dispatch_tick(root)
+            finally:
+                farmctl.MT5_TERMINALS = old_terminals
+                farmctl._running_mt5_terminals = old_running
+                farmctl.subprocess.Popen = old_popen
+
+            self.assertEqual(result["busy_terminals"], ["T1"])
+            self.assertEqual(result["free_terminals"], [])
+            self.assertNotIn("started", [action.get("action") for action in result["actions"]])
+            with sqlite3.connect(db) as conn:
+                status = conn.execute("SELECT status FROM tasks WHERE id='task-p2'").fetchone()[0]
+            self.assertEqual(status, "pending")
+
 
 if __name__ == "__main__":
     unittest.main()

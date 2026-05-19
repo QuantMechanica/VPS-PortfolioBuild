@@ -167,6 +167,70 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             self.assertEqual(payload["prior_failure"], "summary_missing")
             self.assertTrue(payload["terminal_stopped_on_release"])
 
+    def test_run_claimed_item_stops_child_when_claim_is_externally_released(self) -> None:
+        with self._root() as tmp:
+            root = (Path(tmp) / "farm").resolve()
+            self._insert_work_item(
+                root,
+                "wi-external-release",
+                "CADCHF.DWX",
+                phase="P2",
+                status="active",
+                claimed_by="T5",
+                payload={},
+            )
+
+            stopped_children: list[int] = []
+            stopped_terminals: list[str] = []
+            old_spawn = terminal_worker.farmctl._spawn_work_item_runner
+            old_pid_exists = terminal_worker.farmctl._pid_exists
+            old_stop_pid = terminal_worker.farmctl._stop_pid
+            old_default_root = terminal_worker.farmctl.DEFAULT_ROOT
+            old_stop_terminal_slot = terminal_worker.farmctl._stop_terminal_slot
+
+            def fake_pid_exists(_pid: int) -> bool:
+                with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                    conn.execute(
+                        "UPDATE work_items SET status='pending', claimed_by=NULL WHERE id='wi-external-release'"
+                    )
+                    conn.commit()
+                return True
+
+            try:
+                terminal_worker.farmctl._spawn_work_item_runner = lambda _root, _row, _terminal: {
+                    "spawned": True,
+                    "pid": 123456,
+                    "log_path": str(root / "runner.log"),
+                    "report_root": str(root / "reports"),
+                    "ea_dir_name": "QM5_9999",
+                    "expected_trades_per_year_per_symbol": 10,
+                    "smoke_year_count": 6,
+                    "effective_min_trades": 5,
+                    "phase_runner": "run_smoke.ps1",
+                }
+                terminal_worker.farmctl._pid_exists = fake_pid_exists
+                terminal_worker.farmctl._stop_pid = lambda pid: stopped_children.append(int(pid)) or True
+                terminal_worker.farmctl.DEFAULT_ROOT = root
+                terminal_worker.farmctl._stop_terminal_slot = lambda terminal: stopped_terminals.append(terminal) or True
+
+                result = terminal_worker._run_claimed_item(
+                    root,
+                    {"id": "wi-external-release"},
+                    "T5",
+                    timeout_seconds=30,
+                )
+            finally:
+                terminal_worker.farmctl._spawn_work_item_runner = old_spawn
+                terminal_worker.farmctl._pid_exists = old_pid_exists
+                terminal_worker.farmctl._stop_pid = old_stop_pid
+                terminal_worker.farmctl.DEFAULT_ROOT = old_default_root
+                terminal_worker.farmctl._stop_terminal_slot = old_stop_terminal_slot
+
+            self.assertEqual(result["action"], "external_release_observed")
+            self.assertEqual(result["reason"], "status_changed")
+            self.assertEqual(stopped_children, [123456])
+            self.assertEqual(stopped_terminals, ["T5"])
+
 
 if __name__ == "__main__":
     unittest.main()

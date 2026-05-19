@@ -229,6 +229,24 @@ def _stop_terminal_slot_for_release(root: Path, terminal: str | None) -> bool | 
     return farmctl._stop_terminal_slot(str(terminal))
 
 
+def _work_item_ownership(root: Path, item_id: str, terminal: str) -> dict[str, Any]:
+    """Return whether a worker still owns the active work_item claim."""
+    with farmctl.connect(root) as conn:
+        row = conn.execute(
+            "SELECT status, claimed_by FROM work_items WHERE id=?",
+            (item_id,),
+        ).fetchone()
+    if not row:
+        return {"owned": False, "reason": "missing_item"}
+    status = row["status"]
+    claimed_by = row["claimed_by"]
+    if status != "active":
+        return {"owned": False, "reason": "status_changed", "status": status, "claimed_by": claimed_by}
+    if claimed_by != terminal:
+        return {"owned": False, "reason": "claim_transferred", "status": status, "claimed_by": claimed_by}
+    return {"owned": True, "status": status, "claimed_by": claimed_by}
+
+
 def _finish_work_item(root: Path, item_id: str, exit_code: int | None) -> dict[str, Any]:
     def _finish() -> dict[str, Any]:
         now = farmctl.utc_now()
@@ -455,6 +473,18 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
     while time.monotonic() < deadline and farmctl._pid_exists(spawn["pid"]):
         if _STOP:
             return {"action": "shutdown_waiting_for_child", "item_id": item["id"], "pid": spawn["pid"]}
+        ownership = _work_item_ownership(root, item["id"], terminal)
+        if not ownership.get("owned"):
+            child_stopped = farmctl._stop_pid(spawn["pid"])
+            terminal_stopped = _stop_terminal_slot_for_release(root, terminal)
+            return {
+                "action": "external_release_observed",
+                "item_id": item["id"],
+                "pid": spawn["pid"],
+                "child_stopped": child_stopped,
+                "terminal_stopped": terminal_stopped,
+                **ownership,
+            }
         time.sleep(2.0)
     if farmctl._pid_exists(spawn["pid"]):
         farmctl._stop_pid(spawn["pid"])

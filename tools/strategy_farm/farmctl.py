@@ -6515,6 +6515,20 @@ def _phase_runner_cmd(phase: str, ea_id: str, terminal: str | None = None,
     return None
 
 
+def _payload_assigned_terminal(payload: dict[str, Any]) -> str | None:
+    terminal = payload.get("assigned_terminal") or payload.get("terminal")
+    if terminal == "ALL":
+        return "ALL"
+    if terminal in MT5_TERMINALS:
+        return str(terminal)
+    cmd = payload.get("cmd")
+    if isinstance(cmd, list):
+        for index, part in enumerate(cmd[:-1]):
+            if str(part).lower() == "--terminal" and str(cmd[index + 1]) in MT5_TERMINALS:
+                return str(cmd[index + 1])
+    return None
+
+
 def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
     """Hybrid saturated dispatch (Achse B v2, OWNER 2026-05-16).
 
@@ -6548,7 +6562,8 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
     init_db(root)
     actions: list[dict[str, Any]] = []
     started_iso = utc_now()
-    busy_terminals: set[str] = set()
+    running_mt5_terminals = _running_mt5_terminals()
+    busy_terminals: set[str] = set(running_mt5_terminals)
 
     with connect(root) as conn:
         # Phase 1 — poll all active backtest tasks. Tasks that have
@@ -6565,7 +6580,7 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
             payload = json.loads(row["payload_json"])
             phase = payload.get("phase", "?")
             ea_id = payload.get("ea_id")
-            assigned_terminal = payload.get("assigned_terminal")
+            assigned_terminal = _payload_assigned_terminal(payload)
 
             report = _resolve_report(payload)
             if report is not None and report.exists():
@@ -6893,6 +6908,7 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
         "actions": actions,
         "busy_terminals": sorted(busy_terminals),
         "free_terminals": sorted([t for t in MT5_TERMINALS if t not in busy_terminals]),
+        "running_mt5_terminals": sorted(running_mt5_terminals),
         "mode": dispatch_mode if pending_rows or actions else "idle",
     }
 
