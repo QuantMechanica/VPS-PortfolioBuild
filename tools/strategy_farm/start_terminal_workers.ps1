@@ -10,6 +10,7 @@ $stateDir = Join-Path $FarmRoot "state"
 $logDir = Join-Path $FarmRoot "logs"
 $pidFile = Join-Path $stateDir "worker_pids.json"
 $worker = Join-Path $RepoRoot "tools\strategy_farm\terminal_worker.py"
+$factoryTerminals = 1..10 | ForEach-Object { "T$_" }
 
 New-Item -ItemType Directory -Force -Path $stateDir | Out-Null
 New-Item -ItemType Directory -Force -Path $logDir | Out-Null
@@ -27,7 +28,7 @@ if (Test-Path $pidFile) {
 }
 
 $updated = @{}
-$terminals = 1..10 | ForEach-Object { "T$_" } | Where-Object {
+$terminals = $factoryTerminals | Where-Object {
     Test-Path -LiteralPath (Join-Path $Mt5Root (Join-Path $_ "terminal64.exe")) -PathType Leaf
 }
 foreach ($terminal in $terminals) {
