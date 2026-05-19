@@ -1765,31 +1765,56 @@ def _phase_artifact_summary(item_row: sqlite3.Row) -> tuple[Path, dict[str, Any]
     phase = str(item_row["phase"])
     ea_id = str(item_row["ea_id"])
     phase_dir = _ea_phase_dir(ea_id, phase)
+    try:
+        payload = json.loads(item_row["payload_json"] or "{}")
+    except (KeyError, TypeError, json.JSONDecodeError):
+        payload = {}
+
+    def _fresh_enough(path: Path) -> bool:
+        started_raw = str(payload.get("started_at_iso") or payload.get("claimed_at_iso") or "")
+        if not started_raw:
+            return True
+        try:
+            started = dt.datetime.fromisoformat(started_raw.replace("Z", "+00:00"))
+        except ValueError:
+            return True
+        if started.tzinfo is None:
+            started = started.replace(tzinfo=dt.timezone.utc)
+        return path.stat().st_mtime >= started.timestamp()
+
     if phase == "P5":
         clean_path = phase_dir / "p5_clean_metrics.json"
         stress_path = phase_dir / "p5_stress_metrics.json"
         if not clean_path.exists() or not stress_path.exists():
             return None
+        if not _fresh_enough(clean_path) or not _fresh_enough(stress_path):
+            return None
         clean = json.loads(clean_path.read_text(encoding="utf-8-sig"))
         stress = json.loads(stress_path.read_text(encoding="utf-8-sig"))
         symbol = str(item_row["symbol"])
-        def _symbol_metrics(block: dict[str, Any]) -> dict[str, Any]:
+        def _symbol_metrics(block: dict[str, Any]) -> dict[str, Any] | None:
             if str(block.get("symbol") or "") == symbol:
                 return block
             for row in block.get("symbols") or []:
                 if isinstance(row, dict) and str(row.get("symbol") or "") == symbol:
                     return row
-            return block
+            return None
+        clean_metrics = _symbol_metrics(clean)
+        stress_metrics = _symbol_metrics(stress)
+        if clean_metrics is None or stress_metrics is None:
+            return None
         return stress_path, {
             "phase": "P5",
             "ea_id": ea_id,
             "verdict": "",
-            "clean_metrics": _symbol_metrics(clean),
-            "stress_metrics": _symbol_metrics(stress),
+            "clean_metrics": clean_metrics,
+            "stress_metrics": stress_metrics,
         }
     if phase == "P5b":
         trials_path = phase_dir / "p5b_trials.csv"
         if not trials_path.exists():
+            return None
+        if not _fresh_enough(trials_path):
             return None
         rows = _load_csv_dicts(trials_path)
         return trials_path, {
@@ -1801,6 +1826,8 @@ def _phase_artifact_summary(item_row: sqlite3.Row) -> tuple[Path, dict[str, Any]
     if phase == "P6":
         seeds_path = phase_dir / "p6_seeds.csv"
         if not seeds_path.exists():
+            return None
+        if not _fresh_enough(seeds_path):
             return None
         rows = _load_csv_dicts(seeds_path)
         pass_count = sum(1 for row in rows if str(row.get("seed_pass") or "").strip().upper() in {"PASS", "1", "TRUE", "YES"})
@@ -4903,8 +4930,8 @@ def pump(root: Path) -> dict[str, Any]:
                         conn.commit()
 
     # 5c. Spawn final EA review ONLY for builds that have a PASSING codex_review
-    #     AND no ea_review yet. Default to Codex (subscription-included);
-    #     QM_PREFER_CLAUDE_REVIEW=1 keeps Claude available as emergency fallback.
+    #     AND no ea_review yet. OWNER 2026-05-19: Claude spend is hard-disabled;
+    #     route review work to Codex only.
     try:
         active_claude_count = int(subprocess.run(
             ["powershell.exe", "-NoProfile", "-Command",
@@ -4915,8 +4942,8 @@ def pump(root: Path) -> dict[str, Any]:
     except Exception:
         active_claude_count = 0
     result["claude_active_before"] = active_claude_count
-    MAX_PARALLEL_CLAUDE = 3  # OWNER 2026-05-19: 6->3 reduce API burn; prefer Codex for new spawns
-    prefer_claude_review = os.environ.get("QM_PREFER_CLAUDE_REVIEW") == "1"
+    MAX_PARALLEL_CLAUDE = 0
+    prefer_claude_review = False
     result["prefer_claude_review"] = prefer_claude_review
     with connect(root) as conn:
         done_no_review = conn.execute(
@@ -4937,17 +4964,14 @@ def pump(root: Path) -> dict[str, Any]:
             ORDER BY b.updated_at ASC LIMIT 1
             """
         ).fetchone()
-    if done_no_review and prefer_claude_review and active_claude_count < MAX_PARALLEL_CLAUDE:
-        result["claude_review_spawn"] = _spawn_claude_for_review(root, done_no_review)
-    elif done_no_review and not prefer_claude_review:
+    result["claude_review_spawn"] = {"spawned": False, "reason": "claude disabled by OWNER 2026-05-19; routed to Codex"}
+    if done_no_review:
         builds_now = len([s for s in (result.get("codex_spawns_all") or []) if isinstance(s, dict) and s.get("spawned")])
         pre_reviews_now = len([s for s in result["codex_review_spawns"] if isinstance(s, dict) and s.get("spawned")])
         if (active_codex + builds_now + pre_reviews_now) < MAX_PARALLEL_CODEX:
             result["codex_review_spawn"] = _spawn_codex_for_review(root, done_no_review)
         else:
             result["codex_review_spawn"] = {"spawned": False, "reason": "codex total cap reached"}
-    elif done_no_review and prefer_claude_review:
-        result["claude_review_spawn"] = {"spawned": False, "reason": "claude cap reached"}
 
     # 6. Record completed EA reviews — look for verdict JSONs that
     #    correspond to ea_review tasks NOT yet recorded.
@@ -4966,8 +4990,7 @@ def pump(root: Path) -> dict[str, Any]:
             except Exception as e:
                 result["review_records"].append({"task_id": row["id"], "error": str(e)})
 
-    # 7. Spawn G0 review of draft cards. Default to Codex; Claude remains
-    #    available only when QM_PREFER_CLAUDE_REVIEW=1 is set.
+    # 7. Spawn G0 review of draft cards. Claude is disabled; Codex owns G0.
     claude_review_spawned = (
         isinstance(result.get("claude_review_spawn"), dict)
         and result["claude_review_spawn"].get("spawned")
@@ -4983,19 +5006,14 @@ def pump(root: Path) -> dict[str, Any]:
         len([s for s in (result.get("codex_review_spawns") or []) if isinstance(s, dict) and s.get("spawned")])
         + (1 if codex_review_spawned else 0)
     )
-    if prefer_claude_review and active_claude_count < MAX_PARALLEL_CLAUDE and not spawned_other:
-        result["claude_g0_spawn"] = _spawn_claude_for_g0_batch(root)
-        if result["claude_g0_spawn"].get("spawned"):
-            spawned_other = True
-    elif not prefer_claude_review and not spawned_other and (active_codex + g0_builds_now + g0_reviews_now) < MAX_PARALLEL_CODEX:
+    result["claude_g0_spawn"] = {"spawned": False, "reason": "claude disabled by OWNER 2026-05-19; routed to Codex"}
+    if not spawned_other and (active_codex + g0_builds_now + g0_reviews_now) < MAX_PARALLEL_CODEX:
         result["codex_g0_spawn"] = _spawn_codex_for_g0_batch(root)
         if result["codex_g0_spawn"].get("spawned"):
             spawned_other = True
 
-    # 8. Spawn Claude research if no other claude spawn happened and budget allows.
-    #    Continuous research per OWNER 2026-05-16 "weiter mit Research".
-    if active_claude_count < MAX_PARALLEL_CLAUDE and not spawned_other:
-        result["claude_research_spawn"] = _claim_research_source(root)
+    # 8. Claude research disabled. Continuous research is handled by Codex below.
+    result["claude_research_spawn"] = {"spawned": False, "reason": "claude disabled by OWNER 2026-05-19; routed to Codex"}
 
     # 9. Spawn Codex research IN ADDITION when codex has spare capacity.
     #    OWNER 2026-05-16: "Codex kann auch Research, wir verbrauchen Codex
