@@ -16,6 +16,8 @@ Context: On Tuesday 2026-05-19, OWNER ordered all Claude background token burn s
 
 Friday objective: Check whether Claude quota/OAuth is healthy again and ask OWNER before any Claude re-enable. If approved, restart from the current honest pipeline state with Codex still primary and Claude only as an explicitly capped fallback or selected lane. Do not assume "quota reset" means "turn everything back on".
 
+Research policy: do not restart continuous research. New `research_strategy` work is only allowed when the combined strategy reservoir drops below 5; otherwise the factory should spend tokens on review, build, pipeline, and failure triage.
+
 Before changing anything:
 1. Verify no Claude process is already running.
 2. Verify `QM_StrategyFarm_BoardAdvisor_Hourly` and `QM_StrategyFarm_AutonomousWake_Hourly` are still disabled.
@@ -37,6 +39,7 @@ As of 2026-05-19, all autonomous Claude spend is hard-disabled:
 - `claude_review_spawn`, `claude_g0_spawn`, and `claude_research_spawn` return disabled/routed-to-Codex reasons.
 - `QM_StrategyFarm_BoardAdvisor_Hourly` and `QM_StrategyFarm_AutonomousWake_Hourly` were disabled because they directly invoke Claude.
 - `D:\QM\strategy_farm\CLAUDE_DISABLED.flag` blocks the Claude PS1 wrappers even if those tasks are accidentally re-enabled.
+- Research is replenishment-only: `research_strategy` tasks are created only when the combined strategy reservoir is below 5.
 
 This was intentional. Do not treat missing Claude activity as a bug before Friday.
 
@@ -83,6 +86,7 @@ If OWNER confirms re-enable, update `tools/strategy_farm/farmctl.py` around `pum
 - Set `MAX_PARALLEL_CLAUDE` to the OWNER-approved cap, probably `3`.
 - Restore `prefer_claude_review = os.environ.get("QM_PREFER_CLAUDE_REVIEW") == "1"` if Claude should only be fallback.
 - Restore Claude G0/research spawn branches only if OWNER wants dual Claude+Codex operation again.
+- Preserve the research replenish gate: do not spawn Claude, Codex, or Gemini research while strategy reservoir is 5 or higher.
 - Keep Codex as default unless OWNER explicitly says Claude should be primary.
 - Remove `D:\QM\strategy_farm\CLAUDE_DISABLED.flag`.
 - Re-enable `QM_StrategyFarm_BoardAdvisor_Hourly` and/or `QM_StrategyFarm_AutonomousWake_Hourly` only if OWNER wants those Claude wakes back.
