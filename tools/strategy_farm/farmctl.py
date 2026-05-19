@@ -4484,9 +4484,24 @@ def pump(root: Path) -> dict[str, Any]:
     #    don't pile up backlog faster than we can build it.
     result["auto_created_builds"] = []
     result["auto_build_skipped"] = []
+    with connect(root) as conn:
+        pending_work_items_total = conn.execute(
+            "SELECT COUNT(*) FROM work_items WHERE status='pending'"
+        ).fetchone()[0]
+    result["build_backpressure"] = {
+        "pending_work_items": pending_work_items_total,
+        "max_pending_for_new_builds": 1000,
+        "new_builds_paused": pending_work_items_total >= 1000,
+    }
     # Count actually-spawned (not skipped-due-to-fresh-log)
     actually_spawned = sum(1 for s in spawns if s.get("spawned"))
-    if actually_spawned < spawn_budget:
+    if pending_work_items_total >= 1000:
+        result["auto_build_skipped"].append({
+            "reason": "build_backpressure",
+            "pending_work_items": pending_work_items_total,
+            "max_pending_for_new_builds": 1000,
+        })
+    elif actually_spawned < spawn_budget:
         cards_approved_dir = root / "artifacts" / "cards_approved"
         if cards_approved_dir.is_dir():
             with connect(root) as conn:
