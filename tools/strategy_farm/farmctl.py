@@ -1878,8 +1878,8 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
             "--year", "2024",
             "--calibration-json", str(inputs["calibration_json"]),
             "--base-setfile", item_row["setfile_path"],
-            "--allow-running-terminal",
-            "--max-parallel", "5",
+            "--terminal", terminal or "T1",
+            "--max-parallel", "1",
         ])
         _remove_cmd_arg(cmd, "--setfile")
     elif phase == "P5b":
@@ -1896,8 +1896,8 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
             "--year", "2024",
             "--seeds", "42,17,99,7,2026",
             "--base-setfile", str(item_row["setfile_path"] or ""),
-            "--allow-running-terminal",
-            "--max-parallel", "5",
+            "--terminal", terminal or "T1",
+            "--max-parallel", "1",
         ])
         _remove_cmd_arg(cmd, "--setfile")
     elif phase == "P7":
