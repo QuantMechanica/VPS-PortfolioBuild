@@ -9,6 +9,7 @@ import os
 import re
 import sqlite3
 import subprocess
+import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -112,6 +113,9 @@ def mark_done(conn: sqlite3.Connection, *, job_id: str, verdict: str, result_pat
 
 
 def _ea_numeric(ea_id: str) -> str:
+    qm5_match = re.match(r"^QM5_(\d+)(?:\D|$)", ea_id)
+    if qm5_match:
+        return qm5_match.group(1)
     tokens = re.findall(r"(\d+)", ea_id)
     if not tokens:
         raise ValueError(f"ea_id has no numeric component: {ea_id}")
@@ -184,7 +188,18 @@ def run_job(
         str(int(timeout_seconds)),
         "-AllowRunningTerminal",
     ]
-    proc = subprocess.run(cmd, capture_output=True, text=True)
+    creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+    try:
+        proc = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=max(1, int(timeout_seconds)) + 30,
+            creationflags=creationflags,
+        )
+    except subprocess.TimeoutExpired as exc:
+        output = (exc.stdout or "") + "\n" + (exc.stderr or "")
+        raise TimeoutError(f"run_smoke_timeout:timeout_seconds={timeout_seconds};output_tail={output[-1000:]}") from exc
     output = (proc.stdout or "") + "\n" + (proc.stderr or "")
     summary = _parse_summary_path(output)
 
@@ -209,6 +224,40 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def acquire_terminal_lock(terminal: str, lock_dir: Path) -> tuple[Path, bool]:
+    """Single-instance guard. Returns (lock_path, acquired).
+    If another live worker process holds the lock, refuse. Otherwise claim it.
+    Stale locks (process no longer running) are taken over."""
+    lock_path = lock_dir / f".worker_{terminal}.lock"
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    my_pid = os.getpid()
+    if lock_path.exists():
+        try:
+            existing = int(lock_path.read_text().strip() or "0")
+        except (ValueError, OSError):
+            existing = 0
+        if existing > 0 and existing != my_pid:
+            # Check whether existing process is still alive
+            try:
+                # Windows-friendly: os.kill(pid, 0) returns OSError if dead
+                os.kill(existing, 0)
+                return lock_path, False
+            except OSError:
+                pass  # stale, take over
+    lock_path.write_text(str(my_pid), encoding="utf-8")
+    return lock_path, True
+
+
+def release_terminal_lock(lock_path: Path) -> None:
+    try:
+        if lock_path.exists():
+            stored = lock_path.read_text(encoding="utf-8").strip()
+            if stored == str(os.getpid()):
+                lock_path.unlink()
+    except OSError:
+        pass
+
+
 def main() -> int:
     args = parse_args()
     terminal = str(args.terminal).upper()
@@ -219,52 +268,65 @@ def main() -> int:
 
     sqlite_path = Path(args.sqlite)
     sqlite_path.parent.mkdir(parents=True, exist_ok=True)
+
+    lock_path, acquired = acquire_terminal_lock(terminal, sqlite_path.parent)
+    if not acquired:
+        existing_pid = lock_path.read_text(encoding="utf-8").strip()
+        print(f"[REFUSED] another worker holds {terminal} lock (PID {existing_pid})")
+        print(json.dumps({"status": "skipped", "reason": "lock_held_by_other_pid", "terminal": terminal, "holder_pid": existing_pid}))
+        return 3
+
     mt5_root = Path(args.mt5_root)
 
-    while True:
-        conn = sqlite3.connect(str(sqlite_path))
-        conn.row_factory = sqlite3.Row
-        try:
-            ensure_schema(conn)
-            heartbeat(conn, terminal=terminal, current_job_id=None, last_error=None)
-            job = claim_one(conn, terminal=terminal)
-            conn.commit()
-            if job is None:
-                heartbeat(conn, terminal=terminal, current_job_id=None, last_error=None)
-                conn.commit()
-                if args.once:
-                    print(json.dumps({"status": "idle", "terminal": terminal}, sort_keys=True))
-                    return 0
-                time.sleep(max(1, int(args.poll_sec)))
-                continue
-
-            heartbeat(conn, terminal=terminal, current_job_id=job["job_id"], last_error=None)
-            mark_running(conn, job_id=job["job_id"])
-            conn.commit()
-
+    try:
+        while True:
+            conn = sqlite3.connect(str(sqlite_path))
+            conn.row_factory = sqlite3.Row
             try:
-                verdict, result_path, reason = run_job(
-                    job,
-                    terminal=terminal,
-                    report_root=Path(args.report_root),
-                    mt5_root=mt5_root,
-                    timeout_seconds=max(60, int(args.timeout_seconds)),
-                )
-                mark_done(conn, job_id=job["job_id"], verdict=verdict, result_path=result_path, invalidation_reason=reason)
+                ensure_schema(conn)
                 heartbeat(conn, terminal=terminal, current_job_id=None, last_error=None)
+                job = claim_one(conn, terminal=terminal)
                 conn.commit()
-                print(json.dumps({"status": "done", "terminal": terminal, "job_id": job["job_id"], "verdict": verdict}, sort_keys=True))
-            except Exception as exc:  # noqa: BLE001
-                reason = str(exc)
-                mark_failed(conn, job_id=job["job_id"], reason=reason)
-                heartbeat(conn, terminal=terminal, current_job_id=None, last_error=reason)
-                conn.commit()
-                print(json.dumps({"status": "failed", "terminal": terminal, "job_id": job["job_id"], "reason": reason}, sort_keys=True))
+                if job is None:
+                    heartbeat(conn, terminal=terminal, current_job_id=None, last_error=None)
+                    conn.commit()
+                    if args.once:
+                        print(json.dumps({"status": "idle", "terminal": terminal}, sort_keys=True))
+                        return 0
+                    time.sleep(max(1, int(args.poll_sec)))
+                    continue
 
-            if args.once:
-                return 0
-        finally:
-            conn.close()
+                heartbeat(conn, terminal=terminal, current_job_id=job["job_id"], last_error=None)
+                mark_running(conn, job_id=job["job_id"])
+                conn.commit()
+
+                try:
+                    verdict, result_path, reason = run_job(
+                        job,
+                        terminal=terminal,
+                        report_root=Path(args.report_root),
+                        mt5_root=mt5_root,
+                        timeout_seconds=max(60, int(args.timeout_seconds)),
+                    )
+                    mark_done(conn, job_id=job["job_id"], verdict=verdict, result_path=result_path, invalidation_reason=reason)
+                    heartbeat(conn, terminal=terminal, current_job_id=None, last_error=None)
+                    conn.commit()
+                    print(json.dumps({"status": "done", "terminal": terminal, "job_id": job["job_id"], "verdict": verdict}, sort_keys=True))
+                except Exception as exc:  # noqa: BLE001
+                    reason = str(exc)
+                    mark_failed(conn, job_id=job["job_id"], reason=reason)
+                    heartbeat(conn, terminal=terminal, current_job_id=None, last_error=reason)
+                    conn.commit()
+                    print(json.dumps({"status": "failed", "terminal": terminal, "job_id": job["job_id"], "reason": reason}, sort_keys=True))
+
+                if args.once:
+                    return 0
+            finally:
+                conn.close()
+    except KeyboardInterrupt:
+        return 130
+    finally:
+        release_terminal_lock(lock_path)
 
 
 if __name__ == "__main__":

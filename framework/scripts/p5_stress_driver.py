@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import subprocess
+import sys
 import time
 from itertools import cycle
 from pathlib import Path
@@ -63,8 +64,9 @@ def _run_smoke(
         cmd.extend(["-SetFile", str(setfile)])
     if allow_running_terminal:
         cmd.append("-AllowRunningTerminal")
+    creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
     try:
-        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=smoke_timeout_seconds)
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=smoke_timeout_seconds, creationflags=creationflags)
     except subprocess.TimeoutExpired as exc:
         raise RuntimeError(f"run_smoke timed out after {smoke_timeout_seconds}s\ncmd={' '.join(cmd)}") from exc
     if proc.returncode != 0:
@@ -119,7 +121,8 @@ def _run_smoke_parallel(
                 cmd.extend(["-SetFile", str(job["setfile"])])
             if job.get("allow_running_terminal"):
                 cmd.append("-AllowRunningTerminal")
-            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, creationflags=creationflags)
             starts.append({"job_id": str(job["id"]), "terminal": terminal, "started_epoch": time.time()})
             running[str(job["id"])] = {"proc": proc, "job": job, "started": time.monotonic()}
         finished: list[str] = []

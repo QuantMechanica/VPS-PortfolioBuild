@@ -248,11 +248,13 @@ def invoke_run_smoke(ea_id: int, symbol: str, year: int, terminal: str, period: 
     wrapper_timeout = (timeout_sec * max(1, runs)) + 60
     started = time.monotonic()
     next_heartbeat = started + max(1, heartbeat_interval_sec)
+    creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
     proc = subprocess.Popen(
         arglist,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
+        creationflags=creationflags,
     )
     while True:
         rc = proc.poll()

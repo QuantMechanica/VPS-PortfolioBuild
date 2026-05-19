@@ -112,7 +112,8 @@ def invoke_run_smoke(
         "-AllowMissingRealTicksLogMarker",
         "-TimeoutSeconds", str(timeout_sec),
     ]
-    return subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+    return subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, creationflags=creationflags)
 
 
 def reserve_terminal(
