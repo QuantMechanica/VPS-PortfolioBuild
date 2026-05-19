@@ -91,6 +91,12 @@ function Register-TaskFromXml {
     $content = Get-Content -LiteralPath $SourceXml -Raw
     $content = $content.Replace("__RUN_AS_USER__", $RunAsUser)
     $content = $content.Replace("__PYTHON_EXE__", $PythonExe)
+    if ($TaskName -match '^QM_MT5_Worker_T(\d+)$') {
+        $terminal = "T$($Matches[1])"
+        $content = $content.Replace("terminal T1", "terminal $terminal")
+        $content = $content.Replace("QM_MT5_Worker_T1", $TaskName)
+        $content = $content.Replace("--terminal T1", "--terminal $terminal")
+    }
     Set-Content -LiteralPath $RenderedXml -Value $content -Encoding Unicode
 
     $taskPath = "\" + $TaskName
@@ -112,9 +118,12 @@ function Register-TaskFromXml {
 }
 
 try {
-    foreach ($terminal in 1..5) {
+    foreach ($terminal in 1..10) {
         $taskName = "QM_MT5_Worker_T$terminal"
         $sourceXml = Join-Path $taskXmlDir "$taskName.xml"
+        if (-not (Test-Path -LiteralPath $sourceXml -PathType Leaf)) {
+            $sourceXml = Join-Path $taskXmlDir "QM_MT5_Worker_T1.xml"
+        }
         $renderedXml = Join-Path $tempDir "$taskName.xml"
         Register-TaskFromXml -TaskName $taskName -SourceXml $sourceXml -RenderedXml $renderedXml -RunAsUser $resolvedUser -PythonExe $resolvedPythonExe -WhatIf:$WhatIf.IsPresent
     }
@@ -131,7 +140,7 @@ finally {
 }
 
 if (-not $WhatIf.IsPresent) {
-    $taskNames = @("QM_MT5_Worker_T1", "QM_MT5_Worker_T2", "QM_MT5_Worker_T3", "QM_MT5_Worker_T4", "QM_MT5_Worker_T5")
+    $taskNames = 1..10 | ForEach-Object { "QM_MT5_Worker_T$_" }
     if ($IncludeGateEvaluator) {
         $taskNames += "QM_GateEvaluator_5min"
     }
