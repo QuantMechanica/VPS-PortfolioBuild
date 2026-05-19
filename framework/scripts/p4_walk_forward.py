@@ -58,7 +58,7 @@ def _summary_verdict(summary_path: str) -> tuple[str, str]:
     except Exception as exc:
         return "FAIL", f"summary_parse_error:{type(exc).__name__}"
 
-    verdict = str(data.get("verdict") or data.get("classification") or "").upper()
+    verdict = str(data.get("verdict") or data.get("classification") or data.get("result") or "").upper()
     if verdict == "PASS":
         return "PASS", str(data.get("reason") or "fold_summary_pass")
     return "FAIL", str(data.get("reason") or verdict or "fold_summary_not_pass")

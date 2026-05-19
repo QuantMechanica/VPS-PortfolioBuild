@@ -6,10 +6,15 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import sys
+
 
 REPO = Path(__file__).resolve().parents[3]
 SCRIPTS = REPO / "framework" / "scripts"
 FIX = SCRIPTS / "tests" / "fixtures"
+sys.path.insert(0, str(SCRIPTS))
+
+from p4_walk_forward import _write_walk_forward_csv_from_manifest  # noqa: E402
 
 
 class P4WalkForwardRunnerTests(unittest.TestCase):
@@ -39,6 +44,34 @@ class P4WalkForwardRunnerTests(unittest.TestCase):
             self.assertIn("details", payload)
             report_csv = out / "QM5_1001" / "P4" / "report.csv"
             self.assertTrue(report_csv.exists(), msg=f"missing report csv: {report_csv}")
+
+    def test_manifest_fold_summary_accepts_run_smoke_result_field(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            summary = root / "fold_summary.json"
+            summary.write_text(json.dumps({"result": "PASS", "reason": "OK"}), encoding="utf-8")
+            out_dir = root / "out"
+            out_dir.mkdir()
+
+            walk_forward_csv = _write_walk_forward_csv_from_manifest(
+                {
+                    "fold_results": [
+                        {
+                            "fold_id": "F1",
+                            "regime": "UNCLASSIFIED",
+                            "dev_start": "2017-01-01",
+                            "dev_end": "2022-12-25",
+                            "oos_start": "2023-01-01",
+                            "oos_end": "2023-06-30",
+                            "summary_path": str(summary),
+                        }
+                    ]
+                },
+                out_dir,
+            )
+
+            text = walk_forward_csv.read_text(encoding="utf-8")
+            self.assertIn("true,PASS", text)
 
 
 if __name__ == "__main__":
