@@ -95,6 +95,8 @@ function Get-ReportInvalidReasons {
         if ([string]::IsNullOrWhiteSpace($symbolValue)) { $reasons.Add("EMPTY_SYMBOL") }
         if ($periodValue -match "(?i)\bM0\b" -or $periodValue -match "1970\.01\.01\s*-\s*1970\.01\.01") { $reasons.Add("M0_1970_PERIOD") }
         if ($bars -le 0) { $reasons.Add("BARS_ZERO") }
+        if (Test-TesterLogShowsOnInitFailure -TesterLogTail $TesterLogTail) { $reasons.Add("ONINIT_FAILED") }
+        if (Test-TesterLogShowsSetupDataMissing -TesterLogTail $TesterLogTail) { $reasons.Add("SETUP_DATA_MISSING") }
         if (Test-TesterLogHasNoHistoryForRun -TesterLogTail $TesterLogTail -ExpectedSymbol $ExpectedSymbol -ExpectedFromDate $ExpectedFromDate -ExpectedToDate $ExpectedToDate) { $reasons.Add("NO_HISTORY_LOG") }
         if (($periodValue -match "(?i)\bM0\b" -or $bars -le 0) -and $TesterLogTail -match "(?im)\bhistory\b") { $reasons.Add("HISTORY_CONTEXT_INVALID") }
         if ((-not $HasRealTicksMarker) -and $TesterLogTail -match "(?im)automatical testing finished") { $reasons.Add("NO_REAL_TICKS_MARKER_FAST_FINISH") }
@@ -103,6 +105,35 @@ function Get-ReportInvalidReasons {
     }
 
     return @($reasons)
+}
+
+function Test-TesterLogShowsOnInitFailure {
+    param(
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
+        [string]$TesterLogTail
+    )
+
+    if ([string]::IsNullOrWhiteSpace($TesterLogTail)) {
+        return $false
+    }
+    return [regex]::IsMatch($TesterLogTail, "(?im)\btester stopped because OnInit returns non-zero code\b") -or
+        [regex]::IsMatch($TesterLogTail, "(?im)\b(OnInit|init)\b.*\b(failed|INIT_FAILED)\b") -or
+        [regex]::IsMatch($TesterLogTail, "(?im)initialization failed")
+}
+
+function Test-TesterLogShowsSetupDataMissing {
+    param(
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
+        [string]$TesterLogTail
+    )
+
+    if ([string]::IsNullOrWhiteSpace($TesterLogTail)) {
+        return $false
+    }
+    return [regex]::IsMatch($TesterLogTail, "(?im)\bSETUP_DATA_MISSING\b") -or
+        [regex]::IsMatch($TesterLogTail, "(?im)\b(calendar_file_missing_or_unreadable|calendar_file_stale|calendar_csv_parse_failed|calendar_hash_failed|calendar_unavailable)\b")
 }
 
 function Test-TesterLogHasNoHistoryForRun {
@@ -152,6 +183,12 @@ function Resolve-InvalidReportVerdict {
 
     if ($null -eq $InvalidReasons) { $InvalidReasons = @() }
 
+    if ($InvalidReasons -contains "ONINIT_FAILED") {
+        return "ONINIT_FAILED"
+    }
+    if ($InvalidReasons -contains "SETUP_DATA_MISSING") {
+        return "SETUP_DATA_MISSING"
+    }
     if ($InvalidReasons -contains "NO_HISTORY_LOG" -or $InvalidReasons -contains "HISTORY_CONTEXT_INVALID") {
         return "NO_HISTORY"
     }
@@ -566,6 +603,23 @@ function Get-LatestTesterLog {
     return $candidate
 }
 
+function Get-TesterLogTailText {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$TesterLogPath,
+        [int]$LineCount = 800
+    )
+
+    if (-not (Test-Path -LiteralPath $TesterLogPath -PathType Leaf)) {
+        return ""
+    }
+    $logBytes = [System.IO.File]::ReadAllBytes($TesterLogPath)
+    if ($logBytes.Length -ge 2 -and $logBytes[0] -eq 0xFF -and $logBytes[1] -eq 0xFE) {
+        return ((Get-Content -LiteralPath $TesterLogPath -Encoding Unicode | Select-Object -Last $LineCount) -join [Environment]::NewLine)
+    }
+    return ((Get-Content -LiteralPath $TesterLogPath | Select-Object -Last $LineCount) -join [Environment]::NewLine)
+}
+
 function Start-TesterRun {
     param(
         [Parameter(Mandatory = $true)]
@@ -579,6 +633,7 @@ function Start-TesterRun {
 
     $args = @("/portable", "/config:$IniPath")
     $spawnStartedAfter = Get-Date
+    Write-Host ("run_smoke.stage=terminal_start exe='{0}' args='{1}' timeout_seconds={2}" -f $TerminalExe, ([string]::Join(' ', $args)), $TimeoutSec)
     $proc = Start-Process -FilePath $TerminalExe -ArgumentList $args -PassThru -WindowStyle Hidden
     $childTerminal = Wait-TerminalSpawn -TerminalExe $TerminalExe -IniPath $IniPath -TerminalName $TerminalName -StartedAfter $spawnStartedAfter
     Write-Host ("run_smoke.stage=terminal_spawn_confirmed terminal_pid={0} start_time='{1:o}'" -f $childTerminal.Id, $childTerminal.StartTime)
@@ -590,6 +645,8 @@ function Start-TesterRun {
         } catch {
         }
     }
+    $loggedExitCode = if ($finished) { $proc.ExitCode } else { "<timeout>" }
+    Write-Host ("run_smoke.stage=terminal_exit terminal_pid={0} exit_code={1} timed_out={2}" -f $childTerminal.Id, $loggedExitCode, $timedOut)
 
     return [pscustomobject]@{
         exit_code = $(if ($finished) { $proc.ExitCode } else { $null })
@@ -785,6 +842,39 @@ function Get-ExpectedTradesPerYear {
     }
 }
 
+function Resolve-NewsCalendarDiagnostics {
+    $baseDir = "D:\QM\data\news_calendar"
+    $primary = Join-Path $baseDir "news_calendar_2015_2025.csv"
+    $secondary = Join-Path $baseDir "forex_factory_calendar_clean.csv"
+    $maxAgeHours = 24 * 14
+    $paths = @($primary, $secondary)
+    $missing = @($paths | Where-Object { -not (Test-Path -LiteralPath $_ -PathType Leaf) })
+    $latestModifiedUtc = $null
+    if (@($missing).Count -eq 0) {
+        $latestModifiedUtc = ($paths | ForEach-Object { (Get-Item -LiteralPath $_).LastWriteTimeUtc } | Sort-Object -Descending | Select-Object -First 1)
+    }
+    $ageHours = $null
+    $status = "OK"
+    if (@($missing).Count -gt 0) {
+        $status = "MISSING"
+    } elseif ($null -ne $latestModifiedUtc) {
+        $ageHours = [int][Math]::Floor(((Get-Date).ToUniversalTime() - $latestModifiedUtc).TotalHours)
+        if ($ageHours -gt $maxAgeHours) {
+            $status = "STALE"
+        }
+    }
+    return [pscustomobject]@{
+        status = $status
+        base_dir = $baseDir
+        primary_path = $primary
+        secondary_path = $secondary
+        missing_paths = @($missing)
+        latest_modified_utc = $(if ($null -ne $latestModifiedUtc) { $latestModifiedUtc.ToString("o") } else { $null })
+        age_hours = $ageHours
+        max_age_hours = $maxAgeHours
+    }
+}
+
 function Get-SmokeYearCount {
     param(
         [Parameter(Mandatory = $true)]
@@ -850,6 +940,8 @@ New-Item -ItemType Directory -Path $frameworkEvidenceDir -Force | Out-Null
 
 $fromDate = if ($FromDate) { $FromDate } else { "{0}.01.01" -f $Year }
 $toDate = if ($ToDate) { $ToDate } else { "{0}.12.31" -f $Year }
+$newsCalendarDiagnostics = Resolve-NewsCalendarDiagnostics
+Write-Host ("run_smoke.news_calendar_status={0} latest_modified_utc='{1}' age_hours={2} max_age_hours={3}" -f $newsCalendarDiagnostics.status, $newsCalendarDiagnostics.latest_modified_utc, $newsCalendarDiagnostics.age_hours, $newsCalendarDiagnostics.max_age_hours)
 $expectedTradeInfo = Get-ExpectedTradesPerYear -EAIdValue $EAId
 if ($null -ne $expectedTradeInfo) {
     $expectedTradesPerYear = [int]$expectedTradeInfo.ExpectedTradesPerYearPerSymbol
@@ -952,9 +1044,30 @@ for ($i = 1; $i -le $Runs; $i++) {
                     Select-Object -First 1
             }
         }
-        $testerLogPath = if ($testerLog) { $testerLog.FullName } else { $null }
+        $testerLogPath = $null
+        $testerLogTail = ""
+        if ($testerLog) {
+            $testerLogPath = Join-Path $runDir $testerLog.Name
+            Copy-Item -LiteralPath $testerLog.FullName -Destination $testerLogPath -Force
+            $testerLogTail = Get-TesterLogTailText -TesterLogPath $testerLogPath -LineCount 120
+        }
+        $failureHints = New-Object System.Collections.Generic.List[string]
+        if (Test-TesterLogShowsOnInitFailure -TesterLogTail $testerLogTail) {
+            $failureHints.Add("ONINIT_FAILED")
+            $reasonClasses.Add("ONINIT_FAILED")
+            $globalOnInitFailure = $true
+            if ($newsCalendarDiagnostics.status -ne "OK") {
+                $failureHints.Add("NEWS_CALENDAR_$($newsCalendarDiagnostics.status)")
+                $reasonClasses.Add("NEWS_CALENDAR_$($newsCalendarDiagnostics.status)")
+            }
+        }
+        if (Test-TesterLogShowsSetupDataMissing -TesterLogTail $testerLogTail) {
+            $failureHints.Add("SETUP_DATA_MISSING")
+            $reasonClasses.Add("SETUP_DATA_MISSING")
+        }
         $lingeringMeta = @(Get-MetaTesterProcessesForTerminalRoot -TerminalRoot $terminalRoot)
         if (@($lingeringMeta).Count -gt 0) {
+            $failureHints.Add("METATESTER_HUNG")
             $reasonClasses.Add("METATESTER_HUNG")
             foreach ($metaProc in $lingeringMeta) {
                 try {
@@ -973,6 +1086,8 @@ for ($i = 1; $i -le $Runs; $i++) {
             report_canonical_path = $reportHtmPath
             report_size_bytes = 0
             tester_log_path = $testerLogPath
+            tester_log_tail = $testerLogTail
+            failure_hints = @($failureHints)
         }
         continue
     }
@@ -1054,19 +1169,10 @@ for ($i = 1; $i -le $Runs; $i++) {
     if ($testerLog) {
         $testerLogPath = Join-Path $runDir $testerLog.Name
         Copy-Item -LiteralPath $testerLog.FullName -Destination $testerLogPath -Force
-        $logBytes = [System.IO.File]::ReadAllBytes($testerLogPath)
-        if ($logBytes.Length -ge 2 -and $logBytes[0] -eq 0xFF -and $logBytes[1] -eq 0xFE) {
-            $testerLogTail = ((Get-Content -LiteralPath $testerLogPath -Encoding Unicode | Select-Object -Last 800) -join [Environment]::NewLine)
-        } else {
-            $testerLogTail = ((Get-Content -LiteralPath $testerLogPath | Select-Object -Last 800) -join [Environment]::NewLine)
-        }
+        $testerLogTail = Get-TesterLogTailText -TesterLogPath $testerLogPath -LineCount 800
     }
 
-    $onInitFailure = $false
-    if ($testerLogTail) {
-        $onInitFailure = [regex]::IsMatch($testerLogTail, "(?im)\b(OnInit|init)\b.*\b(failed|INIT_FAILED)\b") -or
-            [regex]::IsMatch($testerLogTail, "(?im)initialization failed")
-    }
+    $onInitFailure = Test-TesterLogShowsOnInitFailure -TesterLogTail $testerLogTail
 
     $hasRealTicksMarker = $false
     if ($testerLogTail) {
@@ -1077,6 +1183,12 @@ for ($i = 1; $i -le $Runs; $i++) {
     $invalidVerdict = Resolve-InvalidReportVerdict -InvalidReasons $invalidReasons
     if ($invalidVerdict) {
         $reasonClasses.Add($invalidVerdict)
+        if ($invalidReasons -contains "ONINIT_FAILED") {
+            $globalOnInitFailure = $true
+            if ($newsCalendarDiagnostics.status -ne "OK") {
+                $reasonClasses.Add("NEWS_CALENDAR_$($newsCalendarDiagnostics.status)")
+            }
+        }
         $globalRealTicksMarker = $globalRealTicksMarker -and $hasRealTicksMarker
         $runResults += [pscustomobject]@{
             run = $runName
@@ -1103,6 +1215,9 @@ for ($i = 1; $i -le $Runs; $i++) {
     if ($onInitFailure) {
         $globalOnInitFailure = $true
         $reasonClasses.Add("ONINIT_FAILED")
+        if ($newsCalendarDiagnostics.status -ne "OK") {
+            $reasonClasses.Add("NEWS_CALENDAR_$($newsCalendarDiagnostics.status)")
+        }
     }
     if (-not $hasRealTicksMarker) {
         $globalRealTicksMarker = $false
@@ -1193,6 +1308,7 @@ $summary = [ordered]@{
     model4_log_marker_detected = $globalRealTicksMarker
     report_dir = $reportDir
     report_export_mode = "relative_with_absolute_fallback"
+    news_calendar = $newsCalendarDiagnostics
     runs = $runResults
 }
 
