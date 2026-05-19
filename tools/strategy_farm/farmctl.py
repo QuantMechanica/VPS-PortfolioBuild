@@ -1731,6 +1731,45 @@ def _load_csv_dicts(path: Path) -> list[dict[str, str]]:
         return [dict(row) for row in csv.DictReader(f)]
 
 
+def _refresh_phase_report_from_work_items(root: Path, ea_id: str, phase: str) -> Path | None:
+    """Write phase report.csv from current work_items DB state."""
+    phase_key = str(phase or "").strip()
+    out_path = _ea_phase_dir(ea_id, phase_key) / "report.csv"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    with connect(root) as conn:
+        rows = conn.execute(
+            """
+            SELECT ea_id, phase, symbol, verdict, evidence_path, payload_json
+            FROM work_items
+            WHERE ea_id=? AND phase=? AND status IN ('done', 'failed')
+            ORDER BY updated_at ASC, created_at ASC
+            """,
+            (ea_id, phase_key),
+        ).fetchall()
+    if not rows:
+        return out_path if out_path.exists() else None
+
+    fieldnames = ["ea_id", "phase", "symbol", "terminal", "verdict", "invalidation_reason", "evidence"]
+    with out_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames, lineterminator="\n")
+        writer.writeheader()
+        for row in rows:
+            try:
+                payload = json.loads(row["payload_json"] or "{}")
+            except json.JSONDecodeError:
+                payload = {}
+            writer.writerow({
+                "ea_id": row["ea_id"],
+                "phase": row["phase"],
+                "symbol": row["symbol"],
+                "terminal": payload.get("terminal") or row["symbol"] or "",
+                "verdict": row["verdict"] or "",
+                "invalidation_reason": payload.get("verdict_reason") or payload.get("final_failure") or "",
+                "evidence": row["evidence_path"] or "",
+            })
+    return out_path
+
+
 def _phase_artifact_summary(item_row: sqlite3.Row) -> tuple[Path, dict[str, Any]] | None:
     """Build a classifier summary for phase drivers that do not write summary.json."""
     phase = str(item_row["phase"])
@@ -1830,8 +1869,8 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
     ]
     if phase == "P3.5":
         cmd.extend(["--symbols", symbol, "--from-year", "2017", "--to-year", "2022"])
-        p2_report = _ea_pipeline_dir(ea_id) / "P2" / "report.csv"
-        p3_report = _ea_pipeline_dir(ea_id) / "P3" / "report.csv"
+        p2_report = _refresh_phase_report_from_work_items(root, ea_id, "P2") or (_ea_pipeline_dir(ea_id) / "P2" / "report.csv")
+        p3_report = _refresh_phase_report_from_work_items(root, ea_id, "P3") or (_ea_pipeline_dir(ea_id) / "P3" / "report.csv")
         if p2_report.exists():
             cmd.extend(["--baseline-csv", str(p2_report)])
         if p3_report.exists():
@@ -6462,10 +6501,10 @@ def _phase_runner_cmd(phase: str, ea_id: str, terminal: str | None = None,
         ])
         if setfile_path:
             cmd.extend(["--setfile", setfile_path])
-        p2_report = PIPELINE_REPORT_ROOT / ea_id / "P2" / "report.csv"
+        p2_report = _refresh_phase_report_from_work_items(DEFAULT_ROOT, ea_id, "P2") or (PIPELINE_REPORT_ROOT / ea_id / "P2" / "report.csv")
         if p2_report.exists():
             cmd.extend(["--baseline-csv", str(p2_report)])
-        p3_report = PIPELINE_REPORT_ROOT / ea_id / "P3" / "report.csv"
+        p3_report = _refresh_phase_report_from_work_items(DEFAULT_ROOT, ea_id, "P3") or (PIPELINE_REPORT_ROOT / ea_id / "P3" / "report.csv")
         if p3_report.exists():
             cmd.extend(["--csr-results-csv", str(p3_report)])
         return cmd
