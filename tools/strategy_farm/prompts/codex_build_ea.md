@@ -380,8 +380,17 @@ build_result JSON is more valuable than masking it with a hopeful rewrite.
 7. Run `pwsh -File C:\QM\repo\framework\scripts\compile_one.ps1 -EALabel {{ea_id}}_{{slug}}`.
    Must produce `.ex5`.
 
-8. Run `pwsh -File C:\QM\repo\framework\scripts\run_smoke.ps1 -EALabel {{ea_id}}_{{slug}}`.
-   Must yield ≥1 trade for `smoke_result: passed`.
+8. Run exactly one smoke test on the first registered symbol. `run_smoke.ps1`
+   requires a symbol and year; do not invoke it with only `-EALabel`.
+   Use terminal dispatch instead of hard-coding T1, because T1-T10 may already
+   be occupied by terminal-worker backtests:
+   ```powershell
+   pwsh -File C:\QM\repo\framework\scripts\run_smoke.ps1 `
+     -EALabel {{ea_id}}_{{slug}} -Symbol <FIRST_REGISTERED_SYMBOL.DWX> `
+     -Year 2024 -Terminal any -Period <CARD_TIMEFRAME> -MinTrades 1
+   ```
+   Must yield ≥1 trade for `smoke_result: passed`. If it yields zero trades,
+   report `smoke_result: "zero_trades"` with `blocked_reason: null` per HR7.
 
 9. **Generate P2 setfiles for ALL registered symbols** using `gen_setfile.ps1`.
    For each symbol in `symbols_registered`, invoke:
