@@ -2281,7 +2281,10 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
         search_root = Path(report_root) if report_root else None
         if item["phase"] in REAL_PHASE_RUNNER_PHASES:
             search_root = _ea_phase_dir(item["ea_id"], item["phase"])
-        if search_root and search_root.is_dir():
+            phase_summary = search_root / "summary.json"
+            if phase_summary.exists():
+                summary_path = phase_summary
+        if not summary_path and search_root and search_root.is_dir():
             cands = sorted(
                 search_root.rglob("summary.json"),
                 key=lambda p: p.stat().st_mtime,

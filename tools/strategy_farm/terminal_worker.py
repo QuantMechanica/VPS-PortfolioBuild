@@ -221,6 +221,15 @@ def _find_summary(report_root: str | None) -> Path | None:
     return candidates[0] if candidates else None
 
 
+def _find_work_item_summary(item: sqlite3.Row, payload: dict[str, Any]) -> Path | None:
+    phase = str(item["phase"])
+    if phase in farmctl.REAL_PHASE_RUNNER_PHASES:
+        summary_path = farmctl._ea_phase_dir(str(item["ea_id"]), phase) / "summary.json"
+        if summary_path.exists():
+            return summary_path
+    return _find_summary(payload.get("report_root"))
+
+
 def _smoke_terminal_exit_stalled(item: dict[str, Any], payload: dict[str, Any]) -> bool:
     """Detect run_smoke wrappers stuck after MT5 already exited.
 
@@ -281,7 +290,7 @@ def _finish_work_item(root: Path, item_id: str, exit_code: int | None) -> dict[s
             if not item:
                 return {"finished": False, "reason": "missing_item"}
             payload = _json_loads(item["payload_json"])
-            summary_path = _find_summary(payload.get("report_root"))
+            summary_path = _find_work_item_summary(item, payload)
             if summary_path:
                 try:
                     summary = json.loads(summary_path.read_text(encoding="utf-8-sig"))
