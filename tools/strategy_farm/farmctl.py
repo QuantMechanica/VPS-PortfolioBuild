@@ -4746,13 +4746,13 @@ def pump(root: Path) -> dict[str, Any]:
                     "children_count": 0, "reason": f"error: {exc!r}",
                 })
 
-    # §10c Promote ablation/grid P2-PASS work_items into P3.
+    # §10c Promote exploration P2-PASS work_items into P3.
     #
     # Problem: the original P2→P3 auto-enqueue (in classify_aggregate) gates
     # on "does a backtest_p3 task already exist for this ea_id". When the
     # first 3 P2-PASSes for 1049 created a backtest_p3 task, that task only
     # received work_items for the setfiles that existed at the time (3
-    # originals). The 8 ablation children that later passed P2 never got a
+    # originals). Exploration children that later pass P2 never get a
     # corresponding P3 work_item because the gate sees "P3 task exists".
     #
     # Fix: directly insert P3 work_items per (ea_id, symbol, setfile) that
@@ -4767,7 +4767,11 @@ def pump(root: Path) -> dict[str, Any]:
             """
             SELECT w.* FROM work_items w
             WHERE w.status='done' AND w.verdict='PASS' AND w.phase='P2'
-              AND (w.setfile_path LIKE '%_ablation_%' OR w.setfile_path LIKE '%_grid_%')
+              AND (
+                w.setfile_path LIKE '%_ablation_%'
+                OR w.setfile_path LIKE '%_grid_%'
+                OR w.setfile_path LIKE '%_synth_%'
+              )
               AND NOT EXISTS (
                 SELECT 1 FROM work_items w2
                 WHERE w2.ea_id = w.ea_id
@@ -4775,11 +4779,13 @@ def pump(root: Path) -> dict[str, Any]:
                   AND w2.setfile_path = w.setfile_path
                   AND w2.phase = 'P3'
               )
-            ORDER BY w.updated_at ASC LIMIT 10
+            ORDER BY w.updated_at ASC LIMIT 500
             """
         ).fetchall()
         reopened_parents: set[str] = set()
         for wi in promotable:
+            if len(result["p3_promotions"]) >= 10:
+                break
             p2_net_profit = _work_item_p2_net_profit(wi)
             if p2_net_profit is None or p2_net_profit <= 0.0:
                 result["p3_promotions_skipped"].append({

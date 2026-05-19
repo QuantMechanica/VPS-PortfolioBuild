@@ -30,6 +30,7 @@ import re
 import shutil
 import sqlite3
 import subprocess
+import sys
 from pathlib import Path
 
 ROOT = Path(r"D:\QM\strategy_farm")
@@ -77,6 +78,67 @@ def _check(name: str, status: str, value, threshold, detail: str, hint: str) -> 
         "detail": detail,
         "action_hint": hint,
     }
+
+
+def _creationflags_no_window() -> int:
+    if sys.platform == "win32" and hasattr(subprocess, "CREATE_NO_WINDOW"):
+        return subprocess.CREATE_NO_WINDOW
+    return 0
+
+
+def _json_obj(raw: str | None) -> dict:
+    if not raw:
+        return {}
+    try:
+        data = json.loads(raw)
+    except (TypeError, json.JSONDecodeError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def _summary_net_profit_total(summary: dict) -> float | None:
+    runs = summary.get("runs")
+    if isinstance(runs, list) and runs:
+        total = 0.0
+        seen = False
+        for run in runs:
+            if not isinstance(run, dict):
+                continue
+            value = run.get("net_profit")
+            try:
+                total += float(value)
+                seen = True
+            except (TypeError, ValueError):
+                continue
+        if seen:
+            return total
+    for key in ("net_profit", "profit"):
+        try:
+            return float(summary[key])
+        except (KeyError, TypeError, ValueError):
+            continue
+    return None
+
+
+def _work_item_p2_net_profit(row: sqlite3.Row) -> float | None:
+    payload = _json_obj(row["payload_json"])
+    recovered = payload.get("recovered_stats")
+    if isinstance(recovered, dict):
+        try:
+            return float(recovered["net_profit"])
+        except (KeyError, TypeError, ValueError):
+            pass
+    evidence_path = row["evidence_path"]
+    if not evidence_path:
+        return None
+    path = Path(evidence_path)
+    if not path.exists():
+        return None
+    try:
+        summary = json.loads(path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    return _summary_net_profit_total(summary if isinstance(summary, dict) else {})
 
 
 def _is_codex_auth_broken(con) -> bool:
@@ -224,6 +286,7 @@ def chk_pump_task_health() -> dict:
             ["powershell.exe", "-NoProfile", "-Command",
              "(Get-ScheduledTaskInfo -TaskName 'QM_StrategyFarm_Pump_5min').LastTaskResult"],
             capture_output=True, text=True, timeout=15,
+            creationflags=_creationflags_no_window(),
         )
         result = int((out.stdout or "0").strip() or "0")
     except Exception as exc:
@@ -239,11 +302,16 @@ def chk_pump_task_health() -> dict:
 
 
 def chk_p2_pass_no_p3(con) -> dict:
-    """P2-PASS work_items that lack a corresponding P3 work_item.
-    The pump §10c promotion logic should always be at 0; > 5 = bug."""
-    n = con.execute(
+    """Profitable P2-PASS work_items that lack a corresponding P3 work_item.
+
+    P2 PASS only means the smoke/backtest completed and met the minimum
+    trade gate. P2 rows with non-positive net profit are intentionally not
+    promoted by the pump profit filter, so the detector must not count them
+    as stranded promotion work.
+    """
+    rows = con.execute(
         """
-        SELECT COUNT(*) FROM work_items w
+        SELECT w.* FROM work_items w
         WHERE w.status='done' AND w.verdict='PASS' AND w.phase='P2'
           AND NOT EXISTS (
             SELECT 1 FROM work_items w2
@@ -253,14 +321,16 @@ def chk_p2_pass_no_p3(con) -> dict:
               AND w2.phase='P3'
           )
         """
-    ).fetchone()[0]
+    ).fetchall()
+    promotable = [r for r in rows if (_work_item_p2_net_profit(r) or 0.0) > 0.0]
+    n = len(promotable)
     if n >= 10:
         return _check("p2_pass_no_p3", "FAIL", n, 10,
-                      f"{n} P2-PASS work_items without P3 promotion",
+                      f"{n} profitable P2-PASS work_items without P3 promotion",
                       "Pump §10c is failing or backlogged; run farmctl pump manually")
     if n >= 3:
         return _check("p2_pass_no_p3", "WARN", n, 3,
-                      f"{n} P2-PASS without P3 promotion (pump catches up gradually)",
+                      f"{n} profitable P2-PASS without P3 promotion (pump catches up gradually)",
                       "Next pump cycle (≤5 min) should promote them")
     return _check("p2_pass_no_p3", "OK", n, 10, f"{n} pending promotion", "")
 
@@ -445,6 +515,7 @@ def chk_codex_zero_activity(con) -> dict:
             ["powershell.exe", "-NoProfile", "-Command",
              "(Get-Process -Name codex -ErrorAction SilentlyContinue).Count"],
             capture_output=True, text=True, timeout=10,
+            creationflags=_creationflags_no_window(),
         )
         n_codex = int((out.stdout or "0").strip() or "0")
     except Exception:
@@ -597,6 +668,18 @@ def chk_unenqueued_eas_count(con) -> dict:
             (ea_id,),
         ).fetchone()[0]
         if wi_count > 0:
+            continue
+        terminal_task_exists = con.execute(
+            """
+            SELECT 1 FROM tasks
+            WHERE kind='backtest_p2'
+              AND card_id=?
+              AND status IN ('done', 'failed')
+            LIMIT 1
+            """,
+            (ea_id,),
+        ).fetchone()
+        if terminal_task_exists:
             continue
         candidates = sorted(p for p in FRAMEWORK_EAS_DIR.glob(f"{ea_id}_*") if p.is_dir())
         if not candidates:
