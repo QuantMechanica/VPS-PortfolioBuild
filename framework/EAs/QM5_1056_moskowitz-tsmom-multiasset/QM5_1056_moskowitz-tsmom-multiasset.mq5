@@ -29,6 +29,7 @@ input double strategy_spread_mult         = 3.0;
 input int    strategy_entry_offset_from_month_end = -1;
 input int    strategy_exit_offset_from_month_end  = -1;
 input bool   strategy_exit_on_session_close       = true;
+input int    strategy_rebalance_interval_days     = 0;
 
 const int STRATEGY_UNIVERSE_SIZE = 10;
 string    g_universe_symbols[10] =
@@ -53,6 +54,25 @@ int Strategy_RebalanceKey(const datetime t)
    MqlDateTime dt;
    TimeToStruct(t, dt);
    return dt.year * 100 + dt.mon;
+  }
+
+int Strategy_IntervalRebalanceKey(const datetime t)
+  {
+   if(strategy_rebalance_interval_days <= 0)
+      return Strategy_RebalanceKey(t);
+   const int interval_days = MathMax(2, strategy_rebalance_interval_days);
+   return (int)(DateFloor(t) / 86400) / interval_days;
+  }
+
+bool Strategy_IsIntervalTimingWindow()
+  {
+   if(strategy_rebalance_interval_days <= 0)
+      return false;
+   const datetime current_d1 = iTime(_Symbol, PERIOD_D1, 0);
+   const datetime prior_d1 = iTime(_Symbol, PERIOD_D1, 1);
+   if(current_d1 <= 0 || prior_d1 <= 0)
+      return false;
+   return (Strategy_IntervalRebalanceKey(current_d1) != Strategy_IntervalRebalanceKey(prior_d1));
   }
 
 int MonthOf(const datetime t)
@@ -151,6 +171,9 @@ bool IsLastTradingSessionBeforeMonthChange(const bool require_session_close)
 
 bool Strategy_IsMonthEndTimingWindow(const int offset_from_month_end, const bool require_session_close)
   {
+   if(strategy_rebalance_interval_days > 0)
+      return Strategy_IsIntervalTimingWindow();
+
    const int offset = MathMax(-1, MathMin(1, offset_from_month_end));
    if(offset > 0)
       return IsFirstTradingSessionOfMonth();
@@ -262,8 +285,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!Strategy_IsMonthEndTimingWindow(strategy_entry_offset_from_month_end, strategy_exit_on_session_close))
       return false;
 
-   const datetime rebalance_bar = (strategy_entry_offset_from_month_end > 0) ? iTime(_Symbol, PERIOD_D1, 1) : iTime(_Symbol, PERIOD_D1, 0);
-   const int rebalance_key = Strategy_RebalanceKey(rebalance_bar);
+   const datetime rebalance_bar = (strategy_entry_offset_from_month_end > 0 && strategy_rebalance_interval_days <= 0) ? iTime(_Symbol, PERIOD_D1, 1) : iTime(_Symbol, PERIOD_D1, 0);
+   const int rebalance_key = Strategy_IntervalRebalanceKey(rebalance_bar);
    if(rebalance_key <= 0 || rebalance_key == g_last_entry_rebalance_key)
       return false;
    g_last_entry_rebalance_key = rebalance_key;
@@ -311,8 +334,8 @@ bool Strategy_ExitSignal()
    if(!Strategy_HasOpenPosition())
       return false;
 
-   const datetime rebalance_bar = (strategy_exit_offset_from_month_end > 0) ? iTime(_Symbol, PERIOD_D1, 1) : iTime(_Symbol, PERIOD_D1, 0);
-   const int rebalance_key = Strategy_RebalanceKey(rebalance_bar);
+   const datetime rebalance_bar = (strategy_exit_offset_from_month_end > 0 && strategy_rebalance_interval_days <= 0) ? iTime(_Symbol, PERIOD_D1, 1) : iTime(_Symbol, PERIOD_D1, 0);
+   const int rebalance_key = Strategy_IntervalRebalanceKey(rebalance_bar);
    if(rebalance_key <= 0 || rebalance_key == g_last_exit_rebalance_key)
       return false;
    if(rebalance_key == g_last_entry_rebalance_key)

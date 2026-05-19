@@ -492,6 +492,8 @@ function Write-TesterIni {
         [string]$ToDate,
         [Parameter(Mandatory = $true)]
         [string]$ReportValue,
+        [Parameter(Mandatory = $true)]
+        [string]$TerminalRoot,
         [string]$SetFilePath
     )
 
@@ -536,7 +538,12 @@ function Write-TesterIni {
     )
 
     if ($SetFilePath) {
-        $lines += "ExpertParameters=$SetFilePath"
+        $testerProfileDir = Join-Path $TerminalRoot "MQL5\Profiles\Tester"
+        New-Item -ItemType Directory -Path $testerProfileDir -Force | Out-Null
+        $setfileName = Split-Path -Leaf $SetFilePath
+        $terminalSetfilePath = Join-Path $testerProfileDir $setfileName
+        Copy-Item -LiteralPath $SetFilePath -Destination $terminalSetfilePath -Force
+        $lines += "ExpertParameters=$setfileName"
     }
 
     Set-Content -LiteralPath $Path -Value $lines -Encoding ascii
@@ -1072,6 +1079,7 @@ for ($i = 1; $i -le $Runs; $i++) {
         -FromDate $fromDate `
         -ToDate $toDate `
         -ReportValue $relativeReportFile `
+        -TerminalRoot $terminalRoot `
         -SetFilePath $SetFile
 
     Write-Host ("run_smoke.stage=ini_written run={0} ini='{1}'" -f $runName, $iniPath)
@@ -1461,3 +1469,4 @@ if (-not $passed) {
 }
 
 exit 0
+
