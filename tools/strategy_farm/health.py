@@ -1132,7 +1132,11 @@ def chk_quota_snapshot_fresh() -> dict:
                       f"snapshot unreadable: {exc}", "Check receiver process")
     now = _utc_now()
     ages: dict = {}
-    for src in ("codex", "claude"):
+    sources = ["codex"]
+    claude_disabled = (ROOT / "CLAUDE_DISABLED.flag").exists()
+    if not claude_disabled:
+        sources.append("claude")
+    for src in sources:
         s = snap.get(src) or {}
         ra = s.get("received_at")
         if ra:
@@ -1147,16 +1151,19 @@ def chk_quota_snapshot_fresh() -> dict:
                       "no received_at timestamps in snapshot",
                       "Open Tampermonkey tabs (chatgpt.com / claude.ai)")
     if max_age > 600:  # > 10 min
+        src_detail = ", ".join(f"{src}={ages.get(src, '?')}s" for src in sources)
         return _check("quota_snapshot_fresh", "FAIL", max_age, 600,
-                      f"oldest snapshot {max_age}s old (codex={ages.get('codex','?')}s, "
-                      f"claude={ages.get('claude','?')}s)",
+                      f"oldest enabled snapshot {max_age}s old ({src_detail})",
                       "Refresh Tampermonkey tabs in Chrome")
     if max_age > 300:
         return _check("quota_snapshot_fresh", "WARN", max_age, 300,
-                      f"oldest snapshot {max_age}s old",
+                      f"oldest enabled snapshot {max_age}s old",
                       "Tabs may have lost focus — check Chrome")
+    src_detail = ", ".join(f"{src}={ages.get(src, '?')}s" for src in sources)
+    if claude_disabled:
+        src_detail += "; claude disabled"
     return _check("quota_snapshot_fresh", "OK", max_age, 300,
-                  f"codex={ages.get('codex','?')}s, claude={ages.get('claude','?')}s", "")
+                  src_detail, "")
 
 
 # ---------------------------------------------------------------------------
