@@ -3746,6 +3746,17 @@ def _detect_unenqueued_eas(con: sqlite3.Connection) -> list[dict[str, Any]]:
         ).fetchone()[0]
         if wi_count > 0:
             continue
+        # 2026-05-19: also skip if a terminal backtest_p2 task already exists
+        # for this EA (done OR failed). Prevents pump from re-enqueuing
+        # unactionable EAs (e.g. M1 EAs without DWX history in default
+        # 2017-2022 window) on every cycle.
+        terminal_task_exists = con.execute(
+            "SELECT 1 FROM tasks WHERE kind='backtest_p2' AND card_id=? "
+            "AND status IN ('done','failed') LIMIT 1",
+            (ea_id,),
+        ).fetchone()
+        if terminal_task_exists:
+            continue
         candidates = sorted(p for p in FRAMEWORK_EAS_DIR.glob(f"{ea_id}_*") if p.is_dir())
         if not candidates:
             continue
@@ -5467,6 +5478,25 @@ def enqueue_backtest(root: Path, review_task_id: str, phase: str) -> dict[str, A
             phase=phase,
             surviving_symbols=surviving_symbols,
         )
+
+        # 2026-05-19: If 0 work_items get created (all symbols skipped due to
+        # missing history, no surviving setfiles, etc.), mark the task failed
+        # immediately. Otherwise _detect_unenqueued_eas (which checks only
+        # work_items count) sees ea_review=done + work_items=0 and re-enqueues
+        # on every pump cycle — observed spawn-loop creating 706 tasks/hour
+        # for 3 EAs (M1 + H4 without DWX history in 2017-2022 window).
+        if not work_items_created:
+            skipped_count = len(p2_history_skipped or [])
+            update_task(
+                conn,
+                task_id,
+                status="failed",
+                payload_merge={
+                    "failure_reason": "no_work_items_created",
+                    "skipped_symbols_count": skipped_count,
+                    "skipped_first": (p2_history_skipped or [])[:3],
+                },
+            )
 
     return {
         "enqueued": True,
