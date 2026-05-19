@@ -780,3 +780,110 @@ then unblock the 4 EAs above.
   cluster crosses 40 distinct EAs, (c) post-codex-auth-recovery
   validation cohort (separate signal class from this watchdog
   validation), or (d) OWNER picks a fix candidate.
+
+- **2026-05-19T00:49Z (observe wake)** — **two gates tripped at once:
+  cluster crossed the 40-EA threshold (gate b), and bucket (9)
+  `run_smoke_invocation_missing_params` re-emerged from
+  retired-pending-recurrence via QM5_1400 (gate a). Plus a new
+  post-watchdog preflight variant on QM5_1119: whole-pool exhaustion
+  wording rather than the single-terminal AllowRunningTerminal
+  wording, which the 4dbe855d watchdog patch was designed to
+  fail-fast.**
+
+  Six new terminal failures since the 19:40Z entry (all attempt=3,
+  pump cap holding):
+
+  - **QM5_1195** (failed 22:44:02Z) —
+    `REPORT_MISSING;METATESTER_HUNG;INCOMPLETE_RUNS;MODEL4_MARKER_REQUIRED`.
+    Joins worker-mortality bucket.
+  - **QM5_1213** (failed 23:44:02Z) — same shape. Joins
+    worker-mortality bucket.
+  - **QM5_1101** (failed 23:49:02Z, second row — earlier 14:14Z row
+    was preflight-class) — same shape as 1195/1213. Migrates from
+    preflight to worker-mortality post-watchdog, mirroring QM5_1236
+    / QM5_1237 in the 19:40Z entry.
+  - **QM5_1119** (failed 23:59:02Z) — `smoke not launched: T1
+    terminal already running and T1-T5 are occupied by existing
+    tester work items`. **New preflight variant.** Distinct from the
+    pre-watchdog `T1 terminal already running` wording (which the
+    4dbe855d watchdog fail-fasts with AllowRunningTerminal). This
+    one explicitly says **whole pool T1-T5 occupied** — the watchdog
+    passed the single-terminal check (no single terminal "already
+    running" without authorization) but every terminal in the pool
+    was busy with tester work items. Suggests the 4dbe855d patch
+    handles per-terminal conflict but not pool-saturation refusal;
+    or, the smoke harness's allow-list of terminals does not match
+    the dispatcher's pool, so smoke can't find any free terminal
+    when dispatcher is saturating T1-T5.
+  - **QM5_1448** (failed 00:14:02Z) —
+    `REPORT_MISSING;METATESTER_HUNG;INCOMPLETE_RUNS;MODEL4_MARKER_REQUIRED`.
+    Joins worker-mortality bucket.
+  - **QM5_1400** (failed 00:24:02Z) — `run_smoke.ps1 missing
+    mandatory parameters: Symbol Year`. **Bucket (9) recurrence.**
+    The 19:40Z entry retired (9) when QM5_1104's terminal attempt
+    migrated to cold-warm-asymmetry. QM5_1400 now exhibits the same
+    deterministic invocation bug on a different EA, contradicting
+    the "one-shot pump-retry path bug" hypothesis. Fix candidate
+    (10) `audit pump-retry path for parameter-passing consistency`
+    is back on the active list — this is no longer a single-EA
+    outlier.
+
+  Updated cluster: **40 distinct EAs / 44 rows** (gate (b) crossed
+  exactly):
+  - cold-warm-asymmetry (6): QM5_1045/1050/1055/1122/1149/1104
+  - both-runs-fail (8): QM5_1046/1060/1065/1066/1067/1070/1094/1095
+  - preflight-already-running (5, all pre-watchdog terminal):
+    QM5_1068/1082/1101-firstrow/1123/1159
+  - preflight-pool-exhausted (1, **NEW post-watchdog variant**):
+    **QM5_1119-latestrow**
+  - worker-mortality / metatester-hung (10):
+    QM5_1090/1091/1118/1093/1168/1236/**1195**/**1213**/**1101-latestrow**/**1448**
+  - file-lock-on-include-sync (1): QM5_1121
+  - parser-empty-html-not-classified (3): QM5_1117/1119-firstrow/1142
+  - data-history-missing (1): QM5_1132
+  - REPORT_MISSING (other) (4): QM5_1061/1069/1081/1062/1237
+    (note: 1237 stays here per 19:40Z classification)
+  - **(9) run_smoke_invocation_missing_params (REACTIVATED)**:
+    **QM5_1400**
+
+  **Watchdog (4dbe855d) re-evaluation.** The 19:40Z entry concluded
+  preflight class was eliminated for new failures. That holds for
+  the single-terminal-already-running shape, but QM5_1119 at
+  23:59:02Z demonstrates a second preflight failure mode — whole-pool
+  saturation — that the watchdog does not cover. The watchdog
+  reduces but does not eliminate preflight; a small new bucket
+  (`preflight-pool-exhausted`) opens. Net assessment of the patch:
+  positive but incomplete; the underlying contention between smoke
+  and dispatcher described in fix candidate (5) (terminal-pool
+  mutex) remains the load-bearing fix. Candidate (6) (reserve
+  T0/T5 as smoke-only) would also eliminate this new variant.
+
+  **Worker-mortality bucket dominates.** 10 of 40 EAs (25%) now sit
+  in this bucket — the largest single failure mode. The 19:40Z
+  entry already flagged this as the post-watchdog migration target,
+  and four hours later the bucket gained four more entries
+  (+QM5_1195/1213/1101-latest/1448) — confirming watchdog converted
+  preflight-failures into worker-mortality failures without solving
+  the underlying tester instability.
+
+  **Recommended escalation path strengthened.** Severity remains
+  HIGH. The bundle picks now logically resolve to:
+  - **(5) terminal-pool mutex** — addresses both the
+    single-terminal preflight (already partly covered by watchdog)
+    AND the new pool-exhaustion preflight variant.
+  - **(1) cold-start warm-up** OR **(2)/(3) loosened all-runs-OK
+    gate** — addresses the worker-mortality + cold-warm-asymmetry
+    clusters that are the bulk of the failure mass.
+  - **(10) pump-retry parameter-passing audit** — back on active
+    list per QM5_1400 recurrence.
+  - **(8) defensive parser fallback** — small diff, eliminates the
+    parser-empty-html bucket (3 EAs).
+
+  Per DL-046, no further update gating window now stretches to:
+  next update only on (a) yet another new bucket beyond the
+  currently-active nine (eight original + reactivated (9) +
+  preflight-pool-exhausted), (b) cluster crosses 50 distinct EAs,
+  (c) post-codex-auth-recovery validation cohort, or (d) OWNER
+  picks a fix candidate. No Board-Advisor action beyond this
+  log entry — framework + run_smoke.ps1 + farmctl pump-retry path
+  remain outside scope.
