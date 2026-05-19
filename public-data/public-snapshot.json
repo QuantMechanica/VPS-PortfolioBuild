@@ -1,41 +1,41 @@
 {
-  "schema_version": 1,
-  "generated_at": "2026-05-15T18:07:02.2779488Z",
-  "phase": "Endausbaustufe-Modus — highest EA at P8",
-  "agents": {
-    "offline": 1,
-    "online": 4,
-    "blocked": 0
-  },
-  "pipeline": {
-    "eas_built": 40,
-    "by_phase": {
-      "P5c": 0,
-      "P10": 0,
-      "P3_5": 1,
-      "P9": 0,
-      "P1": 8,
-      "P8": 1,
-      "P9b": 0,
-      "P7": 0,
-      "P5": 0,
-      "P3": 0,
-      "P2": 0,
-      "P6": 0,
-      "P4": 0,
-      "P5b": 0,
-      "G0": 0
-    },
-    "strategy_cards": 29
-  },
-  "t6": {
-    "risk_state": "green",
-    "status": "offline",
-    "autotrading": false
-  },
-  "expenses": {
-    "budget_eur": 1850,
-    "entries": 2,
-    "spent_eur": 204.0
-  }
+    "schema_version":  1,
+    "generated_at":  "2026-05-19T12:48:39.5981316Z",
+    "phase":  "Endausbaustufe-Modus - highest EA at P3",
+    "agents":  {
+                   "offline":  1,
+                   "online":  4,
+                   "blocked":  0
+               },
+    "pipeline":  {
+                     "eas_built":  540,
+                     "by_phase":  {
+                                      "P5b":  0,
+                                      "P6":  0,
+                                      "P2":  3,
+                                      "P9b":  0,
+                                      "G0":  0,
+                                      "P3":  1,
+                                      "P9":  0,
+                                      "P3_5":  0,
+                                      "P8":  0,
+                                      "P4":  0,
+                                      "P10":  0,
+                                      "P5":  0,
+                                      "P7":  0,
+                                      "P1":  10,
+                                      "P5c":  0
+                                  },
+                     "strategy_cards":  29
+                 },
+    "t6":  {
+               "status":  "offline",
+               "risk_state":  "green",
+               "autotrading":  false
+           },
+    "expenses":  {
+                     "entries":  2,
+                     "budget_eur":  1850,
+                     "spent_eur":  204
+                 }
 }

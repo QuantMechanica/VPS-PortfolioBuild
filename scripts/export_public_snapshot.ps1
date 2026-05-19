@@ -35,7 +35,7 @@ function Write-JsonIfChanged {
     $existing = if (Test-Path -LiteralPath $Path) { Get-Content -LiteralPath $Path -Raw } else { "" }
     if ($existing -eq $newJson) { return $false }
     $tmp = "$Path.tmp"
-    $newJson | Set-Content -LiteralPath $tmp -Encoding UTF8
+    [System.IO.File]::WriteAllText($tmp, $newJson, (New-Object System.Text.UTF8Encoding($false)))
     Move-Item -LiteralPath $tmp -Destination $Path -Force
     return $true
 }
@@ -221,14 +221,14 @@ foreach ($p in $phaseOrder) {
     if ([int]$pipelineState.by_phase.$p -gt 0) { $highestPhase = $p }
 }
 if ($null -eq $highestPhase) {
-    $phaseLabel = "Endausbaustufe-Modus — no EA past G0 yet"
+    $phaseLabel = "Endausbaustufe-Modus - no EA past G0 yet"
 } else {
     $displayPhase = $highestPhase -replace "_", "."
-    $phaseLabel = "Endausbaustufe-Modus — highest EA at $displayPhase"
+    $phaseLabel = "Endausbaustufe-Modus - highest EA at $displayPhase"
 }
 
 # agents.{online,offline,blocked} from watchdog sub-agent state.
-# online = sub-agents producing runs in last 2h; offline = idle ≥2h; blocked = (future: Paperclip API count).
+# online = sub-agents producing runs in last 2h; offline = idle >=2h; blocked = (future: Paperclip API count).
 $agentsOnline = [int]$pipelineState.agents_watchdog.online_count
 $agentsOffline = [int]$pipelineState.agents_watchdog.offline_count
 $agentsBlocked = 0  # placeholder until Paperclip API integration

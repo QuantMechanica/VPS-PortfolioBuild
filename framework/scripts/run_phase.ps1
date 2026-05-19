@@ -107,7 +107,7 @@ if (-not (Test-Path -LiteralPath $runnerPath -PathType Leaf)) {
 }
 
 $phaseToken = $Phase.Replace('.', '_')
-$phaseOut = Join-Path (Join-Path $OutRoot $EAId) $phaseToken
+$phaseOut = Join-Path (Join-Path $OutRoot $EAId) $Phase
 New-Item -ItemType Directory -Path $phaseOut -Force | Out-Null
 
 $pythonArgs = @($runnerPath, '--ea', $EAId, '--out-prefix', $OutRoot) + $RunnerArgs

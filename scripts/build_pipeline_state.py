@@ -23,6 +23,7 @@ import csv
 import json
 import os
 import re
+import sqlite3
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -36,12 +37,15 @@ WATCHDOG_LATEST = REPO_ROOT / "docs" / "ops" / "pipeline_health" / "latest.json"
 DISPATCH_STATE = PIPELINE_ROOT / "dispatch_state.json"
 EA_REGISTRY = REPO_ROOT / "framework" / "registry" / "ea_id_registry.csv"
 STRATEGY_CARDS_DIR = REPO_ROOT / "strategy-seeds" / "cards"
+FARM_DB = Path(r"D:/QM/strategy_farm/state/farm_state.sqlite")
 
 # V5 phase order (from PIPELINE_PHASE_SPEC.md). P3.5 is stored as P3_5 in JSON keys
 # to satisfy the public-snapshot schema.
 PHASES = ["G0", "P1", "P2", "P3", "P3.5", "P4", "P5", "P5b", "P5c", "P6", "P7", "P8", "P9", "P9b", "P10"]
 PHASE_TO_KEY = {p: p.replace(".", "_") for p in PHASES}
 MANUAL_GATES = {"G0", "P9", "P9b", "P10"}
+ADVANCED_PHASE_RESULT_MIN_UTC = datetime(2026, 5, 15, tzinfo=timezone.utc)
+ADVANCED_PHASES = {"P3.5", "P4", "P5", "P5b", "P5c", "P6", "P7", "P8"}
 
 
 def read_json_safe(path: Path) -> dict | None:
@@ -75,12 +79,13 @@ def find_phase_result(ea_dir: Path, phase: str) -> dict | None:
     Naming conventions observed:
       - P2:  <ea_dir>/P2/p2_<EA>_result.json
       - Pn:  <ea_dir>/P<n>/P<n>_<EA>_result.json
-      - P3.5: <ea_dir>/P3_5/P3_5_<EA>_result.json
+      - P3.5: <ea_dir>/P3.5/P3_5_<EA>_result.json
+        Legacy <ea_dir>/P3_5 is still accepted while old artifacts age out.
     """
     phase_key = PHASE_TO_KEY[phase]
-    phase_dir = ea_dir / phase_key
+    phase_dir = ea_dir / phase
     if not phase_dir.is_dir():
-        phase_dir = ea_dir / phase  # fallback (e.g., "P2" already matches)
+        phase_dir = ea_dir / phase_key  # legacy P3_5 fallback / schema-safe names
     if not phase_dir.is_dir():
         return None
     ea_name = ea_dir.name
@@ -123,6 +128,30 @@ def extract_verdict(result: dict) -> str:
     return "UNKNOWN"
 
 
+def phase_result_is_current(phase: str, result: dict, evidence_path: str | None) -> bool:
+    """Ignore stale advanced-chain artifacts from pre-V5 cascade experiments."""
+    if phase not in ADVANCED_PHASES:
+        return True
+
+    raw_ts = result.get("generated_at_utc") or result.get("generated_at")
+    parsed_ts = None
+    if raw_ts:
+        text = str(raw_ts).replace("Z", "+00:00")
+        try:
+            parsed_ts = datetime.fromisoformat(text)
+            if parsed_ts.tzinfo is None:
+                parsed_ts = parsed_ts.replace(tzinfo=timezone.utc)
+        except ValueError:
+            parsed_ts = None
+
+    if parsed_ts is None and evidence_path:
+        p = Path(evidence_path)
+        if p.is_file():
+            parsed_ts = datetime.fromtimestamp(p.stat().st_mtime, tz=timezone.utc)
+
+    return bool(parsed_ts and parsed_ts >= ADVANCED_PHASE_RESULT_MIN_UTC)
+
+
 def per_ea_state(ea_dir: Path) -> dict:
     """Build per-EA state record."""
     ea = ea_dir.name
@@ -134,9 +163,12 @@ def per_ea_state(ea_dir: Path) -> dict:
         res = find_phase_result(ea_dir, phase)
         if res is None:
             continue
+        evidence_path = str(res.get("evidence_path") or "")
+        if not phase_result_is_current(phase, res, evidence_path):
+            continue
         phase_verdicts[phase] = extract_verdict(res)
-        if "evidence_path" in res:
-            phase_evidence[phase] = str(res["evidence_path"])
+        if evidence_path:
+            phase_evidence[phase] = evidence_path
 
     # Determine latest reached phase = highest phase with PASS verdict
     latest_pass = None
@@ -204,6 +236,48 @@ def aggregate_by_status(eas: list[dict]) -> dict[str, int]:
     return counts
 
 
+def farm_db_by_phase() -> dict[str, int]:
+    """Current Strategy Farm DB view of each EA's highest PASS phase."""
+    by_phase = {PHASE_TO_KEY[p]: 0 for p in PHASES}
+    if not FARM_DB.is_file():
+        return by_phase
+
+    phase_rank = {phase: idx for idx, phase in enumerate(PHASES)}
+    latest_by_ea: dict[str, str] = {}
+    pass_verdicts = {"PASS", "AUTO_PASS", "MODE_SELECTED", "MULTI_SEED_PASS", "MULTI_SEED_MIXED"}
+
+    con = None
+    try:
+        con = sqlite3.connect(str(FARM_DB))
+        con.row_factory = sqlite3.Row
+        rows = con.execute(
+            "SELECT ea_id, phase, verdict FROM work_items "
+            "WHERE status='done' AND verdict IS NOT NULL"
+        ).fetchall()
+    except sqlite3.Error:
+        return by_phase
+    finally:
+        try:
+            if con is not None:
+                con.close()
+        except Exception:
+            pass
+
+    for row in rows:
+        ea_id = str(row["ea_id"] or "").strip()
+        phase = str(row["phase"] or "").strip()
+        verdict = str(row["verdict"] or "").strip().upper()
+        if not ea_id or phase not in phase_rank or verdict not in pass_verdicts:
+            continue
+        current = latest_by_ea.get(ea_id)
+        if current is None or phase_rank[phase] > phase_rank[current]:
+            latest_by_ea[ea_id] = phase
+
+    for phase in latest_by_ea.values():
+        by_phase[PHASE_TO_KEY[phase]] += 1
+    return by_phase
+
+
 def mt5_state() -> dict:
     """Extract per-terminal MT5 state from aggregator's last_check_state.json."""
     data = read_json_safe(LAST_CHECK_FILE) or {}
@@ -265,13 +339,19 @@ def build() -> dict:
     registry = read_ea_registry()
     cards = count_strategy_cards()
 
+    by_phase = aggregate_by_phase(eas)
+    db_by_phase = farm_db_by_phase()
+    if sum(db_by_phase.values()) > 0:
+        for phase in ("P2", "P3", "P3.5", "P4", "P5", "P5b", "P5c", "P6", "P7", "P8"):
+            by_phase[PHASE_TO_KEY[phase]] = db_by_phase[PHASE_TO_KEY[phase]]
+
     state = {
         "schema_version": 1,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "strategy_cards_count": cards,
         "eas_registered_count": len(registry),
         "eas_with_reports_count": len(eas),
-        "by_phase": aggregate_by_phase(eas),
+        "by_phase": by_phase,
         "by_status": aggregate_by_status(eas),
         "mt5": mt5_state(),
         "agents_watchdog": agents_watchdog_state(),

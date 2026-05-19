@@ -18,7 +18,9 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     p = parse_args()
-    p35_report = REPORT_ROOT / p.ea_id / "P3_5" / "report.csv"
+    p35_report = REPORT_ROOT / p.ea_id / "P3.5" / "report.csv"
+    if not p35_report.exists():
+        p35_report = REPORT_ROOT / p.ea_id / "P3_5" / "report.csv"
 
     pass_rows = []
     if p35_report.exists():

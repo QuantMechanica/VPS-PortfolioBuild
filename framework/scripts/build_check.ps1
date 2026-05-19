@@ -599,6 +599,38 @@ function Invoke-InputGroupCheck {
     }
 }
 
+function Invoke-RiskSizerStaticCheck {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ResolvedRepoRoot
+    )
+
+    $eaRoot = Join-Path $ResolvedRepoRoot "framework\EAs"
+    if (-not (Test-Path -LiteralPath $eaRoot)) {
+        return
+    }
+
+    if ($EALabel) {
+        $eaFiles = @(Get-ChildItem -LiteralPath (Join-Path $eaRoot $EALabel) -File -Filter *.mq5 -ErrorAction SilentlyContinue)
+    } else {
+        $eaFiles = @(Get-ChildItem -LiteralPath $eaRoot -Recurse -File -Include *.mq5 -ErrorAction SilentlyContinue |
+                     Where-Object { $_.Name -notmatch 'smoke|unit|test' -and $_.FullName -notmatch '_obsolete_' })
+    }
+
+    foreach ($file in $eaFiles) {
+        $content = Get-Content -Raw -LiteralPath $file.FullName -ErrorAction SilentlyContinue
+        if (-not $content) { continue }
+
+        $usesFrameworkCommon = $content -match '#include\s+<QM/QM_Common\.mqh>'
+        $callsFrameworkInit = $content -match '\bQM_FrameworkInit\s*\('
+        $callsRiskSizerConfigure = $content -match '\bQM_RiskSizerConfigure\s*\('
+
+        if ($usesFrameworkCommon -and -not $callsFrameworkInit -and -not $callsRiskSizerConfigure) {
+            Add-Failure "EA_RISK_SIZER_UNCONFIGURED: $($file.Name) includes QM_Common but does not call QM_FrameworkInit(...) or QM_RiskSizerConfigure(...). RISK_MODE=UNSET can silently produce zero-lot trades."
+        }
+    }
+}
+
 function Invoke-PerfStaticCheck {
     # Fast pre-filter for per-tick perf hazards. Scans the EA .mq5 only (not
     # framework includes, not tests). Two FAIL cases (block build) + several
@@ -750,6 +782,7 @@ if (-not $SkipForbiddenScan.IsPresent) {
 }
 if (-not $SkipInputGroupCheck.IsPresent) {
     Invoke-InputGroupCheck -ResolvedRepoRoot $resolvedRepoRoot
+    Invoke-RiskSizerStaticCheck -ResolvedRepoRoot $resolvedRepoRoot
 }
 if (-not $SkipPerfStaticCheck.IsPresent) {
     Invoke-PerfStaticCheck -ResolvedRepoRoot $resolvedRepoRoot

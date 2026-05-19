@@ -24,7 +24,8 @@ class PhaseRunnerContractTests(unittest.TestCase):
         proc = subprocess.run(cmd, cwd=str(REPO), capture_output=True, text=True)
         self.assertEqual(proc.returncode, 0, msg=f"phase={phase}\nstdout={proc.stdout}\nstderr={proc.stderr}")
         token = phase.replace(".", "_")
-        result_path = out_root / "QM5_1001" / token / f"{token}_QM5_1001_result.json"
+        phase_dir = phase
+        result_path = out_root / "QM5_1001" / phase_dir / f"{token}_QM5_1001_result.json"
         self.assertTrue(result_path.exists(), msg=f"missing {result_path}\nstdout={proc.stdout}\nstderr={proc.stderr}")
         data = json.loads(result_path.read_text(encoding="utf-8"))
         self.assertEqual(data["phase"], phase)

@@ -7105,7 +7105,11 @@ def record_build_result(root: Path, task_id: str, result_file: str) -> dict[str,
         and result.get("compile_succeeded") is True
         and str(smoke or "").lower() == "framework_error"
     )
+    fail_code = _classify_build_fail_code(result)
     payload_merge: dict[str, Any] = {"codex_result": result}
+    if fail_code:
+        payload_merge["fail_code"] = fail_code
+        result.setdefault("fail_code", fail_code)
     if smoke_framework_error_after_good_build:
         new_status = "done"
         payload_merge.update({
@@ -7130,11 +7134,63 @@ def record_build_result(root: Path, task_id: str, result_file: str) -> dict[str,
         "new_status": new_status,
         "smoke_result": smoke,
         "blocked_reason": blocked,
+        "fail_code": fail_code,
         "next_action_hint": (
             f"python tools/strategy_farm/farmctl.py claude-review-prompt --build-task-id {task_id}"
             if new_status == "done" else f"Build failed/blocked. Inspect {rp} and rework or escalate."
         ),
     }
+
+
+def _classify_build_fail_code(result: dict[str, Any]) -> str | None:
+    """Stable taxonomy for build_ea failures; stored on task payloads."""
+    blocked = str(result.get("blocked_reason") or "").strip()
+    smoke = str(result.get("smoke_result") or "").strip()
+    reason = " ".join(
+        str(result.get(k) or "")
+        for k in ("reason", "error", "reason_class", "failure_reason", "notes")
+    ).lower()
+
+    if blocked:
+        blocked_l = blocked.lower()
+        if "magic" in blocked_l and "collision" in blocked_l:
+            return "magic_collision"
+        if "compile" in blocked_l:
+            return "compile_error"
+        if "smoke" in blocked_l:
+            return "smoke_failed"
+        if "timeout" in blocked_l:
+            return "timeout"
+        if "framework" in blocked_l:
+            return "framework_error"
+        if "codex_review_fail" == blocked_l:
+            return "codex_review_fail"
+        if "card" in blocked_l and ("not found" in blocked_l or "path" in blocked_l or "missing" in blocked_l):
+            return "card_path_missing"
+        return re.sub(r"[^a-z0-9_]+", "_", blocked_l).strip("_") or "blocked"
+
+    if result.get("compile_succeeded") is False or result.get("build_check_passed") is False:
+        if "magic" in reason and "collision" in reason:
+            return "magic_collision"
+        if "timeout" in reason:
+            return "compile_timeout"
+        return "compile_error"
+
+    smoke_l = smoke.lower()
+    if smoke_l in {"passed", "zero_trades"}:
+        return None
+    if smoke_l:
+        if "timeout" in smoke_l or "timeout" in reason:
+            return "smoke_timeout"
+        if "framework_error" in smoke_l:
+            return "framework_error"
+        if "min_trades" in smoke_l:
+            return "min_trades_not_met"
+        if "report" in smoke_l:
+            return "smoke_report_missing"
+        return re.sub(r"[^a-z0-9_]+", "_", smoke_l).strip("_") or "smoke_failed"
+
+    return None
 
 
 def render_claude_review_prompt(root: Path, build_task_id: str, out_path: str | None) -> dict[str, Any]:

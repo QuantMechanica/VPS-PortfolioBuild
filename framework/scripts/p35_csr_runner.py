@@ -44,7 +44,7 @@ def main() -> int:
     args = parser.parse_args()
 
     ea_id = args.ea
-    out_dir = ensure_dir(Path(args.out_prefix) / ea_id / "P3_5")
+    out_dir = ensure_dir(Path(args.out_prefix) / ea_id / "P3.5")
     if not args.baseline_csv:
         result = build_result(
             phase="P3.5",

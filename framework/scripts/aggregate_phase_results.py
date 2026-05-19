@@ -43,8 +43,14 @@ def main() -> int:
 
     by_phase = {}
     for phase in EXPECTED_PHASES:
-        phase_dir = input_root / phase.replace(".", "_")
-        result_file = phase_dir / f"{phase.replace('.', '_')}_{ea_id}_result.json"
+        phase_token = phase.replace(".", "_")
+        phase_dir = input_root / phase
+        result_file = phase_dir / f"{phase_token}_{ea_id}_result.json"
+        if not result_file.exists():
+            legacy_phase_dir = input_root / phase_token
+            legacy_result_file = legacy_phase_dir / f"{phase_token}_{ea_id}_result.json"
+            if legacy_result_file.exists():
+                result_file = legacy_result_file
         if result_file.exists():
             by_phase[phase] = load_json(result_file)
         else:
