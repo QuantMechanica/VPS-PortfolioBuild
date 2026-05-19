@@ -178,6 +178,7 @@ def _is_codex_auth_broken(con) -> bool:
             ["powershell.exe", "-NoProfile", "-Command",
              "(Get-Process -Name codex -ErrorAction SilentlyContinue).Count"],
             capture_output=True, text=True, timeout=10,
+            creationflags=_creationflags_no_window(),
         )
         n_codex = int((out.stdout or "0").strip() or "0")
     except Exception:
@@ -702,11 +703,16 @@ def chk_unenqueued_eas_count(con) -> dict:
 
 def chk_codex_bridge_heartbeat(con) -> dict:
     """Interactive bridge heartbeat freshness."""
+    auth_broken = _is_codex_auth_broken(con)
     if not CODEX_BRIDGE_HEARTBEAT.exists():
         return _check("codex_bridge_heartbeat", "WARN", "missing", 300,
                       "codex bridge heartbeat file missing",
                       "Ensure the Codex /goal poller touches state/codex_bridge_heartbeat.txt each cycle.")
     age = int((_utc_now().timestamp()) - CODEX_BRIDGE_HEARTBEAT.stat().st_mtime)
+    if auth_broken and age > 1800:
+        return _check("codex_bridge_heartbeat", "WARN", age, 1800,
+                      f"heartbeat stale for {age}s (codex_auth_broken upstream)",
+                      "Downstream of codex_auth_broken — restart bridge after OWNER refreshes Codex login.")
     if age > 1800:
         return _check("codex_bridge_heartbeat", "FAIL", age, 1800,
                       f"heartbeat stale for {age}s",
@@ -820,6 +826,7 @@ def chk_codex_auth_broken(con) -> dict:
             ["powershell.exe", "-NoProfile", "-Command",
              "(Get-Process -Name codex -ErrorAction SilentlyContinue).Count"],
             capture_output=True, text=True, timeout=10,
+            creationflags=_creationflags_no_window(),
         )
         n_codex = int((out.stdout or "0").strip() or "0")
     except Exception:
