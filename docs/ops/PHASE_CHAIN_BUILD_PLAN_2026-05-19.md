@@ -32,11 +32,13 @@ Without input CSVs, every runner returns `verdict='PENDING_IMPLEMENTATION'`. Pip
 **Why first:** Goal-acceptance criterion ("WF 2023-2025 OOS Sharpe ≥0.6, Trades ≥30") requires P4. P5/P5b also need P4's calibration output.
 
 Components:
-- A: `p4_fold_generator.py` — emit anchored folds: train windows 2017-`year`, OOS = next 6 months, until 2025-12-31. Min 6 folds. Regime labels via simple trend/range heuristic on benchmark symbol.
+- A: `p4_fold_generator.py` — emit anchored folds: train windows 2017-`year`, OOS = next 6 months, until 2025-12-31. Min 6 folds. Regime labels via simple trend/range heuristic on benchmark symbol. **DONE** commit `73366a4b` (regime classifier stubbed as `UNCLASSIFIED`, separate sub-component step 1A-2)
 - B: `p4_fold_dispatcher.py` — for each fold, call `run_smoke.ps1 -FromDate <oos_start> -ToDate <oos_end> -SetFile <orig>`. Parallel where terminal capacity allows.
 - C: `p4_fold_aggregator.py` — read per-fold summary.json → walk_forward.csv with columns: `ea_id,phase,fold_id,regime,dev_start,dev_end,oos_start,oos_end,verdict,trades,pf,sharpe,max_dd,net_profit`
 - D: `_phase_runner_cmd_for_work_item` P4 branch: run A → B → C → then call existing `p4_walk_forward.py --walk-forward-csv <C output>`
 - E: `tests/test_p4_fold_pipeline.py`
+
+**Lesson from 2026-05-19 Codex session pattern**: Codex `exec` spent 80% tokens on exploration/planning, ran out before writing. **Directive prompts with full code skeleton** (like `bv1s2o2qr`) work much better — Codex just writes + tests + commits in one short session. Apply this pattern for B/C/D/E too.
 
 ### 2. P3.5 Cross-Sectional Robustness (1 day)
 **Why second:** Should run before P4 per spec order. Plus simpler logic.
