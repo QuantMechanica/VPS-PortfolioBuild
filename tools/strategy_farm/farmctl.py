@@ -4433,6 +4433,18 @@ def _auto_create_ea_review_for_unenqueued_eas(root: Path, con: sqlite3.Connectio
         ).fetchone()
         if existing_review:
             continue
+        codex_review_passed = con.execute(
+            """
+            SELECT 1 FROM tasks cr
+            WHERE cr.kind='codex_review' AND cr.status='done'
+              AND cr.payload_json LIKE ?
+              AND cr.payload_json LIKE '%"verdict": "PASS"%'
+            LIMIT 1
+            """,
+            (f'%"build_task_id": "{row["id"]}"%',),
+        ).fetchone()
+        if not codex_review_passed:
+            continue
         candidates = sorted(p for p in FRAMEWORK_EAS_DIR.glob(f"{ea_id}_*") if p.is_dir())
         if not candidates:
             continue
