@@ -21,6 +21,8 @@ import farmctl
 
 POLL_SLEEP_SECONDS = 2.0
 MAX_WORK_ITEM_RETRIES = 3
+SQLITE_WRITE_RETRIES = 5
+SQLITE_WRITE_RETRY_SLEEP_SECONDS = 1.0
 
 _STOP = False
 
@@ -38,6 +40,17 @@ def _json_loads(text: str | None) -> dict[str, Any]:
     except json.JSONDecodeError:
         return {}
     return value if isinstance(value, dict) else {}
+
+
+def _with_sqlite_retry(fn):
+    for attempt in range(1, SQLITE_WRITE_RETRIES + 1):
+        try:
+            return fn()
+        except sqlite3.OperationalError as exc:
+            if "locked" not in str(exc).lower() or attempt == SQLITE_WRITE_RETRIES:
+                raise
+            time.sleep(SQLITE_WRITE_RETRY_SLEEP_SECONDS * attempt)
+    raise RuntimeError("unreachable sqlite retry state")
 
 
 def _priority_pending_query() -> str:
@@ -119,6 +132,10 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     (json.dumps(payload, sort_keys=True), now, active_terminal["id"], terminal),
                 )
 
+            if root.resolve() == farmctl.DEFAULT_ROOT.resolve() and terminal in farmctl._running_mt5_terminals():
+                conn.commit()
+                return {"claimed": False, "reason": "terminal_process_busy", "terminal": terminal}
+
             active_symbols = farmctl._active_work_item_symbols(conn)
             skipped_history: list[dict[str, Any]] = []
             for item in conn.execute(_priority_pending_query()).fetchall():
@@ -156,32 +173,35 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
 
 def release_stale_claims_for_terminal(root: Path, terminal: str) -> list[str]:
     """Release this terminal's active rows if the recorded smoke process is gone."""
-    farmctl.init_db(root)
-    released: list[str] = []
-    now = farmctl.utc_now()
-    with farmctl.connect(root) as conn:
-        rows = conn.execute(
-            "SELECT * FROM work_items WHERE status='active' AND claimed_by=?",
-            (terminal,),
-        ).fetchall()
-        for row in rows:
-            payload = _json_loads(row["payload_json"])
-            pid = payload.get("pid")
-            if pid and farmctl._pid_exists(pid):
-                continue
-            payload["prior_failure"] = payload.get("prior_failure") or "worker_restart_released_stale_claim"
-            conn.execute(
-                """
-                UPDATE work_items
-                SET status='pending', claimed_by=NULL, payload_json=?, updated_at=?
-                WHERE id=? AND status='active' AND claimed_by=?
-                """,
-                (json.dumps(payload, sort_keys=True), now, row["id"], terminal),
-            )
-            released.append(row["id"])
-        if released:
-            conn.commit()
-    return released
+    def _release() -> list[str]:
+        farmctl.init_db(root)
+        released: list[str] = []
+        now = farmctl.utc_now()
+        with farmctl.connect(root) as conn:
+            rows = conn.execute(
+                "SELECT * FROM work_items WHERE status='active' AND claimed_by=?",
+                (terminal,),
+            ).fetchall()
+            for row in rows:
+                payload = _json_loads(row["payload_json"])
+                pid = payload.get("pid")
+                if pid and farmctl._pid_exists(pid):
+                    continue
+                payload["prior_failure"] = payload.get("prior_failure") or "worker_restart_released_stale_claim"
+                conn.execute(
+                    """
+                    UPDATE work_items
+                    SET status='pending', claimed_by=NULL, payload_json=?, updated_at=?
+                    WHERE id=? AND status='active' AND claimed_by=?
+                    """,
+                    (json.dumps(payload, sort_keys=True), now, row["id"], terminal),
+                )
+                released.append(row["id"])
+            if released:
+                conn.commit()
+        return released
+
+    return _with_sqlite_retry(_release)
 
 
 def _find_summary(report_root: str | None) -> Path | None:
@@ -195,75 +215,78 @@ def _find_summary(report_root: str | None) -> Path | None:
 
 
 def _finish_work_item(root: Path, item_id: str, exit_code: int | None) -> dict[str, Any]:
-    now = farmctl.utc_now()
-    with farmctl.connect(root) as conn:
-        item = conn.execute("SELECT * FROM work_items WHERE id=?", (item_id,)).fetchone()
-        if not item:
-            return {"finished": False, "reason": "missing_item"}
-        payload = _json_loads(item["payload_json"])
-        summary_path = _find_summary(payload.get("report_root"))
-        if summary_path:
-            try:
-                summary = json.loads(summary_path.read_text(encoding="utf-8-sig"))
-            except (OSError, json.JSONDecodeError):
-                summary = None
-            if summary:
-                effective_min_trades = int(
-                    payload.get("effective_min_trades")
-                    or summary.get("min_trades_required")
-                    or 5
-                )
-                verdict, reason = farmctl._derive_verdict_from_summary(
-                    summary,
-                    min_trades=effective_min_trades,
-                    phase=item["phase"],
-                )
-                payload["verdict_reason"] = reason
-                payload["run_smoke_exit_code"] = exit_code
+    def _finish() -> dict[str, Any]:
+        now = farmctl.utc_now()
+        with farmctl.connect(root) as conn:
+            item = conn.execute("SELECT * FROM work_items WHERE id=?", (item_id,)).fetchone()
+            if not item:
+                return {"finished": False, "reason": "missing_item"}
+            payload = _json_loads(item["payload_json"])
+            summary_path = _find_summary(payload.get("report_root"))
+            if summary_path:
+                try:
+                    summary = json.loads(summary_path.read_text(encoding="utf-8-sig"))
+                except (OSError, json.JSONDecodeError):
+                    summary = None
+                if summary:
+                    effective_min_trades = int(
+                        payload.get("effective_min_trades")
+                        or summary.get("min_trades_required")
+                        or 5
+                    )
+                    verdict, reason = farmctl._derive_verdict_from_summary(
+                        summary,
+                        min_trades=effective_min_trades,
+                        phase=item["phase"],
+                    )
+                    payload["verdict_reason"] = reason
+                    payload["run_smoke_exit_code"] = exit_code
+                    conn.execute(
+                        """
+                        UPDATE work_items
+                        SET status='done', verdict=?, evidence_path=?, claimed_by=NULL,
+                            payload_json=?, updated_at=?
+                        WHERE id=?
+                        """,
+                        (verdict, str(summary_path), json.dumps(payload, sort_keys=True), now, item_id),
+                    )
+                    conn.commit()
+                    aggregate = _aggregate_finished_parent(root, item["parent_task_id"])
+                    return {"finished": True, "status": "done", "verdict": verdict, "reason": reason, "aggregate": aggregate}
+
+            attempt = int(item["attempt_count"] or 0) + 1
+            payload["run_smoke_exit_code"] = exit_code
+            payload["prior_failure"] = payload.get("prior_failure") or "summary_missing"
+            if attempt < MAX_WORK_ITEM_RETRIES:
                 conn.execute(
                     """
                     UPDATE work_items
-                    SET status='done', verdict=?, evidence_path=?, claimed_by=NULL,
+                    SET status='pending', attempt_count=?, claimed_by=NULL,
                         payload_json=?, updated_at=?
                     WHERE id=?
                     """,
-                    (verdict, str(summary_path), json.dumps(payload, sort_keys=True), now, item_id),
+                    (attempt, json.dumps(payload, sort_keys=True), now, item_id),
                 )
-                conn.commit()
-                aggregate = _aggregate_finished_parent(root, item["parent_task_id"])
-                return {"finished": True, "status": "done", "verdict": verdict, "reason": reason, "aggregate": aggregate}
+                status = "pending"
+                verdict = None
+            else:
+                payload["final_failure"] = "summary_missing_retries_exhausted"
+                conn.execute(
+                    """
+                    UPDATE work_items
+                    SET status='failed', verdict='INVALID', claimed_by=NULL,
+                        payload_json=?, updated_at=?
+                    WHERE id=?
+                    """,
+                    (json.dumps(payload, sort_keys=True), now, item_id),
+                )
+                status = "failed"
+                verdict = "INVALID"
+            conn.commit()
+            aggregate = _aggregate_finished_parent(root, item["parent_task_id"]) if status == "failed" else None
+            return {"finished": True, "status": status, "verdict": verdict, "attempt": attempt, "aggregate": aggregate}
 
-        attempt = int(item["attempt_count"] or 0) + 1
-        payload["run_smoke_exit_code"] = exit_code
-        payload["prior_failure"] = payload.get("prior_failure") or "summary_missing"
-        if attempt < MAX_WORK_ITEM_RETRIES:
-            conn.execute(
-                """
-                UPDATE work_items
-                SET status='pending', attempt_count=?, claimed_by=NULL,
-                    payload_json=?, updated_at=?
-                WHERE id=?
-                """,
-                (attempt, json.dumps(payload, sort_keys=True), now, item_id),
-            )
-            status = "pending"
-            verdict = None
-        else:
-            payload["final_failure"] = "summary_missing_retries_exhausted"
-            conn.execute(
-                """
-                UPDATE work_items
-                SET status='failed', verdict='INVALID', claimed_by=NULL,
-                    payload_json=?, updated_at=?
-                WHERE id=?
-                """,
-                (json.dumps(payload, sort_keys=True), now, item_id),
-            )
-            status = "failed"
-            verdict = "INVALID"
-        conn.commit()
-        aggregate = _aggregate_finished_parent(root, item["parent_task_id"]) if status == "failed" else None
-        return {"finished": True, "status": status, "verdict": verdict, "attempt": attempt, "aggregate": aggregate}
+    return _with_sqlite_retry(_finish)
 
 
 def _phase_from_task_kind(kind: str) -> str:
@@ -400,12 +423,15 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
         "effective_min_trades": spawn.get("effective_min_trades"),
         "phase_runner": spawn.get("phase_runner"),
     })
-    with farmctl.connect(root) as conn:
-        conn.execute(
-            "UPDATE work_items SET payload_json=?, updated_at=? WHERE id=? AND status='active'",
-            (json.dumps(payload, sort_keys=True), now, item["id"]),
-        )
-        conn.commit()
+    def _record_spawn() -> None:
+        with farmctl.connect(root) as conn:
+            conn.execute(
+                "UPDATE work_items SET payload_json=?, updated_at=? WHERE id=? AND status='active'",
+                (json.dumps(payload, sort_keys=True), now, item["id"]),
+            )
+            conn.commit()
+
+    _with_sqlite_retry(_record_spawn)
 
     deadline = time.monotonic() + timeout_seconds
     while time.monotonic() < deadline and farmctl._pid_exists(spawn["pid"]):
