@@ -1383,7 +1383,7 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
             stderr=subprocess.STDOUT,
             stdin=subprocess.DEVNULL,
             creationflags=creationflags,
-            close_fds=False,
+            close_fds=True,
             env=env,
         )
         log_fh.close()
@@ -1472,7 +1472,7 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         stderr=subprocess.STDOUT,
         stdin=subprocess.DEVNULL,
         creationflags=creationflags,
-        close_fds=False,
+        close_fds=True,
     )
     return {
         "spawned": True,
@@ -1715,7 +1715,7 @@ def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
         stderr=subprocess.STDOUT,
         stdin=subprocess.DEVNULL,
         creationflags=creationflags,
-        close_fds=False,
+        close_fds=True,
     )
     log_fh.close()
     return {
@@ -2457,7 +2457,7 @@ def _spawn_claude_for_review(root: Path, build_task_row: sqlite3.Row) -> dict[st
         stdin=subprocess.DEVNULL,
         shell=True,
         creationflags=creationflags,
-        close_fds=False,
+        close_fds=True,
     )
     return {
         "spawned": True,
@@ -2575,7 +2575,7 @@ def _spawn_claude_for_g0_batch(root: Path) -> dict[str, Any]:
         stdin=subprocess.DEVNULL,
         shell=True,
         creationflags=creationflags,
-        close_fds=False,
+        close_fds=True,
     )
     return {
         "spawned": True,
@@ -2637,7 +2637,7 @@ def _spawn_codex_for_g0_batch(root: Path) -> dict[str, Any]:
         env=_codex_env(),
         shell=True,
         creationflags=creationflags,
-        close_fds=False,
+        close_fds=True,
     )
     return {
         "spawned": True,
@@ -2777,7 +2777,7 @@ def _claim_research_source(root: Path) -> dict[str, Any]:
         stdin=subprocess.DEVNULL,
         shell=True,
         creationflags=creationflags,
-        close_fds=False,
+        close_fds=True,
     )
     return {
         "spawned": True,
@@ -2914,7 +2914,7 @@ def _claim_research_source_codex(root: Path) -> dict[str, Any]:
         env=_codex_env(),
         shell=True,
         creationflags=creationflags,
-        close_fds=False,
+        close_fds=True,
     )
     return {
         "spawned": True,
@@ -2979,7 +2979,7 @@ def _spawn_codex_for_review(root: Path, build_task_row: sqlite3.Row) -> dict[str
         env=_codex_env(),
         shell=True,
         creationflags=creationflags,
-        close_fds=False,
+        close_fds=True,
     )
     return {
         "spawned": True,
@@ -3086,7 +3086,7 @@ def _spawn_codex_for_pre_review(root: Path, build_task_row: sqlite3.Row) -> dict
         env=_codex_env(),
         shell=True,
         creationflags=creationflags,
-        close_fds=False,
+        close_fds=True,
     )
     return {
         "spawned": True,
@@ -3219,7 +3219,7 @@ def _spawn_codex_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]:
         env=_codex_env(),
         shell=True,
         creationflags=creationflags,
-        close_fds=False,
+        close_fds=True,
     )
     return {
         "spawned": True,
