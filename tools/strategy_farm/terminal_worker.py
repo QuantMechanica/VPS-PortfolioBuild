@@ -23,6 +23,7 @@ POLL_SLEEP_SECONDS = 2.0
 MAX_WORK_ITEM_RETRIES = 3
 SQLITE_WRITE_RETRIES = 5
 SQLITE_WRITE_RETRY_SLEEP_SECONDS = 1.0
+SMOKE_TERMINAL_EXIT_GRACE_SECONDS = 60.0
 
 _STOP = False
 
@@ -218,6 +219,31 @@ def _find_summary(report_root: str | None) -> Path | None:
         return None
     candidates = sorted(root.rglob("summary.json"), key=lambda p: p.stat().st_mtime, reverse=True)
     return candidates[0] if candidates else None
+
+
+def _smoke_terminal_exit_stalled(item: dict[str, Any], payload: dict[str, Any]) -> bool:
+    """Detect run_smoke wrappers stuck after MT5 already exited.
+
+    P2/P3 use a single run_smoke.ps1 child. If its log has reached
+    terminal_exit but no summary appears and the log is quiet, waiting for the
+    full worker timeout only blocks the symbol dedupe queue.
+    """
+    if str(item.get("phase") or "").upper() not in {"P2", "P3"}:
+        return False
+    if _find_summary(payload.get("report_root")):
+        return False
+    log_path = payload.get("log_path")
+    if not log_path:
+        return False
+    path = Path(str(log_path))
+    try:
+        stat = path.stat()
+        if time.time() - stat.st_mtime < SMOKE_TERMINAL_EXIT_GRACE_SECONDS:
+            return False
+        text = path.read_text(encoding="utf-8-sig", errors="ignore")
+    except OSError:
+        return False
+    return "run_smoke.stage=terminal_exit" in text
 
 
 def _stop_terminal_slot_for_release(root: Path, terminal: str | None) -> bool | None:
@@ -485,6 +511,9 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
                 "terminal_stopped": terminal_stopped,
                 **ownership,
             }
+        if _smoke_terminal_exit_stalled(item, payload):
+            farmctl._stop_pid(spawn["pid"])
+            break
         time.sleep(2.0)
     if farmctl._pid_exists(spawn["pid"]):
         farmctl._stop_pid(spawn["pid"])
