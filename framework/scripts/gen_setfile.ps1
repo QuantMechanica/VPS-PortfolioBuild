@@ -215,8 +215,8 @@ function Normalize-CardDefaultsForSetfile {
     return $normalized
 }
 
-if ($EaSlug -notmatch '^QM5_[A-Za-z0-9_]+$') {
-    throw "EaSlug must start with QM5_ and contain only letters, digits, and underscores. Got: $EaSlug"
+if ($EaSlug -notmatch '^QM5_[A-Za-z0-9_-]+$') {
+    throw "EaSlug must start with QM5_ and contain only letters, digits, underscores, and hyphens. Got: $EaSlug"
 }
 
 $eaFolder = Join-Path $easRoot $EaSlug
@@ -237,10 +237,42 @@ if ($Env -eq 'backtest') {
     }
 }
 
+$eaId = ''
+$eaSlugOnly = $EaSlug
+$magicSlot = 0
+if ($EaSlug -match '^QM5_(\d{4})_(.+)$') {
+    $eaId = $matches[1]
+    $eaSlugOnly = $matches[2]
+    $registryPath = Join-Path $repoRoot 'framework\registry\magic_numbers.csv'
+    if (Test-Path -LiteralPath $registryPath) {
+        $magicRow = Import-Csv -LiteralPath $registryPath |
+            Where-Object { $_.ea_id -eq ([int]$eaId).ToString() -and $_.symbol -eq $Symbol -and $_.status -eq 'active' } |
+            Select-Object -First 1
+        if ($magicRow) {
+            $magicSlot = [int]$magicRow.symbol_slot
+        }
+    }
+}
+
+$today = (Get-Date).ToUniversalTime().ToString('yyyy-MM-dd')
 $lines = @(
-    "; QuantMechanica V5 generated set file",
-    "; Generator=framework/scripts/gen_setfile.ps1",
-    "ENV=$Env",
+    ";==========================================================",
+    "; QM5 Set File",
+    "; ea_id:        $eaId",
+    "; ea_slug:      $eaSlugOnly",
+    "; ea_version:   v5.0",
+    "; set_version:  s$($today.Replace('-', ''))-001",
+    "; symbol:       $Symbol",
+    "; timeframe:    $TF",
+    "; environment:  $Env",
+    "; magic_slot:   $magicSlot",
+    "; risk_mode:    $(if ($Env -eq 'backtest') { 'FIXED' } else { 'PERCENT' })",
+    "; portfolio_weight: $PortfolioWeight",
+    "; build_hash:   pending",
+    "; author:       Development",
+    "; date:         $today",
+    ";==========================================================",
+    "qm_magic_slot_offset=$magicSlot",
     "RISK_FIXED=$RiskFixed",
     "RISK_PERCENT=$RiskPercent",
     "PORTFOLIO_WEIGHT=$PortfolioWeight",

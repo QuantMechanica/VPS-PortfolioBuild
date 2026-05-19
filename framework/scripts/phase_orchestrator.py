@@ -72,6 +72,9 @@ def _utc_now_iso() -> str:
 
 
 def _find_ea_dir(ea_label: str) -> Path | None:
+    exact = EA_ROOT / ea_label
+    if exact.is_dir():
+        return exact
     candidates = [p for p in EA_ROOT.glob(f"{ea_label}_*") if p.is_dir()]
     if not candidates:
         return None
@@ -124,6 +127,7 @@ def _verify_build_deployment_for_ea(ea: str, dry_run: bool) -> tuple[bool, str, 
         return True, "", {"verdict": "PASS", "dry_run": True}
     if not VERIFY_BUILD_DEPLOYMENT_SCRIPT.exists():
         return False, "build_verify:script_missing", {"verdict": "VERIFY_SCRIPT_MISSING"}
+    ea_dir_glob = ea if (EA_ROOT / ea).is_dir() else f"{ea}_*"
     cmd = [
         sys.executable,
         str(VERIFY_BUILD_DEPLOYMENT_SCRIPT),
@@ -131,10 +135,11 @@ def _verify_build_deployment_for_ea(ea: str, dry_run: bool) -> tuple[bool, str, 
         "--ea-id",
         _normalize_ea_numeric_id(ea),
         "--ea-dir-glob",
-        f"{ea}_*",
+        ea_dir_glob,
     ]
     try:
-        proc = subprocess.run(cmd, capture_output=True, text=True, check=False)
+        creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+        proc = subprocess.run(cmd, capture_output=True, text=True, check=False, creationflags=creationflags)
     except Exception as exc:
         return False, f"build_verify:exception:{exc}", {"verdict": "VERIFY_EXCEPTION"}
     try:

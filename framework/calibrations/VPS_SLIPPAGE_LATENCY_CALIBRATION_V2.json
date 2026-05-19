@@ -28,6 +28,25 @@
         "median": 3.0,
         "p95": 4.0
       }
+    },
+    "NDX.DWX": {
+      "auto_stub": true,
+      "commission_cents_per_lot": 700.0,
+      "derive_from": "D:\\QM\\reports\\work_items\\dc737701-459e-4c43-ab45-4fe40c9901da\\QM5_1056\\20260518_114114\\summary.json",
+      "latency_ms": {
+        "avg": 50.0,
+        "p95": 120.0
+      },
+      "slippage_points": {
+        "avg": 1.0,
+        "p95": 3.0
+      },
+      "spread_points": {
+        "median": 20.0,
+        "p95": 60.0
+      },
+      "stub_created_at": "2026-05-18T11:44:19+00:00",
+      "stub_source": "farmctl_pump_p5_calibration_autostub"
     }
   }
 }
