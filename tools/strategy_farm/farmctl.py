@@ -1859,12 +1859,10 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
     ]
     if phase == "P3.5":
         cmd.extend(["--symbols", symbol, "--from-year", "2017", "--to-year", "2022"])
-        p2_report = _refresh_phase_report_from_work_items(root, ea_id, "P2") or (_ea_pipeline_dir(ea_id) / "P2" / "report.csv")
-        p3_report = _refresh_phase_report_from_work_items(root, ea_id, "P3") or (_ea_pipeline_dir(ea_id) / "P3" / "report.csv")
-        if p2_report.exists():
-            cmd.extend(["--baseline-csv", str(p2_report)])
-        if p3_report.exists():
-            cmd.extend(["--csr-results-csv", str(p3_report)])
+        if Path(inputs["p2_report"]).exists():
+            cmd.extend(["--baseline-csv", str(inputs["p2_report"])])
+        if Path(inputs["p3_report"]).exists():
+            cmd.extend(["--csr-results-csv", str(inputs["p3_report"])])
     elif phase == "P4":
         cmd.extend([
             "--symbols", symbol,
