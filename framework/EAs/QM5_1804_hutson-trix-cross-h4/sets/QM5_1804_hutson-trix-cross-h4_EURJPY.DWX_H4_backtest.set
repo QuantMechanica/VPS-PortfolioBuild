@@ -7,14 +7,14 @@
 ; symbol:       EURJPY.DWX
 ; timeframe:    H4
 ; environment:  backtest
-; magic_slot:   0
+; magic_slot:   25
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   bb62b184abdb5b72994cdbb5930b29a2a20ad9fac9273d31a5150d9b2c4ede97
 ; author:       Development
 ; date:         2026-05-19
 ;==========================================================
-qm_magic_slot_offset=0
+qm_magic_slot_offset=25
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1

@@ -7,14 +7,14 @@
 ; symbol:       GBPCHF.DWX
 ; timeframe:    H4
 ; environment:  backtest
-; magic_slot:   0
+; magic_slot:   29
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   dea67b3b58fc32ebe1c229d2f1c46dc13fff0e3e33a10992008c9b8cac3b9e21
 ; author:       Development
 ; date:         2026-05-19
 ;==========================================================
-qm_magic_slot_offset=0
+qm_magic_slot_offset=29
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1

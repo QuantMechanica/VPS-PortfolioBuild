@@ -7,14 +7,14 @@
 ; symbol:       EURCHF.DWX
 ; timeframe:    H4
 ; environment:  backtest
-; magic_slot:   0
+; magic_slot:   23
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   9c0ab4e1426ab50096508157ecba47ff3a46ed465c53a3880a734b0e464195f3
 ; author:       Development
 ; date:         2026-05-19
 ;==========================================================
-qm_magic_slot_offset=0
+qm_magic_slot_offset=23
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1

@@ -7,14 +7,14 @@
 ; symbol:       NZDCHF.DWX
 ; timeframe:    H4
 ; environment:  backtest
-; magic_slot:   0
+; magic_slot:   33
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   287d234e93ab9997b69fe145585cc0b724aac508b5fa32f8e4935cdfd9497fa1
 ; author:       Development
 ; date:         2026-05-19
 ;==========================================================
-qm_magic_slot_offset=0
+qm_magic_slot_offset=33
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1

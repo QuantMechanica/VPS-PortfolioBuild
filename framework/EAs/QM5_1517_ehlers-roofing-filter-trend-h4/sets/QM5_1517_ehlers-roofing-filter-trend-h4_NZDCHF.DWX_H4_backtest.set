@@ -1,0 +1,22 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1517
+; ea_slug:      ehlers-roofing-filter-trend-h4
+; ea_version:   v5.0
+; set_version:  s20260519-001
+; symbol:       NZDCHF.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   439ee890ec170a707299d5e4742aa8cf58dc5ddf44ed24859d396b099b326ccf
+; author:       Development
+; date:         2026-05-19
+;==========================================================
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=not_found

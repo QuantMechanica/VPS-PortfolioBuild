@@ -7,14 +7,14 @@
 ; symbol:       EURAUD.DWX
 ; timeframe:    H4
 ; environment:  backtest
-; magic_slot:   0
+; magic_slot:   21
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   883a3e0fa92fad095a3b1a999b577686557aba23b592821f9e821fc8fd1e0bcf
 ; author:       Development
 ; date:         2026-05-19
 ;==========================================================
-qm_magic_slot_offset=0
+qm_magic_slot_offset=21
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1

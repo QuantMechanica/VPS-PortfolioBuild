@@ -1,0 +1,28 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        9151
+; ea_slug:      chan-at-fstx-gap-mom
+; ea_version:   v5.0
+; set_version:  s20260519-001
+; symbol:       NZDCHF.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-05-19
+;==========================================================
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\chan-at-fstx-gap-mom_card.md
+reference_extreme_choice=prev_bar.high / prev_bar.low
+friday_close_override=false
+session_close_time_currency=5:00 p.m. ET — for currency pairs
+session_open_time_currency=5:00 a.m. ET (London open) — for currency pairs
+vol_lookback=90
+entryZscore=0.1

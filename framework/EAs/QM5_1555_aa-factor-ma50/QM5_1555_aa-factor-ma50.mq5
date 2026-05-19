@@ -84,7 +84,10 @@ bool SplitUniverse(string &symbols[])
   {
    const int n = StringSplit(strategy_universe_csv, ',', symbols);
    for(int i = 0; i < n; ++i)
-      StringTrimLeft(StringTrimRight(symbols[i]));
+     {
+      StringTrimLeft(symbols[i]);
+      StringTrimRight(symbols[i]);
+     }
    return (n > 0);
   }
 
@@ -237,13 +240,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(atr <= 0.0 || point <= 0.0 || price <= 0.0)
       return false;
 
-   const double stop_dist = atr * strategy_atr_sl_mult;
-   if(stop_dist <= 0.0)
-      return false;
-
    req.type = (leg > 0) ? QM_BUY : QM_SELL;
    req.price = 0.0;
-   req.sl = (leg > 0) ? price - stop_dist : price + stop_dist;
+   req.sl = QM_StopATRFromValue(_Symbol, req.type, price, atr, strategy_atr_sl_mult);
+   if(req.sl <= 0.0)
+      return false;
+
    req.tp = 0.0;
    req.reason = (leg > 0) ? "AA_MOM_TOP_SMA50_GT_200" : "AA_MOM_BOTTOM_SMA50_LT_200";
    return true;
@@ -291,7 +293,8 @@ bool Strategy_ExitSignal()
 // custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   (void)broker_time;
+   if(broker_time <= 0)
+      return true;
    return false; // defer to QM_NewsAllowsTrade(...)
   }
 

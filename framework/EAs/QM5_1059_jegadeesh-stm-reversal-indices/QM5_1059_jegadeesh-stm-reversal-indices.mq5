@@ -268,6 +268,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    req.reason = (direction > 0) ? "QM5_1059_STMR_LONG_BOTTOM1" : "QM5_1059_STMR_SHORT_TOP1";
    g_last_entry_week_key = week_key;
+   g_last_exit_week_key = week_key;
    return true;
   }
 
@@ -298,9 +299,6 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
   {
-   for(int i = 0; i < STRATEGY_UNIVERSE_SIZE; ++i)
-      SymbolSelect(g_strategy_symbols[i], true);
-
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
                         RISK_PERCENT,
@@ -331,7 +329,7 @@ void OnTick()
       return;
    if(!QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode))
       return;
-   if(qm_friday_close_enabled && QM_FrameworkHandleFridayClose())
+   if(QM_FrameworkHandleFridayClose())
       return;
 
    if(Strategy_NoTradeFilter())

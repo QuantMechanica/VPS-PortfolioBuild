@@ -7,14 +7,14 @@
 ; symbol:       USDCAD.DWX
 ; timeframe:    H4
 ; environment:  backtest
-; magic_slot:   0
+; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
 ; date:         2026-05-19
 ;==========================================================
-qm_magic_slot_offset=0
+qm_magic_slot_offset=4
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1

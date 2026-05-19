@@ -57,6 +57,7 @@ double   g_tp2_price            = 0.0;
 double   g_trail_fail_price     = 0.0;
 bool     g_tp1_done             = false;
 bool     g_tp2_done             = false;
+datetime g_last_entry_signal_time = 0;
 
 // No Trade Filter (time, spread, news)
 bool Strategy_NoTradeFilter()
@@ -216,8 +217,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(d1_sma_now <= 0.0 || d1_sma_then <= 0.0 || d1_sma_now < d1_sma_then)
       return false;
 
-   if(selected_j - k < strategy_reentry_spacing)
-      return false;
+   if(g_last_entry_signal_time > 0)
+     {
+      const int bars_since_prior = iBarShift(_Symbol, strategy_tf, g_last_entry_signal_time, false);
+      if(bars_since_prior >= 0 && bars_since_prior < strategy_reentry_spacing)
+         return false;
+     }
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double max_entry = h4[k].close + strategy_entry_buffer_atr * atr_k;
@@ -238,6 +243,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    g_trail_fail_price = h4[selected_j].low - strategy_trail_break_atr * atr_k;
    g_tp1_done = false;
    g_tp2_done = false;
+   g_last_entry_signal_time = h4[k].time;
 
    return true;
   }
@@ -273,14 +279,14 @@ void Strategy_ManageOpenPosition()
 
       if(!g_tp1_done && g_tp1_price > 0.0 && high0 >= g_tp1_price && volume > vmin)
         {
-         QM_TM_PartialClose(ticket, volume * 0.5, QM_EXIT_PARTIAL);
-         g_tp1_done = true;
+         if(QM_TM_PartialClose(ticket, volume * 0.5, QM_EXIT_PARTIAL))
+            g_tp1_done = true;
         }
 
       if(!g_tp2_done && g_tp2_price > 0.0 && bid >= g_tp2_price && volume > vmin)
         {
-         QM_TM_PartialClose(ticket, volume * 0.5, QM_EXIT_PARTIAL);
-         g_tp2_done = true;
+         if(QM_TM_PartialClose(ticket, volume * 0.5, QM_EXIT_PARTIAL))
+            g_tp2_done = true;
         }
 
       if(g_trail_fail_price > 0.0 && low0 < g_trail_fail_price)
