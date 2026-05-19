@@ -294,14 +294,14 @@ def route_once(root: Path = DEFAULT_ROOT) -> RouteDecision:
 
 
 def replenish(root: Path = DEFAULT_ROOT, *, min_ready_strategy_cards: int = 5) -> dict[str, Any]:
-    """Seed backlog when the strategy-card reservoir is low.
+    """Seed backlog when the strategy reservoir is low.
 
     This is deliberately conservative. It only creates research tickets and
     leaves build/review/pipeline transitions to artifact-producing workers and
     the existing farm pump.
     """
-    cards_dir = root / "artifacts" / "cards_approved"
-    ready_count = len(list(cards_dir.glob("*.md"))) if cards_dir.exists() else 0
+    inventory = farmctl.research_backlog_inventory(root)
+    ready_count = int(inventory.get("total", 0))
     created: list[dict[str, Any]] = []
     if ready_count < min_ready_strategy_cards:
         needed = min_ready_strategy_cards - ready_count
@@ -322,10 +322,14 @@ def replenish(root: Path = DEFAULT_ROOT, *, min_ready_strategy_cards: int = 5) -
                     state="TODO",
                     priority=30,
                     budget_class="low",
-                    payload={"reason": "strategy_card_reservoir_low", "ready_count": ready_count},
+                    payload={
+                        "reason": "strategy_reservoir_low",
+                        "ready_count": ready_count,
+                        "inventory": inventory,
+                    },
                 )
             )
-    return {"ready_strategy_cards": ready_count, "created": created}
+    return {"ready_strategy_cards": ready_count, "strategy_inventory": inventory, "created": created}
 
 
 def status(root: Path = DEFAULT_ROOT) -> dict[str, Any]:

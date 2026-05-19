@@ -4597,6 +4597,60 @@ def _trigger_p_pass_stagnation_alarm(root: Path) -> dict[str, Any]:
     }
 
 
+def research_backlog_inventory(root: Path) -> dict[str, Any]:
+    """Count strategy work already available before spawning more research."""
+    cards_draft = root / "artifacts" / "cards_draft"
+    cards_approved = root / "artifacts" / "cards_approved"
+    draft_cards = len(list(cards_draft.glob("*.md"))) if cards_draft.exists() else 0
+    approved_cards = len(list(cards_approved.glob("*.md"))) if cards_approved.exists() else 0
+
+    active_pipeline_eas = 0
+    open_build_or_review_tasks = 0
+    try:
+        with connect(root) as conn:
+            row = conn.execute(
+                """
+                SELECT COUNT(DISTINCT ea_id) AS n
+                FROM work_items
+                WHERE ea_id IS NOT NULL
+                  AND status IN ('pending', 'active')
+                  AND phase IN ('P2','P3','P3.5','P4','P5','P5b','P5c','P6','P7','P8')
+                """
+            ).fetchone()
+            active_pipeline_eas = int(row["n"] if row else 0)
+
+            row = conn.execute(
+                """
+                SELECT COUNT(*) AS n
+                FROM tasks
+                WHERE status IN ('pending', 'active', 'review', 'blocked')
+                  AND kind IN ('build_ea', 'ea_review', 'codex_review')
+                """
+            ).fetchone()
+            open_build_or_review_tasks = int(row["n"] if row else 0)
+    except sqlite3.Error:
+        # Research gating must fail closed: if DB state is unreadable, do not
+        # create more research work until the pump/health path exposes the DB issue.
+        return {
+            "total": draft_cards + approved_cards,
+            "draft_cards": draft_cards,
+            "approved_cards": approved_cards,
+            "active_pipeline_eas": active_pipeline_eas,
+            "open_build_or_review_tasks": open_build_or_review_tasks,
+            "db_error": True,
+        }
+
+    total = draft_cards + approved_cards + active_pipeline_eas + open_build_or_review_tasks
+    return {
+        "total": total,
+        "draft_cards": draft_cards,
+        "approved_cards": approved_cards,
+        "active_pipeline_eas": active_pipeline_eas,
+        "open_build_or_review_tasks": open_build_or_review_tasks,
+        "db_error": False,
+    }
+
+
 def pump(root: Path) -> dict[str, Any]:
     """Continuous deterministic worker — run every 5 min.
 
@@ -5135,14 +5189,10 @@ def pump(root: Path) -> dict[str, Any]:
     # 8. Claude research disabled. Continuous research is handled by Codex below.
     result["claude_research_spawn"] = {"spawned": False, "reason": "claude disabled by OWNER 2026-05-19; routed to Codex"}
 
-    # 9. Spawn Codex research IN ADDITION when codex has spare capacity.
-    #    OWNER 2026-05-16: "Codex kann auch Research, wir verbrauchen Codex
-    #    Token langsamer als Claude Token". Codex research runs in parallel
-    #    with Claude research on a DIFFERENT source. Each codex_research
-    #    claims one source as assigned_worker='codex' so no double-claim.
-    #    OWNER 2026-05-17 (Hebel A): lift research parallelism from 1 to 3 —
-    #    Codex quota at 4%/5h, massive headroom; serial-1 mining was wasting
-    #    research throughput (only 4 sources mined per 8h overnight).
+    # 9. Spawn Codex research only when the strategy reservoir is low.
+    #    OWNER 2026-05-19: Research is no longer continuous; the factory has
+    #    enough strategies to process. New research is allowed only when the
+    #    combined strategy/card/pipeline backlog drops below 5.
     MAX_PARALLEL_CODEX_RESEARCH = 3
     try:
         codex_research_fresh = 0
@@ -5165,18 +5215,34 @@ def pump(root: Path) -> dict[str, Any]:
         else 0
     )
     result["codex_research_spawns"] = []
-    # Spawn up to (MAX_PARALLEL_CODEX_RESEARCH - codex_research_fresh) new
-    # research sessions, respecting the total codex cap.
-    research_to_spawn = max(0, MAX_PARALLEL_CODEX_RESEARCH - codex_research_fresh)
-    for _ in range(research_to_spawn):
-        total_now = (active_codex + builds_spawned_this_cycle + reviews_spawned_this_cycle + g0_spawned_this_cycle
-                     + len(result["codex_research_spawns"]))
-        if total_now >= MAX_PARALLEL_CODEX:
-            break
-        spawn = _claim_research_source_codex(root)
-        result["codex_research_spawns"].append(spawn)
-        if not spawn.get("spawned"):
-            break  # no more research work available — stop trying
+    research_min_backlog = 5
+    research_inventory = research_backlog_inventory(root)
+    result["research_backlog_inventory"] = research_inventory
+    result["research_replenish_gate"] = {
+        "min_strategy_backlog": research_min_backlog,
+        "strategy_backlog": research_inventory.get("total", 0),
+        "allow_new_research": research_inventory.get("total", 0) < research_min_backlog,
+    }
+    if result["research_replenish_gate"]["allow_new_research"]:
+        # Spawn up to (MAX_PARALLEL_CODEX_RESEARCH - codex_research_fresh) new
+        # research sessions, respecting the total codex cap.
+        research_to_spawn = max(0, MAX_PARALLEL_CODEX_RESEARCH - codex_research_fresh)
+        for _ in range(research_to_spawn):
+            total_now = (active_codex + builds_spawned_this_cycle + reviews_spawned_this_cycle + g0_spawned_this_cycle
+                         + len(result["codex_research_spawns"]))
+            if total_now >= MAX_PARALLEL_CODEX:
+                break
+            spawn = _claim_research_source_codex(root)
+            result["codex_research_spawns"].append(spawn)
+            if not spawn.get("spawned"):
+                break  # no more research work available — stop trying
+    else:
+        result["codex_research_spawns"].append({
+            "spawned": False,
+            "reason": "strategy backlog >= 5; research replenish paused by OWNER 2026-05-19",
+            "strategy_backlog": research_inventory.get("total", 0),
+            "min_strategy_backlog": research_min_backlog,
+        })
     # Back-compat: keep the singular field pointing to the first spawn
     result["codex_research_spawn"] = (result["codex_research_spawns"][0]
                                        if result["codex_research_spawns"] else None)
