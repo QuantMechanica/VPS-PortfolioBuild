@@ -86,6 +86,7 @@ PHASE_ACTIVE_TIMEOUT_MIN = {
 # back to these.
 _CODEX_FALLBACK = Path(r"C:\Users\Administrator\AppData\Roaming\npm\codex.cmd")
 _CLAUDE_FALLBACK = Path(r"C:\Users\Administrator\AppData\Roaming\npm\claude.cmd")
+_CODEX_HOME = Path(os.environ.get("CODEX_HOME", r"C:\Users\Administrator\.codex"))
 
 
 def _resolve_codex() -> str:
@@ -96,6 +97,53 @@ def _resolve_codex() -> str:
     if _CODEX_FALLBACK.exists():
         return str(_CODEX_FALLBACK)
     return "codex"  # let subprocess fail with a clear error
+
+
+def _codex_env() -> dict[str, str]:
+    """Environment for Codex subprocesses spawned by scheduled tasks.
+
+    The pump runs as SYSTEM, while `codex login` refreshes the Administrator
+    profile. Point Codex at the canonical auth/config dir explicitly so
+    scheduled spawns use the same credentials as the interactive OWNER shell.
+    """
+    env = os.environ.copy()
+    env["CODEX_HOME"] = str(_CODEX_HOME)
+    return env
+
+
+def _tail_has_current_codex_401(log: Path, auth_mtime: float, max_bytes: int = 4096) -> bool:
+    """Return true only for 401s that happened after the current auth file."""
+    pattern = re.compile(rb"401 Unauthorized")
+    timestamp = re.compile(rb"^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z)\b")
+    log_mtime = log.stat().st_mtime
+    with open(log, "rb") as fh:
+        fh.seek(max(0, log.stat().st_size - max_bytes))
+        tail = fh.read()
+    for line in tail.splitlines():
+        if not pattern.search(line):
+            continue
+        if auth_mtime <= 0:
+            return True
+        m = timestamp.match(line)
+        if not m:
+            continue
+        try:
+            seen_at = dt.datetime.fromisoformat(
+                m.group(1).decode("ascii").replace("Z", "+00:00")
+            ).timestamp()
+        except (ValueError, UnicodeDecodeError):
+            continue
+        if seen_at >= auth_mtime:
+            return True
+    return False
+
+
+def _codex_401_cutoff_mtime(auth_mtime: float) -> float:
+    """Ignore 401s older than the currently deployed Codex spawn/auth setup."""
+    try:
+        return max(auth_mtime, Path(__file__).stat().st_mtime)
+    except OSError:
+        return auth_mtime
 
 
 def _resolve_claude() -> str:
@@ -2586,6 +2634,7 @@ def _spawn_codex_for_g0_batch(root: Path) -> dict[str, Any]:
         stdin=stdin_f,
         stdout=stdout_f,
         stderr=subprocess.STDOUT,
+        env=_codex_env(),
         shell=True,
         creationflags=creationflags,
         close_fds=False,
@@ -2862,6 +2911,7 @@ def _claim_research_source_codex(root: Path) -> dict[str, Any]:
         stdin=stdin_f,
         stdout=stdout_f,
         stderr=subprocess.STDOUT,
+        env=_codex_env(),
         shell=True,
         creationflags=creationflags,
         close_fds=False,
@@ -2926,6 +2976,7 @@ def _spawn_codex_for_review(root: Path, build_task_row: sqlite3.Row) -> dict[str
         stdin=stdin_f,
         stdout=stdout_f,
         stderr=subprocess.STDOUT,
+        env=_codex_env(),
         shell=True,
         creationflags=creationflags,
         close_fds=False,
@@ -3032,6 +3083,7 @@ def _spawn_codex_for_pre_review(root: Path, build_task_row: sqlite3.Row) -> dict
         stdin=stdin_f,
         stdout=stdout_f,
         stderr=subprocess.STDOUT,
+        env=_codex_env(),
         shell=True,
         creationflags=creationflags,
         close_fds=False,
@@ -3164,6 +3216,7 @@ def _spawn_codex_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]:
         stdin=stdin_f,
         stdout=stdout_f,
         stderr=subprocess.STDOUT,
+        env=_codex_env(),
         shell=True,
         creationflags=creationflags,
         close_fds=False,
@@ -4157,25 +4210,18 @@ def pump(root: Path) -> dict[str, Any]:
     # + Claude work continue normally.
     codex_auth_broken = False
     try:
-        import re as _re, time as _t
-        pat = _re.compile(rb"401 Unauthorized")
+        import time as _t
         from pathlib import Path as _P
         _auth = _P(r"C:/Users/Administrator/.codex/auth.json")
         auth_mtime = _auth.stat().st_mtime if _auth.exists() else 0.0
+        cutoff_mtime = _codex_401_cutoff_mtime(auth_mtime)
         n_401 = 0
         for log in (root / "logs").glob("codex_*.live.log"):
             try:
                 log_mtime = log.stat().st_mtime
                 if _t.time() - log_mtime > 900:
                     continue
-                # Skip 401s from logs older than the most recent `codex login`.
-                if log_mtime < auth_mtime:
-                    continue
-                size = log.stat().st_size
-                with open(log, "rb") as fh:
-                    fh.seek(max(0, size - 4096))
-                    tail = fh.read()
-                if pat.search(tail):
+                if _tail_has_current_codex_401(log, cutoff_mtime):
                     n_401 += 1
             except OSError:
                 continue

@@ -41,6 +41,7 @@ HEALTH_FILE = ROOT / "state" / "health.json"
 ALARMS_LOG = ROOT / "state" / "health_alarms.log"
 QUOTA_SNAPSHOT = ROOT / "state" / "quota_snapshot.json"
 LOG_DIR = ROOT / "logs"
+CODEX_AUTH = Path(r"C:/Users/Administrator/.codex/auth.json")
 CODEX_BRIDGE_HEARTBEAT = ROOT / "state" / "codex_bridge_heartbeat.txt"
 ZERO_TRADE_DEAD_THRESHOLD = 0.80
 ZERO_TRADE_DEAD_MIN_DONE = 5
@@ -84,6 +85,50 @@ def _creationflags_no_window() -> int:
     if sys.platform == "win32" and hasattr(subprocess, "CREATE_NO_WINDOW"):
         return subprocess.CREATE_NO_WINDOW
     return 0
+
+
+def _tail_has_current_codex_401(log: Path, auth_mtime: float, max_bytes: int = 8192) -> bool:
+    """Return true only for 401s that happened after the current auth file.
+
+    Codex live logs can keep being touched after OWNER refreshes `codex login`,
+    so comparing only the log file mtime to auth.json mtime keeps stale 401s
+    alive until the log ages out. Most Codex log lines start with an ISO UTC
+    timestamp; use that when available.
+    """
+    pattern = re.compile(rb"401 Unauthorized")
+    timestamp = re.compile(rb"^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z)\b")
+    log_mtime = log.stat().st_mtime
+    with open(log, "rb") as fh:
+        fh.seek(max(0, log.stat().st_size - max_bytes))
+        tail = fh.read()
+    for line in tail.splitlines():
+        if not pattern.search(line):
+            continue
+        if auth_mtime <= 0:
+            return True
+        m = timestamp.match(line)
+        if not m:
+            continue
+        try:
+            seen_at = dt.datetime.fromisoformat(
+                m.group(1).decode("ascii").replace("Z", "+00:00")
+            ).timestamp()
+        except (ValueError, UnicodeDecodeError):
+            continue
+        if seen_at >= auth_mtime:
+            return True
+    return False
+
+
+def _codex_401_cutoff_mtime(auth_mtime: float) -> float:
+    """Ignore 401s older than the currently deployed Codex spawn/auth setup."""
+    cutoff = auth_mtime
+    for path in (Path(__file__), REPO_ROOT / "tools" / "strategy_farm" / "farmctl.py"):
+        try:
+            cutoff = max(cutoff, path.stat().st_mtime)
+        except OSError:
+            pass
+    return cutoff
 
 
 def _json_obj(raw: str | None) -> dict:
@@ -187,24 +232,16 @@ def _is_codex_auth_broken(con) -> bool:
     """Shared helper: same logic as chk_codex_auth_broken, returns bool.
     Used by downstream checks for cascade suppression."""
     import time as _t
-    import re as _re
-    pattern = _re.compile(rb"401 Unauthorized")
-    auth_path = Path(r"C:/Users/Administrator/.codex/auth.json")
+    auth_path = CODEX_AUTH
     auth_mtime = auth_path.stat().st_mtime if auth_path.exists() else 0.0
+    cutoff_mtime = _codex_401_cutoff_mtime(auth_mtime)
     n_401 = 0
     for log in LOG_DIR.glob("codex_*.live.log"):
         try:
             log_mtime = log.stat().st_mtime
             if _t.time() - log_mtime > 900:
                 continue
-            # Stale 401: log last touched before the most recent `codex login`.
-            # Those 401s are pre-login and don't reflect current auth state.
-            if log_mtime < auth_mtime:
-                continue
-            with open(log, "rb") as fh:
-                fh.seek(max(0, log.stat().st_size - 8192))
-                tail = fh.read()
-            if pattern.search(tail):
+            if _tail_has_current_codex_401(log, cutoff_mtime):
                 n_401 += 1
         except OSError:
             continue
@@ -845,10 +882,9 @@ def chk_codex_auth_broken(con) -> dict:
          suppressing 401 spam, but auth is still stale)
     """
     import time as _t
-    import re as _re
-    pattern = _re.compile(rb"401 Unauthorized")
-    auth_path = Path(r"C:/Users/Administrator/.codex/auth.json")
+    auth_path = CODEX_AUTH
     auth_mtime = auth_path.stat().st_mtime if auth_path.exists() else 0.0
+    cutoff_mtime = _codex_401_cutoff_mtime(auth_mtime)
     n_401 = 0
     for log in LOG_DIR.glob("codex_*.live.log"):
         try:
@@ -856,14 +892,7 @@ def chk_codex_auth_broken(con) -> dict:
             age = _t.time() - log_mtime
             if age > 900:
                 continue
-            # Stale 401: log last touched before the most recent `codex login`.
-            # Those 401s are pre-login and don't reflect current auth state.
-            if log_mtime < auth_mtime:
-                continue
-            with open(log, "rb") as fh:
-                fh.seek(max(0, log.stat().st_size - 8192))
-                tail = fh.read()
-            if pattern.search(tail):
+            if _tail_has_current_codex_401(log, cutoff_mtime):
                 n_401 += 1
         except OSError:
             continue
