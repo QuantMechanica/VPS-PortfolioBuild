@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        2004
 ; ea_slug:      nnfx-trix-momentum
@@ -10,7 +10,7 @@
 ; magic_slot:   13
 ; risk_mode:    FIXED
 ; portfolio_weight: 1.0
-; build_hash:   pending
+; build_hash:   c4051eaea0198de74e2d191e0837434bd2f4f8041379f71cd64fed435610e48c
 ; author:       Development
 ; date:         2026-05-19
 ;==========================================================
@@ -25,8 +25,8 @@ qm_friday_close_hour_broker=21
 strategy_zlema_period=34
 strategy_trix_period=14
 strategy_chop_period=14
-strategy_chop_threshold=38.0
+strategy_chop_threshold=61.8
 strategy_atr_period=14
 strategy_atr_sl_mult=1.5
 strategy_rr=1.5
-strategy_spread_cap_points=25
+strategy_spread_cap_points=0

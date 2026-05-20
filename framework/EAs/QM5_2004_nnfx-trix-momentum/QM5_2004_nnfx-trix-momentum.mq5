@@ -32,7 +32,7 @@ input group "Strategy"
 input int    strategy_zlema_period      = 34;
 input int    strategy_trix_period       = 14;
 input int    strategy_chop_period       = 14;
-input double strategy_chop_threshold    = 38.0;
+input double strategy_chop_threshold    = 61.8;
 input int    strategy_atr_period        = 14;
 input double strategy_atr_sl_mult       = 1.5;
 input double strategy_rr                 = 1.5;
@@ -45,13 +45,18 @@ double ZlemaValue(const int shift)
    return QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_zlema_period, shift);
   }
 
-// --- TRIX Logic ---
-int TrixSignal(const int shift)
+// --- TRIX Proxy Logic ---
+double TrixRoc(const int shift)
   {
    const double ema_1 = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_trix_period, shift);
-   const double ema_2 = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_trix_period, shift + 1);
+   const double ema_2 = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_trix_period, shift + 3);
    if(ema_2 == 0.0) return 0;
-   const double roc = (ema_1 - ema_2) / ema_2;
+   return (ema_1 - ema_2) / ema_2;
+  }
+
+int TrixSignal(const int shift)
+  {
+   const double roc = TrixRoc(shift);
    if(roc > 0.0) return 1;
    if(roc < 0.0) return -1;
    return 0;

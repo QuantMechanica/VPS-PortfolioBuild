@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        2002
 ; ea_slug:      nnfx-qqe-trend
@@ -10,7 +10,7 @@
 ; magic_slot:   14
 ; risk_mode:    FIXED
 ; portfolio_weight: 1.0
-; build_hash:   pending
+; build_hash:   9b4cf26c2e9e3b25b950b5b4c6a66440d48f7c03ea5778a0378f2a0112e9bc1f
 ; author:       Development
 ; date:         2026-05-19
 ;==========================================================
@@ -29,4 +29,4 @@ strategy_cmf_period=20
 strategy_atr_period=14
 strategy_atr_sl_mult=1.5
 strategy_rr=1.5
-strategy_spread_cap_points=25
+strategy_spread_cap_points=0

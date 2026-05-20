@@ -34,8 +34,9 @@ input int    strategy_wae_fast          = 20;
 input int    strategy_wae_slow          = 40;
 input int    strategy_wae_signal        = 9;
 input int    strategy_adx_period        = 14;
-input double strategy_adx_min           = 25.0;
+input double strategy_adx_min           = 12.0;
 input int    strategy_atr_period        = 14;
+input double strategy_wae_deadzone_atr_mult = 0.10;
 input double strategy_atr_sl_mult       = 1.5;
 input double strategy_rr                 = 1.5;
 input int    strategy_spread_cap_points  = 25;
@@ -48,10 +49,16 @@ double McGinleyValue(const int shift)
   }
 
 // --- WAE Proxy Logic ---
+double WaeHistogram(const int shift)
+  {
+   return QM_MACD_Main(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_wae_fast, strategy_wae_slow, strategy_wae_signal, shift)
+          - QM_MACD_Signal(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_wae_fast, strategy_wae_slow, strategy_wae_signal, shift);
+  }
+
 int WaeSignal(const int shift)
   {
-   const double macd_hist_1 = QM_MACD_Main(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_wae_fast, strategy_wae_slow, strategy_wae_signal, shift);
-   const double deadzone = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, shift) * 0.5;
+   const double macd_hist_1 = WaeHistogram(shift);
+   const double deadzone = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, shift) * strategy_wae_deadzone_atr_mult;
    
    if(macd_hist_1 > deadzone) return 1;
    if(macd_hist_1 < -deadzone) return -1;
@@ -128,12 +135,11 @@ bool Strategy_ExitSignal()
       if(PositionGetInteger(POSITION_MAGIC) != magic) continue;
 
       const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      const int wae_1 = WaeSignal(1);
-      const int wae_2 = WaeSignal(2);
+      const double wae_1 = WaeHistogram(1);
+      const double wae_2 = WaeHistogram(2);
 
-      // Simple exit if WAE momentum starts to fade (bar decrease)
-      if(ptype == POSITION_TYPE_BUY && wae_1 <= wae_2) return true;
-      if(ptype == POSITION_TYPE_SELL && wae_1 >= wae_2) return true;
+      if(ptype == POSITION_TYPE_BUY && (wae_1 < 0.0 || (wae_1 > 0.0 && wae_1 < wae_2 * 0.75))) return true;
+      if(ptype == POSITION_TYPE_SELL && (wae_1 > 0.0 || (wae_1 < 0.0 && MathAbs(wae_1) < MathAbs(wae_2) * 0.75))) return true;
      }
    return false;
   }

@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        2003
 ; ea_slug:      nnfx-wave-sniper
@@ -10,7 +10,7 @@
 ; magic_slot:   19
 ; risk_mode:    FIXED
 ; portfolio_weight: 1.0
-; build_hash:   pending
+; build_hash:   1b205f9aa189b8876f546046044055c97a7e3bbc4625688e2d91f713daf4a314
 ; author:       Development
 ; date:         2026-05-19
 ;==========================================================
@@ -31,4 +31,4 @@ strategy_adx_min=25.0
 strategy_atr_period=14
 strategy_atr_sl_mult=1.5
 strategy_rr=1.5
-strategy_spread_cap_points=25
+strategy_spread_cap_points=0

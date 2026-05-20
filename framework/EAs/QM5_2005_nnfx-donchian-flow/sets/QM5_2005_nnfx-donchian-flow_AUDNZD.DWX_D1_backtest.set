@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        2005
 ; ea_slug:      nnfx-donchian-flow
@@ -10,7 +10,7 @@
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1.0
-; build_hash:   pending
+; build_hash:   a3f97c83c84e985e3d30b1eda51f94d2b463664cbd490da55589666848b6556d
 ; author:       Development
 ; date:         2026-05-19
 ;==========================================================
@@ -28,4 +28,4 @@ strategy_mfi_period=14
 strategy_atr_period=14
 strategy_atr_sl_mult=1.5
 strategy_rr=1.5
-strategy_spread_cap_points=25
+strategy_spread_cap_points=0

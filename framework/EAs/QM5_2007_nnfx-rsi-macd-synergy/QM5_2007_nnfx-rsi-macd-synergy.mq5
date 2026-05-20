@@ -61,7 +61,14 @@ double RviValue(const int shift)
 // --- PSAR Logic ---
 double PsarValue(const int shift)
   {
-   return QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_ema_period, shift);
+   const int handle = iSAR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_psar_step, strategy_psar_max);
+   if(handle == INVALID_HANDLE) return 0.0;
+   double buffer[];
+   ArraySetAsSeries(buffer, true);
+   const int copied = CopyBuffer(handle, 0, shift, 1, buffer); // perf-allowed
+   IndicatorRelease(handle); // perf-allowed
+   if(copied != 1) return 0.0;
+   return buffer[0];
   }
 
 bool HasOpenPosition()
@@ -134,6 +141,7 @@ bool Strategy_ExitSignal()
       const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       const double close_1 = iClose(_Symbol, _Period, 1);
       const double psar_1 = PsarValue(1);
+      if(psar_1 <= 0.0) continue;
 
       if(ptype == POSITION_TYPE_BUY && close_1 < psar_1) return true;
       if(ptype == POSITION_TYPE_SELL && close_1 > psar_1) return true;
