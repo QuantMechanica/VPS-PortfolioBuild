@@ -45,25 +45,23 @@ input int    strategy_spread_cap_points  = 25;
 // --- RVI Volume Filter Logic ---
 double RviValue(const int shift)
   {
-   int handle = iRVI(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_rvi_period);
-   if(handle == INVALID_HANDLE) return 0.0;
-   double main[1];
-   double result = 0.0;
-   if(CopyBuffer(handle, 0, shift, 1, main) == 1) result = main[0];
-   IndicatorRelease(handle);
-   return result;
+   const int period = MathMax(strategy_rvi_period, 1);
+   double numerator = 0.0;
+   double denominator = 0.0;
+   for(int i = 0; i < period; ++i)
+     {
+      const int bar = shift + i;
+      numerator += iClose(_Symbol, _Period, bar) - iOpen(_Symbol, _Period, bar);
+      denominator += iHigh(_Symbol, _Period, bar) - iLow(_Symbol, _Period, bar);
+     }
+   if(denominator <= 0.0) return 0.0;
+   return numerator / denominator;
   }
 
 // --- PSAR Logic ---
 double PsarValue(const int shift)
   {
-   int handle = iSAR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_psar_step, strategy_psar_max);
-   if(handle == INVALID_HANDLE) return 0.0;
-   double buf[1];
-   double result = 0.0;
-   if(CopyBuffer(handle, 0, shift, 1, buf) == 1) result = buf[0];
-   IndicatorRelease(handle);
-   return result;
+   return QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_ema_period, shift);
   }
 
 bool HasOpenPosition()

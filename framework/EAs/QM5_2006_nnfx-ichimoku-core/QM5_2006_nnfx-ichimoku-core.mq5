@@ -40,25 +40,28 @@ input double strategy_rr                = 1.5;
 input int    strategy_spread_cap_points = 25;
 
 // --- Ichimoku Logic ---
+double MidpointRange(const int period, const int shift)
+  {
+   const int safe_period = MathMax(period, 1);
+   const int high_idx = iHighest(_Symbol, _Period, MODE_HIGH, safe_period, shift);
+   const int low_idx = iLowest(_Symbol, _Period, MODE_LOW, safe_period, shift);
+   if(high_idx < 0 || low_idx < 0) return 0.0;
+   return (iHigh(_Symbol, _Period, high_idx) + iLow(_Symbol, _Period, low_idx)) / 2.0;
+  }
+
 int IchimokuSignal(const int shift)
   {
-   int handle = iIchimoku(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_tenkan, strategy_kijun, strategy_senkou);
-   if(handle == INVALID_HANDLE) return 0;
-   double t[1], k[1], sa[1], sb[1];
-   int result = 0;
-   
-   if(CopyBuffer(handle, 0, shift, 1, t) == 1 && CopyBuffer(handle, 1, shift, 1, k) == 1 &&
-      CopyBuffer(handle, 2, shift, 1, sa) == 1 && CopyBuffer(handle, 3, shift, 1, sb) == 1)
-     {
-      const double close = iClose(_Symbol, _Period, shift);
-      const double cloud_top = MathMax(sa[0], sb[0]);
-      const double cloud_bottom = MathMin(sa[0], sb[0]);
-      
-      if(close > cloud_top && t[0] > k[0]) result = 1;
-      if(close < cloud_bottom && t[0] < k[0]) result = -1;
-     }
-   IndicatorRelease(handle);
-   return result;
+   const double tenkan = MidpointRange(strategy_tenkan, shift);
+   const double kijun = MidpointRange(strategy_kijun, shift);
+   const double span_a = (tenkan + kijun) / 2.0;
+   const double span_b = MidpointRange(strategy_senkou, shift);
+   const double close = iClose(_Symbol, _Period, shift);
+   const double cloud_top = MathMax(span_a, span_b);
+   const double cloud_bottom = MathMin(span_a, span_b);
+
+   if(close > cloud_top && tenkan > kijun) return 1;
+   if(close < cloud_bottom && tenkan < kijun) return -1;
+   return 0;
   }
 
 bool HasOpenPosition()
@@ -130,21 +133,16 @@ bool Strategy_ExitSignal()
 
       const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       
-      int handle = iIchimoku(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_tenkan, strategy_kijun, strategy_senkou);
-      if(handle == INVALID_HANDLE) continue;
-      double sa[1], sb[1];
-      bool should_exit = false;
-      if(CopyBuffer(handle, 2, 1, 1, sa) == 1 && CopyBuffer(handle, 3, 1, 1, sb) == 1)
-        {
-         const double close = iClose(_Symbol, _Period, 1);
-         const double cloud_top = MathMax(sa[0], sb[0]);
-         const double cloud_bottom = MathMin(sa[0], sb[0]);
-         
-         if(ptype == POSITION_TYPE_BUY && close < cloud_top) should_exit = true;
-         if(ptype == POSITION_TYPE_SELL && close > cloud_bottom) should_exit = true;
-        }
-      IndicatorRelease(handle);
-      if(should_exit) return true;
+      const double tenkan = MidpointRange(strategy_tenkan, 1);
+      const double kijun = MidpointRange(strategy_kijun, 1);
+      const double span_a = (tenkan + kijun) / 2.0;
+      const double span_b = MidpointRange(strategy_senkou, 1);
+      const double close = iClose(_Symbol, _Period, 1);
+      const double cloud_top = MathMax(span_a, span_b);
+      const double cloud_bottom = MathMin(span_a, span_b);
+
+      if(ptype == POSITION_TYPE_BUY && close < cloud_top) return true;
+      if(ptype == POSITION_TYPE_SELL && close > cloud_bottom) return true;
      }
    return false;
   }

@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        2007
 ; ea_slug:      nnfx-rsi-macd-synergy
@@ -10,7 +10,7 @@
 ; magic_slot:   8
 ; risk_mode:    FIXED
 ; portfolio_weight: 1.0
-; build_hash:   pending
+; build_hash:   9eff1ca092072f3bf779033de8d7ad436f275bf2360f8de97a19f7d2ee7e16b2
 ; author:       Development
 ; date:         2026-05-19
 ;==========================================================

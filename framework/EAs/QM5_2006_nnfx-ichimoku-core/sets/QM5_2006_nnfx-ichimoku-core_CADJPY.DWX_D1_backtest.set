@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        2006
 ; ea_slug:      nnfx-ichimoku-core
@@ -10,7 +10,7 @@
 ; magic_slot:   6
 ; risk_mode:    FIXED
 ; portfolio_weight: 1.0
-; build_hash:   pending
+; build_hash:   8e20ca81e94c19de1473958553814466982feba4cc4362fc1a8a4d903c107816
 ; author:       Development
 ; date:         2026-05-19
 ;==========================================================

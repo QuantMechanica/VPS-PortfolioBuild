@@ -77,6 +77,20 @@ class AgentRouterTests(unittest.TestCase):
             research = [row for row in status["tasks"] if row["task_type"] == "research_strategy"]
             self.assertEqual(research[0]["count"], 2)
 
+    def test_replenish_pauses_research_when_card_pool_is_sufficient(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            approved = root / "artifacts" / "cards_approved"
+            approved.mkdir(parents=True)
+            for idx in range(5):
+                (approved / f"QM5_TEST_{idx}.md").write_text("# card\n", encoding="utf-8")
+
+            result = agent_router.replenish(root, min_ready_strategy_cards=5)
+
+            self.assertEqual(result["ready_strategy_cards"], 5)
+            self.assertEqual(result["created"], [])
+            self.assertEqual(agent_router.status(root)["tasks"], [])
+
 
 if __name__ == "__main__":
     unittest.main()
