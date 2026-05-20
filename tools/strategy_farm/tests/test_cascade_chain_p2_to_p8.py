@@ -51,17 +51,23 @@ class CascadeChainP2ToP8Tests(unittest.TestCase):
             self._insert_work_item(root, item_id="wi-p5", ea_id="QM5_9999", phase="P5")
 
             old_pipeline = farmctl.PIPELINE_REPORT_ROOT
+            old_calibration = farmctl.P5_CALIBRATION_JSON
             old_terminals = farmctl.MT5_TERMINALS
             old_running = farmctl._running_mt5_terminals
+            old_active = farmctl.active_mt5_terminals
             try:
                 farmctl.PIPELINE_REPORT_ROOT = pipeline_root
+                farmctl.P5_CALIBRATION_JSON = root / "missing_calibration.json"
                 farmctl.MT5_TERMINALS = ("T1",)
                 farmctl._running_mt5_terminals = lambda: set()
+                farmctl.active_mt5_terminals = lambda: ["T1"]
                 result = farmctl.dispatch_work_items(root, timeout_minutes=8)
             finally:
                 farmctl.PIPELINE_REPORT_ROOT = old_pipeline
+                farmctl.P5_CALIBRATION_JSON = old_calibration
                 farmctl.MT5_TERMINALS = old_terminals
                 farmctl._running_mt5_terminals = old_running
+                farmctl.active_mt5_terminals = old_active
 
             with sqlite3.connect(root / "state" / "farm_state.sqlite") as conn:
                 row = conn.execute("SELECT status, verdict, payload_json FROM work_items WHERE id='wi-p5'").fetchone()
@@ -99,12 +105,14 @@ class CascadeChainP2ToP8Tests(unittest.TestCase):
             old_popen = farmctl.subprocess.Popen
             old_terminals = farmctl.MT5_TERMINALS
             old_running = farmctl._running_mt5_terminals
+            old_active = farmctl.active_mt5_terminals
             try:
                 farmctl.PIPELINE_REPORT_ROOT = pipeline_root
                 farmctl.NEWS_MATRIX_FALLBACK = fallback_news
                 farmctl.subprocess.Popen = FakeProc
                 farmctl.MT5_TERMINALS = tuple(f"T{i}" for i in range(1, 7))
                 farmctl._running_mt5_terminals = lambda: set()
+                farmctl.active_mt5_terminals = lambda: [f"T{i}" for i in range(1, 7)]
                 for idx, phase in enumerate(phases, start=1):
                     self._insert_work_item(root, item_id=f"wi-{phase}", ea_id="QM5_9999", phase=phase, symbol=f"EURUSD{idx}.DWX")
                 farmctl.dispatch_work_items(root, timeout_minutes=8)
@@ -114,6 +122,7 @@ class CascadeChainP2ToP8Tests(unittest.TestCase):
                 farmctl.subprocess.Popen = old_popen
                 farmctl.MT5_TERMINALS = old_terminals
                 farmctl._running_mt5_terminals = old_running
+                farmctl.active_mt5_terminals = old_active
 
             self.assertEqual(len(spawned_cmds), len(phases))
             joined_by_script = {" ".join(cmd).replace("\\", "/"): cmd for cmd in spawned_cmds}

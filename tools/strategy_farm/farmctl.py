@@ -1594,10 +1594,9 @@ def _phase_runner_inputs(root: Path, ea_id: str, phase: str) -> dict[str, Any]:
     elif phase_key == "P5":
         inputs = {"calibration_json": pipeline_dir / "P4" / "calibration.json"}
     elif phase_key == "P5b":
-        inputs = {
-            "calibration_json": pipeline_dir / "P4" / "calibration.json",
-            "trials_csv": pipeline_dir / "P5b" / "p5b_trials.csv",
-        }
+        # p5b_noise_driver.py is the phase runner that creates
+        # p5b_trials.csv; requiring it before the run deadlocks the phase.
+        inputs = {"calibration_json": pipeline_dir / "P4" / "calibration.json"}
     elif phase_key == "P5c":
         inputs = {"slices_csv": pipeline_dir / "P5" / "p5_slices.csv"}
     elif phase_key == "P6":
@@ -1656,22 +1655,6 @@ def _ensure_phase_runner_inputs(root: Path, item_row: sqlite3.Row, log_path: Pat
                 log_path,
             )
 
-    if phase == "P5b" and not (phase_dir / "P5b" / "p5b_trials.csv").exists():
-        calibration = phase_dir / "P4" / "calibration.json"
-        if calibration.exists() and symbol:
-            _run_phase_input_generator(
-                [
-                    sys.executable,
-                    str(REPO_ROOT / "framework" / "scripts" / "p5b_noise_driver.py"),
-                    "--ea", ea_id,
-                    "--symbol", symbol,
-                    "--calibration-json", str(calibration),
-                    "--paths", "200",
-                    "--out-prefix", str(PIPELINE_REPORT_ROOT),
-                ],
-                log_path,
-            )
-
     if phase == "P5c" and not (phase_dir / "P5" / "p5_slices.csv").exists():
         cmd = [
             sys.executable,
@@ -1702,7 +1685,7 @@ def _ensure_phase_runner_inputs(root: Path, item_row: sqlite3.Row, log_path: Pat
                 cmd.extend(["--p2-report", str(p2_report)])
             _run_phase_input_generator(cmd, log_path)
 
-    if phase == "P8" and not (phase_dir / "P7" / "news_matrix.csv").exists():
+    if phase == "P8" and not (phase_dir / "P7" / "news_matrix.csv").exists() and not NEWS_MATRIX_FALLBACK.exists():
         cmd = [
             sys.executable,
             str(REPO_ROOT / "framework" / "scripts" / "p8_news_matrix_generator.py"),
