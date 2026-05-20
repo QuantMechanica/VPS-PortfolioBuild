@@ -37,6 +37,12 @@ WATCHDOG_LATEST = REPO_ROOT / "docs" / "ops" / "pipeline_health" / "latest.json"
 DISPATCH_STATE = PIPELINE_ROOT / "dispatch_state.json"
 EA_REGISTRY = REPO_ROOT / "framework" / "registry" / "ea_id_registry.csv"
 STRATEGY_CARDS_DIR = REPO_ROOT / "strategy-seeds" / "cards"
+STRATEGY_SPECS_DIR = REPO_ROOT / "strategy-seeds" / "specs"
+FARM_ROOT = Path(r"D:/QM/strategy_farm")
+FARM_CARDS_DIRS = [
+    FARM_ROOT / "artifacts" / "cards_approved",
+    FARM_ROOT / "artifacts" / "cards_draft",
+]
 FARM_DB = Path(r"D:/QM/strategy_farm/state/farm_state.sqlite")
 
 # V5 phase order (from PIPELINE_PHASE_SPEC.md). P3.5 is stored as P3_5 in JSON keys
@@ -58,9 +64,11 @@ def read_json_safe(path: Path) -> dict | None:
 
 
 def count_strategy_cards() -> int:
-    if not STRATEGY_CARDS_DIR.is_dir():
-        return 0
-    return sum(1 for p in STRATEGY_CARDS_DIR.iterdir() if p.is_file() and p.suffix == ".md")
+    slugs: set[str] = set()
+    for directory in [STRATEGY_SPECS_DIR, STRATEGY_CARDS_DIR, *FARM_CARDS_DIRS]:
+        if directory.is_dir():
+            slugs.update(p.stem for p in directory.iterdir() if p.is_file() and p.suffix.lower() == ".md")
+    return len(slugs)
 
 
 def read_ea_registry() -> list[dict]:
@@ -237,13 +245,11 @@ def aggregate_by_status(eas: list[dict]) -> dict[str, int]:
 
 
 def farm_db_by_phase() -> dict[str, int]:
-    """Current Strategy Farm DB view of each EA's highest PASS phase."""
+    """Current Strategy Farm DB view of distinct EAs with PASS evidence per phase."""
     by_phase = {PHASE_TO_KEY[p]: 0 for p in PHASES}
     if not FARM_DB.is_file():
         return by_phase
 
-    phase_rank = {phase: idx for idx, phase in enumerate(PHASES)}
-    latest_by_ea: dict[str, str] = {}
     pass_verdicts = {"PASS", "AUTO_PASS", "MODE_SELECTED", "MULTI_SEED_PASS", "MULTI_SEED_MIXED"}
 
     con = None
@@ -263,18 +269,17 @@ def farm_db_by_phase() -> dict[str, int]:
         except Exception:
             pass
 
+    phase_eas: dict[str, set[str]] = {p: set() for p in PHASES}
     for row in rows:
         ea_id = str(row["ea_id"] or "").strip()
         phase = str(row["phase"] or "").strip()
         verdict = str(row["verdict"] or "").strip().upper()
-        if not ea_id or phase not in phase_rank or verdict not in pass_verdicts:
+        if not ea_id or phase not in phase_eas or verdict not in pass_verdicts:
             continue
-        current = latest_by_ea.get(ea_id)
-        if current is None or phase_rank[phase] > phase_rank[current]:
-            latest_by_ea[ea_id] = phase
+        phase_eas[phase].add(ea_id)
 
-    for phase in latest_by_ea.values():
-        by_phase[PHASE_TO_KEY[phase]] += 1
+    for phase, eas in phase_eas.items():
+        by_phase[PHASE_TO_KEY[phase]] = len(eas)
     return by_phase
 
 

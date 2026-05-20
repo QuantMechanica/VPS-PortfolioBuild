@@ -258,7 +258,7 @@ def equity_svg(deals: list[tuple[str, float]], width: int = 320, height: int = 6
 def collect_farm_state(root: Path) -> dict[str, Any]:
     db = root / "state" / "farm_state.sqlite"
     if not db.exists():
-        return {"sources": [], "tasks": [], "events": [], "db_missing": True}
+        return {"sources": [], "tasks": [], "events": [], "db_missing": True, "_root": root}
 
     with sqlite3.connect(db) as conn:
         conn.row_factory = sqlite3.Row
@@ -288,7 +288,7 @@ def collect_farm_state(root: Path) -> dict[str, Any]:
             ev["detail"] = {}
         events.append(ev)
 
-    return {"sources": sources, "tasks": tasks, "events": events, "db_missing": False}
+    return {"sources": sources, "tasks": tasks, "events": events, "db_missing": False, "_root": root}
 
 
 def get_mt5_fleet_status() -> dict[str, Any]:
@@ -319,7 +319,7 @@ def get_mt5_fleet_status() -> dict[str, Any]:
     return {"scanned_at": scan_at, "processes": procs, "running_count": len(procs)}
 
 
-def derive_ea_candidates(tasks: list[dict]) -> list[dict]:
+def derive_ea_candidates(tasks: list[dict], root: Path | None = None) -> list[dict]:
     """Group tasks by card_id (= ea_id) and derive EA-level state."""
     by_ea: dict[str, list[dict]] = defaultdict(list)
     for t in tasks:
@@ -400,6 +400,46 @@ def derive_ea_candidates(tasks: list[dict]) -> list[dict]:
             "last_updated": ea_tasks[-1].get("updated_at", "") if ea_tasks else "",
             "latest_evidence": latest_evidence,
         })
+
+    if root is not None:
+        db = root / "state" / "farm_state.sqlite"
+        if db.exists() and eas:
+            pass_verdicts = {"PASS", "AUTO_PASS", "MODE_SELECTED", "MULTI_SEED_PASS", "MULTI_SEED_MIXED"}
+            by_id = {ea["ea_id"]: ea for ea in eas}
+            placeholders = ",".join("?" for _ in by_id)
+            try:
+                with sqlite3.connect(db) as conn:
+                    conn.row_factory = sqlite3.Row
+                    rows = conn.execute(
+                        f"SELECT ea_id, phase, status, verdict, updated_at FROM work_items WHERE ea_id IN ({placeholders})",
+                        list(by_id),
+                    ).fetchall()
+            except sqlite3.Error:
+                rows = []
+            for r in rows:
+                phase = str(r["phase"] or "")
+                ea = by_id.get(r["ea_id"])
+                if not ea or phase not in PHASE_ORDER:
+                    continue
+                phase_idx = PHASE_ORDER.index(phase)
+                current_idx = PHASE_ORDER.index(ea["current_phase"]) if ea["current_phase"] in PHASE_ORDER else -1
+                verdict = str(r["verdict"] or "").upper()
+                status = str(r["status"] or "").lower()
+                if status == "done" and verdict in pass_verdicts:
+                    ea["completed_phases"] = sorted(
+                        set(ea.get("completed_phases") or []) | {phase},
+                        key=lambda p: PHASE_ORDER.index(p) if p in PHASE_ORDER else 99,
+                    )
+                    if phase_idx >= current_idx:
+                        ea["current_phase"] = phase
+                        ea["failed_at"] = None
+                        ea["dead"] = False
+                elif status in {"active", "pending", "claimed"} and phase_idx > current_idx:
+                    ea["current_phase"] = phase
+                    ea["dead"] = False
+                    ea["failed_at"] = None
+                if (r["updated_at"] or "") > (ea.get("last_updated") or ""):
+                    ea["last_updated"] = r["updated_at"] or ea.get("last_updated") or ""
 
     eas.sort(key=lambda x: x.get("last_updated", ""), reverse=True)
     return eas
@@ -591,7 +631,7 @@ def render_phase_dots(completed: list[str], current: str | None, failed_at: str 
 
 
 def render_hero(state: dict) -> str:
-    eas = derive_ea_candidates(state["tasks"])
+    eas = derive_ea_candidates(state["tasks"], state.get("_root"))
     live_eas = [ea for ea in eas if ea["live"]]
     advancing = [ea for ea in eas if not ea["dead"] and not ea["live"]]
     target = 5
@@ -722,7 +762,7 @@ def render_throughput(state: dict) -> str:
 
 
 def render_pipeline_table(state: dict) -> str:
-    eas = derive_ea_candidates(state["tasks"])[:10]
+    eas = derive_ea_candidates(state["tasks"], state.get("_root"))[:10]
     if not eas:
         return """
 <section class="pipeline-section">
@@ -1157,7 +1197,7 @@ def collect_ea_lead_kpis(root: Path, ea_ids: list[str]) -> dict[str, dict[str, A
 
 
 def render_strategies(state: dict, root: Path) -> str:
-    eas = derive_ea_candidates(state["tasks"])
+    eas = derive_ea_candidates(state["tasks"], root)
 
     counts = Counter()
     for ea in eas:
@@ -1757,7 +1797,7 @@ def main() -> int:
     strategies_path.write_text(render_strategies(state, root), encoding="utf-8")
 
     # Per-EA detail pages
-    eas = derive_ea_candidates(state["tasks"])
+    eas = derive_ea_candidates(state["tasks"], root)
     detail_count = 0
     for ea in eas:
         try:

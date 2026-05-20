@@ -41,6 +41,23 @@ CARDS_APPROVED = ROOT / "artifacts" / "cards_approved"
 QUOTA_SNAPSHOT = ROOT / "state" / "quota_snapshot.json"
 
 PIPELINE_STAGES = ["Card", "Build", "Review", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "Live"]
+PHASE_RANK = {
+    "P2": 20,
+    "P3": 30,
+    "P3.5": 35,
+    "P4": 40,
+    "P5": 50,
+    "P5b": 55,
+    "P5c": 56,
+    "P6": 60,
+    "P7": 70,
+    "P8": 80,
+}
+PHASE_TO_STAGE = {
+    "P3.5": "P3",
+    "P5b": "P5",
+    "P5c": "P5",
+}
 
 
 def claude_token_usage() -> dict:
@@ -590,8 +607,17 @@ def pipeline_backlog_snapshot() -> dict:
         for r in db_rows("SELECT status, COUNT(*) AS c FROM sources GROUP BY status"):
             out["sources"][r["status"]] = r["c"]
         out["pass_by_phase"] = db_rows(
-            "SELECT phase, COUNT(DISTINCT ea_id) AS c FROM work_items "
-            "WHERE verdict='PASS' GROUP BY phase ORDER BY phase"
+            """
+            SELECT phase, COUNT(DISTINCT ea_id) AS c, COUNT(*) AS c_items
+            FROM work_items
+            WHERE verdict='PASS'
+            GROUP BY phase
+            ORDER BY CASE phase
+              WHEN 'P2' THEN 20 WHEN 'P3' THEN 30 WHEN 'P3.5' THEN 35
+              WHEN 'P4' THEN 40 WHEN 'P5' THEN 50 WHEN 'P5b' THEN 55
+              WHEN 'P5c' THEN 56 WHEN 'P6' THEN 60 WHEN 'P7' THEN 70
+              WHEN 'P8' THEN 80 ELSE 0 END
+            """
         )
         pass_total = db_rows(
             "SELECT COUNT(DISTINCT ea_id) AS c FROM work_items WHERE verdict='PASS'"
@@ -612,7 +638,14 @@ def pipeline_backlog_snapshot() -> dict:
         out["p4_pending_implementation"] = p4_pending[0]["c"] if p4_pending else 0
         out["work_active_by_phase"] = db_rows(
             "SELECT phase, COUNT(*) AS c FROM work_items "
-            "WHERE status IN ('active','pending','claimed') GROUP BY phase ORDER BY phase"
+            """
+            WHERE status IN ('active','pending','claimed') GROUP BY phase
+            ORDER BY CASE phase
+              WHEN 'P2' THEN 20 WHEN 'P3' THEN 30 WHEN 'P3.5' THEN 35
+              WHEN 'P4' THEN 40 WHEN 'P5' THEN 50 WHEN 'P5b' THEN 55
+              WHEN 'P5c' THEN 56 WHEN 'P6' THEN 60 WHEN 'P7' THEN 70
+              WHEN 'P8' THEN 80 ELSE 0 END
+            """
         )
         out["work_active_total"] = sum(r["c"] for r in out["work_active_by_phase"])
         out["top_sources"] = db_rows(
@@ -728,6 +761,51 @@ def compute_pipeline() -> list[dict]:
                     entry["stage_status"] = "done"
                 else:
                     entry["stage_status"] = "failed"
+    # Overlay live work_item state. The task table is useful for build/review,
+    # but cascade phases P3.5..P8 advance as work_items; without this overlay
+    # the cockpit can under-report a P8 winner as still sitting at P2/Review.
+    work_rows = db_rows(
+        """
+        SELECT ea_id, phase, status, verdict, updated_at
+        FROM work_items
+        WHERE ea_id IS NOT NULL
+        """
+    )
+    for r in work_rows:
+        ea_id = r.get("ea_id")
+        phase = r.get("phase")
+        if not ea_id or phase not in PHASE_RANK:
+            continue
+        entry = eas.setdefault(ea_id, {
+            "ea_id": ea_id,
+            "slug": "",
+            "stage": "Card",
+            "stage_status": "pending",
+            "last_activity": r.get("updated_at") or "",
+        })
+        if (r.get("updated_at") or "") > (entry.get("last_activity") or ""):
+            entry["last_activity"] = r.get("updated_at") or entry.get("last_activity") or ""
+
+        current_phase = entry.get("_best_phase")
+        current_rank = PHASE_RANK.get(current_phase or "", -1)
+        row_rank = PHASE_RANK[phase]
+        verdict = str(r.get("verdict") or "").upper()
+        status = str(r.get("status") or "").lower()
+        is_progress = status in {"pending", "active", "claimed"} or verdict == "PASS"
+        if not is_progress:
+            continue
+        if row_rank >= current_rank:
+            entry["_best_phase"] = phase
+            entry["stage"] = PHASE_TO_STAGE.get(phase, phase)
+            if verdict == "PASS":
+                entry["stage_status"] = "done"
+            elif status == "active":
+                entry["stage_status"] = "active"
+            elif status in {"pending", "claimed"}:
+                entry["stage_status"] = "pending"
+
+    for entry in eas.values():
+        entry.pop("_best_phase", None)
     return sorted(eas.values(), key=lambda e: e["ea_id"])
 
 
@@ -1004,11 +1082,16 @@ def main() -> int:
     def phase_chips(rows: list[dict], empty_label: str) -> str:
         if not rows:
             return f'<div class="backlog-empty">{empty_label}</div>'
-        return '<div class="backlog-chips">' + "".join(
-            f'<span class="backlog-chip"><b>{html.escape(str(r.get("phase") or "?"))}</b>'
-            f'<span class="mono">{int(r.get("c") or 0)}</span></span>'
-            for r in rows
-        ) + '</div>'
+        chips = []
+        for r in rows:
+            distinct = int(r.get("c") or 0)
+            items = r.get("c_items")
+            suffix = f' <span class="muted">({int(items)} runs)</span>' if items is not None else ""
+            chips.append(
+                f'<span class="backlog-chip"><b>{html.escape(str(r.get("phase") or "?"))}</b>'
+                f'<span class="mono">{distinct}</span>{suffix}</span>'
+            )
+        return '<div class="backlog-chips">' + "".join(chips) + '</div>'
 
     sources = backlog["sources"]
     top_sources = backlog["top_sources"]

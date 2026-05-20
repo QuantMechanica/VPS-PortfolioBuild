@@ -175,19 +175,48 @@ function Get-ProcessRoadmap {
 }
 
 function Get-StrategyArchiveSnapshot {
-    param([string]$StrategySeedSpecsDir)
+    param(
+        [string]$StrategySeedSpecsDir,
+        [string[]]$FarmCardDirs = @()
+    )
     $items = @()
+    $seen = @{}
     if (Test-Path -LiteralPath $StrategySeedSpecsDir) {
         $items = Get-ChildItem -LiteralPath $StrategySeedSpecsDir -File -Filter "*.md" |
             Sort-Object Name |
             ForEach-Object {
+                $slug = [System.IO.Path]::GetFileNameWithoutExtension($_.Name)
+                $seen[$slug] = $true
                 [ordered]@{
-                    slug = [System.IO.Path]::GetFileNameWithoutExtension($_.Name)
+                    slug = $slug
                     source = "strategy-seeds/specs"
                     visibility = "public"
                     last_updated_utc = $_.LastWriteTimeUtc.ToString("o")
                 }
             }
+    }
+    foreach ($dir in $FarmCardDirs) {
+        if (-not (Test-Path -LiteralPath $dir)) { continue }
+        $leaf = Split-Path -Leaf $dir
+        $source = if ($dir -like "*strategy-seeds*") {
+            "strategy-seeds/$leaf"
+        } else {
+            "strategy_farm/artifacts/$leaf"
+        }
+        $farmItems = Get-ChildItem -LiteralPath $dir -File -Filter "*.md" |
+            Sort-Object Name |
+            ForEach-Object {
+                $slug = [System.IO.Path]::GetFileNameWithoutExtension($_.Name)
+                if ($seen.ContainsKey($slug)) { return }
+                $seen[$slug] = $true
+                [ordered]@{
+                    slug = $slug
+                    source = $source
+                    visibility = "public"
+                    last_updated_utc = $_.LastWriteTimeUtc.ToString("o")
+                }
+            }
+        $items = @($items) + @($farmItems)
     }
     return [ordered]@{
         schema_version = $SchemaVersionV1
@@ -201,7 +230,13 @@ Ensure-Directory -Path $PublicDataDir
 
 $expenses = Get-ExpenseSummary -ExpensesCsvPath (Join-Path $RepoRoot "expenses\expenses.csv")
 $processRoadmap = Get-ProcessRoadmap -ProcessesDir (Join-Path $RepoRoot "processes")
-$strategyArchive = Get-StrategyArchiveSnapshot -StrategySeedSpecsDir (Join-Path $RepoRoot "strategy-seeds\specs")
+$strategyArchive = Get-StrategyArchiveSnapshot `
+    -StrategySeedSpecsDir (Join-Path $RepoRoot "strategy-seeds\specs") `
+    -FarmCardDirs @(
+        (Join-Path $RepoRoot "strategy-seeds\cards"),
+        "D:\QM\strategy_farm\artifacts\cards_approved",
+        "D:\QM\strategy_farm\artifacts\cards_draft"
+    )
 
 # Load pipeline_state.json (single source of truth for the public-snapshot live fields).
 # Built by scripts/build_pipeline_state.py against D:/QM/reports/pipeline + watchdog + aggregator state.
