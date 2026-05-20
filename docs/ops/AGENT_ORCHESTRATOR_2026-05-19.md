@@ -58,6 +58,7 @@ python tools/strategy_farm/agent_router.py status
 python tools/strategy_farm/agent_router.py replenish
 python tools/strategy_farm/agent_router.py enqueue research_strategy --priority 30
 python tools/strategy_farm/agent_router.py route-once
+python tools/strategy_farm/agent_router.py run
 ```
 
 ## Current Integration Boundary
@@ -65,6 +66,22 @@ python tools/strategy_farm/agent_router.py route-once
 The first implementation creates and routes tickets only. It does not spawn
 agents yet. Existing `farmctl.py pump` remains responsible for current Codex
 build/review spawning and real MT5 pipeline execution.
+
+As of 2026-05-20, the router has an autonomous Scheduled Task wrapper:
+
+```powershell
+cd C:\QM\repo
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\strategy_farm\install_agent_router_scheduled_task.ps1 -RunNow
+Get-ScheduledTaskInfo -TaskName QM_StrategyFarm_AgentRouter_5min
+```
+
+The task runs `tools\strategy_farm\run_agent_router_task.py` every 5 minutes
+under `pythonw.exe`. Each tick writes
+`D:\QM\strategy_farm\logs\agent_router_task_<UTC>.json`.
+
+This makes replenish + capability routing autonomous. It still deliberately
+does not execute arbitrary agent work by itself; execution must remain
+artifact-producing and guardrail-aware.
 
 ## Research Replenish Policy
 

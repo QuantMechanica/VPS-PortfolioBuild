@@ -293,6 +293,22 @@ def route_once(root: Path = DEFAULT_ROOT) -> RouteDecision:
         return RouteDecision(task["id"], task["task_type"], agent["agent_id"], "assigned")
 
 
+def route_many(root: Path = DEFAULT_ROOT, *, max_routes: int = 5) -> list[dict[str, Any]]:
+    """Route up to `max_routes` waiting tickets.
+
+    This is intentionally only a router. It moves tickets from BACKLOG/TODO to
+    IN_PROGRESS for an eligible agent and respects each agent's max_parallel
+    limit. Agent execution remains artifact-driven and separate.
+    """
+    decisions: list[dict[str, Any]] = []
+    for _ in range(max(0, max_routes)):
+        decision = route_once(root)
+        decisions.append(decision.__dict__)
+        if decision.reason != "assigned":
+            break
+    return decisions
+
+
 def replenish(root: Path = DEFAULT_ROOT, *, min_ready_strategy_cards: int = 5) -> dict[str, Any]:
     """Seed backlog when the strategy reservoir is low.
 
@@ -332,6 +348,24 @@ def replenish(root: Path = DEFAULT_ROOT, *, min_ready_strategy_cards: int = 5) -
     return {"ready_strategy_cards": ready_count, "strategy_inventory": inventory, "created": created}
 
 
+def run_once(
+    root: Path = DEFAULT_ROOT,
+    *,
+    min_ready_strategy_cards: int = 5,
+    max_routes: int = 5,
+) -> dict[str, Any]:
+    """Autonomous router tick for Scheduled Task use."""
+    registry = sync_default_registry(root)
+    replenished = replenish(root, min_ready_strategy_cards=min_ready_strategy_cards)
+    routed = route_many(root, max_routes=max_routes)
+    return {
+        "registry": registry,
+        "replenish": replenished,
+        "routes": routed,
+        "status": status(root),
+    }
+
+
 def status(root: Path = DEFAULT_ROOT) -> dict[str, Any]:
     sync_default_registry(root)
     with closing(connect(root)) as conn:
@@ -366,6 +400,9 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("init")
     sub.add_parser("status")
     sub.add_parser("replenish")
+    run = sub.add_parser("run")
+    run.add_argument("--min-ready-strategy-cards", type=int, default=5)
+    run.add_argument("--max-routes", type=int, default=5)
     enqueue = sub.add_parser("enqueue")
     enqueue.add_argument("task_type", choices=sorted(TASK_TYPE_CAPABILITIES))
     enqueue.add_argument("--priority", type=int, default=50)
@@ -380,6 +417,12 @@ def main(argv: list[str] | None = None) -> int:
         result = status(args.root)
     elif args.command == "replenish":
         result = replenish(args.root)
+    elif args.command == "run":
+        result = run_once(
+            args.root,
+            min_ready_strategy_cards=args.min_ready_strategy_cards,
+            max_routes=args.max_routes,
+        )
     elif args.command == "enqueue":
         result = enqueue_task(
             args.root,

@@ -91,6 +91,20 @@ class AgentRouterTests(unittest.TestCase):
             self.assertEqual(result["created"], [])
             self.assertEqual(agent_router.status(root)["tasks"], [])
 
+    def test_run_once_replenishes_and_routes_with_limits(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            result = agent_router.run_once(root, min_ready_strategy_cards=2, max_routes=5)
+
+            self.assertEqual(len(result["replenish"]["created"]), 2)
+            assigned = [r for r in result["routes"] if r["reason"] == "assigned"]
+            self.assertEqual(len(assigned), 2)
+            self.assertTrue(all(r["assigned_agent"] == "gemini" for r in assigned))
+            status = agent_router.status(root)
+            research = [row for row in status["tasks"] if row["task_type"] == "research_strategy"]
+            self.assertEqual(research[0]["state"], "IN_PROGRESS")
+            self.assertEqual(research[0]["count"], 2)
+
 
 if __name__ == "__main__":
     unittest.main()
