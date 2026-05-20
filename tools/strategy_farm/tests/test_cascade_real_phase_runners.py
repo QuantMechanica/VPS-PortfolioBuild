@@ -1,4 +1,5 @@
 import json
+import os
 import sqlite3
 import sys
 import tempfile
@@ -121,6 +122,53 @@ class CascadeRealPhaseRunnerTests(unittest.TestCase):
 
         self.assertEqual(verdict, "FAIL")
         self.assertEqual(reason, "wf_folds_below_6")
+
+    def test_p7_input_generator_refreshes_stale_sweep_rows(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            self._insert_work_item(root, item_id="wi-p7", phase="P7")
+            out = root / "pipeline" / "QM5_9999"
+            p3 = out / "P3"
+            p2 = out / "P2"
+            p6 = out / "P6"
+            p3.mkdir(parents=True)
+            p2.mkdir(parents=True)
+            p6.mkdir(parents=True)
+            sweep = p3 / "sweep_pass_rows.csv"
+            p3_report = p3 / "report.csv"
+            p2_report = p2 / "report.csv"
+            sweep.write_text("ea_id,trade_count,pbo_pct,dsr,pass_rows,symbol_count\nQM5_9999,20,30,0,1,1\n", encoding="utf-8")
+            p3_report.write_text("ea_id,phase,symbol,period,verdict\nQM5_9999,P3,EURUSD.DWX,H1,PASS\n", encoding="utf-8")
+            p2_report.write_text("ea_id,phase,symbol,period,verdict\n", encoding="utf-8")
+            p6.joinpath("p6_seeds.csv").write_text("seed,seed_pass\n42,PASS\n", encoding="utf-8")
+            old = 1_700_000_000
+            new = old + 100
+            os.utime(sweep, (old, old))
+            os.utime(p3_report, (new, new))
+
+            db = root / "state" / "farm_state.sqlite"
+            with sqlite3.connect(db) as conn:
+                conn.row_factory = sqlite3.Row
+                row = conn.execute("SELECT * FROM work_items WHERE id='wi-p7'").fetchone()
+
+            calls: list[list[str]] = []
+            old_pipeline_root = farmctl.PIPELINE_REPORT_ROOT
+            old_generator = farmctl._run_phase_input_generator
+            try:
+                farmctl.PIPELINE_REPORT_ROOT = root / "pipeline"
+
+                def fake_generator(cmd: list[str], _log_path: Path) -> bool:
+                    calls.append([str(part) for part in cmd])
+                    return True
+
+                farmctl._run_phase_input_generator = fake_generator
+                farmctl._ensure_phase_runner_inputs(root, row, root / "phase.log")
+            finally:
+                farmctl.PIPELINE_REPORT_ROOT = old_pipeline_root
+                farmctl._run_phase_input_generator = old_generator
+
+            self.assertEqual(len(calls), 1)
+            self.assertIn("p7_sweep_pass_rows_generator.py", " ".join(calls[0]))
 
 
 if __name__ == "__main__":

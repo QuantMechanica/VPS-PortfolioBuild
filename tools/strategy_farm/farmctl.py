@@ -1635,6 +1635,24 @@ def _run_phase_input_generator(cmd: list[str], log_path: Path) -> bool:
         return proc.returncode == 0
 
 
+def _missing_or_older_than(target: Path, *sources: Path) -> bool:
+    if not target.exists():
+        return True
+    try:
+        target_mtime = target.stat().st_mtime
+    except OSError:
+        return True
+    for source in sources:
+        if not source.exists():
+            continue
+        try:
+            if source.stat().st_mtime > target_mtime:
+                return True
+        except OSError:
+            continue
+    return False
+
+
 def _ensure_phase_runner_inputs(root: Path, item_row: sqlite3.Row, log_path: Path) -> None:
     ea_id = str(item_row["ea_id"])
     phase = str(item_row["phase"])
@@ -1670,10 +1688,11 @@ def _ensure_phase_runner_inputs(root: Path, item_row: sqlite3.Row, log_path: Pat
             cmd.extend(["--stress-metrics-json", str(stress)])
         _run_phase_input_generator(cmd, log_path)
 
-    if phase == "P7" and not (phase_dir / "P3" / "sweep_pass_rows.csv").exists():
+    if phase == "P7":
+        sweep_rows = phase_dir / "P3" / "sweep_pass_rows.csv"
         p3_report = phase_dir / "P3" / "report.csv"
         p2_report = phase_dir / "P2" / "report.csv"
-        if p3_report.exists():
+        if p3_report.exists() and _missing_or_older_than(sweep_rows, p3_report, p2_report):
             cmd = [
                 sys.executable,
                 str(REPO_ROOT / "framework" / "scripts" / "p7_sweep_pass_rows_generator.py"),
