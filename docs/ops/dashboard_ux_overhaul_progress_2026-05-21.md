@@ -115,7 +115,8 @@ Scan result — `current.html`, `strategies.html`, `ea_*.html`, `cockpit.html`
 all CLEAN: no `>Pxx<` / `Pxx PASS` display tokens (legacy keys remain only
 inside `file:///` report paths, which are real filesystem paths, not labels).
 
-Minor follow-up (not blocking, shared-module / CTO scope): two `PHASE_NAME`
-strings in `phase_ids.py` differ slightly from the vault page titles —
-`Q06` "Calibrated Stress" vs vault "Stress Test", `Q11` "Real News Replay" vs
-vault "News Impact". Numbering is correct; only the long-name strings differ.
+`PHASE_NAME` strings in `phase_ids.py` aligned to the vault `03 Pipeline/`
+page titles (OWNER-authorised 2026-05-21): `Q05` Walk-Forward (was
+"Walk-Forward OOS"), `Q06` Stress Test (was "Calibrated Stress"), `Q11`
+News Impact (was "Real News Replay"). All 15 PHASE_NAME values now match the
+vault exactly.
