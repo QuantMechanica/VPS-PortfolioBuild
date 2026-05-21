@@ -56,18 +56,46 @@ The old `render_throughput` / `render_pipeline_table` / `render_blockers` /
   `work_items`. The renderer classifies MT5-vs-preflight heuristically and the
   Daily Controlling note states this. A clean split needs a repo-level schema add.
 
-## Pass 2 — REMAINING
+## Pass 2 — DONE: Strategy Archive + EA detail pages
 
-Not yet done — task stays IN_PROGRESS:
+Verified: `py_compile` clean, `render_dashboards.py` runs green (current.html +
+strategies.html + 167 EA detail pages), `render_cockpit.py` unaffected.
 
-- **Strategy Archive (`strategies.html`)** — summary chips (P8 / P4+ / active /
-  dead / not-started), default surface decision candidates before dead rows,
-  filter presets, split "Best Net P&L" into exploratory-vs-gate columns,
-  archive-only vs live-pipeline row labels.
-- **EA detail pages (`ea_*.html`, esp. `ea_QM5_1056.html`)** — decision header,
-  substantive strategy description with source attribution, pipeline-stage
-  `<details>` accordion (Q11→Q02) with symbol/timeframe-level evidence, P8-first
-  ordering, grouped failure reasons.
+### Strategy Archive (`strategies.html`)
 
-These touch `render_strategies`, `collect_ea_lead_kpis`, `collect_ea_detail`,
-`render_ea_detail` and the `.archive-*` / `.detail-*` / `.phase-section` CSS.
+- Summary chips: P8/Q11 PASS, P4+ survivors, Active now, Needs triage,
+  Not started, Dead.
+- Per-EA lane classification (`data-lanes`) drives default sort — decision
+  candidates first, dead last — and 8 filter presets (All, Decision candidates,
+  Active now, P4+ survivors, Needs triage, Dead, Live pipeline only,
+  Archive only).
+- Dead rows dimmed (not hidden); decision-candidate rows tinted.
+- Header renamed: "Best Net P&L" → "Best exploratory P&L"; "Real PASS" →
+  "Most advanced gate"; gate-note explains exploratory ≠ gate proof.
+- Per-row archive/live pill; archive coverage-gap panel for DB EAs without a
+  detail page.
+
+### EA detail pages (`ea_*.html`)
+
+- Decision header: current phase, highest real PASS, next gate, evidence
+  timestamp.
+- Decision summary: verdict + why-it-matters / remaining-risk / next-action,
+  derived from pass state (dead / P8 / advancing / no-pass).
+- Strategy description: up to 3 card-body paragraphs + facts table + explicit
+  source attribution (states "not found in current artifacts" when absent).
+- Pipeline-stage accordion: one `<details>` per phase, ordered most-advanced
+  gate first, most-advanced default-open; summary shows Qxx + legacy Pxx +
+  verdict counts + strongest KPI; grouped failure profile inside; raw symbol
+  table collapses into a nested `<details>` when > 12 rows.
+- `QM5_1056` verified: not DEAD, accordion Q11→Q02, verdict "Advancing —
+  highest real PASS at Q07".
+
+## Open question — phase naming (raised by OWNER 2026-05-21)
+
+`tools/strategy_farm/phase_ids.py` is the canonical module: storage keys are
+legacy `G0,P1,P2,P3,P3.5,P4,P5,P5b,P5c,P6,P7,P8,P9,P9b,P10` (15) and the
+operator-facing display series is `Q00..Q14`. All rebuilt dashboards already
+display the `Qxx` series via `phase_label()`. If the canonical display prefix
+should change `Q`→`G`, that is a one-line `PHASE_QID` change in `phase_ids.py`
+(a shared pipeline module, not a renderer) and every surface follows
+automatically — flagged for OWNER decision, not changed unilaterally.

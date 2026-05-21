@@ -1291,7 +1291,7 @@ def render_decision_band(cockpit: dict, mt5: dict) -> str:
 
 def render_queue_health(cockpit: dict) -> str:
     pm = cockpit.get("phase_matrix") or {}
-    phases = [p for p in PHASE_ORDER if p in pm and p.startswith("P")]
+    phases = [p for p in PHASE_ORDER if p in pm]
     if not phases:
         return ('<section class="card"><h3 class="card-title">Pipeline Queue Health</h3>'
                 '<div class="empty">No work items yet.</div></section>')
@@ -1671,6 +1671,84 @@ EA_DETAIL_CSS = """
 """
 
 
+ARCHIVE2_CSS = """
+.archive-chips{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;max-width:1400px;margin:18px auto 4px;padding:0 36px}
+.achip{padding:11px 18px;border-radius:10px;background:rgba(15,23,42,0.55);border:.5px solid var(--qm-border);min-width:104px;text-align:center}
+.achip-num{font-family:var(--font-mono,'Source Code Pro',monospace);font-size:22px;font-weight:600;line-height:1;letter-spacing:-.5px;color:var(--qm-text)}
+.achip-label{font-size:9px;color:var(--qm-text-muted);margin-top:5px;text-transform:uppercase;letter-spacing:.6px}
+.achip.c-p8 .achip-num{color:var(--em)}
+.achip.c-surv .achip-num{color:var(--qm-live)}
+.achip.c-dead .achip-num{color:var(--qm-fail)}
+.presets{max-width:1400px;margin:8px auto 0;padding:0 36px;display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.preset-label{font-size:10px;color:var(--qm-text-muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-right:2px}
+.preset{padding:6px 13px;border-radius:8px;background:rgba(15,23,42,0.6);border:.5px solid var(--qm-border);font-size:11px;color:var(--qm-text-dim);cursor:pointer;font-family:var(--font-mono,'Source Code Pro',monospace);transition:all .12s}
+.preset:hover{border-color:var(--em);color:var(--qm-text)}
+.preset.active{background:var(--em-s,rgba(16,185,129,0.14));border-color:var(--em);color:var(--em);font-weight:600}
+.archive-table tbody tr.row-dead{opacity:.4}
+.archive-table tbody tr.row-dead:hover{opacity:.85}
+.archive-table tbody tr.row-decision td{background:rgba(16,185,129,0.045)}
+.lane-pill{display:inline-block;padding:1px 6px;border-radius:6px;font-size:8px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;margin-left:5px}
+.lane-pill.lp-live{background:rgba(6,182,212,0.12);color:var(--qm-live)}
+.lane-pill.lp-arch{background:rgba(148,163,184,0.12);color:var(--qm-text-muted)}
+.fail-prof{font-size:9px;color:var(--qm-fail);margin-top:3px;font-family:var(--font-mono,'Source Code Pro',monospace)}
+.gate-note{max-width:1400px;margin:10px auto 0;padding:0 36px;font-size:10.5px;color:var(--qm-text-muted);font-style:italic;line-height:1.5}
+.cov-gap-panel{max-width:1400px;margin:14px auto 0;padding:12px 20px;border-radius:10px;background:rgba(245,158,11,0.05);border:.5px solid rgba(245,158,11,0.22);font-size:11px;color:var(--qm-text-dim);line-height:1.55;font-family:var(--font-mono,'Source Code Pro',monospace)}
+.cov-gap-panel strong{color:#f59e0b}
+"""
+
+
+DETAIL2_CSS = """
+.decision-header{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0 18px}
+.dh-tile{padding:13px 16px;border-radius:10px;background:rgba(15,23,42,0.5);border:.5px solid var(--qm-border)}
+.dh-label{font-size:9px;font-weight:600;color:var(--qm-text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.dh-val{font-family:var(--font-mono,'Source Code Pro',monospace);font-size:17px;font-weight:600;color:var(--qm-text);line-height:1.15}
+.dh-val.good{color:var(--em)}
+.dh-val.bad{color:var(--qm-fail)}
+.dh-val.flow{color:var(--qm-live)}
+.decision-summary{padding:18px 22px;border-radius:12px;background:rgba(15,23,42,0.5);border:.5px solid var(--qm-border);margin-bottom:24px}
+.decision-summary.ds-bad{border-color:rgba(239,68,68,0.3);background:rgba(239,68,68,0.04)}
+.decision-summary.ds-good{border-color:rgba(16,185,129,0.3);background:rgba(16,185,129,0.04)}
+.ds-verdict{font-size:15px;font-weight:600;color:var(--qm-text);margin-bottom:14px}
+.ds-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px 26px}
+.ds-item-label{font-size:9px;font-weight:700;color:var(--em);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.ds-item-body{font-size:12.5px;color:var(--qm-text-dim);line-height:1.55}
+.facts-table{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:14px;font-family:var(--font-mono,'Source Code Pro',monospace)}
+.facts-table td{padding:6px 10px;border-bottom:.5px solid var(--qm-border-soft);vertical-align:top}
+.facts-table td:first-child{color:var(--qm-text-muted);width:140px;text-transform:uppercase;font-size:9px;letter-spacing:.7px;font-weight:600}
+.facts-table td:last-child{color:var(--qm-text-dim);word-break:break-word}
+.facts-table tr:last-child td{border-bottom:none}
+.src-attrib{font-size:11px;color:var(--qm-text-muted);margin-top:12px;font-family:var(--font-mono,'Source Code Pro',monospace);line-height:1.5}
+.src-attrib strong{color:var(--qm-text-dim)}
+.acc-title{font-size:12px;font-weight:600;color:var(--qm-text-muted);text-transform:uppercase;letter-spacing:1.4px;margin:0 0 12px}
+.stage-acc{margin-bottom:9px;border:.5px solid var(--qm-border);border-radius:10px;overflow:hidden;background:rgba(15,23,42,0.4)}
+.stage-acc>summary{cursor:pointer;padding:13px 18px;list-style:none;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.stage-acc>summary::-webkit-details-marker{display:none}
+.stage-acc>summary::before{content:'\\25B8';color:var(--em);font-size:11px}
+.stage-acc[open]>summary::before{content:'\\25BE'}
+.stage-acc[open]>summary{border-bottom:.5px solid var(--qm-border)}
+.sa-phase{font-family:var(--font-mono,'Source Code Pro',monospace);font-weight:700;font-size:13px;color:var(--qm-text)}
+.sa-legacy{font-size:10px;color:var(--qm-text-muted);font-family:var(--font-mono,'Source Code Pro',monospace)}
+.sa-name{font-size:10.5px;color:var(--qm-text-muted)}
+.sa-verdicts{font-size:10.5px;font-family:var(--font-mono,'Source Code Pro',monospace);color:var(--qm-text-muted)}
+.sa-kpi{margin-left:auto;font-size:10.5px;font-family:var(--font-mono,'Source Code Pro',monospace);color:var(--qm-text-dim)}
+.sa-kpi strong{color:var(--em)}
+.sa-body{padding:14px 18px}
+.fail-group-box{margin-bottom:12px}
+.fail-group-box h4{font-size:9px;font-weight:600;color:var(--qm-text-muted);text-transform:uppercase;letter-spacing:1px;margin:0 0 6px}
+.fail-group-row{display:flex;gap:10px;align-items:baseline;padding:5px 0;font-size:11px;font-family:var(--font-mono,'Source Code Pro',monospace);border-bottom:.5px solid var(--qm-border-soft)}
+.fail-group-row:last-child{border-bottom:none}
+.fgr-count{color:var(--qm-fail);font-weight:700;min-width:38px}
+.fgr-count.infra{color:#f59e0b}
+.fgr-reason{color:var(--qm-text-dim)}
+.fgr-syms{color:var(--qm-text-muted);font-size:10px;margin-left:auto;text-align:right}
+.raw-rows{margin-top:10px}
+.raw-rows>summary{cursor:pointer;font-size:10.5px;color:var(--qm-text-muted);font-family:var(--font-mono,'Source Code Pro',monospace);padding:5px 0;list-style:none}
+.raw-rows>summary::-webkit-details-marker{display:none}
+.raw-rows>summary::before{content:'\\25B8 ';color:var(--em)}
+.raw-rows[open]>summary::before{content:'\\25BE '}
+"""
+
+
 def _ea_status(ea: dict) -> tuple[str, str]:
     """Return (label, css-class-suffix) for an EA."""
     if ea.get("live"):
@@ -1794,17 +1872,56 @@ def collect_ea_lead_kpis(root: Path, ea_ids: list[str]) -> dict[str, dict[str, A
 def render_strategies(state: dict, root: Path) -> str:
     eas = derive_ea_candidates(state["tasks"], root)
 
-    counts = Counter()
-    for ea in eas:
-        label, _ = _ea_status(ea)
-        if label == "LIVE":
-            counts["live"] += 1
-        elif label == "DEAD":
-            counts["dead"] += 1
-        else:
-            counts["flow"] += 1
-
     kpis = collect_ea_lead_kpis(root, [ea["ea_id"] for ea in eas])
+
+    # archive coverage: which EAs have live work_items vs detail-page-only
+    wi_eas: set[str] = set()
+    _db = root / "state" / "farm_state.sqlite"
+    if _db.exists():
+        try:
+            with sqlite3.connect(_db) as _conn:
+                wi_eas = {r[0] for r in _conn.execute("SELECT DISTINCT ea_id FROM work_items")}
+        except sqlite3.Error:
+            wi_eas = set()
+    detail_eas = {ea["ea_id"] for ea in eas}
+    coverage_gap = sorted(wi_eas - detail_eas)
+    cov_panel = ""
+    if coverage_gap:
+        cov_panel = (
+            '<div class="cov-gap-panel"><strong>Archive coverage gap:</strong> '
+            f'{len(coverage_gap)} EA(s) have live work_items but no rendered detail page — '
+            f'{e(", ".join(coverage_gap))}. Renderer action: add to derive_ea_candidates().</div>'
+        )
+
+    # per-EA lane classification — drives summary chips, presets, default sort
+    counts: Counter = Counter()
+    lane_meta: dict[str, dict] = {}
+    for ea in eas:
+        label, _sc = _ea_status(ea)
+        k = kpis.get(ea["ea_id"]) or {}
+        has_wi = ea["ea_id"] in wi_eas
+        lanes = {"all", "live" if has_wi else "archive"}
+        if label == "DEAD":
+            lanes.add("dead"); rank = 6; counts["dead"] += 1
+        elif k.get("p8_pass"):
+            lanes |= {"decision", "survivor", "active"}; rank = 0
+            counts["p8"] += 1; counts["surv"] += 1
+        elif k.get("p4plus_pass"):
+            lanes |= {"decision", "survivor", "active"}; rank = 1
+            counts["surv"] += 1
+        elif label == "LIVE":
+            lanes.add("active"); rank = 0; counts["live"] += 1
+        elif has_wi and (k.get("n_pass") or 0) == 0:
+            lanes.add("triage"); rank = 4; counts["triage"] += 1
+        elif has_wi:
+            lanes.add("active"); rank = 3; counts["active"] += 1
+        else:
+            lanes.add("notstarted"); rank = 5; counts["notstarted"] += 1
+        lane_meta[ea["ea_id"]] = {"lanes": lanes, "rank": rank, "has_wi": has_wi}
+
+    # default order: decision candidates first, dead last; recency within rank
+    eas.sort(key=lambda x: x.get("last_updated") or "", reverse=True)
+    eas.sort(key=lambda x: lane_meta[x["ea_id"]]["rank"])
 
     if not eas:
         body = '<div class="empty" style="max-width:1100px;margin:24px auto;text-align:center;color:var(--qm-text-muted);">No EAs registered yet.</div>'
@@ -1843,10 +1960,21 @@ def render_strategies(state: dict, root: Path) -> str:
             n_sym = k.get("n_symbols") or 0
             sym_pass = f'{k.get("n_pass", 0)}/{k.get("n_fail", 0)+k.get("n_pass", 0)}' if k.get("n_pass") or k.get("n_fail") else "—"
 
-            rows.append(f"""<tr data-status="{status_cls}" data-phase="{cur_phase}" data-search="{e((ea['ea_id'] + ' ' + (ea.get('slug') or '')).lower())}" onclick="window.location='ea_{e(ea['ea_id'])}.html'">
-  <td class="td-ea"><code>{e(ea['ea_id'])}</code></td>
+            lm = lane_meta[ea["ea_id"]]
+            row_cls = []
+            if ea.get("dead"):
+                row_cls.append("row-dead")
+            if "decision" in lm["lanes"]:
+                row_cls.append("row-decision")
+            live_pill = ('<span class="lane-pill lp-live">live</span>' if lm["has_wi"]
+                         else '<span class="lane-pill lp-arch">archive</span>')
+            fail_prof = ""
+            if ea.get("dead") and ea.get("failed_at"):
+                fail_prof = f'<div class="fail-prof">failed at {e(ea["failed_at"])}</div>'
+            rows.append(f"""<tr class="{' '.join(row_cls)}" data-status="{status_cls}" data-phase="{cur_phase}" data-lanes="{' '.join(sorted(lm['lanes']))}" data-search="{e((ea['ea_id'] + ' ' + (ea.get('slug') or '')).lower())}" onclick="window.location='ea_{e(ea['ea_id'])}.html'">
+  <td class="td-ea"><code>{e(ea['ea_id'])}</code>{live_pill}</td>
   <td class="td-slug">{e(ea.get('slug') or '')}</td>
-  <td><span class="status-chip {status_cls}">{label}</span></td>
+  <td><span class="status-chip {status_cls}">{label}</span>{fail_prof}</td>
   <td>{_progress_bar_html(ea)}</td>
   <td>{cur_phase}</td>
   <td><span class="status-chip {robust_cls}">{e(robust_label)}</span></td>
@@ -1867,8 +1995,8 @@ def render_strategies(state: dict, root: Path) -> str:
       <th data-sort-col="status" data-sort-type="text">Status</th>
       <th>Progress · G0→P10</th>
       <th data-sort-col="phase" data-sort-type="text">Current</th>
-      <th data-sort-col="robust" data-sort-type="text">Real PASS</th>
-      <th data-sort-col="net" data-sort-type="num" class="col-num">Best Net P&amp;L</th>
+      <th data-sort-col="robust" data-sort-type="text">Most advanced gate</th>
+      <th data-sort-col="net" data-sort-type="num" class="col-num">Best exploratory P&amp;L</th>
       <th data-sort-col="trades" data-sort-type="num" class="col-num">Trades</th>
       <th data-sort-col="dd" data-sort-type="num" class="col-num">Worst DD</th>
       <th data-sort-col="sym" data-sort-type="num" class="col-num">Symbols</th>
@@ -1882,19 +2010,22 @@ def render_strategies(state: dict, root: Path) -> str:
 </div>
 """
 
-    return html_head("Strategy Archive", ARCHIVE_CSS) + f"""
+    return html_head("Strategy Archive", ARCHIVE_CSS + ARCHIVE2_CSS) + f"""
 <div class="archive-hero">
   <h1>Strategy <span class="em-text">Archive</span></h1>
   <p class="archive-hero-sub">Every EA candidate that has entered the QuantMechanica V5 pipeline. Mechanical strategies only (Hard Rule 14, NO ML). Each row traceable G0 → P10 with evidence trail — click for full per-phase × symbol drill-down.</p>
-  <div class="lane-summary">
-    <div class="lane-tile lane-live"><div class="lane-tile-num">{counts.get("live", 0)}</div><div class="lane-tile-label">Live · T6</div></div>
-    <div class="lane-tile lane-flow"><div class="lane-tile-num">{counts.get("flow", 0)}</div><div class="lane-tile-label">In Flow</div></div>
-    <div class="lane-tile lane-dead"><div class="lane-tile-num">{counts.get("dead", 0)}</div><div class="lane-tile-label">Dead</div></div>
+  <div class="archive-chips">
+    <div class="achip c-p8"><div class="achip-num">{counts.get("p8", 0)}</div><div class="achip-label">P8 / Q11 PASS</div></div>
+    <div class="achip c-surv"><div class="achip-num">{counts.get("surv", 0)}</div><div class="achip-label">P4+ survivors</div></div>
+    <div class="achip"><div class="achip-num">{counts.get("active", 0)}</div><div class="achip-label">Active now</div></div>
+    <div class="achip"><div class="achip-num">{counts.get("triage", 0)}</div><div class="achip-label">Needs triage</div></div>
+    <div class="achip"><div class="achip-num">{counts.get("notstarted", 0)}</div><div class="achip-label">Not started</div></div>
+    <div class="achip c-dead"><div class="achip-num">{counts.get("dead", 0)}</div><div class="achip-label">Dead</div></div>
   </div>
 </div>
 
 <div class="transparency-banner">
-  <strong>Transparency:</strong> all EAs are the actual pipeline state — DEAD strategies are NOT hidden. Click any row to see strategy card, per-phase × per-symbol backtest results with inline equity curves, and links to native MT5 reports.
+  <strong>Transparency:</strong> all EAs are the actual pipeline state — DEAD strategies are dimmed but NOT hidden. Decision candidates (P8 / P4+) are surfaced first; click any row for strategy card, per-phase × per-symbol backtest evidence, and native MT5 reports.
 </div>
 
 <div class="controls">
@@ -1912,6 +2043,20 @@ def render_strategies(state: dict, root: Path) -> str:
   <input type="search" id="f-search" placeholder="search ea id or slug…">
   <span class="row-count"><strong id="rc-visible">{len(eas)}</strong> of {len(eas)} EAs</span>
 </div>
+
+<div class="presets">
+  <span class="preset-label">View</span>
+  <span class="preset active" data-preset="all">All</span>
+  <span class="preset" data-preset="decision">Decision candidates</span>
+  <span class="preset" data-preset="active">Active now</span>
+  <span class="preset" data-preset="survivor">P4+ survivors</span>
+  <span class="preset" data-preset="triage">Needs triage</span>
+  <span class="preset" data-preset="dead">Dead</span>
+  <span class="preset" data-preset="live">Live pipeline only</span>
+  <span class="preset" data-preset="archive">Archive only</span>
+</div>
+<div class="gate-note">"Best exploratory P&amp;L" is the single best result across any phase (often a P2 discovery run) — it is NOT gate proof. "Most advanced gate" is the highest real PASS the EA reached. Dead rows are dimmed, not hidden.</div>
+{cov_panel}
 
 {body}
 
@@ -1931,6 +2076,7 @@ def render_strategies(state: dict, root: Path) -> str:
   const searchBox    = document.getElementById('f-search');
   const rcVisible    = document.getElementById('rc-visible');
 
+  let activePreset = 'all';
   function applyFilters(){{
     const s = filterStatus.value;
     const p = filterPhase.value;
@@ -1940,12 +2086,23 @@ def render_strategies(state: dict, root: Path) -> str:
       const rs = r.getAttribute('data-status') || '';
       const rp = r.getAttribute('data-phase') || '';
       const rq = r.getAttribute('data-search') || '';
-      const hide = (s && rs !== s) || (p && rp !== p) || (q && !rq.includes(q));
+      const rl = (r.getAttribute('data-lanes') || '').split(' ');
+      const hide = (s && rs !== s) || (p && rp !== p) || (q && !rq.includes(q))
+                   || (activePreset !== 'all' && rl.indexOf(activePreset) < 0);
       r.classList.toggle('row-hidden', hide);
       if (!hide) visible++;
     }});
     rcVisible.textContent = visible;
   }}
+
+  document.querySelectorAll('.preset').forEach(btn => {{
+    btn.addEventListener('click', () => {{
+      document.querySelectorAll('.preset').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activePreset = btn.getAttribute('data-preset') || 'all';
+      applyFilters();
+    }});
+  }});
 
   filterStatus.addEventListener('change', applyFilters);
   filterPhase.addEventListener('change', applyFilters);
@@ -2154,10 +2311,72 @@ def collect_ea_detail(ea_id: str, root: Path) -> dict[str, Any]:
     return detail
 
 
+def _detail_decision(ea: dict, highest_pass: str | None, most_advanced: str | None,
+                     next_gate: str) -> dict:
+    """Operator decision summary for an EA detail page."""
+    nxt = phase_label(next_gate) if next_gate and next_gate != "—" else "—"
+    if ea.get("dead"):
+        fa = ea.get("failed_at") or most_advanced or "?"
+        return {
+            "verdict": f"DEAD — failed at {phase_label(fa)}",
+            "cls": "ds-bad",
+            "why": "A strategy or infrastructure failure was recorded at this gate. The row is kept "
+                   "visible for evidence transparency, not hidden.",
+            "risk": "If the failure class is infra / zero-trade rather than strategy logic, the kill "
+                    "may be premature — check the grouped failure profile below.",
+            "next": "Triage the failure class: strategy-fail kills the EA; infra or zero-trade routes "
+                    "to zero-trade recovery and a requeue.",
+        }
+    if highest_pass == "P8":
+        return {
+            "verdict": "P8 / Q11 real PASS reached",
+            "cls": "ds-good",
+            "why": "The EA cleared the hardest automated gate (real MT5 news replay) — a genuine "
+                   "portfolio candidate.",
+            "risk": "Q11 PASS is necessary, not sufficient: correlation with existing candidates and "
+                    "live symbol routability still gate Q12.",
+            "next": "OWNER / Board Q12 portfolio review.",
+        }
+    if highest_pass:
+        return {
+            "verdict": f"Advancing — highest real PASS at {phase_label(highest_pass)}",
+            "cls": "",
+            "why": "The EA has real PASS evidence but has not yet reached the P8 gate.",
+            "risk": "Higher gates (crisis slices, multi-seed, news replay) are progressively harsher; "
+                    "most EAs die above P4.",
+            "next": f"Next gate: {nxt}.",
+        }
+    return {
+        "verdict": "No real PASS yet",
+        "cls": "",
+        "why": "The EA has work items but no PASS verdict — still in early discovery, or stuck.",
+        "risk": "If every row is INVALID the cause is most likely infra / build artifacts, not the "
+                "strategy itself.",
+        "next": f"Next gate: {nxt}.",
+    }
+
+
 def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
     ea_id = detail["ea_id"]
     slug = detail.get("slug", ea_id)
     label, status_cls = _ea_status(ea)
+
+    work_items = detail.get("work_items", [])
+    items_by_phase: dict[str, list[dict]] = defaultdict(list)
+    for w in work_items:
+        items_by_phase[w["phase"]].append(w)
+    present_phases = [p for p in PHASE_ORDER if p in items_by_phase]
+    pass_phases = [p for p in present_phases
+                   if any(x.get("verdict") == "PASS" for x in items_by_phase[p])]
+    highest_pass = pass_phases[-1] if pass_phases else None
+    most_advanced = present_phases[-1] if present_phases else None
+    cur_phase = ea.get("current_phase") or "—"
+    next_gate = "—"
+    if cur_phase in PHASE_ORDER:
+        ci = PHASE_ORDER.index(cur_phase)
+        if ci + 1 < len(PHASE_ORDER):
+            next_gate = PHASE_ORDER[ci + 1]
+    decision = _detail_decision(ea, highest_pass, most_advanced, next_gate)
 
     # Card description block
     desc_html = ""
@@ -2165,12 +2384,13 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
     fm = card.get("frontmatter") or {}
     body = (card.get("body") or "").strip()
     if card:
-        # First substantive paragraph from body (skip headings + frontmatter quirks)
-        para = ""
+        # up to 3 substantive paragraphs from the card body (skip headings / tables)
+        paras: list[str] = []
         for p in body.split("\n\n"):
-            p_clean = p.strip()
-            if p_clean and not p_clean.startswith("#") and len(p_clean) > 30:
-                para = p_clean[:800]
+            pc = p.strip()
+            if pc and not pc.startswith("#") and not pc.startswith("|") and len(pc) > 35:
+                paras.append(pc[:700])
+            if len(paras) >= 3:
                 break
         r_tags_html = []
         for key, label_short in (
@@ -2180,20 +2400,44 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
             ("r4_ml_forbidden", "R4 No-ML"),
         ):
             v = fm.get(key, "UNKNOWN")
-            cls = "r-unknown" if v == "UNKNOWN" else ("r-fail" if "FAIL" in v else "")
+            cls = "r-unknown" if v == "UNKNOWN" else ("r-fail" if "FAIL" in str(v) else "")
             r_tags_html.append(f'<span class="r-tag {cls}"><strong>{e(label_short)}</strong> {e(v)}</span>')
         reasoning = fm.get("g0_approval_reasoning", "")
-        sources_yaml = fm.get("sources") or ""
+        facts = [
+            ("Strategy Card", detail.get("card_path") or "—"),
+            ("Slug / family", slug),
+            ("G0 status", fm.get("g0_status", "—")),
+            ("Expected trades/yr", fm.get("expected_trades_per_year_per_symbol", "—")),
+            ("Symbols tested", ", ".join(detail.get("symbols") or []) or "—"),
+        ]
+        facts_rows = "".join(f"<tr><td>{e(k)}</td><td>{e(v)}</td></tr>" for k, v in facts)
+        src = fm.get("sources") or fm.get("source_id")
+        if src:
+            src_html = (f'<div class="src-attrib"><strong>Source:</strong> {e(src)} — '
+                        f'see Strategy Card body for the full citation.</div>')
+        elif detail.get("card_path"):
+            src_html = (f'<div class="src-attrib"><strong>Source:</strong> see Strategy Card body '
+                        f'(<code>{e(detail.get("card_path"))}</code>); not separately indexed in frontmatter.</div>')
+        else:
+            src_html = '<div class="src-attrib"><strong>Source:</strong> not found in current artifacts.</div>'
+        para_html = "".join(f"<p>{e(p)}</p>" for p in paras) or \
+            "<p><em>No prose description in the strategy card.</em></p>"
         desc_html = f"""
 <div class="detail-desc">
-  <div class="detail-desc-title">Strategy Card · {e(detail.get('card_path') or '')}</div>
+  <div class="detail-desc-title">Strategy Description</div>
   <div class="detail-desc-body">
-    {f'<p>{e(para)}</p>' if para else ''}
+    {para_html}
     {f'<p><em>G0 Approval:</em> {e(reasoning)}</p>' if reasoning else ''}
     <div class="detail-desc-r">{''.join(r_tags_html)}</div>
+    <table class="facts-table"><tbody>{facts_rows}</tbody></table>
+    {src_html}
   </div>
 </div>
 """
+    else:
+        desc_html = ('<div class="detail-desc"><div class="detail-desc-title">Strategy Description</div>'
+                     '<div class="detail-desc-body"><p><em>No strategy card found for this EA. '
+                     'Source: not found in current artifacts.</em></p></div></div>')
 
     # KPI tiles — use the most-advanced phase available
     kpis_by_phase = detail.get("kpis_by_phase") or {}
@@ -2248,22 +2492,43 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
 </div>
 """
 
-    # Per-phase backtest tables
-    items_by_phase: dict[str, list[dict]] = defaultdict(list)
-    for w in detail.get("work_items", []):
-        items_by_phase[w["phase"]].append(w)
-
+    # ── Pipeline-stage accordion — most-advanced gate first, default-open ──
     phases_html_chunks: list[str] = []
-    for phase in PHASE_ORDER:
-        if phase not in items_by_phase:
-            continue
+    for phase in reversed(present_phases):
         items = items_by_phase[phase]
         items.sort(key=lambda x: (x.get("verdict") != "PASS", x.get("symbol") or ""))
-        phase_badge_cls = "phase-badge"
-        if phase == ea.get("current_phase"):
-            phase_badge_cls += " current"
-        elif phase == ea.get("failed_at"):
-            phase_badge_cls += " failed"
+        verds = Counter(x.get("verdict") or "—" for x in items)
+        n_pass = verds.get("PASS", 0)
+        verd_html = " · ".join(f"{c}× {v}" for v, c in verds.most_common())
+        nets = [x["net_profit"] for x in items if isinstance(x.get("net_profit"), (int, float))]
+        if nets:
+            kpi_html = f'best net <strong>{e(fmt_dollar(max(nets)))}</strong>'
+        elif n_pass:
+            kpi_html = f'<strong>{n_pass} PASS</strong>'
+        else:
+            kpi_html = '<strong>no PASS</strong>'
+
+        # grouped failure profile — counted, not repeated row-by-row
+        fail_groups: dict[tuple, list[str]] = defaultdict(list)
+        for x in items:
+            if x.get("verdict") in ("FAIL", "INVALID"):
+                reason = x.get("fail_reason") or "unspecified"
+                short = str(reason).split(":")[0][:48]
+                fail_groups[(x.get("fail_class") or "strategy", short)].append(x.get("symbol") or "?")
+        fail_box = ""
+        if fail_groups:
+            frows = []
+            for (fcls, reason), syms in sorted(fail_groups.items(), key=lambda kv: -len(kv[1])):
+                u = sorted(set(syms))
+                sample = ", ".join(u[:10]) + (f"  +{len(u) - 10}" if len(u) > 10 else "")
+                frows.append(
+                    f'<div class="fail-group-row">'
+                    f'<span class="fgr-count {"infra" if fcls == "infra" else ""}">{len(syms)}×</span>'
+                    f'<span class="fgr-reason">{e(reason)}</span>'
+                    f'<span class="fgr-syms">{e(sample)}</span></div>'
+                )
+            fail_box = (f'<div class="fail-group-box"><h4>Failure profile · grouped</h4>'
+                        f'{"".join(frows)}</div>')
 
         rows_html = []
         for w in items:
@@ -2299,27 +2564,30 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
   <td>{report_link}</td>
 </tr>""")
 
-        verds_summary = Counter(x.get("verdict") for x in items if x.get("verdict"))
-        sum_str = " · ".join(f"{c}× {v}" for v, c in verds_summary.most_common())
-        phases_html_chunks.append(f"""
-<section class="phase-section">
-  <h2><span class="{phase_badge_cls}">{e(phase)}</span> Backtest Results <span class="phase-count">{sum_str}</span></h2>
-  <table class="wi-table">
+        table_html = f"""<table class="wi-table">
     <thead><tr>
-      <th>Symbol</th>
-      <th>Verdict</th>
-      <th class="col-spark">Equity</th>
-      <th class="col-num">Trades</th>
-      <th class="col-num">Net P&amp;L</th>
-      <th class="col-num">Max DD</th>
-      <th class="col-num">PF</th>
-      <th class="col-num">Sharpe</th>
-      <th>Report</th>
+      <th>Symbol</th><th>Verdict</th><th class="col-spark">Equity</th>
+      <th class="col-num">Trades</th><th class="col-num">Net P&amp;L</th>
+      <th class="col-num">Max DD</th><th class="col-num">PF</th>
+      <th class="col-num">Sharpe</th><th>Report</th>
     </tr></thead>
     <tbody>{''.join(rows_html)}</tbody>
-  </table>
-</section>
-""")
+  </table>"""
+        if len(items) > 12:
+            table_block = (f'<details class="raw-rows"><summary>Show all {len(items)} '
+                           f'symbol rows</summary>{table_html}</details>')
+        else:
+            table_block = table_html
+
+        is_open = " open" if phase == most_advanced else ""
+        phases_html_chunks.append(
+            f'<details class="stage-acc"{is_open}>'
+            f'<summary><span class="sa-phase">{e(phase_label(phase))}</span>'
+            f'<span class="sa-legacy">{e(phase)}</span>'
+            f'<span class="sa-verdicts">{e(verd_html)}</span>'
+            f'<span class="sa-kpi">{kpi_html}</span></summary>'
+            f'<div class="sa-body">{fail_box}{table_block}</div></details>'
+        )
 
     if not phases_html_chunks:
         phases_html_chunks.append('<div class="empty" style="text-align:center;padding:40px;color:var(--qm-text-muted);">No backtest work_items yet — EA still in G0/P1 stage.</div>')
@@ -2338,7 +2606,29 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
     if files_lines:
         files_html = f'<div class="files-section"><h3>Artefacts</h3><ul>{"".join(files_lines)}</ul></div>'
 
-    return html_head(f"{ea_id} · {slug}", ARCHIVE_CSS + EA_DETAIL_CSS) + f"""
+    ev_ts = (ea.get("last_updated") or "")[:19].replace("T", " ") or "—"
+    decision_header = f"""
+<div class="decision-header">
+  <div class="dh-tile"><div class="dh-label">Current phase</div>
+    <div class="dh-val flow">{e(phase_label(cur_phase) if cur_phase != "—" else "—")}</div></div>
+  <div class="dh-tile"><div class="dh-label">Highest real PASS</div>
+    <div class="dh-val {"good" if highest_pass else ""}">{e(phase_label(highest_pass) if highest_pass else "none")}</div></div>
+  <div class="dh-tile"><div class="dh-label">Next gate</div>
+    <div class="dh-val">{e(phase_label(next_gate) if next_gate != "—" else "—")}</div></div>
+  <div class="dh-tile"><div class="dh-label">Evidence updated</div>
+    <div class="dh-val">{e(ev_ts)}</div></div>
+</div>
+<div class="decision-summary {decision["cls"]}">
+  <div class="ds-verdict">{e(decision["verdict"])}</div>
+  <div class="ds-grid">
+    <div><div class="ds-item-label">Why it matters</div><div class="ds-item-body">{e(decision["why"])}</div></div>
+    <div><div class="ds-item-label">Remaining risk</div><div class="ds-item-body">{e(decision["risk"])}</div></div>
+    <div><div class="ds-item-label">Next action</div><div class="ds-item-body">{e(decision["next"])}</div></div>
+    <div><div class="ds-item-label">Status</div><div class="ds-item-body">{e(label)} · {len(present_phases)} phase(s) with evidence · {len(detail.get('symbols') or [])} symbols tested</div></div>
+  </div>
+</div>
+"""
+    return html_head(f"{ea_id} · {slug}", ARCHIVE_CSS + EA_DETAIL_CSS + DETAIL2_CSS) + f"""
 <div class="detail-wrap">
   <a class="detail-back" href="strategies.html">← back to Strategy Archive</a>
   <div class="detail-head">
@@ -2348,12 +2638,14 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
   <div class="detail-meta">
     <span>Current <strong>{e(ea.get('current_phase', '—'))}</strong></span>
     <span>Done <strong>{e(', '.join(ea.get('completed_phases') or []) or '—')}</strong></span>
-    <span>Updated {e((ea.get('last_updated') or '')[:19].replace('T', ' '))}</span>
+    <span>Updated {e(ev_ts)}</span>
     <span>Tasks <strong>{ea.get('task_count', 0)}</strong></span>
     <span>Symbols <strong>{len(detail.get('symbols') or [])}</strong></span>
   </div>
+  {decision_header}
   {desc_html}
   {kpis_html}
+  <h2 class="acc-title">Pipeline-Stage Evidence · most-advanced gate first</h2>
   {''.join(phases_html_chunks)}
   {files_html}
   <div class="archive-footer">
