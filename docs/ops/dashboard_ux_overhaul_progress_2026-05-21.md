@@ -90,12 +90,32 @@ strategies.html + 167 EA detail pages), `render_cockpit.py` unaffected.
 - `QM5_1056` verified: not DEAD, accordion Q11→Q02, verdict "Advancing —
   highest real PASS at Q07".
 
-## Open question — phase naming (raised by OWNER 2026-05-21)
+## Pass 3 — DONE: phase naming unified to Qxx (OWNER 2026-05-21)
 
-`tools/strategy_farm/phase_ids.py` is the canonical module: storage keys are
-legacy `G0,P1,P2,P3,P3.5,P4,P5,P5b,P5c,P6,P7,P8,P9,P9b,P10` (15) and the
-operator-facing display series is `Q00..Q14`. All rebuilt dashboards already
-display the `Qxx` series via `phase_label()`. If the canonical display prefix
-should change `Q`→`G`, that is a one-line `PHASE_QID` change in `phase_ids.py`
-(a shared pipeline module, not a renderer) and every surface follows
-automatically — flagged for OWNER decision, not changed unilaterally.
+OWNER: operator surfaces must show **only the Qxx series** (vault canonical) —
+no legacy `P3.5 / P5b / P8 / G0` keys. Storage keeps the legacy keys; display
+does not.
+
+Verified against the vault `03 Pipeline/` (`Q03..Q14`): `phase_ids.py`
+`PHASE_QID` numbering matches the vault. Every raw P/G leak in rendered output
+was removed:
+
+- `render_dashboards.py` (17 spots): decision-band label, archive header
+  `Q00→Q14`, archive chips / presets (`Q05+ survivors`, `Q11 PASS`), progress-bar
+  tooltips, `best exploratory` phase meta, dead-row `failed at` profile,
+  EA-detail decision header / detail-meta / KPI tile / accordion (removed the
+  `sa-legacy` raw-Pxx span), `Q00 intake` facts/approval labels, needs-attention
+  INVALID line, next-action text.
+- `render_cockpit.py` (`cockpit.html`, secondary surface): added a `qid()`
+  helper; fixed `entry["stage"]` set to raw `P2` / `phase` (lines 861, 871),
+  MT5 worker subject, pending-backtest queue, backlog chips, and the
+  `Q02/Q03 PASS/day` trend labels.
+
+Scan result — `current.html`, `strategies.html`, `ea_*.html`, `cockpit.html`
+all CLEAN: no `>Pxx<` / `Pxx PASS` display tokens (legacy keys remain only
+inside `file:///` report paths, which are real filesystem paths, not labels).
+
+Minor follow-up (not blocking, shared-module / CTO scope): two `PHASE_NAME`
+strings in `phase_ids.py` differ slightly from the vault page titles —
+`Q06` "Calibrated Stress" vs vault "Stress Test", `Q11` "Real News Replay" vs
+vault "News Impact". Numbering is correct; only the long-name strings differ.

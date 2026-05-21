@@ -79,6 +79,12 @@ PHASE_TO_STAGE = {
 }
 
 
+def qid(phase: str | None) -> str:
+    """Canonical Qxx display id for a legacy phase key (vault naming — Qxx only)."""
+    p = str(phase or "")
+    return PHASE_DISPLAY.get(p, p or "—")
+
+
 def claude_token_usage() -> dict:
     """Sum input/output/cache tokens across all claude streams in 5h window.
 
@@ -852,7 +858,7 @@ def compute_pipeline() -> list[dict]:
             if st == "done":
                 if verdict == "APPROVE_FOR_BACKTEST":
                     entry["stage_status"] = "done"
-                    entry["stage"] = "P2"
+                    entry["stage"] = "Q02"
                     entry["stage_status"] = "pending"
                 else:
                     entry["stage_status"] = "failed"
@@ -862,7 +868,7 @@ def compute_pipeline() -> list[dict]:
             phase = (payload.get("phase") or kind.replace("backtest_", "").upper())
             classification = payload.get("classification") or {}
             v = classification.get("verdict", "")
-            entry["stage"] = phase
+            entry["stage"] = qid(phase)
             if st == "pending":
                 entry["stage_status"] = "pending"
             elif st == "active":
@@ -1246,7 +1252,7 @@ def main() -> int:
             return 0
 
     hero_mt5 = worker_card("MT5", mt5_count, "#06b6d4",
-                           [{"subject": f"{w['ea_id']} {w['phase']} · {w['symbol']}",
+                           [{"subject": f"{w['ea_id']} {qid(w['phase'])} · {w['symbol']}",
                              "kind": w["terminal"],
                              "age": _mt5_age(w.get("since", "")),
                              "size_kb": 0, "tail": []}
@@ -1321,7 +1327,7 @@ def main() -> int:
     ]
     bt_q_items = [
         f'<div class="q-item"><span class="mono">{html.escape(p["ea_id"])}</span> '
-        f'<span class="muted">→ {html.escape(p["phase"])}</span></div>'
+        f'<span class="muted">→ {html.escape(qid(p["phase"]))}</span></div>'
         for p in q["pending_backtests_list"]
     ]
     router = q.get("agent_router") or {}
@@ -1379,7 +1385,7 @@ def main() -> int:
             items = r.get("c_items")
             suffix = f' <span class="muted">({int(items)} runs)</span>' if items is not None else ""
             chips.append(
-                f'<span class="backlog-chip"><b>{html.escape(str(r.get("phase") or "?"))}</b>'
+                f'<span class="backlog-chip"><b>{html.escape(qid(r.get("phase")))}</b>'
                 f'<span class="mono">{distinct}</span>{suffix}</span>'
             )
         return '<div class="backlog-chips">' + "".join(chips) + '</div>'
@@ -1633,8 +1639,8 @@ def main() -> int:
         trend_html = (
             '<div class="trends">'
             + _trend_bars("approved", "Cards approved/day", "#10b981")
-            + _trend_bars("_p2_pass", "P2 PASS/day", "#06b6d4")
-            + _trend_bars("_p3_pass", "P3 PASS/day", "#34d399")
+            + _trend_bars("_p2_pass", "Q02 PASS/day", "#06b6d4")
+            + _trend_bars("_p3_pass", "Q03 PASS/day", "#34d399")
             + _trend_bars("build_blocked_by_codex_review", "Codex pre-review blocks/day", "#f59e0b")
             + '</div>'
         )

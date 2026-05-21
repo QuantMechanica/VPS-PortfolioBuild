@@ -929,7 +929,7 @@ def derive_next_action(cockpit: dict, mt5: dict) -> tuple[str, bool]:
                 f"build defects, not strategy failures.", True)
     if cockpit.get("p8_pass_eas"):
         eas = ", ".join(cockpit["p8_pass_eas"][:3])
-        return (f"{len(cockpit['p8_pass_eas'])} EA(s) at P8/Q11 PASS ({eas}) — "
+        return (f"{len(cockpit['p8_pass_eas'])} EA(s) at Q11 PASS ({eas}) — "
                 f"review for the OWNER Q12 portfolio gate.", False)
     if running < MT5_FLEET_WARN_THRESHOLD:
         return (f"Only {running}/{MT5_FLEET_TOTAL} terminals running — push more "
@@ -1014,7 +1014,7 @@ def render_hero(state: dict) -> str:
         phases_html = render_phase_dots([], None, None)
         heureka_leader_block = (
             '<div class="heureka-leader heureka-leader-empty">'
-            'no EA in flight · pump research → G0 approve → Codex build'
+            'no EA in flight · pump research → Q00 approve → Codex build'
             '</div>'
         )
 
@@ -1261,7 +1261,7 @@ def render_decision_band(cockpit: dict, mt5: dict) -> str:
   <h2 class="section-title">Current Decision State</h2>
   <div class="decision-tiles">
     <div class="dt">
-      <div class="dt-label">Q11 / P8 PASS candidates</div>
+      <div class="dt-label">Q11 PASS candidates</div>
       <div class="dt-val {p8_cls}">{e(p8_val)}</div>
       <div class="dt-sub">{p4p} EA(s) survived P4+</div>
     </div>
@@ -1461,7 +1461,7 @@ def render_needs_attention(cockpit: dict, mt5: dict) -> str:
         inv, tot = m.get("invalid", 0), m.get("total", 1) or 1
         if inv >= 100 and inv / tot > 0.4:
             groups.append(("low", f"{phase_label(p)} INVALID rate {int(100 * inv / tot)}%",
-                           f"{inv} of {tot} {p} work items INVALID — mostly preflight / infra, "
+                           f"{inv} of {tot} {phase_label(p)} work items INVALID — mostly preflight / infra, "
                            f"verify the root cause is not a real strategy failure."))
     if not groups:
         return ('<section class="pipeline-section"><h2 class="section-title">Needs Attention</h2>'
@@ -1772,7 +1772,7 @@ def _progress_bar_html(ea: dict) -> str:
             cls += " p-current"
         elif ph == failed:
             cls += " p-failed"
-        cells.append(f'<span class="{cls}" title="{e(ph)}"></span>')
+        cells.append(f'<span class="{cls}" title="{e(phase_label(ph))}"></span>')
     return '<span class="progress-bar">' + "".join(cells) + '</span>'
 
 
@@ -1939,7 +1939,7 @@ def render_strategies(state: dict, root: Path) -> str:
                 best_sort = float(best_net)
             best_meta = ""
             if k.get("best_phase") and k.get("best_symbol"):
-                best_meta = f'<div style="font-size:9px;color:var(--qm-text-muted);margin-top:2px">{e(k["best_phase"])} · {e(k["best_symbol"])}</div>'
+                best_meta = f'<div style="font-size:9px;color:var(--qm-text-muted);margin-top:2px">{e(phase_label(k["best_phase"]))} · {e(k["best_symbol"])}</div>'
 
             trades_mean = k.get("trades_mean")
             trades_html = f"{int(trades_mean)}" if isinstance(trades_mean, (int, float)) and trades_mean else "—"
@@ -1970,7 +1970,7 @@ def render_strategies(state: dict, root: Path) -> str:
                          else '<span class="lane-pill lp-arch">archive</span>')
             fail_prof = ""
             if ea.get("dead") and ea.get("failed_at"):
-                fail_prof = f'<div class="fail-prof">failed at {e(ea["failed_at"])}</div>'
+                fail_prof = f'<div class="fail-prof">failed at {e(phase_label(ea["failed_at"]))}</div>'
             rows.append(f"""<tr class="{' '.join(row_cls)}" data-status="{status_cls}" data-phase="{cur_phase}" data-lanes="{' '.join(sorted(lm['lanes']))}" data-search="{e((ea['ea_id'] + ' ' + (ea.get('slug') or '')).lower())}" onclick="window.location='ea_{e(ea['ea_id'])}.html'">
   <td class="td-ea"><code>{e(ea['ea_id'])}</code>{live_pill}</td>
   <td class="td-slug">{e(ea.get('slug') or '')}</td>
@@ -1993,7 +1993,7 @@ def render_strategies(state: dict, root: Path) -> str:
       <th data-sort-col="ea" data-sort-type="text">EA</th>
       <th data-sort-col="slug" data-sort-type="text">Slug</th>
       <th data-sort-col="status" data-sort-type="text">Status</th>
-      <th>Progress · G0→P10</th>
+      <th>Progress · Q00→Q14</th>
       <th data-sort-col="phase" data-sort-type="text">Current</th>
       <th data-sort-col="robust" data-sort-type="text">Most advanced gate</th>
       <th data-sort-col="net" data-sort-type="num" class="col-num">Best exploratory P&amp;L</th>
@@ -2013,10 +2013,10 @@ def render_strategies(state: dict, root: Path) -> str:
     return html_head("Strategy Archive", ARCHIVE_CSS + ARCHIVE2_CSS) + f"""
 <div class="archive-hero">
   <h1>Strategy <span class="em-text">Archive</span></h1>
-  <p class="archive-hero-sub">Every EA candidate that has entered the QuantMechanica V5 pipeline. Mechanical strategies only (Hard Rule 14, NO ML). Each row traceable G0 → P10 with evidence trail — click for full per-phase × symbol drill-down.</p>
+  <p class="archive-hero-sub">Every EA candidate that has entered the QuantMechanica V5 pipeline. Mechanical strategies only (Hard Rule 14, NO ML). Each row traceable Q00 → Q14 with evidence trail — click for full per-phase × symbol drill-down.</p>
   <div class="archive-chips">
-    <div class="achip c-p8"><div class="achip-num">{counts.get("p8", 0)}</div><div class="achip-label">P8 / Q11 PASS</div></div>
-    <div class="achip c-surv"><div class="achip-num">{counts.get("surv", 0)}</div><div class="achip-label">P4+ survivors</div></div>
+    <div class="achip c-p8"><div class="achip-num">{counts.get("p8", 0)}</div><div class="achip-label">Q11 PASS</div></div>
+    <div class="achip c-surv"><div class="achip-num">{counts.get("surv", 0)}</div><div class="achip-label">Q05+ survivors</div></div>
     <div class="achip"><div class="achip-num">{counts.get("active", 0)}</div><div class="achip-label">Active now</div></div>
     <div class="achip"><div class="achip-num">{counts.get("triage", 0)}</div><div class="achip-label">Needs triage</div></div>
     <div class="achip"><div class="achip-num">{counts.get("notstarted", 0)}</div><div class="achip-label">Not started</div></div>
@@ -2049,7 +2049,7 @@ def render_strategies(state: dict, root: Path) -> str:
   <span class="preset active" data-preset="all">All</span>
   <span class="preset" data-preset="decision">Decision candidates</span>
   <span class="preset" data-preset="active">Active now</span>
-  <span class="preset" data-preset="survivor">P4+ survivors</span>
+  <span class="preset" data-preset="survivor">Q05+ survivors</span>
   <span class="preset" data-preset="triage">Needs triage</span>
   <span class="preset" data-preset="dead">Dead</span>
   <span class="preset" data-preset="live">Live pipeline only</span>
@@ -2406,7 +2406,7 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
         facts = [
             ("Strategy Card", detail.get("card_path") or "—"),
             ("Slug / family", slug),
-            ("G0 status", fm.get("g0_status", "—")),
+            ("Q00 intake status", fm.get("g0_status", "—")),
             ("Expected trades/yr", fm.get("expected_trades_per_year_per_symbol", "—")),
             ("Symbols tested", ", ".join(detail.get("symbols") or []) or "—"),
         ]
@@ -2427,7 +2427,7 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
   <div class="detail-desc-title">Strategy Description</div>
   <div class="detail-desc-body">
     {para_html}
-    {f'<p><em>G0 Approval:</em> {e(reasoning)}</p>' if reasoning else ''}
+    {f'<p><em>Q00 intake approval:</em> {e(reasoning)}</p>' if reasoning else ''}
     <div class="detail-desc-r">{''.join(r_tags_html)}</div>
     <table class="facts-table"><tbody>{facts_rows}</tbody></table>
     {src_html}
@@ -2456,7 +2456,7 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
 <div class="kpi-grid">
   <div class="kpi-tile">
     <div class="kpi-tile-label">Most-advanced phase</div>
-    <div class="kpi-tile-val">{e(advanced)}</div>
+    <div class="kpi-tile-val">{e(phase_label(advanced))}</div>
     <div class="kpi-tile-sub">{k['n_pass']} PASS · {k['n_fail']} FAIL · {k.get('n_invalid', 0)} INVALID</div>
   </div>
   <div class="kpi-tile">
@@ -2583,14 +2583,13 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
         phases_html_chunks.append(
             f'<details class="stage-acc"{is_open}>'
             f'<summary><span class="sa-phase">{e(phase_label(phase))}</span>'
-            f'<span class="sa-legacy">{e(phase)}</span>'
             f'<span class="sa-verdicts">{e(verd_html)}</span>'
             f'<span class="sa-kpi">{kpi_html}</span></summary>'
             f'<div class="sa-body">{fail_box}{table_block}</div></details>'
         )
 
     if not phases_html_chunks:
-        phases_html_chunks.append('<div class="empty" style="text-align:center;padding:40px;color:var(--qm-text-muted);">No backtest work_items yet — EA still in G0/P1 stage.</div>')
+        phases_html_chunks.append('<div class="empty" style="text-align:center;padding:40px;color:var(--qm-text-muted);">No backtest work_items yet — EA still in Q00/Q01 stage.</div>')
 
     # Artefacts
     files_lines: list[str] = []
@@ -2636,8 +2635,8 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
     <span class="detail-status {status_cls}">{label}</span>
   </div>
   <div class="detail-meta">
-    <span>Current <strong>{e(ea.get('current_phase', '—'))}</strong></span>
-    <span>Done <strong>{e(', '.join(ea.get('completed_phases') or []) or '—')}</strong></span>
+    <span>Current <strong>{e(phase_label(cur_phase) if cur_phase != '—' else '—')}</strong></span>
+    <span>Done <strong>{e(', '.join(phase_label(p) for p in (ea.get('completed_phases') or [])) or '—')}</strong></span>
     <span>Updated {e(ev_ts)}</span>
     <span>Tasks <strong>{ea.get('task_count', 0)}</strong></span>
     <span>Symbols <strong>{len(detail.get('symbols') or [])}</strong></span>
