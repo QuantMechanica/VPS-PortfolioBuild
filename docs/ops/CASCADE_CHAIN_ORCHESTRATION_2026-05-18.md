@@ -1,5 +1,9 @@
 # Cascade Chain Orchestration - 2026-05-18
 
+Status: historical. Current automation is governed by the Q-Series hard-gate map in `PIPELINE_PHASE_SPEC.md` and `PIPELINE_PHASE_ID_MAP.md`.
+
+2026-05-20 hardening note: `REPORT_ONLY`, `MULTI_SEED_MIXED`, proxy P7 rows, and synthetic P8 news matrices are not promotable evidence. Q08, Q09, Q10, and Q11 require the real-evidence semantics described in the current phase spec.
+
 `farmctl.py` now treats P3.5 through P8 as real phase-driver work, with shared EA-scoped artifacts under:
 
 `D:/QM/reports/pipeline/<ea_id>/<phase>/`

@@ -67,7 +67,34 @@ def main() -> int:
     sweep_rows = load_csv_rows(Path(args.sweep_pass_rows))
     multiseed_rows = load_csv_rows(Path(args.multiseed_rows))
 
+    if any(str(row.get("proxy_only") or "").strip().upper() in {"1", "TRUE", "YES"} for row in sweep_rows):
+        result = build_result(
+            phase="P7",
+            ea_id=args.ea,
+            verdict="WAITING_INPUT",
+            criterion="P7 requires real statistical metrics; proxy pass-row counts are not accepted.",
+            evidence_path="",
+            details={"sweep_pass_rows": str(Path(args.sweep_pass_rows)), "multiseed_rows": str(Path(args.multiseed_rows))},
+        )
+        result_path, _ = write_phase_artifacts(out_dir=ensure_dir(Path(args.out_prefix) / args.ea / "P7"), phase="P7", ea_id=args.ea, result=result)
+        update_result_with_evidence_path(result_path, result)
+        print(result_path)
+        return 0
+
     trade_count = parse_int(_first_metric(sweep_rows, ("trade_count", "trades", "T"), 0.0), 0)
+    if not _has_metric(sweep_rows, ("trade_count", "trades", "T")):
+        result = build_result(
+            phase="P7",
+            ea_id=args.ea,
+            verdict="WAITING_INPUT",
+            criterion="P7 requires real trade_count/T metric; missing statistical evidence.",
+            evidence_path="",
+            details={"sweep_pass_rows": str(Path(args.sweep_pass_rows)), "multiseed_rows": str(Path(args.multiseed_rows))},
+        )
+        result_path, _ = write_phase_artifacts(out_dir=ensure_dir(Path(args.out_prefix) / args.ea / "P7"), phase="P7", ea_id=args.ea, result=result)
+        update_result_with_evidence_path(result_path, result)
+        print(result_path)
+        return 0
     pbo_pct = _first_metric(sweep_rows, ("pbo_pct", "pbo", "PBO"), 100.0)
     dsr = _first_metric(sweep_rows, ("dsr", "DSR"), -1.0)
     mc_keys = ("mc_pvalue", "mc_p", "pvalue")

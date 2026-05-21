@@ -61,7 +61,7 @@ function Find-CardPath {
     }
 
     # Fallback: resolve slug from ea_id_registry.csv (ea_id -> strategy slug)
-    if ($EaSlug -match '^QM5_(\d{4})_') {
+    if ($EaSlug -match '^QM5_(\d+)_') {
         $eaId = $matches[1]
         $repoRootGuess = Split-Path -Parent (Split-Path -Parent $CardsRoot)
         $registryPath = Join-Path $repoRootGuess 'framework\registry\ea_id_registry.csv'
@@ -240,7 +240,7 @@ if ($Env -eq 'backtest') {
 $eaId = ''
 $eaSlugOnly = $EaSlug
 $magicSlot = 0
-if ($EaSlug -match '^QM5_(\d{4})_(.+)$') {
+if ($EaSlug -match '^QM5_(\d+)_(.+)$') {
     $eaId = $matches[1]
     $eaSlugOnly = $matches[2]
     $registryPath = Join-Path $repoRoot 'framework\registry\magic_numbers.csv'

@@ -45,6 +45,10 @@ input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
 input QM_NewsMode qm_news_mode          = QM_NEWS_OFF;
+input int    qm_news_pause_before_minutes = 30;
+input int    qm_news_pause_after_minutes  = 30;
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
 
 input group "Friday Close"
 input bool   qm_friday_close_enabled    = true;
@@ -122,7 +126,11 @@ int OnInit()
                         PORTFOLIO_WEIGHT,
                         qm_news_mode,
                         qm_friday_close_enabled,
-                        qm_friday_close_hour_broker))
+                        qm_friday_close_hour_broker,
+                        qm_news_pause_before_minutes,
+                        qm_news_pause_after_minutes,
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");

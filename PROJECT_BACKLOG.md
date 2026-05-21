@@ -59,8 +59,8 @@ Current phase: **Phase 3 — First V5 EA Through Pipeline**. Phase 1 (Paperclip 
 | CTO | `241ccf3c` | LIVE since 2026-04-27 | framework + EA review (DL-036 gate), infra/code sign-off, build/compile validation |
 | Research | `7aef7a17` | LIVE (paused per DL-044 — wake-on-demand only until first V5 EA reaches P7) | Strategy Card extraction (G0), source survey, V5 hard-rule filter |
 | Documentation-KM | `8c85f83f` | LIVE since 2026-04-27 | DL recording, lessons-learned, process registry, Notion mirror, runtime-health docs, **PHASE_STATE.md ownership (per QUA-677 D1)** |
-| DevOps | `86015301` | LIVE since 2026-04-29 | T1-T5 infra, worktree isolation, scheduler, log rotation, PC1-00 mitigation |
-| Pipeline-Operator | `46fc11e5` | LIVE | T1-T5 backtest dispatch, 36-symbol matrix, P0..P10 phase runner, RISK_FIXED setfile generation |
+| DevOps | `86015301` | LIVE since 2026-04-29 | T1-T10 infra, worktree isolation, scheduler, log rotation, PC1-00 mitigation |
+| Pipeline-Operator | `46fc11e5` | LIVE | T1-T10 backtest dispatch, 36-symbol matrix, P0..P10 phase runner, RISK_FIXED setfile generation |
 | Development | `ebefc3a6` | LIVE | EA implementation from APPROVED Strategy Cards (CTO DL-036 gate before P2) |
 | Quality-Tech | `c1f90ba8` | LIVE since 2026-04-28 (DL-045 early trigger) | sub-gate calibration, Step 25 framework gate, CTO peer review |
 | Quality-Business | `0ab3d743` | LIVE since 2026-04-28 (DL-045 early trigger + DL-039 8-cap waiver) | G1 verdict on Strategy Cards, P9 portfolio composition review |

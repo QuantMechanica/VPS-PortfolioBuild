@@ -34,8 +34,8 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 if ($EAId -le 0) {
-    if ([string]::IsNullOrWhiteSpace($EALabel) -or $EALabel -notmatch '^(?:QM5_)?(?<id>\d{4})') {
-        throw "Provide -EAId or an -EALabel beginning with a four-digit EA id."
+    if ([string]::IsNullOrWhiteSpace($EALabel) -or $EALabel -notmatch '^(?:QM5_)?(?<id>\d+)') {
+        throw "Provide -EAId or an -EALabel beginning with a numeric EA id."
     }
     $EAId = [int]$Matches["id"]
 }
@@ -1469,4 +1469,3 @@ if (-not $passed) {
 }
 
 exit 0
-

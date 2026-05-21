@@ -29,25 +29,17 @@ def main() -> int:
     unique_symbols = {str(r.get("symbol") or "").strip() for r in p3_pass + p2_pass if str(r.get("symbol") or "").strip()}
     pass_count = len(p3_pass)
 
-    # Conservative statistical proxy: enough rows and symbol breadth improve
-    # sample confidence, but weak evidence remains a real P7 FAIL.
-    trade_count = max(0, pass_count * 20)
-    pbo_pct = max(0.0, 35.0 - (pass_count * 2.0) - (len(unique_symbols) * 2.5))
-    dsr = round((pass_count - 4) / 10.0, 4)
-
     out_dir = ensure_dir(Path(args.out_prefix) / args.ea / "P3")
     out_csv = out_dir / "sweep_pass_rows.csv"
     with out_csv.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=["ea_id", "trade_count", "pbo_pct", "dsr", "pass_rows", "symbol_count"])
+        writer = csv.DictWriter(handle, fieldnames=["ea_id", "pass_rows", "symbol_count", "proxy_only"])
         writer.writeheader()
         writer.writerow(
             {
                 "ea_id": args.ea,
-                "trade_count": trade_count,
-                "pbo_pct": round(pbo_pct, 4),
-                "dsr": dsr,
                 "pass_rows": pass_count,
                 "symbol_count": len(unique_symbols),
+                "proxy_only": "1",
             }
         )
     print(out_csv)

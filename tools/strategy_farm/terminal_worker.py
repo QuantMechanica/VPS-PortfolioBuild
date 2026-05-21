@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shutil
 import signal
 import sqlite3
 import time
@@ -57,6 +58,9 @@ def _with_sqlite_retry(fn):
 def _priority_pending_query() -> str:
     return """
         SELECT w.*,
+          CASE
+            WHEN w.payload_json LIKE '%"priority_track": true%' THEN 0
+            ELSE 1 END AS _priority_track_rank,
           CASE w.phase
             WHEN 'P8'   THEN 0
             WHEN 'P7'   THEN 1
@@ -75,7 +79,7 @@ def _priority_pending_query() -> str:
           ) THEN 0 ELSE 1 END AS _winner_rank
         FROM work_items w
         WHERE w.status='pending'
-        ORDER BY _phase_rank ASC, _winner_rank ASC, w.updated_at ASC, w.created_at ASC
+        ORDER BY _priority_track_rank ASC, _phase_rank ASC, _winner_rank ASC, w.updated_at ASC, w.created_at ASC
     """
 
 
@@ -224,13 +228,22 @@ def _find_summary(report_root: str | None) -> Path | None:
 def _find_work_item_summary_data(item: sqlite3.Row, payload: dict[str, Any]) -> tuple[Path, dict[str, Any]] | None:
     phase = str(item["phase"])
     if phase in farmctl.REAL_PHASE_RUNNER_PHASES:
-        summary_path = farmctl._ea_phase_dir(str(item["ea_id"]), phase) / "summary.json"
-        if summary_path.exists():
+        report_root = payload.get("report_root")
+        if report_root:
+            summary_path = Path(str(report_root)) / str(item["ea_id"]) / phase / "summary.json"
+            if summary_path.exists():
+                try:
+                    summary = json.loads(summary_path.read_text(encoding="utf-8-sig"))
+                except (OSError, json.JSONDecodeError):
+                    return None
+                return summary_path, summary
+        canonical_summary_path = farmctl._ea_phase_dir(str(item["ea_id"]), phase) / "summary.json"
+        if canonical_summary_path.exists():
             try:
-                summary = json.loads(summary_path.read_text(encoding="utf-8-sig"))
+                summary = json.loads(canonical_summary_path.read_text(encoding="utf-8-sig"))
             except (OSError, json.JSONDecodeError):
                 return None
-            return summary_path, summary
+            return canonical_summary_path, summary
         return farmctl._phase_artifact_summary(item)
     summary_path = _find_summary(payload.get("report_root"))
     if not summary_path:
@@ -240,6 +253,26 @@ def _find_work_item_summary_data(item: sqlite3.Row, payload: dict[str, Any]) -> 
     except (OSError, json.JSONDecodeError):
         return None
     return summary_path, summary
+
+
+def _mirror_real_phase_artifacts(item: sqlite3.Row, summary_path: Path, verdict: str) -> None:
+    """Publish the latest passing real-phase artifacts for downstream inputs.
+
+    The work_item evidence remains the isolated report_root copy. The canonical
+    `D:/QM/reports/pipeline/<EA>/<Phase>/` directory is only a convenience input
+    surface for later phases and dashboards.
+    """
+    if verdict != "PASS" or str(item["phase"]) not in farmctl.REAL_PHASE_RUNNER_PHASES:
+        return
+    source_dir = summary_path.parent
+    target_dir = farmctl._ea_phase_dir(str(item["ea_id"]), str(item["phase"]))
+    if source_dir.resolve() == target_dir.resolve():
+        return
+    target_dir.mkdir(parents=True, exist_ok=True)
+    for source in source_dir.iterdir():
+        if not source.is_file():
+            continue
+        shutil.copy2(source, target_dir / source.name)
 
 
 def _smoke_terminal_exit_stalled(item: dict[str, Any], payload: dict[str, Any]) -> bool:
@@ -317,6 +350,7 @@ def _finish_work_item(root: Path, item_id: str, exit_code: int | None) -> dict[s
                     min_trades=effective_min_trades,
                     phase=item["phase"],
                 )
+                _mirror_real_phase_artifacts(item, summary_path, verdict)
                 payload["verdict_reason"] = reason
                 payload["run_smoke_exit_code"] = exit_code
                 conn.execute(
@@ -451,11 +485,92 @@ def _aggregate_finished_parent(root: Path, parent_task_id: str | None) -> dict[s
     }
 
 
+def _work_item_preflight_failure(item: sqlite3.Row) -> dict[str, Any] | None:
+    """Return a deterministic failure before consuming an MT5 slot."""
+    ea_id = str(item["ea_id"])
+    setfile_path = Path(str(item["setfile_path"]))
+    if not setfile_path.exists():
+        return {"reason": "setfile_missing", "detail": str(setfile_path)}
+
+    ea_root_dir = farmctl.REPO_ROOT / "framework" / "EAs"
+    candidates = [p for p in ea_root_dir.glob(f"{ea_id}_*") if p.is_dir()]
+    if not candidates:
+        return {"reason": "ea_dir_missing", "detail": str(ea_root_dir / f"{ea_id}_*")}
+    if len(candidates) > 1:
+        return {"reason": "ea_dir_ambiguous", "detail": [p.name for p in candidates]}
+
+    ea_dir = candidates[0]
+    ex5 = ea_dir / f"{ea_dir.name}.ex5"
+    if not ex5.exists():
+        return {"reason": "ex5_missing", "detail": str(ex5)}
+    ex5_files = sorted(p.name for p in ea_dir.glob("*.ex5"))
+    if ex5_files != [ex5.name]:
+        return {"reason": "duplicate_ex5", "detail": ex5_files}
+    return None
+
+
+def _fail_work_item_preflight(root: Path, item: sqlite3.Row, failure: dict[str, Any]) -> dict[str, Any]:
+    now = farmctl.utc_now()
+    report_root = Path(r"D:\QM\reports\work_items") / str(item["id"])
+    evidence_dir = report_root / str(item["ea_id"]) / str(item["phase"])
+    evidence_dir.mkdir(parents=True, exist_ok=True)
+    evidence_path = evidence_dir / "preflight_failure.json"
+    payload = _json_loads(item["payload_json"])
+    payload.update({
+        "preflight_failed_at": now,
+        "preflight_failure": failure,
+        "report_root": str(report_root),
+        "verdict_reason": failure.get("reason") or "preflight_failed",
+    })
+    evidence = {
+        "created_at": now,
+        "detail": failure.get("detail"),
+        "ea_id": item["ea_id"],
+        "phase": item["phase"],
+        "reason": failure.get("reason") or "preflight_failed",
+        "setfile_path": item["setfile_path"],
+        "symbol": item["symbol"],
+        "verdict": "INVALID",
+    }
+    evidence_path.write_text(json.dumps(evidence, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    def _update() -> None:
+        with farmctl.connect(root) as conn:
+            conn.execute(
+                """
+                UPDATE work_items
+                SET status='failed', verdict='INVALID', evidence_path=?,
+                    claimed_by=NULL, payload_json=?, updated_at=?
+                WHERE id=?
+                """,
+                (str(evidence_path), json.dumps(payload, sort_keys=True), now, item["id"]),
+            )
+            conn.commit()
+
+    _with_sqlite_retry(_update)
+    aggregate = _aggregate_finished_parent(root, item["parent_task_id"])
+    return {
+        "finished": True,
+        "status": "failed",
+        "verdict": "INVALID",
+        "reason": evidence["reason"],
+        "evidence_path": str(evidence_path),
+        "aggregate": aggregate,
+    }
+
+
 def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_seconds: int) -> dict[str, Any]:
     with farmctl.connect(root) as conn:
         row = conn.execute("SELECT * FROM work_items WHERE id=?", (item["id"],)).fetchone()
     if not row:
         return {"action": "missing_item", "item_id": item["id"]}
+    preflight_failure = _work_item_preflight_failure(row)
+    if preflight_failure:
+        return {
+            "action": "preflight_failed",
+            "item_id": item["id"],
+            **_fail_work_item_preflight(root, row, preflight_failure),
+        }
     spawn = farmctl._spawn_work_item_runner(root, row, terminal)
     now = farmctl.utc_now()
     if not spawn.get("spawned"):

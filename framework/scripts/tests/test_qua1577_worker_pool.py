@@ -86,14 +86,14 @@ class QUA1577WorkerPoolTests(unittest.TestCase):
                 ],
             )
 
-    def test_mt5_worker_refuses_t6_with_required_log_and_exit_code(self) -> None:
+    def test_mt5_worker_refuses_non_factory_terminal_with_required_log_and_exit_code(self) -> None:
         script_path = Path("framework/scripts/mt5_worker.py")
         proc = subprocess.run(
             [
                 "python",
                 str(script_path),
                 "--terminal",
-                "T6",
+                "T_Live",
                 "--sqlite",
                 str(Path(".scratch") / "qua1577_test_refuse.db"),
                 "--once",
@@ -103,7 +103,7 @@ class QUA1577WorkerPoolTests(unittest.TestCase):
         )
         self.assertEqual(proc.returncode, 2)
         stdout = proc.stdout or ""
-        self.assertIn("[REFUSED] T6 is OFF LIMITS", stdout)
+        self.assertIn("[REFUSED] terminal is outside factory scope", stdout)
         self.assertIn('"reason": "terminal_out_of_policy"', stdout)
 
     def test_mt5_worker_once_claims_and_writes_failed_result(self) -> None:

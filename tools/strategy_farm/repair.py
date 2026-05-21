@@ -35,6 +35,16 @@ Repair handlers (each is idempotent, returns count of actions taken):
   R7  Codex_review tasks pending > 30 min with no live_log activity → reset
       to pending state so pump re-spawns. Avoids stuck reviews.
 
+  R11 Pending work_items whose setfile/EA dir/.ex5 is missing → mark
+      failed INVALID immediately, without waiting for a terminal slot.
+
+  R12 Incomplete P2 parent fanout with only one pending symbol while the EA
+      has a full canonical setfile set → add the missing pending symbols.
+
+  R13 Historical codex_review_fail caused only by build-smoke framework
+      infra errors after a successful compile → clear the stale review and
+      return the build to done for fresh review/P2 handling.
+
 Output: {repairs_applied: [...], skipped: [...], errors: [...]}. Each
 repair record has {handler, target, action, detail}.
 """
@@ -47,11 +57,13 @@ import os
 import re
 import sqlite3
 import time
+import uuid
 from pathlib import Path
 
 ROOT = Path(r"D:\QM\strategy_farm")
 DB = ROOT / "state" / "farm_state.sqlite"
 LOG_DIR = ROOT / "logs"
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _utc_now() -> str:
@@ -287,6 +299,7 @@ def _running_mt5_terminals() -> set[str]:
              "Get-Process -Name terminal64 -ErrorAction SilentlyContinue | "
              "ForEach-Object { $_.Path } | Out-String"],
             capture_output=True, text=True, timeout=15,
+            creationflags=(subprocess.CREATE_NO_WINDOW if hasattr(subprocess, "CREATE_NO_WINDOW") else 0),
         )
         paths = (out.stdout or "").splitlines()
     except Exception:
@@ -436,6 +449,322 @@ def repair_stranded_codex_review_pending(con) -> list[dict]:
     return out
 
 
+def _pending_work_item_artifact_failure(row: sqlite3.Row) -> dict | None:
+    setfile_path = Path(str(row["setfile_path"] or ""))
+    if not setfile_path.exists():
+        return {"reason": "setfile_missing", "detail": str(setfile_path)}
+
+    ea_id = str(row["ea_id"] or "")
+    ea_root = REPO_ROOT / "framework" / "EAs"
+    candidates = sorted(p for p in ea_root.glob(f"{ea_id}_*") if p.is_dir())
+    if not candidates:
+        return {"reason": "ea_dir_missing", "detail": str(ea_root / f"{ea_id}_*")}
+    if len(candidates) > 1:
+        return {"reason": "ea_dir_ambiguous", "detail": [p.name for p in candidates]}
+
+    ea_dir = candidates[0]
+    ex5 = ea_dir / f"{ea_dir.name}.ex5"
+    if not ex5.exists():
+        return {"reason": "ex5_missing", "detail": str(ex5)}
+    return None
+
+
+def repair_pending_unclaimable_work_items(con) -> list[dict]:
+    """R11: fail pending work_items that can never run because artifacts are missing."""
+    out = []
+    rows = con.execute(
+        """
+        SELECT id, ea_id, symbol, phase, setfile_path, payload_json
+        FROM work_items
+        WHERE status='pending'
+        """
+    ).fetchall()
+    now = _utc_now()
+    for r in rows:
+        failure = _pending_work_item_artifact_failure(r)
+        if not failure:
+            continue
+
+        report_root = ROOT / "reports" / "work_items" / str(r["id"])
+        evidence_dir = report_root / str(r["ea_id"]) / str(r["phase"])
+        evidence_dir.mkdir(parents=True, exist_ok=True)
+        evidence_path = evidence_dir / "preflight_failure.json"
+        try:
+            payload = json.loads(r["payload_json"] or "{}")
+        except Exception:
+            payload = {}
+        payload.update({
+            "preflight_failed_at": now,
+            "preflight_failure": failure,
+            "report_root": str(report_root),
+            "verdict_reason": failure.get("reason") or "preflight_failed",
+            "repair_handler": "R11_pending_unclaimable_work_item",
+        })
+        evidence = {
+            "created_at": now,
+            "detail": failure.get("detail"),
+            "ea_id": r["ea_id"],
+            "phase": r["phase"],
+            "reason": failure.get("reason") or "preflight_failed",
+            "setfile_path": r["setfile_path"],
+            "symbol": r["symbol"],
+            "verdict": "INVALID",
+        }
+        evidence_path.write_text(json.dumps(evidence, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        con.execute(
+            """
+            UPDATE work_items
+            SET status='failed', verdict='INVALID', evidence_path=?,
+                claimed_by=NULL, payload_json=?, updated_at=?
+            WHERE id=?
+            """,
+            (str(evidence_path), json.dumps(payload, sort_keys=True), now, r["id"]),
+        )
+        out.append({
+            "handler": "R11_pending_unclaimable_work_item",
+            "target": r["id"],
+            "action": "pending → failed INVALID",
+            "detail": f"ea={r['ea_id']} sym={r['symbol']} reason={failure.get('reason')}",
+        })
+    if out:
+        con.commit()
+    return out
+
+
+def _ea_dir_for_id(ea_id: str) -> Path | None:
+    candidates = sorted(p for p in (REPO_ROOT / "framework" / "EAs").glob(f"{ea_id}_*") if p.is_dir())
+    if len(candidates) != 1:
+        return None
+    return candidates[0]
+
+
+def _canonical_setfiles_for_ea(ea_id: str) -> list[tuple[str, str]]:
+    ea_dir = _ea_dir_for_id(ea_id)
+    if not ea_dir:
+        return []
+    if not (ea_dir / f"{ea_dir.name}.ex5").exists():
+        return []
+    sets_dir = ea_dir / "sets"
+    if not sets_dir.is_dir():
+        return []
+
+    pattern = re.compile(rf"^{re.escape(ea_dir.name)}_(?P<symbol>.+?)_(?P<period>[A-Z0-9]+)_backtest\.set$")
+    out: list[tuple[str, str]] = []
+    for path in sorted(sets_dir.glob("*.set")):
+        name = path.name
+        if any(token in name for token in ("_ablation_", "_grid_", "_synth_", "_freq_")):
+            continue
+        m = pattern.match(name)
+        if m:
+            out.append((m.group("symbol"), str(path.resolve())))
+    return out
+
+
+def repair_incomplete_p2_parent_fanout(con) -> list[dict]:
+    """R12: expand old one-symbol P2 parent tasks to their full canonical setfile set."""
+    out = []
+    parents = con.execute(
+        """
+        SELECT parent_task_id, ea_id, COUNT(*) row_count, COUNT(DISTINCT symbol) symbol_count
+        FROM work_items
+        WHERE status='pending' AND phase='P2' AND parent_task_id IS NOT NULL
+        GROUP BY parent_task_id, ea_id
+        HAVING symbol_count=1
+        """
+    ).fetchall()
+    now = _utc_now()
+    for parent in parents:
+        ea_id = str(parent["ea_id"] or "")
+        parent_task_id = str(parent["parent_task_id"] or "")
+        setfiles = _canonical_setfiles_for_ea(ea_id)
+        if len(setfiles) <= int(parent["row_count"] or 0):
+            continue
+        # Guard against exploration-heavy parents; R12 is only for canonical full-fanout gaps.
+        if len(setfiles) > 60:
+            continue
+
+        existing_symbols = {
+            row["symbol"]
+            for row in con.execute(
+                "SELECT symbol FROM work_items WHERE parent_task_id=? AND phase='P2'",
+                (parent_task_id,),
+            ).fetchall()
+        }
+        sample = con.execute(
+            "SELECT payload_json FROM work_items WHERE parent_task_id=? AND phase='P2' LIMIT 1",
+            (parent_task_id,),
+        ).fetchone()
+        payload = sample["payload_json"] if sample else "{}"
+        created = 0
+        for symbol, setfile_path in setfiles:
+            if symbol in existing_symbols:
+                continue
+            wid = str(uuid.uuid4())
+            con.execute(
+                """
+                INSERT INTO work_items
+                  (id, kind, phase, ea_id, symbol, setfile_path, status,
+                   attempt_count, parent_task_id, payload_json, created_at, updated_at)
+                VALUES
+                  (?, 'backtest', 'P2', ?, ?, ?, 'pending',
+                   0, ?, ?, ?, ?)
+                """,
+                (wid, ea_id, symbol, setfile_path, parent_task_id, payload, now, now),
+            )
+            created += 1
+        if created:
+            out.append({
+                "handler": "R12_incomplete_p2_parent_fanout",
+                "target": parent_task_id,
+                "action": f"created {created} pending P2 work_items",
+                "detail": f"ea={ea_id} canonical_setfiles={len(setfiles)}",
+            })
+    if out:
+        con.commit()
+    return out
+
+
+def _latest_codex_reviews_for_build(con, build_id: str) -> list[sqlite3.Row]:
+    return con.execute(
+        """
+        SELECT id, payload_json, updated_at
+        FROM tasks
+        WHERE kind='codex_review'
+          AND payload_json LIKE ?
+        ORDER BY updated_at DESC
+        """,
+        (f'%"build_task_id": "{build_id}"%',),
+    ).fetchall()
+
+
+def _review_findings(payload: dict) -> list[str]:
+    findings = payload.get("findings") or []
+    if not findings:
+        verdict = payload.get("verdict") or {}
+        if isinstance(verdict, dict):
+            findings = verdict.get("findings") or verdict.get("issues") or []
+    if isinstance(findings, str):
+        return [findings]
+    return [str(item) for item in findings]
+
+
+def _infra_only_codex_review_findings(findings: list[str]) -> bool:
+    if not findings:
+        return False
+    infra_markers = (
+        "framework_error",
+        "report_missing",
+        "metatester_hung",
+        "incomplete_runs",
+        "model4_marker_required",
+        "run_smoke",
+        "resolve-dispatchterminal",
+        "setfilepath",
+        "terminal already running",
+        "tester produced no",
+        "stale ",
+        "smoke report path is null",
+    )
+    code_markers = (
+        "itime timestamp",
+        "qm_isnewbar",
+        "magic_numbers.csv",
+        "raw indicator",
+        "qm_indicator",
+        "0 trades",
+        "min_trades_not_met",
+        "zero trades",
+        "entrysignal",
+        "exitsignal",
+    )
+    for finding in findings:
+        text = finding.lower()
+        if any(marker in text for marker in code_markers):
+            return False
+        if not any(marker in text for marker in infra_markers):
+            return False
+    return True
+
+
+def repair_infra_only_codex_review_failures(con) -> list[dict]:
+    """R13: undo stale Codex review failures caused only by old build-smoke infra errors."""
+    out = []
+    rows = con.execute(
+        """
+        SELECT id, card_id, payload_json
+        FROM tasks
+        WHERE kind='build_ea' AND status='blocked'
+          AND payload_json LIKE '%"blocked_reason": "codex_review_fail"%'
+        """
+    ).fetchall()
+    now = _utc_now()
+    for r in rows:
+        try:
+            payload = json.loads(r["payload_json"] or "{}")
+        except Exception:
+            continue
+        build_result_path = payload.get("build_result_path")
+        if not build_result_path:
+            continue
+        br_path = Path(build_result_path)
+        if not br_path.exists():
+            continue
+        try:
+            build_result = json.loads(br_path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if build_result.get("compile_succeeded") is not True:
+            continue
+        blocked = str(build_result.get("blocked_reason") or "")
+        smoke = str(build_result.get("smoke_result") or "")
+        if "framework_error" not in (blocked + " " + smoke).lower():
+            continue
+
+        reviews = _latest_codex_reviews_for_build(con, r["id"])
+        if not reviews:
+            continue
+        parsed_reviews: list[tuple[sqlite3.Row, dict, list[str]]] = []
+        for review in reviews:
+            try:
+                review_payload = json.loads(review["payload_json"] or "{}")
+            except Exception:
+                review_payload = {}
+            findings = _review_findings(review_payload)
+            parsed_reviews.append((review, review_payload, findings))
+        latest_findings = parsed_reviews[0][2]
+        if not _infra_only_codex_review_findings(latest_findings):
+            continue
+
+        build_result["build_smoke_framework_error"] = blocked
+        build_result["blocked_reason"] = ""
+        build_result["smoke_result"] = "deferred_p2_smoke"
+        build_result["smoke_skipped_reason"] = "historical_framework_error_treated_as_deferred_p2_smoke"
+        br_path.write_text(json.dumps(build_result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+        payload["needs_p2_smoke_via_pump"] = True
+        payload["smoke_skipped_reason"] = "historical_framework_error_treated_as_deferred_p2_smoke"
+        payload["infra_only_codex_review_repaired_at"] = now
+        payload["infra_only_codex_review_findings"] = latest_findings
+        payload.pop("blocked_reason", None)
+        payload.pop("codex_review_findings", None)
+
+        con.execute(
+            "UPDATE tasks SET status='done', payload_json=?, updated_at=? WHERE id=?",
+            (json.dumps(payload, sort_keys=True), now, r["id"]),
+        )
+        for review, _review_payload, _findings in parsed_reviews:
+            con.execute("DELETE FROM tasks WHERE id=?", (review["id"],))
+        out.append({
+            "handler": "R13_infra_only_codex_review_failure",
+            "target": r["id"],
+            "action": f"blocked → done; deleted {len(parsed_reviews)} stale codex_review row(s)",
+            "detail": f"ea={r['card_id']} findings={len(latest_findings)}",
+        })
+    if out:
+        con.commit()
+    return out
+
+
 # ---------------------------------------------------------------------------
 
 def run_all() -> dict:
@@ -452,6 +781,9 @@ def run_all() -> dict:
         repair_stranded_codex_review_pending,
         repair_orphan_g0_claims,
         repair_permanent_build_failures,
+        repair_pending_unclaimable_work_items,
+        repair_incomplete_p2_parent_fanout,
+        repair_infra_only_codex_review_failures,
     ]
     try:
         for fn in handlers:

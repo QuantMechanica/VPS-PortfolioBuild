@@ -187,6 +187,7 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             old_stop_pid_tree = terminal_worker.farmctl._stop_pid_tree
             old_default_root = terminal_worker.farmctl.DEFAULT_ROOT
             old_stop_terminal_slot = terminal_worker.farmctl._stop_terminal_slot
+            old_preflight = terminal_worker._work_item_preflight_failure
 
             def fake_pid_exists(_pid: int) -> bool:
                 with sqlite3.connect(root / farmctl.DB_REL) as conn:
@@ -212,6 +213,7 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                 terminal_worker.farmctl._stop_pid_tree = lambda pid: stopped_children.append(int(pid)) or True
                 terminal_worker.farmctl.DEFAULT_ROOT = root
                 terminal_worker.farmctl._stop_terminal_slot = lambda terminal: stopped_terminals.append(terminal) or True
+                terminal_worker._work_item_preflight_failure = lambda _row: None
 
                 result = terminal_worker._run_claimed_item(
                     root,
@@ -225,11 +227,68 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                 terminal_worker.farmctl._stop_pid_tree = old_stop_pid_tree
                 terminal_worker.farmctl.DEFAULT_ROOT = old_default_root
                 terminal_worker.farmctl._stop_terminal_slot = old_stop_terminal_slot
+                terminal_worker._work_item_preflight_failure = old_preflight
 
             self.assertEqual(result["action"], "external_release_observed")
             self.assertEqual(result["reason"], "status_changed")
             self.assertEqual(stopped_children, [123456])
             self.assertEqual(stopped_terminals, ["T5"])
+
+    def test_run_claimed_item_preflight_blocks_missing_ex5_without_spawn(self) -> None:
+        with self._root() as tmp:
+            root = (Path(tmp) / "farm").resolve()
+            repo = Path(tmp) / "repo"
+            ea_dir = repo / "framework" / "EAs" / "QM5_9999_missing-ex5"
+            sets = ea_dir / "sets"
+            sets.mkdir(parents=True)
+            setfile = sets / "QM5_9999_missing-ex5_EURUSD.DWX_H1_backtest.set"
+            setfile.write_text("Symbol=EURUSD.DWX\n", encoding="utf-8")
+            farmctl.init_db(root)
+            now = farmctl.utc_now()
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                conn.execute(
+                    """
+                    INSERT INTO work_items
+                      (id, kind, phase, ea_id, symbol, setfile_path, status, verdict,
+                       attempt_count, parent_task_id, evidence_path, claimed_by,
+                       payload_json, created_at, updated_at)
+                    VALUES
+                      ('wi-missing-ex5', 'backtest', 'P2', 'QM5_9999', 'EURUSD.DWX', ?,
+                       'active', NULL, 0, NULL, NULL, 'T1', '{}', ?, ?)
+                    """,
+                    (str(setfile), now, now),
+                )
+                conn.commit()
+
+            old_repo_root = terminal_worker.farmctl.REPO_ROOT
+            old_spawn = terminal_worker.farmctl._spawn_work_item_runner
+            try:
+                terminal_worker.farmctl.REPO_ROOT = repo
+                terminal_worker.farmctl._spawn_work_item_runner = lambda *_args, **_kwargs: (_ for _ in ()).throw(
+                    AssertionError("spawn must not be called")
+                )
+                result = terminal_worker._run_claimed_item(
+                    root,
+                    {"id": "wi-missing-ex5"},
+                    "T1",
+                    timeout_seconds=30,
+                )
+            finally:
+                terminal_worker.farmctl.REPO_ROOT = old_repo_root
+                terminal_worker.farmctl._spawn_work_item_runner = old_spawn
+
+            self.assertEqual(result["action"], "preflight_failed")
+            self.assertEqual(result["reason"], "ex5_missing")
+            self.assertTrue(Path(result["evidence_path"]).exists())
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT status, verdict, claimed_by, evidence_path, payload_json FROM work_items WHERE id='wi-missing-ex5'"
+                ).fetchone()
+            self.assertEqual(row[0], "failed")
+            self.assertEqual(row[1], "INVALID")
+            self.assertIsNone(row[2])
+            self.assertTrue(Path(row[3]).exists())
+            self.assertEqual(json.loads(row[4])["verdict_reason"], "ex5_missing")
 
 
 if __name__ == "__main__":

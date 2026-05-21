@@ -62,7 +62,7 @@ def active_ea_ids(*, keep_obsolete: bool) -> set[int]:
             continue
         if entry.name.startswith("_obsolete_"):
             continue
-        m = re.match(r"^QM5_(\d{4})(?:_|$)", entry.name)
+        m = re.match(r"^QM5_(\d{4,5})(?:_|$)", entry.name)
         if m:
             ids.add(int(m.group(1)))
     return ids
@@ -131,7 +131,7 @@ def render_mqh(rows: list[dict]) -> str:
 #include "QM_Errors.mqh"
 
 #define QM_MAGIC_EA_ID_MIN 1000
-#define QM_MAGIC_EA_ID_MAX 9999
+#define QM_MAGIC_EA_ID_MAX 99999
 #define QM_MAGIC_SLOT_MIN  0
 #define QM_MAGIC_SLOT_MAX  9999
 

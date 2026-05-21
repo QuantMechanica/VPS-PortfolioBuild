@@ -127,7 +127,8 @@ class PipelineDispatcherTests(unittest.TestCase):
             "symbol_affinity": {},
         }
 
-        decision = dispatch_job(job, state, max_per_terminal=3, enforce_dl054_prelaunch=False)
+        with patch("framework.scripts.pipeline_dispatcher.active_terminals", return_value=("T1", "T2", "T3", "T4", "T5")):
+            decision = dispatch_job(job, state, max_per_terminal=3, enforce_dl054_prelaunch=False)
         self.assertEqual(decision["status"], "scheduled")
         self.assertEqual(decision["terminal"], "T3")
         self.assertEqual(state["running"]["T3"], 3)
@@ -142,7 +143,8 @@ class PipelineDispatcherTests(unittest.TestCase):
             "symbol_affinity": {"US500.DWX": {"terminal": "T2", "ts": 1000}},
         }
 
-        decision = dispatch_job(job, state, max_per_terminal=3, now_epoch=1001, enforce_dl054_prelaunch=False)
+        with patch("framework.scripts.pipeline_dispatcher.active_terminals", return_value=("T1", "T2", "T3", "T4", "T5")):
+            decision = dispatch_job(job, state, max_per_terminal=3, now_epoch=1001, enforce_dl054_prelaunch=False)
         self.assertEqual(decision["status"], "scheduled")
         self.assertEqual(decision["terminal"], "T2")
 
@@ -169,7 +171,8 @@ class PipelineDispatcherTests(unittest.TestCase):
             "recent_runs": {"T1": [990, 995], "T2": [999]},
         }
 
-        decision = dispatch_job(job, state, max_per_terminal=3, now_epoch=1000, enforce_dl054_prelaunch=False)
+        with patch("framework.scripts.pipeline_dispatcher.active_terminals", return_value=("T1", "T2", "T3", "T4", "T5")):
+            decision = dispatch_job(job, state, max_per_terminal=3, now_epoch=1000, enforce_dl054_prelaunch=False)
         self.assertEqual(decision["status"], "scheduled")
         self.assertEqual(decision["terminal"], "T2")
 

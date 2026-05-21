@@ -1,5 +1,13 @@
 # V5 Sub-Gate Spec
 
+Status: historical / superseded for current automation by the Q-Series hard-gate spec in `PIPELINE_PHASE_SPEC.md` and `PIPELINE_PHASE_ID_MAP.md`.
+
+Important 2026-05-20 corrections:
+- Q07 hard PASS requires real MT5 calibrated-noise reruns. Proxy/YELLOW rows are diagnostics only.
+- Q08 hard PASS requires real MT5 crisis-slice reruns. Report-first rows do not promote.
+- Q09 mixed seed outcomes are FAIL for promotion.
+- Q11 hard PASS requires real MT5 news-mode reruns plus deal replay; synthetic news matrices do not promote.
+
 Created: 2026-04-26
 Owner: CTO + Quality-Tech (defaults), OWNER (acceptance)
 Reviewer: Claude Board Advisor (architecture + V5 boundary)

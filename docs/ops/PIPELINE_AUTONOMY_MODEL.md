@@ -6,13 +6,13 @@ For the *content* of the phase spec (gates, criteria, evidence per phase), see `
 
 ## Current Decision
 
-The V5 / V2.1 pipeline operates on the following 15-phase spine:
+The V5 pipeline operates on the following 15-phase Q-Series spine. Legacy phase keys remain in the database for compatibility.
 
 ```text
-G0 -> P1 -> P2 -> P3 -> P3.5 -> P4 -> P5 -> P5b -> P5c -> P6 -> P7 -> P8 -> P9 -> P9b -> P10 -> Live
+Q00 -> Q01 -> Q02 -> Q03 -> Q04 -> Q05 -> Q06 -> Q07 -> Q08 -> Q09 -> Q10 -> Q11 -> Q12 -> Q13 -> Q14 -> Live
 ```
 
-Phase names and gate criteria are in `PIPELINE_PHASE_SPEC.md`. Paperclip executes and instruments this map. Paperclip does not silently invent a new testing process.
+Phase names, display IDs, and gate criteria are in `PIPELINE_PHASE_SPEC.md` and `PIPELINE_PHASE_ID_MAP.md`. Paperclip executes and instruments this map. Paperclip does not silently invent a new testing process.
 
 This supersedes the older 10-phase `Strategy Card → P1 Smoke → … → P8 DarwinexZero Demo → P9 Live → P10 Monitor` outline that appeared in the Notion `V5 Pipeline Design` page and earlier versions of this file. See `decisions/2026-04-25_pipeline_15_phase_override.md`.
 

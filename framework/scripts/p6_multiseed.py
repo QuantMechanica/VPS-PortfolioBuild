@@ -64,8 +64,8 @@ def main() -> int:
         verdict = "MULTI_SEED_PASS"
         criterion = ">= 3 seeds passed and no seed has PF < 1.0."
     elif pass_count >= 3 and has_pf_below_one:
-        verdict = "MULTI_SEED_MIXED"
-        criterion = ">= 3 seeds passed but at least one seed has PF < 1.0."
+        verdict = "MULTI_SEED_FAIL"
+        criterion = "Mixed seed outcome is not promotable: >= 3 seeds passed but at least one seed has PF < 1.0."
     else:
         verdict = "MULTI_SEED_FAIL"
         criterion = "< 3 seeds passed."

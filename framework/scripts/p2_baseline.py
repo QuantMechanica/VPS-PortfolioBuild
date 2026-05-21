@@ -34,7 +34,7 @@ import sys
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 CSV_LOCK = threading.Lock()
@@ -186,6 +186,40 @@ def derive_verdict(summary: dict, min_trades: int) -> tuple[str, str, str]:
     if any(t < min_trades for t in trades):
         return "FAIL", f"trade_count_below_min:got={trades}:min={min_trades}", summary.get("report_dir", "")
     return "PASS", "", summary.get("report_dir", "")
+
+
+def infer_warmup_bars(card_params: dict, runner_params: dict) -> int:
+    """Infer warmup bars from strategy/card metadata.
+
+    `max_warmup` is the explicit cap when present. Older generated cards only
+    carried `training_lookback`, so retain that as the fallback contract.
+    """
+    for key in ("max_warmup", "training_lookback"):
+        for source in (card_params, runner_params):
+            value = source.get(key) if isinstance(source, dict) else None
+            try:
+                parsed = int(value)
+            except (TypeError, ValueError):
+                continue
+            if parsed > 0:
+                return parsed
+    return 0
+
+
+def derive_window_dates(year: int, period: str, warmup_bars: int) -> tuple[str, str]:
+    """Return ISO date bounds for a P2 run window.
+
+    The no-warmup default is the current P2 half-year smoke window. When warmup
+    is required, extend from Jan 1 by timeframe-aware bars while keeping the
+    tested year end fixed.
+    """
+    end = date(int(year), 12, 31)
+    warmup = max(0, int(warmup_bars or 0))
+    if warmup <= 0:
+        return f"{int(year)}-07-01", end.isoformat()
+    period_days = {"MN1": 30, "W1": 7, "D1": 1}.get(str(period).upper(), 0)
+    start = date(int(year), 1, 1) - timedelta(days=warmup * period_days)
+    return start.isoformat(), end.isoformat()
 
 
 def read_existing_passes(report_csv: Path) -> set[str]:

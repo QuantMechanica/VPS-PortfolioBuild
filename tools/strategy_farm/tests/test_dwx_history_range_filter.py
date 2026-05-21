@@ -22,6 +22,7 @@ class DwxHistoryRangeFilterTests(unittest.TestCase):
             registry_dir = repo_root / "framework" / "registry"
             sets_dir.mkdir(parents=True)
             registry_dir.mkdir(parents=True)
+            (ea_dir / "QM5_9999_demo.ex5").write_text("compiled", encoding="utf-8")
 
             (registry_dir / "dwx_symbol_matrix.csv").write_text(
                 "\n".join([

@@ -4,6 +4,7 @@ import sqlite3
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from framework.scripts.mt5_saturation_scheduler import ensure_schema, run_tick
 from framework.scripts.pipeline_dispatcher import save_dispatch_state
@@ -61,13 +62,15 @@ class MT5SaturationSchedulerTests(unittest.TestCase):
             finally:
                 conn.close()
 
-            summary = run_tick(
-                sqlite_path=db_path,
-                dispatch_state_path=state_path,
-                max_per_terminal=3,
-                scan_limit=100,
-                dry_run=False,
-            )
+            with patch("framework.scripts.pipeline_dispatcher.active_terminals", return_value=("T1", "T2", "T3", "T4", "T5")):
+                with patch("framework.scripts.mt5_saturation_scheduler.active_terminals", return_value=("T1", "T2", "T3", "T4", "T5")):
+                    summary = run_tick(
+                        sqlite_path=db_path,
+                        dispatch_state_path=state_path,
+                        max_per_terminal=3,
+                        scan_limit=100,
+                        dry_run=False,
+                    )
             self.assertEqual(summary["scheduled"], 1)
             self.assertEqual(summary["no_capacity"], 1)
 

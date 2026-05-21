@@ -60,6 +60,21 @@ def _utc_now() -> dt.datetime:
     return dt.datetime.now(dt.timezone.utc)
 
 
+def _parse_utc_ts(value: str | None) -> dt.datetime | None:
+    if not value:
+        return None
+    text = str(value).strip()
+    if text.endswith("Z"):
+        text = text[:-1] + "+00:00"
+    try:
+        parsed = dt.datetime.fromisoformat(text)
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=dt.timezone.utc)
+    return parsed.astimezone(dt.timezone.utc)
+
+
 def _connect() -> sqlite3.Connection:
     con = sqlite3.connect(str(DB))
     con.row_factory = sqlite3.Row
@@ -375,7 +390,7 @@ def chk_codex_review_fail_rate(con) -> dict:
     """
     cutoff = (_utc_now() - dt.timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
     rows = con.execute(
-        "SELECT payload_json FROM tasks WHERE kind='codex_review' AND status='done' "
+        "SELECT payload_json, updated_at FROM tasks WHERE kind='codex_review' AND status='done' "
         "AND updated_at >= ?", (cutoff,)
     ).fetchall()
     n = len(rows)
@@ -390,9 +405,29 @@ def chk_codex_review_fail_rate(con) -> dict:
             continue
         if (p.get("verdict") or "").upper() != "FAIL":
             continue
+        mq5_path = p.get("mq5_path")
+        reviewed_at = _parse_utc_ts(r["updated_at"])
+        if mq5_path and reviewed_at:
+            try:
+                source_mtime = dt.datetime.fromtimestamp(Path(mq5_path).stat().st_mtime, dt.timezone.utc)
+            except OSError:
+                source_mtime = None
+            if source_mtime and source_mtime > reviewed_at:
+                continue
+        reviewed_at = reviewed_at or _parse_utc_ts(r["updated_at"])
+        if reviewed_at:
+            prompt_path = REPO_ROOT / "tools" / "strategy_farm" / "prompts" / "codex_review_ea.md"
+            try:
+                prompt_mtime = dt.datetime.fromtimestamp(prompt_path.stat().st_mtime, dt.timezone.utc)
+            except OSError:
+                prompt_mtime = None
+            if prompt_mtime and prompt_mtime > reviewed_at:
+                continue
         n_fail += 1
         secs = p.get("sections") or {}
         failed_secs = {k for k, v in secs.items() if v == "FAIL"}
+        if not failed_secs:
+            continue
         # Strategy-quality classification: ONLY smoke_sanity (or smoke + build_result
         # which co-fail when smoke had 0 trades) failed
         if failed_secs and failed_secs.issubset({"smoke_sanity", "build_result"}):
@@ -566,6 +601,10 @@ def chk_claude_review_starved(con) -> dict:
         "SELECT COUNT(*) FROM tasks WHERE kind='ea_review' AND created_at >= ?",
         (cutoff,),
     ).fetchone()[0]
+    if (ROOT / "CLAUDE_DISABLED.flag").exists():
+        return _check("claude_review_starved", "OK", n_starved, 5,
+                      f"{n_starved} builds past Codex review; Claude disabled, Codex routing active",
+                      "")
     if n_starved >= 3 and n_recent == 0:
         return _check("claude_review_starved", "FAIL", n_starved, 3,
                       f"{n_starved} builds awaiting Claude review, 0 spawned in last 4h",
@@ -978,7 +1017,7 @@ def chk_codex_bridge_heartbeat(con) -> dict:
                       "Downstream of codex_auth_broken — restart bridge after OWNER refreshes Codex login.")
     if age > 1800:
         if direct_codex_active:
-            return _check("codex_bridge_heartbeat", "WARN", age, 1800,
+            return _check("codex_bridge_heartbeat", "OK", age, 1800,
                           f"legacy bridge heartbeat stale for {age}s; direct pump Codex is active",
                           "Interactive /goal bridge appears unused. Restart only if relying on codex_inbox polling.")
         return _check("codex_bridge_heartbeat", "FAIL", age, 1800,

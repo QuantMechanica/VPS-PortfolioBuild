@@ -26,8 +26,12 @@ from typing import Any
 
 DEFAULT_ROOT = Path(os.environ.get("QM_STRATEGY_FARM_ROOT", r"D:\QM\strategy_farm"))
 REPO_ROOT = Path(__file__).resolve().parents[3]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
-PHASE_ORDER = ["G0", "P1", "P2", "P3", "P3.5", "P4", "P5", "P5b", "P5c", "P6", "P7", "P8", "P9", "P9b", "P10"]
+from tools.strategy_farm.phase_ids import PHASE_ORDER, PHASE_QID, phase_label
+
+PHASE_DISPLAY = PHASE_QID
 PHASE_LABEL_FROM_KIND = {
     "backtest_p2": "P2",
     "backtest_p3": "P3",
@@ -404,7 +408,7 @@ def derive_ea_candidates(tasks: list[dict], root: Path | None = None) -> list[di
     if root is not None:
         db = root / "state" / "farm_state.sqlite"
         if db.exists() and eas:
-            pass_verdicts = {"PASS", "AUTO_PASS", "MODE_SELECTED", "MULTI_SEED_PASS", "MULTI_SEED_MIXED"}
+            pass_verdicts = {"PASS", "AUTO_PASS", "MODE_SELECTED", "MULTI_SEED_PASS"}
             by_id = {ea["ea_id"]: ea for ea in eas}
             placeholders = ",".join("?" for _ in by_id)
             try:
@@ -624,8 +628,8 @@ def render_phase_dots(completed: list[str], current: str | None, failed_at: str 
             cls += " phase-failed"
             symbol = "✗"
         out.append(
-            f'<span class="{cls}"><span class="phase-sym">{symbol}</span>'
-            f'<span class="phase-label">{e(phase)}</span></span>'
+            f'<span class="{cls}" title="{e(phase_label(phase, include_name=True))}"><span class="phase-sym">{symbol}</span>'
+            f'<span class="phase-label">{e(phase_label(phase))}</span></span>'
         )
     return "".join(out)
 
@@ -669,9 +673,9 @@ def render_hero(state: dict) -> str:
         </div>
         <div class="heureka-leader-row">
           <span class="heureka-leader-label">Current</span>
-          <strong class="heureka-leader-phase">{e(leader["current_phase"])}</strong>
+          <strong class="heureka-leader-phase">{e(phase_label(leader["current_phase"]))}</strong>
           <span class="heureka-leader-arrow">→</span>
-          <span class="heureka-leader-next">next: <strong>{e(next_gate)}</strong></span>
+          <span class="heureka-leader-next">next: <strong>{e(phase_label(next_gate) if next_gate != "live" else "live")}</strong></span>
         </div>
       </div>"""
     else:
@@ -1241,8 +1245,9 @@ def render_strategies(state: dict, root: Path) -> str:
             except Exception:
                 ts_sort = 0.0
 
-            cur_phase = e(ea.get("current_phase", "—"))
-            robust_label = "P8" if k.get("p8_pass") else ("P4+" if k.get("p4plus_pass") else (k.get("highest_pass_phase") or "—"))
+            cur_phase_key = ea.get("current_phase", "—")
+            cur_phase = e(phase_label(cur_phase_key) if cur_phase_key != "—" else "—")
+            robust_label = "Q11" if k.get("p8_pass") else ("Q05+" if k.get("p4plus_pass") else (phase_label(k.get("highest_pass_phase") or "") or "—"))
             robust_cls = "s-live" if k.get("p8_pass") else ("s-flow" if k.get("p4plus_pass") else "s-dead")
             n_sym = k.get("n_symbols") or 0
             sym_pass = f'{k.get("n_pass", 0)}/{k.get("n_fail", 0)+k.get("n_pass", 0)}' if k.get("n_pass") or k.get("n_fail") else "—"
@@ -1311,7 +1316,7 @@ def render_strategies(state: dict, root: Path) -> str:
   </select>
   <select id="f-phase">
     <option value="">All phases</option>
-    {''.join(f'<option value="{p}">{p}</option>' for p in PHASE_ORDER)}
+    {''.join(f'<option value="{phase_label(p)}">{phase_label(p)}</option>' for p in PHASE_ORDER)}
   </select>
   <input type="search" id="f-search" placeholder="search ea id or slug…">
   <span class="row-count"><strong id="rc-visible">{len(eas)}</strong> of {len(eas)} EAs</span>

@@ -204,7 +204,7 @@ class P2BaselineTests(unittest.TestCase):
 
     def test_derive_window_dates_extends_for_d1_warmup(self) -> None:
         start, end = p2_baseline.derive_window_dates(2024, "D1", 252)
-        self.assertEqual(start, "2023-06-19")
+        self.assertEqual(start, "2023-04-24")
         self.assertEqual(end, "2024-12-31")
 
     def test_derive_verdict_g1_fail_is_invalid_regardless_of_trades(self) -> None:

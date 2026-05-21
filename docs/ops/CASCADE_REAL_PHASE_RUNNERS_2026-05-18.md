@@ -1,5 +1,9 @@
 # Cascade Real Phase Runners (2026-05-18)
 
+Status: historical. Current automation is governed by the Q-Series hard-gate map in `PIPELINE_PHASE_SPEC.md` and `PIPELINE_PHASE_ID_MAP.md`.
+
+2026-05-20 hardening note: Q08 is no longer report-first for promotion; hard PASS requires real MT5 crisis-slice reruns. Q11 hard PASS requires real MT5 news-mode reruns plus deal replay.
+
 ## Problem
 
 Cascade promotion was creating P3/P3.5/P4/P5/P5b/P5c/P6/P7/P8 `work_items`

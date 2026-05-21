@@ -1,23 +1,24 @@
 # Phase Chain Build Result - 2026-05-19
 
+Status: superseded by Q-Series hardening on 2026-05-20. See `PIPELINE_PHASE_SPEC.md` and `PIPELINE_PHASE_ID_MAP.md`.
+
 ## Built
 
 - P3.5 work-item wiring now supplies existing P2/P3 CSV evidence to the CSR runner instead of producing `PENDING_IMPLEMENTATION`.
 - P5 has a real pipeline wrapper: generate clean/stress metrics, then evaluate `p5_stress_runner.py`.
 - P5 calibration input is generated per EA from measured VPS calibration evidence.
-- P5b now generates Monte Carlo trial evidence, then evaluates `p5b_calibrated_noise.py`.
-- P5c now generates crisis-slice rows from P5 clean/stress metrics, then runs the report-first crisis runner.
+- Q07 now requires real MT5 calibrated-noise reruns. Synthetic Monte Carlo rows are diagnostics only.
+- Q08 now requires real MT5 crisis-slice reruns. Report-only/proxy rows do not promote.
 - P6 now generates `p6_seeds.csv`, then evaluates `p6_multiseed.py`.
-- P7 now generates `sweep_pass_rows.csv` from P3/P2 evidence, then evaluates `p7_statval.py`.
-- P8 now generates `news_matrix.csv` and validates against the available news calendar aliases (`news_calendar_2015_2025.csv` / ForexFactory export).
+- Q10 rejects proxy-only pass rows and waits for real statistical evidence.
+- Q11 requires MT5 news-mode reruns plus deal replay against `news_calendar_2015_2025.csv`.
 
 ## Remaining Reality
 
-The chain is now runnable without structural `PENDING_IMPLEMENTATION` for P3.5-P8. Verdicts can still be FAIL, WAITING_INPUT, or REPORT_ONLY when the underlying evidence is weak or absent.
+The chain is runnable without structural `PENDING_IMPLEMENTATION` for Q04-Q11. Verdicts can still be FAIL or WAITING_INPUT when required real evidence is absent.
 
 Known engineering debt:
-- P5c crisis rows are proxy rows derived from P5 stress metrics, not separate MT5 crisis-window reruns yet.
-- P7 statistical inputs are conservative derived rows from P3/P2 evidence; richer PBO/DSR should be computed directly from full parameter distributions later.
-- P8 mode matrix is derived from prior metrics and calendar validation; it does not yet rerun MT5 under each news mode.
+- Existing database rows from the pre-hardening window can contain `P5c REPORT_ONLY`, `P6 MULTI_SEED_MIXED`, proxy P7 PASS, or P8 PASS without MT5-mode reruns. Those rows must be invalidated or rerun before claiming an honest Q11.
+- Q10 still needs richer direct PBO/DSR computation from full parameter distributions.
 
-These are no longer stub blockers, but they are the next quality upgrades before treating P8 PASS as deploy-grade without manual review.
+No Q11 PASS is deploy-grade unless its artifact shows `parameters.run_mt5=true` and non-empty MT5-mode evidence.

@@ -43,6 +43,10 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
     def test_enqueue_cascade_distinguishes_setfiles_for_same_symbol(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
+            repo_root = root / "repo"
+            ea_dir = repo_root / "framework" / "EAs" / "QM5_9999_demo"
+            ea_dir.mkdir(parents=True)
+            (ea_dir / "QM5_9999_demo.ex5").write_text("compiled", encoding="utf-8")
             sets_dir = root / "sets"
             sets_dir.mkdir()
             setfile_a = sets_dir / "a.set"
@@ -73,7 +77,12 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
                 )
                 conn.commit()
 
-            result = farmctl.enqueue_cascade_backtest_for_ea(root, "QM5_9999", "P5b")
+            old_repo_root = farmctl.REPO_ROOT
+            try:
+                farmctl.REPO_ROOT = repo_root
+                result = farmctl.enqueue_cascade_backtest_for_ea(root, "QM5_9999", "P5b")
+            finally:
+                farmctl.REPO_ROOT = old_repo_root
 
             self.assertTrue(result["enqueued"])
             self.assertEqual([row["symbol"] for row in result["created"]], ["EURUSD.DWX"])
@@ -97,8 +106,10 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
             setfile = sets_dir / "a.set"
             setfile.write_text("", encoding="utf-8")
             repo_root = root / "repo"
-            ea_sets = repo_root / "framework" / "EAs" / "QM5_9999_demo" / "sets"
+            ea_dir = repo_root / "framework" / "EAs" / "QM5_9999_demo"
+            ea_sets = ea_dir / "sets"
             ea_sets.mkdir(parents=True)
+            (ea_dir / "QM5_9999_demo.ex5").write_text("compiled", encoding="utf-8")
             (ea_sets / "QM5_9999_demo_EURUSD.DWX_D1_backtest.set").write_text("", encoding="utf-8")
             mt5_root = root / "mt5"
             hist_dir = mt5_root / "T1" / "Bases" / "Custom" / "history" / "EURUSD.DWX"

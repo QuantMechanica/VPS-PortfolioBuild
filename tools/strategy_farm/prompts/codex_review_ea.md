@@ -40,7 +40,9 @@ Reference: `framework/templates/EA_Skeleton.mq5` + `framework/include/QM/*.mqh`.
   not literally named `IsNewBar`.
 - Position open / close uses `QM_TM_OpenPosition / QM_TM_ClosePosition` —
   raw `OrderSend` = FAIL.
-- Risk sizing uses `QM_LotsForRisk()` — hardcoded lots = FAIL.
+- Risk sizing is provided by `QM_TM_OpenPosition()` through the framework risk
+  model. Do NOT require every EA to call `QM_LotsForRisk()` directly. Hardcoded
+  lots, raw `OrderSend`, or bypassing `QM_TM_OpenPosition()` = FAIL.
 - Magic uses `QM_FrameworkMagic()` — hardcoded magic int = FAIL.
 - NO bypass of `QM_FrameworkInit/Shutdown` in `OnInit/OnDeinit`.
 

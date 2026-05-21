@@ -39,6 +39,7 @@ datetime      g_qm_news_last_missing_log_utc         = 0;
 int           g_qm_news_pause_before_minutes         = 30;
 int           g_qm_news_pause_after_minutes          = 30;
 int           g_qm_news_stale_max_hours              = 24 * 14;
+string        g_qm_news_min_impact_upper             = "HIGH";
 
 string QM_NewsTrim(const string value)
   {
@@ -89,6 +90,26 @@ string QM_NewsImpactUpper(const string raw)
    if(StringFind(value, "LOW") >= 0)
       return "LOW";
    return "UNKNOWN";
+  }
+
+int QM_NewsImpactRank(const string impact_upper)
+  {
+   string value = QM_NewsUpper(QM_NewsTrim(impact_upper));
+   if(value == "HIGH")
+      return 3;
+   if(value == "MEDIUM")
+      return 2;
+   if(value == "LOW")
+      return 1;
+   return 0;
+  }
+
+bool QM_NewsImpactMeetsMinimum(const string impact_upper, const string min_impact_upper)
+  {
+   int required = QM_NewsImpactRank(min_impact_upper);
+   if(required <= 0)
+      required = 3;
+   return QM_NewsImpactRank(impact_upper) >= required;
   }
 
 bool QM_NewsParseDateTimeUTC(const string raw, datetime &out_utc)
@@ -279,12 +300,16 @@ void QM_NewsLogSetupMissing(const string reason)
 bool QM_NewsInit(const string base_dir = "D:\\QM\\data\\news_calendar",
                  const int stale_max_hours = 24 * 14,
                  const int pause_before_minutes = 30,
-                 const int pause_after_minutes = 30)
+                 const int pause_after_minutes = 30,
+                 const string min_impact = "high")
   {
    g_qm_news_base_dir                = base_dir;
    g_qm_news_stale_max_hours         = stale_max_hours;
    g_qm_news_pause_before_minutes    = pause_before_minutes;
    g_qm_news_pause_after_minutes     = pause_after_minutes;
+   g_qm_news_min_impact_upper        = QM_NewsImpactUpper(min_impact);
+   if(QM_NewsImpactRank(g_qm_news_min_impact_upper) <= 0)
+      g_qm_news_min_impact_upper = "HIGH";
    g_qm_news_calendar_path_primary   = g_qm_news_base_dir + "\\news_calendar_2015_2025.csv";
    g_qm_news_calendar_path_secondary = g_qm_news_base_dir + "\\forex_factory_calendar_clean.csv";
 
@@ -396,6 +421,8 @@ bool QM_NewsInWindow(const datetime utc_time,
 
       if(StringLen(impact_need) > 0 && event.impact_upper != impact_need)
          continue;
+      if(StringLen(impact_need) == 0 && !QM_NewsImpactMeetsMinimum(event.impact_upper, g_qm_news_min_impact_upper))
+         continue;
 
       datetime from_t = event.event_utc - (before_minutes * 60);
       datetime to_t   = event.event_utc + (after_minutes * 60);
@@ -418,6 +445,8 @@ bool QM_NewsDayHasEvent(const datetime utc_time, const string symbol)
       if(event.day_key_utc != day_key)
          continue;
       if(!QM_NewsEventAffectsSymbol(event.currency, symbol))
+         continue;
+      if(!QM_NewsImpactMeetsMinimum(event.impact_upper, g_qm_news_min_impact_upper))
          continue;
       return true;
      }
@@ -458,6 +487,8 @@ bool QM_NewsAllowsTrade(const string symbol, const datetime broker_time, const Q
             const QM_NewsEvent event = g_qm_news_events[i];
             if(!QM_NewsEventAffectsSymbol(event.currency, symbol))
                continue;
+            if(!QM_NewsImpactMeetsMinimum(event.impact_upper, g_qm_news_min_impact_upper))
+               continue;
             int before = QM_NewsFTMOBeforeMinutes(event.impact_upper);
             int after  = QM_NewsFTMOAfterMinutes(event.impact_upper);
             if(before <= 0 && after <= 0)
@@ -477,6 +508,8 @@ bool QM_NewsAllowsTrade(const string symbol, const datetime broker_time, const Q
            {
             const QM_NewsEvent event = g_qm_news_events[i];
             if(!QM_NewsEventAffectsSymbol(event.currency, symbol))
+               continue;
+            if(!QM_NewsImpactMeetsMinimum(event.impact_upper, g_qm_news_min_impact_upper))
                continue;
             int before = QM_News5ersBeforeMinutes(event.impact_upper);
             int after  = QM_News5ersAfterMinutes(event.impact_upper);

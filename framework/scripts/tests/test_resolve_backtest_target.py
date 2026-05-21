@@ -3,6 +3,7 @@ from __future__ import annotations
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from framework.scripts.resolve_backtest_target import (
     BACKTEST_SETFILE_ERROR,
@@ -46,7 +47,8 @@ class ResolveBacktestTargetTests(unittest.TestCase):
             "symbol_affinity": {},
             "pending_matrix_jobs": {"QM5_1001_v1_P2": [pending_job]},
         }
-        summary = _drain_pending_matrix_jobs(state, max_per_terminal=3)
+        with patch("framework.scripts.pipeline_dispatcher.active_terminals", return_value=("T1", "T2", "T3", "T4", "T5")):
+            summary = _drain_pending_matrix_jobs(state, max_per_terminal=3)
         self.assertEqual(summary["scheduled"], 1)
         self.assertEqual(summary["no_capacity"], 0)
         self.assertNotIn("QM5_1001_v1_P2", state["pending_matrix_jobs"])
@@ -68,7 +70,8 @@ class ResolveBacktestTargetTests(unittest.TestCase):
             "symbol_affinity": {},
             "pending_matrix_jobs": {"QM5_1001_v1_P2": [pending_job]},
         }
-        summary = _drain_pending_matrix_jobs(state, max_per_terminal=3)
+        with patch("framework.scripts.pipeline_dispatcher.active_terminals", return_value=("T1", "T2", "T3", "T4", "T5")):
+            summary = _drain_pending_matrix_jobs(state, max_per_terminal=3)
         self.assertEqual(summary["scheduled"], 0)
         self.assertEqual(summary["no_capacity"], 1)
         self.assertIn("QM5_1001_v1_P2", state["pending_matrix_jobs"])
