@@ -1,8 +1,8 @@
-# 15. Pipeline-Op Load Balancing (T1-T5)
+# 15. Pipeline-Op Load Balancing (T1-T10)
 
 ## Trigger
 
-Pipeline-Operator receives one or more runnable backtest jobs with `target_terminal: any` in factory scope (T1-T5 only).
+Pipeline-Operator receives one or more runnable backtest jobs with `target_terminal: any` in factory scope (T1-T10 only).
 
 ## Actors
 
@@ -10,7 +10,7 @@ Pipeline-Operator receives one or more runnable backtest jobs with `target_termi
 
 ## Guardrails
 
-- T6 is out-of-scope for all dispatch and telemetry writes.
+- T_Live is out-of-scope for all dispatch and telemetry writes.
 - Max concurrency is **3 active jobs per terminal**.
 - Dedup key is `(ea_id, version, symbol, phase, sub_gate_config_hash)`.
 - Filesystem remains truth for report counts and NO_REPORT checks.
@@ -26,7 +26,7 @@ Pipeline-Operator receives one or more runnable backtest jobs with `target_termi
 ## Scheduling Policy
 
 1. Reject duplicates when dedup key already exists in `dispatch_state.json`.
-2. Build eligible terminal set from T1-T5 where running count `< 3`.
+2. Build eligible terminal set from T1-T10 where running count `< 3`.
 3. Pick least-loaded terminal(s) from eligible set.
 4. If symbol affinity exists for same symbol within 24h and terminal is in least-loaded set, pick that terminal.
 5. Otherwise, from least-loaded set, pick the terminal with the lowest run-count in the last 24h.
