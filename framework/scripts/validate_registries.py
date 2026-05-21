@@ -133,6 +133,7 @@ def validate_magic_registry(
 def main() -> int:
     parser = argparse.ArgumentParser(description="Validate QM EA and magic registries.")
     parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON.")
+    parser.add_argument("--show-warnings", action="store_true", help="Print non-fatal inventory warnings in text mode.")
     parser.add_argument("--strict-warnings", action="store_true", help="Treat warnings as failures.")
     args = parser.parse_args()
 
@@ -163,8 +164,11 @@ def main() -> int:
         print(f"status={result['status']} ea_rows={len(ea_rows)} magic_rows={len(magic_rows)}")
         for issue in issues:
             print(f"ISSUE {issue}")
-        for warning in warnings:
-            print(f"WARN {warning}")
+        if args.show_warnings or args.strict_warnings:
+            for warning in warnings:
+                print(f"WARN {warning}")
+        elif warnings:
+            print(f"warnings={len(warnings)} hidden_nonfatal_use_--show-warnings")
     return 1 if result["status"] != "ok" else 0
 
 

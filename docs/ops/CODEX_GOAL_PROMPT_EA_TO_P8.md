@@ -4,7 +4,9 @@
 > via the SQLite state DB; re-paste after every `codex login` refresh
 > (~every 2h when access_token expires).
 >
-> Vault mirror: `G:/My Drive/QuantMechanica - Company Reference/Prompt for Codex_Goal_EA_to_P8.md`
+> Historical vault mirror: `G:/My Drive/QuantMechanica - Company Reference/00 Governance/Archive/Old Prompts/2026-05-21/Prompt for Codex_Goal_EA_to_P8.md`
+>
+> Superseded by: `G:/My Drive/QuantMechanica - Company Reference/Prompt for Codex_Orchestration_Workstream_2026-05-22.md`
 
 Du bist Codex CLI in C:/QM/repo (QuantMechanica V5 strategy_farm).
 - Operating manual: C:/QM/repo/CLAUDE.md (16 Hard Rules)

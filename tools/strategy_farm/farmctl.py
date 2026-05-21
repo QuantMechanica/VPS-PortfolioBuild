@@ -27,6 +27,11 @@ try:
 except ModuleNotFoundError:
     from tools.strategy_farm.cache_audit import has_ea_history_window
 
+try:
+    from phase_ids import phase_label, phase_qid
+except ModuleNotFoundError:
+    from tools.strategy_farm.phase_ids import phase_label, phase_qid
+
 
 DEFAULT_ROOT = Path(os.environ.get("QM_STRATEGY_FARM_ROOT", r"D:\QM\strategy_farm"))
 DB_REL = Path("state") / "farm_state.sqlite"
@@ -485,6 +490,129 @@ def prebuild_validate_card(root: Path, card_path: Path, fm: dict[str, Any]) -> d
     return {"ok": not errors, "errors": errors, "warnings": warnings}
 
 
+def strategy_card_fingerprint(card_path: Path, fm: dict[str, Any] | None = None) -> str:
+    """Stable coarse fingerprint for research dedupe.
+
+    The goal is not cryptographic identity. It catches duplicate theses that
+    arrive from different agents with slightly different prose.
+    """
+    fm = fm or parse_card_frontmatter(card_path)
+    text = card_path.read_text(encoding="utf-8", errors="ignore").lower()
+    source = str(fm.get("source_id") or fm.get("source") or "").strip().lower()
+    slug = str(fm.get("slug") or "").strip().lower()
+    universe = ",".join(sorted(_card_universe_symbols(text)))
+    timeframe_match = re.search(r"\b(?:m1|m5|m15|m30|h1|h4|d1|w1)\b", text, re.IGNORECASE)
+    timeframe = timeframe_match.group(0).lower() if timeframe_match else ""
+    thesis_terms = []
+    for term in (
+        "momentum",
+        "mean reversion",
+        "breakout",
+        "carry",
+        "seasonal",
+        "volatility",
+        "gap",
+        "news",
+        "fomc",
+        "trend",
+        "pairs",
+    ):
+        if term in text:
+            thesis_terms.append(term.replace(" ", "-"))
+    raw = "|".join([source, slug, universe, timeframe, ",".join(thesis_terms)])
+    return re.sub(r"[^a-z0-9_.|,-]+", "-", raw).strip("-") or card_path.stem.lower()
+
+
+STRATEGY_CARD_REQUIRED_FRONTMATTER = (
+    "ea_id",
+    "slug",
+    "g0_status",
+    "r1_track_record",
+    "r2_mechanical",
+    "r3_data_available",
+    "r4_ml_forbidden",
+    "expected_trades_per_year_per_symbol",
+)
+
+STRATEGY_CARD_REQUIRED_BODY_PATTERNS = {
+    "thesis": r"\b(thesis|hypothesis|edge)\b",
+    "market_universe": r"\b(universe|market|symbol|instrument)\b",
+    "timeframe": r"\b(timeframe|period|bar|m1|m5|m15|m30|h1|h4|d1|w1)\b",
+    "entry": r"\b(entry|enter|signal|trigger)\b",
+    "exit": r"\b(exit|close|flatten|take profit|stop)\b",
+    "risk": r"\b(risk|drawdown|position|sizing|stop)\b",
+    "falsification": r"\b(falsification|fail if|kill|reject|invalidate)\b",
+    "q08_q11_risks": r"\b(q08|q11|crisis|news|stress|robustness)\b",
+    "implementation_notes": r"\b(implementation|mql5|setfile|parameter|framework)\b",
+}
+
+
+def strategy_card_schema_issues(card_path: Path, fm: dict[str, Any] | None = None) -> list[str]:
+    """Return missing Strategy Card schema fields for build-ready gating."""
+    fm = fm or parse_card_frontmatter(card_path)
+    issues: list[str] = []
+    for key in STRATEGY_CARD_REQUIRED_FRONTMATTER:
+        if str(fm.get(key) or "").strip() == "":
+            issues.append(f"schema_missing_frontmatter:{key}")
+
+    text = card_path.read_text(encoding="utf-8", errors="ignore")
+    for key, pattern in STRATEGY_CARD_REQUIRED_BODY_PATTERNS.items():
+        if not re.search(pattern, text, re.IGNORECASE):
+            issues.append(f"schema_missing_body:{key}")
+    return issues
+
+
+def ready_strategy_card_inventory(root: Path) -> dict[str, Any]:
+    """Return build-ready card inventory and schema/dedupe diagnostics."""
+    cards_approved = root / "artifacts" / "cards_approved"
+    ready: list[dict[str, Any]] = []
+    blocked: list[dict[str, Any]] = []
+    fingerprints: dict[str, list[str]] = {}
+    if not cards_approved.exists():
+        return {
+            "ready_count": 0,
+            "approved_cards": 0,
+            "ready_cards": [],
+            "blocked_cards": [],
+            "duplicate_fingerprints": {},
+        }
+    cards = sorted(cards_approved.glob("*.md"))
+    for card in cards:
+        try:
+            fm = parse_card_frontmatter(card)
+            check = prebuild_validate_card(root, card, fm)
+            schema_issues = strategy_card_schema_issues(card, fm)
+            fp = strategy_card_fingerprint(card, fm)
+        except Exception as exc:
+            blocked.append({"card": str(card), "errors": [f"inventory_exception:{exc!r}"], "warnings": []})
+            continue
+        entry = {
+            "card": str(card),
+            "ea_id": str(fm.get("ea_id") or ""),
+            "slug": str(fm.get("slug") or ""),
+            "fingerprint": fp,
+        }
+        errors = list(check.get("errors") or []) + schema_issues
+        if check.get("ok") and not schema_issues:
+            ready.append(entry)
+            fingerprints.setdefault(fp, []).append(card.name)
+        else:
+            blocked.append({
+                **entry,
+                "errors": errors,
+                "warnings": list(check.get("warnings") or []),
+            })
+    duplicates = {fp: names for fp, names in fingerprints.items() if len(names) > 1}
+    return {
+        "ready_count": len(ready),
+        "approved_cards": len(cards),
+        "ready_cards": ready[:25],
+        "blocked_cards": blocked[:25],
+        "blocked_count": len(blocked),
+        "duplicate_fingerprints": duplicates,
+    }
+
+
 def _infer_expected_trades_per_year_per_symbol(card_text: str) -> int | None:
     """Conservative trade-frequency estimate from card text."""
     patterns = [
@@ -785,7 +913,7 @@ def work_items_view(root: Path, status_filter: str | None = None,
     Output is the work_items table with optional filters.
     """
     init_db(root)
-    query = "SELECT id, kind, phase, ea_id, symbol, status, verdict, attempt_count, parent_task_id, evidence_path, claimed_by, created_at, updated_at FROM work_items"
+    query = "SELECT id, kind, phase AS _runtime_phase_key, ea_id, symbol, status, verdict, attempt_count, parent_task_id, evidence_path, claimed_by, created_at, updated_at FROM work_items"
     where = []
     params: list[Any] = []
     if status_filter:
@@ -801,11 +929,21 @@ def work_items_view(root: Path, status_filter: str | None = None,
         rows = rows_as_dicts(conn.execute(query, params).fetchall())
     summary: dict[str, dict[str, int]] = {}
     for r in rows:
-        key = f"{r['phase']}_{r['status']}"
+        qid = phase_qid(r.get("_runtime_phase_key"))
+        r.pop("_runtime_phase_key", None)
+        r["phase"] = qid
+        r["phase_display"] = qid
+        r["phase_qid"] = qid
+        key = f"{qid}_{r['status']}"
         if r.get('verdict'):
             key += f"_{r['verdict']}"
         summary[key] = summary.get(key, 0) + 1
-    return {"items": rows, "summary": summary, "count": len(rows)}
+    return {
+        "items": rows,
+        "summary": summary,
+        "count": len(rows),
+        "phase_display_rule": "Q-series display is canonical; runtime DB phase keys are hidden from this operator view.",
+    }
 
 
 def backfill_work_items(root: Path) -> dict[str, Any]:
@@ -1060,12 +1198,41 @@ def _derive_p5plus_metric_verdict(runs: list[dict[str, Any]]) -> tuple[str, str]
     return "PASS", ""
 
 
+PHASE_NOMENCLATURE = {
+    "Q00": "G0",
+    "Q01": "P1",
+    "Q02": "P2",
+    "Q03": "P3",
+    "Q04": "P3.5",
+    "Q05": "P4",
+    "Q06": "P5",
+    "Q07": "P5b",
+    "Q08": "P5c",
+    "Q09": "P6",
+    "Q10": "P7",
+    "Q11": "P8",
+    "Q12": "P9",
+    "Q13": "P9b",
+    "Q14": "P10",
+}
+
+
+def _normalize_phase(phase: str | None) -> str:
+    """Map Q-series to P-series or return as-is."""
+    p = str(phase or "").strip().upper()
+    if p == "P5B":
+        return "P5b"
+    if p == "P5C":
+        return "P5c"
+    return PHASE_NOMENCLATURE.get(p, p)
+
+
 def _derive_phase_runner_verdict(summary: dict[str, Any], min_trades: int = 5, phase: str | None = None) -> tuple[str, str]:
     """Derive honest work_item verdicts from real phase-runner result JSON."""
     raw_verdict = str(summary.get("verdict") or summary.get("result") or "").strip()
     verdict_upper = raw_verdict.upper()
     reason = str(summary.get("reason") or summary.get("criterion") or "").strip()
-    phase_key = str(phase or summary.get("phase") or "").strip()
+    phase_key = _normalize_phase(phase or summary.get("phase"))
 
     if verdict_upper in {"PENDING_IMPLEMENTATION", "PENDING_RUNNER"}:
         return verdict_upper, reason or "phase runner not implemented yet"
@@ -1075,10 +1242,18 @@ def _derive_phase_runner_verdict(summary: dict[str, Any], min_trades: int = 5, p
         return "FAIL", reason or raw_verdict or "phase_runner_fail"
     if verdict_upper in {"REPORT_ONLY"}:
         return "REPORT_ONLY", reason or "report-only phase runner; no hard PASS verdict"
-    if verdict_upper in {"PASS", "AUTO_PASS", "MULTI_SEED_PASS", "MULTI_SEED_MIXED", "MODE_SELECTED"}:
+    if phase_key == "P8" and verdict_upper == "MODE_SELECTED":
+        details = summary.get("details") or {}
+        parameters = details.get("parameters") or {}
+        mt5_metrics = details.get("mt5_mode_metrics") or {}
+        if not parameters.get("run_mt5") or not mt5_metrics:
+            return "FAIL", reason or "p8_mode_selected_without_real_mt5_news_reruns"
+        return "PASS", reason or "p8_real_mt5_news_replay_pass"
+
+    if verdict_upper in {"PASS", "AUTO_PASS", "MULTI_SEED_PASS"}:
         return "PASS", reason
 
-    if phase_key.upper() == "P4":
+    if phase_key == "P4":
         folds = int(summary.get("wf_folds_completed") or summary.get("fold_count") or 0)
         trades = int(summary.get("oos_total_trades") or summary.get("total_trades") or 0)
         sharpe = summary.get("oos_sharpe")
@@ -1096,7 +1271,7 @@ def _derive_phase_runner_verdict(summary: dict[str, Any], min_trades: int = 5, p
             return "FAIL", reason or "wf_oos_unprofitable"
         return "PASS", reason or "wf_oos_gates_met"
 
-    if phase_key.upper() == "P5":
+    if phase_key == "P5":
         clean = summary.get("clean_metrics") or {}
         stress = summary.get("stress_metrics") or {}
         stress_pf = float(stress.get("pf") or 0.0)
@@ -1113,13 +1288,19 @@ def _derive_phase_runner_verdict(summary: dict[str, Any], min_trades: int = 5, p
             return "FAIL", reason or "p5_stress_unprofitable"
         return "PASS", reason or "p5_clean_stress_metrics_pass"
 
-    if phase_key.upper() == "P5B":
+    if phase_key == "P5b":
         trials = int(summary.get("trial_count") or 0)
         if trials <= 0:
             return "FAIL", reason or "p5b_no_trials"
-        return "PASS", reason or "p5b_trials_generated"
+        real_runs = int(summary.get("real_mt5_run_count") or 0)
+        fail_count = int(summary.get("failed_run_count") or 0)
+        if real_runs <= 0:
+            return "FAIL", reason or "p5b_no_real_mt5_runs"
+        if fail_count > 0:
+            return "FAIL", reason or f"p5b_failed_runs:{fail_count}"
+        return "PASS", reason or "p5b_real_noise_runs_passed"
 
-    if phase_key.upper() == "P6":
+    if phase_key == "P6":
         seed_count = int(summary.get("seed_count") or 0)
         pass_count = int(summary.get("seed_pass_count") or 0)
         if seed_count <= 0:
@@ -1127,7 +1308,7 @@ def _derive_phase_runner_verdict(summary: dict[str, Any], min_trades: int = 5, p
         if pass_count <= 0:
             return "FAIL", reason or "p6_no_passing_seeds"
         if pass_count < seed_count:
-            return "MULTI_SEED_MIXED", reason or f"p6_mixed:{pass_count}/{seed_count}"
+            return "FAIL", reason or f"p6_mixed_not_robust:{pass_count}/{seed_count}"
         return "PASS", reason or "p6_all_seeds_pass"
 
     return "FAIL", reason or f"unknown_phase_runner_verdict:{raw_verdict or 'missing'}"
@@ -1581,7 +1762,7 @@ def _ea_phase_dir(ea_id: str, phase: str) -> Path:
 
 def _phase_runner_inputs(root: Path, ea_id: str, phase: str) -> dict[str, Any]:
     pipeline_dir = _ea_pipeline_dir(ea_id)
-    phase_key = str(phase or "").strip()
+    phase_key = _normalize_phase(phase)
     if phase_key == "P3.5":
         p2_report = _refresh_phase_report_from_work_items(root, ea_id, "P2") or (pipeline_dir / "P2" / "report.csv")
         p3_report = _refresh_phase_report_from_work_items(root, ea_id, "P3") or (pipeline_dir / "P3" / "report.csv")
@@ -1607,8 +1788,7 @@ def _phase_runner_inputs(root: Path, ea_id: str, phase: str) -> dict[str, Any]:
             "multiseed_rows": pipeline_dir / "P6" / "p6_seeds.csv",
         }
     elif phase_key == "P8":
-        pipeline_news = pipeline_dir / "P7" / "news_matrix.csv"
-        inputs = {"news_matrix": pipeline_news if pipeline_news.exists() else NEWS_MATRIX_FALLBACK}
+        inputs = {}
     else:
         inputs = {}
     missing = [str(path) for path in inputs.values() if not Path(path).exists()]
@@ -1680,12 +1860,6 @@ def _ensure_phase_runner_inputs(root: Path, item_row: sqlite3.Row, log_path: Pat
             "--ea", ea_id,
             "--out-prefix", str(PIPELINE_REPORT_ROOT),
         ]
-        clean = phase_dir / "P5" / "p5_clean_metrics.json"
-        stress = phase_dir / "P5" / "p5_stress_metrics.json"
-        if clean.exists():
-            cmd.extend(["--clean-metrics-json", str(clean)])
-        if stress.exists():
-            cmd.extend(["--stress-metrics-json", str(stress)])
         _run_phase_input_generator(cmd, log_path)
 
     if phase == "P7":
@@ -1703,19 +1877,6 @@ def _ensure_phase_runner_inputs(root: Path, item_row: sqlite3.Row, log_path: Pat
             if p2_report.exists():
                 cmd.extend(["--p2-report", str(p2_report)])
             _run_phase_input_generator(cmd, log_path)
-
-    if phase == "P8" and not (phase_dir / "P7" / "news_matrix.csv").exists() and not NEWS_MATRIX_FALLBACK.exists():
-        cmd = [
-            sys.executable,
-            str(REPO_ROOT / "framework" / "scripts" / "p8_news_matrix_generator.py"),
-            "--ea", ea_id,
-            "--symbol", symbol or "ALL_SYMBOLS",
-            "--out-prefix", str(PIPELINE_REPORT_ROOT),
-        ]
-        metrics = phase_dir / "P5" / "p5_stress_metrics.json"
-        if metrics.exists():
-            cmd.extend(["--metrics-json", str(metrics)])
-        _run_phase_input_generator(cmd, log_path)
 
 
 def _load_csv_dicts(path: Path) -> list[dict[str, str]]:
@@ -1813,6 +1974,14 @@ def _phase_artifact_summary(item_row: sqlite3.Row) -> tuple[Path, dict[str, Any]
             "stress_metrics": stress_metrics,
         }
     if phase == "P5b":
+        result_path = phase_dir / f"P5b_{ea_id}_result.json"
+        if result_path.exists() and _fresh_enough(result_path):
+            try:
+                summary = json.loads(result_path.read_text(encoding="utf-8-sig"))
+            except json.JSONDecodeError:
+                summary = None
+            if isinstance(summary, dict):
+                return result_path, summary
         trials_path = phase_dir / "p5b_trials.csv"
         if not trials_path.exists():
             return None
@@ -1824,6 +1993,8 @@ def _phase_artifact_summary(item_row: sqlite3.Row) -> tuple[Path, dict[str, Any]
             "ea_id": ea_id,
             "verdict": "",
             "trial_count": len(rows),
+            "real_mt5_run_count": 0,
+            "failed_run_count": len(rows),
         }
     if phase == "P6":
         seeds_path = phase_dir / "p6_seeds.csv"
@@ -1921,13 +2092,19 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
         ])
         _remove_cmd_arg(cmd, "--setfile")
     elif phase == "P5b":
-        cmd.extend(["--calibration-json", str(inputs["calibration_json"])])
-        _remove_cmd_arg(cmd, "--period")
+        cmd.extend([
+            "--calibration-json", str(inputs["calibration_json"]),
+            "--base-setfile", item_row["setfile_path"],
+            "--terminal", terminal or "T1",
+            "--year", "2024",
+        ])
         _remove_cmd_arg(cmd, "--setfile")
     elif phase == "P5c":
-        cmd.extend(["--slices-csv", str(inputs["slices_csv"])])
-        _remove_cmd_arg(cmd, "--symbol")
-        _remove_cmd_arg(cmd, "--period")
+        cmd.extend([
+            "--slices-csv", str(inputs["slices_csv"]),
+            "--base-setfile", item_row["setfile_path"],
+            "--terminal", terminal or "T1",
+        ])
         _remove_cmd_arg(cmd, "--setfile")
     elif phase == "P6":
         cmd.extend([
@@ -1947,17 +2124,33 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
         _remove_cmd_arg(cmd, "--period")
         _remove_cmd_arg(cmd, "--setfile")
     elif phase == "P8":
-        cmd.extend(["--news-matrix", str(inputs["news_matrix"]), "--calendar-csv", str(_news_calendar_csv()), "--mode", "all"])
-        _remove_cmd_arg(cmd, "--symbol")
-        _remove_cmd_arg(cmd, "--period")
-        _remove_cmd_arg(cmd, "--setfile")
+        cmd.extend([
+            "--calendar-csv", str(_news_calendar_csv()),
+            "--mode", "all",
+            "--base-setfile", str(item_row["setfile_path"] or ""),
+            "--terminal", terminal or "T1",
+            "--from-date", "2023.01.01",
+            "--to-date", "2025.12.31",
+            "--run-mt5",
+        ])
+        news_matrix = report_root / ea_id / "P7" / "news_matrix.csv"
+        if not news_matrix.exists() and NEWS_MATRIX_FALLBACK.exists():
+            news_matrix = NEWS_MATRIX_FALLBACK
+        if news_matrix.exists():
+            cmd.extend(["--news-matrix", str(news_matrix)])
     return cmd
 
 
 def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
                                       terminal: str) -> dict[str, Any]:
     phase = item_row["phase"]
-    report_root = PIPELINE_REPORT_ROOT
+    # Real phase runners can run several variants for the same EA/phase in
+    # parallel. Their default output names are phase-level (`summary.json`,
+    # `p5b_trials.csv`, ...), so a shared pipeline directory makes work_item
+    # evidence point at whichever variant finished last. Keep each work_item's
+    # primary evidence isolated; terminal_worker mirrors PASS artifacts back to
+    # the canonical pipeline directory for downstream phase inputs.
+    report_root = Path(r"D:\QM\reports\work_items") / str(item_row["id"])
     report_root.mkdir(parents=True, exist_ok=True)
     log_path = root / "logs" / f"work_item_{item_row['id']}.log"
     log_path.parent.mkdir(parents=True, exist_ok=True)
@@ -4622,6 +4815,8 @@ def research_backlog_inventory(root: Path) -> dict[str, Any]:
     cards_approved = root / "artifacts" / "cards_approved"
     draft_cards = len(list(cards_draft.glob("*.md"))) if cards_draft.exists() else 0
     approved_cards = len(list(cards_approved.glob("*.md"))) if cards_approved.exists() else 0
+    ready_inventory = ready_strategy_card_inventory(root)
+    ready_approved_cards = int(ready_inventory.get("ready_count") or 0)
 
     active_pipeline_eas = 0
     open_build_or_review_tasks = 0
@@ -4651,19 +4846,25 @@ def research_backlog_inventory(root: Path) -> dict[str, Any]:
         # Research gating must fail closed: if DB state is unreadable, do not
         # create more research work until the pump/health path exposes the DB issue.
         return {
-            "total": draft_cards + approved_cards,
+            "total": ready_approved_cards,
             "draft_cards": draft_cards,
             "approved_cards": approved_cards,
+            "ready_approved_cards": ready_approved_cards,
+            "blocked_approved_cards": int(ready_inventory.get("blocked_count") or 0),
+            "duplicate_fingerprints": ready_inventory.get("duplicate_fingerprints") or {},
             "active_pipeline_eas": active_pipeline_eas,
             "open_build_or_review_tasks": open_build_or_review_tasks,
             "db_error": True,
         }
 
-    total = draft_cards + approved_cards + active_pipeline_eas + open_build_or_review_tasks
+    total = ready_approved_cards
     return {
         "total": total,
         "draft_cards": draft_cards,
         "approved_cards": approved_cards,
+        "ready_approved_cards": ready_approved_cards,
+        "blocked_approved_cards": int(ready_inventory.get("blocked_count") or 0),
+        "duplicate_fingerprints": ready_inventory.get("duplicate_fingerprints") or {},
         "active_pipeline_eas": active_pipeline_eas,
         "open_build_or_review_tasks": open_build_or_review_tasks,
         "db_error": False,
@@ -5437,8 +5638,8 @@ def pump(root: Path) -> dict[str, Any]:
         "P4": {"PASS"},
         "P5": {"PASS"},
         "P5b": {"PASS"},
-        "P5c": {"PASS", "REPORT_ONLY"},
-        "P6": {"PASS", "MULTI_SEED_PASS", "MULTI_SEED_MIXED"},
+        "P5c": {"PASS"},
+        "P6": {"PASS", "MULTI_SEED_PASS"},
         "P7": {"PASS"},
     }
     with connect(root) as conn:
@@ -6085,6 +6286,25 @@ def _find_ea_setfiles(ea_id: str, phase: str) -> list[tuple[str, str]]:
     return out
 
 
+def _ea_build_artifact_failure(ea_id: str) -> dict[str, Any] | None:
+    """Return why an EA is not runnable before creating MT5 work_items."""
+    ea_root = REPO_ROOT / "framework" / "EAs"
+    candidates = sorted(p for p in ea_root.glob(f"{ea_id}_*") if p.is_dir())
+    if not candidates:
+        return {"reason": "ea_dir_missing", "detail": str(ea_root / f"{ea_id}_*")}
+    if len(candidates) > 1:
+        return {"reason": "ea_dir_ambiguous", "detail": [p.name for p in candidates]}
+
+    ea_dir = candidates[0]
+    ex5 = ea_dir / f"{ea_dir.name}.ex5"
+    if not ex5.exists():
+        return {"reason": "ex5_missing", "detail": str(ex5)}
+    ex5_files = sorted(p.name for p in ea_dir.glob("*.ex5"))
+    if ex5_files != [ex5.name]:
+        return {"reason": "duplicate_ex5", "detail": ex5_files}
+    return None
+
+
 def _dwx_backtest_symbols() -> list[str]:
     """Return all DWX symbols available for farm backtests.
 
@@ -6329,6 +6549,15 @@ def enqueue_backtest(root: Path, review_task_id: str, phase: str) -> dict[str, A
 
         if not ea_id:
             return {"enqueued": False, "reason": "Predecessor payload missing ea_id"}
+        artifact_failure = _ea_build_artifact_failure(str(ea_id))
+        if artifact_failure:
+            return {
+                "enqueued": False,
+                "reason": artifact_failure["reason"],
+                "detail": artifact_failure["detail"],
+                "ea_id": ea_id,
+                "phase": phase,
+            }
 
         # Each runner writes to D:/QM/reports/pipeline/<args.ea>/<PHASE>/report.csv
         # Glob matches both short (QM5_NNNN) and long (QM5_NNNN_<slug>) forms.
@@ -6414,6 +6643,15 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
             "enqueued": False,
             "reason": f"Phase {phase} is not a cascade phase. Supported cascade phases: {CASCADE_BACKTEST_PHASES}",
         }
+    artifact_failure = _ea_build_artifact_failure(str(ea_id))
+    if artifact_failure:
+        return {
+            "enqueued": False,
+            "reason": artifact_failure["reason"],
+            "detail": artifact_failure["detail"],
+            "ea_id": ea_id,
+            "phase": phase,
+        }
     prev_phase_map = {
         "P5": "P4",
         "P5b": "P5",
@@ -6426,8 +6664,8 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
         "P4": {"PASS"},
         "P5": {"PASS"},
         "P5b": {"PASS"},
-        "P5c": {"PASS", "REPORT_ONLY"},
-        "P6": {"PASS", "MULTI_SEED_PASS", "MULTI_SEED_MIXED"},
+        "P5c": {"PASS"},
+        "P6": {"PASS", "MULTI_SEED_PASS"},
         "P7": {"PASS"},
     }
     prev_phase = prev_phase_map[phase]
@@ -6785,15 +7023,23 @@ def _phase_runner_cmd(phase: str, ea_id: str, terminal: str | None = None,
         cmd = _runner_base("p5b_noise_driver.py")
         if symbol:
             cmd.extend(["--symbol", symbol])
-        cmd.extend(["--calibration-json", str(inputs["calibration_json"])])
+        cmd.extend(["--calibration-json", str(inputs["calibration_json"]), "--period", _detect_ea_period(ea_id)])
+        if setfile_path:
+            cmd.extend(["--base-setfile", setfile_path])
         return cmd
 
     if phase == "P5c":
+        symbols = surviving_symbols or []
+        symbol = symbols[0] if symbols else ""
         inputs = _phase_runner_inputs(DEFAULT_ROOT, ea_id, phase)
         if inputs.get("missing"):
             return None
         cmd = _runner_base("p5c_crisis_slices.py")
-        cmd.extend(["--slices-csv", str(inputs["slices_csv"])])
+        cmd.extend(["--slices-csv", str(inputs["slices_csv"]), "--period", _detect_ea_period(ea_id)])
+        if symbol:
+            cmd.extend(["--symbol", symbol])
+        if setfile_path:
+            cmd.extend(["--base-setfile", setfile_path])
         return cmd
 
     if phase == "P6":
@@ -6816,11 +7062,23 @@ def _phase_runner_cmd(phase: str, ea_id: str, terminal: str | None = None,
         return cmd
 
     if phase == "P8":
+        symbols = surviving_symbols or []
+        symbol = symbols[0] if symbols else ""
         inputs = _phase_runner_inputs(DEFAULT_ROOT, ea_id, phase)
         if inputs.get("missing"):
             return None
         cmd = _runner_base("p8_news_driver.py")
-        cmd.extend(["--news-matrix", str(inputs["news_matrix"]), "--mode", "all"])
+        cmd.extend(["--calendar-csv", str(_news_calendar_csv()), "--mode", "all"])
+        if symbol:
+            cmd.extend(["--symbol", symbol])
+        cmd.extend(["--period", _detect_ea_period(ea_id), "--from-date", "2023.01.01", "--to-date", "2025.12.31"])
+        news_matrix = PIPELINE_REPORT_ROOT / ea_id / "P7" / "news_matrix.csv"
+        if not news_matrix.exists() and NEWS_MATRIX_FALLBACK.exists():
+            news_matrix = NEWS_MATRIX_FALLBACK
+        if news_matrix.exists():
+            cmd.extend(["--news-matrix", str(news_matrix)])
+        if setfile_path:
+            cmd.extend(["--base-setfile", setfile_path, "--terminal", "T1", "--run-mt5"])
         return cmd
 
     return None
@@ -7714,6 +7972,17 @@ def record_build_result(root: Path, task_id: str, result_file: str) -> dict[str,
         and result.get("compile_succeeded") is True
         and str(smoke or "").lower() == "framework_error"
     )
+    if smoke_framework_error_after_good_build:
+        result["build_smoke_framework_error"] = blocked
+        result["blocked_reason"] = ""
+        result["smoke_result"] = "deferred_p2_smoke"
+        result["smoke_skipped_reason"] = "framework_error_during_build_smoke_treated_as_done"
+        try:
+            rp.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+        except Exception:
+            pass
+        blocked = ""
+
     fail_code = _classify_build_fail_code(result)
     payload_merge: dict[str, Any] = {"codex_result": result}
     if fail_code:
@@ -7786,6 +8055,8 @@ def _classify_build_fail_code(result: dict[str, Any]) -> str | None:
         return "compile_error"
 
     smoke_l = smoke.lower()
+    if smoke_l == "deferred_p2_smoke":
+        return None
     if smoke_l in {"passed", "zero_trades"}:
         return None
     if smoke_l:

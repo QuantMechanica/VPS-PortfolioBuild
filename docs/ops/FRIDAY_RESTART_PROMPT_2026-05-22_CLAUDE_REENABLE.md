@@ -81,14 +81,16 @@ Test-Path D:\QM\strategy_farm\CLAUDE_DISABLED.flag
 
 ## 4. Re-enable Patch Target
 
-If OWNER confirms re-enable, update `tools/strategy_farm/farmctl.py` around `pump()`:
+If OWNER confirms re-enable, remove `D:\QM\strategy_farm\CLAUDE_DISABLED.flag` and verify `tools/strategy_farm/agent_router.py`:
 
-- Set `MAX_PARALLEL_CLAUDE` to the OWNER-approved cap, probably `3`.
+- First run `python tools/strategy_farm/claude_reenable_check.py`. It is read-only and should report the exact blocker list before any token spend.
+- Claude default cap is already `3` in the router registry after the flag is removed.
 - Restore `prefer_claude_review = os.environ.get("QM_PREFER_CLAUDE_REVIEW") == "1"` if Claude should only be fallback.
 - Restore Claude G0/research spawn branches only if OWNER wants dual Claude+Codex operation again.
-- Preserve the research replenish gate: do not spawn Claude, Codex, or Gemini research while strategy reservoir is 5 or higher.
+- Preserve the research replenish gate: do not spawn Claude, Codex, or Gemini research while schema-clean ready Strategy Card reservoir is 5 or higher.
 - Keep Codex as default unless OWNER explicitly says Claude should be primary.
-- Remove `D:\QM\strategy_farm\CLAUDE_DISABLED.flag`.
+- Run `python tools/strategy_farm/agent_router.py enqueue-friday-smoke` once; it is idempotent and skips disabled agents.
+- Then run `python tools/strategy_farm/agent_router.py route-many --max-routes 5` so smoke tickets actually move into `IN_PROGRESS` when capacity is available.
 - Re-enable `QM_StrategyFarm_BoardAdvisor_Hourly` and/or `QM_StrategyFarm_AutonomousWake_Hourly` only if OWNER wants those Claude wakes back.
 
 Recommended Friday default:
