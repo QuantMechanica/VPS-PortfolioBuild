@@ -15,6 +15,10 @@ input double PORTFOLIO_WEIGHT            = 1.0;
 
 input group "News"
 input QM_NewsMode qm_news_mode           = QM_NEWS_OFF;
+input int    qm_news_pause_before_minutes = 30;
+input int    qm_news_pause_after_minutes  = 30;
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
 
 input group "Friday Close"
 input bool   qm_friday_close_enabled     = true;
@@ -72,10 +76,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(point <= 0.0 || ask <= 0.0 || bid <= 0.0)
       return false;
 
-   const double m5_close = QM_SMA(_Symbol, PERIOD_M5, 1, 1);
-   const double sma_h4 = QM_SMA(_Symbol, PERIOD_H4, strategy_sma_period, 0);
-   const double sma_h1 = QM_SMA(_Symbol, PERIOD_H1, strategy_sma_period, 0);
-   const double sma_m5 = QM_SMA(_Symbol, PERIOD_M5, strategy_sma_period, 1);
+   const double m5_close = QM_SMA(_Symbol, PERIOD_M5, 1, 1, PRICE_CLOSE);
+   const double sma_h4 = QM_SMA(_Symbol, PERIOD_H4, strategy_sma_period, 0, PRICE_CLOSE);
+   const double sma_h1 = QM_SMA(_Symbol, PERIOD_H1, strategy_sma_period, 0, PRICE_CLOSE);
+   const double sma_m5 = QM_SMA(_Symbol, PERIOD_M5, strategy_sma_period, 1, PRICE_CLOSE);
    if(m5_close <= 0.0 || sma_h4 <= 0.0 || sma_h1 <= 0.0 || sma_m5 <= 0.0)
       return false;
 
@@ -115,8 +119,8 @@ bool Strategy_ExitSignal()
    if(strategy_sma_period <= 0)
       return false;
 
-   const double m5_close = QM_SMA(_Symbol, PERIOD_M5, 1, 1);
-   const double sma_m5 = QM_SMA(_Symbol, PERIOD_M5, strategy_sma_period, 1);
+   const double m5_close = QM_SMA(_Symbol, PERIOD_M5, 1, 1, PRICE_CLOSE);
+   const double sma_m5 = QM_SMA(_Symbol, PERIOD_M5, strategy_sma_period, 1, PRICE_CLOSE);
    if(m5_close <= 0.0 || sma_m5 <= 0.0)
       return false;
 
@@ -155,7 +159,11 @@ int OnInit()
                         PORTFOLIO_WEIGHT,
                         qm_news_mode,
                         qm_friday_close_enabled,
-                        qm_friday_close_hour_broker))
+                        qm_friday_close_hour_broker,
+                        qm_news_pause_before_minutes,
+                        qm_news_pause_after_minutes,
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_1051\",\"ea\":\"cc-3ducks-sma60-mtf\"}");

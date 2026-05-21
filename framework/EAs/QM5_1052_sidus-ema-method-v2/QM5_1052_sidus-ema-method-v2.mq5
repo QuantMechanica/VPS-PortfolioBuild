@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_1052 Sidus Method v2"
+#property description "QM5_1052 Sidus EMA Method v2"
 
 #include <QM/QM_Common.mqh>
 
@@ -45,6 +45,10 @@ input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
 input QM_NewsMode qm_news_mode          = QM_NEWS_OFF;
+input int    qm_news_pause_before_minutes = 30;
+input int    qm_news_pause_after_minutes  = 30;
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
 
 input group "Friday Close"
 input bool   qm_friday_close_enabled    = true;
@@ -55,16 +59,12 @@ input int    strategy_wma_fast_period   = 5;
 input int    strategy_wma_slow_period   = 8;
 input int    strategy_ema_fast_period   = 18;
 input int    strategy_ema_slow_period   = 28;
-input int    strategy_spread_cap_points = 20;
 input int    strategy_sl_buffer_points  = 20;
-input bool   strategy_use_atr_stop      = false;
-input int    strategy_atr_period        = 14;
-input double strategy_atr_sl_mult       = 1.5;
-input bool   strategy_use_rr_tp         = true;
 input double strategy_rr_target         = 1.5;
-input bool   strategy_session_filter    = false;
-input int    strategy_session_start_h   = 7;
-input int    strategy_session_end_h     = 17;
+input int    strategy_spread_cap_points = 20;
+input bool   strategy_session_filter_enabled = false;
+input int    strategy_session_start_hour = 7;
+input int    strategy_session_end_hour   = 17;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -81,96 +81,26 @@ bool Strategy_NoTradeFilter()
          return true;
      }
 
-   if(strategy_session_filter)
+   if(strategy_session_filter_enabled)
      {
       MqlDateTime dt;
       TimeToStruct(TimeCurrent(), dt);
       const int hour = dt.hour;
-      if(strategy_session_start_h == strategy_session_end_h)
+      if(strategy_session_start_hour == strategy_session_end_hour)
          return false;
-      if(strategy_session_start_h < strategy_session_end_h)
+      if(strategy_session_start_hour < strategy_session_end_hour)
         {
-         if(hour < strategy_session_start_h || hour >= strategy_session_end_h)
+         if(hour < strategy_session_start_hour || hour >= strategy_session_end_hour)
             return true;
         }
       else
         {
-         if(hour < strategy_session_start_h && hour >= strategy_session_end_h)
+         if(hour < strategy_session_start_hour && hour >= strategy_session_end_hour)
             return true;
         }
      }
 
    return false;
-  }
-
-int SidusSignal()
-  {
-   if(strategy_wma_fast_period <= 0 || strategy_wma_slow_period <= 0 ||
-      strategy_ema_fast_period <= 0 || strategy_ema_slow_period <= 0)
-      return 0;
-
-   const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
-   const double wma_fast_1 = QM_WMA(_Symbol, tf, strategy_wma_fast_period, 1);
-   const double wma_slow_1 = QM_WMA(_Symbol, tf, strategy_wma_slow_period, 1);
-   const double wma_fast_2 = QM_WMA(_Symbol, tf, strategy_wma_fast_period, 2);
-   const double wma_slow_2 = QM_WMA(_Symbol, tf, strategy_wma_slow_period, 2);
-   const double ema_fast_1 = QM_EMA(_Symbol, tf, strategy_ema_fast_period, 1);
-   const double ema_slow_1 = QM_EMA(_Symbol, tf, strategy_ema_slow_period, 1);
-
-   if(wma_fast_1 <= 0.0 || wma_slow_1 <= 0.0 || wma_fast_2 <= 0.0 ||
-      wma_slow_2 <= 0.0 || ema_fast_1 <= 0.0 || ema_slow_1 <= 0.0)
-      return 0;
-
-   const bool bullish_cross = (wma_fast_2 <= wma_slow_2 && wma_fast_1 > wma_slow_1);
-   const bool bearish_cross = (wma_fast_2 >= wma_slow_2 && wma_fast_1 < wma_slow_1);
-
-   if(bullish_cross &&
-      wma_fast_1 > ema_fast_1 && wma_fast_1 > ema_slow_1 &&
-      wma_slow_1 > ema_fast_1 && wma_slow_1 > ema_slow_1 &&
-      ema_fast_1 > ema_slow_1)
-      return 1;
-
-   if(bearish_cross &&
-      wma_fast_1 < ema_fast_1 && wma_fast_1 < ema_slow_1 &&
-      wma_slow_1 < ema_fast_1 && wma_slow_1 < ema_slow_1 &&
-      ema_fast_1 < ema_slow_1)
-      return -1;
-
-   return 0;
-  }
-
-bool SidusOurPositionType(ENUM_POSITION_TYPE &position_type)
-  {
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      return true;
-     }
-   return false;
-  }
-
-double SidusBufferedEmaStop(const QM_OrderType side, const double entry)
-  {
-   const double ema_slow = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_ema_slow_period, 1);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(ema_slow <= 0.0 || point <= 0.0 || strategy_sl_buffer_points < 0)
-      return 0.0;
-
-   const double buffer = strategy_sl_buffer_points * point;
-   const double raw_stop = QM_OrderTypeIsBuy(side) ? (ema_slow - buffer) : (ema_slow + buffer);
-   if(QM_OrderTypeIsBuy(side) && raw_stop >= entry)
-      return 0.0;
-   if(!QM_OrderTypeIsBuy(side) && raw_stop <= entry)
-      return 0.0;
-   return QM_StopRulesNormalizePrice(_Symbol, raw_stop);
   }
 
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
@@ -186,47 +116,118 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   const int signal = SidusSignal();
-   if(signal == 0)
+   if(strategy_wma_fast_period <= 0 || strategy_wma_slow_period <= 0 ||
+      strategy_ema_fast_period <= 0 || strategy_ema_slow_period <= 0 ||
+      strategy_sl_buffer_points < 0 || strategy_rr_target <= 0.0)
       return false;
 
-   req.type = (signal > 0) ? QM_BUY : QM_SELL;
-   const double entry = QM_EntryMarketPrice(req.type);
-   if(entry <= 0.0)
+   const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(point <= 0.0)
       return false;
 
-   req.sl = strategy_use_atr_stop
-            ? QM_StopATR(_Symbol, req.type, entry, strategy_atr_period, strategy_atr_sl_mult)
-            : SidusBufferedEmaStop(req.type, entry);
-   if(req.sl <= 0.0)
+   const double wma_fast_1 = QM_WMA(_Symbol, tf, strategy_wma_fast_period, 1);
+   const double wma_slow_1 = QM_WMA(_Symbol, tf, strategy_wma_slow_period, 1);
+   const double wma_fast_2 = QM_WMA(_Symbol, tf, strategy_wma_fast_period, 2);
+   const double wma_slow_2 = QM_WMA(_Symbol, tf, strategy_wma_slow_period, 2);
+   const double ema_fast_1 = QM_EMA(_Symbol, tf, strategy_ema_fast_period, 1);
+   const double ema_slow_1 = QM_EMA(_Symbol, tf, strategy_ema_slow_period, 1);
+   if(wma_fast_1 <= 0.0 || wma_slow_1 <= 0.0 || wma_fast_2 <= 0.0 ||
+      wma_slow_2 <= 0.0 || ema_fast_1 <= 0.0 || ema_slow_1 <= 0.0)
       return false;
 
-   if(strategy_use_rr_tp)
+   const bool bullish_cross = (wma_fast_2 <= wma_slow_2 && wma_fast_1 > wma_slow_1);
+   const bool bearish_cross = (wma_fast_2 >= wma_slow_2 && wma_fast_1 < wma_slow_1);
+   const double buffer = strategy_sl_buffer_points * point;
+
+   if(bullish_cross &&
+      wma_fast_1 > ema_fast_1 && wma_fast_1 > ema_slow_1 &&
+      wma_slow_1 > ema_fast_1 && wma_slow_1 > ema_slow_1 &&
+      ema_fast_1 > ema_slow_1)
+     {
+      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      const double sl = NormalizeDouble(ema_slow_1 - buffer, _Digits);
+      if(entry <= 0.0 || sl <= 0.0 || sl >= entry)
+         return false;
+
+      req.type = QM_BUY;
+      req.price = 0.0;
+      req.sl = sl;
       req.tp = QM_TakeRR(_Symbol, req.type, entry, req.sl, strategy_rr_target);
+      req.reason = "SIDUS_LONG_WMA_CROSS_EMA_TUNNEL";
+      return (req.tp > entry);
+     }
 
-   req.reason = (signal > 0) ? "SIDUS_LONG" : "SIDUS_SHORT";
-   return true;
+   if(bearish_cross &&
+      wma_fast_1 < ema_fast_1 && wma_fast_1 < ema_slow_1 &&
+      wma_slow_1 < ema_fast_1 && wma_slow_1 < ema_slow_1 &&
+      ema_fast_1 < ema_slow_1)
+     {
+      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      const double sl = NormalizeDouble(ema_slow_1 + buffer, _Digits);
+      if(entry <= 0.0 || sl <= entry)
+         return false;
+
+      req.type = QM_SELL;
+      req.price = 0.0;
+      req.sl = sl;
+      req.tp = QM_TakeRR(_Symbol, req.type, entry, req.sl, strategy_rr_target);
+      req.reason = "SIDUS_SHORT_WMA_CROSS_EMA_TUNNEL";
+      return (req.tp > 0.0 && req.tp < entry);
+     }
+
+   return false;
   }
 
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies no trailing, break-even, or partial close management.
+   // Card specifies no break-even, trailing, or partial-close management.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   ENUM_POSITION_TYPE position_type;
-   if(!SidusOurPositionType(position_type))
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
       return false;
 
-   const int signal = SidusSignal();
-   if(position_type == POSITION_TYPE_BUY && signal < 0)
+   ENUM_POSITION_TYPE position_type = POSITION_TYPE_BUY;
+   bool have_position = false;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      have_position = true;
+      break;
+     }
+
+   if(!have_position)
+      return false;
+
+   const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
+   const double wma_fast_1 = QM_WMA(_Symbol, tf, strategy_wma_fast_period, 1);
+   const double wma_slow_1 = QM_WMA(_Symbol, tf, strategy_wma_slow_period, 1);
+   const double wma_fast_2 = QM_WMA(_Symbol, tf, strategy_wma_fast_period, 2);
+   const double wma_slow_2 = QM_WMA(_Symbol, tf, strategy_wma_slow_period, 2);
+   if(wma_fast_1 <= 0.0 || wma_slow_1 <= 0.0 || wma_fast_2 <= 0.0 || wma_slow_2 <= 0.0)
+      return false;
+
+   const bool bullish_cross = (wma_fast_2 <= wma_slow_2 && wma_fast_1 > wma_slow_1);
+   const bool bearish_cross = (wma_fast_2 >= wma_slow_2 && wma_fast_1 < wma_slow_1);
+
+   if(position_type == POSITION_TYPE_BUY && bearish_cross)
       return true;
-   if(position_type == POSITION_TYPE_SELL && signal > 0)
+   if(position_type == POSITION_TYPE_SELL && bullish_cross)
       return true;
 
    return false;
@@ -237,6 +238,8 @@ bool Strategy_ExitSignal()
 // custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
+   if(!QM_NewsAllowsTrade(_Symbol, broker_time, qm_news_mode))
+      return true;
    return false; // defer to QM_NewsAllowsTrade(...)
   }
 
@@ -253,7 +256,11 @@ int OnInit()
                         PORTFOLIO_WEIGHT,
                         qm_news_mode,
                         qm_friday_close_enabled,
-                        qm_friday_close_hour_broker))
+                        qm_friday_close_hour_broker,
+                        qm_news_pause_before_minutes,
+                        qm_news_pause_after_minutes,
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");

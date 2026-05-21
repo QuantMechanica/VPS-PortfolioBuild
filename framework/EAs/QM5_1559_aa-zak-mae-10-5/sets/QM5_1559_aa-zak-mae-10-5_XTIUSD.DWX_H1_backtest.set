@@ -3,16 +3,16 @@
 ; ea_id:        1559
 ; ea_slug:      aa-zak-mae-10-5
 ; ea_version:   v5.0
-; set_version:  s20260519-001
+; set_version:  s20260520-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   5
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   f479fcea1771abd50ae09c962c57ca0ebce03e08a63eaa85b9fa82d537485cfa
+; build_hash:   12545458aa5e25ee42198f27eb50fa6f8e6fdd42c5e3d59a4098ae9512d1fd48
 ; author:       Development
-; date:         2026-05-19
+; date:         2026-05-20
 ;==========================================================
 qm_magic_slot_offset=5
 RISK_FIXED=1000

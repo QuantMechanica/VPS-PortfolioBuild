@@ -45,9 +45,13 @@ input double PORTFOLIO_WEIGHT            = 1.0;
 
 input group "News"
 input QM_NewsMode qm_news_mode           = QM_NEWS_OFF;
+input int    qm_news_pause_before_minutes = 30;
+input int    qm_news_pause_after_minutes  = 30;
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled     = true;
+input bool   qm_friday_close_enabled     = false;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Strategy"
@@ -89,18 +93,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    if(Bars(_Symbol, PERIOD_MN1) < strategy_min_monthly_bars)
-      return false;
-
-   const datetime entry_last_bar = iTime(_Symbol, _Period, 1);
-   const datetime entry_prev_bar = iTime(_Symbol, _Period, 2);
-   if(entry_last_bar <= 0 || entry_prev_bar <= 0)
-      return false;
-
-   MqlDateTime entry_last_dt;
-   MqlDateTime entry_prev_dt;
-   TimeToStruct(entry_last_bar, entry_last_dt);
-   TimeToStruct(entry_prev_bar, entry_prev_dt);
-   if(entry_last_dt.year == entry_prev_dt.year && entry_last_dt.mon == entry_prev_dt.mon)
       return false;
 
    const double month_close = iClose(_Symbol, PERIOD_MN1, 1);
@@ -154,17 +146,6 @@ bool Strategy_ExitSignal()
       return false;
    if(Bars(_Symbol, PERIOD_MN1) < strategy_min_monthly_bars)
       return false;
-   const datetime exit_last_bar = iTime(_Symbol, _Period, 1);
-   const datetime exit_prev_bar = iTime(_Symbol, _Period, 2);
-   if(exit_last_bar <= 0 || exit_prev_bar <= 0)
-      return false;
-
-   MqlDateTime exit_last_dt;
-   MqlDateTime exit_prev_dt;
-   TimeToStruct(exit_last_bar, exit_last_dt);
-   TimeToStruct(exit_prev_bar, exit_prev_dt);
-   if(exit_last_dt.year == exit_prev_dt.year && exit_last_dt.mon == exit_prev_dt.mon)
-      return false;
 
    const double month_close = iClose(_Symbol, PERIOD_MN1, 1);
    const double month_sma = QM_SMA(_Symbol, PERIOD_MN1, strategy_sma_months, 1, PRICE_CLOSE);
@@ -195,7 +176,11 @@ int OnInit()
                         PORTFOLIO_WEIGHT,
                         qm_news_mode,
                         qm_friday_close_enabled,
-                        qm_friday_close_hour_broker))
+                        qm_friday_close_hour_broker,
+                        qm_news_pause_before_minutes,
+                        qm_news_pause_after_minutes,
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_1559_aa_zak_mae_10_5\"}");

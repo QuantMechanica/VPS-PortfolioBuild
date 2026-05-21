@@ -1,0 +1,22 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1559
+; ea_slug:      aa-zak-mae-10-5
+; ea_version:   v5.0
+; set_version:  s20260521-001
+; symbol:       USDJPY.DWX
+; timeframe:    MN1
+; environment:  backtest
+; magic_slot:   8
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   2c30f3c02b8a33443b130a056e9c23437750938a9e1f8d1c55e4a6e6c1ea7318
+; author:       Development
+; date:         2026-05-21
+;==========================================================
+qm_magic_slot_offset=8
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=not_found

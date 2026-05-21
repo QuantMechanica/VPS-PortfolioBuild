@@ -1158,3 +1158,8 @@ ea_id,slug,strategy_id,status,owner,created_at
 10283,jstm-rsi-hs,1b906e79-c619-5a61-90db-ee19ac95a19f,active,Research,2026-05-21
 10284,kernc-mtf-rsi,1b906e79-c619-5a61-90db-ee19ac95a19f,active,Research,2026-05-21
 10285,kernc-sma-x,1b906e79-c619-5a61-90db-ee19ac95a19f,active,Research,2026-05-21
+10286,cinar-supertrend,1b906e79-c619-5a61-90db-ee19ac95a19f,active,Research,2026-05-21
+10287,cinar-ichimoku,1b906e79-c619-5a61-90db-ee19ac95a19f,active,Research,2026-05-21
+10288,cinar-aroon,1b906e79-c619-5a61-90db-ee19ac95a19f,active,Research,2026-05-21
+10289,cinar-cci,1b906e79-c619-5a61-90db-ee19ac95a19f,active,Research,2026-05-21
+10290,cinar-trix,1b906e79-c619-5a61-90db-ee19ac95a19f,active,Research,2026-05-21

@@ -14,6 +14,29 @@ __pycache__/
 *.pyc
 **/*.pyc
 .claude/scheduled_tasks.lock
+.tmp/
+framework/registry/*.tmp
+
+# Local one-off audit and queue helper files. Keep already tracked scratch
+# fixtures, but do not surface new ad hoc scripts in normal worktree status.
+.scratch/*
+!.scratch/qua1540/
+!.scratch/qua1582_empty_pipeline_root/
+!.scratch/qua224/
+!.scratch/all-issues.json
+!.scratch/co-issues.json
+!.scratch/compile_bars_startup.ini
+!.scratch/mt5_queue_proto.db
+!.scratch/open-issues.json
+!.scratch/parent_id.txt
+!.scratch/qm_orchestrator_producer_smoketest.py
+!.scratch/qua-696-child-comment.json
+!.scratch/qua-696-child-description.md
+!.scratch/qua-696-disposition-comment.md
+!.scratch/qua-696-disposition.json
+!.scratch/qua-696-rc.json
+!.scratch/qua-696-status-flip.json
+!.scratch/qua-696-status-flip.md
 
 # QUA-186 approved artifact retention policy (CEO comment c2891fa7, 2026-04-27)
 framework/build/

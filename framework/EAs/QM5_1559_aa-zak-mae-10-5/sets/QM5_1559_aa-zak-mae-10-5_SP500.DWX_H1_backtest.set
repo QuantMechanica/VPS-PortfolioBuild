@@ -3,16 +3,16 @@
 ; ea_id:        1559
 ; ea_slug:      aa-zak-mae-10-5
 ; ea_version:   v5.0
-; set_version:  s20260519-001
+; set_version:  s20260520-001
 ; symbol:       SP500.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   46d666097878e667978bcd6d606e9e4081a672bda360d35ad9e26985ce1eac52
+; build_hash:   9c2f8f700f03fb4de1ecd9ac0e8c38128ccebd49a372aa9be462d666a5b639ac
 ; author:       Development
-; date:         2026-05-19
+; date:         2026-05-20
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=1000

@@ -3,16 +3,16 @@
 ; ea_id:        1559
 ; ea_slug:      aa-zak-mae-10-5
 ; ea_version:   v5.0
-; set_version:  s20260519-001
+; set_version:  s20260520-001
 ; symbol:       WS30.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   111d8bd7115eb61f0a7ec9f6ecade0007ec683996164bdfc12186e89ddca589d
+; build_hash:   3a78138d212812790ff52cc696d06a2f63ca99a13687e7a9cec7c9d4a37a6a86
 ; author:       Development
-; date:         2026-05-19
+; date:         2026-05-20
 ;==========================================================
 qm_magic_slot_offset=2
 RISK_FIXED=1000

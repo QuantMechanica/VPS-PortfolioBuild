@@ -1,0 +1,361 @@
+#property strict
+#property version   "5.0"
+#property description "QM5_10038 ForexFactory 4x25EMA MTF ATR Trend"
+
+#include <QM/QM_Common.mqh>
+
+// =============================================================================
+// QuantMechanica V5 EA SKELETON
+// -----------------------------------------------------------------------------
+// Fill in only the five Strategy_* hooks below. Everything else is framework
+// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
+// risk + magic + news + Friday-close guard rails). The framework provides:
+//
+//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  — closed-bar gate
+//   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
+//     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
+//     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
+//   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
+//   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
+//   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
+//   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
+//   - QM_FrameworkHandleFridayClose / QM_KillSwitchCheck / QM_NewsAllowsTrade
+//
+// DO NOT
+//   - Write per-EA IsNewBar() — use QM_IsNewBar()
+//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
+//     use the QM_* readers above. The framework pools handles and releases them
+//     on shutdown.
+//   - CopyRates over warmup windows on every tick. If you genuinely need raw
+//     bar arrays, gate by QM_IsNewBar so the work runs once per closed bar.
+//   - Hand-edit framework/include/QM/QM_MagicResolver.mqh. After adding rows
+//     to magic_numbers.csv, run:
+//         python framework/scripts/update_magic_resolver.py
+//     This is idempotent and preserves all rows.
+// =============================================================================
+
+input group "QuantMechanica V5 Framework"
+input int    qm_ea_id                   = 10038;
+input int    qm_magic_slot_offset       = 0;
+
+input group "Risk"
+input double RISK_PERCENT               = 0.0;
+input double RISK_FIXED                 = 1000.0;
+input double PORTFOLIO_WEIGHT           = 1.0;
+
+input group "News"
+input QM_NewsMode qm_news_mode          = QM_NEWS_OFF;
+
+input group "Friday Close"
+input bool   qm_friday_close_enabled    = true;
+input int    qm_friday_close_hour_broker = 21;
+
+input group "Strategy"
+input int    strategy_ema_period        = 25;
+input int    strategy_atr_period        = 14;
+input double strategy_atr_sl_mult       = 2.0;
+input double strategy_atr_tp_mult       = 3.5;
+input int    strategy_alignment_bars    = 3;
+input int    strategy_atr_percentile_bars = 100;
+input double strategy_min_atr_percentile = 30.0;
+input double strategy_max_spread_stop_fraction = 0.08;
+input int    strategy_session_start_hour = 8;
+input int    strategy_session_end_hour   = 21;
+input int    strategy_max_hold_h4_bars   = 20;
+
+// -----------------------------------------------------------------------------
+// Strategy hooks — implement these against the card mechanically.
+// -----------------------------------------------------------------------------
+
+// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
+// regime filter). Cheap O(1) checks only — runs on every tick.
+bool Strategy_NoTradeFilter()
+  {
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(), dt);
+   if(dt.hour < strategy_session_start_hour || dt.hour >= strategy_session_end_hour)
+      return true;
+
+   const double atr = QM_ATR(_Symbol, PERIOD_H4, strategy_atr_period, 1);
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(atr <= 0.0 || ask <= 0.0 || bid <= 0.0 || ask <= bid)
+      return true;
+
+   const double stop_dist = strategy_atr_sl_mult * atr;
+   if(stop_dist <= 0.0)
+      return true;
+   if((ask - bid) > strategy_max_spread_stop_fraction * stop_dist)
+      return true;
+
+   return false;
+  }
+
+// Populate `req` with entry order parameters and return TRUE if a NEW entry
+// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
+// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
+bool Strategy_EntrySignal(QM_EntryRequest &req)
+  {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+         return false;
+     }
+
+   if(strategy_ema_period <= 0 || strategy_atr_period <= 0 ||
+      strategy_alignment_bars <= 0 || strategy_atr_percentile_bars <= 0 ||
+      strategy_atr_sl_mult <= 0.0 || strategy_atr_tp_mult <= 0.0)
+      return false;
+
+   int long_hits = 0;
+   int short_hits = 0;
+   ENUM_TIMEFRAMES frames[4] = { PERIOD_M15, PERIOD_H1, PERIOD_H4, PERIOD_D1 };
+   for(int f = 0; f < 4; ++f)
+     {
+      bool frame_long = true;
+      bool frame_short = true;
+      for(int shift = 1; shift <= strategy_alignment_bars; ++shift)
+        {
+         const double close_v = iClose(_Symbol, frames[f], shift);
+         const double ema_v = QM_EMA(_Symbol, frames[f], strategy_ema_period, shift);
+         if(close_v <= 0.0 || ema_v <= 0.0)
+           {
+            frame_long = false;
+            frame_short = false;
+            break;
+           }
+         if(close_v <= ema_v)
+            frame_long = false;
+         if(close_v >= ema_v)
+            frame_short = false;
+        }
+      if(frame_long)
+         ++long_hits;
+      if(frame_short)
+         ++short_hits;
+     }
+
+   const bool is_long = (long_hits == 4);
+   const bool is_short = (short_hits == 4);
+   if(!is_long && !is_short)
+      return false;
+
+   const double atr = QM_ATR(_Symbol, PERIOD_H4, strategy_atr_period, 1);
+   if(atr <= 0.0)
+      return false;
+
+   int atr_rank_hits = 0;
+   int atr_count = 0;
+   for(int shift = 1; shift <= strategy_atr_percentile_bars; ++shift)
+     {
+      const double atr_i = QM_ATR(_Symbol, PERIOD_H4, strategy_atr_period, shift);
+      if(atr_i <= 0.0)
+         continue;
+      ++atr_count;
+      if(atr_i <= atr)
+         ++atr_rank_hits;
+     }
+   if(atr_count <= 0)
+      return false;
+   const double atr_percentile = 100.0 * (double)atr_rank_hits / (double)atr_count;
+   if(atr_percentile < strategy_min_atr_percentile)
+      return false;
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0 || ask <= bid)
+      return false;
+
+   const double stop_dist = strategy_atr_sl_mult * atr;
+   if((ask - bid) > strategy_max_spread_stop_fraction * stop_dist)
+      return false;
+
+   if(is_long)
+     {
+      req.type = QM_BUY;
+      req.price = ask;
+      req.sl = ask - stop_dist;
+      req.tp = ask + strategy_atr_tp_mult * atr;
+      req.reason = "QM5_10038_LONG_4TF_EMA25";
+      return true;
+     }
+
+   req.type = QM_SELL;
+   req.price = bid;
+   req.sl = bid + stop_dist;
+   req.tp = bid - strategy_atr_tp_mult * atr;
+   req.reason = "QM5_10038_SHORT_4TF_EMA25";
+   return true;
+  }
+
+// Called every tick when an open position exists for this EA's magic.
+// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
+void Strategy_ManageOpenPosition()
+  {
+   // Card specifies static ATR SL/TP with no trailing, partial, or BE management.
+  }
+
+// Return TRUE to close the open position now (e.g. opposite-signal exit,
+// max-hold-time exceeded, session end).
+bool Strategy_ExitSignal()
+  {
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
+      const int h4_seconds = PeriodSeconds(PERIOD_H4);
+      if(opened > 0 && h4_seconds > 0 && TimeCurrent() - opened >= strategy_max_hold_h4_bars * h4_seconds)
+         return true;
+
+      int long_hits = 0;
+      int short_hits = 0;
+      ENUM_TIMEFRAMES frames[4] = { PERIOD_M15, PERIOD_H1, PERIOD_H4, PERIOD_D1 };
+      for(int f = 0; f < 4; ++f)
+        {
+         bool frame_long = true;
+         bool frame_short = true;
+         for(int shift = 1; shift <= strategy_alignment_bars; ++shift)
+           {
+            const double close_v = iClose(_Symbol, frames[f], shift);
+            const double ema_v = QM_EMA(_Symbol, frames[f], strategy_ema_period, shift);
+            if(close_v <= 0.0 || ema_v <= 0.0)
+              {
+               frame_long = false;
+               frame_short = false;
+               break;
+              }
+            if(close_v <= ema_v)
+               frame_long = false;
+            if(close_v >= ema_v)
+               frame_short = false;
+           }
+         if(frame_long)
+            ++long_hits;
+         if(frame_short)
+            ++short_hits;
+        }
+
+      const ENUM_POSITION_TYPE type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      if(type == POSITION_TYPE_BUY && short_hits == 4)
+         return true;
+      if(type == POSITION_TYPE_SELL && long_hits == 4)
+         return true;
+     }
+
+   return false;
+  }
+
+// Optional news-filter override. Return TRUE to suppress trading regardless
+// of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
+// custom high-impact-event handling beyond the central filter.
+bool Strategy_NewsFilterHook(const datetime broker_time)
+  {
+   return false; // defer to QM_NewsAllowsTrade(...)
+  }
+
+// -----------------------------------------------------------------------------
+// Framework wiring — do NOT edit below this line unless you know why.
+// -----------------------------------------------------------------------------
+
+int OnInit()
+  {
+   if(!QM_FrameworkInit(qm_ea_id,
+                        qm_magic_slot_offset,
+                        RISK_PERCENT,
+                        RISK_FIXED,
+                        PORTFOLIO_WEIGHT,
+                        qm_news_mode,
+                        qm_friday_close_enabled,
+                        qm_friday_close_hour_broker))
+      return INIT_FAILED;
+
+   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
+   return INIT_SUCCEEDED;
+  }
+
+void OnDeinit(const int reason)
+  {
+   QM_LogEvent(QM_INFO, "DEINIT", StringFormat("{\"reason\":%d}", reason));
+   QM_FrameworkShutdown();
+  }
+
+void OnTick()
+  {
+   if(!QM_KillSwitchCheck())
+      return;
+
+   const datetime broker_now = TimeCurrent();
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+   if(!QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode))
+      return;
+   if(QM_FrameworkHandleFridayClose())
+      return;
+
+   if(Strategy_NoTradeFilter())
+      return;
+
+   // Per-tick: trade management can adjust SL/TP on open positions.
+   Strategy_ManageOpenPosition();
+
+   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
+   if(Strategy_ExitSignal())
+     {
+      const int magic = QM_FrameworkMagic();
+      for(int i = PositionsTotal() - 1; i >= 0; --i)
+        {
+         const ulong ticket = PositionGetTicket(i);
+         if(!PositionSelectByTicket(ticket))
+            continue;
+         if(PositionGetInteger(POSITION_MAGIC) != magic)
+            continue;
+         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+        }
+     }
+
+   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
+   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
+   // call, not every incoming tick.
+   if(!QM_IsNewBar())
+      return;
+
+   QM_EntryRequest req;
+   if(Strategy_EntrySignal(req))
+     {
+      ulong out_ticket = 0;
+      QM_TM_OpenPosition(req, out_ticket);
+     }
+  }
+
+void OnTimer()
+  {
+   QM_FrameworkOnTimer();
+  }
+
+double OnTester()
+  {
+   QM_ChartUI_Refresh();
+   return QM_DefaultObjective();
+  }
