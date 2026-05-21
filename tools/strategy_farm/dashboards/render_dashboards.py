@@ -610,6 +610,336 @@ ONE_PAGER_CSS = """
 """
 
 
+COCKPIT_CSS = """
+.decision-band{margin-bottom:22px}
+.decision-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px}
+.dt{padding:16px 18px;border-radius:12px;background:rgba(15,23,42,0.55);border:.5px solid var(--qm-border)}
+.dt-label{font-size:9px;font-weight:600;color:var(--qm-text-muted);text-transform:uppercase;letter-spacing:1.1px;margin-bottom:8px}
+.dt-val{font-family:var(--font-mono,'Source Code Pro',monospace);font-size:26px;font-weight:600;color:var(--qm-text);letter-spacing:-.5px;line-height:1.05}
+.dt-val.good{color:var(--em)}
+.dt-val.warn{color:#f59e0b}
+.dt-val.bad{color:var(--qm-fail)}
+.dt-val.small{font-size:16px;letter-spacing:0}
+.dt-sub{font-size:10px;color:var(--qm-text-muted);margin-top:6px;font-family:var(--font-mono,'Source Code Pro',monospace)}
+.next-action{padding:14px 20px;border-radius:12px;background:rgba(6,182,212,0.08);border:.5px solid rgba(6,182,212,0.28);font-size:13px;color:var(--qm-text);display:flex;gap:12px;align-items:center}
+.next-action.bad{background:rgba(239,68,68,0.07);border-color:rgba(239,68,68,0.3)}
+.next-action .na-label{font-size:9px;font-weight:700;color:var(--qm-live);text-transform:uppercase;letter-spacing:1.2px;white-space:nowrap}
+.next-action.bad .na-label{color:var(--qm-fail)}
+
+.qh-table,.ctrl-table,.atask-table{width:100%;border-collapse:collapse;font-size:12px;font-family:var(--font-mono,'Source Code Pro',monospace)}
+.qh-table th,.ctrl-table th,.atask-table th{text-align:right;font-size:9px;color:var(--qm-text-muted);text-transform:uppercase;letter-spacing:.8px;padding:7px 9px;border-bottom:.5px solid var(--qm-border);font-weight:600}
+.qh-table th:first-child,.ctrl-table th:first-child,.atask-table th:first-child{text-align:left}
+.qh-table td,.ctrl-table td,.atask-table td{text-align:right;padding:8px 9px;border-bottom:.5px solid var(--qm-border-soft)}
+.qh-table td:first-child,.ctrl-table td:first-child,.atask-table td:first-child{text-align:left}
+.qh-table tr:last-child td,.ctrl-table tr:last-child td,.atask-table tr:last-child td{border-bottom:none}
+.qh-table .qh-phase{color:var(--em);font-weight:600}
+.cell-pass{color:var(--em);font-weight:600}
+.cell-fail{color:var(--qm-fail);font-weight:600}
+.cell-inv{color:#f59e0b;font-weight:600}
+.cell-zero{color:var(--qm-text-faint)}
+.cell-act{color:var(--qm-live);font-weight:600}
+
+.cov-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:10px}
+.cov-tile{padding:13px 15px;border-radius:10px;background:rgba(15,23,42,0.45);border:.5px solid var(--qm-border);text-align:center}
+.cov-num{font-family:var(--font-mono,'Source Code Pro',monospace);font-size:22px;font-weight:600;color:var(--qm-text)}
+.cov-num.warn{color:#f59e0b}
+.cov-label{font-size:9px;color:var(--qm-text-muted);text-transform:uppercase;letter-spacing:.6px;margin-top:5px}
+.cov-note{font-size:11px;color:var(--qm-text-muted);line-height:1.55}
+.cov-note code{font-family:var(--font-mono,'Source Code Pro',monospace);color:var(--qm-text-dim);background:rgba(15,23,42,0.6);padding:1px 5px;border-radius:3px}
+
+.attn-group{padding:11px 16px;border-radius:9px;margin-bottom:8px;border-left:3px solid;background:rgba(15,23,42,0.4)}
+.attn-high{border-left-color:var(--qm-fail);background:rgba(239,68,68,0.05)}
+.attn-med{border-left-color:#f59e0b;background:rgba(245,158,11,0.04)}
+.attn-low{border-left-color:var(--qm-text-muted)}
+.attn-head{font-size:12px;color:var(--qm-text);font-weight:600;display:flex;gap:8px;align-items:baseline}
+.attn-count{font-family:var(--font-mono,'Source Code Pro',monospace);font-size:13px;font-weight:700}
+.attn-high .attn-count{color:var(--qm-fail)}
+.attn-med .attn-count{color:#f59e0b}
+.attn-low .attn-count{color:var(--qm-text-muted)}
+.attn-detail{font-size:11px;color:var(--qm-text-muted);margin-top:4px;font-family:var(--font-mono,'Source Code Pro',monospace)}
+
+.atask-table .at-state{padding:2px 7px;border-radius:8px;font-size:9px;font-weight:600;letter-spacing:.4px}
+.at-blocked{background:rgba(239,68,68,0.1);color:var(--qm-fail)}
+.at-progress{background:rgba(6,182,212,0.12);color:var(--qm-live)}
+.at-review{background:rgba(245,158,11,0.1);color:#f59e0b}
+.at-other{background:rgba(148,163,184,0.1);color:var(--qm-text-muted)}
+.sla-late{color:var(--qm-fail);font-weight:600}
+.sla-ok{color:var(--qm-text-muted)}
+
+details.cp-details{margin-top:10px}
+details.cp-details>summary{cursor:pointer;font-size:11px;color:var(--qm-text-muted);font-family:var(--font-mono,'Source Code Pro',monospace);padding:6px 0;list-style:none}
+details.cp-details>summary::-webkit-details-marker{display:none}
+details.cp-details>summary::before{content:'▸ ';color:var(--em)}
+details.cp-details[open]>summary::before{content:'▾ '}
+.cp-subnote{font-size:10.5px;color:var(--qm-text-muted);margin-top:8px;line-height:1.5;font-style:italic}
+"""
+
+
+# ── Cockpit data collection (current.html) ───────────────────────
+
+
+def _wi_payload(row: dict) -> dict:
+    try:
+        return json.loads(row.get("payload_json") or "{}")
+    except Exception:
+        return {}
+
+
+def _ran_real_mt5(status: str, payload: dict, claimed_by: Any, evidence: Any) -> bool:
+    """True only if this work_item actually launched an MT5 tester run.
+
+    Preflight failures are rejected *before* MT5 starts (DEEP_AUDIT 2026-05-20)
+    and must not be counted as backtests. A real run leaves a terminal claim,
+    a run_smoke exit code, or MT5 report evidence behind.
+    """
+    if status not in ("done", "failed"):
+        return False
+    if payload.get("preflight_failure"):
+        return False
+    if claimed_by:
+        return True
+    if "run_smoke_exit_code" in payload:
+        return True
+    if evidence:
+        return True
+    return False
+
+
+def _age_hours(iso: str) -> float:
+    if not iso:
+        return 0.0
+    try:
+        t = dt.datetime.fromisoformat(iso.replace("Z", "+00:00"))
+        if t.tzinfo is None:
+            t = t.replace(tzinfo=dt.UTC)
+        return max(0.0, (dt.datetime.now(dt.UTC) - t).total_seconds() / 3600)
+    except Exception:
+        return 0.0
+
+
+_AGENT_SLA_H = {"TODO": 2, "BACKLOG": 4, "IN_PROGRESS": 4, "REVIEW": 12,
+                "BLOCKED": 24, "OPS_FIX_REQUIRED": 12, "SELF_LEARNING": 24}
+_OPEN_AGENT_STATES = ("BACKLOG", "TODO", "IN_PROGRESS", "REVIEW", "BLOCKED",
+                      "OPS_FIX_REQUIRED", "SELF_LEARNING")
+_PREFLIGHT_REASONS = ("ex5_missing", "setfile_missing", "ea_dir_missing",
+                      "ea_dir_ambiguous")
+
+
+def collect_cockpit_data(root: Path, eas: list[dict]) -> dict[str, Any]:
+    """Single-pass DB read powering the operator cockpit (current.html)."""
+    out: dict[str, Any] = {
+        "db_missing": True,
+        "phase_matrix": {},
+        "pending_total": 0,
+        "active_total": 0,
+        "pending_list": [],
+        "distinct_eas": 0,
+        "p8_pass_eas": [],
+        "p4plus_eas": [],
+        "daily": {},
+        "agent_tasks": [],
+        "agent_open_count": 0,
+        "build_failures": [],
+        "build_fail_total": 0,
+        "coverage": {},
+        "bottleneck": "—",
+        "next_action": "",
+        "next_action_bad": False,
+    }
+    db = root / "state" / "farm_state.sqlite"
+    if not db.exists():
+        return out
+    out["db_missing"] = False
+    with sqlite3.connect(db) as conn:
+        conn.row_factory = sqlite3.Row
+        wi = [dict(r) for r in conn.execute(
+            "SELECT id,phase,ea_id,symbol,status,verdict,claimed_by,evidence_path,"
+            "setfile_path,payload_json,created_at,updated_at FROM work_items")]
+        atasks = [dict(r) for r in conn.execute(
+            "SELECT id,task_type,state,priority,assigned_agent,artifact_path,"
+            "verdict,payload_json,created_at,updated_at FROM agent_tasks "
+            "ORDER BY priority, updated_at DESC")]
+
+    today = dt.datetime.now(dt.UTC).date()
+    yesterday = today - dt.timedelta(days=1)
+
+    phase_matrix: dict[str, Counter] = defaultdict(Counter)
+    wi_eas: set[str] = set()
+    ea_pass_phases: dict[str, set[str]] = defaultdict(set)
+    buckets: dict[str, list[dict]] = {"today": [], "yesterday": [], "d7": [], "d30": []}
+    build_failures: list[dict] = []
+    pending_list: list[dict] = []
+
+    for w in wi:
+        phase = w.get("phase") or "?"
+        status = (w.get("status") or "").lower()
+        verdict = (w.get("verdict") or "").upper()
+        payload = _wi_payload(w)
+        ea_id = w.get("ea_id") or "?"
+        wi_eas.add(ea_id)
+
+        m = phase_matrix[phase]
+        m["total"] += 1
+        if status == "pending":
+            m["pending"] += 1
+            out["pending_total"] += 1
+            if len(pending_list) < 120:
+                pending_list.append({"ea_id": ea_id, "symbol": w.get("symbol") or "?",
+                                     "phase": phase})
+        elif status == "active":
+            m["active"] += 1
+            out["active_total"] += 1
+        elif status in ("done", "failed"):
+            if verdict == "PASS":
+                m["pass"] += 1
+                if phase in PHASE_ORDER:
+                    ea_pass_phases[ea_id].add(phase)
+            elif verdict == "FAIL":
+                m["fail"] += 1
+            elif verdict == "INVALID":
+                m["invalid"] += 1
+            else:
+                m["other"] += 1
+
+        vr = str(payload.get("verdict_reason") or "")
+        pf = payload.get("preflight_failure")
+        if pf or vr in _PREFLIGHT_REASONS:
+            reason = vr
+            if not reason:
+                if isinstance(pf, dict):
+                    reason = str(pf.get("reason") or pf.get("verdict_reason") or "preflight_failure")
+                elif isinstance(pf, str):
+                    reason = pf
+                else:
+                    reason = "preflight_failure"
+            build_failures.append({"ea_id": ea_id, "symbol": w.get("symbol") or "?",
+                                   "phase": phase, "reason": reason})
+
+        ran = _ran_real_mt5(status, payload, w.get("claimed_by"), w.get("evidence_path"))
+        upd = (w.get("updated_at") or "")[:10]
+        try:
+            d = dt.date.fromisoformat(upd)
+        except Exception:
+            d = None
+        if d and status in ("done", "failed"):
+            rec = {"ea_id": ea_id, "ran": ran, "verdict": verdict}
+            if d == today:
+                buckets["today"].append(rec)
+            if d == yesterday:
+                buckets["yesterday"].append(rec)
+            if d >= today - dt.timedelta(days=6):
+                buckets["d7"].append(rec)
+            if d >= today - dt.timedelta(days=29):
+                buckets["d30"].append(rec)
+
+    out["phase_matrix"] = {p: dict(c) for p, c in phase_matrix.items()}
+    out["pending_list"] = pending_list
+    out["distinct_eas"] = len(wi_eas)
+
+    p4_idx = PHASE_ORDER.index("P4") if "P4" in PHASE_ORDER else 99
+    for ea_id, phases in ea_pass_phases.items():
+        if "P8" in phases:
+            out["p8_pass_eas"].append(ea_id)
+        if any(p in PHASE_ORDER and PHASE_ORDER.index(p) >= p4_idx for p in phases):
+            out["p4plus_eas"].append(ea_id)
+
+    for name, recs in buckets.items():
+        completed = recs
+        real = [r for r in recs if r["ran"]]
+        out["daily"][name] = {
+            "completed": len(completed),
+            "real_mt5": len(real),
+            "preflight": len(completed) - len(real),
+            "eas": len({r["ea_id"] for r in real}),
+            "pass": sum(1 for r in completed if r["verdict"] == "PASS"),
+            "fail": sum(1 for r in completed if r["verdict"] == "FAIL"),
+            "invalid": sum(1 for r in completed if r["verdict"] == "INVALID"),
+        }
+
+    # build-artifact failures grouped by reason
+    bf_by_reason: dict[str, list[dict]] = defaultdict(list)
+    for bf in build_failures:
+        bf_by_reason[bf["reason"]].append(bf)
+    out["build_fail_total"] = len(build_failures)
+    out["build_failures"] = sorted(
+        ({"reason": r, "count": len(items),
+          "eas": sorted({i["ea_id"] for i in items})}
+         for r, items in bf_by_reason.items()),
+        key=lambda x: -x["count"],
+    )
+
+    # open agent tasks
+    agent_open = []
+    for t in atasks:
+        state = str(t.get("state") or "")
+        if state not in _OPEN_AGENT_STATES:
+            continue
+        try:
+            payload = json.loads(t.get("payload_json") or "{}")
+        except Exception:
+            payload = {}
+        age_h = _age_hours(t.get("updated_at") or "")
+        agent_open.append({
+            "id": str(t.get("id") or "")[:8],
+            "type": t.get("task_type") or "?",
+            "state": state,
+            "agent": t.get("assigned_agent") or payload.get("target_agent_profile") or "—",
+            "priority": t.get("priority"),
+            "artifact": t.get("artifact_path") or payload.get("expected_artifact") or "",
+            "age_h": round(age_h, 1),
+            "sla_late": age_h > _AGENT_SLA_H.get(state, 24),
+        })
+    out["agent_tasks"] = agent_open
+    out["agent_open_count"] = len(agent_open)
+
+    # live-vs-archive coverage
+    detail_eas = {ea["ea_id"] for ea in eas}
+    out["coverage"] = {
+        "distinct_eas_in_work_items": len(wi_eas),
+        "rendered_ea_detail_pages": len(detail_eas),
+        "db_eas_without_detail_page": sorted(wi_eas - detail_eas),
+        "archive_pages_without_current_work_items": sorted(detail_eas - wi_eas),
+    }
+
+    # bottleneck = pipeline phase holding the most pending work
+    pl_phases = [p for p in PHASE_ORDER if p in phase_matrix]
+    bottleneck_phase = None
+    bottleneck_pending = 0
+    for p in pl_phases:
+        pend = phase_matrix[p].get("pending", 0)
+        if pend > bottleneck_pending:
+            bottleneck_pending = pend
+            bottleneck_phase = p
+    out["bottleneck"] = (
+        f"{phase_label(bottleneck_phase)} · {bottleneck_pending} pending"
+        if bottleneck_phase else "queue drained"
+    )
+    return out
+
+
+def derive_next_action(cockpit: dict, mt5: dict) -> tuple[str, bool]:
+    """Return (recommended-action-text, is_bad) for the decision band."""
+    running = mt5.get("running_count", 0)
+    if running == 0:
+        return ("MT5 fleet idle — restart QM_StrategyFarm terminal workers "
+                "(mission-failure signal, Mission Baseline 2026-05-09).", True)
+    if cockpit.get("build_fail_total", 0) >= 25:
+        return (f"{cockpit['build_fail_total']} work items rejected on missing "
+                f".ex5 / setfiles — route a build/registry cleanup task; these are "
+                f"build defects, not strategy failures.", True)
+    if cockpit.get("p8_pass_eas"):
+        eas = ", ".join(cockpit["p8_pass_eas"][:3])
+        return (f"{len(cockpit['p8_pass_eas'])} EA(s) at P8/Q11 PASS ({eas}) — "
+                f"review for the OWNER Q12 portfolio gate.", False)
+    if running < MT5_FLEET_WARN_THRESHOLD:
+        return (f"Only {running}/{MT5_FLEET_TOTAL} terminals running — push more "
+                f"backlog so the factory bottleneck stays saturated.", True)
+    if cockpit.get("pending_total", 0) > 0:
+        return (f"Let T1–T10 drain {cockpit['pending_total']} pending work items; "
+                f"current bottleneck: {cockpit['bottleneck']}.", False)
+    return ("Pipeline queue drained — enqueue the next backlog batch.", False)
+
+
 # ── Section renderers ────────────────────────────────────────────
 
 
@@ -917,32 +1247,293 @@ def render_events(state: dict) -> str:
 """
 
 
+def render_decision_band(cockpit: dict, mt5: dict) -> str:
+    running = mt5.get("running_count", 0)
+    p8 = len(cockpit.get("p8_pass_eas") or [])
+    p4p = len(cockpit.get("p4plus_eas") or [])
+    pending = cockpit.get("pending_total", 0)
+    fleet_cls = "good" if running >= MT5_FLEET_WARN_THRESHOLD else ("warn" if running else "bad")
+    p8_cls = "good" if p8 else "small"
+    p8_val = str(p8) if p8 else "none"
+    action, bad = derive_next_action(cockpit, mt5)
+    return f"""
+<section class="decision-band">
+  <h2 class="section-title">Current Decision State</h2>
+  <div class="decision-tiles">
+    <div class="dt">
+      <div class="dt-label">Q11 / P8 PASS candidates</div>
+      <div class="dt-val {p8_cls}">{e(p8_val)}</div>
+      <div class="dt-sub">{p4p} EA(s) survived P4+</div>
+    </div>
+    <div class="dt">
+      <div class="dt-label">MT5 fleet running</div>
+      <div class="dt-val {fleet_cls}">{running}/{MT5_FLEET_TOTAL}</div>
+      <div class="dt-sub">{cockpit.get("active_total", 0)} work items active</div>
+    </div>
+    <div class="dt">
+      <div class="dt-label">Pipeline backlog</div>
+      <div class="dt-val {"warn" if pending else "good"}">{pending}</div>
+      <div class="dt-sub">work items pending</div>
+    </div>
+    <div class="dt">
+      <div class="dt-label">Active bottleneck</div>
+      <div class="dt-val small">{e(cockpit.get("bottleneck", "—"))}</div>
+      <div class="dt-sub">phase holding most pending work</div>
+    </div>
+  </div>
+  <div class="next-action{" bad" if bad else ""}">
+    <span class="na-label">Next action</span>
+    <span>{e(action)}</span>
+  </div>
+</section>
+"""
+
+
+def render_queue_health(cockpit: dict) -> str:
+    pm = cockpit.get("phase_matrix") or {}
+    phases = [p for p in PHASE_ORDER if p in pm and p.startswith("P")]
+    if not phases:
+        return ('<section class="card"><h3 class="card-title">Pipeline Queue Health</h3>'
+                '<div class="empty">No work items yet.</div></section>')
+    rows = []
+    for p in phases:
+        m = pm[p]
+        pend, act = m.get("pending", 0), m.get("active", 0)
+        ps, fl, inv = m.get("pass", 0), m.get("fail", 0), m.get("invalid", 0)
+        rows.append(
+            f'<tr><td class="qh-phase">{e(phase_label(p))}</td>'
+            f'<td class="{"" if pend else "cell-zero"}">{pend}</td>'
+            f'<td class="{"cell-act" if act else "cell-zero"}">{act}</td>'
+            f'<td class="{"cell-pass" if ps else "cell-zero"}">{ps}</td>'
+            f'<td class="{"cell-fail" if fl else "cell-zero"}">{fl}</td>'
+            f'<td class="{"cell-inv" if inv else "cell-zero"}">{inv}</td>'
+            f'<td>{m.get("total", 0)}</td></tr>'
+        )
+    return (
+        '<section class="card">'
+        '<h3 class="card-title">Pipeline Queue Health · by phase</h3>'
+        '<table class="qh-table"><thead><tr><th>Phase</th><th>Pending</th><th>Active</th>'
+        '<th>PASS</th><th>FAIL</th><th>INVALID</th><th>Total</th></tr></thead>'
+        f'<tbody>{"".join(rows)}</tbody></table></section>'
+    )
+
+
+def render_coverage(cockpit: dict) -> str:
+    cov = cockpit.get("coverage") or {}
+    db_n = cov.get("distinct_eas_in_work_items", 0)
+    pages = cov.get("rendered_ea_detail_pages", 0)
+    no_page = cov.get("db_eas_without_detail_page") or []
+    no_wi = cov.get("archive_pages_without_current_work_items") or []
+    gap = ""
+    if no_page:
+        gap = (f'<details class="cp-details"><summary>{len(no_page)} DB EA(s) with no rendered detail page'
+               f'</summary><div class="attn-detail">{e(", ".join(no_page))}</div>'
+               f'<div class="cp-subnote">Renderer action: include these ea_ids in derive_ea_candidates() '
+               f'so a detail page is generated.</div></details>')
+    return f"""
+<section class="pipeline-section">
+  <h2 class="section-title">Live Pipeline vs Strategy Archive</h2>
+  <div class="cov-grid">
+    <div class="cov-tile"><div class="cov-num">{db_n}</div><div class="cov-label">Distinct EAs · live work_items</div></div>
+    <div class="cov-tile"><div class="cov-num">{pages}</div><div class="cov-label">Rendered EA detail pages</div></div>
+    <div class="cov-tile"><div class="cov-num {"warn" if no_page else ""}">{len(no_page)}</div><div class="cov-label">DB EAs w/o detail page</div></div>
+    <div class="cov-tile"><div class="cov-num {"warn" if no_wi else ""}">{len(no_wi)}</div><div class="cov-label">Archive pages w/o work_items</div></div>
+  </div>
+  <div class="cov-note"><strong>Strategy Archive (<code>strategies.html</code>) is a broader history, not a live mirror.</strong>
+  Only the {db_n} EAs above have current pipeline work items; the remaining detail pages are archive / legacy / research
+  entries. The archive row count must not be read as live factory progress.</div>
+  {gap}
+</section>
+"""
+
+
+def render_daily_controlling(cockpit: dict) -> str:
+    daily = cockpit.get("daily") or {}
+    order = [("today", "Today"), ("yesterday", "Yesterday"),
+             ("d7", "Last 7 days"), ("d30", "Last 30 days")]
+    rows = []
+    for key, label in order:
+        d = daily.get(key) or {}
+        rows.append(
+            f'<tr><td>{e(label)}</td>'
+            f'<td>{d.get("real_mt5", 0)}</td>'
+            f'<td>{d.get("eas", 0)}</td>'
+            f'<td class="{"cell-pass" if d.get("pass") else "cell-zero"}">{d.get("pass", 0)}</td>'
+            f'<td class="{"cell-fail" if d.get("fail") else "cell-zero"}">{d.get("fail", 0)}</td>'
+            f'<td class="{"cell-inv" if d.get("invalid") else "cell-zero"}">{d.get("invalid", 0)}</td>'
+            f'<td class="cell-zero">{d.get("preflight", 0)}</td></tr>'
+        )
+    return f"""
+<section class="pipeline-section">
+  <h2 class="section-title">Daily Controlling · factory throughput</h2>
+  <table class="ctrl-table">
+    <thead><tr><th>Window</th><th>Real MT5 runs</th><th>Distinct EAs</th>
+    <th>PASS</th><th>FAIL</th><th>INVALID</th><th>Preflight-rejected</th></tr></thead>
+    <tbody>{"".join(rows)}</tbody>
+  </table>
+  <div class="cp-subnote">"Real MT5 runs" counts only work items that actually launched a tester run
+  (terminal claim / run_smoke exit / report evidence). "Preflight-rejected" items failed artifact checks
+  before MT5 started — they are not backtests. Q10-style Python-only analysis gates are not separately
+  flagged: the work_items schema has no execution_kind column (residual limitation, DEEP_AUDIT 2026-05-20).</div>
+</section>
+"""
+
+
+def render_build_integrity(cockpit: dict) -> str:
+    bf = cockpit.get("build_failures") or []
+    total = cockpit.get("build_fail_total", 0)
+    if not bf:
+        return ('<section class="pipeline-section"><h2 class="section-title">Build Artifact Integrity</h2>'
+                '<div class="empty empty-good">No preflight / build-artifact failures in the queue.</div></section>')
+    rows = []
+    for g in bf[:8]:
+        eas = g["eas"]
+        sample = ", ".join(eas[:8]) + (f"  +{len(eas) - 8} more" if len(eas) > 8 else "")
+        rows.append(
+            f'<div class="attn-group attn-med"><div class="attn-head">'
+            f'<span class="attn-count">{g["count"]}×</span> {e(g["reason"])}</div>'
+            f'<div class="attn-detail">{e(sample)}</div></div>'
+        )
+    return f"""
+<section class="pipeline-section">
+  <h2 class="section-title">Build Artifact Integrity · {total} work items blocked</h2>
+  {"".join(rows)}
+  <div class="cp-subnote">These are build / registry defects (missing .ex5, missing or stale setfiles,
+  ambiguous EA directory) — not strategy failures. Route as build cleanup tasks, never as strategy FAIL.</div>
+</section>
+"""
+
+
+def render_agent_tasks(cockpit: dict) -> str:
+    tasks = cockpit.get("agent_tasks") or []
+    if not tasks:
+        return ('<section class="pipeline-section"><h2 class="section-title">Agent Router · open tasks</h2>'
+                '<div class="empty">No open agent_tasks.</div></section>')
+    by_state = Counter(t["state"] for t in tasks)
+    summary = " · ".join(f"{c} {s}" for s, c in by_state.most_common())
+    rows = []
+    for t in tasks:
+        st = t["state"]
+        st_cls = {"BLOCKED": "at-blocked", "IN_PROGRESS": "at-progress",
+                  "REVIEW": "at-review"}.get(st, "at-other")
+        sla_cls = "sla-late" if t["sla_late"] else "sla-ok"
+        art = t["artifact"] or "—"
+        art_disp = ("…" + art[-38:]) if len(art) > 40 else art
+        rows.append(
+            f'<tr><td>{e(t["id"])}</td><td>{e(t["type"])}</td>'
+            f'<td><span class="at-state {st_cls}">{e(st)}</span></td>'
+            f'<td>{e(str(t["agent"]))}</td><td>p{e(str(t["priority"]))}</td>'
+            f'<td class="{sla_cls}">{t["age_h"]}h</td>'
+            f'<td style="text-align:left;color:var(--qm-text-muted)">{e(art_disp)}</td></tr>'
+        )
+    return f"""
+<section class="pipeline-section">
+  <h2 class="section-title">Agent Router · {len(tasks)} open tasks</h2>
+  <table class="atask-table">
+    <thead><tr><th>ID</th><th>Type</th><th>State</th><th>Agent</th>
+    <th>Prio</th><th>Age</th><th>Artifact</th></tr></thead>
+    <tbody>{"".join(rows)}</tbody>
+  </table>
+  <div class="cp-subnote">{e(summary)} — non-terminal router work, including blocked Claude tasks and
+  active Codex / Gemini tasks. SLA age in red is past the per-state limit.</div>
+</section>
+"""
+
+
+def render_needs_attention(cockpit: dict, mt5: dict) -> str:
+    groups: list[tuple[str, str, str]] = []
+    running = mt5.get("running_count", 0)
+    if running == 0:
+        groups.append(("high", "MT5 fleet completely idle",
+                       f"0/{MT5_FLEET_TOTAL} terminals — mission-failure signal."))
+    elif running < MT5_FLEET_WARN_THRESHOLD:
+        groups.append(("med", f"{MT5_FLEET_TOTAL - running}/{MT5_FLEET_TOTAL} MT5 terminals idle",
+                       "Push more backlog to keep the factory bottleneck saturated."))
+    bf = cockpit.get("build_fail_total", 0)
+    if bf:
+        groups.append(("med", f"{bf} work items blocked on build artifacts",
+                       "Missing .ex5 / setfiles — see Build Artifact Integrity above."))
+    late = [t for t in cockpit.get("agent_tasks") or [] if t["sla_late"]]
+    if late:
+        groups.append(("med", f"{len(late)} agent task(s) past SLA",
+                       ", ".join(f'{t["id"]} {t["type"]} ({t["age_h"]}h)' for t in late[:5])))
+    for p, m in (cockpit.get("phase_matrix") or {}).items():
+        inv, tot = m.get("invalid", 0), m.get("total", 1) or 1
+        if inv >= 100 and inv / tot > 0.4:
+            groups.append(("low", f"{phase_label(p)} INVALID rate {int(100 * inv / tot)}%",
+                           f"{inv} of {tot} {p} work items INVALID — mostly preflight / infra, "
+                           f"verify the root cause is not a real strategy failure."))
+    if not groups:
+        return ('<section class="pipeline-section"><h2 class="section-title">Needs Attention</h2>'
+                '<div class="empty empty-good">Nothing flagged — flow is healthy.</div></section>')
+    sev_rank = {"high": 0, "med": 1, "low": 2}
+    groups.sort(key=lambda g: sev_rank[g[0]])
+    items = "".join(
+        f'<div class="attn-group attn-{sev}"><div class="attn-head">'
+        f'<span class="attn-count">●</span> {e(head)}</div>'
+        f'<div class="attn-detail">{e(detail)}</div></div>'
+        for sev, head, detail in groups
+    )
+    return f"""
+<section class="pipeline-section">
+  <h2 class="section-title">Needs Attention · grouped by reason</h2>
+  {items}
+</section>
+"""
+
+
 def render_current(state: dict, mt5: dict) -> str:
-    return html_head("Project Progress") + f"""
+    root = state.get("_root") or DEFAULT_ROOT
+    eas = derive_ea_candidates(state["tasks"], root)
+    cockpit = collect_cockpit_data(root, eas)
+
+    pending_details = ""
+    pl = cockpit.get("pending_list") or []
+    if pl:
+        prows = "".join(
+            f'<tr><td style="text-align:left">{e(p["ea_id"])}</td>'
+            f'<td style="text-align:left">{e(p["symbol"])}</td>'
+            f'<td style="text-align:left">{e(phase_label(p["phase"]))}</td></tr>'
+            for p in pl
+        )
+        pending_details = (
+            f'<details class="cp-details"><summary>Expand {len(pl)} pending work items'
+            f'{" (capped at 120)" if len(pl) >= 120 else ""}</summary>'
+            f'<table class="ctrl-table" style="margin-top:8px"><thead><tr>'
+            f'<th style="text-align:left">EA</th><th style="text-align:left">Symbol</th>'
+            f'<th style="text-align:left">Phase</th></tr></thead>'
+            f'<tbody>{prows}</tbody></table></details>'
+        )
+
+    return html_head("Cockpit", COCKPIT_CSS) + f"""
 <div class="wrap">
   <div class="dash-header">
     <div>
-      <h1>QuantMechanica <span class="em-text">V5</span></h1>
-      <div class="sub">Project Progress · {e(utc_now_iso())}</div>
+      <h1>QuantMechanica <span class="em-text">V5</span> · Cockpit</h1>
+      <div class="sub">Operator decision view · {e(utc_now_iso())}</div>
     </div>
-    <div class="sub">Mission: 5 EAs portfolio · DXZ-compliant · FTMO-ready</div>
+    <div class="sub">Mission: 5 distinct Q11-PASS EAs · DXZ · no ML</div>
   </div>
 
+  {render_decision_band(cockpit, mt5)}
   {render_hero(state)}
 
   <div class="two-col">
     {render_fleet(mt5)}
-    {render_throughput(state)}
+    {render_queue_health(cockpit)}
   </div>
+  {pending_details}
 
-  {render_pipeline_table(state)}
-  {render_blockers(state, mt5)}
-  {render_events(state)}
+  {render_coverage(cockpit)}
+  {render_daily_controlling(cockpit)}
+  {render_build_integrity(cockpit)}
+  {render_agent_tasks(cockpit)}
+  {render_needs_attention(cockpit, mt5)}
 
   <div class="footer-note">
-    Generated by tools/strategy_farm/dashboards/render_dashboards.py<br>
-    Data: D:/QM/strategy_farm/state/farm_state.sqlite + tasklist scan<br>
-    Refresh: QM_StrategyFarm_Dashboard_Hourly (hourly) · QM_StrategyFarm_Cockpit_2min (2 min) · QM_StrategyFarm_Pump_5min (5 min)
+    Generated by tools/strategy_farm/dashboards/render_dashboards.py · render_current()<br>
+    Data: D:/QM/strategy_farm/state/farm_state.sqlite (work_items + agent_tasks) + tasklist scan<br>
+    Refresh: QM_StrategyFarm_Dashboard_Hourly (hourly) · QM_StrategyFarm_Cockpit_2min (2 min)
   </div>
 </div>
 </body>
