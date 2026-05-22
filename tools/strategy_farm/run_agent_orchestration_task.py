@@ -228,6 +228,64 @@ def run_git(args: list[str], timeout: int = 60) -> subprocess.CompletedProcess[s
     )
 
 
+def push_worktree_branch(cwd: Path, branch: str, timeout: int = 120) -> dict[str, Any]:
+    """Push an agent worktree branch without invoking interactive GCM.
+
+    Scheduled tasks run as SYSTEM/session-0, where Git Credential Manager can
+    hang waiting for a desktop prompt. A token supplied through the task
+    environment lets git authenticate non-interactively without writing a
+    credential file or committing a secret.
+    """
+    token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
+    if not token:
+        return {
+            "attempted": False,
+            "ok": False,
+            "reason": "missing_GH_TOKEN_or_GITHUB_TOKEN",
+            "owner_action": "Provide a repo contents:write token in the scheduled-task environment.",
+        }
+    if not cwd.exists():
+        return {"attempted": False, "ok": False, "reason": "worktree_missing", "cwd": str(cwd)}
+
+    env = os.environ.copy()
+    env["GIT_TERMINAL_PROMPT"] = "0"
+    cmd = [
+        "git",
+        "-C",
+        str(cwd),
+        "-c",
+        f"http.extraHeader=Authorization: Bearer {token}",
+        "push",
+        "origin",
+        f"HEAD:{branch}",
+    ]
+    try:
+        proc = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            env=env,
+            creationflags=(subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0),
+        )
+        return {
+            "attempted": True,
+            "ok": proc.returncode == 0,
+            "returncode": proc.returncode,
+            "stdout": proc.stdout.strip(),
+            "stderr": proc.stderr.replace(token, "<redacted>").strip(),
+            "branch": branch,
+        }
+    except subprocess.TimeoutExpired:
+        return {
+            "attempted": True,
+            "ok": False,
+            "returncode": 124,
+            "error": "push_timeout",
+            "branch": branch,
+        }
+
+
 def ensure_worktree(agent: str, slot: int) -> dict[str, Any]:
     path = worktree_path(agent, slot)
     branch = branch_name(agent, slot)
@@ -335,6 +393,7 @@ def run_agent_slot(agent: str, slot: int, dry_run: bool, stale_minutes: int, tim
             except subprocess.TimeoutExpired:
                 proc.kill()
                 payload.update({"ok": False, "returncode": 124, "error": "timeout"})
+        payload["push"] = push_worktree_branch(cwd, branch_name(agent, slot))
         return payload
     except Exception as exc:
         payload.update({"ok": False, "returncode": 1, "error": repr(exc)})
