@@ -78,7 +78,7 @@ ZERO_TRADE_DEAD_THRESHOLD = 0.80
 ZERO_TRADE_DEAD_MIN_DONE = 5
 ZERO_TRADE_REWORK_DEDUP_HOURS = 6
 PHASE_ACTIVE_TIMEOUT_MIN = {
-    "P2": 30,
+    "P2": 360,
     "P3": 60,
     "P3.5": 30,
     "P4": 240,
@@ -1345,6 +1345,10 @@ P2_UNPROFITABLE_SYMBOL_REASON = "P2_UNPROFITABLE_SYMBOL"
 P2_SYMBOL_NO_HISTORY_REASON = "SYMBOL_NO_HISTORY_FOR_PERIOD"
 P2_DEFAULT_FROM_YEAR = 2017
 P2_DEFAULT_TO_YEAR = 2022
+P2_PRESCREEN_MONTHS = 6
+P2_PRESCREEN_TIMEOUT_SECONDS = 1800
+P2_FULL_TIMEOUT_MIN_SECONDS = 7200
+P2_FULL_TIMEOUT_MAX_SECONDS = 14400
 
 
 def _summary_net_profit_total(summary: dict[str, Any]) -> float | None:
@@ -1587,6 +1591,43 @@ def _p2_history_window_for_symbol(
     }
 
 
+def _p2_prescreen_dates(to_year: int) -> tuple[str, str]:
+    """Use the most recent six months inside the requested P2 history window."""
+    return f"{to_year}.07.01", f"{to_year}.12.31"
+
+
+def _p2_date_span_days(from_date: str, to_date: str) -> int:
+    start = dt.datetime.strptime(from_date, "%Y.%m.%d").date()
+    end = dt.datetime.strptime(to_date, "%Y.%m.%d").date()
+    return max(1, (end - start).days + 1)
+
+
+def _p2_full_timeout_seconds(payload: dict[str, Any], from_date: str, to_date: str) -> int:
+    runtime_sec = float(payload.get("p2_prescreen_runtime_sec") or 0.0)
+    prescreen_from = str(payload.get("p2_prescreen_from_date") or "")
+    prescreen_to = str(payload.get("p2_prescreen_to_date") or "")
+    if runtime_sec > 0 and prescreen_from and prescreen_to:
+        try:
+            prescreen_days = _p2_date_span_days(prescreen_from, prescreen_to)
+            full_days = _p2_date_span_days(from_date, to_date)
+            # Full P2 runs twice for determinism. Add 50% headroom above the
+            # observed six-month real-tick runtime.
+            estimated = int(runtime_sec * (full_days / prescreen_days) * 2 * 1.5)
+            return max(P2_FULL_TIMEOUT_MIN_SECONDS, min(P2_FULL_TIMEOUT_MAX_SECONDS, estimated))
+        except ValueError:
+            pass
+    return P2_FULL_TIMEOUT_MIN_SECONDS
+
+
+def _p2_active_summary_runtime_sec(item_row: sqlite3.Row, summary: dict[str, Any]) -> float | None:
+    launched = _parse_utc_datetime(item_row["updated_at"])
+    completed_raw = summary.get("timestamp_utc")
+    completed = _parse_utc_datetime(str(completed_raw)) if completed_raw else None
+    if launched is None or completed is None:
+        return None
+    return max(0.0, (completed - launched).total_seconds())
+
+
 def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
                                     terminal: str) -> dict[str, Any]:
     """Spawn run_smoke.ps1 for one work_item, pinned to a specific terminal.
@@ -1700,9 +1741,19 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         to_year = int(item_payload.get("to_year") or P2_DEFAULT_TO_YEAR)
         from_date = f"{from_year}.01.01"
         to_date = f"{to_year}.12.31"
+        if not is_exploration and not item_payload.get("p2_prescreen_done"):
+            from_date, to_date = _p2_prescreen_dates(to_year)
+            n_runs = "1"
+            p2_run_stage = "prescreen"
+            timeout_seconds = P2_PRESCREEN_TIMEOUT_SECONDS
+        else:
+            p2_run_stage = "full"
+            timeout_seconds = _p2_full_timeout_seconds(item_payload, from_date, to_date)
     else:
         from_date = None
         to_date = None
+        p2_run_stage = None
+        timeout_seconds = 1800
     year = 2024
     min_trade_info = _effective_min_trades(root, ea_id, from_date, to_date, year)
     effective_min_trades = str(min_trade_info["effective_min_trades"])
@@ -1722,7 +1773,7 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         "-SetFile", setfile_path,
         "-ReportRoot", str(report_root),
         "-AllowMissingRealTicksLogMarker",
-        "-TimeoutSeconds", "1800",
+        "-TimeoutSeconds", str(timeout_seconds),
     ]
     if from_date:
         cmd.extend(["-FromDate", from_date])
@@ -1749,6 +1800,10 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         "report_root": str(report_root),
         "ea_dir_name": ea_dir_name,
         **min_trade_info,
+        "p2_run_stage": p2_run_stage,
+        "timeout_seconds": timeout_seconds,
+        "from_date": from_date,
+        "to_date": to_date,
     }
 
 
@@ -2647,6 +2702,52 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                     verdict,
                     summary,
                 )
+                if item["phase"] == "P2" and payload.get("p2_run_stage") == "prescreen":
+                    runtime_sec = _p2_active_summary_runtime_sec(item, summary)
+                    if verdict == "PASS":
+                        updated_payload.update({
+                            "p2_prescreen_done": True,
+                            "p2_prescreen_verdict": verdict,
+                            "p2_prescreen_reason": reason,
+                            "p2_prescreen_evidence_path": str(summary_path),
+                            "p2_prescreen_runtime_sec": runtime_sec,
+                            "p2_prescreen_from_date": payload.get("from_date"),
+                            "p2_prescreen_to_date": payload.get("to_date"),
+                            "p2_run_stage": "full_pending",
+                            "pid": None,
+                            "started_at_iso": None,
+                            "log_path": None,
+                        })
+                        with connect(root) as conn2:
+                            conn2.execute(
+                                """
+                                UPDATE work_items
+                                SET status='pending', verdict=NULL, claimed_by=NULL,
+                                    evidence_path=NULL, payload_json=?, updated_at=?
+                                WHERE id=?
+                                """,
+                                (json.dumps(updated_payload, sort_keys=True), started_iso, item["id"]),
+                            )
+                            conn2.commit()
+                        busy_terminals.discard(terminal)
+                        actions.append({
+                            "action": "p2_prescreen_pass_requeued_full",
+                            "item_id": item["id"],
+                            "ea_id": item["ea_id"],
+                            "symbol": item["symbol"],
+                            "reason": reason,
+                            "runtime_sec": runtime_sec,
+                            "terminal_released": terminal,
+                        })
+                        continue
+                    updated_payload.update({
+                        "p2_prescreen_done": True,
+                        "p2_prescreen_verdict": verdict,
+                        "p2_prescreen_reason": reason,
+                        "p2_prescreen_evidence_path": str(summary_path),
+                        "p2_prescreen_runtime_sec": runtime_sec,
+                        "verdict_reason": f"P2_PRESCREEN_{reason}",
+                    })
                 with connect(root) as conn2:
                     conn2.execute(
                         "UPDATE work_items SET status='done', verdict=?, evidence_path=?, payload_json=?, updated_at=? WHERE id=?",
@@ -4780,35 +4881,6 @@ def _hourly_db_backup(root: Path) -> str | None:
     return str(target)
 
 
-def _trigger_p_pass_stagnation_alarm(root: Path) -> dict[str, Any]:
-    """Run Gmail alarm immediately when health has p_pass_stagnation=FAIL."""
-    health_path = root / "state" / "health.json"
-    if not health_path.exists():
-        return {"triggered": False, "reason": "health_json_missing"}
-    try:
-        health_payload = json.loads(health_path.read_text(encoding="utf-8"))
-    except Exception as exc:
-        return {"triggered": False, "reason": f"health_json_unreadable:{exc!r}"}
-    checks = health_payload.get("checks") or []
-    p_fail = any(c.get("name") == "p_pass_stagnation" and c.get("status") == "FAIL" for c in checks)
-    if not p_fail:
-        return {"triggered": False, "reason": "p_pass_stagnation_not_fail"}
-    script = Path(__file__).resolve().parent / "gmail_alarm.py"
-    proc = subprocess.run(
-        [sys.executable, str(script)],
-        cwd=str(REPO_ROOT),
-        capture_output=True,
-        text=True,
-        timeout=120,
-    )
-    return {
-        "triggered": True,
-        "returncode": proc.returncode,
-        "stdout_tail": (proc.stdout or "")[-1000:],
-        "stderr_tail": (proc.stderr or "")[-1000:],
-    }
-
-
 def research_backlog_inventory(root: Path) -> dict[str, Any]:
     """Count strategy work already available before spawning more research."""
     cards_draft = root / "artifacts" / "cards_draft"
@@ -5337,8 +5409,11 @@ def pump(root: Path) -> dict[str, Any]:
     except Exception:
         active_claude_count = 0
     result["claude_active_before"] = active_claude_count
-    MAX_PARALLEL_CLAUDE = 0
-    prefer_claude_review = False
+    claude_disabled = (root / "CLAUDE_DISABLED.flag").exists()
+    MAX_PARALLEL_CLAUDE = 0 if claude_disabled else 1
+    prefer_claude_review = MAX_PARALLEL_CLAUDE > 0
+    result["claude_disabled"] = claude_disabled
+    result["max_parallel_claude"] = MAX_PARALLEL_CLAUDE
     result["prefer_claude_review"] = prefer_claude_review
     with connect(root) as conn:
         done_no_review = conn.execute(
@@ -5359,13 +5434,22 @@ def pump(root: Path) -> dict[str, Any]:
             ORDER BY b.updated_at ASC LIMIT 1
             """
         ).fetchone()
-    result["claude_review_spawn"] = {"spawned": False, "reason": "claude disabled by OWNER 2026-05-19; routed to Codex"}
+    result["claude_review_spawn"] = {"spawned": False, "reason": "no review candidate"}
     if done_no_review:
+        if claude_disabled:
+            result["claude_review_spawn"] = {"spawned": False, "reason": "CLAUDE_DISABLED.flag present; routed to Codex"}
+        elif active_claude_count < MAX_PARALLEL_CLAUDE:
+            result["claude_review_spawn"] = _spawn_claude_for_review(root, done_no_review)
+        else:
+            result["claude_review_spawn"] = {"spawned": False, "reason": "claude cap reached"}
+
         builds_now = len([s for s in (result.get("codex_spawns_all") or []) if isinstance(s, dict) and s.get("spawned")])
         pre_reviews_now = len([s for s in result["codex_review_spawns"] if isinstance(s, dict) and s.get("spawned")])
-        if (active_codex + builds_now + pre_reviews_now) < MAX_PARALLEL_CODEX:
+        if not result["claude_review_spawn"].get("spawned") and (active_codex + builds_now + pre_reviews_now) < MAX_PARALLEL_CODEX:
             result["codex_review_spawn"] = _spawn_codex_for_review(root, done_no_review)
-        else:
+        elif result["claude_review_spawn"].get("spawned"):
+            result["codex_review_spawn"] = {"spawned": False, "reason": "claude review spawned"}
+        elif (active_codex + builds_now + pre_reviews_now) >= MAX_PARALLEL_CODEX:
             result["codex_review_spawn"] = {"spawned": False, "reason": "codex total cap reached"}
 
     # 6. Record completed EA reviews — look for verdict JSONs that
@@ -5401,14 +5485,30 @@ def pump(root: Path) -> dict[str, Any]:
         len([s for s in (result.get("codex_review_spawns") or []) if isinstance(s, dict) and s.get("spawned")])
         + (1 if codex_review_spawned else 0)
     )
-    result["claude_g0_spawn"] = {"spawned": False, "reason": "claude disabled by OWNER 2026-05-19; routed to Codex"}
+    result["claude_g0_spawn"] = {"spawned": False, "reason": "not attempted"}
+    claude_spawns_this_cycle = 1 if claude_review_spawned else 0
+    if (
+        not spawned_other
+        and not claude_disabled
+        and (active_claude_count + claude_spawns_this_cycle) < MAX_PARALLEL_CLAUDE
+    ):
+        result["claude_g0_spawn"] = _spawn_claude_for_g0_batch(root)
+        if result["claude_g0_spawn"].get("spawned"):
+            spawned_other = True
+            claude_spawns_this_cycle += 1
+    elif claude_disabled:
+        result["claude_g0_spawn"] = {"spawned": False, "reason": "CLAUDE_DISABLED.flag present; routed to Codex"}
+    elif (active_claude_count + claude_spawns_this_cycle) >= MAX_PARALLEL_CLAUDE:
+        result["claude_g0_spawn"] = {"spawned": False, "reason": "claude cap reached"}
+
     if not spawned_other and (active_codex + g0_builds_now + g0_reviews_now) < MAX_PARALLEL_CODEX:
         result["codex_g0_spawn"] = _spawn_codex_for_g0_batch(root)
         if result["codex_g0_spawn"].get("spawned"):
             spawned_other = True
 
-    # 8. Claude research disabled. Continuous research is handled by Codex below.
-    result["claude_research_spawn"] = {"spawned": False, "reason": "claude disabled by OWNER 2026-05-19; routed to Codex"}
+    # 8. Claude research is cap-gated and still subordinate to the research
+    #    replenishment gate computed below. Codex research remains available.
+    result["claude_research_spawn"] = {"spawned": False, "reason": "research gate not evaluated yet"}
 
     # 9. Spawn Codex research only when the strategy reservoir is low.
     #    OWNER 2026-05-19: Research is no longer continuous; the factory has
@@ -5444,6 +5544,18 @@ def pump(root: Path) -> dict[str, Any]:
         "strategy_backlog": research_inventory.get("total", 0),
         "allow_new_research": research_inventory.get("total", 0) < research_min_backlog,
     }
+    if result["research_replenish_gate"]["allow_new_research"]:
+        if claude_disabled:
+            result["claude_research_spawn"] = {"spawned": False, "reason": "CLAUDE_DISABLED.flag present; routed to Codex"}
+        elif (active_claude_count + claude_spawns_this_cycle) < MAX_PARALLEL_CLAUDE:
+            result["claude_research_spawn"] = _claim_research_source(root)
+            if result["claude_research_spawn"].get("spawned"):
+                claude_spawns_this_cycle += 1
+        else:
+            result["claude_research_spawn"] = {"spawned": False, "reason": "claude cap reached"}
+    else:
+        result["claude_research_spawn"] = {"spawned": False, "reason": "strategy backlog above replenishment gate"}
+
     if result["research_replenish_gate"]["allow_new_research"]:
         # Spawn up to (MAX_PARALLEL_CODEX_RESEARCH - codex_research_fresh) new
         # research sessions, respecting the total codex cap.
@@ -5773,10 +5885,10 @@ def pump(root: Path) -> dict[str, Any]:
                 })
 
     result["db_backup"] = _hourly_db_backup(root)
-    try:
-        result["p_pass_stagnation_alarm"] = _trigger_p_pass_stagnation_alarm(root)
-    except Exception as exc:
-        result["p_pass_stagnation_alarm"] = {"triggered": False, "error": repr(exc)}
+    result["p_pass_stagnation_alarm"] = {
+        "triggered": False,
+        "reason": "mail disabled in pump; health alarm mail is sent only by QM_StrategyFarm_GmailAlarm_Hourly",
+    }
 
     return result
 
