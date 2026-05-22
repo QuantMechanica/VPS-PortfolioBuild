@@ -99,6 +99,7 @@ STRATEGY_CARD_SCHEMA: dict[str, list[str]] = {
         "entry",
         "exit",
         "risk",
+        "filters",
         "falsification",
         "q08_q11_risks",
         "implementation_notes",

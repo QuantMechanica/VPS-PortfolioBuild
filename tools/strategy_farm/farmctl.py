@@ -541,6 +541,7 @@ STRATEGY_CARD_REQUIRED_BODY_PATTERNS = {
     "entry": r"\b(entry|enter|signal|trigger)\b",
     "exit": r"\b(exit|close|flatten|take profit|stop)\b",
     "risk": r"\b(risk|drawdown|position|sizing|stop)\b",
+    "filters": r"(?m)^(?:#{1,6}\s+(?:\d+\.\s*)?filters?\b|\s*filters?\s*:)",
     "falsification": r"\b(falsification|fail if|kill|reject|invalidate)\b",
     "q08_q11_risks": r"\b(q08|q11|crisis|news|stress|robustness)\b",
     "implementation_notes": r"\b(implementation|mql5|setfile|parameter|framework)\b",

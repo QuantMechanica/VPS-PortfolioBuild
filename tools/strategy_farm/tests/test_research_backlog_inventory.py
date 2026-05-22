@@ -28,6 +28,7 @@ Timeframe: D1
 Entry: enter on event window.
 Exit: exit after window.
 Risk: fixed fractional.
+Filters: news blackout is mandatory; no optional regime or volatility filter.
 Falsification: fail if PF below threshold.
 Q08/Q11 risks: event concentration and news robustness.
 Implementation notes: simple MQL5 date filter and narrow setfile.

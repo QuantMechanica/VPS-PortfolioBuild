@@ -276,6 +276,18 @@ $lines = @(
     "RISK_FIXED=$RiskFixed",
     "RISK_PERCENT=$RiskPercent",
     "PORTFOLIO_WEIGHT=$PortfolioWeight",
+    "; core filter library params; filter-on/off variants must be pre-declared",
+    "qm_filter_news_enabled=1",
+    "qm_filter_news_mode=3",
+    "qm_filter_regime_enabled=0",
+    "qm_filter_regime_lookback_bars=100",
+    "qm_filter_regime_bull_return_pct=2.0",
+    "qm_filter_regime_bear_return_pct=2.0",
+    "qm_filter_volatility_enabled=0",
+    "qm_filter_volatility_atr_period=14",
+    "qm_filter_volatility_lookback_bars=50",
+    "qm_filter_volatility_compression_ratio=0.75",
+    "qm_filter_volatility_expansion_ratio=1.25",
     "; strategy-specific params from card must be appended below this line"
 )
 

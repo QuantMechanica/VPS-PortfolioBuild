@@ -74,6 +74,18 @@ input double PORTFOLIO_WEIGHT   = 1.0;
 input group "News"
 input QM_NewsMode news_mode     = QM_NEWS_OFF;
 
+input group "Filters"
+input bool   qm_filter_news_enabled = true;
+input bool   qm_filter_regime_enabled = false;
+input int    qm_filter_regime_lookback_bars = 100;
+input double qm_filter_regime_bull_return_pct = 2.0;
+input double qm_filter_regime_bear_return_pct = 2.0;
+input bool   qm_filter_volatility_enabled = false;
+input int    qm_filter_volatility_atr_period = 14;
+input int    qm_filter_volatility_lookback_bars = 50;
+input double qm_filter_volatility_compression_ratio = 0.75;
+input double qm_filter_volatility_expansion_ratio = 1.25;
+
 input group "Friday Close"
 input bool   friday_close_enabled = true;
 input int    friday_close_hour_broker = 21;
@@ -106,6 +118,10 @@ framework/
     QM_MagicResolver.mqh       # ea_id * 10000 + symbol_slot, with registry check
     QM_RiskSizer.mqh           # RISK_PERCENT / RISK_FIXED dual mode
     QM_NewsFilter.mqh          # OFF/PAUSE/SKIP_DAY/FTMO_PAUSE/5ers_PAUSE/no_news/news_only
+    QM_FilterLibrary.mqh       # umbrella for first-class mechanical filters
+    QM_FilterNewsBlackout.mqh  # news-blackout filter wrapper around QM_NewsFilter
+    QM_FilterRegime.mqh        # N-bar return bull/bear/sideways state, no ML
+    QM_FilterVolatility.mqh    # ATR-ratio compression/normal/expansion state
     QM_KillSwitch.mqh          # daily-loss, portfolio-DD, manual halt
     QM_DSTAware.mqh            # DarwinexZero NY-Close GMT+2/+3 → UTC
     QM_TradeContext.mqh        # OrderSend wrappers with error classification
@@ -366,6 +382,28 @@ enum QM_NewsMode {
 - exposes `bool QM_NewsAllowsTrade(string symbol, datetime t, QM_NewsMode mode)`
 - if calendar file missing or stale → returns `false` for *all* modes except `QM_NEWS_OFF`, and logs `SETUP_DATA_MISSING` (per CLAUDE.md hard rule)
 - FTMO and 5ers blackout-window definitions go into `framework/include/news_rules/ftmo.mqh` and `5ers.mqh` — separate small files because they will get tweaked as firm rules change
+
+### QM_FilterLibrary.mqh
+
+First-class filter modules live under `framework/include/QM/` and are imported
+through `QM_FilterLibrary.mqh` when an EA uses declared filters. A filter is an
+entry/no-trade condition, so changing a filter or its parameters invalidates the
+prior entry evidence and must run through the normal Q pipeline as a
+pre-declared variant. No new verdict semantics are introduced.
+
+The Strategy Card schema includes a `filters:` / Filters block listing each
+declared filter and a one-line thesis. The setfile carries filter on/off flags
+and parameters so a filtered variant is reproducible from its `.set` file.
+
+Core filters:
+
+- `QM_FilterNewsBlackout.mqh`: wraps `QM_NewsAllowsTrade(...)` as the mandatory
+  news-blackout filter. Edge Lab FTMO/DXZ variants normally use
+  `QM_NEWS_FTMO_PAUSE`.
+- `QM_FilterRegime.mqh`: rule-based bull/bear/sideways state from N-bar return
+  thresholds. This is deterministic and explicitly not an HMM or ML model.
+- `QM_FilterVolatility.mqh`: ATR-ratio volatility state, classifying
+  compression, normal, or expansion against a recent ATR baseline.
 
 ### QM_KillSwitch.mqh
 

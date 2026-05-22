@@ -29,6 +29,7 @@ Timeframe: D1
 Entry: enter on event window.
 Exit: exit after window.
 Risk: fixed fractional.
+Filters: news blackout is mandatory; no optional regime or volatility filter.
 Falsification: fail if PF below threshold.
 Q08/Q11 risks: event concentration and news robustness.
 Implementation notes: simple MQL5 date filter and narrow setfile.
@@ -354,6 +355,50 @@ r4_ml_forbidden: PASS
 expected_trades_per_year_per_symbol: 12
 ---
 # Thin
+""",
+                encoding="utf-8",
+            )
+            created = agent_router.enqueue_task(root, "research_strategy", priority=10)
+
+            result = agent_router.update_task(
+                root,
+                created["task_id"],
+                state="REVIEW",
+                artifact_path=str(card),
+                verdict="RESEARCH_DRAFT_READY",
+            )
+
+            self.assertFalse(result["updated"])
+            self.assertEqual(result["reason"], "strategy_card_schema_failed")
+
+    def test_research_review_card_requires_filters_block(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            review = root / "artifacts" / "cards_review"
+            review.mkdir(parents=True)
+            card = review / "QM5_900004_schema-gap.md"
+            card.write_text(
+                """---
+ea_id: QM5_900004
+slug: schema-gap
+g0_status: APPROVED
+r1_track_record: PASS
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+expected_trades_per_year_per_symbol: 12
+---
+# Schema Gap
+
+Thesis: monthly event drift.
+Universe: XAUUSD.DWX
+Timeframe: D1
+Entry: enter on event window.
+Exit: exit after window.
+Risk: fixed fractional.
+Falsification: fail if PF below threshold.
+Q08/Q11 risks: event concentration and news robustness.
+Implementation notes: simple MQL5 date filter and narrow setfile.
 """,
                 encoding="utf-8",
             )
