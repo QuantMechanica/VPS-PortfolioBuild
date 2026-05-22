@@ -1,18 +1,18 @@
 ---
 title: Backtest Execution Discipline (V5 binding)
 owner: Documentation-KM
-last-updated: 2026-05-01
-authored-by: QUA-418 (Doc-KM); DL-054 amend by Board Advisor 2026-05-01
+last-updated: 2026-05-21
+authored-by: QUA-418 (Doc-KM); DL-054 amend by Board Advisor 2026-05-01; T1-T10 fleet update by Board Advisor 2026-05-21
 parent-directive: QUA-400 (OWNER 2026-04-28 ~11:15 local) → DL-038; QUA-684 + OWNER 2026-05-01 → DL-054
 ---
 
 # 16 — Backtest Execution Discipline (V5 binding)
 
-> **Binding source:** OWNER consolidated directive 2026-04-28 ~11:15 local, captured verbatim in [QUA-400](/QUA/issues/QUA-400). CEO ratified all seven rules under [DL-038](../decisions/2026-04-28_seven_backtest_rules.md) (recording task: [QUA-422](/QUA/issues/QUA-422); commit `90ada5e4` on `agents/ceo`, pending merge to main). Operationalizing children: [QUA-413](/QUA/issues/QUA-413) (DevOps deploy), [QUA-414](/QUA/issues/QUA-414) (Pipeline-Op matrix dispatcher) + [QUA-421](/QUA/issues/QUA-421) (matrix dispatcher follow-up), [QUA-415](/QUA/issues/QUA-415) (set-file generator) + [QUA-419](/QUA/issues/QUA-419) (dispatch-gate rollout), [QUA-416](/QUA/issues/QUA-416) (Research Tier 1.5) + [QUA-423](/QUA/issues/QUA-423) (survey-pass), [QUA-417](/QUA/issues/QUA-417) (CTO review enforcement) + [QUA-424](/QUA/issues/QUA-424) (retroactive QM5_SRC04_S03 review), [QUA-418](/QUA/issues/QUA-418) (this doc) + [QUA-426](/QUA/issues/QUA-426) (DL-number mirror), [QUA-422](/QUA/issues/QUA-422) (CEO DL recording).
+> **Binding source:** OWNER consolidated directive 2026-04-28 ~11:15 local, captured verbatim in [QUA-400](/QUA/issues/QUA-400). CEO ratified all seven rules under [DL-038](../decisions/2026-04-28_seven_backtest_rules.md) (recording task: [QUA-422](/QUA/issues/QUA-422); commit `90ada5e4` on `agents/ceo`, pending merge to main). Operationalizing children: [QUA-413](/QUA/issues/QUA-413) (DevOps deploy), [QUA-414](/QUA/issues/QUA-414) (Pipeline-Op matrix dispatcher) + [QUA-421](/QUA/issues/QUA-421) (matrix dispatcher follow-up), [QUA-415](/QUA/issues/QUA-415) (set-file generator) + [QUA-419](/QUA/issues/QUA-419) (dispatch-gate rollout), [QUA-416](/QUA/issues/QUA-416) (Research Tier 1.5) + [QUA-423](/QUA/issues/QUA-423) (survey-pass), [QUA-417](/QUA/issues/QUA-417) (CTO review enforcement) + [QUA-424](/QUA/issues/QUA-424) (retroactive review), [QUA-418](/QUA/issues/QUA-418) (this doc) + [QUA-426](/QUA/issues/QUA-426) (DL-number mirror), [QUA-422](/QUA/issues/QUA-422) (CEO DL recording).
 
 > **DL-054 amend (2026-05-01):** the seven rules are necessary but not sufficient. The QUA-662 phantom-PASS matrix (36/36 PASS while Pipeline-Op's own zero_trade_audit_20260501.json showed 36/36 zero-trade) demonstrated that DL-038 alone does not prevent theatrical PASS labels. **DL-054 codifies five binding gates** a `(ea_id, phase, symbol)` run must pass before `verdict=PASS` may land in `report.csv`: G1 tester data access verified (filesystem hcc + ≥95% window coverage); G2 tester defaults loaded (deposit 100k + RISK_FIXED setfile per Rule 7); G3 tester journal clean (no "no history data" / "cannot get history" / "Terminal: Invalid params"); G4 trade evidence (`trade_count >= 1` OR per-symbol zero-trade ADR); G5 symbol-name canonical (`NDXm.DWX` not `NDX.DWX`). Any gate fail forces `verdict=INVALID` with `invalidation_reason`; Quality-Tech is gate-of-record on every matrix review. See [DL-054](../decisions/DL-054_anti_theater_pass_criteria.md), gate library `framework/scripts/dl054_gates.py`, CLI runner `framework/scripts/dl054_gate_runner.py`, integration plan `framework/scripts/dl054_integration.md`. **CTO Tuesday work** (post-Codex-restore): splice gate calls into `pipeline_dispatcher.py` per integration plan §A and into per-phase runners per §B; extend `report.csv` schema with `invalidation_reason` + `evidence` columns per §C.
 
-The seven rules below define how V5 dispatches a strategy across the T1-T5 factory. Together they replace any improvised backtest workflow. Pipeline-Operator refuses to dispatch a run that violates any of them; DevOps refuses to deploy an EA that violates Rule 5; Research refuses to ingest a Tier-1.5 strategy that violates Rule 6.
+The seven rules below define how V5 dispatches a strategy across the T1-T10 factory. Together they replace any improvised backtest workflow. Pipeline-Operator refuses to dispatch a run that violates any of them; DevOps refuses to deploy an EA that violates Rule 5; Research refuses to ingest a Tier-1.5 strategy that violates Rule 6.
 
 ## Trigger
 
@@ -23,7 +23,7 @@ A Strategy Card has reached `APPROVED` (Research → CEO sign-off, CTO `framewor
 | Role | Responsibility |
 |------|----------------|
 | [Pipeline-Operator](/QUA/agents/pipeline-operator) | Enforces Rules 1, 2, 3, 4, 7 at dispatch. Owns `dedup_index.json` schema and the matrix-dispatch + fail-fast logic. |
-| [DevOps](/QUA/agents/devops) | Owns Rule 5 (EA fan-out across T1-T5) and co-owns Rule 7 (set-file generator). |
+| [DevOps](/QUA/agents/devops) | Owns Rule 5 (EA fan-out across T1-T10) and co-owns Rule 7 (set-file generator). |
 | [Research](/QUA/agents/research) | Owns Rule 6 (Drive QuantMechanica as Tier 1.5 input, never as PASS evidence). |
 | [CTO](/QUA/agents/cto) | Owns Review-only execution policy on every `SRC*_S* — APPROVED card → P1..P10 pipeline run` (Rule 5 prerequisite). |
 | Quality-Tech *(Wave 2; CTO interim)* | Sets the per-phase PASS threshold N referenced by Rule 2. |
@@ -56,7 +56,7 @@ A Strategy Card has reached `APPROVED` (Research → CEO sign-off, CTO `framewor
 
 **Tooling.**
 - Backtest matrix per EA per phase = `(36 .DWX symbols) × (1 EA)` = 36 runs.
-- Distribute across T1-T5 under [15-pipeline-op-load-balancing.md](15-pipeline-op-load-balancing.md): 3-cap per terminal × 5 = 15 concurrent ceiling → ~3 batches per matrix (per DL-038).
+- Distribute across T1-T10 under [15-pipeline-op-load-balancing.md](15-pipeline-op-load-balancing.md): 3-cap per terminal × 10 = 30 concurrent ceiling → ~1.2 batches per matrix (per DL-038 update).
 - `dedup_index.json` records 36 verdict rows per `(ea_id, version, phase)` key (schema in Rule 4 below).
 - The 36-symbol universe is the canonical V5 `.DWX` basket; the authoritative list lives with the custom-symbol provisioning artifact tracked under DevOps' `qm-validate-custom-symbol` skill ([`skills/qm/qm-validate-custom-symbol/`](../skills/qm/qm-validate-custom-symbol/)).
 
@@ -64,18 +64,18 @@ A Strategy Card has reached `APPROVED` (Research → CEO sign-off, CTO `framewor
 
 **Cross-link.** Implemented under [QUA-414](/QUA/issues/QUA-414) + [QUA-421](/QUA/issues/QUA-421).
 
-### Rule 3 — All 5 MT5 instances run in parallel
+### Rule 3 — All 10 MT5 instances run in parallel
 
-**Rule.** All five factory terminals (T1-T5) participate concurrently in dispatch. The 15-job concurrent ceiling already codified under QUA-307 (3 active jobs per terminal × 5 terminals) becomes the default; T3, T4, T5 must not sit idle when work is available.
+**Rule.** All ten factory terminals (T1-T10) participate concurrently in dispatch. The 30-job concurrent ceiling (3 active jobs per terminal × 10 terminals) becomes the default; T6-T10 must not sit idle when work is available.
 
-**Who enforces.** Pipeline-Operator (load-balancer) at dispatch; DevOps owns the prerequisite (every EA actually present on T3-T5; see Rule 5).
+**Who enforces.** Pipeline-Operator (load-balancer) at dispatch; DevOps owns the prerequisite (every EA actually present on T1-T10; see Rule 5).
 
 **Tooling.**
 - Scheduler: [`framework/scripts/pipeline_dispatcher.py`](../framework/scripts/pipeline_dispatcher.py) (round-robin + symbol-affinity tie-break) per [15-pipeline-op-load-balancing.md](15-pipeline-op-load-balancing.md).
 - Dispatch state: `D:\QM\Reports\pipeline\dispatch_state.json` — running counts per terminal.
-- Sentinel: if T3, T4, or T5 running-count is `0` while a queue is non-empty AND the EA exists on that terminal, that's a dispatcher anomaly worth a Pipeline-Op heartbeat comment.
+- Sentinel: if any running-count is `0` while a queue is non-empty AND the EA exists on that terminal, that's a dispatcher anomaly worth a Pipeline-Op heartbeat comment.
 
-**Acceptance signal.** A 36-symbol matrix dispatched at full capacity reaches `running_count = 3` on every terminal in T1..T5 within the first dispatch tick. A whole matrix completes in ~3 batches without leaving any terminal idle while work is queued.
+**Acceptance signal.** A 36-symbol matrix dispatched at full capacity reaches `running_count = 3` on every terminal in T1..T10 within the first dispatch tick. A whole matrix completes in ~1.2 batches without leaving any terminal idle while work is queued.
 
 **Cross-link.** Existing scheduler already solves the policy; Rule 5 closes the prerequisite gap (EA fan-out). Implemented under [QUA-413](/QUA/issues/QUA-413) + [QUA-414](/QUA/issues/QUA-414).
 
@@ -110,26 +110,24 @@ When a phase completes:
 
 **Cross-link.** Implemented under [QUA-414](/QUA/issues/QUA-414) + [QUA-421](/QUA/issues/QUA-421). Compatible with the strategy-lineage rule in [13-strategy-research.md](13-strategy-research.md): "fail-fast → next strategy" applies across-strategy under the same source; the same-source `_v2` enhancement loop is a separate path triggered only on explicitly recoverable failure modes (zero-trades not data-quality), per QUA-236.
 
-### Rule 5 — Every EA available on ALL 5 MT5 instances
+### Rule 5 — Every EA available on ALL 10 MT5 instances
 
-**Rule.** When Development scaffolds and CTO review-passes a new EA (`<filename>.ex5`), it MUST be deployed to all five factory terminals before any P2 dispatch:
+**Rule.** When Development scaffolds and CTO review-passes a new EA (`<filename>.ex5`), it MUST be deployed to all ten factory terminals before any P2 dispatch:
 
 - `D:\QM\mt5\T1\MQL5\Experts\QM\<filename>.ex5`
-- `D:\QM\mt5\T2\MQL5\Experts\QM\<filename>.ex5`
-- `D:\QM\mt5\T3\MQL5\Experts\QM\<filename>.ex5`
-- `D:\QM\mt5\T4\MQL5\Experts\QM\<filename>.ex5`
-- `D:\QM\mt5\T5\MQL5\Experts\QM\<filename>.ex5`
+- ... to ...
+- `D:\QM\mt5\T10\MQL5\Experts\QM\<filename>.ex5`
 
 **Who enforces.** DevOps owns the deploy step; CTO blocks `done` on the `SRC*_S* — pipeline run` issue under Review-only policy (Class 3 in [`process_registry.md`](process_registry.md) § Execution Policies) until fan-out evidence is recorded.
 
-**Tooling.** `framework/scripts/deploy_ea_to_all_terminals.ps1 -EaPath <abs path>` — idempotent, copies + creates missing dirs + verifies SHA256 match across all 5 terminals. Runs after every Development build close. T3, T4, T5 missing-dir creation handled by the same script.
+**Tooling.** `framework/scripts/deploy_ea_to_all_terminals.ps1 -EaPath <abs path>` — idempotent, copies + creates missing dirs + verifies SHA256 match across all 10 terminals. Runs after every Development build close.
 
 **Acceptance signal.**
-- All five `Experts\QM\<filename>.ex5` files exist with matching SHA256.
-- Script's stdout records `terminals=[T1,T2,T3,T4,T5]` and `hash_match=true`.
-- Initial backfill for the four pre-existing EAs (`EA_Skeleton.ex5`, `QM5_1001_framework_smoke.ex5`, `QM5_1002_davey-eu-night.ex5`, `QM5_SRC04_S03_lien_fade_double_zeros.ex5`) is recorded in [QUA-413](/QUA/issues/QUA-413) closeout.
+- All ten `Experts\QM\<filename>.ex5` files exist with matching SHA256.
+- Script's stdout records `terminals=[T1,T2,T3,T4,T5,T6,T7,T8,T9,T10]` and `hash_match=true`.
+- Initial backfill for pre-existing EAs is recorded in [QUA-413](/QUA/issues/QUA-413) closeout.
 
-**Cross-link.** Implemented under [QUA-413](/QUA/issues/QUA-413) + rollouts [QUA-411](/QUA/issues/QUA-411) / [QUA-412](/QUA/issues/QUA-412). CTO Review-only enforcement under [QUA-417](/QUA/issues/QUA-417) covers retroactive `QM5_SRC04_S03_lien_fade_double_zeros` review (closed under [QUA-424](/QUA/issues/QUA-424)).
+**Cross-link.** Implemented under [QUA-413](/QUA/issues/QUA-413) + rollouts [QUA-411](/QUA/issues/QUA-411) / [QUA-412](/QUA/issues/QUA-412). CTO Review-only enforcement under [QUA-417](/QUA/issues/QUA-417) covers retroactive reviews.
 
 ### Rule 6 — Drive `QuantMechanica` is V5 INPUT (concepts-only, never PASS evidence)
 
@@ -137,7 +135,7 @@ When a phase completes:
 
 Locations:
 - `G:\My Drive\QuantMechanica\Company\Research\strategies\` — V4-era research output (highest signal for strategy CONCEPTS).
-- `G:\My Drive\QuantMechanica\MT5 Marketplace\` — V4 SM_XXX strategy folders (e.g., `SM_124_Gotobi`, `SM_128_NexusGoldMR`).
+- `G:\My Drive\QuantMechanica\MT5 Marketplace\` — V4 SM_XXX strategy folders.
 - `G:\My Drive\QuantMechanica\Website\strategy-database\strategies\` — strategy database for website.
 - `G:\My Drive\QuantMechanica\Backups\`, `Archive\`, `Reviews\` — V4 historical artifacts.
 
@@ -149,19 +147,18 @@ Locations:
 - **Backtest results from V4 are NEVER cited and NEVER imported as PASS evidence into V5.** V5 PASS is what V5 produces from its own pipeline.
 - V4 SM_XXX names stay V4-namespace. Any V5 EA that re-implements a V4-flavored strategy gets a fresh V5 `ea_id` (1000-9999) per [`framework/V5_FRAMEWORK_DESIGN.md`](../framework/V5_FRAMEWORK_DESIGN.md) § ea_id range.
 
-**Who enforces.** Research is the primary owner; CEO at card review (`DRAFT → IN_REVIEW → APPROVED` per [13-strategy-research.md](13-strategy-research.md)) blocks any card whose `source_citations:` cites a Drive V4 doc as primary; CTO at `framework_alignment` fill-in blocks any card whose `framework_alignment` block claims V4 backtest results as PASS evidence.
+**Who enforces.** Research is the primary owner; CEO at card review blocks any card whose `source_citations:` cites a Drive V4 doc as primary; CTO fill-in blocks any card whose `framework_alignment` block claims V4 backtest results as PASS evidence.
 
 **Tooling.**
-- [`strategy-seeds/sources/SOURCE_QUEUE.md`](../strategy-seeds/sources/SOURCE_QUEUE.md) extended with the four Drive paths as Tier 1.5 entries (under [QUA-416](/QUA/issues/QUA-416)).
-- Card schema: `source_citations: []` must point to original source; `strategy_type_flags:` must come from the controlled vocabulary at [`strategy-seeds/strategy_type_flags.md`](../strategy-seeds/strategy_type_flags.md) — no new flags invented (per [13-strategy-research.md](13-strategy-research.md) § Strategy Card discipline).
-- Cross-reference: [`paperclip-prompts/research.md`](../paperclip-prompts/research.md) § THE CORE RULE (one source at a time) still binds when working a Drive folder — treat each folder as one Tier-1.5 source unit.
+- [`strategy-seeds/sources/SOURCE_QUEUE.md`](../strategy-seeds/sources/SOURCE_QUEUE.md) extended with the four Drive paths as Tier 1.5 entries.
+- Card schema: `source_citations: []` must point to original source; `strategy_type_flags:` must come from the controlled vocabulary.
 
 **Acceptance signal.**
 - `SOURCE_QUEUE.md` lists the four Drive paths under a `## Tier 1.5 — Drive QuantMechanica (concepts-only)` heading.
-- The first Tier-1.5 survey (`G:\My Drive\QuantMechanica\Company\Research\strategies\`) produces a `source_survey.md` with original-source citations only; any V4 backtest numbers it encounters are recorded as "NOT IMPORTED" with a one-line justification per OWNER 2026-04-28 directive.
+- Tier-1.5 survey produces a `source_survey.md` with original-source citations only.
 - No V5 Strategy Card lands in `IN_REVIEW` with `source_citations:` pointing at a `G:\My Drive\QuantMechanica\` URL as primary.
 
-**Cross-link.** Implemented under [QUA-416](/QUA/issues/QUA-416) + [QUA-423](/QUA/issues/QUA-423) (survey-pass).
+**Cross-link.** Implemented under [QUA-416](/QUA/issues/QUA-416) + [QUA-423](/QUA/issues/QUA-423).
 
 ### Rule 7 — Backtest ENV uses `RISK_FIXED` (set-file mandatory)
 
@@ -170,7 +167,7 @@ Locations:
 **Who enforces.** Pipeline-Operator refuses to dispatch a run that lacks a matching set file; DevOps owns the generator; CTO confirms the validator behavior on first use.
 
 **Tooling.**
-- Generator: `framework/scripts/gen_setfile.ps1 -Ea <slug> -Symbol <SYM>.DWX -TF <TF> -Env backtest` produces `QM5_NNNN_<SYM>.DWX_<TF>_backtest.set` per the naming convention in [`framework/V5_FRAMEWORK_DESIGN.md`](../framework/V5_FRAMEWORK_DESIGN.md) § Set file naming.
+- Generator: `framework/scripts/gen_setfile.ps1 -Ea <slug> -Symbol <SYM>.DWX -TF <TF> -Env backtest` produces `QM5_NNNN_<SYM>.DWX_<TF>_backtest.set`.
 - Required content for backtest set files:
   ```
   ENV=backtest
@@ -179,13 +176,13 @@ Locations:
   PORTFOLIO_WEIGHT=1.0
   ; ...strategy-specific params from card...
   ```
-- Validator: `framework/scripts/validate_setfile.ps1` — schema check; rejects set files that omit any input declared in the EA's `OnInit` schema export.
-- Risk-mode mapping authority: [`framework/V5_FRAMEWORK_DESIGN.md`](../framework/V5_FRAMEWORK_DESIGN.md) lines 235-249 (ENV → required mode table; abort codes `EA_INPUT_RISK_MODE_MISMATCH`, `EA_INPUT_RISK_BOTH_ZERO`, `EA_INPUT_RISK_BOTH_SET`).
+- Validator: `framework/scripts/validate_setfile.ps1` — schema check.
+- Risk-mode mapping authority: [`framework/V5_FRAMEWORK_DESIGN.md`](../framework/V5_FRAMEWORK_DESIGN.md) lines 235-249.
 
 **Acceptance signal.**
 - Pipeline-Op dispatch log records `setfile_path=<path>` and `setfile_sha256=<hash>` for every backtest INI.
-- A dispatch attempt without a set file is rejected with `BACKTEST_REJECTED_NO_SETFILE` and never reaches `terminal64.exe /portable /config:<ini>`.
-- The first set-file-driven re-run of `QM5_SRC04_S03_lien_fade_double_zeros` across the 36-symbol universe (closure of QUA-400's "first multi-symbol parallel-T1-T5 backtest" acceptance) proves the generator + dispatch-gate path end-to-end.
+- A dispatch attempt without a set file is rejected with `BACKTEST_REJECTED_NO_SETFILE`.
+- Multi-symbol parallel-T1-T10 backtest acceptance proves the generator + dispatch-gate path end-to-end.
 
 **Cross-link.** Implemented under [QUA-415](/QUA/issues/QUA-415) + rollout [QUA-419](/QUA/issues/QUA-419).
 
@@ -195,13 +192,13 @@ Locations:
 flowchart TD
     A[Strategy Card APPROVED + EA built] --> B[CTO Review-only pass on _v? build]
     B --> C[DevOps deploy_ea_to_all_terminals.ps1]
-    C --> D{T1..T5 hash match?}
+    C --> D{T1..T10 hash match?}
     D -->|No| Z[Block: re-run deploy + escalate to DevOps]
     D -->|Yes| E[Pipeline-Op resolves 36 .DWX symbols]
     E --> F[gen_setfile.ps1 per symbol+TF]
     F --> G{Set files present?}
     G -->|No| Y[BACKTEST_REJECTED_NO_SETFILE]
-    G -->|Yes| H[Dispatch matrix: 36 runs across T1-T5]
+    G -->|Yes| H[Dispatch matrix: 36 runs across T1-T10]
     H --> I[Tally PASS count vs Quality-Tech N]
     I --> J{phase_verdict}
     J -->|PASS| K[Open next phase issue same EA]
@@ -213,35 +210,33 @@ flowchart TD
 ## Exits
 
 - **Success (per phase):** `phase_verdict = PASS`, next phase issue opened, `dedup_index.json` row complete with 36 verdict entries.
-- **Success (per strategy):** Strategy reaches L5 candidate (V-Portfolio entry) per [01-ea-lifecycle.md](01-ea-lifecycle.md); cross-cuts every rule above.
-- **Fail-fast exit:** `phase_verdict = FAIL_PHASE_<X>` with non-null `next_strategy_unblocked`; current sub-issue closes with verdict + evidence path captured in the card's § 13 Pipeline History.
-- **Block:** Any rule violation surfaces as a typed reject (`BACKTEST_REJECTED_NATIVE_SYMBOL`, `BACKTEST_REJECTED_NO_SETFILE`, missing-deploy hash mismatch, etc.); Pipeline-Op or DevOps comments the block reason on the active sub-issue with the unblock owner.
+- **Success (per strategy):** Strategy reaches L5 candidate (V-Portfolio entry) per [01-ea-lifecycle.md](01-ea-lifecycle.md).
+- **Fail-fast exit:** `phase_verdict = FAIL_PHASE_<X>` with non-null `next_strategy_unblocked`.
+- **Block:** Any rule violation surfaces as a typed reject (`BACKTEST_REJECTED_NATIVE_SYMBOL`, `BACKTEST_REJECTED_NO_SETFILE`, etc.).
 
 ## SLA
 
 - **Deploy fan-out (Rule 5):** within 1 hour of Development build close.
-- **Dispatch decision (Rule 3):** `< 1s` local scheduler overhead per [15-pipeline-op-load-balancing.md](15-pipeline-op-load-balancing.md).
-- **36-symbol matrix completion (Rules 2 + 3):** target ~3 dispatch batches; wall-clock depends on phase complexity (P2 baseline typically `< 1 broker day`).
+- **Dispatch decision (Rule 3):** `< 1s` local scheduler overhead.
+- **36-symbol matrix completion (Rules 2 + 3):** target ~1.2 dispatch batches (massively parallel T1-T10).
 - **Fail-fast unblock latency (Rule 4):** within 1 hour of `phase_verdict = FAIL_*` write.
 
 ## Hard rules (do not break)
 
 1. No native broker symbols in any backtest INI. `.DWX` only.
 2. No single-symbol shortcut. 36-symbol matrix or no dispatch.
-3. No skipping a terminal. T1-T5 all participate when work is queued.
+3. No skipping a terminal. T1-T10 all participate when work is queued.
 4. No "continue P3 anyway" when P2 fails the threshold. Fail-fast or escalate to CEO.
-5. No partial fan-out. All five terminals or no dispatch.
-6. No V4 backtest results imported as V5 PASS. Concepts only; primary source must trace to original publication.
+5. No partial fan-out. All ten terminals or no dispatch.
+6. No V4 backtest results imported as V5 PASS. Concepts only.
 7. No `RISK_PERCENT > 0` in any backtest set file. `ENV=backtest` ⇒ `RISK_FIXED > 0`, `RISK_PERCENT = 0`.
 
 ## References
 
-- **Parent directive:** [QUA-400](/QUA/issues/QUA-400) — verbatim 7 rules (OWNER 2026-04-28 ~11:15 local).
-- **DL ratification:** [DL-038](../decisions/2026-04-28_seven_backtest_rules.md) — CEO record (commit `90ada5e4` on `agents/ceo`, recording task [QUA-422](/QUA/issues/QUA-422)). Until QUA-422 merges to main, read the canonical body via `git show 90ada5e4fa281ead6c20b2866c4c16b0a76955bb:decisions/2026-04-28_seven_backtest_rules.md`.
-- **Operationalizing children:** [QUA-413](/QUA/issues/QUA-413) (deploy script), [QUA-411](/QUA/issues/QUA-411) / [QUA-412](/QUA/issues/QUA-412) (deploy rollout), [QUA-414](/QUA/issues/QUA-414) (matrix dispatcher + fail-fast schema), [QUA-421](/QUA/issues/QUA-421) (matrix dispatcher follow-up), [QUA-415](/QUA/issues/QUA-415) (set-file generator) + [QUA-419](/QUA/issues/QUA-419) (rollout), [QUA-416](/QUA/issues/QUA-416) (Tier 1.5 source-queue) + [QUA-423](/QUA/issues/QUA-423) (survey-pass), [QUA-417](/QUA/issues/QUA-417) (CTO review enforcement) + [QUA-424](/QUA/issues/QUA-424) (retroactive review), [QUA-418](/QUA/issues/QUA-418) (this doc) + [QUA-426](/QUA/issues/QUA-426) (DL-number mirror), [QUA-422](/QUA/issues/QUA-422) (DL recording).
-- **Framework spec:** [`framework/V5_FRAMEWORK_DESIGN.md`](../framework/V5_FRAMEWORK_DESIGN.md) — `.DWX` discipline (line 28), `ea_id` range (§ ea_id range), set-file naming (§ Set file naming), risk-mode dual-input (§ Risk Sizing — Dual Mode + ENV Convention), magic-formula registry (§ Magic-Number Schema).
+- **Parent directive:** [QUA-400](/QUA/issues/QUA-400) — verbatim 7 rules.
+- **DL ratification:** [DL-038](../decisions/2026-04-28_seven_backtest_rules.md).
 - **Pipeline load-balancing:** [15-pipeline-op-load-balancing.md](15-pipeline-op-load-balancing.md).
 - **Strategy research workflow (upstream):** [13-strategy-research.md](13-strategy-research.md).
 - **EA life-cycle (upstream):** [01-ea-lifecycle.md](01-ea-lifecycle.md).
-- **Sub-gate spec:** [`docs/ops/PIPELINE_PHASE_SPEC.md`](../docs/ops/PIPELINE_PHASE_SPEC.md) (P-numbering authority).
+- **Sub-gate spec:** [`docs/ops/PIPELINE_PHASE_SPEC.md`](../docs/ops/PIPELINE_PHASE_SPEC.md).
 - **Process registry:** [`process_registry.md`](process_registry.md).

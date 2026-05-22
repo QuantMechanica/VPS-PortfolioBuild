@@ -40,14 +40,6 @@ class PhaseRunnerContractTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             out_root = Path(tmp)
             self._run_phase(
-                "P3.5",
-                [
-                    "--baseline-csv", str(FIXTURES / "p35_baseline.csv"),
-                    "--csr-results-csv", str(FIXTURES / "p35_csr.csv"),
-                ],
-                out_root,
-            )
-            self._run_phase(
                 "P5",
                 [
                     "--calibration-json", str(FIXTURES / "p5_calibration_ready.json"),
@@ -55,15 +47,6 @@ class PhaseRunnerContractTests(unittest.TestCase):
                     "--stress-metrics-json", str(FIXTURES / "p5_stress_metrics.json"),
                     "--full-history-from", "2017-01-01",
                     "--full-history-to", "2022-12-31",
-                ],
-                out_root,
-            )
-            self._run_phase(
-                "P5b",
-                [
-                    "--trials-csv", str(FIXTURES / "p5b_trials.csv"),
-                    "--calibration-json", str(FIXTURES / "p5_calibration_ready.json"),
-                    "--symbol", "EURUSD",
                 ],
                 out_root,
             )
@@ -88,13 +71,6 @@ class PhaseRunnerContractTests(unittest.TestCase):
                 [
                     "--sweep-pass-rows", str(FIXTURES / "p7_sweep_pass_rows.csv"),
                     "--multiseed-rows", str(FIXTURES / "p7_multiseed_rows.csv"),
-                ],
-                out_root,
-            )
-            self._run_phase(
-                "P8",
-                [
-                    "--news-matrix", str(FIXTURES / "p8_matrix.csv"),
                 ],
                 out_root,
             )

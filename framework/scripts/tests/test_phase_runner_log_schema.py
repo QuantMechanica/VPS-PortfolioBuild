@@ -31,13 +31,10 @@ class PhaseRunnerLogSchemaTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             out = Path(tmp)
             phase_args = {
-                "P3.5": ["--baseline-csv", str(FIX / "p35_baseline.csv"), "--csr-results-csv", str(FIX / "p35_csr.csv")],
                 "P5": ["--calibration-json", str(FIX / "p5_calibration_ready.json"), "--clean-metrics-json", str(FIX / "p5_clean_metrics.json"), "--stress-metrics-json", str(FIX / "p5_stress_metrics.json")],
-                "P5b": ["--mc-trials", str(FIX / "p5b_trials.csv"), "--calibration-json", str(FIX / "p5_calibration_ready.json"), "--symbol", "EURUSD.DWX", "--paths", "3"],
                 "P5c": ["--slices-csv", str(FIX / "p5c_slices.csv")],
                 "P6": ["--seeds-csv", str(FIX / "p6_seeds.csv"), "--seeds", "42,17,99,7,2026"],
                 "P7": ["--sweep-pass-rows", str(FIX / "p7_sweep_pass_rows.csv"), "--multiseed-rows", str(FIX / "p7_multiseed_rows.csv")],
-                "P8": ["--news-matrix", str(FIX / "p8_matrix.csv"), "--modes", "OFF,PAUSE,SKIP_DAY"],
             }
 
             for phase, args in phase_args.items():

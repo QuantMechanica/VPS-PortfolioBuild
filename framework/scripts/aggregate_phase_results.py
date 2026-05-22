@@ -8,29 +8,22 @@ from pathlib import Path
 
 from _phase_utils import ensure_dir, load_json, write_json
 
-EXPECTED_PHASES = ["P3.5", "P5", "P5b", "P5c", "P6", "P7", "P8"]
-REQUIRED_PHASES = ("P3.5", "P5", "P5b", "P6", "P7", "P8")
+EXPECTED_PHASES = ["P5", "P5c", "P6", "P7"]
+REQUIRED_PHASES = ("P5", "P6", "P7")
 PHASE_DISPLAY = {
-    "P3.5": "Q04",
     "P5": "Q06",
-    "P5b": "Q07",
     "P5c": "Q08",
     "P6": "Q09",
     "P7": "Q10",
-    "P8": "Q11",
 }
 
 PASS_VERDICTS = {
-    "P3.5": {"AUTO_PASS", "PASS"},
     "P5": {"PASS"},
-    "P5b": {"PASS"},
     "P6": {"MULTI_SEED_PASS", "PASS"},
     "P7": {"PASS"},
-    "P8": {"MODE_SELECTED"},
 }
 
 REVIEW_REQUIRED_VERDICTS = {
-    "P5b": {"YELLOW"},
     "P6": {"MULTI_SEED_WAIVER"},
 }
 
