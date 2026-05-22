@@ -413,63 +413,24 @@ def replenish(
     min_ready_strategy_cards: int = 5,
     claude_disabled_flag: Path = CLAUDE_DISABLED_FLAG,
 ) -> dict[str, Any]:
-    """Seed backlog when the strategy reservoir is low.
+    """Report strategy reservoir state without seeding generic research.
 
-    This is deliberately conservative. It only creates research tickets and
-    leaves build/review/pipeline transitions to artifact-producing workers and
-    the existing farm pump.
+    Generic reservoir replenishment is frozen by WS-1 of the 2026-05-22
+    remediation plan. Edge Lab and other explicitly routed research tasks remain
+    valid, but the old ready-card threshold should not manufacture open-ended
+    research_strategy tasks against the parked generic backlog.
     """
     sync_default_registry(root, claude_disabled_flag=claude_disabled_flag)
     inventory = farmctl.research_backlog_inventory(root)
     ready_count = int(inventory.get("total", 0))
-    created: list[dict[str, Any]] = []
-    if ready_count < min_ready_strategy_cards:
-        needed = min_ready_strategy_cards - ready_count
-        with closing(connect(root)) as conn:
-            existing = conn.execute(
-                """
-                SELECT COUNT(*) AS n FROM agent_tasks
-                WHERE task_type='research_strategy'
-                  AND state IN ('BACKLOG', 'TODO', 'IN_PROGRESS', 'REVIEW')
-                """
-            ).fetchone()
-            open_count = int(existing["n"] if existing else 0)
-            enabled_agents = {
-                row["agent_id"]
-                for row in conn.execute("SELECT agent_id FROM agent_registry WHERE enabled=1 AND max_parallel > 0").fetchall()
-            }
-        profiles = [
-            (agent_id, profile)
-            for agent_id, profile in RESEARCH_PERSPECTIVES.items()
-            if agent_id in enabled_agents
-        ]
-        if not profiles:
-            return {"ready_strategy_cards": ready_count, "strategy_inventory": inventory, "created": created}
-        for idx in range(max(0, needed - open_count)):
-            agent_id, profile = profiles[idx % len(profiles)]
-            created.append(
-                enqueue_task(
-                    root,
-                    "research_strategy",
-                    state="TODO",
-                    priority=30,
-                    required_capabilities=list(profile["required_capabilities"]),
-                    budget_class="low",
-                    payload={
-                        "reason": "strategy_reservoir_low",
-                        "target_agent_profile": agent_id,
-                        "research_perspective": profile["perspective"],
-                        "brief": profile["brief"],
-                        "strategy_card_schema": STRATEGY_CARD_SCHEMA,
-                        "dedupe_required": True,
-                        "output_dir": str(root / CARDS_REVIEW_REL),
-                        "approval_rule": "research_outputs_must_land_in_cards_review_not_cards_approved",
-                        "ready_count": ready_count,
-                        "inventory": inventory,
-                    },
-                )
-            )
-    return {"ready_strategy_cards": ready_count, "strategy_inventory": inventory, "created": created}
+    return {
+        "ready_strategy_cards": ready_count,
+        "strategy_inventory": inventory,
+        "created": [],
+        "frozen": True,
+        "reason": "generic_research_replenishment_frozen_edge_lab_primary_2026-05-22",
+        "min_ready_strategy_cards": min_ready_strategy_cards,
+    }
 
 
 def enqueue_friday_smoke_tasks(

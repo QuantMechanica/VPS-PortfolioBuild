@@ -132,7 +132,7 @@ Implementation notes: simple MQL5 date filter and narrow setfile.
             self.assertEqual(decision.assigned_agent, "codex")
             self.assertNotEqual(decision.task_id, blocked["task_id"])
 
-    def test_replenish_adds_research_when_card_pool_low(self) -> None:
+    def test_replenish_is_frozen_when_card_pool_low(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
             result = agent_router.replenish(
@@ -140,12 +140,11 @@ Implementation notes: simple MQL5 date filter and narrow setfile.
                 min_ready_strategy_cards=2,
                 claude_disabled_flag=root / "missing.flag",
             )
-            self.assertEqual(len(result["created"]), 2)
-            status = agent_router.status(root)
-            research = [row for row in status["tasks"] if row["task_type"] == "research_strategy"]
-            self.assertEqual(research[0]["count"], 2)
+            self.assertTrue(result["frozen"])
+            self.assertEqual(result["created"], [])
+            self.assertEqual(agent_router.status(root)["tasks"], [])
 
-    def test_replenish_creates_distinct_research_perspectives(self) -> None:
+    def test_replenish_freeze_reports_inventory_without_creating_tasks(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
             result = agent_router.replenish(
@@ -154,19 +153,10 @@ Implementation notes: simple MQL5 date filter and narrow setfile.
                 claude_disabled_flag=root / "missing.flag",
             )
 
-            self.assertEqual(len(result["created"]), 3)
-            tasks = agent_router.list_tasks(root)
-            perspectives = {task["payload"]["research_perspective"] for task in tasks}
-            self.assertEqual(
-                perspectives,
-                {
-                    "broad_source_discovery",
-                    "implementation_aware_strategy_design",
-                    "deep_strategy_critique_and_synthesis",
-                },
-            )
-            self.assertTrue(all(task["payload"]["dedupe_required"] for task in tasks))
-            self.assertTrue(all("strategy_card_schema" in task["payload"] for task in tasks))
+            self.assertEqual(result["ready_strategy_cards"], 0)
+            self.assertEqual(result["created"], [])
+            self.assertTrue(result["frozen"])
+            self.assertEqual(agent_router.list_tasks(root), [])
 
     def test_replenish_pauses_research_when_card_pool_is_sufficient(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
@@ -188,9 +178,10 @@ Implementation notes: simple MQL5 date filter and narrow setfile.
 
             self.assertEqual(result["ready_strategy_cards"], 5)
             self.assertEqual(result["created"], [])
+            self.assertTrue(result["frozen"])
             self.assertEqual(agent_router.status(root)["tasks"], [])
 
-    def test_run_once_replenishes_and_routes_with_limits(self) -> None:
+    def test_run_once_does_not_replenish_generic_research(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
             result = agent_router.run_once(
@@ -200,14 +191,11 @@ Implementation notes: simple MQL5 date filter and narrow setfile.
                 claude_disabled_flag=root / "missing.flag",
             )
 
-            self.assertEqual(len(result["replenish"]["created"]), 3)
+            self.assertEqual(result["replenish"]["created"], [])
+            self.assertTrue(result["replenish"]["frozen"])
             assigned = [r for r in result["routes"] if r["reason"] == "assigned"]
-            self.assertEqual(len(assigned), 3)
-            self.assertEqual({r["assigned_agent"] for r in assigned}, {"codex", "gemini", "claude"})
-            status = agent_router.status(root)
-            research = [row for row in status["tasks"] if row["task_type"] == "research_strategy"]
-            self.assertTrue(all(row["state"] == "IN_PROGRESS" for row in research))
-            self.assertEqual(sum(row["count"] for row in research), 3)
+            self.assertEqual(assigned, [])
+            self.assertEqual(agent_router.status(root)["tasks"], [])
 
     def test_friday_smoke_tasks_route_to_all_three_workers_when_enabled(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:

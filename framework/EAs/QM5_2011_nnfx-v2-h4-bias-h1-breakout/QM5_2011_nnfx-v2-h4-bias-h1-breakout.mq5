@@ -23,8 +23,8 @@
 //
 // DO NOT
 //   - Write per-EA IsNewBar() — use QM_IsNewBar()
-//   - Call raw indicator handles directly — use the QM_* readers above.
-//     The framework pools handles and releases them
+//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
+//     use the QM_* readers above. The framework pools handles and releases them
 //     on shutdown.
 //   - CopyRates over warmup windows on every tick. If you genuinely need raw
 //     bar arrays, gate by QM_IsNewBar so the work runs once per closed bar.
@@ -60,9 +60,9 @@ input int    strategy_ssl_period                = 10;
 input int    strategy_macd_fast                 = 12;
 input int    strategy_macd_slow                 = 26;
 input int    strategy_macd_signal               = 9;
-input int    strategy_h1_atr_period             = 14;
+input int    strategy_atr_period                = 14;
 input int    strategy_compression_median_bars   = 80;
-input int    strategy_compression_prior_bars    = 8;
+input int    strategy_compression_scan_bars     = 8;
 input int    strategy_compression_required_bars = 3;
 input int    strategy_entry_donchian_bars       = 20;
 input int    strategy_exit_donchian_bars        = 10;
@@ -70,127 +70,139 @@ input int    strategy_rsi_period                = 14;
 input double strategy_rsi_long_min              = 52.0;
 input double strategy_rsi_short_max             = 48.0;
 input double strategy_initial_atr_mult          = 2.2;
-input double strategy_trail_trigger_r           = 1.5;
 input double strategy_trail_atr_mult            = 2.5;
+input double strategy_trail_trigger_r           = 1.5;
 input int    strategy_time_exit_h1_bars         = 96;
-input int    strategy_weekly_close_skip_bars    = 2;
+input int    strategy_friday_entry_cutoff_hour  = 19;
 
-int Strategy_SSLBias(const string sym, const ENUM_TIMEFRAMES tf, const int period, const int shift)
+double PriceClose(const string sym, const ENUM_TIMEFRAMES tf, const int shift)
   {
-   for(int s = shift; s <= shift + period * 3; ++s)
-     {
-      const double close = iClose(sym, tf, s);
-      const double sma_high = QM_SMA(sym, tf, period, s, PRICE_HIGH);
-      const double sma_low = QM_SMA(sym, tf, period, s, PRICE_LOW);
-      if(close <= 0.0 || sma_high <= 0.0 || sma_low <= 0.0)
-         return 0;
-      if(close > sma_high)
-         return +1;
-      if(close < sma_low)
-         return -1;
-     }
-   return 0;
+   return iClose(sym, tf, shift);
   }
 
-int Strategy_H4Bias()
+double PriceHigh(const string sym, const ENUM_TIMEFRAMES tf, const int shift)
   {
-   const double close = iClose(_Symbol, PERIOD_H4, 1);
-   const double ema = QM_EMA(_Symbol, PERIOD_H4, strategy_h4_ema_period, 1);
-   const double macd_main = QM_MACD_Main(_Symbol, PERIOD_H4,
-                                         strategy_macd_fast,
-                                         strategy_macd_slow,
-                                         strategy_macd_signal,
-                                         1);
-   const double macd_signal = QM_MACD_Signal(_Symbol, PERIOD_H4,
-                                             strategy_macd_fast,
-                                             strategy_macd_slow,
-                                             strategy_macd_signal,
-                                             1);
-   const int ssl = Strategy_SSLBias(_Symbol, PERIOD_H4, strategy_ssl_period, 1);
-   if(close <= 0.0 || ema <= 0.0)
+   return iHigh(sym, tf, shift);
+  }
+
+double PriceLow(const string sym, const ENUM_TIMEFRAMES tf, const int shift)
+  {
+   return iLow(sym, tf, shift);
+  }
+
+int H4Bias()
+  {
+   const double close_h4 = PriceClose(_Symbol, PERIOD_H4, 1);
+   const double ema_h4 = QM_EMA(_Symbol, PERIOD_H4, strategy_h4_ema_period, 1);
+   const double macd_main = QM_MACD_Main(_Symbol, PERIOD_H4, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
+   const double macd_signal = QM_MACD_Signal(_Symbol, PERIOD_H4, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
+   const double ssl_high = QM_SMA(_Symbol, PERIOD_H4, strategy_ssl_period, 1, PRICE_HIGH);
+   const double ssl_low = QM_SMA(_Symbol, PERIOD_H4, strategy_ssl_period, 1, PRICE_LOW);
+
+   if(close_h4 <= 0.0 || ema_h4 <= 0.0 || ssl_high <= 0.0 || ssl_low <= 0.0)
       return 0;
-   if(close > ema && macd_main > macd_signal && ssl > 0)
-      return +1;
-   if(close < ema && macd_main < macd_signal && ssl < 0)
+
+   if(close_h4 > ema_h4 && macd_main > macd_signal && close_h4 > ssl_high)
+      return 1;
+   if(close_h4 < ema_h4 && macd_main < macd_signal && close_h4 < ssl_low)
       return -1;
    return 0;
   }
 
-double Strategy_HighestHigh(const ENUM_TIMEFRAMES tf, const int first_shift, const int bars)
+double MedianATR(const int first_shift, const int bars)
   {
-   double highest = -DBL_MAX;
-   for(int i = first_shift; i < first_shift + bars; ++i)
-     {
-      const double value = iHigh(_Symbol, tf, i);
-      if(value <= 0.0)
-         return 0.0;
-      highest = MathMax(highest, value);
-     }
-   return highest;
-  }
-
-double Strategy_LowestLow(const ENUM_TIMEFRAMES tf, const int first_shift, const int bars)
-  {
-   double lowest = DBL_MAX;
-   for(int i = first_shift; i < first_shift + bars; ++i)
-     {
-      const double value = iLow(_Symbol, tf, i);
-      if(value <= 0.0)
-         return 0.0;
-      lowest = MathMin(lowest, value);
-     }
-   return lowest;
-  }
-
-double Strategy_ATRMedian(const int first_shift, const int bars)
-  {
-   if(bars <= 0)
+   if(bars <= 0 || bars > 128)
       return 0.0;
 
-   double values[];
-   ArrayResize(values, bars);
+   double values[128];
+   int n = 0;
    for(int i = 0; i < bars; ++i)
      {
-      values[i] = QM_ATR(_Symbol, PERIOD_H1, strategy_h1_atr_period, first_shift + i);
-      if(values[i] <= 0.0)
+      const double atr = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, first_shift + i);
+      if(atr <= 0.0)
          return 0.0;
+      values[n++] = atr;
      }
 
-   ArraySort(values);
-   const int mid = bars / 2;
-   if((bars % 2) == 1)
-      return values[mid];
-   return (values[mid - 1] + values[mid]) * 0.5;
+   for(int i = 1; i < n; ++i)
+     {
+      const double key = values[i];
+      int j = i - 1;
+      while(j >= 0 && values[j] > key)
+        {
+         values[j + 1] = values[j];
+         --j;
+        }
+      values[j + 1] = key;
+     }
+
+   if((n % 2) == 1)
+      return values[n / 2];
+   return (values[(n / 2) - 1] + values[n / 2]) * 0.5;
   }
 
-bool Strategy_CompressionOK()
+bool CompressionOK()
   {
-   const double median = Strategy_ATRMedian(strategy_compression_prior_bars + 1,
-                                            strategy_compression_median_bars);
-   if(median <= 0.0)
-      return false;
-
    int compressed = 0;
-   for(int s = 1; s <= strategy_compression_prior_bars; ++s)
+   for(int shift = 1; shift <= strategy_compression_scan_bars; ++shift)
      {
-      const double atr = QM_ATR(_Symbol, PERIOD_H1, strategy_h1_atr_period, s);
-      if(atr > 0.0 && atr < median)
+      const double atr = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, shift);
+      const double median = MedianATR(shift + 1, strategy_compression_median_bars);
+      if(atr <= 0.0 || median <= 0.0)
+         return false;
+      if(atr < median)
          compressed++;
      }
    return (compressed >= strategy_compression_required_bars);
   }
 
-bool Strategy_HasOurPosition(ulong &ticket,
-                             ENUM_POSITION_TYPE &position_type,
-                             double &open_price,
-                             double &sl,
-                             datetime &open_time)
+double HighestHigh(const ENUM_TIMEFRAMES tf, const int first_shift, const int bars)
   {
-   ticket = 0;
-   position_type = POSITION_TYPE_BUY;
+   double highest = -DBL_MAX;
+   for(int i = 0; i < bars; ++i)
+     {
+      const double high = PriceHigh(_Symbol, tf, first_shift + i);
+      if(high <= 0.0)
+         return 0.0;
+      if(high > highest)
+         highest = high;
+     }
+   return highest;
+  }
+
+double LowestLow(const ENUM_TIMEFRAMES tf, const int first_shift, const int bars)
+  {
+   double lowest = DBL_MAX;
+   for(int i = 0; i < bars; ++i)
+     {
+      const double low = PriceLow(_Symbol, tf, first_shift + i);
+      if(low <= 0.0)
+         return 0.0;
+      if(low < lowest)
+         lowest = low;
+     }
+   return lowest;
+  }
+
+bool InFinalTwoH1BarsBeforeWeeklyClose()
+  {
+   const datetime closed_bar_time = iTime(_Symbol, PERIOD_H1, 1);
+   if(closed_bar_time <= 0)
+      return false;
+
+   MqlDateTime dt;
+   ZeroMemory(dt);
+   TimeToStruct(closed_bar_time, dt);
+   return (dt.day_of_week == FRIDAY && dt.hour >= strategy_friday_entry_cutoff_hour);
+  }
+
+bool SelectOurPosition(ENUM_POSITION_TYPE &type, double &open_price, double &sl, datetime &opened_at, ulong &ticket)
+  {
+   type = POSITION_TYPE_BUY;
    open_price = 0.0;
    sl = 0.0;
-   open_time = 0;
+   opened_at = 0;
+   ticket = 0;
 
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
@@ -198,29 +210,22 @@ bool Strategy_HasOurPosition(ulong &ticket,
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
-      const ulong pos_ticket = PositionGetTicket(i);
-      if(pos_ticket == 0 || !PositionSelectByTicket(pos_ticket))
+      const ulong t = PositionGetTicket(i);
+      if(t == 0 || !PositionSelectByTicket(t))
          continue;
       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
 
-      ticket = pos_ticket;
-      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       open_price = PositionGetDouble(POSITION_PRICE_OPEN);
       sl = PositionGetDouble(POSITION_SL);
-      open_time = (datetime)PositionGetInteger(POSITION_TIME);
+      opened_at = (datetime)PositionGetInteger(POSITION_TIME);
+      ticket = t;
       return true;
      }
    return false;
-  }
-
-int Strategy_H1BarsSince(const datetime t)
-  {
-   if(t <= 0)
-      return 0;
-   return iBarShift(_Symbol, PERIOD_H1, t, false);
   }
 
 // -----------------------------------------------------------------------------
@@ -231,10 +236,6 @@ int Strategy_H1BarsSince(const datetime t)
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   MqlDateTime dt;
-   TimeToStruct(TimeCurrent(), dt);
-   if(dt.day_of_week == 5 && dt.hour >= qm_friday_close_hour_broker - strategy_weekly_close_skip_bars)
-      return true;
    return false;
   }
 
@@ -251,107 +252,106 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(_Period != PERIOD_H1)
+   if(InFinalTwoH1BarsBeforeWeeklyClose())
+      return false;
+   if(!CompressionOK())
       return false;
 
-   const int bias = Strategy_H4Bias();
-   if(bias == 0 || !Strategy_CompressionOK())
+   const int bias = H4Bias();
+   if(bias == 0)
       return false;
 
-   const double close_h1 = iClose(_Symbol, PERIOD_H1, 1);
-   const double rsi = QM_RSI(_Symbol, PERIOD_H1, strategy_rsi_period, 1);
-   const double atr = QM_ATR(_Symbol, PERIOD_H1, strategy_h1_atr_period, 1);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(close_h1 <= 0.0 || rsi <= 0.0 || atr <= 0.0 || point <= 0.0)
+   const double close_h1 = PriceClose(_Symbol, PERIOD_H1, 1);
+   const double rsi_h1 = QM_RSI(_Symbol, PERIOD_H1, strategy_rsi_period, 1);
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(close_h1 <= 0.0 || rsi_h1 <= 0.0 || ask <= 0.0 || bid <= 0.0)
       return false;
 
-   const double highest = Strategy_HighestHigh(PERIOD_H1, 2, strategy_entry_donchian_bars);
-   const double lowest = Strategy_LowestLow(PERIOD_H1, 2, strategy_entry_donchian_bars);
-   if(highest <= 0.0 || lowest <= 0.0)
-      return false;
-
-   if(bias > 0 && close_h1 > highest && rsi > strategy_rsi_long_min)
+   if(bias > 0)
      {
-      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      const double prior_high = HighestHigh(PERIOD_H1, 2, strategy_entry_donchian_bars);
+      if(prior_high <= 0.0 || close_h1 <= prior_high || rsi_h1 <= strategy_rsi_long_min)
+         return false;
+
       req.type = QM_BUY;
-      req.price = 0.0;
-      req.sl = NormalizeDouble(entry - atr * strategy_initial_atr_mult, _Digits);
-      req.tp = 0.0;
-      req.reason = "H4_BIAS_H1_BREAKOUT_LONG";
-      return (entry > 0.0 && req.sl > 0.0 && req.sl < entry);
+      req.price = ask;
+      req.sl = QM_StopATR(_Symbol, req.type, req.price, strategy_atr_period, strategy_initial_atr_mult);
+      req.reason = "NNFX_V2_H4_BIAS_H1_BREAKOUT_LONG";
+      return (req.sl > 0.0);
      }
 
-   if(bias < 0 && close_h1 < lowest && rsi < strategy_rsi_short_max)
-     {
-      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      req.type = QM_SELL;
-      req.price = 0.0;
-      req.sl = NormalizeDouble(entry + atr * strategy_initial_atr_mult, _Digits);
-      req.tp = 0.0;
-      req.reason = "H4_BIAS_H1_BREAKOUT_SHORT";
-      return (entry > 0.0 && req.sl > entry);
-     }
+   const double prior_low = LowestLow(PERIOD_H1, 2, strategy_entry_donchian_bars);
+   if(prior_low <= 0.0 || close_h1 >= prior_low || rsi_h1 >= strategy_rsi_short_max)
+      return false;
 
-   return false;
+   req.type = QM_SELL;
+   req.price = bid;
+   req.sl = QM_StopATR(_Symbol, req.type, req.price, strategy_atr_period, strategy_initial_atr_mult);
+   req.reason = "NNFX_V2_H4_BIAS_H1_BREAKOUT_SHORT";
+   return (req.sl > 0.0);
   }
 
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   ulong ticket;
-   ENUM_POSITION_TYPE position_type;
-   double open_price;
-   double sl;
-   datetime open_time;
-   if(!Strategy_HasOurPosition(ticket, position_type, open_price, sl, open_time))
+   ENUM_POSITION_TYPE type;
+   double open_price = 0.0;
+   double sl = 0.0;
+   datetime opened_at = 0;
+   ulong ticket = 0;
+   if(!SelectOurPosition(type, open_price, sl, opened_at, ticket))
       return;
 
-   if(open_price <= 0.0 || sl <= 0.0)
+   const bool is_buy = (type == POSITION_TYPE_BUY);
+   const double market = is_buy ? SymbolInfoDouble(_Symbol, SYMBOL_BID) : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double risk = MathAbs(open_price - sl);
+   if(market <= 0.0 || risk <= 0.0)
       return;
 
-   const bool is_buy = (position_type == POSITION_TYPE_BUY);
-   const double market_price = is_buy ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
-                                      : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double initial_risk = MathAbs(open_price - sl);
-   const double open_profit = is_buy ? (market_price - open_price)
-                                     : (open_price - market_price);
-   if(initial_risk > 0.0 && open_profit >= initial_risk * strategy_trail_trigger_r)
-      QM_TM_TrailATR(ticket, strategy_h1_atr_period, strategy_trail_atr_mult);
+   const double profit_distance = is_buy ? (market - open_price) : (open_price - market);
+   if(profit_distance >= risk * strategy_trail_trigger_r)
+      QM_TM_TrailATR(ticket, strategy_atr_period, strategy_trail_atr_mult);
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   ulong ticket;
-   ENUM_POSITION_TYPE position_type;
-   double open_price;
-   double sl;
-   datetime open_time;
-   if(!Strategy_HasOurPosition(ticket, position_type, open_price, sl, open_time))
+   ENUM_POSITION_TYPE type;
+   double open_price = 0.0;
+   double sl = 0.0;
+   datetime opened_at = 0;
+   ulong ticket = 0;
+   if(!SelectOurPosition(type, open_price, sl, opened_at, ticket))
       return false;
 
-   if(strategy_time_exit_h1_bars > 0 && Strategy_H1BarsSince(open_time) >= strategy_time_exit_h1_bars)
-      return true;
-
-   const int bias = Strategy_H4Bias();
-   if((position_type == POSITION_TYPE_BUY && bias < 0) ||
-      (position_type == POSITION_TYPE_SELL && bias > 0))
-      return true;
-
-   const double close_h1 = iClose(_Symbol, PERIOD_H1, 1);
+   const double close_h1 = PriceClose(_Symbol, PERIOD_H1, 1);
    if(close_h1 <= 0.0)
       return false;
 
-   if(position_type == POSITION_TYPE_BUY)
+   if(type == POSITION_TYPE_BUY)
      {
-      const double lowest = Strategy_LowestLow(PERIOD_H1, 2, strategy_exit_donchian_bars);
-      return (lowest > 0.0 && close_h1 < lowest);
+      const double exit_low = LowestLow(PERIOD_H1, 2, strategy_exit_donchian_bars);
+      if(exit_low > 0.0 && close_h1 < exit_low)
+         return true;
+      if(H4Bias() < 0)
+         return true;
+     }
+   else
+     {
+      const double exit_high = HighestHigh(PERIOD_H1, 2, strategy_exit_donchian_bars);
+      if(exit_high > 0.0 && close_h1 > exit_high)
+         return true;
+      if(H4Bias() > 0)
+         return true;
      }
 
-   const double highest = Strategy_HighestHigh(PERIOD_H1, 2, strategy_exit_donchian_bars);
-   return (highest > 0.0 && close_h1 > highest);
+   if(opened_at > 0 && TimeCurrent() - opened_at >= strategy_time_exit_h1_bars * 3600)
+      return true;
+
+   return false;
   }
 
 // Optional news-filter override. Return TRUE to suppress trading regardless

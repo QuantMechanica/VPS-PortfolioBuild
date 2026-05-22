@@ -63,7 +63,10 @@ from pathlib import Path
 ROOT = Path(r"D:\QM\strategy_farm")
 DB = ROOT / "state" / "farm_state.sqlite"
 LOG_DIR = ROOT / "logs"
+REPORTS_DIR = ROOT / "reports"
+QUEUE_DIR = ROOT / "queue"
 REPO_ROOT = Path(__file__).resolve().parents[2]
+REGISTRY_DIR = REPO_ROOT / "framework" / "registry"
 
 
 def _utc_now() -> str:
@@ -765,6 +768,54 @@ def repair_infra_only_codex_review_failures(con) -> list[dict]:
     return out
 
 
+def repair_strategy_farm_gc(con) -> list[dict]:
+    """R14: bounded farm garbage collection for old logs/prompts/tmp files."""
+    del con
+    out: list[dict] = []
+    now = time.time()
+    seven_days = 7 * 24 * 60 * 60
+    one_day = 24 * 60 * 60
+
+    def remove_old_files(root: Path, pattern: str, max_age_sec: int, handler: str) -> None:
+        if not root.exists():
+            return
+        try:
+            candidates = list(root.rglob(pattern))
+        except OSError:
+            return
+        removed = 0
+        bytes_removed = 0
+        for path in candidates:
+            try:
+                resolved = path.resolve()
+                root_resolved = root.resolve()
+                if resolved == root_resolved or root_resolved not in resolved.parents:
+                    continue
+                if not path.is_file():
+                    continue
+                stat = path.stat()
+                if now - stat.st_mtime < max_age_sec:
+                    continue
+                bytes_removed += stat.st_size
+                path.unlink()
+                removed += 1
+            except OSError:
+                continue
+        if removed:
+            out.append({
+                "handler": handler,
+                "target": str(root),
+                "action": f"deleted {removed} stale file(s)",
+                "detail": f"pattern={pattern} bytes_removed={bytes_removed}",
+            })
+
+    remove_old_files(LOG_DIR, "*", seven_days, "R14_gc_old_logs")
+    remove_old_files(REPORTS_DIR, "*", seven_days, "R14_gc_old_reports")
+    remove_old_files(QUEUE_DIR, "*.md", seven_days, "R14_gc_stale_queue_prompts")
+    remove_old_files(REGISTRY_DIR, "ea_id_registry.csv.*.tmp", one_day, "R14_gc_orphan_registry_tmp")
+    return out
+
+
 # ---------------------------------------------------------------------------
 
 def run_all() -> dict:
@@ -784,6 +835,7 @@ def run_all() -> dict:
         repair_pending_unclaimable_work_items,
         repair_incomplete_p2_parent_fanout,
         repair_infra_only_codex_review_failures,
+        repair_strategy_farm_gc,
     ]
     try:
         for fn in handlers:
