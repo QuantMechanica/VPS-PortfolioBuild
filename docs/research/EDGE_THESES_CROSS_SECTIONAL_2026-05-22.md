@@ -2,7 +2,7 @@
 
 Date: 2026-05-22
 Status: SCREENED — Direction 1 of the Edge Lab
-Author: Claude
+Author: Claude (T1–T4, screen); breadth contributions T5–T6 by Gemini
 Charter: `docs/ops/EDGE_LAB_CHARTER_2026-05-22.md`
 
 Universe: the liquid FX majors / crosses already in the farm (~28 pairs, 8
@@ -84,9 +84,58 @@ the reason this direction is the most FTMO-friendly and goes first.
 
 ---
 
+## Breadth expansion (Gemini, screened by Claude)
+
+Added by Gemini's breadth pass (router task `cdfb768f`). Claude screen verdict
+appended to each.
+
+### T5 — Bond-Yield Convergence (Real Carry)
+
+- **Structural cause:** sovereign bond yield spreads are the primary driver of
+  medium-term FX value. Spot FX often lags the 2-year yield spread due to local
+  liquidity constraints or central-bank jawboning.
+- **Price signature:** rank the 8 currencies by the rolling 12-month z-score of
+  their 2-year government bond yield relative to the G10 average. Long the top
+  underperformer (spot below what the yield spread implies), short the top
+  overperformer. Weekly rebalance.
+- **Persistence:** structural lead-lag between fixed income and FX; high
+  capital requirement for bond arbitrage keeps the FX convergence leg
+  persistent.
+- **Falsification:** if it does not outperform a buy-and-hold "basket of bonds"
+  in non-crisis periods, the FX convergence edge is non-existent.
+- **Q08 / Q11 risk:** yield spreads can decouple violently in a liquidity
+  crisis (March 2020); mitigation: realized-vol gate.
+- **FTMO fit:** swing horizon (D1), mean-reverting character mutes tail risk.
+- **Claude screen — DEFERRED:** requires sovereign 2-year yield series for 8
+  currencies. The farm holds FX / metals / energy / index *price* data, not
+  bond yields. A data-feasibility check (charter "data feasibility") must clear
+  before any build — without yield data this thesis is not testable here.
+
+### T6 — Central-bank "expectations gap" reversion
+
+- **Structural cause:** markets price in rate moves through the cross-section
+  before they happen; once the move/guidance lands, the currency often reverts
+  as the expectations gap closes ("buy the rumour, sell the fact").
+- **Price signature:** identify the currency with the highest trailing 30-day
+  cross-sectional strength ahead of its scheduled central-bank meeting; if the
+  result matches consensus, enter a cross-sectional short against that gainer.
+  Hold 5–10 days.
+- **Persistence:** behavioural bias of over-anticipating policy shifts.
+- **Falsification:** if the reversion signal has a <55% win rate over 5 years
+  of CB events, the "priced-in" thesis is invalid.
+- **Q08 / Q11 risk:** trades the aftermath of news — news-blackout-safe
+  execution mandatory (no entry until the blackout expires).
+- **FTMO fit:** decent; requires disciplined risk-on/off gating.
+- **Claude screen — RECLASSIFIED to Direction 2:** the signal triggers off
+  scheduled central-bank meetings, so it is an event-conditioned strategy, not
+  a pure cross-sectional rank. Carry it into the Direction 2 (event-conditioned)
+  thesis batch; not a Direction 1 build.
+
+---
+
 ## Screen summary & build order
 
-All four carry a real structural cause and fit the FTMO design box. They are
+T1–T4 carry a real structural cause and fit the FTMO design box. They are
 deliberately **complementary** — momentum (T1), filtered carry (T2), reversion
 (T3), risk-rotation (T4) have low mutual correlation, which is the
 diversification mission.
@@ -94,6 +143,9 @@ diversification mission.
 Build order: **T1 → T2** first (flagship + the Q08-survival test), then
 **T3 → T4** as the diversifying legs. Each as a 2–3 variant family per the
 charter.
+
+Breadth: **T5 deferred** pending a bond-yield data-feasibility check; **T6
+moved to Direction 2** (event-conditioned).
 
 Discarded without build:
 
