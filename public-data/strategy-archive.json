@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-05-22T08:07:03.5786238Z",
-    "total":  1687,
+    "generated_at":  "2026-05-22T09:07:03.5347529Z",
+    "total":  1734,
     "items":  [
                   {
                       "slug":  "ath-breakout-atr-trail",
@@ -136,6 +136,24 @@
                       "last_updated_utc":  "2026-04-28T04:50:33.1920212Z"
                   },
                   {
+                      "slug":  "davey-eu-day_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:44:36.8951394Z"
+                  },
+                  {
+                      "slug":  "davey-eu-night_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:44:36.8951394Z"
+                  },
+                  {
+                      "slug":  "davey-worldcup_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:44:36.8961413Z"
+                  },
+                  {
                       "slug":  "lien-20day-breakout_card",
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
@@ -194,6 +212,90 @@
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-05-01T08:54:27.8123774Z"
+                  },
+                  {
+                      "slug":  "singh-cmd-corr_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:44:36.8971440Z"
+                  },
+                  {
+                      "slug":  "singh-eng-bk-tea_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:44:36.8971440Z"
+                  },
+                  {
+                      "slug":  "singh-fade-break_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:44:36.8981472Z"
+                  },
+                  {
+                      "slug":  "singh-fifth-element_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:44:36.8981472Z"
+                  },
+                  {
+                      "slug":  "singh-gd-morn-asia_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:44:36.8991497Z"
+                  },
+                  {
+                      "slug":  "singh-guppy-burst_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:44:36.8991497Z"
+                  },
+                  {
+                      "slug":  "singh-pendulum_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:44:36.9001520Z"
+                  },
+                  {
+                      "slug":  "singh-piranha_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:44:36.9011549Z"
+                  },
+                  {
+                      "slug":  "singh-power-ranger_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:44:36.9011549Z"
+                  },
+                  {
+                      "slug":  "singh-rapid-fire_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:44:36.9021577Z"
+                  },
+                  {
+                      "slug":  "singh-swap-fly_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:44:36.9031605Z"
+                  },
+                  {
+                      "slug":  "singh-trade-break_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:44:36.9031605Z"
+                  },
+                  {
+                      "slug":  "singh-trend-bouncer_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:44:36.9041626Z"
+                  },
+                  {
+                      "slug":  "singh-trend-rider_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:44:36.9041626Z"
                   },
                   {
                       "slug":  "williams-pinch-paunch_card",
@@ -487,7 +589,7 @@
                       "slug":  "QM5_10049_ff-dailyopen-h1",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-05-19T17:42:34.8445364Z"
+                      "last_updated_utc":  "2026-05-22T08:21:53.0332725Z"
                   },
                   {
                       "slug":  "QM5_10050_ff-corr-triad-h1",
@@ -3040,6 +3142,12 @@
                       "last_updated_utc":  "2026-05-22T07:41:39.9258611Z"
                   },
                   {
+                      "slug":  "QM5_10554_mql5-frforce",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:41:39.4135244Z"
+                  },
+                  {
                       "slug":  "QM5_10555_mql5-fradx",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
@@ -3982,10 +4090,34 @@
                       "last_updated_utc":  "2026-05-22T07:44:01.0752320Z"
                   },
                   {
+                      "slug":  "QM5_10707_tv-asian-reclaim",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:16:51.2208136Z"
+                  },
+                  {
+                      "slug":  "QM5_10708_tv-crypto-ils",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:16:56.7658232Z"
+                  },
+                  {
+                      "slug":  "QM5_10709_tv-orb-multitp",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:21:52.7173182Z"
+                  },
+                  {
                       "slug":  "QM5_1071_as-gtaa5-sma",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-05-18T07:25:01.1210339Z"
+                  },
+                  {
+                      "slug":  "QM5_10710_tv-asian-retbrk",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:21:52.4459277Z"
                   },
                   {
                       "slug":  "QM5_10711_tv-mktopen-imp",
@@ -4036,6 +4168,12 @@
                       "last_updated_utc":  "2026-05-18T07:26:02.1261527Z"
                   },
                   {
+                      "slug":  "QM5_10720_tv-htf-fvg",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:07:28.5191682Z"
+                  },
+                  {
                       "slug":  "QM5_10721_tv-wyck-range",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
@@ -4064,6 +4202,24 @@
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-05-22T07:22:23.4090007Z"
+                  },
+                  {
+                      "slug":  "QM5_10726_tv-frac-react",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:07:33.3966684Z"
+                  },
+                  {
+                      "slug":  "QM5_10727_tv-dy-vol-push",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:07:38.6228149Z"
+                  },
+                  {
+                      "slug":  "QM5_10728_tv-smc-liqgrab",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:12:19.9954581Z"
                   },
                   {
                       "slug":  "QM5_10729_tv-smc-mss-fvg",
@@ -4108,10 +4264,22 @@
                       "last_updated_utc":  "2026-05-22T07:27:13.5060430Z"
                   },
                   {
+                      "slug":  "QM5_10738_tv-yd-range",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:46:00.6588243Z"
+                  },
+                  {
                       "slug":  "QM5_1074_as-daa-canary",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-05-18T07:26:07.1572135Z"
+                  },
+                  {
+                      "slug":  "QM5_10743_tv-nq-orb",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:46:00.6364998Z"
                   },
                   {
                       "slug":  "QM5_10744_tv-ict-ote",
@@ -4198,10 +4366,82 @@
                       "last_updated_utc":  "2026-05-22T07:42:41.8838663Z"
                   },
                   {
+                      "slug":  "QM5_10761_tv-vortex",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:46:35.7196099Z"
+                  },
+                  {
+                      "slug":  "QM5_10762_tv-trend-brk",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:46:41.7003258Z"
+                  },
+                  {
+                      "slug":  "QM5_10769_tv-axis-rev",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:50:07.9345881Z"
+                  },
+                  {
                       "slug":  "QM5_1077_as-sector-rs",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-05-18T08:24:26.3891718Z"
+                  },
+                  {
+                      "slug":  "QM5_10770_tv-bigdaddy-orb",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:13:48.4811410Z"
+                  },
+                  {
+                      "slug":  "QM5_10771_tv-trail-hunter",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:13:48.3568174Z"
+                  },
+                  {
+                      "slug":  "QM5_10772_tv-ny-vwap-ret",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:13:48.7734045Z"
+                  },
+                  {
+                      "slug":  "QM5_10774_tv-liq-day",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:23:54.0693577Z"
+                  },
+                  {
+                      "slug":  "QM5_10775_tv-liq-ims",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:24:25.5745714Z"
+                  },
+                  {
+                      "slug":  "QM5_10776_tv-rsi-macd-ema",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:23:54.6253075Z"
+                  },
+                  {
+                      "slug":  "QM5_10777_tv-rsi-bb-mr",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T09:02:39.6113489Z"
+                  },
+                  {
+                      "slug":  "QM5_10778_tv-atr-t3",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T09:02:39.6103680Z"
+                  },
+                  {
+                      "slug":  "QM5_10779_tv-orb-fvg",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T09:02:39.6113489Z"
                   },
                   {
                       "slug":  "QM5_1078_as-trinity-lite",
@@ -4210,16 +4450,118 @@
                       "last_updated_utc":  "2026-05-18T08:24:26.5145678Z"
                   },
                   {
+                      "slug":  "QM5_10782_tv-smc-btc-r3",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:26:27.2548018Z"
+                  },
+                  {
+                      "slug":  "QM5_10783_tv-bos-forex",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:26:42.9159928Z"
+                  },
+                  {
+                      "slug":  "QM5_10784_tv-orbo-basic",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:26:52.1607975Z"
+                  },
+                  {
+                      "slug":  "QM5_10785_tv-momo-200",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:31:54.7149767Z"
+                  },
+                  {
                       "slug":  "QM5_1079_as-ivy-taa",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-05-18T08:24:26.6403529Z"
                   },
                   {
+                      "slug":  "QM5_10791_tv-stc-tt",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:36:45.2801615Z"
+                  },
+                  {
+                      "slug":  "QM5_10792_tv-cipher-div",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:36:51.2454310Z"
+                  },
+                  {
+                      "slug":  "QM5_10793_tv-macd-mfi",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:36:56.4855761Z"
+                  },
+                  {
+                      "slug":  "QM5_10794_tv-atr-st",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:36:29.3698718Z"
+                  },
+                  {
+                      "slug":  "QM5_10795_tv-atr-rip",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:36:29.6234872Z"
+                  },
+                  {
+                      "slug":  "QM5_10796_tv-sma-atr",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:36:29.8071176Z"
+                  },
+                  {
+                      "slug":  "QM5_10797_tv-rsi-ma",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:41:32.3916821Z"
+                  },
+                  {
+                      "slug":  "QM5_10798_tv-ema9-full",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:41:32.3826587Z"
+                  },
+                  {
                       "slug":  "QM5_1080_as-sell-may",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-05-17T18:24:06.5674230Z"
+                  },
+                  {
+                      "slug":  "QM5_10801_tv-dbl-ema-rsi",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:51:37.3883171Z"
+                  },
+                  {
+                      "slug":  "QM5_10802_tv-wma-vwap",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:51:37.5918932Z"
+                  },
+                  {
+                      "slug":  "QM5_10803_tv-3x-super",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:51:37.7934282Z"
+                  },
+                  {
+                      "slug":  "QM5_10807_tv-mtf-st-zone",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:57:12.7100512Z"
+                  },
+                  {
+                      "slug":  "QM5_10808_tv-tqqq-ema",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:57:18.6262243Z"
                   },
                   {
                       "slug":  "QM5_1081_chan-lo-1d-reversal",
@@ -9808,12 +10150,6 @@
                       "last_updated_utc":  "2026-05-21T22:34:40.6453868Z"
                   },
                   {
-                      "slug":  "QM5_10554_mql5-frforce",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-05-22T00:49:47.8635162Z"
-                  },
-                  {
                       "slug":  "QM5_10561_mql5-delta-mfi",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
@@ -9832,54 +10168,6 @@
                       "last_updated_utc":  "2026-05-22T05:10:17.7095790Z"
                   },
                   {
-                      "slug":  "QM5_10707_tv-asian-reclaim",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-05-22T06:19:49.8774713Z"
-                  },
-                  {
-                      "slug":  "QM5_10708_tv-crypto-ils",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-05-22T06:19:49.8774713Z"
-                  },
-                  {
-                      "slug":  "QM5_10709_tv-orb-multitp",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-05-22T06:20:04.1537241Z"
-                  },
-                  {
-                      "slug":  "QM5_10710_tv-asian-retbrk",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-05-22T06:20:04.1557295Z"
-                  },
-                  {
-                      "slug":  "QM5_10720_tv-htf-fvg",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-05-22T08:06:30.6783828Z"
-                  },
-                  {
-                      "slug":  "QM5_10726_tv-frac-react",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-05-22T08:06:30.9611194Z"
-                  },
-                  {
-                      "slug":  "QM5_10727_tv-dy-vol-push",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-05-22T08:06:31.3591607Z"
-                  },
-                  {
-                      "slug":  "QM5_10728_tv-smc-liqgrab",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-05-22T06:47:10.3027519Z"
-                  },
-                  {
                       "slug":  "QM5_10735_tv-hilo-atr",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
@@ -9896,18 +10184,6 @@
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-05-22T07:04:51.2359440Z"
-                  },
-                  {
-                      "slug":  "QM5_10738_tv-yd-range",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-05-22T07:05:21.3730232Z"
-                  },
-                  {
-                      "slug":  "QM5_10743_tv-nq-orb",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-05-22T07:17:51.8777835Z"
                   },
                   {
                       "slug":  "QM5_10749_tv-orb-atlas",
@@ -9940,82 +10216,10 @@
                       "last_updated_utc":  "2026-05-22T07:31:10.9997073Z"
                   },
                   {
-                      "slug":  "QM5_10761_tv-vortex",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-05-22T07:40:41.8394846Z"
-                  },
-                  {
-                      "slug":  "QM5_10762_tv-trend-brk",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-05-22T07:40:41.8424926Z"
-                  },
-                  {
-                      "slug":  "QM5_10769_tv-axis-rev",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-05-22T07:49:44.0093623Z"
-                  },
-                  {
-                      "slug":  "QM5_10770_tv-bigdaddy-orb",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-05-22T07:49:44.0093623Z"
-                  },
-                  {
-                      "slug":  "QM5_10771_tv-trail-hunter",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-05-22T07:49:44.0103664Z"
-                  },
-                  {
-                      "slug":  "QM5_10772_tv-ny-vwap-ret",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-05-22T07:49:44.0133728Z"
-                  },
-                  {
                       "slug":  "QM5_10773_tv-harami-bb",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-05-22T07:49:44.0143757Z"
-                  },
-                  {
-                      "slug":  "QM5_10774_tv-liq-day",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-05-22T08:02:15.3177565Z"
-                  },
-                  {
-                      "slug":  "QM5_10775_tv-liq-ims",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-05-22T08:02:15.3177565Z"
-                  },
-                  {
-                      "slug":  "QM5_10776_tv-rsi-macd-ema",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-05-22T08:02:15.3187588Z"
-                  },
-                  {
-                      "slug":  "QM5_10777_tv-rsi-bb-mr",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-05-22T08:02:15.3187588Z"
-                  },
-                  {
-                      "slug":  "QM5_10778_tv-atr-t3",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-05-22T08:02:15.3187588Z"
-                  },
-                  {
-                      "slug":  "QM5_10779_tv-orb-fvg",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-05-22T08:05:00.1841124Z"
                   },
                   {
                       "slug":  "QM5_10780_tv-ny-orb-dyn",
@@ -10030,28 +10234,106 @@
                       "last_updated_utc":  "2026-05-22T08:05:00.1931353Z"
                   },
                   {
-                      "slug":  "QM5_10782_tv-smc-btc-r3",
+                      "slug":  "QM5_10786_tv-daily-bias",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-05-22T08:05:00.1961432Z"
+                      "last_updated_utc":  "2026-05-22T08:17:05.8662929Z"
                   },
                   {
-                      "slug":  "QM5_10783_tv-bos-forex",
+                      "slug":  "QM5_10787_tv-ema-rsi-adx",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-05-22T08:05:00.1961432Z"
+                      "last_updated_utc":  "2026-05-22T08:17:05.8662929Z"
+                  },
+                  {
+                      "slug":  "QM5_10788_tv-triple-ema-vol",
+                      "source":  "strategy_farm/artifacts/cards_draft",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:17:05.8662929Z"
+                  },
+                  {
+                      "slug":  "QM5_10789_tv-band-zigzag",
+                      "source":  "strategy_farm/artifacts/cards_draft",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:25:48.5934163Z"
+                  },
+                  {
+                      "slug":  "QM5_10790_tv-bb-trend",
+                      "source":  "strategy_farm/artifacts/cards_draft",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:25:48.5944191Z"
+                  },
+                  {
+                      "slug":  "QM5_10799_tv-mtf-pullback",
+                      "source":  "strategy_farm/artifacts/cards_draft",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:46:12.1513610Z"
+                  },
+                  {
+                      "slug":  "QM5_10800_tv-ema-vwap",
+                      "source":  "strategy_farm/artifacts/cards_draft",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:46:12.1523636Z"
+                  },
+                  {
+                      "slug":  "QM5_10804_tv-st-long",
+                      "source":  "strategy_farm/artifacts/cards_draft",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:49:05.5088654Z"
+                  },
+                  {
+                      "slug":  "QM5_10805_tv-bb-stormer",
+                      "source":  "strategy_farm/artifacts/cards_draft",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:49:05.5088654Z"
+                  },
+                  {
+                      "slug":  "QM5_10806_tv-ha-st-adx",
+                      "source":  "strategy_farm/artifacts/cards_draft",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:49:05.5088654Z"
+                  },
+                  {
+                      "slug":  "QM5_10809_tv-dual-st-adx",
+                      "source":  "strategy_farm/artifacts/cards_draft",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:58:29.2479358Z"
+                  },
+                  {
+                      "slug":  "QM5_10810_tv-bb80-daily",
+                      "source":  "strategy_farm/artifacts/cards_draft",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:58:29.2479358Z"
+                  },
+                  {
+                      "slug":  "QM5_10811_tv-inakis-bb",
+                      "source":  "strategy_farm/artifacts/cards_draft",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:58:29.2489385Z"
+                  },
+                  {
+                      "slug":  "QM5_10812_tv-bb-atrtrail",
+                      "source":  "strategy_farm/artifacts/cards_draft",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:58:29.2489385Z"
+                  },
+                  {
+                      "slug":  "QM5_10813_tv-gm8-adx",
+                      "source":  "strategy_farm/artifacts/cards_draft",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-05-22T08:58:29.2489385Z"
                   },
                   {
                       "slug":  "QM5_1136_index-close-auction-intraday-momentum",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-05-22T07:47:15.6557970Z"
+                      "last_updated_utc":  "2026-05-22T08:53:52.9404915Z"
                   },
                   {
                       "slug":  "QM5_1137_fx-h4-filter-rule-breakout",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-05-22T05:52:21.8824506Z"
+                      "last_updated_utc":  "2026-05-22T08:41:28.7687996Z"
                   },
                   {
                       "slug":  "QM5_1138_gold-m30-open-range-fade-after-gap",
@@ -10063,25 +10345,25 @@
                       "slug":  "QM5_1139_crude-m30-first-hour-momentum",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-05-22T07:21:16.4678134Z"
+                      "last_updated_utc":  "2026-05-22T09:00:04.8932439Z"
                   },
                   {
                       "slug":  "QM5_1140_index-daily-range-expansion-continuation",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-05-22T07:56:04.2881632Z"
+                      "last_updated_utc":  "2026-05-22T08:31:42.1352957Z"
                   },
                   {
                       "slug":  "QM5_1151_fx-london-fix-reversal",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-05-22T07:44:01.3190101Z"
+                      "last_updated_utc":  "2026-05-22T08:53:52.7617427Z"
                   },
                   {
                       "slug":  "QM5_1152_fx-tokyo-fix-usd-demand",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-05-22T06:51:14.6736744Z"
+                      "last_updated_utc":  "2026-05-22T08:41:34.5100857Z"
                   },
                   {
                       "slug":  "QM5_1153_fx-us-session-after-london-drift",

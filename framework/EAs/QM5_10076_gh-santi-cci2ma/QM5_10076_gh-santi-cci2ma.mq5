@@ -166,9 +166,10 @@ bool Strategy_ExitSignal()
    if(!HasOurOpenPosition(ptype))
       return false;
 
-   if(ptype == POSITION_TYPE_BUY && g_latest_ma_cross < 0)
+   const int ma_cross = MaCrossDirection();
+   if(ptype == POSITION_TYPE_BUY && ma_cross < 0)
       return true;
-   if(ptype == POSITION_TYPE_SELL && g_latest_ma_cross > 0)
+   if(ptype == POSITION_TYPE_SELL && ma_cross > 0)
       return true;
 
    return false;
@@ -225,14 +226,10 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
+   // Per-tick: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
-   // Per-closed-bar: exit-signal and entry-signal evaluation. Gating here avoids 99% of
-   // per-tick recompute mistakes — Strategy functions see one new closed bar per
-   // call, not every incoming tick.
-   if(!QM_IsNewBar())
-      return;
-
+   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -246,6 +243,12 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
+
+   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
+   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
+   // call, not every incoming tick.
+   if(!QM_IsNewBar())
+      return;
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
