@@ -1905,3 +1905,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10260,cieslak-fomc-cycle-idx,1,WS30.DWX,102600001,2026-05-21,Development,active
 10260,cieslak-fomc-cycle-idx,2,SP500.DWX,102600002,2026-05-21,Development,active
 9151,chan-at-fstx-gap-mom,2,UK100.DWX,91510002,2026-05-21,Development,active
+10717,edgelab-xsec-fx-momentum,0,EURUSD.DWX,107170000,2026-05-22,claude,active
+10717,edgelab-xsec-fx-momentum,1,GBPUSD.DWX,107170001,2026-05-22,claude,active
+10717,edgelab-xsec-fx-momentum,2,AUDUSD.DWX,107170002,2026-05-22,claude,active
+10717,edgelab-xsec-fx-momentum,3,NZDUSD.DWX,107170003,2026-05-22,claude,active
