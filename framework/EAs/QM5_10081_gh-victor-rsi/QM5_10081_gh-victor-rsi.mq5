@@ -285,10 +285,10 @@ void Strategy_ManageOpenPosition()
         }
       else if(ptype == POSITION_TYPE_SELL)
         {
-         const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-         if(ask <= 0.0)
+         const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+         if(bid <= 0.0)
             continue;
-         target_sl = NormalizeDouble(ask * (1.0 + pct), _Digits);
+         target_sl = NormalizeDouble(bid * (1.0 + pct), _Digits);
          if(current_sl <= 0.0 || target_sl < current_sl - point * 0.5)
             QM_TM_MoveSL(ticket, target_sl, "percent_trailing_stop");
         }

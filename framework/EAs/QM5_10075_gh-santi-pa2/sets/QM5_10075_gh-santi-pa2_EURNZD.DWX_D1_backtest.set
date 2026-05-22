@@ -3,16 +3,16 @@
 ; ea_id:        10075
 ; ea_slug:      gh-santi-pa2
 ; ea_version:   v5.0
-; set_version:  s20260519-001
+; set_version:  s20260521-001
 ; symbol:       EURNZD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   136565e048f2588ba90cd4271f39753dd93d442bd27fba4c5d5502ef9f7efc4a
 ; author:       Development
-; date:         2026-05-19
+; date:         2026-05-21
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=1000

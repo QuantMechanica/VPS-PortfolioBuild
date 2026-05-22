@@ -3,16 +3,16 @@
 ; ea_id:        10075
 ; ea_slug:      gh-santi-pa2
 ; ea_version:   v5.0
-; set_version:  s20260519-001
+; set_version:  s20260521-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   ab90ab21bc3dd9ded7e55c8be3c46e31c38631055b49dad472d95e0b971b5fad
 ; author:       Development
-; date:         2026-05-19
+; date:         2026-05-21
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=1000

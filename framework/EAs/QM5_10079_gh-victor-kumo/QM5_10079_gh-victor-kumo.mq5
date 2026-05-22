@@ -56,6 +56,10 @@ input int    strategy_kijun_period      = 26;
 input int    strategy_senkou_b_period   = 52;
 input double strategy_stop_percent      = 3.0;
 
+datetime g_exit_kumo_bar_time = 0;
+double   g_exit_kumo_span_a = 0.0;
+double   g_exit_kumo_span_b = 0.0;
+
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -104,6 +108,31 @@ bool KumoSpansAt(const int shift, double &span_a, double &span_b)
    return true;
   }
 
+bool CachedCurrentKumoSpans(double &span_a, double &span_b)
+  {
+   span_a = 0.0;
+   span_b = 0.0;
+
+   const datetime current_bar_open = iTime(_Symbol, (ENUM_TIMEFRAMES)_Period, 0);
+   if(current_bar_open <= 0)
+      return false;
+
+   if(g_exit_kumo_bar_time != current_bar_open)
+     {
+      double fresh_a;
+      double fresh_b;
+      if(!KumoSpansAt(0, fresh_a, fresh_b))
+         return false;
+      g_exit_kumo_bar_time = current_bar_open;
+      g_exit_kumo_span_a = fresh_a;
+      g_exit_kumo_span_b = fresh_b;
+     }
+
+   span_a = g_exit_kumo_span_a;
+   span_b = g_exit_kumo_span_b;
+   return (span_a > 0.0 && span_b > 0.0);
+  }
+
 bool GetOurPosition(ENUM_POSITION_TYPE &position_type, ulong &ticket)
   {
    position_type = POSITION_TYPE_BUY;
@@ -125,6 +154,38 @@ bool GetOurPosition(ENUM_POSITION_TYPE &position_type, ulong &ticket)
       position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       ticket = t;
       return true;
+     }
+
+   return false;
+  }
+
+bool HasPriorBarTrade()
+  {
+   const datetime prior_bar_open = iTime(_Symbol, (ENUM_TIMEFRAMES)_Period, 1);
+   const datetime current_bar_open = iTime(_Symbol, (ENUM_TIMEFRAMES)_Period, 0);
+   if(prior_bar_open <= 0 || current_bar_open <= prior_bar_open)
+      return false;
+
+   if(!HistorySelect(prior_bar_open, current_bar_open - 1))
+      return false;
+
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   const int deals = HistoryDealsTotal();
+   for(int i = 0; i < deals; ++i)
+     {
+      const ulong deal_ticket = HistoryDealGetTicket(i);
+      if(deal_ticket == 0)
+         continue;
+      if(HistoryDealGetString(deal_ticket, DEAL_SYMBOL) != _Symbol)
+         continue;
+      if((int)HistoryDealGetInteger(deal_ticket, DEAL_MAGIC) != magic)
+         continue;
+      const ENUM_DEAL_ENTRY entry_type = (ENUM_DEAL_ENTRY)HistoryDealGetInteger(deal_ticket, DEAL_ENTRY);
+      if(entry_type == DEAL_ENTRY_IN || entry_type == DEAL_ENTRY_INOUT)
+         return true;
      }
 
    return false;
@@ -155,6 +216,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    ENUM_POSITION_TYPE position_type;
    ulong ticket = 0;
    if(GetOurPosition(position_type, ticket))
+      return false;
+   if(HasPriorBarTrade())
       return false;
 
    double span_a_1;
@@ -228,7 +291,7 @@ bool Strategy_ExitSignal()
 
    double span_a_0;
    double span_b_0;
-   if(!KumoSpansAt(0, span_a_0, span_b_0))
+   if(!CachedCurrentKumoSpans(span_a_0, span_b_0))
       return false;
 
    const double opposite_for_long = MathMin(span_a_0, span_b_0);
@@ -299,7 +362,12 @@ void OnTick()
    // Per-tick: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
-   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
+   // Per-closed-bar: exit-signal and entry-signal evaluation. Gating here avoids 99% of
+   // per-tick recompute mistakes — Strategy functions see one new closed bar per
+   // call, not every incoming tick.
+   if(!QM_IsNewBar())
+     return;
+
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -314,18 +382,13 @@ void OnTick()
         }
      }
 
-   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
-   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
-   // call, not every incoming tick.
-   if(!QM_IsNewBar())
-      return;
-
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
       QM_TM_OpenPosition(req, out_ticket);
      }
+
   }
 
 void OnTimer()

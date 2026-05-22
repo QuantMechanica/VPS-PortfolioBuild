@@ -3,7 +3,7 @@
 ; ea_id:        1051
 ; ea_slug:      cc-3ducks-sma60-mtf
 ; ea_version:   v5.0
-; set_version:  s20260521-001
+; set_version:  s20260522-001
 ; symbol:       EURJPY.DWX
 ; timeframe:    M5
 ; environment:  backtest
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-05-21
+; date:         2026-05-22
 ;==========================================================
 qm_magic_slot_offset=5
 RISK_FIXED=1000

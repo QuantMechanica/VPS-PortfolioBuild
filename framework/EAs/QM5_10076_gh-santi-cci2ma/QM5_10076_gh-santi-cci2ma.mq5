@@ -9,29 +9,7 @@
 // -----------------------------------------------------------------------------
 // Fill in only the five Strategy_* hooks below. Everything else is framework
 // boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
-// risk + magic + news + Friday-close guard rails). The framework provides:
-//
-//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  — closed-bar gate
-//   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
-//     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
-//     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
-//   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
-//   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
-//   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
-//   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
-//   - QM_FrameworkHandleFridayClose / QM_KillSwitchCheck / QM_NewsAllowsTrade
-//
-// DO NOT
-//   - Write per-EA IsNewBar() — use QM_IsNewBar()
-//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
-//     use the QM_* readers above. The framework pools handles and releases them
-//     on shutdown.
-//   - CopyRates over warmup windows on every tick. If you genuinely need raw
-//     bar arrays, gate by QM_IsNewBar so the work runs once per closed bar.
-//   - Hand-edit framework/include/QM/QM_MagicResolver.mqh. After adding rows
-//     to magic_numbers.csv, run:
-//         python framework/scripts/update_magic_resolver.py
-//     This is idempotent and preserves all rows.
+// risk + magic + news + Friday-close guard rails).
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
@@ -45,6 +23,10 @@ input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
 input QM_NewsMode qm_news_mode          = QM_NEWS_OFF;
+input int    qm_news_pause_before_minutes = 30;
+input int    qm_news_pause_after_minutes  = 30;
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
 
 input group "Friday Close"
 input bool   qm_friday_close_enabled    = true;
@@ -60,6 +42,7 @@ input double strategy_rr                = 2.0;
 
 int  g_cci_state = 0;
 int  g_ma_state = 0;
+int  g_latest_ma_cross = 0;
 bool g_reset_states_when_position_seen = false;
 
 bool HasOurOpenPosition(ENUM_POSITION_TYPE &ptype)
@@ -87,6 +70,9 @@ bool HasOurOpenPosition(ENUM_POSITION_TYPE &ptype)
 
 int CciZeroCrossDirection()
   {
+   if(strategy_cci_period < 2)
+      return 0;
+
    const double cci_now = QM_CCI(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_cci_period, 1, PRICE_CLOSE);
    const double cci_prev = QM_CCI(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_cci_period, 2, PRICE_CLOSE);
    if(cci_prev <= 0.0 && cci_now > 0.0)
@@ -98,10 +84,17 @@ int CciZeroCrossDirection()
 
 int MaCrossDirection()
   {
+   if(strategy_fast_ema_period < 1 || strategy_slow_ema_period < 1 ||
+      strategy_fast_ema_period == strategy_slow_ema_period)
+      return 0;
+
    const double fast_now = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_fast_ema_period, 1, PRICE_CLOSE);
    const double slow_now = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_slow_ema_period, 1, PRICE_CLOSE);
    const double fast_prev = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_fast_ema_period, 2, PRICE_CLOSE);
    const double slow_prev = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_slow_ema_period, 2, PRICE_CLOSE);
+   if(fast_now <= 0.0 || slow_now <= 0.0 || fast_prev <= 0.0 || slow_prev <= 0.0)
+      return 0;
+
    if(fast_prev <= slow_prev && fast_now > slow_now)
       return 1;
    if(fast_prev >= slow_prev && fast_now < slow_now)
@@ -110,19 +103,14 @@ int MaCrossDirection()
   }
 
 // -----------------------------------------------------------------------------
-// Strategy hooks — implement these against the card mechanically.
+// Strategy hooks — implemented mechanically from the approved Strategy Card.
 // -----------------------------------------------------------------------------
 
-// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
-// regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
    return false;
   }
 
-// Populate `req` with entry order parameters and return TRUE if a NEW entry
-// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
-// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    req.type = QM_BUY;
@@ -133,17 +121,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   ENUM_POSITION_TYPE ptype;
-   if(HasOurOpenPosition(ptype))
-      return false;
-
    const int cci_cross = CciZeroCrossDirection();
    if(cci_cross != 0)
       g_cci_state = cci_cross;
 
    const int ma_cross = MaCrossDirection();
+   g_latest_ma_cross = ma_cross;
    if(ma_cross != 0)
       g_ma_state = ma_cross;
+
+   ENUM_POSITION_TYPE ptype;
+   if(HasOurOpenPosition(ptype))
+      return false;
 
    if(g_cci_state == 0 || g_ma_state == 0 || g_cci_state != g_ma_state)
       return false;
@@ -155,16 +144,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(entry <= 0.0 || req.sl <= 0.0 || req.tp <= 0.0)
       return false;
 
-   req.reason = (req.type == QM_BUY) ? "CCI_MA_STATE_BUY" : "CCI_MA_STATE_SELL";
+   req.reason = (req.type == QM_BUY) ? "cci_ma_state_buy" : "cci_ma_state_sell";
    g_reset_states_when_position_seen = true;
-   QM_LogEvent(QM_INFO, "ENTRY_SIGNAL",
-               StringFormat("{\"cci_state\":%d,\"ma_state\":%d,\"reason\":\"%s\"}",
-                            g_cci_state, g_ma_state, req.reason));
    return true;
   }
 
-// Called every tick when an open position exists for this EA's magic.
-// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
    ENUM_POSITION_TYPE ptype;
@@ -176,29 +160,23 @@ void Strategy_ManageOpenPosition()
      }
   }
 
-// Return TRUE to close the open position now (e.g. opposite-signal exit,
-// max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
    ENUM_POSITION_TYPE ptype;
    if(!HasOurOpenPosition(ptype))
       return false;
 
-   const int ma_cross = MaCrossDirection();
-   if(ptype == POSITION_TYPE_BUY && ma_cross < 0)
+   if(ptype == POSITION_TYPE_BUY && g_latest_ma_cross < 0)
       return true;
-   if(ptype == POSITION_TYPE_SELL && ma_cross > 0)
+   if(ptype == POSITION_TYPE_SELL && g_latest_ma_cross > 0)
       return true;
 
    return false;
   }
 
-// Optional news-filter override. Return TRUE to suppress trading regardless
-// of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
-// custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false; // defer to QM_NewsAllowsTrade(...)
+   return false;
   }
 
 // -----------------------------------------------------------------------------
@@ -214,7 +192,11 @@ int OnInit()
                         PORTFOLIO_WEIGHT,
                         qm_news_mode,
                         qm_friday_close_enabled,
-                        qm_friday_close_hour_broker))
+                        qm_friday_close_hour_broker,
+                        qm_news_pause_before_minutes,
+                        qm_news_pause_after_minutes,
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
@@ -243,10 +225,14 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
-   // Per-tick: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
-   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
+   // Per-closed-bar: exit-signal and entry-signal evaluation. Gating here avoids 99% of
+   // per-tick recompute mistakes — Strategy functions see one new closed bar per
+   // call, not every incoming tick.
+   if(!QM_IsNewBar())
+      return;
+
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -260,12 +246,6 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
-
-   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
-   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
-   // call, not every incoming tick.
-   if(!QM_IsNewBar())
-      return;
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))

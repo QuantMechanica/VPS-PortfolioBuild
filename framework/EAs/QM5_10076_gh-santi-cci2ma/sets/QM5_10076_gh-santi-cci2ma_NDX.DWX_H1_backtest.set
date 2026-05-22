@@ -3,16 +3,16 @@
 ; ea_id:        10076
 ; ea_slug:      gh-santi-cci2ma
 ; ea_version:   v5.0
-; set_version:  s20260519-001
+; set_version:  s20260521-001
 ; symbol:       NDX.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   a49e8cb5abf32d44b2b27aebae2f7db8d53b6bfc3da7c2ea964a493d3c2b59be
 ; author:       Development
-; date:         2026-05-19
+; date:         2026-05-21
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=1000

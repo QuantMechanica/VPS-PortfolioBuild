@@ -3,16 +3,16 @@
 ; ea_id:        10079
 ; ea_slug:      gh-victor-kumo
 ; ea_version:   v5.0
-; set_version:  s20260519-001
+; set_version:  s20260522-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   29d5062815a6be67694bb3b0b1365405b62033f32fad96d42280a3d6f944dc9a
 ; author:       Development
-; date:         2026-05-19
+; date:         2026-05-22
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=1000

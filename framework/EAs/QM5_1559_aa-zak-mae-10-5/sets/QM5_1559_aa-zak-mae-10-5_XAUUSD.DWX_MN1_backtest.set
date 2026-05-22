@@ -3,16 +3,16 @@
 ; ea_id:        1559
 ; ea_slug:      aa-zak-mae-10-5
 ; ea_version:   v5.0
-; set_version:  s20260521-001
+; set_version:  s20260522-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    MN1
 ; environment:  backtest
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   caf14ae76f0e714f12e9df6a32bebc3cae77d96a9068ed4df8179664f4528037
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-21
+; date:         2026-05-22
 ;==========================================================
 qm_magic_slot_offset=4
 RISK_FIXED=1000

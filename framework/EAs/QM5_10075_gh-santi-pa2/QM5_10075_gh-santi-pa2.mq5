@@ -45,6 +45,10 @@ input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
 input QM_NewsMode qm_news_mode          = QM_NEWS_OFF;
+input int    qm_news_pause_before_minutes = 30;
+input int    qm_news_pause_after_minutes  = 30;
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
 
 input group "Friday Close"
 input bool   qm_friday_close_enabled    = true;
@@ -67,8 +71,26 @@ bool Strategy_NoTradeFilter()
       return true;
 
    const long trade_mode = SymbolInfoInteger(_Symbol, SYMBOL_TRADE_MODE);
-   if(trade_mode == SYMBOL_TRADE_MODE_DISABLED)
-      return true;
+   return (trade_mode == SYMBOL_TRADE_MODE_DISABLED);
+  }
+
+bool Strategy_HasPendingTriggerOrder()
+  {
+   const int magic = QM_FrameworkMagic();
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0 || !OrderSelect(ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+
+      const ENUM_ORDER_TYPE order_type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
+      if(order_type == ORDER_TYPE_BUY_STOP || order_type == ORDER_TYPE_SELL_STOP)
+         return true;
+     }
 
    return false;
   }
@@ -86,21 +108,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = PeriodSeconds((ENUM_TIMEFRAMES)_Period);
 
-   const int magic = QM_FrameworkMagic();
-   for(int i = OrdersTotal() - 1; i >= 0; --i)
-     {
-      const ulong order_ticket = OrderGetTicket(i);
-      if(order_ticket == 0 || !OrderSelect(order_ticket))
-         continue;
-      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
-         continue;
-      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
-         continue;
-
-      const ENUM_ORDER_TYPE order_type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
-      if(order_type == ORDER_TYPE_BUY_STOP || order_type == ORDER_TYPE_SELL_STOP)
-         return false;
-     }
+   if(strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0 || strategy_max_hold_bars <= 0)
+      return false;
+   if(Strategy_HasPendingTriggerOrder())
+      return false;
 
    const double open_1 = iOpen(_Symbol, _Period, 1);
    const double high_1 = iHigh(_Symbol, _Period, 1);
@@ -206,7 +217,11 @@ int OnInit()
                         PORTFOLIO_WEIGHT,
                         qm_news_mode,
                         qm_friday_close_enabled,
-                        qm_friday_close_hour_broker))
+                        qm_friday_close_hour_broker,
+                        qm_news_pause_before_minutes,
+                        qm_news_pause_after_minutes,
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
@@ -238,7 +253,13 @@ void OnTick()
    // Per-tick: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
-   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
+   // Per-closed-bar: exit-signal and entry-signal evaluation. Gating here avoids 99% of
+   // per-tick recompute mistakes — Strategy functions see one new closed bar per
+   // call, not every incoming tick.
+   if(!QM_IsNewBar())
+      return;
+
+   // Check for exits.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -253,18 +274,13 @@ void OnTick()
         }
      }
 
-   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
-   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
-   // call, not every incoming tick.
-   if(!QM_IsNewBar())
-      return;
-
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
       QM_TM_OpenPosition(req, out_ticket);
      }
+
   }
 
 void OnTimer()
@@ -277,3 +293,4 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
+

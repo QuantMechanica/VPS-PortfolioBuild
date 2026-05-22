@@ -3,16 +3,16 @@
 ; ea_id:        10076
 ; ea_slug:      gh-santi-cci2ma
 ; ea_version:   v5.0
-; set_version:  s20260519-001
+; set_version:  s20260521-001
 ; symbol:       EURCAD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   599c238fe39ce9a0e1cb6ec0750a1b40d6e568b624f603fa3d27c1f881b26411
 ; author:       Development
-; date:         2026-05-19
+; date:         2026-05-21
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=1000
