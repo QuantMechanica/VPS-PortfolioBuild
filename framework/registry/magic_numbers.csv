@@ -1909,3 +1909,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10717,edgelab-xsec-fx-momentum,1,GBPUSD.DWX,107170001,2026-05-22,claude,active
 10717,edgelab-xsec-fx-momentum,2,AUDUSD.DWX,107170002,2026-05-22,claude,active
 10717,edgelab-xsec-fx-momentum,3,NZDUSD.DWX,107170003,2026-05-22,claude,active
+10718,edgelab-regime-filtered-carry,0,EURUSD.DWX,107180000,2026-05-22,claude,active
+10718,edgelab-regime-filtered-carry,1,GBPUSD.DWX,107180001,2026-05-22,claude,active
+10718,edgelab-regime-filtered-carry,2,AUDUSD.DWX,107180002,2026-05-22,claude,active
+10718,edgelab-regime-filtered-carry,3,NZDUSD.DWX,107180003,2026-05-22,claude,active
