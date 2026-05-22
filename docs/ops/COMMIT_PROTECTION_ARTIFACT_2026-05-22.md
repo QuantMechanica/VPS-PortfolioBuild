@@ -25,6 +25,26 @@ python -m unittest tools.strategy_farm.tests.test_basket_work_items tools.strate
 
 Result: `7 tests passed`.
 
+Commits created on `agents/board-advisor`:
+
+- `4e42c0a5` - `Harden strategy farm orchestration and verdicts`
+- `59c97fd8` - `Update generated farm registry and EA artifacts`
+
+Push verification:
+
+```text
+git push origin agents/board-advisor
+```
+
+Result: timed out twice. A non-interactive retry with `GIT_TERMINAL_PROMPT=0` returned:
+
+```text
+fatal: Cannot prompt because terminal prompts have been disabled.
+fatal: could not read Username for 'https://github.com': terminal prompts disabled
+```
+
+The branch is committed locally and remains `ahead 2`; push is blocked by missing HTTPS credentials in the headless scheduled-task environment.
+
 ## Verdict
 
-`COMMIT_PROTECTION_READY`
+`COMMITS_LOCAL_PUSH_AUTH_BLOCKED`
