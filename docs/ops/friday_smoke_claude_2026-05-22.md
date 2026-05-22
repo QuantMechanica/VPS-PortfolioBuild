@@ -97,3 +97,38 @@ mismatch.
 
 None of these are kill criteria. The thesis is sound; the danger is a false-positive P2
 that burns P3-P8 MT5 time on equity beta mislabeled as FOMC alpha.
+
+## Cycle update 2026-05-22T18:15Z — QM5_10260 Q02 queue resolved, but all-TIMEOUT
+
+Router task: 92e98d97-210a-4c7c-8e94-6668cdd55bcb (review_strategy, friday smoke).
+Orchestration cycle, headless. Router had no routable task this cycle (replenishment
+frozen — Edge Lab primary; one IN_PROGRESS claude smoke task only).
+
+Checked QM5_10260 queue state per cycle step 4. Evidence:
+`farmctl.py work-items --ea QM5_10260` — 37 Q02 work items, all terminal:
+**status 30 done / 7 failed; verdict 37/37 FAIL.**
+
+The "done + FAIL" combination is NOT a strategy rejection. Inspected the per-item
+evidence (`D:\QM\reports\work_items\51f26da5-…\QM5_10260\20260522_093730\summary.json`,
+AUDCAD.DWX): `result: FAIL`, `reason_classes: [TIMEOUT, METATESTER_HUNG,
+INCOMPLETE_RUNS]` — both runs `Tester run timed out after 1800 seconds`,
+`report_size_bytes: 0`. This is the same per-tick performance washout recorded in
+[[project_qm5_10260_q02_timeout_2026-05-22]] and flagged by commit 44cf33a1.
+
+Verdict: **QM5_10260 Q02 is a perf-TIMEOUT washout across all 37 symbols, not a
+strategy failure.** State to hold:
+
+- Do NOT let the orchestrator or any dashboard read QM5_10260 as STRATEGY_FAIL /
+  pipeline-rejected. The cieslak-fomc-cycle-idx thesis has had zero real evidence
+  produced — every M30 backtest hit the 1800s tester timeout before writing a report.
+- The perf rework is still NOT resolved despite APPROVED codex tasks. The work_items
+  now show `status: done` (the dispatcher marked the timeout terminal) which is more
+  misleading than the earlier `failed` — a casual reader sees "37 done" and assumes
+  evidence exists. It does not.
+- Recommended next step (for OWNER / Codex routing, not invented work): the
+  cieslak-fomc-cycle-idx EA needs the per-tick recompute hot-path profiled and fixed
+  (same class of fix as [[project_qm5_1044_perf_rework_2026-05-16]]), then a fresh
+  Q02 re-enqueue. Until then QM5_10260 carries no pipeline verdict either way.
+
+Smoke result: router round-trip OK, claude `enabled: true`, evidence-backed artifact
+produced. Verdict: CLAUDE_ROUTER_SMOKE_READY / QM5_10260_Q02_TIMEOUT_NOT_STRATEGY_FAIL.
