@@ -5915,22 +5915,14 @@ def pump(root: Path) -> dict[str, Any]:
         "triggered": False,
         "reason": "mail disabled in pump; health alarm mail is sent only by QM_StrategyFarm_GmailAlarm_Hourly",
     }
-    try:
-        from ws0_notifier import check_and_notify as _ws0_check_and_notify
-    except ModuleNotFoundError:
-        from tools.strategy_farm.ws0_notifier import check_and_notify as _ws0_check_and_notify
-    try:
-        result["ws0_clear_notifier"] = _ws0_check_and_notify(root)
-    except Exception as exc:
-        result["ws0_clear_notifier"] = {"triggered": False, "error": repr(exc)}
-    try:
-        from task_watch_notifier import check_and_notify as _task_watch_check_and_notify
-    except ModuleNotFoundError:
-        from tools.strategy_farm.task_watch_notifier import check_and_notify as _task_watch_check_and_notify
-    try:
-        result["task_watch_notifier"] = _task_watch_check_and_notify(root)
-    except Exception as exc:
-        result["task_watch_notifier"] = {"triggered": False, "error": repr(exc)}
+    result["ws0_clear_notifier"] = {
+        "triggered": False,
+        "reason": "disabled_by_owner_2026_05_22; one-shot ping email channel retired",
+    }
+    result["task_watch_notifier"] = {
+        "triggered": False,
+        "reason": "disabled_by_owner_2026_05_22; one-shot ping email channel retired",
+    }
 
     return result
 
