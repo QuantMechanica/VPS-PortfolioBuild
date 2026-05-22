@@ -97,3 +97,69 @@ mismatch.
 
 None of these are kill criteria. The thesis is sound; the danger is a false-positive P2
 that burns P3-P8 MT5 time on equity beta mislabeled as FOMC alpha.
+
+---
+
+# Cycle 2 — 2026-05-22T18:15Z (router task 92e98d97-210a-4c7c-8e94-6668cdd55bcb)
+
+Single-pass orchestration cycle. Health: 18 OK / 1 FAIL (`quota_snapshot_fresh` —
+Tampermonkey tab refresh, operator-side, not actionable headlessly). Router replenish
+frozen (`edge_lab_primary`), no routable tasks. One IN_PROGRESS claude task handled
+below.
+
+## Critique target: QM5_10893 el-d4-t12-ls-ob-micro (SMC liquidity-sweep / order-block)
+
+New Edge Lab Direction-4 card draft in `cards_review/`, not yet G0-reviewed. Adversarial
+pre-MT5 critique. The card is charter-compliant *on paper* (news-blackout present, no
+martingale/grid, no ML, M5 within the allowed scalping horizon) — but three structural
+problems make it a likely false build and one frontmatter field is overstated.
+
+### C1 — 2-pip stop on M5 is dominated by spread + slippage (highest-severity)
+
+Entry stop is "2 pips beyond the extreme of the liquidity sweep". On EURUSD the
+round-trip spread alone is ~0.5-1.0 pip in normal hours and 2-4 pip around the London/NY
+handover and news edges where sweeps cluster. A 2-pip stop therefore spends 25-100% of
+its risk budget on spread before any adverse move, and broker slippage on the stop fill
+adds more. The factory tester must use a broker-accurate spread + slippage model for
+EURUSD/GBPUSD/USDJPY M5 *before* P2; a fixed-low-spread tester config will print a
+strong false-positive. This is the single highest-leverage gate fix for this card.
+
+### C2 — 1:3 RR with WR > 40% is an extraordinary claim, and the falsification is weak
+
+The falsification threshold ("WR > 40% at 1:3 RR over 6 months") implies a profit factor
+near 2.0 and ~+0.6R expectancy — exceptional for any mechanical FX system. A 6-month
+window is also far too short: at 100 trades/yr/symbol that is ~25 trades/symbol, well
+inside the noise band where a 40% vs 30% WR is not separable. Recommend the P3/P8 design
+require a multi-year window and treat the 1:3 fixed RR as a swept axis, not a constant —
+fixed 1:3 is itself a researcher degree of freedom.
+
+### C3 — `r2_mechanical: true` is overstated; SMC has hidden discretion
+
+SMC order-block / MSS logic is mechanizable but the card under-specifies the choices that
+decide every trade: which swing qualifies as "the most recent swing high/low", what
+counts as a valid MSS close (body vs wick), and which candle is "the" order block. The
+card's own falsification text concedes the thesis may be "too discretionary". Until
+those rules are pinned to exact, testable definitions, R2 should read `partial`, not
+`true` — G0 should not pass it as fully mechanical on the current text.
+
+### C4 — Limit-order fill at the "50% mean threshold" is optimistically modeled
+
+Entry is a limit order at the 50% level of the M5 order block. The MT5 tester fills a
+limit the instant price touches it, with no queue position and no partial-fill logic.
+Real fills at a precise intrabar level on M5 are not guaranteed. P4 Monte Carlo / P8
+should stress entry-fill assumptions (e.g. require a small touch-through buffer), or P2
+edge will not survive live execution.
+
+### Routing of these findings
+
+- C1, C3 — pre-P2 / G0 fixes: broker-accurate M5 spread+slippage tester config; downgrade
+  `r2_mechanical` to `partial` and require exact swing/MSS/OB definitions before G0 PASS.
+- C2, C4 — P3/P4/P8 test-design notes: multi-year window, RR as a swept axis, limit-fill
+  stress. Attach to the EA pipeline payload if the card clears G0.
+
+Verdict: not a kill. SMC liquidity-sweep is a legitimate research direction, but on the
+current draft the danger is a false-positive P2 driven by an under-modeled M5 spread and
+an un-pinned, partly-discretionary rule set. G0 should require C1 + C3 fixed before build.
+
+Cycle status: CLAUDE_ROUTER_SMOKE_READY — router round-trip verified, durable artifact
+written, task moved to REVIEW.
