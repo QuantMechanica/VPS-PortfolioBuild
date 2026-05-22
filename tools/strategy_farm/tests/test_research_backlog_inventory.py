@@ -95,6 +95,27 @@ expected_trades_per_year_per_symbol: 12
             errors = ready["blocked_cards"][0]["errors"]
             self.assertIn("schema_missing_body:thesis", errors)
 
+    def test_implausible_entry_frequency_blocks_ready_count(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            approved = root / "artifacts" / "cards_approved"
+            approved.mkdir(parents=True)
+            card = approved / "QM5_777004_implausible.md"
+            self._write_ready_card(card, "QM5_777004", "implausible")
+            text = card.read_text(encoding="utf-8")
+            text = text.replace(
+                "expected_trades_per_year_per_symbol: 12",
+                "expected_trades_per_year_per_symbol: 80",
+            )
+            text = text.replace("Entry: enter on event window.", "Entry: enter only on month-end event window.")
+            card.write_text(text, encoding="utf-8")
+
+            ready = farmctl.ready_strategy_card_inventory(root)
+
+            self.assertEqual(ready["ready_count"], 0)
+            errors = ready["blocked_cards"][0]["errors"]
+            self.assertTrue(any(e.startswith("entry_frequency_implausible:") for e in errors))
+
 
 if __name__ == "__main__":
     unittest.main()

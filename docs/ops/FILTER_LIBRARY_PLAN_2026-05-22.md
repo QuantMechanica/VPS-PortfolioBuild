@@ -96,6 +96,11 @@ filters with a one-line thesis each.
   as pre-declared variants — **no new gate semantics**.
 - The mandatory news-blackout filter is formalised as the first library filter.
 
+Related gate strengthening added 2026-05-22: before Q02 fanout, Q01 blocks EAs
+whose latest build-smoke reference run produces zero trades; G0/prebuild checks
+declared entry frequency against the card's stated cadence; and Q02 fanout is
+constrained to the approved card's declared universe when present.
+
 ## Sequencing
 
 1. **Now (cheap):** this plan + the core filter modules (news-blackout

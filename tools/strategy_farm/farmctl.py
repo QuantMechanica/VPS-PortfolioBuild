@@ -462,6 +462,23 @@ def prebuild_validate_card(root: Path, card_path: Path, fm: dict[str, Any]) -> d
             errors.append(f"expected_trades_too_low:{expected_trades}")
     except (TypeError, ValueError):
         errors.append("expected_trades_per_year_per_symbol_missing")
+        expected_trades = 0
+
+    try:
+        card_text = card_path.read_text(encoding="utf-8", errors="ignore")
+        inference_text = re.sub(
+            r"(?im)^expected_trades_per_year_per_symbol\s*:\s*\d+\s*$",
+            "",
+            card_text,
+        )
+        inferred_trades = _infer_expected_trades_per_year_per_symbol(inference_text)
+        if inferred_trades is not None and expected_trades > max(8, inferred_trades * 4):
+            errors.append(
+                "entry_frequency_implausible:"
+                f"declared={expected_trades}:inferred={inferred_trades}"
+            )
+    except OSError:
+        pass
 
     ea_rows = _read_csv_dicts_if_exists(REPO_ROOT / "framework" / "registry" / "ea_id_registry.csv")
     for row in ea_rows:
@@ -6540,6 +6557,46 @@ def _card_single_symbol_only(root: Path, ea_id: str) -> bool:
     return bool(re.search(r"\bsingle_symbol_only\s*:\s*(?:true|yes|1)\b", text, re.IGNORECASE))
 
 
+def _card_declared_universe_for_ea(root: Path, ea_id: str) -> set[str]:
+    card = _find_approved_card_for_ea(root, ea_id)
+    if not card:
+        return set()
+    try:
+        return _card_universe_symbols(card.read_text(encoding="utf-8-sig", errors="ignore"))
+    except OSError:
+        return set()
+
+
+def _latest_build_smoke_result(con: sqlite3.Connection, ea_id: str) -> dict[str, Any] | None:
+    row = con.execute(
+        """
+        SELECT id, payload_json, updated_at
+        FROM tasks
+        WHERE kind='build_ea' AND card_id=?
+        ORDER BY updated_at DESC
+        LIMIT 1
+        """,
+        (ea_id,),
+    ).fetchone()
+    if not row:
+        return None
+    try:
+        payload = json.loads(row["payload_json"] or "{}")
+    except json.JSONDecodeError:
+        payload = {}
+    codex_result = payload.get("codex_result") if isinstance(payload.get("codex_result"), dict) else {}
+    smoke_result = (
+        codex_result.get("smoke_result")
+        or payload.get("smoke_result")
+        or payload.get("build_smoke_result")
+    )
+    return {
+        "build_task_id": row["id"],
+        "smoke_result": str(smoke_result or "").strip().lower(),
+        "updated_at": row["updated_at"],
+    }
+
+
 def _magic_slot_for_symbol(ea_id: str, symbol: str) -> int:
     m = re.match(r"^QM5_(\d{4})$", ea_id)
     if not m:
@@ -6573,10 +6630,20 @@ def _retarget_setfile_template(template_text: str, symbol: str, magic_slot: int)
     return text
 
 
-def _ensure_p2_full_dwx_setfiles(root: Path, ea_id: str) -> list[tuple[str, str]]:
-    """Ensure P2 has a canonical setfile for every DWX backtest symbol."""
+def _p2_target_symbols_for_ea(root: Path, ea_id: str) -> list[str]:
+    declared = _card_declared_universe_for_ea(root, ea_id)
+    if declared:
+        return sorted(declared)
+    if _card_single_symbol_only(root, ea_id):
+        return [symbol for symbol, _ in _find_ea_setfiles(ea_id, "P2")]
+    return _dwx_backtest_symbols()
+
+
+def _ensure_p2_target_setfiles(root: Path, ea_id: str) -> list[tuple[str, str]]:
+    """Ensure P2 has canonical setfiles only for the card-declared universe."""
     existing = _find_ea_setfiles(ea_id, "P2")
-    if not existing or _card_single_symbol_only(root, ea_id):
+    target_symbols = _p2_target_symbols_for_ea(root, ea_id)
+    if not existing or not target_symbols:
         return existing
 
     ea_root = REPO_ROOT / "framework" / "EAs"
@@ -6593,7 +6660,7 @@ def _ensure_p2_full_dwx_setfiles(root: Path, ea_id: str) -> list[tuple[str, str]
     except OSError:
         return existing
 
-    for symbol in _dwx_backtest_symbols():
+    for symbol in target_symbols:
         if symbol in by_symbol:
             continue
         target = sets_dir / f"{ea_dir.name}_{symbol}_{period}_backtest.set"
@@ -6606,7 +6673,7 @@ def _ensure_p2_full_dwx_setfiles(root: Path, ea_id: str) -> list[tuple[str, str]
             )
         by_symbol[symbol] = str(target.resolve())
 
-    return [(symbol, by_symbol[symbol]) for symbol in _dwx_backtest_symbols() if symbol in by_symbol]
+    return [(symbol, by_symbol[symbol]) for symbol in target_symbols if symbol in by_symbol]
 
 
 def _create_backtest_work_items(conn: sqlite3.Connection, parent_task_id: str,
@@ -6625,7 +6692,7 @@ def _create_backtest_work_items(conn: sqlite3.Connection, parent_task_id: str,
     if basket_manifest:
         setfiles = [basket_setfile] if basket_setfile else []
     else:
-        setfiles = _ensure_p2_full_dwx_setfiles(root, ea_id) if phase == "P2" else _find_ea_setfiles(ea_id, phase)
+        setfiles = _ensure_p2_target_setfiles(root, ea_id) if phase == "P2" else _find_ea_setfiles(ea_id, phase)
     if not setfiles:
         return [], []
     if surviving_symbols:
@@ -6757,6 +6824,16 @@ def enqueue_backtest(root: Path, review_task_id: str, phase: str) -> dict[str, A
 
         if not ea_id:
             return {"enqueued": False, "reason": "Predecessor payload missing ea_id"}
+        if phase == "P2":
+            smoke = _latest_build_smoke_result(conn, str(ea_id))
+            if smoke and smoke.get("smoke_result") == "zero_trades":
+                return {
+                    "enqueued": False,
+                    "reason": "q01_trade_generation_zero_trades",
+                    "detail": "latest build smoke produced zero trades; route to Codex fix or card rework before Q02 fanout",
+                    "ea_id": ea_id,
+                    "build_task_id": smoke.get("build_task_id"),
+                }
         artifact_failure = _ea_build_artifact_failure(str(ea_id))
         if artifact_failure:
             return {
