@@ -8,11 +8,15 @@ Status: REVIEW_READY
 
 - Main checkout: `C:/QM/repo`
 - Branch: `agents/board-advisor`
+- Cleanup commit: `08dd262c`
 - Scratch files removed from the main checkout:
   - `check_db.py`
   - `inspect_tasks.py`
   - `query_tasks.py`
   - `pipeline.json`
+- Note: after the cleanup commit, concurrent work wrote new `QM5_10717` and
+  related registry/public-data changes into the main checkout. Those changes
+  were preserved and not reverted because they belong to another active task.
 
 ## Worktrees Removed
 
@@ -46,3 +50,6 @@ Preserved dirty legacy worktrees instead of removing uncommitted work:
 - No T_Live or AutoTrading changes.
 - No manual `terminal64.exe` start.
 - Active terminal-worker and orchestration processes were not interrupted.
+- The final main-checkout clean-state acceptance was not fully satisfied
+  because concurrent active agents continued writing to `C:/QM/repo` after
+  the cleanup commit.
