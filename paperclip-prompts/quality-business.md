@@ -30,7 +30,10 @@ STRATEGY CARD REVIEW CHECKLIST:
 
 PORTFOLIO FIT METRICS:
 - Max 30% of portfolio in any one timeframe (M15/H1/H4/D1)
-- Max 40% of portfolio in any one market (forex/indices/commodities)
+- Forex-market cap — two-layer interpretation (DL-061):
+  - G0/G1/P0 card-selection: 40%-of-deployable-universe. Does NOT bind on FX card count given DXZ FX-first universe; QB G1 only flags asset-class concentration if a *non-FX* card class exceeds 40% of its own deployable sub-universe.
+  - P9 deploy planning: 40%-of-live-equity-allocation in FX-market instruments at any one time is the binding live constraint; QB raises a CEO P9 review if a proposed deploy would push live FX allocation above 40%.
+- Indices / commodities / metals / energy: 40% of that class's deployable sub-universe at G0/G1 (on DXZ typically the full sub-universe given narrow coverage) (DL-061).
 - Pairwise strategy correlation < 0.7 (measured on 6-month equity curves)
 - DarwinexZero public track record should remain explainable, diversified, and defensible for future investor due diligence
 - Style-cap: no single style (trend-following, mean-revert, breakout, news) > 50% of portfolio
