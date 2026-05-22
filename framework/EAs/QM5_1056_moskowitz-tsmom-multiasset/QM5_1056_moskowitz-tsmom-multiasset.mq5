@@ -3,6 +3,7 @@
 #property description "QM5_1056 Moskowitz Time-Series Momentum Multi-Asset"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_FilterLibrary.mqh>
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                     = 1056;
@@ -15,6 +16,17 @@ input double PORTFOLIO_WEIGHT             = 1.0;
 
 input group "News"
 input QM_NewsMode qm_news_mode            = QM_NEWS_OFF;
+
+input group "Filters"
+input bool   qm_filter_regime_enabled     = false;
+input int    qm_filter_regime_lookback_bars = 63;
+input double qm_filter_regime_bull_return_pct = 8.0;
+input double qm_filter_regime_bear_return_pct = 8.0;
+input bool   qm_filter_volatility_enabled = false;
+input int    qm_filter_volatility_atr_period = 20;
+input int    qm_filter_volatility_lookback_bars = 63;
+input double qm_filter_volatility_compression_ratio = 0.75;
+input double qm_filter_volatility_expansion_ratio = 1.50;
 
 input group "Friday Close"
 input bool   qm_friday_close_enabled      = false;
@@ -261,6 +273,38 @@ bool Strategy_SpreadAllowsEntry()
    return ((double)current_spread <= median_spread * strategy_spread_mult);
   }
 
+bool Strategy_CrisisFilterBlocks()
+  {
+   if(!qm_filter_regime_enabled && !qm_filter_volatility_enabled)
+      return false;
+
+   bool regime_crisis = false;
+   bool volatility_crisis = false;
+
+   if(qm_filter_regime_enabled)
+     {
+      const QM_RegimeState regime = QM_FilterRegimeState(_Symbol, PERIOD_D1,
+                                                        qm_filter_regime_lookback_bars,
+                                                        qm_filter_regime_bull_return_pct,
+                                                        qm_filter_regime_bear_return_pct);
+      regime_crisis = (regime == QM_REGIME_BEAR);
+     }
+
+   if(qm_filter_volatility_enabled)
+     {
+      const QM_VolatilityState volatility = QM_FilterVolatilityState(_Symbol, PERIOD_D1,
+                                                                    qm_filter_volatility_atr_period,
+                                                                    qm_filter_volatility_lookback_bars,
+                                                                    qm_filter_volatility_compression_ratio,
+                                                                    qm_filter_volatility_expansion_ratio);
+      volatility_crisis = (volatility == QM_VOL_EXPANSION);
+     }
+
+   if(qm_filter_regime_enabled && qm_filter_volatility_enabled)
+      return (regime_crisis && volatility_crisis);
+   return (regime_crisis || volatility_crisis);
+  }
+
 // No Trade Filter (time, spread, news)
 bool Strategy_NoTradeFilter()
   {
@@ -385,6 +429,23 @@ void OnTick()
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
+
+   if(Strategy_CrisisFilterBlocks())
+     {
+      const int magic = QM_FrameworkMagic();
+      for(int i = PositionsTotal() - 1; i >= 0; --i)
+        {
+         const ulong ticket = PositionGetTicket(i);
+         if(!PositionSelectByTicket(ticket))
+            continue;
+         if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+            continue;
+         if(PositionGetInteger(POSITION_MAGIC) != magic)
+            continue;
+         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+        }
+      return;
+     }
 
    if(Strategy_NoTradeFilter())
       return;
