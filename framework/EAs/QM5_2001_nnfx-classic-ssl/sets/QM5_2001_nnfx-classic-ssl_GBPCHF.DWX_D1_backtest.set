@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        2001
 ; ea_slug:      nnfx-classic-ssl
@@ -10,7 +10,7 @@
 ; magic_slot:   17
 ; risk_mode:    FIXED
 ; portfolio_weight: 1.0
-; build_hash:   81e27d37c65231a274480d0e5e5dd15f5df837001c1081715ba0558328bdf8a3
+; build_hash:   f0fd2128dc2d6f804ff5bdced17ee9a8a15113b6a78e1d7b267dcaff74c64842
 ; author:       Development
 ; date:         2026-05-19
 ;==========================================================
