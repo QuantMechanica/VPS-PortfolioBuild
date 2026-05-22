@@ -6,6 +6,7 @@ Task: `4fcc31a0-58d7-43bd-9512-4448746158d7`
 ## Result
 
 - Added a one-shot WS-0-clear notifier to `tools/strategy_farm/gmail_alarm.py`.
+- A concurrent pump-integrated notifier hook appeared in `tools/strategy_farm/farmctl.py` / `tools/strategy_farm/ws0_notifier.py`; it was hardened to the same post-policy cutoff and shares the same sentinel path.
 - The notifier checks `work_items` for the first post-policy Q02/P2 real verdict:
   - `phase='P2'`
   - `status='done'`
@@ -36,5 +37,6 @@ The sentinel was written. A second invocation returned `ws0_sentinel_exists`, ve
 - `python -m py_compile tools/strategy_farm/gmail_alarm.py`: PASS
 - Direct notifier check: first call sent mail and wrote sentinel.
 - Direct notifier check: second call returned `{'sent': False, 'reason': 'ws0_sentinel_exists', ...}`.
+- `python -m py_compile tools/strategy_farm/ws0_notifier.py tools/strategy_farm/farmctl.py`: PASS
 
 No Q-gate verdicts were inferred beyond the pipeline row already present in `work_items`. No T_Live or AutoTrading changes were made. No terminal was started manually.
