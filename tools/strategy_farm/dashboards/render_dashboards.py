@@ -323,8 +323,68 @@ def get_mt5_fleet_status() -> dict[str, Any]:
     return {"scanned_at": scan_at, "processes": procs, "running_count": len(procs)}
 
 
+def _slug_for_ea(ea_id: str) -> str:
+    """Best-effort display slug for an EA from its framework/EAs/ directory."""
+    eas_dir = REPO_ROOT / "framework" / "EAs"
+    try:
+        for d in sorted(eas_dir.glob(f"{ea_id}_*")):
+            if d.is_dir():
+                return d.name[len(ea_id) + 1:] or ea_id
+    except OSError:
+        pass
+    return ea_id
+
+
+def _ea_from_work_items(ea_id: str, wi_rows: list, pass_verdicts: set[str]) -> dict:
+    """Derive an EA candidate dict from work_items rows alone — for EAs with
+    pipeline activity but no agent task. Closes the archive coverage gap so
+    every EA in the DB gets a rendered detail page."""
+    completed: set[str] = set()
+    current_phase, current_idx = "G0", 0
+    failed_at: str | None = None
+    has_open = False
+    last_updated = ""
+    for r in wi_rows:
+        phase = str(r["phase"] or "")
+        if phase not in PHASE_ORDER:
+            continue
+        idx = PHASE_ORDER.index(phase)
+        status = str(r["status"] or "").lower()
+        verdict = str(r["verdict"] or "").upper()
+        if status == "done" and verdict in pass_verdicts:
+            completed.add(phase)
+            if idx >= current_idx:
+                current_phase, current_idx = phase, idx
+        elif status in {"active", "pending", "claimed"}:
+            has_open = True
+            if idx > current_idx:
+                current_phase, current_idx = phase, idx
+        elif idx >= current_idx:
+            failed_at = phase
+        if (r["updated_at"] or "") > last_updated:
+            last_updated = r["updated_at"] or ""
+    dead = bool(failed_at) and not has_open and not completed
+    return {
+        "ea_id": ea_id,
+        "slug": _slug_for_ea(ea_id),
+        "completed_phases": sorted(
+            completed, key=lambda p: PHASE_ORDER.index(p) if p in PHASE_ORDER else 99
+        ),
+        "current_phase": current_phase,
+        "failed_at": failed_at if dead else None,
+        "dead": dead,
+        "live": False,
+        "task_count": 0,
+        "last_updated": last_updated,
+        "latest_evidence": None,
+    }
+
+
 def derive_ea_candidates(tasks: list[dict], root: Path | None = None) -> list[dict]:
-    """Group tasks by card_id (= ea_id) and derive EA-level state."""
+    """Group tasks by card_id (= ea_id) and derive EA-level state.
+
+    EAs that have work_items but no agent task are seeded too, so the
+    Strategy Archive and cockpit coverage panel never lose a live EA."""
     by_ea: dict[str, list[dict]] = defaultdict(list)
     for t in tasks:
         ea_id = t.get("card_id")
@@ -407,43 +467,50 @@ def derive_ea_candidates(tasks: list[dict], root: Path | None = None) -> list[di
 
     if root is not None:
         db = root / "state" / "farm_state.sqlite"
-        if db.exists() and eas:
+        if db.exists():
             pass_verdicts = {"PASS", "AUTO_PASS", "MODE_SELECTED", "MULTI_SEED_PASS"}
-            by_id = {ea["ea_id"]: ea for ea in eas}
-            placeholders = ",".join("?" for _ in by_id)
             try:
                 with sqlite3.connect(db) as conn:
                     conn.row_factory = sqlite3.Row
                     rows = conn.execute(
-                        f"SELECT ea_id, phase, status, verdict, updated_at FROM work_items WHERE ea_id IN ({placeholders})",
-                        list(by_id),
+                        "SELECT ea_id, phase, status, verdict, updated_at FROM work_items"
                     ).fetchall()
             except sqlite3.Error:
                 rows = []
+            wi_by_ea: dict[str, list] = defaultdict(list)
             for r in rows:
-                phase = str(r["phase"] or "")
-                ea = by_id.get(r["ea_id"])
-                if not ea or phase not in PHASE_ORDER:
-                    continue
-                phase_idx = PHASE_ORDER.index(phase)
-                current_idx = PHASE_ORDER.index(ea["current_phase"]) if ea["current_phase"] in PHASE_ORDER else -1
-                verdict = str(r["verdict"] or "").upper()
-                status = str(r["status"] or "").lower()
-                if status == "done" and verdict in pass_verdicts:
-                    ea["completed_phases"] = sorted(
-                        set(ea.get("completed_phases") or []) | {phase},
-                        key=lambda p: PHASE_ORDER.index(p) if p in PHASE_ORDER else 99,
-                    )
-                    if phase_idx >= current_idx:
+                if r["ea_id"]:
+                    wi_by_ea[r["ea_id"]].append(r)
+            by_id = {ea["ea_id"]: ea for ea in eas}
+            # enrich task-derived EAs from their work_items
+            for ea_id, ea in by_id.items():
+                for r in wi_by_ea.get(ea_id, []):
+                    phase = str(r["phase"] or "")
+                    if phase not in PHASE_ORDER:
+                        continue
+                    phase_idx = PHASE_ORDER.index(phase)
+                    current_idx = PHASE_ORDER.index(ea["current_phase"]) if ea["current_phase"] in PHASE_ORDER else -1
+                    verdict = str(r["verdict"] or "").upper()
+                    status = str(r["status"] or "").lower()
+                    if status == "done" and verdict in pass_verdicts:
+                        ea["completed_phases"] = sorted(
+                            set(ea.get("completed_phases") or []) | {phase},
+                            key=lambda p: PHASE_ORDER.index(p) if p in PHASE_ORDER else 99,
+                        )
+                        if phase_idx >= current_idx:
+                            ea["current_phase"] = phase
+                            ea["failed_at"] = None
+                            ea["dead"] = False
+                    elif status in {"active", "pending", "claimed"} and phase_idx > current_idx:
                         ea["current_phase"] = phase
-                        ea["failed_at"] = None
                         ea["dead"] = False
-                elif status in {"active", "pending", "claimed"} and phase_idx > current_idx:
-                    ea["current_phase"] = phase
-                    ea["dead"] = False
-                    ea["failed_at"] = None
-                if (r["updated_at"] or "") > (ea.get("last_updated") or ""):
-                    ea["last_updated"] = r["updated_at"] or ea.get("last_updated") or ""
+                        ea["failed_at"] = None
+                    if (r["updated_at"] or "") > (ea.get("last_updated") or ""):
+                        ea["last_updated"] = r["updated_at"] or ea.get("last_updated") or ""
+            # archive coverage: seed EAs that have work_items but no agent task
+            for ea_id, ea_rows in wi_by_ea.items():
+                if ea_id not in by_id:
+                    eas.append(_ea_from_work_items(ea_id, ea_rows, pass_verdicts))
 
     eas.sort(key=lambda x: x.get("last_updated", ""), reverse=True)
     return eas
@@ -2025,7 +2092,7 @@ def render_strategies(state: dict, root: Path) -> str:
 </div>
 
 <div class="transparency-banner">
-  <strong>Transparency:</strong> all EAs are the actual pipeline state — DEAD strategies are dimmed but NOT hidden. Decision candidates (P8 / P4+) are surfaced first; click any row for strategy card, per-phase × per-symbol backtest evidence, and native MT5 reports.
+  <strong>Transparency:</strong> all EAs are the actual pipeline state — DEAD strategies are dimmed but NOT hidden. Decision candidates (Q11 / Q05+) are surfaced first; click any row for strategy card, per-phase × per-symbol backtest evidence, and native MT5 reports.
 </div>
 
 <div class="controls">
@@ -2110,7 +2177,7 @@ def render_strategies(state: dict, root: Path) -> str:
 
   // sortable columns
   let sortCol = null, sortDir = 1;
-  table.querySelectorAll('thead th[data-sort-col]').forEach((th, idx) => {{
+  table.querySelectorAll('thead th[data-sort-col]').forEach(th => {{
     th.addEventListener('click', () => {{
       const type = th.getAttribute('data-sort-type');
       const col = th.getAttribute('data-sort-col');
@@ -2118,7 +2185,7 @@ def render_strategies(state: dict, root: Path) -> str:
       else {{ sortCol = col; sortDir = 1; }}
       table.querySelectorAll('thead th').forEach(t => t.classList.remove('sort-asc','sort-desc'));
       th.classList.add(sortDir === 1 ? 'sort-asc' : 'sort-desc');
-      const cellIdx = idx;
+      const cellIdx = th.cellIndex;  // real column index, incl. non-sortable cols
       const sorted = rows.slice().sort((a, b) => {{
         const ca = a.cells[cellIdx], cb = b.cells[cellIdx];
         let va, vb;
