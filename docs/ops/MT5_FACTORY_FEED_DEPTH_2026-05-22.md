@@ -29,3 +29,5 @@ Router task: `dc67de57-47fe-4d0f-b200-5e62481e79ec`
 - No T_Live or AutoTrading changes were made.
 - No terminal process was started manually.
 - The implementation does not alter pipeline verdict interpretation.
+- Local commit: `b7a52ff3 fix(farm): keep MT5 factory queue fed`
+- Push attempt: blocked by missing noninteractive GitHub HTTPS credentials (`could not read Username`).
