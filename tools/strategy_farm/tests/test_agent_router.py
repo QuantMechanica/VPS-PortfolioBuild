@@ -90,6 +90,15 @@ Implementation notes: simple MQL5 date filter and narrow setfile.
             self.assertTrue(claude["enabled"])
             self.assertEqual(claude["max_parallel"], 3)
 
+    def test_codex_enabled_cap_is_five(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            agent_router.sync_default_registry(root, claude_disabled_flag=root / "missing.flag")
+            status = agent_router.status(root, claude_disabled_flag=root / "missing.flag")
+            codex = next(agent for agent in status["agents"] if agent["agent_id"] == "codex")
+            self.assertTrue(codex["enabled"])
+            self.assertEqual(codex["max_parallel"], 5)
+
     def test_routes_by_capability_and_wip_limit(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)

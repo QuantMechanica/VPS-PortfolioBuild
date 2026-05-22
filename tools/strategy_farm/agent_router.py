@@ -62,7 +62,7 @@ DEFAULT_AGENT_REGISTRY: dict[str, dict[str, Any]] = {
     "codex": {
         "enabled": True,
         "capabilities": ["code", "tests", "repo_edit", "review", "ops", "research", "strategy"],
-        "max_parallel": 3,
+        "max_parallel": 5,
         "cost_rank": 20,
     },
     "claude": {
