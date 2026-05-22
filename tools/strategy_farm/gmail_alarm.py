@@ -26,7 +26,6 @@ import datetime as dt
 import html
 import json
 import smtplib
-import sqlite3
 import sys
 import time
 from email.mime.multipart import MIMEMultipart
@@ -57,9 +56,6 @@ MONO_STACK = "'Source Code Pro', ui-monospace, 'SF Mono', Menlo, monospace"
 ROOT = Path(r"D:\QM\strategy_farm")
 HEALTH_FILE = ROOT / "state" / "health.json"
 STATE_FILE = ROOT / "state" / "gmail_alarm_state.json"
-FARM_DB = ROOT / "state" / "farm_state.sqlite"
-WS0_SENTINEL_FILE = ROOT / "state" / "ws0_notified.json"
-WS0_POLICY_LIVE_AT = "2026-05-22T07:41:37"
 DASHBOARDS_DIR = ROOT / "dashboards"
 SECRETS_DIR = Path(r"C:\QM\repo\.private\secrets")
 APP_PASSWORD_FILE = SECRETS_DIR / "gmail_app_password.txt"
@@ -312,97 +308,7 @@ def _send_mail_with_retries(subject: str, text_body: str, html_body: str | None 
     return {**last, "sent": False, "attempts": attempts, "fail_flag": str(fail_flag)}
 
 
-def _find_first_ws0_real_p2_verdict() -> dict | None:
-    """Return the first post-policy real Q02/P2 verdict, excluding INVALID/timeouts."""
-    if not FARM_DB.exists():
-        return None
-    con: sqlite3.Connection | None = None
-    try:
-        con = sqlite3.connect(str(FARM_DB))
-        con.row_factory = sqlite3.Row
-        row = con.execute(
-            """
-            SELECT id, ea_id, symbol, phase, status, verdict, updated_at, evidence_path
-            FROM work_items
-            WHERE phase='P2'
-              AND status='done'
-              AND verdict IN ('PASS', 'FAIL', 'ZERO_TRADES')
-              AND updated_at >= ?
-            ORDER BY updated_at ASC, id ASC
-            LIMIT 1
-            """,
-            (WS0_POLICY_LIVE_AT,),
-        ).fetchone()
-    except sqlite3.Error:
-        return None
-    finally:
-        if con is not None:
-            con.close()
-    return dict(row) if row else None
-
-
-def _maybe_send_ws0_clear_notification() -> dict:
-    """One-shot OWNER mail when WS-0 first yields a real P2 verdict."""
-    if WS0_SENTINEL_FILE.exists():
-        return {"sent": False, "reason": "ws0_sentinel_exists", "sentinel": str(WS0_SENTINEL_FILE)}
-    verdict = _find_first_ws0_real_p2_verdict()
-    if not verdict:
-        return {"sent": False, "reason": "no_post_policy_real_p2_verdict"}
-
-    subject = f"[QM Strategy Farm] WS-0 cleared - Q02 real verdict {verdict['verdict']}"
-    text_body = "\n".join([
-        "WS-0 cleared: the P2/Q02 pipeline produced its first real post-policy verdict.",
-        "",
-        f"EA: {verdict.get('ea_id')}",
-        f"Symbol: {verdict.get('symbol')}",
-        f"Verdict: {verdict.get('verdict')}",
-        f"Work item: {verdict.get('id')}",
-        f"Updated at: {verdict.get('updated_at')}",
-        f"Evidence: {verdict.get('evidence_path') or '(not recorded)'}",
-        "",
-        "This is a one-shot notification and is now disarmed by state/ws0_notified.json.",
-    ])
-    P = PALETTE
-    html_body = f"""<!DOCTYPE html>
-<html><head><meta charset="utf-8"></head>
-<body style="margin:0;padding:0;background:{P['bg']};font-family:{FONT_STACK};color:{P['text']};">
-<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:{P['bg']};">
-<tr><td align="center" style="padding:24px 12px;">
-<table cellpadding="0" cellspacing="0" border="0" width="640" style="max-width:640px;background:{P['surface_1']};border-radius:12px;border:1px solid {P['border']};">
-<tr><td style="padding:24px 28px;">
-<div style="font-size:10px;letter-spacing:2px;color:{P['emerald']};text-transform:uppercase;font-weight:700;">QuantMechanica · Strategy Farm</div>
-<div style="font-size:24px;color:{P['text']};font-weight:700;margin-top:8px;">WS-0 Cleared</div>
-<div style="font-size:14px;color:{P['text_dim']};line-height:1.6;margin-top:10px;">P2/Q02 produced the first real post-policy verdict.</div>
-<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top:18px;background:{P['surface_0']};border:1px solid {P['border']};border-radius:8px;">
-<tr><td style="padding:14px 16px;font-family:{MONO_STACK};font-size:13px;color:{P['text_dim']};line-height:1.8;">
-EA: {html.escape(str(verdict.get('ea_id')))}<br>
-Symbol: {html.escape(str(verdict.get('symbol')))}<br>
-Verdict: <span style="color:{P['emerald']};font-weight:700;">{html.escape(str(verdict.get('verdict')))}</span><br>
-Work item: {html.escape(str(verdict.get('id')))}<br>
-Updated at: {html.escape(str(verdict.get('updated_at')))}<br>
-Evidence: {html.escape(str(verdict.get('evidence_path') or '(not recorded)'))}
-</td></tr></table>
-<div style="font-size:11px;color:{P['text_subtle']};margin-top:14px;">One-shot notification; disarmed by state/ws0_notified.json.</div>
-</td></tr></table>
-</td></tr></table>
-</body></html>"""
-    result = _send_mail_with_retries(subject, text_body, html_body)
-    WS0_SENTINEL_FILE.parent.mkdir(parents=True, exist_ok=True)
-    WS0_SENTINEL_FILE.write_text(
-        json.dumps({
-            "notified_at": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "work_item": verdict,
-            "send_result": result,
-        }, indent=2, sort_keys=True),
-        encoding="utf-8",
-    )
-    return {**result, "sentinel": str(WS0_SENTINEL_FILE), "work_item": verdict}
-
-
 def main() -> int:
-    ws0_result = _maybe_send_ws0_clear_notification()
-    print("ws0_notifier " + json.dumps(ws0_result, sort_keys=True))
-
     health = _load_health()
     if not health:
         print("no health.json — skipping (run farmctl health first)")

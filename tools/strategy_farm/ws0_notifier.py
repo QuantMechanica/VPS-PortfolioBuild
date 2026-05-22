@@ -86,7 +86,7 @@ def check_and_notify(
     if not verdict_row:
         return {"triggered": False, "reason": "no_real_ws0_verdict_after_cutoff", "cutoff_utc": cutoff_utc}
 
-    subject = f"[QM Strategy Farm] WS-0 cleared - Q02 real verdict {verdict_row.get('verdict')}"
+    subject = "WS-0 cleared"
     body = (
         "WS-0 cleared: first real P2/Q02 verdict recorded.\n\n"
         f"EA: {verdict_row.get('ea_id')}\n"

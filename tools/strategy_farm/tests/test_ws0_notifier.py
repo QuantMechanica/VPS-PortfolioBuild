@@ -39,7 +39,7 @@ class WS0NotifierTests(unittest.TestCase):
             self.assertTrue(first["triggered"])
             self.assertEqual(first["work_item"]["ea_id"], "QM5_9999")
             self.assertEqual(len(sent), 1)
-            self.assertEqual(sent[0][0], "[QM Strategy Farm] WS-0 cleared - Q02 real verdict PASS")
+            self.assertEqual(sent[0][0], "WS-0 cleared")
             self.assertIn("Verdict: PASS", sent[0][1])
             self.assertFalse(second["triggered"])
             self.assertEqual(second["reason"], "already_disarmed")

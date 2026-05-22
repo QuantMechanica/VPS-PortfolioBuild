@@ -1671,3 +1671,8 @@ ea_id,slug,strategy_id,status,owner,created_at
 10796,tv-sma-atr,d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7,active,Research,2026-05-22
 10797,tv-rsi-ma,d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7,active,Research,2026-05-22
 10798,tv-ema9-full,d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7,active,Research,2026-05-22
+10799,tv-mtf-pullback,d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7,active,Research,2026-05-22
+10800,tv-ema-vwap,d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7,active,Research,2026-05-22
+10801,tv-dbl-ema-rsi,d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7,active,Research,2026-05-22
+10802,tv-wma-vwap,d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7,active,Research,2026-05-22
+10803,tv-3x-super,d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7,active,Research,2026-05-22

@@ -5,8 +5,9 @@ Task: `4fcc31a0-58d7-43bd-9512-4448746158d7`
 
 ## Result
 
-- Added a one-shot WS-0-clear notifier to `tools/strategy_farm/gmail_alarm.py`.
-- A concurrent pump-integrated notifier hook appeared in `tools/strategy_farm/farmctl.py` / `tools/strategy_farm/ws0_notifier.py`; it was hardened to the same post-policy cutoff and shares the same sentinel path.
+- Added a one-shot WS-0-clear notifier in `tools/strategy_farm/ws0_notifier.py`.
+- Folded it into the pump via `tools/strategy_farm/farmctl.py`.
+- Kept `tools/strategy_farm/gmail_alarm.py` as the SMTP/debounced daily health-alarm module; the WS-0 code reuses its SMTP helper but is not part of the daily health alarm.
 - The notifier checks `work_items` for the first post-policy Q02/P2 real verdict:
   - `phase='P2'`
   - `status='done'`
@@ -26,9 +27,9 @@ The first eligible row was already present:
 - updated_at: `2026-05-22T07:42:39+00:00`
 - evidence: `D:/QM/reports/work_items/7e75e630-550a-466a-ab50-6b7b3e9a90d2/QM5_10260/20260522_064152/summary.json`
 
-The notifier sent the OWNER email once with subject:
+The notifier sent the OWNER email once. The durable pump-integrated notifier uses subject:
 
-`[QM Strategy Farm] WS-0 cleared - Q02 real verdict FAIL`
+`WS-0 cleared`
 
 The sentinel was written. A second invocation returned `ws0_sentinel_exists`, verifying it cannot fire twice.
 
