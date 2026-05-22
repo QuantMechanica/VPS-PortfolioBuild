@@ -37,7 +37,7 @@ Q14   Live Burn-In Window             (manual; minimum-lot live + KS-test kill-s
 | ID | Name | Description | Type |
 |---|---|---|---|
 | Q00 | Research Intake | Every EA needs economic thesis + failure hypothesis + MT5-native data confirmation. | Autonomous |
-| Q01 | Build Validation | Compile proof, parameter schema, deterministic smoke test, no missing files. | Autonomous |
+| Q01 | Build Validation | Compile proof, parameter schema, deterministic trade-generation smoke test, no missing files. | Autonomous |
 | Q02 | Baseline Screening | DEV only (2017-2022), `PF > 1.30`, `T > 200`, `DD < 12%`, Model 4, fixed-risk baseline. | Autonomous |
 | Q03 | Parameter Sweep | Balke-style Edge Hunting: 30-100 configs scanning time-ranges (start/duration) and structural technicals (ATR mults, thresholds). | Autonomous |
 | Q04 | Cross-Sectional Robustness | Orthogonal asset-class robustness check. | Autonomous |
@@ -70,6 +70,8 @@ Q14   Live Burn-In Window             (manual; minimum-lot live + KS-test kill-s
 - OOS begins with Q05 and must remain holdout-clean.
 - Full-history windows begin at Q06.
 - Q01 smoke is **not** baseline-equivalent. Third-pass audits must use the actual trigger symbol + full BL window, not a portable smoke.
+- Q01 includes a pre-Q02 trade-generation gate: after build and before Q02 fanout, the latest build smoke must show at least one trade on an in-universe reference run. A zero-trade Q01 smoke routes to Codex fix or card rework and must not create Q02 work items. This is separate from downstream per-symbol zero-trade recovery.
+- Q02 fanout must respect the approved card's declared symbol universe and timeframe. Broad DWX fanout is only valid when the approved card is genuinely symbol-agnostic or lacks a parseable declared universe; basket EAs use their logical basket work item.
 - `NO_REPORT` (size-0 `.htm`) must be disambiguated via file-size check before any "dead EA" verdict.
 - `SETUP_DATA_MISSING` (e.g. missing news/calendar seed) and `SETUP_DATA_MISMATCH` (e.g. timezone/DST) are setup-quality failures, never strategy PASS/FAIL signals.
 

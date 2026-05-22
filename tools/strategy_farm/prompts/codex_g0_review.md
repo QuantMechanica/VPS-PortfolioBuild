@@ -25,6 +25,10 @@ For each card in your batch (paths listed below):
       defensible basket-level cadence. Purely annual/one-shot seasonal ideas
       are too sparse for this factory unless OWNER explicitly marked them
       approved.
+      Also sanity-check the declared `expected_trades_per_year_per_symbol`
+      against the written entry conditions. If the entry pattern is monthly,
+      quarterly, event-only, or otherwise rare, do not accept an inflated
+      cadence number just because it appears in frontmatter.
    c. If ALL four PASS:
       ```
       python C:/QM/repo/tools/strategy_farm/farmctl.py approve-card \

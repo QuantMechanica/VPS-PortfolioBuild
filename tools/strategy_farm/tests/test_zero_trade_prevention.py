@@ -35,10 +35,9 @@ Filters: news blackout only.
             with farmctl.connect(root) as conn:
                 with mock.patch.object(
                     farmctl,
-                    "_ensure_p2_full_dwx_setfiles",
+                    "_ensure_p2_target_setfiles",
                     return_value=[
                         ("EURUSD.DWX", "eur.set"),
-                        ("GBPUSD.DWX", "gbp.set"),
                         ("XAUUSD.DWX", "xau.set"),
                     ],
                 ):

@@ -320,8 +320,9 @@ infinite-loop deadlock.
 **You build the EA EXACTLY ONCE.** Smoke is a single non-iterative pass:
 
 - If smoke `passed` or `zero_trades` → emit build_result JSON, exit cleanly.
-  Per HR7 NO_REPORT ≠ EA-Schwäche — zero_trades is OK at this stage, P2 baseline
-  on the full IS window will surface trade-frequency issues.
+  Q01 now treats `zero_trades` as a pre-fanout trade-generation failure, so the
+  reviewer/router will send it to rework instead of Q02. Do not iterate inside
+  this build wake; preserve the evidence honestly.
 - If smoke `compile_failed` or `build_check_failed` — emit JSON with the
   failure reason in `blocked_reason`, exit. Claude review will REJECT_REWORK
   with directives. **You** do not retry the build; the next wake reads the
@@ -390,7 +391,7 @@ build_result JSON is more valuable than masking it with a hopeful rewrite.
      -Year 2024 -Terminal any -Period <CARD_TIMEFRAME> -MinTrades 1
    ```
    Must yield ≥1 trade for `smoke_result: passed`. If it yields zero trades,
-   report `smoke_result: "zero_trades"` with `blocked_reason: null` per HR7.
+   report `smoke_result: "zero_trades"` with `blocked_reason: "q01_trade_generation_zero_trades"`.
 
 9. **Generate P2 setfiles for ALL registered symbols** using `gen_setfile.ps1`.
    For each symbol in `symbols_registered`, invoke:
@@ -465,9 +466,10 @@ Examples of correct honesty:
   blocked_reason: "build_check.result=FAIL ..."`
   (mq5_path still real — you wrote the .mq5 before build_check ran)
 
-`smoke_result: "zero_trades"` is NOT a failure (per HR7 NO_REPORT ≠
-EA-Schwäche) — set `build_check_passed: true, compile_succeeded: true,
-blocked_reason: null` and let the reviewer apply HR7.
+`smoke_result: "zero_trades"` means the Q01 trade-generation gate failed.
+Keep `build_check_passed: true` and `compile_succeeded: true` if those stages
+passed, but set `blocked_reason: "q01_trade_generation_zero_trades"` so review
+routes it to Codex fix or card rework before Q02 fanout.
 
 Lying or pessimistic-pauschal-zeroing the success fields blocks the
 review→backtest pipeline (Claude review reads these flags to decide

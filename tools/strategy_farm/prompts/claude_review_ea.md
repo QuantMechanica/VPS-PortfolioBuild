@@ -92,9 +92,12 @@ Apply each rule literally. If a rule is violated → severity `block`. If unclea
 - `compile_succeeded: true`
 - `smoke_result: "passed"` — ≥1 trade on smoke window
 
-If `smoke_result: "zero_trades"`: per HR7 NO_REPORT ≠ EA-Schwäche. Record `warn`,
-note that filter/window investigation is deferred to P2 setfile generation.
-**Do not block on `zero_trades` alone if mechanical match (§1) and HR14 (§2) hold.**
+If `smoke_result: "zero_trades"`: Q01 trade-generation now blocks Q02 fanout.
+Record a `block` finding and return `REJECT_REWORK`, with a directive to fix
+the entry trigger or send the card back if the declared trade frequency is
+unrealistic. This is the pre-fanout cannot-trade-at-all gate; per-symbol
+zero-trade recovery still belongs downstream after an EA proves it can trade
+somewhere.
 
 If `smoke_result` is `compile_failed` or `build_check_failed`: that is an automatic
 `REJECT_REWORK` with the specific compile log line as rework directive.
@@ -189,8 +192,8 @@ Verdict logic:
 
 - ANY finding with `severity: block` → `REJECT_REWORK`, `rework_directives` must list each
 - No `block` findings AND `smoke_result: passed` → `APPROVE_FOR_BACKTEST`
-- No `block` findings AND `smoke_result: zero_trades` → `APPROVE_FOR_BACKTEST` with a
-  `warn` finding documenting it (P2 will investigate)
+- No `block` findings AND `smoke_result: zero_trades` is impossible under this
+  contract: add a `block` finding and return `REJECT_REWORK`.
 - `compile_failed` / `build_check_failed` → `REJECT_REWORK` automatically
 
 ## Final Response Rule
