@@ -89,6 +89,7 @@ Implementation notes: simple MQL5 date filter and narrow setfile.
             claude = next(agent for agent in status["agents"] if agent["agent_id"] == "claude")
             self.assertTrue(claude["enabled"])
             self.assertEqual(claude["max_parallel"], 3)
+            self.assertIn("code", claude["capabilities"])
 
     def test_codex_enabled_cap_is_five(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:

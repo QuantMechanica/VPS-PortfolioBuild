@@ -67,7 +67,7 @@ DEFAULT_AGENT_REGISTRY: dict[str, dict[str, Any]] = {
     },
     "claude": {
         "enabled": True,
-        "capabilities": ["research", "review", "strategy", "summary"],
+        "capabilities": ["code", "research", "review", "strategy", "summary"],
         "max_parallel": 3,
         "cost_rank": 30,
     },

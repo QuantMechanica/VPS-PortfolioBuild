@@ -2,7 +2,7 @@
 param(
     [string]$RepoRoot = "C:\QM\repo",
     [string]$PythonwExe = "C:\Users\Administrator\AppData\Local\Programs\Python\Python311\pythonw.exe",
-    [int]$EveryMinutes = 10,
+    [int]$EveryMinutes = 15,
     [switch]$RunNow
 )
 
@@ -18,8 +18,9 @@ if (-not (Test-Path -LiteralPath $wrapper)) {
 }
 
 $definitions = @(
-    @{ Name = "QM_StrategyFarm_CodexOrchestration_15min"; Agent = "codex" },
-    @{ Name = "QM_StrategyFarm_GeminiOrchestration_15min"; Agent = "gemini" }
+    @{ Name = "QM_StrategyFarm_CodexOrchestration_15min"; Agent = "codex"; MaxSessions = 1 },
+    @{ Name = "QM_StrategyFarm_GeminiOrchestration_15min"; Agent = "gemini"; MaxSessions = 1 },
+    @{ Name = "QM_StrategyFarm_ClaudeOrchestration_15min"; Agent = "claude"; MaxSessions = 3 }
 )
 
 $startBoundary = (Get-Date).Date
@@ -40,7 +41,8 @@ $registered = @()
 foreach ($definition in $definitions) {
     $taskName = [string]$definition.Name
     $agent = [string]$definition.Agent
-    $arguments = "`"$wrapper`" --agent $agent"
+    $maxSessions = [int]$definition.MaxSessions
+    $arguments = "`"$wrapper`" --agent $agent --max-sessions $maxSessions"
     $action = New-ScheduledTaskAction `
         -Execute $PythonwExe `
         -Argument $arguments `

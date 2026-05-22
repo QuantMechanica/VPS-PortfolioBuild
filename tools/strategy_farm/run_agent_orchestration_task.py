@@ -1,4 +1,4 @@
-"""Headless single-pass orchestration wrapper for Codex/Gemini.
+"""Headless single-pass orchestration wrapper for Codex/Gemini/Claude.
 
 The Windows scheduler owns cadence. This wrapper owns only one fire:
 take an overlap lock, launch the requested agent in non-interactive mode with
@@ -15,19 +15,23 @@ import shutil
 import subprocess
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
 
 
 REPO_ROOT = Path(r"C:\QM\repo")
+WORKTREE_ROOT = Path(os.environ.get("QM_AGENT_WORKTREE_ROOT", r"C:\QM\worktrees"))
 FARM_ROOT = Path(os.environ.get("QM_STRATEGY_FARM_ROOT", r"D:\QM\strategy_farm"))
 LOG_DIR = FARM_ROOT / "logs"
 LOCK_DIR = FARM_ROOT / "locks"
 PYTHON_EXE = Path(r"C:\Users\Administrator\AppData\Local\Programs\Python\Python311\python.exe")
 CODEX_FALLBACK = Path(r"C:\Users\Administrator\AppData\Roaming\npm\codex.cmd")
 GEMINI_FALLBACK = Path(r"C:\Users\Administrator\AppData\Roaming\npm\gemini.cmd")
+CLAUDE_FALLBACK = Path(r"C:\Users\Administrator\AppData\Roaming\npm\claude.cmd")
 CODEX_HOME = Path(os.environ.get("CODEX_HOME", r"C:\Users\Administrator\.codex"))
 AGENT_USER_HOME = Path(r"C:\Users\Administrator")
+CLAUDE_DISABLED_FLAG = FARM_ROOT / "CLAUDE_DISABLED.flag"
 
 
 def utc_stamp() -> str:
@@ -45,6 +49,11 @@ def resolve_cli(agent: str) -> str:
         if found:
             return found
         return str(GEMINI_FALLBACK if GEMINI_FALLBACK.exists() else "gemini")
+    if agent == "claude":
+        found = shutil.which("claude.cmd") or shutil.which("claude")
+        if found:
+            return found
+        return str(CLAUDE_FALLBACK if CLAUDE_FALLBACK.exists() else "claude")
     raise ValueError(f"unsupported agent: {agent}")
 
 
@@ -60,18 +69,23 @@ def agent_env(agent: str) -> dict[str, str]:
         env["HOMEDRIVE"] = "C:"
         env["HOMEPATH"] = r"\Users\Administrator"
         env.setdefault("GEMINI_DEFAULT_AUTH_TYPE", "oauth-personal")
+    if agent == "claude":
+        env["USERPROFILE"] = str(AGENT_USER_HOME)
+        env["HOME"] = str(AGENT_USER_HOME)
+        env["HOMEDRIVE"] = "C:"
+        env["HOMEPATH"] = r"\Users\Administrator"
     return env
 
 
-def build_prompt(agent: str) -> str:
-    edge_charter = REPO_ROOT / "docs" / "ops" / "EDGE_LAB_CHARTER_2026-05-22.md"
-    profitability = REPO_ROOT / "docs" / "ops" / "PROFITABILITY_TRACK_2026-05-21.md"
+def build_prompt(agent: str, cwd: Path) -> str:
+    edge_charter = cwd / "docs" / "ops" / "EDGE_LAB_CHARTER_2026-05-22.md"
+    profitability = cwd / "docs" / "ops" / "PROFITABILITY_TRACK_2026-05-21.md"
     return f"""You are {agent} for QuantMechanica, launched by a headless scheduled task.
 
 Execute exactly one single-pass orchestration cycle, then exit. Do not start a
 15-minute sleep loop; the Windows scheduler provides cadence.
 
-Working directory: C:/QM/repo
+Working directory: {cwd.as_posix()}
 
 Read first if needed:
 - G:/My Drive/QuantMechanica - Company Reference/08 Current State/Current Operating State.md
@@ -119,9 +133,10 @@ def process_alive(pid: int) -> bool:
     return True
 
 
-def acquire_lock(agent: str, stale_minutes: int) -> tuple[bool, dict[str, Any]]:
+def acquire_lock(agent: str, stale_minutes: int, slot: int = 1) -> tuple[bool, dict[str, Any]]:
     LOCK_DIR.mkdir(parents=True, exist_ok=True)
-    lock_path = LOCK_DIR / f"{agent}_orchestration.lock"
+    lock_name = f"{agent}_orchestration.lock" if slot == 1 else f"{agent}_orchestration_{slot}.lock"
+    lock_path = LOCK_DIR / lock_name
     now = time.time()
     if lock_path.exists():
         try:
@@ -145,6 +160,7 @@ def acquire_lock(agent: str, stale_minutes: int) -> tuple[bool, dict[str, Any]]:
             }
     payload = {
         "agent": agent,
+        "slot": slot,
         "pid": os.getpid(),
         "started_at": dt.datetime.now(dt.UTC).isoformat(),
     }
@@ -161,7 +177,7 @@ def release_lock(lock_info: dict[str, Any]) -> None:
         pass
 
 
-def command_for(agent: str, prompt: str) -> list[str]:
+def command_for(agent: str, cwd: Path) -> list[str]:
     cli = resolve_cli(agent)
     if agent == "codex":
         return [
@@ -169,7 +185,7 @@ def command_for(agent: str, prompt: str) -> list[str]:
             "exec",
             "--dangerously-bypass-approvals-and-sandbox",
             "--cd",
-            str(REPO_ROOT),
+            str(cwd),
         ]
     if agent == "gemini":
         return [
@@ -180,24 +196,100 @@ def command_for(agent: str, prompt: str) -> list[str]:
             "yolo",
             "--skip-trust",
             "--include-directories",
-            str(REPO_ROOT),
+            str(cwd),
+        ]
+    if agent == "claude":
+        return [
+            cli,
+            "-p",
+            "--dangerously-skip-permissions",
+            "--add-dir",
+            str(cwd),
         ]
     raise ValueError(f"unsupported agent: {agent}")
 
 
-def run_agent(agent: str, dry_run: bool, stale_minutes: int, timeout_minutes: int) -> dict[str, Any]:
+def worktree_path(agent: str, slot: int) -> Path:
+    return WORKTREE_ROOT / f"{agent}-orchestration-{slot}"
+
+
+def branch_name(agent: str, slot: int) -> str:
+    return f"agents/{agent}-orchestration-{slot}"
+
+
+def run_git(args: list[str], timeout: int = 60) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ["git", *args],
+        cwd=str(REPO_ROOT),
+        capture_output=True,
+        text=True,
+        timeout=timeout,
+        creationflags=(subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0),
+    )
+
+
+def ensure_worktree(agent: str, slot: int) -> dict[str, Any]:
+    path = worktree_path(agent, slot)
+    branch = branch_name(agent, slot)
+    if path.exists():
+        check = subprocess.run(
+            ["git", "-C", str(path), "rev-parse", "--show-toplevel"],
+            capture_output=True,
+            text=True,
+            timeout=20,
+            creationflags=(subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0),
+        )
+        if check.returncode == 0:
+            return {"path": str(path), "branch": branch, "created": False}
+        return {
+            "path": str(path),
+            "branch": branch,
+            "created": False,
+            "ok": False,
+            "error": "path_exists_but_not_git_worktree",
+        }
+
+    WORKTREE_ROOT.mkdir(parents=True, exist_ok=True)
+    add = run_git(["worktree", "add", "-B", branch, str(path), "HEAD"], timeout=120)
+    return {
+        "path": str(path),
+        "branch": branch,
+        "created": add.returncode == 0,
+        "ok": add.returncode == 0,
+        "returncode": add.returncode,
+        "stdout": add.stdout.strip(),
+        "stderr": add.stderr.strip(),
+    }
+
+
+def run_agent_slot(agent: str, slot: int, dry_run: bool, stale_minutes: int, timeout_minutes: int) -> dict[str, Any]:
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     stamp = utc_stamp()
-    prompt = build_prompt(agent)
-    prompt_path = LOG_DIR / f"{agent}_orchestration_prompt_{stamp}.md"
-    live_log = LOG_DIR / f"{agent}_orchestration_{stamp}.live.log"
-    result_path = LOG_DIR / f"{agent}_orchestration_{stamp}.json"
+    cwd = REPO_ROOT if agent in {"codex", "gemini"} and slot == 0 else worktree_path(agent, slot)
+    worktree = ensure_worktree(agent, slot)
+    prompt = build_prompt(agent, cwd)
+    prompt_path = LOG_DIR / f"{agent}_orchestration_slot{slot}_prompt_{stamp}.md"
+    live_log = LOG_DIR / f"{agent}_orchestration_slot{slot}_{stamp}.live.log"
+    result_path = LOG_DIR / f"{agent}_orchestration_slot{slot}_{stamp}.json"
     prompt_path.write_text(prompt, encoding="utf-8", newline="\n")
 
-    locked, lock_info = acquire_lock(agent, stale_minutes)
+    if worktree.get("ok") is False:
+        payload = {
+            "agent": agent,
+            "slot": slot,
+            "ok": False,
+            "returncode": 1,
+            "worktree": worktree,
+            "result_path": str(result_path),
+        }
+        result_path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+        return payload
+
+    locked, lock_info = acquire_lock(agent, stale_minutes, slot=slot)
     if not locked:
         payload = {
             "agent": agent,
+            "slot": slot,
             "ok": True,
             "skipped": True,
             "reason": lock_info.get("reason"),
@@ -207,13 +299,16 @@ def run_agent(agent: str, dry_run: bool, stale_minutes: int, timeout_minutes: in
         result_path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
         return payload
 
-    cmd = command_for(agent, prompt)
+    cmd = command_for(agent, cwd)
     payload: dict[str, Any] = {
         "agent": agent,
+        "slot": slot,
         "dry_run": dry_run,
         "prompt_path": str(prompt_path),
         "live_log": str(live_log),
         "command": cmd,
+        "cwd": str(cwd),
+        "worktree": worktree,
         "started_at": dt.datetime.now(dt.UTC).isoformat(),
     }
     try:
@@ -224,7 +319,7 @@ def run_agent(agent: str, dry_run: bool, stale_minutes: int, timeout_minutes: in
         with open(prompt_path, "rb") as stdin_f, open(live_log, "wb") as stdout_f:
             proc = subprocess.Popen(
                 cmd,
-                cwd=str(REPO_ROOT),
+                cwd=str(cwd),
                 stdin=stdin_f,
                 stdout=stdout_f,
                 stderr=subprocess.STDOUT,
@@ -250,14 +345,46 @@ def run_agent(agent: str, dry_run: bool, stale_minutes: int, timeout_minutes: in
         release_lock(lock_info)
 
 
+def run_agent(agent: str, dry_run: bool, stale_minutes: int, timeout_minutes: int, max_sessions: int) -> dict[str, Any]:
+    if agent == "claude" and CLAUDE_DISABLED_FLAG.exists():
+        return {
+            "agent": agent,
+            "ok": True,
+            "skipped": True,
+            "reason": "claude_disabled_flag",
+            "flag": str(CLAUDE_DISABLED_FLAG),
+        }
+    session_count = max(1, max_sessions)
+    if agent != "claude":
+        session_count = 1
+    if session_count == 1:
+        results = [run_agent_slot(agent, 1, dry_run, stale_minutes, timeout_minutes)]
+    else:
+        with ThreadPoolExecutor(max_workers=session_count) as executor:
+            futures = [
+                executor.submit(run_agent_slot, agent, slot, dry_run, stale_minutes, timeout_minutes)
+                for slot in range(1, session_count + 1)
+            ]
+            results = [future.result() for future in futures]
+    ok = all(bool(r.get("ok")) for r in results)
+    return {
+        "agent": agent,
+        "ok": ok,
+        "returncode": 0 if ok else 1,
+        "max_sessions": session_count,
+        "results": results,
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run one headless agent orchestration pass.")
-    parser.add_argument("--agent", choices=("codex", "gemini"), required=True)
+    parser.add_argument("--agent", choices=("codex", "gemini", "claude"), required=True)
     parser.add_argument("--dry-run", action="store_true", help="Verify prompt/lock/command without launching the model.")
     parser.add_argument("--stale-minutes", type=int, default=180)
     parser.add_argument("--timeout-minutes", type=int, default=240)
+    parser.add_argument("--max-sessions", type=int, default=1, help="Claude-only parallel slot count.")
     args = parser.parse_args()
-    result = run_agent(args.agent, args.dry_run, args.stale_minutes, args.timeout_minutes)
+    result = run_agent(args.agent, args.dry_run, args.stale_minutes, args.timeout_minutes, args.max_sessions)
     print(json.dumps(result, indent=2, sort_keys=True))
     return int(result.get("returncode", 0) or 0)
 
