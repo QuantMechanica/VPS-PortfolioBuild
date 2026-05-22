@@ -352,6 +352,8 @@ def _finish_work_item(root: Path, item_id: str, exit_code: int | None) -> dict[s
                 )
                 _mirror_real_phase_artifacts(item, summary_path, verdict)
                 payload["verdict_reason"] = reason
+                payload["evidence_provenance"] = "phase_runner" if item["phase"] in farmctl.REAL_PHASE_RUNNER_PHASES else "real_mt5"
+                payload["verdict_taxonomy"] = "infra" if verdict == "INFRA_FAIL" else "strategy"
                 payload["run_smoke_exit_code"] = exit_code
                 conn.execute(
                     """
@@ -389,14 +391,14 @@ def _finish_work_item(root: Path, item_id: str, exit_code: int | None) -> dict[s
                 conn.execute(
                     """
                     UPDATE work_items
-                    SET status='failed', verdict='INVALID', claimed_by=NULL,
+                    SET status='failed', verdict='INFRA_FAIL', claimed_by=NULL,
                         payload_json=?, updated_at=?
                     WHERE id=?
                     """,
                     (json.dumps(payload, sort_keys=True), now, item_id),
                 )
                 status = "failed"
-                verdict = "INVALID"
+                verdict = "INFRA_FAIL"
             conn.commit()
             aggregate = _aggregate_finished_parent(root, item["parent_task_id"]) if status == "failed" else None
             return {"finished": True, "status": status, "verdict": verdict, "attempt": attempt, "aggregate": aggregate}
@@ -442,7 +444,7 @@ def _aggregate_finished_parent(root: Path, parent_task_id: str | None) -> dict[s
             "surviving_symbols": surviving,
             "counts_by_verdict": {
                 v: sum(1 for w in wis if w["verdict"] == v)
-                for v in ("PASS", "FAIL", "INVALID")
+                for v in ("PASS", "FAIL", "ZERO_TRADES", "MIN_TRADES_NOT_MET", "INVALID", "INFRA_FAIL")
             },
             "source": "terminal_worker_aggregate",
         }
@@ -530,7 +532,7 @@ def _fail_work_item_preflight(root: Path, item: sqlite3.Row, failure: dict[str, 
         "reason": failure.get("reason") or "preflight_failed",
         "setfile_path": item["setfile_path"],
         "symbol": item["symbol"],
-        "verdict": "INVALID",
+        "verdict": "INFRA_FAIL",
     }
     evidence_path.write_text(json.dumps(evidence, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
@@ -539,7 +541,7 @@ def _fail_work_item_preflight(root: Path, item: sqlite3.Row, failure: dict[str, 
             conn.execute(
                 """
                 UPDATE work_items
-                SET status='failed', verdict='INVALID', evidence_path=?,
+                SET status='failed', verdict='INFRA_FAIL', evidence_path=?,
                     claimed_by=NULL, payload_json=?, updated_at=?
                 WHERE id=?
                 """,
@@ -552,7 +554,7 @@ def _fail_work_item_preflight(root: Path, item: sqlite3.Row, failure: dict[str, 
     return {
         "finished": True,
         "status": "failed",
-        "verdict": "INVALID",
+        "verdict": "INFRA_FAIL",
         "reason": evidence["reason"],
         "evidence_path": str(evidence_path),
         "aggregate": aggregate,
@@ -600,7 +602,7 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
             }
         with farmctl.connect(root) as conn:
             conn.execute(
-                "UPDATE work_items SET status='failed', verdict='INVALID', claimed_by=NULL, updated_at=? WHERE id=?",
+                "UPDATE work_items SET status='failed', verdict='INFRA_FAIL', claimed_by=NULL, updated_at=? WHERE id=?",
                 (now, item["id"]),
             )
             conn.commit()

@@ -1238,7 +1238,11 @@ def _derive_phase_runner_verdict(summary: dict[str, Any], min_trades: int = 5, p
         return verdict_upper, reason or "phase runner not implemented yet"
     if verdict_upper == "WAITING_INPUT":
         return verdict_upper, reason or "phase runner waiting for required input"
-    if verdict_upper in {"FAIL", "INVALID", "NO_PASS_BASELINE", "NO_ELIGIBLE_MODE", "MULTI_SEED_FAIL"}:
+    if verdict_upper in {"INFRA_FAIL", "ERROR", "TIMEOUT"}:
+        return "INFRA_FAIL", reason or raw_verdict or "phase_runner_infra_fail"
+    if verdict_upper == "INVALID":
+        return "INFRA_FAIL", reason or "phase_runner_invalid_report"
+    if verdict_upper in {"FAIL", "NO_PASS_BASELINE", "NO_ELIGIBLE_MODE", "MULTI_SEED_FAIL"}:
         return "FAIL", reason or raw_verdict or "phase_runner_fail"
     if verdict_upper in {"REPORT_ONLY"}:
         return "REPORT_ONLY", reason or "report-only phase runner; no hard PASS verdict"
@@ -1247,7 +1251,7 @@ def _derive_phase_runner_verdict(summary: dict[str, Any], min_trades: int = 5, p
         parameters = details.get("parameters") or {}
         mt5_metrics = details.get("mt5_mode_metrics") or {}
         if not parameters.get("run_mt5") or not mt5_metrics:
-            return "FAIL", reason or "p8_mode_selected_without_real_mt5_news_reruns"
+            return "INFRA_FAIL", reason or "p8_mode_selected_without_real_mt5_news_reruns"
         return "PASS", reason or "p8_real_mt5_news_replay_pass"
 
     if verdict_upper in {"PASS", "AUTO_PASS", "MULTI_SEED_PASS"}:
@@ -1295,9 +1299,9 @@ def _derive_phase_runner_verdict(summary: dict[str, Any], min_trades: int = 5, p
         real_runs = int(summary.get("real_mt5_run_count") or 0)
         fail_count = int(summary.get("failed_run_count") or 0)
         if real_runs <= 0:
-            return "FAIL", reason or "p5b_no_real_mt5_runs"
+            return "INFRA_FAIL", reason or "p5b_no_real_mt5_runs"
         if fail_count > 0:
-            return "FAIL", reason or f"p5b_failed_runs:{fail_count}"
+            return "INFRA_FAIL", reason or f"p5b_failed_runs:{fail_count}"
         return "PASS", reason or "p5b_real_noise_runs_passed"
 
     if phase_key == "P6":
@@ -1325,12 +1329,24 @@ def _derive_verdict_from_summary(summary: dict[str, Any], min_trades: int = 5, p
 
     if summary.get("result") != "PASS":
         reasons = summary.get("reason_classes") or ["UNKNOWN"]
-        return "FAIL", "run_smoke_fail:" + ";".join(reasons)
+        infra_reasons = {
+            "NO_HISTORY",
+            "NO_HISTORY_LOG",
+            "NO_REAL_TICKS",
+            "REPORT_MISSING",
+            "REPORT_PARSE_ERROR",
+            "INVALID_REPORT",
+            "INCOMPLETE_RUNS",
+            "HISTORY_CONTEXT_INVALID",
+            "TIMEOUT",
+        }
+        verdict = "INFRA_FAIL" if any(str(r).upper() in infra_reasons for r in reasons) else "FAIL"
+        return verdict, "run_smoke_fail:" + ";".join(str(r) for r in reasons)
     if not summary.get("model4_log_marker_detected"):
-        return "INVALID", "G1_NO_REAL_TICKS"
+        return "INFRA_FAIL", "G1_NO_REAL_TICKS"
     runs = summary.get("runs") or []
     if not runs:
-        return "INVALID", "no_runs_in_summary"
+        return "INFRA_FAIL", "no_runs_in_summary"
     trades = [int(r.get("total_trades", 0) or 0) for r in runs]
     is_p5plus = str(phase or "").upper() in {p.upper() for p in CASCADE_BACKTEST_PHASES}
     trade_gate_passed = sum(trades) >= min_trades if is_p5plus else any(t >= min_trades for t in trades)
@@ -1644,6 +1660,8 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         item_payload = json.loads(item_row["payload_json"] or "{}")
     except json.JSONDecodeError:
         item_payload = {}
+    runner_symbol = str(item_payload.get("host_symbol") or symbol)
+    runner_period = str(item_payload.get("host_timeframe") or _detect_ea_period(ea_id))
 
     if phase in REAL_PHASE_RUNNER_PHASES:
         report_root = Path(r"D:\QM\reports\work_items") / item_row["id"]
@@ -1712,7 +1730,7 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
     if not candidates:
         return {"spawned": False, "reason": f"no EA dir for {ea_id}"}
     ea_dir_name = candidates[0].name
-    period = _detect_ea_period(ea_id)
+    period = runner_period
     numeric_id = int(re.match(r"^QM5_(\d+)$", ea_id).group(1))
 
     # Per-work-item report root keeps summaries discoverable
@@ -1763,7 +1781,7 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         str(REPO_ROOT / "framework" / "scripts" / "run_smoke.ps1"),
         "-EAId", str(numeric_id),
         "-EALabel", ea_dir_name,
-        "-Symbol", symbol,
+        "-Symbol", runner_symbol,
         "-Year", str(year),
         "-Terminal", terminal,
         "-Period", period,
@@ -1800,6 +1818,8 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         "report_root": str(report_root),
         "ea_dir_name": ea_dir_name,
         **min_trade_info,
+        "logical_symbol": symbol,
+        "runner_symbol": runner_symbol,
         "p2_run_stage": p2_run_stage,
         "timeout_seconds": timeout_seconds,
         "from_date": from_date,
@@ -2702,6 +2722,10 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                     verdict,
                     summary,
                 )
+                updated_payload["evidence_provenance"] = (
+                    "phase_runner" if item["phase"] in REAL_PHASE_RUNNER_PHASES else "real_mt5"
+                )
+                updated_payload["verdict_taxonomy"] = "infra" if verdict == "INFRA_FAIL" else "strategy"
                 if item["phase"] == "P2" and payload.get("p2_run_stage") == "prescreen":
                     runtime_sec = _p2_active_summary_runtime_sec(item, summary)
                     if verdict == "PASS":
@@ -2780,6 +2804,8 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                     verdict,
                     summary,
                 )
+                updated_payload["evidence_provenance"] = "phase_runner"
+                updated_payload["verdict_taxonomy"] = "infra" if verdict == "INFRA_FAIL" else "strategy"
                 with connect(root) as conn2:
                     conn2.execute(
                         "UPDATE work_items SET status='done', verdict=?, evidence_path=?, payload_json=?, updated_at=? WHERE id=?",
@@ -2850,7 +2876,7 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
             else:
                 with connect(root) as conn2:
                     conn2.execute(
-                        "UPDATE work_items SET status='failed', verdict='INVALID', payload_json=?, updated_at=? WHERE id=?",
+                        "UPDATE work_items SET status='failed', verdict='INFRA_FAIL', payload_json=?, updated_at=? WHERE id=?",
                         (json.dumps({**updated_payload, "final_failure": f"{fast_failure}_retries_exhausted"}, sort_keys=True),
                          started_iso, item["id"]),
                     )
@@ -2877,7 +2903,7 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
             else:
                 with connect(root) as conn2:
                     conn2.execute(
-                        "UPDATE work_items SET status='failed', verdict='INVALID', payload_json=?, updated_at=? WHERE id=?",
+                        "UPDATE work_items SET status='failed', verdict='INFRA_FAIL', payload_json=?, updated_at=? WHERE id=?",
                         (json.dumps({**payload, "final_failure": "retries_exhausted", "terminal_stopped_on_release": terminal_stopped}, sort_keys=True),
                          started_iso, item["id"]),
                     )
@@ -2974,7 +3000,7 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 # Mark failed if spawn impossible
                 with connect(root) as conn2:
                     conn2.execute(
-                        "UPDATE work_items SET status='failed', verdict='INVALID', updated_at=? WHERE id=?",
+                        "UPDATE work_items SET status='failed', verdict='INFRA_FAIL', updated_at=? WHERE id=?",
                         (started_iso, item["id"]),
                     )
                     conn2.commit()
@@ -5897,6 +5923,14 @@ def pump(root: Path) -> dict[str, Any]:
         result["ws0_clear_notifier"] = _ws0_check_and_notify(root)
     except Exception as exc:
         result["ws0_clear_notifier"] = {"triggered": False, "error": repr(exc)}
+    try:
+        from task_watch_notifier import check_and_notify as _task_watch_check_and_notify
+    except ModuleNotFoundError:
+        from tools.strategy_farm.task_watch_notifier import check_and_notify as _task_watch_check_and_notify
+    try:
+        result["task_watch_notifier"] = _task_watch_check_and_notify(root)
+    except Exception as exc:
+        result["task_watch_notifier"] = {"triggered": False, "error": repr(exc)}
 
     return result
 
@@ -6406,6 +6440,53 @@ def _find_ea_setfiles(ea_id: str, phase: str) -> list[tuple[str, str]]:
     return out
 
 
+def _find_single_ea_dir(ea_id: str) -> Path | None:
+    ea_root = REPO_ROOT / "framework" / "EAs"
+    candidates = sorted(p for p in ea_root.glob(f"{ea_id}_*") if p.is_dir())
+    if len(candidates) != 1:
+        return None
+    return candidates[0]
+
+
+def _load_basket_manifest(ea_id: str) -> dict[str, Any] | None:
+    """Load the basket EA manifest when the EA declares one."""
+    ea_dir = _find_single_ea_dir(ea_id)
+    if ea_dir is None:
+        return None
+    manifest_path = ea_dir / "basket_manifest.json"
+    if not manifest_path.exists():
+        return None
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    if not isinstance(manifest, dict):
+        return None
+    logical_symbol = str(manifest.get("logical_symbol") or "").strip()
+    host_symbol = str(manifest.get("host_symbol") or "").strip()
+    host_timeframe = str(manifest.get("host_timeframe") or "").strip()
+    if not logical_symbol or not host_symbol or not host_timeframe:
+        return None
+    manifest["manifest_path"] = str(manifest_path.resolve())
+    return manifest
+
+
+def _find_basket_setfile(ea_id: str, manifest: dict[str, Any]) -> tuple[str, str] | None:
+    ea_dir = _find_single_ea_dir(ea_id)
+    if ea_dir is None:
+        return None
+    logical_symbol = str(manifest["logical_symbol"])
+    host_timeframe = str(manifest["host_timeframe"])
+    sets_dir = ea_dir / "sets"
+    expected = sets_dir / f"{ea_dir.name}_{logical_symbol}_{host_timeframe}_backtest.set"
+    if expected.exists():
+        return logical_symbol, str(expected.resolve())
+    matches = sorted(sets_dir.glob(f"*_{logical_symbol}_{host_timeframe}_backtest.set")) if sets_dir.exists() else []
+    if matches:
+        return logical_symbol, str(matches[0].resolve())
+    return None
+
+
 def _ea_build_artifact_failure(ea_id: str) -> dict[str, Any] | None:
     """Return why an EA is not runnable before creating MT5 work_items."""
     ea_root = REPO_ROOT / "framework" / "EAs"
@@ -6546,7 +6627,12 @@ def _create_backtest_work_items(conn: sqlite3.Connection, parent_task_id: str,
     For P3+: only setfiles whose symbol is in surviving_symbols (subset).
     Returns (created, skipped) for the response.
     """
-    setfiles = _ensure_p2_full_dwx_setfiles(root, ea_id) if phase == "P2" else _find_ea_setfiles(ea_id, phase)
+    basket_manifest = _load_basket_manifest(ea_id) if phase == "P2" else None
+    basket_setfile = _find_basket_setfile(ea_id, basket_manifest) if basket_manifest else None
+    if basket_manifest:
+        setfiles = [basket_setfile] if basket_setfile else []
+    else:
+        setfiles = _ensure_p2_full_dwx_setfiles(root, ea_id) if phase == "P2" else _find_ea_setfiles(ea_id, phase)
     if not setfiles:
         return [], []
     if surviving_symbols:
@@ -6559,7 +6645,16 @@ def _create_backtest_work_items(conn: sqlite3.Connection, parent_task_id: str,
     history_registry = _dwx_symbol_history_registry() if phase == "P2" else {}
     for sym, setfile_path in setfiles:
         payload: dict[str, Any] = {}
-        if phase == "P2" and history_registry:
+        if basket_manifest:
+            payload = {
+                "basket_manifest": basket_manifest["manifest_path"],
+                "basket_symbol_count": len(basket_manifest.get("basket_symbols") or []),
+                "host_symbol": basket_manifest["host_symbol"],
+                "host_timeframe": basket_manifest["host_timeframe"],
+                "logical_symbol": basket_manifest["logical_symbol"],
+                "portfolio_scope": "basket",
+            }
+        elif phase == "P2" and history_registry:
             window = _p2_history_window_for_symbol(
                 sym,
                 period,

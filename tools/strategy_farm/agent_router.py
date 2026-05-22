@@ -10,6 +10,7 @@ pipeline remains the approval authority for EAs.
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import json
 import sqlite3
 import uuid
@@ -77,6 +78,8 @@ DEFAULT_AGENT_REGISTRY: dict[str, dict[str, Any]] = {
         "cost_rank": 10,
     },
 }
+
+STALE_IN_PROGRESS_HOURS = 6
 
 STRATEGY_CARD_SCHEMA: dict[str, list[str]] = {
     "frontmatter_required": [
@@ -319,6 +322,54 @@ def _running_count(conn: sqlite3.Connection, agent_id: str) -> int:
     return int(row["n"] if row else 0)
 
 
+def release_stale_in_progress(root: Path = DEFAULT_ROOT, *, max_age_hours: int = STALE_IN_PROGRESS_HOURS) -> dict[str, Any]:
+    """Release abandoned agent_tasks so one dead worker cannot consume capacity forever."""
+    now = farmctl.utc_now()
+    cutoff = dt.datetime.now(dt.UTC).replace(microsecond=0) - dt.timedelta(hours=max_age_hours)
+    released: list[dict[str, Any]] = []
+    with closing(connect(root)) as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        rows = conn.execute(
+            """
+            SELECT * FROM agent_tasks
+            WHERE state='IN_PROGRESS'
+              AND updated_at < ?
+            ORDER BY updated_at ASC
+            """,
+            (cutoff.isoformat(timespec="seconds"),),
+        ).fetchall()
+        for row in rows:
+            payload = json.loads(row["payload_json"] or "{}")
+            history = list(payload.get("stale_releases") or [])
+            history.append(
+                {
+                    "released_at": now,
+                    "previous_assigned_agent": row["assigned_agent"],
+                    "previous_updated_at": row["updated_at"],
+                    "max_age_hours": max_age_hours,
+                }
+            )
+            payload["stale_releases"] = history[-5:]
+            conn.execute(
+                """
+                UPDATE agent_tasks
+                SET state='TODO', assigned_agent=NULL, payload_json=?, updated_at=?
+                WHERE id=? AND state='IN_PROGRESS'
+                """,
+                (_json(payload), now, row["id"]),
+            )
+            released.append(
+                {
+                    "task_id": row["id"],
+                    "task_type": row["task_type"],
+                    "assigned_agent": row["assigned_agent"],
+                    "previous_updated_at": row["updated_at"],
+                }
+            )
+        conn.commit()
+    return {"released": released, "max_age_hours": max_age_hours}
+
+
 def _eligible_agents(conn: sqlite3.Connection, required: set[str]) -> list[sqlite3.Row]:
     rows = conn.execute(
         """
@@ -340,6 +391,7 @@ def _eligible_agents(conn: sqlite3.Connection, required: set[str]) -> list[sqlit
 
 def route_once(root: Path = DEFAULT_ROOT, *, claude_disabled_flag: Path = CLAUDE_DISABLED_FLAG) -> RouteDecision:
     sync_default_registry(root, claude_disabled_flag=claude_disabled_flag)
+    release_stale_in_progress(root)
     now = farmctl.utc_now()
     with closing(connect(root)) as conn:
         conn.execute("BEGIN IMMEDIATE")
