@@ -133,6 +133,15 @@ def _json(data: Any) -> str:
     return json.dumps(data, sort_keys=True, separators=(",", ":"))
 
 
+def _effective_claude_disabled_flag(root: Path, claude_disabled_flag: Path) -> Path:
+    if claude_disabled_flag != CLAUDE_DISABLED_FLAG:
+        return claude_disabled_flag
+    root_flag = root / "CLAUDE_DISABLED.flag"
+    if root != DEFAULT_ROOT and root_flag.exists():
+        return root_flag
+    return claude_disabled_flag
+
+
 def connect(root: Path = DEFAULT_ROOT) -> sqlite3.Connection:
     farmctl.init_dirs(root)
     conn = farmctl.connect(root)
@@ -213,6 +222,7 @@ def init_schema(conn: sqlite3.Connection) -> None:
 
 
 def sync_default_registry(root: Path = DEFAULT_ROOT, claude_disabled_flag: Path = CLAUDE_DISABLED_FLAG) -> dict[str, Any]:
+    claude_disabled_flag = _effective_claude_disabled_flag(root, claude_disabled_flag)
     now = farmctl.utc_now()
     changed: list[str] = []
     with closing(connect(root)) as conn:
