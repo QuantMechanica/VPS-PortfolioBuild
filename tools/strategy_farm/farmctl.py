@@ -74,6 +74,8 @@ P5PLUS_MIN_SHARPE = 0.6
 FACTORY_TERMINAL_PATTERN = re.compile(r"^T(?:[1-9]|10)$", re.IGNORECASE)
 LIVE_TERMINAL_NAMES = {"T_LIVE", "T6_LIVE"}
 MT5_TERMINALS = tuple(f"T{i}" for i in range(1, 11))  # factory fleet, T_Live is never a factory slot
+MT5_WORK_ITEM_FEED_MULTIPLIER = 2
+MT5_WORK_ITEM_MIN_FEED_DEPTH = 20
 ZERO_TRADE_DEAD_THRESHOLD = 0.80
 ZERO_TRADE_DEAD_MIN_DONE = 5
 ZERO_TRADE_REWORK_DEDUP_HOURS = 6
@@ -4754,6 +4756,95 @@ def _enqueue_p2_from_review(root: Path, review_task_id: str) -> int:
     return len(result.get("work_items_created") or [])
 
 
+def _mt5_work_item_feed_target(mt5_root: Path | None = None) -> int:
+    return max(
+        MT5_WORK_ITEM_MIN_FEED_DEPTH,
+        len(active_mt5_terminals(mt5_root)) * MT5_WORK_ITEM_FEED_MULTIPLIER,
+    )
+
+
+def _materialized_backtest_work_item_depth(con: sqlite3.Connection) -> int:
+    row = con.execute(
+        """
+        SELECT COUNT(*) AS n
+        FROM work_items
+        WHERE kind='backtest'
+          AND status IN ('pending', 'active')
+        """
+    ).fetchone()
+    return int(row["n"] if row else 0)
+
+
+def _expand_pending_backtest_p2_parents(
+    root: Path,
+    con: sqlite3.Connection,
+    target_depth: int,
+) -> list[dict[str, Any]]:
+    """Materialize latent pending Q02 parent tasks until MT5 has a feed queue."""
+    expanded: list[dict[str, Any]] = []
+    rows = con.execute(
+        """
+        SELECT *
+        FROM tasks t
+        WHERE t.kind='backtest_p2'
+          AND t.status='pending'
+          AND NOT EXISTS (
+            SELECT 1 FROM work_items wi WHERE wi.parent_task_id=t.id
+          )
+        ORDER BY t.updated_at ASC
+        """
+    ).fetchall()
+    for row in rows:
+        if _materialized_backtest_work_item_depth(con) >= target_depth:
+            break
+        payload = json.loads(row["payload_json"] or "{}")
+        ea_id = payload.get("ea_id") or row["card_id"]
+        if not ea_id:
+            update_task(
+                con,
+                row["id"],
+                status="failed",
+                payload_merge={"enqueue_error": "missing_ea_id"},
+            )
+            expanded.append({"task_id": row["id"], "error": "missing_ea_id"})
+            continue
+        created, skipped = _create_backtest_work_items(
+            con,
+            row["id"],
+            root,
+            str(ea_id),
+            "P2",
+            surviving_symbols=None,
+        )
+        if created:
+            expanded.append({
+                "task_id": row["id"],
+                "ea_id": ea_id,
+                "created": len(created),
+                "skipped": len(skipped),
+            })
+        else:
+            update_task(
+                con,
+                row["id"],
+                status="failed",
+                payload_merge={
+                    "enqueue_error": "no_p2_work_items_created",
+                    "work_items_skipped": skipped,
+                },
+            )
+            expanded.append({
+                "task_id": row["id"],
+                "ea_id": ea_id,
+                "created": 0,
+                "skipped": len(skipped),
+                "error": "no_p2_work_items_created",
+            })
+    if expanded:
+        con.commit()
+    return expanded
+
+
 def _auto_create_ea_review_for_unenqueued_eas(root: Path, con: sqlite3.Connection, limit: int = 3) -> list[dict[str, Any]]:
     """Auto-create done ea_review rows for built EAs ready for P2."""
     out: list[dict[str, Any]] = []
@@ -5074,8 +5165,23 @@ def pump(root: Path) -> dict[str, Any]:
 
     result["auto_p2_enqueued"] = []
     with connect(root) as conn:
-        result["auto_ea_review_created"] = _auto_create_ea_review_for_unenqueued_eas(root, conn)
-        for ea_info in _detect_unenqueued_eas(conn)[:3]:
+        feed_target = _mt5_work_item_feed_target()
+        result["mt5_feed_target"] = feed_target
+        result["mt5_feed_depth_before"] = _materialized_backtest_work_item_depth(conn)
+        result["expanded_pending_backtest_p2"] = _expand_pending_backtest_p2_parents(
+            root,
+            conn,
+            feed_target,
+        )
+        result["mt5_feed_depth_after_parent_expand"] = _materialized_backtest_work_item_depth(conn)
+        result["auto_ea_review_created"] = _auto_create_ea_review_for_unenqueued_eas(
+            root,
+            conn,
+            limit=feed_target,
+        )
+        for ea_info in _detect_unenqueued_eas(conn):
+            if _materialized_backtest_work_item_depth(conn) >= feed_target:
+                break
             try:
                 n = _enqueue_p2_from_review(root, ea_info["review_task_id"])
                 result["auto_p2_enqueued"].append({
@@ -5089,6 +5195,7 @@ def pump(root: Path) -> dict[str, Any]:
                     "review_task_id": ea_info["review_task_id"],
                     "error": repr(exc),
                 })
+        result["mt5_feed_depth_after"] = _materialized_backtest_work_item_depth(conn)
 
     # 2. Retry blocked builds — OWNER 2026-05-16 "Fail → ans Ende der
     #    Liste". A blocked build means the previous attempt hit
