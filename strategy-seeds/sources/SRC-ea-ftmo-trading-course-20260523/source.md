@@ -2,7 +2,7 @@
 source_id: SRC-ea-ftmo-trading-course-20260523
 tier: T2                                       # video-course, anonymous instructor brand ("EA Trading Academy"), self-published — not Wiley/peer-reviewed
 parent_issue: TBD                              # opened at first card-batch landing
-status: wave_a1_batch01_dispatched
+status: paused_for_architecture_fix             # Wave-A1 Batch-01 closed; awaiting Wave-A2 with extended Gemini sandbox
 authored-by: Claude (Wave-A1 pre-flight for Dropbox initiative)
 last-updated: 2026-05-23
 mining_policy:
@@ -10,9 +10,9 @@ mining_policy:
   reservoir_drain_required: true
   complete_coverage: true                       # OWNER policy 2026-05-23 — every video routed once
 budget_tracking:
-  heartbeats_used: 1                            # Wave-A1 Batch-01 enqueue 2026-05-23T13:34Z
+  heartbeats_used: 1                            # Wave-A1 Batch-01 dispatch + close-out 2026-05-23
   videos_dispatched: 5
-  cards_drafted: 0
+  cards_drafted: 0                              # zero source-anchored cards; the 2 APPROVED cards are LLM hallucinations from filename, kept by OWNER decision
   cards_passed_g0: 0
 ---
 
@@ -159,6 +159,65 @@ Worker: `QM_StrategyFarm_GeminiOrchestration_15min` (every 15 min).
 Gemini.max_parallel = 2 → only 2 tasks run concurrently; the 3 TODO queue until a slot frees.
 
 **Open improvement for the contract:** the enqueue CLI does not expose `--required-capabilities`, so the post-enqueue DB patch is currently necessary to pin video-extraction tasks to Gemini. Either (a) extend the CLI to accept `--required-capabilities`, or (b) bake the pin into the enqueue payload via a wrapper script (preferred for Wave-A1-Batch-02+).
+
+## 7b. Wave-A1 Batch-01 close-out (2026-05-23)
+
+Batch-01 closed with the following terminal-state per task:
+
+| Task ID | Video | Final state | Notes |
+|---|---|---|---|
+| `47059b7b` | Setup 1 Catch A Quick Move | FAILED (OWNER-cancelled v1 + v2) | Reviewer RECYCLE verdict: currency-strength-meter unimplementable in single-instrument tester, M1 infra-gap, threshold undefined |
+| `84931317` | Setup 2 Fibs Retracements | FAILED (OWNER-cancelled v1 + v2) | Reviewer RECYCLE verdict: no persistence argument, look-ahead prone, M1 infra-gap, weak falsification |
+| `6672fa16` | Setup 3 20 MA | APPROVED | Hallucination but auto-reviewer APPROVED; 10-pattern PASS; card kept by OWNER decision |
+| `9abf0338` | Setup 4 Fibs Break Out | APPROVED | Hallucination but auto-reviewer APPROVED; 10-pattern PASS; card kept by OWNER decision |
+| `aac25e1f` | When Do I Trade / How Much I Risk | FAILED (OWNER-cancelled, never ran) | Pre-empted to avoid 5th hallucination |
+
+```yaml
+wave_close:
+  wave: Batch-01
+  closed: 2026-05-23T18:55Z
+  videos_processed: 5
+  cards_drafted: 4              # 4 .md files written (Setup 1 v1+v2, Setup 2 v1+v2, Setup 3, Setup 4)
+  cards_approved: 2             # Setup 3 + 4 (kept in cards_review/)
+  cards_dropped: 3              # Setup 1 v1+v2, Setup 2 v1+v2 (4 files deleted, 2 tasks RECYCLE+FAILED)
+  duplicates_skipped: 0
+  total_gemini_calls: ~6        # 4 task-extractions + 2 v2 re-runs
+  total_runtime_hours: ~0.7     # 18:00-18:50Z of orchestration ticks
+  evidence_anchored: false       # CRITICAL — gemini sandbox blocked video read; cards are LLM guesses from filenames
+```
+
+### Root-cause finding from Batch-01
+
+Gemini-CLI is sandboxed to `--include-directories <worktree>` by default. The Dropbox path (and every other path outside `C:\QM\worktrees\gemini-orchestration-1`) is rejected with `Path not in workspace`. The 5 video files were NEVER read; the strategy cards were generated from the video filename in the task payload plus the Edge Lab Charter, NOT from video content.
+
+This is verifiable in `D:\QM\strategy_farm\logs\gemini_orchestration_slot1_20260523T180001Z.live.log` line 21:
+
+```
+Error executing tool list_directory: Path not in workspace:
+Attempted path "C:\Users\Administrator\Dropbox\Finanzen\Forex\..."
+resolves outside the allowed workspace directories:
+C:\QM\worktrees\gemini-orchestration-1 or
+the project temp directory: C:\Users\Administrator\.gemini\tmp\gemini-orchestration-1
+```
+
+Evidence the cards are hallucinations:
+- Setup 1 card claims entry signal = "Currency Strength Meter divergence"
+- The actual FSB-generated EA on disk (`AUDNZD M1 FTMO Filter M30.mq5` etc.) uses **Envelopes + MACD + Spread Level + Chande Momentum Oscillator** — there is no currency strength meter anywhere in the deployed code or, presumably, in the videos
+- Independent auto-reviewer caught this too (verdict on 47059b7b: "currency-strength-meter signal requires multi-pair real-time data — unimplementable")
+
+### Wave-A2 path forward
+
+OWNER decided 2026-05-23: extend Gemini sandbox (Option A from the 4-way architecture decision). Patch committed `cb99f0b0` adds `Dropbox\Finanzen\Forex` and `cards_review` to `--include-directories`. Open follow-ups before Wave-A2 restart:
+
+1. **Verify** that the next Gemini orchestration tick actually loads the video file (look for `read_file` of an `.mp4` path in the live log, or for a different error mode).
+2. **Quota profiling**: a 50-250 MB MP4 ingest may blow free-tier daily quota after 1-2 videos. If yes, OWNER must decide between paid API tier OR Plan B (whisper pre-transcribe → text-to-gemini). Plan B is the sustainable path for the remaining 2,683 videos.
+3. **Re-enqueue the same 5 videos** of SRC-ea-ftmo-trading-course-20260523 as Wave-A2 Batch-01 (the OLD task IDs are FAILED; new task IDs needed). Confirm cards are now source-anchored before declaring success.
+
+### Process-debt items for the contract
+
+- The enqueue CLI does not accept `--required-capabilities`, so capability-pinning required a direct DB UPDATE (`.scratch/wave_a1_pin_to_gemini.py`). Wave-A2-Batch-01 should bake the pin into a wrapper script.
+- The current AgentRouter routes excess tasks to Codex when Gemini is at max_parallel — Codex cannot do video work. Either raise Gemini.max_parallel or always pin via the `source_discovery` capability (Wave-A1 did the latter).
+- After RECYCLE, the system auto-routes the task back to Gemini for v2. Without OWNER intervention, this loops. Either the RECYCLE workflow needs a "do not re-route to gemini" flag, or the orchestration prompt needs an "if the same task has prior RECYCLE history, escalate to OWNER" hook.
 
 ## 8. Extraction plan (Gemini wave dispatch)
 
