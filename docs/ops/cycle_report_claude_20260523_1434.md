@@ -1,0 +1,55 @@
+---
+cycle: claude-orchestration-2
+timestamp: 2026-05-23T12:34Z
+overall_health: FAIL
+---
+
+## Status
+
+**Factory: DOWN** — 0/10 terminal_worker daemons alive. Visible-mode policy: OWNER
+must click Factory ON after RDP login. No backtests dispatched regardless.
+
+**Router: no_routable_task** — `run`, `route-many`, and `list-tasks --agent claude`
+all returned empty. 0 agent_tasks (any agent, any state). Cycle complete with no task work.
+
+## Health Checks
+
+| Check | Status | Detail |
+|---|---|---|
+| mt5_worker_saturation | FAIL | 0/10 daemons alive |
+| p_pass_stagnation | FAIL | 0 P3+ PASS verdicts in last 12h |
+| All others | OK | — |
+
+## State Continuity from 1215Z Report
+
+No change since the 1215Z cycle. DB re-init anomaly stands:
+
+- `work_items`: 0 rows (was 6,677 pre-wipe)
+- `agent_tasks`: 0 rows (was 45 pre-wipe)
+- `sources`: 87 rows intact (12 pending, 2 cards_ready, 3 blocked, 70 done)
+- `cards_review/`: 34 cards, none routed as agent_tasks
+
+Backup at `D:/QM/strategy_farm/state/backups/farm_state_20260523_1025.sqlite`
+(25.7 MB) contains last known full state (10:25 local). Not restored this cycle.
+
+## QM5_10260 Queue State
+
+0 work_items. No re-enqueue performed (perf-rework Codex task is prerequisite).
+Status unchanged from prior reports.
+
+## Pending Blockers (unchanged)
+
+1. **OWNER: Was the DB re-init intentional?**
+   - YES → proceed; re-enqueue EA backtests when factory is up.
+   - NO → restore `farm_state_20260523_1025.sqlite`; investigate trigger.
+
+2. **Factory down** — no throughput until OWNER clicks Factory ON.
+
+3. **34 cards in cards_review** — G0 review tasks not being auto-created by
+   router (replenish frozen). Needs OWNER decision: create review tasks manually
+   via `agent_router.py enqueue`, or keep frozen pending factory restart.
+
+## Next Step
+
+No new work this cycle. Awaiting OWNER action on: (a) DB re-init decision,
+(b) factory start.
