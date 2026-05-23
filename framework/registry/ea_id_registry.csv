@@ -2452,3 +2452,6 @@ ea_id,slug,strategy_id,status,owner,created_at
 11577,robo-psar-awesome2-m30,e78a9f1f-4e6a-563c-a080-915133d6ed28,active,Research,2026-05-23
 11578,neely-weller-pct-filter-rule-d1,577eb0aa-7880-5c0a-a8f9-56cd126c19f9,pending,Claude,2026-05-23
 11579,hui-chan-shiryaev-zhou-sign-persist-d1,03db26bb-7fcd-5144-b6d8-2807a0cf487d,pending,Claude,2026-05-23
+11580,williams-outside-bar-daily-d1,c6f2601c-1c2d-514f-be1e-2cc3fb379135,pending,Claude,2026-05-23
+11581,goodwin-kangaroo-tail-breakout-d1,d0660b7f-b405-5126-b8d1-7e0734054c2d,pending,Claude,2026-05-23
+11582,goodwin-asian-session-breakout-usdjpy-h1,d0660b7f-b405-5126-b8d1-7e0734054c2d,pending,Claude,2026-05-23
