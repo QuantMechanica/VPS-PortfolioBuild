@@ -2509,3 +2509,13 @@ ea_id,slug,strategy_id,status,owner,created_at
 11634,fsr-double-stoch21-9-h1,5e9e8c4d-0c88-5dc6-a550-b3b070a5b44d,active,claude,2026-05-24
 11635,fsr-adv6-ema20-40-adx-h4,5e9e8c4d-0c88-5dc6-a550-b3b070a5b44d,active,claude,2026-05-24
 11636,fsr-ema7-21-adx14-macd-h1,5e9e8c4d-0c88-5dc6-a550-b3b070a5b44d,active,claude,2026-05-24
+11637,robo-ema-fan-ribbon-m1,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,claude,2026-05-24
+11638,robo-bb120-3dev-ema48-h1,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,claude,2026-05-24
+11639,robo-ma6-35-150-365-h1,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,claude,2026-05-24
+11640,robo-ema100hl-bb10-h4,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,claude,2026-05-24
+11641,robo-sma20l-ema34-adx13-d1,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,claude,2026-05-24
+11642,robo-smma818-psar026-stoch1225-h1,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,claude,2026-05-24
+11643,robo-ema828-cci30-psar-h1,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,claude,2026-05-24
+11644,robo-day-hour-macd12120-h4,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,claude,2026-05-24
+11645,robo-sma13-26-100-h4,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,claude,2026-05-24
+11646,robo-rsi8-pending-d1,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,claude,2026-05-24
