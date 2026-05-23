@@ -55,12 +55,100 @@ SUB_GATES = [
 ]
 
 
+def _ensure_sub_gate_inputs(ea_id: int, symbol: str) -> dict:
+    """PT4 2026-05-23 — pre-invoke Q08.5 + Q08.7 supporting runners if their
+    output artifacts don't yet exist. Sub-gates 8.5 (neighborhood) and 8.7
+    (PBO) read perturbations.json / scores.csv produced by separate runners.
+    Without those files the sub-gates return INVALID; this pre-pass tries
+    to populate them so the gate can give a real verdict.
+
+    Both runners are best-effort: failure here is logged but doesn't abort
+    the aggregator. The sub-gates handle missing files gracefully.
+    """
+    import subprocess as _sp
+    sym_clean = symbol.replace(".", "_")
+    repo_root = Path(__file__).resolve().parents[3]
+    py = sys.executable
+
+    ran: dict[str, dict] = {}
+
+    perturbations = (Path(f"D:/QM/reports/pipeline/QM5_{ea_id}/Q08/"
+                          f"neighborhood/{sym_clean}/perturbations.json"))
+    if not perturbations.exists():
+        # Best-effort dispatch — requires a baseline setfile to be discoverable.
+        # We let the runner self-resolve from --ea + --symbol via Q03 plateau
+        # pick lookup; it'll log SKIP and exit non-zero if pre-reqs missing.
+        baseline = _guess_baseline_setfile(repo_root, ea_id, symbol)
+        if baseline is not None:
+            try:
+                proc = _sp.run([
+                    py, str(repo_root / "framework" / "scripts" /
+                            "q08_5_neighborhood_runner.py"),
+                    "--ea", f"QM5_{ea_id}",
+                    "--symbol", symbol,
+                    "--baseline-setfile", str(baseline),
+                ], capture_output=True, text=True, timeout=1800)
+                ran["8_5_neighborhood"] = {
+                    "exit_code": proc.returncode,
+                    "artifact_now_exists": perturbations.exists(),
+                }
+            except _sp.TimeoutExpired:
+                ran["8_5_neighborhood"] = {"exit_code": -1, "error": "timeout"}
+            except Exception as exc:
+                ran["8_5_neighborhood"] = {"exit_code": -1, "error": repr(exc)}
+        else:
+            ran["8_5_neighborhood"] = {"skipped": "no_baseline_setfile_resolvable"}
+
+    pbo_scores = Path(f"D:/QM/reports/pipeline/QM5_{ea_id}/Q08/pbo/"
+                      f"{sym_clean}/scores.csv")
+    if not pbo_scores.exists():
+        try:
+            proc = _sp.run([
+                py, str(repo_root / "framework" / "scripts" /
+                        "q08_7_pbo_runner.py"),
+                "--ea", f"QM5_{ea_id}",
+                "--symbol", symbol,
+            ], capture_output=True, text=True, timeout=600)
+            ran["8_7_pbo"] = {
+                "exit_code": proc.returncode,
+                "artifact_now_exists": pbo_scores.exists(),
+            }
+        except _sp.TimeoutExpired:
+            ran["8_7_pbo"] = {"exit_code": -1, "error": "timeout"}
+        except Exception as exc:
+            ran["8_7_pbo"] = {"exit_code": -1, "error": repr(exc)}
+
+    return ran
+
+
+def _guess_baseline_setfile(repo_root: Path, ea_id: int, symbol: str) -> Path | None:
+    """Find a baseline backtest setfile for an EA — used to feed the
+    neighborhood runner when we can't otherwise resolve the Q03 pick."""
+    ea_dirs = [d for d in (repo_root / "framework" / "EAs").iterdir()
+               if d.is_dir() and d.name.startswith(f"QM5_{ea_id}_")]
+    if not ea_dirs:
+        return None
+    sets_dir = ea_dirs[0] / "sets"
+    if not sets_dir.exists():
+        return None
+    # Match the symbol; prefer baseline setfiles (not stress / not seed / not perturb)
+    sym_token = symbol
+    for f in sets_dir.glob("*_backtest.set"):
+        if sym_token in f.name and not any(s in f.name for s in
+                                            ("stress", "_seed", "_perturb")):
+            return f
+    return None
+
+
 def run_all(ea_id: int, symbol: str, log_path: Path,
             portfolio: list[dict] | None = None,
             out_dir: Path | None = None) -> dict:
     log_path = Path(log_path)
     trades = common.load_trades_from_log(log_path)
     equity_stream = common.load_equity_stream(log_path)
+
+    # PT4 — best-effort pre-run of Q08.5 + Q08.7 supporting runners
+    sub_gate_input_runs = _ensure_sub_gate_inputs(ea_id, symbol)
 
     sub_results: list[dict] = []
     for label, mod in SUB_GATES:
@@ -99,6 +187,7 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
         "n_trades": len(trades),
         "n_equity_snapshots": len(equity_stream),
         "sub_gates": sub_results,
+        "sub_gate_input_runs": sub_gate_input_runs,
         "summary": {
             "n_pass":    sum(1 for r in sub_results if r["status"] == "PASS"),
             "n_fail":    sum(1 for r in sub_results if r["status"] == "FAIL"),

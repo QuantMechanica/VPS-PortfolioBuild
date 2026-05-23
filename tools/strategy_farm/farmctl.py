@@ -299,16 +299,7 @@ def init_db(root: Path) -> None:
                 uri TEXT NOT NULL,
                 title TEXT NOT NULL,
                 status TEXT NOT NULL CHECK (
-                    status IN (
-                        'pending',
-                        'active',
-                        'notes_ready',
-                        'cards_ready',
-                        'approved',
-                        'rejected',
-                        'done',
-                        'blocked'
-                    )
+                    status in ('pending', 'active', 'notes_ready', 'cards_ready', 'approved', 'rejected', 'done', 'blocked')
                 ),
                 notes_path TEXT,
                 created_at TEXT NOT NULL,
@@ -320,7 +311,7 @@ def init_db(root: Path) -> None:
                 id TEXT PRIMARY KEY,
                 kind TEXT NOT NULL,
                 status TEXT NOT NULL CHECK (
-                    status IN ('pending', 'active', 'done', 'blocked', 'failed')
+                    status in ('pending', 'active', 'done', 'blocked', 'failed')
                 ),
                 source_id TEXT,
                 card_id TEXT,
@@ -354,7 +345,7 @@ def init_db(root: Path) -> None:
                 symbol TEXT NOT NULL,           -- 'EURUSD.DWX'
                 setfile_path TEXT NOT NULL,
                 status TEXT NOT NULL CHECK (
-                    status IN ('pending', 'active', 'done', 'failed')
+                    status in ('pending', 'active', 'done', 'failed')
                 ),
                 verdict TEXT,                   -- PASS/FAIL/INVALID (NULL until done)
                 attempt_count INTEGER NOT NULL DEFAULT 0,
@@ -532,19 +523,7 @@ def strategy_card_fingerprint(card_path: Path, fm: dict[str, Any] | None = None)
     timeframe_match = re.search(r"\b(?:m1|m5|m15|m30|h1|h4|d1|w1)\b", text, re.IGNORECASE)
     timeframe = timeframe_match.group(0).lower() if timeframe_match else ""
     thesis_terms = []
-    for term in (
-        "momentum",
-        "mean reversion",
-        "breakout",
-        "carry",
-        "seasonal",
-        "volatility",
-        "gap",
-        "news",
-        "fomc",
-        "trend",
-        "pairs",
-    ):
+    for term in ("momentum", "mean reversion", "breakout", "carry", "seasonal", "volatility", "gap", "news", "fomc", "trend", "pairs", ):
         if term in text:
             thesis_terms.append(term.replace(" ", "-"))
     raw = "|".join([source, slug, universe, timeframe, ",".join(thesis_terms)])
@@ -1111,7 +1090,7 @@ def pipeline_view(root: Path) -> dict[str, Any]:
                 entry["current_stage"] = "build_pending"
             elif r["status"] == "active":
                 entry["current_stage"] = "building"
-            elif r["status"] in ("done",):
+            elif r["status"] in ("done", ):
                 entry["current_stage"] = "built"
             elif r["status"] in ("failed", "blocked"):
                 entry["current_stage"] = f"build_{r['status']}"
@@ -1198,10 +1177,8 @@ def _run_drawdown_pct(run: dict[str, Any]) -> float | None:
 
 def _derive_p5plus_metric_verdict(runs: list[dict[str, Any]]) -> tuple[str, str]:
     net_profits = [
-        value for value in (
-            _run_metric(r, ("net_profit", "total_net_profit", "profit"))
-            for r in runs
-        )
+        value for value in (_run_metric(r, ("net_profit", "total_net_profit", "profit"))
+            for r in runs)
         if value is not None
     ]
     if net_profits and sum(net_profits) <= 0.0:
@@ -1220,10 +1197,8 @@ def _derive_p5plus_metric_verdict(runs: list[dict[str, Any]]) -> tuple[str, str]
         return "FAIL", "DD_EXCEEDED:dd_exceeded"
 
     sharpes = [
-        value for value in (
-            _run_metric(r, ("sharpe", "sharpe_ratio"))
-            for r in runs
-        )
+        value for value in (_run_metric(r, ("sharpe", "sharpe_ratio"))
+            for r in runs)
         if value is not None
     ]
     if sharpes and (sum(sharpes) / len(sharpes)) < P5PLUS_MIN_SHARPE:
@@ -1525,7 +1500,7 @@ def _filter_p2_profitable_symbols(
     rows = conn.execute(
         """
         SELECT * FROM work_items
-        WHERE parent_task_id=? AND phase='P2' AND status='done' AND verdict='PASS'
+        WHERE parent_task_id=? AND phase in ('Q02', 'P2') AND status='done' AND verdict='PASS'
         """,
         (p2_parent_task_id,),
     ).fetchall()
@@ -2003,7 +1978,7 @@ def _refresh_phase_report_from_work_items(root: Path, ea_id: str, phase: str) ->
             """
             SELECT ea_id, phase, symbol, verdict, evidence_path, payload_json
             FROM work_items
-            WHERE ea_id=? AND phase=? AND status IN ('done', 'failed')
+            WHERE ea_id=? AND phase=? AND status in ('done', 'failed')
             ORDER BY updated_at ASC, created_at ASC
             """,
             (ea_id, phase_key),
@@ -2247,6 +2222,44 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
             news_matrix = NEWS_MATRIX_FALLBACK
         if news_matrix.exists():
             cmd.extend(["--news-matrix", str(news_matrix)])
+    # PT3 2026-05-23 — Qxx canonical phase runners (post-pipeline-rewrite).
+    # Each new runner has a slightly different CLI; bridge from the generic
+    # worker args (--ea, --symbol, --period, --setfile) here.
+    elif phase == "Q04":
+        cmd.extend(["--terminal", terminal or "T1"])
+    elif phase in ("Q05", "Q06", "Q10"):
+        # These take --baseline-setfile instead of --setfile.
+        cmd.extend([
+            "--baseline-setfile", str(item_row["setfile_path"] or ""),
+            "--terminal", terminal or "T1",
+        ])
+        _remove_cmd_arg(cmd, "--setfile")
+    elif phase == "Q07":
+        cmd.extend([
+            "--baseline-setfile", str(item_row["setfile_path"] or ""),
+            "--terminal", terminal or "T1",
+        ])
+        _remove_cmd_arg(cmd, "--setfile")
+    elif phase == "Q08":
+        # Q08 aggregator reads the EA's structured JSON-lines log directly.
+        # Worker-passed --setfile/--period not needed; we rebuild the cmd.
+        log_path = (Path(r"D:\QM\mt5") / (terminal or "T1") /
+                    "MQL5" / "Logs" / "QM" / f"{ea_id}.log")
+        cmd = [
+            _console_python_executable(),
+            str(REPO_ROOT / "framework" / "scripts" / "q08_davey" / "aggregate.py"),
+            "--ea-id", str(int(ea_id.replace("QM5_", "").split("_")[0]))
+                          if ea_id.startswith("QM5_") else ea_id,
+            "--symbol", symbol,
+            "--log", str(log_path),
+            "--out-dir", str(report_root / ea_id / "Q08" / symbol.replace(".", "_")),
+        ]
+    elif phase == "Q09":
+        cmd.extend([
+            "--baseline-setfile", str(item_row["setfile_path"] or ""),
+            "--terminal", terminal or "T1",
+        ])
+        _remove_cmd_arg(cmd, "--setfile")
     return cmd
 
 
@@ -3368,7 +3381,7 @@ def _spawn_codex_for_g0_batch(root: Path) -> dict[str, Any]:
     """Spawn Codex for G0 review of up to 3 draft cards (smaller batch
     than Claude — Codex iterates through farmctl subprocesses serially).
 
-    Runs IN PARALLEL with Claude G0 — claim mechanism prevents both
+    Runs in PARALLEL with Claude G0 — claim mechanism prevents both
     workers from grabbing the same card.
     """
     import shutil as _shutil
@@ -4242,7 +4255,7 @@ def _detect_zerotrade_dead_eas(con: sqlite3.Connection, root: Path = DEFAULT_ROO
         """
         SELECT ea_id, verdict, payload_json, evidence_path, updated_at
         FROM work_items
-        WHERE phase='P2' AND status IN ('done', 'failed')
+        WHERE phase in ('Q02', 'P2') AND status in ('done', 'failed')
         """
     ).fetchall()
 
@@ -4732,7 +4745,7 @@ def _detect_unenqueued_eas(con: sqlite3.Connection) -> list[dict[str, Any]]:
         if not ea_id:
             continue
         wi_count = con.execute(
-            "SELECT COUNT(*) FROM work_items WHERE ea_id=? AND phase='P2'",
+            "SELECT COUNT(*) FROM work_items WHERE ea_id=? AND phase in ('Q02', 'P2')",
             (ea_id,),
         ).fetchone()[0]
         if wi_count > 0:
@@ -4743,7 +4756,7 @@ def _detect_unenqueued_eas(con: sqlite3.Connection) -> list[dict[str, Any]]:
         # 2017-2022 window) on every cycle.
         terminal_task_exists = con.execute(
             "SELECT 1 FROM tasks WHERE kind='backtest_p2' AND card_id=? "
-            "AND status IN ('done','failed') LIMIT 1",
+            "AND status in ('done', 'failed') LIMIT 1",
             (ea_id,),
         ).fetchone()
         if terminal_task_exists:
@@ -4784,7 +4797,7 @@ def _materialized_backtest_work_item_depth(con: sqlite3.Connection) -> int:
         SELECT COUNT(*) AS n
         FROM work_items
         WHERE kind='backtest'
-          AND status IN ('pending', 'active')
+          AND status in ('pending', 'active')
         """
     ).fetchone()
     return int(row["n"] if row else 0)
@@ -4959,8 +4972,8 @@ def _auto_stub_p5_calibration(root: Path, con: sqlite3.Connection, limit: int = 
         """
         SELECT * FROM work_items
         WHERE (
-            (phase='P4' AND status='done' AND verdict='PASS')
-            OR (phase='P5' AND status IN ('pending', 'active'))
+            (phase in ('Q04', 'P4') AND status='done' AND verdict='PASS')
+            OR (phase in ('Q05', 'P5') AND status in ('pending', 'active'))
         )
         ORDER BY updated_at DESC
         LIMIT 100
@@ -5049,8 +5062,8 @@ def research_backlog_inventory(root: Path) -> dict[str, Any]:
                 SELECT COUNT(DISTINCT ea_id) AS n
                 FROM work_items
                 WHERE ea_id IS NOT NULL
-                  AND status IN ('pending', 'active')
-                  AND phase IN ('P2','P3','P3.5','P4','P5','P5b','P5c','P6','P7','P8')
+                  AND status in ('pending', 'active')
+                  AND phase in ('P2', 'P3', 'P3.5', 'P4', 'P5', 'P5b', 'P5c', 'P6', 'P7', 'P8', 'Q02', 'Q03', 'Q04', 'Q05', 'Q07', 'Q08')
                 """
             ).fetchone()
             active_pipeline_eas = int(row["n"] if row else 0)
@@ -5059,8 +5072,8 @@ def research_backlog_inventory(root: Path) -> dict[str, Any]:
                 """
                 SELECT COUNT(*) AS n
                 FROM tasks
-                WHERE status IN ('pending', 'active', 'review', 'blocked')
-                  AND kind IN ('build_ea', 'ea_review', 'codex_review')
+                WHERE status in ('pending', 'active', 'review', 'blocked')
+                  AND kind in ('build_ea', 'ea_review', 'codex_review')
                 """
             ).fetchone()
             open_build_or_review_tasks = int(row["n"] if row else 0)
@@ -5773,7 +5786,7 @@ def pump(root: Path) -> dict[str, Any]:
         p2_pass = conn.execute(
             """
             SELECT * FROM work_items
-            WHERE status='done' AND verdict='PASS' AND phase='P2'
+            WHERE status='done' AND verdict='PASS' AND phase in ('Q02', 'P2')
               AND setfile_path NOT LIKE '%_ablation_%'
               AND setfile_path NOT LIKE '%_grid_%'
               AND COALESCE(json_extract(payload_json, '$.ablated_at'), '')=''
@@ -5814,7 +5827,7 @@ def pump(root: Path) -> dict[str, Any]:
         promotable = conn.execute(
             """
             SELECT w.* FROM work_items w
-            WHERE w.status='done' AND w.verdict='PASS' AND w.phase='P2'
+            WHERE w.status='done' AND w.verdict='PASS' AND w.phase in ('Q02', 'P2')
               AND (
                 w.setfile_path LIKE '%_ablation_%'
                 OR w.setfile_path LIKE '%_grid_%'
@@ -5826,7 +5839,7 @@ def pump(root: Path) -> dict[str, Any]:
                 WHERE w2.ea_id = w.ea_id
                   AND w2.symbol = w.symbol
                   AND w2.setfile_path = w.setfile_path
-                  AND w2.phase = 'P3'
+                  AND w2.phase in ('Q03', 'P3')
               )
             ORDER BY w.updated_at ASC LIMIT 500
             """
@@ -5943,7 +5956,7 @@ def pump(root: Path) -> dict[str, Any]:
             promotable = conn.execute(
                 f"""
                 SELECT w.* FROM work_items w
-                WHERE w.status='done' AND w.phase=? AND w.verdict IN ({placeholders})
+                WHERE w.status='done' AND w.phase=? AND w.verdict in ({placeholders})
                   AND NOT EXISTS (
                     SELECT 1 FROM work_items w2
                     WHERE w2.ea_id = w.ea_id
@@ -6043,7 +6056,7 @@ def pump(root: Path) -> dict[str, Any]:
         p3_pass = conn.execute(
             """
             SELECT * FROM work_items
-            WHERE status='done' AND verdict='PASS' AND phase='P3'
+            WHERE status='done' AND verdict='PASS' AND phase in ('Q03', 'P3')
               AND setfile_path NOT LIKE '%_ablation_%'
               AND setfile_path NOT LIKE '%_grid_%'
               AND COALESCE(json_extract(payload_json, '$.ablated_at'), '')=''
@@ -6369,7 +6382,7 @@ def get_mt5_status(root: Path | None = None) -> dict[str, Any]:
             with connect(root) as conn:
                 placeholders = ",".join("?" for _ in ids)
                 rows = conn.execute(
-                    f"SELECT id, status, phase, ea_id, symbol, claimed_by FROM work_items WHERE id IN ({placeholders})",
+                    f"SELECT id, status, phase, ea_id, symbol, claimed_by FROM work_items WHERE id in ({placeholders})",
                     ids,
                 ).fetchall()
             work_item_status = {row["id"]: dict(row) for row in rows}
@@ -7111,7 +7124,7 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
         prev_rows = conn.execute(
             f"""
             SELECT * FROM work_items
-            WHERE ea_id=? AND phase=? AND status='done' AND verdict IN ({placeholders})
+            WHERE ea_id=? AND phase=? AND status='done' AND verdict in ({placeholders})
             ORDER BY updated_at ASC
             """,
             (ea_id, prev_phase, *verdicts),
@@ -8375,6 +8388,63 @@ def reject_card(root: Path, card_path_str: str, reason: str) -> dict[str, Any]:
     }
 
 
+def _validate_ea_spec_md(build_result: dict[str, Any], root: Path) -> dict[str, Any]:
+    """Run framework/scripts/validate_spec_doc.py against the EA's dir.
+
+    PT2 2026-05-23 — gate enforcement of Vault Q01 SPEC.md requirement.
+    Returns {"ok": bool, "failures": list[str], "ea_dir": str | None}.
+    Non-fatal if the validator script itself is missing (returns ok=True
+    with a note) — defensive degradation, won't break older deployments.
+    """
+    ea_dir_raw = (build_result.get("ea_dir") or "").strip()
+    if not ea_dir_raw:
+        # Try to derive from ea_id + slug
+        ea_id = build_result.get("ea_id")
+        slug = build_result.get("slug")
+        if ea_id and slug:
+            ea_dir_raw = str(FRAMEWORK_EAS_DIR / f"{ea_id}_{slug}")
+    if not ea_dir_raw:
+        return {"ok": False, "failures": ["ea_dir_unresolvable"], "ea_dir": None}
+
+    ea_dir = Path(ea_dir_raw)
+    if not ea_dir.exists() or not ea_dir.is_dir():
+        return {"ok": False, "failures": [f"ea_dir_missing:{ea_dir_raw}"], "ea_dir": ea_dir_raw}
+
+    validator = REPO_ROOT / "framework" / "scripts" / "validate_spec_doc.py"
+    if not validator.exists():
+        return {"ok": True, "failures": [], "ea_dir": ea_dir_raw,
+                "note": "validator_script_absent_skipped"}
+
+    import shutil as _shutil
+    python_exe = _shutil.which("python") or sys.executable or "python"
+    creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+    try:
+        proc = subprocess.run(
+            [python_exe, str(validator), str(ea_dir)],
+            capture_output=True, text=True, timeout=30,
+            creationflags=creationflags,
+        )
+    except subprocess.TimeoutExpired:
+        return {"ok": False, "failures": ["validator_timeout"], "ea_dir": ea_dir_raw}
+    except Exception as exc:
+        return {"ok": False, "failures": [f"validator_error:{exc!r}"], "ea_dir": ea_dir_raw}
+
+    if proc.returncode == 0:
+        return {"ok": True, "failures": [], "ea_dir": ea_dir_raw}
+
+    # Validator emits one "FAIL  <ea_name>" line + "      - <failure>" lines.
+    failures: list[str] = []
+    for line in (proc.stdout or "").splitlines():
+        s = line.strip()
+        if s.startswith("- "):
+            failures.append(s[2:])
+    if not failures:
+        # Validator failed but didn't list reasons (parse fallback)
+        failures = [(proc.stdout or proc.stderr or "validator_failed").strip()[:200]]
+    return {"ok": False, "failures": failures, "ea_dir": ea_dir_raw,
+            "exit_code": proc.returncode}
+
+
 def record_build_result(root: Path, task_id: str, result_file: str) -> dict[str, Any]:
     """Read Codex's build result JSON, transition the build_ea task."""
     init_db(root)
@@ -8422,6 +8492,23 @@ def record_build_result(root: Path, task_id: str, result_file: str) -> dict[str,
         new_status = "done"
     else:
         new_status = "failed"
+
+    # PT2 2026-05-23 — Q01 SPEC.md gate enforcement.
+    # Per Vault Q01 Build & Spec spec, every new EA must ship with a complete
+    # SPEC.md (7 required sections, no unfilled placeholders, EA-ID match).
+    # We only enforce this when the build was otherwise about to advance to
+    # "done" — failures/blocks already gate the EA out for other reasons.
+    if new_status == "done":
+        spec_result = _validate_ea_spec_md(result, root)
+        payload_merge["spec_validation"] = spec_result
+        if not spec_result.get("ok"):
+            new_status = "blocked"
+            result["blocked_reason"] = "spec_validation_failed"
+            payload_merge["fail_code"] = "spec_validation_failed"
+            payload_merge.setdefault(
+                "spec_blocked_summary",
+                "; ".join(spec_result.get("failures", [])[:3]),
+            )
 
     with connect(root) as conn:
         updated = update_task(conn, task_id, status=new_status, payload_merge=payload_merge)
