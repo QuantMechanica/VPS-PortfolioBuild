@@ -2245,3 +2245,7 @@ ea_id,slug,strategy_id,status,owner,created_at
 11370,forex-profit-system-ema3-psar-h1,becda36b-263f-5989-b5fa-f1e945c0d4bd,active,Research,2026-05-23
 11371,tom-demark-ema9-30-momentum-h1,becda36b-263f-5989-b5fa-f1e945c0d4bd,active,Research,2026-05-23
 11372,micro-trading-bb18-ema3-macd-m1,becda36b-263f-5989-b5fa-f1e945c0d4bd,active,Research,2026-05-23
+11373,100pips-daily-range-bracket-usdjpy,e1222215-8e37-5add-90ba-87c1801691bf,active,Research,2026-05-23
+11374,kathy-lien-xtreme-fade-bb3sigma-adx-m15,3d831560-f01a-5df3-8843-6d61fd78902f,active,Research,2026-05-23
+11375,kathy-lien-double-bb-1-2sigma-m15,3d831560-f01a-5df3-8843-6d61fd78902f,active,Research,2026-05-23
+11376,4h-macd-5-13-ma5-cascade-h4,da258f22-30af-596a-8c60-9f96d41c0ac7,active,Research,2026-05-23
