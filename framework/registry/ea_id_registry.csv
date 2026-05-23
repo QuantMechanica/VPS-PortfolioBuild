@@ -2363,3 +2363,4 @@ ea_id,slug,strategy_id,status,owner,created_at
 11488,samuels-j-123-pattern-pullback-d1,00fdf02a-7d9c-5521-8c30-99d986e908aa,active,Research,2026-05-23
 11489,suhr-s-bank-stop-run-reversal-d1,00fdf02a-7d9c-5521-8c30-99d986e908aa,active,Research,2026-05-23
 11490,robles-c-continuation-50ema-wpr-d1,00fdf02a-7d9c-5521-8c30-99d986e908aa,active,Research,2026-05-23
+11491,watthana-candlestick-rsi-stochastic-h4,0d6086c2-6e04-5266-a1c5-93b79cc15ffd,active,Research,2026-05-23
