@@ -5291,7 +5291,10 @@ def pump(root: Path) -> dict[str, Any]:
     result["auto_r_eval_queued"] = _auto_queue_r_eval_for_unknown_drafts(root)
 
     result["auto_build_queued"] = []
-    for ea_info in _detect_unbuilt_cards(root)[:2]:
+    # OWNER 2026-05-23 (late): pump now emits up to 10 auto-build bridge
+    # tasks per cycle (was 2) so the queue stays full enough to keep all 5
+    # parallel Codex workers busy on the 2 000+ approved-but-unbuilt cards.
+    for ea_info in _detect_unbuilt_cards(root)[:10]:
         p = _write_auto_build_task(ea_info, root)
         result["auto_build_queued"].append({
             "ea_id": ea_info["ea_id"],
@@ -5422,8 +5425,8 @@ def pump(root: Path) -> dict[str, Any]:
     #    file level: CSV append is atomic line-by-line, update_resolver is
     #    idempotent (reads current CSV state, regenerates .mqh deterministically).
     #    OWNER 2026-05-16: explicit ok to parallelize.
-    MAX_PARALLEL_CODEX = 3       # OWNER 2026-05-23: 18->3 (post-pipeline-rewrite throttle)
-    MAX_PARALLEL_CODEX_BUILDS = 3  # OWNER 2026-05-23: 15->3 (same throttle, cap shared)
+    MAX_PARALLEL_CODEX = 5       # OWNER 2026-05-23 (later): bumped 3->5 to clear the remaining strategy-card build backlog
+    MAX_PARALLEL_CODEX_BUILDS = 5  # same: 3->5 for build_ea throughput
     # Circuit breaker: when codex auth is broken, force both caps to 0 so
     # NO codex work spawns (research/review/build/g0 all gated through
     # these caps). Prevents wasting 5×30s retries per spawn + leaving
