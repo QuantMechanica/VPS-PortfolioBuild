@@ -2,7 +2,7 @@
 
 **Phase:** Plan / Pre-Gemini design (Task #6 of Dropbox strategy-research initiative)
 **Authored:** 2026-05-23
-**Status:** DRAFT — first iteration. Iterate after Wave 1 of real Gemini batches.
+**Status:** v1.1 — added § 7a mandatory body-pattern gate after `project_qm_schema_blocker_2026-05-23` memory surfaced. Iterate after Wave 1 of real Gemini batches.
 
 This document defines exactly what Claude asks Gemini to do per trading-course video, what Gemini returns, and how that return becomes a V5 Strategy Card. The contract exists because the canonical Strategy Card schema is detailed (`strategy-seeds/cards/_TEMPLATE.md`) — unstructured Gemini output cannot be card-converted without machine-tractable fields, and unstructured prompts produce shallow extractions.
 
@@ -232,8 +232,56 @@ Per video-task return, Claude:
      - `strategy_type_flags` → frontmatter
      - `modules_used` + `hard_rules_at_risk` → § 12
      - `reproducibility_notes` → appended to § 11 as "Reproducibility gap noted in Gemini extraction: …"
-3. **Status:** new card lands in `DRAFT`. Claude reviews and bumps to `IN_REVIEW` only after a quick sanity read. CEO (OWNER + Claude proxy) then bumps to `APPROVED` if R1-R4 all pass.
-4. **Reservoir gate check after each new card** — if reservoir reaches 5, halt Gemini wave, drain pipeline, resume.
+3. **MANDATORY 10-pattern check** — see § 7a below. A card that fails ANY of the 10 `STRATEGY_CARD_REQUIRED_BODY_PATTERNS` will be blocked by `ready_strategy_card_inventory()` and cannot enter the build queue.
+4. **Status:** new card lands in `DRAFT`. Claude reviews and bumps to `IN_REVIEW` only after a quick sanity read. CEO (OWNER + Claude proxy) then bumps to `APPROVED` if R1-R4 all pass.
+5. **Reservoir gate check after each new card** — if reservoir reaches 5, halt Gemini wave, drain pipeline, resume.
+
+## 7a. Mandatory card-body patterns (build-ready gate)
+
+Defined by `STRATEGY_CARD_REQUIRED_BODY_PATTERNS` in `tools/strategy_farm/farmctl.py:556-582` (introduced commit `08714a73`, 2026-05-21). Every approved card must contain ALL 10 patterns in its body, else `ready_strategy_card_inventory()` blocks it with `schema_missing_body:<key>`. The 2,129 pre-2026-05-21 cards mostly fail this check — but **new** cards from this contract MUST conform.
+
+| # | Key | Regex (case-insensitive) | How to satisfy in a synthesized card |
+|---|---|---|---|
+| 1 | `thesis` | `\b(thesis\|hypothesis\|edge)\b` | In § 2 Concept, use the word "edge" or "hypothesis" explicitly ("The edge this strategy exploits is …") |
+| 2 | `market_universe` | `\b(universe\|market\|symbol\|instrument)\b` | § 3 mentions "markets:" and "primary_target_symbols:" — automatic |
+| 3 | `timeframe` | `\b(timeframe\|period\|bar\|m1\|m5\|m15\|m30\|h1\|h4\|d1\|w1)\b` | § 3 "timeframes:" + explicit TF tokens (M5, H1, …) in entry/exit rules — automatic |
+| 4 | `entry` | `\b(entry\|enter\|signal\|trigger)\b` | § 4 header "Entry Rules" + body uses these words — automatic |
+| 5 | `exit` | `\b(exit\|close\|flatten\|take profit\|stop)\b` | § 5 header "Exit Rules" + body uses these words — automatic |
+| 6 | `risk` | `\b(risk\|drawdown\|position\|sizing\|stop)\b` | § 10 "Initial Risk Profile" with `risk_class:` etc. — automatic |
+| 7 | `filters` | `(?m)^(?:#{1,6}\s+(?:\d+\.\s*)?filters?\b\|\s*filters?\s*:)` | § 6 header MUST be one of: `## 6. Filters`, `## Filters`, `### Filters`, or start with `filters:` (yaml-key form). The template's `## 6. Filters (No-Trade module)` is OK because the regex matches `filters?\b` after the numbered prefix. **DO NOT rename to "No-Trade Filters" without "Filters" word leading or rename to German "Filter".** |
+| 8 | `falsification` | `\b(falsification\|fail if\|kill\|reject\|invalidate)\b` | NOT in stock template. ADD a new short section or line, e.g. at end of § 11: "**Falsification:** this card is killed if Q02 PF < 1.0 OR Q08 stress drawdown > 25% OR walk-forward CSR rejects." Pick at least one of the regex words. |
+| 9 | `q08_q11_risks` | `\b(q08\|q11\|crisis\|news\|stress\|robustness)\b` | Already satisfied if § 6 Filters mentions `news` (most cards have a news-pause filter). If not, add to § 12 a hard_rules_at_risk note that mentions q08 or stress. |
+| 10 | `implementation_notes` | `\b(implementation\|mql5\|setfile\|parameter\|framework)\b` | § 13 "Implementation Notes" + § 8 "Parameters To Test" — automatic |
+
+**Patterns that need explicit attention every time** (NOT covered by stock template): #1 (`edge` / `hypothesis`), #7 (Filters header wording — preserve English), #8 (Falsification keyword).
+
+**Synthesis-step checklist** (Claude runs after writing each card, before commit):
+
+```bash
+# Run inline before committing a new card:
+python -c "
+import re, sys
+P = {
+  'thesis': r'\b(thesis|hypothesis|edge)\b',
+  'market_universe': r'\b(universe|market|symbol|instrument)\b',
+  'timeframe': r'\b(timeframe|period|bar|m1|m5|m15|m30|h1|h4|d1|w1)\b',
+  'entry': r'\b(entry|enter|signal|trigger)\b',
+  'exit': r'\b(exit|close|flatten|take profit|stop)\b',
+  'risk': r'\b(risk|drawdown|position|sizing|stop)\b',
+  'filters': r'(?m)^(?:#{1,6}\s+(?:\d+\.\s*)?filters?\b|\s*filters?\s*:)',
+  'falsification': r'\b(falsification|fail if|kill|reject|invalidate)\b',
+  'q08_q11_risks': r'\b(q08|q11|crisis|news|stress|robustness)\b',
+  'implementation_notes': r'\b(implementation|mql5|setfile|parameter|framework)\b',
+}
+t = open(sys.argv[1], encoding='utf-8').read()
+missing = [k for k,p in P.items() if not re.search(p, t, re.IGNORECASE)]
+print('MISSING:', missing or 'NONE')
+" strategy-seeds/cards/<slug>_card.md
+```
+
+If `MISSING: NONE`, the card will pass `ready_strategy_card_inventory()` and join the build queue. If anything missing, FIX the card body before committing.
+
+Caveat: this gate only governs build-readiness. The 2,129 pre-existing approved cards remain blocked at the same gate — that's an orthogonal cleanup task for OWNER (Option A/B/C per `~/.claude/projects/C--QM-repo/memory/project_qm_schema_blocker_2026-05-23.md`). Wave-A1 cards do NOT wait for that cleanup.
 
 ## 8. Failure modes & handling
 
