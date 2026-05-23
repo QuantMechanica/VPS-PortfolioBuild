@@ -1066,11 +1066,30 @@ def main() -> int:
     now_utc_full = dt.datetime.now(dt.UTC).replace(tzinfo=None).strftime("%Y-%m-%d %H:%M:%SZ")
     now_local = dt.datetime.now().strftime("%H:%M:%S")
     # Top-bar health pill — map bottleneck severity to NOMINAL/WARN/CRITICAL.
-    # Overall pipeline health.json may upgrade severity to CRIT if any check FAIL.
+    # OWNER call 2026-05-23: CRITICAL fires only when the Edge Lab itself is
+    # down — never on output dryness ("no EA further along" = the actual work,
+    # not a fault). Output-flow checks degrade the pill at most to WARN.
+    _FACTORY_DOWN_CHECKS = {
+        "mt5_worker_saturation",   # T1-T10 daemons dead
+        "codex_auth_broken",       # cannot build EAs
+        "disk_free_gb",            # storage blocker
+        "pump_task_lastresult",    # orchestrator failing
+        "ablation_grandchildren",  # state-integrity violation
+        "active_row_age",          # rows stuck past phase timeout
+    }
     pill_label = {"ok": "NOMINAL", "warn": "WARN", "block": "CRITICAL"}[severity]
     pill_class = {"ok": "", "warn": "warn", "block": "crit"}[severity]
-    if (health.get("overall") or "").upper() == "FAIL":
+    _checks = health.get("checks") or []
+    _factory_fail = any(
+        (c.get("status") or "").upper() == "FAIL"
+        and c.get("name") in _FACTORY_DOWN_CHECKS
+        for c in _checks
+    )
+    _any_fail = any((c.get("status") or "").upper() == "FAIL" for c in _checks)
+    if _factory_fail:
         pill_label = "CRITICAL"; pill_class = "crit"
+    elif _any_fail and pill_class == "":
+        pill_label = "WARN"; pill_class = "warn"
     elif (health.get("overall") or "").upper() == "WARN" and pill_class == "":
         pill_label = "WARN"; pill_class = "warn"
 
@@ -1351,14 +1370,16 @@ def main() -> int:
     p2_total = 0
     for r in db_rows("SELECT status, verdict, COUNT(*) AS c FROM work_items WHERE phase='P2' GROUP BY status, verdict"):
         p2_total += int(r.get("c") or 0)
-    # ROBUST Q05-Q07: phases P4/P5/P5b
+    # ROBUST Q05-Q07: legacy P4 → Q05, P5 → Q06, P5b → Q07 (OWNER hard rule:
+    # operator surfaces show Qxx only — never the legacy P-keys).
     robust_rows = db_rows(
         "SELECT phase, COUNT(DISTINCT ea_id) AS c FROM work_items "
         "WHERE verdict='PASS' AND phase IN ('P4','P5','P5b') GROUP BY phase"
     )
     robust_count = sum(int(r.get("c") or 0) for r in robust_rows)
+    _p_to_q = {"P4": "Q05", "P5": "Q06", "P5b": "Q07"}
     robust_meta = " // ".join(
-        f"{chip_labels.get(r['phase'], r['phase'])}:{r['c']}" for r in robust_rows
+        f"{_p_to_q.get(r['phase'], r['phase'])}:{r['c']}" for r in robust_rows
     ) or "0 PASS"
     portfolio_count = backlog.get("p8_pass_total", 0)
     portfolio_meta = f"TARGET 5 // {portfolio_count}/5"
