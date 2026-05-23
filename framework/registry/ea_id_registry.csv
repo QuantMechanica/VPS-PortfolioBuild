@@ -2435,3 +2435,6 @@ ea_id,slug,strategy_id,status,owner,created_at
 11560,lien-xtreme-fade-bb3-adx25-m15,f8b7c68d-870a-5568-81ff-9b825dcddd32,pending,Claude,2026-05-23
 11561,singh-good-morning-asia-d1-usdjpy,a655746e-8011-56d9-8d9b-0020a8a2ae89,pending,Claude,2026-05-23
 11562,watthana-2018-candlestick-rsi14-stoch14-h4,85985515-bee5-5f5d-a618-9bd9fc924907,pending,Claude,2026-05-23
+11563,connors-rsi2-sma200-mean-reversion-d1,278c6e13-0726-5779-83fe-a38f5a2e480f,pending,Claude,2026-05-23
+11564,connors-double7s-sma200-d1,278c6e13-0726-5779-83fe-a38f5a2e480f,pending,Claude,2026-05-23
+11565,connors-3down-days-sma200-d1,278c6e13-0726-5779-83fe-a38f5a2e480f,pending,Claude,2026-05-23
