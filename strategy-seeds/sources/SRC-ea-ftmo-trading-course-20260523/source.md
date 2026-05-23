@@ -1,8 +1,8 @@
 ---
 source_id: SRC-ea-ftmo-trading-course-20260523
-tier: T2                                       # video-course, anonymous instructor brand ("EA Trading Academy"), self-published — not Wiley/peer-reviewed
+tier: T2                                       # video-course, "EA Trading Academy" brand. Author identified 2026-05-23 from PDF metadata: Petko Aleksandrov (known MQL5-EA course-creator)
 parent_issue: TBD                              # opened at first card-batch landing
-status: paused_for_architecture_fix             # Wave-A1 Batch-01 closed; awaiting Wave-A2 with extended Gemini sandbox
+status: paused_pending_local_video_ai           # OWNER 2026-05-23: pause whole Dropbox-video initiative until AI can analyze local videos with both audio AND visual content (Whisper-only insufficient because trading-strategy charts/indicators are shown not just spoken). Course rules are 100% video-locked — the 2 "Get Started" PDFs are image-only Canva presentations and cannot substitute.
 authored-by: Claude (Wave-A1 pre-flight for Dropbox initiative)
 last-updated: 2026-05-23
 mining_policy:
@@ -175,15 +175,22 @@ Batch-01 closed with the following terminal-state per task:
 ```yaml
 wave_close:
   wave: Batch-01
-  closed: 2026-05-23T18:55Z
-  videos_processed: 5
-  cards_drafted: 4              # 4 .md files written (Setup 1 v1+v2, Setup 2 v1+v2, Setup 3, Setup 4)
-  cards_approved: 2             # Setup 3 + 4 (kept in cards_review/)
-  cards_dropped: 3              # Setup 1 v1+v2, Setup 2 v1+v2 (4 files deleted, 2 tasks RECYCLE+FAILED)
+  closed: 2026-05-23T20:15Z      # final close after sandbox-verify test + cleanup
+  videos_processed: 6            # 5 dispatch + 1 verify task f5043456
+  cards_drafted: 6               # Setup 1 v1+v2, Setup 2 v1+v2, Setup 3, Setup 4 (6 .md files written by gemini)
+  cards_kept: 0                  # ALL deleted — none source-anchored
+  cards_dropped: 6               # all hallucinations
   duplicates_skipped: 0
-  total_gemini_calls: ~6        # 4 task-extractions + 2 v2 re-runs
-  total_runtime_hours: ~0.7     # 18:00-18:50Z of orchestration ticks
-  evidence_anchored: false       # CRITICAL — gemini sandbox blocked video read; cards are LLM guesses from filenames
+  total_gemini_calls: ~8         # 4 task-extractions + 2 v2 re-runs + verify task
+  total_runtime_hours: ~2.5      # 18:00-20:15Z including verify wait
+  evidence_anchored: false        # CRITICAL — gemini sandbox blocked video read in all runs
+  final_task_states:
+    47059b7b: FAILED              # Setup 1 (RECYCLE-loop final-cancelled)
+    84931317: FAILED              # Setup 2 (RECYCLE → cancelled before v2 hallucination)
+    6672fa16: FAILED              # Setup 3 (was APPROVED, card deleted, retroactively FAILED)
+    9abf0338: FAILED              # Setup 4 (was APPROVED, card deleted, retroactively FAILED)
+    aac25e1f: FAILED              # Setup 5 (cancelled before processing)
+    f5043456: FAILED              # sandbox verify (quota-walled, never produced artifact)
 ```
 
 ### Root-cause finding from Batch-01
@@ -205,13 +212,20 @@ Evidence the cards are hallucinations:
 - The actual FSB-generated EA on disk (`AUDNZD M1 FTMO Filter M30.mq5` etc.) uses **Envelopes + MACD + Spread Level + Chande Momentum Oscillator** — there is no currency strength meter anywhere in the deployed code or, presumably, in the videos
 - Independent auto-reviewer caught this too (verdict on 47059b7b: "currency-strength-meter signal requires multi-pair real-time data — unimplementable")
 
-### Wave-A2 path forward
+### Wave-A2 path forward (updated 2026-05-23 evening)
 
-OWNER decided 2026-05-23: extend Gemini sandbox (Option A from the 4-way architecture decision). Patch committed `cb99f0b0` adds `Dropbox\Finanzen\Forex` and `cards_review` to `--include-directories`. Open follow-ups before Wave-A2 restart:
+OWNER decided 2026-05-23 to **pause the entire Dropbox-video initiative** pending better local-video AI. Reasoning chain:
 
-1. **Verify** that the next Gemini orchestration tick actually loads the video file (look for `read_file` of an `.mp4` path in the live log, or for a different error mode).
-2. **Quota profiling**: a 50-250 MB MP4 ingest may blow free-tier daily quota after 1-2 videos. If yes, OWNER must decide between paid API tier OR Plan B (whisper pre-transcribe → text-to-gemini). Plan B is the sustainable path for the remaining 2,683 videos.
-3. **Re-enqueue the same 5 videos** of SRC-ea-ftmo-trading-course-20260523 as Wave-A2 Batch-01 (the OLD task IDs are FAILED; new task IDs needed). Confirm cards are now source-anchored before declaring success.
+1. Sandbox patch `cb99f0b0` extended Gemini's `--include-directories` to Dropbox + cards_review — VERIFIED ACTIVE in the orchestration command line.
+2. Verification test enqueued (task `f5043456`, "My Present For You.mp4" 16.7 MB, smallest video). Gemini-CLI **silently quota-walled** between the 19:15 UTC productive run and the 19:30 UTC dead run — confirmed by the Free-Tier OAuth limit of **50 Gemini 2.5 Pro requests per day** (per Google docs). Free Tier deprecation date is 18 June 2026.
+3. Architecture-options research (Claude 2026-05-23):
+   - **Plan A** Paid Gemini Flash native video: ~$160-270 total for 2,687 videos, but halluzination risk persists even with real video access.
+   - **Plan B** Whisper pre-transcribe + text-LLM: ~$13-135 total, sustainable, but **OWNER rejected** because charts/indicators are *shown* not just *spoken*. Whisper-only loses 30-50% of strategy signal.
+   - **Plan C** Twelve Labs Marengo: ~$887 — overkill, wrong tool (retrieval not extraction).
+   - **Plan D** Free-Tier continuation: not viable (~270 days + deprecation).
+4. EA-FTMO course PDFs (read 2026-05-23) cannot substitute for the videos — the 2 "Get Started" PDFs are image-only Canva presentations and the 2 money-management PDFs only show R:R scaling diagrams. So even with a working sandbox + paid Gemini, the verbal+visual integration that Plan B sacrifices is exactly what matters for THIS course.
+
+**Resume condition:** local-video AI (multimodal, vision-capable, no per-MP4 quota wall) becomes affordable + reliable for batch processing. Plausible candidates to watch: Gemini 3.x Flash with bigger free quotas, Claude 4.x with video support, open-source video-LLMs that run locally.
 
 ### Process-debt items for the contract
 
