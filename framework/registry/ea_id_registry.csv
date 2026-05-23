@@ -2458,3 +2458,11 @@ ea_id,slug,strategy_id,status,owner,created_at
 11583,davey-channel-breakout-close-d1,43af24d3-27c3-5930-b49a-d1e49295f76a,pending,Claude,2026-05-23
 11584,watthana-hammer-rsi-stoch-d1,53008194-15f6-57b5-b81f-c5aecce7f1f1,pending,Claude,2026-05-23
 11585,neely-weller-channel-buffer-band-d1,577eb0aa-7880-5c0a-a8f9-56cd126c19f9,pending,Claude,2026-05-23
+11586,bf-candle-wick,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-23
+11587,bf-ha-ema,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-23
+11588,bf-ha-ema2,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-23
+11589,bf-break-vol,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-23
+11590,bf-ema-stoch,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-23
+11591,robo-ao-macd574-h4,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,pending,Claude,2026-05-23
+11592,robo-3candle-fade-h4,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,pending,Claude,2026-05-23
+11593,robo-midnight-hammer-adx-d1,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,pending,Claude,2026-05-23
