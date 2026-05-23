@@ -2290,3 +2290,7 @@ ea_id,slug,strategy_id,status,owner,created_at
 11415,winning-pips-psar-ao-ac-h1,2d83a162-c6c1-57a6-b325-3c5c9ddb618c,active,Research,2026-05-23
 11416,ichimoku-tenkan-kijun-cross-cloud-h4,d45db07a-2928-5ff6-9251-d54170212549,active,Research,2026-05-23
 11417,lasker-triple-bb-mean-reversion-gbpjpy-m15,84b1cd3f-0cb4-5cf1-92ac-e41ba15b7c93,active,Research,2026-05-23
+11418,nordstrom-abc-fib-reversal-h1,ce671b89-6c69-5b90-8af7-071cbd395e3c,active,Research,2026-05-23
+11419,144-lwma-5smma-proximity-crossover-m5,978d3aba-1440-5aca-9aa4-b3176cf93873,active,Research,2026-05-23
+11420,macd-stochastic-pullback-scalp-m5,faf6561d-007a-547f-8d4c-429ab021a7cc,active,Research,2026-05-23
+11421,ohlc-daily-squeeze-reversal-d1,ca63d391-50d5-52ea-a026-6e82a7433431,active,Research,2026-05-23
