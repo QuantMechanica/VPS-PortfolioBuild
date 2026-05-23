@@ -2519,3 +2519,4 @@ ea_id,slug,strategy_id,status,owner,created_at
 11644,robo-day-hour-macd12120-h4,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,claude,2026-05-24
 11645,robo-sma13-26-100-h4,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,claude,2026-05-24
 11646,robo-rsi8-pending-d1,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,claude,2026-05-24
+11647,h4-macd5131-ma5cascade,0322ece7-f70e-5206-a855-9593c96682c8,active,claude,2026-05-24
