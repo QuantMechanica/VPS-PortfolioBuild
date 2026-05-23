@@ -4712,34 +4712,50 @@ def _card_has_unknown_r_eval(card_path: Path) -> bool:
     return False
 
 
-def _auto_queue_r_eval_for_unknown_drafts(root: Path, max_tasks: int = 3) -> list[dict[str, Any]]:
-    draft_dir = root / "artifacts" / "cards_draft"
+def _auto_queue_r_eval_for_unknown_drafts(root: Path, max_tasks: int = 10) -> list[dict[str, Any]]:
+    """PT10 2026-05-23 — also scan cards_approved/ (was draft-only).
+
+    The approved-but-UNKNOWN bucket (~1 099 cards from the pre-schema-rewrite
+    corpus) was previously invisible to this auto-queue, leaving them stuck
+    out of the build pipeline forever. Cap bumped 3 -> 10 per cycle to match
+    the build-emission cap; R-eval is short (frontmatter rewrite, ~minutes)
+    so a higher rate doesn't pressure Codex.
+    """
     inbox = root / "codex_inbox"
     inbox.mkdir(parents=True, exist_ok=True)
-    if not draft_dir.is_dir():
-        return []
     cutoff = time.time() - 4 * 3600
     queued: list[dict[str, Any]] = []
-    for card_path in sorted(draft_dir.glob("QM5_*.md")):
+    candidate_dirs = [
+        root / "artifacts" / "cards_draft",
+        root / "artifacts" / "cards_approved",
+    ]
+    for cards_dir in candidate_dirs:
         if len(queued) >= max_tasks:
             break
-        if card_path.stat().st_mtime > cutoff:
+        if not cards_dir.is_dir():
             continue
-        ea_id = "_".join(card_path.stem.split("_")[:2])
-        if not _card_has_unknown_r_eval(card_path):
-            continue
-        if _has_auto_task_file(root, f"auto-r-eval-{ea_id}-"):
-            continue
-        ts = dt.datetime.now(dt.UTC).replace(microsecond=0).strftime("%Y%m%dT%H%M%SZ")
-        task_id = f"auto-r-eval-{ea_id}-{ts}"
-        target = inbox / f"{task_id}.md"
-        content = f"""---
+        bucket = cards_dir.name  # "cards_draft" or "cards_approved"
+        for card_path in sorted(cards_dir.glob("QM5_*.md")):
+            if len(queued) >= max_tasks:
+                break
+            if card_path.stat().st_mtime > cutoff:
+                continue
+            ea_id = "_".join(card_path.stem.split("_")[:2])
+            if not _card_has_unknown_r_eval(card_path):
+                continue
+            if _has_auto_task_file(root, f"auto-r-eval-{ea_id}-"):
+                continue
+            ts = dt.datetime.now(dt.UTC).replace(microsecond=0).strftime("%Y%m%dT%H%M%SZ")
+            task_id = f"auto-r-eval-{ea_id}-{ts}"
+            target = inbox / f"{task_id}.md"
+            content = f"""---
 task_id: {task_id}
 priority: med
 created: {dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat()}
 auto_generated: true
-trigger: R_EVAL_UNKNOWN_DRAFT
+trigger: R_EVAL_UNKNOWN_{bucket.upper()}
 ea_id: {ea_id}
+source_bucket: {bucket}
 ---
 
 # Auto R-eval: {card_path.name}
@@ -4754,8 +4770,8 @@ Update the card frontmatter in place with PASS/FAIL for:
 
 Include concise reasoning fields. No commit / no push.
 """
-        target.write_text(content, encoding="utf-8", newline="\n")
-        queued.append({"ea_id": ea_id, "task_path": str(target)})
+            target.write_text(content, encoding="utf-8", newline="\n")
+            queued.append({"ea_id": ea_id, "task_path": str(target), "bucket": bucket})
     return queued
 
 
