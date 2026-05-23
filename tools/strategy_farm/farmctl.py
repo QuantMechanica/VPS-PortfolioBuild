@@ -5150,6 +5150,14 @@ def pump(root: Path) -> dict[str, Any]:
     result["dispatch"] = dispatch_tick(root)
     with connect(root) as conn:
         result["zerotrade_rework_flagged"] = _detect_zerotrade_dead_eas(conn, root)
+    try:
+        from tools.strategy_farm.zero_trade_rework_detector import enqueue_rework_tasks
+    except ModuleNotFoundError:  # pragma: no cover - direct script execution
+        from zero_trade_rework_detector import enqueue_rework_tasks  # type: ignore
+    try:
+        result["zero_trade_agent_rework_detector"] = enqueue_rework_tasks(root)
+    except Exception as exc:
+        result["zero_trade_agent_rework_detector"] = {"error": repr(exc)}
 
     result["research_cards_extracted"] = _extract_cards_from_research_results(root)
     result["auto_r_eval_queued"] = _auto_queue_r_eval_for_unknown_drafts(root)
@@ -8563,14 +8571,19 @@ def record_review_result(root: Path, review_task_id: str, result_file: str) -> d
     if updated is None:
         return {"recorded": False, "reason": f"Review task not found: {review_task_id}"}
 
+    auto_p2_enqueue: dict[str, Any] | None = None
+    if decision == "APPROVE_FOR_BACKTEST":
+        auto_p2_enqueue = enqueue_backtest(root, review_task_id, "P2")
+
     return {
         "recorded": True,
         "review_task_id": review_task_id,
         "verdict": decision,
         "rework_directives": verdict.get("rework_directives"),
         "findings_count": len(verdict.get("findings", []) or []),
+        "auto_p2_enqueue": auto_p2_enqueue,
         "next_action_hint": (
-            "Ready for backtest dispatch (Phase C: enqueue-backtest)"
+            "P2 enqueue attempted automatically"
             if decision == "APPROVE_FOR_BACKTEST"
             else "Reopen build with rework_directives — re-render Codex prompt"
         ),
