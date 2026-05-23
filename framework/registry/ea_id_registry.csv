@@ -2232,8 +2232,10 @@ ea_id,slug,strategy_id,status,owner,created_at
 11357,robo-bb-gjpy,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,Research,2026-05-23
 11358,robo-cci-macd,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,Research,2026-05-23
 11359,robo-adx-mom,e78a9f1f-4e6a-563c-a080-915133d6ed28,inactive,Research,2026-05-23
-11360,robo-range-wma-ema-rsi,e78a9f1f-4e6a-563c-a080-915133d6ed28,active,Research,2026-05-23
-11361,robo-bb-macd-ma-m15,e78a9f1f-4e6a-563c-a080-915133d6ed28,active,Research,2026-05-23
-11362,robo-one-two-bb-reversal,e78a9f1f-4e6a-563c-a080-915133d6ed28,active,Research,2026-05-23
-11363,robo-vol-channel-breakout,e78a9f1f-4e6a-563c-a080-915133d6ed28,active,Research,2026-05-23
-11364,robo-gbpjpy-night-range,e78a9f1f-4e6a-563c-a080-915133d6ed28,active,Research,2026-05-23
+11360,robo-range-wma-ema-rsi,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,Research,2026-05-23
+11361,robo-bb-macd-ma-m15,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,Research,2026-05-23
+11362,robo-one-two-bb-reversal,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,Research,2026-05-23
+11363,robo-vol-channel-breakout,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,Research,2026-05-23
+11364,robo-gbpjpy-night-range,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,Research,2026-05-23
+11365,connors-rsi2-sma200-pullback-d1,52847e5c-960d-528a-a3af-7579d2979d92,active,Research,2026-05-23
+11366,connors-double7s-sma200-d1,52847e5c-960d-528a-a3af-7579d2979d92,active,Research,2026-05-23
