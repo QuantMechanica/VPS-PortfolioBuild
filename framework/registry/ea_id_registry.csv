@@ -2418,3 +2418,17 @@ ea_id,slug,strategy_id,status,owner,created_at
 11543,carter-t-h1-ema100-smma28-macd3060,3001a121-97a0-5db0-b6ff-69b89a0fc07d,pending,Claude,2026-05-23
 11544,carter-t-h1-psar02-adx50,3001a121-97a0-5db0-b6ff-69b89a0fc07d,pending,Claude,2026-05-23
 11545,carter-t-h1-ema18-28-wma5-12-rsi21,3001a121-97a0-5db0-b6ff-69b89a0fc07d,pending,Claude,2026-05-23
+11546,carter-t-m5-macd1226-stoch533-ema5oc,42530cb3-0265-534a-89cc-150f80733ff5,pending,Claude,2026-05-23
+11547,carter-t-m5-bb20-midband-pullback,42530cb3-0265-534a-89cc-150f80733ff5,pending,Claude,2026-05-23
+11548,carter-t-m5-session-box-breakout,42530cb3-0265-534a-89cc-150f80733ff5,pending,Claude,2026-05-23
+11549,carter-t-m5-bb503234-rsi3-stoch633,42530cb3-0265-534a-89cc-150f80733ff5,pending,Claude,2026-05-23
+11550,carter-t-m5-ema50-100-macd-partial,42530cb3-0265-534a-89cc-150f80733ff5,pending,Claude,2026-05-23
+11551,carter-t-m5-ema40-80-cci21,42530cb3-0265-534a-89cc-150f80733ff5,pending,Claude,2026-05-23
+11552,carter-t-m5-ema5-10-mtf4h-rsi-stoch-macd,42530cb3-0265-534a-89cc-150f80733ff5,pending,Claude,2026-05-23
+11553,carter-t-m5-cci14-macd1269,42530cb3-0265-534a-89cc-150f80733ff5,pending,Claude,2026-05-23
+11554,carter-t-m5-wma10-sma20-stoch-rsi28-macd,42530cb3-0265-534a-89cc-150f80733ff5,pending,Claude,2026-05-23
+11555,carter-t-m5-wma5-sma11-psar-adx14,42530cb3-0265-534a-89cc-150f80733ff5,pending,Claude,2026-05-23
+11556,carter-t-m5-ema3-8-macd-stoch-psar-sd20,42530cb3-0265-534a-89cc-150f80733ff5,pending,Claude,2026-05-23
+11557,carter-t-m5-ema20-macd-buystop-partial,42530cb3-0265-534a-89cc-150f80733ff5,pending,Claude,2026-05-23
+11558,carter-t-m5-psar-macd64128-ema100,42530cb3-0265-534a-89cc-150f80733ff5,pending,Claude,2026-05-23
+11559,carter-t-m5-ema3-bb203-macd,42530cb3-0265-534a-89cc-150f80733ff5,pending,Claude,2026-05-23
