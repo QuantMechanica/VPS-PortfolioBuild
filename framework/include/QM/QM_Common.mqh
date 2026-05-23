@@ -10,6 +10,7 @@
 #include "QM_RiskSizer.mqh"
 #include "QM_DSTAware.mqh"
 #include "QM_NewsFilter.mqh"
+#include "QM_SymbolGuard.mqh"
 #include "QM_KillSwitch.mqh"
 #include "QM_KillSwitchKS.mqh"
 #include "QM_Entry.mqh"
@@ -91,6 +92,13 @@ bool QM_FrameworkInit(const int ea_id,
    const string slug = QM_FrameworkSlug(ea_id);
    QM_LoggerInit(ea_id, slug, _Symbol, (ENUM_TIMEFRAMES)_Period, g_qm_fw_magic);
 
+   // FW7 2026-05-23 — default to single-symbol guard. Basket / portfolio EAs
+   // must call QM_SymbolGuardInit({...}) AFTER QM_FrameworkInit to override
+   // with their explicit symbol list. Without an override, any iClose/iTime/
+   // Bars/CopyXxx call for a non-_Symbol symbol logs SYMBOL_GUARD_VIOLATION
+   // when routed through QM_SymbolAssertOrLog.
+   QM_SymbolGuardInitSingle();
+
    QM_RiskMode mode = QM_RISK_MODE_PERCENT;
    if(risk_fixed > 0.0)
       mode = QM_RISK_MODE_FIXED;
@@ -98,19 +106,33 @@ bool QM_FrameworkInit(const int ea_id,
    if(!QM_RiskSizerConfigure(mode, risk_percent, risk_fixed, portfolio_weight, risk_cap_money))
       return false;
 
-   if(!QM_NewsInit("D:\\QM\\data\\news_calendar",
-                   news_stale_max_hours,
-                   news_pause_before_minutes,
-                   news_pause_after_minutes,
-                   news_min_impact))
+   // FW7 2026-05-23 — News lazy-init (OWNER call after Q02 hang triage).
+   // Originally QM_NewsInit ran for every EA, opening the calendar files and
+   // loading thousands of CSV rows into g_qm_news_events even when no news
+   // filter was active. That bricked Q02: every per-tick QM_NewsAllowsTrade2
+   // call hit a linear scan over the loaded array. Now we skip the entire
+   // calendar load when news is off across all three axes; the per-tick hook
+   // takes its early-return path (g_qm_news_active=false) instantly.
+   const bool any_news_active = (news_mode != QM_NEWS_OFF) ||
+                                 (news_temporal != QM_NEWS_TEMPORAL_OFF) ||
+                                 (news_compliance != QM_NEWS_COMPLIANCE_NONE);
+   g_qm_news_active = any_news_active;
+   if(any_news_active)
      {
-      QM_LogEvent(QM_WARN, SETUP_DATA_MISSING, "{\"component\":\"news_calendar\"}");
-      // Hard-fail if ANY news filter is active on either legacy or 2-axis path.
-      const bool any_news_active = (news_mode != QM_NEWS_OFF) ||
-                                    (news_temporal != QM_NEWS_TEMPORAL_OFF) ||
-                                    (news_compliance != QM_NEWS_COMPLIANCE_NONE);
-      if(any_news_active)
+      if(!QM_NewsInit("D:\\QM\\data\\news_calendar",
+                      news_stale_max_hours,
+                      news_pause_before_minutes,
+                      news_pause_after_minutes,
+                      news_min_impact))
+        {
+         QM_LogEvent(QM_WARN, SETUP_DATA_MISSING, "{\"component\":\"news_calendar\"}");
          return false;
+        }
+     }
+   else
+     {
+      QM_LogEvent(QM_INFO, "NEWS_CALENDAR_SKIPPED",
+                  "{\"reason\":\"all_news_axes_off\",\"news_mode\":\"OFF\",\"news_temporal\":\"OFF\",\"news_compliance\":\"NONE\"}");
      }
 
    QM_EntryConfigure(ea_id, news_mode, 20, stress_reject_probability,

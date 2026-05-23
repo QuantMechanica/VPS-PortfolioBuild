@@ -96,6 +96,21 @@ string        g_qm_news_calendar_path_secondary      = "";
 QM_NewsEvent  g_qm_news_events[];
 bool          g_qm_news_loaded                       = false;
 bool          g_qm_news_available                    = false;
+// FW7 2026-05-23 — set by QM_FrameworkInit; gates all per-tick news work.
+// false → calendar never loaded, all news permissions return "allow" fast.
+bool          g_qm_news_active                       = false;
+
+// FW7 2026-05-23 — per-bar verdict cache. News permission only changes at bar
+// boundaries on every timeframe we trade (≥ M5); a per-tick recompute was the
+// root cause of the Q02 30-60min hangs. Cache key is (symbol, broker_bar_time,
+// temporal, compliance); on Q02 single-symbol runs this collapses to one
+// QM_NewsAllowsTrade2 call per closed bar instead of one per tick.
+string                       g_qm_news_cache_symbol     = "";
+datetime                     g_qm_news_cache_bar_time   = 0;
+QM_NewsTemporalMode          g_qm_news_cache_temporal   = QM_NEWS_TEMPORAL_OFF;
+QM_NewsComplianceProfile     g_qm_news_cache_compliance = QM_NEWS_COMPLIANCE_NONE;
+bool                         g_qm_news_cache_verdict    = true;
+bool                         g_qm_news_cache_valid      = false;
 int           g_qm_news_rows_loaded                  = 0;
 string        g_qm_news_hash                         = "";
 datetime      g_qm_news_latest_modified_utc          = 0;
@@ -636,6 +651,13 @@ bool QM_NewsComplianceAllows(const string symbol,
   }
 
 // FW1 canonical query — two-axis composed via AND.
+//
+// FW7 2026-05-23 — fast-path + per-bar cache.
+//   * If both axes are OFF → return true without touching anything.
+//   * If g_qm_news_active was set false at framework-init time, the calendar
+//     was never loaded; same fast return.
+//   * Otherwise, cache the verdict per (symbol, current-bar-time, axes); per-tick
+//     re-queries hit the cache after the first call per bar.
 bool QM_NewsAllowsTrade2(const string symbol,
                          const datetime broker_time,
                          const QM_NewsTemporalMode temporal,
@@ -643,10 +665,21 @@ bool QM_NewsAllowsTrade2(const string symbol,
   {
    if(temporal == QM_NEWS_TEMPORAL_OFF && compliance == QM_NEWS_COMPLIANCE_NONE)
       return true;
+   if(!g_qm_news_active)
+      return true; // calendar deliberately not loaded — caller asked, we say allow.
+
+   // Cache lookup. Bar-time is the current chart bar's open time; one verdict
+   // per bar is sufficient because all permission edges happen on bar close.
+   const datetime bar_time = iTime(symbol, _Period, 0);
+   if(g_qm_news_cache_valid &&
+      g_qm_news_cache_bar_time == bar_time &&
+      g_qm_news_cache_symbol == symbol &&
+      g_qm_news_cache_temporal == temporal &&
+      g_qm_news_cache_compliance == compliance)
+      return g_qm_news_cache_verdict;
 
    if(!g_qm_news_loaded)
       QM_NewsInit();
-
    if(!g_qm_news_available)
      {
       QM_NewsLogSetupMissing("calendar_unavailable");
@@ -657,11 +690,19 @@ bool QM_NewsAllowsTrade2(const string symbol,
    if(utc_time <= 0)
       utc_time = TimeGMT();
 
+   bool verdict = true;
    if(!QM_NewsTemporalAllows(symbol, utc_time, temporal))
-      return false;
-   if(!QM_NewsComplianceAllows(symbol, utc_time, compliance))
-      return false;
-   return true;
+      verdict = false;
+   else if(!QM_NewsComplianceAllows(symbol, utc_time, compliance))
+      verdict = false;
+
+   g_qm_news_cache_symbol     = symbol;
+   g_qm_news_cache_bar_time   = bar_time;
+   g_qm_news_cache_temporal   = temporal;
+   g_qm_news_cache_compliance = compliance;
+   g_qm_news_cache_verdict    = verdict;
+   g_qm_news_cache_valid      = true;
+   return verdict;
   }
 
 // Legacy shim — accepts the old single QM_NewsMode and delegates to the

@@ -1378,6 +1378,24 @@ P2_PRESCREEN_TIMEOUT_SECONDS = 1800
 P2_FULL_TIMEOUT_MIN_SECONDS = 7200
 P2_FULL_TIMEOUT_MAX_SECONDS = 14400
 
+# PT8 2026-05-23 — Q02 window must scale with strategy timeframe. Single-year
+# H1 was enough for HF sleeves, but D1/W1/MN1 strategies trade O(1-50) times per
+# year per symbol → 150-trade Q02 threshold is unreachable in a 1-year run.
+# These windows are bounds, not requirements; explicit from_year/to_year in the
+# payload still overrides.
+Q02_FROM_YEAR_BY_PERIOD: dict[str, int] = {
+    "M1":  2020, "M5":  2020, "M15": 2020, "M30": 2019,
+    "H1":  2017, "H4":  2017,
+    "D1":  2015, "W1":  2010, "MN1": 2005,
+}
+Q02_TO_YEAR_BY_PERIOD: dict[str, int] = {
+    # All periods end at the same recent year — what changes is the start.
+    "M1":  2024, "M5":  2024, "M15": 2024, "M30": 2024,
+    "H1":  2024, "H4":  2024,
+    "D1":  2024, "W1":  2024, "MN1": 2024,
+}
+Q02_SKIP_PRESCREEN_PERIODS: set[str] = {"D1", "W1", "MN1"}  # full run is cheap on slow TFs
+
 
 def _summary_net_profit_total(summary: dict[str, Any]) -> float | None:
     values: list[float] = []
@@ -1765,13 +1783,25 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
     is_exploration = ("_ablation_" in setfile_path or "_grid_" in setfile_path
                       or "_synth_" in setfile_path)
     n_runs = "1" if is_exploration else "2"
-    if phase == "P2":
-        default_from_year = 2020 if is_exploration else P2_DEFAULT_FROM_YEAR
-        from_year = int(item_payload.get("from_year") or default_from_year)
-        to_year = int(item_payload.get("to_year") or P2_DEFAULT_TO_YEAR)
+    if phase in ("P2", "Q02"):
+        # PT8 2026-05-23 — Q02 window now scales with detected period so D1/W1
+        # strategies don't get a 1-year window they can't possibly produce
+        # 150 trades on. H1 keeps the original 6-year span; D1/W1/MN1 stretch
+        # back to 2015-2010-2005 respectively. Explicit from_year/to_year on
+        # the work item still wins.
+        period_upper = (period or "H1").upper()
+        if phase == "Q02":
+            default_from = Q02_FROM_YEAR_BY_PERIOD.get(period_upper, P2_DEFAULT_FROM_YEAR)
+            default_to   = Q02_TO_YEAR_BY_PERIOD.get(period_upper, P2_DEFAULT_TO_YEAR)
+        else:
+            default_from = 2020 if is_exploration else P2_DEFAULT_FROM_YEAR
+            default_to   = P2_DEFAULT_TO_YEAR
+        from_year = int(item_payload.get("from_year") or default_from)
+        to_year = int(item_payload.get("to_year") or default_to)
         from_date = f"{from_year}.01.01"
         to_date = f"{to_year}.12.31"
-        if not is_exploration and not item_payload.get("p2_prescreen_done"):
+        skip_prescreen = (phase == "Q02" and period_upper in Q02_SKIP_PRESCREEN_PERIODS)
+        if not is_exploration and not skip_prescreen and not item_payload.get("p2_prescreen_done"):
             from_date, to_date = _p2_prescreen_dates(to_year)
             n_runs = "1"
             p2_run_stage = "prescreen"
