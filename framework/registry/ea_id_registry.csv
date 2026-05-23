@@ -2375,3 +2375,6 @@ ea_id,slug,strategy_id,status,owner,created_at
 11500,langer-engulfing-w1-position,8ca13fce-d951-53be-9c60-35620d56354d,active,Research,2026-05-23
 11501,langer-engulfing-d1-swing,8ca13fce-d951-53be-9c60-35620d56354d,active,Research,2026-05-23
 11502,watthana-hammer-rsi-stoch-h1,84fab994-8d52-5062-a0ac-69c1c765aa4f,active,Research,2026-05-23
+11503,goodwin-outside-daily-bar-d1,2a126283-6905-5bb7-903a-cccd5f2b533f,active,Research,2026-05-23
+11504,goodwin-kangaroo-tail-d1,2a126283-6905-5bb7-903a-cccd5f2b533f,active,Research,2026-05-23
+11505,goodwin-hourly-breakout-h1,2a126283-6905-5bb7-903a-cccd5f2b533f,active,Research,2026-05-23
