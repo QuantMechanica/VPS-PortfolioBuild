@@ -58,8 +58,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(HasOpenPosition()) return false;
 
    const double close = iClose(_Symbol, _Period, 1);
-   const double sma   = iMA(_Symbol, _Period, strategy_sma_period, 0, MODE_SMA, PRICE_CLOSE, 1);
-   const double stdev = iStdDev(_Symbol, _Period, strategy_sma_period, 0, MODE_SMA, PRICE_CLOSE, 1);
+   const double sma   = QM_SMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_sma_period, 1);
+   const double stdev = QM_StdDev(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_sma_period, 1);
 
    if(stdev <= 0.0) return false;
 
@@ -101,7 +101,7 @@ bool Strategy_ExitSignal()
 
       const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       const double close = iClose(_Symbol, _Period, 0);
-      const double sma   = iMA(_Symbol, _Period, strategy_sma_period, 0, MODE_SMA, PRICE_CLOSE, 0);
+      const double sma   = QM_SMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_sma_period, 0);
 
       if(ptype == POSITION_TYPE_BUY && close >= sma) return true;
       if(ptype == POSITION_TYPE_SELL && close <= sma) return true;

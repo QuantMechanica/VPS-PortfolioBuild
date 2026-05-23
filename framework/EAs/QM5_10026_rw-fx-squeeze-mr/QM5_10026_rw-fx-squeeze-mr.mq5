@@ -37,6 +37,10 @@
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 10026;
 input int    qm_magic_slot_offset       = 0;
+// FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
+// All other phases use 42 by default. Stress / noise dimensions read from
+// this single seed so reproducibility is guaranteed across re-runs.
+input uint   qm_rng_seed                = 42;
 
 input group "Risk"
 input double RISK_PERCENT               = 0.0;
@@ -44,35 +48,57 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsMode qm_news_mode          = QM_NEWS_OFF;
+// FW1 2026-05-23 — Two-axis news filter per Vault Q09.
+//   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
+//   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
+// A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
+input string qm_news_min_impact           = "high";  // high / medium / low
+// Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
+// New EAs use qm_news_temporal + qm_news_compliance above and leave this OFF.
+input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
 input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
+input group "Stress"
+// FW2 2026-05-23 — only populated by Q05 MED / Q06 HARSH stress setfiles.
+// Default 0.0 = no rejection (Q02/Q03/Q04/Q07/Q08/Q09/Q10/Q13 backtests).
+// Q06 HARSH sets to 0.10 (10% of entries randomly dropped before broker send,
+// deterministic per qm_rng_seed). MED slip/spread/commission live in the
+// tester groups file, not as EA inputs.
+input double qm_stress_reject_probability = 0.0;
+
 input group "Strategy"
-input int    strategy_bb_period          = 20;
-input double strategy_bb_deviation       = 2.0;
-input int    strategy_bb_width_lookback  = 120;
-input double strategy_squeeze_pct        = 20.0;
-input double strategy_expand_pct         = 80.0;
-input int    strategy_rsi_period         = 14;
-input double strategy_rsi_long_threshold = 30.0;
-input double strategy_rsi_short_threshold = 70.0;
-input int    strategy_atr_period         = 14;
-input double strategy_atr_sl_mult        = 1.5;
-input int    strategy_extreme_lookback   = 24;
-input double strategy_extreme_atr_buffer = 0.25;
-input int    strategy_time_stop_bars     = 24;
-input double strategy_max_spread_atr_frac = 0.15;
+// TODO: declare strategy-specific input params here, e.g.:
+//   input int    strategy_atr_period   = 14;
+//   input double strategy_atr_sl_mult  = 2.0;
+//   input double strategy_atr_tp_mult  = 3.0;
+input int    strategy_bb_period              = 20;
+input double strategy_bb_deviation           = 2.0;
+input int    strategy_bb_width_lookback      = 120;
+input double strategy_squeeze_percentile     = 20.0;
+input double strategy_expand_percentile      = 80.0;
+input int    strategy_rsi_period             = 14;
+input double strategy_rsi_long_threshold     = 30.0;
+input double strategy_rsi_short_threshold    = 70.0;
+input int    strategy_atr_period             = 14;
+input double strategy_atr_sl_mult            = 1.5;
+input int    strategy_extreme_lookback       = 24;
+input double strategy_extreme_atr_buffer     = 0.25;
+input int    strategy_time_stop_bars         = 24;
+input double strategy_max_spread_atr_frac    = 0.15;
 
 bool   g_long_setup_pending = false;
 bool   g_short_setup_pending = false;
 double g_cached_midline = 0.0;
-double g_cached_width_percentile = 0.0;
+double g_cached_width_percentile = 100.0;
 bool   g_cached_state_ready = false;
 
-double BBWidth(const int shift)
+double Strategy_BBWidth(const int shift)
   {
    const double upper = QM_BB_Upper(_Symbol, PERIOD_H1, strategy_bb_period, strategy_bb_deviation, shift);
    const double lower = QM_BB_Lower(_Symbol, PERIOD_H1, strategy_bb_period, strategy_bb_deviation, shift);
@@ -81,12 +107,100 @@ double BBWidth(const int shift)
    return upper - lower;
   }
 
-double BBWidthPercentileRank(const int shift)
+// FW8 perf 2026-05-23 — rolling-window BB-width cache. Pre-fix this percentile
+// rank did 240 CopyBuffer reads per closed bar (Strategy_BBWidth called 120x,
+// each = 2 CopyBuffer). ~6M reads over a 4y H1 backtest. Now: ring buffer
+// holds the most recent N closed-bar widths; per closed bar we read ONE new
+// width (2 CopyBuffer) and append. Rank is computed by counting in-memory.
+#define BB_WIDTH_RING_MAX 512
+double   g_bb_width_ring[BB_WIDTH_RING_MAX];
+int      g_bb_width_ring_count = 0;
+int      g_bb_width_ring_head  = 0;   // next-write index
+datetime g_bb_width_ring_last_bar = 0;
+
+void Strategy_BBWidthRingPrefill()
+  {
+   // Called once when the ring is empty (typically first Strategy_RefreshCachedState).
+   // Walks shifts 1..lookback and seeds the ring with historical widths.
+   const int lookback = MathMin(strategy_bb_width_lookback, BB_WIDTH_RING_MAX);
+   if(lookback <= 0) return;
+   // Fill OLDEST to NEWEST: shift=lookback first, shift=1 last.
+   for(int s = lookback; s >= 1; --s)
+     {
+      const double w = Strategy_BBWidth(s);
+      if(w <= 0.0) continue;
+      if(g_bb_width_ring_count < BB_WIDTH_RING_MAX)
+        {
+         g_bb_width_ring[g_bb_width_ring_count] = w;
+         g_bb_width_ring_count++;
+         g_bb_width_ring_head = g_bb_width_ring_count % BB_WIDTH_RING_MAX;
+        }
+     }
+   g_bb_width_ring_last_bar = iTime(_Symbol, PERIOD_H1, 0);
+  }
+
+void Strategy_BBWidthRingTick()
+  {
+   // Cheap no-op when bar hasn't changed since last call.
+   const datetime bar_now = iTime(_Symbol, PERIOD_H1, 0);
+   if(bar_now == g_bb_width_ring_last_bar) return;
+
+   if(g_bb_width_ring_count == 0)
+     {
+      Strategy_BBWidthRingPrefill();
+      return;
+     }
+
+   // A new bar has formed. The PREVIOUSLY-forming bar (shift 1) is now closed.
+   const double w = Strategy_BBWidth(1);
+   g_bb_width_ring_last_bar = bar_now;
+   if(w <= 0.0) return;
+
+   if(g_bb_width_ring_count < BB_WIDTH_RING_MAX)
+     {
+      g_bb_width_ring[g_bb_width_ring_count] = w;
+      g_bb_width_ring_count++;
+      g_bb_width_ring_head = g_bb_width_ring_count % BB_WIDTH_RING_MAX;
+     }
+   else
+     {
+      g_bb_width_ring[g_bb_width_ring_head] = w;
+      g_bb_width_ring_head = (g_bb_width_ring_head + 1) % BB_WIDTH_RING_MAX;
+     }
+  }
+
+double Strategy_BBWidthPercentileRank(const int shift)
   {
    if(strategy_bb_width_lookback <= 1)
       return 100.0;
 
-   const double current_width = BBWidth(shift);
+   // Fast path: shift==1 (the only caller — line 192's Strategy_RefreshCachedState).
+   // Use the in-memory ring; one CopyBuffer pair per new bar, zero per repeat call.
+   if(shift == 1)
+     {
+      Strategy_BBWidthRingTick();
+      const int lookback = MathMin(strategy_bb_width_lookback, g_bb_width_ring_count);
+      if(lookback < 2)
+         return 100.0;
+
+      // Most recent value in the ring lives at (head-1) with wrap.
+      const int newest_idx = (g_bb_width_ring_head - 1 + BB_WIDTH_RING_MAX) % BB_WIDTH_RING_MAX;
+      const double current_width = g_bb_width_ring[newest_idx];
+      if(current_width <= 0.0)
+         return 100.0;
+
+      int less_or_equal = 0;
+      for(int i = 0; i < lookback; ++i)
+        {
+         const int idx = (g_bb_width_ring_head - 1 - i + BB_WIDTH_RING_MAX) % BB_WIDTH_RING_MAX;
+         if(g_bb_width_ring[idx] <= current_width)
+            less_or_equal++;
+        }
+      return 100.0 * (double)less_or_equal / (double)lookback;
+     }
+
+   // Defensive fallback for shift != 1 (no caller today, kept for parity).
+   const double current_width = Strategy_BBWidth(shift);
    if(current_width <= 0.0)
       return 100.0;
 
@@ -94,7 +208,7 @@ double BBWidthPercentileRank(const int shift)
    int less_or_equal = 0;
    for(int i = shift; i < shift + strategy_bb_width_lookback; ++i)
      {
-      const double width = BBWidth(i);
+      const double width = Strategy_BBWidth(i);
       if(width <= 0.0)
          continue;
       valid++;
@@ -107,7 +221,7 @@ double BBWidthPercentileRank(const int shift)
    return 100.0 * (double)less_or_equal / (double)valid;
   }
 
-double LowestLow(const int lookback)
+double Strategy_LowestLow(const int lookback)
   {
    double lowest = DBL_MAX;
    for(int i = 1; i <= lookback; ++i)
@@ -119,7 +233,7 @@ double LowestLow(const int lookback)
    return (lowest == DBL_MAX) ? 0.0 : lowest;
   }
 
-double HighestHigh(const int lookback)
+double Strategy_HighestHigh(const int lookback)
   {
    double highest = -DBL_MAX;
    for(int i = 1; i <= lookback; ++i)
@@ -131,7 +245,7 @@ double HighestHigh(const int lookback)
    return (highest == -DBL_MAX) ? 0.0 : highest;
   }
 
-bool SelectOurPosition(ulong &ticket, ENUM_POSITION_TYPE &position_type, datetime &open_time)
+bool Strategy_SelectOurPosition(ulong &ticket, ENUM_POSITION_TYPE &position_type, datetime &open_time)
   {
    ticket = 0;
    position_type = POSITION_TYPE_BUY;
@@ -160,10 +274,10 @@ bool SelectOurPosition(ulong &ticket, ENUM_POSITION_TYPE &position_type, datetim
    return false;
   }
 
-void RefreshCachedState()
+void Strategy_RefreshCachedState()
   {
    g_cached_midline = QM_BB_Middle(_Symbol, PERIOD_H1, strategy_bb_period, strategy_bb_deviation, 1);
-   g_cached_width_percentile = BBWidthPercentileRank(1);
+   g_cached_width_percentile = Strategy_BBWidthPercentileRank(1);
    g_cached_state_ready = (g_cached_midline > 0.0);
   }
 
@@ -206,7 +320,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   RefreshCachedState();
+   Strategy_RefreshCachedState();
 
    if(strategy_bb_period < 2 || strategy_bb_width_lookback < 2 ||
       strategy_atr_period < 1 || strategy_extreme_lookback < 1)
@@ -215,7 +329,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    ulong existing_ticket;
    ENUM_POSITION_TYPE existing_type;
    datetime existing_open_time;
-   if(SelectOurPosition(existing_ticket, existing_type, existing_open_time))
+   if(Strategy_SelectOurPosition(existing_ticket, existing_type, existing_open_time))
       return false;
 
    const double close_1 = iClose(_Symbol, PERIOD_H1, 1);
@@ -227,25 +341,21 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(close_1 <= 0.0 || upper_1 <= 0.0 || lower_1 <= 0.0 || atr_1 <= 0.0 || point <= 0.0)
       return false;
 
-   const bool squeeze = (g_cached_width_percentile <= strategy_squeeze_pct);
-
    if(g_long_setup_pending && close_1 > lower_1)
      {
-      const double prior_low = LowestLow(strategy_extreme_lookback);
+      const double prior_low = Strategy_LowestLow(strategy_extreme_lookback);
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       if(prior_low <= 0.0 || entry <= 0.0)
          return false;
 
       const double atr_stop = strategy_atr_sl_mult * atr_1;
-      const double structure_stop = entry - (prior_low - strategy_extreme_atr_buffer * atr_1);
+      const double structure_stop = entry - prior_low + strategy_extreme_atr_buffer * atr_1;
       const double stop_distance = MathMax(atr_stop, structure_stop);
       if(stop_distance <= point)
          return false;
 
       req.type = QM_BUY;
-      req.price = 0.0;
-      req.sl = NormalizeDouble(entry - stop_distance, _Digits);
-      req.tp = 0.0;
+      req.sl = QM_StopRulesNormalizePrice(_Symbol, entry - stop_distance);
       req.reason = "RW_FX_SQUEEZE_MR_LONG_REENTRY";
       g_long_setup_pending = false;
       g_short_setup_pending = false;
@@ -254,27 +364,26 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(g_short_setup_pending && close_1 < upper_1)
      {
-      const double prior_high = HighestHigh(strategy_extreme_lookback);
+      const double prior_high = Strategy_HighestHigh(strategy_extreme_lookback);
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       if(prior_high <= 0.0 || entry <= 0.0)
          return false;
 
       const double atr_stop = strategy_atr_sl_mult * atr_1;
-      const double structure_stop = (prior_high + strategy_extreme_atr_buffer * atr_1) - entry;
+      const double structure_stop = prior_high - entry + strategy_extreme_atr_buffer * atr_1;
       const double stop_distance = MathMax(atr_stop, structure_stop);
       if(stop_distance <= point)
          return false;
 
       req.type = QM_SELL;
-      req.price = 0.0;
-      req.sl = NormalizeDouble(entry + stop_distance, _Digits);
-      req.tp = 0.0;
+      req.sl = QM_StopRulesNormalizePrice(_Symbol, entry + stop_distance);
       req.reason = "RW_FX_SQUEEZE_MR_SHORT_REENTRY";
       g_long_setup_pending = false;
       g_short_setup_pending = false;
       return true;
      }
 
+   const bool squeeze = (g_cached_width_percentile <= strategy_squeeze_percentile);
    if(squeeze && close_1 < lower_1 && rsi_1 < strategy_rsi_long_threshold)
      {
       g_long_setup_pending = true;
@@ -306,11 +415,11 @@ bool Strategy_ExitSignal()
    ulong ticket;
    ENUM_POSITION_TYPE position_type;
    datetime open_time;
-   if(!SelectOurPosition(ticket, position_type, open_time))
+   if(!Strategy_SelectOurPosition(ticket, position_type, open_time))
       return false;
 
    if(!g_cached_state_ready)
-      RefreshCachedState();
+      Strategy_RefreshCachedState();
 
    const datetime now = TimeCurrent();
    const int seconds_per_bar = PeriodSeconds(PERIOD_H1);
@@ -326,7 +435,7 @@ bool Strategy_ExitSignal()
          return true;
       if(position_type == POSITION_TYPE_SELL && ask <= g_cached_midline)
          return true;
-      if(g_cached_width_percentile >= strategy_expand_pct)
+      if(g_cached_width_percentile >= strategy_expand_percentile)
          return true;
      }
 
@@ -352,9 +461,17 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode,
+                        qm_news_mode_legacy,           // legacy back-compat
                         qm_friday_close_enabled,
-                        qm_friday_close_hour_broker))
+                        qm_friday_close_hour_broker,
+                        30,                            // pause-before (legacy hint)
+                        30,                            // pause-after (legacy hint)
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact,
+                        qm_rng_seed,
+                        qm_stress_reject_probability,
+                        qm_news_temporal,              // FW1 Axis A
+                        qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
@@ -375,7 +492,14 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   if(!QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode))
+   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
+   // when both new axes are at their OFF defaults.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
@@ -407,6 +531,10 @@ void OnTick()
    if(!QM_IsNewBar())
       return;
 
+   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
+   // since last tick. Cheap: most calls early-return on same-day check.
+   QM_EquityStreamOnNewBar();
+
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
      {
@@ -418,6 +546,15 @@ void OnTick()
 void OnTimer()
   {
    QM_FrameworkOnTimer();
+  }
+
+void OnTradeTransaction(const MqlTradeTransaction &trans,
+                        const MqlTradeRequest &request,
+                        const MqlTradeResult &result)
+  {
+   // FW4: feeds closing-deal net-profits to the KS kill-switch.
+   // No-op outside Q13 (when no baseline.json exists).
+   QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
 double OnTester()

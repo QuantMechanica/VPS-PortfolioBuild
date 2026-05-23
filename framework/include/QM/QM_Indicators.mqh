@@ -156,6 +156,25 @@ double QM_ATR(const string sym, const ENUM_TIMEFRAMES tf, const int period, cons
    return QM_IndicatorReadBuffer(QM_IndATR(sym, tf, period), 0, shift);
   }
 
+// Standard Deviation — pooled handle wrapper for iStdDev. Mirrors QM_SMA shape.
+int QM_IndStdDev(const string sym, const ENUM_TIMEFRAMES tf, const int period,
+                 const ENUM_MA_METHOD method, const ENUM_APPLIED_PRICE price)
+  {
+   const string key = StringFormat("STD|%s|%d|%d|%d|%d", sym, (int)tf, period, (int)method, (int)price);
+   int h = QM_IndicatorsLookup(key);
+   if(h != INVALID_HANDLE)
+      return h;
+   h = iStdDev(sym, tf, period, 0, method, price);
+   return QM_IndicatorsRegister(key, h);
+  }
+
+double QM_StdDev(const string sym, const ENUM_TIMEFRAMES tf, const int period,
+                 const int shift = 1, const ENUM_APPLIED_PRICE price = PRICE_CLOSE,
+                 const ENUM_MA_METHOD method = MODE_SMA)
+  {
+   return QM_IndicatorReadBuffer(QM_IndStdDev(sym, tf, period, method, price), 0, shift);
+  }
+
 int QM_IndMA(const string sym, const ENUM_TIMEFRAMES tf, const int period,
              const ENUM_MA_METHOD method, const ENUM_APPLIED_PRICE price)
   {
