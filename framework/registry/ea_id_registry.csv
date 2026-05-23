@@ -2360,3 +2360,6 @@ ea_id,slug,strategy_id,status,owner,created_at
 11485,carter-t-cci100-macd-momentum-m5,b3b11449-1e72-5140-917b-c35b6253f1e7,active,Research,2026-05-23
 11486,carter-t-20ema-macd-zero-m5,b3b11449-1e72-5140-917b-c35b6253f1e7,active,Research,2026-05-23
 11487,carter-t-50-100-ema-macd-breakout-m5,b3b11449-1e72-5140-917b-c35b6253f1e7,active,Research,2026-05-23
+11488,samuels-j-123-pattern-pullback-d1,00fdf02a-7d9c-5521-8c30-99d986e908aa,active,Research,2026-05-23
+11489,suhr-s-bank-stop-run-reversal-d1,00fdf02a-7d9c-5521-8c30-99d986e908aa,active,Research,2026-05-23
+11490,robles-c-continuation-50ema-wpr-d1,00fdf02a-7d9c-5521-8c30-99d986e908aa,active,Research,2026-05-23
