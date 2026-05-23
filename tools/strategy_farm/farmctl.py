@@ -4536,6 +4536,16 @@ def _detect_unbuilt_cards(root: Path) -> list[dict[str, Any]]:
     """
     Find approved cards where the matching EA .ex5 does not exist yet and
     no bridge auto-build task has already been written.
+
+    PT10 2026-05-23 — only return cards whose r2_mechanical evaluation has
+    already PASSED. Pre-PT10 the function returned cards alphabetically by
+    ea_id; the low-id end of the corpus is the old pre-schema-rewrite cards
+    that lack R-eval, so every pump cycle tried 10 such cards and all 10
+    skipped with prebuild_validation failed → auto_build_queued stayed at 0
+    forever. Now: filter to cards with r2_mechanical=PASS up front (cheap
+    frontmatter parse, no heavy preflight) so the queue actually drains.
+    Unready cards (UNKNOWN/FAIL) are waiting on the separate R-eval flow
+    and will become eligible once that completes.
     """
     cards_dir = root / "artifacts" / "cards_approved"
     if not cards_dir.is_dir():
@@ -4553,6 +4563,14 @@ def _detect_unbuilt_cards(root: Path) -> list[dict[str, Any]]:
         if ex5.exists():
             continue
         if _has_auto_build_task_file(root, ea_id):
+            continue
+        # PT10 — gate on r2_mechanical PASS before emitting a build task.
+        try:
+            fm = parse_card_frontmatter(card_md)
+            r2 = str(fm.get("r2_mechanical") or "").strip().upper()
+            if r2 != "PASS":
+                continue
+        except Exception:
             continue
         unbuilt.append({
             "ea_id": ea_id,
@@ -5515,6 +5533,16 @@ def pump(root: Path) -> dict[str, Any]:
                 ea_id = f"{parts[0]}_{parts[1]}"
                 if ea_id not in have_task:
                     if _has_auto_build_task_file(root, ea_id):
+                        continue
+                    # PT10 — same r2_mechanical=PASS gate as _detect_unbuilt_cards.
+                    # Skip cards whose R-eval has not landed PASS yet so we don't
+                    # bombard prebuild_validate_card with cards we know will fail.
+                    try:
+                        fm = parse_card_frontmatter(f)
+                        r2 = str(fm.get("r2_mechanical") or "").strip().upper()
+                        if r2 != "PASS":
+                            continue
+                    except Exception:
                         continue
                     cards_without_task.append((ea_id, f))
             slots_left = spawn_budget - actually_spawned
