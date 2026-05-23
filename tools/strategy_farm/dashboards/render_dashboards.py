@@ -16,6 +16,7 @@ import datetime as dt
 import html
 import json
 import os
+import re
 import sqlite3
 import subprocess
 import sys
@@ -29,7 +30,7 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from tools.strategy_farm.phase_ids import PHASE_ORDER, PHASE_QID, phase_label
+from tools.strategy_farm.phase_ids import PHASE_ORDER, LEGACY_P_TO_Q as PHASE_QID, phase_label
 
 PHASE_DISPLAY = PHASE_QID
 PHASE_LABEL_FROM_KIND = {
@@ -380,6 +381,45 @@ def _ea_from_work_items(ea_id: str, wi_rows: list, pass_verdicts: set[str]) -> d
     }
 
 
+# Strategy-card directory states, in priority order (later wins if a card_id
+# somehow exists in two folders — shouldn't happen, but be defensive).
+CARD_STATE_DIRS: list[tuple[str, str]] = [
+    ("rejected", "cards_rejected"),
+    ("draft",    "cards_draft"),
+    ("review",   "cards_review"),
+    ("approved", "cards_approved"),
+]
+
+_CARD_FILENAME_RE = re.compile(r"^(QM5_\d+)_(.+)\.md$")
+
+
+def _ea_from_strategy_card(card_path: Path, ea_id: str, slug: str,
+                            card_state: str) -> dict:
+    """Seed an EA dict from a strategy-card .md on disk — for cards that have
+    not yet been built into EAs (no agent task, no work_items). Carries
+    `card_state` so the renderer can show the appropriate pill and lane."""
+    try:
+        mtime = dt.datetime.fromtimestamp(card_path.stat().st_mtime, dt.UTC)
+        last_updated = mtime.replace(microsecond=0).isoformat()
+    except OSError:
+        last_updated = ""
+    dead = (card_state == "rejected")
+    return {
+        "ea_id": ea_id,
+        "slug": slug,
+        "completed_phases": [],
+        "current_phase": "Q00",
+        "failed_at": "Q00" if dead else None,
+        "dead": dead,
+        "live": False,
+        "task_count": 0,
+        "last_updated": last_updated,
+        "latest_evidence": str(card_path),
+        "card_state": card_state,
+        "card_path": str(card_path),
+    }
+
+
 def derive_ea_candidates(tasks: list[dict], root: Path | None = None) -> list[dict]:
     """Group tasks by card_id (= ea_id) and derive EA-level state.
 
@@ -511,6 +551,35 @@ def derive_ea_candidates(tasks: list[dict], root: Path | None = None) -> list[di
             for ea_id, ea_rows in wi_by_ea.items():
                 if ea_id not in by_id:
                     eas.append(_ea_from_work_items(ea_id, ea_rows, pass_verdicts))
+                    by_id[ea_id] = eas[-1]
+
+        # archive coverage: seed every strategy card on disk that has no
+        # agent task and no work_items yet — OWNER decision 2026-05-23:
+        # "every strategy card is a strategy in the archive". Stays card-only
+        # row until a build_ea task fires or work_items appear.
+        artifacts_dir = root / "artifacts"
+        if artifacts_dir.is_dir():
+            for card_state, subdir in CARD_STATE_DIRS:
+                dir_path = artifacts_dir / subdir
+                if not dir_path.is_dir():
+                    continue
+                for card_path in dir_path.glob("QM5_*.md"):
+                    m = _CARD_FILENAME_RE.match(card_path.name)
+                    if not m:
+                        continue
+                    ea_id, slug = m.group(1), m.group(2)
+                    if ea_id in by_id:
+                        # Already represented by an agent task or work_items —
+                        # promote slug + card_state onto the existing entry so
+                        # the row shows where this card sits in the funnel.
+                        existing = by_id[ea_id]
+                        if not existing.get("slug") or existing["slug"] == ea_id:
+                            existing["slug"] = slug
+                        existing.setdefault("card_state", card_state)
+                        existing.setdefault("card_path", str(card_path))
+                        continue
+                    eas.append(_ea_from_strategy_card(card_path, ea_id, slug, card_state))
+                    by_id[ea_id] = eas[-1]
 
     eas.sort(key=lambda x: x.get("last_updated", ""), reverse=True)
     return eas
@@ -1421,6 +1490,11 @@ ARCHIVE_CSS = """
 .archive-table .status-chip.s-dead{color:var(--fail);background:transparent}
 .archive-table .status-chip.s-flow{color:var(--live);background:transparent}
 .archive-table .status-chip.s-live{color:var(--signal);background:transparent}
+.archive-table .status-chip.s-prog{color:var(--promising);background:transparent}
+.archive-table .status-chip.s-card{color:var(--text-3);background:transparent}
+.archive-table tr.row-card-only{cursor:default;opacity:0.85}
+.archive-table tr.row-card-only:hover{background:var(--surface-1)}
+.achip.c-card .achip-num{color:var(--text-3)}
 
 .archive-footer{margin:40px auto 48px;max-width:1400px;padding:0 36px;font-family:var(--font-mono);font-size:11px;color:var(--text-3);text-align:center;line-height:1.7;letter-spacing:0.06em}
 """
@@ -1782,8 +1856,10 @@ def collect_ea_lead_kpis(root: Path, ea_ids: list[str]) -> dict[str, dict[str, A
             for i in items
             if i.get("status") == "done" and i.get("verdict") == "PASS" and i.get("phase") in PHASE_ORDER
         }
-        p4plus_pass = any(PHASE_ORDER.index(p) >= PHASE_ORDER.index("P4") for p in pass_phases)
-        p8_pass = "P8" in pass_phases
+        # PT8 — phase keys are now Qxx; "P4" / "P8" are legacy. The "Q05+ survivor"
+        # bar is set at Q05 (first stress gate); the "Q11 PASS" flag at Q11.
+        p4plus_pass = any(PHASE_ORDER.index(p) >= PHASE_ORDER.index("Q05") for p in pass_phases)
+        p8_pass = "Q11" in pass_phases
         highest_pass_phase = None
         if pass_phases:
             highest_pass_phase = max(pass_phases, key=lambda p: PHASE_ORDER.index(p))
@@ -1848,8 +1924,19 @@ def render_strategies(state: dict, root: Path) -> str:
         label, _sc = _ea_status(ea)
         k = kpis.get(ea["ea_id"]) or {}
         has_wi = ea["ea_id"] in wi_eas
+        card_state = ea.get("card_state")
         lanes = {"all", "live" if has_wi else "archive"}
-        if label == "DEAD":
+        if card_state:
+            lanes.add("card")
+            lanes.add(f"card_{card_state}")
+            counts[f"card_{card_state}"] += 1
+        if not has_wi and card_state and ea.get("task_count", 0) == 0:
+            # Card-only row (no agent task, no work_items): rank below dead so
+            # the active funnel stays at the top by default.
+            lanes.add("card_only")
+            rank = 7
+            counts["card_only"] += 1
+        elif label == "DEAD":
             lanes.add("dead"); rank = 6; counts["dead"] += 1
         elif k.get("p8_pass"):
             lanes |= {"survivor", "active"}; rank = 0
@@ -1912,11 +1999,15 @@ def render_strategies(state: dict, root: Path) -> str:
             row_cls = []
             if ea.get("dead"):
                 row_cls.append("row-dead")  # data-attr only; no styling (OWNER call 2026-05-23)
+            card_state = ea.get("card_state")
+            is_card_only = "card_only" in lm["lanes"]
+            if is_card_only:
+                row_cls.append("row-card-only")
             # lane-pill (live/archive) removed from cell HTML 2026-05-23 (OWNER call):
             # "live" was misleading — no EAs are actually T_Live traded; word implied
             # otherwise. Lane membership still carried via data-lanes for filtering.
             fail_prof = ""
-            if ea.get("dead"):
+            if ea.get("dead") and not is_card_only:
                 # Death-reason: failed_at is the most informative field on the EA dict
                 # (failure_reason / verdict_text are not populated upstream). Render the
                 # phase where it died as a small faint secondary line below the status pill.
@@ -1926,10 +2017,32 @@ def render_strategies(state: dict, root: Path) -> str:
                     f'<div class="fail-prof fp-reason" title="{e(reason_title)}">'
                     f'died at {e(phase_label(fa)) if fa else "?"}</div>'
                 )
-            rows.append(f"""<tr class="{' '.join(row_cls)}" data-status="{status_cls}" data-phase="{cur_phase}" data-lanes="{' '.join(sorted(lm['lanes']))}" data-search="{e((ea['ea_id'] + ' ' + (ea.get('slug') or '')).lower())}" onclick="window.location='ea_{e(ea['ea_id'])}.html'">
+
+            # Card-only rows: replace the status pill with a card-state pill,
+            # drop the onclick (no detail page yet — clicking would 404), and
+            # show "—" in KPI columns. Survivors / live EAs keep the original
+            # status pill but may have a card-state secondary indicator.
+            if is_card_only:
+                card_pill_cls = {
+                    "approved": "s-flow",
+                    "review":   "s-prog",
+                    "draft":    "s-card",
+                    "rejected": "s-dead",
+                }.get(card_state, "s-card")
+                status_html = (
+                    f'<span class="status-chip {card_pill_cls}">card · {e(card_state)}</span>'
+                )
+                onclick_attr = ""
+            else:
+                status_html = f'<span class="status-chip {status_cls}">{label}</span>{fail_prof}'
+                onclick_attr = f' onclick="window.location=\'ea_{e(ea["ea_id"])}.html\'"'
+            # Carry card_state into data-* for the filter chip strip below
+            data_card_attr = f' data-card-state="{e(card_state)}"' if card_state else ""
+
+            rows.append(f"""<tr class="{' '.join(row_cls)}" data-status="{status_cls}" data-phase="{cur_phase}" data-lanes="{' '.join(sorted(lm['lanes']))}"{data_card_attr} data-search="{e((ea['ea_id'] + ' ' + (ea.get('slug') or '')).lower())}"{onclick_attr}>
   <td class="td-ea"><code>{e(ea['ea_id'])}</code></td>
   <td class="td-slug">{e(ea.get('slug') or '')}</td>
-  <td><span class="status-chip {status_cls}">{label}</span>{fail_prof}</td>
+  <td>{status_html}</td>
   <td>{_progress_bar_html(ea)}</td>
   <td>{cur_phase}</td>
   <td><span class="status-chip {robust_cls}">{e(robust_label)}</span></td>
@@ -1976,6 +2089,7 @@ def render_strategies(state: dict, root: Path) -> str:
     <div class="achip"><div class="achip-num">{counts.get("triage", 0)}</div><div class="achip-label">Needs triage</div></div>
     <div class="achip"><div class="achip-num">{counts.get("notstarted", 0)}</div><div class="achip-label">Not started</div></div>
     <div class="achip c-dead"><div class="achip-num">{counts.get("dead", 0)}</div><div class="achip-label">Dead</div></div>
+    <div class="achip c-card"><div class="achip-num">{counts.get("card_only", 0)}</div><div class="achip-label">Card · not built</div></div>
   </div>
 </div>
 
@@ -2008,6 +2122,12 @@ def render_strategies(state: dict, root: Path) -> str:
   <span class="preset" data-preset="dead">Dead</span>
   <span class="preset" data-preset="live">Live pipeline only</span>
   <span class="preset" data-preset="archive">Archive only</span>
+  <span class="preset" data-preset="card">Cards · all</span>
+  <span class="preset" data-preset="card_approved">Cards · approved</span>
+  <span class="preset" data-preset="card_review">Cards · review</span>
+  <span class="preset" data-preset="card_draft">Cards · draft</span>
+  <span class="preset" data-preset="card_rejected">Cards · rejected</span>
+  <span class="preset" data-preset="card_only">Cards · not built</span>
 </div>
 <div class="gate-note">"Best exploratory P&amp;L" is the single best result across any phase (often a Q02 discovery run) — it is NOT gate proof. "Most advanced gate" is the highest real PASS the EA reached. Dead EAs are part of the archive and rendered with the same weight as live ones — death is carried by the status color only.</div>
 {cov_panel}
@@ -3055,10 +3175,15 @@ def main() -> int:
     strategies_path = dashboards_dir / "strategies.html"
     strategies_path.write_text(render_strategies(state, root), encoding="utf-8")
 
-    # Per-EA detail pages
+    # Per-EA detail pages — skip card-only EAs (no work_items, no tasks → the
+    # row in strategies.html has no onclick, so a detail page would be unreachable
+    # and wasteful). Card-only EAs still appear in the archive table.
     eas = derive_ea_candidates(state["tasks"], root)
     detail_count = 0
     for ea in eas:
+        if ea.get("card_state") and ea.get("task_count", 0) == 0:
+            # Card-only — has no pipeline activity, skip detail page generation
+            continue
         try:
             d = collect_ea_detail(ea["ea_id"], root)
             out_path = dashboards_dir / f"ea_{ea['ea_id']}.html"
