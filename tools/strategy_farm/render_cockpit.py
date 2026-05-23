@@ -288,6 +288,34 @@ def proc_with_age() -> dict[str, list[dict]]:
     return out
 
 
+def live_worker_terminals() -> set[str]:
+    """{T1, T3, ...} for terminal_worker.py daemons currently alive.
+
+    Cockpit uses this to filter mt5_active_work() down to claims that
+    actually have a living worker behind them - prevents stale-claim
+    lies after Factory_OFF or unclean crashes (DB row still says
+    status=active but the daemon was killed).
+    """
+    out: set[str] = set()
+    try:
+        result = subprocess.run(
+            ["powershell.exe", "-NoProfile", "-Command",
+             "Get-CimInstance Win32_Process -Filter \"Name='pythonw.exe' OR Name='python.exe'\" | "
+             "Where-Object {$_.CommandLine -match 'terminal_worker'} | "
+             "Select-Object -ExpandProperty CommandLine"],
+            capture_output=True, text=True, timeout=15,
+            creationflags=(subprocess.CREATE_NO_WINDOW if hasattr(subprocess, "CREATE_NO_WINDOW") else 0),
+        )
+        if result.returncode == 0:
+            for line in result.stdout.splitlines():
+                m = re.search(r"--terminal\s+(T\d+)", line, re.IGNORECASE)
+                if m:
+                    out.add(m.group(1).upper())
+    except Exception:
+        pass
+    return out
+
+
 def fresh_log_files(pattern: str, max_age_sec: int = 600) -> list[dict]:
     """Live logs modified within max_age_sec, ordered by recency."""
     now = dt.datetime.now().timestamp()
@@ -864,6 +892,11 @@ def main() -> int:
     codex_workers = codex_active_tasks()
     claude_workers = claude_active_tasks()
     mt5_work = mt5_active_work()
+    # Filter DB-claims down to those with a living worker (process exists).
+    # Prevents lying when Factory_OFF + farmctl repair has not run: DB rows
+    # may say status=active but the daemon was killed. OWNER call 2026-05-23.
+    _live = live_worker_terminals()
+    mt5_work = [w for w in mt5_work if str(w.get("terminal") or "").upper() in _live]
     q = queue_snapshot()
     pipeline = compute_pipeline()
     next_actions = profitability_next_actions(pipeline)
