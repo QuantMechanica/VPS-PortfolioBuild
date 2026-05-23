@@ -39,7 +39,7 @@ Three explicit V5 stances on strategy class:
 |---|---|---|
 | **Trend / momentum / mean-reversion / carry / seasonality** | Allowed | Standard pipeline gates apply |
 | **Gridding** | Allowed | Strict fallbacks required: worst-case-scenario explicit in Strategy Card; per-grid-cycle risk **never > 1%** of equity; `QM_KillSwitch` covers grid-stack DD. |
-| **Scalping** | Allowed | Standard gates plus P5b stress with VPS-realistic latency calibration mandatory before P9. |
+| **Scalping** | Allowed | Standard gates plus Q06 HARSH stress (10% trade rejection) with VPS-realistic latency calibration mandatory before Q11 portfolio entry. |
 | **Machine Learning** | **NOT allowed in V5** | Source collection allowed (research only). No ML-predicted entries / exits / sizing in V5 EAs. May reconsider in V6. |
 
 `framework/scripts/build_check.ps1` **[SPEC ONLY — NOT IMPLEMENTED]** greps for ML-library imports (`tensorflow`, `torch`, `sklearn`, `keras`, `onnx`, ML-runtime DLLs) and blocks the build with `EA_ML_FORBIDDEN`.
@@ -100,7 +100,7 @@ Build-check enforces presence of `QuantMechanica V5 Framework`, `Risk`, `News`, 
 
 1. **One source of truth per concern.** Magic, risk, news, kill-switch, logger — each lives in exactly one include file. No duplication across EAs.
 2. **Compile-time validation over runtime trust.** Magic registry, set-file schema, input contracts are all checked at compile / build time, not at first-tick.
-3. **Evidence by construction.** Every runtime decision (entry, exit, kill) writes a structured log line. P1..P10 evidence is just log query.
+3. **Evidence by construction.** Every runtime decision (entry, exit, kill) writes a structured log line. Q01..Q13 evidence is just log query.
 4. **V5 namespace is clean.** EA prefix `QM5_`, ea_id range 1000-9999. No collision with V4 SM_XXX (which used 1-~770).
 5. **Inherit V4 only where V4 was right.** Magic formula, dual risk-mode contract, markdown receipts. Everything else is rebuilt.
 6. **MT5-native, no external runtime deps in the EA itself.** Helpers (compile harness, smoke runner) may use PowerShell + Python, but the EA is pure MQL5.
@@ -149,7 +149,7 @@ framework/
     compile_one.ps1            # [SPEC ONLY — NOT IMPLEMENTED] compiles a single EA via metaeditor.exe
     compile_all.ps1            # [SPEC ONLY — NOT IMPLEMENTED] iterates EAs/, summary report
     build_check.ps1            # [SPEC ONLY — NOT IMPLEMENTED] pre-commit: compile + magic-collision + setfile-schema
-    run_smoke.ps1              # [SPEC ONLY — NOT IMPLEMENTED] P1 smoke harness wrapper around MT5 tester
+    run_smoke.ps1              # [SPEC ONLY — NOT IMPLEMENTED] Q01 smoke harness wrapper around MT5 tester
     validate_setfile.ps1       # [SPEC ONLY — NOT IMPLEMENTED] schema check on a .set file
   conventions/
     SET_FILE_FORMAT.md
@@ -321,7 +321,7 @@ Every set file must explicitly set every EA input — no "default" values. `vali
 ### Storage
 
 - `framework/EAs/QM5_NNNN_<slug>/sets/` during research
-- after P9 manifest approval, the manifest references the set by **SHA256**, not by path — so the set file is content-addressed at deploy time
+- after Q12 Operational Readiness manifest approval, the manifest references the set by **SHA256**, not by path — so the set file is content-addressed at deploy time
 
 ## Common Includes — Module Specs
 
@@ -363,7 +363,7 @@ Spec above. Plus:
 
 ### QM_NewsFilter.mqh
 
-Modes (per the canonical P8 spec + the news-compliance-variants-TBD recommendation):
+Modes (per the canonical Q09 spec — see Vault `03 Pipeline/Q09 News Impact Mode.md`):
 
 ```mql5
 enum QM_NewsMode {
@@ -773,7 +773,7 @@ run_smoke.ps1 -EAId 1001 -Symbol EURUSD -Year 2024 -Terminal T1
 - writes a tester ini, invokes `terminal64.exe /portable /config:<ini>`
 - parses HTML report, extracts trades / PF / DD / NetProfit
 - writes `D:\QM\reports\smoke\QM5_1001\<datetime>\` with raw + JSON summary
-- P1 PASS criteria: ≥ 20 trades, no `OnInit` failure, deterministic across two re-runs
+- Q01 smoke PASS criteria: ≥ 1 trade (per Q01 spec), no `OnInit` failure, deterministic across two re-runs
 
 ### validate_setfile.ps1 [SPEC ONLY — NOT IMPLEMENTED]
 
@@ -789,7 +789,7 @@ run_smoke.ps1 -EAId 1001 -Symbol EURUSD -Year 2024 -Terminal T1
 - V4 ea_id range (V5 starts at 1000 to leave 1-999 forever as V4 namespace)
 - V4 set file format (V5 mandates header comment + schema validation)
 - V4 logger format (V5 uses JSON-line structured logs)
-- V4 P8 hand-orchestration (V5 builds proper `QM_NewsFilter` + tooling)
+- V4 news-mode hand-orchestration (V5 builds proper `QM_NewsFilter` + tooling, two-axis temporal + compliance per Q09)
 - The missing `CODEX_PIPELINE_V2.1_SPEC.md / IMPACT.md / DIFF.md` sub-gate detail (per Codex 2026-04-26: those files do not exist on the laptop). V5 sub-gate detail is authored fresh once the framework can produce real distributions.
 
 ## Implementation Order (for Codex)
@@ -856,7 +856,7 @@ OWNER asked for a defaults proposal; below are the binding choices. Each line is
 - Default: `OnTester` returns `Profit Factor` for V5 day-1.
 - Per-EA override: an EA can set `qm_objective = QM_OBJ_SHARPE` or `QM_OBJ_PF_NCOMP` (composite `PF * sqrt(N) * (1 - DD)`) via input.
 - Rejected (as default): bare Sharpe — too sensitive to small N during early V5 testing. Rejected (as default): V5-composite — has tunable weights that drift; better as opt-in.
-- Quality-Tech reviews this default after the first 5 V5 EAs reach P3 (tracked in `PIPELINE_V5_SUB_GATE_SPEC.md` § Recalibration Triggers).
+- Default reviewed after the first 5 V5 EAs reach Q03 (post-2026-05-23 pipeline rewrite; recalibration triggers TBD in a future ADR).
 
 ### 6. Compile tool → **`metaeditor.exe`** (not `terminal64.exe /compile`)
 

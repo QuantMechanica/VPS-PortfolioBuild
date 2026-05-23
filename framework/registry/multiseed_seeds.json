@@ -1,0 +1,24 @@
+{
+  "version": "1.0",
+  "spec": "Q07 Multi-Seed canonical seed set",
+  "decided_at": "2026-05-23",
+  "decided_by": "OWNER + Claude (pipeline rewrite)",
+  "seeds": [42, 17, 99, 7, 2026],
+  "rationale": {
+    "42": "Standard ML / scientific benchmark seed",
+    "17": "Small prime, common alternative",
+    "99": "Two-digit max, structurally distant from 42",
+    "7":  "Small prime, structurally distant",
+    "2026": "Time-specific (current year), eliminates pre-2026 cherry-picked-seeds concern"
+  },
+  "pass_criteria": {
+    "pf_variance_pct_max": 20.0,
+    "pf_floor_min": 1.0,
+    "description": "PF variance across seeds < 20% AND no single seed PF < 1.0"
+  },
+  "notes": [
+    "Adding/removing seeds requires an OWNER-approved decision record under decisions/.",
+    "Q05/Q06 stress runs use seed 42 (default). Q07 runs all 5 seeds.",
+    "Framework consumer: QM_SeedReset(seed) at OnInit via QM_FrameworkInit."
+  ]
+}

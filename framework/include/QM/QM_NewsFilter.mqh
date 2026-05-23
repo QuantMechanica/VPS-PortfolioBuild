@@ -7,6 +7,43 @@
 #include "..\\news_rules\\ftmo.mqh"
 #include "..\\news_rules\\5ers.mqh"
 
+// FW1 2026-05-23 — Two-axis news filter per Vault Q09 "News Impact Mode".
+//
+// Axis A — Temporal: how the EA reacts in the vicinity of a news event.
+//   0..6 mapping is canonical per Q09. Default for V5 EAs is mode 3.
+//
+// Axis B — Compliance: prop-firm-specific blackout windows that compose
+//   on top of the temporal mode. A trade is allowed only if BOTH axes
+//   allow at the queried timestamp.
+//
+// Legacy `QM_NewsMode` (single enum) is kept as a backwards-compatibility
+// shim — `QM_NewsAllowsTrade(symbol, t, QM_NewsMode)` still works and is
+// translated to the new 2-axis internally. New code (and the V5 skeleton)
+// should use `QM_NewsAllowsTrade2(symbol, t, temporal, compliance)` and
+// the two new input enums directly.
+
+enum QM_NewsTemporalMode
+  {
+   QM_NEWS_TEMPORAL_OFF = 0,            // mode 0 — trade through everything
+   QM_NEWS_TEMPORAL_PRE30,              // mode 1 — pause 30min before event
+   QM_NEWS_TEMPORAL_PRE60,              // mode 2 — pause 60min before event
+   QM_NEWS_TEMPORAL_PRE30_POST30,       // mode 3 — DEFAULT (Vault Q09)
+   QM_NEWS_TEMPORAL_PRE60_POST60,       // mode 4 — pause 60min pre + 60min post
+   QM_NEWS_TEMPORAL_SKIP_DAY,           // mode 5 — no new opens during news day
+   QM_NEWS_TEMPORAL_CLOSE_ALL_PRE       // mode 6 — close all 30min before
+  };
+
+enum QM_NewsComplianceProfile
+  {
+   QM_NEWS_COMPLIANCE_NONE = 0,         // no firm-specific window
+   QM_NEWS_COMPLIANCE_DXZ,              // DarwinexZero house rules (placeholder)
+   QM_NEWS_COMPLIANCE_FTMO,             // FTMO funded-account blackouts
+   QM_NEWS_COMPLIANCE_5ERS              // The5ers blackout schedule
+  };
+
+// Legacy single-enum (PRE-FW1). Kept for backwards compatibility with old
+// setfiles that still set `qm_news_mode`. Translated to (temporal, compliance)
+// by QM_NewsAllowsTrade(...).
 enum QM_NewsMode
   {
    QM_NEWS_OFF = 0,
@@ -17,6 +54,33 @@ enum QM_NewsMode
    QM_NEWS_NO_NEWS,
    QM_NEWS_NEWS_ONLY
   };
+
+// Legacy → 2-axis translation. Stored as two parallel arrays so the
+// translation is data-driven and visible at a glance.
+QM_NewsTemporalMode QM_NewsLegacyTemporal(const QM_NewsMode mode)
+  {
+   switch(mode)
+     {
+      case QM_NEWS_OFF:         return QM_NEWS_TEMPORAL_OFF;
+      case QM_NEWS_PAUSE:       return QM_NEWS_TEMPORAL_PRE30_POST30;
+      case QM_NEWS_SKIP_DAY:    return QM_NEWS_TEMPORAL_SKIP_DAY;
+      case QM_NEWS_FTMO_PAUSE:  return QM_NEWS_TEMPORAL_PRE30_POST30;
+      case QM_NEWS_5ERS_PAUSE:  return QM_NEWS_TEMPORAL_PRE30_POST30;
+      case QM_NEWS_NO_NEWS:     return QM_NEWS_TEMPORAL_SKIP_DAY;
+      case QM_NEWS_NEWS_ONLY:   return QM_NEWS_TEMPORAL_OFF;
+     }
+   return QM_NEWS_TEMPORAL_OFF;
+  }
+
+QM_NewsComplianceProfile QM_NewsLegacyCompliance(const QM_NewsMode mode)
+  {
+   switch(mode)
+     {
+      case QM_NEWS_FTMO_PAUSE:  return QM_NEWS_COMPLIANCE_FTMO;
+      case QM_NEWS_5ERS_PAUSE:  return QM_NEWS_COMPLIANCE_5ERS;
+      default:                  return QM_NEWS_COMPLIANCE_NONE;
+     }
+  }
 
 struct QM_NewsEvent
   {
@@ -488,9 +552,96 @@ bool QM_NewsDayHasEvent(const datetime utc_time, const string symbol)
    return false;
   }
 
-bool QM_NewsAllowsTrade(const string symbol, const datetime broker_time, const QM_NewsMode mode)
+// Internal: prop-firm blackout check for a single profile. Returns true
+// if the current UTC timestamp falls inside any applicable firm window.
+bool QM_NewsInFirmWindow(const QM_NewsComplianceProfile profile,
+                         const datetime utc_time,
+                         const string symbol)
   {
-   if(mode == QM_NEWS_OFF)
+   if(profile == QM_NEWS_COMPLIANCE_NONE || profile == QM_NEWS_COMPLIANCE_DXZ)
+      return false;
+
+   const int n = ArraySize(g_qm_news_events);
+   for(int i = 0; i < n; i++)
+     {
+      const QM_NewsEvent event = g_qm_news_events[i];
+      if(!QM_NewsEventAffectsSymbol(event.currency, symbol))
+         continue;
+      if(!QM_NewsImpactMeetsMinimum(event.impact_upper, g_qm_news_min_impact_upper))
+         continue;
+
+      int before = 0;
+      int after  = 0;
+      if(profile == QM_NEWS_COMPLIANCE_FTMO)
+        {
+         before = QM_NewsFTMOBeforeMinutes(event.impact_upper);
+         after  = QM_NewsFTMOAfterMinutes(event.impact_upper);
+        }
+      else if(profile == QM_NEWS_COMPLIANCE_5ERS)
+        {
+         before = QM_News5ersBeforeMinutes(event.impact_upper);
+         after  = QM_News5ersAfterMinutes(event.impact_upper);
+        }
+      if(before <= 0 && after <= 0)
+         continue;
+
+      const datetime from_t = event.event_utc - (before * 60);
+      const datetime to_t   = event.event_utc + (after * 60);
+      if(utc_time >= from_t && utc_time <= to_t)
+         return true;
+     }
+   return false;
+  }
+
+// AXIS A — Temporal mode allows trade at this UTC timestamp.
+bool QM_NewsTemporalAllows(const string symbol,
+                           const datetime utc_time,
+                           const QM_NewsTemporalMode temporal)
+  {
+   switch(temporal)
+     {
+      case QM_NEWS_TEMPORAL_OFF:
+         return true;
+
+      case QM_NEWS_TEMPORAL_PRE30:
+         return !QM_NewsInWindow(utc_time, symbol, 30, 0);
+
+      case QM_NEWS_TEMPORAL_PRE60:
+         return !QM_NewsInWindow(utc_time, symbol, 60, 0);
+
+      case QM_NEWS_TEMPORAL_PRE30_POST30:
+         return !QM_NewsInWindow(utc_time, symbol, 30, 30);
+
+      case QM_NEWS_TEMPORAL_PRE60_POST60:
+         return !QM_NewsInWindow(utc_time, symbol, 60, 60);
+
+      case QM_NEWS_TEMPORAL_SKIP_DAY:
+         return !QM_NewsDayHasEvent(utc_time, symbol);
+
+      case QM_NEWS_TEMPORAL_CLOSE_ALL_PRE:
+         // Entry-side behaviour: identical to PRE30 (don't open within 30min).
+         // The "close all open positions" half lives in the Strategy_Manage
+         // hook — TODO once the Q05/Q06 stress runners drive Mode 6 tests.
+         return !QM_NewsInWindow(utc_time, symbol, 30, 0);
+     }
+   return false;
+  }
+
+// AXIS B — Compliance profile allows trade at this UTC timestamp.
+bool QM_NewsComplianceAllows(const string symbol,
+                             const datetime utc_time,
+                             const QM_NewsComplianceProfile compliance)
+  {
+   return !QM_NewsInFirmWindow(compliance, utc_time, symbol);
+  }
+
+// FW1 canonical query — two-axis composed via AND.
+bool QM_NewsAllowsTrade2(const string symbol,
+                         const datetime broker_time,
+                         const QM_NewsTemporalMode temporal,
+                         const QM_NewsComplianceProfile compliance)
+  {
+   if(temporal == QM_NEWS_TEMPORAL_OFF && compliance == QM_NEWS_COMPLIANCE_NONE)
       return true;
 
    if(!g_qm_news_loaded)
@@ -506,66 +657,43 @@ bool QM_NewsAllowsTrade(const string symbol, const datetime broker_time, const Q
    if(utc_time <= 0)
       utc_time = TimeGMT();
 
-   switch(mode)
+   if(!QM_NewsTemporalAllows(symbol, utc_time, temporal))
+      return false;
+   if(!QM_NewsComplianceAllows(symbol, utc_time, compliance))
+      return false;
+   return true;
+  }
+
+// Legacy shim — accepts the old single QM_NewsMode and delegates to the
+// new 2-axis function via the translation table. Existing setfiles and old
+// EAs keep working; new code uses QM_NewsAllowsTrade2 directly.
+bool QM_NewsAllowsTrade(const string symbol,
+                        const datetime broker_time,
+                        const QM_NewsMode mode)
+  {
+   // NEWS_ONLY is the one legacy mode that *inverts* (trade only inside news
+   // window). It doesn't compose into the 2-axis cleanly — keep its old
+   // semantics here as a special case.
+   if(mode == QM_NEWS_NEWS_ONLY)
      {
-      case QM_NEWS_PAUSE:
-         return !QM_NewsInWindow(utc_time, symbol, g_qm_news_pause_before_minutes, g_qm_news_pause_after_minutes);
-
-      case QM_NEWS_SKIP_DAY:
-         return !QM_NewsDayHasEvent(utc_time, symbol);
-
-      case QM_NEWS_FTMO_PAUSE:
+      if(!g_qm_news_loaded)
+         QM_NewsInit();
+      if(!g_qm_news_available)
         {
-         const int n = ArraySize(g_qm_news_events);
-         for(int i = 0; i < n; i++)
-           {
-            const QM_NewsEvent event = g_qm_news_events[i];
-            if(!QM_NewsEventAffectsSymbol(event.currency, symbol))
-               continue;
-            if(!QM_NewsImpactMeetsMinimum(event.impact_upper, g_qm_news_min_impact_upper))
-               continue;
-            int before = QM_NewsFTMOBeforeMinutes(event.impact_upper);
-            int after  = QM_NewsFTMOAfterMinutes(event.impact_upper);
-            if(before <= 0 && after <= 0)
-               continue;
-            datetime from_t = event.event_utc - (before * 60);
-            datetime to_t   = event.event_utc + (after * 60);
-            if(utc_time >= from_t && utc_time <= to_t)
-               return false;
-           }
-         return true;
+         QM_NewsLogSetupMissing("calendar_unavailable");
+         return false;
         }
-
-      case QM_NEWS_5ERS_PAUSE:
-        {
-         const int n = ArraySize(g_qm_news_events);
-         for(int i = 0; i < n; i++)
-           {
-            const QM_NewsEvent event = g_qm_news_events[i];
-            if(!QM_NewsEventAffectsSymbol(event.currency, symbol))
-               continue;
-            if(!QM_NewsImpactMeetsMinimum(event.impact_upper, g_qm_news_min_impact_upper))
-               continue;
-            int before = QM_News5ersBeforeMinutes(event.impact_upper);
-            int after  = QM_News5ersAfterMinutes(event.impact_upper);
-            if(before <= 0 && after <= 0)
-               continue;
-            datetime from_t = event.event_utc - (before * 60);
-            datetime to_t   = event.event_utc + (after * 60);
-            if(utc_time >= from_t && utc_time <= to_t)
-               return false;
-           }
-         return true;
-        }
-
-      case QM_NEWS_NO_NEWS:
-         return !QM_NewsDayHasEvent(utc_time, symbol);
-
-      case QM_NEWS_NEWS_ONLY:
-         return QM_NewsInWindow(utc_time, symbol, g_qm_news_pause_before_minutes, g_qm_news_pause_after_minutes);
+      datetime utc_time = QM_BrokerToUTC(broker_time);
+      if(utc_time <= 0)
+         utc_time = TimeGMT();
+      return QM_NewsInWindow(utc_time, symbol,
+                             g_qm_news_pause_before_minutes,
+                             g_qm_news_pause_after_minutes);
      }
 
-   return false;
+   return QM_NewsAllowsTrade2(symbol, broker_time,
+                              QM_NewsLegacyTemporal(mode),
+                              QM_NewsLegacyCompliance(mode));
   }
 
 #endif // QM_NEWS_FILTER_MQH

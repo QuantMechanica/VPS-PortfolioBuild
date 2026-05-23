@@ -1,4 +1,12 @@
-# P8 Real News Replay and Runtime News Filter Spec
+# Q09 News Driver and Calendar Spec
+
+**⚠️ STALE — pre-2026-05-23 pipeline rewrite. The new Q09 design is two-axis (temporal mode × compliance profile), documented in Vault `03 Pipeline/Q09 News Impact Mode.md`. The single-enum model below is preserved for reference until FW1 (QM_NewsFilter rewrite) lands, after which this file will be re-authored.**
+
+Status: PENDING REWRITE
+
+---
+
+# Original P8 spec (legacy, superseded by Q09 2-axis design)
 
 Created: 2026-05-08  
 Replaced: 2026-05-20 synthetic news matrix selector  

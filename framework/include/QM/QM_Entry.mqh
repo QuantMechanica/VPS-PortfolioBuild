@@ -8,6 +8,7 @@
 #include "QM_RiskSizer.mqh"
 #include "QM_MagicResolver.mqh"
 #include "QM_Logger.mqh"
+#include "QM_SeedRNG.mqh"
 
 struct QM_EntryRequest
 {
@@ -27,20 +28,31 @@ enum QM_EntryResult
    QM_ENTRY_REJECTED_NEWS,
    QM_ENTRY_REJECTED_RISK,
    QM_ENTRY_REJECTED_BROKER,
-   QM_ENTRY_REJECTED_DUPLICATE
+   QM_ENTRY_REJECTED_DUPLICATE,
+   QM_ENTRY_REJECTED_STRESS       // FW2: Q06 HARSH simulated trade rejection
 };
 
-int         g_qm_entry_ea_id            = 0;
-QM_NewsMode g_qm_entry_news_mode        = QM_NEWS_OFF;
-int         g_qm_entry_deviation_points = 20;
+int                       g_qm_entry_ea_id              = 0;
+QM_NewsMode               g_qm_entry_news_mode          = QM_NEWS_OFF;  // legacy
+QM_NewsTemporalMode       g_qm_entry_news_temporal      = QM_NEWS_TEMPORAL_OFF;
+QM_NewsComplianceProfile  g_qm_entry_news_compliance    = QM_NEWS_COMPLIANCE_NONE;
+int                       g_qm_entry_deviation_points   = 20;
+double                    g_qm_entry_stress_reject_prob = 0.0;   // FW2: Q06 HARSH default = 0.10
 
 void QM_EntryConfigure(const int ea_id,
                        const QM_NewsMode news_mode = QM_NEWS_OFF,
-                       const int deviation_points = 20)
+                       const int deviation_points = 20,
+                       const double stress_reject_probability = 0.0,
+                       const QM_NewsTemporalMode news_temporal = QM_NEWS_TEMPORAL_OFF,
+                       const QM_NewsComplianceProfile news_compliance = QM_NEWS_COMPLIANCE_NONE)
 {
    g_qm_entry_ea_id = ea_id;
    g_qm_entry_news_mode = news_mode;
+   g_qm_entry_news_temporal = news_temporal;
+   g_qm_entry_news_compliance = news_compliance;
    g_qm_entry_deviation_points = (deviation_points > 0) ? deviation_points : 20;
+   g_qm_entry_stress_reject_prob = (stress_reject_probability < 0.0) ? 0.0
+                                  : ((stress_reject_probability > 1.0) ? 1.0 : stress_reject_probability);
 }
 
 string QM_EntryResultToString(const QM_EntryResult result)
@@ -53,6 +65,7 @@ string QM_EntryResultToString(const QM_EntryResult result)
       case QM_ENTRY_REJECTED_RISK:       return "QM_ENTRY_REJECTED_RISK";
       case QM_ENTRY_REJECTED_BROKER:     return "QM_ENTRY_REJECTED_BROKER";
       case QM_ENTRY_REJECTED_DUPLICATE:  return "QM_ENTRY_REJECTED_DUPLICATE";
+      case QM_ENTRY_REJECTED_STRESS:     return "QM_ENTRY_REJECTED_STRESS";
    }
    return "QM_ENTRY_REJECTED_BROKER";
 }
@@ -133,9 +146,23 @@ QM_EntryResult QM_Entry(const QM_EntryRequest &req, ulong &out_ticket)
       return QM_ENTRY_REJECTED_KILLSWITCH;
    }
 
-   if(!QM_NewsAllowsTrade(_Symbol, TimeCurrent(), g_qm_entry_news_mode))
+   // FW1 2026-05-23: prefer 2-axis if either axis is non-default; otherwise
+   // fall back to legacy single-mode (back-compat with pre-FW1 setfiles).
+   bool news_allows = true;
+   if(g_qm_entry_news_temporal != QM_NEWS_TEMPORAL_OFF ||
+      g_qm_entry_news_compliance != QM_NEWS_COMPLIANCE_NONE)
    {
-      QM_EntryLogReject(req, QM_ENTRY_REJECTED_NEWS, "news_mode_block");
+      news_allows = QM_NewsAllowsTrade2(_Symbol, TimeCurrent(),
+                                        g_qm_entry_news_temporal,
+                                        g_qm_entry_news_compliance);
+   }
+   else
+   {
+      news_allows = QM_NewsAllowsTrade(_Symbol, TimeCurrent(), g_qm_entry_news_mode);
+   }
+   if(!news_allows)
+   {
+      QM_EntryLogReject(req, QM_ENTRY_REJECTED_NEWS, "news_filter_block");
       return QM_ENTRY_REJECTED_NEWS;
    }
 
@@ -158,6 +185,20 @@ QM_EntryResult QM_Entry(const QM_EntryRequest &req, ulong &out_ticket)
    {
       QM_EntryLogReject(req, QM_ENTRY_REJECTED_DUPLICATE, "open_position_same_magic_symbol");
       return QM_ENTRY_REJECTED_DUPLICATE;
+   }
+
+   // FW2 (2026-05-23) — Q06 HARSH stress trade-rejection simulation.
+   // When stress probability > 0, draw from the central seeded RNG (sub-stream
+   // "entry_reject") and drop the entry deterministically. Q05 MED runs with
+   // probability = 0 (this is a no-op); Q06 HARSH runs with probability = 0.10.
+   // The reject happens *before* QM_TradeContextSend, so no broker round-trip
+   // is wasted. Per-rejection log carries the magic + symbol for evidence.
+   if(g_qm_entry_stress_reject_prob > 0.0 &&
+      QM_RandBoolTagged("entry_reject", g_qm_entry_stress_reject_prob))
+   {
+      QM_EntryLogReject(req, QM_ENTRY_REJECTED_STRESS,
+                        StringFormat("stress_reject_prob=%.4f", g_qm_entry_stress_reject_prob));
+      return QM_ENTRY_REJECTED_STRESS;
    }
 
    const double entry_price = QM_EntryResolvePrice(req);

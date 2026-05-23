@@ -362,7 +362,12 @@ bool QM_ChartUI_Init(const int ea_id, const string slug)
    g_qm_chartui_last_payload_summary = "{}";
    g_qm_chartui_initialized = true;
 
-   if(!qm_chartui_enabled)
+   // FW10 2026-05-23: skip all UI work when running under the Strategy Tester.
+   // Mass parallel backtests on T1-T10 don't render charts; the OBJ_RECTANGLE /
+   // OBJ_LABEL calls below would burn CPU for output nobody looks at.
+   // qm_chartui_enabled stays the operator-facing override (default true);
+   // tester mode auto-suppresses regardless of the input value.
+   if(!qm_chartui_enabled || MQLInfoInteger(MQL_TESTER) != 0)
       return true;
 
    QM_LogEvent(QM_INFO, "CHART_UI_INIT", StringFormat("{\"ea_id\":%d,\"slug\":\"%s\"}", ea_id, QM_LoggerEscapeJson(slug)));
@@ -381,6 +386,8 @@ void QM_ChartUI_Refresh()
   {
    if(!g_qm_chartui_initialized || !qm_chartui_enabled)
       return;
+   if(MQLInfoInteger(MQL_TESTER) != 0)
+      return; // FW10: tester mode never renders UI
 
    const long chart_width = ChartGetInteger(g_qm_chartui_chart_id, CHART_WIDTH_IN_PIXELS, 0);
    const bool compact = (chart_width > 0 && chart_width < 720);
