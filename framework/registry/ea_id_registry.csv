@@ -2301,3 +2301,8 @@ ea_id,slug,strategy_id,status,owner,created_at
 11426,williams-consecutive-down-closes-d1,bb9e26af-ebd1-5a26-b1a8-cc4d78835f03,active,Research,2026-05-23
 11427,connors-rsi2-sma200-pullback-d1,4932e25a-fdfb-50cd-b5f5-18e55f3045c2,active,Research,2026-05-23
 11428,connors-double7s-sma200-d1,4932e25a-fdfb-50cd-b5f5-18e55f3045c2,active,Research,2026-05-23
+11429,carter-london-open-box-breakout-m5,ec63ff86-b6dd-522b-ac8e-d90de82e2dee,active,Research,2026-05-23
+11430,carter-cci21-ema4080-zero-cross-m5,ec63ff86-b6dd-522b-ac8e-d90de82e2dee,active,Research,2026-05-23
+11431,lien-xtreme-fade-bb-adx-m15,df524d6c-e7a3-5ab9-a4f5-212ac0f1134b,active,Research,2026-05-23
+11432,carter-multitf-candle-color-h1,96b1d6a2-d0af-5fa2-abbc-865a08f82ef2,active,Research,2026-05-23
+11433,ibr-mean-reversion-d1,16b3c87b-0cff-55ae-802d-2a7680ec6af8,active,Research,2026-05-23
