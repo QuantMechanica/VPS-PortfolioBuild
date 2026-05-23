@@ -2294,3 +2294,10 @@ ea_id,slug,strategy_id,status,owner,created_at
 11419,144-lwma-5smma-proximity-crossover-m5,978d3aba-1440-5aca-9aa4-b3176cf93873,active,Research,2026-05-23
 11420,macd-stochastic-pullback-scalp-m5,faf6561d-007a-547f-8d4c-429ab021a7cc,active,Research,2026-05-23
 11421,ohlc-daily-squeeze-reversal-d1,ca63d391-50d5-52ea-a026-6e82a7433431,active,Research,2026-05-23
+11422,williams-18ma-outside-bar-entry-d1,bb9e26af-ebd1-5a26-b1a8-cc4d78835f03,active,Research,2026-05-23
+11423,williams-naked-close-stop-entry-d1,bb9e26af-ebd1-5a26-b1a8-cc4d78835f03,active,Research,2026-05-23
+11424,williams-fakeout-day-stop-entry-d1,bb9e26af-ebd1-5a26-b1a8-cc4d78835f03,active,Research,2026-05-23
+11425,williams-smash-day-stop-entry-d1,bb9e26af-ebd1-5a26-b1a8-cc4d78835f03,active,Research,2026-05-23
+11426,williams-consecutive-down-closes-d1,bb9e26af-ebd1-5a26-b1a8-cc4d78835f03,active,Research,2026-05-23
+11427,connors-rsi2-sma200-pullback-d1,4932e25a-fdfb-50cd-b5f5-18e55f3045c2,active,Research,2026-05-23
+11428,connors-double7s-sma200-d1,4932e25a-fdfb-50cd-b5f5-18e55f3045c2,active,Research,2026-05-23
