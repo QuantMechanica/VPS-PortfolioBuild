@@ -87,18 +87,21 @@ ZERO_TRADE_DEAD_THRESHOLD = 0.80
 ZERO_TRADE_DEAD_MIN_DONE = 5
 ZERO_TRADE_REWORK_DEDUP_HOURS = 6
 PHASE_ACTIVE_TIMEOUT_MIN = {
-    # 2026-05-23 OR3 — Qxx-keyed timeouts. Q04 walk-forward + Q05/Q06 stress
-    # over full history are the heaviest; Q08 Davey is statistics-on-trade-log
-    # so very fast; Q10 confirmation is one full-history backtest per (EA, sym).
-    "Q02": 360,    # Baseline screening, one backtest per symbol
-    "Q03": 60,     # Parameter sweep, per-config
-    "Q04": 240,    # 3-fold walk-forward + commission
-    "Q05": 240,    # MED stress, full history
-    "Q06": 240,    # HARSH stress, full history (10% reject adds minor overhead)
-    "Q07": 360,    # 5 seeds × full history under HARSH stress
+    # 2026-05-23 PT7 — tightened reaper budgets after the 60-min Q02 hang
+    # incident (T2/T4/T8/T9 stuck for an hour because the per-MT5
+    # `run_smoke.ps1 -TimeoutSeconds 1800` layer failed silently and this
+    # layer was the only safety net, originally set to 6h for Q02).
+    # New budgets are realistic upper bounds for the work, not theoretical
+    # worst-cases — hangs auto-recycle fast even when the inner layer fails.
+    "Q02": 45,     # one backtest per symbol; H1 full-history runs typically 5-20 min
+    "Q03": 60,     # parameter-sweep config
+    "Q04": 90,     # 3-fold walk-forward + commission
+    "Q05": 60,     # MED stress, full history
+    "Q06": 60,     # HARSH stress, full history
+    "Q07": 120,    # 5 seeds × full history under HARSH stress
     "Q08": 30,     # Davey aggregator reads log; cheap
-    "Q09": 240,    # News-mode sweep (7 modes × full history)
-    "Q10": 360,    # Full-history canonical confirmation
+    "Q09": 120,    # news-mode sweep (1 or 7 modes)
+    "Q10": 60,     # full-history canonical confirmation
 }
 
 
