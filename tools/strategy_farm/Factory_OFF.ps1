@@ -28,9 +28,10 @@ Write-Host ''
 $tasks = @(
     'QM_StrategyFarm_Pump_5min',
     'QM_StrategyFarm_Tick_5min',
-    'QM_StrategyFarm_TerminalWorkers_AT_STARTUP',
     'QM_StrategyFarm_Repair_Hourly'
 )
+# TerminalWorkers_AT_STARTUP is permanently disabled (interactive-mode policy
+# 2026-05-23) - daemons are spawned by Factory_ON in the user's session.
 foreach ($t in $tasks) {
     Disable-ScheduledTask -TaskName $t -ErrorAction SilentlyContinue | Out-Null
     $st = (Get-ScheduledTask -TaskName $t -ErrorAction SilentlyContinue).State
