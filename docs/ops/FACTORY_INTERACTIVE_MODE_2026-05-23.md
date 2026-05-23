@@ -19,16 +19,37 @@ regardless of whether anyone was logged in via RDP.
 ### New (interactive / visible)
 
 - `QM_StrategyFarm_TerminalWorkers_AT_STARTUP` is **permanently disabled**.
+- `QM_StrategyFarm_Repair_Hourly` is **permanently disabled** (added
+  2026-05-23 after VPS crash investigation, see "Crash-gap closure" below).
 - `Factory_ON.ps1` spawns the 10 daemons directly inside the calling
   session via `& python start_terminal_workers.py --dedupe`. The daemons
   inherit the operator's RDP session; every `terminal64.exe` they later
-  spawn shows as a window on the desktop.
-- `Factory_OFF.ps1` no longer touches the (already-disabled)
-  `TerminalWorkers_AT_STARTUP` task.
+  spawn shows as a window on the desktop. Factory_ON then runs
+  `farmctl.py repair` ONCE synchronously in the same session (one-shot
+  replacement for the recurring Repair_Hourly task).
+- `Factory_OFF.ps1` only disables `Pump_5min` + `Tick_5min`; the two
+  permanently-disabled tasks (TerminalWorkers, Repair) are not touched.
 
-`QM_StrategyFarm_Pump_5min`, `_Tick_5min`, and `_Repair_Hourly` keep
-running as `SYSTEM` scheduled tasks — they only dispatch / repair and
-do not spawn terminals, so the headless context is fine for them.
+`QM_StrategyFarm_Pump_5min` and `_Tick_5min` keep running as `SYSTEM`
+scheduled tasks while Factory_ON is active — they only dispatch /
+tick and never spawn terminals, so the headless context is fine for
+them. Factory_OFF disables them again so they don't fire between
+sessions.
+
+## Crash-gap closure (2026-05-23)
+
+A VPS crash mid-Factory_ON-session left `Repair_Hourly` in the
+`Enabled` state (Windows preserves last task state across reboots).
+On reboot, before OWNER logged in via RDP, Repair_Hourly fired as
+`SYSTEM`, called `farmctl.py repair`, which auto-spawned the 10
+missing daemons — in session 0, the same headless violation the
+TerminalWorkers_AT_STARTUP retirement was supposed to eliminate.
+
+Fix: Repair_Hourly is now permanently disabled, joining
+TerminalWorkers_AT_STARTUP. Factory_ON invokes the repair logic
+inline as a one-shot. Result: NO scheduled task can spawn worker
+daemons; only an explicit human-clicked Factory_ON does, and only
+in the user RDP session.
 
 ## Operational tradeoff
 
@@ -51,5 +72,7 @@ do not spawn terminals, so the headless context is fine for them.
 ## To revert (if 24/7 headless is ever wanted again)
 
 - `Enable-ScheduledTask -TaskName QM_StrategyFarm_TerminalWorkers_AT_STARTUP`
+- `Enable-ScheduledTask -TaskName QM_StrategyFarm_Repair_Hourly`
 - Restore the original `Factory_ON.ps1` / `Factory_OFF.ps1` lines that
-  triggered the task and listed it in the enable/disable arrays.
+  triggered the tasks and listed them in the enable/disable arrays.
+- Remove the inline `farmctl.py repair` call from Factory_ON.ps1.

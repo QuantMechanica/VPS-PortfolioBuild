@@ -1,8 +1,8 @@
 # =====================================================================
 #  QuantMechanica - Factory OFF
 #  Stops the MT5 backtest factory cleanly:
-#    - disables the 4 farm scheduled tasks (Pump / Tick / TerminalWorkers
-#      / Repair) so nothing re-spawns
+#    - disables Pump + Tick scheduled tasks (TerminalWorkers + Repair
+#      are permanently disabled - see Factory_ON.ps1 header)
 #    - kills the 10 terminal_worker.py daemons
 #    - kills any transient terminal64.exe backtest processes
 #  The AI orchestration (Codex/Claude/Gemini, dashboards, health) is a
@@ -24,14 +24,16 @@ Write-Host '  QuantMechanica  -  FACTORY OFF' -ForegroundColor Yellow
 Write-Host '=====================================================' -ForegroundColor Yellow
 Write-Host ''
 
-# 1. disable the farm scheduled tasks (stop the respawn vectors)
+# 1. disable the dispatch scheduled tasks (stop the respawn vectors)
 $tasks = @(
     'QM_StrategyFarm_Pump_5min',
-    'QM_StrategyFarm_Tick_5min',
-    'QM_StrategyFarm_Repair_Hourly'
+    'QM_StrategyFarm_Tick_5min'
 )
-# TerminalWorkers_AT_STARTUP is permanently disabled (interactive-mode policy
-# 2026-05-23) - daemons are spawned by Factory_ON in the user's session.
+# TerminalWorkers_AT_STARTUP + Repair_Hourly are permanently disabled
+# (interactive-mode policy 2026-05-23). Daemons are spawned by Factory_ON
+# in the user's session; farmctl repair is invoked once by Factory_ON
+# inline. Both used to be Enabled and spawn SYSTEM/session-0 workers
+# after a crash - that's now eliminated by leaving them permanently off.
 foreach ($t in $tasks) {
     Disable-ScheduledTask -TaskName $t -ErrorAction SilentlyContinue | Out-Null
     $st = (Get-ScheduledTask -TaskName $t -ErrorAction SilentlyContinue).State

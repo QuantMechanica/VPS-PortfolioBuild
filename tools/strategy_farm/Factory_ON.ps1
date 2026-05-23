@@ -10,14 +10,20 @@
 #  click this shortcut to bring the factory back up.
 #
 #  What it does:
-#    - enables the Pump / Tick / Repair scheduled tasks
+#    - enables the Pump / Tick scheduled tasks
 #    - kills any lingering daemons + terminals (clean slate)
 #    - spawns the 10 terminal_worker.py daemons IN THIS SESSION
 #      (visible mode) via start_terminal_workers.py
+#    - runs `farmctl.py repair` ONCE synchronously in this session
+#      (replaces the old Repair_Hourly recurring task)
 #    - triggers one Pump cycle to start dispatching
 #
 #  The TerminalWorkers_AT_STARTUP scheduled task is permanently
 #  disabled - it spawned daemons as SYSTEM / session-0 (headless).
+#  The Repair_Hourly scheduled task is ALSO permanently disabled
+#  (OWNER call 2026-05-23): it spawned worker daemons as SYSTEM after
+#  a crash if the task state survived as Enabled - same session-0
+#  violation. Repair work now runs once on Factory_ON instead.
 # =====================================================================
 
 # self-elevate
@@ -36,13 +42,13 @@ Write-Host ("  QuantMechanica  -  FACTORY ON  (session {0}, visible)" -f $mySess
 Write-Host '=====================================================' -ForegroundColor Cyan
 Write-Host ''
 
-# 1. enable dispatch/repair tasks (NOT TerminalWorkers_AT_STARTUP - that
-#    task spawns daemons as SYSTEM/session-0 which is headless; we spawn
-#    daemons directly in THIS session further below).
+# 1. enable dispatch tasks (NOT TerminalWorkers_AT_STARTUP, NOT
+#    Repair_Hourly - both spawn daemons as SYSTEM/session-0 which is
+#    headless. Daemons spawned directly in this session below; repair
+#    runs once synchronously below).
 $tasks = @(
     'QM_StrategyFarm_Pump_5min',
-    'QM_StrategyFarm_Tick_5min',
-    'QM_StrategyFarm_Repair_Hourly'
+    'QM_StrategyFarm_Tick_5min'
 )
 foreach ($t in $tasks) {
     Enable-ScheduledTask -TaskName $t -ErrorAction SilentlyContinue | Out-Null
@@ -73,7 +79,16 @@ $daemons = @(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe' OR Name='
 $inMySession = @($daemons | Where-Object { $_.SessionId -eq $mySession })
 Write-Host ("  worker daemons up : {0} / 10  (in session {1}: {2})" -f $daemons.Count, $mySession, $inMySession.Count)
 
-# 4. trigger one Pump cycle to start dispatching
+# 4. run farmctl repair ONCE synchronously in this session (replaces the
+#    old Repair_Hourly recurring task which spawned session-0 daemons
+#    after a crash). Repair cleans stale work_item claims, resets
+#    timed-out items, etc. Worker daemons are already up from step 3,
+#    so any spawn behavior inside repair is a no-op.
+Write-Host '  running farmctl repair (one-shot, this session) ...'
+& $py 'C:\QM\repo\tools\strategy_farm\farmctl.py' repair | Out-Null
+Write-Host '  farmctl repair done'
+
+# 5. trigger one Pump cycle to start dispatching
 Start-ScheduledTask -TaskName 'QM_StrategyFarm_Pump_5min' -ErrorAction SilentlyContinue
 Write-Host '  pump triggered (dispatching queued backtests)'
 
