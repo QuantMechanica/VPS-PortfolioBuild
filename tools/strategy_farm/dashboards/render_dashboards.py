@@ -380,6 +380,45 @@ def _ea_from_work_items(ea_id: str, wi_rows: list, pass_verdicts: set[str]) -> d
     }
 
 
+def _latest_recycled_eas(root: Path) -> dict[str, dict[str, str]]:
+    db = root / "state" / "farm_state.sqlite"
+    if not db.exists():
+        return {}
+    latest: dict[str, dict[str, str]] = {}
+    try:
+        with sqlite3.connect(db) as conn:
+            conn.row_factory = sqlite3.Row
+            rows = conn.execute(
+                """
+                SELECT state, payload_json, verdict, updated_at
+                FROM agent_tasks
+                ORDER BY updated_at ASC
+                """
+            ).fetchall()
+    except sqlite3.Error:
+        return {}
+    for row in rows:
+        try:
+            payload = json.loads(row["payload_json"] or "{}")
+        except Exception:
+            payload = {}
+        candidate = payload.get("candidate") if isinstance(payload.get("candidate"), dict) else {}
+        ea_id = (
+            payload.get("ea_id")
+            or payload.get("rework_target")
+            or candidate.get("ea_id")
+            or payload.get("card_id")
+        )
+        if not ea_id:
+            continue
+        latest[str(ea_id)] = {
+            "state": str(row["state"] or ""),
+            "updated_at": str(row["updated_at"] or ""),
+            "note": str(payload.get("review_close_note") or payload.get("note") or row["verdict"] or ""),
+        }
+    return {ea_id: meta for ea_id, meta in latest.items() if meta["state"] == "RECYCLE"}
+
+
 def derive_ea_candidates(tasks: list[dict], root: Path | None = None) -> list[dict]:
     """Group tasks by card_id (= ea_id) and derive EA-level state.
 
@@ -511,6 +550,30 @@ def derive_ea_candidates(tasks: list[dict], root: Path | None = None) -> list[di
             for ea_id, ea_rows in wi_by_ea.items():
                 if ea_id not in by_id:
                     eas.append(_ea_from_work_items(ea_id, ea_rows, pass_verdicts))
+                    by_id[ea_id] = eas[-1]
+            for ea_id, meta in _latest_recycled_eas(root).items():
+                ea = by_id.get(ea_id)
+                if ea is None:
+                    ea = {
+                        "ea_id": ea_id,
+                        "slug": _slug_for_ea(ea_id),
+                        "completed_phases": [],
+                        "current_phase": "G0",
+                        "failed_at": None,
+                        "dead": False,
+                        "live": False,
+                        "task_count": 0,
+                        "last_updated": meta.get("updated_at") or "",
+                        "latest_evidence": None,
+                    }
+                    eas.append(ea)
+                    by_id[ea_id] = ea
+                ea["recycled"] = True
+                ea["dead"] = False
+                ea["live"] = False
+                ea["recycle_note"] = meta.get("note") or ""
+                if (meta.get("updated_at") or "") > (ea.get("last_updated") or ""):
+                    ea["last_updated"] = meta.get("updated_at") or ea.get("last_updated") or ""
 
     eas.sort(key=lambda x: x.get("last_updated", ""), reverse=True)
     return eas
@@ -1661,6 +1724,7 @@ ARCHIVE_CSS = """
 .archive-table .status-chip.s-dead{background:rgba(239,68,68,0.1);color:var(--qm-fail);border:.5px solid rgba(239,68,68,0.3)}
 .archive-table .status-chip.s-flow{background:rgba(6,182,212,0.1);color:var(--qm-live);border:.5px solid rgba(6,182,212,0.3)}
 .archive-table .status-chip.s-live{background:rgba(16,185,129,0.12);color:var(--em);border:.5px solid rgba(16,185,129,0.35)}
+.archive-table .status-chip.s-recycled{background:transparent;color:var(--text-3,var(--qm-text-muted));border:0;font-style:italic}
 
 .archive-footer{margin:40px auto 48px;max-width:1400px;padding:0 36px;font-size:11px;color:var(--qm-text-muted);text-align:center;font-family:var(--font-mono,'Source Code Pro',monospace);line-height:1.7}
 """
@@ -1746,6 +1810,7 @@ ARCHIVE2_CSS = """
 .achip.c-p8 .achip-num{color:var(--em)}
 .achip.c-surv .achip-num{color:var(--qm-live)}
 .achip.c-dead .achip-num{color:var(--qm-fail)}
+.achip.c-recycled .achip-num{color:var(--text-3,var(--qm-text-muted))}
 .presets{max-width:1400px;margin:8px auto 0;padding:0 36px;display:flex;gap:7px;flex-wrap:wrap;align-items:center}
 .preset-label{font-size:10px;color:var(--qm-text-muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-right:2px}
 .preset{padding:6px 13px;border-radius:8px;background:rgba(15,23,42,0.6);border:.5px solid var(--qm-border);font-size:11px;color:var(--qm-text-dim);cursor:pointer;font-family:var(--font-mono,'Source Code Pro',monospace);transition:all .12s}
@@ -1753,6 +1818,8 @@ ARCHIVE2_CSS = """
 .preset.active{background:var(--em-s,rgba(16,185,129,0.14));border-color:var(--em);color:var(--em);font-weight:600}
 .archive-table tbody tr.row-dead{opacity:.4}
 .archive-table tbody tr.row-dead:hover{opacity:.85}
+.archive-table tbody tr.row-recycled{opacity:.55}
+.archive-table tbody tr.row-recycled:hover{opacity:.9}
 .archive-table tbody tr.row-decision td{background:rgba(16,185,129,0.045)}
 .lane-pill{display:inline-block;padding:1px 6px;border-radius:6px;font-size:8px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;margin-left:5px}
 .lane-pill.lp-live{background:rgba(6,182,212,0.12);color:var(--qm-live)}
@@ -1818,6 +1885,8 @@ DETAIL2_CSS = """
 
 def _ea_status(ea: dict) -> tuple[str, str]:
     """Return (label, css-class-suffix) for an EA."""
+    if ea.get("recycled"):
+        return "RECYCLED", "s-recycled"
     if ea.get("live"):
         return "LIVE", "s-live"
     if ea.get("dead"):
@@ -1968,7 +2037,9 @@ def render_strategies(state: dict, root: Path) -> str:
         k = kpis.get(ea["ea_id"]) or {}
         has_wi = ea["ea_id"] in wi_eas
         lanes = {"all", "live" if has_wi else "archive"}
-        if label == "DEAD":
+        if label == "RECYCLED":
+            lanes.add("recycled"); rank = 7; counts["recycled"] += 1
+        elif label == "DEAD":
             lanes.add("dead"); rank = 6; counts["dead"] += 1
         elif k.get("p8_pass"):
             lanes |= {"decision", "survivor", "active"}; rank = 0
@@ -2031,6 +2102,8 @@ def render_strategies(state: dict, root: Path) -> str:
             row_cls = []
             if ea.get("dead"):
                 row_cls.append("row-dead")
+            if ea.get("recycled"):
+                row_cls.append("row-recycled")
             if "decision" in lm["lanes"]:
                 row_cls.append("row-decision")
             live_pill = ('<span class="lane-pill lp-live">live</span>' if lm["has_wi"]
@@ -2038,6 +2111,10 @@ def render_strategies(state: dict, root: Path) -> str:
             fail_prof = ""
             if ea.get("dead") and ea.get("failed_at"):
                 fail_prof = f'<div class="fail-prof">failed at {e(phase_label(ea["failed_at"]))}</div>'
+            if ea.get("recycled"):
+                note = str(ea.get("recycle_note") or "")
+                tip = note if "Superseded-by-ea_id=" in note else "Superseded EA"
+                fail_prof = f'<div class="fail-prof" title="{e(tip)}">recycled</div>'
             rows.append(f"""<tr class="{' '.join(row_cls)}" data-status="{status_cls}" data-phase="{cur_phase}" data-lanes="{' '.join(sorted(lm['lanes']))}" data-search="{e((ea['ea_id'] + ' ' + (ea.get('slug') or '')).lower())}" onclick="window.location='ea_{e(ea['ea_id'])}.html'">
   <td class="td-ea"><code>{e(ea['ea_id'])}</code>{live_pill}</td>
   <td class="td-slug">{e(ea.get('slug') or '')}</td>
@@ -2087,6 +2164,7 @@ def render_strategies(state: dict, root: Path) -> str:
     <div class="achip"><div class="achip-num">{counts.get("active", 0)}</div><div class="achip-label">Active now</div></div>
     <div class="achip"><div class="achip-num">{counts.get("triage", 0)}</div><div class="achip-label">Needs triage</div></div>
     <div class="achip"><div class="achip-num">{counts.get("notstarted", 0)}</div><div class="achip-label">Not started</div></div>
+    <div class="achip c-recycled"><div class="achip-num">{counts.get("recycled", 0)}</div><div class="achip-label">Recycled</div></div>
     <div class="achip c-dead"><div class="achip-num">{counts.get("dead", 0)}</div><div class="achip-label">Dead</div></div>
   </div>
 </div>
@@ -2101,6 +2179,7 @@ def render_strategies(state: dict, root: Path) -> str:
     <option value="">All status</option>
     <option value="s-live">Live</option>
     <option value="s-flow">In Flow</option>
+    <option value="s-recycled">Recycled</option>
     <option value="s-dead">Dead</option>
   </select>
   <select id="f-phase">
@@ -2118,6 +2197,7 @@ def render_strategies(state: dict, root: Path) -> str:
   <span class="preset" data-preset="active">Active now</span>
   <span class="preset" data-preset="survivor">Q05+ survivors</span>
   <span class="preset" data-preset="triage">Needs triage</span>
+  <span class="preset" data-preset="recycled">Recycled</span>
   <span class="preset" data-preset="dead">Dead</span>
   <span class="preset" data-preset="live">Live pipeline only</span>
   <span class="preset" data-preset="archive">Archive only</span>
