@@ -2444,3 +2444,10 @@ ea_id,slug,strategy_id,status,owner,created_at
 11569,davey-dueling-momentum-d1,57b37e6a-9b9f-550b-a023-e0d6947ad2e8,pending,Claude,2026-05-23
 11570,wilder-tbp-momentum-d1,0ab0a479-4a09-5ecc-bb90-6a37148fa78b,pending,Claude,2026-05-23
 11571,wilder-reaction-trend-pivots-d1,0ab0a479-4a09-5ecc-bb90-6a37148fa78b,pending,Claude,2026-05-23
+11572,robo-psar-awesome-m30,e78a9f1f-4e6a-563c-a080-915133d6ed28,active,Research,2026-05-23
+11573,robo-ema200-awesome-h1,e78a9f1f-4e6a-563c-a080-915133d6ed28,active,Research,2026-05-23
+11574,robo-ichi-awesome-h1,e78a9f1f-4e6a-563c-a080-915133d6ed28,active,Research,2026-05-23
+11575,robo-32points-d1,e78a9f1f-4e6a-563c-a080-915133d6ed28,active,Research,2026-05-23
+11576,robo-daily-break-ma-d1,e78a9f1f-4e6a-563c-a080-915133d6ed28,active,Research,2026-05-23
+11577,robo-psar-awesome2-m30,e78a9f1f-4e6a-563c-a080-915133d6ed28,active,Research,2026-05-23
+11578,neely-weller-pct-filter-rule-d1,577eb0aa-7880-5c0a-a8f9-56cd126c19f9,pending,Claude,2026-05-23
