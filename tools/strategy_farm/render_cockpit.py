@@ -35,7 +35,6 @@ DB = ROOT / "state" / "farm_state.sqlite"
 DASH = ROOT / "dashboards"
 COCKPIT = DASH / "cockpit.html"
 LOG_DIR = ROOT / "logs"
-WAKES_LOG = LOG_DIR / "autonomous_wakes.log"
 CARDS_DRAFT = ROOT / "artifacts" / "cards_draft"
 CARDS_APPROVED = ROOT / "artifacts" / "cards_approved"
 QUOTA_SNAPSHOT = ROOT / "state" / "quota_snapshot.json"
@@ -85,107 +84,9 @@ def qid(phase: str | None) -> str:
     return PHASE_DISPLAY.get(p, p or "—")
 
 
-def claude_token_usage() -> dict:
-    """Sum input/output/cache tokens across all claude streams in 5h window.
-
-    Claude's rate_limit_event only has allowed/blocked status, no usage
-    percentage. To estimate budget consumption: aggregate `usage` blocks
-    from every assistant message in autonomous_wake_*.jsonl AND
-    claude_*.live.log files modified in the last 5 hours.
-
-    Returns: {events, input, output, cache_create, cache_read, total,
-    billable} where billable = input+output+cache_create (cache_read is
-    Anthropic-discounted ~10x).
-    """
-    now = dt.datetime.now().timestamp()
-    five_hr_start = now - 5 * 3600
-    totals = {"input": 0, "output": 0, "cache_create": 0, "cache_read": 0, "events": 0}
-    streams = (
-        list(LOG_DIR.glob("autonomous_wake_*.jsonl"))
-        + list(LOG_DIR.glob("claude_research_*.live.log"))
-        + list(LOG_DIR.glob("claude_review_*.live.log"))
-        + list(LOG_DIR.glob("claude_g0_*.live.log"))
-    )
-    for f in streams:
-        try:
-            if f.stat().st_mtime < five_hr_start:
-                continue
-            for line in f.read_text(encoding="utf-8", errors="ignore").splitlines():
-                if '"type":"assistant"' not in line or '"usage"' not in line:
-                    continue
-                try:
-                    o = json.loads(line)
-                except Exception:
-                    continue
-                usage = (o.get("message") or {}).get("usage") or {}
-                if not usage:
-                    continue
-                totals["input"]        += int(usage.get("input_tokens") or 0)
-                totals["output"]       += int(usage.get("output_tokens") or 0)
-                totals["cache_read"]   += int(usage.get("cache_read_input_tokens") or 0)
-                totals["cache_create"] += int(usage.get("cache_creation_input_tokens") or 0)
-                totals["events"]       += 1
-        except Exception:
-            continue
-    totals["total"] = totals["input"] + totals["output"] + totals["cache_read"] + totals["cache_create"]
-    totals["billable"] = totals["input"] + totals["output"] + totals["cache_create"]
-    return totals
-
-
-def claude_quota() -> dict:
-    """Parse latest rate_limit_event from claude jsonl streams.
-
-    Reads the newest claude jsonl (autonomous_wake, claude_research,
-    claude_review, claude_g0) and extracts the most recent rate_limit_event.
-    Returns: {status, resetsAt (epoch), reset_in_min, rateLimitType,
-    isUsingOverage, source_log}.
-    """
-    out = {"status": "unknown", "source_log": None}
-    candidates = sorted(
-        list(LOG_DIR.glob("autonomous_wake_*.jsonl"))
-        + list(LOG_DIR.glob("claude_research_*.live.log"))
-        + list(LOG_DIR.glob("claude_review_*.live.log"))
-        + list(LOG_DIR.glob("claude_g0_*.live.log")),
-        key=lambda p: p.stat().st_mtime if p.exists() else 0,
-        reverse=True,
-    )
-    for p in candidates[:5]:
-        try:
-            text = p.read_text(encoding="utf-8", errors="ignore")
-            # Scan lines reverse — pick the LAST rate_limit_event
-            for line in reversed(text.splitlines()):
-                if "rate_limit_event" not in line:
-                    continue
-                # Extract the embedded JSON
-                idx = line.find("{")
-                if idx < 0:
-                    continue
-                try:
-                    obj = json.loads(line[idx:])
-                except Exception:
-                    continue
-                rl = obj.get("rate_limit_info") or {}
-                if not rl:
-                    continue
-                resets_at = rl.get("resetsAt")
-                reset_in = None
-                if isinstance(resets_at, (int, float)):
-                    delta = int(resets_at) - int(dt.datetime.now().timestamp())
-                    reset_in = max(0, delta) // 60
-                out = {
-                    "status": rl.get("status", "?"),
-                    "resetsAt": resets_at,
-                    "reset_in_min": reset_in,
-                    "rateLimitType": rl.get("rateLimitType", "?"),
-                    "isUsingOverage": rl.get("isUsingOverage", False),
-                    "overageStatus": rl.get("overageStatus", "?"),
-                    "source_log": p.name,
-                    "event_age_sec": int(dt.datetime.now().timestamp() - p.stat().st_mtime),
-                }
-                return out
-        except Exception:
-            continue
-    return out
+def e(s) -> str:
+    """HTML-escape with str() coercion; None -> "". Matches dashboards/render_dashboards.py:e()."""
+    return html.escape(str(s)) if s is not None else ""
 
 
 def _parse_codex_text(text: str) -> dict:
@@ -341,44 +242,6 @@ def quota_snapshot() -> dict:
             "matches": matches,
             "url": data.get("url"),
         }
-    return out
-
-
-def codex_quota() -> dict:
-    """Estimate codex token burn from recent codex_build live logs.
-
-    Each codex build emits a final `tokens used\\nN,NNN` line. Aggregate
-    over codex_build_*.live.log files modified in the last 5 hours (the
-    Codex ChatGPT subscription window). Returns: {total_tokens_5h,
-    builds_5h, builds_24h, avg_tokens_per_build}.
-    """
-    out = {"total_tokens_5h": 0, "builds_5h": 0, "builds_24h": 0, "avg_tokens_per_build": 0}
-    now = dt.datetime.now().timestamp()
-    five_hr = now - 5 * 3600
-    one_day = now - 24 * 3600
-    builds_5h_tokens: list[int] = []
-    builds_24h = 0
-    for log in LOG_DIR.glob("codex_build_*.live.log"):
-        try:
-            mtime = log.stat().st_mtime
-            if mtime < one_day:
-                continue
-            builds_24h += 1
-            if mtime < five_hr:
-                continue
-            text = log.read_text(encoding="utf-8", errors="ignore")
-            # Find "tokens used\nN" pattern
-            m = re.search(r"tokens\s+used\s*\n\s*([\d,]+)", text)
-            if m:
-                n = int(m.group(1).replace(",", ""))
-                builds_5h_tokens.append(n)
-        except Exception:
-            continue
-    if builds_5h_tokens:
-        out["total_tokens_5h"] = sum(builds_5h_tokens)
-        out["builds_5h"] = len(builds_5h_tokens)
-        out["avg_tokens_per_build"] = sum(builds_5h_tokens) // len(builds_5h_tokens)
-    out["builds_24h"] = builds_24h
     return out
 
 
@@ -1006,9 +869,6 @@ def main() -> int:
     next_actions = profitability_next_actions(pipeline)
     backlog = pipeline_backlog_snapshot()
     heureka = compute_heureka_leader(pipeline)
-    claude_q = claude_quota()
-    claude_usage = claude_token_usage()
-    codex_q = codex_quota()
     qsnap = quota_snapshot()
 
     # Pipeline health (written by `farmctl health`, scheduled every 15 min)
@@ -1169,1189 +1029,1199 @@ def main() -> int:
 
     severity, msg = diagnose_bottleneck(procs, q, claude_workers, codex_workers)
 
-    # === HTML ===
+    # === HTML — STEEL / EMERALD ===
+    now_utc_full = dt.datetime.now(dt.UTC).replace(tzinfo=None).strftime("%Y-%m-%d %H:%M:%SZ")
     now_local = dt.datetime.now().strftime("%H:%M:%S")
-    now_full = dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    sev_color = {"ok": "#10b981", "warn": "#f59e0b", "block": "#ef4444"}[severity]
-    sev_label = {"ok": "OK", "warn": "WARN", "block": "BLOCK"}[severity]
+    # Top-bar health pill — map bottleneck severity to NOMINAL/WARN/CRITICAL.
+    # Overall pipeline health.json may upgrade severity to CRIT if any check FAIL.
+    pill_label = {"ok": "NOMINAL", "warn": "WARN", "block": "CRITICAL"}[severity]
+    pill_class = {"ok": "", "warn": "warn", "block": "crit"}[severity]
+    if (health.get("overall") or "").upper() == "FAIL":
+        pill_label = "CRITICAL"; pill_class = "crit"
+    elif (health.get("overall") or "").upper() == "WARN" and pill_class == "":
+        pill_label = "WARN"; pill_class = "warn"
 
-    def stage_color(stage_status: str) -> str:
-        if stage_status == "done":
-            return "#10b981"
-        if stage_status == "failed":
-            return "#ef4444"
-        if stage_status == "active":
-            return "#06b6d4"
-        if stage_status == "pending":
-            return "#f59e0b"
-        return "#6b7280"
+    def sparkline_str(values: list[int]) -> str:
+        """7-char unicode bar sparkline from a list of ints."""
+        glyphs = "▁▂▃▄▅▆▇█"
+        if not values:
+            return "▁▁▁▁▁▁▁"
+        max_v = max(values) or 1
+        out = []
+        for v in values:
+            idx = int(round((v / max_v) * (len(glyphs) - 1)))
+            out.append(glyphs[max(0, min(len(glyphs) - 1, idx))])
+        return "".join(out)
 
-    def fmt_age(sec: int) -> str:
-        if sec < 60:
-            return f"{sec}s"
-        if sec < 3600:
-            return f"{sec // 60}m {sec % 60}s"
-        return f"{sec // 3600}h {(sec % 3600) // 60}m"
-
-    # --- Hero: 3 worker panels ---
-    def worker_card(title: str, count: int, color: str, workers: list, what_key: str, sub_key: str = None) -> str:
-        if count == 0:
-            body = '<div class="worker-empty">no active work</div>'
-        else:
-            items = []
-            for w in workers:
-                subject = html.escape(str(w.get(what_key, "?")))
-                sub = ""
-                if sub_key and w.get(sub_key):
-                    sub = f' <span class="muted">{html.escape(str(w[sub_key]))}</span>'
-                age = fmt_age(w.get("age", 0))
-                size = w.get("size_kb", 0)
-                tail_html = ""
-                if w.get("tail"):
-                    tail_html = '<div class="tail">' + "".join(
-                        f'<div>{html.escape(line[:160])}</div>' for line in w["tail"]
-                    ) + '</div>'
-                items.append(
-                    f'<div class="worker-item">'
-                    f'<div class="worker-row"><span class="worker-subject mono">{subject}</span>{sub}'
-                    f'<span class="worker-meta mono">{age} · {size}K</span></div>'
-                    f'{tail_html}</div>'
-                )
-            body = "\n".join(items)
-        return f'''
-        <div class="hero-card" style="border-color:{color}">
-          <div class="hero-head">
-            <span class="hero-title">{title}</span>
-            <span class="hero-count mono" style="color:{color}">{count}</span>
-          </div>
-          <div class="hero-body">{body}</div>
-        </div>'''
-
-    claude_count = len(claude_workers)
-    codex_count = len(codex_workers)
-    mt5_count = len(mt5_work)
-
-    hero_claude = worker_card("Claude", claude_count, "#34d399",
-                              [{"subject": w["subject"], "kind": w["kind"],
-                                "age": w["age"], "size_kb": w["size_kb"], "tail": w["tail"]}
-                               for w in claude_workers],
-                              "subject", "kind")
-    hero_codex = worker_card("Codex", codex_count, "#10b981",
-                             [{"subject": w["ea_id"], "kind": w["slug"][:24],
-                               "age": w["age"], "size_kb": w["size_kb"], "tail": w["tail"]}
-                              for w in codex_workers],
-                             "subject", "kind")
-    def _mt5_age(since: str) -> int:
-        if not since:
-            return 0
-        try:
-            s = since.rstrip("Z")[:19]
-            dtv = dt.datetime.fromisoformat(s)
-            return int((dt.datetime.utcnow() - dtv).total_seconds())
-        except Exception:
-            return 0
-
-    hero_mt5 = worker_card("MT5", mt5_count, "#06b6d4",
-                           [{"subject": f"{w['ea_id']} {qid(w['phase'])} · {w['symbol']}",
-                             "kind": w["terminal"],
-                             "age": _mt5_age(w.get("since", "")),
-                             "size_kb": 0, "tail": []}
-                            for w in mt5_work],
-                           "subject", "kind")
-
-    # --- Pipeline flow visual ---
-    # Group EAs by current stage. Show as columns on a horizontal flow.
-    stage_buckets: dict[str, list[dict]] = {s: [] for s in PIPELINE_STAGES}
-    for e in pipeline:
-        st = e["stage"]
-        if st in stage_buckets:
-            stage_buckets[st].append(e)
-        else:
-            # Unknown stage (e.g. P3.5) — bucket into Card
-            stage_buckets["Card"].append(e)
-
-    flow_cols = []
-    for stage in PIPELINE_STAGES:
-        bucket = stage_buckets[stage]
-        if not bucket and stage in ("P4", "P5", "P6", "P7", "P8", "Live"):
-            # Empty future stages — show as faded placeholders
-            flow_cols.append(
-                f'<div class="flow-col empty"><div class="flow-stage subtle">{stage}</div>'
-                f'<div class="flow-count subtle">·</div></div>'
-            )
-            continue
-        chips = []
-        for e in bucket:
-            col = stage_color(e["stage_status"])
-            chips.append(
-                f'<div class="ea-chip" style="border-color:{col};color:{col}" '
-                f'title="{html.escape(e["ea_id"])} {html.escape(e["slug"])} · {e["stage_status"]}">'
-                f'<span class="mono">{html.escape(e["ea_id"][-4:])}</span></div>'
-            )
-        flow_cols.append(
-            f'<div class="flow-col"><div class="flow-stage">{stage}</div>'
-            f'<div class="flow-count mono">{len(bucket)}</div>'
-            f'<div class="flow-chips">{"".join(chips)}</div></div>'
-        )
-    flow_html = '<div class="flow-row">' + "".join(flow_cols) + '</div>'
-
-    # --- Queue panels ---
-    def queue_card(title: str, count: int, accent: str, items: list[str]) -> str:
-        if count == 0:
-            body = '<div class="q-empty">empty</div>'
-        else:
-            body = '<div class="q-list">' + "".join(items) + '</div>'
-        return f'''
-        <div class="q-card">
-          <div class="q-head"><span class="q-title">{title}</span>
-            <span class="q-count mono" style="color:{accent}">{count}</span></div>
-          {body}
-        </div>'''
-
-    build_q_items = [
-        f'<div class="q-item"><span class="mono">{html.escape(p["ea_id"])}</span> '
-        f'<span class="muted">{html.escape(p["slug"][:24])}</span></div>'
-        for p in q["pending_builds_list"]
-    ]
-    review_q_count = sum(1 for r in db_rows(
-        "SELECT b.id FROM tasks b WHERE b.kind='build_ea' AND b.status='done' "
-        "AND NOT EXISTS (SELECT 1 FROM tasks r WHERE r.kind='ea_review' AND r.payload_json LIKE '%\"build_task_id\": \"' || b.id || '\"%')"
-    ))
-    review_q_eas = db_rows(
-        "SELECT payload_json FROM tasks b WHERE b.kind='build_ea' AND b.status='done' "
-        "AND NOT EXISTS (SELECT 1 FROM tasks r WHERE r.kind='ea_review' AND r.payload_json LIKE '%\"build_task_id\": \"' || b.id || '\"%')"
-    )
-    review_q_items = [
-        f'<div class="q-item"><span class="mono">{html.escape(json.loads(r["payload_json"]).get("ea_id","?"))}</span></div>'
-        for r in review_q_eas[:8]
-    ]
-    bt_q_items = [
-        f'<div class="q-item"><span class="mono">{html.escape(p["ea_id"])}</span> '
-        f'<span class="muted">→ {html.escape(qid(p["phase"]))}</span></div>'
-        for p in q["pending_backtests_list"]
-    ]
-    router = q.get("agent_router") or {}
-    router_items = []
-    if router.get("available"):
-        agent_bits = []
-        for agent in router.get("agents", []):
-            state = "on" if int(agent.get("enabled") or 0) else "off"
-            cap = int(agent.get("max_parallel") or 0)
-            agent_bits.append(
-                f'<span class="mono">{html.escape(str(agent.get("agent_id") or "?"))}</span> '
-                f'<span class="muted">{state}/{cap}</span>'
-            )
-        if agent_bits:
-            router_items.append('<div class="q-item">' + " · ".join(agent_bits) + '</div>')
-        for task in router.get("recent_tasks", [])[:5]:
-            artifact = task.get("artifact") or task.get("verdict") or ""
-            artifact_html = f' <span class="muted">{html.escape(str(artifact)[:36])}</span>' if artifact else ""
-            sla_class = "sla-late" if task.get("sla") == "late" else "sla-ok"
-            router_items.append(
-                f'<div class="q-item"><span class="mono">{html.escape(str(task.get("agent") or "?"))}</span> '
-                f'{html.escape(str(task.get("state") or "?"))} '
-                f'<span class="muted">{html.escape(str(task.get("type") or "?"))}</span> '
-                f'<span class="{sla_class} mono">{html.escape(str(task.get("age_h") or 0))}h</span>{artifact_html}</div>'
-            )
+    # ---------- 2. MISSION + HEUREKA ----------
+    p8_pass = backlog.get("p8_pass_total", 0)
+    portfolio_target = 5
+    mission_pct = int(100 * p8_pass / portfolio_target) if portfolio_target else 0
+    bar_filled = "█" * max(0, min(20, int(20 * p8_pass / portfolio_target))) if portfolio_target else ""
+    bar_empty = "─" * (20 - len(bar_filled))
+    if p8_pass == 0:
+        mission_sub = "No EA has cleared Q11 portfolio gate"
+        bar_html = f'<span class="empty">{bar_empty}</span>'
     else:
-        router_items.append('<div class="q-item muted">agent tables unavailable</div>')
+        mission_sub = f"{p8_pass} EA{'s' if p8_pass != 1 else ''} portfolio-ready"
+        bar_html = f'<span>{bar_filled}</span><span class="empty">{bar_empty}</span>'
 
-    queue_html = f'''
-    <div class="queue-row">
-      {queue_card("Codex queue", q["builds_pending"], "#f59e0b", build_q_items)}
-      {queue_card("Review queue", review_q_count, "#f59e0b", review_q_items)}
-      {queue_card("Backtest queue", len(q["pending_backtests_list"]), "#f59e0b", bt_q_items)}
-      {queue_card("Agent router", int(router.get("open_count") or 0), "#38bdf8", router_items)}
-      {queue_card("Cards approved", q["cards_approved"], "#34d399",
-                  [f'<div class="q-item muted">unbuild: {q["cards_approved"] - codex_count - q["builds_pending"]}</div>'])}
-    </div>'''
-
-    # --- Pipeline backlog ---
-    def metric_tile(label: str, value: int, sub: str = "", accent: str = "var(--qm-text)") -> str:
-        sub_html = f'<div class="backlog-sub">{html.escape(sub)}</div>' if sub else ""
-        return (
-            '<div class="backlog-metric">'
-            f'<div class="backlog-label">{html.escape(label)}</div>'
-            f'<div class="backlog-value mono" style="color:{accent}">{value}</div>'
-            f'{sub_html}</div>'
-        )
-
-    def phase_chips(rows: list[dict], empty_label: str) -> str:
-        if not rows:
-            return f'<div class="backlog-empty">{empty_label}</div>'
-        chips = []
-        for r in rows:
-            distinct = int(r.get("c") or 0)
-            items = r.get("c_items")
-            suffix = f' <span class="muted">({int(items)} runs)</span>' if items is not None else ""
-            chips.append(
-                f'<span class="backlog-chip"><b>{html.escape(qid(r.get("phase")))}</b>'
-                f'<span class="mono">{distinct}</span>{suffix}</span>'
-            )
-        return '<div class="backlog-chips">' + "".join(chips) + '</div>'
-
-    sources = backlog["sources"]
-    top_sources = backlog["top_sources"]
-    if top_sources:
-        top_sources_html = '<div class="backlog-list">' + "".join(
-            f'<div class="backlog-source"><span class="mono prio">P{html.escape(str(s.get("priority") or 0))}</span>'
-            f'<span>{html.escape(str(s.get("title") or "?")[:90])}</span></div>'
-            for s in top_sources
-        ) + '</div>'
-    else:
-        top_sources_html = '<div class="backlog-empty">no pending sources</div>'
-
-    backlog_note = (
-        f'<div class="backlog-error">{html.escape(backlog["error"])}</div>'
-        if backlog.get("error") else ""
-    )
-    backlog_html = f'''
-    <div class="backlog">
-      <div class="backlog-grid">
-        {metric_tile("Sources pending", sources.get("pending", 0), "awaiting extraction", "var(--promising)")}
-        {metric_tile("Cards ready", sources.get("cards_ready", 0), "ready for EA build", "var(--em-l)")}
-        {metric_tile("Sources done", sources.get("done", 0), "completed source intake", "var(--qm-text-dim)")}
-        {metric_tile("Screening PASS", backlog["pass_total"], "distinct EAs with any PASS", "var(--em)")}
-        {metric_tile("Q05+/P4+ PASS", backlog["p4plus_pass_total"], "OOS-or-later candidates", "var(--live)")}
-        {metric_tile("Q11 PASS", backlog["p8_pass_total"], "portfolio-ready candidates", "var(--em-l)")}
-        {metric_tile("Q12 queue", backlog["portfolio_candidates_total"], "target: 5 EAs", "var(--em-l)")}
-        {metric_tile("P4 blocked", backlog["p4_pending_implementation"], "pending implementation rows", "var(--promising)")}
-        {metric_tile("Work items now", backlog["work_active_total"], "active / pending / claimed", "var(--live)")}
-      </div>
-      <div class="backlog-detail">
-        <div class="backlog-panel">
-          <div class="backlog-panel-title">PASS by phase</div>
-          {phase_chips(backlog["pass_by_phase"], "no PASS work_items")}
-        </div>
-        <div class="backlog-panel">
-          <div class="backlog-panel-title">Active / pending work_items by phase</div>
-          {phase_chips(backlog["work_active_by_phase"], "no active or pending work_items")}
-        </div>
-        <div class="backlog-panel">
-          <div class="backlog-panel-title">Top pending sources</div>
-          {top_sources_html}
-        </div>
-      </div>
-      {backlog_note}
-    </div>'''
-
-    if next_actions:
-        action_rows = "\n".join(
-            "<tr>"
-            f'<td class="mono">{html.escape(str(row["ea_id"]))}</td>'
-            f'<td>{html.escape(str(row["slug"])[:34])}</td>'
-            f'<td>{html.escape(str(row["stage"]))}</td>'
-            f'<td style="color:{stage_color(str(row["status"]))}"><b>{html.escape(str(row["status"]))}</b></td>'
-            f'<td>{html.escape(str(row["next_action"]))}</td>'
-            f'<td class="muted mono">{html.escape(str(row["updated"]))}</td>'
-            "</tr>"
-            for row in next_actions
-        )
-    else:
-        action_rows = '<tr><td colspan="6" class="muted">no pipeline candidates</td></tr>'
-    next_actions_html = f'''
-    <div class="detail-card next-actions">
-      <div class="section-title" style="margin-top:0">Profitability next actions</div>
-      <table>
-        <tr><th>EA</th><th>Slug</th><th>Stage</th><th>Status</th><th>Next action</th><th>Updated</th></tr>
-        {action_rows}
-      </table>
-    </div>'''
-
-    # --- Pipeline EA table (full list) ---
-    pipeline_rows = "\n".join(
-        f'<tr><td class="mono"><b>{html.escape(e["ea_id"])}</b></td>'
-        f'<td>{html.escape(e["slug"][:36])}</td>'
-        f'<td class="mono">{html.escape(e["stage"])}</td>'
-        f'<td style="color:{stage_color(e["stage_status"])}"><b>{html.escape(e["stage_status"])}</b></td>'
-        f'<td class="mono muted">{html.escape(e["last_activity"][:19])}</td></tr>'
-        for e in pipeline
-    )
-
-    # --- Wakes (last 8 lines) ---
-    wakes = []
-    if WAKES_LOG.exists():
-        wakes = WAKES_LOG.read_text(encoding="utf-8", errors="ignore").splitlines()[-8:]
-    wakes_html = "\n".join(f'<div class="log">{html.escape(line[:300])}</div>' for line in wakes)
-
-    # --- Commits ---
-    try:
-        out = subprocess.run(
-            ["git", "log", "--oneline", "-n", "8", "agents/board-advisor", "--format=%h|%cr|%s"],
-            cwd=str(REPO), capture_output=True, text=True, timeout=10,
-        )
-        commit_rows = []
-        for line in (out.stdout or "").splitlines():
-            parts = line.split("|", 2)
-            if len(parts) == 3:
-                commit_rows.append(
-                    f'<tr><td class="mono">{html.escape(parts[0])}</td>'
-                    f'<td class="mono muted">{html.escape(parts[1])}</td>'
-                    f'<td>{html.escape(parts[2][:80])}</td></tr>'
-                )
-        commits_html = "\n".join(commit_rows)
-    except Exception:
-        commits_html = ""
-
-    # === Heureka tile HTML ===
+    # 14-chip Q-strip (Card / Build / Review / Q02..Q11 / Live)
+    chip_labels = {
+        "Card": "CRD", "Build": "BLD", "Review": "REV",
+        "Q02": "Q02", "Q03": "Q03", "Q04": "Q04", "Q05": "Q05", "Q06": "Q06",
+        "Q07": "Q07", "Q08": "Q08", "Q09": "Q09", "Q10": "Q10", "Q11": "Q11",
+        "Live": "LIV",
+    }
     if heureka:
-        # Render 11 stages with done/current/idle styling
-        stages_chips = []
+        cur_idx = heureka["current_stage_idx"]
+        chips_inner = []
         for i, st in enumerate(PIPELINE_STAGES):
             cls = ""
-            if i < heureka["current_stage_idx"]:
+            if i < cur_idx:
                 cls = "done"
-            elif i == heureka["current_stage_idx"]:
-                cls = "current"
-            stages_chips.append(f'<div class="heureka-stage {cls}">{st}</div>')
-        stages_html_inner = "".join(stages_chips)
-        leader_inner = (
-            f'<span class="muted">Active</span> '
-            f'<code>{html.escape(heureka["ea_id"])}</code> '
-            f'<span class="slug">{html.escape(heureka["slug"][:36])}</span> '
-            f'<span class="arrow">·</span> '
-            f'<span>at <strong style="color:var(--live)">{html.escape(heureka["current_stage"])}</strong></span> '
-            f'<span class="arrow">→</span> '
-            f'<span class="next">next <strong>{html.escape(heureka["next_stage"])}</strong></span>'
-        )
-        heureka_html = f"""
-<div class="heureka">
-  <div class="heureka-head">
-    <span class="heureka-title">Heureka · first live EA</span>
-    <span class="heureka-meter">
-      <span class="num">{heureka["completed_count"]}</span><span class="tot">/{heureka["total_stages"]}</span>
-      <span class="pct">· {heureka["pct"]}%</span>
-    </span>
-  </div>
-  <div class="heureka-stages">{stages_html_inner}</div>
-  <div class="heureka-leader">{leader_inner}</div>
-</div>"""
+            elif i == cur_idx:
+                cls = "now"
+            chips_inner.append(f'<span class="chip {cls}">{chip_labels.get(st, st)}</span>')
+        heureka_chips_html = "".join(chips_inner)
+        heureka_pct = heureka["pct"]
+        heureka_done = heureka["completed_count"]
+        heureka_total = heureka["total_stages"]
+        next_stage = heureka["next_stage"]
+        next_label = chip_labels.get(heureka["current_stage"], heureka["current_stage"])
+        next_target = chip_labels.get(next_stage, next_stage)
+        heureka_next_act = f"PROMOTE {next_label} → {next_target}"
+        heureka_id = e(heureka["ea_id"])
+        heureka_slug = e(heureka["slug"] or "—")
+        heureka_aux = f'Furthest EA // {heureka_done} of {heureka_total}'
     else:
-        heureka_html = (
-            '<div class="heureka"><div class="heureka-head">'
-            '<span class="heureka-title">Heureka · first live EA</span></div>'
-            '<div class="heureka-leader heureka-leader-empty">'
-            'no EA in flight · pump research → G0 approve → Codex build</div></div>'
+        heureka_chips_html = "".join(
+            f'<span class="chip">{chip_labels[s]}</span>' for s in PIPELINE_STAGES
         )
+        heureka_pct = 0
+        heureka_done = 0
+        heureka_total = len(PIPELINE_STAGES)
+        heureka_next_act = "AWAIT FIRST EA"
+        heureka_id = "—"
+        heureka_slug = "no EA in flight"
+        heureka_aux = "No leader yet"
 
-    # === Tokens panel HTML ===
-    cq = claude_q
-    cxq = codex_q
-    claude_reset = f'{cq.get("reset_in_min", "?")} min' if cq.get("reset_in_min") is not None else "?"
-    claude_status_class = "ok" if cq.get("status") == "allowed" else "fail"
-    codex_tokens_k = f'{cxq["total_tokens_5h"]//1000}K' if cxq["total_tokens_5h"] else "0"
-    cu = claude_usage
-    billable_m = cu["billable"] / 1_000_000  # millions
-    cache_read_m = cu["cache_read"] / 1_000_000
-    # Heuristic budget thresholds — Anthropic doesn't publish exact 5h Pro/Max
-    # limits, but observation: Claude Pro ~225K-450K billable / 5h, Max 5x
-    # ~1-2M, Max 20x ~5-10M. OWNER has subscription Abo.
-    # Color tiers based on billable absolute:
-    if billable_m > 8.0:
-        billable_class = "fail"
-    elif billable_m > 3.0:
-        billable_class = "warn"
-    else:
-        billable_class = "ok"
-    # --- Real-quota overlay row (from Tampermonkey snapshot if fresh) ---
-    def _pct_class(p):
-        if p is None: return "ok"
-        if p >= 85: return "fail"
-        if p >= 60: return "warn"
-        return "ok"
-    def _snap_card(src_key: str, label: str) -> str:
-        s = qsnap.get(src_key)
-        if not s:
-            return (
-                f'<div class="token-card snap-stale">'
-                f'<div class="token-label">{label} · live %</div>'
-                f'<div class="token-value muted">—</div>'
-                f'<div class="token-sub">install Tampermonkey scraper</div>'
-                f'</div>'
-            )
-        hp, wp = s.get("hour_pct"), s.get("week_pct")
-        age = s.get("age_sec")
-        fresh = s.get("fresh")
-        fresh_label = (
-            f'{age}s ago' if (age is not None and age < 90)
-            else (f'{age//60}m ago' if age is not None else 'no ts')
-        )
-        if hp is None and wp is None:
-            body_val = '<span class="muted">no %</span>'
-            sub = f'snapshot present · {fresh_label} · DOM scrape did not match'
-        else:
-            parts = []
-            if hp is not None:
-                parts.append(f'<span class="{_pct_class(hp)}">{hp:.0f}%</span><span class="muted"> /5h</span>')
-            if wp is not None:
-                parts.append(f'<span class="{_pct_class(wp)}">{wp:.0f}%</span><span class="muted"> /wk</span>')
-            body_val = ' · '.join(parts)
-            sub_bits = []
-            if s.get("plan"):
-                sub_bits.append(html.escape(s["plan"]))
-            if s.get("hour_reset"):
-                sub_bits.append(f'5h→{html.escape(str(s["hour_reset"]))}')
-            if s.get("week_reset"):
-                sub_bits.append(f'wk→{html.escape(str(s["week_reset"]))}')
-            sub_bits.append(fresh_label + ('' if fresh else ' · stale'))
-            sub = ' · '.join(sub_bits)
-        return (
-            f'<div class="token-card{"" if fresh else " snap-stale"}">'
-            f'<div class="token-label">{label} · live %</div>'
-            f'<div class="token-value">{body_val}</div>'
-            f'<div class="token-sub">{sub}</div>'
+    # ---------- 3. OWNER ATTENTION ----------
+    router = q.get("agent_router") or {}
+    attention_rows: list[str] = []
+
+    # T_LIVE-level rows would surface from a future portfolio_candidates table;
+    # for now we surface BLOCKED/OPS_FIX_REQUIRED/REVIEW agent_tasks + the
+    # build→review pending queue (Claude must approve those).
+    review_pending = db_rows(
+        "SELECT b.id, b.payload_json FROM tasks b "
+        "WHERE b.kind='build_ea' AND b.status='done' "
+        "AND NOT EXISTS (SELECT 1 FROM tasks r WHERE r.kind='ea_review' "
+        "AND r.payload_json LIKE '%\"build_task_id\": \"' || b.id || '\"%') "
+        "LIMIT 8"
+    )
+    for row in review_pending[:4]:
+        try:
+            p = json.loads(row.get("payload_json") or "{}")
+        except Exception:
+            p = {}
+        ea_id = p.get("ea_id") or "?"
+        slug = (p.get("slug") or "")[:34]
+        attention_rows.append(
+            f'<div class="attention-row">'
+            f'<span class="glyph">▸</span>'
+            f'<span class="cat">REVIEW PENDING</span>'
+            f'<span class="ent">{e(ea_id)}<span class="slug">{e(slug)}</span></span>'
+            f'<span class="status">CLAUDE TASK</span>'
             f'</div>'
         )
-    snap_row = (
-        '<div class="tokens snap-row">'
-        + _snap_card("claude", "Claude")
-        + _snap_card("codex", "Codex")
-        + '</div>'
+
+    # BLOCKED / OPS_FIX_REQUIRED from agent_router
+    for task in router.get("recent_tasks", []):
+        state = str(task.get("state") or "").upper()
+        if state not in ("BLOCKED", "OPS_FIX_REQUIRED"):
+            continue
+        agent = task.get("agent") or "?"
+        ttype = (task.get("type") or "ops_issue")[:34]
+        artifact = (task.get("artifact") or task.get("verdict") or "")[:36]
+        age_h = task.get("age_h") or 0
+        attention_rows.append(
+            f'<div class="attention-row alert">'
+            f'<span class="glyph">▸</span>'
+            f'<span class="cat">{e(state)}</span>'
+            f'<span class="ent">{e(agent)} / {e(ttype)}'
+            f'<span class="slug">{e(artifact or "ops_issue")}</span></span>'
+            f'<span class="status">{age_h:.1f}H SLA</span>'
+            f'</div>'
+        )
+
+    # REVIEW-ready agent_tasks (Codex artefacts waiting Claude eyeballs)
+    for task in router.get("recent_tasks", []):
+        state = str(task.get("state") or "").upper()
+        if state != "REVIEW":
+            continue
+        agent = task.get("agent") or "?"
+        ttype = (task.get("type") or "ops_issue")[:34]
+        age_h = task.get("age_h") or 0
+        attention_rows.append(
+            f'<div class="attention-row">'
+            f'<span class="glyph">▸</span>'
+            f'<span class="cat">REVIEW READY</span>'
+            f'<span class="ent">{e(agent)} / {e(ttype)}'
+            f'<span class="slug">agent_task</span></span>'
+            f'<span class="status">{age_h:.1f}H // CLAUDE</span>'
+            f'</div>'
+        )
+
+    if not attention_rows:
+        attention_rows.append(
+            '<div class="attention-row">'
+            '<span class="glyph">·</span>'
+            '<span class="cat">CLEAR</span>'
+            '<span class="ent">no owner-attention items<span class="slug">all SLAs green</span></span>'
+            '<span class="status">OK</span>'
+            '</div>'
+        )
+    attention_html_inner = "\n".join(attention_rows[:8])
+    attention_aux = f"{len(attention_rows):02d} Items Open"
+
+    # ---------- 3. AGENT STATUS ----------
+    claude_act = len(claude_workers)
+    codex_act = len(codex_workers)
+    mt5_act = len(mt5_work)
+    review_q_count = len(review_pending)
+
+    # Today's completed work_items counts as "DONE TODAY" for MT5
+    cw_today = controlling["windows"]["today"]
+    mt5_done_today = cw_today.get("mt5_items", 0)
+
+    # Claude/Codex closed-today: agent_tasks transitioned in the last 24h
+    try:
+        claude_closed_today = (db_rows(
+            "SELECT COUNT(*) AS c FROM agent_tasks "
+            "WHERE assigned_agent='claude' AND state IN ('APPROVED','PASSED','FAILED','RECYCLE') "
+            "AND DATE(updated_at) = DATE('now')"
+        ) or [{"c": 0}])[0]["c"]
+        codex_closed_today = (db_rows(
+            "SELECT COUNT(*) AS c FROM agent_tasks "
+            "WHERE assigned_agent='codex' AND state IN ('APPROVED','PASSED','FAILED','RECYCLE') "
+            "AND DATE(updated_at) = DATE('now')"
+        ) or [{"c": 0}])[0]["c"]
+    except Exception:
+        claude_closed_today = 0
+        codex_closed_today = 0
+
+    # Token % from live quota snapshot (Tampermonkey) when fresh, else "—"
+    claude_tok_pct = qsnap.get("claude", {}).get("hour_pct") if qsnap else None
+    codex_tok_pct = qsnap.get("codex", {}).get("hour_pct") if qsnap else None
+    claude_tok_str = f"{int(claude_tok_pct)}%" if isinstance(claude_tok_pct, (int, float)) else "—"
+    codex_tok_str = f"{int(codex_tok_pct)}%" if isinstance(codex_tok_pct, (int, float)) else "—"
+
+    # Total backtests pending across all phases (combine builds + p2 + p3 + work_items pending)
+    mt5_pend = (
+        q.get("backtest_p2_pending", 0)
+        + q.get("backtest_p3_pending", 0)
+        + len(q.get("pending_backtests_list", []) or [])
+    )
+    # T1..T10 fleet — active when an mt5_work entry's terminal matches
+    active_terms = {str(w.get("terminal") or "").upper() for w in mt5_work}
+    term_cells = []
+    for i in range(1, 11):
+        tname = f"T{i}"
+        is_active = any(tname in t or t == tname for t in active_terms)
+        cls = "active" if is_active else "idle"
+        dot = "■" if is_active else "□"
+        term_cells.append(
+            f'<div class="term {cls}"><div class="id">{tname}</div><div class="dot">{dot}</div></div>'
+        )
+    term_row_html = "".join(term_cells)
+    fleet_label = f"T1–T10 Workers // {len(active_terms)} of 10 saturated"
+
+    # ---------- 4. PROFITABILITY NEXT ACTIONS ----------
+    def stage_state_class(status: str) -> tuple[str, str]:
+        s = (status or "").lower()
+        if s == "done":
+            return ("state-done", "DONE")
+        if s == "active":
+            return ("state-act", "ACTIVE")
+        if s == "failed":
+            return ("state-fail", "FAIL")
+        return ("state-pend", "PEND")
+
+    action_rows_html: list[str] = []
+    for row in next_actions:
+        cls, label = stage_state_class(str(row.get("status") or ""))
+        ea = e(str(row.get("ea_id") or "?"))
+        slug = e(str(row.get("slug") or "")[:40])
+        next_act = e(str(row.get("next_action") or "")[:80])
+        # Lane heuristic from slug prefix
+        lane = "MULTI"
+        slug_lower = (row.get("slug") or "").lower()
+        if "carry" in slug_lower:
+            lane = "FX-CARRY"
+        elif "fx" in slug_lower or "eur" in slug_lower or "usd" in slug_lower:
+            lane = "FX"
+        elif "h4" in slug_lower:
+            lane = "H4"
+        elif "h1" in slug_lower:
+            lane = "H1"
+        elif "idx" in slug_lower or "spx" in slug_lower or "ndx" in slug_lower:
+            lane = "INDEX"
+        # Decide top-level action verb
+        st = (row.get("status") or "").lower()
+        stage_name = (row.get("stage") or "")
+        if st == "done":
+            verb = "PROMOTE"
+        elif st == "active":
+            verb = "WAIT EVIDENCE"
+        elif st == "failed":
+            verb = "REVIEW FAIL"
+        else:
+            verb = "ENQUEUE" if stage_name not in ("Card",) else "BUILD"
+        # Compute next gate hint (e.g. Q02 → Q03)
+        try:
+            idx = PIPELINE_STAGES.index(stage_name)
+            nxt_g = PIPELINE_STAGES[idx + 1] if idx + 1 < len(PIPELINE_STAGES) else "live"
+            next_gate = f"{chip_labels.get(stage_name, stage_name)} → {chip_labels.get(nxt_g, nxt_g)}"
+        except ValueError:
+            next_gate = chip_labels.get(stage_name, stage_name) or "—"
+        action_rows_html.append(
+            "<tr>"
+            f'<td class="action">{e(verb)}</td>'
+            f'<td class="ea-cell">{ea}</td>'
+            f'<td class="slug-cell">{e(lane)}</td>'
+            f'<td class="slug-cell">{slug}</td>'
+            f'<td><span class="state {cls}">{label}</span></td>'
+            f'<td class="gate">{e(next_gate)}</td>'
+            f'<td class="note">{next_act}</td>'
+            "</tr>"
+        )
+    if not action_rows_html:
+        action_rows_html.append('<tr><td colspan="7" class="note">no pipeline candidates</td></tr>')
+    profit_aux = f"{len(next_actions):02d} Rows // Sorted By Recency"
+
+    # ---------- 5. PIPELINE FUNNEL ----------
+    # Stage counts:
+    # SRC      — sources pending  (input reservoir)
+    # CARDS    — cards_ready / approved (write-ready EAs)
+    # BUILT    — build_ea active+pending+done not yet reviewed (EAs being built)
+    # BACKTEST Q02  — work_items at P2 (any status)
+    # ROBUST Q05-Q07 — work_items at P4/P5/P5b (any status)
+    # PORTFOLIO Q11 — work_items PASS at P8
+    src_pending = backlog["sources"].get("pending", 0)
+    src_done = backlog["sources"].get("done", 0)
+    cards_ready = backlog["sources"].get("cards_ready", 0)
+    cards_cum_approved = q.get("cards_approved", 0)
+    # Builds: pending + active + waiting review
+    built_count = q.get("builds_pending", 0) + q.get("builds_active", 0) + review_q_count
+    # Backtest Q02 — count work_items at P2 (active+pending+done)
+    p2_total = 0
+    for r in db_rows("SELECT status, verdict, COUNT(*) AS c FROM work_items WHERE phase='P2' GROUP BY status, verdict"):
+        p2_total += int(r.get("c") or 0)
+    # ROBUST Q05-Q07: phases P4/P5/P5b
+    robust_rows = db_rows(
+        "SELECT phase, COUNT(DISTINCT ea_id) AS c FROM work_items "
+        "WHERE verdict='PASS' AND phase IN ('P4','P5','P5b') GROUP BY phase"
+    )
+    robust_count = sum(int(r.get("c") or 0) for r in robust_rows)
+    robust_meta = " // ".join(
+        f"{chip_labels.get(r['phase'], r['phase'])}:{r['c']}" for r in robust_rows
+    ) or "0 PASS"
+    portfolio_count = backlog.get("p8_pass_total", 0)
+    portfolio_meta = f"TARGET 5 // {portfolio_count}/5"
+
+    # 7D sparklines from trend dict (keys per day)
+    def _last7(metric_key: str) -> list[int]:
+        today_d = dt.date.today()
+        return [int((trend.get((today_d - dt.timedelta(days=i)).isoformat()) or {}).get(metric_key, 0))
+                for i in range(6, -1, -1)]
+
+    src_spark = sparkline_str(_last7("source_intake")) if trend else "▁▁▁▁▁▁▁"
+    cards_spark = sparkline_str(_last7("approved")) if trend else "▁▁▁▁▁▁▁"
+    build_spark = sparkline_str(_last7("build_ok") or _last7("build_done")) if trend else "▁▁▁▁▁▁▁"
+    q02_spark = sparkline_str(_last7("_p2_pass")) if trend else "▁▁▁▁▁▁▁"
+    q03_spark = sparkline_str(_last7("_p3_pass")) if trend else "▁▁▁▁▁▁▁"
+    q11_spark = "▁▁▁▁▁▁▁"  # no P8-PASS observed yet; sparkline stays empty
+
+    # Funnel drop-off labels
+    review_drop = ""
+    if cards_cum_approved:
+        review_drop = f"▼ {int(100 - 100 * built_count / max(1, cards_cum_approved))}% TO REVIEW"
+    q02_drop = ""
+    if p2_total:
+        q02_drop = f"▼ {int(100 - 100 * robust_count / max(1, p2_total))}% TO Q05"
+
+    funnel_html_inner = (
+        '<div class="funnel-stage{src_empty}">'
+        '<div class="stg-lbl">SRC</div>'
+        f'<div class="stg-num">{src_pending}</div>'
+        f'<div class="stg-meta">{src_done} DONE // {src_pending} PEND</div>'
+        '<span class="stg-spark-lbl">7D INTAKE</span>'
+        f'<div class="stg-spark">{src_spark}</div>'
+        '</div>'
+        '<div class="funnel-arrow">→</div>'
+        '<div class="funnel-stage{cards_empty}">'
+        '<div class="stg-lbl">CARDS</div>'
+        f'<div class="stg-num">{cards_ready}</div>'
+        f'<div class="stg-meta">{cards_cum_approved} APPROVED CUM</div>'
+        '<span class="stg-spark-lbl">7D APPROVED</span>'
+        f'<div class="stg-spark">{cards_spark}</div>'
+        '</div>'
+        '<div class="funnel-arrow">→</div>'
+        '<div class="funnel-stage{built_empty}">'
+        '<div class="stg-lbl">BUILT</div>'
+        f'<div class="stg-num">{built_count}</div>'
+        f'<div class="stg-meta drop">{e(review_drop) or "—"}</div>'
+        '<span class="stg-spark-lbl">7D BUILD</span>'
+        f'<div class="stg-spark">{build_spark}</div>'
+        '</div>'
+        '<div class="funnel-arrow">→</div>'
+        '<div class="funnel-stage{p2_empty}">'
+        '<div class="stg-lbl">BACKTEST Q02</div>'
+        f'<div class="stg-num">{p2_total}</div>'
+        f'<div class="stg-meta drop">{e(q02_drop) or "—"}</div>'
+        '<span class="stg-spark-lbl">7D Q02 PASS</span>'
+        f'<div class="stg-spark">{q02_spark}</div>'
+        '</div>'
+        '<div class="funnel-arrow">→</div>'
+        '<div class="funnel-stage{robust_empty}">'
+        '<div class="stg-lbl">ROBUST Q05-Q07</div>'
+        f'<div class="stg-num">{robust_count}</div>'
+        f'<div class="stg-meta">{e(robust_meta)}</div>'
+        '<span class="stg-spark-lbl">7D Q03 PASS</span>'
+        f'<div class="stg-spark">{q03_spark}</div>'
+        '</div>'
+        '<div class="funnel-arrow">→</div>'
+        '<div class="funnel-stage{portfolio_empty}">'
+        '<div class="stg-lbl">PORTFOLIO Q11</div>'
+        f'<div class="stg-num">{portfolio_count}</div>'
+        f'<div class="stg-meta">{e(portfolio_meta)}</div>'
+        '<span class="stg-spark-lbl">7D Q11 PASS</span>'
+        f'<div class="stg-spark">{q11_spark}</div>'
+        '</div>'
+    )
+    funnel_html_inner = funnel_html_inner.format(
+        src_empty=" empty" if src_pending == 0 else "",
+        cards_empty=" empty" if cards_ready == 0 else "",
+        built_empty=" empty" if built_count == 0 else "",
+        p2_empty=" empty" if p2_total == 0 else "",
+        robust_empty=" empty" if robust_count == 0 else "",
+        portfolio_empty=" empty" if portfolio_count == 0 else "",
     )
 
-    # 7-day trend chart — small inline SVG histogram per metric
-    def _trend_bars(metric_key: str, label: str, color: str) -> str:
-        # Build last-7-day series
-        today_local = dt.date.today()
-        days = [(today_local - dt.timedelta(days=i)).isoformat() for i in range(6, -1, -1)]
-        values = [int((trend.get(d) or {}).get(metric_key, 0)) for d in days]
-        max_v = max(values) if values else 0
-        bars = []
-        for i, (d, v) in enumerate(zip(days, values)):
-            h = max(2, int(36 * v / max_v)) if max_v > 0 else 2
-            day_label = d[-2:]  # last 2 chars of date "DD"
-            bars.append(
-                f'<div class="trend-bar-wrap" title="{html.escape(d)}: {v}">'
-                f'<div class="trend-bar" style="height:{h}px;background:{color}"></div>'
-                f'<div class="trend-bar-num">{v}</div>'
-                f'<div class="trend-bar-day">{day_label}</div>'
-                f'</div>'
-            )
-        total = sum(values)
-        return (
-            f'<div class="trend-card">'
-            f'<div class="trend-label">{label}</div>'
-            f'<div class="trend-row">{"".join(bars)}</div>'
-            f'<div class="trend-foot">7-day total: <b>{total}</b></div>'
+    # ---------- 6. RECENT EVENTS ----------
+    try:
+        events_rows = db_rows(
+            "SELECT ts, entity_type, entity_id, event, detail_json "
+            "FROM events ORDER BY ts DESC LIMIT 10"
+        )
+    except Exception:
+        events_rows = []
+
+    def event_class(event: str) -> tuple[str, str]:
+        ev = (event or "").lower()
+        if "pass" in ev or "ok" in ev or "approve" in ev:
+            return ("pass", "✓")
+        if "fail" in ev or "dead" in ev or "blocked" in ev:
+            return ("fail", "✗")
+        if "stagnation" in ev or "p_pass" in ev:
+            return ("dead", "☠")
+        return ("", "⚙")
+
+    events_html_rows: list[str] = []
+    for idx, r in enumerate(events_rows):
+        try:
+            t = dt.datetime.fromisoformat(str(r.get("ts") or "").replace("Z", "+00:00"))
+            ts_str = t.strftime("%H:%M:%SZ")
+        except Exception:
+            ts_str = (str(r.get("ts") or "")[11:19] or "—") + "Z"
+        kind, gly = event_class(r.get("event"))
+        cls = kind or ""
+        evt = (r.get("event") or "").replace("_", " ").upper()[:24]
+        ent = r.get("entity_id") or "—"
+        # Try to pull slug + symbol from detail_json
+        slug = ""
+        sym = "--"
+        try:
+            d = json.loads(r.get("detail_json") or "{}")
+            slug = (d.get("slug") or d.get("source_title") or d.get("verdict") or "")[:40]
+            sym = (d.get("symbol") or d.get("source") or sym)[:14]
+            term = d.get("terminal")
+            if term:
+                slug = f"{slug} // {term}" if slug else term
+        except Exception:
+            pass
+        cur_cls = "cur live" if idx == 0 else "cur dim"
+        events_html_rows.append(
+            f'<div class="events-row {cls}">'
+            f'<span class="{cur_cls}">▮</span>'
+            f'<span class="ts">{e(ts_str)}</span>'
+            f'<span class="gly">{gly}</span>'
+            f'<span class="evt">{e(evt)}</span>'
+            f'<span class="ent">{e(str(ent))}</span>'
+            f'<span class="slug">{e(slug)}</span>'
+            f'<span class="sym">{e(sym)}</span>'
             f'</div>'
         )
-    if trend:
-        trend_html = (
-            '<div class="trends">'
-            + _trend_bars("approved", "Cards approved/day", "#10b981")
-            + _trend_bars("_p2_pass", "Q02 PASS/day", "#06b6d4")
-            + _trend_bars("_p3_pass", "Q03 PASS/day", "#34d399")
-            + _trend_bars("build_blocked_by_codex_review", "Codex pre-review blocks/day", "#f59e0b")
-            + '</div>'
-        )
-    else:
-        trend_html = '<div class="trends-empty">no trend data yet</div>'
-
-    def _control_metric(label: str, value: object, sub: str = "") -> str:
-        return (
-            '<div class="control-metric">'
-            f'<div class="control-label">{html.escape(label)}</div>'
-            f'<div class="control-value mono">{html.escape(str(value))}</div>'
-            f'<div class="control-sub">{html.escape(sub)}</div>'
-            '</div>'
+    if not events_html_rows:
+        events_html_rows.append(
+            '<div class="events-row">'
+            '<span class="cur dim">▮</span><span class="ts">—</span>'
+            '<span class="gly">·</span><span class="evt">NO EVENTS</span>'
+            '<span class="ent">—</span><span class="slug">events table empty</span>'
+            '<span class="sym">--</span></div>'
         )
 
+    # ---------- 7. DAILY CONTROLLING ----------
     cw = controlling["windows"]
-    phase_rows = "".join(
-        f'<span class="control-chip"><b>{html.escape(r["label"])}</b><span class="mono">{int(r["count"])}</span></span>'
-        for r in controlling["by_phase"][:10]
-    ) or '<span class="control-empty">no completed work items</span>'
-    terminal_rows = "".join(
-        f'<span class="control-chip"><b>{html.escape(r["terminal"])}</b><span class="mono">{int(r["count"])}</span></span>'
-        for r in controlling["by_terminal"]
-    ) or '<span class="control-empty">no terminal attribution</span>'
-    anomalies = controlling["anomalies"]
-    controlling_html = f'''
-    <section class="control-section">
-      <div class="section-title">Daily Controlling</div>
-      <div class="control-grid">
-        {_control_metric("MT5 EAs today", cw["today"]["mt5_eas"], f'{cw["today"]["mt5_items"]} MT5 work items')}
-        {_control_metric("MT5 EAs yesterday", cw["yesterday"]["mt5_eas"], f'{cw["yesterday"]["mt5_items"]} MT5 work items')}
-        {_control_metric("MT5 EAs 7d", cw["7d"]["mt5_eas"], f'{cw["7d"]["mt5_items"]} MT5 work items')}
-        {_control_metric("MT5 EAs 30d", cw["30d"]["mt5_eas"], f'{cw["30d"]["mt5_items"]} MT5 work items')}
-        {_control_metric("Analysis gates 7d", cw["7d"]["analysis_items"], f'{cw["7d"]["analysis_eas"]} EAs touched')}
-        {_control_metric("Fail/invalid 7d", cw["7d"]["fail_invalid"], "completed work-item failures")}
-      </div>
-      <div class="control-detail">
-        <div class="control-panel"><div class="control-title">Completed by phase/verdict</div><div class="control-chips">{phase_rows}</div></div>
-        <div class="control-panel"><div class="control-title">MT5 work by terminal</div><div class="control-chips">{terminal_rows}</div></div>
-        <div class="control-panel"><div class="control-title">Anomalies 30d</div><div class="control-chips">
-          <span class="control-chip"><b>zero/min-trade</b><span class="mono">{anomalies["zero_trade_like"]}</span></span>
-          <span class="control-chip"><b>invalid</b><span class="mono">{anomalies["invalid"]}</span></span>
-          <span class="control-chip"><b>waiting input</b><span class="mono">{anomalies["waiting_input"]}</span></span>
-        </div></div>
-      </div>
-    </section>'''
+    today_date = dt.date.today().isoformat()
+    yesterday_date = (dt.date.today() - dt.timedelta(days=1)).isoformat()
+    # 7-day avg
+    mt5_7d_total = cw["7d"]["mt5_items"]
+    mt5_7d_avg = mt5_7d_total // 7 if mt5_7d_total else 0
+    analysis_7d_total = cw["7d"]["analysis_items"]
+    analysis_7d_avg = analysis_7d_total // 7 if analysis_7d_total else 0
+    fail_7d_total = cw["7d"]["fail_invalid"]
+    fail_7d_avg = fail_7d_total // 7 if fail_7d_total else 0
+    mt5_30d = cw["30d"]["mt5_items"]
+    # Q02 PASS cum from controlling.by_phase if available
+    q02_pass_30d = 0
+    for r in controlling.get("by_phase") or []:
+        if (r.get("label") or "").startswith("Q02 PASS"):
+            q02_pass_30d += int(r.get("count") or 0)
+    anom = controlling["anomalies"]
+    anom_today_total = anom["zero_trade_like"] + anom["invalid"] + anom["waiting_input"]
 
-    # Health banner — reads state/health.json written by farmctl health.
-    # If overall=FAIL → red banner with list of FAILing checks + action hints.
-    # If WARN → yellow banner.  If OK → green compact "all clear" pill.
-    if health.get("overall"):
-        ov = health["overall"]
-        summ = health.get("summary", {})
-        checks = health.get("checks", [])
-        checked_at = health.get("checked_at", "")
-        if ov == "FAIL":
-            fails = [c for c in checks if c.get("status") == "FAIL"]
-            fail_lines = "".join(
-                f'<div class="health-item"><span class="health-name">{html.escape(c["name"])}</span>: '
-                f'<span class="health-detail">{html.escape(c["detail"][:160])}</span>'
-                + (f' <span class="health-hint">→ {html.escape(c["action_hint"][:140])}</span>' if c.get("action_hint") else '')
-                + '</div>'
-                for c in fails
-            )
-            health_banner_html = (
-                f'<div class="health-banner health-fail">'
-                f'<div class="health-head">PIPELINE HEALTH · {summ.get("fail",0)} FAIL · {summ.get("warn",0)} WARN · {summ.get("ok",0)} OK'
-                f'<span class="health-ts">{html.escape(checked_at)}</span></div>'
-                f'{fail_lines}'
-                f'</div>'
-            )
-        elif ov == "WARN":
-            warns = [c for c in checks if c.get("status") == "WARN"]
-            lines = "".join(
-                f'<div class="health-item"><span class="health-name">{html.escape(c["name"])}</span>: '
-                f'<span class="health-detail">{html.escape(c["detail"][:160])}</span></div>'
-                for c in warns
-            )
-            health_banner_html = (
-                f'<div class="health-banner health-warn">'
-                f'<div class="health-head">PIPELINE HEALTH · {summ.get("warn",0)} WARN · {summ.get("ok",0)} OK'
-                f'<span class="health-ts">{html.escape(checked_at)}</span></div>'
-                f'{lines}'
-                f'</div>'
-            )
-        else:
-            health_banner_html = (
-                f'<div class="health-banner health-ok">'
-                f'PIPELINE HEALTH OK · all {summ.get("ok", 0)} invariants green '
-                f'<span class="health-ts">{html.escape(checked_at)}</span>'
-                f'</div>'
-            )
-    else:
-        health_banner_html = (
-            '<div class="health-banner health-warn">'
-            'PIPELINE HEALTH: no snapshot · run <code>farmctl health</code> or wait for next 15-min cycle'
-            '</div>'
+    # ---------- 1. TOP BAR message ----------
+    topbar_msg = e(msg)[:140]
+
+    # ---------- BOTTOM BAR ----------
+    try:
+        sha_out = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            cwd=str(REPO), capture_output=True, text=True, timeout=5,
+            creationflags=(subprocess.CREATE_NO_WINDOW if hasattr(subprocess, "CREATE_NO_WINDOW") else 0),
         )
+        build_sha = (sha_out.stdout or "").strip() or "—"
+    except Exception:
+        build_sha = "—"
 
-    tokens_html = f"""
-{snap_row}
-<div class="tokens">
-  <div class="token-card">
-    <div class="token-label">Claude · status</div>
-    <div class="token-value {claude_status_class}">{html.escape(str(cq.get("status","?")).upper())}</div>
-    <div class="token-sub">{html.escape(str(cq.get("rateLimitType","?")))} · resets in {claude_reset}</div>
-  </div>
-  <div class="token-card">
-    <div class="token-label">Claude · 5h billable</div>
-    <div class="token-value {billable_class}">{billable_m:.2f}M</div>
-    <div class="token-sub">{cu['events']} events · cache_read {cache_read_m:.1f}M (≈free)</div>
-  </div>
-  <div class="token-card">
-    <div class="token-label">Codex · 5h tokens</div>
-    <div class="token-value ok">{codex_tokens_k}</div>
-    <div class="token-sub">{cxq["builds_5h"]} builds · avg {cxq["avg_tokens_per_build"]//1000 if cxq['avg_tokens_per_build'] else 0}K each</div>
-  </div>
-  <div class="token-card">
-    <div class="token-label">Codex · builds 24h</div>
-    <div class="token-value">{cxq["builds_24h"]}</div>
-    <div class="token-sub">incl. failed/blocked</div>
-  </div>
-</div>
-<div class="token-detail">
-  Claude 5h: input <code>{cu['input']:,}</code> · output <code>{cu['output']:,}</code> ·
-  cache_create <code>{cu['cache_create']:,}</code> · cache_read <code>{cu['cache_read']:,}</code> ·
-  TOTAL <code>{cu['total']:,}</code> tokens.
-  Color: <span style="color:var(--em)">≤3M ok</span> ·
-  <span style="color:var(--promising)">3-8M warn</span> ·
-  <span style="color:var(--fail)">&gt;8M risk</span>
-  (heuristic; resets at {dt.datetime.fromtimestamp(cq.get('resetsAt',0)).strftime('%H:%M') if cq.get('resetsAt') else '?'})
-</div>"""
+# ==== HTML assembly (STEEL/EMERALD brand · OWNER call 2026-05-23) ====
+
+    # CSS lives outside the f-string to avoid brace-escaping.
+    CSS = r"""
+:root {
+  --bg:            #020617;
+  --surface-1:     #060b18;
+  --surface-2:     #0f172a;
+  --surface-3:     #1e293b;
+  --text:          #f8fafc;
+  --text-2:        #cbd5e1;
+  --text-3:        #94a3b8;
+  --text-4:        #64748b;
+  --border:        rgba(148, 163, 184, 0.08);
+  --border-2:      rgba(148, 163, 184, 0.18);
+  --signal:        #10b981;
+  --signal-bright: #34d399;
+  --signal-dim:    #059669;
+  --pass:          #10b981;
+  --fail:          #ef4444;
+  --warn:          #f97316;
+  --info:          #cbd5e1;
+  --promising:     #f59e0b;
+  --dead:          #6b7280;
+  --live:          #06b6d4;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; border-radius: 0 !important; }
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'General Sans', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+body { padding: 32px; min-height: 100vh; }
+.mono, .num, code, kbd {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+.page { display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px; }
+
+/* TOP BAR */
+.topbar {
+  grid-column: span 12;
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.brand {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-weight: 700; font-size: 14px;
+  letter-spacing: 0.18em; color: var(--text); text-transform: uppercase;
+}
+.brand .slash { color: var(--text-4); margin: 0 10px; font-weight: 400; }
+.brand .sub { color: var(--text-3); font-weight: 500; }
+.topbar-msg {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px; letter-spacing: 0.08em;
+  color: var(--text-3); text-transform: uppercase;
+}
+.topbar-msg .tag { color: var(--warn); font-weight: 700; letter-spacing: 0.16em; margin-right: 10px; }
+.topbar-msg .dot { color: var(--text-4); margin: 0 8px; }
+.utc-clock {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 18px; font-weight: 500;
+  color: var(--text); text-align: right; letter-spacing: 0.02em;
+}
+.utc-clock .lbl {
+  display: block; font-size: 10px; font-weight: 400;
+  letter-spacing: 0.22em; color: var(--text-3);
+  margin-bottom: 4px; text-transform: uppercase;
+}
+.health-pill {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.22em;
+  padding: 8px 14px; border: 1px solid var(--border-2);
+  text-transform: uppercase; color: var(--text-3); background: transparent;
+}
+.health-pill.warn { color: var(--bg); background: var(--warn); border-color: var(--warn); }
+.health-pill.crit { color: var(--bg); background: var(--fail); border-color: var(--fail);
+                    animation: blink 1s steps(2) infinite; }
+@keyframes blink { 50% { opacity: 0.35; } }
+
+/* SECTION */
+.section { grid-column: span 12; }
+.col-left  { grid-column: span 7; min-width: 0; }
+.col-right { grid-column: span 5; min-width: 0; }
+.section-head {
+  display: flex; align-items: center; gap: 12px;
+  padding-bottom: 8px; margin-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.section-glyph { display: inline-block; width: 8px; height: 8px; background: var(--signal); flex-shrink: 0; }
+.section-title {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 12px; font-weight: 600; letter-spacing: 0.12em;
+  color: var(--text-3); text-transform: uppercase;
+}
+.section-aux {
+  margin-left: auto;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px; letter-spacing: 0.14em; color: var(--text-4); text-transform: uppercase;
+}
+.panel { background: var(--surface-1); border: 1px solid var(--border); box-shadow: 0 0 0 1px var(--border) inset; }
+
+/* MISSION */
+.mission {
+  display: grid; grid-template-columns: 1fr 1px 1fr; gap: 28px;
+  align-items: stretch; padding: 24px 28px; height: 100%;
+  background: var(--surface-1); border: 1px solid var(--border);
+}
+.mission .divider { background: var(--border); width: 1px; }
+.mission-tile { min-width: 0; display: flex; flex-direction: column; }
+.mission-label {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px; font-weight: 500; letter-spacing: 0.18em;
+  color: var(--text-3); text-transform: uppercase; margin-bottom: 10px;
+}
+.mission-hero {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 72px; line-height: 0.9; font-weight: 500;
+  color: var(--text); letter-spacing: -0.04em;
+}
+.mission-hero .denom { font-size: 28px; font-weight: 400; color: var(--text-3); margin-left: 4px; letter-spacing: 0; }
+.mission-hero .pct { font-size: 20px; font-weight: 400; color: var(--text-3); margin-left: 14px; letter-spacing: 0; }
+.mission-sub {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px; color: var(--text-3);
+  letter-spacing: 0.12em; margin-top: 14px; text-transform: uppercase;
+}
+.mission-bar {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  color: var(--text-2); font-size: 13px; letter-spacing: 0;
+  margin-top: 12px; word-break: break-all;
+}
+.mission-bar .empty { color: var(--text-4); }
+.mission-tag {
+  display: inline-block;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  margin-top: 12px; font-size: 10px; font-weight: 700; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--warn);
+  border: 1px solid var(--warn); padding: 4px 8px; align-self: flex-start;
+}
+
+/* HEUREKA */
+.heureka {
+  background: var(--surface-1); border: 1px solid var(--border);
+  padding: 22px 24px; height: 100%;
+  display: flex; flex-direction: column; gap: 18px;
+}
+.heureka-id {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 28px; font-weight: 500; line-height: 1;
+  color: var(--text); letter-spacing: -0.01em;
+}
+.heureka-slug {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px; color: var(--text-3); letter-spacing: 0.14em;
+  text-transform: uppercase; margin-top: 6px;
+}
+.heureka-chips { display: grid; grid-template-columns: repeat(14, 1fr); gap: 2px; }
+.chip {
+  text-align: center;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px; font-weight: 600; letter-spacing: 0.08em;
+  padding: 6px 0 5px;
+  border: 1px solid var(--border); background: var(--surface-2); color: var(--text-4);
+}
+.chip.done { color: var(--pass); background: var(--surface-3); border-color: var(--border-2); }
+.chip.now { color: var(--bg); background: var(--signal); border-color: var(--signal); font-weight: 700; }
+.heureka-metric {
+  display: grid; grid-template-columns: 1fr 1fr;
+  border-top: 1px solid var(--border); padding-top: 16px; gap: 16px;
+}
+.heureka-metric .m-lbl {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px; font-weight: 500; letter-spacing: 0.18em;
+  color: var(--text-3); text-transform: uppercase; margin-bottom: 6px;
+}
+.heureka-metric .m-val {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 28px; font-weight: 500; color: var(--text); line-height: 1;
+}
+.heureka-metric .m-val .unit { font-size: 14px; color: var(--text-3); margin-left: 4px; }
+.heureka-next {
+  margin-top: auto; border-top: 1px solid var(--border); padding-top: 14px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px; letter-spacing: 0.08em; color: var(--text-2);
+  display: flex; align-items: baseline; gap: 10px; text-transform: uppercase;
+}
+.heureka-next .arr { color: var(--signal); font-weight: 700; }
+.heureka-next .lbl { font-size: 10px; letter-spacing: 0.22em; color: var(--text-3); }
+.heureka-next .act { color: var(--text); font-weight: 600; letter-spacing: 0.06em; }
+
+/* OWNER ATTENTION */
+.attention { background: var(--surface-1); border: 1px solid var(--border); }
+.attention-row {
+  display: grid; grid-template-columns: 18px 150px 1fr 130px;
+  gap: 14px; padding: 12px 18px; align-items: baseline;
+  border-bottom: 1px solid var(--border);
+  font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px;
+}
+.attention-row:last-child { border-bottom: none; }
+.attention-row .glyph { color: var(--text-3); font-weight: 700; }
+.attention-row .cat {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--text-2);
+}
+.attention-row .ent { color: var(--text); font-weight: 500; }
+.attention-row .ent .slug { color: var(--text-3); margin-left: 8px; font-weight: 400; }
+.attention-row .status {
+  font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--text-3); text-align: right;
+}
+.attention-row.alert .glyph { color: var(--fail); }
+.attention-row.alert .cat   { color: var(--fail); }
+.attention-row.alert .ent   { color: var(--text); }
+.attention-row.alert .status { color: var(--fail); }
+
+/* AGENT STATUS */
+.agent-status { background: var(--surface-1); border: 1px solid var(--border); }
+.agent-row {
+  display: grid; grid-template-columns: 80px 1fr;
+  gap: 16px; padding: 14px 20px; align-items: baseline;
+  border-bottom: 1px solid var(--border);
+}
+.agent-row .name {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.2em;
+  color: var(--text); text-transform: uppercase;
+}
+.agent-readout {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 12px; letter-spacing: 0.02em; color: var(--text-2);
+}
+.agent-readout .v { color: var(--text); font-weight: 600; }
+.agent-readout .sep { color: var(--text-4); margin: 0 8px; }
+.agent-readout .k {
+  color: var(--text-3); font-size: 10px;
+  letter-spacing: 0.18em; text-transform: uppercase; margin-left: 4px;
+}
+.agent-fleet { padding: 16px 20px 18px; border-bottom: none; }
+.agent-fleet .flbl {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px; font-weight: 600; letter-spacing: 0.22em;
+  color: var(--text-3); text-transform: uppercase; margin-bottom: 12px;
+}
+.fleet-row { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; }
+.term {
+  text-align: center; padding: 10px 0 8px;
+  border: 1px solid var(--border); background: var(--surface-2);
+}
+.term .id {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px; font-weight: 500; letter-spacing: 0.14em;
+  color: var(--text-3); text-transform: uppercase;
+}
+.term .dot {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 14px; line-height: 1; margin-top: 5px;
+}
+.term.active .dot { color: var(--text); }
+.term.idle   .dot { color: var(--text-3); }
+.term.active .id  { color: var(--text-2); }
+
+/* TABLE */
+.qm-table {
+  width: 100%; border-collapse: collapse;
+  background: var(--surface-1); border: 1px solid var(--border);
+  font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px;
+}
+.qm-table th, .qm-table td {
+  padding: 11px 16px;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  text-align: left; vertical-align: baseline;
+}
+.qm-table th:last-child, .qm-table td:last-child { border-right: none; }
+.qm-table tr:last-child td { border-bottom: none; }
+.qm-table th {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--text-3); background: var(--bg);
+}
+.qm-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.qm-table .ea-cell    { color: var(--text); font-weight: 600; }
+.qm-table .slug-cell  { color: var(--text-3); }
+.qm-table .gate       { color: var(--text-2); letter-spacing: 0.06em; }
+.qm-table .note       { color: var(--text-3); font-size: 11px; }
+.qm-table .state {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+}
+.qm-table .state-done { color: var(--pass); }
+.qm-table .state-act  { color: var(--text-2); }
+.qm-table .state-pend { color: var(--text-3); }
+.qm-table .state-fail { color: var(--fail); }
+.qm-table .action {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--text-2);
+}
+
+/* PIPELINE FUNNEL */
+.funnel {
+  display: grid;
+  grid-template-columns: 1fr 14px 1fr 14px 1fr 14px 1fr 14px 1fr 14px 1fr;
+  align-items: stretch; gap: 0;
+  background: var(--surface-1); border: 1px solid var(--border); padding: 20px;
+}
+.funnel-stage {
+  border: 1px solid var(--border); background: var(--surface-2);
+  padding: 14px 12px 12px; text-align: left; min-width: 0;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.funnel-stage .stg-lbl {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.2em;
+  color: var(--text-3); text-transform: uppercase;
+}
+.funnel-stage .stg-num {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 36px; font-weight: 500; line-height: 1;
+  margin: 2px 0; color: var(--text); letter-spacing: -0.02em;
+}
+.funnel-stage.empty .stg-num { color: var(--text-3); }
+.funnel-stage .stg-meta {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px; color: var(--text-3);
+  letter-spacing: 0.04em; text-transform: uppercase;
+}
+.funnel-stage .stg-meta.drop { color: var(--text-2); }
+.funnel-arrow {
+  align-self: center; color: var(--text-4); text-align: center;
+  font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 14px;
+}
+.funnel-stage .stg-spark-lbl {
+  display: block;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px; font-weight: 600; letter-spacing: 0.22em;
+  color: var(--text-4); margin-top: 6px; text-transform: uppercase;
+}
+.funnel-stage .stg-spark {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 14px; line-height: 1; letter-spacing: 0.04em;
+  color: var(--text-2); margin-top: 2px;
+}
+.funnel-stage.empty .stg-spark { color: var(--text-4); }
+
+/* EVENTS */
+.events {
+  background: var(--surface-1); border: 1px solid var(--border);
+  font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px;
+}
+.events-row {
+  display: grid;
+  grid-template-columns: 22px 92px 24px 140px 120px 1fr 140px;
+  gap: 12px; padding: 10px 18px;
+  border-bottom: 1px solid var(--border); align-items: baseline;
+}
+.events-row:last-child { border-bottom: none; }
+.events-row .cur {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  color: var(--signal); font-weight: 700;
+}
+.events-row .cur.live { animation: blink 1s steps(2) infinite; }
+.events-row .cur.dim { color: transparent; }
+.events-row .ts {
+  color: var(--text-3); font-variant-numeric: tabular-nums; letter-spacing: 0.02em;
+}
+.events-row .gly { text-align: center; font-weight: 600; color: var(--text); }
+.events-row.fail  .gly { color: var(--fail); }
+.events-row.pass  .gly { color: var(--pass); }
+.events-row.dead  .gly { color: var(--text-3); }
+.events-row .evt {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--text-2);
+}
+.events-row.fail  .evt { color: var(--fail); }
+.events-row.pass  .evt { color: var(--pass); }
+.events-row.dead  .evt { color: var(--text-3); }
+.events-row .ent { color: var(--text); font-weight: 600; }
+.events-row .slug { color: var(--text-3); }
+.events-row .sym {
+  color: var(--text-2); text-align: right;
+  font-size: 11px; letter-spacing: 0.04em;
+}
+
+/* DAILY CONTROLLING */
+.control {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+  background: var(--surface-1); border: 1px solid var(--border);
+}
+.control-col {
+  padding: 18px 22px 20px; border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 16px;
+}
+.control-col:last-child { border-right: none; }
+.control-col .col-lbl {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.24em;
+  text-transform: uppercase; color: var(--text-3);
+  border-bottom: 1px solid var(--border); padding-bottom: 8px;
+}
+.control-stat .s-lbl {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px; font-weight: 500; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--text-3);
+}
+.control-stat .s-val {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 28px; font-weight: 500; line-height: 1;
+  margin-top: 6px; color: var(--text); letter-spacing: -0.02em;
+}
+.control-stat .s-val.dim { color: var(--text-3); }
+.control-stat .s-sub {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px; color: var(--text-3);
+  letter-spacing: 0.04em; margin-top: 5px; text-transform: uppercase;
+}
+
+/* BOTTOM BAR */
+.botbar {
+  grid-column: span 12;
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px;
+  padding-top: 16px; border-top: 1px solid var(--border); margin-top: 4px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--text-3);
+}
+.botbar .center { text-align: center; }
+.botbar .right  { text-align: right; }
+.botbar .key    { color: var(--text-4); margin-right: 8px; }
+.botbar .val    { color: var(--text-2); }
+"""
 
     # === Final HTML ===
-    html_doc = f"""<!DOCTYPE html>
-<html lang="en"><head>
-<meta charset="utf-8">
-<title>QuantMechanica · Strategy Farm Cockpit</title>
-<meta http-equiv="refresh" content="30">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Code+Pro:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-:root {{
-  --qm-bg: #020617;
-  --qm-surface-0: #060b18;
-  --qm-surface-1: #0f172a;
-  --qm-surface-2: #1e293b;
-  --qm-glass: rgba(15,23,42,0.6);
-  --qm-border: rgba(148,163,184,0.08);
-  --qm-border-strong: rgba(148,163,184,0.18);
-  --qm-text: #f8fafc;
-  --qm-text-dim: #cbd5e1;
-  --qm-text-muted: #94a3b8;
-  --qm-text-subtle: #64748b;
-  --em: #10b981;
-  --em-l: #34d399;
-  --em-d: #059669;
-  --em-s: rgba(16,185,129,0.12);
-  --em-glow: rgba(16,185,129,0.25);
-  --pass: #10b981;
-  --promising: #f59e0b;
-  --fail: #ef4444;
-  --dead: #6b7280;
-  --live: #06b6d4;
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'Source Code Pro', 'SF Mono', Consolas, monospace;
-}}
-* {{ box-sizing: border-box; }}
-html, body {{ margin: 0; padding: 0; }}
-body {{
-  font-family: var(--font-sans);
-  background: var(--qm-bg);
-  color: var(--qm-text);
-  padding: 20px 28px;
-  font-feature-settings: 'tnum' on, 'lnum' on;
-  line-height: 1.5;
-}}
+    html_doc = (
+        '<!DOCTYPE html>\n'
+        '<html lang="en"><head>\n'
+        '<meta charset="utf-8">\n'
+        '<title>QuantMechanica // COCKPIT</title>\n'
+        '<meta http-equiv="refresh" content="30">\n'
+        '<link rel="preconnect" href="https://fonts.googleapis.com">\n'
+        '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
+        '<link rel="preconnect" href="https://api.fontshare.com" crossorigin>\n'
+        '<link href="https://api.fontshare.com/v2/css?f[]=general-sans@200,400,500,600,700&display=swap" rel="stylesheet">\n'
+        '<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">\n'
+        '<style>' + CSS + '</style>\n'
+        '</head>\n<body>\n'
+        + f'''
+<div class="page">
 
-/* ===== TOP BAR ===== */
-.top {{
-  display: flex; align-items: center; gap: 16px;
-  padding-bottom: 14px; margin-bottom: 18px;
-  border-bottom: 1px solid var(--qm-border);
-}}
-.brand {{ font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }}
-.brand .accent {{ color: var(--em); }}
-.timestamp {{ font-family: var(--font-mono); font-size: 11px; color: var(--qm-text-muted); }}
-.sev-tag {{
-  margin-left: auto;
-  font-family: var(--font-mono); font-size: 10px; font-weight: 600;
-  letter-spacing: 0.08em; padding: 4px 10px; border-radius: 4px;
-  background: {sev_color}; color: var(--qm-bg);
-  box-shadow: 0 0 12px {sev_color}44;
-}}
-.sev-msg {{ font-size: 12px; color: var(--qm-text-dim); flex: 0 1 auto; }}
+  <!-- 1. TOP BAR -->
+  <div class="topbar">
+    <div class="brand">QUANTMECHANICA<span class="slash">//</span><span class="sub">COCKPIT</span></div>
+    <div class="topbar-msg">
+      <span class="tag">{e(pill_label)}</span>
+      {topbar_msg}
+    </div>
+    <div class="utc-clock">
+      <span class="lbl">UTC // MISSION TIME</span>
+      {e(now_utc_full)}
+    </div>
+    <div class="health-pill {pill_class}">{e(pill_label)}</div>
+  </div>
 
-/* ===== HERO ROW ===== */
-.hero {{ display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 22px; }}
-.hero-card {{
-  background: var(--qm-surface-1);
-  border: 1px solid var(--qm-border-strong);
-  border-radius: 10px;
-  padding: 14px 16px;
-  min-height: 200px;
-}}
-.hero-head {{ display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; }}
-.hero-title {{
-  text-transform: uppercase; letter-spacing: 0.1em;
-  font-size: 10px; font-weight: 600; color: var(--qm-text-muted);
-}}
-.hero-count {{
-  font-size: 28px; font-weight: 600; line-height: 1; letter-spacing: -0.01em;
-}}
-.hero-body {{ font-size: 12px; }}
-.worker-item {{
-  padding: 8px 0;
-  border-top: 1px solid var(--qm-border);
-}}
-.worker-item:first-child {{ border-top: none; padding-top: 0; }}
-.worker-row {{ display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }}
-.worker-subject {{ font-weight: 600; color: var(--qm-text); font-size: 12px; }}
-.worker-meta {{ margin-left: auto; color: var(--qm-text-subtle); font-size: 10px; }}
-.tail {{
-  background: var(--qm-surface-0); border-radius: 4px;
-  padding: 6px 8px; font-family: var(--font-mono); font-size: 10px;
-  color: var(--qm-text-muted); white-space: nowrap; overflow-x: auto;
-}}
-.tail div {{ overflow: hidden; text-overflow: ellipsis; }}
-.worker-empty {{
-  color: var(--qm-text-subtle); font-size: 11px; padding: 24px 0;
-  text-align: center; font-style: italic;
-}}
+  <!-- 2. MISSION + HEUREKA -->
+  <div class="col-left">
+    <div class="section-head">
+      <span class="section-glyph"></span>
+      <span class="section-title">Mission Progress // Heureka Portfolio</span>
+      <span class="section-aux">Q11-PASS Cohort // Target {portfolio_target} EAs</span>
+    </div>
+    <div class="mission">
+      <div class="mission-tile">
+        <div class="mission-label">Q11-Pass Portfolio</div>
+        <div class="mission-hero">{p8_pass}<span class="denom">/{portfolio_target}</span><span class="pct">{mission_pct}%</span></div>
+        <div class="mission-bar">{bar_html}</div>
+        <div class="mission-sub">{e(mission_sub)}</div>
+      </div>
+      <div class="divider"></div>
+      <div class="mission-tile">
+        <div class="mission-label">Portfolio // Annualised Return</div>
+        <div class="mission-hero">+20.0<span class="pct">% p.a.</span></div>
+        <div class="mission-sub">Target // OWNER mandate // DXZ &euro;100k</div>
+        <span class="mission-tag">UNCALIB // NO LIVE EVIDENCE</span>
+      </div>
+    </div>
+  </div>
 
-/* ===== PIPELINE FLOW ===== */
-.section-title {{
-  text-transform: uppercase; letter-spacing: 0.1em;
-  font-size: 10px; font-weight: 600; color: var(--qm-text-muted);
-  margin: 24px 0 10px 0;
-}}
-.flow-row {{
-  display: grid; grid-template-columns: repeat({len(PIPELINE_STAGES)}, 1fr);
-  gap: 6px; background: var(--qm-surface-1);
-  border: 1px solid var(--qm-border); border-radius: 8px;
-  padding: 12px 10px;
-}}
-.flow-col {{
-  text-align: center; padding: 4px 2px;
-  border-right: 1px solid var(--qm-border);
-}}
-.flow-col:last-child {{ border-right: none; }}
-.flow-col.empty {{ opacity: 0.45; }}
-.flow-stage {{
-  font-size: 10px; font-weight: 600; text-transform: uppercase;
-  letter-spacing: 0.08em; color: var(--qm-text-muted); margin-bottom: 4px;
-}}
-.flow-count {{
-  font-family: var(--font-mono); font-size: 18px; font-weight: 600;
-  color: var(--qm-text); margin-bottom: 8px;
-}}
-.flow-chips {{ display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; min-height: 28px; }}
-.ea-chip {{
-  font-family: var(--font-mono); font-size: 10px;
-  padding: 2px 6px; border: 1px solid; border-radius: 3px;
-  background: var(--qm-surface-0);
-}}
+  <div class="col-right">
+    <div class="section-head">
+      <span class="section-glyph"></span>
+      <span class="section-title">Heureka Leader</span>
+      <span class="section-aux">{e(heureka_aux)}</span>
+    </div>
+    <div class="heureka">
+      <div>
+        <div class="heureka-id">{heureka_id}</div>
+        <div class="heureka-slug">{heureka_slug}</div>
+      </div>
+      <div class="heureka-chips">{heureka_chips_html}</div>
+      <div class="heureka-metric">
+        <div>
+          <div class="m-lbl">Phase Progress</div>
+          <div class="m-val">{heureka_done}<span class="unit">/{heureka_total}</span></div>
+        </div>
+        <div>
+          <div class="m-lbl">Pipeline % Complete</div>
+          <div class="m-val">{heureka_pct}<span class="unit">%</span></div>
+        </div>
+      </div>
+      <div class="heureka-next">
+        <span class="arr">&#9656;</span>
+        <span class="lbl">NEXT</span>
+        <span class="act">{e(heureka_next_act)}</span>
+      </div>
+    </div>
+  </div>
 
-/* ===== QUEUES ===== */
-.queue-row {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }}
-.q-card {{
-  background: var(--qm-surface-1);
-  border: 1px solid var(--qm-border);
-  border-radius: 8px;
-  padding: 12px 14px;
-}}
-.q-head {{ display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }}
-.q-title {{
-  text-transform: uppercase; letter-spacing: 0.08em;
-  font-size: 10px; font-weight: 600; color: var(--qm-text-muted);
-}}
-.q-count {{ font-size: 24px; font-weight: 600; line-height: 1; }}
-.q-list {{ display: flex; flex-direction: column; gap: 4px; }}
-.q-item {{ font-size: 11px; padding: 3px 0; border-bottom: 1px solid var(--qm-border); }}
-.q-item:last-child {{ border-bottom: none; }}
-.q-empty {{ font-style: italic; font-size: 11px; color: var(--qm-text-subtle); padding: 8px 0; }}
+  <!-- 3. OWNER ATTENTION + AGENT STATUS -->
+  <div class="col-left">
+    <div class="section-head">
+      <span class="section-glyph"></span>
+      <span class="section-title">Owner Attention</span>
+      <span class="section-aux">{attention_aux}</span>
+    </div>
+    <div class="attention">
+      {attention_html_inner}
+    </div>
+  </div>
 
-/* ===== PIPELINE BACKLOG ===== */
-.backlog {{
-  background: var(--qm-surface-1);
-  border: 1px solid var(--qm-border);
-  border-radius: 8px;
-  padding: 12px 14px;
-}}
-.sla-ok {{ color: var(--qm-text-muted); }}
-.sla-late {{ color: var(--promising); font-weight: 700; }}
-.next-actions {{ margin: 14px 0; }}
-.backlog-grid {{
-  display: grid; grid-template-columns: repeat(6, 1fr);
-  gap: 10px; margin-bottom: 12px;
-}}
-.backlog-metric {{
-  background: var(--qm-surface-0);
-  border: 1px solid var(--qm-border);
-  border-radius: 6px; padding: 10px 12px;
-}}
-.backlog-label, .backlog-panel-title {{
-  font-size: 9px; font-weight: 600; text-transform: uppercase;
-  letter-spacing: 0.08em; color: var(--qm-text-muted);
-}}
-.backlog-value {{
-  font-size: 24px; font-weight: 600; line-height: 1.1; margin-top: 5px;
-}}
-.backlog-sub {{
-  font-family: var(--font-mono); font-size: 10px;
-  color: var(--qm-text-subtle); margin-top: 3px;
-}}
-.backlog-detail {{
-  display: grid; grid-template-columns: 1fr 1.2fr 1.4fr;
-  gap: 10px;
-}}
-.backlog-panel {{
-  border-top: 1px solid var(--qm-border);
-  padding-top: 10px; min-width: 0;
-}}
-.backlog-panel-title {{ margin-bottom: 8px; }}
-.backlog-chips {{ display: flex; flex-wrap: wrap; gap: 5px; }}
-.backlog-chip {{
-  display: inline-flex; align-items: center; gap: 7px;
-  border: 1px solid var(--qm-border-strong);
-  border-radius: 4px; padding: 3px 7px;
-  background: var(--qm-surface-0);
-  font-size: 10px; color: var(--qm-text-dim);
-}}
-.backlog-chip b {{ color: var(--qm-text); font-weight: 600; }}
-.backlog-chip .mono {{ color: var(--em-l); }}
-.backlog-list {{ display: flex; flex-direction: column; gap: 4px; }}
-.backlog-source {{
-  display: grid; grid-template-columns: 38px minmax(0, 1fr);
-  gap: 8px; align-items: baseline;
-  font-size: 11px; color: var(--qm-text-dim);
-  border-bottom: 1px solid var(--qm-border);
-  padding-bottom: 4px;
-}}
-.backlog-source:last-child {{ border-bottom: none; }}
-.backlog-source span:last-child {{
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}}
-.backlog-source .prio {{ color: var(--promising); font-size: 10px; }}
-.backlog-empty {{
-  font-style: italic; font-size: 11px; color: var(--qm-text-subtle);
-}}
-.backlog-error {{
-  margin-top: 10px; padding: 7px 9px; border-radius: 4px;
-  border: 1px solid rgba(239,68,68,0.3);
-  background: rgba(239,68,68,0.06);
-  color: var(--fail); font-family: var(--font-mono); font-size: 10px;
-}}
+  <div class="col-right">
+    <div class="section-head">
+      <span class="section-glyph"></span>
+      <span class="section-title">Agent Status</span>
+      <span class="section-aux">Claude // Codex // MT5</span>
+    </div>
+    <div class="agent-status">
+      <div class="agent-row">
+        <span class="name">CLAUDE</span>
+        <span class="agent-readout">
+          <span class="v">{claude_act}</span><span class="k">ACT</span><span class="sep">&middot;</span>
+          <span class="v">{review_q_count}</span><span class="k">QUE</span><span class="sep">&middot;</span>
+          <span class="v">{claude_closed_today}</span><span class="k">CLOSED</span><span class="sep">&middot;</span>
+          <span class="k">TOK</span> <span class="v">{e(claude_tok_str)}</span>
+        </span>
+      </div>
+      <div class="agent-row">
+        <span class="name">CODEX</span>
+        <span class="agent-readout">
+          <span class="v">{codex_act}</span><span class="k">ACT</span><span class="sep">&middot;</span>
+          <span class="v">{q.get("builds_pending", 0)}</span><span class="k">QUE</span><span class="sep">&middot;</span>
+          <span class="v">{codex_closed_today}</span><span class="k">CLOSED</span><span class="sep">&middot;</span>
+          <span class="k">TOK</span> <span class="v">{e(codex_tok_str)}</span>
+        </span>
+      </div>
+      <div class="agent-row">
+        <span class="name">MT5</span>
+        <span class="agent-readout">
+          <span class="v">{mt5_act}</span><span class="k">/10 RUN</span><span class="sep">&middot;</span>
+          <span class="v">{mt5_pend}</span><span class="k">PEND</span><span class="sep">&middot;</span>
+          <span class="v">{mt5_done_today}</span><span class="k">DONE TODAY</span>
+        </span>
+      </div>
+      <div class="agent-fleet">
+        <div class="flbl">{e(fleet_label)}</div>
+        <div class="fleet-row">{term_row_html}</div>
+      </div>
+    </div>
+  </div>
 
-/* ===== DETAIL ===== */
-.detail-row {{ display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 14px; margin-top: 22px; }}
-.detail-card {{
-  background: var(--qm-surface-1);
-  border: 1px solid var(--qm-border);
-  border-radius: 8px;
-  padding: 12px 14px;
-}}
-table {{ border-collapse: collapse; width: 100%; font-size: 11px; }}
-th {{
-  color: var(--qm-text-muted); text-align: left;
-  padding: 4px 8px 6px 0; font-weight: 500; font-size: 9px;
-  text-transform: uppercase; letter-spacing: 0.08em;
-  border-bottom: 1px solid var(--qm-border-strong);
-}}
-td {{ padding: 4px 8px 4px 0; border-bottom: 1px solid var(--qm-border); color: var(--qm-text-dim); }}
-tr:last-child td {{ border-bottom: none; }}
-
-.mono {{ font-family: var(--font-mono); font-variant-numeric: tabular-nums; }}
-.muted {{ color: var(--qm-text-muted); }}
-.subtle {{ color: var(--qm-text-subtle); }}
-
-.log {{
-  font-family: var(--font-mono); font-size: 10px;
-  padding: 3px 8px; border-left: 2px solid var(--em-d);
-  background: var(--qm-surface-0); color: var(--qm-text-dim);
-  overflow-x: auto; white-space: nowrap;
-  margin-bottom: 2px;
-}}
-
-.footer {{
-  margin-top: 28px; padding-top: 12px;
-  border-top: 1px solid var(--qm-border); text-align: center;
-  font-size: 10px; color: var(--qm-text-subtle);
-  font-family: var(--font-mono); letter-spacing: 0.04em;
-}}
-
-/* === Heureka tile === */
-.heureka {{
-  background: linear-gradient(135deg, rgba(16,185,129,0.06) 0%, rgba(15,23,42,0.5) 100%);
-  border: 1px solid rgba(16,185,129,0.2);
-  border-radius: 14px;
-  padding: 18px 22px;
-  margin: 16px 0 14px 0;
-  position: relative;
-  overflow: hidden;
-}}
-.heureka::before {{
-  content:''; position:absolute; top:-50%; right:-15%;
-  width:300px; height:300px; border-radius:50%;
-  background: radial-gradient(circle, var(--em-glow) 0%, transparent 65%);
-  filter: blur(70px); pointer-events: none;
-}}
-.heureka-head {{
-  display: flex; align-items: baseline; gap: 12px;
-  margin-bottom: 12px; position: relative; z-index: 1;
-}}
-.heureka-title {{
-  font-size: 10px; font-weight: 600; text-transform: uppercase;
-  letter-spacing: 0.12em; color: var(--em);
-}}
-.heureka-meter {{
-  font-family: var(--font-mono); font-weight: 600;
-  letter-spacing: 0.5px;
-}}
-.heureka-meter .num {{ color: var(--em); font-size: 14px; }}
-.heureka-meter .tot {{ color: var(--qm-text-muted); font-size: 11px; }}
-.heureka-meter .pct {{ color: var(--qm-text-dim); font-size: 11px; margin-left: 6px; }}
-.heureka-stages {{
-  display: flex; gap: 4px; margin-bottom: 12px;
-  position: relative; z-index: 1;
-}}
-.heureka-stage {{
-  flex: 1; min-width: 40px; padding: 7px 4px;
-  border: 1px solid var(--qm-border); border-radius: 6px;
-  background: rgba(15,23,42,0.5);
-  text-align: center; font-size: 9px; font-weight: 600;
-  color: var(--qm-text-subtle); text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-family: var(--font-mono);
-}}
-.heureka-stage.done {{
-  background: var(--em-s); border-color: rgba(16,185,129,0.45);
-  color: var(--em);
-}}
-.heureka-stage.current {{
-  background: rgba(6,182,212,0.12); border-color: rgba(6,182,212,0.5);
-  color: var(--live); box-shadow: 0 0 8px rgba(6,182,212,0.3);
-}}
-.heureka-leader {{
-  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
-  font-family: var(--font-mono); font-size: 12px;
-  color: var(--qm-text-dim); position: relative; z-index: 1;
-  padding-top: 10px; border-top: 1px solid var(--qm-border);
-}}
-.heureka-leader code {{ color: var(--em); font-weight: 600; font-size: 13px; }}
-.heureka-leader .slug {{ color: var(--qm-text-muted); }}
-.heureka-leader .arrow {{ color: var(--qm-text-faint); }}
-.heureka-leader .next strong {{ color: var(--em); }}
-.heureka-leader-empty {{
-  font-style: italic; color: var(--qm-text-muted); font-size: 12px;
-}}
-
-/* === Token panel === */
-.tokens {{
-  display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;
-  gap: 12px; margin-bottom: 18px;
-}}
-.token-card {{
-  background: var(--qm-surface-1); border: 1px solid var(--qm-border);
-  border-radius: 8px; padding: 10px 14px;
-}}
-.token-label {{
-  font-size: 9px; font-weight: 600; text-transform: uppercase;
-  letter-spacing: 0.1em; color: var(--qm-text-muted); margin-bottom: 6px;
-}}
-.token-value {{
-  font-family: var(--font-mono); font-size: 18px; font-weight: 600;
-  color: var(--qm-text); letter-spacing: -0.01em;
-}}
-.token-value.ok {{ color: var(--em); }}
-.token-value.warn {{ color: var(--promising); }}
-.token-value.fail {{ color: var(--fail); }}
-.token-sub {{
-  font-family: var(--font-mono); font-size: 10px;
-  color: var(--qm-text-muted); margin-top: 4px;
-}}
-.token-detail {{
-  font-family: var(--font-mono); font-size: 10.5px;
-  color: var(--qm-text-muted); padding: 8px 14px;
-  border: 1px dashed var(--qm-border);
-  border-radius: 6px; margin-bottom: 18px;
-}}
-.token-detail code {{
-  background: var(--qm-surface-0); padding: 1px 4px;
-  border-radius: 3px; color: var(--qm-text-dim);
-}}
-.tokens.snap-row {{
-  grid-template-columns: 1fr 1fr;
-  margin-bottom: 10px;
-}}
-.tokens.snap-row .token-card {{
-  border-color: var(--em);
-  background: linear-gradient(180deg, var(--em-s) 0%, var(--qm-surface-1) 60%);
-}}
-.tokens.snap-row .token-card.snap-stale {{
-  border-color: var(--qm-border);
-  background: var(--qm-surface-1);
-  opacity: 0.65;
-}}
-.tokens.snap-row .token-value {{ font-size: 22px; }}
-.tokens.snap-row .token-value .ok {{ color: var(--em); }}
-.tokens.snap-row .token-value .warn {{ color: var(--promising); }}
-.tokens.snap-row .token-value .fail {{ color: var(--fail); }}
-.tokens.snap-row .token-value .muted {{ color: var(--qm-text-muted); font-size: 12px; font-weight: 400; }}
-
-/* === Pipeline health banner === */
-.health-banner {{
-  border-radius: 8px; padding: 10px 14px; margin: 0 0 14px 0;
-  border: 1px solid var(--qm-border-strong); font-family: var(--font-mono);
-  font-size: 11px;
-}}
-.health-banner.health-fail {{
-  border-color: var(--fail); background: rgba(239,68,68,0.08);
-}}
-.health-banner.health-warn {{
-  border-color: var(--promising); background: rgba(245,158,11,0.06);
-}}
-.health-banner.health-ok {{
-  border-color: var(--em); background: rgba(16,185,129,0.06);
-  color: var(--em-l);
-}}
-.health-head {{
-  font-weight: 700; font-size: 11px; letter-spacing: 0.04em;
-  text-transform: uppercase; margin-bottom: 6px;
-  display: flex; justify-content: space-between; align-items: center;
-}}
-.health-fail .health-head {{ color: var(--fail); }}
-.health-warn .health-head {{ color: var(--promising); }}
-.health-ts {{ color: var(--qm-text-muted); font-weight: 400; }}
-.health-item {{ padding: 3px 0; line-height: 1.55; }}
-.health-name {{ color: var(--qm-text); font-weight: 600; }}
-.health-detail {{ color: var(--qm-text-dim); }}
-.health-hint {{ color: var(--qm-text-muted); font-style: italic; }}
-
-/* === 7-day trend dashboard === */
-.control-section {{
-  background: var(--qm-surface-1);
-  border: 1px solid var(--qm-border);
-  border-radius: 8px;
-  padding: 14px;
-  margin: 0 0 18px 0;
-}}
-.control-grid {{
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 10px;
-  margin-bottom: 12px;
-}}
-.control-metric {{
-  background: var(--qm-surface-0);
-  border: 1px solid var(--qm-border);
-  border-radius: 8px;
-  padding: 10px;
-}}
-.control-label, .control-title {{
-  font-size: 9px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--qm-text-muted);
-}}
-.control-value {{
-  font-size: 24px;
-  font-weight: 600;
-  margin-top: 4px;
-  color: var(--em-l);
-}}
-.control-sub {{
-  font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--qm-text-subtle);
-  margin-top: 3px;
-}}
-.control-detail {{
-  display: grid;
-  grid-template-columns: 1.4fr 1fr 1fr;
-  gap: 10px;
-}}
-.control-panel {{
-  border-top: 1px solid var(--qm-border);
-  padding-top: 10px;
-  min-width: 0;
-}}
-.control-chips {{
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-top: 8px;
-}}
-.control-chip {{
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  border: 1px solid var(--qm-border-strong);
-  border-radius: 999px;
-  padding: 4px 8px;
-  background: var(--qm-surface-0);
-  font-size: 10px;
-  color: var(--qm-text-muted);
-}}
-.control-chip b {{ color: var(--qm-text); font-weight: 600; }}
-.control-empty {{ color: var(--qm-text-muted); font-size: 10px; }}
-.trends {{
-  display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;
-  gap: 10px; margin: 0 0 18px 0;
-}}
-.trend-card {{
-  background: var(--qm-surface-1); border: 1px solid var(--qm-border);
-  border-radius: 8px; padding: 10px 12px;
-}}
-.trend-label {{
-  font-size: 9px; font-weight: 600; text-transform: uppercase;
-  letter-spacing: 0.08em; color: var(--qm-text-muted); margin-bottom: 8px;
-}}
-.trend-row {{
-  display: flex; align-items: flex-end; gap: 4px; height: 56px;
-}}
-.trend-bar-wrap {{
-  flex: 1; display: flex; flex-direction: column; align-items: center;
-}}
-.trend-bar {{
-  width: 100%; border-radius: 2px 2px 0 0; min-height: 2px;
-}}
-.trend-bar-num {{
-  font-family: var(--font-mono); font-size: 9px;
-  color: var(--qm-text-muted); margin-top: 2px;
-}}
-.trend-bar-day {{
-  font-family: var(--font-mono); font-size: 8px;
-  color: var(--qm-text-subtle);
-}}
-.trend-foot {{
-  font-family: var(--font-mono); font-size: 10px;
-  color: var(--qm-text-muted); margin-top: 6px;
-}}
-.trends-empty {{ font-size: 10px; color: var(--qm-text-muted); margin-bottom: 18px; }}
-</style></head>
-<body>
-
-<div class="top">
-  <div class="brand">Quant<span class="accent">Mechanica</span></div>
-  <div class="timestamp">{now_full}</div>
-  <span class="sev-msg">{html.escape(msg)}</span>
-  <span class="sev-tag">{sev_label}</span>
-</div>
-
-{health_banner_html}
-
-{controlling_html}
-
-{trend_html}
-
-{heureka_html}
-
-{tokens_html}
-
-<div class="hero">
-  {hero_claude}
-  {hero_codex}
-  {hero_mt5}
-</div>
-
-<div class="section-title">Pipeline flow</div>
-{flow_html}
-
-<div class="section-title">Queues</div>
-{queue_html}
-
-<div class="section-title">Pipeline backlog</div>
-{backlog_html}
-
-{next_actions_html}
-
-<div class="detail-row">
-
-  <div class="detail-card">
-    <div class="section-title" style="margin-top:0">EA states · all</div>
-    <table>
-      <tr><th>EA</th><th>Slug</th><th>Stage</th><th>Status</th><th>Updated</th></tr>
-      {pipeline_rows}
+  <!-- 4. PROFITABILITY NEXT ACTIONS -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-glyph"></span>
+      <span class="section-title">Profitability // Next Actions</span>
+      <span class="section-aux">{profit_aux}</span>
+    </div>
+    <table class="qm-table">
+      <tr>
+        <th>Action</th><th>EA</th><th>Lane</th><th>Symbol / Slug</th>
+        <th>State</th><th>Next Gate</th><th>Note</th>
+      </tr>
+      {"".join(action_rows_html)}
     </table>
   </div>
 
-  <div class="detail-card">
-    <div class="section-title" style="margin-top:0">Wakes</div>
-    {wakes_html}
+  <!-- 5. PIPELINE FUNNEL -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-glyph"></span>
+      <span class="section-title">Pipeline Funnel // SRC &rarr; Portfolio</span>
+      <span class="section-aux">Drop-Off Rates Per Stage</span>
+    </div>
+    <div class="funnel">
+      {funnel_html_inner}
+    </div>
   </div>
 
-  <div class="detail-card">
-    <div class="section-title" style="margin-top:0">Recent commits</div>
-    <table>
-      <tr><th>SHA</th><th>Age</th><th>Subject</th></tr>
-      {commits_html}
-    </table>
+  <!-- 6. RECENT EVENTS -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-glyph"></span>
+      <span class="section-title">Recent Events // Telemetry Tail</span>
+      <span class="section-aux">Last 10 // UTC</span>
+    </div>
+    <div class="events">
+      {"".join(events_html_rows)}
+    </div>
+  </div>
+
+  <!-- 7. DAILY CONTROLLING -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-glyph"></span>
+      <span class="section-title">Daily Controlling // Throughput &amp; Anomalies</span>
+      <span class="section-aux">Today // Yesterday // 7D // 30D</span>
+    </div>
+    <div class="control">
+      <div class="control-col">
+        <div class="col-lbl">TODAY // {e(today_date)}</div>
+        <div class="control-stat">
+          <div class="s-lbl">MT5 Items Done</div>
+          <div class="s-val">{cw["today"]["mt5_items"]}</div>
+          <div class="s-sub">{cw["today"]["mt5_eas"]} EAs touched</div>
+        </div>
+        <div class="control-stat">
+          <div class="s-lbl">Analysis Gates</div>
+          <div class="s-val">{cw["today"]["analysis_items"]}</div>
+          <div class="s-sub">{cw["today"]["analysis_eas"]} EAs reviewed</div>
+        </div>
+        <div class="control-stat">
+          <div class="s-lbl">Anomalies</div>
+          <div class="s-val">{anom_today_total}</div>
+          <div class="s-sub">zero-trade // invalid</div>
+        </div>
+      </div>
+      <div class="control-col">
+        <div class="col-lbl">YESTERDAY // {e(yesterday_date)}</div>
+        <div class="control-stat">
+          <div class="s-lbl">MT5 Items Done</div>
+          <div class="s-val dim">{cw["yesterday"]["mt5_items"]}</div>
+          <div class="s-sub">{cw["yesterday"]["mt5_eas"]} EAs touched</div>
+        </div>
+        <div class="control-stat">
+          <div class="s-lbl">Analysis Gates</div>
+          <div class="s-val dim">{cw["yesterday"]["analysis_items"]}</div>
+          <div class="s-sub">{cw["yesterday"]["analysis_eas"]} EAs reviewed</div>
+        </div>
+        <div class="control-stat">
+          <div class="s-lbl">Anomalies</div>
+          <div class="s-val dim">{cw["yesterday"]["fail_invalid"]}</div>
+          <div class="s-sub">fail / invalid yesterday</div>
+        </div>
+      </div>
+      <div class="control-col">
+        <div class="col-lbl">7-DAY AVG // PER DAY</div>
+        <div class="control-stat">
+          <div class="s-lbl">MT5 Items / day</div>
+          <div class="s-val">{mt5_7d_avg}</div>
+          <div class="s-sub">{mt5_7d_total} 7d total</div>
+        </div>
+        <div class="control-stat">
+          <div class="s-lbl">Analysis Gates / day</div>
+          <div class="s-val">{analysis_7d_avg}</div>
+          <div class="s-sub">{analysis_7d_total} 7d total</div>
+        </div>
+        <div class="control-stat">
+          <div class="s-lbl">Fail/Invalid / day</div>
+          <div class="s-val">{fail_7d_avg}</div>
+          <div class="s-sub">{fail_7d_total} 7d // pre-screen</div>
+        </div>
+      </div>
+      <div class="control-col">
+        <div class="col-lbl">30-DAY TOTAL</div>
+        <div class="control-stat">
+          <div class="s-lbl">MT5 Items Done</div>
+          <div class="s-val">{mt5_30d}</div>
+          <div class="s-sub">{cw["30d"]["mt5_eas"]} distinct EAs</div>
+        </div>
+        <div class="control-stat">
+          <div class="s-lbl">Q02 PASS Cum</div>
+          <div class="s-val">{q02_pass_30d}</div>
+          <div class="s-sub">{int(100 * q02_pass_30d / max(1, mt5_30d))}% of {mt5_30d} backtests</div>
+        </div>
+        <div class="control-stat">
+          <div class="s-lbl">Anomalies</div>
+          <div class="s-val">{cw["30d"]["fail_invalid"]}</div>
+          <div class="s-sub">{anom["zero_trade_like"]} zero // {anom["invalid"]} invalid</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. BOTTOM BAR -->
+  <div class="botbar">
+    <div><span class="key">Next Refresh</span><span class="val">30S</span></div>
+    <div class="center"><span class="key">Renderer</span><span class="val">v5.0 // STEEL-EMERALD</span></div>
+    <div class="right"><span class="key">Build</span><span class="val">SHA {e(build_sha)}</span></div>
   </div>
 
 </div>
-
-<div class="footer">QuantMechanica V5 · strategy_farm cockpit · {now_local} · re-render 2 min · browser refresh 30 s</div>
-
-</body></html>
-"""
+'''
+        + '\n</body></html>\n'
+    )
     COCKPIT.write_text(html_doc, encoding="utf-8")
     print(f"cockpit written: {COCKPIT}")
     return 0
