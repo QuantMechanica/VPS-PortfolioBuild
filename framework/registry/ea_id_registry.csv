@@ -2333,3 +2333,10 @@ ea_id,slug,strategy_id,status,owner,created_at
 11458,goodwin-friday-monday-gap-d1,545042dd-9b9a-5428-a067-d60fdae46c08,active,Research,2026-05-23
 11459,blade-macd-stoch-divergence-h1,ea67ad76-751d-576b-a28a-4efb99691dad,active,Research,2026-05-23
 11460,sachs-consolidation-breakout-sma50-ema15,f9a2d9c8-2f26-5aee-ab31-38716a4558c2,active,Research,2026-05-23
+11461,goodwin-j-outside-bar-daily-reversion-d1,038d2a5d-1c89-5745-afdb-2cd76b623b77,active,Research,2026-05-23
+11462,goodwin-j-kangaroo-tail-breakout-d1,038d2a5d-1c89-5745-afdb-2cd76b623b77,active,Research,2026-05-23
+11463,goodwin-j-session-high-breakout-usdjpy,038d2a5d-1c89-5745-afdb-2cd76b623b77,active,Research,2026-05-23
+11464,robles-continuation-ema50-williams-h4d1,966a64b0-7975-5f93-81f6-ddc316a4e029,active,Research,2026-05-23
+11465,suhr-bank-trading-stop-run-fade-h1,966a64b0-7975-5f93-81f6-ddc316a4e029,active,Research,2026-05-23
+11466,samuels-123-pattern-fractal-d1h4,966a64b0-7975-5f93-81f6-ddc316a4e029,active,Research,2026-05-23
+11467,duplooy-multiMA-knot-straddle-h1,df7a4891-bfda-5815-bf43-67b503eac619,active,Research,2026-05-23
