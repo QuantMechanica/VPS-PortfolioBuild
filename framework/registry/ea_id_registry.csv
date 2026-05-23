@@ -2442,3 +2442,5 @@ ea_id,slug,strategy_id,status,owner,created_at
 11567,davey-meanrev-lowvol-d1,57b37e6a-9b9f-550b-a023-e0d6947ad2e8,pending,Claude,2026-05-23
 11568,davey-simple-nbar-breakout-d1,57b37e6a-9b9f-550b-a023-e0d6947ad2e8,pending,Claude,2026-05-23
 11569,davey-dueling-momentum-d1,57b37e6a-9b9f-550b-a023-e0d6947ad2e8,pending,Claude,2026-05-23
+11570,wilder-tbp-momentum-d1,0ab0a479-4a09-5ecc-bb90-6a37148fa78b,pending,Claude,2026-05-23
+11571,wilder-reaction-trend-pivots-d1,0ab0a479-4a09-5ecc-bb90-6a37148fa78b,pending,Claude,2026-05-23
