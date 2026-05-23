@@ -3,33 +3,42 @@
 **Binding** for all G0 verdicts. This file is canonical — when vault pages or
 prompts disagree, this file wins.
 
-**Last revised 2026-05-15** — OWNER directive: relax R1 / R2 / R3 from strict to
-permissive. G0 becomes a wide net; the pipeline (P1 smoke, P2 baseline, P3+
-statistical) is the real quality filter. R4 (HR14, NO ML) stays binding.
+**Last revised 2026-05-23** — pipeline rewrite. OWNER directive: R1 widened to
+accept OWNER and AI as valid sources (the single-source-per-card rule remains,
+but the source *type* is open). R4 narrowed to ML-only — Grid trading is now
+allowed provided it's deterministic and bounded.
+
+**Earlier revision 2026-05-15** — R1 / R2 / R3 relaxed from strict to permissive
+(wide-net G0; the pipeline Q02/Q04/Q08 is the real quality filter).
 
 ## The four criteria
 
-### R1 — Source attribution (link or title)
+### R1 — Single source per card (type is open)
 
-**PASS** if the card cites **any** verifiable reference for the source. That's it.
+**PASS** if the card has **exactly ONE source attribution** with a `source_id`
+in the frontmatter for lineage tracking. The *type* of source is open:
 
 Examples that PASS:
-- Forum thread URL (ForexFactory, BabyPips, Elite Trader) — incl. anon handles
-- Article URL (MQL5 Articles, named-author blog post)
-- Paper DOI / arXiv / SSRN URL
-- Book ISBN + chapter reference (or just author + title)
-- Video URL + timestamp
-- **Local PDF on disk: filename / title is enough** (no URL needed) —
-  e.g. `Davey - Building Algorithmic Trading Systems.pdf, ch. 7`
-- **Local archive folder: path + title** —
-  e.g. `G:/My Drive/QuantMechanica/research/lien_day_trading.pdf`
+- Paper / book / article / forum thread / video — same as before
+- **OWNER-originated idea** — `source_id: OWNER-<short-tag>-<YYYYMMDD>`,
+  with the OWNER note captured in the card body explaining the idea
+- **AI-originated idea** — `source_id: AI-<agent>-<short-tag>-<YYYYMMDD>`
+  (e.g. `AI-claude-mean-rev-fade-20260523`), with the AI's prompt/output
+  trail captured in `strategy-seeds/sources/<source_id>/`
+- Anonymous forum handles, local PDFs, course recordings — all still OK
 
-**REJECT** only if there is **no source attribution at all** — pure invention,
-unverifiable claim, "a friend told me".
+**REJECT** only if:
+- Card has **no** `source_id` at all (lineage broken)
+- Card claims multiple sources (must pick one canonical source per card; sister
+  cards from the same source are fine, but each card has one source ID)
 
-**Author track record is NOT required.** Anonymous forum handles are OK
-provided the post is linked. PDFs on disk only need their title. The
-strategy will pass or fail on its own data in P2-P7.
+**Author track record is NOT required.** AI-developed and OWNER-developed
+ideas are first-class sources. The strategy will pass or fail on its own
+data in Q02-Q08.
+
+**Why one source per card:** lineage. If a source turns out to be poisoned
+(e.g. fabricated paper, AI hallucination, OWNER changes mind), we can trace
+every dependent card and re-evaluate. Multi-source cards make this messy.
 
 ### R2 — Implementable mechanically (gaps OK)
 
@@ -70,20 +79,30 @@ Valid porting examples:
 unavailable in CFD trading — e.g., options chain pricing, ETF order flow,
 exchange-specific microstructure with no analog in CFDs.
 
-### R4 — No ML, 1-pos-per-magic (Hard Rule 14, BINDING)
+### R4 — No ML / 1-pos-per-magic / deterministic (Hard Rule 14, BINDING)
 
-**PASS** if the strategy uses mechanical rules with fixed parameters and is
-compatible with the 1-position-per-magic-number convention.
+**PASS** if the strategy uses mechanical, deterministic rules and is
+compatible with the 1-position-per-magic-number convention. **Grid trading
+is allowed** as long as it's deterministic and bounded.
 
 **REJECT** any of:
 - Neural networks, deep learning, ONNX inference
-- Adaptive parameters (params change based on running PnL or recent equity)
+- Adaptive parameters that re-fit based on running PnL or recent equity
+  (parameters that depend only on price history — e.g. ATR-scaled stops —
+  are fine; parameters that depend on the strategy's own PnL are not)
 - Online learning, retraining-style logic
-- Grid or martingale without explicit bounded worst-case
+- Non-deterministic logic (random entries, time-of-day-clock-dependent
+  paths that aren't seeded reproducibly)
 - Multiple positions per magic number (without explicit slot allocation)
 
-**R4 is binding Hard Rule 14 — not relaxable.** OWNER explicit written
-exception only.
+**Grid trading is OK** (OWNER call 2026-05-23) provided:
+- Grid levels are determined by the EA's code (deterministic)
+- Maximum simultaneous open positions per magic is bounded in code
+- No martingale-style runaway sizing (each grid level must have a defined
+  position-size formula that doesn't grow without limit)
+
+**R4 is binding Hard Rule 14 — not relaxable beyond what's above.** OWNER
+explicit written exception only for any further relaxation.
 
 ## How to apply
 
