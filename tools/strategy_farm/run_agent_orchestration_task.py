@@ -188,6 +188,21 @@ def command_for(agent: str, cwd: Path) -> list[str]:
             str(cwd),
         ]
     if agent == "gemini":
+        # Sandbox whitelist. By default gemini-cli only sees the worktree.
+        # Extra paths are needed for:
+        #  - Dropbox-mining initiative (Wave-A* video source folders, project memo
+        #    `project_dropbox_strategy_research_2026-05-23`)
+        #  - cards_review write target (so gemini can write artifacts directly
+        #    instead of staging inside the worktree and requiring a copy step)
+        # `--include-directories` accepts comma-separated or repeated flag (per
+        # `gemini --help`); using comma-separated for compactness.
+        extra_dirs = [str(cwd)]
+        dropbox_forex = Path(r"C:\Users\Administrator\Dropbox\Finanzen\Forex")
+        if dropbox_forex.exists():
+            extra_dirs.append(str(dropbox_forex))
+        cards_review = FARM_ROOT / "artifacts" / "cards_review"
+        if cards_review.exists():
+            extra_dirs.append(str(cards_review))
         return [
             cli,
             "--prompt",
@@ -196,7 +211,7 @@ def command_for(agent: str, cwd: Path) -> list[str]:
             "yolo",
             "--skip-trust",
             "--include-directories",
-            str(cwd),
+            ",".join(extra_dirs),
         ]
     if agent == "claude":
         return [
