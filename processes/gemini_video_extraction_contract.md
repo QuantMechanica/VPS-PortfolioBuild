@@ -267,12 +267,26 @@ This contract is `v1-2026-05-23`. Bump the version field in the task payload (`c
 - `tools/strategy_farm/agent_router.py` — task routing (`enqueue research_strategy`, capabilities, registry)
 - `CLAUDE.md` — V5 Hard Rules (no ML in EAs, RISK_FIXED for backtest / RISK_PERCENT for live, no public VPS exposure)
 
-## 12. Open questions for OWNER
+## 12. OWNER-resolved policies (2026-05-23)
 
-These need decisions before Wave 1 fires:
+The original five open questions resolved as follows:
 
-1. **Source-folder naming:** confirm `strategy-seeds/sources/SRC-<short-slug>-<YYYYMMDD>/source.md` convention vs alternative.
-2. **Tier-3 mining policy:** do we mine TIER-3 ever, or only after TIER-1+2 exhausted?
-3. **Hinterleitner videos:** `Finanzen/Forex` will reveal whether Hinterleitner course videos exist. If yes, do they re-open the MomentumTrailer reimplementation question?
-4. **Per-source Gemini budget cap:** how many tasks/hour or tasks/day are we OK spending on a single anchor course? E.g. Andrea Unger has 161 videos — at 2 parallel Gemini extractions taking ~10 min each, that's ~13 hours of wall-clock for one course.
-5. **What signals "course exhausted"?** ≥X% has_strategies=false consecutively? ≥Y duplicate cards in a row? CEO judgment call?
+1. **Source-folder naming.** `strategy-seeds/sources/SRC-<short-slug>-<YYYYMMDD>/source.md`. Self-describing, date-versioned, alphabetically sortable. Differs from the legacy `SRC<NN>` numeric convention in processes/13-strategy-research.md — the new naming wins for Dropbox-mined sources; existing numeric SRCs (e.g. SRC06 Singh) keep their names. No renumbering campaign.
+2. **TIER-3 mining policy.** Skip TIER-3 (the 26 generic YouTube courses + 5 "02.19" vintage packs) until TIER-1 and TIER-2 are fully exhausted. Do not enqueue TIER-3 tasks while any TIER-1/2 course remains with unmined videos.
+3. **Hinterleitner videos.** Deferred. Re-open only if `Finanzen/Forex` ends up containing identifiable Hinterleitner course material that Task #2 catalogue did not surface under his name (e.g. videos hosted under a different folder title). If Wave-1 reveals such videos, raise the MomentumTrailer reimplementation question with OWNER then.
+4. **Per-source Gemini budget cap.** **Max 50 videos per course per day**, ~8 h wall-clock at 2 parallel Gemini extractions × ~10 min each. Caps individual-course concentration without freezing the queue: Andrea Unger (161 videos) ≈ 3 days end-to-end, EA-FTMO (55) ≈ 1 day, Quantreo (42) < 1 day.
+5. **"Course exhausted" signal.** **Complete coverage** — every video of a course goes through Gemini once before the source flips to `status: done`. No early-exit heuristic on consecutive `has_strategies=false`. Avoids false-negatives from author-style "theory first, then strategy" sequencing. Combined with the reservoir gate + OWNER mining policy (5 cards then drain), a 161-video course spans many drain cycles spread across days, but every video gets seen.
+
+## 13. Wave-1 queue (concrete starting point)
+
+Anchor course for Wave-1: **`EA - FTMO - Trading Course`** (55 videos, 4.9 GB). Rationale: TIER-1, smallest video count among the top anchors (8h fits inside one budget-cap day), and the course ships with 15 .mq5 sources + 1 .ex5 already on disk — so even partial Gemini extractions can be reconciled against compiled code. Best controlled environment to validate the contract before scaling to Andrea Unger.
+
+Pre-flight steps for Wave-1 (not yet executed; require explicit OWNER kick-off):
+
+1. Allocate `source_id`: `SRC-ea-ftmo-trading-course-20260523`.
+2. Create `strategy-seeds/sources/SRC-ea-ftmo-trading-course-20260523/source.md` with course metadata + cross-grep against existing FTMO_*_Portfolio EAs (lots of overlap likely with `FTMO March 2026/EAs/`).
+3. Enqueue first batch of ≤ 5 video-tasks via `agent_router.py enqueue research_strategy`.
+4. Monitor returns, validate YAML, synthesise cards.
+5. At reservoir = 5, halt, drain pipeline, resume next batch.
+
+Wave-2 anchor (after EA-FTMO complete): **Andrea Unger Bundle** (161 videos, 5.4 GB) — highest-signal vendor in the archive.
