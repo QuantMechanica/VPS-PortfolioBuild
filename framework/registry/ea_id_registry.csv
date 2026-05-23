@@ -2521,3 +2521,6 @@ ea_id,slug,strategy_id,status,owner,created_at
 11646,robo-rsi8-pending-d1,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,claude,2026-05-24
 11647,h4-macd5131-ma5cascade,0322ece7-f70e-5206-a855-9593c96682c8,active,claude,2026-05-24
 11648,gbpjpy-bb50-triple-dev-m1,84b1cd3f-0cb4-5cf1-92ac-e41ba15b7c93,active,claude,2026-05-24
+11649,trix14-zero-cross,7a39d96d-07c4-5a69-86c8-be0f1d5523c1,active,claude,2026-05-24
+11650,sma5-sma20-m15-scalp,5d9691ed-e39a-5d1f-b401-86d507e2bd0b,active,claude,2026-05-24
+11651,rsi14-80-20-m15-counter,5d9691ed-e39a-5d1f-b401-86d507e2bd0b,active,claude,2026-05-24
