@@ -48,18 +48,25 @@ CODEX_REVIEW_TEMPLATE = PROMPTS_DIR / "codex_review_ea.md"
 CODEX_G0_TEMPLATE = PROMPTS_DIR / "codex_g0_review.md"
 
 PIPELINE_REPORT_ROOT = Path(r"D:\QM\reports\pipeline")
-SUPPORTED_BACKTEST_PHASES = ("P2", "P3", "P3.5", "P4")  # 2026-05-17: extend chain to P3.5 (cross-symbol robustness) + P4 (walk-forward OOS)
-CASCADE_BACKTEST_PHASES = ("P5", "P5b", "P5c", "P6", "P7", "P8")
-REAL_PHASE_RUNNER_PHASES = ("P3.5", "P4", "P5", "P5b", "P5c", "P6", "P7", "P8")
+
+# 2026-05-23 OR3 — post-pipeline-rewrite Qxx canonical phase set.
+# Vault: 03 Pipeline/Pipeline Overview.md
+# Wipe (DL-063 + PIPELINE_REWRITE_PROPOSAL_2026-05-23) cleared all legacy
+# work_items, so the storage layer now writes Qxx directly. Legacy P-key
+# references in classify_* / report-csv paths remain inert (no rows to read).
+SUPPORTED_BACKTEST_PHASES = ("Q02", "Q03", "Q04")
+CASCADE_BACKTEST_PHASES = ("Q05", "Q06", "Q07", "Q08", "Q09", "Q10")
+REAL_PHASE_RUNNER_PHASES = ("Q04", "Q05", "Q06", "Q07", "Q08", "Q09", "Q10")
 PHASE_RUNNER_SCRIPTS = {
-    "P3.5": "p35_csr_runner.py",
-    "P4": "p4_walk_forward.py",
-    "P5": "p5_stress_driver.py",
-    "P5b": "p5b_noise_driver.py",
-    "P5c": "p5c_crisis_slices.py",
-    "P6": "p6_multiseed_driver.py",
-    "P7": "p7_statval.py",
-    "P8": "p8_news_driver.py",
+    "Q02": "p2_baseline.py",            # verdict rewritten for PF>1.20/T>150/DD<15%
+    "Q03": "p3_param_sweep.py",         # unchanged behaviour, phase-tag renamed
+    "Q04": "q04_walkforward.py",        # NEW: anchored 3-fold + $7/lot commission
+    "Q05": "q05_stress_medium.py",      # NEW: slip+2/spread×2/comm×2
+    "Q06": "q06_stress_harsh.py",       # NEW: slip5/spread×3/comm×3/10% reject
+    "Q07": "q07_multiseed.py",          # NEW: 5 seeds, PF variance < 20%
+    "Q08": "q08_davey/aggregate.py",    # NEW: 10 Davey sub-gates
+    "Q09": "q09_news_mode.py",          # TODO: news-mode sweep runner
+    "Q10": "q10_confirmation.py",       # NEW: full-history canonical + baseline capture
 }
 NEWS_MATRIX_FALLBACK = Path(r"D:\QM\data\news_calendar\news_matrix.csv")
 NEWS_CALENDAR_CANDIDATES = (
@@ -80,16 +87,18 @@ ZERO_TRADE_DEAD_THRESHOLD = 0.80
 ZERO_TRADE_DEAD_MIN_DONE = 5
 ZERO_TRADE_REWORK_DEDUP_HOURS = 6
 PHASE_ACTIVE_TIMEOUT_MIN = {
-    "P2": 360,
-    "P3": 60,
-    "P3.5": 30,
-    "P4": 240,
-    "P5": 30,
-    "P5b": 30,
-    "P5c": 30,
-    "P6": 30,
-    "P7": 30,
-    "P8": 30,
+    # 2026-05-23 OR3 — Qxx-keyed timeouts. Q04 walk-forward + Q05/Q06 stress
+    # over full history are the heaviest; Q08 Davey is statistics-on-trade-log
+    # so very fast; Q10 confirmation is one full-history backtest per (EA, sym).
+    "Q02": 360,    # Baseline screening, one backtest per symbol
+    "Q03": 60,     # Parameter sweep, per-config
+    "Q04": 240,    # 3-fold walk-forward + commission
+    "Q05": 240,    # MED stress, full history
+    "Q06": 240,    # HARSH stress, full history (10% reject adds minor overhead)
+    "Q07": 360,    # 5 seeds × full history under HARSH stress
+    "Q08": 30,     # Davey aggregator reads log; cheap
+    "Q09": 240,    # News-mode sweep (7 modes × full history)
+    "Q10": 360,    # Full-history canonical confirmation
 }
 
 
@@ -392,7 +401,7 @@ def parse_card_frontmatter(card_path: Path) -> dict[str, Any]:
     Returns a dict of the simple top-level keys (ea_id, slug, g0_status, r1..r4,
     pipeline_phase, last_updated). Skips list/dict values silently.
     """
-    text = card_path.read_text(encoding="utf-8")
+    text = card_path.read_text(encoding="utf-8-sig")
     m = re.match(r"^---\s*\n(.*?)\n---", text, re.DOTALL)
     if not m:
         return {}
@@ -553,17 +562,22 @@ STRATEGY_CARD_REQUIRED_FRONTMATTER = (
     "expected_trades_per_year_per_symbol",
 )
 
+# CR1 2026-05-23 — relaxed per OWNER call. The Strategy Card Framework
+# (canonical: G:/My Drive/QuantMechanica - Company Reference/05 Skills/
+# qm-strategy-card-extraction.md) requires only mechanical Entry/Exit/Stop/
+# Sizing + source citation. Previously we also demanded downstream-pipeline
+# knowledge from card authors (Q08/Q11 risks, MQL5 implementation notes,
+# falsification language, explicit Filters header) AND a "thesis" word —
+# those are pipeline-test / authoring-style concerns, not gating concerns.
+# Dropped: thesis, filters, falsification, q08_q11_risks, implementation_notes.
+# Kept 5: market_universe / timeframe / entry / exit / risk — all directly
+# required by the Skill spec to make the card mechanically implementable.
 STRATEGY_CARD_REQUIRED_BODY_PATTERNS = {
-    "thesis": r"\b(thesis|hypothesis|edge)\b",
-    "market_universe": r"\b(universe|market|symbol|instrument)\b",
+    "market_universe": r"\b(universe|market|symbol|instrument|target_symbols)\b|\.DWX\b",
     "timeframe": r"\b(timeframe|period|bar|m1|m5|m15|m30|h1|h4|d1|w1)\b",
     "entry": r"\b(entry|enter|signal|trigger)\b",
     "exit": r"\b(exit|close|flatten|take profit|stop)\b",
     "risk": r"\b(risk|drawdown|position|sizing|stop)\b",
-    "filters": r"(?m)^(?:#{1,6}\s+(?:\d+\.\s*)?filters?\b|\s*filters?\s*:)",
-    "falsification": r"\b(falsification|fail if|kill|reject|invalidate)\b",
-    "q08_q11_risks": r"\b(q08|q11|crisis|news|stress|robustness)\b",
-    "implementation_notes": r"\b(implementation|mql5|setfile|parameter|framework)\b",
 }
 
 
@@ -4515,6 +4529,7 @@ UNKNOWN
 
 
 def _card_frontmatter_block(text: str) -> tuple[dict[str, str], str]:
+    text = text.lstrip("\ufeff")
     m = re.match(r"^---\s*\n(.*?)\n---\s*\n?", text, re.DOTALL)
     if not m:
         return {}, text
@@ -4527,7 +4542,7 @@ def _card_frontmatter_block(text: str) -> tuple[dict[str, str], str]:
 
 
 def _update_flat_frontmatter_file(path: Path, updates: dict[str, str]) -> None:
-    text = path.read_text(encoding="utf-8")
+    text = path.read_text(encoding="utf-8-sig")
     if not text.startswith("---"):
         lines = ["---"] + [f"{k}: {v}" for k, v in updates.items()] + ["---", "", text]
         path.write_text("\n".join(lines), encoding="utf-8", newline="\n")
@@ -5840,8 +5855,12 @@ def pump(root: Path) -> dict[str, Any]:
                     "parent_p2_work_item_id": wi["id"],
                 })
                 continue
+            # 2026-05-23 OR3: this cascade path is the pre-rewrite P2→P3
+            # promoter. Kept for back-compat (returns 0 rows on the wiped DB
+            # since no P2 work_items exist). New Q-pipeline cascade happens
+            # at the `cascade_phase_map` loop further down (sets phase='Q03').
             parent = conn.execute(
-                "SELECT id, status FROM tasks WHERE kind='backtest_p3' "
+                "SELECT id, status FROM tasks WHERE kind='backtest_q03' "
                 "AND payload_json LIKE ? ORDER BY created_at ASC LIMIT 1",
                 (f'%"ea_id": "{wi["ea_id"]}"%',),
             ).fetchone()
@@ -5855,12 +5874,12 @@ def pump(root: Path) -> dict[str, Any]:
                 INSERT INTO work_items
                   (id, kind, phase, ea_id, symbol, setfile_path, status,
                    attempt_count, parent_task_id, payload_json, created_at, updated_at)
-                VALUES (?, 'backtest', 'P3', ?, ?, ?, 'pending', 0, ?, ?, ?, ?)
+                VALUES (?, 'backtest', 'Q03', ?, ?, ?, 'pending', 0, ?, ?, ?, ?)
                 """,
                 (new_id, wi["ea_id"], wi["symbol"], wi["setfile_path"],
                  parent["id"], json.dumps(payload), now, now),
             )
-            # Re-open parent P3 task so classify_aggregate re-runs when this
+            # Re-open parent Q03 task so classify_aggregate re-runs when this
             # work_item finishes. No-op if already pending.
             if parent["id"] not in reopened_parents and parent["status"] == "done":
                 conn.execute(
@@ -5885,17 +5904,27 @@ def pump(root: Path) -> dict[str, Any]:
 
     result["cascade_promotions"] = []
     result["cascade_promotions_skipped"] = []
+    # 2026-05-23 OR3 — Qxx cascade map. Each phase's PASS promotes to the next.
+    # Q09 News Mode auto-defaults to Mode 3 (per Vault), no explicit PASS needed
+    # — so Q08 PASS cascades directly to Q10 (skipping the Q09 mode-selection
+    # step which is handled as a setfile patch in the Q10 runner).
     cascade_phase_map = {
-        "P3": "P3.5",
-        "P3.5": "P4",
-        "P4": "P5",
-        "P5": "P5b",
-        "P5b": "P5c",
-        "P5c": "P6",
-        "P6": "P7",
-        "P7": "P8",
+        "Q03": "Q04",
+        "Q04": "Q05",
+        "Q05": "Q06",
+        "Q06": "Q07",
+        "Q07": "Q08",
+        "Q08": "Q10",   # Q09 is auto-defaulted; Q10 is the closing per-(EA, sym) verdict
     }
     cascade_pass_verdicts = {
+        "Q03": {"PASS"},
+        "Q04": {"PASS"},
+        "Q05": {"PASS"},
+        "Q06": {"PASS"},
+        "Q07": {"PASS"},
+        "Q08": {"PASS"},
+        # Pre-rewrite keys retained inert for any orphan reads against the
+        # empty post-wipe DB. These will never match new rows.
         "P3": {"PASS"},
         "P3.5": {"PASS"},
         "P4": {"PASS"},
