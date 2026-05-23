@@ -163,11 +163,39 @@ bool QM_NewsHashBytes(const uchar &data[], string &hash_hex)
    return true;
   }
 
+//+------------------------------------------------------------------+
+//| Basename of a path (last segment after \ or /).                  |
+//| MT5 build 5833+ rejects FileOpen on absolute paths with drive    |
+//| letter (err 5002 ERR_FILE_WRONG_FILENAME). Callers fall back to  |
+//| this basename + FILE_COMMON after the absolute path is refused.  |
+//+------------------------------------------------------------------+
+string QM_NewsBasename(const string path)
+  {
+   int pos = StringLen(path) - 1;
+   while(pos >= 0)
+     {
+      const ushort ch = StringGetCharacter(path, pos);
+      if(ch == '\\' || ch == '/')
+         break;
+      pos--;
+     }
+   if(pos >= 0)
+      return StringSubstr(path, pos + 1);
+   return path;
+  }
+
 bool QM_NewsReadFileBytes(const string path, uchar &bytes[], datetime &modified_utc)
   {
    int handle = FileOpen(path, FILE_READ | FILE_BIN | FILE_SHARE_READ);
    if(handle == INVALID_HANDLE)
       handle = FileOpen(path, FILE_READ | FILE_BIN | FILE_SHARE_READ | FILE_COMMON);
+   if(handle == INVALID_HANDLE)
+     {
+      // MT5 5833+ rejects absolute paths with err 5002. Fallback: basename in Common\Files.
+      const string base = QM_NewsBasename(path);
+      if(StringLen(base) > 0 && base != path)
+         handle = FileOpen(base, FILE_READ | FILE_BIN | FILE_SHARE_READ | FILE_COMMON);
+     }
    if(handle == INVALID_HANDLE)
       return false;
 
@@ -236,6 +264,13 @@ bool QM_NewsLoadCsv(const string path, int &rows_added)
    int handle = FileOpen(path, FILE_READ | FILE_TXT | FILE_ANSI | FILE_SHARE_READ);
    if(handle == INVALID_HANDLE)
       handle = FileOpen(path, FILE_READ | FILE_TXT | FILE_ANSI | FILE_SHARE_READ | FILE_COMMON);
+   if(handle == INVALID_HANDLE)
+     {
+      // MT5 5833+ rejects absolute paths with err 5002. Fallback: basename in Common\Files.
+      const string base = QM_NewsBasename(path);
+      if(StringLen(base) > 0 && base != path)
+         handle = FileOpen(base, FILE_READ | FILE_TXT | FILE_ANSI | FILE_SHARE_READ | FILE_COMMON);
+     }
    if(handle == INVALID_HANDLE)
       return false;
 
