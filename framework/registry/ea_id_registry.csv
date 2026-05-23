@@ -2479,3 +2479,16 @@ ea_id,slug,strategy_id,status,owner,created_at
 11604,ar-psar,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-23
 11605,ar-supertrend,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-23
 11606,ar-doten-brk,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-23
+11607,sd-prev-close,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-23
+11608,sd-bnf-orb,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-23
+11609,id-sma5-20,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-23
+11610,id-connors-rsi2,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-23
+11611,pj-hma20-cross,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-23
+11612,robo-alligator-sma144-m15,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,pending,Claude,2026-05-23
+11613,robo-bb-wpr25-rsi5-m15,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,pending,Claude,2026-05-23
+11614,robo-sma11-21-momentum30-rsi14-m15,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,pending,Claude,2026-05-23
+11615,robo-dual-sma-band-rsi11-m15,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,pending,Claude,2026-05-23
+11616,robo-ema8-28-cci30-m30,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,pending,Claude,2026-05-23
+11617,robo-psar001-ao-ema5-m30,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,pending,Claude,2026-05-23
+11618,robo-lwma-low-macd1526-m30,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,pending,Claude,2026-05-23
+11619,robo-psar01-ema6-11-34-h1,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,pending,Claude,2026-05-23
