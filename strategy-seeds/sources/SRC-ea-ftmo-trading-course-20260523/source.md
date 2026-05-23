@@ -2,7 +2,7 @@
 source_id: SRC-ea-ftmo-trading-course-20260523
 tier: T2                                       # video-course, anonymous instructor brand ("EA Trading Academy"), self-published — not Wiley/peer-reviewed
 parent_issue: TBD                              # opened at first card-batch landing
-status: pre_flight_complete
+status: wave_a1_batch01_dispatched
 authored-by: Claude (Wave-A1 pre-flight for Dropbox initiative)
 last-updated: 2026-05-23
 mining_policy:
@@ -10,7 +10,8 @@ mining_policy:
   reservoir_drain_required: true
   complete_coverage: true                       # OWNER policy 2026-05-23 — every video routed once
 budget_tracking:
-  heartbeats_used: 0                            # Wave-A1 enqueue not yet authorized
+  heartbeats_used: 1                            # Wave-A1 Batch-01 enqueue 2026-05-23T13:34Z
+  videos_dispatched: 5
   cards_drafted: 0
   cards_passed_g0: 0
 ---
@@ -141,7 +142,25 @@ Cross-grep performed 2026-05-23 against `strategy-seeds/cards/`, `framework/EAs/
 
 Gemini's per-strategy YAML output includes `duplicate_likelihood` + `duplicate_notes` to be filled against this list. Claude's card-synthesis step uses this to drop duplicates BEFORE creating a new card.
 
-## 8. Extraction plan (Gemini wave dispatch — pending OWNER green light)
+## 7a. Wave-A1 Batch-01 dispatch log (2026-05-23T13:34Z)
+
+OWNER green light given. 5 videos enqueued via `agent_router.py enqueue research_strategy` with `--priority 30 --skills video-analysis,strategy-extraction`. Tasks then patched directly in the DB to add `source_discovery` to `required_capabilities_json` so routing pins them exclusively to Gemini (cost_rank 10) instead of falling through to Codex (cost_rank 20) — Codex cannot do video analysis. 3 tasks initially mis-routed to Codex were released back to TODO post-pin.
+
+| Task ID | Video | Initial route | After pin |
+|---|---|---|---|
+| `47059b7b` | Module 4 vid 1 — Setup 1 Catch A Quick Move | Gemini IN_PROGRESS | Gemini IN_PROGRESS |
+| `84931317` | Module 4 vid 2 — Setup 2 Fibs Retracements | Gemini IN_PROGRESS | Gemini IN_PROGRESS |
+| `6672fa16` | Module 4 vid 3 — Setup 3 20 МА | Codex IN_PROGRESS (mis-routed) | TODO, will re-route to Gemini |
+| `9abf0338` | Module 4 vid 4 — Setup 4 Fibs Break Out | Codex IN_PROGRESS (mis-routed) | TODO, will re-route to Gemini |
+| `aac25e1f` | Module 3 vid 1 — When Do I Trade / How Much I Risk | Codex IN_PROGRESS (mis-routed) | TODO, will re-route to Gemini |
+
+Routing daemon: `QM_StrategyFarm_AgentRouter_5min` (every 5 min).
+Worker: `QM_StrategyFarm_GeminiOrchestration_15min` (every 15 min).
+Gemini.max_parallel = 2 → only 2 tasks run concurrently; the 3 TODO queue until a slot frees.
+
+**Open improvement for the contract:** the enqueue CLI does not expose `--required-capabilities`, so the post-enqueue DB patch is currently necessary to pin video-extraction tasks to Gemini. Either (a) extend the CLI to accept `--required-capabilities`, or (b) bake the pin into the enqueue payload via a wrapper script (preferred for Wave-A1-Batch-02+).
+
+## 8. Extraction plan (Gemini wave dispatch)
 
 Per contract `processes/gemini_video_extraction_contract.md` § 4-5:
 
