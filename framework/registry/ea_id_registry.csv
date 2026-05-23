@@ -2265,3 +2265,7 @@ ea_id,slug,strategy_id,status,owner,created_at
 11390,midnight-setup-d1-candle-breakout,dfd32799-2055-5ef8-b99b-dcbfa51daba0,active,Research,2026-05-23
 11391,d1-rsi3-stoch633-sma150-reversal,dfd32799-2055-5ef8-b99b-dcbfa51daba0,active,Research,2026-05-23
 11392,justforex-momentum7-divergence-fib,9909fee4-3d9d-56ad-b4cf-cea631d7873e,active,Research,2026-05-23
+11393,paul-langer-w1-engulfing-sr-position,4852552c-8446-5986-ac32-e63fd176f84a,active,Research,2026-05-23
+11394,paul-langer-m5-bb20-scalper,4852552c-8446-5986-ac32-e63fd176f84a,active,Research,2026-05-23
+11395,connors-rsi2-sma200-pullback-h4,ea4596d1-24e0-5e43-9106-66fd575a5370,active,Research,2026-05-23
+11396,connors-double7s-sma200-h4,ea4596d1-24e0-5e43-9106-66fd575a5370,active,Research,2026-05-23
