@@ -1,0 +1,25 @@
+Reject. Hard-caps in cents feuern nicht bei billingType=subscription_included (heartbeat.ts:1038-1039 normalisiert auf 0¢). Beide Skripte sind misaligned mit OWNERs Subscription-Realität:
+
+1. apply_subscription_guardian_policies.py: Targets sind 6 Anthropic-Agents (CEO 70k, andere 25k ct). Anthropic-Subscription-Tokens werden auf 0¢ normalisiert → Hard-Stop feuert nie. Schützt vor nichts. Codex-Agents (DevOps/Development/HoP/CTO) wo der echte Burn passiert sind nicht im Target.
+
+2. ingest_codex_cost_events.py: Würde 280 Cost-Events mit estimatedTotalCents=9.573.233 (≈€95k API-Listenpreis) ins /cost-events posten. Das ist KEIN echtes Geld bei Subscription, würde Paperclips Budget-System mit fiktivem Spend-Volumen fluten.
+
+Redirect — bau den Polling-Guardian wie auf QUA-1032 gespect:
+
+a) paperclip/tools/ops/subscription_guardian.py (~150 LOC, deterministisch, kein LLM):
+   - Pollt /api/companies/{id}/costs/quota-windows alle 5 min
+   - Threshold-Tabelle (Codex 5h: 75/85/95, Codex weekly: 75/80/90 mit Reset-Awareness, Anthropic Subscription-Week: 80/90/95, Anthropic 5h: 75/90/95)
+   - WICHTIG: Anthropic Extra-Pool ist NICHT Throttle-Trigger — Subscription-Week erst ab 80%, weil Extra-Pool nur sunk cost vom Monatsanfang ist
+   - Aktion bei throttle: PATCH runtimeConfig.heartbeat.intervalSec ×2 auf Top-3-Burner für betroffenen Provider via /costs/by-agent?days=1
+   - Aktion bei emergency: alle Codex-Agents enabled=false außer Phase-3-kritisch (CTO, Pipeline-Orchestrator)
+   - Auto-Revert wenn Window <60% nach Reset (state.json tracking)
+
+b) Deployment: Process-Adapter-Agent (kombinieren mit P7-Migration), nicht Windows Task Scheduler
+
+c) ingest_codex_cost_events.py darf bleiben aber NUR als Telemetrie-Logger: write zu docs/ops/codex_burn_telemetry.json, KEIN /cost-events Posting
+
+d) apply_subscription_guardian_policies.py als Scaffold behalten — die PATCH-Logik (Agents nach Cohort, Policy-Plan-JSON) ist wiederverwendbar für den Polling-Guardian
+
+Acceptance unverändert wie auf QUA-1032 gespect: 5-min-Poll läuft, throttle bei Threshold, auto-revert nach Reset, ALERTS als Class-2-Comment auf QUA-1032.
+
+Notbremse läuft bereits (Board Advisor 2026-05-09T07:24Z): Development + Head-of-Pipeline auf intervalSec=7200s gestretched. CTO bleibt auf 1800s wegen QUA-1031.

@@ -1,143 +1,137 @@
+#!/usr/bin/env python3
+"""P4 Monte Carlo robustness runner."""
+
+from __future__ import annotations
+
 import argparse
+import csv
+import hashlib
 import json
-from datetime import datetime
+import random
 from pathlib import Path
-from typing import Any, Dict
+
+from _phase_utils import ensure_dir
 
 
-def _is_number(value: Any) -> bool:
-    return isinstance(value, (int, float)) and not isinstance(value, bool)
+def parse_args() -> argparse.Namespace:
+    p = argparse.ArgumentParser(description="Run P4 Monte Carlo robustness checks.")
+    p.add_argument("--ea", required=True, help="EA identifier, e.g. QM5_1004")
+    p.add_argument("--returns-csv", required=True, help="CSV with per-trade returns in column return_pct")
+    p.add_argument("--iterations", type=int, default=1000)
+    p.add_argument("--path-length", type=int, default=250)
+    p.add_argument("--seed", type=int, default=42)
+    p.add_argument("--max-dd-cap-pct", type=float, default=20.0)
+    p.add_argument("--out-prefix", default="D:/QM/reports/pipeline")
+    p.add_argument("--run-tag", default="")
+    return p.parse_args()
 
 
-def _write_result(output_root: Path, ea_id: str, symbol: str, payload: Dict[str, Any]) -> Path:
-    ts = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
-    safe_symbol = symbol.replace("/", "_")
-    target_dir = output_root / ea_id / "P4"
-    target_dir.mkdir(parents=True, exist_ok=True)
-    out_path = target_dir / f"P4_{ea_id}_{safe_symbol}_{ts}_result.json"
-    out_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-    return out_path
+def load_returns(path: Path) -> list[float]:
+    values: list[float] = []
+    with path.open("r", encoding="utf-8", newline="") as handle:
+        for row in csv.DictReader(handle):
+            raw = (row.get("return_pct") or "").strip()
+            if raw:
+                values.append(float(raw))
+    if not values:
+        raise ValueError("returns-csv contains no return_pct values")
+    return values
 
 
-def run_p4_montecarlo(
-    ea_id: str,
-    symbol: str,
-    output_root: Path,
-    baseline_pf: float,
-    baseline_max_dd_pct: float,
-    mc_pf_p05: float,
-    mc_net_profit_p05: float,
-    mc_max_dd_pct_p95: float,
-    min_pf_p05: float,
-    max_dd_multiplier: float,
-) -> Dict[str, Any]:
-    numeric_values = {
-        "baseline_pf": baseline_pf,
-        "baseline_max_dd_pct": baseline_max_dd_pct,
-        "mc_pf_p05": mc_pf_p05,
-        "mc_net_profit_p05": mc_net_profit_p05,
-        "mc_max_dd_pct_p95": mc_max_dd_pct_p95,
-        "min_pf_p05": min_pf_p05,
-        "max_dd_multiplier": max_dd_multiplier,
-    }
-    for key, value in numeric_values.items():
-        if not _is_number(value):
-            raise ValueError(f"{key} must be numeric.")
+def max_drawdown_pct(equity_points: list[float]) -> float:
+    peak = equity_points[0]
+    worst = 0.0
+    for v in equity_points:
+        if v > peak:
+            peak = v
+        dd = 100.0 * (peak - v) / peak if peak > 0 else 0.0
+        if dd > worst:
+            worst = dd
+    return worst
 
-    verdict = "PASS"
-    reasons = []
 
-    if mc_pf_p05 < min_pf_p05:
-        verdict = "FAIL"
-        reasons.append(f"MC PF p05 {mc_pf_p05:.4f} < required minimum {min_pf_p05:.4f}.")
-
-    if mc_net_profit_p05 <= 0.0:
-        verdict = "FAIL"
-        reasons.append(f"MC net profit p05 {mc_net_profit_p05:.2f} must be > 0.")
-
-    allowed_dd = baseline_max_dd_pct * max_dd_multiplier
-    if mc_max_dd_pct_p95 > allowed_dd:
-        verdict = "FAIL"
-        reasons.append(
-            f"MC max DD p95 {mc_max_dd_pct_p95:.4f}% > allowed {allowed_dd:.4f}% "
-            f"({baseline_max_dd_pct:.4f}% baseline * {max_dd_multiplier:.2f})."
-        )
-
-    criterion = (
-        "P4 Monte Carlo hard gates satisfied."
-        if verdict == "PASS"
-        else " ".join(reasons)
-    )
-
-    payload = {
-        "phase": "P4",
-        "ea_id": ea_id,
-        "verdict": verdict,
-        "criterion": criterion,
-        "details": {
-            "symbol": symbol,
-            "baseline": {
-                "profit_factor": baseline_pf,
-                "max_drawdown_pct": baseline_max_dd_pct,
-            },
-            "monte_carlo": {
-                "profit_factor_p05": mc_pf_p05,
-                "net_profit_p05": mc_net_profit_p05,
-                "max_drawdown_pct_p95": mc_max_dd_pct_p95,
-            },
-            "thresholds": {
-                "min_pf_p05": min_pf_p05,
-                "max_dd_multiplier": max_dd_multiplier,
-                "max_allowed_dd_pct": allowed_dd,
-            },
-        },
-    }
-
-    evidence_path = _write_result(output_root, ea_id, symbol, payload)
-    payload["evidence_path"] = str(evidence_path)
-    evidence_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-
-    print(
-        json.dumps(
-            {
-                "phase": "P4",
-                "ea_id": ea_id,
-                "verdict": verdict,
-                "criterion": criterion,
-                "evidence_path": str(evidence_path),
-            }
-        )
-    )
-    return payload
+def short_hash(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Run P4 Monte Carlo robustness gate checks.")
-    parser.add_argument("--ea", required=True, dest="ea_id")
-    parser.add_argument("--symbol", default="EURUSD.DWX")
-    parser.add_argument("--output-root", default="D:/QM/reports/pipeline")
-    parser.add_argument("--baseline-pf", type=float, required=True)
-    parser.add_argument("--baseline-max-dd-pct", type=float, required=True)
-    parser.add_argument("--mc-pf-p05", type=float, required=True)
-    parser.add_argument("--mc-net-profit-p05", type=float, required=True)
-    parser.add_argument("--mc-max-dd-pct-p95", type=float, required=True)
-    parser.add_argument("--min-pf-p05", type=float, default=1.00)
-    parser.add_argument("--max-dd-multiplier", type=float, default=1.50)
-    args = parser.parse_args()
+    args = parse_args()
+    rng = random.Random(args.seed)
+    returns = load_returns(Path(args.returns_csv))
+    run_tag = args.run_tag.strip() or f"seed{args.seed}_n{args.iterations}"
 
-    result = run_p4_montecarlo(
-        ea_id=args.ea_id,
-        symbol=args.symbol,
-        output_root=Path(args.output_root),
-        baseline_pf=args.baseline_pf,
-        baseline_max_dd_pct=args.baseline_max_dd_pct,
-        mc_pf_p05=args.mc_pf_p05,
-        mc_net_profit_p05=args.mc_net_profit_p05,
-        mc_max_dd_pct_p95=args.mc_max_dd_pct_p95,
-        min_pf_p05=args.min_pf_p05,
-        max_dd_multiplier=args.max_dd_multiplier,
-    )
-    return 0 if result["verdict"] == "PASS" else 2
+    out_dir = ensure_dir(Path(args.out_prefix) / "P4" / args.ea / run_tag)
+    mc_csv = out_dir / "mc_distribution.csv"
+    paths_csv = out_dir / "equity_paths.csv"
+    summary_json = out_dir / "summary.json"
+
+    failures = 0
+    dist_rows: list[dict[str, float | int]] = []
+    sampled_paths: list[tuple[int, int, float]] = []
+
+    with mc_csv.open("w", encoding="utf-8", newline="") as mc_handle:
+        mc_writer = csv.DictWriter(
+            mc_handle,
+            fieldnames=["iteration", "final_equity", "total_return_pct", "max_dd_pct", "breach_dd_cap"],
+        )
+        mc_writer.writeheader()
+
+        for i in range(1, args.iterations + 1):
+            equity = 1.0
+            points = [equity]
+            for step in range(1, args.path_length + 1):
+                r = rng.choice(returns)
+                equity *= 1.0 + (r / 100.0)
+                points.append(equity)
+                if i <= 10:
+                    sampled_paths.append((i, step, equity))
+
+            dd_pct = max_drawdown_pct(points)
+            total_ret = 100.0 * (equity - 1.0)
+            breach = dd_pct > args.max_dd_cap_pct
+            if breach:
+                failures += 1
+
+            row = {
+                "iteration": i,
+                "final_equity": round(equity, 10),
+                "total_return_pct": round(total_ret, 6),
+                "max_dd_pct": round(dd_pct, 6),
+                "breach_dd_cap": int(breach),
+            }
+            mc_writer.writerow(row)
+            dist_rows.append(row)
+
+    with paths_csv.open("w", encoding="utf-8", newline="") as path_handle:
+        path_writer = csv.DictWriter(path_handle, fieldnames=["iteration", "step", "equity"])
+        path_writer.writeheader()
+        for it, step, eq in sampled_paths:
+            path_writer.writerow({"iteration": it, "step": step, "equity": round(eq, 10)})
+
+    failure_rate = 100.0 * failures / args.iterations if args.iterations else 100.0
+    verdict = "FAIL" if failure_rate > 5.0 else "PASS"
+    summary = {
+        "ea_id": args.ea,
+        "phase": "P4",
+        "run_tag": run_tag,
+        "seed": args.seed,
+        "iterations": args.iterations,
+        "path_length": args.path_length,
+        "max_dd_cap_pct": args.max_dd_cap_pct,
+        "failure_count": failures,
+        "failure_rate_pct": round(failure_rate, 4),
+        "criterion": "MC failure if >5% iterations breach max_dd cap",
+        "verdict": verdict,
+        "artifacts": {
+            "summary_json": str(summary_json),
+            "mc_distribution_csv": str(mc_csv),
+            "equity_paths_csv": str(paths_csv),
+            "mc_distribution_sha256": short_hash(mc_csv),
+        },
+    }
+    summary_json.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps(summary, indent=2))
+    return 0
 
 
 if __name__ == "__main__":

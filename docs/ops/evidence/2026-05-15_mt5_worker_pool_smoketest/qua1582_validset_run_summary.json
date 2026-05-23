@@ -1,0 +1,11 @@
+{
+  "tag": "qua1582_e2e_validset_20260515T1048Z",
+  "inserted": 8,
+  "final_rows": 8,
+  "status_counts": {
+    "failed": 8
+  },
+  "duration_sec": 10.0,
+  "start_utc": "2026-05-15T10:44:33.422107Z",
+  "end_utc": "2026-05-15T10:44:43.423342Z"
+}

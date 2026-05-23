@@ -1,0 +1,37 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1046
+; ea_slug:      QM5_1046_maroy-intraday-vwap-exit
+; ea_version:   v5.0
+; set_version:  s2026-05-16-001
+; symbol:       NDX.DWX
+; timeframe:    M30
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1.00
+; build_hash:   38f826697c1625123054ac602cbda922e12d4b78f9883bf78aa38dcaa8045cda
+; author:       Development
+; date:         2026-05-16
+;==========================================================
+ENV=backtest
+qm_ea_id=1046
+qm_magic_slot_offset=0
+RISK_PERCENT=0.0
+RISK_FIXED=1000.0
+PORTFOLIO_WEIGHT=1.0
+qm_news_mode=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+strategy_session_open_hhmm=1630
+strategy_session_close_hhmm=2255
+strategy_vol_lookback_days=10
+strategy_vol_multiplier_k=1.0
+strategy_exit_variant=0
+strategy_atr_period=14
+strategy_atr_mult=3.0
+strategy_max_session_dd_pct=20.0
+strategy_ladder_long_mfe_pct=1.0
+strategy_ladder_short_mfe_pct=2.0
+strategy_ladder_close_pct=75.0
+strategy_max_spread_points=0

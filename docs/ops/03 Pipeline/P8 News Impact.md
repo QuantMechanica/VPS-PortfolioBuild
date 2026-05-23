@@ -1,11 +1,11 @@
-# P8 News Impact
+# Q11 / P8 Real News Replay
 
-Updated: 2026-05-08
+Updated: 2026-05-20
 Issue: QUA-911
 
 ## Purpose
 
-P8 selects a deploy-safe news mode policy from backtest matrix evidence and validates the runtime calendar input contract before phase verdict emission.
+Q11 selects a deploy-safe news mode policy from real MT5 news-mode reruns and deal replay against the actual UTC news calendar. Deprecated `news_matrix.csv` inputs are compatibility markers only and cannot produce a hard PASS.
 
 ## Canonical Calendar Schema
 
@@ -31,9 +31,15 @@ Validation rules:
 ```bash
 python framework/scripts/p8_news_driver.py \
   --ea QM5_1001 \
-  --news-matrix framework/scripts/tests/fixtures/p8_matrix.csv \
-  --calendar-csv D:/QM/data/news_calendar/news_calendar.csv \
-  --mode all
+  --symbol EURUSD.DWX \
+  --period H1 \
+  --base-setfile D:/QM/reports/pipeline/QM5_1001/sets/QM5_1001_EURUSD.DWX_H1_backtest.set \
+  --calendar-csv D:/QM/data/news_calendar/news_calendar_2015_2025.csv \
+  --mode all \
+  --mt5-modes all \
+  --from-date 2023.01.01 \
+  --to-date 2025.12.31 \
+  --run-mt5
 ```
 
 PowerShell phase wrapper (opt-in integration):
@@ -43,7 +49,7 @@ powershell -ExecutionPolicy Bypass -File framework/scripts/run_phase.ps1 `
   -EAId QM5_1001 `
   -Phase P8 `
   -UseP8NewsDriver `
-  -RunnerArgs @('--news-matrix','framework/scripts/tests/fixtures/p8_matrix.csv','--calendar-csv','D:/QM/data/news_calendar/news_calendar.csv','--mode','all')
+  -RunnerArgs @('--symbol','EURUSD.DWX','--period','H1','--base-setfile','D:/QM/reports/pipeline/QM5_1001/sets/QM5_1001_EURUSD.DWX_H1_backtest.set','--calendar-csv','D:/QM/data/news_calendar/news_calendar_2015_2025.csv','--mode','all','--mt5-modes','all','--from-date','2023.01.01','--to-date','2025.12.31','--run-mt5')
 ```
 
 Supported `--mode` profiles:
@@ -61,6 +67,15 @@ Supported `--mode` profiles:
 Under `D:/QM/reports/pipeline/<ea_id>/P8/`:
 - `P8_<ea_id>_result.json`
 - `P8_summary.csv`
+- `P8_real_news_replay.csv`
+- `P8_trade_replay_inputs.json`
+- `mt5_mode_runs/`
 - `phase_runner_log.jsonl`
 
 `P8_summary.csv` emits per-profile/per-symbol recommended mode and verdict.
+
+Hard PASS requires:
+- `P8_<ea_id>_result.json` verdict `MODE_SELECTED`
+- `details.parameters.run_mt5=true`
+- non-empty MT5 rerun evidence under `details.mt5_mode_metrics`
+- no synthetic `news_matrix.csv` as the deciding evidence

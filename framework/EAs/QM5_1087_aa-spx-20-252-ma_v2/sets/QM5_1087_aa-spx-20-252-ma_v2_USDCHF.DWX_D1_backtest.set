@@ -1,0 +1,22 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1087
+; ea_slug:      aa-spx-20-252-ma_v2
+; ea_version:   v5.0
+; set_version:  s20260518-002
+; symbol:       USDCHF.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   112
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   a5d6a69dc363cb9e1d96296331cb20a3b4e39667ee1bbb33ede2252af46b42c8
+; author:       Development
+; date:         2026-05-18
+;==========================================================
+qm_magic_slot_offset=112
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=alpha_architect_original_source

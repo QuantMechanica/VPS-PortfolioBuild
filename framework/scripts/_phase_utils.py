@@ -152,8 +152,10 @@ def write_phase_artifacts(
 ) -> tuple[Path, Path]:
     phase_safe = phase.replace(".", "_")
     result_path = out_dir / f"{phase_safe}_{ea_id}_result.json"
+    summary_path = out_dir / "summary.json"
     log_path = out_dir / "phase_runner_log.jsonl"
     write_json(result_path, result)
+    write_json(summary_path, result)
     append_jsonl(
         log_path,
         {

@@ -33,12 +33,38 @@ def evaluate_classes(rows: list[dict[str, str]]) -> set[str]:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Evaluate P3.5 CSR verdict")
     add_common_args(parser)
-    parser.add_argument("--baseline-csv", required=True)
+    parser.add_argument("--baseline-csv")
     parser.add_argument("--csr-results-csv")
+    parser.add_argument("--symbols", default="")
+    parser.add_argument("--symbol", default="")
+    parser.add_argument("--period", default="")
+    parser.add_argument("--setfile", default="")
+    parser.add_argument("--from-year", default="")
+    parser.add_argument("--to-year", default="")
     args = parser.parse_args()
 
     ea_id = args.ea
-    out_dir = ensure_dir(Path(args.out_prefix) / ea_id / "P3_5")
+    out_dir = ensure_dir(Path(args.out_prefix) / ea_id / "P3.5")
+    if not args.baseline_csv:
+        result = build_result(
+            phase="P3.5",
+            ea_id=ea_id,
+            verdict="PENDING_IMPLEMENTATION",
+            criterion="P3.5 CSR runner requires baseline CSV evidence; cascade spawn path is wired but evidence generation is pending.",
+            evidence_path="",
+            details={
+                "symbols": args.symbols or args.symbol,
+                "period": args.period,
+                "setfile": args.setfile,
+                "from_year": args.from_year,
+                "to_year": args.to_year,
+            },
+        )
+        result_path, _ = write_phase_artifacts(out_dir=out_dir, phase="P3.5", ea_id=ea_id, result=result)
+        update_result_with_evidence_path(result_path, result)
+        print(result_path)
+        return 0
+
     baseline_rows = load_csv_rows(Path(args.baseline_csv))
     baseline_classes = evaluate_classes(baseline_rows)
 

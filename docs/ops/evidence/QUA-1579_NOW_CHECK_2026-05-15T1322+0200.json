@@ -1,0 +1,17 @@
+{
+  "issue": "QUA-1579",
+  "kind": "now_check",
+  "captured_at_local": "2026-05-15T13:14:28.0898725+02:00",
+  "task": {
+    "task_name": "QM_GateEvaluator_5min",
+    "state": "Ready",
+    "last_run_time": "2026-05-15T13:10:10.0000000+02:00",
+    "last_task_result": 0,
+    "next_run_time": "2026-05-15T13:15:15.0000000+02:00"
+  },
+  "queue_counts_by_status": {
+    "done": 1,
+    "failed": 18,
+    "running": 1
+  }
+}

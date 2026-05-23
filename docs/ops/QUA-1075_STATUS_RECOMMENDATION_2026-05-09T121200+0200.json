@@ -1,0 +1,16 @@
+{
+  "issue": "QUA-1075",
+  "recommended_status": "blocked",
+  "reason": "deterministic_guard_failure",
+  "timestamp": "2026-05-09T12:12:00+02:00",
+  "evidence": {
+    "p2_guard": "build_ea_first",
+    "p3_guard": "stop_no_p2_pass_symbols",
+    "ea_dir_present": false
+  },
+  "unblock": {
+    "owner": "Development/CTO",
+    "action": "deliver_QM5_1014_build_setfiles_and_P2_pass_artifacts"
+  },
+  "resume_command": "pwsh -NoProfile -File C:/QM/repo/framework/scripts/run_qua1075_p3_resume.ps1"
+}

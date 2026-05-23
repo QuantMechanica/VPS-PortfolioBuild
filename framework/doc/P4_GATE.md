@@ -1,61 +1,34 @@
-# P4 Gate (Monte Carlo)
+# P4 Gate: Monte Carlo Robustness
 
-## Purpose
+## Entry criteria
 
-P4 Monte Carlo validates robustness after upstream baseline/selection gates. This gate is pass/fail and writes structured evidence JSON under `<output-root>/<ea_id>/P4/`.
+P4 may start only after `P3.5` has at least one `PASS` row for the EA/symbol cell.
 
-## Inputs
+Default P3.5 pass thresholds for entry:
+- `sharpe > 1.20`
+- `max_dd_pct < 20.0`
+- `profit_factor > 1.20`
 
-Runner: `framework/scripts/p4_montecarlo.py`
+## Monte Carlo run contract
 
-Required CLI parameters:
-- `--ea`
-- `--baseline-pf`
-- `--baseline-max-dd-pct`
-- `--mc-pf-p05`
-- `--mc-net-profit-p05`
-- `--mc-max-dd-pct-p95`
+- Runner: `framework/scripts/p4_montecarlo.py`
+- Inputs: `return_pct` series from a P3.5 PASS cell (or approved synthetic replay for smoke only).
+- Default production run: `--iterations 1000`
+- Output folder: `P4/<EA>/<run_tag>/`
+- Required artifacts:
+- `summary.json`
+- `mc_distribution.csv`
+- `equity_paths.csv`
 
-Optional parameters:
-- `--symbol` (default `EURUSD.DWX`)
-- `--output-root` (default `D:/QM/reports/pipeline`)
-- `--min-pf-p05` (default `1.00`)
-- `--max-dd-multiplier` (default `1.50`)
+## Stop criteria
 
-## Hard Criteria
+Monte Carlo gate fails when more than 5% of iterations breach the configured drawdown cap:
 
-PASS requires all checks:
-1. `mc_pf_p05 >= min_pf_p05`
-2. `mc_net_profit_p05 > 0`
-3. `mc_max_dd_pct_p95 <= baseline_max_dd_pct * max_dd_multiplier`
+- `failure_rate_pct = 100 * (breach_count / iterations)`
+- `FAIL` if `failure_rate_pct > 5.0`
+- `PASS` otherwise
 
-Any violation returns `FAIL` and process exit code `2`.
+## Determinism
 
-## Evidence Contract
-
-The script prints a compact JSON summary to stdout and writes a full evidence payload with:
-- `phase` (`P4`)
-- `ea_id`
-- `verdict`
-- `criterion`
-- `details` (baseline, monte_carlo, thresholds)
-- `evidence_path`
-
-## Example
-
-```powershell
-python framework/scripts/p4_montecarlo.py `
-  --ea QM5_1004 `
-  --symbol EURUSD.DWX `
-  --baseline-pf 1.42 `
-  --baseline-max-dd-pct 9.8 `
-  --mc-pf-p05 1.11 `
-  --mc-net-profit-p05 1250.0 `
-  --mc-max-dd-pct-p95 13.7
-```
-
-## Notes
-
-- This gate does not consume external market APIs.
-- Symbol defaults preserve `.DWX` suffix discipline in research/backtest contexts.
-- Threshold overrides should be documented in issue-level evidence before use.
+Runs must be seed-deterministic:
+- identical `--seed`, input returns, and params must produce identical `mc_distribution.csv` hash.

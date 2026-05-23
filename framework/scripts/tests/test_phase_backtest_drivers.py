@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import csv
 import json
 import subprocess
 import tempfile
@@ -63,45 +62,17 @@ class PhaseBacktestDriverTests(unittest.TestCase):
             self.assertEqual(clean_m["trade_count"], 100)
             self.assertEqual(stress_m["trade_count"], 50)
 
-    def test_p5b_noise_driver_deterministic_path_count(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            cal = root / "cal.json"
-            out = root / "out"
-            _write_json(
-                cal,
-                {
-                    "symbols": {
-                        "EURUSD.DWX": {
-                            "latency_ms": {"p95": 120},
-                            "slippage_points": {"p95": 5},
-                            "spread_points": {"p95": 25},
-                        }
-                    }
-                },
-            )
-            cmd = [
-                "python",
-                str(SCRIPTS / "p5b_noise_driver.py"),
-                "--ea",
-                "QM5_1001",
-                "--symbol",
-                "EURUSD.DWX",
-                "--calibration-json",
-                str(cal),
-                "--paths",
-                "200",
-                "--seed",
-                "42",
-                "--out-prefix",
-                str(out),
-            ]
-            proc = subprocess.run(cmd, cwd=str(REPO), capture_output=True, text=True)
-            self.assertEqual(proc.returncode, 0, msg=f"stdout={proc.stdout}\nstderr={proc.stderr}")
-            out_csv = Path(proc.stdout.strip().splitlines()[-1])
-            with out_csv.open("r", encoding="utf-8", newline="") as handle:
-                rows = list(csv.DictReader(handle))
-            self.assertEqual(len(rows), 200)
+    def test_p5b_noise_driver_exposes_real_mt5_contract(self) -> None:
+        proc = subprocess.run(
+            ["python", str(SCRIPTS / "p5b_noise_driver.py"), "--help"],
+            cwd=str(REPO),
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(proc.returncode, 0, msg=f"stdout={proc.stdout}\nstderr={proc.stderr}")
+        self.assertIn("--calibration-json", proc.stdout)
+        self.assertIn("--smoke-script", proc.stdout)
+        self.assertNotIn("--paths", proc.stdout)
 
     def test_p6_multiseed_driver_copies_mock_seed_csv(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

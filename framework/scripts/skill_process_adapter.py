@@ -14,6 +14,7 @@ SKILL_SCRIPT_MAP = {
     "qm-p2-baseline-guard": "skill_p2_baseline_guard.py",
     "qm-p3-sweep-guard": "skill_p3_sweep_guard.py",
     "qm-p4-montecarlo-guard": "skill_p4_montecarlo_guard.py",
+    "qm-p4-montecarlo-run": "p4_montecarlo.py",
 }
 
 

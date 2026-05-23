@@ -1,0 +1,22 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1703
+; ea_slug:      sperandeo-multiple-top-bottom-h4
+; ea_version:   v5.0
+; set_version:  s20260519-001
+; symbol:       CHFJPY.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   7
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   82bc131bcded920dfa514fa4acc3459185ac79124fb01dd12422476e27b7ce0d
+; author:       Development
+; date:         2026-05-19
+;==========================================================
+qm_magic_slot_offset=7
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=not_found

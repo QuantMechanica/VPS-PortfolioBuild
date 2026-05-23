@@ -13,6 +13,22 @@
     "unit": "USD",
     "applies_via": "RISK_FIXED set-file per DL-038 Rule 7"
   },
+  "p2_real_tick_policy": {
+    "model": 4,
+    "pre_screen": {
+      "enabled": true,
+      "window_months": 6,
+      "runs": 1,
+      "purpose": "Fast real-tick trade/profit sanity check before launching the canonical full P2 run."
+    },
+    "full_run": {
+      "date_range": "2017.01.01-2022.12.31",
+      "runs": 2,
+      "timeout_seconds_min": 7200,
+      "timeout_seconds_max": 14400,
+      "timeout_basis": "Sized from the six-month pre-screen runtime with deterministic-run and headroom multipliers."
+    }
+  },
   "anti_theater_gates": {
     "min_trade_count": 1,
     "min_trade_count_exception": "Per-symbol zero-trade ADR with named cause (e.g. broker-blocked window). 'no history data, stop testing' is NEVER a valid zero-trade outcome — it is a setup failure.",

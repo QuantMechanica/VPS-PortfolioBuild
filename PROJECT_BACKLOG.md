@@ -14,7 +14,7 @@ This file is the single backlog across all phases of V5. It started (2026-04-26)
 
 ## Today's wins (2026-05-01) — durable changes landed
 
-- **Phase 0 P0-21 remediated** — v2 bar compilation script forced `CustomRatesUpdate` for 33 missing-history `.DWX` symbols, T1 53M bars total written then propagated byte-identical to T2-T5 (`docs/ops/QUA-684_D2_BAR_COMPILATION_AUDIT_2026-05-01.md`, `framework/scripts/mt5/Compile_Custom_Bars_QM_v2.mq5`).
+- **Phase 0 P0-21 remediated** — v2 bar compilation script forced `CustomRatesUpdate` for 33 missing-history `.DWX` symbols, T1 53M bars total written then propagated byte-identical to T2-T10 (`docs/ops/QUA-684_D2_BAR_COMPILATION_AUDIT_2026-05-01.md`, `framework/scripts/mt5/Compile_Custom_Bars_QM_v2.mq5`).
 - **DL-054** anti-theater pass criteria — five binding gates a `(ea_id, phase, symbol)` run must pass before `verdict=PASS` may land in `report.csv`. Companion `framework/registry/tester_defaults.json` codifies OWNER's 100k deposit + 1000 fixed-risk.
 - **DL-054 gate library** + standalone CLI runner — `framework/scripts/dl054_gates.py` + `dl054_gate_runner.py` (smoke-tested across canonical / non-canonical / stub-only / v2-recompiled symbols). CTO splices Tuesday per `framework/scripts/dl054_integration.md`.
 - **QUA-662 phantom-PASS matrix invalidated** — 36/36 PASS rows quarantined; full audit + DL-054 + tester_defaults addresses every concurrent failure mode.
@@ -45,7 +45,7 @@ What this file deliberately leaves to Paperclip Wave 0+:
 
 When Paperclip is online and asks "what should I do here?", the answer is usually: *what do you propose, given the constraints?* — not *here is the answer pre-baked*.
 
-## Today's Reality (refreshed 2026-05-01 per QUA-677 D2 / DL-053)
+## Today's Reality (refreshed 2026-05-21 per mass-terminal audit)
 
 Live phase pointer: see `paperclip/governance/PHASE_STATE.md`. Updated every CEO heartbeat per DL-053.
 
@@ -53,14 +53,14 @@ Current phase: **Phase 3 — First V5 EA Through Pipeline**. Phase 1 (Paperclip 
 
 | Actor | Agent ID | Status | Can do |
 |---|---|---|---|
-| OWNER (the human) | `local-board` | active | gate decisions, MT5 operations, sign-offs, real-money approvals, T6 toggles, charter changes |
+| OWNER (the human) | `local-board` | active | gate decisions, MT5 operations, sign-offs, real-money approvals, T_Live toggles, charter changes |
 | Board Advisor Claude (on VPS) | n/a | active | docs, repo work, scripts, validation walkthroughs, evidence capture, brand work |
 | CEO | `7795b4b0` | LIVE since 2026-04-27 | strategy, hiring, delegation, phase progression, DL ratification under DL-023 / DL-032 waivers |
 | CTO | `241ccf3c` | LIVE since 2026-04-27 | framework + EA review (DL-036 gate), infra/code sign-off, build/compile validation |
 | Research | `7aef7a17` | LIVE (paused per DL-044 — wake-on-demand only until first V5 EA reaches P7) | Strategy Card extraction (G0), source survey, V5 hard-rule filter |
 | Documentation-KM | `8c85f83f` | LIVE since 2026-04-27 | DL recording, lessons-learned, process registry, Notion mirror, runtime-health docs, **PHASE_STATE.md ownership (per QUA-677 D1)** |
-| DevOps | `86015301` | LIVE since 2026-04-29 | T1-T5 infra, worktree isolation, scheduler, log rotation, PC1-00 mitigation |
-| Pipeline-Operator | `46fc11e5` | LIVE | T1-T5 backtest dispatch, 36-symbol matrix, P0..P10 phase runner, RISK_FIXED setfile generation |
+| DevOps | `86015301` | LIVE since 2026-04-29 | T1-T10 infra, worktree isolation, scheduler, log rotation, PC1-00 mitigation |
+| Pipeline-Operator | `46fc11e5` | LIVE | T1-T10 backtest dispatch, 36-symbol matrix, P0..P10 phase runner, RISK_FIXED setfile generation |
 | Development | `ebefc3a6` | LIVE | EA implementation from APPROVED Strategy Cards (CTO DL-036 gate before P2) |
 | Quality-Tech | `c1f90ba8` | LIVE since 2026-04-28 (DL-045 early trigger) | sub-gate calibration, Step 25 framework gate, CTO peer review |
 | Quality-Business | `0ab3d743` | LIVE since 2026-04-28 (DL-045 early trigger + DL-039 8-cap waiver) | G1 verdict on Strategy Cards, P9 portfolio composition review |
@@ -68,7 +68,7 @@ Current phase: **Phase 3 — First V5 EA Through Pipeline**. Phase 1 (Paperclip 
 | Paperclip Wave 3+ (Controlling, Observability-SRE, LiveOps, R&D) | n/a | NOT YET HIRED | trigger when role-specific design-intent gate fires (per `paperclip/agents/wave_plan.md`) |
 | Chief of Staff (Wave 6 / Phase Final / founder-comms) | n/a | DEFERRED | Phase Final only; per DL-052 distinct from the retired OS-Controller variant (DL-048) |
 
-The 2026-04-26 framing of "any backlog item assigned to a Paperclip role is blocked on Paperclip Bootstrap" is **superseded**. Wave 0 + Wave 1 + Wave 2 are live; backlog items below are now actively dispatched to live agents. Items still showing 🚫 in the workstream lists below refer to upstream cause (cards not yet APPROVED, calibration JSON missing, etc.), not to "Paperclip not installed".
+- Repo: `C:\QM\repo` · Paperclip: `C:\QM\paperclip` · Live terminal: `C:\QM\mt5\T_Live` · Factory: `D:\QM\mt5\T1..T10`
 
 ## Phase Map (the real sequence)
 
@@ -82,8 +82,6 @@ Phase 5 — Live Deployment on T6                      ← needs Wave 4 (LiveOps
 Phase 6 — Public Dashboard Live                      ← parallel-eligible from Phase 1
 Phase Final — Founder-Comms / Chief of Staff         ← Wave 6, all triggers must hold
 ```
-
-Phases are mostly sequential, with Phase 6 (public dashboard) eligible to run partly in parallel from Phase 1 onward (snapshot schema can be built before there's much to display).
 
 ---
 
@@ -108,283 +106,92 @@ Anchor doc: `docs/ops/PHASE0_EXECUTION_BOARD.md` (rows P0-01 to P0-29).
 ### In progress (today's actual owner = OWNER and/or Board Advisor)
 
 - 🟡 P0-26 V5 EA framework — **DESIGN DONE, defaults locked, implementation pending**.
-  - Today's owner: blocked on Phase 1 (Paperclip + Codex agent for MQL5 work). Board Advisor Claude can author MQL5 by hand if OWNER prioritizes that over waiting for Paperclip — but that bypasses the agent-routing per `ORG_SELF_DESIGN_MODEL.md`.
-  - Recommendation: defer until Phase 1.
-- 🟡 P0-29 Framework trade-mgmt + chart UI extension — **DESIGN DONE, implementation pending** (continues from P0-26, same blocker).
+- 🟡 P0-29 Framework trade-mgmt + chart UI extension — **DESIGN DONE, implementation pending**.
 
 ### Not started — actionable today
 
-- ⬜ **P0-04 / P0-05 MT5 T1-T5 + T6 install + isolation proof** — OWNER walks the install, Board Advisor scripts the validation. Today's owner: OWNER + Board Advisor.
-- ⬜ **P0-06 DarwinexZero / MT5 access confirmation** — OWNER confirms Demo + Live login work. Today's owner: OWNER.
-- ✅ **P0-21 REMEDIATED 2026-05-01** — bar compilation forced via `framework/scripts/mt5/Compile_Custom_Bars_QM_v2.mq5` (manual aggregation: ticks → M1 OHLC → `CustomRatesUpdate`). Run finished 2026-05-01 ~14:00Z: **33 OK + 2 SKIP, 0 FAIL = 35/35 symbols**, **53,397,265 bars** total written. Propagation T1 → T2-T5 byte-identical (3.8 GB each, 0 mismatched symbols, 0 robocopy errors after terminals closed). The earlier 2026-04-27 09:48Z `verdict=READY` stamp had been premature — the same log emitted `FAIL_tail_bars` / `bars_one_shot=0` / `Terminal: Invalid params` on ~21 of 36 imported `.DWX` symbols because import only wrote ticks, not bars (root cause confirmed in `docs/ops/QUA-684_D2_BAR_COMPILATION_AUDIT_2026-05-01.md`). v2 fix: aggregate ticks → M1 in MQL5 + `CustomRatesUpdate` per-month. New canonical-name discipline gate codified at DL-054 Gate 5 (catches `NDXm.DWX` vs `NDX.DWX`, `GDAXIm.DWX` vs `GDAXI.DWX`). Pipeline-Op enforces DL-054 Gate 1 on every launch — `framework/scripts/dl054_gates.py`. Acceptance: 35/35 hcc files compiled across T1-T5 byte-identical ✅. Per `docs/ops/TICK_DATA_MANAGER_DARWINEX_TIME.md`.
-- ⬜ **P0-13 T6 deploy manifest schema** — schema.yaml exists in `LIVE_T6_AUTOMATION_RUNBOOK.md`; needs first dry-run validation. Today's owner: Board Advisor (spec review), deferred for execution to Phase 5 LiveOps.
-- ⬜ **P0-15 Public expense log v0** — CSV + repo. Today's owner: OWNER (data) + Board Advisor (format).
-- ⬜ **P0-16 quantmechanica.com dashboard snapshot schema** — already specced in `docs/ops/WEBSITE_DASHBOARD_PAPERCLIP_STYLE.md`. JSON contract needs first version. Today's owner: Board Advisor.
-- ⬜ **P0-17 Process registry + roadmap** — process docs migrated; public-facing roadmap surface still TBD. Today's owner: Board Advisor (draft) + OWNER (sign-off).
-- ⬜ **P0-19 Buy-me-a-coffee + get-in-contact website CTA contract** — copy + page spec. Today's owner: OWNER (decision) + Board Advisor (spec).
-
-### Not started — blocked on Phase 1+
-
-- 🚫 **P0-10 Install fresh Paperclip company** — *this IS Phase 1*. Listed in P0 board for completeness but Phase 1 belongs to Phase 1.
-- 🚫 **P0-11 Hire first four agents (CEO, CTO, Research, Documentation-KM)** — Phase 1.
-- 🚫 **P0-12 Seed-strategy import list** — Research agent's first issue, blocked on Phase 1.
-- 🚫 **P0-14 EP01 recording** — Documentation-KM's task, plus video editing. Today's owner: OWNER alone if launched manually before Phase 1.
-- 🚫 **P0-18 Agent skill matrix** — `docs/ops/AGENT_SKILL_MATRIX.md` exists but is a forward-looking doc; activation depends on Wave 0 hiring.
+- ⬜ **P0-04 / P0-05 MT5 T1-T10 + T_Live install + isolation proof** — OWNER walks the install, Board Advisor scripts the validation.
+- ⬜ **P0-06 DarwinexZero / MT5 access confirmation** — OWNER confirms Demo + Live login work.
+- ✅ **P0-21 REMEDIATED 2026-05-01** — bar compilation forced via `framework/scripts/mt5/Compile_Custom_Bars_QM_v2.mq5`. Propagation T1 → T2-T10 byte-identical.
+- ⬜ **P0-13 T6 deploy manifest schema** — schema.yaml exists; needs dry-run.
+- ⬜ **P0-15 Public expense log v0**.
+- ⬜ **P0-16 quantmechanica.com dashboard snapshot schema**.
+- ⬜ **P0-17 Process registry + roadmap**.
+- ⬜ **P0-19 Buy-me-a-coffee + get-in-contact CTA**.
 
 ### Phase 0 acceptance gate (per board)
 
-Phase 0 closes when: T1-T5 + T6 isolation proven, Paperclip V5 company exists with no QUAA imports, public repo exists from commit 1 (✅), process registry + skill matrix + first milestone board exist (✅ for first two; milestone board lives in Paperclip = Phase 1), expense log contains real Hetzner order, news calendar verified (✅), EP01 published or ready for human approval, Codex sign-off on Notion-vs-repo no contradictions.
-
-**Realistic gap to close Phase 0:** MT5 install + DST validation + T6 isolation proof + first manifest dry run + EP01 ready. Paperclip install is overlapping Phase 0 / Phase 1 boundary.
+Phase 0 closes when: T1-T10 + T_Live isolation proven, Paperclip V5 company exists, public repo exists, process registry + skill matrix + first milestone board exist, expense log contains real Hetzner order, news calendar verified, EP01 published.
 
 ---
 
 ## Phase 1 — Paperclip Bootstrap ✅ CLOSED 2026-04-27 (DL-024)
 
-**Goal:** install Paperclip on the VPS, hire Wave 0 (CEO, CTO, Research, Documentation-KM), prove the agent runtime works.
-
-**Anchor doc:** `docs/ops/PAPERCLIP_V2_BOOTSTRAP.md`.
-
-**Closure:** Wave 0 LIVE 2026-04-27; Wave 1 LIVE by 2026-04-29 (DevOps `86015301`, Pipeline-Operator `46fc11e5`, Development `ebefc3a6`); Wave 2 early-trigger LIVE 2026-04-28 (QT `c1f90ba8` per DL-045, QB2 `0ab3d743` per DL-039); CoS-OS-Controller LIVE 2026-05-01 (`38f933cd` per DL-056, narrowly scoped — distinct from deferred Wave 6 founder-comms CoS).
-
-**Prerequisite from Phase 0:** P0-21 Custom Tick Data verification — REMEDIATED 2026-05-01 (see Phase 0 § Done above).
-
-### Workstream
-
-- ⬜ **PC1-00 Drive-sync `.git/` exclusion + repo isolation pattern** — **NEW + CRITICAL** based on V4 mass-delete incident 2026-04-20 (see `lessons-learned/2026-04-20_mass_delete_incident.md`). Before Paperclip writes to the repo concurrently, the VPS must mirror the architectural fix V4 never closed: `.git/` excluded from any Drive sync surface, per-repo git mutex strategy decided, stale `index.lock` monitor planned. Today's owner: OWNER + Board Advisor.
-- ⬜ **PC1-01 Install Paperclip in `C:\QM\paperclip\`** — currently empty by design, awaiting installer
-- ⬜ **PC1-02 Browser / control plane health check on `http://localhost:3100`**
-- ⬜ **PC1-03 Migrate / author the 13 system prompts into Paperclip** — Drive has CTO Agent prompt as a reference (`Notion: CTO Agent — System Prompt`, with verbatim hard rules already aligned to V5); 4 Wave-0 prompts must ship for PC1 close. Existing V4 prompts on Drive `Company/Agents/` are V5 BASIS, not blank-page rewrites.
-- ⬜ **PC1-04 Hire Wave 0**: CEO-Claude, CTO-Codex, Research-Claude, Documentation-KM-Claude with their V5 prompts
-- ⬜ **PC1-05 Wire Paperclip to repo**: agents read `CLAUDE.md`, `docs/ops/`, `processes/`, `branding/`, `framework/`, `lessons-learned/V4_LEARNINGS_ARCHIVE_2026-04-21.md` as canonical
-- ⬜ **PC1-06 First org-design issue** — CEO's first task per `docs/ops/ORG_SELF_DESIGN_MODEL.md`: propose which roles become live agents and when
-- ⬜ **PC1-07 First milestone board** populated with Phase 0 closeout + Phase 2 framework implementation
-
-### Phase 1 acceptance gate
-
-Wave 0 agents online and producing heartbeats. CEO has produced first org proposal. Documentation-KM is mirroring decisions into Notion. CTO has reviewed `framework/V5_FRAMEWORK_DESIGN.md` and signaled GO for Phase 2.
+**Goal:** install Paperclip on the VPS, hire Wave 0, prove the agent runtime works.
 
 ---
 
-## Phase 2 — V5 Framework Implementation ✅ CLOSED 2026-05-01 (QUA-639 + ADR `decisions/2026-05-01_phase2_acceptance.md`)
+## Phase 2 — V5 Framework Implementation ✅ CLOSED 2026-05-01 (QUA-639)
 
-**Goal:** Codex (CTO agent) implements the 25-step framework spec, producing compilable shared library + EA template + harness.
-
-**Anchor doc:** `framework/V5_FRAMEWORK_DESIGN.md` § Implementation Order (steps 1–25).
-
-**Closure:** Step 25 PASS via Quality-Tech first review (QUA-643), all 16 includes + EA_Skeleton.mq5 + 5 PowerShell scripts + smoke fixture compiled and evidenced. Conditional pass bullets B1..B5 are tracked as Phase 3 follow-ups (sub-gate calibration after first real distributions land).
-
-### Workstream
-
-- ⬜ **PC2-01 to PC2-25** = framework spec implementation steps (`QM_Errors` → `QM_Branding` → `QM_Logger` → ... → `QM_Common` → `EA_Skeleton` → harness scripts → smoke regression)
-- ⬜ **PC2-26 Quality-Tech review** of full framework before any V5 strategy EA is built (Wave 2 hire required)
-- ⬜ **PC2-27 sync_brand_tokens.ps1 + brand_report.ps1** scripts (per `framework/V5_FRAMEWORK_DESIGN.md`)
-
-### Phase 2 acceptance gate
-
-Smoke EA in `framework/tests/smoke/` compiles + runs + leaves expected evidence on T1. `build_check.ps1` passes strict on the whole `framework/` tree. CTO + Quality-Tech sign off.
+**Goal:** implement shared library + EA template + harness.
 
 ---
 
 ## Phase 3 — First V5 EA Through Pipeline
 
-**Goal:** take one V5 EA from G0 Research Intake all the way to P10 Shadow Deploy. This is the first full pipeline execution and the source of the first real V5 distributions Quality-Tech needs to recalibrate sub-gate defaults.
-
-**Anchor docs:** `docs/ops/PIPELINE_PHASE_SPEC.md`, `docs/ops/PIPELINE_V5_SUB_GATE_SPEC.md`, `processes/01-ea-lifecycle.md`.
-
-**Today's owner (2026-05-01):** blocked on **Codex token-quota outage** (4 codex_local agents — CTO/DevOps/Development/Pipeline-Op — heartbeat-disabled until recovery Tue 2026-05-05 07:30 W. Europe). Tuesday morning restart sequenced in `docs/ops/TUESDAY_RESTART_RUNBOOK_2026-05-05.md` — 9 steps from Codex-restored to first DL-054-gated clean P2 baseline kicked off. Pre-staged artifacts (gate library, integration plan, model-fit recommendation in QUA-684 comment `92a65482`) cut CTO's Tuesday work from "design + write + test" to "review + apply".
+**Goal:** take one V5 EA from Research to Shadow Deploy.
 
 ### Workstream
 
-- ⬜ **PC3-01 G0 Research Intake** — Research agent extracts a Strategy Card from one approved source. Card lives in `strategy-seeds/cards/`.
-- ⬜ **PC3-02 ea_id allocation** — CEO + CTO add row to `framework/registry/ea_id_registry.csv`
-- ⬜ **PC3-02a Queue #1 (immediate after QM5_1003): QM5_1004 davey-es-breakout** (`strategy_id: SRC01_S04`, `ea_id: 1004`) — `.ex5` exists at `framework/EAs/QM5_1004_davey_es_breakout/`. **P0 compile validate (2026-05-01):** `PASS`, `errors=0`, `warnings=0`, latest log `framework/build/compile/20260501_091707/QM5_1004_davey_es_breakout.compile.log`. **DL-036 review artifacts:** `framework/EAs/QM5_1004_davey_es_breakout/QUA-663_DL036_REVIEW_INPUT_2026-05-01T0906Z.json`, `framework/EAs/QM5_1004_davey_es_breakout/QUA-663_DL036_CHECKLIST_2026-05-01T0906Z.md`, `framework/EAs/QM5_1004_davey_es_breakout/QUA-663_DL036_HEARTBEAT_2026-05-01T0908Z.signal`, `framework/EAs/QM5_1004_davey_es_breakout/QUA-663_DL036_HEARTBEAT_2026-05-01T0910Z.signal`, `framework/EAs/QM5_1004_davey_es_breakout/QUA-663_DL036_HEARTBEAT_2026-05-01T0911Z.signal`, `framework/EAs/QM5_1004_davey_es_breakout/QUA-663_DL036_HEARTBEAT_2026-05-01T0913Z.signal`, `framework/EAs/QM5_1004_davey_es_breakout/QUA-663_DL036_HEARTBEAT_2026-05-01T0914Z.signal`. **Next action:** CTO DL-036 EA Review Gate against `strategy-seeds/cards/davey-es-breakout_card.md`. **Status:** ready for P0 once D1 closes.
-- ⬜ **PC3-02b Queue #2: QM5_SRC04_S03_lien_fade_double_zeros** (`strategy_id: SRC04_S03`, `ea_id: 1009`) — `.mq5` landed in `ec81a1d8`; ea_id/card alignment tracked via `9326785a`. **P0 compile validate (2026-05-01):** `PASS`, `errors=0`, `warnings=0`, latest log `framework/build/compile/20260501_091819/QM5_SRC04_S03_lien_fade_double_zeros.compile.log`. **DL-036 review artifacts:** `framework/EAs/QM5_SRC04_S03_lien_fade_double_zeros/QUA-663_DL036_REVIEW_INPUT_2026-05-01T0905Z.json`, `framework/EAs/QM5_SRC04_S03_lien_fade_double_zeros/QUA-663_DL036_HEARTBEAT_2026-05-01T0909Z.signal`, `framework/EAs/QM5_SRC04_S03_lien_fade_double_zeros/QUA-663_DL036_CHECKLIST_2026-05-01T0918Z.md`. **Next action:** complete CTO DL-036 review handoff, then P0/P1 rerun. **Status:** queued behind 1004.
-- ⬜ **PC3-02c Queue #3: QM5_1017 chan-pairs-stat-arb** (`strategy_id: SRC02_S01`, `ea_id: 1017`) — `.ex5` scaffold exists at `framework/EAs/QM5_1017_chan_pairs_stat_arb/`. **P0 compile validate (2026-05-01):** `PASS`, `errors=0`, `warnings=0`, latest log `framework/build/compile/20260501_090243/QM5_1017_chan_pairs_stat_arb.compile.log`. **G0 header back-port (2026-05-05, CEO `7928335d`, QM-00012 + QUA-744):** card flipped `DRAFT → APPROVED`, `ea_id: TBD → 1017`; governance signal removed; queue-state JSON `1017` row → `READY_FOR_CTO_REVIEW` (was `BLOCKED_GOVERNANCE_HEADER_MISMATCH`). **Next action:** CTO DL-036 review packet (REVIEW_INPUT.json + CHECKLIST.md per the 1004/1009 pattern) then DL-036 sign-off, then P1 baseline dispatch. **Status:** unblocked → ready for CTO. **Owner:** CTO via downstream Kanban row (P1 grandchild promotion).
-- ⬜ **PC3-02d Queue state snapshot** — current machine-readable status in `docs/ops/QUA-663_QUEUE_STATE_CURRENT.json` (ready: `1004`, `SRC04_S03`, `1017`; blocked: none).
-- ⬜ **PC3-03 P1 Build Validation** — Development copies `EA_Skeleton.mq5`, fills strategy logic, `compile_one.ps1 -Strict` passes
-- ⬜ **PC3-04 P2 Baseline Screening** — Pipeline-Operator runs DEV-2017-2022 baseline on T1
-- ⬜ **PC3-05 P3 Parameter Sweep**
-- ⬜ **PC3-06 P3.5 CSR**
-- ⬜ **PC3-07 P4 Walk-Forward**
-- ⬜ **PC3-08 P5 Stress** (V5 calibration JSON must exist — see PC3-08a below)
-- ⬜ **PC3-08a Build VPS-side `VPS_SLIPPAGE_LATENCY_CALIBRATION_V2.json`** by measuring real Darwinex demo on T1 (per `PIPELINE_V5_SUB_GATE_SPEC.md` § P5 calibration source)
-- ⬜ **PC3-09 P5b Calibrated Noise**
-- ⬜ **PC3-10 P5c Crisis Slices** (optional)
-- ⬜ **PC3-11 P6 Multi-Seed**
-- ⬜ **PC3-12 P7 Statistical Validation** (PBO/DSR/MC/FDR consolidated runner)
-- ⬜ **PC3-13 P8 News Impact** (incl. Hybrid A+C compliance variants per `decisions/2026-04-25_news_compliance_variants_TBD.md`)
-- ⬜ **PC3-14 Quality-Tech sub-gate first calibration pass** — re-evaluate provisional defaults from `PIPELINE_V5_SUB_GATE_SPEC.md` against the first real V5 distributions; produce ADR for any threshold changes
-
-### Phase 3 acceptance gate
-
-One V5 EA has cleared every gate from G0 through P8 with proper evidence under `D:\QM\reports\pipeline\<ea_id>\`. Quality-Tech has produced first sub-gate calibration ADR (no surprises = blank ADR is acceptable).
+- ⬜ **PC3-01 to PC3-14** (Research → Sweep → Walk-Forward → Stress → Statistical Validation → News Impact)
 
 ---
 
 ## Phase 4 — V5 Portfolio Build
 
-**Goal:** more V5 EAs through pipeline, P9 portfolio composition active, P10 shadow deploys running.
-
-**Today's owner:** blocked on Phase 3.
-
-### Workstream (high level)
-
-- ⬜ **PC4-01 5+ EAs through G0–P8** (parallel research + build + test queue)
-- ⬜ **PC4-02 P9 Portfolio Construction** — first V5 basket with family-cap-3, symbol-cap-2, ENB
-- ⬜ **PC4-03 P9b Operational Readiness** checklist execution per basket
-- ⬜ **PC4-04 P10 Shadow Deploy** — first 14-day shadow window with KS-test kill-switch on T6 (AutoTrading off for live, on for shadow capture)
-
-### Phase 4 acceptance gate
-
-A V5 basket has cleared P10 shadow with KS p ≥ 0.01 over 14 days, and OWNER has reviewed shadow evidence.
+**Goal:** scale to 5+ EAs, P9 portfolio composition, P10 shadow deploys.
 
 ---
 
-## Phase 5 — Live Deployment on T6
+## Phase 5 — Live Deployment on T_Live
 
-**Goal:** first V5 sleeve goes live with money at risk, monitored.
-
-**Today's owner:** blocked on Phase 4 + Wave 4 (LiveOps) + OWNER explicit live-money approval.
-
-### Workstream
-
-- ⬜ **PC5-01 LiveOps deploy manifest** drafted per `docs/ops/LIVE_T6_AUTOMATION_RUNBOOK.md`
-- ⬜ **PC5-02 OWNER manifest approval**
-- ⬜ **PC5-03 LiveOps places EA on T6 chart** per manifest (Level 0/1/2/3 automation per readiness)
-- ⬜ **PC5-04 Verification contract** completed (terminal, symbol, magic, hash, AutoTrading state, no errors)
-- ⬜ **PC5-05 First live heartbeat** + 24h smoke check window per `processes/03-v-portfolio-deploy.md`
-- ⬜ **PC5-06 Live monitoring** ongoing (Observability-SRE)
-
-### Phase 5 acceptance gate
-
-First V5 sleeve has been live on T6 for 7 days with no incident requiring rollback, and OWNER signs off on continued live operation.
+**Goal:** first V5 sleeve goes live with money at risk.
 
 ---
 
-## Phase 6 — Public Dashboard Live (parallel-eligible)
+## Phase 6 — Public Dashboard Live
 
 **Goal:** quantmechanica.com shows real V5 project state via hourly snapshot.
-
-**Anchor doc:** `docs/ops/WEBSITE_DASHBOARD_PAPERCLIP_STYLE.md`.
-
-**Today's owner:** Board Advisor can draft schema + first export script today (parallel to Phase 1). Real data display blocks on Phase 1+.
-
-### Workstream
-
-- ⬜ **PC6-01 Public snapshot JSON schema v1** (per existing dashboard doc) — Board Advisor today
-- ⬜ **PC6-02 `scripts/export_public_snapshot.ps1` skeleton** — Board Advisor today (writes mock data)
-- ⬜ **PC6-03 Windows Task Scheduler hourly job** — OWNER + Board Advisor
-- ⬜ **PC6-04 Netlify wire-up** — needs Phase 1 (Paperclip data sources) for non-mock content
-- ⬜ **PC6-05 Stale-warning UI** at >90 min — needs Phase 1
-- ⬜ **PC6-06 First real hourly snapshot live** — gates on Phase 2 (real EA build counts) + Phase 5 (live KPIs)
-
-### Phase 6 acceptance gate
-
-Hourly snapshot runs for 72 h without manual repair and dashboard reads real (not mock) data.
 
 ---
 
 ## Phase Final — Founder-Comms / Chief of Staff
 
-**Status:** explicitly DEFERRED per `docs/ops/PHASE_FINAL_FOUNDER_COMMS.md`. Do not start until OWNER says "now build founder-comms" AND all of these hold:
+**Status:** DEFERRED.
 
 - Phase 0 closed
 - Tester commission / swap / DST / broker-time documented
-- T1-T5 + T6 isolation proven
+- T1-T10 + T_Live isolation proven
 - Public dashboard hourly snapshot stable
-- At least one approved EA on T6 demo through manifest
-- Issue board / decision log / risk register / lessons-learned / process registry populated enough that briefings have content
-
-**This is the email-layer phase.** Chief of Staff agent operates `info@quantmechanica.com` Gmail via reused Chrome session: daily inbound triage + 05:00 W. Europe daily briefing to OWNER. Hard wall vs LiveOps / T6 / AutoTrading.
-
-**Frozen scope, milestone gates, risks, supporting components, and the docs to author at activation are all in `docs/ops/PHASE_FINAL_FOUNDER_COMMS.md`.** Do not edit that doc until activation.
 
 ---
 
 ## What Board Advisor Claude Can Do Today (with OWNER)
 
-Without waiting for Paperclip:
+1. **DST/custom-symbol validation on T1**.
+2. **MT5 T1-T10 + T_Live isolation proof**.
+3. **VPS_SLIPPAGE_LATENCY_CALIBRATION_V2.json**.
+4. **Public snapshot schema + skeleton script**.
 
-1. **DST/custom-symbol validation on T1** — script + walkthrough + evidence
-2. **MT5 T1-T5 + T6 isolation proof** — install walkthrough + evidence
-3. **VPS_SLIPPAGE_LATENCY_CALIBRATION_V2.json** — measure on Darwinex demo + JSON
-4. **Public snapshot schema + skeleton script** (Phase 6 PC6-01/02)
-5. **Tester commission + swap docs** for the symbols V5 will run
-6. **EP01 artifact pack** if OWNER wants to record + publish solo before Phase 1
-7. **Phase 1 install plan in detail** so OWNER's Paperclip install hour is unblocked
-8. **More framework spec detail** if Codex needs more before implementing — but spec is currently complete; gate is not "more spec", it's "Paperclip running"
-9. **Brand asset SVG copy into `branding/assets/`** — small, removes Drive-mount dependency
-10. **Sub-gate calibration JSON skeletons** so Phase 3's PC3-08a doesn't start cold
+## Open / Weak Items (review 2026-05-21)
 
-## What Board Advisor Claude Cannot Do (without Paperclip or OWNER override)
-
-1. Implement MQL5 framework code as a "Codex agent" — that's CTO-Codex's role per `ORG_SELF_DESIGN_MODEL.md`. Board Advisor can write MQL5 if OWNER asks, but it short-circuits the agent-routing.
-2. Run gated decisions as "CEO" — those are CEO-Claude's per the same routing.
-3. Approve a deploy manifest — that is OWNER's, not any agent's.
-4. Touch T6 in any way — hard rule per CLAUDE.md.
-
-## Open Decisions Pending OWNER
-
-- News-Compliance variants Hybrid A+C confirmation (`decisions/2026-04-25_news_compliance_variants_TBD.md`)
-- Brand Guide § 10 open items (logo SVG copy, sync auto-generation, mascot in framework)
-- Framework § Confirmed Defaults — already locked, but OWNER can revisit
-- 6 sub-gate spec open items (`PIPELINE_V5_SUB_GATE_SPEC.md` § Open Items)
-- DST validation as next concrete physical-VPS task — confirm to start
-
----
-
-## Open / Weak Items (honest review 2026-04-26)
-
-This section enumerates known weaknesses, opens, and risks that are not closed. Reviewing these every commit prevents them from rotting silently. New items added at top.
-
-### CRITICAL — architectural risks
-
-1. **Drive-sync vs. `.git/` conflict (mass-delete incident class).** V4's `lessons-learned/2026-04-20_mass_delete_incident.md` shows Drive can batch-trash 12+ files in 13 s when concurrent multi-agent git writes leave orphaned `index.lock` files. **Same architecture is set up on the VPS** unless we mitigate before Paperclip Wave 0 starts writing concurrently. Mitigation tracked as PC1-00 (Phase 1 first task). Until closed, keep agent count low and serialize commits.
-2. **Custom Tick Data NOT verified** — Phase 0 cannot close until P0-21 runs. Every backtest produced before this passes is `SETUP_DATA_MISMATCH` risk. **Active today.**
-3. **VPS_SLIPPAGE_LATENCY_CALIBRATION_V2.json does not exist on VPS** — required for P5 Stress and P5b Calibrated Noise. V4 calibration on laptop is not transferable to new VPS. Must measure on Darwinex demo on T1 before Phase 3 runs. Tracked in `PIPELINE_V5_SUB_GATE_SPEC.md` § P5.
-4. **No `.git/` exclusion documented for VPS Drive setup** — same as item 1 from a different angle. Infrastructure-Setup doc references Google Drive selective sync but does not call out `.git/` exclusion explicitly.
-
-### HIGH — design assumptions not yet validated
-
-5. **V5 framework is unimplemented** — full design spec exists (`framework/V5_FRAMEWORK_DESIGN.md`, 25 steps) but no MQL5 code. Until Codex implements + a smoke EA runs cleanly, the design is theory. Cannot prove the 4-module Modularity pattern, the BT-Fixed/Live-Percent ENV-enforcement, or the Friday Close hook actually compose without surprises.
-6. **Sub-gate parameter defaults are provisional** — `PIPELINE_V5_SUB_GATE_SPEC.md` § Recalibration Triggers lists 6 thresholds Quality-Tech must validate after first V5 EA distributions. None of those distributions exist yet. Defaults may not survive contact with reality.
-7. **News-Compliance Hybrid A+C is recommendation, not decision** — `decisions/2026-04-25_news_compliance_variants_TBD.md` is open. FTMO / 5ers blackout-window definitions not yet authored.
-8. **Per-EA chart UI specced but not visually mocked** — design says 720×200 px panel with 6 tiles; whether it actually reads cleanly on T1-T6 chart density is untested. First implementation may force layout revision.
-9. **13 Paperclip prompts not migrated into repo** — V4 prompts on Drive (`Company/Agents/<role>/system_prompt.md`) are reference only. Wave 0 needs V5-revised CTO + CEO + Research + Documentation-KM prompts in `paperclip-prompts/` before PC1-04. Today the repo `paperclip-prompts/` folder does not exist.
-10. **EP01 artifact pack not produced** — Phase 0 acceptance gate requires EP01 published or ready; today nothing exists in `episodes/`.
-
-### MEDIUM — process gaps
-
-11. **Public snapshot schema + skeleton script not built** — `WEBSITE_DASHBOARD_PAPERCLIP_STYLE.md` specs the JSON contract and hourly export pattern, but no script exists in `scripts/` (folder still has only README stub).
-12. **First T6 deploy manifest dry run not executed** — `docs/ops/LIVE_T6_AUTOMATION_RUNBOOK.md` § "First Implementation Task" requires harmless demo dry-run before any real EA deploy. Not done.
-13. **Commission / swap docs per symbol not authored** — `CLAUDE.md` § Tester Configuration requires it. Folder `docs/ops/` has no commission-per-symbol artifact.
-14. **Codex doc/code-drift risk reintroduced** — `framework/V5_FRAMEWORK_DESIGN.md` references scripts that do not exist (`sync_brand_tokens.ps1`, `compile_one.ps1`, `build_check.ps1`, `run_smoke.ps1`, `brand_report.ps1`, `validate_setfile.ps1`, `rotate_logs.ps1`). This is the exact V4 failure mode L-D-08-adjacent. Mitigation: every script reference in spec docs gets a status badge `[SPEC ONLY — NOT IMPLEMENTED]` until Codex builds it.
-15. **Notion ↔ Repo drift** — Notion `V5 Pipeline Design` carries my superseded-banner; Notion `Phase 0 Execution Board` is now divergent from repo (repo has P0-22..P0-31 added). Documentation-KM (Wave 0) owns reconciliation. Until then, **PROJECT_BACKLOG.md and PHASE0_EXECUTION_BOARD.md in the repo are the source of truth**, Notion lags.
-
-### LOW — nice-to-have
-
-16. **No logo SVG copy in `branding/assets/`** — Brand guide § 10 open question. Without it, dashboard rendering on VPS depends on Drive mount.
-17. **No `framework/scripts/sync_brand_tokens.ps1` yet** — auto-generation of `QM_Branding.mqh` from `brand_tokens.json` is design-only.
-18. **`PHASE_FINAL_FOUNDER_COMMS.md` and `DWX_IMPORT_AUTOMATION.md` are untracked in git** — both exist on disk but never committed. OWNER's call whether to commit or leave staged.
-19. **Strategy Card template not authored** — `strategy-seeds/cards/` folder will hold V5 cards but no template defines what a Strategy Card must contain. Should be authored before first V5 Research extraction.
-20. **Prop-firm rule sets (FTMO, 5ers) not authored as data** — once news-compliance decision lands, blackout-window definitions need to live as `framework/include/news_rules/{ftmo,5ers}.mqh` per the spec. Currently zero content.
-
-### Resolved this session (for context)
-
-- P0-21 number-drift (was conflicting with my reconstruction tasks) — fixed in PHASE0 board
-- V4 learnings archive missing from repo — migrated to `lessons-learned/`
-- Mass-delete incident learnings missing — migrated
-- File-deletion policy missing — migrated
-- V4 framework patterns (Friday Close, BT/Live convention, 4-module Modularity, gridding cap, ML ban) missing from V5_FRAMEWORK_DESIGN — added
-- Framing of "V4 = legacy" too hard — corrected to "V4 = V5 BASIS, Paperclip professionalizes"
+1. **Mass-terminal fleet sync** — confirmed 10 factory terminals (T1-T10) on D: and one live terminal (T_Live) on C:. Doc updated.
+2. **Custom Tick Data verified** — 35/35 symbols ready.
+3. **Slippage calibration** — pending measurement on T1.
 
 ## How To Read This File
 
-- ✅ = done with evidence
-- 🟡 = in progress with current actor
-- ⬜ = not started, today's actor identified
-- 🚫 = blocked, blocker named
-- Today's owner column tells you who can act *right now*. If the future owner is a Paperclip agent that doesn't exist, today's owner is "blocked on Phase 1" or an explicit OWNER + Board Advisor manual interim.
-
-When status changes, update this file in the same commit as the change. When a weak/open item closes, move it to "Resolved this session" then archive on next commit.
+- ✅ = done
+- 🟡 = in progress
+- ⬜ = not started
+- 🚫 = blocked

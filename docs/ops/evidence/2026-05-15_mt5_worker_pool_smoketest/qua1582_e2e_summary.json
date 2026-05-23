@@ -1,0 +1,15 @@
+{
+  "sub_gate_config_hash": "cfg_qua1582_e2e_20260515T1215Z",
+  "counts": {
+    "dispatched": 8
+  },
+  "assigned_terminal_distribution": {
+    "T1": 2,
+    "T2": 2,
+    "T3": 2,
+    "T4": 1,
+    "T5": 1
+  },
+  "created_at_min": "2026-05-15T10:29:46.086Z",
+  "dispatched_at_max": "2026-05-15T10:30:03.330220+00:00"
+}

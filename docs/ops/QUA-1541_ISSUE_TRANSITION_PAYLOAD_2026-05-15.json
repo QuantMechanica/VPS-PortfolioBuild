@@ -1,0 +1,22 @@
+{
+  "issue": "QUA-1541",
+  "requested_state": "in_review",
+  "resume": false,
+  "summary": "MT5 multi-EA saturation scheduler hardened with orphan-dispatch recovery, production hourly wiring, regression fix for malformed dispatch_state handling, and deterministic test coverage (unit + integration-style).",
+  "evidence": {
+    "consolidated_snapshot": "C:/QM/repo/docs/ops/evidence/QUA-1541_HEARTBEAT_2026-05-15T0513_CONSOLIDATED.md",
+    "hourly_regression_fix": "C:/QM/repo/docs/ops/evidence/QUA-1541_HEARTBEAT_2026-05-15T0512_HOURLY_FIX.md",
+    "run_once_metrics_test": "C:/QM/repo/docs/ops/evidence/QUA-1541_HEARTBEAT_2026-05-15T0510_TEST_RUNONCE.md",
+    "cli_flags_test": "C:/QM/repo/docs/ops/evidence/QUA-1541_HEARTBEAT_2026-05-15T0511_CLI_FLAGS.md",
+    "orphan_recovery_implementation": "C:/QM/repo/docs/ops/evidence/QUA-1541_HEARTBEAT_2026-05-15T050621Z.md"
+  },
+  "checks": {
+    "scheduler_tests": "python -m unittest C:/QM/paperclip/tools/ops/tests/test_multi_ea_scheduler.py -v (Ran 7 tests, OK)",
+    "hourly_wrapper": "cmd /c C:/QM/paperclip/tools/ops/cron/hourly_status.bat -> done line multi_ea_scheduler=0 mt5_queue_status=0",
+    "runtime_snapshot": "multi_ea_scheduler --once --recover-orphan-dispatched --orphan-dispatched-minutes 30 => status=ok"
+  },
+  "notes": [
+    "Production command path now includes orphan recovery flags in both cron/hourly_status.bat and routine_commands.json.",
+    "State normalization now safely resets unreadable/malformed dispatch_state content instead of failing the hourly run."
+  ]
+}

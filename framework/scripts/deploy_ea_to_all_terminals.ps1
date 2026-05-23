@@ -7,7 +7,12 @@ param(
         'D:\QM\mt5\T2',
         'D:\QM\mt5\T3',
         'D:\QM\mt5\T4',
-        'D:\QM\mt5\T5'
+        'D:\QM\mt5\T5',
+        'D:\QM\mt5\T6',
+        'D:\QM\mt5\T7',
+        'D:\QM\mt5\T8',
+        'D:\QM\mt5\T9',
+        'D:\QM\mt5\T10'
     ),
     [string]$ExpertsRelativeDir = 'MQL5\Experts\QM',
     [string]$EvidenceJsonPath
@@ -26,14 +31,14 @@ function Resolve-FactoryTerminalRoot {
 
     $resolved = [IO.Path]::GetFullPath($RootPath).TrimEnd('\')
     $leaf = Split-Path -Path $resolved -Leaf
-    if ($leaf -match '^T6(_|$)') {
-        throw "Refusing T6 scope path '$resolved' without explicit OWNER + LiveOps approval."
+    if ($leaf -in @('T_Live', 'T6_Live')) {
+        throw "Refusing live scope path '$resolved' without explicit OWNER + LiveOps approval."
     }
-    if ($leaf -notmatch '^T[1-5]$') {
-        throw "Unsupported terminal leaf '$leaf' under '$resolved'. Allowed: T1..T5 only."
+    if ($leaf -notmatch '^T([1-9]|10)$') {
+        throw "Unsupported terminal leaf '$leaf' under '$resolved'. Allowed factory terminals: T1..T10 only."
     }
     if (-not (Test-Path -LiteralPath $resolved -PathType Container)) {
-        throw "Terminal root not found: $resolved"
+        return $null
     }
     return $resolved
 }
@@ -52,9 +57,15 @@ $fileName = Split-Path -Path $sourceFull -Leaf
 $normalizedRoots = @()
 foreach ($root in $TerminalRoots) {
     $resolvedRoot = Resolve-FactoryTerminalRoot -RootPath $root
+    if (-not $resolvedRoot) {
+        continue
+    }
     if ($normalizedRoots -notcontains $resolvedRoot) {
         $normalizedRoots += $resolvedRoot
     }
+}
+if ($normalizedRoots.Count -eq 0) {
+    throw "No installed factory terminal roots found in requested set."
 }
 
 $results = @()

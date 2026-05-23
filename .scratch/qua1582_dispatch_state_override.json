@@ -1,0 +1,209 @@
+{
+  "dedup": {
+    "QM5_1003|v1|AUDUSD.DWX|P2|cfg_qua1582_e2e_20260515T1215Z": {
+      "completed_ts": 1778841604,
+      "job": {
+        "ea_id": "QM5_1003",
+        "phase": "P2",
+        "setfile_path": "framework/EAs/QM5_1003_example/sets/QM5_1003_example_EURUSD.DWX_H1_backtest.set",
+        "sub_gate_config_hash": "cfg_qua1582_e2e_20260515T1215Z",
+        "symbol": "AUDUSD.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "AUDUSD.DWX",
+      "terminal": "T5",
+      "ts": 1778840998
+    },
+    "QM5_1003|v1|EURJPY.DWX|P2|cfg_qua1582_e2e_20260515T1215Z": {
+      "job": {
+        "ea_id": "QM5_1003",
+        "phase": "P2",
+        "setfile_path": "framework/EAs/QM5_1003_example/sets/QM5_1003_example_EURUSD.DWX_H1_backtest.set",
+        "sub_gate_config_hash": "cfg_qua1582_e2e_20260515T1215Z",
+        "symbol": "EURJPY.DWX",
+        "version": "v1"
+      },
+      "symbol": "EURJPY.DWX",
+      "terminal": "T2",
+      "ts": 1778841003
+    },
+    "QM5_1003|v1|EURUSD.DWX|P2|cfg_qua1582_e2e_20260515T1215Z": {
+      "job": {
+        "ea_id": "QM5_1003",
+        "phase": "P2",
+        "setfile_path": "framework/EAs/QM5_1003_example/sets/QM5_1003_example_EURUSD.DWX_H1_backtest.set",
+        "sub_gate_config_hash": "cfg_qua1582_e2e_20260515T1215Z",
+        "symbol": "EURUSD.DWX",
+        "version": "v1"
+      },
+      "symbol": "EURUSD.DWX",
+      "terminal": "T3",
+      "ts": 1778840998
+    },
+    "QM5_1003|v1|GBPUSD.DWX|P2|cfg_qua1582_e2e_20260515T1215Z": {
+      "job": {
+        "ea_id": "QM5_1003",
+        "phase": "P2",
+        "setfile_path": "framework/EAs/QM5_1003_example/sets/QM5_1003_example_EURUSD.DWX_H1_backtest.set",
+        "sub_gate_config_hash": "cfg_qua1582_e2e_20260515T1215Z",
+        "symbol": "GBPUSD.DWX",
+        "version": "v1"
+      },
+      "symbol": "GBPUSD.DWX",
+      "terminal": "T2",
+      "ts": 1778840998
+    },
+    "QM5_1003|v1|NZDUSD.DWX|P2|cfg_qua1582_e2e_20260515T1215Z": {
+      "job": {
+        "ea_id": "QM5_1003",
+        "phase": "P2",
+        "setfile_path": "framework/EAs/QM5_1003_example/sets/QM5_1003_example_EURUSD.DWX_H1_backtest.set",
+        "sub_gate_config_hash": "cfg_qua1582_e2e_20260515T1215Z",
+        "symbol": "NZDUSD.DWX",
+        "version": "v1"
+      },
+      "symbol": "NZDUSD.DWX",
+      "terminal": "T3",
+      "ts": 1778841003
+    },
+    "QM5_1003|v1|USDCAD.DWX|P2|cfg_qua1582_e2e_20260515T1215Z": {
+      "job": {
+        "ea_id": "QM5_1003",
+        "phase": "P2",
+        "setfile_path": "framework/EAs/QM5_1003_example/sets/QM5_1003_example_EURUSD.DWX_H1_backtest.set",
+        "sub_gate_config_hash": "cfg_qua1582_e2e_20260515T1215Z",
+        "symbol": "USDCAD.DWX",
+        "version": "v1"
+      },
+      "symbol": "USDCAD.DWX",
+      "terminal": "T1",
+      "ts": 1778840998
+    },
+    "QM5_1003|v1|USDCHF.DWX|P2|cfg_qua1582_e2e_20260515T1215Z": {
+      "job": {
+        "ea_id": "QM5_1003",
+        "phase": "P2",
+        "setfile_path": "framework/EAs/QM5_1003_example/sets/QM5_1003_example_EURUSD.DWX_H1_backtest.set",
+        "sub_gate_config_hash": "cfg_qua1582_e2e_20260515T1215Z",
+        "symbol": "USDCHF.DWX",
+        "version": "v1"
+      },
+      "symbol": "USDCHF.DWX",
+      "terminal": "T1",
+      "ts": 1778841003
+    },
+    "QM5_1003|v1|USDJPY.DWX|P2|cfg_qua1582_e2e_20260515T1215Z": {
+      "job": {
+        "ea_id": "QM5_1003",
+        "phase": "P2",
+        "setfile_path": "framework/EAs/QM5_1003_example/sets/QM5_1003_example_EURUSD.DWX_H1_backtest.set",
+        "sub_gate_config_hash": "cfg_qua1582_e2e_20260515T1215Z",
+        "symbol": "USDJPY.DWX",
+        "version": "v1"
+      },
+      "symbol": "USDJPY.DWX",
+      "terminal": "T4",
+      "ts": 1778840998
+    },
+    "QM5_1009|smoke|USDCHF.DWX|P1|M15-2024": {
+      "completed_ts": 1778829470,
+      "job": {
+        "ea_id": "QM5_1009",
+        "phase": "P1",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_SRC04_S03_lien_fade_double_zeros\\sets\\QM5_SRC04_S03_lien_fade_double_zeros_USDCHF.DWX_M15_backtest.set",
+        "sub_gate_config_hash": "M15-2024",
+        "symbol": "USDCHF.DWX",
+        "version": "smoke"
+      },
+      "status": "complete",
+      "symbol": "USDCHF.DWX",
+      "terminal": "T1",
+      "ts": 1778828502
+    }
+  },
+  "last_rr_index": 1,
+  "pending_matrix_jobs": {},
+  "phase_matrix_index": {
+    "QM5_1009_smoke_P1": {
+      "matrix": [
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "USDCHF.DWX",
+          "terminal": "T1",
+          "verdict": null
+        }
+      ],
+      "next_strategy_unblocked": null,
+      "phase_verdict": null
+    },
+    "QM5_1003_v1_P1": {
+      "matrix": [],
+      "phase_verdict": "PASS",
+      "next_strategy_unblocked": null
+    }
+  },
+  "recent_runs": {
+    "T1": [
+      1778828502,
+      1778840998,
+      1778841003
+    ],
+    "T2": [
+      1778840998,
+      1778841003
+    ],
+    "T3": [
+      1778840998,
+      1778841003
+    ],
+    "T4": [
+      1778840998
+    ],
+    "T5": [
+      1778840998
+    ]
+  },
+  "running": {
+    "T1": 2,
+    "T2": 2,
+    "T3": 2,
+    "T4": 1,
+    "T5": 0
+  },
+  "symbol_affinity": {
+    "AUDUSD.DWX": {
+      "terminal": "T5",
+      "ts": 1778840998
+    },
+    "EURJPY.DWX": {
+      "terminal": "T2",
+      "ts": 1778841003
+    },
+    "EURUSD.DWX": {
+      "terminal": "T3",
+      "ts": 1778840998
+    },
+    "GBPUSD.DWX": {
+      "terminal": "T2",
+      "ts": 1778840998
+    },
+    "NZDUSD.DWX": {
+      "terminal": "T3",
+      "ts": 1778841003
+    },
+    "USDCAD.DWX": {
+      "terminal": "T1",
+      "ts": 1778840998
+    },
+    "USDCHF.DWX": {
+      "terminal": "T1",
+      "ts": 1778841003
+    },
+    "USDJPY.DWX": {
+      "terminal": "T4",
+      "ts": 1778840998
+    }
+  }
+}

@@ -19,6 +19,8 @@ from framework.scripts.pipeline_dispatcher import load_dispatch_state
 RUN_SMOKE = REPO_ROOT / "framework" / "scripts" / "run_smoke.ps1"
 RESOLVER = REPO_ROOT / "framework" / "scripts" / "resolve_backtest_target.py"
 EA_ROOT = REPO_ROOT / "framework" / "EAs"
+FACTORY_TERMINALS = tuple(f"T{i}" for i in range(1, 11))
+CREATE_NO_WINDOW = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
 
 
 @dataclass
@@ -79,7 +81,7 @@ def _collect_scheduled_jobs(state: dict[str, Any]) -> list[ScheduledJob]:
         if phase.upper() != "P2":
             continue
         terminal = str(record.get("terminal", ""))
-        if terminal not in {"T1", "T2", "T3", "T4", "T5"}:
+        if terminal not in FACTORY_TERMINALS:
             continue
         period, year = _parse_period_year(cfg_hash)
         setfile_path: Path | None = None
@@ -139,6 +141,7 @@ def _invoke_dispatch_complete(job: ScheduledJob, state_json: Path) -> None:
             capture_output=True,
             text=True,
             timeout=60,
+            creationflags=CREATE_NO_WINDOW,
         )
     finally:
         try:
@@ -180,7 +183,14 @@ def _run_one(job: ScheduledJob, timeout_sec: int, state_json: Path) -> int:
     ]
     if job.setfile_path is not None:
         cmd.extend(["-SetFile", str(job.setfile_path)])
-    proc = subprocess.run(cmd, check=False, capture_output=True, text=True, timeout=(timeout_sec * 2) + 120)
+    proc = subprocess.run(
+        cmd,
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=(timeout_sec * 2) + 120,
+        creationflags=CREATE_NO_WINDOW,
+    )
     _invoke_dispatch_complete(job, state_json=state_json)
     return int(proc.returncode)
 

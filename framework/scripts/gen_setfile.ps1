@@ -61,7 +61,7 @@ function Find-CardPath {
     }
 
     # Fallback: resolve slug from ea_id_registry.csv (ea_id -> strategy slug)
-    if ($EaSlug -match '^QM5_(\d{4})_') {
+    if ($EaSlug -match '^QM5_(\d+)_') {
         $eaId = $matches[1]
         $repoRootGuess = Split-Path -Parent (Split-Path -Parent $CardsRoot)
         $registryPath = Join-Path $repoRootGuess 'framework\registry\ea_id_registry.csv'
@@ -215,8 +215,8 @@ function Normalize-CardDefaultsForSetfile {
     return $normalized
 }
 
-if ($EaSlug -notmatch '^QM5_[A-Za-z0-9_]+$') {
-    throw "EaSlug must start with QM5_ and contain only letters, digits, and underscores. Got: $EaSlug"
+if ($EaSlug -notmatch '^QM5_[A-Za-z0-9_-]+$') {
+    throw "EaSlug must start with QM5_ and contain only letters, digits, underscores, and hyphens. Got: $EaSlug"
 }
 
 $eaFolder = Join-Path $easRoot $EaSlug
@@ -237,13 +237,57 @@ if ($Env -eq 'backtest') {
     }
 }
 
+$eaId = ''
+$eaSlugOnly = $EaSlug
+$magicSlot = 0
+if ($EaSlug -match '^QM5_(\d+)_(.+)$') {
+    $eaId = $matches[1]
+    $eaSlugOnly = $matches[2]
+    $registryPath = Join-Path $repoRoot 'framework\registry\magic_numbers.csv'
+    if (Test-Path -LiteralPath $registryPath) {
+        $magicRow = Import-Csv -LiteralPath $registryPath |
+            Where-Object { $_.ea_id -eq ([int]$eaId).ToString() -and $_.symbol -eq $Symbol -and $_.status -eq 'active' } |
+            Select-Object -First 1
+        if ($magicRow) {
+            $magicSlot = [int]$magicRow.symbol_slot
+        }
+    }
+}
+
+$today = (Get-Date).ToUniversalTime().ToString('yyyy-MM-dd')
 $lines = @(
-    "; QuantMechanica V5 generated set file",
-    "; Generator=framework/scripts/gen_setfile.ps1",
-    "ENV=$Env",
+    ";==========================================================",
+    "; QM5 Set File",
+    "; ea_id:        $eaId",
+    "; ea_slug:      $eaSlugOnly",
+    "; ea_version:   v5.0",
+    "; set_version:  s$($today.Replace('-', ''))-001",
+    "; symbol:       $Symbol",
+    "; timeframe:    $TF",
+    "; environment:  $Env",
+    "; magic_slot:   $magicSlot",
+    "; risk_mode:    $(if ($Env -eq 'backtest') { 'FIXED' } else { 'PERCENT' })",
+    "; portfolio_weight: $PortfolioWeight",
+    "; build_hash:   pending",
+    "; author:       Development",
+    "; date:         $today",
+    ";==========================================================",
+    "qm_magic_slot_offset=$magicSlot",
     "RISK_FIXED=$RiskFixed",
     "RISK_PERCENT=$RiskPercent",
     "PORTFOLIO_WEIGHT=$PortfolioWeight",
+    "; core filter library params; filter-on/off variants must be pre-declared",
+    "qm_filter_news_enabled=1",
+    "qm_filter_news_mode=3",
+    "qm_filter_regime_enabled=0",
+    "qm_filter_regime_lookback_bars=100",
+    "qm_filter_regime_bull_return_pct=2.0",
+    "qm_filter_regime_bear_return_pct=2.0",
+    "qm_filter_volatility_enabled=0",
+    "qm_filter_volatility_atr_period=14",
+    "qm_filter_volatility_lookback_bars=50",
+    "qm_filter_volatility_compression_ratio=0.75",
+    "qm_filter_volatility_expansion_ratio=1.25",
     "; strategy-specific params from card must be appended below this line"
 )
 

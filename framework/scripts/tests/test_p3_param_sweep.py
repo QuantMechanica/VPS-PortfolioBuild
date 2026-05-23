@@ -95,6 +95,50 @@ class P3ParamSweepTests(unittest.TestCase):
         self.assertIsNone(got)
         mock_save.assert_called_once()
 
+    @patch("framework.scripts.p3_param_sweep.save_dispatch_state")
+    @patch("framework.scripts.p3_param_sweep.resolve_target_terminal")
+    @patch("framework.scripts.p3_param_sweep.load_dispatch_state")
+    def test_reserve_terminal_uses_canonical_qm5_ea_id_in_dispatch_key(
+        self,
+        mock_load: unittest.mock.MagicMock,
+        mock_resolve: unittest.mock.MagicMock,
+        mock_save: unittest.mock.MagicMock,
+    ) -> None:
+        mock_load.return_value = {"dedup": {}, "running": {}}
+        mock_resolve.return_value = {"status": "scheduled", "terminal": "T1"}
+        p3_param_sweep.reserve_terminal(
+            ea_id=1003,
+            symbol="AUDCHF.DWX",
+            period="H1",
+            setfile=Path("C:/tmp/run.set"),
+            state_path=Path("C:/tmp/dispatch_state.json"),
+        )
+        called_job = mock_resolve.call_args.args[0]
+        self.assertEqual(called_job["ea_id"], "QM5_1003")
+        mock_save.assert_called_once()
+
+    @patch("framework.scripts.p3_param_sweep.subprocess.Popen")
+    def test_invoke_run_smoke_passes_p3_dispatch_identity(self, mock_popen: unittest.mock.MagicMock) -> None:
+        p3_param_sweep.invoke_run_smoke(
+            ea_id=1003,
+            ea_expert="QM\\QM5_1003_davey_baseline_3bar",
+            symbol="AUDCHF.DWX",
+            year=2024,
+            period="H1",
+            run_id="AUDCHF.DWX_H1_001",
+            setfile=Path("C:/tmp/run.set"),
+            report_root=Path("D:/QM/reports/pipeline/QM5_1003/P3"),
+            timeout_sec=1800,
+            terminal="T1",
+        )
+        args = mock_popen.call_args.args[0]
+        self.assertIn("-DispatchPhase", args)
+        self.assertIn("P3", args)
+        self.assertIn("-DispatchVersion", args)
+        self.assertIn("p3_sweep", args)
+        self.assertIn("-DispatchSubGateHash", args)
+        self.assertIn("H1_AUDCHF.DWX_H1_001", args)
+
 
 if __name__ == "__main__":
     unittest.main()

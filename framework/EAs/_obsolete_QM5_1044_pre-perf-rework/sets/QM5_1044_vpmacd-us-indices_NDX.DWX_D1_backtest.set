@@ -1,0 +1,37 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1044
+; ea_slug:      vpmacd-us-indices
+; ea_version:   v5.0
+; set_version:  s2026-05-16-072621
+; symbol:       NDX.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-05-16
+;==========================================================
+ENV=backtest
+qm_ea_id=1044
+qm_magic_slot_offset=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_news_mode=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+; strategy-specific params from card must be appended below this line
+strategy_fast_ema=12
+strategy_slow_ema=26
+strategy_signal_ema=9
+strategy_lambda=0.98
+strategy_atr_period=14
+strategy_atr_sl_mult=2.5
+strategy_session_start_hhmm=1530
+strategy_session_end_hhmm=2200
+strategy_max_spread_points=250
+strategy_m5_copy_cap=400
+; card_defaults_source=not_found

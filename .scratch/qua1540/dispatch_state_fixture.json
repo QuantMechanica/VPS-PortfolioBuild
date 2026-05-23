@@ -1,0 +1,87 @@
+{
+  "dedup": {
+    "QM5_1001|v1|EURUSD.DWX|P2|cfgA": {
+      "job": {
+        "ea_id": "QM5_1001",
+        "phase": "P2",
+        "setfile_path": "C:/QM/repo/framework/EAs/QM5_1001/set1.set",
+        "sub_gate_config_hash": "cfgA",
+        "symbol": "EURUSD.DWX",
+        "version": "v1"
+      },
+      "symbol": "EURUSD.DWX",
+      "terminal": "T1",
+      "ts": 1778819954
+    },
+    "QM5_1002|v1|GBPUSD.DWX|P3|cfgB": {
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P3",
+        "setfile_path": "C:/QM/repo/framework/EAs/QM5_1002/set2.set",
+        "sub_gate_config_hash": "cfgB",
+        "symbol": "GBPUSD.DWX",
+        "version": "v1"
+      },
+      "symbol": "GBPUSD.DWX",
+      "terminal": "T3",
+      "ts": 1778819954
+    }
+  },
+  "last_rr_index": 2,
+  "phase_matrix_index": {
+    "QM5_1001_v1_P2": {
+      "matrix": [
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURUSD.DWX",
+          "terminal": "T1",
+          "verdict": null
+        }
+      ],
+      "next_strategy_unblocked": null,
+      "phase_verdict": null
+    },
+    "QM5_1002_v1_P3": {
+      "matrix": [
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPUSD.DWX",
+          "terminal": "T3",
+          "verdict": null
+        }
+      ],
+      "next_strategy_unblocked": null,
+      "phase_verdict": null
+    }
+  },
+  "recent_runs": {
+    "T1": [
+      1778819954
+    ],
+    "T2": [],
+    "T3": [
+      1778819954
+    ],
+    "T4": [],
+    "T5": []
+  },
+  "running": {
+    "T1": 1,
+    "T2": 0,
+    "T3": 1,
+    "T4": 0,
+    "T5": 0
+  },
+  "symbol_affinity": {
+    "EURUSD.DWX": {
+      "terminal": "T1",
+      "ts": 1778819954
+    },
+    "GBPUSD.DWX": {
+      "terminal": "T3",
+      "ts": 1778819954
+    }
+  }
+}

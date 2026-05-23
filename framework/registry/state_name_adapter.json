@@ -1,0 +1,267 @@
+{
+  "schema_version": 2,
+  "description": "Adapter mapping OWNER's prompt-level state names to the V5 pipeline reality (PIPELINE_PHASE_SPEC.md). The V5 phase + per-phase verdict is the runtime authority; this adapter lets dashboards / website / daily-summary speak the OWNER vocabulary without re-spec'ing the framework.",
+  "authority": "Runtime authority is per-EA phase result JSON under D:/QM/reports/pipeline/<EA>/<phase>/. Adapter is read-only translation for human-facing surfaces.",
+  "owner_state_to_v5": {
+    "IDEA_FOUND": {
+      "phase": "pre-G0",
+      "note": "Research agent surfaced a candidate, no card yet"
+    },
+    "STRATEGY_CARD_CREATED": {
+      "phase": "G0",
+      "verdict_when": "card written to strategy-seeds/cards/",
+      "display_phase": "Q00"
+    },
+    "EA_BUILD_REQUESTED": {
+      "phase": "G0",
+      "verdict_when": "QB approved card, CEO issued build to Development",
+      "display_phase": "Q00"
+    },
+    "EA_BUILT": {
+      "phase": "P1",
+      "verdict_when": "P1 build_validation result.json verdict=PASS",
+      "display_phase": "Q01"
+    },
+    "SETFILES_CREATED": {
+      "phase": "P1",
+      "verdict_when": "setfile(s) at framework/EAs/<EA>/sets/ verified by Setfile-Engineer",
+      "display_phase": "Q01"
+    },
+    "BASELINE_BACKTEST_QUEUED": {
+      "phase": "P2",
+      "verdict_when": "pipeline_dispatcher state=pending for ea+P2",
+      "display_phase": "Q02"
+    },
+    "BASELINE_BACKTEST_RUNNING": {
+      "phase": "P2",
+      "verdict_when": "pipeline_dispatcher state=running for ea+P2",
+      "display_phase": "Q02"
+    },
+    "BASELINE_BACKTEST_COMPLETED": {
+      "phase": "P2",
+      "verdict_when": "P2 result.json exists with counts>0",
+      "display_phase": "Q02"
+    },
+    "BASELINE_BACKTEST_PASSED": {
+      "phase": "P2",
+      "verdict_when": "P2 verdict=PASS (PF>1.30, trades>200, DD<12%)",
+      "display_phase": "Q02"
+    },
+    "BASELINE_BACKTEST_FAILED": {
+      "phase": "P2",
+      "verdict_when": "P2 verdict=FAIL or counts.INVALID>0",
+      "display_phase": "Q02"
+    },
+    "NEWS_FILTER_STAGE_QUEUED": {
+      "phase": "P8",
+      "verdict_when": "Decision (2026-05-12): V5 P8 (post-statval mode selection) is the news stage. There is no inter-baseline-sweep news stage.",
+      "display_phase": "Q11"
+    },
+    "NEWS_FILTER_STAGE_RUNNING": {
+      "phase": "P8",
+      "verdict_when": "p8_news_driver.py invocation in flight",
+      "display_phase": "Q11"
+    },
+    "NEWS_FILTER_STAGE_COMPLETED": {
+      "phase": "P8",
+      "verdict_when": "P8 result.json present",
+      "display_phase": "Q11"
+    },
+    "NEWS_FILTER_STAGE_PASSED": {
+      "phase": "P8",
+      "verdict_when": "P8 verdict=MODE_SELECTED (mapped to PASS)",
+      "display_phase": "Q11"
+    },
+    "NEWS_FILTER_STAGE_FAILED": {
+      "phase": "P8",
+      "verdict_when": "P8 returns no eligible mode (all 7 modes PF<1.0 or 0 trades)",
+      "display_phase": "Q11"
+    },
+    "SWEEP_BACKTEST_QUEUED": {
+      "phase": "P3",
+      "verdict_when": "P3 param-sweep job enqueued",
+      "display_phase": "Q03"
+    },
+    "SWEEP_BACKTEST_RUNNING": {
+      "phase": "P3",
+      "verdict_when": "p3_param_sweep.py running",
+      "display_phase": "Q03"
+    },
+    "SWEEP_BACKTEST_COMPLETED": {
+      "phase": "P3",
+      "verdict_when": "P3 result.json present",
+      "display_phase": "Q03"
+    },
+    "SWEEP_BACKTEST_PASSED": {
+      "phase": "P3",
+      "verdict_when": "P3 verdict=PASS (>50% combos PF>1.0 + plateau check)",
+      "display_phase": "Q03"
+    },
+    "SWEEP_BACKTEST_FAILED": {
+      "phase": "P3",
+      "verdict_when": "P3 verdict=FAIL",
+      "display_phase": "Q03"
+    },
+    "FORWARD_TEST_QUEUED": {
+      "phase": "P4",
+      "verdict_when": "P4 walk-forward enqueued. Note: V5 also has P3.5 cross-sectional robustness immediately before P4.",
+      "display_phase": "Q05"
+    },
+    "FORWARD_TEST_RUNNING": {
+      "phase": "P4",
+      "verdict_when": "p4_walk_forward.py running",
+      "display_phase": "Q05"
+    },
+    "FORWARD_TEST_COMPLETED": {
+      "phase": "P4",
+      "verdict_when": "P4 result.json present",
+      "display_phase": "Q05"
+    },
+    "FORWARD_TEST_PASSED": {
+      "phase": "P4",
+      "verdict_when": "P4 verdict=PASS (≥6 anchored folds, dev_end<oos_start embargo, regime labels)",
+      "display_phase": "Q05"
+    },
+    "FORWARD_TEST_FAILED": {
+      "phase": "P4",
+      "verdict_when": "P4 verdict=FAIL",
+      "display_phase": "Q05"
+    },
+    "PIPELINE_PASSED": {
+      "phase": "P8+",
+      "verdict_when": "All automated phases through P8 verdict=PASS; aggregate index.json final_verdict=READY",
+      "display_phase": "Q11+"
+    },
+    "PIPELINE_FAILED": {
+      "phase": "any",
+      "verdict_when": "Any required phase verdict=FAIL/INVALID/BLOCKED; aggregate final_verdict=BLOCKED"
+    },
+    "READY_FOR_LIVE_REVIEW": {
+      "phase": "P9",
+      "verdict_when": "Pipeline passed AND queued for OWNER P9 portfolio-construction review (manual gate)",
+      "display_phase": "Q12"
+    },
+    "LIVE_ELIGIBLE": {
+      "phase": "P9b",
+      "verdict_when": "OWNER passed P9 + P9b operational-readiness sign-off; eligible for P10 burn-in",
+      "display_phase": "Q13"
+    },
+    "LIVE_DEPLOYED": {
+      "phase": "P10",
+      "verdict_when": "EA deployed to T_Live with AutoTrading enabled by OWNER+Board-Advisor (Hard Rule)",
+      "display_phase": "Q14"
+    },
+    "REJECTED": {
+      "phase": "any",
+      "verdict_when": "OWNER or QB explicitly rejected the EA card / strategy"
+    },
+    "REVIEW_REQUIRED": {
+      "phase": "any",
+      "verdict_when": "aggregate final_verdict=REVIEW_REQUIRED — human judgment needed on a verdict edge case"
+    },
+    "DASHBOARD_LOCAL_UPDATE_QUEUED": {
+      "subsystem": "dashboard",
+      "trigger": "QM_DashboardRender_Hourly fires"
+    },
+    "DASHBOARD_LOCAL_UPDATE_RUNNING": {
+      "subsystem": "dashboard",
+      "trigger": "render_all_dashboards.bat in flight"
+    },
+    "DASHBOARD_LOCAL_UPDATED": {
+      "subsystem": "dashboard",
+      "trigger": "dashboards/current.html mtime within last hour"
+    },
+    "DASHBOARD_LOCAL_UPDATE_FAILED": {
+      "subsystem": "dashboard",
+      "trigger": "scheduled task QM_DashboardRender_Hourly LastTaskResult != 0"
+    },
+    "ARCHIVE_LOCAL_UPDATE_QUEUED": {
+      "subsystem": "archive",
+      "trigger": "QM_DashboardRender_Hourly fires (renders strategies.html in same batch)"
+    },
+    "ARCHIVE_LOCAL_UPDATE_RUNNING": {
+      "subsystem": "archive",
+      "trigger": "render_strategies.py in flight"
+    },
+    "ARCHIVE_LOCAL_UPDATED": {
+      "subsystem": "archive",
+      "trigger": "dashboards/strategies.html mtime within last hour"
+    },
+    "ARCHIVE_LOCAL_UPDATE_FAILED": {
+      "subsystem": "archive",
+      "trigger": "scheduled task QM_DashboardRender_Hourly LastTaskResult != 0"
+    },
+    "WEBSITE_PUBLISH_QUEUED": {
+      "subsystem": "website",
+      "trigger": "QM_Public_Snapshot_Hourly fires"
+    },
+    "WEBSITE_PUBLISH_RUNNING": {
+      "subsystem": "website",
+      "trigger": "export_public_snapshot.ps1 in flight"
+    },
+    "WEBSITE_PUBLISHED": {
+      "subsystem": "website",
+      "trigger": "public-data/*.json updated AND git push succeeded OR Netlify hook fired"
+    },
+    "WEBSITE_PUBLISH_FAILED": {
+      "subsystem": "website",
+      "trigger": "export_public_snapshot.ps1 non-zero exit"
+    },
+    "WEBSITE_PUBLISH_SKIPPED": {
+      "subsystem": "website",
+      "trigger": "No diff in any public-data/*.json (idempotent no-op)"
+    }
+  },
+  "phase_alias_owner_to_v5": {
+    "BASELINE": "P2",
+    "SWEEP": "P3",
+    "FORWARD": "P4",
+    "NEWS_FILTER": "P8"
+  },
+  "phase_alias_v5_to_owner": {
+    "G0": "STRATEGY_CARD_CREATED",
+    "P1": "EA_BUILT",
+    "P2": "BASELINE",
+    "P3": "SWEEP",
+    "P3.5": "ROBUSTNESS_CSR",
+    "P4": "FORWARD",
+    "P5": "STRESS",
+    "P5b": "NOISE",
+    "P5c": "CRISIS",
+    "P6": "MULTI_SEED",
+    "P7": "STATVAL",
+    "P8": "NEWS_FILTER",
+    "P9": "READY_FOR_LIVE_REVIEW",
+    "P9b": "LIVE_ELIGIBLE",
+    "P10": "LIVE_DEPLOYED"
+  },
+  "notes": [
+    "OWNER 2026-05-12: V5 P8 stays as the news stage; we do not insert an additional news-robustness stage between P2 (baseline) and P3 (sweep). The 7-mode QM_NewsFilter.mqh + p8_news_driver.py already address news robustness as end-of-automated-pipeline mode selection.",
+    "OWNER's WAITING/RUNNING/COMPLETED sub-states map to dispatch_state.json's pending/running/dedup keys for each phase.",
+    "P9, P9b, P10 are manual OWNER gates — no automated transition. The orchestrator (phase_orchestrator.py) refuses to launch these (MANUAL_GATES = {G0, P9, P9b, P10})."
+  ],
+  "canonical_display_rule": "Show only the Q-series ID, e.g. Q08. Runtime JSON/SQLite phase keys remain internal compatibility keys until an explicit DB migration.",
+  "phase_display_id": {
+    "G0": "Q00",
+    "P1": "Q01",
+    "P2": "Q02",
+    "P3": "Q03",
+    "P3.5": "Q04",
+    "P4": "Q05",
+    "P5": "Q06",
+    "P5b": "Q07",
+    "P5c": "Q08",
+    "P6": "Q09",
+    "P7": "Q10",
+    "P8": "Q11",
+    "P9": "Q12",
+    "P9b": "Q13",
+    "P10": "Q14"
+  },
+  "phase_alias_owner_to_display": {
+    "BASELINE": "Q02",
+    "SWEEP": "Q03",
+    "FORWARD": "Q05",
+    "NEWS_FILTER": "Q11"
+  }
+}

@@ -1,0 +1,37 @@
+[
+  {
+    "path": "C:/QM/repo/docs/ops/QUA-1075_STATUS_PACKET_2026-05-09.md",
+    "last_write": "2026-05-09T14:25:21+02:00",
+    "size_bytes": 1579
+  },
+  {
+    "path": "C:/QM/repo/docs/ops/QUA-1075_P2_STATE_SNAPSHOT_2026-05-09T1421.json",
+    "last_write": "2026-05-09T14:22:20+02:00",
+    "size_bytes": 962
+  },
+  {
+    "path": "C:/QM/repo/docs/ops/QUA-1075_P2_CLEAN_HANDOFF_2026-05-09T1423.json",
+    "last_write": "2026-05-09T14:23:53+02:00",
+    "size_bytes": 266
+  },
+  {
+    "path": "C:/QM/repo/docs/ops/QUA-1075_DEVOPS_CHILD_DRAFT_2026-05-09T1424.json",
+    "last_write": "2026-05-09T14:24:28+02:00",
+    "size_bytes": 1258
+  },
+  {
+    "path": "C:/QM/repo/docs/ops/QUA-1075_HANDOFF_CHECKLIST_2026-05-09T1426.json",
+    "last_write": "2026-05-09T14:26:47+02:00",
+    "size_bytes": 328
+  },
+  {
+    "path": "C:/QM/repo/docs/ops/QUA-1075_HANDOFF_HASHES_2026-05-09T1427.json",
+    "last_write": "2026-05-09T14:27:49+02:00",
+    "size_bytes": 879
+  },
+  {
+    "path": "C:/QM/repo/docs/ops/QUA-1075_HEARTBEAT_SIGNAL_2026-05-09T1428.txt",
+    "last_write": "2026-05-09T14:29:25+02:00",
+    "size_bytes": 145
+  }
+]

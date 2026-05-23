@@ -48,7 +48,7 @@ Notion if access exists:
 Rules:
 - Filesystem is truth for current VPS operational state.
 - Google Drive and Notion are onboarding and migration sources, not automatic operational truth.
-- Do not touch T6_Live unless explicitly asked.
+- Do not touch T_Live unless explicitly asked.
 - Do not enable AutoTrading.
 - Do not expose credentials.
 - Do not assume DST, commission, or tester settings without evidence.

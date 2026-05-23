@@ -1,0 +1,11 @@
+{
+  "manifest_file": "QUA-1579_EVIDENCE_MANIFEST_2026-05-15T1308+0200.json",
+  "inventory_file": "QUA-1579_EVIDENCE_INVENTORY_2026-05-15T1308+0200.csv",
+  "normalization": "inventory excludes current manifest file name",
+  "manifest_count": 14,
+  "inventory_count_normalized": 14,
+  "missing_in_inventory": [],
+  "extra_in_inventory": [],
+  "counts_match": true,
+  "sets_match": true
+}

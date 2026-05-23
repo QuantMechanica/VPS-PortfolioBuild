@@ -1,0 +1,22 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        10076
+; ea_slug:      gh-santi-cci2ma
+; ea_version:   v5.0
+; set_version:  s20260521-001
+; symbol:       XNGUSD.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   cc5ef3b87fbeea3478c6b80eef1dc3d900d2552a9589649e054cd67906ef514f
+; author:       Development
+; date:         2026-05-21
+;==========================================================
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=not_found

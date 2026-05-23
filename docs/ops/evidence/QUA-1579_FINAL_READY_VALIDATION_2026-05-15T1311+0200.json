@@ -1,0 +1,27 @@
+{
+  "issue": "QUA-1579",
+  "final_ready_marker": "docs/ops/evidence/QUA-1579_FINAL_READY_2026-05-15T1310+0200.json",
+  "all_artifacts_exist": true,
+  "checks": {
+    "manifest_json": {
+      "path": "docs/ops/evidence/QUA-1579_EVIDENCE_MANIFEST_2026-05-15T1308+0200.json",
+      "exists": true
+    },
+    "inventory_csv": {
+      "path": "docs/ops/evidence/QUA-1579_EVIDENCE_INVENTORY_2026-05-15T1308+0200.csv",
+      "exists": true
+    },
+    "manifest_sha256": {
+      "path": "docs/ops/evidence/QUA-1579_EVIDENCE_MANIFEST_2026-05-15T1308+0200.sha256",
+      "exists": true
+    },
+    "consistency_json": {
+      "path": "docs/ops/evidence/QUA-1579_EVIDENCE_CONSISTENCY_CHECK_2026-05-15T1308+0200.json",
+      "exists": true
+    },
+    "consistency_normalized_json": {
+      "path": "docs/ops/evidence/QUA-1579_EVIDENCE_CONSISTENCY_CHECK_NORMALIZED_2026-05-15T1308+0200.json",
+      "exists": true
+    }
+  }
+}

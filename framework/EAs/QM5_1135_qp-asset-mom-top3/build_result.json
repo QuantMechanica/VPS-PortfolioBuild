@@ -1,0 +1,33 @@
+{
+  "task_id": "auto-build-QM5_1135-2026-05-17T16-19-25Z",
+  "ea_id": "QM5_1135",
+  "ea_dir": "framework/EAs/QM5_1135_qp-asset-mom-top3",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1135_qp-asset-mom-top3\\QM5_1135_qp-asset-mom-top3.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1135_qp-asset-mom-top3\\QM5_1135_qp-asset-mom-top3.ex5",
+  "magic_base": 11350000,
+  "symbols_registered": [
+    "SP500.DWX",
+    "NDX.DWX",
+    "WS30.DWX",
+    "GDAXI.DWX",
+    "UK100.DWX",
+    "XAUUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1135_qp-asset-mom-top3\\sets\\QM5_1135_qp-asset-mom-top3_SP500.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1135_qp-asset-mom-top3\\sets\\QM5_1135_qp-asset-mom-top3_NDX.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1135_qp-asset-mom-top3\\sets\\QM5_1135_qp-asset-mom-top3_WS30.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1135_qp-asset-mom-top3\\sets\\QM5_1135_qp-asset-mom-top3_GDAXI.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1135_qp-asset-mom-top3\\sets\\QM5_1135_qp-asset-mom-top3_UK100.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1135_qp-asset-mom-top3\\sets\\QM5_1135_qp-asset-mom-top3_XAUUSD.DWX_H1_backtest.set"
+  ],
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "framework_error",
+  "smoke_report_path": "D:\\QM\\reports\\smoke\\QM5_1135\\20260518_050554\\summary.json",
+  "blocked_reason": "smoke failed: TIMEOUT;METATESTER_HUNG;INCOMPLETE_RUNS on NDX.DWX H1 2024 run_01 after 900s",
+  "open_questions": [
+    "Card mentions GER40/JPN225/AUS200/bond or rates CFDs; DWX matrix only confirmed GDAXI.DWX, UK100.DWX, and no confirmed bond/rates CFD, so registered SP500.DWX, NDX.DWX, WS30.DWX, GDAXI.DWX, UK100.DWX, XAUUSD.DWX.",
+    "SP500.DWX is backtest-only per card T6 caveat; live deployment would need parallel validation on NDX.DWX or WS30.DWX."
+  ]
+}

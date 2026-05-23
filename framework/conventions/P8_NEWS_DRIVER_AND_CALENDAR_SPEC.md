@@ -1,68 +1,42 @@
-# P8 News Driver and News Calendar Spec
+# P8 Real News Replay and Runtime News Filter Spec
 
-Created: 2026-05-08
-Issue: QUA-911
-Owners: CTO + CEO
-Scope: V5 pipeline P8 mode-selection and runtime news gating against MT5-native calendar seed data.
+Created: 2026-05-08  
+Replaced: 2026-05-20 synthetic news matrix selector  
+Owners: CTO + CEO  
+Scope: V5 pipeline P8 real news replay and EA runtime news gating.
 
 ## 1. Purpose
 
-Define the executable contract for:
-- Offline P8 phase selection of news mode from sweep outputs.
-- Runtime EA behavior for news blocking/pausing.
-- News calendar data requirements and validation.
+P8 must prove how an EA behaves under actual news-calendar constraints. It is not a synthetic multiplier gate.
 
-This spec binds `framework/scripts/p8_news_impact.py` outputs to EA runtime inputs and deployment packaging.
+P8 now has two evidence layers:
 
-## 2. Hard-Rule Alignment
+1. **Real MT5 mode reruns**: rerun the EA on the target symbol/timeframe with `qm_news_mode` patched to each supported mode.
+2. **Deal replay analysis**: parse real MT5 deal timestamps from the resulting reports and map every entry to the actual UTC news calendar.
 
-- Darwinex MT5 native data only. No external market API calls in P8 or runtime news filters.
-- Symbols remain `.DWX` in research/backtest artifacts; suffix stripping is deploy-only.
-- Friday Close remains independently enabled by default; news mode does not disable Friday Close.
-- No ML scoring/classification in news driver logic.
-- Claims must cite generated CSV/JSON artifacts.
+## 2. Runtime Contract
 
-## 3. Inputs
+Every V5 EA must expose the framework news inputs from the first build:
 
-## 3.1 P8 Matrix CSV (required)
+```mql5
+input group "News"
+input QM_NewsMode qm_news_mode             = QM_NEWS_OFF;
+input int         qm_news_pause_before_minutes = 30;
+input int         qm_news_pause_after_minutes  = 30;
+input int         qm_news_stale_max_hours      = 336;
+input string      qm_news_min_impact           = "high";
+```
 
-Minimum columns:
-- `symbol`
-- `mode`
-- `pf`
-- `sharpe`
-- `drawdown_pct`
-- `trades`
-- `compliance_5ers`
-- `compliance_ftmo`
-- `compliance_news_only`
-- `compliance_no_news`
+The EA must call:
 
-`framework/scripts/p8_news_impact.py` normalizes mode aliases and filters to requested modes.
+```mql5
+QM_NewsAllowsTrade(_Symbol, TimeCurrent(), qm_news_mode)
+```
 
-## 3.2 News Calendar Seed (required for runtime enforcement)
+before any new entry. Position management and exits remain allowed unless the EA has a documented strategy-specific override.
 
-Canonical location:
-- `seed_assets/news_calendar/`
+## 3. Supported Modes
 
-Required fields per row:
-- `event_id` unique identifier.
-- `timestamp_utc` ISO-8601 UTC datetime.
-- `currency` ISO currency code.
-- `impact` one of `low|medium|high`.
-- `event_name` non-empty text.
-
-Optional fields:
-- `country`, `source`, `revision_of_event_id`.
-
-Validation contract:
-- Reject rows with missing required fields.
-- Reject rows with non-UTC timestamps.
-- Reject duplicate `(timestamp_utc, currency, event_name)` unless explicit revision link exists.
-
-## 4. Supported News Modes
-
-Allowed normalized modes:
 - `OFF`
 - `PAUSE`
 - `SKIP_DAY`
@@ -71,73 +45,106 @@ Allowed normalized modes:
 - `no_news`
 - `news_only`
 
-Any non-normalized mode is ignored by selector and must fail runtime config validation.
+## 4. Calendar
 
-## 5. Selection Logic (P8)
+Canonical calendar:
 
-Per symbol:
-- Eligible row: `pf >= 1.0` and `trades > 0`.
-- Ranking key: `pf desc`, `sharpe desc`, `drawdown_pct asc`.
-- Winner: top eligible row mode.
-- No eligible row:
-  - if `OFF` exists, recommend `OFF`.
-  - else verdict `NO_ELIGIBLE_MODE` and manual review required.
+- `D:/QM/data/news_calendar/news_calendar_2015_2025.csv`
 
-Portfolio verdict:
-- `MODE_SELECTED` only if all symbols have eligible winners.
-- Else `NO_ELIGIBLE_MODE`.
+Required fields:
 
-## 6. Runtime EA Contract
+- `timestamp_utc`
+- `currency`
+- `impact`
+- `event`
+- `actual`
+- `forecast`
+- `previous`
 
-EA must expose input enum compatible with normalized modes.
+Validation:
 
-Behavioral contract:
-- `OFF`: no news gating.
-- `PAUSE`: block new entries around configured window; manage exits allowed.
-- `SKIP_DAY`: no new entries for impacted symbol/day; manage exits allowed.
-- `FTMO_PAUSE`: enforce FTMO-oriented pause window and impact threshold.
-- `5ers_PAUSE`: enforce 5ers-oriented pause window and impact threshold.
-- `no_news`: trade only when no relevant event is in active window.
-- `news_only`: trade only inside configured event window; outside window block entries.
+- timestamps must be UTC
+- impact must be `low|medium|high`
+- duplicate `(timestamp_utc, currency, event)` rows are counted and reported
 
-All runtime decisions must log:
-- symbol
-- mode
-- event_id (if matched)
-- decision (`allow_entry|block_entry|manage_only`)
-- reason code
-- timestamp UTC
+## 5. P8 Driver Inputs
 
-## 7. Artifacts and Evidence
+`framework/scripts/p8_news_driver.py` must accept:
 
-P8 selector output directory:
-- `artifacts/<ea_id>/P8/`
+- `--ea`
+- `--symbol`
+- `--period`
+- `--base-setfile`
+- `--calendar-csv`
+- `--from-date 2023.01.01`
+- `--to-date 2025.12.31`
+- `--run-mt5`
+- `--mt5-modes all` or a comma-list such as `OFF,PAUSE`
+- `--trade-report` optional repeatable fallback/evidence input
 
-Required outputs:
-- `P8_result.json` (verdict + criterion + details)
-- `P8_summary.csv` (symbol/mode decision matrix)
+The driver creates temporary setfiles per mode by patching `qm_news_mode` and news-window inputs.
+`qm_news_min_impact` is enforced by both the EA runtime filter and the replay analyzer.
+For legacy TerminalWorker commands that still call P8 without `--run-mt5`, the driver may infer the active P8 `work_items` row from SQLite and run MT5 on the claimed terminal. Use `--no-auto-mt5` only for deliberate offline replay.
+
+Runtime/replay windows:
+
+- `PAUSE`, `no_news`, `news_only`: use `qm_news_pause_before_minutes` / `qm_news_pause_after_minutes`.
+- `SKIP_DAY`: blocks the UTC event day for matching symbol currency.
+- `FTMO_PAUSE`: 5/3/1 minutes for high/medium/low impact.
+- `5ers_PAUSE`: 2/1/0 minutes for high/medium/low impact.
+
+## 6. Selection Logic
+
+For each symbol/profile:
+
+1. Run or load all requested news modes.
+2. Parse MT5 summaries and deal rows.
+3. Reject modes below minimum trade count, profit factor, or net-profit threshold.
+4. Rank eligible modes by:
+   - profit factor descending
+   - net profit descending
+   - blocked trades ascending
+
+Default thresholds:
+
+- `min_trades = 30`
+- `min_profit_factor = 1.0`
+- `net_profit >= 0`
+
+## 7. Required Artifacts
+
+P8 output directory:
+
+- `P8_QM5_<id>_result.json`
+- `summary.json`
+- `P8_summary.csv`
+- `P8_real_news_replay.csv`
+- `P8_trade_replay_inputs.json`
+- `mt5_mode_runs/` when `--run-mt5` is used
 
 `P8_result.json` must include:
-- `recommended_mode_by_symbol`
-- compliance aggregate booleans
-- flattened matrix rows with symbol attached
 
-Any pass/fail statement in issue comments must cite exact artifact paths.
+- calendar stats
+- source report paths
+- MT5 mode metrics
+- replay CSV path
+- recommended mode by symbol
+- thresholds used
 
 ## 8. Failure Modes
 
-Hard fail and stop phase when:
-- Matrix CSV missing required columns.
-- No rows remain after mode normalization/filtering.
-- Recommended mode not in allowed normalized set.
-- Calendar validation fails required-field/timestamp constraints.
+Hard fail:
 
-Soft fail (manual review required):
-- `NO_ELIGIBLE_MODE` for one or more symbols.
+- calendar invalid
+- no MT5 report/deal rows parseable
+- real MT5 mode rerun produces no summary
+- no mode passes thresholds
 
-## 9. Acceptance Criteria for QUA-911
+Manual review:
 
-- Spec file exists at this path and is peer-readable.
-- `framework/scripts/p8_news_impact.py` behavior matches Section 5.
-- Pipeline documentation references this file as P8 normative contract.
-- Evidence paths for at least one P8 run are included in issue close-out comment.
+- a mode technically passes but trades are concentrated around a small number of news events
+- top-trade removal materially changes verdict
+
+## 9. What P8 Does Not Authorize
+
+P8 does not authorize T_Live. P9/P9b/P10 remain OWNER/Board/manual gates.

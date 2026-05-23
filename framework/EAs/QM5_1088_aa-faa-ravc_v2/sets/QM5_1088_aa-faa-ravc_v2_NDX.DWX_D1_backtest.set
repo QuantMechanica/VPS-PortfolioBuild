@@ -1,0 +1,22 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1088
+; ea_slug:      aa-faa-ravc_v2
+; ea_version:   v5.0
+; set_version:  s20260518-002
+; symbol:       NDX.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   101
+; risk_mode:    FIXED
+; portfolio_weight: 0.33333333
+; build_hash:   dce60578d27831344b3c462bb4c9e9f4ea9b0f622d9a44c462f9667860ba2cae
+; author:       Development
+; date:         2026-05-18
+;==========================================================
+qm_magic_slot_offset=101
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=0.33333333
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=alpha_architect_original_source

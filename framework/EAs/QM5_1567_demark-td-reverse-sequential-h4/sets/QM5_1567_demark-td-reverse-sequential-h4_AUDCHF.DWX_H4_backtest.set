@@ -1,0 +1,22 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1567
+; ea_slug:      demark-td-reverse-sequential-h4
+; ea_version:   v5.0
+; set_version:  s20260519-001
+; symbol:       AUDCHF.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   3e38ae449e00e6c854e4adbd923503741049258b041e7fe2ecd37e61a1038797
+; author:       Development
+; date:         2026-05-19
+;==========================================================
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=not_found

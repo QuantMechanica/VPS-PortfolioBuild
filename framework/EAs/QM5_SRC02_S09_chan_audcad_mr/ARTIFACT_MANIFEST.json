@@ -1,0 +1,44 @@
+[
+  {
+    "path": "framework\\EAs\\QM5_SRC02_S09_chan_audcad_mr\\deploy_evidence.json",
+    "size_bytes": 4855,
+    "sha256": "A2D45C3A6EDF6C7B4C3EE53BA752F74231300CE6D164FC311C8F13B8B16A243F",
+    "last_write_utc": "2026-05-15T11:28:52.1052996Z"
+  },
+  {
+    "path": "framework\\EAs\\QM5_SRC02_S09_chan_audcad_mr\\docs\\strategy_card.md",
+    "size_bytes": 13680,
+    "sha256": "1D8ACEF6344DC256087D80B2FD0133C2148959B560C9B5E002D4FD3E30B9D2C3",
+    "last_write_utc": "2026-05-15T08:31:39.0917843Z"
+  },
+  {
+    "path": "framework\\EAs\\QM5_SRC02_S09_chan_audcad_mr\\HANDOFF_STATUS.json",
+    "size_bytes": 1651,
+    "sha256": "D23DA6971B08018825B49BD3473592A39C4515686662C4F2736CB5D1B163AFAA",
+    "last_write_utc": "2026-05-15T11:32:07.3876143Z"
+  },
+  {
+    "path": "framework\\EAs\\QM5_SRC02_S09_chan_audcad_mr\\P0_BUILD_REPORT.md",
+    "size_bytes": 1002,
+    "sha256": "DF855B99A05975ED43C7CBC1B61AC9FCF38E6AC42BAD2002533D0D0D30A1C2DF",
+    "last_write_utc": "2026-05-15T11:29:11.5864545Z"
+  },
+  {
+    "path": "framework\\EAs\\QM5_SRC02_S09_chan_audcad_mr\\QM5_SRC02_S09_chan_audcad_mr.ex5",
+    "size_bytes": 97156,
+    "sha256": "50E4DCE888778ED872F92AEBAF9EB34E40D0156A42871EC3A8A5A73D5D719D2C",
+    "last_write_utc": "2026-05-15T11:28:11.5302546Z"
+  },
+  {
+    "path": "framework\\EAs\\QM5_SRC02_S09_chan_audcad_mr\\QM5_SRC02_S09_chan_audcad_mr.mq5",
+    "size_bytes": 8128,
+    "sha256": "08C35674363961193764CD5F6FD2EEA0F70033478B21B02351F61DAA5EFB67E4",
+    "last_write_utc": "2026-05-15T11:23:33.1012270Z"
+  },
+  {
+    "path": "framework\\EAs\\QM5_SRC02_S09_chan_audcad_mr\\sets\\QM5_SRC02_S09_chan_audcad_mr_AUDCAD.DWX_D1_backtest.set",
+    "size_bytes": 850,
+    "sha256": "6054DEAB9B2F846B97B2B71A8E6369DD90F80E88AD1BF05FB9719A20792C1F9D",
+    "last_write_utc": "2026-05-15T11:28:43.5829694Z"
+  }
+]

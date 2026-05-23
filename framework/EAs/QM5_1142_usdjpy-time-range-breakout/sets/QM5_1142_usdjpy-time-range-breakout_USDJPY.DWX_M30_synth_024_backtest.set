@@ -1,0 +1,41 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1142
+; ea_slug:      usdjpy-time-range-breakout
+; ea_version:   v5.0
+; set_version:  s20260517-grid
+; symbol:       USDJPY.DWX
+; timeframe:    M30
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1.0
+; build_hash:   40fe2d45f9ac773a842a6c25cbbfc653babfbcf358d9f7741abf9918fdaaddd8
+; author:       Development
+; date:         2026-05-17
+;==========================================================
+qm_ea_id=1142
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1.0
+qm_news_mode=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+strategy_range_start_hour_broker=0
+strategy_range_start_minute=0
+strategy_range_duration_minutes=30
+strategy_hold_minutes_max=480
+strategy_exit_hour_broker=22
+strategy_atr_period=14
+strategy_atr_stop_mult=3.0
+strategy_atr_target_mult=1.5
+strategy_long_only=false
+strategy_short_only=false
+strategy_max_spread_points=30
+strategy_min_range_atr_ratio=0.5
+strategy_max_range_atr_ratio=3.0
+strategy_enable_friday=false
+strategy_skip_news_hour=true
+strategy_breakout_buffer_points=5
+strategy_session_filter_hour_to=22

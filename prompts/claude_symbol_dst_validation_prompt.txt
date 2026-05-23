@@ -11,7 +11,7 @@ You must do this end-to-end yourself using the T1 MT5 installation and an MT5 sc
 
 Environment constraints:
 - Work only against the T1 factory terminal on D:\
-- Do NOT modify T6_Live
+- Do NOT modify T_Live
 - Do NOT expose or log credentials, passwords, account IDs, or other sensitive values
 - Do NOT guess; produce machine-checkable evidence
 

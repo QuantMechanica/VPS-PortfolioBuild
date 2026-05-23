@@ -1,0 +1,22 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1443
+; ea_slug:      demark-td-lines-h4
+; ea_version:   v5.0
+; set_version:  s20260519-001
+; symbol:       WS30.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   9
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   df98ff7dbb7c87bbd42610dce835857934a802340cf8f9e94f79ef0da2ba8664
+; author:       Development
+; date:         2026-05-19
+;==========================================================
+qm_magic_slot_offset=9
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=not_found

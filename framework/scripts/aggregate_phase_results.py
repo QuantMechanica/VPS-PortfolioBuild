@@ -8,20 +8,22 @@ from pathlib import Path
 
 from _phase_utils import ensure_dir, load_json, write_json
 
-EXPECTED_PHASES = ["P3.5", "P5", "P5b", "P5c", "P6", "P7", "P8"]
-REQUIRED_PHASES = ("P3.5", "P5", "P5b", "P6", "P7", "P8")
+EXPECTED_PHASES = ["P5", "P5c", "P6", "P7"]
+REQUIRED_PHASES = ("P5", "P6", "P7")
+PHASE_DISPLAY = {
+    "P5": "Q06",
+    "P5c": "Q08",
+    "P6": "Q09",
+    "P7": "Q10",
+}
 
 PASS_VERDICTS = {
-    "P3.5": {"AUTO_PASS", "PASS"},
     "P5": {"PASS"},
-    "P5b": {"PASS"},
-    "P6": {"MULTI_SEED_PASS", "MULTI_SEED_MIXED"},
+    "P6": {"MULTI_SEED_PASS", "PASS"},
     "P7": {"PASS"},
-    "P8": {"MODE_SELECTED"},
 }
 
 REVIEW_REQUIRED_VERDICTS = {
-    "P5b": {"YELLOW"},
     "P6": {"MULTI_SEED_WAIVER"},
 }
 
@@ -43,8 +45,14 @@ def main() -> int:
 
     by_phase = {}
     for phase in EXPECTED_PHASES:
-        phase_dir = input_root / phase.replace(".", "_")
-        result_file = phase_dir / f"{phase.replace('.', '_')}_{ea_id}_result.json"
+        phase_token = phase.replace(".", "_")
+        phase_dir = input_root / phase
+        result_file = phase_dir / f"{phase_token}_{ea_id}_result.json"
+        if not result_file.exists():
+            legacy_phase_dir = input_root / phase_token
+            legacy_result_file = legacy_phase_dir / f"{phase_token}_{ea_id}_result.json"
+            if legacy_result_file.exists():
+                result_file = legacy_result_file
         if result_file.exists():
             by_phase[phase] = load_json(result_file)
         else:
@@ -79,6 +87,7 @@ def main() -> int:
         "phase_review_required": review_required,
         "phases": by_phase,
         "required_phases": list(REQUIRED_PHASES),
+        "phase_display": PHASE_DISPLAY,
     }
 
     out_path = output_dir / "index.json"

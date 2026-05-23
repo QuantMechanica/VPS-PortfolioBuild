@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param(
     [switch]$Strict = $true,
+    [string]$EALabel,
     [string]$RepoRoot,
     [string]$CompileScriptPath,
     [string]$ReportRoot = "D:\QM\reports\framework\21",
@@ -10,7 +11,8 @@ param(
     [switch]$SkipSetValidation,
     [switch]$SkipLoggerSchema,
     [switch]$SkipForbiddenScan,
-    [switch]$SkipInputGroupCheck
+    [switch]$SkipInputGroupCheck,
+    [switch]$SkipPerfStaticCheck
 )
 
 Set-StrictMode -Version Latest
@@ -49,6 +51,19 @@ function Get-CompileCandidates {
     )
 
     $candidates = New-Object System.Collections.Generic.List[string]
+    if ($EALabel) {
+        $target = Join-Path $ResolvedRepoRoot "framework\EAs\$EALabel"
+        if (-not (Test-Path -LiteralPath $target)) {
+            Add-Failure "BUILD_CHECK_EA_LABEL_NOT_FOUND: $EALabel."
+            return $candidates
+        }
+        $mq5Files = @(Get-ChildItem -LiteralPath $target -File -Filter "*.mq5")
+        foreach ($mq5 in $mq5Files) {
+            $candidates.Add($mq5.FullName)
+        }
+        return $candidates
+    }
+
     $easRoot = Join-Path $ResolvedRepoRoot "framework\EAs"
     if (Test-Path -LiteralPath $easRoot) {
         $eaFiles = Get-ChildItem -LiteralPath $easRoot -Recurse -File -Filter "*.mq5" | Sort-Object FullName
@@ -330,7 +345,14 @@ function Invoke-SetValidation {
     $setFiles = @()
     $easRoot = Join-Path $ResolvedRepoRoot "framework\EAs"
     if (Test-Path -LiteralPath $easRoot) {
-        $setFiles = @(Get-ChildItem -LiteralPath $easRoot -Recurse -File -Filter "*.set" | Sort-Object FullName)
+        if ($EALabel) {
+            $targetRoot = Join-Path $easRoot $EALabel
+            if (Test-Path -LiteralPath $targetRoot) {
+                $setFiles = @(Get-ChildItem -LiteralPath $targetRoot -Recurse -File -Filter "*.set" | Sort-Object FullName)
+            }
+        } else {
+            $setFiles = @(Get-ChildItem -LiteralPath $easRoot -Recurse -File -Filter "*.set" | Sort-Object FullName)
+        }
     }
     if (-not $setFiles -or $setFiles.Count -eq 0) {
         Add-Warning "BUILD_CHECK_SETFILE_NONE_FOUND: no .set files found."
@@ -449,6 +471,11 @@ function Invoke-LoggerSchemaValidation {
         }
         $effectivePath = (Resolve-Path -LiteralPath $SamplePath).Path
         $lines = Get-Content -LiteralPath $effectivePath
+    } elseif ($EALabel) {
+        $effectivePath = "<embedded-sample>"
+        $lines = @(
+            '{"ts_utc":"2026-04-26T14:23:01.234Z","ts_broker":"2026-04-26T16:23:01","level":"INFO","ea_id":1044,"slug":"vpmacd-us-indices","symbol":"WS30.DWX","tf":"H1","magic":10440001,"event":"ENTRY","payload":{"side":"BUY","lot":0.12}}'
+        )
     } else {
         $candidate = Get-ChildItem -LiteralPath $ResolvedRepoRoot -Recurse -File -Filter "*.jsonl" |
             Where-Object { $_.FullName -match '(?i)log|logger|smoke' } |
@@ -497,6 +524,14 @@ function Invoke-ForbiddenScan {
         (Join-Path $ResolvedRepoRoot "framework\EAs")
     ) | Where-Object { Test-Path -LiteralPath $_ }
 
+    if ($EALabel) {
+        $targetEaRoot = Join-Path $ResolvedRepoRoot "framework\EAs\$EALabel"
+        $scanRoots = @(
+            (Join-Path $ResolvedRepoRoot "framework\include"),
+            $targetEaRoot
+        ) | Where-Object { Test-Path -LiteralPath $_ }
+    }
+
     $mqlFiles = New-Object System.Collections.Generic.List[string]
     foreach ($scanRoot in $scanRoots) {
         $files = Get-ChildItem -LiteralPath $scanRoot -Recurse -File -Include *.mq5,*.mqh
@@ -535,8 +570,13 @@ function Invoke-InputGroupCheck {
         return
     }
 
-    $eaFiles = Get-ChildItem -LiteralPath $eaRoot -Recurse -File -Include *.mq5 -ErrorAction SilentlyContinue |
-               Where-Object { $_.Name -notmatch 'smoke|unit|test' }
+    if ($EALabel) {
+        $targetEaRoot = Join-Path $eaRoot $EALabel
+        $eaFiles = Get-ChildItem -LiteralPath $targetEaRoot -File -Filter *.mq5 -ErrorAction SilentlyContinue
+    } else {
+        $eaFiles = Get-ChildItem -LiteralPath $eaRoot -Recurse -File -Include *.mq5 -ErrorAction SilentlyContinue |
+                   Where-Object { $_.Name -notmatch 'smoke|unit|test' }
+    }
 
     $requiredGroups = @(
         'QuantMechanica V5 Framework',
@@ -555,6 +595,138 @@ function Invoke-InputGroupCheck {
             if ($content -notmatch $pattern) {
                 Add-Failure "EA_INPUT_GROUP_MISSING: $($file.Name) is missing required input group `"$group`"."
             }
+        }
+    }
+}
+
+function Invoke-RiskSizerStaticCheck {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ResolvedRepoRoot
+    )
+
+    $eaRoot = Join-Path $ResolvedRepoRoot "framework\EAs"
+    if (-not (Test-Path -LiteralPath $eaRoot)) {
+        return
+    }
+
+    if ($EALabel) {
+        $eaFiles = @(Get-ChildItem -LiteralPath (Join-Path $eaRoot $EALabel) -File -Filter *.mq5 -ErrorAction SilentlyContinue)
+    } else {
+        $eaFiles = @(Get-ChildItem -LiteralPath $eaRoot -Recurse -File -Include *.mq5 -ErrorAction SilentlyContinue |
+                     Where-Object { $_.Name -notmatch 'smoke|unit|test' -and $_.FullName -notmatch '_obsolete_' })
+    }
+
+    foreach ($file in $eaFiles) {
+        $content = Get-Content -Raw -LiteralPath $file.FullName -ErrorAction SilentlyContinue
+        if (-not $content) { continue }
+
+        $usesFrameworkCommon = $content -match '#include\s+<QM/QM_Common\.mqh>'
+        $callsFrameworkInit = $content -match '\bQM_FrameworkInit\s*\('
+        $callsRiskSizerConfigure = $content -match '\bQM_RiskSizerConfigure\s*\('
+
+        if ($usesFrameworkCommon -and -not $callsFrameworkInit -and -not $callsRiskSizerConfigure) {
+            Add-Failure "EA_RISK_SIZER_UNCONFIGURED: $($file.Name) includes QM_Common but does not call QM_FrameworkInit(...) or QM_RiskSizerConfigure(...). RISK_MODE=UNSET can silently produce zero-lot trades."
+        }
+    }
+}
+
+function Invoke-PerfStaticCheck {
+    # Fast pre-filter for per-tick perf hazards. Scans the EA .mq5 only (not
+    # framework includes, not tests). Two FAIL cases (block build) + several
+    # WARN cases (surface for review without blocking, since custom math is
+    # sometimes legitimate). Deep gate-check is Claude review §7.
+    #
+    # FAIL:
+    #  - Local `IsNewBar` function definition  → must use QM_IsNewBar
+    #  - Raw indicator handle creation (iATR/iMA/iRSI/iMACD/iADX/iBands) in
+    #    OnInit or OnTick context  → must use QM_Indicators readers
+    #
+    # WARN:
+    #  - Bare `CopyRates / CopyBuffer / CopyTime/Open/High/Low/Close/...` in
+    #    .mq5 outside a clearly closed-bar branch. Heuristic: any preceding
+    #    20 lines contain QM_IsNewBar() - accepted as gated. Otherwise WARN
+    #    so reviewer can verify.
+    #  - Manual `IndicatorRelease(` in EA - pool releases on shutdown.
+    #
+    # Recognized exception: lines containing `// perf-allowed` comment are
+    # skipped (gives strategy author explicit override for genuine bespoke
+    # math that the reviewer has signed off on).
+
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ResolvedRepoRoot
+    )
+
+    $eaRoot = Join-Path $ResolvedRepoRoot "framework\EAs"
+    if (-not (Test-Path -LiteralPath $eaRoot)) {
+        return
+    }
+
+    if ($EALabel) {
+        $eaFiles = @(Get-ChildItem -LiteralPath (Join-Path $eaRoot $EALabel) -File -Filter *.mq5 -ErrorAction SilentlyContinue)
+    } else {
+        $eaFiles = @(Get-ChildItem -LiteralPath $eaRoot -Recurse -File -Include *.mq5 -ErrorAction SilentlyContinue |
+                     Where-Object { $_.Name -notmatch 'smoke|unit|test' -and $_.FullName -notmatch '_obsolete_' })
+    }
+
+    if (-not $eaFiles -or $eaFiles.Count -eq 0) {
+        return
+    }
+
+    # FAIL patterns
+    $localIsNewBarPattern = '(?m)^\s*(?:bool|static\s+bool)\s+IsNewBar\s*\('
+    $rawIndicatorPattern  = '(?m)^\s*[^/\r\n]*?\b(?<![A-Za-z0-9_])(iATR|iMA|iRSI|iMACD|iADX|iBands|iStochastic|iCustom)\s*\('
+
+    # WARN patterns
+    $copyDataPattern      = '(?m)^\s*[^/\r\n]*?\b(?<![A-Za-z0-9_])(CopyRates|CopyBuffer|CopyTime|CopyOpen|CopyHigh|CopyLow|CopyClose|CopyTickVolume|CopyRealVolume|CopySpread)\s*\('
+    $manualReleasePattern = '(?m)^\s*[^/\r\n]*?\bIndicatorRelease\s*\('
+    $perfAllowedTag       = '//\s*perf-allowed'
+
+    foreach ($file in $eaFiles) {
+        $fullText = Get-Content -Raw -LiteralPath $file.FullName -ErrorAction SilentlyContinue
+        if (-not $fullText) { continue }
+        $lines = $fullText -split "`r?`n"
+
+        # FAIL - local IsNewBar
+        $localMatches = [regex]::Matches($fullText, $localIsNewBarPattern)
+        foreach ($m in $localMatches) {
+            $lineNum = ($fullText.Substring(0, $m.Index) -split "`n").Count
+            Add-Failure "EA_PERF_LOCAL_ISNEWBAR: $($file.Name):$lineNum defines IsNewBar() locally; use QM_IsNewBar() from QM_Indicators.mqh (auto-included via QM_Common)."
+        }
+
+        # FAIL - raw indicator call (allow override via // perf-allowed)
+        $rawMatches = [regex]::Matches($fullText, $rawIndicatorPattern)
+        foreach ($m in $rawMatches) {
+            $lineNum = ($fullText.Substring(0, $m.Index) -split "`n").Count
+            $line = $lines[$lineNum - 1]
+            if ($line -match $perfAllowedTag) { continue }
+            $fnName = $m.Groups[1].Value
+            Add-Failure "EA_PERF_RAW_INDICATOR_CALL: $($file.Name):$lineNum uses raw '$fnName(' - use QM_$($fnName.Substring(1))(...) from QM_Indicators.mqh instead. Add '// perf-allowed' comment to override (requires reviewer sign-off)."
+        }
+
+        # WARN - manual IndicatorRelease
+        $relMatches = [regex]::Matches($fullText, $manualReleasePattern)
+        foreach ($m in $relMatches) {
+            $lineNum = ($fullText.Substring(0, $m.Index) -split "`n").Count
+            $line = $lines[$lineNum - 1]
+            if ($line -match $perfAllowedTag) { continue }
+            Add-Warning "EA_PERF_MANUAL_INDICATOR_RELEASE: $($file.Name):$lineNum calls IndicatorRelease - handles are pooled by QM_Indicators and released by QM_FrameworkShutdown."
+        }
+
+        # WARN - CopyRates/CopyBuffer/Copy* not preceded by QM_IsNewBar within 20 lines
+        $copyMatches = [regex]::Matches($fullText, $copyDataPattern)
+        foreach ($m in $copyMatches) {
+            $lineNum = ($fullText.Substring(0, $m.Index) -split "`n").Count
+            $line = $lines[$lineNum - 1]
+            if ($line -match $perfAllowedTag) { continue }
+            $fnName = $m.Groups[1].Value
+            $lookBackStart = [Math]::Max(0, $lineNum - 1 - 20)
+            $window = $lines[$lookBackStart..($lineNum - 1)] -join "`n"
+            if ($window -match 'QM_IsNewBar\s*\(') {
+                continue # gated - OK
+            }
+            Add-Warning "EA_PERF_UNGATED_BAR_DATA: $($file.Name):$lineNum calls $fnName( without a preceding QM_IsNewBar() guard in the last 20 lines. Per-tick CopyRates/CopyBuffer is the QM5_1044/1046 perf-wall class. Gate by 'if(!QM_IsNewBar()) return;' or add '// perf-allowed' if intentional."
         }
     }
 }
@@ -610,6 +782,10 @@ if (-not $SkipForbiddenScan.IsPresent) {
 }
 if (-not $SkipInputGroupCheck.IsPresent) {
     Invoke-InputGroupCheck -ResolvedRepoRoot $resolvedRepoRoot
+    Invoke-RiskSizerStaticCheck -ResolvedRepoRoot $resolvedRepoRoot
+}
+if (-not $SkipPerfStaticCheck.IsPresent) {
+    Invoke-PerfStaticCheck -ResolvedRepoRoot $resolvedRepoRoot
 }
 
 Write-GateEvidence -ResolvedReportRoot $ReportRoot

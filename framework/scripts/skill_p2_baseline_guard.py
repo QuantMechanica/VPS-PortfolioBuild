@@ -4,10 +4,13 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from datetime import datetime, timedelta
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+# Canonical source of truth — always main repo, override via QM_REPO_ROOT for tests.
+# DL-062 + DL-028 — guards must agree with launchers across worktrees.
+REPO_ROOT = Path(os.environ.get("QM_REPO_ROOT", r"C:\QM\repo"))
 EA_ROOT = REPO_ROOT / "framework" / "EAs"
 REPORT_ROOT = Path("D:/QM/reports/pipeline")
 

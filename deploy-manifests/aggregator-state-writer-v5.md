@@ -21,8 +21,8 @@
 - State file: `D:\QM\reports\state\last_check_state.json`
 - Heartbeat file: `C:\QM\logs\aggregator\heartbeat.txt`
 - Hard exclusions:
-  - `C:\QM\mt5\T6_Live`
-  - `D:\QM\mt5\T6_Live`
+  - `C:\QM\mt5\T_Live`
+  - `D:\QM\mt5\T_Live`
   - `C:\QM\mt5\T6_Demo`
   - `D:\QM\mt5\T6_Demo`
 

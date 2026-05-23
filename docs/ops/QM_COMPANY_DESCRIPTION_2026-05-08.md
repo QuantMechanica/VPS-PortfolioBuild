@@ -63,7 +63,7 @@ V1–V4 auf dem lokalen PC haben über 6 Monate technische Schulden angehäuft: 
 |------------|------|-------|
 | Repo | `C:\QM\repo` | Git-Wahrheit, alle Docs, Framework, Skills |
 | Paperclip | `C:\QM\paperclip` | Agenten-System, Kanban, Dashboards |
-| Live Terminal | `C:\QM\mt5\T6_Live` | **OFF LIMITS** — nur für live Trading |
+| Live Terminal | `C:\QM\mt5\T_Live` | **OFF LIMITS** — nur für live Trading |
 | Factory Terminals | `D:\QM\mt5\T1` … `T5` | Backtests und Sweeps |
 | Reports | `D:\QM\reports\pipeline\` | Pipeline-Evidenz pro EA |
 | Data | `D:\QM\data` | Tick-Daten, News-Calendar |
@@ -85,7 +85,7 @@ T2 (D:\QM\mt5\T2)  ─┤
 T3 (D:\QM\mt5\T3)  ─┼── Factory (Backtests, P1-P8) — Agenten dürfen schreiben
 T4 (D:\QM\mt5\T4)  ─┤
 T5 (D:\QM\mt5\T5)  ─┘
-T6 (C:\QM\mt5\T6_Live) ── Live/Demo — OWNER-only, AutoTrading nur nach Manifest
+T6 (C:\QM\mt5\T_Live) ── Live/Demo — OWNER-only, AutoTrading nur nach Manifest
 ```
 
 ---

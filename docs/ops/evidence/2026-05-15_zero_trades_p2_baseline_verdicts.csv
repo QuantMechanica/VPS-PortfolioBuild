@@ -1,0 +1,6 @@
+ea_id,symbol,period,trade_count,min_trades_required,verdict,evidence_path,decided_at_utc
+QM5_1003,CADCHF.DWX,P2,0,1,STRATEGY_DRIFT:QUA-1550,D:/QM/reports/pipeline/QM5_1003/P2/report.csv,2026-05-15T05:49:53Z
+QM5_1004,AUDNZD.DWX,P2,0,1,STRATEGY_DRIFT:QUA-1551,D:/QM/reports/pipeline/QM5_1004/P2/report.csv,2026-05-15T05:49:53Z
+QM5_1014,EURGBP.DWX,P2,0,1,BASELINE_ACCURATE_FAILED,D:/QM/reports/pipeline/QM5_1014/P2/report.csv,2026-05-15T05:49:53Z
+QM5_1017,AUDUSD.DWX,P2,0,1,STRATEGY_DRIFT:QUA-1552,D:/QM/reports/pipeline/QM5_1017/P2/report.csv,2026-05-15T05:49:53Z
+QM5_SRC04_S03,USDCHF.DWX,P2,0,1,STRATEGY_DRIFT:QUA-1553,D:/QM/reports/pipeline/QM5_SRC04_S03/P2/report.csv,2026-05-15T05:49:53Z

@@ -1,0 +1,159 @@
+{
+  "after": {
+    "counts": {
+      "dispatched": 6,
+      "queued": 3
+    },
+    "db_exists": true,
+    "dispatched_top": [
+      {
+        "assigned_terminal": "T1",
+        "dispatch_decision": "scheduled",
+        "ea_id": "QM5_1003",
+        "id": 6,
+        "phase": "P2",
+        "status": "dispatched",
+        "symbol": "USDCAD.DWX"
+      },
+      {
+        "assigned_terminal": "T5",
+        "dispatch_decision": "scheduled",
+        "ea_id": "QM5_1003",
+        "id": 5,
+        "phase": "P2",
+        "status": "dispatched",
+        "symbol": "AUDUSD.DWX"
+      },
+      {
+        "assigned_terminal": "T4",
+        "dispatch_decision": "scheduled",
+        "ea_id": "QM5_1003",
+        "id": 4,
+        "phase": "P2",
+        "status": "dispatched",
+        "symbol": "USDJPY.DWX"
+      },
+      {
+        "assigned_terminal": "T2",
+        "dispatch_decision": "scheduled",
+        "ea_id": "QM5_1003",
+        "id": 3,
+        "phase": "P2",
+        "status": "dispatched",
+        "symbol": "GBPUSD.DWX"
+      },
+      {
+        "assigned_terminal": "T3",
+        "dispatch_decision": "scheduled",
+        "ea_id": "QM5_1003",
+        "id": 2,
+        "phase": "P2",
+        "status": "dispatched",
+        "symbol": "EURUSD.DWX"
+      }
+    ],
+    "queued_top": [
+      {
+        "ea_id": "QM5_1003",
+        "id": 7,
+        "phase": "P2",
+        "priority": 80,
+        "status": "queued",
+        "symbol": "USDCHF.DWX"
+      },
+      {
+        "ea_id": "QM5_1003",
+        "id": 8,
+        "phase": "P2",
+        "priority": 80,
+        "status": "queued",
+        "symbol": "NZDUSD.DWX"
+      },
+      {
+        "ea_id": "QM5_1003",
+        "id": 9,
+        "phase": "P2",
+        "priority": 80,
+        "status": "queued",
+        "symbol": "EURJPY.DWX"
+      }
+    ],
+    "sqlite": "D:\\QM\\reports\\pipeline\\mt5_queue.db"
+  },
+  "before": {
+    "counts": {
+      "dispatched": 1,
+      "queued": 8
+    },
+    "db_exists": true,
+    "dispatched_top": [
+      {
+        "assigned_terminal": "T1",
+        "dispatch_decision": "scheduled",
+        "ea_id": "QM5_1003",
+        "id": 1,
+        "phase": "P2",
+        "status": "dispatched",
+        "symbol": "EURUSD.DWX"
+      }
+    ],
+    "queued_top": [
+      {
+        "ea_id": "QM5_1003",
+        "id": 2,
+        "phase": "P2",
+        "priority": 80,
+        "status": "queued",
+        "symbol": "EURUSD.DWX"
+      },
+      {
+        "ea_id": "QM5_1003",
+        "id": 3,
+        "phase": "P2",
+        "priority": 80,
+        "status": "queued",
+        "symbol": "GBPUSD.DWX"
+      },
+      {
+        "ea_id": "QM5_1003",
+        "id": 4,
+        "phase": "P2",
+        "priority": 80,
+        "status": "queued",
+        "symbol": "USDJPY.DWX"
+      },
+      {
+        "ea_id": "QM5_1003",
+        "id": 5,
+        "phase": "P2",
+        "priority": 80,
+        "status": "queued",
+        "symbol": "AUDUSD.DWX"
+      },
+      {
+        "ea_id": "QM5_1003",
+        "id": 6,
+        "phase": "P2",
+        "priority": 80,
+        "status": "queued",
+        "symbol": "USDCAD.DWX"
+      }
+    ],
+    "sqlite": "D:\\QM\\reports\\pipeline\\mt5_queue.db"
+  },
+  "dispatch_state": "D:\\QM\\Reports\\pipeline\\dispatch_state.json",
+  "dry_run": false,
+  "sqlite": "D:\\QM\\reports\\pipeline\\mt5_queue.db",
+  "tick": {
+    "available_slots_after": 0,
+    "available_slots_before": 5,
+    "dry_run": false,
+    "duplicate": 0,
+    "invalid": 0,
+    "no_capacity": 1,
+    "queued_scanned": 8,
+    "scheduled": 5,
+    "status": "ok"
+  },
+  "timestamp_utc": "2026-05-15T10:29:58Z"
+}

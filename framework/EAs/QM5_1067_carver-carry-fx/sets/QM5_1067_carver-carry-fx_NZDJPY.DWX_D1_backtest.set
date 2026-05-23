@@ -1,0 +1,22 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1067
+; ea_slug:      carver-carry-fx
+; ea_version:   v5.0
+; set_version:  s20260517-001
+; symbol:       NZDJPY.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   bca7f51a992852930de119438e457c36a0fb0da515c3d3d210ad188433f84c3f
+; author:       Development
+; date:         2026-05-17
+;==========================================================
+qm_magic_slot_offset=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=not_found

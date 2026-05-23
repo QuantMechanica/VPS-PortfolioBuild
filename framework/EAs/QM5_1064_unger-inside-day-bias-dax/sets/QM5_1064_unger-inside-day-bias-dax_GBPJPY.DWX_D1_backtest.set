@@ -1,0 +1,22 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1064
+; ea_slug:      unger-inside-day-bias-dax
+; ea_version:   v5.0
+; set_version:  s20260517-001
+; symbol:       GBPJPY.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-05-17
+;==========================================================
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=not_found

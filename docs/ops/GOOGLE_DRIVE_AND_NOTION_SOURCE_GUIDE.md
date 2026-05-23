@@ -117,7 +117,7 @@ Correct sequence:
 7. After DST is resolved, move to Paperclip bootstrap
 
 ## Hard Reminders
-- Do not modify T6_Live during onboarding.
+- Do not modify T_Live during onboarding.
 - Do not expose credentials while reading Drive or Notion material.
 - Do not assume that older docs are still valid for V5.
 - If different sources conflict, report the conflict explicitly.

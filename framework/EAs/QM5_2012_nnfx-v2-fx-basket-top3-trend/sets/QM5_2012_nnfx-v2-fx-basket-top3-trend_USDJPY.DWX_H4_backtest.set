@@ -1,0 +1,22 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        2012
+; ea_slug:      nnfx-v2-fx-basket-top3-trend
+; ea_version:   v5.0
+; set_version:  s20260520-001
+; symbol:       USDJPY.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   4
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   0a24d8b62be124dfa5184f49f8b3d78ffd6f6cbac5b7ae930f596926f8788128
+; author:       Development
+; date:         2026-05-20
+;==========================================================
+qm_magic_slot_offset=4
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=not_found

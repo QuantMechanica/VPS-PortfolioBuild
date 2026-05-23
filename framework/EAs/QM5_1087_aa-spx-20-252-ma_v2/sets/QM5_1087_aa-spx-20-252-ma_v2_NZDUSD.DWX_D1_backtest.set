@@ -1,0 +1,22 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1087
+; ea_slug:      aa-spx-20-252-ma_v2
+; ea_version:   v5.0
+; set_version:  s20260518-002
+; symbol:       NZDUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   109
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   c3eed1417fa07d80671427ea50f46fcc9d814d06de0aeee80b7379d3eddfc3a7
+; author:       Development
+; date:         2026-05-18
+;==========================================================
+qm_magic_slot_offset=109
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=alpha_architect_original_source

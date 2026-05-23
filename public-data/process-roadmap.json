@@ -1,115 +1,127 @@
 {
-  "schema_version": 1,
-  "generated_at": "2026-05-09T09:07:04.3602859Z",
-  "total": 18,
-  "items": [
-    {
-      "id": "01-ea-lifecycle",
-      "title": "01-ea-lifecycle",
-      "status": "active",
-      "last_updated_utc": "2026-04-27T14:27:57.0496408Z"
-    },
-    {
-      "id": "02-zt-recovery",
-      "title": "02-zt-recovery",
-      "status": "active",
-      "last_updated_utc": "2026-04-25T14:21:56.2766054Z"
-    },
-    {
-      "id": "03-v-portfolio-deploy",
-      "title": "03-v-portfolio-deploy",
-      "status": "active",
-      "last_updated_utc": "2026-04-30T22:45:34.3586064Z"
-    },
-    {
-      "id": "04-incident-response",
-      "title": "04-incident-response",
-      "status": "active",
-      "last_updated_utc": "2026-04-25T14:21:56.3036750Z"
-    },
-    {
-      "id": "05-dashboard-refresh",
-      "title": "05-dashboard-refresh",
-      "status": "active",
-      "last_updated_utc": "2026-04-25T14:21:56.3157067Z"
-    },
-    {
-      "id": "06-issue-triage",
-      "title": "06-issue-triage",
-      "status": "active",
-      "last_updated_utc": "2026-04-25T14:21:56.3287407Z"
-    },
-    {
-      "id": "07-ceo-cto-dialectic",
-      "title": "07-ceo-cto-dialectic",
-      "status": "active",
-      "last_updated_utc": "2026-04-25T14:21:56.3407722Z"
-    },
-    {
-      "id": "08-daily-operating-rhythm",
-      "title": "08-daily-operating-rhythm",
-      "status": "active",
-      "last_updated_utc": "2026-04-25T14:21:56.3548078Z"
-    },
-    {
-      "id": "09-disaster-recovery",
-      "title": "09-disaster-recovery",
-      "status": "active",
-      "last_updated_utc": "2026-04-25T14:21:56.3688445Z"
-    },
-    {
-      "id": "10-agent-rescope",
-      "title": "10-agent-rescope",
-      "status": "active",
-      "last_updated_utc": "2026-04-25T14:21:56.3888975Z"
-    },
-    {
-      "id": "11-disk-and-sync",
-      "title": "11-disk-and-sync",
-      "status": "active",
-      "last_updated_utc": "2026-04-30T22:40:51.0008051Z"
-    },
-    {
-      "id": "12-board-escalation",
-      "title": "12-board-escalation",
-      "status": "active",
-      "last_updated_utc": "2026-04-29T11:16:08.5384643Z"
-    },
-    {
-      "id": "13-strategy-research",
-      "title": "13-strategy-research",
-      "status": "active",
-      "last_updated_utc": "2026-04-27T14:24:09.7144725Z"
-    },
-    {
-      "id": "15-pipeline-op-load-balancing",
-      "title": "15-pipeline-op-load-balancing",
-      "status": "active",
-      "last_updated_utc": "2026-04-28T04:47:03.4571147Z"
-    },
-    {
-      "id": "16-backtest-execution-discipline",
-      "title": "16-backtest-execution-discipline",
-      "status": "active",
-      "last_updated_utc": "2026-05-01T19:38:41.4784925Z"
-    },
-    {
-      "id": "17-agent-runtime-health",
-      "title": "17-agent-runtime-health",
-      "status": "active",
-      "last_updated_utc": "2026-04-30T22:54:30.5278769Z"
-    },
-    {
-      "id": "process_registry",
-      "title": "process_registry",
-      "status": "active",
-      "last_updated_utc": "2026-05-01T09:00:13.0660203Z"
-    },
-    {
-      "id": "README",
-      "title": "README",
-      "status": "active",
-      "last_updated_utc": "2026-04-30T22:45:34.3586064Z"
-    }
-  ]
+    "schema_version":  1,
+    "generated_at":  "2026-05-22T13:07:02.4264499Z",
+    "total":  20,
+    "items":  [
+                  {
+                      "id":  "01-ea-lifecycle",
+                      "title":  "01-ea-lifecycle",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-04-27T14:27:57.0496408Z"
+                  },
+                  {
+                      "id":  "02-zt-recovery",
+                      "title":  "02-zt-recovery",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-04-25T14:21:56.2766054Z"
+                  },
+                  {
+                      "id":  "03-v-portfolio-deploy",
+                      "title":  "03-v-portfolio-deploy",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-04-30T22:45:34.3586064Z"
+                  },
+                  {
+                      "id":  "04-incident-response",
+                      "title":  "04-incident-response",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-04-25T14:21:56.3036750Z"
+                  },
+                  {
+                      "id":  "05-dashboard-refresh",
+                      "title":  "05-dashboard-refresh",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-04-25T14:21:56.3157067Z"
+                  },
+                  {
+                      "id":  "06-issue-triage",
+                      "title":  "06-issue-triage",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-04-25T14:21:56.3287407Z"
+                  },
+                  {
+                      "id":  "07-ceo-cto-dialectic",
+                      "title":  "07-ceo-cto-dialectic",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-04-25T14:21:56.3407722Z"
+                  },
+                  {
+                      "id":  "08-daily-operating-rhythm",
+                      "title":  "08-daily-operating-rhythm",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-04-25T14:21:56.3548078Z"
+                  },
+                  {
+                      "id":  "09-disaster-recovery",
+                      "title":  "09-disaster-recovery",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-04-25T14:21:56.3688445Z"
+                  },
+                  {
+                      "id":  "10-agent-rescope",
+                      "title":  "10-agent-rescope",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-04-25T14:21:56.3888975Z"
+                  },
+                  {
+                      "id":  "11-disk-and-sync",
+                      "title":  "11-disk-and-sync",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-04-30T22:40:51.0008051Z"
+                  },
+                  {
+                      "id":  "12-board-escalation",
+                      "title":  "12-board-escalation",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-04-29T11:16:08.5384643Z"
+                  },
+                  {
+                      "id":  "13-strategy-research",
+                      "title":  "13-strategy-research",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-04-27T14:24:09.7144725Z"
+                  },
+                  {
+                      "id":  "14-ea-enhancement-loop",
+                      "title":  "14-ea-enhancement-loop",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-05-17T17:48:45.7867431Z"
+                  },
+                  {
+                      "id":  "15-pipeline-op-load-balancing",
+                      "title":  "15-pipeline-op-load-balancing",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-05-21T17:35:10.7107716Z"
+                  },
+                  {
+                      "id":  "16-backtest-execution-discipline",
+                      "title":  "16-backtest-execution-discipline",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-05-21T17:40:33.8272878Z"
+                  },
+                  {
+                      "id":  "17-agent-runtime-health",
+                      "title":  "17-agent-runtime-health",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-04-30T22:54:30.5278769Z"
+                  },
+                  {
+                      "id":  "process_registry",
+                      "title":  "process_registry",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-05-19T13:56:23.4049060Z"
+                  },
+                  {
+                      "id":  "qb_reputable_source_criteria",
+                      "title":  "qb_reputable_source_criteria",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-05-17T17:48:55.3575346Z"
+                  },
+                  {
+                      "id":  "README",
+                      "title":  "README",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-04-30T22:45:34.3586064Z"
+                  }
+              ]
 }

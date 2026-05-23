@@ -1,0 +1,37 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        1143
+; ea_slug:      carver-ewmac-indices-grid
+; ea_version:   v5.0
+; set_version:  s20260517-024
+; symbol:       SP500.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   4
+; risk_mode:    FIXED
+; portfolio_weight: 1.0
+; build_hash:   81b2528f632d13e210412d8536eca29072d494387b0e6a4e18b3ebe9b2575036
+; author:       Development
+; date:         2026-05-17
+;==========================================================
+qm_ea_id=1143
+qm_magic_slot_offset=4
+RISK_PERCENT=0.0
+RISK_FIXED=1000.0
+PORTFOLIO_WEIGHT=1.0
+qm_news_mode=0
+qm_friday_close_enabled=false
+qm_friday_close_hour_broker=21
+strategy_fast_ema_period=64
+strategy_slow_ema_period=256
+strategy_vol_lookback_bars=10
+strategy_rebalance_period_bars=10
+strategy_signal_threshold_min=0.75
+strategy_signal_threshold_max=2.0
+strategy_target_vol_pct=0.18
+strategy_atr_period=14
+strategy_atr_stop_mult=3.0
+strategy_long_only=true
+strategy_regime_filter=false
+strategy_regime_sma_period=200
+strategy_max_spread_points=40

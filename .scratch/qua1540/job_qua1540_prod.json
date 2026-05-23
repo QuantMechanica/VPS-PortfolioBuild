@@ -1,0 +1,10 @@
+{
+  "ea_id": "QM5_1003",
+  "version": "v1",
+  "phase": "P2",
+  "symbol": "EURUSD.DWX",
+  "sub_gate_config_hash": "cfg_qua1540_live_20260515",
+  "setfile_path": "framework/EAs/QM5_1003_example/sets/QM5_1003_example_EURUSD.DWX_H1_backtest.set",
+  "target_terminal": "any",
+  "priority": 50
+}

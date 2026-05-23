@@ -1,0 +1,36 @@
+{
+  "active_terminals": 2,
+  "idle_min_per_terminal": {
+    "T1": 0.0,
+    "T2": 0.0,
+    "T3": 0.0,
+    "T4": 0.0,
+    "T5": 0.0
+  },
+  "mt5_active_count": 2,
+  "queue_counts_after": {
+    "dispatched": 2
+  },
+  "queue_counts_before": {
+    "queued": 2
+  },
+  "queue_delta": {
+    "dispatched": 2,
+    "queued": -2
+  },
+  "queue_depth": 0,
+  "scheduler_summary": {
+    "available_slots_after": 23,
+    "available_slots_before": 25,
+    "dry_run": false,
+    "duplicate": 0,
+    "invalid": 0,
+    "no_capacity": 0,
+    "queued_scanned": 2,
+    "scheduled": 2,
+    "status": "ok"
+  },
+  "throughput_24h_runs": 0,
+  "throughput_runs_per_h": 0.0,
+  "timestamp_utc": "2026-05-15T04:39:14Z"
+}

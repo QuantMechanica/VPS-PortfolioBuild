@@ -3,9 +3,9 @@ param(
     [string[]]$DiskDrives = @('C','D'),
     [int]$DiskWarnGb = 60,
     [int]$DiskCriticalGb = 30,
-    [string[]]$FactoryTerminalRoots = @('D:\QM\mt5\T1', 'D:\QM\mt5\T2', 'D:\QM\mt5\T3', 'D:\QM\mt5\T4', 'D:\QM\mt5\T5'),
+    [string[]]$FactoryTerminalRoots = @('D:\QM\mt5\T1', 'D:\QM\mt5\T2', 'D:\QM\mt5\T3', 'D:\QM\mt5\T4', 'D:\QM\mt5\T5', 'D:\QM\mt5\T6', 'D:\QM\mt5\T7', 'D:\QM\mt5\T8', 'D:\QM\mt5\T9', 'D:\QM\mt5\T10'),
     [string]$FactoryPortableMarkerName = 'portable.txt',
-    [string[]]$T6TerminalRoots = @('C:\QM\mt5\T6_Live', 'C:\QM\mt5\T6_Demo'),
+    [string[]]$T6TerminalRoots = @('C:\QM\mt5\T_Live'),
     [string]$AggregatorStateFile = 'D:\QM\reports\state\last_check_state.json',
     [int]$AggregatorSilentMinutes = 15,
     [string]$DriveLogDir = 'C:\ProgramData\Google\DriveFS\Logs',
@@ -142,34 +142,21 @@ foreach ($root in $FactoryTerminalRoots) {
     }
 }
 
-# T6 isolation/liveness
-$t6Live = @()
-$t6Demo = @()
+# T_Live isolation/liveness (T6_Demo retired 2026-05-19 — single live terminal model)
+$tLive = @()
+$tLiveRoot = ''
 if ($T6TerminalRoots.Count -ge 1) {
-    $liveRoot = [IO.Path]::GetFullPath($T6TerminalRoots[0]).TrimEnd('\\')
-    $t6Live = @($terminalProcs | Where-Object { $_.ExecutablePath -and $_.ExecutablePath.StartsWith($liveRoot, [System.StringComparison]::OrdinalIgnoreCase) })
-}
-if ($T6TerminalRoots.Count -ge 2) {
-    $demoRoot = [IO.Path]::GetFullPath($T6TerminalRoots[1]).TrimEnd('\\')
-    $t6Demo = @($terminalProcs | Where-Object { $_.ExecutablePath -and $_.ExecutablePath.StartsWith($demoRoot, [System.StringComparison]::OrdinalIgnoreCase) })
+    $tLiveRoot = [IO.Path]::GetFullPath($T6TerminalRoots[0]).TrimEnd('\\')
+    $tLive = @($terminalProcs | Where-Object { $_.ExecutablePath -and $_.ExecutablePath.StartsWith($tLiveRoot, [System.StringComparison]::OrdinalIgnoreCase) })
 }
 
-$t6Status = if ($t6Live.Count -gt 0) { 'ok' } else { 'critical' }
-if ($T6TerminalRoots.Count -ge 2 -and (Test-Path -LiteralPath $T6TerminalRoots[1]) -and $t6Demo.Count -eq 0) {
-    if ($t6Status -eq 'ok') { $t6Status = 'warn' }
-}
+$tLiveStatus = if ($tLive.Count -gt 0) { 'ok' } else { 'critical' }
 
 $factoryLeaks = @()
-$t6LiveRoot = ''
-$t6DemoRoot = ''
-if ($T6TerminalRoots.Count -ge 1) { $t6LiveRoot = $T6TerminalRoots[0] }
-if ($T6TerminalRoots.Count -ge 2) { $t6DemoRoot = $T6TerminalRoots[1] }
 
-Add-Check -Name 't6_live_demo_isolation' -Status $t6Status -Meta @{
-    live_root = $t6LiveRoot
-    demo_root = $t6DemoRoot
-    live_pids = @($t6Live | ForEach-Object { $_.ProcessId })
-    demo_pids = @($t6Demo | ForEach-Object { $_.ProcessId })
+Add-Check -Name 't_live_isolation' -Status $tLiveStatus -Meta @{
+    live_root = $tLiveRoot
+    live_pids = @($tLive | ForEach-Object { $_.ProcessId })
     factory_leak_pids = @($factoryLeaks | ForEach-Object { $_.ProcessId })
 }
 

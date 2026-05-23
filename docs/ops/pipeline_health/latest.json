@@ -1,0 +1,65 @@
+{
+  "ts_utc": "2026-05-15T18:00:06.771107+00:00",
+  "mt5": {
+    "active": 0,
+    "total": 5
+  },
+  "backtests_30min": {
+    "minutes": 30,
+    "total_runs": 0,
+    "pass": 0,
+    "fail": 0,
+    "invalid": 0,
+    "fail_rate": 0.0,
+    "top_fail_reasons": []
+  },
+  "sub_agents": [
+    {
+      "name": "P2-Baseline-Runner",
+      "id": "c24c6a8c",
+      "runs_last_2h": 1,
+      "alarm": false
+    },
+    {
+      "name": "Phase-Runner-P3plus",
+      "id": "7aea3c00",
+      "runs_last_2h": 0,
+      "alarm": true
+    },
+    {
+      "name": "Setfile-Engineer",
+      "id": "b4320cc1",
+      "runs_last_2h": 1,
+      "alarm": false
+    },
+    {
+      "name": "Zero-Trades-Specialist",
+      "id": "8ba981d2",
+      "runs_last_2h": 4,
+      "alarm": false
+    },
+    {
+      "name": "Framework-Guardian",
+      "id": "99723fbd",
+      "runs_last_2h": 2,
+      "alarm": false
+    }
+  ],
+  "hop": {
+    "runs_last_hour": 2,
+    "top_issues": [
+      [
+        "?",
+        2
+      ]
+    ],
+    "loop_alarm": false
+  },
+  "alarms": [
+    {
+      "kind": "mt5_underutilized",
+      "severity": "high",
+      "message": "MT5 saturation 0/5 (threshold 2). Pipeline-bottleneck visible."
+    }
+  ]
+}

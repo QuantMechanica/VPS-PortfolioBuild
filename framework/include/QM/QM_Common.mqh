@@ -16,6 +16,7 @@
 #include "QM_TradeManagement.mqh"
 #include "QM_TradeContext.mqh"
 #include "QM_ChartUI.mqh"
+#include "QM_Indicators.mqh"
 
 int  g_qm_fw_ea_id            = 0;
 int  g_qm_fw_magic_slot       = 0;
@@ -54,7 +55,11 @@ bool QM_FrameworkInit(const int ea_id,
                       const double portfolio_weight,
                       const QM_NewsMode news_mode,
                       const bool friday_close_enabled = true,
-                      const int friday_close_hour_broker = 21)
+                      const int friday_close_hour_broker = 21,
+                      const int news_pause_before_minutes = 30,
+                      const int news_pause_after_minutes = 30,
+                      const int news_stale_max_hours = 24 * 14,
+                      const string news_min_impact = "high")
   {
    if(ea_id <= 0)
       return false;
@@ -82,7 +87,11 @@ bool QM_FrameworkInit(const int ea_id,
    if(!QM_RiskSizerConfigure(mode, risk_percent, risk_fixed, portfolio_weight, risk_cap_money))
       return false;
 
-   if(!QM_NewsInit())
+   if(!QM_NewsInit("D:\\QM\\data\\news_calendar",
+                   news_stale_max_hours,
+                   news_pause_before_minutes,
+                   news_pause_after_minutes,
+                   news_min_impact))
      {
       QM_LogEvent(QM_WARN, SETUP_DATA_MISSING, "{\"component\":\"news_calendar\"}");
       if(news_mode != QM_NEWS_OFF)
@@ -185,6 +194,7 @@ void QM_FrameworkShutdown()
      }
 
    QM_ChartUI_Shutdown();
+   QM_IndicatorsShutdown();
    if(g_qm_fw_initialized)
       QM_LogEvent(QM_INFO, "DEINIT", "{}");
    g_qm_fw_initialized = false;

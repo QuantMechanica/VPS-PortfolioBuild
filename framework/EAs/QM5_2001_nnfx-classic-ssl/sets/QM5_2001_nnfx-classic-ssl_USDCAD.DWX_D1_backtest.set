@@ -1,0 +1,30 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        2001
+; ea_slug:      nnfx-classic-ssl
+; ea_version:   v5.0
+; set_version:  s20260519-001
+; symbol:       USDCAD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   29
+; risk_mode:    FIXED
+; portfolio_weight: 1.0
+; build_hash:   ebed2a84dd75ec7fba09068ffa3b1ace6d9b3d3ac063bccbae29e0b4d7811ee8
+; author:       Development
+; date:         2026-05-19
+;==========================================================
+qm_ea_id=2001
+qm_magic_slot_offset=29
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1.0
+qm_news_mode=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+strategy_kijun_period=26
+strategy_ssl_period=10
+strategy_atr_period=14
+strategy_atr_sl_mult=1.5
+strategy_rr=1.5
+strategy_spread_cap_points=0

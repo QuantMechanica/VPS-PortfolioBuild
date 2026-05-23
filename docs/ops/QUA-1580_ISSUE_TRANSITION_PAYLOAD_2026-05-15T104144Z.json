@@ -1,0 +1,17 @@
+{
+  "issue": "QUA-1580",
+  "requested_state": "done",
+  "recommended_state": "done",
+  "resume": true,
+  "summary": "phase_orchestrator producer integration completed and validated (dispatch_state-driven phase progression, jobs-queue enqueue, dedup, blocked-path guard).",
+  "evidence": {
+    "acceptance_receipt": "C:/QM/repo/docs/ops/evidence/QUA-1580_phase_orchestrator_producer_acceptance_2026-05-15T104033Z.md",
+    "producer_script": "C:/QM/repo/framework/scripts/phase_orchestrator.py",
+    "producer_tests": "C:/QM/repo/framework/scripts/tests/test_phase_orchestrator_producer.py",
+    "docs": "C:/QM/repo/framework/scripts/README.md"
+  },
+  "checks": {
+    "producer_suite": "python -m unittest framework.scripts.tests.test_phase_orchestrator_producer => OK (6 tests)",
+    "regression_suite": "python -m unittest framework.scripts.tests.test_phase_orchestrator_producer framework.scripts.tests.test_gate_evaluator framework.scripts.tests.test_mt5_queue_enqueue framework.scripts.tests.test_mt5_saturation_scheduler => OK (20 tests)"
+  }
+}

@@ -1,0 +1,7 @@
+[
+  {
+    "timestamp_utc": "2026-05-09T09:20:04.085513+00:00",
+    "reason": "smtp",
+    "exception": "SMTPAuthenticationError(535, b'5.7.8 Username and Password not accepted. For more information, go to\\n5.7.8  https://support.google.com/mail/?p=BadCredentials 38308e7fff4ca-393f60db673sm10786061fa.23 - gsmtp')"
+  }
+]

@@ -88,3 +88,199 @@ python framework/scripts/resolve_backtest_target.py `
 Expected matrix state path after completion:
 - `dispatch_state.json -> phase_matrix_index["<ea_id>_<version>_<phase>"]`
 - Fields: `matrix[]`, `phase_verdict`, `next_strategy_unblocked`
+
+## MT5 Multi-EA Saturation Scheduler (SQLite queue adapter)
+
+Deterministic one-tick scheduler that reads `mt5_job_queue` rows with `status='queued'` and dispatches into available T1-T5 capacity via `resolve_target_terminal` / `dispatch_state.json`.
+
+```powershell
+python framework/scripts/mt5_saturation_scheduler.py `
+  --sqlite D:\QM\reports\pipeline\mt5_queue.db `
+  --dispatch-state D:\QM\Reports\pipeline\dispatch_state.json `
+  --max-per-terminal 3 `
+  --scan-limit 500
+```
+
+Dry-run mode (no DB/state writes):
+
+```powershell
+python framework/scripts/mt5_saturation_scheduler.py `
+  --sqlite D:\QM\reports\pipeline\mt5_queue.db `
+  --dispatch-state D:\QM\Reports\pipeline\dispatch_state.json `
+  --dry-run
+```
+
+Queue rows scheduled successfully are marked `status='dispatched'` with `assigned_terminal`, `dispatch_decision`, and `dedup_key`.
+
+## MT5 Worker-Pool Queue Init (jobs + heartbeat schema)
+
+Create/update the worker-pool queue schema idempotently:
+
+```powershell
+python framework/scripts/queue_init.py `
+  --sqlite D:\QM\reports\pipeline\mt5_queue.db
+```
+
+Expected output:
+- JSON summary with `status=ok` and `sqlite=<path>`.
+
+## MT5 Single Worker Prototype (claim-based)
+
+Run one deterministic claim/execute cycle on a specific terminal:
+
+```powershell
+python framework/scripts/mt5_worker.py `
+  --terminal T1 `
+  --sqlite D:\QM\reports\pipeline\mt5_queue.db `
+  --once
+```
+
+Notes:
+- `--terminal` accepts `T1..T5` only (`T6` is rejected with exit code `2`).
+- Worker updates `worker_heartbeat`, claims the next `jobs.status='queued'` row atomically, then marks `done`/`failed`.
+
+## MT5 Queue Status Snapshot (worker heartbeat surface)
+
+Read a compact status snapshot from `mt5_queue.db`:
+
+```powershell
+python framework/scripts/mt5_queue_status.py `
+  --sqlite D:\QM\reports\pipeline\mt5_queue.db `
+  --limit 5
+```
+
+Expected output keys:
+- `schema`: `worker_pool` (canonical `jobs + worker_heartbeat`) or `legacy_saturation` (`mt5_job_queue` fallback).
+- `counts`: grouped job counts by `status`.
+- `queued_top`: top queued rows.
+- `dispatched_top`: active claimed/running rows (worker schema) or dispatched rows (legacy schema).
+- `worker_heartbeat_top`: latest worker heartbeats (`terminal_id`, `last_seen_utc`, `current_job_id`, `jobs_completed`, `last_error`) when worker schema is present.
+
+## Enqueue MT5 Queue Rows (deterministic producer helper)
+
+Use this when `mt5_queue.db` has no queued rows and you need to drive a scheduler tick without manual SQL.
+
+```powershell
+python framework/scripts/mt5_queue_enqueue.py `
+  --sqlite D:\QM\reports\pipeline\mt5_queue.db `
+  --job-json C:\QM\repo\.scratch\job_qm5_1003_p2.json
+```
+
+Expected output:
+- JSON summary with `status=ok`, `inserted`, and `inserted_ids`.
+
+## Phase Orchestrator Producer (P2 -> jobs queue)
+
+`phase_orchestrator.py` is the producer for worker-pool phases. For `P2`, `--execute`
+now enqueues rows into the canonical `jobs` table in `mt5_queue.db` (worker schema),
+instead of launching `p2_baseline.py` directly.
+
+```powershell
+python framework/scripts/phase_orchestrator.py `
+  --ea QM5_1003 `
+  --execute `
+  --dispatch-state D:\QM\Reports\pipeline\dispatch_state.json `
+  --queue-sqlite D:\QM\reports\pipeline\mt5_queue.db `
+  --json
+```
+
+Deterministic dry-run (no queue writes):
+
+```powershell
+python framework/scripts/phase_orchestrator.py `
+  --ea QM5_1003 `
+  --dry-run `
+  --dispatch-state D:\QM\Reports\pipeline\dispatch_state.json `
+  --queue-sqlite D:\QM\reports\pipeline\mt5_queue.db `
+  --json
+```
+
+Optional override for evidence-root decisions (testing / controlled ops):
+
+```powershell
+python framework/scripts/phase_orchestrator.py `
+  --ea QM5_1003 `
+  --execute `
+  --dispatch-state D:\QM\Reports\pipeline\dispatch_state.json `
+  --pipeline-root D:\QM\reports\pipeline `
+  --queue-sqlite D:\QM\reports\pipeline\mt5_queue.db `
+  --json
+```
+
+Phase selection source-of-truth:
+- Orchestrator reads `dispatch_state.json -> phase_matrix_index` first for per-EA progression (`PASS` / `FAIL_*`).
+- If no usable dispatch verdict exists for the EA, it falls back to report/result-file verdict discovery under `pipeline-root`.
+
+## One-shot MT5 Saturation Evidence Bundle
+
+Capture `before -> scheduler tick -> after` queue state in one artifact:
+
+```powershell
+python framework/scripts/mt5_saturation_evidence_once.py `
+  --sqlite D:\QM\reports\pipeline\mt5_queue.db `
+  --dispatch-state D:\QM\Reports\pipeline\dispatch_state.json `
+  --out D:\QM\reports\pipeline\mt5_saturation_evidence_once_<timestamp>.json
+```
+
+Expected artifact keys:
+- `before`
+- `tick`
+- `after`
+
+## Gate Evaluator (worker-pool verdict processor)
+
+Evaluates `jobs` rows where `status='done'` and `verdict_processed_at IS NULL`, then performs:
+- PASS gate checks from `framework/registry/tester_defaults.json`
+- PASS roll-forward (`gen_setfile.ps1` + `deploy_ea_to_all_terminals.ps1`) + next-phase enqueue
+- infra FAIL/INVALID retry handling (`no_summary_json:rc=1`, `REPORT_MISSING`, `missing_verdict`)
+- strategy FAIL (`MIN_TRADES_NOT_MET`) escalation issue for Zero-Trades-Specialist
+
+Scheduled Task target (ops): `QM_GateEvaluator_5min` (S4U), every 5 minutes.
+
+```powershell
+python framework/scripts/gate_evaluator.py `
+  --sqlite D:\QM\reports\pipeline\mt5_queue.db `
+  --max-retries 3 `
+  --limit 200 `
+  --paperclip-base http://127.0.0.1:3100 `
+  --company-id 03d4dcc8-4cea-4133-9f68-90c0d99628fb `
+  --project-id 71b6d994-70ba-4a28-bd62-732b42a9ea58
+```
+
+Dry-run (no DB writes, no issue creation, no roll-forward side effects):
+
+```powershell
+python framework/scripts/gate_evaluator.py `
+  --sqlite D:\QM\reports\pipeline\mt5_queue.db `
+  --dry-run
+```
+
+Template override for zero-trades dispatch body:
+
+```powershell
+python framework/scripts/gate_evaluator.py `
+  --sqlite D:\QM\reports\pipeline\mt5_queue.db `
+  --zero-trades-template C:\QM\repo\framework\registry\zero_trades_dispatch_template.md
+```
+
+Create/update Scheduled Task (deterministic helper):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File framework/scripts/register_qm_gate_evaluator_task.ps1 `
+  -TaskName QM_GateEvaluator_5min `
+  -RepoRoot C:\QM\repo `
+  -QueueDbPath D:\QM\reports\pipeline\mt5_queue.db
+```
+
+Expected output:
+- JSON payload with `task_name`, `state`, `last_run_time`, `last_task_result`, and effective command line.
+
+Dry-run preflight (no task registration/update):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File framework/scripts/register_qm_gate_evaluator_task.ps1 `
+  -TaskName QM_GateEvaluator_5min `
+  -RepoRoot C:\QM\repo `
+  -QueueDbPath D:\QM\reports\pipeline\mt5_queue.db `
+  -DryRun
+```

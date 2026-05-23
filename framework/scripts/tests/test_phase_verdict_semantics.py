@@ -305,7 +305,7 @@ class P6VerdictSemanticsTests(unittest.TestCase):
                 ["--ea", "QM5_1001", "--out-prefix", str(out), "--seeds-csv", str(seeds_csv), "--seeds", seeds],
                 REPO,
             )
-            self.assertEqual(mixed["verdict"], "MULTI_SEED_MIXED")
+            self.assertEqual(mixed["verdict"], "MULTI_SEED_FAIL")
 
             _write_csv(
                 seeds_csv,

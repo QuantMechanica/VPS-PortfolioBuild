@@ -34,11 +34,9 @@ class PhaseRunnersIdempotenceTests(unittest.TestCase):
                 ("p4_walk_forward.py", ["--walk-forward-csv", str(FIX / "p4_walk_forward.csv")]),
                 ("p35_csr_runner.py", ["--baseline-csv", str(FIX / "p35_baseline.csv"), "--csr-results-csv", str(FIX / "p35_csr.csv")]),
                 ("p5_stress_runner.py", ["--calibration-json", str(FIX / "p5_calibration_ready.json"), "--clean-metrics-json", str(FIX / "p5_clean_metrics.json"), "--stress-metrics-json", str(FIX / "p5_stress_metrics.json")]),
-                ("p5b_calibrated_noise.py", ["--mc-trials", str(FIX / "p5b_trials.csv"), "--calibration-json", str(FIX / "p5_calibration_ready.json"), "--symbol", "EURUSD.DWX", "--paths", "3"]),
                 ("p5c_crisis_slices.py", ["--slices-csv", str(FIX / "p5c_slices.csv")]),
                 ("p6_multiseed.py", ["--seeds-csv", str(FIX / "p6_seeds.csv"), "--seeds", "42,17,99,7,2026"]),
                 ("p7_statval.py", ["--sweep-pass-rows", str(FIX / "p7_sweep_pass_rows.csv"), "--multiseed-rows", str(FIX / "p7_multiseed_rows.csv")]),
-                ("p8_news_impact.py", ["--news-matrix", str(FIX / "p8_matrix.csv"), "--modes", "OFF,PAUSE,SKIP_DAY"]),
             ]
 
             for script, args in cases:

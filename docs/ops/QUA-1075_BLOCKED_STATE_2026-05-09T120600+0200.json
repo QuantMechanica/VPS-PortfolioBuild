@@ -1,0 +1,36 @@
+{
+  "issue": "QUA-1075",
+  "timestamp": "2026-05-09T12:06:00+02:00",
+  "status": "blocked",
+  "card_id": "SRC04_S08",
+  "ea_id": "QM5_1014",
+  "blocker": {
+    "owner": "Development/CTO",
+    "action": "build_compile_setfiles_then_p2",
+    "details": [
+      "Create framework/EAs/QM5_1014_lien_channels/QM5_1014_lien_channels.mq5",
+      "Compile .ex5 artifact",
+      "Generate baseline setfiles",
+      "Run P2 baseline and produce PASS symbols"
+    ]
+  },
+  "guards": {
+    "p2_guard": {
+      "status": "error",
+      "next_action": "build_ea_first",
+      "ea_dir_exists": false,
+      "ex5_exists": false,
+      "sets_dir_exists": false,
+      "setfile_count": 0,
+      "p2_dir_exists": false,
+      "recent_report_count": 0
+    },
+    "p3_guard": {
+      "status": "error",
+      "next_action": "stop_no_p2_pass_symbols",
+      "p2_report_exists": false,
+      "p2_pass_symbol_count": 0
+    }
+  },
+  "next_pipeline_operator_action": "run_p3_param_sweep_after_unblock"
+}

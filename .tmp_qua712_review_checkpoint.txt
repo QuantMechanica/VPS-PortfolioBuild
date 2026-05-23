@@ -1,0 +1,5 @@
+2026-05-09T14:17:18.7415781Z
+issue=QUA-712
+state=review_closeout_only
+instruction=No automated continuation comments without new substantive evidence or explicit reopen.
+continuation_needed_checkpoint=2026-05-09T14:17:47.2753077Z

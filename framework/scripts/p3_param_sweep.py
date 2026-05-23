@@ -8,6 +8,7 @@ import argparse
 import csv
 import itertools
 import json
+import os
 import re
 import subprocess
 import sys
@@ -22,7 +23,8 @@ from framework.scripts.pipeline_dispatcher import (
     save_dispatch_state,
 )
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+# Canonical source of truth — DL-062 + DL-028.
+REPO_ROOT = Path(os.environ.get("QM_REPO_ROOT", r"C:\QM\repo"))
 EA_ROOT = REPO_ROOT / "framework" / "EAs"
 RUN_SMOKE_PS1 = REPO_ROOT / "framework" / "scripts" / "run_smoke.ps1"
 DEFAULT_OUT_PREFIX = Path(r"D:\QM\reports\pipeline")
@@ -43,6 +45,11 @@ def derive_numeric_ea_id(ea_label: str) -> int:
     if not m:
         raise SystemExit(f"[FATAL] unsupported EA label format: {ea_label}")
     return int(m.group(1))
+
+
+def canonical_dispatch_ea_id(ea_id: int) -> str:
+    """Use the canonical EA label in dispatcher keys/state to avoid key-shape drift."""
+    return f"QM5_{ea_id}"
 
 
 def setfile_for(ea_dir: Path, symbol: str, period: str) -> Path:
@@ -80,6 +87,7 @@ def invoke_run_smoke(
     symbol: str,
     year: int,
     period: str,
+    run_id: str,
     setfile: Path,
     report_root: Path,
     timeout_sec: int,
@@ -93,6 +101,9 @@ def invoke_run_smoke(
         "-Year", str(year),
         "-Terminal", terminal,
         "-Period", period,
+        "-DispatchSubGateHash", f"{period}_{run_id}",
+        "-DispatchPhase", "P3",
+        "-DispatchVersion", "p3_sweep",
         "-Runs", "2",
         "-MinTrades", "20",
         "-Model", "4",
@@ -101,7 +112,8 @@ def invoke_run_smoke(
         "-AllowMissingRealTicksLogMarker",
         "-TimeoutSeconds", str(timeout_sec),
     ]
-    return subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+    return subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, creationflags=creationflags)
 
 
 def reserve_terminal(
@@ -115,7 +127,7 @@ def reserve_terminal(
 ) -> str | None:
     state = load_dispatch_state(state_path)
     job = {
-        "ea_id": str(ea_id),
+        "ea_id": canonical_dispatch_ea_id(ea_id),
         "version": "p3_sweep",
         "symbol": symbol,
         "phase": "P3",
@@ -142,7 +154,7 @@ def release_terminal(
 ) -> None:
     state = load_dispatch_state(state_path)
     job = {
-        "ea_id": str(ea_id),
+        "ea_id": canonical_dispatch_ea_id(ea_id),
         "version": "p3_sweep",
         "symbol": symbol,
         "phase": "P3",
@@ -291,9 +303,9 @@ def main() -> int:
                 ea_id=ea_id,
                 symbol=symbol,
                 period=period,
+                run_id=run_id,
                 setfile=temp_set,
                 state_path=dispatch_state_path,
-                run_id=run_id,
             )
             if not terminal:
                 break
@@ -304,6 +316,7 @@ def main() -> int:
                 symbol=symbol,
                 year=args.year,
                 period=period,
+                run_id=run_id,
                 setfile=temp_set,
                 report_root=report_root_phase,
                 timeout_sec=args.timeout,

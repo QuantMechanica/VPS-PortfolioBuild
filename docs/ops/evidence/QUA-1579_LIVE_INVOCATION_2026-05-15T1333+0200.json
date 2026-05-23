@@ -1,0 +1,29 @@
+{
+  "issue": "QUA-1579",
+  "captured_at": "2026-05-15T13:33:44.3649977+02:00",
+  "invocation": {
+    "cmd": "python framework/scripts/gate_evaluator.py --sqlite D:\\QM\\reports\\pipeline\\mt5_queue.db --max-retries 3 --limit 200 --paperclip-base http://127.0.0.1:3100 --company-id 03d4dcc8-4cea-4133-9f68-90c0d99628fb --project-id 71b6d994-70ba-4a28-bd62-732b42a9ea58",
+    "output": {
+      "blocked_strategy_count": 0,
+      "escalations_created": 0,
+      "failed_terminal_count": 0,
+      "pass_count": 0,
+      "pass_gate_failed_count": 0,
+      "processed": 0,
+      "requeued_count": 0,
+      "rollforward_failed_count": 0
+    }
+  },
+  "scheduler": {
+    "task_name": "QM_GateEvaluator_5min",
+    "state": "Ready",
+    "last_run_time": "2026-05-15T13:30:30.0000000+02:00",
+    "last_task_result": 0,
+    "next_run_time": "2026-05-15T13:35:35.0000000+02:00"
+  },
+  "queue_counts": {
+    "done": 2,
+    "failed": 19
+  }
+}
+

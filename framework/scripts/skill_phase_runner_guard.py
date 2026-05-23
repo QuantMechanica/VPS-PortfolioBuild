@@ -5,9 +5,11 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import os
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+# Canonical source of truth — DL-062 + DL-028.
+REPO_ROOT = Path(os.environ.get("QM_REPO_ROOT", r"C:\QM\repo"))
 EA_ROOT = REPO_ROOT / "framework" / "EAs"
 MAGIC_CSV = REPO_ROOT / "framework" / "registry" / "magic_numbers.csv"
 VALID_PHASES = {"P3.5", "P5", "P5b", "P5c", "P6", "P7", "P8"}

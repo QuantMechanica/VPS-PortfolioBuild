@@ -1,0 +1,126 @@
+{
+  "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_2001_nnfx-classic-ssl\\QM5_2001_nnfx-classic-ssl.ex5",
+  "file_name": "QM5_2001_nnfx-classic-ssl.ex5",
+  "deployed_at_local": "2026-05-22T08:46:33.6118955+02:00",
+  "terminal_roots": [
+    "D:\\QM\\mt5\\T1",
+    "D:\\QM\\mt5\\T2",
+    "D:\\QM\\mt5\\T3",
+    "D:\\QM\\mt5\\T4",
+    "D:\\QM\\mt5\\T5",
+    "D:\\QM\\mt5\\T6",
+    "D:\\QM\\mt5\\T7",
+    "D:\\QM\\mt5\\T8",
+    "D:\\QM\\mt5\\T9",
+    "D:\\QM\\mt5\\T10"
+  ],
+  "status_counts": [
+    {
+      "status": "updated",
+      "count": 10
+    }
+  ],
+  "files": [
+    {
+      "terminal": "T1",
+      "status": "updated",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_2001_nnfx-classic-ssl\\QM5_2001_nnfx-classic-ssl.ex5",
+      "destination_path": "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_2001_nnfx-classic-ssl.ex5",
+      "source_hash_sha256": "DEFA21C6A72F5FADA34F4ED10AC429F6C218722B44671143223BD0D8E185611A",
+      "destination_hash_before_sha256": "32E066FFC4E2426F4C3E4E5ABDB9F2C1CB7612B81A5118C3E91880D47C7E63F2",
+      "destination_hash_after_sha256": "DEFA21C6A72F5FADA34F4ED10AC429F6C218722B44671143223BD0D8E185611A",
+      "hash_match": true
+    },
+    {
+      "terminal": "T2",
+      "status": "updated",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_2001_nnfx-classic-ssl\\QM5_2001_nnfx-classic-ssl.ex5",
+      "destination_path": "D:\\QM\\mt5\\T2\\MQL5\\Experts\\QM\\QM5_2001_nnfx-classic-ssl.ex5",
+      "source_hash_sha256": "DEFA21C6A72F5FADA34F4ED10AC429F6C218722B44671143223BD0D8E185611A",
+      "destination_hash_before_sha256": "32E066FFC4E2426F4C3E4E5ABDB9F2C1CB7612B81A5118C3E91880D47C7E63F2",
+      "destination_hash_after_sha256": "DEFA21C6A72F5FADA34F4ED10AC429F6C218722B44671143223BD0D8E185611A",
+      "hash_match": true
+    },
+    {
+      "terminal": "T3",
+      "status": "updated",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_2001_nnfx-classic-ssl\\QM5_2001_nnfx-classic-ssl.ex5",
+      "destination_path": "D:\\QM\\mt5\\T3\\MQL5\\Experts\\QM\\QM5_2001_nnfx-classic-ssl.ex5",
+      "source_hash_sha256": "DEFA21C6A72F5FADA34F4ED10AC429F6C218722B44671143223BD0D8E185611A",
+      "destination_hash_before_sha256": "32E066FFC4E2426F4C3E4E5ABDB9F2C1CB7612B81A5118C3E91880D47C7E63F2",
+      "destination_hash_after_sha256": "DEFA21C6A72F5FADA34F4ED10AC429F6C218722B44671143223BD0D8E185611A",
+      "hash_match": true
+    },
+    {
+      "terminal": "T4",
+      "status": "updated",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_2001_nnfx-classic-ssl\\QM5_2001_nnfx-classic-ssl.ex5",
+      "destination_path": "D:\\QM\\mt5\\T4\\MQL5\\Experts\\QM\\QM5_2001_nnfx-classic-ssl.ex5",
+      "source_hash_sha256": "DEFA21C6A72F5FADA34F4ED10AC429F6C218722B44671143223BD0D8E185611A",
+      "destination_hash_before_sha256": "32E066FFC4E2426F4C3E4E5ABDB9F2C1CB7612B81A5118C3E91880D47C7E63F2",
+      "destination_hash_after_sha256": "DEFA21C6A72F5FADA34F4ED10AC429F6C218722B44671143223BD0D8E185611A",
+      "hash_match": true
+    },
+    {
+      "terminal": "T5",
+      "status": "updated",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_2001_nnfx-classic-ssl\\QM5_2001_nnfx-classic-ssl.ex5",
+      "destination_path": "D:\\QM\\mt5\\T5\\MQL5\\Experts\\QM\\QM5_2001_nnfx-classic-ssl.ex5",
+      "source_hash_sha256": "DEFA21C6A72F5FADA34F4ED10AC429F6C218722B44671143223BD0D8E185611A",
+      "destination_hash_before_sha256": "32E066FFC4E2426F4C3E4E5ABDB9F2C1CB7612B81A5118C3E91880D47C7E63F2",
+      "destination_hash_after_sha256": "DEFA21C6A72F5FADA34F4ED10AC429F6C218722B44671143223BD0D8E185611A",
+      "hash_match": true
+    },
+    {
+      "terminal": "T6",
+      "status": "updated",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_2001_nnfx-classic-ssl\\QM5_2001_nnfx-classic-ssl.ex5",
+      "destination_path": "D:\\QM\\mt5\\T6\\MQL5\\Experts\\QM\\QM5_2001_nnfx-classic-ssl.ex5",
+      "source_hash_sha256": "DEFA21C6A72F5FADA34F4ED10AC429F6C218722B44671143223BD0D8E185611A",
+      "destination_hash_before_sha256": "32E066FFC4E2426F4C3E4E5ABDB9F2C1CB7612B81A5118C3E91880D47C7E63F2",
+      "destination_hash_after_sha256": "DEFA21C6A72F5FADA34F4ED10AC429F6C218722B44671143223BD0D8E185611A",
+      "hash_match": true
+    },
+    {
+      "terminal": "T7",
+      "status": "updated",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_2001_nnfx-classic-ssl\\QM5_2001_nnfx-classic-ssl.ex5",
+      "destination_path": "D:\\QM\\mt5\\T7\\MQL5\\Experts\\QM\\QM5_2001_nnfx-classic-ssl.ex5",
+      "source_hash_sha256": "DEFA21C6A72F5FADA34F4ED10AC429F6C218722B44671143223BD0D8E185611A",
+      "destination_hash_before_sha256": "32E066FFC4E2426F4C3E4E5ABDB9F2C1CB7612B81A5118C3E91880D47C7E63F2",
+      "destination_hash_after_sha256": "DEFA21C6A72F5FADA34F4ED10AC429F6C218722B44671143223BD0D8E185611A",
+      "hash_match": true
+    },
+    {
+      "terminal": "T8",
+      "status": "updated",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_2001_nnfx-classic-ssl\\QM5_2001_nnfx-classic-ssl.ex5",
+      "destination_path": "D:\\QM\\mt5\\T8\\MQL5\\Experts\\QM\\QM5_2001_nnfx-classic-ssl.ex5",
+      "source_hash_sha256": "DEFA21C6A72F5FADA34F4ED10AC429F6C218722B44671143223BD0D8E185611A",
+      "destination_hash_before_sha256": "32E066FFC4E2426F4C3E4E5ABDB9F2C1CB7612B81A5118C3E91880D47C7E63F2",
+      "destination_hash_after_sha256": "DEFA21C6A72F5FADA34F4ED10AC429F6C218722B44671143223BD0D8E185611A",
+      "hash_match": true
+    },
+    {
+      "terminal": "T9",
+      "status": "updated",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_2001_nnfx-classic-ssl\\QM5_2001_nnfx-classic-ssl.ex5",
+      "destination_path": "D:\\QM\\mt5\\T9\\MQL5\\Experts\\QM\\QM5_2001_nnfx-classic-ssl.ex5",
+      "source_hash_sha256": "DEFA21C6A72F5FADA34F4ED10AC429F6C218722B44671143223BD0D8E185611A",
+      "destination_hash_before_sha256": "32E066FFC4E2426F4C3E4E5ABDB9F2C1CB7612B81A5118C3E91880D47C7E63F2",
+      "destination_hash_after_sha256": "DEFA21C6A72F5FADA34F4ED10AC429F6C218722B44671143223BD0D8E185611A",
+      "hash_match": true
+    },
+    {
+      "terminal": "T10",
+      "status": "updated",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_2001_nnfx-classic-ssl\\QM5_2001_nnfx-classic-ssl.ex5",
+      "destination_path": "D:\\QM\\mt5\\T10\\MQL5\\Experts\\QM\\QM5_2001_nnfx-classic-ssl.ex5",
+      "source_hash_sha256": "DEFA21C6A72F5FADA34F4ED10AC429F6C218722B44671143223BD0D8E185611A",
+      "destination_hash_before_sha256": "32E066FFC4E2426F4C3E4E5ABDB9F2C1CB7612B81A5118C3E91880D47C7E63F2",
+      "destination_hash_after_sha256": "DEFA21C6A72F5FADA34F4ED10AC429F6C218722B44671143223BD0D8E185611A",
+      "hash_match": true
+    }
+  ],
+  "all_hashes_match": true
+}

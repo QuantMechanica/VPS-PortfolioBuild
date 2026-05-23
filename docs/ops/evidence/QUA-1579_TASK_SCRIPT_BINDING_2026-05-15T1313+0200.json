@@ -1,0 +1,9 @@
+{
+  "issue": "QUA-1579",
+  "task_name": "QM_GateEvaluator_5min",
+  "script_path": "C:\\QM\\repo\\framework\\scripts\\gate_evaluator.py",
+  "script_sha256": "6ab7055dbe1edd8eda4611f8a5730b39b627c55f471f42851b6d22a8618d8792",
+  "execute": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+  "arguments": "\"C:\\QM\\repo\\framework\\scripts\\gate_evaluator.py\" --sqlite \"D:\\QM\\reports\\pipeline\\mt5_queue.db\" --max-retries 3 --limit 200 --paperclip-base \"http://127.0.0.1:3100\" --company-id \"03d4dcc8-4cea-4133-9f68-90c0d99628fb\" --project-id \"71b6d994-70ba-4a28-bd62-732b42a9ea58\"",
+  "working_directory": "C:\\QM\\repo"
+}

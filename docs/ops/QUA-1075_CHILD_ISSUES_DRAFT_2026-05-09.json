@@ -1,0 +1,37 @@
+{
+  "parent_issue": "QUA-1075",
+  "created_at": "2026-05-09T12:09:00+02:00",
+  "children": [
+    {
+      "key": "QUA-1075-P0",
+      "title": "P0 Build QM5_1014 lien-channels",
+      "owner": "Development/CTO",
+      "body": "Build and compile framework/EAs/QM5_1014_lien_channels/QM5_1014_lien_channels.mq5 from strategy-seeds/cards/lien-channels_card.md section 8 defaults. Deliver .ex5 and compile log evidence.",
+      "acceptance": [
+        "mq5 exists",
+        "ex5 exists",
+        "compile log shows 0 errors"
+      ]
+    },
+    {
+      "key": "QUA-1075-P1",
+      "title": "P1 Smoke QM5_1014 on Lien worked pairs",
+      "owner": "Pipeline-Operator",
+      "body": "Run smoke for USDCAD.DWX M15 and EURGBP.DWX M15 once P0 artifacts exist. Publish summary.json/log paths.",
+      "acceptance": [
+        "2 smoke runs executed",
+        "summary artifacts saved under D:/QM/reports/smoke/QM5_1014"
+      ]
+    },
+    {
+      "key": "QUA-1075-P2",
+      "title": "P2 Baseline QM5_1014 queue cohort",
+      "owner": "Pipeline-Operator",
+      "body": "Run baseline on 8 symbols x 5 timeframes from tools/ops/p3_next_candidates_queue.json using 5-terminal saturation profile. Publish report.csv and p2 result json.",
+      "acceptance": [
+        "D:/QM/reports/pipeline/QM5_1014/P2/report.csv exists",
+        "D:/QM/reports/pipeline/QM5_1014/P2/p2_QM5_1014_result.json exists"
+      ]
+    }
+  ]
+}

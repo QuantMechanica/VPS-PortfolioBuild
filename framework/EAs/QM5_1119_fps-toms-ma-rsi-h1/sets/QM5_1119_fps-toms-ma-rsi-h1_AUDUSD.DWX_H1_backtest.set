@@ -1,0 +1,22 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1119
+; ea_slug:      fps-toms-ma-rsi-h1
+; ea_version:   v5.0
+; set_version:  s20260519-001
+; symbol:       AUDUSD.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   3
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   6a98c2e5c35b56d30c09ad5e704f78b257794a482a3ea11a55c01276ef1bf7b1
+; author:       Development
+; date:         2026-05-19
+;==========================================================
+qm_magic_slot_offset=3
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=not_found

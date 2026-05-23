@@ -1,0 +1,31 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        2005
+; ea_slug:      nnfx-donchian-flow
+; ea_version:   v5.0
+; set_version:  s20260519-001
+; symbol:       NDX.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   22
+; risk_mode:    FIXED
+; portfolio_weight: 1.0
+; build_hash:   afb6393a8875372153c016897a5dcbbe79dee10dbdb3b6b0af3709a95a1c72f8
+; author:       Development
+; date:         2026-05-19
+;==========================================================
+qm_ea_id=2005
+qm_magic_slot_offset=22
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1.0
+qm_news_mode=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+strategy_donchian_period=20
+strategy_aroon_period=14
+strategy_mfi_period=14
+strategy_atr_period=14
+strategy_atr_sl_mult=1.5
+strategy_rr=1.5
+strategy_spread_cap_points=0

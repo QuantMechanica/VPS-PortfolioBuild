@@ -1,0 +1,29 @@
+{
+  "symbols": [
+    {
+      "pf": 1.23,
+      "symbol": "EURUSD.DWX",
+      "trade_count": 100
+    },
+    {
+      "pf": 1.23,
+      "symbol": "GBPUSD.DWX",
+      "trade_count": 100
+    },
+    {
+      "pf": 1.23,
+      "symbol": "USDJPY.DWX",
+      "trade_count": 100
+    },
+    {
+      "pf": 1.23,
+      "symbol": "AUDUSD.DWX",
+      "trade_count": 100
+    },
+    {
+      "pf": 1.23,
+      "symbol": "USDCAD.DWX",
+      "trade_count": 100
+    }
+  ]
+}

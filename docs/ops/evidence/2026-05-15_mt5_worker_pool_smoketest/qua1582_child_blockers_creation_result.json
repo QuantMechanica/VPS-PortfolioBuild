@@ -1,0 +1,41 @@
+{
+  "created": [
+    {
+      "id": "f643e74e-6b49-4449-9c5c-db84348e01bd",
+      "identifier": "QUA-1584"
+    },
+    {
+      "id": "3c161283-40b5-40a2-bef5-aa96be798d37",
+      "identifier": "QUA-1585"
+    },
+    {
+      "id": "187dc6d2-f647-4d96-b32f-5abf35fa45c9",
+      "identifier": "QUA-1586"
+    }
+  ],
+  "parent_patch_attempts": [
+    {
+      "id": "f643e74e-6b49-4449-9c5c-db84348e01bd",
+      "ok": true,
+      "parentId": "bcd7ba77-d8f6-4557-b54e-3af0204f6438"
+    },
+    {
+      "id": "3c161283-40b5-40a2-bef5-aa96be798d37",
+      "ok": true,
+      "parentId": "bcd7ba77-d8f6-4557-b54e-3af0204f6438"
+    },
+    {
+      "id": "187dc6d2-f647-4d96-b32f-5abf35fa45c9",
+      "ok": true,
+      "parentId": "bcd7ba77-d8f6-4557-b54e-3af0204f6438"
+    }
+  ],
+  "parent_update": {
+    "status": "blocked",
+    "blockedByIssueIds": null,
+    "raw_error": null
+  },
+  "comment_id": "7ddd49be-6e08-4b24-93ca-2f50510fffe9",
+  "parent_snapshot_status": "blocked",
+  "parent_snapshot_blockedByIssueIds": null
+}

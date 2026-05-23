@@ -17,6 +17,10 @@ REQUIRED_BY_TEMPLATE = {
     "strategies": ("id", "slug", "title"),
 }
 
+META_FILE_PREFIXES = ("_",)
+TEMPLATE_NAME_PREFIX = "_template "
+NODE_DIRS = {"strategies", "sources", "concepts", "indicators"}
+
 
 @dataclass
 class Violation:
@@ -44,11 +48,42 @@ def link_target(raw: str) -> str:
     return Path(base).name.lower()
 
 
+def is_meta_file(path: Path) -> bool:
+    stem = path.stem.lower()
+    return stem.startswith(META_FILE_PREFIXES) or stem.startswith(TEMPLATE_NAME_PREFIX)
+
+
+def is_wiki_node(path: Path, vault: Path) -> bool:
+    if is_meta_file(path):
+        return False
+    try:
+        rel = path.relative_to(vault)
+    except ValueError:
+        return False
+    return len(rel.parts) >= 2 and rel.parts[0].lower() in NODE_DIRS
+
+
+def heading_title(text: str) -> str:
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("# "):
+            return stripped[2:].strip()
+    return ""
+
+
+def frontmatter_field(fm: dict[str, str], field: str, text: str) -> str:
+    if field == "id":
+        return fm.get("id", "").strip() or fm.get("ea_id", "").strip()
+    if field == "title":
+        return fm.get("title", "").strip() or heading_title(text)
+    return fm.get(field, "").strip()
+
+
 def lint_vault(vault: Path) -> list[Violation]:
     if not vault.exists():
         return [Violation(path=vault, line=1, code="vault_missing", message=f"Vault path does not exist: {vault}")]
 
-    md_files = sorted(vault.rglob("*.md"))
+    md_files = sorted(p for p in vault.rglob("*.md") if is_wiki_node(p, vault))
     if not md_files:
         return []
 
@@ -65,18 +100,18 @@ def lint_vault(vault: Path) -> list[Violation]:
         template = path.parent.name.lower()
         required = REQUIRED_BY_TEMPLATE.get(template, ())
         for field in required:
-            if not fm.get(field, "").strip():
+            if not frontmatter_field(fm, field, text):
                 violations.append(Violation(path=path, line=1, code="missing_field", message=f"Missing required field '{field}'"))
 
-        node_id = fm.get("id", "").strip()
-        if node_id:
+        node_id = frontmatter_field(fm, "id", text)
+        if node_id and node_id.upper() != "TBD":
             lower = node_id.lower()
             if lower in seen_ids:
                 violations.append(Violation(path=path, line=1, code="duplicate_id", message=f"Duplicate id '{node_id}' (first: {seen_ids[lower]})"))
             else:
                 seen_ids[lower] = path
 
-        slug = fm.get("slug", "").strip().lower()
+        slug = frontmatter_field(fm, "slug", text).lower()
         if slug:
             if slug in seen_slugs:
                 violations.append(Violation(path=path, line=1, code="duplicate_slug", message=f"Duplicate slug '{slug}' (first: {seen_slugs[slug]})"))

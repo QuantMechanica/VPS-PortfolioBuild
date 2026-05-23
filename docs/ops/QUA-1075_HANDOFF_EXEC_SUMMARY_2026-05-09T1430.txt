@@ -1,0 +1,1 @@
+QUA-1075 handoff artifacts: 7 files tracked; latest_mtime=05/09/2026 14:29:25; runtime_state=non_running_clean_handoff

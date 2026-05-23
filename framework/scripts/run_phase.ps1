@@ -2,7 +2,7 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$EAId,
     [Parameter(Mandatory = $true)]
-    [ValidateSet('P3.5','P5','P5b','P5c','P6','P7','P8')]
+    [ValidateSet('P5','P5c','P6','P7')]
     [string]$Phase,
     [string]$OutRoot = 'D:\QM\reports\pipeline',
     [string[]]$Symbols = @(),
@@ -14,13 +14,10 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $runnerMap = @{
-    'P3.5' = 'p35_csr_runner.py'
     'P5'   = 'p5_stress_runner.py'
-    'P5b'  = 'p5b_calibrated_noise.py'
     'P5c'  = 'p5c_crisis_slices.py'
     'P6'   = 'p6_multiseed.py'
     'P7'   = 'p7_statval.py'
-    'P8'   = 'p8_news_impact.py'
 }
 
 if ($Phase -eq 'P8' -and $UseP8NewsDriver.IsPresent) {
@@ -107,7 +104,7 @@ if (-not (Test-Path -LiteralPath $runnerPath -PathType Leaf)) {
 }
 
 $phaseToken = $Phase.Replace('.', '_')
-$phaseOut = Join-Path (Join-Path $OutRoot $EAId) $phaseToken
+$phaseOut = Join-Path (Join-Path $OutRoot $EAId) $Phase
 New-Item -ItemType Directory -Path $phaseOut -Force | Out-Null
 
 $pythonArgs = @($runnerPath, '--ea', $EAId, '--out-prefix', $OutRoot) + $RunnerArgs

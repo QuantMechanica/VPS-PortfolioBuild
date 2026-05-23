@@ -6,7 +6,7 @@ This document exists to onboard the VPS Claude instance before it performs DST v
 - Local VPS repo target: `C:\QM\repo`
 - Local Paperclip target: `C:\QM\paperclip`
 - Local MT5 factory terminals: `D:\QM\mt5\T1` ... `D:\QM\mt5\T5`
-- Local live terminal: `C:\QM\mt5\T6_Live`
+- Local live terminal: `C:\QM\mt5\T_Live`
 - Local reports: `D:\QM\reports`
 - Local exports: `D:\QM\exports`
 - Local news seed target: `D:\QM\data\news_calendar`
@@ -89,7 +89,7 @@ Recommended execution order for Claude on the VPS:
 7. After Paperclip is online, help bootstrap the company operating model and routines.
 
 ## Hard Safety Reminder
-- No changes to T6_Live without explicit approval.
+- No changes to T_Live without explicit approval.
 - No credential exposure.
 - No live deployment.
 - No commission or DST assumptions without evidence.

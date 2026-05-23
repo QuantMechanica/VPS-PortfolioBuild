@@ -1,0 +1,9 @@
+{
+  "issue": "QUA-1579",
+  "kind": "no_drift_check",
+  "captured_at_local": "2026-05-15T13:10:26.4308427+02:00",
+  "recorded_binding_file": "QUA-1579_TASK_SCRIPT_BINDING_2026-05-15T1313+0200.json",
+  "recorded_sha256": "6ab7055dbe1edd8eda4611f8a5730b39b627c55f471f42851b6d22a8618d8792",
+  "current_sha256": "6ab7055dbe1edd8eda4611f8a5730b39b627c55f471f42851b6d22a8618d8792",
+  "match": true
+}

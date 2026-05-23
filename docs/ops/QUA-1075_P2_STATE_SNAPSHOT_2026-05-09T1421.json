@@ -1,0 +1,30 @@
+{
+  "issue": "QUA-1075",
+  "ea": "QM5_1014",
+  "captured_at": "2026-05-09T14:22:20+02:00",
+  "run_state": "no_active_p2_workers",
+  "p2_counts": {
+    "FAIL": 9,
+    "INVALID": 8,
+    "PASS": 0
+  },
+  "latest_rollup": "D:/QM/reports/pipeline/QM5_1014/P2/p2_QM5_1014_result.json",
+  "latest_rollup_counts": {
+    "FAIL": 2,
+    "INVALID": 0,
+    "PASS": 0
+  },
+  "dominant_reasons": [
+    "no_summary_json:rc=1",
+    "run_smoke_fail:REPORT_MISSING;INCOMPLETE_RUNS",
+    "run_smoke_fail:MIN_TRADES_NOT_MET"
+  ],
+  "blocker_owner": "DevOps/CTO",
+  "blocker_action": "stabilize run_smoke/report chain + metatester hang behavior, then rerun clean M15 baseline matrix",
+  "evidence_paths": [
+    "D:/QM/reports/pipeline/QM5_1014/P2/report.csv",
+    "D:/QM/reports/pipeline/QM5_1014/P2/QM5_1014/20260509_121838/summary.json",
+    "C:/QM/repo/framework/scripts/run_smoke.ps1",
+    "C:/QM/repo/framework/scripts/p2_matrix_launcher.py"
+  ]
+}

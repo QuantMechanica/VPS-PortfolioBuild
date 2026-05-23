@@ -1,0 +1,32 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        2002
+; ea_slug:      nnfx-qqe-trend
+; ea_version:   v5.0
+; set_version:  s20260519-001
+; symbol:       GBPCHF.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   17
+; risk_mode:    FIXED
+; portfolio_weight: 1.0
+; build_hash:   17674b1c13e8fb585575a2717a26d5b8b552ad5f060d44cdea0abe41556e1dde
+; author:       Development
+; date:         2026-05-19
+;==========================================================
+qm_ea_id=2002
+qm_magic_slot_offset=17
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1.0
+qm_news_mode=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+strategy_hma_period=20
+strategy_rsi_period=14
+strategy_qqe_ema=5
+strategy_cmf_period=20
+strategy_atr_period=14
+strategy_atr_sl_mult=1.5
+strategy_rr=1.5
+strategy_spread_cap_points=0

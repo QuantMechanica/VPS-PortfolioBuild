@@ -1,0 +1,22 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1386
+; ea_slug:      forex-pulse-detector-multi-tf-momo-h1
+; ea_version:   v5.0
+; set_version:  s20260519-001
+; symbol:       NDX.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   8
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   0e766a2975f9739481048d178b145caa787b33b48f1ce6a7a95c1c96ab278c29
+; author:       Development
+; date:         2026-05-19
+;==========================================================
+qm_magic_slot_offset=8
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=not_found

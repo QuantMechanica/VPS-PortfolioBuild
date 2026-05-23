@@ -4,7 +4,28 @@ from __future__ import annotations
 import argparse, json
 from pathlib import Path
 
-REQUIRED=['strategy_name','entry_logic','exit_logic','filters','timeframe','symbol_universe']
+REQUIRED = [
+    "strategy_id",
+    "ea_id",
+    "slug",
+    "status:",
+    "source_citations:",
+    "markets:",
+    "timeframes:",
+    "primary_target_symbols:",
+    "## 4. entry rules",
+    "## 5. exit rules",
+    "## 6. filters (no-trade module)",
+    "## 7. trade management rules",
+    "expected_pf:",
+    "expected_dd_pct:",
+    "expected_trade_frequency:",
+    "risk_class:",
+    "ml_required:",
+    "modules_used:",
+    "hard_rules_at_risk:",
+    "target_modules:",
+]
 
 def main():
     p=argparse.ArgumentParser(description='Lint strategy card for G0 readiness')
