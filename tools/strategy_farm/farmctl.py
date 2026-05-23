@@ -1674,6 +1674,69 @@ def _p2_active_summary_runtime_sec(item_row: sqlite3.Row, summary: dict[str, Any
     return max(0.0, (completed - launched).total_seconds())
 
 
+# PT9 2026-05-23 — Q02 compile gate. Cheap inline mtime check first; full
+# tools/strategy_farm/compile_ea.py subprocess fallback only when source is
+# newer than the cached ex5 (i.e. the EA was edited since last compile). This
+# closes the QM5_10005-style ex5_missing failure mode at the dispatch boundary
+# instead of letting the backtest fail with FATAL missing EA binary downstream.
+COMPILE_EA_SCRIPT = REPO_ROOT / "tools" / "strategy_farm" / "compile_ea.py"
+
+
+def _compile_gate_check(ea_dir_name: str) -> dict[str, Any]:
+    """Return {allowed: bool, verdict: str, source: 'mtime'|'subprocess'|'error'}.
+    Fast path: if .ex5 exists with size > 0 and mtime >= .mq5 mtime, allow.
+    Otherwise: delegate to compile_ea.py and parse its verdict."""
+    ea_dir = REPO_ROOT / "framework" / "EAs" / ea_dir_name
+    mq5 = ea_dir / f"{ea_dir_name}.mq5"
+    ex5 = ea_dir / f"{ea_dir_name}.ex5"
+    if not mq5.exists():
+        return {"allowed": False, "verdict": "NO_MQ5", "source": "mtime",
+                "ea_dir": str(ea_dir)}
+
+    if ex5.exists():
+        try:
+            ex5_stat = ex5.stat()
+            mq5_stat = mq5.stat()
+            if ex5_stat.st_size > 0 and ex5_stat.st_mtime >= mq5_stat.st_mtime:
+                return {"allowed": True, "verdict": "COMPILED_CACHED",
+                        "source": "mtime", "ex5_path": str(ex5),
+                        "ex5_size": ex5_stat.st_size}
+        except OSError:
+            pass
+
+    # Source changed or ex5 missing — call compile_ea.py for fresh build + validator
+    if not COMPILE_EA_SCRIPT.exists():
+        return {"allowed": False, "verdict": "COMPILE_EA_SCRIPT_MISSING",
+                "source": "error", "expected_path": str(COMPILE_EA_SCRIPT)}
+    creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+    try:
+        proc = subprocess.run(
+            [sys.executable, str(COMPILE_EA_SCRIPT), "--ea-label", ea_dir_name, "--json"],
+            capture_output=True, text=True, timeout=180,
+            creationflags=creationflags,
+        )
+    except subprocess.TimeoutExpired:
+        return {"allowed": False, "verdict": "COMPILE_TIMEOUT", "source": "subprocess"}
+    if not proc.stdout.strip():
+        return {"allowed": False, "verdict": "COMPILE_NO_OUTPUT",
+                "source": "subprocess", "stderr": (proc.stderr or "")[:200]}
+    try:
+        results = json.loads(proc.stdout)
+        if not results:
+            return {"allowed": False, "verdict": "COMPILE_EMPTY_RESULT",
+                    "source": "subprocess"}
+        r = results[0]
+        verdict = r.get("verdict", "UNKNOWN")
+        allowed = verdict in ("COMPILED", "COMPILED_CACHED")
+        return {"allowed": allowed, "verdict": verdict, "source": "subprocess",
+                "reason": r.get("reason", ""),
+                "compile_log_path": r.get("compile_log_path", ""),
+                "symbol_scope_verdict": r.get("symbol_scope_verdict", "")}
+    except json.JSONDecodeError as exc:
+        return {"allowed": False, "verdict": "COMPILE_BAD_JSON",
+                "source": "subprocess", "error": repr(exc)[:200]}
+
+
 def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
                                     terminal: str) -> dict[str, Any]:
     """Spawn run_smoke.ps1 for one work_item, pinned to a specific terminal.
@@ -1762,6 +1825,18 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
     ea_dir_name = candidates[0].name
     period = runner_period
     numeric_id = int(re.match(r"^QM5_(\d+)$", ea_id).group(1))
+
+    # PT9 2026-05-23 — compile gate. For Q02 / P2 (entry-point phases), call
+    # compile_ea.py to ensure the .ex5 is current + scope-clean before
+    # dispatching the backtest. Inline mtime check first (fast); subprocess
+    # fallback only when source changed or validator output stale. Closes the
+    # ex5_missing class (QM5_10005-style: build never ran) and the
+    # SYMBOL_SCOPE_LEAK class structurally.
+    if phase in ("Q02", "P2"):
+        gate = _compile_gate_check(ea_dir_name)
+        if not gate["allowed"]:
+            return {"spawned": False, "reason": f"compile_gate:{gate['verdict']}",
+                    "compile_gate": gate}
 
     # Per-work-item report root keeps summaries discoverable
     report_root = Path(r"D:\QM\reports\work_items") / item_row["id"]

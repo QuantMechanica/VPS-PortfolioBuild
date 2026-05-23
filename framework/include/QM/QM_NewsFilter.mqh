@@ -100,6 +100,13 @@ bool          g_qm_news_available                    = false;
 // false → calendar never loaded, all news permissions return "allow" fast.
 bool          g_qm_news_active                       = false;
 
+// FW8 perf 2026-05-23 — events are kept sorted by event_utc ascending so
+// QM_NewsInWindow can binary-search the [utc-after, utc+before] window
+// instead of linear-scanning all ~95k events on every cache miss. Reduces
+// per-bar cache-miss cost from O(N) to O(log N + k) where k≈events-in-window
+// (typically 1-10 over a 60-minute buffer).
+bool          g_qm_news_events_sorted                = false;
+
 // FW7 2026-05-23 — per-bar verdict cache. News permission only changes at bar
 // boundaries on every timeframe we trade (≥ M5); a per-tick recompute was the
 // root cause of the Q02 30-60min hangs. Cache key is (symbol, broker_bar_time,
@@ -433,6 +440,7 @@ bool QM_NewsInit(const string base_dir = "D:\\QM\\data\\news_calendar",
    g_qm_news_latest_modified_utc = 0;
    g_qm_news_loaded = true;
    g_qm_news_available = false;
+   g_qm_news_events_sorted = false; // FW8: re-sort after fresh load
 
    uchar bytes_primary[];
    uchar bytes_secondary[];
@@ -492,6 +500,10 @@ bool QM_NewsInit(const string base_dir = "D:\\QM\\data\\news_calendar",
                                  TimeToString(g_qm_news_latest_modified_utc, TIME_DATE | TIME_SECONDS));
    QM_LogEvent(QM_INFO, "NEWS_CALENDAR_LOADED", payload);
 
+   // FW8 perf — build the sorted index now so the first OnTick query
+   // doesn't pay the one-time sort cost (~50ms for 95k events).
+   QM_NewsBuildUtcIndex();
+
    g_qm_news_available = true;
    return true;
   }
@@ -516,6 +528,52 @@ int QM_NewsRowsLoaded()
    return g_qm_news_rows_loaded;
   }
 
+// FW8 perf 2026-05-23 — sort events by event_utc ascending. Idempotent: only
+// the first call does real work. Insertion sort is O(N) on near-sorted data
+// (calendar CSVs are chronological by nature) and worst-case O(N²); we accept
+// the latter as a one-time init cost (in practice <50ms for 95k events).
+void QM_NewsBuildUtcIndex()
+  {
+   if(g_qm_news_events_sorted)
+      return;
+   const int n = ArraySize(g_qm_news_events);
+   if(n < 2)
+     {
+      g_qm_news_events_sorted = true;
+      return;
+     }
+   for(int i = 1; i < n; i++)
+     {
+      const QM_NewsEvent key = g_qm_news_events[i];
+      int j = i - 1;
+      while(j >= 0 && g_qm_news_events[j].event_utc > key.event_utc)
+        {
+         g_qm_news_events[j + 1] = g_qm_news_events[j];
+         j--;
+        }
+      g_qm_news_events[j + 1] = key;
+     }
+   g_qm_news_events_sorted = true;
+  }
+
+// Smallest index where g_qm_news_events[i].event_utc >= target.
+// Returns n if all events are before target.
+int QM_NewsLowerBoundUtc(const datetime target)
+  {
+   const int n = ArraySize(g_qm_news_events);
+   int lo = 0;
+   int hi = n;
+   while(lo < hi)
+     {
+      const int mid = (lo + hi) / 2;
+      if(g_qm_news_events[mid].event_utc < target)
+         lo = mid + 1;
+      else
+         hi = mid;
+     }
+   return lo;
+  }
+
 bool QM_NewsInWindow(const datetime utc_time,
                      const string symbol,
                      const int before_minutes,
@@ -525,23 +583,29 @@ bool QM_NewsInWindow(const datetime utc_time,
    const int n = ArraySize(g_qm_news_events);
    if(n == 0)
       return false;
+   if(!g_qm_news_events_sorted)
+      QM_NewsBuildUtcIndex();
 
-   string impact_need = QM_NewsUpper(QM_NewsTrim(impact_filter));
-   for(int i = 0; i < n; i++)
+   // utc_time is in event's blackout window iff
+   //   event.event_utc - before_min*60 <= utc_time <= event.event_utc + after_min*60
+   // Rearranged: event.event_utc in [utc_time - after, utc_time + before].
+   const datetime t_min = utc_time - (after_minutes * 60);
+   const datetime t_max = utc_time + (before_minutes * 60);
+
+   const string impact_need = QM_NewsUpper(QM_NewsTrim(impact_filter));
+   const int start = QM_NewsLowerBoundUtc(t_min);
+   for(int i = start; i < n; i++)
      {
       const QM_NewsEvent event = g_qm_news_events[i];
+      if(event.event_utc > t_max)
+         break; // sorted — no later event can match
       if(!QM_NewsEventAffectsSymbol(event.currency, symbol))
          continue;
-
       if(StringLen(impact_need) > 0 && event.impact_upper != impact_need)
          continue;
       if(StringLen(impact_need) == 0 && !QM_NewsImpactMeetsMinimum(event.impact_upper, g_qm_news_min_impact_upper))
          continue;
-
-      datetime from_t = event.event_utc - (before_minutes * 60);
-      datetime to_t   = event.event_utc + (after_minutes * 60);
-      if(utc_time >= from_t && utc_time <= to_t)
-         return true;
+      return true;
      }
    return false;
   }
