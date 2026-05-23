@@ -2471,3 +2471,5 @@ ea_id,slug,strategy_id,status,owner,created_at
 11596,carter-tf10-sma3-15-macd-adx-dpo-h1,b20a1c94-74f8-58a3-aeac-bfab2f1dbbf0,pending,Claude,2026-05-23
 11597,carter-tf12-sma-4cascade-cci5-m15,b20a1c94-74f8-58a3-aeac-bfab2f1dbbf0,pending,Claude,2026-05-23
 11598,carter-tf5-mtf-wma-sma-stoch-rsi-macd-m5m15,b20a1c94-74f8-58a3-aeac-bfab2f1dbbf0,pending,Claude,2026-05-23
+11599,kobas-ema5-10-15-65-macd-trend,aed96960-24ea-5353-8902-73fb103f6357,pending,Claude,2026-05-23
+11600,easy1min-sma70-stoch-m1,3d0b214b-a704-5d06-b294-ff922a89a25f,pending,Claude,2026-05-23
