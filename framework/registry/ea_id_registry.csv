@@ -2369,3 +2369,5 @@ ea_id,slug,strategy_id,status,owner,created_at
 11494,carter-t-mtf-triple-ema-bb-align-m5h1,b3b11449-1e72-5140-917b-c35b6253f1e7,active,Research,2026-05-23
 11495,carter-t-ema3-8-macd-stoch-psar-sd-m5,b3b11449-1e72-5140-917b-c35b6253f1e7,active,Research,2026-05-23
 11496,carter-t-ema100-psar-macd64128-m5,b3b11449-1e72-5140-917b-c35b6253f1e7,active,Research,2026-05-23
+11497,connors-alvarez-double7s-sma200-d1,e2807d63-4109-5824-8d44-1800ee8fe7eb,active,Research,2026-05-23
+11498,connors-alvarez-cumulative-rsi2-sma200-d1,e2807d63-4109-5824-8d44-1800ee8fe7eb,active,Research,2026-05-23
