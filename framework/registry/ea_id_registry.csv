@@ -2494,3 +2494,9 @@ ea_id,slug,strategy_id,status,owner,created_at
 11619,robo-psar01-ema6-11-34-h1,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,pending,Claude,2026-05-23
 11620,robo-bb3dev-ema50-pullback-h4,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,pending,Claude,2026-05-23
 11621,robo-ema100hl-bb10-23-reversal-h4,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,pending,Claude,2026-05-23
+11622,ba-sma12-x,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-23
+11623,ba-rsi7-3070,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-23
+11624,ba-bb30-mid,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-23
+11625,ba-ema-dual,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-23
+11626,pj-ema8-30,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-23
+11627,carter-tf19-schaff-ema100-stoch-m15,8794b680-f6f4-5142-b12c-e5e0057e7bcf,active,Research,2026-05-24
