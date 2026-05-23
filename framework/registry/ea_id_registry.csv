@@ -2255,3 +2255,6 @@ ea_id,slug,strategy_id,status,owner,created_at
 11380,macd12-stoch8-extreme-m1m5,be645940-9d45-534c-ba3d-405365e3e9a8,active,Research,2026-05-23
 11381,psar-ao-ac-trend-align-h1,875997e6-a398-5eb7-a5ee-75e75a020ad6,active,Research,2026-05-23
 11382,sma10-15-50-trend-cross-m5,828e3848-fdd3-5b45-a780-e746c4691997,active,Research,2026-05-23
+11383,blade-m5-ema-zone-scalper,f4fa8966-3aa0-5df0-9d8f-3872df92309a,active,Research,2026-05-23
+11384,blade-h4-ema30-breakout-retrace,f4fa8966-3aa0-5df0-9d8f-3872df92309a,active,Research,2026-05-23
+11385,mario-singh-good-morning-asia-usdjpy-d1,3c141158-8aca-5961-8e09-afd081ef32ee,active,Research,2026-05-23
