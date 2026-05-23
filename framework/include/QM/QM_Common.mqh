@@ -215,13 +215,31 @@ int QM_FrameworkCloseAllByMagic(const long magic, const string reason)
    return closed;
   }
 
+// FW8 2026-05-23 — once-per-Friday guard. Pre-FW8 every tick from Friday
+// hour H to 23:59 hit QM_LogEvent which synchronously FileOpen/Write/Flush/
+// Close → 99.95% of all Q02 backtest log volume was redundant FRIDAY_CLOSE
+// entries (e.g. QM5_10026 EURUSD Q02: 83 087 of 83 126 lines). Track the
+// last broker-day we acted on; subsequent same-day calls return false fast.
+int g_qm_fw_friday_close_last_day_key = -1;
+
 bool QM_FrameworkHandleFridayClose()
   {
    if(!QM_FrameworkFridayCloseNow())
       return false;
 
+   // Idempotent per broker-day: only the FIRST tick past the close hour
+   // closes positions and logs. Day key = year*1000 + day_of_year.
+   const datetime broker_now = TimeCurrent();
+   MqlDateTime tm;
+   TimeToStruct(broker_now, tm);
+   const int day_key = tm.year * 1000 + tm.day_of_year;
+   if(day_key == g_qm_fw_friday_close_last_day_key)
+      return true; // already handled this Friday — silent fast return.
+   g_qm_fw_friday_close_last_day_key = day_key;
+
    const int closed = QM_FrameworkCloseAllByMagic((long)g_qm_fw_magic, "friday_close");
-   QM_LogEvent(QM_INFO, "FRIDAY_CLOSE", StringFormat("{\"closed\":%d,\"hour\":%d}", closed, g_qm_fw_friday_close_hour_broker));
+   QM_LogEvent(QM_INFO, "FRIDAY_CLOSE", StringFormat("{\"closed\":%d,\"hour\":%d,\"day_key\":%d}",
+               closed, g_qm_fw_friday_close_hour_broker, day_key));
    return true;
   }
 

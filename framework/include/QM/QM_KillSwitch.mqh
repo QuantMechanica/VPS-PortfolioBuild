@@ -252,6 +252,16 @@ double QM_KillSwitchPerTradeRiskCapPct()
    return g_qm_ks_per_trade_risk_cap_pct;
 }
 
+// FW8 2026-05-23 — tester-aware throttle for file-stat checks. Pre-FW8 every
+// tick called QM_KillSwitchFileExists() twice (manual_halt + portfolio_DD),
+// each doing FileIsExist locally + FILE_COMMON — 4 syscalls per tick. In MT5
+// tester these signal files never exist; in live they change rarely. We now:
+//   - skip both checks entirely in tester (manual halt + portfolio kill from
+//     an external file are operator concepts, meaningless during a backtest)
+//   - in live, throttle to 1× per broker-second so a busy tick stream
+//     doesn't translate to thousands of syscalls/sec
+datetime g_qm_ks_last_file_check_broker_ts = 0;
+
 bool QM_KillSwitchCheck()
 {
    if(!g_qm_ks_initialized)
@@ -268,34 +278,44 @@ bool QM_KillSwitchCheck()
    if(g_qm_ks_halted)
       return false;
 
-   if(QM_KillSwitchFileExists(g_qm_ks_manual_halt_file))
+   // Operator-signal files (manual halt + portfolio DD) live only in live ops.
+   const bool is_tester = (MQLInfoInteger(MQL_TESTER) != 0);
+   if(!is_tester)
    {
-      QM_KillSwitchTrip(KS_MANUAL,
-                        StringFormat("{\"file\":\"%s\"}", QM_LoggerEscapeJson(g_qm_ks_manual_halt_file)));
-      return false;
-   }
+      const datetime broker_now = TimeCurrent();
+      if(broker_now != g_qm_ks_last_file_check_broker_ts)
+      {
+         g_qm_ks_last_file_check_broker_ts = broker_now;
+         if(QM_KillSwitchFileExists(g_qm_ks_manual_halt_file))
+         {
+            QM_KillSwitchTrip(KS_MANUAL,
+                              StringFormat("{\"file\":\"%s\"}", QM_LoggerEscapeJson(g_qm_ks_manual_halt_file)));
+            return false;
+         }
 
-   double portfolio_signal_value = 0.0;
-   bool portfolio_value_present = false;
-   if(QM_KillSwitchPortfolioSignalTriggered(portfolio_signal_value, portfolio_value_present))
-   {
-      if(portfolio_value_present)
-      {
-         QM_KillSwitchTrip(KS_PORTFOLIO_DD,
-                           StringFormat("{\"file\":\"%s\",\"signal_value\":%.6f,\"halt_pct\":%.6f}",
-                                        QM_LoggerEscapeJson(g_qm_ks_portfolio_dd_signal_file),
-                                        portfolio_signal_value,
-                                        g_qm_ks_portfolio_dd_halt_pct));
-      }
-      else
-      {
-         QM_KillSwitchTrip(KS_PORTFOLIO_DD,
-                           StringFormat("{\"file\":\"%s\",\"signal_value\":null,\"halt_pct\":%.6f}",
-                                        QM_LoggerEscapeJson(g_qm_ks_portfolio_dd_signal_file),
-                                        g_qm_ks_portfolio_dd_halt_pct));
-      }
-      return false;
-   }
+         double portfolio_signal_value = 0.0;
+         bool portfolio_value_present = false;
+         if(QM_KillSwitchPortfolioSignalTriggered(portfolio_signal_value, portfolio_value_present))
+         {
+            if(portfolio_value_present)
+            {
+               QM_KillSwitchTrip(KS_PORTFOLIO_DD,
+                                 StringFormat("{\"file\":\"%s\",\"signal_value\":%.6f,\"halt_pct\":%.6f}",
+                                              QM_LoggerEscapeJson(g_qm_ks_portfolio_dd_signal_file),
+                                              portfolio_signal_value,
+                                              g_qm_ks_portfolio_dd_halt_pct));
+            }
+            else
+            {
+               QM_KillSwitchTrip(KS_PORTFOLIO_DD,
+                                 StringFormat("{\"file\":\"%s\",\"signal_value\":null,\"halt_pct\":%.6f}",
+                                              QM_LoggerEscapeJson(g_qm_ks_portfolio_dd_signal_file),
+                                              g_qm_ks_portfolio_dd_halt_pct));
+            }
+            return false;
+         }
+      } // end: if(broker_now != g_qm_ks_last_file_check_broker_ts)
+   } // end: if(!is_tester)
 
    if(g_qm_ks_daily_loss_halt_pct > 0.0 && g_qm_ks_day_start_equity > 0.0)
    {
