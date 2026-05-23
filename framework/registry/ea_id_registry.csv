@@ -2438,3 +2438,7 @@ ea_id,slug,strategy_id,status,owner,created_at
 11563,connors-rsi2-sma200-mean-reversion-d1,278c6e13-0726-5779-83fe-a38f5a2e480f,pending,Claude,2026-05-23
 11564,connors-double7s-sma200-d1,278c6e13-0726-5779-83fe-a38f5a2e480f,pending,Claude,2026-05-23
 11565,connors-3down-days-sma200-d1,278c6e13-0726-5779-83fe-a38f5a2e480f,pending,Claude,2026-05-23
+11566,davey-momentum-big-range-d1,57b37e6a-9b9f-550b-a023-e0d6947ad2e8,pending,Claude,2026-05-23
+11567,davey-meanrev-lowvol-d1,57b37e6a-9b9f-550b-a023-e0d6947ad2e8,pending,Claude,2026-05-23
+11568,davey-simple-nbar-breakout-d1,57b37e6a-9b9f-550b-a023-e0d6947ad2e8,pending,Claude,2026-05-23
+11569,davey-dueling-momentum-d1,57b37e6a-9b9f-550b-a023-e0d6947ad2e8,pending,Claude,2026-05-23
