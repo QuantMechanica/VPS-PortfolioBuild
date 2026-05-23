@@ -2466,3 +2466,8 @@ ea_id,slug,strategy_id,status,owner,created_at
 11591,robo-ao-macd574-h4,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,pending,Claude,2026-05-23
 11592,robo-3candle-fade-h4,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,pending,Claude,2026-05-23
 11593,robo-midnight-hammer-adx-d1,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,pending,Claude,2026-05-23
+11594,carter-t-m5-ema10-21-50-zone-pullback,bbbba6a1-c18a-5035-bedf-fbd6207e996a,pending,Claude,2026-05-23
+11595,carter-t-m5-ema15-50hl-macd15-70,bbbba6a1-c18a-5035-bedf-fbd6207e996a,pending,Claude,2026-05-23
+11596,carter-tf10-sma3-15-macd-adx-dpo-h1,b20a1c94-74f8-58a3-aeac-bfab2f1dbbf0,pending,Claude,2026-05-23
+11597,carter-tf12-sma-4cascade-cci5-m15,b20a1c94-74f8-58a3-aeac-bfab2f1dbbf0,pending,Claude,2026-05-23
+11598,carter-tf5-mtf-wma-sma-stoch-rsi-macd-m5m15,b20a1c94-74f8-58a3-aeac-bfab2f1dbbf0,pending,Claude,2026-05-23
