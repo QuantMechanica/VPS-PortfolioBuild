@@ -2473,3 +2473,9 @@ ea_id,slug,strategy_id,status,owner,created_at
 11598,carter-tf5-mtf-wma-sma-stoch-rsi-macd-m5m15,b20a1c94-74f8-58a3-aeac-bfab2f1dbbf0,pending,Claude,2026-05-23
 11599,kobas-ema5-10-15-65-macd-trend,aed96960-24ea-5353-8902-73fb103f6357,pending,Claude,2026-05-23
 11600,easy1min-sma70-stoch-m1,3d0b214b-a704-5d06-b294-ff922a89a25f,pending,Claude,2026-05-23
+11601,cobra-sma72-ema12-band-adx-h1,5b818e1c-1438-5cbf-9c9c-cadb5768042c,pending,Claude,2026-05-23
+11602,ar-macd-long,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-23
+11603,ar-sma-x,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-23
+11604,ar-psar,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-23
+11605,ar-supertrend,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-23
+11606,ar-doten-brk,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-23
