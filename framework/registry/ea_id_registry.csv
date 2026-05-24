@@ -2753,3 +2753,9 @@ ea_id,slug,strategy_id,status,owner,created_at
 11878,macd-5-13-1-zero-cross-h4,ac05822b-0169-5e89-bca3-c5c08dfc2eb7,active,claude,2026-05-24
 11879,turtle-20day-breakout,52da6bcf-0837-5552-9464-2a81d0424ac8,active,claude,2026-05-24
 11880,continuation-method-ema50-williams,f0c55de1-dfde-56a4-b052-5d4c37f36ed1,active,claude,2026-05-24
+11881,connors-rsi2-mean-reversion,2f18abf6-a4aa-5974-8299-aa2d8913fa7d,active,claude,2026-05-24
+11882,connors-double-7s,2f18abf6-a4aa-5974-8299-aa2d8913fa7d,active,claude,2026-05-24
+11883,blade-h4-double-top-breakout-retest,832dc656-b75f-5051-a75a-c987476834e4,active,claude,2026-05-24
+11884,blade-macd-divergence-stoch-trigger,832dc656-b75f-5051-a75a-c987476834e4,active,claude,2026-05-24
+11885,fps-ema-stack-parabolic-sar-h1,202d107a-567f-5ece-b325-f3d681ee9693,active,claude,2026-05-24
+11886,floor-pivot-intraday-breakout-retest,202d107a-567f-5ece-b325-f3d681ee9693,active,claude,2026-05-24
