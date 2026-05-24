@@ -2653,3 +2653,7 @@ ea_id,slug,strategy_id,status,owner,created_at
 11778,tc-tf-s16-ema721-pullback-any,3afb28d0-5993-527a-b039-5eef9c0e62e8,active,claude,2026-05-24
 11779,tc-tf-s17-ema18-adx12-pullback,3afb28d0-5993-527a-b039-5eef9c0e62e8,active,claude,2026-05-24
 11780,tc-tf-s18-ema613-macd-psar-h4,3afb28d0-5993-527a-b039-5eef9c0e62e8,active,claude,2026-05-24
+11781,turtle-trading-20day-breakout-d1,e080841a-27d1-5e41-b1cc-fffe3ecb6b5f,active,claude,2026-05-24
+11782,sma520-cross-scalp-m15,83b41d71-f371-5e5f-aed0-df9f9d01a565,active,claude,2026-05-24
+11783,rsi14-8020-counter-trend-m15,83b41d71-f371-5e5f-aed0-df9f9d01a565,active,claude,2026-05-24
+11784,psar-ao-ac-trend-alignment-h1,9b0adeea-79d7-55b9-ad75-55c49d97586b,active,claude,2026-05-24
