@@ -2717,3 +2717,8 @@ ea_id,slug,strategy_id,status,owner,created_at
 11842,ait-macd-pos,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-24
 11843,ait-bb20,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-24
 11844,macd-psar-atr-h4,7ccea479-a9a2-5bd4-8fdd-fbc301491491,active,claude,2026-05-24
+11845,macd513-ema-stack-h4,fe7a98e7-dc35-55f8-8d57-7d63f7d26ddc,active,claude,2026-05-24
+11846,ema513-cross-h1,c2d29b61-a0ae-5151-b0e1-70777e58611a,active,claude,2026-05-24
+11847,trix14-zero-cross-h1,48c5b99e-3b71-5956-aabc-3a2f1ae44c43,active,claude,2026-05-24
+11848,smi-stoch-ha-m15,9d97eec6-6cfc-5561-885f-067424721621,active,claude,2026-05-24
+11849,range-breakout-24h-usdjpy,dde791fb-b29d-5152-954a-7e951a980d5c,active,claude,2026-05-24
