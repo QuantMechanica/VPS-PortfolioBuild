@@ -2583,3 +2583,6 @@ ea_id,slug,strategy_id,status,owner,created_at
 11708,anon-market-squeeze-d1,91733bcd-fc55-59be-a119-de42fd753c3c,active,claude,2026-05-24
 11709,anon-h4-macd513-extreme-reversal,813a4eab-116e-5c7c-a794-1d2862824270,active,claude,2026-05-24
 11710,anon-h4-macd513-zeroline-bounce,813a4eab-116e-5c7c-a794-1d2862824270,active,claude,2026-05-24
+11711,blade-m5-zone-scalp,a78d03bc-2113-5ea3-bd12-cfa0a991a0f8,active,claude,2026-05-24
+11712,blade-h4-breakout-retrace,a78d03bc-2113-5ea3-bd12-cfa0a991a0f8,active,claude,2026-05-24
+11713,blade-macd-divergence-stoch,a78d03bc-2113-5ea3-bd12-cfa0a991a0f8,active,claude,2026-05-24
