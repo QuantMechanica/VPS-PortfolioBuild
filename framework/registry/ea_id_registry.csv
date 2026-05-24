@@ -2751,3 +2751,5 @@ ea_id,slug,strategy_id,status,owner,created_at
 11876,gbpjpy-triple-bb50-fade,b64e232f-22dc-5e0d-a783-630ebff99f6d,active,claude,2026-05-24
 11877,ema5-13-cross-h1,91919757-597d-526e-ad11-144903f76c28,active,claude,2026-05-24
 11878,macd-5-13-1-zero-cross-h4,ac05822b-0169-5e89-bca3-c5c08dfc2eb7,active,claude,2026-05-24
+11879,turtle-20day-breakout,52da6bcf-0837-5552-9464-2a81d0424ac8,active,claude,2026-05-24
+11880,continuation-method-ema50-williams,f0c55de1-dfde-56a4-b052-5d4c37f36ed1,active,claude,2026-05-24
