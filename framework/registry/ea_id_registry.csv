@@ -2625,3 +2625,5 @@ ea_id,slug,strategy_id,status,owner,created_at
 11750,nfs-ema3-psar-h1-profit,781e6542-cf6d-5b05-b351-2c769d7fb926,active,claude,2026-05-24
 11751,nfs-tom-demark-ema-momentum-h1,781e6542-cf6d-5b05-b351-2c769d7fb926,active,claude,2026-05-24
 11752,nfs-intraday-pivots-ema-macd,781e6542-cf6d-5b05-b351-2c769d7fb926,active,claude,2026-05-24
+11753,5min-sma10-15-50-scalp,5fa014bc-031b-548a-8e5a-9b6ce6b1b2c1,active,claude,2026-05-24
+11754,continuation-ema50-williamsr-mtf,8fc38d7b-ef60-57f3-97f3-24eab132b1d9,active,claude,2026-05-24
