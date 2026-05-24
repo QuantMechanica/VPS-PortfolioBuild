@@ -2596,3 +2596,14 @@ ea_id,slug,strategy_id,status,owner,created_at
 11721,tc-m5-s7-london-box-breakout,40a4454c-64ff-5015-8538-9f7b32abc0e9,active,claude,2026-05-24
 11722,tc-m5-s8-triple-bb-rsi-stoch,40a4454c-64ff-5015-8538-9f7b32abc0e9,active,claude,2026-05-24
 11723,tc-m5-s10-ema-cci-cross,40a4454c-64ff-5015-8538-9f7b32abc0e9,active,claude,2026-05-24
+11724,tc-m5-s11-mtf-h4-ema-macd-stoch,40a4454c-64ff-5015-8538-9f7b32abc0e9,active,claude,2026-05-24
+11725,tc-m5-s12-ema-laguerre,40a4454c-64ff-5015-8538-9f7b32abc0e9,active,claude,2026-05-24
+11726,tc-m5-s13-cci-macd-breakthrough,40a4454c-64ff-5015-8538-9f7b32abc0e9,active,claude,2026-05-24
+11727,tc-m5-s14-wma-sma-stoch-rsi-macd,40a4454c-64ff-5015-8538-9f7b32abc0e9,active,claude,2026-05-24
+11728,tc-m5-s16-wma-psar-adx,40a4454c-64ff-5015-8538-9f7b32abc0e9,active,claude,2026-05-24
+11729,tc-m5-s17-ema-macd-psar-stddev,40a4454c-64ff-5015-8538-9f7b32abc0e9,active,claude,2026-05-24
+11730,tc-m5-s19-psar-macd-ema100,40a4454c-64ff-5015-8538-9f7b32abc0e9,active,claude,2026-05-24
+11731,tc-m5-s20-ema3-bb-macd,40a4454c-64ff-5015-8538-9f7b32abc0e9,active,claude,2026-05-24
+11732,tc-m5-s9-ema50-100-macd,40a4454c-64ff-5015-8538-9f7b32abc0e9,active,claude,2026-05-24
+11733,tc-m5-s15-ema-bb-channel-macd,40a4454c-64ff-5015-8538-9f7b32abc0e9,active,claude,2026-05-24
+11734,tc-m5-s18-ema20-macd-cross,40a4454c-64ff-5015-8538-9f7b32abc0e9,active,claude,2026-05-24
