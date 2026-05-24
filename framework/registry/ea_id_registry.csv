@@ -2578,3 +2578,6 @@ ea_id,slug,strategy_id,status,owner,created_at
 11703,janus-100pips-daily-range-breakout,8c69e3f7-8b72-5187-a4af-d2f3da523aeb,active,claude,2026-05-24
 11704,fsr-macd-stoch-m5-scalp,9c37bc30-46e8-5965-bc24-a8eba30ed51f,active,claude,2026-05-24
 11705,fsr-ema5-13-cross-h1,0c59301b-355d-50e7-bb44-38d3af038ce9,active,claude,2026-05-24
+11706,anon-parallel-motion-abcd,91733bcd-fc55-59be-a119-de42fd753c3c,active,claude,2026-05-24
+11707,anon-channel-scalp-pivot,91733bcd-fc55-59be-a119-de42fd753c3c,active,claude,2026-05-24
+11708,anon-market-squeeze-d1,91733bcd-fc55-59be-a119-de42fd753c3c,active,claude,2026-05-24
