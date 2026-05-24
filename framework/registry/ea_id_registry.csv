@@ -2737,3 +2737,9 @@ ea_id,slug,strategy_id,status,owner,created_at
 11862,smma5-lwma144-fractal-m5,1c857cdb-5992-5831-89e1-802b5d018c5f,active,claude,2026-05-24
 11863,sma10-15-50-cross-m5-scalp,66094b52-9d4a-567d-805b-66e67cb54b31,active,claude,2026-05-24
 11864,ichimoku-5line-alignment-d1,d101ea52-c21b-59b3-ab87-17814fbfe19f,active,claude,2026-05-24
+11865,ema5-15-60-pullback-h1,3c77a80c-f428-57eb-a720-51347dd823b3,active,claude,2026-05-24
+11866,multi-tf-candle-color-h1,3c77a80c-f428-57eb-a720-51347dd823b3,active,claude,2026-05-24
+11867,psar-adx50-di-h1,3c77a80c-f428-57eb-a720-51347dd823b3,active,claude,2026-05-24
+11868,hour-box-breakout-m5,7eb3773b-4c7d-5f72-9c2a-99773154821f,active,claude,2026-05-24
+11869,ema40-80-cci-m5,7eb3773b-4c7d-5f72-9c2a-99773154821f,active,claude,2026-05-24
+11870,dead-time-range-fade,34ee988d-9c04-5057-9277-af2bd00e148c,active,claude,2026-05-24
