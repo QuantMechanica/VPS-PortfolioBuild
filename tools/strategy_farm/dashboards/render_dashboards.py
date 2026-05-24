@@ -3175,14 +3175,29 @@ def main() -> int:
     strategies_path = dashboards_dir / "strategies.html"
     strategies_path.write_text(render_strategies(state, root), encoding="utf-8")
 
-    # Per-EA detail pages — skip card-only EAs (no work_items, no tasks → the
-    # row in strategies.html has no onclick, so a detail page would be unreachable
-    # and wasteful). Card-only EAs still appear in the archive table.
+    # Per-EA detail pages — skip TRUE card-only EAs (no work_items, no tasks,
+    # only a card on disk). EAs with work_items DO need detail pages even
+    # when they also have a card — the row in strategies.html is clickable
+    # because work_items exist. Pre-PT12 the skip condition was just
+    # (card_state AND task_count==0) which incorrectly suppressed pages for
+    # EAs like QM5_1099 (8 Q02 attempts, no agent_task) → broken links.
     eas = derive_ea_candidates(state["tasks"], root)
+    wi_eas: set[str] = set()
+    db_path = root / "state" / "farm_state.sqlite"
+    if db_path.exists():
+        try:
+            with sqlite3.connect(db_path) as _conn:
+                wi_eas = {r[0] for r in _conn.execute("SELECT DISTINCT ea_id FROM work_items")}
+        except sqlite3.Error:
+            wi_eas = set()
     detail_count = 0
+    skipped_card_only = 0
     for ea in eas:
-        if ea.get("card_state") and ea.get("task_count", 0) == 0:
-            # Card-only — has no pipeline activity, skip detail page generation
+        has_wi = ea["ea_id"] in wi_eas
+        if (ea.get("card_state")
+                and ea.get("task_count", 0) == 0
+                and not has_wi):
+            skipped_card_only += 1
             continue
         try:
             d = collect_ea_detail(ea["ea_id"], root)
