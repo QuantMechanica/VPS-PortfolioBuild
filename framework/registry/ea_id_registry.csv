@@ -2627,3 +2627,8 @@ ea_id,slug,strategy_id,status,owner,created_at
 11752,nfs-intraday-pivots-ema-macd,781e6542-cf6d-5b05-b351-2c769d7fb926,active,claude,2026-05-24
 11753,5min-sma10-15-50-scalp,5fa014bc-031b-548a-8e5a-9b6ce6b1b2c1,active,claude,2026-05-24
 11754,continuation-ema50-williamsr-mtf,8fc38d7b-ef60-57f3-97f3-24eab132b1d9,active,claude,2026-05-24
+11755,davey-big-range-momentum-h1,82b485a3-2c05-565c-818d-f04e03f74c5a,active,claude,2026-05-24
+11756,davey-mean-reversion-lowvol-h4,82b485a3-2c05-565c-818d-f04e03f74c5a,active,claude,2026-05-24
+11757,davey-donchian-close-breakout-d1,82b485a3-2c05-565c-818d-f04e03f74c5a,active,claude,2026-05-24
+11758,davey-dueling-momentum-h4,82b485a3-2c05-565c-818d-f04e03f74c5a,active,claude,2026-05-24
+11759,continuation-ema50-williamsr-w1d1,8d8e94b0-ccf7-59ab-8b1d-e99dc7dab229,active,claude,2026-05-24
