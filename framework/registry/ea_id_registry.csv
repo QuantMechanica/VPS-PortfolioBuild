@@ -2759,3 +2759,7 @@ ea_id,slug,strategy_id,status,owner,created_at
 11884,blade-macd-divergence-stoch-trigger,832dc656-b75f-5051-a75a-c987476834e4,active,claude,2026-05-24
 11885,fps-ema-stack-parabolic-sar-h1,202d107a-567f-5ece-b325-f3d681ee9693,active,claude,2026-05-24
 11886,floor-pivot-intraday-breakout-retest,202d107a-567f-5ece-b325-f3d681ee9693,active,claude,2026-05-24
+11887,lien-double-bollinger-bands-regime,b840c053-5cd2-5e17-b25b-d495e73a33ab,active,claude,2026-05-24
+11888,lien-perfect-order-sma-stack,b840c053-5cd2-5e17-b25b-d495e73a33ab,active,claude,2026-05-24
+11889,lien-xtreme-fade-double-bb-adx,b840c053-5cd2-5e17-b25b-d495e73a33ab,active,claude,2026-05-24
+11890,big-ben-london-breakout-fade,2b2fb143-b663-5552-a316-8319a3edccad,active,claude,2026-05-24
