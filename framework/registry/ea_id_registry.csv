@@ -2743,3 +2743,11 @@ ea_id,slug,strategy_id,status,owner,created_at
 11868,hour-box-breakout-m5,7eb3773b-4c7d-5f72-9c2a-99773154821f,active,claude,2026-05-24
 11869,ema40-80-cci-m5,7eb3773b-4c7d-5f72-9c2a-99773154821f,active,claude,2026-05-24
 11870,dead-time-range-fade,34ee988d-9c04-5057-9277-af2bd00e148c,active,claude,2026-05-24
+11871,sma5-20-cross-m15-scalp,182e6755-015a-50ff-a0c9-b5507c5308b4,active,claude,2026-05-24
+11872,rsi-80-20-fade-m15,182e6755-015a-50ff-a0c9-b5507c5308b4,active,claude,2026-05-24
+11873,trix-signal-line-cross,ee502396-b08f-5cc0-a793-ca869b7b75e2,active,claude,2026-05-24
+11874,usdjpy-24hr-range-breakout,92f2b500-b152-5bcc-802b-bc8fde49df4f,active,claude,2026-05-24
+11875,ema144-169-fractal-breakout-h1,22e3d41e-5d8f-526f-8327-ca08425be191,active,claude,2026-05-24
+11876,gbpjpy-triple-bb50-fade,b64e232f-22dc-5e0d-a783-630ebff99f6d,active,claude,2026-05-24
+11877,ema5-13-cross-h1,91919757-597d-526e-ad11-144903f76c28,active,claude,2026-05-24
+11878,macd-5-13-1-zero-cross-h4,ac05822b-0169-5e89-bca3-c5c08dfc2eb7,active,claude,2026-05-24
