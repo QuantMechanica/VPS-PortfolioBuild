@@ -2733,3 +2733,7 @@ ea_id,slug,strategy_id,status,owner,created_at
 11858,psar-ao-ac-triple-confluence,78d504fe-863c-59e6-945b-34b9e54b62e8,active,claude,2026-05-24
 11859,kobas-ema5-10-15-65-macd,1319514a-ba7e-5b62-b919-fc65b58efefe,active,claude,2026-05-24
 11860,macd-stoch-m1-scalp,005c4660-2425-5e61-a136-36f66b3ab782,active,claude,2026-05-24
+11861,london-open-range-fade,15b901a0-6e19-5a57-b30b-3c5b6ab42bf3,active,claude,2026-05-24
+11862,smma5-lwma144-fractal-m5,1c857cdb-5992-5831-89e1-802b5d018c5f,active,claude,2026-05-24
+11863,sma10-15-50-cross-m5-scalp,66094b52-9d4a-567d-805b-66e67cb54b31,active,claude,2026-05-24
+11864,ichimoku-5line-alignment-d1,d101ea52-c21b-59b3-ab87-17814fbfe19f,active,claude,2026-05-24
