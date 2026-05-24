@@ -2607,3 +2607,17 @@ ea_id,slug,strategy_id,status,owner,created_at
 11732,tc-m5-s9-ema50-100-macd,40a4454c-64ff-5015-8538-9f7b32abc0e9,active,claude,2026-05-24
 11733,tc-m5-s15-ema-bb-channel-macd,40a4454c-64ff-5015-8538-9f7b32abc0e9,active,claude,2026-05-24
 11734,tc-m5-s18-ema20-macd-cross,40a4454c-64ff-5015-8538-9f7b32abc0e9,active,claude,2026-05-24
+11735,rfs-psar-cci-ema-m5,b5a932a2-40b6-5628-840b-d5069ac35c4a,active,claude,2026-05-24
+11736,rfs-cutting-points-bb-rsi-adx-m5,b5a932a2-40b6-5628-840b-d5069ac35c4a,active,claude,2026-05-24
+11737,rfs-adx-momentum-m5,b5a932a2-40b6-5628-840b-d5069ac35c4a,active,claude,2026-05-24
+11738,rfs-ha-adx-stoch-m5,b5a932a2-40b6-5628-840b-d5069ac35c4a,active,claude,2026-05-24
+11739,rfs-alligator-sma144-m15,b5a932a2-40b6-5628-840b-d5069ac35c4a,active,claude,2026-05-24
+11740,rfs-momentum-sma-m15,b5a932a2-40b6-5628-840b-d5069ac35c4a,active,claude,2026-05-24
+11741,rfs-ema200-ao-h1,b5a932a2-40b6-5628-840b-d5069ac35c4a,active,claude,2026-05-24
+11742,rfs-ema3-psar-h1,b5a932a2-40b6-5628-840b-d5069ac35c4a,active,claude,2026-05-24
+11743,rfs-ichimoku-ao-h1,b5a932a2-40b6-5628-840b-d5069ac35c4a,active,claude,2026-05-24
+11744,rfs-ema5-stoch-rsi-h1,b5a932a2-40b6-5628-840b-d5069ac35c4a,active,claude,2026-05-24
+11745,rfs-3sma-h4,b5a932a2-40b6-5628-840b-d5069ac35c4a,active,claude,2026-05-24
+11746,rfs-ema-adx-macd-h4,b5a932a2-40b6-5628-840b-d5069ac35c4a,active,claude,2026-05-24
+11747,rfs-midnight-d1,b5a932a2-40b6-5628-840b-d5069ac35c4a,active,claude,2026-05-24
+11748,bigben-london-range-fade,54fedbdc-d2bd-5000-acdd-e4dd3e633f3e,active,claude,2026-05-24
