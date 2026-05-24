@@ -2730,3 +2730,6 @@ ea_id,slug,strategy_id,status,owner,created_at
 11855,blade-m5-ema-zone-scalp,7f6f2831-ea66-58f6-a7ff-a8c89a44803d,active,claude,2026-05-24
 11856,blade-4h-ema30-breakout-retrace,7f6f2831-ea66-58f6-a7ff-a8c89a44803d,active,claude,2026-05-24
 11857,blade-macd-stoch-divergence-h1,7f6f2831-ea66-58f6-a7ff-a8c89a44803d,active,claude,2026-05-24
+11858,psar-ao-ac-triple-confluence,78d504fe-863c-59e6-945b-34b9e54b62e8,active,claude,2026-05-24
+11859,kobas-ema5-10-15-65-macd,1319514a-ba7e-5b62-b919-fc65b58efefe,active,claude,2026-05-24
+11860,macd-stoch-m1-scalp,005c4660-2425-5e61-a136-36f66b3ab782,active,claude,2026-05-24
