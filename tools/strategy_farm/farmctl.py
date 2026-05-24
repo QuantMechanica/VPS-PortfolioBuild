@@ -8665,6 +8665,22 @@ def record_build_result(root: Path, task_id: str, result_file: str) -> dict[str,
                 "; ".join(spec_result.get("failures", [])[:3]),
             )
 
+    # PT11 2026-05-24 — auto-enqueue Q02 work_items immediately after a clean
+    # build. Pre-PT11 every build, even fully-compiled with PASS spec, sat at
+    # status=done waiting for a manual `claude-review-prompt` + `ea_review` +
+    # `enqueue-backtest` chain. That gap was the dominant cause of the
+    # "283 ex5 built / 15 in Q02" funnel collapse — 95% of fresh ex5s never
+    # entered the test pipeline. Now: when build is clean (status=done), we
+    # read setfiles_generated from the codex result, pair each setfile with
+    # its symbol (parsed from filename), and INSERT one Q02 work_item per
+    # (symbol, setfile). The factory's worker daemons pick them up on the
+    # next dispatch tick. Idempotent — skips if a pending/active Q02 already
+    # exists for the same (ea_id, symbol).
+    auto_q02 = None
+    if new_status == "done":
+        auto_q02 = _auto_enqueue_q02_for_build(root, result)
+        payload_merge["auto_q02_enqueued"] = auto_q02
+
     with connect(root) as conn:
         updated = update_task(conn, task_id, status=new_status, payload_merge=payload_merge)
     if updated is None:
@@ -8676,11 +8692,83 @@ def record_build_result(root: Path, task_id: str, result_file: str) -> dict[str,
         "smoke_result": smoke,
         "blocked_reason": blocked,
         "fail_code": fail_code,
+        "auto_q02_enqueued": auto_q02,
         "next_action_hint": (
-            f"python tools/strategy_farm/farmctl.py claude-review-prompt --build-task-id {task_id}"
+            f"Q02 auto-enqueued ({len(auto_q02.get('enqueued', [])) if auto_q02 else 0} work_items); "
+            f"worker daemons will dispatch on next tick"
+            if new_status == "done" and auto_q02
+            else f"python tools/strategy_farm/farmctl.py claude-review-prompt --build-task-id {task_id}"
             if new_status == "done" else f"Build failed/blocked. Inspect {rp} and rework or escalate."
         ),
     }
+
+
+def _auto_enqueue_q02_for_build(root: Path, build_result: dict[str, Any]) -> dict[str, Any]:
+    """Create Q02 work_items for every setfile the Codex build produced.
+
+    Pairs each setfile with its symbol parsed from the filename
+    (<ea_label>_<SYMBOL>_<TF>_backtest.set). Skips (ea_id, symbol) pairs
+    that already have a pending or active Q02 work_item — idempotent so
+    re-running record-build doesn't create duplicates.
+
+    Returns {"enqueued": [{...}], "skipped": [{...}]} for observability.
+    """
+    ea_id = build_result.get("ea_id")
+    setfiles = build_result.get("setfiles_generated") or []
+    if not ea_id or not setfiles:
+        return {"enqueued": [], "skipped": [],
+                "reason": "missing_ea_id_or_setfiles"}
+
+    enqueued: list[dict[str, Any]] = []
+    skipped: list[dict[str, Any]] = []
+    now_iso = utc_now()
+
+    with connect(root) as conn:
+        for setfile_str in setfiles:
+            setfile_path = Path(str(setfile_str))
+            # Filename pattern: <ea_label>_<SYMBOL>_<TF>_backtest.set
+            # Symbol may contain '.' (e.g. EURUSD.DWX); use regex to extract.
+            m = re.search(r"_([A-Z][A-Z0-9.]{2,})_([A-Z0-9]+)_backtest\.set$",
+                          setfile_path.name)
+            if not m:
+                skipped.append({"setfile": str(setfile_path),
+                                "reason": "setfile_name_parse_failed"})
+                continue
+            symbol = m.group(1)
+            tf = m.group(2)
+
+            # Idempotency: skip if pending/active Q02 already exists
+            existing = conn.execute(
+                "SELECT id, status FROM work_items "
+                "WHERE ea_id=? AND symbol=? AND phase='Q02' AND status IN ('pending', 'active')",
+                (ea_id, symbol),
+            ).fetchone()
+            if existing:
+                skipped.append({"setfile": setfile_path.name, "symbol": symbol,
+                                "reason": f"existing_q02_{existing[1]}",
+                                "existing_wi_id": existing[0][:8]})
+                continue
+
+            wi_id = str(uuid.uuid4())
+            payload = {
+                "host_symbol": symbol,
+                "host_timeframe": tf,
+                "enqueued_by": "record_build_result.auto_q02",
+                "enqueued_at_utc": now_iso,
+                "build_task_id": build_result.get("task_id"),
+            }
+            conn.execute(
+                "INSERT INTO work_items (id, kind, phase, ea_id, symbol, setfile_path, "
+                "status, attempt_count, payload_json, created_at, updated_at) "
+                "VALUES (?, 'backtest', 'Q02', ?, ?, ?, 'pending', 0, ?, ?, ?)",
+                (wi_id, ea_id, symbol, str(setfile_path),
+                 json.dumps(payload), now_iso, now_iso),
+            )
+            enqueued.append({"wi_id": wi_id[:8], "symbol": symbol, "tf": tf,
+                             "setfile": setfile_path.name})
+        conn.commit()
+
+    return {"enqueued": enqueued, "skipped": skipped, "ea_id": ea_id}
 
 
 def _classify_build_fail_code(result: dict[str, Any]) -> str | None:
