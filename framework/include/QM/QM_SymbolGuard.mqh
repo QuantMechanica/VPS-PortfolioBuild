@@ -97,6 +97,49 @@ int QM_SymbolGuardCount()
    return g_qm_sg_allowed_count;
   }
 
+// FW9 2026-05-24 — basket history pre-load. Pre-fix, basket EAs like
+// QM5_10717/10718 called SymbolSelect(symbol, true) in OnInit which only
+// adds the symbol to Market Watch — the MT5 tester does NOT load that
+// symbol's history into the testing context. First per-symbol iClose
+// then returned 0 or stale data, the strategy made no decisions, MT5
+// fast-finished, run_smoke flagged NO_REAL_TICKS_MARKER_FAST_FINISH ->
+// INVALID. Fix: after SymbolSelect, force MT5 to load `warmup_bars` of
+// history per symbol via CopyClose. The CopyClose itself triggers the
+// tester's symbol-data sync; the returned data is not used.
+//
+// Call after QM_SymbolGuardInit(basket) in the EA's OnInit. Safe to call
+// outside the tester too (live mode will just confirm history is loaded).
+void QM_BasketWarmupHistory(const string &symbols[],
+                             const ENUM_TIMEFRAMES tf = PERIOD_CURRENT,
+                             const int warmup_bars = 300)
+  {
+   const int n = ArraySize(symbols);
+   const ENUM_TIMEFRAMES effective_tf = (tf == PERIOD_CURRENT) ? (ENUM_TIMEFRAMES)_Period : tf;
+   int loaded_count = 0;
+   int skipped_count = 0;
+   for(int i = 0; i < n; i++)
+     {
+      const string sym = symbols[i];
+      if(StringLen(sym) == 0)
+         continue;
+      if(!SymbolSelect(sym, true))
+        {
+         skipped_count++;
+         continue;
+        }
+      // Force history load. Result is discarded; we just need the side effect.
+      double buf[];
+      const int got = CopyClose(sym, effective_tf, 0, warmup_bars, buf);
+      if(got > 0)
+         loaded_count++;
+      else
+         skipped_count++;
+     }
+   QM_LogEvent(QM_INFO, "BASKET_WARMUP",
+               StringFormat("{\"requested\":%d,\"loaded\":%d,\"skipped\":%d,\"warmup_bars\":%d,\"tf\":%d}",
+                            n, loaded_count, skipped_count, warmup_bars, (int)effective_tf));
+  }
+
 // Returns true if symbol is permitted; otherwise logs a throttled
 // SYMBOL_GUARD_VIOLATION and returns false. Caller decides what to do
 // with the verdict (skip the call, allow with warning logged, etc.).

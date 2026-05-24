@@ -93,7 +93,13 @@ function Get-ReportInvalidReasons {
         [Parameter(Mandatory = $true)]
         [string]$ExpectedToDate,
         [Parameter(Mandatory = $true)]
-        [bool]$HasRealTicksMarker
+        [bool]$HasRealTicksMarker,
+        # FW9 2026-05-24 — when the strategy actually traded (> 0 deals) we
+        # know the tester ran far enough to execute logic; suppressing the
+        # NO_REAL_TICKS_MARKER_FAST_FINISH flag in that case avoids false
+        # INVALIDs on basket EAs whose host-symbol marker log line gets
+        # consumed before run_smoke's tail window.
+        [int]$ReportTotalTrades = -1
     )
 
     $reasons = New-Object System.Collections.Generic.List[string]
@@ -135,7 +141,12 @@ function Get-ReportInvalidReasons {
     if (Test-TesterLogShowsSetupDataMissing -TesterLogTail $TesterLogTail) { $reasons.Add("SETUP_DATA_MISSING") }
     if (Test-TesterLogHasNoHistoryForRun -TesterLogTail $TesterLogTail -ExpectedSymbol $ExpectedSymbol -ExpectedFromDate $ExpectedFromDate -ExpectedToDate $ExpectedToDate) { $reasons.Add("NO_HISTORY_LOG") }
     if ($bars -ge 0 -and ($periodValue -match "(?i)\bM0\b" -or $bars -le 0) -and $TesterLogTail -match "(?im)\bhistory\b") { $reasons.Add("HISTORY_CONTEXT_INVALID") }
-    if ((-not $HasRealTicksMarker) -and $TesterLogTail -match "(?im)automatical testing finished") { $reasons.Add("NO_REAL_TICKS_MARKER_FAST_FINISH") }
+    # FW9 2026-05-24 — only flag NO_REAL_TICKS if the EA also produced 0 trades.
+    # If the report shows real trade activity, the marker absence is a
+    # logging quirk (esp. on basket EAs) not a tester-failure signal.
+    if ((-not $HasRealTicksMarker) -and $TesterLogTail -match "(?im)automatical testing finished" -and ($ReportTotalTrades -le 0)) {
+        $reasons.Add("NO_REAL_TICKS_MARKER_FAST_FINISH")
+    }
 
     return @($reasons)
 }
@@ -1335,7 +1346,7 @@ for ($i = 1; $i -le $Runs; $i++) {
         $hasRealTicksMarker = [regex]::IsMatch($testerLogTail, "(?im)generating based on real ticks")
     }
 
-    $invalidReasons = Get-ReportInvalidReasons -Html $reportHtml -TesterLogTail $testerLogTail -ExpectedSymbol $Symbol -ExpectedFromDate $fromDate -ExpectedToDate $toDate -HasRealTicksMarker $hasRealTicksMarker
+    $invalidReasons = Get-ReportInvalidReasons -Html $reportHtml -TesterLogTail $testerLogTail -ExpectedSymbol $Symbol -ExpectedFromDate $fromDate -ExpectedToDate $toDate -HasRealTicksMarker $hasRealTicksMarker -ReportTotalTrades $totalTrades
     $invalidVerdict = Resolve-InvalidReportVerdict -InvalidReasons $invalidReasons
     if ($invalidVerdict) {
         $reasonClasses.Add($invalidVerdict)

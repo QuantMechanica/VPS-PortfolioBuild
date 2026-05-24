@@ -364,8 +364,15 @@ int OnInit()
                         qm_friday_close_hour_broker))
       return INIT_FAILED;
 
+   // FW9 2026-05-24 — basket scope + history pre-load. See QM5_10717 for
+   // the rationale; carry strategy needs 252d realized-vol regime + per-pair
+   // closes to compute carry signal — neither works if the tester didn't
+   // load the basket symbols' history.
+   string basket_list[28];
    for(int i = 0; i < 28; ++i)
-      SymbolSelect(QM10718_PAIRS[i], true);
+      basket_list[i] = QM10718_PAIRS[i];
+   QM_SymbolGuardInit(basket_list);
+   QM_BasketWarmupHistory(basket_list, PERIOD_D1, 280);
 
    QM_LogEvent(QM_INFO, "INIT_OK",
                "{\"card\":\"QM5_10718_edgelab-regime-filtered-carry\",\"scope\":\"basket\"}");
