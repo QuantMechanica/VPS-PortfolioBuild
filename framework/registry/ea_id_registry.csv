@@ -2703,3 +2703,5 @@ ea_id,slug,strategy_id,status,owner,created_at
 11828,carter-m5-s18-ema20-macd-10pip-m5,f4430cee-7efb-592e-bf0f-e469ef156b2d,active,claude,2026-05-24
 11829,carter-m5-s19-psar-macd64128-ema100-m5,f4430cee-7efb-592e-bf0f-e469ef156b2d,active,claude,2026-05-24
 11830,carter-m5-s20-ema3-bb20-macd-m5,f4430cee-7efb-592e-bf0f-e469ef156b2d,active,claude,2026-05-24
+11831,scalp-macd1269-stoch833-m5,cea07ead-613e-5767-89b6-9b9ec98b84ee,active,claude,2026-05-24
+11832,scalp-sma101550-m5,8eb42267-6c2d-58f5-9e29-132e1a43e2c0,active,claude,2026-05-24
