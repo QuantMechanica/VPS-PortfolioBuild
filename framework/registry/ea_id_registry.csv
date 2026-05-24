@@ -2621,3 +2621,7 @@ ea_id,slug,strategy_id,status,owner,created_at
 11746,rfs-ema-adx-macd-h4,b5a932a2-40b6-5628-840b-d5069ac35c4a,active,claude,2026-05-24
 11747,rfs-midnight-d1,b5a932a2-40b6-5628-840b-d5069ac35c4a,active,claude,2026-05-24
 11748,bigben-london-range-fade,54fedbdc-d2bd-5000-acdd-e4dd3e633f3e,active,claude,2026-05-24
+11749,london-breakfast-asia-box-breakout,a9d18254-30e7-52b3-8381-990257e0931e,active,claude,2026-05-24
+11750,nfs-ema3-psar-h1-profit,781e6542-cf6d-5b05-b351-2c769d7fb926,active,claude,2026-05-24
+11751,nfs-tom-demark-ema-momentum-h1,781e6542-cf6d-5b05-b351-2c769d7fb926,active,claude,2026-05-24
+11752,nfs-intraday-pivots-ema-macd,781e6542-cf6d-5b05-b351-2c769d7fb926,active,claude,2026-05-24
