@@ -5459,8 +5459,8 @@ def pump(root: Path) -> dict[str, Any]:
     #    file level: CSV append is atomic line-by-line, update_resolver is
     #    idempotent (reads current CSV state, regenerates .mqh deterministically).
     #    OWNER 2026-05-16: explicit ok to parallelize.
-    MAX_PARALLEL_CODEX = 5       # OWNER 2026-05-23 (later): bumped 3->5 to clear the remaining strategy-card build backlog
-    MAX_PARALLEL_CODEX_BUILDS = 5  # same: 3->5 for build_ea throughput
+    MAX_PARALLEL_CODEX = 3       # OWNER 2026-05-24: 5->3 (back to throttle after token-burn audit)
+    MAX_PARALLEL_CODEX_BUILDS = 3  # same: 5->3 to match
     # Circuit breaker: when codex auth is broken, force both caps to 0 so
     # NO codex work spawns (research/review/build/g0 all gated through
     # these caps). Prevents wasting 5×30s retries per spawn + leaving
@@ -5493,8 +5493,28 @@ def pump(root: Path) -> dict[str, Any]:
             "ORDER BY updated_at ASC"
         ).fetchall()
         all_pending = sorted(all_pending, key=lambda row: _card_build_priority(root, row))
+        # PT12 2026-05-24 — skip-list of EAs Codex has already permanently
+        # blocked on (3 retries exhausted with compile_error or similar). Pre-
+        # PT12 these EAs sat in the pending queue too and Codex re-spawned for
+        # them every cycle, costing ~228 wasted Codex spawns/day per the
+        # token-burn audit. Now: read the failed/blocked tasks once, build a
+        # set of ea_ids that hit permanent_blocked_retries_exhausted, and skip
+        # any pending build_ea whose ea_id is in that set.
+        perma_blocked_eas: set[str] = set()
+        for r in conn.execute(
+            "SELECT payload_json FROM tasks WHERE kind='build_ea' AND status IN ('failed','blocked')"
+        ):
+            try:
+                pl = json.loads(r["payload_json"] or "{}")
+            except (json.JSONDecodeError, TypeError):
+                continue
+            if pl.get("final_failure") == "permanent_blocked_retries_exhausted":
+                ea_id = pl.get("ea_id")
+                if ea_id:
+                    perma_blocked_eas.add(ea_id)
         seen_eas: set[str] = set()
         pending_builds = []
+        skipped_perma_blocked = 0
         for row in all_pending:
             if len(pending_builds) >= spawn_budget:
                 break
@@ -5502,12 +5522,20 @@ def pump(root: Path) -> dict[str, Any]:
             ea_id = payload.get("ea_id")
             if ea_id in seen_eas:
                 continue
+            if ea_id in perma_blocked_eas:
+                # Hard-block: don't re-spawn for an EA that has already
+                # exhausted its retries. OWNER can recycle to _v2 manually
+                # if the underlying source is fixable.
+                skipped_perma_blocked += 1
+                continue
             seen_eas.add(ea_id)
             pending_builds.append(row)
     spawns = []
     for pending_build in pending_builds:
         sp = _spawn_codex_for_build(root, pending_build)
         spawns.append(sp)
+    result["codex_perma_blocked_skipped"] = skipped_perma_blocked
+    result["codex_perma_blocked_ea_count"] = len(perma_blocked_eas)
 
     # 3b. Auto-create build_ea tasks for newly-approved cards. Without this,
     #    pump can't reach Codex on cards that haven't yet been touched by
