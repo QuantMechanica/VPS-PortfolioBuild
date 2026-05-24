@@ -2586,3 +2586,4 @@ ea_id,slug,strategy_id,status,owner,created_at
 11711,blade-m5-zone-scalp,a78d03bc-2113-5ea3-bd12-cfa0a991a0f8,active,claude,2026-05-24
 11712,blade-h4-breakout-retrace,a78d03bc-2113-5ea3-bd12-cfa0a991a0f8,active,claude,2026-05-24
 11713,blade-macd-divergence-stoch,a78d03bc-2113-5ea3-bd12-cfa0a991a0f8,active,claude,2026-05-24
+11714,chelo-gbpjpy-triple-bb50-scalp,76dfdaf4-870e-516d-80cd-a62b4f40e499,active,claude,2026-05-24
