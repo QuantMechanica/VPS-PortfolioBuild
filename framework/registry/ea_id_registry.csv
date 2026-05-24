@@ -2589,3 +2589,10 @@ ea_id,slug,strategy_id,status,owner,created_at
 11714,chelo-gbpjpy-triple-bb50-scalp,76dfdaf4-870e-516d-80cd-a62b4f40e499,active,claude,2026-05-24
 11715,tradingwalk-abc-fib-extension,694f33c6-526a-56b2-8b1c-364efb192124,active,claude,2026-05-24
 11716,nico-smi-vq-m15-eurjpy,5071d002-b640-5386-a182-9c7dd3551d60,active,claude,2026-05-24
+11717,tc-m5-s1-macd-stoch-ema5co,40a4454c-64ff-5015-8538-9f7b32abc0e9,active,claude,2026-05-24
+11718,tc-m5-s3-bb-stoch-breakout,40a4454c-64ff-5015-8538-9f7b32abc0e9,active,claude,2026-05-24
+11719,tc-m5-s4-bb-midband-trend,40a4454c-64ff-5015-8538-9f7b32abc0e9,active,claude,2026-05-24
+11720,tc-m5-s6-mtf-ema-bb,40a4454c-64ff-5015-8538-9f7b32abc0e9,active,claude,2026-05-24
+11721,tc-m5-s7-london-box-breakout,40a4454c-64ff-5015-8538-9f7b32abc0e9,active,claude,2026-05-24
+11722,tc-m5-s8-triple-bb-rsi-stoch,40a4454c-64ff-5015-8538-9f7b32abc0e9,active,claude,2026-05-24
+11723,tc-m5-s10-ema-cci-cross,40a4454c-64ff-5015-8538-9f7b32abc0e9,active,claude,2026-05-24
