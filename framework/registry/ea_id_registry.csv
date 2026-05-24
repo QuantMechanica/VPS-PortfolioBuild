@@ -2561,3 +2561,10 @@ ea_id,slug,strategy_id,status,owner,created_at
 11686,tc-h1-s3-ema6-23-stoch-macd,6b5ab225-a2d3-54b1-ac8b-2b000a205468,active,claude,2026-05-24
 11687,tc-h1-s5-smma55-wr55-stoch,6b5ab225-a2d3-54b1-ac8b-2b000a205468,active,claude,2026-05-24
 11688,tc-h1-s17-smma28-ema100-macd,6b5ab225-a2d3-54b1-ac8b-2b000a205468,active,claude,2026-05-24
+11689,strat-bb-mr,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-24
+11690,strat-ma-trend,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-24
+11691,strat-ma-x,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-24
+11692,strat-macd,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-24
+11693,strat-mom,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-24
+11694,tc-h1-s2-sma9-100,6b5ab225-a2d3-54b1-ac8b-2b000a205468,active,claude,2026-05-24
+11695,tc-h1-s4-ha-sma14-osma-momentum-rsi,6b5ab225-a2d3-54b1-ac8b-2b000a205468,active,claude,2026-05-24
