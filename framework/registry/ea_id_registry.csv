@@ -2639,3 +2639,17 @@ ea_id,slug,strategy_id,status,owner,created_at
 11764,ichimoku-cloud-tenkan-kijun,053a19aa-386f-50a7-8a0e-1c480d243306,active,claude,2026-05-24
 11765,ema5-ema13-fibonacci-cross-h1,83256a48-a68f-5453-8c0d-a5ac5e9493c3,active,claude,2026-05-24
 11766,trix-signal-zero-cross-h4,cec3b02f-11c5-5fee-b396-ff04907e058e,active,claude,2026-05-24
+11767,connors-double7s-200sma-d1,ef7afc8e-406f-5f05-90d5-8258a7fb7123,active,claude,2026-05-24
+11768,connors-cumrsi2-200sma-d1,ef7afc8e-406f-5f05-90d5-8258a7fb7123,active,claude,2026-05-24
+11769,tc-tf-s1-psar-ema102550-h30,3afb28d0-5993-527a-b039-5eef9c0e62e8,active,claude,2026-05-24
+11770,tc-tf-s6-sma32hl-psar-sma200-m15,3afb28d0-5993-527a-b039-5eef9c0e62e8,active,claude,2026-05-24
+11771,tc-tf-s7-ema24-stoch-d1,3afb28d0-5993-527a-b039-5eef9c0e62e8,active,claude,2026-05-24
+11772,tc-tf-s8-ema411-adx-d1,3afb28d0-5993-527a-b039-5eef9c0e62e8,active,claude,2026-05-24
+11773,tc-tf-s9-macd3916-adx-d1,3afb28d0-5993-527a-b039-5eef9c0e62e8,active,claude,2026-05-24
+11774,tc-tf-s10-sma315-macd-adx-dpo-h1,3afb28d0-5993-527a-b039-5eef9c0e62e8,active,claude,2026-05-24
+11775,tc-tf-s11-adx-prevday-breakout-h1,3afb28d0-5993-527a-b039-5eef9c0e62e8,active,claude,2026-05-24
+11776,tc-tf-s12-sma-cci5-m15,3afb28d0-5993-527a-b039-5eef9c0e62e8,active,claude,2026-05-24
+11777,tc-tf-s13-sma150-stoch-rsi3-d1,3afb28d0-5993-527a-b039-5eef9c0e62e8,active,claude,2026-05-24
+11778,tc-tf-s16-ema721-pullback-any,3afb28d0-5993-527a-b039-5eef9c0e62e8,active,claude,2026-05-24
+11779,tc-tf-s17-ema18-adx12-pullback,3afb28d0-5993-527a-b039-5eef9c0e62e8,active,claude,2026-05-24
+11780,tc-tf-s18-ema613-macd-psar-h4,3afb28d0-5993-527a-b039-5eef9c0e62e8,active,claude,2026-05-24
