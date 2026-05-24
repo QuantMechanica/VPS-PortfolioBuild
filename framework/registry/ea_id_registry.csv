@@ -2722,3 +2722,6 @@ ea_id,slug,strategy_id,status,owner,created_at
 11847,trix14-zero-cross-h1,48c5b99e-3b71-5956-aabc-3a2f1ae44c43,active,claude,2026-05-24
 11848,smi-stoch-ha-m15,9d97eec6-6cfc-5561-885f-067424721621,active,claude,2026-05-24
 11849,range-breakout-24h-usdjpy,dde791fb-b29d-5152-954a-7e951a980d5c,active,claude,2026-05-24
+11850,vegas-wave-ema144169-h1,b61870d4-4397-5e38-8f46-aaca7b7a1bb0,active,claude,2026-05-24
+11851,bermuda-123-fib-h1,d90c43fa-d602-5370-ac1c-c2fc6b6d4680,active,claude,2026-05-24
+11852,bb50-234-meanturn-m1,f0aafe89-74a4-54d6-a2ec-9d555e7b2eb3,active,claude,2026-05-24
