@@ -2632,3 +2632,10 @@ ea_id,slug,strategy_id,status,owner,created_at
 11757,davey-donchian-close-breakout-d1,82b485a3-2c05-565c-818d-f04e03f74c5a,active,claude,2026-05-24
 11758,davey-dueling-momentum-h4,82b485a3-2c05-565c-818d-f04e03f74c5a,active,claude,2026-05-24
 11759,continuation-ema50-williamsr-w1d1,8d8e94b0-ccf7-59ab-8b1d-e99dc7dab229,active,claude,2026-05-24
+11760,144-trend-shift-sma5-lwma144-m5,7977a977-69b4-5432-9af3-a8ebb04c0214,active,claude,2026-05-24
+11761,stoch-sma70-scalp-m1,d994057c-1ee2-5dd0-bf70-45ed6cba7b65,active,claude,2026-05-24
+11762,100pips-daily-range-breakout-usdjpy,20bff02a-78e8-584d-99e5-3cbe236956d4,active,claude,2026-05-24
+11763,macd-trender-psar-atr-h4,6797c5ab-c8ba-508f-8eb5-27932f374869,active,claude,2026-05-24
+11764,ichimoku-cloud-tenkan-kijun,053a19aa-386f-50a7-8a0e-1c480d243306,active,claude,2026-05-24
+11765,ema5-ema13-fibonacci-cross-h1,83256a48-a68f-5453-8c0d-a5ac5e9493c3,active,claude,2026-05-24
+11766,trix-signal-zero-cross-h4,cec3b02f-11c5-5fee-b396-ff04907e058e,active,claude,2026-05-24
