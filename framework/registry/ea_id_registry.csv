@@ -2788,3 +2788,5 @@ ea_id,slug,strategy_id,status,owner,created_at
 11913,crue-ichimoku-5line-alignment-d1,f9b3c7a4-2e58-5d63-9c47-a1d6e4b7f2c8,active,claude,2026-05-25
 11914,ciurea-100sma-cross-h4,a5e8f4b2-6c91-5d47-8b39-d2a6c4e7f3b8,active,claude,2026-05-25
 11915,fielder-deadtime-midpoint-reversion-h1,b8c4e9a2-5d76-5f48-9c37-d6a4b1e5f3c8,active,claude,2026-05-25
+10311,hf-momo-buffer,fd8c6a44-7c20-5e45-a7a8-c6a595ac47a9,active,Development,2026-05-25
+11916,neely-weller-alexander-filter-2pct-d1,7e2b8f4a-3c95-5d68-9a47-d3b6e1f4c7a8,active,claude,2026-05-25
