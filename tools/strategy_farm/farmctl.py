@@ -5459,8 +5459,8 @@ def pump(root: Path) -> dict[str, Any]:
     #    file level: CSV append is atomic line-by-line, update_resolver is
     #    idempotent (reads current CSV state, regenerates .mqh deterministically).
     #    OWNER 2026-05-16: explicit ok to parallelize.
-    MAX_PARALLEL_CODEX = 3       # OWNER 2026-05-24: 5->3 (back to throttle after token-burn audit)
-    MAX_PARALLEL_CODEX_BUILDS = 3  # same: 5->3 to match
+    MAX_PARALLEL_CODEX = 5       # OWNER 2026-05-25: 3->5 (raise throttle; perma-blocked skip-list keeps token-burn bounded)
+    MAX_PARALLEL_CODEX_BUILDS = 5  # same: 3->5 to match
     # Circuit breaker: when codex auth is broken, force both caps to 0 so
     # NO codex work spawns (research/review/build/g0 all gated through
     # these caps). Prevents wasting 5×30s retries per spawn + leaving
