@@ -282,6 +282,21 @@ def connect(root: Path) -> sqlite3.Connection:
     return conn
 
 
+def _is_sqlite_locked(exc: sqlite3.OperationalError) -> bool:
+    return "locked" in str(exc).lower()
+
+
+def _with_sqlite_write_retry(fn, retries: int = 8, base_sleep_seconds: float = 1.5):
+    for attempt in range(1, retries + 1):
+        try:
+            return fn()
+        except sqlite3.OperationalError as exc:
+            if not _is_sqlite_locked(exc) or attempt == retries:
+                raise
+            time.sleep(min(30.0, base_sleep_seconds * attempt))
+    raise RuntimeError("unreachable sqlite retry state")
+
+
 def init_dirs(root: Path) -> None:
     for rel in RUNTIME_DIRS:
         (root / rel).mkdir(parents=True, exist_ok=True)
@@ -4438,6 +4453,8 @@ def _detect_zerotrade_dead_eas(con: sqlite3.Connection, root: Path = DEFAULT_ROO
         ratio = zt / done if done else 0.0
         if ratio < ZERO_TRADE_DEAD_THRESHOLD:
             continue
+        if _recent_zero_trade_rework_exists(con, ea_id):
+            continue
         prior_attempts = con.execute(
             """
             SELECT COUNT(*) FROM tasks
@@ -4453,8 +4470,6 @@ def _detect_zerotrade_dead_eas(con: sqlite3.Connection, root: Path = DEFAULT_ROO
                 "sample_size": done,
                 "zero_trade_failures": zt,
             })
-            continue
-        if _recent_zero_trade_rework_exists(con, ea_id):
             continue
 
         card_path = _find_first_path([
@@ -5307,9 +5322,21 @@ def pump(root: Path) -> dict[str, Any]:
     # 1a. Per-symbol work_items dispatch is owned by the per-terminal daemon
     #     fleet (tools/strategy_farm/terminal_worker.py). Pump-cron keeps the
     #     active-timeout detector but no longer spawns MT5 work_items.
-    with connect(root) as conn:
-        result["active_timeouts"] = _detect_active_age_timeout(conn)
-        result["pending_verdicts_normalized"] = _normalize_pending_work_item_verdicts(conn)
+    def _run_worker_owned_maintenance() -> dict[str, Any]:
+        with connect(root) as conn:
+            return {
+                "active_timeouts": _detect_active_age_timeout(conn),
+                "pending_verdicts_normalized": _normalize_pending_work_item_verdicts(conn),
+            }
+
+    try:
+        result.update(_with_sqlite_write_retry(_run_worker_owned_maintenance))
+    except sqlite3.OperationalError as exc:
+        if not _is_sqlite_locked(exc):
+            raise
+        result["active_timeouts"] = []
+        result["pending_verdicts_normalized"] = 0
+        result["worker_owned_maintenance_skipped"] = f"sqlite_locked:{exc}"
     result["dispatch_work_items"] = {
         "disabled": True,
         "reason": "per-terminal worker daemons own work_item dispatch",
@@ -6056,12 +6083,6 @@ def pump(root: Path) -> dict[str, Any]:
             """
             SELECT w.* FROM work_items w
             WHERE w.status='done' AND w.verdict='PASS' AND w.phase in ('Q02', 'P2')
-              AND (
-                w.setfile_path LIKE '%_ablation_%'
-                OR w.setfile_path LIKE '%_grid_%'
-                OR w.setfile_path LIKE '%_synth_%'
-                OR w.setfile_path LIKE '%_freq_%'
-              )
               AND NOT EXISTS (
                 SELECT 1 FROM work_items w2
                 WHERE w2.ea_id = w.ea_id
@@ -6069,12 +6090,12 @@ def pump(root: Path) -> dict[str, Any]:
                   AND w2.setfile_path = w.setfile_path
                   AND w2.phase in ('Q03', 'P3')
               )
-            ORDER BY w.updated_at ASC LIMIT 500
+            ORDER BY w.updated_at ASC LIMIT 5000
             """
         ).fetchall()
         reopened_parents: set[str] = set()
         for wi in promotable:
-            if len(result["p3_promotions"]) >= 10:
+            if len(result["p3_promotions"]) >= 250:
                 break
             p2_net_profit = _work_item_p2_net_profit(wi)
             if p2_net_profit is None or p2_net_profit <= 0.0:
@@ -6106,7 +6127,21 @@ def pump(root: Path) -> dict[str, Any]:
                 (f'%"ea_id": "{wi["ea_id"]}"%',),
             ).fetchone()
             if not parent:
-                continue
+                parent_id = create_task(
+                    conn,
+                    kind="backtest_q03",
+                    source_id=None,
+                    card_id=wi["ea_id"],
+                    payload={
+                        "ea_id": wi["ea_id"],
+                        "phase": "Q03",
+                        "created_by": "p2_pass_promoter",
+                    },
+                )
+                parent = conn.execute(
+                    "SELECT id, status FROM tasks WHERE id=?",
+                    (parent_id,),
+                ).fetchone()
             new_id = str(uuid.uuid4())
             now = utc_now()
             payload = {"promoted_from_p2_work_item": wi["id"]}
