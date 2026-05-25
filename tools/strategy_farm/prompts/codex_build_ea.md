@@ -375,6 +375,39 @@ build_result JSON is more valuable than masking it with a hopeful rewrite.
    helpers listed in the Framework Corset section above — no per-EA
    `IsNewBar`, no raw `iATR / iMA / iRSI / iMACD / iADX / iBands` calls.
 
+5a. **Write `{{ea_dir}}/SPEC.md`** from `framework/templates/SPEC.md.template`.
+    This file is REQUIRED by the Q01 Build & Spec gate
+    (`framework/scripts/validate_spec_doc.py`); pump records every build
+    that lacks it as `status=failed` with `fail_code=spec_validation_failed`,
+    blocking Q02 promotion. The validator checks: file exists, all 7
+    section headers present (`## 1. Strategy Logic` through
+    `## 7. Risk Model`), ≤5 unfilled `<PLACEHOLDER>` tokens, EA ID line
+    matches dir name. Fill in:
+    - Header: `**EA ID:** QM5_{{ea_id_suffix}}`, `**Slug:** {{slug}}`,
+      `**Source:** {{source_id_from_card_frontmatter}}`, today's date
+    - § 1 Strategy Logic: 2-4 sentence prose summary of the entry/exit
+      rule (paraphrase the card's mechanical body, no jargon)
+    - § 2 Parameters: table of the strategy-specific `input` declarations
+      you wrote in the .mq5 (framework inputs RISK_PERCENT etc. are
+      already documented in V5_FRAMEWORK_DESIGN.md — do NOT re-list)
+    - § 3 Symbol Universe: list each symbol you appended to
+      `magic_numbers.csv` for this EA, with a one-line "why it fits"
+    - § 4 Timeframe: base TF from the card, MTF refs if any
+    - § 5 Expected Behaviour: copy the four metrics from the card
+      frontmatter (`expected_trades_per_year_per_symbol`,
+      `expected_trade_frequency`, hold time, regime)
+    - § 6 Source Citation: source_id + pointer + "all R1–R4 PASS per
+      `artifacts/cards_approved/{{ea_id}}_{{slug}}.md`"
+    - § 7 Risk Model: keep the template's stock table verbatim (it
+      describes the framework convention, not per-EA)
+    - Revision History: `| v1 | YYYY-MM-DD | Initial build from card | <build_task_id> |`
+    Validate with:
+    ```powershell
+    python C:\QM\repo\framework\scripts\validate_spec_doc.py {{ea_dir}}
+    ```
+    Must report `PASS`. If FAIL, fix the listed sections before
+    continuing.
+
 6. Run `pwsh -File C:\QM\repo\framework\scripts\build_check.ps1 -EALabel {{ea_id}}_{{slug}}`.
    Must pass.
 
@@ -421,6 +454,7 @@ No prose around it. Schema:
   "magic_base": <int>,
   "symbols_registered": ["EURUSD.DWX", "..."],
   "setfiles_generated": ["<absolute paths to .set files in sets/>"],
+  "spec_md_path": "<absolute path to SPEC.md or null if not written>",
   "build_check_passed": true,
   "compile_succeeded": true,
   "smoke_result": "passed" | "zero_trades" | "compile_failed" | "build_check_failed" | "framework_error",
