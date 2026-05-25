@@ -5645,6 +5645,11 @@ def pump(root: Path) -> dict[str, Any]:
 
     # 4. Record completed Codex builds — any pending build_ea whose
     #    build_result JSON exists and isn't empty.
+    # PT15 2026-05-25 — Codex actually writes `<task_id>.attempt_<N>.json`
+    # (retry-aware) but pump's payload sets BRP to `<task_id>.json` in
+    # 7 different sites. The literal path never exists; fresh builds sat
+    # forever in status=pending with .ex5 already produced. Now: fall
+    # back to glob `<task_id>*.json` and pick the newest attempt.
     with connect(root) as conn:
         rows = conn.execute(
             "SELECT * FROM tasks WHERE kind='build_ea' AND status='pending'"
@@ -5652,8 +5657,23 @@ def pump(root: Path) -> dict[str, Any]:
     for row in rows:
         payload = json.loads(row["payload_json"])
         brp = payload.get("build_result_path")
-        if brp and Path(brp).exists() and Path(brp).stat().st_size > 0:
-            rec = record_build_result(root, row["id"], brp)
+        result_path: Path | None = None
+        if brp:
+            p = Path(brp)
+            if p.exists() and p.stat().st_size > 0:
+                result_path = p
+            else:
+                # Look for attempt-suffixed variants written by Codex.
+                stem = p.stem  # task UUID
+                attempts = sorted(
+                    [a for a in p.parent.glob(f"{stem}*.json") if a.stat().st_size > 0],
+                    key=lambda a: a.stat().st_mtime,
+                    reverse=True,
+                )
+                if attempts:
+                    result_path = attempts[0]
+        if result_path is not None:
+            rec = record_build_result(root, row["id"], str(result_path))
             result["build_records"].append({"task_id": row["id"], "recorded": rec})
 
     # 4b. ZERO-TRADE SHORT-CIRCUIT — observed 2026-05-17: 9/9 codex_reviews
