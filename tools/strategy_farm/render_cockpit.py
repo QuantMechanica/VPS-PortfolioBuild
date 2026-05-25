@@ -1066,11 +1066,30 @@ def main() -> int:
     now_utc_full = dt.datetime.now(dt.UTC).replace(tzinfo=None).strftime("%Y-%m-%d %H:%M:%SZ")
     now_local = dt.datetime.now().strftime("%H:%M:%S")
     # Top-bar health pill — map bottleneck severity to NOMINAL/WARN/CRITICAL.
-    # Overall pipeline health.json may upgrade severity to CRIT if any check FAIL.
+    # OWNER call 2026-05-23: CRITICAL fires only when the Edge Lab itself is
+    # down — never on output dryness ("no EA further along" = the actual work,
+    # not a fault). Output-flow checks degrade the pill at most to WARN.
+    _FACTORY_DOWN_CHECKS = {
+        "mt5_worker_saturation",   # T1-T10 daemons dead
+        "codex_auth_broken",       # cannot build EAs
+        "disk_free_gb",            # storage blocker
+        "pump_task_lastresult",    # orchestrator failing
+        "ablation_grandchildren",  # state-integrity violation
+        "active_row_age",          # rows stuck past phase timeout
+    }
     pill_label = {"ok": "NOMINAL", "warn": "WARN", "block": "CRITICAL"}[severity]
     pill_class = {"ok": "", "warn": "warn", "block": "crit"}[severity]
-    if (health.get("overall") or "").upper() == "FAIL":
+    _checks = health.get("checks") or []
+    _factory_fail = any(
+        (c.get("status") or "").upper() == "FAIL"
+        and c.get("name") in _FACTORY_DOWN_CHECKS
+        for c in _checks
+    )
+    _any_fail = any((c.get("status") or "").upper() == "FAIL" for c in _checks)
+    if _factory_fail:
         pill_label = "CRITICAL"; pill_class = "crit"
+    elif _any_fail and pill_class == "":
+        pill_label = "WARN"; pill_class = "warn"
     elif (health.get("overall") or "").upper() == "WARN" and pill_class == "":
         pill_label = "WARN"; pill_class = "warn"
 
@@ -1351,14 +1370,16 @@ def main() -> int:
     p2_total = 0
     for r in db_rows("SELECT status, verdict, COUNT(*) AS c FROM work_items WHERE phase='P2' GROUP BY status, verdict"):
         p2_total += int(r.get("c") or 0)
-    # ROBUST Q05-Q07: phases P4/P5/P5b
+    # ROBUST Q05-Q07: legacy P4 → Q05, P5 → Q06, P5b → Q07 (OWNER hard rule:
+    # operator surfaces show Qxx only — never the legacy P-keys).
     robust_rows = db_rows(
         "SELECT phase, COUNT(DISTINCT ea_id) AS c FROM work_items "
         "WHERE verdict='PASS' AND phase IN ('P4','P5','P5b') GROUP BY phase"
     )
     robust_count = sum(int(r.get("c") or 0) for r in robust_rows)
+    _p_to_q = {"P4": "Q05", "P5": "Q06", "P5b": "Q07"}
     robust_meta = " // ".join(
-        f"{chip_labels.get(r['phase'], r['phase'])}:{r['c']}" for r in robust_rows
+        f"{_p_to_q.get(r['phase'], r['phase'])}:{r['c']}" for r in robust_rows
     ) or "0 PASS"
     portfolio_count = backlog.get("p8_pass_total", 0)
     portfolio_meta = f"TARGET 5 // {portfolio_count}/5"
@@ -1441,6 +1462,96 @@ def main() -> int:
         robust_empty=" empty" if robust_count == 0 else "",
         portfolio_empty=" empty" if portfolio_count == 0 else "",
     )
+
+    # ---------- 5b. PIPELINE PROGRESS (per-Q breakdown — OWNER call) ----------
+    # Cards total: filesystem count of cards_approved/
+    cards_dir = ROOT / "artifacts" / "cards_approved"
+    cards_total = (sum(1 for p in cards_dir.iterdir()
+                       if p.is_file() and p.suffix == ".md")
+                   if cards_dir.exists() else 0)
+
+    # EAs built: registry rows where the on-disk EA dir exists
+    ea_registry_path = ROOT.parent.parent.parent / "QM" / "repo" / "framework" / "registry" / "ea_id_registry.csv"
+    if not ea_registry_path.exists():
+        # Try the canonical repo path
+        ea_registry_path = Path(r"C:\QM\repo\framework\registry\ea_id_registry.csv")
+    ea_dir_root = Path(r"C:\QM\repo\framework\EAs")
+    eas_built = 0
+    if ea_dir_root.exists():
+        for d in ea_dir_root.iterdir():
+            if d.is_dir() and d.name.startswith("QM5_"):
+                # Counted as "built" only if the .ex5 exists
+                if any(p.suffix == ".ex5" for p in d.iterdir()):
+                    eas_built += 1
+    eas_to_build = max(0, cards_total - eas_built)
+
+    # Backtest queue totals
+    bt_done = 0
+    bt_open = 0
+    for r in db_rows(
+        "SELECT status, COUNT(*) AS c FROM work_items GROUP BY status"
+    ):
+        if r.get("status") == "done":
+            bt_done += int(r.get("c") or 0)
+        elif r.get("status") in ("pending", "active"):
+            bt_open += int(r.get("c") or 0)
+
+    # Per-phase progress: distinct (ea_id, symbol) pairs that reached each Qxx
+    # with a PASS verdict (or — for phases that don't write per-symbol PASS
+    # rows — distinct ea_id count). Reads Qxx-keyed rows directly; legacy
+    # P-keys map via phase_ids.LEGACY_P_TO_Q for any orphan rows.
+    Q_DISPLAY_ORDER = ["Q01", "Q02", "Q03", "Q04", "Q05", "Q06", "Q07",
+                       "Q08", "Q09", "Q10", "Q11", "Q12", "Q13"]
+    q_counts: dict[str, int] = {q: 0 for q in Q_DISPLAY_ORDER}
+    # Q01 = EAs built (registry intersection w/ disk)
+    q_counts["Q01"] = eas_built
+    # Q02..Q10 = distinct (ea_id, symbol) PASS pairs at each Qxx
+    for r in db_rows(
+        "SELECT phase, COUNT(DISTINCT ea_id || '|' || symbol) AS c "
+        "FROM work_items WHERE verdict='PASS' GROUP BY phase"
+    ):
+        phase_raw = r.get("phase") or ""
+        # Map legacy P-keys to Qxx for display
+        _legacy = {"P2": "Q02", "P3": "Q03", "P3.5": "Q03", "P4": "Q04",
+                   "P5": "Q05", "P5b": "Q05", "P5c": "Q05",
+                   "P6": "Q07", "P7": "Q08", "P8": "Q08"}
+        qid = phase_raw if phase_raw in q_counts else _legacy.get(phase_raw)
+        if qid and qid in q_counts:
+            q_counts[qid] += int(r.get("c") or 0)
+    # Q11..Q13 are OWNER-only phases (no work_items yet) — leave at 0 until
+    # the agent_tasks table tracks them. Future iteration.
+
+    # Build the progress HTML — top-line counters + per-Q chip strip.
+    progress_html = f"""
+  <!-- 5b. PIPELINE PROGRESS -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-glyph"></span>
+      <span class="section-title">Pipeline Progress // Per-Phase Count</span>
+      <span class="section-aux">Cards &rarr; EAs &rarr; Backtests &rarr; Q-Survivors</span>
+    </div>
+    <div class="prog-counters">
+      <div class="prog-counter"><div class="prog-lbl">Strategy Cards</div><div class="prog-val">{cards_total:,}</div></div>
+      <div class="prog-counter"><div class="prog-lbl">EAs Built</div><div class="prog-val">{eas_built:,}<span class="prog-of"> / {cards_total:,}</span></div></div>
+      <div class="prog-counter"><div class="prog-lbl">EAs To Build</div><div class="prog-val">{eas_to_build:,}</div></div>
+      <div class="prog-counter"><div class="prog-lbl">Backtests Done</div><div class="prog-val">{bt_done:,}</div></div>
+      <div class="prog-counter"><div class="prog-lbl">Backtests Open</div><div class="prog-val">{bt_open:,}</div></div>
+    </div>
+    <div class="prog-strip">
+      {''.join(
+          f'<div class="prog-chip{" empty" if q_counts[q] == 0 else ""}">'
+          f'<div class="prog-chip-q">{q}</div>'
+          f'<div class="prog-chip-n">{q_counts[q]:,}</div>'
+          f'</div>'
+          for q in Q_DISPLAY_ORDER
+      )}
+    </div>
+    <div class="prog-foot">
+      Q01 = EAs with .ex5 on disk &middot; Q02..Q10 = distinct (EA, symbol) PASS pairs &middot;
+      Q11..Q13 = OWNER phases (live count pending)
+    </div>
+  </div>
+"""
 
     # ---------- 6. RECENT EVENTS ----------
     try:
@@ -1849,6 +1960,67 @@ body { padding: 32px; min-height: 100vh; }
   text-transform: uppercase; color: var(--text-2);
 }
 
+/* PIPELINE PROGRESS — top-line counters + per-Q chip strip (OWNER call) */
+.prog-counters {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  background: var(--surface-1); border: 1px solid var(--border);
+  padding: 16px 20px;
+  margin-bottom: 12px;
+}
+.prog-counter {
+  padding: 6px 14px;
+  border-right: 1px solid var(--border);
+}
+.prog-counter:last-child { border-right: none; }
+.prog-counter .prog-lbl {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.2em;
+  color: var(--text-3); text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.prog-counter .prog-val {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 26px; font-weight: 500; line-height: 1;
+  color: var(--text); letter-spacing: -0.02em;
+}
+.prog-counter .prog-of {
+  font-size: 14px; color: var(--text-3); font-weight: 400;
+}
+.prog-strip {
+  display: grid;
+  grid-template-columns: repeat(13, 1fr);
+  gap: 6px;
+  background: var(--surface-1); border: 1px solid var(--border);
+  padding: 14px 20px;
+}
+.prog-chip {
+  padding: 10px 8px;
+  text-align: center;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.prog-chip.empty .prog-chip-n { color: var(--text-4); }
+.prog-chip-q {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.14em;
+  color: var(--text-3); text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.prog-chip-n {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 18px; font-weight: 500; line-height: 1;
+  color: var(--signal); letter-spacing: -0.02em;
+}
+.prog-foot {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px; color: var(--text-4); letter-spacing: 0.06em;
+  padding: 8px 4px 0;
+}
+
 /* PIPELINE FUNNEL */
 .funnel {
   display: grid;
@@ -2136,6 +2308,8 @@ body { padding: 32px; min-height: 100vh; }
       {"".join(action_rows_html)}
     </table>
   </div>
+
+  {progress_html}
 
   <!-- 5. PIPELINE FUNNEL -->
   <div class="section">

@@ -783,7 +783,13 @@ def close_review_task(
 
 
 def sync_q11_candidates(root: Path = DEFAULT_ROOT) -> dict[str, Any]:
-    """Mirror Q11/P8 PASS work_items into a Q12 portfolio-candidate queue."""
+    """Mirror Q10 PASS work_items into a Q11 portfolio-candidate queue.
+
+    2026-05-23 OR4 — post-pipeline-rewrite this reads Q10 PASS rows (the
+    closing per-(EA, symbol) verdict) and feeds them into Q11 portfolio
+    construction. Pre-rewrite the source was P8 PASS; that legacy key is
+    retained as a fallback for any orphan rows (none exist post-wipe).
+    """
     now = farmctl.utc_now()
     created = 0
     existing = 0
@@ -792,7 +798,7 @@ def sync_q11_candidates(root: Path = DEFAULT_ROOT) -> dict[str, Any]:
             """
             SELECT id, ea_id, COALESCE(symbol, '') AS symbol, evidence_path
             FROM work_items
-            WHERE phase='P8' AND status='done' AND verdict='PASS'
+            WHERE phase IN ('Q10', 'P8') AND status='done' AND verdict='PASS'
             ORDER BY updated_at DESC
             """
         ).fetchall()

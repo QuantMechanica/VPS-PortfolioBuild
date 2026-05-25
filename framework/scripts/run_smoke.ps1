@@ -54,12 +54,14 @@ function Get-ReportMetricValue {
         [Parameter(Mandatory = $true)]
         [string]$Html,
         [Parameter(Mandatory = $true)]
-        [string]$Label
+        [string]$Label,
+        [switch]$AllowMissing
     )
 
     $regex = [regex]::new("(?is)<td[^>]*>\s*$([regex]::Escape($Label)):\s*</td>\s*<td[^>]*>\s*<b>(?<value>[^<]*)</b>", [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
     $match = $regex.Match($Html)
     if (-not $match.Success) {
+        if ($AllowMissing) { return $null }
         throw "Could not find metric label '$Label' in report."
     }
 
@@ -67,6 +69,17 @@ function Get-ReportMetricValue {
     return $value
 }
 
+# FW8-classifier 2026-05-23 — per-metric error isolation. Pre-fix, this
+# function wrapped 8 separate label reads in one try/catch — any single
+# missing label collapsed all 8 checks to REPORT_PARSE_ERROR, which the
+# verdict resolver then mapped to INVALID_REPORT. Result: a legitimate
+# 0-trade run with a slightly drifted HTML label flagged INVALID instead
+# of routing through MIN_TRADES_NOT_MET. New behaviour:
+#   * Read each metric with -AllowMissing → null on miss, no throw.
+#   * Add REPORT_METRIC_MISSING:<label> for each missing label (preserves
+#     diagnostic detail without collapsing the run).
+#   * Genuinely unparseable HTML (empty or no <td> at all) → REPORT_EMPTY.
+#   * BARS_ZERO is now a distinct verdict (was buried in INVALID_REPORT).
 function Get-ReportInvalidReasons {
     param(
         [Parameter(Mandatory = $true)]
@@ -80,28 +93,59 @@ function Get-ReportInvalidReasons {
         [Parameter(Mandatory = $true)]
         [string]$ExpectedToDate,
         [Parameter(Mandatory = $true)]
-        [bool]$HasRealTicksMarker
+        [bool]$HasRealTicksMarker,
+        # FW9 2026-05-24 — when the strategy actually traded (> 0 deals) we
+        # know the tester ran far enough to execute logic; suppressing the
+        # NO_REAL_TICKS_MARKER_FAST_FINISH flag in that case avoids false
+        # INVALIDs on basket EAs whose host-symbol marker log line gets
+        # consumed before run_smoke's tail window.
+        [int]$ReportTotalTrades = -1
     )
 
     $reasons = New-Object System.Collections.Generic.List[string]
-    try {
-        $expertValue = Get-ReportMetricValue -Html $Html -Label "Expert"
-        $symbolValue = Get-ReportMetricValue -Html $Html -Label "Symbol"
-        $periodValue = Get-ReportMetricValue -Html $Html -Label "Period"
-        $barsValue = Get-ReportMetricValue -Html $Html -Label "Bars"
-        $bars = [int](Convert-ReportNumber -Value $barsValue)
 
-        if ([string]::IsNullOrWhiteSpace($expertValue)) { $reasons.Add("EMPTY_EXPERT") }
-        if ([string]::IsNullOrWhiteSpace($symbolValue)) { $reasons.Add("EMPTY_SYMBOL") }
-        if ($periodValue -match "(?i)\bM0\b" -or $periodValue -match "1970\.01\.01\s*-\s*1970\.01\.01") { $reasons.Add("M0_1970_PERIOD") }
-        if ($bars -le 0) { $reasons.Add("BARS_ZERO") }
-        if (Test-TesterLogShowsOnInitFailure -TesterLogTail $TesterLogTail) { $reasons.Add("ONINIT_FAILED") }
-        if (Test-TesterLogShowsSetupDataMissing -TesterLogTail $TesterLogTail) { $reasons.Add("SETUP_DATA_MISSING") }
-        if (Test-TesterLogHasNoHistoryForRun -TesterLogTail $TesterLogTail -ExpectedSymbol $ExpectedSymbol -ExpectedFromDate $ExpectedFromDate -ExpectedToDate $ExpectedToDate) { $reasons.Add("NO_HISTORY_LOG") }
-        if (($periodValue -match "(?i)\bM0\b" -or $bars -le 0) -and $TesterLogTail -match "(?im)\bhistory\b") { $reasons.Add("HISTORY_CONTEXT_INVALID") }
-        if ((-not $HasRealTicksMarker) -and $TesterLogTail -match "(?im)automatical testing finished") { $reasons.Add("NO_REAL_TICKS_MARKER_FAST_FINISH") }
-    } catch {
-        $reasons.Add("REPORT_PARSE_ERROR")
+    # Pre-flight: is this HTML even a tester report?
+    if ([string]::IsNullOrWhiteSpace($Html) -or $Html.Length -lt 100 -or $Html -notmatch '(?is)<td[^>]*>') {
+        $reasons.Add("REPORT_EMPTY")
+        return @($reasons)
+    }
+
+    $expertValue = Get-ReportMetricValue -Html $Html -Label "Expert" -AllowMissing
+    $symbolValue = Get-ReportMetricValue -Html $Html -Label "Symbol" -AllowMissing
+    $periodValue = Get-ReportMetricValue -Html $Html -Label "Period" -AllowMissing
+    $barsValue   = Get-ReportMetricValue -Html $Html -Label "Bars"   -AllowMissing
+
+    if ($null -eq $expertValue) { $reasons.Add("REPORT_METRIC_MISSING:Expert") }
+    elseif ([string]::IsNullOrWhiteSpace($expertValue)) { $reasons.Add("EMPTY_EXPERT") }
+
+    if ($null -eq $symbolValue) { $reasons.Add("REPORT_METRIC_MISSING:Symbol") }
+    elseif ([string]::IsNullOrWhiteSpace($symbolValue)) { $reasons.Add("EMPTY_SYMBOL") }
+
+    if ($null -eq $periodValue) { $reasons.Add("REPORT_METRIC_MISSING:Period") }
+    elseif ($periodValue -match "(?i)\bM0\b" -or $periodValue -match "1970\.01\.01\s*-\s*1970\.01\.01") { $reasons.Add("M0_1970_PERIOD") }
+
+    $bars = -1
+    if ($null -eq $barsValue) {
+        $reasons.Add("REPORT_METRIC_MISSING:Bars")
+    } else {
+        try {
+            $bars = [int](Convert-ReportNumber -Value $barsValue)
+            if ($bars -le 0) { $reasons.Add("BARS_ZERO") }
+        } catch {
+            $reasons.Add("REPORT_METRIC_UNPARSEABLE:Bars")
+        }
+    }
+
+    # Log-tail driven checks always run — they don't depend on report parsing.
+    if (Test-TesterLogShowsOnInitFailure -TesterLogTail $TesterLogTail) { $reasons.Add("ONINIT_FAILED") }
+    if (Test-TesterLogShowsSetupDataMissing -TesterLogTail $TesterLogTail) { $reasons.Add("SETUP_DATA_MISSING") }
+    if (Test-TesterLogHasNoHistoryForRun -TesterLogTail $TesterLogTail -ExpectedSymbol $ExpectedSymbol -ExpectedFromDate $ExpectedFromDate -ExpectedToDate $ExpectedToDate) { $reasons.Add("NO_HISTORY_LOG") }
+    if ($bars -ge 0 -and ($periodValue -match "(?i)\bM0\b" -or $bars -le 0) -and $TesterLogTail -match "(?im)\bhistory\b") { $reasons.Add("HISTORY_CONTEXT_INVALID") }
+    # FW9 2026-05-24 — only flag NO_REAL_TICKS if the EA also produced 0 trades.
+    # If the report shows real trade activity, the marker absence is a
+    # logging quirk (esp. on basket EAs) not a tester-failure signal.
+    if ((-not $HasRealTicksMarker) -and $TesterLogTail -match "(?im)automatical testing finished" -and ($ReportTotalTrades -le 0)) {
+        $reasons.Add("NO_REAL_TICKS_MARKER_FAST_FINISH")
     }
 
     return @($reasons)
@@ -194,6 +238,26 @@ function Resolve-InvalidReportVerdict {
     }
     if ($InvalidReasons -contains "NO_REAL_TICKS_MARKER_FAST_FINISH") {
         return "NO_REAL_TICKS"
+    }
+    # FW8-classifier — REPORT_EMPTY is "MT5 wrote nothing" (genuinely broken);
+    # BARS_ZERO is "MT5 ran but loaded no bars" (history gap, distinct cause).
+    if ($InvalidReasons -contains "REPORT_EMPTY") {
+        return "REPORT_EMPTY"
+    }
+    if ($InvalidReasons -contains "BARS_ZERO") {
+        return "BARS_ZERO"
+    }
+    # If only metric-missing reasons remain (HTML format drift), surface them
+    # explicitly so we can fix the parser instead of swallowing as INVALID.
+    $onlyMetricMissing = $true
+    foreach ($r in $InvalidReasons) {
+        if (-not $r.StartsWith("REPORT_METRIC_MISSING:") -and -not $r.StartsWith("REPORT_METRIC_UNPARSEABLE:")) {
+            $onlyMetricMissing = $false
+            break
+        }
+    }
+    if ($onlyMetricMissing -and @($InvalidReasons).Count -gt 0) {
+        return "REPORT_FORMAT_DRIFT"
     }
     if (@($InvalidReasons).Count -gt 0) {
         return "INVALID_REPORT"
@@ -1247,15 +1311,24 @@ for ($i = 1; $i -le $Runs; $i++) {
 
     $reportHtml = Get-Content -Raw -LiteralPath $reportHtmPath
 
-    $totalTradesRaw = Get-ReportMetricValue -Html $reportHtml -Label "Total Trades"
-    $profitFactorRaw = Get-ReportMetricValue -Html $reportHtml -Label "Profit Factor"
-    $drawdownRaw = Get-ReportMetricValue -Html $reportHtml -Label "Equity Drawdown Maximal"
-    $netProfitRaw = Get-ReportMetricValue -Html $reportHtml -Label "Total Net Profit"
+    # FW8-classifier — tolerant metric reads. Pre-fix this block threw on any
+    # missing label, crashing run_smoke before the run could be classified at
+    # all. Now: read each metric with -AllowMissing; defaults below match what
+    # downstream code (MIN_TRADES_NOT_MET, determinism check) expects on a
+    # 0-trade or report-missing-label run.
+    $totalTradesRaw = Get-ReportMetricValue -Html $reportHtml -Label "Total Trades" -AllowMissing
+    $profitFactorRaw = Get-ReportMetricValue -Html $reportHtml -Label "Profit Factor" -AllowMissing
+    $drawdownRaw = Get-ReportMetricValue -Html $reportHtml -Label "Equity Drawdown Maximal" -AllowMissing
+    $netProfitRaw = Get-ReportMetricValue -Html $reportHtml -Label "Total Net Profit" -AllowMissing
 
-    $totalTrades = [int](Convert-ReportNumber -Value $totalTradesRaw)
-    $profitFactor = Convert-ReportNumber -Value $profitFactorRaw
-    $drawdown = Convert-ReportNumber -Value $drawdownRaw
-    $netProfit = Convert-ReportNumber -Value $netProfitRaw
+    $totalTrades = 0
+    $profitFactor = 0.0
+    $drawdown = 0.0
+    $netProfit = 0.0
+    if ($null -ne $totalTradesRaw) { try { $totalTrades = [int](Convert-ReportNumber -Value $totalTradesRaw) } catch {} }
+    if ($null -ne $profitFactorRaw) { try { $profitFactor = Convert-ReportNumber -Value $profitFactorRaw } catch {} }
+    if ($null -ne $drawdownRaw) { try { $drawdown = Convert-ReportNumber -Value $drawdownRaw } catch {} }
+    if ($null -ne $netProfitRaw) { try { $netProfit = Convert-ReportNumber -Value $netProfitRaw } catch {} }
 
     $testerLog = Get-LatestTesterLog -TerminalRoot $terminalRoot -SinceUtc $runStartUtc
     $testerLogPath = $null
@@ -1273,7 +1346,7 @@ for ($i = 1; $i -le $Runs; $i++) {
         $hasRealTicksMarker = [regex]::IsMatch($testerLogTail, "(?im)generating based on real ticks")
     }
 
-    $invalidReasons = Get-ReportInvalidReasons -Html $reportHtml -TesterLogTail $testerLogTail -ExpectedSymbol $Symbol -ExpectedFromDate $fromDate -ExpectedToDate $toDate -HasRealTicksMarker $hasRealTicksMarker
+    $invalidReasons = Get-ReportInvalidReasons -Html $reportHtml -TesterLogTail $testerLogTail -ExpectedSymbol $Symbol -ExpectedFromDate $fromDate -ExpectedToDate $toDate -HasRealTicksMarker $hasRealTicksMarker -ReportTotalTrades $totalTrades
     $invalidVerdict = Resolve-InvalidReportVerdict -InvalidReasons $invalidReasons
     if ($invalidVerdict) {
         $reasonClasses.Add($invalidVerdict)

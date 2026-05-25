@@ -357,8 +357,17 @@ int OnInit()
                         qm_friday_close_hour_broker))
       return INIT_FAILED;
 
+   // FW9 2026-05-24 — basket scope + history pre-load. SymbolSelect alone
+   // adds to Market Watch but doesn't force the MT5 tester to load each
+   // symbol's history; QM_BasketWarmupHistory triggers that load so first
+   // iClose returns real data instead of 0 (which caused
+   // NO_REAL_TICKS_MARKER_FAST_FINISH -> INVALID on prior Q02 runs).
+   string basket_list[28];
    for(int i = 0; i < 28; ++i)
-      SymbolSelect(QM10717_PAIRS[i], true);
+      basket_list[i] = QM10717_PAIRS[i];
+   QM_SymbolGuardInit(basket_list);
+   // Lookback covers vol-percentile window (252d) + momentum window (63d)
+   QM_BasketWarmupHistory(basket_list, PERIOD_D1, 280);
 
    QM_LogEvent(QM_INFO, "INIT_OK",
                "{\"card\":\"QM5_10717_edgelab-xsec-fx-momentum\",\"scope\":\"basket\"}");

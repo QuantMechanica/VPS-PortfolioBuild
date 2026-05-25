@@ -63,7 +63,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(StringFind(_Symbol, "XAU") < 0) return false;
 
    const double close = iClose(_Symbol, _Period, 1);
-   const double sma   = iMA(_Symbol, _Period, strategy_ma_period, 0, MODE_SMA, PRICE_CLOSE, 1);
+   const double sma   = QM_SMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_ma_period, 1);
 
    // Condition: Bullish extension in Gold while Yields are surging (Divergence)
    if(close > sma * 1.02 && IsYieldSurging())
@@ -90,7 +90,7 @@ bool Strategy_ExitSignal()
       if(ticket == 0 || !PositionSelectByTicket(ticket)) continue;
       if(PositionGetInteger(POSITION_MAGIC) != magic) continue;
 
-      const double sma = iMA(_Symbol, _Period, strategy_ma_period, 0, MODE_SMA, PRICE_CLOSE, 0);
+      const double sma = QM_SMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_ma_period, 0);
       if(iClose(_Symbol, _Period, 0) <= sma) return true;
      }
    return false;

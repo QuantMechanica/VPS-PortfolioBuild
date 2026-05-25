@@ -171,21 +171,114 @@ def parse_summary(summary_path: Path) -> dict:
         return json.load(f)
 
 
+#
+# Q02 verdict thresholds — locked 2026-05-23 (OWNER call: balanced profile).
+# Documented in Vault `03 Pipeline/Q02 Baseline Screening.md`.
+# Spec source: docs/ops/PIPELINE_REWRITE_PROPOSAL_2026-05-23.md §5 item 1.
+#
+Q02_PF_MIN = 1.20         # profit factor floor (per symbol)
+Q02_TRADES_MIN = 150      # sample-size floor (per symbol)
+Q02_DD_PCT_MAX = 15.0     # max drawdown ceiling, % of starting equity
+Q02_STARTING_EQUITY = 100_000.0   # HR4: fixed-risk backtest deposit
+
+
+def _run_stat(run: dict, key: str) -> float | None:
+    v = run.get(key)
+    if v is None or v == "":
+        return None
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return None
+
+
+def _aggregate_run_metrics(runs: list[dict]) -> dict:
+    """Pick the canonical metrics across all runs of a single symbol.
+
+    Q02 typically has 1 run per symbol, but the harness sometimes does a
+    warmup re-run; in either case the LAST run is the meaningful one.
+    Falls back to 0 / None when a metric is absent from the summary.
+    """
+    if not runs:
+        return {"trades": 0, "pf": None, "dd_money": None, "net": None}
+    last = runs[-1]
+    return {
+        "trades":   int(_run_stat(last, "total_trades") or 0),
+        "pf":       _run_stat(last, "profit_factor"),
+        "dd_money": _run_stat(last, "drawdown"),
+        "net":      _run_stat(last, "net_profit"),
+    }
+
+
 def derive_verdict(summary: dict, min_trades: int) -> tuple[str, str, str]:
-    """Return (verdict, invalidation_reason, evidence_summary)."""
+    """Return (verdict, reason, evidence_summary) per the new Q02 gate spec.
+
+    Verdicts emitted (post-2026-05-23 rewrite):
+      - "PASS"           — meets PF > 1.20 AND trades > 150 AND DD < 15%
+      - "FAIL"           — strategy failed at least one threshold
+      - "Q02_NO_TRADES"  — EA produced 0 trades; route back to Q01 revision loop
+      - "INVALID"        — infrastructure issue, not a strategy verdict
+
+    The `min_trades` argument is kept for back-compat but the locked
+    Q02_TRADES_MIN constant is the operative threshold.
+    """
+    report_dir = summary.get("report_dir", "")
+
     if summary.get("result") != "PASS":
         reasons = summary.get("reason_classes") or ["UNKNOWN"]
-        return "FAIL", "run_smoke_fail:" + ";".join(reasons), summary.get("report_dir", "")
-    # DL-054 G1: model4 real-ticks log marker is mandatory; INVALID beats all other gates.
+        return "FAIL", "run_smoke_fail:" + ";".join(reasons), report_dir
+
+    # DL-054 G1: model 4 real-ticks log marker is mandatory; INVALID beats all gates.
     if not summary.get("model4_log_marker_detected"):
-        return "INVALID", "G1_NO_REAL_TICKS", summary.get("report_dir", "")
+        return "INVALID", "G1_NO_REAL_TICKS", report_dir
+
     runs = summary.get("runs") or []
     if not runs:
-        return "INVALID", "no_runs_in_summary", summary.get("report_dir", "")
-    trades = [int(r.get("total_trades", 0) or 0) for r in runs]
-    if any(t < min_trades for t in trades):
-        return "FAIL", f"trade_count_below_min:got={trades}:min={min_trades}", summary.get("report_dir", "")
-    return "PASS", "", summary.get("report_dir", "")
+        return "INVALID", "no_runs_in_summary", report_dir
+
+    metrics = _aggregate_run_metrics(runs)
+    trades  = metrics["trades"]
+    pf      = metrics["pf"]
+    dd_money = metrics["dd_money"]
+
+    # Zero-trade route: distinct from FAIL. Vault Q02 spec §"Zero-Trades Policy"
+    # — when an EA produces no trades, the strategy code is fine but its entry
+    # conditions are too strict. This routes back to Q01 for re-versioning
+    # rather than killing the symbol.
+    if trades == 0:
+        return "Q02_NO_TRADES", "zero_trades_route_to_q01_revision", report_dir
+
+    # Sample-size guard (slightly stricter than the legacy min_trades arg).
+    floor = max(int(min_trades or 0), Q02_TRADES_MIN)
+    if trades < floor:
+        return ("FAIL",
+                f"trades_below_q02_floor:got={trades}:floor={floor}",
+                report_dir)
+
+    # Profit-factor gate.
+    if pf is None:
+        return ("FAIL",
+                "missing_profit_factor_in_summary",
+                report_dir)
+    if pf < Q02_PF_MIN:
+        return ("FAIL",
+                f"pf_below_q02_floor:pf={pf:.3f}:min={Q02_PF_MIN}",
+                report_dir)
+
+    # Drawdown gate. Reports give DD in account currency; convert to % vs
+    # the HR4 starting deposit ($100k). If absent, fail loudly — DD is not
+    # an optional metric for a passable Q02 run.
+    if dd_money is None:
+        return ("FAIL",
+                "missing_drawdown_in_summary",
+                report_dir)
+    dd_pct = (dd_money / Q02_STARTING_EQUITY) * 100.0
+    if dd_pct > Q02_DD_PCT_MAX:
+        return ("FAIL",
+                f"dd_above_q02_ceiling:dd_pct={dd_pct:.2f}:max={Q02_DD_PCT_MAX}",
+                report_dir)
+
+    return "PASS", "", report_dir
 
 
 def infer_warmup_bars(card_params: dict, runner_params: dict) -> int:

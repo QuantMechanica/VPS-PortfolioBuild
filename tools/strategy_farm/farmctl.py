@@ -48,18 +48,25 @@ CODEX_REVIEW_TEMPLATE = PROMPTS_DIR / "codex_review_ea.md"
 CODEX_G0_TEMPLATE = PROMPTS_DIR / "codex_g0_review.md"
 
 PIPELINE_REPORT_ROOT = Path(r"D:\QM\reports\pipeline")
-SUPPORTED_BACKTEST_PHASES = ("P2", "P3", "P3.5", "P4")  # 2026-05-17: extend chain to P3.5 (cross-symbol robustness) + P4 (walk-forward OOS)
-CASCADE_BACKTEST_PHASES = ("P5", "P5b", "P5c", "P6", "P7", "P8")
-REAL_PHASE_RUNNER_PHASES = ("P3.5", "P4", "P5", "P5b", "P5c", "P6", "P7", "P8")
+
+# 2026-05-23 OR3 — post-pipeline-rewrite Qxx canonical phase set.
+# Vault: 03 Pipeline/Pipeline Overview.md
+# Wipe (DL-063 + PIPELINE_REWRITE_PROPOSAL_2026-05-23) cleared all legacy
+# work_items, so the storage layer now writes Qxx directly. Legacy P-key
+# references in classify_* / report-csv paths remain inert (no rows to read).
+SUPPORTED_BACKTEST_PHASES = ("Q02", "Q03", "Q04")
+CASCADE_BACKTEST_PHASES = ("Q05", "Q06", "Q07", "Q08", "Q09", "Q10")
+REAL_PHASE_RUNNER_PHASES = ("Q04", "Q05", "Q06", "Q07", "Q08", "Q09", "Q10")
 PHASE_RUNNER_SCRIPTS = {
-    "P3.5": "p35_csr_runner.py",
-    "P4": "p4_walk_forward.py",
-    "P5": "p5_stress_driver.py",
-    "P5b": "p5b_noise_driver.py",
-    "P5c": "p5c_crisis_slices.py",
-    "P6": "p6_multiseed_driver.py",
-    "P7": "p7_statval.py",
-    "P8": "p8_news_driver.py",
+    "Q02": "p2_baseline.py",            # verdict rewritten for PF>1.20/T>150/DD<15%
+    "Q03": "p3_param_sweep.py",         # unchanged behaviour, phase-tag renamed
+    "Q04": "q04_walkforward.py",        # NEW: anchored 3-fold + $7/lot commission
+    "Q05": "q05_stress_medium.py",      # NEW: slip+2/spread×2/comm×2
+    "Q06": "q06_stress_harsh.py",       # NEW: slip5/spread×3/comm×3/10% reject
+    "Q07": "q07_multiseed.py",          # NEW: 5 seeds, PF variance < 20%
+    "Q08": "q08_davey/aggregate.py",    # NEW: 10 Davey sub-gates
+    "Q09": "q09_news_mode.py",          # TODO: news-mode sweep runner
+    "Q10": "q10_confirmation.py",       # NEW: full-history canonical + baseline capture
 }
 NEWS_MATRIX_FALLBACK = Path(r"D:\QM\data\news_calendar\news_matrix.csv")
 NEWS_CALENDAR_CANDIDATES = (
@@ -80,16 +87,21 @@ ZERO_TRADE_DEAD_THRESHOLD = 0.80
 ZERO_TRADE_DEAD_MIN_DONE = 5
 ZERO_TRADE_REWORK_DEDUP_HOURS = 6
 PHASE_ACTIVE_TIMEOUT_MIN = {
-    "P2": 360,
-    "P3": 60,
-    "P3.5": 30,
-    "P4": 240,
-    "P5": 30,
-    "P5b": 30,
-    "P5c": 30,
-    "P6": 30,
-    "P7": 30,
-    "P8": 30,
+    # 2026-05-23 PT7 — tightened reaper budgets after the 60-min Q02 hang
+    # incident (T2/T4/T8/T9 stuck for an hour because the per-MT5
+    # `run_smoke.ps1 -TimeoutSeconds 1800` layer failed silently and this
+    # layer was the only safety net, originally set to 6h for Q02).
+    # New budgets are realistic upper bounds for the work, not theoretical
+    # worst-cases — hangs auto-recycle fast even when the inner layer fails.
+    "Q02": 45,     # one backtest per symbol; H1 full-history runs typically 5-20 min
+    "Q03": 60,     # parameter-sweep config
+    "Q04": 90,     # 3-fold walk-forward + commission
+    "Q05": 60,     # MED stress, full history
+    "Q06": 60,     # HARSH stress, full history
+    "Q07": 120,    # 5 seeds × full history under HARSH stress
+    "Q08": 30,     # Davey aggregator reads log; cheap
+    "Q09": 120,    # news-mode sweep (1 or 7 modes)
+    "Q10": 60,     # full-history canonical confirmation
 }
 
 
@@ -290,16 +302,7 @@ def init_db(root: Path) -> None:
                 uri TEXT NOT NULL,
                 title TEXT NOT NULL,
                 status TEXT NOT NULL CHECK (
-                    status IN (
-                        'pending',
-                        'active',
-                        'notes_ready',
-                        'cards_ready',
-                        'approved',
-                        'rejected',
-                        'done',
-                        'blocked'
-                    )
+                    status in ('pending', 'active', 'notes_ready', 'cards_ready', 'approved', 'rejected', 'done', 'blocked')
                 ),
                 notes_path TEXT,
                 created_at TEXT NOT NULL,
@@ -311,7 +314,7 @@ def init_db(root: Path) -> None:
                 id TEXT PRIMARY KEY,
                 kind TEXT NOT NULL,
                 status TEXT NOT NULL CHECK (
-                    status IN ('pending', 'active', 'done', 'blocked', 'failed')
+                    status in ('pending', 'active', 'done', 'blocked', 'failed')
                 ),
                 source_id TEXT,
                 card_id TEXT,
@@ -345,7 +348,7 @@ def init_db(root: Path) -> None:
                 symbol TEXT NOT NULL,           -- 'EURUSD.DWX'
                 setfile_path TEXT NOT NULL,
                 status TEXT NOT NULL CHECK (
-                    status IN ('pending', 'active', 'done', 'failed')
+                    status in ('pending', 'active', 'done', 'failed')
                 ),
                 verdict TEXT,                   -- PASS/FAIL/INVALID (NULL until done)
                 attempt_count INTEGER NOT NULL DEFAULT 0,
@@ -392,7 +395,7 @@ def parse_card_frontmatter(card_path: Path) -> dict[str, Any]:
     Returns a dict of the simple top-level keys (ea_id, slug, g0_status, r1..r4,
     pipeline_phase, last_updated). Skips list/dict values silently.
     """
-    text = card_path.read_text(encoding="utf-8")
+    text = card_path.read_text(encoding="utf-8-sig")
     m = re.match(r"^---\s*\n(.*?)\n---", text, re.DOTALL)
     if not m:
         return {}
@@ -523,19 +526,7 @@ def strategy_card_fingerprint(card_path: Path, fm: dict[str, Any] | None = None)
     timeframe_match = re.search(r"\b(?:m1|m5|m15|m30|h1|h4|d1|w1)\b", text, re.IGNORECASE)
     timeframe = timeframe_match.group(0).lower() if timeframe_match else ""
     thesis_terms = []
-    for term in (
-        "momentum",
-        "mean reversion",
-        "breakout",
-        "carry",
-        "seasonal",
-        "volatility",
-        "gap",
-        "news",
-        "fomc",
-        "trend",
-        "pairs",
-    ):
+    for term in ("momentum", "mean reversion", "breakout", "carry", "seasonal", "volatility", "gap", "news", "fomc", "trend", "pairs", ):
         if term in text:
             thesis_terms.append(term.replace(" ", "-"))
     raw = "|".join([source, slug, universe, timeframe, ",".join(thesis_terms)])
@@ -553,17 +544,22 @@ STRATEGY_CARD_REQUIRED_FRONTMATTER = (
     "expected_trades_per_year_per_symbol",
 )
 
+# CR1 2026-05-23 — relaxed per OWNER call. The Strategy Card Framework
+# (canonical: G:/My Drive/QuantMechanica - Company Reference/05 Skills/
+# qm-strategy-card-extraction.md) requires only mechanical Entry/Exit/Stop/
+# Sizing + source citation. Previously we also demanded downstream-pipeline
+# knowledge from card authors (Q08/Q11 risks, MQL5 implementation notes,
+# falsification language, explicit Filters header) AND a "thesis" word —
+# those are pipeline-test / authoring-style concerns, not gating concerns.
+# Dropped: thesis, filters, falsification, q08_q11_risks, implementation_notes.
+# Kept 5: market_universe / timeframe / entry / exit / risk — all directly
+# required by the Skill spec to make the card mechanically implementable.
 STRATEGY_CARD_REQUIRED_BODY_PATTERNS = {
-    "thesis": r"\b(thesis|hypothesis|edge)\b",
-    "market_universe": r"\b(universe|market|symbol|instrument)\b",
+    "market_universe": r"\b(universe|market|symbol|instrument|target_symbols)\b|\.DWX\b",
     "timeframe": r"\b(timeframe|period|bar|m1|m5|m15|m30|h1|h4|d1|w1)\b",
     "entry": r"\b(entry|enter|signal|trigger)\b",
     "exit": r"\b(exit|close|flatten|take profit|stop)\b",
     "risk": r"\b(risk|drawdown|position|sizing|stop)\b",
-    "filters": r"(?m)^(?:#{1,6}\s+(?:\d+\.\s*)?filters?\b|\s*filters?\s*:)",
-    "falsification": r"\b(falsification|fail if|kill|reject|invalidate)\b",
-    "q08_q11_risks": r"\b(q08|q11|crisis|news|stress|robustness)\b",
-    "implementation_notes": r"\b(implementation|mql5|setfile|parameter|framework)\b",
 }
 
 
@@ -1097,7 +1093,7 @@ def pipeline_view(root: Path) -> dict[str, Any]:
                 entry["current_stage"] = "build_pending"
             elif r["status"] == "active":
                 entry["current_stage"] = "building"
-            elif r["status"] in ("done",):
+            elif r["status"] in ("done", ):
                 entry["current_stage"] = "built"
             elif r["status"] in ("failed", "blocked"):
                 entry["current_stage"] = f"build_{r['status']}"
@@ -1184,10 +1180,8 @@ def _run_drawdown_pct(run: dict[str, Any]) -> float | None:
 
 def _derive_p5plus_metric_verdict(runs: list[dict[str, Any]]) -> tuple[str, str]:
     net_profits = [
-        value for value in (
-            _run_metric(r, ("net_profit", "total_net_profit", "profit"))
-            for r in runs
-        )
+        value for value in (_run_metric(r, ("net_profit", "total_net_profit", "profit"))
+            for r in runs)
         if value is not None
     ]
     if net_profits and sum(net_profits) <= 0.0:
@@ -1206,10 +1200,8 @@ def _derive_p5plus_metric_verdict(runs: list[dict[str, Any]]) -> tuple[str, str]
         return "FAIL", "DD_EXCEEDED:dd_exceeded"
 
     sharpes = [
-        value for value in (
-            _run_metric(r, ("sharpe", "sharpe_ratio"))
-            for r in runs
-        )
+        value for value in (_run_metric(r, ("sharpe", "sharpe_ratio"))
+            for r in runs)
         if value is not None
     ]
     if sharpes and (sum(sharpes) / len(sharpes)) < P5PLUS_MIN_SHARPE:
@@ -1386,6 +1378,24 @@ P2_PRESCREEN_TIMEOUT_SECONDS = 1800
 P2_FULL_TIMEOUT_MIN_SECONDS = 7200
 P2_FULL_TIMEOUT_MAX_SECONDS = 14400
 
+# PT8 2026-05-23 — Q02 window must scale with strategy timeframe. Single-year
+# H1 was enough for HF sleeves, but D1/W1/MN1 strategies trade O(1-50) times per
+# year per symbol → 150-trade Q02 threshold is unreachable in a 1-year run.
+# These windows are bounds, not requirements; explicit from_year/to_year in the
+# payload still overrides.
+Q02_FROM_YEAR_BY_PERIOD: dict[str, int] = {
+    "M1":  2020, "M5":  2020, "M15": 2020, "M30": 2019,
+    "H1":  2017, "H4":  2017,
+    "D1":  2015, "W1":  2010, "MN1": 2005,
+}
+Q02_TO_YEAR_BY_PERIOD: dict[str, int] = {
+    # All periods end at the same recent year — what changes is the start.
+    "M1":  2024, "M5":  2024, "M15": 2024, "M30": 2024,
+    "H1":  2024, "H4":  2024,
+    "D1":  2024, "W1":  2024, "MN1": 2024,
+}
+Q02_SKIP_PRESCREEN_PERIODS: set[str] = {"D1", "W1", "MN1"}  # full run is cheap on slow TFs
+
 
 def _summary_net_profit_total(summary: dict[str, Any]) -> float | None:
     values: list[float] = []
@@ -1511,7 +1521,7 @@ def _filter_p2_profitable_symbols(
     rows = conn.execute(
         """
         SELECT * FROM work_items
-        WHERE parent_task_id=? AND phase='P2' AND status='done' AND verdict='PASS'
+        WHERE parent_task_id=? AND phase in ('Q02', 'P2') AND status='done' AND verdict='PASS'
         """,
         (p2_parent_task_id,),
     ).fetchall()
@@ -1664,6 +1674,69 @@ def _p2_active_summary_runtime_sec(item_row: sqlite3.Row, summary: dict[str, Any
     return max(0.0, (completed - launched).total_seconds())
 
 
+# PT9 2026-05-23 — Q02 compile gate. Cheap inline mtime check first; full
+# tools/strategy_farm/compile_ea.py subprocess fallback only when source is
+# newer than the cached ex5 (i.e. the EA was edited since last compile). This
+# closes the QM5_10005-style ex5_missing failure mode at the dispatch boundary
+# instead of letting the backtest fail with FATAL missing EA binary downstream.
+COMPILE_EA_SCRIPT = REPO_ROOT / "tools" / "strategy_farm" / "compile_ea.py"
+
+
+def _compile_gate_check(ea_dir_name: str) -> dict[str, Any]:
+    """Return {allowed: bool, verdict: str, source: 'mtime'|'subprocess'|'error'}.
+    Fast path: if .ex5 exists with size > 0 and mtime >= .mq5 mtime, allow.
+    Otherwise: delegate to compile_ea.py and parse its verdict."""
+    ea_dir = REPO_ROOT / "framework" / "EAs" / ea_dir_name
+    mq5 = ea_dir / f"{ea_dir_name}.mq5"
+    ex5 = ea_dir / f"{ea_dir_name}.ex5"
+    if not mq5.exists():
+        return {"allowed": False, "verdict": "NO_MQ5", "source": "mtime",
+                "ea_dir": str(ea_dir)}
+
+    if ex5.exists():
+        try:
+            ex5_stat = ex5.stat()
+            mq5_stat = mq5.stat()
+            if ex5_stat.st_size > 0 and ex5_stat.st_mtime >= mq5_stat.st_mtime:
+                return {"allowed": True, "verdict": "COMPILED_CACHED",
+                        "source": "mtime", "ex5_path": str(ex5),
+                        "ex5_size": ex5_stat.st_size}
+        except OSError:
+            pass
+
+    # Source changed or ex5 missing — call compile_ea.py for fresh build + validator
+    if not COMPILE_EA_SCRIPT.exists():
+        return {"allowed": False, "verdict": "COMPILE_EA_SCRIPT_MISSING",
+                "source": "error", "expected_path": str(COMPILE_EA_SCRIPT)}
+    creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+    try:
+        proc = subprocess.run(
+            [sys.executable, str(COMPILE_EA_SCRIPT), "--ea-label", ea_dir_name, "--json"],
+            capture_output=True, text=True, timeout=180,
+            creationflags=creationflags,
+        )
+    except subprocess.TimeoutExpired:
+        return {"allowed": False, "verdict": "COMPILE_TIMEOUT", "source": "subprocess"}
+    if not proc.stdout.strip():
+        return {"allowed": False, "verdict": "COMPILE_NO_OUTPUT",
+                "source": "subprocess", "stderr": (proc.stderr or "")[:200]}
+    try:
+        results = json.loads(proc.stdout)
+        if not results:
+            return {"allowed": False, "verdict": "COMPILE_EMPTY_RESULT",
+                    "source": "subprocess"}
+        r = results[0]
+        verdict = r.get("verdict", "UNKNOWN")
+        allowed = verdict in ("COMPILED", "COMPILED_CACHED")
+        return {"allowed": allowed, "verdict": verdict, "source": "subprocess",
+                "reason": r.get("reason", ""),
+                "compile_log_path": r.get("compile_log_path", ""),
+                "symbol_scope_verdict": r.get("symbol_scope_verdict", "")}
+    except json.JSONDecodeError as exc:
+        return {"allowed": False, "verdict": "COMPILE_BAD_JSON",
+                "source": "subprocess", "error": repr(exc)[:200]}
+
+
 def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
                                     terminal: str) -> dict[str, Any]:
     """Spawn run_smoke.ps1 for one work_item, pinned to a specific terminal.
@@ -1753,6 +1826,18 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
     period = runner_period
     numeric_id = int(re.match(r"^QM5_(\d+)$", ea_id).group(1))
 
+    # PT9 2026-05-23 — compile gate. For Q02 / P2 (entry-point phases), call
+    # compile_ea.py to ensure the .ex5 is current + scope-clean before
+    # dispatching the backtest. Inline mtime check first (fast); subprocess
+    # fallback only when source changed or validator output stale. Closes the
+    # ex5_missing class (QM5_10005-style: build never ran) and the
+    # SYMBOL_SCOPE_LEAK class structurally.
+    if phase in ("Q02", "P2"):
+        gate = _compile_gate_check(ea_dir_name)
+        if not gate["allowed"]:
+            return {"spawned": False, "reason": f"compile_gate:{gate['verdict']}",
+                    "compile_gate": gate}
+
     # Per-work-item report root keeps summaries discoverable
     report_root = Path(r"D:\QM\reports\work_items") / item_row["id"]
     report_root.mkdir(parents=True, exist_ok=True)
@@ -1773,13 +1858,25 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
     is_exploration = ("_ablation_" in setfile_path or "_grid_" in setfile_path
                       or "_synth_" in setfile_path)
     n_runs = "1" if is_exploration else "2"
-    if phase == "P2":
-        default_from_year = 2020 if is_exploration else P2_DEFAULT_FROM_YEAR
-        from_year = int(item_payload.get("from_year") or default_from_year)
-        to_year = int(item_payload.get("to_year") or P2_DEFAULT_TO_YEAR)
+    if phase in ("P2", "Q02"):
+        # PT8 2026-05-23 — Q02 window now scales with detected period so D1/W1
+        # strategies don't get a 1-year window they can't possibly produce
+        # 150 trades on. H1 keeps the original 6-year span; D1/W1/MN1 stretch
+        # back to 2015-2010-2005 respectively. Explicit from_year/to_year on
+        # the work item still wins.
+        period_upper = (period or "H1").upper()
+        if phase == "Q02":
+            default_from = Q02_FROM_YEAR_BY_PERIOD.get(period_upper, P2_DEFAULT_FROM_YEAR)
+            default_to   = Q02_TO_YEAR_BY_PERIOD.get(period_upper, P2_DEFAULT_TO_YEAR)
+        else:
+            default_from = 2020 if is_exploration else P2_DEFAULT_FROM_YEAR
+            default_to   = P2_DEFAULT_TO_YEAR
+        from_year = int(item_payload.get("from_year") or default_from)
+        to_year = int(item_payload.get("to_year") or default_to)
         from_date = f"{from_year}.01.01"
         to_date = f"{to_year}.12.31"
-        if not is_exploration and not item_payload.get("p2_prescreen_done"):
+        skip_prescreen = (phase == "Q02" and period_upper in Q02_SKIP_PRESCREEN_PERIODS)
+        if not is_exploration and not skip_prescreen and not item_payload.get("p2_prescreen_done"):
             from_date, to_date = _p2_prescreen_dates(to_year)
             n_runs = "1"
             p2_run_stage = "prescreen"
@@ -1989,7 +2086,7 @@ def _refresh_phase_report_from_work_items(root: Path, ea_id: str, phase: str) ->
             """
             SELECT ea_id, phase, symbol, verdict, evidence_path, payload_json
             FROM work_items
-            WHERE ea_id=? AND phase=? AND status IN ('done', 'failed')
+            WHERE ea_id=? AND phase=? AND status in ('done', 'failed')
             ORDER BY updated_at ASC, created_at ASC
             """,
             (ea_id, phase_key),
@@ -2233,6 +2330,44 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
             news_matrix = NEWS_MATRIX_FALLBACK
         if news_matrix.exists():
             cmd.extend(["--news-matrix", str(news_matrix)])
+    # PT3 2026-05-23 — Qxx canonical phase runners (post-pipeline-rewrite).
+    # Each new runner has a slightly different CLI; bridge from the generic
+    # worker args (--ea, --symbol, --period, --setfile) here.
+    elif phase == "Q04":
+        cmd.extend(["--terminal", terminal or "T1"])
+    elif phase in ("Q05", "Q06", "Q10"):
+        # These take --baseline-setfile instead of --setfile.
+        cmd.extend([
+            "--baseline-setfile", str(item_row["setfile_path"] or ""),
+            "--terminal", terminal or "T1",
+        ])
+        _remove_cmd_arg(cmd, "--setfile")
+    elif phase == "Q07":
+        cmd.extend([
+            "--baseline-setfile", str(item_row["setfile_path"] or ""),
+            "--terminal", terminal or "T1",
+        ])
+        _remove_cmd_arg(cmd, "--setfile")
+    elif phase == "Q08":
+        # Q08 aggregator reads the EA's structured JSON-lines log directly.
+        # Worker-passed --setfile/--period not needed; we rebuild the cmd.
+        log_path = (Path(r"D:\QM\mt5") / (terminal or "T1") /
+                    "MQL5" / "Logs" / "QM" / f"{ea_id}.log")
+        cmd = [
+            _console_python_executable(),
+            str(REPO_ROOT / "framework" / "scripts" / "q08_davey" / "aggregate.py"),
+            "--ea-id", str(int(ea_id.replace("QM5_", "").split("_")[0]))
+                          if ea_id.startswith("QM5_") else ea_id,
+            "--symbol", symbol,
+            "--log", str(log_path),
+            "--out-dir", str(report_root / ea_id / "Q08" / symbol.replace(".", "_")),
+        ]
+    elif phase == "Q09":
+        cmd.extend([
+            "--baseline-setfile", str(item_row["setfile_path"] or ""),
+            "--terminal", terminal or "T1",
+        ])
+        _remove_cmd_arg(cmd, "--setfile")
     return cmd
 
 
@@ -3354,7 +3489,7 @@ def _spawn_codex_for_g0_batch(root: Path) -> dict[str, Any]:
     """Spawn Codex for G0 review of up to 3 draft cards (smaller batch
     than Claude — Codex iterates through farmctl subprocesses serially).
 
-    Runs IN PARALLEL with Claude G0 — claim mechanism prevents both
+    Runs in PARALLEL with Claude G0 — claim mechanism prevents both
     workers from grabbing the same card.
     """
     import shutil as _shutil
@@ -4228,7 +4363,7 @@ def _detect_zerotrade_dead_eas(con: sqlite3.Connection, root: Path = DEFAULT_ROO
         """
         SELECT ea_id, verdict, payload_json, evidence_path, updated_at
         FROM work_items
-        WHERE phase='P2' AND status IN ('done', 'failed')
+        WHERE phase in ('Q02', 'P2') AND status in ('done', 'failed')
         """
     ).fetchall()
 
@@ -4401,6 +4536,16 @@ def _detect_unbuilt_cards(root: Path) -> list[dict[str, Any]]:
     """
     Find approved cards where the matching EA .ex5 does not exist yet and
     no bridge auto-build task has already been written.
+
+    PT10 2026-05-23 — only return cards whose r2_mechanical evaluation has
+    already PASSED. Pre-PT10 the function returned cards alphabetically by
+    ea_id; the low-id end of the corpus is the old pre-schema-rewrite cards
+    that lack R-eval, so every pump cycle tried 10 such cards and all 10
+    skipped with prebuild_validation failed → auto_build_queued stayed at 0
+    forever. Now: filter to cards with r2_mechanical=PASS up front (cheap
+    frontmatter parse, no heavy preflight) so the queue actually drains.
+    Unready cards (UNKNOWN/FAIL) are waiting on the separate R-eval flow
+    and will become eligible once that completes.
     """
     cards_dir = root / "artifacts" / "cards_approved"
     if not cards_dir.is_dir():
@@ -4418,6 +4563,14 @@ def _detect_unbuilt_cards(root: Path) -> list[dict[str, Any]]:
         if ex5.exists():
             continue
         if _has_auto_build_task_file(root, ea_id):
+            continue
+        # PT10 — gate on r2_mechanical PASS before emitting a build task.
+        try:
+            fm = parse_card_frontmatter(card_md)
+            r2 = str(fm.get("r2_mechanical") or "").strip().upper()
+            if r2 != "PASS":
+                continue
+        except Exception:
             continue
         unbuilt.append({
             "ea_id": ea_id,
@@ -4515,6 +4668,7 @@ UNKNOWN
 
 
 def _card_frontmatter_block(text: str) -> tuple[dict[str, str], str]:
+    text = text.lstrip("\ufeff")
     m = re.match(r"^---\s*\n(.*?)\n---\s*\n?", text, re.DOTALL)
     if not m:
         return {}, text
@@ -4527,7 +4681,7 @@ def _card_frontmatter_block(text: str) -> tuple[dict[str, str], str]:
 
 
 def _update_flat_frontmatter_file(path: Path, updates: dict[str, str]) -> None:
-    text = path.read_text(encoding="utf-8")
+    text = path.read_text(encoding="utf-8-sig")
     if not text.startswith("---"):
         lines = ["---"] + [f"{k}: {v}" for k, v in updates.items()] + ["---", "", text]
         path.write_text("\n".join(lines), encoding="utf-8", newline="\n")
@@ -4558,34 +4712,50 @@ def _card_has_unknown_r_eval(card_path: Path) -> bool:
     return False
 
 
-def _auto_queue_r_eval_for_unknown_drafts(root: Path, max_tasks: int = 3) -> list[dict[str, Any]]:
-    draft_dir = root / "artifacts" / "cards_draft"
+def _auto_queue_r_eval_for_unknown_drafts(root: Path, max_tasks: int = 10) -> list[dict[str, Any]]:
+    """PT10 2026-05-23 — also scan cards_approved/ (was draft-only).
+
+    The approved-but-UNKNOWN bucket (~1 099 cards from the pre-schema-rewrite
+    corpus) was previously invisible to this auto-queue, leaving them stuck
+    out of the build pipeline forever. Cap bumped 3 -> 10 per cycle to match
+    the build-emission cap; R-eval is short (frontmatter rewrite, ~minutes)
+    so a higher rate doesn't pressure Codex.
+    """
     inbox = root / "codex_inbox"
     inbox.mkdir(parents=True, exist_ok=True)
-    if not draft_dir.is_dir():
-        return []
     cutoff = time.time() - 4 * 3600
     queued: list[dict[str, Any]] = []
-    for card_path in sorted(draft_dir.glob("QM5_*.md")):
+    candidate_dirs = [
+        root / "artifacts" / "cards_draft",
+        root / "artifacts" / "cards_approved",
+    ]
+    for cards_dir in candidate_dirs:
         if len(queued) >= max_tasks:
             break
-        if card_path.stat().st_mtime > cutoff:
+        if not cards_dir.is_dir():
             continue
-        ea_id = "_".join(card_path.stem.split("_")[:2])
-        if not _card_has_unknown_r_eval(card_path):
-            continue
-        if _has_auto_task_file(root, f"auto-r-eval-{ea_id}-"):
-            continue
-        ts = dt.datetime.now(dt.UTC).replace(microsecond=0).strftime("%Y%m%dT%H%M%SZ")
-        task_id = f"auto-r-eval-{ea_id}-{ts}"
-        target = inbox / f"{task_id}.md"
-        content = f"""---
+        bucket = cards_dir.name  # "cards_draft" or "cards_approved"
+        for card_path in sorted(cards_dir.glob("QM5_*.md")):
+            if len(queued) >= max_tasks:
+                break
+            if card_path.stat().st_mtime > cutoff:
+                continue
+            ea_id = "_".join(card_path.stem.split("_")[:2])
+            if not _card_has_unknown_r_eval(card_path):
+                continue
+            if _has_auto_task_file(root, f"auto-r-eval-{ea_id}-"):
+                continue
+            ts = dt.datetime.now(dt.UTC).replace(microsecond=0).strftime("%Y%m%dT%H%M%SZ")
+            task_id = f"auto-r-eval-{ea_id}-{ts}"
+            target = inbox / f"{task_id}.md"
+            content = f"""---
 task_id: {task_id}
 priority: med
 created: {dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat()}
 auto_generated: true
-trigger: R_EVAL_UNKNOWN_DRAFT
+trigger: R_EVAL_UNKNOWN_{bucket.upper()}
 ea_id: {ea_id}
+source_bucket: {bucket}
 ---
 
 # Auto R-eval: {card_path.name}
@@ -4600,8 +4770,8 @@ Update the card frontmatter in place with PASS/FAIL for:
 
 Include concise reasoning fields. No commit / no push.
 """
-        target.write_text(content, encoding="utf-8", newline="\n")
-        queued.append({"ea_id": ea_id, "task_path": str(target)})
+            target.write_text(content, encoding="utf-8", newline="\n")
+            queued.append({"ea_id": ea_id, "task_path": str(target), "bucket": bucket})
     return queued
 
 
@@ -4717,7 +4887,7 @@ def _detect_unenqueued_eas(con: sqlite3.Connection) -> list[dict[str, Any]]:
         if not ea_id:
             continue
         wi_count = con.execute(
-            "SELECT COUNT(*) FROM work_items WHERE ea_id=? AND phase='P2'",
+            "SELECT COUNT(*) FROM work_items WHERE ea_id=? AND phase in ('Q02', 'P2')",
             (ea_id,),
         ).fetchone()[0]
         if wi_count > 0:
@@ -4728,7 +4898,7 @@ def _detect_unenqueued_eas(con: sqlite3.Connection) -> list[dict[str, Any]]:
         # 2017-2022 window) on every cycle.
         terminal_task_exists = con.execute(
             "SELECT 1 FROM tasks WHERE kind='backtest_p2' AND card_id=? "
-            "AND status IN ('done','failed') LIMIT 1",
+            "AND status in ('done', 'failed') LIMIT 1",
             (ea_id,),
         ).fetchone()
         if terminal_task_exists:
@@ -4769,7 +4939,7 @@ def _materialized_backtest_work_item_depth(con: sqlite3.Connection) -> int:
         SELECT COUNT(*) AS n
         FROM work_items
         WHERE kind='backtest'
-          AND status IN ('pending', 'active')
+          AND status in ('pending', 'active')
         """
     ).fetchone()
     return int(row["n"] if row else 0)
@@ -4944,8 +5114,8 @@ def _auto_stub_p5_calibration(root: Path, con: sqlite3.Connection, limit: int = 
         """
         SELECT * FROM work_items
         WHERE (
-            (phase='P4' AND status='done' AND verdict='PASS')
-            OR (phase='P5' AND status IN ('pending', 'active'))
+            (phase in ('Q04', 'P4') AND status='done' AND verdict='PASS')
+            OR (phase in ('Q05', 'P5') AND status in ('pending', 'active'))
         )
         ORDER BY updated_at DESC
         LIMIT 100
@@ -5034,8 +5204,8 @@ def research_backlog_inventory(root: Path) -> dict[str, Any]:
                 SELECT COUNT(DISTINCT ea_id) AS n
                 FROM work_items
                 WHERE ea_id IS NOT NULL
-                  AND status IN ('pending', 'active')
-                  AND phase IN ('P2','P3','P3.5','P4','P5','P5b','P5c','P6','P7','P8')
+                  AND status in ('pending', 'active')
+                  AND phase in ('P2', 'P3', 'P3.5', 'P4', 'P5', 'P5b', 'P5c', 'P6', 'P7', 'P8', 'Q02', 'Q03', 'Q04', 'Q05', 'Q07', 'Q08')
                 """
             ).fetchone()
             active_pipeline_eas = int(row["n"] if row else 0)
@@ -5044,8 +5214,8 @@ def research_backlog_inventory(root: Path) -> dict[str, Any]:
                 """
                 SELECT COUNT(*) AS n
                 FROM tasks
-                WHERE status IN ('pending', 'active', 'review', 'blocked')
-                  AND kind IN ('build_ea', 'ea_review', 'codex_review')
+                WHERE status in ('pending', 'active', 'review', 'blocked')
+                  AND kind in ('build_ea', 'ea_review', 'codex_review')
                 """
             ).fetchone()
             open_build_or_review_tasks = int(row["n"] if row else 0)
@@ -5155,7 +5325,10 @@ def pump(root: Path) -> dict[str, Any]:
     result["auto_r_eval_queued"] = _auto_queue_r_eval_for_unknown_drafts(root)
 
     result["auto_build_queued"] = []
-    for ea_info in _detect_unbuilt_cards(root)[:2]:
+    # OWNER 2026-05-23 (late): pump now emits up to 10 auto-build bridge
+    # tasks per cycle (was 2) so the queue stays full enough to keep all 5
+    # parallel Codex workers busy on the 2 000+ approved-but-unbuilt cards.
+    for ea_info in _detect_unbuilt_cards(root)[:10]:
         p = _write_auto_build_task(ea_info, root)
         result["auto_build_queued"].append({
             "ea_id": ea_info["ea_id"],
@@ -5286,8 +5459,8 @@ def pump(root: Path) -> dict[str, Any]:
     #    file level: CSV append is atomic line-by-line, update_resolver is
     #    idempotent (reads current CSV state, regenerates .mqh deterministically).
     #    OWNER 2026-05-16: explicit ok to parallelize.
-    MAX_PARALLEL_CODEX = 18  # OWNER 2026-05-19: 10->18 (Codex subscription has reserves vs Claude burn)
-    MAX_PARALLEL_CODEX_BUILDS = 15  # OWNER 2026-05-19: 7->15 unblock cards-to-EAs conversion
+    MAX_PARALLEL_CODEX = 5       # OWNER 2026-05-25: 3->5 (raise throttle; perma-blocked skip-list keeps token-burn bounded)
+    MAX_PARALLEL_CODEX_BUILDS = 5  # same: 3->5 to match
     # Circuit breaker: when codex auth is broken, force both caps to 0 so
     # NO codex work spawns (research/review/build/g0 all gated through
     # these caps). Prevents wasting 5×30s retries per spawn + leaving
@@ -5320,8 +5493,28 @@ def pump(root: Path) -> dict[str, Any]:
             "ORDER BY updated_at ASC"
         ).fetchall()
         all_pending = sorted(all_pending, key=lambda row: _card_build_priority(root, row))
+        # PT12 2026-05-24 — skip-list of EAs Codex has already permanently
+        # blocked on (3 retries exhausted with compile_error or similar). Pre-
+        # PT12 these EAs sat in the pending queue too and Codex re-spawned for
+        # them every cycle, costing ~228 wasted Codex spawns/day per the
+        # token-burn audit. Now: read the failed/blocked tasks once, build a
+        # set of ea_ids that hit permanent_blocked_retries_exhausted, and skip
+        # any pending build_ea whose ea_id is in that set.
+        perma_blocked_eas: set[str] = set()
+        for r in conn.execute(
+            "SELECT payload_json FROM tasks WHERE kind='build_ea' AND status IN ('failed','blocked')"
+        ):
+            try:
+                pl = json.loads(r["payload_json"] or "{}")
+            except (json.JSONDecodeError, TypeError):
+                continue
+            if pl.get("final_failure") == "permanent_blocked_retries_exhausted":
+                ea_id = pl.get("ea_id")
+                if ea_id:
+                    perma_blocked_eas.add(ea_id)
         seen_eas: set[str] = set()
         pending_builds = []
+        skipped_perma_blocked = 0
         for row in all_pending:
             if len(pending_builds) >= spawn_budget:
                 break
@@ -5329,12 +5522,20 @@ def pump(root: Path) -> dict[str, Any]:
             ea_id = payload.get("ea_id")
             if ea_id in seen_eas:
                 continue
+            if ea_id in perma_blocked_eas:
+                # Hard-block: don't re-spawn for an EA that has already
+                # exhausted its retries. OWNER can recycle to _v2 manually
+                # if the underlying source is fixable.
+                skipped_perma_blocked += 1
+                continue
             seen_eas.add(ea_id)
             pending_builds.append(row)
     spawns = []
     for pending_build in pending_builds:
         sp = _spawn_codex_for_build(root, pending_build)
         spawns.append(sp)
+    result["codex_perma_blocked_skipped"] = skipped_perma_blocked
+    result["codex_perma_blocked_ea_count"] = len(perma_blocked_eas)
 
     # 3b. Auto-create build_ea tasks for newly-approved cards. Without this,
     #    pump can't reach Codex on cards that haven't yet been touched by
@@ -5376,6 +5577,16 @@ def pump(root: Path) -> dict[str, Any]:
                 ea_id = f"{parts[0]}_{parts[1]}"
                 if ea_id not in have_task:
                     if _has_auto_build_task_file(root, ea_id):
+                        continue
+                    # PT10 — same r2_mechanical=PASS gate as _detect_unbuilt_cards.
+                    # Skip cards whose R-eval has not landed PASS yet so we don't
+                    # bombard prebuild_validate_card with cards we know will fail.
+                    try:
+                        fm = parse_card_frontmatter(f)
+                        r2 = str(fm.get("r2_mechanical") or "").strip().upper()
+                        if r2 != "PASS":
+                            continue
+                    except Exception:
                         continue
                     cards_without_task.append((ea_id, f))
             slots_left = spawn_budget - actually_spawned
@@ -5758,7 +5969,7 @@ def pump(root: Path) -> dict[str, Any]:
         p2_pass = conn.execute(
             """
             SELECT * FROM work_items
-            WHERE status='done' AND verdict='PASS' AND phase='P2'
+            WHERE status='done' AND verdict='PASS' AND phase in ('Q02', 'P2')
               AND setfile_path NOT LIKE '%_ablation_%'
               AND setfile_path NOT LIKE '%_grid_%'
               AND COALESCE(json_extract(payload_json, '$.ablated_at'), '')=''
@@ -5799,7 +6010,7 @@ def pump(root: Path) -> dict[str, Any]:
         promotable = conn.execute(
             """
             SELECT w.* FROM work_items w
-            WHERE w.status='done' AND w.verdict='PASS' AND w.phase='P2'
+            WHERE w.status='done' AND w.verdict='PASS' AND w.phase in ('Q02', 'P2')
               AND (
                 w.setfile_path LIKE '%_ablation_%'
                 OR w.setfile_path LIKE '%_grid_%'
@@ -5811,7 +6022,7 @@ def pump(root: Path) -> dict[str, Any]:
                 WHERE w2.ea_id = w.ea_id
                   AND w2.symbol = w.symbol
                   AND w2.setfile_path = w.setfile_path
-                  AND w2.phase = 'P3'
+                  AND w2.phase in ('Q03', 'P3')
               )
             ORDER BY w.updated_at ASC LIMIT 500
             """
@@ -5840,8 +6051,12 @@ def pump(root: Path) -> dict[str, Any]:
                     "parent_p2_work_item_id": wi["id"],
                 })
                 continue
+            # 2026-05-23 OR3: this cascade path is the pre-rewrite P2→P3
+            # promoter. Kept for back-compat (returns 0 rows on the wiped DB
+            # since no P2 work_items exist). New Q-pipeline cascade happens
+            # at the `cascade_phase_map` loop further down (sets phase='Q03').
             parent = conn.execute(
-                "SELECT id, status FROM tasks WHERE kind='backtest_p3' "
+                "SELECT id, status FROM tasks WHERE kind='backtest_q03' "
                 "AND payload_json LIKE ? ORDER BY created_at ASC LIMIT 1",
                 (f'%"ea_id": "{wi["ea_id"]}"%',),
             ).fetchone()
@@ -5855,12 +6070,12 @@ def pump(root: Path) -> dict[str, Any]:
                 INSERT INTO work_items
                   (id, kind, phase, ea_id, symbol, setfile_path, status,
                    attempt_count, parent_task_id, payload_json, created_at, updated_at)
-                VALUES (?, 'backtest', 'P3', ?, ?, ?, 'pending', 0, ?, ?, ?, ?)
+                VALUES (?, 'backtest', 'Q03', ?, ?, ?, 'pending', 0, ?, ?, ?, ?)
                 """,
                 (new_id, wi["ea_id"], wi["symbol"], wi["setfile_path"],
                  parent["id"], json.dumps(payload), now, now),
             )
-            # Re-open parent P3 task so classify_aggregate re-runs when this
+            # Re-open parent Q03 task so classify_aggregate re-runs when this
             # work_item finishes. No-op if already pending.
             if parent["id"] not in reopened_parents and parent["status"] == "done":
                 conn.execute(
@@ -5885,17 +6100,27 @@ def pump(root: Path) -> dict[str, Any]:
 
     result["cascade_promotions"] = []
     result["cascade_promotions_skipped"] = []
+    # 2026-05-23 OR3 — Qxx cascade map. Each phase's PASS promotes to the next.
+    # Q09 News Mode auto-defaults to Mode 3 (per Vault), no explicit PASS needed
+    # — so Q08 PASS cascades directly to Q10 (skipping the Q09 mode-selection
+    # step which is handled as a setfile patch in the Q10 runner).
     cascade_phase_map = {
-        "P3": "P3.5",
-        "P3.5": "P4",
-        "P4": "P5",
-        "P5": "P5b",
-        "P5b": "P5c",
-        "P5c": "P6",
-        "P6": "P7",
-        "P7": "P8",
+        "Q03": "Q04",
+        "Q04": "Q05",
+        "Q05": "Q06",
+        "Q06": "Q07",
+        "Q07": "Q08",
+        "Q08": "Q10",   # Q09 is auto-defaulted; Q10 is the closing per-(EA, sym) verdict
     }
     cascade_pass_verdicts = {
+        "Q03": {"PASS"},
+        "Q04": {"PASS"},
+        "Q05": {"PASS"},
+        "Q06": {"PASS"},
+        "Q07": {"PASS"},
+        "Q08": {"PASS"},
+        # Pre-rewrite keys retained inert for any orphan reads against the
+        # empty post-wipe DB. These will never match new rows.
         "P3": {"PASS"},
         "P3.5": {"PASS"},
         "P4": {"PASS"},
@@ -5914,7 +6139,7 @@ def pump(root: Path) -> dict[str, Any]:
             promotable = conn.execute(
                 f"""
                 SELECT w.* FROM work_items w
-                WHERE w.status='done' AND w.phase=? AND w.verdict IN ({placeholders})
+                WHERE w.status='done' AND w.phase=? AND w.verdict in ({placeholders})
                   AND NOT EXISTS (
                     SELECT 1 FROM work_items w2
                     WHERE w2.ea_id = w.ea_id
@@ -6014,7 +6239,7 @@ def pump(root: Path) -> dict[str, Any]:
         p3_pass = conn.execute(
             """
             SELECT * FROM work_items
-            WHERE status='done' AND verdict='PASS' AND phase='P3'
+            WHERE status='done' AND verdict='PASS' AND phase in ('Q03', 'P3')
               AND setfile_path NOT LIKE '%_ablation_%'
               AND setfile_path NOT LIKE '%_grid_%'
               AND COALESCE(json_extract(payload_json, '$.ablated_at'), '')=''
@@ -6340,7 +6565,7 @@ def get_mt5_status(root: Path | None = None) -> dict[str, Any]:
             with connect(root) as conn:
                 placeholders = ",".join("?" for _ in ids)
                 rows = conn.execute(
-                    f"SELECT id, status, phase, ea_id, symbol, claimed_by FROM work_items WHERE id IN ({placeholders})",
+                    f"SELECT id, status, phase, ea_id, symbol, claimed_by FROM work_items WHERE id in ({placeholders})",
                     ids,
                 ).fetchall()
             work_item_status = {row["id"]: dict(row) for row in rows}
@@ -7082,7 +7307,7 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
         prev_rows = conn.execute(
             f"""
             SELECT * FROM work_items
-            WHERE ea_id=? AND phase=? AND status='done' AND verdict IN ({placeholders})
+            WHERE ea_id=? AND phase=? AND status='done' AND verdict in ({placeholders})
             ORDER BY updated_at ASC
             """,
             (ea_id, prev_phase, *verdicts),
@@ -8346,6 +8571,63 @@ def reject_card(root: Path, card_path_str: str, reason: str) -> dict[str, Any]:
     }
 
 
+def _validate_ea_spec_md(build_result: dict[str, Any], root: Path) -> dict[str, Any]:
+    """Run framework/scripts/validate_spec_doc.py against the EA's dir.
+
+    PT2 2026-05-23 — gate enforcement of Vault Q01 SPEC.md requirement.
+    Returns {"ok": bool, "failures": list[str], "ea_dir": str | None}.
+    Non-fatal if the validator script itself is missing (returns ok=True
+    with a note) — defensive degradation, won't break older deployments.
+    """
+    ea_dir_raw = (build_result.get("ea_dir") or "").strip()
+    if not ea_dir_raw:
+        # Try to derive from ea_id + slug
+        ea_id = build_result.get("ea_id")
+        slug = build_result.get("slug")
+        if ea_id and slug:
+            ea_dir_raw = str(FRAMEWORK_EAS_DIR / f"{ea_id}_{slug}")
+    if not ea_dir_raw:
+        return {"ok": False, "failures": ["ea_dir_unresolvable"], "ea_dir": None}
+
+    ea_dir = Path(ea_dir_raw)
+    if not ea_dir.exists() or not ea_dir.is_dir():
+        return {"ok": False, "failures": [f"ea_dir_missing:{ea_dir_raw}"], "ea_dir": ea_dir_raw}
+
+    validator = REPO_ROOT / "framework" / "scripts" / "validate_spec_doc.py"
+    if not validator.exists():
+        return {"ok": True, "failures": [], "ea_dir": ea_dir_raw,
+                "note": "validator_script_absent_skipped"}
+
+    import shutil as _shutil
+    python_exe = _shutil.which("python") or sys.executable or "python"
+    creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+    try:
+        proc = subprocess.run(
+            [python_exe, str(validator), str(ea_dir)],
+            capture_output=True, text=True, timeout=30,
+            creationflags=creationflags,
+        )
+    except subprocess.TimeoutExpired:
+        return {"ok": False, "failures": ["validator_timeout"], "ea_dir": ea_dir_raw}
+    except Exception as exc:
+        return {"ok": False, "failures": [f"validator_error:{exc!r}"], "ea_dir": ea_dir_raw}
+
+    if proc.returncode == 0:
+        return {"ok": True, "failures": [], "ea_dir": ea_dir_raw}
+
+    # Validator emits one "FAIL  <ea_name>" line + "      - <failure>" lines.
+    failures: list[str] = []
+    for line in (proc.stdout or "").splitlines():
+        s = line.strip()
+        if s.startswith("- "):
+            failures.append(s[2:])
+    if not failures:
+        # Validator failed but didn't list reasons (parse fallback)
+        failures = [(proc.stdout or proc.stderr or "validator_failed").strip()[:200]]
+    return {"ok": False, "failures": failures, "ea_dir": ea_dir_raw,
+            "exit_code": proc.returncode}
+
+
 def record_build_result(root: Path, task_id: str, result_file: str) -> dict[str, Any]:
     """Read Codex's build result JSON, transition the build_ea task."""
     init_db(root)
@@ -8394,6 +8676,39 @@ def record_build_result(root: Path, task_id: str, result_file: str) -> dict[str,
     else:
         new_status = "failed"
 
+    # PT2 2026-05-23 — Q01 SPEC.md gate enforcement.
+    # Per Vault Q01 Build & Spec spec, every new EA must ship with a complete
+    # SPEC.md (7 required sections, no unfilled placeholders, EA-ID match).
+    # We only enforce this when the build was otherwise about to advance to
+    # "done" — failures/blocks already gate the EA out for other reasons.
+    if new_status == "done":
+        spec_result = _validate_ea_spec_md(result, root)
+        payload_merge["spec_validation"] = spec_result
+        if not spec_result.get("ok"):
+            new_status = "blocked"
+            result["blocked_reason"] = "spec_validation_failed"
+            payload_merge["fail_code"] = "spec_validation_failed"
+            payload_merge.setdefault(
+                "spec_blocked_summary",
+                "; ".join(spec_result.get("failures", [])[:3]),
+            )
+
+    # PT11 2026-05-24 — auto-enqueue Q02 work_items immediately after a clean
+    # build. Pre-PT11 every build, even fully-compiled with PASS spec, sat at
+    # status=done waiting for a manual `claude-review-prompt` + `ea_review` +
+    # `enqueue-backtest` chain. That gap was the dominant cause of the
+    # "283 ex5 built / 15 in Q02" funnel collapse — 95% of fresh ex5s never
+    # entered the test pipeline. Now: when build is clean (status=done), we
+    # read setfiles_generated from the codex result, pair each setfile with
+    # its symbol (parsed from filename), and INSERT one Q02 work_item per
+    # (symbol, setfile). The factory's worker daemons pick them up on the
+    # next dispatch tick. Idempotent — skips if a pending/active Q02 already
+    # exists for the same (ea_id, symbol).
+    auto_q02 = None
+    if new_status == "done":
+        auto_q02 = _auto_enqueue_q02_for_build(root, result)
+        payload_merge["auto_q02_enqueued"] = auto_q02
+
     with connect(root) as conn:
         updated = update_task(conn, task_id, status=new_status, payload_merge=payload_merge)
     if updated is None:
@@ -8405,11 +8720,83 @@ def record_build_result(root: Path, task_id: str, result_file: str) -> dict[str,
         "smoke_result": smoke,
         "blocked_reason": blocked,
         "fail_code": fail_code,
+        "auto_q02_enqueued": auto_q02,
         "next_action_hint": (
-            f"python tools/strategy_farm/farmctl.py claude-review-prompt --build-task-id {task_id}"
+            f"Q02 auto-enqueued ({len(auto_q02.get('enqueued', [])) if auto_q02 else 0} work_items); "
+            f"worker daemons will dispatch on next tick"
+            if new_status == "done" and auto_q02
+            else f"python tools/strategy_farm/farmctl.py claude-review-prompt --build-task-id {task_id}"
             if new_status == "done" else f"Build failed/blocked. Inspect {rp} and rework or escalate."
         ),
     }
+
+
+def _auto_enqueue_q02_for_build(root: Path, build_result: dict[str, Any]) -> dict[str, Any]:
+    """Create Q02 work_items for every setfile the Codex build produced.
+
+    Pairs each setfile with its symbol parsed from the filename
+    (<ea_label>_<SYMBOL>_<TF>_backtest.set). Skips (ea_id, symbol) pairs
+    that already have a pending or active Q02 work_item — idempotent so
+    re-running record-build doesn't create duplicates.
+
+    Returns {"enqueued": [{...}], "skipped": [{...}]} for observability.
+    """
+    ea_id = build_result.get("ea_id")
+    setfiles = build_result.get("setfiles_generated") or []
+    if not ea_id or not setfiles:
+        return {"enqueued": [], "skipped": [],
+                "reason": "missing_ea_id_or_setfiles"}
+
+    enqueued: list[dict[str, Any]] = []
+    skipped: list[dict[str, Any]] = []
+    now_iso = utc_now()
+
+    with connect(root) as conn:
+        for setfile_str in setfiles:
+            setfile_path = Path(str(setfile_str))
+            # Filename pattern: <ea_label>_<SYMBOL>_<TF>_backtest.set
+            # Symbol may contain '.' (e.g. EURUSD.DWX); use regex to extract.
+            m = re.search(r"_([A-Z][A-Z0-9.]{2,})_([A-Z0-9]+)_backtest\.set$",
+                          setfile_path.name)
+            if not m:
+                skipped.append({"setfile": str(setfile_path),
+                                "reason": "setfile_name_parse_failed"})
+                continue
+            symbol = m.group(1)
+            tf = m.group(2)
+
+            # Idempotency: skip if pending/active Q02 already exists
+            existing = conn.execute(
+                "SELECT id, status FROM work_items "
+                "WHERE ea_id=? AND symbol=? AND phase='Q02' AND status IN ('pending', 'active')",
+                (ea_id, symbol),
+            ).fetchone()
+            if existing:
+                skipped.append({"setfile": setfile_path.name, "symbol": symbol,
+                                "reason": f"existing_q02_{existing[1]}",
+                                "existing_wi_id": existing[0][:8]})
+                continue
+
+            wi_id = str(uuid.uuid4())
+            payload = {
+                "host_symbol": symbol,
+                "host_timeframe": tf,
+                "enqueued_by": "record_build_result.auto_q02",
+                "enqueued_at_utc": now_iso,
+                "build_task_id": build_result.get("task_id"),
+            }
+            conn.execute(
+                "INSERT INTO work_items (id, kind, phase, ea_id, symbol, setfile_path, "
+                "status, attempt_count, payload_json, created_at, updated_at) "
+                "VALUES (?, 'backtest', 'Q02', ?, ?, ?, 'pending', 0, ?, ?, ?)",
+                (wi_id, ea_id, symbol, str(setfile_path),
+                 json.dumps(payload), now_iso, now_iso),
+            )
+            enqueued.append({"wi_id": wi_id[:8], "symbol": symbol, "tf": tf,
+                             "setfile": setfile_path.name})
+        conn.commit()
+
+    return {"enqueued": enqueued, "skipped": skipped, "ea_id": ea_id}
 
 
 def _classify_build_fail_code(result: dict[str, Any]) -> str | None:

@@ -16,6 +16,7 @@ import datetime as dt
 import html
 import json
 import os
+import re
 import sqlite3
 import subprocess
 import sys
@@ -29,7 +30,7 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from tools.strategy_farm.phase_ids import PHASE_ORDER, PHASE_QID, phase_label
+from tools.strategy_farm.phase_ids import PHASE_ORDER, LEGACY_P_TO_Q as PHASE_QID, phase_label
 
 PHASE_DISPLAY = PHASE_QID
 PHASE_LABEL_FROM_KIND = {
@@ -380,6 +381,45 @@ def _ea_from_work_items(ea_id: str, wi_rows: list, pass_verdicts: set[str]) -> d
     }
 
 
+# Strategy-card directory states, in priority order (later wins if a card_id
+# somehow exists in two folders — shouldn't happen, but be defensive).
+CARD_STATE_DIRS: list[tuple[str, str]] = [
+    ("rejected", "cards_rejected"),
+    ("draft",    "cards_draft"),
+    ("review",   "cards_review"),
+    ("approved", "cards_approved"),
+]
+
+_CARD_FILENAME_RE = re.compile(r"^(QM5_\d+)_(.+)\.md$")
+
+
+def _ea_from_strategy_card(card_path: Path, ea_id: str, slug: str,
+                            card_state: str) -> dict:
+    """Seed an EA dict from a strategy-card .md on disk — for cards that have
+    not yet been built into EAs (no agent task, no work_items). Carries
+    `card_state` so the renderer can show the appropriate pill and lane."""
+    try:
+        mtime = dt.datetime.fromtimestamp(card_path.stat().st_mtime, dt.UTC)
+        last_updated = mtime.replace(microsecond=0).isoformat()
+    except OSError:
+        last_updated = ""
+    dead = (card_state == "rejected")
+    return {
+        "ea_id": ea_id,
+        "slug": slug,
+        "completed_phases": [],
+        "current_phase": "Q00",
+        "failed_at": "Q00" if dead else None,
+        "dead": dead,
+        "live": False,
+        "task_count": 0,
+        "last_updated": last_updated,
+        "latest_evidence": str(card_path),
+        "card_state": card_state,
+        "card_path": str(card_path),
+    }
+
+
 def derive_ea_candidates(tasks: list[dict], root: Path | None = None) -> list[dict]:
     """Group tasks by card_id (= ea_id) and derive EA-level state.
 
@@ -511,6 +551,35 @@ def derive_ea_candidates(tasks: list[dict], root: Path | None = None) -> list[di
             for ea_id, ea_rows in wi_by_ea.items():
                 if ea_id not in by_id:
                     eas.append(_ea_from_work_items(ea_id, ea_rows, pass_verdicts))
+                    by_id[ea_id] = eas[-1]
+
+        # archive coverage: seed every strategy card on disk that has no
+        # agent task and no work_items yet — OWNER decision 2026-05-23:
+        # "every strategy card is a strategy in the archive". Stays card-only
+        # row until a build_ea task fires or work_items appear.
+        artifacts_dir = root / "artifacts"
+        if artifacts_dir.is_dir():
+            for card_state, subdir in CARD_STATE_DIRS:
+                dir_path = artifacts_dir / subdir
+                if not dir_path.is_dir():
+                    continue
+                for card_path in dir_path.glob("QM5_*.md"):
+                    m = _CARD_FILENAME_RE.match(card_path.name)
+                    if not m:
+                        continue
+                    ea_id, slug = m.group(1), m.group(2)
+                    if ea_id in by_id:
+                        # Already represented by an agent task or work_items —
+                        # promote slug + card_state onto the existing entry so
+                        # the row shows where this card sits in the funnel.
+                        existing = by_id[ea_id]
+                        if not existing.get("slug") or existing["slug"] == ea_id:
+                            existing["slug"] = slug
+                        existing.setdefault("card_state", card_state)
+                        existing.setdefault("card_path", str(card_path))
+                        continue
+                    eas.append(_ea_from_strategy_card(card_path, ea_id, slug, card_state))
+                    by_id[ea_id] = eas[-1]
 
     eas.sort(key=lambda x: x.get("last_updated", ""), reverse=True)
     return eas
@@ -1421,6 +1490,11 @@ ARCHIVE_CSS = """
 .archive-table .status-chip.s-dead{color:var(--fail);background:transparent}
 .archive-table .status-chip.s-flow{color:var(--live);background:transparent}
 .archive-table .status-chip.s-live{color:var(--signal);background:transparent}
+.archive-table .status-chip.s-prog{color:var(--promising);background:transparent}
+.archive-table .status-chip.s-card{color:var(--text-3);background:transparent}
+.archive-table tr.row-card-only{cursor:default;opacity:0.85}
+.archive-table tr.row-card-only:hover{background:var(--surface-1)}
+.achip.c-card .achip-num{color:var(--text-3)}
 
 .archive-footer{margin:40px auto 48px;max-width:1400px;padding:0 36px;font-family:var(--font-mono);font-size:11px;color:var(--text-3);text-align:center;line-height:1.7;letter-spacing:0.06em}
 """
@@ -1570,6 +1644,42 @@ DETAIL2_CSS = """
 .raw-rows>summary::-webkit-details-marker{display:none}
 .raw-rows>summary::before{content:'\\25B8 ';color:var(--signal)}
 .raw-rows[open]>summary::before{content:'\\25BE '}
+.attempt-toggle{display:inline-block;margin-left:8px;padding:1px 7px;font-family:var(--font-mono);font-size:9px;font-weight:600;letter-spacing:0.1em;color:var(--text-3);border:1px solid var(--border-2);cursor:pointer;user-select:none}
+.attempt-toggle:hover{color:var(--text);border-color:var(--signal)}
+.attempt-toggle.open{color:var(--signal);border-color:var(--signal)}
+.attempt-row{background:var(--bg)}
+.attempt-row td{padding:0!important;border:none!important}
+.attempt-row.hidden{display:none}
+.att-wrap{padding:6px 12px 12px 28px;font-family:var(--font-mono);font-size:10.5px}
+.att-title{font-size:9px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.18em;margin:6px 0 6px}
+.att-table{width:100%;border-collapse:collapse;background:transparent}
+.att-table th{text-align:left;font-size:9px;color:var(--text-4);text-transform:uppercase;letter-spacing:0.14em;font-weight:700;padding:4px 8px;border-bottom:1px solid var(--border)}
+.att-table th.col-num{text-align:right}
+.att-table td{padding:4px 8px;border-bottom:1px solid var(--border);vertical-align:middle;color:var(--text-2)}
+.att-table td.col-num{text-align:right;font-variant-numeric:tabular-nums}
+.att-table tr:last-child td{border-bottom:none}
+.att-table .v-pass{color:var(--signal);font-weight:600}
+.att-table .v-fail{color:var(--fail);font-weight:600}
+.att-table .v-invalid{color:var(--promising);font-weight:600}
+.att-table .v-completed{color:var(--text-2);font-weight:600}
+.att-table .att-reason{color:var(--text-3);font-size:9.5px;letter-spacing:0.02em}
+.att-table .att-promo{display:inline-block;margin-left:6px;padding:1px 6px;font-size:8px;font-weight:700;letter-spacing:0.14em;color:var(--bg);background:var(--signal);text-transform:uppercase}
+.wi-table .v-completed{color:var(--text-2);font-weight:600}
+.wi-table td.symcell{white-space:nowrap}
+.fold-block{margin-bottom:14px}
+.fold-criterion{font-size:10px;color:var(--text-3);letter-spacing:0.04em;margin-bottom:6px;font-style:italic}
+.fold-table{width:100%;border-collapse:collapse;background:transparent;font-family:var(--font-mono);font-size:10.5px}
+.fold-table th{text-align:left;font-size:9px;color:var(--text-4);text-transform:uppercase;letter-spacing:0.14em;font-weight:700;padding:4px 8px;border-bottom:1px solid var(--border);background:var(--surface-1)}
+.fold-table th.col-num{text-align:right}
+.fold-table td{padding:4px 8px;border-bottom:1px solid var(--border);vertical-align:middle;color:var(--text-2)}
+.fold-table td.col-num{text-align:right;font-variant-numeric:tabular-nums}
+.fold-table tr:last-child td{border-bottom:none}
+.fold-table .fold-id{font-weight:700;color:var(--text)}
+.fold-table .net-pos{color:var(--signal);font-weight:600}
+.fold-table .net-neg{color:var(--fail);font-weight:600}
+.fold-table .clean-yes{color:var(--signal)}
+.fold-table .clean-no{color:var(--fail)}
+.fold-table .regime{font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-3)}
 """
 
 
@@ -1580,6 +1690,92 @@ def _ea_status(ea: dict) -> tuple[str, str]:
     if ea.get("dead"):
         return "DEAD", "s-dead"
     return "IN FLOW", "s-flow"
+
+
+_PASS_REASON_TOKENS = (
+    "_pass", "passed", "satisfied", "recommendation",
+    "trials_generated", "all_seeds", "hard gates",
+)
+
+
+def _is_pass_reason(reason: str) -> bool:
+    """True if a verdict=INVALID row's reason text reads like a PASS marker.
+
+    Q09 / Q10 / Q11 (legacy P6 / P7 / P8) frequently emit rows with
+    verdict=INVALID but a reason string that confirms the gate criterion was
+    met. We surface these as COMPLETED rather than fail-looking INVALID.
+    """
+    r = reason.lower()
+    return any(tok in r for tok in _PASS_REASON_TOKENS)
+
+
+# Map any "P3.5" / "P5b" / "P10" token in a pipeline-emitted reason string
+# to its canonical Q-id. Long keys first so e.g. "P5b" wins over "P5".
+_P_TO_Q_TOKENS = sorted(PHASE_QID.items(), key=lambda kv: -len(kv[0]))
+_P_TOKEN_RE = _re_mt5.compile(
+    r"\b(" + "|".join(_re_mt5.escape(k) for k, _ in _P_TO_Q_TOKENS) + r")\b"
+)
+
+
+def _parse_summary_stats(evidence_path: str | None) -> dict[str, Any]:
+    """Read a work_item summary.json and pull the per-run stats and report path.
+
+    Returns dict with keys: net_profit, trades, drawdown, profit_factor,
+    sharpe, report_htm, deals. Any field may be None if the summary lacks it
+    (e.g. TIMEOUT runs that never produced a report).
+    """
+    out: dict[str, Any] = {
+        "net_profit": None, "trades": None, "drawdown": None,
+        "profit_factor": None, "sharpe": None, "report_htm": None,
+        "deals": [],
+    }
+    if not evidence_path:
+        return out
+    try:
+        p = Path(evidence_path)
+        if not (p.exists() and p.suffix == ".json"):
+            return out
+        sj = json.loads(p.read_text(encoding="utf-8", errors="ignore"))
+        runs = sj.get("runs") or []
+        if not runs:
+            return out
+        r0 = runs[0]
+        for fld_dst, fld_src in (
+            ("net_profit", "net_profit"),
+            ("trades", "total_trades"),
+            ("drawdown", "drawdown"),
+            ("profit_factor", "profit_factor"),
+        ):
+            v = r0.get(fld_src)
+            if v not in (None, ""):
+                out[fld_dst] = v
+        rp = r0.get("report_canonical_path") or r0.get("report_source_path")
+        if rp and Path(rp).exists():
+            out["report_htm"] = rp
+            try:
+                htm = read_mt5_report(Path(rp))
+                if htm:
+                    more = extract_mt5_stats(htm)
+                    if more.get("sharpe") is not None:
+                        out["sharpe"] = more["sharpe"]
+                    out["deals"] = extract_mt5_deals(htm)
+            except Exception:
+                pass
+    except Exception:
+        pass
+    return out
+
+
+def qxx_text(s: str | None) -> str:
+    """Rewrite any legacy P-keys in a free-text string to canonical Qxx.
+
+    Operator surfaces must show Qxx only (OWNER hard rule). Pipeline-emitted
+    reason strings still contain "P5c", "P7", etc. — this transform cleans
+    them on display without changing the stored payload.
+    """
+    if not s:
+        return s or ""
+    return _P_TOKEN_RE.sub(lambda m: PHASE_QID.get(m.group(1), m.group(1)), s)
 
 
 def _progress_bar_html(ea: dict) -> str:
@@ -1639,7 +1835,9 @@ def collect_ea_lead_kpis(root: Path, ea_ids: list[str]) -> dict[str, dict[str, A
             "status": r["status"],
             "symbol": r["symbol"],
             "verdict": r["verdict"],
-            "net_profit": stats.get("net_profit") if r["verdict"] == "PASS" else None,
+            # 2026-05-23 OWNER call: surface stats for FAIL/INVALID runs too;
+            # negative P&L is information the operator wants in the table.
+            "net_profit": stats.get("net_profit"),
             "trades": stats.get("total_trades"),
             "drawdown": stats.get("max_dd") or stats.get("drawdown"),
             "updated_at": r["updated_at"],
@@ -1658,8 +1856,10 @@ def collect_ea_lead_kpis(root: Path, ea_ids: list[str]) -> dict[str, dict[str, A
             for i in items
             if i.get("status") == "done" and i.get("verdict") == "PASS" and i.get("phase") in PHASE_ORDER
         }
-        p4plus_pass = any(PHASE_ORDER.index(p) >= PHASE_ORDER.index("P4") for p in pass_phases)
-        p8_pass = "P8" in pass_phases
+        # PT8 — phase keys are now Qxx; "P4" / "P8" are legacy. The "Q05+ survivor"
+        # bar is set at Q05 (first stress gate); the "Q11 PASS" flag at Q11.
+        p4plus_pass = any(PHASE_ORDER.index(p) >= PHASE_ORDER.index("Q05") for p in pass_phases)
+        p8_pass = "Q11" in pass_phases
         highest_pass_phase = None
         if pass_phases:
             highest_pass_phase = max(pass_phases, key=lambda p: PHASE_ORDER.index(p))
@@ -1724,8 +1924,19 @@ def render_strategies(state: dict, root: Path) -> str:
         label, _sc = _ea_status(ea)
         k = kpis.get(ea["ea_id"]) or {}
         has_wi = ea["ea_id"] in wi_eas
+        card_state = ea.get("card_state")
         lanes = {"all", "live" if has_wi else "archive"}
-        if label == "DEAD":
+        if card_state:
+            lanes.add("card")
+            lanes.add(f"card_{card_state}")
+            counts[f"card_{card_state}"] += 1
+        if not has_wi and card_state and ea.get("task_count", 0) == 0:
+            # Card-only row (no agent task, no work_items): rank below dead so
+            # the active funnel stays at the top by default.
+            lanes.add("card_only")
+            rank = 7
+            counts["card_only"] += 1
+        elif label == "DEAD":
             lanes.add("dead"); rank = 6; counts["dead"] += 1
         elif k.get("p8_pass"):
             lanes |= {"survivor", "active"}; rank = 0
@@ -1788,11 +1999,15 @@ def render_strategies(state: dict, root: Path) -> str:
             row_cls = []
             if ea.get("dead"):
                 row_cls.append("row-dead")  # data-attr only; no styling (OWNER call 2026-05-23)
+            card_state = ea.get("card_state")
+            is_card_only = "card_only" in lm["lanes"]
+            if is_card_only:
+                row_cls.append("row-card-only")
             # lane-pill (live/archive) removed from cell HTML 2026-05-23 (OWNER call):
             # "live" was misleading — no EAs are actually T_Live traded; word implied
             # otherwise. Lane membership still carried via data-lanes for filtering.
             fail_prof = ""
-            if ea.get("dead"):
+            if ea.get("dead") and not is_card_only:
                 # Death-reason: failed_at is the most informative field on the EA dict
                 # (failure_reason / verdict_text are not populated upstream). Render the
                 # phase where it died as a small faint secondary line below the status pill.
@@ -1802,10 +2017,32 @@ def render_strategies(state: dict, root: Path) -> str:
                     f'<div class="fail-prof fp-reason" title="{e(reason_title)}">'
                     f'died at {e(phase_label(fa)) if fa else "?"}</div>'
                 )
-            rows.append(f"""<tr class="{' '.join(row_cls)}" data-status="{status_cls}" data-phase="{cur_phase}" data-lanes="{' '.join(sorted(lm['lanes']))}" data-search="{e((ea['ea_id'] + ' ' + (ea.get('slug') or '')).lower())}" onclick="window.location='ea_{e(ea['ea_id'])}.html'">
+
+            # Card-only rows: replace the status pill with a card-state pill,
+            # drop the onclick (no detail page yet — clicking would 404), and
+            # show "—" in KPI columns. Survivors / live EAs keep the original
+            # status pill but may have a card-state secondary indicator.
+            if is_card_only:
+                card_pill_cls = {
+                    "approved": "s-flow",
+                    "review":   "s-prog",
+                    "draft":    "s-card",
+                    "rejected": "s-dead",
+                }.get(card_state, "s-card")
+                status_html = (
+                    f'<span class="status-chip {card_pill_cls}">card · {e(card_state)}</span>'
+                )
+                onclick_attr = ""
+            else:
+                status_html = f'<span class="status-chip {status_cls}">{label}</span>{fail_prof}'
+                onclick_attr = f' onclick="window.location=\'ea_{e(ea["ea_id"])}.html\'"'
+            # Carry card_state into data-* for the filter chip strip below
+            data_card_attr = f' data-card-state="{e(card_state)}"' if card_state else ""
+
+            rows.append(f"""<tr class="{' '.join(row_cls)}" data-status="{status_cls}" data-phase="{cur_phase}" data-lanes="{' '.join(sorted(lm['lanes']))}"{data_card_attr} data-search="{e((ea['ea_id'] + ' ' + (ea.get('slug') or '')).lower())}"{onclick_attr}>
   <td class="td-ea"><code>{e(ea['ea_id'])}</code></td>
   <td class="td-slug">{e(ea.get('slug') or '')}</td>
-  <td><span class="status-chip {status_cls}">{label}</span>{fail_prof}</td>
+  <td>{status_html}</td>
   <td>{_progress_bar_html(ea)}</td>
   <td>{cur_phase}</td>
   <td><span class="status-chip {robust_cls}">{e(robust_label)}</span></td>
@@ -1852,6 +2089,7 @@ def render_strategies(state: dict, root: Path) -> str:
     <div class="achip"><div class="achip-num">{counts.get("triage", 0)}</div><div class="achip-label">Needs triage</div></div>
     <div class="achip"><div class="achip-num">{counts.get("notstarted", 0)}</div><div class="achip-label">Not started</div></div>
     <div class="achip c-dead"><div class="achip-num">{counts.get("dead", 0)}</div><div class="achip-label">Dead</div></div>
+    <div class="achip c-card"><div class="achip-num">{counts.get("card_only", 0)}</div><div class="achip-label">Card · not built</div></div>
   </div>
 </div>
 
@@ -1884,8 +2122,14 @@ def render_strategies(state: dict, root: Path) -> str:
   <span class="preset" data-preset="dead">Dead</span>
   <span class="preset" data-preset="live">Live pipeline only</span>
   <span class="preset" data-preset="archive">Archive only</span>
+  <span class="preset" data-preset="card">Cards · all</span>
+  <span class="preset" data-preset="card_approved">Cards · approved</span>
+  <span class="preset" data-preset="card_review">Cards · review</span>
+  <span class="preset" data-preset="card_draft">Cards · draft</span>
+  <span class="preset" data-preset="card_rejected">Cards · rejected</span>
+  <span class="preset" data-preset="card_only">Cards · not built</span>
 </div>
-<div class="gate-note">"Best exploratory P&amp;L" is the single best result across any phase (often a P2 discovery run) — it is NOT gate proof. "Most advanced gate" is the highest real PASS the EA reached. Dead rows are dimmed, not hidden.</div>
+<div class="gate-note">"Best exploratory P&amp;L" is the single best result across any phase (often a Q02 discovery run) — it is NOT gate proof. "Most advanced gate" is the highest real PASS the EA reached. Dead EAs are part of the archive and rendered with the same weight as live ones — death is carried by the status color only.</div>
 {cov_panel}
 
 {body}
@@ -2001,7 +2245,37 @@ def collect_ea_detail(ea_id: str, root: Path) -> dict[str, Any]:
                 "SELECT * FROM work_items WHERE ea_id = ? ORDER BY phase, symbol, updated_at DESC",
                 (ea_id,)
             )]
-        # Keep the latest record per (phase, symbol)
+        # Collect ALL chronological attempts per (phase, symbol) — needed for
+        # the expandable timeline (OWNER call 2026-05-23: latest-only display
+        # hid that NDX Q02 had 30+ historical PASS attempts, making the
+        # promotion to Q03+ look unjustified).
+        attempts_by_key: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
+        for w in rows:
+            key = (w.get("phase") or "?", w.get("symbol") or "?")
+            try:
+                pl = json.loads(w.get("payload_json") or "{}")
+            except Exception:
+                pl = {}
+            rs = pl.get("recovered_stats") or {}
+            reason = (pl.get("blocked_reason") or pl.get("verdict_reason")
+                      or pl.get("reason") or "")
+            attempts_by_key[key].append({
+                "created_at": w.get("created_at") or w.get("updated_at"),
+                "updated_at": w.get("updated_at"),
+                "status": w.get("status"),
+                "verdict": w.get("verdict"),
+                "reason": str(reason) if reason else "",
+                "net_profit": rs.get("net_profit"),
+                "trades": rs.get("total_trades"),
+                "drawdown": rs.get("max_dd") or rs.get("drawdown"),
+                "evidence": w.get("evidence_path"),
+                "setfile": w.get("setfile_path"),
+            })
+        # Order each bucket chronologically (oldest → newest)
+        for k in attempts_by_key:
+            attempts_by_key[k].sort(key=lambda a: a.get("created_at") or "")
+
+        # Keep the latest record per (phase, symbol) for the summary row
         seen: set[tuple[str, str]] = set()
         items: list[dict[str, Any]] = []
         for w in rows:
@@ -2032,53 +2306,126 @@ def collect_ea_detail(ea_id: str, root: Path) -> dict[str, Any]:
                 "fail_reason": None,
                 "fail_class": None,
             }
+            # Q05 (legacy P4) walk-forward fold table — parsed from evidence JSON
+            # so the operator sees per-fold OOS net / DD% / regime instead of just
+            # a single PASS verdict (OWNER call 2026-05-23).
+            if w.get("phase") == "P4":
+                ev = w.get("evidence_path")
+                if ev:
+                    try:
+                        ep = Path(ev)
+                        if ep.exists():
+                            ej = json.loads(ep.read_text(encoding="utf-8", errors="ignore"))
+                            folds = (ej.get("details") or {}).get("folds") or []
+                            if folds:
+                                item["folds"] = folds
+                                item["fold_criterion"] = ej.get("criterion") or ""
+                    except Exception:
+                        pass
+            # Q06 / Q07 / Q08 evidence — stress / calibrated-noise / crisis-slice
+            # (OWNER call 2026-05-23). Each phase has its own JSON / CSV shape.
+            if w.get("phase") == "P5":
+                # Stress metrics file is per-EA, shared across symbols. Find this
+                # symbol's row in the symbols list.
+                stress_path = root / "reports" / "pipeline" / ea_id / "P5" / "p5_stress_metrics.json"
+                if not stress_path.exists():
+                    stress_path = Path("D:/QM/reports/pipeline") / ea_id / "P5" / "p5_stress_metrics.json"
+                if stress_path.exists():
+                    try:
+                        sj = json.loads(stress_path.read_text(encoding="utf-8", errors="ignore"))
+                        for s in (sj.get("symbols") or []):
+                            if s.get("symbol") == w.get("symbol"):
+                                item["stress"] = s
+                                break
+                    except Exception:
+                        pass
+            if w.get("phase") == "P5b":
+                trials_path = Path("D:/QM/reports/pipeline") / ea_id / "P5b" / "p5b_trials.csv"
+                if trials_path.exists():
+                    try:
+                        import csv as _csv
+                        trials = []
+                        with trials_path.open("r", encoding="utf-8", errors="ignore") as fh:
+                            for row in _csv.DictReader(fh):
+                                if row.get("symbol") == w.get("symbol"):
+                                    trials.append(row)
+                        if trials:
+                            item["trials"] = trials
+                    except Exception:
+                        pass
+            if w.get("phase") == "P5c":
+                ev = w.get("evidence_path")
+                if ev:
+                    try:
+                        ep = Path(ev)
+                        if ep.exists() and ep.suffix == ".json":
+                            cj = json.loads(ep.read_text(encoding="utf-8", errors="ignore"))
+                            rows = (cj.get("details") or {}).get("rows") or []
+                            failures = (cj.get("details") or {}).get("failures") or []
+                            if rows:
+                                item["crisis_slices"] = rows
+                                item["crisis_failures"] = failures
+                                item["crisis_criterion"] = cj.get("criterion") or ""
+                    except Exception:
+                        pass
             verd = w.get("verdict") or ""
-            if verd in ("FAIL", "INVALID"):
-                reason = (
-                    payload.get("blocked_reason")
-                    or payload.get("verdict_reason")
-                    or payload.get("reason")
-                )
+            reason = (
+                payload.get("blocked_reason")
+                or payload.get("verdict_reason")
+                or payload.get("reason")
+                or ""
+            )
+            # Q09 / Q10 / Q11 (legacy P6 / P7 / P8) frequently write verdict=INVALID
+            # with a reason text that reads like a PASS ("p6_all_seeds_pass",
+            # "P7 hard gates satisfied", "P8 ... recommendation"). Relabel those
+            # as COMPLETED so the page stops looking broken at Q09+ (OWNER call).
+            if verd == "INVALID" and reason and _is_pass_reason(str(reason)):
+                item["verdict"] = "COMPLETED"
+                item["completion_note"] = str(reason)[:120]
+            elif verd in ("FAIL", "INVALID"):
                 if reason:
                     item["fail_reason"] = str(reason)
                     item["fail_class"] = (
                         "infra" if any(k in str(reason) for k in ("METATESTER", "REPORT_MISSING", "TIMEOUT", "INCOMPLETE"))
                         else "strategy"
                     )
+            item["attempts"] = attempts_by_key.get(key, [])
+            item["n_attempts"] = len(item["attempts"])
+            item["n_ever_pass"] = sum(1 for a in item["attempts"] if a.get("verdict") == "PASS")
+            # Distinct setfile count distinguishes parameter trials (different
+            # setfile each row) from re-runs (same setfile repeated). Q03 sweep
+            # = many distinct setfiles by design; Q02 may mix a baseline re-run
+            # with synth variants.
+            _sf_distinct = {a.get("setfile") for a in item["attempts"] if a.get("setfile")}
+            item["n_setfiles"] = len(_sf_distinct)
 
-            # Enrich from summary.json + raw report.htm if available
-            ev = w.get("evidence_path")
-            if ev:
-                try:
-                    p = Path(ev)
-                    if p.exists() and p.suffix == ".json":
-                        sj = json.loads(p.read_text(encoding="utf-8", errors="ignore"))
-                        runs = sj.get("runs") or []
-                        if runs:
-                            r0 = runs[0]
-                            for fld_dst, fld_src in (
-                                ("net_profit", "net_profit"),
-                                ("trades", "total_trades"),
-                                ("drawdown", "drawdown"),
-                                ("profit_factor", "profit_factor"),
-                            ):
-                                if item[fld_dst] in (None, "") and r0.get(fld_src) not in (None, ""):
-                                    item[fld_dst] = r0.get(fld_src)
-                            rp = r0.get("report_canonical_path") or r0.get("report_source_path")
-                            if rp and Path(rp).exists():
-                                item["report_htm"] = rp
-                                # Parse deals + stats for inline SVG (only if needed)
-                                try:
-                                    htm = read_mt5_report(Path(rp))
-                                    if htm:
-                                        more = extract_mt5_stats(htm)
-                                        if more.get("sharpe") is not None:
-                                            item["sharpe"] = more["sharpe"]
-                                        item["deals"] = extract_mt5_deals(htm)
-                                except Exception:
-                                    pass
-                except Exception:
-                    pass
+            # Enrich from latest summary.json + raw report.htm
+            latest_stats = _parse_summary_stats(w.get("evidence_path"))
+            for fld in ("net_profit", "trades", "drawdown", "profit_factor",
+                        "sharpe", "report_htm", "deals"):
+                if item.get(fld) in (None, "", []) and latest_stats.get(fld) not in (None, "", []):
+                    item[fld] = latest_stats[fld]
+
+            # Fallback (OWNER call 2026-05-23): if the latest attempt produced no
+            # stats (e.g. infra TIMEOUT / METATESTER_HUNG never wrote report.htm),
+            # fall back to the most recent earlier attempt that actually has
+            # parsable data. Q02 NDX is the motivating case — the EA *did* run
+            # successfully many times, the headline row should not look empty
+            # just because the most recent re-run hit an MT5 timeout.
+            if item.get("net_profit") in (None, ""):
+                for a in reversed(attempts_by_key.get(key, [])):
+                    if not a.get("evidence"):
+                        continue
+                    fb = _parse_summary_stats(a.get("evidence"))
+                    if fb.get("net_profit") not in (None, ""):
+                        for fld in ("net_profit", "trades", "drawdown",
+                                    "profit_factor", "sharpe", "report_htm",
+                                    "deals"):
+                            if item.get(fld) in (None, "", []) and fb.get(fld) not in (None, "", []):
+                                item[fld] = fb[fld]
+                        item["stats_fallback_from"] = (a.get("created_at") or "")[:19].replace("T", " ")
+                        item["stats_fallback_verdict"] = a.get("verdict")
+                        break
             items.append(item)
         detail["work_items"] = items
         detail["symbols"] = sorted({i["symbol"] for i in items if i["symbol"] and i["symbol"] != "?"})
@@ -2159,7 +2506,7 @@ def _detail_decision(ea: dict, highest_pass: str | None, most_advanced: str | No
         }
     if highest_pass == "P8":
         return {
-            "verdict": "P8 / Q11 real PASS reached",
+            "verdict": "Q11 real PASS reached",
             "cls": "ds-good",
             "why": "The EA cleared the hardest automated gate (real MT5 news replay) — a genuine "
                    "portfolio candidate.",
@@ -2171,9 +2518,9 @@ def _detail_decision(ea: dict, highest_pass: str | None, most_advanced: str | No
         return {
             "verdict": f"Advancing — highest real PASS at {phase_label(highest_pass)}",
             "cls": "",
-            "why": "The EA has real PASS evidence but has not yet reached the P8 gate.",
+            "why": "The EA has real PASS evidence but has not yet reached the Q11 gate.",
             "risk": "Higher gates (crisis slices, multi-seed, news replay) are progressively harsher; "
-                    "most EAs die above P4.",
+                    "most EAs die above Q05.",
             "next": f"Next gate: {nxt}.",
         }
     return {
@@ -2322,19 +2669,36 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
 </div>
 """
 
-    # ── Pipeline-stage accordion — most-advanced gate first, default-open ──
+    # ── Pipeline-stage accordion — Q01 → Q11 ascending (OWNER call 2026-05-23):
+    # reading order matches pipeline progression so the eye walks the EA's
+    # actual journey gate-by-gate. The most-advanced gate auto-opens.
     phases_html_chunks: list[str] = []
-    for phase in reversed(present_phases):
+    for phase in present_phases:
         items = items_by_phase[phase]
         items.sort(key=lambda x: (x.get("verdict") != "PASS", x.get("symbol") or ""))
         verds = Counter(x.get("verdict") or "—" for x in items)
         n_pass = verds.get("PASS", 0)
         verd_html = " · ".join(f"{c}× {v}" for v, c in verds.most_common())
         nets = [x["net_profit"] for x in items if isinstance(x.get("net_profit"), (int, float))]
+        # Profitable-PASS sub-counter (OWNER call 2026-05-23): some gates (notably
+        # Q03) PASS on sample-size only and let loss-making rows through. Surface
+        # how many PASS rows are actually profitable so "4× PASS" is no longer
+        # mistaken for "4× profitable".
+        n_pass_profitable = sum(
+            1 for x in items
+            if x.get("verdict") == "PASS"
+            and isinstance(x.get("net_profit"), (int, float))
+            and x["net_profit"] > 0
+        )
+        pass_qualifier = ""
+        if n_pass and n_pass_profitable < n_pass:
+            pass_qualifier = (f' <span style="color:var(--text-3)">'
+                              f'({n_pass_profitable}/{n_pass} profitable)</span>')
         if nets:
-            kpi_html = f'best net <strong>{e(fmt_dollar(max(nets)))}</strong>'
+            kpi_html = (f'best net <strong>{e(fmt_dollar(max(nets)))}</strong>'
+                        f'{pass_qualifier}')
         elif n_pass:
-            kpi_html = f'<strong>{n_pass} PASS</strong>'
+            kpi_html = f'<strong>{n_pass} PASS</strong>{pass_qualifier}'
         else:
             kpi_html = '<strong>no PASS</strong>'
 
@@ -2354,7 +2718,7 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
                 frows.append(
                     f'<div class="fail-group-row">'
                     f'<span class="fgr-count {"infra" if fcls == "infra" else ""}">{len(syms)}×</span>'
-                    f'<span class="fgr-reason">{e(reason)}</span>'
+                    f'<span class="fgr-reason">{e(qxx_text(reason))}</span>'
                     f'<span class="fgr-syms">{e(sample)}</span></div>'
                 )
             fail_box = (f'<div class="fail-group-box"><h4>Failure profile · grouped</h4>'
@@ -2363,7 +2727,8 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
         rows_html = []
         for w in items:
             verd = w.get("verdict") or "—"
-            v_cls = {"PASS": "v-pass", "FAIL": "v-fail", "INVALID": "v-invalid"}.get(verd, "v-pending")
+            v_cls = {"PASS": "v-pass", "FAIL": "v-fail", "INVALID": "v-invalid",
+                     "COMPLETED": "v-completed"}.get(verd, "v-pending")
             # Numeric-cell convention (OWNER call 2026-05-23):
             #   - If real number present (PASS or FAIL with parsed report): show it
             #   - If no data (INVALID infra-fail, no report.htm): show 0/$0.00
@@ -2387,10 +2752,299 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
                 rp = w["report_htm"].replace("\\", "/")
                 report_link = f'<a class="report-link" href="file:///{e(rp)}" target="_blank">Full MT5 ↗</a>'
             fr = ""
-            if w.get("fail_reason"):
-                fr = f'<div class="fail-reason {e(w.get("fail_class") or "")}">{e(w["fail_reason"][:110])}</div>'
+            if verd == "COMPLETED" and w.get("completion_note"):
+                fr = f'<div class="fail-reason" style="color:var(--text-3)">{e(qxx_text(w["completion_note"]))}</div>'
+            elif w.get("fail_reason"):
+                fr = f'<div class="fail-reason {e(w.get("fail_class") or "")}">{e(qxx_text(w["fail_reason"][:110]))}</div>'
+            if w.get("stats_fallback_from"):
+                fr += (f'<div class="fail-reason" style="color:var(--text-3)">'
+                       f'stats from earlier {e(w.get("stats_fallback_verdict") or "")} '
+                       f'attempt {e(w["stats_fallback_from"])} '
+                       f'(latest run had no data)</div>')
+
+            # Expandable per-row drill-down (OWNER call 2026-05-23). Two
+            # things may live inside:
+            #   1. Q05 walk-forward fold table (parsed from P4 evidence JSON)
+            #   2. Chronological attempt timeline (when > 1 DB row exists)
+            # The row is expandable if either has content.
+            n_att = w.get("n_attempts") or 1
+            n_ever = w.get("n_ever_pass") or 0
+            folds_for_row = w.get("folds") or []
+            stress_for_row = w.get("stress") or None
+            trials_for_row = w.get("trials") or []
+            crisis_for_row = w.get("crisis_slices") or []
+            has_extra = bool(folds_for_row or stress_for_row or trials_for_row or crisis_for_row)
+            attempt_html = ""
+            toggle_html = ""
+            if n_att > 1 or has_extra:
+                qid = phase_label(w.get("phase") or "?")
+                row_uid = f"att-{e(qid)}-{e(w['symbol']).replace('.', '_')}"
+                extras = []
+                if folds_for_row:
+                    extras.append(f"{len(folds_for_row)} folds")
+                if stress_for_row:
+                    extras.append("stress")
+                if trials_for_row:
+                    extras.append(f"{len(trials_for_row)} noise trials")
+                if crisis_for_row:
+                    extras.append(f"{len(crisis_for_row)} crisis slices")
+                if n_att > 1:
+                    n_sf = w.get("n_setfiles") or 1
+                    # Choose the framing that matches the data:
+                    #   • n_setfiles ≈ n_attempts → parameter sweep trials
+                    #   • n_setfiles == 1        → genuine re-runs of one setfile
+                    #   • mixed                  → both
+                    if n_sf >= n_att:
+                        kind = "parameter trials"
+                    elif n_sf == 1:
+                        kind = "re-runs (1 setfile)"
+                    else:
+                        kind = f"runs ({n_sf} setfiles)"
+                    ever_chip = (f'<span style="color:var(--signal);margin-left:6px">'
+                                 f'ever PASS {n_ever}/{n_att}</span>') if n_ever else ""
+                    extras_chip = (f' + {" · ".join(extras)}' if extras else "")
+                    toggle_label = f'{n_att} {kind}{extras_chip}{ever_chip}'
+                else:
+                    toggle_label = " · ".join(extras) or "1 run"
+                toggle_html = (f'<span class="attempt-toggle" data-target="{row_uid}" '
+                               f'onclick="toggleAttempts(this)">▸ {toggle_label}</span>')
+                # Build the chronological mini-table
+                att_rows = []
+                first_pass_idx = next(
+                    (i for i, a in enumerate(w.get("attempts") or [])
+                     if a.get("verdict") == "PASS"), None)
+                for i, a in enumerate(w.get("attempts") or []):
+                    av = a.get("verdict") or "—"
+                    a_reason_raw = a.get("reason") or ""
+                    if av == "INVALID" and _is_pass_reason(a_reason_raw):
+                        av = "COMPLETED"
+                    a_cls = {"PASS": "v-pass", "FAIL": "v-fail",
+                             "INVALID": "v-invalid",
+                             "COMPLETED": "v-completed"}.get(av, "v-pending")
+                    a_when = (a.get("created_at") or "")[:19].replace("T", " ")
+                    a_net = a.get("net_profit")
+                    a_net_html = (f'{fmt_dollar(a_net)}'
+                                  if isinstance(a_net, (int, float)) else "—")
+                    a_trades = (str(int(a["trades"]))
+                                if isinstance(a.get("trades"), (int, float))
+                                else "—")
+                    a_dd = (fmt_dollar(a["drawdown"])
+                            if isinstance(a.get("drawdown"), (int, float))
+                            else "—")
+                    a_reason = qxx_text((a.get("reason") or "")[:90])
+                    promo = (' <span class="att-promo">promoted</span>'
+                             if first_pass_idx is not None and i == first_pass_idx
+                             else "")
+                    sf_raw = a.get("setfile") or ""
+                    sf_short = sf_raw.replace("\\", "/").rsplit("/", 1)[-1] if sf_raw else "—"
+                    # Strip the verbose EA+symbol+TF prefix so only the
+                    # discriminating part (e.g. "grid_049" or "synth_026" or
+                    # "baseline") remains.
+                    if sf_short.endswith("_backtest.set"):
+                        sf_short = sf_short[:-len("_backtest.set")]
+                    for pfx in (f"{ea_id}_", f"{detail.get('slug', '')}_"):
+                        if pfx and sf_short.startswith(pfx):
+                            sf_short = sf_short[len(pfx):]
+                    # Drop slug + symbol + timeframe tokens, keep last segment
+                    # like "grid_049" / "synth_026" / "baseline"
+                    parts = sf_short.split("_")
+                    if len(parts) >= 2 and parts[-2] in ("grid", "synth", "freq"):
+                        sf_short = "_".join(parts[-2:])
+                    elif not parts[-1].isdigit() and len(parts) > 1 and parts[-1] not in ("grid", "synth", "freq"):
+                        sf_short = "baseline"
+                    att_rows.append(
+                        f'<tr><td>{e(a_when)}</td>'
+                        f'<td class="{a_cls}">{e(av)}{promo}</td>'
+                        f'<td>{e(sf_short)}</td>'
+                        f'<td class="col-num">{e(a_trades)}</td>'
+                        f'<td class="col-num">{e(a_net_html)}</td>'
+                        f'<td class="col-num">{e(a_dd)}</td>'
+                        f'<td class="att-reason">{e(a_reason)}</td></tr>'
+                    )
+                # Q05 fold table — rendered above the attempt timeline when
+                # the latest run has parsed walk-forward folds.
+                fold_block_html = ""
+                if folds_for_row:
+                    fold_rows = []
+                    for f in folds_for_row:
+                        fid = f.get("fold_id") or "?"
+                        dev = f"{(f.get('dev_start') or '?')[:10]} → {(f.get('dev_end') or '?')[:10]}"
+                        oos = f"{(f.get('oos_start') or '?')[:10]} → {(f.get('oos_end') or '?')[:10]}"
+                        net = f.get("oos_net_profit")
+                        if isinstance(net, (int, float)):
+                            net_cls = "net-pos" if net > 0 else "net-neg"
+                            net_html = f'<span class="{net_cls}">{fmt_dollar(net)}</span>'
+                        else:
+                            net_html = "—"
+                        dd_pct = f.get("oos_drawdown_pct")
+                        dd_html = (f"{dd_pct:.2f}%"
+                                   if isinstance(dd_pct, (int, float)) else "—")
+                        trd = f.get("oos_trades")
+                        trd_html = str(int(trd)) if isinstance(trd, (int, float)) else "—"
+                        clean = f.get("oos_clean")
+                        clean_html = (f'<span class="clean-yes">✓</span>'
+                                      if clean else f'<span class="clean-no">✗</span>')
+                        regime = (f.get("regime") or "—").lower()
+                        fold_rows.append(
+                            f'<tr><td class="fold-id">{e(fid)}</td>'
+                            f'<td>{e(dev)}</td>'
+                            f'<td>{e(oos)}</td>'
+                            f'<td class="col-num">{e(trd_html)}</td>'
+                            f'<td class="col-num">{net_html}</td>'
+                            f'<td class="col-num">{e(dd_html)}</td>'
+                            f'<td>{clean_html}</td>'
+                            f'<td class="regime">{e(regime)}</td></tr>'
+                        )
+                    crit = qxx_text(w.get("fold_criterion") or "")
+                    crit_html = (f'<div class="fold-criterion">{e(crit)}</div>'
+                                 if crit else "")
+                    fold_block_html = (
+                        f'<div class="fold-block">'
+                        f'<div class="att-title">Walk-forward folds · {e(w["symbol"])} · {len(folds_for_row)} folds</div>'
+                        f'{crit_html}'
+                        f'<table class="fold-table"><thead><tr>'
+                        f'<th>Fold</th><th>DEV window</th><th>OOS window</th>'
+                        f'<th class="col-num">Trades</th>'
+                        f'<th class="col-num">OOS Net</th>'
+                        f'<th class="col-num">OOS DD%</th>'
+                        f'<th>Clean</th><th>Regime</th>'
+                        f'</tr></thead><tbody>{"".join(fold_rows)}</tbody></table>'
+                        f'</div>'
+                    )
+
+                # Q06 stress metrics block (per-symbol stress KPIs)
+                stress_block_html = ""
+                if stress_for_row:
+                    s = stress_for_row
+                    sn = s.get("net_profit")
+                    sn_cls = "net-pos" if isinstance(sn, (int, float)) and sn > 0 else "net-neg"
+                    sn_html = (f'<span class="{sn_cls}">{fmt_dollar(sn)}</span>'
+                               if isinstance(sn, (int, float)) else "—")
+                    spf = s.get("pf")
+                    spf_html = f"{spf:.2f}" if isinstance(spf, (int, float)) else "—"
+                    stn = s.get("trade_count")
+                    stn_html = str(int(stn)) if isinstance(stn, (int, float)) else "—"
+                    stress_block_html = (
+                        f'<div class="fold-block">'
+                        f'<div class="att-title">Stress metrics · {e(w["symbol"])}</div>'
+                        f'<table class="fold-table"><thead><tr>'
+                        f'<th class="col-num">Trades</th>'
+                        f'<th class="col-num">Net P&amp;L</th>'
+                        f'<th class="col-num">PF</th>'
+                        f'</tr></thead><tbody><tr>'
+                        f'<td class="col-num">{e(stn_html)}</td>'
+                        f'<td class="col-num">{sn_html}</td>'
+                        f'<td class="col-num">{e(spf_html)}</td>'
+                        f'</tr></tbody></table></div>'
+                    )
+
+                # Q07 calibrated-noise trials block
+                trials_block_html = ""
+                if trials_for_row:
+                    trial_rows = []
+                    for t in trials_for_row:
+                        def _num(k, fmt="{:.4f}"):
+                            try:
+                                return fmt.format(float(t.get(k)))
+                            except (TypeError, ValueError):
+                                return "—"
+                        trial_rows.append(
+                            f'<tr><td class="fold-id">{e(str(t.get("trial") or "?"))}</td>'
+                            f'<td class="col-num">{e(str(t.get("breach_count") or "—"))}</td>'
+                            f'<td class="col-num">{e(_num("reject_rate"))}</td>'
+                            f'<td class="col-num">{e(_num("remaining_cushion_pct"))}</td>'
+                            f'<td class="col-num">{e(_num("recovery_fraction"))}</td></tr>'
+                        )
+                    trials_block_html = (
+                        f'<div class="fold-block">'
+                        f'<div class="att-title">Calibrated-noise trials · {e(w["symbol"])} · {len(trials_for_row)} trials</div>'
+                        f'<table class="fold-table"><thead><tr>'
+                        f'<th>Trial</th>'
+                        f'<th class="col-num">Breaches</th>'
+                        f'<th class="col-num">Reject rate</th>'
+                        f'<th class="col-num">Cushion %</th>'
+                        f'<th class="col-num">Recovery</th>'
+                        f'</tr></thead><tbody>{"".join(trial_rows)}</tbody></table></div>'
+                    )
+
+                # Q08 crisis-slice block
+                crisis_block_html = ""
+                if crisis_for_row:
+                    crisis_rows = []
+                    for cs in crisis_for_row:
+                        slc = cs.get("slice") or "?"
+                        win = f"{(cs.get('start') or '?')[:10]} → {(cs.get('end') or '?')[:10]}"
+                        result = (cs.get("result") or "?").upper()
+                        r_cls = ("v-pass" if result == "PASS"
+                                 else "v-fail" if result == "FAIL"
+                                 else "v-invalid")
+                        trd = cs.get("trade_count")
+                        trd_html = str(int(trd)) if isinstance(trd, (int, float)) else "—"
+                        net = cs.get("net_profit")
+                        if isinstance(net, (int, float)) and net != 0:
+                            net_cls = "net-pos" if net > 0 else "net-neg"
+                            net_html = f'<span class="{net_cls}">{fmt_dollar(net)}</span>'
+                        elif isinstance(net, (int, float)):
+                            net_html = '<span class="net-zero">$0.00</span>'
+                        else:
+                            net_html = "—"
+                        pf = cs.get("profit_factor")
+                        pf_html = f"{pf:.2f}" if isinstance(pf, (int, float)) else "—"
+                        crisis_rows.append(
+                            f'<tr><td class="fold-id">{e(slc)}</td>'
+                            f'<td>{e(win)}</td>'
+                            f'<td class="{r_cls}">{e(result)}</td>'
+                            f'<td class="col-num">{e(trd_html)}</td>'
+                            f'<td class="col-num">{net_html}</td>'
+                            f'<td class="col-num">{e(pf_html)}</td></tr>'
+                        )
+                    crit = qxx_text(w.get("crisis_criterion") or "")
+                    crit_html = (f'<div class="fold-criterion">{e(crit)}</div>'
+                                 if crit else "")
+                    crisis_block_html = (
+                        f'<div class="fold-block">'
+                        f'<div class="att-title">Crisis-slice replay · {e(w["symbol"])} · {len(crisis_for_row)} slices</div>'
+                        f'{crit_html}'
+                        f'<table class="fold-table"><thead><tr>'
+                        f'<th>Slice</th><th>Window</th><th>Result</th>'
+                        f'<th class="col-num">Trades</th>'
+                        f'<th class="col-num">Net P&amp;L</th>'
+                        f'<th class="col-num">PF</th>'
+                        f'</tr></thead><tbody>{"".join(crisis_rows)}</tbody></table></div>'
+                    )
+
+                # Chronological attempt timeline (only when > 1 attempt)
+                attempt_block_html = ""
+                if n_att > 1:
+                    n_sf = w.get("n_setfiles") or 1
+                    framing = (f'{n_sf} parameter trials' if n_sf >= n_att
+                               else (f'{n_att} re-runs of 1 setfile' if n_sf == 1
+                                     else f'{n_att} runs across {n_sf} setfiles'))
+                    attempt_block_html = (
+                        f'<div class="att-title">{e(qid)} · {e(w["symbol"])} '
+                        f'· {e(framing)} (oldest first)</div>'
+                        f'<table class="att-table"><thead><tr>'
+                        f'<th>When (UTC)</th><th>Verdict</th>'
+                        f'<th>Setfile</th>'
+                        f'<th class="col-num">Trades</th>'
+                        f'<th class="col-num">Net P&amp;L</th>'
+                        f'<th class="col-num">Max DD</th><th>Reason</th>'
+                        f'</tr></thead><tbody>{"".join(att_rows)}</tbody></table>'
+                    )
+
+                attempt_html = (
+                    f'<tr class="attempt-row hidden" id="{row_uid}"><td colspan="9">'
+                    f'<div class="att-wrap">'
+                    f'{fold_block_html}'
+                    f'{stress_block_html}'
+                    f'{trials_block_html}'
+                    f'{crisis_block_html}'
+                    f'{attempt_block_html}'
+                    f'</div></td></tr>'
+                )
+
             rows_html.append(f"""<tr>
-  <td>{e(w['symbol'])}</td>
+  <td class="symcell">{e(w['symbol'])}{toggle_html}</td>
   <td class="{v_cls}">{e(verd)}{fr}</td>
   <td class="col-spark">{spark}</td>
   <td class="col-num">{tr_html}</td>
@@ -2399,7 +3053,7 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
   <td class="col-num">{pf_html}</td>
   <td class="col-num">{sh_html}</td>
   <td>{report_link}</td>
-</tr>""")
+</tr>{attempt_html}""")
 
         table_html = f"""<table class="wi-table">
     <thead><tr>
@@ -2473,7 +3127,7 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
   {decision_header}
   {desc_html}
   {kpis_html}
-  <h2 class="acc-title">Pipeline-Stage Evidence · most-advanced gate first</h2>
+  <h2 class="acc-title">Pipeline-Stage Evidence · Q01 → Q11 ascending</h2>
   {''.join(phases_html_chunks)}
   {files_html}
   <div class="archive-footer">
@@ -2481,6 +3135,16 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
     "Full MT5 ↗" links open the native report with interactive equity, trade markers, monthly distribution.
   </div>
 </div>
+<script>
+function toggleAttempts(el) {{
+  var id = el.getAttribute('data-target');
+  var row = document.getElementById(id);
+  if (!row) return;
+  var open = row.classList.toggle('hidden') === false;
+  el.classList.toggle('open', open);
+  el.innerHTML = el.innerHTML.replace(/^[▸▾]/, open ? '▾' : '▸');
+}}
+</script>
 </body>
 </html>
 """
@@ -2511,10 +3175,30 @@ def main() -> int:
     strategies_path = dashboards_dir / "strategies.html"
     strategies_path.write_text(render_strategies(state, root), encoding="utf-8")
 
-    # Per-EA detail pages
+    # Per-EA detail pages — skip TRUE card-only EAs (no work_items, no tasks,
+    # only a card on disk). EAs with work_items DO need detail pages even
+    # when they also have a card — the row in strategies.html is clickable
+    # because work_items exist. Pre-PT12 the skip condition was just
+    # (card_state AND task_count==0) which incorrectly suppressed pages for
+    # EAs like QM5_1099 (8 Q02 attempts, no agent_task) → broken links.
     eas = derive_ea_candidates(state["tasks"], root)
+    wi_eas: set[str] = set()
+    db_path = root / "state" / "farm_state.sqlite"
+    if db_path.exists():
+        try:
+            with sqlite3.connect(db_path) as _conn:
+                wi_eas = {r[0] for r in _conn.execute("SELECT DISTINCT ea_id FROM work_items")}
+        except sqlite3.Error:
+            wi_eas = set()
     detail_count = 0
+    skipped_card_only = 0
     for ea in eas:
+        has_wi = ea["ea_id"] in wi_eas
+        if (ea.get("card_state")
+                and ea.get("task_count", 0) == 0
+                and not has_wi):
+            skipped_card_only += 1
+            continue
         try:
             d = collect_ea_detail(ea["ea_id"], root)
             out_path = dashboards_dir / f"ea_{ea['ea_id']}.html"

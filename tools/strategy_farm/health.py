@@ -1049,7 +1049,12 @@ def chk_disk_free_space(con) -> dict:
 
 
 def chk_p_pass_stagnation(con) -> dict:
-    """Alert if no P3+ PASS verdicts arrive for 6h/12h."""
+    """Information hint about recent P3+ PASS verdict flow.
+
+    OWNER call 2026-05-23: "no EA further along" is the actual work, not a
+    critical fault. This check caps at WARN — pipeline-throughput dryness is
+    interesting but never CRITICAL on its own.
+    """
     cutoff_6h = (_utc_now() - dt.timedelta(hours=6)).strftime("%Y-%m-%dT%H:%M:%S")
     cutoff_12h = (_utc_now() - dt.timedelta(hours=12)).strftime("%Y-%m-%dT%H:%M:%S")
     phases = ("P3", "P3.5", "P4", "P5", "P5b", "P5c", "P6", "P7", "P8")
@@ -1073,14 +1078,20 @@ def chk_p_pass_stagnation(con) -> dict:
             """,
             (*phases, cutoff_12h),
         ).fetchone()[0]
-        if n_12h == 0:
-            return _check("p_pass_stagnation", "FAIL", n_12h, 1,
-                          "0 P3+ PASS verdicts in last 12h",
-                          "Pipeline stuck on infrastructure or strategy quality. "
-                          "Trigger Gmail alarm + check bridge_review_pending.md.")
+        n_ever = con.execute(
+            f"""
+            SELECT COUNT(*) FROM work_items
+            WHERE phase IN ({placeholders}) AND verdict='PASS'
+            """,
+            phases,
+        ).fetchone()[0]
+        if n_ever == 0:
+            return _check("p_pass_stagnation", "WARN", 0, 1,
+                          "0 P3+ PASS ever — pipeline still pre-survivor (the work, not a fault)",
+                          "Normal early-stage state; promote first survivors via T1-T10.")
         return _check("p_pass_stagnation", "WARN", n_recent_p3plus, 1,
-                      "0 P3+ PASS in last 6h (had >=1 in last 12h)",
-                      "Watch for next cascade. If next iter still 0, escalate.")
+                      f"0 P3+ PASS in last {'6h' if n_12h>0 else '12h'} ({n_ever} historical)",
+                      "Pipeline-throughput hint; not a critical fault — watch and act if persistent.")
     return _check("p_pass_stagnation", "OK", n_recent_p3plus, 1,
                   f"{n_recent_p3plus} P3+ PASS in last 6h", "")
 

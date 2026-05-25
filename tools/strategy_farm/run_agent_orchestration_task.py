@@ -188,6 +188,21 @@ def command_for(agent: str, cwd: Path) -> list[str]:
             str(cwd),
         ]
     if agent == "gemini":
+        # Sandbox whitelist. By default gemini-cli only sees the worktree.
+        # Extra paths are needed for:
+        #  - Dropbox-mining initiative (Wave-A* video source folders, project memo
+        #    `project_dropbox_strategy_research_2026-05-23`)
+        #  - cards_review write target (so gemini can write artifacts directly
+        #    instead of staging inside the worktree and requiring a copy step)
+        # `--include-directories` accepts comma-separated or repeated flag (per
+        # `gemini --help`); using comma-separated for compactness.
+        extra_dirs = [str(cwd)]
+        dropbox_forex = Path(r"C:\Users\Administrator\Dropbox\Finanzen\Forex")
+        if dropbox_forex.exists():
+            extra_dirs.append(str(dropbox_forex))
+        cards_review = FARM_ROOT / "artifacts" / "cards_review"
+        if cards_review.exists():
+            extra_dirs.append(str(cards_review))
         return [
             cli,
             "--prompt",
@@ -196,7 +211,7 @@ def command_for(agent: str, cwd: Path) -> list[str]:
             "yolo",
             "--skip-trust",
             "--include-directories",
-            str(cwd),
+            ",".join(extra_dirs),
         ]
     if agent == "claude":
         return [
@@ -404,6 +419,59 @@ def run_agent_slot(agent: str, slot: int, dry_run: bool, stale_minutes: int, tim
         release_lock(lock_info)
 
 
+def claude_work_available() -> dict[str, Any]:
+    """PT12 2026-05-24 — pre-spawn check to avoid empty Claude invocations.
+
+    21% of Claude orchestration spawns produced 0-byte logs (Claude was
+    invoked, found nothing actionable, exited). Each empty spawn burns a
+    session against the daily subscription limit. Pre-check the farm DB
+    for actionable work before spawning. Returns a dict so the caller can
+    log details about WHY work was/wasn't available.
+    """
+    import sqlite3 as _sqlite3
+    db = FARM_ROOT / "state" / "farm_state.sqlite"
+    if not db.exists():
+        return {"any_work": True, "reason": "db_missing_assume_work"}
+    try:
+        con = _sqlite3.connect(db)
+        con.row_factory = _sqlite3.Row
+        # ea_review backlog — done builds with codex PASS but no Claude review yet
+        n_review_pending = con.execute(
+            """
+            SELECT COUNT(*) FROM tasks b
+            WHERE b.kind='build_ea' AND b.status='done'
+              AND EXISTS (
+                SELECT 1 FROM tasks cr WHERE cr.kind='codex_review'
+                  AND cr.status='done'
+                  AND cr.payload_json LIKE '%"build_task_id": "' || b.id || '"%'
+                  AND cr.payload_json LIKE '%"verdict": "PASS"%'
+              )
+              AND NOT EXISTS (
+                SELECT 1 FROM tasks r WHERE r.kind='ea_review'
+                  AND r.payload_json LIKE '%"build_task_id": "' || b.id || '"%'
+              )
+            """
+        ).fetchone()[0]
+        # G0 batch reviews — cards in cards_review/ awaiting Claude verdict
+        cards_review = FARM_ROOT / "artifacts" / "cards_review"
+        n_g0_pending = len(list(cards_review.glob("QM5_*.md"))) if cards_review.is_dir() else 0
+        # ea_review tasks pending verdict file
+        n_ea_review_pending_verdict = con.execute(
+            "SELECT COUNT(*) FROM tasks WHERE kind='ea_review' AND status='pending'"
+        ).fetchone()[0]
+        con.close()
+        any_work = (n_review_pending + n_g0_pending + n_ea_review_pending_verdict) > 0
+        return {
+            "any_work": any_work,
+            "ea_review_to_spawn": n_review_pending,
+            "g0_cards_pending": n_g0_pending,
+            "ea_review_pending_verdict": n_ea_review_pending_verdict,
+        }
+    except Exception as exc:
+        # Fail OPEN — if the check fails, spawn anyway rather than starve Claude.
+        return {"any_work": True, "reason": f"work_check_error:{exc!r}"}
+
+
 def run_agent(agent: str, dry_run: bool, stale_minutes: int, timeout_minutes: int, max_sessions: int) -> dict[str, Any]:
     if agent == "claude" and CLAUDE_DISABLED_FLAG.exists():
         return {
@@ -413,6 +481,17 @@ def run_agent(agent: str, dry_run: bool, stale_minutes: int, timeout_minutes: in
             "reason": "claude_disabled_flag",
             "flag": str(CLAUDE_DISABLED_FLAG),
         }
+    # PT12 2026-05-24 — Claude empty-spawn guard.
+    if agent == "claude" and not dry_run:
+        wa = claude_work_available()
+        if not wa.get("any_work"):
+            return {
+                "agent": agent,
+                "ok": True,
+                "skipped": True,
+                "reason": "no_actionable_work",
+                "work_available_check": wa,
+            }
     session_count = max(1, max_sessions)
     if agent != "claude":
         session_count = 1
