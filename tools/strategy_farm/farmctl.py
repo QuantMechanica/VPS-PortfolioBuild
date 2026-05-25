@@ -5590,7 +5590,23 @@ def pump(root: Path) -> dict[str, Any]:
                         continue
                     cards_without_task.append((ea_id, f))
             slots_left = spawn_budget - actually_spawned
-            for ea_id, card_path in cards_without_task[:slots_left]:
+            # PT13 2026-05-25 — advance past prebuild-failed cards instead of
+            # capping the iteration at slots_left. The old code took the first
+            # N cards alphabetically; if the head of the list was all broken
+            # (missing frontmatter, r3 not PASS, etc.) pump emitted 0 spawns
+            # every cycle even though OK cards existed further down. Now we
+            # iterate the full list, counting only successful spawns toward
+            # the budget. Cap on attempts prevents pathological lists from
+            # burning a whole cycle on rejections.
+            spawned_here = 0
+            attempts_cap = max(slots_left * 6, 30)
+            attempts = 0
+            for ea_id, card_path in cards_without_task:
+                if spawned_here >= slots_left:
+                    break
+                if attempts >= attempts_cap:
+                    break
+                attempts += 1
                 br = render_codex_build_prompt(root, str(card_path), None)
                 if br.get("written"):
                     result["auto_created_builds"].append({
@@ -5605,6 +5621,8 @@ def pump(root: Path) -> dict[str, Any]:
                     if new_row:
                         sp = _spawn_codex_for_build(root, new_row)
                         spawns.append(sp)
+                        if sp.get("spawned"):
+                            spawned_here += 1
                 else:
                     result["auto_build_skipped"].append({
                         "ea_id": ea_id,
