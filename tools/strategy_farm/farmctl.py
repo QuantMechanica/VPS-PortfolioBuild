@@ -5325,16 +5325,23 @@ def pump(root: Path) -> dict[str, Any]:
     result["auto_r_eval_queued"] = _auto_queue_r_eval_for_unknown_drafts(root)
 
     result["auto_build_queued"] = []
-    # OWNER 2026-05-23 (late): pump now emits up to 10 auto-build bridge
-    # tasks per cycle (was 2) so the queue stays full enough to keep all 5
-    # parallel Codex workers busy on the 2 000+ approved-but-unbuilt cards.
-    for ea_info in _detect_unbuilt_cards(root)[:10]:
-        p = _write_auto_build_task(ea_info, root)
-        result["auto_build_queued"].append({
-            "ea_id": ea_info["ea_id"],
-            "label": ea_info["label"],
-            "task_path": str(p),
-        })
+    # PT14 2026-05-25 — gate legacy bridge-file emission. The /goal-bridge
+    # daemon that consumed codex_inbox/auto-build-*.md files died on
+    # 2026-05-17 (last result in codex_outbox is from then). Continuing to
+    # emit bridge files only created dead-letter pollution AND blocked the
+    # new DB-direct spawn path via _has_auto_build_task_file(). The new
+    # path (Step 3b below: render_codex_build_prompt + _spawn_codex_for_build)
+    # handles emission + spawning end-to-end without the inbox detour.
+    # See memory: project_qm_dead_bridge_inbox_blocker_2026-05-25.
+    EMIT_LEGACY_BRIDGE_TASKS = False  # flip to True only if the /goal bridge is revived
+    if EMIT_LEGACY_BRIDGE_TASKS:
+        for ea_info in _detect_unbuilt_cards(root)[:10]:
+            p = _write_auto_build_task(ea_info, root)
+            result["auto_build_queued"].append({
+                "ea_id": ea_info["ea_id"],
+                "label": ea_info["label"],
+                "task_path": str(p),
+            })
 
     result["auto_p2_enqueued"] = []
     with connect(root) as conn:
@@ -5590,7 +5597,23 @@ def pump(root: Path) -> dict[str, Any]:
                         continue
                     cards_without_task.append((ea_id, f))
             slots_left = spawn_budget - actually_spawned
-            for ea_id, card_path in cards_without_task[:slots_left]:
+            # PT13 2026-05-25 — advance past prebuild-failed cards instead of
+            # capping the iteration at slots_left. The old code took the first
+            # N cards alphabetically; if the head of the list was all broken
+            # (missing frontmatter, r3 not PASS, etc.) pump emitted 0 spawns
+            # every cycle even though OK cards existed further down. Now we
+            # iterate the full list, counting only successful spawns toward
+            # the budget. Cap on attempts prevents pathological lists from
+            # burning a whole cycle on rejections.
+            spawned_here = 0
+            attempts_cap = max(slots_left * 6, 30)
+            attempts = 0
+            for ea_id, card_path in cards_without_task:
+                if spawned_here >= slots_left:
+                    break
+                if attempts >= attempts_cap:
+                    break
+                attempts += 1
                 br = render_codex_build_prompt(root, str(card_path), None)
                 if br.get("written"):
                     result["auto_created_builds"].append({
@@ -5605,6 +5628,8 @@ def pump(root: Path) -> dict[str, Any]:
                     if new_row:
                         sp = _spawn_codex_for_build(root, new_row)
                         spawns.append(sp)
+                        if sp.get("spawned"):
+                            spawned_here += 1
                 else:
                     result["auto_build_skipped"].append({
                         "ea_id": ea_id,
@@ -5620,6 +5645,11 @@ def pump(root: Path) -> dict[str, Any]:
 
     # 4. Record completed Codex builds — any pending build_ea whose
     #    build_result JSON exists and isn't empty.
+    # PT15 2026-05-25 — Codex actually writes `<task_id>.attempt_<N>.json`
+    # (retry-aware) but pump's payload sets BRP to `<task_id>.json` in
+    # 7 different sites. The literal path never exists; fresh builds sat
+    # forever in status=pending with .ex5 already produced. Now: fall
+    # back to glob `<task_id>*.json` and pick the newest attempt.
     with connect(root) as conn:
         rows = conn.execute(
             "SELECT * FROM tasks WHERE kind='build_ea' AND status='pending'"
@@ -5627,8 +5657,23 @@ def pump(root: Path) -> dict[str, Any]:
     for row in rows:
         payload = json.loads(row["payload_json"])
         brp = payload.get("build_result_path")
-        if brp and Path(brp).exists() and Path(brp).stat().st_size > 0:
-            rec = record_build_result(root, row["id"], brp)
+        result_path: Path | None = None
+        if brp:
+            p = Path(brp)
+            if p.exists() and p.stat().st_size > 0:
+                result_path = p
+            else:
+                # Look for attempt-suffixed variants written by Codex.
+                stem = p.stem  # task UUID
+                attempts = sorted(
+                    [a for a in p.parent.glob(f"{stem}*.json") if a.stat().st_size > 0],
+                    key=lambda a: a.stat().st_mtime,
+                    reverse=True,
+                )
+                if attempts:
+                    result_path = attempts[0]
+        if result_path is not None:
+            rec = record_build_result(root, row["id"], str(result_path))
             result["build_records"].append({"task_id": row["id"], "recorded": rec})
 
     # 4b. ZERO-TRADE SHORT-CIRCUIT — observed 2026-05-17: 9/9 codex_reviews
