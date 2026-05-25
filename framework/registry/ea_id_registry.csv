@@ -2771,3 +2771,6 @@ ea_id,slug,strategy_id,status,owner,created_at
 11896,morris-rsi10-divergence-candle-confirm,3e5a7b21-8c64-5d92-b738-f1a4c6e9d2b5,active,claude,2026-05-25
 11897,vegas-wave-ema144-169-fractal-h1,1a8d4f72-6e95-5c38-b427-d3f6a1c8e4b9,active,claude,2026-05-25
 11898,trix-signal-line-cross-h1,e7b3d2c8-5a91-5d46-9f72-c4b8e1f6d3a5,active,claude,2026-05-25
+11899,psar-ao-ac-confluence-h1,7d4e2a91-5c83-5f47-b619-a2d8c5f4e7b3,active,claude,2026-05-25
+11900,kobasfx-4ema-macd-sentiment-h1,b8f3c4d7-9e26-5a51-8d74-c3e6f9a5b1d4,active,claude,2026-05-25
+11901,london-asia-range-breakout-m15,c5e1f8b3-4a92-5d68-9c47-e3f6a1c8d4b9,active,claude,2026-05-25
