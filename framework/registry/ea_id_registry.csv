@@ -2768,3 +2768,4 @@ ea_id,slug,strategy_id,status,owner,created_at
 11893,robles-continuation-method-ema50-wpr,6a3d8c2e-1f47-5b89-c532-e1d4a8b9f6c7,active,claude,2026-05-25
 11894,carter-55-smma-channel-wpr-stoch,9b7e5f31-2d68-5aa4-b914-d7e2f5c1a8b6,active,claude,2026-05-25
 11895,carter-ema-cross-rsi-candlestick-confirmation,9b7e5f31-2d68-5aa4-b914-d7e2f5c1a8b6,active,claude,2026-05-25
+11896,morris-rsi10-divergence-candle-confirm,3e5a7b21-8c64-5d92-b738-f1a4c6e9d2b5,active,claude,2026-05-25
