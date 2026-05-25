@@ -5325,16 +5325,23 @@ def pump(root: Path) -> dict[str, Any]:
     result["auto_r_eval_queued"] = _auto_queue_r_eval_for_unknown_drafts(root)
 
     result["auto_build_queued"] = []
-    # OWNER 2026-05-23 (late): pump now emits up to 10 auto-build bridge
-    # tasks per cycle (was 2) so the queue stays full enough to keep all 5
-    # parallel Codex workers busy on the 2 000+ approved-but-unbuilt cards.
-    for ea_info in _detect_unbuilt_cards(root)[:10]:
-        p = _write_auto_build_task(ea_info, root)
-        result["auto_build_queued"].append({
-            "ea_id": ea_info["ea_id"],
-            "label": ea_info["label"],
-            "task_path": str(p),
-        })
+    # PT14 2026-05-25 — gate legacy bridge-file emission. The /goal-bridge
+    # daemon that consumed codex_inbox/auto-build-*.md files died on
+    # 2026-05-17 (last result in codex_outbox is from then). Continuing to
+    # emit bridge files only created dead-letter pollution AND blocked the
+    # new DB-direct spawn path via _has_auto_build_task_file(). The new
+    # path (Step 3b below: render_codex_build_prompt + _spawn_codex_for_build)
+    # handles emission + spawning end-to-end without the inbox detour.
+    # See memory: project_qm_dead_bridge_inbox_blocker_2026-05-25.
+    EMIT_LEGACY_BRIDGE_TASKS = False  # flip to True only if the /goal bridge is revived
+    if EMIT_LEGACY_BRIDGE_TASKS:
+        for ea_info in _detect_unbuilt_cards(root)[:10]:
+            p = _write_auto_build_task(ea_info, root)
+            result["auto_build_queued"].append({
+                "ea_id": ea_info["ea_id"],
+                "label": ea_info["label"],
+                "task_path": str(p),
+            })
 
     result["auto_p2_enqueued"] = []
     with connect(root) as conn:
