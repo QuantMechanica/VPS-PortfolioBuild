@@ -1,0 +1,14 @@
+{
+  "logical_symbol": "QM5_10022_DUAL_MOM_D1",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "SP500.DWX",
+    "NDX.DWX",
+    "WS30.DWX",
+    "XAUUSD.DWX"
+  ],
+  "notes": [
+    "Cross-sectional dual-momentum rotation. EA runs one instance per universe symbol; each instance reads D1 for the full universe to rank and select. Foreign-symbol reads (Bars/iClose/SymbolSelect on `symbol` parameter) are bound at call site from g_strategy_symbols[]."
+  ]
+}
