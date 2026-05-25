@@ -2763,3 +2763,8 @@ ea_id,slug,strategy_id,status,owner,created_at
 11888,lien-perfect-order-sma-stack,b840c053-5cd2-5e17-b25b-d495e73a33ab,active,claude,2026-05-24
 11889,lien-xtreme-fade-double-bb-adx,b840c053-5cd2-5e17-b25b-d495e73a33ab,active,claude,2026-05-24
 11890,big-ben-london-breakout-fade,2b2fb143-b663-5552-a316-8319a3edccad,active,claude,2026-05-24
+11891,unger-daily-factor-indecision-pattern,4c5f1a9d-8e2b-5cc6-a4d2-f8e9b3c1d7a5,active,claude,2026-05-25
+11892,samuels-123-reversal-pattern,6a3d8c2e-1f47-5b89-c532-e1d4a8b9f6c7,active,claude,2026-05-25
+11893,robles-continuation-method-ema50-wpr,6a3d8c2e-1f47-5b89-c532-e1d4a8b9f6c7,active,claude,2026-05-25
+11894,carter-55-smma-channel-wpr-stoch,9b7e5f31-2d68-5aa4-b914-d7e2f5c1a8b6,active,claude,2026-05-25
+11895,carter-ema-cross-rsi-candlestick-confirmation,9b7e5f31-2d68-5aa4-b914-d7e2f5c1a8b6,active,claude,2026-05-25
