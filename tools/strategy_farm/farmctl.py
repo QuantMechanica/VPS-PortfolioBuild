@@ -2012,8 +2012,20 @@ def _phase_runner_inputs(root: Path, ea_id: str, phase: str) -> dict[str, Any]:
     pipeline_dir = _ea_pipeline_dir(ea_id)
     phase_key = _normalize_phase(phase)
     if phase_key == "P3.5":
-        p2_report = _refresh_phase_report_from_work_items(root, ea_id, "P2") or (pipeline_dir / "P2" / "report.csv")
-        p3_report = _refresh_phase_report_from_work_items(root, ea_id, "P3") or (pipeline_dir / "P3" / "report.csv")
+        # Q-rewrite stores rows under phase='Q02'/'Q03'; legacy P-pipeline used
+        # phase='P2'/'P3'. Try the Q name first so post-rewrite work_items
+        # populate the report. Fall back to the legacy P name and then the
+        # on-disk pipeline file so older EAs that still have P-rows keep working.
+        p2_report = (
+            _refresh_phase_report_from_work_items(root, ea_id, "Q02")
+            or _refresh_phase_report_from_work_items(root, ea_id, "P2")
+            or (pipeline_dir / "P2" / "report.csv")
+        )
+        p3_report = (
+            _refresh_phase_report_from_work_items(root, ea_id, "Q03")
+            or _refresh_phase_report_from_work_items(root, ea_id, "P3")
+            or (pipeline_dir / "P3" / "report.csv")
+        )
         inputs: dict[str, Path] = {
             "p2_report": p2_report,
             "p3_report": p3_report,
