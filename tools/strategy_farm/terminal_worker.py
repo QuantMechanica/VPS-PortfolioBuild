@@ -624,6 +624,38 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
                 "reason": spawn.get("reason"),
                 "aggregate": _aggregate_finished_parent(root, row["parent_task_id"]),
             }
+        if spawn.get("waiting_input"):
+            # Preserve the diagnostic signal — farmctl reported a missing
+            # input file (e.g. parent-phase artifact not produced yet).
+            # Previously this fell through to a verdict-less INFRA_FAIL with
+            # no payload context, making input-gap bugs invisible from the DB.
+            # WAITING_INPUT mirrors PENDING_RUNNER as a terminal "done" state
+            # (no retry — if the input later appears, a new work_item should
+            # be enqueued rather than reviving this one).
+            payload = _json_loads(row["payload_json"])
+            payload.update({
+                "verdict_reason": spawn.get("reason"),
+                "missing_inputs": spawn.get("missing_inputs"),
+                "log_path": spawn.get("log_path"),
+                "report_root": spawn.get("report_root"),
+            })
+            with farmctl.connect(root) as conn:
+                conn.execute(
+                    """
+                    UPDATE work_items
+                    SET status='done', verdict='WAITING_INPUT', claimed_by=NULL,
+                        payload_json=?, updated_at=?
+                    WHERE id=?
+                    """,
+                    (json.dumps(payload, sort_keys=True), now, item["id"]),
+                )
+                conn.commit()
+            return {
+                "action": "waiting_input",
+                "item_id": item["id"],
+                "reason": spawn.get("reason"),
+                "aggregate": _aggregate_finished_parent(root, row["parent_task_id"]),
+            }
         with farmctl.connect(root) as conn:
             conn.execute(
                 "UPDATE work_items SET status='failed', verdict='INFRA_FAIL', claimed_by=NULL, updated_at=? WHERE id=?",
