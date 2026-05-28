@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import random
 import shutil
 import signal
 import sqlite3
@@ -22,9 +23,10 @@ import farmctl
 
 POLL_SLEEP_SECONDS = 2.0
 MAX_WORK_ITEM_RETRIES = 3
-SQLITE_WRITE_RETRIES = 5
-SQLITE_WRITE_RETRY_SLEEP_SECONDS = 1.0
+SQLITE_WRITE_RETRIES = 12
+SQLITE_WRITE_RETRY_SLEEP_SECONDS = 1.5
 SMOKE_TERMINAL_EXIT_GRACE_SECONDS = 60.0
+SQLITE_LOCK_BACKOFF_SECONDS = 10.0
 
 _STOP = False
 
@@ -51,8 +53,12 @@ def _with_sqlite_retry(fn):
         except sqlite3.OperationalError as exc:
             if "locked" not in str(exc).lower() or attempt == SQLITE_WRITE_RETRIES:
                 raise
-            time.sleep(SQLITE_WRITE_RETRY_SLEEP_SECONDS * attempt)
+            time.sleep(min(30.0, SQLITE_WRITE_RETRY_SLEEP_SECONDS * attempt) + random.random())
     raise RuntimeError("unreachable sqlite retry state")
+
+
+def _is_sqlite_locked(exc: sqlite3.OperationalError) -> bool:
+    return "locked" in str(exc).lower()
 
 
 def _priority_pending_query() -> str:
@@ -109,74 +115,82 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
     The transaction serializes competing worker daemons. A symbol already active
     anywhere in the farm blocks another item with the same symbol.
     """
-    farmctl.init_db(root)
-    now = farmctl.utc_now()
-    db_path = root / farmctl.DB_REL
-    with sqlite3.connect(db_path, timeout=30) as conn:
-        conn.row_factory = sqlite3.Row
-        conn.execute("PRAGMA busy_timeout=30000")
-        conn.execute("BEGIN IMMEDIATE")
-        try:
-            active_terminal = conn.execute(
-                "SELECT * FROM work_items WHERE status='active' AND claimed_by=? LIMIT 1",
-                (terminal,),
-            ).fetchone()
-            if active_terminal:
-                payload = _json_loads(active_terminal["payload_json"])
-                pid = payload.get("pid")
-                if pid and farmctl._pid_tree_exists(pid):
-                    conn.commit()
-                    return {"claimed": False, "reason": "terminal_busy", "item_id": active_terminal["id"]}
-                payload["prior_failure"] = payload.get("prior_failure") or "worker_loop_released_stale_claim"
-                terminal_stopped = _stop_terminal_slot_for_release(root, terminal)
-                if terminal_stopped is not None:
-                    payload["terminal_stopped_on_release"] = terminal_stopped
-                conn.execute(
-                    """
-                    UPDATE work_items
-                    SET status='pending', verdict=NULL, claimed_by=NULL, payload_json=?, updated_at=?
-                    WHERE id=? AND status='active' AND claimed_by=?
-                    """,
-                    (json.dumps(payload, sort_keys=True), now, active_terminal["id"], terminal),
-                )
+    def _claim() -> dict[str, Any]:
+        farmctl.init_db(root)
+        now = farmctl.utc_now()
+        db_path = root / farmctl.DB_REL
+        with sqlite3.connect(db_path, timeout=30) as conn:
+            conn.row_factory = sqlite3.Row
+            conn.execute("PRAGMA busy_timeout=30000")
+            conn.execute("BEGIN IMMEDIATE")
+            try:
+                active_terminal = conn.execute(
+                    "SELECT * FROM work_items WHERE status='active' AND claimed_by=? LIMIT 1",
+                    (terminal,),
+                ).fetchone()
+                if active_terminal:
+                    payload = _json_loads(active_terminal["payload_json"])
+                    pid = payload.get("pid")
+                    if pid and farmctl._pid_tree_exists(pid):
+                        conn.commit()
+                        return {"claimed": False, "reason": "terminal_busy", "item_id": active_terminal["id"]}
+                    payload["prior_failure"] = payload.get("prior_failure") or "worker_loop_released_stale_claim"
+                    terminal_stopped = _stop_terminal_slot_for_release(root, terminal)
+                    if terminal_stopped is not None:
+                        payload["terminal_stopped_on_release"] = terminal_stopped
+                    conn.execute(
+                        """
+                        UPDATE work_items
+                        SET status='pending', verdict=NULL, claimed_by=NULL, payload_json=?, updated_at=?
+                        WHERE id=? AND status='active' AND claimed_by=?
+                        """,
+                        (json.dumps(payload, sort_keys=True), now, active_terminal["id"], terminal),
+                    )
 
-            if root.resolve() == farmctl.DEFAULT_ROOT.resolve() and terminal in farmctl._running_mt5_terminals():
+                if root.resolve() == farmctl.DEFAULT_ROOT.resolve() and terminal in farmctl._running_mt5_terminals():
+                    conn.commit()
+                    return {"claimed": False, "reason": "terminal_process_busy", "terminal": terminal}
+
+                active_symbols = farmctl._active_work_item_symbols(conn)
+                skipped_history: list[dict[str, Any]] = []
+                for item in conn.execute(_priority_pending_query()).fetchall():
+                    symbol_key = str(item["symbol"] or "").upper()
+                    if symbol_key and symbol_key in active_symbols:
+                        continue
+                    history_ok, history = _p2_history_claimable(item)
+                    if not history_ok:
+                        skipped_history.append({"item_id": item["id"], **(history or {})})
+                        continue
+                    payload = _json_loads(item["payload_json"])
+                    payload.update({
+                        "claimed_at_iso": now,
+                        "claimed_by_worker_pid": os.getpid(),
+                        "terminal": terminal,
+                    })
+                    cur = conn.execute(
+                        """
+                        UPDATE work_items
+                        SET status='active', claimed_by=?, payload_json=?, updated_at=?
+                        WHERE id=? AND status='pending'
+                        """,
+                        (terminal, json.dumps(payload, sort_keys=True), now, item["id"]),
+                    )
+                    if cur.rowcount == 1:
+                        conn.commit()
+                        row = conn.execute("SELECT * FROM work_items WHERE id=?", (item["id"],)).fetchone()
+                        return {"claimed": True, "item": dict(row)}
                 conn.commit()
-                return {"claimed": False, "reason": "terminal_process_busy", "terminal": terminal}
+                return {"claimed": False, "reason": "no_pending_claimable", "history_skipped": skipped_history}
+            except Exception:
+                conn.rollback()
+                raise
 
-            active_symbols = farmctl._active_work_item_symbols(conn)
-            skipped_history: list[dict[str, Any]] = []
-            for item in conn.execute(_priority_pending_query()).fetchall():
-                symbol_key = str(item["symbol"] or "").upper()
-                if symbol_key and symbol_key in active_symbols:
-                    continue
-                history_ok, history = _p2_history_claimable(item)
-                if not history_ok:
-                    skipped_history.append({"item_id": item["id"], **(history or {})})
-                    continue
-                payload = _json_loads(item["payload_json"])
-                payload.update({
-                    "claimed_at_iso": now,
-                    "claimed_by_worker_pid": os.getpid(),
-                    "terminal": terminal,
-                })
-                cur = conn.execute(
-                    """
-                    UPDATE work_items
-                    SET status='active', claimed_by=?, payload_json=?, updated_at=?
-                    WHERE id=? AND status='pending'
-                    """,
-                    (terminal, json.dumps(payload, sort_keys=True), now, item["id"]),
-                )
-                if cur.rowcount == 1:
-                    conn.commit()
-                    row = conn.execute("SELECT * FROM work_items WHERE id=?", (item["id"],)).fetchone()
-                    return {"claimed": True, "item": dict(row)}
-            conn.commit()
-            return {"claimed": False, "reason": "no_pending_claimable", "history_skipped": skipped_history}
-        except Exception:
-            conn.rollback()
+    try:
+        return _with_sqlite_retry(_claim)
+    except sqlite3.OperationalError as exc:
+        if not _is_sqlite_locked(exc):
             raise
+        return {"claimed": False, "reason": "sqlite_locked"}
 
 
 def release_stale_claims_for_terminal(root: Path, terminal: str) -> list[str]:
@@ -212,7 +226,12 @@ def release_stale_claims_for_terminal(root: Path, terminal: str) -> list[str]:
                 conn.commit()
         return released
 
-    return _with_sqlite_retry(_release)
+    try:
+        return _with_sqlite_retry(_release)
+    except sqlite3.OperationalError as exc:
+        if not _is_sqlite_locked(exc):
+            raise
+        return []
 
 
 def _find_summary(report_root: str | None) -> Path | None:
@@ -403,7 +422,12 @@ def _finish_work_item(root: Path, item_id: str, exit_code: int | None) -> dict[s
             aggregate = _aggregate_finished_parent(root, item["parent_task_id"]) if status == "failed" else None
             return {"finished": True, "status": status, "verdict": verdict, "attempt": attempt, "aggregate": aggregate}
 
-    return _with_sqlite_retry(_finish)
+    try:
+        return _with_sqlite_retry(_finish)
+    except sqlite3.OperationalError as exc:
+        if not _is_sqlite_locked(exc):
+            raise
+        return {"finished": False, "reason": "sqlite_locked_finish_deferred"}
 
 
 def _phase_from_task_kind(kind: str) -> str:
@@ -668,6 +692,10 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
     while not _STOP:
         claim = claim_atomic(root, terminal)
         if not claim.get("claimed"):
+            if claim.get("reason") == "sqlite_locked":
+                print(json.dumps({"event": "sqlite_locked", "terminal": terminal, "action": "claim_backoff"}), flush=True)
+                time.sleep(SQLITE_LOCK_BACKOFF_SECONDS + random.random())
+                continue
             time.sleep(POLL_SLEEP_SECONDS)
             continue
         item = claim["item"]

@@ -73,7 +73,7 @@ DEFAULT_AGENT_REGISTRY: dict[str, dict[str, Any]] = {
     },
     "gemini": {
         "enabled": True,
-        "capabilities": ["research", "strategy", "source_discovery"],
+        "capabilities": ["code", "tests", "repo_edit", "research", "strategy", "source_discovery"],
         "max_parallel": 2,
         "cost_rank": 10,
     },
@@ -595,13 +595,18 @@ def status(root: Path = DEFAULT_ROOT, *, claude_disabled_flag: Path = CLAUDE_DIS
     return {"agents": agents, "tasks": tasks}
 
 
-def list_tasks(root: Path = DEFAULT_ROOT, agent_id: str | None = None) -> list[dict[str, Any]]:
+def list_tasks(root: Path = DEFAULT_ROOT, agent_id: str | None = None, state: str | None = None) -> list[dict[str, Any]]:
+    if state is not None and state not in TASK_STATES:
+        raise ValueError(f"unknown state: {state}")
     with closing(connect(root)) as conn:
         query = "SELECT * FROM agent_tasks"
         params = []
         if agent_id:
             query += " WHERE assigned_agent = ?"
             params.append(agent_id)
+        if state:
+            query += " AND state = ?" if params else " WHERE state = ?"
+            params.append(state)
         query += " ORDER BY priority DESC, updated_at DESC"
         
         rows = conn.execute(query, params).fetchall()
@@ -691,6 +696,57 @@ def update_task(
             """,
             (state, artifact_path, verdict, now, task_id),
         )
+        codex_review_task_id = None
+        if row["task_type"] == "build_ea" and row["assigned_agent"] == "gemini" and state == "REVIEW":
+            existing_review = conn.execute(
+                """
+                SELECT id FROM agent_tasks
+                WHERE task_type='review_ea'
+                  AND parent_id=?
+                  AND state IN ('BACKLOG', 'TODO', 'IN_PROGRESS', 'REVIEW')
+                ORDER BY created_at DESC
+                LIMIT 1
+                """,
+                (task_id,),
+            ).fetchone()
+            if existing_review:
+                codex_review_task_id = existing_review["id"]
+            else:
+                payload = json.loads(row["payload_json"] or "{}")
+                review_payload = {
+                    "reason": "codex_review_required_for_gemini_code",
+                    "source_task_id": task_id,
+                    "source_agent": "gemini",
+                    "source_task_type": row["task_type"],
+                    "source_artifact_path": artifact_path or row["artifact_path"],
+                    "source_verdict": verdict,
+                    "ea_id": payload.get("ea_id"),
+                    "card_id": payload.get("card_id"),
+                    "required_capabilities": ["code", "review"],
+                }
+                codex_review_task_id = str(uuid.uuid4())
+                conn.execute(
+                    """
+                    INSERT INTO agent_tasks(
+                        id, task_type, state, priority, required_capabilities_json,
+                        required_skills_json, assigned_agent, budget_class, parent_id,
+                        artifact_path, verdict, payload_json, created_at, updated_at
+                    )
+                    VALUES (?, 'review_ea', 'TODO', ?, ?, ?, NULL, ?, ?, ?, NULL, ?, ?, ?)
+                    """,
+                    (
+                        codex_review_task_id,
+                        int(row["priority"]) + 1,
+                        _json(["code", "review"]),
+                        _json(["code-review", "gemini-output-review"]),
+                        row["budget_class"],
+                        task_id,
+                        artifact_path or row["artifact_path"],
+                        _json(review_payload),
+                        now,
+                        now,
+                    ),
+                )
         conn.commit()
     return {
         "updated": True,
@@ -698,6 +754,7 @@ def update_task(
         "state": state,
         "artifact_path": artifact_path,
         "verdict": verdict,
+        "codex_review_task_id": codex_review_task_id,
     }
 
 
@@ -849,6 +906,7 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("status")
     list_tasks_p = sub.add_parser("list-tasks")
     list_tasks_p.add_argument("--agent", help="Filter by assigned agent ID")
+    list_tasks_p.add_argument("--state", choices=sorted(TASK_STATES), help="Filter by task state")
     sub.add_parser("replenish")
     route_many_p = sub.add_parser("route-many")
     route_many_p.add_argument("--max-routes", type=int, default=5)
@@ -882,7 +940,7 @@ def main(argv: list[str] | None = None) -> int:
     elif args.command == "status":
         result = status(args.root)
     elif args.command == "list-tasks":
-        result = list_tasks(args.root, agent_id=args.agent)
+        result = list_tasks(args.root, agent_id=args.agent, state=args.state)
     elif args.command == "replenish":
         result = replenish(args.root)
     elif args.command == "route-many":

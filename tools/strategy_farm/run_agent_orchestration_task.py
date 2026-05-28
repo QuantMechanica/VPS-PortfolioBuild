@@ -28,6 +28,7 @@ LOCK_DIR = FARM_ROOT / "locks"
 PYTHON_EXE = Path(r"C:\Users\Administrator\AppData\Local\Programs\Python\Python311\python.exe")
 CODEX_FALLBACK = Path(r"C:\Users\Administrator\AppData\Roaming\npm\codex.cmd")
 GEMINI_FALLBACK = Path(r"C:\Users\Administrator\AppData\Roaming\npm\gemini.cmd")
+GEMINI_NODE_BUNDLE = Path(r"C:\Users\Administrator\AppData\Roaming\npm\node_modules\@google\gemini-cli\bundle\gemini.js")
 CLAUDE_FALLBACK = Path(r"C:\Users\Administrator\AppData\Roaming\npm\claude.cmd")
 CODEX_HOME = Path(os.environ.get("CODEX_HOME", r"C:\Users\Administrator\.codex"))
 AGENT_USER_HOME = Path(r"C:\Users\Administrator")
@@ -69,6 +70,10 @@ def agent_env(agent: str) -> dict[str, str]:
         env["HOMEDRIVE"] = "C:"
         env["HOMEPATH"] = r"\Users\Administrator"
         env.setdefault("GEMINI_DEFAULT_AUTH_TYPE", "oauth-personal")
+        env.setdefault("TERM", "dumb")
+        env.setdefault("NO_COLOR", "1")
+        env.setdefault("FORCE_COLOR", "0")
+        env.setdefault("CI", "1")
     if agent == "claude":
         env["USERPROFILE"] = str(AGENT_USER_HOME)
         env["HOME"] = str(AGENT_USER_HOME)
@@ -100,17 +105,20 @@ Cycle:
    python tools/strategy_farm/agent_router.py status
    python tools/strategy_farm/agent_router.py run --min-ready-strategy-cards 5 --max-routes 5
    python tools/strategy_farm/agent_router.py route-many --max-routes 5
-   python tools/strategy_farm/agent_router.py list-tasks --agent {agent}
+   python tools/strategy_farm/agent_router.py list-tasks --agent {agent} --state IN_PROGRESS
 2. For every IN_PROGRESS task assigned to {agent}, in ascending numeric priority:
    read payload and skills, produce a durable artifact, run focused verification,
    then update the router with:
    python tools/strategy_farm/agent_router.py update-task <task_id> --state REVIEW --artifact-path "<artifact>" --verdict "<short_verdict>"
-3. Repeat task handling until no IN_PROGRESS {agent} task remains.
+3. Repeat task handling until `list-tasks --agent {agent} --state IN_PROGRESS`
+   returns an empty list. Ignore REVIEW/BLOCKED/PASSED tasks; they are not yours.
 4. If no task remains, run farmctl health and check QM5_10260 queue state. Do not invent untracked work.
 5. Exit.
 
 Hard rules:
 - Do not choose work outside the deterministic router.
+- Gemini may draft code, but Codex review is mandatory before acceptance; leave
+  Gemini code tasks in REVIEW and do not self-approve or move them to PIPELINE.
 - Keep operator-facing phase names Q-only.
 - Never enable T_Live or AutoTrading.
 - Never start terminal64.exe manually.
@@ -128,7 +136,7 @@ def process_alive(pid: int) -> bool:
         return False
     try:
         os.kill(pid, 0)
-    except OSError:
+    except Exception:
         return False
     return True
 
@@ -203,13 +211,20 @@ def command_for(agent: str, cwd: Path) -> list[str]:
         cards_review = FARM_ROOT / "artifacts" / "cards_review"
         if cards_review.exists():
             extra_dirs.append(str(cards_review))
+        node = shutil.which("node.exe") or shutil.which("node")
+        if node and GEMINI_NODE_BUNDLE.exists():
+            launcher = [node, str(GEMINI_NODE_BUNDLE)]
+        else:
+            launcher = [cli]
         return [
-            cli,
+            *launcher,
             "--prompt",
             "Execute the single-pass QuantMechanica orchestration instructions from stdin.",
             "--approval-mode",
             "yolo",
             "--skip-trust",
+            "--output-format",
+            "text",
             "--include-directories",
             ",".join(extra_dirs),
         ]
@@ -338,8 +353,18 @@ def ensure_worktree(agent: str, slot: int) -> dict[str, Any]:
 def run_agent_slot(agent: str, slot: int, dry_run: bool, stale_minutes: int, timeout_minutes: int) -> dict[str, Any]:
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     stamp = utc_stamp()
-    cwd = REPO_ROOT if agent in {"codex", "gemini"} and slot == 0 else worktree_path(agent, slot)
-    worktree = ensure_worktree(agent, slot)
+    if agent == "gemini":
+        cwd = REPO_ROOT
+        worktree = {
+            "path": str(REPO_ROOT),
+            "branch": "shared-repo",
+            "created": False,
+            "shared_repo": True,
+            "reason": "gemini_uses_current_farm_code_and_router_state",
+        }
+    else:
+        cwd = REPO_ROOT if agent == "codex" and slot == 0 else worktree_path(agent, slot)
+        worktree = ensure_worktree(agent, slot)
     prompt = build_prompt(agent, cwd)
     prompt_path = LOG_DIR / f"{agent}_orchestration_slot{slot}_prompt_{stamp}.md"
     live_log = LOG_DIR / f"{agent}_orchestration_slot{slot}_{stamp}.live.log"
@@ -397,7 +422,7 @@ def run_agent_slot(agent: str, slot: int, dry_run: bool, stale_minutes: int, tim
                 stdout=stdout_f,
                 stderr=subprocess.STDOUT,
                 env=agent_env(agent),
-                shell=True,
+                shell=(agent != "gemini"),
                 creationflags=creationflags,
                 close_fds=True,
             )
@@ -408,7 +433,14 @@ def run_agent_slot(agent: str, slot: int, dry_run: bool, stale_minutes: int, tim
             except subprocess.TimeoutExpired:
                 proc.kill()
                 payload.update({"ok": False, "returncode": 124, "error": "timeout"})
-        payload["push"] = push_worktree_branch(cwd, branch_name(agent, slot))
+        if worktree.get("shared_repo"):
+            payload["push"] = {
+                "attempted": False,
+                "ok": True,
+                "reason": "shared_repo_not_pushed_by_headless_agent",
+            }
+        else:
+            payload["push"] = push_worktree_branch(cwd, branch_name(agent, slot))
         return payload
     except Exception as exc:
         payload.update({"ok": False, "returncode": 1, "error": repr(exc)})

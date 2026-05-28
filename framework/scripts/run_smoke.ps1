@@ -43,6 +43,7 @@ if ($EAId -le 0) {
 function Convert-HtmlEntityText {
     param(
         [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
         [string]$Text
     )
 
@@ -1530,7 +1531,7 @@ try {
     $pumpExe = (Get-Command pythonw.exe -ErrorAction SilentlyContinue).Source
     if (-not $pumpExe) { $pumpExe = (Get-Command python.exe).Source }
     Start-Process -FilePath $pumpExe -ArgumentList @(
-        'tools/strategy_farm/farmctl.py','pump'
+        'tools/strategy_farm/run_pump_task.py'
     ) -WorkingDirectory 'C:/QM/repo' -WindowStyle Hidden
     Write-Output "run_smoke.stage=post_run_pump_triggered"
 } catch {

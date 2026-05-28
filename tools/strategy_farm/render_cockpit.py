@@ -41,6 +41,17 @@ QUOTA_SNAPSHOT = ROOT / "state" / "quota_snapshot.json"
 
 PIPELINE_STAGES = ["Card", "Build", "Review", "Q02", "Q03", "Q04", "Q05", "Q06", "Q07", "Q08", "Q09", "Q10", "Q11", "Live"]
 PHASE_DISPLAY = {
+    "Q01": "Q01",
+    "Q02": "Q02",
+    "Q03": "Q03",
+    "Q04": "Q04",
+    "Q05": "Q05",
+    "Q06": "Q06",
+    "Q07": "Q07",
+    "Q08": "Q08",
+    "Q09": "Q09",
+    "Q10": "Q10",
+    "Q11": "Q11",
     "P2": "Q02",
     "P3": "Q03",
     "P3.5": "Q04",
@@ -53,6 +64,17 @@ PHASE_DISPLAY = {
     "P8": "Q11",
 }
 PHASE_RANK = {
+    "Q01": 10,
+    "Q02": 20,
+    "Q03": 30,
+    "Q04": 40,
+    "Q05": 50,
+    "Q06": 60,
+    "Q07": 70,
+    "Q08": 80,
+    "Q09": 90,
+    "Q10": 100,
+    "Q11": 110,
     "P2": 20,
     "P3": 30,
     "P3.5": 35,
@@ -65,6 +87,17 @@ PHASE_RANK = {
     "P8": 80,
 }
 PHASE_TO_STAGE = {
+    "Q01": "Q01",
+    "Q02": "Q02",
+    "Q03": "Q03",
+    "Q04": "Q04",
+    "Q05": "Q05",
+    "Q06": "Q06",
+    "Q07": "Q07",
+    "Q08": "Q08",
+    "Q09": "Q09",
+    "Q10": "Q10",
+    "Q11": "Q11",
     "P2": "Q02",
     "P3": "Q03",
     "P3.5": "Q04",
@@ -467,6 +500,8 @@ def queue_snapshot() -> dict:
     wi = db_rows("SELECT phase, status, verdict, COUNT(*) AS c FROM work_items "
                  "GROUP BY phase, status, verdict")
     out["work_items"] = wi
+    out["work_items_pending"] = sum(int(r.get("c") or 0) for r in wi if r.get("status") == "pending")
+    out["work_items_active"] = sum(int(r.get("c") or 0) for r in wi if r.get("status") == "active")
 
     # Card backlog
     out["cards_draft"] = len(list_files(CARDS_DRAFT))
@@ -616,10 +651,14 @@ def pipeline_backlog_snapshot() -> dict:
             WHERE verdict='PASS'
             GROUP BY phase
             ORDER BY CASE phase
-              WHEN 'P2' THEN 20 WHEN 'P3' THEN 30 WHEN 'P3.5' THEN 35
-              WHEN 'P4' THEN 40 WHEN 'P5' THEN 50 WHEN 'P5b' THEN 55
-              WHEN 'P5c' THEN 56 WHEN 'P6' THEN 60 WHEN 'P7' THEN 70
-              WHEN 'P8' THEN 80 ELSE 0 END
+              WHEN 'Q01' THEN 10 WHEN 'Q02' THEN 20 WHEN 'Q03' THEN 30
+              WHEN 'Q04' THEN 40 WHEN 'Q05' THEN 50 WHEN 'Q06' THEN 60
+              WHEN 'Q07' THEN 70 WHEN 'Q08' THEN 80 WHEN 'Q09' THEN 90
+              WHEN 'Q10' THEN 100 WHEN 'Q11' THEN 110
+              WHEN 'P2' THEN 20 WHEN 'P3' THEN 30 WHEN 'P3.5' THEN 40
+              WHEN 'P4' THEN 50 WHEN 'P5' THEN 60 WHEN 'P5b' THEN 70
+              WHEN 'P5c' THEN 80 WHEN 'P6' THEN 90 WHEN 'P7' THEN 100
+              WHEN 'P8' THEN 110 ELSE 0 END
             """
         )
         pass_total = db_rows(
@@ -628,11 +667,11 @@ def pipeline_backlog_snapshot() -> dict:
         out["pass_total"] = pass_total[0]["c"] if pass_total else 0
         p4plus = db_rows(
             "SELECT COUNT(DISTINCT ea_id) AS c FROM work_items "
-            "WHERE verdict='PASS' AND phase IN ('P4','P5','P5b','P5c','P6','P7','P8')"
+            "WHERE verdict='PASS' AND phase IN ('Q05','Q06','Q07','Q08','Q09','Q10','Q11','P4','P5','P5b','P5c','P6','P7','P8')"
         )
         out["p4plus_pass_total"] = p4plus[0]["c"] if p4plus else 0
         p8 = db_rows(
-            "SELECT COUNT(DISTINCT ea_id) AS c FROM work_items WHERE verdict='PASS' AND phase='P8'"
+            "SELECT COUNT(DISTINCT ea_id) AS c FROM work_items WHERE verdict='PASS' AND phase IN ('Q11','P8')"
         )
         out["p8_pass_total"] = p8[0]["c"] if p8 else 0
         try:
@@ -641,7 +680,7 @@ def pipeline_backlog_snapshot() -> dict:
         except sqlite3.Error:
             out["portfolio_candidates_total"] = 0
         p4_pending = db_rows(
-            "SELECT COUNT(*) AS c FROM work_items WHERE phase='P4' AND verdict='PENDING_IMPLEMENTATION'"
+            "SELECT COUNT(*) AS c FROM work_items WHERE phase IN ('Q05','P4') AND verdict='PENDING_IMPLEMENTATION'"
         )
         out["p4_pending_implementation"] = p4_pending[0]["c"] if p4_pending else 0
         out["work_active_by_phase"] = db_rows(
@@ -649,10 +688,14 @@ def pipeline_backlog_snapshot() -> dict:
             """
             WHERE status IN ('active','pending','claimed') GROUP BY phase
             ORDER BY CASE phase
-              WHEN 'P2' THEN 20 WHEN 'P3' THEN 30 WHEN 'P3.5' THEN 35
-              WHEN 'P4' THEN 40 WHEN 'P5' THEN 50 WHEN 'P5b' THEN 55
-              WHEN 'P5c' THEN 56 WHEN 'P6' THEN 60 WHEN 'P7' THEN 70
-              WHEN 'P8' THEN 80 ELSE 0 END
+              WHEN 'Q01' THEN 10 WHEN 'Q02' THEN 20 WHEN 'Q03' THEN 30
+              WHEN 'Q04' THEN 40 WHEN 'Q05' THEN 50 WHEN 'Q06' THEN 60
+              WHEN 'Q07' THEN 70 WHEN 'Q08' THEN 80 WHEN 'Q09' THEN 90
+              WHEN 'Q10' THEN 100 WHEN 'Q11' THEN 110
+              WHEN 'P2' THEN 20 WHEN 'P3' THEN 30 WHEN 'P3.5' THEN 40
+              WHEN 'P4' THEN 50 WHEN 'P5' THEN 60 WHEN 'P5b' THEN 70
+              WHEN 'P5c' THEN 80 WHEN 'P6' THEN 90 WHEN 'P7' THEN 100
+              WHEN 'P8' THEN 110 ELSE 0 END
             """
         )
         out["work_active_total"] = sum(r["c"] for r in out["work_active_by_phase"])
@@ -864,6 +907,12 @@ def profitability_next_actions(pipeline: list[dict]) -> list[dict]:
 
 
 def diagnose_bottleneck(procs: dict, q: dict, claude_workers: list, codex_workers: list) -> tuple[str, str]:
+    mt5_backpressure = q.get("work_items_pending", 0) >= 1000 or q.get("work_items_active", 0) >= 10
+    if q["builds_pending"] > 0 and len(codex_workers) == 0 and mt5_backpressure:
+        return "ok", (
+            f"{q['builds_pending']} build(s) queued; coding intentionally paused while MT5 drains "
+            f"{q.get('work_items_pending', 0)} pending / {q.get('work_items_active', 0)} active work_items."
+        )
     if q["builds_pending"] > 3 and len(codex_workers) < 3:
         return "warn", (f"{q['builds_pending']} builds queued, only {len(codex_workers)} codex running. "
                         "Next pump (≤5 min) fills the budget to 3.")
@@ -935,18 +984,18 @@ def main() -> int:
             con.row_factory = sqlite3.Row
             for r in con.execute("""
                 SELECT DATE(updated_at) day, COUNT(*) c FROM work_items
-                WHERE phase='P2' AND status='done' AND verdict='PASS'
+                WHERE phase IN ('Q02','P2') AND status='done' AND verdict='PASS'
                   AND updated_at >= date('now', '-7 days')
                 GROUP BY day
             """):
-                days.setdefault(r["day"], {})["_p2_pass"] = r["c"]
+                days.setdefault(r["day"], {})["_q02_pass"] = r["c"]
             for r in con.execute("""
                 SELECT DATE(updated_at) day, COUNT(*) c FROM work_items
-                WHERE phase='P3' AND status='done' AND verdict='PASS'
+                WHERE phase IN ('Q03','P3') AND status='done' AND verdict='PASS'
                   AND updated_at >= date('now', '-7 days')
                 GROUP BY day
             """):
-                days.setdefault(r["day"], {})["_p3_pass"] = r["c"]
+                days.setdefault(r["day"], {})["_q03_pass"] = r["c"]
             con.close()
         except Exception:
             pass
@@ -954,8 +1003,11 @@ def main() -> int:
     trend = _trend_data()
 
     def _daily_controlling_data() -> dict:
-        mt5_phases = {"P2", "P3", "P4", "P5", "P5b", "P5c", "P6", "P8"}
-        analysis_phases = {"P3.5", "P7"}
+        mt5_phases = {
+            "P2", "P3", "P4", "P5", "P5b", "P5c", "P6", "P8",
+            "Q02", "Q03", "Q04", "Q05", "Q06", "Q08", "Q10", "Q11",
+        }
+        analysis_phases = {"P3.5", "P7", "Q07"}
         rows = db_rows(
             """
             SELECT phase, status, verdict, ea_id, symbol, payload_json, updated_at
@@ -978,6 +1030,9 @@ def main() -> int:
                 "analysis_eas": set(),
                 "done_items": 0,
                 "fail_invalid": 0,
+                "zero_trade_like": 0,
+                "invalid": 0,
+                "waiting_input": 0,
             }
             for key in windows
         }
@@ -1008,24 +1063,32 @@ def main() -> int:
                     payload = json.loads(row["payload_json"])
                 except Exception:
                     payload = {}
+            reason = str(payload.get("verdict_reason") or "")
+            zero_trade_like = "MIN_TRADES_NOT_MET" in reason or "zero" in reason.lower()
             is_mt5 = phase in mt5_phases
             is_analysis = phase in analysis_phases
             for key, days in windows.items():
                 if not in_window(day, key, days):
                     continue
                 bucket = stats[key]
-                if is_mt5:
-                    bucket["mt5_items"] += 1
-                    if row.get("ea_id"):
-                        bucket["mt5_eas"].add(row["ea_id"])
-                elif is_analysis:
-                    bucket["analysis_items"] += 1
-                    if row.get("ea_id"):
-                        bucket["analysis_eas"].add(row["ea_id"])
                 if status in {"done", "failed"}:
                     bucket["done_items"] += 1
+                    if is_mt5:
+                        bucket["mt5_items"] += 1
+                        if row.get("ea_id"):
+                            bucket["mt5_eas"].add(row["ea_id"])
+                    elif is_analysis:
+                        bucket["analysis_items"] += 1
+                        if row.get("ea_id"):
+                            bucket["analysis_eas"].add(row["ea_id"])
                 if verdict in {"FAIL", "INVALID"}:
                     bucket["fail_invalid"] += 1
+                if zero_trade_like:
+                    bucket["zero_trade_like"] += 1
+                if verdict == "INVALID":
+                    bucket["invalid"] += 1
+                if verdict == "WAITING_INPUT":
+                    bucket["waiting_input"] += 1
             if status in {"done", "failed"}:
                 key = f"{PHASE_DISPLAY.get(phase, phase)} {verdict or status}"
                 by_phase[key] = by_phase.get(key, {"count": 0})
@@ -1033,8 +1096,7 @@ def main() -> int:
             terminal = payload.get("terminal") or row.get("claimed_by")
             if terminal and is_mt5:
                 by_terminal[str(terminal)] = by_terminal.get(str(terminal), 0) + 1
-            reason = str(payload.get("verdict_reason") or "")
-            if "MIN_TRADES_NOT_MET" in reason or "zero" in reason.lower():
+            if zero_trade_like:
                 anomalies["zero_trade_like"] += 1
             if verdict == "INVALID":
                 anomalies["invalid"] += 1
@@ -1274,6 +1336,7 @@ def main() -> int:
         q.get("backtest_p2_pending", 0)
         + q.get("backtest_p3_pending", 0)
         + len(q.get("pending_backtests_list", []) or [])
+        + q.get("work_items_pending", 0)
     )
     # T1..T10 fleet — active when an mt5_work entry's terminal matches
     active_terms = {str(w.get("terminal") or "").upper() for w in mt5_work}
@@ -1357,24 +1420,23 @@ def main() -> int:
     # SRC      — sources pending  (input reservoir)
     # CARDS    — cards_ready / approved (write-ready EAs)
     # BUILT    — build_ea active+pending+done not yet reviewed (EAs being built)
-    # BACKTEST Q02  — work_items at P2 (any status)
-    # ROBUST Q05-Q07 — work_items at P4/P5/P5b (any status)
-    # PORTFOLIO Q11 — work_items PASS at P8
+    # BACKTEST Q02  — work_items at Q02 (plus legacy P2 rows)
+    # ROBUST Q05-Q07 — work_items at Q05-Q07 (plus legacy rows)
+    # PORTFOLIO Q11 — work_items PASS at Q11 (plus legacy P8 rows)
     src_pending = backlog["sources"].get("pending", 0)
     src_done = backlog["sources"].get("done", 0)
     cards_ready = backlog["sources"].get("cards_ready", 0)
     cards_cum_approved = q.get("cards_approved", 0)
     # Builds: pending + active + waiting review
     built_count = q.get("builds_pending", 0) + q.get("builds_active", 0) + review_q_count
-    # Backtest Q02 — count work_items at P2 (active+pending+done)
-    p2_total = 0
-    for r in db_rows("SELECT status, verdict, COUNT(*) AS c FROM work_items WHERE phase='P2' GROUP BY status, verdict"):
-        p2_total += int(r.get("c") or 0)
-    # ROBUST Q05-Q07: legacy P4 → Q05, P5 → Q06, P5b → Q07 (OWNER hard rule:
-    # operator surfaces show Qxx only — never the legacy P-keys).
+    # Backtest Q02 — count Q02 and any legacy P2 rows.
+    q02_total = 0
+    for r in db_rows("SELECT status, verdict, COUNT(*) AS c FROM work_items WHERE phase IN ('Q02','P2') GROUP BY status, verdict"):
+        q02_total += int(r.get("c") or 0)
+    # ROBUST Q05-Q07: operator surfaces show Qxx only.
     robust_rows = db_rows(
         "SELECT phase, COUNT(DISTINCT ea_id) AS c FROM work_items "
-        "WHERE verdict='PASS' AND phase IN ('P4','P5','P5b') GROUP BY phase"
+        "WHERE verdict='PASS' AND phase IN ('Q05','Q06','Q07','P4','P5','P5b') GROUP BY phase"
     )
     robust_count = sum(int(r.get("c") or 0) for r in robust_rows)
     _p_to_q = {"P4": "Q05", "P5": "Q06", "P5b": "Q07"}
@@ -1393,17 +1455,17 @@ def main() -> int:
     src_spark = sparkline_str(_last7("source_intake")) if trend else "▁▁▁▁▁▁▁"
     cards_spark = sparkline_str(_last7("approved")) if trend else "▁▁▁▁▁▁▁"
     build_spark = sparkline_str(_last7("build_ok") or _last7("build_done")) if trend else "▁▁▁▁▁▁▁"
-    q02_spark = sparkline_str(_last7("_p2_pass")) if trend else "▁▁▁▁▁▁▁"
-    q03_spark = sparkline_str(_last7("_p3_pass")) if trend else "▁▁▁▁▁▁▁"
-    q11_spark = "▁▁▁▁▁▁▁"  # no P8-PASS observed yet; sparkline stays empty
+    q02_spark = sparkline_str(_last7("_q02_pass")) if trend else "▁▁▁▁▁▁▁"
+    q03_spark = sparkline_str(_last7("_q03_pass")) if trend else "▁▁▁▁▁▁▁"
+    q11_spark = "▁▁▁▁▁▁▁"
 
     # Funnel drop-off labels
     review_drop = ""
     if cards_cum_approved:
         review_drop = f"▼ {int(100 - 100 * built_count / max(1, cards_cum_approved))}% TO REVIEW"
     q02_drop = ""
-    if p2_total:
-        q02_drop = f"▼ {int(100 - 100 * robust_count / max(1, p2_total))}% TO Q05"
+    if q02_total:
+        q02_drop = f"▼ {int(100 - 100 * robust_count / max(1, q02_total))}% TO Q05"
 
     funnel_html_inner = (
         '<div class="funnel-stage{src_empty}">'
@@ -1432,7 +1494,7 @@ def main() -> int:
         '<div class="funnel-arrow">→</div>'
         '<div class="funnel-stage{p2_empty}">'
         '<div class="stg-lbl">BACKTEST Q02</div>'
-        f'<div class="stg-num">{p2_total}</div>'
+        f'<div class="stg-num">{q02_total}</div>'
         f'<div class="stg-meta drop">{e(q02_drop) or "—"}</div>'
         '<span class="stg-spark-lbl">7D Q02 PASS</span>'
         f'<div class="stg-spark">{q02_spark}</div>'
@@ -1458,7 +1520,7 @@ def main() -> int:
         src_empty=" empty" if src_pending == 0 else "",
         cards_empty=" empty" if cards_ready == 0 else "",
         built_empty=" empty" if built_count == 0 else "",
-        p2_empty=" empty" if p2_total == 0 else "",
+        p2_empty=" empty" if q02_total == 0 else "",
         robust_empty=" empty" if robust_count == 0 else "",
         portfolio_empty=" empty" if portfolio_count == 0 else "",
     )
@@ -1512,9 +1574,9 @@ def main() -> int:
     ):
         phase_raw = r.get("phase") or ""
         # Map legacy P-keys to Qxx for display
-        _legacy = {"P2": "Q02", "P3": "Q03", "P3.5": "Q03", "P4": "Q04",
-                   "P5": "Q05", "P5b": "Q05", "P5c": "Q05",
-                   "P6": "Q07", "P7": "Q08", "P8": "Q08"}
+        _legacy = {"P2": "Q02", "P3": "Q03", "P3.5": "Q04", "P4": "Q05",
+                   "P5": "Q06", "P5b": "Q07", "P5c": "Q08",
+                   "P6": "Q09", "P7": "Q10", "P8": "Q11"}
         qid = phase_raw if phase_raw in q_counts else _legacy.get(phase_raw)
         if qid and qid in q_counts:
             q_counts[qid] += int(r.get("c") or 0)
@@ -1634,7 +1696,17 @@ def main() -> int:
         if (r.get("label") or "").startswith("Q02 PASS"):
             q02_pass_30d += int(r.get("count") or 0)
     anom = controlling["anomalies"]
-    anom_today_total = anom["zero_trade_like"] + anom["invalid"] + anom["waiting_input"]
+    anom_today_total = (
+        cw["today"]["zero_trade_like"]
+        + cw["today"]["invalid"]
+        + cw["today"]["waiting_input"]
+    )
+    anom_yesterday_total = (
+        cw["yesterday"]["zero_trade_like"]
+        + cw["yesterday"]["invalid"]
+        + cw["yesterday"]["waiting_input"]
+    )
+    anom_30d_total = anom["zero_trade_like"] + anom["invalid"] + anom["waiting_input"]
 
     # ---------- 1. TOP BAR message ----------
     topbar_msg = e(msg)[:140]
@@ -2323,23 +2395,11 @@ body { padding: 32px; min-height: 100vh; }
     </div>
   </div>
 
-  <!-- 6. RECENT EVENTS -->
+  <!-- 6. DAILY CONTROLLING -->
   <div class="section">
     <div class="section-head">
       <span class="section-glyph"></span>
-      <span class="section-title">Recent Events // Telemetry Tail</span>
-      <span class="section-aux">Last 10 // UTC</span>
-    </div>
-    <div class="events">
-      {"".join(events_html_rows)}
-    </div>
-  </div>
-
-  <!-- 7. DAILY CONTROLLING -->
-  <div class="section">
-    <div class="section-head">
-      <span class="section-glyph"></span>
-      <span class="section-title">Daily Controlling // Throughput &amp; Anomalies</span>
+      <span class="section-title">Daily Controlling // Throughput &amp; Test Exceptions</span>
       <span class="section-aux">Today // Yesterday // 7D // 30D</span>
     </div>
     <div class="control">
@@ -2356,9 +2416,9 @@ body { padding: 32px; min-height: 100vh; }
           <div class="s-sub">{cw["today"]["analysis_eas"]} EAs reviewed</div>
         </div>
         <div class="control-stat">
-          <div class="s-lbl">Anomalies</div>
+          <div class="s-lbl">Test Exceptions</div>
           <div class="s-val">{anom_today_total}</div>
-          <div class="s-sub">zero-trade // invalid</div>
+          <div class="s-sub">{cw["today"]["zero_trade_like"]} min-trade // {cw["today"]["invalid"]} invalid // {cw["today"]["waiting_input"]} waiting</div>
         </div>
       </div>
       <div class="control-col">
@@ -2374,9 +2434,9 @@ body { padding: 32px; min-height: 100vh; }
           <div class="s-sub">{cw["yesterday"]["analysis_eas"]} EAs reviewed</div>
         </div>
         <div class="control-stat">
-          <div class="s-lbl">Anomalies</div>
-          <div class="s-val dim">{cw["yesterday"]["fail_invalid"]}</div>
-          <div class="s-sub">fail / invalid yesterday</div>
+          <div class="s-lbl">Test Exceptions</div>
+          <div class="s-val dim">{anom_yesterday_total}</div>
+          <div class="s-sub">{cw["yesterday"]["zero_trade_like"]} min-trade // {cw["yesterday"]["invalid"]} invalid // {cw["yesterday"]["waiting_input"]} waiting</div>
         </div>
       </div>
       <div class="control-col">
@@ -2410,11 +2470,23 @@ body { padding: 32px; min-height: 100vh; }
           <div class="s-sub">{int(100 * q02_pass_30d / max(1, mt5_30d))}% of {mt5_30d} backtests</div>
         </div>
         <div class="control-stat">
-          <div class="s-lbl">Anomalies</div>
-          <div class="s-val">{cw["30d"]["fail_invalid"]}</div>
-          <div class="s-sub">{anom["zero_trade_like"]} zero // {anom["invalid"]} invalid</div>
+          <div class="s-lbl">Test Exceptions</div>
+          <div class="s-val">{anom_30d_total}</div>
+          <div class="s-sub">{anom["zero_trade_like"]} min-trade // {anom["invalid"]} invalid // {anom["waiting_input"]} waiting</div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- 7. RECENT EVENTS -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-glyph"></span>
+      <span class="section-title">Recent Events // Telemetry Tail</span>
+      <span class="section-aux">Last 10 // UTC</span>
+    </div>
+    <div class="events">
+      {"".join(events_html_rows)}
     </div>
   </div>
 
