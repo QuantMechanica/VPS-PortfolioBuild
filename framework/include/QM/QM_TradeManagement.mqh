@@ -164,6 +164,35 @@ bool QM_TM_OpenPosition(const QM_EntryRequest &req, ulong &out_ticket)
    return ok;
   }
 
+bool QM_TM_RemovePendingOrder(const ulong ticket, const string reason)
+  {
+   if(ticket == 0 || !OrderSelect(ticket))
+      return false;
+
+   const string symbol = OrderGetString(ORDER_SYMBOL);
+   MqlTradeRequest request;
+   ZeroMemory(request);
+   request.action = TRADE_ACTION_REMOVE;
+   request.order = ticket;
+   request.symbol = symbol;
+
+   MqlTradeResult result;
+   string error_class = BROKER_OTHER;
+   const bool ok = QM_TradeContextSend(request, result, error_class);
+
+   const string payload = StringFormat(
+      "{\"ticket\":%I64u,\"symbol\":\"%s\",\"reason\":\"%s\",\"ok\":%s,\"retcode\":%u,\"retcode_class\":\"%s\"}",
+      ticket,
+      QM_LoggerEscapeJson(symbol),
+      QM_LoggerEscapeJson(reason),
+      ok ? "true" : "false",
+      result.retcode,
+      QM_LoggerEscapeJson(error_class)
+   );
+   QM_LogEvent(ok ? QM_INFO : QM_WARN, "TM_REMOVE_PENDING", payload);
+   return ok;
+  }
+
 bool QM_TM_ClosePosition(const ulong ticket, const QM_ExitReason reason)
   {
    return QM_TM_CloseByVolume(ticket, 0.0, reason, false);

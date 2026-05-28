@@ -45,7 +45,7 @@ int     g_qm_ks_live_window_min    = 30;   // min size before check fires
 double  g_qm_ks_alpha              = 0.05; // significance threshold
 double  g_qm_ks_alpha_constant     = 1.358; // KS critical-value coefficient for α=0.05
 
-bool    g_qm_ks_initialized        = false;
+bool    g_qm_ks_dist_initialized   = false;
 bool    g_qm_ks_baseline_loaded    = false;
 datetime g_qm_ks_last_check_utc    = 0;
 
@@ -196,7 +196,7 @@ void QM_KillSwitchKSInit(const int ea_id,
    g_qm_ks_live_window_min   = (min_samples_for_check > 0) ? min_samples_for_check : 30;
    ArrayResize(g_qm_ks_live_window, g_qm_ks_live_window_max);
    g_qm_ks_live_count = 0;
-   g_qm_ks_initialized = true;
+   g_qm_ks_dist_initialized = true;
 
    string sym_clean = symbol;
    StringReplace(sym_clean, ".", "_");
@@ -218,7 +218,7 @@ void QM_KillSwitchKSInit(const int ea_id,
 // is detected with this EA's magic.
 void QM_KillSwitchKSOnTradeClosed(const double net_profit)
   {
-   if(!g_qm_ks_initialized || !g_qm_ks_baseline_loaded)
+   if(!g_qm_ks_dist_initialized || !g_qm_ks_baseline_loaded)
       return;
 
    // Ring buffer write
@@ -286,7 +286,7 @@ double QM_KS_CriticalValue(const int n1, const int n2)
 // Designed to be called from OnTick or OnTimer; cheap when window not full.
 bool QM_KillSwitchKSCheck()
   {
-   if(!g_qm_ks_initialized || !g_qm_ks_baseline_loaded)
+   if(!g_qm_ks_dist_initialized || !g_qm_ks_baseline_loaded)
       return false;
    if(g_qm_ks_live_count < g_qm_ks_live_window_min)
       return false;

@@ -5,29 +5,43 @@
 #include <QM/QM_Common.mqh>
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                    = 10028;
-input int    qm_magic_slot_offset        = 0;
+input int    qm_ea_id                   = 10028;
+input int    qm_magic_slot_offset       = 0;
+input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT                = 0.0;
-input double RISK_FIXED                  = 1000.0;
-input double PORTFOLIO_WEIGHT            = 1.0;
+input double RISK_PERCENT               = 0.0;
+input double RISK_FIXED                 = 1000.0;
+input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsMode qm_news_mode           = QM_NEWS_OFF;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
+input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled     = false;
+input bool   qm_friday_close_enabled    = false;
 input int    qm_friday_close_hour_broker = 21;
 
+input group "Stress"
+input double qm_stress_reject_probability = 0.0;
+
 input group "Strategy"
-input int    strategy_vol_lookback_days  = 63;
-input int    strategy_momentum_days      = 126;
-input int    strategy_gold_momentum_days = 63;
-input int    strategy_atr_period         = 20;
-input double strategy_atr_sl_mult        = 4.0;
-input int    strategy_min_eligible       = 2;
-input double strategy_max_spread_points  = 0.0;
+input int    strategy_vol_lookback_days     = 63;
+input int    strategy_momentum_days         = 126;
+input int    strategy_gold_momentum_days    = 63;
+input int    strategy_atr_period            = 20;
+input double strategy_atr_sl_mult           = 4.0;
+input int    strategy_min_eligible          = 2;
+input double strategy_max_symbol_weight     = 0.35;
+input double strategy_portfolio_stop_pct    = 8.0;
+input double strategy_max_spread_points     = 0.0;
+
+double g_month_start_equity = 0.0;
+int    g_month_key          = 0;
+bool   g_portfolio_stop     = false;
 
 string StrategySymbolBySlot(const int slot)
   {
@@ -50,9 +64,30 @@ bool StrategySymbolInBasket(const string symbol)
    return false;
   }
 
-bool StrategyIsFirstSessionAfterMonthEnd()
+int StrategyCurrentMonthKey()
   {
-   return true; // OnTick gates monthly evaluation with QM_IsNewBar(PERIOD_MN1).
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(), dt);
+   return dt.year * 100 + dt.mon;
+  }
+
+void StrategyUpdatePortfolioStop()
+  {
+   const int key = StrategyCurrentMonthKey();
+   const double equity = AccountInfoDouble(ACCOUNT_EQUITY);
+   if(key != g_month_key || g_month_start_equity <= 0.0)
+     {
+      g_month_key = key;
+      g_month_start_equity = equity;
+      g_portfolio_stop = false;
+     }
+
+   if(strategy_portfolio_stop_pct <= 0.0 || g_month_start_equity <= 0.0)
+      return;
+
+   const double dd_pct = 100.0 * (g_month_start_equity - equity) / g_month_start_equity;
+   if(dd_pct >= strategy_portfolio_stop_pct)
+      g_portfolio_stop = true;
   }
 
 double StrategyReturn(const string symbol, const int lookback_days)
@@ -62,8 +97,8 @@ double StrategyReturn(const string symbol, const int lookback_days)
    if(Bars(symbol, PERIOD_D1) < lookback_days + 2)
       return 0.0;
 
-   const double recent = QM_SMA(symbol, PERIOD_D1, 1, 1);
-   const double past = QM_SMA(symbol, PERIOD_D1, 1, 1 + lookback_days);
+   const double recent = iClose(symbol, PERIOD_D1, 1);
+   const double past = iClose(symbol, PERIOD_D1, 1 + lookback_days);
    if(recent <= 0.0 || past <= 0.0)
       return 0.0;
    return (recent / past) - 1.0;
@@ -77,14 +112,14 @@ double StrategyRealizedVol(const string symbol, const int lookback_days)
    double sum = 0.0;
    double sumsq = 0.0;
    int samples = 0;
-   for(int i = 1; i <= lookback_days; ++i)
+   for(int shift = 1; shift <= lookback_days; ++shift)
      {
-      const double c0 = QM_SMA(symbol, PERIOD_D1, 1, i);
-      const double c1 = QM_SMA(symbol, PERIOD_D1, 1, i + 1);
-      if(c0 <= 0.0 || c1 <= 0.0)
+      const double close_now = iClose(symbol, PERIOD_D1, shift);
+      const double close_prev = iClose(symbol, PERIOD_D1, shift + 1);
+      if(close_now <= 0.0 || close_prev <= 0.0)
          return 0.0;
 
-      const double r = MathLog(c0 / c1);
+      const double r = MathLog(close_now / close_prev);
       sum += r;
       sumsq += r * r;
       samples++;
@@ -99,28 +134,78 @@ double StrategyRealizedVol(const string symbol, const int lookback_days)
    return MathSqrt(variance);
   }
 
-bool StrategySymbolEligible(const string symbol)
+bool StrategySymbolEligible(const string symbol, double &out_inv_vol)
   {
+   out_inv_vol = 0.0;
    if(!StrategySymbolInBasket(symbol))
+      return false;
+   if(!SymbolSelect(symbol, true))
       return false;
 
    const double vol = StrategyRealizedVol(symbol, strategy_vol_lookback_days);
    if(vol <= 0.0)
       return false;
 
-   if(symbol == "XAUUSD.DWX")
-      return (StrategyReturn(symbol, strategy_gold_momentum_days) > 0.0);
+   const bool positive_momentum = (symbol == "XAUUSD.DWX")
+      ? (StrategyReturn(symbol, strategy_gold_momentum_days) > 0.0)
+      : (StrategyReturn(symbol, strategy_momentum_days) > 0.0);
+   if(!positive_momentum)
+      return false;
 
-   return (StrategyReturn(symbol, strategy_momentum_days) > 0.0);
+   out_inv_vol = 1.0 / vol;
+   return true;
   }
 
-int StrategyEligibleCount()
+int StrategyEligibleSet(bool &eligible[], double &inv_vol[])
   {
+   ArrayResize(eligible, 5);
+   ArrayResize(inv_vol, 5);
+
    int count = 0;
    for(int i = 0; i < 5; ++i)
-      if(StrategySymbolEligible(StrategySymbolBySlot(i)))
+     {
+      eligible[i] = false;
+      inv_vol[i] = 0.0;
+
+      double score = 0.0;
+      if(StrategySymbolEligible(StrategySymbolBySlot(i), score))
+        {
+         eligible[i] = true;
+         inv_vol[i] = score;
          count++;
+        }
+     }
    return count;
+  }
+
+int StrategyCurrentSlot()
+  {
+   for(int i = 0; i < 5; ++i)
+      if(_Symbol == StrategySymbolBySlot(i))
+         return i;
+   return -1;
+  }
+
+bool StrategyCurrentSymbolPassesWeightCap()
+  {
+   bool eligible[];
+   double inv_vol[];
+   if(StrategyEligibleSet(eligible, inv_vol) < strategy_min_eligible)
+      return false;
+
+   const int current_slot = StrategyCurrentSlot();
+   if(current_slot < 0 || !eligible[current_slot])
+      return false;
+
+   double total = 0.0;
+   for(int i = 0; i < 5; ++i)
+      if(eligible[i])
+         total += inv_vol[i];
+   if(total <= 0.0)
+      return false;
+
+   const double raw_weight = inv_vol[current_slot] / total;
+   return (MathMin(raw_weight, strategy_max_symbol_weight) > 0.0);
   }
 
 bool StrategyHasOpenPosition()
@@ -142,6 +227,8 @@ bool StrategyHasOpenPosition()
    return false;
   }
 
+// No Trade Filter: symbol and optional spread gate. Framework handles time,
+// news, kill-switch, and Friday close before this hook.
 bool Strategy_NoTradeFilter()
   {
    if(!StrategySymbolInBasket(_Symbol))
@@ -149,18 +236,17 @@ bool Strategy_NoTradeFilter()
 
    if(strategy_max_spread_points > 0.0)
      {
-      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-      if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
-         return true;
-      if((ask - bid) / point > strategy_max_spread_points)
+      const int spread_points = (int)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+      if(point <= 0.0 || spread_points > strategy_max_spread_points)
          return true;
      }
 
    return false;
   }
 
+// Trade Entry: first D1 bar of a new month, long-only, positive-momentum
+// eligible symbols, inverse-vol basket membership, 4 ATR catastrophic SL.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    req.type = QM_BUY;
@@ -171,13 +257,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!StrategyIsFirstSessionAfterMonthEnd())
+   if(g_portfolio_stop)
       return false;
    if(StrategyHasOpenPosition())
       return false;
-   if(StrategyEligibleCount() < strategy_min_eligible)
-      return false;
-   if(!StrategySymbolEligible(_Symbol))
+   if(!StrategyCurrentSymbolPassesWeightCap())
       return false;
 
    const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -185,28 +269,39 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    req.sl = QM_StopATR(_Symbol, QM_BUY, entry, strategy_atr_period, strategy_atr_sl_mult);
-   if(req.sl <= 0.0)
+   if(req.sl <= 0.0 || req.sl >= entry)
       return false;
 
    return true;
   }
 
+// Trade Management: card specifies no trailing, break-even, partial close, or
+// pyramiding. Portfolio stop only blocks new entries until the next month.
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies no trailing, partial close, or break-even management.
+   StrategyUpdatePortfolioStop();
   }
 
+// Trade Close: monthly rebalance exits symbols that lose eligibility, and exits
+// all symbols when fewer than two risk-premia proxies are eligible.
 bool Strategy_ExitSignal()
   {
-   if(!StrategyIsFirstSessionAfterMonthEnd())
-      return false;
    if(!StrategyHasOpenPosition())
       return false;
-   if(StrategyEligibleCount() < strategy_min_eligible)
+
+   bool eligible[];
+   double inv_vol[];
+   if(StrategyEligibleSet(eligible, inv_vol) < strategy_min_eligible)
       return true;
-   return !StrategySymbolEligible(_Symbol);
+
+   const int current_slot = StrategyCurrentSlot();
+   if(current_slot < 0)
+      return true;
+
+   return !eligible[current_slot];
   }
 
+// News Filter Hook: defer to framework P8-compatible news implementation.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
@@ -219,11 +314,20 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode,
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
-                        qm_friday_close_hour_broker))
+                        qm_friday_close_hour_broker,
+                        30,
+                        30,
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact,
+                        qm_rng_seed,
+                        qm_stress_reject_probability,
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
+   StrategyUpdatePortfolioStop();
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_10028\",\"ea\":\"QM5_10028_rw-risk-premia\"}");
    return INIT_SUCCEEDED;
   }
@@ -242,7 +346,13 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   if(!QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode))
+
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
@@ -255,15 +365,19 @@ void OnTick()
    if(!QM_IsNewBar(_Symbol, PERIOD_MN1))
       return;
 
+   QM_EquityStreamOnNewBar();
+
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
       for(int i = PositionsTotal() - 1; i >= 0; --i)
         {
          const ulong ticket = PositionGetTicket(i);
-         if(!PositionSelectByTicket(ticket))
+         if(ticket == 0 || !PositionSelectByTicket(ticket))
             continue;
-         if(PositionGetInteger(POSITION_MAGIC) != magic)
+         if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+            continue;
+         if((int)PositionGetInteger(POSITION_MAGIC) != magic)
             continue;
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
@@ -280,6 +394,13 @@ void OnTick()
 void OnTimer()
   {
    QM_FrameworkOnTimer();
+  }
+
+void OnTradeTransaction(const MqlTradeTransaction &trans,
+                        const MqlTradeRequest &request,
+                        const MqlTradeResult &result)
+  {
+   QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
 double OnTester()

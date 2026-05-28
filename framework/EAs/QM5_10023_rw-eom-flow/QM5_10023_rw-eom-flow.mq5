@@ -7,6 +7,7 @@
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                    = 10023;
 input int    qm_magic_slot_offset        = 0;
+input uint   qm_rng_seed                 = 42;
 
 input group "Risk"
 input double RISK_PERCENT                = 0.0;
@@ -14,11 +15,18 @@ input double RISK_FIXED                  = 1000.0;
 input double PORTFOLIO_WEIGHT            = 1.0;
 
 input group "News"
-input QM_NewsMode qm_news_mode           = QM_NEWS_OFF;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
+input int    qm_news_stale_max_hours     = 336;
+input string qm_news_min_impact          = "high";
+input QM_NewsMode qm_news_mode_legacy    = QM_NEWS_OFF;
 
 input group "Friday Close"
 input bool   qm_friday_close_enabled     = false;
 input int    qm_friday_close_hour_broker = 21;
+
+input group "Stress"
+input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input int    strategy_entry_days_before_eom = 3;
@@ -33,9 +41,17 @@ input int    strategy_max_spread_points     = 0;
 // Strategy hooks - implemented mechanically from the approved card.
 // -----------------------------------------------------------------------------
 
+bool StrategySymbolInBasket(const string symbol)
+  {
+   return (symbol == "SP500.DWX" || symbol == "NDX.DWX" || symbol == "WS30.DWX");
+  }
+
 // No Trade Filter (time, spread, news)
 bool Strategy_NoTradeFilter()
   {
+   if(!StrategySymbolInBasket(_Symbol))
+      return true;
+
    if(_Period != PERIOD_D1)
       return true;
 
@@ -96,7 +112,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
       double closes[];
       ArraySetAsSeries(closes, true);
-      const int copied = CopyClose(_Symbol, PERIOD_D1, 1, closes_needed, closes);
+      const int copied = CopyClose(_Symbol, PERIOD_D1, 1, closes_needed, closes); // perf-allowed: Strategy_EntrySignal is called only after the framework QM_IsNewBar gate.
       if(copied < closes_needed)
          return false;
 
@@ -148,12 +164,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
-   if(ask <= 0.0 || point <= 0.0 || atr <= 0.0 || strategy_atr_stop_mult <= 0.0)
+   if(ask <= 0.0 || point <= 0.0 || strategy_atr_stop_mult <= 0.0)
       return false;
 
    req.price = ask;
-   req.sl = ask - (atr * strategy_atr_stop_mult);
+   req.sl = QM_StopATR(_Symbol, QM_BUY, ask, strategy_atr_period, strategy_atr_stop_mult);
    req.tp = 0.0;
    req.reason = "RW_EOM_FLOW_T_MINUS_3";
 
@@ -217,6 +232,8 @@ bool Strategy_ExitSignal()
 // News Filter Hook (callable for P8 News Impact phase)
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
+   if(broker_time <= 0)
+      return false;
    return false;
   }
 
@@ -231,9 +248,17 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode,
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
-                        qm_friday_close_hour_broker))
+                        qm_friday_close_hour_broker,
+                        30,
+                        30,
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact,
+                        qm_rng_seed,
+                        qm_stress_reject_probability,
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_10023\",\"ea\":\"rw_eom_flow\"}");
@@ -254,7 +279,13 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   if(!QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode))
+
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
@@ -281,6 +312,8 @@ void OnTick()
    if(!QM_IsNewBar())
       return;
 
+   QM_EquityStreamOnNewBar();
+
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
      {
@@ -292,6 +325,13 @@ void OnTick()
 void OnTimer()
   {
    QM_FrameworkOnTimer();
+  }
+
+void OnTradeTransaction(const MqlTradeTransaction &trans,
+                        const MqlTradeRequest &request,
+                        const MqlTradeResult &result)
+  {
+   QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
 double OnTester()

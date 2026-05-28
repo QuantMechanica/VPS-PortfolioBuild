@@ -4,43 +4,88 @@
 
 #include <QM/QM_Common.mqh>
 
+// =============================================================================
+// QuantMechanica V5 EA SKELETON
+// -----------------------------------------------------------------------------
+// Fill in only the five Strategy_* hooks below. Everything else is framework
+// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
+// risk + magic + news + Friday-close guard rails). The framework provides:
+//
+//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  — closed-bar gate
+//   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
+//     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
+//     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
+//   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
+//   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
+//   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
+//   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
+//   - QM_FrameworkHandleFridayClose / QM_KillSwitchCheck / QM_NewsAllowsTrade
+//
+// DO NOT
+//   - Write per-EA IsNewBar() — use QM_IsNewBar()
+//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
+//     use the QM_* readers above. The framework pools handles and releases them
+//     on shutdown.
+//   - CopyRates over warmup windows on every tick. If you genuinely need raw
+//     bar arrays, gate by QM_IsNewBar so the work runs once per closed bar.
+//   - Hand-edit framework/include/QM/QM_MagicResolver.mqh. After adding rows
+//     to magic_numbers.csv, run:
+//         python framework/scripts/update_magic_resolver.py
+//     This is idempotent and preserves all rows.
+// =============================================================================
+
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 10260;
 input int    qm_magic_slot_offset       = 0;
-// HR5: magic = qm_ea_id * 10000 + qm_magic_slot_offset.
-// Registered slots: NDX.DWX=102600000, WS30.DWX=102600001, SP500.DWX=102600002.
+// FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
+// All other phases use 42 by default. Stress / noise dimensions read from
+// this single seed so reproducibility is guaranteed across re-runs.
+input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-// HR4: P2 backtests use RISK_FIXED=1000; live deploy manifests must set RISK_PERCENT=0.5.
 input double RISK_PERCENT               = 0.0;
 input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsMode qm_news_mode          = QM_NEWS_OFF;
-input int    qm_news_pause_before_minutes = 30;
-input int    qm_news_pause_after_minutes  = 30;
-input int    qm_news_stale_max_hours      = 336;
-input string qm_news_min_impact           = "high";
+// FW1 2026-05-23 — Two-axis news filter per Vault Q09.
+//   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
+//   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
+// A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
+input string qm_news_min_impact           = "high";  // high / medium / low
+// Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
+// New EAs use qm_news_temporal + qm_news_compliance above and leave this OFF.
+input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
 input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
+input group "Stress"
+// FW2 2026-05-23 — only populated by Q05 MED / Q06 HARSH stress setfiles.
+// Default 0.0 = no rejection (Q02/Q03/Q04/Q07/Q08/Q09/Q10/Q13 backtests).
+// Q06 HARSH sets to 0.10 (10% of entries randomly dropped before broker send,
+// deterministic per qm_rng_seed). MED slip/spread/commission live in the
+// tester groups file, not as EA inputs.
+input double qm_stress_reject_probability = 0.0;
+
 input group "Strategy"
-input int    strategy_atr_period        = 14;
+input int    strategy_atr_period_d1     = 14;
 input double strategy_atr_sl_mult       = 3.0;
-input int    strategy_entry_hour_broker = 0;
-input int    strategy_entry_minute      = 0;
-input int    strategy_exit_hour_broker  = 20;
-input int    strategy_exit_minute       = 30;
+input int    strategy_entry_start_hour  = 0;
+input int    strategy_entry_end_hour    = 6;
+input int    strategy_friday_exit_hour  = 21;
 input int    strategy_max_cycle_week    = 8;
 input int    strategy_max_spread_points = 0;
+input bool   strategy_allow_tuesday_holiday_entry = true;
 input bool   strategy_allow_fomc_hold   = true;
 
-// FOMC scheduled meeting decision dates, table-as-of 2026-05-21 from
-// federalreserve.gov/monetarypolicy/fomccalendars.htm. Refresh for 2028+ builds.
-const datetime FOMC_DATES[] =
+// FOMC meeting decision dates, table-as-of 2026-05-27 from federalreserve.gov
+// monetarypolicy/fomccalendars.htm. Times use broker-day anchors only.
+datetime g_fomc_dates[] =
   {
    D'2018.01.31 00:00', D'2018.03.21 00:00', D'2018.05.02 00:00', D'2018.06.13 00:00',
    D'2018.08.01 00:00', D'2018.09.26 00:00', D'2018.11.08 00:00', D'2018.12.19 00:00',
@@ -60,11 +105,30 @@ const datetime FOMC_DATES[] =
    D'2025.07.30 00:00', D'2025.09.17 00:00', D'2025.10.29 00:00', D'2025.12.10 00:00',
    D'2026.01.28 00:00', D'2026.03.18 00:00', D'2026.04.29 00:00', D'2026.06.17 00:00',
    D'2026.07.29 00:00', D'2026.09.16 00:00', D'2026.10.28 00:00', D'2026.12.09 00:00',
-   D'2027.01.27 00:00', D'2027.03.17 00:00', D'2027.04.28 00:00', D'2027.06.09 00:00',
+   D'2027.01.27 00:00', D'2027.03.17 00:00', D'2027.04.28 00:00', D'2027.06.16 00:00',
    D'2027.07.28 00:00', D'2027.09.15 00:00', D'2027.10.27 00:00', D'2027.12.08 00:00'
   };
 
-datetime DateOnly(const datetime t)
+datetime g_us_monday_holidays[] =
+  {
+   D'2018.01.01 00:00', D'2018.01.15 00:00', D'2018.02.19 00:00', D'2018.05.28 00:00',
+   D'2018.09.03 00:00', D'2018.12.24 00:00', D'2019.01.21 00:00', D'2019.02.18 00:00',
+   D'2019.05.27 00:00', D'2019.09.02 00:00', D'2020.01.20 00:00', D'2020.02.17 00:00',
+   D'2020.05.25 00:00', D'2020.09.07 00:00', D'2021.01.18 00:00', D'2021.02.15 00:00',
+   D'2021.05.31 00:00', D'2021.07.05 00:00', D'2021.09.06 00:00', D'2022.01.17 00:00',
+   D'2022.02.21 00:00', D'2022.05.30 00:00', D'2022.06.20 00:00', D'2022.09.05 00:00',
+   D'2022.12.26 00:00', D'2023.01.02 00:00', D'2023.01.16 00:00', D'2023.02.20 00:00',
+   D'2023.05.29 00:00', D'2023.06.19 00:00', D'2023.09.04 00:00', D'2023.12.25 00:00',
+   D'2024.01.01 00:00', D'2024.01.15 00:00', D'2024.02.19 00:00', D'2024.05.27 00:00',
+   D'2024.09.02 00:00', D'2025.01.20 00:00', D'2025.02.17 00:00', D'2025.05.26 00:00',
+   D'2025.09.01 00:00', D'2026.01.19 00:00', D'2026.02.16 00:00', D'2026.05.25 00:00',
+   D'2026.09.07 00:00', D'2027.01.18 00:00', D'2027.02.15 00:00', D'2027.05.31 00:00',
+   D'2027.07.05 00:00', D'2027.09.06 00:00'
+  };
+
+int g_last_entry_week_key = -1;
+
+datetime Strategy_DateOnly(const datetime t)
   {
    MqlDateTime dt;
    TimeToStruct(t, dt);
@@ -74,166 +138,53 @@ datetime DateOnly(const datetime t)
    return StructToTime(dt);
   }
 
-datetime MakeDate(const int year, const int month, const int day)
+int Strategy_WeekKey(const datetime t)
   {
    MqlDateTime dt;
-   ZeroMemory(dt);
-   dt.year = year;
-   dt.mon = month;
-   dt.day = day;
-   return StructToTime(dt);
+   TimeToStruct(Strategy_DateOnly(t), dt);
+   return dt.year * 1000 + dt.day_of_year / 7;
   }
 
-int Hhmm(const datetime t)
+bool Strategy_IsSupportedSymbol()
   {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.hour * 100 + dt.min;
+   return (_Symbol == "NDX.DWX" || _Symbol == "WS30.DWX" || _Symbol == "SP500.DWX");
   }
 
-bool SameDate(const datetime a, const datetime b)
+bool Strategy_IsHolidayDate(const datetime date_only)
   {
-   MqlDateTime da;
-   MqlDateTime db;
-   TimeToStruct(a, da);
-   TimeToStruct(b, db);
-   return (da.year == db.year && da.mon == db.mon && da.day == db.day);
-  }
-
-int DaysInMonth(const int year, const int month)
-  {
-   if(month == 2)
-     {
-      const bool leap = ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0));
-      return leap ? 29 : 28;
-     }
-   if(month == 4 || month == 6 || month == 9 || month == 11)
-      return 30;
-   return 31;
-  }
-
-datetime NthWeekdayOfMonth(const int year, const int month, const int weekday, const int nth)
-  {
-   int found = 0;
-   for(int day = 1; day <= DaysInMonth(year, month); ++day)
-     {
-      const datetime d = MakeDate(year, month, day);
-      MqlDateTime dt;
-      TimeToStruct(d, dt);
-      if(dt.day_of_week == weekday)
-        {
-         ++found;
-         if(found == nth)
-            return d;
-        }
-     }
-   return 0;
-  }
-
-datetime LastWeekdayOfMonth(const int year, const int month, const int weekday)
-  {
-   for(int day = DaysInMonth(year, month); day >= 1; --day)
-     {
-      const datetime d = MakeDate(year, month, day);
-      MqlDateTime dt;
-      TimeToStruct(d, dt);
-      if(dt.day_of_week == weekday)
-         return d;
-     }
-   return 0;
-  }
-
-datetime ObservedFixedHoliday(const int year, const int month, const int day)
-  {
-   const datetime d = MakeDate(year, month, day);
-   MqlDateTime dt;
-   TimeToStruct(d, dt);
-   if(dt.day_of_week == 6)
-      return d - 86400;
-   if(dt.day_of_week == 0)
-      return d + 86400;
-   return d;
-  }
-
-bool IsUsMarketHoliday(const datetime t)
-  {
-   const datetime d = DateOnly(t);
-   MqlDateTime dt;
-   TimeToStruct(d, dt);
-   const int y = dt.year;
-
-   if(SameDate(d, ObservedFixedHoliday(y, 1, 1)))
-      return true;
-   if(SameDate(d, NthWeekdayOfMonth(y, 1, 1, 3)))
-      return true;
-   if(SameDate(d, NthWeekdayOfMonth(y, 2, 1, 3)))
-      return true;
-   if(SameDate(d, LastWeekdayOfMonth(y, 5, 1)))
-      return true;
-   if(y >= 2022 && SameDate(d, ObservedFixedHoliday(y, 6, 19)))
-      return true;
-   if(SameDate(d, ObservedFixedHoliday(y, 7, 4)))
-      return true;
-   if(SameDate(d, NthWeekdayOfMonth(y, 9, 1, 1)))
-      return true;
-   if(SameDate(d, NthWeekdayOfMonth(y, 11, 4, 4)))
-      return true;
-   if(SameDate(d, ObservedFixedHoliday(y, 12, 25)))
-      return true;
-
+   const int count = ArraySize(g_us_monday_holidays);
+   for(int i = 0; i < count; ++i)
+      if(g_us_monday_holidays[i] == date_only)
+         return true;
    return false;
   }
 
-int FomcCycleWeek(const datetime t)
+datetime Strategy_LastFomcDate(const datetime date_only)
   {
-   const datetime d = DateOnly(t);
-   datetime last_meeting = 0;
-   const int n = ArraySize(FOMC_DATES);
-   for(int i = 0; i < n; ++i)
-     {
-      if(FOMC_DATES[i] <= d)
-         last_meeting = FOMC_DATES[i];
-      else
-         break;
-     }
-   if(last_meeting <= 0)
+   const int count = ArraySize(g_fomc_dates);
+   for(int i = count - 1; i >= 0; --i)
+      if(g_fomc_dates[i] <= date_only)
+         return g_fomc_dates[i];
+   return 0;
+  }
+
+int Strategy_CycleWeek(const datetime date_only)
+  {
+   const datetime last_fomc = Strategy_LastFomcDate(date_only);
+   if(last_fomc <= 0)
       return -1;
-   return (int)((d - last_meeting) / (7 * 86400));
+   return (int)MathFloor((double)(date_only - last_fomc) / 604800.0);
   }
 
-bool IsEvenFomcWeek(const datetime t)
+bool Strategy_IsEvenCycleWeek(const datetime date_only)
   {
-   const int week = FomcCycleWeek(t);
-   if(week < 0 || week > strategy_max_cycle_week)
-      return false;
-   return ((week % 2) == 0);
+   const int week = Strategy_CycleWeek(date_only);
+   return (week >= 0 && week <= strategy_max_cycle_week && (week % 2) == 0);
   }
 
-bool IsEntryDate(const datetime t)
-  {
-   if(!IsEvenFomcWeek(t))
-      return false;
-
-   MqlDateTime dt;
-   TimeToStruct(DateOnly(t), dt);
-   if(dt.day_of_week == 1)
-      return !IsUsMarketHoliday(t);
-
-   if(dt.day_of_week == 2)
-     {
-      const datetime monday = DateOnly(t) - 86400;
-      return IsUsMarketHoliday(monday);
-     }
-
-   return false;
-  }
-
-bool HasOpenPositionForThisMagic()
+bool Strategy_HasOpenPosition()
   {
    const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -248,76 +199,133 @@ bool HasOpenPositionForThisMagic()
    return false;
   }
 
-bool Strategy_NoTradeFilter()
+bool Strategy_IsEntryWindow(const datetime broker_time)
   {
-   if(strategy_max_spread_points <= 0 || HasOpenPositionForThisMagic())
+   MqlDateTime dt;
+   TimeToStruct(broker_time, dt);
+   if(dt.hour < strategy_entry_start_hour || dt.hour >= strategy_entry_end_hour)
       return false;
 
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
+   const datetime today = Strategy_DateOnly(broker_time);
+   if(!Strategy_IsEvenCycleWeek(today))
+      return false;
+
+   if(dt.day_of_week == 1 && !Strategy_IsHolidayDate(today))
       return true;
 
-   const int spread_points = (int)MathRound((ask - bid) / point);
-   return (spread_points > strategy_max_spread_points);
+   if(strategy_allow_tuesday_holiday_entry && dt.day_of_week == 2)
+      return Strategy_IsHolidayDate(today - 86400);
+
+   return false;
   }
 
+bool Strategy_IsFridayExitWindow(const datetime broker_time)
+  {
+   MqlDateTime dt;
+   TimeToStruct(broker_time, dt);
+   return (dt.day_of_week == 5 &&
+           dt.hour >= strategy_friday_exit_hour &&
+           Strategy_IsEvenCycleWeek(Strategy_DateOnly(broker_time)));
+  }
+
+// -----------------------------------------------------------------------------
+// Strategy hooks — implement these against the card mechanically.
+// -----------------------------------------------------------------------------
+
+// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
+// regime filter). Cheap O(1) checks only — runs on every tick.
+bool Strategy_NoTradeFilter()
+  {
+   if(!Strategy_IsSupportedSymbol())
+      return true;
+
+   if(strategy_max_spread_points > 0)
+     {
+      const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+      if(spread_points > strategy_max_spread_points)
+         return true;
+     }
+
+   return false;
+  }
+
+// Populate `req` with entry order parameters and return TRUE if a NEW entry
+// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
+// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    req.type = QM_BUY;
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
-   req.reason = "QM5_10260_FOMC_EVEN_WEEK_LONG";
+   req.reason = "";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   const datetime now = TimeCurrent();
-   if(!IsEntryDate(now))
+   if(strategy_atr_period_d1 <= 0 || strategy_atr_sl_mult <= 0.0)
+      return false;
+   if(Strategy_HasOpenPosition())
       return false;
 
-   const int entry_hhmm = strategy_entry_hour_broker * 100 + strategy_entry_minute;
-   if(Hhmm(now) != entry_hhmm)
+   const datetime broker_now = TimeCurrent();
+   if(!Strategy_IsEntryWindow(broker_now))
+      return false;
+
+   const int week_key = Strategy_WeekKey(broker_now);
+   if(week_key == g_last_entry_week_key)
       return false;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period_d1, 1);
    if(ask <= 0.0 || atr <= 0.0)
       return false;
 
-   req.sl = QM_StopATRFromValue(_Symbol, QM_BUY, ask, atr, strategy_atr_sl_mult);
+   req.price = ask;
+   req.sl = NormalizeDouble(ask - atr * strategy_atr_sl_mult, _Digits);
+   req.tp = 0.0;
+   req.reason = "CIESLAK_FOMC_EVEN_WEEK_LONG";
+
    if(req.sl <= 0.0 || req.sl >= ask)
       return false;
 
+   g_last_entry_week_key = week_key;
    return true;
   }
 
+// Called every tick when an open position exists for this EA's magic.
+// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies no break-even, trailing, partial close, or target.
+   // Card specifies no trailing, break-even, partial close, or add-on rule.
   }
 
+// Return TRUE to close the open position now (e.g. opposite-signal exit,
+// max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   const datetime now = TimeCurrent();
-   MqlDateTime dt;
-   TimeToStruct(now, dt);
-   if(dt.day_of_week != 5)
+   if(!Strategy_HasOpenPosition())
       return false;
-   if(!IsEvenFomcWeek(now))
-      return false;
-
-   const int exit_hhmm = strategy_exit_hour_broker * 100 + strategy_exit_minute;
-   return (Hhmm(now) >= exit_hhmm);
+   return Strategy_IsFridayExitWindow(TimeCurrent());
   }
 
+// Optional news-filter override. Return TRUE to suppress trading regardless
+// of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
+// custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   if(strategy_allow_fomc_hold && IsEvenFomcWeek(broker_time))
-      return false;
-   return false;
+   if(strategy_allow_fomc_hold)
+     {
+      const datetime today = Strategy_DateOnly(broker_time);
+      if(Strategy_IsEvenCycleWeek(today))
+         return false;
+     }
+
+   return false; // defer to QM_NewsAllowsTrade(...)
   }
+
+// -----------------------------------------------------------------------------
+// Framework wiring — do NOT edit below this line unless you know why.
+// -----------------------------------------------------------------------------
 
 int OnInit()
   {
@@ -326,16 +334,20 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode,
+                        qm_news_mode_legacy,           // legacy back-compat
                         qm_friday_close_enabled,
                         qm_friday_close_hour_broker,
-                        qm_news_pause_before_minutes,
-                        qm_news_pause_after_minutes,
+                        30,                            // pause-before (legacy hint)
+                        30,                            // pause-after (legacy hint)
                         qm_news_stale_max_hours,
-                        qm_news_min_impact))
+                        qm_news_min_impact,
+                        qm_rng_seed,
+                        qm_stress_reject_probability,
+                        qm_news_temporal,              // FW1 Axis A
+                        qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_10260\",\"ea\":\"cieslak-fomc-cycle-idx\"}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
   }
 
@@ -353,7 +365,14 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   if(!QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode))
+   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
+   // when both new axes are at their OFF defaults.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
@@ -361,8 +380,10 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
+   // Per-tick: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
+   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -377,8 +398,15 @@ void OnTick()
         }
      }
 
+   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
+   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
+   // call, not every incoming tick.
    if(!QM_IsNewBar())
       return;
+
+   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
+   // since last tick. Cheap: most calls early-return on same-day check.
+   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
@@ -391,6 +419,15 @@ void OnTick()
 void OnTimer()
   {
    QM_FrameworkOnTimer();
+  }
+
+void OnTradeTransaction(const MqlTradeTransaction &trans,
+                        const MqlTradeRequest &request,
+                        const MqlTradeResult &result)
+  {
+   // FW4: feeds closing-deal net-profits to the KS kill-switch.
+   // No-op outside Q13 (when no baseline.json exists).
+   QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
 double OnTester()

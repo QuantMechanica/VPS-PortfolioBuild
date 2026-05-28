@@ -37,6 +37,10 @@
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 10019;
 input int    qm_magic_slot_offset       = 0;
+// FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
+// All other phases use 42 by default. Stress / noise dimensions read from
+// this single seed so reproducibility is guaranteed across re-runs.
+input uint   qm_rng_seed                = 42;
 
 input group "Risk"
 input double RISK_PERCENT               = 0.0;
@@ -44,11 +48,19 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsMode qm_news_mode          = QM_NEWS_OFF;
+// NFP is the traded event, so temporal news blackout must be disabled here.
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
+input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
 input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
+
+input group "Stress"
+input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input int    strategy_atr_period         = 14;
@@ -57,9 +69,9 @@ input double strategy_sl_atr_mult        = 0.60;
 input double strategy_tp_atr_mult        = 0.60;
 input bool   strategy_use_atr_tp         = true;
 input double strategy_max_spread_atr     = 0.25;
-input int    strategy_pre_start_hhmm     = 1300; // 06:00 New York
-input int    strategy_entry_hhmm         = 1500; // 08:00 New York
-input int    strategy_exit_hhmm          = 1525; // 08:25 New York
+input int    strategy_pre_start_hhmm_ny  = 600;
+input int    strategy_entry_hhmm_ny      = 800;
+input int    strategy_exit_hhmm_ny       = 825;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -69,43 +81,39 @@ input int    strategy_exit_hhmm          = 1525; // 08:25 New York
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   // No Trade Filter: time, spread, and news gates. News is handled by
-   // Strategy_NewsFilterHook plus the framework QM_NewsAllowsTrade call.
-   const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
-   if(atr <= 0.0)
-      return true;
-
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0 || ask <= bid)
-      return true;
-
-   if((ask - bid) > strategy_max_spread_atr * atr)
-      return true;
-
+   // No Trade Filter: framework handles kill-switch, Friday close, and news.
+   // Entry-specific time/spread gates live in Strategy_EntrySignal so the
+   // 08:25 NY force-flat cannot be blocked by a wide spread.
    return false;
   }
 
-int BrokerHhmm(const datetime broker_time)
+datetime BrokerToNewYork(const datetime broker_time)
+  {
+   const datetime utc_time = QM_BrokerToUTC(broker_time);
+   const int ny_offset_hours = QM_IsUSDSTUTC(utc_time) ? -4 : -5;
+   return utc_time + (ny_offset_hours * 3600);
+  }
+
+int NewYorkHhmm(const datetime broker_time)
   {
    MqlDateTime dt;
-   TimeToStruct(broker_time, dt);
+   TimeToStruct(BrokerToNewYork(broker_time), dt);
    return dt.hour * 100 + dt.min;
   }
 
-bool IsFirstFriday(const datetime broker_time)
+bool IsFirstFridayNewYork(const datetime broker_time)
   {
    MqlDateTime dt;
-   TimeToStruct(broker_time, dt);
+   TimeToStruct(BrokerToNewYork(broker_time), dt);
    return (dt.day_of_week == 5 && dt.day >= 1 && dt.day <= 7);
   }
 
-bool SameBrokerDate(const datetime a, const datetime b)
+bool SameNewYorkDate(const datetime a, const datetime b)
   {
    MqlDateTime da;
    MqlDateTime db;
-   TimeToStruct(a, da);
-   TimeToStruct(b, db);
+   TimeToStruct(BrokerToNewYork(a), da);
+   TimeToStruct(BrokerToNewYork(b), db);
    return (da.year == db.year && da.mon == db.mon && da.day == db.day);
   }
 
@@ -119,9 +127,9 @@ double PreEventDrift()
    for(int shift = 1; shift <= 36; ++shift)
      {
       const datetime bar_time = iTime(_Symbol, _Period, shift);
-      if(bar_time <= 0 || !SameBrokerDate(bar_time, now))
+      if(bar_time <= 0 || !SameNewYorkDate(bar_time, now))
          continue;
-      if(BrokerHhmm(bar_time) != strategy_pre_start_hhmm)
+      if(NewYorkHhmm(bar_time) != strategy_pre_start_hhmm_ny)
          continue;
 
       const double start_open = iOpen(_Symbol, _Period, shift);
@@ -133,8 +141,7 @@ double PreEventDrift()
    return 0.0;
   }
 
-// Trade Entry: first Friday NFP drift-following entry at 08:00 New York
-// (15:00 DarwinexZero broker time under both US-DST and standard time).
+// Trade Entry: first Friday NFP drift-following entry at 08:00 New York.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    req.type = QM_BUY;
@@ -146,11 +153,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.expiration_seconds = 0;
 
    const datetime broker_now = TimeCurrent();
-   if(!IsFirstFriday(broker_now) || BrokerHhmm(broker_now) != strategy_entry_hhmm)
+   if(!IsFirstFridayNewYork(broker_now) || NewYorkHhmm(broker_now) != strategy_entry_hhmm_ny)
       return false;
 
    const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
    if(atr <= 0.0)
+      return false;
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0 || ask <= bid)
+      return false;
+   if((ask - bid) > strategy_max_spread_atr * atr)
       return false;
 
    const double drift = PreEventDrift();
@@ -159,14 +173,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const bool buy = (drift > 0.0);
-   req.type = buy ? QM_BUY : QM_SELL;
-   const double entry = buy ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                            : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const QM_OrderType side = buy ? QM_BUY : QM_SELL;
+   req.type = side;
+   const double entry = buy ? ask : bid;
    if(entry <= 0.0)
       return false;
 
-   req.sl = QM_StopATRFromValue(_Symbol, req.type, entry, atr, strategy_sl_atr_mult);
-   req.tp = strategy_use_atr_tp ? QM_TakeATRFromValue(_Symbol, req.type, entry, atr, strategy_tp_atr_mult) : 0.0;
+   req.sl = QM_StopATRFromValue(_Symbol, side, entry, atr, strategy_sl_atr_mult);
+   req.tp = strategy_use_atr_tp ? QM_TakeATRFromValue(_Symbol, side, entry, atr, strategy_tp_atr_mult) : 0.0;
    if(req.sl <= 0.0)
       return false;
 
@@ -185,7 +199,7 @@ void Strategy_ManageOpenPosition()
 bool Strategy_ExitSignal()
   {
    const datetime broker_now = TimeCurrent();
-   return (IsFirstFriday(broker_now) && BrokerHhmm(broker_now) >= strategy_exit_hhmm);
+   return (IsFirstFridayNewYork(broker_now) && NewYorkHhmm(broker_now) >= strategy_exit_hhmm_ny);
   }
 
 // Optional news-filter override. Return TRUE to suppress trading regardless
@@ -209,9 +223,17 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode,
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
-                        qm_friday_close_hour_broker))
+                        qm_friday_close_hour_broker,
+                        30,
+                        30,
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact,
+                        qm_rng_seed,
+                        qm_stress_reject_probability,
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
@@ -232,7 +254,13 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   if(!QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode))
+
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
@@ -264,6 +292,8 @@ void OnTick()
    if(!QM_IsNewBar())
       return;
 
+   QM_EquityStreamOnNewBar();
+
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
      {
@@ -275,6 +305,13 @@ void OnTick()
 void OnTimer()
   {
    QM_FrameworkOnTimer();
+  }
+
+void OnTradeTransaction(const MqlTradeTransaction &trans,
+                        const MqlTradeRequest &request,
+                        const MqlTradeResult &result)
+  {
+   QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
 double OnTester()

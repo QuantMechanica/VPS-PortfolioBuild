@@ -4,140 +4,112 @@
 
 #include <QM/QM_Common.mqh>
 
+// =============================================================================
+// QuantMechanica V5 EA
+// Strategy Card: QM5_1089_aa-raa-robust-pairs
+// =============================================================================
+
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                     = 1089;
-input int    qm_magic_slot_offset         = 0;
+input int    qm_ea_id                   = 1089;
+input int    qm_magic_slot_offset       = 0;
+input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT                 = 0.0;
-input double RISK_FIXED                   = 1000.0;
-input double PORTFOLIO_WEIGHT             = 1.0;
+input double RISK_PERCENT               = 0.0;
+input double RISK_FIXED                 = 1000.0;
+input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsMode qm_news_mode            = QM_NEWS_OFF;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
+input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled      = false;
-input int    qm_friday_close_hour_broker  = 21;
+input bool   qm_friday_close_enabled    = false;
+input int    qm_friday_close_hour_broker = 21;
+
+input group "Stress"
+input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_lookback_months     = 12;
-input double strategy_cash_12m_return     = 0.0;
-input int    strategy_atr_period_d1       = 20;
-input double strategy_atr_sl_mult         = 4.0;
-input int    strategy_max_spread_points   = 5000;
+input int    strategy_lookback_months   = 12;
+input double strategy_cash_12m_return   = 0.0;
+input int    strategy_atr_period        = 20;
+input double strategy_atr_sl_mult       = 4.0;
+input double strategy_take_profit_rr    = 0.0;
+input int    strategy_max_spread_points = 5000;
+input int    strategy_min_monthly_bars  = 14;
 
-const int STRATEGY_UNIVERSE_SIZE = 8;
-string    g_universe_symbols[8] =
+// -----------------------------------------------------------------------------
+// Strategy hooks
+// -----------------------------------------------------------------------------
+
+// No Trade Filter (time, spread, news)
+bool Strategy_NoTradeFilter()
   {
-   "SP500.DWX", "GDAXI.DWX", "XAUUSD.DWX", "XTIUSD.DWX",
-   "EURUSD.DWX", "USDJPY.DWX", "NDX.DWX", "WS30.DWX"
-  };
-int       g_universe_slots[8] = {0, 1, 2, 3, 4, 5, 6, 7};
-
-int       g_last_entry_rebalance_key = 0;
-int       g_last_exit_rebalance_key  = 0;
-int       g_last_partial_key         = 0;
-double    g_position_target_exposure = 0.0;
-
-int Strategy_CurrentSymbolIndex()
-  {
-   for(int i = 0; i < STRATEGY_UNIVERSE_SIZE; ++i)
-      if(g_universe_symbols[i] == _Symbol)
-         return i;
-   return -1;
-  }
-
-int Strategy_RebalanceKey(const datetime t)
-  {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.year * 100 + dt.mon;
-  }
-
-bool Strategy_IsMonthlyRebalanceClosedBar()
-  {
-   const datetime closed_bar = iTime(_Symbol, _Period, 1);
-   const datetime current_bar = iTime(_Symbol, _Period, 0);
-   if(closed_bar <= 0 || current_bar <= 0)
-      return false;
-
-   MqlDateTime closed_dt;
-   MqlDateTime current_dt;
-   TimeToStruct(closed_bar, closed_dt);
-   TimeToStruct(current_bar, current_dt);
-
-   return (closed_dt.mon != current_dt.mon || closed_dt.year != current_dt.year);
-  }
-
-bool Strategy_HasOpenPosition()
-  {
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
+   bool symbol_slot_ok = false;
+   if(_Symbol == "SP500.DWX"  && qm_magic_slot_offset == 0) symbol_slot_ok = true;
+   if(_Symbol == "GDAXI.DWX"  && qm_magic_slot_offset == 1) symbol_slot_ok = true;
+   if(_Symbol == "XAUUSD.DWX" && qm_magic_slot_offset == 2) symbol_slot_ok = true;
+   if(_Symbol == "XTIUSD.DWX" && qm_magic_slot_offset == 3) symbol_slot_ok = true;
+   if(_Symbol == "EURUSD.DWX" && qm_magic_slot_offset == 4) symbol_slot_ok = true;
+   if(_Symbol == "USDJPY.DWX" && qm_magic_slot_offset == 5) symbol_slot_ok = true;
+   if(_Symbol == "NDX.DWX"    && qm_magic_slot_offset == 6) symbol_slot_ok = true;
+   if(_Symbol == "WS30.DWX"   && qm_magic_slot_offset == 7) symbol_slot_ok = true;
+   if(!symbol_slot_ok)
       return true;
+
+   if(strategy_max_spread_points > 0)
+     {
+      const long spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+      if(spread > strategy_max_spread_points)
+         return true;
      }
 
    return false;
   }
 
-double Strategy_TargetExposure()
+double Strategy_ActiveExposure()
   {
-   if(strategy_lookback_months <= 0)
+   if(strategy_lookback_months < 12)
+      return 0.0;
+   if(Bars(_Symbol, PERIOD_MN1) < strategy_min_monthly_bars)
       return 0.0;
 
    const int recent_shift = 1;
    const int lookback_shift = recent_shift + strategy_lookback_months;
-   const double recent_close = iClose(_Symbol, PERIOD_MN1, recent_shift);
-   const double lookback_close = iClose(_Symbol, PERIOD_MN1, lookback_shift);
-   const double sma = QM_SMA(_Symbol, PERIOD_MN1, strategy_lookback_months, recent_shift);
-   if(recent_close <= 0.0 || lookback_close <= 0.0 || sma <= 0.0)
+   const double recent_close = QM_SMA(_Symbol, PERIOD_MN1, 1, recent_shift, PRICE_CLOSE);
+   const double lookback_close = QM_SMA(_Symbol, PERIOD_MN1, 1, lookback_shift, PRICE_CLOSE);
+   const double monthly_sma = QM_SMA(_Symbol, PERIOD_MN1, strategy_lookback_months, recent_shift, PRICE_CLOSE);
+   if(recent_close <= 0.0 || lookback_close <= 0.0 || monthly_sma <= 0.0)
       return 0.0;
 
+   double exposure = 0.0;
    const double total_return = (recent_close / lookback_close) - 1.0;
-   const bool tmom_positive = (total_return > strategy_cash_12m_return);
-   const bool ma_positive = (recent_close > sma);
-
-   if(tmom_positive && ma_positive)
-      return 1.0;
-   if(tmom_positive || ma_positive)
-      return 0.5;
-   return 0.0;
+   if(total_return > strategy_cash_12m_return)
+      exposure += 0.5;
+   if(recent_close > monthly_sma)
+      exposure += 0.5;
+   return exposure;
   }
 
-bool Strategy_SpreadAllowsEntry()
+bool Strategy_HasOpenLong()
   {
-   if(strategy_max_spread_points <= 0)
-      return true;
-   const long spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-   if(spread <= 0)
-      return true;
-   return (spread <= strategy_max_spread_points);
-  }
-
-// No Trade Filter (time, spread, news)
-bool Strategy_NoTradeFilter()
-  {
-   if(_Period != PERIOD_H1)
-      return true;
-
-   const int idx = Strategy_CurrentSymbolIndex();
-   if(idx < 0)
-      return true;
-   if(qm_magic_slot_offset != g_universe_slots[idx])
-      return true;
-   if(!Strategy_SpreadAllowsEntry())
-      return true;
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(!PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if(PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      if(PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY)
+         return true;
+     }
    return false;
   }
 
@@ -148,112 +120,57 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
-   req.reason = "QM5_1089_RAA_ROBUST_PAIRS";
+   req.reason = "";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!Strategy_IsMonthlyRebalanceClosedBar())
+   if(strategy_lookback_months < 12 || strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
+      return false;
+   if(_Period != PERIOD_MN1 && !QM_IsNewBar(_Symbol, PERIOD_MN1))
       return false;
 
-   const int rebalance_key = Strategy_RebalanceKey(iTime(_Symbol, PERIOD_MN1, 1));
-   if(rebalance_key <= 0 || rebalance_key == g_last_entry_rebalance_key)
+   if(Strategy_HasOpenLong())
       return false;
 
-   if(Strategy_HasOpenPosition())
-      return false;
-
-   const double target_exposure = Strategy_TargetExposure();
-   if(target_exposure <= 0.0)
-      return false;
-   if(!Strategy_SpreadAllowsEntry())
+   const double exposure = Strategy_ActiveExposure();
+   if(exposure <= 0.0)
       return false;
 
    const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    if(entry <= 0.0)
       return false;
 
-   const double atr_d1 = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period_d1, 1);
-   req.sl = QM_StopATRFromValue(_Symbol, QM_BUY, entry, atr_d1, strategy_atr_sl_mult);
+   req.sl = QM_StopATR(_Symbol, QM_BUY, entry, strategy_atr_period, strategy_atr_sl_mult);
    if(req.sl <= 0.0 || req.sl >= entry)
       return false;
 
-   g_last_entry_rebalance_key = rebalance_key;
-   g_position_target_exposure = (target_exposure < 1.0) ? 0.5 : 1.0;
-   req.reason = (target_exposure >= 1.0) ? "QM5_1089_RAA_FULL" : "QM5_1089_RAA_HALF";
+   if(strategy_take_profit_rr > 0.0)
+     {
+      req.tp = QM_TakeRR(_Symbol, QM_BUY, entry, req.sl, strategy_take_profit_rr);
+      if(req.tp <= entry)
+         req.tp = 0.0;
+     }
+
+   req.reason = (exposure >= 1.0) ? "QM5_1089_RAA_FULL" : "QM5_1089_RAA_HALF";
    return true;
   }
 
 // Trade Management
 void Strategy_ManageOpenPosition()
   {
-   if(!Strategy_IsMonthlyRebalanceClosedBar())
-      return;
-   if(!Strategy_HasOpenPosition())
-      return;
-
-   const double target_exposure = Strategy_TargetExposure();
-   if(target_exposure > 0.51)
-      return;
-   if(g_position_target_exposure <= 0.51)
-      return;
-
-   const int rebalance_key = Strategy_RebalanceKey(iTime(_Symbol, PERIOD_MN1, 1));
-   if(rebalance_key <= 0 || rebalance_key == g_last_partial_key)
-      return;
-
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      const double volume = PositionGetDouble(POSITION_VOLUME);
-      if(volume <= 0.0)
-         continue;
-
-      if(QM_TM_PartialClose(ticket, volume * 0.5, QM_EXIT_PARTIAL))
-        {
-         g_last_partial_key = rebalance_key;
-         g_position_target_exposure = 0.5;
-        }
-     }
+   // Source rule has monthly cash reallocation, no trailing, break-even,
+   // pyramiding, or partial-management rule authorized by the card.
   }
 
 // Trade Close
 bool Strategy_ExitSignal()
   {
-   if(_Period != PERIOD_H1)
+   if(strategy_lookback_months < 12)
       return false;
-   if(!Strategy_IsMonthlyRebalanceClosedBar())
-      return false;
-   if(!Strategy_HasOpenPosition())
+   if(!Strategy_HasOpenLong())
       return false;
 
-   const int rebalance_key = Strategy_RebalanceKey(iTime(_Symbol, PERIOD_MN1, 1));
-   if(rebalance_key <= 0 || rebalance_key == g_last_exit_rebalance_key)
-      return false;
-
-   const double target_exposure = Strategy_TargetExposure();
-   if(target_exposure <= 0.0)
-     {
-      g_last_exit_rebalance_key = rebalance_key;
-      g_position_target_exposure = 0.0;
-      return true;
-     }
-
-   if(target_exposure > g_position_target_exposure && g_position_target_exposure > 0.0)
-     {
-      g_last_exit_rebalance_key = rebalance_key;
-      g_position_target_exposure = 0.0;
-      return true;
-     }
-
-   return false;
+   return (Strategy_ActiveExposure() <= 0.0);
   }
 
 // News Filter Hook (callable for P8 News Impact phase)
@@ -263,7 +180,7 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
   }
 
 // -----------------------------------------------------------------------------
-// Framework wiring - do NOT edit below this line unless you know why.
+// Framework wiring - do NOT edit below this line.
 // -----------------------------------------------------------------------------
 
 int OnInit()
@@ -273,12 +190,20 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode,
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
-                        qm_friday_close_hour_broker))
+                        qm_friday_close_hour_broker,
+                        30,
+                        30,
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact,
+                        qm_rng_seed,
+                        qm_stress_reject_probability,
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_1089\",\"ea\":\"aa-raa-robust-pairs\"}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
   }
 
@@ -296,7 +221,13 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   if(!QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode))
+
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
@@ -314,8 +245,6 @@ void OnTick()
          const ulong ticket = PositionGetTicket(i);
          if(!PositionSelectByTicket(ticket))
             continue;
-         if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-            continue;
          if(PositionGetInteger(POSITION_MAGIC) != magic)
             continue;
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
@@ -324,6 +253,8 @@ void OnTick()
 
    if(!QM_IsNewBar())
       return;
+
+   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
@@ -336,6 +267,13 @@ void OnTick()
 void OnTimer()
   {
    QM_FrameworkOnTimer();
+  }
+
+void OnTradeTransaction(const MqlTradeTransaction &trans,
+                        const MqlTradeRequest &request,
+                        const MqlTradeResult &result)
+  {
+   QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
 double OnTester()

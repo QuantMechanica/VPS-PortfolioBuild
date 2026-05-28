@@ -5,56 +5,58 @@
 #include <QM/QM_Common.mqh>
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                     = 10006;
-input int    qm_magic_slot_offset         = 0;
+input int    qm_ea_id                   = 10006;
+input int    qm_magic_slot_offset       = 0;
+input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT                 = 0.0;
-input double RISK_FIXED                   = 1000.0;
-input double PORTFOLIO_WEIGHT             = 1.0;
+input double RISK_PERCENT               = 0.0;
+input double RISK_FIXED                 = 1000.0;
+input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsMode qm_news_mode            = QM_NEWS_OFF;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input int    qm_news_stale_max_hours    = 336;
+input string qm_news_min_impact         = "high";
+input QM_NewsMode qm_news_mode_legacy   = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled      = true;
-input int    qm_friday_close_hour_broker  = 23;
+input bool   qm_friday_close_enabled    = true;
+input int    qm_friday_close_hour_broker = 21;
+
+input group "Stress"
+input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_entry_offset_pips   = 50;
-input int    strategy_fx_sl_pips          = 30;
-input int    strategy_atr_period          = 14;
-input double strategy_xau_sl_atr_mult     = 0.60;
+input int    strategy_entry_offset_pips    = 50;
+input int    strategy_fx_sl_pips           = 30;
+input int    strategy_atr_period           = 14;
+input double strategy_xau_sl_atr_mult      = 0.60;
 input double strategy_weekly_range_atr_min = 1.00;
 input double strategy_weekly_range_atr_max = 3.50;
-input int    strategy_max_spread_points   = 80;
+input int    strategy_max_spread_points    = 80;
 
-datetime g_armed_week_open = 0;
-
-int MinutesOfDay(const datetime t)
-  {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return (dt.hour * 60 + dt.min);
-  }
-
-double PipSize()
+double Strategy_PipSize()
   {
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    const int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
    if(point <= 0.0)
       return 0.0;
-   if(digits == 3 || digits == 5)
-      return 10.0 * point;
-   return point;
+   return (digits == 3 || digits == 5) ? 10.0 * point : point;
   }
 
-bool IsXauSymbol()
+bool Strategy_IsXauSymbol()
   {
    return (StringFind(_Symbol, "XAU") >= 0);
   }
 
-bool HasOurOpenPosition()
+bool Strategy_IsPendingStopType(const ENUM_ORDER_TYPE order_type)
+  {
+   return (order_type == ORDER_TYPE_BUY_STOP || order_type == ORDER_TYPE_SELL_STOP);
+  }
+
+bool Strategy_HasOpenPosition()
   {
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
@@ -73,12 +75,7 @@ bool HasOurOpenPosition()
    return false;
   }
 
-bool IsOurPendingStopType(const ENUM_ORDER_TYPE order_type)
-  {
-   return (order_type == ORDER_TYPE_BUY_STOP || order_type == ORDER_TYPE_SELL_STOP);
-  }
-
-bool HasOurPendingStops()
+bool Strategy_HasPendingStops()
   {
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
@@ -93,13 +90,50 @@ bool HasOurPendingStops()
          continue;
       if((int)OrderGetInteger(ORDER_MAGIC) != magic)
          continue;
-      if(IsOurPendingStopType((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE)))
+      if(Strategy_IsPendingStopType((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE)))
          return true;
      }
    return false;
   }
 
-bool DeleteOrderByTicket(const ulong ticket, const string reason)
+bool Strategy_HasCurrentWeekHistory(const datetime week_open)
+  {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0 || week_open <= 0)
+      return false;
+   if(!HistorySelect(week_open, TimeCurrent()))
+      return false;
+
+   const int orders = HistoryOrdersTotal();
+   for(int i = orders - 1; i >= 0; --i)
+     {
+      const ulong ticket = HistoryOrderGetTicket(i);
+      if(ticket == 0)
+         continue;
+      if(HistoryOrderGetString(ticket, ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)HistoryOrderGetInteger(ticket, ORDER_MAGIC) != magic)
+         continue;
+      const ENUM_ORDER_TYPE type = (ENUM_ORDER_TYPE)HistoryOrderGetInteger(ticket, ORDER_TYPE);
+      if(Strategy_IsPendingStopType(type) || type == ORDER_TYPE_BUY || type == ORDER_TYPE_SELL)
+         return true;
+     }
+
+   const int deals = HistoryDealsTotal();
+   for(int i = deals - 1; i >= 0; --i)
+     {
+      const ulong ticket = HistoryDealGetTicket(i);
+      if(ticket == 0)
+         continue;
+      if(HistoryDealGetString(ticket, DEAL_SYMBOL) != _Symbol)
+         continue;
+      if((int)HistoryDealGetInteger(ticket, DEAL_MAGIC) == magic)
+         return true;
+     }
+   return false;
+  }
+
+bool Strategy_DeleteOrderByTicket(const ulong ticket, const string reason)
   {
    MqlTradeRequest request;
    ZeroMemory(request);
@@ -122,7 +156,7 @@ bool DeleteOrderByTicket(const ulong ticket, const string reason)
    return ok;
   }
 
-void CancelOurPendingStops(const string reason)
+void Strategy_CancelPendingStops(const string reason)
   {
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
@@ -137,31 +171,29 @@ void CancelOurPendingStops(const string reason)
          continue;
       if((int)OrderGetInteger(ORDER_MAGIC) != magic)
          continue;
-      if(!IsOurPendingStopType((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE)))
+      if(!Strategy_IsPendingStopType((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE)))
          continue;
-      DeleteOrderByTicket(ticket, reason);
+      Strategy_DeleteOrderByTicket(ticket, reason);
      }
   }
 
-bool IsPlacementWindow(const datetime broker_time)
+bool Strategy_IsPlacementWindow(const datetime broker_time)
   {
    MqlDateTime dt;
    TimeToStruct(broker_time, dt);
    if(dt.day_of_week == 0)
       return (dt.hour >= 22);
-   if(dt.day_of_week == 1)
-      return true;
-   return false;
+   return (dt.day_of_week == 1);
   }
 
-bool IsFridayCloseWindow(const datetime broker_time)
+bool Strategy_IsFridayCloseWindow(const datetime broker_time)
   {
    MqlDateTime dt;
    TimeToStruct(broker_time, dt);
    return (dt.day_of_week == 5 && dt.hour >= qm_friday_close_hour_broker);
   }
 
-int SecondsToFridayClose(const datetime broker_time)
+int Strategy_SecondsToFridayClose(const datetime broker_time)
   {
    MqlDateTime dt;
    TimeToStruct(broker_time, dt);
@@ -173,13 +205,13 @@ int SecondsToFridayClose(const datetime broker_time)
    close_dt.hour = qm_friday_close_hour_broker;
    close_dt.min = 0;
    close_dt.sec = 0;
-   datetime close_time = StructToTime(close_dt) + (days_to_friday * 86400);
+   datetime close_time = StructToTime(close_dt) + days_to_friday * 86400;
    if(close_time <= broker_time)
       close_time += 7 * 86400;
    return (int)(close_time - broker_time);
   }
 
-bool WeeklyRangeAllowsEntry()
+bool Strategy_WeeklyRangeAllowsEntry()
   {
    const double pwh = iHigh(_Symbol, PERIOD_W1, 1);
    const double pwl = iLow(_Symbol, PERIOD_W1, 1);
@@ -192,11 +224,11 @@ bool WeeklyRangeAllowsEntry()
            range <= strategy_weekly_range_atr_max * atr);
   }
 
-bool BuildStopRequest(const QM_OrderType type,
-                      const double price,
-                      const int expiration_seconds,
-                      const string reason,
-                      QM_EntryRequest &req)
+bool Strategy_BuildStopRequest(const QM_OrderType type,
+                               const double price,
+                               const int expiration_seconds,
+                               const string reason,
+                               QM_EntryRequest &req)
   {
    req.type = type;
    req.price = NormalizeDouble(price, _Digits);
@@ -205,11 +237,10 @@ bool BuildStopRequest(const QM_OrderType type,
    req.expiration_seconds = expiration_seconds;
    req.reason = reason;
 
-   const double pip = PipSize();
-   if(pip <= 0.0 || req.price <= 0.0)
+   if(req.price <= 0.0)
       return false;
 
-   if(IsXauSymbol())
+   if(Strategy_IsXauSymbol())
      {
       const double atr_h4 = QM_ATR(_Symbol, PERIOD_H4, strategy_atr_period, 1);
       if(atr_h4 <= 0.0)
@@ -227,14 +258,11 @@ bool BuildStopRequest(const QM_OrderType type,
    return (req.sl > 0.0);
   }
 
-// No Trade Filter (time, spread, news): central news runs before this hook;
-// entry-time is enforced in Strategy_EntrySignal and spread is checked here.
+// No Trade Filter (time, spread, news): central news runs before this hook.
 bool Strategy_NoTradeFilter()
   {
    const int spread_points = (int)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-   if(strategy_max_spread_points > 0 && spread_points > strategy_max_spread_points)
-      return true;
-   return false;
+   return (strategy_max_spread_points > 0 && spread_points > strategy_max_spread_points);
   }
 
 // Trade Entry: prior-week OCO buy-stop/sell-stop straddle.
@@ -249,17 +277,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.expiration_seconds = 0;
 
    const datetime broker_now = TimeCurrent();
-   const datetime week_open = iTime(_Symbol, PERIOD_W1, 0);
-   if(week_open <= 0 || g_armed_week_open == week_open)
-      return false;
-   if(!IsPlacementWindow(broker_now))
-      return false;
-   if(HasOurOpenPosition() || HasOurPendingStops())
-      return false;
-   if(!WeeklyRangeAllowsEntry())
+   if(!Strategy_IsPlacementWindow(broker_now))
       return false;
 
-   const double pip = PipSize();
+   const datetime week_open = iTime(_Symbol, PERIOD_W1, 0);
+   if(week_open <= 0)
+      return false;
+   if(Strategy_HasOpenPosition() || Strategy_HasPendingStops() || Strategy_HasCurrentWeekHistory(week_open))
+      return false;
+   if(!Strategy_WeeklyRangeAllowsEntry())
+      return false;
+
+   const double pip = Strategy_PipSize();
    const double pwh = iHigh(_Symbol, PERIOD_W1, 1);
    const double pwl = iLow(_Symbol, PERIOD_W1, 1);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -273,42 +302,37 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(buy_stop <= ask + point || sell_stop >= bid - point)
       return false;
 
-   const int expiry_seconds = SecondsToFridayClose(broker_now);
+   const int expiry_seconds = Strategy_SecondsToFridayClose(broker_now);
    if(expiry_seconds <= 0)
       return false;
 
    QM_EntryRequest buy_req;
-   if(!BuildStopRequest(QM_BUY_STOP, buy_stop, expiry_seconds, "FF_WEEKLY_BUY_STOP", buy_req))
+   if(!Strategy_BuildStopRequest(QM_BUY_STOP, buy_stop, expiry_seconds, "FF_WEEKLY_BUY_STOP", buy_req))
       return false;
-   if(!BuildStopRequest(QM_SELL_STOP, sell_stop, expiry_seconds, "FF_WEEKLY_SELL_STOP", req))
+   if(!Strategy_BuildStopRequest(QM_SELL_STOP, sell_stop, expiry_seconds, "FF_WEEKLY_SELL_STOP", req))
       return false;
 
    ulong buy_ticket = 0;
-   if(!QM_TM_OpenPosition(buy_req, buy_ticket))
-      return false;
-
-   g_armed_week_open = week_open;
-   return true;
+   return QM_TM_OpenPosition(buy_req, buy_ticket);
   }
 
 // Trade Management: enforce OCO cancellation once either side is filled.
 void Strategy_ManageOpenPosition()
   {
-   if(HasOurOpenPosition())
+   if(Strategy_HasOpenPosition())
      {
-      CancelOurPendingStops("oco_peer_cancel");
+      Strategy_CancelPendingStops("oco_peer_cancel");
       return;
      }
 
-   if(IsFridayCloseWindow(TimeCurrent()))
-      CancelOurPendingStops("friday_expiry");
+   if(Strategy_IsFridayCloseWindow(TimeCurrent()))
+      Strategy_CancelPendingStops("friday_expiry");
   }
 
-// Trade Close: no TP; positions close at Friday 17:00 New York, approximated by
-// the broker Friday close hour configured for the framework.
+// Trade Close: no TP; positions close at configured Friday broker close hour.
 bool Strategy_ExitSignal()
   {
-   return (HasOurOpenPosition() && IsFridayCloseWindow(TimeCurrent()));
+   return (Strategy_HasOpenPosition() && Strategy_IsFridayCloseWindow(TimeCurrent()));
   }
 
 // News Filter Hook: no custom override; defer to the central framework filter.
@@ -324,9 +348,17 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode,
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
-                        qm_friday_close_hour_broker))
+                        qm_friday_close_hour_broker,
+                        30,
+                        30,
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact,
+                        qm_rng_seed,
+                        qm_stress_reject_probability,
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_10006\",\"ea\":\"ff-weekly-stop-straddle\"}");
@@ -347,7 +379,13 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   if(!QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode))
+
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
@@ -374,6 +412,8 @@ void OnTick()
    if(!QM_IsNewBar())
       return;
 
+   QM_EquityStreamOnNewBar();
+
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
      {
@@ -385,6 +425,13 @@ void OnTick()
 void OnTimer()
   {
    QM_FrameworkOnTimer();
+  }
+
+void OnTradeTransaction(const MqlTradeTransaction &trans,
+                        const MqlTradeRequest &request,
+                        const MqlTradeResult &result)
+  {
+   QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
 double OnTester()

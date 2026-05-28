@@ -5,20 +5,28 @@
 #include <QM/QM_Common.mqh>
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                    = 10001;
-input int    qm_magic_slot_offset        = 0;
+input int    qm_ea_id                   = 10001;
+input int    qm_magic_slot_offset       = 0;
+input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT                = 0.0;
-input double RISK_FIXED                  = 1000.0;
-input double PORTFOLIO_WEIGHT            = 1.0;
+input double RISK_PERCENT               = 0.0;
+input double RISK_FIXED                 = 1000.0;
+input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsMode qm_news_mode           = QM_NEWS_PAUSE;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
+input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled     = true;
+input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
+
+input group "Stress"
+input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input int    strategy_tokyo_open_hour_broker = 0;
@@ -41,6 +49,64 @@ input double strategy_max_entry_atr_mult     = 2.5;
 input int    strategy_be_trigger_pips        = 20;
 input int    strategy_be_buffer_pips         = 3;
 input int    strategy_max_spread_points      = 35;
+input int    strategy_news_blackout_minutes  = 15;
+
+bool IsTimeStopActive()
+  {
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(), dt);
+   return (dt.hour >= strategy_time_stop_hour_broker);
+  }
+
+bool HasOurPendingStopOrder()
+  {
+   const int magic = QM_FrameworkMagic();
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong order_ticket = OrderGetTicket(i);
+      if(order_ticket == 0 || !OrderSelect(order_ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+
+      const ENUM_ORDER_TYPE order_type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
+      if(order_type == ORDER_TYPE_BUY_STOP || order_type == ORDER_TYPE_SELL_STOP)
+         return true;
+     }
+
+   return false;
+  }
+
+void CancelOurPendingStopOrders()
+  {
+   const int magic = QM_FrameworkMagic();
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong order_ticket = OrderGetTicket(i);
+      if(order_ticket == 0 || !OrderSelect(order_ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+
+      const ENUM_ORDER_TYPE order_type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
+      if(order_type != ORDER_TYPE_BUY_STOP && order_type != ORDER_TYPE_SELL_STOP)
+         continue;
+
+      MqlTradeRequest request;
+      ZeroMemory(request);
+      request.action = TRADE_ACTION_REMOVE;
+      request.order = order_ticket;
+
+      MqlTradeResult result;
+      ZeroMemory(result);
+      string error_class = "";
+      QM_TradeContextSend(request, result, error_class);
+     }
+  }
 
 bool Strategy_NoTradeFilter()
   {
@@ -89,33 +155,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_max_entry_atr_mult <= strategy_min_entry_atr_mult)
       return false;
 
-   const int magic = QM_FrameworkMagic();
-   for(int i = OrdersTotal() - 1; i >= 0; --i)
-     {
-      const ulong order_ticket = OrderGetTicket(i);
-      if(order_ticket == 0 || !OrderSelect(order_ticket))
-         continue;
-      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
-         continue;
-      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
-         continue;
-
-      const ENUM_ORDER_TYPE order_type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
-      if(order_type == ORDER_TYPE_BUY_STOP || order_type == ORDER_TYPE_SELL_STOP)
-         return false;
-     }
-
-   const int m15_seconds = PeriodSeconds(PERIOD_M15);
-   if(m15_seconds <= 0)
+   MqlDateTime now_dt;
+   TimeToStruct(TimeCurrent(), now_dt);
+   if(now_dt.hour != strategy_tokyo_open_hour_broker ||
+      now_dt.min != strategy_tokyo_open_minute)
       return false;
 
-   MqlDateTime bar_dt;
-   TimeToStruct(TimeCurrent() - m15_seconds, bar_dt);
-   if(bar_dt.hour != strategy_tokyo_open_hour_broker ||
-      bar_dt.min != strategy_tokyo_open_minute)
+   if(HasOurPendingStopOrder())
       return false;
 
-   const double open_price = iOpen(_Symbol, PERIOD_M15, 1);
+   const double open_price = iOpen(_Symbol, PERIOD_M15, 0);
    const double h1_close = iClose(_Symbol, PERIOD_H1, 1);
    if(open_price <= 0.0 || h1_close <= 0.0)
       return false;
@@ -139,8 +188,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       entry_offset > strategy_max_entry_atr_mult * atr)
       return false;
 
-   MqlDateTime now_dt;
-   TimeToStruct(TimeCurrent(), now_dt);
    now_dt.hour = strategy_time_stop_hour_broker;
    now_dt.min = 0;
    now_dt.sec = 0;
@@ -176,6 +223,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
 void Strategy_ManageOpenPosition()
   {
+   if(IsTimeStopActive())
+      CancelOurPendingStopOrders();
+
    const int magic = QM_FrameworkMagic();
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
@@ -187,21 +237,31 @@ void Strategy_ManageOpenPosition()
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
 
+      CancelOurPendingStopOrders();
       QM_TM_MoveToBreakEven(ticket, strategy_be_trigger_pips, strategy_be_buffer_pips);
      }
   }
 
 bool Strategy_ExitSignal()
   {
-   const datetime broker_now = TimeCurrent();
-   MqlDateTime dt;
-   TimeToStruct(broker_now, dt);
-   return (dt.hour >= strategy_time_stop_hour_broker);
+   return IsTimeStopActive();
   }
 
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return !QM_NewsAllowsTrade(_Symbol, broker_time, qm_news_mode);
+   if(strategy_news_blackout_minutes <= 0)
+      return false;
+   if(!QM_NewsInit())
+      return true;
+
+   datetime utc_time = QM_BrokerToUTC(broker_time);
+   if(utc_time <= 0)
+      utc_time = TimeGMT();
+   return QM_NewsInWindow(utc_time,
+                          _Symbol,
+                          strategy_news_blackout_minutes,
+                          0,
+                          "high");
   }
 
 int OnInit()
@@ -211,9 +271,17 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode,
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
-                        qm_friday_close_hour_broker))
+                        qm_friday_close_hour_broker,
+                        30,
+                        30,
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact,
+                        qm_rng_seed,
+                        qm_stress_reject_probability,
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_10001_ff-static-fib-open\"}");
@@ -234,7 +302,12 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   if(!QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode))
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
@@ -258,8 +331,10 @@ void OnTick()
         }
      }
 
-   if(!QM_IsNewBar(_Symbol, PERIOD_M15))
+   if(!QM_IsNewBar())
       return;
+
+   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
@@ -272,6 +347,13 @@ void OnTick()
 void OnTimer()
   {
    QM_FrameworkOnTimer();
+  }
+
+void OnTradeTransaction(const MqlTradeTransaction &trans,
+                        const MqlTradeRequest &request,
+                        const MqlTradeResult &result)
+  {
+   QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
 double OnTester()

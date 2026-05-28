@@ -5,20 +5,28 @@
 #include <QM/QM_Common.mqh>
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                    = 10003;
-input int    qm_magic_slot_offset        = 0;
+input int    qm_ea_id                   = 10003;
+input int    qm_magic_slot_offset       = 0;
+input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT                = 0.0;
-input double RISK_FIXED                  = 1000.0;
-input double PORTFOLIO_WEIGHT            = 1.0;
+input double RISK_PERCENT               = 0.0;
+input double RISK_FIXED                 = 1000.0;
+input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsMode qm_news_mode           = QM_NEWS_PAUSE;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input int    qm_news_stale_max_hours    = 336;
+input string qm_news_min_impact         = "high";
+input QM_NewsMode qm_news_mode_legacy   = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled     = true;
+input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
+
+input group "Stress"
+input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input ENUM_TIMEFRAMES strategy_timeframe = PERIOD_M30;
@@ -33,22 +41,38 @@ input double strategy_tp_range_mult      = 0.0;
 input int    strategy_pending_hours      = 24;
 input int    strategy_max_spread_points  = 0;
 
-int ClampInt(const int value, const int min_value, const int max_value)
+int Strategy_ClampInt(const int value, const int min_value, const int max_value)
   {
    return MathMax(min_value, MathMin(max_value, value));
   }
 
-datetime BrokerToFixedCET(const datetime broker_time)
+datetime Strategy_BrokerToFixedCET(const datetime broker_time)
   {
    return QM_BrokerToUTC(broker_time) + 3600;
   }
 
-bool IsOurStopOrderType(const ENUM_ORDER_TYPE order_type)
+bool Strategy_IsOurStopOrderType(const ENUM_ORDER_TYPE order_type)
   {
    return (order_type == ORDER_TYPE_BUY_STOP || order_type == ORDER_TYPE_SELL_STOP);
   }
 
-bool HasOurOpenPosition()
+bool Strategy_CurrentSpread(double &spread_price, double &spread_points)
+  {
+   spread_price = 0.0;
+   spread_points = 0.0;
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(ask <= 0.0 || bid <= 0.0 || ask <= bid || point <= 0.0)
+      return false;
+
+   spread_price = ask - bid;
+   spread_points = spread_price / point;
+   return true;
+  }
+
+bool Strategy_HasOurOpenPosition()
   {
    const int magic = QM_FrameworkMagic();
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -64,7 +88,7 @@ bool HasOurOpenPosition()
    return false;
   }
 
-int OurPendingStopCount()
+int Strategy_OurPendingStopCount()
   {
    const int magic = QM_FrameworkMagic();
    int count = 0;
@@ -77,13 +101,13 @@ int OurPendingStopCount()
          continue;
       if((int)OrderGetInteger(ORDER_MAGIC) != magic)
          continue;
-      if(IsOurStopOrderType((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE)))
+      if(Strategy_IsOurStopOrderType((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE)))
          ++count;
      }
    return count;
   }
 
-bool DeletePendingOrder(const ulong ticket, const string reason)
+bool Strategy_DeletePendingOrder(const ulong ticket, const string reason)
   {
    MqlTradeRequest request;
    ZeroMemory(request);
@@ -106,10 +130,9 @@ bool DeletePendingOrder(const ulong ticket, const string reason)
    return ok;
   }
 
-int DeleteOurPendingStops(const string reason)
+void Strategy_DeleteOurPendingStops(const string reason)
   {
    const int magic = QM_FrameworkMagic();
-   int deleted = 0;
    for(int i = OrdersTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = OrderGetTicket(i);
@@ -119,15 +142,13 @@ int DeleteOurPendingStops(const string reason)
          continue;
       if((int)OrderGetInteger(ORDER_MAGIC) != magic)
          continue;
-      if(!IsOurStopOrderType((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE)))
+      if(!Strategy_IsOurStopOrderType((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE)))
          continue;
-      if(DeletePendingOrder(ticket, reason))
-         ++deleted;
+      Strategy_DeletePendingOrder(ticket, reason);
      }
-   return deleted;
   }
 
-void DeleteExpiredPendingStops()
+void Strategy_DeleteExpiredPendingStops()
   {
    const int magic = QM_FrameworkMagic();
    const datetime now = TimeCurrent();
@@ -141,44 +162,28 @@ void DeleteExpiredPendingStops()
          continue;
       if((int)OrderGetInteger(ORDER_MAGIC) != magic)
          continue;
-      if(!IsOurStopOrderType((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE)))
+      if(!Strategy_IsOurStopOrderType((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE)))
          continue;
 
       const datetime setup_time = (datetime)OrderGetInteger(ORDER_TIME_SETUP);
       if(setup_time > 0 && now - setup_time >= max_age_seconds)
-         DeletePendingOrder(ticket, "one_trading_day_expiry");
+         Strategy_DeletePendingOrder(ticket, "one_trading_day_expiry");
      }
   }
 
-bool CurrentSpread(double &spread_price, double &spread_points)
-  {
-   spread_price = 0.0;
-   spread_points = 0.0;
-
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(ask <= 0.0 || bid <= 0.0 || ask <= bid || point <= 0.0)
-      return false;
-
-   spread_price = ask - bid;
-   spread_points = spread_price / point;
-   return true;
-  }
-
-bool LastClosedBarIsRangeBar()
+bool Strategy_LastClosedBarIsRangeBar()
   {
    const datetime bar_open = iTime(_Symbol, strategy_timeframe, 1);
    if(bar_open <= 0)
       return false;
 
    MqlDateTime cet;
-   TimeToStruct(BrokerToFixedCET(bar_open), cet);
-   return (cet.hour == ClampInt(strategy_cet_range_hour, 0, 23) &&
-           cet.min == ClampInt(strategy_cet_range_minute, 0, 59));
+   TimeToStruct(Strategy_BrokerToFixedCET(bar_open), cet);
+   return (cet.hour == Strategy_ClampInt(strategy_cet_range_hour, 0, 23) &&
+           cet.min == Strategy_ClampInt(strategy_cet_range_minute, 0, 59));
   }
 
-void InitEntryRequest(QM_EntryRequest &req)
+void Strategy_InitEntryRequest(QM_EntryRequest &req)
   {
    req.type = QM_BUY_STOP;
    req.price = 0.0;
@@ -194,7 +199,7 @@ bool Strategy_NoTradeFilter()
   {
    double spread_price = 0.0;
    double spread_points = 0.0;
-   if(!CurrentSpread(spread_price, spread_points))
+   if(!Strategy_CurrentSpread(spread_price, spread_points))
       return true;
    if(strategy_max_spread_points > 0 && spread_points > (double)strategy_max_spread_points)
       return true;
@@ -205,19 +210,19 @@ bool Strategy_NoTradeFilter()
 // Trade Entry: 09:00-09:30 fixed-CET M30 breakout stop orders.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   InitEntryRequest(req);
-   DeleteExpiredPendingStops();
+   Strategy_InitEntryRequest(req);
+   Strategy_DeleteExpiredPendingStops();
 
    if(strategy_timeframe != PERIOD_M30)
       return false;
-   if(HasOurOpenPosition() || OurPendingStopCount() > 0)
+   if(Strategy_HasOurOpenPosition() || Strategy_OurPendingStopCount() > 0)
       return false;
-   if(!LastClosedBarIsRangeBar())
+   if(!Strategy_LastClosedBarIsRangeBar())
       return false;
 
    double spread_price = 0.0;
    double spread_points = 0.0;
-   if(!CurrentSpread(spread_price, spread_points))
+   if(!Strategy_CurrentSpread(spread_price, spread_points))
       return false;
 
    const double range_high = iHigh(_Symbol, strategy_timeframe, 1);
@@ -233,9 +238,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
    if(range_size > strategy_max_range_atr_mult * atr)
       return false;
-
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(point <= 0.0 || strategy_sl_range_mult <= 0.0)
+   if(strategy_sl_range_mult <= 0.0)
       return false;
 
    const double sl_distance = strategy_sl_range_mult * range_size;
@@ -245,7 +248,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    QM_EntryRequest buy_req;
-   InitEntryRequest(buy_req);
+   Strategy_InitEntryRequest(buy_req);
    buy_req.type = QM_BUY_STOP;
    buy_req.price = buy_entry;
    buy_req.sl = QM_TM_NormalizePrice(_Symbol, buy_entry - sl_distance);
@@ -265,8 +268,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(req.sl <= sell_entry)
       return false;
 
-   ulong ticket = 0;
-   if(!QM_TM_OpenPosition(buy_req, ticket))
+   ulong buy_ticket = 0;
+   if(!QM_TM_OpenPosition(buy_req, buy_ticket))
       return false;
 
    return true;
@@ -275,11 +278,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Trade Management: cancel opposite pending after fill, then trail last two M30 bars after +1R.
 void Strategy_ManageOpenPosition()
   {
-   DeleteExpiredPendingStops();
-   if(!HasOurOpenPosition())
+   Strategy_DeleteExpiredPendingStops();
+   if(!Strategy_HasOurOpenPosition())
       return;
 
-   DeleteOurPendingStops("opposite_order_after_fill");
+   Strategy_DeleteOurPendingStops("opposite_order_after_fill");
 
    const int magic = QM_FrameworkMagic();
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
@@ -332,15 +335,14 @@ void Strategy_ManageOpenPosition()
 bool Strategy_ExitSignal()
   {
    MqlDateTime cet;
-   TimeToStruct(BrokerToFixedCET(TimeCurrent()), cet);
-   if(cet.hour < ClampInt(strategy_cet_time_stop_hour, 0, 23))
+   TimeToStruct(Strategy_BrokerToFixedCET(TimeCurrent()), cet);
+   if(cet.hour < Strategy_ClampInt(strategy_cet_time_stop_hour, 0, 23))
       return false;
 
-   DeleteExpiredPendingStops();
-   return HasOurOpenPosition();
+   return Strategy_HasOurOpenPosition();
   }
 
-// News Filter Hook: central QM_NEWS_PAUSE handles the high-impact 30-minute blackout.
+// News Filter Hook: central FW1 news filter handles high-impact 30-minute blackout.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
@@ -356,9 +358,17 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode,
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
-                        qm_friday_close_hour_broker))
+                        qm_friday_close_hour_broker,
+                        30,
+                        30,
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact,
+                        qm_rng_seed,
+                        qm_stress_reject_probability,
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_10003\",\"ea\":\"ff-xaron-morning-breakout\"}");
@@ -379,13 +389,15 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   if(!QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode))
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
-     {
-      DeleteOurPendingStops("friday_close");
       return;
-     }
 
    if(Strategy_NoTradeFilter())
       return;
@@ -398,11 +410,9 @@ void OnTick()
       for(int i = PositionsTotal() - 1; i >= 0; --i)
         {
          const ulong ticket = PositionGetTicket(i);
-         if(ticket == 0 || !PositionSelectByTicket(ticket))
+         if(!PositionSelectByTicket(ticket))
             continue;
-         if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-            continue;
-         if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         if(PositionGetInteger(POSITION_MAGIC) != magic)
             continue;
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
@@ -410,6 +420,8 @@ void OnTick()
 
    if(!QM_IsNewBar(_Symbol, strategy_timeframe))
       return;
+
+   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
@@ -422,6 +434,13 @@ void OnTick()
 void OnTimer()
   {
    QM_FrameworkOnTimer();
+  }
+
+void OnTradeTransaction(const MqlTradeTransaction &trans,
+                        const MqlTradeRequest &request,
+                        const MqlTradeResult &result)
+  {
+   QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
 double OnTester()
