@@ -3157,6 +3157,21 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 """
                 SELECT w.*,
                   CASE w.phase
+                    -- Q-rewrite phases first (downstream-priority). Without
+                    -- these the Q-rewrite work all ties at ELSE 9 against
+                    -- the legacy P-keys and FIFO hands claims to whichever
+                    -- phase has the freshest inflow (typically Q02), starving
+                    -- Q04+ promotion-chain work. Same fix in
+                    -- terminal_worker.py:_priority_pending_query.
+                    WHEN 'Q10'  THEN 0
+                    WHEN 'Q09'  THEN 1
+                    WHEN 'Q08'  THEN 2
+                    WHEN 'Q07'  THEN 3
+                    WHEN 'Q06'  THEN 4
+                    WHEN 'Q05'  THEN 5
+                    WHEN 'Q04'  THEN 6
+                    WHEN 'Q03'  THEN 7
+                    WHEN 'Q02'  THEN 8
                     WHEN 'P8'   THEN 0
                     WHEN 'P7'   THEN 1
                     WHEN 'P6'   THEN 2
