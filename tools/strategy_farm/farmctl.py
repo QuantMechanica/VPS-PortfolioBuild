@@ -2010,22 +2010,29 @@ def _ea_phase_dir(ea_id: str, phase: str) -> Path:
 
 def _phase_runner_inputs(root: Path, ea_id: str, phase: str) -> dict[str, Any]:
     pipeline_dir = _ea_pipeline_dir(ea_id)
+    raw_phase = str(phase or "").strip().upper()
+
+    # Q-rewrite phase runners (q04_walkforward.py, q05_stress_medium.py, ...)
+    # are self-contained: each takes a baseline-setfile from the work_item row
+    # and writes aggregate.json under report_root. None of them consume a
+    # pre-existing pipeline artifact, so the factory spawn must not be gated
+    # on legacy P-pipeline input files (e.g. P4/calibration.json,
+    # P5/p5_slices.csv, P3/sweep_pass_rows.csv) — those existed only for the
+    # old P-pipeline runners and never appear under the Q-rewrite. Returning
+    # {} here lets _phase_runner_cmd_for_work_item build the Q-runner cmd
+    # straight from the work_item row.
+    #
+    # The legacy CLI dispatch in _phase_runner_cmd() below still calls this
+    # function with raw P-keys (P5/P5b/P5c/P7/P8) and relies on the legacy
+    # input lookup that follows — so do NOT short-circuit on the normalized
+    # P-key, only on the inbound Q-name.
+    if raw_phase in ("Q04", "Q05", "Q06", "Q07", "Q08", "Q09", "Q10"):
+        return {}
+
     phase_key = _normalize_phase(phase)
     if phase_key == "P3.5":
-        # Q-rewrite stores rows under phase='Q02'/'Q03'; legacy P-pipeline used
-        # phase='P2'/'P3'. Try the Q name first so post-rewrite work_items
-        # populate the report. Fall back to the legacy P name and then the
-        # on-disk pipeline file so older EAs that still have P-rows keep working.
-        p2_report = (
-            _refresh_phase_report_from_work_items(root, ea_id, "Q02")
-            or _refresh_phase_report_from_work_items(root, ea_id, "P2")
-            or (pipeline_dir / "P2" / "report.csv")
-        )
-        p3_report = (
-            _refresh_phase_report_from_work_items(root, ea_id, "Q03")
-            or _refresh_phase_report_from_work_items(root, ea_id, "P3")
-            or (pipeline_dir / "P3" / "report.csv")
-        )
+        p2_report = _refresh_phase_report_from_work_items(root, ea_id, "P2") or (pipeline_dir / "P2" / "report.csv")
+        p3_report = _refresh_phase_report_from_work_items(root, ea_id, "P3") or (pipeline_dir / "P3" / "report.csv")
         inputs: dict[str, Path] = {
             "p2_report": p2_report,
             "p3_report": p3_report,
