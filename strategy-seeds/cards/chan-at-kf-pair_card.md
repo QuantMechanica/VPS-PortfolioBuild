@@ -9,10 +9,10 @@
 strategy_id: SRC05_S02
 ea_id: TBD
 slug: chan-at-kf-pair
-status: DRAFT
+status: APPROVED                             # G0 APPROVED 2026-05-25 by Claude — R1 PASS (Chan AT 2013 book, A-tier); R2 PASS (Kalman recursion + threshold-cross on e(t) vs ±√Q(t), fully deterministic given fixed δ/Vε); R3 PASS (ports to AUDUSD.DWX/USDCAD.DWX or any cointegrating Darwinex pair); R4 PASS — Kalman with FIXED δ/Vε is Bayesian state-space recursion equivalent to HMM-with-EM precedent in strategy_type_flags.md §E (V5-allowed; not ML in V5 sense)
 created: 2026-04-28
 created_by: Research
-last_updated: 2026-04-28
+last_updated: 2026-05-25
 
 strategy_type_flags:
   - kalman-filter-mr                          # NEW VOCAB GAP — entry mechanism: state-space estimator (Kalman filter) updates dynamic hedge ratio + dynamic mean + dynamic forecast-error variance; entries triggered by standardized prediction error e(t) crossing ±√Q(t) one-stdev band

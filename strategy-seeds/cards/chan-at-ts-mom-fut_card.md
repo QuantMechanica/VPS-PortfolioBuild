@@ -9,10 +9,10 @@
 strategy_id: SRC05_S07
 ea_id: TBD
 slug: chan-at-ts-mom-fut
-status: DRAFT
+status: APPROVED                             # G0 APPROVED 2026-05-25 by Claude — R1 PASS (Chan AT 2013 book + Moskowitz-Yao-Pedersen 2012 paper, A-tier); R2 PASS (cl > backshift(N,cl) sign-comparison, fully deterministic; default Ex 6.1 form uses single-symbol closes only); R3 PASS (single-symbol D1; ports to COPPER.DWX, BRENT.DWX, USDJPY.DWX or any Darwinex symbol with persistent serial correlation); R4 PASS (no ML; M-overlap slot mechanic can be aggregated to single net pos(t) for V5 magic_schema compliance per card §16); roll-return-threshold variant requires multi-month curve and is excluded from approval scope
 created: 2026-04-28
 created_by: Research
-last_updated: 2026-04-28
+last_updated: 2026-05-25
 
 strategy_type_flags:
   - time-series-momentum                      # NEW VOCAB GAP — entry mechanism: long if price[t] > price[t-N], short if price[t] < price[t-N], hold for M days, daily-rebalanced 1/M-allocation overlap. Distinct from donchian-breakout (no rolling N-bar extreme; just price-vs-N-ago sign), n-period-max-continuation (no rolling-N-bar-max gate; just sign of N-day return), and ath-breakout (no all-time-high requirement).

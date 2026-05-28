@@ -9,10 +9,10 @@
 strategy_id: SRC05_S06
 ea_id: TBD
 slug: chan-at-cal-spread
-status: DRAFT
+status: REJECTED                             # G0 REJECTED 2026-05-25 by Claude — R3 FAIL: strategy fundamentally requires multi-month forward-curve data (5 nearest CL/VX contracts simultaneously) for γ-estimation via OLS on log(F) vs time-to-expiry, plus simultaneous long-far/short-near calendar-spread positions on the same underlying. Darwinex offers spot/CFD on commodities (OIL.DWX = WTI front-month proxy) but NOT multi-expiry futures contracts. Card itself flags 'V5-architecture-CHALLENGED at the data layer'. R1/R2/R4 PASS. Reject under R3 'fundamentally requires a feature unavailable in CFD trading' (futures curve / multi-expiry contracts).
 created: 2026-04-28
 created_by: Research
-last_updated: 2026-04-28
+last_updated: 2026-05-25
 
 strategy_type_flags:
   - calendar-spread-mr                        # NEW VOCAB GAP — entry mechanism: cross-maturity futures spread (long far + short near or vice versa) with signal = Z-score of estimated roll return γ over halflife-derived lookback. Distinct from cointegration-pair-trade (mean reversion of the roll-return component, not of a cointegrated linear combo)

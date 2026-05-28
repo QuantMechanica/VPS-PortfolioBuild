@@ -9,10 +9,10 @@
 strategy_id: SRC05_S12
 ea_id: TBD
 slug: chan-at-fstx-gap-mom
-status: DRAFT
+status: APPROVED                             # G0 APPROVED 2026-05-25 by Claude — R1 PASS (Chan AT 2013 book, A-tier, full MATLAB Ex 7.1); R2 PASS (open ±entryZscore·90d_stdret threshold cross at session open, deterministic); R3 PASS (intraday open-to-close on Darwinex-native STOXX50.DWX / EUSTX50.DWX and GBPUSD.DWX direct; generalizes to any Darwinex index CFD or FX pair); R4 PASS (no ML, single-position-per-symbol intraday, fully Friday-Close-compatible). Cleanest fit of all SRC05 cards. Note: cards_draft pipeline already processed under QM5_9151 via active flow.
 created: 2026-04-28
 created_by: Research
-last_updated: 2026-04-28
+last_updated: 2026-05-25
 
 strategy_type_flags:
   - opening-gap-momentum                        # NEW VOCAB GAP — entry mechanism: long if today_open > prev_high * (1 + entryZscore * 90d_close-to-close_stdret), short if today_open < prev_low * (1 - entryZscore * 90d_close-to-close_stdret); position held one session and liquidated at the close. Distinct from gap-fade-stop-entry (opposite direction; that flag is FADE the gap with calendar-pattern + stop-entry placed back); distinct from vol-expansion-breakout (next-bar open + N% × prior-day-range projection rather than prev-bar-extreme + σ-band scale). Sibling proposal — direction-mirror of gap-fade-stop-entry and S03 chan-at-buy-on-gap (gap-FADE in the cross-sectional-screen specialization).

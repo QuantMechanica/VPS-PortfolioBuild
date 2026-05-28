@@ -9,10 +9,10 @@
 strategy_id: SRC05_S01
 ea_id: TBD
 slug: chan-at-bb-pair
-status: DRAFT
+status: APPROVED                             # G0 APPROVED 2026-05-25 by Claude — R1 PASS (Chan AT 2013 book, A-tier); R2 PASS (rolling OLS hedge + Bollinger Z-score, fully deterministic); R3 PASS (ports to GOLD.DWX/OIL.DWX or any cointegrating Darwinex pair); R4 PASS (no ML, 2-leg = 2 distinct symbol-magic slots — compliant with one-position-per-magic-symbol); pipeline must handle 2-leg position bookkeeping
 created: 2026-04-28
 created_by: Research
-last_updated: 2026-04-28
+last_updated: 2026-05-25
 
 strategy_type_flags:
   - cointegration-pair-trade                  # entry mechanism: spread of two-leg pair (with regression-derived hedge ratio) crosses ±N·σ band

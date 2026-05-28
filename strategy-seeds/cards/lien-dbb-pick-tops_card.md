@@ -9,10 +9,10 @@
 strategy_id: SRC04_S02a
 ea_id: TBD
 slug: lien-dbb-pick-tops
-status: DRAFT
+status: APPROVED                             # G0 APPROVED 2026-05-25 by Claude — R1 PASS (Lien 2015 book, A-tier); R2 PASS (deterministic BB-reclaim with dwell-zone precondition, NY-close fill); R3 PASS (D1 forex; Darwinex-native EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX); R4 PASS (no ML, one-position-per-direction, ATR-equivalent hard stop, no martingale)
 created: 2026-04-28
 created_by: Research
-last_updated: 2026-04-28
+last_updated: 2026-05-25
 
 strategy_type_flags:
   - bband-reclaim                             # vocabulary-gap PROPOSED — entry: close back across N·σ Bollinger band after a multi-bar dwell on the OUTER side of the band. Distinct from `zscore-band-reversion` (entry on band CROSS OUT, not reclaim BACK IN). V4 had no equivalent SM_XXX EA. Per-card precondition disambiguation: `precondition_mode = outer-band-zone` (S02a — range-bound between 1st-σ and 2nd-σ) vs `n-bars-opposite-1sigma` (S02b — n consecutive bars on outer side). Flagged at § 16; batch-ratified at SRC04 closeout.

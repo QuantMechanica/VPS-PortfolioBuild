@@ -9,10 +9,10 @@
 strategy_id: SRC05_S03
 ea_id: TBD
 slug: chan-at-buy-on-gap
-status: DRAFT
+status: APPROVED                             # G0 APPROVED 2026-05-25 by Claude — R1 PASS (Chan AT 2013 book, A-tier, full MATLAB); R2 PASS (cross-sectional screen + sort + top-N selection, fully deterministic); R3 PASS under wide-net porting — cross-section can be tested on small N basket of Darwinex index/sector CFDs (US500/NDX/WS30/GER40/UK100/NIKKEI etc.); R4 PASS (no ML, no martingale); V5-architecture flag at magic_schema layer is pipeline concern, not G0 blocker
 created: 2026-04-28
 created_by: Research
-last_updated: 2026-04-28
+last_updated: 2026-05-25
 
 strategy_type_flags:
   - cross-sectional-decile-sort                 # existing (extended): universe = SPX stocks; ranking_metric = prior-low-to-open-gap-return-most-negative; weighting_scheme = top-N-screen (long-only top-N most-extreme-negative-gap names, NOT decile-rank long-short). Sibling extension to the same flag — parameterizes the existing flag for the top-N-screen specialization (same architecture: universe ranking + relative selection; different selection rule). Vocab note in §16 below.

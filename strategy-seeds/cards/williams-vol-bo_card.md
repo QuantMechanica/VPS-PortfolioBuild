@@ -9,10 +9,10 @@
 strategy_id: SRC03_S01
 ea_id: TBD
 slug: williams-vol-bo
-status: DRAFT
+status: APPROVED                             # G0 APPROVED 2026-05-25 by Claude — R1 PASS (Williams 1999 book, A-tier, PDF on Drive); R2 PASS (deterministic stop-buy/sell at open ± N% × prior range, full pseudocode in §4); R3 PASS (single-symbol D1; ports to GOLD.DWX / US500.DWX / EURUSD.DWX / GBPUSD.DWX); R4 PASS (no ML, one-position-per-direction, no martingale, ATR-equivalent hard stop)
 created: 2026-04-28
 created_by: Research
-last_updated: 2026-04-28
+last_updated: 2026-05-25
 
 strategy_type_flags:
   - vol-expansion-breakout                    # canonical match — entry: stop-buy/sell at next bar's open ± N% × range(prior_bar), no NR precondition. CEO ratified 2026-04-28 in QUA-298 closeout (comment cc655c56); back-port QUA-334.

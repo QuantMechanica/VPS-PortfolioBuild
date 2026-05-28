@@ -9,10 +9,10 @@
 strategy_id: SRC05_S09
 ea_id: TBD
 slug: chan-at-vx-es-roll-mom
-status: DRAFT
+status: REJECTED                             # G0 REJECTED 2026-05-25 by Claude — R3 FAIL: strategy fundamentally requires VIX SPOT index value AND VX FRONT-MONTH future price simultaneously (signal = VX_front - VIX vs ±0.1·DTS threshold). Darwinex offers no VIX spot data feed and no multi-expiry VX futures; the entry rule literally cannot be computed without external CBOE/Refinitiv data feed (which would violate darwinex_native_data_only). Card itself flags this as 'load-bearing and may be a G0 BLOCKER'. R1/R2/R4 PASS. Reject under R3 'fundamentally requires a feature unavailable in CFD trading'.
 created: 2026-04-28
 created_by: Research
-last_updated: 2026-04-28
+last_updated: 2026-05-25
 
 strategy_type_flags:
   - futures-roll-return-arb                   # NEW VOCAB GAP (shared with S08) — entry mechanism: position direction set by roll-return regime sign on the underlying. S08 goes AGAINST the regime (extract roll return); S09 goes WITH the regime (capture roll-return-driven momentum). Both fall under the same vocab class. Flag NEW per S08; reused here.
