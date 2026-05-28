@@ -3,20 +3,32 @@
 ; ea_id:        10039
 ; ea_slug:      ff-hline-sma50-h1
 ; ea_version:   v5.0
-; set_version:  s20260519-001
+; set_version:  s20260523-001
 ; symbol:       EURJPY.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   11d84405bbca039924a385f7da57d4e613b28587a525b31c57e294f9648f8a6e
 ; author:       Development
-; date:         2026-05-19
+; date:         2026-05-23
 ;==========================================================
 qm_magic_slot_offset=2
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+; core filter library params; filter-on/off variants must be pre-declared
+qm_filter_news_enabled=1
+qm_filter_news_mode=3
+qm_filter_regime_enabled=0
+qm_filter_regime_lookback_bars=100
+qm_filter_regime_bull_return_pct=2.0
+qm_filter_regime_bear_return_pct=2.0
+qm_filter_volatility_enabled=0
+qm_filter_volatility_atr_period=14
+qm_filter_volatility_lookback_bars=50
+qm_filter_volatility_compression_ratio=0.75
+qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
