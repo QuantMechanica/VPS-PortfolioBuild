@@ -68,6 +68,21 @@ def _priority_pending_query() -> str:
             WHEN w.payload_json LIKE '%"priority_track": true%' THEN 0
             ELSE 1 END AS _priority_track_rank,
           CASE w.phase
+            -- Downstream phases first so work drains rather than re-pooling
+            -- at the head of the pipeline. Without this Q04+ stars in
+            -- 'ELSE 9' alongside Q02 and lose every FIFO tie to fresh Q02
+            -- inflow, leaving Q03-PASS-promoted Q04 rows starved.
+            -- Legacy P-keys preserved at their original ranks for any work
+            -- still using the old nomenclature.
+            WHEN 'Q10'  THEN 0
+            WHEN 'Q09'  THEN 1
+            WHEN 'Q08'  THEN 2
+            WHEN 'Q07'  THEN 3
+            WHEN 'Q06'  THEN 4
+            WHEN 'Q05'  THEN 5
+            WHEN 'Q04'  THEN 6
+            WHEN 'Q03'  THEN 7
+            WHEN 'Q02'  THEN 8
             WHEN 'P8'   THEN 0
             WHEN 'P7'   THEN 1
             WHEN 'P6'   THEN 2
