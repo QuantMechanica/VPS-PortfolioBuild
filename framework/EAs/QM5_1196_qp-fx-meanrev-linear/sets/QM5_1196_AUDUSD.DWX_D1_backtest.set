@@ -1,0 +1,38 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1196
+; ea_slug:      qp-fx-meanrev-linear
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       AUDUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   3
+; risk_mode:    FIXED
+; portfolio_weight: 0.1667
+; build_hash:   65068b4355cb6a471414c8af3273a9b8c360673a99dec0fcbd4cde6fb1de946e
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1196
+qm_magic_slot_offset=3
+qm_rng_seed=42
+RISK_PERCENT=0
+RISK_FIXED=1000
+PORTFOLIO_WEIGHT=0.1667
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0
+strategy_min_monthly_observations=24
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=3.0
+strategy_spread_median_days=20
+strategy_spread_mult=3.0
+strategy_min_deviation_pct=0.05
+strategy_stale_rebalance_days=5
+strategy_basket_kill_mult=2.5

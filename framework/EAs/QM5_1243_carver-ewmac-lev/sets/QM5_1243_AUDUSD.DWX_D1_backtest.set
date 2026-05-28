@@ -1,0 +1,45 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1243
+; ea_slug:      carver-ewmac-lev
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       AUDUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   3
+; risk_mode:    FIXED
+; portfolio_weight: 0.083333
+; build_hash:   3e770014a9155a92aed1c7651b930cee371b0d97b587b036ece128ed11d62514
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1243
+qm_magic_slot_offset=3
+qm_rng_seed=42
+RISK_PERCENT=0
+RISK_FIXED=1000
+PORTFOLIO_WEIGHT=0.083333
+qm_news_temporal=3
+qm_news_compliance=1
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+strategy_fast_ema=16
+strategy_slow_ema=64
+strategy_atr_period=25
+strategy_sma_filter_period=100
+strategy_entry_forecast=1.0
+strategy_exit_forecast=0.0
+strategy_initial_stop_atr=3.0
+strategy_trail_atr_mult=1.0
+strategy_trail_trigger_r=1.5
+strategy_max_hold_bars=160
+strategy_min_history_bars=260
+strategy_median_atr_days=252
+strategy_min_atr_ratio=0.50
+strategy_spread_median_days=60
+strategy_spread_mult=2.0

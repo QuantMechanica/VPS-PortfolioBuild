@@ -1,0 +1,42 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1251
+; ea_slug:      carver-trendconvert
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       USDJPY.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 0.083333
+; build_hash:   99c8d40c6ad39d874500dae5f538ef9aea0bd5129c430154edc7c4ba116ed614
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1251
+qm_magic_slot_offset=2
+qm_rng_seed=42
+RISK_PERCENT=0
+RISK_FIXED=1000
+PORTFOLIO_WEIGHT=0.083333
+qm_news_temporal=3
+qm_news_compliance=1
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+strategy_fast_ema_days=64
+strategy_slow_ema_days=256
+strategy_vol_ewma_days=25
+strategy_conversion_lookback_days=1500
+strategy_min_conversion_sr=0.05
+strategy_entry_forecast=4.0
+strategy_forecast_cap=20.0
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=2.5
+strategy_spread_median_days=20
+strategy_spread_mult=2.0
+strategy_min_group_members=3

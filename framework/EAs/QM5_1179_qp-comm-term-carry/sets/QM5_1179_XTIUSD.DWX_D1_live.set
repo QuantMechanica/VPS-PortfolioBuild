@@ -1,0 +1,30 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1179
+; ea_slug:      qp-comm-term-carry
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  live
+; magic_slot:   1
+; risk_mode:    PERCENT
+; portfolio_weight: 0.50
+; build_hash:   8dfcad9653fccde4fd59e94131e5a329fafe6ca51694fb845b4f4ce3c51d15b1
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1179
+qm_magic_slot_offset=1
+RISK_PERCENT=0.25
+RISK_FIXED=0
+PORTFOLIO_WEIGHT=0.50
+qm_news_mode=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+strategy_roll_yield_csv_path=QM5_1179_commodity_roll_yield.csv
+strategy_min_eligible=5
+strategy_bucket_pct=20.0
+strategy_atr_period=20
+strategy_atr_sl_mult=2.5
+strategy_max_spread_points=0

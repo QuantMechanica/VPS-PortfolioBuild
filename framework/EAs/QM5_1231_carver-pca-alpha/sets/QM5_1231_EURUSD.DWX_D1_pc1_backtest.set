@@ -1,0 +1,40 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1231
+; ea_slug:      carver-pca-alpha
+; ea_version:   v5.0
+; set_version:  s20260526-pc1
+; symbol:       EURUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   5
+; risk_mode:    FIXED
+; portfolio_weight: 0.0909
+; build_hash:   43c7af2eac9a63eee31af16b75777918ec0a74a8f9010d081a071ad5c18cd751
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1231
+qm_magic_slot_offset=5
+qm_rng_seed=42
+RISK_PERCENT=0
+RISK_FIXED=1000
+PORTFOLIO_WEIGHT=0.0909
+qm_news_temporal=3
+qm_news_compliance=1
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0
+strategy_lookback_d1=252
+strategy_num_pc=1
+strategy_norm_stddev_days=25
+strategy_entry_forecast=5.0
+strategy_max_longs=2
+strategy_max_shorts=2
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=2.5
+strategy_spread_median_days=20
+strategy_spread_mult=2.0

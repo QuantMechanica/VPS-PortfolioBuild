@@ -1,0 +1,42 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1255
+; ea_slug:      zarattini-qqq-orb
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       NDX.DWX
+; timeframe:    M5
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   b6478677a4cd16657ac4f23976c4807d14b212b74bf20569d0581d22441cf0ef
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1255
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_PERCENT=0
+RISK_FIXED=1000
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=1
+qm_news_compliance=1
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0
+strategy_signal_tf=5
+strategy_opening_range_min=5
+strategy_atr_period=14
+strategy_atr_stop_mult=1.0
+strategy_session_start_hour=16
+strategy_session_start_min=30
+strategy_session_end_hour=23
+strategy_session_end_min=0
+strategy_flatten_before_min=5
+strategy_max_spread_points=80
+strategy_min_history_bars=80
+strategy_one_trade_per_day=true

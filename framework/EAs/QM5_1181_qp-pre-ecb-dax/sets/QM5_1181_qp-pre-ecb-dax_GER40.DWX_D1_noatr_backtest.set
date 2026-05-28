@@ -1,0 +1,27 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1181
+; ea_slug:      qp-pre-ecb-dax
+; ea_version:   v5.0
+; set_version:  s20260526-002
+; symbol:       GER40.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   f69a652f11e1eb127e408359b6b5044ef6dc2e8352f1f9fe75bc41e99b74572b
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+strategy_atr_period=20
+strategy_atr_sl_mult=2.0
+strategy_use_atr_stop=false
+strategy_spread_median_days=20
+strategy_spread_mult=3.0
+strategy_min_d1_bars=80
+strategy_time_stop_days=3

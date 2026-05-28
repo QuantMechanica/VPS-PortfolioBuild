@@ -1,0 +1,39 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1202
+; ea_slug:      qp-sp500-rv-vix-short
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       SP500.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   4914b2f0355183eee96836f399f9e2e946c7cd3ab2a5373db8fe3ed6f2bbd38c
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1202
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_PERCENT=0
+RISK_FIXED=1000
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0
+strategy_vix_csv_path=QM5_1202_vix_daily.csv
+strategy_rv_lookback_d1=5
+strategy_vix_sma_period=60
+strategy_min_vix_observations=80
+strategy_min_sp500_d1_bars=40
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=2.5
+strategy_vix_stale_days=10
+strategy_max_spread_points=0

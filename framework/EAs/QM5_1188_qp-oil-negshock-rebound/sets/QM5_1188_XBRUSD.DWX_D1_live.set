@@ -1,0 +1,33 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1188
+; ea_slug:      qp-oil-negshock-rebound
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       XBRUSD.DWX
+; timeframe:    D1
+; environment:  live
+; magic_slot:   1
+; risk_mode:    PERCENT
+; portfolio_weight: 1.0
+; build_hash:   a521d81b3303527cdb7a6ac2fd20b7f0fe9b16150f0df723fd43820a280d2c5a
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1188
+qm_magic_slot_offset=1
+RISK_PERCENT=0.25
+RISK_FIXED=0
+PORTFOLIO_WEIGHT=1.0
+qm_news_mode=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+strategy_atr_period=20
+strategy_shock_atr_mult=2.0
+strategy_atr_percentile_bars=252
+strategy_min_atr_percentile=70.0
+strategy_sl_atr_mult=1.0
+strategy_safety_hold_days=2
+strategy_min_history_bars=275
+strategy_max_spread_points=0
+strategy_skip_friday_signal=true

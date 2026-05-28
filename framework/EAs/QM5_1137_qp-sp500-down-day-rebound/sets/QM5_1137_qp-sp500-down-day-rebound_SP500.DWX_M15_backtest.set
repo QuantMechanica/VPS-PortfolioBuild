@@ -1,0 +1,43 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1137
+; ea_slug:      qp-sp500-down-day-rebound
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       SP500.DWX
+; timeframe:    M15
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   32a5d0ae65dfd8d780a24a59271e5102e3da4e93022321c5d19eac01d835b883
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1137
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_PERCENT=0
+RISK_FIXED=1000
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0
+strategy_return_lookback_days=250
+strategy_bottom_rank_count=25
+strategy_min_valid_closes=260
+strategy_holding_days=1
+strategy_entry_hour_ny=9
+strategy_entry_minute_ny=30
+strategy_exit_hour_ny=15
+strategy_exit_minute_ny=55
+strategy_safety_exit_hour_ny=16
+strategy_atr_period=20
+strategy_atr_sl_mult=1.5
+strategy_spread_median_mult=3
+strategy_spread_lookback_days=20

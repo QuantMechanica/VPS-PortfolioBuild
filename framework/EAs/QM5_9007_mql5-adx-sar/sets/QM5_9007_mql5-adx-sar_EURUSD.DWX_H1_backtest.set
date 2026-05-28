@@ -1,0 +1,28 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        9007
+; ea_slug:      mql5-adx-sar
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       EURUSD.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   0000000000000000000000000000000000000000000000000000000000000000
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+adx_period=7
+adx_di_threshold=0.34
+par_sar_step=0.02
+par_sar_max=0.2
+atr_sl_mult=1.5
+rr_target=2.0
+max_spread_points=25
+no_trade_first_bars=2

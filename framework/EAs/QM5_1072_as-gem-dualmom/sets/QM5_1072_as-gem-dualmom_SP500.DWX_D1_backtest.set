@@ -1,0 +1,39 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1072
+; ea_slug:      as-gem-dualmom
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       SP500.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1.00
+; build_hash:   6332dfb87cf3881e4b94b090c17e39d4e80672d1424fa8ac3f0377d5fd476cf7
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1072
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_PERCENT=0
+RISK_FIXED=1000
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=false
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0
+strategy_us_symbol=SP500.DWX
+strategy_international_symbol=GDAXI.DWX
+strategy_momentum_days=252
+strategy_cash_return_pct=0
+strategy_rebalance_hour=1
+strategy_atr_period=20
+strategy_atr_sl_mult=4
+strategy_spread_median_days=20
+strategy_spread_cap_mult=3

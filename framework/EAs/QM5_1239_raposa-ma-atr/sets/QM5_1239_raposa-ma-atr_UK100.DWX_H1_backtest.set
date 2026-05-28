@@ -1,0 +1,37 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1239
+; ea_slug:      raposa-ma-atr
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       UK100.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   11
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   cea9e9fa4bdad03c78bab3b3ba2480a992d8b16b951f323d44341b068a77e1c1
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_magic_slot_offset=11
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=1
+qm_news_compliance=1
+strategy_timeframe=16385
+strategy_ema_fast=20
+strategy_ema_slow=80
+strategy_ema_trend=200
+strategy_atr_period=14
+strategy_atr_median_bars=240
+strategy_min_atr_ratio=0.50
+strategy_stop_atr_mult=2.0
+strategy_tp_r_mult=2.0
+strategy_trail_trigger_r=1.5
+strategy_trail_atr_mult=2.5
+strategy_max_hold_bars=120
+strategy_min_history_bars=260
+strategy_spread_days=20
+strategy_spread_mult=2.0

@@ -1,0 +1,33 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1169
+; ea_slug:      qp-comm-corr-mom
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       XAUUSD.DWX
+; timeframe:    D1
+; environment:  live
+; magic_slot:   0
+; risk_mode:    PERCENT
+; portfolio_weight: 1.00
+; build_hash:   e1bf7353b7c813794d0ec913261b19b92a4abfdad4607aa5a5bc4d34993f9e5e
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1169
+qm_magic_slot_offset=0
+RISK_PERCENT=0.25
+RISK_FIXED=0
+PORTFOLIO_WEIGHT=1
+qm_news_mode=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+strategy_momentum_lookback_d1_bars=252
+strategy_short_corr_d1_bars=20
+strategy_long_corr_d1_bars=250
+strategy_min_history_d1_bars=270
+strategy_rank_slots_each_side=2
+strategy_atr_period=20
+strategy_atr_sl_mult=5.0
+strategy_spread_median_days=20
+strategy_spread_mult=3.0

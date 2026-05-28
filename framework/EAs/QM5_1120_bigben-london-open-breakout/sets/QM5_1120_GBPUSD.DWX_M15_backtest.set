@@ -1,0 +1,43 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1120
+; ea_slug:      bigben-london-open-breakout
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       GBPUSD.DWX
+; timeframe:    M15
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   0e70f93794eaac4430e7363d69c62d6d6a95228f451096513ba04c118280b1a5
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1120
+qm_magic_slot_offset=1
+qm_rng_seed=42
+RISK_PERCENT=0
+RISK_FIXED=1000
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=1
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0
+strategy_timeframe_minutes=15
+strategy_range_start_hour_broker=0
+strategy_range_end_hour_broker=7
+strategy_entry_start_hour_broker=7
+strategy_cancel_hour_broker=11
+strategy_exit_hour_broker=19
+strategy_breakout_buffer_points=5
+strategy_max_spread_points=25
+strategy_rr_target=2.0
+strategy_use_atr_stop=0
+strategy_atr_period=14
+strategy_atr_stop_mult=1.0
+strategy_mon_thu_only=0

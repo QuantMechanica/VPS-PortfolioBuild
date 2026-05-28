@@ -1,0 +1,37 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1074
+; ea_slug:      as-daa-canary
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       SP500.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   e80c712b401123d29d6d496adb915786cc9ae5ef109e09b3faccc6e005394750
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=3
+qm_news_compliance=1
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=0
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+strategy_canary_1_symbol=NDX.DWX
+strategy_canary_2_symbol=
+strategy_cash_canary_score=0.0
+strategy_max_negative_canaries_for_entry=0
+strategy_min_monthly_bars=14
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=4.0
+strategy_max_spread_points=0

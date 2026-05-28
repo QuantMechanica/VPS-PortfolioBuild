@@ -1,0 +1,34 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1116
+; ea_slug:      hopwood-asctrend-h1-tf
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       EURJPY
+; timeframe:    H1
+; environment:  live
+; magic_slot:   4
+; risk_mode:    PERCENT
+; portfolio_weight: 1
+; build_hash:   913778a4d62fa0e2c7a45f0b2f0ccdf7adb0c1d384123878bddff56410dc2c91
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_magic_slot_offset=4
+RISK_FIXED=0
+RISK_PERCENT=0.5
+PORTFOLIO_WEIGHT=1
+qm_news_mode=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+strategy_tf=16385
+strategy_asctrend_risk=3
+strategy_ema_period=200
+strategy_atr_period=14
+strategy_atr_sl_mult=2.0
+strategy_rr_target=2.0
+strategy_structure_lookback=10
+strategy_use_structure_sl=false
+strategy_max_spread_points=25
+strategy_warmup_bars=260
+

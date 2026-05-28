@@ -1,0 +1,38 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1173
+; ea_slug:      qp-eafe-spy-sma-spread
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       UK100.DWX
+; timeframe:    MN1
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   068cadedffee087b2802a63b6a783978060917d1c42091bedd8e78361365dbdb
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1173
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_PERCENT=0
+RISK_FIXED=1000
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+strategy_pair_slot=1
+strategy_sma_months=36
+strategy_atr_months=12
+strategy_spread_atr_stop_mult=2.5
+strategy_leg_atr_stop_mult=3.0
+strategy_min_monthly_bars=72
+strategy_deviation_points=20
+strategy_close_on_missing_data=true

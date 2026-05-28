@@ -1,0 +1,26 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1342
+; ea_slug:      chan-lev-etf-close-momo
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       SP500.DWX
+; timeframe:    M5
+; environment:  live
+; magic_slot:   0
+; risk_mode:    PERCENT
+; portfolio_weight: 1
+; build_hash:   0000000000000000000000000000000000000000000000000000000000000000
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_magic_slot_offset=0
+RISK_FIXED=0
+RISK_PERCENT=0.25
+PORTFOLIO_WEIGHT=1
+strategy_signal_hour=14
+strategy_signal_min=15
+strategy_momo_threshold=0.02
+strategy_atr_sl_mult=1.0
+strategy_atr_period=14
+strategy_max_spread_points=0

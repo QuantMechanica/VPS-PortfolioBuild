@@ -1,0 +1,32 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        12114
+; ea_slug:      donchian-vegas-hybrid
+; ea_version:   v5.0
+; set_version:  s2026-05-26-smoke
+; symbol:       WS30.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   7
+; risk_mode:    FIXED
+; portfolio_weight: 1.00
+; build_hash:   8758ba87317713cd5c1909a343bda04671a7af481651b99871903314cbb12b9e
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=12114
+qm_magic_slot_offset=7
+RISK_PERCENT=0.0
+RISK_FIXED=1000.0
+PORTFOLIO_WEIGHT=1.0
+qm_news_mode=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+ema_fast_period=144
+ema_slow_period=169
+donchian_period=20
+tunnel_thickness_atr=0.3
+atr_sl_mult=1.5
+rr_target=2.0
+max_spread_points=25
+no_trade_first_bars=2

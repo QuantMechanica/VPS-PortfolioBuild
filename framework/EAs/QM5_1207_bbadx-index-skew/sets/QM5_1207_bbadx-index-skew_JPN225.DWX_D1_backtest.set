@@ -1,0 +1,41 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1207
+; ea_slug:      bbadx-index-skew
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       JPN225.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   7d611736eddcec163ee2f318c06b811cf937d2354324650e4cc3c37c55133e23
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1207
+qm_magic_slot_offset=2
+qm_rng_seed=42
+RISK_PERCENT=0
+RISK_FIXED=1000
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=1
+qm_news_compliance=1
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0
+strategy_timeframe_minutes=1440
+strategy_bb_period=20
+strategy_bb_deviation=2.0
+strategy_adx_period=14
+strategy_adx_threshold=20
+strategy_atr_period=20
+strategy_stop_atr_cap=3.0
+strategy_min_bars=60
+strategy_max_hold_bars=5
+strategy_max_spread_points=450
+strategy_allow_ports=true

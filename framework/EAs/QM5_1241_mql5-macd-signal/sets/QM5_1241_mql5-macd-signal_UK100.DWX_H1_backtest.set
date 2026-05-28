@@ -1,0 +1,39 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1241
+; ea_slug:      mql5-macd-signal
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       UK100.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   11
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   7004bffb56c87b905c7d9e50b3244cd505e22597f7768de83603ba191fa3b199
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_magic_slot_offset=11
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=1
+qm_news_compliance=1
+strategy_timeframe=16385
+strategy_macd_fast=12
+strategy_macd_slow=26
+strategy_macd_signal=9
+strategy_ema_trend_period=200
+strategy_ema_exit_period=50
+strategy_atr_period=14
+strategy_min_history_bars=260
+strategy_median_atr_bars=240
+strategy_min_atr_median_mult=0.45
+strategy_late_macd_close_mult=0.0025
+strategy_stop_atr_mult=2.0
+strategy_take_profit_r=2.0
+strategy_be_trigger_r=1.0
+strategy_max_hold_bars=96
+strategy_spread_days=20
+strategy_spread_mult=2.0

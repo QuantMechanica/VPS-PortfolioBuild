@@ -1,0 +1,43 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1162
+; ea_slug:      unger-nasdaq-close-channel
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       NDX.DWX
+; timeframe:    H1
+; environment:  live
+; magic_slot:   0
+; risk_mode:    PERCENT
+; portfolio_weight: 1
+; build_hash:   32a5c95291344a3eed2c9174e8a25349c99822bb6536918f82fff4800023cbc7
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1162
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_PERCENT=0.25
+RISK_FIXED=0
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=3
+qm_news_compliance=1
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0
+strategy_entry_start_hour_ny=9
+strategy_entry_start_minute_ny=30
+strategy_entry_end_hour_ny=16
+strategy_entry_end_minute_ny=0
+strategy_close_lookback_bars=24
+strategy_ema_fast_period=50
+strategy_ema_slow_period=200
+strategy_atr_period_h1=14
+strategy_sl_atr_mult=2.5
+strategy_be_trigger_atr_mult=2
+strategy_be_buffer_points=0
+strategy_max_hold_bars=120
+strategy_max_spread_points=0

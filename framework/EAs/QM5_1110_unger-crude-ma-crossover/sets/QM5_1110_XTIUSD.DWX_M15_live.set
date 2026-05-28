@@ -1,0 +1,37 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1110
+; ea_slug:      unger-crude-ma-crossover
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       XTIUSD.DWX
+; timeframe:    M15
+; environment:  live
+; magic_slot:   0
+; risk_mode:    PERCENT
+; portfolio_weight: 1
+; build_hash:   c4b2cc1fc97a667ff4d0b57c964a3592d5a7011d6af5d1b735aa7f7dfbffac73
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1110
+qm_magic_slot_offset=0
+RISK_FIXED=0
+RISK_PERCENT=0.25
+PORTFOLIO_WEIGHT=1
+qm_news_mode=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+strategy_signal_tf=15
+strategy_fast_sma_period=30
+strategy_slow_sma_period=140
+strategy_atr_period=14
+strategy_atr_sl_mult=2.5
+strategy_tp_enabled=false
+strategy_tp_rr=4.0
+strategy_max_sessions=5
+strategy_session_skip_minutes=60
+strategy_d1_atr_percentile_days=120
+strategy_d1_atr_percentile=30.0
+strategy_spread_median_bars=120
+strategy_spread_mult=2.0
