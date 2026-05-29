@@ -31,6 +31,20 @@ bool g_qm_fw_initialized      = false;
 bool g_qm_fw_friday_close_enabled = true;
 int  g_qm_fw_friday_close_hour_broker = 21;
 
+// Q04 simulated commission (USD per lot, round-trip), applied EA-side.
+// The MT5 tester applies NO commission to custom .DWX symbols (they are MT5 Custom
+// symbols; the broker groups file does not govern them), so PF from the tester report
+// is always gross. For the Q04 commission gate the EA self-accounts a worst-case
+// commission per closing deal and emits a structured PF-net so the gate has a realistic
+// figure without depending on tester-side commission. Default 0 = no effect (every other
+// phase / EA is unchanged until a Q04 setfile sets this input).
+input double InpQMSimCommissionPerLot = 0.0;   // Q04: worst-case USD/lot round-trip (0=off)
+
+double g_qm_sim_gross_profit_net = 0.0;
+double g_qm_sim_gross_loss_net   = 0.0;
+double g_qm_sim_commission_total = 0.0;
+long   g_qm_sim_closed_deals     = 0;
+
 CTrade g_qm_fw_trade;
 
 string QM_FrameworkSlug(const int ea_id)
@@ -282,6 +296,23 @@ void QM_FrameworkOnTradeTransaction(const MqlTradeTransaction &trans,
    const double commission = HistoryDealGetDouble(trans.deal, DEAL_COMMISSION);
    const double net        = profit + swap + commission;
 
+   // Q04 EA-side simulated commission: accumulate a PF-net that reflects a worst-case
+   // USD/lot round-trip charge the tester does not apply to custom symbols. Charged once
+   // per closing deal on its volume (round-trip per lot). Pure accounting — does not
+   // alter live trading or the tester books; reported in QM_FrameworkShutdown.
+   if(InpQMSimCommissionPerLot > 0.0)
+     {
+      const double sim_vol  = HistoryDealGetDouble(trans.deal, DEAL_VOLUME);
+      const double sim_cost = InpQMSimCommissionPerLot * sim_vol;
+      const double net_after = net - sim_cost;
+      g_qm_sim_commission_total += sim_cost;
+      g_qm_sim_closed_deals++;
+      if(net_after >= 0.0)
+         g_qm_sim_gross_profit_net += net_after;
+      else
+         g_qm_sim_gross_loss_net   += -net_after;
+     }
+
    QM_KillSwitchKSOnTradeClosed(net);
 
    if(QM_KillSwitchKSCheck())
@@ -310,6 +341,18 @@ void QM_FrameworkShutdown()
    QM_ChartUI_Shutdown();
    QM_IndicatorsShutdown();
    QM_EquityStreamShutdown();
+   if(g_qm_fw_initialized && InpQMSimCommissionPerLot > 0.0 && g_qm_sim_closed_deals > 0)
+     {
+      const double pf_net = (g_qm_sim_gross_loss_net > 0.0)
+                            ? g_qm_sim_gross_profit_net / g_qm_sim_gross_loss_net : 0.0;
+      const double net_profit = g_qm_sim_gross_profit_net - g_qm_sim_gross_loss_net;
+      const string payload = StringFormat(
+         "{\"sim_commission_per_lot\":%.2f,\"pf_net\":%.4f,\"net_profit\":%.2f,\"gross_profit_net\":%.2f,\"gross_loss_net\":%.2f,\"closed_deals\":%I64d,\"sim_commission_total\":%.2f}",
+         InpQMSimCommissionPerLot, pf_net, net_profit,
+         g_qm_sim_gross_profit_net, g_qm_sim_gross_loss_net,
+         g_qm_sim_closed_deals, g_qm_sim_commission_total);
+      QM_LogEvent(QM_INFO, "Q04_SIM_COMMISSION", payload);
+     }
    if(g_qm_fw_initialized)
       QM_LogEvent(QM_INFO, "DEINIT", "{}");
    g_qm_fw_initialized = false;
