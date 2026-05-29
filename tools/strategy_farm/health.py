@@ -1049,12 +1049,12 @@ def chk_disk_free_space(con) -> dict:
 
 
 def chk_p_pass_stagnation(con) -> dict:
-    """Alert if no P3+ PASS verdicts arrive for 6h/12h."""
+    """Alert if no Q04+ PASS verdicts arrive for 6h/12h."""
     cutoff_6h = (_utc_now() - dt.timedelta(hours=6)).strftime("%Y-%m-%dT%H:%M:%S")
     cutoff_12h = (_utc_now() - dt.timedelta(hours=12)).strftime("%Y-%m-%dT%H:%M:%S")
-    phases = ("P3", "P3.5", "P4", "P5", "P5b", "P5c", "P6", "P7", "P8")
+    phases = ("Q03", "Q04", "Q05", "Q06", "Q07", "Q08", "Q09", "Q10", "Q11", "Q12", "Q13", "Q14")
     placeholders = ",".join("?" for _ in phases)
-    n_recent_p3plus = con.execute(
+    n_recent_q04plus = con.execute(
         f"""
         SELECT COUNT(*) FROM work_items
         WHERE phase IN ({placeholders})
@@ -1063,7 +1063,7 @@ def chk_p_pass_stagnation(con) -> dict:
         """,
         (*phases, cutoff_6h),
     ).fetchone()[0]
-    if n_recent_p3plus == 0:
+    if n_recent_q04plus == 0:
         n_12h = con.execute(
             f"""
             SELECT COUNT(*) FROM work_items
@@ -1075,14 +1075,14 @@ def chk_p_pass_stagnation(con) -> dict:
         ).fetchone()[0]
         if n_12h == 0:
             return _check("p_pass_stagnation", "FAIL", n_12h, 1,
-                          "0 P3+ PASS verdicts in last 12h",
+                          "0 Q04+ PASS verdicts in last 12h",
                           "Pipeline stuck on infrastructure or strategy quality. "
                           "Trigger Gmail alarm + check bridge_review_pending.md.")
-        return _check("p_pass_stagnation", "WARN", n_recent_p3plus, 1,
-                      "0 P3+ PASS in last 6h (had >=1 in last 12h)",
+        return _check("p_pass_stagnation", "WARN", n_recent_q04plus, 1,
+                      "0 Q04+ PASS in last 6h (had >=1 in last 12h)",
                       "Watch for next cascade. If next iter still 0, escalate.")
-    return _check("p_pass_stagnation", "OK", n_recent_p3plus, 1,
-                  f"{n_recent_p3plus} P3+ PASS in last 6h", "")
+    return _check("p_pass_stagnation", "OK", n_recent_q04plus, 1,
+                  f"{n_recent_q04plus} Q04+ PASS in last 6h", "")
 
 
 def chk_codex_auth_broken(con) -> dict:
