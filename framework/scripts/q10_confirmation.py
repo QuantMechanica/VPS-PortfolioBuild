@@ -23,7 +23,9 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from framework.scripts._phase_utils import (ensure_dir, utc_now_iso, write_json,
-                                            resolve_ea_expert_path, period_from_setfile)
+                                            resolve_ea_expert_path, period_from_setfile,
+                                            find_latest_summary, FULL_HISTORY_FROM,
+                                            FULL_HISTORY_TO, FULL_HISTORY_YEAR)
 from framework.scripts.q05_stress_medium import _parse_pf_dd_trades, STARTING_EQUITY
 
 GATE_NAME = "Q10"
@@ -71,7 +73,7 @@ def run_confirmation(*, ea_id: int, ea_expert: str, symbol: str,
         "-EAId", str(ea_id),
         "-Expert", ea_expert,
         "-Symbol", symbol,
-        "-Year", "0",                        # 0 = full available history
+        "-Year", FULL_HISTORY_YEAR, "-FromDate", FULL_HISTORY_FROM, "-ToDate", FULL_HISTORY_TO,
         "-Terminal", terminal,
         "-Period", period,
         "-DispatchSubGateHash", f"q10_{ea_id}_{symbol.replace('.', '_')}",
@@ -88,8 +90,8 @@ def run_confirmation(*, ea_id: int, ea_expert: str, symbol: str,
     proc = subprocess.run(args, capture_output=True, text=True,
                           timeout=timeout_sec, creationflags=creationflags)
     sym_clean = symbol.replace(".", "_")
-    summary = report_root / f"QM5_{ea_id}" / "Q10" / sym_clean / "summary.json"
-    pf, dd_money, trades = _parse_pf_dd_trades(summary)
+    summary = find_latest_summary(report_root)
+    pf, dd_money, trades = _parse_pf_dd_trades(summary) if summary else (None, None, 0)
     dd_pct = (dd_money / STARTING_EQUITY * 100.0) if dd_money is not None else None
 
     if pf is None or dd_money is None:
@@ -112,8 +114,8 @@ def run_confirmation(*, ea_id: int, ea_expert: str, symbol: str,
         "dd_pct": dd_pct,
         "trades": trades,
         "exit_code": proc.returncode,
-        "summary_path": str(summary) if summary.exists() else None,
-        "report_htm": _find_report_htm(summary) if summary.exists() else None,
+        "summary_path": str(summary) if summary else None,
+        "report_htm": _find_report_htm(summary) if summary else None,
         "generated_at_utc": utc_now_iso(),
     }
 

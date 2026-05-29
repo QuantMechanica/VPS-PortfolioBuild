@@ -45,6 +45,26 @@ def period_from_setfile(setfile, default: str = "H1") -> str:
     m = re.search(r"_(M1|M5|M15|M30|H1|H4|H6|H8|D1|W1|MN1)_backtest", Path(setfile).name)
     return m.group(1) if m else default
 
+
+def find_latest_summary(report_root):
+    """Most-recent run_smoke summary.json under report_root. run_smoke writes it at
+    <report_root>/<eaLabel>/<timestamp>/summary.json, NOT the <ea>/<phase>/<sym> path the
+    Q-rewrite stress runners assumed — so rglob for the freshest one instead. Shared."""
+    root = Path(report_root)
+    if not root.is_dir():
+        return None
+    cands = sorted(root.rglob("summary.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+    return cands[0] if cands else None
+
+
+# Full available history window for the stress/confirmation gates (Q05/Q06/Q07/Q10).
+# run_smoke's -Year is [ValidateRange(2000,2100)] Mandatory, so '-Year 0' (the old
+# "full history" sentinel) was REJECTED at param binding -> instant abort. Pass a valid
+# year plus explicit FromDate/ToDate (which run_smoke prefers) instead.
+FULL_HISTORY_FROM = "2017.01.01"
+FULL_HISTORY_TO = "2025.12.31"
+FULL_HISTORY_YEAR = "2025"
+
 FX_MAJOR = {
     "EURUSD",
     "GBPUSD",
