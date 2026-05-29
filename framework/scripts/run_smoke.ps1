@@ -27,7 +27,11 @@ param(
     [string]$DispatchVersion = "smoke",
     [string]$DispatchSubGateHash,
     [switch]$AllowRunningTerminal,
-    [switch]$AllowMissingRealTicksLogMarker
+    [switch]$AllowMissingRealTicksLogMarker,
+    # Q04 commission gate: round-trip USD/lot to apply via the tester groups file.
+    # 0 (default) = restore the canonical real Darwinex schedule unchanged (Q02/Q03).
+    [ValidateRange(0, 1000)]
+    [double]$CommissionPerLot = 0
 )
 
 Set-StrictMode -Version Latest
@@ -614,6 +618,64 @@ function Write-TesterIni {
     Set-Content -LiteralPath $Path -Value $lines -Encoding ascii
 }
 
+function Set-TesterGroupsCommission {
+    param(
+        [Parameter(Mandatory = $true)][string]$TerminalRoot,
+        [Parameter(Mandatory = $true)][string]$SymbolName,
+        [Parameter(Mandatory = $true)][double]$CommissionPerLot
+    )
+
+    # The MT5 strategy tester reads commission from the server-keyed groups file
+    # <terminal>\MQL5\Profiles\Tester\Groups\Darwinex-Live_real.txt. The canonical real
+    # schedule keys commission to broker symbol PATHS (Forex\*, Indices\*, ...) that the
+    # custom .DWX symbols do NOT match, so they trade commission-free. For Q04 we inject a
+    # top-priority EXACT-symbol entry applying $CommissionPerLot USD/lot round-trip; for
+    # CommissionPerLot<=0 we restore the canonical file unchanged (keeps Q02/Q03 on the
+    # real schedule). Per-terminal, per-run write is race-free: the worker owns the
+    # terminal for the duration of the run.
+    $localRepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
+    $canonical = Join-Path $localRepoRoot "framework\registry\tester_groups\Darwinex-Live_real.canonical.txt"
+    if (-not (Test-Path -LiteralPath $canonical -PathType Leaf)) {
+        throw "canonical tester groups file missing at $canonical"
+    }
+    $groupsDir = Join-Path $TerminalRoot "MQL5\Profiles\Tester\Groups"
+    New-Item -ItemType Directory -Path $groupsDir -Force | Out-Null
+    $target = Join-Path $groupsDir "Darwinex-Live_real.txt"
+
+    $text = [System.IO.File]::ReadAllText($canonical, [System.Text.Encoding]::Unicode)
+    if ($CommissionPerLot -gt 0) {
+        # Encoding mirrors the canonical file's money-per-lot Forex block
+        # (CommissionMode=1, CommissionType=1, CommissionCharge=2). Exact USD/lot
+        # semantics are confirmed empirically by reading the tester report commission.
+        # InvariantCulture: the VPS locale uses a comma decimal separator, but MT5
+        # groups files require a dot (e.g. 7.0000, matching the canonical entries).
+        $val = $CommissionPerLot.ToString("F4", [System.Globalization.CultureInfo]::InvariantCulture)
+        $block = @(
+            "CommissionSymbol=$SymbolName",
+            "CommissionCharge=2",
+            "CommissionRange=0",
+            "CommissionEntry=0",
+            "CommissionValue=$val",
+            "CommissionRangeTo=1000.00",
+            "CommissionMode=1",
+            "CommissionType=1"
+        ) -join "`r`n"
+        $lines = $text -split "`r`n"
+        $out = New-Object System.Collections.Generic.List[string]
+        $inserted = $false
+        foreach ($ln in $lines) {
+            $out.Add($ln)
+            if ((-not $inserted) -and ($ln -match '^CommonUseSettings=')) {
+                $out.Add($block)
+                $inserted = $true
+            }
+        }
+        if (-not $inserted) { $out.Insert(0, $block) }
+        $text = ($out -join "`r`n")
+    }
+    [System.IO.File]::WriteAllText($target, $text, [System.Text.Encoding]::Unicode)
+}
+
 function Get-RelativeReportFileName {
     param(
         [Parameter(Mandatory = $true)]
@@ -1110,6 +1172,12 @@ if ($null -ne $expectedTradeInfo) {
         $MinTrades = $effectiveMinTrades
     }
 }
+
+# Apply (or reset) the tester commission for this run before launching. Q04 passes
+# -CommissionPerLot 7.0 to install a $7/lot round-trip entry matching the .DWX symbol;
+# all other phases pass 0 and get the canonical real schedule restored unchanged.
+Set-TesterGroupsCommission -TerminalRoot $terminalRoot -SymbolName $Symbol -CommissionPerLot $CommissionPerLot
+Write-Host ("run_smoke.commission_per_lot={0} terminal={1} symbol={2}" -f $CommissionPerLot, $effectiveTerminal, $Symbol)
 
 $runResults = @()
 $globalOnInitFailure = $false
