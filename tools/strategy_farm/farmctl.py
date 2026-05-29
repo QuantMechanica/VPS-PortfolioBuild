@@ -5666,8 +5666,8 @@ def pump(root: Path) -> dict[str, Any]:
     #    file level: CSV append is atomic line-by-line, update_resolver is
     #    idempotent (reads current CSV state, regenerates .mqh deterministically).
     #    OWNER 2026-05-16: explicit ok to parallelize.
-    MAX_PARALLEL_CODEX = 5       # OWNER 2026-05-25: 3->5 (raise throttle; perma-blocked skip-list keeps token-burn bounded)
-    MAX_PARALLEL_CODEX_BUILDS = 5  # same: 3->5 to match
+    MAX_PARALLEL_CODEX = 3       # OWNER 2026-05-29: 5->3 (false-PASS pattern showed bounded burn wasn't holding; project_qm_false_pass_build_ea_wave_2026-05-28)
+    MAX_PARALLEL_CODEX_BUILDS = 3  # same: 5->3 to match
     # Gemini headless CLI can authenticate, but on this Windows host it may
     # hang on tool-heavy EA builds after node-pty AttachConsole failures.
     # Keep the lane implemented but opt-in until a supervised smoke proves it
