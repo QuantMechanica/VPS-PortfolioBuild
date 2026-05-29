@@ -33,24 +33,29 @@ ACTED — Fixed `farmctl pipeline` crash; confirmed Q04 daemon restart working.
 
 **Effect:** `farmctl pipeline` now returns 440 EAs cleanly. Fix applies to this worktree only; Codex should port to `main`.
 
-## Q04 Daemon Restart — CONFIRMED
+## Q04 Daemon Restart — CONFIRMED (but FIFTH ROOT CAUSE still active)
 
-Q04 was producing INFRA_FAIL items until ~06:32Z. From 06:37Z onward, work items complete with proper strategy verdicts (e.g., QM5_10569 EURJPY FAIL, QM5_10513 USDJPY FAIL, QM5_10559 EURUSD FAIL). Daemon restart happened between 06:32Z and 06:37Z — the OWNER-controlled restart from last cycle is confirmed effective.
+Q04 was producing `status=failed/INFRA_FAIL` items until ~06:32Z. From 06:37Z onward, work items complete with `status=done` — daemon restart happened between 06:32Z and 06:37Z, confirmed effective.
 
-**Current Q04 FAIL pattern:** `trades=0, pf_net=None, exit_code=1` across all 3 folds for all 3 active EAs (QM5_10513/10559/10569). Infrastructure is fine; these are strategy quality failures (no trades generated in OOS windows). Expected behavior.
+**CORRECTION — these are still INFRA failures, not strategy verdicts.** All `done` items show `exit_code=1, trades=0, pf_net=null, summary_path=null` across all 3 folds (completing in ~2s). Root cause (FIFTH): `q04_walkforward.py:~153` passes `-CommissionPerLot 7.0` to `run_smoke.ps1`, which uses `[CmdletBinding()]` but does NOT declare that parameter → PowerShell aborts before MT5 starts → exit 1 → no trades.
+
+OWNER decision (commit `b18a8b21` in C:/QM/repo): commission = **$7.00/lot round-trip** (spec authoritative). Full diagnosis: `docs/ops/Q04_FIFTH_ROOT_CAUSE_commission_mechanism_2026-05-29.md` (C:/QM/repo).
+
+**Action taken:** created Codex ops_issue task `f308fe3f` (TODO → routed to codex) to wire the $7/lot commission into Q04 backtests (Option A: write Q04 tester groups file + declare -GroupsFile in run_smoke.ps1; remove -CommissionPerLot).
 
 ## QM5_10260 Queue State
 
 QM5_10260 (cieslak-fomc-cycle-idx, NDX.DWX M30) has 51 Q04 INFRA_FAIL items from 2026-05-28T18:04Z — all pre-daemon-restart. It also has Q03 PASS on both NDX.DWX and WS30.DWX. **No pending Q04 items.** The pump needs to create new Q04 work items from these Q03 PASSes — this should happen automatically once the pump cycles. No manual intervention needed unless pump does not re-enqueue within 2 cycles.
 
 ## Risks / Blockers
-- 3934 Q04 INFRA_FAIL items (pre-fix) still not re-queued; pump is creating new Q04 items from Q03 PASS gradually (2 pending observed at 06:47Z)
+- Q04 FIFTH ROOT CAUSE still active: all `done/FAIL trades=0` items are INFRA failures until Codex fixes commission wiring (task f308fe3f)
+- 3934 pre-fix INFRA_FAIL Q04 items will need re-queue once commission wiring is fixed
 - `farmctl pipeline` fix is in claude-orchestration-1 worktree only (not on main); Codex should merge
-- Gemini sandbox-verifier task (f5043456) has 5 stale releases — Gemini cannot read MP4 files in its sandbox; task will keep recycling unless task is restructured or approach changes
+- Gemini sandbox-verifier task (f5043456) has 5 stale releases — Gemini cannot read MP4 files; will keep recycling
 - §10c pump bug (p2_pass_no_p3=127) blocked on OWNER PAT refresh + push to main
 
 ## Next
-- Monitor Q04 PASS rate — first Q04 PASS will be the milestone
-- OWNER: bulk re-queue of pre-fix INFRA_FAIL Q04 items if pump is too slow (or farmctl enqueue-backtest)
+- Codex: implement Q04 commission wiring (task f308fe3f) — this is the current pipeline critical path
+- OWNER: once Q04 commission wired, bulk re-queue all INFRA_FAIL Q04 items to get real verdicts
 - Codex: port farmctl pipeline fix from this worktree to main
-- Gemini sandbox MP4 issue: consider closing f5043456 as RECYCLE with explanation if no progress
+- First Q04 PASS (with real commission-adjusted PF > 1.0 across all 3 folds) is the key milestone
