@@ -2443,6 +2443,19 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
             "--terminal", terminal or "T1",
         ])
         _remove_cmd_arg(cmd, "--setfile")
+    # PT3 bridge (2026-05-29): the rewritten Qxx runners (q04-q10) use
+    # --report-root, not the P-era --out-prefix, and reject --period. The
+    # generic base cmd above always injects --out-prefix/--period, which the
+    # Q-runners abort on at argparse (exit 2) -> no summary.json ->
+    # summary_missing -> INFRA_FAIL. Translate once for every Q-phase. (Q08
+    # rebuilds cmd from scratch above, so these flags are already absent and
+    # this is a no-op for it.) Carry the --out-prefix value into --report-root;
+    # --report-root otherwise defaults to the shared pipeline tree and breaks
+    # per-work-item evidence isolation.
+    if str(phase).startswith("Q"):
+        _remove_cmd_arg(cmd, "--period")
+        if "--out-prefix" in cmd:
+            cmd[cmd.index("--out-prefix")] = "--report-root"
     return cmd
 
 
