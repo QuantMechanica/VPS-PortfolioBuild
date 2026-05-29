@@ -6,9 +6,23 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+# Phase runners are spawned by terminal_worker with stdout/stderr redirected to
+# a per-work-item log file; on Windows that handle defaults to cp1252 and a
+# single non-ASCII character in a diagnostic print() (e.g. the "->" arrow in
+# Q04 fold descriptions) raises UnicodeEncodeError and aborts the runner BEFORE
+# it writes summary.json -> summary_missing -> INFRA_FAIL. Every Q-runner
+# imports this module, so force UTF-8 here once: a cosmetic log line can never
+# kill a gate run again.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):
+        pass
 
 PASS_TOKENS = {"pass", "green", "true", "1", "yes", "auto_pass", "multi_seed_pass", "multi_seed_mixed"}
 
