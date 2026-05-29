@@ -2511,6 +2511,10 @@ def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
     creationflags = 0
     if sys.platform == "win32":
         creationflags = subprocess.CREATE_NO_WINDOW  # type: ignore[attr-defined]
+    env = {**os.environ}
+    env["PYTHONPATH"] = os.pathsep.join(
+        [str(REPO_ROOT), env.get("PYTHONPATH", "")]
+    )
     proc = subprocess.Popen(
         cmd,
         cwd=str(REPO_ROOT),
@@ -2519,6 +2523,7 @@ def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
         stdin=subprocess.DEVNULL,
         creationflags=creationflags,
         close_fds=True,
+        env=env,
     )
     log_fh.close()
     return {
