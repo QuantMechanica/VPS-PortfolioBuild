@@ -200,7 +200,7 @@ def main() -> int:
 
     fold_results: list[dict] = []
     for fold in folds:
-        print(f"  fold {fold['id']}: OOS {fold['oos_start']} → {fold['oos_end']} ...")
+        print(f"  fold {fold['id']}: OOS {fold['oos_start']} -> {fold['oos_end']} ...")
         res = run_fold_via_smoke(
             ea_id=ea_id, ea_expert=args.ea, symbol=args.symbol,
             setfile=args.setfile, fold=fold,
