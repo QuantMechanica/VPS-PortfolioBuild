@@ -271,6 +271,22 @@ def _find_work_item_summary_data(item: sqlite3.Row, payload: dict[str, Any]) -> 
                 except (OSError, json.JSONDecodeError):
                     return None
                 return summary_path, summary
+            # Q-rewrite runners (q04..q10) write aggregate.json at
+            # <report_root>/QM5_<num>/<phase>/<symbol>/aggregate.json with a
+            # top-level `verdict` field that _derive_phase_runner_verdict
+            # already understands. Q04 keeps the raw symbol in the path
+            # (e.g. NDX.DWX); Q05+ replace '.' with '_' (e.g. NDX_DWX).
+            ea_num = str(item["ea_id"]).replace("QM5_", "")
+            symbol = str(item["symbol"] or "")
+            for sym_variant in (symbol, symbol.replace(".", "_")):
+                if not sym_variant:
+                    continue
+                agg = Path(str(report_root)) / f"QM5_{ea_num}" / phase / sym_variant / "aggregate.json"
+                if agg.exists():
+                    try:
+                        return agg, json.loads(agg.read_text(encoding="utf-8-sig"))
+                    except (OSError, json.JSONDecodeError):
+                        return None
         canonical_summary_path = farmctl._ea_phase_dir(str(item["ea_id"]), phase) / "summary.json"
         if canonical_summary_path.exists():
             try:
