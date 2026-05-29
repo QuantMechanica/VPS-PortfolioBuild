@@ -352,6 +352,19 @@ void QM_FrameworkShutdown()
          g_qm_sim_gross_profit_net, g_qm_sim_gross_loss_net,
          g_qm_sim_closed_deals, g_qm_sim_commission_total);
       QM_LogEvent(QM_INFO, "Q04_SIM_COMMISSION", payload);
+      // Also write a deterministic per-(ea,symbol) result file in Common\Files so the
+      // Q04 runner can read PF-net back without parsing the rotating tester journal
+      // or hunting the tester-agent sandbox log. q04_walkforward.py deletes this before
+      // each fold and reads it after (folds run sequentially per ea/symbol).
+      string q04_sym = _Symbol;
+      StringReplace(q04_sym, ".", "_");
+      const string q04_path = StringFormat("QM\\q04_sim\\%d_%s.json", g_qm_fw_ea_id, q04_sym);
+      int q04_fh = FileOpen(q04_path, FILE_WRITE | FILE_TXT | FILE_ANSI | FILE_COMMON);
+      if(q04_fh != INVALID_HANDLE)
+        {
+         FileWriteString(q04_fh, payload);
+         FileClose(q04_fh);
+        }
      }
    if(g_qm_fw_initialized)
       QM_LogEvent(QM_INFO, "DEINIT", "{}");
