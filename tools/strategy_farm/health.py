@@ -1123,6 +1123,58 @@ def chk_p_pass_stagnation(con) -> dict:
                   f"{n_recent_p3plus} Q03+ PASS in last 6h", "")
 
 
+def chk_phase_infra_graveyard(con) -> dict:
+    """Catch a gate whose *plumbing* is broken — high INFRA_FAIL volume with
+    ~0 PASS in the same window.
+
+    This is the canary the Q04 3-day stall needed. `p_pass_stagnation` stays
+    OK on absence-of-survivors (output quality), and it goes green as long as
+    *any* Q03+ phase produces a PASS — so a downstream gate that is 100%
+    INFRA_FAIL (a crashing runner / arg mismatch / missing input) is invisible
+    to it. INFRA_FAIL means the runner never produced a verdict at all, which
+    is infrastructure, not strategy quality. A phase that has processed real
+    volume in the window but is almost entirely INFRA_FAIL is a broken gate.
+
+    FAIL when, for any phase: window volume (PASS+FAIL+INFRA_FAIL) >= MIN_VOL
+    AND INFRA_FAIL/volume >= INFRA_RATIO AND PASS == 0 in the window.
+    """
+    MIN_VOL = 30
+    INFRA_RATIO = 0.9
+    WINDOW_H = 6
+    cutoff = (_utc_now() - dt.timedelta(hours=WINDOW_H)).strftime("%Y-%m-%dT%H:%M:%S")
+    rows = con.execute(
+        """
+        SELECT phase,
+               SUM(CASE WHEN verdict='INFRA_FAIL' THEN 1 ELSE 0 END) AS infra,
+               SUM(CASE WHEN verdict='PASS' THEN 1 ELSE 0 END) AS passed,
+               COUNT(*) AS total
+        FROM work_items
+        WHERE verdict IS NOT NULL AND updated_at >= ?
+        GROUP BY phase
+        """,
+        (cutoff,),
+    ).fetchall()
+    graveyards = []
+    for r in rows:
+        phase, infra, passed, total = r[0], r[1] or 0, r[2] or 0, r[3] or 0
+        if total >= MIN_VOL and passed == 0 and infra / total >= INFRA_RATIO:
+            graveyards.append((phase, infra, total))
+    if graveyards:
+        graveyards.sort(key=lambda x: x[1], reverse=True)
+        worst = graveyards[0]
+        detail = "; ".join(f"{p}: {i}/{t} INFRA_FAIL, 0 PASS/{WINDOW_H}h"
+                           for p, i, t in graveyards)
+        return _check("phase_infra_graveyard", "FAIL", worst[1], MIN_VOL,
+                      detail,
+                      "A gate runner is failing before producing any verdict "
+                      "(crashing runner, CLI arg mismatch, or missing input) — "
+                      "NOT a strategy-quality issue. Read a recent "
+                      "work_item_<id>.log for that phase; check the phase "
+                      "runner spawn args in farmctl._phase_runner_cmd_for_work_item.")
+    return _check("phase_infra_graveyard", "OK", 0, MIN_VOL,
+                  "no gate is INFRA_FAIL-saturated", "")
+
+
 def chk_codex_auth_broken(con) -> dict:
     """Detect Codex authentication failures.
 
@@ -1261,6 +1313,7 @@ ALL_CHECKS = [
     ("codex_bridge_heartbeat", chk_codex_bridge_heartbeat, True),
     ("disk_free_space",        chk_disk_free_space,        True),
     ("p_pass_stagnation",      chk_p_pass_stagnation,      True),
+    ("phase_infra_graveyard",  chk_phase_infra_graveyard,  True),
     ("quota_snapshot_fresh",   chk_quota_snapshot_fresh,   False),
     ("codex_auth_broken",      chk_codex_auth_broken,      True),
 ]
