@@ -24,7 +24,8 @@ from pathlib import Path
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from framework.scripts._phase_utils import ensure_dir, utc_now_iso, write_json
+from framework.scripts._phase_utils import (ensure_dir, utc_now_iso, write_json,
+                                            resolve_ea_expert_path, period_from_setfile)
 from framework.scripts.q05_stress_medium import (
     _parse_pf_dd_trades,
     PF_FLOOR, DD_PCT_MAX, STARTING_EQUITY,
@@ -49,7 +50,7 @@ def gen_harsh_setfile_for(baseline: Path) -> Path:
 
 
 def run_harsh_backtest(*, ea_id: int, ea_expert: str, symbol: str,
-                        setfile: Path, terminal: str,
+                        setfile: Path, terminal: str, period: str = "H1",
                         report_root: Path, timeout_sec: int = 2400) -> dict:
     """Q06 timeout is longer than Q05 — 10% trade rejection may slightly
     increase retry overhead on the EA side, though the rejection itself
@@ -63,7 +64,7 @@ def run_harsh_backtest(*, ea_id: int, ea_expert: str, symbol: str,
         "-Symbol", symbol,
         "-Year", "0",
         "-Terminal", terminal,
-        "-Period", "H1",
+        "-Period", period,
         "-DispatchSubGateHash", f"q06_{ea_id}_{symbol.replace('.', '_')}",
         "-DispatchPhase", "Q06",
         "-DispatchVersion", "q06_stress_harsh",
@@ -125,12 +126,19 @@ def main() -> int:
         return 2
     ea_id = int(ea_match.group(1))
 
+    repo_root = Path(__file__).resolve().parents[2]
+    ea_expert = resolve_ea_expert_path(repo_root, args.ea)
+    if ea_expert is None:
+        print(f"cannot resolve EA dir for {args.ea}", file=sys.stderr)
+        return 2
+    period = period_from_setfile(args.baseline_setfile)
+
     harsh_set = gen_harsh_setfile_for(args.baseline_setfile)
     print(f"Q06 HARSH: generated stress setfile {harsh_set.name}  (reject_prob=0.10)")
 
     res = run_harsh_backtest(
-        ea_id=ea_id, ea_expert=args.ea, symbol=args.symbol,
-        setfile=harsh_set, terminal=args.terminal,
+        ea_id=ea_id, ea_expert=ea_expert, symbol=args.symbol,
+        setfile=harsh_set, terminal=args.terminal, period=period,
         report_root=args.report_root, timeout_sec=args.timeout_sec,
     )
 

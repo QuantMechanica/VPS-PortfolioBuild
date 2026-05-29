@@ -23,7 +23,8 @@ from pathlib import Path
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from framework.scripts._phase_utils import ensure_dir, utc_now_iso, write_json
+from framework.scripts._phase_utils import (ensure_dir, utc_now_iso, write_json,
+                                            resolve_ea_expert_path, period_from_setfile)
 
 GATE_NAME = "Q05"
 LEVEL = "MED"
@@ -70,7 +71,7 @@ def gen_stress_setfile_for(baseline: Path) -> Path:
 
 
 def run_stress_backtest(*, ea_id: int, ea_expert: str, symbol: str,
-                         setfile: Path, terminal: str,
+                         setfile: Path, terminal: str, period: str = "H1",
                          report_root: Path, timeout_sec: int = 1800) -> dict:
     repo_root = Path(__file__).resolve().parents[2]
     run_smoke_ps1 = repo_root / "framework" / "scripts" / "run_smoke.ps1"
@@ -81,7 +82,7 @@ def run_stress_backtest(*, ea_id: int, ea_expert: str, symbol: str,
         "-Symbol", symbol,
         "-Year", "0",                # 0 = full available history
         "-Terminal", terminal,
-        "-Period", "H1",
+        "-Period", period,
         "-DispatchSubGateHash", f"q05_{ea_id}_{symbol.replace('.', '_')}",
         "-DispatchPhase", "Q05",
         "-DispatchVersion", "q05_stress_medium",
@@ -142,12 +143,19 @@ def main() -> int:
         return 2
     ea_id = int(ea_match.group(1))
 
+    repo_root = Path(__file__).resolve().parents[2]
+    ea_expert = resolve_ea_expert_path(repo_root, args.ea)
+    if ea_expert is None:
+        print(f"cannot resolve EA dir for {args.ea}", file=sys.stderr)
+        return 2
+    period = period_from_setfile(args.baseline_setfile)
+
     stress_set = gen_stress_setfile_for(args.baseline_setfile)
     print(f"Q05 MED: generated stress setfile {stress_set.name}")
 
     res = run_stress_backtest(
-        ea_id=ea_id, ea_expert=args.ea, symbol=args.symbol,
-        setfile=stress_set, terminal=args.terminal,
+        ea_id=ea_id, ea_expert=ea_expert, symbol=args.symbol,
+        setfile=stress_set, terminal=args.terminal, period=period,
         report_root=args.report_root, timeout_sec=args.timeout_sec,
     )
 

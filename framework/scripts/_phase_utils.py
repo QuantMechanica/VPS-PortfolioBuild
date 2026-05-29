@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -25,6 +26,24 @@ for _stream in (sys.stdout, sys.stderr):
         pass
 
 PASS_TOKENS = {"pass", "green", "true", "1", "yes", "auto_pass", "multi_seed_pass", "multi_seed_mixed"}
+
+
+def resolve_ea_expert_path(repo_root: Path, ea_label: str) -> str | None:
+    """Canonical MT5 expert path 'QM\\<ea_dir>' for run_smoke / the tester.
+    run_smoke deploys framework/EAs/<dir>/<dir>.ex5 to Experts/QM/<dir>.ex5; a bare
+    label (e.g. 'QM5_1056') hits deploy_skip -> REPORT_MISSING. Shared by q04-q10."""
+    eas = Path(repo_root) / "framework" / "EAs"
+    matches = sorted(p for p in eas.glob(f"{ea_label}_*") if p.is_dir())
+    if not matches and (eas / ea_label).is_dir():
+        matches = [eas / ea_label]
+    return f"QM\\{matches[0].name}" if matches else None
+
+
+def period_from_setfile(setfile, default: str = "H1") -> str:
+    """Detect the EA's timeframe from the setfile name, e.g. '..._M15_backtest.set'.
+    The Q-rewrite runners hardcoded -Period H1, so M15/D1/etc. EAs traded 0. Shared."""
+    m = re.search(r"_(M1|M5|M15|M30|H1|H4|H6|H8|D1|W1|MN1)_backtest", Path(setfile).name)
+    return m.group(1) if m else default
 
 FX_MAJOR = {
     "EURUSD",
