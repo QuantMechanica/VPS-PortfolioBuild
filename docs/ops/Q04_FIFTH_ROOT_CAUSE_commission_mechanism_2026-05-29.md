@@ -57,6 +57,52 @@ the spec value the runner *intends* and the value the terminal *actually applies
 Per the Hard Rule (no invented commission/swap values; documented commission source) and the
 T1–T10 test-environment ownership process, this must be reconciled deliberately, not guessed.
 
+## MAJOR FINDING 2026-05-29 — commission has NEVER been applied to .DWX symbols
+
+Verified from real MT5 reports (not inference): across 6+ recent backtests with trades,
+`Total Net Profit == Gross Profit + Gross Loss` to the cent — i.e. **commission + swap =
+$0 in every case**. Examples: EURUSD 138 trades net −23,777.55 = 60,305.48 − 84,083.03;
+448 trades residual 0.00; etc. The shared `Darwinex-Live_real.txt` commission entries are
+keyed to broker symbol *paths* (`Forex\*`, `Indices\Index 1\*`, …) that the **custom
+`.DWX` symbols do not match**, so no entry ever applied.
+
+Consequences:
+- **The whole pipeline funnel to date is gross-of-costs.** Every Q02 (104) and Q03 (56)
+  PASS was computed with zero commission AND zero swap. Q02's `PF>1.30` gate is therefore
+  more lenient than intended; some PASSes will not survive realistic costs.
+- The fix is not "override Forex 2.5 → 7" — it is "make the tester apply commission to
+  custom symbols *at all*," which means a groups entry that MATCHES the `.DWX` symbols.
+- The MT5 commission-field encoding (`CommissionMode/Type/Charge/Value`) **cannot be
+  calibrated from existing data** (current applied commission is $0) — it requires ONE
+  measured backtest: set a candidate entry, run a fold, read the report's commission, and
+  scale `CommissionValue` until `commission_total ≈ trades × $7 × lots` (round-trip/lot).
+
+## Refined implementation spec (for Codex task f308fe3f)
+
+1. Pin canonical real groups file — DONE: `framework/registry/tester_groups/Darwinex-Live_real.canonical.txt`.
+2. `run_smoke.ps1`: add `[double]$CommissionPerLot = 0`. Before launching the tester, write
+   `<TerminalRoot>\MQL5\Profiles\Tester\Groups\Darwinex-Live_real.txt` from the canonical
+   (UTF-16 LE BOM, CRLF). If `$CommissionPerLot -gt 0`, ALSO inject a high-priority entry
+   that matches the custom symbols — start with `CommissionSymbol=*` (or the exact tested
+   symbol, e.g. `CommissionSymbol=EURUSD.DWX`) using a money-per-lot encoding at the value
+   that yields $7/lot round-trip. If `=0`, the canonical restore keeps Q02/Q03 unchanged
+   (still cost-free today — see "open question" below). Per-terminal, per-run write is
+   race-free because the worker owns the terminal for the run.
+3. Keep `q04_walkforward.py` passing `-CommissionPerLot 7.0` (already does, line 153).
+4. **Calibrate with ONE real fold** on a known-trading FX EA (e.g. QM5_10042 GBPUSD.DWX):
+   read the MT5 report commission, confirm `≈ trades × $7 × lot-size`. Adjust the encoding
+   (per-side vs round-trip; money-per-lot mode) and re-run until correct. Capture the report
+   as evidence.
+5. After verified: bulk re-queue the ~3,900 Q04 INFRA_FAIL + trades=0 items so the real
+   Q03-PASS cohort flows through Q04 with commission.
+6. Beware: `q04_walkforward.py:144` hardcodes `-Period H1` regardless of the EA's tuned
+   timeframe — verify this is intended for the walk-forward, else folds may mis-trade.
+
+**Open question for OWNER (separate, larger):** should Q02/Q03 also apply realistic costs,
+or are they intentionally gross screens with Q04 the first cost-aware gate? Today they are
+cost-free by accident, not design. If gates 2-3 should be cost-aware, the same groups
+mechanism applies to them and the current PASS cohort must be re-run.
+
 ## Decision required (OWNER), then implementation
 
 **DECISION 2026-05-29 (OWNER): option (a) — the Vault spec $7/lot round-trip is
