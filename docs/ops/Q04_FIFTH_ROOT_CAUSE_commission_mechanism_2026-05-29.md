@@ -57,6 +57,42 @@ the spec value the runner *intends* and the value the terminal *actually applies
 Per the Hard Rule (no invented commission/swap values; documented commission source) and the
 T1–T10 test-environment ownership process, this must be reconciled deliberately, not guessed.
 
+## VERIFICATION RESULT 2026-05-29 — groups file CANNOT reach custom symbols (3 backtests)
+
+Implemented the per-run groups-file mechanism in `run_smoke.ps1` (commit 121da873:
+`-CommissionPerLot`, writes terminal groups file from pinned canonical, injects an entry
+for the symbol) and ran 3 real verification backtests on T1. Result: **commission still
+$0** in every case — `Net == GrossProfit + GrossLoss` to the cent (e.g. QM5_10442 EURUSD.DWX
+2024 M15: 137 trades, net −31,826.98 = 58,185.06 − 90,012.04). Even an exact-name entry
+`CommissionSymbol=EURUSD.DWX` did not apply.
+
+**Root cause (decisive):** the `.DWX` symbols are **Custom symbols** — they live under
+`D:\QM\mt5\T*\bases\Custom\{history,ticks}\<SYM>`, NOT under `bases\Darwinex-Live\`. The
+groups file `Profiles\Tester\Groups\Darwinex-Live_real.txt` governs the *Darwinex-Live
+server* symbols; the tester does **not** apply it to Custom symbols. Commission for a custom
+symbol is governed by the **custom-symbol specification** (set at `CustomSymbolCreate` /
+`CustomSymbolSetInteger(SYMBOL_TRADE_*)` / commission fields), which defaults to 0. So the
+groups-file approach is the wrong mechanism for our universe; the fix must set commission on
+the custom symbol itself (or regenerate the custom symbols with the commission spec). This
+is MT5-internals R&D — hand to a focused Codex/MT5 loop, not the Claude quota.
+
+`run_smoke.ps1`'s `-CommissionPerLot` scaffolding (121da873) is harmless and correct to keep
+(stops the argparse crash; writes a valid groups file; right hook once the mechanism is
+known), but it does NOT yet apply commission to custom symbols.
+
+### Two further bugs found while verifying (the chain continues past #5)
+
+- **#6 expert-path:** `q04_walkforward.py:140` (and q05:80, q07:70) pass the bare EA label
+  as `-Expert` (e.g. `QM5_10042`), but MT5/run_smoke need `QM\<full-ea-dir>` (e.g.
+  `QM\QM5_10042_ff-notable-numbers`, per `p2_baseline.py:116`). Bare label →
+  `deploy_skip=non_canonical_expert_path` → no `.ex5` deployed → `REPORT_MISSING`. Q02/Q03
+  avoid this via `p2_baseline.find_ea_dir`. Fix: resolve the dir (glob `framework/EAs/<ea>_*`)
+  and pass `QM\<dir.name>`. **Not yet applied** — applying it alone would make Q04 emit
+  cost-free (misleading) verdicts, so hold until commission works.
+- **#7 hardcoded period:** `q04_walkforward.py:144` forces `-Period H1` regardless of the
+  EA's tuned timeframe; an M15 EA (QM5_10042) produced **0 trades** on H1. Folds should run
+  on the EA's own period.
+
 ## MAJOR FINDING 2026-05-29 — commission has NEVER been applied to .DWX symbols
 
 Verified from real MT5 reports (not inference): across 6+ recent backtests with trades,
