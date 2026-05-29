@@ -33,7 +33,7 @@ from pathlib import Path
 
 # Allow running both as a module and as a script
 if __package__ in (None, ""):
-    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from framework.scripts._phase_utils import ensure_dir, utc_now_iso, write_json
 

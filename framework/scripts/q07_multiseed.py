@@ -20,7 +20,7 @@ import sys
 from pathlib import Path
 
 if __package__ in (None, ""):
-    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from framework.scripts._phase_utils import ensure_dir, utc_now_iso, write_json
 from framework.scripts.q05_stress_medium import _parse_pf_dd_trades, STARTING_EQUITY
