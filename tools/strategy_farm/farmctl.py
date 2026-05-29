@@ -1090,7 +1090,7 @@ def pipeline_view(root: Path) -> dict[str, Any]:
             entry["build"] = {
                 "task_id": r["id"],
                 "status": r["status"],
-                "smoke": (payload.get("build_result") or {}).get("smoke_result") or payload.get("smoke_result"),
+                "smoke": (payload.get("build_result") if isinstance(payload.get("build_result"), dict) else {}).get("smoke_result") or payload.get("smoke_result"),
                 "blocked_reason": payload.get("blocked_reason"),
             }
             if r["status"] == "pending":
