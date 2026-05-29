@@ -198,8 +198,15 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
     baseline_run = None
     if not trades:
         common_log = _common_q08_trade_log(ea_id, symbol)
-        if not common_log.exists():
-            baseline_run = _run_baseline_for_trades(ea_id, symbol, terminal)
+        # Always run a FRESH full-history baseline so Q08 evaluates a clean run, not a
+        # stale per-fold log left by an earlier phase (which would undercount trades and
+        # wrongly fail a higher-frequency strategy). Clear the stale log first.
+        try:
+            if common_log.exists():
+                common_log.unlink()
+        except OSError:
+            pass
+        baseline_run = _run_baseline_for_trades(ea_id, symbol, terminal)
         trades = common.load_trades_from_log(common_log)
         equity_stream = common.load_equity_stream(common_log) or equity_stream
 
