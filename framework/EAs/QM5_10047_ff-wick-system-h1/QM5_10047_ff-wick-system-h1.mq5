@@ -45,25 +45,23 @@ input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
 input QM_NewsMode qm_news_mode          = QM_NEWS_OFF;
+input int    qm_news_pause_before_minutes = 30;
+input int    qm_news_pause_after_minutes  = 30;
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
 
 input group "Friday Close"
 input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Strategy"
-// TODO: declare strategy-specific input params here, e.g.:
-//   input int    strategy_atr_period   = 14;
-//   input double strategy_atr_sl_mult  = 2.0;
-//   input double strategy_atr_tp_mult  = 3.0;
-input ENUM_TIMEFRAMES strategy_timeframe = PERIOD_H1;
-input int    strategy_atr_period         = 14;
-input double strategy_min_range_atr_frac = 0.25;
-input int    strategy_stop_pips          = 50;
-input int    strategy_take_pips          = 50;
-input int    strategy_time_stop_bars     = 12;
-input double strategy_max_spread_sl_frac = 0.10;
+input int    strategy_atr_period        = 14;
+input double strategy_min_range_atr     = 0.25;
+input int    strategy_stop_pips         = 50;
+input int    strategy_take_profit_pips  = 50;
+input int    strategy_max_hold_bars     = 12;
 input int    strategy_session_start_hour = 7;
-input int    strategy_session_end_hour   = 21;
+input int    strategy_session_end_hour   = 20;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -73,31 +71,38 @@ input int    strategy_session_end_hour   = 21;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   if(_Period != strategy_timeframe)
-      return true;
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+         return false;
+     }
 
    MqlDateTime dt;
    TimeToStruct(TimeCurrent(), dt);
    if(dt.day_of_week < 1 || dt.day_of_week > 4)
       return true;
 
-   if(strategy_session_start_hour < strategy_session_end_hour)
+   if(strategy_session_start_hour != strategy_session_end_hour)
      {
-      if(dt.hour < strategy_session_start_hour || dt.hour >= strategy_session_end_hour)
-         return true;
-     }
-   else if(strategy_session_start_hour > strategy_session_end_hour)
-     {
-      if(dt.hour < strategy_session_start_hour && dt.hour >= strategy_session_end_hour)
+      const bool in_session = (strategy_session_start_hour < strategy_session_end_hour)
+                              ? (dt.hour >= strategy_session_start_hour && dt.hour < strategy_session_end_hour)
+                              : (dt.hour >= strategy_session_start_hour || dt.hour < strategy_session_end_hour);
+      if(!in_session)
          return true;
      }
 
    const double stop_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_stop_pips);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(stop_distance <= 0.0 || ask <= 0.0 || bid <= 0.0 || ask < bid)
+   if(stop_distance <= 0.0 || ask <= 0.0 || bid <= 0.0)
       return true;
-   if((ask - bid) > stop_distance * strategy_max_spread_sl_frac)
+   if((ask - bid) > (0.10 * stop_distance))
       return true;
 
    return false;
@@ -112,72 +117,62 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
-   req.reason = "";
+   req.reason = "ff_wick_h1";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(strategy_atr_period <= 0 || strategy_min_range_atr_frac <= 0.0 ||
-      strategy_stop_pips <= 0 || strategy_take_pips <= 0)
+   if(strategy_atr_period <= 0 ||
+      strategy_min_range_atr <= 0.0 ||
+      strategy_stop_pips <= 0 ||
+      strategy_take_profit_pips <= 0)
       return false;
 
-   const double open1 = iOpen(_Symbol, strategy_timeframe, 1);
-   const double high1 = iHigh(_Symbol, strategy_timeframe, 1);
-   const double low1 = iLow(_Symbol, strategy_timeframe, 1);
-   const double close1 = iClose(_Symbol, strategy_timeframe, 1);
-   if(open1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0 || close1 <= 0.0 ||
-      high1 <= low1)
+   const double open1 = iOpen(_Symbol, PERIOD_H1, 1);
+   const double high1 = iHigh(_Symbol, PERIOD_H1, 1);
+   const double low1 = iLow(_Symbol, PERIOD_H1, 1);
+   const double close1 = iClose(_Symbol, PERIOD_H1, 1);
+   if(open1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0 || close1 <= 0.0 || high1 <= low1)
       return false;
 
-   const double atr = QM_ATR(_Symbol, strategy_timeframe, strategy_atr_period, 1);
-   if(atr <= 0.0 || atr == EMPTY_VALUE)
-      return false;
-
-   const double range1 = high1 - low1;
-   if(range1 < strategy_min_range_atr_frac * atr)
+   const double atr = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
+   const double range = high1 - low1;
+   if(atr <= 0.0 || range < (strategy_min_range_atr * atr))
       return false;
 
    const double upper_wick = high1 - MathMax(open1, close1);
    const double lower_wick = MathMin(open1, close1) - low1;
-   if(upper_wick < 0.0 || lower_wick < 0.0 || upper_wick == lower_wick)
+   if(upper_wick == lower_wick)
       return false;
 
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
+   req.type = (lower_wick > upper_wick) ? QM_BUY : QM_SELL;
+   const double entry = QM_EntryMarketPrice(req.type);
+   if(entry <= 0.0)
       return false;
 
-   if(lower_wick > upper_wick)
-     {
-      req.type = QM_BUY;
-      req.sl = QM_StopFixedPips(_Symbol, req.type, ask, strategy_stop_pips);
-      req.tp = QM_TakeFixedPips(_Symbol, req.type, ask, strategy_take_pips);
-      req.reason = "FF_WICK_SYSTEM_H1_LONG";
-      return (req.sl > 0.0 && req.tp > 0.0);
-     }
+   req.sl = QM_StopFixedPips(_Symbol, req.type, entry, strategy_stop_pips);
+   const double tp_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_take_profit_pips);
+   req.tp = QM_StopRulesTakeFromDistance(_Symbol, req.type, entry, tp_distance);
+   if(req.sl <= 0.0 || req.tp <= 0.0)
+      return false;
 
-   req.type = QM_SELL;
-   req.sl = QM_StopFixedPips(_Symbol, req.type, bid, strategy_stop_pips);
-   req.tp = QM_TakeFixedPips(_Symbol, req.type, bid, strategy_take_pips);
-   req.reason = "FF_WICK_SYSTEM_H1_SHORT";
-   return (req.sl > 0.0 && req.tp > 0.0);
+   return true;
   }
 
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card has no trailing, break-even, partial close, or add-on logic.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   if(strategy_time_stop_bars <= 0)
+   if(strategy_max_hold_bars <= 0)
       return false;
 
    const int magic = QM_FrameworkMagic();
-   const int hold_seconds = strategy_time_stop_bars * PeriodSeconds(strategy_timeframe);
+   const int hold_seconds = strategy_max_hold_bars * PeriodSeconds(PERIOD_H1);
    if(hold_seconds <= 0)
       return false;
 
@@ -185,7 +180,7 @@ bool Strategy_ExitSignal()
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
          continue;
       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
@@ -193,7 +188,7 @@ bool Strategy_ExitSignal()
          continue;
 
       const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
-      if(opened > 0 && now - opened >= hold_seconds)
+      if(opened > 0 && (now - opened) >= hold_seconds)
          return true;
      }
 
@@ -221,7 +216,11 @@ int OnInit()
                         PORTFOLIO_WEIGHT,
                         qm_news_mode,
                         qm_friday_close_enabled,
-                        qm_friday_close_hour_broker))
+                        qm_friday_close_hour_broker,
+                        qm_news_pause_before_minutes,
+                        qm_news_pause_after_minutes,
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");

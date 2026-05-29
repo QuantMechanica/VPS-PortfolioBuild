@@ -1,89 +1,137 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_10050 ForexFactory correlation triad H1 MA cross"
+#property description "QM5_10050 ForexFactory Correlation Triad H1 MA Cross"
 
 #include <QM/QM_Common.mqh>
 
+// =============================================================================
+// QuantMechanica V5 EA SKELETON
+// -----------------------------------------------------------------------------
+// Fill in only the five Strategy_* hooks below. Everything else is framework
+// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
+// risk + magic + news + Friday-close guard rails). The framework provides:
+//
+//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  — closed-bar gate
+//   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
+//     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
+//     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
+//   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
+//   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
+//   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
+//   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
+//   - QM_FrameworkHandleFridayClose / QM_KillSwitchCheck / QM_NewsAllowsTrade
+//
+// DO NOT
+//   - Write per-EA IsNewBar() — use QM_IsNewBar()
+//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
+//     use the QM_* readers above. The framework pools handles and releases them
+//     on shutdown.
+//   - CopyRates over warmup windows on every tick. If you genuinely need raw
+//     bar arrays, gate by QM_IsNewBar so the work runs once per closed bar.
+//   - Hand-edit framework/include/QM/QM_MagicResolver.mqh. After adding rows
+//     to magic_numbers.csv, run:
+//         python framework/scripts/update_magic_resolver.py
+//     This is idempotent and preserves all rows.
+// =============================================================================
+
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                    = 10050;
-input int    qm_magic_slot_offset        = 0;
+input int    qm_ea_id                   = 10050;
+input int    qm_magic_slot_offset       = 0;
 
 input group "Risk"
-input double RISK_PERCENT                = 0.0;
-input double RISK_FIXED                  = 1000.0;
-input double PORTFOLIO_WEIGHT            = 1.0;
+input double RISK_PERCENT               = 0.0;
+input double RISK_FIXED                 = 1000.0;
+input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsMode qm_news_mode           = QM_NEWS_OFF;
+input QM_NewsMode qm_news_mode          = QM_NEWS_OFF;
+input int    qm_news_pause_before_minutes = 30;
+input int    qm_news_pause_after_minutes  = 30;
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled     = true;
+input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Strategy"
-input int    strategy_fast_sma_period    = 15;
-input int    strategy_slow_sma_period    = 30;
-input int    strategy_atr_period         = 10;
-input double strategy_sl_atr_mult        = 3.0;
-input double strategy_tp_atr_mult        = 1.0;
-input int    strategy_max_spread_points  = 0;
+input string strategy_primary_symbol    = "EURUSD.DWX";
+input string strategy_eurchf_symbol     = "EURCHF.DWX";
+input string strategy_usdchf_symbol     = "USDCHF.DWX";
+input ENUM_TIMEFRAMES strategy_tf       = PERIOD_H1;
+input int    strategy_fast_sma_period   = 15;
+input int    strategy_slow_sma_period   = 30;
+input int    strategy_atr_period        = 10;
+input double strategy_atr_tp_mult       = 1.0;
+input double strategy_atr_sl_mult       = 3.0;
+input double strategy_max_spread_points = 0.0;
 
-const string STRATEGY_EXEC_SYMBOL = "EURUSD.DWX";
-const string STRATEGY_CONFIRM_EURCHF = "EURCHF.DWX";
-const string STRATEGY_CONFIRM_USDCHF = "USDCHF.DWX";
-const ENUM_TIMEFRAMES STRATEGY_TF = PERIOD_H1;
+// -----------------------------------------------------------------------------
+// Strategy hooks — implement these against the card mechanically.
+// -----------------------------------------------------------------------------
 
-bool IsSynchronizedClosedBar(const string symbol, const datetime decision_bar_time)
+// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
+// regime filter). Cheap O(1) checks only — runs on every tick.
+bool Strategy_NoTradeFilter()
   {
-   return (iTime(symbol, STRATEGY_TF, 1) == decision_bar_time);
+   // Card trades EURUSD only; time and news filters are framework-level.
+   if(_Symbol != strategy_primary_symbol)
+      return true;
+
+   if(strategy_max_spread_points > 0.0)
+     {
+      const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+      if(spread_points > (long)strategy_max_spread_points)
+         return true;
+     }
+
+   return false;
   }
 
-int SmaCrossSignal(const string symbol)
+bool BarExistsAt(const string sym, const ENUM_TIMEFRAMES tf, const datetime bar_time, int &shift)
   {
-   const double fast_1 = QM_SMA(symbol, STRATEGY_TF, strategy_fast_sma_period, 1, PRICE_CLOSE);
-   const double slow_1 = QM_SMA(symbol, STRATEGY_TF, strategy_slow_sma_period, 1, PRICE_CLOSE);
-   const double fast_2 = QM_SMA(symbol, STRATEGY_TF, strategy_fast_sma_period, 2, PRICE_CLOSE);
-   const double slow_2 = QM_SMA(symbol, STRATEGY_TF, strategy_slow_sma_period, 2, PRICE_CLOSE);
+   shift = iBarShift(sym, tf, bar_time, true);
+   return (shift >= 1);
+  }
 
-   if(fast_1 <= 0.0 || slow_1 <= 0.0 || fast_2 <= 0.0 || slow_2 <= 0.0)
+int CrossSignalAt(const string sym, const ENUM_TIMEFRAMES tf, const int shift)
+  {
+   if(shift < 1 || strategy_fast_sma_period <= 0 || strategy_slow_sma_period <= 0)
       return 0;
-   if(fast_2 <= slow_2 && fast_1 > slow_1)
+
+   const double fast_now = QM_SMA(sym, tf, strategy_fast_sma_period, shift);
+   const double slow_now = QM_SMA(sym, tf, strategy_slow_sma_period, shift);
+   const double fast_prev = QM_SMA(sym, tf, strategy_fast_sma_period, shift + 1);
+   const double slow_prev = QM_SMA(sym, tf, strategy_slow_sma_period, shift + 1);
+   if(fast_now <= 0.0 || slow_now <= 0.0 || fast_prev <= 0.0 || slow_prev <= 0.0)
+      return 0;
+
+   if(fast_prev <= slow_prev && fast_now > slow_now)
       return 1;
-   if(fast_2 >= slow_2 && fast_1 < slow_1)
+   if(fast_prev >= slow_prev && fast_now < slow_now)
       return -1;
    return 0;
   }
 
-bool HasOurOpenPosition()
-  {
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      return true;
-     }
-   return false;
-  }
-
 int TriadSignal()
   {
-   const datetime decision_bar_time = iTime(STRATEGY_EXEC_SYMBOL, STRATEGY_TF, 1);
-   if(decision_bar_time <= 0)
-      return 0;
-   if(!IsSynchronizedClosedBar(STRATEGY_CONFIRM_EURCHF, decision_bar_time))
-      return 0;
-   if(!IsSynchronizedClosedBar(STRATEGY_CONFIRM_USDCHF, decision_bar_time))
+   const datetime primary_bar_time = iTime(strategy_primary_symbol, strategy_tf, 1);
+   if(primary_bar_time <= 0)
       return 0;
 
-   const int eurusd = SmaCrossSignal(STRATEGY_EXEC_SYMBOL);
-   const int eurchf = SmaCrossSignal(STRATEGY_CONFIRM_EURCHF);
-   const int usdchf = SmaCrossSignal(STRATEGY_CONFIRM_USDCHF);
+   int eurusd_shift = 0;
+   int eurchf_shift = 0;
+   int usdchf_shift = 0;
+   if(!BarExistsAt(strategy_primary_symbol, strategy_tf, primary_bar_time, eurusd_shift))
+      return 0;
+   if(!BarExistsAt(strategy_eurchf_symbol, strategy_tf, primary_bar_time, eurchf_shift))
+      return 0;
+   if(!BarExistsAt(strategy_usdchf_symbol, strategy_tf, primary_bar_time, usdchf_shift))
+      return 0;
+
+   const int eurusd = CrossSignalAt(strategy_primary_symbol, strategy_tf, eurusd_shift);
+   const int eurchf = CrossSignalAt(strategy_eurchf_symbol, strategy_tf, eurchf_shift);
+   const int usdchf = CrossSignalAt(strategy_usdchf_symbol, strategy_tf, usdchf_shift);
 
    if(eurusd > 0 && eurchf > 0 && usdchf < 0)
       return 1;
@@ -92,25 +140,9 @@ int TriadSignal()
    return 0;
   }
 
-// No Trade Filter: framework handles news and Friday close; this hook enforces
-// the card symbol and an optional spread ceiling without adding a session rule.
-bool Strategy_NoTradeFilter()
-  {
-   if(_Symbol != STRATEGY_EXEC_SYMBOL)
-      return true;
-   if(_Period != STRATEGY_TF)
-      return true;
-   if(strategy_max_spread_points > 0)
-     {
-      const int spread = (int)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-      if(spread > strategy_max_spread_points)
-         return true;
-     }
-   return false;
-  }
-
-// Trade Entry: completed-H1 triad SMA cross concurrence, market entry at the
-// next H1 open, with ATR(10) SL/TP on EURUSD.
+// Populate `req` with entry order parameters and return TRUE if a NEW entry
+// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
+// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    req.type = QM_BUY;
@@ -121,74 +153,86 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(strategy_fast_sma_period <= 0 || strategy_slow_sma_period <= strategy_fast_sma_period)
-      return false;
-   if(strategy_atr_period <= 0 || strategy_sl_atr_mult <= 0.0 || strategy_tp_atr_mult <= 0.0)
-      return false;
-   if(HasOurOpenPosition())
-      return false;
-
    const int signal = TriadSignal();
    if(signal == 0)
       return false;
 
-   req.type = (signal > 0) ? QM_BUY : QM_SELL;
-   const double entry_price = (signal > 0) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK) : SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double atr = QM_ATR(_Symbol, STRATEGY_TF, strategy_atr_period, 1);
-   if(entry_price <= 0.0 || atr <= 0.0)
+   const double atr = QM_ATR(strategy_primary_symbol, strategy_tf, strategy_atr_period, 1);
+   if(atr <= 0.0 || strategy_atr_sl_mult <= 0.0 || strategy_atr_tp_mult <= 0.0)
       return false;
 
-   req.sl = QM_StopATRFromValue(_Symbol, req.type, entry_price, atr, strategy_sl_atr_mult);
-   req.tp = QM_TakeATRFromValue(_Symbol, req.type, entry_price, atr, strategy_tp_atr_mult);
-   if(req.sl <= 0.0 || req.tp <= 0.0)
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
       return false;
 
-   req.reason = (signal > 0) ? "FF_CORR_TRIAD_LONG" : "FF_CORR_TRIAD_SHORT";
+   if(signal > 0)
+     {
+      req.type = QM_BUY;
+      req.price = 0.0;
+      req.sl = NormalizeDouble(ask - (strategy_atr_sl_mult * atr), _Digits);
+      req.tp = NormalizeDouble(ask + (strategy_atr_tp_mult * atr), _Digits);
+      req.reason = "FF_CORR_TRIAD_LONG";
+      return true;
+     }
+
+   req.type = QM_SELL;
+   req.price = 0.0;
+   req.sl = NormalizeDouble(bid + (strategy_atr_sl_mult * atr), _Digits);
+   req.tp = NormalizeDouble(bid - (strategy_atr_tp_mult * atr), _Digits);
+   req.reason = "FF_CORR_TRIAD_SHORT";
    return true;
   }
 
-// Trade Management: card baseline uses one full-size position, no partials or
-// trailing; TP/SL are placed at entry.
+// Called every tick when an open position exists for this EA's magic.
+// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
+   // Card baseline compresses optional partial/trailing management into fixed TP/SL.
   }
 
-// Trade Close: exit early on the opposite triad signal before TP/SL.
+// Return TRUE to close the open position now (e.g. opposite-signal exit,
+// max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   if(!HasOurOpenPosition())
-      return false;
-
-   const int signal = TriadSignal();
-   if(signal == 0)
-      return false;
-
    const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   int current_side = 0;
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
+      if(!PositionSelectByTicket(ticket))
          continue;
       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
 
-      const ENUM_POSITION_TYPE type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      if(type == POSITION_TYPE_BUY && signal < 0)
-         return true;
-      if(type == POSITION_TYPE_SELL && signal > 0)
-         return true;
+      const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      current_side = (position_type == POSITION_TYPE_BUY) ? 1 : -1;
+      break;
      }
-   return false;
+
+   if(current_side == 0)
+      return false;
+
+   const int signal = TriadSignal();
+   return (signal != 0 && signal == -current_side);
   }
 
-// News Filter Hook: no card-specific event handling; central framework news
-// mode remains the source of truth for P8.
+// Optional news-filter override. Return TRUE to suppress trading regardless
+// of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
+// custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false;
+   return false; // defer to QM_NewsAllowsTrade(...)
   }
+
+// -----------------------------------------------------------------------------
+// Framework wiring — do NOT edit below this line unless you know why.
+// -----------------------------------------------------------------------------
 
 int OnInit()
   {
@@ -199,10 +243,14 @@ int OnInit()
                         PORTFOLIO_WEIGHT,
                         qm_news_mode,
                         qm_friday_close_enabled,
-                        qm_friday_close_hour_broker))
+                        qm_friday_close_hour_broker,
+                        qm_news_pause_before_minutes,
+                        qm_news_pause_after_minutes,
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact))
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_10050\",\"ea\":\"ff-corr-triad-h1\"}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
   }
 
@@ -228,24 +276,27 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
+   // Per-tick: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
+   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
       for(int i = PositionsTotal() - 1; i >= 0; --i)
         {
          const ulong ticket = PositionGetTicket(i);
-         if(ticket == 0 || !PositionSelectByTicket(ticket))
+         if(!PositionSelectByTicket(ticket))
             continue;
-         if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-            continue;
-         if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         if(PositionGetInteger(POSITION_MAGIC) != magic)
             continue;
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
 
+   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
+   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
+   // call, not every incoming tick.
    if(!QM_IsNewBar())
       return;
 
