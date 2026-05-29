@@ -34,6 +34,19 @@ CODEX_HOME = Path(os.environ.get("CODEX_HOME", r"C:\Users\Administrator\.codex")
 AGENT_USER_HOME = Path(r"C:\Users\Administrator")
 CLAUDE_DISABLED_FLAG = FARM_ROOT / "CLAUDE_DISABLED.flag"
 
+# --- Headless model selection (weekly-quota cost control) -------------------
+# Each headless cycle is mostly routine orchestration (claim work, run gates,
+# write the cycle log, monitor health) — work that does not need the top model.
+# Default Claude headless to Sonnet and let OWNER raise to opus per-run via env;
+# Codex/Gemini default to their config.toml model unless an env override is set.
+# Interactive sessions (e.g. the senior agent) are unaffected — they ignore
+# these vars. Empty string => omit the flag (use the CLI/account default).
+#   $env:QM_CLAUDE_HEADLESS_MODEL = 'opus'   # bump a cycle back to Opus
+#   $env:QM_CODEX_HEADLESS_MODEL  = 'gpt-5-codex'  # cheaper Codex tier
+CLAUDE_HEADLESS_MODEL = os.environ.get("QM_CLAUDE_HEADLESS_MODEL", "sonnet").strip()
+CODEX_HEADLESS_MODEL = os.environ.get("QM_CODEX_HEADLESS_MODEL", "").strip()
+GEMINI_HEADLESS_MODEL = os.environ.get("QM_GEMINI_HEADLESS_MODEL", "").strip()
+
 
 def utc_stamp() -> str:
     return dt.datetime.now(dt.UTC).replace(microsecond=0).strftime("%Y%m%dT%H%M%SZ")
@@ -188,9 +201,11 @@ def release_lock(lock_info: dict[str, Any]) -> None:
 def command_for(agent: str, cwd: Path) -> list[str]:
     cli = resolve_cli(agent)
     if agent == "codex":
+        model_args = ["-m", CODEX_HEADLESS_MODEL] if CODEX_HEADLESS_MODEL else []
         return [
             cli,
             "exec",
+            *model_args,
             "--dangerously-bypass-approvals-and-sandbox",
             "--cd",
             str(cwd),
@@ -216,8 +231,10 @@ def command_for(agent: str, cwd: Path) -> list[str]:
             launcher = [node, str(GEMINI_NODE_BUNDLE)]
         else:
             launcher = [cli]
+        model_args = ["--model", GEMINI_HEADLESS_MODEL] if GEMINI_HEADLESS_MODEL else []
         return [
             *launcher,
+            *model_args,
             "--prompt",
             "Execute the single-pass QuantMechanica orchestration instructions from stdin.",
             "--approval-mode",
@@ -229,9 +246,11 @@ def command_for(agent: str, cwd: Path) -> list[str]:
             ",".join(extra_dirs),
         ]
     if agent == "claude":
+        model_args = ["--model", CLAUDE_HEADLESS_MODEL] if CLAUDE_HEADLESS_MODEL else []
         return [
             cli,
             "-p",
+            *model_args,
             "--dangerously-skip-permissions",
             "--add-dir",
             str(cwd),
