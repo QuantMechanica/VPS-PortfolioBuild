@@ -59,6 +59,11 @@ T1–T10 test-environment ownership process, this must be reconciled deliberatel
 
 ## Decision required (OWNER), then implementation
 
+**DECISION 2026-05-29 (OWNER): option (a) — the Vault spec $7/lot round-trip is
+authoritative.** Implement a Q04 commission of $7.00/lot round-trip and apply it provably
+in the tester; do NOT adopt the Darwinex-Live_real.txt 2.5/0.35 values for Q04. Implementation
+proceeds on OWNER go (needs a real MT5 verification fold).
+
 **Q1 — what is the correct Q04 commission?**
 - (a) The Vault Q04 spec value **$7/lot round-trip** is authoritative → generate/point a
   Q04 groups file at $7/lot (round-trip) and apply it for the fold backtests; OR
