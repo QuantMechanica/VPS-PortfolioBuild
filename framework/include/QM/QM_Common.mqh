@@ -45,6 +45,12 @@ double g_qm_sim_gross_loss_net   = 0.0;
 double g_qm_sim_commission_total = 0.0;
 long   g_qm_sim_closed_deals     = 0;
 
+// Q08 (Davey) per-trade stream. The framework previously emitted closing-deal data
+// only on kill-switch divergence, so Q08's load_trades_from_log() found ZERO trades.
+// Accumulate one TRADE_CLOSED JSON line per closing deal and dump to Common\Files at
+// shutdown so the Q08 aggregator (and any robustness gate) can read real per-trade P&L.
+string g_qm_q08_trade_log = "";
+
 CTrade g_qm_fw_trade;
 
 string QM_FrameworkSlug(const int ea_id)
@@ -296,6 +302,13 @@ void QM_FrameworkOnTradeTransaction(const MqlTradeTransaction &trans,
    const double commission = HistoryDealGetDouble(trans.deal, DEAL_COMMISSION);
    const double net        = profit + swap + commission;
 
+   // Q08 per-trade stream: one TRADE_CLOSED line per closing deal (real net P&L).
+   const double q08_vol = HistoryDealGetDouble(trans.deal, DEAL_VOLUME);
+   const long   q08_t   = (long)HistoryDealGetInteger(trans.deal, DEAL_TIME);
+   g_qm_q08_trade_log += StringFormat(
+      "{\"event\":\"TRADE_CLOSED\",\"time\":%I64d,\"net\":%.2f,\"profit\":%.2f,\"swap\":%.2f,\"commission\":%.2f,\"volume\":%.2f}\r\n",
+      q08_t, net, profit, swap, commission, q08_vol);
+
    // Q04 EA-side simulated commission: accumulate a PF-net that reflects a worst-case
    // USD/lot round-trip charge the tester does not apply to custom symbols. Charged once
    // per closing deal on its volume (round-trip per lot). Pure accounting — does not
@@ -364,6 +377,22 @@ void QM_FrameworkShutdown()
         {
          FileWriteString(q04_fh, payload);
          FileClose(q04_fh);
+        }
+     }
+   // Q08 per-trade stream: dump the accumulated TRADE_CLOSED lines to a deterministic
+   // Common\Files path so the Davey aggregator can read real per-trade P&L (the tester
+   // writes the EA's own log to the agent sandbox, which Q08 can't find). Always written
+   // when trades occurred — Q08 runs its own backtest, reads this, then clears/re-runs.
+   if(g_qm_fw_initialized && StringLen(g_qm_q08_trade_log) > 0)
+     {
+      string q08_sym = _Symbol;
+      StringReplace(q08_sym, ".", "_");
+      const string q08_path = StringFormat("QM\\q08_trades\\%d_%s.jsonl", g_qm_fw_ea_id, q08_sym);
+      int q08_fh = FileOpen(q08_path, FILE_WRITE | FILE_TXT | FILE_ANSI | FILE_COMMON);
+      if(q08_fh != INVALID_HANDLE)
+        {
+         FileWriteString(q08_fh, g_qm_q08_trade_log);
+         FileClose(q08_fh);
         }
      }
    if(g_qm_fw_initialized)

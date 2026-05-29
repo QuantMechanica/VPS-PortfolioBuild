@@ -2436,6 +2436,7 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
             "--symbol", symbol,
             "--log", str(log_path),
             "--out-dir", str(report_root / ea_id / "Q08" / symbol.replace(".", "_")),
+            "--terminal", terminal or "T1",
         ]
     elif phase == "Q09":
         cmd.extend([
