@@ -298,12 +298,15 @@ def push_worktree_branch(cwd: Path, branch: str, timeout: int = 120) -> dict[str
 
     env = os.environ.copy()
     env["GIT_TERMINAL_PROMPT"] = "0"
+    env["GCM_INTERACTIVE"] = "never"
+    # Classic PATs use Basic auth; rewrite the github.com URL to embed credentials
+    # so GCM is bypassed entirely in headless/session-0 contexts.
     cmd = [
         "git",
         "-C",
         str(cwd),
         "-c",
-        f"http.extraHeader=Authorization: Bearer {token}",
+        f"url.https://x-access-token:{token}@github.com/.insteadOf=https://github.com/",
         "push",
         "origin",
         f"HEAD:{branch}",
