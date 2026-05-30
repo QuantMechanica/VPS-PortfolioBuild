@@ -523,6 +523,40 @@ def claude_work_available() -> dict[str, Any]:
         return {"any_work": True, "reason": f"work_check_error:{exc!r}"}
 
 
+def _agent_tasks_work_available(agent: str) -> dict[str, Any]:
+    """Pre-spawn guard for Codex/Gemini: skip if no actionable work in agent_tasks.
+
+    Checks two signals:
+    - Tasks already assigned to this agent with state TODO or IN_PROGRESS
+    - Unrouted BACKLOG tasks (route-many might assign them to this agent)
+    Fails OPEN so a DB error never starves the agent.
+    """
+    import sqlite3 as _sqlite3
+    db = FARM_ROOT / "state" / "farm_state.sqlite"
+    if not db.exists():
+        return {"any_work": True, "reason": "db_missing_assume_work"}
+    try:
+        con = _sqlite3.connect(db)
+        con.row_factory = _sqlite3.Row
+        n_assigned = con.execute(
+            "SELECT COUNT(*) FROM agent_tasks WHERE assigned_agent=? AND state IN ('TODO','IN_PROGRESS')",
+            (agent,),
+        ).fetchone()[0]
+        n_backlog = con.execute(
+            "SELECT COUNT(*) FROM agent_tasks WHERE state='BACKLOG'",
+        ).fetchone()[0]
+        con.close()
+        any_work = (n_assigned + n_backlog) > 0
+        return {
+            "any_work": any_work,
+            f"{agent}_assigned": n_assigned,
+            "backlog_unrouted": n_backlog,
+        }
+    except Exception as exc:
+        # Fail OPEN — if the check fails, spawn anyway rather than starve the agent.
+        return {"any_work": True, "reason": f"work_check_error:{exc!r}"}
+
+
 def run_agent(agent: str, dry_run: bool, stale_minutes: int, timeout_minutes: int, max_sessions: int) -> dict[str, Any]:
     if agent == "claude" and CLAUDE_DISABLED_FLAG.exists():
         return {
@@ -535,6 +569,17 @@ def run_agent(agent: str, dry_run: bool, stale_minutes: int, timeout_minutes: in
     # PT12 2026-05-24 — Claude empty-spawn guard.
     if agent == "claude" and not dry_run:
         wa = claude_work_available()
+        if not wa.get("any_work"):
+            return {
+                "agent": agent,
+                "ok": True,
+                "skipped": True,
+                "reason": "no_actionable_work",
+                "work_available_check": wa,
+            }
+    # 2026-05-30 — Codex/Gemini empty-spawn guard (mirrors PT12 logic for agent_tasks).
+    if agent in ("codex", "gemini") and not dry_run:
+        wa = _agent_tasks_work_available(agent)
         if not wa.get("any_work"):
             return {
                 "agent": agent,
