@@ -24,6 +24,11 @@ credential-manager / remote-https children hanging.
 - Disabled `QM_StrategyFarm_ClaudeOrchestration_15min`.
 - Stopped stale `claude.exe`, `git.exe`, `git-remote-https.exe`, and
   `git-credential-manager.exe` processes tied to the old Claude orchestration runs.
+- Set `D:\QM\strategy_farm\CLAUDE_DISABLED.flag` so `farmctl.py pump` cannot spawn
+  Claude review/G0/research work while the token throttle is active.
+- Archived stale empty `D:\QM\strategy_farm\CODEX_LOW_TOKENS.flag` to
+  `CODEX_LOW_TOKENS.flag.cleared_20260530T211719Z`; it was blocking Codex spawns
+  and causing the pump to fall back to Claude.
 - Did not stop MT5 factory workers, Qxx pipeline scripts, Codex, or `T_Live`.
 
 ## Current Policy
