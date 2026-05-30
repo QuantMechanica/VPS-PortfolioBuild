@@ -36,6 +36,8 @@ used as the default factory executor while weekly quota is constrained.
   - count budget from 2026-05-30 23:30 Europe/Berlin so stale same-day logs do
     not consume the new controlled-mode budget,
   - no runs after Friday 2026-06-05 00:00 Europe/Berlin.
+- `QM_StrategyFarm_ClaudeVerify_4h` is disabled during controlled mode because it
+  invokes Claude directly and does not use the orchestration budget policy.
 
 With the 2026-05-30 quota snapshot showing weekly all-model usage at 41% and Sonnet at
 47%, this keeps the remaining quota for explicit premium work instead of background churn.
