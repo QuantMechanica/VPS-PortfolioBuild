@@ -25,14 +25,15 @@ used as the default factory executor while weekly quota is constrained.
 
 ## Runtime Controls
 
-- `D:\QM\strategy_farm\CLAUDE_PUMP_DISABLED.flag` blocks `farmctl.py pump` from spawning
-  Claude lanes. The pump routes review/G0/research fallbacks to Codex instead.
+- `farmctl.py pump` may spawn Claude automatically for the Claude-owned lanes above.
+  Pump Claude concurrency is capped at 3 simultaneous Claude sessions.
+  G0/card mass review remains routed to Codex.
 - `D:\QM\strategy_farm\CLAUDE_DISABLED.flag` is the emergency full kill-switch. It disables
   Claude in the deterministic router and in orchestration wrappers.
 - `D:\QM\strategy_farm\CLAUDE_BUDGET_POLICY.json` caps headless Claude orchestration:
-  - max 2 real Claude orchestration runs per local day,
-  - min 6 hours between real runs,
-  - max 1 Claude session per run,
+  - no daily run-count cap,
+  - no fixed minimum interval between real runs,
+  - max 3 Claude sessions per orchestration run,
   - count budget from 2026-05-30 23:30 Europe/Berlin so stale same-day logs do
     not consume the new controlled-mode budget,
   - no runs after Friday 2026-06-05 00:00 Europe/Berlin.
@@ -40,4 +41,5 @@ used as the default factory executor while weekly quota is constrained.
   invokes Claude directly and does not use the orchestration budget policy.
 
 With the 2026-05-30 quota snapshot showing weekly all-model usage at 41% and Sonnet at
-47%, this keeps the remaining quota for explicit premium work instead of background churn.
+47%, this keeps Claude available for the right work while avoiding accidental stale
+process churn.

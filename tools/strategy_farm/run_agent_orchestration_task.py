@@ -531,9 +531,9 @@ def _parse_dt(value: str) -> dt.datetime | None:
 def _claude_budget_policy() -> dict[str, Any]:
     defaults: dict[str, Any] = {
         "enabled": True,
-        "max_runs_per_day": 2,
-        "min_minutes_between_runs": 360,
-        "max_sessions_per_run": 1,
+        "max_runs_per_day": 0,
+        "min_minutes_between_runs": 0,
+        "max_sessions_per_run": 3,
     }
     if not CLAUDE_BUDGET_POLICY.exists():
         return defaults
