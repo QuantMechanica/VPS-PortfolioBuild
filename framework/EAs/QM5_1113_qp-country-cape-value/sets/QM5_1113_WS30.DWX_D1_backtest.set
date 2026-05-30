@@ -1,0 +1,37 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1113
+; ea_slug:      qp-country-cape-value
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       WS30.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1.00
+; build_hash:   89e870df9ab808efc5c4c3d856031d23452dbd92a7a51bb4c9637e4f9f3f9d0e
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1113
+qm_magic_slot_offset=1
+qm_rng_seed=42
+RISK_PERCENT=0
+RISK_FIXED=1000
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0
+strategy_cape_csv_path=QM5_1113_country_cape.csv
+strategy_cape_threshold=15.0
+strategy_bucket_pct=33.0
+strategy_min_eligible=3
+strategy_csv_stale_days=800
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=5.0

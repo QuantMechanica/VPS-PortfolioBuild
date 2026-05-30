@@ -1,0 +1,42 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1140
+; ea_slug:      qp-sp500-ma10-breakout
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       WS30.DWX
+; timeframe:    M15
+; environment:  live
+; magic_slot:   2
+; risk_mode:    PERCENT
+; portfolio_weight: 1
+; build_hash:   087061da0f3e42365b1c85dc7ba838dc9e8598442f08ed8efce4090f7c011eeb
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1140
+qm_magic_slot_offset=2
+qm_rng_seed=42
+RISK_PERCENT=0.25
+RISK_FIXED=0
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0
+strategy_sma_period_d1=10
+strategy_min_d1_closes=60
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=2
+strategy_spread_median_mult=3
+strategy_spread_lookback_days=20
+strategy_fixed_hold_enabled=false
+strategy_fixed_hold_days=3
+strategy_entry_hour_ny=9
+strategy_entry_minute_ny=30
+strategy_safety_exit_hour_ny=15
+strategy_safety_exit_minute_ny=55

@@ -1,0 +1,41 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1164
+; ea_slug:      unger-gold-donchian-bias
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       XAUUSD.DWX
+; timeframe:    M15
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   86f2b734d306688220c8c7f8cd21e7d51a505cc1743672b95acb08557fbb147a
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_PERCENT=0
+RISK_FIXED=1000
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=5
+qm_news_compliance=1
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=2
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+strategy_donchian_period=20
+strategy_atr_period=14
+strategy_sl_atr_mult=1.50
+strategy_long_start_hour_ny=8
+strategy_long_start_min_ny=0
+strategy_long_end_hour_ny=12
+strategy_long_end_min_ny=0
+strategy_short_start_hour_ny=20
+strategy_short_start_min_ny=0
+strategy_short_end_hour_ny=2
+strategy_short_end_min_ny=0
+strategy_max_spread_points=250

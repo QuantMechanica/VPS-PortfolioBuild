@@ -1,0 +1,42 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1249
+; ea_slug:      hsu-carry-stop
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       USDJPY.DWX
+; timeframe:    D1
+; environment:  live
+; magic_slot:   3
+; risk_mode:    PERCENT
+; portfolio_weight: 0.166667
+; build_hash:   414a511ceb096874c1c2f72177deb9fa6e976de1c322fb31f0fa1cf636a25016
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1249
+qm_magic_slot_offset=3
+qm_rng_seed=42
+RISK_PERCENT=0.25
+RISK_FIXED=0
+PORTFOLIO_WEIGHT=0.166667
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0
+strategy_rates_csv_path=QM5_1249_fx_monthly_rates.csv
+strategy_rank_count=2
+strategy_stale_calendar_days=45
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=2.5
+strategy_rebalance_months=1
+strategy_vol_filter_enabled=false
+strategy_vol_window_d1=20
+strategy_vol_baseline_d1=252
+strategy_vol_percentile=80.0
+strategy_spread_median_days=20
+strategy_spread_mult=3.0

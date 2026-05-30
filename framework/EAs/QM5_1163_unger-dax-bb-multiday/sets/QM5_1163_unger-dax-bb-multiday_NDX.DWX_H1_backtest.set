@@ -1,0 +1,45 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1163
+; ea_slug:      unger-dax-bb-multiday
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       NDX.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   a7b6168a7ffd98726e487f1b212a856f0b3cb16d0a477c2e13717500fbd653b5
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1163
+qm_magic_slot_offset=1
+qm_rng_seed=42
+RISK_PERCENT=0
+RISK_FIXED=1000
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=1
+qm_news_compliance=1
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0
+strategy_timeframe_minutes=60
+strategy_bb_period=40
+strategy_bb_deviation=2.0
+strategy_atr_period=14
+strategy_sl_atr_mult=2.5
+strategy_use_take_profit=true
+strategy_tp_atr_mult=5.0
+strategy_use_atr_trailing=true
+strategy_trail_atr_mult=2.5
+strategy_max_hold_bars=40
+strategy_entry_start_hhmm=900
+strategy_entry_end_hhmm=1730
+strategy_friday_cutoff_hhmm=1700
+strategy_max_spread_points=250
+strategy_allow_ports=true

@@ -1,0 +1,38 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1075
+; ea_slug:      as-accel-dualmom
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       GER40.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   3
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   1c29abfd4940f85ca37fd48c50e92623ccf76953a3307c31d3d16efa6a2717a4
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_magic_slot_offset=3
+qm_rng_seed=42
+RISK_PERCENT=0
+RISK_FIXED=1000
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=1
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0
+strategy_us_proxy_1=SP500.DWX
+strategy_us_proxy_2=NDX.DWX
+strategy_us_proxy_3=WS30.DWX
+strategy_international_proxy=GER40.DWX
+strategy_m1_bars=22
+strategy_m3_bars=63
+strategy_m6_bars=126
+strategy_atr_period=20
+strategy_atr_sl_mult=3.0

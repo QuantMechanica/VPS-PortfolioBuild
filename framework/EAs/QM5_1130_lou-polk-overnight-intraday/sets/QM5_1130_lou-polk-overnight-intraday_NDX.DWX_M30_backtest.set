@@ -1,0 +1,40 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1130
+; ea_slug:      lou-polk-overnight-intraday
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       NDX.DWX
+; timeframe:    M30
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1.00
+; build_hash:   a7d5d700fd2a03fbd0d483708f5735be43082bce2df264ec845b54565af43ba8
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1130
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_PERCENT=0
+RISK_FIXED=1000
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=5
+qm_news_compliance=1
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=2
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0
+strategy_timeframe_minutes=30
+strategy_atr_period=14
+strategy_atr_sl_mult=3.0
+strategy_skip_friday_entries=true
+strategy_use_vol_regime_filter=true
+strategy_vol_lookback_days=252
+strategy_vol_threshold_mult=1.5
+strategy_entry_offset_minutes=0
+strategy_exit_offset_minutes=0
+strategy_max_spread_points=0

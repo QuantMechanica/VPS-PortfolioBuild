@@ -3,79 +3,56 @@
 #property description "QM5_10009 Robot Wealth FX Cointegration Bollinger Bands"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_BasketOrder.mqh>
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                    = 10009;
-input int    qm_magic_slot_offset        = 0;
+input int    qm_ea_id                   = 10009;
+input int    qm_magic_slot_offset       = 0;
+input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT                = 0.0;
-input double RISK_FIXED                  = 1000.0;
-input double PORTFOLIO_WEIGHT            = 1.0;
+input double RISK_PERCENT               = 0.0;
+input double RISK_FIXED                 = 1000.0;
+input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsMode qm_news_mode           = QM_NEWS_PAUSE;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
+input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled     = true;
+input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
+input group "Stress"
+input double qm_stress_reject_probability = 0.0;
+
 input group "Strategy"
-input int    strategy_hedge_lookback_d1  = 500;
-input int    strategy_min_z_lookback     = 20;
-input int    strategy_max_z_lookback     = 120;
-input double strategy_entry_z            = 2.0;
-input double strategy_exit_z             = 1.0;
-input double strategy_emergency_z        = 4.0;
-input double strategy_min_half_life      = 5.0;
-input double strategy_max_half_life      = 60.0;
-input double strategy_time_stop_mult     = 3.0;
-input int    strategy_time_stop_cap_d1   = 90;
-input int    strategy_atr_period         = 20;
-input double strategy_stop_excursion_mult = 1.5;
-input int    strategy_max_spread_points  = 50;
+input int    strategy_hedge_lookback       = 500;
+input int    strategy_min_half_life_bars   = 5;
+input int    strategy_max_half_life_bars   = 60;
+input int    strategy_min_z_lookback       = 20;
+input int    strategy_max_z_lookback       = 120;
+input double strategy_entry_z              = 2.0;
+input double strategy_exit_z               = 1.0;
+input double strategy_emergency_z          = 4.0;
+input int    strategy_max_hold_cap_bars    = 90;
+input int    strategy_leg_stop_pips        = 250;
 
-#define QM10009_LEGS 3
-
-string g_symbols[QM10009_LEGS] = {"AUDUSD.DWX", "NZDUSD.DWX", "USDCAD.DWX"};
-double g_weights[QM10009_LEGS] = {1.0, -1.0, 1.0};
-int    g_weight_month_key = 0;
-bool   g_weight_valid = false;
-double g_cached_z = 0.0;
-double g_cached_half_life = 0.0;
-double g_cached_stdev = 0.0;
-bool   g_cached_state_valid = false;
-bool   g_exit_state = false;
-
-int SymbolSlotFor(const string symbol)
-  {
-   if(symbol == "AUDUSD.DWX") return 0;
-   if(symbol == "NZDUSD.DWX") return 1;
-   if(symbol == "USDCAD.DWX") return 2;
-   return qm_magic_slot_offset;
-  }
-
-int SymbolIndex(const string symbol)
-  {
-   for(int i = 0; i < QM10009_LEGS; ++i)
-      if(symbol == g_symbols[i])
-         return i;
-   return -1;
-  }
-
-double SpreadTermWeight(const int idx)
-  {
-   if(idx == 2)
-      return -g_weights[idx]; // USDCAD is inverted to keep quote-currency direction consistent.
-   return g_weights[idx];
-  }
-
-int SignOf(const double value)
-  {
-   if(value > 0.0) return 1;
-   if(value < 0.0) return -1;
-   return 0;
-  }
+string  g_symbols[3] = {"AUDUSD.DWX", "NZDUSD.DWX", "USDCAD.DWX"};
+int     g_slots[3] = {0, 1, 2};
+double  g_weights[3] = {1.0, -1.0, -1.0};
+double  g_spreads[600];
+int     g_spread_count = 0;
+int     g_current_month_key = -1;
+int     g_z_lookback = 20;
+double  g_half_life = 20.0;
+double  g_current_z = 0.0;
+int     g_signal_direction = 0;
+bool    g_state_ready = false;
+datetime g_entry_bar_time = 0;
 
 int MonthKey(const datetime t)
   {
@@ -84,381 +61,380 @@ int MonthKey(const datetime t)
    return dt.year * 100 + dt.mon;
   }
 
-bool LoadLogCloses(const string symbol, const int count, double &out[])
+double PipDistance(const string symbol, const int pips)
   {
-   MqlRates rates[];
-   ArraySetAsSeries(rates, true);
-   const int copied = CopyRates(symbol, PERIOD_D1, 1, count, rates); // perf-allowed: called only from the closed-bar path after QM_IsNewBar().
-   if(copied != count)
+   const double point = SymbolInfoDouble(symbol, SYMBOL_POINT);
+   const int digits = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
+   if(point <= 0.0 || pips <= 0)
+      return 0.0;
+   const double pip_points = (digits == 3 || digits == 5) ? 10.0 : 1.0;
+   return pips * pip_points * point;
+  }
+
+bool ReadCloses(double &aud[], double &nzd[], double &cad_inv[], const int bars)
+  {
+   if(bars < 50)
       return false;
 
-   ArrayResize(out, count);
-   for(int i = 0; i < count; ++i)
+   ArraySetAsSeries(aud, true);
+   ArraySetAsSeries(nzd, true);
+   ArraySetAsSeries(cad_inv, true);
+
+   double cad_raw[];
+   ArraySetAsSeries(cad_raw, true);
+   if(CopyClose(g_symbols[0], PERIOD_D1, 1, bars, aud) != bars)
+      return false;
+   if(CopyClose(g_symbols[1], PERIOD_D1, 1, bars, nzd) != bars)
+      return false;
+   if(CopyClose(g_symbols[2], PERIOD_D1, 1, bars, cad_raw) != bars)
+      return false;
+
+   ArrayResize(cad_inv, bars);
+   for(int i = 0; i < bars; ++i)
      {
-      if(rates[i].close <= 0.0)
+      if(aud[i] <= 0.0 || nzd[i] <= 0.0 || cad_raw[i] <= 0.0)
          return false;
-      out[i] = MathLog(rates[i].close);
-      if(!MathIsValidNumber(out[i]))
-         return false;
+      cad_inv[i] = 1.0 / cad_raw[i];
      }
    return true;
   }
 
-bool Invert3x3(const double &m[][3], double &inv[][3])
+bool EstimateWeights(const double &aud[], const double &nzd[], const double &cad_inv[], const int bars)
   {
-   const double a = m[0][0], b = m[0][1], c = m[0][2];
-   const double d = m[1][0], e = m[1][1], f = m[1][2];
-   const double g = m[2][0], h = m[2][1], i = m[2][2];
-   const double det = a * (e * i - f * h) - b * (d * i - f * g) + c * (d * h - e * g);
-   if(MathAbs(det) <= 1e-12 || !MathIsValidNumber(det))
+   double sx1 = 0.0, sx2 = 0.0, sy = 0.0;
+   double sx1x1 = 0.0, sx2x2 = 0.0, sx1x2 = 0.0, sx1y = 0.0, sx2y = 0.0;
+   for(int i = 0; i < bars; ++i)
+     {
+      const double x1 = nzd[i];
+      const double x2 = cad_inv[i];
+      const double y = aud[i];
+      sx1 += x1;
+      sx2 += x2;
+      sy += y;
+      sx1x1 += x1 * x1;
+      sx2x2 += x2 * x2;
+      sx1x2 += x1 * x2;
+      sx1y += x1 * y;
+      sx2y += x2 * y;
+     }
+
+   const double n = (double)bars;
+   const double a11 = sx1x1 - sx1 * sx1 / n;
+   const double a22 = sx2x2 - sx2 * sx2 / n;
+   const double a12 = sx1x2 - sx1 * sx2 / n;
+   const double b1 = sx1y - sx1 * sy / n;
+   const double b2 = sx2y - sx2 * sy / n;
+   const double det = a11 * a22 - a12 * a12;
+   if(MathAbs(det) < 1e-12)
       return false;
 
-   inv[0][0] =  (e * i - f * h) / det;
-   inv[0][1] = -(b * i - c * h) / det;
-   inv[0][2] =  (b * f - c * e) / det;
-   inv[1][0] = -(d * i - f * g) / det;
-   inv[1][1] =  (a * i - c * g) / det;
-   inv[1][2] = -(a * f - c * d) / det;
-   inv[2][0] =  (d * h - e * g) / det;
-   inv[2][1] = -(a * h - b * g) / det;
-   inv[2][2] =  (a * e - b * d) / det;
+   const double beta1 = (b1 * a22 - b2 * a12) / det;
+   const double beta2 = (a11 * b2 - a12 * b1) / det;
+   if(!MathIsValidNumber(beta1) || !MathIsValidNumber(beta2) ||
+      MathAbs(beta1) > 20.0 || MathAbs(beta2) > 20.0)
+      return false;
+
+   g_weights[0] = 1.0;
+   g_weights[1] = -beta1;
+   g_weights[2] = -beta2;
    return true;
   }
 
-bool EstimateMonthlyWeights()
+void BuildSpreadSeries(const double &aud[], const double &nzd[], const double &cad_inv[], const int bars)
   {
-   const int n = MathMax(60, strategy_hedge_lookback_d1);
-   double logs0[], logs1[], logs2[];
-   if(!LoadLogCloses(g_symbols[0], n, logs0))
-      return false;
-   if(!LoadLogCloses(g_symbols[1], n, logs1))
-      return false;
-   if(!LoadLogCloses(g_symbols[2], n, logs2))
-      return false;
-
-   double mean[QM10009_LEGS] = {0.0, 0.0, 0.0};
-   for(int k = 0; k < n; ++k)
-     {
-      mean[0] += logs0[k];
-      mean[1] += logs1[k];
-      mean[2] += -logs2[k];
-     }
-   for(int j = 0; j < QM10009_LEGS; ++j)
-      mean[j] /= (double)n;
-
-   double cov[3][3];
-   ArrayInitialize(cov, 0.0);
-   for(int k = 0; k < n; ++k)
-     {
-      const double x0 = logs0[k] - mean[0];
-      const double x1 = logs1[k] - mean[1];
-      const double x2 = -logs2[k] - mean[2];
-      const double x[3] = {x0, x1, x2};
-      for(int r = 0; r < 3; ++r)
-         for(int c = 0; c < 3; ++c)
-            cov[r][c] += x[r] * x[c];
-     }
-   for(int r = 0; r < 3; ++r)
-      for(int c = 0; c < 3; ++c)
-         cov[r][c] /= (double)MathMax(1, n - 1);
-
-   cov[0][0] += 1e-10;
-   cov[1][1] += 1e-10;
-   cov[2][2] += 1e-10;
-
-   double inv[3][3];
-   ArrayInitialize(inv, 0.0);
-   if(!Invert3x3(cov, inv))
-      return false;
-
-   double v[3] = {1.0, -1.0, 1.0};
-   for(int iter = 0; iter < 12; ++iter)
-     {
-      double y[3] =
-        {
-         inv[0][0] * v[0] + inv[0][1] * v[1] + inv[0][2] * v[2],
-         inv[1][0] * v[0] + inv[1][1] * v[1] + inv[1][2] * v[2],
-         inv[2][0] * v[0] + inv[2][1] * v[1] + inv[2][2] * v[2]
-        };
-      const double norm = MathAbs(y[0]) + MathAbs(y[1]) + MathAbs(y[2]);
-      if(norm <= 0.0 || !MathIsValidNumber(norm))
-         return false;
-      for(int j = 0; j < 3; ++j)
-         v[j] = y[j] / norm;
-     }
-
-   if(v[0] < 0.0)
-      for(int j = 0; j < 3; ++j)
-         v[j] = -v[j];
-
-   const double abs_sum = MathAbs(v[0]) + MathAbs(v[1]) + MathAbs(v[2]);
-   if(abs_sum <= 0.0)
-      return false;
-   for(int j = 0; j < 3; ++j)
-     {
-      g_weights[j] = v[j] / abs_sum;
-      if(!MathIsValidNumber(g_weights[j]) || MathAbs(g_weights[j]) <= 1e-8)
-         return false;
-     }
-   g_weight_valid = true;
-   return true;
+   g_spread_count = MathMin(bars, 600);
+   for(int i = 0; i < g_spread_count; ++i)
+      g_spreads[i] = g_weights[0] * aud[i] + g_weights[1] * nzd[i] + g_weights[2] * cad_inv[i];
   }
 
-double SpreadAt(const double &logs0[], const double &logs1[], const double &logs2[], const int idx)
+bool EstimateHalfLife()
   {
-   return g_weights[0] * logs0[idx] + g_weights[1] * logs1[idx] - g_weights[2] * logs2[idx];
+   const int bars = MathMin(g_spread_count, strategy_hedge_lookback);
+   if(bars < 50)
+      return false;
+
+   double sx = 0.0, sy = 0.0, sxx = 0.0, sxy = 0.0;
+   int n = 0;
+   for(int i = bars - 2; i >= 0; --i)
+     {
+      const double lagged = g_spreads[i + 1];
+      const double delta = g_spreads[i] - g_spreads[i + 1];
+      sx += lagged;
+      sy += delta;
+      sxx += lagged * lagged;
+      sxy += lagged * delta;
+      ++n;
+     }
+
+   const double denom = sxx - sx * sx / (double)n;
+   if(MathAbs(denom) < 1e-12)
+      return false;
+
+   const double beta = (sxy - sx * sy / (double)n) / denom;
+   if(!MathIsValidNumber(beta) || beta >= 0.0)
+      return false;
+
+   g_half_life = -MathLog(2.0) / beta;
+   if(!MathIsValidNumber(g_half_life))
+      return false;
+   return (g_half_life >= strategy_min_half_life_bars && g_half_life <= strategy_max_half_life_bars);
   }
 
-bool RefreshSpreadState()
+bool ComputeZScore()
   {
-   g_cached_state_valid = false;
-   g_exit_state = false;
+   g_z_lookback = (int)MathRound(g_half_life);
+   g_z_lookback = MathMax(strategy_min_z_lookback, MathMin(strategy_max_z_lookback, g_z_lookback));
+   if(g_spread_count <= g_z_lookback)
+      return false;
+
+   double mean = 0.0;
+   for(int i = 1; i <= g_z_lookback; ++i)
+      mean += g_spreads[i];
+   mean /= (double)g_z_lookback;
+
+   double var = 0.0;
+   for(int i = 1; i <= g_z_lookback; ++i)
+     {
+      const double d = g_spreads[i] - mean;
+      var += d * d;
+     }
+   const double sd = MathSqrt(var / (double)(g_z_lookback - 1));
+   if(sd <= 0.0 || !MathIsValidNumber(sd))
+      return false;
+
+   g_current_z = (g_spreads[0] - mean) / sd;
+   return MathIsValidNumber(g_current_z);
+  }
+
+bool RefreshState()
+  {
+   for(int i = 0; i < 3; ++i)
+      SymbolSelect(g_symbols[i], true);
+
+   const int bars = MathMax(strategy_hedge_lookback + 5, strategy_max_z_lookback + 10);
+   double aud[], nzd[], cad_inv[];
+   if(!ReadCloses(aud, nzd, cad_inv, bars))
+     {
+      g_state_ready = false;
+      return false;
+     }
 
    const datetime bar_time = iTime(_Symbol, PERIOD_D1, 1);
-   if(bar_time <= 0)
-      return false;
-
-   const int mk = MonthKey(bar_time);
-   if(!g_weight_valid || mk != g_weight_month_key)
+   const int month_key = MonthKey(bar_time);
+   if(month_key != g_current_month_key)
      {
-      if(!EstimateMonthlyWeights())
+      if(!EstimateWeights(aud, nzd, cad_inv, strategy_hedge_lookback))
+        {
+         g_state_ready = false;
          return false;
-      g_weight_month_key = mk;
+        }
+      g_current_month_key = month_key;
      }
 
-   const int need = MathMax(strategy_hedge_lookback_d1, strategy_max_z_lookback + 5);
-   double logs0[], logs1[], logs2[];
-   if(!LoadLogCloses(g_symbols[0], need, logs0))
-      return false;
-   if(!LoadLogCloses(g_symbols[1], need, logs1))
-      return false;
-   if(!LoadLogCloses(g_symbols[2], need, logs2))
-      return false;
-
-   double sum_x = 0.0;
-   double sum_y = 0.0;
-   double sum_xx = 0.0;
-   double sum_xy = 0.0;
-   const int ar_n = MathMin(strategy_hedge_lookback_d1 - 1, need - 1);
-   for(int i = 1; i <= ar_n; ++i)
+   BuildSpreadSeries(aud, nzd, cad_inv, bars);
+   if(!EstimateHalfLife() || !ComputeZScore())
      {
-      const double prev = SpreadAt(logs0, logs1, logs2, i);
-      const double curr = SpreadAt(logs0, logs1, logs2, i - 1);
-      const double delta = curr - prev;
-      sum_x += prev;
-      sum_y += delta;
-      sum_xx += prev * prev;
-      sum_xy += prev * delta;
+      g_state_ready = false;
+      return false;
      }
 
-   const double denom = (double)ar_n * sum_xx - sum_x * sum_x;
-   if(denom <= 1e-12)
-      return false;
-   const double lambda = ((double)ar_n * sum_xy - sum_x * sum_y) / denom;
-   if(lambda >= 0.0 || !MathIsValidNumber(lambda))
-      return false;
-
-   g_cached_half_life = -MathLog(2.0) / lambda;
-   if(!MathIsValidNumber(g_cached_half_life) ||
-      g_cached_half_life < strategy_min_half_life ||
-      g_cached_half_life > strategy_max_half_life)
-      return false;
-
-   int z_n = (int)MathRound(g_cached_half_life);
-   z_n = MathMax(strategy_min_z_lookback, MathMin(strategy_max_z_lookback, z_n));
-   if(z_n + 1 > need)
-      return false;
-
-   double spread_sum = 0.0;
-   double spread_sumsq = 0.0;
-   for(int i = 0; i < z_n; ++i)
-     {
-      const double s = SpreadAt(logs0, logs1, logs2, i);
-      spread_sum += s;
-      spread_sumsq += s * s;
-     }
-
-   const double mean = spread_sum / (double)z_n;
-   const double var = (spread_sumsq / (double)z_n) - mean * mean;
-   if(var <= 0.0)
-      return false;
-
-   g_cached_stdev = MathSqrt(var);
-   g_cached_z = (SpreadAt(logs0, logs1, logs2, 0) - mean) / g_cached_stdev;
-   g_cached_state_valid = MathIsValidNumber(g_cached_z);
-   return g_cached_state_valid;
+   g_state_ready = true;
+   return true;
   }
 
-bool HasOpenPosition(ulong &ticket, datetime &open_time)
+bool HasBasketPosition()
   {
-   ticket = 0;
-   open_time = 0;
-   const int magic = QM_FrameworkMagic();
+   for(int i = 0; i < PositionsTotal(); ++i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      for(int leg = 0; leg < 3; ++leg)
+        {
+         if(PositionGetString(POSITION_SYMBOL) == g_symbols[leg] &&
+            (int)PositionGetInteger(POSITION_MAGIC) == QM_MagicChecked(qm_ea_id, g_slots[leg], g_symbols[leg]))
+            return true;
+        }
+     }
+   return false;
+  }
+
+int CloseBasket(const QM_ExitReason reason)
+  {
+   int closed = 0;
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
-      const ulong t = PositionGetTicket(i);
-      if(t == 0 || !PositionSelectByTicket(t))
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
          continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      ticket = t;
-      open_time = (datetime)PositionGetInteger(POSITION_TIME);
-      return true;
+      const string symbol = PositionGetString(POSITION_SYMBOL);
+      for(int leg = 0; leg < 3; ++leg)
+        {
+         if(symbol == g_symbols[leg] &&
+            (int)PositionGetInteger(POSITION_MAGIC) == QM_MagicChecked(qm_ea_id, g_slots[leg], g_symbols[leg]))
+           {
+            if(QM_TM_ClosePosition(ticket, reason))
+               ++closed;
+            break;
+           }
+        }
      }
-   return false;
+   return closed;
   }
 
-int HeldD1Bars(const datetime open_time)
+bool OpenBasket(const int signal_direction)
   {
-   if(open_time <= 0)
-      return 0;
-   const int shift = iBarShift(_Symbol, PERIOD_D1, open_time, false);
-   return (shift < 0) ? 0 : shift;
+   double sum_abs = 0.0;
+   for(int leg = 0; leg < 3; ++leg)
+      sum_abs += MathAbs(g_weights[leg]);
+   if(sum_abs <= 0.0)
+      return false;
+
+   bool any_opened = false;
+   for(int leg = 0; leg < 3; ++leg)
+     {
+      const string symbol = g_symbols[leg];
+      const double ask = SymbolInfoDouble(symbol, SYMBOL_ASK);
+      const double bid = SymbolInfoDouble(symbol, SYMBOL_BID);
+      if(ask <= 0.0 || bid <= 0.0)
+         continue;
+
+      const bool buy_leg = (signal_direction * g_weights[leg] < 0.0);
+      const double entry = buy_leg ? ask : bid;
+      const double stop_dist = PipDistance(symbol, strategy_leg_stop_pips);
+      if(stop_dist <= 0.0)
+         continue;
+
+      QM_BasketOrderRequest breq;
+      breq.symbol = symbol;
+      breq.type = buy_leg ? QM_BUY : QM_SELL;
+      breq.price = 0.0;
+      breq.sl = buy_leg ? entry - stop_dist : entry + stop_dist;
+      breq.tp = 0.0;
+      breq.symbol_slot = g_slots[leg];
+      breq.expiration_seconds = 0;
+      breq.reason = (signal_direction > 0) ? "RW_COINTEG_SHORT_POS_SPREAD" : "RW_COINTEG_LONG_NEG_SPREAD";
+
+      const double point = SymbolInfoDouble(symbol, SYMBOL_POINT);
+      const double sl_points = (point > 0.0) ? stop_dist / point : 0.0;
+      breq.lots = QM_LotsForRisk(symbol, sl_points) * MathAbs(g_weights[leg]) / sum_abs;
+
+      ulong ticket = 0;
+      if(QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, 20, breq, ticket))
+         any_opened = true;
+     }
+
+   if(any_opened)
+      g_entry_bar_time = iTime(_Symbol, PERIOD_D1, 1);
+   return any_opened;
   }
 
-double StopDistanceForLeg(const int idx, const double entry_price)
-  {
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
-   const double term_weight = MathAbs(SpreadTermWeight(idx));
-   double log_dist = 0.0;
-   if(term_weight > 0.0 && g_cached_stdev > 0.0)
-      log_dist = strategy_stop_excursion_mult * MathAbs(strategy_entry_z) * g_cached_stdev / term_weight;
-
-   double price_dist = (log_dist > 0.0 && entry_price > 0.0) ? entry_price * (MathExp(log_dist) - 1.0) : 0.0;
-   if(atr > 0.0)
-      price_dist = MathMax(price_dist, atr);
-   if(point > 0.0)
-      price_dist = MathMax(price_dist, 50.0 * point);
-   return price_dist;
-  }
-
-// No Trade Filter (time, spread, news)
 bool Strategy_NoTradeFilter()
   {
-   if(SymbolIndex(_Symbol) < 0)
-      return true;
-   if(strategy_max_spread_points > 0 && SymbolInfoInteger(_Symbol, SYMBOL_SPREAD) > strategy_max_spread_points)
-      return true;
-   return false;
+   return (_Period != PERIOD_D1);
   }
 
-// Trade Entry
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    req.type = QM_BUY;
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
-   req.reason = "";
-   req.symbol_slot = SymbolSlotFor(_Symbol);
+   req.reason = "RW_COINTEG_BASKET_HOST";
+   req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   ulong ticket;
-   datetime open_time;
-   if(HasOpenPosition(ticket, open_time))
+   if(!RefreshState() || HasBasketPosition())
       return false;
 
-   if(!RefreshSpreadState())
+   g_signal_direction = 0;
+   if(g_current_z >= strategy_entry_z)
+      g_signal_direction = 1;
+   else if(g_current_z <= -strategy_entry_z)
+      g_signal_direction = -1;
+
+   if(g_signal_direction == 0)
       return false;
 
-   int spread_direction = 0;
-   if(g_cached_z >= strategy_entry_z)
-      spread_direction = -1;
-   else if(g_cached_z <= -strategy_entry_z)
-      spread_direction = 1;
-   else
-      return false;
-
-   const int idx = SymbolIndex(_Symbol);
-   const int leg_sign = SignOf(SpreadTermWeight(idx));
-   if(leg_sign == 0)
-      return false;
-
-   const int leg_direction = spread_direction * leg_sign;
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
-      return false;
-
-   if(leg_direction > 0)
-     {
-      req.type = QM_BUY;
-      req.price = ask;
-      const double stop_dist = StopDistanceForLeg(idx, ask);
-      if(stop_dist <= 0.0)
-         return false;
-      req.sl = ask - stop_dist;
-      req.reason = "RW_FX_COINTEG_BB_LONG_LEG";
-     }
-   else
-     {
-      req.type = QM_SELL;
-      req.price = bid;
-      const double stop_dist = StopDistanceForLeg(idx, bid);
-      if(stop_dist <= 0.0)
-         return false;
-      req.sl = bid + stop_dist;
-      req.reason = "RW_FX_COINTEG_BB_SHORT_LEG";
-     }
-
-   return true;
+   OpenBasket(g_signal_direction);
+   return false;
   }
 
-// Trade Management
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies basket-level exits only; no trailing, partial, break-even, or add-on logic.
   }
 
-// Trade Close
 bool Strategy_ExitSignal()
   {
-   ulong ticket;
-   datetime open_time;
-   if(!HasOpenPosition(ticket, open_time))
+   if(!HasBasketPosition())
       return false;
 
-   if(!RefreshSpreadState())
+   if(MathAbs(g_current_z) <= strategy_exit_z)
+     {
+      CloseBasket(QM_EXIT_STRATEGY);
       return false;
+     }
 
-   if(MathAbs(g_cached_z) <= strategy_exit_z)
-      return true;
-   if(MathAbs(g_cached_z) >= strategy_emergency_z)
-      return true;
+   if(MathAbs(g_current_z) >= strategy_emergency_z)
+     {
+      CloseBasket(QM_EXIT_STRATEGY);
+      return false;
+     }
 
-   const int max_bars = MathMin(strategy_time_stop_cap_d1,
-                                (int)MathCeil(strategy_time_stop_mult * g_cached_half_life));
-   if(max_bars > 0 && HeldD1Bars(open_time) >= max_bars)
-      return true;
+   if(g_entry_bar_time > 0)
+     {
+      const datetime current_bar = iTime(_Symbol, PERIOD_D1, 1);
+      const int max_hold = MathMin(strategy_max_hold_cap_bars, MathMax(1, (int)MathRound(3.0 * g_half_life)));
+      const int held_seconds = (int)(current_bar - g_entry_bar_time);
+      if(held_seconds >= max_hold * 86400)
+        {
+         CloseBasket(QM_EXIT_TIME_STOP);
+         return false;
+        }
+     }
 
    return false;
   }
 
-// News Filter Hook (callable for P8 News Impact phase)
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
+   for(int i = 0; i < 3; ++i)
+     {
+      if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+        {
+         if(!QM_NewsAllowsTrade2(g_symbols[i], broker_time, qm_news_temporal, qm_news_compliance))
+            return true;
+        }
+      else if(!QM_NewsAllowsTrade(g_symbols[i], broker_time, qm_news_mode_legacy))
+         return true;
+     }
    return false;
   }
 
 int OnInit()
   {
+   for(int i = 0; i < 3; ++i)
+      SymbolSelect(g_symbols[i], true);
+
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode,
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
-                        qm_friday_close_hour_broker))
+                        qm_friday_close_hour_broker,
+                        30,
+                        30,
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact,
+                        qm_rng_seed,
+                        qm_stress_reject_probability,
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
-   for(int i = 0; i < QM10009_LEGS; ++i)
-      SymbolSelect(g_symbols[i], true);
-
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_10009\",\"strategy\":\"rw-fx-cointeg-bb\"}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_10009_rw_fx_cointeg_bb\"}");
    return INIT_SUCCEEDED;
   }
 
@@ -476,7 +452,13 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   if(!QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode))
+
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
@@ -484,39 +466,29 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
+   if(!QM_IsNewBar())
+      return;
+
+   QM_EquityStreamOnNewBar();
+
    Strategy_ManageOpenPosition();
-
-   if(!QM_IsNewBar(_Symbol, PERIOD_D1))
-      return;
-
-   if(Strategy_ExitSignal())
-     {
-      const int magic = QM_FrameworkMagic();
-      for(int i = PositionsTotal() - 1; i >= 0; --i)
-        {
-         const ulong ticket = PositionGetTicket(i);
-         if(ticket == 0 || !PositionSelectByTicket(ticket))
-            continue;
-         if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-            continue;
-         if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-            continue;
-         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
-        }
-      return;
-     }
+   RefreshState();
+   Strategy_ExitSignal();
 
    QM_EntryRequest req;
-   if(Strategy_EntrySignal(req))
-     {
-      ulong out_ticket = 0;
-      QM_TM_OpenPosition(req, out_ticket);
-     }
+   Strategy_EntrySignal(req);
   }
 
 void OnTimer()
   {
    QM_FrameworkOnTimer();
+  }
+
+void OnTradeTransaction(const MqlTradeTransaction &trans,
+                        const MqlTradeRequest &request,
+                        const MqlTradeResult &result)
+  {
+   QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
 double OnTester()

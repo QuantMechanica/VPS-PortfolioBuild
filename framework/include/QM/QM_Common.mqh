@@ -31,6 +31,26 @@ bool g_qm_fw_initialized      = false;
 bool g_qm_fw_friday_close_enabled = true;
 int  g_qm_fw_friday_close_hour_broker = 21;
 
+// Q04 simulated commission (USD per lot, round-trip), applied EA-side.
+// The MT5 tester applies NO commission to custom .DWX symbols (they are MT5 Custom
+// symbols; the broker groups file does not govern them), so PF from the tester report
+// is always gross. For the Q04 commission gate the EA self-accounts a worst-case
+// commission per closing deal and emits a structured PF-net so the gate has a realistic
+// figure without depending on tester-side commission. Default 0 = no effect (every other
+// phase / EA is unchanged until a Q04 setfile sets this input).
+input double InpQMSimCommissionPerLot = 0.0;   // Q04: worst-case USD/lot round-trip (0=off)
+
+double g_qm_sim_gross_profit_net = 0.0;
+double g_qm_sim_gross_loss_net   = 0.0;
+double g_qm_sim_commission_total = 0.0;
+long   g_qm_sim_closed_deals     = 0;
+
+// Q08 (Davey) per-trade stream. The framework previously emitted closing-deal data
+// only on kill-switch divergence, so Q08's load_trades_from_log() found ZERO trades.
+// Accumulate one TRADE_CLOSED JSON line per closing deal and dump to Common\Files at
+// shutdown so the Q08 aggregator (and any robustness gate) can read real per-trade P&L.
+string g_qm_q08_trade_log = "";
+
 CTrade g_qm_fw_trade;
 
 string QM_FrameworkSlug(const int ea_id)
@@ -282,6 +302,30 @@ void QM_FrameworkOnTradeTransaction(const MqlTradeTransaction &trans,
    const double commission = HistoryDealGetDouble(trans.deal, DEAL_COMMISSION);
    const double net        = profit + swap + commission;
 
+   // Q08 per-trade stream: one TRADE_CLOSED line per closing deal (real net P&L).
+   const double q08_vol = HistoryDealGetDouble(trans.deal, DEAL_VOLUME);
+   const long   q08_t   = (long)HistoryDealGetInteger(trans.deal, DEAL_TIME);
+   g_qm_q08_trade_log += StringFormat(
+      "{\"event\":\"TRADE_CLOSED\",\"time\":%I64d,\"net\":%.2f,\"profit\":%.2f,\"swap\":%.2f,\"commission\":%.2f,\"volume\":%.2f}\r\n",
+      q08_t, net, profit, swap, commission, q08_vol);
+
+   // Q04 EA-side simulated commission: accumulate a PF-net that reflects a worst-case
+   // USD/lot round-trip charge the tester does not apply to custom symbols. Charged once
+   // per closing deal on its volume (round-trip per lot). Pure accounting — does not
+   // alter live trading or the tester books; reported in QM_FrameworkShutdown.
+   if(InpQMSimCommissionPerLot > 0.0)
+     {
+      const double sim_vol  = HistoryDealGetDouble(trans.deal, DEAL_VOLUME);
+      const double sim_cost = InpQMSimCommissionPerLot * sim_vol;
+      const double net_after = net - sim_cost;
+      g_qm_sim_commission_total += sim_cost;
+      g_qm_sim_closed_deals++;
+      if(net_after >= 0.0)
+         g_qm_sim_gross_profit_net += net_after;
+      else
+         g_qm_sim_gross_loss_net   += -net_after;
+     }
+
    QM_KillSwitchKSOnTradeClosed(net);
 
    if(QM_KillSwitchKSCheck())
@@ -310,6 +354,47 @@ void QM_FrameworkShutdown()
    QM_ChartUI_Shutdown();
    QM_IndicatorsShutdown();
    QM_EquityStreamShutdown();
+   if(g_qm_fw_initialized && InpQMSimCommissionPerLot > 0.0 && g_qm_sim_closed_deals > 0)
+     {
+      const double pf_net = (g_qm_sim_gross_loss_net > 0.0)
+                            ? g_qm_sim_gross_profit_net / g_qm_sim_gross_loss_net : 0.0;
+      const double net_profit = g_qm_sim_gross_profit_net - g_qm_sim_gross_loss_net;
+      const string payload = StringFormat(
+         "{\"sim_commission_per_lot\":%.2f,\"pf_net\":%.4f,\"net_profit\":%.2f,\"gross_profit_net\":%.2f,\"gross_loss_net\":%.2f,\"closed_deals\":%I64d,\"sim_commission_total\":%.2f}",
+         InpQMSimCommissionPerLot, pf_net, net_profit,
+         g_qm_sim_gross_profit_net, g_qm_sim_gross_loss_net,
+         g_qm_sim_closed_deals, g_qm_sim_commission_total);
+      QM_LogEvent(QM_INFO, "Q04_SIM_COMMISSION", payload);
+      // Also write a deterministic per-(ea,symbol) result file in Common\Files so the
+      // Q04 runner can read PF-net back without parsing the rotating tester journal
+      // or hunting the tester-agent sandbox log. q04_walkforward.py deletes this before
+      // each fold and reads it after (folds run sequentially per ea/symbol).
+      string q04_sym = _Symbol;
+      StringReplace(q04_sym, ".", "_");
+      const string q04_path = StringFormat("QM\\q04_sim\\%d_%s.json", g_qm_fw_ea_id, q04_sym);
+      int q04_fh = FileOpen(q04_path, FILE_WRITE | FILE_TXT | FILE_ANSI | FILE_COMMON);
+      if(q04_fh != INVALID_HANDLE)
+        {
+         FileWriteString(q04_fh, payload);
+         FileClose(q04_fh);
+        }
+     }
+   // Q08 per-trade stream: dump the accumulated TRADE_CLOSED lines to a deterministic
+   // Common\Files path so the Davey aggregator can read real per-trade P&L (the tester
+   // writes the EA's own log to the agent sandbox, which Q08 can't find). Always written
+   // when trades occurred — Q08 runs its own backtest, reads this, then clears/re-runs.
+   if(g_qm_fw_initialized && StringLen(g_qm_q08_trade_log) > 0)
+     {
+      string q08_sym = _Symbol;
+      StringReplace(q08_sym, ".", "_");
+      const string q08_path = StringFormat("QM\\q08_trades\\%d_%s.jsonl", g_qm_fw_ea_id, q08_sym);
+      int q08_fh = FileOpen(q08_path, FILE_WRITE | FILE_TXT | FILE_ANSI | FILE_COMMON);
+      if(q08_fh != INVALID_HANDLE)
+        {
+         FileWriteString(q08_fh, g_qm_q08_trade_log);
+         FileClose(q08_fh);
+        }
+     }
    if(g_qm_fw_initialized)
       QM_LogEvent(QM_INFO, "DEINIT", "{}");
    g_qm_fw_initialized = false;

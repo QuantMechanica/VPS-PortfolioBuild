@@ -3,145 +3,194 @@
 #property description "QM5_10034 Robot Wealth Rolling Z-Score Pairs"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_BasketOrder.mqh>
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                    = 10034;
-input int    qm_magic_slot_offset        = 0;
+input int    qm_ea_id                   = 10034;
+input int    qm_magic_slot_offset       = 0;
+input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT                = 0.0;
-input double RISK_FIXED                  = 1000.0;
-input double PORTFOLIO_WEIGHT            = 0.5;
+input double RISK_PERCENT               = 0.0;
+input double RISK_FIXED                 = 1000.0;
+input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsMode qm_news_mode           = QM_NEWS_OFF;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
+input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled     = true;
+input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
+input group "Stress"
+input double qm_stress_reject_probability = 0.0;
+
 input group "Strategy"
-input int    strategy_z_lookback_d1      = 100;
-input double strategy_beta               = 0.4;
-input double strategy_entry_z            = 1.0;
-input double strategy_exit_z             = 0.0;
-input double strategy_stop_z             = 3.0;
-input int    strategy_atr_period_d1      = 20;
-input double strategy_atr_sl_mult        = 3.0;
-input int    strategy_time_stop_bars     = 30;
+input int    strategy_z_lookback_d1     = 100;
+input double strategy_beta              = 0.4;
+input double strategy_entry_z           = 1.0;
+input double strategy_exit_z            = 0.0;
+input double strategy_stop_z            = 3.0;
+input int    strategy_atr_period_d1     = 20;
+input double strategy_atr_sl_mult       = 3.0;
+input int    strategy_time_stop_bars    = 30;
 input int    strategy_half_life_lookback = 250;
 input double strategy_max_half_life_days = 60.0;
-input int    strategy_max_spread_points  = 0;
+input int    strategy_max_spread_points = 0;
 
-const int STRATEGY_PAIR_COUNT = 2;
-string g_pair_y[2]      = {"SP500.DWX", "XAUUSD.DWX"};
-string g_pair_x[2]      = {"NDX.DWX",   "XAGUSD.DWX"};
-int    g_pair_y_slot[2] = {0, 2};
-int    g_pair_x_slot[2] = {1, 3};
+#define STRATEGY_PAIR_COUNT 2
 
-int Strategy_PairIndex()
+string g_pair_y[STRATEGY_PAIR_COUNT]      = {"SP500.DWX", "XAUUSD.DWX"};
+string g_pair_x[STRATEGY_PAIR_COUNT]      = {"NDX.DWX",   "XAGUSD.DWX"};
+int    g_pair_y_slot[STRATEGY_PAIR_COUNT] = {0, 2};
+int    g_pair_x_slot[STRATEGY_PAIR_COUNT] = {1, 3};
+double g_pair_x_weight[STRATEGY_PAIR_COUNT] = {-0.4, -0.4};
+double g_pair_y_weight[STRATEGY_PAIR_COUNT] = {1.0, 1.0};
+
+double   g_z_now = 0.0;
+double   g_z_prev = 0.0;
+double   g_spread_stdev = 0.0;
+int      g_active_pair = -1;
+datetime g_pair_entry_time = 0;
+bool     g_state_ready = false;
+
+bool Strategy_HasDwxSuffix(const string symbol)
+  {
+   return (StringFind(symbol, ".DWX") == StringLen(symbol) - 4);
+  }
+
+int Strategy_PairIndexForSymbol(const string symbol)
   {
    for(int i = 0; i < STRATEGY_PAIR_COUNT; ++i)
      {
-      if(_Symbol == g_pair_x[i] || _Symbol == g_pair_y[i])
+      if(symbol == g_pair_y[i] || symbol == g_pair_x[i])
          return i;
      }
    return -1;
   }
 
-bool Strategy_IsXLeg(const int pair_index)
+bool Strategy_IsPairLeg(const int pair_index, const string symbol)
   {
-   return (pair_index >= 0 && pair_index < STRATEGY_PAIR_COUNT && _Symbol == g_pair_x[pair_index]);
+   return (pair_index >= 0 && pair_index < STRATEGY_PAIR_COUNT &&
+           (symbol == g_pair_y[pair_index] || symbol == g_pair_x[pair_index]));
   }
 
-int Strategy_CurrentSlot()
+int Strategy_SlotForSymbol(const int pair_index, const string symbol)
   {
-   const int pair_index = Strategy_PairIndex();
-   if(pair_index < 0)
+   if(pair_index < 0 || pair_index >= STRATEGY_PAIR_COUNT)
       return qm_magic_slot_offset;
-   return Strategy_IsXLeg(pair_index) ? g_pair_x_slot[pair_index] : g_pair_y_slot[pair_index];
+   if(symbol == g_pair_y[pair_index])
+      return g_pair_y_slot[pair_index];
+   if(symbol == g_pair_x[pair_index])
+      return g_pair_x_slot[pair_index];
+   return qm_magic_slot_offset;
   }
 
-bool Strategy_SymbolHasDwxSuffix(const string symbol)
+double Strategy_WeightForSymbol(const int pair_index, const string symbol)
   {
-   return (StringFind(symbol, ".DWX") == StringLen(symbol) - 4);
+   if(pair_index < 0 || pair_index >= STRATEGY_PAIR_COUNT)
+      return 0.0;
+   if(symbol == g_pair_y[pair_index])
+      return g_pair_y_weight[pair_index];
+   if(symbol == g_pair_x[pair_index])
+      return g_pair_x_weight[pair_index];
+   return 0.0;
   }
 
-bool Strategy_ReadSpread(const int pair_index, const int shift, double &spread)
+bool Strategy_CopyPairCloses(const int pair_index, const int count, double &y[], double &x[])
   {
-   spread = 0.0;
-   if(pair_index < 0 || pair_index >= STRATEGY_PAIR_COUNT || shift < 1)
+   if(pair_index < 0 || pair_index >= STRATEGY_PAIR_COUNT || count < 20)
       return false;
 
-   const string sym_x = g_pair_x[pair_index];
-   const string sym_y = g_pair_y[pair_index];
-   SymbolSelect(sym_x, true);
-   SymbolSelect(sym_y, true);
+   ArraySetAsSeries(y, true);
+   ArraySetAsSeries(x, true);
 
-   const double x = iClose(sym_x, PERIOD_D1, shift);
-   const double y = iClose(sym_y, PERIOD_D1, shift);
-   if(x <= 0.0 || y <= 0.0)
+   SymbolSelect(g_pair_y[pair_index], true);
+   SymbolSelect(g_pair_x[pair_index], true);
+
+   if(CopyClose(g_pair_y[pair_index], PERIOD_D1, 1, count, y) != count) // perf-allowed: called only after the framework new-bar gate.
       return false;
-
-   spread = y - strategy_beta * x;
-   return MathIsValidNumber(spread);
+   if(CopyClose(g_pair_x[pair_index], PERIOD_D1, 1, count, x) != count) // perf-allowed: called only after the framework new-bar gate.
+      return false;
+   return true;
   }
 
-bool Strategy_ZScore(const int pair_index, const int shift, double &z, double &stdev)
+double Strategy_SpreadAt(const int index, const double &y[], const double &x[])
   {
-   z = 0.0;
+   if(y[index] <= 0.0 || x[index] <= 0.0)
+      return 0.0;
+   return y[index] - strategy_beta * x[index];
+  }
+
+bool Strategy_ComputeZScores(const int pair_index, double &z_now, double &z_prev, double &stdev)
+  {
+   z_now = 0.0;
+   z_prev = 0.0;
    stdev = 0.0;
-   const int n = strategy_z_lookback_d1;
-   if(n < 20)
+
+   const int lookback = MathMax(20, strategy_z_lookback_d1);
+   double y[];
+   double x[];
+   if(!Strategy_CopyPairCloses(pair_index, lookback + 2, y, x))
       return false;
 
    double sum = 0.0;
-   double sumsq = 0.0;
-   for(int i = shift; i < shift + n; ++i)
+   for(int i = 1; i <= lookback; ++i)
      {
-      double spread = 0.0;
-      if(!Strategy_ReadSpread(pair_index, i, spread))
+      const double spread = Strategy_SpreadAt(i, y, x);
+      if(spread == 0.0 || !MathIsValidNumber(spread))
          return false;
       sum += spread;
-      sumsq += spread * spread;
      }
 
-   const double mean = sum / (double)n;
-   const double variance = (sumsq / (double)n) - mean * mean;
-   if(variance <= 0.0)
+   const double mean = sum / (double)lookback;
+   double var_sum = 0.0;
+   for(int i = 1; i <= lookback; ++i)
+     {
+      const double d = Strategy_SpreadAt(i, y, x) - mean;
+      var_sum += d * d;
+     }
+
+   stdev = MathSqrt(var_sum / (double)MathMax(1, lookback - 1));
+   if(stdev <= 0.0 || !MathIsValidNumber(stdev))
       return false;
 
-   double now_spread = 0.0;
-   if(!Strategy_ReadSpread(pair_index, shift, now_spread))
-      return false;
-
-   stdev = MathSqrt(variance);
-   z = (now_spread - mean) / stdev;
-   return (MathIsValidNumber(z) && MathIsValidNumber(stdev));
+   const double spread_now = Strategy_SpreadAt(0, y, x);
+   const double spread_prev = Strategy_SpreadAt(1, y, x);
+   z_now = (spread_now - mean) / stdev;
+   z_prev = (spread_prev - mean) / stdev;
+   return (MathIsValidNumber(z_now) && MathIsValidNumber(z_prev));
   }
 
 bool Strategy_HalfLifeAllows(const int pair_index)
   {
-   const int n = strategy_half_life_lookback;
-   if(n < 30 || strategy_max_half_life_days <= 0.0)
+   if(strategy_half_life_lookback < 30 || strategy_max_half_life_days <= 0.0)
       return true;
 
-   double spreads[];
-   ArrayResize(spreads, n);
-   double sum = 0.0;
-   for(int i = 0; i < n; ++i)
-     {
-      double spread = 0.0;
-      if(!Strategy_ReadSpread(pair_index, i + 1, spread))
-         return false;
-      spreads[i] = spread;
-      sum += spread;
-     }
+   double y[];
+   double x[];
+   if(!Strategy_CopyPairCloses(pair_index, strategy_half_life_lookback + 1, y, x))
+      return false;
 
-   const double mean = sum / (double)n;
+   double spreads[];
+   ArrayResize(spreads, strategy_half_life_lookback);
+   double mean = 0.0;
+   for(int i = 0; i < strategy_half_life_lookback; ++i)
+     {
+      spreads[i] = Strategy_SpreadAt(i, y, x);
+      if(spreads[i] == 0.0 || !MathIsValidNumber(spreads[i]))
+         return false;
+      mean += spreads[i];
+     }
+   mean /= (double)strategy_half_life_lookback;
+
    double num = 0.0;
    double den = 0.0;
-   for(int i = 0; i < n - 1; ++i)
+   for(int i = 0; i < strategy_half_life_lookback - 1; ++i)
      {
       const double curr = spreads[i] - mean;
       const double lag = spreads[i + 1] - mean;
@@ -164,51 +213,49 @@ bool Strategy_DataAllows(const int pair_index)
   {
    if(pair_index < 0 || pair_index >= STRATEGY_PAIR_COUNT)
       return false;
-
-   const string sym_x = g_pair_x[pair_index];
-   const string sym_y = g_pair_y[pair_index];
-   if(!Strategy_SymbolHasDwxSuffix(sym_x) || !Strategy_SymbolHasDwxSuffix(sym_y))
+   if(!Strategy_HasDwxSuffix(g_pair_y[pair_index]) || !Strategy_HasDwxSuffix(g_pair_x[pair_index]))
       return false;
 
-   const datetime tx = iTime(sym_x, PERIOD_D1, 1);
-   const datetime ty = iTime(sym_y, PERIOD_D1, 1);
-   if(tx <= 0 || ty <= 0)
-      return false;
-   if(MathAbs((long)(tx - ty)) > 3 * 86400)
-      return false;
+   if(strategy_max_spread_points > 0)
+     {
+      const long y_spread = SymbolInfoInteger(g_pair_y[pair_index], SYMBOL_SPREAD);
+      const long x_spread = SymbolInfoInteger(g_pair_x[pair_index], SYMBOL_SPREAD);
+      if(y_spread <= 0 || x_spread <= 0 ||
+         y_spread > strategy_max_spread_points || x_spread > strategy_max_spread_points)
+         return false;
+     }
 
    return true;
   }
 
-bool Strategy_HasOpenPosition()
+bool Strategy_RefreshState()
   {
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      return true;
-     }
-   return false;
+   g_state_ready = false;
+   g_active_pair = Strategy_PairIndexForSymbol(_Symbol);
+   if(g_active_pair < 0 || !Strategy_DataAllows(g_active_pair))
+      return false;
+   if(!Strategy_ComputeZScores(g_active_pair, g_z_now, g_z_prev, g_spread_stdev))
+      return false;
+   if(g_spread_stdev <= SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE))
+      return false;
+   if(!Strategy_HalfLifeAllows(g_active_pair))
+      return false;
+
+   g_state_ready = true;
+   return true;
   }
 
-bool Strategy_IsPairLegPosition(const int pair_index)
+bool Strategy_IsRegisteredPairPosition(const int pair_index)
   {
    if(pair_index < 0 || pair_index >= STRATEGY_PAIR_COUNT)
       return false;
 
    const string symbol = PositionGetString(POSITION_SYMBOL);
-   const int magic = (int)PositionGetInteger(POSITION_MAGIC);
-   if(symbol == g_pair_x[pair_index] && magic == QM_Magic(qm_ea_id, g_pair_x_slot[pair_index]))
-      return true;
-   if(symbol == g_pair_y[pair_index] && magic == QM_Magic(qm_ea_id, g_pair_y_slot[pair_index]))
-      return true;
-   return false;
+   if(!Strategy_IsPairLeg(pair_index, symbol))
+      return false;
+
+   const int slot = Strategy_SlotForSymbol(pair_index, symbol);
+   return ((int)PositionGetInteger(POSITION_MAGIC) == QM_MagicChecked(qm_ea_id, slot, symbol));
   }
 
 int Strategy_OpenPairLegCount(const int pair_index)
@@ -219,212 +266,223 @@ int Strategy_OpenPairLegCount(const int pair_index)
       const ulong ticket = PositionGetTicket(i);
       if(ticket == 0 || !PositionSelectByTicket(ticket))
          continue;
-      if(Strategy_IsPairLegPosition(pair_index))
+      if(Strategy_IsRegisteredPairPosition(pair_index))
          ++count;
      }
    return count;
   }
 
-void Strategy_CloseOpenPairLegs(const int pair_index)
+void Strategy_ClosePair(const int pair_index, const QM_ExitReason reason)
   {
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
       if(ticket == 0 || !PositionSelectByTicket(ticket))
          continue;
-      if(!Strategy_IsPairLegPosition(pair_index))
-         continue;
-      QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+      if(Strategy_IsRegisteredPairPosition(pair_index))
+         QM_TM_ClosePosition(ticket, reason);
      }
   }
 
-int Strategy_PositionBarsHeld()
+bool Strategy_OpenPair(const int pair_index, const int spread_direction)
   {
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
+   if(pair_index < 0 || pair_index >= STRATEGY_PAIR_COUNT || spread_direction == 0)
+      return false;
+
+   string symbols[2] = {g_pair_y[pair_index], g_pair_x[pair_index]};
+   double weights[2] = {g_pair_y_weight[pair_index], g_pair_x_weight[pair_index]};
+
+   const double sum_abs = MathAbs(weights[0]) + MathAbs(weights[1]);
+   if(sum_abs <= 0.0)
+      return false;
+
+   bool any_opened = false;
+   for(int leg = 0; leg < 2; ++leg)
      {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+      const string symbol = symbols[leg];
+      const double weight = weights[leg];
+      const bool buy_leg = (spread_direction * weight) > 0.0;
+      const QM_OrderType type = buy_leg ? QM_BUY : QM_SELL;
+      const double entry = buy_leg ? SymbolInfoDouble(symbol, SYMBOL_ASK) : SymbolInfoDouble(symbol, SYMBOL_BID);
+      if(entry <= 0.0)
          continue;
 
-      const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
-      const int shift = iBarShift(_Symbol, PERIOD_D1, open_time, false);
-      return (shift < 0) ? 0 : shift;
+      const double atr = QM_ATR(symbol, PERIOD_D1, strategy_atr_period_d1, 1);
+      if(atr <= 0.0)
+         continue;
+
+      const int digits = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
+      const double stop_dist = strategy_atr_sl_mult * atr;
+      const double point = SymbolInfoDouble(symbol, SYMBOL_POINT);
+      const double sl_points = (point > 0.0) ? stop_dist / point : 0.0;
+      if(sl_points <= 0.0)
+         continue;
+
+      QM_BasketOrderRequest breq;
+      breq.symbol = symbol;
+      breq.type = type;
+      breq.price = 0.0;
+      breq.sl = buy_leg ? NormalizeDouble(entry - stop_dist, digits)
+                         : NormalizeDouble(entry + stop_dist, digits);
+      breq.tp = 0.0;
+      breq.lots = QM_LotsForRisk(symbol, sl_points) * MathAbs(weight) / sum_abs;
+      breq.reason = (spread_direction > 0) ? "QM5_10034_LONG_SPREAD_Z_CROSS_NEG"
+                                           : "QM5_10034_SHORT_SPREAD_Z_CROSS_POS";
+      breq.symbol_slot = Strategy_SlotForSymbol(pair_index, symbol);
+      breq.expiration_seconds = 0;
+
+      ulong ticket = 0;
+      if(QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, 20, breq, ticket))
+         any_opened = true;
      }
-   return 0;
+
+   if(any_opened)
+      g_pair_entry_time = TimeCurrent();
+   return any_opened;
   }
 
-// No Trade Filter (time, spread, news)
+// No Trade Filter (time, spread, news).
 bool Strategy_NoTradeFilter()
   {
-   const int pair_index = Strategy_PairIndex();
+   if((ENUM_TIMEFRAMES)_Period != PERIOD_D1)
+      return true;
+
+   const int pair_index = Strategy_PairIndexForSymbol(_Symbol);
    if(pair_index < 0)
       return true;
 
-   if(!Strategy_DataAllows(pair_index))
+   const int expected_slot = Strategy_SlotForSymbol(pair_index, _Symbol);
+   if(qm_magic_slot_offset != expected_slot)
       return true;
 
-   if(strategy_max_spread_points > 0)
-     {
-      const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-      if(spread_points <= 0 || spread_points > strategy_max_spread_points)
-         return true;
-     }
-
-   return false;
+   return !Strategy_DataAllows(pair_index);
   }
 
-// Trade Entry
+// Trade Entry.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    req.type = QM_BUY;
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
-   req.reason = "QM5_10034_RW_PAIRS_Z";
-   req.symbol_slot = Strategy_CurrentSlot();
+   req.reason = "QM5_10034_RW_PAIRS_Z_HOST";
+   req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(Strategy_HasOpenPosition())
-      return false;
-
-   const int pair_index = Strategy_PairIndex();
-   if(pair_index < 0 || !Strategy_HalfLifeAllows(pair_index))
-      return false;
-
-   double z_now = 0.0;
-   double sd_now = 0.0;
-   double z_prev = 0.0;
-   double sd_prev = 0.0;
-   if(!Strategy_ZScore(pair_index, 1, z_now, sd_now))
-      return false;
-   if(!Strategy_ZScore(pair_index, 2, z_prev, sd_prev))
-      return false;
-
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
-   if(point <= 0.0 || tick_size <= 0.0)
-      return false;
-   if(sd_now <= tick_size)
+   if(!g_state_ready || Strategy_OpenPairLegCount(g_active_pair) > 0)
       return false;
 
    int spread_direction = 0;
-   if(z_prev >= -strategy_entry_z && z_now < -strategy_entry_z)
+   if(g_z_prev >= -strategy_entry_z && g_z_now < -strategy_entry_z)
       spread_direction = 1;
-   else if(z_prev <= strategy_entry_z && z_now > strategy_entry_z)
+   else if(g_z_prev <= strategy_entry_z && g_z_now > strategy_entry_z)
       spread_direction = -1;
    else
       return false;
 
-   const bool is_x_leg = Strategy_IsXLeg(pair_index);
-   const int leg_direction = is_x_leg ? -spread_direction : spread_direction;
-   req.type = (leg_direction > 0) ? QM_BUY : QM_SELL;
-
-   const double entry = (req.type == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                                             : SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(entry <= 0.0)
-      return false;
-
-   const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period_d1, 1);
-   if(atr <= 0.0)
-      return false;
-
-   req.sl = (req.type == QM_BUY)
-            ? NormalizeDouble(entry - strategy_atr_sl_mult * atr, (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS))
-            : NormalizeDouble(entry + strategy_atr_sl_mult * atr, (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS));
-   req.tp = 0.0;
-   req.reason = (spread_direction > 0) ? "QM5_10034_LONG_SPREAD_Z_CROSS_NEG" : "QM5_10034_SHORT_SPREAD_Z_CROSS_POS";
-   return (req.sl > 0.0);
+   Strategy_OpenPair(g_active_pair, spread_direction);
+   return false;
   }
 
-// Trade Management
+// Trade Management.
 void Strategy_ManageOpenPosition()
   {
-   // Card baseline specifies no trailing, break-even, partial cover, stacking, or rebalance.
+   // Card baseline specifies platform SL, zero-line exit, z-stop, and time stop;
+   // no trailing, break-even, partial cover, stacking, or rebalance.
   }
 
-// Trade Close
+// Trade Close.
 bool Strategy_ExitSignal()
   {
-   const int pair_index = Strategy_PairIndex();
-   if(pair_index < 0 || Strategy_OpenPairLegCount(pair_index) <= 0)
+   if(!g_state_ready || Strategy_OpenPairLegCount(g_active_pair) <= 0)
       return false;
 
-   double z = 0.0;
-   double stdev = 0.0;
-   if(!Strategy_ZScore(pair_index, 1, z, stdev))
+   if(MathAbs(g_z_now) >= strategy_stop_z)
+     {
+      Strategy_ClosePair(g_active_pair, QM_EXIT_STRATEGY);
       return false;
-
-   if(MathAbs(z) >= strategy_stop_z)
-      return true;
+     }
 
    if(strategy_exit_z <= 0.0)
      {
-      const int pair_legs = Strategy_OpenPairLegCount(pair_index);
-      if(pair_legs > 0)
+      if((g_z_prev < 0.0 && g_z_now >= 0.0) || (g_z_prev > 0.0 && g_z_now <= 0.0))
         {
-         bool has_buy = false;
-         bool has_sell = false;
-         const int magic = QM_FrameworkMagic();
-         for(int i = PositionsTotal() - 1; i >= 0; --i)
-           {
-            const ulong ticket = PositionGetTicket(i);
-            if(ticket == 0 || !PositionSelectByTicket(ticket))
-               continue;
-            if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-               continue;
-            if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-               continue;
-            const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-            has_buy = has_buy || (ptype == POSITION_TYPE_BUY);
-            has_sell = has_sell || (ptype == POSITION_TYPE_SELL);
-           }
-
-         const bool x_leg = Strategy_IsXLeg(pair_index);
-         if(has_buy && ((x_leg && z <= 0.0) || (!x_leg && z >= 0.0)))
-            return true;
-         if(has_sell && ((x_leg && z >= 0.0) || (!x_leg && z <= 0.0)))
-            return true;
+         Strategy_ClosePair(g_active_pair, QM_EXIT_STRATEGY);
+         return false;
         }
      }
-   else if(MathAbs(z) <= strategy_exit_z)
-      return true;
+   else if(MathAbs(g_z_now) <= strategy_exit_z)
+     {
+      Strategy_ClosePair(g_active_pair, QM_EXIT_STRATEGY);
+      return false;
+     }
 
-   if(strategy_time_stop_bars > 0 && Strategy_PositionBarsHeld() >= strategy_time_stop_bars)
-      return true;
+   if(strategy_time_stop_bars > 0 && g_pair_entry_time > 0)
+     {
+      const int held_seconds = (int)(TimeCurrent() - g_pair_entry_time);
+      if(held_seconds >= strategy_time_stop_bars * 86400)
+        {
+         Strategy_ClosePair(g_active_pair, QM_EXIT_TIME_STOP);
+         return false;
+        }
+     }
 
    return false;
   }
 
-// News Filter Hook (callable for P8 News Impact phase)
+// News Filter Hook (callable for P8 News Impact phase).
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
+   const int pair_index = Strategy_PairIndexForSymbol(_Symbol);
+   if(pair_index < 0)
+      return false;
+
+   for(int leg = 0; leg < 2; ++leg)
+     {
+      const string symbol = (leg == 0) ? g_pair_y[pair_index] : g_pair_x[pair_index];
+      if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+        {
+         if(!QM_NewsAllowsTrade2(symbol, broker_time, qm_news_temporal, qm_news_compliance))
+            return true;
+        }
+      else if(!QM_NewsAllowsTrade(symbol, broker_time, qm_news_mode_legacy))
+         return true;
+     }
    return false;
   }
+
+// -----------------------------------------------------------------------------
+// Framework wiring - do NOT edit below this line unless you know why.
+// -----------------------------------------------------------------------------
 
 int OnInit()
   {
+   for(int i = 0; i < STRATEGY_PAIR_COUNT; ++i)
+     {
+      SymbolSelect(g_pair_y[i], true);
+      SymbolSelect(g_pair_x[i], true);
+      g_pair_x_weight[i] = -MathAbs(strategy_beta);
+     }
+
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode,
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
-                        qm_friday_close_hour_broker))
+                        qm_friday_close_hour_broker,
+                        30,
+                        30,
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact,
+                        qm_rng_seed,
+                        qm_stress_reject_probability,
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
-   for(int i = 0; i < STRATEGY_PAIR_COUNT; ++i)
-     {
-      SymbolSelect(g_pair_x[i], true);
-      SymbolSelect(g_pair_y[i], true);
-     }
-
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_10034\",\"ea\":\"rw-pairs-z\"}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_10034\",\"strategy\":\"rw-pairs-z\"}");
    return INIT_SUCCEEDED;
   }
 
@@ -442,7 +500,13 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   if(!QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode))
+
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
@@ -450,25 +514,29 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
-   Strategy_ManageOpenPosition();
-
-   if(!QM_IsNewBar(_Symbol, PERIOD_D1))
+   if(!QM_IsNewBar())
       return;
 
-   if(Strategy_ExitSignal())
-      Strategy_CloseOpenPairLegs(Strategy_PairIndex());
+   QM_EquityStreamOnNewBar();
+
+   Strategy_RefreshState();
+   Strategy_ManageOpenPosition();
+   Strategy_ExitSignal();
 
    QM_EntryRequest req;
-   if(Strategy_EntrySignal(req))
-     {
-      ulong out_ticket = 0;
-      QM_TM_OpenPosition(req, out_ticket);
-     }
+   Strategy_EntrySignal(req);
   }
 
 void OnTimer()
   {
    QM_FrameworkOnTimer();
+  }
+
+void OnTradeTransaction(const MqlTradeTransaction &trans,
+                        const MqlTradeRequest &request,
+                        const MqlTradeResult &result)
+  {
+   QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
 double OnTester()

@@ -83,6 +83,10 @@ LIVE_TERMINAL_NAMES = {"T_LIVE", "T6_LIVE"}
 MT5_TERMINALS = tuple(f"T{i}" for i in range(1, 11))  # factory fleet, T_Live is never a factory slot
 MT5_WORK_ITEM_FEED_MULTIPLIER = 2
 MT5_WORK_ITEM_MIN_FEED_DEPTH = 20
+BUILD_BACKPRESSURE_PENDING_SOFT_LIMIT = 1000
+BUILD_BACKPRESSURE_PENDING_HARD_LIMIT = 3000
+BUILD_BACKPRESSURE_ACTIVE_WORK_ITEM_LIMIT = 7
+MAX_AUTO_CREATED_BUILDS_PER_PUMP = 1
 ZERO_TRADE_DEAD_THRESHOLD = 0.80
 ZERO_TRADE_DEAD_MIN_DONE = 5
 ZERO_TRADE_REWORK_DEDUP_HOURS = 6
@@ -130,6 +134,8 @@ def active_mt5_terminals(mt5_root: Path | None = None) -> tuple[str, ...]:
 # as an internal or external command". Try shutil.which first, then fall
 # back to these.
 _CODEX_FALLBACK = Path(r"C:\Users\Administrator\AppData\Roaming\npm\codex.cmd")
+_GEMINI_FALLBACK = Path(r"C:\Users\Administrator\AppData\Roaming\npm\gemini.cmd")
+_GEMINI_NODE_BUNDLE = Path(r"C:\Users\Administrator\AppData\Roaming\npm\node_modules\@google\gemini-cli\bundle\gemini.js")
 _CLAUDE_FALLBACK = Path(r"C:\Users\Administrator\AppData\Roaming\npm\claude.cmd")
 _CODEX_HOME = Path(os.environ.get("CODEX_HOME", r"C:\Users\Administrator\.codex"))
 
@@ -153,6 +159,39 @@ def _codex_env() -> dict[str, str]:
     """
     env = os.environ.copy()
     env["CODEX_HOME"] = str(_CODEX_HOME)
+    return env
+
+
+def _resolve_gemini_command() -> tuple[list[str], bool]:
+    """Return a headless Gemini command and whether it needs shell=True.
+
+    On Windows scheduled tasks, the npm .cmd shim can enter the Gemini CLI's
+    pseudo-terminal path and fail with AttachConsole errors. Prefer direct
+    node + bundle execution, which works in headless prompt mode.
+    """
+    import shutil as _shutil
+    node = _shutil.which("node.exe") or _shutil.which("node")
+    if node and _GEMINI_NODE_BUNDLE.exists():
+        return [node, str(_GEMINI_NODE_BUNDLE)], False
+    p = _shutil.which("gemini.cmd") or _shutil.which("gemini")
+    if p:
+        return [p], True
+    if _GEMINI_FALLBACK.exists():
+        return [str(_GEMINI_FALLBACK)], True
+    return ["gemini"], True
+
+
+def _gemini_env() -> dict[str, str]:
+    env = os.environ.copy()
+    env["USERPROFILE"] = r"C:\Users\Administrator"
+    env["HOME"] = r"C:\Users\Administrator"
+    env["HOMEDRIVE"] = "C:"
+    env["HOMEPATH"] = r"\Users\Administrator"
+    env.setdefault("GEMINI_DEFAULT_AUTH_TYPE", "oauth-personal")
+    env.setdefault("TERM", "dumb")
+    env.setdefault("NO_COLOR", "1")
+    env.setdefault("FORCE_COLOR", "0")
+    env.setdefault("CI", "1")
     return env
 
 
@@ -280,6 +319,21 @@ def connect(root: Path) -> sqlite3.Connection:
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA busy_timeout=30000")
     return conn
+
+
+def _is_sqlite_locked(exc: sqlite3.OperationalError) -> bool:
+    return "locked" in str(exc).lower()
+
+
+def _with_sqlite_write_retry(fn, retries: int = 8, base_sleep_seconds: float = 1.5):
+    for attempt in range(1, retries + 1):
+        try:
+            return fn()
+        except sqlite3.OperationalError as exc:
+            if not _is_sqlite_locked(exc) or attempt == retries:
+                raise
+            time.sleep(min(30.0, base_sleep_seconds * attempt))
+    raise RuntimeError("unreachable sqlite retry state")
 
 
 def init_dirs(root: Path) -> None:
@@ -1083,10 +1137,12 @@ def pipeline_view(root: Path) -> dict[str, Any]:
 
         kind = r["kind"]
         if kind == "build_ea":
+            build_result = payload.get("build_result")
+            build_result_smoke = build_result.get("smoke_result") if isinstance(build_result, dict) else None
             entry["build"] = {
                 "task_id": r["id"],
                 "status": r["status"],
-                "smoke": (payload.get("build_result") or {}).get("smoke_result") or payload.get("smoke_result"),
+                "smoke": build_result_smoke or payload.get("smoke_result"),
                 "blocked_reason": payload.get("blocked_reason"),
             }
             if r["status"] == "pending":
@@ -1954,6 +2010,25 @@ def _ea_phase_dir(ea_id: str, phase: str) -> Path:
 
 def _phase_runner_inputs(root: Path, ea_id: str, phase: str) -> dict[str, Any]:
     pipeline_dir = _ea_pipeline_dir(ea_id)
+    raw_phase = str(phase or "").strip().upper()
+
+    # Q-rewrite phase runners (q04_walkforward.py, q05_stress_medium.py, ...)
+    # are self-contained: each takes a baseline-setfile from the work_item row
+    # and writes aggregate.json under report_root. None of them consume a
+    # pre-existing pipeline artifact, so the factory spawn must not be gated
+    # on legacy P-pipeline input files (e.g. P4/calibration.json,
+    # P5/p5_slices.csv, P3/sweep_pass_rows.csv) — those existed only for the
+    # old P-pipeline runners and never appear under the Q-rewrite. Returning
+    # {} here lets _phase_runner_cmd_for_work_item build the Q-runner cmd
+    # straight from the work_item row.
+    #
+    # The legacy CLI dispatch in _phase_runner_cmd() below still calls this
+    # function with raw P-keys (P5/P5b/P5c/P7/P8) and relies on the legacy
+    # input lookup that follows — so do NOT short-circuit on the normalized
+    # P-key, only on the inbound Q-name.
+    if raw_phase in ("Q04", "Q05", "Q06", "Q07", "Q08", "Q09", "Q10"):
+        return {}
+
     phase_key = _normalize_phase(phase)
     if phase_key == "P3.5":
         p2_report = _refresh_phase_report_from_work_items(root, ea_id, "P2") or (pipeline_dir / "P2" / "report.csv")
@@ -2361,6 +2436,7 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
             "--symbol", symbol,
             "--log", str(log_path),
             "--out-dir", str(report_root / ea_id / "Q08" / symbol.replace(".", "_")),
+            "--terminal", terminal or "T1",
         ]
     elif phase == "Q09":
         cmd.extend([
@@ -2368,6 +2444,19 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
             "--terminal", terminal or "T1",
         ])
         _remove_cmd_arg(cmd, "--setfile")
+    # PT3 bridge (2026-05-29): the rewritten Qxx runners (q04-q10) use
+    # --report-root, not the P-era --out-prefix, and reject --period. The
+    # generic base cmd above always injects --out-prefix/--period, which the
+    # Q-runners abort on at argparse (exit 2) -> no summary.json ->
+    # summary_missing -> INFRA_FAIL. Translate once for every Q-phase. (Q08
+    # rebuilds cmd from scratch above, so these flags are already absent and
+    # this is a no-op for it.) Carry the --out-prefix value into --report-root;
+    # --report-root otherwise defaults to the shared pipeline tree and breaks
+    # per-work-item evidence isolation.
+    if str(phase).startswith("Q"):
+        _remove_cmd_arg(cmd, "--period")
+        if "--out-prefix" in cmd:
+            cmd[cmd.index("--out-prefix")] = "--report-root"
     return cmd
 
 
@@ -2423,6 +2512,10 @@ def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
     creationflags = 0
     if sys.platform == "win32":
         creationflags = subprocess.CREATE_NO_WINDOW  # type: ignore[attr-defined]
+    env = {**os.environ}
+    env["PYTHONPATH"] = os.pathsep.join(
+        [str(REPO_ROOT), env.get("PYTHONPATH", "")]
+    )
     proc = subprocess.Popen(
         cmd,
         cwd=str(REPO_ROOT),
@@ -2431,6 +2524,7 @@ def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
         stdin=subprocess.DEVNULL,
         creationflags=creationflags,
         close_fds=True,
+        env=env,
     )
     log_fh.close()
     return {
@@ -3082,6 +3176,21 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 """
                 SELECT w.*,
                   CASE w.phase
+                    -- Q-rewrite phases first (downstream-priority). Without
+                    -- these the Q-rewrite work all ties at ELSE 9 against
+                    -- the legacy P-keys and FIFO hands claims to whichever
+                    -- phase has the freshest inflow (typically Q02), starving
+                    -- Q04+ promotion-chain work. Same fix in
+                    -- terminal_worker.py:_priority_pending_query.
+                    WHEN 'Q10'  THEN 0
+                    WHEN 'Q09'  THEN 1
+                    WHEN 'Q08'  THEN 2
+                    WHEN 'Q07'  THEN 3
+                    WHEN 'Q06'  THEN 4
+                    WHEN 'Q05'  THEN 5
+                    WHEN 'Q04'  THEN 6
+                    WHEN 'Q03'  THEN 7
+                    WHEN 'Q02'  THEN 8
                     WHEN 'P8'   THEN 0
                     WHEN 'P7'   THEN 1
                     WHEN 'P6'   THEN 2
@@ -4123,6 +4232,95 @@ def _spawn_codex_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]:
     )
     return {
         "spawned": True,
+        "agent": "codex",
+        "task_id": task_row["id"],
+        "ea_id": ea_id,
+        "pid": proc.pid,
+        "live_log": str(live_log),
+    }
+
+
+def _spawn_gemini_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]:
+    """Spawn Gemini CLI for a pending build_ea task using the Codex build contract.
+
+    Gemini is allowed to draft/implement, but completion still flows through
+    record-build and the existing Codex pre-review gate before any backtest.
+    """
+    payload = json.loads(task_row["payload_json"])
+    ea_id = payload.get("ea_id")
+    slug = payload.get("slug")
+    card_path = payload.get("card_path")
+    prompt_path = payload.get("prompt_path")
+    if not prompt_path:
+        if not card_path:
+            return {"spawned": False, "agent": "gemini", "reason": "no card_path in payload"}
+        prompt_path = str(root / "queue" / f"gemini_build_{task_row['id']}.md")
+        build_result_path = str(root / "artifacts" / "builds" / f"{task_row['id']}.json")
+        Path(prompt_path).parent.mkdir(parents=True, exist_ok=True)
+        Path(build_result_path).parent.mkdir(parents=True, exist_ok=True)
+        template = CODEX_BUILD_TEMPLATE.read_text(encoding="utf-8")
+        for k, v in [
+            ("task_id", task_row["id"]),
+            ("ea_id", ea_id),
+            ("slug", slug or ""),
+            ("card_path", card_path or ""),
+            ("source_id", ""),
+            ("ea_dir", str(FRAMEWORK_EAS_DIR / f"{ea_id}_{slug}")),
+            ("build_result_path", build_result_path),
+        ]:
+            template = template.replace("{{" + k + "}}", str(v))
+        Path(prompt_path).write_text(
+            "You are Gemini drafting a QuantMechanica EA build. Follow the "
+            "same build contract below exactly. Codex will review your output "
+            "before it can enter backtest. Write the required JSON result and "
+            "exit cleanly.\n\n" + template,
+            encoding="utf-8",
+            newline="\n",
+        )
+        payload["prompt_path"] = prompt_path
+        payload["build_result_path"] = build_result_path
+        payload["build_agent"] = "gemini"
+        with connect(root) as conn:
+            conn.execute("UPDATE tasks SET payload_json=? WHERE id=?", (json.dumps(payload), task_row["id"]))
+            conn.commit()
+
+    live_log = root / "logs" / f"gemini_build_{task_row['id']}.live.log"
+    live_log.parent.mkdir(parents=True, exist_ok=True)
+    if live_log.exists():
+        age_sec = time.time() - live_log.stat().st_mtime
+        if age_sec < 60:
+            return {"spawned": False, "agent": "gemini", "reason": "live log activity within 60s - gemini likely still running", "task_id": task_row["id"]}
+
+    launcher, shell_needed = _resolve_gemini_command()
+    cmd = [
+        *launcher,
+        "--prompt",
+        "Execute the QuantMechanica EA build instructions from stdin.",
+        "--approval-mode",
+        "yolo",
+        "--skip-trust",
+        "--output-format",
+        "text",
+        "--include-directories",
+        str(REPO_ROOT),
+    ]
+    creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0  # type: ignore[attr-defined]
+    stdin_f = open(prompt_path, "rb")
+    stdout_f = open(live_log, "wb")
+    proc = subprocess.Popen(
+        cmd,
+        cwd=str(REPO_ROOT),
+        stdin=stdin_f,
+        stdout=stdout_f,
+        stderr=subprocess.STDOUT,
+        env=_gemini_env(),
+        shell=shell_needed,
+        creationflags=creationflags,
+        close_fds=True,
+    )
+    return {
+        "spawned": True,
+        "agent": "gemini",
         "task_id": task_row["id"],
         "ea_id": ea_id,
         "pid": proc.pid,
@@ -4438,6 +4636,8 @@ def _detect_zerotrade_dead_eas(con: sqlite3.Connection, root: Path = DEFAULT_ROO
         ratio = zt / done if done else 0.0
         if ratio < ZERO_TRADE_DEAD_THRESHOLD:
             continue
+        if _recent_zero_trade_rework_exists(con, ea_id):
+            continue
         prior_attempts = con.execute(
             """
             SELECT COUNT(*) FROM tasks
@@ -4453,8 +4653,6 @@ def _detect_zerotrade_dead_eas(con: sqlite3.Connection, root: Path = DEFAULT_ROO
                 "sample_size": done,
                 "zero_trade_failures": zt,
             })
-            continue
-        if _recent_zero_trade_rework_exists(con, ea_id):
             continue
 
         card_path = _find_first_path([
@@ -5272,6 +5470,14 @@ def pump(root: Path) -> dict[str, Any]:
         "build_records": [],
         "build_retries": [],
     }
+    codex_low_tokens = (
+        (root / "CODEX_LOW_TOKENS.flag").exists()
+        or os.environ.get("QM_CODEX_LOW_TOKENS") == "1"
+    )
+    result["codex_low_tokens"] = {
+        "enabled": codex_low_tokens,
+        "flag": str(root / "CODEX_LOW_TOKENS.flag"),
+    }
 
     # CIRCUIT BREAKER: if recent codex logs are full of 401 Unauthorized,
     # Codex OAuth is broken. Each new spawn wastes 5 retries × ~30s before
@@ -5307,9 +5513,21 @@ def pump(root: Path) -> dict[str, Any]:
     # 1a. Per-symbol work_items dispatch is owned by the per-terminal daemon
     #     fleet (tools/strategy_farm/terminal_worker.py). Pump-cron keeps the
     #     active-timeout detector but no longer spawns MT5 work_items.
-    with connect(root) as conn:
-        result["active_timeouts"] = _detect_active_age_timeout(conn)
-        result["pending_verdicts_normalized"] = _normalize_pending_work_item_verdicts(conn)
+    def _run_worker_owned_maintenance() -> dict[str, Any]:
+        with connect(root) as conn:
+            return {
+                "active_timeouts": _detect_active_age_timeout(conn),
+                "pending_verdicts_normalized": _normalize_pending_work_item_verdicts(conn),
+            }
+
+    try:
+        result.update(_with_sqlite_write_retry(_run_worker_owned_maintenance))
+    except sqlite3.OperationalError as exc:
+        if not _is_sqlite_locked(exc):
+            raise
+        result["active_timeouts"] = []
+        result["pending_verdicts_normalized"] = 0
+        result["worker_owned_maintenance_skipped"] = f"sqlite_locked:{exc}"
     result["dispatch_work_items"] = {
         "disabled": True,
         "reason": "per-terminal worker daemons own work_item dispatch",
@@ -5403,7 +5621,7 @@ def pump(root: Path) -> dict[str, Any]:
     for row in blocked_builds:
         payload = json.loads(row["payload_json"])
         # Forensic tombstones — never retry.
-        if payload.get("superseded_by"):
+        if payload.get("superseded_by") or payload.get("duplicate_of_task_id"):
             continue
         blocked_reason = str(
             payload.get("blocked_reason")
@@ -5453,6 +5671,7 @@ def pump(root: Path) -> dict[str, Any]:
                 (json.dumps(update_payload), utc_now(), row["id"]),
             )
             conn2.commit()
+        cards_with_pending_build.add(row["card_id"])
         result["build_retries"].append({
             "task_id": row["id"],
             "ea_id": payload.get("ea_id"),
@@ -5466,14 +5685,22 @@ def pump(root: Path) -> dict[str, Any]:
     #    file level: CSV append is atomic line-by-line, update_resolver is
     #    idempotent (reads current CSV state, regenerates .mqh deterministically).
     #    OWNER 2026-05-16: explicit ok to parallelize.
-    MAX_PARALLEL_CODEX = 5       # OWNER 2026-05-25: 3->5 (raise throttle; perma-blocked skip-list keeps token-burn bounded)
-    MAX_PARALLEL_CODEX_BUILDS = 5  # same: 3->5 to match
+    MAX_PARALLEL_CODEX = 3       # OWNER 2026-05-29: 5->3 (false-PASS pattern showed bounded burn wasn't holding; project_qm_false_pass_build_ea_wave_2026-05-28)
+    MAX_PARALLEL_CODEX_BUILDS = 3  # same: 5->3 to match
+    # Gemini headless CLI can authenticate, but on this Windows host it may
+    # hang on tool-heavy EA builds after node-pty AttachConsole failures.
+    # Keep the lane implemented but opt-in until a supervised smoke proves it
+    # can complete a full build-result contract.
+    MAX_PARALLEL_GEMINI_BUILDS = 2 if os.environ.get("QM_ENABLE_GEMINI_BUILDS") == "1" else 0
     # Circuit breaker: when codex auth is broken, force both caps to 0 so
     # NO codex work spawns (research/review/build/g0 all gated through
     # these caps). Prevents wasting 5×30s retries per spawn + leaving
     # 401-junk logs that confuse later diagnosis.
     if codex_auth_broken:
         MAX_PARALLEL_CODEX = 0
+        MAX_PARALLEL_CODEX_BUILDS = 0
+    if codex_low_tokens:
+        MAX_PARALLEL_CODEX = min(MAX_PARALLEL_CODEX, 1)
         MAX_PARALLEL_CODEX_BUILDS = 0
     try:
         import shutil as _shutil
@@ -5486,9 +5713,21 @@ def pump(root: Path) -> dict[str, Any]:
         active_codex = int((ps_out.stdout or "0").strip() or "0")
     except Exception:
         active_codex = 0
-    # Build budget capped at 7 OR (total cap - already active), whichever is lower.
+    try:
+        ps_out = subprocess.run(
+            ["powershell.exe", "-NoProfile", "-Command",
+             "(Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -match 'gemini\\.js|gemini\\.cmd' }).Count"],
+            capture_output=True, text=True, timeout=10,
+            creationflags=(subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0),
+        )
+        active_gemini = int((ps_out.stdout or "0").strip() or "0")
+    except Exception:
+        active_gemini = 0
+    # Build budget: Gemini can draft builds, Codex still owns review gates.
     # Non-build spawns (research/review/g0) can still use up to MAX_PARALLEL_CODEX-active.
     spawn_budget = max(0, min(MAX_PARALLEL_CODEX_BUILDS, MAX_PARALLEL_CODEX - active_codex))
+    gemini_build_budget = max(0, MAX_PARALLEL_GEMINI_BUILDS - active_gemini)
+    total_build_spawn_budget = spawn_budget + gemini_build_budget
     with connect(root) as conn:
         # Dedupe by ea_id — never spawn 2 codex builds for the same EA at
         # once (race on EA dir + magic_numbers.csv + resolver regeneration).
@@ -5523,7 +5762,7 @@ def pump(root: Path) -> dict[str, Any]:
         pending_builds = []
         skipped_perma_blocked = 0
         for row in all_pending:
-            if len(pending_builds) >= spawn_budget:
+            if len(pending_builds) >= total_build_spawn_budget:
                 break
             payload = json.loads(row["payload_json"])
             ea_id = payload.get("ea_id")
@@ -5538,9 +5777,14 @@ def pump(root: Path) -> dict[str, Any]:
             seen_eas.add(ea_id)
             pending_builds.append(row)
     spawns = []
-    for pending_build in pending_builds:
-        sp = _spawn_codex_for_build(root, pending_build)
+    for idx, pending_build in enumerate(pending_builds):
+        if idx < gemini_build_budget:
+            sp = _spawn_gemini_for_build(root, pending_build)
+        else:
+            sp = _spawn_codex_for_build(root, pending_build)
         spawns.append(sp)
+    result["gemini_active_before"] = active_gemini
+    result["gemini_build_budget"] = gemini_build_budget
     result["codex_perma_blocked_skipped"] = skipped_perma_blocked
     result["codex_perma_blocked_ea_count"] = len(perma_blocked_eas)
 
@@ -5555,18 +5799,34 @@ def pump(root: Path) -> dict[str, Any]:
         pending_work_items_total = conn.execute(
             "SELECT COUNT(*) FROM work_items WHERE status='pending'"
         ).fetchone()[0]
+        active_work_items_total = conn.execute(
+            "SELECT COUNT(*) FROM work_items WHERE status='active'"
+        ).fetchone()[0]
+    build_backpressure_paused = (
+        pending_work_items_total >= BUILD_BACKPRESSURE_PENDING_HARD_LIMIT
+        or (
+            pending_work_items_total >= BUILD_BACKPRESSURE_PENDING_SOFT_LIMIT
+            and active_work_items_total >= BUILD_BACKPRESSURE_ACTIVE_WORK_ITEM_LIMIT
+        )
+    )
     result["build_backpressure"] = {
         "pending_work_items": pending_work_items_total,
-        "max_pending_for_new_builds": 1000,
-        "new_builds_paused": pending_work_items_total >= 1000,
+        "active_work_items": active_work_items_total,
+        "max_pending_for_new_builds": BUILD_BACKPRESSURE_PENDING_SOFT_LIMIT,
+        "hard_pending_for_new_builds": BUILD_BACKPRESSURE_PENDING_HARD_LIMIT,
+        "active_work_items_pause_threshold": BUILD_BACKPRESSURE_ACTIVE_WORK_ITEM_LIMIT,
+        "new_builds_paused": build_backpressure_paused,
     }
     # Count actually-spawned (not skipped-due-to-fresh-log)
     actually_spawned = sum(1 for s in spawns if s.get("spawned"))
-    if pending_work_items_total >= 1000:
+    if build_backpressure_paused:
         result["auto_build_skipped"].append({
             "reason": "build_backpressure",
             "pending_work_items": pending_work_items_total,
-            "max_pending_for_new_builds": 1000,
+            "active_work_items": active_work_items_total,
+            "max_pending_for_new_builds": BUILD_BACKPRESSURE_PENDING_SOFT_LIMIT,
+            "hard_pending_for_new_builds": BUILD_BACKPRESSURE_PENDING_HARD_LIMIT,
+            "active_work_items_pause_threshold": BUILD_BACKPRESSURE_ACTIVE_WORK_ITEM_LIMIT,
         })
     elif actually_spawned < spawn_budget:
         cards_approved_dir = root / "artifacts" / "cards_approved"
@@ -5596,7 +5856,7 @@ def pump(root: Path) -> dict[str, Any]:
                     except Exception:
                         continue
                     cards_without_task.append((ea_id, f))
-            slots_left = spawn_budget - actually_spawned
+            slots_left = min(spawn_budget - actually_spawned, MAX_AUTO_CREATED_BUILDS_PER_PUMP)
             # PT13 2026-05-25 — advance past prebuild-failed cards instead of
             # capping the iteration at slots_left. The old code took the first
             # N cards alphabetically; if the head of the list was all broken
@@ -5642,6 +5902,8 @@ def pump(root: Path) -> dict[str, Any]:
     result["codex_active_before"] = active_codex
     result["codex_spawn_budget"] = spawn_budget
     MAX_PARALLEL_CODEX_REVIEW = 4
+    if codex_low_tokens:
+        MAX_PARALLEL_CODEX_REVIEW = min(MAX_PARALLEL_CODEX_REVIEW, 1)
 
     # 4. Record completed Codex builds — any pending build_ea whose
     #    build_result JSON exists and isn't empty.
@@ -5908,7 +6170,9 @@ def pump(root: Path) -> dict[str, Any]:
     elif (active_claude_count + claude_spawns_this_cycle) >= MAX_PARALLEL_CLAUDE:
         result["claude_g0_spawn"] = {"spawned": False, "reason": "claude cap reached"}
 
-    if not spawned_other and (active_codex + g0_builds_now + g0_reviews_now) < MAX_PARALLEL_CODEX:
+    if codex_low_tokens:
+        result["codex_g0_spawn"] = {"spawned": False, "reason": "CODEX_LOW_TOKENS.flag present"}
+    elif not spawned_other and (active_codex + g0_builds_now + g0_reviews_now) < MAX_PARALLEL_CODEX:
         result["codex_g0_spawn"] = _spawn_codex_for_g0_batch(root)
         if result["codex_g0_spawn"].get("spawned"):
             spawned_other = True
@@ -5963,7 +6227,14 @@ def pump(root: Path) -> dict[str, Any]:
     else:
         result["claude_research_spawn"] = {"spawned": False, "reason": "strategy backlog above replenishment gate"}
 
-    if result["research_replenish_gate"]["allow_new_research"]:
+    if codex_low_tokens:
+        result["codex_research_spawns"].append({
+            "spawned": False,
+            "reason": "CODEX_LOW_TOKENS.flag present",
+            "strategy_backlog": research_inventory.get("total", 0),
+            "min_strategy_backlog": research_min_backlog,
+        })
+    elif result["research_replenish_gate"]["allow_new_research"]:
         # Spawn up to (MAX_PARALLEL_CODEX_RESEARCH - codex_research_fresh) new
         # research sessions, respecting the total codex cap.
         research_to_spawn = max(0, MAX_PARALLEL_CODEX_RESEARCH - codex_research_fresh)
@@ -6056,12 +6327,6 @@ def pump(root: Path) -> dict[str, Any]:
             """
             SELECT w.* FROM work_items w
             WHERE w.status='done' AND w.verdict='PASS' AND w.phase in ('Q02', 'P2')
-              AND (
-                w.setfile_path LIKE '%_ablation_%'
-                OR w.setfile_path LIKE '%_grid_%'
-                OR w.setfile_path LIKE '%_synth_%'
-                OR w.setfile_path LIKE '%_freq_%'
-              )
               AND NOT EXISTS (
                 SELECT 1 FROM work_items w2
                 WHERE w2.ea_id = w.ea_id
@@ -6069,12 +6334,12 @@ def pump(root: Path) -> dict[str, Any]:
                   AND w2.setfile_path = w.setfile_path
                   AND w2.phase in ('Q03', 'P3')
               )
-            ORDER BY w.updated_at ASC LIMIT 500
+            ORDER BY w.updated_at ASC LIMIT 5000
             """
         ).fetchall()
         reopened_parents: set[str] = set()
         for wi in promotable:
-            if len(result["p3_promotions"]) >= 10:
+            if len(result["p3_promotions"]) >= 250:
                 break
             p2_net_profit = _work_item_p2_net_profit(wi)
             if p2_net_profit is None or p2_net_profit <= 0.0:
@@ -6106,7 +6371,21 @@ def pump(root: Path) -> dict[str, Any]:
                 (f'%"ea_id": "{wi["ea_id"]}"%',),
             ).fetchone()
             if not parent:
-                continue
+                parent_id = create_task(
+                    conn,
+                    kind="backtest_q03",
+                    source_id=None,
+                    card_id=wi["ea_id"],
+                    payload={
+                        "ea_id": wi["ea_id"],
+                        "phase": "Q03",
+                        "created_by": "p2_pass_promoter",
+                    },
+                )
+                parent = conn.execute(
+                    "SELECT id, status FROM tasks WHERE id=?",
+                    (parent_id,),
+                ).fetchone()
             new_id = str(uuid.uuid4())
             now = utc_now()
             payload = {"promoted_from_p2_work_item": wi["id"]}
@@ -8691,6 +8970,11 @@ def record_build_result(root: Path, task_id: str, result_file: str) -> dict[str,
         and result.get("compile_succeeded") is True
         and str(smoke or "").lower() == "framework_error"
     )
+    smoke_deferred_after_good_build = (
+        result.get("build_check_passed") is True
+        and result.get("compile_succeeded") is True
+        and str(smoke or "").lower() == "deferred_p2_smoke"
+    )
     if smoke_framework_error_after_good_build:
         result["build_smoke_framework_error"] = blocked
         result["blocked_reason"] = ""
@@ -8711,6 +8995,12 @@ def record_build_result(root: Path, task_id: str, result_file: str) -> dict[str,
         new_status = "done"
         payload_merge.update({
             "smoke_skipped_reason": "framework_error_during_build_smoke_treated_as_done",
+            "needs_p2_smoke_via_pump": True,
+        })
+    elif smoke_deferred_after_good_build:
+        new_status = "done"
+        payload_merge.update({
+            "smoke_skipped_reason": result.get("smoke_skipped_reason") or "framework_error_during_build_smoke_treated_as_done",
             "needs_p2_smoke_via_pump": True,
         })
     elif blocked:

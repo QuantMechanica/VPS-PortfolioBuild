@@ -1,0 +1,32 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1247
+; ea_slug:      fuertes-comm-tsmom
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       XAUUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 0.333333
+; build_hash:   94c6f1cbb4fd78c7aa8674b4e624fbf428be43bf8ad5e1ec5dfa6e3e8e2ffbfd
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1247
+qm_magic_slot_offset=0
+RISK_PERCENT=0
+RISK_FIXED=1000
+PORTFOLIO_WEIGHT=0.333333
+qm_news_mode=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+strategy_curve_csv_path=QM5_1247_comm_curve.csv
+strategy_momentum_months=12
+strategy_term_threshold=0.0
+strategy_min_daily_bars=252
+strategy_curve_stale_months=1
+strategy_atr_period=20
+strategy_atr_sl_mult=3.0
+strategy_max_spread_points=0

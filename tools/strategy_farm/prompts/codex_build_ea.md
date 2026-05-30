@@ -161,6 +161,7 @@ Use these framework helpers — DO NOT reimplement them:
 | Stochastic                        | `QM_Stoch_K(sym, tf, k=5, d=3, slow=3)`, `QM_Stoch_D(...)`         |
 | CCI                               | `QM_CCI(sym, tf, period=14)`                                       |
 | Open / close / partial position   | `QM_TM_OpenPosition` / `ClosePosition` / `PartialClose`            |
+| Remove pending orders             | `QM_TM_RemovePendingOrder(ticket, reason)`                         |
 | SL/TP modify, BE, trailing        | `QM_TM_MoveSL/MoveTP/MoveToBreakEven/TrailATR/TrailStep`           |
 | Stop distance from ATR/structure  | `QM_StopATR / QM_StopStructure / QM_StopVolatility / QM_StopFixedPips` |
 | Lot sizing from SL points         | `QM_LotsForRisk(symbol, sl_points)`                                |
@@ -245,15 +246,15 @@ N-bar-deep state per tick costs O(N × ticks_per_bar × bars_total).
 **Intraday EAs MUST cache strategy state per closed bar.** Pattern:
 
 ```mq5
-// File-scope cached state (advanced once per new bar)
+// File-scope cached state (advanced by the framework new-bar gate)
 double  g_session_vwap = 0.0;
 double  g_upper_band = 0.0;
 double  g_lower_band = 0.0;
-datetime g_last_advanced_bar = 0;
 
 void AdvanceState_OnNewBar()
   {
-   // Called ONCE per new closed bar from OnTick (gated by QM_IsNewBar).
+   // Called ONCE per new closed bar after OnTick passes QM_IsNewBar().
+   // Do not add a second timestamp gate inside this function.
    // Reads the LAST closed bar's data, updates cumulative state by ONE step,
    // recomputes bands. Never loops back further than necessary.
    double close_last = iClose(_Symbol, _Period, 1);

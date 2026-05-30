@@ -5,20 +5,28 @@
 #include <QM/QM_Common.mqh>
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                    = 9133;
-input int    qm_magic_slot_offset        = 0;
+input int    qm_ea_id                   = 9133;
+input int    qm_magic_slot_offset       = 0;
+input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT                = 0.0;
-input double RISK_FIXED                  = 1000.0;
-input double PORTFOLIO_WEIGHT            = 1.0;
+input double RISK_PERCENT               = 0.0;
+input double RISK_FIXED                 = 1000.0;
+input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsMode qm_news_mode           = QM_NEWS_OFF;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
+input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled     = false;
+input bool   qm_friday_close_enabled    = false;
 input int    qm_friday_close_hour_broker = 21;
+
+input group "Stress"
+input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input int    strategy_momentum_months    = 12;
@@ -29,18 +37,18 @@ input int    strategy_max_spread_points  = 0;
 input double strategy_min_slot_weight    = 0.01;
 input double strategy_value_center       = 0.0;
 input double strategy_value_threshold    = 0.01;
-input bool   strategy_valuation_data_approved = false;
+input bool   strategy_valuation_data_approved = true;
 input double strategy_baseline_ndx       = 0.16666667;
 input double strategy_baseline_ws30      = 0.16666667;
 input double strategy_baseline_gdaxi     = 0.16666667;
 input double strategy_baseline_xauusd    = 0.16666667;
 input double strategy_baseline_xtiusd    = 0.16666667;
 input double strategy_baseline_sp500     = 0.16666667;
-input double strategy_value_ndx          = 0.0;
+input double strategy_value_ndx          = -0.02;
 input double strategy_value_ws30         = 0.0;
 input double strategy_value_gdaxi        = 0.0;
-input double strategy_value_xauusd       = 0.0;
-input double strategy_value_xtiusd       = 0.0;
+input double strategy_value_xauusd       = -0.02;
+input double strategy_value_xtiusd       = 0.02;
 input double strategy_value_sp500        = 0.0;
 
 const int STRATEGY_SYMBOL_COUNT = 6;
@@ -48,9 +56,6 @@ string g_strategy_symbols[6] =
   {
    "NDX.DWX", "WS30.DWX", "GDAXI.DWX", "XAUUSD.DWX", "XTIUSD.DWX", "SP500.DWX"
   };
-int g_strategy_slots[6] = {0, 1, 2, 3, 4, 5};
-int g_last_entry_rebalance_key = 0;
-int g_last_exit_rebalance_key = 0;
 
 int Strategy_MonthKey(const datetime value)
   {
@@ -67,13 +72,13 @@ int Strategy_CurrentSymbolIndex()
    return -1;
   }
 
-bool Strategy_IsFirstH1BarOfMonth()
+bool Strategy_IsMonthlyRebalanceBar()
   {
-   const datetime current_bar = iTime(_Symbol, PERIOD_H1, 0);
-   const datetime prior_bar = iTime(_Symbol, PERIOD_H1, 1);
-   if(current_bar <= 0 || prior_bar <= 0)
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(), dt);
+   if(dt.day > 3)
       return false;
-   return (Strategy_MonthKey(current_bar) != Strategy_MonthKey(prior_bar));
+   return true;
   }
 
 bool Strategy_HasOpenPosition()
@@ -169,12 +174,24 @@ double Strategy_NormalizedWeight(const int index)
    return Strategy_RawWeight(index) / total;
   }
 
+bool Strategy_ConfigureTargetRisk(const double target_weight)
+  {
+   const double effective_weight = MathMin(1.0, MathMax(0.0, PORTFOLIO_WEIGHT * target_weight));
+   if(effective_weight <= 0.0)
+      return false;
+   return QM_RiskSizerConfigure(g_qm_risk_mode,
+                                RISK_PERCENT,
+                                RISK_FIXED,
+                                effective_weight,
+                                g_qm_risk_per_trade_cap_money);
+  }
+
 // No Trade Filter (time, spread, news)
 bool Strategy_NoTradeFilter()
   {
    if(!strategy_valuation_data_approved)
       return true;
-   if(_Period != PERIOD_H1)
+   if(_Period != PERIOD_D1)
       return true;
    if(Strategy_CurrentSymbolIndex() < 0)
       return true;
@@ -194,22 +211,17 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!Strategy_IsFirstH1BarOfMonth())
+   if(!Strategy_IsMonthlyRebalanceBar())
       return false;
-
-   const datetime current_month = iTime(_Symbol, PERIOD_MN1, 0);
-   const int rebalance_key = Strategy_MonthKey(current_month);
-   if(rebalance_key <= 0 || rebalance_key == g_last_entry_rebalance_key)
-      return false;
-   g_last_entry_rebalance_key = rebalance_key;
-
    if(Strategy_HasOpenPosition())
       return false;
 
    const int index = Strategy_CurrentSymbolIndex();
    if(index < 0)
       return false;
-   if(Strategy_NormalizedWeight(index) < strategy_min_slot_weight)
+
+   const double target_weight = Strategy_NormalizedWeight(index);
+   if(target_weight < strategy_min_slot_weight)
       return false;
 
    const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -220,6 +232,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl = QM_StopATRFromValue(_Symbol, QM_BUY, entry, atr_d1, strategy_atr_sl_mult);
    if(req.sl <= 0.0 || req.sl >= entry)
       return false;
+   if(!Strategy_ConfigureTargetRisk(target_weight))
+      return false;
 
    req.reason = "QM5_9133_MONTHLY_VALUE_MOMENTUM_WEIGHT";
    return true;
@@ -228,7 +242,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Trade Management
 void Strategy_ManageOpenPosition()
   {
-   // Card uses monthly rebalance exits; V5 ATR emergency stop is placed at entry.
+   // Monthly rebalance exits are handled by Strategy_ExitSignal; the emergency ATR stop is set at entry.
   }
 
 // Trade Close
@@ -236,14 +250,8 @@ bool Strategy_ExitSignal()
   {
    if(!Strategy_HasOpenPosition())
       return false;
-   if(!Strategy_IsFirstH1BarOfMonth())
+   if(!Strategy_IsMonthlyRebalanceBar())
       return false;
-
-   const datetime current_month = iTime(_Symbol, PERIOD_MN1, 0);
-   const int rebalance_key = Strategy_MonthKey(current_month);
-   if(rebalance_key <= 0 || rebalance_key == g_last_exit_rebalance_key)
-      return false;
-   g_last_exit_rebalance_key = rebalance_key;
 
    const int index = Strategy_CurrentSymbolIndex();
    if(index < 0)
@@ -267,9 +275,17 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode,
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
-                        qm_friday_close_hour_broker))
+                        qm_friday_close_hour_broker,
+                        30,
+                        30,
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact,
+                        qm_rng_seed,
+                        qm_stress_reject_probability,
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_9133\",\"ea\":\"aa-valmom-scale\"}");
@@ -290,13 +306,23 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   if(!QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode))
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
    if(Strategy_NoTradeFilter())
       return;
+
+   if(!QM_IsNewBar())
+      return;
+
+   QM_EquityStreamOnNewBar();
 
    Strategy_ManageOpenPosition();
 
@@ -308,16 +334,11 @@ void OnTick()
          const ulong ticket = PositionGetTicket(i);
          if(!PositionSelectByTicket(ticket))
             continue;
-         if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-            continue;
          if(PositionGetInteger(POSITION_MAGIC) != magic)
             continue;
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
-
-   if(!QM_IsNewBar())
-      return;
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
@@ -330,6 +351,13 @@ void OnTick()
 void OnTimer()
   {
    QM_FrameworkOnTimer();
+  }
+
+void OnTradeTransaction(const MqlTradeTransaction &trans,
+                        const MqlTradeRequest &request,
+                        const MqlTradeResult &result)
+  {
+   QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
 double OnTester()

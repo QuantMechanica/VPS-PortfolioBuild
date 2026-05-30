@@ -1,0 +1,39 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1191
+; ea_slug:      qp-pair-switch-spx-gold
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       XAUUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1.00
+; build_hash:   aaf56c5145cfc068d75af9a2311129873b10aaeb66e771d1f4482fda5615aaee
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1191
+qm_magic_slot_offset=1
+qm_rng_seed=42
+RISK_PERCENT=0
+RISK_FIXED=1000
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0
+strategy_lookback_months=3
+strategy_rebalance_months=1
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=3.0
+strategy_stale_exit_days=70
+strategy_min_monthly_bars=8
+strategy_spread_median_mult=3.0
+strategy_spread_warmup_days=20
+strategy_max_spread_points=0

@@ -27,7 +27,7 @@ from pathlib import Path
 
 # Allow running both as a module and as a script
 if __package__ in (None, ""):
-    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
     from framework.scripts.q08_davey import (
         common, sub_8_1_correlation, sub_8_2_dsr_mc_fdr, sub_8_3_tail_dependence,
         sub_8_4_seasonal, sub_8_5_neighborhood, sub_8_6_chopping_block,
@@ -140,12 +140,75 @@ def _guess_baseline_setfile(repo_root: Path, ea_id: int, symbol: str) -> Path | 
     return None
 
 
+def _common_q08_trade_log(ea_id: int, symbol: str) -> Path:
+    """Deterministic Common\\Files path the recompiled EA writes its per-trade stream to
+    (the tester writes the EA's own log to the agent sandbox, which Q08 can't find)."""
+    return (Path(r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\Common\Files")
+            / "QM" / "q08_trades" / f"{ea_id}_{symbol.replace('.', '_')}.jsonl")
+
+
+def _run_baseline_for_trades(ea_id: int, symbol: str, terminal: str | None) -> dict:
+    """Run ONE clean full-history backtest so the EA emits its TRADE_CLOSED stream to
+    Common\\Files. Q08 itself doesn't otherwise run a backtest, so without this the trade
+    log never exists for the aggregator to read."""
+    import subprocess as _sp
+    import re as _re
+    repo_root = Path(__file__).resolve().parents[3]
+    baseline = _guess_baseline_setfile(repo_root, ea_id, symbol)
+    if baseline is None:
+        return {"skipped": "no_baseline_setfile"}
+    ea_dirs = [d for d in (repo_root / "framework" / "EAs").iterdir()
+               if d.is_dir() and d.name.startswith(f"QM5_{ea_id}_")]
+    if not ea_dirs:
+        return {"skipped": "no_ea_dir"}
+    expert = f"QM\\{ea_dirs[0].name}"
+    m = _re.search(r"_(M1|M5|M15|M30|H1|H4|H6|H8|D1|W1|MN1)_backtest", baseline.name)
+    period = m.group(1) if m else "H1"
+    report_root = Path(f"D:/QM/reports/pipeline/QM5_{ea_id}/Q08/_baseline")
+    args = [
+        "pwsh.exe", "-NoProfile", "-File",
+        str(repo_root / "framework" / "scripts" / "run_smoke.ps1"),
+        "-EAId", str(ea_id), "-Expert", expert, "-Symbol", symbol,
+        "-Year", "2025", "-FromDate", "2017.01.01", "-ToDate", "2025.12.31",
+        "-Terminal", terminal or "T1", "-Period", period,
+        "-Runs", "1", "-MinTrades", "1", "-Model", "4",
+        "-SetFile", str(baseline), "-ReportRoot", str(report_root),
+        "-DispatchPhase", "Q08", "-DispatchVersion", "q08_baseline",
+        "-DispatchSubGateHash", f"q08base_{ea_id}_{symbol.replace('.', '_')}",
+        "-TimeoutSeconds", "2400",
+    ]
+    flags = 0x08000000 if sys.platform == "win32" else 0
+    try:
+        p = _sp.run(args, capture_output=True, text=True, timeout=2500, creationflags=flags)
+        return {"exit_code": p.returncode, "expert": expert, "period": period}
+    except Exception as exc:
+        return {"error": repr(exc)}
+
+
 def run_all(ea_id: int, symbol: str, log_path: Path,
             portfolio: list[dict] | None = None,
-            out_dir: Path | None = None) -> dict:
+            out_dir: Path | None = None,
+            terminal: str | None = None) -> dict:
     log_path = Path(log_path)
     trades = common.load_trades_from_log(log_path)
     equity_stream = common.load_equity_stream(log_path)
+    # Tester writes the EA log to the agent sandbox, so the farmctl --log path is empty.
+    # The recompiled EA also dumps a TRADE_CLOSED stream to Common\Files; read that, and
+    # run a clean baseline backtest first if it's not there yet.
+    baseline_run = None
+    if not trades:
+        common_log = _common_q08_trade_log(ea_id, symbol)
+        # Always run a FRESH full-history baseline so Q08 evaluates a clean run, not a
+        # stale per-fold log left by an earlier phase (which would undercount trades and
+        # wrongly fail a higher-frequency strategy). Clear the stale log first.
+        try:
+            if common_log.exists():
+                common_log.unlink()
+        except OSError:
+            pass
+        baseline_run = _run_baseline_for_trades(ea_id, symbol, terminal)
+        trades = common.load_trades_from_log(common_log)
+        equity_stream = common.load_equity_stream(common_log) or equity_stream
 
     # PT4 — best-effort pre-run of Q08.5 + Q08.7 supporting runners
     sub_gate_input_runs = _ensure_sub_gate_inputs(ea_id, symbol)
@@ -188,6 +251,7 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
         "n_equity_snapshots": len(equity_stream),
         "sub_gates": sub_results,
         "sub_gate_input_runs": sub_gate_input_runs,
+        "baseline_run": baseline_run,
         "summary": {
             "n_pass":    sum(1 for r in sub_results if r["status"] == "PASS"),
             "n_fail":    sum(1 for r in sub_results if r["status"] == "FAIL"),
@@ -228,6 +292,7 @@ def main() -> int:
     ap.add_argument("--symbol", help="symbol e.g. NDX.DWX")
     ap.add_argument("--log", type=Path, help="path to EA JSON-lines log")
     ap.add_argument("--out-dir", type=Path, help="override output dir")
+    ap.add_argument("--terminal", help="MT5 terminal (T1-T10) for the baseline trade-log backtest")
     ap.add_argument("--discover", action="store_true",
                     help="walk Q07-PASS pairs in farm DB and run Q08 on each (TODO)")
     args = ap.parse_args()
@@ -240,7 +305,7 @@ def main() -> int:
         ap.print_usage(sys.stderr)
         return 2
 
-    agg = run_all(args.ea_id, args.symbol, args.log, out_dir=args.out_dir)
+    agg = run_all(args.ea_id, args.symbol, args.log, out_dir=args.out_dir, terminal=args.terminal)
     _print_summary(agg)
     return 0 if agg["verdict"] == "PASS" else (1 if agg["verdict"] == "FAIL" else 3)
 

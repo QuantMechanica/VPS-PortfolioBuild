@@ -9,10 +9,10 @@
 strategy_id: SRC05_S10
 ea_id: TBD
 slug: chan-at-xs-mom-fut
-status: DRAFT
+status: APPROVED                             # G0 APPROVED 2026-05-25 by Claude — R1 PASS (Chan AT 2013 + Daniel-Moskowitz 2011 paper, A-tier); R2 PASS (rank by 252-day lagged return + top-N/bottom-N selection, deterministic); R3 PASS under wide-net porting — cross-section testable on Darwinex commodity-CFD universe (~10 names: GOLD/SILVER/COPPER/BRENT/NATGAS/COCOA/COFFEE/SUGAR/CORN/WHEAT if available) or FX-cross-section (G10+EM ~15 pairs); R4 PASS (no ML); V5 magic_schema multi-slot architecture is downstream concern. Note: Chan documents 2008-09 -33% APR — P5c crisis-slice testing mandatory.
 created: 2026-04-28
 created_by: Research
-last_updated: 2026-04-28
+last_updated: 2026-05-25
 
 strategy_type_flags:
   - cross-sectional-momentum                    # NEW VOCAB GAP — entry mechanism: rank universe of N futures by 252-day lagged return; long top-1 (or top-decile) + short bottom-1 (or bottom-decile); hold 25 days. Sibling of existing `cross-sectional-decile-sort` (which is the MR direction); `cross-sectional-momentum` is the OPPOSITE direction (buy winners, sell losers). Vocab gap proposal: separate flag (matches V4 sibling-flag-not-generalize precedent for `intraday-day-of-month` / `intraday-day-of-week` from SRC03 closeout). Distinct from `time-series-momentum` (S07 chan-at-ts-mom-fut) which is single-instrument N-day-ago-sign comparison without cross-sectional ranking.

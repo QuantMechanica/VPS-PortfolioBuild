@@ -9,10 +9,10 @@
 strategy_id: SRC05_S05
 ea_id: TBD
 slug: chan-at-fx-coint-pair
-status: DRAFT
+status: APPROVED                             # G0 APPROVED 2026-05-25 by Claude — R1 PASS (Chan AT 2013 book, A-tier); R2 PASS (rolling Johansen + linear/Bollinger Z-score, deterministic); R3 PASS — best Darwinex fit: AUDUSD.DWX + USDCAD.DWX + AUDCAD.DWX all native; R4 PASS (no ML; Bollinger-mode discrete ±1 entry is V5-default-compliant)
 created: 2026-04-28
 created_by: Research
-last_updated: 2026-04-28
+last_updated: 2026-05-25
 
 strategy_type_flags:
   - cointegration-pair-trade                  # entry mechanism: Johansen-tested cointegrating currency pair with non-unity hedge ratio; spread = h1·log(y1) + h2·log(y2) (using Johansen first eigenvector as hedge weights)

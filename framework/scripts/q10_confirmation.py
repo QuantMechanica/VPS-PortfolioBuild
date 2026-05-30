@@ -20,9 +20,12 @@ import sys
 from pathlib import Path
 
 if __package__ in (None, ""):
-    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from framework.scripts._phase_utils import ensure_dir, utc_now_iso, write_json
+from framework.scripts._phase_utils import (ensure_dir, utc_now_iso, write_json,
+                                            resolve_ea_expert_path, period_from_setfile,
+                                            find_latest_summary, FULL_HISTORY_FROM,
+                                            FULL_HISTORY_TO, FULL_HISTORY_YEAR)
 from framework.scripts.q05_stress_medium import _parse_pf_dd_trades, STARTING_EQUITY
 
 GATE_NAME = "Q10"
@@ -61,7 +64,7 @@ def write_canonical_setfile(baseline: Path, news_temporal: str,
 
 
 def run_confirmation(*, ea_id: int, ea_expert: str, symbol: str,
-                      setfile: Path, terminal: str,
+                      setfile: Path, terminal: str, period: str = "H1",
                       report_root: Path, timeout_sec: int = 3600) -> dict:
     repo_root = Path(__file__).resolve().parents[2]
     run_smoke_ps1 = repo_root / "framework" / "scripts" / "run_smoke.ps1"
@@ -70,9 +73,9 @@ def run_confirmation(*, ea_id: int, ea_expert: str, symbol: str,
         "-EAId", str(ea_id),
         "-Expert", ea_expert,
         "-Symbol", symbol,
-        "-Year", "0",                        # 0 = full available history
+        "-Year", FULL_HISTORY_YEAR, "-FromDate", FULL_HISTORY_FROM, "-ToDate", FULL_HISTORY_TO,
         "-Terminal", terminal,
-        "-Period", "H1",
+        "-Period", period,
         "-DispatchSubGateHash", f"q10_{ea_id}_{symbol.replace('.', '_')}",
         "-DispatchPhase", "Q10",
         "-DispatchVersion", "q10_full_history_confirmation",
@@ -87,8 +90,8 @@ def run_confirmation(*, ea_id: int, ea_expert: str, symbol: str,
     proc = subprocess.run(args, capture_output=True, text=True,
                           timeout=timeout_sec, creationflags=creationflags)
     sym_clean = symbol.replace(".", "_")
-    summary = report_root / f"QM5_{ea_id}" / "Q10" / sym_clean / "summary.json"
-    pf, dd_money, trades = _parse_pf_dd_trades(summary)
+    summary = find_latest_summary(report_root)
+    pf, dd_money, trades = _parse_pf_dd_trades(summary) if summary else (None, None, 0)
     dd_pct = (dd_money / STARTING_EQUITY * 100.0) if dd_money is not None else None
 
     if pf is None or dd_money is None:
@@ -111,8 +114,8 @@ def run_confirmation(*, ea_id: int, ea_expert: str, symbol: str,
         "dd_pct": dd_pct,
         "trades": trades,
         "exit_code": proc.returncode,
-        "summary_path": str(summary) if summary.exists() else None,
-        "report_htm": _find_report_htm(summary) if summary.exists() else None,
+        "summary_path": str(summary) if summary else None,
+        "report_htm": _find_report_htm(summary) if summary else None,
         "generated_at_utc": utc_now_iso(),
     }
 
@@ -171,6 +174,13 @@ def main() -> int:
         return 2
     ea_id = int(ea_match.group(1))
 
+    repo_root = Path(__file__).resolve().parents[2]
+    ea_expert = resolve_ea_expert_path(repo_root, args.ea)
+    if ea_expert is None:
+        print(f"cannot resolve EA dir for {args.ea}", file=sys.stderr)
+        return 2
+    period = period_from_setfile(args.baseline_setfile)
+
     canonical = write_canonical_setfile(args.baseline_setfile,
                                          args.news_temporal,
                                          args.news_compliance)
@@ -178,8 +188,8 @@ def main() -> int:
     print(f"  news: temporal={args.news_temporal}  compliance={args.news_compliance}")
 
     res = run_confirmation(
-        ea_id=ea_id, ea_expert=args.ea, symbol=args.symbol,
-        setfile=canonical, terminal=args.terminal,
+        ea_id=ea_id, ea_expert=ea_expert, symbol=args.symbol,
+        setfile=canonical, terminal=args.terminal, period=period,
         report_root=args.report_root, timeout_sec=args.timeout_sec,
     )
     res["news_temporal"] = args.news_temporal

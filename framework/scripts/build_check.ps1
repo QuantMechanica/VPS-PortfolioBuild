@@ -442,7 +442,20 @@ function Validate-LoggerRecord {
 
     if ($Record.PSObject.Properties.Name -contains "ts_utc") {
         $ignored = [System.DateTimeOffset]::MinValue
-        if (-not [System.DateTimeOffset]::TryParse([string]$Record.ts_utc, [ref]$ignored)) {
+        $tsUtc = $Record.ts_utc
+        $tsUtcValid = $false
+        if ($tsUtc -is [System.DateTimeOffset] -or $tsUtc -is [System.DateTime]) {
+            $tsUtcValid = $true
+        } else {
+            $styles = [System.Globalization.DateTimeStyles]::AssumeUniversal -bor [System.Globalization.DateTimeStyles]::AdjustToUniversal
+            $tsUtcValid = [System.DateTimeOffset]::TryParse(
+                [string]$tsUtc,
+                [System.Globalization.CultureInfo]::InvariantCulture,
+                $styles,
+                [ref]$ignored
+            )
+        }
+        if (-not $tsUtcValid) {
             Add-Failure "BUILD_CHECK_LOGGER_SCHEMA_TS_UTC_INVALID: $PathForError line $LineNumber ts_utc=$($Record.ts_utc)."
         }
     }

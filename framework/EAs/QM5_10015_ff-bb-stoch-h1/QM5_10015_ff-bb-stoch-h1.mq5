@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_10015 ForexFactory BB Stoch H1 reversal"
+#property description "QM5_10015 ForexFactory Bollinger Stochastic H1 Reversal"
 
 #include <QM/QM_Common.mqh>
 
@@ -37,6 +37,10 @@
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 10015;
 input int    qm_magic_slot_offset       = 0;
+// FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
+// All other phases use 42 by default. Stress / noise dimensions read from
+// this single seed so reproducibility is guaranteed across re-runs.
+input uint   qm_rng_seed                = 42;
 
 input group "Risk"
 input double RISK_PERCENT               = 0.0;
@@ -44,26 +48,108 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsMode qm_news_mode          = QM_NEWS_OFF;
+// FW1 2026-05-23 — Two-axis news filter per Vault Q09.
+//   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
+//   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
+// A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
+input string qm_news_min_impact           = "high";  // high / medium / low
+// Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
+// New EAs use qm_news_temporal + qm_news_compliance above and leave this OFF.
+input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
 input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
+input group "Stress"
+// FW2 2026-05-23 — only populated by Q05 MED / Q06 HARSH stress setfiles.
+// Default 0.0 = no rejection (Q02/Q03/Q04/Q07/Q08/Q09/Q10/Q13 backtests).
+// Q06 HARSH sets to 0.10 (10% of entries randomly dropped before broker send,
+// deterministic per qm_rng_seed). MED slip/spread/commission live in the
+// tester groups file, not as EA inputs.
+input double qm_stress_reject_probability = 0.0;
+
 input group "Strategy"
-input ENUM_TIMEFRAMES strategy_tf        = PERIOD_H1;
-input int    strategy_bb_period         = 20;
-input double strategy_bb_deviation      = 2.0;
-input int    strategy_stoch_k           = 14;
-input int    strategy_stoch_d           = 3;
-input int    strategy_stoch_slowing     = 3;
-input int    strategy_fx_sl_pips        = 50;
-input int    strategy_fx_tp_pips        = 50;
+input int    strategy_bb_period          = 20;
+input double strategy_bb_deviation       = 2.0;
+input int    strategy_stoch_k            = 14;
+input int    strategy_stoch_d            = 3;
+input int    strategy_stoch_slowing      = 3;
+input int    strategy_fx_sl_pips         = 50;
+input int    strategy_fx_tp_pips         = 50;
+input int    strategy_xau_atr_period     = 14;
+input double strategy_xau_atr_mult       = 1.0;
 input int    strategy_trail_trigger_pips = 20;
-input int    strategy_trail_step_pips   = 15;
-input int    strategy_xau_atr_period    = 14;
-input double strategy_xau_atr_mult      = 1.0;
-input double strategy_max_spread_stop_fraction = 0.10;
+input int    strategy_trail_step_pips    = 15;
+input double strategy_max_spread_frac    = 0.10;
+
+bool Strategy_IsXAU()
+  {
+   return (StringFind(_Symbol, "XAUUSD") == 0);
+  }
+
+double Strategy_StopDistance()
+  {
+   if(Strategy_IsXAU())
+     {
+      const double atr = QM_ATR(_Symbol, PERIOD_H1, strategy_xau_atr_period, 1);
+      return atr * strategy_xau_atr_mult;
+     }
+
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
+   const int pip_factor = (digits == 3 || digits == 5) ? 10 : 1;
+   return strategy_fx_sl_pips * point * pip_factor;
+  }
+
+double Strategy_TakeDistance()
+  {
+   if(Strategy_IsXAU())
+     {
+      const double atr = QM_ATR(_Symbol, PERIOD_H1, strategy_xau_atr_period, 1);
+      return atr * strategy_xau_atr_mult;
+     }
+
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
+   const int pip_factor = (digits == 3 || digits == 5) ? 10 : 1;
+   return strategy_fx_tp_pips * point * pip_factor;
+  }
+
+bool Strategy_LongSignal()
+  {
+   const double lower2 = QM_BB_Lower(_Symbol, PERIOD_H1, strategy_bb_period, strategy_bb_deviation, 2);
+   const double k1 = QM_Stoch_K(_Symbol, PERIOD_H1, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, 1);
+   const double d1 = QM_Stoch_D(_Symbol, PERIOD_H1, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, 1);
+   const double open1 = iOpen(_Symbol, PERIOD_H1, 1);
+   const double close1 = iClose(_Symbol, PERIOD_H1, 1);
+   const double low2 = iLow(_Symbol, PERIOD_H1, 2);
+   const double close2 = iClose(_Symbol, PERIOD_H1, 2);
+   if(lower2 <= 0.0 || open1 <= 0.0 || close1 <= 0.0 || low2 <= 0.0 || close2 <= 0.0)
+      return false;
+
+   const bool pierced = (close2 < lower2) || (low2 < lower2 && close2 > lower2);
+   return pierced && close1 > open1 && k1 > d1 && k1 < 80.0;
+  }
+
+bool Strategy_ShortSignal()
+  {
+   const double upper2 = QM_BB_Upper(_Symbol, PERIOD_H1, strategy_bb_period, strategy_bb_deviation, 2);
+   const double k1 = QM_Stoch_K(_Symbol, PERIOD_H1, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, 1);
+   const double d1 = QM_Stoch_D(_Symbol, PERIOD_H1, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, 1);
+   const double open1 = iOpen(_Symbol, PERIOD_H1, 1);
+   const double close1 = iClose(_Symbol, PERIOD_H1, 1);
+   const double high2 = iHigh(_Symbol, PERIOD_H1, 2);
+   const double close2 = iClose(_Symbol, PERIOD_H1, 2);
+   if(upper2 <= 0.0 || open1 <= 0.0 || close1 <= 0.0 || high2 <= 0.0 || close2 <= 0.0)
+      return false;
+
+   const bool pierced = (close2 > upper2) || (high2 > upper2 && close2 < upper2);
+   return pierced && close1 < open1 && k1 < d1 && k1 > 20.0;
+  }
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -73,7 +159,13 @@ input double strategy_max_spread_stop_fraction = 0.10;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   return false;
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double stop_dist = Strategy_StopDistance();
+   if(ask <= 0.0 || bid <= 0.0 || stop_dist <= 0.0)
+      return true;
+
+   return ((ask - bid) > stop_dist * strategy_max_spread_frac);
   }
 
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
@@ -89,71 +181,36 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(strategy_bb_period <= 0 || strategy_bb_deviation <= 0.0 ||
-      strategy_stoch_k <= 0 || strategy_stoch_d <= 0 || strategy_stoch_slowing <= 0)
+   const double stop_dist = Strategy_StopDistance();
+   const double take_dist = Strategy_TakeDistance();
+   if(stop_dist <= 0.0 || take_dist <= 0.0)
       return false;
 
-   const double open1 = iOpen(_Symbol, strategy_tf, 1);
-   const double close1 = iClose(_Symbol, strategy_tf, 1);
-   const double low2 = iLow(_Symbol, strategy_tf, 2);
-   const double high2 = iHigh(_Symbol, strategy_tf, 2);
-   const double close2 = iClose(_Symbol, strategy_tf, 2);
-   if(open1 <= 0.0 || close1 <= 0.0 || low2 <= 0.0 || high2 <= 0.0 || close2 <= 0.0)
-      return false;
-
-   const double lower2 = QM_BB_Lower(_Symbol, strategy_tf, strategy_bb_period, strategy_bb_deviation, 2);
-   const double upper2 = QM_BB_Upper(_Symbol, strategy_tf, strategy_bb_period, strategy_bb_deviation, 2);
-   const double stoch_k1 = QM_Stoch_K(_Symbol, strategy_tf, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, 1);
-   const double stoch_d1 = QM_Stoch_D(_Symbol, strategy_tf, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, 1);
-   if(lower2 <= 0.0 || upper2 <= 0.0 || stoch_k1 == EMPTY_VALUE || stoch_d1 == EMPTY_VALUE)
-      return false;
-
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
-      return false;
-
-   const bool is_xau = (StringFind(_Symbol, "XAUUSD") >= 0);
-   const bool long_setup = ((close2 < lower2) || (low2 < lower2 && close2 > lower2)) &&
-                           close1 > open1 &&
-                           stoch_k1 > stoch_d1 &&
-                           stoch_k1 < 80.0;
-   const bool short_setup = ((close2 > upper2) || (high2 > upper2 && close2 < upper2)) &&
-                            close1 < open1 &&
-                            stoch_k1 < stoch_d1 &&
-                            stoch_k1 > 20.0;
-
-   if(!long_setup && !short_setup)
-      return false;
-
-   req.type = long_setup ? QM_BUY : QM_SELL;
-   const double entry = long_setup ? ask : bid;
-   req.price = 0.0;
-
-   if(is_xau)
+   if(Strategy_LongSignal())
      {
-      req.sl = QM_StopATR(_Symbol, req.type, entry, strategy_xau_atr_period, strategy_xau_atr_mult);
-      req.tp = QM_TakeATR(_Symbol, req.type, entry, strategy_xau_atr_period, strategy_xau_atr_mult);
-     }
-   else
-     {
-      req.sl = QM_StopFixedPips(_Symbol, req.type, entry, strategy_fx_sl_pips);
-      req.tp = QM_TakeFixedPips(_Symbol, req.type, entry, strategy_fx_tp_pips);
+      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      if(entry <= 0.0)
+         return false;
+      req.type = QM_BUY;
+      req.sl = NormalizeDouble(entry - stop_dist, _Digits);
+      req.tp = NormalizeDouble(entry + take_dist, _Digits);
+      req.reason = "BB_STOCH_H1_LONG";
+      return true;
      }
 
-   if(req.sl <= 0.0 || req.tp <= 0.0)
-      return false;
+   if(Strategy_ShortSignal())
+     {
+      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      if(entry <= 0.0)
+         return false;
+      req.type = QM_SELL;
+      req.sl = NormalizeDouble(entry + stop_dist, _Digits);
+      req.tp = NormalizeDouble(entry - take_dist, _Digits);
+      req.reason = "BB_STOCH_H1_SHORT";
+      return true;
+     }
 
-   const double stop_distance = MathAbs(entry - req.sl);
-   const double spread_distance = ask - bid;
-   if(stop_distance <= 0.0 || spread_distance <= 0.0 ||
-      spread_distance > stop_distance * strategy_max_spread_stop_fraction)
-      return false;
-
-   req.reason = long_setup ? "QM5_10015_LONG_BB_STOCH" : "QM5_10015_SHORT_BB_STOCH";
-   req.symbol_slot = qm_magic_slot_offset;
-   return true;
+   return false;
   }
 
 // Called every tick when an open position exists for this EA's magic.
@@ -180,8 +237,6 @@ void Strategy_ManageOpenPosition()
 bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
-   bool have_position = false;
-   bool have_buy = false;
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -191,42 +246,14 @@ bool Strategy_ExitSignal()
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
-      have_position = true;
-      have_buy = ((ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY);
-      break;
+
+      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      if(ptype == POSITION_TYPE_BUY && Strategy_ShortSignal())
+         return true;
+      if(ptype == POSITION_TYPE_SELL && Strategy_LongSignal())
+         return true;
      }
 
-   if(!have_position)
-      return false;
-
-   const double open1 = iOpen(_Symbol, strategy_tf, 1);
-   const double close1 = iClose(_Symbol, strategy_tf, 1);
-   const double low2 = iLow(_Symbol, strategy_tf, 2);
-   const double high2 = iHigh(_Symbol, strategy_tf, 2);
-   const double close2 = iClose(_Symbol, strategy_tf, 2);
-   if(open1 <= 0.0 || close1 <= 0.0 || low2 <= 0.0 || high2 <= 0.0 || close2 <= 0.0)
-      return false;
-
-   const double lower2 = QM_BB_Lower(_Symbol, strategy_tf, strategy_bb_period, strategy_bb_deviation, 2);
-   const double upper2 = QM_BB_Upper(_Symbol, strategy_tf, strategy_bb_period, strategy_bb_deviation, 2);
-   const double stoch_k1 = QM_Stoch_K(_Symbol, strategy_tf, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, 1);
-   const double stoch_d1 = QM_Stoch_D(_Symbol, strategy_tf, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, 1);
-   if(lower2 <= 0.0 || upper2 <= 0.0 || stoch_k1 == EMPTY_VALUE || stoch_d1 == EMPTY_VALUE)
-      return false;
-
-   const bool long_signal = ((close2 < lower2) || (low2 < lower2 && close2 > lower2)) &&
-                            close1 > open1 &&
-                            stoch_k1 > stoch_d1 &&
-                            stoch_k1 < 80.0;
-   const bool short_signal = ((close2 > upper2) || (high2 > upper2 && close2 < upper2)) &&
-                             close1 < open1 &&
-                             stoch_k1 < stoch_d1 &&
-                             stoch_k1 > 20.0;
-
-   if(have_buy && short_signal)
-      return true;
-   if(!have_buy && long_signal)
-      return true;
    return false;
   }
 
@@ -249,9 +276,17 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode,
+                        qm_news_mode_legacy,           // legacy back-compat
                         qm_friday_close_enabled,
-                        qm_friday_close_hour_broker))
+                        qm_friday_close_hour_broker,
+                        30,                            // pause-before (legacy hint)
+                        30,                            // pause-after (legacy hint)
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact,
+                        qm_rng_seed,
+                        qm_stress_reject_probability,
+                        qm_news_temporal,              // FW1 Axis A
+                        qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
@@ -272,7 +307,14 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   if(!QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode))
+   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
+   // when both new axes are at their OFF defaults.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
@@ -304,6 +346,10 @@ void OnTick()
    if(!QM_IsNewBar())
       return;
 
+   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
+   // since last tick. Cheap: most calls early-return on same-day check.
+   QM_EquityStreamOnNewBar();
+
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
      {
@@ -315,6 +361,15 @@ void OnTick()
 void OnTimer()
   {
    QM_FrameworkOnTimer();
+  }
+
+void OnTradeTransaction(const MqlTradeTransaction &trans,
+                        const MqlTradeRequest &request,
+                        const MqlTradeResult &result)
+  {
+   // FW4: feeds closing-deal net-profits to the KS kill-switch.
+   // No-op outside Q13 (when no baseline.json exists).
+   QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
 double OnTester()

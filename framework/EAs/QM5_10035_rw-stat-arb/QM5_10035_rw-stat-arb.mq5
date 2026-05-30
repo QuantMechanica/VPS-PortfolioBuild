@@ -4,29 +4,29 @@
 
 #include <QM/QM_Common.mqh>
 
-// =============================================================================
-// QuantMechanica V5 EA SKELETON
-// -----------------------------------------------------------------------------
-// Fill in only the five Strategy_* hooks below. Everything else is framework
-// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
-// risk + magic + news + Friday-close guard rails).
-// =============================================================================
-
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                    = 10035;
-input int    qm_magic_slot_offset        = 0;
+input int    qm_ea_id                   = 10035;
+input int    qm_magic_slot_offset       = 0;
+input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT                = 0.0;
-input double RISK_FIXED                  = 1000.0;
-input double PORTFOLIO_WEIGHT            = 0.25;
+input double RISK_PERCENT               = 0.0;
+input double RISK_FIXED                 = 1000.0;
+input double PORTFOLIO_WEIGHT           = 0.25;
 
 input group "News"
-input QM_NewsMode qm_news_mode           = QM_NEWS_PAUSE;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
+input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled     = true;
+input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
+
+input group "Stress"
+input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input int    strategy_return_lookback_days     = 5;
@@ -52,7 +52,7 @@ string g_strategy_basket[STRATEGY_BASKET_COUNT] =
    "UK100.DWX"
   };
 
-double LogReturnForShift(const string symbol, const int shift, const int lookback)
+double Strategy_LogReturnForShift(const string symbol, const int shift, const int lookback)
   {
    if(lookback < 1 || shift < 1)
       return 0.0;
@@ -65,7 +65,7 @@ double LogReturnForShift(const string symbol, const int shift, const int lookbac
    return MathLog(c0 / c1);
   }
 
-bool SymbolFreshForShift(const string symbol, const int shift, const datetime ref_time)
+bool Strategy_SymbolFreshForShift(const string symbol, const int shift, const datetime ref_time)
   {
    const datetime t = iTime(symbol, PERIOD_D1, shift);
    if(t <= 0)
@@ -76,11 +76,11 @@ bool SymbolFreshForShift(const string symbol, const int shift, const datetime re
    return (MathAbs((long)(ref_time - t)) <= 3L * 86400L);
   }
 
-bool BasketStatsForShift(const int shift,
-                         const int lookback,
-                         double &mean,
-                         double &sd,
-                         int &eligible)
+bool Strategy_BasketStatsForShift(const int shift,
+                                  const int lookback,
+                                  double &mean,
+                                  double &sd,
+                                  int &eligible)
   {
    mean = 0.0;
    sd = 0.0;
@@ -93,10 +93,10 @@ bool BasketStatsForShift(const int shift,
    for(int i = 0; i < STRATEGY_BASKET_COUNT; ++i)
      {
       const string symbol = g_strategy_basket[i];
-      if(!SymbolFreshForShift(symbol, shift, ref_time))
+      if(!Strategy_SymbolFreshForShift(symbol, shift, ref_time))
          continue;
 
-      const double r = LogReturnForShift(symbol, shift, lookback);
+      const double r = Strategy_LogReturnForShift(symbol, shift, lookback);
       if(r == 0.0)
          continue;
 
@@ -116,7 +116,7 @@ bool BasketStatsForShift(const int shift,
    return (sd > 0.0);
   }
 
-double MedianRecentDispersion()
+double Strategy_MedianRecentDispersion()
   {
    const int n = MathMax(1, strategy_dispersion_lookback_days);
    double values[];
@@ -128,7 +128,7 @@ double MedianRecentDispersion()
       double mean = 0.0;
       double sd = 0.0;
       int eligible = 0;
-      if(!BasketStatsForShift(shift, strategy_return_lookback_days, mean, sd, eligible))
+      if(!Strategy_BasketStatsForShift(shift, strategy_return_lookback_days, mean, sd, eligible))
          continue;
       values[used] = sd;
       ++used;
@@ -145,23 +145,23 @@ double MedianRecentDispersion()
    return 0.5 * (values[mid - 1] + values[mid]);
   }
 
-bool CurrentZScore(const string symbol, double &z, double &dispersion)
+bool Strategy_CurrentZScore(const string symbol, double &z, double &dispersion)
   {
    z = 0.0;
    dispersion = 0.0;
 
    double mean = 0.0;
    int eligible = 0;
-   if(!BasketStatsForShift(1, strategy_return_lookback_days, mean, dispersion, eligible))
+   if(!Strategy_BasketStatsForShift(1, strategy_return_lookback_days, mean, dispersion, eligible))
       return false;
 
-   const double median_dispersion = MedianRecentDispersion();
+   const double median_dispersion = Strategy_MedianRecentDispersion();
    if(median_dispersion <= 0.0)
       return false;
    if(dispersion < strategy_min_dispersion_fraction * median_dispersion)
       return false;
 
-   const double r = LogReturnForShift(symbol, 1, strategy_return_lookback_days);
+   const double r = Strategy_LogReturnForShift(symbol, 1, strategy_return_lookback_days);
    if(r == 0.0)
       return false;
 
@@ -169,7 +169,7 @@ bool CurrentZScore(const string symbol, double &z, double &dispersion)
    return true;
   }
 
-bool CurrentBasketZScores(double &z_values[], bool &eligible_values[])
+bool Strategy_CurrentBasketZScores(double &z_values[], bool &eligible_values[])
   {
    ArrayResize(z_values, STRATEGY_BASKET_COUNT);
    ArrayResize(eligible_values, STRATEGY_BASKET_COUNT);
@@ -179,17 +179,17 @@ bool CurrentBasketZScores(double &z_values[], bool &eligible_values[])
    double mean = 0.0;
    double dispersion = 0.0;
    int eligible = 0;
-   if(!BasketStatsForShift(1, strategy_return_lookback_days, mean, dispersion, eligible))
+   if(!Strategy_BasketStatsForShift(1, strategy_return_lookback_days, mean, dispersion, eligible))
       return false;
 
-   const double median_dispersion = MedianRecentDispersion();
+   const double median_dispersion = Strategy_MedianRecentDispersion();
    if(median_dispersion <= 0.0 || dispersion < strategy_min_dispersion_fraction * median_dispersion)
       return false;
 
    for(int i = 0; i < STRATEGY_BASKET_COUNT; ++i)
      {
       const string symbol = g_strategy_basket[i];
-      const double r = LogReturnForShift(symbol, 1, strategy_return_lookback_days);
+      const double r = Strategy_LogReturnForShift(symbol, 1, strategy_return_lookback_days);
       if(r == 0.0)
          continue;
 
@@ -200,7 +200,7 @@ bool CurrentBasketZScores(double &z_values[], bool &eligible_values[])
    return true;
   }
 
-int BasketIndexForSymbol(const string symbol)
+int Strategy_BasketIndexForSymbol(const string symbol)
   {
    for(int i = 0; i < STRATEGY_BASKET_COUNT; ++i)
      {
@@ -210,7 +210,7 @@ int BasketIndexForSymbol(const string symbol)
    return -1;
   }
 
-int LongRank(const double &z_values[], const bool &eligible_values[], const int index)
+int Strategy_LongRank(const double &z_values[], const bool &eligible_values[], const int index)
   {
    int rank = 1;
    for(int i = 0; i < STRATEGY_BASKET_COUNT; ++i)
@@ -223,7 +223,7 @@ int LongRank(const double &z_values[], const bool &eligible_values[], const int 
    return rank;
   }
 
-int ShortRank(const double &z_values[], const bool &eligible_values[], const int index)
+int Strategy_ShortRank(const double &z_values[], const bool &eligible_values[], const int index)
   {
    int rank = 1;
    for(int i = 0; i < STRATEGY_BASKET_COUNT; ++i)
@@ -236,7 +236,7 @@ int ShortRank(const double &z_values[], const bool &eligible_values[], const int
    return rank;
   }
 
-bool GetOurPosition(ENUM_POSITION_TYPE &ptype, datetime &opened_at, double &profit)
+bool Strategy_GetOurPosition(ENUM_POSITION_TYPE &ptype, datetime &opened_at, double &profit)
   {
    ptype = POSITION_TYPE_BUY;
    opened_at = 0;
@@ -265,7 +265,7 @@ bool GetOurPosition(ENUM_POSITION_TYPE &ptype, datetime &opened_at, double &prof
 // No Trade Filter (time, spread, news)
 bool Strategy_NoTradeFilter()
   {
-   const int index = BasketIndexForSymbol(_Symbol);
+   const int index = Strategy_BasketIndexForSymbol(_Symbol);
    if(index < 0)
       return true;
 
@@ -290,20 +290,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   const int index = BasketIndexForSymbol(_Symbol);
+   const int index = Strategy_BasketIndexForSymbol(_Symbol);
    if(index < 0)
       return false;
 
    double z_values[];
    bool eligible_values[];
-   if(!CurrentBasketZScores(z_values, eligible_values))
+   if(!Strategy_CurrentBasketZScores(z_values, eligible_values))
       return false;
    if(!eligible_values[index])
       return false;
 
    const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(atr <= 0.0 || point <= 0.0)
+   if(atr <= 0.0)
       return false;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -311,27 +310,26 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(ask <= 0.0 || bid <= 0.0)
       return false;
 
-   const double stop_dist = strategy_atr_sl_mult * atr;
    const double z = z_values[index];
 
-   if(z <= -strategy_entry_z && LongRank(z_values, eligible_values, index) <= 2)
+   if(z <= -strategy_entry_z && Strategy_LongRank(z_values, eligible_values, index) <= 2)
      {
       req.type = QM_BUY;
       req.price = 0.0;
-      req.sl = ask - stop_dist;
+      req.sl = QM_StopATRFromValue(_Symbol, req.type, ask, atr, strategy_atr_sl_mult);
       req.tp = 0.0;
       req.reason = "RW_STAT_ARB_LONG_Z";
-      return true;
+      return (req.sl > 0.0);
      }
 
-   if(z >= strategy_entry_z && ShortRank(z_values, eligible_values, index) <= 2)
+   if(z >= strategy_entry_z && Strategy_ShortRank(z_values, eligible_values, index) <= 2)
      {
       req.type = QM_SELL;
       req.price = 0.0;
-      req.sl = bid + stop_dist;
+      req.sl = QM_StopATRFromValue(_Symbol, req.type, bid, atr, strategy_atr_sl_mult);
       req.tp = 0.0;
       req.reason = "RW_STAT_ARB_SHORT_Z";
-      return true;
+      return (req.sl > 0.0);
      }
 
    return false;
@@ -349,7 +347,7 @@ bool Strategy_ExitSignal()
    ENUM_POSITION_TYPE ptype;
    datetime opened_at;
    double profit;
-   if(!GetOurPosition(ptype, opened_at, profit))
+   if(!Strategy_GetOurPosition(ptype, opened_at, profit))
       return false;
 
    const double risk_money = (RISK_FIXED > 0.0)
@@ -364,7 +362,7 @@ bool Strategy_ExitSignal()
 
    double z = 0.0;
    double dispersion = 0.0;
-   if(!CurrentZScore(_Symbol, z, dispersion))
+   if(!Strategy_CurrentZScore(_Symbol, z, dispersion))
       return false;
 
    if(ptype == POSITION_TYPE_BUY && z > -strategy_exit_z)
@@ -392,9 +390,17 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode,
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
-                        qm_friday_close_hour_broker))
+                        qm_friday_close_hour_broker,
+                        30,
+                        30,
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact,
+                        qm_rng_seed,
+                        qm_stress_reject_probability,
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_10035\",\"ea\":\"QM5_10035_rw-stat-arb\"}");
@@ -415,7 +421,13 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   if(!QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode))
+
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
@@ -427,6 +439,8 @@ void OnTick()
 
    if(!QM_IsNewBar(_Symbol, PERIOD_D1))
       return;
+
+   QM_EquityStreamOnNewBar();
 
    if(Strategy_ExitSignal())
      {
@@ -453,6 +467,13 @@ void OnTick()
 void OnTimer()
   {
    QM_FrameworkOnTimer();
+  }
+
+void OnTradeTransaction(const MqlTradeTransaction &trans,
+                        const MqlTradeRequest &request,
+                        const MqlTradeResult &result)
+  {
+   QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
 double OnTester()

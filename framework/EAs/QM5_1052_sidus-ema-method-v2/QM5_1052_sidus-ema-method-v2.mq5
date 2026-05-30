@@ -60,6 +60,7 @@ input int    strategy_wma_slow_period   = 8;
 input int    strategy_ema_fast_period   = 18;
 input int    strategy_ema_slow_period   = 28;
 input int    strategy_sl_buffer_points  = 20;
+input bool   strategy_use_rr_take_profit = false;
 input double strategy_rr_target         = 1.5;
 input int    strategy_spread_cap_points = 20;
 input bool   strategy_session_filter_enabled = false;
@@ -118,7 +119,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(strategy_wma_fast_period <= 0 || strategy_wma_slow_period <= 0 ||
       strategy_ema_fast_period <= 0 || strategy_ema_slow_period <= 0 ||
-      strategy_sl_buffer_points < 0 || strategy_rr_target <= 0.0)
+      strategy_sl_buffer_points < 0 ||
+      (strategy_use_rr_take_profit && strategy_rr_target <= 0.0))
       return false;
 
    const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
@@ -153,9 +155,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.type = QM_BUY;
       req.price = 0.0;
       req.sl = sl;
-      req.tp = QM_TakeRR(_Symbol, req.type, entry, req.sl, strategy_rr_target);
+      req.tp = strategy_use_rr_take_profit ? QM_TakeRR(_Symbol, req.type, entry, req.sl, strategy_rr_target) : 0.0;
       req.reason = "SIDUS_LONG_WMA_CROSS_EMA_TUNNEL";
-      return (req.tp > entry);
+      return (!strategy_use_rr_take_profit || req.tp > entry);
      }
 
    if(bearish_cross &&
@@ -171,9 +173,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.type = QM_SELL;
       req.price = 0.0;
       req.sl = sl;
-      req.tp = QM_TakeRR(_Symbol, req.type, entry, req.sl, strategy_rr_target);
+      req.tp = strategy_use_rr_take_profit ? QM_TakeRR(_Symbol, req.type, entry, req.sl, strategy_rr_target) : 0.0;
       req.reason = "SIDUS_SHORT_WMA_CROSS_EMA_TUNNEL";
-      return (req.tp > 0.0 && req.tp < entry);
+      return (!strategy_use_rr_take_profit || (req.tp > 0.0 && req.tp < entry));
      }
 
    return false;
@@ -238,8 +240,6 @@ bool Strategy_ExitSignal()
 // custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   if(!QM_NewsAllowsTrade(_Symbol, broker_time, qm_news_mode))
-      return true;
    return false; // defer to QM_NewsAllowsTrade(...)
   }
 

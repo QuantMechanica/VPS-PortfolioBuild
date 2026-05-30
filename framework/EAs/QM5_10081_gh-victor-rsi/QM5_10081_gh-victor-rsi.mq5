@@ -37,6 +37,10 @@
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 10081;
 input int    qm_magic_slot_offset       = 0;
+// FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
+// All other phases use 42 by default. Stress / noise dimensions read from
+// this single seed so reproducibility is guaranteed across re-runs.
+input uint   qm_rng_seed                = 42;
 
 input group "Risk"
 input double RISK_PERCENT               = 0.0;
@@ -44,20 +48,37 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsMode qm_news_mode          = QM_NEWS_OFF;
+// FW1 2026-05-23 — Two-axis news filter per Vault Q09.
+//   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
+//   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
+// A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
+input string qm_news_min_impact           = "high";  // high / medium / low
+// Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
+// New EAs use qm_news_temporal + qm_news_compliance above and leave this OFF.
+input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
 input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
+input group "Stress"
+// FW2 2026-05-23 — only populated by Q05 MED / Q06 HARSH stress setfiles.
+// Default 0.0 = no rejection (Q02/Q03/Q04/Q07/Q08/Q09/Q10/Q13 backtests).
+// Q06 HARSH sets to 0.10 (10% of entries randomly dropped before broker send,
+// deterministic per qm_rng_seed). MED slip/spread/commission live in the
+// tester groups file, not as EA inputs.
+input double qm_stress_reject_probability = 0.0;
+
 input group "Strategy"
 input int    strategy_rsi_period        = 14;
-input int    strategy_min_div_bars      = 20;
-input int    strategy_max_div_bars      = 100;
-input double strategy_rsi_buy_level     = 30.0;
-input double strategy_rsi_sell_level    = 70.0;
+input int    strategy_min_lookback      = 20;
+input int    strategy_max_lookback      = 100;
+input double strategy_rsi_low           = 30.0;
+input double strategy_rsi_high          = 70.0;
 input double strategy_trail_percent     = 1.0;
-input int    strategy_extreme_radius    = 2;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -67,136 +88,6 @@ input int    strategy_extreme_radius    = 2;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   return false;
-  }
-
-bool Strategy_LocalLow(const int shift, const int radius)
-  {
-   const double v = iLow(_Symbol, _Period, shift);
-   if(v <= 0.0)
-      return false;
-   for(int k = 1; k <= radius; ++k)
-     {
-      const double left = iLow(_Symbol, _Period, shift + k);
-      const double right = iLow(_Symbol, _Period, shift - k);
-      if(left <= 0.0 || right <= 0.0)
-         return false;
-      if(v > left || v > right)
-         return false;
-     }
-   return true;
-  }
-
-bool Strategy_LocalHigh(const int shift, const int radius)
-  {
-   const double v = iHigh(_Symbol, _Period, shift);
-   if(v <= 0.0)
-      return false;
-   for(int k = 1; k <= radius; ++k)
-     {
-      const double left = iHigh(_Symbol, _Period, shift + k);
-      const double right = iHigh(_Symbol, _Period, shift - k);
-      if(left <= 0.0 || right <= 0.0)
-         return false;
-      if(v < left || v < right)
-         return false;
-     }
-   return true;
-  }
-
-bool Strategy_TradedDuringPriorBar()
-  {
-   const datetime prior_bar_open = iTime(_Symbol, _Period, 1);
-   const datetime current_bar_open = iTime(_Symbol, _Period, 0);
-   if(prior_bar_open <= 0 || current_bar_open <= prior_bar_open)
-      return false;
-
-   if(!HistorySelect(prior_bar_open, current_bar_open))
-      return false;
-
-   const long magic = (long)QM_FrameworkMagic();
-   const int total = HistoryDealsTotal();
-   for(int i = 0; i < total; ++i)
-     {
-      const ulong deal = HistoryDealGetTicket(i);
-      if(deal == 0)
-         continue;
-      if(HistoryDealGetString(deal, DEAL_SYMBOL) != _Symbol)
-         continue;
-      if(HistoryDealGetInteger(deal, DEAL_MAGIC) != magic)
-         continue;
-      if((ENUM_DEAL_ENTRY)HistoryDealGetInteger(deal, DEAL_ENTRY) == DEAL_ENTRY_IN)
-         return true;
-     }
-   return false;
-  }
-
-bool Strategy_HasDivergence(const bool bullish)
-  {
-   const int max_lookback = MathMax(strategy_min_div_bars + strategy_extreme_radius + 2,
-                                    MathMin(strategy_max_div_bars, 100));
-   const int min_sep = MathMax(1, strategy_min_div_bars);
-   const int radius = MathMax(1, MathMin(strategy_extreme_radius, 5));
-   if(Bars(_Symbol, _Period) <= max_lookback + radius + 5)
-      return false;
-
-   int extrema[32];
-   double rsi_cache[128];
-   int extrema_count = 0;
-   ArrayInitialize(rsi_cache, EMPTY_VALUE);
-
-   for(int shift = 2 + radius; shift <= max_lookback - radius && extrema_count < 32; ++shift)
-     {
-      const bool is_extreme = bullish ? Strategy_LocalLow(shift, radius)
-                                      : Strategy_LocalHigh(shift, radius);
-      if(!is_extreme)
-         continue;
-
-      const double rsi = QM_RSI(_Symbol, _Period, strategy_rsi_period, shift);
-      if(rsi == EMPTY_VALUE || rsi <= 0.0)
-         continue;
-      if(bullish && rsi >= strategy_rsi_buy_level)
-         continue;
-      if(!bullish && rsi <= strategy_rsi_sell_level)
-         continue;
-
-      extrema[extrema_count] = shift;
-      rsi_cache[shift] = rsi;
-      ++extrema_count;
-     }
-
-   for(int recent_idx = 0; recent_idx < extrema_count; ++recent_idx)
-     {
-      const int recent_shift = extrema[recent_idx];
-      for(int older_idx = recent_idx + 1; older_idx < extrema_count; ++older_idx)
-        {
-         const int older_shift = extrema[older_idx];
-         const int separation = older_shift - recent_shift;
-         if(separation < min_sep || separation > max_lookback)
-            continue;
-
-         const double recent_rsi = rsi_cache[recent_shift];
-         const double older_rsi = rsi_cache[older_shift];
-         if(recent_rsi == EMPTY_VALUE || older_rsi == EMPTY_VALUE)
-            continue;
-
-         if(bullish)
-           {
-            const double recent_low = iLow(_Symbol, _Period, recent_shift);
-            const double older_low = iLow(_Symbol, _Period, older_shift);
-            if(recent_low < older_low && recent_rsi > older_rsi)
-               return true;
-           }
-         else
-           {
-            const double recent_high = iHigh(_Symbol, _Period, recent_shift);
-            const double older_high = iHigh(_Symbol, _Period, older_shift);
-            if(recent_high > older_high && recent_rsi < older_rsi)
-               return true;
-           }
-        }
-     }
-
    return false;
   }
 
@@ -213,35 +104,38 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(Strategy_TradedDuringPriorBar())
+   if(strategy_rsi_period < 2 ||
+      strategy_min_lookback < 3 ||
+      strategy_max_lookback < strategy_min_lookback ||
+      strategy_trail_percent <= 0.0)
       return false;
 
-   const double open1 = iOpen(_Symbol, _Period, 1);
-   const double close1 = iClose(_Symbol, _Period, 1);
+   if(Strategy_HasPriorBarEntry())
+      return false;
+
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(open1 <= 0.0 || close1 <= 0.0 || ask <= 0.0 || bid <= 0.0 || strategy_trail_percent <= 0.0)
+   if(ask <= 0.0 || bid <= 0.0)
       return false;
 
    const double pct = strategy_trail_percent / 100.0;
-   if(close1 > open1 && Strategy_HasDivergence(true))
+
+   if(Strategy_IsBullishClosedCandle() && Strategy_FindBullishDivergence())
      {
       req.type = QM_BUY;
-      req.price = 0.0;
-      req.sl = ask * (1.0 - pct);
-      req.tp = 0.0;
-      req.reason = "RSI_BULLISH_DIVERGENCE";
-      return true;
+      req.price = ask;
+      req.sl = Strategy_NormalizePrice(ask * (1.0 - pct));
+      req.reason = "RSI_DIVERGENCE_BUY";
+      return (req.sl > 0.0 && req.sl < req.price);
      }
 
-   if(close1 < open1 && Strategy_HasDivergence(false))
+   if(Strategy_IsBearishClosedCandle() && Strategy_FindBearishDivergence())
      {
       req.type = QM_SELL;
-      req.price = 0.0;
-      req.sl = bid * (1.0 + pct);
-      req.tp = 0.0;
-      req.reason = "RSI_BEARISH_DIVERGENCE";
-      return true;
+      req.price = bid;
+      req.sl = Strategy_NormalizePrice(bid * (1.0 + pct));
+      req.reason = "RSI_DIVERGENCE_SELL";
+      return (req.sl > req.price);
      }
 
    return false;
@@ -255,11 +149,14 @@ void Strategy_ManageOpenPosition()
       return;
 
    const int magic = QM_FrameworkMagic();
-   const double pct = strategy_trail_percent / 100.0;
+   if(magic <= 0)
+      return;
+
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    if(point <= 0.0)
       return;
 
+   const double pct = strategy_trail_percent / 100.0;
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -270,26 +167,26 @@ void Strategy_ManageOpenPosition()
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
 
-      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       const double current_sl = PositionGetDouble(POSITION_SL);
       double target_sl = 0.0;
 
-      if(ptype == POSITION_TYPE_BUY)
+      if(position_type == POSITION_TYPE_BUY)
         {
          const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
          if(bid <= 0.0)
             continue;
-         target_sl = NormalizeDouble(bid * (1.0 - pct), _Digits);
-         if(current_sl <= 0.0 || target_sl > current_sl + point * 0.5)
+         target_sl = Strategy_NormalizePrice(bid * (1.0 - pct));
+         if(target_sl > 0.0 && (current_sl <= 0.0 || target_sl > current_sl + point * 0.5))
             QM_TM_MoveSL(ticket, target_sl, "percent_trailing_stop");
         }
-      else if(ptype == POSITION_TYPE_SELL)
+      else if(position_type == POSITION_TYPE_SELL)
         {
-         const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-         if(bid <= 0.0)
+         const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+         if(ask <= 0.0)
             continue;
-         target_sl = NormalizeDouble(bid * (1.0 + pct), _Digits);
-         if(current_sl <= 0.0 || target_sl < current_sl - point * 0.5)
+         target_sl = Strategy_NormalizePrice(ask * (1.0 + pct));
+         if(target_sl > 0.0 && (current_sl <= 0.0 || target_sl < current_sl - point * 0.5))
             QM_TM_MoveSL(ticket, target_sl, "percent_trailing_stop");
         }
      }
@@ -310,6 +207,141 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
    return false; // defer to QM_NewsAllowsTrade(...)
   }
 
+double Strategy_NormalizePrice(const double price)
+  {
+   if(price <= 0.0)
+      return 0.0;
+   const int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
+   return NormalizeDouble(price, digits);
+  }
+
+bool Strategy_IsBullishClosedCandle()
+  {
+   return (iClose(_Symbol, _Period, 1) > iOpen(_Symbol, _Period, 1));
+  }
+
+bool Strategy_IsBearishClosedCandle()
+  {
+   return (iClose(_Symbol, _Period, 1) < iOpen(_Symbol, _Period, 1));
+  }
+
+bool Strategy_IsPivotLow(const int shift)
+  {
+   const double low = iLow(_Symbol, _Period, shift);
+   const double low_prev = iLow(_Symbol, _Period, shift + 1);
+   const double low_next = iLow(_Symbol, _Period, shift - 1);
+   const double rsi = QM_RSI(_Symbol, _Period, strategy_rsi_period, shift);
+   const double rsi_prev = QM_RSI(_Symbol, _Period, strategy_rsi_period, shift + 1);
+   const double rsi_next = QM_RSI(_Symbol, _Period, strategy_rsi_period, shift - 1);
+   return (low > 0.0 && low < low_prev && low < low_next &&
+           rsi > 0.0 && rsi < rsi_prev && rsi < rsi_next);
+  }
+
+bool Strategy_IsPivotHigh(const int shift)
+  {
+   const double high = iHigh(_Symbol, _Period, shift);
+   const double high_prev = iHigh(_Symbol, _Period, shift + 1);
+   const double high_next = iHigh(_Symbol, _Period, shift - 1);
+   const double rsi = QM_RSI(_Symbol, _Period, strategy_rsi_period, shift);
+   const double rsi_prev = QM_RSI(_Symbol, _Period, strategy_rsi_period, shift + 1);
+   const double rsi_next = QM_RSI(_Symbol, _Period, strategy_rsi_period, shift - 1);
+   return (high > 0.0 && high > high_prev && high > high_next &&
+           rsi > 0.0 && rsi > rsi_prev && rsi > rsi_next);
+  }
+
+bool Strategy_HasPriorBarEntry()
+  {
+   const datetime bar_start = iTime(_Symbol, _Period, 1);
+   const datetime bar_end = iTime(_Symbol, _Period, 0);
+   if(bar_start <= 0 || bar_end <= bar_start)
+      return false;
+
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0 || !HistorySelect(bar_start, bar_end))
+      return false;
+
+   const int total = HistoryDealsTotal();
+   for(int i = 0; i < total; ++i)
+     {
+      const ulong deal = HistoryDealGetTicket(i);
+      if(deal == 0)
+         continue;
+      if(HistoryDealGetString(deal, DEAL_SYMBOL) != _Symbol)
+         continue;
+      if((int)HistoryDealGetInteger(deal, DEAL_MAGIC) != magic)
+         continue;
+      if((ENUM_DEAL_ENTRY)HistoryDealGetInteger(deal, DEAL_ENTRY) == DEAL_ENTRY_IN)
+         return true;
+     }
+   return false;
+  }
+
+bool Strategy_FindBullishDivergence()
+  {
+   int recent = -1;
+   const int max_shift = MathMax(strategy_min_lookback, strategy_max_lookback);
+   const int min_older_shift = MathMax(3, strategy_min_lookback);
+
+   for(int shift = 2; shift <= max_shift; ++shift)
+     {
+      if(!Strategy_IsPivotLow(shift))
+         continue;
+
+      if(recent < 0)
+        {
+         recent = shift;
+         continue;
+        }
+
+      if(shift < min_older_shift)
+         continue;
+
+      const double price_recent = iLow(_Symbol, _Period, recent);
+      const double price_older = iLow(_Symbol, _Period, shift);
+      const double rsi_recent = QM_RSI(_Symbol, _Period, strategy_rsi_period, recent);
+      const double rsi_older = QM_RSI(_Symbol, _Period, strategy_rsi_period, shift);
+      if(price_recent < price_older &&
+         rsi_recent > rsi_older &&
+         rsi_recent < strategy_rsi_low &&
+         rsi_older < strategy_rsi_low)
+         return true;
+     }
+   return false;
+  }
+
+bool Strategy_FindBearishDivergence()
+  {
+   int recent = -1;
+   const int max_shift = MathMax(strategy_min_lookback, strategy_max_lookback);
+   const int min_older_shift = MathMax(3, strategy_min_lookback);
+
+   for(int shift = 2; shift <= max_shift; ++shift)
+     {
+      if(!Strategy_IsPivotHigh(shift))
+         continue;
+
+      if(recent < 0)
+        {
+         recent = shift;
+         continue;
+        }
+
+      if(shift < min_older_shift)
+         continue;
+
+      const double price_recent = iHigh(_Symbol, _Period, recent);
+      const double price_older = iHigh(_Symbol, _Period, shift);
+      const double rsi_recent = QM_RSI(_Symbol, _Period, strategy_rsi_period, recent);
+      const double rsi_older = QM_RSI(_Symbol, _Period, strategy_rsi_period, shift);
+      if(price_recent > price_older &&
+         rsi_recent < rsi_older &&
+         rsi_recent > strategy_rsi_high &&
+         rsi_older > strategy_rsi_high)
+         return true;
+     }
+   return false;
+  }
+
 // -----------------------------------------------------------------------------
 // Framework wiring — do NOT edit below this line unless you know why.
 // -----------------------------------------------------------------------------
@@ -321,9 +353,17 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode,
+                        qm_news_mode_legacy,           // legacy back-compat
                         qm_friday_close_enabled,
-                        qm_friday_close_hour_broker))
+                        qm_friday_close_hour_broker,
+                        30,                            // pause-before (legacy hint)
+                        30,                            // pause-after (legacy hint)
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact,
+                        qm_rng_seed,
+                        qm_stress_reject_probability,
+                        qm_news_temporal,              // FW1 Axis A
+                        qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
@@ -344,7 +384,14 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   if(!QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode))
+   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
+   // when both new axes are at their OFF defaults.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
@@ -376,6 +423,10 @@ void OnTick()
    if(!QM_IsNewBar())
       return;
 
+   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
+   // since last tick. Cheap: most calls early-return on same-day check.
+   QM_EquityStreamOnNewBar();
+
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
      {
@@ -387,6 +438,15 @@ void OnTick()
 void OnTimer()
   {
    QM_FrameworkOnTimer();
+  }
+
+void OnTradeTransaction(const MqlTradeTransaction &trans,
+                        const MqlTradeRequest &request,
+                        const MqlTradeResult &result)
+  {
+   // FW4: feeds closing-deal net-profits to the KS kill-switch.
+   // No-op outside Q13 (when no baseline.json exists).
+   QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
 double OnTester()

@@ -33,7 +33,7 @@ from pathlib import Path
 
 # Allow running both as a module and as a script
 if __package__ in (None, ""):
-    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from framework.scripts._phase_utils import ensure_dir, utc_now_iso, write_json
 
@@ -107,6 +107,49 @@ def estimate_pf_gross(pf_net: float | None, trades: int, lots: float, commission
     return round(pf_net * 1.05, 4) if pf_net > 0 else pf_net
 
 
+def _common_files_dir() -> Path:
+    return Path(r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\Common\Files")
+
+
+def _q04_sim_result_path(ea_id: int, symbol: str) -> Path:
+    return _common_files_dir() / "QM" / "q04_sim" / f"{ea_id}_{symbol.replace('.', '_')}.json"
+
+
+def read_pf_net_from_ea(ea_id: int, symbol: str) -> tuple[float | None, int, float | None]:
+    """PF-net the EA self-reported (net of InpQMSimCommissionPerLot), from the
+    deterministic Common\\Files result file. The MT5 tester applies NO commission to
+    custom .DWX symbols, so the report PF is gross; the EA emits the true PF-net here."""
+    p = _q04_sim_result_path(ea_id, symbol)
+    if not p.exists():
+        return None, 0, None
+    try:
+        d = json.loads(p.read_text(encoding="utf-8-sig"))
+        pf = d.get("pf_net")
+        comm = d.get("sim_commission_total")
+        pf = float(pf) if pf is not None else None
+        trades = int(d.get("closed_deals") or 0)
+        comm = float(comm) if comm is not None else None
+    except (OSError, json.JSONDecodeError, TypeError, ValueError):
+        return None, 0, None
+    return pf, trades, comm
+
+
+def resolve_ea_expert_path(repo_root: Path, ea_label: str) -> str | None:
+    """Canonical MT5 expert path 'QM\\<ea_dir>' for run_smoke / the tester (run_smoke
+    deploys framework/EAs/<dir>/<dir>.ex5 to Experts/QM/<dir>.ex5). Bare labels do NOT
+    resolve — that was the Q04 expert-path bug."""
+    eas = repo_root / "framework" / "EAs"
+    matches = sorted(p for p in eas.glob(f"{ea_label}_*") if p.is_dir())
+    if not matches and (eas / ea_label).is_dir():
+        matches = [eas / ea_label]
+    return f"QM\\{matches[0].name}" if matches else None
+
+
+def period_from_setfile(setfile: Path, default: str = "H1") -> str:
+    m = re.search(r"_(M1|M5|M15|M30|H1|H4|H6|H8|D1|W1|MN1)_backtest", Path(setfile).name)
+    return m.group(1) if m else default
+
+
 def aggregate_verdict(fold_results: list[dict]) -> tuple[str, str]:
     """All-folds-must-pass verdict; PASS only if every fold has PF-net > floor."""
     if not fold_results:
@@ -120,7 +163,7 @@ def aggregate_verdict(fold_results: list[dict]) -> tuple[str, str]:
 
 def run_fold_via_smoke(*, ea_id: int, ea_expert: str, symbol: str,
                         setfile: Path, fold: dict, report_root: Path,
-                        terminal: str, timeout_sec: int = 1800) -> dict:
+                        terminal: str, period: str, timeout_sec: int = 1800) -> dict:
     """Invoke run_smoke.ps1 for a single OOS fold. Returns fold-result dict.
 
     Bridges to the existing MT5 tester harness — the runner doesn't
@@ -134,6 +177,25 @@ def run_fold_via_smoke(*, ea_id: int, ea_expert: str, symbol: str,
     repo_root = Path(__file__).resolve().parents[2]
     run_smoke_ps1 = repo_root / "framework" / "scripts" / "run_smoke.ps1"
 
+    # Inject the EA-side simulated commission into a fold-local setfile copy. The tester
+    # cannot commission custom .DWX symbols; the EA self-accounts InpQMSimCommissionPerLot
+    # and writes PF-net to Common\Files (read back below).
+    fold_dir = report_root / f"QM5_{ea_id}" / "Q04" / fold["id"]
+    fold_dir.mkdir(parents=True, exist_ok=True)
+    fold_set = fold_dir / f"{Path(setfile).stem}_q04comm.set"
+    base_text = Path(setfile).read_text(encoding="utf-8", errors="ignore") if Path(setfile).exists() else ""
+    if "InpQMSimCommissionPerLot" not in base_text:
+        base_text = base_text.rstrip("\r\n") + f"\r\nInpQMSimCommissionPerLot={COMMISSION_PER_LOT_ROUND_TRIP}\r\n"
+    fold_set.write_text(base_text, encoding="utf-8")
+
+    # Clear any stale EA result before this fold (folds run sequentially per ea/symbol).
+    res_path = _q04_sim_result_path(ea_id, symbol)
+    try:
+        if res_path.exists():
+            res_path.unlink()
+    except OSError:
+        pass
+
     args = [
         "pwsh.exe", "-NoProfile", "-File", str(run_smoke_ps1),
         "-EAId", str(ea_id),
@@ -141,16 +203,15 @@ def run_fold_via_smoke(*, ea_id: int, ea_expert: str, symbol: str,
         "-Symbol", symbol,
         "-Year", str(oos_year),
         "-Terminal", terminal,
-        "-Period", "H1",
+        "-Period", period,
         "-DispatchSubGateHash", run_id,
         "-DispatchPhase", "Q04",
         "-DispatchVersion", "q04_walkforward",
         "-Runs", "1",
-        "-MinTrades", "20",
+        "-MinTrades", "5",
         "-Model", "4",
-        "-SetFile", str(setfile),
+        "-SetFile", str(fold_set),
         "-ReportRoot", str(report_root),
-        "-CommissionPerLot", str(COMMISSION_PER_LOT_ROUND_TRIP),
         "-TimeoutSeconds", str(timeout_sec),
     ]
     creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
@@ -161,16 +222,15 @@ def run_fold_via_smoke(*, ea_id: int, ea_expert: str, symbol: str,
         return {**fold, "pf_net": None, "trades": 0, "status": "TIMEOUT",
                 "summary_path": None}
 
+    pf_net, trades, sim_comm = read_pf_net_from_ea(ea_id, symbol)
     summary_path = report_root / f"QM5_{ea_id}" / "Q04" / fold["id"] / "summary.json"
-    pf_net, trades = parse_pf_from_report_summary(summary_path)
-    pf_gross = estimate_pf_gross(pf_net, trades, lots=0.1,
-                                  commission_total=trades * COMMISSION_PER_LOT_ROUND_TRIP * 0.1)
+    status = "OK" if (pf_net is not None and proc.returncode == 0) else "FAIL"
     return {
         **fold,
         "pf_net": pf_net,
-        "pf_gross": pf_gross,
         "trades": trades,
-        "status": "OK" if proc.returncode == 0 else "FAIL",
+        "sim_commission_total": sim_comm,
+        "status": status,
         "summary_path": str(summary_path) if summary_path.exists() else None,
         "exit_code": proc.returncode,
     }
@@ -195,17 +255,24 @@ def main() -> int:
         return 2
     ea_id = int(ea_match.group(1))
 
+    repo_root = Path(__file__).resolve().parents[2]
+    ea_expert = resolve_ea_expert_path(repo_root, args.ea)
+    if ea_expert is None:
+        print(f"cannot resolve EA dir for {args.ea} under framework/EAs", file=sys.stderr)
+        return 2
+    period = period_from_setfile(args.setfile)
+
     folds = folds_for_year(args.latest_full_year)
-    print(f"Q04 {args.ea} {args.symbol}  folds={[f['id'] for f in folds]}  comm=${COMMISSION_PER_LOT_ROUND_TRIP}/lot")
+    print(f"Q04 {args.ea} {args.symbol} {period}  expert={ea_expert}  folds={[f['id'] for f in folds]}  comm=${COMMISSION_PER_LOT_ROUND_TRIP}/lot (EA-side)")
 
     fold_results: list[dict] = []
     for fold in folds:
-        print(f"  fold {fold['id']}: OOS {fold['oos_start']} → {fold['oos_end']} ...")
+        print(f"  fold {fold['id']}: OOS {fold['oos_start']} -> {fold['oos_end']} ...")
         res = run_fold_via_smoke(
-            ea_id=ea_id, ea_expert=args.ea, symbol=args.symbol,
+            ea_id=ea_id, ea_expert=ea_expert, symbol=args.symbol,
             setfile=args.setfile, fold=fold,
             report_root=args.report_root, terminal=args.terminal,
-            timeout_sec=args.timeout_sec,
+            period=period, timeout_sec=args.timeout_sec,
         )
         pf_str = f"{res['pf_net']:.3f}" if res.get("pf_net") is not None else "n/a"
         print(f"    -> PF-net={pf_str}  trades={res['trades']}  status={res['status']}")

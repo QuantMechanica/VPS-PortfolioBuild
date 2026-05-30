@@ -1,0 +1,43 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1154
+; ea_slug:      unger-dax-4h-high-breakout
+; ea_version:   v5.0
+; set_version:  s20260526-003
+; symbol:       GDAXI.DWX
+; timeframe:    M15
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   f42aca6ddd1993959ed3139632ceb6e3a5d875706577e7c4131452993ab1d627
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1154
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_PERCENT=0
+RISK_FIXED=1000
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=1
+qm_news_compliance=1
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0
+strategy_entry_start_hhmm=900
+strategy_entry_end_hhmm=1200
+strategy_session_end_hhmm=1725
+strategy_hh_lookback_bars=24
+strategy_atr_period_m15=14
+strategy_atr_period_d1=14
+strategy_buffer_atr_mult=0.05
+strategy_sl_atr_mult=2.0
+strategy_tp_atr_mult=3.0
+strategy_min_range_d1_atr=0.25
+strategy_max_range_d1_atr=1.25
+strategy_max_hold_sessions=3
+strategy_max_spread_points=200

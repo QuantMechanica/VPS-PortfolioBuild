@@ -1,0 +1,41 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1193
+; ea_slug:      qp-stress-usd-rebound
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       USDCAD.DWX
+; timeframe:    D1
+; environment:  live
+; magic_slot:   4
+; risk_mode:    PERCENT
+; portfolio_weight: 0.20
+; build_hash:   02fcc9b1f5757808a91b352db8e6492eb4c4c001dc02fb8921ab1bcd65b8e089
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1193
+qm_magic_slot_offset=4
+qm_rng_seed=42
+RISK_PERCENT=0.25
+RISK_FIXED=0
+PORTFOLIO_WEIGHT=0.20
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0
+strategy_equity_signal_symbol=SP500.DWX
+strategy_oil_primary_symbol=XTIUSD.DWX
+strategy_oil_fallback_symbol=XBRUSD.DWX
+strategy_stress_threshold_pct=0.0
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=1.5
+strategy_safety_hold_days=2
+strategy_min_d1_bars=30
+strategy_spread_median_days=20
+strategy_spread_mult=3.0
+strategy_basket_kill_mult=1.2

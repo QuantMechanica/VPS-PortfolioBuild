@@ -1,0 +1,41 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1083
+; ea_slug:      chan-gld-gdx-z2
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       XAGUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   74ae67858c0c31be9aef3aa3317d26be70f9a688c53634a5ba5170112a160d65
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1083
+qm_magic_slot_offset=1
+qm_rng_seed=42
+RISK_PERCENT=0
+RISK_FIXED=1000
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=1
+qm_news_compliance=1
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=1
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0
+strategy_pair_index=0
+strategy_lookback_d1=100
+strategy_entry_z=2.0
+strategy_exit_z=0.0
+strategy_stop_z=4.0
+strategy_min_half_life_bars=2
+strategy_max_half_life_bars=60
+strategy_adf_t_max=-1.30
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=4.0
+strategy_max_spread_points=0

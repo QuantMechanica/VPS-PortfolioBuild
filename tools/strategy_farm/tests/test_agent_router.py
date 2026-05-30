@@ -111,9 +111,38 @@ Implementation notes: simple MQL5 date filter and narrow setfile.
             second = agent_router.route_once(root)
 
             self.assertEqual(first.task_id, build["task_id"])
-            self.assertEqual(first.assigned_agent, "codex")
+            self.assertEqual(first.assigned_agent, "gemini")
             self.assertEqual(second.task_id, research["task_id"])
             self.assertEqual(second.assigned_agent, "gemini")
+
+    def test_gemini_build_review_creates_codex_review_task(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            agent_router.sync_default_registry(root, claude_disabled_flag=root / "missing.flag")
+            build = agent_router.enqueue_task(
+                root,
+                "build_ea",
+                priority=10,
+                payload={"ea_id": "QM5_TEST_1", "card_id": "QM5_TEST_1"},
+            )
+            routed = agent_router.route_once(root, claude_disabled_flag=root / "missing.flag")
+            self.assertEqual(routed.assigned_agent, "gemini")
+
+            artifact = root / "gemini_build_result.md"
+            artifact.write_text("draft build complete\n", encoding="utf-8")
+            updated = agent_router.update_task(
+                root,
+                build["task_id"],
+                state="REVIEW",
+                artifact_path=str(artifact),
+                verdict="GEMINI_DRAFT_READY",
+            )
+
+            self.assertTrue(updated["updated"])
+            self.assertTrue(updated["codex_review_task_id"])
+            review_route = agent_router.route_once(root, claude_disabled_flag=root / "missing.flag")
+            self.assertEqual(review_route.task_id, updated["codex_review_task_id"])
+            self.assertEqual(review_route.assigned_agent, "codex")
 
     def test_route_once_skips_temporarily_unavailable_head_task(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:

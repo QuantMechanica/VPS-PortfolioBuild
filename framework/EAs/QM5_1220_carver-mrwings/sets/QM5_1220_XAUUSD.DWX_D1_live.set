@@ -1,0 +1,42 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1220
+; ea_slug:      carver-mrwings
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       XAUUSD.DWX
+; timeframe:    D1
+; environment:  live
+; magic_slot:   6
+; risk_mode:    PERCENT
+; portfolio_weight: 0.1429
+; build_hash:   59ddd4e994f479076f7c5430512ad783d381a1e60665e9954702a65c004b7eb7
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1220
+qm_magic_slot_offset=6
+qm_rng_seed=42
+RISK_PERCENT=0.5
+RISK_FIXED=0
+PORTFOLIO_WEIGHT=0.1429
+qm_news_temporal=3
+qm_news_compliance=1
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0
+strategy_lfast_d1=4
+strategy_lslow_mult=4
+strategy_change_std_days=25
+strategy_wing_std_lookback=5000
+strategy_wing_sigma=3.0
+strategy_exit_sigma=2.0
+strategy_forecast_scalar=1.0
+strategy_entry_forecast=2.0
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=3.0
+strategy_spread_median_days=20
+strategy_spread_mult=2.0

@@ -1,0 +1,42 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        1218
+; ea_slug:      carver-relmomentum
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       USDJPY.DWX
+; timeframe:    D1
+; environment:  live
+; magic_slot:   8
+; risk_mode:    PERCENT
+; portfolio_weight: 0.0909
+; build_hash:   f7ee3269da6fc3ecd86a2456b4efded34a7ca217a2375637b75b3d1d4013fd0d
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1218
+qm_magic_slot_offset=8
+qm_rng_seed=42
+RISK_PERCENT=0.5
+RISK_FIXED=0
+PORTFOLIO_WEIGHT=0.0909
+qm_news_temporal=3
+qm_news_compliance=1
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0
+strategy_horizon_d1=40
+strategy_ema_span=10
+strategy_norm_stddev_days=25
+strategy_forecast_scalar=10.0
+strategy_entry_forecast=2.0
+strategy_max_slots_per_group=2
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=2.5
+strategy_break_atr_mult=3.5
+strategy_break_block_bars=20
+strategy_spread_median_days=20
+strategy_spread_mult=2.0

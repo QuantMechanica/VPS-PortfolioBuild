@@ -20,9 +20,12 @@ import sys
 from pathlib import Path
 
 if __package__ in (None, ""):
-    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from framework.scripts._phase_utils import ensure_dir, utc_now_iso, write_json
+from framework.scripts._phase_utils import (ensure_dir, utc_now_iso, write_json,
+                                            resolve_ea_expert_path, period_from_setfile,
+                                            find_latest_summary, FULL_HISTORY_FROM,
+                                            FULL_HISTORY_TO, FULL_HISTORY_YEAR)
 from framework.scripts.q05_stress_medium import _parse_pf_dd_trades, STARTING_EQUITY
 from framework.scripts.q06_stress_harsh import gen_harsh_setfile_for
 
@@ -61,7 +64,7 @@ def _write_seeded_setfile(baseline: Path, seed: int) -> Path:
 
 def _run_seed(*, ea_id: int, ea_expert: str, symbol: str, setfile: Path,
               seed: int, terminal: str, report_root: Path,
-              timeout_sec: int) -> dict:
+              timeout_sec: int, period: str = "H1") -> dict:
     repo_root = Path(__file__).resolve().parents[2]
     run_smoke_ps1 = repo_root / "framework" / "scripts" / "run_smoke.ps1"
     args = [
@@ -69,9 +72,9 @@ def _run_seed(*, ea_id: int, ea_expert: str, symbol: str, setfile: Path,
         "-EAId", str(ea_id),
         "-Expert", ea_expert,
         "-Symbol", symbol,
-        "-Year", "0",
+        "-Year", FULL_HISTORY_YEAR, "-FromDate", FULL_HISTORY_FROM, "-ToDate", FULL_HISTORY_TO,
         "-Terminal", terminal,
-        "-Period", "H1",
+        "-Period", period,
         "-DispatchSubGateHash", f"q07_seed{seed}_{ea_id}_{symbol.replace('.', '_')}",
         "-DispatchPhase", "Q07",
         "-DispatchVersion", f"q07_seed_{seed}",
@@ -86,12 +89,12 @@ def _run_seed(*, ea_id: int, ea_expert: str, symbol: str, setfile: Path,
     proc = subprocess.run(args, capture_output=True, text=True,
                           timeout=timeout_sec, creationflags=creationflags)
     sym_clean = symbol.replace(".", "_")
-    summary = report_root / f"QM5_{ea_id}" / "Q07" / sym_clean / f"seed_{seed}" / "summary.json"
-    pf, dd_money, trades = _parse_pf_dd_trades(summary)
+    summary = find_latest_summary(report_root)
+    pf, dd_money, trades = _parse_pf_dd_trades(summary) if summary else (None, None, 0)
     dd_pct = (dd_money / STARTING_EQUITY * 100.0) if dd_money is not None else None
     return {"seed": seed, "pf": pf, "dd_money": dd_money, "dd_pct": dd_pct,
             "trades": trades, "exit_code": proc.returncode,
-            "summary_path": str(summary) if summary.exists() else None}
+            "summary_path": str(summary) if summary else None}
 
 
 def evaluate_seeds(seed_results: list[dict]) -> tuple[str, str, dict]:
@@ -149,6 +152,13 @@ def main() -> int:
         return 2
     ea_id = int(ea_match.group(1))
 
+    repo_root = Path(__file__).resolve().parents[2]
+    ea_expert = resolve_ea_expert_path(repo_root, args.ea)
+    if ea_expert is None:
+        print(f"cannot resolve EA dir for {args.ea}", file=sys.stderr)
+        return 2
+    period = period_from_setfile(args.baseline_setfile)
+
     # Q07 runs against Q06 HARSH stress per spec — apply HARSH first, then per-seed.
     harsh_set = gen_harsh_setfile_for(args.baseline_setfile)
     seeds = _load_canonical_seeds()
@@ -158,10 +168,10 @@ def main() -> int:
     for seed in seeds:
         seeded_set = _write_seeded_setfile(harsh_set, seed)
         print(f"  seed {seed}: running...")
-        res = _run_seed(ea_id=ea_id, ea_expert=args.ea, symbol=args.symbol,
+        res = _run_seed(ea_id=ea_id, ea_expert=ea_expert, symbol=args.symbol,
                         setfile=seeded_set, seed=seed,
                         terminal=args.terminal, report_root=args.report_root,
-                        timeout_sec=args.timeout_sec)
+                        timeout_sec=args.timeout_sec, period=period)
         print(f"    -> PF={res['pf']}  trades={res['trades']}  exit={res['exit_code']}")
         seed_results.append(res)
 

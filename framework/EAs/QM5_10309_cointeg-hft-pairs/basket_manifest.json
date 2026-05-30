@@ -1,0 +1,22 @@
+{
+  "ea_id": "QM5_10309",
+  "ea_slug": "cointeg-hft-pairs",
+  "timeframe": "M15",
+  "symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "AUDUSD.DWX",
+    "NZDUSD.DWX",
+    "SP500.DWX",
+    "NDX.DWX"
+  ],
+  "pairs": [
+    ["EURUSD.DWX", "GBPUSD.DWX"],
+    ["AUDUSD.DWX", "NZDUSD.DWX"],
+    ["SP500.DWX", "NDX.DWX"]
+  ],
+  "notes": [
+    "Card R3 GER40/FRA40 pair was not registered because FRA40.DWX is not present in dwx_symbol_matrix.csv.",
+    "SP500.DWX is backtest-only per DWX symbol discipline."
+  ]
+}

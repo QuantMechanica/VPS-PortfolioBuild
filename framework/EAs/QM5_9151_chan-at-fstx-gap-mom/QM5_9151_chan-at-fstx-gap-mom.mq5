@@ -5,164 +5,48 @@
 #include <QM/QM_Common.mqh>
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                    = 9151;
-input int    qm_magic_slot_offset        = 0;
+input int    qm_ea_id                   = 9151;
+input int    qm_magic_slot_offset       = 0;
 
 input group "Risk"
-input double RISK_PERCENT                = 0.0;
-input double RISK_FIXED                  = 1000.0;
-input double PORTFOLIO_WEIGHT            = 1.0;
+input double RISK_PERCENT               = 0.0;
+input double RISK_FIXED                 = 1000.0;
+input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsMode qm_news_mode           = QM_NEWS_OFF;
+input QM_NewsMode qm_news_mode          = QM_NEWS_OFF;
 input int    qm_news_pause_before_minutes = 30;
 input int    qm_news_pause_after_minutes  = 30;
 input int    qm_news_stale_max_hours      = 336;
 input string qm_news_min_impact           = "high";
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled     = true;
+input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Strategy"
 input int    strategy_session_open_hour_broker  = 12;
 input int    strategy_session_close_hour_broker = 0;
 input int    strategy_return_lookback_sessions  = 90;
-input double strategy_entry_z                  = 0.10;
-input int    strategy_atr_period               = 14;
-input double strategy_atr_sl_mult              = 2.50;
-input double strategy_max_spread_points        = 80.0;
-
-int SessionKey(const datetime t)
-  {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   datetime session_date = t;
-   if(dt.hour < strategy_session_open_hour_broker)
-      session_date = t - 86400;
-
-   TimeToStruct(session_date, dt);
-   return dt.year * 1000 + dt.day_of_year;
-  }
-
-bool BuildSessionStats(const int today_key,
-                       double &prior_high,
-                       double &prior_low,
-                       double &stdret)
-  {
-   prior_high = 0.0;
-   prior_low = 0.0;
-   stdret = 0.0;
-
-   const int lookback = MathMax(strategy_return_lookback_sessions, 90);
-   const int bars_needed = (lookback + 20) * 24;
-   MqlRates rates[];
-   ArraySetAsSeries(rates, true);
-   const int copied = CopyRates(_Symbol, PERIOD_H1, 0, bars_needed, rates); // perf-allowed: Strategy_EntrySignal is called only after QM_IsNewBar().
-   if(copied < (lookback + 2) * 12)
-      return false;
-
-   double highs[160];
-   double lows[160];
-   double closes[160];
-   int count = 0;
-   int active_key = -1;
-   double active_high = 0.0;
-   double active_low = 0.0;
-   double active_close = 0.0;
-
-   for(int i = copied - 1; i >= 0; --i)
-     {
-      const int key = SessionKey(rates[i].time);
-      if(key >= today_key)
-         continue;
-
-      if(active_key != key)
-        {
-         if(active_key >= 0 && count < 160)
-           {
-            highs[count] = active_high;
-            lows[count] = active_low;
-            closes[count] = active_close;
-            ++count;
-           }
-
-         active_key = key;
-         active_high = rates[i].high;
-         active_low = rates[i].low;
-         active_close = rates[i].close;
-        }
-      else
-        {
-         active_high = MathMax(active_high, rates[i].high);
-         active_low = MathMin(active_low, rates[i].low);
-         active_close = rates[i].close;
-        }
-     }
-
-   if(active_key >= 0 && count < 160)
-     {
-      highs[count] = active_high;
-      lows[count] = active_low;
-      closes[count] = active_close;
-      ++count;
-     }
-
-   if(count < lookback + 1)
-      return false;
-
-   prior_high = highs[count - 1];
-   prior_low = lows[count - 1];
-   if(prior_high <= 0.0 || prior_low <= 0.0)
-      return false;
-
-   double returns[120];
-   double mean = 0.0;
-   for(int r = 0; r < lookback; ++r)
-     {
-      const int idx = count - lookback + r;
-      if(closes[idx - 1] <= 0.0 || closes[idx] <= 0.0)
-         return false;
-      returns[r] = (closes[idx] / closes[idx - 1]) - 1.0;
-      mean += returns[r];
-     }
-   mean /= lookback;
-
-   double variance = 0.0;
-   for(int r = 0; r < lookback; ++r)
-     {
-      const double diff = returns[r] - mean;
-      variance += diff * diff;
-     }
-   variance /= MathMax(1, lookback - 1);
-   stdret = MathSqrt(variance);
-
-   return (stdret > 0.0);
-  }
-
-bool HasOpenPosition()
-  {
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
-         return true;
-     }
-   return false;
-  }
+input double strategy_entry_z                   = 0.10;
+input int    strategy_atr_period                = 14;
+input double strategy_atr_sl_mult               = 2.50;
+input double strategy_max_spread_points         = 80.0;
 
 bool Strategy_NoTradeFilter()
   {
    if(_Period != PERIOD_H1)
       return true;
 
-   if(HasOpenPosition())
-      return false;
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(!PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetInteger(POSITION_MAGIC) == magic)
+         return false;
+     }
 
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -183,35 +67,141 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(strategy_entry_z <= 0.0 || strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
+   if(strategy_entry_z <= 0.0 ||
+      strategy_atr_period <= 0 ||
+      strategy_atr_sl_mult <= 0.0 ||
+      strategy_return_lookback_sessions < 90 ||
+      strategy_return_lookback_sessions > 200)
       return false;
 
-   MqlDateTime dt;
-   TimeToStruct(TimeCurrent(), dt);
-   if(dt.hour != strategy_session_open_hour_broker)
-      return false;
-   if(HasOpenPosition())
+   MqlDateTime now_dt;
+   TimeToStruct(TimeCurrent(), now_dt);
+   if(now_dt.hour != strategy_session_open_hour_broker)
       return false;
 
-   const datetime bar_time = iTime(_Symbol, PERIOD_H1, 0);
-   if(bar_time <= 0)
+   const int magic = QM_FrameworkMagic();
+   for(int p = PositionsTotal() - 1; p >= 0; --p)
+     {
+      const ulong ticket = PositionGetTicket(p);
+      if(!PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetInteger(POSITION_MAGIC) == magic)
+         return false;
+     }
+
+   const int bars_needed = (strategy_return_lookback_sessions + 20) * 24;
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, PERIOD_H1, 0, bars_needed, rates); // perf-allowed: EntrySignal is called only after QM_IsNewBar().
+   if(copied < (strategy_return_lookback_sessions + 2) * 12)
       return false;
 
-   const int today_key = SessionKey(bar_time);
-   double prior_high = 0.0;
-   double prior_low = 0.0;
-   double stdret = 0.0;
-   if(!BuildSessionStats(today_key, prior_high, prior_low, stdret))
+   MqlDateTime current_bar_dt;
+   TimeToStruct(rates[0].time, current_bar_dt);
+   const int today_key = current_bar_dt.year * 1000 + current_bar_dt.day_of_year;
+
+   double highs[240];
+   double lows[240];
+   double closes[240];
+   int session_count = 0;
+   int active_key = -1;
+   double active_high = 0.0;
+   double active_low = 0.0;
+   double active_close = 0.0;
+
+   for(int i = copied - 1; i >= 0; --i)
+     {
+      MqlDateTime dt;
+      TimeToStruct(rates[i].time, dt);
+
+      bool in_session = false;
+      datetime session_date = rates[i].time;
+      if(strategy_session_close_hour_broker == 0 && strategy_session_open_hour_broker > 0)
+         in_session = (dt.hour >= strategy_session_open_hour_broker);
+      else if(strategy_session_open_hour_broker < strategy_session_close_hour_broker)
+         in_session = (dt.hour >= strategy_session_open_hour_broker && dt.hour < strategy_session_close_hour_broker);
+      else
+        {
+         in_session = (dt.hour >= strategy_session_open_hour_broker || dt.hour < strategy_session_close_hour_broker);
+         if(dt.hour < strategy_session_close_hour_broker)
+            session_date = rates[i].time - 86400;
+        }
+
+      if(!in_session)
+         continue;
+
+      MqlDateTime session_dt;
+      TimeToStruct(session_date, session_dt);
+      const int session_key = session_dt.year * 1000 + session_dt.day_of_year;
+      if(session_key >= today_key)
+         continue;
+
+      if(active_key != session_key)
+        {
+         if(active_key >= 0 && session_count < 240)
+           {
+            highs[session_count] = active_high;
+            lows[session_count] = active_low;
+            closes[session_count] = active_close;
+            ++session_count;
+           }
+
+         active_key = session_key;
+         active_high = rates[i].high;
+         active_low = rates[i].low;
+         active_close = rates[i].close;
+        }
+      else
+        {
+         active_high = MathMax(active_high, rates[i].high);
+         active_low = MathMin(active_low, rates[i].low);
+         active_close = rates[i].close;
+        }
+     }
+
+   if(active_key >= 0 && session_count < 240)
+     {
+      highs[session_count] = active_high;
+      lows[session_count] = active_low;
+      closes[session_count] = active_close;
+      ++session_count;
+     }
+
+   if(session_count < strategy_return_lookback_sessions + 1)
       return false;
 
-   const double today_open = iOpen(_Symbol, PERIOD_H1, 0);
-   if(today_open <= 0.0)
+   const double prior_high = highs[session_count - 1];
+   const double prior_low = lows[session_count - 1];
+   if(prior_high <= 0.0 || prior_low <= 0.0)
+      return false;
+
+   double mean = 0.0;
+   double returns[200];
+   for(int r = 0; r < strategy_return_lookback_sessions; ++r)
+     {
+      const int idx = session_count - strategy_return_lookback_sessions + r;
+      if(closes[idx - 1] <= 0.0 || closes[idx] <= 0.0)
+         return false;
+      returns[r] = (closes[idx] / closes[idx - 1]) - 1.0;
+      mean += returns[r];
+     }
+   mean /= (double)strategy_return_lookback_sessions;
+
+   double variance = 0.0;
+   for(int r = 0; r < strategy_return_lookback_sessions; ++r)
+     {
+      const double diff = returns[r] - mean;
+      variance += diff * diff;
+     }
+   variance /= (double)MathMax(1, strategy_return_lookback_sessions - 1);
+   const double stdret = MathSqrt(variance);
+   if(stdret <= 0.0 || rates[0].open <= 0.0)
       return false;
 
    const double upper_trigger = prior_high * (1.0 + strategy_entry_z * stdret);
    const double lower_trigger = prior_low * (1.0 - strategy_entry_z * stdret);
 
-   if(today_open > upper_trigger)
+   if(rates[0].open > upper_trigger)
      {
       req.type = QM_BUY;
       req.price = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -220,7 +210,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return (req.price > 0.0 && req.sl > 0.0);
      }
 
-   if(today_open < lower_trigger)
+   if(rates[0].open < lower_trigger)
      {
       req.type = QM_SELL;
       req.price = SymbolInfoDouble(_Symbol, SYMBOL_BID);
@@ -234,17 +224,26 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
 void Strategy_ManageOpenPosition()
   {
-   // Card baseline specifies no trailing, break-even, partial close, or scaling.
+   // The card specifies no trailing, break-even, partial close, or scale logic.
   }
 
 bool Strategy_ExitSignal()
   {
-   if(!HasOpenPosition())
-      return false;
-
    MqlDateTime dt;
    TimeToStruct(TimeCurrent(), dt);
-   return (dt.hour == strategy_session_close_hour_broker);
+   if(dt.hour != strategy_session_close_hour_broker)
+      return false;
+
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(!PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetInteger(POSITION_MAGIC) == magic)
+         return true;
+     }
+   return false;
   }
 
 bool Strategy_NewsFilterHook(const datetime broker_time)
@@ -268,7 +267,7 @@ int OnInit()
                         qm_news_min_impact))
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_9151\",\"ea\":\"QM5_9151_chan-at-fstx-gap-mom\"}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
   }
 
@@ -303,8 +302,6 @@ void OnTick()
         {
          const ulong ticket = PositionGetTicket(i);
          if(!PositionSelectByTicket(ticket))
-            continue;
-         if(PositionGetString(POSITION_SYMBOL) != _Symbol)
             continue;
          if(PositionGetInteger(POSITION_MAGIC) != magic)
             continue;

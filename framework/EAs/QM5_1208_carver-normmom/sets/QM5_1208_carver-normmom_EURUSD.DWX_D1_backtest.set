@@ -1,0 +1,41 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1208
+; ea_slug:      carver-normmom
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       EURUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 0.142857
+; build_hash:   398b267416a5002feaff846d7125e0180440fb9627fec72860ab5f481c4969ad
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1208
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_PERCENT=0
+RISK_FIXED=1000
+PORTFOLIO_WEIGHT=0.142857
+qm_news_temporal=1
+qm_news_compliance=1
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0
+strategy_fast_period=16
+strategy_slow_period=64
+strategy_vol_lookback=25
+strategy_normret_cap=6.0
+strategy_forecast_scalar=10.0
+strategy_entry_forecast=2.0
+strategy_forecast_cap=20.0
+strategy_atr_period=20
+strategy_stop_atr_mult=2.5
+strategy_max_spread_points=35
+strategy_allow_ports=true

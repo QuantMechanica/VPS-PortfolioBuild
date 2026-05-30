@@ -9,10 +9,10 @@
 strategy_id: SRC04_S02b
 ea_id: TBD
 slug: lien-dbb-trend-join
-status: DRAFT
+status: APPROVED                             # G0 APPROVED 2026-05-25 by Claude — R1 PASS (Lien 2015 book, A-tier); R2 PASS (deterministic BB K-bar dwell + reclaim, fixed 65-pip stop); R3 PASS (D1 forex; Darwinex-native USDJPY.DWX, GBPUSD.DWX, EURUSD.DWX); R4 PASS (no ML, one-position-per-direction, no martingale)
 created: 2026-04-28
 created_by: Research
-last_updated: 2026-04-28
+last_updated: 2026-05-25
 
 strategy_type_flags:
   - bband-reclaim                             # vocabulary-gap PROPOSED — entry: close back across N·σ Bollinger band after K consecutive bars on the OUTER side. SHARED FLAG with sibling S02a; per-card disambiguation `precondition_mode = n-bars-opposite-1sigma` (this card) vs `outer-band-zone` (S02a). V4 had no equivalent SM_XXX EA. Flagged at § 16; batch-ratified at SRC04 closeout. See sibling card `lien-dbb-pick-tops_card.md` § 16 for canonical proposal.

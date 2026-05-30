@@ -1,0 +1,30 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1156
+; ea_slug:      caldeira-cointegration-pairs-fx
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       GBPUSD.DWX
+; timeframe:    M30
+; environment:  backtest
+; magic_slot:   7
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   139a12cae8d97ee141864ba03fe9f9f0e55d69b8b60a5f2893be2fbcf67c1f44
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+strategy_pair_slot=7
+strategy_formation_days=60
+strategy_zscore_days=60
+strategy_entry_z=2.0
+strategy_exit_abs_z=0.5
+strategy_stop_abs_z=4.0
+strategy_coint_entry_p=0.05
+strategy_coint_exit_p=0.10
+strategy_max_hold_days=30
+strategy_max_active_pairs=4

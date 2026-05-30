@@ -28,10 +28,24 @@ LOCK_DIR = FARM_ROOT / "locks"
 PYTHON_EXE = Path(r"C:\Users\Administrator\AppData\Local\Programs\Python\Python311\python.exe")
 CODEX_FALLBACK = Path(r"C:\Users\Administrator\AppData\Roaming\npm\codex.cmd")
 GEMINI_FALLBACK = Path(r"C:\Users\Administrator\AppData\Roaming\npm\gemini.cmd")
+GEMINI_NODE_BUNDLE = Path(r"C:\Users\Administrator\AppData\Roaming\npm\node_modules\@google\gemini-cli\bundle\gemini.js")
 CLAUDE_FALLBACK = Path(r"C:\Users\Administrator\AppData\Roaming\npm\claude.cmd")
 CODEX_HOME = Path(os.environ.get("CODEX_HOME", r"C:\Users\Administrator\.codex"))
 AGENT_USER_HOME = Path(r"C:\Users\Administrator")
 CLAUDE_DISABLED_FLAG = FARM_ROOT / "CLAUDE_DISABLED.flag"
+
+# --- Headless model selection (weekly-quota cost control) -------------------
+# Each headless cycle is mostly routine orchestration (claim work, run gates,
+# write the cycle log, monitor health) — work that does not need the top model.
+# Default Claude headless to Sonnet and let OWNER raise to opus per-run via env;
+# Codex/Gemini default to their config.toml model unless an env override is set.
+# Interactive sessions (e.g. the senior agent) are unaffected — they ignore
+# these vars. Empty string => omit the flag (use the CLI/account default).
+#   $env:QM_CLAUDE_HEADLESS_MODEL = 'opus'   # bump a cycle back to Opus
+#   $env:QM_CODEX_HEADLESS_MODEL  = 'gpt-5-codex'  # cheaper Codex tier
+CLAUDE_HEADLESS_MODEL = os.environ.get("QM_CLAUDE_HEADLESS_MODEL", "sonnet").strip()
+CODEX_HEADLESS_MODEL = os.environ.get("QM_CODEX_HEADLESS_MODEL", "").strip()
+GEMINI_HEADLESS_MODEL = os.environ.get("QM_GEMINI_HEADLESS_MODEL", "").strip()
 
 
 def utc_stamp() -> str:
@@ -69,6 +83,10 @@ def agent_env(agent: str) -> dict[str, str]:
         env["HOMEDRIVE"] = "C:"
         env["HOMEPATH"] = r"\Users\Administrator"
         env.setdefault("GEMINI_DEFAULT_AUTH_TYPE", "oauth-personal")
+        env.setdefault("TERM", "dumb")
+        env.setdefault("NO_COLOR", "1")
+        env.setdefault("FORCE_COLOR", "0")
+        env.setdefault("CI", "1")
     if agent == "claude":
         env["USERPROFILE"] = str(AGENT_USER_HOME)
         env["HOME"] = str(AGENT_USER_HOME)
@@ -100,17 +118,20 @@ Cycle:
    python tools/strategy_farm/agent_router.py status
    python tools/strategy_farm/agent_router.py run --min-ready-strategy-cards 5 --max-routes 5
    python tools/strategy_farm/agent_router.py route-many --max-routes 5
-   python tools/strategy_farm/agent_router.py list-tasks --agent {agent}
+   python tools/strategy_farm/agent_router.py list-tasks --agent {agent} --state IN_PROGRESS
 2. For every IN_PROGRESS task assigned to {agent}, in ascending numeric priority:
    read payload and skills, produce a durable artifact, run focused verification,
    then update the router with:
    python tools/strategy_farm/agent_router.py update-task <task_id> --state REVIEW --artifact-path "<artifact>" --verdict "<short_verdict>"
-3. Repeat task handling until no IN_PROGRESS {agent} task remains.
+3. Repeat task handling until `list-tasks --agent {agent} --state IN_PROGRESS`
+   returns an empty list. Ignore REVIEW/BLOCKED/PASSED tasks; they are not yours.
 4. If no task remains, run farmctl health and check QM5_10260 queue state. Do not invent untracked work.
 5. Exit.
 
 Hard rules:
 - Do not choose work outside the deterministic router.
+- Gemini may draft code, but Codex review is mandatory before acceptance; leave
+  Gemini code tasks in REVIEW and do not self-approve or move them to PIPELINE.
 - Keep operator-facing phase names Q-only.
 - Never enable T_Live or AutoTrading.
 - Never start terminal64.exe manually.
@@ -128,7 +149,7 @@ def process_alive(pid: int) -> bool:
         return False
     try:
         os.kill(pid, 0)
-    except OSError:
+    except Exception:
         return False
     return True
 
@@ -180,9 +201,11 @@ def release_lock(lock_info: dict[str, Any]) -> None:
 def command_for(agent: str, cwd: Path) -> list[str]:
     cli = resolve_cli(agent)
     if agent == "codex":
+        model_args = ["-m", CODEX_HEADLESS_MODEL] if CODEX_HEADLESS_MODEL else []
         return [
             cli,
             "exec",
+            *model_args,
             "--dangerously-bypass-approvals-and-sandbox",
             "--cd",
             str(cwd),
@@ -203,20 +226,31 @@ def command_for(agent: str, cwd: Path) -> list[str]:
         cards_review = FARM_ROOT / "artifacts" / "cards_review"
         if cards_review.exists():
             extra_dirs.append(str(cards_review))
+        node = shutil.which("node.exe") or shutil.which("node")
+        if node and GEMINI_NODE_BUNDLE.exists():
+            launcher = [node, str(GEMINI_NODE_BUNDLE)]
+        else:
+            launcher = [cli]
+        model_args = ["--model", GEMINI_HEADLESS_MODEL] if GEMINI_HEADLESS_MODEL else []
         return [
-            cli,
+            *launcher,
+            *model_args,
             "--prompt",
             "Execute the single-pass QuantMechanica orchestration instructions from stdin.",
             "--approval-mode",
             "yolo",
             "--skip-trust",
+            "--output-format",
+            "text",
             "--include-directories",
             ",".join(extra_dirs),
         ]
     if agent == "claude":
+        model_args = ["--model", CLAUDE_HEADLESS_MODEL] if CLAUDE_HEADLESS_MODEL else []
         return [
             cli,
             "-p",
+            *model_args,
             "--dangerously-skip-permissions",
             "--add-dir",
             str(cwd),
@@ -338,8 +372,18 @@ def ensure_worktree(agent: str, slot: int) -> dict[str, Any]:
 def run_agent_slot(agent: str, slot: int, dry_run: bool, stale_minutes: int, timeout_minutes: int) -> dict[str, Any]:
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     stamp = utc_stamp()
-    cwd = REPO_ROOT if agent in {"codex", "gemini"} and slot == 0 else worktree_path(agent, slot)
-    worktree = ensure_worktree(agent, slot)
+    if agent == "gemini":
+        cwd = REPO_ROOT
+        worktree = {
+            "path": str(REPO_ROOT),
+            "branch": "shared-repo",
+            "created": False,
+            "shared_repo": True,
+            "reason": "gemini_uses_current_farm_code_and_router_state",
+        }
+    else:
+        cwd = REPO_ROOT if agent == "codex" and slot == 0 else worktree_path(agent, slot)
+        worktree = ensure_worktree(agent, slot)
     prompt = build_prompt(agent, cwd)
     prompt_path = LOG_DIR / f"{agent}_orchestration_slot{slot}_prompt_{stamp}.md"
     live_log = LOG_DIR / f"{agent}_orchestration_slot{slot}_{stamp}.live.log"
@@ -397,7 +441,7 @@ def run_agent_slot(agent: str, slot: int, dry_run: bool, stale_minutes: int, tim
                 stdout=stdout_f,
                 stderr=subprocess.STDOUT,
                 env=agent_env(agent),
-                shell=True,
+                shell=(agent != "gemini"),
                 creationflags=creationflags,
                 close_fds=True,
             )
@@ -408,7 +452,14 @@ def run_agent_slot(agent: str, slot: int, dry_run: bool, stale_minutes: int, tim
             except subprocess.TimeoutExpired:
                 proc.kill()
                 payload.update({"ok": False, "returncode": 124, "error": "timeout"})
-        payload["push"] = push_worktree_branch(cwd, branch_name(agent, slot))
+        if worktree.get("shared_repo"):
+            payload["push"] = {
+                "attempted": False,
+                "ok": True,
+                "reason": "shared_repo_not_pushed_by_headless_agent",
+            }
+        else:
+            payload["push"] = push_worktree_branch(cwd, branch_name(agent, slot))
         return payload
     except Exception as exc:
         payload.update({"ok": False, "returncode": 1, "error": repr(exc)})
@@ -472,6 +523,40 @@ def claude_work_available() -> dict[str, Any]:
         return {"any_work": True, "reason": f"work_check_error:{exc!r}"}
 
 
+def _agent_tasks_work_available(agent: str) -> dict[str, Any]:
+    """Pre-spawn guard for Codex/Gemini: skip if no actionable work in agent_tasks.
+
+    Checks two signals:
+    - Tasks already assigned to this agent with state TODO or IN_PROGRESS
+    - Unrouted BACKLOG tasks (route-many might assign them to this agent)
+    Fails OPEN so a DB error never starves the agent.
+    """
+    import sqlite3 as _sqlite3
+    db = FARM_ROOT / "state" / "farm_state.sqlite"
+    if not db.exists():
+        return {"any_work": True, "reason": "db_missing_assume_work"}
+    try:
+        con = _sqlite3.connect(db)
+        con.row_factory = _sqlite3.Row
+        n_assigned = con.execute(
+            "SELECT COUNT(*) FROM agent_tasks WHERE assigned_agent=? AND state IN ('TODO','IN_PROGRESS')",
+            (agent,),
+        ).fetchone()[0]
+        n_backlog = con.execute(
+            "SELECT COUNT(*) FROM agent_tasks WHERE state='BACKLOG'",
+        ).fetchone()[0]
+        con.close()
+        any_work = (n_assigned + n_backlog) > 0
+        return {
+            "any_work": any_work,
+            f"{agent}_assigned": n_assigned,
+            "backlog_unrouted": n_backlog,
+        }
+    except Exception as exc:
+        # Fail OPEN — if the check fails, spawn anyway rather than starve the agent.
+        return {"any_work": True, "reason": f"work_check_error:{exc!r}"}
+
+
 def run_agent(agent: str, dry_run: bool, stale_minutes: int, timeout_minutes: int, max_sessions: int) -> dict[str, Any]:
     if agent == "claude" and CLAUDE_DISABLED_FLAG.exists():
         return {
@@ -484,6 +569,17 @@ def run_agent(agent: str, dry_run: bool, stale_minutes: int, timeout_minutes: in
     # PT12 2026-05-24 — Claude empty-spawn guard.
     if agent == "claude" and not dry_run:
         wa = claude_work_available()
+        if not wa.get("any_work"):
+            return {
+                "agent": agent,
+                "ok": True,
+                "skipped": True,
+                "reason": "no_actionable_work",
+                "work_available_check": wa,
+            }
+    # 2026-05-30 — Codex/Gemini empty-spawn guard (mirrors PT12 logic for agent_tasks).
+    if agent in ("codex", "gemini") and not dry_run:
+        wa = _agent_tasks_work_available(agent)
         if not wa.get("any_work"):
             return {
                 "agent": agent,

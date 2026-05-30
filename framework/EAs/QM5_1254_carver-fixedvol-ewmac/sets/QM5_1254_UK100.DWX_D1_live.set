@@ -1,0 +1,43 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1254
+; ea_slug:      carver-fixedvol-ewmac
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       UK100.DWX
+; timeframe:    D1
+; environment:  live
+; magic_slot:   11
+; risk_mode:    PERCENT
+; portfolio_weight: 0.083333
+; build_hash:   74ff11bdca7e3de1dbb09a5f490933b634d95fe5b28988f3819c71084684d647
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1254
+qm_magic_slot_offset=11
+qm_rng_seed=42
+RISK_PERCENT=0.5
+RISK_FIXED=0
+PORTFOLIO_WEIGHT=0.083333
+qm_news_temporal=3
+qm_news_compliance=1
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+strategy_fast_ema=64
+strategy_slow_ema=256
+strategy_fixed_vol_days=1500
+strategy_fixed_vol_annualizer=16.0
+strategy_forecast_scale=10.0
+strategy_forecast_cap=20.0
+strategy_entry_forecast=4.0
+strategy_exit_forecast=0.0
+strategy_atr_period=20
+strategy_initial_stop_atr=3.0
+strategy_min_history_bars=1756
+strategy_spread_median_days=20
+strategy_spread_mult=2.0

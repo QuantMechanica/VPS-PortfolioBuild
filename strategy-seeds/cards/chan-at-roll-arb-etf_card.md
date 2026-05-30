@@ -9,10 +9,10 @@
 strategy_id: SRC05_S08
 ea_id: TBD
 slug: chan-at-roll-arb-etf
-status: DRAFT
+status: REJECTED                             # G0 REJECTED 2026-05-25 by Claude — R3 FAIL: strategy fundamentally requires (a) multi-month forward-curve data for γ-estimation (5 nearest CL contracts per Ex 5.3 OLS estimator) AND (b) an energy-sector-basket-ETF cointegrating leg (XLE / sector-producer-stock basket). Darwinex offers neither futures-curve data nor sector-ETF CFDs of US producer stocks. Card itself states 'dwx_suffix_discipline LOAD-BEARING and may be a G0 BLOCKER' and 'without a producer-basket leg the strategy degenerates to futures-roll-return-direct which loses the cointegrating-spot hedge and exposes pure futures spot+roll return' — i.e., not the same strategy. R1/R2/R4 PASS. Reject under R3.
 created: 2026-04-28
 created_by: Research
-last_updated: 2026-04-28
+last_updated: 2026-05-25
 
 strategy_type_flags:
   - futures-roll-return-arb                   # NEW VOCAB GAP — entry mechanism: position direction set by sign of computed futures roll return γ; long the spot-tracking ETF + short the future when γ < 0 (contango); mirror when γ > 0 (backwardation). Distinct from carry-direction (carry sets direction on a SINGLE instrument; roll-return-arb pairs a future with a non-future-carrying instrument and trades the difference) and from cointegration-pair-trade (no cointegration test — direction comes from γ sign, not from spread Z-score).

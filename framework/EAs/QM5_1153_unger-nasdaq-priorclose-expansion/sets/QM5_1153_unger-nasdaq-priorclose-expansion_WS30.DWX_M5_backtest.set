@@ -1,0 +1,44 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1153
+; ea_slug:      unger-nasdaq-priorclose-expansion
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       WS30.DWX
+; timeframe:    M5
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   e03f86270d22a9267ccdd42c4e00a9240c46748f02ce5aafcd8cbc68eb6d7f1c
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1153
+qm_magic_slot_offset=1
+qm_rng_seed=42
+RISK_PERCENT=0
+RISK_FIXED=1000
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=3
+qm_news_compliance=1
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0
+strategy_entry_start_hour_ny=9
+strategy_entry_start_minute_ny=30
+strategy_cancel_hour_ny=15
+strategy_cancel_minute_ny=30
+strategy_session_end_hour_ny=16
+strategy_session_end_minute_ny=0
+strategy_preclose_flatten_minutes=5
+strategy_daily_atr_period=14
+strategy_m15_atr_period=14
+strategy_expansion_mult=0.25
+strategy_extreme_range_atr_mult=2.5
+strategy_sl_atr_mult=1.5
+strategy_tp_atr_mult=2.5
+strategy_max_spread_points=0

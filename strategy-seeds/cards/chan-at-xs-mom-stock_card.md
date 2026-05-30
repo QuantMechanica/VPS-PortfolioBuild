@@ -9,10 +9,10 @@
 strategy_id: SRC05_S11
 ea_id: TBD
 slug: chan-at-xs-mom-stock
-status: DRAFT
+status: APPROVED                             # G0 APPROVED 2026-05-25 by Claude — R1 PASS (Chan AT 2013 + Daniel-Moskowitz 2011, A-tier, full MATLAB Ex 6.2); R2 PASS (rank by 252-day lagged return + top-50/bottom-50 selection, deterministic); R3 PASS under wide-net porting — strategy ports to world-index-cross-section (US500/GER40/UK100/NIKKEI/AUS200/etc. ~10 indices) or sector-ETF basket. Note SPX single-name CFDs unavailable on Darwinex; small-N basket reduces edge dispersion but strategy IS testable. R4 PASS (no ML). 2008-09 -30% APR documented — mandatory P5c crisis-slice test.
 created: 2026-04-28
 created_by: Research
-last_updated: 2026-04-28
+last_updated: 2026-05-25
 
 strategy_type_flags:
   - cross-sectional-momentum                    # NEW VOCAB GAP — same flag introduced by S10 chan-at-xs-mom-fut. Here parameterized for stock universe (lookback=252, holddays=25, topN=50). Sibling of existing `cross-sectional-decile-sort` (MR direction); `cross-sectional-momentum` is OPPOSITE direction (buy winners, sell losers). Distinct from `time-series-momentum` (S07; single-instrument; not cross-sectional).

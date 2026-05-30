@@ -1,0 +1,42 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        1194
+; ea_slug:      qp-stress-spx-composite
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       SP500.DWX
+; timeframe:    D1
+; environment:  live
+; magic_slot:   0
+; risk_mode:    PERCENT
+; portfolio_weight: 1.00
+; build_hash:   ae649ae3af174df344606128482215107090953dcb9ff6b78f9a6d0d7b203124
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1194
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_PERCENT=0.25
+RISK_FIXED=0
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0
+strategy_gold_signal_symbol=XAUUSD.DWX
+strategy_oil_primary_symbol=XTIUSD.DWX
+strategy_oil_fallback_symbol=XBRUSD.DWX
+strategy_treasury_csv_path=IEF_total_return.csv
+strategy_min_confirmations=2
+strategy_stress_threshold_pct=0.0
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=1.5
+strategy_safety_hold_days=2
+strategy_min_d1_bars=30
+strategy_treasury_stale_days=7
+strategy_max_spread_points=0

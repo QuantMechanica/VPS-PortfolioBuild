@@ -1,0 +1,14 @@
+{
+  "ea_id": 1111,
+  "slug": "qp-fx-momentum-12m",
+  "timeframe": "D1",
+  "symbols": [
+    {"slot": 0, "symbol": "EURUSD.DWX"},
+    {"slot": 1, "symbol": "GBPUSD.DWX"},
+    {"slot": 2, "symbol": "AUDUSD.DWX"},
+    {"slot": 3, "symbol": "NZDUSD.DWX"},
+    {"slot": 4, "symbol": "USDJPY.DWX"},
+    {"slot": 5, "symbol": "USDCHF.DWX"},
+    {"slot": 6, "symbol": "USDCAD.DWX"}
+  ]
+}

@@ -9,10 +9,10 @@
 strategy_id: SRC05_S04
 ea_id: TBD
 slug: chan-at-spy-arb
-status: DRAFT
+status: REJECTED                             # G0 REJECTED 2026-05-25 by Claude — R3 FAIL: strategy fundamentally requires a Johansen cointegration test across 99 simultaneous instruments (~98 SPX single-name stocks + SPY). Darwinex offers no US single-name stock CFDs; the cross-instrument cointegration test on 98 stocks IS the edge (Chan p.101 explicitly notes the Johansen-test cap is 12 symbols, and basket construction requires the full universe). Substitute paths (sector-ETF basket of ~5 names vs US500.DWX) per Chan's own framing produce "a different strategy with different risk profile" — not testable as Chan-AT Ex 4.2. R1/R2/R4 PASS. Reject under R3 'fundamentally requires a feature unavailable in CFD trading'.
 created: 2026-04-28
 created_by: Research
-last_updated: 2026-04-28
+last_updated: 2026-05-25
 
 strategy_type_flags:
   - cointegration-pair-trade                    # existing — Johansen-derived multi-symbol cointegration where the second "leg" is a 98-stock long-only portfolio cointegrating with SPY (rather than a 2-symbol pair). The card uses the Johansen eigenvector to determine the dollar-capital allocation across {98 stocks, SPY}, treating the long-only stock portfolio as one synthetic leg and SPY as the other. Sibling parameterization of `cointegration-pair-trade` (which existing SRC02 cards use for the GLD-GDX 2-symbol cadf pair) — same architectural mechanic (regress for a stationary spread, trade the spread mean reversion) but with a basket-vs-ETF cardinality.

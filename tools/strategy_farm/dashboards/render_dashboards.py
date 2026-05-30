@@ -1830,6 +1830,17 @@ def collect_ea_lead_kpis(root: Path, ea_ids: list[str]) -> dict[str, dict[str, A
         except Exception:
             p = {}
         stats = p.get("recovered_stats") or {}
+        # Detail pages already fall back to summary.json/report.htm when the
+        # work_item payload lacks recovered_stats. Keep the archive row aligned
+        # with the detail dashboard so "Best exploratory P&L" is not blank for
+        # rows whose parser evidence lives only in summary.json.
+        if not any(stats.get(k) not in (None, "", []) for k in ("net_profit", "total_trades", "max_dd", "drawdown")):
+            parsed_stats = _parse_summary_stats(r["evidence_path"])
+            stats = {
+                "net_profit": parsed_stats.get("net_profit"),
+                "total_trades": parsed_stats.get("trades"),
+                "max_dd": parsed_stats.get("drawdown"),
+            }
         item = {
             "phase": r["phase"],
             "status": r["status"],
@@ -2086,7 +2097,7 @@ def render_strategies(state: dict, root: Path) -> str:
     <div class="achip c-p8"><div class="achip-num">{counts.get("p8", 0)}</div><div class="achip-label">Q11 PASS</div></div>
     <div class="achip c-surv"><div class="achip-num">{counts.get("surv", 0)}</div><div class="achip-label">Q05+ survivors</div></div>
     <div class="achip"><div class="achip-num">{counts.get("active", 0)}</div><div class="achip-label">Active now</div></div>
-    <div class="achip"><div class="achip-num">{counts.get("triage", 0)}</div><div class="achip-label">Needs triage</div></div>
+    <div class="achip"><div class="achip-num">{counts.get("triage", 0)}</div><div class="achip-label">Needs EA triage</div></div>
     <div class="achip"><div class="achip-num">{counts.get("notstarted", 0)}</div><div class="achip-label">Not started</div></div>
     <div class="achip c-dead"><div class="achip-num">{counts.get("dead", 0)}</div><div class="achip-label">Dead</div></div>
     <div class="achip c-card"><div class="achip-num">{counts.get("card_only", 0)}</div><div class="achip-label">Card · not built</div></div>
@@ -2118,7 +2129,7 @@ def render_strategies(state: dict, root: Path) -> str:
   <span class="preset active" data-preset="all">All</span>
   <span class="preset" data-preset="active">Active now</span>
   <span class="preset" data-preset="survivor">Q05+ survivors</span>
-  <span class="preset" data-preset="triage">Needs triage</span>
+  <span class="preset" data-preset="triage">Needs EA triage</span>
   <span class="preset" data-preset="dead">Dead</span>
   <span class="preset" data-preset="live">Live pipeline only</span>
   <span class="preset" data-preset="archive">Archive only</span>
@@ -2129,7 +2140,7 @@ def render_strategies(state: dict, root: Path) -> str:
   <span class="preset" data-preset="card_rejected">Cards · rejected</span>
   <span class="preset" data-preset="card_only">Cards · not built</span>
 </div>
-<div class="gate-note">"Best exploratory P&amp;L" is the single best result across any phase (often a Q02 discovery run) — it is NOT gate proof. "Most advanced gate" is the highest real PASS the EA reached. Dead EAs are part of the archive and rendered with the same weight as live ones — death is carried by the status color only.</div>
+<div class="gate-note">"Best exploratory P&amp;L" is the single best result across any phase (often a Q02 discovery run) — it is NOT gate proof. "Most advanced gate" is the highest real PASS the EA reached. "Needs EA triage" is an EA-level archive lane, not the same as cockpit "Test Exceptions", which are daily work-item outcomes such as min-trade/zero-trade, invalid report, or waiting-input rows.</div>
 {cov_panel}
 
 {body}

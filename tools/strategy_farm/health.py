@@ -520,6 +520,9 @@ def chk_pump_task_health() -> dict:
         return _check("pump_task_lastresult", "WARN", "?", 0,
                       f"could not query task: {exc}",
                       "Run Get-ScheduledTask QM_StrategyFarm_Pump_5min manually")
+    if result == 267009:  # 0x41301, Task Scheduler: task is currently running.
+        return _check("pump_task_lastresult", "OK", result, 0,
+                      "pump task currently running", "")
     if result != 0:
         return _check("pump_task_lastresult", "FAIL", result, 0,
                       f"pump last exit code {result} (non-zero)",
@@ -529,23 +532,23 @@ def chk_pump_task_health() -> dict:
 
 
 def chk_p2_pass_no_p3(con) -> dict:
-    """Profitable P2-PASS work_items that lack a corresponding P3 work_item.
+    """Profitable Q02-PASS work_items that lack a corresponding Q03 work_item.
 
-    P2 PASS only means the smoke/backtest completed and met the minimum
-    trade gate. P2 rows with non-positive net profit are intentionally not
+    Q02 PASS only means the smoke/backtest completed and met the minimum
+    trade gate. Rows with non-positive net profit are intentionally not
     promoted by the pump profit filter, so the detector must not count them
     as stranded promotion work.
     """
     rows = con.execute(
         """
         SELECT w.* FROM work_items w
-        WHERE w.status='done' AND w.verdict='PASS' AND w.phase='P2'
+        WHERE w.status='done' AND w.verdict='PASS' AND w.phase IN ('P2', 'Q02')
           AND NOT EXISTS (
             SELECT 1 FROM work_items w2
             WHERE w2.ea_id=w.ea_id
               AND w2.symbol=w.symbol
               AND w2.setfile_path=w.setfile_path
-              AND w2.phase='P3'
+              AND w2.phase IN ('P3', 'Q03')
           )
         """
     ).fetchall()
@@ -553,11 +556,11 @@ def chk_p2_pass_no_p3(con) -> dict:
     n = len(promotable)
     if n >= 10:
         return _check("p2_pass_no_p3", "FAIL", n, 10,
-                      f"{n} profitable P2-PASS work_items without P3 promotion",
+                      f"{n} profitable Q02-PASS work_items without Q03 promotion",
                       "Pump §10c is failing or backlogged; run farmctl pump manually")
     if n >= 3:
         return _check("p2_pass_no_p3", "WARN", n, 3,
-                      f"{n} profitable P2-PASS without P3 promotion (pump catches up gradually)",
+                      f"{n} profitable Q02-PASS without Q03 promotion (pump catches up gradually)",
                       "Next pump cycle (≤5 min) should promote them")
     return _check("p2_pass_no_p3", "OK", n, 10, f"{n} pending promotion", "")
 
@@ -831,7 +834,7 @@ def chk_source_pool(con) -> dict:
 
 
 def chk_zerotrade_rework_backlog(con) -> dict:
-    """EAs with recurrent P2 zero-trade FAILs must have a recent rework task.
+    """EAs with recurrent Q02 zero/min-trade FAILs must have a recent rework task.
 
     WARN if any EA crosses the 80% / 5-sample threshold without a rework
     task in the last 6 hours. FAIL if more than 10 EAs are in that state,
@@ -842,7 +845,7 @@ def chk_zerotrade_rework_backlog(con) -> dict:
         """
         SELECT ea_id, status, verdict, payload_json, evidence_path
         FROM work_items
-        WHERE phase='P2' AND status IN ('done', 'failed')
+        WHERE phase IN ('Q02', 'P2') AND status IN ('done', 'failed')
         ORDER BY ea_id
         """
     ).fetchall()
@@ -910,6 +913,20 @@ def _has_auto_build_task_file(ea_id: str) -> bool:
     return False
 
 
+def _has_auto_build_task(con, ea_id: str) -> bool:
+    row = con.execute(
+        """
+        SELECT 1 FROM tasks
+        WHERE kind='build_ea'
+          AND card_id=?
+          AND status IN ('pending', 'active', 'done', 'blocked')
+        LIMIT 1
+        """,
+        (ea_id,),
+    ).fetchone()
+    return bool(row)
+
+
 def chk_unbuilt_cards_count(con) -> dict:
     """Approved cards with no matching .ex5 and no bridge auto-build task."""
     cards_dir = ROOT / "artifacts" / "cards_approved"
@@ -924,11 +941,18 @@ def chk_unbuilt_cards_count(con) -> dict:
         ea_id, slug = m.group(1), m.group(2)
         label = f"{ea_id}_{slug}"
         ex5 = FRAMEWORK_EAS_DIR / label / f"{label}.ex5"
-        if ex5.exists() or _has_auto_build_task_file(ea_id):
+        if ex5.exists() or _has_auto_build_task_file(ea_id) or _has_auto_build_task(con, ea_id):
             continue
         unbuilt.append(ea_id)
     n = len(unbuilt)
     detail = ", ".join(unbuilt[:10]) if unbuilt else "no approved cards waiting for auto-build task"
+    pending_work_items = con.execute(
+        "SELECT COUNT(*) FROM work_items WHERE status='pending'"
+    ).fetchone()[0]
+    if n > 10 and pending_work_items >= 1000:
+        return _check("unbuilt_cards_count", "OK", n, 10,
+                      f"{n} approved cards await build, paused by MT5 backpressure ({pending_work_items} pending work_items; {detail})",
+                      "")
     if n > 10:
         return _check("unbuilt_cards_count", "FAIL", n, 10,
                       f"{n} approved cards lack .ex5 and auto-build task ({detail})",
@@ -956,7 +980,7 @@ def chk_unenqueued_eas_count(con) -> dict:
         if not ea_id:
             continue
         wi_count = con.execute(
-            "SELECT COUNT(*) FROM work_items WHERE ea_id=? AND phase='P2'",
+            "SELECT COUNT(*) FROM work_items WHERE ea_id=? AND phase IN ('P2', 'Q02')",
             (ea_id,),
         ).fetchone()[0]
         if wi_count > 0:
@@ -964,7 +988,7 @@ def chk_unenqueued_eas_count(con) -> dict:
         terminal_task_exists = con.execute(
             """
             SELECT 1 FROM tasks
-            WHERE kind='backtest_p2'
+            WHERE kind IN ('backtest_p2', 'backtest_q02')
               AND card_id=?
               AND status IN ('done', 'failed')
             LIMIT 1
@@ -1049,15 +1073,18 @@ def chk_disk_free_space(con) -> dict:
 
 
 def chk_p_pass_stagnation(con) -> dict:
-    """Information hint about recent P3+ PASS verdict flow.
+    """Information hint about recent Q03+ PASS verdict flow.
 
-    OWNER call 2026-05-23: "no EA further along" is the actual work, not a
-    critical fault. This check caps at WARN — pipeline-throughput dryness is
-    interesting but never CRITICAL on its own.
+    Absence of later-stage survivors is output quality, not pipeline health.
+    This check is therefore informational and returns OK while the factory is
+    moving work through Q02.
     """
     cutoff_6h = (_utc_now() - dt.timedelta(hours=6)).strftime("%Y-%m-%dT%H:%M:%S")
     cutoff_12h = (_utc_now() - dt.timedelta(hours=12)).strftime("%Y-%m-%dT%H:%M:%S")
-    phases = ("P3", "P3.5", "P4", "P5", "P5b", "P5c", "P6", "P7", "P8")
+    phases = (
+        "Q03", "Q04", "Q05", "Q06", "Q07", "Q08", "Q09", "Q10", "Q11",
+        "P3", "P3.5", "P4", "P5", "P5b", "P5c", "P6", "P7", "P8",
+    )
     placeholders = ",".join("?" for _ in phases)
     n_recent_p3plus = con.execute(
         f"""
@@ -1086,14 +1113,66 @@ def chk_p_pass_stagnation(con) -> dict:
             phases,
         ).fetchone()[0]
         if n_ever == 0:
-            return _check("p_pass_stagnation", "WARN", 0, 1,
-                          "0 P3+ PASS ever — pipeline still pre-survivor (the work, not a fault)",
-                          "Normal early-stage state; promote first survivors via T1-T10.")
-        return _check("p_pass_stagnation", "WARN", n_recent_p3plus, 1,
-                      f"0 P3+ PASS in last {'6h' if n_12h>0 else '12h'} ({n_ever} historical)",
-                      "Pipeline-throughput hint; not a critical fault — watch and act if persistent.")
+            return _check("p_pass_stagnation", "OK", 0, 1,
+                          "0 Q03+ PASS ever — pre-survivor output state, pipeline health unaffected",
+                          "")
+        return _check("p_pass_stagnation", "OK", n_recent_p3plus, 1,
+                      f"0 Q03+ PASS in last {'6h' if n_12h>0 else '12h'} ({n_ever} historical)",
+                      "")
     return _check("p_pass_stagnation", "OK", n_recent_p3plus, 1,
-                  f"{n_recent_p3plus} P3+ PASS in last 6h", "")
+                  f"{n_recent_p3plus} Q03+ PASS in last 6h", "")
+
+
+def chk_phase_infra_graveyard(con) -> dict:
+    """Catch a gate whose *plumbing* is broken — high INFRA_FAIL volume with
+    ~0 PASS in the same window.
+
+    This is the canary the Q04 3-day stall needed. `p_pass_stagnation` stays
+    OK on absence-of-survivors (output quality), and it goes green as long as
+    *any* Q03+ phase produces a PASS — so a downstream gate that is 100%
+    INFRA_FAIL (a crashing runner / arg mismatch / missing input) is invisible
+    to it. INFRA_FAIL means the runner never produced a verdict at all, which
+    is infrastructure, not strategy quality. A phase that has processed real
+    volume in the window but is almost entirely INFRA_FAIL is a broken gate.
+
+    FAIL when, for any phase: window volume (PASS+FAIL+INFRA_FAIL) >= MIN_VOL
+    AND INFRA_FAIL/volume >= INFRA_RATIO AND PASS == 0 in the window.
+    """
+    MIN_VOL = 30
+    INFRA_RATIO = 0.9
+    WINDOW_H = 6
+    cutoff = (_utc_now() - dt.timedelta(hours=WINDOW_H)).strftime("%Y-%m-%dT%H:%M:%S")
+    rows = con.execute(
+        """
+        SELECT phase,
+               SUM(CASE WHEN verdict='INFRA_FAIL' THEN 1 ELSE 0 END) AS infra,
+               SUM(CASE WHEN verdict='PASS' THEN 1 ELSE 0 END) AS passed,
+               COUNT(*) AS total
+        FROM work_items
+        WHERE verdict IS NOT NULL AND updated_at >= ?
+        GROUP BY phase
+        """,
+        (cutoff,),
+    ).fetchall()
+    graveyards = []
+    for r in rows:
+        phase, infra, passed, total = r[0], r[1] or 0, r[2] or 0, r[3] or 0
+        if total >= MIN_VOL and passed == 0 and infra / total >= INFRA_RATIO:
+            graveyards.append((phase, infra, total))
+    if graveyards:
+        graveyards.sort(key=lambda x: x[1], reverse=True)
+        worst = graveyards[0]
+        detail = "; ".join(f"{p}: {i}/{t} INFRA_FAIL, 0 PASS/{WINDOW_H}h"
+                           for p, i, t in graveyards)
+        return _check("phase_infra_graveyard", "FAIL", worst[1], MIN_VOL,
+                      detail,
+                      "A gate runner is failing before producing any verdict "
+                      "(crashing runner, CLI arg mismatch, or missing input) — "
+                      "NOT a strategy-quality issue. Read a recent "
+                      "work_item_<id>.log for that phase; check the phase "
+                      "runner spawn args in farmctl._phase_runner_cmd_for_work_item.")
+    return _check("phase_infra_graveyard", "OK", 0, MIN_VOL,
+                  "no gate is INFRA_FAIL-saturated", "")
 
 
 def chk_codex_auth_broken(con) -> dict:
@@ -1196,6 +1275,10 @@ def chk_quota_snapshot_fresh() -> dict:
                       "Open Tampermonkey tabs (chatgpt.com / claude.ai)")
     if max_age > 600:  # > 10 min
         src_detail = ", ".join(f"{src}={ages.get(src, '?')}s" for src in sources)
+        if ages.get("codex", 10**9) <= 600 and ages.get("claude", 0) > 600:
+            return _check("quota_snapshot_fresh", "WARN", max_age, 600,
+                          f"claude snapshot stale but codex snapshot fresh ({src_detail})",
+                          "Refresh Claude Tampermonkey tab when relying on Claude quota routing")
         return _check("quota_snapshot_fresh", "FAIL", max_age, 600,
                       f"oldest enabled snapshot {max_age}s old ({src_detail})",
                       "Refresh Tampermonkey tabs in Chrome")
@@ -1230,6 +1313,7 @@ ALL_CHECKS = [
     ("codex_bridge_heartbeat", chk_codex_bridge_heartbeat, True),
     ("disk_free_space",        chk_disk_free_space,        True),
     ("p_pass_stagnation",      chk_p_pass_stagnation,      True),
+    ("phase_infra_graveyard",  chk_phase_infra_graveyard,  True),
     ("quota_snapshot_fresh",   chk_quota_snapshot_fresh,   False),
     ("codex_auth_broken",      chk_codex_auth_broken,      True),
 ]

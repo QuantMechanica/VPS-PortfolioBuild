@@ -53,3 +53,13 @@ framework/EAs/*/*.signal
 framework/EAs/*/sets/*_grid_*.set
 framework/EAs/*/sets/*_synth_*_backtest.set
 framework/EAs/*/sets/*_ablation_*.set
+
+# Node tooling — never commit npm install footprint
+node_modules/
+package.json
+package-lock.json
+
+# Per-cycle scratch dirs from agents and audits
+.codex_tmp/
+tmp_audit/
+

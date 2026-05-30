@@ -1,0 +1,33 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1169
+; ea_slug:      qp-comm-corr-mom
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1.00
+; build_hash:   e6940d1d609156ec7c99e67c58bb98271b783e57f24642bbf32faed5d34ff092
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1169
+qm_magic_slot_offset=2
+RISK_PERCENT=0
+RISK_FIXED=1000
+PORTFOLIO_WEIGHT=1
+qm_news_mode=0
+qm_friday_close_enabled=false
+qm_friday_close_hour_broker=21
+strategy_momentum_lookback_d1_bars=252
+strategy_short_corr_d1_bars=20
+strategy_long_corr_d1_bars=250
+strategy_min_history_d1_bars=270
+strategy_rank_slots_each_side=2
+strategy_atr_period=20
+strategy_atr_sl_mult=5.0
+strategy_spread_median_days=20
+strategy_spread_mult=3.0

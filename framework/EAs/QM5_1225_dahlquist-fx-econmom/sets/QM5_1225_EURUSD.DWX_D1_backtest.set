@@ -1,0 +1,38 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1225
+; ea_slug:      dahlquist-fx-econmom
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       EURUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 0.142857
+; build_hash:   e52d6be6f1198df82a024b08d073f7f85058b594dcdb8b66667c34c3f20739cb
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1225
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_PERCENT=0
+RISK_FIXED=500
+PORTFOLIO_WEIGHT=0.142857
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0
+strategy_macro_csv_path=QM5_1225_fx_econmom.csv
+strategy_macro_lookback_months=6
+strategy_rank_count_entry=1
+strategy_rank_count_exit=2
+strategy_macro_stale_days=45
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=3.0
+strategy_min_eligible=5

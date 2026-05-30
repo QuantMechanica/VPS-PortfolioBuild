@@ -5,28 +5,40 @@
 #include <QM/QM_Common.mqh>
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                    = 1045;
-input int    qm_magic_slot_offset        = 2;
+input int    qm_ea_id                   = 1045;
+input int    qm_magic_slot_offset       = 2;
+input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT                = 0.0;
-input double RISK_FIXED                  = 1000.0;
-input double PORTFOLIO_WEIGHT            = 1.0;
+input double RISK_PERCENT               = 0.0;
+input double RISK_FIXED                 = 1000.0;
+input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsMode qm_news_mode           = QM_NEWS_OFF;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input int    qm_news_stale_max_hours    = 336;
+input string qm_news_min_impact         = "high";
+input QM_NewsMode qm_news_mode_legacy   = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled     = true;
+input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
+input group "Stress"
+input double qm_stress_reject_probability = 0.0;
+
 input group "Strategy"
-input int    strategy_session_open_hhmm  = 1630;
-input int    strategy_session_close_hhmm = 2255;
 input int    strategy_noise_lookback_days = 14;
-input int    strategy_atr_period         = 14;
-input double strategy_atr_sl_mult        = 3.0;
-input int    strategy_max_spread_points  = 250;
+input int    strategy_winter_open_hhmm    = 1530;
+input int    strategy_winter_close_hhmm   = 2200;
+input int    strategy_usdst_open_hhmm     = 1430;
+input int    strategy_usdst_close_hhmm    = 2100;
+input bool   strategy_use_us_dst_session  = true;
+input int    strategy_atr_period          = 14;
+input double strategy_atr_sl_mult         = 3.0;
+input int    strategy_max_spread_points   = 250;
+input int    strategy_copy_bars           = 2200;
 
 int  g_trade_day_key = -1;
 bool g_long_taken_today = false;
@@ -46,68 +58,104 @@ int DayKey(const datetime t)
    return dt.year * 10000 + dt.mon * 100 + dt.day;
   }
 
-datetime DayStart(const datetime t)
+int DayOfYearKey(const datetime t)
   {
    MqlDateTime dt;
    TimeToStruct(t, dt);
-   dt.hour = 0;
-   dt.min = 0;
-   dt.sec = 0;
-   return StructToTime(dt);
+   return dt.year * 1000 + dt.day_of_year;
   }
 
-datetime DateWithHhmm(const datetime day_start, const int hhmm)
+int DayOfWeekForDate(const int year, const int mon, const int day)
   {
-   const int hour = hhmm / 100;
-   const int minute = hhmm % 100;
-   return day_start + hour * 3600 + minute * 60;
+   const datetime stamp = StringToTime(StringFormat("%04d.%02d.%02d 00:00", year, mon, day));
+   MqlDateTime dt;
+   TimeToStruct(stamp, dt);
+   return dt.day_of_week;
   }
 
-bool InSession(const datetime t)
+int NthSundayOfMonth(const int year, const int mon, const int n)
   {
-   const int hhmm = Hhmm(t);
-   return (hhmm >= strategy_session_open_hhmm && hhmm < strategy_session_close_hhmm);
+   const int first_dow = DayOfWeekForDate(year, mon, 1);
+   return 1 + ((7 - first_dow) % 7) + 7 * (n - 1);
   }
 
-bool HalfHourBoundaryBar(const datetime bar_time)
+bool IsUsDstDate(const datetime t)
   {
    MqlDateTime dt;
-   TimeToStruct(bar_time, dt);
+   TimeToStruct(t, dt);
+   if(dt.mon < 3 || dt.mon > 11)
+      return false;
+   if(dt.mon > 3 && dt.mon < 11)
+      return true;
+
+   const int start_day = NthSundayOfMonth(dt.year, 3, 2);
+   const int end_day = NthSundayOfMonth(dt.year, 11, 1);
+   if(dt.mon == 3)
+      return (dt.day >= start_day);
+   return (dt.day < end_day);
+  }
+
+int SessionOpenHhmm(const datetime t)
+  {
+   if(strategy_use_us_dst_session && IsUsDstDate(t))
+      return strategy_usdst_open_hhmm;
+   return strategy_winter_open_hhmm;
+  }
+
+int SessionCloseHhmm(const datetime t)
+  {
+   if(strategy_use_us_dst_session && IsUsDstDate(t))
+      return strategy_usdst_close_hhmm;
+   return strategy_winter_close_hhmm;
+  }
+
+bool IsCashSessionMark(const datetime t, const bool allow_close_mark)
+  {
+   const int hhmm = Hhmm(t);
+   const int session_open = SessionOpenHhmm(t);
+   const int session_close = SessionCloseHhmm(t);
+   if(allow_close_mark)
+      return (hhmm >= session_open && hhmm <= session_close);
+   return (hhmm >= session_open && hhmm < session_close);
+  }
+
+bool IsHalfHourMark(const datetime t)
+  {
+   MqlDateTime dt;
+   TimeToStruct(t, dt);
    return (dt.min == 0 || dt.min == 30);
   }
 
-bool GetOurPosition(ulong &ticket)
+bool HasOurPosition()
   {
-   ticket = 0;
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
       return false;
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
-      const ulong t = PositionGetTicket(i);
-      if(t == 0 || !PositionSelectByTicket(t))
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
          continue;
       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
 
-      ticket = t;
+      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      if(ptype == POSITION_TYPE_BUY)
+         g_long_taken_today = true;
+      if(ptype == POSITION_TYPE_SELL)
+         g_short_taken_today = true;
       return true;
      }
 
    return false;
   }
 
-bool HasOurPosition()
+void RefreshTradeDayState(const datetime t)
   {
-   ulong ticket = 0;
-   return GetOurPosition(ticket);
-  }
-
-void EnsureTradeDay(const int day_key)
-  {
+   const int day_key = DayKey(t);
    if(day_key == g_trade_day_key)
       return;
 
@@ -116,101 +164,121 @@ void EnsureTradeDay(const int day_key)
    g_short_taken_today = false;
   }
 
-bool SessionRangeForDay(const datetime day_start,
-                        const int target_hhmm,
-                        double &range_value)
+int FindDayIndex(const int &days[], const int count, const int day_key)
   {
-   range_value = 0.0;
-   const datetime session_open_time = DateWithHhmm(day_start, strategy_session_open_hhmm);
-   const datetime target_time = DateWithHhmm(day_start, target_hhmm);
-   if(target_time < session_open_time)
-      return false;
-
-   const int open_shift = iBarShift(_Symbol, PERIOD_M30, session_open_time, false);
-   const int target_shift = iBarShift(_Symbol, PERIOD_M30, target_time, false);
-   if(open_shift < 0 || target_shift < 0 || open_shift < target_shift)
-      return false;
-
-   double high_value = -DBL_MAX;
-   double low_value = DBL_MAX;
-   int bars = 0;
-   for(int shift = open_shift; shift >= target_shift; --shift)
+   for(int i = 0; i < count; ++i)
      {
-      const datetime bt = iTime(_Symbol, PERIOD_M30, shift);
-      if(bt < session_open_time || bt > target_time)
-         continue;
-
-      const double high_price = iHigh(_Symbol, PERIOD_M30, shift);
-      const double low_price = iLow(_Symbol, PERIOD_M30, shift);
-      if(high_price <= 0.0 || low_price <= 0.0)
-         continue;
-
-      if(high_price > high_value)
-         high_value = high_price;
-      if(low_price < low_value)
-         low_value = low_price;
-      bars++;
+      if(days[i] == day_key)
+         return i;
      }
-
-   if(bars <= 0 || high_value <= low_value)
-      return false;
-
-   range_value = high_value - low_value;
-   return (range_value > 0.0);
+   return -1;
   }
 
-double AveragePriorSessionMove(const datetime current_bar_time,
-                               const int target_hhmm,
-                               const int lookback_days)
+bool ComputeNoiseBoundaries(const datetime signal_time,
+                            const double signal_close,
+                            double &upper,
+                            double &lower)
   {
-   if(lookback_days <= 0)
-      return 0.0;
+   upper = 0.0;
+   lower = 0.0;
 
-   double sum = 0.0;
-   int samples = 0;
-   const datetime current_day = DayStart(current_bar_time);
+   const int count_request = (strategy_copy_bars < 500) ? 500 : strategy_copy_bars;
+   MqlRates rates[];
+   const int copied = CopyRates(_Symbol, PERIOD_M30, 1, count_request, rates);
+   if(copied <= 0)
+      return false;
+   ArraySetAsSeries(rates, true);
 
-   for(int d = 1; d <= 80 && samples < lookback_days; ++d)
+   const int current_day = DayOfYearKey(signal_time);
+   const int target_hhmm = Hhmm(signal_time);
+   double session_open = 0.0;
+   double prior_close = 0.0;
+
+   int day_keys[64];
+   double day_highs[64];
+   double day_lows[64];
+   int day_count = 0;
+
+   for(int i = 0; i < copied; ++i)
      {
-      const datetime d1_time = iTime(_Symbol, PERIOD_D1, d);
-      if(d1_time <= 0)
-         break;
-      const datetime day_start = DayStart(d1_time);
-      if(day_start >= current_day)
+      const datetime bar_open = rates[i].time;
+      const datetime bar_close = bar_open + PeriodSeconds(PERIOD_M30);
+      const int bar_day = DayOfYearKey(bar_close);
+      const int close_hhmm = Hhmm(bar_close);
+      const int session_open_hhmm = SessionOpenHhmm(bar_close);
+      const int session_close_hhmm = SessionCloseHhmm(bar_close);
+
+      if(bar_day == current_day && Hhmm(bar_open) == session_open_hhmm && session_open <= 0.0)
+         session_open = rates[i].open;
+
+      if(bar_day == current_day)
          continue;
 
-      double day_range = 0.0;
-      if(SessionRangeForDay(day_start, target_hhmm, day_range))
+      if(prior_close <= 0.0 && close_hhmm <= session_close_hhmm && close_hhmm > session_open_hhmm)
+         prior_close = rates[i].close;
+
+      if(close_hhmm < session_open_hhmm || close_hhmm > target_hhmm)
+         continue;
+
+      int idx = FindDayIndex(day_keys, day_count, bar_day);
+      if(idx < 0)
         {
-         sum += day_range;
-         samples++;
+         if(day_count >= strategy_noise_lookback_days)
+            continue;
+         idx = day_count;
+         day_keys[idx] = bar_day;
+         day_highs[idx] = rates[i].high;
+         day_lows[idx] = rates[i].low;
+         day_count++;
+        }
+      else
+        {
+         if(rates[i].high > day_highs[idx])
+            day_highs[idx] = rates[i].high;
+         if(rates[i].low < day_lows[idx])
+            day_lows[idx] = rates[i].low;
         }
      }
 
-   if(samples < lookback_days)
-      return 0.0;
-   return sum / samples;
-  }
+   if(session_open <= 0.0)
+      session_open = iOpen(_Symbol, PERIOD_D1, 0);
+   if(session_open <= 0.0 || signal_close <= 0.0 || day_count < strategy_noise_lookback_days)
+      return false;
 
-double PriorDailyClose()
-  {
-   for(int d = 1; d <= 10; ++d)
+   double sum_move = 0.0;
+   for(int j = 0; j < strategy_noise_lookback_days; ++j)
      {
-      const double close_price = iClose(_Symbol, PERIOD_D1, d);
-      if(close_price > 0.0)
-         return close_price;
+      if(day_highs[j] <= day_lows[j])
+         return false;
+      sum_move += day_highs[j] - day_lows[j];
      }
-   return 0.0;
+
+   const double avg_move = sum_move / strategy_noise_lookback_days;
+   double gap_adj_up = 0.0;
+   double gap_adj_dn = 0.0;
+   if(prior_close > 0.0)
+     {
+      if(session_open < prior_close)
+         gap_adj_up = prior_close - session_open;
+      else if(session_open > prior_close)
+         gap_adj_dn = session_open - prior_close;
+     }
+
+   upper = session_open + avg_move + gap_adj_up;
+   lower = session_open - avg_move - gap_adj_dn;
+   return (upper > lower);
   }
 
 // No Trade Filter (time, spread, news)
 bool Strategy_NoTradeFilter()
   {
+   const datetime broker_now = TimeCurrent();
+   RefreshTradeDayState(broker_now);
+
    if(HasOurPosition())
       return false;
 
-   const datetime now = TimeCurrent();
-   if(!InSession(now))
+   if(!IsCashSessionMark(broker_now, false))
       return true;
 
    if(strategy_max_spread_points > 0)
@@ -234,41 +302,26 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
+   const datetime bar_open = iTime(_Symbol, PERIOD_M30, 1);
+   if(bar_open <= 0)
+      return false;
+   const datetime signal_time = bar_open + PeriodSeconds(PERIOD_M30);
+   RefreshTradeDayState(signal_time);
+
    if(HasOurPosition())
       return false;
-
-   const datetime bar_time = iTime(_Symbol, PERIOD_M30, 1);
-   if(bar_time <= 0 || !InSession(bar_time) || !HalfHourBoundaryBar(bar_time))
+   if(!IsHalfHourMark(signal_time) || !IsCashSessionMark(signal_time, false))
+      return false;
+   if(strategy_noise_lookback_days < 1 || strategy_atr_period < 1 || strategy_atr_sl_mult <= 0.0)
       return false;
 
-   const int day_key = DayKey(bar_time);
-   EnsureTradeDay(day_key);
-
-   const datetime day_start = DayStart(bar_time);
-   const double session_open = iOpen(_Symbol, PERIOD_M30, iBarShift(_Symbol, PERIOD_M30, DateWithHhmm(day_start, strategy_session_open_hhmm), false));
-   const double close_price = iClose(_Symbol, PERIOD_M30, 1);
-   if(session_open <= 0.0 || close_price <= 0.0)
+   const double signal_close = iClose(_Symbol, PERIOD_M30, 1);
+   double upper = 0.0;
+   double lower = 0.0;
+   if(!ComputeNoiseBoundaries(signal_time, signal_close, upper, lower))
       return false;
 
-   const int target_hhmm = Hhmm(bar_time);
-   const double move = AveragePriorSessionMove(bar_time, target_hhmm, strategy_noise_lookback_days);
-   if(move <= 0.0)
-      return false;
-
-   const double prior_close = PriorDailyClose();
-   double gap_adj_up = 0.0;
-   double gap_adj_dn = 0.0;
-   if(prior_close > 0.0)
-     {
-      if(session_open < prior_close)
-         gap_adj_up = prior_close - session_open;
-      else if(session_open > prior_close)
-         gap_adj_dn = session_open - prior_close;
-     }
-
-   const double upper = session_open + move + gap_adj_up;
-   const double lower = session_open - move - gap_adj_dn;
-   if(close_price > upper && !g_long_taken_today)
+   if(signal_close > upper && !g_long_taken_today)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       if(entry <= 0.0)
@@ -276,11 +329,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.type = QM_BUY;
       req.sl = QM_StopATR(_Symbol, req.type, entry, strategy_atr_period, strategy_atr_sl_mult);
       req.reason = "QM5_1045_NOISE_BOUNDARY_LONG";
-      g_long_taken_today = true;
-      return (req.sl > 0.0 && req.sl < entry);
+      if(req.sl > 0.0 && req.sl < entry)
+        {
+         g_long_taken_today = true;
+         return true;
+        }
      }
 
-   if(close_price < lower && !g_short_taken_today)
+   if(signal_close < lower && !g_short_taken_today)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       if(entry <= 0.0)
@@ -288,8 +344,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.type = QM_SELL;
       req.sl = QM_StopATR(_Symbol, req.type, entry, strategy_atr_period, strategy_atr_sl_mult);
       req.reason = "QM5_1045_NOISE_BOUNDARY_SHORT";
-      g_short_taken_today = true;
-      return (req.sl > 0.0 && req.sl > entry);
+      if(req.sl > 0.0 && req.sl > entry)
+        {
+         g_short_taken_today = true;
+         return true;
+        }
      }
 
    return false;
@@ -306,7 +365,8 @@ bool Strategy_ExitSignal()
    if(!HasOurPosition())
       return false;
 
-   return (Hhmm(TimeCurrent()) >= strategy_session_close_hhmm);
+   const datetime broker_now = TimeCurrent();
+   return (Hhmm(broker_now) >= SessionCloseHhmm(broker_now) || !IsCashSessionMark(broker_now, true));
   }
 
 // News Filter Hook
@@ -326,9 +386,17 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode,
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
-                        qm_friday_close_hour_broker))
+                        qm_friday_close_hour_broker,
+                        30,
+                        30,
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact,
+                        qm_rng_seed,
+                        qm_stress_reject_probability,
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_1045_zarattini-spy-intraday-momentum\"}");
@@ -349,7 +417,12 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   if(!QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode))
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
@@ -376,6 +449,8 @@ void OnTick()
    if(!QM_IsNewBar())
       return;
 
+   QM_EquityStreamOnNewBar();
+
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
      {
@@ -387,6 +462,13 @@ void OnTick()
 void OnTimer()
   {
    QM_FrameworkOnTimer();
+  }
+
+void OnTradeTransaction(const MqlTradeTransaction &trans,
+                        const MqlTradeRequest &request,
+                        const MqlTradeResult &result)
+  {
+   QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
 double OnTester()

@@ -1,0 +1,29 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1186
+; ea_slug:      qp-comm-sma12-filter
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       XCUUSD.DWX
+; timeframe:    D1
+; environment:  live
+; magic_slot:   4
+; risk_mode:    PERCENT
+; portfolio_weight: 0.20
+; build_hash:   dbd5134b7fc97f538e8b569c860bafbf69b397fd3f432fbf6f98c222d86c1dfe
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1186
+qm_magic_slot_offset=4
+RISK_PERCENT=0.25
+RISK_FIXED=0
+PORTFOLIO_WEIGHT=0.20
+qm_news_mode=0
+qm_friday_close_enabled=false
+qm_friday_close_hour_broker=21
+strategy_sma_months=12
+strategy_min_history_months=14
+strategy_atr_period=20
+strategy_atr_sl_mult=6.0
+strategy_max_spread_points=0

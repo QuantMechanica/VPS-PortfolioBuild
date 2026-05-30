@@ -31,9 +31,10 @@ import sys
 from pathlib import Path
 
 if __package__ in (None, ""):
-    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from framework.scripts._phase_utils import ensure_dir, utc_now_iso, write_json
+from framework.scripts._phase_utils import (ensure_dir, utc_now_iso, write_json,
+                                            resolve_ea_expert_path, period_from_setfile)
 
 GATE_NAME = "Q09"
 
@@ -135,6 +136,8 @@ def main() -> int:
     print(f"Q09 {args.ea} {args.symbol}: sweeping all {len(ALL_TEMPORAL_MODES)} temporal modes...")
     repo_root = Path(__file__).resolve().parents[2]
     run_smoke_ps1 = repo_root / "framework" / "scripts" / "run_smoke.ps1"
+    ea_expert = resolve_ea_expert_path(repo_root, args.ea) or args.ea
+    period = period_from_setfile(args.baseline_setfile)
 
     matrix_rows: list[dict] = []
     for temporal, tag in ALL_TEMPORAL_MODES:
@@ -144,11 +147,11 @@ def main() -> int:
         args_list = [
             "pwsh.exe", "-NoProfile", "-File", str(run_smoke_ps1),
             "-EAId", str(ea_id),
-            "-Expert", args.ea,
+            "-Expert", ea_expert,
             "-Symbol", args.symbol,
             "-Year", "0",
             "-Terminal", args.terminal,
-            "-Period", "H1",
+            "-Period", period,
             "-DispatchSubGateHash", run_tag,
             "-DispatchPhase", "Q09",
             "-DispatchVersion", f"q09_{tag}",

@@ -1,0 +1,43 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1114
+; ea_slug:      qp-crossasset-valmom
+; ea_version:   v5.0
+; set_version:  s20260526-007
+; symbol:       XAGUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   6
+; risk_mode:    FIXED
+; portfolio_weight: 1.00
+; build_hash:   276db2d37786706f0152f69b5124fbc32db22d4fa49af1765373d375ea88c168
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1114
+qm_magic_slot_offset=6
+qm_rng_seed=42
+RISK_PERCENT=0
+RISK_FIXED=1000
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0
+strategy_value_csv_path=QM5_1114_crossasset_value.csv
+strategy_momentum_12m_bars=252
+strategy_momentum_1m_bars=21
+strategy_min_d1_bars=270
+strategy_weight_mom_12m=0.25
+strategy_weight_mom_1m=0.25
+strategy_weight_value=0.50
+strategy_bucket_pct=25.0
+strategy_min_eligible=4
+strategy_value_stale_days=45
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=5.0
+strategy_max_spread_points=0

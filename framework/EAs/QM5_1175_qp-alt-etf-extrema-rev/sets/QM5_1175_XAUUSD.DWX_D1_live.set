@@ -1,0 +1,36 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1175
+; ea_slug:      qp-alt-etf-extrema-rev
+; ea_version:   v5.0
+; set_version:  s20260526-001
+; symbol:       XAUUSD.DWX
+; timeframe:    D1
+; environment:  live
+; magic_slot:   4
+; risk_mode:    PERCENT
+; portfolio_weight: 1.00
+; build_hash:   a0de121e3c9196e25a749f0ce2a36bb12d8d9b181b6ab5e6f632c85bf04a0cd0
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=1175
+qm_magic_slot_offset=4
+qm_rng_seed=42
+RISK_PERCENT=0.25
+RISK_FIXED=0
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=3
+qm_news_compliance=1
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0
+strategy_extrema_lookback_d1=10
+strategy_min_valid_d1_bars=15
+strategy_atr_period_d1=14
+strategy_atr_sl_mult=1.5
+strategy_hold_bars_d1=1
+strategy_max_spread_points=0

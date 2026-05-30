@@ -30,7 +30,11 @@ input int    strategy_sl_buffer_points   = 20;
 input double strategy_rr                 = 1.5;
 input int    strategy_spread_cap_points  = 20;
 input bool   strategy_london_ny_only     = false;
+input bool   strategy_use_atr_stop       = false;
+input int    strategy_atr_period         = 14;
+input double strategy_atr_mult           = 1.5;
 
+// No Trade Filter (time, spread, news)
 bool Strategy_NoTradeFilter()
   {
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
@@ -57,6 +61,17 @@ bool Strategy_NoTradeFilter()
    return false;
   }
 
+double StrategyInitialStop(const QM_OrderType side, const double entry_price, const double h1_sma, const double point)
+  {
+   if(strategy_use_atr_stop)
+      return QM_StopATR(_Symbol, side, entry_price, strategy_atr_period, strategy_atr_mult);
+
+   const double buffer = strategy_sl_buffer_points * point;
+   const double stop = QM_OrderTypeIsBuy(side) ? (h1_sma - buffer) : (h1_sma + buffer);
+   return QM_StopRulesNormalizePrice(_Symbol, stop);
+  }
+
+// Trade Entry
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    req.type = QM_BUY;
@@ -67,7 +82,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(strategy_sma_period <= 0 || strategy_rr <= 0.0)
+   if(strategy_sma_period <= 0 || strategy_rr <= 0.0 || strategy_atr_period <= 0 || strategy_atr_mult <= 0.0)
       return false;
 
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
@@ -83,12 +98,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(m5_close <= 0.0 || sma_h4 <= 0.0 || sma_h1 <= 0.0 || sma_m5 <= 0.0)
       return false;
 
-   const double buffer = strategy_sl_buffer_points * point;
-
    if(bid > sma_h4 && bid > sma_h1 && m5_close > sma_m5)
      {
       req.type = QM_BUY;
-      req.sl = sma_h1 - buffer;
+      req.sl = StrategyInitialStop(req.type, ask, sma_h1, point);
       if(req.sl <= 0.0 || req.sl >= ask)
          return false;
       req.tp = QM_TakeRR(_Symbol, req.type, ask, req.sl, strategy_rr);
@@ -99,7 +112,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(bid < sma_h4 && bid < sma_h1 && m5_close < sma_m5)
      {
       req.type = QM_SELL;
-      req.sl = sma_h1 + buffer;
+      req.sl = StrategyInitialStop(req.type, bid, sma_h1, point);
       if(req.sl <= bid)
          return false;
       req.tp = QM_TakeRR(_Symbol, req.type, bid, req.sl, strategy_rr);
@@ -110,10 +123,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    return false;
   }
 
+// Trade Management
 void Strategy_ManageOpenPosition()
   {
   }
 
+// Trade Close
 bool Strategy_ExitSignal()
   {
    if(strategy_sma_period <= 0)
@@ -145,6 +160,7 @@ bool Strategy_ExitSignal()
    return false;
   }
 
+// News Filter Hook (callable for P8 News Impact phase)
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
