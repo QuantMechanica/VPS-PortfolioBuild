@@ -36,6 +36,12 @@ unclear about *what the company is*.
 
 If filesystem conflicts with notes, trust filesystem and report the inconsistency.
 
+For live company audits, also read `docs/ops/COMPANY_AUDIT_LIVE_SOURCES_2026-05-30.md`.
+It records the current Paperclip-free runtime source order, Q00–Q14 phase naming,
+`D:\QM\mt5\T1..T10` factory layout, and `C:\QM\mt5\T_Live` isolation. Generated
+`public-data` snapshots and `D:\QM\reports\state\pipeline_state.json` may still expose
+legacy `P*` compatibility keys and must not override live Qxx work-item evidence.
+
 ## The Strategy Farm
 
 The factory is the `strategy_farm` system. Paperclip — the previous agent OS — is

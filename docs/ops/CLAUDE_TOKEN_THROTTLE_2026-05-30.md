@@ -1,0 +1,53 @@
+# Claude Token Throttle
+
+Date: 2026-05-30
+Operator: Codex
+
+## Reason
+
+Company audit found no active Claude router tasks:
+
+```powershell
+python tools\strategy_farm\agent_router.py list-tasks --agent claude
+# []
+```
+
+Despite that, many `claude.exe -p --model sonnet --dangerously-skip-permissions
+--add-dir C:\QM\worktrees\claude-orchestration-*` sessions and stale `git push origin
+agents/claude-orchestration-*` child process trees were still alive. Several were older
+than 12 hours; some were older than one day. This wastes Claude quota and leaves Git
+credential-manager / remote-https children hanging.
+
+## Action Taken
+
+- Stopped `QM_StrategyFarm_ClaudeOrchestration_15min`.
+- Disabled `QM_StrategyFarm_ClaudeOrchestration_15min`.
+- Stopped stale `claude.exe`, `git.exe`, `git-remote-https.exe`, and
+  `git-credential-manager.exe` processes tied to the old Claude orchestration runs.
+- Did not stop MT5 factory workers, Qxx pipeline scripts, Codex, or `T_Live`.
+
+## Current Policy
+
+Keep Claude orchestration disabled unless there is a concrete premium-reasoning queue:
+
+- strategy critique that Codex should not do,
+- high-signal OWNER synthesis,
+- manual live-trading authority workflow,
+- final review of complex architecture/process changes.
+
+Default code, ops, EA builds, tests, dashboard plumbing, and routine pipeline repairs
+should route to Codex.
+
+## Re-enable Command
+
+```powershell
+Enable-ScheduledTask -TaskName QM_StrategyFarm_ClaudeOrchestration_15min
+Start-ScheduledTask -TaskName QM_StrategyFarm_ClaudeOrchestration_15min
+```
+
+Before re-enabling, check:
+
+```powershell
+python tools\strategy_farm\agent_router.py list-tasks --agent claude
+Get-Process -Name claude,git,git-remote-https,git-credential-manager -ErrorAction SilentlyContinue
+```
