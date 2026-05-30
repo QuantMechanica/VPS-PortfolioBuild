@@ -6078,10 +6078,11 @@ def pump(root: Path) -> dict[str, Any]:
     except Exception:
         active_claude_count = 0
     result["claude_active_before"] = active_claude_count
-    claude_disabled = (root / "CLAUDE_DISABLED.flag").exists()
+    claude_disabled = (root / "CLAUDE_DISABLED.flag").exists() or (root / "CLAUDE_PUMP_DISABLED.flag").exists()
     MAX_PARALLEL_CLAUDE = 0 if claude_disabled else 1
     prefer_claude_review = MAX_PARALLEL_CLAUDE > 0
     result["claude_disabled"] = claude_disabled
+    result["claude_pump_disabled"] = (root / "CLAUDE_PUMP_DISABLED.flag").exists()
     result["max_parallel_claude"] = MAX_PARALLEL_CLAUDE
     result["prefer_claude_review"] = prefer_claude_review
     with connect(root) as conn:
@@ -6106,7 +6107,7 @@ def pump(root: Path) -> dict[str, Any]:
     result["claude_review_spawn"] = {"spawned": False, "reason": "no review candidate"}
     if done_no_review:
         if claude_disabled:
-            result["claude_review_spawn"] = {"spawned": False, "reason": "CLAUDE_DISABLED.flag present; routed to Codex"}
+            result["claude_review_spawn"] = {"spawned": False, "reason": "Claude pump lane disabled; routed to Codex"}
         elif active_claude_count < MAX_PARALLEL_CLAUDE:
             result["claude_review_spawn"] = _spawn_claude_for_review(root, done_no_review)
         else:
@@ -6166,7 +6167,7 @@ def pump(root: Path) -> dict[str, Any]:
             spawned_other = True
             claude_spawns_this_cycle += 1
     elif claude_disabled:
-        result["claude_g0_spawn"] = {"spawned": False, "reason": "CLAUDE_DISABLED.flag present; routed to Codex"}
+        result["claude_g0_spawn"] = {"spawned": False, "reason": "Claude pump lane disabled; routed to Codex"}
     elif (active_claude_count + claude_spawns_this_cycle) >= MAX_PARALLEL_CLAUDE:
         result["claude_g0_spawn"] = {"spawned": False, "reason": "claude cap reached"}
 
@@ -6217,7 +6218,7 @@ def pump(root: Path) -> dict[str, Any]:
     }
     if result["research_replenish_gate"]["allow_new_research"]:
         if claude_disabled:
-            result["claude_research_spawn"] = {"spawned": False, "reason": "CLAUDE_DISABLED.flag present; routed to Codex"}
+            result["claude_research_spawn"] = {"spawned": False, "reason": "Claude pump lane disabled; routed to Codex"}
         elif (active_claude_count + claude_spawns_this_cycle) < MAX_PARALLEL_CLAUDE:
             result["claude_research_spawn"] = _claim_research_source(root)
             if result["claude_research_spawn"].get("spawned"):
@@ -6611,12 +6612,12 @@ def next_action(root: Path) -> dict[str, Any]:
             "active_sources": active,
         }
     if active:
-        claude_disabled = (root / "CLAUDE_DISABLED.flag").exists()
+        claude_disabled = (root / "CLAUDE_DISABLED.flag").exists() or (root / "CLAUDE_PUMP_DISABLED.flag").exists()
         return {
             "action": "research_active_source",
             "role": "Codex" if claude_disabled else "Claude",
             "required_capabilities": ["research", "strategy"],
-            "routing_reason": "CLAUDE_DISABLED.flag present; route research to Codex/Gemini-compatible workers" if claude_disabled else "legacy research role",
+            "routing_reason": "Claude pump lane disabled; route research to Codex/Gemini-compatible workers" if claude_disabled else "legacy research role",
             "source": active[0],
             "expected_output": "source notes and draft strategy cards under artifacts/source_notes and artifacts/cards_draft",
         }

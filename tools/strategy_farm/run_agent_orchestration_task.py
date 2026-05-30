@@ -33,6 +33,7 @@ CLAUDE_FALLBACK = Path(r"C:\Users\Administrator\AppData\Roaming\npm\claude.cmd")
 CODEX_HOME = Path(os.environ.get("CODEX_HOME", r"C:\Users\Administrator\.codex"))
 AGENT_USER_HOME = Path(r"C:\Users\Administrator")
 CLAUDE_DISABLED_FLAG = FARM_ROOT / "CLAUDE_DISABLED.flag"
+CLAUDE_BUDGET_POLICY = FARM_ROOT / "CLAUDE_BUDGET_POLICY.json"
 
 # --- Headless model selection (weekly-quota cost control) -------------------
 # Each headless cycle is mostly routine orchestration (claim work, run gates,
@@ -474,13 +475,12 @@ def run_agent_slot(agent: str, slot: int, dry_run: bool, stale_minutes: int, tim
 
 
 def claude_work_available() -> dict[str, Any]:
-    """PT12 2026-05-24 — pre-spawn check to avoid empty Claude invocations.
+    """Pre-spawn check to avoid empty or low-value Claude invocations.
 
-    21% of Claude orchestration spawns produced 0-byte logs (Claude was
-    invoked, found nothing actionable, exited). Each empty spawn burns a
-    session against the daily subscription limit. Pre-check the farm DB
-    for actionable work before spawning. Returns a dict so the caller can
-    log details about WHY work was/wasn't available.
+    Claude is quota-constrained. It should only wake for explicit router work
+    already assigned to Claude, or for unrouted premium work that asks for
+    Claude-only capabilities such as `summary`. G0/card mass review is handled
+    by Codex while the pump Claude lane is disabled.
     """
     import sqlite3 as _sqlite3
     db = FARM_ROOT / "state" / "farm_state.sqlite"
@@ -489,41 +489,132 @@ def claude_work_available() -> dict[str, Any]:
     try:
         con = _sqlite3.connect(db)
         con.row_factory = _sqlite3.Row
-        # ea_review backlog — done builds with codex PASS but no Claude review yet
-        n_review_pending = con.execute(
+        n_assigned = con.execute(
             """
-            SELECT COUNT(*) FROM tasks b
-            WHERE b.kind='build_ea' AND b.status='done'
-              AND EXISTS (
-                SELECT 1 FROM tasks cr WHERE cr.kind='codex_review'
-                  AND cr.status='done'
-                  AND cr.payload_json LIKE '%"build_task_id": "' || b.id || '"%'
-                  AND cr.payload_json LIKE '%"verdict": "PASS"%'
-              )
-              AND NOT EXISTS (
-                SELECT 1 FROM tasks r WHERE r.kind='ea_review'
-                  AND r.payload_json LIKE '%"build_task_id": "' || b.id || '"%'
-              )
+            SELECT COUNT(*) FROM agent_tasks
+            WHERE assigned_agent='claude' AND state IN ('TODO','IN_PROGRESS')
             """
         ).fetchone()[0]
-        # G0 batch reviews — cards in cards_review/ awaiting Claude verdict
-        cards_review = FARM_ROOT / "artifacts" / "cards_review"
-        n_g0_pending = len(list(cards_review.glob("QM5_*.md"))) if cards_review.is_dir() else 0
-        # ea_review tasks pending verdict file
-        n_ea_review_pending_verdict = con.execute(
-            "SELECT COUNT(*) FROM tasks WHERE kind='ea_review' AND status='pending'"
+        n_premium_backlog = con.execute(
+            """
+            SELECT COUNT(*) FROM agent_tasks
+            WHERE state IN ('BACKLOG','TODO')
+              AND assigned_agent IS NULL
+              AND (
+                required_capabilities_json LIKE '%"summary"%'
+                OR budget_class IN ('premium','claude','owner')
+              )
+            """
         ).fetchone()[0]
         con.close()
-        any_work = (n_review_pending + n_g0_pending + n_ea_review_pending_verdict) > 0
+        any_work = (n_assigned + n_premium_backlog) > 0
         return {
             "any_work": any_work,
-            "ea_review_to_spawn": n_review_pending,
-            "g0_cards_pending": n_g0_pending,
-            "ea_review_pending_verdict": n_ea_review_pending_verdict,
+            "claude_assigned": n_assigned,
+            "premium_backlog": n_premium_backlog,
         }
     except Exception as exc:
         # Fail OPEN — if the check fails, spawn anyway rather than starve Claude.
         return {"any_work": True, "reason": f"work_check_error:{exc!r}"}
+
+
+def _parse_dt(value: str) -> dt.datetime | None:
+    try:
+        parsed = dt.datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except Exception:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=dt.UTC)
+    return parsed.astimezone(dt.UTC)
+
+
+def _claude_budget_policy() -> dict[str, Any]:
+    defaults: dict[str, Any] = {
+        "enabled": True,
+        "max_runs_per_day": 2,
+        "min_minutes_between_runs": 360,
+        "max_sessions_per_run": 1,
+    }
+    if not CLAUDE_BUDGET_POLICY.exists():
+        return defaults
+    try:
+        loaded = json.loads(CLAUDE_BUDGET_POLICY.read_text(encoding="utf-8"))
+    except Exception as exc:
+        policy = dict(defaults)
+        policy["policy_error"] = repr(exc)
+        return policy
+    if not isinstance(loaded, dict):
+        policy = dict(defaults)
+        policy["policy_error"] = "policy_not_object"
+        return policy
+    policy = dict(defaults)
+    policy.update(loaded)
+    return policy
+
+
+def _claude_non_skipped_runs_today(now: dt.datetime, count_from: dt.datetime | None = None) -> list[dt.datetime]:
+    local_now = now.astimezone()
+    local_midnight = local_now.replace(hour=0, minute=0, second=0, microsecond=0)
+    cutoff = count_from or local_midnight.astimezone(dt.UTC)
+    started: list[dt.datetime] = []
+    for path in LOG_DIR.glob("claude_orchestration_slot*_*.json"):
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if payload.get("agent") != "claude" or payload.get("skipped"):
+            continue
+        ts = _parse_dt(str(payload.get("started_at") or payload.get("finished_at") or ""))
+        if ts and ts >= cutoff:
+            started.append(ts)
+    return sorted(started)
+
+
+def claude_budget_check(max_sessions: int) -> dict[str, Any]:
+    policy = _claude_budget_policy()
+    now = dt.datetime.now(dt.UTC)
+    if not bool(policy.get("enabled", True)):
+        return {"allowed": False, "reason": "budget_policy_disabled", "policy": policy}
+
+    not_after = str(policy.get("not_after_local") or policy.get("not_after_utc") or "").strip()
+    if not_after:
+        deadline = _parse_dt(not_after)
+        if deadline and now >= deadline:
+            return {"allowed": False, "reason": "budget_deadline_reached", "deadline": not_after, "policy": policy}
+
+    count_from_value = str(policy.get("count_from_local") or policy.get("count_from_utc") or "").strip()
+    count_from = _parse_dt(count_from_value) if count_from_value else None
+    runs_today = _claude_non_skipped_runs_today(now, count_from=count_from)
+    max_runs = int(policy.get("max_runs_per_day") or 0)
+    if max_runs > 0 and len(runs_today) >= max_runs:
+        return {
+            "allowed": False,
+            "reason": "daily_run_budget_exhausted",
+            "runs_today": len(runs_today),
+            "max_runs_per_day": max_runs,
+            "policy": policy,
+        }
+
+    min_gap = int(policy.get("min_minutes_between_runs") or 0)
+    if min_gap > 0 and runs_today:
+        elapsed = (now - runs_today[-1]).total_seconds() / 60
+        if elapsed < min_gap:
+            return {
+                "allowed": False,
+                "reason": "min_interval_not_elapsed",
+                "minutes_since_last_run": round(elapsed, 1),
+                "min_minutes_between_runs": min_gap,
+                "policy": policy,
+            }
+
+    cap = max(1, int(policy.get("max_sessions_per_run") or 1))
+    return {
+        "allowed": True,
+        "policy": policy,
+        "runs_today": len(runs_today),
+        "requested_max_sessions": max_sessions,
+        "effective_max_sessions": min(max_sessions, cap),
+    }
 
 
 def _agent_tasks_work_available(agent: str) -> dict[str, Any]:
@@ -569,6 +660,17 @@ def run_agent(agent: str, dry_run: bool, stale_minutes: int, timeout_minutes: in
             "reason": "claude_disabled_flag",
             "flag": str(CLAUDE_DISABLED_FLAG),
         }
+    if agent == "claude" and not dry_run:
+        budget = claude_budget_check(max_sessions)
+        if not budget.get("allowed"):
+            return {
+                "agent": agent,
+                "ok": True,
+                "skipped": True,
+                "reason": budget.get("reason", "claude_budget_blocked"),
+                "budget_check": budget,
+            }
+        max_sessions = int(budget.get("effective_max_sessions") or 1)
     # PT12 2026-05-24 — Claude empty-spawn guard.
     if agent == "claude" and not dry_run:
         wa = claude_work_available()

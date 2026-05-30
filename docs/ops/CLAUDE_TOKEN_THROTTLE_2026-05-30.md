@@ -24,8 +24,10 @@ credential-manager / remote-https children hanging.
 - Disabled `QM_StrategyFarm_ClaudeOrchestration_15min`.
 - Stopped stale `claude.exe`, `git.exe`, `git-remote-https.exe`, and
   `git-credential-manager.exe` processes tied to the old Claude orchestration runs.
-- Set `D:\QM\strategy_farm\CLAUDE_DISABLED.flag` so `farmctl.py pump` cannot spawn
-  Claude review/G0/research work while the token throttle is active.
+- Initially set `D:\QM\strategy_farm\CLAUDE_DISABLED.flag` as an emergency brake.
+  This was later split into controlled mode: `CLAUDE_PUMP_DISABLED.flag` blocks
+  automatic pump Claude lanes, while the router may still use Claude under
+  `CLAUDE_BUDGET_POLICY.json`.
 - Archived stale empty `D:\QM\strategy_farm\CODEX_LOW_TOKENS.flag` to
   `CODEX_LOW_TOKENS.flag.cleared_20260530T211719Z`; it was blocking Codex spawns
   and causing the pump to fall back to Claude.
@@ -33,7 +35,8 @@ credential-manager / remote-https children hanging.
 
 ## Current Policy
 
-Keep Claude orchestration disabled unless there is a concrete premium-reasoning queue:
+Keep Claude pump lanes disabled. Claude orchestration may remain enabled only under
+`CLAUDE_BUDGET_POLICY.json` and only for a concrete premium-reasoning queue:
 
 - strategy critique that Codex should not do,
 - high-signal OWNER synthesis,
@@ -43,6 +46,9 @@ Keep Claude orchestration disabled unless there is a concrete premium-reasoning 
 Default code, ops, EA builds, tests, dashboard plumbing, and routine pipeline repairs
 should route to Codex.
 
+See `docs/ops/CLAUDE_CONTROLLED_RUN_POLICY_2026-05-30.md` for the controlled-run
+policy through Friday 2026-06-05 00:00 Europe/Berlin.
+
 ## Re-enable Command
 
 ```powershell
@@ -50,7 +56,7 @@ Enable-ScheduledTask -TaskName QM_StrategyFarm_ClaudeOrchestration_15min
 Start-ScheduledTask -TaskName QM_StrategyFarm_ClaudeOrchestration_15min
 ```
 
-Before re-enabling, check:
+Before increasing cadence or removing budget limits, check:
 
 ```powershell
 python tools\strategy_farm\agent_router.py list-tasks --agent claude
