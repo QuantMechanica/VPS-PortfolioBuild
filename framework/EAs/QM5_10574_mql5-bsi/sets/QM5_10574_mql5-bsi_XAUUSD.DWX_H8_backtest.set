@@ -1,0 +1,27 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        10574
+; ea_slug:      mql5-bsi
+; ea_version:   v5.0
+; set_version:  s20260529-001
+; symbol:       XAUUSD.DWX
+; timeframe:    H8
+; environment:  backtest
+; magic_slot:   3
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   62592ffa1055682ba1f1fb83939ca284da115e89301d60a0711347fe12fe978d
+; author:       Development
+; date:         2026-05-29
+;==========================================================
+qm_magic_slot_offset=3
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+strategy_bsi_range_period=20
+strategy_bsi_slowing=3
+strategy_bsi_avg_period=3
+strategy_atr_period=14
+strategy_atr_sl_mult=2.0
+strategy_rr_target=1.5
+strategy_min_hist_abs=0.0

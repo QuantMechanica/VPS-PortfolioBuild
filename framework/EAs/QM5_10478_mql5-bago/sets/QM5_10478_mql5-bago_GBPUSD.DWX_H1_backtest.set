@@ -3,16 +3,16 @@
 ; ea_id:        10478
 ; ea_slug:      mql5-bago
 ; ea_version:   v5.0
-; set_version:  s20260528-001
+; set_version:  s20260530-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   79dd79361d073667c49fd124403c03b5e35331946302883131edb6a73f2dd129
 ; author:       Development
-; date:         2026-05-28
+; date:         2026-05-30
 ;==========================================================
 qm_magic_slot_offset=1
 RISK_FIXED=1000

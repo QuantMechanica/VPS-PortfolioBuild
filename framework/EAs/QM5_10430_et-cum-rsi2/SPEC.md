@@ -4,7 +4,7 @@
 **Slug:** `et-cum-rsi2`
 **Source:** `d6ae8bae-7b94-5209-9be7-fb72a1c3e3fe` (see `strategy-seeds/sources/d6ae8bae-7b94-5209-9be7-fb72a1c3e3fe/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-05-27
+**Last revised:** 2026-05-31
 
 ---
 
@@ -96,4 +96,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-05-27 | Initial build from card | 3a78a245-20f2-40f3-81ee-dd58339284ba |
+| v1 | 2026-05-31 | Initial build from card | ace8f337-a76b-4cca-9fc0-0b5f56176c84 |

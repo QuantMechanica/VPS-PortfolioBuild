@@ -1,0 +1,32 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        10558
+; ea_slug:      mql5-mfi-slow
+; ea_version:   v5.0
+; set_version:  s20260529-001
+; symbol:       GBPJPY.DWX
+; timeframe:    H6
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   8c04a0f9c34ddb165723f903f7ce129287923d7f2478850f6928ede83e2b4b96
+; author:       Development
+; date:         2026-05-29
+;==========================================================
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card must be appended below this line
+strategy_signal_tf=PERIOD_H6
+strategy_mfi_period=14
+strategy_oversold_level=30.0
+strategy_overbought_level=70.0
+strategy_slowdown_bars=2
+strategy_atr_period=14
+strategy_atr_sl_mult=2.0
+strategy_reward_r_multiple=1.5
+strategy_ema_filter_enabled=false
+strategy_ema_period=200
+strategy_max_spread_points=0

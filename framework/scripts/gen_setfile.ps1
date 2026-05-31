@@ -5,7 +5,7 @@ param(
     [ValidatePattern('^[A-Z0-9._]+\.DWX$')]
     [string]$Symbol,
     [Parameter(Mandatory = $true)]
-    [ValidateSet('M1', 'M5', 'M10', 'M15', 'M30', 'H1', 'H4', 'D1', 'W1', 'MN1')]
+    [ValidateSet('M1', 'M5', 'M10', 'M15', 'M30', 'H1', 'H2', 'H3', 'H4', 'H6', 'H8', 'H12', 'D1', 'W1', 'MN1')]
     [string]$TF,
     [ValidateSet('backtest', 'demo', 'shadow', 'live')]
     [string]$Env = 'backtest',

@@ -3,16 +3,16 @@
 ; ea_id:        10478
 ; ea_slug:      mql5-bago
 ; ea_version:   v5.0
-; set_version:  s20260528-001
+; set_version:  s20260530-001
 ; symbol:       AUDUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   5
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   7bad57c55973295ba2a79bf124ebc615e2d1341834623ae1a84a14cbf5af5a6c
 ; author:       Development
-; date:         2026-05-28
+; date:         2026-05-30
 ;==========================================================
 qm_magic_slot_offset=5
 RISK_FIXED=1000

@@ -1,0 +1,32 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        10559
+; ea_slug:      mql5-wpr-slow
+; ea_version:   v5.0
+; set_version:  s20260529-001
+; symbol:       XAUUSD.DWX
+; timeframe:    H6
+; environment:  backtest
+; magic_slot:   3
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   1441f330eac19eecb1b7ad9438948f0bc4c951ba836a703f49f44fa96c2cd1e2
+; author:       Development
+; date:         2026-05-29
+;==========================================================
+qm_magic_slot_offset=3
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card must be appended below this line
+strategy_signal_tf=PERIOD_H6
+strategy_wpr_period=14
+strategy_oversold_level=-80.0
+strategy_overbought_level=-20.0
+strategy_slowdown_bars=2
+strategy_atr_period=14
+strategy_atr_sl_mult=2.0
+strategy_reward_r_multiple=1.5
+strategy_ema_filter_enabled=false
+strategy_ema_period=200
+strategy_max_spread_points=0

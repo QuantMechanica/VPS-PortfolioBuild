@@ -1,0 +1,25 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        10565
+; ea_slug:      mql5-rvidiff
+; ea_version:   v5.0
+; set_version:  s20260529-001
+; symbol:       USDCAD.DWX
+; timeframe:    H6
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   b65717aef4c1bf21b0a5a5bdbbefb09b314017a8d916db3db3c06323c09f4d1a
+; author:       Development
+; date:         2026-05-29
+;==========================================================
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+strategy_signal_tf=PERIOD_H6
+strategy_rvi_period=10
+strategy_atr_period=14
+strategy_atr_sl_mult=2.0
+strategy_rr_target=1.5

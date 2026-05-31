@@ -638,12 +638,9 @@ function Set-TesterGroupsCommission {
 
     # The MT5 strategy tester reads commission from the server-keyed groups file
     # <terminal>\MQL5\Profiles\Tester\Groups\Darwinex-Live_real.txt. The canonical real
-    # schedule keys commission to broker symbol PATHS (Forex\*, Indices\*, ...) that the
-    # custom .DWX symbols do NOT match, so they trade commission-free. For Q04 we inject a
-    # top-priority EXACT-symbol entry applying $CommissionPerLot USD/lot round-trip; for
-    # CommissionPerLot<=0 we restore the canonical file unchanged (keeps Q02/Q03 on the
-    # real schedule). Per-terminal, per-run write is race-free: the worker owns the
-    # terminal for the duration of the run.
+    # schedule keys commission to broker paths (Forex\*, Indices\*, ...) that custom
+    # .DWX symbols do not match. Q04 injects a top-priority Custom\... matcher for the
+    # tested symbol class; CommissionPerLot<=0 restores the canonical file unchanged.
     $localRepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
     $canonical = Join-Path $localRepoRoot "framework\registry\tester_groups\Darwinex-Live_real.canonical.txt"
     if (-not (Test-Path -LiteralPath $canonical -PathType Leaf)) {
@@ -655,6 +652,9 @@ function Set-TesterGroupsCommission {
 
     $text = [System.IO.File]::ReadAllText($canonical, [System.Text.Encoding]::Unicode)
     if ($CommissionPerLot -gt 0) {
+        $assetClass = Get-DwxSymbolAssetClass -RepoRoot $localRepoRoot -SymbolName $SymbolName
+        $commissionMatcher = Get-DwxCommissionMatcher -AssetClass $assetClass -SymbolName $SymbolName
+
         # Encoding mirrors the canonical file's money-per-lot Forex block
         # (CommissionMode=1, CommissionType=1, CommissionCharge=2). Exact USD/lot
         # semantics are confirmed empirically by reading the tester report commission.
@@ -662,7 +662,7 @@ function Set-TesterGroupsCommission {
         # groups files require a dot (e.g. 7.0000, matching the canonical entries).
         $val = $CommissionPerLot.ToString("F4", [System.Globalization.CultureInfo]::InvariantCulture)
         $block = @(
-            "CommissionSymbol=$SymbolName",
+            "CommissionSymbol=$commissionMatcher",
             "CommissionCharge=2",
             "CommissionRange=0",
             "CommissionEntry=0",
@@ -685,6 +685,49 @@ function Set-TesterGroupsCommission {
         $text = ($out -join "`r`n")
     }
     [System.IO.File]::WriteAllText($target, $text, [System.Text.Encoding]::Unicode)
+}
+
+function Get-DwxSymbolAssetClass {
+    param(
+        [Parameter(Mandatory = $true)][string]$RepoRoot,
+        [Parameter(Mandatory = $true)][string]$SymbolName
+    )
+
+    $matrix = Join-Path $RepoRoot "framework\registry\dwx_symbol_matrix.csv"
+    if (Test-Path -LiteralPath $matrix -PathType Leaf) {
+        $row = Import-Csv -LiteralPath $matrix | Where-Object { $_.symbol -eq $SymbolName } | Select-Object -First 1
+        if ($null -ne $row -and -not [string]::IsNullOrWhiteSpace($row.asset_class)) {
+            return $row.asset_class.ToLowerInvariant()
+        }
+    }
+
+    if ($SymbolName -match '^(?:GDAXI|NDX|SP500|UK100|WS30|JPN225|GER40|FRA40|AUS200)\.DWX$') {
+        return "indices"
+    }
+    if ($SymbolName -match '^X(?:AU|AG|TI|BR|NG|CU)USD\.DWX$') {
+        return "commodities"
+    }
+    return "forex"
+}
+
+function Get-DwxCommissionMatcher {
+    param(
+        [Parameter(Mandatory = $true)][string]$AssetClass,
+        [Parameter(Mandatory = $true)][string]$SymbolName
+    )
+
+    switch ($AssetClass.ToLowerInvariant()) {
+        "forex" { return "Custom\Forex\*" }
+        "commodities" { return "Custom\Commodities\*" }
+        "indices" {
+            switch -Regex ($SymbolName) {
+                '^(?:WS30)\.DWX$' { return "Custom\Indices\Index 1\*" }
+                '^(?:GDAXI|GER40)\.DWX$' { return "Custom\Indices\Index DAX\*" }
+                default { return "Custom\Indices\Index 3\*" }
+            }
+        }
+        default { return "Custom\*" }
+    }
 }
 
 function Get-RelativeReportFileName {

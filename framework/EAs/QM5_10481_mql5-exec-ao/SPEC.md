@@ -4,7 +4,7 @@
 **Slug:** `mql5-exec-ao`
 **Source:** `b8b5125a-c67f-5bbc-baff-33456e08f5b2` (see `strategy-seeds/sources/b8b5125a-c67f-5bbc-baff-33456e08f5b2/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-05-28
+**Last revised:** 2026-05-29
 
 ---
 
@@ -107,4 +107,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-05-28 | Initial build from card | 283b29ac-7ddd-4a6d-b8e9-596292d39993 |
+| v1 | 2026-05-29 | Initial build from card | 23730b88-1d8c-427a-9410-2ea3cbd82d88 |

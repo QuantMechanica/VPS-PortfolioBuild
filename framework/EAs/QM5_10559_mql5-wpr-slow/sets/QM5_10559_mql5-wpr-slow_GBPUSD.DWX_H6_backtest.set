@@ -1,0 +1,32 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        10559
+; ea_slug:      mql5-wpr-slow
+; ea_version:   v5.0
+; set_version:  s20260529-001
+; symbol:       GBPUSD.DWX
+; timeframe:    H6
+; environment:  backtest
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   e989335aa623beae47b0ce589f710248e5ad405448fcafce6b7eb8b94003b5d9
+; author:       Development
+; date:         2026-05-29
+;==========================================================
+qm_magic_slot_offset=2
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card must be appended below this line
+strategy_signal_tf=PERIOD_H6
+strategy_wpr_period=14
+strategy_oversold_level=-80.0
+strategy_overbought_level=-20.0
+strategy_slowdown_bars=2
+strategy_atr_period=14
+strategy_atr_sl_mult=2.0
+strategy_reward_r_multiple=1.5
+strategy_ema_filter_enabled=false
+strategy_ema_period=200
+strategy_max_spread_points=0

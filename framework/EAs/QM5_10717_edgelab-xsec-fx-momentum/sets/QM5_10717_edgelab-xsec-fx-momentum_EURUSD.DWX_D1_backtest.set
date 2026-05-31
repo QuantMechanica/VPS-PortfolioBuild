@@ -3,19 +3,19 @@
 ; ea_id:        10717
 ; ea_slug:      edgelab-xsec-fx-momentum
 ; ea_version:   v5.0
-; set_version:  s20260522-001
+; set_version:  s20260531-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   26ca2c4d757f6bc1bb1a7c936c0f9f2df013579e0eaeb001701e5121670cdfb5
+; build_hash:   7c57c56551a22b8d13bdc690bc4d29eb3fec1b4f89011ea9a8410d27da6a8da1
 ; author:       Development
-; date:         2026-05-22
+; date:         2026-05-31
 ;==========================================================
 qm_magic_slot_offset=0
-RISK_FIXED=500
+RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; core filter library params; filter-on/off variants must be pre-declared

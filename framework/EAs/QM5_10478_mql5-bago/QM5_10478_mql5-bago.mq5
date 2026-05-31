@@ -107,19 +107,49 @@ bool Strategy_NoTradeFilter()
    return false;
   }
 
-int Strategy_BagoSignal()
+// Populate `req` with entry order parameters and return TRUE if a NEW entry
+// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
+// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
+bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    if(strategy_fast_ema_period <= 0 ||
       strategy_slow_ema_period <= 0 ||
       strategy_rsi_period <= 0 ||
       strategy_tunnel_ema_fast <= 0 ||
-      strategy_tunnel_ema_slow <= 0)
-      return 0;
+      strategy_tunnel_ema_slow <= 0 ||
+      strategy_atr_period <= 0 ||
+      strategy_atr_sl_mult <= 0.0 ||
+      strategy_atr_sl_cap_mult <= 0.0 ||
+      strategy_take_profit_rr <= 0.0)
+      return false;
+
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+         return false;
+     }
 
    const int warmup = MathMax(MathMax(strategy_tunnel_ema_fast, strategy_tunnel_ema_slow),
                               MathMax(strategy_slow_ema_period, strategy_rsi_period));
    if(Bars(_Symbol, (ENUM_TIMEFRAMES)_Period) < warmup + 3)
-      return 0;
+      return false;
 
    const double fast_1 = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_fast_ema_period, 1);
    const double fast_2 = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_fast_ema_period, 2);
@@ -134,94 +164,37 @@ int Strategy_BagoSignal()
    if(fast_1 <= 0.0 || fast_2 <= 0.0 || slow_1 <= 0.0 || slow_2 <= 0.0 ||
       rsi_1 <= 0.0 || rsi_2 <= 0.0 || tunnel_a <= 0.0 || tunnel_b <= 0.0 ||
       close_1 <= 0.0)
-      return 0;
-
-   const bool ema_cross_up = (fast_2 <= slow_2 && fast_1 > slow_1);
-   const bool ema_cross_dn = (fast_2 >= slow_2 && fast_1 < slow_1);
-   const bool rsi_cross_up = (rsi_2 <= strategy_rsi_midline && rsi_1 > strategy_rsi_midline);
-   const bool rsi_cross_dn = (rsi_2 >= strategy_rsi_midline && rsi_1 < strategy_rsi_midline);
-   const bool above_tunnel = (close_1 > tunnel_a && close_1 > tunnel_b);
-   const bool below_tunnel = (close_1 < tunnel_a && close_1 < tunnel_b);
-
-   if(ema_cross_up && rsi_cross_up && above_tunnel)
-      return 1;
-   if(ema_cross_dn && rsi_cross_dn && below_tunnel)
-      return -1;
-   return 0;
-  }
-
-bool Strategy_HasOpenPosition()
-  {
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
       return false;
 
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
-         return true;
-     }
-   return false;
-  }
-
-double Strategy_BagoStop(const QM_OrderType side, const double entry)
-  {
-   if(entry <= 0.0 || strategy_atr_period <= 0 ||
-      strategy_atr_sl_mult <= 0.0 || strategy_atr_sl_cap_mult <= 0.0)
-      return 0.0;
-
-   const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
-   if(atr <= 0.0)
-      return 0.0;
-
-   const double atr_distance = atr * strategy_atr_sl_mult;
-   const double cap_distance = atr * strategy_atr_sl_cap_mult;
-   double structure_distance = 0.0;
-
-   const double structure_stop = QM_StopStructure(_Symbol, side, entry, strategy_swing_lookback);
-   if(structure_stop > 0.0)
-      structure_distance = MathAbs(entry - structure_stop);
-
-   double stop_distance = MathMax(atr_distance, structure_distance);
-   if(stop_distance <= 0.0)
-      stop_distance = atr_distance;
-   stop_distance = MathMin(stop_distance, cap_distance);
-
-   double stop = (side == QM_BUY) ? (entry - stop_distance) : (entry + stop_distance);
-   return NormalizeDouble(stop, _Digits);
-  }
-
-// Populate `req` with entry order parameters and return TRUE if a NEW entry
-// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
-// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
-bool Strategy_EntrySignal(QM_EntryRequest &req)
-  {
-   req.type = QM_BUY;
-   req.price = 0.0;
-   req.sl = 0.0;
-   req.tp = 0.0;
-   req.reason = "";
-   req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
-
-   if(Strategy_HasOpenPosition())
+   const bool long_signal = (fast_2 <= slow_2 && fast_1 > slow_1 &&
+                             rsi_2 <= strategy_rsi_midline && rsi_1 > strategy_rsi_midline &&
+                             close_1 > tunnel_a && close_1 > tunnel_b);
+   const bool short_signal = (fast_2 >= slow_2 && fast_1 < slow_1 &&
+                              rsi_2 >= strategy_rsi_midline && rsi_1 < strategy_rsi_midline &&
+                              close_1 < tunnel_a && close_1 < tunnel_b);
+   if(!long_signal && !short_signal)
       return false;
 
-   const int signal = Strategy_BagoSignal();
-   if(signal == 0)
-      return false;
-
-   const QM_OrderType side = (signal > 0) ? QM_BUY : QM_SELL;
+   const QM_OrderType side = long_signal ? QM_BUY : QM_SELL;
    const double entry = QM_EntryMarketPrice(side);
    if(entry <= 0.0)
       return false;
 
-   const double sl = Strategy_BagoStop(side, entry);
+   const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
+   if(atr <= 0.0)
+      return false;
+
+   const double structure_stop = QM_StopStructure(_Symbol, side, entry, strategy_swing_lookback);
+   double structure_distance = 0.0;
+   if(structure_stop > 0.0)
+      structure_distance = MathAbs(entry - structure_stop);
+
+   double stop_distance = MathMax(atr * strategy_atr_sl_mult, structure_distance);
+   stop_distance = MathMin(stop_distance, atr * strategy_atr_sl_cap_mult);
+   if(stop_distance <= 0.0)
+      return false;
+
+   const double sl = QM_StopRulesStopFromDistance(_Symbol, side, entry, stop_distance);
    if(sl <= 0.0)
       return false;
 
@@ -232,7 +205,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.type = side;
    req.sl = sl;
    req.tp = tp;
-   req.reason = (side == QM_BUY) ? "BAGO_EMA_RSI_LONG" : "BAGO_EMA_RSI_SHORT";
+   req.reason = long_signal ? "BAGO_EMA_RSI_LONG" : "BAGO_EMA_RSI_SHORT";
    return true;
   }
 
@@ -251,9 +224,37 @@ bool Strategy_ExitSignal()
    if(magic <= 0)
       return false;
 
-   const int signal = Strategy_BagoSignal();
-   const int period_seconds = PeriodSeconds((ENUM_TIMEFRAMES)_Period);
-   const datetime now = TimeCurrent();
+   int signal = 0;
+   if(strategy_fast_ema_period > 0 &&
+      strategy_slow_ema_period > 0 &&
+      strategy_rsi_period > 0 &&
+      strategy_tunnel_ema_fast > 0 &&
+      strategy_tunnel_ema_slow > 0)
+     {
+      const double fast_1 = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_fast_ema_period, 1);
+      const double fast_2 = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_fast_ema_period, 2);
+      const double slow_1 = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_slow_ema_period, 1);
+      const double slow_2 = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_slow_ema_period, 2);
+      const double rsi_1 = QM_RSI(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_rsi_period, 1);
+      const double rsi_2 = QM_RSI(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_rsi_period, 2);
+      const double tunnel_a = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_tunnel_ema_fast, 1);
+      const double tunnel_b = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_tunnel_ema_slow, 1);
+      const double close_1 = iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, 1);
+
+      if(fast_1 > 0.0 && fast_2 > 0.0 && slow_1 > 0.0 && slow_2 > 0.0 &&
+         rsi_1 > 0.0 && rsi_2 > 0.0 && tunnel_a > 0.0 && tunnel_b > 0.0 &&
+         close_1 > 0.0)
+        {
+         if(fast_2 <= slow_2 && fast_1 > slow_1 &&
+            rsi_2 <= strategy_rsi_midline && rsi_1 > strategy_rsi_midline &&
+            close_1 > tunnel_a && close_1 > tunnel_b)
+            signal = 1;
+         else if(fast_2 >= slow_2 && fast_1 < slow_1 &&
+                 rsi_2 >= strategy_rsi_midline && rsi_1 < strategy_rsi_midline &&
+                 close_1 < tunnel_a && close_1 < tunnel_b)
+            signal = -1;
+        }
+     }
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
@@ -271,10 +272,11 @@ bool Strategy_ExitSignal()
       if(position_type == POSITION_TYPE_SELL && signal > 0)
          return true;
 
-      if(strategy_time_stop_bars > 0 && period_seconds > 0)
+      if(strategy_time_stop_bars > 0)
         {
          const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
-         if(opened > 0 && now - opened >= strategy_time_stop_bars * period_seconds)
+         const int bars_since_open = iBarShift(_Symbol, (ENUM_TIMEFRAMES)_Period, opened, false);
+         if(bars_since_open >= strategy_time_stop_bars)
             return true;
         }
      }
