@@ -23,6 +23,7 @@ import argparse
 import datetime as dt
 import json
 import sys
+import time
 from pathlib import Path
 
 # Allow running both as a module and as a script
@@ -185,7 +186,7 @@ def _run_baseline_for_trades(ea_id: int, symbol: str, terminal: str | None) -> d
     flags = 0x08000000 if sys.platform == "win32" else 0
     try:
         p = _sp.run(args, capture_output=True, text=True, timeout=2500, creationflags=flags)
-        summary = _latest_baseline_summary(report_root, ea_id)
+        summary = _latest_baseline_summary(report_root, ea_id, wait_seconds=10)
         out = {"exit_code": p.returncode, "expert": expert, "period": period}
         if summary is not None:
             out.update(_baseline_report_metadata(summary))
@@ -194,12 +195,17 @@ def _run_baseline_for_trades(ea_id: int, symbol: str, terminal: str | None) -> d
         return {"error": repr(exc)}
 
 
-def _latest_baseline_summary(report_root: Path, ea_id: int) -> Path | None:
+def _latest_baseline_summary(report_root: Path, ea_id: int, wait_seconds: int = 0) -> Path | None:
     base = report_root / f"QM5_{ea_id}"
-    if not base.exists():
-        return None
-    summaries = sorted(base.glob("*/summary.json"), key=lambda p: p.stat().st_mtime, reverse=True)
-    return summaries[0] if summaries else None
+    deadline = time.time() + max(0, wait_seconds)
+    while True:
+        if base.exists():
+            summaries = sorted(base.glob("*/summary.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+            if summaries:
+                return summaries[0]
+        if time.time() >= deadline:
+            return None
+        time.sleep(1)
 
 
 def _baseline_report_metadata(summary_path: Path) -> dict:
@@ -242,6 +248,14 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
         except OSError:
             pass
         baseline_run = _run_baseline_for_trades(ea_id, symbol, terminal)
+        if baseline_run and not baseline_run.get("baseline_report_path"):
+            retry_summary = _latest_baseline_summary(
+                Path(f"D:/QM/reports/pipeline/QM5_{ea_id}/Q08/_baseline"),
+                ea_id,
+                wait_seconds=5,
+            )
+            if retry_summary is not None:
+                baseline_run.update(_baseline_report_metadata(retry_summary))
         trades = common.load_trades_from_log(common_log)
         equity_stream = common.load_equity_stream(common_log) or equity_stream
         if not trades and baseline_run and baseline_run.get("baseline_report_path"):
