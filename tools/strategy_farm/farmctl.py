@@ -87,6 +87,8 @@ BUILD_BACKPRESSURE_PENDING_SOFT_LIMIT = 1000
 BUILD_BACKPRESSURE_PENDING_HARD_LIMIT = 3000
 BUILD_BACKPRESSURE_ACTIVE_WORK_ITEM_LIMIT = 7
 MAX_AUTO_CREATED_BUILDS_PER_PUMP = 1
+DIRTY_REPO_BUILD_GUARD_ENV = "QM_ALLOW_DIRTY_REPO_BUILDS"
+DIRTY_REPO_GUARD_DETAIL_LIMIT = 20
 ZERO_TRADE_DEAD_THRESHOLD = 0.80
 ZERO_TRADE_DEAD_MIN_DONE = 5
 ZERO_TRADE_REWORK_DEDUP_HOURS = 6
@@ -126,6 +128,35 @@ def available_mt5_terminals(mt5_root: Path | None = None) -> tuple[str, ...]:
 def active_mt5_terminals(mt5_root: Path | None = None) -> tuple[str, ...]:
     installed = available_mt5_terminals(mt5_root)
     return installed if installed else tuple(t for t in MT5_TERMINALS if is_factory_terminal_name(t))
+
+
+def _repo_dirty_status(root_path: Path = REPO_ROOT) -> dict[str, Any]:
+    if os.environ.get(DIRTY_REPO_BUILD_GUARD_ENV) == "1":
+        return {"blocked": False, "override": True, "entries": [], "count": 0}
+    try:
+        proc = subprocess.run(
+            ["git", "-C", str(root_path), "status", "--porcelain=v1", "--untracked-files=normal"],
+            capture_output=True,
+            text=True,
+            timeout=20,
+            creationflags=(subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0),
+        )
+    except Exception as exc:
+        return {"blocked": True, "error": repr(exc), "entries": [], "count": 0}
+    entries = [line for line in (proc.stdout or "").splitlines() if line.strip()]
+    if proc.returncode != 0:
+        return {
+            "blocked": True,
+            "error": (proc.stderr or proc.stdout or "").strip(),
+            "entries": entries[:DIRTY_REPO_GUARD_DETAIL_LIMIT],
+            "count": len(entries),
+        }
+    return {
+        "blocked": bool(entries),
+        "override": False,
+        "entries": entries[:DIRTY_REPO_GUARD_DETAIL_LIMIT],
+        "count": len(entries),
+    }
 
 # Known-good fallback paths for codex.cmd / claude.cmd. Required because
 # scheduled tasks run as SYSTEM user, which has a minimal PATH that doesn't
@@ -3434,8 +3465,13 @@ def _spawn_claude_for_review(root: Path, build_task_row: sqlite3.Row) -> dict[st
     live_log = root / "logs" / f"claude_review_{review_task_id}.live.log"
     live_log.parent.mkdir(parents=True, exist_ok=True)
 
-    # Read prompt to embed as the -p argument (claude CLI doesn't accept stdin
-    # for -p mode; the prompt is a single string arg with non-interactive output).
+    # Feed the prompt via stdin, NOT as the -p argument. Embedding the full
+    # rendered review prompt (mq5 + card + build_result + smoke_summary) in a
+    # single command-line arg overflows the Windows cmd limit and the claude
+    # process dies immediately with "The command line is too long." before
+    # writing any verdict — silently stalling every Claude EA review. `claude -p`
+    # reads the prompt from stdin when no positional prompt is given. Mirror the
+    # working _spawn_codex_for_review stdin pattern.
     prompt_text = Path(prompt_path).read_text(encoding="utf-8") if prompt_path else ""
     bootstrap = (
         "You are a focused QM EA reviewer. Read the prompt I pass + the referenced "
@@ -3444,21 +3480,24 @@ def _spawn_claude_for_review(root: Path, build_task_row: sqlite3.Row) -> dict[st
         f"'{verdict_path}'. Then exit cleanly. No prose, no commentary outside "
         f"the JSON file.\n\nReview Prompt:\n\n{prompt_text}"
     )
+    prompt_file = Path(prompt_path) if prompt_path else live_log.with_suffix(".prompt.txt")
+    prompt_file.write_text(bootstrap, encoding="utf-8", newline="\n")
 
     creationflags = 0
     if sys.platform == "win32":
         creationflags = subprocess.CREATE_NO_WINDOW  # type: ignore[attr-defined]
+    stdin_f = open(prompt_file, "rb")
     stdout_f = open(live_log, "wb")
     proc = subprocess.Popen(
-        [claude_path, "-p", bootstrap,
+        [claude_path, "-p",
          "--permission-mode", "bypassPermissions",
          "--add-dir", "C:\\QM\\repo",
          "--add-dir", "D:\\QM\\strategy_farm",
          "--add-dir", "D:\\QM\\reports"],
         cwd=str(REPO_ROOT),
+        stdin=stdin_f,
         stdout=stdout_f,
         stderr=subprocess.STDOUT,
-        stdin=subprocess.DEVNULL,
         shell=True,
         creationflags=creationflags,
         close_fds=True,
@@ -3568,19 +3607,25 @@ def _spawn_claude_for_g0_batch(root: Path) -> dict[str, Any]:
         "Process all cards in the batch, then exit cleanly."
     )
 
+    # Feed the prompt via stdin — see _spawn_claude_for_review: a long -p arg
+    # overflows the Windows command-line limit and kills the process before it
+    # can act ("The command line is too long.").
+    prompt_file = live_log.with_suffix(".prompt.txt")
+    prompt_file.write_text(bootstrap, encoding="utf-8", newline="\n")
     creationflags = 0
     if sys.platform == "win32":
         creationflags = subprocess.CREATE_NO_WINDOW  # type: ignore[attr-defined]
+    stdin_f = open(prompt_file, "rb")
     stdout_f = open(live_log, "wb")
     proc = subprocess.Popen(
-        [claude_path, "-p", bootstrap,
+        [claude_path, "-p",
          "--permission-mode", "bypassPermissions",
          "--add-dir", "C:\\QM\\repo",
          "--add-dir", "D:\\QM\\strategy_farm"],
         cwd=str(REPO_ROOT),
+        stdin=stdin_f,
         stdout=stdout_f,
         stderr=subprocess.STDOUT,
-        stdin=subprocess.DEVNULL,
         shell=True,
         creationflags=creationflags,
         close_fds=True,
@@ -3770,20 +3815,26 @@ def _claim_research_source(root: Path) -> dict[str, Any]:
         f"{src_id} done`. If 5 cards + more findable, run `farmctl "
         f"set-source-status {src_id} cards_ready`. Exit cleanly."
     )
+    # Feed the prompt via stdin — see _spawn_claude_for_review: a long -p arg
+    # overflows the Windows command-line limit and kills the process before it
+    # can act ("The command line is too long.").
+    prompt_file = live_log.with_suffix(".prompt.txt")
+    prompt_file.write_text(bootstrap, encoding="utf-8", newline="\n")
     creationflags = 0
     if sys.platform == "win32":
         creationflags = subprocess.CREATE_NO_WINDOW  # type: ignore[attr-defined]
+    stdin_f = open(prompt_file, "rb")
     stdout_f = open(live_log, "wb")
     proc = subprocess.Popen(
-        [claude_path, "-p", bootstrap,
+        [claude_path, "-p",
          "--permission-mode", "bypassPermissions",
          "--add-dir", "C:\\QM\\repo",
          "--add-dir", "D:\\QM\\strategy_farm",
          "--add-dir", "G:\\My Drive\\QuantMechanica - Company Reference"],
         cwd=str(REPO_ROOT),
+        stdin=stdin_f,
         stdout=stdout_f,
         stderr=subprocess.STDOUT,
-        stdin=subprocess.DEVNULL,
         shell=True,
         creationflags=creationflags,
         close_fds=True,
@@ -5728,6 +5779,11 @@ def pump(root: Path) -> dict[str, Any]:
     # Non-build spawns (research/review/g0) can still use up to MAX_PARALLEL_CODEX-active.
     spawn_budget = max(0, min(MAX_PARALLEL_CODEX_BUILDS, MAX_PARALLEL_CODEX - active_codex))
     gemini_build_budget = max(0, MAX_PARALLEL_GEMINI_BUILDS - active_gemini)
+    repo_dirty_guard = _repo_dirty_status()
+    result["repo_dirty_build_guard"] = repo_dirty_guard
+    if repo_dirty_guard.get("blocked"):
+        spawn_budget = 0
+        gemini_build_budget = 0
     total_build_spawn_budget = spawn_budget + gemini_build_budget
     with connect(root) as conn:
         # Dedupe by ea_id — never spawn 2 codex builds for the same EA at
@@ -5828,6 +5884,13 @@ def pump(root: Path) -> dict[str, Any]:
             "max_pending_for_new_builds": BUILD_BACKPRESSURE_PENDING_SOFT_LIMIT,
             "hard_pending_for_new_builds": BUILD_BACKPRESSURE_PENDING_HARD_LIMIT,
             "active_work_items_pause_threshold": BUILD_BACKPRESSURE_ACTIVE_WORK_ITEM_LIMIT,
+        })
+    elif repo_dirty_guard.get("blocked"):
+        result["auto_build_skipped"].append({
+            "reason": "repo_worktree_dirty",
+            "dirty_count": repo_dirty_guard.get("count", 0),
+            "dirty_entries": repo_dirty_guard.get("entries", []),
+            "override_env": DIRTY_REPO_BUILD_GUARD_ENV,
         })
     elif actually_spawned < spawn_budget:
         cards_approved_dir = root / "artifacts" / "cards_approved"
