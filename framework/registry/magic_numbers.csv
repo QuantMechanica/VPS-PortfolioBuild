@@ -5209,3 +5209,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10749,tv-orb-atlas,4,EURUSD.DWX,107490004,2026-05-31,Development,active
 10749,tv-orb-atlas,5,GBPUSD.DWX,107490005,2026-05-31,Development,active
 10749,tv-orb-atlas,6,SP500.DWX,107490006,2026-05-31,Development,active
+10753,tv-three-musk,0,EURUSD.DWX,107530000,2026-05-31,Development,active
+10753,tv-three-musk,1,GBPUSD.DWX,107530001,2026-05-31,Development,active
+10753,tv-three-musk,2,XAUUSD.DWX,107530002,2026-05-31,Development,active
+10753,tv-three-musk,3,NDX.DWX,107530003,2026-05-31,Development,active
+10753,tv-three-musk,4,WS30.DWX,107530004,2026-05-31,Development,active
