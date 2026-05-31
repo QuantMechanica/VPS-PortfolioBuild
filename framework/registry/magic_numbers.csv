@@ -5243,3 +5243,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10760,tv-iu-orb,5,NDX.DWX,107600005,2026-05-31,Development,active
 10760,tv-iu-orb,6,WS30.DWX,107600006,2026-05-31,Development,active
 10760,tv-iu-orb,7,SP500.DWX,107600007,2026-05-31,Development,active
+10762,tv-trend-brk,0,EURUSD.DWX,107620000,2026-05-31,Development,active
+10762,tv-trend-brk,1,GBPUSD.DWX,107620001,2026-05-31,Development,active
+10762,tv-trend-brk,2,USDJPY.DWX,107620002,2026-05-31,Development,active
+10762,tv-trend-brk,3,XAUUSD.DWX,107620003,2026-05-31,Development,active
+10762,tv-trend-brk,4,GDAXI.DWX,107620004,2026-05-31,Development,active
+10762,tv-trend-brk,5,NDX.DWX,107620005,2026-05-31,Development,active
+10762,tv-trend-brk,6,WS30.DWX,107620006,2026-05-31,Development,active
