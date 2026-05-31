@@ -87,6 +87,7 @@ BUILD_BACKPRESSURE_PENDING_SOFT_LIMIT = 1000
 BUILD_BACKPRESSURE_PENDING_HARD_LIMIT = 3000
 BUILD_BACKPRESSURE_ACTIVE_WORK_ITEM_LIMIT = 7
 MAX_AUTO_CREATED_BUILDS_PER_PUMP = 1
+MAX_PARALLEL_CLAUDE = 3
 DIRTY_REPO_BUILD_GUARD_ENV = "QM_ALLOW_DIRTY_REPO_BUILDS"
 DIRTY_REPO_GUARD_DETAIL_LIMIT = 20
 ZERO_TRADE_DEAD_THRESHOLD = 0.80
@@ -5524,7 +5525,7 @@ def pump(root: Path) -> dict[str, Any]:
       - Spawn Codex for ONE pending build_ea task per pump call (bounded —
         Codex builds take 5-15 min, don't pile up multiple)
       - Record build results when Codex's build_result JSON appears
-      - (Future) spawn Claude for ONE pending ea_review task
+      - Spawn Claude for EA review up to MAX_PARALLEL_CLAUDE total sessions
 
     Bounded per pump cycle to avoid resource overrun. Idempotent — checks
     live_log freshness so re-runs while Codex is still going don't
@@ -6146,8 +6147,8 @@ def pump(root: Path) -> dict[str, Any]:
                         conn.commit()
 
     # 5c. Spawn final EA review ONLY for builds that have a PASSING codex_review
-    #     AND no ea_review yet. OWNER 2026-05-19: Claude spend is hard-disabled;
-    #     route review work to Codex only.
+    #     AND no ea_review yet. Claude owns final qualitative EA review, but is
+    #     capped so the pump can drain review backlog without uncontrolled spend.
     try:
         active_claude_count = int(subprocess.run(
             ["powershell.exe", "-NoProfile", "-Command",
@@ -6159,13 +6160,16 @@ def pump(root: Path) -> dict[str, Any]:
         active_claude_count = 0
     result["claude_active_before"] = active_claude_count
     claude_disabled = (root / "CLAUDE_DISABLED.flag").exists()
-    MAX_PARALLEL_CLAUDE = 0 if claude_disabled else 3
-    prefer_claude_review = MAX_PARALLEL_CLAUDE > 0
+    max_parallel_claude = 0 if claude_disabled else MAX_PARALLEL_CLAUDE
+    prefer_claude_review = max_parallel_claude > 0
     result["claude_disabled"] = claude_disabled
-    result["max_parallel_claude"] = MAX_PARALLEL_CLAUDE
+    result["max_parallel_claude"] = max_parallel_claude
     result["prefer_claude_review"] = prefer_claude_review
+    claude_spawns_this_cycle = 0
+    claude_review_slots = max(0, max_parallel_claude - active_claude_count)
+    result["claude_review_slots"] = claude_review_slots
     with connect(root) as conn:
-        done_no_review = conn.execute(
+        done_no_review_rows = conn.execute(
             """
             SELECT b.* FROM tasks b
             WHERE b.kind='build_ea' AND b.status='done'
@@ -6180,24 +6184,37 @@ def pump(root: Path) -> dict[str, Any]:
                 WHERE r.kind='ea_review'
                   AND r.payload_json LIKE '%"build_task_id": "' || b.id || '"%'
               )
-            ORDER BY b.updated_at ASC LIMIT 1
-            """
-        ).fetchone()
+            ORDER BY b.updated_at ASC LIMIT ?
+            """,
+            (max(claude_review_slots, 1),),
+        ).fetchall()
     result["claude_review_spawn"] = {"spawned": False, "reason": "no review candidate"}
-    if done_no_review:
+    result["claude_review_spawns_all"] = []
+    if done_no_review_rows:
         if claude_disabled:
             result["claude_review_spawn"] = {"spawned": False, "reason": "CLAUDE_DISABLED.flag present; routed to Codex"}
-        elif active_claude_count < MAX_PARALLEL_CLAUDE:
-            result["claude_review_spawn"] = _spawn_claude_for_review(root, done_no_review)
+        elif claude_review_slots > 0:
+            for done_no_review in done_no_review_rows[:claude_review_slots]:
+                sp = _spawn_claude_for_review(root, done_no_review)
+                result["claude_review_spawns_all"].append(sp)
+                if sp.get("spawned"):
+                    claude_spawns_this_cycle += 1
+            result["claude_review_spawn"] = (
+                result["claude_review_spawns_all"][0]
+                if result["claude_review_spawns_all"]
+                else {"spawned": False, "reason": "no review candidate"}
+            )
         else:
             result["claude_review_spawn"] = {"spawned": False, "reason": "claude cap reached"}
 
         builds_now = len([s for s in (result.get("codex_spawns_all") or []) if isinstance(s, dict) and s.get("spawned")])
         pre_reviews_now = len([s for s in result["codex_review_spawns"] if isinstance(s, dict) and s.get("spawned")])
-        if not result["claude_review_spawn"].get("spawned") and (active_codex + builds_now + pre_reviews_now) < MAX_PARALLEL_CODEX:
-            result["codex_review_spawn"] = _spawn_codex_for_review(root, done_no_review)
+        if claude_disabled and (active_codex + builds_now + pre_reviews_now) < MAX_PARALLEL_CODEX:
+            result["codex_review_spawn"] = _spawn_codex_for_review(root, done_no_review_rows[0])
         elif result["claude_review_spawn"].get("spawned"):
             result["codex_review_spawn"] = {"spawned": False, "reason": "claude review spawned"}
+        elif not claude_disabled and claude_review_slots <= 0:
+            result["codex_review_spawn"] = {"spawned": False, "reason": "claude cap reached; waiting for Claude review slot"}
         elif (active_codex + builds_now + pre_reviews_now) >= MAX_PARALLEL_CODEX:
             result["codex_review_spawn"] = {"spawned": False, "reason": "codex total cap reached"}
 
@@ -6237,7 +6254,6 @@ def pump(root: Path) -> dict[str, Any]:
         + (1 if codex_review_spawned else 0)
     )
     result["claude_g0_spawn"] = {"spawned": False, "reason": "G0 mass review routed to Codex by Claude role policy"}
-    claude_spawns_this_cycle = 1 if claude_review_spawned else 0
     if claude_disabled:
         result["claude_g0_spawn"] = {"spawned": False, "reason": "CLAUDE_DISABLED.flag present; routed to Codex"}
 
