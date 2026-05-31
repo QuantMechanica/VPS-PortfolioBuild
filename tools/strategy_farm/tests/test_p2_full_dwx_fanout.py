@@ -110,7 +110,7 @@ Universe: EURUSD.DWX
                 ).fetchall()
             self.assertEqual(
                 rows,
-                [("P2", "EURUSD.DWX")],
+                [("Q02", "EURUSD.DWX")],
             )
 
     def test_p2_enqueue_rejects_latest_zero_trade_q01_smoke(self) -> None:
