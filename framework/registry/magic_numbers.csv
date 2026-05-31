@@ -5264,3 +5264,17 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10770,tv-bigdaddy-orb,4,GDAXI.DWX,107700004,2026-05-31,Development,active
 10770,tv-bigdaddy-orb,5,NDX.DWX,107700005,2026-05-31,Development,active
 10770,tv-bigdaddy-orb,6,WS30.DWX,107700006,2026-05-31,Development,active
+10771,tv-trail-hunter,0,EURUSD.DWX,107710000,2026-05-31,Development,active
+10771,tv-trail-hunter,1,GBPUSD.DWX,107710001,2026-05-31,Development,active
+10771,tv-trail-hunter,2,USDJPY.DWX,107710002,2026-05-31,Development,active
+10771,tv-trail-hunter,3,XAUUSD.DWX,107710003,2026-05-31,Development,active
+10771,tv-trail-hunter,4,GDAXI.DWX,107710004,2026-05-31,Development,active
+10771,tv-trail-hunter,5,NDX.DWX,107710005,2026-05-31,Development,active
+10771,tv-trail-hunter,6,WS30.DWX,107710006,2026-05-31,Development,active
+10772,tv-ny-vwap-ret,0,EURUSD.DWX,107720000,2026-05-31,Development,active
+10772,tv-ny-vwap-ret,1,GBPUSD.DWX,107720001,2026-05-31,Development,active
+10772,tv-ny-vwap-ret,2,USDJPY.DWX,107720002,2026-05-31,Development,active
+10772,tv-ny-vwap-ret,3,XAUUSD.DWX,107720003,2026-05-31,Development,active
+10772,tv-ny-vwap-ret,4,GDAXI.DWX,107720004,2026-05-31,Development,active
+10772,tv-ny-vwap-ret,5,NDX.DWX,107720005,2026-05-31,Development,active
+10772,tv-ny-vwap-ret,6,WS30.DWX,107720006,2026-05-31,Development,active
