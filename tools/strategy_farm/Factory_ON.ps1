@@ -11,6 +11,8 @@
 #
 #  What it does:
 #    - enables the Pump / Tick scheduled tasks
+#    - enables the AI scheduled tasks (AgentRouter, Codex, Gemini, Claude,
+#      QuotaReceiver)
 #    - kills any lingering daemons + terminals (clean slate)
 #    - spawns the 10 terminal_worker.py daemons IN THIS SESSION
 #      (visible mode) via start_terminal_workers.py
@@ -42,15 +44,22 @@ Write-Host ("  QuantMechanica  -  FACTORY ON  (session {0}, visible)" -f $mySess
 Write-Host '=====================================================' -ForegroundColor Cyan
 Write-Host ''
 
-# 1. enable dispatch tasks (NOT TerminalWorkers_AT_STARTUP, NOT
+# 1. enable dispatch + AI tasks (NOT TerminalWorkers_AT_STARTUP, NOT
 #    Repair_Hourly - both spawn daemons as SYSTEM/session-0 which is
 #    headless. Daemons spawned directly in this session below; repair
 #    runs once synchronously below).
-$tasks = @(
+$dispatchTasks = @(
     'QM_StrategyFarm_Pump_5min',
     'QM_StrategyFarm_Tick_5min'
 )
-foreach ($t in $tasks) {
+$aiTasks = @(
+    'QM_StrategyFarm_AgentRouter_5min',
+    'QM_StrategyFarm_CodexOrchestration_15min',
+    'QM_StrategyFarm_GeminiOrchestration_15min',
+    'QM_StrategyFarm_ClaudeOrchestration_15min',
+    'QM_StrategyFarm_QuotaReceiver'
+)
+foreach ($t in @($dispatchTasks + $aiTasks)) {
     Enable-ScheduledTask -TaskName $t -ErrorAction SilentlyContinue | Out-Null
     $st = (Get-ScheduledTask -TaskName $t -ErrorAction SilentlyContinue).State
     Write-Host ("  task enabled  : {0,-42} [{1}]" -f $t, $st)
@@ -89,8 +98,10 @@ Write-Host '  running farmctl repair (one-shot, this session) ...'
 Write-Host '  farmctl repair done'
 
 # 5. trigger one Pump cycle to start dispatching
+Start-ScheduledTask -TaskName 'QM_StrategyFarm_QuotaReceiver' -ErrorAction SilentlyContinue
+Start-ScheduledTask -TaskName 'QM_StrategyFarm_AgentRouter_5min' -ErrorAction SilentlyContinue
 Start-ScheduledTask -TaskName 'QM_StrategyFarm_Pump_5min' -ErrorAction SilentlyContinue
-Write-Host '  pump triggered (dispatching queued backtests)'
+Write-Host '  AI router/quota receiver started; pump triggered (dispatching queued backtests)'
 
 Write-Host ''
 if ($inMySession.Count -ge 8) {
