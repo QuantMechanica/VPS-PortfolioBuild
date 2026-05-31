@@ -270,6 +270,19 @@ def _resolve_claude() -> str:
         return str(_CLAUDE_FALLBACK)
     return "claude"
 
+
+def _claude_env() -> dict[str, str]:
+    env = os.environ.copy()
+    env["USERPROFILE"] = r"C:\Users\Administrator"
+    env["HOME"] = r"C:\Users\Administrator"
+    env["HOMEDRIVE"] = "C:"
+    env["HOMEPATH"] = r"\Users\Administrator"
+    env.setdefault("TERM", "dumb")
+    env.setdefault("NO_COLOR", "1")
+    env.setdefault("FORCE_COLOR", "0")
+    env.setdefault("CI", "1")
+    return env
+
 RUNTIME_DIRS = [
     "queue",
     "state/locks",
@@ -3495,6 +3508,7 @@ def _spawn_claude_for_review(root: Path, build_task_row: sqlite3.Row) -> dict[st
          "--add-dir", "D:\\QM\\strategy_farm",
          "--add-dir", "D:\\QM\\reports"],
         cwd=str(REPO_ROOT),
+        env=_claude_env(),
         stdin=stdin_f,
         stdout=stdout_f,
         stderr=subprocess.STDOUT,
@@ -3623,6 +3637,7 @@ def _spawn_claude_for_g0_batch(root: Path) -> dict[str, Any]:
          "--add-dir", "C:\\QM\\repo",
          "--add-dir", "D:\\QM\\strategy_farm"],
         cwd=str(REPO_ROOT),
+        env=_claude_env(),
         stdin=stdin_f,
         stdout=stdout_f,
         stderr=subprocess.STDOUT,
@@ -3832,6 +3847,7 @@ def _claim_research_source(root: Path) -> dict[str, Any]:
          "--add-dir", "D:\\QM\\strategy_farm",
          "--add-dir", "G:\\My Drive\\QuantMechanica - Company Reference"],
         cwd=str(REPO_ROOT),
+        env=_claude_env(),
         stdin=stdin_f,
         stdout=stdout_f,
         stderr=subprocess.STDOUT,
