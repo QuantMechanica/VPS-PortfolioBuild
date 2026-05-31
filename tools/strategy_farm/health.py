@@ -1022,14 +1022,18 @@ def chk_unenqueued_eas_count(con) -> dict:
         SELECT card_id, id AS review_task_id, payload_json
         FROM tasks
         WHERE kind='ea_review' AND status='done'
-        GROUP BY card_id
+        ORDER BY updated_at DESC, id DESC
         """
     ).fetchall()
     waiting = []
+    seen_eas = set()
     for r in rows:
         ea_id = r["card_id"]
         if not ea_id:
             continue
+        if ea_id in seen_eas:
+            continue
+        seen_eas.add(ea_id)
         try:
             review_payload = json.loads(r["payload_json"] or "{}")
         except json.JSONDecodeError:
