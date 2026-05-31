@@ -393,13 +393,24 @@ function Resolve-DispatchTerminal {
     if ($TargetTerminal -ine 'any') {
         return $TargetTerminal
     }
-    # $SetFilePath only required for any-terminal resolution; specific-terminal
-    # early-return above. Codex strategy_farm builds invoke run_smoke without
-    # -SetFile (the smoke pass runs against EA-internal defaults, setfiles are
-    # generated AFTER smoke), and PowerShell Mandatory rejects empty strings
-    # at bind time before the early-return executes (QM5_1045 build 2026-05-16).
+    # Some bounded build-smoke callers intentionally run before a P2 setfile
+    # exists. They still need "any" terminal dispatch, but cannot provide a
+    # setfile identity for resolve_backtest_target.py. Pick a currently-free
+    # factory terminal directly instead of aborting before MT5 starts.
     if ([string]::IsNullOrWhiteSpace($SetFilePath)) {
-        throw "Resolve-DispatchTerminal requires -SetFilePath when -TargetTerminal='any'."
+        foreach ($candidate in @("T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10")) {
+            try {
+                $candidateRoot = Resolve-TerminalRoot -TerminalName $candidate
+                if (-not (Test-TerminalAlreadyRunning -TerminalRoot $candidateRoot)) {
+                    Write-Host "run_smoke.dispatch_status=fallback_no_setfile"
+                    Write-Host ("run_smoke.dispatch_terminal={0}" -f $candidate)
+                    return $candidate
+                }
+            } catch {
+                Write-Host ("run_smoke.dispatch_skip_terminal={0} err='{1}'" -f $candidate, $_.Exception.Message)
+            }
+        }
+        throw "Resolve-DispatchTerminal found no free T1-T10 terminal for -TargetTerminal='any' without -SetFilePath."
     }
 
     $resolverPath = Join-Path $PSScriptRoot "resolve_backtest_target.py"

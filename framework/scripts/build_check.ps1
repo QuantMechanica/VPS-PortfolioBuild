@@ -558,7 +558,7 @@ function Invoke-ForbiddenScan {
         return
     }
 
-    $mlPattern = '(?i)\b(tensorflow|torch|pytorch|sklearn|keras|onnx|xgboost|lightgbm|catboost|mlpack|dlib)\b|\.onnx\b|\.pb\b|\.pt\b|\.pth\b'
+    $mlPattern = '(?i)\b(tensorflow|torch|pytorch|sklearn|keras|onnx|xgboost|lightgbm|catboost|mlpack|dlib)\b|\.onnx\b|\.pb\b|\.pt\b|\.pth\b|\bweights\s*\['
     $externalPattern = '(?i)\bWebRequest\s*\(|https?://'
 
     $mlHits = Select-String -Path $mqlFiles.ToArray() -Pattern $mlPattern
@@ -656,10 +656,10 @@ function Invoke-PerfStaticCheck {
     #    OnInit or OnTick context  → must use QM_Indicators readers
     #
     # WARN:
-    #  - Bare `CopyRates / CopyBuffer / CopyTime/Open/High/Low/Close/...` in
-    #    .mq5 outside a clearly closed-bar branch. Heuristic: any preceding
-    #    20 lines contain QM_IsNewBar() - accepted as gated. Otherwise WARN
-    #    so reviewer can verify.
+    #  - Bare `CopyRates / CopyTime/Open/High/Low/Close/...` in .mq5 outside a
+    #    clearly closed-bar branch. Heuristic: any preceding 20 lines contain
+    #    QM_IsNewBar() - accepted as gated. Otherwise WARN so reviewer can
+    #    verify.
     #  - Manual `IndicatorRelease(` in EA - pool releases on shutdown.
     #
     # Recognized exception: lines containing `// perf-allowed` comment are
@@ -690,9 +690,11 @@ function Invoke-PerfStaticCheck {
     # FAIL patterns
     $localIsNewBarPattern = '(?m)^\s*(?:bool|static\s+bool)\s+IsNewBar\s*\('
     $rawIndicatorPattern  = '(?m)^\s*[^/\r\n]*?\b(?<![A-Za-z0-9_])(iATR|iMA|iRSI|iMACD|iADX|iBands|iStochastic|iCustom)\s*\('
+    $rawCopyBufferPattern = '(?m)^\s*[^/\r\n]*?\b(?<![A-Za-z0-9_])CopyBuffer\s*\('
+    $rawSeriesPattern     = '(?m)^\s*[^/\r\n]*?\b(?<![A-Za-z0-9_])(iOpen|iHigh|iLow|iClose|iTime|iVolume|Bars)\s*\('
 
     # WARN patterns
-    $copyDataPattern      = '(?m)^\s*[^/\r\n]*?\b(?<![A-Za-z0-9_])(CopyRates|CopyBuffer|CopyTime|CopyOpen|CopyHigh|CopyLow|CopyClose|CopyTickVolume|CopyRealVolume|CopySpread)\s*\('
+    $copyDataPattern      = '(?m)^\s*[^/\r\n]*?\b(?<![A-Za-z0-9_])(CopyRates|CopyTime|CopyOpen|CopyHigh|CopyLow|CopyClose|CopyTickVolume|CopyRealVolume|CopySpread)\s*\('
     $manualReleasePattern = '(?m)^\s*[^/\r\n]*?\bIndicatorRelease\s*\('
     $perfAllowedTag       = '//\s*perf-allowed'
 
@@ -716,6 +718,27 @@ function Invoke-PerfStaticCheck {
             if ($line -match $perfAllowedTag) { continue }
             $fnName = $m.Groups[1].Value
             Add-Failure "EA_PERF_RAW_INDICATOR_CALL: $($file.Name):$lineNum uses raw '$fnName(' - use QM_$($fnName.Substring(1))(...) from QM_Indicators.mqh instead. Add '// perf-allowed' comment to override (requires reviewer sign-off)."
+        }
+
+        # FAIL - raw CopyBuffer in user EAs. Framework indicator readers own
+        # handles and buffer access; direct CopyBuffer bypasses the corset and
+        # was a repeated codex_review system-class failure.
+        $copyBufferMatches = [regex]::Matches($fullText, $rawCopyBufferPattern)
+        foreach ($m in $copyBufferMatches) {
+            $lineNum = ($fullText.Substring(0, $m.Index) -split "`n").Count
+            Add-Failure "EA_FRAMEWORK_RAW_COPYBUFFER: $($file.Name):$lineNum calls CopyBuffer directly; use QM_Indicators reader helpers instead."
+        }
+
+        # FAIL - raw per-bar series readers in user strategy math. These are
+        # allowed only with an explicit perf-allowed exception because they
+        # commonly reimplement framework indicator/window logic.
+        $seriesMatches = [regex]::Matches($fullText, $rawSeriesPattern)
+        foreach ($m in $seriesMatches) {
+            $lineNum = ($fullText.Substring(0, $m.Index) -split "`n").Count
+            $line = $lines[$lineNum - 1]
+            if ($line -match $perfAllowedTag) { continue }
+            $fnName = $m.Groups[1].Value
+            Add-Failure "EA_FRAMEWORK_RAW_SERIES_CALL: $($file.Name):$lineNum calls $fnName directly; use QM_* helpers or add '// perf-allowed' with reviewer sign-off for bespoke structural logic."
         }
 
         # WARN - manual IndicatorRelease
