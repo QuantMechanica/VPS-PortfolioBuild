@@ -90,14 +90,34 @@ def profit_factor(profits: list[float]) -> float | None:
     return wins / losses
 
 
-def parse_ts(ts: str) -> dt.datetime | None:
-    if not ts:
+def parse_ts(ts) -> dt.datetime | None:
+    if ts is None or ts == "":
         return None
+    if isinstance(ts, (int, float)):
+        try:
+            # MT5/FW trade emitters use epoch seconds; tolerate millis too.
+            value = float(ts)
+            if value > 10_000_000_000:
+                value = value / 1000.0
+            return dt.datetime.fromtimestamp(value, tz=dt.UTC)
+        except (OSError, OverflowError, ValueError):
+            return None
     try:
-        s = ts.replace("Z", "+00:00")
+        s = str(ts).replace("Z", "+00:00")
+        if s.isdigit():
+            return parse_ts(int(s))
         return dt.datetime.fromisoformat(s)
     except (ValueError, AttributeError):
         return None
+
+
+def trade_timestamp(trade: dict) -> dt.datetime | None:
+    """Return a close timestamp from any trade-log schema currently emitted."""
+    for key in ("ts_utc", "close_ts", "close_time", "time", "timestamp", "ts"):
+        ts = parse_ts(trade.get(key))
+        if ts is not None:
+            return ts
+    return None
 
 
 def make_result(name: str, status: str, value, threshold, detail: str,

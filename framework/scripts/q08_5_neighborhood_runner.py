@@ -63,6 +63,36 @@ def load_plateau_pick(plateau_path: Path) -> dict:
     return data
 
 
+def load_params_from_setfile(setfile_path: Path) -> dict:
+    """Fallback when Q03 did not publish plateau_pick.json yet."""
+    if not setfile_path.exists():
+        raise FileNotFoundError(f"baseline setfile missing: {setfile_path}")
+    params: dict[str, int | float] = {}
+    in_strategy_block = False
+    for raw in setfile_path.read_text(encoding="utf-8", errors="replace").splitlines():
+        line = raw.strip()
+        if line.lower().startswith("; strategy-specific params"):
+            in_strategy_block = True
+            continue
+        if not line or line.startswith(";") or "=" not in line or not in_strategy_block:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip()
+        if not key or value.lower() in {"true", "false"}:
+            continue
+        try:
+            if re.fullmatch(r"[-+]?\d+", value):
+                params[key] = int(value)
+            else:
+                params[key] = float(value)
+        except ValueError:
+            continue
+    if not params:
+        raise ValueError(f"no numeric params found in baseline setfile: {setfile_path}")
+    return {"params": params, "source": str(setfile_path), "source_type": "baseline_setfile"}
+
+
 def numeric_perturbation(value, pct: float):
     """Return (down, up) tuples for ±pct of a numeric value.
 
@@ -96,6 +126,17 @@ def write_perturbation_setfile(baseline_set: Path, param: str, value, out_dir: P
     out_path = out_dir / f"{baseline_set.stem}_perturb_{param}_{value}.set"
     out_path.write_text(new_text, encoding="utf-8")
     return out_path
+
+
+def resolve_ea_expert(ea_label: str, ea_id: int) -> str:
+    repo_root = Path(__file__).resolve().parents[2]
+    if "_" in ea_label.replace(f"QM5_{ea_id}", "", 1).strip("_"):
+        return ea_label
+    ea_dirs = sorted(
+        d for d in (repo_root / "framework" / "EAs").glob(f"QM5_{ea_id}_*")
+        if d.is_dir()
+    )
+    return ea_dirs[0].name if ea_dirs else ea_label
 
 
 def fire_backtest(*, ea_id: int, ea_expert: str, symbol: str,
@@ -154,15 +195,23 @@ def main() -> int:
         print(f"bad EA label: {args.ea}", file=sys.stderr)
         return 2
     ea_id = int(ea_match.group(1))
+    ea_expert = resolve_ea_expert(args.ea, ea_id)
     sym_clean = args.symbol.replace(".", "_")
 
     plateau_path = args.plateau_pick or (
         args.report_root / f"QM5_{ea_id}" / "Q03" / sym_clean / "plateau_pick.json"
     )
-    pick = load_plateau_pick(plateau_path)
+    try:
+        pick = load_plateau_pick(plateau_path)
+        pick_source = str(plateau_path)
+        pick_source_type = "plateau_pick"
+    except FileNotFoundError:
+        pick = load_params_from_setfile(args.baseline_setfile)
+        pick_source = str(args.baseline_setfile)
+        pick_source_type = "baseline_setfile_fallback"
     params = pick["params"]
     if not isinstance(params, dict):
-        print(f"plateau_pick.params is not a dict: {plateau_path}", file=sys.stderr)
+        print(f"Q08.5 params is not a dict: {pick_source}", file=sys.stderr)
         return 2
 
     out_dir = ensure_dir(args.report_root / f"QM5_{ea_id}" / "Q08" / "neighborhood" / sym_clean)
@@ -171,7 +220,7 @@ def main() -> int:
     # Baseline (nominal) backtest
     print(f"Q08.5 {args.ea} {args.symbol}: baseline (no perturbation)...")
     bl_pf, bl_dd, bl_trades = fire_backtest(
-        ea_id=ea_id, ea_expert=args.ea, symbol=args.symbol,
+        ea_id=ea_id, ea_expert=ea_expert, symbol=args.symbol,
         setfile=args.baseline_setfile, terminal=args.terminal,
         run_tag="baseline", report_root=args.report_root,
         timeout_sec=args.timeout_sec,
@@ -197,7 +246,7 @@ def main() -> int:
             setfile = write_perturbation_setfile(args.baseline_setfile, param_name, value, setfile_dir)
             print(f"  perturb {param_name}={value} ({label})...")
             pf, dd_money, trades = fire_backtest(
-                ea_id=ea_id, ea_expert=args.ea, symbol=args.symbol,
+                ea_id=ea_id, ea_expert=ea_expert, symbol=args.symbol,
                 setfile=setfile, terminal=args.terminal, run_tag=run_tag,
                 report_root=args.report_root, timeout_sec=args.timeout_sec,
             )
@@ -214,6 +263,7 @@ def main() -> int:
     payload = {
         "ea_id": ea_id,
         "symbol": args.symbol,
+        "ea_expert": ea_expert,
         "perturbation_pct": PERTURBATION_PCT,
         "baseline": {
             "pf": bl_pf, "dd": bl_dd, "trades": bl_trades,
@@ -222,6 +272,8 @@ def main() -> int:
         "perturbations": perturbations,
         "n_params_in_pick": len(numeric_params),
         "n_params_tested": len(chosen),
+        "param_source": pick_source,
+        "param_source_type": pick_source_type,
         "generated_at_utc": utc_now_iso(),
     }
     write_json(out_dir / "perturbations.json", payload)

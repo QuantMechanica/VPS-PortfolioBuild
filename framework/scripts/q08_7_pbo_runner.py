@@ -31,8 +31,10 @@ from __future__ import annotations
 import argparse
 import csv
 import datetime as dt
+import html
 import json
 import re
+import sqlite3
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -44,6 +46,55 @@ from framework.scripts._phase_utils import ensure_dir, utc_now_iso
 
 GATE_NAME = "Q08.7_pbo"
 DEFAULT_N_SLICES = 8
+FARM_DB = Path(r"D:/QM/strategy_farm/state/farm_state.sqlite")
+
+
+def _float_report(value) -> float | None:
+    if value is None:
+        return None
+    text = str(value).strip().replace("\xa0", " ").replace(" ", "")
+    if not text:
+        return None
+    text = text.replace(",", "")
+    try:
+        return float(text)
+    except ValueError:
+        return None
+
+
+def _parse_mt5_report_deals(report_path: Path) -> list[dict]:
+    """Extract closing deals from MT5's Strategy Tester HTML report."""
+    if not report_path.exists():
+        return []
+    raw = report_path.read_bytes()
+    encoding = "utf-16" if raw.startswith((b"\xff\xfe", b"\xfe\xff")) else "utf-8"
+    text = raw.decode(encoding, errors="ignore")
+    match = re.search(r"<b>\s*Deals\s*</b>", text, flags=re.IGNORECASE)
+    if not match:
+        return []
+    section = text[match.start():]
+    out: list[dict] = []
+    for row_html in re.findall(r"<tr[^>]*>(.*?)</tr>", section, flags=re.IGNORECASE | re.DOTALL):
+        cells = []
+        for cell_html in re.findall(r"<td[^>]*>(.*?)</td>", row_html, flags=re.IGNORECASE | re.DOTALL):
+            cell = re.sub(r"<[^>]+>", "", cell_html)
+            cells.append(html.unescape(cell).strip())
+        if len(cells) < 11:
+            continue
+        direction = cells[4].lower()
+        if not direction.startswith("out"):
+            continue
+        try:
+            close_ts = dt.datetime.strptime(cells[0], "%Y.%m.%d %H:%M:%S").replace(tzinfo=dt.UTC)
+        except ValueError:
+            continue
+        profit = _float_report(cells[10])
+        if profit is None:
+            continue
+        commission = _float_report(cells[8]) or 0.0
+        swap = _float_report(cells[9]) or 0.0
+        out.append({"ts": close_ts, "net": profit + commission + swap})
+    return out
 
 
 def _parse_trades_from_summary(summary_path: Path) -> list[dict]:
@@ -80,6 +131,15 @@ def _parse_trades_from_summary(summary_path: Path) -> list[dict]:
         except (TypeError, ValueError):
             continue
         out.append({"ts": close_ts, "net": net_f})
+    if out:
+        return out
+    report_path = None
+    for run in runs:
+        report_path = run.get("report_canonical_path") or run.get("report_source_path")
+        if report_path:
+            break
+    if report_path:
+        return _parse_mt5_report_deals(Path(report_path))
     return out
 
 
@@ -122,6 +182,38 @@ def discover_sweep_configs(sweep_dir: Path) -> list[tuple[str, Path]]:
     return out
 
 
+def discover_work_item_q03_configs(ea_id: int, symbol: str) -> list[tuple[str, Path]]:
+    """Fallback for the current farm: Q03 evidence lives under work_items."""
+    if not FARM_DB.exists():
+        return []
+    con = sqlite3.connect(str(FARM_DB))
+    con.row_factory = sqlite3.Row
+    rows = con.execute(
+        """
+        SELECT id, setfile_path, evidence_path
+        FROM work_items
+        WHERE ea_id=? AND symbol=? AND phase='Q03' AND status='done'
+          AND verdict IN ('PASS', 'FAIL')
+          AND evidence_path IS NOT NULL
+        ORDER BY updated_at ASC, created_at ASC
+        """,
+        (f"QM5_{ea_id}", symbol),
+    ).fetchall()
+    out: list[tuple[str, Path]] = []
+    seen: set[str] = set()
+    for row in rows:
+        summary = Path(row["evidence_path"])
+        if not summary.exists():
+            continue
+        setfile = Path(row["setfile_path"] or "")
+        config_id = setfile.stem if str(setfile) else str(row["id"])
+        if config_id in seen:
+            config_id = f"{config_id}_{str(row['id'])[:8]}"
+        seen.add(config_id)
+        out.append((config_id, summary))
+    return out
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="Q08.7 PBO runner — emit CSCV scores.csv")
     ap.add_argument("--ea", required=True)
@@ -144,8 +236,12 @@ def main() -> int:
         args.report_root / f"QM5_{ea_id}" / "Q03" / sym_clean
     )
     configs = discover_sweep_configs(sweep_dir)
+    config_source = str(sweep_dir)
     if not configs:
-        print(f"no Q03 sweep configs found under {sweep_dir}", file=sys.stderr)
+        configs = discover_work_item_q03_configs(ea_id, args.symbol)
+        config_source = "work_items.Q03"
+    if not configs:
+        print(f"no Q03 sweep configs found under {sweep_dir} or work_items", file=sys.stderr)
         return 1
 
     # Collect trades per config + determine global time window
@@ -182,7 +278,7 @@ def main() -> int:
             for slice_id, slice_start, slice_end in slices:
                 pf = _slice_pf(trades, slice_start, slice_end)
                 if pf is None:
-                    continue
+                    pf = 0.0
                 # CSCV PF in [-inf, +inf]; cap inf for numerical sanity
                 if pf == float("inf"):
                     pf = 99.0
@@ -198,6 +294,7 @@ def main() -> int:
         "time_window": {"start": min_ts.isoformat(), "end": max_ts.isoformat()},
         "rows_written": rows_written,
         "scores_csv": str(scores_path),
+        "config_source": config_source,
         "generated_at_utc": utc_now_iso(),
     }
     meta_path.write_text(json.dumps(meta, indent=2), encoding="utf-8")

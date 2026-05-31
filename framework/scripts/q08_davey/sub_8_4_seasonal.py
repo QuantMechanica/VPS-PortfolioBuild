@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 
-from .common import make_result, parse_ts
+from .common import make_result, trade_timestamp
 
 GATE_NAME = "8.4_seasonal"
 
@@ -22,7 +22,7 @@ def run(trades: list[dict], **_) -> dict:
     monthly: dict[int, float] = defaultdict(float)
     counted = 0
     for t in trades:
-        ts = parse_ts(t.get("ts_utc", t.get("close_ts", "")))
+        ts = trade_timestamp(t)
         if ts is None:
             continue
         try:

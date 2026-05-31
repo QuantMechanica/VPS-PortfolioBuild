@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 
-from .common import make_result, parse_ts
+from .common import make_result, trade_timestamp
 
 GATE_NAME = "8.10_regime_crisis"
 REQUIRED_REGIMES = ("low", "normal", "high")
@@ -62,7 +62,7 @@ def run(trades: list[dict], equity_stream: list[dict] | None = None, **_) -> dic
     crisis_count: dict[str, int] = defaultdict(int)
 
     for t in trades:
-        ts = parse_ts(t.get("ts_utc", t.get("close_ts", "")))
+        ts = trade_timestamp(t)
         try:
             net = float(t.get("net", t.get("profit", 0)) or 0)
         except (TypeError, ValueError):

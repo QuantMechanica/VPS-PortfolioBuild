@@ -14,7 +14,7 @@ from __future__ import annotations
 import math
 from collections import defaultdict
 
-from .common import make_result, parse_ts
+from .common import make_result, trade_timestamp
 
 GATE_NAME = "8.9_runs_test"
 RUNS_P_MIN = 0.05
@@ -91,7 +91,7 @@ def run(trades: list[dict], **_) -> dict:
         if net == 0:
             continue  # break-even trades don't contribute to run-direction
         seq.append(1 if net > 0 else 0)
-        ts = parse_ts(t.get("ts_utc", t.get("close_ts", "")))
+        ts = trade_timestamp(t)
         if ts is not None:
             monthly[ts.year * 100 + ts.month] += net
 

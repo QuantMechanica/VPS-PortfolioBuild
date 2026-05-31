@@ -11,7 +11,7 @@ from __future__ import annotations
 import math
 from collections import defaultdict
 
-from .common import make_result, parse_ts, profit_factor
+from .common import make_result, profit_factor, trade_timestamp
 
 GATE_NAME = "8.8_edge_decay"
 MAX_DECLINE_PCT = 40.0
@@ -43,7 +43,7 @@ def run(trades: list[dict], **_) -> dict:
 
     monthly: dict[int, list[float]] = defaultdict(list)
     for t in trades:
-        ts = parse_ts(t.get("ts_utc", t.get("close_ts", "")))
+        ts = trade_timestamp(t)
         if ts is None:
             continue
         try:

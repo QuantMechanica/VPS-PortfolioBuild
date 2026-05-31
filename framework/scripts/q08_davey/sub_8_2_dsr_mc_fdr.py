@@ -16,7 +16,7 @@ from __future__ import annotations
 import math
 import statistics
 
-from .common import make_result, parse_ts
+from .common import make_result, trade_timestamp
 
 GATE_NAME = "8.2_dsr_mc_fdr"
 DSR_P_MIN = 0.05
@@ -29,7 +29,7 @@ def _trade_returns_per_day(trades: list[dict]) -> list[float]:
     from collections import defaultdict
     by_day: dict[int, float] = defaultdict(float)
     for t in trades:
-        ts = parse_ts(t.get("ts_utc", t.get("close_ts", "")))
+        ts = trade_timestamp(t)
         if ts is None:
             continue
         try:

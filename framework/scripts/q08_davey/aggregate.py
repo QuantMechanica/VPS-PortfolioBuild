@@ -55,7 +55,7 @@ SUB_GATES = [
 ]
 
 
-def _ensure_sub_gate_inputs(ea_id: int, symbol: str) -> dict:
+def _ensure_sub_gate_inputs(ea_id: int, symbol: str, terminal: str | None = None) -> dict:
     """PT4 2026-05-23 — pre-invoke Q08.5 + Q08.7 supporting runners if their
     output artifacts don't yet exist. Sub-gates 8.5 (neighborhood) and 8.7
     (PBO) read perturbations.json / scores.csv produced by separate runners.
@@ -87,10 +87,13 @@ def _ensure_sub_gate_inputs(ea_id: int, symbol: str) -> dict:
                     "--ea", f"QM5_{ea_id}",
                     "--symbol", symbol,
                     "--baseline-setfile", str(baseline),
+                    "--terminal", terminal or "T2",
                 ], capture_output=True, text=True, timeout=1800)
                 ran["8_5_neighborhood"] = {
                     "exit_code": proc.returncode,
                     "artifact_now_exists": perturbations.exists(),
+                    "stdout_tail": proc.stdout[-1000:],
+                    "stderr_tail": proc.stderr[-1000:],
                 }
             except _sp.TimeoutExpired:
                 ran["8_5_neighborhood"] = {"exit_code": -1, "error": "timeout"}
@@ -112,6 +115,8 @@ def _ensure_sub_gate_inputs(ea_id: int, symbol: str) -> dict:
             ran["8_7_pbo"] = {
                 "exit_code": proc.returncode,
                 "artifact_now_exists": pbo_scores.exists(),
+                "stdout_tail": proc.stdout[-1000:],
+                "stderr_tail": proc.stderr[-1000:],
             }
         except _sp.TimeoutExpired:
             ran["8_7_pbo"] = {"exit_code": -1, "error": "timeout"}
@@ -211,7 +216,7 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
         equity_stream = common.load_equity_stream(common_log) or equity_stream
 
     # PT4 — best-effort pre-run of Q08.5 + Q08.7 supporting runners
-    sub_gate_input_runs = _ensure_sub_gate_inputs(ea_id, symbol)
+    sub_gate_input_runs = _ensure_sub_gate_inputs(ea_id, symbol, terminal)
 
     sub_results: list[dict] = []
     for label, mod in SUB_GATES:
