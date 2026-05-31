@@ -4735,12 +4735,12 @@ def _detect_unbuilt_cards(root: Path) -> list[dict[str, Any]]:
     Find approved cards where the matching EA .ex5 does not exist yet and
     no bridge auto-build task has already been written.
 
-    PT10 2026-05-23 — only return cards whose r2_mechanical evaluation has
+    PT10 2026-05-23 — only return cards whose R-gate evaluations have
     already PASSED. Pre-PT10 the function returned cards alphabetically by
     ea_id; the low-id end of the corpus is the old pre-schema-rewrite cards
     that lack R-eval, so every pump cycle tried 10 such cards and all 10
     skipped with prebuild_validation failed → auto_build_queued stayed at 0
-    forever. Now: filter to cards with r2_mechanical=PASS up front (cheap
+    forever. Now: filter to cards with R1-R4=PASS up front (cheap
     frontmatter parse, no heavy preflight) so the queue actually drains.
     Unready cards (UNKNOWN/FAIL) are waiting on the separate R-eval flow
     and will become eligible once that completes.
@@ -4762,11 +4762,12 @@ def _detect_unbuilt_cards(root: Path) -> list[dict[str, Any]]:
             continue
         if _has_auto_build_task_file(root, ea_id):
             continue
-        # PT10 — gate on r2_mechanical PASS before emitting a build task.
+        # PT10 — gate on the same R fields that prebuild_validate_card requires
+        # before emitting a build task.
         try:
             fm = parse_card_frontmatter(card_md)
-            r2 = str(fm.get("r2_mechanical") or "").strip().upper()
-            if r2 != "PASS":
+            if any(str(fm.get(key) or "").strip().upper() != "PASS"
+                   for key in ("r1_track_record", "r2_mechanical", "r3_data_available", "r4_ml_forbidden")):
                 continue
         except Exception:
             continue
@@ -5090,12 +5091,12 @@ def _detect_unenqueued_eas(con: sqlite3.Connection) -> list[dict[str, Any]]:
         ).fetchone()[0]
         if wi_count > 0:
             continue
-        # 2026-05-19: also skip if a terminal backtest_p2 task already exists
+        # 2026-05-19: also skip if a terminal Q02/backtest_p2 task already exists
         # for this EA (done OR failed). Prevents pump from re-enqueuing
         # unactionable EAs (e.g. M1 EAs without DWX history in default
         # 2017-2022 window) on every cycle.
         terminal_task_exists = con.execute(
-            "SELECT 1 FROM tasks WHERE kind='backtest_p2' AND card_id=? "
+            "SELECT 1 FROM tasks WHERE kind IN ('backtest_p2', 'backtest_q02') AND card_id=? "
             "AND status in ('done', 'failed') LIMIT 1",
             (ea_id,),
         ).fetchone()
@@ -5118,7 +5119,7 @@ def _detect_unenqueued_eas(con: sqlite3.Connection) -> list[dict[str, Any]]:
 
 
 def _enqueue_p2_from_review(root: Path, review_task_id: str) -> int:
-    result = enqueue_backtest(root, review_task_id, "P2")
+    result = enqueue_backtest(root, review_task_id, "Q02")
     if not result.get("enqueued"):
         raise RuntimeError(str(result.get("reason") or result))
     return len(result.get("work_items_created") or [])
@@ -5154,7 +5155,7 @@ def _expand_pending_backtest_p2_parents(
         """
         SELECT *
         FROM tasks t
-        WHERE t.kind='backtest_p2'
+        WHERE t.kind IN ('backtest_p2', 'backtest_q02')
           AND t.status='pending'
           AND NOT EXISTS (
             SELECT 1 FROM work_items wi WHERE wi.parent_task_id=t.id
@@ -5181,7 +5182,7 @@ def _expand_pending_backtest_p2_parents(
             row["id"],
             root,
             str(ea_id),
-            "P2",
+            "Q02",
             surviving_symbols=None,
         )
         if created:
@@ -5214,7 +5215,7 @@ def _expand_pending_backtest_p2_parents(
 
 
 def _auto_create_ea_review_for_unenqueued_eas(root: Path, con: sqlite3.Connection, limit: int = 3) -> list[dict[str, Any]]:
-    """Auto-create done ea_review rows for built EAs ready for P2."""
+    """Auto-create done ea_review rows for built EAs ready for Q02."""
     out: list[dict[str, Any]] = []
     rows = con.execute(
         """
@@ -5845,13 +5846,13 @@ def pump(root: Path) -> dict[str, Any]:
                 if ea_id not in have_task:
                     if _has_auto_build_task_file(root, ea_id):
                         continue
-                    # PT10 — same r2_mechanical=PASS gate as _detect_unbuilt_cards.
+                    # PT10 — same R1-R4 PASS gate as _detect_unbuilt_cards.
                     # Skip cards whose R-eval has not landed PASS yet so we don't
                     # bombard prebuild_validate_card with cards we know will fail.
                     try:
                         fm = parse_card_frontmatter(f)
-                        r2 = str(fm.get("r2_mechanical") or "").strip().upper()
-                        if r2 != "PASS":
+                        if any(str(fm.get(key) or "").strip().upper() != "PASS"
+                               for key in ("r1_track_record", "r2_mechanical", "r3_data_available", "r4_ml_forbidden")):
                             continue
                     except Exception:
                         continue
@@ -6079,7 +6080,7 @@ def pump(root: Path) -> dict[str, Any]:
         active_claude_count = 0
     result["claude_active_before"] = active_claude_count
     claude_disabled = (root / "CLAUDE_DISABLED.flag").exists()
-    MAX_PARALLEL_CLAUDE = 0 if claude_disabled else 1
+    MAX_PARALLEL_CLAUDE = 0 if claude_disabled else 3
     prefer_claude_review = MAX_PARALLEL_CLAUDE > 0
     result["claude_disabled"] = claude_disabled
     result["max_parallel_claude"] = MAX_PARALLEL_CLAUDE
@@ -6138,7 +6139,9 @@ def pump(root: Path) -> dict[str, Any]:
             except Exception as e:
                 result["review_records"].append({"task_id": row["id"], "error": str(e)})
 
-    # 7. Spawn G0 review of draft cards. Claude is disabled; Codex owns G0.
+    # 7. Spawn G0 review of draft cards. G0 is a mass-review lane; Codex owns it
+    # under the 2026-05-30 Claude role policy. Claude remains available for
+    # premium review/synthesis lanes above, but not for G0 batches.
     claude_review_spawned = (
         isinstance(result.get("claude_review_spawn"), dict)
         and result["claude_review_spawn"].get("spawned")
@@ -6154,21 +6157,10 @@ def pump(root: Path) -> dict[str, Any]:
         len([s for s in (result.get("codex_review_spawns") or []) if isinstance(s, dict) and s.get("spawned")])
         + (1 if codex_review_spawned else 0)
     )
-    result["claude_g0_spawn"] = {"spawned": False, "reason": "not attempted"}
+    result["claude_g0_spawn"] = {"spawned": False, "reason": "G0 mass review routed to Codex by Claude role policy"}
     claude_spawns_this_cycle = 1 if claude_review_spawned else 0
-    if (
-        not spawned_other
-        and not claude_disabled
-        and (active_claude_count + claude_spawns_this_cycle) < MAX_PARALLEL_CLAUDE
-    ):
-        result["claude_g0_spawn"] = _spawn_claude_for_g0_batch(root)
-        if result["claude_g0_spawn"].get("spawned"):
-            spawned_other = True
-            claude_spawns_this_cycle += 1
-    elif claude_disabled:
+    if claude_disabled:
         result["claude_g0_spawn"] = {"spawned": False, "reason": "CLAUDE_DISABLED.flag present; routed to Codex"}
-    elif (active_claude_count + claude_spawns_this_cycle) >= MAX_PARALLEL_CLAUDE:
-        result["claude_g0_spawn"] = {"spawned": False, "reason": "claude cap reached"}
 
     if codex_low_tokens:
         result["codex_g0_spawn"] = {"spawned": False, "reason": "CODEX_LOW_TOKENS.flag present"}
@@ -7343,12 +7335,14 @@ def _create_backtest_work_items(conn: sqlite3.Connection, parent_task_id: str,
     For P3+: only setfiles whose symbol is in surviving_symbols (subset).
     Returns (created, skipped) for the response.
     """
-    basket_manifest = _load_basket_manifest(ea_id) if phase == "P2" else None
+    phase = phase_qid(phase)
+    is_q02 = phase == "Q02"
+    basket_manifest = _load_basket_manifest(ea_id) if is_q02 else None
     basket_setfile = _find_basket_setfile(ea_id, basket_manifest) if basket_manifest else None
     if basket_manifest:
         setfiles = [basket_setfile] if basket_setfile else []
     else:
-        setfiles = _ensure_p2_target_setfiles(root, ea_id) if phase == "P2" else _find_ea_setfiles(ea_id, phase)
+        setfiles = _ensure_p2_target_setfiles(root, ea_id) if is_q02 else _find_ea_setfiles(ea_id, phase)
     if not setfiles:
         return [], []
     if surviving_symbols:
@@ -7358,7 +7352,7 @@ def _create_backtest_work_items(conn: sqlite3.Connection, parent_task_id: str,
     skipped: list[dict[str, Any]] = []
     now = utc_now()
     period = _detect_ea_period(ea_id)
-    history_registry = _dwx_symbol_history_registry() if phase == "P2" else {}
+    history_registry = _dwx_symbol_history_registry() if is_q02 else {}
     for sym, setfile_path in setfiles:
         payload: dict[str, Any] = {}
         if basket_manifest:
@@ -7370,7 +7364,7 @@ def _create_backtest_work_items(conn: sqlite3.Connection, parent_task_id: str,
                 "logical_symbol": basket_manifest["logical_symbol"],
                 "portfolio_scope": "basket",
             }
-        elif phase == "P2" and history_registry:
+        elif is_q02 and history_registry:
             window = _p2_history_window_for_symbol(
                 sym,
                 period,
@@ -7434,6 +7428,7 @@ def enqueue_backtest(root: Path, review_task_id: str, phase: str) -> dict[str, A
     classification.verdict == 'PASS'. The review_task_id argument is then
     actually the previous backtest task id (kept name for back-compat).
     """
+    phase = phase_qid(phase)
     if phase not in SUPPORTED_BACKTEST_PHASES:
         return {
             "enqueued": False,
@@ -7448,9 +7443,9 @@ def enqueue_backtest(root: Path, review_task_id: str, phase: str) -> dict[str, A
         # P2 predecessor must be ea_review APPROVE_FOR_BACKTEST.
         # P3+ predecessor must be backtest_<prev>:done with verdict=PASS.
         p2_profit_filter_skipped: list[dict[str, Any]] = []
-        if phase == "P2":
+        if phase == "Q02":
             if pred_row["kind"] != "ea_review":
-                return {"enqueued": False, "reason": f"Task {review_task_id} kind={pred_row['kind']!r}, expected ea_review for P2"}
+                return {"enqueued": False, "reason": f"Task {review_task_id} kind={pred_row['kind']!r}, expected ea_review for Q02"}
             review_payload = json.loads(pred_row["payload_json"])
             verdict_doc = review_payload.get("verdict") or {}
             if verdict_doc.get("verdict") != "APPROVE_FOR_BACKTEST":
@@ -7471,7 +7466,7 @@ def enqueue_backtest(root: Path, review_task_id: str, phase: str) -> dict[str, A
             ea_id = pred_payload.get("ea_id")
             surviving_symbols = classification.get("surviving_symbols", [])
             surviving_params = classification.get("surviving_params", [])
-            if phase == "P3":
+            if phase == "Q03":
                 surviving_symbols, p2_profit_filter_skipped = _filter_p2_profitable_symbols(
                     conn,
                     review_task_id,
@@ -7480,7 +7475,7 @@ def enqueue_backtest(root: Path, review_task_id: str, phase: str) -> dict[str, A
 
         if not ea_id:
             return {"enqueued": False, "reason": "Predecessor payload missing ea_id"}
-        if phase == "P2":
+        if phase == "Q02":
             smoke = _latest_build_smoke_result(conn, str(ea_id))
             if smoke and smoke.get("smoke_result") == "zero_trades":
                 return {
@@ -7514,15 +7509,16 @@ def enqueue_backtest(root: Path, review_task_id: str, phase: str) -> dict[str, A
             payload["surviving_symbols"] = surviving_symbols
         if surviving_params is not None:
             payload["surviving_params"] = surviving_params
-        if phase == "P3" and p2_profit_filter_skipped:
+        if phase == "Q03" and p2_profit_filter_skipped:
             payload["p2_p3_profit_filter_skipped"] = p2_profit_filter_skipped
         # Back-compat alias
-        if phase == "P2":
+        if phase == "Q02":
             payload["review_task_id"] = review_task_id
 
+        kind_phase = "p2" if phase == "Q02" else phase.lower().replace(".", "")
         task_id = create_task(
             conn,
-            kind=f"backtest_{phase.lower().replace('.', '')}",  # P3.5 → 'backtest_p35'
+            kind=f"backtest_{kind_phase}",
             source_id=pred_row["source_id"],
             card_id=pred_row["card_id"],
             payload=payload,
@@ -7566,7 +7562,7 @@ def enqueue_backtest(root: Path, review_task_id: str, phase: str) -> dict[str, A
         "ea_id": ea_id,
         "phase": phase,
         "work_items_created": work_items_created,
-        "work_items_skipped": p2_history_skipped if phase == "P2" else (p2_profit_filter_skipped if phase == "P3" else []),
+        "work_items_skipped": p2_history_skipped if phase == "Q02" else (p2_profit_filter_skipped if phase == "Q03" else []),
         "expected_report_glob": expected_glob,
         "next_action_hint": "python tools/strategy_farm/farmctl.py dispatch-tick",
     }
@@ -9504,8 +9500,8 @@ def build_parser() -> argparse.ArgumentParser:
         help="Create a backtest_<phase> task from an APPROVE_FOR_BACKTEST ea_review task",
     )
     enqueue_bt.add_argument("--review-task-id")
-    enqueue_bt.add_argument("--ea", help="EA label for P5+ cascade requeue, e.g. QM5_1056")
-    enqueue_bt.add_argument("--phase", default="P2", choices=list(SUPPORTED_BACKTEST_PHASES + CASCADE_BACKTEST_PHASES))
+    enqueue_bt.add_argument("--ea", help="EA label for Q05+ cascade requeue, e.g. QM5_1056")
+    enqueue_bt.add_argument("--phase", default="Q02", choices=list(SUPPORTED_BACKTEST_PHASES + CASCADE_BACKTEST_PHASES))
 
     dispatch = sub.add_parser(
         "dispatch-tick",

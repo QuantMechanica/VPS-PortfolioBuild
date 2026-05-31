@@ -204,7 +204,12 @@ Forbidden patterns (Claude review will `REJECT_REWORK` on any):
   `QM_IsNewBar(symbol, timeframe)` overload or read fixed closed-bar shifts
   from `QM_*` helpers. Do not maintain your own timestamp gate.
 - Direct `iATR / iMA / iRSI / iMACD / iADX / iBands` calls — use the `QM_*` readers
-- `CopyBuffer` on raw handles — the readers do it for you
+- Direct `iOpen / iHigh / iLow / iClose / iTime / iVolume / Bars` calls for strategy
+  math — use `QM_*` readers/signals or a documented `// perf-allowed` exception
+  only for bespoke structural logic.
+- `CopyBuffer` on raw handles — no `perf-allowed` exception; the readers do it for you
+- ML-like weight arrays such as `weights[]` — forbidden under HR14 unless this is a
+  fixed, transparent non-ML coefficient table and explicitly justified before build.
 - File-scope `g_atr_handle` / `IndicatorRelease` — handles are pooled
 - `CopyRates` over warmup window on every tick
 
@@ -415,27 +420,29 @@ build_result JSON is more valuable than masking it with a hopeful rewrite.
 7. Run `pwsh -File C:\QM\repo\framework\scripts\compile_one.ps1 -EALabel {{ea_id}}_{{slug}}`.
    Must produce `.ex5`.
 
-8. Run exactly one smoke test on the first registered symbol. `run_smoke.ps1`
-   requires a symbol and year; do not invoke it with only `-EALabel`.
+8. **Generate P2 setfiles before smoke** using `gen_setfile.ps1`.
+   For each symbol in `symbols_registered`, invoke:
+   ```powershell
+   pwsh -File C:\QM\repo\framework\scripts\gen_setfile.ps1 `
+     -EaSlug {{ea_id}}_{{slug}} -Symbol <SYMBOL.DWX> -TF <CARD_TIMEFRAME> -Env backtest
+   ```
+   This populates `framework/EAs/{{ea_id}}_{{slug}}/sets/` with one setfile per
+   symbol named `{{ea_id}}_{{slug}}_<SYMBOL>_<TF>_backtest.set`. Without these the
+   Q02 phase runner exits FATAL ("no setfiles match pattern").
+
+9. Run exactly one smoke test on the first registered symbol and its generated setfile.
+   `run_smoke.ps1` requires a symbol and year; do not invoke it with only `-EALabel`.
    Use terminal dispatch instead of hard-coding T1, because T1-T10 may already
    be occupied by terminal-worker backtests:
    ```powershell
    pwsh -File C:\QM\repo\framework\scripts\run_smoke.ps1 `
      -EALabel {{ea_id}}_{{slug}} -Symbol <FIRST_REGISTERED_SYMBOL.DWX> `
-     -Year 2024 -Terminal any -Period <CARD_TIMEFRAME> -MinTrades 1
+     -Year 2024 -Terminal any -Period <CARD_TIMEFRAME> `
+     -SetFile C:\QM\repo\framework\EAs\{{ea_id}}_{{slug}}\sets\<GENERATED_SETFILE>.set `
+     -MinTrades 1
    ```
    Must yield ≥1 trade for `smoke_result: passed`. If it yields zero trades,
    report `smoke_result: "zero_trades"` with `blocked_reason: "q01_trade_generation_zero_trades"`.
-
-9. **Generate P2 setfiles for ALL registered symbols** using `gen_setfile.ps1`.
-   For each symbol in `symbols_registered`, invoke:
-   ```powershell
-   pwsh -File C:\QM\repo\framework\scripts\gen_setfile.ps1 `
-     -EaSlug {{ea_id}}_{{slug}} -Symbol <SYMBOL.DWX> -TF H1 -Env backtest
-   ```
-   This populates `framework/EAs/{{ea_id}}_{{slug}}/sets/` with one setfile per
-   symbol named `{{ea_id}}_{{slug}}_<SYMBOL>_H1_backtest.set`. Without these the
-   P2 phase runner exits FATAL ("no setfiles match pattern").
 
    If the card targets timeframes other than H1, generate one setfile per
    (symbol × TF) combination.

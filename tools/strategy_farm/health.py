@@ -928,12 +928,13 @@ def _has_auto_build_task(con, ea_id: str) -> bool:
 
 
 def chk_unbuilt_cards_count(con) -> dict:
-    """Approved cards with no matching .ex5 and no bridge auto-build task."""
+    """Build-ready approved cards with no matching .ex5 and no auto-build task."""
     cards_dir = ROOT / "artifacts" / "cards_approved"
     if not cards_dir.is_dir():
         return _check("unbuilt_cards_count", "OK", 0, 3,
                       "cards_approved missing or empty", "")
     unbuilt = []
+    not_build_ready = 0
     for card_md in sorted(cards_dir.glob("QM5_*.md")):
         m = re.match(r"(QM5_\d{4})_(.+)\.md$", card_md.name)
         if not m:
@@ -943,9 +944,16 @@ def chk_unbuilt_cards_count(con) -> dict:
         ex5 = FRAMEWORK_EAS_DIR / label / f"{label}.ex5"
         if ex5.exists() or _has_auto_build_task_file(ea_id) or _has_auto_build_task(con, ea_id):
             continue
+        fm = _card_frontmatter(card_md)
+        if any(str(fm.get(key) or "").strip().upper() != "PASS"
+               for key in ("r1_track_record", "r2_mechanical", "r3_data_available", "r4_ml_forbidden")):
+            not_build_ready += 1
+            continue
         unbuilt.append(ea_id)
     n = len(unbuilt)
     detail = ", ".join(unbuilt[:10]) if unbuilt else "no approved cards waiting for auto-build task"
+    if not_build_ready:
+        detail = f"{detail}; {not_build_ready} approved cards are waiting on R-gates"
     pending_work_items = con.execute(
         "SELECT COUNT(*) FROM work_items WHERE status='pending'"
     ).fetchone()[0]
