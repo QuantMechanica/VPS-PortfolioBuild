@@ -89,7 +89,7 @@ def load_params_from_setfile(setfile_path: Path) -> dict:
         except ValueError:
             continue
     if not params:
-        raise ValueError(f"no numeric params found in baseline setfile: {setfile_path}")
+        return {"params": params, "source": str(setfile_path), "source_type": "baseline_setfile_no_strategy_params"}
     return {"params": params, "source": str(setfile_path), "source_type": "baseline_setfile"}
 
 
@@ -231,8 +231,26 @@ def main() -> int:
     numeric_params = [(k, v) for k, v in sorted(params.items())
                       if isinstance(v, (int, float)) and not isinstance(v, bool)]
     if not numeric_params:
-        print("no numeric params in plateau_pick.params", file=sys.stderr)
-        return 2
+        payload = {
+            "ea_id": ea_id,
+            "symbol": args.symbol,
+            "ea_expert": ea_expert,
+            "perturbation_pct": PERTURBATION_PCT,
+            "baseline": {
+                "pf": bl_pf, "dd": bl_dd, "trades": bl_trades,
+                "params": params,
+            },
+            "perturbations": [],
+            "n_params_in_pick": 0,
+            "n_params_tested": 0,
+            "param_source": pick_source,
+            "param_source_type": pick_source_type,
+            "generated_at_utc": utc_now_iso(),
+            "note": "no_numeric_strategy_params_to_perturb",
+        }
+        write_json(out_dir / "perturbations.json", payload)
+        print(f"Q08.5 wrote {out_dir / 'perturbations.json'} (no numeric strategy params)")
+        return 0
     chosen = numeric_params[: args.max_params]
     print(f"Q08.5: perturbing {len(chosen)} of {len(numeric_params)} numeric params at ±{PERTURBATION_PCT}%")
 

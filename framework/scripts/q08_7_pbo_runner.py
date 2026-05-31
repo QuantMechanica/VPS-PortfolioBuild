@@ -31,7 +31,6 @@ from __future__ import annotations
 import argparse
 import csv
 import datetime as dt
-import html
 import json
 import re
 import sqlite3
@@ -43,58 +42,11 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from framework.scripts._phase_utils import ensure_dir, utc_now_iso
+from framework.scripts.q08_davey.common import load_trades_from_mt5_report
 
 GATE_NAME = "Q08.7_pbo"
 DEFAULT_N_SLICES = 8
 FARM_DB = Path(r"D:/QM/strategy_farm/state/farm_state.sqlite")
-
-
-def _float_report(value) -> float | None:
-    if value is None:
-        return None
-    text = str(value).strip().replace("\xa0", " ").replace(" ", "")
-    if not text:
-        return None
-    text = text.replace(",", "")
-    try:
-        return float(text)
-    except ValueError:
-        return None
-
-
-def _parse_mt5_report_deals(report_path: Path) -> list[dict]:
-    """Extract closing deals from MT5's Strategy Tester HTML report."""
-    if not report_path.exists():
-        return []
-    raw = report_path.read_bytes()
-    encoding = "utf-16" if raw.startswith((b"\xff\xfe", b"\xfe\xff")) else "utf-8"
-    text = raw.decode(encoding, errors="ignore")
-    match = re.search(r"<b>\s*Deals\s*</b>", text, flags=re.IGNORECASE)
-    if not match:
-        return []
-    section = text[match.start():]
-    out: list[dict] = []
-    for row_html in re.findall(r"<tr[^>]*>(.*?)</tr>", section, flags=re.IGNORECASE | re.DOTALL):
-        cells = []
-        for cell_html in re.findall(r"<td[^>]*>(.*?)</td>", row_html, flags=re.IGNORECASE | re.DOTALL):
-            cell = re.sub(r"<[^>]+>", "", cell_html)
-            cells.append(html.unescape(cell).strip())
-        if len(cells) < 11:
-            continue
-        direction = cells[4].lower()
-        if not direction.startswith("out"):
-            continue
-        try:
-            close_ts = dt.datetime.strptime(cells[0], "%Y.%m.%d %H:%M:%S").replace(tzinfo=dt.UTC)
-        except ValueError:
-            continue
-        profit = _float_report(cells[10])
-        if profit is None:
-            continue
-        commission = _float_report(cells[8]) or 0.0
-        swap = _float_report(cells[9]) or 0.0
-        out.append({"ts": close_ts, "net": profit + commission + swap})
-    return out
 
 
 def _parse_trades_from_summary(summary_path: Path) -> list[dict]:
@@ -139,7 +91,10 @@ def _parse_trades_from_summary(summary_path: Path) -> list[dict]:
         if report_path:
             break
     if report_path:
-        return _parse_mt5_report_deals(Path(report_path))
+        return [
+            {"ts": t["ts_utc"], "net": t["net"]}
+            for t in load_trades_from_mt5_report(Path(report_path))
+        ]
     return out
 
 

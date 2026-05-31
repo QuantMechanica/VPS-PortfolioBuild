@@ -4176,6 +4176,53 @@ def _spawn_codex_for_pre_review(root: Path, build_task_row: sqlite3.Row) -> dict
     }
 
 
+def _pre_review_ready(root: Path, build_task_row: sqlite3.Row) -> tuple[bool, str]:
+    """Return whether a done build has enough durable artifacts for Codex review."""
+    build_task_id = build_task_row["id"]
+    build_result_path = root / "artifacts" / "builds" / f"{build_task_id}.json"
+    if not build_result_path.exists():
+        return False, "missing_build_result"
+    try:
+        build_result = json.loads(build_result_path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError):
+        return False, "invalid_build_result"
+    if build_result.get("blocked_reason"):
+        return False, "build_result_blocked"
+    if build_result.get("compile_succeeded") is not True:
+        return False, "compile_not_passed"
+    if build_result.get("build_check_passed") is not True:
+        return False, "build_check_not_passed"
+    for key in ("mq5_path", "ex5_path"):
+        p = build_result.get(key)
+        if not p or not Path(str(p)).exists():
+            return False, f"missing_{key}"
+    return True, ""
+
+
+def _block_unreviewable_build(root: Path, build_task_row: sqlite3.Row, reason: str) -> dict[str, Any]:
+    payload = json.loads(build_task_row["payload_json"])
+    blocked_reason = f"pre_review_not_reviewable:{reason}"
+    payload["blocked_reason"] = payload.get("blocked_reason") or blocked_reason
+    payload["pre_review_not_reviewable_reason"] = reason
+    payload["attempt"] = int(payload.get("attempt", 0)) + 1
+    with connect(root) as conn:
+        conn.execute(
+            "UPDATE tasks SET status='blocked', payload_json=?, updated_at=? WHERE id=?",
+            (json.dumps(payload), utc_now(), build_task_row["id"]),
+        )
+        event(conn, "task", build_task_row["id"], "build_pre_review_not_reviewable", {
+            "reason": reason,
+            "saved_codex_review_spawn": True,
+        })
+        conn.commit()
+    return {
+        "spawned": False,
+        "build_task_id": build_task_row["id"],
+        "ea_id": payload.get("ea_id"),
+        "reason": blocked_reason,
+    }
+
+
 def _record_codex_review_result(root: Path, review_task_id: str, verdict_path: str) -> dict[str, Any]:
     """Read a completed codex_review verdict, mark the task done, return the verdict.
 
@@ -6110,6 +6157,10 @@ def pump(root: Path) -> dict[str, Any]:
         reviews_now = len([s for s in result["codex_review_spawns"] if isinstance(s, dict) and s.get("spawned")])
         if (active_codex + builds_now + reviews_now) >= MAX_PARALLEL_CODEX:
             break
+        ready, not_ready_reason = _pre_review_ready(root, b)
+        if not ready:
+            result["codex_review_spawns"].append(_block_unreviewable_build(root, b, not_ready_reason))
+            continue
         sp = _spawn_codex_for_pre_review(root, b)
         result["codex_review_spawns"].append(sp)
 

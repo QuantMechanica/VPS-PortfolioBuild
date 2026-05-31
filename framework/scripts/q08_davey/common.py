@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import datetime as dt
+import html
 import json
 import math
+import re
 import statistics
 from pathlib import Path
 
@@ -67,6 +69,66 @@ def load_equity_stream(log_path: Path) -> list[dict]:
                     continue
             snaps.append(payload)
     return snaps
+
+
+def _float_report(value) -> float | None:
+    if value is None:
+        return None
+    text = str(value).strip().replace("\xa0", " ").replace(" ", "").replace(",", "")
+    if not text:
+        return None
+    try:
+        return float(text)
+    except ValueError:
+        return None
+
+
+def load_trades_from_mt5_report(report_path: Path) -> list[dict]:
+    """Extract closing deals from MT5 Strategy Tester HTML reports.
+
+    Q08's preferred source is the Common\Files TRADE_CLOSED stream. Older EAs
+    and some tester exits can still produce a valid HTML report while skipping
+    that stream, so this is the deterministic fallback.
+    """
+    report_path = Path(report_path)
+    if not report_path.exists():
+        return []
+    raw = report_path.read_bytes()
+    encoding = "utf-16" if raw.startswith((b"\xff\xfe", b"\xfe\xff")) else "utf-8"
+    text = raw.decode(encoding, errors="ignore")
+    match = re.search(r"<b>\s*Deals\s*</b>", text, flags=re.IGNORECASE)
+    if not match:
+        return []
+    section = text[match.start():]
+    trades: list[dict] = []
+    for row_html in re.findall(r"<tr[^>]*>(.*?)</tr>", section, flags=re.IGNORECASE | re.DOTALL):
+        cells = []
+        for cell_html in re.findall(r"<td[^>]*>(.*?)</td>", row_html, flags=re.IGNORECASE | re.DOTALL):
+            cell = re.sub(r"<[^>]+>", "", cell_html)
+            cells.append(html.unescape(cell).strip())
+        if len(cells) < 11:
+            continue
+        if not cells[4].lower().startswith("out"):
+            continue
+        try:
+            close_ts = dt.datetime.strptime(cells[0], "%Y.%m.%d %H:%M:%S").replace(tzinfo=dt.UTC)
+        except ValueError:
+            continue
+        profit = _float_report(cells[10])
+        if profit is None:
+            continue
+        commission = _float_report(cells[8]) or 0.0
+        swap = _float_report(cells[9]) or 0.0
+        trades.append({
+            "event": "TRADE_CLOSED",
+            "ts_utc": close_ts.isoformat(),
+            "time": int(close_ts.timestamp()),
+            "net": profit + commission + swap,
+            "profit": profit,
+            "swap": swap,
+            "commission": commission,
+        })
+    return trades
 
 
 def trade_net_profits(trades: list[dict]) -> list[float]:

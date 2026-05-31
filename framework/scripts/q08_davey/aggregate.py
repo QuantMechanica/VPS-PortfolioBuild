@@ -185,9 +185,39 @@ def _run_baseline_for_trades(ea_id: int, symbol: str, terminal: str | None) -> d
     flags = 0x08000000 if sys.platform == "win32" else 0
     try:
         p = _sp.run(args, capture_output=True, text=True, timeout=2500, creationflags=flags)
-        return {"exit_code": p.returncode, "expert": expert, "period": period}
+        summary = _latest_baseline_summary(report_root, ea_id)
+        out = {"exit_code": p.returncode, "expert": expert, "period": period}
+        if summary is not None:
+            out.update(_baseline_report_metadata(summary))
+        return out
     except Exception as exc:
         return {"error": repr(exc)}
+
+
+def _latest_baseline_summary(report_root: Path, ea_id: int) -> Path | None:
+    base = report_root / f"QM5_{ea_id}"
+    if not base.exists():
+        return None
+    summaries = sorted(base.glob("*/summary.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+    return summaries[0] if summaries else None
+
+
+def _baseline_report_metadata(summary_path: Path) -> dict:
+    try:
+        data = json.loads(summary_path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError):
+        return {"baseline_summary_path": str(summary_path)}
+    runs = data.get("runs") or []
+    run = runs[0] if runs else {}
+    report_path = run.get("report_canonical_path") or run.get("report_source_path")
+    return {
+        "baseline_summary_path": str(summary_path),
+        "baseline_result": data.get("result"),
+        "baseline_reason_classes": data.get("reason_classes"),
+        "baseline_report_path": report_path,
+        "baseline_total_trades": run.get("total_trades"),
+        "baseline_profit_factor": run.get("profit_factor"),
+    }
 
 
 def run_all(ea_id: int, symbol: str, log_path: Path,
@@ -214,6 +244,8 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
         baseline_run = _run_baseline_for_trades(ea_id, symbol, terminal)
         trades = common.load_trades_from_log(common_log)
         equity_stream = common.load_equity_stream(common_log) or equity_stream
+        if not trades and baseline_run and baseline_run.get("baseline_report_path"):
+            trades = common.load_trades_from_mt5_report(Path(str(baseline_run["baseline_report_path"])))
 
     # PT4 — best-effort pre-run of Q08.5 + Q08.7 supporting runners
     sub_gate_input_runs = _ensure_sub_gate_inputs(ea_id, symbol, terminal)
