@@ -152,6 +152,30 @@ def _json_obj(raw: str | None) -> dict:
     return data if isinstance(data, dict) else {}
 
 
+def _codex_review_payload_unreviewable(payload: dict) -> bool:
+    """True when a codex_review FAIL came from missing/blocked build artifacts."""
+    build_result_path = payload.get("build_result_path")
+    if build_result_path:
+        br_path = Path(str(build_result_path))
+        if not br_path.exists():
+            return True
+        try:
+            build_result = json.loads(br_path.read_text(encoding="utf-8-sig"))
+        except (OSError, json.JSONDecodeError):
+            return True
+        if build_result.get("blocked_reason"):
+            return True
+        for key in ("mq5_path", "ex5_path"):
+            p = build_result.get(key)
+            if not p or not Path(str(p)).exists():
+                return True
+    for key in ("mq5_path", "ex5_path"):
+        p = payload.get(key)
+        if not p or not Path(str(p)).exists():
+            return True
+    return False
+
+
 def _card_frontmatter(path: Path) -> dict[str, str]:
     try:
         text = path.read_text(encoding="utf-8", errors="ignore")
@@ -404,6 +428,8 @@ def chk_codex_review_fail_rate(con) -> dict:
         except Exception:
             continue
         if (p.get("verdict") or "").upper() != "FAIL":
+            continue
+        if _codex_review_payload_unreviewable(p):
             continue
         mq5_path = p.get("mq5_path")
         reviewed_at = _parse_utc_ts(r["updated_at"])
@@ -957,10 +983,27 @@ def chk_unbuilt_cards_count(con) -> dict:
     pending_work_items = con.execute(
         "SELECT COUNT(*) FROM work_items WHERE status='pending'"
     ).fetchone()[0]
+    pending_builds = con.execute(
+        "SELECT COUNT(*) FROM tasks WHERE kind='build_ea' AND status='pending'"
+    ).fetchone()[0]
+    try:
+        out = subprocess.run(
+            ["powershell.exe", "-NoProfile", "-Command",
+             "(Get-Process -Name codex -ErrorAction SilentlyContinue).Count"],
+            capture_output=True, text=True, timeout=10,
+            creationflags=_creationflags_no_window(),
+        )
+        active_codex = int((out.stdout or "0").strip() or "0")
+    except Exception:
+        active_codex = 0
     if n > 10 and pending_work_items >= 1000:
         return _check("unbuilt_cards_count", "OK", n, 10,
                       f"{n} approved cards await build, paused by MT5 backpressure ({pending_work_items} pending work_items; {detail})",
                       "")
+    if n > 10 and (pending_builds > 0 or active_codex >= getattr(farmctl, "MAX_PARALLEL_CODEX", 3)):
+        return _check("unbuilt_cards_count", "WARN", n, 10,
+                      f"{n} approved cards await build, Codex/build queue saturated (codex={active_codex}, pending_builds={pending_builds}; {detail})",
+                      "No manual action while Codex slots are full; pump will emit auto-build tasks when a slot frees.")
     if n > 10:
         return _check("unbuilt_cards_count", "FAIL", n, 10,
                       f"{n} approved cards lack .ex5 and auto-build task ({detail})",
