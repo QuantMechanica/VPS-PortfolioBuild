@@ -1019,7 +1019,7 @@ def chk_unenqueued_eas_count(con) -> dict:
     """Reviewed and built EAs that still have no P2 work_items."""
     rows = con.execute(
         """
-        SELECT card_id, id AS review_task_id
+        SELECT card_id, id AS review_task_id, payload_json
         FROM tasks
         WHERE kind='ea_review' AND status='done'
         GROUP BY card_id
@@ -1029,6 +1029,13 @@ def chk_unenqueued_eas_count(con) -> dict:
     for r in rows:
         ea_id = r["card_id"]
         if not ea_id:
+            continue
+        try:
+            review_payload = json.loads(r["payload_json"] or "{}")
+        except json.JSONDecodeError:
+            continue
+        verdict_doc = review_payload.get("verdict") or {}
+        if verdict_doc.get("verdict") != "APPROVE_FOR_BACKTEST":
             continue
         wi_count = con.execute(
             "SELECT COUNT(*) FROM work_items WHERE ea_id=? AND phase IN ('P2', 'Q02')",

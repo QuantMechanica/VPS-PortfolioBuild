@@ -5189,7 +5189,7 @@ def _detect_unenqueued_eas(con: sqlite3.Connection) -> list[dict[str, Any]]:
     """
     rows = con.execute(
         """
-        SELECT card_id, MAX(updated_at) latest_review_ts, id AS review_task_id
+        SELECT card_id, MAX(updated_at) latest_review_ts, id AS review_task_id, payload_json
         FROM tasks
         WHERE kind='ea_review' AND status='done'
         GROUP BY card_id
@@ -5199,6 +5199,13 @@ def _detect_unenqueued_eas(con: sqlite3.Connection) -> list[dict[str, Any]]:
     for r in rows:
         ea_id = r["card_id"]
         if not ea_id:
+            continue
+        try:
+            review_payload = json.loads(r["payload_json"] or "{}")
+        except json.JSONDecodeError:
+            continue
+        verdict_doc = review_payload.get("verdict") or {}
+        if verdict_doc.get("verdict") != "APPROVE_FOR_BACKTEST":
             continue
         wi_count = con.execute(
             "SELECT COUNT(*) FROM work_items WHERE ea_id=? AND phase in ('Q02', 'P2')",
