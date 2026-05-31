@@ -1,0 +1,43 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        10548
+; ea_slug:      mql5-fract-mfi
+; ea_version:   v5.0
+; set_version:  s20260528-001
+; symbol:       GBPUSD.DWX
+; timeframe:    H2
+; environment:  backtest
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   805e7ddd5dd96cf100c827c5dfc729c68943c797dffd81d9d10eb004ddddd2d3
+; author:       Development
+; date:         2026-05-28
+;==========================================================
+qm_magic_slot_offset=2
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; core filter library params; filter-on/off variants must be pre-declared
+qm_filter_news_enabled=1
+qm_filter_news_mode=3
+qm_filter_regime_enabled=0
+qm_filter_regime_lookback_bars=100
+qm_filter_regime_bull_return_pct=2.0
+qm_filter_regime_bear_return_pct=2.0
+qm_filter_volatility_enabled=0
+qm_filter_volatility_atr_period=14
+qm_filter_volatility_lookback_bars=50
+qm_filter_volatility_compression_ratio=0.75
+qm_filter_volatility_expansion_ratio=1.25
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=not_found
+strategy_mfi_period=14
+strategy_oversold_level=30.0
+strategy_overbought_level=70.0
+strategy_midline_level=50.0
+strategy_atr_period=14
+strategy_atr_sl_mult=2.0
+strategy_rr_target=1.5
+strategy_use_trend_filter=false
+strategy_trend_ma_period=200

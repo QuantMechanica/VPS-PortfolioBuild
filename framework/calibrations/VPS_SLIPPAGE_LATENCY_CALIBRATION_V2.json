@@ -14,6 +14,25 @@
   "measurement_status": "MEASURED",
   "notes": "Measured on T1 Darwinex-Live. Slippage reflects quote-drift proxy until live-fill sample policy is approved.",
   "symbols": {
+    "EURJPY.DWX": {
+      "auto_stub": true,
+      "commission_cents_per_lot": 700.0,
+      "derive_from": "D:\\QM\\reports\\work_items\\bad44412-db45-4667-83cc-24b94955c2df\\QM5_10569\\Q04\\EURJPY.DWX\\aggregate.json",
+      "latency_ms": {
+        "avg": 50.0,
+        "p95": 120.0
+      },
+      "slippage_points": {
+        "avg": 1.0,
+        "p95": 3.0
+      },
+      "spread_points": {
+        "median": 20.0,
+        "p95": 60.0
+      },
+      "stub_created_at": "2026-05-29T16:43:02+00:00",
+      "stub_source": "farmctl_pump_p5_calibration_autostub"
+    },
     "EURUSD.DWX": {
       "commission_cents_per_lot": 250.0,
       "latency_ms": {
@@ -28,6 +47,25 @@
         "median": 3.0,
         "p95": 4.0
       }
+    },
+    "GDAXI.DWX": {
+      "auto_stub": true,
+      "commission_cents_per_lot": 700.0,
+      "derive_from": "D:\\QM\\reports\\work_items\\1f831edd-b1f5-4d69-93e3-6b9e34f489b4\\QM5_10115\\Q04\\GDAXI.DWX\\aggregate.json",
+      "latency_ms": {
+        "avg": 50.0,
+        "p95": 120.0
+      },
+      "slippage_points": {
+        "avg": 1.0,
+        "p95": 3.0
+      },
+      "spread_points": {
+        "median": 20.0,
+        "p95": 60.0
+      },
+      "stub_created_at": "2026-05-29T10:27:42+00:00",
+      "stub_source": "farmctl_pump_p5_calibration_autostub"
     },
     "NDX.DWX": {
       "auto_stub": true,
@@ -46,6 +84,63 @@
         "p95": 60.0
       },
       "stub_created_at": "2026-05-18T11:44:19+00:00",
+      "stub_source": "farmctl_pump_p5_calibration_autostub"
+    },
+    "SP500.DWX": {
+      "auto_stub": true,
+      "commission_cents_per_lot": 700.0,
+      "derive_from": "D:\\QM\\reports\\work_items\\64abf3c2-70d5-41dc-a4a5-5f8cbc9e7bf9\\QM5_10627\\Q04\\SP500.DWX\\aggregate.json",
+      "latency_ms": {
+        "avg": 50.0,
+        "p95": 120.0
+      },
+      "slippage_points": {
+        "avg": 1.0,
+        "p95": 3.0
+      },
+      "spread_points": {
+        "median": 20.0,
+        "p95": 60.0
+      },
+      "stub_created_at": "2026-05-31T05:39:23+00:00",
+      "stub_source": "farmctl_pump_p5_calibration_autostub"
+    },
+    "WS30.DWX": {
+      "auto_stub": true,
+      "commission_cents_per_lot": 700.0,
+      "derive_from": "D:\\QM\\reports\\work_items\\d023344c-1d4a-449f-b32d-8458caaa0d3f\\QM5_10166\\Q04\\WS30.DWX\\aggregate.json",
+      "latency_ms": {
+        "avg": 50.0,
+        "p95": 120.0
+      },
+      "slippage_points": {
+        "avg": 1.0,
+        "p95": 3.0
+      },
+      "spread_points": {
+        "median": 20.0,
+        "p95": 60.0
+      },
+      "stub_created_at": "2026-05-29T10:30:04+00:00",
+      "stub_source": "farmctl_pump_p5_calibration_autostub"
+    },
+    "XAUUSD.DWX": {
+      "auto_stub": true,
+      "commission_cents_per_lot": 700.0,
+      "derive_from": "D:\\QM\\reports\\work_items\\73f81da6-ceaf-4a20-9fb5-aa4c3f682cd7\\QM5_10069\\Q04\\XAUUSD.DWX\\aggregate.json",
+      "latency_ms": {
+        "avg": 50.0,
+        "p95": 120.0
+      },
+      "slippage_points": {
+        "avg": 1.0,
+        "p95": 3.0
+      },
+      "spread_points": {
+        "median": 20.0,
+        "p95": 60.0
+      },
+      "stub_created_at": "2026-05-29T09:47:55+00:00",
       "stub_source": "farmctl_pump_p5_calibration_autostub"
     }
   }

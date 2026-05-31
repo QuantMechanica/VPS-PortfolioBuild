@@ -4,7 +4,7 @@
 **Slug:** mql5-bago
 **Source:** b8b5125a-c67f-5bbc-baff-33456e08f5b2
 **Author of this spec:** Codex
-**Last revised:** 2026-05-28
+**Last revised:** 2026-05-29
 
 ---
 
@@ -106,4 +106,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-05-28 | Initial build from card | ec6e3203-eaf9-4f5f-a127-712c999a5ca7 |
+| v1 | 2026-05-29 | Initial build from card | 79b9675b-acb6-469d-b278-041979b34bdf |

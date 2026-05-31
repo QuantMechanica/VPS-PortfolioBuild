@@ -28,10 +28,11 @@ Top-level fields (all required unless marked optional):
 | `magic_base`          | int               | `ea_id * 10000` — base for per-symbol magic slots.        |
 | `symbols_registered`  | list[string]      | DWX symbols this EA registered (e.g. `["NDX.DWX"]`).     |
 | `setfiles_generated`  | list[string]      | Paths to setfiles in `sets/` dir (may be empty if smoke deferred). |
+| `spec_md_path`        | string or null    | Absolute path to written `SPEC.md`, or null if not written. |
 | `build_check_passed`  | bool              | Did `framework/scripts/build_check.ps1` pass?            |
 | `compile_succeeded`   | bool              | Did MetaEditor compile produce a `.ex5`?                 |
-| `smoke_result`        | string            | One of: `"ok"`, `"PASS"`, `"framework_error"`, `"METATESTER_HUNG"`, `"INCOMPLETE_RUNS"`, `"MIN_TRADES_NOT_MET"`. |
-| `smoke_report_path`   | string (abs path) | Where the smoke summary.json lives.                      |
+| `smoke_result`        | string            | One of: `"passed"`, `"zero_trades"`, `"compile_failed"`, `"build_check_failed"`, `"framework_error"`. |
+| `smoke_report_path`   | string or null    | Where the smoke summary.json lives if smoke ran.         |
 | `blocked_reason`      | string (optional) | Present + non-empty = build is blocked; reason text.     |
 | `open_questions`      | list[string] (optional) | Unresolved decisions Codex deferred to reviewer.   |
 

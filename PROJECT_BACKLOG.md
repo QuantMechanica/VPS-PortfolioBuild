@@ -151,6 +151,15 @@ Phase 0 closes when: T1-T10 + T_Live isolation proven, Paperclip V5 company exis
 
 **Goal:** scale to 5+ EAs, P9 portfolio composition, P10 shadow deploys.
 
+- ⬜ **PC4-01 Controlled symbol-expansion sweeps after backlog drain** — once the
+  Q02/Q03/Q04 MT5 queue is no longer backpressure-limited, take the strongest
+  surviving EAs and run targeted out-of-family symbol sweeps. Do not assume that
+  the original card/setfile symbol family is the only viable market: include FX
+  minors/crosses, oil, metals, indices, and other canonical `.DWX` symbols when
+  the strategy mechanics plausibly transfer. Expansion must be evidence-led:
+  record which symbols were added, why they are plausible for the strategy, and
+  whether they PASS/FAIL before promoting any new lane.
+
 ---
 
 ## Phase 5 — Live Deployment on T_Live

@@ -1,0 +1,26 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        10582
+; ea_slug:      mql5-ema-pred
+; ea_version:   v5.0
+; set_version:  s20260529-001
+; symbol:       EURUSD.DWX
+; timeframe:    H6
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1.0
+; build_hash:   5bbb7814bf87bded0c980da5b0079c80eb5aac1e4d3d41e89646beca5b8ab941
+; author:       Development
+; date:         2026-05-29
+;==========================================================
+qm_magic_slot_offset=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1.0
+strategy_fast_ema_period=1
+strategy_slow_ema_period=2
+strategy_atr_period=14
+strategy_atr_sl_mult=2.0
+strategy_take_profit_rr=1.5
+strategy_max_spread_points=80

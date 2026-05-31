@@ -106,16 +106,13 @@ bool Strategy_FindOurPosition(ENUM_POSITION_TYPE &ptype, datetime &opened_at)
    return false;
   }
 
-// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
-// regime filter). Cheap O(1) checks only — runs on every tick.
+// No Trade Filter (time, spread, news)
 bool Strategy_NoTradeFilter()
   {
    return false;
   }
 
-// Populate `req` with entry order parameters and return TRUE if a NEW entry
-// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
-// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
+// Trade Entry
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    req.type = QM_BUY;
@@ -155,15 +152,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    return true;
   }
 
-// Called every tick when an open position exists for this EA's magic.
-// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
+// Trade Management
 void Strategy_ManageOpenPosition()
   {
    // Card specifies no trailing, break-even, partial close, averaging, or grid.
   }
 
-// Return TRUE to close the open position now (e.g. opposite-signal exit,
-// max-hold-time exceeded, session end).
+// Trade Close
 bool Strategy_ExitSignal()
   {
    ENUM_POSITION_TYPE ptype = POSITION_TYPE_BUY;
@@ -187,9 +182,7 @@ bool Strategy_ExitSignal()
    return false;
   }
 
-// Optional news-filter override. Return TRUE to suppress trading regardless
-// of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
-// custom high-impact-event handling beyond the central filter.
+// News Filter Hook
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false; // defer to QM_NewsAllowsTrade(...)
