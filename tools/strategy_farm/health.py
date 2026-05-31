@@ -616,7 +616,7 @@ def chk_claude_review_starved(con) -> dict:
     if n_starved >= 5:
         return _check("claude_review_starved", "WARN", n_starved, 5,
                       f"{n_starved} builds waiting for Claude review",
-                      "Pump caps at 1 review/cycle — will catch up")
+                      "Pump may fill up to 3 Claude review sessions; backlog should drain as slots free")
     return _check("claude_review_starved", "OK", n_starved, 3, "no starvation", "")
 
 
