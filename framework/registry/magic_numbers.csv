@@ -5250,3 +5250,17 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10762,tv-trend-brk,4,GDAXI.DWX,107620004,2026-05-31,Development,active
 10762,tv-trend-brk,5,NDX.DWX,107620005,2026-05-31,Development,active
 10762,tv-trend-brk,6,WS30.DWX,107620006,2026-05-31,Development,active
+10769,tv-axis-rev,0,EURUSD.DWX,107690000,2026-05-31,Development,active
+10769,tv-axis-rev,1,GBPUSD.DWX,107690001,2026-05-31,Development,active
+10769,tv-axis-rev,2,USDJPY.DWX,107690002,2026-05-31,Development,active
+10769,tv-axis-rev,3,XAUUSD.DWX,107690003,2026-05-31,Development,active
+10769,tv-axis-rev,4,GDAXI.DWX,107690004,2026-05-31,Development,active
+10769,tv-axis-rev,5,NDX.DWX,107690005,2026-05-31,Development,active
+10769,tv-axis-rev,6,WS30.DWX,107690006,2026-05-31,Development,active
+10770,tv-bigdaddy-orb,0,EURUSD.DWX,107700000,2026-05-31,Development,active
+10770,tv-bigdaddy-orb,1,GBPUSD.DWX,107700001,2026-05-31,Development,active
+10770,tv-bigdaddy-orb,2,USDJPY.DWX,107700002,2026-05-31,Development,active
+10770,tv-bigdaddy-orb,3,XAUUSD.DWX,107700003,2026-05-31,Development,active
+10770,tv-bigdaddy-orb,4,GDAXI.DWX,107700004,2026-05-31,Development,active
+10770,tv-bigdaddy-orb,5,NDX.DWX,107700005,2026-05-31,Development,active
+10770,tv-bigdaddy-orb,6,WS30.DWX,107700006,2026-05-31,Development,active
