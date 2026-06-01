@@ -29,12 +29,14 @@ from pathlib import Path
 # Allow running both as a module and as a script
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+    from tools.strategy_farm.portfolio import commission
     from framework.scripts.q08_davey import (
         common, sub_8_1_correlation, sub_8_2_dsr_mc_fdr, sub_8_3_tail_dependence,
         sub_8_4_seasonal, sub_8_5_neighborhood, sub_8_6_chopping_block,
         sub_8_7_pbo, sub_8_8_edge_decay, sub_8_9_runs_test, sub_8_10_regime_crisis,
     )
 else:
+    from tools.strategy_farm.portfolio import commission
     from . import (
         common, sub_8_1_correlation, sub_8_2_dsr_mc_fdr, sub_8_3_tail_dependence,
         sub_8_4_seasonal, sub_8_5_neighborhood, sub_8_6_chopping_block,
@@ -226,6 +228,57 @@ def _baseline_report_metadata(summary_path: Path) -> dict:
     }
 
 
+def _float_or_none(value) -> float | None:
+    if value is None or value == "":
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _gross_before_commission(trade: dict) -> float:
+    profit = _float_or_none(trade.get("profit"))
+    swap = _float_or_none(trade.get("swap")) or 0.0
+    if profit is not None:
+        return profit + swap
+
+    net = _float_or_none(trade.get("net")) or 0.0
+    broker_commission = _float_or_none(trade.get("commission"))
+    if broker_commission is not None:
+        return net - broker_commission
+    return net
+
+
+def _apply_worst_case_commission(trades: list[dict], fallback_symbol: str) -> tuple[list[dict], dict]:
+    model = commission.load_model()
+    adjusted: list[dict] = []
+    total_cost = 0.0
+
+    for trade in trades:
+        row = dict(trade)
+        trade_symbol = str(row.get("symbol") or fallback_symbol)
+        volume = _float_or_none(row.get("volume")) or 0.0
+        notional = _float_or_none(row.get("notional"))
+        cost = model.cost_round_trip(trade_symbol, volume, notional)
+        total_cost += cost
+
+        original_net = _float_or_none(row.get("net", row.get("profit", 0))) or 0.0
+        row["net_original"] = original_net
+        row["commission_model_cost"] = cost
+        row["commission_basis"] = "worst_case_dxz_ftmo"
+        row["net"] = _gross_before_commission(row) - cost
+        adjusted.append(row)
+
+    model_info = commission.describe_model(model)
+    return adjusted, {
+        "commission_basis": "worst_case_dxz_ftmo",
+        "commission_model": model_info,
+        "commission_total": round(total_cost, 6),
+        "degraded_symbols": model_info["degraded_symbols"],
+    }
+
+
 def run_all(ea_id: int, symbol: str, log_path: Path,
             portfolio: list[dict] | None = None,
             out_dir: Path | None = None,
@@ -260,6 +313,8 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
         equity_stream = common.load_equity_stream(common_log) or equity_stream
         if not trades and baseline_run and baseline_run.get("baseline_report_path"):
             trades = common.load_trades_from_mt5_report(Path(str(baseline_run["baseline_report_path"])))
+
+    trades, commission_info = _apply_worst_case_commission(trades, symbol)
 
     # PT4 — best-effort pre-run of Q08.5 + Q08.7 supporting runners
     sub_gate_input_runs = _ensure_sub_gate_inputs(ea_id, symbol, terminal)
@@ -300,6 +355,9 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
         "generated_at_utc": dt.datetime.now(dt.UTC).isoformat(),
         "n_trades": len(trades),
         "n_equity_snapshots": len(equity_stream),
+        "commission_basis": commission_info["commission_basis"],
+        "commission_model": commission_info["commission_model"],
+        "commission_total": commission_info["commission_total"],
         "sub_gates": sub_results,
         "sub_gate_input_runs": sub_gate_input_runs,
         "baseline_run": baseline_run,
@@ -309,6 +367,8 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
             "n_invalid": sum(1 for r in sub_results if r["status"] == "INVALID"),
         },
     }
+    if commission_info["degraded_symbols"]:
+        aggregate["degraded_symbols"] = commission_info["degraded_symbols"]
 
     if out_dir is None:
         sym_clean = symbol.replace(".", "_")
