@@ -1,0 +1,27 @@
+{
+  "_comment": "R-064-6 portfolio demo burn-in config. Demo-only evidence generator; never targets T_Live and never toggles AutoTrading.",
+  "_owner_must_set": [
+    "demo_account.account_label",
+    "demo_account.terminal_data_path",
+    "burnin_window_days",
+    "pass_tolerances.dd_tolerance",
+    "pass_tolerances.sharpe_band",
+    "mandatory_scope"
+  ],
+  "demo_account": {
+    "account_label": "OWNER_SET_DEMO_ACCOUNT_LABEL",
+    "terminal_data_path": "OWNER_SET_DEMO_TERMINAL_DATA_PATH",
+    "environment": "demo"
+  },
+  "burnin_window_days": "OWNER_SET_BURNIN_WINDOW_DAYS",
+  "pass_tolerances": {
+    "dd_tolerance": "OWNER_SET_DD_TOLERANCE_PCT_POINTS",
+    "sharpe_band": "OWNER_SET_SHARPE_BAND_ABSOLUTE"
+  },
+  "mandatory_scope": "OWNER_SET_MANDATORY_BEFORE_EVERY_TLIVE_CHANGE_OR_FIRST_DEPLOYMENT_ONLY",
+  "tier0_safety": {
+    "tlive_action": "forbidden",
+    "autotrading_action": "forbidden",
+    "authority": "OWNER+Claude manual only"
+  }
+}
