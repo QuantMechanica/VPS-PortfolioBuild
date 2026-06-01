@@ -1,18 +1,18 @@
 {
-  "_comment": "R-064-6 portfolio demo burn-in config. Demo-only evidence generator; never targets T_Live and never toggles AutoTrading.",
+  "_comment": "R-064-6 DXZ/T_Live post-go-live burn-in config. Read-only evidence generator; never operates T_Live and never toggles AutoTrading.",
   "_owner_must_set": [
-    "demo_account.account_label",
-    "demo_account.terminal_data_path",
+    "live_account.account_label",
+    "live_account.terminal_data_path",
     "burnin_window_days",
     "pass_tolerances.dd_tolerance",
     "pass_tolerances.sharpe_band",
     "mandatory_scope"
   ],
-  "_decided_by": "Claude 2026-06-01 (OWNER delegated). Rationale: window 42d (6wk) spans multiple regimes like the Kaspareit Beta phases without stalling deployment; dd_tolerance 1.5pp = small live-vs-backtest buffer over the Monte-Carlo p95 (mission DD is tight: 5% daily / 20% total); sharpe_band 1.0 absolute allows realistic forward Sharpe decay on a short window (e.g. backtest 2.4 -> live >=1.4 still strong); first_deployment_only so incremental sleeve changes go via the admission gate + re-fit (already evidence-based) without re-burning-in every time. INFRA STILL PENDING: a demo terminal must be provisioned at terminal_data_path and deploy_to_demo() implemented (currently a NotImplementedError stub) before a real burn-in can run.",
-  "demo_account": {
-    "account_label": "DXZ-DEMO-PORTFOLIO",
-    "terminal_data_path": "C:\\QM\\mt5\\T_Demo",
-    "environment": "demo"
+  "_decided_by": "Claude 2026-06-01 (OWNER delegated). OWNER decision 2026-06-01: Darwinex Zero uses virtual funds, so the DXZ/T_Live account is already the forward test. R-064-6 is repurposed from a separate demo-terminal burn-in into a post-go-live READ-ONLY evaluation gate on T_Live. The OWNER+Claude T_Live flip is the go-live; this burn-in only observes the first 42d evidence window and produces PASS/HOLD evidence. Rationale: window 42d (6wk) spans multiple regimes like the Kaspareit Beta phases without stalling deployment; dd_tolerance 1.5pp = small live-vs-backtest buffer over the Monte-Carlo p95 (mission DD is tight: 5% daily / 20% total); sharpe_band 1.0 absolute allows realistic forward Sharpe decay on a short window (e.g. backtest 2.4 -> live >=1.4 still strong); first_deployment_only so incremental sleeve changes go via the admission gate + re-fit (already evidence-based) without re-burning-in every time.",
+  "live_account": {
+    "account_label": "DXZ-PORTFOLIO",
+    "terminal_data_path": "C:\\QM\\mt5\\T_Live",
+    "environment": "dxz_live"
   },
   "burnin_window_days": 42,
   "pass_tolerances": {

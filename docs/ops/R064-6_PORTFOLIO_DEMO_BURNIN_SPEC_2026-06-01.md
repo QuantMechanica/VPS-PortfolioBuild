@@ -1,6 +1,20 @@
 # R-064-6 — Portfolio demo burn-in — Spec (OWNER-gated infra)
 
-**Date:** 2026-06-01 · **Authority:** DL-064 R-064-6 · **Status:** Spec — needs OWNER infra decision before build.
+**Date:** 2026-06-01 · **Authority:** DL-064 R-064-6 · **Status:** Superseded by DXZ/T_Live read-only evaluation.
+
+## 2026-06-01 OWNER repurpose note
+OWNER decision 2026-06-01: Darwinex Zero uses virtual funds, so the DXZ/T_Live
+account is already the forward test. R-064-6 is repurposed from the separate
+demo-terminal burn-in described below into a **post-go-live read-only evaluation
+gate on DXZ/T_Live**. The OWNER+Claude T_Live flip is the go-live; after that,
+R-064-6 only reads the assembled book's live `TRADE_CLOSED` streams for the first
+configured evidence window and produces advisory PASS/HOLD evidence for OWNER.
+
+There is no demo terminal and no automated terminal operation in the repurposed
+design. Tier-0 remains unchanged: the evaluation never toggles AutoTrading, never
+starts MT5, never deploys, and never writes into T_Live.
+
+The original demo-terminal design below is historical context only.
 
 ## Why
 Per DL-064 R-064-6 and the Kaspareit blueprint (demo Beta-Phase 1/2): the

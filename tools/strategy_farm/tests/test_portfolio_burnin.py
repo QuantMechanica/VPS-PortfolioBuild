@@ -17,6 +17,7 @@ from portfolio.portfolio_burnin import (  # noqa: E402
     collect_forward_equity,
     load_burnin_config,
     main,
+    note_go_live_is_manual,
 )
 
 
@@ -39,6 +40,7 @@ class PortfolioBurninTests(unittest.TestCase):
         self.assertEqual(verdict["status"], "EVIDENCE_FOR_OWNER")
         self.assertEqual(verdict["verdict"], "PASS")
         self.assertEqual(verdict["reasons"], [])
+        self.assertEqual(forward["stream_root"], str(common_dir))
 
     def test_forward_drawdown_above_mc_p95_fails_with_reason(self) -> None:
         manifest = self._manifest(sharpe=1.0)
@@ -62,11 +64,11 @@ class PortfolioBurninTests(unittest.TestCase):
                 json.dumps(
                     {
                         "_owner_must_set": [
-                            "demo_account.account_label",
+                            "live_account.account_label",
                             "pass_tolerances.dd_tolerance",
                         ],
-                        "demo_account": {
-                            "account_label": "OWNER_SET_DEMO_ACCOUNT_LABEL",
+                        "live_account": {
+                            "account_label": "OWNER_SET_LIVE_ACCOUNT_LABEL",
                         },
                         "pass_tolerances": {
                             "dd_tolerance": "OWNER_SET_DD_TOLERANCE",
@@ -85,9 +87,9 @@ class PortfolioBurninTests(unittest.TestCase):
             config_path.write_text(
                 json.dumps(
                     {
-                        "_owner_must_set": ["demo_account.account_label"],
-                        "demo_account": {
-                            "account_label": "OWNER_SET_DEMO_ACCOUNT_LABEL",
+                        "_owner_must_set": ["live_account.account_label"],
+                        "live_account": {
+                            "account_label": "OWNER_SET_LIVE_ACCOUNT_LABEL",
                         },
                     }
                 ),
@@ -100,8 +102,8 @@ class PortfolioBurninTests(unittest.TestCase):
                     [
                         "--manifest",
                         str(Path(tmp) / "missing_manifest.json"),
-                        "--demo-results-dir",
-                        str(Path(tmp) / "missing_demo"),
+                        "--live-results-root",
+                        str(Path(tmp) / "missing_live"),
                         "--out",
                         str(Path(tmp) / "out"),
                         "--config",
@@ -111,6 +113,28 @@ class PortfolioBurninTests(unittest.TestCase):
 
         self.assertEqual(rc, 2)
         self.assertIn("portfolio burn-in refused: OWNER must set", stdout.getvalue())
+
+    def test_collect_forward_equity_finds_terminal_local_live_streams(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            terminal = Path(tmp) / "T_Live"
+            stream_root = terminal / "MT5_Base" / "MQL5" / "Files"
+            self._write_stream(stream_root, "100_EURUSD_DWX.jsonl", [40.0, 20.0, -30.0, 35.0])
+
+            forward = collect_forward_equity(terminal, self._manifest(sharpe=9.3132846448))
+
+        self.assertEqual(forward["stream_root"], str(stream_root))
+        self.assertEqual(forward["daily_pnl"], [40.0, 20.0, -30.0, 35.0])
+
+    def test_module_has_no_terminal_operation_hook(self) -> None:
+        source = (REPO / "tools" / "strategy_farm" / "portfolio" / "portfolio_burnin.py").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertNotIn("deploy" + "_to_demo", source)
+        self.assertNotIn("terminal" + "64", source.lower())
+        self.assertNotIn("Start" + "-Process", source)
+        self.assertNotIn("Auto" + "Trading", source)
+        self.assertIn("read-only evidence", note_go_live_is_manual())
 
     def _manifest(self, *, sharpe: float) -> dict[str, object]:
         return {
