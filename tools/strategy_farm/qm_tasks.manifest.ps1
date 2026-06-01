@@ -44,7 +44,8 @@ $QM_ALWAYSON_TASKS = @(
     'QM_Public_Snapshot_Hourly',              # quantmechanica.com public JSON
     'QM_StrategyFarm_InboxCleanup_Daily',     # codex_inbox cleanup
     'QM_StrategyFarm_WorktreeClean_4h',       # agent worktree GC
-    'QM_WorkItemLogPruner_Daily_0310'         # work_item log pruning
+    'QM_WorkItemLogPruner_Daily_0310',        # work_item log pruning
+    'QM_StrategyFarm_HourlyMonitor_60min'     # deterministic health triage (auto-fix drift + escalate)
 )
 
 # --- must stay disabled: session-0 daemon respawn hazards -----------
