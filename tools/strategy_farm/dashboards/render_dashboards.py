@@ -76,6 +76,18 @@ def fmt_dollar(v: Any) -> str:
     return f"${v:,.2f}"
 
 
+def fmt_num(v: Any, digits: int = 2) -> str:
+    if not isinstance(v, (int, float)):
+        return "—"
+    return f"{v:,.{digits}f}"
+
+
+def fmt_pct(v: Any, digits: int = 2) -> str:
+    if not isinstance(v, (int, float)):
+        return "—"
+    return f"{v:,.{digits}f}%"
+
+
 def split_frontmatter(content: str) -> tuple[dict[str, Any], str]:
     """Tiny stdlib YAML-frontmatter splitter (no PyYAML)."""
     fm: dict[str, Any] = {}
@@ -3161,6 +3173,424 @@ function toggleAttempts(el) {{
 """
 
 
+# ── Portfolio Dashboard ─────────────────────────────────────────
+
+
+PORTFOLIO_CSS = """
+.portfolio-wrap{max-width:1400px;margin:0 auto;padding:34px 36px 72px}
+.portfolio-top{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;flex-wrap:wrap;border-bottom:1px solid var(--border);padding-bottom:22px;margin-bottom:22px}
+.portfolio-title h1{font-size:36px;font-weight:600;letter-spacing:-0.03em;line-height:1.05;margin:0 0 10px;color:var(--text)}
+.portfolio-title h1 .em-text{color:var(--signal)}
+.portfolio-sub{font-family:var(--font-mono);font-size:11px;color:var(--text-3);line-height:1.6;letter-spacing:0.06em;max-width:760px}
+.portfolio-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.portfolio-link,.portfolio-badge{display:inline-flex;align-items:center;padding:6px 10px;border:1px solid var(--border-2);background:transparent;color:var(--text-3);font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;line-height:1.2}
+.portfolio-link:hover{border-color:var(--signal);color:var(--signal)}
+.portfolio-badge.good{border-color:var(--signal);color:var(--signal)}
+.portfolio-badge.warn{border-color:var(--warn);color:var(--warn)}
+.portfolio-status{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 20px}
+.portfolio-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:28px}
+.portfolio-kpi{padding:16px 18px;background:var(--surface-1);border:1px solid var(--border)}
+.portfolio-kpi-label{font-family:var(--font-mono);font-size:9px;font-weight:700;color:var(--text-3);letter-spacing:0.2em;text-transform:uppercase;margin-bottom:9px}
+.portfolio-kpi-val{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:26px;font-weight:500;color:var(--text);letter-spacing:-0.02em;line-height:1}
+.portfolio-kpi-val.good{color:var(--signal)}
+.portfolio-kpi-val.warn{color:var(--warn)}
+.portfolio-section{margin-top:26px}
+.portfolio-section h2{font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:0.2em;text-transform:uppercase;margin:0 0 12px}
+.portfolio-panel{background:var(--surface-1);border:1px solid var(--border);padding:18px}
+.portfolio-empty{padding:26px 18px;background:var(--surface-1);border:1px solid var(--border);color:var(--text-3);font-family:var(--font-mono);font-size:11px;letter-spacing:0.06em;line-height:1.6;text-align:center}
+.heatmap-scroll{overflow:auto;border:1px solid var(--border);background:var(--surface-1)}
+.heatmap-table{border-collapse:collapse;font-family:var(--font-mono);font-size:10px;min-width:760px;width:100%}
+.heatmap-table th,.heatmap-table td{border:1px solid var(--border);padding:6px 7px;text-align:center;white-space:nowrap}
+.heatmap-table th{background:var(--bg);color:var(--text-3);font-weight:700;letter-spacing:0.08em}
+.heatmap-table th.row-head{text-align:left;position:sticky;left:0;z-index:2}
+.heatmap-table thead th{position:sticky;top:0;z-index:3}
+.heatmap-table td{font-variant-numeric:tabular-nums;color:var(--text)}
+.heatmap-table td.corr-good{background:color-mix(in srgb,var(--signal) 38%,var(--surface-1));color:var(--bg)}
+.heatmap-table td.corr-mid{background:var(--surface-2);color:var(--text-2)}
+.heatmap-table td.corr-warn{background:color-mix(in srgb,var(--warn) 58%,var(--surface-1));color:var(--bg)}
+.heatmap-table td.corr-null{background:var(--surface-2);color:var(--text-4)}
+.heatmap-table td.corr-self{background:var(--bg);color:var(--text-4)}
+.portfolio-svg{width:100%;height:auto;background:var(--surface-1);border:1px solid var(--border)}
+.portfolio-table{width:100%;border-collapse:collapse;background:var(--surface-1);border:1px solid var(--border);font-family:var(--font-mono);font-size:11px}
+.portfolio-table th{text-align:left;padding:10px 12px;background:var(--bg);border-bottom:1px solid var(--border);border-right:1px solid var(--border);font-size:9px;font-weight:700;color:var(--text-3);letter-spacing:0.18em;text-transform:uppercase}
+.portfolio-table td{padding:10px 12px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);color:var(--text-2);vertical-align:middle}
+.portfolio-table th:last-child,.portfolio-table td:last-child{border-right:none}
+.portfolio-table tr:last-child td{border-bottom:none}
+.portfolio-table .num{text-align:right;font-variant-numeric:tabular-nums;color:var(--text)}
+.portfolio-table .good{color:var(--signal)}
+.portfolio-table .warn{color:var(--warn)}
+.portfolio-grid-2{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;align-items:start}
+.portfolio-foot{margin-top:34px;font-family:var(--font-mono);font-size:10px;color:var(--text-4);letter-spacing:0.06em;text-align:center;line-height:1.6}
+@media(max-width:1000px){.portfolio-kpis{grid-template-columns:repeat(2,1fr)}.portfolio-grid-2{grid-template-columns:1fr}}
+@media(max-width:720px){.portfolio-wrap{padding:26px 18px 56px}.portfolio-kpis{grid-template-columns:1fr}.portfolio-title h1{font-size:30px}.portfolio-actions{justify-content:flex-start}}
+"""
+
+
+def _load_portfolio_json(root: Path, filename: str) -> tuple[dict[str, Any] | None, str | None, Path]:
+    path = root / "artifacts" / "portfolio" / filename
+    if not path.exists():
+        return None, "not generated yet", path
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        return None, f"unreadable artifact: {exc}", path
+    if not isinstance(data, dict):
+        return None, "artifact is not a JSON object", path
+    return data, None, path
+
+
+def _placeholder(title: str, detail: str = "artifact not generated yet") -> str:
+    return f'<div class="portfolio-empty"><strong>{e(title)}</strong><br>{e(detail)}</div>'
+
+
+def _as_float(v: Any) -> float | None:
+    if isinstance(v, bool) or not isinstance(v, (int, float)):
+        return None
+    return float(v)
+
+
+def _portfolio_short_key(key: Any) -> str:
+    s = str(key)
+    if ":" not in s:
+        return s
+    ea_id, symbol = s.split(":", 1)
+    return f"{ea_id}:{symbol.replace('.DWX', '')}"
+
+
+def _portfolio_weights(manifest: dict[str, Any] | None) -> dict[str, float]:
+    if not manifest or not isinstance(manifest.get("weights"), dict):
+        return {}
+    out: dict[str, float] = {}
+    for k, v in manifest["weights"].items():
+        fv = _as_float(v)
+        if fv is not None:
+            out[str(k)] = fv
+    return out
+
+
+def _portfolio_selected_keys(manifest: dict[str, Any] | None,
+                             corr: dict[str, Any] | None) -> list[str]:
+    raw = manifest.get("selected_keys") if manifest else None
+    if isinstance(raw, list) and raw:
+        return [str(k) for k in raw]
+    raw = corr.get("keys") if corr else None
+    if isinstance(raw, list):
+        return [str(k) for k in raw]
+    return []
+
+
+def _portfolio_artifact_badges(errors: dict[str, str | None]) -> str:
+    badges = []
+    labels = {
+        "manifest": "manifest",
+        "correlation": "correlation",
+        "montecarlo": "monte carlo",
+    }
+    for key, label in labels.items():
+        err = errors.get(key)
+        cls = "warn" if err else "good"
+        text = f"{label}: {'missing' if err else 'ready'}"
+        badges.append(f'<span class="portfolio-badge {cls}">{e(text)}</span>')
+    return "".join(badges)
+
+
+def _render_portfolio_header(manifest: dict[str, Any] | None,
+                             errors: dict[str, str | None]) -> str:
+    if not manifest:
+        return _placeholder("Header KPIs", errors.get("manifest") or "portfolio manifest not generated yet")
+    kpis = manifest.get("kpis") if isinstance(manifest.get("kpis"), dict) else {}
+    sharpe = _as_float(kpis.get("sharpe"))
+    max_dd = _as_float(kpis.get("max_drawdown_pct"))
+    net_profit = _as_float(kpis.get("total_net_of_cost_profit"))
+    sleeves = kpis.get("n_uncorrelated_sleeves", kpis.get("n_sleeves", len(manifest.get("selected_keys") or [])))
+    degraded = bool(manifest.get("degraded") or manifest.get("commission_degraded"))
+    basis = manifest.get("commission_basis") or "commission basis unknown"
+    degraded_badge = '<span class="portfolio-badge warn">degraded</span>' if degraded else ""
+    return f"""
+<div class="portfolio-status">
+  <span class="portfolio-badge">{e(basis)}</span>
+  {degraded_badge}
+  {_portfolio_artifact_badges(errors)}
+</div>
+<div class="portfolio-kpis">
+  <div class="portfolio-kpi"><div class="portfolio-kpi-label">Portfolio Sharpe</div><div class="portfolio-kpi-val good">{e(fmt_num(sharpe, 2))}</div></div>
+  <div class="portfolio-kpi"><div class="portfolio-kpi-label">Portfolio max DD</div><div class="portfolio-kpi-val warn">{e(fmt_pct(max_dd, 2))}</div></div>
+  <div class="portfolio-kpi"><div class="portfolio-kpi-label">Net-of-cost profit</div><div class="portfolio-kpi-val good">{e(fmt_dollar(net_profit))}</div></div>
+  <div class="portfolio-kpi"><div class="portfolio-kpi-label">Uncorrelated sleeves</div><div class="portfolio-kpi-val">{e(sleeves)}</div></div>
+</div>
+"""
+
+
+def _corr_cell_class(v: float | None, is_self: bool) -> str:
+    if is_self:
+        return "corr-self"
+    if v is None:
+        return "corr-null"
+    if v <= 0.30:
+        return "corr-good"
+    if v <= 0.65:
+        return "corr-mid"
+    return "corr-warn"
+
+
+def _render_portfolio_heatmap(corr: dict[str, Any] | None,
+                              manifest: dict[str, Any] | None,
+                              error: str | None) -> str:
+    if not corr:
+        return _placeholder("Correlation heatmap", error or "correlation artifact not generated yet")
+    all_keys = [str(k) for k in corr.get("keys") or []]
+    matrix = corr.get("correlation_matrix") or corr.get("correlation")
+    if not all_keys or not isinstance(matrix, list):
+        return _placeholder("Correlation heatmap", "correlation matrix not present in artifact")
+    selected = _portfolio_selected_keys(manifest, corr)
+    index = {k: i for i, k in enumerate(all_keys)}
+    keys = [k for k in selected if k in index]
+    if not keys:
+        keys = all_keys[:40]
+    header = "".join(f'<th title="{e(k)}">{e(_portfolio_short_key(k))}</th>' for k in keys)
+    rows = []
+    for rk in keys:
+        ri = index[rk]
+        row = [f'<th class="row-head" title="{e(rk)}">{e(_portfolio_short_key(rk))}</th>']
+        raw_row = matrix[ri] if ri < len(matrix) and isinstance(matrix[ri], list) else []
+        for ck in keys:
+            ci = index[ck]
+            val = _as_float(raw_row[ci]) if ci < len(raw_row) else None
+            cls = _corr_cell_class(val, rk == ck)
+            text = "—" if val is None else f"{val:.2f}"
+            row.append(f'<td class="{cls}" title="{e(rk)} vs {e(ck)}">{e(text)}</td>')
+        rows.append(f"<tr>{''.join(row)}</tr>")
+    return f"""
+<div class="heatmap-scroll">
+  <table class="heatmap-table">
+    <thead><tr><th class="row-head">Sleeve</th>{header}</tr></thead>
+    <tbody>{''.join(rows)}</tbody>
+  </table>
+</div>
+"""
+
+
+def _series_from_candidate(candidate: Any) -> list[float]:
+    values: list[float] = []
+    if isinstance(candidate, list):
+        for item in candidate:
+            if isinstance(item, dict):
+                for key in ("equity", "balance", "value", "portfolio_equity", "combined_equity"):
+                    fv = _as_float(item.get(key))
+                    if fv is not None:
+                        values.append(fv)
+                        break
+            else:
+                fv = _as_float(item)
+                if fv is not None:
+                    values.append(fv)
+    elif isinstance(candidate, dict):
+        for item in candidate.values():
+            fv = _as_float(item)
+            if fv is not None:
+                values.append(fv)
+    return values
+
+
+def _extract_portfolio_equity(manifest: dict[str, Any] | None) -> list[float]:
+    if not manifest:
+        return []
+    for key in (
+        "combined_equity",
+        "combined_equity_curve",
+        "equity_curve",
+        "portfolio_equity",
+        "portfolio_equity_curve",
+    ):
+        values = _series_from_candidate(manifest.get(key))
+        if len(values) >= 2:
+            return values
+    return []
+
+
+def _portfolio_equity_svg(series: list[float], width: int = 960, height: int = 240) -> str:
+    if len(series) < 2:
+        return f'''<svg class="portfolio-svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}" xmlns="http://www.w3.org/2000/svg">
+<rect x="0" y="0" width="{width}" height="{height}" fill="var(--surface-1)"/>
+<text x="{width // 2}" y="{height // 2}" fill="var(--text-4)" font-size="13" text-anchor="middle" font-family="JetBrains Mono, monospace">combined equity series not generated yet</text>
+</svg>'''
+    vmin = min(series)
+    vmax = max(series)
+    span = (vmax - vmin) or 1.0
+    pad = 18
+    inner_w = width - 2 * pad
+    inner_h = height - 2 * pad
+    points: list[tuple[float, float]] = []
+    for i, v in enumerate(series):
+        x = pad + (i / max(1, len(series) - 1)) * inner_w
+        y = pad + inner_h - ((v - vmin) / span) * inner_h
+        points.append((x, y))
+    line_d = "M " + " L ".join(f"{x:.1f},{y:.1f}" for x, y in points)
+    base_y = pad + inner_h
+    fill_d = f"M {points[0][0]:.1f},{base_y:.1f} L " + " L ".join(
+        f"{x:.1f},{y:.1f}" for x, y in points
+    ) + f" L {points[-1][0]:.1f},{base_y:.1f} Z"
+    return f'''<svg class="portfolio-svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}" xmlns="http://www.w3.org/2000/svg">
+<rect x="0" y="0" width="{width}" height="{height}" fill="var(--surface-1)"/>
+<line x1="{pad}" y1="{base_y:.1f}" x2="{width - pad}" y2="{base_y:.1f}" stroke="var(--border-2)" stroke-width="1"/>
+<path d="{fill_d}" fill="var(--signal)" opacity="0.14" stroke="none"/>
+<path d="{line_d}" fill="none" stroke="var(--signal)" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="{points[-1][0]:.1f}" cy="{points[-1][1]:.1f}" r="3" fill="var(--signal)"/>
+<text x="{pad}" y="16" fill="var(--text-4)" font-size="10" font-family="JetBrains Mono, monospace">{e(fmt_dollar(vmax))}</text>
+<text x="{pad}" y="{height - 6}" fill="var(--text-4)" font-size="10" font-family="JetBrains Mono, monospace">{e(fmt_dollar(vmin))}</text>
+</svg>'''
+
+
+def _render_portfolio_montecarlo(mc: dict[str, Any] | None, error: str | None) -> str:
+    if not mc:
+        return _placeholder("Monte Carlo band", error or "Monte Carlo artifact not generated yet")
+    rows = []
+    labels = {
+        "block_bootstrap": "Block bootstrap",
+        "trade_order_shuffle": "Trade-order shuffle",
+    }
+    metrics = {
+        "max_drawdown_pct": "Max DD",
+        "terminal_equity": "Terminal equity",
+    }
+    for mode_key, mode_label in labels.items():
+        mode = mc.get(mode_key)
+        if not isinstance(mode, dict):
+            continue
+        for metric_key, metric_label in metrics.items():
+            vals = mode.get(metric_key)
+            if not isinstance(vals, dict):
+                continue
+            is_pct = metric_key == "max_drawdown_pct"
+            def fmt(v: Any) -> str:
+                fv = _as_float(v)
+                if fv is None:
+                    return "—"
+                return fmt_pct(fv, 2) if is_pct else fmt_dollar(fv)
+            rows.append(
+                f'<tr><td>{e(mode_label)}</td><td>{e(metric_label)}</td>'
+                f'<td class="num">{e(fmt(vals.get("p5")))}</td>'
+                f'<td class="num">{e(fmt(vals.get("p50")))}</td>'
+                f'<td class="num">{e(fmt(vals.get("p95")))}</td></tr>'
+            )
+    if not rows:
+        return _placeholder("Monte Carlo band", "p5/p50/p95 bands not present in artifact")
+    return f"""
+<table class="portfolio-table">
+  <thead><tr><th>Method</th><th>Metric</th><th class="num">p5</th><th class="num">p50</th><th class="num">p95</th></tr></thead>
+  <tbody>{''.join(rows)}</tbody>
+</table>
+"""
+
+
+def _render_portfolio_sleeves(manifest: dict[str, Any] | None,
+                              corr: dict[str, Any] | None,
+                              manifest_error: str | None) -> str:
+    keys = _portfolio_selected_keys(manifest, corr)
+    if not manifest or not keys:
+        return _placeholder("Per-sleeve table", manifest_error or "selected sleeve manifest not generated yet")
+    per_series = corr.get("per_series") if corr and isinstance(corr.get("per_series"), dict) else {}
+    weights = _portfolio_weights(manifest)
+    rows = []
+    for key in keys:
+        stats = per_series.get(key) if isinstance(per_series.get(key), dict) else {}
+        note = (
+            stats.get("marginal_diversification_note")
+            or stats.get("diversification_note")
+            or stats.get("note")
+            or "selected"
+        )
+        net = _as_float(stats.get("net_of_cost_total"))
+        net_cls = "good" if isinstance(net, float) and net >= 0 else "warn" if isinstance(net, float) else ""
+        trades = stats.get("trades", "—")
+        active_days = stats.get("active_days", "—")
+        weight = weights.get(key)
+        rows.append(
+            f'<tr><td title="{e(key)}">{e(_portfolio_short_key(key))}</td>'
+            f'<td class="num">{e(fmt_pct(weight * 100, 2) if weight is not None else "—")}</td>'
+            f'<td class="num">{e(trades)}</td>'
+            f'<td class="num">{e(active_days)}</td>'
+            f'<td class="num {net_cls}">{e(fmt_dollar(net))}</td>'
+            f'<td>{e(note)}</td></tr>'
+        )
+    return f"""
+<table class="portfolio-table">
+  <thead><tr><th>Key</th><th class="num">Weight</th><th class="num">Trades</th><th class="num">Active days</th><th class="num">Net-of-cost</th><th>Diversification note</th></tr></thead>
+  <tbody>{''.join(rows)}</tbody>
+</table>
+"""
+
+
+def render_portfolio(root: Path) -> str:
+    manifest, manifest_error, _manifest_path = _load_portfolio_json(root, "portfolio_manifest_dev.json")
+    corr, corr_error, _corr_path = _load_portfolio_json(root, "correlation_dev.json")
+    mc, mc_error, _mc_path = _load_portfolio_json(root, "portfolio_montecarlo_dev.json")
+    errors = {
+        "manifest": manifest_error,
+        "correlation": corr_error,
+        "montecarlo": mc_error,
+    }
+    generated = manifest.get("generated_at_utc") if manifest else "—"
+    basis = (manifest.get("generated_basis") or manifest.get("basis")) if manifest else "not generated yet"
+    equity = _extract_portfolio_equity(manifest)
+    return html_head("Portfolio Dashboard", PORTFOLIO_CSS) + f"""
+<div class="portfolio-wrap">
+  <div class="portfolio-top">
+    <div class="portfolio-title">
+      <h1>Portfolio <span class="em-text">Dashboard</span></h1>
+      <div class="portfolio-sub">Read-only Wave-2 portfolio artifacts. Generated {e(generated)} · basis {e(basis)}.</div>
+    </div>
+    <div class="portfolio-actions">
+      <a class="portfolio-link" href="strategies.html">Strategy Archive</a>
+    </div>
+  </div>
+
+  {_render_portfolio_header(manifest, errors)}
+
+  <section class="portfolio-section">
+    <h2>Correlation heatmap</h2>
+    {_render_portfolio_heatmap(corr, manifest, corr_error)}
+  </section>
+
+  <section class="portfolio-section">
+    <h2>Combined equity curve</h2>
+    {_portfolio_equity_svg(equity)}
+  </section>
+
+  <div class="portfolio-grid-2">
+    <section class="portfolio-section">
+      <h2>Monte Carlo band</h2>
+      {_render_portfolio_montecarlo(mc, mc_error)}
+    </section>
+    <section class="portfolio-section">
+      <h2>Portfolio inputs</h2>
+      <div class="portfolio-panel">
+        <table class="portfolio-table">
+          <tbody>
+            <tr><td>Starting capital</td><td class="num">{e(fmt_dollar(_as_float(manifest.get("starting_capital")) if manifest else None))}</td></tr>
+            <tr><td>Weighting</td><td class="num">{e(manifest.get("weighting", "—") if manifest else "—")}</td></tr>
+            <tr><td>Series considered</td><td class="num">{e(manifest.get("n_series_considered", "—") if manifest else "—")}</td></tr>
+            <tr><td>Days</td><td class="num">{e(manifest.get("n_days", "—") if manifest else "—")}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <section class="portfolio-section">
+    <h2>Per-sleeve table</h2>
+    {_render_portfolio_sleeves(manifest, corr, manifest_error)}
+  </section>
+
+  <div class="portfolio-foot">
+    Generated by tools/strategy_farm/dashboards/render_dashboards.py · data: D:/QM/strategy_farm/artifacts/portfolio/
+  </div>
+</div>
+</body>
+</html>
+"""
+
+
 # ── Main ─────────────────────────────────────────────────────────
 
 
@@ -3185,6 +3615,9 @@ def main() -> int:
     # current.html retired 2026-05-23 (OWNER decision); cockpit.html (render_cockpit.py) is the canonical live ops view.
     strategies_path = dashboards_dir / "strategies.html"
     strategies_path.write_text(render_strategies(state, root), encoding="utf-8")
+
+    portfolio_path = dashboards_dir / "portfolio.html"
+    portfolio_path.write_text(render_portfolio(root), encoding="utf-8")
 
     # Per-EA detail pages — skip TRUE card-only EAs (no work_items, no tasks,
     # only a card on disk). EAs with work_items DO need detail pages even
@@ -3221,6 +3654,7 @@ def main() -> int:
     summary = {
         "rendered_at": utc_now_iso(),
         "strategies_html": str(strategies_path),
+        "portfolio_html": str(portfolio_path),
         "style_css": str(dst_css),
         "ea_detail_pages": detail_count,
         "ea_count": len(eas),
