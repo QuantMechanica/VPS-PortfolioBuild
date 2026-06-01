@@ -1464,8 +1464,17 @@ for ($i = 1; $i -le $Runs; $i++) {
 
     $onInitFailure = Test-TesterLogShowsOnInitFailure -TesterLogTail $testerLogTail
 
+    # Scan the FULL tester log, not just the tail. In large real-tick runs the
+    # "generating based on real ticks" marker appears near the START (right after
+    # synchronization), far outside an 800-line tail window — tail-only scanning
+    # falsely flagged valid high-activity runs (millions of ticks / hundreds of
+    # trades) as NO_REAL_TICKS_MARKER -> INVALID -> INFRA_FAIL. Verified on a 21MB
+    # / 95k-line NDX.DWX log: marker present 148x (first at line 38), 0x in the tail.
     $hasRealTicksMarker = $false
-    if ($testerLogTail) {
+    if ($testerLogPath -and (Test-Path -LiteralPath $testerLogPath)) {
+        $hasRealTicksMarker = [bool](Select-String -LiteralPath $testerLogPath -Pattern "generating based on real ticks" -SimpleMatch -Quiet -ErrorAction SilentlyContinue)
+    }
+    if (-not $hasRealTicksMarker -and $testerLogTail) {
         $hasRealTicksMarker = [regex]::IsMatch($testerLogTail, "(?im)generating based on real ticks")
     }
 
