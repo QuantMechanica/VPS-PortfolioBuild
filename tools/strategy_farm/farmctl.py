@@ -47,6 +47,15 @@ CLAUDE_REVIEW_TEMPLATE = PROMPTS_DIR / "claude_review_ea.md"
 CODEX_REVIEW_TEMPLATE = PROMPTS_DIR / "codex_review_ea.md"
 CODEX_G0_TEMPLATE = PROMPTS_DIR / "codex_g0_review.md"
 
+SHARED_BUILD_PATHS = [
+    "framework/include/QM/QM_MagicResolver.mqh",
+    "framework/registry/ea_id_registry.csv",
+    "framework/registry/magic_numbers.csv",
+    "public-data/process-roadmap.json",
+    "public-data/public-snapshot.json",
+    "public-data/strategy-archive.json",
+]
+
 PIPELINE_REPORT_ROOT = Path(r"D:\QM\reports\pipeline")
 
 # 2026-05-23 OR3 — post-pipeline-rewrite Qxx canonical phase set.
@@ -4223,6 +4232,243 @@ def _block_unreviewable_build(root: Path, build_task_row: sqlite3.Row, reason: s
     }
 
 
+def _latest_codex_review_fail_for_build(
+    conn: sqlite3.Connection,
+    build_task_id: str,
+) -> dict[str, Any] | None:
+    rows = conn.execute(
+        """
+        SELECT id, payload_json, updated_at FROM tasks
+        WHERE kind='codex_review' AND status='done'
+          AND payload_json LIKE '%"build_task_id": "' || ? || '"%'
+        ORDER BY updated_at DESC
+        """,
+        (build_task_id,),
+    ).fetchall()
+    for row in rows:
+        try:
+            payload = json.loads(row["payload_json"] or "{}")
+        except (json.JSONDecodeError, TypeError):
+            continue
+        verdict = payload.get("verdict") if isinstance(payload.get("verdict"), dict) else None
+        verdict_path = payload.get("verdict_path")
+        if verdict is None and verdict_path and Path(str(verdict_path)).exists():
+            try:
+                verdict = json.loads(Path(str(verdict_path)).read_text(encoding="utf-8-sig"))
+            except (OSError, json.JSONDecodeError):
+                verdict = None
+        if not isinstance(verdict, dict) or verdict.get("verdict") != "FAIL":
+            continue
+        findings = verdict.get("findings") or []
+        if not findings:
+            continue
+        return {
+            "review_task_id": row["id"],
+            "verdict_path": verdict_path,
+            "verdict": verdict,
+            "findings": findings,
+            "updated_at": row["updated_at"],
+        }
+    return None
+
+
+def _write_codex_review_rework_prompt(
+    root: Path,
+    build_task_row: sqlite3.Row,
+    payload: dict[str, Any],
+    review_fail: dict[str, Any],
+) -> tuple[str, str]:
+    task_id = build_task_row["id"]
+    ea_id = payload.get("ea_id") or build_task_row["card_id"]
+    slug = payload.get("slug") or ""
+    card_path = payload.get("card_path") or ""
+    ea_dir = payload.get("ea_dir") or str(FRAMEWORK_EAS_DIR / f"{ea_id}_{slug}")
+    prompt_path = str(root / "queue" / f"codex_build_{task_id}.md")
+    build_result_path = str(root / "artifacts" / "builds" / f"{task_id}.json")
+    Path(prompt_path).parent.mkdir(parents=True, exist_ok=True)
+    Path(build_result_path).parent.mkdir(parents=True, exist_ok=True)
+
+    template = CODEX_BUILD_TEMPLATE.read_text(encoding="utf-8")
+    for k, v in [
+        ("task_id", task_id),
+        ("ea_id", ea_id),
+        ("slug", slug),
+        ("card_path", card_path),
+        ("source_id", ""),
+        ("ea_dir", ea_dir),
+        ("build_result_path", build_result_path),
+    ]:
+        template = template.replace("{{" + k + "}}", str(v))
+
+    findings = "\n".join(f"- {str(f)}" for f in (review_fail.get("findings") or []))
+    verdict = review_fail.get("verdict") or {}
+    sections = json.dumps(verdict.get("sections") or {}, indent=2, sort_keys=True)
+    rework = f"""
+
+## CODEX REVIEW FAIL REWORK MODE
+
+This is a bounded rework of an existing EA build, not a fresh implementation.
+The previous Codex mechanical review failed. Fix the current files in place,
+then rerun compile/build_check and write the normal build_result JSON to:
+
+`{build_result_path}`
+
+Review task: `{review_fail.get("review_task_id")}`
+Verdict file: `{review_fail.get("verdict_path")}`
+
+Failed sections:
+
+```json
+{sections}
+```
+
+Findings to fix exactly:
+
+{findings}
+
+Rework constraints:
+
+- Do not create a new EA ID or new EA directory.
+- Do not duplicate existing magic registry rows.
+- Keep existing setfiles unless the fix requires regenerating them.
+- Prefer the smallest source change that satisfies the review finding.
+- After the fix, `compile_one.ps1 -Strict` and `build_check.ps1 -Strict` for this EA must pass with 0 errors and 0 warnings.
+- If a finding conflicts with the generic build prompt, the review finding wins for this rework.
+"""
+    Path(prompt_path).write_text(template + rework, encoding="utf-8", newline="\n")
+    return prompt_path, build_result_path
+
+
+def _archive_rework_artifacts(root: Path, build_task_id: str, payload: dict[str, Any], attempt: int) -> None:
+    brp = payload.get("build_result_path") or str(root / "artifacts" / "builds" / f"{build_task_id}.json")
+    brp_path = Path(str(brp))
+    if brp_path.exists() and brp_path.stat().st_size > 0:
+        archive = brp_path.with_suffix(f".codex_review_fail_attempt_{attempt}.json")
+        try:
+            brp_path.replace(archive)
+        except OSError:
+            pass
+    live_log = root / "logs" / f"codex_build_{build_task_id}.live.log"
+    if live_log.exists():
+        archive = live_log.with_suffix(f".codex_review_fail_attempt_{attempt}.log")
+        try:
+            live_log.replace(archive)
+        except OSError:
+            pass
+
+
+def _prepare_codex_review_fail_reworks(root: Path, limit: int = 1) -> list[dict[str, Any]]:
+    """Turn mechanical Codex review failures into bounded pending rework jobs."""
+    prepared: list[dict[str, Any]] = []
+    with connect(root) as conn:
+        rows = conn.execute(
+            """
+            SELECT * FROM tasks
+            WHERE kind='build_ea' AND status='blocked'
+              AND payload_json LIKE '%"blocked_reason": "codex_review_fail"%'
+            ORDER BY updated_at DESC
+            """
+        ).fetchall()
+        pending_cards = {
+            r[0] for r in conn.execute(
+                "SELECT DISTINCT card_id FROM tasks WHERE kind='build_ea' AND status='pending'"
+            )
+        }
+        for row in rows:
+            if len(prepared) >= limit:
+                break
+            payload = json.loads(row["payload_json"] or "{}")
+            if payload.get("superseded_by") or payload.get("duplicate_of_task_id"):
+                continue
+            if row["card_id"] in pending_cards:
+                continue
+            attempt = int(payload.get("codex_review_rework_attempt_count", 0)) + 1
+            if attempt > 2:
+                payload["final_failure"] = payload.get("final_failure") or "codex_review_rework_exhausted"
+                payload["last_blocked_reason"] = "codex_review_fail"
+                conn.execute(
+                    "UPDATE tasks SET payload_json=?, updated_at=? WHERE id=?",
+                    (json.dumps(payload), utc_now(), row["id"]),
+                )
+                continue
+            review_fail = _latest_codex_review_fail_for_build(conn, row["id"])
+            if review_fail is None:
+                continue
+
+            _archive_rework_artifacts(root, row["id"], payload, attempt)
+            prompt_path, build_result_path = _write_codex_review_rework_prompt(
+                root,
+                row,
+                payload,
+                review_fail,
+            )
+            updated = dict(payload)
+            updated.pop("blocked_reason", None)
+            updated.pop("pid", None)
+            updated.pop("started_at_iso", None)
+            updated.pop("build_result", None)
+            updated["prompt_path"] = prompt_path
+            updated["build_result_path"] = build_result_path
+            updated["codex_review_rework"] = True
+            updated["codex_review_rework_attempt_count"] = attempt
+            updated["last_blocked_reason"] = "codex_review_fail"
+            updated["last_codex_review_task_id"] = review_fail["review_task_id"]
+            updated["last_codex_review_findings"] = review_fail["findings"]
+            updated["attempt_count"] = int(updated.get("attempt_count", 0)) + 1
+
+            conn.execute(
+                "DELETE FROM tasks WHERE kind='codex_review' "
+                "AND payload_json LIKE '%\"build_task_id\": \"' || ? || '\"%'",
+                (row["id"],),
+            )
+            conn.execute(
+                "UPDATE tasks SET status='pending', payload_json=?, updated_at=? WHERE id=?",
+                (json.dumps(updated), utc_now(), row["id"]),
+            )
+            event(conn, "task", row["id"], "codex_review_fail_rework_queued", {
+                "ea_id": updated.get("ea_id"),
+                "attempt": attempt,
+                "review_task_id": review_fail["review_task_id"],
+                "findings_count": len(review_fail["findings"]),
+            })
+            prepared.append({
+                "build_task_id": row["id"],
+                "ea_id": updated.get("ea_id"),
+                "attempt": attempt,
+                "findings_count": len(review_fail["findings"]),
+                "prompt_path": prompt_path,
+            })
+        conn.commit()
+    return prepared
+
+
+def _pending_build_is_review_rework(row: sqlite3.Row) -> bool:
+    try:
+        payload = json.loads(row["payload_json"] or "{}")
+    except (json.JSONDecodeError, TypeError):
+        return False
+    return payload.get("codex_review_rework") is True
+
+
+def _dirty_entries_compatible_with_rework(entries: list[str], payload: dict[str, Any]) -> bool:
+    ea_dir = str(payload.get("ea_dir") or "").replace("\\", "/").strip("/")
+    allowed_prefixes = [ea_dir + "/"] if ea_dir else []
+    allowed_exact = set(SHARED_BUILD_PATHS)
+    if ea_dir:
+        allowed_exact.add(ea_dir)
+    for raw in entries:
+        rel = str(raw).strip()
+        if len(rel) >= 3 and rel[:2] in {" M", "??", "A ", "AM", "MM", " D"}:
+            rel = rel[3:].strip()
+        rel = rel.replace("\\", "/").strip("/")
+        if rel in allowed_exact:
+            continue
+        if any(rel.startswith(prefix) for prefix in allowed_prefixes):
+            continue
+        return False
+    return True
+
+
 def _record_codex_review_result(root: Path, review_task_id: str, verdict_path: str) -> dict[str, Any]:
     """Read a completed codex_review verdict, mark the task done, return the verdict.
 
@@ -4262,6 +4508,7 @@ def _record_codex_review_result(root: Path, review_task_id: str, verdict_path: s
         "review_task_id": review_task_id,
         "verdict": verdict,
         "build_task_id": payload.get("build_task_id"),
+        "findings": payload["findings"],
         "findings_count": len(payload["findings"]),
     }
 
@@ -5723,7 +5970,12 @@ def pump(root: Path) -> dict[str, Any]:
                 })
         result["mt5_feed_depth_after"] = _materialized_backtest_work_item_depth(conn)
 
-    # 2. Retry blocked builds — OWNER 2026-05-16 "Fail → ans Ende der
+    # 2. Convert mechanical Codex pre-review failures into bounded rework
+    #    jobs. These are not transient infra retries; Codex receives the
+    #    exact review findings and edits the existing dirty EA in place.
+    result["codex_review_fail_reworks"] = _prepare_codex_review_fail_reworks(root)
+
+    # 2b. Retry blocked builds — OWNER 2026-05-16 "Fail → ans Ende der
     #    Liste". A blocked build means the previous attempt hit
     #    framework_error / compile_failed / smoke_failed. Re-queue up to
     #    MAX_BUILD_RETRIES so framework fixes (deploy, perf, etc.) get a
@@ -5857,10 +6109,16 @@ def pump(root: Path) -> dict[str, Any]:
     gemini_build_budget = max(0, MAX_PARALLEL_GEMINI_BUILDS - active_gemini)
     repo_dirty_guard = _repo_dirty_status()
     result["repo_dirty_build_guard"] = repo_dirty_guard
+    raw_codex_build_budget = spawn_budget
     if repo_dirty_guard.get("blocked"):
         spawn_budget = 0
         gemini_build_budget = 0
     total_build_spawn_budget = spawn_budget + gemini_build_budget
+    if repo_dirty_guard.get("blocked") and raw_codex_build_budget > 0:
+        # A codex_review_fail rework necessarily starts from dirty build
+        # artifacts. Allow only that same EA's rework to run through the guard;
+        # unrelated dirty paths still block all build spawns.
+        total_build_spawn_budget = raw_codex_build_budget
     with connect(root) as conn:
         # Dedupe by ea_id — never spawn 2 codex builds for the same EA at
         # once (race on EA dir + magic_numbers.csv + resolver regeneration).
@@ -5899,6 +6157,12 @@ def pump(root: Path) -> dict[str, Any]:
                 break
             payload = json.loads(row["payload_json"])
             ea_id = payload.get("ea_id")
+            if repo_dirty_guard.get("blocked"):
+                if not payload.get("codex_review_rework"):
+                    continue
+                entries = repo_dirty_guard.get("entries") or []
+                if not _dirty_entries_compatible_with_rework(entries, payload):
+                    continue
             if ea_id in seen_eas:
                 continue
             if ea_id in perma_blocked_eas:
@@ -5911,7 +6175,7 @@ def pump(root: Path) -> dict[str, Any]:
             pending_builds.append(row)
     spawns = []
     for idx, pending_build in enumerate(pending_builds):
-        if idx < gemini_build_budget:
+        if (not repo_dirty_guard.get("blocked")) and idx < gemini_build_budget:
             sp = _spawn_gemini_for_build(root, pending_build)
         else:
             sp = _spawn_codex_for_build(root, pending_build)
@@ -6197,7 +6461,7 @@ def pump(root: Path) -> dict[str, Any]:
                     brow = conn.execute("SELECT payload_json FROM tasks WHERE id=?", (build_id,)).fetchone()
                     if brow:
                         bp = json.loads(brow["payload_json"])
-                        bp["codex_review_findings"] = p.get("findings") or []
+                        bp["codex_review_findings"] = rec.get("findings") or []
                         bp["blocked_reason"] = "codex_review_fail"
                         bp["attempt"] = int(bp.get("attempt", 0)) + 1
                         conn.execute(
