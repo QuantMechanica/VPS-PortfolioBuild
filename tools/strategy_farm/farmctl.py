@@ -4491,9 +4491,11 @@ def _dirty_entries_compatible_with_rework(entries: list[str], payload: dict[str,
     if ea_dir:
         allowed_exact.add(ea_dir)
     for raw in entries:
-        rel = str(raw).strip()
+        rel = str(raw).rstrip()
         if len(rel) >= 3 and rel[:2] in {" M", "??", "A ", "AM", "MM", " D"}:
             rel = rel[3:].strip()
+        else:
+            rel = rel.strip()
         rel = rel.replace("\\", "/").strip("/")
         if rel in allowed_exact:
             continue
