@@ -95,7 +95,7 @@ def _audit(agent_id: str, scope: str, *, tool: str, args_summary: str,
         if conn is not None:
             farmctl.event(conn, "agent_audit", agent_id, scope, detail)
             return
-        own = farmctl.connect()
+        own = farmctl.connect(farmctl.DEFAULT_ROOT)
         try:
             farmctl.event(own, "agent_audit", agent_id, scope, detail)
             own.commit()
@@ -108,6 +108,31 @@ def _audit(agent_id: str, scope: str, *, tool: str, args_summary: str,
 def current_agent_id() -> str:
     """Acting identity from QM_AGENT_ID; absent -> 'unknown' (fail-closed)."""
     return os.environ.get("QM_AGENT_ID", "unknown")
+
+
+# Identities that are the trusted deterministic base, NOT spawned agents: the
+# farmctl/pump controller, the OWNER, or an un-set context. They pass (audited)
+# so wiring guards into live controller paths can never halt the factory. The
+# scope layer's purpose is to enforce against SPAWNED agents, which always set
+# QM_AGENT_ID (DL-065 R-065-2 amended). Flip this to fail-closed later once the
+# pump scheduled task sets QM_AGENT_ID=controller.
+_TRUSTED_BASE = {"", "unknown", "controller", "owner"}
+
+
+def guard(scope: str, *, tool: str, args_summary: str = "", conn: Any | None = None) -> None:
+    """Controller-safe choke-point guard (DL-065 Task H).
+
+    - Spawned agent identity (codex/gemini/claude/…): fail-closed `require()` — raises
+      ScopeDenied if the agent lacks the scope.
+    - Trusted base (controller/pump/owner/unset): audit ALLOW and return, never block.
+    """
+    actor = current_agent_id()
+    if actor in _TRUSTED_BASE:
+        label = actor if actor in {"controller", "owner"} else "controller"
+        _audit(label, scope, tool=tool,
+               args_summary=(args_summary + " [base]").strip(), decision="ALLOW", conn=conn)
+        return
+    require(actor, scope, tool=tool, args_summary=args_summary, conn=conn)
 
 
 def require(agent_id: str | None, scope: str, *, tool: str, args_summary: str = "",

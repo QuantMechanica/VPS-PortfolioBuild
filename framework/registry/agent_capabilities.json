@@ -10,6 +10,15 @@
     "T3_cheap_reversible": ["repo.read", "repo.write", "dashboard.render", "card.draft", "research.web"]
   },
   "agents": {
+    "controller": {
+      "grants": ["git.push.main", "live.deploy_manifest", "db.delete", "external.send",
+                 "registry.reserve_ea_ids", "ea.compile", "fleet.recompile",
+                 "mt5.backtest.dispatch", "pipeline.close_gate", "repo.read", "repo.write",
+                 "dashboard.render", "card.draft", "research.web"],
+      "deny_explicit": ["live.autotrade"],
+      "default_sandbox": "trusted-local",
+      "note": "the deterministic farmctl/pump itself — trusted base process, not a spawned agent; everything except live.autotrade (T0, no automation ever)"
+    },
     "claude": {
       "grants": ["git.push.main", "live.deploy_manifest", "db.delete", "registry.reserve_ea_ids",
                  "ea.compile", "fleet.recompile", "mt5.backtest.dispatch", "pipeline.close_gate",

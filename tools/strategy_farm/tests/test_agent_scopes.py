@@ -97,3 +97,27 @@ def test_require_unknown_identity_defaults_fail_closed(monkeypatch):
     with pytest.raises(sc.ScopeDenied):
         sc.require(None, "ea.compile", tool="compile", conn=object())
     assert calls[0][1] == "unknown" and calls[0][3]["decision"] == "DENY"
+
+
+# ---- guard(): controller-safe choke point ---------------------------------
+
+def test_guard_trusted_base_passes(monkeypatch):
+    calls = _patch_event(monkeypatch)
+    monkeypatch.delenv("QM_AGENT_ID", raising=False)  # unset == trusted base (pump)
+    sc.guard("git.push.main", tool="push", args_summary="HEAD:main", conn=object())  # no raise
+    assert calls[0][1] == "controller" and calls[0][3]["decision"] == "ALLOW"
+
+
+def test_guard_enforces_spawned_codex(monkeypatch):
+    calls = _patch_event(monkeypatch)
+    monkeypatch.setenv("QM_AGENT_ID", "codex")
+    with pytest.raises(sc.ScopeDenied):
+        sc.guard("git.push.main", tool="push", conn=object())  # codex denied main push
+    assert calls[0][3]["decision"] == "DENY"
+
+
+def test_guard_allows_spawned_codex_in_scope(monkeypatch):
+    calls = _patch_event(monkeypatch)
+    monkeypatch.setenv("QM_AGENT_ID", "codex")
+    sc.guard("ea.compile", tool="compile", conn=object())  # codex allowed
+    assert calls[0][3]["decision"] == "ALLOW"

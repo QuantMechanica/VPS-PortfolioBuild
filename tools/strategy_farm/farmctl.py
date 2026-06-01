@@ -200,6 +200,7 @@ def _codex_env() -> dict[str, str]:
     """
     env = os.environ.copy()
     env["CODEX_HOME"] = str(_CODEX_HOME)
+    env["QM_AGENT_ID"] = "codex"  # DL-065: spawned identity for the scope layer
     return env
 
 
@@ -233,6 +234,7 @@ def _gemini_env() -> dict[str, str]:
     env.setdefault("NO_COLOR", "1")
     env.setdefault("FORCE_COLOR", "0")
     env.setdefault("CI", "1")
+    env["QM_AGENT_ID"] = "gemini"  # DL-065: spawned identity for the scope layer
     return env
 
 
@@ -495,6 +497,17 @@ def event(conn: sqlite3.Connection, entity_type: str, entity_id: str, name: str,
         """,
         (utc_now(), entity_type, entity_id, name, json.dumps(detail, sort_keys=True)),
     )
+
+
+def _scope_guard(scope: str, *, tool: str, args_summary: str = "") -> None:
+    """DL-065 controller-safe choke-point guard. Trusted base (pump/controller,
+    no QM_AGENT_ID) passes + audits; a spawned agent identity is enforced
+    fail-closed and raises agent_scopes.ScopeDenied if out of scope."""
+    try:
+        import agent_scopes  # same dir on sys.path when run as controller
+    except ImportError:  # pragma: no cover
+        from tools.strategy_farm import agent_scopes  # type: ignore
+    agent_scopes.guard(scope, tool=tool, args_summary=args_summary)
 
 
 def parse_card_frontmatter(card_path: Path) -> dict[str, Any]:
@@ -7157,6 +7170,38 @@ def set_source_status(root: Path, sid: str, new_status: str, notes_path: str | N
     return {"updated": True, "source_id": sid, "from": row["status"], "to": new_status, "next_action": next_action(root)}
 
 
+def audit_tail(root: Path, *, agent: str | None = None, scope: str | None = None,
+               decision: str | None = None, limit: int = 30) -> dict[str, Any]:
+    """DL-065 agent capability-scope audit trail (events where entity_type='agent_audit')."""
+    init_db(root)
+    clauses = ["entity_type = 'agent_audit'"]
+    params: list[Any] = []
+    if agent:
+        clauses.append("entity_id = ?")
+        params.append(agent)
+    if scope:
+        clauses.append("event = ?")
+        params.append(scope)
+    where = " AND ".join(clauses)
+    with connect(root) as conn:
+        rows = rows_as_dicts(
+            conn.execute(
+                f"SELECT ts, entity_id, event, detail_json FROM events WHERE {where} "
+                f"ORDER BY id DESC LIMIT ?",
+                (*params, limit),
+            ).fetchall()
+        )
+    out: list[dict[str, Any]] = []
+    for row in rows:
+        detail = json.loads(row.pop("detail_json"))
+        if decision and not str(detail.get("decision", "")).startswith(decision):
+            continue
+        out.append({"ts": row["ts"], "agent": row["entity_id"], "scope": row["event"],
+                    "decision": detail.get("decision"), "tool": detail.get("tool"),
+                    "args": detail.get("args_summary")})
+    return {"audit": out, "count": len(out)}
+
+
 def events_tail(root: Path, limit: int) -> dict[str, Any]:
     init_db(root)
     with connect(root) as conn:
@@ -7893,6 +7938,8 @@ def enqueue_backtest(root: Path, review_task_id: str, phase: str) -> dict[str, A
     actually the previous backtest task id (kept name for back-compat).
     """
     phase = phase_qid(phase)
+    _scope_guard("mt5.backtest.dispatch", tool="enqueue_backtest",
+                 args_summary=f"{review_task_id}:{phase}")
     if phase not in SUPPORTED_BACKTEST_PHASES:
         return {
             "enqueued": False,
@@ -9846,6 +9893,8 @@ def reserve_ea_ids(
     the historical race where parallel agents each read "highest ID" and append
     colliding rows.
     """
+    _scope_guard("registry.reserve_ea_ids", tool="reserve_ea_ids",
+                 args_summary=f"{owner}:{len(slugs)} slugs")
     del root  # registry is repo-scoped, not runtime-root scoped.
     cleaned_slugs = [str(slug).strip() for slug in slugs if str(slug).strip()]
     if not cleaned_slugs:
@@ -9940,6 +9989,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     events_cmd = sub.add_parser("events", help="Show recent state transition events")
     events_cmd.add_argument("--limit", type=int, default=20)
+
+    audit_cmd = sub.add_parser("audit", help="Show agent capability-scope audit trail (DL-065)")
+    audit_cmd.add_argument("--agent", help="Filter by acting agent identity (codex/gemini/claude/controller)")
+    audit_cmd.add_argument("--scope", help="Filter by scope, e.g. git.push.main")
+    audit_cmd.add_argument("--decision", choices=["ALLOW", "DENY"], help="Filter by decision")
+    audit_cmd.add_argument("--limit", type=int, default=30)
 
     claude_prompt = sub.add_parser("claude-prompt", help="Write a Claude research handoff prompt")
     claude_prompt.add_argument("--source-id")
@@ -10081,6 +10136,9 @@ def main(argv: list[str] | None = None) -> int:
         print_json(set_source_status(root, args.source_id, args.status, args.notes_path))
     elif args.command == "events":
         print_json(events_tail(root, args.limit))
+    elif args.command == "audit":
+        print_json(audit_tail(root, agent=args.agent, scope=args.scope,
+                              decision=args.decision, limit=args.limit))
     elif args.command == "claude-prompt":
         print_json(render_claude_prompt(root, args.source_id, args.out))
     elif args.command == "build-ea":
