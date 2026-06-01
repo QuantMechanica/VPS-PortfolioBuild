@@ -51,15 +51,34 @@ Diese DL ist ein **Initiativ-Beschluss** (richtungsweisend, reversibel) — sie
 autorisiert die Spezifikation und den Bau, nicht eine fertige Implementierung.
 Code-Bewegung erfolgt erst nach OWNER-Ratifizierung und nach Gate-0 (s. u.).
 
-## Gate-0 (harte Vorbedingung — nichts wird darauf gebaut, bevor dies steht)
+## Gate-0 (harte Vorbedingung) — ✅ ERFÜLLT, verifiziert 2026-06-01
 
-**Die Q04-Kommissions-/Swap-Kalibrierung muss landen, bevor irgendeine
-Portfolio-KPI getraut wird.** Aktenlage (`project_qm_backtests_cost_free_2026-05-29`):
-jeder MT5-Backtest verrechnet $0 Kommission + $0 Swap auf `.DWX`-Symbole
-(verifiziert Net==GrossP+GrossL auf 6+ Reports). Ein Portfolio-Aggregat aus
+**Begründung:** Ohne Kostenrechnung ist jedes Portfolio-Aggregat aus
 Brutto-Equity-Kurven überzeichnet — eine "Sharpe 2,46" wäre gross-of-costs.
-Vor R-064-3 (Portfolio-KPI-Artefakt) ist mindestens **eine** MT5-Kalibrierungs-
-Run-Validierung erforderlich (Codex-Task `f308fe3f`, canonical `d04f2611`).
+Ursprungslage (`project_qm_backtests_cost_free_2026-05-29`): jeder MT5-Backtest
+verrechnet $0 Kommission + $0 Swap auf `.DWX`-Custom-Symbole (Net==GrossP+GrossL,
+6+ Reports), weil die Groups-Datei `Darwinex-Live_real.txt` keine `.DWX`-Pfade
+matcht.
+
+**Gelöst — nicht über die Groups-Datei, sondern EA-seitig.** Die Groups-File-Route
+(Codex-Task `f308fe3f`, Pin `d04f2611`) wurde verworfen (RECYCLE, 3 Backtests
+weiter $0) — `.DWX` sind Custom-Symbole, die die Groups-Datei nie governt. Der
+**bewährte Fix ist EA-seitige simulierte Kommission** (`InpQMSimCommissionPerLot`
+in `QM_Common.mqh`, Commit `541bfdd8`, **auf origin/main**): jeder schließende
+Deal wird mit `$/lot` belastet, der EA emittiert `pf_net` nach
+`Common\Files\QM`, und `q04_walkforward.py` fällt das Verdikt auf `pf_net`
+(nicht den Brutto-Report-PF). Konstante **`COMMISSION_PER_LOT_ROUND_TRIP = 7.00`**
+gelockt; Bug #6 (Expert-Pfad `QM\<dir>`) und #7 (`-Period` variabel) gefixt.
+
+**Laufzeit-Evidenz (Farm-State-DB, 2026-06-01):** Q04 läuft netto-of-cost. Alle
+3687 INFRA_FAIL sind Alt-Last (26.–29.05., vor dem Fix); **null INFRA_FAIL seit
+dem Fix**. Netto-PASS fließen täglich: 29.05 = 5, 30.05 = 10, 31.05 = 10,
+01.06 = 7 (laufend). Damit ist die Kosten-Vorbedingung für R-064-3 erfüllt.
+
+**Offen (nicht blockierend für Gate-0, aber für OWNER):** Q02/Q03 bleiben
+gross-of-costs Screens — bewusst (Q04 = erstes kostenbewusstes Gate) oder
+nachzuziehen? OWNER-Entscheidung, siehe
+`docs/ops/Q04_FIFTH_ROOT_CAUSE_commission_mechanism_2026-05-29.md`.
 
 ## Bindende Regeln
 
@@ -161,7 +180,9 @@ gäbe nichts zu übernehmen; die Energie gehört in die Portfolio-Schicht.
 ## Implementierung (nach Ratifizierung)
 
 1. ~~Diese DL ratifizieren (OWNER).~~ ✅ Ratifiziert 2026-06-01. Registry-Zeile gesetzt.
-2. **Gate-0:** Q04-Kommissions-/Swap-Kalibrierung verifizieren (1 MT5-Run).
+2. ~~**Gate-0:** Q04-Kommissions-/Swap-Kalibrierung verifizieren.~~ ✅ Erfüllt
+   2026-06-01 via EA-seitige Sim-Kommission (`541bfdd8`, auf main); Q04 läuft
+   netto, null INFRA_FAIL seit Fix. Siehe Gate-0-Sektion.
 3. Portfolio-Matrix-Definition + `agent_router`-Patch (R-064-1).
 4. Korrelations-Aggregator auf `q08_trades`-Streams (R-064-3.1) + KPI-Artefakt
    (R-064-3.3, hängt an Gate-0).
