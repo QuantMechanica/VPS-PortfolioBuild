@@ -5285,3 +5285,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10773,tv-harami-bb,4,GDAXI.DWX,107730004,2026-06-01,Development,active
 10773,tv-harami-bb,5,NDX.DWX,107730005,2026-06-01,Development,active
 10773,tv-harami-bb,6,WS30.DWX,107730006,2026-06-01,Development,active
+10774,tv-liq-day,0,EURUSD.DWX,107740000,2026-06-01,Development,active
+10774,tv-liq-day,1,GBPUSD.DWX,107740001,2026-06-01,Development,active
+10774,tv-liq-day,2,USDJPY.DWX,107740002,2026-06-01,Development,active
+10774,tv-liq-day,3,XAUUSD.DWX,107740003,2026-06-01,Development,active
+10774,tv-liq-day,4,GDAXI.DWX,107740004,2026-06-01,Development,active
+10774,tv-liq-day,5,NDX.DWX,107740005,2026-06-01,Development,active
+10774,tv-liq-day,6,WS30.DWX,107740006,2026-06-01,Development,active
