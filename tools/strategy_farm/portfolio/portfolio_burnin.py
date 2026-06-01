@@ -8,7 +8,14 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 try:
-    from .portfolio_common import DEFAULT_ARTIFACT_DIR, align, key_label, load_streams, to_daily_pnl
+    from .portfolio_common import (
+        DEFAULT_ARTIFACT_DIR,
+        DEFAULT_COMMON_DIR,
+        align,
+        key_label,
+        load_streams,
+        to_daily_pnl,
+    )
     from .portfolio_kpi import (
         Key,
         equity_to_daily_pnl,
@@ -16,7 +23,14 @@ try:
         portfolio_daily_pnl,
     )
 except ImportError:  # pragma: no cover - direct script execution
-    from portfolio_common import DEFAULT_ARTIFACT_DIR, align, key_label, load_streams, to_daily_pnl  # type: ignore
+    from portfolio_common import (  # type: ignore
+        DEFAULT_ARTIFACT_DIR,
+        DEFAULT_COMMON_DIR,
+        align,
+        key_label,
+        load_streams,
+        to_daily_pnl,
+    )
     from portfolio_kpi import (  # type: ignore
         Key,
         equity_to_daily_pnl,
@@ -36,15 +50,21 @@ class ConfigError(ValueError):
     """Raised when OWNER-gated burn-in config is incomplete."""
 
 
-def collect_forward_equity(demo_results_dir: Path | str, manifest: Mapping[str, Any]) -> dict[str, Any]:
-    """Collect demo forward trade streams and build combined portfolio equity.
+def collect_forward_equity(
+    live_results_root: Path | str,
+    manifest: Mapping[str, Any],
+    *,
+    burnin_window_days: int | None = None,
+) -> dict[str, Any]:
+    """Collect DXZ/T_Live forward trade streams and build combined portfolio equity.
 
-    Expected input layout is the MT5/Common-style root containing
-    ``QM/q08_trades/<ea_id>_<symbol>.jsonl``. Only sleeves listed in the manifest
-    are loaded.
+    The framework emits one ``TRADE_CLOSED`` JSONL stream per sleeve through
+    ``FILE_COMMON`` at ``Common/Files/QM/q08_trades/<ea_id>_<symbol>.jsonl``.
+    The collector also accepts a terminal-local ``MQL5/Files`` root for copied
+    evidence bundles. Only manifest sleeves are loaded.
     """
 
-    root = Path(demo_results_dir)
+    root = Path(live_results_root)
     keys, weights = _manifest_keys_and_weights(manifest)
     if not keys:
         return {
@@ -62,14 +82,19 @@ def collect_forward_equity(demo_results_dir: Path | str, manifest: Mapping[str, 
             ),
         }
 
-    streams = load_streams(root, candidates=keys)
+    streams, stream_root, searched_roots = _load_live_streams(root, keys)
     missing = sorted(set(keys) - set(streams))
     if missing:
         labels = ", ".join(key_label(key) for key in missing)
-        raise ValueError(f"missing demo forward stream(s) for manifest sleeve(s): {labels}")
+        searched = ", ".join(str(item) for item in searched_roots)
+        raise ValueError(
+            f"missing live forward stream(s) for manifest sleeve(s): {labels}; searched: {searched}"
+        )
 
     series_by_key = {key: to_daily_pnl(streams[key]) for key in keys}
     aligned_keys, dates, matrix = align(series_by_key)
+    if burnin_window_days is not None:
+        dates, matrix = _limit_to_first_window(dates, matrix, burnin_window_days)
     weight_vector = [weights[key] for key in aligned_keys]
     daily_pnl = portfolio_daily_pnl(matrix, weight_vector)
     equity_curve = _cumulative_sum(daily_pnl)
@@ -94,6 +119,7 @@ def collect_forward_equity(demo_results_dir: Path | str, manifest: Mapping[str, 
         "equity_curve": [_round_float(value) for value in equity_curve],
         "keys": [key_label(key) for key in aligned_keys],
         "weights": [_round_float(value) for value in weight_vector],
+        "stream_root": str(stream_root),
         "sleeves": sleeve_payload,
         "metrics": metrics_from_daily_pnl(
             daily_pnl,
@@ -161,7 +187,7 @@ def burnin_verdict(
         "tier0_safety": {
             "tlive_action": "NONE",
             "autotrading_action": "NONE",
-            "note": "Evidence only; T_Live AutoTrading remains OWNER+Claude manual.",
+            "note": "Evidence only; T_Live trading-state control remains OWNER+Claude manual.",
         },
         "reasons": reasons,
         "criteria": {
@@ -176,8 +202,11 @@ def burnin_verdict(
     }
 
 
-def deploy_to_demo(*_args: Any, **_kwargs: Any) -> None:
-    raise NotImplementedError("OWNER infra decision pending")
+def note_go_live_is_manual() -> str:
+    return (
+        "R-064-6 is read-only evidence. The DXZ/T_Live go-live flip is OWNER+Claude "
+        "manual; this module does not operate the terminal or change trading state."
+    )
 
 
 def load_burnin_config(path: Path | str = DEFAULT_CONFIG) -> dict[str, Any]:
@@ -213,7 +242,8 @@ def build_report(
         "config_basis": {
             "burnin_window_days": config.get("burnin_window_days"),
             "mandatory_scope": config.get("mandatory_scope"),
-            "demo_environment": _nested_get(config, ("demo_account", "environment")),
+            "live_environment": _nested_get(config, ("live_account", "environment")),
+            "account_label": _nested_get(config, ("live_account", "account_label")),
         },
         "forward_equity": forward_equity,
         "verdict": verdict,
@@ -229,10 +259,15 @@ def write_report(report: Mapping[str, Any], out_path: Path) -> None:
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Build R-064-6 demo-only portfolio burn-in evidence report."
+        description="Build R-064-6 DXZ/T_Live read-only burn-in evidence report."
     )
     parser.add_argument("--manifest", type=Path, required=True)
-    parser.add_argument("--demo-results-dir", type=Path, required=True)
+    parser.add_argument(
+        "--live-results-root",
+        type=Path,
+        default=None,
+        help="MT5 Common/Files root, terminal data path, or copied evidence bundle root.",
+    )
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     parser.add_argument("--mc-artifact", type=Path, default=None)
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
@@ -251,7 +286,12 @@ def main(argv: list[str] | None = None) -> int:
                 "manifest['montecarlo_artifact']"
             )
         mc_artifact = _read_json(mc_path)
-        forward_equity = collect_forward_equity(args.demo_results_dir, manifest)
+        live_root = args.live_results_root or Path(str(config["live_account"]["terminal_data_path"]))
+        forward_equity = collect_forward_equity(
+            live_root,
+            manifest,
+            burnin_window_days=int(config["burnin_window_days"]),
+        )
         tolerances = config["pass_tolerances"]
         report = build_report(
             manifest=manifest,
@@ -264,7 +304,7 @@ def main(argv: list[str] | None = None) -> int:
         out_path = _resolve_out_path(args.out)
         write_report(report, out_path)
         print(f"wrote {out_path}")
-        print("R-064-6 evidence only: no T_Live action and no AutoTrading action performed.")
+        print(note_go_live_is_manual())
         return 0
     except (ConfigError, FileNotFoundError, ValueError, KeyError) as exc:
         print(f"portfolio burn-in refused: {exc}")
@@ -321,6 +361,74 @@ def _forward_daily_pnl(
         raise ValueError("forward_equity must contain daily_pnl or equity_curve")
     curve = [float(value) for value in forward_equity]
     return equity_to_daily_pnl(curve), {}
+
+
+def _load_live_streams(
+    live_results_root: Path,
+    keys: Sequence[Key],
+) -> tuple[dict[Key, Any], Path, list[Path]]:
+    roots = _live_stream_roots(live_results_root)
+    requested = set(keys)
+    best_streams: dict[Key, Any] = {}
+    best_root = roots[0]
+
+    for root in roots:
+        streams = load_streams(root, candidates=list(keys))
+        if requested.issubset(streams):
+            return streams, root, roots
+        if len(streams) > len(best_streams):
+            best_streams = streams
+            best_root = root
+
+    return best_streams, best_root, roots
+
+
+def _live_stream_roots(live_results_root: Path) -> list[Path]:
+    """Return candidate roots that contain ``QM/q08_trades`` below them."""
+
+    candidates = [
+        live_results_root,
+        live_results_root / "MQL5" / "Files",
+    ]
+    if live_results_root.exists() and live_results_root.is_dir():
+        candidates.extend(
+            child / "MQL5" / "Files"
+            for child in sorted(live_results_root.iterdir(), key=lambda item: item.name)
+            if child.is_dir()
+        )
+    candidates.append(DEFAULT_COMMON_DIR)
+    roots: list[Path] = []
+    seen: set[str] = set()
+    for candidate in candidates:
+        marker = str(candidate)
+        if marker in seen:
+            continue
+        roots.append(candidate)
+        seen.add(marker)
+    return roots
+
+
+def _limit_to_first_window(
+    dates: Sequence[dt.date],
+    matrix: Any,
+    burnin_window_days: int,
+) -> tuple[list[dt.date], Any]:
+    if burnin_window_days <= 0 or not dates:
+        return list(dates), matrix
+
+    first_day = dates[0]
+    keep = [
+        idx
+        for idx, day in enumerate(dates)
+        if (day - first_day).days < int(burnin_window_days)
+    ]
+    if len(keep) == len(dates):
+        return list(dates), matrix
+
+    kept_dates = [dates[idx] for idx in keep]
+    if hasattr(matrix, "shape"):
+        return kept_dates, matrix[keep, :]
+    return kept_dates, [matrix[idx] for idx in keep]
 
 
 def _per_sleeve_drift(
