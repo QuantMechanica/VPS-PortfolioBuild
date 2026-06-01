@@ -10087,6 +10087,13 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     root = root_from_args(args)
 
+    # DL-065: the farmctl CLI itself is the trusted deterministic controller.
+    # Default the scope-layer actor to "controller" UNLESS a spawned agent already
+    # set QM_AGENT_ID (codex/gemini via _codex_env/_gemini_env) — setdefault keeps
+    # those overrides. This attributes pump/controller actions correctly in the
+    # agent_audit trail and is the prerequisite for later flipping unknown->fail-closed.
+    os.environ.setdefault("QM_AGENT_ID", "controller")
+
     if args.command == "init":
         init_db(root)
         print_json({"initialized": True, "root": str(root), "db": str(db_path(root))})
