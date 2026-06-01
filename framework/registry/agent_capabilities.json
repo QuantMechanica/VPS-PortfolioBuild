@@ -1,0 +1,40 @@
+{
+  "_authority": "DL-065 Agent Capability Scopes + Audit Layer (OWNER + Claude, 2026-06-01)",
+  "_model": "fail-closed: a tool runs only if the acting agent identity holds the required scope; otherwise refuse + audit DENY",
+  "_doc": "decisions/DL-065_agent_capability_scopes_audit.md",
+  "version": 1,
+  "tiers": {
+    "T0_never_automated": ["live.autotrade"],
+    "T1_irreversible_outward": ["git.push.main", "live.deploy_manifest", "db.delete", "external.send", "registry.reserve_ea_ids"],
+    "T2_heavy_contended": ["ea.compile", "fleet.recompile", "mt5.backtest.dispatch", "pipeline.close_gate"],
+    "T3_cheap_reversible": ["repo.read", "repo.write", "dashboard.render", "card.draft", "research.web"]
+  },
+  "agents": {
+    "claude": {
+      "grants": ["git.push.main", "live.deploy_manifest", "db.delete", "registry.reserve_ea_ids",
+                 "ea.compile", "fleet.recompile", "mt5.backtest.dispatch", "pipeline.close_gate",
+                 "repo.read", "repo.write", "dashboard.render", "card.draft", "research.web"],
+      "deny_explicit": ["live.autotrade", "external.send"],
+      "default_sandbox": "workspace-write"
+    },
+    "codex": {
+      "grants": ["registry.reserve_ea_ids", "ea.compile", "fleet.recompile", "mt5.backtest.dispatch",
+                 "pipeline.close_gate", "repo.read", "repo.write", "dashboard.render", "card.draft", "research.web"],
+      "deny_explicit": ["live.autotrade", "git.push.main", "live.deploy_manifest", "db.delete", "external.send"],
+      "default_sandbox": "workspace-write",
+      "note": "codex pushes feature branches only; main is Claude/OWNER review-merge"
+    },
+    "gemini": {
+      "grants": ["repo.read", "repo.write", "dashboard.render", "card.draft", "research.web"],
+      "deny_explicit": ["live.autotrade", "git.push.main", "live.deploy_manifest", "db.delete",
+                        "external.send", "registry.reserve_ea_ids", "ea.compile", "fleet.recompile",
+                        "mt5.backtest.dispatch", "pipeline.close_gate"],
+      "default_sandbox": "workspace-write",
+      "note": "research-only; tightest scope given known sandbox-hallucination risk"
+    }
+  },
+  "full_access_grant": {
+    "_doc": "danger-full-access is NOT a default (DL-065 R-065-2). It requires an explicit per-task OWNER grant recorded here with an expiry; the spawn checks this before using danger-full-access.",
+    "active_grants": []
+  }
+}
