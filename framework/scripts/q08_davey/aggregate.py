@@ -155,6 +155,45 @@ def _common_q08_trade_log(ea_id: int, symbol: str) -> Path:
             / "QM" / "q08_trades" / f"{ea_id}_{symbol.replace('.', '_')}.jsonl")
 
 
+def _latest_structured_qm_log(ea_id: int, symbol: str, terminal: str | None = None) -> Path | None:
+    """Find the fullest tester-agent QM log carrying structured framework events.
+
+    `farmctl` passes the terminal MQL5 Logs path, but Strategy Tester agents write
+    QM_Logger output under Tester/Agent-*/MQL5/Files/QM. The Common\\Files stream
+    only carries TRADE_CLOSED rows, so Q08.1/8.3/8.10 need this recovery path for
+    EQUITY_SNAPSHOT input.
+    """
+    terminals = [terminal] if terminal else []
+    terminals.extend(f"T{i}" for i in range(1, 11) if f"T{i}" not in terminals)
+    symbol_token = f'"symbol":"{symbol}"'
+
+    candidates: list[Path] = []
+    for term in terminals:
+        if not term:
+            continue
+        base = Path("D:/QM/mt5") / term / "Tester"
+        if not base.exists():
+            continue
+        candidates.extend(base.glob(f"Agent-*/MQL5/Files/QM/QM5_{ea_id}_*.log"))
+
+    best: tuple[int, float, Path] | None = None
+    for path in candidates:
+        count = 0
+        try:
+            with path.open(encoding="utf-8", errors="ignore") as fh:
+                for line in fh:
+                    if "EQUITY_SNAPSHOT" in line and symbol_token in line:
+                        count += 1
+        except OSError:
+            continue
+        if count <= 0:
+            continue
+        score = (count, path.stat().st_mtime, path)
+        if best is None or score[:2] > best[:2]:
+            best = score
+    return best[2] if best is not None else None
+
+
 def _run_baseline_for_trades(ea_id: int, symbol: str, terminal: str | None) -> dict:
     """Run ONE clean full-history backtest so the EA emits its TRADE_CLOSED stream to
     Common\\Files. Q08 itself doesn't otherwise run a backtest, so without this the trade
@@ -192,6 +231,9 @@ def _run_baseline_for_trades(ea_id: int, symbol: str, terminal: str | None) -> d
         out = {"exit_code": p.returncode, "expert": expert, "period": period}
         if summary is not None:
             out.update(_baseline_report_metadata(summary))
+        structured_log = _latest_structured_qm_log(ea_id, symbol, terminal)
+        if structured_log is not None:
+            out["structured_log_path"] = str(structured_log)
         return out
     except Exception as exc:
         return {"error": repr(exc)}
@@ -279,6 +321,16 @@ def _apply_worst_case_commission(trades: list[dict], fallback_symbol: str) -> tu
     }
 
 
+def _aggregate_verdict(statuses: list[str]) -> str:
+    """Combine sub-gate statuses while preserving infra gaps as INVALID."""
+    normalized = [str(s).upper() for s in statuses]
+    if "INVALID" in normalized:
+        return "INVALID"
+    if "FAIL" in normalized:
+        return "FAIL"
+    return "PASS"
+
+
 def run_all(ea_id: int, symbol: str, log_path: Path,
             portfolio: list[dict] | None = None,
             out_dir: Path | None = None,
@@ -286,6 +338,10 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
     log_path = Path(log_path)
     trades = common.load_trades_from_log(log_path)
     equity_stream = common.load_equity_stream(log_path)
+    if not equity_stream:
+        structured_log = _latest_structured_qm_log(ea_id, symbol, terminal)
+        if structured_log is not None:
+            equity_stream = common.load_equity_stream(structured_log)
     # Tester writes the EA log to the agent sandbox, so the farmctl --log path is empty.
     # The recompiled EA also dumps a TRADE_CLOSED stream to Common\Files; read that, and
     # run a clean baseline backtest first if it's not there yet.
@@ -311,6 +367,11 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
                 baseline_run.update(_baseline_report_metadata(retry_summary))
         trades = common.load_trades_from_log(common_log)
         equity_stream = common.load_equity_stream(common_log) or equity_stream
+        structured_log = _latest_structured_qm_log(ea_id, symbol, terminal)
+        if structured_log is not None:
+            equity_stream = common.load_equity_stream(structured_log) or equity_stream
+            if baseline_run is not None:
+                baseline_run["structured_log_path"] = str(structured_log)
         if not trades and baseline_run and baseline_run.get("baseline_report_path"):
             trades = common.load_trades_from_mt5_report(Path(str(baseline_run["baseline_report_path"])))
 
@@ -340,12 +401,7 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
 
     # AND-combine: PASS only if all 10 PASS.
     statuses = [r["status"] for r in sub_results]
-    if "FAIL" in statuses:
-        overall = "FAIL"
-    elif "INVALID" in statuses:
-        overall = "INVALID"  # any infrastructure-missing → can't decide
-    else:
-        overall = "PASS"
+    overall = _aggregate_verdict(statuses)
 
     aggregate = {
         "ea_id": ea_id,

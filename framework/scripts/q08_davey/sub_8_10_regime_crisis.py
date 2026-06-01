@@ -53,10 +53,19 @@ def run(trades: list[dict], equity_stream: list[dict] | None = None, **_) -> dic
                 continue
             day_regime[str(day_key)] = regime
 
+    if not day_regime:
+        return make_result(
+            GATE_NAME, "INVALID",
+            value={r: 0 for r in REQUIRED_REGIMES},
+            threshold={r: ">0 trades" for r in REQUIRED_REGIMES},
+            detail=f"regime_input_missing:no_equity_snapshots:n_trades={len(trades)}",
+            evidence={"n_trades": len(trades), "n_equity_snapshots": len(equity_stream or [])})
+
     # Bucket per-trade P&L by regime.
     regime_pnl: dict[str, float] = defaultdict(float)
     regime_count: dict[str, int] = defaultdict(int)
     unclassified = 0
+    timestamped_trades = 0
 
     crisis_pnl: dict[str, float] = defaultdict(float)
     crisis_count: dict[str, int] = defaultdict(int)
@@ -69,6 +78,7 @@ def run(trades: list[dict], equity_stream: list[dict] | None = None, **_) -> dic
             continue
         # Regime
         if ts is not None:
+            timestamped_trades += 1
             day_key = ts.year * 10000 + ts.month * 100 + ts.day
             r = day_regime.get(str(day_key)) or day_regime.get(day_key)
             if r in REQUIRED_REGIMES:
@@ -85,12 +95,44 @@ def run(trades: list[dict], equity_stream: list[dict] | None = None, **_) -> dic
     # Regime hard gate: every required regime must be net-positive.
     missing = [r for r in REQUIRED_REGIMES if regime_count[r] == 0]
     losers = [r for r in REQUIRED_REGIMES if regime_count[r] > 0 and regime_pnl[r] <= 0]
+    classified = sum(regime_count[r] for r in REQUIRED_REGIMES)
 
     crisis_info = {
         name: {"net": round(crisis_pnl[name], 2), "trades": crisis_count[name]}
         for name in CRISIS_WINDOWS
         if crisis_count[name] > 0
     }
+
+    if classified == 0 and unclassified > 0:
+        return make_result(
+            GATE_NAME, "INVALID",
+            value={r: regime_count[r] for r in REQUIRED_REGIMES},
+            threshold={r: ">0 trades" for r in REQUIRED_REGIMES},
+            detail=(
+                "regime_join_failed:"
+                f"classified=0:unclassified={unclassified}:n_trades={len(trades)}"
+            ),
+            evidence={"regime_pnl": {r: round(regime_pnl[r], 2) for r in REQUIRED_REGIMES},
+                      "regime_count": dict(regime_count),
+                      "unclassified_trades": unclassified,
+                      "equity_snapshot_days": len(day_regime),
+                      "crisis_informational": crisis_info})
+
+    if timestamped_trades > 0 and unclassified / timestamped_trades > 0.10:
+        return make_result(
+            GATE_NAME, "INVALID",
+            value={r: regime_count[r] for r in REQUIRED_REGIMES},
+            threshold={r: ">0 trades" for r in REQUIRED_REGIMES},
+            detail=(
+                "regime_join_incomplete:"
+                f"classified={classified}:unclassified={unclassified}:"
+                f"n_timestamped={timestamped_trades}"
+            ),
+            evidence={"regime_pnl": {r: round(regime_pnl[r], 2) for r in REQUIRED_REGIMES},
+                      "regime_count": dict(regime_count),
+                      "unclassified_trades": unclassified,
+                      "equity_snapshot_days": len(day_regime),
+                      "crisis_informational": crisis_info})
 
     if missing:
         return make_result(

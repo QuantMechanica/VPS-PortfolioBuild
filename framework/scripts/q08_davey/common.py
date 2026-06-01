@@ -185,9 +185,11 @@ def trade_timestamp(trade: dict) -> dt.datetime | None:
 def make_result(name: str, status: str, value, threshold, detail: str,
                 evidence: dict | None = None) -> dict:
     """Standard Q08 sub-gate result shape."""
+    normalized_status = str(status).upper()
     return {
         "name": name,
-        "status": status,
+        "status": normalized_status,
+        "passed": normalized_status == "PASS",
         "value": value,
         "threshold": threshold,
         "detail": detail,

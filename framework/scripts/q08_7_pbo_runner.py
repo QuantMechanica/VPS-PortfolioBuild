@@ -42,7 +42,7 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from framework.scripts._phase_utils import ensure_dir, utc_now_iso
-from framework.scripts.q08_davey.common import load_trades_from_mt5_report
+from framework.scripts.q08_davey.common import load_trades_from_mt5_report, parse_ts
 
 GATE_NAME = "Q08.7_pbo"
 DEFAULT_N_SLICES = 8
@@ -91,10 +91,17 @@ def _parse_trades_from_summary(summary_path: Path) -> list[dict]:
         if report_path:
             break
     if report_path:
-        return [
-            {"ts": t["ts_utc"], "net": t["net"]}
-            for t in load_trades_from_mt5_report(Path(report_path))
-        ]
+        parsed: list[dict] = []
+        for trade in load_trades_from_mt5_report(Path(report_path)):
+            close_ts = parse_ts(trade.get("ts_utc") or trade.get("time"))
+            if close_ts is None:
+                continue
+            try:
+                net_f = float(trade["net"])
+            except (KeyError, TypeError, ValueError):
+                continue
+            parsed.append({"ts": close_ts, "net": net_f})
+        return parsed
     return out
 
 
