@@ -8,7 +8,7 @@ $logDir = "D:\QM\strategy_farm\logs"
 New-Item -ItemType Directory -Force -Path $logDir | Out-Null
 
 $action = New-ScheduledTaskAction -Execute $pythonw -Argument "`"$wrapper`""
-$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).Date -RepetitionInterval (New-TimeSpan -Hours 4)
+$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).Date -RepetitionInterval (New-TimeSpan -Minutes 30)
 $settings = New-ScheduledTaskSettingsSet `
   -MultipleInstances IgnoreNew `
   -ExecutionTimeLimit (New-TimeSpan -Minutes 30) `
