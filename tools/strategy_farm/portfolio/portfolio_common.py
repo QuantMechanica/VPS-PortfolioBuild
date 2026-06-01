@@ -63,18 +63,22 @@ def read_candidates(
         return []
 
     placeholders = ",".join("?" for _ in states)
+    conn: sqlite3.Connection | None = None
     try:
-        with sqlite3.connect(db_path) as conn:
-            rows = conn.execute(
-                f"""
-                SELECT DISTINCT ea_id, symbol
-                FROM portfolio_candidates
-                WHERE state IN ({placeholders})
-                """,
-                states,
-            ).fetchall()
+        conn = sqlite3.connect(db_path)
+        rows = conn.execute(
+            f"""
+            SELECT DISTINCT ea_id, symbol
+            FROM portfolio_candidates
+            WHERE state IN ({placeholders})
+            """,
+            states,
+        ).fetchall()
     except sqlite3.Error:
         return []
+    finally:
+        if conn is not None:
+            conn.close()
 
     candidates: list[tuple[int, str]] = []
     for ea_id, symbol in rows:
