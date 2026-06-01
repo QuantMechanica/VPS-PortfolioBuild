@@ -74,6 +74,7 @@ def resolve_cli(agent: str) -> str:
 
 def agent_env(agent: str) -> dict[str, str]:
     env = os.environ.copy()
+    env["QM_AGENT_ID"] = agent
     if agent == "codex":
         env["CODEX_HOME"] = str(CODEX_HOME)
     if agent == "gemini":
@@ -121,6 +122,10 @@ Cycle:
    python tools/strategy_farm/agent_router.py route-many --max-routes 5
    python tools/strategy_farm/agent_router.py list-tasks --agent {agent} --state IN_PROGRESS
 2. For every IN_PROGRESS task assigned to {agent}, in ascending numeric priority:
+   The router claims a 30-minute spawn lease (`agent_task:<task_id>`) when it
+   moves work to IN_PROGRESS. If you were launched directly for a specific task
+   outside the router path, acquire that same lease before doing any work; if the
+   lease is live, skip/defer instead of duplicating the task.
    read payload and skills, produce a durable artifact, run focused verification,
    then update the router with:
    python tools/strategy_farm/agent_router.py update-task <task_id> --state REVIEW --artifact-path "<artifact>" --verdict "<short_verdict>"
@@ -716,6 +721,7 @@ def run_agent(agent: str, dry_run: bool, stale_minutes: int, timeout_minutes: in
 
 
 def main() -> int:
+    os.environ.setdefault("QM_AGENT_ID", "controller")
     parser = argparse.ArgumentParser(description="Run one headless agent orchestration pass.")
     parser.add_argument("--agent", choices=("codex", "gemini", "claude"), required=True)
     parser.add_argument("--dry-run", action="store_true", help="Verify prompt/lock/command without launching the model.")

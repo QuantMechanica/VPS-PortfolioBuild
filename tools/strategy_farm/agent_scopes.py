@@ -111,12 +111,8 @@ def current_agent_id() -> str:
 
 
 # Identities that are the trusted deterministic base, NOT spawned agents: the
-# farmctl/pump controller, the OWNER, or an un-set context. They pass (audited)
-# so wiring guards into live controller paths can never halt the factory. The
-# scope layer's purpose is to enforce against SPAWNED agents, which always set
-# QM_AGENT_ID (DL-065 R-065-2 amended). Flip this to fail-closed later once the
-# pump scheduled task sets QM_AGENT_ID=controller.
-_TRUSTED_BASE = {"", "unknown", "controller", "owner"}
+# farmctl/pump controller and the OWNER. Unset/unknown callers fail closed.
+_TRUSTED_BASE = {"controller", "owner"}
 
 
 def guarded_db_delete(conn: Any, sql: str, params: tuple = (), *,
@@ -134,26 +130,39 @@ def acquire_spawn_lease(conn: Any, task_key: str, agent_id: str, now_iso: str,
     """R-065-3 claim/lease: prevent two spawn paths doing the same work (the
     Task-E duplication). Returns True if the lease was acquired, False if a live
     (non-expired) lease for task_key already exists. Caller passes timestamps so
-    the function stays deterministic/testable."""
-    conn.execute(
-        """CREATE TABLE IF NOT EXISTS spawn_leases (
-            task_key TEXT PRIMARY KEY, agent_id TEXT NOT NULL,
-            acquired_at TEXT NOT NULL, expires_at TEXT NOT NULL)"""
-    )
-    row = conn.execute("SELECT expires_at FROM spawn_leases WHERE task_key=?", (task_key,)).fetchone()
-    live = row is not None and str(row[0]) > now_iso
-    if live:
-        return False
-    conn.execute(
-        "INSERT OR REPLACE INTO spawn_leases(task_key, agent_id, acquired_at, expires_at) "
-        "VALUES (?, ?, ?, ?)",
-        (task_key, agent_id, now_iso, expires_iso),
-    )
-    return True
+    the function stays deterministic/testable.
+
+    Lease bugs must never halt the live factory. On storage errors this returns
+    True (fail-open for coordination only) and emits a best-effort audit event.
+    """
+    try:
+        conn.execute(
+            """CREATE TABLE IF NOT EXISTS spawn_leases (
+                task_key TEXT PRIMARY KEY, agent_id TEXT NOT NULL,
+                acquired_at TEXT NOT NULL, expires_at TEXT NOT NULL)"""
+        )
+        row = conn.execute("SELECT expires_at FROM spawn_leases WHERE task_key=?", (task_key,)).fetchone()
+        live = row is not None and str(row[0]) > now_iso
+        if live:
+            return False
+        conn.execute(
+            "INSERT OR REPLACE INTO spawn_leases(task_key, agent_id, acquired_at, expires_at) "
+            "VALUES (?, ?, ?, ?)",
+            (task_key, agent_id, now_iso, expires_iso),
+        )
+        return True
+    except Exception as exc:  # pragma: no cover - exercised by caller-safety tests
+        _audit(agent_id, "spawn.lease", tool="acquire_spawn_lease",
+               args_summary=f"{task_key} [LEASE_ERROR_FAIL_OPEN:{exc!r}]",
+               decision="ALLOW", conn=conn)
+        return True
 
 
 def release_spawn_lease(conn: Any, task_key: str) -> None:
-    conn.execute("DELETE FROM spawn_leases WHERE task_key=?", (task_key,))
+    try:
+        conn.execute("DELETE FROM spawn_leases WHERE task_key=?", (task_key,))
+    except Exception:
+        pass
 
 
 def guard(scope: str, *, tool: str, args_summary: str = "", conn: Any | None = None) -> None:
@@ -161,7 +170,7 @@ def guard(scope: str, *, tool: str, args_summary: str = "", conn: Any | None = N
 
     - Spawned agent identity (codex/gemini/claude/…): fail-closed `require()` — raises
       ScopeDenied if the agent lacks the scope.
-    - Trusted base (controller/pump/owner/unset): audit ALLOW and return, never block.
+    - Trusted base (controller/pump/owner): audit ALLOW and return, never block.
     """
     actor = current_agent_id()
     if actor in _TRUSTED_BASE:

@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -24,6 +25,7 @@ from tools.strategy_farm import agent_router  # noqa: E402
 
 
 def main() -> int:
+    os.environ.setdefault("QM_AGENT_ID", "controller")
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     stamp = dt.datetime.now(dt.UTC).replace(microsecond=0).strftime("%Y%m%dT%H%M%SZ")
     log_path = LOG_DIR / f"agent_router_task_{stamp}.json"

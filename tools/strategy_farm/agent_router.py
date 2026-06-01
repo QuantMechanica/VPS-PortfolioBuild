@@ -25,6 +25,11 @@ try:
 except ModuleNotFoundError:  # pragma: no cover - direct script execution
     import farmctl  # type: ignore
 
+try:
+    from tools.strategy_farm import agent_scopes
+except ModuleNotFoundError:  # pragma: no cover - direct script execution
+    import agent_scopes  # type: ignore
+
 
 DEFAULT_ROOT = farmctl.DEFAULT_ROOT
 CLAUDE_DISABLED_FLAG = Path(r"D:\QM\strategy_farm\CLAUDE_DISABLED.flag")
@@ -47,6 +52,8 @@ TASK_STATES = {
 }
 
 REVIEW_CLOSE_STATES = {"APPROVED", "BLOCKED", "FAILED", "RECYCLE"}
+LEASE_TTL_MINUTES = 30
+LEASE_RELEASE_STATES = {"REVIEW", "APPROVED", "FAILED", "BLOCKED", "RECYCLE"}
 
 TASK_TYPE_CAPABILITIES: dict[str, list[str]] = {
     "research_strategy": ["research", "strategy"],
@@ -324,6 +331,58 @@ def _running_count(conn: sqlite3.Connection, agent_id: str) -> int:
     return int(row["n"] if row else 0)
 
 
+def _task_lease_key(task_id: str) -> str:
+    return f"agent_task:{task_id}"
+
+
+def _record_lease_event(conn: sqlite3.Connection, task_id: str, event_name: str, detail: dict[str, Any]) -> None:
+    try:
+        farmctl.event(conn, "agent_task", task_id, event_name, detail)
+    except Exception:
+        pass
+
+
+def _acquire_task_lease(
+    conn: sqlite3.Connection,
+    task_id: str,
+    agent_id: str,
+    now_dt: dt.datetime,
+) -> bool:
+    now_iso = now_dt.isoformat(timespec="seconds")
+    expires_iso = (now_dt + dt.timedelta(minutes=LEASE_TTL_MINUTES)).isoformat(timespec="seconds")
+    task_key = _task_lease_key(task_id)
+    try:
+        acquired = agent_scopes.acquire_spawn_lease(conn, task_key, agent_id, now_iso, expires_iso)
+    except Exception as exc:
+        _record_lease_event(
+            conn,
+            task_id,
+            "spawn_lease_error",
+            {"agent_id": agent_id, "task_key": task_key, "error": repr(exc), "decision": "fail_open"},
+        )
+        return True
+    if not acquired:
+        _record_lease_event(
+            conn,
+            task_id,
+            "spawn_lease_deferred",
+            {"agent_id": agent_id, "task_key": task_key, "expires_after": now_iso},
+        )
+    return acquired
+
+
+def _release_task_lease(conn: sqlite3.Connection, task_id: str) -> None:
+    try:
+        agent_scopes.release_spawn_lease(conn, _task_lease_key(task_id))
+    except Exception as exc:
+        _record_lease_event(
+            conn,
+            task_id,
+            "spawn_lease_release_error",
+            {"task_key": _task_lease_key(task_id), "error": repr(exc)},
+        )
+
+
 def release_stale_in_progress(root: Path = DEFAULT_ROOT, *, max_age_hours: int = STALE_IN_PROGRESS_HOURS) -> dict[str, Any]:
     """Release abandoned agent_tasks so one dead worker cannot consume capacity forever."""
     now = farmctl.utc_now()
@@ -360,6 +419,7 @@ def release_stale_in_progress(root: Path = DEFAULT_ROOT, *, max_age_hours: int =
                 """,
                 (_json(payload), now, row["id"]),
             )
+            _release_task_lease(conn, row["id"])
             released.append(
                 {
                     "task_id": row["id"],
@@ -394,7 +454,8 @@ def _eligible_agents(conn: sqlite3.Connection, required: set[str]) -> list[sqlit
 def route_once(root: Path = DEFAULT_ROOT, *, claude_disabled_flag: Path = CLAUDE_DISABLED_FLAG) -> RouteDecision:
     sync_default_registry(root, claude_disabled_flag=claude_disabled_flag)
     release_stale_in_progress(root)
-    now = farmctl.utc_now()
+    now_dt = dt.datetime.now(dt.UTC).replace(microsecond=0)
+    now = now_dt.isoformat()
     with closing(connect(root)) as conn:
         conn.execute("BEGIN IMMEDIATE")
         tasks = conn.execute(
@@ -414,6 +475,9 @@ def route_once(root: Path = DEFAULT_ROOT, *, claude_disabled_flag: Path = CLAUDE
             required = set(json.loads(task["required_capabilities_json"] or "[]"))
             agents = _eligible_agents(conn, required)
             if not agents:
+                skipped.append(task["id"])
+                continue
+            if not _acquire_task_lease(conn, task["id"], agents[0]["agent_id"], now_dt):
                 skipped.append(task["id"])
                 continue
             selected = (task, agents[0], required)
@@ -697,6 +761,8 @@ def update_task(
             """,
             (state, artifact_path, verdict, now, task_id),
         )
+        if state in LEASE_RELEASE_STATES:
+            _release_task_lease(conn, task_id)
         codex_review_task_id = None
         if row["task_type"] == "build_ea" and row["assigned_agent"] == "gemini" and state == "REVIEW":
             existing_review = conn.execute(
@@ -830,6 +896,7 @@ def close_review_task(
                 task_id,
             ),
         )
+        _release_task_lease(conn, task_id)
         conn.commit()
     return {
         "closed": True,

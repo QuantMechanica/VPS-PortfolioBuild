@@ -103,9 +103,17 @@ def test_require_unknown_identity_defaults_fail_closed(monkeypatch):
 
 def test_guard_trusted_base_passes(monkeypatch):
     calls = _patch_event(monkeypatch)
-    monkeypatch.delenv("QM_AGENT_ID", raising=False)  # unset == trusted base (pump)
+    monkeypatch.setenv("QM_AGENT_ID", "controller")
     sc.guard("git.push.main", tool="push", args_summary="HEAD:main", conn=object())  # no raise
     assert calls[0][1] == "controller" and calls[0][3]["decision"] == "ALLOW"
+
+
+def test_guard_unset_identity_fails_closed(monkeypatch):
+    calls = _patch_event(monkeypatch)
+    monkeypatch.delenv("QM_AGENT_ID", raising=False)
+    with pytest.raises(sc.ScopeDenied):
+        sc.guard("git.push.main", tool="push", args_summary="HEAD:main", conn=object())
+    assert calls[0][1] == "unknown" and calls[0][3]["decision"] == "DENY"
 
 
 def test_guard_enforces_spawned_codex(monkeypatch):
@@ -127,7 +135,7 @@ def test_guard_allows_spawned_codex_in_scope(monkeypatch):
 
 def test_guarded_db_delete_controller_executes(monkeypatch):
     import sqlite3
-    _patch_event(monkeypatch); monkeypatch.delenv("QM_AGENT_ID", raising=False)
+    _patch_event(monkeypatch); monkeypatch.setenv("QM_AGENT_ID", "controller")
     c = sqlite3.connect(":memory:")
     c.execute("CREATE TABLE t(x)"); c.executemany("INSERT INTO t VALUES(?)", [(1,), (2,)])
     n = sc.guarded_db_delete(c, "DELETE FROM t WHERE x=?", (1,), tool="test")
@@ -156,3 +164,17 @@ def test_spawn_lease_prevents_duplicate():
     assert sc.acquire_spawn_lease(c, "taskA", "codex", "2026-06-01T10:31:00", "2026-06-01T11:00:00") is True
     sc.release_spawn_lease(c, "taskA")
     assert sc.acquire_spawn_lease(c, "taskA", "codex", "2026-06-01T11:01:00", "2026-06-01T11:30:00") is True
+
+
+def test_spawn_lease_error_fails_open(monkeypatch):
+    class BadConn:
+        def execute(self, *_args, **_kwargs):
+            raise RuntimeError("boom")
+
+    calls = _patch_event(monkeypatch)
+    assert sc.acquire_spawn_lease(
+        BadConn(), "taskA", "codex", "2026-06-01T10:00:00", "2026-06-01T10:30:00"
+    ) is True
+    assert calls[0][0] == "agent_audit"
+    assert calls[0][2] == "spawn.lease"
+    assert calls[0][3]["decision"] == "ALLOW"

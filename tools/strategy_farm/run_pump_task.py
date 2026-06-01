@@ -49,6 +49,7 @@ def _acquire_lock() -> int | None:
 
 
 def main() -> int:
+    os.environ.setdefault("QM_AGENT_ID", "controller")
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     lock_fd = _acquire_lock()
     if lock_fd is None:
@@ -57,12 +58,15 @@ def main() -> int:
     log_path = LOG_DIR / f"pump_task_{stamp}.log"
     try:
         with log_path.open("w", encoding="utf-8", newline="\n") as log:
+            env = os.environ.copy()
+            env.setdefault("QM_AGENT_ID", "controller")
             proc = subprocess.run(
                 [_console_python(), str(FARMCTL), "pump"],
                 cwd=str(REPO_ROOT),
                 stdout=log,
                 stderr=subprocess.STDOUT,
                 stdin=subprocess.DEVNULL,
+                env=env,
                 close_fds=True,
             )
         return int(proc.returncode)

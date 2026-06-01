@@ -293,6 +293,7 @@ def _claude_env() -> dict[str, str]:
     env.setdefault("NO_COLOR", "1")
     env.setdefault("FORCE_COLOR", "0")
     env.setdefault("CI", "1")
+    env["QM_AGENT_ID"] = "claude"  # DL-065: spawned identity for the scope layer
     return env
 
 RUNTIME_DIRS = [
@@ -10092,7 +10093,7 @@ def main(argv: list[str] | None = None) -> int:
 
     # DL-065: the farmctl CLI itself is the trusted deterministic controller.
     # Default the scope-layer actor to "controller" UNLESS a spawned agent already
-    # set QM_AGENT_ID (codex/gemini via _codex_env/_gemini_env) — setdefault keeps
+    # set QM_AGENT_ID (codex/gemini/claude via spawn env helpers) — setdefault keeps
     # those overrides. This attributes pump/controller actions correctly in the
     # agent_audit trail and is the prerequisite for later flipping unknown->fail-closed.
     os.environ.setdefault("QM_AGENT_ID", "controller")
