@@ -121,3 +121,38 @@ def test_guard_allows_spawned_codex_in_scope(monkeypatch):
     monkeypatch.setenv("QM_AGENT_ID", "codex")
     sc.guard("ea.compile", tool="compile", conn=object())  # codex allowed
     assert calls[0][3]["decision"] == "ALLOW"
+
+
+# ---- guarded_db_delete (DL-065 follow-up) ---------------------------------
+
+def test_guarded_db_delete_controller_executes(monkeypatch):
+    import sqlite3
+    _patch_event(monkeypatch); monkeypatch.delenv("QM_AGENT_ID", raising=False)
+    c = sqlite3.connect(":memory:")
+    c.execute("CREATE TABLE t(x)"); c.executemany("INSERT INTO t VALUES(?)", [(1,), (2,)])
+    n = sc.guarded_db_delete(c, "DELETE FROM t WHERE x=?", (1,), tool="test")
+    assert n == 1 and c.execute("SELECT COUNT(*) FROM t").fetchone()[0] == 1
+
+
+def test_guarded_db_delete_codex_denied(monkeypatch):
+    import sqlite3
+    _patch_event(monkeypatch); monkeypatch.setenv("QM_AGENT_ID", "codex")
+    c = sqlite3.connect(":memory:")
+    c.execute("CREATE TABLE t(x)"); c.execute("INSERT INTO t VALUES(1)")
+    with pytest.raises(sc.ScopeDenied):
+        sc.guarded_db_delete(c, "DELETE FROM t", (), tool="test")
+    assert c.execute("SELECT COUNT(*) FROM t").fetchone()[0] == 1  # delete never ran
+
+
+# ---- spawn lease (R-065-3) ------------------------------------------------
+
+def test_spawn_lease_prevents_duplicate():
+    import sqlite3
+    c = sqlite3.connect(":memory:")
+    assert sc.acquire_spawn_lease(c, "taskA", "codex", "2026-06-01T10:00:00", "2026-06-01T10:30:00") is True
+    # a second spawn path sees a live lease -> blocked (the Task-E dup guard)
+    assert sc.acquire_spawn_lease(c, "taskA", "orchestration", "2026-06-01T10:05:00", "2026-06-01T10:35:00") is False
+    # after expiry it is reclaimable
+    assert sc.acquire_spawn_lease(c, "taskA", "codex", "2026-06-01T10:31:00", "2026-06-01T11:00:00") is True
+    sc.release_spawn_lease(c, "taskA")
+    assert sc.acquire_spawn_lease(c, "taskA", "codex", "2026-06-01T11:01:00", "2026-06-01T11:30:00") is True

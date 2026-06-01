@@ -119,6 +119,43 @@ def current_agent_id() -> str:
 _TRUSTED_BASE = {"", "unknown", "controller", "owner"}
 
 
+def guarded_db_delete(conn: Any, sql: str, params: tuple = (), *,
+                      tool: str, args_summary: str = "") -> int:
+    """Sanctioned db.delete path (DL-065). Fail-closed guard, then execute the
+    DELETE. Spawned agents without the scope raise ScopeDenied; controller passes.
+    Returns rowcount. Raw `conn.execute("DELETE ...")` should migrate to this."""
+    guard("db.delete", tool=tool, args_summary=args_summary or sql[:80], conn=conn)
+    cur = conn.execute(sql, params)
+    return cur.rowcount
+
+
+def acquire_spawn_lease(conn: Any, task_key: str, agent_id: str, now_iso: str,
+                        expires_iso: str) -> bool:
+    """R-065-3 claim/lease: prevent two spawn paths doing the same work (the
+    Task-E duplication). Returns True if the lease was acquired, False if a live
+    (non-expired) lease for task_key already exists. Caller passes timestamps so
+    the function stays deterministic/testable."""
+    conn.execute(
+        """CREATE TABLE IF NOT EXISTS spawn_leases (
+            task_key TEXT PRIMARY KEY, agent_id TEXT NOT NULL,
+            acquired_at TEXT NOT NULL, expires_at TEXT NOT NULL)"""
+    )
+    row = conn.execute("SELECT expires_at FROM spawn_leases WHERE task_key=?", (task_key,)).fetchone()
+    live = row is not None and str(row[0]) > now_iso
+    if live:
+        return False
+    conn.execute(
+        "INSERT OR REPLACE INTO spawn_leases(task_key, agent_id, acquired_at, expires_at) "
+        "VALUES (?, ?, ?, ?)",
+        (task_key, agent_id, now_iso, expires_iso),
+    )
+    return True
+
+
+def release_spawn_lease(conn: Any, task_key: str) -> None:
+    conn.execute("DELETE FROM spawn_leases WHERE task_key=?", (task_key,))
+
+
 def guard(scope: str, *, tool: str, args_summary: str = "", conn: Any | None = None) -> None:
     """Controller-safe choke-point guard (DL-065 Task H).
 
