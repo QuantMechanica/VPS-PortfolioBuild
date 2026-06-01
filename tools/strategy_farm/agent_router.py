@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import re
 import sqlite3
 import uuid
 from contextlib import closing
@@ -839,18 +840,53 @@ def close_review_task(
     }
 
 
-def sync_q11_candidates(root: Path = DEFAULT_ROOT) -> dict[str, Any]:
-    """Mirror Q10 PASS work_items into a Q11 portfolio-candidate queue.
+def _portfolio_admission_key(ea_id: str, symbol: str) -> tuple[int, str] | None:
+    """work_items ea_id 'QM5_10692' + symbol 'NDX.DWX' -> (10692, 'NDX.DWX').
+    Note: match QM5_(\\d+), NOT \\d+ (the latter grabs the 5 in 'QM5')."""
+    m = re.search(r"QM5_(\d+)", str(ea_id))
+    sym = str(symbol).strip()
+    if not m or not sym:
+        return None
+    return int(m.group(1)), sym
 
-    2026-05-23 OR4 — post-pipeline-rewrite this reads Q10 PASS rows (the
-    closing per-(EA, symbol) verdict) and feeds them into Q11 portfolio
-    construction. Pre-rewrite the source was P8 PASS; that legacy key is
-    retained as a fallback for any orphan rows (none exist post-wipe).
+
+def sync_q11_candidates(root: Path = DEFAULT_ROOT, *, apply_admission: bool = True) -> dict[str, Any]:
+    """Promote Q10 PASS work_items into the Q11 portfolio-candidate book.
+
+    DL-064 R-064-2: this is the real portfolio gate, not "≥1 symbol passed =
+    candidate". A Q10 passer is admitted ONLY if portfolio_admission judges it
+    diversifying vs the current book (low correlation AND it improves portfolio
+    Sharpe or max-DD); the first sleeve is admitted unconditionally. Non-
+    diversifying passers are recorded as DIVERSIFICATION_REJECTED (visible, not
+    silently dropped); evaluation errors (e.g. missing q08 stream) land as
+    ADMISSION_DEFERRED and are retried next sync. Pass apply_admission=False
+    (CLI --no-admission) to fall back to the legacy mirror-all behaviour.
     """
     now = farmctl.utc_now()
     created = 0
     existing = 0
+    admitted = 0
+    rejected = 0
+    deferred = 0
+    admission = None
+    if apply_admission:
+        try:
+            from portfolio import portfolio_admission as admission  # type: ignore
+        except ImportError:  # pragma: no cover
+            from tools.strategy_farm.portfolio import portfolio_admission as admission  # type: ignore
+
     with closing(connect(root)) as conn:
+        # Seed the book with already-admitted candidates so new passers evaluate
+        # against (and grow) the real book.
+        book: list[tuple[int, str]] = []
+        if apply_admission:
+            for r in conn.execute(
+                "SELECT DISTINCT ea_id, symbol FROM portfolio_candidates WHERE state='Q12_REVIEW_READY'"
+            ).fetchall():
+                key = _portfolio_admission_key(r["ea_id"], r["symbol"])
+                if key:
+                    book.append(key)
+
         rows = conn.execute(
             """
             SELECT id, ea_id, COALESCE(symbol, '') AS symbol, evidence_path
@@ -861,32 +897,51 @@ def sync_q11_candidates(root: Path = DEFAULT_ROOT) -> dict[str, Any]:
         ).fetchall()
         for row in rows:
             cur = conn.execute(
-                """
-                SELECT 1 FROM portfolio_candidates
-                WHERE ea_id=? AND symbol=? AND q11_work_item_id=?
-                """,
+                "SELECT 1 FROM portfolio_candidates WHERE ea_id=? AND symbol=? AND q11_work_item_id=?",
                 (row["ea_id"], row["symbol"], row["id"]),
             ).fetchone()
             if cur:
                 existing += 1
                 conn.execute(
-                    """
-                    UPDATE portfolio_candidates
-                    SET evidence_path=COALESCE(?, evidence_path), updated_at=?
-                    WHERE ea_id=? AND symbol=? AND q11_work_item_id=?
-                    """,
+                    "UPDATE portfolio_candidates SET evidence_path=COALESCE(?, evidence_path), "
+                    "updated_at=? WHERE ea_id=? AND symbol=? AND q11_work_item_id=?",
                     (row["evidence_path"], now, row["ea_id"], row["symbol"], row["id"]),
                 )
                 continue
+
+            state = "Q12_REVIEW_READY"
+            reason = "legacy_mirror_all"
+            if apply_admission:
+                key = _portfolio_admission_key(row["ea_id"], row["symbol"])
+                if key is None:
+                    state, reason = "ADMISSION_DEFERRED", "unparseable_ea_id"
+                    deferred += 1
+                else:
+                    try:
+                        verdict = admission.evaluate_candidate(key, book)
+                        reason = str(verdict.get("reason", ""))
+                        if verdict.get("admit"):
+                            state = "Q12_REVIEW_READY"
+                            book.append(key)
+                            admitted += 1
+                        else:
+                            state = "DIVERSIFICATION_REJECTED"
+                            rejected += 1
+                    except Exception as exc:  # never crash the sync on one bad candidate
+                        state, reason = "ADMISSION_DEFERRED", f"admission_error:{exc!r}"[:160]
+                        deferred += 1
+                farmctl.event(conn, "portfolio_admission", str(row["ea_id"]),
+                              state, {"symbol": row["symbol"], "reason": reason})
+
             conn.execute(
                 """
                 INSERT INTO portfolio_candidates(
                     ea_id, symbol, q11_work_item_id, state, evidence_path,
                     first_seen_at, updated_at
                 )
-                VALUES (?, ?, ?, 'Q12_REVIEW_READY', ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
                 """,
-                (row["ea_id"], row["symbol"], row["id"], row["evidence_path"], now, now),
+                (row["ea_id"], row["symbol"], row["id"], state, row["evidence_path"], now, now),
             )
             created += 1
         conn.commit()
@@ -894,6 +949,10 @@ def sync_q11_candidates(root: Path = DEFAULT_ROOT) -> dict[str, Any]:
         "q11_pass_rows": len(rows),
         "created": created,
         "existing": existing,
+        "admitted": admitted,
+        "rejected": rejected,
+        "deferred": deferred,
+        "apply_admission": apply_admission,
         "target": "portfolio_candidates",
     }
 
@@ -927,7 +986,9 @@ def main(argv: list[str] | None = None) -> int:
     close.add_argument("--verdict", required=True)
     close.add_argument("--artifact-path")
     close.add_argument("--note")
-    sub.add_parser("sync-q11-candidates")
+    sync_q11 = sub.add_parser("sync-q11-candidates")
+    sync_q11.add_argument("--no-admission", action="store_true",
+                          help="legacy mirror-all (skip the DL-064 R-064-2 diversification gate)")
     update = sub.add_parser("update-task")
     update.add_argument("task_id")
     update.add_argument("--state", required=True, choices=sorted(TASK_STATES))
@@ -975,7 +1036,7 @@ def main(argv: list[str] | None = None) -> int:
             note=args.note,
         )
     elif args.command == "sync-q11-candidates":
-        result = sync_q11_candidates(args.root)
+        result = sync_q11_candidates(args.root, apply_admission=not args.no_admission)
     elif args.command == "update-task":
         result = update_task(
             args.root,
