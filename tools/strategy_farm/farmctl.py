@@ -4364,8 +4364,11 @@ def _prepare_codex_review_fail_reworks(root: Path, limit: int = 1) -> list[dict[
         rows = conn.execute(
             """
             SELECT * FROM tasks
-            WHERE kind='build_ea' AND status='blocked'
-              AND payload_json LIKE '%"blocked_reason": "codex_review_fail"%'
+            WHERE kind='build_ea' AND status IN ('blocked', 'failed')
+              AND (
+                payload_json LIKE '%"blocked_reason": "codex_review_fail"%'
+                OR payload_json LIKE '%"codex_review_rework": true%'
+              )
             ORDER BY updated_at DESC
             """
         ).fetchall()
@@ -4382,7 +4385,16 @@ def _prepare_codex_review_fail_reworks(root: Path, limit: int = 1) -> list[dict[
                 continue
             if row["card_id"] in pending_cards:
                 continue
-            attempt = int(payload.get("codex_review_rework_attempt_count", 0)) + 1
+            current_attempt = int(payload.get("codex_review_rework_attempt_count", 0))
+            result_path = Path(str(
+                payload.get("build_result_path")
+                or root / "artifacts" / "builds" / f"{row['id']}.json"
+            ))
+            recovering_prepared_rework = (
+                payload.get("codex_review_rework") is True
+                and not result_path.exists()
+            )
+            attempt = max(1, current_attempt) if recovering_prepared_rework else current_attempt + 1
             if attempt > 2:
                 payload["final_failure"] = payload.get("final_failure") or "codex_review_rework_exhausted"
                 payload["last_blocked_reason"] = "codex_review_fail"
@@ -4392,10 +4404,19 @@ def _prepare_codex_review_fail_reworks(root: Path, limit: int = 1) -> list[dict[
                 )
                 continue
             review_fail = _latest_codex_review_fail_for_build(conn, row["id"])
+            if review_fail is None and payload.get("last_codex_review_findings"):
+                review_fail = {
+                    "review_task_id": payload.get("last_codex_review_task_id"),
+                    "verdict_path": None,
+                    "verdict": {"verdict": "FAIL", "sections": {}},
+                    "findings": payload.get("last_codex_review_findings") or [],
+                    "updated_at": row["updated_at"],
+                }
             if review_fail is None:
                 continue
 
-            _archive_rework_artifacts(root, row["id"], payload, attempt)
+            if not recovering_prepared_rework:
+                _archive_rework_artifacts(root, row["id"], payload, attempt)
             prompt_path, build_result_path = _write_codex_review_rework_prompt(
                 root,
                 row,
@@ -4416,11 +4437,12 @@ def _prepare_codex_review_fail_reworks(root: Path, limit: int = 1) -> list[dict[
             updated["last_codex_review_findings"] = review_fail["findings"]
             updated["attempt_count"] = int(updated.get("attempt_count", 0)) + 1
 
-            conn.execute(
-                "DELETE FROM tasks WHERE kind='codex_review' "
-                "AND payload_json LIKE '%\"build_task_id\": \"' || ? || '\"%'",
-                (row["id"],),
-            )
+            if review_fail.get("review_task_id"):
+                conn.execute(
+                    "DELETE FROM tasks WHERE kind='codex_review' "
+                    "AND payload_json LIKE '%\"build_task_id\": \"' || ? || '\"%'",
+                    (row["id"],),
+                )
             conn.execute(
                 "UPDATE tasks SET status='pending', payload_json=?, updated_at=? WHERE id=?",
                 (json.dumps(updated), utc_now(), row["id"]),
