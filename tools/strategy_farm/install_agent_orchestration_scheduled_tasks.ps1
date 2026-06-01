@@ -18,11 +18,20 @@ if (-not (Test-Path -LiteralPath $wrapper)) {
 }
 
 # MaxSessions = concurrent headless sessions per orchestration run, per agent.
-# Codex + Claude raised to 5 (OWNER directive 2026-06-01). Must stay in sync
-# with agent_router DEFAULT_AGENT_REGISTRY max_parallel (routing cap) and, for
-# Claude, with CLAUDE_BUDGET_POLICY.json max_sessions_per_run (budget cap).
+# Claude raised to 5 (OWNER directive 2026-06-01); must stay in sync with
+# agent_router DEFAULT_AGENT_REGISTRY max_parallel (routing cap) and
+# CLAUDE_BUDGET_POLICY.json max_sessions_per_run (budget cap).
+#
+# CODEX MUST STAY AT 1: codex CLI shares a single ~/.codex/auth.json OAuth
+# token across all processes. Concurrent sessions race on token refresh
+# ("refresh_token_reused" 401) and INVALIDATE the whole login. Setting codex=5
+# on 2026-06-01 re-broke auth ~54min after re-login (evidence:
+# codex_g0_*.live.log "Your refresh token has already been used"). 5 concurrent
+# codex would need 5 separate Codex OAuth logins, which we do not have. Codex
+# throughput comes from the pump's build dispatch + router, not parallel
+# orchestration sessions. DO NOT raise without per-session auth isolation.
 $definitions = @(
-    @{ Name = "QM_StrategyFarm_CodexOrchestration_15min"; Agent = "codex"; MaxSessions = 5 },
+    @{ Name = "QM_StrategyFarm_CodexOrchestration_15min"; Agent = "codex"; MaxSessions = 1 },
     @{ Name = "QM_StrategyFarm_GeminiOrchestration_15min"; Agent = "gemini"; MaxSessions = 1 },
     @{ Name = "QM_StrategyFarm_ClaudeOrchestration_15min"; Agent = "claude"; MaxSessions = 5 }
 )

@@ -39,15 +39,23 @@ by Factory_ON (visible mode), and a one-shot `farmctl.py repair`.
 | Task | Schedule | Instances (`--max-sessions`) |
 |---|---|---|
 | `QM_StrategyFarm_AgentRouter_5min` | 5 min | n/a (router) |
-| `QM_StrategyFarm_CodexOrchestration_15min` | 15 min | **5** |
+| `QM_StrategyFarm_CodexOrchestration_15min` | 15 min | **1** (see warning) |
 | `QM_StrategyFarm_GeminiOrchestration_15min` | 15 min | 1 |
 | `QM_StrategyFarm_ClaudeOrchestration_15min` | 15 min | **5** |
 | `QM_StrategyFarm_QuotaReceiver` | continuous | n/a |
 
-**Instance count lives in THREE places that must stay in sync** (OWNER 2026-06-01: Codex + Claude = 5):
+**Instance count lives in THREE places that must stay in sync** (OWNER 2026-06-01):
 1. `agent_router.py` `DEFAULT_AGENT_REGISTRY[*].max_parallel` — routing cap.
 2. `install_agent_orchestration_scheduled_tasks.ps1` `MaxSessions` — task arg `--max-sessions`.
 3. (Claude only) `D:\QM\strategy_farm\CLAUDE_BUDGET_POLICY.json` `max_sessions_per_run` — budget cap; effective = min(arg, cap). Default in `run_agent_orchestration_task.py` is also 5.
+
+> ⚠️ **Codex max-sessions MUST stay 1.** The codex CLI shares one
+> `~/.codex/auth.json` OAuth token across all processes; concurrent sessions race
+> on token refresh (`refresh_token_reused` 401) and **invalidate the whole login**.
+> Setting codex=5 on 2026-06-01 re-broke auth ~54 min after re-login. 5 concurrent
+> codex would need 5 separate Codex OAuth logins (not available). Codex throughput
+> comes from the pump's build dispatch, not parallel orchestration sessions.
+> Claude=5 is retained but **unverified for the same class of race** — monitor.
 
 ## ALWAYS_ON — support layer (left running by Factory OFF)
 
