@@ -8100,21 +8100,24 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
             "ea_id": ea_id,
             "phase": phase,
         }
+    # Q-native cascade map (post-2026-05-23 rewrite). Pipeline order:
+    # Q04 WF -> Q05 Stress MED -> Q06 Stress HARSH -> Q07 Multi-Seed -> Q08 Davey
+    # -> Q09 News -> Q10 Full-History. (Was legacy P-keys; KeyError'd on Q-input.)
     prev_phase_map = {
-        "P5": "P4",
-        "P5b": "P5",
-        "P5c": "P5b",
-        "P6": "P5c",
-        "P7": "P6",
-        "P8": "P7",
+        "Q05": "Q04",
+        "Q06": "Q05",
+        "Q07": "Q06",
+        "Q08": "Q07",
+        "Q09": "Q08",
+        "Q10": "Q09",
     }
     prev_pass_verdicts = {
-        "P4": {"PASS"},
-        "P5": {"PASS"},
-        "P5b": {"PASS"},
-        "P5c": {"PASS"},
-        "P6": {"PASS", "MULTI_SEED_PASS"},
-        "P7": {"PASS"},
+        "Q04": {"PASS"},
+        "Q05": {"PASS"},
+        "Q06": {"PASS"},
+        "Q07": {"PASS", "MULTI_SEED_PASS"},  # Q07 = multi-seed phase
+        "Q08": {"PASS"},
+        "Q09": {"PASS"},
     }
     prev_phase = prev_phase_map[phase]
     verdicts = sorted(prev_pass_verdicts[prev_phase])
@@ -8126,7 +8129,7 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
     skipped: list[dict[str, Any]] = []
     p5_has_history = True
     p5_history_detail: dict[str, Any] | None = None
-    if phase == "P5":
+    if phase == "Q05":
         p5_has_history, p5_history_detail = has_ea_history_window(
             ea_id,
             P5_REQUIRED_OOS_FROM_YEAR,
@@ -8152,7 +8155,7 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
                     "reason": "missing_setfile",
                 })
                 continue
-            if phase == "P5" and not p5_has_history:
+            if phase == "Q05" and not p5_has_history:
                 skipped.append({
                     "id": prev["id"],
                     "symbol": prev["symbol"],
