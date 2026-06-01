@@ -17,10 +17,14 @@ if (-not (Test-Path -LiteralPath $wrapper)) {
     throw "Wrapper not found: $wrapper"
 }
 
+# MaxSessions = concurrent headless sessions per orchestration run, per agent.
+# Codex + Claude raised to 5 (OWNER directive 2026-06-01). Must stay in sync
+# with agent_router DEFAULT_AGENT_REGISTRY max_parallel (routing cap) and, for
+# Claude, with CLAUDE_BUDGET_POLICY.json max_sessions_per_run (budget cap).
 $definitions = @(
-    @{ Name = "QM_StrategyFarm_CodexOrchestration_15min"; Agent = "codex"; MaxSessions = 1 },
+    @{ Name = "QM_StrategyFarm_CodexOrchestration_15min"; Agent = "codex"; MaxSessions = 5 },
     @{ Name = "QM_StrategyFarm_GeminiOrchestration_15min"; Agent = "gemini"; MaxSessions = 1 },
-    @{ Name = "QM_StrategyFarm_ClaudeOrchestration_15min"; Agent = "claude"; MaxSessions = 3 }
+    @{ Name = "QM_StrategyFarm_ClaudeOrchestration_15min"; Agent = "claude"; MaxSessions = 5 }
 )
 
 $startBoundary = (Get-Date).Date

@@ -538,7 +538,7 @@ def _claude_budget_policy() -> dict[str, Any]:
         "enabled": True,
         "max_runs_per_day": 0,
         "min_minutes_between_runs": 0,
-        "max_sessions_per_run": 3,
+        "max_sessions_per_run": 5,  # OWNER 2026-06-01: Claude = full worker at 5
     }
     if not CLAUDE_BUDGET_POLICY.exists():
         return defaults

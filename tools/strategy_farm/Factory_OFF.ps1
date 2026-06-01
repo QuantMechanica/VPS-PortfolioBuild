@@ -1,13 +1,13 @@
 # =====================================================================
 #  QuantMechanica - Factory OFF
-#  Stops the MT5 backtest factory cleanly:
-#    - disables Pump + Tick scheduled tasks (TerminalWorkers + Repair
-#      are permanently disabled - see Factory_ON.ps1 header)
-#    - disables and stops the AI scheduled tasks (AgentRouter, Codex,
-#      Gemini, Claude, QuotaReceiver)
-#    - kills the 10 terminal_worker.py daemons
-#    - kills any transient terminal64.exe backtest processes
-#  Dashboards, health checks, Gmail alarm, and morning brief are left alone.
+#  Stops the MT5 backtest factory cleanly. Task lifecycle is driven by the
+#  canonical manifest qm_tasks.manifest.ps1:
+#    FACTORY + AI    -> stopped + disabled (the respawn vectors)
+#    ALWAYS_ON       -> LEFT ALONE (dashboards, health, gmail alarm, morning
+#                       brief, public snapshot, housekeeping keep running)
+#    ENFORCE_DISABLED-> left disabled (Repair_Hourly, TerminalWorkers)
+#  Plus: kills the 10 terminal_worker.py daemons + transient terminal64.exe.
+#  Existing manually-started AI shells are not killed.
 # =====================================================================
 
 # --- self-elevate to Administrator ---
@@ -19,30 +19,18 @@ if (-not $pr.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
 }
 
 $ErrorActionPreference = 'Continue'
+. (Join-Path $PSScriptRoot 'qm_tasks.manifest.ps1')
+
 Write-Host ''
 Write-Host '=====================================================' -ForegroundColor Yellow
 Write-Host '  QuantMechanica  -  FACTORY OFF' -ForegroundColor Yellow
 Write-Host '=====================================================' -ForegroundColor Yellow
 Write-Host ''
 
-# 1. disable dispatch + AI scheduled tasks (stop the respawn vectors)
-$dispatchTasks = @(
-    'QM_StrategyFarm_Pump_5min',
-    'QM_StrategyFarm_Tick_5min'
-)
-$aiTasks = @(
-    'QM_StrategyFarm_AgentRouter_5min',
-    'QM_StrategyFarm_CodexOrchestration_15min',
-    'QM_StrategyFarm_GeminiOrchestration_15min',
-    'QM_StrategyFarm_ClaudeOrchestration_15min',
-    'QM_StrategyFarm_QuotaReceiver'
-)
-# TerminalWorkers_AT_STARTUP + Repair_Hourly are permanently disabled
-# (interactive-mode policy 2026-05-23). Daemons are spawned by Factory_ON
-# in the user's session; farmctl repair is invoked once by Factory_ON
-# inline. Both used to be Enabled and spawn SYSTEM/session-0 workers
-# after a crash - that's now eliminated by leaving them permanently off.
-foreach ($t in @($dispatchTasks + $aiTasks)) {
+# 1. stop + disable the FACTORY + AI tasks (stop the respawn vectors).
+#    ALWAYS_ON tasks are deliberately NOT touched - you still get the
+#    morning brief, dashboards, health and gmail alarm with the factory off.
+foreach ($t in @($QM_FACTORY_TASKS + $QM_AI_TASKS)) {
     Stop-ScheduledTask -TaskName $t -ErrorAction SilentlyContinue | Out-Null
     Disable-ScheduledTask -TaskName $t -ErrorAction SilentlyContinue | Out-Null
     $st = (Get-ScheduledTask -TaskName $t -ErrorAction SilentlyContinue).State
@@ -74,6 +62,8 @@ if ($leftDaemons -eq 0 -and $leftTerms -eq 0) {
     Write-Host '  Re-run this script, or check Task Scheduler.' -ForegroundColor Red
 }
 Write-Host ''
-Write-Host '  AI scheduled tasks are disabled. Existing manually-started AI shells are not killed.'
+Write-Host '  Factory + AI tasks disabled. Always-on tasks (dashboards, health,'
+Write-Host '  gmail alarm, morning brief, snapshot, housekeeping) keep running.'
+Write-Host '  Existing manually-started AI shells are not killed.'
 Write-Host ''
 Read-Host 'Press Enter to close'
