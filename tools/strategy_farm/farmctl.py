@@ -6367,11 +6367,17 @@ def pump(root: Path) -> dict[str, Any]:
             else:
                 # Look for attempt-suffixed variants written by Codex.
                 stem = p.stem  # task UUID
-                attempts = sorted(
-                    [a for a in p.parent.glob(f"{stem}*.json") if a.stat().st_size > 0],
-                    key=lambda a: a.stat().st_mtime,
-                    reverse=True,
-                )
+                attempts = []
+                if not payload.get("codex_review_rework"):
+                    attempts = sorted(
+                        [
+                            a for a in p.parent.glob(f"{stem}*.json")
+                            if a.stat().st_size > 0
+                            and ".codex_review_fail_attempt_" not in a.name
+                        ],
+                        key=lambda a: a.stat().st_mtime,
+                        reverse=True,
+                    )
                 if attempts:
                     result_path = attempts[0]
         if result_path is not None:
