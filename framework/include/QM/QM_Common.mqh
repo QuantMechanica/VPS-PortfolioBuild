@@ -270,6 +270,65 @@ void QM_FrameworkOnTimer()
    QM_ChartUI_Refresh();
   }
 
+bool QM_FrameworkSymbolPrice(const string symbol, double &price)
+  {
+   price = 0.0;
+   if(SymbolInfoDouble(symbol, SYMBOL_BID, price) && price > 0.0)
+      return true;
+   if(SymbolInfoDouble(symbol, SYMBOL_LAST, price) && price > 0.0)
+      return true;
+   if(SymbolInfoDouble(symbol, SYMBOL_ASK, price) && price > 0.0)
+      return true;
+   return false;
+  }
+
+bool QM_FrameworkCurrencyRateToAccount(const string from_currency, const string account_currency, double &rate)
+  {
+   rate = 1.0;
+   if(from_currency == "" || account_currency == "" || from_currency == account_currency)
+      return true;
+
+   double px = 0.0;
+   const string direct = from_currency + account_currency;
+   if(QM_FrameworkSymbolPrice(direct, px) || QM_FrameworkSymbolPrice(direct + ".DWX", px))
+     {
+      rate = px;
+      return true;
+     }
+
+   const string inverse = account_currency + from_currency;
+   if((QM_FrameworkSymbolPrice(inverse, px) || QM_FrameworkSymbolPrice(inverse + ".DWX", px)) && px > 0.0)
+     {
+      rate = 1.0 / px;
+      return true;
+     }
+
+   return false;
+  }
+
+double QM_FrameworkDealNotionalAccount(const ulong deal_ticket, const string symbol, const double volume, const double close_price)
+  {
+   double contract_size = 0.0;
+   if(!SymbolInfoDouble(symbol, SYMBOL_TRADE_CONTRACT_SIZE, contract_size) || contract_size <= 0.0)
+      contract_size = 1.0;
+
+   const double raw_notional = volume * contract_size * close_price;
+   const string profit_currency = SymbolInfoString(symbol, SYMBOL_CURRENCY_PROFIT);
+   const string account_currency = AccountInfoString(ACCOUNT_CURRENCY);
+
+   double rate = 1.0;
+   if(QM_FrameworkCurrencyRateToAccount(profit_currency, account_currency, rate))
+      return raw_notional * rate;
+
+   QM_LogEvent(QM_WARN, "Q08_NOTIONAL_CONVERSION_FALLBACK",
+               StringFormat("{\"deal\":%I64u,\"symbol\":\"%s\",\"profit_currency\":\"%s\",\"account_currency\":\"%s\"}",
+                            deal_ticket,
+                            QM_LoggerEscapeJson(symbol),
+                            QM_LoggerEscapeJson(profit_currency),
+                            QM_LoggerEscapeJson(account_currency)));
+   return raw_notional;
+  }
+
 // FW4 2026-05-23 — OnTradeTransaction wrapper.
 // MT5 fires OnTradeTransaction on every trade-server event. We care about
 // DEAL_ADD transactions for closing deals (entry=OUT, OUT_BY) that belong to
@@ -303,11 +362,14 @@ void QM_FrameworkOnTradeTransaction(const MqlTradeTransaction &trans,
    const double net        = profit + swap + commission;
 
    // Q08 per-trade stream: one TRADE_CLOSED line per closing deal (real net P&L).
+   const string q08_symbol = HistoryDealGetString(trans.deal, DEAL_SYMBOL);
    const double q08_vol = HistoryDealGetDouble(trans.deal, DEAL_VOLUME);
+   const double q08_price = HistoryDealGetDouble(trans.deal, DEAL_PRICE);
+   const double q08_notional = QM_FrameworkDealNotionalAccount(trans.deal, q08_symbol, q08_vol, q08_price);
    const long   q08_t   = (long)HistoryDealGetInteger(trans.deal, DEAL_TIME);
    g_qm_q08_trade_log += StringFormat(
-      "{\"event\":\"TRADE_CLOSED\",\"time\":%I64d,\"net\":%.2f,\"profit\":%.2f,\"swap\":%.2f,\"commission\":%.2f,\"volume\":%.2f}\r\n",
-      q08_t, net, profit, swap, commission, q08_vol);
+      "{\"event\":\"TRADE_CLOSED\",\"time\":%I64d,\"net\":%.2f,\"profit\":%.2f,\"swap\":%.2f,\"commission\":%.2f,\"volume\":%.2f,\"notional\":%.2f,\"symbol\":\"%s\"}\r\n",
+      q08_t, net, profit, swap, commission, q08_vol, q08_notional, QM_LoggerEscapeJson(q08_symbol));
 
    // Q04 EA-side simulated commission: accumulate a PF-net that reflects a worst-case
    // USD/lot round-trip charge the tester does not apply to custom symbols. Charged once
