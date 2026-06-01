@@ -4451,7 +4451,15 @@ def _pending_build_is_review_rework(row: sqlite3.Row) -> bool:
 
 
 def _dirty_entries_compatible_with_rework(entries: list[str], payload: dict[str, Any]) -> bool:
-    ea_dir = str(payload.get("ea_dir") or "").replace("\\", "/").strip("/")
+    ea_dir_raw = str(payload.get("ea_dir") or "")
+    ea_dir = ea_dir_raw.replace("\\", "/").strip("/")
+    if ea_dir_raw:
+        try:
+            ea_path = Path(ea_dir_raw)
+            if ea_path.is_absolute():
+                ea_dir = str(ea_path.resolve().relative_to(REPO_ROOT.resolve())).replace("\\", "/")
+        except (OSError, ValueError):
+            pass
     allowed_prefixes = [ea_dir + "/"] if ea_dir else []
     allowed_exact = set(SHARED_BUILD_PATHS)
     if ea_dir:
