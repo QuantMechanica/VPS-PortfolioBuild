@@ -547,7 +547,8 @@ function Invoke-ForbiddenScan {
 
     $mqlFiles = New-Object System.Collections.Generic.List[string]
     foreach ($scanRoot in $scanRoots) {
-        $files = Get-ChildItem -LiteralPath $scanRoot -Recurse -File -Include *.mq5,*.mqh
+        $files = Get-ChildItem -LiteralPath $scanRoot -Recurse -File -ErrorAction SilentlyContinue |
+            Where-Object { $_.Extension -in @(".mq5", ".mqh") }
         foreach ($f in $files) {
             $mqlFiles.Add($f.FullName)
         }

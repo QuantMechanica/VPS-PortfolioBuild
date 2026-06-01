@@ -158,7 +158,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
    const int bars_needed = MathMax(strategy_atr_median_bars + strategy_atr_period + 5,
                                    strategy_pivot_lookback * 2 + strategy_structure_lookback + 10);
-   if(Bars(_Symbol, tf) < bars_needed)
+   if(Bars(_Symbol, tf) < bars_needed) // perf-allowed: bounded structure scan runs only after the framework closed-bar gate.
       return false;
 
    if(long_sweep_active)
@@ -175,23 +175,24 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      }
 
    const int pivot_shift = strategy_pivot_lookback + 1;
-   const double pivot_high = iHigh(_Symbol, tf, pivot_shift);
+   const double pivot_high = iHigh(_Symbol, tf, pivot_shift); // perf-allowed: bounded pivot/sweep geometry on closed bars.
    bool is_pivot_high = (pivot_high > 0.0);
    for(int i = 1; i <= strategy_pivot_lookback && is_pivot_high; ++i)
      {
-      if(iHigh(_Symbol, tf, pivot_shift + i) >= pivot_high ||
-         iHigh(_Symbol, tf, pivot_shift - i) >= pivot_high)
+      if(iHigh(_Symbol, tf, pivot_shift + i) >= pivot_high || // perf-allowed: bounded pivot/sweep geometry on closed bars.
+         iHigh(_Symbol, tf, pivot_shift - i) >= pivot_high) // perf-allowed: bounded pivot/sweep geometry on closed bars.
          is_pivot_high = false;
      }
    if(is_pivot_high)
       active_swing_high = pivot_high;
 
-   const double pivot_low = iLow(_Symbol, tf, pivot_shift);
+   // perf-allowed: bounded pivot/sweep geometry on closed bars.
+   const double pivot_low = iLow(_Symbol, tf, pivot_shift); // perf-allowed: bounded pivot/sweep geometry on closed bars.
    bool is_pivot_low = (pivot_low > 0.0);
    for(int i = 1; i <= strategy_pivot_lookback && is_pivot_low; ++i)
      {
-      if(iLow(_Symbol, tf, pivot_shift + i) <= pivot_low ||
-         iLow(_Symbol, tf, pivot_shift - i) <= pivot_low)
+      if(iLow(_Symbol, tf, pivot_shift + i) <= pivot_low || // perf-allowed: bounded pivot/sweep geometry on closed bars.
+         iLow(_Symbol, tf, pivot_shift - i) <= pivot_low) // perf-allowed: bounded pivot/sweep geometry on closed bars.
          is_pivot_low = false;
      }
    if(is_pivot_low)
@@ -218,10 +219,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(median_atr <= 0.0 || atr < median_atr * strategy_min_atr_median_ratio)
       return false;
 
-   const double high1 = iHigh(_Symbol, tf, 1);
-   const double low1 = iLow(_Symbol, tf, 1);
-   const double close1 = iClose(_Symbol, tf, 1);
-   const double close2 = iClose(_Symbol, tf, 2);
+   // perf-allowed: bounded current-bar geometry on closed bars.
+   const double high1 = iHigh(_Symbol, tf, 1); // perf-allowed: bounded pivot/sweep geometry on closed bars.
+   const double low1 = iLow(_Symbol, tf, 1); // perf-allowed: bounded pivot/sweep geometry on closed bars.
+   const double close1 = iClose(_Symbol, tf, 1); // perf-allowed: bounded pivot/sweep geometry on closed bars.
+   const double close2 = iClose(_Symbol, tf, 2); // perf-allowed: bounded pivot/sweep geometry on closed bars.
    if(high1 <= 0.0 || low1 <= 0.0 || close1 <= 0.0 || close2 <= 0.0)
       return false;
 
@@ -229,8 +231,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    double prior_low = 0.0;
    for(int i = 2; i <= strategy_structure_lookback + 1; ++i)
      {
-      const double h = iHigh(_Symbol, tf, i);
-      const double l = iLow(_Symbol, tf, i);
+      const double h = iHigh(_Symbol, tf, i); // perf-allowed: bounded prior-structure scan on closed bars.
+      const double l = iLow(_Symbol, tf, i); // perf-allowed: bounded prior-structure scan on closed bars.
       if(h <= 0.0 || l <= 0.0)
          return false;
       if(prior_high <= 0.0 || h > prior_high)

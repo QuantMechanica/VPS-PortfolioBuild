@@ -82,7 +82,7 @@ This card was mechanised from:
 
 **Source ID:** `d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7`
 **Source type:** TradingView open-source strategy
-**Pointer:** AIScripts, Liquidity Sweep + Market Structure Strategy, https://cn.tradingview.com/script/VRt4r5FM-Liquidity-Sweep-Market-Structure-Strategy/
+**Pointer:** AIScripts, Liquidity Sweep + Market Structure Strategy, TradingView script VRt4r5FM
 **R1-R4 verdict (Q00):** all R1-R4 PASS per `artifacts/cards_approved/QM5_10692_tv-ls-ms.md`
 
 ---

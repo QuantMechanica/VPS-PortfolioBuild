@@ -1,8 +1,20 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_10569 MQL5 SuperTrend Color Point"
+#property description "QM5_10773 TradingView Harami Bollinger Band Reversal"
 
 #include <QM/QM_Common.mqh>
+
+enum Strategy_HaramiStrictness
+  {
+   STRATEGY_HARAMI_BODY_INSIDE = 0,
+   STRATEGY_HARAMI_FULL_RANGE_INSIDE = 1
+  };
+
+enum Strategy_StopMode
+  {
+   STRATEGY_STOP_SOURCE_POINTS = 0,
+   STRATEGY_STOP_ATR = 1
+  };
 
 // =============================================================================
 // QuantMechanica V5 EA SKELETON
@@ -35,7 +47,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 10569;
+input int    qm_ea_id                   = 10773;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -73,38 +85,32 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input ENUM_TIMEFRAMES strategy_signal_tf    = PERIOD_H4;
-input int             strategy_atr_period   = 14;
-input double          strategy_st_mult      = 3.0;
-input double          strategy_atr_sl_mult  = 2.0;
-input double          strategy_rr_target    = 1.5;
-input int             strategy_warmup_bars  = 160;
+input ENUM_TIMEFRAMES         strategy_signal_timeframe  = PERIOD_CURRENT;
+input int                     strategy_bb_period         = 20;
+input double                  strategy_bb_deviation      = 2.0;
+input Strategy_HaramiStrictness strategy_pattern_strictness = STRATEGY_HARAMI_BODY_INSIDE;
+input Strategy_StopMode       strategy_stop_mode         = STRATEGY_STOP_ATR;
+input int                     strategy_source_sl_points  = 20;
+input int                     strategy_source_tp_points  = 40;
+input int                     strategy_atr_period        = 14;
+input double                  strategy_atr_sl_mult       = 1.0;
+input double                  strategy_take_profit_rr    = 2.0;
+input bool                    strategy_use_ema200_filter = false;
+input int                     strategy_ema_period        = 200;
+input int                     strategy_max_spread_points = 0;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-bool Strategy_HasOurPosition()
+ENUM_TIMEFRAMES Strategy_Timeframe()
   {
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
-         return true;
-     }
-
-   return false;
+   if(strategy_signal_timeframe == PERIOD_CURRENT)
+      return (ENUM_TIMEFRAMES)_Period;
+   return strategy_signal_timeframe;
   }
 
-bool Strategy_ReadOurPositionType(ENUM_POSITION_TYPE &position_type)
+bool Strategy_GetOurPosition(ENUM_POSITION_TYPE &position_type)
   {
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
@@ -127,88 +133,191 @@ bool Strategy_ReadOurPositionType(ENUM_POSITION_TYPE &position_type)
    return false;
   }
 
-bool Strategy_ReadSuperTrend(const int target_shift, double &line, int &direction)
+bool Strategy_ReadCandle(const ENUM_TIMEFRAMES tf,
+                         const int shift,
+                         double &open_price,
+                         double &high_price,
+                         double &low_price,
+                         double &close_price)
   {
-   line = 0.0;
-   direction = 0;
-
-   const int warmup = MathMax(strategy_warmup_bars, strategy_atr_period * 8);
-   if(strategy_atr_period <= 0 || strategy_st_mult <= 0.0 ||
-      Bars(_Symbol, strategy_signal_tf) < warmup + target_shift + 5) // perf-allowed: one closed-bar SuperTrend reconstruction over bounded warmup.
+   MqlRates rates[1];
+   if(CopyRates(_Symbol, tf, shift, 1, rates) != 1) // perf-allowed: Harami geometry reads one closed candle per closed-bar entry pass.
       return false;
 
-   double final_upper = 0.0;
-   double final_lower = 0.0;
-   int dir = 0;
-
-   for(int shift = warmup + target_shift; shift >= target_shift; --shift)
-     {
-      const double high = iHigh(_Symbol, strategy_signal_tf, shift); // perf-allowed: one closed-bar SuperTrend reconstruction over bounded warmup.
-      const double low = iLow(_Symbol, strategy_signal_tf, shift); // perf-allowed: one closed-bar SuperTrend reconstruction over bounded warmup.
-      const double close = iClose(_Symbol, strategy_signal_tf, shift); // perf-allowed: one closed-bar SuperTrend reconstruction over bounded warmup.
-      const double atr = QM_ATR(_Symbol, strategy_signal_tf, strategy_atr_period, shift);
-      if(high <= 0.0 || low <= 0.0 || close <= 0.0 || atr <= 0.0)
-         return false;
-
-      const double midpoint = (high + low) * 0.5;
-      const double basic_upper = midpoint + strategy_st_mult * atr;
-      const double basic_lower = midpoint - strategy_st_mult * atr;
-
-      if(dir == 0)
-        {
-         final_upper = basic_upper;
-         final_lower = basic_lower;
-         dir = (close >= midpoint) ? 1 : -1;
-        }
-      else
-        {
-         const double prev_close = iClose(_Symbol, strategy_signal_tf, shift + 1); // perf-allowed: one closed-bar SuperTrend reconstruction over bounded warmup.
-         const double prev_upper = final_upper;
-         const double prev_lower = final_lower;
-
-         final_upper = (basic_upper < prev_upper || prev_close > prev_upper) ? basic_upper : prev_upper;
-         final_lower = (basic_lower > prev_lower || prev_close < prev_lower) ? basic_lower : prev_lower;
-
-         if(dir < 0 && close > final_upper)
-            dir = 1;
-         else if(dir > 0 && close < final_lower)
-            dir = -1;
-        }
-
-      line = (dir > 0) ? final_lower : final_upper;
-      direction = dir;
-     }
-
-   return (line > 0.0 && direction != 0);
+   open_price = rates[0].open;
+   high_price = rates[0].high;
+   low_price = rates[0].low;
+   close_price = rates[0].close;
+   return (open_price > 0.0 && high_price > 0.0 && low_price > 0.0 && close_price > 0.0);
   }
 
-int Strategy_SuperTrendSignal()
+double Strategy_BodyHigh(const double open_price, const double close_price)
   {
-   double line_1 = 0.0;
-   double line_2 = 0.0;
-   int dir_1 = 0;
-   int dir_2 = 0;
-   if(!Strategy_ReadSuperTrend(1, line_1, dir_1) ||
-      !Strategy_ReadSuperTrend(2, line_2, dir_2))
+   return MathMax(open_price, close_price);
+  }
+
+double Strategy_BodyLow(const double open_price, const double close_price)
+  {
+   return MathMin(open_price, close_price);
+  }
+
+bool Strategy_SecondCandleInsideFirst(const double o1,
+                                      const double h1,
+                                      const double l1,
+                                      const double c1,
+                                      const double o2,
+                                      const double h2,
+                                      const double l2,
+                                      const double c2)
+  {
+   const bool body_inside =
+      (Strategy_BodyLow(o1, c1) >= Strategy_BodyLow(o2, c2) &&
+       Strategy_BodyHigh(o1, c1) <= Strategy_BodyHigh(o2, c2));
+   if(!body_inside)
+      return false;
+
+   if(strategy_pattern_strictness == STRATEGY_HARAMI_FULL_RANGE_INSIDE)
+      return (l1 >= l2 && h1 <= h2);
+   return true;
+  }
+
+int Strategy_HaramiSignal()
+  {
+   if(strategy_bb_period <= 0 || strategy_bb_deviation <= 0.0)
       return 0;
 
-   if(dir_2 < 0 && dir_1 > 0)
+   const ENUM_TIMEFRAMES tf = Strategy_Timeframe();
+   double o1 = 0.0, h1 = 0.0, l1 = 0.0, c1 = 0.0;
+   double o2 = 0.0, h2 = 0.0, l2 = 0.0, c2 = 0.0;
+   if(!Strategy_ReadCandle(tf, 1, o1, h1, l1, c1))
+      return 0;
+   if(!Strategy_ReadCandle(tf, 2, o2, h2, l2, c2))
+      return 0;
+
+   if(!Strategy_SecondCandleInsideFirst(o1, h1, l1, c1, o2, h2, l2, c2))
+      return 0;
+
+   const double lower_2 = QM_BB_Lower(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 2, PRICE_CLOSE);
+   const double upper_2 = QM_BB_Upper(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 2, PRICE_CLOSE);
+   if(lower_2 <= 0.0 || upper_2 <= 0.0)
+      return 0;
+
+   const bool first_bearish = (c2 < o2);
+   const bool second_bullish = (c1 > o1);
+   const bool first_bullish = (c2 > o2);
+   const bool second_bearish = (c1 < o1);
+
+   if(first_bearish && second_bullish && l2 <= lower_2)
       return 1;
-   if(dir_2 > 0 && dir_1 < 0)
+   if(first_bullish && second_bearish && h2 >= upper_2)
       return -1;
    return 0;
   }
 
-// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
-// regime filter). Cheap O(1) checks only — runs on every tick.
+bool Strategy_EmaFilterPasses(const QM_OrderType side)
+  {
+   if(!strategy_use_ema200_filter)
+      return true;
+   if(strategy_ema_period <= 0)
+      return false;
+
+   const ENUM_TIMEFRAMES tf = Strategy_Timeframe();
+   double o1 = 0.0, h1 = 0.0, l1 = 0.0, c1 = 0.0;
+   if(!Strategy_ReadCandle(tf, 1, o1, h1, l1, c1))
+      return false;
+
+   const double ema = QM_EMA(_Symbol, tf, strategy_ema_period, 1, PRICE_CLOSE);
+   if(ema <= 0.0)
+      return false;
+
+   if(side == QM_BUY)
+      return (c1 > ema);
+   return (c1 < ema);
+  }
+
+bool Strategy_StopDistancePasses(const double entry, const double sl)
+  {
+   if(entry <= 0.0 || sl <= 0.0 || entry == sl)
+      return false;
+
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(point <= 0.0)
+      return false;
+
+   const double stop_points = MathAbs(entry - sl) / point;
+   const long broker_min_points = SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
+   if(broker_min_points > 0 && stop_points < (double)broker_min_points)
+      return false;
+
+   return true;
+  }
+
+bool Strategy_BuildBracket(const QM_OrderType side,
+                           const double entry,
+                           double &sl,
+                           double &tp)
+  {
+   sl = 0.0;
+   tp = 0.0;
+   if(entry <= 0.0)
+      return false;
+
+   if(strategy_stop_mode == STRATEGY_STOP_SOURCE_POINTS)
+     {
+      if(strategy_source_sl_points <= 0 || strategy_source_tp_points <= 0)
+         return false;
+      const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+      if(point <= 0.0)
+         return false;
+
+      if(side == QM_BUY)
+        {
+         sl = entry - (double)strategy_source_sl_points * point;
+         tp = entry + (double)strategy_source_tp_points * point;
+        }
+      else
+        {
+         sl = entry + (double)strategy_source_sl_points * point;
+         tp = entry - (double)strategy_source_tp_points * point;
+        }
+     }
+   else
+     {
+      if(strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0 || strategy_take_profit_rr <= 0.0)
+         return false;
+      sl = QM_StopATR(_Symbol, side, entry, strategy_atr_period, strategy_atr_sl_mult);
+      tp = QM_TakeRR(_Symbol, side, entry, sl, strategy_take_profit_rr);
+     }
+
+   if(sl <= 0.0 || tp <= 0.0)
+      return false;
+   if(side == QM_BUY && (sl >= entry || tp <= entry))
+      return false;
+   if(side == QM_SELL && (sl <= entry || tp >= entry))
+      return false;
+
+   return Strategy_StopDistancePasses(entry, sl);
+  }
+
+// No Trade Filter (time, spread, news): the framework handles news and Friday
+// close; this hook enforces any explicit signal-timeframe and spread ceiling.
 bool Strategy_NoTradeFilter()
   {
+   if(strategy_signal_timeframe != PERIOD_CURRENT && _Period != strategy_signal_timeframe)
+      return true;
+
+   if(strategy_max_spread_points > 0)
+     {
+      const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+      if(spread_points < 0 || spread_points > strategy_max_spread_points)
+         return true;
+     }
+
    return false;
   }
 
-// Populate `req` with entry order parameters and return TRUE if a NEW entry
-// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
-// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
+// Trade Entry: confirmed two-bar Harami reversal where the first candle touches
+// the outer Bollinger Band; bracket is source points or ATR-normalized 2R.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    req.type = QM_BUY;
@@ -219,61 +328,42 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(strategy_atr_period <= 0 || strategy_st_mult <= 0.0 ||
-      strategy_atr_sl_mult <= 0.0 || strategy_rr_target <= 0.0 ||
-      strategy_warmup_bars < strategy_atr_period + 5)
+   ENUM_POSITION_TYPE existing_type = POSITION_TYPE_BUY;
+   if(Strategy_GetOurPosition(existing_type))
       return false;
 
-   if(Strategy_HasOurPosition())
-      return false;
-
-   const int signal = Strategy_SuperTrendSignal();
+   const int signal = Strategy_HaramiSignal();
    if(signal == 0)
       return false;
 
    const QM_OrderType side = (signal > 0) ? QM_BUY : QM_SELL;
-   const double entry = (side == QM_BUY)
-                        ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                        : SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(entry <= 0.0)
+   if(!Strategy_EmaFilterPasses(side))
       return false;
 
-   const double atr = QM_ATR(_Symbol, strategy_signal_tf, strategy_atr_period, 1);
-   if(atr <= 0.0)
+   const double entry = QM_EntryMarketPrice(side);
+   double sl = 0.0;
+   double tp = 0.0;
+   if(!Strategy_BuildBracket(side, entry, sl, tp))
       return false;
 
    req.type = side;
-   req.sl = QM_StopATRFromValue(_Symbol, side, entry, atr, strategy_atr_sl_mult);
-   req.tp = QM_TakeRR(_Symbol, side, entry, req.sl, strategy_rr_target);
-   req.reason = (side == QM_BUY) ? "MQL5_SUPERTREND_LONG" : "MQL5_SUPERTREND_SHORT";
-
-   return (req.sl > 0.0 && req.tp > 0.0);
+   req.price = 0.0;
+   req.sl = sl;
+   req.tp = tp;
+   req.reason = (side == QM_BUY) ? "TV_HARAMI_BB_LONG" : "TV_HARAMI_BB_SHORT";
+   return true;
   }
 
-// Called every tick when an open position exists for this EA's magic.
-// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
+// Trade Management: the card specifies no trailing, break-even, partial close,
+// or add-on logic; broker SL/TP manages the bracket.
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies no break-even, trailing, partial close, or pyramiding.
   }
 
-// Return TRUE to close the open position now (e.g. opposite-signal exit,
-// max-hold-time exceeded, session end).
+// Trade Close: no discretionary close in the card; exits are bracket SL/TP and
+// framework-level Friday/kill-switch closures.
 bool Strategy_ExitSignal()
   {
-   ENUM_POSITION_TYPE position_type;
-   if(!Strategy_ReadOurPositionType(position_type))
-      return false;
-
-   if(!QM_IsNewBar(_Symbol, strategy_signal_tf))
-      return false;
-
-   const int signal = Strategy_SuperTrendSignal();
-   if(position_type == POSITION_TYPE_BUY && signal < 0)
-      return true;
-   if(position_type == POSITION_TYPE_SELL && signal > 0)
-      return true;
-
    return false;
   }
 
@@ -282,6 +372,7 @@ bool Strategy_ExitSignal()
 // custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
+   // News Filter Hook: no card-specific override; central framework news mode applies.
    return false; // defer to QM_NewsAllowsTrade(...)
   }
 

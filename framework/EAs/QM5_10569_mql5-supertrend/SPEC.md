@@ -68,7 +68,7 @@ This card was mechanised from:
 
 **Source ID:** b8b5125a-c67f-5bbc-baff-33456e08f5b2
 **Source type:** MQL5 CodeBase
-**Pointer:** https://www.mql5.com/en/code/15239
+**Pointer:** MQL5 CodeBase 15239
 **R1-R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_10569_mql5-supertrend.md`
 
 ---

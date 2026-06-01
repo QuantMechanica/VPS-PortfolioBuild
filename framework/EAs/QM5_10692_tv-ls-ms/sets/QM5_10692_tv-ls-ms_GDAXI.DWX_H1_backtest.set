@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        10692
 ; ea_slug:      tv-ls-ms
@@ -10,7 +10,7 @@
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   d49eadde58acd5603c0567cdaebed104a0c1d052f283978c339c341ff332b806
 ; author:       Development
 ; date:         2026-05-31
 ;==========================================================

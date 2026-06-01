@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        10569
 ; ea_slug:      mql5-supertrend
@@ -10,7 +10,7 @@
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   65d86405616e6a6e066862a1ad91ca087b79c5e91aa0c921b74f9813cdf8a02e
+; build_hash:   8eef0e040c8e26ef52fbdfb4bf01d4921a8b3ef6a119149108bc84d33ba15707
 ; author:       Development
 ; date:         2026-05-29
 ;==========================================================

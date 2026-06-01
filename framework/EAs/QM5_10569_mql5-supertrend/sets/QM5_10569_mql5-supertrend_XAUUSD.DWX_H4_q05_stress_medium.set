@@ -3,21 +3,22 @@
 ; ea_id:        10569
 ; ea_slug:      mql5-supertrend
 ; ea_version:   v5.0
-; set_version:  s20260529-001
-; symbol:       EURJPY.DWX
+; set_version:  s20260601-stress-med
+; symbol:       XAUUSD.DWX
 ; timeframe:    H4
-; environment:  backtest
-; magic_slot:   0
+; environment:  q05_stress_medium
+; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   1243793041c1dac093b7b80cc71e178c9cab091b6acaa6bd39d74103bd1eb5f8
+; build_hash:   b959a76825d5538cd12a9f92ceac5c11375bf99f6aa5b50ca5a267ded00cdfff
 ; author:       Development
-; date:         2026-05-29
+; date:         2026-06-01
 ;==========================================================
-qm_magic_slot_offset=0
+qm_magic_slot_offset=3
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+qm_stress_reject_probability=0.0000
 ; core filter library params; filter-on/off variants must be pre-declared
 qm_filter_news_enabled=1
 qm_filter_news_mode=3
