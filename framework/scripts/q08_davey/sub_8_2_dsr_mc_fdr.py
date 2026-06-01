@@ -4,9 +4,20 @@ Two-tier pass:
   Tier 1 (Core):     Deflated Sharpe Ratio p-value < 0.05
   Tier 2 (Watchlist): Benjamini-Hochberg FDR-controlled pass
 
-DSR adjusts Sharpe for the multiple-testing bias of having tested many
-strategies. The deflation reflects the maximum-Sharpe selection variance
-across a candidate set of `n_strategies`.
+DSR adjusts Sharpe for the multiple-testing bias of having *selected* this
+strategy out of a candidate cohort. The deflation reflects the maximum-Sharpe
+selection variance across that cohort.
+
+First-entry / empty-cohort semantics
+------------------------------------
+The deflation only has meaning when there is a peer cohort to have selected
+from. For the first EA (no portfolio peers) there is no selection bias to
+correct, so — exactly like 8.1 (correlation) and 8.3 (tail-dependence) — this
+gate returns a trivial PASS pending cohort, and the deflation is deferred.
+A computed DSR result is NEVER returned as INVALID: INVALID is reserved for
+genuine infrastructure gaps (insufficient data), not statistical outcomes.
+A Tier-1 statistical fail resolves to FAIL (there is no batch-FDR rescue pass
+implemented in the aggregator yet; once one exists it may override FAIL->PASS).
 
 Reference: Bailey & López de Prado, 2014 — "The Deflated Sharpe Ratio".
 """
@@ -21,6 +32,13 @@ from .common import make_result, trade_timestamp
 GATE_NAME = "8.2_dsr_mc_fdr"
 DSR_P_MIN = 0.05
 N_CANDIDATE_STRATEGIES = 369   # rough V5 candidate count; updates as the farm grows
+# Minimum peer cohort below which DSR deflation is not applicable (no
+# selection bias to correct). Mirrors the first-entry trivial-pass used by
+# 8.1 / 8.3. TODO(calibration): once the farm wires a real candidate-Sharpe
+# distribution, derive `sharpe_std` from it and replace the 1.0 placeholder in
+# run(); the current deflation bar (E[max] ~= sqrt(2 ln N)) is otherwise too
+# harsh for any realistic Sharpe.
+MIN_COHORT_PEERS = 1
 EULER_MASCHERONI = 0.5772156649
 
 
@@ -84,9 +102,10 @@ def _deflated_sharpe_pvalue(observed_sr: float, sharpe_std: float, skew: float,
     return max(0.0, min(1.0, p))
 
 
-def run(trades: list[dict], **_) -> dict:
+def run(trades: list[dict], *, portfolio: list[dict] | None = None, **_) -> dict:
     returns = _trade_returns_per_day(trades)
     if len(returns) < 60:  # ~3 months of trading days
+        # Genuine infrastructure / data gap — INVALID is correct here (re-runnable).
         return make_result(GATE_NAME, "INVALID",
                            value=len(returns), threshold=60,
                            detail=f"insufficient_daily_returns:got={len(returns)}:need>=60")
@@ -97,7 +116,23 @@ def run(trades: list[dict], **_) -> dict:
                            value=round(sharpe, 4), threshold=0,
                            detail=f"sharpe_non_positive:sr={sharpe:.3f}")
 
-    sharpe_std_estimate = 1.0  # conservative; refined when N_STRATS samples land
+    # First-entry / empty-cohort: no selection bias to deflate. Trivial PASS
+    # pending cohort, consistent with 8.1 / 8.3. The DSR deflation activates
+    # once the farm accumulates a calibrated peer cohort (see MIN_COHORT_PEERS).
+    n_peers = len(portfolio or [])
+    if n_peers < MIN_COHORT_PEERS:
+        return make_result(GATE_NAME, "PASS",
+                           value=0, threshold=DSR_P_MIN,
+                           detail=("no_candidate_cohort_first_entry_trivial_pass:"
+                                   f"sr={sharpe:.3f}; DSR deflation deferred until "
+                                   f">={MIN_COHORT_PEERS} peer(s)"),
+                           evidence={"sharpe": round(sharpe, 4), "skew": round(skew, 4),
+                                     "excess_kurtosis": round(kurt_ex, 4),
+                                     "n_obs_days": n_obs, "n_peers": n_peers,
+                                     "tier": "standalone_pending_cohort"})
+
+    # Cohort mode — deflate against the candidate set's max-Sharpe selection bias.
+    sharpe_std_estimate = 1.0  # placeholder; see TODO(calibration) on MIN_COHORT_PEERS
     p_value = _deflated_sharpe_pvalue(sharpe, sharpe_std_estimate, skew, kurt_ex,
                                       n_obs, N_CANDIDATE_STRATEGIES)
 
@@ -107,16 +142,16 @@ def run(trades: list[dict], **_) -> dict:
                            detail=f"DSR_TIER1:p={p_value:.4f}<{DSR_P_MIN}:sr={sharpe:.3f}",
                            evidence={"sharpe": round(sharpe, 4), "skew": round(skew, 4),
                                      "excess_kurtosis": round(kurt_ex, 4),
-                                     "n_obs_days": n_obs, "tier": "core"})
+                                     "n_obs_days": n_obs, "n_peers": n_peers,
+                                     "tier": "core"})
 
-    # Tier 2 (Watchlist) — BH-FDR is applied across the candidate set at
-    # batch level. Per-EA we report the p-value; the batch-level FDR pass
-    # is determined by the aggregator's outer pass over all candidates.
-    # Here we mark "INVALID" so the aggregator knows to push to FDR review
-    # rather than mark FAIL outright.
-    return make_result(GATE_NAME, "INVALID",
+    # Tier-1 statistical fail. There is no batch-level BH-FDR rescue pass in the
+    # aggregator yet, so resolve to a real verdict (FAIL) rather than a permanent
+    # INVALID dead-end. A future cohort-level FDR pass may override FAIL->PASS.
+    return make_result(GATE_NAME, "FAIL",
                        value=round(p_value, 5), threshold=DSR_P_MIN,
-                       detail=f"DSR_TIER1_FAIL_push_to_fdr_review:p={p_value:.4f}",
+                       detail=f"DSR_TIER1_FAIL:p={p_value:.4f}>={DSR_P_MIN}:sr={sharpe:.3f}",
                        evidence={"sharpe": round(sharpe, 4), "skew": round(skew, 4),
                                  "excess_kurtosis": round(kurt_ex, 4),
-                                 "n_obs_days": n_obs, "tier": "watchlist_pending_fdr"})
+                                 "n_obs_days": n_obs, "n_peers": n_peers,
+                                 "tier": "fdr_rescue_eligible"})

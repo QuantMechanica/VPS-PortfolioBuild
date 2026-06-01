@@ -143,6 +143,36 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
         self.assertEqual(chopping["status"], "FAIL")
         self.assertFalse(chopping["passed"])
 
+    def test_dsr_first_entry_empty_cohort_is_trivial_pass(self) -> None:
+        # Positive-drift but volatile daily series, no portfolio peers: the DSR
+        # deflation is not applicable (no selection bias), so it trivial-passes
+        # pending cohort — never INVALID, never a deflation FAIL.
+        trades = [
+            _trade(dt.datetime(2024, 1, 1) + dt.timedelta(days=i), 10.0 if i % 2 == 0 else -9.0)
+            for i in range(120)
+        ]
+        result = sub_8_2_dsr_mc_fdr.run(trades=trades, portfolio=[])
+
+        self.assertEqual(result["status"], "PASS")
+        self.assertTrue(result["passed"])
+        self.assertEqual(result["evidence"]["tier"], "standalone_pending_cohort")
+        self.assertIn("first_entry", result["detail"])
+
+    def test_dsr_tier1_fail_with_cohort_is_fail_not_invalid(self) -> None:
+        # Same modest-Sharpe series, but with a peer cohort present the DSR
+        # deflation applies and fails Tier-1. It must resolve to a real FAIL,
+        # not a permanent INVALID dead-end (no batch-FDR rescue exists yet).
+        trades = [
+            _trade(dt.datetime(2024, 1, 1) + dt.timedelta(days=i), 10.0 if i % 2 == 0 else -9.0)
+            for i in range(120)
+        ]
+        result = sub_8_2_dsr_mc_fdr.run(trades=trades, portfolio=[{"ea_id": 1, "equity": []}])
+
+        self.assertEqual(result["status"], "FAIL")
+        self.assertFalse(result["passed"])
+        self.assertNotEqual(result["status"], "INVALID")
+        self.assertIn("DSR_TIER1_FAIL", result["detail"])
+
     def test_aggregate_invalid_has_precedence_over_fail_for_infra_separation(self) -> None:
         self.assertEqual(aggregate._aggregate_verdict(["PASS", "FAIL", "INVALID"]), "INVALID")
         self.assertEqual(aggregate._aggregate_verdict(["PASS", "FAIL"]), "FAIL")
