@@ -5666,6 +5666,7 @@ def pump(root: Path) -> dict[str, Any]:
     with connect(root) as conn:
         result["zerotrade_rework_flagged"] = _detect_zerotrade_dead_eas(conn, root)
 
+    result["resume_mining"] = resume_mining(root)
     result["research_cards_extracted"] = _extract_cards_from_research_results(root)
     result["auto_r_eval_queued"] = _auto_queue_r_eval_for_unknown_drafts(root)
 
@@ -8942,7 +8943,7 @@ def resume_mining(root: Path) -> dict[str, Any]:
     results: list[dict[str, Any]] = []
     with connect(root) as conn:
         paused = conn.execute(
-            "SELECT id, title, priority FROM sources "
+            "SELECT id, title, priority, assigned_worker FROM sources "
             "WHERE status = 'cards_ready' ORDER BY priority"
         ).fetchall()
         for src in paused:
@@ -8956,11 +8957,22 @@ def resume_mining(root: Path) -> dict[str, Any]:
             in_flight = total - done
 
             if total == 0:
+                conn.execute(
+                    "UPDATE sources SET status = 'active', updated_at = ? WHERE id = ?",
+                    (scan_at, src["id"]),
+                )
+                event(conn, "source", src["id"], "resumed", {
+                    "previous_status": "cards_ready",
+                    "cards_in_batch": 0,
+                    "reason": "no traceable cards; re-open source for re-mining or duplicate reconciliation",
+                    "assigned_worker": src["assigned_worker"],
+                })
                 results.append({
                     "source_id": src["id"],
                     "title": src["title"],
-                    "action": "skipped_no_cards",
-                    "reason": "no cards with this source_id — possible missing frontmatter field",
+                    "action": "resumed_no_cards",
+                    "cards_in_batch": 0,
+                    "reason": "no cards with this source_id; re-opened for re-mining or duplicate reconciliation",
                 })
                 continue
 
@@ -8993,7 +9005,7 @@ def resume_mining(root: Path) -> dict[str, Any]:
     return {
         "scanned_at": scan_at,
         "checked_sources": len(results),
-        "resumed_count": sum(1 for r in results if r["action"] == "resumed"),
+        "resumed_count": sum(1 for r in results if str(r["action"]).startswith("resumed")),
         "results": results,
     }
 

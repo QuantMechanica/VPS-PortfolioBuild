@@ -105,19 +105,18 @@ def repair_stranded_active_sources(con) -> list[dict]:
     ).fetchall()
     for r in rows:
         worker = (r["assigned_worker"] or "").lower()
-        if not worker:
-            continue
         # Check live_log freshness for this worker's research session
-        pattern = (f"codex_research_{r['id']}.live.log" if worker == "codex"
-                   else f"claude_research_{r['id']}.live.log")
-        log_path = LOG_DIR / pattern
         fresh = False
-        try:
-            if log_path.exists():
-                if time.time() - log_path.stat().st_mtime < 300:  # 5 min
-                    fresh = True
-        except OSError:
-            pass
+        if worker:
+            pattern = (f"codex_research_{r['id']}.live.log" if worker == "codex"
+                       else f"claude_research_{r['id']}.live.log")
+            log_path = LOG_DIR / pattern
+            try:
+                if log_path.exists():
+                    if time.time() - log_path.stat().st_mtime < 300:  # 5 min
+                        fresh = True
+            except OSError:
+                pass
         if fresh:
             continue
         # Source has been active > 30 min with no log activity → reset
@@ -135,7 +134,7 @@ def repair_stranded_active_sources(con) -> list[dict]:
             "handler": "R2_stranded_active_source",
             "target": r["id"],
             "action": "reset active → cards_ready",
-            "detail": f"worker={worker} title={r['title'][:60]!r} (no live_log activity)",
+            "detail": f"worker={worker or 'unassigned'} title={r['title'][:60]!r} (no live_log activity)",
         })
     if out:
         con.commit()
