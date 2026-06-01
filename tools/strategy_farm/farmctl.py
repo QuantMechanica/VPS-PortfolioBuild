@@ -4360,6 +4360,8 @@ def _archive_rework_artifacts(root: Path, build_task_id: str, payload: dict[str,
 def _prepare_codex_review_fail_reworks(root: Path, limit: int = 1) -> list[dict[str, Any]]:
     """Turn mechanical Codex review failures into bounded pending rework jobs."""
     prepared: list[dict[str, Any]] = []
+    dirty_guard = _repo_dirty_status()
+    dirty_entries = dirty_guard.get("entries") or []
     with connect(root) as conn:
         rows = conn.execute(
             """
@@ -4382,6 +4384,8 @@ def _prepare_codex_review_fail_reworks(root: Path, limit: int = 1) -> list[dict[
                 break
             payload = json.loads(row["payload_json"] or "{}")
             if payload.get("superseded_by") or payload.get("duplicate_of_task_id"):
+                continue
+            if dirty_guard.get("blocked") and not _dirty_entries_compatible_with_rework(dirty_entries, payload):
                 continue
             if row["card_id"] in pending_cards:
                 continue
