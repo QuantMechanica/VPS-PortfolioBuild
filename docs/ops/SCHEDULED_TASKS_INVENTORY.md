@@ -57,16 +57,15 @@ by Factory_ON (visible mode), and a one-shot `farmctl.py repair`.
 | `QM_StrategyFarm_Dashboard_Hourly` | hourly | `dashboards/render_dashboards.py` |
 | `QM_StrategyFarm_Health_15min` | 15 min | `farmctl.py health` |
 | `QM_StrategyFarm_GmailAlarm_Hourly` | hourly | `run_gmail_alarm_task.py` (sanctioned alarm + 06:05 digest) |
-| `QM_StrategyFarm_MorningBrief_0700` | 07:00 | `morning_brief.py` (email) |
 | `QM_MorningBriefing_Vault` | 06:00 | `morning_brief.py` (vault) |
 | `QM_Public_Snapshot_Hourly` | hourly | `run_public_snapshot_task.ps1` (quantmechanica.com JSON) |
 | `QM_StrategyFarm_InboxCleanup_Daily` | daily | `inbox_cleanup.py --days 7` |
 | `QM_StrategyFarm_WorktreeClean_4h` | 4 h | `run_worktree_clean_task.py` |
 | `QM_WorkItemLogPruner_Daily_0310` | 03:10 | `prune_workitem_logs.py` |
 
-> Note: there are **two** morning-brief tasks — `QM_MorningBriefing_Vault` (06:00, vault
-> write) and `QM_StrategyFarm_MorningBrief_0700` (07:00, email). Both invoke
-> `morning_brief.py`. Kept both intentionally; if one is redundant, retire the 06:00 vault one.
+> Note: the duplicate **07:00 email** morning brief (`QM_StrategyFarm_MorningBrief_0700`)
+> was deleted 2026-06-01 (OWNER: keep the 06:00 vault brief, drop the email). Only
+> `QM_MorningBriefing_Vault` remains.
 
 ## ENFORCE_DISABLED — must stay off (session-0 respawn hazards)
 
@@ -75,25 +74,28 @@ by Factory_ON (visible mode), and a one-shot `farmctl.py repair`.
 | `QM_StrategyFarm_Repair_Hourly` | spawned SYSTEM/session-0 workers after a crash; repair now runs ONCE inline in Factory_ON. **Was found drifted to Enabled on 2026-06-01 and re-disabled.** |
 | `QM_StrategyFarm_TerminalWorkers_AT_STARTUP` | spawned daemons as SYSTEM/session-0 (headless); workers now spawn in the user session via Factory_ON. |
 
-## DECOMMISSIONED — legacy / paused (NOT toggled by ON/OFF)
+## DECOMMISSIONED — DELETED 2026-06-01 (OWNER-approved)
 
-Left disabled; revive by hand only with OWNER intent. Three groups (full list in the manifest):
+42 legacy tasks were unregistered from Task Scheduler on 2026-06-01 (`Unregister-ScheduledTask`,
+all verified Disabled first). The QM task count dropped 61 → 18. Three groups deleted:
 
-- **Paperclip-era relics** (paths under `C:\QM\paperclip\...\<GUID>\`): backup, sentinels,
-  daily status mail, old dashboard render, drive-git-exclusion, WS30 gate, infra health,
-  kanban archive, stale-lock watchdog, old public-snapshot export/health, all `QUA*`
-  ops-cycle/heartbeat/blocker tasks, recovery-orphans cleanup, runtime-health scan,
-  subscription guardian.
-- **Superseded V5 pre-strategy-farm**: `AggregatorState_1min`, `DWX_HourlyCheck`,
-  `GateEvaluator_5min`, `MT5_Worker_T1..T5` (old session-0 workers), `Phase_Orchestrator`,
-  `PipelineHealth_Watchdog`, `PipelineState_Build_Hourly`, `PythonRuntimeHealth_10min`,
-  `Research_Wake_Check`, `TokenCostBudget*`.
-- **Intentionally-paused strategy-farm tasks**: `AutonomousWake_Hourly`,
-  `BoardAdvisor_Hourly`, `ClaudeVerify_4h`, `Q08Regen_Resume`.
+- **Paperclip-era relics (23)** (paths under `C:\QM\paperclip\...\<GUID>\`): `Backup_Daily_0215`,
+  `Class2ExecutionPolicySentinel_60min`, `DailyStatusMail`, `DashboardRender_Hourly`,
+  `DriveGitExclusion_15min`, `DWX_WS30Gate_15min`, `InfraHealthCheck_5min`,
+  `KanbanArchive_Daily_2300`, `PaperclipStaleLockWatchdog_15min`, `PublicSnapshot_Export_Hourly`,
+  `PublicSnapshot_Health_15min`, `QUA1006/1016/1023_OpsCycle`, `QUA207_RuntimeHeartbeat`,
+  `QUA774_ExternalUnblock{OpsSuite,Status}`, `QUA945_BlockedHeartbeat`, `QUA95_{BlockerRefresh,TaskHealth}`,
+  `RecoveryOrphans_Cleanup_Daily_0310`, `RuntimeHealthScan_15min`, `SubscriptionGuardian_5m`.
+- **Superseded V5 pre-strategy-farm (15)**: `AggregatorState_1min`, `DWX_HourlyCheck`,
+  `GateEvaluator_5min`, `MT5_Worker_T1..T5`, `Phase_Orchestrator`, `PipelineHealth_Watchdog`,
+  `PipelineState_Build_Hourly`, `PythonRuntimeHealth_10min`, `Research_Wake_Check`,
+  `TokenCostBudgetDailySnapshot_0010`, `TokenCostBudgetHealth_15min`.
+- **Paused strategy-farm tasks (4)**: `AutonomousWake_Hourly`, `BoardAdvisor_Hourly`,
+  `ClaudeVerify_4h`, `Q08Regen_Resume`. A few have repo install scripts (e.g.
+  `install_claude_verify_4h_task.ps1`) and can be re-created by re-running those if ever needed.
 
-> Optional follow-up: these legacy tasks are harmless while disabled but clutter Task
-> Scheduler. They can be bulk-`Unregister-ScheduledTask`'d once OWNER confirms none will
-> be revived. Not done automatically (deletion is irreversible).
+> The 07:00 email morning brief (`QM_StrategyFarm_MorningBrief_0700`) was also deleted in the
+> same pass (vault brief retained).
 
 ## Non-QM tasks (not ours)
 
