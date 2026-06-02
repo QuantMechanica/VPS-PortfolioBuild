@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        10566
 ; ea_slug:      mql5-ravi-hist_v2
@@ -10,7 +10,7 @@
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   c7d3c3b7956db8950fa20c7ad16ae58d134608ab381546308ae0e90123c85097
 ; author:       Claude
 ; date:         2026-06-02
 ; fix_v2:       strategy params injected; correct slot per registry

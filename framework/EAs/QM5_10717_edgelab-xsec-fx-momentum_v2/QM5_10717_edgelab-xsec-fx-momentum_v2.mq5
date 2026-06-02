@@ -1,4 +1,4 @@
-#property strict
+﻿#property strict
 #property version   "5.0"
 #property description "QM5_10717_v2 Edge Lab Cross-Sectional FX Momentum"
 

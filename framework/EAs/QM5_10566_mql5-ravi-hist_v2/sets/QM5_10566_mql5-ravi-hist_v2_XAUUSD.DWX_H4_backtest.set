@@ -10,7 +10,7 @@
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   9365de50d2c4aefa394781d470d7e45834b2b6e2ee3ac2bb09debce7df02959e
+; build_hash:   291800a2bc48d6a4f775e8525c2971e99c7dafabdfd2b8d76c6944f21f6baf91
 ; author:       Claude
 ; date:         2026-06-02
 ; fix_v2:       strategy params injected; correct slot per registry

@@ -1,21 +1,21 @@
 ﻿;==========================================================
 ; QM5 Set File
-; ea_id:        10570
-; ea_slug:      mql5-stepma-nrtr_v2
+; ea_id:        10717
+; ea_slug:      edgelab-xsec-fx-momentum_v2
 ; ea_version:   v5.0
 ; set_version:  s20260602-001
-; symbol:       EURUSD.DWX
-; timeframe:    H4
+; symbol:       USDCAD.DWX
+; timeframe:    D1
 ; environment:  backtest
-; magic_slot:   0
+; magic_slot:   6
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   73c02d6bec7be1f9aca05b85aaa3833b1a29b212daf0584a8b83c9d742c58f8d
+; build_hash:   8ff06a8dd71872ca952dc55c38c4af3f44ff2124261054d1fd770cdd5a4d4cf0
 ; author:       Claude
 ; date:         2026-06-02
 ; fix_v2:       strategy params injected; correct slot per registry
 ;==========================================================
-qm_magic_slot_offset=0
+qm_magic_slot_offset=6
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
@@ -32,14 +32,13 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params
-strategy_stepma_length=10
-strategy_stepma_kv=1.0
-strategy_stepma_step_size=0
-strategy_stepma_percentage=0.0
-strategy_stepma_high_low=true
-strategy_atr_period=14
+strategy_lookback_days=63
+strategy_rebalance_dow=1
+strategy_atr_period=20
 strategy_atr_sl_mult=2.0
-strategy_tp_rr=1.5
-strategy_warmup_bars=180
-strategy_exit_on_opposite=true
+strategy_deviation_points=30
+strategy_volfilter_enabled=true
+strategy_vol_window=20
+strategy_vol_percentile_days=252
+strategy_vol_skip_pct=0.90
 strategy_max_spread_points=0

@@ -10,7 +10,7 @@
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   1b299f8c7682fead9b8e6822cf39e536e2d10079f9437f1eff2e5f2bd281ba77
+; build_hash:   c9260557f61de67e16f230a36b5baeb6aeca3a566047e501b8a6d07f3490287f
 ; author:       Claude
 ; date:         2026-06-02
 ; fix_v2:       strategy params injected; card_defaults_source=not_found defect fixed
