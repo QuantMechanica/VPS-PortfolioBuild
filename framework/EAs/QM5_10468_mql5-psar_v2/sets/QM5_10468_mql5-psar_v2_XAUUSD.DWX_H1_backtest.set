@@ -1,20 +1,20 @@
 ﻿;==========================================================
 ; QM5 Set File
-; ea_id:        10452
-; ea_slug:      mql5-div3_v2
+; ea_id:        10468
+; ea_slug:      mql5-psar_v2
 ; ea_version:   v5.0
 ; set_version:  s20260528-001
-; symbol:       GDAXI.DWX
+; symbol:       XAUUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
-; magic_slot:   4
+; magic_slot:   7
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   93db4892b4e282a9e09513670e4ee372bd2d58f2bf45fe21508f63077848a7df
 ; author:       Development
 ; date:         2026-05-28
 ;==========================================================
-qm_magic_slot_offset=4
+qm_magic_slot_offset=7
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1

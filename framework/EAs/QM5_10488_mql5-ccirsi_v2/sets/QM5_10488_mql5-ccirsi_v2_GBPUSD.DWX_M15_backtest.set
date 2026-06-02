@@ -3,17 +3,16 @@
 ; ea_id:        10488
 ; ea_slug:      mql5-ccirsi_v2
 ; ea_version:   v5.0
-; set_version:  s20260602-001
+; set_version:  s20260528-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    M15
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   4036ec219ea563f78d803671eaf7d5519005163aa7166086b0f297cc1802061e
-; author:       Claude
-; date:         2026-06-02
-; fix_v2:       strategy params injected; correct slot
+; build_hash:   pending
+; author:       Development
+; date:         2026-05-28
 ;==========================================================
 qm_magic_slot_offset=1
 RISK_FIXED=1000
@@ -31,16 +30,5 @@ qm_filter_volatility_atr_period=14
 qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params
-strategy_work_tf=15
-strategy_rsi_period=14
-strategy_rsi_level_up=55.0
-strategy_rsi_level_down=45.0
-strategy_cci_period=14
-strategy_cci_level_up=100.0
-strategy_cci_level_down=-100.0
-strategy_atr_period=14
-strategy_atr_sl_mult=1.5
-strategy_target_rr=2.0
-strategy_time_stop_bars=64
-strategy_max_spread_points=35
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=not_found

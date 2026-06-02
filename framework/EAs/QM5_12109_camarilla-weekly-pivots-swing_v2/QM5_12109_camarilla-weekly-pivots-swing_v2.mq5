@@ -1,6 +1,6 @@
 ﻿#property strict
 #property version   "5.0"
-#property description "QM5_12109 (v2) camarilla-weekly-pivots-swing"
+#property description "QM5_12109 camarilla-weekly-pivots-swing v2"
 
 #include <QM/QM_Common.mqh>
 
@@ -36,13 +36,6 @@ input double rr_target            = 2.0;
 input int    max_spread_points    = 30;
 input int    no_trade_first_bars  = 2;
 
-// ----------------------------------------------------------------------
-// Helper functions
-// ----------------------------------------------------------------------
-
-// ----------------------------------------------------------------------
-// Camarilla pivot levels from prior weekly OHLC
-// ----------------------------------------------------------------------
 struct CamPivots
 {
    double h3, h4, l3, l4, p;
@@ -54,9 +47,9 @@ datetime g_last_week_start = 0;
 
 void ComputePivots()
 {
-   const double pw_h  = iHigh(_Symbol, PERIOD_W1, 1); // perf-allowed: structural/indicator series read; called from QM_IsNewBar-gated context
-   const double pw_l  = iLow(_Symbol, PERIOD_W1, 1); // perf-allowed: structural/indicator series read; called from QM_IsNewBar-gated context
-   const double pw_c  = iClose(_Symbol, PERIOD_W1, 1); // perf-allowed: structural/indicator series read; called from QM_IsNewBar-gated context
+   const double pw_h  = iHigh(_Symbol, PERIOD_W1, 1); // perf-allowed: structural read; called from per-bar context
+   const double pw_l  = iLow(_Symbol, PERIOD_W1, 1); // perf-allowed: structural read; called from per-bar context
+   const double pw_c  = iClose(_Symbol, PERIOD_W1, 1); // perf-allowed: structural read; called from per-bar context
    if(pw_h <= 0 || pw_l <= 0 || pw_c <= 0) return;
    const double range = pw_h - pw_l;
    g_pivots.h3 = pw_c + range * 1.1 / 4.0;
@@ -65,11 +58,9 @@ void ComputePivots()
    g_pivots.l4 = pw_c - range * 1.1 / 2.0;
    g_pivots.p  = (pw_h + pw_l + pw_c) / 3.0;
    g_pivots.computed_at = TimeCurrent();
-
-   // Detect week start for no-trade zone
    MqlDateTime dt;
    TimeToStruct(g_pivots.computed_at, dt);
-   int dow = dt.day_of_week; // 0=Sunday
+   int dow = dt.day_of_week;
    g_last_week_start = g_pivots.computed_at - (dow >= 1 ? (dow - 1) * 86400 : 6 * 86400);
 }
 
@@ -77,15 +68,11 @@ bool IsNewWeek()
 {
    MqlDateTime dt;
    TimeToStruct(TimeCurrent(), dt);
-   if(dt.day_of_week == 0) return false; // Sunday: still computing
-   // First bar after weekly pivot recompute
+   if(dt.day_of_week == 0) return false;
    const datetime week_start = TimeCurrent() - (dt.day_of_week - 1) * 86400;
    return (week_start > g_last_week_start);
 }
 
-// ----------------------------------------------------------------------
-// Entry/exit helpers
-// ----------------------------------------------------------------------
 bool HasPosition()
 {
    const int magic = QM_FrameworkMagic();
@@ -113,13 +100,8 @@ void CloseAll(const QM_ExitReason reason)
    }
 }
 
-
-// ----------------------------------------------------------------------
-// Strategy hooks
-// ----------------------------------------------------------------------
 bool Strategy_NoTradeFilter()
   {
-   // No-trade first N H4 bars of the week
    const datetime broker_now = TimeCurrent();
    if(g_last_week_start > 0)
    {
@@ -133,55 +115,45 @@ bool Strategy_NoTradeFilter()
       if(spread > max_spread_points) return true;
    }
    return false;
-
   }
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // Refresh pivots on new week
    if(g_last_week_start == 0 || IsNewWeek())
       ComputePivots();
    if(g_pivots.h3 <= 0) return false;
-   const double close = iClose(_Symbol, PERIOD_H4, 1); // perf-allowed: structural/indicator series read; called from QM_IsNewBar-gated context
-   const double high = iHigh(_Symbol, PERIOD_H4, 1); // perf-allowed: structural/indicator series read; called from QM_IsNewBar-gated context
-   const double low  = iLow(_Symbol, PERIOD_H4, 1); // perf-allowed: structural/indicator series read; called from QM_IsNewBar-gated context
+
+   const double close = iClose(_Symbol, PERIOD_H4, 1); // perf-allowed: structural read; called from per-bar context
+   const double high = iHigh(_Symbol, PERIOD_H4, 1); // perf-allowed: structural read; called from per-bar context
+   const double low  = iLow(_Symbol, PERIOD_H4, 1); // perf-allowed: structural read; called from per-bar context
    if(close <= 0 || high <= 0 || low <= 0) return false;
 
    if(HasPosition()) return false;
 
-    const double atr = QM_ATR(_Symbol, PERIOD_H4, cam_atr_period, 1);
+   const double atr = QM_ATR(_Symbol, PERIOD_H4, cam_atr_period, 1);
    if(atr <= 0) return false;
 
-   // Mode A (fade): H3/L3 touch with L4/H4 not broken
-   // Mode B (breakout): H4/L4 break
    bool long_signal = false, short_signal = false;
    double sl = 0, tp = 0;
 
-   // LONG entries
-   // Mode A: L3 touch from above, close > L4
    if(low <= g_pivots.l3 && close > g_pivots.l4)
    {
       long_signal = true;
       sl = g_pivots.l4;
       tp = g_pivots.p;
    }
-   // Mode B: H4 break
    if(close > g_pivots.h4)
    {
       long_signal = true;
       sl = g_pivots.h3;
       tp = close + (g_pivots.h4 - g_pivots.h3) * 2.0;
    }
-
-   // SHORT entries (mutually exclusive with long)
-   // Mode A: H3 touch from below, close < H4
    if(!long_signal && high >= g_pivots.h3 && close < g_pivots.h4)
    {
       short_signal = true;
       sl = g_pivots.h4;
       tp = g_pivots.p;
    }
-   // Mode B: L4 break
    if(!long_signal && !short_signal && close < g_pivots.l4)
    {
       short_signal = true;
@@ -191,7 +163,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(!long_signal && !short_signal) return false;
 
-   // SL floor check
    const double entry = long_signal ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
                                     : SymbolInfoDouble(_Symbol, SYMBOL_BID);
    const double sl_dist = MathAbs(entry - sl);
@@ -209,7 +180,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
    return true;
-
   }
 
 void Strategy_ManageOpenPosition()
@@ -226,12 +196,9 @@ bool Strategy_ExitSignal()
       if(ticket == 0 || !PositionSelectByTicket(ticket)) continue;
       if(PositionGetString(POSITION_SYMBOL) != _Symbol) continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic) continue;
-
       const ENUM_POSITION_TYPE pt = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-
-      // Opposite pivot touch invalidates
-      const double high = iHigh(_Symbol, PERIOD_H4, 1); // perf-allowed: structural/indicator series read; called from QM_IsNewBar-gated context
-      const double low = iLow(_Symbol, PERIOD_H4, 1); // perf-allowed: structural/indicator series read; called from QM_IsNewBar-gated context
+      const double high = iHigh(_Symbol, PERIOD_H4, 1); // perf-allowed: structural read; called from per-bar context
+      const double low = iLow(_Symbol, PERIOD_H4, 1); // perf-allowed: structural read; called from per-bar context
       if(pt == POSITION_TYPE_BUY && high >= g_pivots.h4)
       {
          QM_TM_ClosePosition(ticket, QM_EXIT_OPPOSITE_SIGNAL);
@@ -244,7 +211,6 @@ bool Strategy_ExitSignal()
       }
    }
    return false;
-
   }
 
 bool Strategy_NewsFilterHook(const datetime broker_time)
@@ -252,9 +218,6 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
    return false;
   }
 
-// ----------------------------------------------------------------------
-// Framework wiring
-// ----------------------------------------------------------------------
 int OnInit()
   {
    if(!QM_FrameworkInit(qm_ea_id,
@@ -267,10 +230,9 @@ int OnInit()
                         qm_rng_seed, qm_stress_reject_probability,
                         qm_news_temporal, qm_news_compliance))
       return INIT_FAILED;
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_12109\",\"strategy\":\"camarilla-weekly-pivots-swing\"}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_12109\",\"strategy\":\"camarilla-weekly-pivots-swing\",\"version\":\"v2\"}");
    return INIT_SUCCEEDED;
   }
-
 
 void OnDeinit(const int reason)
   {
@@ -303,9 +265,7 @@ void OnTick()
    }}
   }}
 
-
 void OnTimer() {{ QM_FrameworkOnTimer(); }}
 void OnTradeTransaction(const MqlTradeTransaction &trans, const MqlTradeRequest &request, const MqlTradeResult &result)
   {{ QM_FrameworkOnTradeTransaction(trans, request, result); }}
 double OnTester() {{ QM_ChartUI_Refresh(); return QM_DefaultObjective(); }}
-

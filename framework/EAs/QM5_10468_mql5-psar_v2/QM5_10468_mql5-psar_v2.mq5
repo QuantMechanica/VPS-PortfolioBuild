@@ -1,6 +1,6 @@
 ﻿#property strict
 #property version   "5.0"
-#property description "QM5_10452_v2 MQL5 Triple Oscillator Divergence Reversal - v2 recompile: QM_MagicResolver refresh"
+#property description "QM5_10468_v2 MQL5 Parabolic SAR Expert - v2 recompile: QM_MagicResolver refresh"
 
 #include <QM/QM_Common.mqh>
 
@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 10452;
+input int    qm_ea_id                   = 10468;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -73,139 +73,96 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_bars_to_check       = 80;
-input int    strategy_min_bars_distance   = 3;
-input int    strategy_min_confirmations   = 2;
-input int    strategy_rsi_period          = 14;
-input int    strategy_macd_fast           = 12;
-input int    strategy_macd_slow           = 26;
-input int    strategy_macd_signal         = 9;
-input int    strategy_stoch_k             = 5;
-input int    strategy_stoch_d             = 3;
-input int    strategy_stoch_slowing       = 3;
-input int    strategy_ema_period          = 50;
-input int    strategy_atr_period          = 14;
-input double strategy_atr_stop_buffer     = 0.25;
-input int    strategy_take_profit_points  = 1000;
-input int    strategy_max_spread_points   = 80;
-
-double Strategy_NormalizePrice(const double price)
-  {
-   return NormalizeDouble(price, (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS));
-  }
-
-int Strategy_CompareSwingLow(const double current_value, const double previous_value)
-  {
-   return (current_value > previous_value) ? 1 : 0;
-  }
-
-int Strategy_CompareSwingHigh(const double current_value, const double previous_value)
-  {
-   return (current_value < previous_value) ? 1 : 0;
-  }
-
-bool Strategy_IsPriceSwingLow(const int shift)
-  {
-   const double low = iLow(_Symbol, _Period, shift);
-   if(low <= 0.0)
-      return false;
-
-   for(int offset = 1; offset <= strategy_min_bars_distance; ++offset)
-     {
-      if(iLow(_Symbol, _Period, shift - offset) <= low)
-         return false;
-      if(iLow(_Symbol, _Period, shift + offset) < low)
-         return false;
-     }
-   return true;
-  }
-
-bool Strategy_IsPriceSwingHigh(const int shift)
-  {
-   const double high = iHigh(_Symbol, _Period, shift);
-   if(high <= 0.0)
-      return false;
-
-   for(int offset = 1; offset <= strategy_min_bars_distance; ++offset)
-     {
-      if(iHigh(_Symbol, _Period, shift - offset) >= high)
-         return false;
-      if(iHigh(_Symbol, _Period, shift + offset) > high)
-         return false;
-     }
-   return true;
-  }
-
-bool Strategy_FindSwingPair(const bool lows, int &recent_shift, int &older_shift)
-  {
-   recent_shift = 0;
-   older_shift = 0;
-
-   const int min_shift = strategy_min_bars_distance + 1;
-   const int max_shift = MathMax(min_shift + 1, strategy_bars_to_check);
-   for(int shift = min_shift; shift <= max_shift; ++shift)
-     {
-      const bool is_swing = lows ? Strategy_IsPriceSwingLow(shift) : Strategy_IsPriceSwingHigh(shift);
-      if(!is_swing)
-         continue;
-
-      if(recent_shift == 0)
-         recent_shift = shift;
-      else
-        {
-         older_shift = shift;
-         return true;
-        }
-     }
-   return false;
-  }
-
-int Strategy_BullishConfirmations(const int recent_shift, const int older_shift)
-  {
-   int confirmations = 0;
-
-   confirmations += Strategy_CompareSwingLow(QM_RSI(_Symbol, _Period, strategy_rsi_period, recent_shift),
-                                             QM_RSI(_Symbol, _Period, strategy_rsi_period, older_shift));
-   confirmations += Strategy_CompareSwingLow(QM_MACD_Main(_Symbol, _Period, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, recent_shift),
-                                             QM_MACD_Main(_Symbol, _Period, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, older_shift));
-   confirmations += Strategy_CompareSwingLow(QM_Stoch_K(_Symbol, _Period, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, recent_shift),
-                                             QM_Stoch_K(_Symbol, _Period, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, older_shift));
-
-   return confirmations;
-  }
-
-int Strategy_BearishConfirmations(const int recent_shift, const int older_shift)
-  {
-   int confirmations = 0;
-
-   confirmations += Strategy_CompareSwingHigh(QM_RSI(_Symbol, _Period, strategy_rsi_period, recent_shift),
-                                              QM_RSI(_Symbol, _Period, strategy_rsi_period, older_shift));
-   confirmations += Strategy_CompareSwingHigh(QM_MACD_Main(_Symbol, _Period, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, recent_shift),
-                                              QM_MACD_Main(_Symbol, _Period, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, older_shift));
-   confirmations += Strategy_CompareSwingHigh(QM_Stoch_K(_Symbol, _Period, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, recent_shift),
-                                              QM_Stoch_K(_Symbol, _Period, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, older_shift));
-
-   return confirmations;
-  }
+input ENUM_TIMEFRAMES strategy_timeframe = PERIOD_H1;
+input double strategy_psar_step         = 0.02;
+input double strategy_psar_maximum      = 0.20;
+input int    strategy_atr_period        = 14;
+input double strategy_atr_sl_mult       = 1.50;
+input double strategy_target_rr         = 2.00;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
+bool Strategy_ReadPSAR(const int shift, double &out_psar)
+  {
+   out_psar = 0.0;
+   if(shift < 0 || strategy_psar_step <= 0.0 || strategy_psar_maximum <= 0.0)
+      return false;
+
+   static int handle = INVALID_HANDLE;
+   static string handle_symbol = "";
+   static ENUM_TIMEFRAMES handle_tf = PERIOD_CURRENT;
+   static double handle_step = 0.0;
+   static double handle_maximum = 0.0;
+
+   if(handle == INVALID_HANDLE ||
+      handle_symbol != _Symbol ||
+      handle_tf != strategy_timeframe ||
+      MathAbs(handle_step - strategy_psar_step) > 0.0000001 ||
+      MathAbs(handle_maximum - strategy_psar_maximum) > 0.0000001)
+     {
+      handle = iSAR(_Symbol, strategy_timeframe, strategy_psar_step, strategy_psar_maximum);
+      handle_symbol = _Symbol;
+      handle_tf = strategy_timeframe;
+      handle_step = strategy_psar_step;
+      handle_maximum = strategy_psar_maximum;
+     }
+
+   if(handle == INVALID_HANDLE)
+      return false;
+
+   double buffer[];
+   ArraySetAsSeries(buffer, true);
+   const int copied = CopyBuffer(handle, 0, shift, 1, buffer); // perf-allowed: PSAR has no QM wrapper; one value only.
+   if(copied != 1 || buffer[0] <= 0.0)
+      return false;
+
+   out_psar = buffer[0];
+   return true;
+  }
+
+bool Strategy_IsBullishPSAR(const int shift)
+  {
+   double psar = 0.0;
+   if(!Strategy_ReadPSAR(shift, psar))
+      return false;
+
+   const double close_price = iClose(_Symbol, strategy_timeframe, shift);
+   return (close_price > 0.0 && psar < close_price);
+  }
+
+bool Strategy_IsBearishPSAR(const int shift)
+  {
+   double psar = 0.0;
+   if(!Strategy_ReadPSAR(shift, psar))
+      return false;
+
+   const double close_price = iClose(_Symbol, strategy_timeframe, shift);
+   return (close_price > 0.0 && psar > close_price);
+  }
+
+bool Strategy_HasOpenPosition()
+  {
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+         return true;
+     }
+   return false;
+  }
+
 // Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   if(strategy_max_spread_points <= 0)
-      return false;
-
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(ask <= 0.0 || bid <= 0.0 || point <= 0.0 || ask <= bid)
-      return true;
-
-   return ((ask - bid) / point > strategy_max_spread_points);
+   return false;
   }
 
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
@@ -213,98 +170,70 @@ bool Strategy_NoTradeFilter()
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   req.type = QM_BUY;
+   if(Strategy_HasOpenPosition())
+      return false;
+
+   const bool bullish_now = Strategy_IsBullishPSAR(1);
+   const bool bullish_prev = Strategy_IsBullishPSAR(2);
+   const bool bearish_now = Strategy_IsBearishPSAR(1);
+   const bool bearish_prev = Strategy_IsBearishPSAR(2);
+
+   const bool long_signal = (bullish_now && !bullish_prev);
+   const bool short_signal = (bearish_now && !bearish_prev);
+   if(!long_signal && !short_signal)
+      return false;
+
+   const QM_OrderType side = long_signal ? QM_BUY : QM_SELL;
+   const double entry = (side == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
+                                         : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(entry <= 0.0)
+      return false;
+
+   const double sl = QM_StopATR(_Symbol, side, entry, strategy_atr_period, strategy_atr_sl_mult);
+   if(sl <= 0.0)
+      return false;
+
+   const double tp = QM_TakeRR(_Symbol, side, entry, sl, strategy_target_rr);
+   if(tp <= 0.0)
+      return false;
+
+   req.type = side;
    req.price = 0.0;
-   req.sl = 0.0;
-   req.tp = 0.0;
-   req.reason = "";
+   req.sl = sl;
+   req.tp = tp;
+   req.reason = long_signal ? "PSAR_FLIP_LONG" : "PSAR_FLIP_SHORT";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
-
-   if(strategy_bars_to_check < 10 ||
-      strategy_min_bars_distance < 1 ||
-      strategy_min_confirmations < 1 ||
-      strategy_min_confirmations > 3 ||
-      strategy_take_profit_points <= 0 ||
-      strategy_atr_period <= 0 ||
-      strategy_atr_stop_buffer < 0.0)
-      return false;
-
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(point <= 0.0)
-      return false;
-
-   const double atr = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   const double ema = QM_EMA(_Symbol, _Period, strategy_ema_period, 1);
-   const double close1 = iClose(_Symbol, _Period, 1);
-   if(atr <= 0.0 || ema <= 0.0 || close1 <= 0.0)
-      return false;
-
-   int recent_low = 0;
-   int older_low = 0;
-   if(Strategy_FindSwingPair(true, recent_low, older_low))
-     {
-      const double recent_price_low = iLow(_Symbol, _Period, recent_low);
-      const double older_price_low = iLow(_Symbol, _Period, older_low);
-      if(recent_price_low > 0.0 &&
-         older_price_low > 0.0 &&
-         recent_price_low < older_price_low &&
-         close1 > ema &&
-         Strategy_BullishConfirmations(recent_low, older_low) >= strategy_min_confirmations)
-        {
-         const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-         if(entry <= 0.0)
-            return false;
-
-         req.type = QM_BUY;
-         req.price = Strategy_NormalizePrice(entry);
-         req.sl = Strategy_NormalizePrice(recent_price_low - atr * strategy_atr_stop_buffer);
-         req.tp = Strategy_NormalizePrice(entry + strategy_take_profit_points * point);
-         req.reason = "TRIPLE_DIV_LONG";
-         return (req.sl > 0.0 && req.sl < req.price && req.tp > req.price);
-        }
-     }
-
-   int recent_high = 0;
-   int older_high = 0;
-   if(Strategy_FindSwingPair(false, recent_high, older_high))
-     {
-      const double recent_price_high = iHigh(_Symbol, _Period, recent_high);
-      const double older_price_high = iHigh(_Symbol, _Period, older_high);
-      if(recent_price_high > 0.0 &&
-         older_price_high > 0.0 &&
-         recent_price_high > older_price_high &&
-         close1 < ema &&
-         Strategy_BearishConfirmations(recent_high, older_high) >= strategy_min_confirmations)
-        {
-         const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-         if(entry <= 0.0)
-            return false;
-
-         req.type = QM_SELL;
-         req.price = Strategy_NormalizePrice(entry);
-         req.sl = Strategy_NormalizePrice(recent_price_high + atr * strategy_atr_stop_buffer);
-         req.tp = Strategy_NormalizePrice(entry - strategy_take_profit_points * point);
-         req.reason = "TRIPLE_DIV_SHORT";
-         return (req.sl > req.price && req.tp > 0.0 && req.tp < req.price);
-        }
-     }
-
-   return false;
+   return true;
   }
 
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card baseline has no trailing, break-even, partial close, or pyramiding.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   // Baseline exits by fixed TP, divergence-swing SL, framework Friday close, and kill-switch.
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      if(position_type == POSITION_TYPE_BUY && Strategy_IsBearishPSAR(1))
+         return true;
+      if(position_type == POSITION_TYPE_SELL && Strategy_IsBullishPSAR(1))
+         return true;
+     }
    return false;
   }
 

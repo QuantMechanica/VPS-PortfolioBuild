@@ -1,6 +1,6 @@
 ﻿#property strict
 #property version   "5.0"
-#property description "QM5_10488 (v2) MQL5 Basic CCI RSI dual oscillator thresholds"
+#property description "QM5_10488_v2 MQL5 Basic CCI RSI dual oscillator - v2 recompile: QM_MagicResolver refresh"
 
 #include <QM/QM_Common.mqh>
 

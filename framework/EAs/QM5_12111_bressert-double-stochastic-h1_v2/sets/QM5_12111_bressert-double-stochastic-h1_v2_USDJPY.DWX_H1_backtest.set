@@ -3,35 +3,25 @@
 ; ea_id:        12111
 ; ea_slug:      bressert-double-stochastic-h1_v2
 ; ea_version:   v5.0
-; set_version:  s20260602-001
+; set_version:  s2026-05-26-smoke
 ; symbol:       USDJPY.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
-; portfolio_weight: 1
-; build_hash:   7eda9a8b87c19d8f769da37b7b23ad91dc9d191c814a7311451a6dc96f58399e
-; author:       Claude
-; date:         2026-06-02
-; fix_v2:       strategy params injected; correct slot
+; portfolio_weight: 1.00
+; build_hash:   ab06e7431f732fbc900118bfa40dd73fa81065b7ba60188cec9ce6a6b4129dc5
+; author:       Development
+; date:         2026-05-26
 ;==========================================================
+qm_ea_id=12111
 qm_magic_slot_offset=2
-RISK_FIXED=1000
-RISK_PERCENT=0
-PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params
+RISK_PERCENT=0.0
+RISK_FIXED=1000.0
+PORTFOLIO_WEIGHT=1.0
+qm_news_mode=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
 raw_stoch_k=13
 raw_stoch_d=5
 raw_stoch_slowing=3
