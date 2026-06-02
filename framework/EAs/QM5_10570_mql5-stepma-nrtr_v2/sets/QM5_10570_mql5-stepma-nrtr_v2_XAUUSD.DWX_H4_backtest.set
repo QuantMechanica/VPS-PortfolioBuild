@@ -1,8 +1,8 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        10570
-; ea_slug:      mql5-stepma-nrtr
-; ea_version:   v5.0 _v2
+; ea_slug:      mql5-stepma-nrtr_v2
+; ea_version:   v5.0
 ; set_version:  s20260602-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    H4
@@ -10,24 +10,28 @@
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   ec5db7e2f479887b699e1b98743807a68248d89b87ed9cece637fdd9c56bfe52
 ; author:       Claude
 ; date:         2026-06-02
+; fix_v2:       strategy params injected; correct slot per registry
 ;==========================================================
-qm_ea_id=10570
 qm_magic_slot_offset=3
-qm_rng_seed=42
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-qm_news_temporal=3
-qm_news_compliance=0
-qm_news_stale_max_hours=336
-qm_news_min_impact=high
-qm_news_mode_legacy=0
-qm_friday_close_enabled=true
-qm_friday_close_hour_broker=21
-qm_stress_reject_probability=0.0
+; core filter library params; filter-on/off variants must be pre-declared
+qm_filter_news_enabled=1
+qm_filter_news_mode=3
+qm_filter_regime_enabled=0
+qm_filter_regime_lookback_bars=100
+qm_filter_regime_bull_return_pct=2.0
+qm_filter_regime_bear_return_pct=2.0
+qm_filter_volatility_enabled=0
+qm_filter_volatility_atr_period=14
+qm_filter_volatility_lookback_bars=50
+qm_filter_volatility_compression_ratio=0.75
+qm_filter_volatility_expansion_ratio=1.25
+; strategy-specific params
 strategy_stepma_length=10
 strategy_stepma_kv=1.0
 strategy_stepma_step_size=0

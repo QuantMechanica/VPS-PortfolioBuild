@@ -5,13 +5,33 @@
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica Strategy Card: QM5_10570_mql5-stepma-nrtr
-// v2: source logic unchanged from v1.
-// Root cause of v1 INFRA_FAIL on EURJPY/GBPJPY: T10 shared daily log contained
-// ONINIT_FAILED markers from an earlier same-day test of a different EA on that
-// terminal slot. run_smoke detected those stale markers during log scan and
-// misclassified this EA's run as ONINIT_FAILED. Fresh recompile + clean set
-// files with explicit strategy params resolve the false-positive.
+// QuantMechanica V5 EA SKELETON
+// -----------------------------------------------------------------------------
+// Fill in only the five Strategy_* hooks below. Everything else is framework
+// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
+// risk + magic + news + Friday-close guard rails). The framework provides:
+//
+//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  — closed-bar gate
+//   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
+//     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
+//     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
+//   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
+//   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
+//   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
+//   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
+//   - QM_FrameworkHandleFridayClose / QM_KillSwitchCheck / QM_NewsAllowsTrade
+//
+// DO NOT
+//   - Write per-EA IsNewBar() — use QM_IsNewBar()
+//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
+//     use the QM_* readers above. The framework pools handles and releases them
+//     on shutdown.
+//   - CopyRates over warmup windows on every tick. If you genuinely need raw
+//     bar arrays, gate by QM_IsNewBar so the work runs once per closed bar.
+//   - Hand-edit framework/include/QM/QM_MagicResolver.mqh. After adding rows
+//     to magic_numbers.csv, run:
+//         python framework/scripts/update_magic_resolver.py
+//     This is idempotent and preserves all rows.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
@@ -225,7 +245,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
-   req.reason = "QM5_10570_V2_STEPMA_NRTR";
+   req.reason = "QM5_10570_STEPMA_NRTR";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
@@ -253,7 +273,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.price = entry;
    req.sl = sl;
    req.tp = tp;
-   req.reason = (side == QM_BUY) ? "stepma_nrtr_v2_bull_point" : "stepma_nrtr_v2_bear_point";
+   req.reason = (side == QM_BUY) ? "stepma_nrtr_bull_point" : "stepma_nrtr_bear_point";
    return true;
   }
 
