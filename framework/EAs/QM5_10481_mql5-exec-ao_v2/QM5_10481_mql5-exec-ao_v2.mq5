@@ -1,15 +1,15 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_10481_v2 MQL5 Executor AO Momentum Bend"
+#property description "QM5_10481_v2 MQL5 Executor AO Momentum Bend — v2 rebuild: set-file params injected"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
 // QuantMechanica V5 EA SKELETON
-// v2: source unchanged; qm_ea_id=10481 was correct in v1.
-// Root cause of v1 INFRA_FAIL: deployed set file had qm_magic_slot_offset=20
-// for GBPUSD (slot 20 unregistered; registry has 0-13 only). Set files
-// corrected in v1 directory; v2 reuses corrected set files.
+// -----------------------------------------------------------------------------
+// Fill in only the five Strategy_* hooks below. Everything else is framework
+// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
+// risk + magic + news + Friday-close guard rails).
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
