@@ -31,4 +31,13 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+strategy_lookback_days=63
+strategy_rebalance_dow=1
+strategy_atr_period=20
+strategy_atr_sl_mult=2.0
+strategy_deviation_points=30
+strategy_volfilter_enabled=true
+strategy_vol_window=20
+strategy_vol_percentile_days=252
+strategy_vol_skip_pct=0.90
+strategy_max_spread_points=0
