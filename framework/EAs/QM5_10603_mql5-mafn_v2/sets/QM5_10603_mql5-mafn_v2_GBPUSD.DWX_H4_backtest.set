@@ -1,0 +1,41 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        10603
+; ea_slug:      mql5-mafn_v2
+; ea_version:   v5.0
+; set_version:  s20260602-001
+; symbol:       GBPUSD.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Claude/v2-rebuild
+; date:         2026-06-02
+;==========================================================
+qm_magic_slot_offset=2
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; core filter library params; filter-on/off variants must be pre-declared
+qm_filter_news_enabled=1
+qm_filter_news_mode=3
+qm_filter_regime_enabled=0
+qm_filter_regime_lookback_bars=100
+qm_filter_regime_bull_return_pct=2.0
+qm_filter_regime_bear_return_pct=2.0
+qm_filter_volatility_enabled=0
+qm_filter_volatility_atr_period=14
+qm_filter_volatility_lookback_bars=50
+qm_filter_volatility_compression_ratio=0.75
+qm_filter_volatility_expansion_ratio=1.25
+; strategy-specific params from card
+strategy_signal_tf=16388
+strategy_filter_period=44
+strategy_smooth_period=12
+strategy_calc_bars=180
+strategy_atr_period=14
+strategy_atr_sl_mult=2.5
+strategy_max_hold_bars=16
+strategy_max_spread_points=0
