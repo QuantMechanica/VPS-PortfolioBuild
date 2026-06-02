@@ -1,0 +1,26 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        9132
+; ea_slug:      aa-currency-econmom
+; ea_version:   v5.0
+; set_version:  s20260603-001
+; symbol:       AUDUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   3
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-06-03
+;==========================================================
+qm_magic_slot_offset=3
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card
+strategy_macro_signal_file=QM5_9132_aa_currency_econmom_macro.csv
+strategy_rebalance_day=7
+strategy_atr_period=20
+strategy_atr_sl_mult=2.5
+strategy_tp_r=0.0
