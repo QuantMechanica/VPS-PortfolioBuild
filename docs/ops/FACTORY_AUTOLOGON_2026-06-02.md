@@ -53,6 +53,29 @@ would land in shell history/transcripts. Use the GUI.)
 Takes effect on the **next reboot**. No reboot is forced now (factory is running); it
 proves out on the next natural reboot (e.g. Windows Update) or whenever you reboot.
 
+## Self-healing watchdog (covers the crash-while-up gap)
+
+Autologon + `FactoryON_AtLogon` handles **session loss / reboot** (no session → bring the
+factory up at the next logon). It does **not** cover the case where the session stays
+alive but the worker daemons / MT5 terminals die (crash, hang, OOM kill). The session-0
+`QM_StrategyFarm_HourlyMonitor_60min` can't fix that either — a SYSTEM/session-0 task
+cannot spawn visible terminals into the interactive session (the same reason
+`Repair_Hourly`/`TerminalWorkers_AT_STARTUP` are ENFORCE_DISABLED).
+
+**`QM_StrategyFarm_FactoryWatchdog_15min`** (`factory_watchdog.ps1`) fills that gap. Every
+15 min, **in the autologon interactive session** (Interactive, RunLevel=Highest):
+1. Reads OWNER intent from the FACTORY tasks' enable-state (`Pump_5min`/`Tick_5min`):
+   factory intentionally **OFF** → do nothing.
+2. If **ON** and live `terminal_worker.py` daemons < 8/10 → respawn only the missing ones
+   via `start_terminal_workers.py --dedupe` (idempotent; never doubles, never interrupts a
+   running backtest).
+3. One JSON line to `D:\QM\reports\state\factory_watchdog.jsonl`. No email (NO-ping-mail
+   policy). Never toggles FACTORY/AI enable-state, never touches T_Live.
+
+Dry-run verified 2026-06-02 against a healthy factory → `noop_healthy`, workers=10/10,
+nothing spawned. Re-install/adjust cadence: `install_factory_watchdog_scheduled_task.ps1
+-EveryMinutes <n>`.
+
 ## Verification
 - After enabling: `AutoAdminLogon=1` and `DefaultUserName=qm-admin` under
   `HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon` (the password is an LSA

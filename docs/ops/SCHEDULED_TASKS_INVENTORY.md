@@ -89,6 +89,7 @@ by Factory_ON (visible mode), and a one-shot `farmctl.py repair`.
 | Task | Behaviour |
 |---|---|
 | `QM_StrategyFarm_FactoryON_AtLogon` | Trigger **AtLogon of `qm-admin`** (+30s), **Interactive**, **RunLevel=Highest** (skips the self-elevate UAC prompt). Runs `Factory_ON.ps1 -NoPause`. Paired with **autologon** (Sysinternals, `C:\Tools\Autologon`): the console session is created at boot, so this fires ~once per boot and brings the visible MT5 factory up independent of OWNER's (mobile) RDP connection. Added 2026-06-02. **Not** in FACTORY/AI/ALWAYS_ON/ENFORCE_DISABLED lists → Factory OFF does not tear it down. Full runbook: `FACTORY_AUTOLOGON_2026-06-02.md`. |
+| `QM_StrategyFarm_FactoryWatchdog_15min` | Every **15 min**, **Interactive** (qm-admin autologon session), **RunLevel=Highest**. Runs `factory_watchdog.ps1`: if the factory is meant ON (Pump/Tick enabled) but worker daemons < 8/10, respawns only the missing ones (`start_terminal_workers --dedupe`, idempotent, doesn't interrupt running backtests). Covers the *session-alive-but-daemons-crashed* gap that `FactoryON_AtLogon` (boot-only) and the session-0 `HourlyMonitor` (can't spawn visible terminals) miss. Respects OWNER ON/OFF (no-ops when factory OFF), never touches T_Live, no email; logs to `D:\QM\reports\state\factory_watchdog.jsonl`. Added 2026-06-02. **Not** in any manifest list → Factory OFF leaves it (it self-no-ops). |
 
 ## DECOMMISSIONED — DELETED 2026-06-01 (OWNER-approved)
 
