@@ -1,12 +1,8 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_12111 bressert-double-stochastic-h1_v2"
+#property description "QM5_12111 bressert-double-stochastic-h1 v2"
 
 #include <QM/QM_Common.mqh>
-
-// v2: source unchanged. Root cause: false-positive ONINIT_FAILED on 6 symbols
-// _v2 forces fresh pipeline entry with distinct artifact for Q02 retest.
-
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 12111;
@@ -46,16 +42,8 @@ input int    oversold_level        = 20;
 input int    overbought_level      = 80;
 input int    max_spread_points     = 25;
 
-// ----------------------------------------------------------------------
-// Helper functions
-// ----------------------------------------------------------------------
-
-// ----------------------------------------------------------------------
-// Double-Stochastic (DSS) � inline computation
-// ----------------------------------------------------------------------
 void ComputeDSS(double &dss_k, double &dss_d, const int shift)
 {
-   // Stage 1: raw Stoch %K
    const int handle1 = iStochastic(_Symbol, PERIOD_H1, raw_stoch_k, raw_stoch_d, raw_stoch_slowing, MODE_SMA, STO_CLOSECLOSE);
    if(handle1 == INVALID_HANDLE) { dss_k = 50; dss_d = 50; return; }
    double raw_k_buf[];
@@ -65,7 +53,6 @@ void ComputeDSS(double &dss_k, double &dss_d, const int shift)
    IndicatorRelease(handle1);
    if(ck < raw_count) { dss_k = 50; dss_d = 50; return; }
 
-   // Stage 2: manual 'Stochastic' on raw_k_buf (highest/lowest of last N)
    double dss_raw_buf[];
    ArrayResize(dss_raw_buf, ck);
    for(int i = 0; i < ck - dss_period + 1; i++)
@@ -80,7 +67,6 @@ void ComputeDSS(double &dss_k, double &dss_d, const int shift)
       dss_raw_buf[i] = (range > 0) ? (raw_k_buf[i] - lowest) / range * 100.0 : 50.0;
    }
 
-   // Apply 3-period smoothing (slowing)
    const int dss_len = ck - dss_period + 1;
    if(dss_len < dss_slowing + 1) { dss_k = 50; dss_d = 50; return; }
    double smoothed[];
@@ -94,8 +80,8 @@ void ComputeDSS(double &dss_k, double &dss_d, const int shift)
       smoothed[i] = (cnt > 0) ? sum / cnt : 50.0;
    }
 
-   dss_k = smoothed[0];                    // %K
-   dss_d = (dss_len >= 2) ? smoothed[1] : smoothed[0];  // %D (shifted)
+   dss_k = smoothed[0];
+   dss_d = (dss_len >= 2) ? smoothed[1] : smoothed[0];
 }
 
 double EMAValue(const int period, const int shift)
@@ -135,10 +121,6 @@ void CloseAll(const QM_ExitReason reason)
    }
 }
 
-
-// ----------------------------------------------------------------------
-// Strategy hooks
-// ----------------------------------------------------------------------
 bool Strategy_NoTradeFilter()
   {
    if(max_spread_points > 0)
@@ -147,7 +129,6 @@ bool Strategy_NoTradeFilter()
       if(spread > max_spread_points) return true;
    }
    return false;
-
   }
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
@@ -162,7 +143,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double ema = EMAValue(ema_period, 0);
    if(ema <= 0) return false;
 
-   // Cross detection
    const bool bull_cross = (dss_k1 > dss_d1 && dss_k2 <= dss_d2 && dss_k2 < oversold_level);
    const bool bear_cross = (dss_k1 < dss_d1 && dss_k2 >= dss_d2 && dss_k2 > overbought_level);
 
@@ -206,7 +186,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
    return true;
-
   }
 
 void Strategy_ManageOpenPosition()
@@ -226,8 +205,6 @@ bool Strategy_ExitSignal()
       if(PositionGetString(POSITION_SYMBOL) != _Symbol) continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic) continue;
       const ENUM_POSITION_TYPE pt = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-
-      // Opposite cross
       if((pt == POSITION_TYPE_BUY && dss_k < dss_d) ||
          (pt == POSITION_TYPE_SELL && dss_k > dss_d))
       {
@@ -236,7 +213,6 @@ bool Strategy_ExitSignal()
       }
    }
    return false;
-
   }
 
 bool Strategy_NewsFilterHook(const datetime broker_time)
@@ -244,9 +220,6 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
    return false;
   }
 
-// ----------------------------------------------------------------------
-// Framework wiring
-// ----------------------------------------------------------------------
 int OnInit()
   {
    if(!QM_FrameworkInit(qm_ea_id,
@@ -259,10 +232,9 @@ int OnInit()
                         qm_rng_seed, qm_stress_reject_probability,
                         qm_news_temporal, qm_news_compliance))
       return INIT_FAILED;
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_12111\",\"strategy\":\"bressert-double-stochastic-h1\"}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_12111\",\"strategy\":\"bressert-double-stochastic-h1\",\"version\":\"v2\"}");
    return INIT_SUCCEEDED;
   }
-
 
 void OnDeinit(const int reason)
   {
@@ -295,10 +267,7 @@ void OnTick()
    }}
   }}
 
-
 void OnTimer() {{ QM_FrameworkOnTimer(); }}
 void OnTradeTransaction(const MqlTradeTransaction &trans, const MqlTradeRequest &request, const MqlTradeResult &result)
   {{ QM_FrameworkOnTradeTransaction(trans, request, result); }}
 double OnTester() {{ QM_ChartUI_Refresh(); return QM_DefaultObjective(); }}
-
-

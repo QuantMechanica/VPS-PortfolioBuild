@@ -1,12 +1,8 @@
-#property strict
+﻿#property strict
 #property version   "5.0"
-#property description "QM5_10468 MQL5 Parabolic SAR Expert_v2"
+#property description "QM5_10468_v2 MQL5 Parabolic SAR Expert - v2 recompile: QM_MagicResolver refresh"
 
 #include <QM/QM_Common.mqh>
-
-// v2: source unchanged. Root cause: REPORT_MISSING+METATESTER_HUNG on UK100.DWX in v1
-// _v2 forces fresh pipeline entry with distinct artifact for Q02 retest.
-
 
 // =============================================================================
 // QuantMechanica V5 EA SKELETON
@@ -361,4 +357,3 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-

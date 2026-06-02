@@ -1,12 +1,8 @@
-#property strict
+﻿#property strict
 #property version   "5.0"
-#property description "QM5_10488 MQL5 Basic CCI RSI dual oscillator thresholds_v2"
+#property description "QM5_10488_v2 MQL5 Basic CCI RSI dual oscillator - v2 recompile: QM_MagicResolver refresh"
 
 #include <QM/QM_Common.mqh>
-
-// v2: source unchanged. Root cause: false-positive ONINIT_FAILED on EURUSD+USDJPY
-// _v2 forces fresh pipeline entry with distinct artifact for Q02 retest.
-
 
 // =============================================================================
 // QuantMechanica V5 EA SKELETON
@@ -343,4 +339,3 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-
