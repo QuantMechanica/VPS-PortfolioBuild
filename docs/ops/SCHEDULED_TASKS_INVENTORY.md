@@ -71,6 +71,7 @@ by Factory_ON (visible mode), and a one-shot `farmctl.py repair`.
 | `QM_StrategyFarm_WorktreeClean_4h` | 4 h | `run_worktree_clean_task.py` |
 | `QM_WorkItemLogPruner_Daily_0310` | 03:10 | `prune_workitem_logs.py` |
 | `QM_StrategyFarm_HourlyMonitor_60min` | 60 min | `hourly_monitor.ps1` — health triage: auto-fix reversible task-state drift, escalate auth/factory/T_Live to `D:\QM\reports\state\hourly_monitor.jsonl`. Install: `install_hourly_monitor_scheduled_task.ps1`. Fail-safe (DL-065). |
+| `QM_StrategyFarm_TesterCachePurge` | 3 h | `tester_cache_purge.ps1` — if D: free <80GB: stop factory, purge regenerable `T*\Tester\bases`+`Agent-*` caches, restart. **Runs as INTERACTIVE qm-admin** (not SYSTEM) so workers respawn in OWNER's visible session. Source ticks/reports never touched. Permanent fix for D: fill-up (incident 2026-06-02). Install: `install_tester_cache_purge_scheduled_task.ps1`. |
 
 > Note: the duplicate **07:00 email** morning brief (`QM_StrategyFarm_MorningBrief_0700`)
 > was deleted 2026-06-01 (OWNER: keep the 06:00 vault brief, drop the email). Only

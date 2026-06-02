@@ -45,7 +45,8 @@ $QM_ALWAYSON_TASKS = @(
     'QM_StrategyFarm_InboxCleanup_Daily',     # codex_inbox cleanup
     'QM_StrategyFarm_WorktreeClean_4h',       # agent worktree GC
     'QM_WorkItemLogPruner_Daily_0310',        # work_item log pruning
-    'QM_StrategyFarm_HourlyMonitor_60min'     # deterministic health triage (auto-fix drift + escalate)
+    'QM_StrategyFarm_HourlyMonitor_60min',    # deterministic health triage (auto-fix drift + escalate)
+    'QM_StrategyFarm_TesterCachePurge'        # every 3h: purge MT5 tester caches if D:<80GB (interactive, visible-session restart)
 )
 
 # --- must stay disabled: session-0 daemon respawn hazards -----------
