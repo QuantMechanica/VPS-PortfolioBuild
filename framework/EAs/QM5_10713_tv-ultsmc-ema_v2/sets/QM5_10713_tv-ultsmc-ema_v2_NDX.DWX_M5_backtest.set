@@ -1,21 +1,21 @@
 ﻿;==========================================================
 ; QM5 Set File
-; ea_id:        10570
-; ea_slug:      mql5-stepma-nrtr_v2
+; ea_id:        10713
+; ea_slug:      tv-ultsmc-ema_v2
 ; ea_version:   v5.0
 ; set_version:  s20260602-001
-; symbol:       XAUUSD.DWX
-; timeframe:    H4
+; symbol:       NDX.DWX
+; timeframe:    M5
 ; environment:  backtest
-; magic_slot:   3
+; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   2f219be95c2d7dafa49eddc2b5b3cfce26d989ccd314b521706b55e09fd6a13e
+; build_hash:   8cb1fb734a9c2efa925a4688e07a8a04254fd7067d3dbc50dc07d6406729d759
 ; author:       Claude
 ; date:         2026-06-02
-; fix_v2:       strategy params injected; correct slot per registry
+; fix_v2:       strategy params injected; card_defaults_source=not_found defect fixed
 ;==========================================================
-qm_magic_slot_offset=3
+qm_magic_slot_offset=4
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
@@ -32,14 +32,11 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params
-strategy_stepma_length=10
-strategy_stepma_kv=1.0
-strategy_stepma_step_size=0
-strategy_stepma_percentage=0.0
-strategy_stepma_high_low=true
+strategy_sma_period=200
+strategy_ema_fast_period=9
+strategy_ema_slow_period=21
+strategy_h4_fractal_width=2
+strategy_h4_scan_bars=240
 strategy_atr_period=14
-strategy_atr_sl_mult=2.0
-strategy_tp_rr=1.5
-strategy_warmup_bars=180
-strategy_exit_on_opposite=true
-strategy_max_spread_points=0
+strategy_atr_floor_mult=1.0
+strategy_min_target_stop_ratio=1.2

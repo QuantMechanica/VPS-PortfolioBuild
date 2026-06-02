@@ -1,0 +1,38 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        10717
+; ea_slug:      edgelab-xsec-fx-momentum-v2
+; ea_version:   v5.1
+; set_version:  s20260602-001
+; symbol:       EURUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; fix:          recompile with updated QM_MagicResolver; stale set params cleaned
+; author:       claude
+; date:         2026-06-02
+;==========================================================
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_rng_seed=42
+qm_news_temporal=3
+qm_news_compliance=2
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=1
+qm_friday_close_enabled=0
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+strategy_lookback_days=63
+strategy_rebalance_dow=1
+strategy_atr_period=20
+strategy_atr_sl_mult=2.0
+strategy_deviation_points=30
+strategy_volfilter_enabled=1
+strategy_vol_window=20
+strategy_vol_percentile_days=252
+strategy_vol_skip_pct=0.90
+strategy_max_spread_points=0

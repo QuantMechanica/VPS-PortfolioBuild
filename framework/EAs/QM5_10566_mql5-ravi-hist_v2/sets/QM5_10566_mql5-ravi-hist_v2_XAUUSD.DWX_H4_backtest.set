@@ -1,7 +1,7 @@
 ﻿;==========================================================
 ; QM5 Set File
-; ea_id:        10570
-; ea_slug:      mql5-stepma-nrtr_v2
+; ea_id:        10566
+; ea_slug:      mql5-ravi-hist_v2
 ; ea_version:   v5.0
 ; set_version:  s20260602-001
 ; symbol:       XAUUSD.DWX
@@ -10,7 +10,7 @@
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   2f219be95c2d7dafa49eddc2b5b3cfce26d989ccd314b521706b55e09fd6a13e
+; build_hash:   291800a2bc48d6a4f775e8525c2971e99c7dafabdfd2b8d76c6944f21f6baf91
 ; author:       Claude
 ; date:         2026-06-02
 ; fix_v2:       strategy params injected; correct slot per registry
@@ -32,14 +32,11 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params
-strategy_stepma_length=10
-strategy_stepma_kv=1.0
-strategy_stepma_step_size=0
-strategy_stepma_percentage=0.0
-strategy_stepma_high_low=true
+strategy_signal_tf=16388
+strategy_fast_ma_period=7
+strategy_slow_ma_period=65
+strategy_high_level=0.1
+strategy_low_level=-0.1
 strategy_atr_period=14
 strategy_atr_sl_mult=2.0
-strategy_tp_rr=1.5
-strategy_warmup_bars=180
-strategy_exit_on_opposite=true
-strategy_max_spread_points=0
+strategy_rr_target=1.5

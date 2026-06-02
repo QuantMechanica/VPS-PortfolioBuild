@@ -10,7 +10,7 @@
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   827978d5147ca3104a39995f89e9372c11632f166d40270a949c3c06a54378a9
+; build_hash:   pending
 ; author:       Claude
 ; date:         2026-06-02
 ; fix_v2:       strategy params injected; correct slot per registry
@@ -32,14 +32,14 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params
-strategy_stepma_length=10
-strategy_stepma_kv=1.0
-strategy_stepma_step_size=0
-strategy_stepma_percentage=0.0
-strategy_stepma_high_low=true
-strategy_atr_period=14
-strategy_atr_sl_mult=2.0
-strategy_tp_rr=1.5
-strategy_warmup_bars=180
-strategy_exit_on_opposite=true
+strategy_stepma_length=10
+strategy_stepma_kv=1.0
+strategy_stepma_step_size=0
+strategy_stepma_percentage=0.0
+strategy_stepma_high_low=true
+strategy_atr_period=14
+strategy_atr_sl_mult=2.0
+strategy_tp_rr=1.5
+strategy_warmup_bars=180
+strategy_exit_on_opposite=true
 strategy_max_spread_points=0
