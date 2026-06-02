@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_10589 MQL5 Leading Indicator Line Crossover v2"
+#property description "QM5_10589_v2 MQL5 Leading Indicator Line Crossover — v2 rebuild: fixed qm_ea_id 9999→10589"
 
 #include <QM/QM_Common.mqh>
 
@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 9999;
+input int    qm_ea_id                   = 10589;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
