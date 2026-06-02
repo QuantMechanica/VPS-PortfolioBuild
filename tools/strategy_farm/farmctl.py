@@ -9196,8 +9196,17 @@ def add_source(
     }
 
 
-def approve_card(root: Path, card_path_str: str, reasoning: str) -> dict[str, Any]:
-    """Set g0_status: APPROVED in the card frontmatter, move draft → approved."""
+def approve_card(root: Path, card_path_str: str, reasoning: str,
+                 expected_pf: float | None = None,
+                 expected_dd_pct: float | None = None) -> dict[str, Any]:
+    """Set g0_status: APPROVED in the card frontmatter, move draft → approved.
+
+    expected_pf / expected_dd_pct: conservative research ESTIMATES stamped into
+    the card frontmatter (numeric). They feed only the build/test prioritization
+    score (strategy_priority, 35% weight) - a sequencing prior, NEVER a gate
+    verdict (Hard Rule: evidence over claims). Optional in code for backward
+    compatibility; the G0 prompts require them on new approvals ("force forward",
+    OWNER 2026-06-02)."""
     init_db(root)
     card_path = Path(card_path_str).resolve()
     if not card_path.exists():
@@ -9248,6 +9257,10 @@ def approve_card(root: Path, card_path_str: str, reasoning: str) -> dict[str, An
         "last_updated": today,
     }
     updates["expected_trades_per_year_per_symbol"] = str(expected_trades)
+    if expected_pf is not None:
+        updates["expected_pf"] = str(expected_pf)
+    if expected_dd_pct is not None:
+        updates["expected_dd_pct"] = str(expected_dd_pct)
     update_card_frontmatter(card_path, updates)
 
     target_dir = root / "artifacts" / "cards_approved"
@@ -10127,6 +10140,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     approve.add_argument("--card", required=True, help="Path to the draft card .md")
     approve.add_argument("--reasoning", required=True, help="One-line R1-R4 rationale")
+    approve.add_argument("--expected-pf", type=float, default=None,
+                         help="Conservative research ESTIMATE of profit factor (e.g. 1.4). "
+                              "Build/test ordering prior only, never a gate. Expected on new G0 approvals.")
+    approve.add_argument("--expected-dd-pct", type=float, default=None,
+                         help="Conservative research ESTIMATE of max drawdown percent (e.g. 15). "
+                              "Build/test ordering prior only, never a gate. Expected on new G0 approvals.")
 
     reject = sub.add_parser(
         "reject-card",
@@ -10254,7 +10273,9 @@ def main(argv: list[str] | None = None) -> int:
             "dispatch": dispatch_tick(root, timeout_hours=args.timeout_hours),
         })
     elif args.command == "approve-card":
-        print_json(approve_card(root, args.card, args.reasoning))
+        print_json(approve_card(root, args.card, args.reasoning,
+                                expected_pf=args.expected_pf,
+                                expected_dd_pct=args.expected_dd_pct))
     elif args.command == "reject-card":
         print_json(reject_card(root, args.card, args.reason))
     elif args.command == "resume-mining":

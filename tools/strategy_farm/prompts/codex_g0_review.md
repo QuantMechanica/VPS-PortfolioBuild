@@ -29,10 +29,17 @@ For each card in your batch (paths listed below):
       against the written entry conditions. If the entry pattern is monthly,
       quarterly, event-only, or otherwise rare, do not accept an inflated
       cadence number just because it appears in frontmatter.
-   c. If ALL four PASS:
+   c. If ALL four PASS, also produce two CONSERVATIVE research ESTIMATES from the
+      source + mechanics (these are claims, used only to ORDER builds/tests — never
+      a gate; the pipeline still judges the EA):
+        - `expected_pf`: realistic profit factor, typically 1.1–1.6. Do NOT inflate;
+          if the source gives no edge evidence, estimate low (≈1.2).
+        - `expected_dd_pct`: realistic max drawdown percent, typically 8–25.
+      Pass both to approve-card (required on new approvals):
       ```
       python C:/QM/repo/tools/strategy_farm/farmctl.py approve-card \
-        --card "<path>" --reasoning "<R1-R4 one-line rationale>"
+        --card "<path>" --reasoning "<R1-R4 one-line rationale>" \
+        --expected-pf <e.g. 1.3> --expected-dd-pct <e.g. 15>
       ```
    d. If ANY FAIL:
       ```
