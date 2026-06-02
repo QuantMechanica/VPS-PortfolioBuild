@@ -1,0 +1,31 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        10481
+; ea_slug:      mql5-exec-ao
+; ea_version:   v5.0
+; set_version:  s20260602-001
+; symbol:       EURUSD.DWX
+; timeframe:    M15
+; environment:  backtest
+; magic_slot:   14
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-06-02
+;==========================================================
+qm_magic_slot_offset=14
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=3
+qm_news_compliance=1
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+strategy_ao_fast_period=5
+strategy_ao_slow_period=34
+strategy_atr_period=14
+strategy_min_ao_atr_mult=0.10
+strategy_atr_sl_mult=1.50
+strategy_tp_r_mult=2.00
+strategy_max_hold_bars=24
