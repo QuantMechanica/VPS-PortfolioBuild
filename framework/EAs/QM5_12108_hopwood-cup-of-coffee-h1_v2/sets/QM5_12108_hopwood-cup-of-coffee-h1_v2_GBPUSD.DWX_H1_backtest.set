@@ -1,0 +1,34 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        12108
+; ea_slug:      hopwood-cup-of-coffee-h1_v2
+; ea_version:   v5.0
+; set_version:  s2026-05-26-smoke
+; symbol:       GBPUSD.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1.00
+; build_hash:   6111679cf84bb87f49a96074554031f2d50e933c98a5a84237e3e7bb8a04ee2c
+; author:       Development
+; date:         2026-05-26
+;==========================================================
+qm_ea_id=12108
+qm_magic_slot_offset=1
+RISK_PERCENT=0.0
+RISK_FIXED=1000.0
+PORTFOLIO_WEIGHT=1.0
+qm_news_mode=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+stoch_k=14
+stoch_d=3
+stoch_slowing=3
+donchian_period=20
+ema_period=200
+atr_sl_mult=1.0
+rr_target=2.0
+oversold_level=30
+overbought_level=70
+max_spread_points=25
