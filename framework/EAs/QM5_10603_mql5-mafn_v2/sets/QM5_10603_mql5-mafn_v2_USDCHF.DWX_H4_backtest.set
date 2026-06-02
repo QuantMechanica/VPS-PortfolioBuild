@@ -10,7 +10,6 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
 ; author:       Development
 ; date:         2026-06-02
 ;==========================================================
@@ -18,5 +17,11 @@ qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+strategy_signal_tf=PERIOD_H4
+strategy_filter_period=44
+strategy_smooth_period=12
+strategy_calc_bars=180
+strategy_atr_period=14
+strategy_atr_sl_mult=2.5
+strategy_max_hold_bars=16
+strategy_max_spread_points=0
