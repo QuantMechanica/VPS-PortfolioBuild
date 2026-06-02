@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        10042
 ; ea_slug:      ff-notable-numbers
@@ -31,4 +31,8 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+strategy_sydney_start_hhmm=2200
+strategy_sydney_end_hhmm=700
+strategy_tokyo_start_hhmm=0
+strategy_london_end_hhmm=1700
+strategy_min_spread_mult=3

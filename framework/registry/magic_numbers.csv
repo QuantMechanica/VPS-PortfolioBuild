@@ -5332,3 +5332,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10584,mql5-digvar,1,EURUSD.DWX,105840001,2026-06-02,claude,active
 10584,mql5-digvar,2,USDJPY.DWX,105840002,2026-06-02,claude,active
 10584,mql5-digvar,3,XAUUSD.DWX,105840003,2026-06-02,claude,active
+10571,mql5-pchan-stop,100,EURUSD.DWX,105710100,2026-06-02,Gemini,active
+10571,mql5-pchan-stop,101,GBPUSD.DWX,105710101,2026-06-02,Gemini,active
+10571,mql5-pchan-stop,102,EURJPY.DWX,105710102,2026-06-02,Gemini,active
+10571,mql5-pchan-stop,103,XAUUSD.DWX,105710103,2026-06-02,Gemini,active
+10489,mql5-trendmgr,101,EURUSD.DWX,104890101,2026-06-02,Gemini,active
+10489,mql5-trendmgr,102,GBPUSD.DWX,104890102,2026-06-02,Gemini,active
+10489,mql5-trendmgr,103,XAUUSD.DWX,104890103,2026-06-02,Gemini,active
