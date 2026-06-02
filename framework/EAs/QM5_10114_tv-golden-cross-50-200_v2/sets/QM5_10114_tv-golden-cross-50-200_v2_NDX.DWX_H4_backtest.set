@@ -1,0 +1,26 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        10114
+; ea_slug:      tv-golden-cross-50-200_v2
+; ea_version:   v5.0
+; set_version:  s20260603-001
+; symbol:       NDX.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Claude
+; date:         2026-06-03
+;==========================================================
+qm_magic_slot_offset=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy params
+strategy_fast_sma_period=50
+strategy_slow_sma_period=200
+strategy_atr_period=14
+strategy_atr_sl_mult=4.0
+strategy_max_spread_stop_frac=0.10
