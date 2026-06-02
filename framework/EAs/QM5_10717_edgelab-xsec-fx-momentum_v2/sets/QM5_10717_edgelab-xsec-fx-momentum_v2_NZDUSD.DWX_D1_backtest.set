@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        10713
-; ea_slug:      tv-ultsmc-ema
+; ea_id:        10717
+; ea_slug:      edgelab-xsec-fx-momentum
 ; ea_version:   v5.0
 ; set_version:  s20260531-001
-; symbol:       GBPUSD.DWX
-; timeframe:    M15
+; symbol:       NZDUSD.DWX
+; timeframe:    D1
 ; environment:  backtest
-; magic_slot:   1
+; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   48ea97cb02468fd405cb52ddbb8a29f9182d21a8311ec6b8745b290b5c9d4de3
+; build_hash:   4b1c4df582c2a176cb41da8fb6262572a4ad7bfe30f55572b93a969c9831a7d4
 ; author:       Development
 ; date:         2026-05-31
 ;==========================================================
-qm_magic_slot_offset=1
+qm_magic_slot_offset=3
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
@@ -31,4 +31,13 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+strategy_lookback_days=63
+strategy_rebalance_dow=1
+strategy_atr_period=20
+strategy_atr_sl_mult=2.0
+strategy_deviation_points=30
+strategy_volfilter_enabled=true
+strategy_vol_window=20
+strategy_vol_percentile_days=252
+strategy_vol_skip_pct=0.90
+strategy_max_spread_points=0
