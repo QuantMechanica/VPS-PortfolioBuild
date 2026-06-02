@@ -30,5 +30,11 @@ qm_filter_volatility_atr_period=14
 qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params injected for SP500 US-session timing + wider range gate
+strategy_session_open_hour=16
+strategy_session_open_min=30
+strategy_bracket_hour=17
+strategy_bracket_min=5
+strategy_exit_hour=22
+strategy_exit_min=0
+strategy_max_range_atr_mult=3.0

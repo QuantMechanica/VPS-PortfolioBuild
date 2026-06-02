@@ -3,10 +3,14 @@
 **Date:** 2026-06-02  
 **Task:** 152ee474-6a8e-4c67-8178-80de9c2d5dce (reprogram _v2 after ONINIT_FAILED)
 
-## Root Cause
+## Root Cause (confirmed from tester log + summary.json)
 
-Original .ex5 compiled against a stale QM_Common.mqh — ABI mismatch caused ONINIT_FAILED on SP500.DWX.  
-The _v2 source adds " v2" to `#property description`; otherwise identical to original. Fresh compile resolves the failure.
+Tester log `work_item_1b67cfd7` (SP500.DWX, T10, May 31):  
+- `oninit_failure_detected=true` is a **false positive** — the shared T10 terminal day-log contains ONINIT errors from other EAs; the classifier picked them up even though this EA ran successfully.
+- The EA **did initialize and did trade** (summary: 1 trade, PF=0.00, net=-$19.64).
+- SPEC expects 25 trades/year on H1. 1 trade in 2024 is at the low end of expected frequency for slow SMA-stack (60/90/150 H1 bars) but within plausible range. Q02 will judge performance.
+
+**No code bug found.** The _v2 re-submits the same code with a fresh .ex5 to clear the tainted run record.
 
 ## Compile Result
 

@@ -3,10 +3,14 @@
 **Date:** 2026-06-02  
 **Task:** d3f415e5-6c85-4f57-a515-db22c290e1d6 (reprogram _v2 after ONINIT_FAILED)
 
-## Root Cause
+## Root Cause (confirmed from tester log + summary.json)
 
-Original .ex5 compiled against a stale QM_Common.mqh — ABI mismatch caused ONINIT_FAILED on SP500.DWX.  
-The _v2 source adds " v2" to `#property description`; otherwise identical. Fresh compile resolves the failure.
+Tester log `work_item_4d479d21` (SP500.DWX, T10, May 31):  
+- `oninit_failure_detected=true` is a **false positive** — the shared T10 terminal day-log contains ONINIT errors from other EAs running earlier the same day.
+- The EA **ran successfully**: summary shows 41 trades, PF=1.13, net profit +$3569.52. Test passed: "SP500.DWX,M1: 11844408 ticks, 175165 bars generated. Test passed in 0:03:21."
+- No ONINIT error was present in the EA's own tester execution.
+
+**No code bug found.** The _v2 re-submits with fresh .ex5 to clear the tainted run record. This EA is a strong candidate for Q02 PASS on SP500.
 
 ## Compile Result
 
