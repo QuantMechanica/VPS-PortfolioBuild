@@ -84,6 +84,12 @@ by Factory_ON (visible mode), and a one-shot `farmctl.py repair`.
 | `QM_StrategyFarm_Repair_Hourly` | spawned SYSTEM/session-0 workers after a crash; repair now runs ONCE inline in Factory_ON. **Was found drifted to Enabled on 2026-06-01 and re-disabled.** |
 | `QM_StrategyFarm_TerminalWorkers_AT_STARTUP` | spawned daemons as SYSTEM/session-0 (headless); workers now spawn in the user session via Factory_ON. |
 
+## BOOTSTRAP — factory autostart (not in any manifest list)
+
+| Task | Behaviour |
+|---|---|
+| `QM_StrategyFarm_FactoryON_AtLogon` | Trigger **AtLogon of `qm-admin`** (+30s), **Interactive**, **RunLevel=Highest** (skips the self-elevate UAC prompt). Runs `Factory_ON.ps1 -NoPause`. Paired with **autologon** (Sysinternals, `C:\Tools\Autologon`): the console session is created at boot, so this fires ~once per boot and brings the visible MT5 factory up independent of OWNER's (mobile) RDP connection. Added 2026-06-02. **Not** in FACTORY/AI/ALWAYS_ON/ENFORCE_DISABLED lists → Factory OFF does not tear it down. Full runbook: `FACTORY_AUTOLOGON_2026-06-02.md`. |
+
 ## DECOMMISSIONED — DELETED 2026-06-01 (OWNER-approved)
 
 42 legacy tasks were unregistered from Task Scheduler on 2026-06-01 (`Unregister-ScheduledTask`,

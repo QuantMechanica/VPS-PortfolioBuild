@@ -20,12 +20,22 @@
 #  `farmctl.py repair` ONCE synchronously (replaces the old recurring
 #  Repair_Hourly task, which spawned SYSTEM/session-0 daemons).
 # =====================================================================
+#
+#  -NoPause : skip the trailing "Press Enter to close" prompt. Used by the
+#             QM_StrategyFarm_FactoryON_AtLogon task (autologon console
+#             session) so the run completes unattended instead of hanging
+#             on Read-Host. Manual desktop double-clicks omit it, keeping
+#             the window open to read.
+# =====================================================================
+
+param([switch]$NoPause)
 
 # self-elevate
 $pr = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
 if (-not $pr.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Start-Process -FilePath 'powershell.exe' -Verb RunAs `
-        -ArgumentList '-NoProfile','-ExecutionPolicy','Bypass','-File',"`"$PSCommandPath`""
+    $reArgs = @('-NoProfile','-ExecutionPolicy','Bypass','-File',"`"$PSCommandPath`"")
+    if ($NoPause) { $reArgs += '-NoPause' }
+    Start-Process -FilePath 'powershell.exe' -Verb RunAs -ArgumentList $reArgs
     exit
 }
 
@@ -128,4 +138,4 @@ Write-Host '        An explicit LOGOFF kills the session and stops the factory.'
 Write-Host '        Always-on tasks (dashboards/health/brief/alarm) keep running regardless.'
 Write-Host '        After a reboot, log in via RDP and click this shortcut again.'
 Write-Host ''
-Read-Host 'Press Enter to close'
+if (-not $NoPause) { Read-Host 'Press Enter to close' }
