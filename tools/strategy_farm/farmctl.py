@@ -740,6 +740,15 @@ def ready_strategy_card_inventory(root: Path) -> dict[str, Any]:
                 "errors": errors,
                 "warnings": list(check.get("warnings") or []),
             })
+    # Order ready cards by the deterministic strategy_priority score (diversification
+    # + expected metrics) so the most promising / most diversifying cards surface
+    # first. Guarded: a scorer failure leaves the original (filesystem) order.
+    try:
+        import strategy_priority as _sp
+        _sm = _sp.compute_scores()
+        ready.sort(key=lambda e: -float(_sm.get(str(e.get("ea_id") or ""), {}).get("score", 0.0)))
+    except Exception:
+        pass
     duplicates = {fp: names for fp, names in fingerprints.items() if len(names) > 1}
     return {
         "ready_count": len(ready),
@@ -778,8 +787,15 @@ def _infer_expected_trades_per_year_per_symbol(card_text: str) -> int | None:
     return None
 
 
-def _card_build_priority(root: Path, task_row: sqlite3.Row) -> tuple[int, int, str]:
-    """Higher quality / more actionable cards get built first."""
+def _card_build_priority(root: Path, task_row: sqlite3.Row,
+                         score_map: dict | None = None) -> tuple[float, int, int, str]:
+    """Higher quality / more actionable cards get built first.
+
+    Leading key is the deterministic strategy_priority score (65% portfolio
+    diversification + 35% expected metrics; OWNER 2026-06-02). It is a sequencing
+    PRIOR only - never a gate. When score_map is absent/empty (scorer unavailable),
+    pscore=0.0 for every row, so this degrades exactly to the legacy
+    r_passes/expected-frequency/FIFO ordering below."""
     payload = json.loads(task_row["payload_json"] or "{}")
     card_path = Path(str(payload.get("card_path") or ""))
     fm = payload.get("frontmatter") if isinstance(payload.get("frontmatter"), dict) else {}
@@ -794,8 +810,15 @@ def _card_build_priority(root: Path, task_row: sqlite3.Row) -> tuple[int, int, s
         expected = 0
     r_passes = sum(1 for key in ("r1_track_record", "r2_mechanical", "r3_data_available", "r4_ml_forbidden")
                    if str(fm.get(key) or "").upper() == "PASS")
+    pscore = 0.0
+    if score_map:
+        ea_id = str(fm.get("ea_id") or payload.get("ea_id") or "")
+        try:
+            pscore = float(score_map.get(ea_id, {}).get("score", 0.0))
+        except Exception:
+            pscore = 0.0
     # Negative because Python sorts ascending.
-    return (-r_passes, -expected, str(task_row["updated_at"] or ""))
+    return (-pscore, -r_passes, -expected, str(task_row["updated_at"] or ""))
 
 
 def _normalise_card_symbol(symbol: str) -> str:
@@ -1861,6 +1884,28 @@ def _compile_gate_check(ea_dir_name: str) -> dict[str, Any]:
                 "source": "subprocess", "error": repr(exc)[:200]}
 
 
+def _ea_dir_from_setfile_path(setfile_path: str | os.PathLike[str] | None,
+                              ea_id: str) -> Path | None:
+    """Resolve the exact EA dir anchored by a work_item setfile path."""
+    if not setfile_path:
+        return None
+    path = Path(str(setfile_path))
+    if not path.is_absolute():
+        path = REPO_ROOT / path
+    try:
+        path = path.resolve()
+    except OSError:
+        path = path.absolute()
+    if path.parent.name.lower() != "sets":
+        return None
+    ea_dir = path.parent.parent
+    if not ea_dir.is_dir():
+        return None
+    if not ea_dir.name.startswith(f"{ea_id}_"):
+        return None
+    return ea_dir
+
+
 def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
                                     terminal: str) -> dict[str, Any]:
     """Spawn run_smoke.ps1 for one work_item, pinned to a specific terminal.
@@ -1878,7 +1923,7 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
     except json.JSONDecodeError:
         item_payload = {}
     runner_symbol = str(item_payload.get("host_symbol") or symbol)
-    runner_period = str(item_payload.get("host_timeframe") or _detect_ea_period(ea_id))
+    runner_period = str(item_payload.get("host_timeframe") or _detect_ea_period(ea_id, setfile_path))
 
     if phase in REAL_PHASE_RUNNER_PHASES:
         report_root = Path(r"D:\QM\reports\work_items") / item_row["id"]
@@ -1941,11 +1986,17 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
             "effective_min_trades": 5,
         }
 
-    # Resolve full EA dir name (with slug) for the -EALabel arg
+    # Resolve full EA dir name (with slug) for the -EALabel arg. Existing
+    # work_items are anchored by their setfile path; this avoids selecting the
+    # wrong directory when an EA has both original and _v2 folders on disk.
     ea_root_dir = REPO_ROOT / "framework" / "EAs"
-    candidates = [p for p in ea_root_dir.glob(f"{ea_id}_*") if p.is_dir()]
+    ea_dir = _ea_dir_from_setfile_path(setfile_path, ea_id)
+    candidates = [p for p in ea_root_dir.glob(f"{ea_id}_*") if p.is_dir()] if ea_dir is None else [ea_dir]
     if not candidates:
         return {"spawned": False, "reason": f"no EA dir for {ea_id}"}
+    if len(candidates) > 1:
+        return {"spawned": False, "reason": f"ambiguous EA dir for {ea_id}",
+                "candidates": [p.name for p in candidates]}
     ea_dir_name = candidates[0].name
     period = runner_period
     numeric_id = int(re.match(r"^QM5_(\d+)$", ea_id).group(1))
@@ -2052,6 +2103,7 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         creationflags=creationflags,
         close_fds=True,
     )
+    log_fh.close()
     return {
         "spawned": True,
         "pid": proc.pid,
@@ -2391,7 +2443,7 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
         return None
     ea_id = item_row["ea_id"]
     symbol = item_row["symbol"]
-    period = _detect_ea_period(ea_id)
+    period = _detect_ea_period(ea_id, item_row["setfile_path"])
     cmd = [
         _console_python_executable(),
         str(script_path),
@@ -6179,7 +6231,12 @@ def pump(root: Path) -> dict[str, Any]:
             "SELECT * FROM tasks WHERE kind='build_ea' AND status='pending' "
             "ORDER BY updated_at ASC"
         ).fetchall()
-        all_pending = sorted(all_pending, key=lambda row: _card_build_priority(root, row))
+        try:
+            import strategy_priority as _sp
+            _build_score_map = _sp.compute_scores()
+        except Exception:
+            _build_score_map = {}
+        all_pending = sorted(all_pending, key=lambda row: _card_build_priority(root, row, _build_score_map))
         # PT12 2026-05-24 — skip-list of EAs Codex has already permanently
         # blocked on (3 retries exhausted with compile_error or similar). Pre-
         # PT12 these EAs sat in the pending queue too and Codex re-spawned for
@@ -7862,6 +7919,14 @@ def _create_backtest_work_items(conn: sqlite3.Connection, parent_task_id: str,
     skipped: list[dict[str, Any]] = []
     now = utc_now()
     period = _detect_ea_period(ea_id)
+    # Fast-track the backtest queue for high-priority EAs (top strategy_priority
+    # tier). The T1-T10 workers read payload_json["priority_track"] and pull these
+    # before non-flagged pending items. Guarded: scorer failure -> no flag.
+    try:
+        import strategy_priority as _sp
+        _priority_track = bool(_sp.compute_scores().get(str(ea_id), {}).get("priority_track", False))
+    except Exception:
+        _priority_track = False
     history_registry = _dwx_symbol_history_registry() if is_q02 else {}
     for sym, setfile_path in setfiles:
         payload: dict[str, Any] = {}
@@ -7906,6 +7971,8 @@ def _create_backtest_work_items(conn: sqlite3.Connection, parent_task_id: str,
                 _log_p2_history_filter(root, message)
                 payload["history_adjusted"] = True
                 payload["history_adjustment_message"] = message
+        if _priority_track:
+            payload["priority_track"] = True
         wid = str(uuid.uuid4())
         conn.execute(
             """
@@ -8282,7 +8349,7 @@ def _resolve_report(payload: dict[str, Any]) -> Path | None:
     return None
 
 
-def _detect_ea_period(ea_id: str) -> str:
+def _detect_ea_period(ea_id: str, setfile_path: str | os.PathLike[str] | None = None) -> str:
     """Infer setfile period (D1/H1/M30/...) from existing setfile names.
 
     p2_baseline.py needs --period to match the setfile pattern. Default H1
@@ -8300,6 +8367,14 @@ def _detect_ea_period(ea_id: str) -> str:
     Fix: match ONLY canonical MT5 timeframe tokens. Order matters
     (longest first) so H4 doesn't get partial-matched by H.
     """
+    VALID_TFS = ("MN1", "W1", "D1", "H12", "H8", "H6", "H4", "H3", "H2", "H1",
+                 "M30", "M20", "M15", "M12", "M10", "M6", "M5", "M4", "M3", "M2", "M1")
+    pat = re.compile(r"_(" + "|".join(VALID_TFS) + r")_")
+    if setfile_path:
+        m = pat.search(Path(str(setfile_path)).name)
+        if m:
+            return m.group(1)
+
     ea_root = REPO_ROOT / "framework" / "EAs"
     candidates = [p for p in ea_root.glob(f"{ea_id}_*") if p.is_dir()]
     if not candidates:
@@ -8307,9 +8382,6 @@ def _detect_ea_period(ea_id: str) -> str:
     sets_dir = candidates[0] / "sets"
     if not sets_dir.is_dir():
         return "H1"
-    VALID_TFS = ("MN1", "W1", "D1", "H12", "H8", "H6", "H4", "H3", "H2", "H1",
-                 "M30", "M20", "M15", "M12", "M10", "M6", "M5", "M4", "M3", "M2", "M1")
-    pat = re.compile(r"_(" + "|".join(VALID_TFS) + r")_")
     periods: set[str] = set()
     for f in sets_dir.iterdir():
         if not f.name.endswith(".set"):
