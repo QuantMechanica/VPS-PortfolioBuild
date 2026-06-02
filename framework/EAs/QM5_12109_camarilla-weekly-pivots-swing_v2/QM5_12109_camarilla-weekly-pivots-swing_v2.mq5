@@ -122,7 +122,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(g_last_week_start == 0 || IsNewWeek())
       ComputePivots();
    if(g_pivots.h3 <= 0) return false;
-
    const double close = iClose(_Symbol, PERIOD_H4, 1); // perf-allowed: structural read; called from per-bar context
    const double high = iHigh(_Symbol, PERIOD_H4, 1); // perf-allowed: structural read; called from per-bar context
    const double low  = iLow(_Symbol, PERIOD_H4, 1); // perf-allowed: structural read; called from per-bar context
