@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_10381 Elite Trader MACD Position Strategy v2"
+#property description "QM5_10727 TradingView D.Y Volume Push Reversal v2"
 
 #include <QM/QM_Common.mqh>
 
@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 10381;
+input int    qm_ea_id                   = 10727;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -73,24 +73,20 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_macd_fast          = 12;
-input int    strategy_macd_slow          = 26;
-input int    strategy_macd_signal        = 9;
-input bool   strategy_allow_long         = true;
-input bool   strategy_allow_short        = true;
-input int    strategy_session_start_hour = 9;
-input int    strategy_session_start_min  = 30;
-input int    strategy_entry_cutoff_hour  = 15;
-input int    strategy_entry_cutoff_min   = 30;
-input int    strategy_exit_hour          = 16;
-input int    strategy_exit_min           = 5;
-input int    strategy_stop_mode          = 0;       // 0 fixed source money, 1 ATR
-input double strategy_stop_money         = 600.0;
-input double strategy_profit_money       = 400.0;
-input int    strategy_atr_period         = 20;
-input double strategy_atr_sl_mult        = 1.0;
-input double strategy_atr_tp_mult        = 0.67;
-input int    strategy_max_spread_points  = 0;       // 0 disables spread gate
+input int    strategy_session_open_hour      = 16;
+input int    strategy_session_open_minute    = 30;
+input int    strategy_session_close_hour     = 22;
+input int    strategy_session_close_minute   = 55;
+input int    strategy_sample_minutes         = 5;
+input double strategy_entry_window_hours     = 2.0;
+input double strategy_volume_threshold_pct   = 75.0;
+input int    strategy_max_trades_per_day     = 2;
+input int    strategy_atr_period             = 14;
+input double strategy_min_stop_atr           = 0.3;
+input double strategy_max_stop_atr           = 3.0;
+input double strategy_rr                     = 2.0;
+input int    strategy_stop_buffer_points     = 1;
+input int    strategy_max_spread_points      = 0;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -101,25 +97,43 @@ input int    strategy_max_spread_points  = 0;       // 0 disables spread gate
 bool Strategy_NoTradeFilter()
   {
    const int magic = QM_FrameworkMagic();
+   bool has_position = false;
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
          continue;
-      if(PositionGetInteger(POSITION_MAGIC) == magic)
-         return false;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      has_position = true;
+      break;
      }
 
-   if(strategy_max_spread_points > 0 &&
-      (int)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD) > strategy_max_spread_points)
-      return true;
+   if(has_position)
+      return false;
 
-   MqlDateTime now;
-   TimeToStruct(TimeCurrent(), now);
-   const int minute_of_day = now.hour * 60 + now.min;
-   const int start_minute = strategy_session_start_hour * 60 + strategy_session_start_min;
-   const int cutoff_minute = strategy_entry_cutoff_hour * 60 + strategy_entry_cutoff_min;
-   if(minute_of_day < start_minute || minute_of_day >= cutoff_minute)
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(strategy_max_spread_points > 0 && point > 0.0 && ask > bid)
+     {
+      const double spread_points = (ask - bid) / point;
+      if(spread_points > strategy_max_spread_points)
+         return true;
+     }
+
+   MqlDateTime now_dt;
+   TimeToStruct(TimeCurrent(), now_dt);
+   const int now_s = now_dt.hour * 3600 + now_dt.min * 60 + now_dt.sec;
+   const int open_s = strategy_session_open_hour * 3600 + strategy_session_open_minute * 60;
+   const int sample_minutes_filter = (strategy_sample_minutes > 1) ? strategy_sample_minutes : 1;
+   const double entry_hours_filter = (strategy_entry_window_hours > 0.1) ? strategy_entry_window_hours : 0.1;
+   const int sample_end_s = open_s + sample_minutes_filter * 60;
+   const int entry_end_s = sample_end_s + (int)MathRound(entry_hours_filter * 3600.0);
+
+   if(now_s < open_s || now_s >= entry_end_s)
       return true;
 
    return false;
@@ -138,106 +152,177 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(strategy_macd_fast <= 0 || strategy_macd_slow <= strategy_macd_fast ||
-      strategy_macd_signal <= 0)
+   static int    state_day_key = 0;
+   static double state_or_high = 0.0;
+   static double state_or_low = 0.0;
+   static double state_opening_volume_peak = 0.0;
+   static double state_post_sample_low = 0.0;
+   static double state_post_sample_high = 0.0;
+   static bool   state_sample_started = false;
+   static bool   state_sample_complete = false;
+   static int    state_first_break_dir = 0;
+   static int    state_trades_today = 0;
+
+   MqlRates bar[1];
+   if(CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, 1, bar) != 1) // perf-allowed: EntrySignal is called only after QM_IsNewBar; ORB needs one closed OHLCV bar.
       return false;
 
-   const double macd_prev = QM_MACD_Main(_Symbol, (ENUM_TIMEFRAMES)_Period,
-                                         strategy_macd_fast, strategy_macd_slow,
-                                         strategy_macd_signal, 2, PRICE_CLOSE);
-   const double signal_prev = QM_MACD_Signal(_Symbol, (ENUM_TIMEFRAMES)_Period,
-                                             strategy_macd_fast, strategy_macd_slow,
-                                             strategy_macd_signal, 2, PRICE_CLOSE);
-   const double macd_curr = QM_MACD_Main(_Symbol, (ENUM_TIMEFRAMES)_Period,
-                                         strategy_macd_fast, strategy_macd_slow,
-                                         strategy_macd_signal, 1, PRICE_CLOSE);
-   const double signal_curr = QM_MACD_Signal(_Symbol, (ENUM_TIMEFRAMES)_Period,
-                                             strategy_macd_fast, strategy_macd_slow,
-                                             strategy_macd_signal, 1, PRICE_CLOSE);
-   if(macd_prev == EMPTY_VALUE || signal_prev == EMPTY_VALUE ||
-      macd_curr == EMPTY_VALUE || signal_curr == EMPTY_VALUE)
+   MqlDateTime bar_dt;
+   TimeToStruct(bar[0].time, bar_dt);
+   const int day_key = bar_dt.year * 10000 + bar_dt.mon * 100 + bar_dt.day;
+   if(day_key != state_day_key)
+     {
+      state_day_key = day_key;
+      state_or_high = 0.0;
+      state_or_low = 0.0;
+      state_opening_volume_peak = 0.0;
+      state_post_sample_low = 0.0;
+      state_post_sample_high = 0.0;
+      state_sample_started = false;
+      state_sample_complete = false;
+      state_first_break_dir = 0;
+      state_trades_today = 0;
+     }
+
+   const int bar_s = bar_dt.hour * 3600 + bar_dt.min * 60 + bar_dt.sec;
+   const int open_s = strategy_session_open_hour * 3600 + strategy_session_open_minute * 60;
+   const int close_s = strategy_session_close_hour * 3600 + strategy_session_close_minute * 60;
+   const int sample_minutes = (strategy_sample_minutes > 1) ? strategy_sample_minutes : 1;
+   const double entry_hours = (strategy_entry_window_hours > 0.1) ? strategy_entry_window_hours : 0.1;
+   const int sample_end_s = open_s + sample_minutes * 60;
+   const int entry_end_s = sample_end_s + (int)MathRound(entry_hours * 3600.0);
+
+   if(bar_s < open_s || bar_s >= close_s)
       return false;
 
-   QM_OrderType side = QM_BUY;
-   if(strategy_allow_long &&
-      macd_prev <= signal_prev && macd_curr > signal_curr &&
-      macd_curr > 0.0 && signal_curr > 0.0)
-      side = QM_BUY;
-   else if(strategy_allow_short &&
-           macd_prev >= signal_prev && macd_curr < signal_curr &&
-           macd_curr < 0.0 && signal_curr < 0.0)
-      side = QM_SELL;
+   if(bar_s >= open_s && bar_s < sample_end_s)
+     {
+      if(!state_sample_started)
+        {
+         state_or_high = bar[0].high;
+         state_or_low = bar[0].low;
+         state_opening_volume_peak = (double)bar[0].tick_volume;
+         state_sample_started = true;
+        }
+      else
+        {
+         state_or_high = MathMax(state_or_high, bar[0].high);
+         state_or_low = MathMin(state_or_low, bar[0].low);
+         state_opening_volume_peak = MathMax(state_opening_volume_peak, (double)bar[0].tick_volume);
+        }
+      return false;
+     }
+
+   if(!state_sample_started || state_or_high <= 0.0 || state_or_low <= 0.0 || state_opening_volume_peak <= 0.0)
+      return false;
+
+   if(!state_sample_complete)
+     {
+      state_post_sample_low = bar[0].low;
+      state_post_sample_high = bar[0].high;
+      state_sample_complete = true;
+     }
    else
+     {
+      state_post_sample_low = MathMin(state_post_sample_low, bar[0].low);
+      state_post_sample_high = MathMax(state_post_sample_high, bar[0].high);
+     }
+
+   if(bar_s < sample_end_s || bar_s >= entry_end_s)
       return false;
 
-   const double entry = QM_EntryMarketPrice(side);
+   const int max_trades = (strategy_max_trades_per_day > 1) ? strategy_max_trades_per_day : 1;
+   if(state_trades_today >= max_trades)
+      return false;
+
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+         return false;
+     }
+
+   const double volume_threshold_pct = (strategy_volume_threshold_pct > 1.0) ? strategy_volume_threshold_pct : 1.0;
+   const double required_volume = state_opening_volume_peak * volume_threshold_pct / 100.0;
+   if((double)bar[0].tick_volume < required_volume)
+      return false;
+
+   int signal_dir = 0;
+   if(bar[0].close > state_or_high && state_first_break_dir <= 0)
+      signal_dir = 1;
+   else if(bar[0].close < state_or_low && state_first_break_dir >= 0)
+      signal_dir = -1;
+
+   if(signal_dir == 0)
+      return false;
+
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(point <= 0.0)
+      return false;
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double entry = (signal_dir > 0) ? ask : bid;
    if(entry <= 0.0)
       return false;
 
-   double stop_distance = 0.0;
-   double take_distance = 0.0;
-   if(strategy_stop_mode == 0)
-     {
-      const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
-      const double tick_value = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_VALUE);
-      if(tick_size <= 0.0 || tick_value <= 0.0 ||
-         strategy_stop_money <= 0.0 || strategy_profit_money <= 0.0)
-         return false;
-      stop_distance = strategy_stop_money * tick_size / tick_value;
-      take_distance = strategy_profit_money * tick_size / tick_value;
-     }
-   else
-     {
-      const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
-      if(atr <= 0.0 || strategy_atr_sl_mult <= 0.0 || strategy_atr_tp_mult <= 0.0)
-         return false;
-      stop_distance = atr * strategy_atr_sl_mult;
-      take_distance = atr * strategy_atr_tp_mult;
-     }
-
-   if(stop_distance <= 0.0 || take_distance <= 0.0)
+   const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
+   if(atr <= 0.0)
       return false;
 
-   req.type = side;
+   const int buffer_points = (strategy_stop_buffer_points > 0) ? strategy_stop_buffer_points : 0;
+   const double buffer = (double)buffer_points * point;
+   double sl = 0.0;
+   if(signal_dir > 0)
+      sl = MathMin(state_or_low, state_post_sample_low) - buffer;
+   else
+      sl = MathMax(state_or_high, state_post_sample_high) + buffer;
+
+   const double stop_distance = MathAbs(entry - sl);
+   if(stop_distance < strategy_min_stop_atr * atr || stop_distance > strategy_max_stop_atr * atr)
+      return false;
+
+   const double sl_points = stop_distance / point;
+   if(QM_LotsForRisk(_Symbol, sl_points) <= 0.0)
+      return false;
+
+   req.type = (signal_dir > 0) ? QM_BUY : QM_SELL;
    req.price = 0.0;
-   req.sl = NormalizeDouble(QM_OrderTypeIsBuy(side) ? entry - stop_distance : entry + stop_distance,
-                            _Digits);
-   req.tp = NormalizeDouble(QM_OrderTypeIsBuy(side) ? entry + take_distance : entry - take_distance,
-                            _Digits);
-   req.reason = QM_OrderTypeIsBuy(side) ? "ET_MACD_POS_LONG" : "ET_MACD_POS_SHORT";
-   return (req.sl > 0.0 && req.tp > 0.0);
+   req.sl = NormalizeDouble(sl, (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS));
+   req.tp = NormalizeDouble(QM_TakeRR(_Symbol, req.type, entry, req.sl, strategy_rr),
+                            (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS));
+   if(req.tp <= 0.0)
+      return false;
+
+   req.reason = (state_first_break_dir == 0)
+                ? ((signal_dir > 0) ? "DY_VOL_PUSH_LONG_INITIAL" : "DY_VOL_PUSH_SHORT_INITIAL")
+                : ((signal_dir > 0) ? "DY_VOL_PUSH_LONG_REVERSAL" : "DY_VOL_PUSH_SHORT_REVERSAL");
+   state_first_break_dir = signal_dir;
+   state_trades_today++;
+   return true;
   }
 
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
+   // Card specifies no break-even, partial close, trailing stop, or pyramiding.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   const int magic = QM_FrameworkMagic();
-   bool has_position = false;
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      has_position = true;
-      break;
-     }
-   if(!has_position)
-      return false;
-
-   MqlDateTime now;
-   TimeToStruct(TimeCurrent(), now);
-   const int minute_of_day = now.hour * 60 + now.min;
-   const int exit_minute = strategy_exit_hour * 60 + strategy_exit_min;
-   if(minute_of_day >= exit_minute)
+   MqlDateTime now_dt;
+   TimeToStruct(TimeCurrent(), now_dt);
+   const int now_s = now_dt.hour * 3600 + now_dt.min * 60 + now_dt.sec;
+   const int close_s = strategy_session_close_hour * 3600 + strategy_session_close_minute * 60;
+   if(now_s >= close_s)
       return true;
 
    return false;
