@@ -33,10 +33,10 @@ class CascadeRealPhaseRunnerTests(unittest.TestCase):
             )
             conn.commit()
 
-    def test_p4_dispatch_spawns_walk_forward_not_run_smoke(self) -> None:
+    def test_q04_dispatch_spawns_walk_forward_not_run_smoke(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
-            self._insert_work_item(root, item_id="wi-p4", phase="P4")
+            self._insert_work_item(root, item_id="wi-q04", phase="Q04")
             spawned_cmds: list[list[str]] = []
 
             class FakeProc:
@@ -60,19 +60,19 @@ class CascadeRealPhaseRunnerTests(unittest.TestCase):
 
             self.assertEqual(len(spawned_cmds), 1)
             joined = " ".join(spawned_cmds[0])
-            self.assertIn("p4_walk_forward.py", joined)
+            self.assertIn("q04_walkforward.py", joined)
             self.assertNotIn("run_smoke.ps1", joined)
-            self.assertEqual(result["actions"][0]["phase_runner"].replace("\\", "/").split("/")[-1], "p4_walk_forward.py")
+            self.assertEqual(result["actions"][0]["phase_runner"].replace("\\", "/").split("/")[-1], "q04_walkforward.py")
 
-    def test_missing_p6_runner_marks_pending_runner(self) -> None:
+    def test_missing_q06_runner_marks_pending_runner(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
-            self._insert_work_item(root, item_id="wi-p6", phase="P6")
+            self._insert_work_item(root, item_id="wi-q06", phase="Q06")
             old_scripts = dict(farmctl.PHASE_RUNNER_SCRIPTS)
             old_terminals = farmctl.MT5_TERMINALS
             old_running = farmctl._running_mt5_terminals
             try:
-                farmctl.PHASE_RUNNER_SCRIPTS["P6"] = "missing_p6_runner.py"
+                farmctl.PHASE_RUNNER_SCRIPTS["Q06"] = "missing_q06_runner.py"
                 farmctl.MT5_TERMINALS = ("T1",)
                 farmctl._running_mt5_terminals = lambda: set()
                 result = farmctl.dispatch_work_items(root, timeout_minutes=8)
@@ -84,7 +84,7 @@ class CascadeRealPhaseRunnerTests(unittest.TestCase):
 
             db = root / "state" / "farm_state.sqlite"
             with sqlite3.connect(db) as conn:
-                row = conn.execute("SELECT status, verdict, payload_json FROM work_items WHERE id='wi-p6'").fetchone()
+                row = conn.execute("SELECT status, verdict, payload_json FROM work_items WHERE id='wi-q06'").fetchone()
             self.assertEqual(row[0], "done")
             self.assertEqual(row[1], "PENDING_RUNNER")
             self.assertIn("pending_runner", [action["action"] for action in result["actions"]])

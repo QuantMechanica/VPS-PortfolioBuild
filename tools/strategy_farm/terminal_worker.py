@@ -75,6 +75,7 @@ def _priority_pending_query() -> str:
             -- Legacy P-keys preserved at their original ranks for any work
             -- still using the old nomenclature.
             WHEN 'Q10'  THEN 0
+            WHEN 'Q09_PORTFOLIO' THEN 1
             WHEN 'Q09'  THEN 1
             WHEN 'Q08'  THEN 2
             WHEN 'Q07'  THEN 3

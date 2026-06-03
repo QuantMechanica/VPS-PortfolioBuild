@@ -245,8 +245,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    g_last_entry_day_key = day_key;
    return true;
   }
-   return false;
-  }
 
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
