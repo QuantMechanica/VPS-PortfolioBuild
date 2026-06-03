@@ -186,13 +186,26 @@ def _to_float(v):
 
 
 def metrics_component(fm: dict) -> float:
-    """0.5 neutral when missing (never invented). pf: 1.0->0, 2.0+->1.
-    dd: 0%->1, 30%+->0."""
+    """Expected-quality component (0..1). 0.5-neutral when a field is missing
+    (never invented).
+
+    Three sub-signals:
+      - frequency (weight 0.5): expected_trades_per_year_per_symbol. This is the
+        ONE expected field actually populated on the backlog (2207/2674), and it
+        directly predicts whether an EA clears Q08's absolute trade thresholds
+        (50/100/200) - currently THE pipeline bottleneck. >=200/yr -> 1.0,
+        100 -> 0.5, 50 -> 0.25 (OWNER 2026-06-03: pull higher-frequency cards
+        forward for Q08).
+      - profit factor (0.25): expected_pf, 1.0->0, 2.0+->1 (mostly empty today).
+      - drawdown (0.25): expected_dd_pct, 0%->1, 30%+->0 (mostly empty today).
+    All are ordering priors, never gates."""
     pf = _to_float(fm.get("expected_pf"))
     dd = _to_float(fm.get("expected_dd_pct"))
+    freq = _to_float(fm.get("expected_trades_per_year_per_symbol"))
     pf_c = _clamp01((pf - 1.0) / 1.0) if pf is not None else 0.5
     dd_c = _clamp01(1.0 - (dd / 30.0)) if dd is not None else 0.5
-    return 0.5 * pf_c + 0.5 * dd_c
+    freq_c = _clamp01(freq / 200.0) if freq is not None else 0.5
+    return 0.5 * freq_c + 0.25 * pf_c + 0.25 * dd_c
 
 
 def score_cards(cards: list[dict], built_counts: dict, built_eas: set,
