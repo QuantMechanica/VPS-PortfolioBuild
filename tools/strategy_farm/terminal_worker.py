@@ -146,31 +146,57 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 if active_terminal:
                     payload = _json_loads(active_terminal["payload_json"])
                     pid = payload.get("pid")
-                    if pid and farmctl._pid_tree_exists(pid):
+                    worker_pid = payload.get("claimed_by_worker_pid")
+                    if worker_pid and not farmctl._pid_exists(worker_pid):
+                        payload["prior_failure"] = payload.get("prior_failure") or "worker_process_missing_released_stale_claim"
+                        if pid:
+                            payload["child_stopped_on_orphan_release"] = farmctl._stop_pid_tree(pid)
+                        terminal_stopped = _stop_terminal_slot_for_release(root, terminal)
+                        if terminal_stopped is not None:
+                            payload["terminal_stopped_on_release"] = terminal_stopped
+                        payload.pop("pid", None)
+                        conn.execute(
+                            """
+                            UPDATE work_items
+                            SET status='pending', verdict=NULL, claimed_by=NULL, payload_json=?, updated_at=?
+                            WHERE id=? AND status='active' AND claimed_by=?
+                            """,
+                            (json.dumps(payload, sort_keys=True), now, active_terminal["id"], terminal),
+                        )
+                    elif pid and farmctl._pid_tree_exists(pid):
                         conn.commit()
                         return {"claimed": False, "reason": "terminal_busy", "item_id": active_terminal["id"]}
-                    payload["prior_failure"] = payload.get("prior_failure") or "worker_loop_released_stale_claim"
-                    terminal_stopped = _stop_terminal_slot_for_release(root, terminal)
-                    if terminal_stopped is not None:
-                        payload["terminal_stopped_on_release"] = terminal_stopped
-                    conn.execute(
-                        """
-                        UPDATE work_items
-                        SET status='pending', verdict=NULL, claimed_by=NULL, payload_json=?, updated_at=?
-                        WHERE id=? AND status='active' AND claimed_by=?
-                        """,
-                        (json.dumps(payload, sort_keys=True), now, active_terminal["id"], terminal),
-                    )
+                    else:
+                        payload["prior_failure"] = payload.get("prior_failure") or "worker_loop_released_stale_claim"
+                        terminal_stopped = _stop_terminal_slot_for_release(root, terminal)
+                        if terminal_stopped is not None:
+                            payload["terminal_stopped_on_release"] = terminal_stopped
+                        conn.execute(
+                            """
+                            UPDATE work_items
+                            SET status='pending', verdict=NULL, claimed_by=NULL, payload_json=?, updated_at=?
+                            WHERE id=? AND status='active' AND claimed_by=?
+                            """,
+                            (json.dumps(payload, sort_keys=True), now, active_terminal["id"], terminal),
+                        )
 
                 if root.resolve() == farmctl.DEFAULT_ROOT.resolve() and terminal in farmctl._running_mt5_terminals():
                     conn.commit()
                     return {"claimed": False, "reason": "terminal_process_busy", "terminal": terminal}
 
                 active_symbols = farmctl._active_work_item_symbols(conn)
+                active_q04_eas = {
+                    str(row["ea_id"])
+                    for row in conn.execute(
+                        "SELECT DISTINCT ea_id FROM work_items WHERE status='active' AND phase='Q04'"
+                    )
+                }
                 skipped_history: list[dict[str, Any]] = []
                 for item in conn.execute(_priority_pending_query()).fetchall():
                     symbol_key = str(item["symbol"] or "").upper()
                     if symbol_key and symbol_key in active_symbols:
+                        continue
+                    if str(item["phase"]).upper() == "Q04" and str(item["ea_id"]) in active_q04_eas:
                         continue
                     history_ok, history = _p2_history_claimable(item)
                     if not history_ok:
@@ -550,7 +576,12 @@ def _work_item_preflight_failure(item: sqlite3.Row) -> dict[str, Any] | None:
         return {"reason": "setfile_missing", "detail": str(setfile_path)}
 
     ea_root_dir = farmctl.REPO_ROOT / "framework" / "EAs"
-    candidates = [p for p in ea_root_dir.glob(f"{ea_id}_*") if p.is_dir()]
+    ea_dir_from_setfile = farmctl._ea_dir_from_setfile_path(setfile_path, ea_id)
+    candidates = (
+        [ea_dir_from_setfile]
+        if ea_dir_from_setfile is not None
+        else [p for p in ea_root_dir.glob(f"{ea_id}_*") if p.is_dir()]
+    )
     if not candidates:
         return {"reason": "ea_dir_missing", "detail": str(ea_root_dir / f"{ea_id}_*")}
     if len(candidates) > 1:

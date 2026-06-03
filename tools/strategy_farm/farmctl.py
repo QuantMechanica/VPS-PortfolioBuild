@@ -1400,6 +1400,15 @@ def _derive_phase_runner_verdict(summary: dict[str, Any], min_trades: int = 5, p
     if verdict_upper in {"INFRA_FAIL", "ERROR", "TIMEOUT"}:
         return "INFRA_FAIL", reason or raw_verdict or "phase_runner_infra_fail"
     if verdict_upper == "INVALID":
+        if reason and any(token in reason.lower() for token in ("summary_missing", "missing_summary")):
+            return "INFRA_FAIL", reason
+        if phase_key in {"P4", "P5", "P5b", "P5c"} and (
+            summary.get("summary_path")
+            or summary.get("sub_gates")
+            or summary.get("per_seed_detail")
+            or summary.get("n_trades") is not None
+        ):
+            return "FAIL", reason or "phase_runner_invalid_gate_result"
         return "INFRA_FAIL", reason or "phase_runner_invalid_report"
     if verdict_upper in {"FAIL", "NO_PASS_BASELINE", "NO_ELIGIBLE_MODE", "MULTI_SEED_FAIL"}:
         return "FAIL", reason or raw_verdict or "phase_runner_fail"
@@ -1904,6 +1913,23 @@ def _ea_dir_from_setfile_path(setfile_path: str | os.PathLike[str] | None,
     if not ea_dir.name.startswith(f"{ea_id}_"):
         return None
     return ea_dir
+
+
+def _ea_dir_version(dir_name: str) -> int:
+    match = re.search(r"_v(\d+)(?:$|_)", dir_name)
+    return int(match.group(1)) if match else 1
+
+
+def _preferred_ea_dir(ea_id: str) -> Path | None:
+    ea_root = REPO_ROOT / "framework" / "EAs"
+    candidates = sorted(p for p in ea_root.glob(f"{ea_id}_*") if p.is_dir())
+    if not candidates:
+        return None
+    best_version = max(_ea_dir_version(p.name) for p in candidates)
+    versioned = [p for p in candidates if _ea_dir_version(p.name) == best_version]
+    if len(versioned) != 1:
+        return None
+    return versioned[0]
 
 
 def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
@@ -7651,11 +7677,9 @@ def _find_ea_setfiles(ea_id: str, phase: str) -> list[tuple[str, str]]:
     EAs are the norm). For P3+, restrict to the surviving_symbols supplied
     by the caller (filter applied externally).
     """
-    ea_root = REPO_ROOT / "framework" / "EAs"
-    candidates = [p for p in ea_root.glob(f"{ea_id}_*") if p.is_dir()]
-    if not candidates:
+    ea_dir = _preferred_ea_dir(ea_id)
+    if ea_dir is None:
         return []
-    ea_dir = candidates[0]
     sets_dir = ea_dir / "sets"
     if not sets_dir.is_dir():
         return []
@@ -7670,11 +7694,7 @@ def _find_ea_setfiles(ea_id: str, phase: str) -> list[tuple[str, str]]:
 
 
 def _find_single_ea_dir(ea_id: str) -> Path | None:
-    ea_root = REPO_ROOT / "framework" / "EAs"
-    candidates = sorted(p for p in ea_root.glob(f"{ea_id}_*") if p.is_dir())
-    if len(candidates) != 1:
-        return None
-    return candidates[0]
+    return _preferred_ea_dir(ea_id)
 
 
 def _load_basket_manifest(ea_id: str) -> dict[str, Any] | None:
@@ -7722,10 +7742,9 @@ def _ea_build_artifact_failure(ea_id: str) -> dict[str, Any] | None:
     candidates = sorted(p for p in ea_root.glob(f"{ea_id}_*") if p.is_dir())
     if not candidates:
         return {"reason": "ea_dir_missing", "detail": str(ea_root / f"{ea_id}_*")}
-    if len(candidates) > 1:
+    ea_dir = _preferred_ea_dir(ea_id)
+    if ea_dir is None:
         return {"reason": "ea_dir_ambiguous", "detail": [p.name for p in candidates]}
-
-    ea_dir = candidates[0]
     ex5 = ea_dir / f"{ea_dir.name}.ex5"
     if not ex5.exists():
         return {"reason": "ex5_missing", "detail": str(ex5)}
@@ -7817,7 +7836,7 @@ def _latest_build_smoke_result(con: sqlite3.Connection, ea_id: str) -> dict[str,
 
 
 def _magic_slot_for_symbol(ea_id: str, symbol: str) -> int:
-    m = re.match(r"^QM5_(\d{4})$", ea_id)
+    m = re.match(r"^QM5_(\d+)$", ea_id)
     if not m:
         return 0
     registry = REPO_ROOT / "framework" / "registry" / "magic_numbers.csv"
@@ -7865,11 +7884,9 @@ def _ensure_p2_target_setfiles(root: Path, ea_id: str) -> list[tuple[str, str]]:
     if not existing or not target_symbols:
         return existing
 
-    ea_root = REPO_ROOT / "framework" / "EAs"
-    candidates = [p for p in ea_root.glob(f"{ea_id}_*") if p.is_dir()]
-    if not candidates:
+    ea_dir = _preferred_ea_dir(ea_id)
+    if ea_dir is None:
         return existing
-    ea_dir = candidates[0]
     sets_dir = ea_dir / "sets"
     period = _detect_ea_period(ea_id)
     by_symbol = {symbol: path for symbol, path in existing}
@@ -8379,11 +8396,10 @@ def _detect_ea_period(ea_id: str, setfile_path: str | os.PathLike[str] | None = 
         if m:
             return m.group(1)
 
-    ea_root = REPO_ROOT / "framework" / "EAs"
-    candidates = [p for p in ea_root.glob(f"{ea_id}_*") if p.is_dir()]
-    if not candidates:
+    ea_dir = _preferred_ea_dir(ea_id)
+    if ea_dir is None:
         return "H1"
-    sets_dir = candidates[0] / "sets"
+    sets_dir = ea_dir / "sets"
     if not sets_dir.is_dir():
         return "H1"
     periods: set[str] = set()

@@ -28,6 +28,7 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
         status: str = "pending",
         claimed_by: str | None = None,
         payload: dict[str, object] | None = None,
+        ea_id: str = "QM5_9999",
     ) -> None:
         farmctl.init_db(root)
         now = farmctl.utc_now()
@@ -39,10 +40,10 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                    attempt_count, parent_task_id, evidence_path, claimed_by,
                    payload_json, created_at, updated_at)
                 VALUES
-                  (?, 'backtest', ?, 'QM5_9999', ?, 'dummy.set', ?, NULL,
+                  (?, 'backtest', ?, ?, ?, 'dummy.set', ?, NULL,
                    0, NULL, NULL, ?, ?, ?, ?)
                 """,
-                (item_id, phase, symbol, status, claimed_by, json.dumps(payload or {}), now, now),
+                (item_id, phase, ea_id, symbol, status, claimed_by, json.dumps(payload or {}), now, now),
             )
             conn.commit()
 
@@ -78,6 +79,42 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                 statuses = dict(conn.execute("SELECT id, status FROM work_items").fetchall())
             self.assertEqual(statuses["pending-1"], "pending")
             self.assertEqual(statuses["pending-2"], "active")
+
+    def test_q04_claim_limits_one_active_item_per_ea(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "active-q04-ea-a",
+                "NDX.DWX",
+                phase="Q04",
+                status="active",
+                claimed_by="T1",
+                ea_id="QM5_1001",
+            )
+            self._insert_work_item(
+                root,
+                "pending-q04-same-ea",
+                "SP500.DWX",
+                phase="Q04",
+                ea_id="QM5_1001",
+            )
+            self._insert_work_item(
+                root,
+                "pending-q04-other-ea",
+                "WS30.DWX",
+                phase="Q04",
+                ea_id="QM5_1002",
+            )
+
+            result = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertTrue(result.get("claimed"))
+            self.assertEqual(result["item"]["id"], "pending-q04-other-ea")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                statuses = dict(conn.execute("SELECT id, status FROM work_items").fetchall())
+            self.assertEqual(statuses["pending-q04-same-ea"], "pending")
+            self.assertEqual(statuses["pending-q04-other-ea"], "active")
 
     def test_dwx_history_range_registry_is_respected_for_p2_claims(self) -> None:
         with self._root() as tmp:
@@ -128,6 +165,44 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             with sqlite3.connect(root / farmctl.DB_REL) as conn:
                 row = conn.execute("SELECT status, claimed_by FROM work_items WHERE id='stale-1'").fetchone()
             self.assertEqual(row, ("active", "T1"))
+
+    def test_orphan_same_terminal_claim_stops_child_and_reclaims(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "orphan-1",
+                "EURUSD.DWX",
+                phase="P3",
+                status="active",
+                claimed_by="T1",
+                payload={"pid": 123456, "claimed_by_worker_pid": 654321},
+            )
+
+            stopped_children: list[int] = []
+            old_pid_exists = terminal_worker.farmctl._pid_exists
+            old_pid_tree_exists = terminal_worker.farmctl._pid_tree_exists
+            old_stop_pid_tree = terminal_worker.farmctl._stop_pid_tree
+            try:
+                terminal_worker.farmctl._pid_exists = lambda pid: int(pid) != 654321
+                terminal_worker.farmctl._pid_tree_exists = lambda _pid: True
+                terminal_worker.farmctl._stop_pid_tree = lambda pid: stopped_children.append(int(pid)) or True
+                result = terminal_worker.claim_atomic(root, "T1")
+            finally:
+                terminal_worker.farmctl._pid_exists = old_pid_exists
+                terminal_worker.farmctl._pid_tree_exists = old_pid_tree_exists
+                terminal_worker.farmctl._stop_pid_tree = old_stop_pid_tree
+
+            self.assertTrue(result.get("claimed"))
+            self.assertEqual(result["item"]["id"], "orphan-1")
+            self.assertEqual(stopped_children, [123456])
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute("SELECT status, claimed_by, payload_json FROM work_items WHERE id='orphan-1'").fetchone()
+            self.assertEqual(row[0], "active")
+            self.assertEqual(row[1], "T1")
+            payload = json.loads(row[2])
+            self.assertEqual(payload["prior_failure"], "worker_process_missing_released_stale_claim")
+            self.assertTrue(payload["child_stopped_on_orphan_release"])
 
     def test_summary_missing_release_stops_terminal_slot(self) -> None:
         with self._root() as tmp:
@@ -285,7 +360,7 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                     "SELECT status, verdict, claimed_by, evidence_path, payload_json FROM work_items WHERE id='wi-missing-ex5'"
                 ).fetchone()
             self.assertEqual(row[0], "failed")
-            self.assertEqual(row[1], "INVALID")
+            self.assertEqual(row[1], "INFRA_FAIL")
             self.assertIsNone(row[2])
             self.assertTrue(Path(row[3]).exists())
             self.assertEqual(json.loads(row[4])["verdict_reason"], "ex5_missing")

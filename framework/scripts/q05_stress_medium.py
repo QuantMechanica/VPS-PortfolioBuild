@@ -32,6 +32,7 @@ GATE_NAME = "Q05"
 LEVEL = "MED"
 PF_FLOOR = 1.0
 DD_PCT_MAX = 15.0
+MIN_TRADES = 20
 STARTING_EQUITY = 100_000.0
 
 
@@ -47,9 +48,13 @@ def _parse_pf_dd_trades(summary_path: Path) -> tuple[float | None, float | None,
     if not runs:
         return None, None, 0
     r0 = runs[-1]
+    def _optional_float(value: object) -> float | None:
+        if value is None or value == "":
+            return None
+        return float(value)
     try:
-        pf = float(r0.get("profit_factor") or 0) or None
-        dd_money = float(r0.get("drawdown") or 0) or None
+        pf = _optional_float(r0.get("profit_factor"))
+        dd_money = _optional_float(r0.get("drawdown"))
         trades = int(r0.get("total_trades") or 0)
     except (TypeError, ValueError):
         return None, None, 0
@@ -89,7 +94,7 @@ def run_stress_backtest(*, ea_id: int, ea_expert: str, symbol: str,
         "-DispatchPhase", "Q05",
         "-DispatchVersion", "q05_stress_medium",
         "-Runs", "1",
-        "-MinTrades", "20",
+        "-MinTrades", str(MIN_TRADES),
         "-Model", "4",
         "-SetFile", str(setfile),
         "-ReportRoot", str(report_root),
@@ -103,8 +108,14 @@ def run_stress_backtest(*, ea_id: int, ea_expert: str, symbol: str,
     pf, dd_money, trades = _parse_pf_dd_trades(summary) if summary else (None, None, 0)
     dd_pct = (dd_money / STARTING_EQUITY * 100.0) if dd_money is not None else None
 
-    if pf is None or dd_money is None:
-        verdict, reason = "INVALID", "missing_pf_or_dd_in_summary"
+    if summary is None:
+        verdict, reason = "INVALID", "summary_missing"
+    elif trades < MIN_TRADES:
+        verdict, reason = "FAIL", f"trades_below_floor:trades={trades}:floor={MIN_TRADES}"
+    elif pf is None:
+        verdict, reason = "FAIL", f"missing_pf_in_summary:trades={trades}"
+    elif dd_money is None:
+        verdict, reason = "FAIL", f"missing_dd_in_summary:trades={trades}"
     elif pf <= PF_FLOOR:
         verdict, reason = "FAIL", f"pf_below_floor:pf={pf:.3f}:floor={PF_FLOOR}"
     elif dd_pct > DD_PCT_MAX:

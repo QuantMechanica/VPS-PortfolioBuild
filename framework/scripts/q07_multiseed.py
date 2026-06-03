@@ -26,7 +26,7 @@ from framework.scripts._phase_utils import (ensure_dir, utc_now_iso, write_json,
                                             resolve_ea_expert_path, period_from_setfile,
                                             find_latest_summary, FULL_HISTORY_FROM,
                                             FULL_HISTORY_TO, FULL_HISTORY_YEAR)
-from framework.scripts.q05_stress_medium import _parse_pf_dd_trades, STARTING_EQUITY
+from framework.scripts.q05_stress_medium import _parse_pf_dd_trades, MIN_TRADES, STARTING_EQUITY
 from framework.scripts.q06_stress_harsh import gen_harsh_setfile_for
 
 GATE_NAME = "Q07"
@@ -79,7 +79,7 @@ def _run_seed(*, ea_id: int, ea_expert: str, symbol: str, setfile: Path,
         "-DispatchPhase", "Q07",
         "-DispatchVersion", f"q07_seed_{seed}",
         "-Runs", "1",
-        "-MinTrades", "20",
+        "-MinTrades", str(MIN_TRADES),
         "-Model", "4",
         "-SetFile", str(setfile),
         "-ReportRoot", str(report_root),
@@ -99,12 +99,25 @@ def _run_seed(*, ea_id: int, ea_expert: str, symbol: str, setfile: Path,
 
 def evaluate_seeds(seed_results: list[dict]) -> tuple[str, str, dict]:
     """Combined Q07 verdict from per-seed results."""
-    pfs = [r["pf"] for r in seed_results if r.get("pf") is not None and r["pf"] > 0]
-    if len(pfs) < len(seed_results):
-        missing = [r["seed"] for r in seed_results if r.get("pf") is None or r["pf"] <= 0]
+    missing_summary = [r["seed"] for r in seed_results if not r.get("summary_path")]
+    if missing_summary:
         return ("INVALID",
-                f"seeds_with_invalid_pf:{missing}",
+                f"seeds_missing_summary:{missing_summary}",
                 {"per_seed_pf": [(r["seed"], r["pf"]) for r in seed_results]})
+
+    low_trades = [r["seed"] for r in seed_results if int(r.get("trades") or 0) < MIN_TRADES]
+    if low_trades:
+        return ("FAIL",
+                f"seed_trades_below_floor:seeds={low_trades}:floor={MIN_TRADES}",
+                {"per_seed_trades": [(r["seed"], r.get("trades", 0)) for r in seed_results]})
+
+    missing_pf = [r["seed"] for r in seed_results if r.get("pf") is None]
+    if missing_pf:
+        return ("FAIL",
+                f"seeds_missing_pf:{missing_pf}",
+                {"per_seed_pf": [(r["seed"], r["pf"]) for r in seed_results]})
+
+    pfs = [float(r["pf"]) for r in seed_results]
 
     mean_pf = sum(pfs) / len(pfs)
     if mean_pf <= 0:

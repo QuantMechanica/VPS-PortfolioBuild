@@ -44,6 +44,29 @@ class VerdictTaxonomyWs2Tests(unittest.TestCase):
         self.assertEqual(verdict, "INFRA_FAIL")
         self.assertIn("without_real_mt5", reason)
 
+    def test_q08_invalid_gate_report_is_strategy_fail(self) -> None:
+        verdict, reason = farmctl._derive_phase_runner_verdict(
+            {
+                "phase": "Q08",
+                "verdict": "INVALID",
+                "n_trades": 3,
+                "sub_gates": [
+                    {"name": "8.2_dsr_mc_fdr", "status": "INVALID", "detail": "insufficient_daily_returns"}
+                ],
+            },
+            phase="Q08",
+        )
+        self.assertEqual(verdict, "FAIL")
+        self.assertEqual(reason, "phase_runner_invalid_gate_result")
+
+    def test_invalid_missing_summary_remains_infra_fail(self) -> None:
+        verdict, reason = farmctl._derive_phase_runner_verdict(
+            {"phase": "Q05", "verdict": "INVALID", "reason": "summary_missing"},
+            phase="Q05",
+        )
+        self.assertEqual(verdict, "INFRA_FAIL")
+        self.assertEqual(reason, "summary_missing")
+
 
 if __name__ == "__main__":
     unittest.main()

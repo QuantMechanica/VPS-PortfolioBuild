@@ -156,14 +156,20 @@ def aggregate_verdict(fold_results: list[dict]) -> tuple[str, str]:
         return "INVALID", "no_folds_ran"
     incomplete = [
         f for f in fold_results
-        if not f.get("summary_path") or f.get("pf_net") is None
+        if not f.get("summary_path")
     ]
     if incomplete:
         return "INVALID", ";".join(f"{f['id']}:incomplete_fold" for f in incomplete)
     failures = [f for f in fold_results if f.get("pf_net") is None or
                                             float(f["pf_net"]) <= PF_NET_FLOOR_PER_FOLD]
     if failures:
-        return "FAIL", ";".join(f"{f['id']}:pf_net={f.get('pf_net')}" for f in failures)
+        reasons = []
+        for f in failures:
+            if f.get("pf_net") is None:
+                reasons.append(f"{f['id']}:trades={f.get('trades', 0)}")
+            else:
+                reasons.append(f"{f['id']}:pf_net={f.get('pf_net')}")
+        return "FAIL", ";".join(reasons)
     return "PASS", ";".join(f"{f['id']}:pf_net={f['pf_net']:.3f}" for f in fold_results)
 
 

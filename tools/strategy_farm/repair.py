@@ -60,6 +60,8 @@ import time
 import uuid
 from pathlib import Path
 
+import farmctl
+
 ROOT = Path(r"D:\QM\strategy_farm")
 DB = ROOT / "state" / "farm_state.sqlite"
 LOG_DIR = ROOT / "logs"
@@ -458,7 +460,12 @@ def _pending_work_item_artifact_failure(row: sqlite3.Row) -> dict | None:
 
     ea_id = str(row["ea_id"] or "")
     ea_root = REPO_ROOT / "framework" / "EAs"
-    candidates = sorted(p for p in ea_root.glob(f"{ea_id}_*") if p.is_dir())
+    ea_dir_from_setfile = farmctl._ea_dir_from_setfile_path(setfile_path, ea_id)
+    candidates = (
+        [ea_dir_from_setfile]
+        if ea_dir_from_setfile is not None
+        else sorted(p for p in ea_root.glob(f"{ea_id}_*") if p.is_dir())
+    )
     if not candidates:
         return {"reason": "ea_dir_missing", "detail": str(ea_root / f"{ea_id}_*")}
     if len(candidates) > 1:
@@ -534,10 +541,7 @@ def repair_pending_unclaimable_work_items(con) -> list[dict]:
 
 
 def _ea_dir_for_id(ea_id: str) -> Path | None:
-    candidates = sorted(p for p in (REPO_ROOT / "framework" / "EAs").glob(f"{ea_id}_*") if p.is_dir())
-    if len(candidates) != 1:
-        return None
-    return candidates[0]
+    return farmctl._preferred_ea_dir(ea_id)
 
 
 def _canonical_setfiles_for_ea(ea_id: str) -> list[tuple[str, str]]:

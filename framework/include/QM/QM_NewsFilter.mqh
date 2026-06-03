@@ -542,16 +542,22 @@ void QM_NewsBuildUtcIndex()
       g_qm_news_events_sorted = true;
       return;
      }
-   for(int i = 1; i < n; i++)
+
+   // Shell sort: significantly faster than insertion sort for large,
+   // partially-ordered arrays (like concatenated sorted calendar files).
+   // O(N log N) to O(N^1.5) depending on gaps.
+   for(int gap = n / 2; gap > 0; gap /= 2)
      {
-      const QM_NewsEvent key = g_qm_news_events[i];
-      int j = i - 1;
-      while(j >= 0 && g_qm_news_events[j].event_utc > key.event_utc)
+      for(int i = gap; i < n; i++)
         {
-         g_qm_news_events[j + 1] = g_qm_news_events[j];
-         j--;
+         const QM_NewsEvent temp = g_qm_news_events[i];
+         int j;
+         for(j = i; j >= gap && g_qm_news_events[j - gap].event_utc > temp.event_utc; j -= gap)
+           {
+            g_qm_news_events[j] = g_qm_news_events[j - gap];
+           }
+         g_qm_news_events[j] = temp;
         }
-      g_qm_news_events[j + 1] = key;
      }
    g_qm_news_events_sorted = true;
   }
@@ -641,9 +647,22 @@ bool QM_NewsInFirmWindow(const QM_NewsComplianceProfile profile,
       return false;
 
    const int n = ArraySize(g_qm_news_events);
-   for(int i = 0; i < n; i++)
+   if(n == 0)
+      return false;
+   if(!g_qm_news_events_sorted)
+      QM_NewsBuildUtcIndex();
+
+   // Firm blackouts (FTMO, 5ers) are typically very short (2-5 minutes).
+   // Searching in a +/- 60 minute window is efficient and safe.
+   const datetime t_min = utc_time - 3600;
+   const datetime t_max = utc_time + 3600;
+   const int start = QM_NewsLowerBoundUtc(t_min);
+
+   for(int i = start; i < n; i++)
      {
       const QM_NewsEvent event = g_qm_news_events[i];
+      if(event.event_utc > t_max)
+         break;
       if(!QM_NewsEventAffectsSymbol(event.currency, symbol))
          continue;
       if(!QM_NewsImpactMeetsMinimum(event.impact_upper, g_qm_news_min_impact_upper))

@@ -85,6 +85,17 @@ class Q04WalkForwardTests(unittest.TestCase):
         self.assertEqual(verdict, "FAIL")
         self.assertIn("F1:pf_net=0.9", reason)
 
+    def test_completed_zero_trade_fold_is_strategy_fail(self) -> None:
+        mod = _load_module()
+        verdict, reason = mod.aggregate_verdict([
+            {"id": "F1", "exit_code": 1, "summary_path": "summary.json", "pf_net": None, "trades": 0},
+            {"id": "F2", "exit_code": 1, "summary_path": "summary.json", "pf_net": 0.8, "trades": 12},
+            {"id": "F3", "exit_code": 1, "summary_path": "summary.json", "pf_net": 1.1, "trades": 10},
+        ])
+
+        self.assertEqual(verdict, "FAIL")
+        self.assertIn("F1:trades=0", reason)
+
 
 if __name__ == "__main__":
     unittest.main()

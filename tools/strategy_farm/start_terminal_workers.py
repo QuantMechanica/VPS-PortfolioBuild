@@ -25,6 +25,7 @@ def _pid_alive(pid: int) -> bool:
             ["tasklist", "/FI", f"PID eq {pid}", "/FO", "CSV", "/NH"],
             capture_output=True,
             text=True,
+            errors="replace",
             creationflags=creationflags,
         )
         return str(pid) in (result.stdout or "")
@@ -48,6 +49,7 @@ def _scan_running_workers() -> dict[str, list[int]]:
             ["powershell.exe", "-NoProfile", "-Command", command],
             capture_output=True,
             text=True,
+            errors="replace",
             timeout=15,
             creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, "CREATE_NO_WINDOW") else 0,
         )
