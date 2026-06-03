@@ -1,6 +1,17 @@
 from pathlib import Path
 
+from tools.strategy_farm import compile_ea
 from tools.strategy_farm.validate_build_guardrails import validate_path
+
+
+def test_ea_id_registered_matches_id_not_qm5_prefix(tmp_path: Path, monkeypatch) -> None:
+    # fail-closed compile gate: an EA may only compile if its ea_id is in the registry.
+    csv = tmp_path / "magic_numbers.csv"
+    csv.write_text("10590,elderimp,0,EURUSD.DWX,105900000,2026-06-03,X,active\n", encoding="utf-8")
+    monkeypatch.setattr(compile_ea, "MAGIC_REGISTRY", csv)
+    assert compile_ea.ea_id_registered("QM5_10590_mql5-elderimp") == (True, 10590)
+    assert compile_ea.ea_id_registered("QM5_99999_x") == (False, 99999)
+    assert compile_ea.ea_id_registered("QM5_5_x") == (False, 5)  # not the '5' in 'QM5'
 
 
 def test_rejects_news_stale_bypass_in_mq5(tmp_path: Path) -> None:

@@ -32,6 +32,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import re
 import subprocess
 import sys
 from dataclasses import asdict, dataclass, field
@@ -48,6 +49,22 @@ COMPILE_ONE_PS1 = REPO_ROOT / "framework" / "scripts" / "compile_one.ps1"
 REPORT_ROOT = Path("D:/QM/reports/compile")
 
 VALIDATOR = REPO_ROOT / "tools" / "strategy_farm" / "validate_symbol_scope.py"
+MAGIC_REGISTRY = REPO_ROOT / "framework" / "registry" / "magic_numbers.csv"
+
+
+def ea_id_registered(ea_label: str) -> tuple[bool, int | None]:
+    """Is the EA's ea_id present in magic_numbers.csv? Without a registered magic the
+    QM_MagicResolver cannot bind a runtime magic, so the compiled .ex5 is non-functional.
+    Match QM5_(\\d+), not \\d+ (the latter grabs the '5' in the 'QM5' prefix)."""
+    m = re.search(r"QM5_(\d+)", ea_label)
+    if not m:
+        return False, None
+    ea_id = int(m.group(1))
+    try:
+        text = MAGIC_REGISTRY.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        return False, ea_id
+    return bool(re.search(rf"(?m)^{ea_id},", text)), ea_id
 
 
 @dataclass
@@ -180,6 +197,24 @@ def compile_ea(ea_label: str, force: bool = False, skip_validator: bool = False)
         r = CompileResult(
             ea_label=ea_label, verdict="BUILD_GUARDRAILS_FAILED",
             reason=f"build guardrails failed: {kinds}",
+            mq5_mtime_utc=file_mtime_iso(mq5),
+            symbol_scope_verdict=scope_verdict,
+            timestamp_utc=utc_now_iso(),
+            elapsed_seconds=round((dt.datetime.now(dt.UTC) - started).total_seconds(), 2),
+        )
+        write_result(r)
+        return r
+
+    # Pre-compile magic-registration gate (fail-closed): refuse to compile an EA whose
+    # ea_id is not in magic_numbers.csv. Without a registered magic the QM_MagicResolver
+    # cannot bind a runtime magic, producing a non-functional .ex5 (the exact state that
+    # left 8 EAs with .ex5 but no registration, 2026-06-03). Register the magic first.
+    registered, ea_id_num = ea_id_registered(ea_label)
+    if not registered:
+        r = CompileResult(
+            ea_label=ea_label, verdict="MAGIC_NOT_REGISTERED",
+            reason=(f"ea_id {ea_id_num} not in framework/registry/magic_numbers.csv; "
+                    f"register the magic before compiling"),
             mq5_mtime_utc=file_mtime_iso(mq5),
             symbol_scope_verdict=scope_verdict,
             timestamp_utc=utc_now_iso(),
