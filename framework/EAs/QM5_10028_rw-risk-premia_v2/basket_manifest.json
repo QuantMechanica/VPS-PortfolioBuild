@@ -1,0 +1,15 @@
+{
+  "logical_symbol": "QM5_10028_RISK_PREMIA_D1",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "SP500.DWX",
+    "NDX.DWX",
+    "WS30.DWX",
+    "XAUUSD.DWX",
+    "XTIUSD.DWX"
+  ],
+  "notes": [
+    "Cross-sectional risk-premia harvesting. EA runs one instance per universe symbol; each instance reads D1 for the full universe (returns, realized vol) for sizing. Foreign-symbol reads (Bars/iClose on `symbol` parameter) are bound at call site from StrategySymbolBySlot()."
+  ]
+}
