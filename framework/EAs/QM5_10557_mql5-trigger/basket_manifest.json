@@ -1,0 +1,9 @@
+{
+  "basket_symbols": [
+    "GBPUSD.DWX",
+    "EURUSD.DWX",
+    "GBPJPY.DWX",
+    "XAUUSD.DWX"
+  ],
+  "source": "router_task_e4900b2c_no_source_rebuild"
+}
