@@ -154,11 +154,33 @@ def aggregate_verdict(fold_results: list[dict]) -> tuple[str, str]:
     """All-folds-must-pass verdict; PASS only if every fold has PF-net > floor."""
     if not fold_results:
         return "INVALID", "no_folds_ran"
+    incomplete = [
+        f for f in fold_results
+        if not f.get("summary_path") or f.get("pf_net") is None
+    ]
+    if incomplete:
+        return "INVALID", ";".join(f"{f['id']}:incomplete_fold" for f in incomplete)
     failures = [f for f in fold_results if f.get("pf_net") is None or
                                             float(f["pf_net"]) <= PF_NET_FLOOR_PER_FOLD]
     if failures:
         return "FAIL", ";".join(f"{f['id']}:pf_net={f.get('pf_net')}" for f in failures)
     return "PASS", ";".join(f"{f['id']}:pf_net={f['pf_net']:.3f}" for f in fold_results)
+
+
+def _mt5_date(iso_date: str) -> str:
+    return iso_date.replace("-", ".")
+
+
+def _summary_from_log(log_path: Path) -> Path | None:
+    try:
+        for line in log_path.read_text(encoding="utf-8", errors="replace").splitlines():
+            if line.startswith("run_smoke.summary="):
+                candidate = Path(line.partition("=")[2].strip())
+                if candidate.exists():
+                    return candidate
+    except OSError:
+        return None
+    return None
 
 
 def run_fold_via_smoke(*, ea_id: int, ea_expert: str, symbol: str,
@@ -213,17 +235,29 @@ def run_fold_via_smoke(*, ea_id: int, ea_expert: str, symbol: str,
         "-SetFile", str(fold_set),
         "-ReportRoot", str(report_root),
         "-TimeoutSeconds", str(timeout_sec),
+        "-FromDate", _mt5_date(fold["oos_start"]),
+        "-ToDate", _mt5_date(fold["oos_end"]),
+        "-AllowRunningTerminal",
+        "-AllowMissingRealTicksLogMarker",
     ]
     creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+    log_path = fold_dir / "run_smoke.log"
     try:
-        proc = subprocess.run(args, capture_output=True, text=True,
-                              timeout=timeout_sec, creationflags=creationflags)
+        with log_path.open("w", encoding="utf-8") as log:
+            proc = subprocess.run(
+                args,
+                stdout=log,
+                stderr=subprocess.STDOUT,
+                text=True,
+                timeout=timeout_sec,
+                creationflags=creationflags,
+            )
     except subprocess.TimeoutExpired:
         return {**fold, "pf_net": None, "trades": 0, "status": "TIMEOUT",
-                "summary_path": None}
+                "summary_path": None, "log_path": str(log_path)}
 
     pf_net, trades, sim_comm = read_pf_net_from_ea(ea_id, symbol)
-    summary_path = report_root / f"QM5_{ea_id}" / "Q04" / fold["id"] / "summary.json"
+    summary_path = _summary_from_log(log_path) or report_root / f"QM5_{ea_id}" / "Q04" / fold["id"] / "summary.json"
     status = "OK" if (pf_net is not None and proc.returncode == 0) else "FAIL"
     return {
         **fold,
@@ -233,6 +267,7 @@ def run_fold_via_smoke(*, ea_id: int, ea_expert: str, symbol: str,
         "status": status,
         "summary_path": str(summary_path) if summary_path.exists() else None,
         "exit_code": proc.returncode,
+        "log_path": str(log_path),
     }
 
 
