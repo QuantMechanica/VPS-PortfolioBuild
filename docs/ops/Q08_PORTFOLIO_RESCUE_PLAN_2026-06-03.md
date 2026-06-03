@@ -32,6 +32,9 @@ A negative month after a Q04 walk-forward must not disqualify an EA from the por
 
 ## Sub-gate → tier classification — CALIBRATION LOCKED (OWNER "moderate" 2026-06-03)
 Locked constants: `N_SEASON=3`, `CHOP_SOFT=0.90`, `PBO_HARD=55`, `MIN_PORTFOLIO_TRADES=30`.
+**N_SEASON is the max CONSECUTIVE losing calendar months** (OWNER: "am Stück") — 4 scattered
+losing months are not a sustained drawdown; 4 in a row are. HARD dominates INVALID (a
+definitive edge fail wins over a single non-evaluable gate).
 
 **SOFT (→ portfolio-review):**
 - Any `insufficient_trade_count` / `insufficient_daily_returns` / `insufficient_month_coverage`

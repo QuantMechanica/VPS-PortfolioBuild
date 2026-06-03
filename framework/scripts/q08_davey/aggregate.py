@@ -22,6 +22,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import re
 import sys
 import time
 from pathlib import Path
@@ -56,6 +57,22 @@ SUB_GATES = [
     ("8.9",  sub_8_9_runs_test),
     ("8.10", sub_8_10_regime_crisis),
 ]
+
+N_SEASON = 3  # max CONSECUTIVE losing calendar months still 'soft' (OWNER: "am Stück")
+CHOP_SOFT = 0.90
+PBO_HARD = 55.0
+LOW_SAMPLE_DETAIL_TOKENS = (
+    "insufficient_trade_count",
+    "insufficient_daily_returns",
+    "insufficient_month_coverage",
+    "insufficient_history",
+    "insufficient_candidate_history",
+    "months_with_no_trades",
+    "no_trades",
+    "regime_input_missing",
+    "regime_join_incomplete",
+    "regimes_with_zero_trades",
+)
 
 
 def _ensure_sub_gate_inputs(ea_id: int, symbol: str, terminal: str | None = None) -> dict:
@@ -321,14 +338,121 @@ def _apply_worst_case_commission(trades: list[dict], fallback_symbol: str) -> tu
     }
 
 
-def _aggregate_verdict(statuses: list[str]) -> str:
-    """Combine sub-gate statuses while preserving infra gaps as INVALID."""
-    normalized = [str(s).upper() for s in statuses]
-    if "INVALID" in normalized:
-        return "INVALID"
-    if "FAIL" in normalized:
-        return "FAIL"
-    return "PASS"
+def _detail_text(sub_gate_result: dict) -> str:
+    return str(sub_gate_result.get("detail") or "").strip()
+
+
+def _result_name(sub_gate_result: dict) -> str:
+    return str(sub_gate_result.get("name") or "").strip().lower()
+
+
+def _float_from_detail(detail: str, pattern: str) -> float | None:
+    match = re.search(pattern, detail)
+    if not match:
+        return None
+    try:
+        return float(match.group(1))
+    except (TypeError, ValueError):
+        return None
+
+
+def _max_consecutive_losing_months(sub_gate_result: dict) -> int | None:
+    """Longest run of CONSECUTIVE losing calendar months (OWNER: 'am Stück').
+    4 scattered losing months are not a sustained drawdown; 4 in a row are."""
+    evidence = sub_gate_result.get("evidence") or {}
+    losing_months = evidence.get("losing_months")
+    if not isinstance(losing_months, list):
+        detail = _detail_text(sub_gate_result)
+        if "losing_months:" not in detail:
+            return None
+        tail = detail.split("losing_months:", 1)[1]
+        losing_months = [int(x) for x in re.findall(r"\b\d{1,2}\b", tail)]
+    months = sorted({int(m) for m in losing_months if 1 <= int(m) <= 12})
+    if not months:
+        return 0
+    best = run = 1
+    for i in range(1, len(months)):
+        run = run + 1 if months[i] == months[i - 1] + 1 else 1
+        best = max(best, run)
+    return best
+
+
+def _classify_fail(sub_gate_result: dict) -> str:
+    """Classify a non-PASS Q08 sub-gate result for the portfolio-rescue track."""
+    detail = _detail_text(sub_gate_result)
+    detail_lower = detail.lower()
+    name = _result_name(sub_gate_result)
+
+    if any(token in detail_lower for token in LOW_SAMPLE_DETAIL_TOKENS):
+        return "LOW_SAMPLE"
+
+    if name.startswith("8.4"):
+        streak = _max_consecutive_losing_months(sub_gate_result)
+        if streak is not None and streak <= N_SEASON:
+            return "EDGE_SOFT"
+        return "EDGE_HARD"
+
+    if name.startswith("8.6"):
+        pf_after = _float_from_detail(detail, r"pf_after_top\d+pct_removal=([-+]?\d+(?:\.\d+)?)")
+        if pf_after is not None and CHOP_SOFT <= pf_after < 1.0:
+            return "EDGE_SOFT"
+        return "EDGE_HARD"
+
+    if name.startswith("8.7"):
+        pbo = _float_from_detail(detail, r"PBO=([-+]?\d+(?:\.\d+)?)%")
+        if pbo is not None and 40.0 < pbo <= PBO_HARD:
+            return "EDGE_SOFT"
+        return "EDGE_HARD"
+
+    return "EDGE_HARD"
+
+
+def _net_profit_factor(trades: list[dict]) -> float | None:
+    profits = [_float_or_none(t.get("net")) or 0.0 for t in trades]
+    return common.profit_factor(profits)
+
+
+def _aggregate_verdict(sub_results: list[dict], trades: list[dict] | None = None) -> tuple[str, dict[str, str]]:
+    """Combine sub-gate statuses into PASS/FAIL_SOFT/FAIL_HARD/INVALID."""
+    classification: dict[str, str] = {}
+    hard = False
+    soft = False
+    invalid = False
+
+    for result in sub_results:
+        name = str(result.get("name") or "unknown")
+        status = str(result.get("status") or "").upper()
+        if status == "PASS":
+            classification[name] = "PASS"
+            continue
+        if status == "INVALID" and not any(
+            token in _detail_text(result).lower() for token in LOW_SAMPLE_DETAIL_TOKENS
+        ):
+            classification[name] = "INVALID"
+            invalid = True
+            continue
+        tier = _classify_fail(result)
+        classification[name] = tier
+        if tier == "EDGE_HARD":
+            hard = True
+        else:
+            soft = True
+
+    pf = _net_profit_factor(trades or [])
+    if pf is not None and pf < 1.0:
+        classification["portfolio_net_pf"] = "EDGE_HARD"
+        hard = True
+
+    # HARD dominates: a definitive edge failure (e.g. PBO 88%, 4-consecutive losing
+    # months) means the EA is not robust regardless of a single non-evaluable gate.
+    # INVALID (genuine infra/join gap) only decides when no hard fail is present.
+    if hard:
+        return "FAIL_HARD", classification
+    if invalid:
+        return "INVALID", classification
+    if soft:
+        return "FAIL_SOFT", classification
+    return "PASS", classification
 
 
 def run_all(ea_id: int, symbol: str, log_path: Path,
@@ -399,15 +523,20 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
             )
         sub_results.append(res)
 
-    # AND-combine: PASS only if all 10 PASS.
-    statuses = [r["status"] for r in sub_results]
-    overall = _aggregate_verdict(statuses)
+    # PASS only if all 10 PASS; otherwise split failures into hard/soft/infra.
+    overall, verdict_classification = _aggregate_verdict(sub_results, trades)
 
     aggregate = {
         "ea_id": ea_id,
         "symbol": symbol,
         "phase": "Q08",
         "verdict": overall,
+        "verdict_classification": verdict_classification,
+        "verdict_calibration": {
+            "N_SEASON": N_SEASON,
+            "CHOP_SOFT": CHOP_SOFT,
+            "PBO_HARD": PBO_HARD,
+        },
         "generated_at_utc": dt.datetime.now(dt.UTC).isoformat(),
         "n_trades": len(trades),
         "n_equity_snapshots": len(equity_stream),

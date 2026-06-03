@@ -64,8 +64,8 @@ PIPELINE_REPORT_ROOT = Path(r"D:\QM\reports\pipeline")
 # work_items, so the storage layer now writes Qxx directly. Legacy P-key
 # references in classify_* / report-csv paths remain inert (no rows to read).
 SUPPORTED_BACKTEST_PHASES = ("Q02", "Q03", "Q04")
-CASCADE_BACKTEST_PHASES = ("Q05", "Q06", "Q07", "Q08", "Q09", "Q10")
-REAL_PHASE_RUNNER_PHASES = ("Q04", "Q05", "Q06", "Q07", "Q08", "Q09", "Q10")
+CASCADE_BACKTEST_PHASES = ("Q05", "Q06", "Q07", "Q08", "Q09", "Q09_PORTFOLIO", "Q10")
+REAL_PHASE_RUNNER_PHASES = ("Q04", "Q05", "Q06", "Q07", "Q08", "Q09", "Q09_PORTFOLIO", "Q10")
 PHASE_RUNNER_SCRIPTS = {
     "Q02": "p2_baseline.py",            # verdict rewritten for PF>1.20/T>150/DD<15%
     "Q03": "p3_param_sweep.py",         # unchanged behaviour, phase-tag renamed
@@ -75,8 +75,10 @@ PHASE_RUNNER_SCRIPTS = {
     "Q07": "q07_multiseed.py",          # NEW: 5 seeds, PF variance < 20%
     "Q08": "q08_davey/aggregate.py",    # NEW: 10 Davey sub-gates
     "Q09": "q09_news_mode.py",          # TODO: news-mode sweep runner
+    "Q09_PORTFOLIO": "q09_portfolio.py",
     "Q10": "q10_confirmation.py",       # NEW: full-history canonical + baseline capture
 }
+Q09_PORTFOLIO_MIN_TRADES = 30
 NEWS_MATRIX_FALLBACK = Path(r"D:\QM\data\news_calendar\news_matrix.csv")
 NEWS_CALENDAR_CANDIDATES = (
     Path(r"D:\QM\data\news_calendar\news_calendar.csv"),
@@ -461,7 +463,7 @@ def init_db(root: Path) -> None:
                 status TEXT NOT NULL CHECK (
                     status in ('pending', 'active', 'done', 'failed')
                 ),
-                verdict TEXT,                   -- PASS/FAIL/INVALID (NULL until done)
+                verdict TEXT,                   -- PASS/FAIL/FAIL_SOFT/... (NULL until done)
                 attempt_count INTEGER NOT NULL DEFAULT 0,
                 parent_task_id TEXT,            -- FK to tasks(id) — the bundled backtest task
                 evidence_path TEXT,             -- path to smoke summary.json
@@ -1368,6 +1370,7 @@ PHASE_NOMENCLATURE = {
     "Q07": "P5b",
     "Q08": "P5c",
     "Q09": "P6",
+    "Q09_PORTFOLIO": "P6",
     "Q10": "P7",
     "Q11": "P8",
     "Q12": "P9",
@@ -1402,7 +1405,7 @@ def _derive_phase_runner_verdict(summary: dict[str, Any], min_trades: int = 5, p
     if verdict_upper == "INVALID":
         if reason and any(token in reason.lower() for token in ("summary_missing", "missing_summary")):
             return "INFRA_FAIL", reason
-        if phase_key in {"P4", "P5", "P5b", "P5c"} and (
+        if phase_key in {"P4", "P5", "P5b"} and (
             summary.get("summary_path")
             or summary.get("sub_gates")
             or summary.get("per_seed_detail")
@@ -1410,6 +1413,8 @@ def _derive_phase_runner_verdict(summary: dict[str, Any], min_trades: int = 5, p
         ):
             return "FAIL", reason or "phase_runner_invalid_gate_result"
         return "INFRA_FAIL", reason or "phase_runner_invalid_report"
+    if verdict_upper in {"FAIL_SOFT", "FAIL_HARD", "PASS_PORTFOLIO", "FAIL_PORTFOLIO", "NEED_MORE_DATA"}:
+        return verdict_upper, reason or raw_verdict or "phase_runner_verdict"
     if verdict_upper in {"FAIL", "NO_PASS_BASELINE", "NO_ELIGIBLE_MODE", "MULTI_SEED_FAIL"}:
         return "FAIL", reason or raw_verdict or "phase_runner_fail"
     if verdict_upper in {"REPORT_ONLY"}:
@@ -2172,7 +2177,7 @@ def _phase_runner_inputs(root: Path, ea_id: str, phase: str) -> dict[str, Any]:
     # function with raw P-keys (P5/P5b/P5c/P7/P8) and relies on the legacy
     # input lookup that follows — so do NOT short-circuit on the normalized
     # P-key, only on the inbound Q-name.
-    if raw_phase in ("Q04", "Q05", "Q06", "Q07", "Q08", "Q09", "Q10"):
+    if raw_phase in ("Q04", "Q05", "Q06", "Q07", "Q08", "Q09", "Q09_PORTFOLIO", "Q10"):
         return {}
 
     phase_key = _normalize_phase(phase)
@@ -2590,6 +2595,19 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
             "--terminal", terminal or "T1",
         ])
         _remove_cmd_arg(cmd, "--setfile")
+    elif phase == "Q09_PORTFOLIO":
+        payload = json.loads(item_row["payload_json"] or "{}")
+        cmd = [
+            _console_python_executable(),
+            str(REPO_ROOT / "framework" / "scripts" / "q09_portfolio.py"),
+            "--ea-id", ea_id,
+            "--symbol", symbol,
+            "--report-root", str(report_root),
+            "--min-portfolio-trades", str(Q09_PORTFOLIO_MIN_TRADES),
+        ]
+        q08_summary = payload.get("q08_evidence_path")
+        if q08_summary:
+            cmd.extend(["--q08-summary", str(q08_summary)])
     # PT3 bridge (2026-05-29): the rewritten Qxx runners (q04-q10) use
     # --report-root, not the P-era --out-prefix, and reject --period. The
     # generic base cmd above always injects --out-prefix/--period, which the
@@ -3087,12 +3105,13 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
         search_root = Path(report_root) if report_root else None
         if item["phase"] in REAL_PHASE_RUNNER_PHASES:
             search_root = _ea_phase_dir(item["ea_id"], item["phase"])
-            phase_summary = search_root / "summary.json"
-            if phase_summary.exists():
-                summary_path = phase_summary
+            for phase_summary in (search_root / "summary.json", search_root / "aggregate.json"):
+                if phase_summary.exists():
+                    summary_path = phase_summary
+                    break
         if not summary_path and search_root and search_root.is_dir():
             cands = sorted(
-                search_root.rglob("summary.json"),
+                [*search_root.rglob("summary.json"), *search_root.rglob("aggregate.json")],
                 key=lambda p: p.stat().st_mtime,
                 reverse=True,
             )
@@ -3329,6 +3348,7 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                     -- Q04+ promotion-chain work. Same fix in
                     -- terminal_worker.py:_priority_pending_query.
                     WHEN 'Q10'  THEN 0
+                    WHEN 'Q09_PORTFOLIO' THEN 1
                     WHEN 'Q09'  THEN 1
                     WHEN 'Q08'  THEN 2
                     WHEN 'Q07'  THEN 3
@@ -5890,6 +5910,27 @@ def _hourly_db_backup(root: Path) -> str | None:
     return str(target)
 
 
+def _q08_trade_count_from_work_item(work_item: sqlite3.Row) -> int | None:
+    payload = json.loads(work_item["payload_json"] or "{}")
+    for key in ("q08_n_trades", "n_trades", "trade_count"):
+        if payload.get(key) is not None:
+            try:
+                return int(payload[key])
+            except (TypeError, ValueError):
+                pass
+    evidence_path = work_item["evidence_path"]
+    if not evidence_path:
+        return None
+    try:
+        summary = json.loads(Path(evidence_path).read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    try:
+        return int(summary.get("n_trades"))
+    except (TypeError, ValueError):
+        return None
+
+
 def research_backlog_inventory(root: Path) -> dict[str, Any]:
     """Count strategy work already available before spawning more research."""
     cards_draft = root / "artifacts" / "cards_draft"
@@ -5950,6 +5991,212 @@ def research_backlog_inventory(root: Path) -> dict[str, Any]:
         "open_build_or_review_tasks": open_build_or_review_tasks,
         "db_error": False,
     }
+
+def _phase_summary_trade_count(evidence_path: str | None) -> int | None:
+    if not evidence_path:
+        return None
+    path = Path(str(evidence_path))
+    if not path.exists():
+        return None
+    try:
+        summary = json.loads(path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    for key in ("n_trades", "trade_count", "total_trades", "trades"):
+        value = _coerce_metric_int(summary.get(key))
+        if value is not None:
+            return value
+    runs = summary.get("runs")
+    if isinstance(runs, list):
+        total = 0
+        found = False
+        for run in runs:
+            if not isinstance(run, dict):
+                continue
+            value = _coerce_metric_int(run.get("total_trades") or run.get("trades"))
+            if value is not None:
+                total += value
+                found = True
+        if found:
+            return total
+    return None
+
+
+def _ensure_portfolio_candidates_table(conn: sqlite3.Connection) -> None:
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS portfolio_candidates (
+            ea_id TEXT NOT NULL,
+            symbol TEXT NOT NULL DEFAULT '',
+            q11_work_item_id TEXT NOT NULL,
+            state TEXT NOT NULL DEFAULT 'Q12_REVIEW_READY',
+            evidence_path TEXT,
+            first_seen_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            PRIMARY KEY (ea_id, symbol, q11_work_item_id)
+        )
+        """
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_portfolio_candidates_state "
+        "ON portfolio_candidates(state, updated_at)"
+    )
+
+
+def _promote_q08_soft_fails_to_q09_portfolio(
+    conn: sqlite3.Connection,
+    result: dict[str, Any],
+) -> int:
+    promoted = 0
+    q08_soft_rows = conn.execute(
+        """
+        SELECT w.* FROM work_items w
+        WHERE w.status='done'
+          AND w.phase='Q08'
+          AND w.verdict='FAIL_SOFT'
+          AND NOT EXISTS (
+            SELECT 1 FROM work_items w2
+            WHERE w2.ea_id = w.ea_id
+              AND w2.symbol = w.symbol
+              AND w2.phase = 'Q09_PORTFOLIO'
+              AND w2.setfile_path = w.setfile_path
+          )
+        ORDER BY w.updated_at ASC LIMIT 10
+        """
+    ).fetchall()
+    for wi in q08_soft_rows:
+        trade_count = _q08_trade_count_from_work_item(wi)
+        if trade_count is None:
+            trade_count = _phase_summary_trade_count(wi["evidence_path"])
+        new_id = str(uuid.uuid4())
+        now = utc_now()
+        payload = {
+            "promoted_from_phase": "Q08",
+            "promoted_from_work_item": wi["id"],
+            "promotion_source": "pump_q08_soft_portfolio_rescue",
+            "q08_evidence_path": wi["evidence_path"],
+            "q08_trade_count": trade_count,
+            "min_portfolio_trades": Q09_PORTFOLIO_MIN_TRADES,
+        }
+        if trade_count is None or trade_count < Q09_PORTFOLIO_MIN_TRADES:
+            payload["verdict_reason"] = "portfolio_trade_count_below_min"
+            conn.execute(
+                """
+                INSERT INTO work_items
+                  (id, kind, phase, ea_id, symbol, setfile_path, status,
+                   verdict, attempt_count, parent_task_id, evidence_path,
+                   payload_json, created_at, updated_at)
+                VALUES (?, 'backtest', 'Q09_PORTFOLIO', ?, ?, ?, 'done',
+                        'NEED_MORE_DATA', 0, NULL, ?, ?, ?, ?)
+                """,
+                (
+                    new_id,
+                    wi["ea_id"],
+                    wi["symbol"],
+                    wi["setfile_path"],
+                    wi["evidence_path"],
+                    json.dumps(payload, sort_keys=True),
+                    now,
+                    now,
+                ),
+            )
+            result["q09_portfolio_promotions_skipped"].append({
+                "work_item_id": new_id,
+                "ea_id": wi["ea_id"],
+                "symbol": wi["symbol"],
+                "from_work_item_id": wi["id"],
+                "trade_count": trade_count,
+                "reason": "portfolio_trade_count_below_min",
+                "verdict": "NEED_MORE_DATA",
+            })
+            promoted += 1
+            continue
+        conn.execute(
+            """
+            INSERT INTO work_items
+              (id, kind, phase, ea_id, symbol, setfile_path, status,
+               attempt_count, parent_task_id, payload_json, created_at, updated_at)
+            VALUES (?, 'backtest', 'Q09_PORTFOLIO', ?, ?, ?, 'pending',
+                    0, NULL, ?, ?, ?)
+            """,
+            (
+                new_id,
+                wi["ea_id"],
+                wi["symbol"],
+                wi["setfile_path"],
+                json.dumps(payload, sort_keys=True),
+                now,
+                now,
+            ),
+        )
+        result["q09_portfolio_promotions"].append({
+            "work_item_id": new_id,
+            "ea_id": wi["ea_id"],
+            "symbol": wi["symbol"],
+            "from_work_item_id": wi["id"],
+            "trade_count": trade_count,
+        })
+        promoted += 1
+    return promoted
+
+
+def _admit_q09_portfolio_passes(
+    conn: sqlite3.Connection,
+    result: dict[str, Any],
+) -> int:
+    _ensure_portfolio_candidates_table(conn)
+    admitted = 0
+    now = utc_now()
+    q09_pass_rows = conn.execute(
+        """
+        SELECT w.* FROM work_items w
+        WHERE w.status='done'
+          AND w.phase='Q09_PORTFOLIO'
+          AND w.verdict='PASS_PORTFOLIO'
+          AND NOT EXISTS (
+            SELECT 1 FROM portfolio_candidates pc
+            WHERE pc.ea_id = w.ea_id
+              AND pc.symbol = w.symbol
+              AND pc.q11_work_item_id = w.id
+          )
+        ORDER BY w.updated_at ASC LIMIT 20
+        """
+    ).fetchall()
+    for wi in q09_pass_rows:
+        conn.execute(
+            """
+            INSERT INTO portfolio_candidates(
+                ea_id, symbol, q11_work_item_id, state, evidence_path,
+                first_seen_at, updated_at
+            )
+            VALUES (?, ?, ?, 'Q12_REVIEW_READY', ?, ?, ?)
+            """,
+            (wi["ea_id"], wi["symbol"], wi["id"], wi["evidence_path"], now, now),
+        )
+        try:
+            payload = json.loads(wi["payload_json"] or "{}")
+        except json.JSONDecodeError:
+            payload = {}
+        payload["portfolio_only"] = True
+        payload["portfolio_candidate_state"] = "Q12_REVIEW_READY"
+        conn.execute(
+            "UPDATE work_items SET payload_json=?, updated_at=? WHERE id=?",
+            (json.dumps(payload, sort_keys=True), now, wi["id"]),
+        )
+        event(conn, "portfolio_candidate", wi["ea_id"], "Q12_REVIEW_READY", {
+            "symbol": wi["symbol"],
+            "q09_portfolio_work_item_id": wi["id"],
+            "evidence_path": wi["evidence_path"],
+            "portfolio_only": True,
+        })
+        result["q09_portfolio_admissions"].append({
+            "ea_id": wi["ea_id"],
+            "symbol": wi["symbol"],
+            "q09_portfolio_work_item_id": wi["id"],
+            "state": "Q12_REVIEW_READY",
+        })
+        admitted += 1
+    return admitted
 
 
 def pump(root: Path) -> dict[str, Any]:
@@ -6981,6 +7228,9 @@ def pump(root: Path) -> dict[str, Any]:
 
     result["cascade_promotions"] = []
     result["cascade_promotions_skipped"] = []
+    result["q09_portfolio_promotions"] = []
+    result["q09_portfolio_promotions_skipped"] = []
+    result["q09_portfolio_admissions"] = []
     # 2026-05-23 OR3 — Qxx cascade map. Each phase's PASS promotes to the next.
     # Q09 News Mode auto-defaults to Mode 3 (per Vault), no explicit PASS needed
     # — so Q08 PASS cascades directly to Q10 (skipping the Q09 mode-selection
@@ -7096,7 +7346,9 @@ def pump(root: Path) -> dict[str, Any]:
                     "parent_task_id": parent_id,
                     "reopened_parent": reopened_parent,
                 })
-        if result["cascade_promotions"]:
+        q09_promoted = _promote_q08_soft_fails_to_q09_portfolio(conn, result)
+        q09_admitted = _admit_q09_portfolio_passes(conn, result)
+        if result["cascade_promotions"] or q09_promoted or q09_admitted:
             conn.commit()
 
     # §10d Synthetic variants for proven winners — EAs with ≥3 P2-PASSes
@@ -8198,18 +8450,20 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
         "Q07": "Q06",
         "Q08": "Q07",
         "Q09": "Q08",
-        "Q10": "Q09",
+        "Q09_PORTFOLIO": "Q08",
+        "Q10": "Q08",
     }
-    prev_pass_verdicts = {
-        "Q04": {"PASS"},
+    phase_prev_verdicts = {
         "Q05": {"PASS"},
         "Q06": {"PASS"},
-        "Q07": {"PASS", "MULTI_SEED_PASS"},  # Q07 = multi-seed phase
-        "Q08": {"PASS"},
+        "Q07": {"PASS"},
+        "Q08": {"PASS", "MULTI_SEED_PASS"},  # Q07 = multi-seed phase
         "Q09": {"PASS"},
+        "Q09_PORTFOLIO": {"FAIL_SOFT"},
+        "Q10": {"PASS"},
     }
     prev_phase = prev_phase_map[phase]
-    verdicts = sorted(prev_pass_verdicts[prev_phase])
+    verdicts = sorted(phase_prev_verdicts[phase])
     placeholders = ",".join("?" for _ in verdicts)
     init_db(root)
     now = utc_now()
