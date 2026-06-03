@@ -841,6 +841,35 @@ def _task_artifact_path(root: Path, row: sqlite3.Row, artifact_path: str | None)
     return path
 
 
+NEWS_STALENESS_FAILCLOSED_HOURS = 24 * 14   # 336h = QM_NewsFilter fail-closed bound
+NEWS_STALENESS_GUARD_MAX = 720              # >30d is unambiguously a bypass of the 14d bound
+
+
+def _news_staleness_bypass(ea_dir: Path | None) -> int | None:
+    """Return the offending qm_news_stale_max_hours if an EA's set files / source
+    DISABLE the fail-closed news-staleness check (value > NEWS_STALENESS_GUARD_MAX),
+    else None.
+
+    Backstop for the Gemini v2 rework pattern (2026-06-03): instead of refreshing
+    the news calendar, the build set qm_news_stale_max_hours=8760/1000000 so the
+    mandatory fresh-news blackout never trips - an unacceptable safety bypass. No
+    build carrying this may be APPROVED. The legit default is 336h (24*14)."""
+    if not ea_dir or not ea_dir.exists():
+        return None
+    worst: int | None = None
+    for pat in ("sets/*.set", "*.set", "*.mq5"):
+        for f in ea_dir.glob(pat):
+            try:
+                txt = f.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                continue
+            for m in re.finditer(r"qm_news_stale_max_hours\s*=\s*(\d+)", txt):
+                v = int(m.group(1))
+                if v > NEWS_STALENESS_GUARD_MAX and (worst is None or v > worst):
+                    worst = v
+    return worst
+
+
 def close_review_task(
     root: Path,
     task_id: str,
@@ -873,6 +902,20 @@ def close_review_task(
                     "reason": "artifact_missing",
                     "artifact_path": str(evidence),
                 }
+            # Hard-Rule backstop: never approve a build that disables the fail-closed
+            # news-staleness check (qm_news_stale_max_hours bypass). OWNER 2026-06-03.
+            if row["task_type"] == "build_ea":
+                bypass = _news_staleness_bypass(Path(evidence).parent)
+                if bypass is not None:
+                    return {
+                        "closed": False,
+                        "task_id": task_id,
+                        "reason": "news_staleness_bypass",
+                        "qm_news_stale_max_hours": bypass,
+                        "detail": (f"refusing APPROVED: news-calendar fail-closed check disabled "
+                                   f"(qm_news_stale_max_hours={bypass} > {NEWS_STALENESS_GUARD_MAX}h). "
+                                   f"Refresh the calendar; do not raise the staleness bound."),
+                    }
 
         payload = json.loads(row["payload_json"] or "{}")
         payload["review_closed_at"] = now
