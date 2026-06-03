@@ -6043,10 +6043,53 @@ def _ensure_portfolio_candidates_table(conn: sqlite3.Connection) -> None:
     )
 
 
+def _q08_verdict_from_classification(classification: dict[str, Any]) -> str | None:
+    """Re-derive the Q08 verdict from a stored per-gate tier map, matching
+    aggregate.py precedence (HARD > INVALID > SOFT)."""
+    tiers = {str(v).upper() for v in classification.values()}
+    if "EDGE_HARD" in tiers:
+        return "FAIL_HARD"
+    if "INVALID" in tiers:
+        return "INVALID"
+    if tiers & {"EDGE_SOFT", "LOW_SAMPLE"}:
+        return "FAIL_SOFT"
+    return None
+
+
+def _migrate_legacy_q08_verdicts(conn: sqlite3.Connection) -> int:
+    """Legacy Q08 rows can carry verdict='FAIL'/'INVALID' while payload
+    q08_verdict_classification already holds the EDGE_SOFT/LOW_SAMPLE/EDGE_HARD tiers
+    (e.g. backfilled rows). The cockpit reads the classification as soft but the Q09
+    promotion only matches FAIL_SOFT, so visible soft-fails never route. Normalize the
+    verdict to match its classification. Idempotent. (OWNER feedback F3 2026-06-03.)"""
+    migrated = 0
+    rows = conn.execute(
+        "SELECT id, verdict, payload_json FROM work_items "
+        "WHERE phase='Q08' AND status='done' AND verdict IN ('FAIL', 'INVALID')"
+    ).fetchall()
+    for r in rows:
+        try:
+            payload = json.loads(r["payload_json"] or "{}")
+        except (TypeError, ValueError):
+            continue
+        classification = payload.get("q08_verdict_classification")
+        if not isinstance(classification, dict):
+            continue
+        new_verdict = _q08_verdict_from_classification(classification)
+        if new_verdict and new_verdict != r["verdict"]:
+            conn.execute(
+                "UPDATE work_items SET verdict=?, updated_at=? WHERE id=?",
+                (new_verdict, utc_now(), r["id"]),
+            )
+            migrated += 1
+    return migrated
+
+
 def _promote_q08_soft_fails_to_q09_portfolio(
     conn: sqlite3.Connection,
     result: dict[str, Any],
 ) -> int:
+    _migrate_legacy_q08_verdicts(conn)
     promoted = 0
     q08_soft_rows = conn.execute(
         """
@@ -6059,12 +6102,16 @@ def _promote_q08_soft_fails_to_q09_portfolio(
             WHERE w2.ea_id = w.ea_id
               AND w2.symbol = w.symbol
               AND w2.phase = 'Q09_PORTFOLIO'
-              AND w2.setfile_path = w.setfile_path
           )
         ORDER BY w.updated_at ASC LIMIT 10
         """
     ).fetchall()
+    promoted_pairs: set[tuple[str, str]] = set()
     for wi in q08_soft_rows:
+        pair = (str(wi["ea_id"]), str(wi["symbol"]))
+        if pair in promoted_pairs:
+            continue
+        promoted_pairs.add(pair)
         trade_count = _q08_trade_count_from_work_item(wi)
         if trade_count is None:
             trade_count = _phase_summary_trade_count(wi["evidence_path"])

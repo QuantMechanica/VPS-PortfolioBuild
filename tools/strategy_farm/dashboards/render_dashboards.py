@@ -1622,6 +1622,16 @@ DETAIL2_CSS = """
 .ds-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 28px}
 .ds-item-label{font-family:var(--font-mono);font-size:9px;font-weight:700;color:var(--signal);text-transform:uppercase;letter-spacing:0.2em;margin-bottom:5px}
 .ds-item-body{font-size:12.5px;color:var(--text-2);line-height:1.6}
+.rescue-detail{margin:0 0 24px;padding:18px 20px;background:var(--surface-1);border:1px solid var(--border)}
+.rescue-detail-title{font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.2em;margin-bottom:12px}
+.rescue-detail-table .rescue-tier,.rescue-detail-table .rescue-q09{font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;white-space:nowrap}
+.rescue-detail-table .rescue-tier.soft{color:var(--warn)}
+.rescue-detail-table .rescue-tier.hard{color:var(--fail)}
+.rescue-detail-table .rescue-tier.other{color:var(--text-3)}
+.rescue-detail-table .rescue-q09.pass{color:var(--signal)}
+.rescue-detail-table .rescue-q09.wait{color:var(--promising)}
+.rescue-detail-table .rescue-q09.fail{color:var(--fail)}
+.rescue-detail-table .rescue-q09.other{color:var(--text-3)}
 .facts-table{width:100%;border-collapse:collapse;font-family:var(--font-mono);font-size:11.5px;margin-top:14px}
 .facts-table td{padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:top}
 .facts-table td:first-child{color:var(--text-3);width:140px;text-transform:uppercase;font-size:9px;letter-spacing:0.18em;font-weight:700}
@@ -1788,6 +1798,152 @@ def qxx_text(s: str | None) -> str:
     if not s:
         return s or ""
     return _P_TOKEN_RE.sub(lambda m: PHASE_QID.get(m.group(1), m.group(1)), s)
+
+
+def _json_from_file(path_value: str | None) -> dict[str, Any]:
+    if not path_value:
+        return {}
+    try:
+        path = Path(path_value)
+        if not path.exists():
+            return {}
+        data = json.loads(path.read_text(encoding="utf-8-sig", errors="ignore"))
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+def _payload_from_row(row: dict[str, Any]) -> dict[str, Any]:
+    try:
+        data = json.loads(row.get("payload_json") or "{}")
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+def _q08_rescue_tier(verdict: str, payload: dict[str, Any]) -> str:
+    verdict = str(verdict or "").upper()
+    if verdict in {"FAIL_SOFT", "FAIL_HARD", "INVALID"}:
+        return verdict
+    classification = payload.get("q08_verdict_classification") or payload.get("verdict_classification")
+    if isinstance(classification, dict):
+        vals = {str(v).upper() for v in classification.values()}
+        if "EDGE_HARD" in vals:
+            return "FAIL_HARD"
+        if vals & {"EDGE_SOFT", "LOW_SAMPLE"}:
+            return "FAIL_SOFT"
+    return verdict or "—"
+
+
+def _q08_rescue_reason(payload: dict[str, Any]) -> str:
+    classification = payload.get("q08_verdict_classification") or payload.get("verdict_classification")
+    if not isinstance(classification, dict):
+        return str(payload.get("verdict_reason") or payload.get("reason") or "—")
+    rank = {"EDGE_HARD": 0, "EDGE_SOFT": 1, "LOW_SAMPLE": 2}
+    rows = [
+        (rank.get(str(tier).upper(), 9), str(gate), str(tier))
+        for gate, tier in classification.items()
+        if str(tier).upper() not in {"PASS", ""}
+    ]
+    if not rows:
+        return str(payload.get("verdict_reason") or "—")
+    rows.sort()
+    return ", ".join(f"{gate}:{tier}" for _, gate, tier in rows[:4])
+
+
+def _q09_rescue_priority(row: dict[str, Any] | None) -> int:
+    if not row:
+        return 99
+    verdict = str(row.get("verdict") or "").upper()
+    status = str(row.get("status") or "").lower()
+    if verdict == "PASS_PORTFOLIO":
+        return 0
+    if verdict == "FAIL_PORTFOLIO":
+        return 1
+    if verdict == "NEED_MORE_DATA":
+        return 2
+    if status == "pending":
+        return 3
+    return 9
+
+
+def collect_q08_portfolio_rescue_for_ea(ea_id: str, root: Path) -> list[dict[str, Any]]:
+    db = root / "state" / "farm_state.sqlite"
+    if not db.exists():
+        return []
+    with sqlite3.connect(db) as conn:
+        conn.row_factory = sqlite3.Row
+        q08_rows = [dict(r) for r in conn.execute(
+            """
+            SELECT * FROM work_items
+            WHERE ea_id=? AND phase='Q08' AND status='done'
+              AND verdict IN ('FAIL_SOFT','FAIL_HARD','FAIL','INVALID')
+            ORDER BY updated_at DESC
+            """,
+            (ea_id,),
+        )]
+        q09_rows = [dict(r) for r in conn.execute(
+            """
+            SELECT * FROM work_items
+            WHERE ea_id=? AND phase='Q09_PORTFOLIO'
+            ORDER BY updated_at DESC
+            """,
+            (ea_id,),
+        )]
+        try:
+            pc_rows = [dict(r) for r in conn.execute(
+                """
+                SELECT ea_id, symbol, state, evidence_path, updated_at
+                FROM portfolio_candidates
+                WHERE ea_id=?
+                """,
+                (ea_id,),
+            )]
+        except sqlite3.Error:
+            pc_rows = []
+
+    latest_q08: dict[str, dict[str, Any]] = {}
+    for row in q08_rows:
+        sym = str(row.get("symbol") or "?")
+        latest_q08.setdefault(sym, row)
+    latest_q09: dict[str, dict[str, Any]] = {}
+    for row in q09_rows:
+        sym = str(row.get("symbol") or "?")
+        if sym not in latest_q09 or _q09_rescue_priority(row) < _q09_rescue_priority(latest_q09[sym]):
+            latest_q09[sym] = row
+    pc_by_symbol = {str(row.get("symbol") or "?"): row for row in pc_rows}
+
+    out: list[dict[str, Any]] = []
+    for symbol, q08 in latest_q08.items():
+        q08_payload = {**_json_from_file(q08.get("evidence_path")), **_payload_from_row(q08)}
+        q09 = latest_q09.get(symbol)
+        q09_payload = _payload_from_row(q09) if q09 else {}
+        q09_artifact = _json_from_file(q09.get("evidence_path") if q09 else None)
+        sharpe_delta = None
+        if isinstance(q09_artifact.get("sharpe_with"), (int, float)) and isinstance(q09_artifact.get("sharpe_without"), (int, float)):
+            sharpe_delta = q09_artifact["sharpe_with"] - q09_artifact["sharpe_without"]
+        maxdd_delta = None
+        if isinstance(q09_artifact.get("maxdd_with"), (int, float)) and isinstance(q09_artifact.get("maxdd_without"), (int, float)):
+            maxdd_delta = q09_artifact["maxdd_with"] - q09_artifact["maxdd_without"]
+        out.append({
+            "symbol": symbol,
+            "q08_tier": _q08_rescue_tier(str(q08.get("verdict") or ""), q08_payload),
+            "q08_reason": _q08_rescue_reason(q08_payload),
+            "q08_trades": q08_payload.get("q08_n_trades") or q09_payload.get("q08_trade_count"),
+            "q09_status": q09.get("status") if q09 else "",
+            "q09_verdict": (q09.get("verdict") if q09 else None) or ("PENDING" if q09 else "—"),
+            "portfolio_only": bool(q09_payload.get("portfolio_only") or symbol in pc_by_symbol),
+            "candidate_state": (pc_by_symbol.get(symbol) or {}).get("state") or q09_payload.get("portfolio_candidate_state") or "",
+            "corr": q09_artifact.get("max_corr_to_book"),
+            "standalone_pf": q09_artifact.get("standalone_pf"),
+            "sharpe_delta": sharpe_delta,
+            "maxdd_delta": maxdd_delta,
+            "q09_reason": q09_artifact.get("reason") or q09_payload.get("verdict_reason") or "",
+            "evidence": q09.get("evidence_path") if q09 else q08.get("evidence_path"),
+            "updated_at": q09.get("updated_at") if q09 else q08.get("updated_at"),
+        })
+    out.sort(key=lambda row: row.get("updated_at") or "", reverse=True)
+    return out
 
 
 def _progress_bar_html(ea: dict) -> str:
@@ -2257,6 +2413,7 @@ def collect_ea_detail(ea_id: str, root: Path) -> dict[str, Any]:
         "ea_ex5": None,
         "set_files": [],
         "work_items": [],
+        "q08_portfolio_rescue": [],
         "kpis_by_phase": {},
         "symbols": [],
     }
@@ -2475,6 +2632,7 @@ def collect_ea_detail(ea_id: str, root: Path) -> dict[str, Any]:
                 "drawdown_worst": max(dds) if dds else None,
                 "profit_factor_mean": (sum(pfs) / len(pfs)) if pfs else None,
             }
+        detail["q08_portfolio_rescue"] = collect_q08_portfolio_rescue_for_ea(ea_id, root)
 
     # Card .md
     cards_dir = root / "artifacts" / "cards_approved"
@@ -3133,6 +3291,53 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
   </div>
 </div>
 """
+    rescue_rows = detail.get("q08_portfolio_rescue") or []
+    rescue_html = ""
+    if rescue_rows:
+        row_html = []
+        for r in rescue_rows:
+            tier = str(r.get("q08_tier") or "—")
+            q09v = str(r.get("q09_verdict") or "—")
+            tier_cls = "soft" if tier == "FAIL_SOFT" else ("hard" if tier == "FAIL_HARD" else "other")
+            q09_cls = (
+                "pass" if q09v == "PASS_PORTFOLIO"
+                else "wait" if q09v in {"NEED_MORE_DATA", "PENDING"}
+                else "fail" if q09v == "FAIL_PORTFOLIO"
+                else "other"
+            )
+            dd_delta = r.get("maxdd_delta")
+            dd_txt = fmt_num(dd_delta) if isinstance(dd_delta, (int, float)) else "—"
+            if isinstance(dd_delta, (int, float)) and dd_delta < 0:
+                dd_txt += " better"
+            elif isinstance(dd_delta, (int, float)) and dd_delta > 0:
+                dd_txt += " worse"
+            row_html.append(
+                f'<tr><td class="symcell">{e(r.get("symbol"))}</td>'
+                f'<td><span class="rescue-tier {tier_cls}">{e(tier)}</span>'
+                f'<div class="fail-reason">{e(qxx_text(str(r.get("q08_reason") or ""))[:150])}</div></td>'
+                f'<td class="col-num">{e(r.get("q08_trades") if r.get("q08_trades") is not None else "—")}</td>'
+                f'<td><span class="rescue-q09 {q09_cls}">{e(q09v)}</span>'
+                f'<div class="fail-reason">{e(str(r.get("q09_reason") or ""))[:90]}</div></td>'
+                f'<td class="col-num">{e(fmt_num(r.get("corr")) if isinstance(r.get("corr"), (int, float)) else "—")}</td>'
+                f'<td class="col-num">{e(fmt_num(r.get("sharpe_delta")) if isinstance(r.get("sharpe_delta"), (int, float)) else "—")}</td>'
+                f'<td class="col-num">{e(dd_txt)}</td>'
+                f'<td class="col-num">{e(fmt_num(r.get("standalone_pf")) if isinstance(r.get("standalone_pf"), (int, float)) else "—")}</td>'
+                f'<td>{e("portfolio-only" if r.get("portfolio_only") else (r.get("candidate_state") or "—"))}</td></tr>'
+            )
+        rescue_html = f"""
+<div class="rescue-detail">
+  <div class="rescue-detail-title">Q08 portfolio-rescue track</div>
+  <table class="wi-table rescue-detail-table">
+    <thead><tr>
+      <th>Symbol</th><th>Standalone Q08 Result</th><th class="col-num">Trades</th>
+      <th>Q09 Portfolio</th><th class="col-num">Corr</th>
+      <th class="col-num">Sharpe Delta</th><th class="col-num">MaxDD Delta</th>
+      <th class="col-num">PF</th><th>Flag</th>
+    </tr></thead>
+    <tbody>{"".join(row_html)}</tbody>
+  </table>
+</div>
+"""
     return html_head(f"{ea_id} · {slug}", ARCHIVE_CSS + EA_DETAIL_CSS + DETAIL2_CSS) + f"""
 <div class="detail-wrap">
   <a class="detail-back" href="strategies.html">← back to Strategy Archive</a>
@@ -3148,6 +3353,7 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
     <span>Symbols <strong>{len(detail.get('symbols') or [])}</strong></span>
   </div>
   {decision_header}
+  {rescue_html}
   {desc_html}
   {kpis_html}
   <h2 class="acc-title">Pipeline-Stage Evidence · Q01 → Q11 ascending</h2>

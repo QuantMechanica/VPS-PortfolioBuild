@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import re
 import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
@@ -24,6 +25,20 @@ DEFAULT_COMMON_DIR = Path(
 DEFAULT_CANDIDATES_DB = Path(r"D:\QM\strategy_farm\state\farm_state.sqlite")
 DEFAULT_ARTIFACT_DIR = Path(r"D:\QM\strategy_farm\artifacts\portfolio")
 Q12_READY_STATES = ("Q12_REVIEW_READY",)
+
+
+def _coerce_ea_int(ea_id: Any) -> int | None:
+    """Portfolio keys are (int ea_id, symbol), but portfolio_candidates.ea_id stores
+    the label form 'QM5_10692'. Normalize both to the integer 10692.
+    NB: match QM5_(\\d+), not \\d+ — the latter grabs the '5' in the 'QM5' prefix."""
+    if isinstance(ea_id, int):
+        return ea_id
+    s = str(ea_id)
+    m = re.search(r"QM5_(\d+)", s)
+    if m:
+        return int(m.group(1))
+    m2 = re.fullmatch(r"\s*(\d+)\s*", s)
+    return int(m2.group(1)) if m2 else None
 
 
 @dataclass(frozen=True)
@@ -87,7 +102,10 @@ def read_candidates(
         symbol_text = str(symbol)
         if not symbol_text:
             continue
-        candidates.append((int(ea_id), symbol_text))
+        ea_int = _coerce_ea_int(ea_id)
+        if ea_int is None:
+            continue
+        candidates.append((ea_int, symbol_text))
     return sorted(set(candidates))
 
 
@@ -106,7 +124,11 @@ def load_streams(
 
     candidate_set: set[tuple[int, str]] | None = None
     if candidates is not None:
-        candidate_set = {(int(ea_id), str(symbol)) for ea_id, symbol in candidates}
+        candidate_set = {
+            (ce, str(symbol))
+            for ea_id, symbol in candidates
+            if (ce := _coerce_ea_int(ea_id)) is not None
+        }
 
     streams: dict[tuple[int, str], list[Trade]] = {}
     for path in sorted(q08_dir.glob("*.jsonl"), key=lambda item: item.name):

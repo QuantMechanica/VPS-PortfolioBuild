@@ -289,6 +289,189 @@ def db_rows(query: str, params: tuple = ()) -> list[dict]:
         con.close()
 
 
+def _json_from_path(path_value: str | None) -> dict:
+    if not path_value:
+        return {}
+    try:
+        path = Path(path_value)
+        if not path.exists():
+            return {}
+        data = json.loads(path.read_text(encoding="utf-8-sig", errors="ignore"))
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+def _json_payload(row: dict) -> dict:
+    try:
+        data = json.loads(row.get("payload_json") or "{}")
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+def _num(value, digits: int = 2) -> str:
+    if isinstance(value, (int, float)):
+        return f"{value:,.{digits}f}"
+    return "--"
+
+
+def _q08_tier(verdict: str, payload: dict) -> str:
+    verdict = str(verdict or "").upper()
+    if verdict in {"FAIL_SOFT", "FAIL_HARD", "INVALID"}:
+        return verdict
+    classification = payload.get("q08_verdict_classification") or payload.get("verdict_classification")
+    if isinstance(classification, dict):
+        vals = {str(v).upper() for v in classification.values()}
+        if "EDGE_HARD" in vals:
+            return "FAIL_HARD"
+        if vals & {"EDGE_SOFT", "LOW_SAMPLE"}:
+            return "FAIL_SOFT"
+    return verdict or "--"
+
+
+def _q08_reason(payload: dict) -> str:
+    classification = payload.get("q08_verdict_classification") or payload.get("verdict_classification")
+    if not isinstance(classification, dict):
+        return str(payload.get("verdict_reason") or payload.get("reason") or "--")
+    ranked = {"EDGE_HARD": 0, "EDGE_SOFT": 1, "LOW_SAMPLE": 2}
+    items = [
+        (ranked.get(str(tier).upper(), 9), str(gate), str(tier))
+        for gate, tier in classification.items()
+        if str(tier).upper() not in {"PASS", ""}
+    ]
+    if not items:
+        return str(payload.get("verdict_reason") or "--")
+    items.sort()
+    return ", ".join(f"{gate}:{tier}" for _, gate, tier in items[:3])
+
+
+def _q09_priority(row: dict | None) -> int:
+    if not row:
+        return 99
+    verdict = str(row.get("verdict") or "").upper()
+    status = str(row.get("status") or "").lower()
+    if verdict == "PASS_PORTFOLIO":
+        return 0
+    if verdict == "FAIL_PORTFOLIO":
+        return 1
+    if verdict == "NEED_MORE_DATA":
+        return 2
+    if status == "pending":
+        return 3
+    return 9
+
+
+def q08_portfolio_rescue_snapshot(limit: int = 8) -> dict:
+    """Read-only Q08 portfolio-rescue state for the cockpit."""
+    out = {
+        "soft": 0,
+        "hard": 0,
+        "need_more_data": 0,
+        "pending": 0,
+        "pass_portfolio": 0,
+        "fail_portfolio": 0,
+        "candidates": 0,
+        "rows": [],
+    }
+    try:
+        q08_rows = db_rows(
+            """
+            SELECT ea_id, symbol, verdict, payload_json, evidence_path, updated_at
+            FROM work_items
+            WHERE phase='Q08' AND status='done'
+              AND verdict IN ('FAIL_SOFT','FAIL_HARD','FAIL','INVALID')
+            ORDER BY updated_at DESC
+            """
+        )
+        q09_rows = db_rows(
+            """
+            SELECT ea_id, symbol, status, verdict, payload_json, evidence_path, updated_at
+            FROM work_items
+            WHERE phase='Q09_PORTFOLIO'
+            ORDER BY updated_at DESC
+            """
+        )
+    except sqlite3.Error:
+        return out
+    try:
+        pc_rows = db_rows(
+            """
+            SELECT ea_id, symbol, state, evidence_path, updated_at
+            FROM portfolio_candidates
+            WHERE state='Q12_REVIEW_READY'
+            ORDER BY updated_at DESC
+            """
+        )
+    except sqlite3.Error:
+        pc_rows = []
+
+    latest_q08: dict[tuple[str, str], dict] = {}
+    for row in q08_rows:
+        key = (str(row.get("ea_id") or ""), str(row.get("symbol") or ""))
+        if key not in latest_q08:
+            latest_q08[key] = row
+
+    latest_q09: dict[tuple[str, str], dict] = {}
+    for row in q09_rows:
+        key = (str(row.get("ea_id") or ""), str(row.get("symbol") or ""))
+        if key not in latest_q09 or _q09_priority(row) < _q09_priority(latest_q09[key]):
+            latest_q09[key] = row
+        verdict = str(row.get("verdict") or "").upper()
+        status = str(row.get("status") or "").lower()
+        if status == "pending":
+            out["pending"] += 1
+        elif verdict == "NEED_MORE_DATA":
+            out["need_more_data"] += 1
+        elif verdict == "PASS_PORTFOLIO":
+            out["pass_portfolio"] += 1
+        elif verdict == "FAIL_PORTFOLIO":
+            out["fail_portfolio"] += 1
+
+    candidates = {(str(r.get("ea_id") or ""), str(r.get("symbol") or "")): r for r in pc_rows}
+    out["candidates"] = len(candidates)
+
+    display_rows = []
+    for key, q08 in latest_q08.items():
+        payload = {**_json_from_path(q08.get("evidence_path")), **_json_payload(q08)}
+        tier = _q08_tier(str(q08.get("verdict") or ""), payload)
+        if tier == "FAIL_SOFT":
+            out["soft"] += 1
+        elif tier == "FAIL_HARD":
+            out["hard"] += 1
+        q09 = latest_q09.get(key)
+        q09_payload = _json_payload(q09) if q09 else {}
+        q09_artifact = _json_from_path(q09.get("evidence_path") if q09 else None)
+        display_rows.append({
+            "ea_id": key[0],
+            "symbol": key[1],
+            "tier": tier,
+            "reason": _q08_reason(payload),
+            "q08_trades": payload.get("q08_n_trades") or q09_payload.get("q08_trade_count"),
+            "q09_verdict": (q09.get("verdict") if q09 else None) or ("PENDING" if q09 else "--"),
+            "portfolio_only": bool(q09_payload.get("portfolio_only") or key in candidates),
+            "candidate_state": (candidates.get(key) or {}).get("state") or q09_payload.get("portfolio_candidate_state") or "",
+            "corr": q09_artifact.get("max_corr_to_book"),
+            "sharpe_delta": (
+                q09_artifact.get("sharpe_with") - q09_artifact.get("sharpe_without")
+                if isinstance(q09_artifact.get("sharpe_with"), (int, float))
+                and isinstance(q09_artifact.get("sharpe_without"), (int, float))
+                else None
+            ),
+            "maxdd_delta": (
+                q09_artifact.get("maxdd_with") - q09_artifact.get("maxdd_without")
+                if isinstance(q09_artifact.get("maxdd_with"), (int, float))
+                and isinstance(q09_artifact.get("maxdd_without"), (int, float))
+                else None
+            ),
+            "pf": q09_artifact.get("standalone_pf"),
+            "updated_at": q09.get("updated_at") if q09 else q08.get("updated_at"),
+        })
+    display_rows.sort(key=lambda r: (r.get("portfolio_only") is not True, r.get("updated_at") or ""), reverse=False)
+    out["rows"] = sorted(display_rows, key=lambda r: r.get("updated_at") or "", reverse=True)[:limit]
+    return out
+
+
 def list_files(p: Path, pattern: str = "*.md") -> list[str]:
     if not p.is_dir():
         return []
@@ -950,6 +1133,7 @@ def main() -> int:
     pipeline = compute_pipeline()
     next_actions = profitability_next_actions(pipeline)
     backlog = pipeline_backlog_snapshot()
+    q08_rescue = q08_portfolio_rescue_snapshot()
     heureka = compute_heureka_leader(pipeline)
     qsnap = quota_snapshot()
 
@@ -1525,6 +1709,69 @@ def main() -> int:
         portfolio_empty=" empty" if portfolio_count == 0 else "",
     )
 
+    # ---------- 5c. Q08 PORTFOLIO RESCUE ----------
+    rescue_rows_html: list[str] = []
+    for r in q08_rescue.get("rows") or []:
+        tier = str(r.get("tier") or "--")
+        q09v = str(r.get("q09_verdict") or "--")
+        tier_cls = "soft" if tier == "FAIL_SOFT" else ("hard" if tier == "FAIL_HARD" else "other")
+        q09_cls = (
+            "pass" if q09v == "PASS_PORTFOLIO"
+            else "wait" if q09v in {"NEED_MORE_DATA", "PENDING"}
+            else "fail" if q09v == "FAIL_PORTFOLIO"
+            else "other"
+        )
+        dd_delta = r.get("maxdd_delta")
+        dd_txt = _num(dd_delta)
+        if isinstance(dd_delta, (int, float)) and dd_delta < 0:
+            dd_txt = f"{dd_txt} better"
+        elif isinstance(dd_delta, (int, float)) and dd_delta > 0:
+            dd_txt = f"{dd_txt} worse"
+        rescue_rows_html.append(
+            '<tr>'
+            f'<td class="ea-cell">{e(r.get("ea_id"))}</td>'
+            f'<td class="slug-cell">{e(r.get("symbol"))}</td>'
+            f'<td><span class="rescue-tier {tier_cls}">{e(tier)}</span></td>'
+            f'<td class="note">{e(str(r.get("reason") or "--")[:90])}</td>'
+            f'<td class="num">{e(r.get("q08_trades") if r.get("q08_trades") is not None else "--")}</td>'
+            f'<td><span class="rescue-q09 {q09_cls}">{e(q09v)}</span></td>'
+            f'<td class="num">{e(_num(r.get("corr")))}</td>'
+            f'<td class="num">{e(_num(r.get("sharpe_delta")))}</td>'
+            f'<td class="num">{e(dd_txt)}</td>'
+            f'<td class="num">{e(_num(r.get("pf")))}</td>'
+            f'<td class="note">{e("portfolio-only" if r.get("portfolio_only") else (r.get("candidate_state") or "--"))}</td>'
+            '</tr>'
+        )
+    if not rescue_rows_html:
+        rescue_rows_html.append('<tr><td colspan="11" class="note">no Q08 rescue rows yet</td></tr>')
+    q08_rescue_aux = (
+        f'{q08_rescue.get("soft", 0)} soft // {q08_rescue.get("hard", 0)} hard // '
+        f'{q08_rescue.get("pass_portfolio", 0)} pass // {q08_rescue.get("need_more_data", 0)} need data'
+    )
+    q08_rescue_html = f'''
+  <div class="section">
+    <div class="section-head">
+      <span class="section-glyph"></span>
+      <span class="section-title">Q08 Portfolio Rescue // Standalone Fail Track</span>
+      <span class="section-aux">{e(q08_rescue_aux)}</span>
+    </div>
+    <div class="rescue-summary">
+      <div class="rescue-stat"><span>FAIL_SOFT</span><strong>{q08_rescue.get("soft", 0)}</strong></div>
+      <div class="rescue-stat"><span>Q09 pending</span><strong>{q08_rescue.get("pending", 0)}</strong></div>
+      <div class="rescue-stat"><span>Need data</span><strong>{q08_rescue.get("need_more_data", 0)}</strong></div>
+      <div class="rescue-stat"><span>Portfolio-only</span><strong>{q08_rescue.get("candidates", 0)}</strong></div>
+    </div>
+    <table class="qm-table rescue-table">
+      <tr>
+        <th>EA</th><th>Symbol</th><th>Q08 Tier</th><th>Standalone Fail Reason</th>
+        <th>Trades</th><th>Q09 Verdict</th><th>Corr</th><th>Sharpe Delta</th>
+        <th>MaxDD Delta</th><th>PF</th><th>Flag</th>
+      </tr>
+      {"".join(rescue_rows_html)}
+    </table>
+  </div>
+'''
+
     # ---------- 5b. PIPELINE PROGRESS (per-Q breakdown — OWNER call) ----------
     # Cards total: filesystem count of cards_approved/
     cards_dir = ROOT / "artifacts" / "cards_approved"
@@ -2031,6 +2278,36 @@ body { padding: 32px; min-height: 100vh; }
   font-size: 10px; font-weight: 700; letter-spacing: 0.16em;
   text-transform: uppercase; color: var(--text-2);
 }
+.rescue-summary {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+  background: var(--surface-1); border: 1px solid var(--border);
+  border-bottom: none;
+}
+.rescue-stat {
+  padding: 14px 18px; border-right: 1px solid var(--border);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+}
+.rescue-stat:last-child { border-right: none; }
+.rescue-stat span {
+  display: block; font-size: 10px; font-weight: 700; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--text-3); margin-bottom: 6px;
+}
+.rescue-stat strong {
+  font-size: 26px; line-height: 1; font-weight: 500; color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.rescue-table th:nth-child(4), .rescue-table td:nth-child(4) { max-width: 360px; }
+.rescue-tier, .rescue-q09 {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; white-space: nowrap;
+}
+.rescue-tier.soft { color: var(--warn); }
+.rescue-tier.hard { color: var(--fail); }
+.rescue-tier.other { color: var(--text-3); }
+.rescue-q09.pass { color: var(--signal); }
+.rescue-q09.wait { color: var(--promising); }
+.rescue-q09.fail { color: var(--fail); }
+.rescue-q09.other { color: var(--text-3); }
 
 /* PIPELINE PROGRESS — top-line counters + per-Q chip strip (OWNER call) */
 .prog-counters {
@@ -2394,6 +2671,8 @@ body { padding: 32px; min-height: 100vh; }
       {funnel_html_inner}
     </div>
   </div>
+
+  {q08_rescue_html}
 
   <!-- 6. DAILY CONTROLLING -->
   <div class="section">

@@ -106,15 +106,17 @@ def evaluate_q08_soft_rescue(
         common_dir,
         max_corr=max_corr,
     )
-    standalone_pf = admission.get("standalone_pf")
-    pf_ok = isinstance(standalone_pf, (int, float)) and float(standalone_pf) > 1.0
-    verdict = "PASS_PORTFOLIO" if admission.get("admit") and pf_ok else "FAIL_PORTFOLIO"
-    if not pf_ok:
-        reason = "standalone_pf_not_above_1"
-    else:
-        reason = str(admission.get("reason") or "").strip() or (
-            "portfolio_contribution_pass" if verdict == "PASS_PORTFOLIO" else "portfolio_contribution_fail"
-        )
+    # Trust portfolio_admission: it admits only when the candidate is sufficiently
+    # uncorrelated AND actually improves the book (Sharpe up OR maxDD down). A standalone
+    # net PF < 1 does NOT disqualify a portfolio sleeve - that is the whole point of the
+    # rescue track, and test_portfolio_admission proves an anti-correlated PF<1 candidate
+    # can be admitted when the portfolio improves. Genuinely negative-edge EAs (net PF < 1
+    # over the window) are already FAIL_HARD upstream in Q08 and never reach Q09.
+    # (OWNER feedback F4 2026-06-03: the standalone_pf>1 gate contradicted admission.)
+    verdict = "PASS_PORTFOLIO" if admission.get("admit") else "FAIL_PORTFOLIO"
+    reason = str(admission.get("reason") or "").strip() or (
+        "portfolio_contribution_pass" if verdict == "PASS_PORTFOLIO" else "portfolio_contribution_fail"
+    )
     return {
         **base,
         **admission,

@@ -212,6 +212,46 @@ class VerdictTaxonomyWs2Tests(unittest.TestCase):
         finally:
             conn.close()
 
+    def test_q08_soft_portfolio_route_dedups_by_ea_symbol(self) -> None:
+        conn = _memory_work_items_conn()
+        try:
+            for idx, setfile in enumerate(("grid_001.set", "grid_002.set"), start=1):
+                conn.execute(
+                    """
+                    INSERT INTO work_items(
+                        id, kind, phase, ea_id, symbol, setfile_path, status,
+                        verdict, attempt_count, parent_task_id, payload_json,
+                        created_at, updated_at
+                    )
+                    VALUES (
+                        ?, 'backtest', 'Q08', 'QM5_10692', 'NDX.DWX',
+                        ?, 'done', 'FAIL_SOFT', 1, NULL, ?,
+                        ?, ?
+                    )
+                    """,
+                    (
+                        f"q08-soft-{idx}",
+                        setfile,
+                        '{"q08_n_trades": 443}',
+                        f"2026-06-03T00:0{idx}:00Z",
+                        f"2026-06-03T00:0{idx}:00Z",
+                    ),
+                )
+            result = {
+                "q09_portfolio_promotions": [],
+                "q09_portfolio_promotions_skipped": [],
+            }
+            first = farmctl._promote_q08_soft_fails_to_q09_portfolio(conn, result)
+            second = farmctl._promote_q08_soft_fails_to_q09_portfolio(conn, result)
+            q09_count = conn.execute(
+                "SELECT COUNT(*) FROM work_items WHERE phase='Q09_PORTFOLIO'"
+            ).fetchone()[0]
+            self.assertEqual(first, 1)
+            self.assertEqual(second, 0)
+            self.assertEqual(q09_count, 1)
+        finally:
+            conn.close()
+
     def test_q09_portfolio_pass_enters_portfolio_candidates(self) -> None:
         conn = _memory_work_items_conn()
         try:

@@ -21,6 +21,15 @@ class PortfolioAdmissionTests(unittest.TestCase):
         self.assertTrue(verdict["admit"])
         self.assertEqual(verdict["reason"], "first_sleeve")
 
+    def test_ea_id_label_normalizes_to_int_not_prefix_digit(self) -> None:
+        # portfolio_candidates.ea_id stores 'QM5_10692'; the key must be 10692, NOT the
+        # '5' in the 'QM5' prefix (regression for the F1 read_candidates int() crash).
+        from portfolio.portfolio_common import _coerce_ea_int
+        self.assertEqual(_coerce_ea_int("QM5_10692"), 10692)
+        self.assertEqual(_coerce_ea_int("QM5_5"), 5)
+        self.assertEqual(_coerce_ea_int(10692), 10692)
+        self.assertIsNone(_coerce_ea_int("not-an-ea"))
+
     def test_anticorrelated_candidate_with_low_pf_admits_when_portfolio_improves(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             common_dir = Path(tmp)
