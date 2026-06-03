@@ -138,6 +138,11 @@ Hard rules:
 - Do not choose work outside the deterministic router.
 - Gemini may draft code, but Codex review is mandatory before acceptance; leave
   Gemini code tasks in REVIEW and do not self-approve or move them to PIPELINE.
+- Build guardrail (enforced by validate_build_guardrails.py + compile_ea +
+  close-review): NEVER set qm_news_stale_max_hours above 336. A stale-news INIT
+  failure is fixed by refreshing the news calendar seed (D:/QM/data/news_calendar
+  + the FILE_COMMON copy), NOT by weakening the fail-closed check. Backtest set
+  files must use RISK_FIXED > 0 and RISK_PERCENT = 0.
 - Keep operator-facing phase names Q-only.
 - Never enable T_Live or AutoTrading.
 - Never start terminal64.exe manually.

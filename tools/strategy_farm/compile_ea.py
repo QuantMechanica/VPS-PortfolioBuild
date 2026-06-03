@@ -37,6 +37,11 @@ import sys
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
+try:
+    from validate_build_guardrails import validate_path as _validate_build_guardrails
+except ImportError:  # imported as a package (tools.strategy_farm.compile_ea)
+    from tools.strategy_farm.validate_build_guardrails import validate_path as _validate_build_guardrails
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 EAS_DIR = REPO_ROOT / "framework" / "EAs"
 COMPILE_ONE_PS1 = REPO_ROOT / "framework" / "scripts" / "compile_one.ps1"
@@ -164,6 +169,24 @@ def compile_ea(ea_label: str, force: bool = False, skip_validator: bool = False)
             return r
     else:
         scope_verdict = "SKIPPED"
+
+    # Pre-compile build guardrails (deterministic): refuse to compile an EA that
+    # disables the fail-closed news-staleness check (qm_news_stale_max_hours > 336)
+    # or uses RISK_PERCENT in a backtest set (must be RISK_FIXED). Catches the
+    # Gemini v2 rework bypass at the source, before MetaEditor stamps an .ex5.
+    guardrails = _validate_build_guardrails(ea_dir)
+    if guardrails["verdict"] != "PASS":
+        kinds = ",".join(sorted({f["kind"] for f in guardrails["findings"]}))
+        r = CompileResult(
+            ea_label=ea_label, verdict="BUILD_GUARDRAILS_FAILED",
+            reason=f"build guardrails failed: {kinds}",
+            mq5_mtime_utc=file_mtime_iso(mq5),
+            symbol_scope_verdict=scope_verdict,
+            timestamp_utc=utc_now_iso(),
+            elapsed_seconds=round((dt.datetime.now(dt.UTC) - started).total_seconds(), 2),
+        )
+        write_result(r)
+        return r
 
     # Invoke compile_one.ps1
     cmd = [
