@@ -1,6 +1,6 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-06-01T05:07:02.2596224Z",
+    "generated_at":  "2026-06-04T17:07:03.8663694Z",
     "phase":  "Endausbaustufe-Modus - highest EA at P2",
     "agents":  {
                    "offline":  1,
@@ -26,7 +26,7 @@
                                       "P1":  0,
                                       "P5c":  0
                                   },
-                     "strategy_cards":  2742
+                     "strategy_cards":  2745
                  },
     "t6":  {
                "status":  "offline",

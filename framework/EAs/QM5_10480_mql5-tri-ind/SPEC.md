@@ -4,13 +4,13 @@
 **Slug:** `mql5-tri-ind`
 **Source:** `b8b5125a-c67f-5bbc-baff-33456e08f5b2` (see `strategy-seeds/sources/b8b5125a-c67f-5bbc-baff-33456e08f5b2/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-05-28
+**Last revised:** 2026-06-04
 
 ---
 
 ## 1. Strategy Logic
 
-The EA evaluates a M15 work timeframe only when a new chart bar forms. It opens long when the current open is above the prior open, MACD main is above signal, Stochastic %K is above %D without exceeding 80, and RSI(14) is above 50. It opens short on the mirrored conditions: current open below prior open, MACD main below signal, Stochastic %K below %D without falling below 20, and RSI(14) below 50. Exits occur through a 1.5 x ATR(14) stop, a 2R take profit, an opposite confirmed signal, or after 16 M15 bars.
+The EA evaluates the configured work timeframe, default M15, from the framework new-bar entry gate. It opens long when the current open is above the prior open, MACD main is above signal, Stochastic %K is above %D without exceeding 80, and RSI(14) is above 50. It opens short on the mirrored conditions: current open below prior open, MACD main below signal, Stochastic %K below %D without falling below 20, and RSI(14) below 50. Exits occur through a 1.5 x ATR(14) stop, a 2R take profit, an opposite confirmed signal, or after 16 M15 bars.
 
 ---
 
@@ -33,26 +33,50 @@ The EA evaluates a M15 work timeframe only when a new chart bar forms. It opens 
 | `strategy_atr_sl_mult` | `1.5` | `>0` | ATR multiple used for stop loss distance. |
 | `strategy_tp_rr` | `2.0` | `>0` | Take-profit reward-to-risk multiple. |
 | `strategy_time_stop_bars` | `16` | `0+` | Maximum hold time measured in work-timeframe bars; 0 disables. |
+| `strategy_max_spread_points` | `80` | `0+` | Maximum current spread in points; 0 disables the strategy spread guard. |
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `EURUSD.DWX` - liquid FX major with standard OHLC and indicator coverage.
-- `GBPUSD.DWX` - liquid FX major with standard OHLC and indicator coverage.
-- `USDJPY.DWX` - liquid FX major with standard OHLC and indicator coverage.
-- `USDCHF.DWX` - liquid FX major with standard OHLC and indicator coverage.
-- `USDCAD.DWX` - liquid FX major with standard OHLC and indicator coverage.
-- `AUDUSD.DWX` - liquid FX major with standard OHLC and indicator coverage.
-- `NZDUSD.DWX` - liquid FX major with standard OHLC and indicator coverage.
-- `XAUUSD.DWX` - liquid gold CFD with standard OHLC and indicator coverage.
-- `XTIUSD.DWX` - liquid oil CFD with standard OHLC and indicator coverage.
-- `SP500.DWX` - S&P 500 custom symbol, valid for backtest coverage.
-- `NDX.DWX` - liquid Nasdaq 100 index CFD.
-- `WS30.DWX` - liquid Dow 30 index CFD.
-- `GDAXI.DWX` - liquid DAX index CFD.
-- `UK100.DWX` - liquid FTSE 100 index CFD.
+- `AUDCAD.DWX` - verified DWX forex cross with OHLC and standard indicator coverage.
+- `AUDCHF.DWX` - verified DWX forex cross with OHLC and standard indicator coverage.
+- `AUDJPY.DWX` - verified DWX forex cross with OHLC and standard indicator coverage.
+- `AUDNZD.DWX` - verified DWX forex cross with OHLC and standard indicator coverage.
+- `AUDUSD.DWX` - verified DWX forex major with OHLC and standard indicator coverage.
+- `CADCHF.DWX` - verified DWX forex cross with OHLC and standard indicator coverage.
+- `CADJPY.DWX` - verified DWX forex cross with OHLC and standard indicator coverage.
+- `CHFJPY.DWX` - verified DWX forex cross with OHLC and standard indicator coverage.
+- `EURAUD.DWX` - verified DWX forex cross with OHLC and standard indicator coverage.
+- `EURCAD.DWX` - verified DWX forex cross with OHLC and standard indicator coverage.
+- `EURCHF.DWX` - verified DWX forex cross with OHLC and standard indicator coverage.
+- `EURGBP.DWX` - verified DWX forex cross with OHLC and standard indicator coverage.
+- `EURJPY.DWX` - verified DWX forex cross with OHLC and standard indicator coverage.
+- `EURNZD.DWX` - verified DWX forex cross with OHLC and standard indicator coverage.
+- `EURUSD.DWX` - verified DWX forex major with OHLC and standard indicator coverage.
+- `GBPAUD.DWX` - verified DWX forex cross with OHLC and standard indicator coverage.
+- `GBPCAD.DWX` - verified DWX forex cross with OHLC and standard indicator coverage.
+- `GBPCHF.DWX` - verified DWX forex cross with OHLC and standard indicator coverage.
+- `GBPJPY.DWX` - verified DWX forex cross with OHLC and standard indicator coverage.
+- `GBPNZD.DWX` - verified DWX forex cross with OHLC and standard indicator coverage.
+- `GBPUSD.DWX` - verified DWX forex major with OHLC and standard indicator coverage.
+- `GDAXI.DWX` - verified DWX DAX index CFD with OHLC and standard indicator coverage.
+- `NDX.DWX` - verified DWX Nasdaq 100 index CFD with OHLC and standard indicator coverage.
+- `NZDCAD.DWX` - verified DWX forex cross with OHLC and standard indicator coverage.
+- `NZDCHF.DWX` - verified DWX forex cross with OHLC and standard indicator coverage.
+- `NZDJPY.DWX` - verified DWX forex cross with OHLC and standard indicator coverage.
+- `NZDUSD.DWX` - verified DWX forex major with OHLC and standard indicator coverage.
+- `SP500.DWX` - verified custom S&P 500 symbol for backtests with OHLC and standard indicator coverage.
+- `UK100.DWX` - verified DWX FTSE 100 index CFD with OHLC and standard indicator coverage.
+- `USDCAD.DWX` - verified DWX forex major with OHLC and standard indicator coverage.
+- `USDCHF.DWX` - verified DWX forex major with OHLC and standard indicator coverage.
+- `USDJPY.DWX` - verified DWX forex major with OHLC and standard indicator coverage.
+- `WS30.DWX` - verified DWX Dow 30 index CFD with OHLC and standard indicator coverage.
+- `XAGUSD.DWX` - verified DWX silver CFD with OHLC and standard indicator coverage.
+- `XAUUSD.DWX` - verified DWX gold CFD with OHLC and standard indicator coverage.
+- `XNGUSD.DWX` - verified DWX natural gas CFD with OHLC and standard indicator coverage.
+- `XTIUSD.DWX` - verified DWX oil CFD with OHLC and standard indicator coverage.
 
 **Explicitly NOT for:**
 - Symbols absent from `framework/registry/dwx_symbol_matrix.csv` - no verified DWX data target exists.
@@ -108,4 +132,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-05-28 | Initial build from card | a8fd6e69-4b28-4142-b859-9c952d5f6376 |
+| v1 | 2026-06-04 | Initial build from card | 0d6f7a00-1549-44b6-a472-2396b41b2850 |

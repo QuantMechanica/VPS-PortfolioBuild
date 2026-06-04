@@ -88,6 +88,7 @@ input int    strategy_atr_period        = 14;
 input double strategy_atr_sl_mult       = 1.5;
 input double strategy_tp_rr             = 2.0;
 input int    strategy_time_stop_bars    = 16;
+input int    strategy_max_spread_points = 80;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -97,6 +98,19 @@ input int    strategy_time_stop_bars    = 16;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
+   if(strategy_max_spread_points > 0)
+     {
+      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+      if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
+         return true;
+
+      const double spread_points = (ask - bid) / point;
+      if(spread_points > strategy_max_spread_points)
+         return true;
+     }
+
    return false;
   }
 
@@ -108,8 +122,8 @@ int Strategy_ConfirmedSignal()
       strategy_rsi_period <= 0)
       return 0;
 
-   const double open_current = iOpen(_Symbol, strategy_work_tf, 0);
-   const double open_prior = iOpen(_Symbol, strategy_work_tf, 1);
+   const double open_current = QM_SMA(_Symbol, strategy_work_tf, 1, 0, PRICE_OPEN);
+   const double open_prior = QM_SMA(_Symbol, strategy_work_tf, 1, 1, PRICE_OPEN);
    if(open_current <= 0.0 || open_prior <= 0.0)
       return 0;
 
@@ -232,8 +246,8 @@ bool Strategy_ExitSignal()
 
    if(strategy_time_stop_bars > 0 && opened_at > 0)
      {
-      const int open_shift = iBarShift(_Symbol, strategy_work_tf, opened_at, false);
-      if(open_shift >= strategy_time_stop_bars)
+      const int work_seconds = PeriodSeconds(strategy_work_tf);
+      if(work_seconds > 0 && (TimeCurrent() - opened_at) >= (strategy_time_stop_bars * work_seconds))
          return true;
      }
 
