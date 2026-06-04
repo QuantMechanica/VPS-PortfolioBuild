@@ -4,6 +4,10 @@
 
 #include <QM/QM_Common.mqh>
 
+// =============================================================================
+// QuantMechanica V5 EA
+// =============================================================================
+
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 10697;
 input int    qm_magic_slot_offset       = 0;
@@ -29,18 +33,29 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_liquidity_lookback = 20;
-input int    strategy_ema_period         = 50;
-input int    strategy_atr_period         = 14;
-input double strategy_atr_stop_mult      = 1.5;
-input double strategy_rr_target          = 2.5;
-input int    strategy_session_start_hhmm = 930;
-input int    strategy_session_end_hhmm   = 1100;
+input int    strategy_liquidity_lookback  = 20;
+input int    strategy_ema_period          = 50;
+input int    strategy_atr_period          = 14;
+input double strategy_atr_stop_mult       = 1.5;
+input double strategy_rr_target           = 2.5;
+input int    strategy_session_start_hhmm  = 930;
+input int    strategy_session_end_hhmm    = 1100;
 input double strategy_min_sweep_range_atr = 0.5;
-input int    strategy_max_spread_points  = 0;
+input int    strategy_max_spread_points   = 0;
 
-bool Strategy_HasOpenPosition()
+// -----------------------------------------------------------------------------
+// No Trade Filter (time, spread, news)
+// -----------------------------------------------------------------------------
+bool Strategy_NoTradeFilter()
   {
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(), dt);
+   const int hhmm = dt.hour * 100 + dt.min;
+   const bool in_session = (strategy_session_start_hhmm <= strategy_session_end_hhmm)
+                           ? (hhmm >= strategy_session_start_hhmm && hhmm < strategy_session_end_hhmm)
+                           : (hhmm >= strategy_session_start_hhmm || hhmm < strategy_session_end_hhmm);
+
+   bool has_position = false;
    const int magic = QM_FrameworkMagic();
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
@@ -51,32 +66,14 @@ bool Strategy_HasOpenPosition()
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
-      return true;
+      has_position = true;
+      break;
      }
 
-   return false;
-  }
-
-bool Strategy_HHMMInSession(const int hhmm)
-  {
-   if(strategy_session_start_hhmm <= strategy_session_end_hhmm)
-      return (hhmm >= strategy_session_start_hhmm && hhmm < strategy_session_end_hhmm);
-   return (hhmm >= strategy_session_start_hhmm || hhmm < strategy_session_end_hhmm);
-  }
-
-int Strategy_HHMM(const datetime t)
-  {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.hour * 100 + dt.min;
-  }
-
-bool Strategy_NoTradeFilter()
-  {
-   if(!Strategy_HHMMInSession(Strategy_HHMM(TimeCurrent())) && !Strategy_HasOpenPosition())
+   if(!in_session && !has_position)
       return true;
 
-   if(strategy_max_spread_points > 0)
+   if(strategy_max_spread_points > 0 && !has_position)
      {
       const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
       if(spread_points > strategy_max_spread_points)
@@ -86,6 +83,9 @@ bool Strategy_NoTradeFilter()
    return false;
   }
 
+// -----------------------------------------------------------------------------
+// Trade Entry
+// -----------------------------------------------------------------------------
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    req.type = QM_BUY;
@@ -103,8 +103,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_rr_target <= 0.0)
       return false;
 
-   if(Strategy_HasOpenPosition())
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
       return false;
+     }
 
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
@@ -113,7 +123,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(copied != bars_needed)
       return false;
 
-   if(!Strategy_HHMMInSession(Strategy_HHMM(rates[0].time)))
+   MqlDateTime signal_dt;
+   TimeToStruct(rates[0].time, signal_dt);
+   const int signal_hhmm = signal_dt.hour * 100 + signal_dt.min;
+   const bool signal_in_session = (strategy_session_start_hhmm <= strategy_session_end_hhmm)
+                                  ? (signal_hhmm >= strategy_session_start_hhmm && signal_hhmm < strategy_session_end_hhmm)
+                                  : (signal_hhmm >= strategy_session_start_hhmm || signal_hhmm < strategy_session_end_hhmm);
+   if(!signal_in_session)
       return false;
 
    double prior_high = -DBL_MAX;
@@ -167,23 +183,55 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    return false;
   }
 
+// -----------------------------------------------------------------------------
+// Trade Management
+// -----------------------------------------------------------------------------
 void Strategy_ManageOpenPosition()
   {
    // Card specifies no trailing, break-even, partial close, or pyramiding.
   }
 
+// -----------------------------------------------------------------------------
+// Trade Close
+// -----------------------------------------------------------------------------
 bool Strategy_ExitSignal()
   {
-   if(!Strategy_HasOpenPosition())
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(), dt);
+   const int hhmm = dt.hour * 100 + dt.min;
+   const bool in_session = (strategy_session_start_hhmm <= strategy_session_end_hhmm)
+                           ? (hhmm >= strategy_session_start_hhmm && hhmm < strategy_session_end_hhmm)
+                           : (hhmm >= strategy_session_start_hhmm || hhmm < strategy_session_end_hhmm);
+   if(in_session)
       return false;
 
-   return !Strategy_HHMMInSession(Strategy_HHMM(TimeCurrent()));
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      return true;
+     }
+
+   return false;
   }
 
+// -----------------------------------------------------------------------------
+// News Filter Hook (callable for P8 News Impact phase)
+// -----------------------------------------------------------------------------
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
   }
+
+// -----------------------------------------------------------------------------
+// Framework wiring
+// -----------------------------------------------------------------------------
 
 int OnInit()
   {

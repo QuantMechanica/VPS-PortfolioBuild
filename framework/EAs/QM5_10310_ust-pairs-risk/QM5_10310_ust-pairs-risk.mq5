@@ -3,7 +3,6 @@
 #property description "QM5_10310 Treasury-style pairs risk-control EA"
 
 #include <QM/QM_Common.mqh>
-#include <QM/QM_BasketOrder.mqh>
 
 // =============================================================================
 // QuantMechanica V5 EA SKELETON
@@ -368,25 +367,29 @@ bool Strategy_OpenLeg(const string symbol,
                       const double weight_sum,
                       const string reason)
   {
-   const double entry = QM_BasketMarketPrice(symbol, type);
-   const double stop_dist = Strategy_StopDistance(symbol);
-   const double point = SymbolInfoDouble(symbol, SYMBOL_POINT);
-   if(entry <= 0.0 || stop_dist <= 0.0 || point <= 0.0 || weight_sum <= 0.0)
+   if(symbol != _Symbol)
+      return false;
+   if(MathAbs(weight) <= 0.0 || weight_sum <= 0.0)
       return false;
 
-   QM_BasketOrderRequest breq;
-   breq.symbol = symbol;
-   breq.type = type;
-   breq.price = 0.0;
-   breq.sl = QM_OrderTypeIsBuy(type) ? entry - stop_dist : entry + stop_dist;
-   breq.tp = 0.0;
-   breq.lots = QM_LotsForRisk(symbol, stop_dist / point) * MathAbs(weight) / weight_sum;
-   breq.symbol_slot = slot;
-   breq.expiration_seconds = 0;
-   breq.reason = reason;
+   const double entry = QM_OrderTypeIsBuy(type) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
+                                                : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double stop_dist = Strategy_StopDistance(symbol);
+   const double point = SymbolInfoDouble(symbol, SYMBOL_POINT);
+   if(entry <= 0.0 || stop_dist <= 0.0 || point <= 0.0)
+      return false;
+
+   QM_EntryRequest req;
+   req.type = type;
+   req.price = 0.0;
+   req.sl = QM_OrderTypeIsBuy(type) ? entry - stop_dist : entry + stop_dist;
+   req.tp = 0.0;
+   req.reason = reason;
+   req.symbol_slot = slot;
+   req.expiration_seconds = 0;
 
    ulong ticket = 0;
-   return QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, 20, breq, ticket);
+   return QM_TM_OpenPosition(req, ticket);
   }
 
 bool Strategy_OpenPackage(const int direction)
