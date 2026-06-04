@@ -2090,6 +2090,12 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
             timeout_seconds = P2_PRESCREEN_TIMEOUT_SECONDS
         else:
             p2_run_stage = "full"
+            # DL-067 2026-06-04 (OWNER): single canonical P2/Q02 full run instead of
+            # the 2-run determinism re-check. Model-4 real-tick is deterministic for an
+            # unchanged .ex5 (exploration children already ran 1 with no issue), so the
+            # second run was near-redundant. Halves the dominant queue cost. Scoped to
+            # P2/Q02 full ONLY — Q03/Q04 keep their default run count.
+            n_runs = "1"
             timeout_seconds = _p2_full_timeout_seconds(item_payload, from_date, to_date)
     else:
         from_date = None

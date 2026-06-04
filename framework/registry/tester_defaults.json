@@ -1,9 +1,9 @@
 {
   "_authored_by": "Board Advisor at OWNER direction (2026-05-01)",
-  "_authority": "OWNER 2026-05-01 directive + DL-038 Seven Binding Backtest Rules + DL-054 anti-theater pass criteria",
+  "_authority": "OWNER 2026-05-01 directive + DL-038 Seven Binding Backtest Rules + DL-054 anti-theater pass criteria + DL-067 single-run P2 (2026-06-04)",
   "_purpose": "Canonical tester defaults for V5 pipeline runs. Pipeline-Operator MUST load these on every tester launch. Set-files MAY override per-EA values but MUST cite a per-EA ADR.",
   "_origin_evidence": "Tester journal 2026-05-01 11:40Z showed 'initial deposit 10000.00 USD' — wrong by factor 10x. OWNER had stated the 100k/1000 decision multiple times but it was never codified to disk. This file is that codification.",
-  "version": 1,
+  "version": 2,
   "initial_deposit": 100000,
   "deposit_currency": "USD",
   "leverage": 100,
@@ -23,10 +23,11 @@
     },
     "full_run": {
       "date_range": "2017.01.01-2022.12.31",
-      "runs": 2,
+      "runs": 1,
+      "runs_note": "DL-067 2026-06-04 (OWNER): reduced 2->1. Model-4 real-tick is deterministic for an unchanged .ex5, so the second run was a near-redundant re-check; dropping it ~halves the dominant P2/Q02 backtest cost. Scoped to P2/Q02 full runs only (Q03/Q04 keep their counts). Re-raise to 2 if a non-determinism source (e.g. seed/state bug) is ever suspected.",
       "timeout_seconds_min": 7200,
       "timeout_seconds_max": 14400,
-      "timeout_basis": "Sized from the six-month pre-screen runtime with deterministic-run and headroom multipliers."
+      "timeout_basis": "Sized from the six-month pre-screen runtime with headroom multipliers (single full run as of DL-067)."
     }
   },
   "anti_theater_gates": {
