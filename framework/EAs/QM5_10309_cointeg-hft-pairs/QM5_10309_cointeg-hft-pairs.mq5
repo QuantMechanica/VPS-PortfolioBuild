@@ -387,8 +387,6 @@ double RecentVolDistance(const string symbol)
 bool OpenLeg(const string symbol,
              const int slot,
              const QM_OrderType type,
-             const double weight,
-             const double weight_sum,
              const string reason)
   {
    if(symbol != _Symbol)
@@ -398,10 +396,7 @@ bool OpenLeg(const string symbol,
                                                 : SymbolInfoDouble(_Symbol, SYMBOL_BID);
    const double stop_dist = RecentVolDistance(symbol);
    const double point = SymbolInfoDouble(symbol, SYMBOL_POINT);
-   if(entry <= 0.0 || stop_dist <= 0.0 || point <= 0.0 || weight_sum <= 0.0)
-      return false;
-
-   if(MathAbs(weight) <= 0.0)
+   if(entry <= 0.0 || stop_dist <= 0.0 || point <= 0.0)
       return false;
 
    QM_EntryRequest req;
@@ -419,10 +414,7 @@ bool OpenLeg(const string symbol,
 
 bool OpenPackage(const int direction)
   {
-   const double weight_a = 1.0;
-   const double weight_b = -g_beta;
-   const double weight_sum = MathAbs(weight_a) + MathAbs(weight_b);
-   if(weight_sum <= 0.0)
+   if(MathAbs(g_beta) <= 0.0)
       return false;
 
    const QM_OrderType type_a = (direction > 0) ? QM_SELL : QM_BUY;
@@ -430,9 +422,9 @@ bool OpenPackage(const int direction)
    const string reason = (direction > 0) ? "COINTEG_SHORT_A_LONG_B" : "COINTEG_LONG_A_SHORT_B";
 
    bool opened = false;
-   if(OpenLeg(g_symbol_a, g_slot_a, type_a, weight_a, weight_sum, reason))
+   if(OpenLeg(g_symbol_a, g_slot_a, type_a, reason))
       opened = true;
-   if(OpenLeg(g_symbol_b, g_slot_b, type_b, weight_b, weight_sum, reason))
+   if(OpenLeg(g_symbol_b, g_slot_b, type_b, reason))
       opened = true;
 
    if(opened)
