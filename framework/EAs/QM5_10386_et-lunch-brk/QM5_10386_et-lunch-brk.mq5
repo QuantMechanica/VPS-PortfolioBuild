@@ -209,8 +209,8 @@ bool ETLB_RangeAtLunch(double &range_high, double &range_low)
    const int bars = MathMax(1, strategy_range_bars);
    for(int i = 1; i <= bars; ++i)
      {
-      const double hi = iHigh(_Symbol, _Period, i);
-      const double lo = iLow(_Symbol, _Period, i);
+      const double hi = iHigh(_Symbol, _Period, i); // perf-allowed: bounded lunch-range structural scan inside framework-gated EntrySignal.
+      const double lo = iLow(_Symbol, _Period, i);  // perf-allowed: bounded lunch-range structural scan inside framework-gated EntrySignal.
       if(hi <= 0.0 || lo <= 0.0)
          return false;
       range_high = MathMax(range_high, hi);
