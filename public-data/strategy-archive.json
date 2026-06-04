@@ -1,6 +1,6 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-06-04T18:07:03.0278958Z",
+    "generated_at":  "2026-06-04T19:07:07.0758706Z",
     "total":  2745,
     "items":  [
                   {
@@ -16393,19 +16393,19 @@
                       "slug":  "QM5_1136_index-close-auction-intraday-momentum",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-06-04T17:25:00.2525330Z"
+                      "last_updated_utc":  "2026-06-04T19:06:31.3957814Z"
                   },
                   {
                       "slug":  "QM5_1137_fx-h4-filter-rule-breakout",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-06-04T16:40:33.4050654Z"
+                      "last_updated_utc":  "2026-06-04T18:33:59.4346597Z"
                   },
                   {
                       "slug":  "QM5_1138_gold-m30-open-range-fade-after-gap",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-06-04T16:40:42.0761743Z"
+                      "last_updated_utc":  "2026-06-04T19:06:31.3957814Z"
                   },
                   {
                       "slug":  "QM5_1139_crude-m30-first-hour-momentum",
@@ -16429,13 +16429,13 @@
                       "slug":  "QM5_1152_fx-tokyo-fix-usd-demand",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-06-04T16:40:48.2954961Z"
+                      "last_updated_utc":  "2026-06-04T19:06:31.3967838Z"
                   },
                   {
                       "slug":  "QM5_1153_fx-us-session-after-london-drift",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-06-04T16:10:40.2548789Z"
+                      "last_updated_utc":  "2026-06-04T18:33:59.8442279Z"
                   },
                   {
                       "slug":  "QM5_1154_index-hks-halfhour-lag-continuation",
@@ -16459,7 +16459,7 @@
                       "slug":  "QM5_1157_index-realized-skewness-fade",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-06-04T16:10:46.1682256Z"
+                      "last_updated_utc":  "2026-06-04T18:33:58.9473930Z"
                   },
                   {
                       "slug":  "QM5_1158_index-famous-earnings-cluster-drift",
