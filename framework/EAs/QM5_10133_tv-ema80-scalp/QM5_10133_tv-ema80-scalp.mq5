@@ -226,10 +226,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double ema340 = QM_EMA(_Symbol, tf, strategy_ema_trend_fast, 1);
    const double ema500 = QM_EMA(_Symbol, tf, strategy_ema_trend_slow, 1);
    const double sma325 = QM_SMA(_Symbol, tf, strategy_sma_safety, 1);
-   const double close1 = iClose(_Symbol, tf, 1);
-   const double open1 = iOpen(_Symbol, tf, 1);
-   const double high1 = iHigh(_Symbol, tf, 1);
-   const double low1 = iLow(_Symbol, tf, 1);
+   const double close1 = iClose(_Symbol, tf, 1); // perf-allowed: single closed-bar OHLC read for EMA-band breakout structure.
+   const double open1 = iOpen(_Symbol, tf, 1);   // perf-allowed: single closed-bar OHLC read for candle direction.
+   const double high1 = iHigh(_Symbol, tf, 1);   // perf-allowed: single closed-bar OHLC read for EMA-band retest.
+   const double low1 = iLow(_Symbol, tf, 1);     // perf-allowed: single closed-bar OHLC read for EMA-band retest.
    if(ema80 <= 0.0 || ema90 <= 0.0 || ema340 <= 0.0 || ema500 <= 0.0 ||
       sma325 <= 0.0 || close1 <= 0.0 || open1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0)
       return false;
@@ -338,7 +338,7 @@ bool Strategy_ExitSignal()
    const double ema90 = QM_EMA(_Symbol, tf, strategy_ema_band_slow, 1);
    const double ema340 = QM_EMA(_Symbol, tf, strategy_ema_trend_fast, 1);
    const double ema500 = QM_EMA(_Symbol, tf, strategy_ema_trend_slow, 1);
-   const double close1 = iClose(_Symbol, tf, 1);
+   const double close1 = iClose(_Symbol, tf, 1); // perf-allowed: single closed-bar close for EMA-band exit.
    if(ema80 <= 0.0 || ema90 <= 0.0 || ema340 <= 0.0 || ema500 <= 0.0 || close1 <= 0.0)
       return false;
 
