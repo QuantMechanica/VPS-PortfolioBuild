@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA trades a one-minute opening-range breakout. It builds the range from the first five M1 candles after the local cash-market open, then buys when price breaks above the range high plus 0.05 ATR(14), or sells when price breaks below the range low minus the same buffer. The initial stop is placed at the entry candle or recent three-bar structure as specified by direction, trades are skipped when the stop distance is outside 0.25-2.5 ATR(14), and the initial take profit is 2R. At +1R the EA closes half, moves the stop to breakeven, and then closes the remainder if price touches EMA(20); any open trade is forced flat at the configured session end.
+The EA trades a one-minute opening-range breakout. It builds the range from the first five M1 candles after the local cash-market open, then arms buy-stop and sell-stop orders at the range boundary plus or minus 0.05 ATR(14), using an immediate market entry only when the trigger is already crossed at the first eligible bar. The initial stop uses the available opening-range boundary plus the latest three closed M1 candles as the structure proxy, trades are skipped when the stop distance is outside 0.25-2.5 ATR(14), and the initial take profit is 2R. At +1R the EA closes half, moves the stop to breakeven, and then closes the remainder if price touches EMA(20); any open trade is forced flat at the configured session end.
 
 ---
 

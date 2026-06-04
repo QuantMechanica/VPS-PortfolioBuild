@@ -173,6 +173,27 @@ datetime Strategy_SessionStartTime(const datetime t)
    return StructToTime(dt);
   }
 
+datetime Strategy_SessionEndTime(const datetime t)
+  {
+   MqlDateTime dt;
+   TimeToStruct(t, dt);
+   const int end_hhmm = Strategy_SessionEndHhmm();
+   dt.hour = end_hhmm / 100;
+   dt.min = end_hhmm % 100;
+   dt.sec = 0;
+
+   datetime end_time = StructToTime(dt);
+   if(Strategy_HhmmToMinutes(end_hhmm) <= Strategy_HhmmToMinutes(Strategy_SessionStartHhmm()) &&
+      end_time <= t)
+      end_time += 86400;
+   return end_time;
+  }
+
+int Strategy_SecondsUntilSessionEnd(const datetime t)
+  {
+   return MathMax(60, (int)(Strategy_SessionEndTime(t) - t));
+  }
+
 void Strategy_ResetSession(const int day_key)
   {
    g_strategy_session_key = day_key;
@@ -223,6 +244,54 @@ bool Strategy_HasOurOpenPosition()
          return true;
      }
    return false;
+  }
+
+bool Strategy_IsOurStopOrderType(const ENUM_ORDER_TYPE order_type)
+  {
+   return (order_type == ORDER_TYPE_BUY_STOP || order_type == ORDER_TYPE_SELL_STOP);
+  }
+
+int Strategy_OurPendingStopCount()
+  {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return 0;
+
+   int count = 0;
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0 || !OrderSelect(ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+      if(Strategy_IsOurStopOrderType((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE)))
+         ++count;
+     }
+   return count;
+  }
+
+void Strategy_DeleteOurPendingStops(const string reason)
+  {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return;
+
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0 || !OrderSelect(ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+      if(!Strategy_IsOurStopOrderType((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE)))
+         continue;
+      QM_TM_RemovePendingOrder(ticket, reason);
+     }
   }
 
 void Strategy_AdvanceOpeningRange(const MqlRates &bar)
@@ -343,63 +412,96 @@ bool Strategy_GetOurPosition(ulong &ticket,
    return false;
   }
 
-bool Strategy_BuildBreakoutRequest(const bool want_long,
-                                   const MqlRates &bars[],
-                                   const double atr,
-                                   QM_EntryRequest &req)
+bool Strategy_StopDistanceAllowed(const double entry, const double sl, const double atr)
   {
-   const double buffer = atr * MathMax(0.0, strategy_buffer_atr_mult);
-   const double trigger = want_long ? (g_strategy_or_high + buffer) : (g_strategy_or_low - buffer);
-   if(want_long && bars[0].high <= trigger)
+   if(entry <= 0.0 || sl <= 0.0 || atr <= 0.0)
       return false;
-   if(!want_long && bars[0].low >= trigger)
-      return false;
-   if(want_long && g_strategy_long_taken)
-      return false;
-   if(!want_long && g_strategy_short_taken)
-      return false;
-
-   const double entry = want_long ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                                  : SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(entry <= 0.0)
-      return false;
-
-   double sl = 0.0;
-   if(want_long)
-     {
-      sl = bars[0].low;
-      for(int i = 1; i <= 3; ++i)
-         sl = MathMin(sl, bars[i].low);
-      if(sl >= entry)
-         return false;
-     }
-   else
-     {
-      sl = g_strategy_or_high;
-      for(int i = 1; i <= 3; ++i)
-         sl = MathMax(sl, bars[i].high);
-      if(sl <= entry)
-         return false;
-     }
 
    const double stop_distance = MathAbs(entry - sl);
    if(stop_distance < strategy_min_stop_atr_mult * atr)
       return false;
    if(stop_distance > strategy_max_stop_atr_mult * atr)
       return false;
+   return true;
+  }
 
-   const QM_OrderType side = want_long ? QM_BUY : QM_SELL;
+double Strategy_StructureStop(const bool want_long, const MqlRates &bars[])
+  {
+   if(want_long)
+     {
+      double sl = g_strategy_or_low;
+      for(int i = 0; i < 3; ++i)
+         sl = MathMin(sl, bars[i].low);
+      return sl;
+     }
+
+   double sl = g_strategy_or_high;
+   for(int i = 0; i < 3; ++i)
+      sl = MathMax(sl, bars[i].high);
+   return sl;
+  }
+
+bool Strategy_BuildBreakoutRequest(const bool want_long,
+                                   const bool pending_stop,
+                                   const MqlRates &bars[],
+                                   const double atr,
+                                   QM_EntryRequest &req)
+  {
+   const double buffer = atr * MathMax(0.0, strategy_buffer_atr_mult);
+   const double trigger = want_long ? (g_strategy_or_high + buffer) : (g_strategy_or_low - buffer);
+   if(want_long && g_strategy_long_taken)
+      return false;
+   if(!want_long && g_strategy_short_taken)
+      return false;
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
+      return false;
+
+   const double entry = pending_stop ? trigger : (want_long ? ask : bid);
+   if(entry <= 0.0)
+      return false;
+
+   if(pending_stop)
+     {
+      const int stop_level = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
+      const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+      const double min_gap = MathMax(0, stop_level) * point;
+      if(want_long && entry <= ask + min_gap)
+         return false;
+      if(!want_long && entry >= bid - min_gap)
+         return false;
+     }
+   else
+     {
+      if(want_long && ask < trigger)
+         return false;
+      if(!want_long && bid > trigger)
+         return false;
+     }
+
+   const double sl = Strategy_StructureStop(want_long, bars);
+   if(want_long && sl >= entry)
+      return false;
+   if(!want_long && sl <= entry)
+      return false;
+   if(!Strategy_StopDistanceAllowed(entry, sl, atr))
+      return false;
+
+   const QM_OrderType side = pending_stop ? (want_long ? QM_BUY_STOP : QM_SELL_STOP)
+                                          : (want_long ? QM_BUY : QM_SELL);
    const double tp = QM_TakeRR(_Symbol, side, entry, sl, MathMax(0.1, strategy_rr_target));
    if(tp <= 0.0)
       return false;
 
    req.type = side;
-   req.price = 0.0;
+   req.price = pending_stop ? QM_StopRulesNormalizePrice(_Symbol, entry) : 0.0;
    req.sl = QM_StopRulesNormalizePrice(_Symbol, sl);
    req.tp = QM_StopRulesNormalizePrice(_Symbol, tp);
    req.reason = want_long ? "TV_NIFTY_ORB_LONG" : "TV_NIFTY_ORB_SHORT";
    req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
+   req.expiration_seconds = pending_stop ? Strategy_SecondsUntilSessionEnd(TimeCurrent()) : 0;
    return true;
   }
 
@@ -424,7 +526,10 @@ bool Strategy_NoTradeFilter()
 
    const int hhmm = Strategy_HhmmFromTime(TimeCurrent());
    if(!Strategy_TimeInWindow(hhmm, Strategy_SessionStartHhmm(), Strategy_SessionEndHhmm()))
+     {
+      Strategy_DeleteOurPendingStops("session_end_no_position");
       return true;
+     }
 
    return false;
   }
@@ -447,6 +552,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(Strategy_HasOurOpenPosition())
       return false;
+   if(Strategy_OurPendingStopCount() > 0)
+      return false;
    if(!g_strategy_or_has_range || !g_strategy_or_ready || g_strategy_or_high <= g_strategy_or_low)
       return false;
    if(bars[0].time < g_strategy_or_locked_at)
@@ -460,15 +567,37 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(atr <= 0.0)
       return false;
 
-   if(Strategy_BuildBreakoutRequest(true, bars, atr, req))
+   if(Strategy_BuildBreakoutRequest(true, false, bars, atr, req))
+      return true;
+
+   if(Strategy_BuildBreakoutRequest(false, false, bars, atr, req))
+      return true;
+
+   QM_EntryRequest buy_req;
+   Strategy_InitEntryRequest(buy_req);
+   const bool have_buy = Strategy_BuildBreakoutRequest(true, true, bars, atr, buy_req);
+
+   QM_EntryRequest sell_req;
+   Strategy_InitEntryRequest(sell_req);
+   const bool have_sell = Strategy_BuildBreakoutRequest(false, true, bars, atr, sell_req);
+
+   if(have_buy && have_sell)
      {
-      g_strategy_long_taken = true;
+      ulong buy_ticket = 0;
+      QM_TM_OpenPosition(buy_req, buy_ticket);
+      req = sell_req;
       return true;
      }
 
-   if(Strategy_BuildBreakoutRequest(false, bars, atr, req))
+   if(have_buy)
      {
-      g_strategy_short_taken = true;
+      req = buy_req;
+      return true;
+     }
+
+   if(have_sell)
+     {
+      req = sell_req;
       return true;
      }
 
@@ -484,6 +613,12 @@ void Strategy_ManageOpenPosition()
    double open_price, current_sl, current_tp, volume;
    if(!Strategy_GetOurPosition(ticket, position_type, open_price, current_sl, current_tp, volume))
       return;
+
+   Strategy_DeleteOurPendingStops("opposite_order_after_fill");
+   if(position_type == POSITION_TYPE_BUY)
+      g_strategy_long_taken = true;
+   else
+      g_strategy_short_taken = true;
 
    const bool is_buy = (position_type == POSITION_TYPE_BUY);
    const double market = is_buy ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
