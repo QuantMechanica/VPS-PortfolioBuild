@@ -4,7 +4,7 @@
 **Slug:** tv-sess-ls-ema
 **Source:** d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7 (see `strategy-seeds/sources/d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-05-31
+**Last revised:** 2026-06-04
 
 ---
 
@@ -49,7 +49,7 @@ This EA trades failed breaks of a recent intraday range during a configured sess
 
 | Aspect | Value |
 |---|---|
-| Base timeframe | `M15` baseline, with `M5` also generated for the card's M5-M15 range |
+| Base timeframe | `M15` smoke baseline, with `M5` also generated for the card's M5-M15 range |
 | Multi-timeframe refs | none |
 | Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
 
@@ -95,3 +95,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-05-31 | Initial build from card | 614fe085-9f05-41e5-88b8-c3cd438025c6 |
+| v2 | 2026-06-04 | Build handoff refresh | dc1ed35f-d1bb-49e6-b18c-3844bc9e7303 |

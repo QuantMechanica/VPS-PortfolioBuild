@@ -255,23 +255,23 @@ bool ETO_OpeningRange(double &range_high, double &range_low)
    if(broker_now < range_end)
       return false;
 
-   const int period_seconds = PeriodSeconds((ENUM_TIMEFRAMES)_Period);
-   if(period_seconds <= 0)
+   MqlRates rates[];
+   const int copied = CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, session_start, range_end, rates); // perf-allowed: ORB structural window, called only from closed-bar EntrySignal
+   if(copied <= 0)
       return false;
 
-   const int bars = MathMax(1, strategy_range_minutes * 60 / period_seconds);
-   for(int i = 1; i <= bars + 2; ++i)
+   for(int i = 0; i < copied; ++i)
      {
-      const datetime bt = iTime(_Symbol, _Period, i);
+      const datetime bt = rates[i].time;
       if(bt <= 0)
          return false;
       if(bt < session_start)
-         break;
+         continue;
       if(bt >= range_end)
          continue;
 
-      const double hi = iHigh(_Symbol, _Period, i);
-      const double lo = iLow(_Symbol, _Period, i);
+      const double hi = rates[i].high;
+      const double lo = rates[i].low;
       if(hi <= 0.0 || lo <= 0.0)
          return false;
       range_high = MathMax(range_high, hi);

@@ -3,16 +3,16 @@
 ; ea_id:        10697
 ; ea_slug:      tv-sess-ls-ema
 ; ea_version:   v5.0
-; set_version:  s20260603-001
+; set_version:  s20260604-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    M5
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   6cb42dcc26e8de7c253813a5f78e9393eaa634015807f61aa137bf52657d2c30
 ; author:       Development
-; date:         2026-06-03
+; date:         2026-06-04
 ;==========================================================
 qm_magic_slot_offset=3
 RISK_FIXED=1000
