@@ -94,11 +94,12 @@ LIVE_TERMINAL_NAMES = {"T_LIVE", "T6_LIVE"}
 MT5_TERMINALS = tuple(f"T{i}" for i in range(1, 11))  # factory fleet, T_Live is never a factory slot
 MT5_WORK_ITEM_FEED_MULTIPLIER = 2
 MT5_WORK_ITEM_MIN_FEED_DEPTH = 20
-BUILD_BACKPRESSURE_PENDING_SOFT_LIMIT = 1000
-BUILD_BACKPRESSURE_PENDING_HARD_LIMIT = 3000
+BUILD_BACKPRESSURE_PENDING_SOFT_LIMIT = 3000  # OWNER 2026-06-04: 1000->3000 (raise build throughput vs MT5 queue)
+BUILD_BACKPRESSURE_PENDING_HARD_LIMIT = 5000  # OWNER 2026-06-04: 3000->5000
 BUILD_BACKPRESSURE_ACTIVE_WORK_ITEM_LIMIT = 7
 MAX_AUTO_CREATED_BUILDS_PER_PUMP = 1
 MAX_PARALLEL_CLAUDE = 3
+MAX_PARALLEL_CLAUDE_BUILDS = 1  # OWNER 2026-06-04: Claude build lane (Codex-reviewed); leaves >=1 Claude slot for reviews
 DIRTY_REPO_BUILD_GUARD_ENV = "QM_ALLOW_DIRTY_REPO_BUILDS"
 DIRTY_REPO_GUARD_DETAIL_LIMIT = 20
 ZERO_TRADE_DEAD_THRESHOLD = 0.80
@@ -4842,6 +4843,87 @@ def _spawn_gemini_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]
     }
 
 
+def _spawn_claude_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]:
+    """Spawn Claude CLI to build one pending build_ea task.
+
+    Mirror of _spawn_codex_for_build using the shared build contract
+    (codex_build_ea.md). Claude-built EAs are tagged build_agent='claude' so
+    the pump (§5c) routes their FINAL ea_review to Codex — the inverse of
+    Codex-built EAs, which Claude reviews. OWNER 2026-06-04.
+
+    Idempotent: skip if claude_build_<task_id>.live.log grew in the last 60s.
+    """
+    payload = json.loads(task_row["payload_json"])
+    ea_id = payload.get("ea_id")
+    slug = payload.get("slug")
+    card_path = payload.get("card_path")
+    if not card_path:
+        return {"spawned": False, "agent": "claude", "reason": "no card_path in payload"}
+    prompt_path = str(root / "queue" / f"claude_build_{task_row['id']}.md")
+    build_result_path = str(root / "artifacts" / "builds" / f"{task_row['id']}.json")
+    Path(prompt_path).parent.mkdir(parents=True, exist_ok=True)
+    Path(build_result_path).parent.mkdir(parents=True, exist_ok=True)
+    template = CODEX_BUILD_TEMPLATE.read_text(encoding="utf-8")
+    for k, v in [
+        ("task_id", task_row["id"]),
+        ("ea_id", ea_id),
+        ("slug", slug or ""),
+        ("card_path", card_path or ""),
+        ("source_id", ""),
+        ("ea_dir", str(FRAMEWORK_EAS_DIR / f"{ea_id}_{slug}")),
+        ("build_result_path", build_result_path),
+    ]:
+        template = template.replace("{{" + k + "}}", str(v))
+    bootstrap = (
+        "You are Claude building a QuantMechanica V5 EA. Follow the build "
+        "contract below EXACTLY. Codex will review your output before it can "
+        f"enter backtest. Write the required JSON result to '{build_result_path}' "
+        "and exit cleanly. No prose outside the JSON file.\n\n" + template
+    )
+    Path(prompt_path).write_text(bootstrap, encoding="utf-8", newline="\n")
+    payload["prompt_path"] = prompt_path
+    payload["build_result_path"] = build_result_path
+    payload["build_agent"] = "claude"
+    with connect(root) as conn:
+        conn.execute("UPDATE tasks SET payload_json=? WHERE id=?", (json.dumps(payload), task_row["id"]))
+        conn.commit()
+
+    live_log = root / "logs" / f"claude_build_{task_row['id']}.live.log"
+    live_log.parent.mkdir(parents=True, exist_ok=True)
+    if live_log.exists():
+        age_sec = time.time() - live_log.stat().st_mtime
+        if age_sec < 60:
+            return {"spawned": False, "agent": "claude", "reason": "live log activity within 60s - claude likely still running", "task_id": task_row["id"]}
+
+    claude_path = _resolve_claude()
+    creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0  # type: ignore[attr-defined]
+    stdin_f = open(prompt_path, "rb")
+    stdout_f = open(live_log, "wb")
+    proc = subprocess.Popen(
+        [claude_path, "-p",
+         "--permission-mode", "bypassPermissions",
+         "--add-dir", "C:\\QM\\repo",
+         "--add-dir", "D:\\QM\\strategy_farm",
+         "--add-dir", "D:\\QM\\reports"],
+        cwd=str(REPO_ROOT),
+        env=_claude_env(),
+        stdin=stdin_f,
+        stdout=stdout_f,
+        stderr=subprocess.STDOUT,
+        shell=True,
+        creationflags=creationflags,
+        close_fds=True,
+    )
+    return {
+        "spawned": True,
+        "agent": "claude",
+        "task_id": task_row["id"],
+        "ea_id": ea_id,
+        "pid": proc.pid,
+        "live_log": str(live_log),
+    }
+
+
 def _is_zero_trade_failure_payload(payload_json: str | None, evidence_path: str | None) -> bool:
     invalid_report_reasons = {"NO_HISTORY", "NO_REAL_TICKS", "INVALID_REPORT"}
     if payload_json and "MIN_TRADES_NOT_MET" in payload_json:
@@ -6529,6 +6611,16 @@ def pump(root: Path) -> dict[str, Any]:
         active_gemini = int((ps_out.stdout or "0").strip() or "0")
     except Exception:
         active_gemini = 0
+    try:
+        ps_out = subprocess.run(
+            ["powershell.exe", "-NoProfile", "-Command",
+             "(Get-Process -Name claude -ErrorAction SilentlyContinue).Count"],
+            capture_output=True, text=True, timeout=10,
+            creationflags=(subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0),
+        )
+        active_claude = int((ps_out.stdout or "0").strip() or "0")
+    except Exception:
+        active_claude = 0
     # Build budget: Gemini can draft builds, Codex still owns review gates.
     # Non-build spawns (research/review/g0) can still use up to MAX_PARALLEL_CODEX-active.
     spawn_budget = max(0, min(MAX_PARALLEL_CODEX_BUILDS, MAX_PARALLEL_CODEX - active_codex))
@@ -6736,6 +6828,44 @@ def pump(root: Path) -> dict[str, Any]:
     result["codex_spawns_all"] = spawns
     result["codex_active_before"] = active_codex
     result["codex_spawn_budget"] = spawn_budget
+
+    # 3c. Claude builds — OWNER 2026-06-04 reactivated the Claude build lane.
+    #     Claude builds a small number of pending build_ea tasks alongside
+    #     Codex; claude-built EAs are tagged build_agent='claude' so §5c routes
+    #     their FINAL ea_review to Codex (mirror of Codex-built -> Claude review).
+    #     Bounded by MAX_PARALLEL_CLAUDE_BUILDS + the shared Claude pool, always
+    #     leaving >=1 Claude slot for reviews. Skips EAs Codex is already
+    #     building this cycle and perma-blocked EAs. Existing-pending spawn
+    #     (like §3 Codex) is not gated by build_backpressure.
+    result["claude_build_spawns"] = []
+    claude_disabled_build = (root / "CLAUDE_DISABLED.flag").exists()
+    claude_build_budget = 0
+    if not claude_disabled_build and not repo_dirty_guard.get("blocked"):
+        claude_build_budget = max(0, min(
+            MAX_PARALLEL_CLAUDE_BUILDS,
+            MAX_PARALLEL_CLAUDE - 1 - active_claude,
+        ))
+    result["claude_build_budget"] = claude_build_budget
+    if claude_build_budget > 0:
+        already_spawned_eas = {
+            s.get("ea_id") for s in spawns if isinstance(s, dict) and s.get("spawned")
+        }
+        with connect(root) as conn:
+            claude_pending = conn.execute(
+                "SELECT * FROM tasks WHERE kind='build_ea' AND status='pending' "
+                "ORDER BY updated_at ASC"
+            ).fetchall()
+        claude_seen: set[str] = set()
+        for row in claude_pending:
+            if len(result["claude_build_spawns"]) >= claude_build_budget:
+                break
+            cp = json.loads(row["payload_json"])
+            cea = cp.get("ea_id")
+            if cea in already_spawned_eas or cea in claude_seen or cea in perma_blocked_eas:
+                continue
+            claude_seen.add(cea)
+            result["claude_build_spawns"].append(_spawn_claude_for_build(root, row))
+
     MAX_PARALLEL_CODEX_REVIEW = 4
     if codex_low_tokens:
         MAX_PARALLEL_CODEX_REVIEW = min(MAX_PARALLEL_CODEX_REVIEW, 1)
@@ -6959,7 +7089,13 @@ def pump(root: Path) -> dict[str, Any]:
             result["claude_review_spawn"] = {"spawned": False, "reason": "CLAUDE_DISABLED.flag present; routed to Codex"}
         elif claude_review_slots > 0:
             for done_no_review in done_no_review_rows[:claude_review_slots]:
-                sp = _spawn_claude_for_review(root, done_no_review)
+                dnr_payload = json.loads(done_no_review["payload_json"])
+                if dnr_payload.get("build_agent") == "claude":
+                    # Mirror: Codex performs the final ea_review of Claude-built
+                    # EAs (the inverse of Claude reviewing Codex-built EAs).
+                    sp = _spawn_codex_for_review(root, done_no_review)
+                else:
+                    sp = _spawn_claude_for_review(root, done_no_review)
                 result["claude_review_spawns_all"].append(sp)
                 if sp.get("spawned"):
                     claude_spawns_this_cycle += 1
