@@ -12,8 +12,8 @@ import sys
 from pathlib import Path
 
 
-TERMINALS = tuple(f"T{i}" for i in range(1, 11))
-FACTORY_TERMINAL_RE = re.compile(r"^T(?:[1-9]|10)$", re.IGNORECASE)
+TERMINALS = tuple(f"T{i}" for i in range(1, 15))  # T1-T14 (OWNER 2026-06-04: +T11-T14)
+FACTORY_TERMINAL_RE = re.compile(r"^T(?:[1-9]|1[0-4])$", re.IGNORECASE)
 
 
 def _pid_alive(pid: int) -> bool:

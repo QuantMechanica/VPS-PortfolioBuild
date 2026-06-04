@@ -1522,11 +1522,18 @@ def main() -> int:
         + len(q.get("pending_backtests_list", []) or [])
         + q.get("work_items_pending", 0)
     )
-    # T1..T10 fleet — active when an mt5_work entry's terminal matches
+    # Factory fleet — provisioned T1..T14 terminals (gated on terminal64.exe).
+    # Fleet auto-grows as terminals are provisioned (OWNER 2026-06-04: +T11-T14).
+    import os as _os
+    _mt5_root = r"D:\QM\mt5"
+    fleet_terminals = [
+        f"T{i}" for i in range(1, 15)
+        if _os.path.exists(_os.path.join(_mt5_root, f"T{i}", "terminal64.exe"))
+    ] or [f"T{i}" for i in range(1, 11)]
+    fleet_n = len(fleet_terminals)
     active_terms = {str(w.get("terminal") or "").upper() for w in mt5_work}
     term_cells = []
-    for i in range(1, 11):
-        tname = f"T{i}"
+    for tname in fleet_terminals:
         is_active = any(tname in t or t == tname for t in active_terms)
         cls = "active" if is_active else "idle"
         dot = "■" if is_active else "□"
@@ -1534,7 +1541,7 @@ def main() -> int:
             f'<div class="term {cls}"><div class="id">{tname}</div><div class="dot">{dot}</div></div>'
         )
     term_row_html = "".join(term_cells)
-    fleet_label = f"T1–T10 Workers // {len(active_terms)} of 10 saturated"
+    fleet_label = f"{fleet_terminals[0]}–{fleet_terminals[-1]} Workers // {len(active_terms)} of {fleet_n} saturated"
 
     # ---------- 4. PROFITABILITY NEXT ACTIONS ----------
     def stage_state_class(status: str) -> tuple[str, str]:
