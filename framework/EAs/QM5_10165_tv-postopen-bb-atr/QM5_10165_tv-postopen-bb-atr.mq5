@@ -27,7 +27,7 @@ input int    qm_friday_close_hour_broker  = 21;
 input group "Strategy"
 input int    strategy_bb_period           = 14;
 input double strategy_bb_deviation        = 1.5;
-input double strategy_bb_near_basis_frac  = 0.25;
+input double strategy_bb_near_basis_frac  = 0.50;
 input int    strategy_ema_fast_period     = 10;
 input int    strategy_ema_slow_period     = 200;
 input int    strategy_rsi_period          = 7;
@@ -36,7 +36,7 @@ input int    strategy_adx_period          = 7;
 input double strategy_adx_min             = 10.0;
 input int    strategy_resistance_bars     = 20;
 input int    strategy_resistance_touches  = 2;
-input double strategy_touch_tolerance_atr = 0.10;
+input double strategy_touch_tolerance_atr = 0.20;
 input int    strategy_atr_period          = 14;
 input double strategy_atr_sl_mult         = 2.0;
 input double strategy_atr_tp_mult         = 4.0;
@@ -69,8 +69,8 @@ bool Strategy_InTradingWindow(const datetime t)
 
 bool Strategy_IsBearishCandle(const int shift)
   {
-   const double open = iOpen(_Symbol, _Period, shift);
-   const double close = iClose(_Symbol, _Period, shift);
+   const double open = iOpen(_Symbol, _Period, shift); // perf-allowed: bounded bespoke candle-colour check
+   const double close = iClose(_Symbol, _Period, shift); // perf-allowed: bounded bespoke candle-colour check
    return (open > 0.0 && close > 0.0 && close < open);
   }
 
@@ -82,48 +82,52 @@ bool Strategy_FindResistance(double &resistance, int &touch_count)
    if(strategy_resistance_bars < 2 || strategy_resistance_touches < 1)
       return false;
 
-   for(int shift = 2; shift < 2 + strategy_resistance_bars; ++shift)
-     {
-      const double high = iHigh(_Symbol, _Period, shift);
-      if(high <= 0.0)
-         return false;
-      if(high > resistance)
-         resistance = high;
-     }
-
-   if(resistance <= 0.0)
-      return false;
-
    const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    if(atr <= 0.0 || point <= 0.0)
       return false;
 
    const double tolerance = MathMax(point, atr * strategy_touch_tolerance_atr);
-   for(int shift = 2; shift < 2 + strategy_resistance_bars; ++shift)
+   for(int candidate_shift = 2; candidate_shift < 2 + strategy_resistance_bars; ++candidate_shift)
      {
-      const double high = iHigh(_Symbol, _Period, shift);
-      if(MathAbs(high - resistance) <= tolerance)
-         touch_count++;
+      const double candidate = iHigh(_Symbol, _Period, candidate_shift); // perf-allowed: bounded two-touch resistance scan
+      if(candidate <= 0.0)
+         return false;
+
+      int candidate_touches = 0;
+      for(int touch_shift = 2; touch_shift < 2 + strategy_resistance_bars; ++touch_shift)
+        {
+         const double high = iHigh(_Symbol, _Period, touch_shift); // perf-allowed: bounded two-touch resistance scan
+         if(high <= 0.0)
+            return false;
+         if(MathAbs(high - candidate) <= tolerance)
+            candidate_touches++;
+        }
+
+      if(candidate_touches >= strategy_resistance_touches && candidate > resistance)
+        {
+         resistance = candidate;
+         touch_count = candidate_touches;
+        }
      }
 
    return (touch_count >= strategy_resistance_touches);
   }
 
-bool Strategy_PriceNearBasis()
+bool Strategy_PriceNearBasis(const int shift)
   {
-   const double close1 = iClose(_Symbol, _Period, 1);
-   const double middle = QM_BB_Middle(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_bb_period, strategy_bb_deviation, 1);
-   const double upper = QM_BB_Upper(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_bb_period, strategy_bb_deviation, 1);
-   const double lower = QM_BB_Lower(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_bb_period, strategy_bb_deviation, 1);
-   if(close1 <= 0.0 || middle <= 0.0 || upper <= lower)
+   const double close_price = iClose(_Symbol, _Period, shift); // perf-allowed: setup-bar BB lateralization check
+   const double middle = QM_BB_Middle(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_bb_period, strategy_bb_deviation, shift);
+   const double upper = QM_BB_Upper(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_bb_period, strategy_bb_deviation, shift);
+   const double lower = QM_BB_Lower(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_bb_period, strategy_bb_deviation, shift);
+   if(close_price <= 0.0 || middle <= 0.0 || upper <= lower)
       return false;
 
    const double half_width = (upper - lower) * 0.5;
    if(half_width <= 0.0)
       return false;
 
-   return (MathAbs(close1 - middle) <= half_width * strategy_bb_near_basis_frac);
+   return (MathAbs(close_price - middle) <= half_width * strategy_bb_near_basis_frac);
   }
 
 bool Strategy_NoTradeFilter()
@@ -155,15 +159,17 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   const datetime bar_time = iTime(_Symbol, _Period, 1);
+   // perf-allowed: closed breakout-bar session check
+   const datetime bar_time = iTime(_Symbol, _Period, 1); // perf-allowed
    if(bar_time <= 0 || !Strategy_InTradingWindow(bar_time))
       return false;
 
-   if(!Strategy_PriceNearBasis())
+   if(!Strategy_PriceNearBasis(2))
       return false;
 
-   const double close1 = iClose(_Symbol, _Period, 1);
-   const double close2 = iClose(_Symbol, _Period, 2);
+   // perf-allowed: closed-bar resistance confirmation
+   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed
+   const double close2 = iClose(_Symbol, _Period, 2); // perf-allowed: closed setup-bar resistance confirmation
    if(close1 <= 0.0 || close2 <= 0.0)
       return false;
 

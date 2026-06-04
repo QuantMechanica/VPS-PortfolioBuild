@@ -18,9 +18,9 @@ This EA trades long-only post-open resistance breakouts on intraday bars. It onl
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `strategy_signal_tf` | PERIOD_M15 | M5 or M15 | Timeframe used for indicator and breakout calculations |
 | `strategy_bb_period` | 14 | 5-50 | Bollinger Bands lookback for lateralization |
 | `strategy_bb_deviation` | 1.5 | 0.5-4.0 | Bollinger standard-deviation multiplier |
+| `strategy_bb_near_basis_frac` | 0.50 | 0.0-1.0 | Maximum setup-candle distance from Bollinger basis as a fraction of half-band width |
 | `strategy_ema_fast_period` | 10 | 2-50 | Fast EMA filter period |
 | `strategy_ema_slow_period` | 200 | 50-400 | Slow EMA trend filter period |
 | `strategy_rsi_period` | 7 | 2-50 | RSI filter period |
@@ -28,13 +28,16 @@ This EA trades long-only post-open resistance breakouts on intraday bars. It onl
 | `strategy_adx_period` | 7 | 2-50 | ADX trend-strength period |
 | `strategy_adx_min` | 10.0 | 0.0-100.0 | Minimum ADX value allowed for long entries |
 | `strategy_resistance_bars` | 20 | 5-100 | Closed bars used to identify resistance |
-| `strategy_min_touches` | 2 | 1-10 | Minimum highs near resistance required |
+| `strategy_resistance_touches` | 2 | 1-10 | Minimum highs near resistance required |
+| `strategy_touch_tolerance_atr` | 0.20 | 0.0-1.0 | Resistance touch tolerance as a fraction of ATR |
 | `strategy_atr_period` | 14 | 2-100 | ATR period for spread, stop, and target distances |
 | `strategy_atr_sl_mult` | 2.0 | 0.1-10.0 | Stop-loss distance in ATR multiples |
 | `strategy_atr_tp_mult` | 4.0 | 0.1-20.0 | Take-profit distance in ATR multiples |
-| `strategy_spread_stop_frac` | 0.15 | 0.0-1.0 | Maximum spread as a fraction of ATR stop distance |
-| `strategy_touch_atr_frac` | 0.10 | 0.0-1.0 | Resistance touch tolerance as a fraction of ATR |
-| `strategy_near_basis_frac` | 0.25 | 0.0-1.0 | Maximum distance from Bollinger basis as a fraction of band width |
+| `strategy_max_spread_sl_frac` | 0.15 | 0.0-1.0 | Maximum spread as a fraction of ATR stop distance |
+| `strategy_de_open_start_hhmm` | 800 | 0-2359 | German post-open window start in broker HHMM |
+| `strategy_de_open_end_hhmm` | 1200 | 0-2359 | German post-open window end in broker HHMM |
+| `strategy_us_open_start_hhmm` | 1530 | 0-2359 | US post-open window start in broker HHMM |
+| `strategy_us_open_end_hhmm` | 1900 | 0-2359 | US post-open window end in broker HHMM |
 
 > Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
 > qm_news_mode, qm_rng_seed, qm_stress_reject_probability, qm_friday_close_*)
@@ -61,7 +64,7 @@ This EA trades long-only post-open resistance breakouts on intraday bars. It onl
 
 | Aspect | Value |
 |---|---|
-| Base timeframe | `M15` |
+| Base timeframe | `M5` or `M15` per card; Q01 smoke uses `M5` to exercise the higher-frequency card variant |
 | Multi-timeframe refs | none |
 | Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
 
@@ -107,3 +110,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-05-25 | Initial build from card | 74fe4c97-4c5e-4ad6-8782-e7a2fc06f41c |
+| v2 | 2026-06-04 | Q01 rework: evaluate BB lateralization on setup candle and use highest two-touch resistance level | b1747809-4fa1-4ee9-b336-f5893e4bcd27 |

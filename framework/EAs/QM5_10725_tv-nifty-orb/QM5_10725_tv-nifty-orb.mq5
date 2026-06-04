@@ -162,6 +162,17 @@ int Strategy_MinutesFromSessionStart(const int hhmm)
    return delta;
   }
 
+datetime Strategy_SessionStartTime(const datetime t)
+  {
+   MqlDateTime dt;
+   TimeToStruct(t, dt);
+   const int start_hhmm = Strategy_SessionStartHhmm();
+   dt.hour = start_hhmm / 100;
+   dt.min = start_hhmm % 100;
+   dt.sec = 0;
+   return StructToTime(dt);
+  }
+
 void Strategy_ResetSession(const int day_key)
   {
    g_strategy_session_key = day_key;
@@ -222,12 +233,40 @@ void Strategy_AdvanceOpeningRange(const MqlRates &bar)
    const int elapsed = Strategy_MinutesFromSessionStart(hhmm);
    const int or_bars = MathMax(1, MathMin(60, strategy_or_bars));
    const int bar_minutes = MathMax(1, PeriodSeconds((ENUM_TIMEFRAMES)_Period) / 60);
-   if(elapsed < 0 || elapsed >= or_bars)
+   if(elapsed < 0)
+      return;
+
+   if(elapsed >= or_bars)
      {
+      if(!g_strategy_or_has_range)
+        {
+         const datetime range_start = Strategy_SessionStartTime(bar.time);
+         const datetime range_end = range_start + or_bars * 60 - 1;
+         MqlRates range_bars[];
+         const int copied = CopyRates(_Symbol, PERIOD_M1, range_start, range_end, range_bars); // perf-allowed: at most five M1 OR bars, called after QM_IsNewBar().
+         if(copied < or_bars)
+            return;
+
+         for(int i = 0; i < copied; ++i)
+           {
+            if(!g_strategy_or_has_range)
+              {
+               g_strategy_or_high = range_bars[i].high;
+               g_strategy_or_low = range_bars[i].low;
+               g_strategy_or_has_range = true;
+              }
+            else
+              {
+               g_strategy_or_high = MathMax(g_strategy_or_high, range_bars[i].high);
+               g_strategy_or_low = MathMin(g_strategy_or_low, range_bars[i].low);
+              }
+           }
+        }
+
       if(g_strategy_or_has_range && !g_strategy_or_ready)
         {
          g_strategy_or_ready = true;
-         g_strategy_or_locked_at = bar.time;
+         g_strategy_or_locked_at = Strategy_SessionStartTime(bar.time) + or_bars * 60;
         }
       return;
      }
