@@ -39,9 +39,8 @@ input int    strategy_session_end_hhmm   = 1100;
 input double strategy_min_sweep_range_atr = 0.5;
 input int    strategy_max_spread_points  = 0;
 
-bool Strategy_NoTradeFilter()
+bool Strategy_HasOpenPosition()
   {
-   bool has_position = false;
    const int magic = QM_FrameworkMagic();
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
@@ -52,20 +51,29 @@ bool Strategy_NoTradeFilter()
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
-      has_position = true;
-      break;
+      return true;
      }
 
-   MqlDateTime dt;
-   TimeToStruct(TimeCurrent(), dt);
-   const int hhmm = dt.hour * 100 + dt.min;
-   bool in_session = false;
-   if(strategy_session_start_hhmm <= strategy_session_end_hhmm)
-      in_session = (hhmm >= strategy_session_start_hhmm && hhmm < strategy_session_end_hhmm);
-   else
-      in_session = (hhmm >= strategy_session_start_hhmm || hhmm < strategy_session_end_hhmm);
+   return false;
+  }
 
-   if(!in_session && !has_position)
+bool Strategy_HHMMInSession(const int hhmm)
+  {
+   if(strategy_session_start_hhmm <= strategy_session_end_hhmm)
+      return (hhmm >= strategy_session_start_hhmm && hhmm < strategy_session_end_hhmm);
+   return (hhmm >= strategy_session_start_hhmm || hhmm < strategy_session_end_hhmm);
+  }
+
+int Strategy_HHMM(const datetime t)
+  {
+   MqlDateTime dt;
+   TimeToStruct(t, dt);
+   return dt.hour * 100 + dt.min;
+  }
+
+bool Strategy_NoTradeFilter()
+  {
+   if(!Strategy_HHMMInSession(Strategy_HHMM(TimeCurrent())) && !Strategy_HasOpenPosition())
       return true;
 
    if(strategy_max_spread_points > 0)
@@ -95,47 +103,34 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_rr_target <= 0.0)
       return false;
 
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
-         return false;
-     }
-
-   MqlDateTime bar_dt;
-   const datetime signal_time = iTime(_Symbol, _Period, 1);
-   if(signal_time <= 0)
+   if(Strategy_HasOpenPosition())
       return false;
-   TimeToStruct(signal_time, bar_dt);
-   const int signal_hhmm = bar_dt.hour * 100 + bar_dt.min;
-   bool signal_in_session = false;
-   if(strategy_session_start_hhmm <= strategy_session_end_hhmm)
-      signal_in_session = (signal_hhmm >= strategy_session_start_hhmm && signal_hhmm < strategy_session_end_hhmm);
-   else
-      signal_in_session = (signal_hhmm >= strategy_session_start_hhmm || signal_hhmm < strategy_session_end_hhmm);
-   if(!signal_in_session)
+
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int bars_needed = strategy_liquidity_lookback + 1;
+   const int copied = CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, bars_needed, rates); // perf-allowed: bounded structural sweep read; caller is behind the framework QM_IsNewBar gate.
+   if(copied != bars_needed)
+      return false;
+
+   if(!Strategy_HHMMInSession(Strategy_HHMM(rates[0].time)))
       return false;
 
    double prior_high = -DBL_MAX;
    double prior_low = DBL_MAX;
-   for(int shift = 2; shift <= strategy_liquidity_lookback + 1; ++shift)
+   for(int idx = 1; idx < bars_needed; ++idx)
      {
-      const double bar_high = iHigh(_Symbol, _Period, shift);
-      const double bar_low = iLow(_Symbol, _Period, shift);
+      const double bar_high = rates[idx].high;
+      const double bar_low = rates[idx].low;
       if(bar_high <= 0.0 || bar_low <= 0.0)
          return false;
       prior_high = MathMax(prior_high, bar_high);
       prior_low = MathMin(prior_low, bar_low);
      }
 
-   const double high1 = iHigh(_Symbol, _Period, 1);
-   const double low1 = iLow(_Symbol, _Period, 1);
-   const double close1 = iClose(_Symbol, _Period, 1);
+   const double high1 = rates[0].high;
+   const double low1 = rates[0].low;
+   const double close1 = rates[0].close;
    const double ema1 = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_ema_period, 1);
    const double atr1 = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
    if(high1 <= 0.0 || low1 <= 0.0 || close1 <= 0.0 || ema1 <= 0.0 || atr1 <= 0.0)
@@ -179,33 +174,10 @@ void Strategy_ManageOpenPosition()
 
 bool Strategy_ExitSignal()
   {
-   bool has_position = false;
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      has_position = true;
-      break;
-     }
-   if(!has_position)
+   if(!Strategy_HasOpenPosition())
       return false;
 
-   MqlDateTime dt;
-   TimeToStruct(TimeCurrent(), dt);
-   const int hhmm = dt.hour * 100 + dt.min;
-   bool in_session = false;
-   if(strategy_session_start_hhmm <= strategy_session_end_hhmm)
-      in_session = (hhmm >= strategy_session_start_hhmm && hhmm < strategy_session_end_hhmm);
-   else
-      in_session = (hhmm >= strategy_session_start_hhmm || hhmm < strategy_session_end_hhmm);
-
-   return !in_session;
+   return !Strategy_HHMMInSession(Strategy_HHMM(TimeCurrent()));
   }
 
 bool Strategy_NewsFilterHook(const datetime broker_time)

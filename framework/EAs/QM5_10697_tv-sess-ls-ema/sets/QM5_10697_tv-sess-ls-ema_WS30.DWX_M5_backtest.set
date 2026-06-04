@@ -3,7 +3,7 @@
 ; ea_id:        10697
 ; ea_slug:      tv-sess-ls-ema
 ; ea_version:   v5.0
-; set_version:  s20260531-001
+; set_version:  s20260603-001
 ; symbol:       WS30.DWX
 ; timeframe:    M5
 ; environment:  backtest
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-05-31
+; date:         2026-06-03
 ;==========================================================
 qm_magic_slot_offset=5
 RISK_FIXED=1000
@@ -32,3 +32,12 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
+strategy_liquidity_lookback=20
+strategy_ema_period=50
+strategy_atr_period=14
+strategy_atr_stop_mult=1.5
+strategy_rr_target=2.5
+strategy_session_start_hhmm=930
+strategy_session_end_hhmm=1100
+strategy_min_sweep_range_atr=0.5
+strategy_max_spread_points=0
