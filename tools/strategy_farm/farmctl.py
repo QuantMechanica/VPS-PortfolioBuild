@@ -89,9 +89,9 @@ P5_REQUIRED_OOS_FROM_YEAR = 2023
 P5_REQUIRED_OOS_TO_YEAR = 2025
 P5PLUS_MAX_DRAWDOWN_PCT = 20.0
 P5PLUS_MIN_SHARPE = 0.6
-FACTORY_TERMINAL_PATTERN = re.compile(r"^T(?:[1-9]|1[0-4])$", re.IGNORECASE)  # T1-T14 (OWNER 2026-06-04: +T11-T14)
+FACTORY_TERMINAL_PATTERN = re.compile(r"^T(?:[1-9]|10)$", re.IGNORECASE)
 LIVE_TERMINAL_NAMES = {"T_LIVE", "T6_LIVE"}
-MT5_TERMINALS = tuple(f"T{i}" for i in range(1, 15))  # factory fleet T1-T14, T_Live is never a factory slot. available_mt5_terminals() gates on terminal64.exe existence, so T11-T14 activate only once provisioned.
+MT5_TERMINALS = tuple(f"T{i}" for i in range(1, 11))  # factory fleet, T_Live is never a factory slot
 MT5_WORK_ITEM_FEED_MULTIPLIER = 2
 MT5_WORK_ITEM_MIN_FEED_DEPTH = 20
 BUILD_BACKPRESSURE_PENDING_SOFT_LIMIT = 3000  # OWNER 2026-06-04: 1000->3000 (raise build throughput vs MT5 queue)
@@ -2805,7 +2805,7 @@ def _running_mt5_terminals() -> set[str]:
                 "-Command",
                 (
                     "Get-CimInstance Win32_Process -Filter \"Name='terminal64.exe'\" "
-                    "| ForEach-Object { if ($_.ExecutablePath -match '\\\\(T(?:[1-9]|1[0-4]))\\\\terminal64\\.exe$') { $Matches[1] } }"
+                    "| ForEach-Object { if ($_.ExecutablePath -match '\\\\(T(?:[1-9]|10))\\\\terminal64\\.exe$') { $Matches[1] } }"
                 ),
             ],
             capture_output=True,
