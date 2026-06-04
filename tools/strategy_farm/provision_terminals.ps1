@@ -1,14 +1,14 @@
 <#
 .SYNOPSIS
   Provision additional factory MT5 terminals by cloning an existing one.
-  OWNER 2026-06-04 — adds T11-T14 on the 8-physical-core VPS.
+  OWNER 2026-06-04 - adds T11-T14 on the 8-physical-core VPS.
 
 .DESCRIPTION
   Clones a SOURCE terminal (default T1) into TARGET terminals. Copies the
   binaries, Config, MQL5, dwx_import, and Bases\Custom (the .DWX custom-symbol
   ticks the factory backtests use). DELIBERATELY SKIPS:
     - Tester\           regenerable backtest cache (huge)
-    - Bases\Darwinex-Live  broker live history (~14GB) — .DWX backtests don't use it
+    - Bases\Darwinex-Live  broker live history (~14GB) - .DWX backtests don't use it
     - logs\, *.png/*.htm/*.html/*.log  loose report artifacts
 
   MUST be run during a FACTORY-IDLE window (no terminal64.exe running): cloning
@@ -65,7 +65,7 @@ $excludeFiles = @('*.png','*.htm','*.html','*.log','*.gif')
 foreach ($t in $Targets) {
   $dst = Join-Path $root $t
   Write-Host "=== Cloning $Source -> $t ==="
-  if (Test-Path (Join-Path $dst 'terminal64.exe')) { Write-Warning "$t already provisioned — skipping"; continue }
+  if (Test-Path (Join-Path $dst 'terminal64.exe')) { Write-Warning "$t already provisioned - skipping"; continue }
   $rcArgs = @($src, $dst, '/E', '/COPY:DAT', '/R:1', '/W:1', '/MT:8', '/NFL', '/NDL', '/NP')
   foreach ($x in $excludeDirs)  { $rcArgs += @('/XD', $x) }
   $rcArgs += @('/XF') + $excludeFiles
@@ -76,7 +76,7 @@ foreach ($t in $Targets) {
   $okCustom = Test-Path $custom
   $cgb = if ($okCustom) { [math]::Round(((Get-ChildItem $custom -Recurse -File -ErrorAction SilentlyContinue | Measure-Object Length -Sum).Sum)/1GB,1) } else { 0 }
   Write-Host ("  {0}: terminal64={1}  Bases\Custom={2} ({3} GB)" -f $t, $okExe, $okCustom, $cgb)
-  if (-not ($okExe -and $okCustom)) { Write-Warning "$t clone INCOMPLETE — investigate before starting its worker." }
+  if (-not ($okExe -and $okCustom)) { Write-Warning "$t clone INCOMPLETE - investigate before starting its worker." }
 }
 
 Write-Host ""
