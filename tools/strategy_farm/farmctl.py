@@ -6328,6 +6328,125 @@ def _admit_q09_portfolio_passes(
     return admitted
 
 
+ARTIFACT_COMMIT_ALLOWLIST = (
+    "framework/EAs/",
+    "framework/registry/magic_numbers.csv",
+    "framework/registry/ea_id_registry.csv",
+    "framework/include/QM/",
+    "public-data/",
+    "strategy-seeds/",
+)
+
+
+def _auto_commit_build_artifacts(root: Path, within_sec: int = 90) -> dict[str, Any]:
+    """Commit completed factory artifacts so repo_dirty_build_guard does not
+    deadlock the build lane.
+
+    Root cause it fixes: the pump has no git step, so every completed build
+    (.mq5/.ex5/set files + magic_numbers.csv + resolver regen) plus the
+    public-data snapshot exporter leave the working tree dirty. _repo_dirty_status
+    then blocks ALL build spawns until a human commits. With continuous building
+    the tree is almost never clean -> builds stall.
+
+    Safety: per-EA gating. An EA dir under framework/EAs/ is committed only if
+    that EA has no build live-log grown in the last `within_sec`s (i.e. not
+    mid-write). Shared artifacts (magic_numbers.csv append is line-atomic, the
+    resolver .mqh is regenerated atomically, public-data is exporter output,
+    strategy-seeds are research drafts) are committed when present. Only paths
+    on ARTIFACT_COMMIT_ALLOWLIST are touched — never code (tools/, scripts/),
+    so a human mid-edit still (correctly) blocks builds. Commit only, no push.
+    OWNER 2026-06-04.
+    """
+    import subprocess as _sp
+    if os.environ.get(DIRTY_REPO_BUILD_GUARD_ENV) == "1":
+        return {"committed": False, "reason": "guard_overridden"}
+    flags = _sp.CREATE_NO_WINDOW if sys.platform == "win32" else 0  # type: ignore[attr-defined]
+    try:
+        proc = _sp.run(
+            ["git", "-C", str(REPO_ROOT), "status", "--porcelain=v1", "--untracked-files=all"],
+            capture_output=True, text=True, timeout=30, creationflags=flags,
+        )
+    except Exception as exc:
+        return {"committed": False, "reason": f"status_failed:{exc!r}"}
+    if proc.returncode != 0:
+        return {"committed": False, "reason": "status_rc", "stderr": (proc.stderr or "")[:200]}
+    entries = [ln for ln in (proc.stdout or "").splitlines() if ln.strip()]
+    if not entries:
+        return {"committed": False, "reason": "clean"}
+
+    now = time.time()
+    # EAs whose build is actively writing (any agent) -> skip their dirs.
+    active_eas: set[str] = set()
+    try:
+        with connect(root) as conn:
+            build_rows = conn.execute(
+                "SELECT id, card_id, payload_json FROM tasks "
+                "WHERE kind='build_ea' AND status IN ('pending','done')"
+            ).fetchall()
+    except Exception:
+        build_rows = []
+    for r in build_rows:
+        for prefix in ("codex_build_", "claude_build_", "gemini_build_"):
+            lg = root / "logs" / f"{prefix}{r['id']}.live.log"
+            try:
+                if lg.exists() and now - lg.stat().st_mtime < within_sec:
+                    pl = json.loads(r["payload_json"] or "{}")
+                    active_eas.add(pl.get("ea_id") or r["card_id"])
+            except OSError:
+                continue
+
+    def _path_of(line: str) -> str:
+        p = line[3:] if len(line) > 3 else line
+        if " -> " in p:  # rename
+            p = p.split(" -> ", 1)[1]
+        return p.strip().strip('"')
+
+    commit_set: set[str] = set()
+    skipped_active: list[str] = []
+    for line in entries:
+        p = _path_of(line)
+        pu = p.replace("\\", "/")
+        if not any(pu.startswith(pre) for pre in ARTIFACT_COMMIT_ALLOWLIST):
+            continue
+        m = re.match(r"(framework/EAs/(QM5_\d+)_[^/]+)/", pu)
+        if m:
+            if m.group(2) in active_eas:
+                skipped_active.append(pu)
+                continue
+            commit_set.add(m.group(1))  # collapse to the EA dir
+        else:
+            commit_set.add(pu)
+    commit_paths = sorted(commit_set)
+    if not commit_paths:
+        return {"committed": False, "reason": "nothing_committable", "skipped_active": skipped_active}
+
+    try:
+        add = _sp.run(["git", "-C", str(REPO_ROOT), "add", "--"] + commit_paths,
+                      capture_output=True, text=True, timeout=120, creationflags=flags)
+        if add.returncode != 0:
+            return {"committed": False, "reason": "add_rc", "stderr": (add.stderr or "")[:200]}
+        msg = (f"build: pump auto-commit {len(commit_paths)} factory artifact path(s)\n\n"
+               "Deterministic artifact commit so repo_dirty_build_guard does not\n"
+               "deadlock the build lane. OWNER 2026-06-04.\n\n"
+               "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>")
+        com = _sp.run(["git", "-C", str(REPO_ROOT), "commit", "-m", msg, "--"] + commit_paths,
+                      capture_output=True, text=True, timeout=120, creationflags=flags)
+        if com.returncode != 0:
+            # Nothing staged (race) is benign.
+            tail = (com.stdout or "") + (com.stderr or "")
+            if "nothing to commit" in tail.lower():
+                return {"committed": False, "reason": "nothing_staged_race"}
+            return {"committed": False, "reason": "commit_rc", "stderr": tail[:200]}
+    except Exception as exc:
+        return {"committed": False, "reason": f"git_failed:{exc!r}"}
+    return {
+        "committed": True,
+        "n_paths": len(commit_paths),
+        "paths": commit_paths[:25],
+        "skipped_active_build_eas": sorted(set(skipped_active))[:25],
+    }
+
+
 def pump(root: Path) -> dict[str, Any]:
     """Continuous deterministic worker — run every 5 min.
 
@@ -6345,8 +6464,13 @@ def pump(root: Path) -> dict[str, Any]:
     double-spawn.
     """
     init_db(root)
+    # Deterministic artifact commit FIRST — clears the working tree of completed
+    # build/registry/snapshot output before the build guard checks it, so the
+    # build lane stops deadlocking on its own un-committed artifacts.
+    auto_commit_result = _auto_commit_build_artifacts(root)
     result: dict[str, Any] = {
         "pumped_at": utc_now(),
+        "auto_commit": auto_commit_result,
         "dispatch": None,
         "codex_spawn": None,
         "build_records": [],
