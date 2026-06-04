@@ -3,7 +3,6 @@
 #property description "QM5_10309 Cointegrated HFT Pairs Reversion"
 
 #include <QM/QM_Common.mqh>
-#include <QM/QM_BasketOrder.mqh>
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 10309;
@@ -392,27 +391,30 @@ bool OpenLeg(const string symbol,
              const double weight_sum,
              const string reason)
   {
-   const double entry = QM_BasketMarketPrice(symbol, type);
+   if(symbol != _Symbol)
+      return false;
+
+   const double entry = QM_OrderTypeIsBuy(type) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
+                                                : SymbolInfoDouble(_Symbol, SYMBOL_BID);
    const double stop_dist = RecentVolDistance(symbol);
    const double point = SymbolInfoDouble(symbol, SYMBOL_POINT);
    if(entry <= 0.0 || stop_dist <= 0.0 || point <= 0.0 || weight_sum <= 0.0)
       return false;
 
-   QM_BasketOrderRequest breq;
-   breq.symbol = symbol;
-   breq.type = type;
-   breq.price = 0.0;
-   breq.sl = QM_OrderTypeIsBuy(type) ? entry - stop_dist : entry + stop_dist;
-   breq.tp = 0.0;
-   breq.symbol_slot = slot;
-   breq.expiration_seconds = 0;
-   breq.reason = reason;
+   if(MathAbs(weight) <= 0.0)
+      return false;
 
-   const double sl_points = MathAbs(entry - breq.sl) / point;
-   breq.lots = QM_LotsForRisk(symbol, sl_points) * MathAbs(weight) / weight_sum;
+   QM_EntryRequest req;
+   req.type = type;
+   req.price = 0.0;
+   req.sl = QM_OrderTypeIsBuy(type) ? entry - stop_dist : entry + stop_dist;
+   req.tp = 0.0;
+   req.symbol_slot = slot;
+   req.expiration_seconds = 0;
+   req.reason = reason;
 
    ulong ticket = 0;
-   return QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, 20, breq, ticket);
+   return QM_TM_OpenPosition(req, ticket);
   }
 
 bool OpenPackage(const int direction)
@@ -434,7 +436,7 @@ bool OpenPackage(const int direction)
       opened = true;
 
    if(opened)
-      g_entry_bar_time = iTime(_Symbol, PERIOD_M15, 1);
+      g_entry_bar_time = TimeCurrent();
    return opened;
   }
 
