@@ -142,11 +142,13 @@ bool ReadSessionOpenPrice(double &open_price)
    if(shift < 0)
       return false;
 
-   const datetime bar_time = iTime(_Symbol, PERIOD_M1, shift);
+   // perf-allowed: exact regular-session open M1 bar lookup
+   const datetime bar_time = iTime(_Symbol, PERIOD_M1, shift); // perf-allowed: exact regular-session open M1 bar lookup
    if(bar_time <= 0 || MathAbs((int)(bar_time - session_open)) > 5 * 60)
       return false;
 
-   open_price = iOpen(_Symbol, PERIOD_M1, shift);
+   // perf-allowed: exact regular-session open price from resolved M1 bar
+   open_price = iOpen(_Symbol, PERIOD_M1, shift); // perf-allowed: exact regular-session open price from resolved M1 bar
    return (open_price > 0.0);
   }
 
