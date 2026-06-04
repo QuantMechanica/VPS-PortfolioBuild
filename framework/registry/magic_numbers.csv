@@ -5313,7 +5313,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10723,tv-tns-fvg,1,SP500.DWX,107230001,2026-06-02,Development,active
 10723,tv-tns-fvg,2,GDAXI.DWX,107230002,2026-06-02,Development,active
 10723,tv-tns-fvg,3,WS30.DWX,107230003,2026-06-02,Development,active
-10709,tv-orb-multitp,0,GER40.DWX,107090000,2026-06-02,Development,active
+10709,tv-orb-multitp,0,GDAXI.DWX,107090000,2026-06-02,Development,active
 10709,tv-orb-multitp,1,NDX.DWX,107090001,2026-06-02,Development,active
 10709,tv-orb-multitp,2,WS30.DWX,107090002,2026-06-02,Development,active
 10709,tv-orb-multitp,3,EURUSD.DWX,107090003,2026-06-02,Development,active
