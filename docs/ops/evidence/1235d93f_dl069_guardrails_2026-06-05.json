@@ -1,0 +1,126 @@
+{
+  "checked_at": "2026-06-05T08:38:48.187639Z",
+  "results": [
+    {
+      "checked_at": "2026-06-05T08:38:48.135504Z",
+      "files_checked": 6,
+      "findings": [],
+      "max_news_stale_hours": 336,
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10712_tv-ict-retest",
+      "verdict": "PASS"
+    },
+    {
+      "checked_at": "2026-06-05T08:38:48.138511Z",
+      "files_checked": 11,
+      "findings": [],
+      "max_news_stale_hours": 336,
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10713_tv-ultsmc-ema",
+      "verdict": "PASS"
+    },
+    {
+      "checked_at": "2026-06-05T08:38:48.146532Z",
+      "files_checked": 29,
+      "findings": [],
+      "max_news_stale_hours": 336,
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10717_edgelab-xsec-fx-momentum",
+      "verdict": "PASS"
+    },
+    {
+      "checked_at": "2026-06-05T08:38:48.149541Z",
+      "files_checked": 6,
+      "findings": [],
+      "max_news_stale_hours": 336,
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10727_tv-dy-vol-push",
+      "verdict": "PASS"
+    },
+    {
+      "checked_at": "2026-06-05T08:38:48.152549Z",
+      "files_checked": 9,
+      "findings": [],
+      "max_news_stale_hours": 336,
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10760_tv-iu-orb",
+      "verdict": "PASS"
+    },
+    {
+      "checked_at": "2026-06-05T08:38:48.156560Z",
+      "files_checked": 15,
+      "findings": [],
+      "max_news_stale_hours": 336,
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10762_tv-trend-brk",
+      "verdict": "PASS"
+    },
+    {
+      "checked_at": "2026-06-05T08:38:48.165582Z",
+      "files_checked": 38,
+      "findings": [],
+      "max_news_stale_hours": 336,
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1099_dax-weekly-donchian50-breakout",
+      "verdict": "PASS"
+    },
+    {
+      "checked_at": "2026-06-05T08:38:48.167588Z",
+      "files_checked": 7,
+      "findings": [],
+      "max_news_stale_hours": 336,
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12108_hopwood-cup-of-coffee-h1",
+      "verdict": "PASS"
+    },
+    {
+      "checked_at": "2026-06-05T08:38:48.170596Z",
+      "files_checked": 8,
+      "findings": [],
+      "max_news_stale_hours": 336,
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12109_camarilla-weekly-pivots-swing",
+      "verdict": "PASS"
+    },
+    {
+      "checked_at": "2026-06-05T08:38:48.173603Z",
+      "files_checked": 7,
+      "findings": [],
+      "max_news_stale_hours": 336,
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12111_bressert-double-stochastic-h1",
+      "verdict": "PASS"
+    },
+    {
+      "checked_at": "2026-06-05T08:38:48.175608Z",
+      "files_checked": 8,
+      "findings": [],
+      "max_news_stale_hours": 336,
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12112_channel-keltner-trend",
+      "verdict": "PASS"
+    },
+    {
+      "checked_at": "2026-06-05T08:38:48.178616Z",
+      "files_checked": 10,
+      "findings": [],
+      "max_news_stale_hours": 336,
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12113_bb-width-regime-breakout",
+      "verdict": "PASS"
+    },
+    {
+      "checked_at": "2026-06-05T08:38:48.181624Z",
+      "files_checked": 12,
+      "findings": [],
+      "max_news_stale_hours": 336,
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12115_classic-pivot-points-fade-break",
+      "verdict": "PASS"
+    },
+    {
+      "checked_at": "2026-06-05T08:38:48.184631Z",
+      "files_checked": 10,
+      "findings": [],
+      "max_news_stale_hours": 336,
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12116_carter-ttm-squeeze-h1",
+      "verdict": "PASS"
+    },
+    {
+      "checked_at": "2026-06-05T08:38:48.187639Z",
+      "files_checked": 10,
+      "findings": [],
+      "max_news_stale_hours": 336,
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12117_demark-td-sequential-h4",
+      "verdict": "PASS"
+    }
+  ],
+  "verdict": "PASS"
+}

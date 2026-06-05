@@ -1,0 +1,281 @@
+{
+  "generated_at": "2026-06-05T08:35:58.824447Z",
+  "promoted": [
+    {
+      "ea": "QM5_10712",
+      "canonical_dir": "QM5_10712_tv-ict-retest",
+      "deleted_v2_dir": "QM5_10712_tv-ict-retest_v2",
+      "sets": [
+        "QM5_10712_tv-ict-retest_EURUSD.DWX_M5_backtest.set",
+        "QM5_10712_tv-ict-retest_GBPUSD.DWX_M5_backtest.set",
+        "QM5_10712_tv-ict-retest_GDAXI.DWX_M5_backtest.set",
+        "QM5_10712_tv-ict-retest_NDX.DWX_M5_backtest.set",
+        "QM5_10712_tv-ict-retest_XAUUSD.DWX_M5_backtest.set"
+      ]
+    },
+    {
+      "ea": "QM5_10713",
+      "canonical_dir": "QM5_10713_tv-ultsmc-ema",
+      "deleted_v2_dir": "QM5_10713_tv-ultsmc-ema_v2",
+      "sets": [
+        "QM5_10713_tv-ultsmc-ema_EURUSD.DWX_M15_backtest.set",
+        "QM5_10713_tv-ultsmc-ema_EURUSD.DWX_M5_backtest.set",
+        "QM5_10713_tv-ultsmc-ema_GBPUSD.DWX_M15_backtest.set",
+        "QM5_10713_tv-ultsmc-ema_GBPUSD.DWX_M5_backtest.set",
+        "QM5_10713_tv-ultsmc-ema_GDAXI.DWX_M15_backtest.set",
+        "QM5_10713_tv-ultsmc-ema_GDAXI.DWX_M5_backtest.set",
+        "QM5_10713_tv-ultsmc-ema_NDX.DWX_M15_backtest.set",
+        "QM5_10713_tv-ultsmc-ema_NDX.DWX_M5_backtest.set",
+        "QM5_10713_tv-ultsmc-ema_XAUUSD.DWX_M15_backtest.set",
+        "QM5_10713_tv-ultsmc-ema_XAUUSD.DWX_M5_backtest.set"
+      ]
+    },
+    {
+      "ea": "QM5_10717",
+      "canonical_dir": "QM5_10717_edgelab-xsec-fx-momentum",
+      "deleted_v2_dir": "QM5_10717_edgelab-xsec-fx-momentum_v2",
+      "sets": [
+        "QM5_10717_edgelab-xsec-fx-momentum_AUDCAD.DWX_D1_backtest.set",
+        "QM5_10717_edgelab-xsec-fx-momentum_AUDCHF.DWX_D1_backtest.set",
+        "QM5_10717_edgelab-xsec-fx-momentum_AUDJPY.DWX_D1_backtest.set",
+        "QM5_10717_edgelab-xsec-fx-momentum_AUDNZD.DWX_D1_backtest.set",
+        "QM5_10717_edgelab-xsec-fx-momentum_AUDUSD.DWX_D1_backtest.set",
+        "QM5_10717_edgelab-xsec-fx-momentum_CADCHF.DWX_D1_backtest.set",
+        "QM5_10717_edgelab-xsec-fx-momentum_CADJPY.DWX_D1_backtest.set",
+        "QM5_10717_edgelab-xsec-fx-momentum_CHFJPY.DWX_D1_backtest.set",
+        "QM5_10717_edgelab-xsec-fx-momentum_EURAUD.DWX_D1_backtest.set",
+        "QM5_10717_edgelab-xsec-fx-momentum_EURCAD.DWX_D1_backtest.set",
+        "QM5_10717_edgelab-xsec-fx-momentum_EURCHF.DWX_D1_backtest.set",
+        "QM5_10717_edgelab-xsec-fx-momentum_EURGBP.DWX_D1_backtest.set",
+        "QM5_10717_edgelab-xsec-fx-momentum_EURJPY.DWX_D1_backtest.set",
+        "QM5_10717_edgelab-xsec-fx-momentum_EURNZD.DWX_D1_backtest.set",
+        "QM5_10717_edgelab-xsec-fx-momentum_EURUSD.DWX_D1_backtest.set",
+        "QM5_10717_edgelab-xsec-fx-momentum_GBPAUD.DWX_D1_backtest.set",
+        "QM5_10717_edgelab-xsec-fx-momentum_GBPCAD.DWX_D1_backtest.set",
+        "QM5_10717_edgelab-xsec-fx-momentum_GBPCHF.DWX_D1_backtest.set",
+        "QM5_10717_edgelab-xsec-fx-momentum_GBPJPY.DWX_D1_backtest.set",
+        "QM5_10717_edgelab-xsec-fx-momentum_GBPNZD.DWX_D1_backtest.set",
+        "QM5_10717_edgelab-xsec-fx-momentum_GBPUSD.DWX_D1_backtest.set",
+        "QM5_10717_edgelab-xsec-fx-momentum_NZDCAD.DWX_D1_backtest.set",
+        "QM5_10717_edgelab-xsec-fx-momentum_NZDCHF.DWX_D1_backtest.set",
+        "QM5_10717_edgelab-xsec-fx-momentum_NZDJPY.DWX_D1_backtest.set",
+        "QM5_10717_edgelab-xsec-fx-momentum_NZDUSD.DWX_D1_backtest.set",
+        "QM5_10717_edgelab-xsec-fx-momentum_USDCAD.DWX_D1_backtest.set",
+        "QM5_10717_edgelab-xsec-fx-momentum_USDCHF.DWX_D1_backtest.set",
+        "QM5_10717_edgelab-xsec-fx-momentum_USDJPY.DWX_D1_backtest.set"
+      ]
+    },
+    {
+      "ea": "QM5_10727",
+      "canonical_dir": "QM5_10727_tv-dy-vol-push",
+      "deleted_v2_dir": "QM5_10727_tv-dy-vol-push_v2",
+      "sets": [
+        "QM5_10727_tv-dy-vol-push_GDAXI.DWX_M1_backtest.set",
+        "QM5_10727_tv-dy-vol-push_NDX.DWX_M1_backtest.set",
+        "QM5_10727_tv-dy-vol-push_SP500.DWX_M1_backtest.set",
+        "QM5_10727_tv-dy-vol-push_WS30.DWX_M1_backtest.set",
+        "QM5_10727_tv-dy-vol-push_XAUUSD.DWX_M1_backtest.set"
+      ]
+    },
+    {
+      "ea": "QM5_10760",
+      "canonical_dir": "QM5_10760_tv-iu-orb",
+      "deleted_v2_dir": "QM5_10760_tv-iu-orb_v2",
+      "sets": [
+        "QM5_10760_tv-iu-orb_EURUSD.DWX_M5_backtest.set",
+        "QM5_10760_tv-iu-orb_GBPUSD.DWX_M5_backtest.set",
+        "QM5_10760_tv-iu-orb_GDAXI.DWX_M5_backtest.set",
+        "QM5_10760_tv-iu-orb_NDX.DWX_M5_backtest.set",
+        "QM5_10760_tv-iu-orb_SP500.DWX_M5_backtest.set",
+        "QM5_10760_tv-iu-orb_USDJPY.DWX_M5_backtest.set",
+        "QM5_10760_tv-iu-orb_WS30.DWX_M5_backtest.set",
+        "QM5_10760_tv-iu-orb_XAUUSD.DWX_M5_backtest.set"
+      ]
+    },
+    {
+      "ea": "QM5_10762",
+      "canonical_dir": "QM5_10762_tv-trend-brk",
+      "deleted_v2_dir": "QM5_10762_tv-trend-brk_v2",
+      "sets": [
+        "QM5_10762_tv-trend-brk_EURUSD.DWX_H1_backtest.set",
+        "QM5_10762_tv-trend-brk_EURUSD.DWX_M15_backtest.set",
+        "QM5_10762_tv-trend-brk_GBPUSD.DWX_H1_backtest.set",
+        "QM5_10762_tv-trend-brk_GBPUSD.DWX_M15_backtest.set",
+        "QM5_10762_tv-trend-brk_GDAXI.DWX_H1_backtest.set",
+        "QM5_10762_tv-trend-brk_GDAXI.DWX_M15_backtest.set",
+        "QM5_10762_tv-trend-brk_NDX.DWX_H1_backtest.set",
+        "QM5_10762_tv-trend-brk_NDX.DWX_M15_backtest.set",
+        "QM5_10762_tv-trend-brk_USDJPY.DWX_H1_backtest.set",
+        "QM5_10762_tv-trend-brk_USDJPY.DWX_M15_backtest.set",
+        "QM5_10762_tv-trend-brk_WS30.DWX_H1_backtest.set",
+        "QM5_10762_tv-trend-brk_WS30.DWX_M15_backtest.set",
+        "QM5_10762_tv-trend-brk_XAUUSD.DWX_H1_backtest.set",
+        "QM5_10762_tv-trend-brk_XAUUSD.DWX_M15_backtest.set"
+      ]
+    },
+    {
+      "ea": "QM5_1099",
+      "canonical_dir": "QM5_1099_dax-weekly-donchian50-breakout",
+      "deleted_v2_dir": "QM5_1099_dax-weekly-donchian50-breakout_v2",
+      "sets": [
+        "QM5_1099_dax-weekly-donchian50-breakout_AUDCAD.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_AUDCHF.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_AUDJPY.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_AUDNZD.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_AUDUSD.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_CADCHF.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_CADJPY.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_CHFJPY.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_EURAUD.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_EURCAD.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_EURCHF.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_EURGBP.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_EURJPY.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_EURNZD.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_EURUSD.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_GBPAUD.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_GBPCAD.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_GBPCHF.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_GBPJPY.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_GBPNZD.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_GBPUSD.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_GDAXI.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_NDX.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_NZDCAD.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_NZDCHF.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_NZDJPY.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_NZDUSD.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_SP500.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_UK100.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_USDCAD.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_USDCHF.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_USDJPY.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_WS30.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_XAGUSD.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_XAUUSD.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_XNGUSD.DWX_W1_backtest.set",
+        "QM5_1099_dax-weekly-donchian50-breakout_XTIUSD.DWX_W1_backtest.set"
+      ]
+    },
+    {
+      "ea": "QM5_12108",
+      "canonical_dir": "QM5_12108_hopwood-cup-of-coffee-h1",
+      "deleted_v2_dir": "QM5_12108_hopwood-cup-of-coffee-h1_v2",
+      "sets": [
+        "QM5_12108_hopwood-cup-of-coffee-h1_AUDUSD.DWX_H1_backtest.set",
+        "QM5_12108_hopwood-cup-of-coffee-h1_EURJPY.DWX_H1_backtest.set",
+        "QM5_12108_hopwood-cup-of-coffee-h1_EURUSD.DWX_H1_backtest.set",
+        "QM5_12108_hopwood-cup-of-coffee-h1_GBPJPY.DWX_H1_backtest.set",
+        "QM5_12108_hopwood-cup-of-coffee-h1_GBPUSD.DWX_H1_backtest.set",
+        "QM5_12108_hopwood-cup-of-coffee-h1_USDJPY.DWX_H1_backtest.set"
+      ]
+    },
+    {
+      "ea": "QM5_12109",
+      "canonical_dir": "QM5_12109_camarilla-weekly-pivots-swing",
+      "deleted_v2_dir": "QM5_12109_camarilla-weekly-pivots-swing_v2",
+      "sets": [
+        "QM5_12109_camarilla-weekly-pivots-swing_EURUSD.DWX_H4_backtest.set",
+        "QM5_12109_camarilla-weekly-pivots-swing_GBPUSD.DWX_H4_backtest.set",
+        "QM5_12109_camarilla-weekly-pivots-swing_GDAXI.DWX_H4_backtest.set",
+        "QM5_12109_camarilla-weekly-pivots-swing_NDX.DWX_H4_backtest.set",
+        "QM5_12109_camarilla-weekly-pivots-swing_USDJPY.DWX_H4_backtest.set",
+        "QM5_12109_camarilla-weekly-pivots-swing_WS30.DWX_H4_backtest.set",
+        "QM5_12109_camarilla-weekly-pivots-swing_XAUUSD.DWX_H4_backtest.set"
+      ]
+    },
+    {
+      "ea": "QM5_12111",
+      "canonical_dir": "QM5_12111_bressert-double-stochastic-h1",
+      "deleted_v2_dir": "QM5_12111_bressert-double-stochastic-h1_v2",
+      "sets": [
+        "QM5_12111_bressert-double-stochastic-h1_AUDUSD.DWX_H1_backtest.set",
+        "QM5_12111_bressert-double-stochastic-h1_EURUSD.DWX_H1_backtest.set",
+        "QM5_12111_bressert-double-stochastic-h1_GBPUSD.DWX_H1_backtest.set",
+        "QM5_12111_bressert-double-stochastic-h1_NDX.DWX_H1_backtest.set",
+        "QM5_12111_bressert-double-stochastic-h1_USDJPY.DWX_H1_backtest.set",
+        "QM5_12111_bressert-double-stochastic-h1_WS30.DWX_H1_backtest.set"
+      ]
+    },
+    {
+      "ea": "QM5_12112",
+      "canonical_dir": "QM5_12112_channel-keltner-trend",
+      "deleted_v2_dir": "QM5_12112_channel-keltner-trend_v2",
+      "sets": [
+        "QM5_12112_channel-keltner-trend_EURUSD.DWX_H1_backtest.set",
+        "QM5_12112_channel-keltner-trend_GBPUSD.DWX_H1_backtest.set",
+        "QM5_12112_channel-keltner-trend_GDAXI.DWX_H1_backtest.set",
+        "QM5_12112_channel-keltner-trend_NDX.DWX_H1_backtest.set",
+        "QM5_12112_channel-keltner-trend_USDJPY.DWX_H1_backtest.set",
+        "QM5_12112_channel-keltner-trend_WS30.DWX_H1_backtest.set",
+        "QM5_12112_channel-keltner-trend_XAUUSD.DWX_H1_backtest.set"
+      ]
+    },
+    {
+      "ea": "QM5_12113",
+      "canonical_dir": "QM5_12113_bb-width-regime-breakout",
+      "deleted_v2_dir": "QM5_12113_bb-width-regime-breakout_v2",
+      "sets": [
+        "QM5_12113_bb-width-regime-breakout_AUDUSD.DWX_H1_backtest.set",
+        "QM5_12113_bb-width-regime-breakout_EURJPY.DWX_H1_backtest.set",
+        "QM5_12113_bb-width-regime-breakout_EURUSD.DWX_H1_backtest.set",
+        "QM5_12113_bb-width-regime-breakout_GBPUSD.DWX_H1_backtest.set",
+        "QM5_12113_bb-width-regime-breakout_GDAXI.DWX_H1_backtest.set",
+        "QM5_12113_bb-width-regime-breakout_NDX.DWX_H1_backtest.set",
+        "QM5_12113_bb-width-regime-breakout_USDJPY.DWX_H1_backtest.set",
+        "QM5_12113_bb-width-regime-breakout_WS30.DWX_H1_backtest.set",
+        "QM5_12113_bb-width-regime-breakout_XAUUSD.DWX_H1_backtest.set"
+      ]
+    },
+    {
+      "ea": "QM5_12115",
+      "canonical_dir": "QM5_12115_classic-pivot-points-fade-break",
+      "deleted_v2_dir": "QM5_12115_classic-pivot-points-fade-break_v2",
+      "sets": [
+        "QM5_12115_classic-pivot-points-fade-break_AUDUSD.DWX_H1_backtest.set",
+        "QM5_12115_classic-pivot-points-fade-break_EURJPY.DWX_H1_backtest.set",
+        "QM5_12115_classic-pivot-points-fade-break_EURUSD.DWX_H1_backtest.set",
+        "QM5_12115_classic-pivot-points-fade-break_GBPUSD.DWX_H1_backtest.set",
+        "QM5_12115_classic-pivot-points-fade-break_GDAXI.DWX_H1_backtest.set",
+        "QM5_12115_classic-pivot-points-fade-break_NDX.DWX_H1_backtest.set",
+        "QM5_12115_classic-pivot-points-fade-break_UK100.DWX_H1_backtest.set",
+        "QM5_12115_classic-pivot-points-fade-break_USDCAD.DWX_H1_backtest.set",
+        "QM5_12115_classic-pivot-points-fade-break_USDJPY.DWX_H1_backtest.set",
+        "QM5_12115_classic-pivot-points-fade-break_WS30.DWX_H1_backtest.set",
+        "QM5_12115_classic-pivot-points-fade-break_XAUUSD.DWX_H1_backtest.set"
+      ]
+    },
+    {
+      "ea": "QM5_12116",
+      "canonical_dir": "QM5_12116_carter-ttm-squeeze-h1",
+      "deleted_v2_dir": "QM5_12116_carter-ttm-squeeze-h1_v2",
+      "sets": [
+        "QM5_12116_carter-ttm-squeeze-h1_AUDUSD.DWX_H1_backtest.set",
+        "QM5_12116_carter-ttm-squeeze-h1_EURJPY.DWX_H1_backtest.set",
+        "QM5_12116_carter-ttm-squeeze-h1_EURUSD.DWX_H1_backtest.set",
+        "QM5_12116_carter-ttm-squeeze-h1_GBPUSD.DWX_H1_backtest.set",
+        "QM5_12116_carter-ttm-squeeze-h1_GDAXI.DWX_H1_backtest.set",
+        "QM5_12116_carter-ttm-squeeze-h1_NDX.DWX_H1_backtest.set",
+        "QM5_12116_carter-ttm-squeeze-h1_USDJPY.DWX_H1_backtest.set",
+        "QM5_12116_carter-ttm-squeeze-h1_WS30.DWX_H1_backtest.set",
+        "QM5_12116_carter-ttm-squeeze-h1_XAUUSD.DWX_H1_backtest.set"
+      ]
+    },
+    {
+      "ea": "QM5_12117",
+      "canonical_dir": "QM5_12117_demark-td-sequential-h4",
+      "deleted_v2_dir": "QM5_12117_demark-td-sequential-h4_v2",
+      "sets": [
+        "QM5_12117_demark-td-sequential-h4_AUDUSD.DWX_H4_backtest.set",
+        "QM5_12117_demark-td-sequential-h4_EURJPY.DWX_H4_backtest.set",
+        "QM5_12117_demark-td-sequential-h4_EURUSD.DWX_H4_backtest.set",
+        "QM5_12117_demark-td-sequential-h4_GBPUSD.DWX_H4_backtest.set",
+        "QM5_12117_demark-td-sequential-h4_GDAXI.DWX_H4_backtest.set",
+        "QM5_12117_demark-td-sequential-h4_NDX.DWX_H4_backtest.set",
+        "QM5_12117_demark-td-sequential-h4_USDJPY.DWX_H4_backtest.set",
+        "QM5_12117_demark-td-sequential-h4_WS30.DWX_H4_backtest.set",
+        "QM5_12117_demark-td-sequential-h4_XAUUSD.DWX_H4_backtest.set"
+      ]
+    }
+  ]
+}

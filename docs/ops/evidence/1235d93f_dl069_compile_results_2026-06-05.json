@@ -1,0 +1,437 @@
+[
+  {
+    "ea": "QM5_10712",
+    "label": "QM5_10712_tv-ict-retest",
+    "returncode": 0,
+    "verdict": "COMPILED",
+    "data": [
+      {
+        "ea_label": "QM5_10712_tv-ict-retest",
+        "verdict": "COMPILED",
+        "reason": "fresh build, 0 warnings",
+        "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10712_tv-ict-retest\\QM5_10712_tv-ict-retest.ex5",
+        "ex5_size_bytes": 194900,
+        "ex5_mtime_utc": "2026-06-05T08:36:42+00:00",
+        "mq5_mtime_utc": "2026-06-05T08:35:58+00:00",
+        "compile_one_exit_code": 0,
+        "compile_one_errors": 0,
+        "compile_one_warnings": 0,
+        "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260605_083633\\QM5_10712_tv-ict-retest.compile.log",
+        "symbol_scope_verdict": "SINGLE_SYMBOL_OK",
+        "elapsed_seconds": 10.66,
+        "timestamp_utc": "2026-06-05T08:36:42+00:00",
+        "cached": false
+      }
+    ],
+    "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260605_083633\\QM5_10712_tv-ict-retest.compile.log",
+    "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10712_tv-ict-retest\\QM5_10712_tv-ict-retest.ex5",
+    "errors": 0,
+    "warnings": 0
+  },
+  {
+    "ea": "QM5_10713",
+    "label": "QM5_10713_tv-ultsmc-ema",
+    "returncode": 0,
+    "verdict": "COMPILED",
+    "data": [
+      {
+        "ea_label": "QM5_10713_tv-ultsmc-ema",
+        "verdict": "COMPILED",
+        "reason": "fresh build, 0 warnings",
+        "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10713_tv-ultsmc-ema\\QM5_10713_tv-ultsmc-ema.ex5",
+        "ex5_size_bytes": 195726,
+        "ex5_mtime_utc": "2026-06-05T08:36:52+00:00",
+        "mq5_mtime_utc": "2026-06-05T08:35:58+00:00",
+        "compile_one_exit_code": 0,
+        "compile_one_errors": 0,
+        "compile_one_warnings": 0,
+        "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260605_083644\\QM5_10713_tv-ultsmc-ema.compile.log",
+        "symbol_scope_verdict": "SINGLE_SYMBOL_OK",
+        "elapsed_seconds": 9.79,
+        "timestamp_utc": "2026-06-05T08:36:52+00:00",
+        "cached": false
+      }
+    ],
+    "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260605_083644\\QM5_10713_tv-ultsmc-ema.compile.log",
+    "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10713_tv-ultsmc-ema\\QM5_10713_tv-ultsmc-ema.ex5",
+    "errors": 0,
+    "warnings": 0
+  },
+  {
+    "ea": "QM5_10717",
+    "label": "QM5_10717_edgelab-xsec-fx-momentum",
+    "returncode": 0,
+    "verdict": "COMPILED",
+    "data": [
+      {
+        "ea_label": "QM5_10717_edgelab-xsec-fx-momentum",
+        "verdict": "COMPILED",
+        "reason": "fresh build, 0 warnings",
+        "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10717_edgelab-xsec-fx-momentum\\QM5_10717_edgelab-xsec-fx-momentum.ex5",
+        "ex5_size_bytes": 200624,
+        "ex5_mtime_utc": "2026-06-05T08:37:00+00:00",
+        "mq5_mtime_utc": "2026-06-05T08:35:58+00:00",
+        "compile_one_exit_code": 0,
+        "compile_one_errors": 0,
+        "compile_one_warnings": 0,
+        "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260605_083654\\QM5_10717_edgelab-xsec-fx-momentum.compile.log",
+        "symbol_scope_verdict": "BASKET_OK",
+        "elapsed_seconds": 8.21,
+        "timestamp_utc": "2026-06-05T08:37:01+00:00",
+        "cached": false
+      }
+    ],
+    "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260605_083654\\QM5_10717_edgelab-xsec-fx-momentum.compile.log",
+    "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10717_edgelab-xsec-fx-momentum\\QM5_10717_edgelab-xsec-fx-momentum.ex5",
+    "errors": 0,
+    "warnings": 0
+  },
+  {
+    "ea": "QM5_10727",
+    "label": "QM5_10727_tv-dy-vol-push",
+    "returncode": 0,
+    "verdict": "COMPILED",
+    "data": [
+      {
+        "ea_label": "QM5_10727_tv-dy-vol-push",
+        "verdict": "COMPILED",
+        "reason": "fresh build, 0 warnings",
+        "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10727_tv-dy-vol-push\\QM5_10727_tv-dy-vol-push.ex5",
+        "ex5_size_bytes": 195636,
+        "ex5_mtime_utc": "2026-06-05T08:37:11+00:00",
+        "mq5_mtime_utc": "2026-06-05T08:35:58+00:00",
+        "compile_one_exit_code": 0,
+        "compile_one_errors": 0,
+        "compile_one_warnings": 0,
+        "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260605_083702\\QM5_10727_tv-dy-vol-push.compile.log",
+        "symbol_scope_verdict": "SINGLE_SYMBOL_OK",
+        "elapsed_seconds": 10.19,
+        "timestamp_utc": "2026-06-05T08:37:11+00:00",
+        "cached": false
+      }
+    ],
+    "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260605_083702\\QM5_10727_tv-dy-vol-push.compile.log",
+    "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10727_tv-dy-vol-push\\QM5_10727_tv-dy-vol-push.ex5",
+    "errors": 0,
+    "warnings": 0
+  },
+  {
+    "ea": "QM5_10760",
+    "label": "QM5_10760_tv-iu-orb",
+    "returncode": 0,
+    "verdict": "COMPILED",
+    "data": [
+      {
+        "ea_label": "QM5_10760_tv-iu-orb",
+        "verdict": "COMPILED",
+        "reason": "fresh build, 0 warnings",
+        "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10760_tv-iu-orb\\QM5_10760_tv-iu-orb.ex5",
+        "ex5_size_bytes": 195706,
+        "ex5_mtime_utc": "2026-06-05T08:37:20+00:00",
+        "mq5_mtime_utc": "2026-06-05T08:35:58+00:00",
+        "compile_one_exit_code": 0,
+        "compile_one_errors": 0,
+        "compile_one_warnings": 0,
+        "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260605_083713\\QM5_10760_tv-iu-orb.compile.log",
+        "symbol_scope_verdict": "SINGLE_SYMBOL_OK",
+        "elapsed_seconds": 9.05,
+        "timestamp_utc": "2026-06-05T08:37:20+00:00",
+        "cached": false
+      }
+    ],
+    "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260605_083713\\QM5_10760_tv-iu-orb.compile.log",
+    "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10760_tv-iu-orb\\QM5_10760_tv-iu-orb.ex5",
+    "errors": 0,
+    "warnings": 0
+  },
+  {
+    "ea": "QM5_10762",
+    "label": "QM5_10762_tv-trend-brk",
+    "returncode": 0,
+    "verdict": "COMPILED",
+    "data": [
+      {
+        "ea_label": "QM5_10762_tv-trend-brk",
+        "verdict": "COMPILED",
+        "reason": "fresh build, 0 warnings",
+        "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10762_tv-trend-brk\\QM5_10762_tv-trend-brk.ex5",
+        "ex5_size_bytes": 191408,
+        "ex5_mtime_utc": "2026-06-05T08:37:28+00:00",
+        "mq5_mtime_utc": "2026-06-05T08:35:58+00:00",
+        "compile_one_exit_code": 0,
+        "compile_one_errors": 0,
+        "compile_one_warnings": 0,
+        "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260605_083721\\QM5_10762_tv-trend-brk.compile.log",
+        "symbol_scope_verdict": "SINGLE_SYMBOL_OK",
+        "elapsed_seconds": 7.48,
+        "timestamp_utc": "2026-06-05T08:37:28+00:00",
+        "cached": false
+      }
+    ],
+    "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260605_083721\\QM5_10762_tv-trend-brk.compile.log",
+    "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10762_tv-trend-brk\\QM5_10762_tv-trend-brk.ex5",
+    "errors": 0,
+    "warnings": 0
+  },
+  {
+    "ea": "QM5_1099",
+    "label": "QM5_1099_dax-weekly-donchian50-breakout",
+    "returncode": 0,
+    "verdict": "COMPILED",
+    "data": [
+      {
+        "ea_label": "QM5_1099_dax-weekly-donchian50-breakout",
+        "verdict": "COMPILED",
+        "reason": "fresh build, 0 warnings",
+        "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1099_dax-weekly-donchian50-breakout\\QM5_1099_dax-weekly-donchian50-breakout.ex5",
+        "ex5_size_bytes": 178316,
+        "ex5_mtime_utc": "2026-06-05T08:37:34+00:00",
+        "mq5_mtime_utc": "2026-06-05T08:35:58+00:00",
+        "compile_one_exit_code": 0,
+        "compile_one_errors": 0,
+        "compile_one_warnings": 0,
+        "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260605_083729\\QM5_1099_dax-weekly-donchian50-breakout.compile.log",
+        "symbol_scope_verdict": "SINGLE_SYMBOL_OK",
+        "elapsed_seconds": 6.68,
+        "timestamp_utc": "2026-06-05T08:37:35+00:00",
+        "cached": false
+      }
+    ],
+    "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260605_083729\\QM5_1099_dax-weekly-donchian50-breakout.compile.log",
+    "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1099_dax-weekly-donchian50-breakout\\QM5_1099_dax-weekly-donchian50-breakout.ex5",
+    "errors": 0,
+    "warnings": 0
+  },
+  {
+    "ea": "QM5_12108",
+    "label": "QM5_12108_hopwood-cup-of-coffee-h1",
+    "returncode": 0,
+    "verdict": "COMPILED",
+    "data": [
+      {
+        "ea_label": "QM5_12108_hopwood-cup-of-coffee-h1",
+        "verdict": "COMPILED",
+        "reason": "fresh build, 0 warnings",
+        "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12108_hopwood-cup-of-coffee-h1\\QM5_12108_hopwood-cup-of-coffee-h1.ex5",
+        "ex5_size_bytes": 195004,
+        "ex5_mtime_utc": "2026-06-05T08:37:41+00:00",
+        "mq5_mtime_utc": "2026-06-05T08:35:58+00:00",
+        "compile_one_exit_code": 0,
+        "compile_one_errors": 0,
+        "compile_one_warnings": 0,
+        "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260605_083736\\QM5_12108_hopwood-cup-of-coffee-h1.compile.log",
+        "symbol_scope_verdict": "SINGLE_SYMBOL_OK",
+        "elapsed_seconds": 6.53,
+        "timestamp_utc": "2026-06-05T08:37:41+00:00",
+        "cached": false
+      }
+    ],
+    "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260605_083736\\QM5_12108_hopwood-cup-of-coffee-h1.compile.log",
+    "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12108_hopwood-cup-of-coffee-h1\\QM5_12108_hopwood-cup-of-coffee-h1.ex5",
+    "errors": 0,
+    "warnings": 0
+  },
+  {
+    "ea": "QM5_12109",
+    "label": "QM5_12109_camarilla-weekly-pivots-swing",
+    "returncode": 0,
+    "verdict": "COMPILED",
+    "data": [
+      {
+        "ea_label": "QM5_12109_camarilla-weekly-pivots-swing",
+        "verdict": "COMPILED",
+        "reason": "fresh build, 0 warnings",
+        "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12109_camarilla-weekly-pivots-swing\\QM5_12109_camarilla-weekly-pivots-swing.ex5",
+        "ex5_size_bytes": 192006,
+        "ex5_mtime_utc": "2026-06-05T08:37:48+00:00",
+        "mq5_mtime_utc": "2026-06-05T08:35:58+00:00",
+        "compile_one_exit_code": 0,
+        "compile_one_errors": 0,
+        "compile_one_warnings": 0,
+        "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260605_083742\\QM5_12109_camarilla-weekly-pivots-swing.compile.log",
+        "symbol_scope_verdict": "SINGLE_SYMBOL_OK",
+        "elapsed_seconds": 6.33,
+        "timestamp_utc": "2026-06-05T08:37:48+00:00",
+        "cached": false
+      }
+    ],
+    "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260605_083742\\QM5_12109_camarilla-weekly-pivots-swing.compile.log",
+    "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12109_camarilla-weekly-pivots-swing\\QM5_12109_camarilla-weekly-pivots-swing.ex5",
+    "errors": 0,
+    "warnings": 0
+  },
+  {
+    "ea": "QM5_12111",
+    "label": "QM5_12111_bressert-double-stochastic-h1",
+    "returncode": 0,
+    "verdict": "COMPILED",
+    "data": [
+      {
+        "ea_label": "QM5_12111_bressert-double-stochastic-h1",
+        "verdict": "COMPILED",
+        "reason": "fresh build, 0 warnings",
+        "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12111_bressert-double-stochastic-h1\\QM5_12111_bressert-double-stochastic-h1.ex5",
+        "ex5_size_bytes": 194796,
+        "ex5_mtime_utc": "2026-06-05T08:37:54+00:00",
+        "mq5_mtime_utc": "2026-06-05T08:35:58+00:00",
+        "compile_one_exit_code": 0,
+        "compile_one_errors": 0,
+        "compile_one_warnings": 0,
+        "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260605_083749\\QM5_12111_bressert-double-stochastic-h1.compile.log",
+        "symbol_scope_verdict": "SINGLE_SYMBOL_OK",
+        "elapsed_seconds": 6.54,
+        "timestamp_utc": "2026-06-05T08:37:55+00:00",
+        "cached": false
+      }
+    ],
+    "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260605_083749\\QM5_12111_bressert-double-stochastic-h1.compile.log",
+    "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12111_bressert-double-stochastic-h1\\QM5_12111_bressert-double-stochastic-h1.ex5",
+    "errors": 0,
+    "warnings": 0
+  },
+  {
+    "ea": "QM5_12112",
+    "label": "QM5_12112_channel-keltner-trend",
+    "returncode": 0,
+    "verdict": "COMPILED",
+    "data": [
+      {
+        "ea_label": "QM5_12112_channel-keltner-trend",
+        "verdict": "COMPILED",
+        "reason": "fresh build, 0 warnings",
+        "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12112_channel-keltner-trend\\QM5_12112_channel-keltner-trend.ex5",
+        "ex5_size_bytes": 192990,
+        "ex5_mtime_utc": "2026-06-05T08:38:02+00:00",
+        "mq5_mtime_utc": "2026-06-05T08:35:58+00:00",
+        "compile_one_exit_code": 0,
+        "compile_one_errors": 0,
+        "compile_one_warnings": 0,
+        "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260605_083756\\QM5_12112_channel-keltner-trend.compile.log",
+        "symbol_scope_verdict": "SINGLE_SYMBOL_OK",
+        "elapsed_seconds": 7.42,
+        "timestamp_utc": "2026-06-05T08:38:02+00:00",
+        "cached": false
+      }
+    ],
+    "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260605_083756\\QM5_12112_channel-keltner-trend.compile.log",
+    "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12112_channel-keltner-trend\\QM5_12112_channel-keltner-trend.ex5",
+    "errors": 0,
+    "warnings": 0
+  },
+  {
+    "ea": "QM5_12113",
+    "label": "QM5_12113_bb-width-regime-breakout",
+    "returncode": 0,
+    "verdict": "COMPILED",
+    "data": [
+      {
+        "ea_label": "QM5_12113_bb-width-regime-breakout",
+        "verdict": "COMPILED",
+        "reason": "fresh build, 0 warnings",
+        "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12113_bb-width-regime-breakout\\QM5_12113_bb-width-regime-breakout.ex5",
+        "ex5_size_bytes": 196708,
+        "ex5_mtime_utc": "2026-06-05T08:38:08+00:00",
+        "mq5_mtime_utc": "2026-06-05T08:35:58+00:00",
+        "compile_one_exit_code": 0,
+        "compile_one_errors": 0,
+        "compile_one_warnings": 0,
+        "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260605_083803\\QM5_12113_bb-width-regime-breakout.compile.log",
+        "symbol_scope_verdict": "SINGLE_SYMBOL_OK",
+        "elapsed_seconds": 5.93,
+        "timestamp_utc": "2026-06-05T08:38:08+00:00",
+        "cached": false
+      }
+    ],
+    "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260605_083803\\QM5_12113_bb-width-regime-breakout.compile.log",
+    "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12113_bb-width-regime-breakout\\QM5_12113_bb-width-regime-breakout.ex5",
+    "errors": 0,
+    "warnings": 0
+  },
+  {
+    "ea": "QM5_12115",
+    "label": "QM5_12115_classic-pivot-points-fade-break",
+    "returncode": 0,
+    "verdict": "COMPILED",
+    "data": [
+      {
+        "ea_label": "QM5_12115_classic-pivot-points-fade-break",
+        "verdict": "COMPILED",
+        "reason": "fresh build, 0 warnings",
+        "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12115_classic-pivot-points-fade-break\\QM5_12115_classic-pivot-points-fade-break.ex5",
+        "ex5_size_bytes": 193872,
+        "ex5_mtime_utc": "2026-06-05T08:38:15+00:00",
+        "mq5_mtime_utc": "2026-06-05T08:35:58+00:00",
+        "compile_one_exit_code": 0,
+        "compile_one_errors": 0,
+        "compile_one_warnings": 0,
+        "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260605_083809\\QM5_12115_classic-pivot-points-fade-break.compile.log",
+        "symbol_scope_verdict": "SINGLE_SYMBOL_OK",
+        "elapsed_seconds": 6.64,
+        "timestamp_utc": "2026-06-05T08:38:15+00:00",
+        "cached": false
+      }
+    ],
+    "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260605_083809\\QM5_12115_classic-pivot-points-fade-break.compile.log",
+    "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12115_classic-pivot-points-fade-break\\QM5_12115_classic-pivot-points-fade-break.ex5",
+    "errors": 0,
+    "warnings": 0
+  },
+  {
+    "ea": "QM5_12116",
+    "label": "QM5_12116_carter-ttm-squeeze-h1",
+    "returncode": 0,
+    "verdict": "COMPILED",
+    "data": [
+      {
+        "ea_label": "QM5_12116_carter-ttm-squeeze-h1",
+        "verdict": "COMPILED",
+        "reason": "fresh build, 0 warnings",
+        "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12116_carter-ttm-squeeze-h1\\QM5_12116_carter-ttm-squeeze-h1.ex5",
+        "ex5_size_bytes": 194896,
+        "ex5_mtime_utc": "2026-06-05T08:38:22+00:00",
+        "mq5_mtime_utc": "2026-06-05T08:35:58+00:00",
+        "compile_one_exit_code": 0,
+        "compile_one_errors": 0,
+        "compile_one_warnings": 0,
+        "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260605_083816\\QM5_12116_carter-ttm-squeeze-h1.compile.log",
+        "symbol_scope_verdict": "SINGLE_SYMBOL_OK",
+        "elapsed_seconds": 7.48,
+        "timestamp_utc": "2026-06-05T08:38:23+00:00",
+        "cached": false
+      }
+    ],
+    "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260605_083816\\QM5_12116_carter-ttm-squeeze-h1.compile.log",
+    "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12116_carter-ttm-squeeze-h1\\QM5_12116_carter-ttm-squeeze-h1.ex5",
+    "errors": 0,
+    "warnings": 0
+  },
+  {
+    "ea": "QM5_12117",
+    "label": "QM5_12117_demark-td-sequential-h4",
+    "returncode": 0,
+    "verdict": "COMPILED",
+    "data": [
+      {
+        "ea_label": "QM5_12117_demark-td-sequential-h4",
+        "verdict": "COMPILED",
+        "reason": "fresh build, 0 warnings",
+        "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12117_demark-td-sequential-h4\\QM5_12117_demark-td-sequential-h4.ex5",
+        "ex5_size_bytes": 194758,
+        "ex5_mtime_utc": "2026-06-05T08:38:29+00:00",
+        "mq5_mtime_utc": "2026-06-05T08:35:58+00:00",
+        "compile_one_exit_code": 0,
+        "compile_one_errors": 0,
+        "compile_one_warnings": 0,
+        "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260605_083824\\QM5_12117_demark-td-sequential-h4.compile.log",
+        "symbol_scope_verdict": "SINGLE_SYMBOL_OK",
+        "elapsed_seconds": 6.79,
+        "timestamp_utc": "2026-06-05T08:38:29+00:00",
+        "cached": false
+      }
+    ],
+    "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260605_083824\\QM5_12117_demark-td-sequential-h4.compile.log",
+    "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12117_demark-td-sequential-h4\\QM5_12117_demark-td-sequential-h4.ex5",
+    "errors": 0,
+    "warnings": 0
+  }
+]
