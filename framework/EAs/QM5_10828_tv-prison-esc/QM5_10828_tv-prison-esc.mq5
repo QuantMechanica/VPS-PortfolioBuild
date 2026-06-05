@@ -65,9 +65,9 @@ input group "Strategy"
 input int    pivot_depth                    = 5;     // swing-pivot left/right bars (card: depth 3/5/8)
 input int    pivot_lookback_n               = 2;     // recent pivot highs & lows spanning the range (A-D ~= 2+2)
 input int    breakout_closes                = 2;     // consecutive closes beyond range to confirm (card: 1 or 2)
-input double range_min_atr_mult             = 0.5;   // skip if range width < this * ATR(atr_period)
-input double range_max_atr_mult             = 3.0;   // skip if range width > this * ATR(atr_period)
-input int    atr_period                     = 14;    // ATR period for width / FVG filters
+input double range_min_atr_mult             = 0.5;   // skip if range width < this * ATR(range_atr_period)
+input double range_max_atr_mult             = 3.0;   // skip if range width > this * ATR(range_atr_period)
+input int    range_atr_period               = 14;    // ATR period for width / FVG filters
 input double target_rr                      = 1.0;   // take-profit as multiple of risk (1R baseline)
 input bool   use_fvg_filter                 = false; // optional 3-bar FVG confirmation (card: off baseline)
 input double fvg_atr_mult                    = 0.5;   // min FVG width as * ATR(atr_period) when enabled
@@ -200,7 +200,7 @@ void PE_AdvanceState()
    const int window = 2 * d + 1;             // shifts 1..window
    if(Bars(_Symbol, PERIOD_CURRENT) < window + 2)   // perf-allowed: bounded warmup guard
       return;
-
+   // Key the active session off the just-closed bar's broker date.
    const datetime bar_t = iTime(_Symbol, PERIOD_CURRENT, 1);   // perf-allowed: bespoke session keying
    if(bar_t <= 0)
       return;
@@ -210,7 +210,7 @@ void PE_AdvanceState()
    const int bdate = PE_BrokerDate(bar_t);
    if(bdate != g_session_date)
       PE_ResetSession(bdate);
-
+   // Candidate pivot bar (centre of the just-completed left/right window).
    const datetime centre_t = iTime(_Symbol, PERIOD_CURRENT, centre);   // perf-allowed: bespoke pivot keying
    if(centre_t <= 0)
       return;
@@ -221,7 +221,7 @@ void PE_AdvanceState()
       PE_RefreshRange();
       return;
      }
-
+   // Centre-bar extremes for the swing-pivot test.
    const double centre_high = iHigh(_Symbol, PERIOD_CURRENT, centre);  // perf-allowed: bespoke pivot detection
    const double centre_low  = iLow(_Symbol, PERIOD_CURRENT, centre);   // perf-allowed: bespoke pivot detection
    bool is_pivot_high = (centre_high > 0.0);
@@ -280,7 +280,7 @@ bool PE_FvgConfirms(const bool is_long, const double atr)
       return true;
    if(atr <= 0.0)
       return false;
-
+   // Three-bar window for the fair-value-gap test.
    const double h1 = iHigh(_Symbol, PERIOD_CURRENT, 1);   // perf-allowed: bespoke FVG structure read
    const double l1 = iLow(_Symbol, PERIOD_CURRENT, 1);    // perf-allowed: bespoke FVG structure read
    const double h3 = iHigh(_Symbol, PERIOD_CURRENT, 3);   // perf-allowed: bespoke FVG structure read
@@ -326,12 +326,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(g_traded_today || !g_range_valid)
       return false;
-
+   // Gate entries to the just-closed bar's broker time inside the window.
    const datetime bar_t = iTime(_Symbol, PERIOD_CURRENT, 1);   // perf-allowed: bespoke session keying
    if(bar_t <= 0 || !PE_InEntryWindowBroker(bar_t))
       return false;
 
-   const double atr = QM_ATR(_Symbol, PERIOD_CURRENT, atr_period, 1);
+   const double atr = QM_ATR(_Symbol, PERIOD_CURRENT, range_atr_period, 1);
    if(atr <= 0.0)
       return false;
 

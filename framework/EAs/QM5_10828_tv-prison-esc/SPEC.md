@@ -32,12 +32,12 @@ Chicago. At most one position per symbol/magic and one entry per session day.
 | `pivot_depth` | 5 | 3-8 | Swing-pivot left/right confirmation bars |
 | `pivot_lookback_n` | 2 | 1-32 | Recent pivot highs & lows spanning the range (A–D ≈ 2+2) |
 | `breakout_closes` | 2 | 1-3 | Consecutive closes beyond the range to confirm a break |
-| `range_min_atr_mult` | 0.5 | 0.0-3.0 | Skip if range width < this × ATR(`atr_period`) |
-| `range_max_atr_mult` | 3.0 | 0.5-6.0 | Skip if range width > this × ATR(`atr_period`) |
-| `atr_period` | 14 | 5-50 | ATR period for width / FVG filters |
+| `range_min_atr_mult` | 0.5 | 0.0-3.0 | Skip if range width < this × ATR(`range_atr_period`) |
+| `range_max_atr_mult` | 3.0 | 0.5-6.0 | Skip if range width > this × ATR(`range_atr_period`) |
+| `range_atr_period` | 14 | 5-50 | ATR period for width / FVG filters |
 | `target_rr` | 1.0 | 0.5-3.0 | Take-profit as a multiple of risk (1R baseline) |
 | `use_fvg_filter` | false | bool | Optional 3-bar fair-value-gap confirmation |
-| `fvg_atr_mult` | 0.5 | 0.0-1.0 | Min FVG width as × ATR(`atr_period`) when enabled |
+| `fvg_atr_mult` | 0.5 | 0.0-1.0 | Min FVG width as × ATR(`range_atr_period`) when enabled |
 | `session_start_chicago_hhmm` | 830 | 0-2359 | Range-def + entry window open (America/Chicago) |
 | `entry_end_chicago_hhmm` | 1030 | 0-2359 | Entry window close (America/Chicago) |
 | `hard_flat_chicago_hhmm` | 1230 | 0-2359 | Hard flat all positions (America/Chicago) |
