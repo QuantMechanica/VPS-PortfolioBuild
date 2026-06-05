@@ -1,0 +1,455 @@
+{
+  "updated_at": "2026-06-05T08:41:57.465063Z",
+  "requeued_count": 64,
+  "requeued": [
+    {
+      "ea": "QM5_12108",
+      "work_item": "c7353e2d-9da0-439b-bd34-a787032a73fc",
+      "symbol": "AUDUSD.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12108_hopwood-cup-of-coffee-h1/sets/QM5_12108_hopwood-cup-of-coffee-h1_AUDUSD.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12108",
+      "work_item": "cee29613-cf52-4904-a593-a9d50a2a3f08",
+      "symbol": "EURJPY.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12108_hopwood-cup-of-coffee-h1/sets/QM5_12108_hopwood-cup-of-coffee-h1_EURJPY.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12108",
+      "work_item": "292a720b-d623-4320-80d0-f9aff568855c",
+      "symbol": "EURUSD.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12108_hopwood-cup-of-coffee-h1/sets/QM5_12108_hopwood-cup-of-coffee-h1_EURUSD.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12108",
+      "work_item": "042ff87b-fe62-4657-88db-e9bab304987f",
+      "symbol": "GBPJPY.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12108_hopwood-cup-of-coffee-h1/sets/QM5_12108_hopwood-cup-of-coffee-h1_GBPJPY.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12108",
+      "work_item": "f6bfd2ce-3044-4354-9cc8-49772df185f9",
+      "symbol": "GBPUSD.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12108_hopwood-cup-of-coffee-h1/sets/QM5_12108_hopwood-cup-of-coffee-h1_GBPUSD.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12108",
+      "work_item": "d549d809-dd68-4ac5-bf56-bc6bf8f414df",
+      "symbol": "USDJPY.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12108_hopwood-cup-of-coffee-h1/sets/QM5_12108_hopwood-cup-of-coffee-h1_USDJPY.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12109",
+      "work_item": "7a802e78-cd84-4ccd-bcd6-57227093eef7",
+      "symbol": "EURUSD.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12109_camarilla-weekly-pivots-swing/sets/QM5_12109_camarilla-weekly-pivots-swing_EURUSD.DWX_H4_backtest.set"
+    },
+    {
+      "ea": "QM5_12109",
+      "work_item": "4cc8404c-4b19-488f-9135-c497bdac8b65",
+      "symbol": "GBPUSD.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12109_camarilla-weekly-pivots-swing/sets/QM5_12109_camarilla-weekly-pivots-swing_GBPUSD.DWX_H4_backtest.set"
+    },
+    {
+      "ea": "QM5_12109",
+      "work_item": "5f773d94-fd32-4ae0-8650-59c351d0fd10",
+      "symbol": "GDAXI.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12109_camarilla-weekly-pivots-swing/sets/QM5_12109_camarilla-weekly-pivots-swing_GDAXI.DWX_H4_backtest.set"
+    },
+    {
+      "ea": "QM5_12109",
+      "work_item": "571a4e15-b6a9-4fe6-b541-a22ac83b3929",
+      "symbol": "NDX.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12109_camarilla-weekly-pivots-swing/sets/QM5_12109_camarilla-weekly-pivots-swing_NDX.DWX_H4_backtest.set"
+    },
+    {
+      "ea": "QM5_12109",
+      "work_item": "e5d520f9-9bbc-4ab6-9a4e-21b5b562f06c",
+      "symbol": "USDJPY.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12109_camarilla-weekly-pivots-swing/sets/QM5_12109_camarilla-weekly-pivots-swing_USDJPY.DWX_H4_backtest.set"
+    },
+    {
+      "ea": "QM5_12109",
+      "work_item": "2266e63d-1d4a-4657-ac55-5a2ce325b4f3",
+      "symbol": "WS30.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12109_camarilla-weekly-pivots-swing/sets/QM5_12109_camarilla-weekly-pivots-swing_WS30.DWX_H4_backtest.set"
+    },
+    {
+      "ea": "QM5_12109",
+      "work_item": "c45bb32e-193d-4c08-aacd-419a413091f1",
+      "symbol": "XAUUSD.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12109_camarilla-weekly-pivots-swing/sets/QM5_12109_camarilla-weekly-pivots-swing_XAUUSD.DWX_H4_backtest.set"
+    },
+    {
+      "ea": "QM5_12111",
+      "work_item": "7c02404b-ae1a-48d8-afce-5ebc795e56e1",
+      "symbol": "AUDUSD.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12111_bressert-double-stochastic-h1/sets/QM5_12111_bressert-double-stochastic-h1_AUDUSD.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12111",
+      "work_item": "669b3c89-d66d-4ea2-be3c-e7a040935a58",
+      "symbol": "EURUSD.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12111_bressert-double-stochastic-h1/sets/QM5_12111_bressert-double-stochastic-h1_EURUSD.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12111",
+      "work_item": "33e39d91-5629-4c57-8874-cb0cf9529d1d",
+      "symbol": "GBPUSD.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12111_bressert-double-stochastic-h1/sets/QM5_12111_bressert-double-stochastic-h1_GBPUSD.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12111",
+      "work_item": "304f23d4-1e98-43af-8844-b3ed73f0ffa9",
+      "symbol": "NDX.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12111_bressert-double-stochastic-h1/sets/QM5_12111_bressert-double-stochastic-h1_NDX.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12111",
+      "work_item": "ea77fda8-6a80-4f21-8af0-5ea1f3cb3438",
+      "symbol": "USDJPY.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12111_bressert-double-stochastic-h1/sets/QM5_12111_bressert-double-stochastic-h1_USDJPY.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12111",
+      "work_item": "38266f75-34f9-4406-bca3-3c19471b01ff",
+      "symbol": "WS30.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12111_bressert-double-stochastic-h1/sets/QM5_12111_bressert-double-stochastic-h1_WS30.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12112",
+      "work_item": "84e07f16-e66a-44e6-9e32-4ac52ffeae5a",
+      "symbol": "EURUSD.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12112_channel-keltner-trend/sets/QM5_12112_channel-keltner-trend_EURUSD.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12112",
+      "work_item": "2ab14c88-0db5-4165-952d-1c844b2ec192",
+      "symbol": "GBPUSD.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12112_channel-keltner-trend/sets/QM5_12112_channel-keltner-trend_GBPUSD.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12112",
+      "work_item": "36a733a9-9d4f-4862-98fc-56ca914838f6",
+      "symbol": "GDAXI.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12112_channel-keltner-trend/sets/QM5_12112_channel-keltner-trend_GDAXI.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12112",
+      "work_item": "ad7f8d5b-7f25-4863-ab25-16a20f29f6ed",
+      "symbol": "NDX.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12112_channel-keltner-trend/sets/QM5_12112_channel-keltner-trend_NDX.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12112",
+      "work_item": "bd7f60d8-dc51-4353-b07c-77e4714ba739",
+      "symbol": "USDJPY.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12112_channel-keltner-trend/sets/QM5_12112_channel-keltner-trend_USDJPY.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12112",
+      "work_item": "5123b839-b9e6-40b8-a3b3-d10f14573c6a",
+      "symbol": "WS30.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12112_channel-keltner-trend/sets/QM5_12112_channel-keltner-trend_WS30.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12112",
+      "work_item": "d144ba05-30e4-4121-add0-bacbbfaa84db",
+      "symbol": "XAUUSD.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12112_channel-keltner-trend/sets/QM5_12112_channel-keltner-trend_XAUUSD.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12113",
+      "work_item": "c77a864e-8268-4684-965f-96becf31d806",
+      "symbol": "AUDUSD.DWX",
+      "old_verdict": "PASS",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12113_bb-width-regime-breakout/sets/QM5_12113_bb-width-regime-breakout_AUDUSD.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12113",
+      "work_item": "dcfce0c3-85bc-488b-8f02-e3bb823e9459",
+      "symbol": "EURJPY.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12113_bb-width-regime-breakout/sets/QM5_12113_bb-width-regime-breakout_EURJPY.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12113",
+      "work_item": "a07f6851-5b2c-4373-822a-871448ed670b",
+      "symbol": "EURUSD.DWX",
+      "old_verdict": "PASS",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12113_bb-width-regime-breakout/sets/QM5_12113_bb-width-regime-breakout_EURUSD.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12113",
+      "work_item": "35775939-13f9-4dc0-bc34-fdd1a90dda22",
+      "symbol": "GBPUSD.DWX",
+      "old_verdict": "PASS",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12113_bb-width-regime-breakout/sets/QM5_12113_bb-width-regime-breakout_GBPUSD.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12113",
+      "work_item": "dcc57774-91b0-439c-96e8-8e2ccaf8448f",
+      "symbol": "GDAXI.DWX",
+      "old_verdict": "PASS",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12113_bb-width-regime-breakout/sets/QM5_12113_bb-width-regime-breakout_GDAXI.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12113",
+      "work_item": "a6733a49-109f-435d-9dc5-04377235757e",
+      "symbol": "NDX.DWX",
+      "old_verdict": "PASS",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12113_bb-width-regime-breakout/sets/QM5_12113_bb-width-regime-breakout_NDX.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12113",
+      "work_item": "07b2730b-1c20-450e-948e-bef520245612",
+      "symbol": "USDJPY.DWX",
+      "old_verdict": "PASS",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12113_bb-width-regime-breakout/sets/QM5_12113_bb-width-regime-breakout_USDJPY.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12113",
+      "work_item": "7c5cb5d1-06dc-4824-a6df-fc32de8dba03",
+      "symbol": "WS30.DWX",
+      "old_verdict": "FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12113_bb-width-regime-breakout/sets/QM5_12113_bb-width-regime-breakout_WS30.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12113",
+      "work_item": "6980abe0-60a0-4c83-bab3-e644e012acf2",
+      "symbol": "XAUUSD.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12113_bb-width-regime-breakout/sets/QM5_12113_bb-width-regime-breakout_XAUUSD.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12115",
+      "work_item": "393fd2dc-d78f-443b-bb21-ab55985feaaf",
+      "symbol": "AUDUSD.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12115_classic-pivot-points-fade-break/sets/QM5_12115_classic-pivot-points-fade-break_AUDUSD.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12115",
+      "work_item": "5128bc21-4631-4d60-a1d5-4b573b6e8b8d",
+      "symbol": "EURJPY.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12115_classic-pivot-points-fade-break/sets/QM5_12115_classic-pivot-points-fade-break_EURJPY.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12115",
+      "work_item": "69e2bed6-368a-41bb-aac5-afbf4f6c019e",
+      "symbol": "EURUSD.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12115_classic-pivot-points-fade-break/sets/QM5_12115_classic-pivot-points-fade-break_EURUSD.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12115",
+      "work_item": "c9def9b2-4ca1-4189-aee5-7b4648fa31c8",
+      "symbol": "GBPUSD.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12115_classic-pivot-points-fade-break/sets/QM5_12115_classic-pivot-points-fade-break_GBPUSD.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12115",
+      "work_item": "fa11dc8a-a088-4b04-8611-65262cb08e3d",
+      "symbol": "GDAXI.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12115_classic-pivot-points-fade-break/sets/QM5_12115_classic-pivot-points-fade-break_GDAXI.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12115",
+      "work_item": "1bb1ac90-e4cb-4b86-bcc7-3bee8852b038",
+      "symbol": "NDX.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12115_classic-pivot-points-fade-break/sets/QM5_12115_classic-pivot-points-fade-break_NDX.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12115",
+      "work_item": "cec8311d-eeb6-42a0-9843-c0924c194e5d",
+      "symbol": "UK100.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12115_classic-pivot-points-fade-break/sets/QM5_12115_classic-pivot-points-fade-break_UK100.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12115",
+      "work_item": "62e4812c-00d4-4496-9f4d-6f8e1e0a1a3e",
+      "symbol": "USDCAD.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12115_classic-pivot-points-fade-break/sets/QM5_12115_classic-pivot-points-fade-break_USDCAD.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12115",
+      "work_item": "4b3e7979-1b50-4f7b-a73d-05b8620c2b46",
+      "symbol": "USDJPY.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12115_classic-pivot-points-fade-break/sets/QM5_12115_classic-pivot-points-fade-break_USDJPY.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12115",
+      "work_item": "ce976424-988b-4bc3-9ecb-99a80fb9f340",
+      "symbol": "WS30.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12115_classic-pivot-points-fade-break/sets/QM5_12115_classic-pivot-points-fade-break_WS30.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12115",
+      "work_item": "2c1d4129-9fc2-431c-ab8f-8aed76b0b31d",
+      "symbol": "XAUUSD.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12115_classic-pivot-points-fade-break/sets/QM5_12115_classic-pivot-points-fade-break_XAUUSD.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12116",
+      "work_item": "0c9f9244-2f62-4b56-b214-0f294a4fd937",
+      "symbol": "AUDUSD.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12116_carter-ttm-squeeze-h1/sets/QM5_12116_carter-ttm-squeeze-h1_AUDUSD.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12116",
+      "work_item": "7e3e3f37-8a8c-48ae-90a2-c0e68968d52c",
+      "symbol": "EURJPY.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12116_carter-ttm-squeeze-h1/sets/QM5_12116_carter-ttm-squeeze-h1_EURJPY.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12116",
+      "work_item": "f8b7d743-d722-41a3-884b-8bf106575e6b",
+      "symbol": "EURUSD.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12116_carter-ttm-squeeze-h1/sets/QM5_12116_carter-ttm-squeeze-h1_EURUSD.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12116",
+      "work_item": "14cfd7d9-0bea-415c-aa03-b13a706a80eb",
+      "symbol": "GBPUSD.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12116_carter-ttm-squeeze-h1/sets/QM5_12116_carter-ttm-squeeze-h1_GBPUSD.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12116",
+      "work_item": "a5531b50-7399-4956-970f-600f838f3131",
+      "symbol": "GDAXI.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12116_carter-ttm-squeeze-h1/sets/QM5_12116_carter-ttm-squeeze-h1_GDAXI.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12116",
+      "work_item": "0dfca0e2-6dce-4698-ad8f-cce7f456fe9e",
+      "symbol": "NDX.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12116_carter-ttm-squeeze-h1/sets/QM5_12116_carter-ttm-squeeze-h1_NDX.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12116",
+      "work_item": "1a0b0ed3-bdca-419d-96fa-b7dc6098ea9b",
+      "symbol": "USDJPY.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12116_carter-ttm-squeeze-h1/sets/QM5_12116_carter-ttm-squeeze-h1_USDJPY.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12116",
+      "work_item": "efecc2f0-d24f-4e84-9886-791ace105f6a",
+      "symbol": "WS30.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12116_carter-ttm-squeeze-h1/sets/QM5_12116_carter-ttm-squeeze-h1_WS30.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12116",
+      "work_item": "c8810dfb-ecda-47b0-9e0c-729bd013d3c7",
+      "symbol": "XAUUSD.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12116_carter-ttm-squeeze-h1/sets/QM5_12116_carter-ttm-squeeze-h1_XAUUSD.DWX_H1_backtest.set"
+    },
+    {
+      "ea": "QM5_12117",
+      "work_item": "5fb81723-7148-47ab-9868-6b4018061985",
+      "symbol": "AUDUSD.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12117_demark-td-sequential-h4/sets/QM5_12117_demark-td-sequential-h4_AUDUSD.DWX_H4_backtest.set"
+    },
+    {
+      "ea": "QM5_12117",
+      "work_item": "0b6c9bca-a901-42a8-a60b-8a8e67d9008e",
+      "symbol": "EURJPY.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12117_demark-td-sequential-h4/sets/QM5_12117_demark-td-sequential-h4_EURJPY.DWX_H4_backtest.set"
+    },
+    {
+      "ea": "QM5_12117",
+      "work_item": "ebd1c627-3274-4106-aa2a-fc565bb946f5",
+      "symbol": "EURUSD.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12117_demark-td-sequential-h4/sets/QM5_12117_demark-td-sequential-h4_EURUSD.DWX_H4_backtest.set"
+    },
+    {
+      "ea": "QM5_12117",
+      "work_item": "0ef3a199-e150-4889-aaa4-b833472881ce",
+      "symbol": "GBPUSD.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12117_demark-td-sequential-h4/sets/QM5_12117_demark-td-sequential-h4_GBPUSD.DWX_H4_backtest.set"
+    },
+    {
+      "ea": "QM5_12117",
+      "work_item": "44e87a1e-74a1-4003-ab52-0312acee157a",
+      "symbol": "GDAXI.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12117_demark-td-sequential-h4/sets/QM5_12117_demark-td-sequential-h4_GDAXI.DWX_H4_backtest.set"
+    },
+    {
+      "ea": "QM5_12117",
+      "work_item": "ac46fb76-9249-44bf-b5b2-ef71b513e19d",
+      "symbol": "NDX.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12117_demark-td-sequential-h4/sets/QM5_12117_demark-td-sequential-h4_NDX.DWX_H4_backtest.set"
+    },
+    {
+      "ea": "QM5_12117",
+      "work_item": "13909fe5-e165-4e73-9e0c-bcb3a1eca097",
+      "symbol": "USDJPY.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12117_demark-td-sequential-h4/sets/QM5_12117_demark-td-sequential-h4_USDJPY.DWX_H4_backtest.set"
+    },
+    {
+      "ea": "QM5_12117",
+      "work_item": "d51b8dab-1b12-433b-bc4f-755a999ecfb2",
+      "symbol": "WS30.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12117_demark-td-sequential-h4/sets/QM5_12117_demark-td-sequential-h4_WS30.DWX_H4_backtest.set"
+    },
+    {
+      "ea": "QM5_12117",
+      "work_item": "f6b30b29-2ab5-4246-9f0d-53f5e031e77b",
+      "symbol": "XAUUSD.DWX",
+      "old_verdict": "INFRA_FAIL",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12117_demark-td-sequential-h4/sets/QM5_12117_demark-td-sequential-h4_XAUUSD.DWX_H4_backtest.set"
+    }
+  ],
+  "skipped": []
+}
