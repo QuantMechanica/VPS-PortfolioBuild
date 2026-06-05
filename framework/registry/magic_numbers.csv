@@ -5718,3 +5718,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10823,tv-st-atr-trail,4,GDAXI.DWX,108230004,2026-06-05,Development,active
 10823,tv-st-atr-trail,5,NDX.DWX,108230005,2026-06-05,Development,active
 10823,tv-st-atr-trail,6,WS30.DWX,108230006,2026-06-05,Development,active
+10824,tv-ny3h-sweep,0,NDX.DWX,108240000,2026-06-06,Development,active
+10824,tv-ny3h-sweep,1,WS30.DWX,108240001,2026-06-06,Development,active
+10824,tv-ny3h-sweep,2,GDAXI.DWX,108240002,2026-06-06,Development,active
+10824,tv-ny3h-sweep,3,XAUUSD.DWX,108240003,2026-06-06,Development,active
+10824,tv-ny3h-sweep,4,EURUSD.DWX,108240004,2026-06-06,Development,active
