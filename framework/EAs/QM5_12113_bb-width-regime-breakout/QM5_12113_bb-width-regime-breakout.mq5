@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_12113 bb-width-regime-breakout"
+#property description "QM5_12113_v2 bb-width-regime-breakout"
 
 #include <QM/QM_Common.mqh>
 
