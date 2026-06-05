@@ -5683,3 +5683,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10816,tv-kalman-tl,4,GDAXI.DWX,108160004,2026-06-05,Development,active
 10816,tv-kalman-tl,5,NDX.DWX,108160005,2026-06-05,Development,active
 10816,tv-kalman-tl,6,WS30.DWX,108160006,2026-06-05,Development,active
+10819,tv-dema-vwap,0,EURUSD.DWX,108190000,2026-06-05,Development,active
+10819,tv-dema-vwap,1,GBPUSD.DWX,108190001,2026-06-05,Development,active
+10819,tv-dema-vwap,2,USDJPY.DWX,108190002,2026-06-05,Development,active
+10819,tv-dema-vwap,3,XAUUSD.DWX,108190003,2026-06-05,Development,active
+10819,tv-dema-vwap,4,GDAXI.DWX,108190004,2026-06-05,Development,active
+10819,tv-dema-vwap,5,NDX.DWX,108190005,2026-06-05,Development,active
+10819,tv-dema-vwap,6,WS30.DWX,108190006,2026-06-05,Development,active
