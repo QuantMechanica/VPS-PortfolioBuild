@@ -3,21 +3,36 @@
 **EA ID:** QM5_10232
 **Slug:** `tv-donchian-macd`
 **Source:** `30591366-874b-5bee-b47c-da2fca20b728` (see `strategy-seeds/sources/30591366-874b-5bee-b47c-da2fca20b728/`)
-**Author of this spec:** auto-generated ex-post by gen_spec_md.py
-**Last revised:** 2026-05-25
+**Author of this spec:** Claude (Development role)
+**Last revised:** 2026-06-05
 
 ---
 
 ## 1. Strategy Logic
 
-Mechanical strategy implemented per the approved card
-`artifacts/cards_approved/QM5_10232_tv-donchian-macd.md`. See that card's body for
-the full entry/exit/stop/sizing rules; this SPEC summarises the
-implementation surface.
+Donchian-channel breakout with an MACD trend filter, mechanised from the
+TradingView source "Trend Following with Donchian Channels and MACD"
+(LordRobrecht). On each closed bar the EA checks whether price broke the
+prior 50-bar Donchian range and confirms the move with MACD.
+
+- **Long** when the last closed bar breaks above the 50-bar high
+  (`QM_Sig_Range_Breakout == +1`) AND the MACD line is above its signal line
+  AND both MACD and signal are above zero.
+- **Short** when the last closed bar breaks below the 50-bar low
+  (`QM_Sig_Range_Breakout == -1`) AND the MACD line is below its signal line
+  AND both MACD and signal are below zero.
+- **Stop:** initial stop is 4×ATR(14) from the entry (`QM_StopATR`); the same
+  4×ATR distance trails the position each tick (`QM_TM_TrailATR`). There is no
+  fixed take-profit — exits happen only on the trailing stop.
+- **One position per magic** (source reverted pyramiding to 1): a new entry is
+  suppressed while a position for this EA's magic is open, so reversals can
+  only occur after the current position closes out on its trailing stop.
 
 Entry/exit logic is encoded in the five `Strategy_*` hooks in
-`QM5_10232_tv-donchian-macd.mq5`. Framework wiring (risk, magic, news, Friday close)
-is inherited from `QM_Common.mqh` and is not redocumented here.
+`QM5_10232_tv-donchian-macd.mq5`. The Donchian breakout and MACD reads use the
+framework `QM_Signals.mqh` / `QM_Indicators.mqh` readers (pooled handles);
+framework wiring (risk, magic, news, Friday close) is inherited from
+`QM_Common.mqh` and is not redocumented here.
 
 ---
 
@@ -25,15 +40,15 @@ is inherited from `QM_Common.mqh` and is not redocumented here.
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `strategy_signal_tf` | PERIOD_CURRENT | (see source) | (see strategy logic) |
-| `strategy_donchian_lookback` | 50 | (see source) | (see strategy logic) |
-| `strategy_macd_fast` | 12 | (see source) | (see strategy logic) |
-| `strategy_macd_slow` | 26 | (see source) | (see strategy logic) |
-| `strategy_macd_signal` | 9 | (see source) | (see strategy logic) |
-| `strategy_atr_period` | 14 | (see source) | (see strategy logic) |
-| `strategy_atr_stop_mult` | 4.0 | (see source) | (see strategy logic) |
-| `strategy_allow_shorts` | true | (see source) | (see strategy logic) |
-| `strategy_max_spread_points` | 0 | (see source) | (see strategy logic) |
+| `strategy_signal_tf` | PERIOD_CURRENT | any TF | Signal timeframe; PERIOD_CURRENT = use the chart/tester TF |
+| `strategy_donchian_lookback` | 50 | 10-200 | Donchian breakout window in bars (source default 50) |
+| `strategy_macd_fast` | 12 | 5-50 | MACD fast EMA period |
+| `strategy_macd_slow` | 26 | 10-100 | MACD slow EMA period (must exceed fast) |
+| `strategy_macd_signal` | 9 | 2-50 | MACD signal-line EMA period |
+| `strategy_atr_period` | 14 | 5-100 | ATR period for stop sizing/trailing |
+| `strategy_atr_stop_mult` | 4.0 | 1.0-10.0 | Stop distance in ATR multiples (source: 4 ATR) |
+| `strategy_allow_shorts` | true | true/false | Enable short breakout entries |
+| `strategy_max_spread_points` | 0 | 0-1000 | Skip entries when spread exceeds this (0 = no spread gate) |
 
 > Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
 > qm_news_mode, qm_rng_seed, qm_stress_reject_probability,
@@ -61,8 +76,8 @@ rejects foreign symbols).
 
 | Aspect | Value |
 |---|---|
-| Base timeframe | `H1` |
-| Multi-timeframe refs | see `Strategy_*` hooks in the .mq5 |
+| Base timeframe | `D1` (source is a daily 50-day system; card also tests `H4`) |
+| Multi-timeframe refs | none — signals read from the active TF only |
 | Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
 
 ---
@@ -71,12 +86,11 @@ rejects foreign symbols).
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | 30 |
-| Cadence note | see card body |
-| Typical hold time | see card body |
+| Trades / year / symbol | ~30 |
+| Typical hold time | days to weeks (trend-following, D1 trailing exit) |
 | Expected drawdown profile | bounded by RISK_FIXED + FTMO 10% total DD ceiling |
-| Regime preference | per card thesis |
-| Win rate target (qualitative) | medium |
+| Regime preference | trend / breakout (low win rate, large winners) |
+| Win rate target (qualitative) | low |
 
 ---
 
@@ -108,3 +122,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-05-25 | Initial spec (ex-post, generated by gen_spec_md.py) | post-PT15 remediation |
+| v2 | 2026-06-05 | Rebuild in place: replaced bespoke iHigh/iLow Donchian loop with QM_Sig_Range_Breakout to clear build_check perf-static FAIL | bc416466-631f-4f3f-a952-f1284f9e3e30 |

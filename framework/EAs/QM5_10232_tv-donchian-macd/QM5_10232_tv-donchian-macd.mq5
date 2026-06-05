@@ -3,6 +3,7 @@
 #property description "QM5_10232 TradingView Donchian MACD Trend Filter"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_Signals.mqh>
 
 // =============================================================================
 // QuantMechanica V5 EA SKELETON
@@ -88,34 +89,6 @@ ENUM_TIMEFRAMES Strategy_Timeframe()
    return (strategy_signal_tf == PERIOD_CURRENT) ? (ENUM_TIMEFRAMES)_Period : strategy_signal_tf;
   }
 
-bool Strategy_DonchianChannel(const ENUM_TIMEFRAMES tf,
-                              const int start_shift,
-                              const int bars,
-                              double &upper,
-                              double &lower)
-  {
-   upper = -DBL_MAX;
-   lower = DBL_MAX;
-
-   if(start_shift <= 0 || bars <= 0)
-      return false;
-
-   for(int shift = start_shift; shift < start_shift + bars; ++shift)
-     {
-      const double high_i = iHigh(_Symbol, tf, shift);
-      const double low_i = iLow(_Symbol, tf, shift);
-      if(high_i <= 0.0 || low_i <= 0.0 || high_i < low_i)
-         return false;
-
-      if(high_i > upper)
-         upper = high_i;
-      if(low_i < lower)
-         lower = low_i;
-     }
-
-   return (upper > 0.0 && lower > 0.0 && upper > lower);
-  }
-
 bool Strategy_SelectOpenPosition(ulong &ticket)
   {
    ticket = 0;
@@ -157,10 +130,6 @@ bool Strategy_NoTradeFilter()
       strategy_atr_stop_mult <= 0.0)
       return true;
 
-   const ENUM_TIMEFRAMES tf = Strategy_Timeframe();
-   if(Bars(_Symbol, tf) < strategy_donchian_lookback + strategy_macd_slow + strategy_macd_signal + 5)
-      return true;
-
    if(strategy_max_spread_points > 0)
      {
       const long spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
@@ -189,26 +158,25 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const ENUM_TIMEFRAMES tf = Strategy_Timeframe();
-   const double high_1 = iHigh(_Symbol, tf, 1);
-   const double low_1 = iLow(_Symbol, tf, 1);
-   if(high_1 <= 0.0 || low_1 <= 0.0)
+
+   // Card Entry: 50-bar Donchian breakout on the last closed bar. The framework
+   // QM_Sig_Range_Breakout reader returns +1 when the closed bar breaks the
+   // prior N-bar high, -1 on a break of the prior N-bar low (lookback window
+   // shift+1..shift+N, i.e. bars 2..51 with shift=1 — excludes the breakout bar).
+   const int breakout = QM_Sig_Range_Breakout(_Symbol, tf, strategy_donchian_lookback, 1);
+   if(breakout == 0)
       return false;
 
-   double upper = 0.0;
-   double lower = 0.0;
-   if(!Strategy_DonchianChannel(tf, 2, strategy_donchian_lookback, upper, lower))
-      return false;
-
+   // Card Entry: MACD trend filter — line vs signal AND both on the same side
+   // of zero. A read failure returns 0.0, which fails the sign checks below.
    const double macd_main_1 = QM_MACD_Main(_Symbol, tf, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
    const double macd_sig_1 = QM_MACD_Signal(_Symbol, tf, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
-   if(macd_main_1 == EMPTY_VALUE || macd_sig_1 == EMPTY_VALUE)
-      return false;
 
    int direction = 0;
-   if(high_1 > upper && macd_main_1 > macd_sig_1 && macd_main_1 > 0.0 && macd_sig_1 > 0.0)
+   if(breakout > 0 && macd_main_1 > macd_sig_1 && macd_main_1 > 0.0 && macd_sig_1 > 0.0)
       direction = 1;
    else if(strategy_allow_shorts &&
-           low_1 < lower &&
+           breakout < 0 &&
            macd_main_1 < macd_sig_1 &&
            macd_main_1 < 0.0 &&
            macd_sig_1 < 0.0)
