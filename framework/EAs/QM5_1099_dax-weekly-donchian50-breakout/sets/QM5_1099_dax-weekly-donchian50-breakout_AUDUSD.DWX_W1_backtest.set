@@ -7,7 +7,7 @@
 ; symbol:       AUDUSD.DWX
 ; timeframe:    W1
 ; environment:  backtest
-; magic_slot:   2
+; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
 ; build_hash:   0c951bd2dc5ee3c06288d77c9e35b0d52c810b81795cbbd02f360942ab1b90b3
