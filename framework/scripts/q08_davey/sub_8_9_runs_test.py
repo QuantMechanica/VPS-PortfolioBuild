@@ -75,10 +75,14 @@ def _profit_concentration_top_pct(monthly_net: dict[int, float]) -> tuple[float,
 
 
 def run(trades: list[dict], **_) -> dict:
-    if len(trades) < 100:
+    # DL-070 (OWNER 2026-06-05): swing/low-freq track. Runs-test is still valid (with
+    # somewhat lower power) at ~40 trades, which a ~10-trades/yr swing EA reaches over
+    # the 9-year Q08 window (~90). Floor lowered 100 -> 40 so swing EAs are evaluated
+    # instead of auto-INVALID; the test itself still judges win/loss-run randomness.
+    if len(trades) < 40:
         return make_result(GATE_NAME, "INVALID",
-                           value=len(trades), threshold=100,
-                           detail=f"insufficient_trade_count:got={len(trades)}:need>=100")
+                           value=len(trades), threshold=40,
+                           detail=f"insufficient_trade_count:got={len(trades)}:need>=40")
 
     # Build win/loss sequence and per-month P&L stream
     seq: list[int] = []
