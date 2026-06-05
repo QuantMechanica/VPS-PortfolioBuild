@@ -42,6 +42,7 @@ input int    strategy_supertrend_lookback     = 180;
 
 double g_st_line = 0.0;
 double g_st_prev_line = 0.0;
+double g_st_close = 0.0;
 bool   g_st_bull = false;
 bool   g_st_prev_bull = false;
 bool   g_st_valid = false;
@@ -139,6 +140,7 @@ bool RefreshSuperTrendCache()
         {
          g_st_line = st_line;
          g_st_bull = st_bull;
+         g_st_close = close;
          have_curr = true;
         }
      }
@@ -195,7 +197,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!g_st_bull || g_st_prev_bull)
       return false;
 
-   const double close_last = iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, 1); // perf-allowed: single closed-bar price for SuperTrend confirmation after framework new-bar gate.
+   const double close_last = g_st_close; // last closed-bar close cached in RefreshSuperTrendCache (no raw series read)
    const double ma_last = StrategyTrendMA(1);
    if(close_last <= 0.0 || ma_last <= 0.0)
       return false;
