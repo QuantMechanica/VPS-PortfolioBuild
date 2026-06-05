@@ -5607,3 +5607,17 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10801,tv-dbl-ema-rsi,4,GDAXI.DWX,108010004,2026-06-05,Development,active
 10801,tv-dbl-ema-rsi,5,NDX.DWX,108010005,2026-06-05,Development,active
 10801,tv-dbl-ema-rsi,6,WS30.DWX,108010006,2026-06-05,Development,active
+10802,tv-wma-vwap,0,EURUSD.DWX,108020000,2026-06-05,Development,active
+10802,tv-wma-vwap,1,GBPUSD.DWX,108020001,2026-06-05,Development,active
+10802,tv-wma-vwap,2,USDJPY.DWX,108020002,2026-06-05,Development,active
+10802,tv-wma-vwap,3,XAUUSD.DWX,108020003,2026-06-05,Development,active
+10802,tv-wma-vwap,4,GDAXI.DWX,108020004,2026-06-05,Development,active
+10802,tv-wma-vwap,5,NDX.DWX,108020005,2026-06-05,Development,active
+10802,tv-wma-vwap,6,WS30.DWX,108020006,2026-06-05,Development,active
+10804,tv-st-long,0,EURUSD.DWX,108040000,2026-06-05,Development,active
+10804,tv-st-long,1,GBPUSD.DWX,108040001,2026-06-05,Development,active
+10804,tv-st-long,2,USDJPY.DWX,108040002,2026-06-05,Development,active
+10804,tv-st-long,3,XAUUSD.DWX,108040003,2026-06-05,Development,active
+10804,tv-st-long,4,GDAXI.DWX,108040004,2026-06-05,Development,active
+10804,tv-st-long,5,NDX.DWX,108040005,2026-06-05,Development,active
+10804,tv-st-long,6,WS30.DWX,108040006,2026-06-05,Development,active
