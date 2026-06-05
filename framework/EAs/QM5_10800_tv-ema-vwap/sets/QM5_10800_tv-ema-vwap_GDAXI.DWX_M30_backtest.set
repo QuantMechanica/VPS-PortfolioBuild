@@ -4,17 +4,17 @@
 ; ea_slug:      tv-ema-vwap
 ; ea_version:   v5.0
 ; set_version:  s20260605-001
-; symbol:       WS30.DWX
-; timeframe:    M5
+; symbol:       GDAXI.DWX
+; timeframe:    M30
 ; environment:  backtest
-; magic_slot:   6
+; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   7598e951fb6a0a16b9f488d5336947f565f481800725667aa33065e0f8b7cea3
+; build_hash:   f18a6e4be411caac1362911f19b8912ecd692285eae645fec217841540563ffe
 ; author:       Development
 ; date:         2026-06-05
 ;==========================================================
-qm_magic_slot_offset=6
+qm_magic_slot_offset=4
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
