@@ -3,16 +3,16 @@
 ; ea_id:        10232
 ; ea_slug:      tv-donchian-macd
 ; ea_version:   v5.0
-; set_version:  s20260524-001
+; set_version:  s20260605-001
 ; symbol:       EURJPY.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   eeaff28058fc9955f79d3fa8045e6a0da9162905799f0b88d10193ae5be2aca4
+; build_hash:   7bc59fea8234ad08e105810f6e023f8967bea9810e93b5a130a00375adcb54fd
 ; author:       Development
-; date:         2026-05-24
+; date:         2026-06-05
 ;==========================================================
 qm_magic_slot_offset=4
 RISK_FIXED=1000

@@ -3,16 +3,16 @@
 ; ea_id:        10232
 ; ea_slug:      tv-donchian-macd
 ; ea_version:   v5.0
-; set_version:  s20260524-001
+; set_version:  s20260605-001
 ; symbol:       NDX.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   2b8d8f8af570d8bc6dcc77ff0a67b233380432ed1d3f56338aa4a0dad1357d0d
+; build_hash:   49255542a80d142bdc440e2223651a9a3057c9481720330b3b2c90f7967d4cbe
 ; author:       Development
-; date:         2026-05-24
+; date:         2026-06-05
 ;==========================================================
 qm_magic_slot_offset=2
 RISK_FIXED=1000
