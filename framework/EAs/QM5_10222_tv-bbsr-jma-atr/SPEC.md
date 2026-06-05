@@ -10,10 +10,17 @@
 
 ## 1. Strategy Logic
 
-Mechanical strategy implemented per the approved card
-`artifacts/cards_approved/QM5_10222_tv-bbsr-jma-atr.md`. See that card's body for
-the full entry/exit/stop/sizing rules; this SPEC summarises the
-implementation surface.
+Bollinger-band extreme reversal with momentum and trend confirmation. Long
+when the previous bar closed below the lower Bollinger Band and the current bar
+closes back inside (reclaim), while both Stochastic %K and %D are below the
+oversold threshold and the JMA trend filter is rising (green). Short is the
+mirror: previous close above the upper band, current close reclaimed inside,
+Stochastic %K and %D above the overbought threshold, and the JMA trend filter
+falling (red). Exit is an ATR trailing stop in both directions, plus an
+opposite-signal close (a long is closed on a fresh bearish signal and a short
+on a fresh bullish signal). The Jurik Moving Average is reproduced with the
+framework Hull-MA low-lag proxy (`QM_HMA`), per the card's §Stop-Loss license to
+substitute a low-lag EMA/HMA proxy when JMA cannot be reproduced directly.
 
 Entry/exit logic is encoded in the five `Strategy_*` hooks in
 `QM5_10222_tv-bbsr-jma-atr.mq5`. Framework wiring (risk, magic, news, Friday close)
@@ -25,21 +32,23 @@ is inherited from `QM_Common.mqh` and is not redocumented here.
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `strategy_signal_tf` | PERIOD_H1 | (see source) | (see strategy logic) |
-| `strategy_bb_period` | 20 | (see source) | (see strategy logic) |
-| `strategy_bb_deviation` | 2.0 | (see source) | (see strategy logic) |
-| `strategy_stoch_k_period` | 14 | (see source) | (see strategy logic) |
-| `strategy_stoch_d_period` | 3 | (see source) | (see strategy logic) |
-| `strategy_stoch_slowing` | 3 | (see source) | (see strategy logic) |
-| `strategy_stoch_oversold` | 20.0 | (see source) | (see strategy logic) |
-| `strategy_stoch_overbought` | 80.0 | (see source) | (see strategy logic) |
-| `strategy_jma_proxy_period` | 55 | (see source) | (see strategy logic) |
-| `strategy_atr_period` | 14 | (see source) | (see strategy logic) |
-| `strategy_atr_trail_mult` | 3.0 | (see source) | (see strategy logic) |
-| `strategy_skip_overnight` | true | (see source) | (see strategy logic) |
-| `strategy_skip_start_hour` | 22 | (see source) | (see strategy logic) |
-| `strategy_skip_end_hour` | 2 | (see source) | (see strategy logic) |
-| `strategy_max_spread_atr` | 0.10 | (see source) | (see strategy logic) |
+| `strategy_bb_period` | 20 | 10-50 | Bollinger lookback |
+| `strategy_bb_deviation` | 2.0 | 1.5-3.0 | Bollinger band standard deviations |
+| `strategy_stoch_k_period` | 14 | 5-21 | Stochastic %K period |
+| `strategy_stoch_d_period` | 3 | 2-5 | Stochastic %D period |
+| `strategy_stoch_slowing` | 3 | 1-5 | Stochastic slowing |
+| `strategy_stoch_oversold` | 20.0 | 10-30 | Long gate: %K & %D both below this |
+| `strategy_stoch_overbought` | 80.0 | 70-90 | Short gate: %K & %D both above this |
+| `strategy_jma_proxy_period` | 55 | 10-100 | JMA trend filter period (Hull-MA proxy) |
+| `strategy_atr_period` | 14 | 7-28 | ATR period for initial SL + trailing |
+| `strategy_atr_trail_mult` | 3.0 | 1.5-4.0 | ATR multiple for SL distance + trailing stop |
+| `strategy_skip_overnight` | true | true/false | Block the flat overnight session |
+| `strategy_skip_start_hour` | 22 | 0-23 | Overnight block start (broker hour, inclusive) |
+| `strategy_skip_end_hour` | 2 | 0-23 | Overnight block end (broker hour, exclusive, wrap-safe) |
+
+> Signal timeframe is the chart/tester timeframe (`_Period`), so the same EA
+> evaluates the Bollinger/Stochastic/JMA logic at whatever timeframe the
+> setfile drives (M30 or H1).
 
 > Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
 > qm_news_mode, qm_rng_seed, qm_stress_reject_probability,
@@ -67,8 +76,8 @@ rejects foreign symbols).
 
 | Aspect | Value |
 |---|---|
-| Base timeframe | `H1` |
-| Multi-timeframe refs | see `Strategy_*` hooks in the .mq5 |
+| Base timeframe | `H1` (card baseline M30/H1; EA reads the chart timeframe) |
+| Multi-timeframe refs | none — all reads on the chart timeframe |
 | Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
 
 ---
