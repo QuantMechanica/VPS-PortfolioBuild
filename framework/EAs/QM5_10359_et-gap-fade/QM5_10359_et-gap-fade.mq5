@@ -34,12 +34,16 @@ input int    strategy_inactive_stop_bars  = 15;
 input double strategy_stop_gap_mult       = 1.25;
 input double strategy_first_range_atr_max = 0.8;
 input int    strategy_atr_period          = 14;
-input int    strategy_session_open_hhmm   = 1630;
+input bool   strategy_auto_session_open   = true;
+input int    strategy_us_session_open_hhmm = 1630;
+input int    strategy_eu_session_open_hhmm = 1000;
 input int    strategy_entry_window_minutes = 10;
 input int    strategy_min_stop_spreads    = 4;
 
 int g_last_day_key = -1;
 bool g_trade_armed_today = false;
+
+int StrategySessionOpenHhmm();
 
 int DayKey(const datetime t)
   {
@@ -70,8 +74,23 @@ int MinutesOfDay(const datetime t)
 bool IsInEntryWindow(const datetime t)
   {
    const int now_min = MinutesOfDay(t);
-   const int open_min = MinutesOfDayFromHhmm(strategy_session_open_hhmm);
+   const int open_min = MinutesOfDayFromHhmm(StrategySessionOpenHhmm());
    return (now_min >= open_min && now_min <= open_min + strategy_entry_window_minutes);
+  }
+
+bool IsEuropeanIndexSymbol()
+  {
+   return (StringFind(_Symbol, "GDAXI") >= 0 ||
+           StringFind(_Symbol, "GER40") >= 0 ||
+           StringFind(_Symbol, "DE30") >= 0 ||
+           StringFind(_Symbol, "UK100") >= 0);
+  }
+
+int StrategySessionOpenHhmm()
+  {
+   if(!strategy_auto_session_open)
+      return strategy_us_session_open_hhmm;
+   return IsEuropeanIndexSymbol() ? strategy_eu_session_open_hhmm : strategy_us_session_open_hhmm;
   }
 
 void RefreshSessionState()
@@ -127,7 +146,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // QM_* reader exists for raw OHLC and the work is gated once-per-closed-bar
    // by QM_IsNewBar in OnTick.
    const datetime first_bar_time = iTime(_Symbol, _Period, 1); // perf-allowed: session-open time of last closed bar, single shift-1 read
-   if(first_bar_time <= 0 || Hhmm(first_bar_time) != strategy_session_open_hhmm)
+   if(first_bar_time <= 0 || Hhmm(first_bar_time) != StrategySessionOpenHhmm())
       return false;
    const double prev_close = iClose(_Symbol, PERIOD_D1, 1);    // perf-allowed
    const double prev_high = iHigh(_Symbol, PERIOD_D1, 1);      // perf-allowed
