@@ -37,15 +37,14 @@ input int    strategy_rearm_bars         = 3;
 input double strategy_spread_mult        = 2.0;
 input int    strategy_spread_lookback    = 20;
 
-datetime g_spread_cache_bar       = 0;
 double   g_median_spread_points   = 0.0;
 ulong    g_active_ticket          = 0;
 int      g_active_direction       = 0;
 double   g_initial_risk_price     = 0.0;
 bool     g_tp1_done               = false;
-datetime g_last_closed_bar        = 0;
-int      g_last_closed_direction  = 0;
-datetime g_last_exit_eval_bar     = 0;
+bool     g_strategy_cadence_ready = false;
+int      g_rearm_direction        = 0;
+int      g_rearm_remaining        = 0;
 
 double PipDistance()
   {
@@ -85,10 +84,8 @@ double HighestHigh(const int first_shift, const int count)
 
 void RefreshSpreadMedian()
   {
-   const datetime bar_time = iTime(_Symbol, strategy_tf, 0); // perf-allowed: spread cache key for current strategy bar
-   if(bar_time <= 0 || bar_time == g_spread_cache_bar)
+   if(!g_strategy_cadence_ready && g_median_spread_points > 0.0)
       return;
-   g_spread_cache_bar = bar_time;
 
    double spreads[];
    ArrayResize(spreads, strategy_spread_lookback);
@@ -167,8 +164,8 @@ void RefreshPositionLifecycle()
 
    if(g_active_ticket != 0)
      {
-      g_last_closed_bar = iTime(_Symbol, strategy_tf, 1); // perf-allowed: re-arm state records the closed position's bar
-      g_last_closed_direction = g_active_direction;
+      g_rearm_direction = g_active_direction;
+      g_rearm_remaining = MathMax(strategy_rearm_bars, 0);
      }
 
    g_active_ticket = 0;
@@ -177,12 +174,25 @@ void RefreshPositionLifecycle()
    g_tp1_done = false;
   }
 
+void AdvanceRearmCountdown()
+  {
+   if(g_rearm_remaining <= 0)
+     {
+      g_rearm_remaining = 0;
+      g_rearm_direction = 0;
+      return;
+     }
+
+   g_rearm_remaining--;
+   if(g_rearm_remaining <= 0)
+      g_rearm_direction = 0;
+  }
+
 bool RearmBlocksDirection(const int direction)
   {
-   if(g_last_closed_bar <= 0 || g_last_closed_direction != direction)
+   if(g_rearm_remaining <= 0 || g_rearm_direction != direction)
       return false;
-   const int bars_since = iBarShift(_Symbol, strategy_tf, g_last_closed_bar, false);
-   return (bars_since >= 0 && bars_since <= strategy_rearm_bars);
+   return true;
   }
 
 bool PatternBuy(double &entry_sl, double &entry_tp)
@@ -369,11 +379,8 @@ bool Strategy_ExitSignal()
    RefreshPositionLifecycle();
    if(g_active_ticket == 0 || g_tp1_done)
       return false;
-   // perf-allowed: exit check cache key for current strategy bar
-   const datetime bar_time = iTime(_Symbol, strategy_tf, 0); // perf-allowed: exit check cache key for current strategy bar
-   if(bar_time <= 0 || bar_time == g_last_exit_eval_bar)
+   if(!g_strategy_cadence_ready)
       return false;
-   g_last_exit_eval_bar = bar_time;
 
    if(!PositionSelectByTicket(g_active_ticket))
       return false;
@@ -423,6 +430,8 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   g_strategy_cadence_ready = false;
+
    if(!QM_KillSwitchCheck())
       return;
 
@@ -433,6 +442,10 @@ void OnTick()
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
+
+   g_strategy_cadence_ready = QM_IsNewBar(_Symbol, strategy_tf);
+   if(g_strategy_cadence_ready)
+      AdvanceRearmCountdown();
 
    if(Strategy_NoTradeFilter())
       return;
@@ -453,7 +466,7 @@ void OnTick()
         }
      }
 
-   if(!QM_IsNewBar(_Symbol, strategy_tf))
+   if(!g_strategy_cadence_ready)
       return;
 
    QM_EntryRequest req;
