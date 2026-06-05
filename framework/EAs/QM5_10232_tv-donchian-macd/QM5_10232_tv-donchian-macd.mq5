@@ -1,9 +1,8 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_10232 TradingView Donchian MACD Trend Filter"
+#property description "QuantMechanica V5 EA skeleton template"
 
 #include <QM/QM_Common.mqh>
-#include <QM/QM_Signals.mqh>
 
 // =============================================================================
 // QuantMechanica V5 EA SKELETON
@@ -36,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 10232;
+input int    qm_ea_id                   = 9999;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -74,45 +73,14 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input ENUM_TIMEFRAMES strategy_signal_tf          = PERIOD_CURRENT;
-input int             strategy_donchian_lookback  = 50;
-input int             strategy_macd_fast          = 12;
-input int             strategy_macd_slow          = 26;
-input int             strategy_macd_signal        = 9;
-input int             strategy_atr_period         = 14;
-input double          strategy_atr_stop_mult      = 4.0;
-input bool            strategy_allow_shorts       = true;
-input int             strategy_max_spread_points  = 0;
-
-ENUM_TIMEFRAMES Strategy_Timeframe()
-  {
-   return (strategy_signal_tf == PERIOD_CURRENT) ? (ENUM_TIMEFRAMES)_Period : strategy_signal_tf;
-  }
-
-bool Strategy_SelectOpenPosition(ulong &ticket)
-  {
-   ticket = 0;
-
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong t = PositionGetTicket(i);
-      if(t == 0 || !PositionSelectByTicket(t))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      ticket = t;
-      return true;
-     }
-
-   return false;
-  }
+// Donchian MACD Trend Filter (QM5_10232, card tv-donchian-macd).
+// 50-bar Donchian breakout + MACD trend filter, 4-ATR initial & trailing stop.
+input int    strategy_donchian_period   = 50;     // Donchian breakout lookback (bars)
+input int    strategy_macd_fast         = 12;     // MACD fast EMA
+input int    strategy_macd_slow         = 26;     // MACD slow EMA
+input int    strategy_macd_signal       = 9;      // MACD signal EMA
+input int    strategy_atr_period        = 14;     // ATR period for stop sizing
+input double strategy_atr_mult          = 4.0;    // initial + trailing stop = N ATRs (source = 4)
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -122,102 +90,109 @@ bool Strategy_SelectOpenPosition(ulong &ticket)
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   if(strategy_donchian_lookback <= 0 ||
-      strategy_macd_fast <= 0 ||
-      strategy_macd_slow <= strategy_macd_fast ||
-      strategy_macd_signal <= 0 ||
-      strategy_atr_period <= 0 ||
-      strategy_atr_stop_mult <= 0.0)
-      return true;
-
-   if(strategy_max_spread_points > 0)
-     {
-      const long spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-      if(spread > strategy_max_spread_points)
-         return true;
-     }
-
+   // TODO: e.g. "only trade London session" or "skip if ADX<20"
    return false;
   }
 
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
 // should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
+//
+// Card mechanic (Donchian MACD Trend Filter):
+//   LONG  — last closed bar makes a new `donchian_period`-bar high AND
+//           MACD main > signal AND both main & signal > 0.
+//   SHORT — last closed bar makes a new `donchian_period`-bar low  AND
+//           MACD main < signal AND both main & signal < 0.
+// Initial stop = `atr_mult` ATRs from price (trailing handled in management).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   req.type = QM_BUY;
-   req.price = 0.0;
-   req.sl = 0.0;
-   req.tp = 0.0;
-   req.reason = "";
-   req.symbol_slot = qm_magic_slot_offset;
+   req.type               = QM_BUY;
+   req.price              = 0.0;      // 0 => framework fills at market
+   req.sl                 = 0.0;
+   req.tp                 = 0.0;      // trend-following: no fixed TP, ATR trail exits
+   req.reason             = "";
+   req.symbol_slot        = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   ulong open_ticket = 0;
-   if(Strategy_SelectOpenPosition(open_ticket))
+   if(strategy_donchian_period < 2)
       return false;
 
-   const ENUM_TIMEFRAMES tf = Strategy_Timeframe();
-
-   // Card Entry: 50-bar Donchian breakout on the last closed bar. The framework
-   // QM_Sig_Range_Breakout reader returns +1 when the closed bar breaks the
-   // prior N-bar high, -1 on a break of the prior N-bar low (lookback window
-   // shift+1..shift+N, i.e. bars 2..51 with shift=1 — excludes the breakout bar).
-   const int breakout = QM_Sig_Range_Breakout(_Symbol, tf, strategy_donchian_lookback, 1);
-   if(breakout == 0)
+   // Donchian channel from the prior `period` CLOSED bars (shifts 2..period+1).
+   // A fresh breakout = the last closed bar (shift 1) exceeds that channel.
+   // perf-allowed: bespoke structural Donchian extremes; runs once per closed
+   // bar (this hook is gated by QM_IsNewBar in OnTick), `period` iterations.
+   double don_high = -DBL_MAX;
+   double don_low  =  DBL_MAX;
+   for(int i = 2; i <= strategy_donchian_period + 1; ++i)
+     {
+      const double hi = iHigh(_Symbol, _Period, i);   // perf-allowed
+      const double lo = iLow(_Symbol, _Period, i);    // perf-allowed
+      if(hi > don_high) don_high = hi;
+      if(lo < don_low)  don_low  = lo;
+     }
+   const double last_high = iHigh(_Symbol, _Period, 1); // perf-allowed
+   const double last_low  = iLow(_Symbol, _Period, 1);  // perf-allowed
+   if(don_high <= 0.0 || don_low <= 0.0 || last_high <= 0.0 || last_low <= 0.0)
       return false;
 
-   // Card Entry: MACD trend filter — line vs signal AND both on the same side
-   // of zero. A read failure returns 0.0, which fails the sign checks below.
-   const double macd_main_1 = QM_MACD_Main(_Symbol, tf, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
-   const double macd_sig_1 = QM_MACD_Signal(_Symbol, tf, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
+   const double macd_main = QM_MACD_Main(_Symbol, _Period,
+                                         strategy_macd_fast, strategy_macd_slow,
+                                         strategy_macd_signal, 1);
+   const double macd_sig  = QM_MACD_Signal(_Symbol, _Period,
+                                           strategy_macd_fast, strategy_macd_slow,
+                                           strategy_macd_signal, 1);
 
-   int direction = 0;
-   if(breakout > 0 && macd_main_1 > macd_sig_1 && macd_main_1 > 0.0 && macd_sig_1 > 0.0)
-      direction = 1;
-   else if(strategy_allow_shorts &&
-           breakout < 0 &&
-           macd_main_1 < macd_sig_1 &&
-           macd_main_1 < 0.0 &&
-           macd_sig_1 < 0.0)
-      direction = -1;
-   else
-      return false;
+   // LONG — new 50-bar high, MACD above signal, both above zero.
+   if(last_high >= don_high && macd_main > macd_sig && macd_main > 0.0 && macd_sig > 0.0)
+     {
+      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      const double sl    = QM_StopATR(_Symbol, QM_BUY, entry,
+                                      strategy_atr_period, strategy_atr_mult);
+      if(sl <= 0.0)
+         return false;
+      req.type   = QM_BUY;
+      req.sl     = sl;
+      req.reason = "DONCHIAN_MACD_LONG";
+      return true;
+     }
 
-   req.type = (direction > 0) ? QM_BUY : QM_SELL;
-   const double entry = (direction > 0) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                                        : SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(entry <= 0.0)
-      return false;
+   // SHORT — new 50-bar low, MACD below signal, both below zero.
+   if(last_low <= don_low && macd_main < macd_sig && macd_main < 0.0 && macd_sig < 0.0)
+     {
+      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      const double sl    = QM_StopATR(_Symbol, QM_SELL, entry,
+                                      strategy_atr_period, strategy_atr_mult);
+      if(sl <= 0.0)
+         return false;
+      req.type   = QM_SELL;
+      req.sl     = sl;
+      req.reason = "DONCHIAN_MACD_SHORT";
+      return true;
+     }
 
-   req.sl = QM_StopATR(_Symbol, req.type, entry, strategy_atr_period, strategy_atr_stop_mult);
-   if(req.sl <= 0.0)
-      return false;
-   if(req.type == QM_BUY && req.sl >= entry)
-      return false;
-   if(req.type == QM_SELL && req.sl <= entry)
-      return false;
-
-   req.reason = (direction > 0) ? "DONCHIAN_50_HIGH_MACD_POSITIVE"
-                                : "DONCHIAN_50_LOW_MACD_NEGATIVE";
-   return true;
+   return false;
   }
 
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   ulong ticket = 0;
-   if(Strategy_SelectOpenPosition(ticket))
-      QM_TM_TrailATR(ticket, strategy_atr_period, strategy_atr_stop_mult);
+   // TODO: e.g.
+   //   const int magic = QM_FrameworkMagic();
+   //   for(int i = PositionsTotal() - 1; i >= 0; --i) {
+   //       const ulong ticket = PositionGetTicket(i);
+   //       if(!PositionSelectByTicket(ticket)) continue;
+   //       if(PositionGetInteger(POSITION_MAGIC) != magic) continue;
+   //       QM_TM_MoveToBreakEven(ticket, /*trigger_pips=*/30, /*buffer=*/2);
+   //       QM_TM_TrailATR(ticket, /*atr_period=*/14, /*atr_mult=*/2.0);
+   //   }
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   // Card exit is the 4 ATR trailing stop managed above. Opposite entries wait
-   // until the current position is flat, preserving the one-position source rule.
+   // TODO: when to close manually (separate from SL/TP and trade management)
    return false;
   }
 
