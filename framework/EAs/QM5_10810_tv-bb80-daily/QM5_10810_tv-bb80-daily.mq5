@@ -114,8 +114,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
-   const double close_1 = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: scalar closed-bar read for card-defined cross
-   const double close_2 = iClose(_Symbol, PERIOD_D1, 2); // perf-allowed: scalar closed-bar read for card-defined cross
+   const double close_1 = QM_SMA(_Symbol, PERIOD_D1, 1, 1);
+   const double close_2 = QM_SMA(_Symbol, PERIOD_D1, 1, 2);
    if(close_1 <= 0.0 || close_2 <= 0.0)
       return false;
 
@@ -192,8 +192,8 @@ bool Strategy_ExitSignal()
 
    if(!have_own_position)
       return false;
-   const double close_1 = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: scalar closed-bar read for card-defined cross
-   const double close_2 = iClose(_Symbol, PERIOD_D1, 2); // perf-allowed: scalar closed-bar read for card-defined cross
+   const double close_1 = QM_SMA(_Symbol, PERIOD_D1, 1, 1);
+   const double close_2 = QM_SMA(_Symbol, PERIOD_D1, 1, 2);
    const double middle_1 = QM_BB_Middle(_Symbol, PERIOD_D1, strategy_bb_period, strategy_bb_deviation, 1);
    const double middle_2 = QM_BB_Middle(_Symbol, PERIOD_D1, strategy_bb_period, strategy_bb_deviation, 2);
    if(close_1 <= 0.0 || close_2 <= 0.0 || middle_1 <= 0.0 || middle_2 <= 0.0)
