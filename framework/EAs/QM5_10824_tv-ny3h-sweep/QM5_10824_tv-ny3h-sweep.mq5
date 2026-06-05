@@ -189,15 +189,18 @@ bool Strategy_LoadClosedBarAndSwings(MqlRates &bar,
                                      double &swing_low)
   {
    const int lookback = MathMax(1, MathMin(strategy_swing_lookback_bars, 32));
-   MqlRates bars[40];
    const int need = lookback + 1;
+   MqlRates bars[];
+   ArraySetAsSeries(bars, true); // bars[0] = shift 1 (last closed bar), bars[i] = shift i+1
    if(CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, need, bars) != need) // perf-allowed: bounded M5 structural swing window, called only after QM_IsNewBar.
       return false;
 
+   // bars[0] is the just-closed signal bar; the swing is the prior `lookback`
+   // closed bars (shifts 2..lookback+1), excluding the signal bar itself.
    bar = bars[0];
    swing_high = bars[1].high;
    swing_low = bars[1].low;
-   for(int i = 2; i <= lookback; ++i)
+   for(int i = 2; i < need; ++i)
      {
       swing_high = MathMax(swing_high, bars[i].high);
       swing_low = MathMin(swing_low, bars[i].low);
