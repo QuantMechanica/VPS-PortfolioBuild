@@ -3,16 +3,16 @@
 ; ea_id:        10038
 ; ea_slug:      ff-4x25ema-mtf-h4
 ; ea_version:   v5.0
-; set_version:  s20260523-001
+; set_version:  s20260605-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   bf5c144cfe13447367c58501e79fd74a0a7bd370e47bc69d557427fa3721f212
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-23
+; date:         2026-06-05
 ;==========================================================
 qm_magic_slot_offset=1
 RISK_FIXED=1000
