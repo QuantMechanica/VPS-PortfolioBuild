@@ -5628,3 +5628,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10805,tv-bb-stormer,4,GDAXI.DWX,108050004,2026-06-05,Development,active
 10805,tv-bb-stormer,5,NDX.DWX,108050005,2026-06-05,Development,active
 10805,tv-bb-stormer,6,WS30.DWX,108050006,2026-06-05,Development,active
+10806,tv-ha-st-adx,0,EURUSD.DWX,108060000,2026-06-05,Development,active
+10806,tv-ha-st-adx,1,GBPUSD.DWX,108060001,2026-06-05,Development,active
+10806,tv-ha-st-adx,2,USDJPY.DWX,108060002,2026-06-05,Development,active
+10806,tv-ha-st-adx,3,XAUUSD.DWX,108060003,2026-06-05,Development,active
+10806,tv-ha-st-adx,4,GDAXI.DWX,108060004,2026-06-05,Development,active
+10806,tv-ha-st-adx,5,NDX.DWX,108060005,2026-06-05,Development,active
+10806,tv-ha-st-adx,6,WS30.DWX,108060006,2026-06-05,Development,active
