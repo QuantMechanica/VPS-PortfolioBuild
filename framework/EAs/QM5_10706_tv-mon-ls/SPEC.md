@@ -22,8 +22,9 @@ sweep wick extreme (`SlPct` padding). Take profit is the larger of an R:R target
 (`RrTarget`) and a Monday-range-percentage target (`MondayRangeTpPct` of the box
 height). The stop is moved to a locked breakeven (entry ± `BeLockFrac` of risk)
 once the trade reaches `BeTriggerR` of profit or has been open `BeBars` bars.
-At most one trade per week. Open trades are force-closed on Friday by the
-framework Friday-close guard.
+The entry mode can be Tuesday-only or one-trade-per-week. Open trades are
+force-closed on Friday at the strategy's broker-time mapping of NY open + 2h,
+with the framework Friday close as a later backstop.
 
 ---
 
@@ -40,7 +41,9 @@ framework Friday-close guard.
 | `BeTriggerR` | 1.5 | 1.5-3.0 | R multiple that arms the breakeven lock. |
 | `BeBars` | 24 | 1-200 | Bars-open that also arms the breakeven lock. |
 | `BeLockFrac` | 0.1 | 0.0-1.0 | Fraction of initial risk locked at breakeven. |
-| `OneTradePerWeek` | true | bool | P2 baseline: at most one trade per week. |
+| `EntryMode` | `MLS_ONE_TRADE_PER_WEEK` | enum | Card entry mode: Tuesday-only or one-trade-per-week. |
+| `FridayExitHourBroker` | 18 | 0-23 | Broker hour for Friday NY-open-plus-two-hours strategy close. |
+| `FridayExitMinuteBroker` | 30 | 0-59 | Broker minute for Friday NY-open-plus-two-hours strategy close. |
 
 ---
 

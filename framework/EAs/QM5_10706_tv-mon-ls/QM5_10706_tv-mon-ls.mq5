@@ -57,7 +57,14 @@ input double MondayRangeTpPct           = 1.30;     // Monday-range take-profit 
 input double BeTriggerR                 = 1.5;      // R multiple that arms the breakeven lock.
 input int    BeBars                     = 24;       // Bars-open that also arms the breakeven lock.
 input double BeLockFrac                 = 0.1;      // Fraction of initial risk locked at breakeven.
-input bool   OneTradePerWeek            = true;     // P2 baseline: at most one trade per week.
+enum MLS_EntryMode
+  {
+   MLS_TUESDAY_ONLY = 0,
+   MLS_ONE_TRADE_PER_WEEK = 1
+  };
+input MLS_EntryMode EntryMode           = MLS_ONE_TRADE_PER_WEEK; // Card modes: Tuesday-only or one-trade-per-week.
+input int    FridayExitHourBroker       = 18;       // Friday NY open + 2h mapped with the source 7h broker shift.
+input int    FridayExitMinuteBroker     = 30;
 
 // -----------------------------------------------------------------------------
 // File-scope strategy state — advanced once per closed bar.
@@ -161,7 +168,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
    if(weekday < 2 || weekday > 5)
       return false;
-   if(OneTradePerWeek && g_entry_week == g_week_index)
+   if(EntryMode == MLS_TUESDAY_ONLY && weekday != 2)
+      return false;
+   if(g_entry_week == g_week_index)
       return false;
 
    // Sweep bar = shift 2, confirmation bar = shift 1 (just closed). The sweep
@@ -316,6 +325,16 @@ void Strategy_ManageOpenPosition()
 // close — no discretionary exit signal.
 bool Strategy_ExitSignal()
   {
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(), dt);
+   if(dt.day_of_week != 5)
+      return false;
+
+   const int now_hhmm = dt.hour * 100 + dt.min;
+   const int exit_hhmm = FridayExitHourBroker * 100 + FridayExitMinuteBroker;
+   if(now_hhmm >= exit_hhmm)
+      return true;
+
    return false;
   }
 
