@@ -123,16 +123,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(g_trade_armed_today || strategy_gap_percent <= 0.0 || strategy_inactive_stop_bars <= 0)
       return false;
 
-   const datetime first_bar_time = iTime(_Symbol, _Period, 1);
+   const datetime first_bar_time = iTime(_Symbol, _Period, 1); // perf-allowed: session-open time of last closed bar, single shift-1 read, gated by QM_IsNewBar in OnTick
    if(first_bar_time <= 0 || Hhmm(first_bar_time) != strategy_session_open_hhmm)
       return false;
 
-   const double prev_close = iClose(_Symbol, PERIOD_D1, 1);
-   const double prev_high = iHigh(_Symbol, PERIOD_D1, 1);
-   const double prev_low = iLow(_Symbol, PERIOD_D1, 1);
-   const double session_open = iOpen(_Symbol, _Period, 1);
-   const double first_high = iHigh(_Symbol, _Period, 1);
-   const double first_low = iLow(_Symbol, _Period, 1);
+   // perf-allowed: bespoke opening-gap structural reads (prior-day OHLC + first
+   // session-bar OHLC) at fixed closed-bar shifts; no QM_* reader exists for raw
+   // OHLC and the work is gated once-per-closed-bar by QM_IsNewBar in OnTick.
+   const double prev_close = iClose(_Symbol, PERIOD_D1, 1);    // perf-allowed
+   const double prev_high = iHigh(_Symbol, PERIOD_D1, 1);      // perf-allowed
+   const double prev_low = iLow(_Symbol, PERIOD_D1, 1);        // perf-allowed
+   const double session_open = iOpen(_Symbol, _Period, 1);     // perf-allowed
+   const double first_high = iHigh(_Symbol, _Period, 1);       // perf-allowed
+   const double first_low = iLow(_Symbol, _Period, 1);         // perf-allowed
    const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
    if(prev_close <= 0.0 || prev_high <= 0.0 || prev_low <= 0.0 ||
       session_open <= 0.0 || first_high <= 0.0 || first_low <= 0.0 || atr <= 0.0)
