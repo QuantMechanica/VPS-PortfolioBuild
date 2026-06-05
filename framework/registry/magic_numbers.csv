@@ -5723,3 +5723,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10824,tv-ny3h-sweep,2,GDAXI.DWX,108240002,2026-06-06,Development,active
 10824,tv-ny3h-sweep,3,XAUUSD.DWX,108240003,2026-06-06,Development,active
 10824,tv-ny3h-sweep,4,EURUSD.DWX,108240004,2026-06-06,Development,active
+10826,tv-rr-master,0,EURUSD.DWX,108260000,2026-06-06,Development,active
+10826,tv-rr-master,1,GBPUSD.DWX,108260001,2026-06-06,Development,active
+10826,tv-rr-master,2,USDJPY.DWX,108260002,2026-06-06,Development,active
+10826,tv-rr-master,3,XAUUSD.DWX,108260003,2026-06-06,Development,active
+10826,tv-rr-master,4,GDAXI.DWX,108260004,2026-06-06,Development,active
+10826,tv-rr-master,5,NDX.DWX,108260005,2026-06-06,Development,active
+10826,tv-rr-master,6,WS30.DWX,108260006,2026-06-06,Development,active
