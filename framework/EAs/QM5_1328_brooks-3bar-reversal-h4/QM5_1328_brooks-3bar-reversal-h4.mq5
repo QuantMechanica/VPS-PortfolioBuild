@@ -59,19 +59,19 @@ double PipDistance()
 
 double BodySize(const int shift)
   {
-   return MathAbs(iClose(_Symbol, strategy_tf, shift) - iOpen(_Symbol, strategy_tf, shift));
+   return MathAbs(iClose(_Symbol, strategy_tf, shift) - iOpen(_Symbol, strategy_tf, shift)); // perf-allowed: fixed closed-bar OHLC structural pattern
   }
 
 double BarRange(const int shift)
   {
-   return iHigh(_Symbol, strategy_tf, shift) - iLow(_Symbol, strategy_tf, shift);
+   return iHigh(_Symbol, strategy_tf, shift) - iLow(_Symbol, strategy_tf, shift); // perf-allowed: fixed closed-bar OHLC structural pattern
   }
 
 double LowestLow(const int first_shift, const int count)
   {
    double low = DBL_MAX;
    for(int shift = first_shift; shift < first_shift + count; ++shift)
-      low = MathMin(low, iLow(_Symbol, strategy_tf, shift));
+      low = MathMin(low, iLow(_Symbol, strategy_tf, shift)); // perf-allowed: bounded swing-low structural scan
    return low;
   }
 
@@ -79,13 +79,13 @@ double HighestHigh(const int first_shift, const int count)
   {
    double high = -DBL_MAX;
    for(int shift = first_shift; shift < first_shift + count; ++shift)
-      high = MathMax(high, iHigh(_Symbol, strategy_tf, shift));
+      high = MathMax(high, iHigh(_Symbol, strategy_tf, shift)); // perf-allowed: bounded swing-high structural scan
    return high;
   }
 
 void RefreshSpreadMedian()
   {
-   const datetime bar_time = iTime(_Symbol, strategy_tf, 0);
+   const datetime bar_time = iTime(_Symbol, strategy_tf, 0); // perf-allowed: spread cache key for current strategy bar
    if(bar_time <= 0 || bar_time == g_spread_cache_bar)
       return;
    g_spread_cache_bar = bar_time;
@@ -167,7 +167,7 @@ void RefreshPositionLifecycle()
 
    if(g_active_ticket != 0)
      {
-      g_last_closed_bar = iTime(_Symbol, strategy_tf, 1);
+      g_last_closed_bar = iTime(_Symbol, strategy_tf, 1); // perf-allowed: re-arm state records the closed position's bar
       g_last_closed_direction = g_active_direction;
      }
 
@@ -192,17 +192,17 @@ bool PatternBuy(double &entry_sl, double &entry_tp)
    const double pip = PipDistance();
    if(atr <= 0.0 || sma <= 0.0 || pip <= 0.0)
       return false;
-
-   const double o3 = iOpen(_Symbol, strategy_tf, 3);
-   const double c3 = iClose(_Symbol, strategy_tf, 3);
-   const double h3 = iHigh(_Symbol, strategy_tf, 3);
-   const double l3 = iLow(_Symbol, strategy_tf, 3);
-   const double o2 = iOpen(_Symbol, strategy_tf, 2);
-   const double h2 = iHigh(_Symbol, strategy_tf, 2);
-   const double l2 = iLow(_Symbol, strategy_tf, 2);
-   const double o1 = iOpen(_Symbol, strategy_tf, 1);
-   const double c1 = iClose(_Symbol, strategy_tf, 1);
-   const double l1 = iLow(_Symbol, strategy_tf, 1);
+   // perf-allowed: fixed closed-bar OHLC structural pattern
+   const double o3 = iOpen(_Symbol, strategy_tf, 3);  // perf-allowed: fixed closed-bar OHLC structural pattern
+   const double c3 = iClose(_Symbol, strategy_tf, 3); // perf-allowed: fixed closed-bar OHLC structural pattern
+   const double h3 = iHigh(_Symbol, strategy_tf, 3);  // perf-allowed: fixed closed-bar OHLC structural pattern
+   const double l3 = iLow(_Symbol, strategy_tf, 3);   // perf-allowed: fixed closed-bar OHLC structural pattern
+   const double o2 = iOpen(_Symbol, strategy_tf, 2);  // perf-allowed: fixed closed-bar OHLC structural pattern
+   const double h2 = iHigh(_Symbol, strategy_tf, 2);  // perf-allowed: fixed closed-bar OHLC structural pattern
+   const double l2 = iLow(_Symbol, strategy_tf, 2);   // perf-allowed: fixed closed-bar OHLC structural pattern
+   const double o1 = iOpen(_Symbol, strategy_tf, 1);  // perf-allowed: fixed closed-bar OHLC structural pattern
+   const double c1 = iClose(_Symbol, strategy_tf, 1); // perf-allowed: fixed closed-bar OHLC structural pattern
+   const double l1 = iLow(_Symbol, strategy_tf, 1);   // perf-allowed: fixed closed-bar OHLC structural pattern
 
    const double r3 = BarRange(3);
    const double r2 = BarRange(2);
@@ -238,17 +238,17 @@ bool PatternSell(double &entry_sl, double &entry_tp)
    const double pip = PipDistance();
    if(atr <= 0.0 || sma <= 0.0 || pip <= 0.0)
       return false;
-
-   const double o3 = iOpen(_Symbol, strategy_tf, 3);
-   const double c3 = iClose(_Symbol, strategy_tf, 3);
-   const double h3 = iHigh(_Symbol, strategy_tf, 3);
-   const double l3 = iLow(_Symbol, strategy_tf, 3);
-   const double o2 = iOpen(_Symbol, strategy_tf, 2);
-   const double h2 = iHigh(_Symbol, strategy_tf, 2);
-   const double l2 = iLow(_Symbol, strategy_tf, 2);
-   const double o1 = iOpen(_Symbol, strategy_tf, 1);
-   const double c1 = iClose(_Symbol, strategy_tf, 1);
-   const double h1 = iHigh(_Symbol, strategy_tf, 1);
+   // perf-allowed: fixed closed-bar OHLC structural pattern
+   const double o3 = iOpen(_Symbol, strategy_tf, 3);  // perf-allowed: fixed closed-bar OHLC structural pattern
+   const double c3 = iClose(_Symbol, strategy_tf, 3); // perf-allowed: fixed closed-bar OHLC structural pattern
+   const double h3 = iHigh(_Symbol, strategy_tf, 3);  // perf-allowed: fixed closed-bar OHLC structural pattern
+   const double l3 = iLow(_Symbol, strategy_tf, 3);   // perf-allowed: fixed closed-bar OHLC structural pattern
+   const double o2 = iOpen(_Symbol, strategy_tf, 2);  // perf-allowed: fixed closed-bar OHLC structural pattern
+   const double h2 = iHigh(_Symbol, strategy_tf, 2);  // perf-allowed: fixed closed-bar OHLC structural pattern
+   const double l2 = iLow(_Symbol, strategy_tf, 2);   // perf-allowed: fixed closed-bar OHLC structural pattern
+   const double o1 = iOpen(_Symbol, strategy_tf, 1);  // perf-allowed: fixed closed-bar OHLC structural pattern
+   const double c1 = iClose(_Symbol, strategy_tf, 1); // perf-allowed: fixed closed-bar OHLC structural pattern
+   const double h1 = iHigh(_Symbol, strategy_tf, 1);  // perf-allowed: fixed closed-bar OHLC structural pattern
 
    const double r3 = BarRange(3);
    const double r2 = BarRange(2);
@@ -369,8 +369,8 @@ bool Strategy_ExitSignal()
    RefreshPositionLifecycle();
    if(g_active_ticket == 0 || g_tp1_done)
       return false;
-
-   const datetime bar_time = iTime(_Symbol, strategy_tf, 0);
+   // perf-allowed: exit check cache key for current strategy bar
+   const datetime bar_time = iTime(_Symbol, strategy_tf, 0); // perf-allowed: exit check cache key for current strategy bar
    if(bar_time <= 0 || bar_time == g_last_exit_eval_bar)
       return false;
    g_last_exit_eval_bar = bar_time;
@@ -391,7 +391,7 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
    for(int shift = 1; shift <= 3; ++shift)
      {
-      const datetime bar_time = iTime(_Symbol, strategy_tf, shift);
+      const datetime bar_time = iTime(_Symbol, strategy_tf, shift); // perf-allowed: fixed 3-bar news overlap check
       if(bar_time > 0 && !QM_NewsAllowsTrade(_Symbol, bar_time, qm_news_mode))
          return true;
      }
