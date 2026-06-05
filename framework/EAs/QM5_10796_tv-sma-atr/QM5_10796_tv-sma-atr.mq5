@@ -110,6 +110,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_atr_stop_multiplier <= 0.0)
       return false;
 
+   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
+      return false;
+
    const double fast_last = QM_SMA(_Symbol, PERIOD_CURRENT, strategy_fast_sma_period, 1);
    const double slow_last = QM_SMA(_Symbol, PERIOD_CURRENT, strategy_slow_sma_period, 1);
    const double fast_prev = QM_SMA(_Symbol, PERIOD_CURRENT, strategy_fast_sma_period, 2);
@@ -128,11 +131,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double entry = (side == QM_BUY)
                         ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
                         : SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double atr = QM_ATR(_Symbol, PERIOD_CURRENT, strategy_atr_period, 1);
-   if(entry <= 0.0 || atr <= 0.0)
+   if(entry <= 0.0)
       return false;
 
-   const double stop = QM_StopATRFromValue(_Symbol, side, entry, atr, strategy_atr_stop_multiplier);
+   const double stop = QM_StopATR(_Symbol, side, entry, strategy_atr_period, strategy_atr_stop_multiplier);
    if(stop <= 0.0)
       return false;
 

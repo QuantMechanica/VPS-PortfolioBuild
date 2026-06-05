@@ -49,7 +49,7 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md`.
 
 | Aspect | Value |
 |---|---|
-| Base timeframe | H1 |
+| Base timeframe | M30, H1, H4 |
 | Multi-timeframe refs | none |
 | Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` via framework `OnTick` entry gate |
 
@@ -61,7 +61,7 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md`.
 |---|---|
 | Trades / year / symbol | 60 |
 | Expected trade frequency | not specified in card frontmatter |
-| Typical hold time | not specified in card frontmatter |
+| Typical hold time | not specified in card frontmatter; trades persist until fixed ATR stop, opposite crossover, or Friday close |
 | Expected drawdown profile | whipsaw risk in range-bound regimes |
 | Regime preference | trend-following |
 | Win rate target qualitative | not specified in card frontmatter |
