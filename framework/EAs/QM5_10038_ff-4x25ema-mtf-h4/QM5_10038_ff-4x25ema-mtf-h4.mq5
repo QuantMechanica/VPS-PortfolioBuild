@@ -3,43 +3,35 @@
 #property description "QM5_10038 ForexFactory 4x25EMA MTF ATR Trend"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_Signals.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA SKELETON
+// QM5_10038 — ForexFactory "4x25MA Simple Strategy" (foff00, 2019)
+// Card: artifacts/cards_approved/QM5_10038_ff-4x25ema-mtf-h4.md (G0 APPROVED).
 // -----------------------------------------------------------------------------
-// Fill in only the five Strategy_* hooks below. Everything else is framework
-// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
-// risk + magic + news + Friday-close guard rails). The framework provides:
+// Mechanic (H4 execution, four-timeframe EMA-side alignment):
+//   - Long  when the last N closed bars on M15, H1, H4 AND D1 all close ABOVE
+//     their own EMA(25), inside the liquid session, with H4 ATR above the 30th
+//     percentile of the last 100 H4 bars.
+//   - Short mirrors (all four timeframes close BELOW EMA(25)).
+//   - SL = 2.0 * ATR(14,H4), TP = 3.5 * ATR(14,H4) (midpoint of source 3-4xATR).
+//   - Exit early on a full opposite four-timeframe EMA alignment, or after a
+//     20 H4-bar time stop.
 //
-//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  — closed-bar gate
-//   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
-//     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
-//     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
-//   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
-//   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
-//   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
-//   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
-//   - QM_FrameworkHandleFridayClose / QM_KillSwitchCheck / QM_NewsAllowsTrade
-//
-// DO NOT
-//   - Write per-EA IsNewBar() — use QM_IsNewBar()
-//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
-//     use the QM_* readers above. The framework pools handles and releases them
-//     on shutdown.
-//   - CopyRates over warmup windows on every tick. If you genuinely need raw
-//     bar arrays, gate by QM_IsNewBar so the work runs once per closed bar.
-//   - Hand-edit framework/include/QM/QM_MagicResolver.mqh. After adding rows
-//     to magic_numbers.csv, run:
-//         python framework/scripts/update_magic_resolver.py
-//     This is idempotent and preserves all rows.
+// Framework corset:
+//   - Four-timeframe alignment is computed ONCE per closed H4 bar inside
+//     Strategy_EntrySignal (the caller gates it with QM_IsNewBar()) and cached
+//     in file scope. Strategy_ExitSignal reads the cache on the per-tick path —
+//     it never recomputes EMAs per tick.
+//   - All MTF EMA-side reads go through QM_Sig_Price_Above_MA / QM_EMA. No raw
+//     iClose / iMA / CopyBuffer. ATR via QM_ATR (handle-pooled).
+//   - No per-EA IsNewBar(); OnTick uses the framework QM_IsNewBar() gate.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 10038;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
-// All other phases use 42 by default. Stress / noise dimensions read from
-// this single seed so reproducibility is guaranteed across re-runs.
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
@@ -49,15 +41,10 @@ input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
 // FW1 2026-05-23 — Two-axis news filter per Vault Q09.
-//   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
-//   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
-// A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
-// Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
-// New EAs use qm_news_temporal + qm_news_compliance above and leave this OFF.
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
@@ -65,57 +52,95 @@ input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Stress"
-// FW2 2026-05-23 — only populated by Q05 MED / Q06 HARSH stress setfiles.
-// Default 0.0 = no rejection (Q02/Q03/Q04/Q07/Q08/Q09/Q10/Q13 backtests).
-// Q06 HARSH sets to 0.10 (10% of entries randomly dropped before broker send,
-// deterministic per qm_rng_seed). MED slip/spread/commission live in the
-// tester groups file, not as EA inputs.
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_ema_period              = 25;
-input int    strategy_atr_period              = 14;
-input double strategy_atr_sl_mult             = 2.0;
-input double strategy_atr_tp_mult             = 3.5;
-input int    strategy_alignment_bars          = 3;
-input int    strategy_atr_percentile_bars     = 100;
-input double strategy_min_atr_percentile      = 30.0;
-input double strategy_max_spread_stop_fraction = 0.08;
-input int    strategy_session_start_hour      = 8;
-input int    strategy_session_end_hour        = 21;
-input int    strategy_max_hold_h4_bars        = 20;
+input int    strategy_ema_period              = 25;     // Card Entry: EMA(25) on each timeframe.
+input int    strategy_atr_period              = 14;     // Card Exit/Stop: ATR(14,H4).
+input double strategy_atr_sl_mult             = 2.0;     // Card Stop Loss: SL = 2.0 * ATR.
+input double strategy_atr_tp_mult             = 3.5;     // Card Exit: TP = 3.5 * ATR (midpoint of 3-4x).
+input int    strategy_alignment_bars          = 3;       // Card Entry: last 3 closed bars same side of EMA.
+input int    strategy_atr_percentile_bars     = 100;     // Card Filter: ATR percentile window (100 H4 bars).
+input double strategy_min_atr_percentile      = 30.0;    // Card Filter: minimum H4 ATR percentile (30).
+input double strategy_max_spread_stop_fraction = 0.08;   // Card Stop Loss: skip if spread > 8% of stop dist.
+input int    strategy_session_start_hour      = 8;       // Card Entry: liquid-session start (broker hour).
+input int    strategy_session_end_hour        = 21;      // Card Entry: liquid-session end / not after NY close.
+input int    strategy_max_hold_h4_bars        = 20;      // Card Exit: time stop of 20 H4 bars.
 
 // -----------------------------------------------------------------------------
-// Strategy hooks — implement these against the card mechanically.
+// File-scope cached four-timeframe alignment, refreshed once per closed H4 bar
+// by RefreshAlignment() (called from Strategy_EntrySignal). Consumed on the
+// per-tick path by Strategy_ExitSignal without any EMA recompute.
 // -----------------------------------------------------------------------------
+bool g_long_aligned  = false;   // last N closed bars on M15/H1/H4/D1 all ABOVE EMA(25)
+bool g_short_aligned = false;   // last N closed bars on M15/H1/H4/D1 all BELOW EMA(25)
 
-// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
-// regime filter). Cheap O(1) checks only — runs on every tick.
-bool Strategy_NoTradeFilter()
+// Recompute the four-timeframe EMA-side alignment from the last N closed bars.
+// Runs once per closed H4 bar; uses QM_Sig_Price_Above_MA (+1 above / -1 below
+// / 0 equal) plus a QM_EMA validity guard so warmup (EMA==0) never registers as
+// a false "above" alignment.
+void RefreshAlignment()
   {
-   MqlDateTime dt;
-   TimeToStruct(TimeCurrent(), dt);
-   if(dt.hour < strategy_session_start_hour || dt.hour >= strategy_session_end_hour)
-      return true;
+   bool all_long  = true;
+   bool all_short = true;
+   ENUM_TIMEFRAMES frames[4] = { PERIOD_M15, PERIOD_H1, PERIOD_H4, PERIOD_D1 };
+   for(int f = 0; f < 4; ++f)
+     {
+      for(int shift = 1; shift <= strategy_alignment_bars; ++shift)
+        {
+         const double ema = QM_EMA(_Symbol, frames[f], strategy_ema_period, shift);
+         if(ema <= 0.0)
+           {
+            all_long  = false;
+            all_short = false;
+            break;
+           }
+         const int side = QM_Sig_Price_Above_MA(_Symbol, frames[f], strategy_ema_period, 0.0, shift);
+         if(side != +1)
+            all_long = false;
+         if(side != -1)
+            all_short = false;
+        }
+      if(!all_long && !all_short)
+         break;
+     }
+   g_long_aligned  = all_long;
+   g_short_aligned = all_short;
+  }
 
-   const double atr = QM_ATR(_Symbol, PERIOD_H4, strategy_atr_period, 1);
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(atr <= 0.0 || ask <= 0.0 || bid <= 0.0 || ask <= bid)
-      return true;
-
-   const double stop_dist = strategy_atr_sl_mult * atr;
-   if(stop_dist <= 0.0)
-      return true;
-   if((ask - bid) > strategy_max_spread_stop_fraction * stop_dist)
-      return true;
-
+// True iff this EA's magic already holds a position on the current symbol.
+bool HaveOpenPosition()
+  {
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+         return true;
+     }
    return false;
   }
 
-// Populate `req` with entry order parameters and return TRUE if a NEW entry
-// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
-// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
+// -----------------------------------------------------------------------------
+// Strategy hooks
+// -----------------------------------------------------------------------------
+
+// No Trade Filter — runs on every tick and must stay O(1). The card's no-trade
+// conditions (liquid session, spread cap, volatility floor) are ENTRY-scoped,
+// so they live in Strategy_EntrySignal; gating them here would also suppress the
+// time-stop / opposite-alignment EXIT cadence. Nothing blocks the whole tick.
+bool Strategy_NoTradeFilter()
+  {
+   return false;
+  }
+
+// Trade Entry — fires at most one new position per closed H4 bar. The caller
+// guarantees QM_IsNewBar() == true, so this is the once-per-bar slot where the
+// cached MTF alignment is refreshed for both entry and exit.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    req.type = QM_BUY;
@@ -126,6 +151,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
+   // Refresh cached four-timeframe alignment first — Strategy_ExitSignal reads
+   // it on the per-tick path, so it must advance every closed bar even when a
+   // position is open (i.e. before the one-position early return below).
+   RefreshAlignment();
+
    if(_Period != PERIOD_H4)
       return false;
 
@@ -134,48 +164,17 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_atr_sl_mult <= 0.0 || strategy_atr_tp_mult <= 0.0)
       return false;
 
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
-         return false;
-     }
+   // Card Filter: one active position per symbol/magic.
+   if(HaveOpenPosition())
+      return false;
 
-   int long_hits = 0;
-   int short_hits = 0;
-   ENUM_TIMEFRAMES frames[4] = { PERIOD_M15, PERIOD_H1, PERIOD_H4, PERIOD_D1 };
-   for(int f = 0; f < 4; ++f)
-     {
-      bool frame_long = true;
-      bool frame_short = true;
-      for(int shift = 1; shift <= strategy_alignment_bars; ++shift)
-        {
-         const double close_v = iClose(_Symbol, frames[f], shift);
-         const double ema_v = QM_EMA(_Symbol, frames[f], strategy_ema_period, shift);
-         if(close_v <= 0.0 || ema_v <= 0.0)
-           {
-            frame_long = false;
-            frame_short = false;
-            break;
-           }
-         if(close_v <= ema_v)
-            frame_long = false;
-         if(close_v >= ema_v)
-            frame_short = false;
-        }
-      if(frame_long)
-         ++long_hits;
-      if(frame_short)
-         ++short_hits;
-     }
+   // Card Entry: only inside the liquid session, not after New York close.
+   if(QM_Sig_Session(TimeCurrent(), strategy_session_start_hour, strategy_session_end_hour) == 0)
+      return false;
 
-   const bool is_long = (long_hits == 4);
-   const bool is_short = (short_hits == 4);
+   // Card Entry: four-timeframe EMA-side alignment (cached above).
+   const bool is_long  = g_long_aligned;
+   const bool is_short = g_short_aligned;
    if(!is_long && !is_short)
       return false;
 
@@ -183,6 +182,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(atr <= 0.0)
       return false;
 
+   // Card Filter: minimum H4 ATR percentile over the last 100 H4 bars
+   // (approximates the source "high volatility" wording).
    int atr_rank_hits = 0;
    int atr_count = 0;
    for(int shift = 1; shift <= strategy_atr_percentile_bars; ++shift)
@@ -206,39 +207,44 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const double stop_dist = strategy_atr_sl_mult * atr;
+   if(stop_dist <= 0.0)
+      return false;
+
+   // Card Stop Loss: skip if spread exceeds 8% of the stop distance.
    if((ask - bid) > strategy_max_spread_stop_fraction * stop_dist)
       return false;
 
+   const double tp_dist = strategy_atr_tp_mult * atr;
    if(is_long)
      {
       req.type = QM_BUY;
-      req.price = ask;
+      req.price = 0.0;                                   // market
       req.sl = NormalizeDouble(ask - stop_dist, _Digits);
-      req.tp = NormalizeDouble(ask + strategy_atr_tp_mult * atr, _Digits);
+      req.tp = NormalizeDouble(ask + tp_dist, _Digits);
       req.reason = "QM5_10038_LONG_4TF_EMA25";
       return true;
      }
 
    req.type = QM_SELL;
-   req.price = bid;
+   req.price = 0.0;                                      // market
    req.sl = NormalizeDouble(bid + stop_dist, _Digits);
-   req.tp = NormalizeDouble(bid - strategy_atr_tp_mult * atr, _Digits);
+   req.tp = NormalizeDouble(bid - tp_dist, _Digits);
    req.reason = "QM5_10038_SHORT_4TF_EMA25";
    return true;
   }
 
-// Called every tick when an open position exists for this EA's magic.
-// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
+// Trade Management — the card specifies a static ATR SL/TP with no trailing,
+// partial, or break-even management.
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies static ATR SL/TP with no trailing, partial, or BE management.
   }
 
-// Return TRUE to close the open position now (e.g. opposite-signal exit,
-// max-hold-time exceeded, session end).
+// Trade Close — discretionary exit, runs every tick and stays O(1): a time stop
+// from POSITION_TIME plus an opposite full four-timeframe alignment read from
+// the file-scope cache (refreshed once per closed H4 bar in Strategy_EntrySignal).
 bool Strategy_ExitSignal()
   {
-   if(strategy_ema_period <= 0 || strategy_alignment_bars <= 0 || strategy_max_hold_h4_bars <= 0)
+   if(strategy_max_hold_h4_bars <= 0)
       return false;
 
    const int magic = QM_FrameworkMagic();
@@ -252,55 +258,29 @@ bool Strategy_ExitSignal()
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
 
+      // Card Exit: 20 H4-bar time stop.
       const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
       const int h4_seconds = PeriodSeconds(PERIOD_H4);
-      if(opened > 0 && h4_seconds > 0 && TimeCurrent() - opened >= strategy_max_hold_h4_bars * h4_seconds)
+      if(opened > 0 && h4_seconds > 0 &&
+         (TimeCurrent() - opened) >= (long)strategy_max_hold_h4_bars * h4_seconds)
          return true;
 
-      int long_hits = 0;
-      int short_hits = 0;
-      ENUM_TIMEFRAMES frames[4] = { PERIOD_M15, PERIOD_H1, PERIOD_H4, PERIOD_D1 };
-      for(int f = 0; f < 4; ++f)
-        {
-         bool frame_long = true;
-         bool frame_short = true;
-         for(int shift = 1; shift <= strategy_alignment_bars; ++shift)
-           {
-            const double close_v = iClose(_Symbol, frames[f], shift);
-            const double ema_v = QM_EMA(_Symbol, frames[f], strategy_ema_period, shift);
-            if(close_v <= 0.0 || ema_v <= 0.0)
-              {
-               frame_long = false;
-               frame_short = false;
-               break;
-              }
-            if(close_v <= ema_v)
-               frame_long = false;
-            if(close_v >= ema_v)
-               frame_short = false;
-           }
-         if(frame_long)
-            ++long_hits;
-         if(frame_short)
-            ++short_hits;
-        }
-
+      // Card Exit: full opposite four-timeframe EMA alignment.
       const ENUM_POSITION_TYPE type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      if(type == POSITION_TYPE_BUY && short_hits == 4)
+      if(type == POSITION_TYPE_BUY && g_short_aligned)
          return true;
-      if(type == POSITION_TYPE_SELL && long_hits == 4)
+      if(type == POSITION_TYPE_SELL && g_long_aligned)
          return true;
      }
 
    return false;
   }
 
-// Optional news-filter override. Return TRUE to suppress trading regardless
-// of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
-// custom high-impact-event handling beyond the central filter.
+// News Filter Hook — callable by the P8 News Impact phase. Defers to the central
+// QM_NewsAllowsTrade filter; this EA adds no custom high-impact handling.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false; // defer to QM_NewsAllowsTrade(...)
+   return false;
   }
 
 // -----------------------------------------------------------------------------
