@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA trades M15 pullback continuations in the direction of an H4 EMA trend. A long entry requires the last completed H4 close to be above a rising H4 EMA, price to remain above that EMA while pulling back from a recent H4 swing high, RSI to turn up from oversold/pullback territory or show bullish divergence, and a bullish engulfing candle to appear on the execution timeframe. Short entries mirror the same logic below a falling H4 EMA, with RSI turning down or bearish divergence and a bearish engulfing candle. Exits use the card's fixed 2.0 percent target and 2.0 x ATR(14) stop, with the card's optional diagnostic close on opposite engulfing plus RSI reversal.
+The EA trades M15 pullback continuations in the direction of an H4 EMA trend. A long entry requires the last completed H4 close to be above a rising H4 EMA, price to remain above that EMA while pulling back from a recent H4 swing high, RSI to turn up from oversold/pullback territory or show bullish divergence, and a bullish engulfing candle to appear on the execution timeframe. Short entries mirror the same logic below a falling H4 EMA, with RSI turning down or bearish divergence and a bearish engulfing candle. Exits use the card's fixed 2.0 percent target and 2.0 x ATR(14) stop, plus the framework Friday close.
 
 ---
 
