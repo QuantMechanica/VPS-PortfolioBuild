@@ -5502,3 +5502,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10785,tv-momo-200,4,GDAXI.DWX,107850004,2026-06-05,Codex,active
 10785,tv-momo-200,5,NDX.DWX,107850005,2026-06-05,Codex,active
 10785,tv-momo-200,6,WS30.DWX,107850006,2026-06-05,Codex,active
+10786,tv-daily-bias,0,EURUSD.DWX,107860000,2026-06-05,Development,active
+10786,tv-daily-bias,1,GBPUSD.DWX,107860001,2026-06-05,Development,active
+10786,tv-daily-bias,2,USDJPY.DWX,107860002,2026-06-05,Development,active
+10786,tv-daily-bias,3,XAUUSD.DWX,107860003,2026-06-05,Development,active
+10786,tv-daily-bias,4,GDAXI.DWX,107860004,2026-06-05,Development,active
+10786,tv-daily-bias,5,NDX.DWX,107860005,2026-06-05,Development,active
+10786,tv-daily-bias,6,WS30.DWX,107860006,2026-06-05,Development,active
