@@ -4,7 +4,7 @@
 **Slug:** tv-st-atr-trail
 **Source:** d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7 (see TradingView source citation in the approved card)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-05
+**Last revised:** 2026-06-06
 
 ---
 
@@ -95,4 +95,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-05 | Initial build from card | 2c885668-917a-47c8-90f7-50617169b62d |
+| v1 | 2026-06-06 | Initial build from card | 2c885668-917a-47c8-90f7-50617169b62d |
