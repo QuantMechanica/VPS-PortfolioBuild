@@ -4,6 +4,8 @@
 
 #include <QM/QM_Common.mqh>
 #include <QM/QM_Indicators.mqh>
+#include <QM/QM_FilterVolatility.mqh>
+#include <QM/QM_Signals.mqh>
 
 // =============================================================================
 // QuantMechanica V5 EA - tv-triple-ema-vol
@@ -49,7 +51,7 @@ input double strategy_rsi_buy_min       = 50.0;
 input double strategy_rsi_buy_max       = 70.0;
 input double strategy_rsi_exit_below    = 45.0;
 input int    strategy_vol_atr_period    = 14;
-input double strategy_vol_norm_cap_pct  = 1.0;
+input int    strategy_vol_lookback_bars = 100;
 input double strategy_vol_min_norm      = 30.0;
 input double strategy_vol_max_norm      = 100.0;
 input int    strategy_stop_mode         = 0;      // 0 = fixed percent, 1 = ATR multiple
@@ -60,14 +62,6 @@ input double strategy_target_fixed_pct  = 15.0;
 input double strategy_target_rr         = 3.0;
 input bool   strategy_exit_ema_enabled  = true;
 input bool   strategy_exit_rsi_enabled  = true;
-
-double Strategy_ClosedClose(const int shift)
-  {
-   double closes[1];
-   if(CopyClose(_Symbol, (ENUM_TIMEFRAMES)_Period, shift, 1, closes) != 1) // perf-allowed: single closed-bar price read for card price/volatility rules.
-      return 0.0;
-   return closes[0];
-  }
 
 bool Strategy_GetOpenPosition(ENUM_POSITION_TYPE &out_type)
   {
@@ -101,17 +95,21 @@ void Strategy_ResetRequest(QM_EntryRequest &req)
    req.expiration_seconds = 0;
   }
 
-double Strategy_VolatilityNorm(const double close_price)
+double Strategy_VolatilityNorm()
   {
-   if(close_price <= 0.0 || strategy_vol_atr_period <= 0 || strategy_vol_norm_cap_pct <= 0.0)
+   if(strategy_vol_atr_period <= 0 || strategy_vol_lookback_bars < 2)
       return -1.0;
 
    const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_vol_atr_period, 1);
-   if(atr <= 0.0)
+   const double baseline = QM_FilterVolatilityAtrAverage(_Symbol,
+                                                         (ENUM_TIMEFRAMES)_Period,
+                                                         strategy_vol_atr_period,
+                                                         strategy_vol_lookback_bars,
+                                                         2);
+   if(atr <= 0.0 || baseline <= 0.0)
       return -1.0;
 
-   const double atr_pct = 100.0 * atr / close_price;
-   return 100.0 * atr_pct / strategy_vol_norm_cap_pct;
+   return 100.0 * atr / baseline;
   }
 
 double Strategy_StopPrice(const double entry)
@@ -166,15 +164,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!(ema_fast > ema_mid && ema_mid > ema_slow))
       return false;
 
-   const double close1 = Strategy_ClosedClose(1);
-   if(close1 <= ema_fast)
+   if(QM_Sig_Price_Above_MA(_Symbol, tf, strategy_ema_fast, 0.0, 1) <= 0)
       return false;
 
    const double rsi = QM_RSI(_Symbol, tf, strategy_rsi_period, 1);
    if(rsi < strategy_rsi_buy_min || rsi > strategy_rsi_buy_max)
       return false;
 
-   const double vol_norm = Strategy_VolatilityNorm(close1);
+   const double vol_norm = Strategy_VolatilityNorm();
    if(vol_norm < strategy_vol_min_norm || vol_norm > strategy_vol_max_norm)
       return false;
 

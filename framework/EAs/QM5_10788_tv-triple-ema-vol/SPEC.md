@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA is long-only. On each closed H4 bar it buys when EMA20 is above EMA50, EMA50 is above EMA200, the close is above EMA20, RSI(14) is between 50 and 70, and a fixed ATR-percent volatility proxy is between 30 and 100 on its normalized scale. It exits at a fixed 5 percent stop, fixed 15 percent target, bearish EMA stack where EMA20 is below EMA50 and EMA50 is below EMA200, or RSI below 45.
+The EA is long-only. On each closed H4 bar it buys when EMA20 is above EMA50, EMA50 is above EMA200, the close is above EMA20, RSI(14) is between 50 and 70, and ATR(14) is between 30 and 100 percent of its fixed 100-bar ATR baseline. It exits at a fixed 5 percent stop, fixed 15 percent target, bearish EMA stack where EMA20 is below EMA50 and EMA50 is below EMA200, or RSI below 45.
 
 ---
 
@@ -26,7 +26,7 @@ The EA is long-only. On each closed H4 bar it buys when EMA20 is above EMA50, EM
 | strategy_rsi_buy_max | 70.0 | 0-100 | Upper bound of the RSI buy zone. |
 | strategy_rsi_exit_below | 45.0 | 0-100 | Close long positions when RSI falls below this value. |
 | strategy_vol_atr_period | 14 | 2-100 | ATR period for the deterministic volatility proxy. |
-| strategy_vol_norm_cap_pct | 1.0 | >0 | ATR percent-of-price that maps to 100 on the normalized volatility scale. |
+| strategy_vol_lookback_bars | 100 | 2-500 | ATR lookback used to normalize current ATR onto the volatility scale. |
 | strategy_vol_min_norm | 30.0 | 0-100 | Minimum normalized volatility accepted for entry. |
 | strategy_vol_max_norm | 100.0 | 0-200 | Maximum normalized volatility accepted for entry. |
 | strategy_stop_mode | 0 | 0-1 | 0 uses fixed percent stop, 1 uses ATR multiple stop. |
