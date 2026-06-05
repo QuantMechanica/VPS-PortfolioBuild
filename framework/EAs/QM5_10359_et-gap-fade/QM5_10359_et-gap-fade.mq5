@@ -122,14 +122,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    RefreshSessionState();
    if(g_trade_armed_today || strategy_gap_percent <= 0.0 || strategy_inactive_stop_bars <= 0)
       return false;
-
-   const datetime first_bar_time = iTime(_Symbol, _Period, 1); // perf-allowed: session-open time of last closed bar, single shift-1 read, gated by QM_IsNewBar in OnTick
+   // perf-allowed: bespoke opening-gap structural reads (session-open time,
+   // prior-day OHLC + first session-bar OHLC) at fixed closed-bar shift 1; no
+   // QM_* reader exists for raw OHLC and the work is gated once-per-closed-bar
+   // by QM_IsNewBar in OnTick.
+   const datetime first_bar_time = iTime(_Symbol, _Period, 1); // perf-allowed: session-open time of last closed bar, single shift-1 read
    if(first_bar_time <= 0 || Hhmm(first_bar_time) != strategy_session_open_hhmm)
       return false;
-
-   // perf-allowed: bespoke opening-gap structural reads (prior-day OHLC + first
-   // session-bar OHLC) at fixed closed-bar shifts; no QM_* reader exists for raw
-   // OHLC and the work is gated once-per-closed-bar by QM_IsNewBar in OnTick.
    const double prev_close = iClose(_Symbol, PERIOD_D1, 1);    // perf-allowed
    const double prev_high = iHigh(_Symbol, PERIOD_D1, 1);      // perf-allowed
    const double prev_low = iLow(_Symbol, PERIOD_D1, 1);        // perf-allowed

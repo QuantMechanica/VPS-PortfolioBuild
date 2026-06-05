@@ -3,16 +3,16 @@
 ; ea_id:        10359
 ; ea_slug:      et-gap-fade
 ; ea_version:   v5.0
-; set_version:  s20260525-001
+; set_version:  s20260605-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    M5
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   a50de7713571a6b6aea12cfd31f49f1052e932307ecf6115a870b6cb2620af95
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-25
+; date:         2026-06-05
 ;==========================================================
 qm_magic_slot_offset=3
 RISK_FIXED=1000

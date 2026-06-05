@@ -3,16 +3,16 @@
 ; ea_id:        10359
 ; ea_slug:      et-gap-fade
 ; ea_version:   v5.0
-; set_version:  s20260525-001
+; set_version:  s20260605-001
 ; symbol:       WS30.DWX
 ; timeframe:    M5
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   cab1369a1075b906d400c0bc57120a99e0136726b1ca67ff8e815b823b335c4b
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-25
+; date:         2026-06-05
 ;==========================================================
 qm_magic_slot_offset=2
 RISK_FIXED=1000
