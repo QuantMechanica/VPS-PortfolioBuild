@@ -5495,3 +5495,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10780,tv-ny-orb-dyn,4,GDAXI.DWX,107800004,2026-06-05,Development,active
 10780,tv-ny-orb-dyn,5,NDX.DWX,107800005,2026-06-05,Development,active
 10780,tv-ny-orb-dyn,6,WS30.DWX,107800006,2026-06-05,Development,active
+10785,tv-momo-200,0,EURUSD.DWX,107850000,2026-06-05,Codex,active
+10785,tv-momo-200,1,GBPUSD.DWX,107850001,2026-06-05,Codex,active
+10785,tv-momo-200,2,USDJPY.DWX,107850002,2026-06-05,Codex,active
+10785,tv-momo-200,3,XAUUSD.DWX,107850003,2026-06-05,Codex,active
+10785,tv-momo-200,4,GDAXI.DWX,107850004,2026-06-05,Codex,active
+10785,tv-momo-200,5,NDX.DWX,107850005,2026-06-05,Codex,active
+10785,tv-momo-200,6,WS30.DWX,107850006,2026-06-05,Codex,active
