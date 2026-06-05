@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_10024 Robot Wealth FX Commodity Basket Stat Arb"
+#property description "QM5_10024 Robot Wealth FX Commodity Basket Stat Arb (v2 Optimized)"
 
 #include <QM/QM_Common.mqh>
 #include <QM/QM_BasketOrder.mqh>
@@ -53,6 +53,7 @@ double g_z_now = 0.0;
 double g_z_prev = 0.0;
 double g_spread_stdev = 0.0;
 bool   g_state_ready = false;
+bool   g_news_allows = true;
 
 int Strategy_LegIndexForSymbol(const string symbol)
   {
@@ -84,9 +85,6 @@ bool Strategy_CopyLegCloses(const int count, double &c0[], double &c1[], double 
    ArraySetAsSeries(c1, true);
    ArraySetAsSeries(c2, true);
    ArraySetAsSeries(c3, true);
-
-   for(int i = 0; i < STRATEGY_LEG_COUNT; ++i)
-      SymbolSelect(g_leg_symbols[i], true);
 
    if(CopyClose(g_leg_symbols[0], PERIOD_D1, 1, count, c0) != count)
       return false;
@@ -160,8 +158,7 @@ bool Strategy_DataAllows()
       const string symbol = g_leg_symbols[i];
       if(!Strategy_HasDwxSuffix(symbol))
          return false;
-      if(!SymbolSelect(symbol, true))
-         return false;
+      // Note: SymbolSelect is called in OnInit for all legs.
       if(iTime(symbol, PERIOD_D1, 1) <= 0)
          return false;
       if(strategy_max_spread_points > 0)
@@ -308,7 +305,8 @@ bool Strategy_NoTradeFilter()
    if(qm_magic_slot_offset != g_leg_slots[leg])
       return true;
 
-   return !Strategy_DataAllows();
+   // v2 optimization: data availability is checked once per bar in Strategy_RefreshState
+   return !g_state_ready;
   }
 
 // Trade Entry.
@@ -378,18 +376,24 @@ bool Strategy_ExitSignal()
 // News Filter Hook (callable for P8 News Impact phase).
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
+   // v2 optimization: news state is cached per-bar in OnTick.
+   return !g_news_allows;
+  }
+
+bool Strategy_CheckAllNews(const datetime broker_time)
+  {
    for(int leg = 0; leg < STRATEGY_LEG_COUNT; ++leg)
      {
       const string symbol = g_leg_symbols[leg];
       if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
         {
          if(!QM_NewsAllowsTrade2(symbol, broker_time, qm_news_temporal, qm_news_compliance))
-            return true;
+            return false;
         }
       else if(!QM_NewsAllowsTrade(symbol, broker_time, qm_news_mode_legacy))
-         return true;
+         return false;
      }
-   return false;
+   return true;
   }
 
 // -----------------------------------------------------------------------------
@@ -440,28 +444,28 @@ void OnTick()
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
+   
+   // v2 optimization: only check new bar logic once.
+   const bool is_new_bar = QM_IsNewBar();
+   
+   if(is_new_bar)
+     {
+      // Refresh news once per bar
+      g_news_allows = Strategy_CheckAllNews(broker_now);
+      
+      QM_EquityStreamOnNewBar();
+      Strategy_RefreshState();
+     }
 
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
+   if(!g_news_allows)
       return;
+      
    if(QM_FrameworkHandleFridayClose())
       return;
 
    if(Strategy_NoTradeFilter())
       return;
 
-   if(!QM_IsNewBar())
-      return;
-
-   QM_EquityStreamOnNewBar();
-
-   Strategy_RefreshState();
    Strategy_ManageOpenPosition();
    Strategy_ExitSignal();
 

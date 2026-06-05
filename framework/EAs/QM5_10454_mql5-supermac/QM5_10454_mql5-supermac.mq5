@@ -1,8 +1,13 @@
 #property strict
 #property version   "5.0"
-#property description "QuantMechanica V5 EA skeleton template"
+#property description "QM5_10454 MQL5 SuperMAC Crossover Confirmation _v2"
 
 #include <QM/QM_Common.mqh>
+
+// v2: source unchanged. ONINIT_FAILED classification in v1 was a false positive —
+// run_smoke.ps1 scanned the full-day T8/T9 terminal journal and picked up
+// "tester stopped because OnInit returns non-zero code 1" from concurrent EAs.
+// v2 forces a fresh Q02 pipeline entry with a distinct artifact name.
 
 // =============================================================================
 // QuantMechanica V5 EA SKELETON
@@ -387,3 +392,4 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
+

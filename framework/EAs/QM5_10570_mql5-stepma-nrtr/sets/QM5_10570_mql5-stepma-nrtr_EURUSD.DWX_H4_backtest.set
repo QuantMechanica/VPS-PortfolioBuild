@@ -3,7 +3,7 @@
 ; ea_id:        10570
 ; ea_slug:      mql5-stepma-nrtr
 ; ea_version:   v5.0
-; set_version:  s20260529-001
+; set_version:  s20260602-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    H4
 ; environment:  backtest
@@ -11,8 +11,8 @@
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
 ; build_hash:   pending
-; author:       Development
-; date:         2026-05-29
+; author:       Claude/v2-rebuild
+; date:         2026-06-02
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=1000
@@ -30,5 +30,15 @@ qm_filter_volatility_atr_period=14
 qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card
+strategy_stepma_length=10
+strategy_stepma_kv=1.0
+strategy_stepma_step_size=0
+strategy_stepma_percentage=0.0
+strategy_stepma_high_low=true
+strategy_atr_period=14
+strategy_atr_sl_mult=2.0
+strategy_tp_rr=1.5
+strategy_warmup_bars=180
+strategy_exit_on_opposite=true
+strategy_max_spread_points=0

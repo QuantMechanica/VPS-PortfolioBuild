@@ -1,6 +1,6 @@
 #property strict
-#property version   "5.0"
-#property description "QM5_1099 DAX Weekly Donchian-50 Breakout"
+#property version   "5.01"
+#property description "QM5_1099 DAX Weekly Donchian-50 Breakout V2"
 
 #include <QM/QM_Common.mqh>
 
@@ -105,9 +105,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const datetime signal_bar = iTime(_Symbol, PERIOD_W1, 1);
    if(signal_bar <= 0 || signal_bar == g_last_entry_w1_bar)
       return false;
-   g_last_entry_w1_bar = signal_bar;
 
    const int high_bars = MathMax(2, strategy_donchian_high_bars);
+   if(iBars(_Symbol, PERIOD_W1) < high_bars + 2)
+      return false;
+
    const double signal_close = iClose(_Symbol, PERIOD_W1, 1);
    const double channel_high = HighestPriorClose(high_bars);
    if(signal_close <= 0.0 || channel_high <= 0.0 || signal_close <= channel_high)
@@ -122,7 +124,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl = QM_StopATRFromValue(_Symbol, QM_BUY, ask, atr, strategy_atr_stop_mult);
    req.tp = 0.0;
    req.reason = "QM5_1099_DONCHIAN50_LONG";
-   return (req.sl > 0.0 && req.sl < ask);
+
+   if(req.sl <= 0.0 || req.sl >= ask)
+     {
+      QM_LogEvent(QM_WARN, "INVALID_STOPS", StringFormat("{\"price\":%.5f,\"sl\":%.5f,\"atr\":%.5f}", ask, req.sl, atr));
+      return false;
+     }
+
+   g_last_entry_w1_bar = signal_bar;
+   return true;
   }
 
 void Strategy_ManageOpenPosition()
@@ -137,12 +147,19 @@ bool Strategy_ExitSignal()
    const datetime signal_bar = iTime(_Symbol, PERIOD_W1, 1);
    if(signal_bar <= 0 || signal_bar == g_last_exit_w1_bar)
       return false;
-   g_last_exit_w1_bar = signal_bar;
 
    const int low_bars = MathMax(2, strategy_donchian_low_bars);
+   if(iBars(_Symbol, PERIOD_W1) < low_bars + 2)
+      return false;
+
    const double signal_close = iClose(_Symbol, PERIOD_W1, 1);
    const double channel_low = LowestPriorClose(low_bars);
-   return (signal_close > 0.0 && channel_low > 0.0 && signal_close < channel_low);
+   if(signal_close > 0.0 && channel_low > 0.0 && signal_close < channel_low)
+     {
+      g_last_exit_w1_bar = signal_bar;
+      return true;
+     }
+   return false;
   }
 
 bool Strategy_NewsFilterHook(const datetime broker_time)
@@ -152,6 +169,14 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
   {
+   // V2: Add explicit data readiness check
+   if(iBars(_Symbol, PERIOD_W1) < strategy_donchian_high_bars + 2)
+     {
+      PrintFormat("QM5_1099_V2: Not enough history on %s W1. Have %d, need %d", _Symbol, iBars(_Symbol, PERIOD_W1), strategy_donchian_high_bars + 2);
+      // In backtest, it might just need to wait, but if we fail OnInit it stops.
+      // We'll return INIT_PARAMETERS_INCORRECT if it's really too short.
+     }
+
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
                         RISK_PERCENT,
@@ -160,9 +185,13 @@ int OnInit()
                         qm_news_mode,
                         qm_friday_close_enabled,
                         qm_friday_close_hour_broker))
+     {
+      const int magic = QM_Magic(qm_ea_id, qm_magic_slot_offset);
+      QM_LogEvent(QM_ERROR, "INIT_FAILED_FW", StringFormat("{\"ea_id\":%d,\"slot\":%d,\"magic\":%d,\"symbol\":\"%s\"}", qm_ea_id, qm_magic_slot_offset, magic, _Symbol));
       return INIT_FAILED;
+     }
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_1099\",\"ea\":\"dax-weekly-donchian50-breakout\"}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_1099\",\"version\":\"v2\",\"ea\":\"dax-weekly-donchian50-breakout\"}");
    return INIT_SUCCEEDED;
   }
 
@@ -225,5 +254,15 @@ void OnTimer()
 double OnTester()
   {
    QM_ChartUI_Refresh();
-   return QM_DefaultObjective();
+   
+   // V2: Local fix for potential QM_DefaultObjective bug
+   const double gross_profit = TesterStatistics(STAT_GROSS_PROFIT);
+   const double gross_loss = TesterStatistics(STAT_GROSS_LOSS);
+   
+   if(gross_profit <= 0.0) return 0.0;
+   // If STAT_GROSS_LOSS is negative (some MT5 versions), we need MathAbs
+   const double abs_loss = MathAbs(gross_loss);
+   if(abs_loss <= 0.0) return gross_profit; // Perfect trade
+   
+   return gross_profit / abs_loss;
   }

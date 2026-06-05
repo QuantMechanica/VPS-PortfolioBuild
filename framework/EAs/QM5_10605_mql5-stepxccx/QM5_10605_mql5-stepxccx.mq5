@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_10605 MQL5 ColorStepXCCX Cloud Flip"
+#property description "QM5_10605 MQL5 ColorStepXCCX Cloud Flip v2"
 
 #include <QM/QM_Common.mqh>
 
@@ -369,3 +369,4 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
+

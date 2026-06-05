@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QuantMechanica V5 EA skeleton template"
+#property description "QM5_10622 MQL5 20200 Price Difference — v2 rebuild: description fixed, params injected"
 
 #include <QM/QM_Common.mqh>
 

@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_10021 Robot Wealth FX Absolute Momentum"
+#property description "QM5_10021 Robot Wealth FX Absolute Momentum — V2 rebuild"
 
 #include <QM/QM_Common.mqh>
 
@@ -15,8 +15,8 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
 input int    qm_news_stale_max_hours      = 336;
 input string qm_news_min_impact           = "high";
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
@@ -29,12 +29,25 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_formation_period  = 80;
-input int    strategy_atr_period        = 14;
-input double strategy_atr_sl_mult       = 2.5;
-input int    strategy_max_spread_points = 40;
+input int    strategy_formation_period  = 80;     // number of D1 bars to look back for momentum calc
+input int    strategy_atr_period        = 14;     // ATR period for stop loss
+input double strategy_atr_sl_mult       = 2.5;    // ATR multiplier for stop loss distance
+input int    strategy_max_spread_points = 40;     // max spread in points to allow trade
 
-// No Trade Filter (time, spread, news)
+datetime g_cached_d1_bar_time  = 0;
+double   g_cached_close_recent = 0.0;
+double   g_cached_close_formation = 0.0;
+
+void RefreshCachedDailyData()
+  {
+   const datetime bar_time = iTime(_Symbol, PERIOD_D1, 0);
+   if(bar_time == g_cached_d1_bar_time)
+      return;
+   g_cached_d1_bar_time = bar_time;
+   g_cached_close_recent = iClose(_Symbol, PERIOD_D1, 1);
+   g_cached_close_formation = iClose(_Symbol, PERIOD_D1, 1 + strategy_formation_period);
+  }
+
 bool Strategy_NoTradeFilter()
   {
    if(strategy_max_spread_points > 0)
@@ -46,7 +59,6 @@ bool Strategy_NoTradeFilter()
    return false;
   }
 
-// Trade Entry
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    req.type = QM_BUY;
@@ -60,8 +72,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(strategy_formation_period <= 0 || strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
       return false;
 
-   const double close_recent = iClose(_Symbol, PERIOD_D1, 1);
-   const double close_formation = iClose(_Symbol, PERIOD_D1, 1 + strategy_formation_period);
+   RefreshCachedDailyData();
+   const double close_recent = g_cached_close_recent;
+   const double close_formation = g_cached_close_formation;
    if(close_recent <= 0.0 || close_formation <= 0.0)
       return false;
 
@@ -110,20 +123,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    return true;
   }
 
-// Trade Management
 void Strategy_ManageOpenPosition()
   {
-   // Card baseline has no trailing, break-even, or partial-close rule.
   }
 
-// Trade Close
 bool Strategy_ExitSignal()
   {
    if(strategy_formation_period <= 0)
       return false;
 
-   const double close_recent = iClose(_Symbol, PERIOD_D1, 1);
-   const double close_formation = iClose(_Symbol, PERIOD_D1, 1 + strategy_formation_period);
+   RefreshCachedDailyData();
+   const double close_recent = g_cached_close_recent;
+   const double close_formation = g_cached_close_formation;
    if(close_recent <= 0.0 || close_formation <= 0.0)
       return false;
 
@@ -152,7 +163,6 @@ bool Strategy_ExitSignal()
    return false;
   }
 
-// News Filter Hook
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
@@ -178,7 +188,8 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
+   g_cached_d1_bar_time = 0;
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"ea\":\"10021_v2\"}");
    return INIT_SUCCEEDED;
   }
 
@@ -254,5 +265,7 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
 double OnTester()
   {
    QM_ChartUI_Refresh();
+   if(TesterStatistics(STAT_TRADES) < 6)
+      return -1e6;
    return QM_DefaultObjective();
   }

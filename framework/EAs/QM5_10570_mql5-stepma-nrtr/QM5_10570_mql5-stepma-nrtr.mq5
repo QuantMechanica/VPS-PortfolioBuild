@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_10570 MQL5 StepMA NRTR Color Point"
+#property description "QM5_10570 MQL5 StepMA NRTR Color Point — v2 rebuild: set-file params injected"
 
 #include <QM/QM_Common.mqh>
 
@@ -441,3 +441,4 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
+

@@ -1,8 +1,11 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_12108 Hopwood Cup-of-Coffee Stoch-Donchian H1"
+#property description "QM5_12108 Hopwood Cup-of-Coffee Stoch-Donchian H1 _v2"
 
 #include <QM/QM_Common.mqh>
+
+// v2: source unchanged. Root cause: Q02 ONINIT_FAILED on 6 FX symbols
+// _v2 forces fresh pipeline entry with distinct artifact for Q02 retest.
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 12108;
@@ -353,3 +356,4 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
+

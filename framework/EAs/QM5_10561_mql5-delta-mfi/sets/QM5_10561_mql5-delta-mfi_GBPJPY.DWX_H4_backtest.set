@@ -3,7 +3,7 @@
 ; ea_id:        10561
 ; ea_slug:      mql5-delta-mfi
 ; ea_version:   v5.0
-; set_version:  s20260529-001
+; set_version:  s20260602-001
 ; symbol:       GBPJPY.DWX
 ; timeframe:    H4
 ; environment:  backtest
@@ -11,8 +11,8 @@
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
 ; build_hash:   pending
-; author:       Development
-; date:         2026-05-29
+; author:       Claude/v2-rebuild
+; date:         2026-06-02
 ;==========================================================
 qm_magic_slot_offset=2
 RISK_FIXED=1000
@@ -30,5 +30,14 @@ qm_filter_volatility_atr_period=14
 qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card
+strategy_signal_tf=16388
+strategy_mfi_fast_period=14
+strategy_mfi_slow_period=50
+strategy_signal_level=50.0
+strategy_atr_period=14
+strategy_atr_sl_mult=2.0
+strategy_reward_r_multiple=1.5
+strategy_ema_filter_enabled=false
+strategy_ema_period=200
+strategy_max_spread_points=0

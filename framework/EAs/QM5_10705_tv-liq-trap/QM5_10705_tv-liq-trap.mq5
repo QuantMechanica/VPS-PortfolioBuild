@@ -1,12 +1,45 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_10705 TradingView PDH/PDL Liquidity Trap"
+#property description "QM5_10705 TradingView PDH PDL Liquidity Trap"
 
 #include <QM/QM_Common.mqh>
+
+// =============================================================================
+// QuantMechanica V5 EA SKELETON
+// -----------------------------------------------------------------------------
+// Fill in only the five Strategy_* hooks below. Everything else is framework
+// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
+// risk + magic + news + Friday-close guard rails). The framework provides:
+//
+//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  — closed-bar gate
+//   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
+//     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
+//     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
+//   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
+//   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
+//   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
+//   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
+//   - QM_FrameworkHandleFridayClose / QM_KillSwitchCheck / QM_NewsAllowsTrade
+//
+// DO NOT
+//   - Write per-EA IsNewBar() — use QM_IsNewBar()
+//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
+//     use the QM_* readers above. The framework pools handles and releases them
+//     on shutdown.
+//   - CopyRates over warmup windows on every tick. If you genuinely need raw
+//     bar arrays, gate by QM_IsNewBar so the work runs once per closed bar.
+//   - Hand-edit framework/include/QM/QM_MagicResolver.mqh. After adding rows
+//     to magic_numbers.csv, run:
+//         python framework/scripts/update_magic_resolver.py
+//     This is idempotent and preserves all rows.
+// =============================================================================
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 10705;
 input int    qm_magic_slot_offset       = 0;
+// FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
+// All other phases use 42 by default. Stress / noise dimensions read from
+// this single seed so reproducibility is guaranteed across re-runs.
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
@@ -15,91 +48,140 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
+// FW1 2026-05-23 — Two-axis news filter per Vault Q09.
+//   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
+//   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
+// A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
-input int    qm_news_stale_max_hours    = 336;
-input string qm_news_min_impact         = "high";
-input QM_NewsMode qm_news_mode_legacy   = QM_NEWS_OFF;
+input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
+input string qm_news_min_impact           = "high";  // high / medium / low
+// Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
+// New EAs use qm_news_temporal + qm_news_compliance above and leave this OFF.
+input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
 input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Stress"
+// FW2 2026-05-23 — only populated by Q05 MED / Q06 HARSH stress setfiles.
+// Default 0.0 = no rejection (Q02/Q03/Q04/Q07/Q08/Q09/Q10/Q13 backtests).
+// Q06 HARSH sets to 0.10 (10% of entries randomly dropped before broker send,
+// deterministic per qm_rng_seed). MED slip/spread/commission live in the
+// tester groups file, not as EA inputs.
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_atr_period        = 14;
-input double strategy_atr_buffer_mult   = 1.0;
-input double strategy_min_atr_buffer_mult = 0.5;
-input double strategy_rr_target         = 2.0;
-input int    strategy_trade_start_hour  = 0;
-input int    strategy_trade_end_hour    = 24;
-input int    strategy_max_spread_points = 0;
-input int    strategy_cash_open_skip_minutes = 0;
+input int    strategy_atr_period             = 14;
+input double strategy_atr_buffer_mult        = 1.0;
+input double strategy_min_atr_buffer_mult    = 0.5;
+input double strategy_rr_target              = 2.0;
+input int    strategy_trade_window           = 0;      // 0 all day, 1 London/NY overlap, 2 NY only.
+input int    strategy_london_ny_start_minute = 780;
+input int    strategy_london_ny_end_minute   = 1020;
+input int    strategy_ny_start_minute        = 870;
+input int    strategy_ny_end_minute          = 1260;
+input int    strategy_skip_cash_open_minutes = 0;
+input int    strategy_london_open_minute     = 480;
+input int    strategy_ny_cash_open_minute    = 870;
+input int    strategy_max_spread_points      = 0;
 
-int  g_trade_day_key = 0;
-bool g_trade_taken_today = false;
+// -----------------------------------------------------------------------------
+// Strategy hooks - implement these against the card mechanically.
+// -----------------------------------------------------------------------------
 
-int DayKey(const datetime value)
+// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
+// regime filter). Cheap O(1) checks only — runs on every tick.
+bool Strategy_NoTradeFilter()
   {
-   MqlDateTime dt;
-   TimeToStruct(value, dt);
-   return (dt.year * 10000) + (dt.mon * 100) + dt.day;
-  }
-
-void RefreshTradeDay(const datetime bar_time)
-  {
-   const int key = DayKey(bar_time);
-   if(key <= 0)
-      return;
-   if(key != g_trade_day_key)
+   if(strategy_max_spread_points > 0)
      {
-      g_trade_day_key = key;
-      g_trade_taken_today = false;
+      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+      if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
+         return true;
+      if((ask - bid) / point > (double)strategy_max_spread_points)
+         return true;
      }
-  }
 
-bool ReadOneBar(const ENUM_TIMEFRAMES timeframe, const int shift, MqlRates &bar)
-  {
-   MqlRates rates[];
-   ArraySetAsSeries(rates, true);
-   if(CopyRates(_Symbol, timeframe, shift, 1, rates) != 1) // perf-allowed: PDH/PDL structural rule, closed-bar hook only.
-      return false;
-   bar = rates[0];
-   return true;
-  }
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(), dt);
+   const int minute = dt.hour * 60 + dt.min;
 
-bool HourInsideWindow(const int hour, const int start_hour, const int end_hour)
-  {
-   int start = start_hour;
-   int end = end_hour;
-   if(start < 0)
-      start = 0;
-   if(start > 23)
-      start = 23;
-   if(end < 0)
-      end = 0;
-   if(end > 24)
-      end = 24;
+   if(strategy_trade_window == 1)
+     {
+      int start_minute = strategy_london_ny_start_minute;
+      int end_minute = strategy_london_ny_end_minute;
+      if(start_minute < 0) start_minute = 0;
+      if(start_minute > 1439) start_minute = 1439;
+      if(end_minute < 0) end_minute = 0;
+      if(end_minute > 1439) end_minute = 1439;
 
-   if(start == end)
+      bool inside = true;
+      if(start_minute != end_minute)
+        {
+         if(start_minute < end_minute)
+            inside = (minute >= start_minute && minute < end_minute);
+         else
+            inside = (minute >= start_minute || minute < end_minute);
+        }
+      if(!inside)
+         return true;
+     }
+
+   if(strategy_trade_window == 2)
+     {
+      int start_minute = strategy_ny_start_minute;
+      int end_minute = strategy_ny_end_minute;
+      if(start_minute < 0) start_minute = 0;
+      if(start_minute > 1439) start_minute = 1439;
+      if(end_minute < 0) end_minute = 0;
+      if(end_minute > 1439) end_minute = 1439;
+
+      bool inside = true;
+      if(start_minute != end_minute)
+        {
+         if(start_minute < end_minute)
+            inside = (minute >= start_minute && minute < end_minute);
+         else
+            inside = (minute >= start_minute || minute < end_minute);
+        }
+      if(!inside)
+         return true;
+     }
+
+   if(strategy_trade_window < 0 || strategy_trade_window > 2)
       return true;
-   if(start < end)
-      return (hour >= start && hour < end);
-   return (hour >= start || hour < end);
+
+   if(strategy_skip_cash_open_minutes > 0)
+     {
+      int london_open = strategy_london_open_minute;
+      int ny_open = strategy_ny_cash_open_minute;
+      if(london_open < 0) london_open = 0;
+      if(london_open > 1439) london_open = 1439;
+      if(ny_open < 0) ny_open = 0;
+      if(ny_open > 1439) ny_open = 1439;
+
+      int london_end = london_open + strategy_skip_cash_open_minutes;
+      int ny_end = ny_open + strategy_skip_cash_open_minutes;
+      if(london_end > 1440) london_end = 1440;
+      if(ny_end > 1440) ny_end = 1440;
+
+      if(minute >= london_open && minute < london_end)
+         return true;
+      if(minute >= ny_open && minute < ny_end)
+         return true;
+     }
+
+   return false;
   }
 
-bool InsideCashOpenSkip(const MqlDateTime &dt, const int open_hour, const int open_minute)
-  {
-   if(strategy_cash_open_skip_minutes <= 0)
-      return false;
-   const int now_minutes = dt.hour * 60 + dt.min;
-   const int open_minutes = open_hour * 60 + open_minute;
-   return (now_minutes >= open_minutes && now_minutes < open_minutes + strategy_cash_open_skip_minutes);
-  }
-
-void InitEntryRequest(QM_EntryRequest &req)
+// Populate `req` with entry order parameters and return TRUE if a NEW entry
+// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
+// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
+bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    req.type = QM_BUY;
    req.price = 0.0;
@@ -108,142 +190,113 @@ void InitEntryRequest(QM_EntryRequest &req)
    req.reason = "";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
-  }
 
-bool BuildTrapRequest(const QM_OrderType side,
-                      const double entry_price,
-                      const double trap_extreme,
-                      const double atr_value,
-                      QM_EntryRequest &req)
-  {
-   const double buffer_mult = MathMax(strategy_atr_buffer_mult, strategy_min_atr_buffer_mult);
-   if(entry_price <= 0.0 || trap_extreme <= 0.0 || atr_value <= 0.0 || buffer_mult <= 0.0 || strategy_rr_target <= 0.0)
+   if(strategy_atr_period < 1 || strategy_rr_target <= 0.0 ||
+      strategy_atr_buffer_mult <= 0.0 || strategy_min_atr_buffer_mult <= 0.0)
       return false;
 
-   const double buffer = atr_value * buffer_mult;
-   double stop = 0.0;
-   if(side == QM_BUY)
-      stop = trap_extreme - buffer;
-   else
-      stop = trap_extreme + buffer;
-
-   const double risk_distance = MathAbs(entry_price - stop);
-   if(stop <= 0.0 || risk_distance <= 0.0)
+   if(Bars(_Symbol, _Period) < strategy_atr_period + 5 || Bars(_Symbol, PERIOD_D1) < 2)
       return false;
 
-   const double take = (side == QM_BUY) ? (entry_price + risk_distance * strategy_rr_target)
-                                        : (entry_price - risk_distance * strategy_rr_target);
-   if(take <= 0.0)
+   const datetime trap_bar_time = iTime(_Symbol, _Period, 1);
+   if(trap_bar_time <= 0)
       return false;
 
-   req.type = side;
-   req.price = 0.0;
-   req.sl = NormalizeDouble(stop, _Digits);
-   req.tp = NormalizeDouble(take, _Digits);
-   req.reason = (side == QM_BUY) ? "PDL_SELLER_TRAP_LONG" : "PDH_BUYER_TRAP_SHORT";
-   req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
-   return true;
-  }
-
-// No Trade Filter: time, spread, news-adjacent cash-open blackout.
-bool Strategy_NoTradeFilter()
-  {
-   const datetime broker_now = TimeCurrent();
-   MqlDateTime dt;
-   TimeToStruct(broker_now, dt);
-
-   if(!HourInsideWindow(dt.hour, strategy_trade_start_hour, strategy_trade_end_hour))
-      return true;
-
-   if(InsideCashOpenSkip(dt, 8, 0) || InsideCashOpenSkip(dt, 15, 30))
-      return true;
-
-   if(strategy_max_spread_points > 0)
-     {
-      const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      if(point <= 0.0 || ask <= 0.0 || bid <= 0.0)
-         return true;
-      const double spread_points = (ask - bid) / point;
-      if(spread_points > strategy_max_spread_points)
-         return true;
-     }
-
-   return false;
-  }
-
-// Trade Entry: failed break of previous-day high/low, confirmed on closed bar.
-bool Strategy_EntrySignal(QM_EntryRequest &req)
-  {
-   InitEntryRequest(req);
-
-   if(strategy_atr_period <= 0)
+   static int last_trade_day_key = 0;
+   MqlDateTime trap_dt;
+   TimeToStruct(trap_bar_time, trap_dt);
+   const int day_key = trap_dt.year * 10000 + trap_dt.mon * 100 + trap_dt.day;
+   if(last_trade_day_key == day_key)
       return false;
 
-   MqlRates trap_bar;
-   if(!ReadOneBar((ENUM_TIMEFRAMES)_Period, 1, trap_bar))
-      return false;
-
-   RefreshTradeDay(trap_bar.time);
-   if(g_trade_taken_today)
-      return false;
-
-   MqlRates prev_day;
-   if(!ReadOneBar(PERIOD_D1, 1, prev_day))
-      return false;
-   if(prev_day.high <= 0.0 || prev_day.low <= 0.0 || prev_day.high <= prev_day.low)
-      return false;
-
-   const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
-   if(atr <= 0.0)
-      return false;
-
+   const double pdh = iHigh(_Symbol, PERIOD_D1, 1);
+   const double pdl = iLow(_Symbol, PERIOD_D1, 1);
+   const double high1 = iHigh(_Symbol, _Period, 1);
+   const double low1 = iLow(_Symbol, _Period, 1);
+   const double close1 = iClose(_Symbol, _Period, 1);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
+   const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
+   if(pdh <= 0.0 || pdl <= 0.0 || high1 <= 0.0 || low1 <= 0.0 ||
+      close1 <= 0.0 || ask <= 0.0 || bid <= 0.0 || atr <= 0.0)
       return false;
 
-   if(trap_bar.high > prev_day.high && trap_bar.close < prev_day.high)
+   const double buffer_mult = MathMax(strategy_atr_buffer_mult, strategy_min_atr_buffer_mult);
+   const double buffer = atr * buffer_mult;
+
+   if(high1 > pdh && close1 < pdh)
      {
-      if(BuildTrapRequest(QM_SELL, bid, trap_bar.high, atr, req))
-        {
-         g_trade_taken_today = true;
-         return true;
-        }
+      const double entry = bid;
+      const double sl = NormalizeDouble(high1 + buffer, _Digits);
+      if(sl <= entry)
+         return false;
+
+      req.type = QM_SELL;
+      req.price = 0.0;
+      req.sl = sl;
+      req.tp = QM_TakeRR(_Symbol, req.type, entry, req.sl, strategy_rr_target);
+      req.reason = "PDH_TRAP_SHORT";
+      req.symbol_slot = qm_magic_slot_offset;
+      req.expiration_seconds = 0;
+      if(req.tp <= 0.0 || req.tp >= entry)
+         return false;
+
+      last_trade_day_key = day_key;
+      return true;
      }
 
-   if(trap_bar.low < prev_day.low && trap_bar.close > prev_day.low)
+   if(low1 < pdl && close1 > pdl)
      {
-      if(BuildTrapRequest(QM_BUY, ask, trap_bar.low, atr, req))
-        {
-         g_trade_taken_today = true;
-         return true;
-        }
+      const double entry = ask;
+      const double sl = NormalizeDouble(low1 - buffer, _Digits);
+      if(sl <= 0.0 || sl >= entry)
+         return false;
+
+      req.type = QM_BUY;
+      req.price = 0.0;
+      req.sl = sl;
+      req.tp = QM_TakeRR(_Symbol, req.type, entry, req.sl, strategy_rr_target);
+      req.reason = "PDL_TRAP_LONG";
+      req.symbol_slot = qm_magic_slot_offset;
+      req.expiration_seconds = 0;
+      if(req.tp <= entry)
+         return false;
+
+      last_trade_day_key = day_key;
+      return true;
      }
 
    return false;
   }
 
-// Trade Management: card specifies no trailing, break-even, or partial exits.
+// Called every tick when an open position exists for this EA's magic.
+// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
+   // Card has no trailing, break-even, partial close, or scale-out rule.
   }
 
-// Trade Close: exits are broker SL/TP at configured R multiple plus framework Friday close.
+// Return TRUE to close the open position now (e.g. opposite-signal exit,
+// max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
+   // Card exits through fixed 2R TP, ATR-buffered SL, and framework Friday close.
    return false;
   }
 
-// News Filter Hook: central V5 news filter remains authoritative.
+// Optional news-filter override. Return TRUE to suppress trading regardless
+// of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
+// custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    if(broker_time <= 0)
-      return false;
-   return false;
+      return true;
+   return false; // defer to QM_NewsAllowsTrade(...)
   }
+
+// -----------------------------------------------------------------------------
+// Framework wiring — do NOT edit below this line unless you know why.
+// -----------------------------------------------------------------------------
 
 int OnInit()
   {
@@ -252,20 +305,20 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode_legacy,
+                        qm_news_mode_legacy,           // legacy back-compat
                         qm_friday_close_enabled,
                         qm_friday_close_hour_broker,
-                        30,
-                        30,
+                        30,                            // pause-before (legacy hint)
+                        30,                            // pause-after (legacy hint)
                         qm_news_stale_max_hours,
                         qm_news_min_impact,
                         qm_rng_seed,
                         qm_stress_reject_probability,
-                        qm_news_temporal,
-                        qm_news_compliance))
+                        qm_news_temporal,              // FW1 Axis A
+                        qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_10705_tv-liq-trap\"}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
   }
 
@@ -283,7 +336,8 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-
+   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
+   // when both new axes are at their OFF defaults.
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
@@ -291,14 +345,16 @@ void OnTick()
       news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
    if(!news_allows)
       return;
-
    if(QM_FrameworkHandleFridayClose())
       return;
+
    if(Strategy_NoTradeFilter())
       return;
 
+   // Per-tick: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
+   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -313,9 +369,14 @@ void OnTick()
         }
      }
 
+   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
+   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
+   // call, not every incoming tick.
    if(!QM_IsNewBar())
       return;
 
+   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
+   // since last tick. Cheap: most calls early-return on same-day check.
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
@@ -335,6 +396,8 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
                         const MqlTradeRequest &request,
                         const MqlTradeResult &result)
   {
+   // FW4: feeds closing-deal net-profits to the KS kill-switch.
+   // No-op outside Q13 (when no baseline.json exists).
    QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
@@ -343,3 +406,4 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
+

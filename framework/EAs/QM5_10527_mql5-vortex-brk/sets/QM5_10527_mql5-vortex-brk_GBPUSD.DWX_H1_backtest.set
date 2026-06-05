@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-05-28
+; date:         2026-06-02
 ;==========================================================
 qm_magic_slot_offset=1
 RISK_FIXED=1000
@@ -31,4 +31,10 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+strategy_vortex_period=14
+strategy_atr_period=14
+strategy_atr_sl_mult=1.5
+strategy_atr_sl_cap_mult=2.5
+strategy_tp_rr=1.5
+strategy_breakout_exp_bars=6
+

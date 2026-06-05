@@ -3,16 +3,16 @@
 ; ea_id:        10481
 ; ea_slug:      mql5-exec-ao
 ; ea_version:   v5.0
-; set_version:  s20260528-001
+; set_version:  s20260602-001
 ; symbol:       USDJPY.DWX
 ; timeframe:    M15
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   8e6a74c7e7194d21c60259adad1f354de24ec8c1444c90b592f9dc18ac3c9794
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-28
+; date:         2026-06-02
 ;==========================================================
 qm_magic_slot_offset=2
 RISK_FIXED=1000

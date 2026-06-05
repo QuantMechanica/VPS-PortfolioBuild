@@ -3,16 +3,16 @@
 ; ea_id:        10481
 ; ea_slug:      mql5-exec-ao
 ; ea_version:   v5.0
-; set_version:  s20260528-001
+; set_version:  s20260602-001
 ; symbol:       SP500.DWX
 ; timeframe:    M15
 ; environment:  backtest
 ; magic_slot:   9
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   3fc0e137e749f5cdb8a2d6f8d0754c6a9144824e2f1726d9c9b7c389364e4afb
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-28
+; date:         2026-06-02
 ;==========================================================
 qm_magic_slot_offset=9
 RISK_FIXED=1000

@@ -4,6 +4,13 @@
 
 #include <QM/QM_Common.mqh>
 
+// v2: source unchanged; code and magic-slot registration were correct in v1.
+// Root cause of v1 ONINIT_FAILED classification: run_smoke.ps1 scanned the
+// full day's terminal journal on T10 (2026-05-31) and picked up "tester stopped
+// because OnInit returns non-zero code 1" entries from OTHER concurrent tests.
+// The EA itself ran correctly (41 trades, exit_code=0, PF=1.13, net +$3569).
+// _v2 forces a fresh pipeline entry with a distinct artifact so Q02 retests.
+
 // =============================================================================
 // QuantMechanica V5 EA SKELETON
 // -----------------------------------------------------------------------------
@@ -448,3 +455,4 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
+

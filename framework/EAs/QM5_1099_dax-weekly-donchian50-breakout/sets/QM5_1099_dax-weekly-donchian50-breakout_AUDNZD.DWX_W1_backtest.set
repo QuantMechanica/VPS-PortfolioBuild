@@ -7,14 +7,14 @@
 ; symbol:       AUDNZD.DWX
 ; timeframe:    W1
 ; environment:  backtest
-; magic_slot:   0
+; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
 ; build_hash:   0c951bd2dc5ee3c06288d77c9e35b0d52c810b81795cbbd02f360942ab1b90b3
 ; author:       Development
 ; date:         2026-05-17
 ;==========================================================
-qm_magic_slot_offset=0
+qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1

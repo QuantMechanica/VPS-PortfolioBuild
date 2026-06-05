@@ -3,16 +3,16 @@
 ; ea_id:        10705
 ; ea_slug:      tv-liq-trap
 ; ea_version:   v5.0
-; set_version:  s20260604-001
+; set_version:  s20260531-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   5
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   d8cb6672e32ba070c7eed9d7144ee108d7c580512f5c89ab99289cba8814481f
+; build_hash:   pending
 ; author:       Development
-; date:         2026-06-04
+; date:         2026-05-31
 ;==========================================================
 qm_magic_slot_offset=5
 RISK_FIXED=1000
@@ -32,3 +32,4 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
+

@@ -3,16 +3,16 @@
 ; ea_id:        10481
 ; ea_slug:      mql5-exec-ao
 ; ea_version:   v5.0
-; set_version:  s20260528-001
+; set_version:  s20260602-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    M15
 ; environment:  backtest
 ; magic_slot:   12
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   a36bac3a2565a0d5b888eb14d63a10e42778f2cb3062eb92a747fdfa218e2a01
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-28
+; date:         2026-06-02
 ;==========================================================
 qm_magic_slot_offset=12
 RISK_FIXED=1000

@@ -3,7 +3,7 @@
 ; ea_id:        10622
 ; ea_slug:      mql5-20200
 ; ea_version:   v5.0
-; set_version:  s20260531-001
+; set_version:  s20260602-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
@@ -11,8 +11,8 @@
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
 ; build_hash:   pending
-; author:       Development
-; date:         2026-05-31
+; author:       Claude/v2-rebuild
+; date:         2026-06-02
 ;==========================================================
 qm_magic_slot_offset=1
 RISK_FIXED=1000
@@ -31,4 +31,9 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+strategy_trade_hour_gmt=18
+strategy_t1_shift=7
+strategy_t2_shift=2
+strategy_delta_points=70
+strategy_take_profit_points=200
+strategy_stop_loss_points=2000

@@ -48,7 +48,8 @@ input int    no_trade_first_bars   = 2;
 // ----------------------------------------------------------------------
 // BB width rolling percentile + squeeze latch
 // ----------------------------------------------------------------------
-double g_bb_width_buf[100];
+#define BB_WIDTH_BUF_MAX 256
+double g_bb_width_buf[BB_WIDTH_BUF_MAX];
 int g_bb_width_idx = 0;
 int g_bb_width_count = 0;
 bool g_squeeze_latch = false;
@@ -69,14 +70,15 @@ double BBPercentile(const double current_width)
 
 void UpdateBBWidth()
 {
+   const int lookback = MathMin(MathMax(bb_width_lookback, 2), BB_WIDTH_BUF_MAX);
    double upper = QM_BB_Upper(_Symbol, PERIOD_H1, bb_period, bb_dev, 0);
    double lower = QM_BB_Lower(_Symbol, PERIOD_H1, bb_period, bb_dev, 0);
    double mid   = QM_BB_Middle(_Symbol, PERIOD_H1, bb_period, bb_dev, 0);
    if(upper <= 0 || lower <= 0 || mid <= 0) return;
    double width = (upper - lower) / mid;
    g_bb_width_buf[g_bb_width_idx] = width;
-   g_bb_width_idx = (g_bb_width_idx + 1) % bb_width_lookback;
-   if(g_bb_width_count < bb_width_lookback) g_bb_width_count++;
+   g_bb_width_idx = (g_bb_width_idx + 1) % lookback;
+   if(g_bb_width_count < lookback) g_bb_width_count++;
 }
 
 string QM_ATR_CacheKey() { return "atr_cache"; }
@@ -129,7 +131,8 @@ bool Strategy_NoTradeFilter()
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    UpdateBBWidth();
-   if(g_bb_width_count < bb_width_lookback) return false;
+   const int lookback = MathMin(MathMax(bb_width_lookback, 2), BB_WIDTH_BUF_MAX);
+   if(g_bb_width_count < lookback) return false;
 
    // Squeeze latch
    bool all_squeeze = true;

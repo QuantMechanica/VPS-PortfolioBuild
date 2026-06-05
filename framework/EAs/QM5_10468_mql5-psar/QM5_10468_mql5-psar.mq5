@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_10468 MQL5 Parabolic SAR Expert"
+#property description "QM5_10468 MQL5 Parabolic SAR Expert - v2 recompile: QM_MagicResolver refresh"
 
 #include <QM/QM_Common.mqh>
 

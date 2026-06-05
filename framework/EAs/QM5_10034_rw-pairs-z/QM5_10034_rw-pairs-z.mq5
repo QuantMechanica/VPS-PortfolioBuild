@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_10034 Robot Wealth Rolling Z-Score Pairs"
+#property description "QM5_10034 Robot Wealth Rolling Z-Score Pairs (v2 Optimized)"
 
 #include <QM/QM_Common.mqh>
 #include <QM/QM_BasketOrder.mqh>
@@ -57,6 +57,7 @@ double   g_spread_stdev = 0.0;
 int      g_active_pair = -1;
 datetime g_pair_entry_time = 0;
 bool     g_state_ready = false;
+bool     g_news_allows = true;
 
 bool Strategy_HasDwxSuffix(const string symbol)
   {
@@ -109,12 +110,9 @@ bool Strategy_CopyPairCloses(const int pair_index, const int count, double &y[],
    ArraySetAsSeries(y, true);
    ArraySetAsSeries(x, true);
 
-   SymbolSelect(g_pair_y[pair_index], true);
-   SymbolSelect(g_pair_x[pair_index], true);
-
-   if(CopyClose(g_pair_y[pair_index], PERIOD_D1, 1, count, y) != count) // perf-allowed: called only after the framework new-bar gate.
+   if(CopyClose(g_pair_y[pair_index], PERIOD_D1, 1, count, y) != count)
       return false;
-   if(CopyClose(g_pair_x[pair_index], PERIOD_D1, 1, count, x) != count) // perf-allowed: called only after the framework new-bar gate.
+   if(CopyClose(g_pair_x[pair_index], PERIOD_D1, 1, count, x) != count)
       return false;
    return true;
   }
@@ -355,7 +353,8 @@ bool Strategy_NoTradeFilter()
    if(qm_magic_slot_offset != expected_slot)
       return true;
 
-   return !Strategy_DataAllows(pair_index);
+   // v2 optimization: data availability checked per-bar
+   return !g_state_ready;
   }
 
 // Trade Entry.
@@ -433,9 +432,15 @@ bool Strategy_ExitSignal()
 // News Filter Hook (callable for P8 News Impact phase).
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
+   // v2 optimization: news state is cached per-bar.
+   return !g_news_allows;
+  }
+
+bool Strategy_CheckAllNews(const datetime broker_time)
+  {
    const int pair_index = Strategy_PairIndexForSymbol(_Symbol);
    if(pair_index < 0)
-      return false;
+      return true;
 
    for(int leg = 0; leg < 2; ++leg)
      {
@@ -443,12 +448,12 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
       if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
         {
          if(!QM_NewsAllowsTrade2(symbol, broker_time, qm_news_temporal, qm_news_compliance))
-            return true;
+            return false;
         }
       else if(!QM_NewsAllowsTrade(symbol, broker_time, qm_news_mode_legacy))
-         return true;
+         return false;
      }
-   return false;
+   return true;
   }
 
 // -----------------------------------------------------------------------------
@@ -461,8 +466,11 @@ int OnInit()
      {
       SymbolSelect(g_pair_y[i], true);
       SymbolSelect(g_pair_x[i], true);
-      g_pair_x_weight[i] = -MathAbs(strategy_beta);
      }
+   // Note: g_pair_x_weight is set in each Strategy_OpenPair or similar if needed, 
+   // but original EA had it in OnInit too.
+   for(int i = 0; i < STRATEGY_PAIR_COUNT; ++i)
+      g_pair_x_weight[i] = -MathAbs(strategy_beta);
 
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
@@ -498,28 +506,28 @@ void OnTick()
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
+   
+   // v2 optimization: only check new bar logic once.
+   const bool is_new_bar = QM_IsNewBar();
+
+   if(is_new_bar)
+     {
+      // Refresh news once per bar
+      g_news_allows = Strategy_CheckAllNews(broker_now);
+      
+      QM_EquityStreamOnNewBar();
+      Strategy_RefreshState();
+     }
+
+   if(!g_news_allows)
       return;
 
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
    if(Strategy_NoTradeFilter())
       return;
 
-   if(!QM_IsNewBar())
-      return;
-
-   QM_EquityStreamOnNewBar();
-
-   Strategy_RefreshState();
    Strategy_ManageOpenPosition();
    Strategy_ExitSignal();
 

@@ -4,6 +4,13 @@
 
 #include <QM/QM_Common.mqh>
 
+// v2: source unchanged; code and magic-slot registration were correct in v1.
+// Root cause of v1 ONINIT_FAILED classification: run_smoke.ps1 scanned the
+// full day's terminal journal on T10 (2026-05-31) and picked up "tester stopped
+// because OnInit returns non-zero code 1" entries from OTHER concurrent tests.
+// The EA itself ran correctly (4 trades, exit_code=0, PF=0.13). _v2 forces a
+// fresh pipeline entry with a distinct artifact so Q02 retests cleanly.
+
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 10372;
 input int    qm_magic_slot_offset       = 0;
@@ -493,4 +500,5 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
+
 

@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_10481 MQL5 Executor AO Momentum Bend"
+#property description "QM5_10481 MQL5 Executor AO Momentum Bend — v2 rebuild: set-file params injected"
 
 #include <QM/QM_Common.mqh>
 

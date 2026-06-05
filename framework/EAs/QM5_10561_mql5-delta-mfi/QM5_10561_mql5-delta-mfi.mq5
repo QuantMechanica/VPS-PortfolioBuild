@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_10561 MQL5 Delta MFI histogram color trend"
+#property description "QM5_10561 MQL5 Delta MFI histogram color trend — v2 rebuild: set-file params injected"
 
 #include <QM/QM_Common.mqh>
 
@@ -398,3 +398,4 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
+
