@@ -1357,7 +1357,57 @@ def chk_quota_snapshot_fresh() -> dict:
 
 # ---------------------------------------------------------------------------
 
+def chk_stranded_ea_improvements() -> dict:
+    """DL-069: flag EAs where a higher-version on-disk dir exists but is NOT the
+    active-registered canonical build — an improvement built but never promoted in
+    magic_numbers.csv, so the resolver still runs the older build."""
+    import csv as _csv
+    from collections import defaultdict
+    reg = REPO_ROOT / "framework" / "registry" / "magic_numbers.csv"
+    active_by_ea: dict[str, set] = defaultdict(set)
+    if reg.exists():
+        try:
+            with reg.open(encoding="utf-8-sig", newline="") as f:
+                for row in _csv.DictReader(f):
+                    if str(row.get("status") or "active").strip().lower() == "retired":
+                        continue
+                    eid = str(row.get("ea_id") or "").strip()
+                    slug = str(row.get("ea_slug") or "").strip()
+                    if eid and slug:
+                        active_by_ea[eid].add(slug)
+        except OSError:
+            pass
+
+    def _ver(name: str) -> int:
+        mm = re.search(r"_v(\d+)(?:$|_)", name)
+        return int(mm.group(1)) if mm else 1
+
+    dirs: dict[tuple, list] = defaultdict(list)
+    for p in FRAMEWORK_EAS_DIR.glob("QM5_*"):
+        if p.is_dir():
+            m = re.match(r"(QM5_(\d+))_", p.name)
+            if m:
+                dirs[(m.group(1), m.group(2))].append(p.name)
+    stranded = []
+    for (ea_label, num), names in dirs.items():
+        if len(names) < 2:
+            continue
+        active = active_by_ea.get(num, set())
+        registered = [n for n in names if (n[len(ea_label) + 1:] if n.startswith(ea_label + "_") else n) in active]
+        pool = registered or names
+        canon_v = max(_ver(n) for n in pool)
+        if any(_ver(n) > canon_v for n in names):
+            stranded.append(ea_label)
+    n = len(stranded)
+    if n == 0:
+        return _check("stranded_ea_improvements", "OK", 0, 0, "no un-promoted higher-version dirs", "")
+    return _check("stranded_ea_improvements", "WARN", n, 0,
+                  f"{n} EAs have a higher-version dir not active-registered: {sorted(stranded)[:8]}",
+                  "Register the improved slug (active) in magic_numbers.csv or remove the un-promoted dir (DL-069).")
+
+
 ALL_CHECKS = [
+    ("stranded_ea_improvements", chk_stranded_ea_improvements, False),
     ("codex_review_fail_rate", chk_codex_review_fail_rate, True),  # needs con
     ("cards_ready_stagnation", chk_cards_ready_stagnation, True),
     ("pump_task_health",       chk_pump_task_health,       False),

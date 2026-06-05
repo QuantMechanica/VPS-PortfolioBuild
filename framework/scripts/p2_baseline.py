@@ -63,41 +63,52 @@ def installed_terminals() -> list[str]:
     return terminals or list(TERMINALS)
 
 
-def _registered_ea_slug(ea_label: str) -> str | None:
-    """DL-068: ea_slug registered in magic_numbers.csv = the canonical build dir."""
+def _active_registered_slugs(ea_label: str) -> set[str]:
+    """DL-068/DL-069: ea_slugs with a non-retired magic_numbers.csv row = canonical builds."""
     import csv as _csv
     m = re.search(r"QM5_(\d+)", ea_label)
     if not m:
-        return None
+        return set()
     num = m.group(1)
     reg = REPO_ROOT / "framework" / "registry" / "magic_numbers.csv"
+    out: set[str] = set()
     if not reg.exists():
-        return None
+        return out
     try:
         with reg.open(encoding="utf-8-sig", newline="") as f:
             for row in _csv.DictReader(f):
-                if str(row.get("ea_id") or "").strip() == num:
-                    slug = str(row.get("ea_slug") or "").strip()
-                    if slug:
-                        return slug
+                if str(row.get("ea_id") or "").strip() != num:
+                    continue
+                if str(row.get("status") or "active").strip().lower() == "retired":
+                    continue
+                slug = str(row.get("ea_slug") or "").strip()
+                if slug:
+                    out.add(slug)
     except OSError:
-        return None
-    return None
+        return out
+    return out
+
+
+def _ea_dir_version(name: str) -> int:
+    mm = re.search(r"_v(\d+)(?:$|_)", name)
+    return int(mm.group(1)) if mm else 1
 
 
 def find_ea_dir(ea_label: str) -> Path:
-    """Resolve QM5_1003 -> framework/EAs/QM5_1003_davey_baseline_3bar/."""
+    """Resolve QM5_1003 -> framework/EAs/QM5_1003_davey_baseline_3bar/ (DL-069: active-registered, highest vN)."""
     candidates = [p for p in EA_ROOT.glob(f"{ea_label}_*") if p.is_dir()]
     if not candidates:
         raise SystemExit(f"[FATAL] EA dir not found: {EA_ROOT}/{ea_label}_*")
     if len(candidates) == 1:
         return candidates[0]
-    # DL-068: prefer the dir whose slug is registered in magic_numbers.csv.
-    slug = _registered_ea_slug(ea_label)
-    if slug:
-        match = [p for p in candidates if p.name == f"{ea_label}_{slug}"]
-        if len(match) == 1:
-            return match[0]
+    active = _active_registered_slugs(ea_label)
+    pref = ea_label + "_"
+    registered = [p for p in candidates if (p.name[len(pref):] if p.name.startswith(pref) else p.name) in active]
+    pool = registered or candidates
+    best = max(_ea_dir_version(p.name) for p in pool)
+    top = [p for p in pool if _ea_dir_version(p.name) == best]
+    if len(top) == 1:
+        return top[0]
     raise SystemExit(f"[FATAL] ambiguous EA dir: {[p.name for p in candidates]}")
 
 

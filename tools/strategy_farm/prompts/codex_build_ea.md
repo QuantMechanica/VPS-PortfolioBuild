@@ -68,6 +68,12 @@ Build artifact target: `{{build_result_path}}`
 - Setfile naming: **`{{ea_id}}_{{slug}}_<SYMBOL>_<TF>_<env>.set`**
   (e.g. `QM5_1044_vpmacd-us-indices_WS30.DWX_H1_backtest.set`).
 
+- **Reworks / improvements (DL-069):** to improve an existing EA, REBUILD IN PLACE —
+  overwrite `{{ea_id}}_{{slug}}` (git keeps the history) and re-enqueue from Q02. Do NOT
+  drop a new `{{ea_id}}_{{slug}}_v2` dir unless you ALSO register that `_v2` slug (active)
+  in `magic_numbers.csv`; an un-promoted `_vN` dir is an inert orphan that the resolver
+  ignores (it runs the highest ACTIVE-registered version) and that `health.chk_stranded_ea_improvements` will flag.
+
 If you generate the smoke setfile manually, name it per the convention above. P2
 setfiles via `gen_setfile.ps1` (see workflow step 9) inherit this pattern.
 

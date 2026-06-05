@@ -1926,20 +1926,40 @@ def _ea_dir_version(dir_name: str) -> int:
     return int(match.group(1)) if match else 1
 
 
-def _registered_ea_slug(ea_id: str) -> str | None:
-    """The ea_slug registered in magic_numbers.csv for QM5_<n> = the canonical
-    build. DL-068: this is the source of truth for which on-disk dir to run when
-    an EA has sibling dirs (e.g. <ea>_slug vs <ea>_slug_v2 vs slug-format dupes)."""
+def _active_registered_slugs(ea_id: str) -> set[str]:
+    """All ea_slugs with a non-retired magic_numbers.csv row for QM5_<n>.
+
+    DL-068/DL-069: the registry is the source of truth for the canonical build.
+    Generalises to v1/v2/v3/...: an improvement enters the pipeline by being
+    REGISTERED (active); the resolver then prefers the highest active-registered
+    version, so the latest promoted build wins automatically and old builds are
+    never silently re-selected."""
     m = re.search(r"QM5_(\d+)", str(ea_id))
     if not m:
-        return None
+        return set()
     num = m.group(1)
-    rows = _read_csv_dicts_if_exists(REPO_ROOT / "framework" / "registry" / "magic_numbers.csv")
-    for row in rows:
-        if str(row.get("ea_id") or "").strip() == num:
-            slug = str(row.get("ea_slug") or "").strip()
-            if slug:
-                return slug
+    out: set[str] = set()
+    for row in _read_csv_dicts_if_exists(REPO_ROOT / "framework" / "registry" / "magic_numbers.csv"):
+        if str(row.get("ea_id") or "").strip() != num:
+            continue
+        if str(row.get("status") or "active").strip().lower() == "retired":
+            continue
+        slug = str(row.get("ea_slug") or "").strip()
+        if slug:
+            out.add(slug)
+    return out
+
+
+def _ea_dir_slug(ea_id: str, dir_name: str) -> str:
+    prefix = f"{ea_id}_"
+    return dir_name[len(prefix):] if dir_name.startswith(prefix) else dir_name
+
+
+# Back-compat shim: a single registered slug (highest active version), if unique.
+def _registered_ea_slug(ea_id: str) -> str | None:
+    slugs = _active_registered_slugs(ea_id)
+    if len(slugs) == 1:
+        return next(iter(slugs))
     return None
 
 
@@ -1950,21 +1970,19 @@ def _preferred_ea_dir(ea_id: str) -> Path | None:
         return None
     if len(candidates) == 1:
         return candidates[0]
-    # DL-068: when sibling dirs exist, prefer the one whose slug is REGISTERED in
-    # magic_numbers.csv (the canonical build). This is authoritative and direction-
-    # agnostic (registry may name v1, v2, or a particular slug spelling). Only if
-    # the registry gives no usable match do we fall back to the unique highest
-    # version. Returning None (ambiguous) is the last resort.
-    slug = _registered_ea_slug(ea_id)
-    if slug:
-        match = [p for p in candidates if p.name == f"{ea_id}_{slug}"]
-        if len(match) == 1:
-            return match[0]
-    best_version = max(_ea_dir_version(p.name) for p in candidates)
-    versioned = [p for p in candidates if _ea_dir_version(p.name) == best_version]
-    if len(versioned) != 1:
+    # DL-068/DL-069: prefer dirs whose slug is REGISTERED + active in magic_numbers.csv
+    # (the canonical build), and among those the HIGHEST version (vN) — the latest
+    # promoted improvement. An unregistered sibling (e.g. an un-promoted _v2 rework)
+    # is ignored. Only when NO on-disk dir is active-registered do we fall back to the
+    # unique highest version on disk. Returning None (truly ambiguous) is the last resort.
+    active = _active_registered_slugs(ea_id)
+    registered = [p for p in candidates if _ea_dir_slug(ea_id, p.name) in active]
+    pool = registered or candidates
+    best_version = max(_ea_dir_version(p.name) for p in pool)
+    top = [p for p in pool if _ea_dir_version(p.name) == best_version]
+    if len(top) != 1:
         return None
-    return versioned[0]
+    return top[0]
 
 
 def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
