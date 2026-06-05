@@ -149,7 +149,7 @@ void AdvanceState_OnNewBar()
       g_long_phase   = 0;
       g_short_phase  = 0;
      }
-
+   // Closed-bar OHLCV (single-shift reads) for opening-range + session VWAP.
    const double h1 = iHigh(_Symbol, _Period, 1);   // perf-allowed: closed-bar OR high
    const double l1 = iLow(_Symbol, _Period, 1);    // perf-allowed: closed-bar OR low
    const double c1 = iClose(_Symbol, _Period, 1);  // perf-allowed: closed-bar close
@@ -247,7 +247,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
    if(!g_or_active || g_or_high <= g_or_low)
       return false;
-
+   // Closed-bar NY time gate for the entry window.
    const datetime bar_t = iTime(_Symbol, _Period, 1); // perf-allowed: closed-bar timestamp for entry-window gate
    if(bar_t <= 0)
       return false;
@@ -256,7 +256,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const int hhmm = ny.hour * 100 + ny.min;
    if(hhmm < strategy_entry_start_hhmm || hhmm > strategy_entry_end_hhmm)
       return false;
-
+   // Breakout bar close vs prior bar close (cross + confirmation reads).
    const double c1 = iClose(_Symbol, _Period, 1);  // perf-allowed: breakout bar close
    const double c2 = iClose(_Symbol, _Period, 2);  // perf-allowed: prior bar close (cross / confirmation)
    if(c1 <= 0.0 || c2 <= 0.0)
