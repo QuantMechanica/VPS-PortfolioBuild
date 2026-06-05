@@ -5530,3 +5530,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10789,tv-band-zigzag,4,GDAXI.DWX,107890004,2026-06-05,Codex,active
 10789,tv-band-zigzag,5,NDX.DWX,107890005,2026-06-05,Codex,active
 10789,tv-band-zigzag,6,WS30.DWX,107890006,2026-06-05,Codex,active
+10790,tv-bb-trend,0,EURUSD.DWX,107900000,2026-06-05,Development,active
+10790,tv-bb-trend,1,GBPUSD.DWX,107900001,2026-06-05,Development,active
+10790,tv-bb-trend,2,USDJPY.DWX,107900002,2026-06-05,Development,active
+10790,tv-bb-trend,3,XAUUSD.DWX,107900003,2026-06-05,Development,active
+10790,tv-bb-trend,4,GDAXI.DWX,107900004,2026-06-05,Development,active
+10790,tv-bb-trend,5,NDX.DWX,107900005,2026-06-05,Development,active
+10790,tv-bb-trend,6,WS30.DWX,107900006,2026-06-05,Development,active
