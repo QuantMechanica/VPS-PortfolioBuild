@@ -29,81 +29,22 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input double strategy_gap_percent         = 0.006;
-input int    strategy_inactive_stop_bars  = 15;
-input double strategy_stop_gap_mult       = 1.25;
-input double strategy_first_range_atr_max = 0.8;
-input int    strategy_atr_period          = 14;
-input bool   strategy_auto_session_open   = true;
+input double strategy_gap_percent          = 0.006;
+input int    strategy_inactive_stop_bars   = 15;
+input double strategy_stop_gap_mult        = 1.25;
+input double strategy_first_range_atr_max  = 0.8;
+input int    strategy_atr_period           = 14;
 input int    strategy_us_session_open_hhmm = 1630;
 input int    strategy_eu_session_open_hhmm = 1000;
 input int    strategy_entry_window_minutes = 10;
-input int    strategy_min_stop_spreads    = 4;
+input int    strategy_min_stop_spreads     = 4;
 
-int g_last_day_key = -1;
-bool g_trade_armed_today = false;
+// -----------------------------------------------------------------------------
+// Strategy hooks - implemented mechanically from the approved card.
+// -----------------------------------------------------------------------------
 
-int StrategySessionOpenHhmm();
-
-int DayKey(const datetime t)
-  {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.year * 1000 + dt.day_of_year;
-  }
-
-int Hhmm(const datetime t)
-  {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.hour * 100 + dt.min;
-  }
-
-int MinutesOfDayFromHhmm(const int hhmm)
-  {
-   return (hhmm / 100) * 60 + (hhmm % 100);
-  }
-
-int MinutesOfDay(const datetime t)
-  {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.hour * 60 + dt.min;
-  }
-
-bool IsInEntryWindow(const datetime t)
-  {
-   const int now_min = MinutesOfDay(t);
-   const int open_min = MinutesOfDayFromHhmm(StrategySessionOpenHhmm());
-   return (now_min >= open_min && now_min <= open_min + strategy_entry_window_minutes);
-  }
-
-bool IsEuropeanIndexSymbol()
-  {
-   return (StringFind(_Symbol, "GDAXI") >= 0 ||
-           StringFind(_Symbol, "GER40") >= 0 ||
-           StringFind(_Symbol, "DE30") >= 0 ||
-           StringFind(_Symbol, "UK100") >= 0);
-  }
-
-int StrategySessionOpenHhmm()
-  {
-   if(!strategy_auto_session_open)
-      return strategy_us_session_open_hhmm;
-   return IsEuropeanIndexSymbol() ? strategy_eu_session_open_hhmm : strategy_us_session_open_hhmm;
-  }
-
-void RefreshSessionState()
-  {
-   const int key = DayKey(TimeCurrent());
-   if(key != g_last_day_key)
-     {
-      g_last_day_key = key;
-      g_trade_armed_today = false;
-     }
-  }
-
-bool HasOurPosition()
+// Return TRUE to BLOCK trading this tick (time/spread/news no-trade layer).
+bool Strategy_NoTradeFilter()
   {
    const int magic = QM_FrameworkMagic();
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -113,21 +54,29 @@ bool HasOurPosition()
          continue;
       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      return true;
+      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+         return false;
      }
-   return false;
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0 || ask <= bid)
+      return true;
+
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(), dt);
+   const int now_minutes = dt.hour * 60 + dt.min;
+   const bool is_eu_symbol = (StringFind(_Symbol, "GDAXI") >= 0 ||
+                              StringFind(_Symbol, "GER40") >= 0 ||
+                              StringFind(_Symbol, "DE30") >= 0 ||
+                              StringFind(_Symbol, "UK100") >= 0);
+   const int open_hhmm = is_eu_symbol ? strategy_eu_session_open_hhmm : strategy_us_session_open_hhmm;
+   const int open_minutes = (open_hhmm / 100) * 60 + (open_hhmm % 100);
+   return (now_minutes < open_minutes ||
+           now_minutes > open_minutes + MathMax(0, strategy_entry_window_minutes));
   }
 
-bool Strategy_NoTradeFilter()
-  {
-   RefreshSessionState();
-   if(HasOurPosition())
-      return false;
-   return !IsInEntryWindow(TimeCurrent());
-  }
-
+// Populate `req` with one first-bar stop entry when the opening gap qualifies.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    req.type = QM_BUY_STOP;
@@ -136,24 +85,42 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.tp = 0.0;
    req.reason = "";
    req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = strategy_inactive_stop_bars * PeriodSeconds((ENUM_TIMEFRAMES)_Period);
+   req.expiration_seconds = MathMax(1, strategy_inactive_stop_bars) * PeriodSeconds((ENUM_TIMEFRAMES)_Period);
 
-   RefreshSessionState();
-   if(g_trade_armed_today || strategy_gap_percent <= 0.0 || strategy_inactive_stop_bars <= 0)
+   if(strategy_gap_percent <= 0.0 || strategy_inactive_stop_bars <= 0 ||
+      strategy_stop_gap_mult <= 0.0 || strategy_atr_period <= 0)
       return false;
-   // perf-allowed: bespoke opening-gap structural reads (session-open time,
-   // prior-day OHLC + first session-bar OHLC) at fixed closed-bar shift 1; no
-   // QM_* reader exists for raw OHLC and the work is gated once-per-closed-bar
-   // by QM_IsNewBar in OnTick.
-   const datetime first_bar_time = iTime(_Symbol, _Period, 1); // perf-allowed: session-open time of last closed bar, single shift-1 read
-   if(first_bar_time <= 0 || Hhmm(first_bar_time) != StrategySessionOpenHhmm())
+
+   MqlDateTime now_dt;
+   TimeToStruct(TimeCurrent(), now_dt);
+   const int today_key = now_dt.year * 1000 + now_dt.day_of_year;
+   static int traded_day_key = -1;
+   if(traded_day_key == today_key)
       return false;
-   const double prev_close = iClose(_Symbol, PERIOD_D1, 1);    // perf-allowed
-   const double prev_high = iHigh(_Symbol, PERIOD_D1, 1);      // perf-allowed
-   const double prev_low = iLow(_Symbol, PERIOD_D1, 1);        // perf-allowed
-   const double session_open = iOpen(_Symbol, _Period, 1);     // perf-allowed
-   const double first_high = iHigh(_Symbol, _Period, 1);       // perf-allowed
-   const double first_low = iLow(_Symbol, _Period, 1);         // perf-allowed
+
+   const bool is_eu_symbol = (StringFind(_Symbol, "GDAXI") >= 0 ||
+                              StringFind(_Symbol, "GER40") >= 0 ||
+                              StringFind(_Symbol, "DE30") >= 0 ||
+                              StringFind(_Symbol, "UK100") >= 0);
+   const int open_hhmm = is_eu_symbol ? strategy_eu_session_open_hhmm : strategy_us_session_open_hhmm;
+
+   // perf-allowed: opening-gap structure requires fixed closed-bar OHLC reads.
+   const datetime first_bar_time = iTime(_Symbol, _Period, 1); // perf-allowed
+   if(first_bar_time <= 0)
+      return false;
+
+   MqlDateTime first_dt;
+   TimeToStruct(first_bar_time, first_dt);
+   const int first_hhmm = first_dt.hour * 100 + first_dt.min;
+   if(first_hhmm != open_hhmm)
+      return false;
+
+   const double prev_close = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed
+   const double prev_high = iHigh(_Symbol, PERIOD_D1, 1);   // perf-allowed
+   const double prev_low = iLow(_Symbol, PERIOD_D1, 1);     // perf-allowed
+   const double session_open = iOpen(_Symbol, _Period, 1);  // perf-allowed
+   const double first_high = iHigh(_Symbol, _Period, 1);    // perf-allowed
+   const double first_low = iLow(_Symbol, _Period, 1);      // perf-allowed
    const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
    if(prev_close <= 0.0 || prev_high <= 0.0 || prev_low <= 0.0 ||
       session_open <= 0.0 || first_high <= 0.0 || first_low <= 0.0 || atr <= 0.0)
@@ -167,15 +134,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(first_range <= 0.0 || first_range > strategy_first_range_atr_max * atr)
       return false;
 
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    const double spread = ask - bid;
-   if(point <= 0.0 || ask <= 0.0 || bid <= 0.0 || spread <= 0.0)
+   if(ask <= 0.0 || bid <= 0.0 || spread <= 0.0)
       return false;
 
    const double stop_dist = strategy_stop_gap_mult * gap;
-   if(stop_dist < strategy_min_stop_spreads * spread)
+   if(stop_dist < MathMax(1, strategy_min_stop_spreads) * spread)
       return false;
 
    if(session_open > prev_high)
@@ -185,7 +151,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.sl = NormalizeDouble(req.price + stop_dist, _Digits);
       req.tp = NormalizeDouble(req.price - gap, _Digits);
       req.reason = "ET_GAP_UP_FADE_SELL_STOP";
-      g_trade_armed_today = true;
+      traded_day_key = today_key;
       return true;
      }
 
@@ -196,7 +162,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.sl = NormalizeDouble(req.price - stop_dist, _Digits);
       req.tp = NormalizeDouble(req.price + gap, _Digits);
       req.reason = "ET_GAP_DOWN_FADE_BUY_STOP";
-      g_trade_armed_today = true;
+      traded_day_key = today_key;
       return true;
      }
 
@@ -205,15 +171,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
 void Strategy_ManageOpenPosition()
   {
+   // Card specifies no trailing, break-even, pyramiding, or partial exits.
   }
 
 bool Strategy_ExitSignal()
   {
+   const int hold_seconds = MathMax(1, strategy_inactive_stop_bars) * PeriodSeconds((ENUM_TIMEFRAMES)_Period);
    const int magic = QM_FrameworkMagic();
-   const int hold_seconds = strategy_inactive_stop_bars * PeriodSeconds((ENUM_TIMEFRAMES)_Period);
-   if(hold_seconds <= 0)
-      return false;
-
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -235,6 +199,10 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
    return false;
   }
 
+// -----------------------------------------------------------------------------
+// Framework wiring - do NOT edit below this line unless you know why.
+// -----------------------------------------------------------------------------
+
 int OnInit()
   {
    if(!QM_FrameworkInit(qm_ea_id,
@@ -255,7 +223,7 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_10359_et-gap-fade\"}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
   }
 
@@ -296,8 +264,6 @@ void OnTick()
         {
          const ulong ticket = PositionGetTicket(i);
          if(!PositionSelectByTicket(ticket))
-            continue;
-         if(PositionGetString(POSITION_SYMBOL) != _Symbol)
             continue;
          if(PositionGetInteger(POSITION_MAGIC) != magic)
             continue;
