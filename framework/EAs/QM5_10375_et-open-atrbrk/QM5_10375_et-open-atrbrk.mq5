@@ -29,17 +29,29 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input ENUM_TIMEFRAMES strategy_trade_tf          = PERIOD_M5;
-input int    strategy_atr_period                 = 20;
-input double strategy_entry_atr_mult             = 0.30;
-input double strategy_target_atr_mult            = 0.60;
-input int    strategy_final_order_minutes        = 30;
-input int    strategy_us_session_start_hhmm      = 1530;
-input int    strategy_us_session_end_hhmm        = 2200;
-input int    strategy_dax_session_start_hhmm     = 900;
-input int    strategy_dax_session_end_hhmm       = 1730;
-input int    strategy_gold_session_start_hhmm    = 800;
-input int    strategy_gold_session_end_hhmm      = 2100;
+// Card QM5_10375: session-open ATR breakout straddle.
+//   Entry  : at first M5 bar of the primary session, bracket session-open with
+//            symmetric stop orders at session_open +/- entry_mult * ATR(20,D1).
+//   Exit   : profit target target_mult*ATR from entry; protective stop = the
+//            opposite session-open ATR band; flat at session close.
+//   Filters: one trade per symbol per session; no new orders in the final N
+//            minutes; skip when the band distance is below min_band_spreads.
+input int    strategy_atr_period          = 20;     // D1 ATR lookback (card: ATR(20))
+input double strategy_entry_atr_mult      = 0.30;   // entry band = session_open +/- mult*ATR
+input double strategy_target_atr_mult     = 0.60;   // profit target distance = mult*ATR from entry
+input int    strategy_final_order_minutes = 30;     // no new orders in the final N minutes of session
+input double strategy_min_band_spreads    = 4.0;    // skip when band distance < N * current spread
+// Broker-time (Darwinex NY-Close, GMT+2/+3 = ET+7) session windows per asset.
+// US cash RTH 09:30-16:00 ET -> 16:30-23:00 broker. DAX/Gold are first-pass
+// defaults to be calibrated in P3 per-symbol session tuning.
+input int    strategy_us_session_start_hhmm   = 1630; // US index cash open (broker time)
+input int    strategy_us_session_end_hhmm     = 2300; // US index cash close (broker time)
+input int    strategy_dax_session_start_hhmm  = 1000; // GDAXI cash open (broker time, P3-tunable)
+input int    strategy_dax_session_end_hhmm    = 1830; // GDAXI cash close (broker time, P3-tunable)
+input int    strategy_gold_session_start_hhmm = 800;  // XAUUSD active window start (P3-tunable)
+input int    strategy_gold_session_end_hhmm   = 2100; // XAUUSD active window end (P3-tunable)
+
+// --- small time helpers -----------------------------------------------------
 
 int Strategy_Hhmm(const datetime t)
   {
@@ -65,19 +77,18 @@ int Strategy_DayKey(const datetime t)
 void Strategy_SessionForSymbol(int &start_hhmm, int &end_hhmm)
   {
    start_hhmm = strategy_us_session_start_hhmm;
-   end_hhmm = strategy_us_session_end_hhmm;
+   end_hhmm   = strategy_us_session_end_hhmm;
 
    if(StringFind(_Symbol, "GDAXI") >= 0 || StringFind(_Symbol, "GER40") >= 0)
      {
       start_hhmm = strategy_dax_session_start_hhmm;
-      end_hhmm = strategy_dax_session_end_hhmm;
+      end_hhmm   = strategy_dax_session_end_hhmm;
       return;
      }
-
    if(StringFind(_Symbol, "XAUUSD") >= 0)
      {
       start_hhmm = strategy_gold_session_start_hhmm;
-      end_hhmm = strategy_gold_session_end_hhmm;
+      end_hhmm   = strategy_gold_session_end_hhmm;
      }
   }
 
@@ -85,8 +96,10 @@ bool Strategy_InMinuteWindow(const int now_min, const int start_min, const int e
   {
    if(start_min <= end_min)
       return (now_min >= start_min && now_min < end_min);
-   return (now_min >= start_min || now_min < end_min);
+   return (now_min >= start_min || now_min < end_min); // wrap-safe
   }
+
+// --- position / pending-order bookkeeping -----------------------------------
 
 bool Strategy_IsOurStopOrderType(const ENUM_ORDER_TYPE order_type)
   {
@@ -128,29 +141,6 @@ int Strategy_OurPendingStopCount()
    return count;
   }
 
-bool Strategy_DeletePendingOrder(const ulong ticket, const string reason)
-  {
-   MqlTradeRequest request;
-   ZeroMemory(request);
-   request.action = TRADE_ACTION_REMOVE;
-   request.order = ticket;
-   request.symbol = _Symbol;
-   request.comment = reason;
-
-   MqlTradeResult result;
-   string error_class = BROKER_OTHER;
-   const bool ok = QM_TradeContextSend(request, result, error_class);
-   QM_LogEvent(ok ? QM_INFO : QM_WARN,
-               "PENDING_DELETE",
-               StringFormat("{\"ticket\":%I64u,\"reason\":\"%s\",\"ok\":%s,\"retcode\":%u,\"retcode_class\":\"%s\"}",
-                            ticket,
-                            QM_LoggerEscapeJson(reason),
-                            ok ? "true" : "false",
-                            result.retcode,
-                            QM_LoggerEscapeJson(error_class)));
-   return ok;
-  }
-
 void Strategy_DeleteOurPendingStops(const string reason)
   {
    const int magic = QM_FrameworkMagic();
@@ -165,7 +155,7 @@ void Strategy_DeleteOurPendingStops(const string reason)
          continue;
       if(!Strategy_IsOurStopOrderType((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE)))
          continue;
-      Strategy_DeletePendingOrder(ticket, reason);
+      QM_TM_RemovePendingOrder(ticket, reason);
      }
   }
 
@@ -181,62 +171,54 @@ bool Strategy_CurrentSpread(double &spread_price)
 
 void Strategy_InitRequest(QM_EntryRequest &req)
   {
-   req.type = QM_BUY_STOP;
-   req.price = 0.0;
-   req.sl = 0.0;
-   req.tp = 0.0;
-   req.reason = "";
-   req.symbol_slot = qm_magic_slot_offset;
+   req.type               = QM_BUY_STOP;
+   req.price              = 0.0;
+   req.sl                 = 0.0;
+   req.tp                 = 0.0;
+   req.reason             = "";
+   req.symbol_slot        = qm_magic_slot_offset;
    req.expiration_seconds = 0;
   }
 
-bool Strategy_IsFirstClosedSessionBar(datetime &bar_time)
-  {
-   bar_time = iTime(_Symbol, strategy_trade_tf, 1);
-   if(bar_time <= 0)
-      return false;
-
-   int start_hhmm = 0;
-   int end_hhmm = 0;
-   Strategy_SessionForSymbol(start_hhmm, end_hhmm);
-   return (Strategy_Hhmm(bar_time) == start_hhmm);
-  }
-
-int Strategy_SecondsUntilFinalOrderWindow(const datetime now)
+int Strategy_SecondsUntilSessionEnd(const datetime now)
   {
    int start_hhmm = 0;
-   int end_hhmm = 0;
+   int end_hhmm   = 0;
    Strategy_SessionForSymbol(start_hhmm, end_hhmm);
 
    const int now_min = Strategy_MinutesOfDay(Strategy_Hhmm(now));
    const int end_min = Strategy_MinutesOfDay(end_hhmm);
-   int remaining_minutes = end_min - now_min - MathMax(0, strategy_final_order_minutes);
-   if(remaining_minutes <= 0)
-      remaining_minutes += 24 * 60;
-   return MathMax(60, remaining_minutes * 60);
+   int remaining = end_min - now_min;
+   if(remaining <= 0)
+      remaining += 24 * 60;
+   return MathMax(60, remaining * 60);
   }
 
-bool Strategy_FinalOrderWindowOrLater(const datetime now)
+bool Strategy_PastFinalOrderWindow(const datetime now)
   {
    int start_hhmm = 0;
-   int end_hhmm = 0;
+   int end_hhmm   = 0;
    Strategy_SessionForSymbol(start_hhmm, end_hhmm);
-   const int now_min = Strategy_MinutesOfDay(Strategy_Hhmm(now));
+
+   const int now_min   = Strategy_MinutesOfDay(Strategy_Hhmm(now));
    const int start_min = Strategy_MinutesOfDay(start_hhmm);
-   const int end_min = Strategy_MinutesOfDay(end_hhmm);
+   const int end_min   = Strategy_MinutesOfDay(end_hhmm);
+   if(!Strategy_InMinuteWindow(now_min, start_min, end_min))
+      return true; // outside the session entirely
    const int final_start = end_min - MathMax(0, strategy_final_order_minutes);
-   return Strategy_InMinuteWindow(now_min, final_start, end_min) || !Strategy_InMinuteWindow(now_min, start_min, end_min);
+   return Strategy_InMinuteWindow(now_min, final_start, end_min);
   }
 
-// No Trade Filter (time, spread, news): entry timing and spread guard, with
-// pending/position pass-through so management and session-close cleanup can run.
+// No Trade Filter (time, spread, news): cheap O(1) gate. While exposure exists
+// it never blocks, so management/exit can always run; when flat it blocks
+// outside the entry window, on bad spread, or when the ATR band is too tight.
 bool Strategy_NoTradeFilter()
   {
    if(Strategy_HasOurOpenPosition() || Strategy_OurPendingStopCount() > 0)
       return false;
 
    const datetime now = TimeCurrent();
-   if(Strategy_FinalOrderWindowOrLater(now))
+   if(Strategy_PastFinalOrderWindow(now))
       return true;
 
    double spread = 0.0;
@@ -248,111 +230,131 @@ bool Strategy_NoTradeFilter()
       return true;
 
    const double band_distance = strategy_entry_atr_mult * atr;
-   if(band_distance < 4.0 * spread)
+   if(band_distance < strategy_min_band_spreads * spread)
       return true;
 
    return false;
   }
 
-// Trade Entry: at the first M5 bar of the primary session, bracket the session
-// open with symmetric ATR stop orders.
+// Trade Entry: on the first M5 bar of the primary session, store the session
+// open and bracket it with symmetric ATR stop orders (one trade per session).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    Strategy_InitRequest(req);
 
-   static int s_order_day = -1;
-   const datetime now = TimeCurrent();
-   const int day_key = Strategy_DayKey(now);
-   if(s_order_day != day_key && Strategy_OurPendingStopCount() == 0 && !Strategy_HasOurOpenPosition())
-      s_order_day = -1;
+   static int s_session_day = -1;
+   static bool s_session_placed = false;
 
-   if(s_order_day == day_key)
+   const datetime now     = TimeCurrent();
+   const int      day_key = Strategy_DayKey(now);
+   if(day_key != s_session_day)
+     {
+      s_session_day    = day_key;
+      s_session_placed = false;
+     }
+
+   if(s_session_placed)
       return false;
    if(Strategy_HasOurOpenPosition() || Strategy_OurPendingStopCount() > 0)
       return false;
-   if(Strategy_FinalOrderWindowOrLater(now))
+
+   int start_hhmm = 0;
+   int end_hhmm   = 0;
+   Strategy_SessionForSymbol(start_hhmm, end_hhmm);
+   const int now_min   = Strategy_MinutesOfDay(Strategy_Hhmm(now));
+   const int start_min = Strategy_MinutesOfDay(start_hhmm);
+   const int end_min   = Strategy_MinutesOfDay(end_hhmm);
+   if(!Strategy_InMinuteWindow(now_min, start_min, end_min))
+      return false;
+   if(Strategy_PastFinalOrderWindow(now))
       return false;
 
-   datetime session_bar_time = 0;
-   if(!Strategy_IsFirstClosedSessionBar(session_bar_time))
-      return false;
-
-   const double session_open = iOpen(_Symbol, strategy_trade_tf, 1);
+   // session_open = open of the first session bar (bespoke session anchor).
+   const double session_open = iOpen(_Symbol, _Period, 0); // perf-allowed: session-open reference price
    const double atr = QM_ATR(_Symbol, PERIOD_D1, MathMax(1, strategy_atr_period), 1);
    double spread = 0.0;
    if(session_open <= 0.0 || atr <= 0.0 || !Strategy_CurrentSpread(spread))
       return false;
 
-   const double band = strategy_entry_atr_mult * atr;
+   const double band        = strategy_entry_atr_mult * atr;
    const double target_dist = strategy_target_atr_mult * atr;
-   if(band <= 0.0 || target_dist <= 0.0 || band < 4.0 * spread)
+   if(band <= 0.0 || target_dist <= 0.0 || band < strategy_min_band_spreads * spread)
       return false;
 
-   const double long_entry = QM_TM_NormalizePrice(_Symbol, session_open + band);
+   const double long_entry  = QM_TM_NormalizePrice(_Symbol, session_open + band);
    const double short_entry = QM_TM_NormalizePrice(_Symbol, session_open - band);
    if(long_entry <= 0.0 || short_entry <= 0.0 || long_entry <= short_entry)
       return false;
 
+   const int expiry = Strategy_SecondsUntilSessionEnd(now);
+
+   // Long stop bracket: entry above the band, protective stop at the opposite
+   // (lower) band, target target_mult*ATR above entry.
    QM_EntryRequest buy_req;
    Strategy_InitRequest(buy_req);
-   buy_req.type = QM_BUY_STOP;
-   buy_req.price = long_entry;
-   buy_req.sl = QM_TM_NormalizePrice(_Symbol, session_open - band);
-   buy_req.tp = QM_TM_NormalizePrice(_Symbol, long_entry + target_dist);
-   buy_req.reason = "ET_OPEN_ATRBRK_BUY_STOP";
-   buy_req.expiration_seconds = Strategy_SecondsUntilFinalOrderWindow(now);
-
-   req.type = QM_SELL_STOP;
-   req.price = short_entry;
-   req.sl = QM_TM_NormalizePrice(_Symbol, session_open + band);
-   req.tp = QM_TM_NormalizePrice(_Symbol, short_entry - target_dist);
-   req.reason = "ET_OPEN_ATRBRK_SELL_STOP";
-   req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = Strategy_SecondsUntilFinalOrderWindow(now);
-
+   buy_req.type               = QM_BUY_STOP;
+   buy_req.price              = long_entry;
+   buy_req.sl                 = QM_TM_NormalizePrice(_Symbol, session_open - band);
+   buy_req.tp                 = QM_TM_NormalizePrice(_Symbol, long_entry + target_dist);
+   buy_req.reason             = "ET_OPEN_ATRBRK_BUY_STOP";
+   buy_req.expiration_seconds = expiry;
    if(buy_req.sl <= 0.0 || buy_req.sl >= buy_req.price || buy_req.tp <= buy_req.price)
       return false;
+
+   // Short stop bracket (symmetric V5 variant): entry below the band,
+   // protective stop at the opposite (upper) band, target below entry.
+   req.type               = QM_SELL_STOP;
+   req.price              = short_entry;
+   req.sl                 = QM_TM_NormalizePrice(_Symbol, session_open + band);
+   req.tp                 = QM_TM_NormalizePrice(_Symbol, short_entry - target_dist);
+   req.reason             = "ET_OPEN_ATRBRK_SELL_STOP";
+   req.symbol_slot        = qm_magic_slot_offset;
+   req.expiration_seconds = expiry;
    if(req.sl <= req.price || req.tp >= req.price || req.tp <= 0.0)
       return false;
 
+   // Place the long bracket here; the framework OnTick places the short bracket
+   // returned in `req`. Both legs are pending stops, so neither trips the
+   // open-position duplicate guard.
    ulong buy_ticket = 0;
    if(!QM_TM_OpenPosition(buy_req, buy_ticket))
       return false;
 
-   s_order_day = day_key;
+   s_session_placed = true;
    return true;
   }
 
-// Trade Management: cancel the unfilled bracket side after one side fills, and
-// remove any remaining pending stops at the final-order/session boundary.
+// Trade Management: once one bracket leg fills, cancel the unfilled opposite
+// leg; clear any leftover pending stops at the final-order / session boundary.
 void Strategy_ManageOpenPosition()
   {
    if(Strategy_HasOurOpenPosition())
      {
-      Strategy_DeleteOurPendingStops("opposite_order_after_fill");
+      if(Strategy_OurPendingStopCount() > 0)
+         Strategy_DeleteOurPendingStops("opposite_leg_after_fill");
       return;
      }
 
-   if(Strategy_FinalOrderWindowOrLater(TimeCurrent()))
+   if(Strategy_OurPendingStopCount() > 0 && Strategy_PastFinalOrderWindow(TimeCurrent()))
       Strategy_DeleteOurPendingStops("session_final_order_window");
   }
 
-// Trade Close: flat any open position at the mapped session close.
+// Trade Close: flat any open position at the mapped session close (time exit).
 bool Strategy_ExitSignal()
   {
    if(!Strategy_HasOurOpenPosition())
       return false;
 
    int start_hhmm = 0;
-   int end_hhmm = 0;
+   int end_hhmm   = 0;
    Strategy_SessionForSymbol(start_hhmm, end_hhmm);
-   const int now_min = Strategy_MinutesOfDay(Strategy_Hhmm(TimeCurrent()));
+   const int now_min   = Strategy_MinutesOfDay(Strategy_Hhmm(TimeCurrent()));
    const int start_min = Strategy_MinutesOfDay(start_hhmm);
-   const int end_min = Strategy_MinutesOfDay(end_hhmm);
+   const int end_min   = Strategy_MinutesOfDay(end_hhmm);
    return !Strategy_InMinuteWindow(now_min, start_min, end_min);
   }
 
-// News Filter Hook: callable P8 hook; default defers to framework two-axis news.
+// News Filter Hook: callable P8 hook; defers to the framework two-axis filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
