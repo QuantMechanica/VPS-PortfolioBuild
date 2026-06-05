@@ -5516,3 +5516,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10787,tv-ema-rsi-adx,4,GDAXI.DWX,107870004,2026-06-05,Development,active
 10787,tv-ema-rsi-adx,5,NDX.DWX,107870005,2026-06-05,Development,active
 10787,tv-ema-rsi-adx,6,WS30.DWX,107870006,2026-06-05,Development,active
+10788,tv-triple-ema-vol,0,EURUSD.DWX,107880000,2026-06-05,Codex,active
+10788,tv-triple-ema-vol,1,GBPUSD.DWX,107880001,2026-06-05,Codex,active
+10788,tv-triple-ema-vol,2,USDJPY.DWX,107880002,2026-06-05,Codex,active
+10788,tv-triple-ema-vol,3,XAUUSD.DWX,107880003,2026-06-05,Codex,active
+10788,tv-triple-ema-vol,4,GDAXI.DWX,107880004,2026-06-05,Codex,active
+10788,tv-triple-ema-vol,5,NDX.DWX,107880005,2026-06-05,Codex,active
+10788,tv-triple-ema-vol,6,WS30.DWX,107880006,2026-06-05,Codex,active
