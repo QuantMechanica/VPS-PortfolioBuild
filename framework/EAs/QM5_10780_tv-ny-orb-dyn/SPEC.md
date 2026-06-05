@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA builds a New York opening range from 08:30 through 08:45 NY time. After that range is complete, it enters long when the closed bar breaks above the range high, or short when the closed bar breaks below the range low, during the 08:50-12:00 NY entry window. Optional filters require the signal close to align with VWAP, 50-period SMMA, MACD, and RSI according to `strategy_filter_mode`. Each entry uses an ATR(14) stop capped by the opening-range size, a fixed R target, and a hard flat exit at 13:25 NY time.
+The EA builds a New York opening range from 08:30 through 08:45 NY time. After that range is complete, it enters long when the closed bar breaks above the range high, or short when the closed bar breaks below the range low, during the 08:50-12:00 NY entry window. One position per symbol per day. Optional ablation filters require the signal close to align with session VWAP, 50-period SMMA, MACD, and RSI according to `strategy_filter_mode`; the P2 baseline runs with `strategy_filter_mode=0` (no filters), `strategy_second_breakout=false`, and `strategy_confirmation_bars=0` so the cleanest breakout is measured first. Each entry uses an ATR(14) stop capped by the opening-range size, a fixed R target, and a hard flat exit at 13:25 NY time. Opening-range and session-VWAP state is advanced once per closed bar (O(1)) — no per-tick session re-scan.
 
 ---
 
@@ -24,8 +24,8 @@ The EA builds a New York opening range from 08:30 through 08:45 NY time. After t
 | `strategy_entry_end_hhmm` | 1200 | 0000-2359 | Last New York time at which breakouts may enter. |
 | `strategy_hard_exit_hhmm` | 1325 | 0000-2359 | New York time to close any open strategy position. |
 | `strategy_second_breakout` | false | false/true | Require a prior breakout, return into range, then second breakout. |
-| `strategy_confirmation_bars` | 1 | 0-2 | Number of prior bars that must close inside the opening range. |
-| `strategy_filter_mode` | 3 | 0-3 | Filter set: none, VWAP, VWAP+SMMA, or VWAP+SMMA+MACD+RSI. |
+| `strategy_confirmation_bars` | 0 | 0-2 | Number of prior bars that must close inside the opening range. |
+| `strategy_filter_mode` | 0 | 0-3 | Filter set: none, VWAP, VWAP+SMMA, or VWAP+SMMA+MACD+RSI. |
 | `strategy_rsi_period` | 14 | 2-100 | RSI lookback. |
 | `strategy_rsi_overbought` | 70.0 | 50-100 | Long entries require RSI below this level. |
 | `strategy_rsi_oversold` | 30.0 | 0-50 | Short entries require RSI above this level. |
@@ -109,3 +109,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-05 | Initial build from card | 8271eb35-0ba8-47f0-9ed6-773d8957ece5 |
+| v1.1 | 2026-06-05 | Rebuild in place: O(1)/closed-bar cached OR+VWAP state (prior per-bar session CopyRates re-scan hung the smoke / METATESTER_HUNG); baseline defaults filters off | 8271eb35-0ba8-47f0-9ed6-773d8957ece5 |

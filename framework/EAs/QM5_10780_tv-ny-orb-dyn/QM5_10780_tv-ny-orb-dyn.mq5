@@ -5,33 +5,27 @@
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA SKELETON
+// QM5_10780 — TradingView "NY ORB - Full Dynamic System" (card tv-ny-orb-dyn)
 // -----------------------------------------------------------------------------
-// Fill in only the five Strategy_* hooks below. Everything else is framework
-// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
-// risk + magic + news + Friday-close guard rails). The framework provides:
+// New York opening-range breakout. The opening range is built from the NY
+// pre-market window (source default 08:30-08:45 NY). After the range completes,
+// breakouts in the entry window (default 08:50-12:00 NY) trigger a single
+// position per day. All open trades are force-flat at the hard-exit time
+// (default 13:25 NY). Stops are ATR(14) capped at the opening-range size; the
+// profit target is a fixed R multiple of the stop.
 //
-//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  — closed-bar gate
-//   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
-//     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
-//     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
-//   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
-//   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
-//   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
-//   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
-//   - QM_FrameworkHandleFridayClose / QM_KillSwitchCheck / QM_NewsAllowsTrade
+// INTRADAY PERFORMANCE NOTE: session state (opening range high/low + session
+// VWAP) is advanced ONCE per closed bar (AdvanceState_OnNewBar) using single-
+// shift closed-bar reads — O(1) per bar. No per-tick CopyRates, no per-bar
+// re-summing of the whole session. The per-tick path (NoTradeFilter / Manage /
+// ExitSignal) is O(1). This is the QM5_1044/1046 METATESTER_HUNG-avoidance
+// pattern from the Intraday Discipline. Raw closed-bar series reads carry an
+// explicit `// perf-allowed` tag because the opening range is bespoke
+// structural session math the framework indicator readers do not cover.
 //
-// DO NOT
-//   - Write per-EA IsNewBar() — use QM_IsNewBar()
-//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
-//     use the QM_* readers above. The framework pools handles and releases them
-//     on shutdown.
-//   - CopyRates over warmup windows on every tick. If you genuinely need raw
-//     bar arrays, gate by QM_IsNewBar so the work runs once per closed bar.
-//   - Hand-edit framework/include/QM/QM_MagicResolver.mqh. After adding rows
-//     to magic_numbers.csv, run:
-//         python framework/scripts/update_magic_resolver.py
-//     This is idempotent and preserves all rows.
+// Optional ablation axes (second-breakout, confirmation candles, VWAP / SMMA /
+// MACD / RSI filters) are implemented as inputs but default OFF for the P2
+// baseline (filter_mode=0) so the cleanest breakout is measured first.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
@@ -73,14 +67,17 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_or_start_hhmm      = 830;
-input int    strategy_or_end_hhmm        = 845;
-input int    strategy_entry_start_hhmm   = 850;
-input int    strategy_entry_end_hhmm     = 1200;
-input int    strategy_hard_exit_hhmm     = 1325;
-input bool   strategy_second_breakout    = false;
-input int    strategy_confirmation_bars  = 1;
-input int    strategy_filter_mode        = 3;       // 0 none, 1 VWAP, 2 VWAP+SMMA, 3 VWAP+SMMA+MACD+RSI
+// Session windows are expressed in NEW YORK local time (HHMM); the EA converts
+// the broker bar time to NY internally (DST-aware) so the windows track the
+// US session year-round.
+input int    strategy_or_start_hhmm      = 830;     // NY opening-range start (incl.)
+input int    strategy_or_end_hhmm        = 845;     // NY opening-range end (excl.)
+input int    strategy_entry_start_hhmm   = 850;     // NY entry window start (incl.)
+input int    strategy_entry_end_hhmm     = 1200;    // NY entry window end (incl.)
+input int    strategy_hard_exit_hhmm     = 1325;    // NY hard flat time
+input bool   strategy_second_breakout    = false;   // require break->return->break (ablation)
+input int    strategy_confirmation_bars  = 0;       // close N bars pre-break inside range (0/1/2)
+input int    strategy_filter_mode        = 0;       // 0 none,1 VWAP,2 +SMMA,3 +MACD+RSI
 input int    strategy_rsi_period         = 14;
 input double strategy_rsi_overbought     = 70.0;
 input double strategy_rsi_oversold       = 30.0;
@@ -90,17 +87,132 @@ input int    strategy_macd_signal        = 9;
 input int    strategy_smma_period        = 50;
 input int    strategy_atr_period         = 14;
 input double strategy_atr_sl_mult        = 1.0;
-input bool   strategy_cap_at_or_range    = true;
+input bool   strategy_cap_at_or_range    = true;    // cap ATR stop at OR-range multiple
 input double strategy_or_cap_mult        = 1.0;
-input double strategy_rr_target          = 2.0;
+input double strategy_rr_target          = 2.0;     // fixed R profit target
 input int    strategy_max_spread_points  = 0;       // 0 disables non-card spread gate
 
 // -----------------------------------------------------------------------------
-// Strategy hooks — implement these against the card mechanically.
+// Cached per-day session state. Advanced exactly once per closed bar by
+// AdvanceState_OnNewBar() (reached only after the framework QM_IsNewBar() gate
+// in OnTick). No file-scope timestamp gate of our own — the framework owns the
+// new-bar cadence.
+// -----------------------------------------------------------------------------
+int      g_day_ymd      = -1;     // NY calendar date (YYYYMMDD) of the active day
+double   g_or_high      = 0.0;
+double   g_or_low       = 0.0;
+bool     g_or_active    = false;  // >=1 opening-range bar observed
+bool     g_or_complete  = false;  // opening-range window finished
+bool     g_traded_today = false;  // one position per symbol per day
+double   g_vwap_num     = 0.0;    // sum(typical*vol) since session start
+double   g_vwap_den     = 0.0;    // sum(vol) since session start
+double   g_vwap         = 0.0;    // session VWAP (anchored at OR start)
+int      g_long_phase   = 0;      // second-breakout long: 0 none,1 broke up,2 returned
+int      g_short_phase  = 0;      // second-breakout short: 0 none,1 broke down,2 returned
+
+// Convert a broker timestamp to a New-York MqlDateTime (DST-aware). Cheap O(1),
+// no series reads.
+void BrokerToNyStruct(const datetime broker_time, MqlDateTime &ny_dt)
+  {
+   const datetime utc = QM_BrokerToUTC(broker_time);
+   const int ny_off_hours = QM_IsUSDSTUTC(utc) ? -4 : -5;
+   const datetime ny = utc + (ny_off_hours * 3600);
+   ZeroMemory(ny_dt);
+   TimeToStruct(ny, ny_dt);
+  }
+
+// Advance opening-range + VWAP + breakout-phase state by ONE closed bar.
+// Called once per new closed bar from Strategy_EntrySignal. O(1) — single-shift
+// closed-bar reads only, no loops, no CopyRates.
+void AdvanceState_OnNewBar()
+  {
+   const datetime bar_t = iTime(_Symbol, _Period, 1); // perf-allowed: closed-bar timestamp for session state
+   if(bar_t <= 0)
+      return;
+
+   MqlDateTime ny;
+   BrokerToNyStruct(bar_t, ny);
+   const int ymd  = ny.year * 10000 + ny.mon * 100 + ny.day;
+   const int hhmm = ny.hour * 100 + ny.min;
+
+   if(ymd != g_day_ymd)
+     {
+      g_day_ymd      = ymd;
+      g_or_high      = 0.0;
+      g_or_low       = 0.0;
+      g_or_active    = false;
+      g_or_complete  = false;
+      g_traded_today = false;
+      g_vwap_num     = 0.0;
+      g_vwap_den     = 0.0;
+      g_vwap         = 0.0;
+      g_long_phase   = 0;
+      g_short_phase  = 0;
+     }
+
+   const double h1 = iHigh(_Symbol, _Period, 1);   // perf-allowed: closed-bar OR high
+   const double l1 = iLow(_Symbol, _Period, 1);    // perf-allowed: closed-bar OR low
+   const double c1 = iClose(_Symbol, _Period, 1);  // perf-allowed: closed-bar close
+   if(h1 <= 0.0 || l1 <= 0.0 || c1 <= 0.0)
+      return;
+
+   // Opening-range accumulation over the NY OR window.
+   if(hhmm >= strategy_or_start_hhmm && hhmm < strategy_or_end_hhmm)
+     {
+      if(!g_or_active)
+        {
+         g_or_high   = h1;
+         g_or_low    = l1;
+         g_or_active = true;
+        }
+      else
+        {
+         g_or_high = MathMax(g_or_high, h1);
+         g_or_low  = MathMin(g_or_low, l1);
+        }
+     }
+   else if(hhmm >= strategy_or_end_hhmm && g_or_active && !g_or_complete)
+     {
+      g_or_complete = true;
+     }
+
+   // Session VWAP anchored at OR start (incremental, one bar's contribution).
+   if(hhmm >= strategy_or_start_hhmm)
+     {
+      const double vol_raw = (double)iVolume(_Symbol, _Period, 1); // perf-allowed: closed-bar volume for session VWAP
+      const double vol = (vol_raw > 0.0) ? vol_raw : 1.0;
+      const double typical = (h1 + l1 + c1) / 3.0;
+      g_vwap_num += typical * vol;
+      g_vwap_den += vol;
+      if(g_vwap_den > 0.0)
+         g_vwap = g_vwap_num / g_vwap_den;
+     }
+
+   // Second-breakout sequence (break -> return into range -> re-break). The
+   // re-break itself is detected in Strategy_EntrySignal; here we only advance
+   // the arming phases. Used only when strategy_second_breakout is enabled.
+   if(g_or_complete && g_or_high > g_or_low)
+     {
+      if(g_long_phase == 0 && c1 > g_or_high)
+         g_long_phase = 1;
+      else if(g_long_phase == 1 && c1 <= g_or_high)
+         g_long_phase = 2;
+
+      if(g_short_phase == 0 && c1 < g_or_low)
+         g_short_phase = 1;
+      else if(g_short_phase == 1 && c1 >= g_or_low)
+         g_short_phase = 2;
+     }
+  }
+
+// -----------------------------------------------------------------------------
+// Strategy hooks
 // -----------------------------------------------------------------------------
 
-// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
-// regime filter). Cheap O(1) checks only — runs on every tick.
+// No-Trade Filter (time / spread / news). Cheap O(1) per-tick checks ONLY.
+// Entry session timing is enforced in Strategy_EntrySignal (not here) so that
+// returning TRUE never suppresses the per-tick hard-exit in Strategy_ExitSignal.
+// News is handled by the framework filter + Strategy_NewsFilterHook.
 bool Strategy_NoTradeFilter()
   {
    if(strategy_max_spread_points > 0)
@@ -116,9 +228,8 @@ bool Strategy_NoTradeFilter()
    return false;
   }
 
-// Populate `req` with entry order parameters and return TRUE if a NEW entry
-// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
-// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
+// Populate `req` and return TRUE if a NEW entry should fire on this closed bar.
+// Caller guarantees QM_IsNewBar() == true (one call per closed bar).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    req.type = QM_BUY;
@@ -129,158 +240,79 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   MqlRates last_bar[1];
-   if(CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, 1, last_bar) != 1) // perf-allowed: closed-bar structural ORB read
+   // Advance cached session state by this one closed bar (O(1)).
+   AdvanceState_OnNewBar();
+
+   if(!g_or_complete || g_traded_today)
+      return false;
+   if(!g_or_active || g_or_high <= g_or_low)
       return false;
 
-   const datetime signal_broker_time = last_bar[0].time;
-   const datetime signal_utc = QM_BrokerToUTC(signal_broker_time);
-   const int ny_offset_hours = QM_IsUSDSTUTC(signal_utc) ? -4 : -5;
-   const datetime signal_ny = signal_utc + (ny_offset_hours * 3600);
-
-   MqlDateTime ny_dt;
-   ZeroMemory(ny_dt);
-   TimeToStruct(signal_ny, ny_dt);
-   const int signal_hhmm = ny_dt.hour * 100 + ny_dt.min;
-   if(signal_hhmm < strategy_entry_start_hhmm || signal_hhmm > strategy_entry_end_hhmm)
+   const datetime bar_t = iTime(_Symbol, _Period, 1); // perf-allowed: closed-bar timestamp for entry-window gate
+   if(bar_t <= 0)
+      return false;
+   MqlDateTime ny;
+   BrokerToNyStruct(bar_t, ny);
+   const int hhmm = ny.hour * 100 + ny.min;
+   if(hhmm < strategy_entry_start_hhmm || hhmm > strategy_entry_end_hhmm)
       return false;
 
-   MqlDateTime ny_or_start = ny_dt;
-   ny_or_start.hour = strategy_or_start_hhmm / 100;
-   ny_or_start.min = strategy_or_start_hhmm % 100;
-   ny_or_start.sec = 0;
-   const datetime or_start_ny = StructToTime(ny_or_start);
-   const datetime or_start_utc = or_start_ny - (ny_offset_hours * 3600);
-   const datetime or_start_broker = QM_UTCToBroker(or_start_utc);
-
-   MqlRates rates[];
-   ArrayResize(rates, 0);
-   const int copied = CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, or_start_broker, signal_broker_time, rates); // perf-allowed: closed-bar OR/VWAP session scan
-   if(copied <= 2)
+   const double c1 = iClose(_Symbol, _Period, 1);  // perf-allowed: breakout bar close
+   const double c2 = iClose(_Symbol, _Period, 2);  // perf-allowed: prior bar close (cross / confirmation)
+   if(c1 <= 0.0 || c2 <= 0.0)
       return false;
 
-   double or_high = -DBL_MAX;
-   double or_low = DBL_MAX;
-   bool have_or = false;
-   double vwap_num = 0.0;
-   double vwap_den = 0.0;
-   double signal_close = 0.0;
-   double prev1_close = 0.0;
-   double prev2_close = 0.0;
-   datetime signal_time = 0;
-   datetime prev1_time = 0;
-   datetime prev2_time = 0;
-   bool earlier_long_break = false;
-   bool earlier_short_break = false;
-
-   for(int i = 0; i < copied; ++i)
+   // Optional confirmation candle(s): close N bars before the breakout must
+   // still be inside the opening range.
+   if(strategy_confirmation_bars >= 1 && (c2 < g_or_low || c2 > g_or_high))
+      return false;
+   if(strategy_confirmation_bars >= 2)
      {
-      const datetime bar_time = rates[i].time;
-      if(bar_time > signal_broker_time)
-         continue;
-
-      const datetime bar_utc = QM_BrokerToUTC(bar_time);
-      const int bar_ny_offset = QM_IsUSDSTUTC(bar_utc) ? -4 : -5;
-      const datetime bar_ny = bar_utc + (bar_ny_offset * 3600);
-      MqlDateTime bar_dt;
-      ZeroMemory(bar_dt);
-      TimeToStruct(bar_ny, bar_dt);
-      const int bar_hhmm = bar_dt.hour * 100 + bar_dt.min;
-
-      if(bar_hhmm >= strategy_or_start_hhmm && bar_hhmm < strategy_or_end_hhmm)
-        {
-         or_high = MathMax(or_high, rates[i].high);
-         or_low = MathMin(or_low, rates[i].low);
-         have_or = true;
-        }
-
-      if(have_or && bar_time < signal_broker_time)
-        {
-         if(rates[i].close > or_high)
-            earlier_long_break = true;
-         if(rates[i].close < or_low)
-            earlier_short_break = true;
-        }
-
-      if(bar_hhmm >= strategy_or_start_hhmm && bar_time <= signal_broker_time)
-        {
-         const double vol = (rates[i].tick_volume > 0) ? (double)rates[i].tick_volume : 1.0;
-         const double typical = (rates[i].high + rates[i].low + rates[i].close) / 3.0;
-         vwap_num += typical * vol;
-         vwap_den += vol;
-        }
-
-      if(bar_time > signal_time)
-        {
-         prev2_time = prev1_time;
-         prev2_close = prev1_close;
-         prev1_time = signal_time;
-         prev1_close = signal_close;
-         signal_time = bar_time;
-         signal_close = rates[i].close;
-        }
-      else if(bar_time > prev1_time)
-        {
-         prev2_time = prev1_time;
-         prev2_close = prev1_close;
-         prev1_time = bar_time;
-         prev1_close = rates[i].close;
-        }
-      else if(bar_time > prev2_time)
-        {
-         prev2_time = bar_time;
-         prev2_close = rates[i].close;
-        }
+      const double c3 = iClose(_Symbol, _Period, 3); // perf-allowed: 2-bars-back confirmation close
+      if(c3 <= 0.0 || c3 < g_or_low || c3 > g_or_high)
+         return false;
      }
 
-   if(!have_or || or_high <= or_low || signal_time != signal_broker_time || prev1_time <= 0)
-      return false;
-
-   if(strategy_confirmation_bars >= 1 && (prev1_close < or_low || prev1_close > or_high))
-      return false;
-   if(strategy_confirmation_bars >= 2 && (prev2_time <= 0 || prev2_close < or_low || prev2_close > or_high))
-      return false;
-
-   const bool long_break = (signal_close > or_high && prev1_close <= or_high);
-   const bool short_break = (signal_close < or_low && prev1_close >= or_low);
-   if(!long_break && !short_break)
-      return false;
-
+   bool long_break  = false;
+   bool short_break = false;
    if(strategy_second_breakout)
      {
-      if(long_break && (!earlier_long_break || prev1_close < or_low || prev1_close > or_high))
-         return false;
-      if(short_break && (!earlier_short_break || prev1_close < or_low || prev1_close > or_high))
-         return false;
+      long_break  = (g_long_phase >= 2 && c1 > g_or_high);
+      short_break = (g_short_phase >= 2 && c1 < g_or_low);
      }
-
-   const double vwap = (vwap_den > 0.0) ? (vwap_num / vwap_den) : 0.0;
-   if(strategy_filter_mode >= 1)
+   else
      {
-      if(vwap <= 0.0)
+      long_break  = (c1 > g_or_high && c2 <= g_or_high);
+      short_break = (c1 < g_or_low  && c2 >= g_or_low);
+     }
+   if(long_break == short_break) // neither, or (impossible) both
+      return false;
+
+   // Optional filter stack (ablation axes; baseline filter_mode=0 = none).
+   if(strategy_filter_mode >= 1) // VWAP
+     {
+      if(g_vwap <= 0.0)
          return false;
-      if(long_break && signal_close <= vwap)
+      if(long_break && c1 <= g_vwap)
          return false;
-      if(short_break && signal_close >= vwap)
+      if(short_break && c1 >= g_vwap)
          return false;
      }
-
-   if(strategy_filter_mode >= 2)
+   if(strategy_filter_mode >= 2) // 50-period SMMA
      {
       const double smma = QM_SMMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_smma_period, 1);
       if(smma <= 0.0)
          return false;
-      if(long_break && signal_close <= smma)
+      if(long_break && c1 <= smma)
          return false;
-      if(short_break && signal_close >= smma)
+      if(short_break && c1 >= smma)
          return false;
      }
-
-   if(strategy_filter_mode >= 3)
+   if(strategy_filter_mode >= 3) // MACD line vs signal + RSI guard
      {
       const double macd_main = QM_MACD_Main(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
-      const double macd_sig = QM_MACD_Signal(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
-      const double rsi = QM_RSI(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_rsi_period, 1);
+      const double macd_sig  = QM_MACD_Signal(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
+      const double rsi       = QM_RSI(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_rsi_period, 1);
       if(rsi <= 0.0)
          return false;
       if(long_break && (macd_main <= macd_sig || rsi >= strategy_rsi_overbought))
@@ -291,7 +323,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    const QM_OrderType side = long_break ? QM_BUY : QM_SELL;
    const double entry = long_break ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                                   : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+                                    : SymbolInfoDouble(_Symbol, SYMBOL_BID);
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    if(entry <= 0.0 || point <= 0.0)
       return false;
@@ -300,57 +332,50 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(atr <= 0.0 || strategy_atr_sl_mult <= 0.0 || strategy_rr_target <= 0.0)
       return false;
 
+   // Capped-ATR stop distance, floored at the broker stops level.
    double stop_distance = atr * strategy_atr_sl_mult;
-   const double or_range = or_high - or_low;
+   const double or_range = g_or_high - g_or_low;
    if(strategy_cap_at_or_range && strategy_or_cap_mult > 0.0 && or_range > 0.0)
       stop_distance = MathMin(stop_distance, or_range * strategy_or_cap_mult);
-
    const int stops_level = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
    const double min_stop_distance = MathMax(1, stops_level + 2) * point;
    stop_distance = MathMax(stop_distance, min_stop_distance);
 
-   const double adjusted_atr = stop_distance;
-   const double sl = QM_StopATRFromValue(_Symbol, side, entry, adjusted_atr, 1.0);
+   const double sl = QM_StopATRFromValue(_Symbol, side, entry, stop_distance, 1.0);
    const double tp = QM_TakeRR(_Symbol, side, entry, sl, strategy_rr_target);
    if(sl <= 0.0 || tp <= 0.0)
       return false;
 
    req.type = side;
-   req.price = 0.0;
+   req.price = 0.0; // market — QM_Entry resolves ask/bid
    req.sl = sl;
    req.tp = tp;
    req.reason = long_break ? "NY_ORB_LONG" : "NY_ORB_SHORT";
+   g_traded_today = true; // one shot per day, even if the order is rejected
    return true;
   }
 
-// Called every tick when an open position exists for this EA's magic.
-// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
+// No trailing / break-even / partial: the card baseline uses a fixed ATR/OR
+// stop and a fixed-R target set at entry, with a hard time exit.
 void Strategy_ManageOpenPosition()
   {
-   // Card baseline uses fixed SL/TP and no adaptive daily PnL or trailing logic.
   }
 
-// Return TRUE to close the open position now (e.g. opposite-signal exit,
-// max-hold-time exceeded, session end).
+// Force-flat at the NY hard-exit time. Per-tick so the exit is precise rather
+// than waiting for a bar close. O(1).
 bool Strategy_ExitSignal()
   {
-   const datetime broker_now = TimeCurrent();
-   const datetime utc_now = QM_BrokerToUTC(broker_now);
-   const int ny_offset_hours = QM_IsUSDSTUTC(utc_now) ? -4 : -5;
-   const datetime ny_now = utc_now + (ny_offset_hours * 3600);
-   MqlDateTime ny_dt;
-   ZeroMemory(ny_dt);
-   TimeToStruct(ny_now, ny_dt);
-   const int hhmm = ny_dt.hour * 100 + ny_dt.min;
+   MqlDateTime ny;
+   BrokerToNyStruct(TimeCurrent(), ny);
+   const int hhmm = ny.hour * 100 + ny.min;
    return (hhmm >= strategy_hard_exit_hhmm);
   }
 
-// Optional news-filter override. Return TRUE to suppress trading regardless
-// of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
-// custom high-impact-event handling beyond the central filter.
+// News-filter hook for the P8 News Impact phase. Defers to the central
+// framework filter (QM_NewsAllowsTrade) by default.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false; // defer to QM_NewsAllowsTrade(...)
+   return false;
   }
 
 // -----------------------------------------------------------------------------
