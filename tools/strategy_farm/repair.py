@@ -469,7 +469,11 @@ def _pending_work_item_artifact_failure(row: sqlite3.Row) -> dict | None:
     if not candidates:
         return {"reason": "ea_dir_missing", "detail": str(ea_root / f"{ea_id}_*")}
     if len(candidates) > 1:
-        return {"reason": "ea_dir_ambiguous", "detail": [p.name for p in candidates]}
+        pref = farmctl._preferred_ea_dir(ea_id)  # DL-068: registry-aware disambiguation
+        if pref is not None:
+            candidates = [pref]
+        else:
+            return {"reason": "ea_dir_ambiguous", "detail": [p.name for p in candidates]}
 
     ea_dir = candidates[0]
     ex5 = ea_dir / f"{ea_dir.name}.ex5"

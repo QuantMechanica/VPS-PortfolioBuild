@@ -1926,11 +1926,40 @@ def _ea_dir_version(dir_name: str) -> int:
     return int(match.group(1)) if match else 1
 
 
+def _registered_ea_slug(ea_id: str) -> str | None:
+    """The ea_slug registered in magic_numbers.csv for QM5_<n> = the canonical
+    build. DL-068: this is the source of truth for which on-disk dir to run when
+    an EA has sibling dirs (e.g. <ea>_slug vs <ea>_slug_v2 vs slug-format dupes)."""
+    m = re.search(r"QM5_(\d+)", str(ea_id))
+    if not m:
+        return None
+    num = m.group(1)
+    rows = _read_csv_dicts_if_exists(REPO_ROOT / "framework" / "registry" / "magic_numbers.csv")
+    for row in rows:
+        if str(row.get("ea_id") or "").strip() == num:
+            slug = str(row.get("ea_slug") or "").strip()
+            if slug:
+                return slug
+    return None
+
+
 def _preferred_ea_dir(ea_id: str) -> Path | None:
     ea_root = REPO_ROOT / "framework" / "EAs"
     candidates = sorted(p for p in ea_root.glob(f"{ea_id}_*") if p.is_dir())
     if not candidates:
         return None
+    if len(candidates) == 1:
+        return candidates[0]
+    # DL-068: when sibling dirs exist, prefer the one whose slug is REGISTERED in
+    # magic_numbers.csv (the canonical build). This is authoritative and direction-
+    # agnostic (registry may name v1, v2, or a particular slug spelling). Only if
+    # the registry gives no usable match do we fall back to the unique highest
+    # version. Returning None (ambiguous) is the last resort.
+    slug = _registered_ea_slug(ea_id)
+    if slug:
+        match = [p for p in candidates if p.name == f"{ea_id}_{slug}"]
+        if len(match) == 1:
+            return match[0]
     best_version = max(_ea_dir_version(p.name) for p in candidates)
     versioned = [p for p in candidates if _ea_dir_version(p.name) == best_version]
     if len(versioned) != 1:
@@ -2027,8 +2056,12 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
     if not candidates:
         return {"spawned": False, "reason": f"no EA dir for {ea_id}"}
     if len(candidates) > 1:
-        return {"spawned": False, "reason": f"ambiguous EA dir for {ea_id}",
-                "candidates": [p.name for p in candidates]}
+        pref = _preferred_ea_dir(ea_id)  # DL-068: registry-aware disambiguation
+        if pref is not None:
+            candidates = [pref]
+        else:
+            return {"spawned": False, "reason": f"ambiguous EA dir for {ea_id}",
+                    "candidates": [p.name for p in candidates]}
     ea_dir_name = candidates[0].name
     period = runner_period
     numeric_id = int(re.match(r"^QM5_(\d+)$", ea_id).group(1))

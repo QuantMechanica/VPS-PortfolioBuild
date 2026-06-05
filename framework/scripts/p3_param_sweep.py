@@ -31,13 +31,41 @@ DEFAULT_OUT_PREFIX = Path(r"D:\QM\reports\pipeline")
 DEFAULT_DISPATCH_STATE = Path(r"D:\QM\Reports\pipeline\dispatch_state.json")
 
 
+def _registered_ea_slug(ea_label: str) -> str | None:
+    """DL-068: ea_slug registered in magic_numbers.csv = the canonical build dir."""
+    import csv as _csv
+    m = re.search(r"QM5_(\d+)", ea_label)
+    if not m:
+        return None
+    num = m.group(1)
+    reg = REPO_ROOT / "framework" / "registry" / "magic_numbers.csv"
+    if not reg.exists():
+        return None
+    try:
+        with reg.open(encoding="utf-8-sig", newline="") as f:
+            for row in _csv.DictReader(f):
+                if str(row.get("ea_id") or "").strip() == num:
+                    slug = str(row.get("ea_slug") or "").strip()
+                    if slug:
+                        return slug
+    except OSError:
+        return None
+    return None
+
+
 def find_ea_dir(ea_label: str) -> Path:
     candidates = [p for p in EA_ROOT.glob(f"{ea_label}_*") if p.is_dir()]
     if not candidates:
         raise SystemExit(f"[FATAL] EA dir not found: {EA_ROOT}/{ea_label}_*")
-    if len(candidates) > 1:
-        raise SystemExit(f"[FATAL] ambiguous EA dir: {[p.name for p in candidates]}")
-    return candidates[0]
+    if len(candidates) == 1:
+        return candidates[0]
+    # DL-068: prefer the dir whose slug is registered in magic_numbers.csv.
+    slug = _registered_ea_slug(ea_label)
+    if slug:
+        match = [p for p in candidates if p.name == f"{ea_label}_{slug}"]
+        if len(match) == 1:
+            return match[0]
+    raise SystemExit(f"[FATAL] ambiguous EA dir: {[p.name for p in candidates]}")
 
 
 def derive_numeric_ea_id(ea_label: str) -> int:
