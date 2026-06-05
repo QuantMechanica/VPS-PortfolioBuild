@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_10705 TradingView PDH PDL Liquidity Trap"
+#property description "QM5_10780 TradingView NY ORB Dynamic System"
 
 #include <QM/QM_Common.mqh>
 
@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 10705;
+input int    qm_ea_id                   = 10780;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -73,22 +73,30 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_atr_period             = 14;
-input double strategy_atr_buffer_mult        = 1.0;
-input double strategy_min_atr_buffer_mult    = 0.5;
-input double strategy_rr_target              = 2.0;
-input int    strategy_trade_window           = 0;      // 0 all day, 1 London/NY overlap, 2 NY only.
-input int    strategy_london_ny_start_minute = 780;
-input int    strategy_london_ny_end_minute   = 1020;
-input int    strategy_ny_start_minute        = 870;
-input int    strategy_ny_end_minute          = 1260;
-input int    strategy_skip_cash_open_minutes = 0;
-input int    strategy_london_open_minute     = 480;
-input int    strategy_ny_cash_open_minute    = 870;
-input int    strategy_max_spread_points      = 0;
+input int    strategy_or_start_hhmm      = 830;
+input int    strategy_or_end_hhmm        = 845;
+input int    strategy_entry_start_hhmm   = 850;
+input int    strategy_entry_end_hhmm     = 1200;
+input int    strategy_hard_exit_hhmm     = 1325;
+input bool   strategy_second_breakout    = false;
+input int    strategy_confirmation_bars  = 1;
+input int    strategy_filter_mode        = 3;       // 0 none, 1 VWAP, 2 VWAP+SMMA, 3 VWAP+SMMA+MACD+RSI
+input int    strategy_rsi_period         = 14;
+input double strategy_rsi_overbought     = 70.0;
+input double strategy_rsi_oversold       = 30.0;
+input int    strategy_macd_fast          = 12;
+input int    strategy_macd_slow          = 26;
+input int    strategy_macd_signal        = 9;
+input int    strategy_smma_period        = 50;
+input int    strategy_atr_period         = 14;
+input double strategy_atr_sl_mult        = 1.0;
+input bool   strategy_cap_at_or_range    = true;
+input double strategy_or_cap_mult        = 1.0;
+input double strategy_rr_target          = 2.0;
+input int    strategy_max_spread_points  = 0;       // 0 disables non-card spread gate
 
 // -----------------------------------------------------------------------------
-// Strategy hooks - implement these against the card mechanically.
+// Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
 // Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
@@ -102,79 +110,9 @@ bool Strategy_NoTradeFilter()
       const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
       if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
          return true;
-      if((ask - bid) / point > (double)strategy_max_spread_points)
+      if((ask - bid) / point > strategy_max_spread_points)
          return true;
      }
-
-   MqlDateTime dt;
-   TimeToStruct(TimeCurrent(), dt);
-   const int minute = dt.hour * 60 + dt.min;
-
-   if(strategy_trade_window == 1)
-     {
-      int start_minute = strategy_london_ny_start_minute;
-      int end_minute = strategy_london_ny_end_minute;
-      if(start_minute < 0) start_minute = 0;
-      if(start_minute > 1439) start_minute = 1439;
-      if(end_minute < 0) end_minute = 0;
-      if(end_minute > 1439) end_minute = 1439;
-
-      bool inside = true;
-      if(start_minute != end_minute)
-        {
-         if(start_minute < end_minute)
-            inside = (minute >= start_minute && minute < end_minute);
-         else
-            inside = (minute >= start_minute || minute < end_minute);
-        }
-      if(!inside)
-         return true;
-     }
-
-   if(strategy_trade_window == 2)
-     {
-      int start_minute = strategy_ny_start_minute;
-      int end_minute = strategy_ny_end_minute;
-      if(start_minute < 0) start_minute = 0;
-      if(start_minute > 1439) start_minute = 1439;
-      if(end_minute < 0) end_minute = 0;
-      if(end_minute > 1439) end_minute = 1439;
-
-      bool inside = true;
-      if(start_minute != end_minute)
-        {
-         if(start_minute < end_minute)
-            inside = (minute >= start_minute && minute < end_minute);
-         else
-            inside = (minute >= start_minute || minute < end_minute);
-        }
-      if(!inside)
-         return true;
-     }
-
-   if(strategy_trade_window < 0 || strategy_trade_window > 2)
-      return true;
-
-   if(strategy_skip_cash_open_minutes > 0)
-     {
-      int london_open = strategy_london_open_minute;
-      int ny_open = strategy_ny_cash_open_minute;
-      if(london_open < 0) london_open = 0;
-      if(london_open > 1439) london_open = 1439;
-      if(ny_open < 0) ny_open = 0;
-      if(ny_open > 1439) ny_open = 1439;
-
-      int london_end = london_open + strategy_skip_cash_open_minutes;
-      int ny_end = ny_open + strategy_skip_cash_open_minutes;
-      if(london_end > 1440) london_end = 1440;
-      if(ny_end > 1440) ny_end = 1440;
-
-      if(minute >= london_open && minute < london_end)
-         return true;
-      if(minute >= ny_open && minute < ny_end)
-         return true;
-     }
-
    return false;
   }
 
@@ -191,100 +129,220 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(strategy_atr_period < 1 || strategy_rr_target <= 0.0 ||
-      strategy_atr_buffer_mult <= 0.0 || strategy_min_atr_buffer_mult <= 0.0)
+   MqlRates last_bar[1];
+   if(CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, 1, last_bar) != 1) // perf-allowed: closed-bar structural ORB read
       return false;
 
-   // perf-allowed: bounded history availability check for structural PDH/PDL setup.
-   if(Bars(_Symbol, _Period) < strategy_atr_period + 5 || Bars(_Symbol, PERIOD_D1) < 2) // perf-allowed
+   const datetime signal_broker_time = last_bar[0].time;
+   const datetime signal_utc = QM_BrokerToUTC(signal_broker_time);
+   const int ny_offset_hours = QM_IsUSDSTUTC(signal_utc) ? -4 : -5;
+   const datetime signal_ny = signal_utc + (ny_offset_hours * 3600);
+
+   MqlDateTime ny_dt;
+   ZeroMemory(ny_dt);
+   TimeToStruct(signal_ny, ny_dt);
+   const int signal_hhmm = ny_dt.hour * 100 + ny_dt.min;
+   if(signal_hhmm < strategy_entry_start_hhmm || signal_hhmm > strategy_entry_end_hhmm)
       return false;
 
-   // perf-allowed: closed trap-bar date for one-trade-per-day state.
-   const datetime trap_bar_time = iTime(_Symbol, _Period, 1); // perf-allowed
-   if(trap_bar_time <= 0)
+   MqlDateTime ny_or_start = ny_dt;
+   ny_or_start.hour = strategy_or_start_hhmm / 100;
+   ny_or_start.min = strategy_or_start_hhmm % 100;
+   ny_or_start.sec = 0;
+   const datetime or_start_ny = StructToTime(ny_or_start);
+   const datetime or_start_utc = or_start_ny - (ny_offset_hours * 3600);
+   const datetime or_start_broker = QM_UTCToBroker(or_start_utc);
+
+   MqlRates rates[];
+   ArrayResize(rates, 0);
+   const int copied = CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, or_start_broker, signal_broker_time, rates); // perf-allowed: closed-bar OR/VWAP session scan
+   if(copied <= 2)
       return false;
 
-   static int last_trade_day_key = 0;
-   MqlDateTime trap_dt;
-   TimeToStruct(trap_bar_time, trap_dt);
-   const int day_key = trap_dt.year * 10000 + trap_dt.mon * 100 + trap_dt.day;
-   if(last_trade_day_key == day_key)
+   double or_high = -DBL_MAX;
+   double or_low = DBL_MAX;
+   bool have_or = false;
+   double vwap_num = 0.0;
+   double vwap_den = 0.0;
+   double signal_close = 0.0;
+   double prev1_close = 0.0;
+   double prev2_close = 0.0;
+   datetime signal_time = 0;
+   datetime prev1_time = 0;
+   datetime prev2_time = 0;
+   bool earlier_long_break = false;
+   bool earlier_short_break = false;
+
+   for(int i = 0; i < copied; ++i)
+     {
+      const datetime bar_time = rates[i].time;
+      if(bar_time > signal_broker_time)
+         continue;
+
+      const datetime bar_utc = QM_BrokerToUTC(bar_time);
+      const int bar_ny_offset = QM_IsUSDSTUTC(bar_utc) ? -4 : -5;
+      const datetime bar_ny = bar_utc + (bar_ny_offset * 3600);
+      MqlDateTime bar_dt;
+      ZeroMemory(bar_dt);
+      TimeToStruct(bar_ny, bar_dt);
+      const int bar_hhmm = bar_dt.hour * 100 + bar_dt.min;
+
+      if(bar_hhmm >= strategy_or_start_hhmm && bar_hhmm < strategy_or_end_hhmm)
+        {
+         or_high = MathMax(or_high, rates[i].high);
+         or_low = MathMin(or_low, rates[i].low);
+         have_or = true;
+        }
+
+      if(have_or && bar_time < signal_broker_time)
+        {
+         if(rates[i].close > or_high)
+            earlier_long_break = true;
+         if(rates[i].close < or_low)
+            earlier_short_break = true;
+        }
+
+      if(bar_hhmm >= strategy_or_start_hhmm && bar_time <= signal_broker_time)
+        {
+         const double vol = (rates[i].tick_volume > 0) ? (double)rates[i].tick_volume : 1.0;
+         const double typical = (rates[i].high + rates[i].low + rates[i].close) / 3.0;
+         vwap_num += typical * vol;
+         vwap_den += vol;
+        }
+
+      if(bar_time > signal_time)
+        {
+         prev2_time = prev1_time;
+         prev2_close = prev1_close;
+         prev1_time = signal_time;
+         prev1_close = signal_close;
+         signal_time = bar_time;
+         signal_close = rates[i].close;
+        }
+      else if(bar_time > prev1_time)
+        {
+         prev2_time = prev1_time;
+         prev2_close = prev1_close;
+         prev1_time = bar_time;
+         prev1_close = rates[i].close;
+        }
+      else if(bar_time > prev2_time)
+        {
+         prev2_time = bar_time;
+         prev2_close = rates[i].close;
+        }
+     }
+
+   if(!have_or || or_high <= or_low || signal_time != signal_broker_time || prev1_time <= 0)
       return false;
 
-   // perf-allowed: card requires closed structural OHLC levels unavailable through QM indicator readers.
-   const double pdh = iHigh(_Symbol, PERIOD_D1, 1); // perf-allowed
-   const double pdl = iLow(_Symbol, PERIOD_D1, 1); // perf-allowed
-   const double high1 = iHigh(_Symbol, _Period, 1); // perf-allowed
-   const double low1 = iLow(_Symbol, _Period, 1); // perf-allowed
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(strategy_confirmation_bars >= 1 && (prev1_close < or_low || prev1_close > or_high))
+      return false;
+   if(strategy_confirmation_bars >= 2 && (prev2_time <= 0 || prev2_close < or_low || prev2_close > or_high))
+      return false;
+
+   const bool long_break = (signal_close > or_high && prev1_close <= or_high);
+   const bool short_break = (signal_close < or_low && prev1_close >= or_low);
+   if(!long_break && !short_break)
+      return false;
+
+   if(strategy_second_breakout)
+     {
+      if(long_break && (!earlier_long_break || prev1_close < or_low || prev1_close > or_high))
+         return false;
+      if(short_break && (!earlier_short_break || prev1_close < or_low || prev1_close > or_high))
+         return false;
+     }
+
+   const double vwap = (vwap_den > 0.0) ? (vwap_num / vwap_den) : 0.0;
+   if(strategy_filter_mode >= 1)
+     {
+      if(vwap <= 0.0)
+         return false;
+      if(long_break && signal_close <= vwap)
+         return false;
+      if(short_break && signal_close >= vwap)
+         return false;
+     }
+
+   if(strategy_filter_mode >= 2)
+     {
+      const double smma = QM_SMMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_smma_period, 1);
+      if(smma <= 0.0)
+         return false;
+      if(long_break && signal_close <= smma)
+         return false;
+      if(short_break && signal_close >= smma)
+         return false;
+     }
+
+   if(strategy_filter_mode >= 3)
+     {
+      const double macd_main = QM_MACD_Main(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
+      const double macd_sig = QM_MACD_Signal(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
+      const double rsi = QM_RSI(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_rsi_period, 1);
+      if(rsi <= 0.0)
+         return false;
+      if(long_break && (macd_main <= macd_sig || rsi >= strategy_rsi_overbought))
+         return false;
+      if(short_break && (macd_main >= macd_sig || rsi <= strategy_rsi_oversold))
+         return false;
+     }
+
+   const QM_OrderType side = long_break ? QM_BUY : QM_SELL;
+   const double entry = long_break ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
+                                   : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(entry <= 0.0 || point <= 0.0)
+      return false;
+
    const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
-   if(pdh <= 0.0 || pdl <= 0.0 || high1 <= 0.0 || low1 <= 0.0 ||
-      close1 <= 0.0 || ask <= 0.0 || bid <= 0.0 || atr <= 0.0)
+   if(atr <= 0.0 || strategy_atr_sl_mult <= 0.0 || strategy_rr_target <= 0.0)
       return false;
 
-   const double buffer_mult = MathMax(strategy_atr_buffer_mult, strategy_min_atr_buffer_mult);
-   const double buffer = atr * buffer_mult;
+   double stop_distance = atr * strategy_atr_sl_mult;
+   const double or_range = or_high - or_low;
+   if(strategy_cap_at_or_range && strategy_or_cap_mult > 0.0 && or_range > 0.0)
+      stop_distance = MathMin(stop_distance, or_range * strategy_or_cap_mult);
 
-   if(high1 > pdh && close1 < pdh)
-     {
-      const double entry = bid;
-      const double sl = NormalizeDouble(high1 + buffer, _Digits);
-      if(sl <= entry)
-         return false;
+   const int stops_level = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
+   const double min_stop_distance = MathMax(1, stops_level + 2) * point;
+   stop_distance = MathMax(stop_distance, min_stop_distance);
 
-      req.type = QM_SELL;
-      req.price = 0.0;
-      req.sl = sl;
-      req.tp = QM_TakeRR(_Symbol, req.type, entry, req.sl, strategy_rr_target);
-      req.reason = "PDH_TRAP_SHORT";
-      req.symbol_slot = qm_magic_slot_offset;
-      req.expiration_seconds = 0;
-      if(req.tp <= 0.0 || req.tp >= entry)
-         return false;
+   const double adjusted_atr = stop_distance;
+   const double sl = QM_StopATRFromValue(_Symbol, side, entry, adjusted_atr, 1.0);
+   const double tp = QM_TakeRR(_Symbol, side, entry, sl, strategy_rr_target);
+   if(sl <= 0.0 || tp <= 0.0)
+      return false;
 
-      last_trade_day_key = day_key;
-      return true;
-     }
-
-   if(low1 < pdl && close1 > pdl)
-     {
-      const double entry = ask;
-      const double sl = NormalizeDouble(low1 - buffer, _Digits);
-      if(sl <= 0.0 || sl >= entry)
-         return false;
-
-      req.type = QM_BUY;
-      req.price = 0.0;
-      req.sl = sl;
-      req.tp = QM_TakeRR(_Symbol, req.type, entry, req.sl, strategy_rr_target);
-      req.reason = "PDL_TRAP_LONG";
-      req.symbol_slot = qm_magic_slot_offset;
-      req.expiration_seconds = 0;
-      if(req.tp <= entry)
-         return false;
-
-      last_trade_day_key = day_key;
-      return true;
-     }
-
-   return false;
+   req.type = side;
+   req.price = 0.0;
+   req.sl = sl;
+   req.tp = tp;
+   req.reason = long_break ? "NY_ORB_LONG" : "NY_ORB_SHORT";
+   return true;
   }
 
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card has no trailing, break-even, partial close, or scale-out rule.
+   // Card baseline uses fixed SL/TP and no adaptive daily PnL or trailing logic.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   // Card exits through fixed 2R TP, ATR-buffered SL, and framework Friday close.
-   return false;
+   const datetime broker_now = TimeCurrent();
+   const datetime utc_now = QM_BrokerToUTC(broker_now);
+   const int ny_offset_hours = QM_IsUSDSTUTC(utc_now) ? -4 : -5;
+   const datetime ny_now = utc_now + (ny_offset_hours * 3600);
+   MqlDateTime ny_dt;
+   ZeroMemory(ny_dt);
+   TimeToStruct(ny_now, ny_dt);
+   const int hhmm = ny_dt.hour * 100 + ny_dt.min;
+   return (hhmm >= strategy_hard_exit_hhmm);
   }
 
 // Optional news-filter override. Return TRUE to suppress trading regardless
@@ -292,8 +350,6 @@ bool Strategy_ExitSignal()
 // custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   if(broker_time <= 0)
-      return true;
    return false; // defer to QM_NewsAllowsTrade(...)
   }
 
@@ -409,4 +465,3 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-

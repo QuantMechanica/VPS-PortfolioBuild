@@ -4,7 +4,7 @@
 **Slug:** tv-liq-trap
 **Source:** d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7 (see `strategy-seeds/sources/d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-04
+**Last revised:** 2026-06-05
 
 ---
 
@@ -22,10 +22,15 @@ The EA trades failed breaks of the previous daily high and previous daily low. A
 | `strategy_atr_buffer_mult` | 1.0 | 0.5+ tested | ATR multiplier added beyond the trap candle extreme. |
 | `strategy_min_atr_buffer_mult` | 0.5 | 0.5+ | Floor that prevents reducing the stop below the tested ATR buffer floor. |
 | `strategy_rr_target` | 2.0 | 1.5-2.5 tested | Take-profit distance in R from entry. |
-| `strategy_trade_start_hour` | 0 | 0-23 | Broker-hour start for optional session filtering. |
-| `strategy_trade_end_hour` | 24 | 0-24 | Broker-hour end for optional session filtering; start=end means all day. |
+| `strategy_trade_window` | 0 | 0, 1, 2 | Optional session mode: all day, London/NY overlap, or NY only. |
+| `strategy_london_ny_start_minute` | 780 | 0-1439 | Broker-minute start for the London/NY overlap window. |
+| `strategy_london_ny_end_minute` | 1020 | 0-1439 | Broker-minute end for the London/NY overlap window. |
+| `strategy_ny_start_minute` | 870 | 0-1439 | Broker-minute start for the NY-only window. |
+| `strategy_ny_end_minute` | 1260 | 0-1439 | Broker-minute end for the NY-only window. |
+| `strategy_skip_cash_open_minutes` | 0 | 0+ | Optional skip minutes after configured major cash opens; 0 disables. |
+| `strategy_london_open_minute` | 480 | 0-1439 | Broker-minute for London cash open skip filter. |
+| `strategy_ny_cash_open_minute` | 870 | 0-1439 | Broker-minute for NY cash open skip filter. |
 | `strategy_max_spread_points` | 0 | 0+ | Optional spread cap in points; 0 disables the cap. |
-| `strategy_cash_open_skip_minutes` | 0 | 0+ | Optional skip minutes after configured major cash opens; 0 disables. |
 
 ---
 
