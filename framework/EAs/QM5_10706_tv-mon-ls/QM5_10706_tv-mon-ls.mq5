@@ -132,7 +132,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       g_monday_tracking = false;
       g_monday_valid    = false;
      }
-
+   // perf-allowed: closed-bar OHLC reads for the Monday box (structural).
    const double h1 = iHigh(_Symbol, _Period, 1);      // perf-allowed
    const double l1 = iLow(_Symbol, _Period, 1);       // perf-allowed
    if(h1 <= 0.0 || l1 <= 0.0)
@@ -174,7 +174,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    LogicalCalendar(t2, wd2, wi2);
    if(wi2 != g_week_index || wd2 < 2 || wd2 > 5)
       return false;
-
+   // perf-allowed: closed-bar OHLC reads for sweep detection (structural).
    const double h2 = iHigh(_Symbol, _Period, 2);      // perf-allowed
    const double l2 = iLow(_Symbol, _Period, 2);       // perf-allowed
    const double c1 = iClose(_Symbol, _Period, 1);     // perf-allowed
