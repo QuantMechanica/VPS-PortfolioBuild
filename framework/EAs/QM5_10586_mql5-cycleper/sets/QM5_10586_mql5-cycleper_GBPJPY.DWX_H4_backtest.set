@@ -3,16 +3,16 @@
 ; ea_id:        10586
 ; ea_slug:      mql5-cycleper
 ; ea_version:   v5.0
-; set_version:  s20260529-001
+; set_version:  s20260605-001
 ; symbol:       GBPJPY.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   69746a29b096a289985075e0b6651b0845b670c66a77873c709f83f98fa289bd
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-29
+; date:         2026-06-05
 ;==========================================================
 qm_magic_slot_offset=2
 RISK_FIXED=1000
