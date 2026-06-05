@@ -225,7 +225,6 @@ void Strategy_AdvanceState()
    StrategyBand band;
    if(!Strategy_ReadBand(1, band))
       return;
-
    const double high_1 = iHigh(_Symbol, (ENUM_TIMEFRAMES)_Period, 1);  // perf-allowed: single closed-bar band-zigzag pivot read
    const double low_1 = iLow(_Symbol, (ENUM_TIMEFRAMES)_Period, 1);    // perf-allowed: single closed-bar band-zigzag pivot read
    const double close_1 = iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, 1); // perf-allowed: single closed-bar breakout confirmation
