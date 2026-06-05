@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_10727 TradingView D.Y Volume Push Reversal"
+#property description "QM5_10727_v2 TradingView D.Y Volume Push Reversal"
 
 #include <QM/QM_Common.mqh>
 

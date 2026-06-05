@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_10717 Edge Lab Cross-Sectional FX Momentum"
+#property description "QM5_10717_v2 Edge Lab Cross-Sectional FX Momentum"
 
 #include <QM/QM_Common.mqh>
 #include <QM/QM_BasketOrder.mqh>
