@@ -6504,6 +6504,35 @@ def _auto_commit_build_artifacts(root: Path, within_sec: int = 90) -> dict[str, 
     }
 
 
+def _reap_stuck_codex_procs(max_age_min: int = 60) -> dict[str, Any]:
+    """Kill codex/node-codex processes older than max_age_min (OWNER 2026-06-05).
+
+    Stuck codex procs (observed 18h old, twice in one day) hold the build proc-cap
+    (spawn_budget = min(MAX_PARALLEL_CODEX_BUILDS, MAX_PARALLEL_CODEX - active_codex)),
+    driving budget to 0 so NO builds spawn — the EA count silently stops growing for
+    hours. No legit codex invocation runs >60min (build 5-15min, review, 15-min
+    orchestration), so age alone is a safe kill criterion. CODEX ONLY — never claude
+    (a persistent interactive/monitoring claude session would be >60min and must live)."""
+    if sys.platform != "win32":
+        return {"reaped": 0}
+    ps = (
+        "$cut=(Get-Date).AddMinutes(-%d); "
+        "Get-CimInstance Win32_Process | Where-Object { ($_.Name -eq 'codex.exe' -or "
+        "($_.Name -eq 'node.exe' -and $_.CommandLine -match 'codex')) -and $_.CreationDate -lt $cut } | "
+        "ForEach-Object { & taskkill /PID $_.ProcessId /T /F 2>$null | Out-Null; $_.ProcessId }"
+    ) % max_age_min
+    try:
+        out = subprocess.run(
+            ["powershell.exe", "-NoProfile", "-Command", ps],
+            capture_output=True, text=True, timeout=30,
+            creationflags=(subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0),
+        )
+        pids = [ln.strip() for ln in (out.stdout or "").splitlines() if ln.strip().isdigit()]
+        return {"reaped": len(pids), "pids": pids[:20], "max_age_min": max_age_min}
+    except Exception as exc:
+        return {"reaped": 0, "error": repr(exc)}
+
+
 def pump(root: Path) -> dict[str, Any]:
     """Continuous deterministic worker — run every 5 min.
 
@@ -6521,12 +6550,14 @@ def pump(root: Path) -> dict[str, Any]:
     double-spawn.
     """
     init_db(root)
-    # Deterministic artifact commit FIRST — clears the working tree of completed
-    # build/registry/snapshot output before the build guard checks it, so the
-    # build lane stops deadlocking on its own un-committed artifacts.
+    # Reap stuck codex procs FIRST — they hold the build proc-cap and silently
+    # halt all builds (see _reap_stuck_codex_procs). Then deterministic artifact
+    # commit clears the working tree before the build guard checks it.
+    reap_result = _reap_stuck_codex_procs()
     auto_commit_result = _auto_commit_build_artifacts(root)
     result: dict[str, Any] = {
         "pumped_at": utc_now(),
+        "reaped_stuck_procs": reap_result,
         "auto_commit": auto_commit_result,
         "dispatch": None,
         "codex_spawn": None,
