@@ -3,16 +3,16 @@
 ; ea_id:        10705
 ; ea_slug:      tv-liq-trap
 ; ea_version:   v5.0
-; set_version:  s20260531-001
+; set_version:  s20260605-001
 ; symbol:       NDX.DWX
 ; timeframe:    M30
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   52d12cab41025a0161f537e1082443c7915d0288d55d15f280a4b396516454a1
+; build_hash:   2fcce4bb6a6b3657ce98921cdbb8018667702b3f3a84500d6cae3e3adc889604
 ; author:       Development
-; date:         2026-05-31
+; date:         2026-06-05
 ;==========================================================
 qm_magic_slot_offset=3
 RISK_FIXED=1000
@@ -32,4 +32,3 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
-

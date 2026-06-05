@@ -3,16 +3,16 @@
 ; ea_id:        10705
 ; ea_slug:      tv-liq-trap
 ; ea_version:   v5.0
-; set_version:  s20260531-001
+; set_version:  s20260605-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    M30
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   d7b54c44fba7dbf946ab3b3dd1a0ad590c650971d78c6ea7b924f19dad4a681d
+; build_hash:   4ed39540af2b8e8b2840c6180d76d93ae47e39ad3fda0454736e69266d701018
 ; author:       Development
-; date:         2026-05-31
+; date:         2026-06-05
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=1000
@@ -32,4 +32,3 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
-

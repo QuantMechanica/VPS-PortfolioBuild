@@ -104,6 +104,8 @@ datetime g_orb_session_end = 0;
 bool     g_orb_range_ready = false;
 double   g_orb_high = 0.0;
 double   g_orb_low = 0.0;
+bool     g_orb_break_seen_long = false;
+bool     g_orb_break_seen_short = false;
 bool     g_orb_retested_long = false;
 bool     g_orb_retested_short = false;
 bool     g_orb_trade_taken = false;
@@ -157,6 +159,8 @@ void Strategy_SyncSession(const datetime broker_time)
       g_orb_range_ready = false;
       g_orb_high = 0.0;
       g_orb_low = 0.0;
+      g_orb_break_seen_long = false;
+      g_orb_break_seen_short = false;
       g_orb_retested_long = false;
       g_orb_retested_short = false;
       g_orb_trade_taken = false;
@@ -257,6 +261,9 @@ bool Strategy_NoTradeFilter()
   {
    Strategy_SyncSession(TimeCurrent());
 
+   if(Strategy_HasOpenPosition())
+      return false;
+
    if(strategy_session_end_flat && TimeCurrent() >= g_orb_session_end)
       return true;
 
@@ -308,9 +315,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const bool long_breakout = (prior_bar.close <= g_orb_high && closed_bar.close > g_orb_high);
    const bool short_breakout = (prior_bar.close >= g_orb_low && closed_bar.close < g_orb_low);
 
-   if(closed_bar.low <= g_orb_high && closed_bar.close <= g_orb_high)
+   if(long_breakout)
+      g_orb_break_seen_long = true;
+   if(short_breakout)
+      g_orb_break_seen_short = true;
+
+   if(g_orb_break_seen_long && prior_bar.close > g_orb_high &&
+      closed_bar.low <= g_orb_high && closed_bar.close > g_orb_high)
       g_orb_retested_long = true;
-   if(closed_bar.high >= g_orb_low && closed_bar.close >= g_orb_low)
+   if(g_orb_break_seen_short && prior_bar.close < g_orb_low &&
+      closed_bar.high >= g_orb_low && closed_bar.close < g_orb_low)
       g_orb_retested_short = true;
 
    const bool allow_breakout = (strategy_entry_mode == STRATEGY_ENTRY_BREAKOUT_CLOSE ||
