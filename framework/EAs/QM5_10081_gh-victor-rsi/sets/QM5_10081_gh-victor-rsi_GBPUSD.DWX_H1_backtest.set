@@ -3,16 +3,16 @@
 ; ea_id:        10081
 ; ea_slug:      gh-victor-rsi
 ; ea_version:   v5.0
-; set_version:  s20260523-001
+; set_version:  s20260605-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   f68cd067daa48a49262c91acbd9d481cae339a8001b7f670514ed8ffbbd8d45a
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-23
+; date:         2026-06-05
 ;==========================================================
 qm_magic_slot_offset=1
 RISK_FIXED=1000
