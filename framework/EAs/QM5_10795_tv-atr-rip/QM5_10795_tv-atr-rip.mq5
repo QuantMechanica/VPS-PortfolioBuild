@@ -12,7 +12,7 @@
 // QuantMechanica V5 — ATR "Sell the Rip" short-only mean-reversion EA
 // -----------------------------------------------------------------------------
 // Mechanik (card §Mechanik):
-//   TRIGGER : raw_k = close[k] + ATR(atr_period)[k] * atr_mult ; the signal
+//   TRIGGER : raw_k = close[k] + ATR(trig_atr_period)[k] * trig_atr_mult ; the
 //             trigger is the SMA over smooth_period of that raw series.
 //   SHORT   : last closed-bar close is ABOVE the smoothed trigger (overextended
 //             "rip"), price within the trading window, optional EMA(200) filter
@@ -54,8 +54,8 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    atr_period                 = 20;     // ATR period for trigger — card 14/20/30
-input double atr_mult                   = 1.0;    // ATR multiplier in raw trigger — card 0.75/1.0/1.5
+input int    trig_atr_period            = 20;     // ATR period for trigger — card 14/20/30
+input double trig_atr_mult              = 1.0;    // ATR multiplier in raw trigger — card 0.75/1.0/1.5
 input int    smooth_period              = 10;     // SMA smoothing of raw trigger — card 5/10/20
 
 input group "Strategy - Stop / Exit"
@@ -78,16 +78,16 @@ input int    session_end_hour           = 24;     // session window end (broker 
 // Bounded loop, evaluated once per closed bar. Returns 0.0 during warmup.
 double QM_SmoothedTrigger()
   {
-   if(smooth_period < 1 || atr_period < 1)
+   if(smooth_period < 1 || trig_atr_period < 1)
       return 0.0;
    double sum = 0.0;
    for(int k = 1; k <= smooth_period; ++k)
      {
-      const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, atr_period, k);
+      const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, trig_atr_period, k);
       const double cl  = iClose(_Symbol, _Period, k);  // perf-allowed: bespoke ATR-trigger series, no QM_* reader
       if(atr <= 0.0 || cl <= 0.0)
          return 0.0;  // warmup — abort, no signal this bar
-      sum += cl + atr * atr_mult;
+      sum += cl + atr * trig_atr_mult;
      }
    return sum / smooth_period;
   }
@@ -158,7 +158,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double trig = QM_SmoothedTrigger();
    if(trig <= 0.0)
       return false;
-
+   // Compare the just-closed bar's close against the smoothed trigger.
    const double close1 = iClose(_Symbol, _Period, 1);  // perf-allowed: closed-bar close vs trigger
    if(close1 <= 0.0)
       return false;
@@ -199,7 +199,7 @@ bool Strategy_ExitSignal()
    datetime opent = 0;
    if(!QM_OurShort(tkt, opent))
       return false;
-
+   // Source reversal exit: closed-bar close vs the prior bar's low.
    const double close1  = iClose(_Symbol, _Period, 1);  // perf-allowed: source signal exit (closed-bar)
    const double prevlow = iLow(_Symbol, _Period, 2);     // perf-allowed: source signal exit (closed-bar)
    if(close1 > 0.0 && prevlow > 0.0 && close1 < prevlow)
