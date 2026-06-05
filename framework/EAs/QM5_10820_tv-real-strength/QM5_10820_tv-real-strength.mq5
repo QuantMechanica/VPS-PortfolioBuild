@@ -177,7 +177,6 @@ double Strategy_VolumeRatio(const int shift)
   {
    if(strategy_volume_ma_period < 1 || shift < 1)
       return 0.0;
-
    const long last_volume = iVolume(_Symbol, _Period, shift); // perf-allowed: broker tick-volume proxy, bounded closed-bar read.
    if(last_volume <= 0)
       return 0.0;
@@ -202,7 +201,6 @@ double Strategy_RocSign(const int shift)
   {
    if(strategy_roc_period < 1 || shift < 1)
       return 0.0;
-
    const double close_now = iClose(_Symbol, _Period, shift); // perf-allowed: ROC sign needs fixed closed-bar closes.
    const double close_then = iClose(_Symbol, _Period, shift + strategy_roc_period); // perf-allowed: ROC sign needs fixed closed-bar closes.
    if(close_now <= 0.0 || close_then <= 0.0)
