@@ -3416,3 +3416,4 @@ ea_id,slug,strategy_id,status,owner,created_at
 10477,mql5-yday-today,b8b5125a-c67f-5bbc-baff-33456e08f5b2,active,Development,2026-05-28
 10759,tv-scp-score,d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7,active,Development,2026-05-31
 10081,gh-victor-rsi,3b3ec48a-0755-5187-9331-afb36e174175,active,Development,2026-06-05
+10794,tv-atr-st,d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7,active,Development,2026-06-05
