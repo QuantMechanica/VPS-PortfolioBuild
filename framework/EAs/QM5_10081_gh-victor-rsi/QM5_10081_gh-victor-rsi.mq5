@@ -1,45 +1,34 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_10081 GitHub Victor Algo RSI Divergence Reversal"
+#property description "QM5_10081 gh-victor-rsi — RSI/price divergence reversal (Victor Algo)"
+// Strategy Card: QM5_10081 (gh-victor-rsi), G0 APPROVED 2026-05-19.
+// Source: Victor Algo "Divergence Rsi de LeTraderSmart" (GitHub), card source_id
+// 3b3ec48a-0755-5187-9331-afb36e174175.
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA SKELETON
+// QuantMechanica V5 EA — QM5_10081 gh-victor-rsi
 // -----------------------------------------------------------------------------
-// Fill in only the five Strategy_* hooks below. Everything else is framework
-// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
-// risk + magic + news + Friday-close guard rails). The framework provides:
-//
-//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  — closed-bar gate
-//   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
-//     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
-//     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
-//   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
-//   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
-//   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
-//   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
-//   - QM_FrameworkHandleFridayClose / QM_KillSwitchCheck / QM_NewsAllowsTrade
-//
-// DO NOT
-//   - Write per-EA IsNewBar() — use QM_IsNewBar()
-//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
-//     use the QM_* readers above. The framework pools handles and releases them
-//     on shutdown.
-//   - CopyRates over warmup windows on every tick. If you genuinely need raw
-//     bar arrays, gate by QM_IsNewBar so the work runs once per closed bar.
-//   - Hand-edit framework/include/QM/QM_MagicResolver.mqh. After adding rows
-//     to magic_numbers.csv, run:
-//         python framework/scripts/update_magic_resolver.py
-//     This is idempotent and preserves all rows.
+// Mechanical RSI/price divergence reversal, H1 baseline.
+//   Long  : recent price local-low < older price local-low (price lower-low),
+//           recent RSI  local-low > older RSI  local-low  (RSI higher-low),
+//           BOTH RSI local-lows < oversold, latest closed candle bullish.
+//   Short : recent price local-high > older price local-high (price higher-high),
+//           recent RSI  local-high < older RSI  local-high  (RSI lower-high),
+//           BOTH RSI local-highs > overbought, latest closed candle bearish.
+//   Stop  : initial SL = entry * (1 -/+ sl_percent%).
+//   Exit  : percent trailing stop (no fixed TP).
+// One active position per symbol/magic, and no re-entry if an entry deal for
+// this magic already fired on the prior closed bar. Entry is evaluated once per
+// closed bar (framework QM_IsNewBar gate in OnTick). The divergence pivot scan
+// is bespoke structural logic gated to once-per-closed-bar; all raw series reads
+// are routed through the tagged Px* helpers below (// perf-allowed).
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 10081;
 input int    qm_magic_slot_offset       = 0;
-// FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
-// All other phases use 42 by default. Stress / noise dimensions read from
-// this single seed so reproducibility is guaranteed across re-runs.
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
@@ -48,16 +37,10 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-// FW1 2026-05-23 — Two-axis news filter per Vault Q09.
-//   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
-//   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
-// A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
-// Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
-// New EAs use qm_news_temporal + qm_news_compliance above and leave this OFF.
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
@@ -65,149 +48,31 @@ input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Stress"
-// FW2 2026-05-23 — only populated by Q05 MED / Q06 HARSH stress setfiles.
-// Default 0.0 = no rejection (Q02/Q03/Q04/Q07/Q08/Q09/Q10/Q13 backtests).
-// Q06 HARSH sets to 0.10 (10% of entries randomly dropped before broker send,
-// deterministic per qm_rng_seed). MED slip/spread/commission live in the
-// tester groups file, not as EA inputs.
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_rsi_period        = 14;
-input int    strategy_min_lookback      = 20;
-input int    strategy_max_lookback      = 100;
-input double strategy_rsi_low           = 30.0;
-input double strategy_rsi_high          = 70.0;
-input double strategy_trail_percent     = 1.0;
+input int    inp_rsi_period             = 14;     // RSI period (close).
+input double inp_rsi_oversold           = 30.0;   // Buy: both RSI local-lows must be below this.
+input double inp_rsi_overbought         = 70.0;   // Sell: both RSI local-highs must be above this.
+input int    inp_div_lookback_max       = 100;    // Search window in closed candles (card: 20-100).
+input int    inp_pivot_strength         = 2;      // Bars each side that define a local extreme.
+input int    inp_pivot_min_gap          = 5;      // Min bar separation between the two compared pivots.
+input double inp_sl_percent             = 1.0;    // Initial stop distance, percent of entry.
+input double inp_trail_percent          = 1.0;    // Percent trailing stop distance.
 
 // -----------------------------------------------------------------------------
-// Strategy hooks — implement these against the card mechanically.
+// Bespoke series readers. The divergence pivot scan needs raw OHLC of the
+// closed-bar window; these helpers are the ONLY raw-series call sites and are
+// tagged // perf-allowed. They run inside the QM_IsNewBar()-gated entry path
+// (once per closed bar), never per tick.
 // -----------------------------------------------------------------------------
+double   PxLow(const int sh)   { return iLow(_Symbol, _Period, sh); }    // perf-allowed
+double   PxHigh(const int sh)  { return iHigh(_Symbol, _Period, sh); }   // perf-allowed
+double   PxClose(const int sh) { return iClose(_Symbol, _Period, sh); }  // perf-allowed
+double   PxOpen(const int sh)  { return iOpen(_Symbol, _Period, sh); }   // perf-allowed
+datetime PxTime(const int sh)  { return iTime(_Symbol, _Period, sh); }   // perf-allowed
 
-// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
-// regime filter). Cheap O(1) checks only — runs on every tick.
-bool Strategy_NoTradeFilter()
-  {
-   return false;
-  }
-
-// Populate `req` with entry order parameters and return TRUE if a NEW entry
-// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
-// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
-bool Strategy_EntrySignal(QM_EntryRequest &req)
-  {
-   req.type = QM_BUY;
-   req.price = 0.0;
-   req.sl = 0.0;
-   req.tp = 0.0;
-   req.reason = "";
-   req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
-
-   if(strategy_rsi_period < 2 ||
-      strategy_min_lookback < 3 ||
-      strategy_max_lookback < strategy_min_lookback ||
-      strategy_trail_percent <= 0.0)
-      return false;
-
-   if(Strategy_HasPriorBarEntry())
-      return false;
-
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
-      return false;
-
-   const double pct = strategy_trail_percent / 100.0;
-
-   if(Strategy_IsBullishClosedCandle() && Strategy_FindBullishDivergence())
-     {
-      req.type = QM_BUY;
-      req.price = ask;
-      req.sl = Strategy_NormalizePrice(ask * (1.0 - pct));
-      req.reason = "RSI_DIVERGENCE_BUY";
-      return (req.sl > 0.0 && req.sl < req.price);
-     }
-
-   if(Strategy_IsBearishClosedCandle() && Strategy_FindBearishDivergence())
-     {
-      req.type = QM_SELL;
-      req.price = bid;
-      req.sl = Strategy_NormalizePrice(bid * (1.0 + pct));
-      req.reason = "RSI_DIVERGENCE_SELL";
-      return (req.sl > req.price);
-     }
-
-   return false;
-  }
-
-// Called every tick when an open position exists for this EA's magic.
-// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
-void Strategy_ManageOpenPosition()
-  {
-   if(strategy_trail_percent <= 0.0)
-      return;
-
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return;
-
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(point <= 0.0)
-      return;
-
-   const double pct = strategy_trail_percent / 100.0;
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      const double current_sl = PositionGetDouble(POSITION_SL);
-      double target_sl = 0.0;
-
-      if(position_type == POSITION_TYPE_BUY)
-        {
-         const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-         if(bid <= 0.0)
-            continue;
-         target_sl = Strategy_NormalizePrice(bid * (1.0 - pct));
-         if(target_sl > 0.0 && (current_sl <= 0.0 || target_sl > current_sl + point * 0.5))
-            QM_TM_MoveSL(ticket, target_sl, "percent_trailing_stop");
-        }
-      else if(position_type == POSITION_TYPE_SELL)
-        {
-         const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-         if(ask <= 0.0)
-            continue;
-         target_sl = Strategy_NormalizePrice(ask * (1.0 + pct));
-         if(target_sl > 0.0 && (current_sl <= 0.0 || target_sl < current_sl - point * 0.5))
-            QM_TM_MoveSL(ticket, target_sl, "percent_trailing_stop");
-        }
-     }
-  }
-
-// Return TRUE to close the open position now (e.g. opposite-signal exit,
-// max-hold-time exceeded, session end).
-bool Strategy_ExitSignal()
-  {
-   return false;
-  }
-
-// Optional news-filter override. Return TRUE to suppress trading regardless
-// of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
-// custom high-impact-event handling beyond the central filter.
-bool Strategy_NewsFilterHook(const datetime broker_time)
-  {
-   return false; // defer to QM_NewsAllowsTrade(...)
-  }
-
-double Strategy_NormalizePrice(const double price)
+double NormPrice(const double price)
   {
    if(price <= 0.0)
       return 0.0;
@@ -215,44 +80,99 @@ double Strategy_NormalizePrice(const double price)
    return NormalizeDouble(price, digits);
   }
 
-bool Strategy_IsBullishClosedCandle()
+double RsiAt(const int sh)
   {
-   return (iClose(_Symbol, _Period, 1) > iOpen(_Symbol, _Period, 1));
+   return QM_RSI(_Symbol, _Period, inp_rsi_period, sh);
   }
 
-bool Strategy_IsBearishClosedCandle()
+// A local price low at shift `i` is strictly lower than the `s` bars on both
+// sides (more-recent: i-k, older: i+k).
+bool IsPivotLow(const int i, const int s)
   {
-   return (iClose(_Symbol, _Period, 1) < iOpen(_Symbol, _Period, 1));
+   const double li = PxLow(i);
+   if(li <= 0.0)
+      return false;
+   for(int k = 1; k <= s; ++k)
+     {
+      if(!(li < PxLow(i - k)))
+         return false;
+      if(!(li < PxLow(i + k)))
+         return false;
+     }
+   return true;
   }
 
-bool Strategy_IsPivotLow(const int shift)
+bool IsPivotHigh(const int i, const int s)
   {
-   const double low = iLow(_Symbol, _Period, shift);
-   const double low_prev = iLow(_Symbol, _Period, shift + 1);
-   const double low_next = iLow(_Symbol, _Period, shift - 1);
-   const double rsi = QM_RSI(_Symbol, _Period, strategy_rsi_period, shift);
-   const double rsi_prev = QM_RSI(_Symbol, _Period, strategy_rsi_period, shift + 1);
-   const double rsi_next = QM_RSI(_Symbol, _Period, strategy_rsi_period, shift - 1);
-   return (low > 0.0 && low < low_prev && low < low_next &&
-           rsi > 0.0 && rsi < rsi_prev && rsi < rsi_next);
+   const double hi = PxHigh(i);
+   if(hi <= 0.0)
+      return false;
+   for(int k = 1; k <= s; ++k)
+     {
+      if(!(hi > PxHigh(i - k)))
+         return false;
+      if(!(hi > PxHigh(i + k)))
+         return false;
+     }
+   return true;
   }
 
-bool Strategy_IsPivotHigh(const int shift)
+// Most-recent (smallest shift) and next-older pivot lows within the window,
+// separated by at least min_gap bars. Returns false if two cannot be found.
+bool FindTwoPivotLows(const int s, const int max_shift, const int min_gap,
+                      int &recent, int &older)
   {
-   const double high = iHigh(_Symbol, _Period, shift);
-   const double high_prev = iHigh(_Symbol, _Period, shift + 1);
-   const double high_next = iHigh(_Symbol, _Period, shift - 1);
-   const double rsi = QM_RSI(_Symbol, _Period, strategy_rsi_period, shift);
-   const double rsi_prev = QM_RSI(_Symbol, _Period, strategy_rsi_period, shift + 1);
-   const double rsi_next = QM_RSI(_Symbol, _Period, strategy_rsi_period, shift - 1);
-   return (high > 0.0 && high > high_prev && high > high_next &&
-           rsi > 0.0 && rsi > rsi_prev && rsi > rsi_next);
+   recent = -1;
+   older  = -1;
+   const int hi = max_shift - s;
+   for(int i = s + 1; i <= hi; ++i)
+     {
+      if(!IsPivotLow(i, s))
+         continue;
+      if(recent < 0)
+        {
+         recent = i;
+         continue;
+        }
+      if(i - recent >= min_gap)
+        {
+         older = i;
+         return true;
+        }
+     }
+   return false;
   }
 
-bool Strategy_HasPriorBarEntry()
+bool FindTwoPivotHighs(const int s, const int max_shift, const int min_gap,
+                       int &recent, int &older)
   {
-   const datetime bar_start = iTime(_Symbol, _Period, 1);
-   const datetime bar_end = iTime(_Symbol, _Period, 0);
+   recent = -1;
+   older  = -1;
+   const int hi = max_shift - s;
+   for(int i = s + 1; i <= hi; ++i)
+     {
+      if(!IsPivotHigh(i, s))
+         continue;
+      if(recent < 0)
+        {
+         recent = i;
+         continue;
+        }
+      if(i - recent >= min_gap)
+        {
+         older = i;
+         return true;
+        }
+     }
+   return false;
+  }
+
+// Card: do not re-enter if this magic already opened a position on the prior
+// closed bar. Scans closed-deal history for an entry-in deal in [bar1, bar0).
+bool HasPriorBarEntry()
+  {
+   const datetime bar_start = PxTime(1);
+   const datetime bar_end   = PxTime(0);
    if(bar_start <= 0 || bar_end <= bar_start)
       return false;
 
@@ -276,69 +196,161 @@ bool Strategy_HasPriorBarEntry()
    return false;
   }
 
-bool Strategy_FindBullishDivergence()
+// -----------------------------------------------------------------------------
+// Strategy hooks
+// -----------------------------------------------------------------------------
+
+// No Trade Filter — framework news/Friday-close defaults cover this card; no
+// strategy-specific block. Cheap O(1).
+bool Strategy_NoTradeFilter()
   {
-   int recent = -1;
-   const int max_shift = MathMax(strategy_min_lookback, strategy_max_lookback);
-   const int min_older_shift = MathMax(3, strategy_min_lookback);
-
-   for(int shift = 2; shift <= max_shift; ++shift)
-     {
-      if(!Strategy_IsPivotLow(shift))
-         continue;
-
-      if(recent < 0)
-        {
-         recent = shift;
-         continue;
-        }
-
-      if(shift < min_older_shift)
-         continue;
-
-      const double price_recent = iLow(_Symbol, _Period, recent);
-      const double price_older = iLow(_Symbol, _Period, shift);
-      const double rsi_recent = QM_RSI(_Symbol, _Period, strategy_rsi_period, recent);
-      const double rsi_older = QM_RSI(_Symbol, _Period, strategy_rsi_period, shift);
-      if(price_recent < price_older &&
-         rsi_recent > rsi_older &&
-         rsi_recent < strategy_rsi_low &&
-         rsi_older < strategy_rsi_low)
-         return true;
-     }
    return false;
   }
 
-bool Strategy_FindBearishDivergence()
+// Trade Entry — RSI/price divergence reversal. Caller guarantees QM_IsNewBar().
+bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   int recent = -1;
-   const int max_shift = MathMax(strategy_min_lookback, strategy_max_lookback);
-   const int min_older_shift = MathMax(3, strategy_min_lookback);
+   req.type               = QM_BUY;
+   req.price              = 0.0;   // market
+   req.sl                 = 0.0;
+   req.tp                 = 0.0;
+   req.reason             = "";
+   req.symbol_slot        = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
 
-   for(int shift = 2; shift <= max_shift; ++shift)
+   if(inp_pivot_strength < 1 ||
+      inp_div_lookback_max < (inp_pivot_strength + 1 + inp_pivot_min_gap))
+      return false;
+
+   // One active position per symbol/magic, no prior-bar re-entry.
+   const int magic = QM_FrameworkMagic();
+   if(QM_TM_OpenPositionCount(magic) > 0)
+      return false;
+   if(HasPriorBarEntry())
+      return false;
+
+   const double c1 = PxClose(1);
+   const double o1 = PxOpen(1);
+   if(c1 <= 0.0 || o1 <= 0.0)
+      return false;
+
+   // ---- Bullish divergence (long) ----
+   int rl = -1, ol = -1;
+   if(FindTwoPivotLows(inp_pivot_strength, inp_div_lookback_max, inp_pivot_min_gap, rl, ol))
      {
-      if(!Strategy_IsPivotHigh(shift))
-         continue;
-
-      if(recent < 0)
+      const double price_recent = PxLow(rl);
+      const double price_older  = PxLow(ol);
+      const double rsi_recent   = RsiAt(rl);
+      const double rsi_older    = RsiAt(ol);
+      if(rsi_recent > 0.0 && rsi_older > 0.0 &&
+         price_recent < price_older &&                 // price lower-low
+         rsi_recent   > rsi_older &&                    // RSI higher-low (divergence)
+         rsi_recent   < inp_rsi_oversold &&
+         rsi_older    < inp_rsi_oversold &&
+         c1 > o1)                                       // bullish confirmation candle
         {
-         recent = shift;
-         continue;
-        }
-
-      if(shift < min_older_shift)
-         continue;
-
-      const double price_recent = iHigh(_Symbol, _Period, recent);
-      const double price_older = iHigh(_Symbol, _Period, shift);
-      const double rsi_recent = QM_RSI(_Symbol, _Period, strategy_rsi_period, recent);
-      const double rsi_older = QM_RSI(_Symbol, _Period, strategy_rsi_period, shift);
-      if(price_recent > price_older &&
-         rsi_recent < rsi_older &&
-         rsi_recent > strategy_rsi_high &&
-         rsi_older > strategy_rsi_high)
+         const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+         if(ask <= 0.0)
+            return false;
+         const double sl = NormPrice(ask * (1.0 - inp_sl_percent / 100.0));
+         if(sl <= 0.0 || sl >= ask)
+            return false;
+         req.type   = QM_BUY;
+         req.price  = 0.0;
+         req.sl     = sl;
+         req.tp     = 0.0;
+         req.reason = "gh-victor-rsi DIV LONG";
          return true;
+        }
      }
+
+   // ---- Bearish divergence (short) ----
+   int rh = -1, oh = -1;
+   if(FindTwoPivotHighs(inp_pivot_strength, inp_div_lookback_max, inp_pivot_min_gap, rh, oh))
+     {
+      const double price_recent = PxHigh(rh);
+      const double price_older  = PxHigh(oh);
+      const double rsi_recent   = RsiAt(rh);
+      const double rsi_older    = RsiAt(oh);
+      if(rsi_recent > 0.0 && rsi_older > 0.0 &&
+         price_recent > price_older &&                 // price higher-high
+         rsi_recent   < rsi_older &&                    // RSI lower-high (divergence)
+         rsi_recent   > inp_rsi_overbought &&
+         rsi_older    > inp_rsi_overbought &&
+         c1 < o1)                                       // bearish confirmation candle
+        {
+         const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+         if(bid <= 0.0)
+            return false;
+         const double sl = NormPrice(bid * (1.0 + inp_sl_percent / 100.0));
+         if(sl <= bid)
+            return false;
+         req.type   = QM_SELL;
+         req.price  = 0.0;
+         req.sl     = sl;
+         req.tp     = 0.0;
+         req.reason = "gh-victor-rsi DIV SHORT";
+         return true;
+        }
+     }
+
+   return false;
+  }
+
+// Trade Management — percent trailing stop. Runs per tick (O(1) per position).
+void Strategy_ManageOpenPosition()
+  {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return;
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(point <= 0.0)
+      return;
+   const double trail = inp_trail_percent / 100.0;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+
+      const ENUM_POSITION_TYPE pt = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const double cur_sl = PositionGetDouble(POSITION_SL);
+
+      if(pt == POSITION_TYPE_BUY)
+        {
+         const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+         if(bid <= 0.0)
+            continue;
+         const double target = NormPrice(bid * (1.0 - trail));
+         if(target > 0.0 && (cur_sl <= 0.0 || target > cur_sl + point * 0.5))   // ratchet up only
+            QM_TM_MoveSL(ticket, target, "gh-victor-rsi trail");
+        }
+      else if(pt == POSITION_TYPE_SELL)
+        {
+         const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+         if(ask <= 0.0)
+            continue;
+         const double target = NormPrice(ask * (1.0 + trail));
+         if(target > 0.0 && (cur_sl <= 0.0 || target < cur_sl - point * 0.5))   // ratchet down only
+            QM_TM_MoveSL(ticket, target, "gh-victor-rsi trail");
+        }
+     }
+  }
+
+// Trade Close — no discretionary exit; exits via trailing SL + framework Friday close.
+bool Strategy_ExitSignal()
+  {
+   return false;
+  }
+
+// News Filter Hook — defer to the central two-axis framework news filter.
+bool Strategy_NewsFilterHook(const datetime broker_time)
+  {
    return false;
   }
 
@@ -366,7 +378,7 @@ int OnInit()
                         qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_10081\",\"ea\":\"gh-victor-rsi\"}");
    return INIT_SUCCEEDED;
   }
 
