@@ -5655,3 +5655,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10811,tv-inakis-bb,4,GDAXI.DWX,108110004,2026-06-05,Development,active
 10811,tv-inakis-bb,5,NDX.DWX,108110005,2026-06-05,Development,active
 10811,tv-inakis-bb,6,WS30.DWX,108110006,2026-06-05,Development,active
+10812,tv-bb-atrtrail,0,EURUSD.DWX,108120000,2026-06-05,Development,active
+10812,tv-bb-atrtrail,1,GBPUSD.DWX,108120001,2026-06-05,Development,active
+10812,tv-bb-atrtrail,2,USDJPY.DWX,108120002,2026-06-05,Development,active
+10812,tv-bb-atrtrail,3,XAUUSD.DWX,108120003,2026-06-05,Development,active
+10812,tv-bb-atrtrail,4,GDAXI.DWX,108120004,2026-06-05,Development,active
+10812,tv-bb-atrtrail,5,NDX.DWX,108120005,2026-06-05,Development,active
+10812,tv-bb-atrtrail,6,WS30.DWX,108120006,2026-06-05,Development,active
