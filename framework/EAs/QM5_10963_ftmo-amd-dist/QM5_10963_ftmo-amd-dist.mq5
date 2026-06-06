@@ -63,6 +63,9 @@ input double strat_sweep_atr_mult       = 0.25;  // sweep depth past range edge 
 input double strat_sl_atr_buffer        = 0.2;   // SL buffer past manipulation extreme (* ATR)
 input double strat_vol_confirm_mult     = 1.2;   // breakout volume >= mult * 20-bar avg
 input double strat_tp_r_mult            = 2.5;   // final TP at mult * R
+input int    strat_h1_swing_lookback    = 12;    // H1 bars scanned for the swing-high/low TP cap
+input double strat_tp1_r_mult           = 1.0;   // TP1 distance in R (partial profit + break-even)
+input double strat_tp1_partial_frac     = 0.5;   // fraction of position banked at TP1
 input int    strat_ema_fast             = 50;    // H1 bias fast EMA
 input int    strat_ema_slow             = 200;   // H1 bias slow EMA
 
@@ -92,8 +95,8 @@ bool     g_attempted          = false;   // one AMD attempt per symbol/session
 
 // Open-trade tracking (set at entry, read per tick by management/exit).
 int      g_active_session     = 0;       // session the open trade belongs to
-double   g_r_distance         = 0.0;     // 1R in price units, for break-even
-bool     g_be_done            = false;   // SL already moved to break-even
+double   g_r_distance         = 0.0;     // 1R in price units, for TP1 / break-even
+bool     g_be_done            = false;   // TP1 handled (partial banked + SL at BE)
 
 int BrokerHhmm(const datetime t)
   {
@@ -126,10 +129,38 @@ int H1Bias()
    return 0;
   }
 
-bool FindOurPosition(ulong &ticket, ENUM_POSITION_TYPE &ptype, double &open_price)
+// Nearest H1 swing-high above price over the last N closed H1 bars (TP cap for
+// longs). Bounded loop, evaluated once at entry — not on the per-tick path.
+double SwingHighH1(const int lookback)
+  {
+   double hi = 0.0;
+   for(int i = 1; i <= lookback; ++i)
+     {
+      const double h = iHigh(_Symbol, PERIOD_H1, i);   // perf-allowed: H1 swing-high TP cap, once per entry
+      if(h > hi) hi = h;
+     }
+   return hi;
+  }
+
+// Nearest H1 swing-low below price over the last N closed H1 bars (TP cap for
+// shorts). Bounded loop, evaluated once at entry — not on the per-tick path.
+double SwingLowH1(const int lookback)
+  {
+   double lo = 0.0;
+   for(int i = 1; i <= lookback; ++i)
+     {
+      const double l = iLow(_Symbol, PERIOD_H1, i);   // perf-allowed: H1 swing-low TP cap, once per entry
+      if(l <= 0.0) continue;
+      if(lo == 0.0 || l < lo) lo = l;
+     }
+   return lo;
+  }
+
+bool FindOurPosition(ulong &ticket, ENUM_POSITION_TYPE &ptype, double &open_price, double &volume)
   {
    ticket = 0;
    open_price = 0.0;
+   volume = 0.0;
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
       return false;
@@ -145,6 +176,7 @@ bool FindOurPosition(ulong &ticket, ENUM_POSITION_TYPE &ptype, double &open_pric
          continue;
       ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+      volume = PositionGetDouble(POSITION_VOLUME);
       ticket = t;
       return true;
      }
@@ -314,10 +346,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
             if(ask <= 0.0 || sl <= 0.0 || ask <= sl)
               { g_phase = AMD_DONE; return false; }
             const double r = ask - sl;
+            // Final TP = 2.5R, capped by the next H1 swing high if it is nearer
+            // (card: "2.5R or the next H1 swing high/low, whichever comes first").
+            double tp = ask + strat_tp_r_mult * r;
+            const double swing_hi = SwingHighH1(strat_h1_swing_lookback);
+            if(swing_hi > ask && swing_hi < tp)
+               tp = swing_hi;
             req.type   = QM_BUY;
             req.price  = 0.0;
             req.sl     = sl;
-            req.tp     = ask + strat_tp_r_mult * r;
+            req.tp     = tp;
             req.reason = "AMD_LONG_DIST";
             g_active_session = g_cur_session;
             g_r_distance = r;
@@ -339,10 +377,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
             if(bid <= 0.0 || sl <= bid)
               { g_phase = AMD_DONE; return false; }
             const double r = sl - bid;
+            // Final TP = 2.5R, capped by the next H1 swing low if it is nearer
+            // (card: "2.5R or the next H1 swing high/low, whichever comes first").
+            double tp = bid - strat_tp_r_mult * r;
+            const double swing_lo = SwingLowH1(strat_h1_swing_lookback);
+            if(swing_lo > 0.0 && swing_lo < bid && swing_lo > tp)
+               tp = swing_lo;
             req.type   = QM_SELL;
             req.price  = 0.0;
             req.sl     = sl;
-            req.tp     = bid - strat_tp_r_mult * r;
+            req.tp     = tp;
             req.reason = "AMD_SHORT_DIST";
             g_active_session = g_cur_session;
             g_r_distance = r;
@@ -358,15 +402,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    return false;
   }
 
-// Trade Management. Per-tick, O(1): once price reaches +1R, move SL to
-// break-even (card: "move SL to breakeven after TP1 touch"). Final TP (2.5R)
-// is carried on the order itself.
+// Trade Management. Per-tick, O(1): once price reaches TP1 (+1R) bank a partial
+// (card: "TP1 at 1.0R") and lift SL to break-even (card: "move SL to breakeven
+// after TP1 touch"). The runner's final TP (2.5R / H1 swing) is on the order.
 void Strategy_ManageOpenPosition()
   {
    ulong ticket;
    ENUM_POSITION_TYPE ptype;
    double open_price;
-   if(!FindOurPosition(ticket, ptype, open_price))
+   double volume;
+   if(!FindOurPosition(ticket, ptype, open_price, volume))
      {
       g_active_session = 0;   // flat — clear trade tracking
       return;
@@ -374,24 +419,23 @@ void Strategy_ManageOpenPosition()
    if(g_be_done || g_r_distance <= 0.0 || open_price <= 0.0)
       return;
 
-   if(ptype == POSITION_TYPE_BUY)
-     {
-      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      if(bid > 0.0 && (bid - open_price) >= g_r_distance)
-        {
-         if(QM_TM_MoveSL(ticket, open_price, "BE_after_1R"))
-            g_be_done = true;
-        }
-     }
-   else
-     {
-      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      if(ask > 0.0 && (open_price - ask) >= g_r_distance)
-        {
-         if(QM_TM_MoveSL(ticket, open_price, "BE_after_1R"))
-            g_be_done = true;
-        }
-     }
+   const bool is_buy = (ptype == POSITION_TYPE_BUY);
+   const double mkt  = is_buy ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
+                              : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   if(mkt <= 0.0)
+      return;
+   const double moved = is_buy ? (mkt - open_price) : (open_price - mkt);
+   if(moved < strat_tp1_r_mult * g_r_distance)
+      return;
+
+   // TP1 reached: bank the partial (skipped automatically if the remaining lot
+   // would fall below the broker minimum), then move SL to break-even. Mark
+   // handled either way so this fires once.
+   const double partial = volume * strat_tp1_partial_frac;
+   if(partial > 0.0)
+      QM_TM_PartialClose(ticket, partial, QM_EXIT_PARTIAL);
+   QM_TM_MoveSL(ticket, open_price, "BE_after_TP1");
+   g_be_done = true;
   }
 
 // Trade Close. Per-tick, O(1): time-exit at end of the active session. The

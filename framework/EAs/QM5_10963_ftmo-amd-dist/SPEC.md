@@ -21,9 +21,11 @@ least 0.25× ATR beyond the accumulation edge. After such a manipulation sweep, 
 price closes back inside the range and then closes beyond the opposite accumulation
 edge on a bar whose tick volume is ≥ 1.2× its 20-bar average (all within 6 M15 bars),
 the EA enters at market in the bias direction. Stop loss sits 0.2× ATR beyond the
-manipulation extreme; the final take-profit is 2.5× R, the stop is moved to
-break-even once price reaches +1R, and any open trade is closed at the end of the
-active session. One attempt per symbol per session.
+manipulation extreme. The final take-profit is 2.5× R, capped by the next H1
+swing high/low when that level is nearer than the 2.5R target ("whichever comes
+first"). At +1R (TP1) a partial (default 50%) is banked and the stop is moved to
+break-even; any remaining position is closed at the end of the active session.
+One attempt per symbol per session.
 
 ---
 
@@ -46,6 +48,9 @@ active session. One attempt per symbol per session.
 | `strat_sl_atr_buffer` | 0.2 | 0.0-1.0 | SL buffer past manipulation extreme (× ATR) |
 | `strat_vol_confirm_mult` | 1.2 | 1.0-2.0 | Breakout volume ≥ mult × 20-bar average |
 | `strat_tp_r_mult` | 2.5 | 1.0-5.0 | Final take-profit at mult × R |
+| `strat_h1_swing_lookback` | 12 | 4-48 | H1 bars scanned for the swing-high/low TP cap |
+| `strat_tp1_r_mult` | 1.0 | 0.5-2.0 | TP1 distance in R (partial profit + break-even) |
+| `strat_tp1_partial_frac` | 0.5 | 0.0-1.0 | Fraction of the position banked at TP1 |
 | `strat_ema_fast` | 50 | 10-100 | H1 bias fast EMA period |
 | `strat_ema_slow` | 200 | 100-400 | H1 bias slow EMA period |
 
@@ -114,3 +119,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-06 | Initial build from card | 9d53c11a-621d-4d81-b842-03a07fe8d7d5 |
+| v2 | 2026-06-06 | Card-faithful TP1 partial close + H1-swing TP cap (review rework) | 9d53c11a-621d-4d81-b842-03a07fe8d7d5 |
