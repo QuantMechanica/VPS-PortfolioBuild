@@ -135,6 +135,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    MqlRates h4_rates[];
    ArrayResize(d1_rates, d1_count);
    ArrayResize(h4_rates, h4_count);
+   ArraySetAsSeries(d1_rates, true);
+   ArraySetAsSeries(h4_rates, true);
 
    // perf-allowed: bounded structural OHLC reads, called only by the framework
    // after QM_IsNewBar() passes.
@@ -163,8 +165,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(current_d1_atr <= 0.0 || current_d1_atr < atr_values[percentile_index])
       return false;
 
-   const int d1_latest_idx = d1_count - 1;
-   const double d1_close_1 = d1_rates[d1_latest_idx].close;
+   const double d1_close_1 = d1_rates[0].close;
    const double d1_ema_fast_1 = QM_EMA(_Symbol, PERIOD_D1, strategy_d1_fast_ema, 1);
    const double d1_ema_slow_1 = QM_EMA(_Symbol, PERIOD_D1, strategy_d1_slow_ema, 1);
    if(d1_close_1 <= 0.0 || d1_ema_fast_1 <= 0.0 || d1_ema_slow_1 <= 0.0)
@@ -181,7 +182,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    bool short_below_slow = true;
    for(int shift = 1; shift <= strategy_d1_pullback_bars; ++shift)
      {
-      const int idx = d1_count - shift;
+      const int idx = shift - 1;
       pullback_high = MathMax(pullback_high, d1_rates[idx].high);
       pullback_low = MathMin(pullback_low, d1_rates[idx].low);
 
@@ -200,7 +201,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const int impulse_end_shift = strategy_d1_pullback_bars + strategy_d1_impulse_bars;
    for(int shift = impulse_start_shift; shift <= impulse_end_shift; ++shift)
      {
-      const int idx = d1_count - shift;
+      const int idx = shift - 1;
       impulse_high = MathMax(impulse_high, d1_rates[idx].high);
       impulse_low = MathMin(impulse_low, d1_rates[idx].low);
      }
@@ -209,10 +210,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(impulse_range <= 0.0)
       return false;
 
-   const int d1_shift2_idx = d1_count - 2;
-   const int d1_shift3_idx = d1_count - 3;
-   const double prior_2bar_high = MathMax(d1_rates[d1_shift2_idx].high, d1_rates[d1_shift3_idx].high);
-   const double prior_2bar_low = MathMin(d1_rates[d1_shift2_idx].low, d1_rates[d1_shift3_idx].low);
+   const double prior_2bar_high = MathMax(d1_rates[1].high, d1_rates[2].high);
+   const double prior_2bar_low = MathMin(d1_rates[1].low, d1_rates[2].low);
 
    const double long_retrace = (impulse_high - pullback_low) / impulse_range;
    const double short_retrace = (pullback_high - impulse_low) / impulse_range;
@@ -240,8 +239,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(h4_atr <= 0.0)
       return false;
 
-   const int h4_breakout_idx = h4_count - 1;
-   const double trigger_close = h4_rates[h4_breakout_idx].close;
+   const double trigger_close = h4_rates[0].close;
    if(trigger_close <= 0.0)
       return false;
 
@@ -261,7 +259,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
       for(int shift = 2; shift <= pause_bars + 1; ++shift)
         {
-         const int idx = h4_count - shift;
+         const int idx = shift - 1;
          pause_high = MathMax(pause_high, h4_rates[idx].high);
          pause_low = MathMin(pause_low, h4_rates[idx].low);
 
@@ -395,7 +393,8 @@ bool Strategy_ExitSignal()
 
    MqlRates last_h4[];
    ArrayResize(last_h4, 1);
-   if(CopyRates(_Symbol, PERIOD_H4, 1, 1, last_h4) != 1)
+   ArraySetAsSeries(last_h4, true);
+   if(CopyRates(_Symbol, PERIOD_H4, 1, 1, last_h4) != 1) // perf-allowed: one closed H4 bar for the exit check while a position is open.
       return false;
 
    const double h4_ema_fast = QM_EMA(_Symbol, PERIOD_H4, strategy_d1_fast_ema, 1);
