@@ -5916,3 +5916,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10884,risk-carry-3x3,4,USDCAD.DWX,108840004,2026-06-06,Development,active
 10884,risk-carry-3x3,5,USDCHF.DWX,108840005,2026-06-06,Development,active
 10884,risk-carry-3x3,6,NZDUSD.DWX,108840006,2026-06-06,Development,active
+10886,risk-comm-rot,0,XAUUSD.DWX,108860000,2026-06-06,Development,active
+10886,risk-comm-rot,1,XAGUSD.DWX,108860001,2026-06-06,Development,active
+10886,risk-comm-rot,2,XTIUSD.DWX,108860002,2026-06-06,Development,active
+10886,risk-comm-rot,3,XNGUSD.DWX,108860003,2026-06-06,Development,active
