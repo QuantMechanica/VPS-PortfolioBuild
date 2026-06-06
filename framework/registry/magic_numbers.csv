@@ -6159,3 +6159,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10965,ftmo-morn-star,1,USDJPY.DWX,109650001,2026-06-06,Development,active
 10965,ftmo-morn-star,2,GBPUSD.DWX,109650002,2026-06-06,Development,active
 10965,ftmo-morn-star,3,XAUUSD.DWX,109650003,2026-06-06,Development,active
+10966,ftmo-even-star,0,EURUSD.DWX,109660000,2026-06-06,Development,active
+10966,ftmo-even-star,1,USDJPY.DWX,109660001,2026-06-06,Development,active
+10966,ftmo-even-star,2,GBPUSD.DWX,109660002,2026-06-06,Development,active
+10966,ftmo-even-star,3,XAUUSD.DWX,109660003,2026-06-06,Development,active

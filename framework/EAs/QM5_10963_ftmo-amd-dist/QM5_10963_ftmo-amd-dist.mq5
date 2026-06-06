@@ -77,7 +77,6 @@ input int    strat_ema_slow             = 200;   // H1 bias slow EMA
 #define AMD_DONE         4
 
 int      g_phase              = AMD_IDLE;
-datetime g_last_proc_bar      = 0;       // closed-bar dedupe guard
 int      g_cur_session        = 0;       // 1 = London, 2 = NY, 0 = none
 int      g_acc_count          = 0;
 double   g_acc_high           = 0.0;
@@ -192,9 +191,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
    const datetime bar_t = iTime(_Symbol, _Period, 1);   // perf-allowed: closed-bar timestamp for session gating
-   if(bar_t <= 0 || bar_t == g_last_proc_bar)
+   if(bar_t <= 0)
       return false;
-   g_last_proc_bar = bar_t;
    const double bar_high  = iHigh(_Symbol, _Period, 1);    // perf-allowed: bespoke AMD range, new-bar gated
    const double bar_low   = iLow(_Symbol, _Period, 1);     // perf-allowed: bespoke AMD range, new-bar gated
    const double bar_close = iClose(_Symbol, _Period, 1);   // perf-allowed: bespoke AMD reclaim, new-bar gated
