@@ -8,6 +8,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10853,tv-trendpulse-obv,2,GDAXI.DWX,108530002,2026-06-06,Development,active
 10853,tv-trendpulse-obv,3,XAUUSD.DWX,108530003,2026-06-06,Development,active
 10853,tv-trendpulse-obv,4,EURUSD.DWX,108530004,2026-06-06,Development,active
+10924,grimes-mac-spike,0,SP500.DWX,109240000,2026-06-06,Development,active
+10924,grimes-mac-spike,1,NDX.DWX,109240001,2026-06-06,Development,active
+10924,grimes-mac-spike,2,GDAXI.DWX,109240002,2026-06-06,Development,active
+10924,grimes-mac-spike,3,XAUUSD.DWX,109240003,2026-06-06,Development,active
 1255,zarattini-qqq-orb,0,NDX.DWX,12550000,2026-05-26,Development,active
 1247,fuertes-comm-tsmom,0,XAUUSD.DWX,12470000,2026-05-26,Development,active
 1247,fuertes-comm-tsmom,1,XAGUSD.DWX,12470001,2026-05-26,Development,active
@@ -5987,3 +5991,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10922,grimes-kc-fade,1,NDX.DWX,109220001,2026-06-06,Development,active
 10922,grimes-kc-fade,2,GDAXI.DWX,109220002,2026-06-06,Development,active
 10922,grimes-kc-fade,3,XAUUSD.DWX,109220003,2026-06-06,Development,active
+10923,grimes-donchian,0,EURUSD.DWX,109230000,2026-06-06,Development,active
+10923,grimes-donchian,1,GBPUSD.DWX,109230001,2026-06-06,Development,active
+10923,grimes-donchian,2,USDJPY.DWX,109230002,2026-06-06,Development,active
+10923,grimes-donchian,3,XAUUSD.DWX,109230003,2026-06-06,Development,active
+10923,grimes-donchian,4,XTIUSD.DWX,109230004,2026-06-06,Development,active
