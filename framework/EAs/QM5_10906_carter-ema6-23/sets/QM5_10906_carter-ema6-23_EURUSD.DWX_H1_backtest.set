@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        10904
-; ea_slug:      carter-wpr-smma
+; ea_id:        10906
+; ea_slug:      carter-ema6-23
 ; ea_version:   v5.0
 ; set_version:  s20260606-001
-; symbol:       GBPUSD.DWX
+; symbol:       EURUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
-; magic_slot:   1
+; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   4157e9478c3ce24f7767a0f6c0dd250337a881b23358ce835a2c0cc484c4e3f6
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-06-06
 ;==========================================================
-qm_magic_slot_offset=1
+qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
