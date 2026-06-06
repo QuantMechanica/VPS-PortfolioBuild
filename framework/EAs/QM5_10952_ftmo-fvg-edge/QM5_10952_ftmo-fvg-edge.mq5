@@ -91,9 +91,39 @@ input double strategy_max_spread_stop_fraction = 0.12;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
+   // Keep management and time exits live for existing exposure; block only fresh flat-session entries.
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return true;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+         return false;
+     }
+
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0 || !OrderSelect(ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+
+      const ENUM_ORDER_TYPE order_type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
+      if(order_type == ORDER_TYPE_BUY_LIMIT || order_type == ORDER_TYPE_SELL_LIMIT)
+         return false;
+     }
+
    MqlDateTime dt;
    TimeToStruct(TimeCurrent(), dt);
-
    if(dt.day_of_week == 0 || dt.day_of_week == 6)
       return true;
 
@@ -103,8 +133,10 @@ bool Strategy_NoTradeFilter()
    const bool ny = (strategy_ny_start_hour <= strategy_ny_end_hour)
                    ? (dt.hour >= strategy_ny_start_hour && dt.hour < strategy_ny_end_hour)
                    : (dt.hour >= strategy_ny_start_hour || dt.hour < strategy_ny_end_hour);
+   if(london || ny)
+      return false;
 
-   return !(london || ny);
+   return true;
   }
 
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
@@ -119,6 +151,20 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.reason = "";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = MathMax(1, strategy_pending_expiry_bars) * PeriodSeconds((ENUM_TIMEFRAMES)_Period);
+
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(), dt);
+   if(dt.day_of_week == 0 || dt.day_of_week == 6)
+      return false;
+
+   const bool london = (strategy_london_start_hour <= strategy_london_end_hour)
+                       ? (dt.hour >= strategy_london_start_hour && dt.hour < strategy_london_end_hour)
+                       : (dt.hour >= strategy_london_start_hour || dt.hour < strategy_london_end_hour);
+   const bool ny = (strategy_ny_start_hour <= strategy_ny_end_hour)
+                   ? (dt.hour >= strategy_ny_start_hour && dt.hour < strategy_ny_end_hour)
+                   : (dt.hour >= strategy_ny_start_hour || dt.hour < strategy_ny_end_hour);
+   if(!(london || ny))
+      return false;
 
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
@@ -142,9 +188,26 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          continue;
       if(OrderGetString(ORDER_SYMBOL) != _Symbol)
          continue;
-      if((int)OrderGetInteger(ORDER_MAGIC) == magic)
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+
+      const ENUM_ORDER_TYPE order_type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
+      if(order_type == ORDER_TYPE_BUY_LIMIT || order_type == ORDER_TYPE_SELL_LIMIT)
          return false;
      }
+
+   const int bar_seconds = PeriodSeconds((ENUM_TIMEFRAMES)_Period);
+   if(bar_seconds <= 0)
+      return false;
+
+   // perf-allowed: fixed three-bar timestamp check prevents overnight/weekend FVG gaps.
+   const datetime t1 = iTime(_Symbol, _Period, 1); // perf-allowed
+   const datetime t2 = iTime(_Symbol, _Period, 2); // perf-allowed
+   const datetime t3 = iTime(_Symbol, _Period, 3); // perf-allowed
+   if(t1 <= 0 || t2 <= 0 || t3 <= 0)
+      return false;
+   if((t1 - t2) != bar_seconds || (t2 - t3) != bar_seconds)
+      return false;
 
    // perf-allowed: bespoke FVG three-candle structural rule, called only after framework QM_IsNewBar().
    const double gap_low_1 = iLow(_Symbol, _Period, 1);      // perf-allowed
@@ -172,6 +235,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       const double stop_dist = entry - sl;
       if(stop_dist <= 0.0)
          return false;
+      if(ask <= entry)
+         return false;
       if(spread > stop_dist * strategy_max_spread_stop_fraction)
          return false;
 
@@ -189,6 +254,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       const double sl = mid_high;
       const double stop_dist = sl - entry;
       if(stop_dist <= 0.0)
+         return false;
+      if(bid >= entry)
          return false;
       if(spread > stop_dist * strategy_max_spread_stop_fraction)
          return false;
@@ -211,6 +278,31 @@ void Strategy_ManageOpenPosition()
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
       return;
+
+   const int bar_seconds = PeriodSeconds((ENUM_TIMEFRAMES)_Period);
+   if(bar_seconds > 0)
+     {
+      const int expiry_seconds = MathMax(1, strategy_pending_expiry_bars) * bar_seconds;
+      const datetime now = TimeCurrent();
+      for(int i = OrdersTotal() - 1; i >= 0; --i)
+        {
+         const ulong ticket = OrderGetTicket(i);
+         if(ticket == 0 || !OrderSelect(ticket))
+            continue;
+         if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+            continue;
+         if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+            continue;
+
+         const ENUM_ORDER_TYPE order_type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
+         if(order_type != ORDER_TYPE_BUY_LIMIT && order_type != ORDER_TYPE_SELL_LIMIT)
+            continue;
+
+         const datetime setup_time = (datetime)OrderGetInteger(ORDER_TIME_SETUP);
+         if(setup_time > 0 && now - setup_time >= expiry_seconds)
+            QM_TM_RemovePendingOrder(ticket, "ftmo_fvg_pending_expired");
+        }
+     }
 
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    if(point <= 0.0)
@@ -244,8 +336,12 @@ void Strategy_ManageOpenPosition()
 
       const double be_sl = open_price;
       const bool be_improves = is_buy ? (be_sl > current_sl + point * 0.5) : (be_sl < current_sl - point * 0.5);
+      double active_sl = current_sl;
       if(be_improves)
+        {
          QM_TM_MoveSL(ticket, be_sl, "ftmo_fvg_tp1_breakeven");
+         active_sl = be_sl;
+        }
 
       // perf-allowed: latest same-direction FVG trail check uses only three closed bars and no history scan.
       const double gap_low_1 = iLow(_Symbol, _Period, 1);      // perf-allowed
@@ -256,10 +352,15 @@ void Strategy_ManageOpenPosition()
       const double mid_high = iHigh(_Symbol, _Period, 2);      // perf-allowed
       const double first_high = iHigh(_Symbol, _Period, 3);    // perf-allowed
       const double first_low = iLow(_Symbol, _Period, 3);      // perf-allowed
+      if(gap_low_1 <= 0.0 || gap_high_1 <= 0.0 || mid_open <= 0.0 || mid_close <= 0.0 ||
+         mid_low <= 0.0 || mid_high <= 0.0 || first_high <= 0.0 || first_low <= 0.0)
+         continue;
 
-      if(is_buy && gap_low_1 > first_high && mid_close > mid_open && mid_low > current_sl + point * 0.5)
+      if(is_buy && gap_low_1 > first_high && mid_close > mid_open &&
+         mid_low > active_sl + point * 0.5 && mid_low < market - point)
          QM_TM_MoveSL(ticket, mid_low, "ftmo_fvg_bull_trail");
-      if(!is_buy && gap_high_1 < first_low && mid_close < mid_open && mid_high < current_sl - point * 0.5)
+      if(!is_buy && gap_high_1 < first_low && mid_close < mid_open &&
+         mid_high < active_sl - point * 0.5 && mid_high > market + point)
          QM_TM_MoveSL(ticket, mid_high, "ftmo_fvg_bear_trail");
      }
   }
