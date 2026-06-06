@@ -6104,3 +6104,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10951,rentech-short-revert,3,XAGUSD.DWX,109510003,2026-06-06,Development,active
 10951,rentech-short-revert,4,GDAXI.DWX,109510004,2026-06-06,Development,active
 10951,rentech-short-revert,5,NDX.DWX,109510005,2026-06-06,Development,active
+10952,ftmo-fvg-edge,0,EURUSD.DWX,109520000,2026-06-06,Development,active
+10952,ftmo-fvg-edge,1,GBPUSD.DWX,109520001,2026-06-06,Development,active
+10952,ftmo-fvg-edge,2,XAUUSD.DWX,109520002,2026-06-06,Development,active
+10952,ftmo-fvg-edge,3,NDX.DWX,109520003,2026-06-06,Development,active
