@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        10848
-; ea_slug:      tv-mtf-ambush
+; ea_id:        10849
+; ea_slug:      tv-smema-sovereign
 ; ea_version:   v5.0
 ; set_version:  s20260606-001
-; symbol:       XAUUSD.DWX
-; timeframe:    H1
+; symbol:       EURUSD.DWX
+; timeframe:    M30
 ; environment:  backtest
-; magic_slot:   2
+; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   ec6f08d4e7970739cd059855aadfd7ee8f57b753185d2cd0351429708c4d0003
+; build_hash:   42f6fe4a408afdc8db1a4a1a69517896a0581c5354065600efe666c0e011bf9a
 ; author:       Development
 ; date:         2026-06-06
 ;==========================================================
-qm_magic_slot_offset=2
+qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
