@@ -5936,3 +5936,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10910,grimes-pullback,2,XAUUSD.DWX,109100002,2026-06-06,Development,active
 10910,grimes-pullback,3,GDAXI.DWX,109100003,2026-06-06,Development,active
 10910,grimes-pullback,4,NDX.DWX,109100004,2026-06-06,Development,active
+10911,grimes-complex-pb,0,EURUSD.DWX,109110000,2026-06-06,Development,active
+10911,grimes-complex-pb,1,GBPUSD.DWX,109110001,2026-06-06,Development,active
+10911,grimes-complex-pb,2,XAUUSD.DWX,109110002,2026-06-06,Development,active
+10911,grimes-complex-pb,3,GDAXI.DWX,109110003,2026-06-06,Development,active
