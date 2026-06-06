@@ -6087,3 +6087,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10943,grimes-trendday,1,NDX.DWX,109430001,2026-06-06,Development,active
 10943,grimes-trendday,2,WS30.DWX,109430002,2026-06-06,Development,active
 10943,grimes-trendday,3,GDAXI.DWX,109430003,2026-06-06,Development,active
+10944,grimes-time-trend,0,SP500.DWX,109440000,2026-06-06,Development,active
+10944,grimes-time-trend,1,NDX.DWX,109440001,2026-06-06,Development,active
+10944,grimes-time-trend,2,WS30.DWX,109440002,2026-06-06,Development,active
+10944,grimes-time-trend,3,GDAXI.DWX,109440003,2026-06-06,Development,active
