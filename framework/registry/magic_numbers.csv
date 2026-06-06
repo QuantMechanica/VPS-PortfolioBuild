@@ -6016,3 +6016,17 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10928,grimes-yoyo-break,2,USDJPY.DWX,109280002,2026-06-06,Development,active
 10928,grimes-yoyo-break,3,GDAXI.DWX,109280003,2026-06-06,Development,active
 10928,grimes-yoyo-break,4,XAUUSD.DWX,109280004,2026-06-06,Development,active
+10930,grimes-nr7-orb,0,SP500.DWX,109300000,2026-06-06,Development,active
+10930,grimes-nr7-orb,1,NDX.DWX,109300001,2026-06-06,Development,active
+10930,grimes-nr7-orb,2,WS30.DWX,109300002,2026-06-06,Development,active
+10930,grimes-nr7-orb,3,GDAXI.DWX,109300003,2026-06-06,Development,active
+10931,grimes-band-snap,0,EURUSD.DWX,109310000,2026-06-06,Development,active
+10931,grimes-band-snap,1,GBPUSD.DWX,109310001,2026-06-06,Development,active
+10931,grimes-band-snap,2,USDJPY.DWX,109310002,2026-06-06,Development,active
+10931,grimes-band-snap,3,XAUUSD.DWX,109310003,2026-06-06,Development,active
+10931,grimes-band-snap,4,GDAXI.DWX,109310004,2026-06-06,Development,active
+10929,grimes-clearair,0,SP500.DWX,109290000,2026-06-06,Development,active
+10929,grimes-clearair,1,NDX.DWX,109290001,2026-06-06,Development,active
+10929,grimes-clearair,2,WS30.DWX,109290002,2026-06-06,Development,active
+10929,grimes-clearair,3,GDAXI.DWX,109290003,2026-06-06,Development,active
+10929,grimes-clearair,4,XAUUSD.DWX,109290004,2026-06-06,Development,active
