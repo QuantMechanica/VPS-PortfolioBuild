@@ -102,7 +102,11 @@ struct Strategy_CrackSetup
    double sl;
   };
 
-double D1Open(const int shift)  { return iOpen(_Symbol, PERIOD_D1, shift); }   // perf-allowed: bounded D1 flag/crack structure read from framework-gated entry path.
+// Bespoke D1/H4 OHLC structure reads for flag/crack/break detection. No
+// framework helper covers flag geometry; reads are bounded (<= flag_max bars)
+// and run on the framework-gated entry path. Kept contiguous (no blank line
+// before the first reader) so build_check's perf scanner attributes the
+// '// perf-allowed' tag to the correct line.
 double D1High(const int shift)  { return iHigh(_Symbol, PERIOD_D1, shift); }   // perf-allowed: bounded D1 flag/crack structure read from framework-gated entry path.
 double D1Low(const int shift)   { return iLow(_Symbol, PERIOD_D1, shift); }    // perf-allowed: bounded D1 flag/crack structure read from framework-gated entry path.
 double D1Close(const int shift) { return iClose(_Symbol, PERIOD_D1, shift); }  // perf-allowed: bounded D1 flag/crack structure read from framework-gated entry path.
