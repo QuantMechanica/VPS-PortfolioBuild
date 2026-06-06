@@ -19,9 +19,9 @@ The EA trades M15 index continuation only near the session open and close. It co
 | Parameter | Default | Range | Meaning |
 |---|---:|---|---|
 | strategy_tf | PERIOD_M15 | M15 recommended | Signal, ATR, and VWAP-proxy timeframe. |
-| strategy_session_open_hour | 15 | 0-23 | Broker-time hour for the cash/session open proxy. |
+| strategy_session_open_hour | 16 | 0-23 | Broker-time hour for the cash/session open proxy (09:30 ET + 7 = 16:30 server). |
 | strategy_session_open_minute | 30 | 0-59 | Broker-time minute for the cash/session open proxy. |
-| strategy_session_close_hour | 22 | 0-23 | Broker-time hour for the cash/session close proxy. |
+| strategy_session_close_hour | 23 | 0-23 | Broker-time hour for the cash/session close proxy (16:00 ET + 7 = 23:00 server). |
 | strategy_session_close_minute | 0 | 0-59 | Broker-time minute for the cash/session close proxy. |
 | strategy_window_minutes | 90 | 1-240 | Morning and afternoon active-window length. |
 | strategy_atr_period | 20 | 2-200 | ATR period for signal range and stop filters. |
