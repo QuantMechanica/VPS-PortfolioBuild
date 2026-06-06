@@ -5365,7 +5365,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10781,tv-orb-100ema,4,XAUUSD.DWX,107810004,2026-06-05,Codex,active
 10781,tv-orb-100ema,5,GDAXI.DWX,107810005,2026-06-05,Codex,active
 10781,tv-orb-100ema,6,NDX.DWX,107810006,2026-06-05,Codex,active
-
 1099,dax-weekly-donchian50-breakout,1,AUDNZD.DWX,10990001,2026-06-03,Development,active
 1099,dax-weekly-donchian50-breakout,2,AUDUSD.DWX,10990002,2026-06-03,Development,active
 1099,dax-weekly-donchian50-breakout,3,CADCHF.DWX,10990003,2026-06-03,Development,active
@@ -5855,12 +5854,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10856,tv-xiznit-er,2,GDAXI.DWX,108560002,2026-06-06,Development,active
 10856,tv-xiznit-er,3,XAUUSD.DWX,108560003,2026-06-06,Development,active
 10856,tv-xiznit-er,4,XAGUSD.DWX,108560004,2026-06-06,Development,active
-10857,tv-qing-lrc,0,EURUSD.DWX,108570000,2026-06-06,Development,active
-10857,tv-qing-lrc,1,GBPUSD.DWX,108570001,2026-06-06,Development,active
-10857,tv-qing-lrc,2,XAUUSD.DWX,108570002,2026-06-06,Development,active
-10857,tv-qing-lrc,3,NDX.DWX,108570003,2026-06-06,Development,active
-10857,tv-qing-lrc,4,GDAXI.DWX,108570004,2026-06-06,Development,active
-
 10857,tv-qing-lrc,0,EURUSD.DWX,108570000,2026-06-06,Development,active
 10857,tv-qing-lrc,1,GBPUSD.DWX,108570001,2026-06-06,Development,active
 10857,tv-qing-lrc,2,XAUUSD.DWX,108570002,2026-06-06,Development,active
