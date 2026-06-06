@@ -6098,3 +6098,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10950,rentech-short-trend,4,XTIUSD.DWX,109500004,2026-06-06,Development,active
 10950,rentech-short-trend,5,GDAXI.DWX,109500005,2026-06-06,Development,active
 10950,rentech-short-trend,6,NDX.DWX,109500006,2026-06-06,Development,active
+10951,rentech-short-revert,0,EURUSD.DWX,109510000,2026-06-06,Development,active
+10951,rentech-short-revert,1,GBPUSD.DWX,109510001,2026-06-06,Development,active
+10951,rentech-short-revert,2,XAUUSD.DWX,109510002,2026-06-06,Development,active
+10951,rentech-short-revert,3,XAGUSD.DWX,109510003,2026-06-06,Development,active
+10951,rentech-short-revert,4,GDAXI.DWX,109510004,2026-06-06,Development,active
+10951,rentech-short-revert,5,NDX.DWX,109510005,2026-06-06,Development,active
