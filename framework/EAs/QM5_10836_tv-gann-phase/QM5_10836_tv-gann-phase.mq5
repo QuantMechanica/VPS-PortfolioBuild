@@ -58,9 +58,13 @@ input StrategyEntryMode strategy_entry_mode          = ENTRY_MEDIUM;
 
 // -----------------------------------------------------------------------------
 // Strategy helpers for the card's automatic pivot and phase logic.
-// Raw OHLC reads are perf-allowed because pivot structure is bespoke and
-// Strategy_EntrySignal is called only behind the framework QM_IsNewBar gate.
+// A compact MqlRates cache is refreshed once per Strategy_EntrySignal call.
+// The framework calls that hook only after QM_IsNewBar(), keeping pivot scans
+// bounded to one closed-bar pass instead of the per-tick path.
 // -----------------------------------------------------------------------------
+
+MqlRates g_strategy_rates[];
+int      g_strategy_rates_count = 0;
 
 void Strategy_InitEntryRequest(QM_EntryRequest &req)
   {
@@ -73,19 +77,66 @@ void Strategy_InitEntryRequest(QM_EntryRequest &req)
    req.expiration_seconds = 0;
   }
 
+bool Strategy_LoadRates()
+  {
+   g_strategy_rates_count = 0;
+
+   const int radius = (strategy_pivot_lookback > 1) ? strategy_pivot_lookback : 1;
+   const int min_scan = radius + 2;
+   const int scan = (strategy_pivot_scan_bars > min_scan) ? strategy_pivot_scan_bars : min_scan;
+   const int bars_needed = scan + radius + 3;
+
+   ArrayFree(g_strategy_rates);
+   ArraySetAsSeries(g_strategy_rates, true);
+   const int copied = CopyRates(_Symbol, _Period, 0, bars_needed, g_strategy_rates); // perf-allowed: bespoke pivot cache, called only from the framework new-bar entry hook.
+   if(copied < bars_needed)
+      return false;
+
+   g_strategy_rates_count = copied;
+   return true;
+  }
+
+double Strategy_BarHigh(const int shift)
+  {
+   if(shift < 0 || shift >= g_strategy_rates_count)
+      return 0.0;
+   return g_strategy_rates[shift].high;
+  }
+
+double Strategy_BarLow(const int shift)
+  {
+   if(shift < 0 || shift >= g_strategy_rates_count)
+      return 0.0;
+   return g_strategy_rates[shift].low;
+  }
+
+double Strategy_BarOpen(const int shift)
+  {
+   if(shift < 0 || shift >= g_strategy_rates_count)
+      return 0.0;
+   return g_strategy_rates[shift].open;
+  }
+
+double Strategy_BarClose(const int shift)
+  {
+   if(shift < 0 || shift >= g_strategy_rates_count)
+      return 0.0;
+   return g_strategy_rates[shift].close;
+  }
+
 bool Strategy_IsPivotHigh(const int shift, const int radius)
   {
    if(shift <= radius || radius <= 0)
       return false;
 
-   const double center = iHigh(_Symbol, _Period, shift); // perf-allowed
+   const double center = Strategy_BarHigh(shift);
    if(center <= 0.0)
       return false;
 
    for(int j = 1; j <= radius; ++j)
      {
-      const double newer = iHigh(_Symbol, _Period, shift - j); // perf-allowed
-      const double older = iHigh(_Symbol, _Period, shift + j); // perf-allowed
+      const double newer = Strategy_BarHigh(shift - j);
+      const double older = Strategy_BarHigh(shift + j);
       if(newer <= 0.0 || older <= 0.0)
          return false;
       if(center <= newer || center <= older)
@@ -100,14 +151,14 @@ bool Strategy_IsPivotLow(const int shift, const int radius)
    if(shift <= radius || radius <= 0)
       return false;
 
-   const double center = iLow(_Symbol, _Period, shift); // perf-allowed
+   const double center = Strategy_BarLow(shift);
    if(center <= 0.0)
       return false;
 
    for(int j = 1; j <= radius; ++j)
      {
-      const double newer = iLow(_Symbol, _Period, shift - j); // perf-allowed
-      const double older = iLow(_Symbol, _Period, shift + j); // perf-allowed
+      const double newer = Strategy_BarLow(shift - j);
+      const double older = Strategy_BarLow(shift + j);
       if(newer <= 0.0 || older <= 0.0)
          return false;
       if(center >= newer || center >= older)
@@ -136,16 +187,16 @@ bool Strategy_FindPivot(const bool want_high,
       if(want_high)
         {
          if(!Strategy_IsPivotHigh(shift, radius))
-            continue;
+         continue;
          pivot_shift = shift;
-         pivot_price = iHigh(_Symbol, _Period, shift); // perf-allowed
+         pivot_price = Strategy_BarHigh(shift);
          return (pivot_price > 0.0);
         }
 
       if(!Strategy_IsPivotLow(shift, radius))
          continue;
       pivot_shift = shift;
-      pivot_price = iLow(_Symbol, _Period, shift); // perf-allowed
+      pivot_price = Strategy_BarLow(shift);
       return (pivot_price > 0.0);
      }
 
@@ -262,6 +313,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_tp_rr <= 0.0)
       return false;
 
+   if(!Strategy_LoadRates())
+      return false;
+
    bool bullish_swing = false;
    StrategyPhase phase = PHASE_ACCUM;
    StrategyPhase previous_phase = PHASE_ACCUM;
@@ -272,8 +326,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    const double ema_fast = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_ema_fast, 1);
    const double ema_slow = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_ema_slow, 1);
-   const double open1 = iOpen(_Symbol, _Period, 1); // perf-allowed
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed
+   const double open1 = Strategy_BarOpen(1);
+   const double close1 = Strategy_BarClose(1);
    if(ema_fast <= 0.0 || ema_slow <= 0.0 || open1 <= 0.0 || close1 <= 0.0)
       return false;
 
