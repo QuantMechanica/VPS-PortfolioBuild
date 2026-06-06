@@ -113,6 +113,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_atr_buffer_mult <= 0.0 || strategy_target_r <= 0.0)
       return false;
 
+   // Read the just-closed sweep/reclaim bars (perf-allowed structural reads, QM_IsNewBar-gated).
    const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: bespoke sweep/reclaim bar read, framework-gated by QM_IsNewBar().
    const double high1 = iHigh(_Symbol, _Period, 1);   // perf-allowed: bespoke sweep/reclaim bar read, framework-gated by QM_IsNewBar().
    const double low1 = iLow(_Symbol, _Period, 1);     // perf-allowed: bespoke sweep/reclaim bar read, framework-gated by QM_IsNewBar().
