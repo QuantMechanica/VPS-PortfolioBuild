@@ -1,7 +1,7 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        10932
-; ea_slug:      grimes-volshock
+; ea_id:        10933
+; ea_slug:      grimes-cup-hndl
 ; ea_version:   v5.0
 ; set_version:  s20260606-001
 ; symbol:       EURUSD.DWX
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   4aec53a95f9e1e579aa3c278f830e4b9cb8f0391db679cfb43c68aab3665ac22
+; build_hash:   9ffddebd6d95ece41a2a727e2b46f8baefdbf25d5c8889a58a923a9ffbc9b933
 ; author:       Development
 ; date:         2026-06-06
 ;==========================================================
