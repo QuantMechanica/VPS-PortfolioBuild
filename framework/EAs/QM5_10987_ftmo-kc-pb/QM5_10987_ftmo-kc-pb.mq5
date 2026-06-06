@@ -88,47 +88,64 @@ input double strategy_trail_trigger_r       = 1.5;
 input int    strategy_max_hold_bars         = 48;
 input double strategy_spread_median_mult    = 1.5;
 
+double g_strategy_spread_median_points = 0.0;
+double g_strategy_two_bar_swing_low = 0.0;
+double g_strategy_two_bar_swing_high = 0.0;
+
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
-// regime filter). Cheap O(1) checks only — runs on every tick.
-bool Strategy_NoTradeFilter()
+bool Strategy_ReadRecentH1(MqlRates &rates[], const int bars_needed)
   {
-   // No Trade Filter (time, spread, news): no card time filter; framework handles news.
-   // perf-allowed: card requires current spread <= 1.5x median of the last 20 H1 spreads.
-   if(strategy_spread_median_mult <= 0.0)
+   if(bars_needed <= 0)
       return false;
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, PERIOD_H1, 0, bars_needed, rates); // perf-allowed: bounded H1 OHLC/spread snapshot inside framework new-bar entry hook.
+   return (copied >= bars_needed);
+  }
 
-   const long current_spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-   if(current_spread <= 0)
-      return false;
+double Strategy_MedianSpread(const MqlRates &rates[], const int first_shift, const int bars)
+  {
+   if(bars <= 0)
+      return 0.0;
 
    double spreads[];
-   ArrayResize(spreads, 20);
+   ArrayResize(spreads, bars);
    int count = 0;
-   for(int shift = 1; shift <= 20; ++shift)
+   for(int i = 0; i < bars; ++i)
      {
-      const long spread = iSpread(_Symbol, PERIOD_H1, shift);
+      const int idx = first_shift + i;
+      const int spread = rates[idx].spread;
       if(spread <= 0)
          continue;
       spreads[count] = (double)spread;
       count++;
      }
 
-   if(count < 10)
-      return false;
+   if(count < MathMax(3, bars / 2))
+      return 0.0;
 
    ArrayResize(spreads, count);
    ArraySort(spreads);
-   const double median = (count % 2 == 1)
-                         ? spreads[count / 2]
-                         : 0.5 * (spreads[count / 2 - 1] + spreads[count / 2]);
-   if(median <= 0.0)
+   if(count % 2 == 1)
+      return spreads[count / 2];
+   return 0.5 * (spreads[count / 2 - 1] + spreads[count / 2]);
+  }
+
+// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
+// regime filter). Cheap O(1) checks only — runs on every tick.
+bool Strategy_NoTradeFilter()
+  {
+   // No Trade Filter (time, spread, news): no card time filter; framework handles news.
+   if(strategy_spread_median_mult <= 0.0 || g_strategy_spread_median_points <= 0.0)
       return false;
 
-   return ((double)current_spread > median * strategy_spread_median_mult);
+   const long current_spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+   if(current_spread <= 0)
+      return false;
+
+   return ((double)current_spread > g_strategy_spread_median_points * strategy_spread_median_mult);
   }
 
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
@@ -172,12 +189,26 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double upper2 = ema2 + strategy_keltner_atr_mult * atr2;
    const double lower2 = ema2 - strategy_keltner_atr_mult * atr2;
 
-   // perf-allowed: fixed closed-bar OHLC reads are required for the card's candle-close rules.
-   const double open1 = iOpen(_Symbol, tf, 1);    // perf-allowed
-   const double high1 = iHigh(_Symbol, tf, 1);    // perf-allowed
-   const double low1 = iLow(_Symbol, tf, 1);      // perf-allowed
-   const double close1 = iClose(_Symbol, tf, 1);  // perf-allowed
-   const double close2 = iClose(_Symbol, tf, 2);  // perf-allowed
+   MqlRates rates[];
+   if(!Strategy_ReadRecentH1(rates, 22))
+      return false;
+
+   g_strategy_spread_median_points = Strategy_MedianSpread(rates, 1, 20);
+   g_strategy_two_bar_swing_low = MathMin(rates[1].low, rates[2].low);
+   g_strategy_two_bar_swing_high = MathMax(rates[1].high, rates[2].high);
+
+   const long current_spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+   if(strategy_spread_median_mult > 0.0 &&
+      g_strategy_spread_median_points > 0.0 &&
+      current_spread > 0 &&
+      (double)current_spread > g_strategy_spread_median_points * strategy_spread_median_mult)
+      return false;
+
+   const double open1 = rates[1].open;
+   const double high1 = rates[1].high;
+   const double low1 = rates[1].low;
+   const double close1 = rates[1].close;
+   const double close2 = rates[2].close;
    if(open1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0 || close1 <= 0.0 || close2 <= 0.0)
       return false;
 
@@ -332,15 +363,10 @@ void Strategy_ManageOpenPosition()
 
       if(favorable >= strategy_trail_trigger_r * tracked_risk)
         {
-         // perf-allowed: fixed two-bar swing trail from the card, no history scan.
-         const double low1 = iLow(_Symbol, PERIOD_H1, 1);    // perf-allowed
-         const double low2 = iLow(_Symbol, PERIOD_H1, 2);    // perf-allowed
-         const double high1 = iHigh(_Symbol, PERIOD_H1, 1);  // perf-allowed
-         const double high2 = iHigh(_Symbol, PERIOD_H1, 2);  // perf-allowed
-         if(low1 <= 0.0 || low2 <= 0.0 || high1 <= 0.0 || high2 <= 0.0)
+         if(g_strategy_two_bar_swing_low <= 0.0 || g_strategy_two_bar_swing_high <= 0.0)
             continue;
 
-         const double raw_trail = is_buy ? MathMin(low1, low2) : MathMax(high1, high2);
+         const double raw_trail = is_buy ? g_strategy_two_bar_swing_low : g_strategy_two_bar_swing_high;
          const double trail_sl = QM_TM_NormalizePrice(_Symbol, raw_trail);
          const bool improves = is_buy ? (trail_sl > current_sl + 0.5 * point && trail_sl < market)
                                       : (trail_sl < current_sl - 0.5 * point && trail_sl > market);
