@@ -6040,3 +6040,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10933,grimes-cup-hndl,2,USDJPY.DWX,109330002,2026-06-06,Development,active
 10933,grimes-cup-hndl,3,NDX.DWX,109330003,2026-06-06,Development,active
 10933,grimes-cup-hndl,4,GDAXI.DWX,109330004,2026-06-06,Development,active
+10934,grimes-pong,0,GDAXI.DWX,109340000,2026-06-06,Development,active
+10934,grimes-pong,1,NDX.DWX,109340001,2026-06-06,Development,active
+10934,grimes-pong,2,WS30.DWX,109340002,2026-06-06,Development,active
+10934,grimes-pong,3,XAUUSD.DWX,109340003,2026-06-06,Development,active
+10934,grimes-pong,4,XTIUSD.DWX,109340004,2026-06-06,Development,active
