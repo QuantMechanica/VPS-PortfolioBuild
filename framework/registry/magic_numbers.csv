@@ -6210,3 +6210,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10989,ftmo-bo-retest,1,GBPUSD.DWX,109890001,2026-06-07,Development,active
 10989,ftmo-bo-retest,2,GDAXI.DWX,109890002,2026-06-07,Development,active
 10989,ftmo-bo-retest,3,NDX.DWX,109890003,2026-06-07,Development,active
+10992,ftmo-cci-fvg,0,EURUSD.DWX,109920000,2026-06-07,Development,active
+10992,ftmo-cci-fvg,1,GBPUSD.DWX,109920001,2026-06-07,Development,active
+10992,ftmo-cci-fvg,2,XAUUSD.DWX,109920002,2026-06-07,Development,active
+10992,ftmo-cci-fvg,3,NDX.DWX,109920003,2026-06-07,Development,active
