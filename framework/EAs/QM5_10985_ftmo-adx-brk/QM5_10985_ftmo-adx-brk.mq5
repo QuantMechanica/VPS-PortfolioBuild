@@ -255,10 +255,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
+   static ulong  tracked_ticket = 0;
+   static double best_close_since_entry = 0.0;
+
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
       return;
 
+   bool found_position = false;
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -269,11 +273,27 @@ void Strategy_ManageOpenPosition()
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
 
+      found_position = true;
       const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
       const double current_tp = PositionGetDouble(POSITION_TP);
       if(open_price <= 0.0 || current_tp <= 0.0)
          continue;
+
+      if(tracked_ticket != ticket)
+        {
+         tracked_ticket = ticket;
+         best_close_since_entry = open_price;
+        }
+
+      const double close_1 = QM_SMA(_Symbol, PERIOD_H1, 1, 1);
+      if(close_1 > 0.0)
+        {
+         if(position_type == POSITION_TYPE_BUY)
+            best_close_since_entry = MathMax(best_close_since_entry, close_1);
+         else
+            best_close_since_entry = MathMin(best_close_since_entry, close_1);
+        }
 
       // Initial risk R recovered from the entry geometry (TP = entry + 2R, fixed
       // at open and never moved), so no per-trade file-scope state is required.
@@ -288,11 +308,28 @@ void Strategy_ManageOpenPosition()
                                ? (market_price - open_price)
                                : (open_price - market_price);
 
-      // Card: trail after +1.5R using 2*ATR. QM_TM_TrailATR trails the SL to
-      // market -/+ 2*ATR and only ever tightens (favourable-only), which is the
-      // framework primitive closest to the card's "2*ATR from the extreme close".
+      // Card: trail after +1.5R using 2*ATR from the highest/lowest close since entry.
       if(favorable >= strategy_trail_trigger_r * original_r)
-         QM_TM_TrailATR(ticket, strategy_atr_period, strategy_trail_atr_mult);
+        {
+         const double atr = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
+         if(atr <= 0.0 || best_close_since_entry <= 0.0)
+            continue;
+
+         const double raw_sl = (position_type == POSITION_TYPE_BUY)
+                               ? (best_close_since_entry - strategy_trail_atr_mult * atr)
+                               : (best_close_since_entry + strategy_trail_atr_mult * atr);
+         const double new_sl = QM_TM_NormalizePrice(_Symbol, raw_sl);
+         if(new_sl <= 0.0)
+            continue;
+
+         QM_TM_MoveSL(ticket, new_sl, "adx_breakout_close_extreme_atr_trail");
+        }
+     }
+
+   if(!found_position)
+     {
+      tracked_ticket = 0;
+      best_close_since_entry = 0.0;
      }
   }
 
