@@ -5815,3 +5815,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10847,tv-inside-gem,2,XAUUSD.DWX,108470002,2026-06-06,Development,active
 10847,tv-inside-gem,3,GDAXI.DWX,108470003,2026-06-06,Development,active
 10847,tv-inside-gem,4,NDX.DWX,108470004,2026-06-06,Development,active
+10848,tv-mtf-ambush,0,EURUSD.DWX,108480000,2026-06-06,Development,active
+10848,tv-mtf-ambush,1,GBPUSD.DWX,108480001,2026-06-06,Development,active
+10848,tv-mtf-ambush,2,XAUUSD.DWX,108480002,2026-06-06,Development,active
+10848,tv-mtf-ambush,3,GDAXI.DWX,108480003,2026-06-06,Development,active
+10848,tv-mtf-ambush,4,NDX.DWX,108480004,2026-06-06,Development,active
