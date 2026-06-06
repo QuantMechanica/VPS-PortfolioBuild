@@ -3,14 +3,14 @@
 **EA ID:** QM5_1086
 **Slug:** `aa-dpm-tmom-ma`
 **Source:** `ede348b4-0fa7-5be1-baa8-09e9089b67b7` (see `sources/alpha-architect-blog`)
-**Author of this spec:** Codex
+**Author of this spec:** Claude (Development)
 **Last revised:** 2026-06-06
 
 ---
 
 ## 1. Strategy Logic
 
-The EA evaluates the last closed monthly bar on the first D1 bar of each new calendar month. It computes 12-month total return minus a configurable 12-month cash proxy and compares the same monthly close with its 12-month simple moving average. If both signals are positive it enters long with 100% of the strategy risk budget; if exactly one is positive it enters long with 50% of the strategy risk budget; if neither is positive it stays in cash. Existing positions are closed on each monthly rollover, then the current target exposure is reopened if the signal is still above zero.
+The EA runs natively on the MN1 chart so the framework new-bar gate fires once per monthly close — that gate is the monthly rebalance. On each rebalance it computes the 12-month total return minus a configurable cash proxy (TMOM) and compares the last monthly close with its 12-month simple moving average (MA). If both signals are positive it holds long at 100% of the strategy risk budget; if exactly one is positive it holds long at 50% of the risk budget; if neither is positive it goes to cash. The 50%/100% ladder is realised by scaling the framework risk weight (so a 50% state risks half of RISK_FIXED). The position is HELD across months while exposure is unchanged; the rebalance hook closes on a cash signal and closes-then-reopens on the same bar when the target exposure changes. A per-position D1-ATR stop is the catastrophic backstop (the source uses signal-based cash switching as the primary exit).
 
 ---
 
@@ -20,8 +20,8 @@ The EA evaluates the last closed monthly bar on the first D1 bar of each new cal
 |---|---:|---|---|
 | `strategy_lookback_months` | 12 | 1-60 | Monthly lookback used for total return and SMA length. |
 | `strategy_cash_return_12m_pct` | 0.0 | -10.0-20.0 | 12-month cash return proxy subtracted from total return, in percent. |
-| `strategy_atr_period_d1` | 20 | 2-100 | D1 ATR period used for the framework stop. |
-| `strategy_atr_sl_mult` | 4.0 | 0.5-20.0 | ATR multiple for the initial stop loss. |
+| `strategy_atr_period` | 14 | 2-100 | D1 ATR period used for the per-position catastrophic stop. |
+| `strategy_atr_sl_mult` | 3.0 | 0.5-20.0 | ATR multiple for the initial stop loss. |
 | `strategy_max_spread_points` | 5000 | 0-100000 | Maximum allowed spread in points at monthly entry; 0 disables this guard. |
 
 Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md`.
@@ -54,9 +54,9 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md`.
 
 | Aspect | Value |
 |---|---|
-| Base timeframe | `D1` |
-| Multi-timeframe refs | `PERIOD_MN1` for monthly total return and SMA, `PERIOD_D1` for ATR stop |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) plus `QM_IsNewBar(_Symbol, PERIOD_MN1)` for monthly close cadence |
+| Base timeframe | `MN1` |
+| Multi-timeframe refs | `PERIOD_MN1` for monthly total return and 12-month SMA; `PERIOD_D1` for the ATR stop |
+| Bar gating | Single `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` gate (PERIOD_CURRENT = MN1) = the monthly rebalance; no second QM_IsNewBar call (the tracker is consuming) |
 
 ---
 
@@ -99,4 +99,5 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-06 | Initial build from card | 4c937a7c-3bc6-4f6a-b805-9757b0e85fcf |
+| v1 | 2026-06-06 | Initial build from card | (prior task) |
+| v2 | 2026-06-06 | Rebuild-in-place (DL-069): MN1-native single new-bar gate (prior D1+MN1 dual gate / month-rollover detection produced 0 trades); exposure ladder via risk-weight scaling; rebalance close+reopen centralised in the new-bar-gated hook | 4c937a7c-3bc6-4f6a-b805-9757b0e85fcf |

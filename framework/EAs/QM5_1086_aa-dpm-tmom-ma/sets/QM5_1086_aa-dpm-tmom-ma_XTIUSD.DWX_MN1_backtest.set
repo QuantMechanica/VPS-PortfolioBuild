@@ -4,17 +4,17 @@
 ; ea_slug:      aa-dpm-tmom-ma
 ; ea_version:   v5.0
 ; set_version:  s20260606-001
-; symbol:       GDAXI.DWX
-; timeframe:    D1
+; symbol:       XTIUSD.DWX
+; timeframe:    MN1
 ; environment:  backtest
-; magic_slot:   3
+; magic_slot:   5
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   397d7519b864e3265160815e4637a85d4a00f208a3a419e3a87f1f7e7a12ce7e
 ; author:       Development
 ; date:         2026-06-06
 ;==========================================================
-qm_magic_slot_offset=3
+qm_magic_slot_offset=5
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1

@@ -4,17 +4,17 @@
 ; ea_slug:      aa-dpm-tmom-ma
 ; ea_version:   v5.0
 ; set_version:  s20260606-001
-; symbol:       EURUSD.DWX
-; timeframe:    D1
+; symbol:       USDJPY.DWX
+; timeframe:    MN1
 ; environment:  backtest
-; magic_slot:   6
+; magic_slot:   8
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   d26838b2014d9801d9a32cf2789d4443c4e5a598a9d78df605073685ce88c8ce
 ; author:       Development
 ; date:         2026-06-06
 ;==========================================================
-qm_magic_slot_offset=6
+qm_magic_slot_offset=8
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
