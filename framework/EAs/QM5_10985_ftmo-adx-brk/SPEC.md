@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA trades H1 range breakouts after ADX compression. It requires ADX(14) to have stayed below 22 on at least 8 of the prior 12 closed H1 bars, the prior Donchian(20) range to be no wider than 2.2 * ATR(14), and the breakout candle range to be no wider than 2.5 * ATR(14). A long opens when the last closed H1 candle closes above the prior Donchian high, ADX crosses above 25 and rises, and +DI is above -DI; shorts mirror the rule below the prior Donchian low. The EA sets a 2.0R target, exits if ADX falls below 20, exits after 48 H1 bars, and trails after 1.5R by 2.0 * ATR(14) from the best closed-bar close since entry.
+The EA trades H1 range breakouts after ADX compression. It requires ADX(14) to have stayed below 22 on at least 8 of the prior 12 closed H1 bars, the prior Donchian(20) range to be no wider than 2.2 * ATR(14), and the breakout candle range to be no wider than 2.5 * ATR(14). A long opens when the last closed H1 candle closes above the prior Donchian high, ADX crosses above 25 and rises, and +DI is above -DI; shorts mirror the rule below the prior Donchian low. The EA sets a 2.0R target, exits if ADX falls below 20, exits after 48 H1 bars, and trails after 1.5R by 2.0 * ATR(14) behind current price via the framework `QM_TM_TrailATR` (favourable-only tighten), the framework primitive closest to the card's "2*ATR from the extreme close since entry".
 
 ---
 
@@ -31,7 +31,7 @@ The EA trades H1 range breakouts after ADX compression. It requires ADX(14) to h
 | `strategy_sl_atr_mult` | 1.2 | >0 | ATR stop candidate when the compression midpoint is farther away. |
 | `strategy_tp_r_multiple` | 2.0 | >0 | Take-profit multiple of initial risk. |
 | `strategy_trail_trigger_r` | 1.5 | >0 | Profit threshold before ATR trailing starts. |
-| `strategy_trail_atr_mult` | 2.0 | >0 | ATR distance behind the best closed-bar close for trailing. |
+| `strategy_trail_atr_mult` | 2.0 | >0 | ATR distance behind current price for the favourable-only `QM_TM_TrailATR` trail. |
 | `strategy_max_hold_bars` | 48 | >=1 | Time exit in H1 bars. |
 | `strategy_max_spread_points` | 0 | >=0 | Optional spread guard; 0 disables the extra spread cap. |
 
