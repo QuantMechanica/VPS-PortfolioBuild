@@ -6058,3 +6058,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10936,grimes-accum-close,1,NDX.DWX,109360001,2026-06-06,Development,active
 10936,grimes-accum-close,2,WS30.DWX,109360002,2026-06-06,Development,active
 10936,grimes-accum-close,3,GDAXI.DWX,109360003,2026-06-06,Development,active
+10938,grimes-accept-high,0,SP500.DWX,109380000,2026-06-06,Development,active
+10938,grimes-accept-high,1,NDX.DWX,109380001,2026-06-06,Development,active
+10938,grimes-accept-high,2,WS30.DWX,109380002,2026-06-06,Development,active
+10938,grimes-accept-high,3,GDAXI.DWX,109380003,2026-06-06,Development,active
+10938,grimes-accept-high,4,XAUUSD.DWX,109380004,2026-06-06,Development,active
