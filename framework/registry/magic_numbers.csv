@@ -5785,3 +5785,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10839,tv-momo-slope,2,XAUUSD.DWX,108390002,2026-06-06,Development,active
 10839,tv-momo-slope,3,GDAXI.DWX,108390003,2026-06-06,Development,active
 10839,tv-momo-slope,4,NDX.DWX,108390004,2026-06-06,Development,active
+10840,tv-prison-orb,0,NDX.DWX,108400000,2026-06-06,Development,active
+10840,tv-prison-orb,1,WS30.DWX,108400001,2026-06-06,Development,active
+10840,tv-prison-orb,2,GDAXI.DWX,108400002,2026-06-06,Development,active
+10840,tv-prison-orb,3,XAUUSD.DWX,108400003,2026-06-06,Development,active
+10840,tv-prison-orb,4,EURUSD.DWX,108400004,2026-06-06,Development,active
