@@ -6045,3 +6045,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10934,grimes-pong,2,WS30.DWX,109340002,2026-06-06,Development,active
 10934,grimes-pong,3,XAUUSD.DWX,109340003,2026-06-06,Development,active
 10934,grimes-pong,4,XTIUSD.DWX,109340004,2026-06-06,Development,active
+10935,grimes-news-rev,0,SP500.DWX,109350000,2026-06-06,Development,active
+10935,grimes-news-rev,1,NDX.DWX,109350001,2026-06-06,Development,active
+10935,grimes-news-rev,2,WS30.DWX,109350002,2026-06-06,Development,active
+10935,grimes-news-rev,3,GDAXI.DWX,109350003,2026-06-06,Development,active
