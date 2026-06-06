@@ -5920,3 +5920,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10886,risk-comm-rot,1,XAGUSD.DWX,108860001,2026-06-06,Development,active
 10886,risk-comm-rot,2,XTIUSD.DWX,108860002,2026-06-06,Development,active
 10886,risk-comm-rot,3,XNGUSD.DWX,108860003,2026-06-06,Development,active
+10888,risk-tom-index,0,GDAXI.DWX,108880000,2026-06-06,Development,active
+10888,risk-tom-index,1,NDX.DWX,108880001,2026-06-06,Development,active
+10888,risk-tom-index,2,WS30.DWX,108880002,2026-06-06,Development,active
+10888,risk-tom-index,3,SP500.DWX,108880003,2026-06-06,Development,active
