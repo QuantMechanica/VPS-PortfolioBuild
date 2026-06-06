@@ -288,9 +288,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = ((strategy_pending_expiry_minutes > 1) ? strategy_pending_expiry_minutes : 1) * 60;
 
-   if(HasOurPosition() || HasOurPendingOrder())
-      return false;
    if(!RefreshClosedBarState())
+      return false;
+   if(HasOurPosition() || HasOurPendingOrder())
       return false;
 
    const StrategyWindow window = ActiveWindowAt(g_signal_time);
