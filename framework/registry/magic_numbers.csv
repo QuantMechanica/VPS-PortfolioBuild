@@ -5790,3 +5790,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10840,tv-prison-orb,2,GDAXI.DWX,108400002,2026-06-06,Development,active
 10840,tv-prison-orb,3,XAUUSD.DWX,108400003,2026-06-06,Development,active
 10840,tv-prison-orb,4,EURUSD.DWX,108400004,2026-06-06,Development,active
+10841,tv-930-body,0,NDX.DWX,108410000,2026-06-06,Development,active
+10841,tv-930-body,1,WS30.DWX,108410001,2026-06-06,Development,active
+10841,tv-930-body,2,GDAXI.DWX,108410002,2026-06-06,Development,active
+10841,tv-930-body,3,XAUUSD.DWX,108410003,2026-06-06,Development,active
+10841,tv-930-body,4,EURUSD.DWX,108410004,2026-06-06,Development,active
