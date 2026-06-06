@@ -24,7 +24,7 @@
 // Perf: the LRC regression + pivot scan are bespoke structural math with no QM_*
 // reader. They run ONCE per closed bar inside Strategy_EntrySignal (the caller
 // gates entry behind QM_IsNewBar()), are cached to file scope, and are read
-// O(1) by the per-tick exit path. Raw iClose/iLow/iTime calls carry an explicit
+// O(1) by the per-tick exit path. Raw iClose/iLow calls carry an explicit
 // `// perf-allowed` tag per the Framework Corset. NOTE: the exit path must NOT
 // call QM_IsNewBar() — that would consume the new-bar event for the _Symbol|
 // _Period key and starve the entry gate in OnTick (guaranteed zero trades).
@@ -81,8 +81,8 @@ double   g_ema_prev          = 0.0;   // EMA(ema_period) shift 2
 double   g_atr_now           = 0.0;   // ATR(atr_period) shift 1
 double   g_pivot_support     = 0.0;   // recent swing-low support level
 double   g_channel_width     = 0.0;   // upper - lower band
-bool     g_ema_slope_neg3    = false; // EMA fell three consecutive bars
-datetime g_block_reentry_bar = 0;     // bar on which a weakness exit fired (no re-entry)
+bool     g_ema_slope_neg3          = false; // EMA fell three consecutive bars
+bool     g_skip_next_entry_eval    = false; // weakness exit fired; suppress next entry evaluation
 
 // -----------------------------------------------------------------------------
 // Strategy helpers
@@ -223,10 +223,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(HasOurPosition())
       return false;
 
-   // Card: disable same-bar re-entry after a trend-weakness exit.
-   const datetime cur_bar = iTime(_Symbol, _Period, 0); // perf-allowed: card re-entry guard, single read
-   if(cur_bar > 0 && cur_bar == g_block_reentry_bar)
+   // Card: disable immediate re-entry after a trend-weakness exit without using
+   // a per-EA timestamp gate. Entry is evaluated once per closed bar, so this
+   // suppresses the next eligible entry evaluation after the exit.
+   if(g_skip_next_entry_eval)
+     {
+      g_skip_next_entry_eval = false;
       return false;
+     }
 
    // Filter: channel must be wide enough to be a real value zone.
    if(g_channel_width < width_atr_min * g_atr_now)
@@ -301,7 +305,7 @@ bool Strategy_ExitSignal()
    // Trend-weakness exit: LRC lower channel crosses below EMA (cached state).
    if(g_state_ready && g_lrc_lo_prev >= g_ema_prev && g_lrc_lo < g_ema_now)
      {
-      g_block_reentry_bar = iTime(_Symbol, _Period, 0); // perf-allowed: card re-entry guard, single read
+      g_skip_next_entry_eval = true;
       return true;
      }
 
