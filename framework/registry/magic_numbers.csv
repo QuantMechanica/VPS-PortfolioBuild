@@ -6143,3 +6143,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10961,ftmo-chop-kc,1,NDX.DWX,109610001,2026-06-06,Development,active
 10961,ftmo-chop-kc,2,WS30.DWX,109610002,2026-06-06,Development,active
 10961,ftmo-chop-kc,3,EURUSD.DWX,109610003,2026-06-06,Development,active
+10962,ftmo-ichi-fib,0,EURJPY.DWX,109620000,2026-06-06,Development,active
+10962,ftmo-ichi-fib,1,EURUSD.DWX,109620001,2026-06-06,Development,active
+10962,ftmo-ichi-fib,2,GBPJPY.DWX,109620002,2026-06-06,Development,active
+10962,ftmo-ichi-fib,3,XAUUSD.DWX,109620003,2026-06-06,Development,active
