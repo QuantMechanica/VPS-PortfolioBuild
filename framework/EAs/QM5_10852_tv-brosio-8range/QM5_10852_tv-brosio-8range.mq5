@@ -29,12 +29,17 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_anchor_hour              = 8;
+// Session times are expressed in BROKER SERVER time. The source anchors are
+// New York exchange local (America/New_York). Darwinex NY-Close server time is
+// NY local + 7h year-round (server GMT+2/+3 vs NY GMT-5/-4 — both switch on US
+// DST, so the offset is a constant +7). Conversion applied at build:
+//   08:00 NY -> 15:00 broker   09:45 NY -> 16:45 broker   11:40 NY -> 18:40 broker
+input int    strategy_anchor_hour              = 15;   // 08:00 NY (range anchor)
 input int    strategy_anchor_minute            = 0;
 input int    strategy_range_minutes            = 15;
-input int    strategy_trade_start_hour         = 9;
+input int    strategy_trade_start_hour         = 16;   // 09:45 NY (entry window open)
 input int    strategy_trade_start_minute       = 45;
-input int    strategy_trade_end_hour           = 11;
+input int    strategy_trade_end_hour           = 18;   // 11:40 NY (entry window close + force-close)
 input int    strategy_trade_end_minute         = 40;
 input int    strategy_atr_period               = 14;
 input double strategy_min_range_atr_mult       = 0.5;
@@ -49,6 +54,8 @@ bool   g_range_ready = false;
 bool   g_range_valid = false;
 bool   g_long_break = false;
 bool   g_short_break = false;
+bool   g_long_retraced = false;
+bool   g_short_retraced = false;
 bool   g_long_traded = false;
 bool   g_short_traded = false;
 double g_range_high = 0.0;
@@ -89,6 +96,8 @@ void Strategy_ResetSession(const int day_key)
    g_range_valid = false;
    g_long_break = false;
    g_short_break = false;
+   g_long_retraced = false;
+   g_short_retraced = false;
    g_long_traded = false;
    g_short_traded = false;
    g_range_high = 0.0;
@@ -181,6 +190,13 @@ int Strategy_AdvanceState()
    if(!g_range_ready || !g_range_valid)
       return 0;
 
+   // Track range breaks from range-completion onward. A break may occur before
+   // the entry window opens; the retest entry below still fires only in-window.
+   if(bar.high > g_range_high)
+      g_long_break = true;
+   if(bar.low < g_range_low)
+      g_short_break = true;
+
    const int bar_minute = Strategy_MinuteOfDay(bar.time);
    const int trade_start = Strategy_Minutes(strategy_trade_start_hour, strategy_trade_start_minute);
    const int trade_end = Strategy_Minutes(strategy_trade_end_hour, strategy_trade_end_minute);
@@ -188,30 +204,28 @@ int Strategy_AdvanceState()
       return 0;
 
    const double tolerance = g_range_width * MathMax(0.0, strategy_retest_tolerance_frac);
-   int signal = 0;
 
-   if(g_long_break && !g_long_traded &&
-      bar.low <= g_range_mid + tolerance &&
-      bar.close > g_range_mid)
+   // After a break, latch the midpoint retrace, then enter on the reclaim
+   // (long) / rejection (short) candle — "the candle after price retraces to
+   // the range midpoint and reclaims/rejects".
+   if(g_long_break && bar.low <= g_range_mid + tolerance)
+      g_long_retraced = true;
+   if(g_short_break && bar.high >= g_range_mid - tolerance)
+      g_short_retraced = true;
+
+   if(g_long_break && g_long_retraced && !g_long_traded && bar.close > g_range_mid)
      {
-      signal = 1;
       g_long_traded = true;
+      return 1;
      }
 
-   if(signal == 0 && g_short_break && !g_short_traded &&
-      bar.high >= g_range_mid - tolerance &&
-      bar.close < g_range_mid)
+   if(g_short_break && g_short_retraced && !g_short_traded && bar.close < g_range_mid)
      {
-      signal = -1;
       g_short_traded = true;
+      return -1;
      }
 
-   if(bar.high > g_range_high)
-      g_long_break = true;
-   if(bar.low < g_range_low)
-      g_short_break = true;
-
-   return signal;
+   return 0;
   }
 
 bool Strategy_NoTradeFilter()
