@@ -5810,3 +5810,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10845,tv-ls-short-3r,2,XAUUSD.DWX,108450002,2026-06-06,Development,active
 10845,tv-ls-short-3r,3,GDAXI.DWX,108450003,2026-06-06,Development,active
 10845,tv-ls-short-3r,4,NDX.DWX,108450004,2026-06-06,Development,active
+10847,tv-inside-gem,0,EURUSD.DWX,108470000,2026-06-06,Development,active
+10847,tv-inside-gem,1,GBPUSD.DWX,108470001,2026-06-06,Development,active
+10847,tv-inside-gem,2,XAUUSD.DWX,108470002,2026-06-06,Development,active
+10847,tv-inside-gem,3,GDAXI.DWX,108470003,2026-06-06,Development,active
+10847,tv-inside-gem,4,NDX.DWX,108470004,2026-06-06,Development,active
