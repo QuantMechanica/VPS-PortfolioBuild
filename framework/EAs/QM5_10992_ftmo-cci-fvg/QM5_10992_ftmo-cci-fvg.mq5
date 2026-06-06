@@ -136,9 +136,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
             return false;
         }
      }
-
+   // perf-allowed: the closed-bar OHLC reads below implement bespoke FVG/CCI geometry.
    const double close1 = iClose(_Symbol, strategy_timeframe, 1); // perf-allowed: FVG confirmation uses closed OHLC.
-   const double close2 = iClose(_Symbol, strategy_timeframe, 2); // perf-allowed: first-retrace check uses prior closed bar.
    const double low1 = iLow(_Symbol, strategy_timeframe, 1); // perf-allowed: bespoke FVG retrace geometry.
    const double high1 = iHigh(_Symbol, strategy_timeframe, 1); // perf-allowed: bespoke FVG retrace geometry.
    const double low2 = iLow(_Symbol, strategy_timeframe, 2); // perf-allowed: first-retrace check.
@@ -146,7 +145,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double ema1 = QM_EMA(_Symbol, strategy_timeframe, strategy_ema_period, 1);
    const double atr1 = QM_ATR(_Symbol, strategy_timeframe, strategy_atr_period, 1);
    const double cci1 = QM_CCI(_Symbol, strategy_timeframe, strategy_cci_period, 1);
-   if(close1 <= 0.0 || close2 <= 0.0 || low1 <= 0.0 || high1 <= 0.0 || low2 <= 0.0 || high2 <= 0.0 ||
+   if(close1 <= 0.0 || low1 <= 0.0 || high1 <= 0.0 || low2 <= 0.0 || high2 <= 0.0 ||
       ema1 <= 0.0 || atr1 <= 0.0)
       return false;
 

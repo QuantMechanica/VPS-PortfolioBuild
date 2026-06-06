@@ -1,8 +1,8 @@
 # QM5_10992_ftmo-cci-fvg - Strategy Spec
 
 **EA ID:** QM5_10992
-**Slug:** ftmo-cci-fvg
-**Source:** c11dc4d3-bdfb-5076-aeed-5d943e9ef03f
+**Slug:** `ftmo-cci-fvg`
+**Source:** `c11dc4d3-bdfb-5076-aeed-5d943e9ef03f` (see FTMO Academy citation in the approved card)
 **Author of this spec:** Codex
 **Last revised:** 2026-06-07
 
@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-This EA trades H1 continuation after price is aligned with EMA(50), CCI(20) has crossed the zero line in the trend direction within the last three closed bars, and a recent three-candle fair value gap is present. It buys after a bullish FVG retrace into the upper half closes back above the gap midpoint, and sells after a bearish FVG retrace into the lower half closes back below the gap midpoint. The stop is placed beyond the FVG boundary by 0.35 ATR(14), the target is 2.0R, the stop moves to breakeven after 1.0R, and positions close early on a CCI zero-line reversal or after 36 H1 bars.
+The EA trades H1 trend-continuation setups after CCI(20) crosses the zero line in the trend direction. A long requires the last closed bar above EMA(50), a recent CCI cross above zero, and a bullish three-candle fair value gap whose height is between 0.25 and 1.5 ATR(14). It enters when the first retrace touches the upper half of that gap and closes back above the midpoint; shorts mirror the same logic below EMA(50). Initial stop is beyond the opposite FVG boundary by 0.35 ATR(14), target is 2.0R, SL moves to breakeven after 1.0R, and open trades exit if CCI closes back through zero or after 36 H1 bars.
 
 ---
 
@@ -18,32 +18,32 @@ This EA trades H1 continuation after price is aligned with EMA(50), CCI(20) has 
 
 | Parameter | Default | Range | Meaning |
 |---|---:|---|---|
-| strategy_timeframe | PERIOD_H1 | H1 intended | Signal timeframe from the card. |
-| strategy_cci_period | 20 | 2-200 | CCI lookback for trend confirmation and early exit. |
-| strategy_ema_period | 50 | 2-300 | EMA trend filter. |
-| strategy_atr_period | 14 | 2-200 | ATR lookback for FVG height filter and stop buffer. |
-| strategy_cci_cross_lookback | 3 | 1-20 | Number of closed bars in which CCI must have crossed zero. |
-| strategy_fvg_lookback_bars | 8 | 3-50 | Recent closed bars scanned for a three-candle FVG. |
-| strategy_fvg_min_atr_mult | 0.25 | 0.01-5.0 | Minimum FVG height as ATR multiple. |
-| strategy_fvg_max_atr_mult | 1.50 | 0.01-10.0 | Maximum FVG height as ATR multiple. |
-| strategy_sl_atr_mult | 0.35 | 0.0-5.0 | ATR buffer beyond the FVG boundary for SL. |
-| strategy_rr | 2.0 | 0.1-10.0 | Take-profit multiple of initial risk. |
-| strategy_max_hold_bars | 36 | 1-500 | Time exit in H1 bars. |
-| strategy_spread_median_bars | 20 | 1-200 | Median historical spread lookback. |
-| strategy_spread_median_mult | 1.5 | 0.1-10.0 | Maximum current spread versus median spread. |
+| `strategy_timeframe` | `PERIOD_H1` | H1 expected | Signal timeframe from the approved card. |
+| `strategy_cci_period` | `20` | `2+` | CCI period used for zero-line confirmation and CCI exit. |
+| `strategy_ema_period` | `50` | `2+` | EMA trend filter period. |
+| `strategy_atr_period` | `14` | `2+` | ATR period used for FVG size filter and SL offset. |
+| `strategy_cci_cross_lookback` | `3` | `1+` | Closed-bar lookback for the CCI zero-line cross. |
+| `strategy_fvg_lookback` | `8` | `1+` | Lookback for locating the most recent qualifying FVG. |
+| `strategy_fvg_min_atr` | `0.25` | `0+` | Minimum FVG height as a multiple of ATR(14). |
+| `strategy_fvg_max_atr` | `1.50` | `0+` | Maximum FVG height as a multiple of ATR(14). |
+| `strategy_sl_atr_mult` | `0.35` | `0+` | ATR offset beyond the FVG boundary for the initial stop. |
+| `strategy_tp_r_multiple` | `2.0` | `0+` | Take-profit distance in R multiples. |
+| `strategy_time_exit_bars` | `36` | `1+` | Maximum hold time in H1 bars. |
+| `strategy_spread_lookback` | `20` | `2+` | Closed-bar spread sample length for the median spread filter. |
+| `strategy_spread_median_mult` | `1.50` | `0+` | Current spread must not exceed this multiple of median spread. |
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- EURUSD.DWX - Card-listed liquid FX major with DWX H1 OHLC and spread history.
-- GBPUSD.DWX - Card-listed liquid FX major with DWX H1 OHLC and spread history.
-- XAUUSD.DWX - Card-listed gold market suitable for CCI/EMA/FVG continuation tests.
-- NDX.DWX - Card-listed liquid index CFD proxy suitable for H1 continuation tests.
+- `EURUSD.DWX` - liquid DWX major FX pair named by the card's R3 basket.
+- `GBPUSD.DWX` - liquid DWX major FX pair named by the card's R3 basket.
+- `XAUUSD.DWX` - DWX metal instrument named by the card's R3 basket.
+- `NDX.DWX` - DWX index instrument named by the card's R3 basket.
 
 **Explicitly NOT for:**
-- Symbols outside `framework/registry/dwx_symbol_matrix.csv` - not registered because DWX data availability is required.
+- Symbols outside the approved R3 basket - not registered for this EA at Q01.
 
 ---
 
@@ -51,9 +51,9 @@ This EA trades H1 continuation after price is aligned with EMA(50), CCI(20) has 
 
 | Aspect | Value |
 |---|---|
-| Base timeframe | H1 |
+| Base timeframe | `H1` |
 | Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` via the framework entry gate |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` via framework `OnTick` entry gate |
 
 ---
 
@@ -61,10 +61,10 @@ This EA trades H1 continuation after price is aligned with EMA(50), CCI(20) has 
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | 45 |
-| Typical hold time | Intraday to 36 H1 bars |
-| Expected drawdown profile | Moderate trend-continuation drawdowns controlled by fixed 1R stop and 2R target. |
-| Regime preference | Trend continuation with pullback into fair value gap. |
+| Trades / year / symbol | `45` |
+| Typical hold time | Few H1 bars to maximum 36 H1 bars |
+| Expected drawdown profile | ATR-bounded single-position risk with 2R target and breakeven after 1R |
+| Regime preference | Trend continuation with FVG pullback |
 | Win rate target (qualitative) | medium |
 
 ---
@@ -73,10 +73,10 @@ This EA trades H1 continuation after price is aligned with EMA(50), CCI(20) has 
 
 This card was mechanised from:
 
-**Source ID:** c11dc4d3-bdfb-5076-aeed-5d943e9ef03f
-**Source type:** article
-**Pointer:** FTMO Academy, CCI: Technical Indicator, 2025, https://academy.ftmo.com/lesson/cci-technical-indicator/
-**R1-R4 verdict (Q00):** all PASS per `artifacts/cards_approved/QM5_10992_ftmo-cci-fvg.md`
+**Source ID:** `c11dc4d3-bdfb-5076-aeed-5d943e9ef03f`
+**Source type:** `blog`
+**Pointer:** FTMO Academy, "CCI: Technical Indicator", 2025, `https://academy.ftmo.com/lesson/cci-technical-indicator/`
+**R1-R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_10992_ftmo-cci-fvg.md`
 
 ---
 
