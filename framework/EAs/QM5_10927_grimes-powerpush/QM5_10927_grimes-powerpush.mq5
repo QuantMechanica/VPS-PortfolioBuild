@@ -154,7 +154,9 @@ bool StrategyLoadOpeningRange(const datetime day_start,
 
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
-   const int need_bars = MathMax(strategy_opening_range_bars + 8, 12);
+   const int period_seconds = PeriodSeconds(PERIOD_M15);
+   const int elapsed_bars = (period_seconds > 0) ? (int)((TimeCurrent() - day_start) / period_seconds) + 2 : 12;
+   const int need_bars = MathMax(strategy_opening_range_bars + 8, MathMin(elapsed_bars + 4, 120));
    const int copied = CopyRates(_Symbol, PERIOD_M15, 0, need_bars, rates); // perf-allowed: bounded closed-bar opening-range scan.
    if(copied < strategy_opening_range_bars + 1)
       return false;

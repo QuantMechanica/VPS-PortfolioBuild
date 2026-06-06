@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        10927
-; ea_slug:      grimes-powerpush
+; ea_id:        10928
+; ea_slug:      grimes-yoyo-break
 ; ea_version:   v5.0
 ; set_version:  s20260606-001
-; symbol:       WS30.DWX
-; timeframe:    M15
+; symbol:       GBPUSD.DWX
+; timeframe:    M30
 ; environment:  backtest
-; magic_slot:   2
+; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   d801a51cfe19da6b83ceaf86062bab6b2dd41657b7e16f64836552cb6631114f
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-06-06
 ;==========================================================
-qm_magic_slot_offset=2
+qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
