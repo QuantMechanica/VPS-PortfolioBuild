@@ -3,57 +3,70 @@
 **EA ID:** QM5_10856
 **Slug:** tv-xiznit-er
 **Source:** d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7 (see TradingView Xiznit Advanced Scalper card)
-**Author of this spec:** Codex
+**Author of this spec:** Claude
 **Last revised:** 2026-06-06
 
 ---
 
 ## 1. Strategy Logic
 
-The EA trades a short-timeframe Efficiency Ratio regime transition after a full non-trending reset. A long entry requires ER to transition from neutral to uptrend, price and both EMAs to close above session VWAP, fast EMA to be above slow EMA, both EMAs to slope upward, the signal candle body to clear a minimum ATR-based size, and the close to break the prior-bar high. A short entry mirrors those rules below VWAP and below the prior-bar low. Open trades use fixed ATR stop and target distances, close when ER is no longer aligned with the trade direction, and flatten at the broker-time equivalent of the card's 15:58 CST cutoff.
+A regime-gated intraday trend scalper. On each closed bar the EA computes the
+Kaufman Efficiency Ratio (ER) over the last `er_length` bars, a session-anchored
+VWAP, and a fast/slow EMA pair. The market is classified "uptrend" when ER is at
+or above `er_trend_threshold` AND the fast EMA is above the slow EMA AND both EMAs
+and the bar close are above VWAP; "downtrend" is the mirror; otherwise
+"non-trending". A long fires on the first bar that transitions from non-trending
+into a fully-aligned uptrend, provided the prior bar already had fast>slow MA
+alignment, both EMAs are sloping up, the signal candle body is at least
+`min_body_atr_frac * ATR`, and the candle closes beyond the prior bar's high
+(short is the mirror with prior-bar low). A fixed ATR bracket is attached at
+entry (stop = `atr_sl_mult * ATR`, target = `atr_tp_mult * ATR`). The position is
+closed immediately when the ER regime shifts away from the trade direction, at
+the broker-time EOD flatten (23:58, = 15:58 CST), and otherwise by its SL/TP. New
+entries are blocked during the first 20 minutes of the NY session, the CST lunch
+hour, and after the EOD flatten time. A spread guard skips entries whose spread
+exceeds 15% of the stop distance.
 
 ---
 
 ## 2. Parameters
 
 | Parameter | Default | Range | Meaning |
-|---|---:|---|---|
-| `strategy_fast_ma_period` | 9 | 1+ | Fast EMA used for Full Filter alignment. |
-| `strategy_slow_ma_period` | 21 | greater than fast MA | Slow EMA used for Full Filter alignment. |
-| `strategy_er_length` | 20 | 2+ | Efficiency Ratio lookback length. |
-| `strategy_er_trend_threshold` | 0.35 | greater than 0 | Minimum ER value that classifies a bar as trending. |
-| `strategy_atr_period` | 14 | 1+ | ATR period for stop, target, spread guard, and body threshold. |
-| `strategy_atr_stop_mult` | 1.0 | greater than 0 | Stop distance as a multiple of ATR(14). |
-| `strategy_atr_target_mult` | 1.0 | greater than 0 | Take-profit distance as a multiple of ATR(14). |
-| `strategy_min_body_atr_frac` | 0.05 | 0+ | Minimum signal candle body as a fraction of ATR. |
-| `strategy_max_spread_stop_frac` | 0.15 | greater than 0 | Entry spread guard as a fraction of ATR stop distance. |
-| `strategy_min_session_bars` | 20 | 1+ | Minimum broker-day bars required before session VWAP signals are valid. |
-| `strategy_ny_open_hour_broker` | 16 | 0-23 | Broker hour corresponding to NY session open. |
-| `strategy_ny_open_minute` | 30 | 0-59 | Broker minute corresponding to NY session open. |
-| `strategy_open_block_minutes` | 20 | 0-1439 | Minutes blocked after NY session open. |
-| `strategy_lunch_start_hour` | 20 | 0-23 | Broker hour for CST lunch-hour block start. |
-| `strategy_lunch_end_hour` | 21 | 0-23 | Broker hour for CST lunch-hour block end. |
-| `strategy_flat_hour_broker` | 23 | 0-23 | Broker hour for EOD flatten. |
-| `strategy_flat_minute_broker` | 58 | 0-59 | Broker minute for EOD flatten. |
+|---|---|---|---|
+| `er_length` | 20 | 10-30 | Kaufman Efficiency Ratio lookback (bars) |
+| `er_trend_threshold` | 0.30 | 0.0-1.0 | ER at/above this = trending regime |
+| `fast_ma_period` | 9 | 5-20 | Fast EMA period |
+| `slow_ma_period` | 21 | 15-60 | Slow EMA period |
+| `atr_period` | 14 | 5-30 | ATR period for the bracket |
+| `atr_sl_mult` | 1.0 | 0.5-2.0 | Stop distance = mult * ATR |
+| `atr_tp_mult` | 1.0 | 0.5-2.0 | Target distance = mult * ATR |
+| `min_body_atr_frac` | 0.10 | 0.0-1.0 | Min signal-candle body as fraction of ATR |
+| `spread_guard_frac` | 0.15 | 0.0-1.0 | Skip entry if spread > frac * stop distance |
+| `ny_open_hour_broker` | 16 | 0-23 | NY RTH open hour, broker time (08:30 CST) |
+| `ny_open_min_broker` | 30 | 0-59 | NY RTH open minute, broker time |
+| `ny_open_block_minutes` | 20 | 0-120 | Block first N min of NY session |
+| `lunch_start_hour_broker` | 20 | 0-23 | CST lunch start (12:00 CST), broker time |
+| `lunch_end_hour_broker` | 21 | 0-23 | CST lunch end (13:00 CST), broker time |
+| `eod_flat_hour_broker` | 23 | 0-23 | EOD flatten hour (15:58 CST), broker time |
+| `eod_flat_min_broker` | 58 | 0-59 | EOD flatten minute, broker time |
 
-Note: framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
-qm_news_mode, qm_rng_seed, qm_stress_reject_probability, qm_friday_close_*)
-are documented in `framework/V5_FRAMEWORK_DESIGN.md`.
+> Note: framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
+> qm_news_*, qm_rng_seed, qm_stress_reject_probability, qm_friday_close_*) are
+> documented in `framework/V5_FRAMEWORK_DESIGN.md` and are not re-listed here.
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `NDX.DWX` - Card-stated Nasdaq index target ported from MNQ-style exposure.
-- `WS30.DWX` - Card-stated US index basket member with liquid DWX intraday data.
-- `GDAXI.DWX` - Canonical DWX DAX symbol used for the card's `GER40.DWX` target.
-- `XAUUSD.DWX` - Card-stated metal CFD target ported from MGC-style exposure.
-- `XAGUSD.DWX` - Card-stated silver CFD target ported from SIL-style exposure.
+- `NDX.DWX` — Nasdaq 100; high-cadence trending index, primary P2/live symbol.
+- `WS30.DWX` — Dow 30; liquid US large-cap index, live-tradable.
+- `GDAXI.DWX` — DAX 40; the card's "GER40" maps to the matrix name GDAXI.DWX.
+- `XAUUSD.DWX` — Gold; the card's metals leg, strong intraday trends.
+- `XAGUSD.DWX` — Silver; second metals leg, complements gold.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - Not present in `dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
-- `SP500.DWX` - Mentioned only as a possible later test path, not in the card's Primary P2 basket.
+- `SP500.DWX` — backtest-only (not broker-routable); not in this card's R3 basket.
 
 ---
 
@@ -61,9 +74,9 @@ are documented in `framework/V5_FRAMEWORK_DESIGN.md`.
 
 | Aspect | Value |
 |---|---|
-| Base timeframe | `M2, M5` |
-| Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` via framework `OnTick` |
+| Base timeframe | `M5` (card baseline M2/M5; M5 chosen for the P2 baseline) |
+| Multi-timeframe refs | `none` (all reads on the chart timeframe) |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
 
 ---
 
@@ -71,11 +84,11 @@ are documented in `framework/V5_FRAMEWORK_DESIGN.md`.
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | 120 |
-| Typical hold time | Intraday scalps, usually minutes to same-session. |
-| Expected drawdown profile | High-cadence scalper vulnerable to choppy VWAP and ER threshold noise. |
-| Regime preference | ER-classified trend continuation with VWAP and EMA alignment. |
-| Win rate target (qualitative) | Medium |
+| Trades / year / symbol | `~120` |
+| Typical hold time | `minutes to a few hours (intraday, EOD-flat)` |
+| Expected drawdown profile | `frequent small fixed-bracket losses; trend runners` |
+| Regime preference | `trend (ER-gated trend continuation)` |
+| Win rate target (qualitative) | `medium` |
 
 ---
 
@@ -83,9 +96,9 @@ are documented in `framework/V5_FRAMEWORK_DESIGN.md`.
 
 This card was mechanised from:
 
-**Source ID:** d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7
-**Source type:** TradingView open-source strategy
-**Pointer:** https://www.tradingview.com/script/qP7M4QtD-Xiznit-Advanced-Scalper/
+**Source ID:** `d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7`
+**Source type:** `forum` (TradingView open-source community strategy)
+**Pointer:** `https://www.tradingview.com/script/qP7M4QtD-Xiznit-Advanced-Scalper/`
 **R1-R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_10856_tv-xiznit-er.md`
 
 ---

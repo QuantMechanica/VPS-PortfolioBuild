@@ -5,33 +5,19 @@
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA SKELETON
+// QuantMechanica V5 EA — QM5_10856 tv-xiznit-er
 // -----------------------------------------------------------------------------
-// Fill in only the five Strategy_* hooks below. Everything else is framework
-// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
-// risk + magic + news + Friday-close guard rails). The framework provides:
+// Mechanised from card QM5_10856_tv-xiznit-er.md (TradingView "Xiznit Advanced
+// Scalper"). Efficiency-Ratio regime filter + session VWAP + dual EMA alignment
+// scalper with fixed ATR bracket, regime-shift exit, and EOD flatten.
 //
-//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  — closed-bar gate
-//   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
-//     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
-//     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
-//   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
-//   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
-//   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
-//   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
-//   - QM_FrameworkHandleFridayClose / QM_KillSwitchCheck / QM_NewsAllowsTrade
-//
-// DO NOT
-//   - Write per-EA IsNewBar() — use QM_IsNewBar()
-//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
-//     use the QM_* readers above. The framework pools handles and releases them
-//     on shutdown.
-//   - CopyRates over warmup windows on every tick. If you genuinely need raw
-//     bar arrays, gate by QM_IsNewBar so the work runs once per closed bar.
-//   - Hand-edit framework/include/QM/QM_MagicResolver.mqh. After adding rows
-//     to magic_numbers.csv, run:
-//         python framework/scripts/update_magic_resolver.py
-//     This is idempotent and preserves all rows.
+// Framework corset: only the five Strategy_* hooks + strategy inputs are filled.
+// All per-tick wiring, risk, magic, news and Friday-close handling is framework
+// boilerplate (unchanged). ER, VWAP and the candle-pattern filters are bespoke
+// structural math with no QM_* reader equivalent, so the raw bar-series reads
+// carry an explicit `// perf-allowed` exception. Every such read runs ONLY
+// inside Strategy_EntrySignal, which OnTick gates behind QM_IsNewBar() — i.e.
+// once per closed bar, never on the per-tick path.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
@@ -73,356 +59,278 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_fast_ma_period       = 9;
-input int    strategy_slow_ma_period       = 21;
-input int    strategy_er_length            = 20;
-input double strategy_er_trend_threshold   = 0.35;
-input int    strategy_atr_period           = 14;
-input double strategy_atr_stop_mult        = 1.0;
-input double strategy_atr_target_mult      = 1.0;
-input double strategy_min_body_atr_frac    = 0.05;
-input double strategy_max_spread_stop_frac = 0.15;
-input int    strategy_min_session_bars     = 20;
-input int    strategy_ny_open_hour_broker  = 16;
-input int    strategy_ny_open_minute       = 30;
-input int    strategy_open_block_minutes   = 20;
-input int    strategy_lunch_start_hour     = 20;
-input int    strategy_lunch_end_hour       = 21;
-input int    strategy_flat_hour_broker     = 23;
-input int    strategy_flat_minute_broker   = 58;
+// --- Efficiency Ratio regime ---
+input int    er_length              = 20;    // Kaufman ER lookback (card tests 10/20/30)
+input double er_trend_threshold     = 0.30;  // ER >= thr => regime is "trending" (card unspecified; see SPEC open question)
+// --- Dual moving averages (EMA) ---
+input int    fast_ma_period         = 9;     // fast EMA (card tests 9/12)
+input int    slow_ma_period         = 21;    // slow EMA (card tests 21/34)
+// --- Bracket (ATR-calibrated, approximates source 100-tick fixed SL/TP) ---
+input int    atr_period             = 14;    // ATR period for stop/target
+input double atr_sl_mult            = 1.0;   // stop = 1.0*ATR(14) (card P2 baseline)
+input double atr_tp_mult            = 1.0;   // target = 1.0*ATR (source 100t SL == 100t TP => 1:1)
+// --- Entry quality filters ---
+input double min_body_atr_frac      = 0.10;  // signal-candle body must be >= frac*ATR (card unspecified; see SPEC)
+input double spread_guard_frac      = 0.15;  // skip if spread > 15% of stop distance (card V5 spread guard)
+// --- Session windows (BROKER time; CST + 8h, DST-stable for NY-Close server) ---
+input int    ny_open_hour_broker    = 16;    // NY RTH open 08:30 CST -> 16:30 broker
+input int    ny_open_min_broker     = 30;
+input int    ny_open_block_minutes  = 20;    // block first 20 min of NY session
+input int    lunch_start_hour_broker= 20;    // 12:00 CST lunch -> 20:00 broker
+input int    lunch_end_hour_broker  = 21;    // 13:00 CST lunch end -> 21:00 broker
+input int    eod_flat_hour_broker   = 23;    // 15:58 CST EOD flatten -> 23:58 broker
+input int    eod_flat_min_broker    = 58;
 
-double g_session_vwap = 0.0;
-double g_prev_session_vwap = 0.0;
-double g_session_volume_sum = 0.0;
-double g_last_atr = 0.0;
-int    g_session_key = -1;
-int    g_session_bars = 0;
-int    g_er_regime = 0;
-int    g_prev_er_regime = 0;
-bool   g_long_signal = false;
-bool   g_short_signal = false;
+// -----------------------------------------------------------------------------
+// File-scope cached strategy state. Advanced exactly one closed bar per call to
+// Strategy_EntrySignal (which OnTick gates with QM_IsNewBar()). The per-tick
+// path (Strategy_ExitSignal / Strategy_ManageOpenPosition) reads these only.
+// -----------------------------------------------------------------------------
+double   g_vwap         = 0.0;   // session VWAP up to the last closed bar
+datetime g_vwap_day     = 0;     // broker date of the current VWAP session
+double   g_vwap_cum_pv  = 0.0;   // cumulative typical*volume this session
+double   g_vwap_cum_vol = 0.0;   // cumulative volume this session
+int      g_regime       = 0;     // +1 uptrend / -1 downtrend / 0 non-trending
+int      g_prev_regime  = 0;     // regime classified on the previous closed bar
 
-int Strategy_SessionKey(const datetime t)
+// =============================================================================
+// SECTION: News Filter Hook  (callable for Q09 News Impact phase)
+// =============================================================================
+// Optional news-filter override. Return TRUE to suppress trading regardless of
+// the framework filter. This EA carries no bespoke news rule beyond the central
+// two-axis filter, so it defers.
+bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.year * 1000 + dt.day_of_year;
+   return false; // defer to QM_NewsAllowsTrade2(...)
   }
 
-int Strategy_MinutesOfDay(const datetime t)
+// =============================================================================
+// SECTION: No Trade Filter  (time, spread, news)
+// =============================================================================
+// Return TRUE to BLOCK this tick. Cheap O(1) broker-time gates only. Blocks the
+// first 20 minutes of the NY session and the CST lunch hour — short windows in
+// which neither new entries nor discretionary management should run. The EOD
+// flatten (23:58 broker) is deliberately NOT gated here: it must remain on the
+// live tick path so Strategy_ExitSignal can flatten open positions. Per-entry
+// spread rejection lives in Strategy_EntrySignal (needs the stop distance).
+bool Strategy_NoTradeFilter()
   {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.hour * 60 + dt.min;
+   MqlDateTime t;
+   TimeToStruct(TimeCurrent(), t);
+   const int mod = t.hour * 60 + t.min;
+
+   const int ny_open = ny_open_hour_broker * 60 + ny_open_min_broker;
+   if(mod >= ny_open && mod < ny_open + ny_open_block_minutes)
+      return true;
+
+   const int lunch_start = lunch_start_hour_broker * 60;
+   const int lunch_end   = lunch_end_hour_broker * 60;
+   if(mod >= lunch_start && mod < lunch_end)
+      return true;
+
+   return false;
   }
 
-bool Strategy_InsideWindow(const int now_minute, const int start_minute, const int end_minute)
+// -----------------------------------------------------------------------------
+// Helpers (closed-bar / time math)
+// -----------------------------------------------------------------------------
+bool IsAfterEodFlat(const datetime now)
   {
-   if(start_minute == end_minute)
+   MqlDateTime t;
+   TimeToStruct(now, t);
+   const int mod = t.hour * 60 + t.min;
+   const int eod = eod_flat_hour_broker * 60 + eod_flat_min_broker;
+   return (mod >= eod);
+  }
+
+// Advance the session VWAP by exactly one closed bar (shift=1). Resets the
+// cumulative sums when the broker date rolls. O(1) — no history scan.
+void AdvanceState_OnNewBar()
+  {
+   const double h1 = iHigh(_Symbol, _Period, 1);             // perf-allowed: bespoke VWAP typical price
+   const double l1 = iLow(_Symbol, _Period, 1);              // perf-allowed: bespoke VWAP typical price
+   const double c1 = iClose(_Symbol, _Period, 1);            // perf-allowed: bespoke VWAP typical price
+   const double v1 = (double)iVolume(_Symbol, _Period, 1);   // perf-allowed: bespoke VWAP volume weight
+   const datetime bt = iTime(_Symbol, _Period, 1);           // perf-allowed: bespoke VWAP session reset
+   if(h1 <= 0.0 || l1 <= 0.0 || c1 <= 0.0 || bt <= 0)
+      return;
+
+   const datetime day = (datetime)(bt - (bt % 86400));
+   if(day != g_vwap_day)
+     {
+      g_vwap_day     = day;
+      g_vwap_cum_pv  = 0.0;
+      g_vwap_cum_vol = 0.0;
+     }
+
+   const double typical = (h1 + l1 + c1) / 3.0;
+   g_vwap_cum_pv  += typical * v1;
+   g_vwap_cum_vol += v1;
+   g_vwap = (g_vwap_cum_vol > 0.0) ? (g_vwap_cum_pv / g_vwap_cum_vol) : c1;
+  }
+
+// Kaufman Efficiency Ratio over `length` closed bars (ending at shift=1).
+double ComputeER(const int length)
+  {
+   if(length < 1)
+      return 0.0;
+   const double c_now = iClose(_Symbol, _Period, 1);          // perf-allowed: bespoke efficiency ratio
+   const double c_old = iClose(_Symbol, _Period, 1 + length); // perf-allowed: bespoke efficiency ratio
+   if(c_now <= 0.0 || c_old <= 0.0)
+      return 0.0;
+
+   const double direction = MathAbs(c_now - c_old);
+   double volatility = 0.0;
+   for(int i = 1; i <= length; ++i)
+     {
+      const double a = iClose(_Symbol, _Period, i);     // perf-allowed: bespoke efficiency ratio
+      const double b = iClose(_Symbol, _Period, i + 1); // perf-allowed: bespoke efficiency ratio
+      if(a <= 0.0 || b <= 0.0)
+         return 0.0;
+      volatility += MathAbs(a - b);
+     }
+   if(volatility <= 0.0)
+      return 0.0;
+   return direction / volatility;
+  }
+
+// Classify the regime on the last closed bar: trending requires ER >= threshold
+// PLUS full VWAP/MA directional alignment.
+int ClassifyRegime(const double er, const double fast, const double slow, const double close1)
+  {
+   if(g_vwap <= 0.0 || er < er_trend_threshold)
+      return 0;
+   if(fast > slow && fast > g_vwap && slow > g_vwap && close1 > g_vwap)
+      return +1;
+   if(fast < slow && fast < g_vwap && slow < g_vwap && close1 < g_vwap)
+      return -1;
+   return 0;
+  }
+
+// =============================================================================
+// SECTION: Trade Entry
+// =============================================================================
+// Called once per closed bar (OnTick guarantees QM_IsNewBar() == true). Fires on
+// the FIRST candle that transitions from non-trending into a fully-aligned
+// trend, with the card's "Full Filter" candle confirmations.
+bool Strategy_EntrySignal(QM_EntryRequest &req)
+  {
+   // Advance bespoke per-bar state first (VWAP), then regime.
+   AdvanceState_OnNewBar();
+
+   const double fast1 = QM_EMA(_Symbol, _Period, fast_ma_period, 1);
+   const double slow1 = QM_EMA(_Symbol, _Period, slow_ma_period, 1);
+   const double fast2 = QM_EMA(_Symbol, _Period, fast_ma_period, 2);
+   const double slow2 = QM_EMA(_Symbol, _Period, slow_ma_period, 2);
+   const double atr   = QM_ATR(_Symbol, _Period, atr_period, 1);
+   const double er    = ComputeER(er_length);
+
+   const double close1 = iClose(_Symbol, _Period, 1);  // perf-allowed: bespoke regime/candle close
+   const double open1  = iOpen(_Symbol, _Period, 1);   // perf-allowed: bespoke candle body size
+   const double high2  = iHigh(_Symbol, _Period, 2);   // perf-allowed: bespoke breakout confirmation
+   const double low2   = iLow(_Symbol, _Period, 2);    // perf-allowed: bespoke breakout confirmation
+
+   g_prev_regime = g_regime;
+   g_regime      = ClassifyRegime(er, fast1, slow1, close1);
+
+   if(atr <= 0.0 || g_vwap <= 0.0 || close1 <= 0.0 || open1 <= 0.0)
       return false;
-   if(start_minute < end_minute)
-      return (now_minute >= start_minute && now_minute < end_minute);
-   return (now_minute >= start_minute || now_minute < end_minute);
+
+   // No new entries once the EOD flatten window has begun.
+   if(IsAfterEodFlat(TimeCurrent()))
+      return false;
+
+   // Signal-candle body must clear the minimum-size threshold.
+   if(MathAbs(close1 - open1) < min_body_atr_frac * atr)
+      return false;
+
+   const double stop_dist = atr * atr_sl_mult;
+   const double tp_dist   = atr * atr_tp_mult;
+   if(stop_dist <= 0.0 || tp_dist <= 0.0)
+      return false;
+
+   // V5 spread guard: skip if spread > 15% of stop distance.
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
+      return false;
+   if((ask - bid) > spread_guard_frac * stop_dist)
+      return false;
+
+   req.price              = 0.0;   // market order
+   req.sl                 = 0.0;
+   req.tp                 = 0.0;
+   req.symbol_slot        = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   // LONG: non-trend -> uptrend transition + Full Filter confirmations.
+   if(g_regime == +1 && g_prev_regime != +1 &&
+      fast2 > slow2 &&                    // prior-bar MA alignment confirmed
+      fast1 > fast2 && slow1 > slow2 &&   // both MAs sloping up
+      close1 > high2)                     // close beyond prior-bar high
+     {
+      req.type   = QM_BUY;
+      req.sl     = ask - stop_dist;
+      req.tp     = ask + tp_dist;
+      req.reason = "XIZNIT_ER_LONG";
+      return true;
+     }
+
+   // SHORT: non-trend -> downtrend transition + Full Filter confirmations.
+   if(g_regime == -1 && g_prev_regime != -1 &&
+      fast2 < slow2 &&
+      fast1 < fast2 && slow1 < slow2 &&
+      close1 < low2)
+     {
+      req.type   = QM_SELL;
+      req.sl     = bid + stop_dist;
+      req.tp     = bid - tp_dist;
+      req.reason = "XIZNIT_ER_SHORT";
+      return true;
+     }
+
+   return false;
   }
 
-void Strategy_ResetSession()
+// =============================================================================
+// SECTION: Trade Management
+// =============================================================================
+// Card disables breakeven/trailing for the P2 baseline (tested in P3). The fixed
+// ATR bracket is attached at entry; nothing to adjust per tick.
+void Strategy_ManageOpenPosition()
   {
-   g_session_vwap = 0.0;
-   g_prev_session_vwap = 0.0;
-   g_session_volume_sum = 0.0;
-   g_session_bars = 0;
-   g_er_regime = 0;
-   g_prev_er_regime = 0;
-   g_long_signal = false;
-   g_short_signal = false;
+   // intentionally empty — P2 baseline runs the static bracket only.
   }
 
-bool Strategy_SelectOurPosition(ulong &ticket, ENUM_POSITION_TYPE &ptype)
+// =============================================================================
+// SECTION: Trade Close
+// =============================================================================
+// Per-tick discretionary close. Returns TRUE to flatten our position(s) when the
+// ER regime shifts away from the trade direction, or at the EOD flatten time.
+// Reads cached regime only (advanced once per closed bar) — O(1) per tick.
+bool Strategy_ExitSignal()
   {
-   ticket = 0;
-   ptype = POSITION_TYPE_BUY;
+   if(IsAfterEodFlat(TimeCurrent()))
+      return true;
 
    const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
-      const ulong t = PositionGetTicket(i);
-      if(t == 0 || !PositionSelectByTicket(t))
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
          continue;
       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
 
-      ticket = t;
-      ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      return true;
-     }
-
-   return false;
-  }
-
-double Strategy_EfficiencyRatio(const int length)
-  {
-   if(length < 2)
-      return 0.0;
-
-   const double close_now = iClose(_Symbol, _Period, 1);              // perf-allowed: ER on closed-bar path only.
-   const double close_then = iClose(_Symbol, _Period, length + 1);    // perf-allowed: ER on closed-bar path only.
-   if(close_now <= 0.0 || close_then <= 0.0)
-      return 0.0;
-
-   double path = 0.0;
-   for(int i = 1; i <= length; ++i)
-     {
-      const double c0 = iClose(_Symbol, _Period, i);                 // perf-allowed: bounded ER loop on closed-bar path only.
-      const double c1 = iClose(_Symbol, _Period, i + 1);             // perf-allowed: bounded ER loop on closed-bar path only.
-      if(c0 <= 0.0 || c1 <= 0.0)
-         return 0.0;
-      path += MathAbs(c0 - c1);
-     }
-
-   if(path <= 0.0)
-      return 0.0;
-   return MathAbs(close_now - close_then) / path;
-  }
-
-bool Strategy_AdvanceClosedBarState()
-  {
-   g_long_signal = false;
-   g_short_signal = false;
-
-   const datetime bar_time = iTime(_Symbol, _Period, 1);             // perf-allowed: session VWAP anchor on closed-bar path.
-   if(bar_time <= 0)
-      return false;
-
-   const int session_key = Strategy_SessionKey(bar_time);
-   if(session_key != g_session_key)
-     {
-      g_session_key = session_key;
-      Strategy_ResetSession();
-     }
-
-   const double open1 = iOpen(_Symbol, _Period, 1);                  // perf-allowed: signal candle body on closed-bar path.
-   const double high1 = iHigh(_Symbol, _Period, 1);                  // perf-allowed: VWAP typical price on closed-bar path.
-   const double low1 = iLow(_Symbol, _Period, 1);                    // perf-allowed: VWAP typical price on closed-bar path.
-   const double close1 = iClose(_Symbol, _Period, 1);                // perf-allowed: signal candle close on closed-bar path.
-   const double high2 = iHigh(_Symbol, _Period, 2);                  // perf-allowed: prior-bar breakout confirmation.
-   const double low2 = iLow(_Symbol, _Period, 2);                    // perf-allowed: prior-bar breakout confirmation.
-   const long tick_volume = iVolume(_Symbol, _Period, 1);            // perf-allowed: VWAP volume term on closed-bar path.
-   if(open1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0 || close1 <= 0.0 || high2 <= 0.0 || low2 <= 0.0)
-      return false;
-
-   g_prev_session_vwap = g_session_vwap;
-   const double volume = (tick_volume > 0) ? (double)tick_volume : 1.0;
-   const double typical = (high1 + low1 + close1) / 3.0;
-   g_session_vwap = (g_session_bars <= 0)
-                    ? typical
-                    : ((g_session_vwap * g_session_volume_sum + typical * volume) / (g_session_volume_sum + volume));
-   g_session_volume_sum += volume;
-   g_session_bars++;
-
-   g_last_atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
-   const double fast1 = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_fast_ma_period, 1);
-   const double fast2 = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_fast_ma_period, 2);
-   const double slow1 = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_slow_ma_period, 1);
-   const double slow2 = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_slow_ma_period, 2);
-   if(g_last_atr <= 0.0 || fast1 <= 0.0 || fast2 <= 0.0 || slow1 <= 0.0 || slow2 <= 0.0 ||
-      g_session_vwap <= 0.0 || g_prev_session_vwap <= 0.0)
-      return false;
-
-   const double er = Strategy_EfficiencyRatio(strategy_er_length);
-   const double close_then = iClose(_Symbol, _Period, strategy_er_length + 1); // perf-allowed: ER direction on closed-bar path.
-   g_prev_er_regime = g_er_regime;
-   if(er >= strategy_er_trend_threshold && close1 > close_then)
-      g_er_regime = 1;
-   else if(er >= strategy_er_trend_threshold && close1 < close_then)
-      g_er_regime = -1;
-   else
-      g_er_regime = 0;
-
-   if(g_session_bars < strategy_min_session_bars)
-      return true;
-
-   const double body = MathAbs(close1 - open1);
-   const bool body_ok = (body >= strategy_min_body_atr_frac * g_last_atr);
-   const bool long_alignment = (close1 > g_session_vwap &&
-                                fast1 > slow1 &&
-                                fast1 > g_session_vwap &&
-                                slow1 > g_session_vwap &&
-                                fast2 > slow2 &&
-                                fast2 > g_prev_session_vwap &&
-                                slow2 > g_prev_session_vwap);
-   const bool short_alignment = (close1 < g_session_vwap &&
-                                 fast1 < slow1 &&
-                                 fast1 < g_session_vwap &&
-                                 slow1 < g_session_vwap &&
-                                 fast2 < slow2 &&
-                                 fast2 < g_prev_session_vwap &&
-                                 slow2 < g_prev_session_vwap);
-   const bool long_slope = (fast1 > fast2 && slow1 > slow2);
-   const bool short_slope = (fast1 < fast2 && slow1 < slow2);
-
-   g_long_signal = (g_prev_er_regime == 0 &&
-                    g_er_regime == 1 &&
-                    long_alignment &&
-                    long_slope &&
-                    body_ok &&
-                    close1 > high2);
-   g_short_signal = (g_prev_er_regime == 0 &&
-                     g_er_regime == -1 &&
-                     short_alignment &&
-                     short_slope &&
-                     body_ok &&
-                     close1 < low2);
-
-   return true;
-  }
-
-// -----------------------------------------------------------------------------
-// Strategy hooks — implement these against the card mechanically.
-// -----------------------------------------------------------------------------
-
-// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
-// regime filter). Cheap O(1) checks only — runs on every tick.
-bool Strategy_NoTradeFilter()
-  {
-   // Time: baseline is the card's M2/M5 intraday cadence.
-   if(_Period != PERIOD_M2 && _Period != PERIOD_M5)
-      return true;
-
-   if(strategy_fast_ma_period < 1 ||
-      strategy_slow_ma_period <= strategy_fast_ma_period ||
-      strategy_er_length < 2 ||
-      strategy_er_trend_threshold <= 0.0 ||
-      strategy_atr_period < 1 ||
-      strategy_atr_stop_mult <= 0.0 ||
-      strategy_atr_target_mult <= 0.0 ||
-      strategy_min_body_atr_frac < 0.0 ||
-      strategy_max_spread_stop_frac <= 0.0 ||
-      strategy_min_session_bars < 1)
-      return true;
-
-   ulong ticket;
-   ENUM_POSITION_TYPE ptype;
-   if(Strategy_SelectOurPosition(ticket, ptype))
-      return false;
-
-   const datetime broker_now = TimeCurrent();
-   const int now_minute = Strategy_MinutesOfDay(broker_now);
-   const int open_start = MathMax(0, MathMin(1439, strategy_ny_open_hour_broker * 60 + strategy_ny_open_minute));
-   const int open_end = MathMax(0, MathMin(1439, open_start + strategy_open_block_minutes));
-   if(Strategy_InsideWindow(now_minute, open_start, open_end))
-      return true;
-
-   const int lunch_start = MathMax(0, MathMin(1439, strategy_lunch_start_hour * 60));
-   const int lunch_end = MathMax(0, MathMin(1439, strategy_lunch_end_hour * 60));
-   if(Strategy_InsideWindow(now_minute, lunch_start, lunch_end))
-      return true;
-
-   // Spread: card guard skips entries when spread exceeds 15% of ATR stop distance.
-   if(g_last_atr > 0.0)
-     {
-      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      const double stop_distance = strategy_atr_stop_mult * g_last_atr;
-      if(ask <= 0.0 || bid <= 0.0 || ask <= bid || stop_distance <= 0.0)
+      const ENUM_POSITION_TYPE pt = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      if(pt == POSITION_TYPE_BUY  && g_regime != +1)
          return true;
-      if((ask - bid) > strategy_max_spread_stop_frac * stop_distance)
+      if(pt == POSITION_TYPE_SELL && g_regime != -1)
          return true;
      }
-
-   // News: central framework news filter plus Strategy_NewsFilterHook provide P8 compatibility.
    return false;
-  }
-
-// Populate `req` with entry order parameters and return TRUE if a NEW entry
-// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
-// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
-bool Strategy_EntrySignal(QM_EntryRequest &req)
-  {
-   req.type = QM_BUY;
-   req.price = 0.0;
-   req.sl = 0.0;
-   req.tp = 0.0;
-   req.reason = "";
-   req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
-
-   if(!Strategy_AdvanceClosedBarState())
-      return false;
-
-   const int now_minute = Strategy_MinutesOfDay(TimeCurrent());
-   const int flat_minute = MathMax(0, MathMin(1439, strategy_flat_hour_broker * 60 + strategy_flat_minute_broker));
-   if(now_minute >= flat_minute)
-      return false;
-
-   ulong ticket;
-   ENUM_POSITION_TYPE ptype;
-   if(Strategy_SelectOurPosition(ticket, ptype))
-      return false;
-
-   if(!g_long_signal && !g_short_signal)
-      return false;
-
-   const QM_OrderType side = g_long_signal ? QM_BUY : QM_SELL;
-   const double entry = (side == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                                         : SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(entry <= 0.0)
-      return false;
-
-   const double sl = QM_StopATR(_Symbol, side, entry, strategy_atr_period, strategy_atr_stop_mult);
-   const double tp = QM_TakeATR(_Symbol, side, entry, strategy_atr_period, strategy_atr_target_mult);
-   if(sl <= 0.0 || tp <= 0.0)
-      return false;
-
-   req.type = side;
-   req.sl = sl;
-   req.tp = tp;
-   req.reason = (side == QM_BUY) ? "ER_RESET_TO_UP_FULL_FILTER" : "ER_RESET_TO_DOWN_FULL_FILTER";
-   return true;
-  }
-
-// Called every tick when an open position exists for this EA's magic.
-// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
-void Strategy_ManageOpenPosition()
-  {
-   // Card P2 baseline disables breakeven and does not specify trailing or partial exits.
-  }
-
-// Return TRUE to close the open position now (e.g. opposite-signal exit,
-// max-hold-time exceeded, session end).
-bool Strategy_ExitSignal()
-  {
-   ulong ticket;
-   ENUM_POSITION_TYPE ptype;
-   if(!Strategy_SelectOurPosition(ticket, ptype))
-      return false;
-
-   if(QM_IsNewBar())
-      Strategy_AdvanceClosedBarState();
-
-   const int now_minute = Strategy_MinutesOfDay(TimeCurrent());
-   const int flat_minute = MathMax(0, MathMin(1439, strategy_flat_hour_broker * 60 + strategy_flat_minute_broker));
-   if(now_minute >= flat_minute)
-      return true;
-
-   if(ptype == POSITION_TYPE_BUY && g_er_regime != 1)
-      return true;
-   if(ptype == POSITION_TYPE_SELL && g_er_regime != -1)
-      return true;
-
-   return false;
-  }
-
-// Optional news-filter override. Return TRUE to suppress trading regardless
-// of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
-// custom high-impact-event handling beyond the central filter.
-bool Strategy_NewsFilterHook(const datetime broker_time)
-  {
-   return false; // defer to QM_NewsAllowsTrade(...); callable hook retained for P8.
   }
 
 // -----------------------------------------------------------------------------
@@ -449,7 +357,7 @@ int OnInit()
                         qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"ea\":\"QM5_10856_tv_xiznit_er\",\"card\":\"QM5_10856\"}");
    return INIT_SUCCEEDED;
   }
 
@@ -485,7 +393,7 @@ void OnTick()
    // Per-tick: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
-   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
+   // Per-tick: discretionary exit (regime shift / EOD flat). Separate from SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -500,14 +408,11 @@ void OnTick()
         }
      }
 
-   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
-   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
-   // call, not every incoming tick.
+   // Per-closed-bar: entry-signal evaluation.
    if(!QM_IsNewBar())
       return;
 
-   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
-   // since last tick. Cheap: most calls early-return on same-day check.
+   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled.
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
@@ -528,7 +433,6 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
                         const MqlTradeResult &result)
   {
    // FW4: feeds closing-deal net-profits to the KS kill-switch.
-   // No-op outside Q13 (when no baseline.json exists).
    QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
