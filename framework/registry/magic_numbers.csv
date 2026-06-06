@@ -5996,3 +5996,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10923,grimes-donchian,2,USDJPY.DWX,109230002,2026-06-06,Development,active
 10923,grimes-donchian,3,XAUUSD.DWX,109230003,2026-06-06,Development,active
 10923,grimes-donchian,4,XTIUSD.DWX,109230004,2026-06-06,Development,active
+10925,grimes-polarity,0,EURUSD.DWX,109250000,2026-06-06,Development,active
+10925,grimes-polarity,1,GBPUSD.DWX,109250001,2026-06-06,Development,active
+10925,grimes-polarity,2,USDJPY.DWX,109250002,2026-06-06,Development,active
+10925,grimes-polarity,3,XAUUSD.DWX,109250003,2026-06-06,Development,active
+10925,grimes-polarity,4,GDAXI.DWX,109250004,2026-06-06,Development,active
