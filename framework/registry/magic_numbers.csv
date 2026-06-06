@@ -5840,6 +5840,16 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10852,tv-brosio-8range,2,GDAXI.DWX,108520002,2026-06-06,Development,active
 10852,tv-brosio-8range,3,XAUUSD.DWX,108520003,2026-06-06,Development,active
 10852,tv-brosio-8range,4,GBPUSD.DWX,108520004,2026-06-06,Development,active
+10855,tv-inside2-bo,0,XAUUSD.DWX,108550000,2026-06-06,Development,active
+10855,tv-inside2-bo,1,EURUSD.DWX,108550001,2026-06-06,Development,active
+10855,tv-inside2-bo,2,GBPUSD.DWX,108550002,2026-06-06,Development,active
+10855,tv-inside2-bo,3,NDX.DWX,108550003,2026-06-06,Development,active
+10855,tv-inside2-bo,4,GDAXI.DWX,108550004,2026-06-06,Development,active
+10854,tv-liq-entry,0,EURUSD.DWX,108540000,2026-06-06,Development,active
+10854,tv-liq-entry,1,GBPUSD.DWX,108540001,2026-06-06,Development,active
+10854,tv-liq-entry,2,XAUUSD.DWX,108540002,2026-06-06,Development,active
+10854,tv-liq-entry,3,NDX.DWX,108540003,2026-06-06,Development,active
+10854,tv-liq-entry,4,GDAXI.DWX,108540004,2026-06-06,Development,active
 10854,tv-liq-entry,0,EURUSD.DWX,108540000,2026-06-06,Development,active
 10854,tv-liq-entry,1,GBPUSD.DWX,108540001,2026-06-06,Development,active
 10854,tv-liq-entry,2,XAUUSD.DWX,108540002,2026-06-06,Development,active
