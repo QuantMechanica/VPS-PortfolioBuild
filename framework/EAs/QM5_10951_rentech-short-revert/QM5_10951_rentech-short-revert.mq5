@@ -3,6 +3,7 @@
 #property description "QM5_10951 Renaissance-style short horizon reversion"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_Signals.mqh>
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                     = 10951;
@@ -169,16 +170,12 @@ bool Strategy_ExitSignal()
    if(magic <= 0)
       return false;
 
-   MqlRates rates[];
-   ArraySetAsSeries(rates, true);
-   if(CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, 1, rates) != 1) // perf-allowed: one closed bar read for card-mandated close-vs-EMA exit.
-      return false;
-
-   const double close1 = rates[0].close;
+   const int price_vs_exit_ema = QM_Sig_Price_Above_MA(_Symbol, (ENUM_TIMEFRAMES)_Period,
+                                                       strategy_ema_exit_period, 0.0, 1);
    const double ema_exit = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_ema_exit_period, 1);
    const double rsi = QM_RSI(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_rsi_period, 1);
    const int period_seconds = PeriodSeconds((ENUM_TIMEFRAMES)_Period);
-   if(close1 <= 0.0 || ema_exit <= 0.0 || rsi <= 0.0 || period_seconds <= 0)
+   if(ema_exit <= 0.0 || rsi <= 0.0 || period_seconds <= 0)
       return false;
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -194,9 +191,9 @@ bool Strategy_ExitSignal()
       const ENUM_POSITION_TYPE type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
       const bool time_exit = ((TimeCurrent() - open_time) >= strategy_time_exit_bars * period_seconds);
-      if(type == POSITION_TYPE_BUY && (close1 >= ema_exit || rsi > 60.0 || time_exit))
+      if(type == POSITION_TYPE_BUY && (price_vs_exit_ema >= 0 || rsi > 60.0 || time_exit))
          return true;
-      if(type == POSITION_TYPE_SELL && (close1 <= ema_exit || rsi < 40.0 || time_exit))
+      if(type == POSITION_TYPE_SELL && (price_vs_exit_ema <= 0 || rsi < 40.0 || time_exit))
          return true;
      }
 
