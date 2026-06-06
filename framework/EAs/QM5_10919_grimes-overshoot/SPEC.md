@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA trades H4 climax reversals after a mature trend overshoots a Keltner-style EMA20 +/- 2.25 ATR20 channel. A short setup requires price above EMA50 with EMA50 rising for 30 bars, an upside acceleration, a wide-range new 20-bar high, and a weak close in the lower 35% of the exhaustion bar; the long setup mirrors those conditions after a downside overshoot. After detecting an exhaustion bar, the EA waits up to three subsequent H4 bars and enters at market when the last closed bar traded beyond the exhaustion low for shorts or high for longs. It uses the exhaustion extreme plus 0.25 ATR20 as the stop, rejects stops above 3.5 ATR20, places a 2R target, partially closes at 1R, exits on EMA20 touch, and time-exits after 12 H4 bars.
+The EA trades H4 climax reversals after a mature trend overshoots a Keltner-style EMA20 +/- 2.25 ATR20 channel. A short setup requires price above EMA50 with EMA50 rising for 30 bars, an upside acceleration, a wide-range new 20-bar high, and a weak close in the lower 35% of the exhaustion bar; the long setup mirrors those conditions after a downside overshoot. After detecting an exhaustion bar, the EA places a stop order at the exhaustion low for shorts or high for longs, valid for the next three H4 bars. It uses the exhaustion extreme plus 0.25 ATR20 as the stop, rejects stops above 3.5 ATR20, places a 2R target, partially closes at 1R, exits on EMA20 touch, and time-exits after 12 H4 bars.
 
 ---
 

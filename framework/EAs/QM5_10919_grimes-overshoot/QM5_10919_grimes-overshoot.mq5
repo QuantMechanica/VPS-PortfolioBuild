@@ -201,7 +201,10 @@ bool Strategy_BuildRequest(const bool long_signal,
    if(Strategy_GrimesSlideConflict(long_signal))
       return false;
 
-   const double entry = long_signal ? ask : bid;
+   const double entry = long_signal ? exhaustion_high : exhaustion_low;
+   if(entry <= 0.0)
+      return false;
+
    const double raw_sl = long_signal ? (exhaustion_low - strategy_stop_buffer_atr * atr)
                                      : (exhaustion_high + strategy_stop_buffer_atr * atr);
    const double sl = NormalizeDouble(raw_sl, _Digits);
@@ -217,13 +220,13 @@ bool Strategy_BuildRequest(const bool long_signal,
    if(tp_dist <= 0.0)
       return false;
 
-   req.type = long_signal ? QM_BUY : QM_SELL;
-   req.price = 0.0;
+   req.type = long_signal ? QM_BUY_STOP : QM_SELL_STOP;
+   req.price = NormalizeDouble(entry, _Digits);
    req.sl = sl;
    req.tp = NormalizeDouble(long_signal ? (entry + tp_dist) : (entry - tp_dist), _Digits);
    req.reason = reason;
    req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
+   req.expiration_seconds = strategy_trigger_window_bars * PeriodSeconds(strategy_timeframe);
    return true;
   }
 
@@ -335,10 +338,20 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!Strategy_LoadRates(rates))
       return false;
 
-   if(Strategy_CheckPendingTrigger(rates, req))
-      return true;
-
    Strategy_DetectExhaustion(rates);
+   if(g_pending_dir != 0)
+     {
+      const bool want_long = (g_pending_dir > 0);
+      const bool built = Strategy_BuildRequest(want_long,
+                                               g_pending_low,
+                                               g_pending_high,
+                                               g_pending_atr,
+                                               want_long ? "grimes_overshoot_long_stop" : "grimes_overshoot_short_stop",
+                                               req);
+      Strategy_ClearPending();
+      return built;
+     }
+
    return false;
   }
 
@@ -398,13 +411,13 @@ bool Strategy_ExitSignal()
    if(position_type == POSITION_TYPE_BUY)
      {
       const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      return (bid > 0.0 && bid <= ema20);
+      return (bid > 0.0 && bid >= ema20);
      }
 
    if(position_type == POSITION_TYPE_SELL)
      {
       const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      return (ask > 0.0 && ask >= ema20);
+      return (ask > 0.0 && ask <= ema20);
      }
 
    return false;
