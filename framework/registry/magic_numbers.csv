@@ -6091,3 +6091,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10944,grimes-time-trend,1,NDX.DWX,109440001,2026-06-06,Development,active
 10944,grimes-time-trend,2,WS30.DWX,109440002,2026-06-06,Development,active
 10944,grimes-time-trend,3,GDAXI.DWX,109440003,2026-06-06,Development,active
+10950,rentech-short-trend,0,EURUSD.DWX,109500000,2026-06-06,Development,active
+10950,rentech-short-trend,1,GBPUSD.DWX,109500001,2026-06-06,Development,active
+10950,rentech-short-trend,2,XAUUSD.DWX,109500002,2026-06-06,Development,active
+10950,rentech-short-trend,3,XAGUSD.DWX,109500003,2026-06-06,Development,active
+10950,rentech-short-trend,4,XTIUSD.DWX,109500004,2026-06-06,Development,active
+10950,rentech-short-trend,5,GDAXI.DWX,109500005,2026-06-06,Development,active
+10950,rentech-short-trend,6,NDX.DWX,109500006,2026-06-06,Development,active
