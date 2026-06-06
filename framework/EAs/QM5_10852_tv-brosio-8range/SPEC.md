@@ -10,7 +10,9 @@
 
 ## 1. Strategy Logic
 
-The EA trades the M5 08:00 opening range. It builds the high, low, and midpoint from the first 15 minutes after the configured anchor time, then trades only during the configured morning window. A long signal requires a prior break above the range high, then a closed bar that retraces to the midpoint tolerance and closes back above the midpoint; shorts mirror this below the range low. The stop is the opposite side of the 08:00 range, the take-profit is 4R, and the stop is moved to breakeven after 2R.
+The EA trades the M5 08:00 New-York opening range. It builds the high, low, and midpoint from the first 15 minutes after the configured anchor time, then trades only during the configured morning window. A long signal requires a prior break above the range high, then (after the break) a closed bar that retraces to the midpoint tolerance and a subsequent closed bar that closes back above the midpoint (reclaim); shorts mirror this below the range low. The stop is the opposite side of the opening range, the take-profit is 4R, and the stop is moved to breakeven after 2R; any open position is force-closed at the end of the entry window.
+
+All session times are stored in **broker server time**. The source anchors are New York exchange local (America/New_York); the Darwinex NY-Close server runs NY + 7h year-round (server GMT+2/+3 vs NY GMT-5/-4, both switching on US DST), so 08:00/09:45/11:40 NY map to 15:00/16:45/18:40 broker.
 
 ---
 
@@ -18,12 +20,12 @@ The EA trades the M5 08:00 opening range. It builds the high, low, and midpoint 
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `strategy_anchor_hour` | 8 | 0-23 | Broker-time hour for the opening-range anchor. |
+| `strategy_anchor_hour` | 15 | 0-23 | Broker-time hour for the opening-range anchor (08:00 NY). |
 | `strategy_anchor_minute` | 0 | 0-59 | Broker-time minute for the opening-range anchor. |
 | `strategy_range_minutes` | 15 | 5-60 | Number of minutes used to form the opening range. |
-| `strategy_trade_start_hour` | 9 | 0-23 | Broker-time hour when entries may start. |
+| `strategy_trade_start_hour` | 16 | 0-23 | Broker-time hour when entries may start (09:45 NY). |
 | `strategy_trade_start_minute` | 45 | 0-59 | Broker-time minute when entries may start. |
-| `strategy_trade_end_hour` | 11 | 0-23 | Broker-time hour for session-end forced exit. |
+| `strategy_trade_end_hour` | 18 | 0-23 | Broker-time hour for session-end forced exit (11:40 NY). |
 | `strategy_trade_end_minute` | 40 | 0-59 | Broker-time minute for session-end forced exit. |
 | `strategy_atr_period` | 14 | 2-100 | ATR period for validating opening-range width. |
 | `strategy_min_range_atr_mult` | 0.5 | 0.0-5.0 | Minimum accepted range width as a multiple of ATR. |
