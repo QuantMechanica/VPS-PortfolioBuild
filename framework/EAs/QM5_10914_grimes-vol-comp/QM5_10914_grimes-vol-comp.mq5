@@ -198,10 +198,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    // 20-bar consolidation window PRIOR to the breakout bar (shifts 2..N+1).
    double hh = -DBL_MAX, ll = DBL_MAX;
-   for(int i = 2; i <= InpRangeLookback + 1; ++i) // perf-allowed: bespoke structural HH/LL, new-bar gated
+   for(int i = 2; i <= InpRangeLookback + 1; ++i) // bespoke structural HH/LL, new-bar gated
      {
-      const double h = iHigh(_Symbol, _Period, i);
-      const double l = iLow(_Symbol, _Period, i);
+      const double h = iHigh(_Symbol, _Period, i); // perf-allowed: structural 20-bar high, new-bar gated
+      const double l = iLow(_Symbol, _Period, i);  // perf-allowed: structural 20-bar low, new-bar gated
       if(h <= 0.0 || l <= 0.0)
          return false;
       if(h > hh) hh = h;
