@@ -35,6 +35,7 @@ input int    strategy_session_end_hour         = 23;
 input int    strategy_session_end_minute       = 0;
 input int    strategy_profile_lookback_bars    = 500;
 input double strategy_value_area_fraction      = 0.70;
+input int    strategy_profile_bins             = 50;
 input int    strategy_atr_period               = 14;
 input double strategy_min_va_width_atr_h1      = 1.0;
 input double strategy_max_va_width_atr_h1      = 4.0;
@@ -150,9 +151,11 @@ bool Strategy_BuildProfile(const MqlRates &rates[], const int count, const int p
    profile.low = 0.0;
    profile.session_key = profile_key;
 
+   // Pass 1: previous regular-session high/low.
+   if(strategy_value_area_fraction <= 0.0 || strategy_value_area_fraction > 1.0)
+      return false;
+
    bool have = false;
-   long best_volume = -1;
-   double best_tpo_price = 0.0;
    for(int i = 0; i < count; ++i)
      {
       if(!Strategy_IsInRegularSession(rates[i].time))
@@ -173,40 +176,100 @@ bool Strategy_BuildProfile(const MqlRates &rates[], const int count, const int p
          if(rates[i].low < profile.low)
             profile.low = rates[i].low;
         }
+     }
 
-      if(rates[i].tick_volume > best_volume)
+   if(!have || profile.high <= profile.low)
+      return false;
+
+   // Pass 2: build a price-binned TPO / volume-profile histogram. Each M30
+   // block distributes its tick volume across the price bins its high-low
+   // range spans (card-documented session volume-profile value-area
+   // approximation). Bins are bounded so this stays O(bins*session_bars),
+   // executed once per closed bar.
+   const int bins = (int)MathMax(10, MathMin(strategy_profile_bins, 250));
+   double hist[];
+   if(ArrayResize(hist, bins) != bins)
+      return false;
+   ArrayInitialize(hist, 0.0);
+
+   const double range = profile.high - profile.low;
+   const double bin_width = range / bins;
+   if(bin_width <= 0.0)
+      return false;
+
+   double total = 0.0;
+   for(int i = 0; i < count; ++i)
+     {
+      if(!Strategy_IsInRegularSession(rates[i].time))
+         continue;
+      if(Strategy_SessionKey(rates[i].time) != profile_key)
+         continue;
+
+      int lo_bin = (int)MathFloor((rates[i].low - profile.low) / bin_width);
+      int hi_bin = (int)MathFloor((rates[i].high - profile.low) / bin_width);
+      if(lo_bin < 0)
+         lo_bin = 0;
+      if(hi_bin > bins - 1)
+         hi_bin = bins - 1;
+      if(hi_bin < lo_bin)
+         hi_bin = lo_bin;
+
+      const int spanned = hi_bin - lo_bin + 1;
+      const double vol = (double)rates[i].tick_volume;
+      const double share = (spanned > 0) ? vol / spanned : vol;
+      for(int b = lo_bin; b <= hi_bin; ++b)
         {
-         best_volume = rates[i].tick_volume;
-         best_tpo_price = (rates[i].high + rates[i].low + rates[i].close) / 3.0;
+         hist[b] += share;
+         total += share;
         }
      }
 
-   if(!have || profile.high <= profile.low || best_tpo_price <= 0.0)
+   if(total <= 0.0)
       return false;
 
-   const double range = profile.high - profile.low;
-   double width = range * strategy_value_area_fraction;
-   if(width <= 0.0 || strategy_value_area_fraction <= 0.0 || strategy_value_area_fraction > 1.0)
-      return false;
+   // POC = highest-volume price bin.
+   int poc_bin = 0;
+   double poc_vol = hist[0];
+   for(int b = 1; b < bins; ++b)
+      if(hist[b] > poc_vol)
+        {
+         poc_vol = hist[b];
+         poc_bin = b;
+        }
 
-   profile.poc = MathMax(profile.low, MathMin(profile.high, best_tpo_price));
-   profile.val = profile.poc - width * 0.5;
-   profile.vah = profile.poc + width * 0.5;
+   // Value area: expand outward from the POC bin, always adding the larger of
+   // the two neighbouring bins, until value_area_fraction of total volume is
+   // captured (standard 70% value-area construction rule).
+   double captured = hist[poc_bin];
+   int lo = poc_bin;
+   int hi = poc_bin;
+   const double target = total * strategy_value_area_fraction;
+   while(captured < target && (lo > 0 || hi < bins - 1))
+     {
+      const double below = (lo > 0) ? hist[lo - 1] : -1.0;
+      const double above = (hi < bins - 1) ? hist[hi + 1] : -1.0;
+      if(above >= below && above >= 0.0)
+        {
+         hi++;
+         captured += hist[hi];
+        }
+      else if(below >= 0.0)
+        {
+         lo--;
+         captured += hist[lo];
+        }
+      else
+         break;
+     }
 
-   if(profile.val < profile.low)
-     {
-      profile.vah += (profile.low - profile.val);
-      profile.val = profile.low;
-     }
-   if(profile.vah > profile.high)
-     {
-      profile.val -= (profile.vah - profile.high);
-      profile.vah = profile.high;
-     }
+   profile.poc = profile.low + (poc_bin + 0.5) * bin_width;
+   profile.val = profile.low + lo * bin_width;
+   profile.vah = profile.low + (hi + 1) * bin_width;
 
    profile.val = MathMax(profile.low, profile.val);
    profile.vah = MathMin(profile.high, profile.vah);
-   profile.ok = (profile.vah > profile.val && profile.poc > profile.val && profile.poc < profile.vah);
+   profile.poc = MathMax(profile.val, MathMin(profile.vah, profile.poc));
+   profile.ok = (profile.vah > profile.val && profile.poc >= profile.val && profile.poc <= profile.vah);
    return profile.ok;
   }
 
