@@ -59,13 +59,18 @@ Start-Sleep -Seconds 2
 $after = FreeGB
 Log "caches cleared: D: ${free}GB -> ${after}GB (reclaimed $([math]::Round($after-$free,1))GB)"
 
-# 3. restart factory (this process runs as interactive qm-admin -> workers land
-#    in the visible RDP session)
+# 3. restart factory INTO the autologon console session (visible-mode) via the
+#    console-session launcher. This task runs as SYSTEM (SeTcb) so the launcher
+#    can CreateProcessAsUser into qm-admin's session even when RDP is DISCONNECTED.
+#    A plain `& $py ...` here would land workers in SYSTEM's session-0 (hazard).
+#    Workers were all killed above, so start_terminal_workers spawns a clean 10
+#    (its --dedupe CIM scan is irrelevant with nothing to dedupe).
 Enable-ScheduledTask -TaskName 'QM_StrategyFarm_Pump_5min' -ErrorAction SilentlyContinue | Out-Null
 Enable-ScheduledTask -TaskName 'QM_StrategyFarm_Tick_5min' -ErrorAction SilentlyContinue | Out-Null
-& $py (Join-Path $RepoRoot 'tools\strategy_farm\start_terminal_workers.py') --repo-root $RepoRoot --farm-root $FarmRoot --dedupe | Out-Null
+$launcher = Join-Path $RepoRoot 'tools\strategy_farm\run_in_console_session.ps1'
+$swArgs = '"' + (Join-Path $RepoRoot 'tools\strategy_farm\start_terminal_workers.py') + '" --repo-root "' + $RepoRoot + '" --farm-root "' + $FarmRoot + '" --dedupe'
+& powershell.exe -NoProfile -ExecutionPolicy Bypass -File $launcher -Exe $py -Arguments $swArgs -WorkDir $RepoRoot | Out-Null
 Start-Sleep -Seconds 12
 $daemons = @(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe' OR Name='python.exe'" | Where-Object CommandLine -match 'terminal_worker\.py')
-$sid = (Get-Process -Id $PID).SessionId
 Start-ScheduledTask -TaskName 'QM_StrategyFarm_Pump_5min' -ErrorAction SilentlyContinue
-Log "factory restarted: $($daemons.Count)/10 workers (this session=$sid); pump triggered; D: free $(FreeGB)GB"
+Log "factory restarted: $($daemons.Count)/10 workers (console-session launcher); pump triggered; D: free $(FreeGB)GB"
