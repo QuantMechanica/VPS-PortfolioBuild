@@ -168,7 +168,9 @@ void Strategy_RemoveExpiredPendingStops()
      }
   }
 
-bool Strategy_BuildInsideBarRequest(QM_EntryRequest &req, int &signal_direction)
+bool Strategy_BuildInsideBarRequest(QM_EntryRequest &req,
+                                    int &signal_direction,
+                                    const bool require_orderable = true)
   {
    signal_direction = 0;
    req.type = QM_BUY_STOP;
@@ -186,6 +188,8 @@ bool Strategy_BuildInsideBarRequest(QM_EntryRequest &req, int &signal_direction)
    const int bars_needed = MathMax(strategy_range_lookback_bars, 2);
    MqlRates bars[];
    ArraySetAsSeries(bars, true);
+   // perf-allowed: structural inside-bar/range math has no framework OHLC reader.
+   // Strategy_EntrySignal is called only after the skeleton's QM_IsNewBar gate.
    if(CopyRates(_Symbol, PERIOD_H4, 1, bars_needed, bars) < bars_needed)
       return false;
 
@@ -221,11 +225,6 @@ bool Strategy_BuildInsideBarRequest(QM_EntryRequest &req, int &signal_direction)
    if(recent_high - recent_low < strategy_min_range_atr_mult * atr)
       return false;
 
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0 || ask <= bid)
-      return false;
-
    const bool long_signal = (inside_close > ema);
    const bool short_signal = (inside_close < ema);
    if(!long_signal && !short_signal)
@@ -239,13 +238,21 @@ bool Strategy_BuildInsideBarRequest(QM_EntryRequest &req, int &signal_direction)
    if(entry <= 0.0 || sl <= 0.0 || stop_distance <= 0.0)
       return false;
 
-   if(ask - bid > strategy_max_spread_stop_pct * stop_distance)
-      return false;
+   if(require_orderable)
+     {
+      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      if(ask <= 0.0 || bid <= 0.0 || ask <= bid)
+         return false;
 
-   if(long_signal && ask >= entry)
-      return false;
-   if(short_signal && bid <= entry)
-      return false;
+      if(ask - bid > strategy_max_spread_stop_pct * stop_distance)
+         return false;
+
+      if(long_signal && ask >= entry)
+         return false;
+      if(short_signal && bid <= entry)
+         return false;
+     }
 
    req.type = long_signal ? QM_BUY_STOP : QM_SELL_STOP;
    req.price = QM_StopRulesNormalizePrice(_Symbol, entry);
@@ -279,7 +286,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    g_cached_opposite_exit_direction = 0;
 
    int signal_direction = 0;
-   if(!Strategy_BuildInsideBarRequest(req, signal_direction))
+   if(!Strategy_BuildInsideBarRequest(req, signal_direction, false))
       return false;
 
    const int position_direction = Strategy_CurrentPositionDirection();
@@ -293,7 +300,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(Strategy_HasPendingStopOrder())
       return false;
 
-   return true;
+   return Strategy_BuildInsideBarRequest(req, signal_direction, true);
   }
 
 // Called every tick when an open position exists for this EA's magic.
