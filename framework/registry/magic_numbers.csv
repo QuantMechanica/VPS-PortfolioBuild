@@ -6147,3 +6147,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10962,ftmo-ichi-fib,1,EURUSD.DWX,109620001,2026-06-06,Development,active
 10962,ftmo-ichi-fib,2,GBPJPY.DWX,109620002,2026-06-06,Development,active
 10962,ftmo-ichi-fib,3,XAUUSD.DWX,109620003,2026-06-06,Development,active
+10963,ftmo-amd-dist,0,EURUSD.DWX,109630000,2026-06-06,Development,active
+10963,ftmo-amd-dist,1,GBPUSD.DWX,109630001,2026-06-06,Development,active
+10963,ftmo-amd-dist,2,XAUUSD.DWX,109630002,2026-06-06,Development,active
+10963,ftmo-amd-dist,3,NDX.DWX,109630003,2026-06-06,Development,active
+10964,ftmo-va-break,0,SP500.DWX,109640000,2026-06-06,Development,active
+10964,ftmo-va-break,1,NDX.DWX,109640001,2026-06-06,Development,active
+10964,ftmo-va-break,2,WS30.DWX,109640002,2026-06-06,Development,active
+10964,ftmo-va-break,3,XAUUSD.DWX,109640003,2026-06-06,Development,active
