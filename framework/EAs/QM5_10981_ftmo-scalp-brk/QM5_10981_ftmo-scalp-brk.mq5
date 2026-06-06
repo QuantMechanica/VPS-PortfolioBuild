@@ -336,6 +336,9 @@ bool Strategy_NoTradeFilter()
    if(_Period != PERIOD_M5)
       return true;
 
+   if(HasOurOpenPosition())
+      return false;
+
    const datetime broker_now = TimeCurrent();
    if(CurrentLiquidityWindow(broker_now) <= 0)
       return true;
@@ -488,7 +491,9 @@ bool Strategy_ExitSignal()
       if(TimeCurrent() - open_time >= max_hold_seconds)
          return true;
 
-      if(g_breakout_range_high > g_breakout_range_low && TimeCurrent() - open_time >= PeriodSeconds(PERIOD_M5))
+      if(g_breakout_range_high > g_breakout_range_low &&
+         TimeCurrent() - open_time >= PeriodSeconds(PERIOD_M5) &&
+         QM_IsNewBar(_Symbol, PERIOD_M5))
         {
          const double close1 = BarClose(1);
          if(close1 > g_breakout_range_low && close1 < g_breakout_range_high)
