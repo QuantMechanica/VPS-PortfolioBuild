@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_10941 Grimes Keltner Pullback Continuation"
+#property description "QM5_10942 Grimes Five-Day Run Fade"
 
 #include <QM/QM_Common.mqh>
 
@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 10941;
+input int    qm_ea_id                   = 10942;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -73,17 +73,19 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_ema_period        = 20;
-input int    strategy_atr_period        = 20;
-input int    strategy_atr_filter_period = 100;
-input double strategy_keltner_atr_mult  = 2.25;
-input int    strategy_setup_max_bars    = 10;
-input int    strategy_ema_slope_bars    = 5;
-input double strategy_atr_filter_mult   = 0.70;
-input double strategy_stop_atr_mult     = 2.0;
-input double strategy_max_stop_atr_mult = 3.0;
-input double strategy_rr_target         = 2.0;
-input int    strategy_time_exit_bars    = 12;
+input int    strategy_run_closes            = 5;
+input int    strategy_atr_period            = 20;
+input int    strategy_ema_period            = 20;
+input int    strategy_adx_period            = 14;
+input double strategy_extension_atr_mult    = 1.5;
+input double strategy_max_range_atr_mult    = 2.75;
+input double strategy_adx_skip_threshold    = 35.0;
+input double strategy_stop_atr_mult         = 1.5;
+input double strategy_tp_r_mult             = 1.5;
+input double strategy_extreme_exit_atr_mult = 0.5;
+input int    strategy_time_exit_d1_bars     = 5;
+input int    strategy_cooldown_d1_bars      = 10;
+input double strategy_spread_stop_pct       = 5.0;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -93,22 +95,9 @@ input int    strategy_time_exit_bars    = 12;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   // No Trade Filter: framework handles time, spread/broker, news, and Friday gates.
-   // Card adds a dead-market volatility filter: ATR(20) must be at least 0.7 * ATR(100).
-   if(_Period != PERIOD_D1)
-      return true;
-
-   if(strategy_atr_period <= 0 ||
-      strategy_atr_filter_period <= strategy_atr_period ||
-      strategy_atr_filter_mult <= 0.0)
-      return true;
-
-   const double atr_fast = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
-   const double atr_slow = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_filter_period, 1);
-   if(atr_fast <= 0.0 || atr_slow <= 0.0)
-      return true;
-
-   return (atr_fast < strategy_atr_filter_mult * atr_slow);
+   // News, kill-switch, and Friday close are enforced by the framework.
+   // Strategy-specific spread and regime gates apply only to new entries.
+   return false;
   }
 
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
@@ -126,156 +115,132 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(_Period != PERIOD_D1)
       return false;
-
-   if(strategy_ema_period <= 0 ||
-      strategy_atr_period <= 0 ||
-      strategy_keltner_atr_mult <= 0.0 ||
-      strategy_setup_max_bars < 1 ||
-      strategy_ema_slope_bars < 1 ||
-      strategy_stop_atr_mult <= 0.0 ||
-      strategy_max_stop_atr_mult <= strategy_stop_atr_mult ||
-      strategy_rr_target <= 0.0)
+   if(strategy_run_closes < 2 || strategy_atr_period < 1 || strategy_ema_period < 1 ||
+      strategy_adx_period < 1 || strategy_stop_atr_mult <= 0.0 || strategy_tp_r_mult <= 0.0)
       return false;
 
-   const int bars_needed = strategy_setup_max_bars + strategy_ema_slope_bars + 5;
+   const int bars_needed = MathMax(strategy_run_closes + 2, strategy_cooldown_d1_bars + 2);
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
-   // EntrySignal runs only after the OnTick QM_IsNewBar() gate, so this is one
-   // bounded closed-bar OHLC snapshot per D1 bar, not per tick.
-   if(CopyRates(_Symbol, PERIOD_D1, 0, bars_needed, rates) < bars_needed) // perf-allowed: bounded closed-bar OHLC snapshot, post-QM_IsNewBar
+   const int copied = CopyRates(_Symbol, PERIOD_D1, 0, bars_needed, rates); // perf-allowed: D1 closed-bar structural run check inside framework new-bar entry gate.
+   if(copied < bars_needed)
       return false;
 
-   const double ema_1 = QM_EMA(_Symbol, PERIOD_D1, strategy_ema_period, 1);
-   const double ema_prior_to_touch = QM_EMA(_Symbol, PERIOD_D1, strategy_ema_period, 2);
-   const double ema_slope_ref = QM_EMA(_Symbol, PERIOD_D1, strategy_ema_period, 1 + strategy_ema_slope_bars);
-   const double atr_1 = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
-   if(ema_1 <= 0.0 || ema_prior_to_touch <= 0.0 || ema_slope_ref <= 0.0 || atr_1 <= 0.0)
+   bool five_down = true;
+   bool five_up = true;
+   for(int i = 1; i <= strategy_run_closes; ++i)
+     {
+      if(rates[i].close >= rates[i + 1].close)
+         five_down = false;
+      if(rates[i].close <= rates[i + 1].close)
+         five_up = false;
+     }
+   if(!five_down && !five_up)
       return false;
 
-   const double upper_1 = ema_1 + strategy_keltner_atr_mult * atr_1;
-   const double lower_1 = ema_1 - strategy_keltner_atr_mult * atr_1;
-   const bool touch_long = (rates[1].low <= ema_prior_to_touch);
-   const bool touch_short = (rates[1].high >= ema_prior_to_touch);
-   const bool slope_up = (ema_1 > ema_slope_ref);
-   const bool slope_down = (ema_1 < ema_slope_ref);
+   const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   const double ema = QM_EMA(_Symbol, PERIOD_D1, strategy_ema_period, 1);
+   const double ema_prev = QM_EMA(_Symbol, PERIOD_D1, strategy_ema_period, 2);
+   const double adx = QM_ADX(_Symbol, PERIOD_D1, strategy_adx_period, 1);
+   if(atr <= 0.0 || ema <= 0.0 || ema_prev <= 0.0)
+      return false;
 
-   bool long_setup = false;
-   bool short_setup = false;
+   const double close1 = rates[1].close;
+   const double range1 = rates[1].high - rates[1].low;
+   if(range1 <= 0.0 || range1 > strategy_max_range_atr_mult * atr)
+      return false;
 
-   if(touch_long && slope_up)
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(bid <= 0.0 || ask <= 0.0 || point <= 0.0)
+      return false;
+
+   const double stop_distance = strategy_stop_atr_mult * atr;
+   const double max_spread = stop_distance * strategy_spread_stop_pct / 100.0;
+   if((ask - bid) > max_spread)
+      return false;
+
+   QM_OrderType signal_type = QM_BUY;
+   double signal_extreme = 0.0;
+   bool has_signal = false;
+   if(five_down && close1 <= ema - strategy_extension_atr_mult * atr)
      {
-      for(int thrust_shift = 2; thrust_shift <= strategy_setup_max_bars + 1; ++thrust_shift)
+      if(!(adx > strategy_adx_skip_threshold && ema < ema_prev))
         {
-         const double ema_thrust = QM_EMA(_Symbol, PERIOD_D1, strategy_ema_period, thrust_shift);
-         const double atr_thrust = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, thrust_shift);
-         if(ema_thrust <= 0.0 || atr_thrust <= 0.0)
-            continue;
-
-         const double upper_thrust = ema_thrust + strategy_keltner_atr_mult * atr_thrust;
-         if(rates[thrust_shift].close <= upper_thrust)
-            continue;
-
-         bool stayed_above_ema = true;
-         for(int s = thrust_shift - 1; s >= 1; --s)
-           {
-            const double ema_s = QM_EMA(_Symbol, PERIOD_D1, strategy_ema_period, s);
-            if(ema_s <= 0.0 || rates[s].close < ema_s)
-              {
-               stayed_above_ema = false;
-               break;
-              }
-           }
-
-         if(stayed_above_ema)
-           {
-            long_setup = true;
-            break;
-           }
+         signal_type = QM_BUY;
+         signal_extreme = rates[1].low;
+         has_signal = true;
         }
      }
-
-   if(touch_short && slope_down)
+   else if(five_up && close1 >= ema + strategy_extension_atr_mult * atr)
      {
-      for(int thrust_shift = 2; thrust_shift <= strategy_setup_max_bars + 1; ++thrust_shift)
+      if(!(adx > strategy_adx_skip_threshold && ema > ema_prev))
         {
-         const double ema_thrust = QM_EMA(_Symbol, PERIOD_D1, strategy_ema_period, thrust_shift);
-         const double atr_thrust = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, thrust_shift);
-         if(ema_thrust <= 0.0 || atr_thrust <= 0.0)
-            continue;
-
-         const double lower_thrust = ema_thrust - strategy_keltner_atr_mult * atr_thrust;
-         if(rates[thrust_shift].close >= lower_thrust)
-            continue;
-
-         bool stayed_below_ema = true;
-         for(int s = thrust_shift - 1; s >= 1; --s)
-           {
-            const double ema_s = QM_EMA(_Symbol, PERIOD_D1, strategy_ema_period, s);
-            if(ema_s <= 0.0 || rates[s].close > ema_s)
-              {
-               stayed_below_ema = false;
-               break;
-              }
-           }
-
-         if(stayed_below_ema)
-           {
-            short_setup = true;
-            break;
-           }
+         signal_type = QM_SELL;
+         signal_extreme = rates[1].high;
+         has_signal = true;
         }
      }
+   if(!has_signal || signal_extreme <= 0.0)
+      return false;
 
-   if(long_setup)
+   datetime latest_same_dir_exit = 0;
+   if(HistorySelect(0, TimeCurrent()))
      {
-      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      if(entry <= 0.0)
-         return false;
+      const int total_deals = HistoryDealsTotal();
+      const int magic = QM_FrameworkMagic();
+      for(int i = total_deals - 1; i >= 0; --i)
+        {
+         const ulong deal = HistoryDealGetTicket(i);
+         if(deal == 0)
+            continue;
+         if(HistoryDealGetString(deal, DEAL_SYMBOL) != _Symbol)
+            continue;
+         if((int)HistoryDealGetInteger(deal, DEAL_MAGIC) != magic)
+            continue;
+         const ENUM_DEAL_ENTRY entry = (ENUM_DEAL_ENTRY)HistoryDealGetInteger(deal, DEAL_ENTRY);
+         if(entry != DEAL_ENTRY_OUT && entry != DEAL_ENTRY_OUT_BY)
+            continue;
+         const ENUM_DEAL_TYPE dtype = (ENUM_DEAL_TYPE)HistoryDealGetInteger(deal, DEAL_TYPE);
+         const bool closed_buy = (dtype == DEAL_TYPE_SELL);
+         const bool closed_sell = (dtype == DEAL_TYPE_BUY);
+         if((signal_type == QM_BUY && !closed_buy) || (signal_type == QM_SELL && !closed_sell))
+            continue;
+         latest_same_dir_exit = (datetime)HistoryDealGetInteger(deal, DEAL_TIME);
+         break;
+        }
+     }
+   if(latest_same_dir_exit > 0 && latest_same_dir_exit >= rates[strategy_cooldown_d1_bars].time)
+      return false;
 
-      const double sl = MathMin(rates[1].low, entry - strategy_stop_atr_mult * atr_1);
-      const double stop_dist = entry - sl;
-      if(sl <= 0.0 || stop_dist <= 0.0 || stop_dist > strategy_max_stop_atr_mult * atr_1)
-         return false;
+   const double entry_price = (signal_type == QM_BUY) ? ask : bid;
+   if(entry_price <= 0.0)
+      return false;
 
-      const double rr_tp = entry + strategy_rr_target * stop_dist;
-      const double keltner_tp = (upper_1 > entry) ? upper_1 : rr_tp;
-      req.type = QM_BUY;
-      req.price = entry;
-      req.sl = sl;
-      req.tp = MathMin(rr_tp, keltner_tp);
-      req.reason = "QM5_10941_KELTNER_PB_LONG";
-      return (req.tp > req.price);
+   req.type = signal_type;
+   req.price = 0.0;
+   if(signal_type == QM_BUY)
+     {
+      req.sl = entry_price - stop_distance;
+      req.tp = entry_price + stop_distance * strategy_tp_r_mult;
+      req.reason = StringFormat("GRF_L_%.5f", signal_extreme);
+     }
+   else
+     {
+      req.sl = entry_price + stop_distance;
+      req.tp = entry_price - stop_distance * strategy_tp_r_mult;
+      req.reason = StringFormat("GRF_S_%.5f", signal_extreme);
      }
 
-   if(short_setup)
-     {
-      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      if(entry <= 0.0)
-         return false;
-
-      const double sl = MathMax(rates[1].high, entry + strategy_stop_atr_mult * atr_1);
-      const double stop_dist = sl - entry;
-      if(sl <= 0.0 || stop_dist <= 0.0 || stop_dist > strategy_max_stop_atr_mult * atr_1)
-         return false;
-
-      const double rr_tp = entry - strategy_rr_target * stop_dist;
-      const double keltner_tp = (lower_1 < entry) ? lower_1 : rr_tp;
-      req.type = QM_SELL;
-      req.price = entry;
-      req.sl = sl;
-      req.tp = MathMax(rr_tp, keltner_tp);
-      req.reason = "QM5_10941_KELTNER_PB_SHORT";
-      return (req.tp > 0.0 && req.tp < req.price);
-     }
-
-   return false;
+   return true;
   }
 
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies no trailing stop, break-even move, partial close, or add-on logic.
+   // Card has no trailing stop, break-even move, partial close, or add-on logic.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
@@ -283,41 +248,73 @@ void Strategy_ManageOpenPosition()
 bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
+   ulong ticket = 0;
+   ENUM_POSITION_TYPE ptype = POSITION_TYPE_BUY;
+   double open_price = 0.0;
+   datetime open_time = 0;
+   string comment = "";
 
-   if(strategy_ema_period <= 0 || strategy_time_exit_bars <= 0)
-      return false;
-
-   // Last closed D1 close via a 1-period SMA reader (pooled handle) — avoids a
-   // raw iClose() call while giving exactly close[shift=1] for the card's
-   // close-against-EMA exit test.
-   const double close_1 = QM_SMA(_Symbol, PERIOD_D1, 1, 1);
-   const double ema_1 = QM_EMA(_Symbol, PERIOD_D1, strategy_ema_period, 1);
-   if(close_1 <= 0.0 || ema_1 <= 0.0)
-      return false;
-
-   const int hold_seconds = strategy_time_exit_bars * PeriodSeconds(PERIOD_D1);
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
-      const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
+      const ulong pos_ticket = PositionGetTicket(i);
+      if(pos_ticket == 0 || !PositionSelectByTicket(pos_ticket))
          continue;
       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
+      ticket = pos_ticket;
+      ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+      open_time = (datetime)PositionGetInteger(POSITION_TIME);
+      comment = PositionGetString(POSITION_COMMENT);
+      break;
+     }
+   if(ticket == 0 || open_price <= 0.0)
+      return false;
 
-      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      if(ptype == POSITION_TYPE_BUY && close_1 < ema_1)
+   const double ema = QM_EMA(_Symbol, PERIOD_D1, strategy_ema_period, 1);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   if(ema > 0.0 && bid > 0.0 && ask > 0.0)
+     {
+      if(ptype == POSITION_TYPE_BUY && bid >= ema)
          return true;
-      if(ptype == POSITION_TYPE_SELL && close_1 > ema_1)
-         return true;
-
-      const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
-      if(opened > 0 && TimeCurrent() - opened >= hold_seconds)
+      if(ptype == POSITION_TYPE_SELL && ask <= ema)
          return true;
      }
+
+   if(!QM_IsNewBar(_Symbol, PERIOD_D1))
+      return false;
+
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int bars_needed = MathMax(strategy_time_exit_d1_bars + 1, 3);
+   const int copied = CopyRates(_Symbol, PERIOD_D1, 0, bars_needed, rates); // perf-allowed: closed-bar exit check only after QM_IsNewBar with open position.
+   if(copied < bars_needed)
+      return false;
+
+   const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   if(atr <= 0.0)
+      return false;
+
+   double entry_extreme = open_price;
+   const int long_pos = StringFind(comment, "GRF_L_");
+   const int short_pos = StringFind(comment, "GRF_S_");
+   if(long_pos >= 0)
+      entry_extreme = StringToDouble(StringSubstr(comment, long_pos + 6));
+   else if(short_pos >= 0)
+      entry_extreme = StringToDouble(StringSubstr(comment, short_pos + 6));
+
+   const double close1 = rates[1].close;
+   const double beyond = strategy_extreme_exit_atr_mult * atr;
+   if(ptype == POSITION_TYPE_BUY && entry_extreme > 0.0 && close1 < entry_extreme - beyond)
+      return true;
+   if(ptype == POSITION_TYPE_SELL && entry_extreme > 0.0 && close1 > entry_extreme + beyond)
+      return true;
+
+   if(open_time > 0 && open_time <= rates[strategy_time_exit_d1_bars].time)
+      return true;
 
    return false;
   }

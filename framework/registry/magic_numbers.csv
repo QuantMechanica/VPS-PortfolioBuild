@@ -6083,3 +6083,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10942,grimes-run-fade,2,USDJPY.DWX,109420002,2026-06-06,Development,active
 10942,grimes-run-fade,3,XAUUSD.DWX,109420003,2026-06-06,Development,active
 10942,grimes-run-fade,4,GDAXI.DWX,109420004,2026-06-06,Development,active
+10943,grimes-trendday,0,SP500.DWX,109430000,2026-06-06,Development,active
+10943,grimes-trendday,1,NDX.DWX,109430001,2026-06-06,Development,active
+10943,grimes-trendday,2,WS30.DWX,109430002,2026-06-06,Development,active
+10943,grimes-trendday,3,GDAXI.DWX,109430003,2026-06-06,Development,active
