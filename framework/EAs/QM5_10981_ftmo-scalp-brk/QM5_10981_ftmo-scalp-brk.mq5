@@ -94,11 +94,26 @@ double   g_breakout_range_low  = 0.0;
 datetime g_entry_signal_time   = 0;
 int      g_last_trade_window_key = -1;
 
-double BarHigh(const int shift)   { return iHigh(_Symbol, PERIOD_M5, shift); }     // perf-allowed: bounded closed-bar range scan from card
-double BarLow(const int shift)    { return iLow(_Symbol, PERIOD_M5, shift); }      // perf-allowed: bounded closed-bar range scan from card
-double BarClose(const int shift)  { return iClose(_Symbol, PERIOD_M5, shift); }    // perf-allowed: bounded closed-bar breakout/exit read from card
-datetime BarTime(const int shift) { return iTime(_Symbol, PERIOD_M5, shift); }     // perf-allowed: closed-bar timestamp for card state
-long BarVolume(const int shift)   { return iVolume(_Symbol, PERIOD_M5, shift); }   // perf-allowed: bounded tick-volume median from card
+double BarHigh(const int shift)
+  {
+   return iHigh(_Symbol, PERIOD_M5, shift);   // perf-allowed: bounded closed-bar range scan from card
+  }
+double BarLow(const int shift)
+  {
+   return iLow(_Symbol, PERIOD_M5, shift);    // perf-allowed: bounded closed-bar range scan from card
+  }
+double BarClose(const int shift)
+  {
+   return iClose(_Symbol, PERIOD_M5, shift);  // perf-allowed: bounded closed-bar breakout/exit read from card
+  }
+datetime BarTime(const int shift)
+  {
+   return iTime(_Symbol, PERIOD_M5, shift);   // perf-allowed: closed-bar timestamp for card state
+  }
+long BarVolume(const int shift)
+  {
+   return iVolume(_Symbol, PERIOD_M5, shift); // perf-allowed: bounded tick-volume median from card
+  }
 
 int MinuteOfDay(const datetime t)
   {
@@ -495,9 +510,13 @@ bool Strategy_ExitSignal()
       if(TimeCurrent() - open_time >= max_hold_seconds)
          return true;
 
+      // Exit if the last CLOSED bar finished back inside the pre-breakout
+      // range. close[1] only changes when a new bar forms, so evaluating it
+      // every tick is equivalent to a new-bar gate WITHOUT consuming the
+      // shared QM_IsNewBar tracker that OnTick uses to gate entries. The
+      // one-bar-elapsed guard prevents acting on the entry bar itself.
       if(g_breakout_range_high > g_breakout_range_low &&
-         TimeCurrent() - open_time >= PeriodSeconds(PERIOD_M5) &&
-         QM_IsNewBar(_Symbol, PERIOD_M5))
+         TimeCurrent() - open_time >= PeriodSeconds(PERIOD_M5))
         {
          const double close1 = BarClose(1);
          if(close1 > g_breakout_range_low && close1 < g_breakout_range_high)
