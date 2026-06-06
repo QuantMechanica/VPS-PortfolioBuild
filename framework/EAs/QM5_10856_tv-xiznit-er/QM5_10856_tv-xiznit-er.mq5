@@ -224,7 +224,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double slow2 = QM_EMA(_Symbol, _Period, slow_ma_period, 2);
    const double atr   = QM_ATR(_Symbol, _Period, strat_atr_period, 1);
    const double er    = ComputeER(er_length);
-
    const double close1 = iClose(_Symbol, _Period, 1);  // perf-allowed: bespoke regime/candle close
    const double open1  = iOpen(_Symbol, _Period, 1);   // perf-allowed: bespoke candle body size
    const double high2  = iHigh(_Symbol, _Period, 2);   // perf-allowed: bespoke breakout confirmation
