@@ -73,130 +73,30 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_envelopes_period     = 22;
-input double strategy_envelopes_deviation  = 0.3;
-input int    strategy_sl_points            = 160;
-input int    strategy_tp_points            = 310;
-input int    strategy_time_stop_bars       = 48;
-input int    strategy_max_spread_points    = 0;
+input int    strategy_envelopes_period    = 22;
+input double strategy_envelopes_deviation = 0.3;
+input int    strategy_sl_points           = 160;
+input int    strategy_tp_points           = 310;
+input int    strategy_time_stop_bars      = 48;
+input int    strategy_max_spread_points   = 0;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-bool g_long_reentry_blocked = false;
-bool g_short_reentry_blocked = false;
-
-bool Strategy_ReadClosedH1Bar(MqlRates &bar)
-  {
-   MqlRates rates[1];
-   if(CopyRates(_Symbol, PERIOD_H1, 1, 1, rates) != 1) // perf-allowed: one completed H1 bar for open/close envelope bounce math.
-      return false;
-   bar = rates[0];
-   return true;
-  }
-
-double Strategy_EnvelopeLower(const int shift)
-  {
-   const double middle = QM_SMA(_Symbol, PERIOD_H1, strategy_envelopes_period, shift, PRICE_CLOSE);
-   if(middle <= 0.0)
-      return 0.0;
-   return middle * (1.0 - (strategy_envelopes_deviation / 100.0));
-  }
-
-double Strategy_EnvelopeUpper(const int shift)
-  {
-   const double middle = QM_SMA(_Symbol, PERIOD_H1, strategy_envelopes_period, shift, PRICE_CLOSE);
-   if(middle <= 0.0)
-      return 0.0;
-   return middle * (1.0 + (strategy_envelopes_deviation / 100.0));
-  }
-
-bool Strategy_StopDistanceAllowed()
-  {
-   const int stops_level = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
-   if(stops_level <= 0)
-      return true;
-   return (strategy_sl_points >= stops_level && strategy_tp_points >= stops_level);
-  }
-
-double Strategy_PointsToDistance(const int points)
-  {
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(points <= 0 || point <= 0.0)
-      return 0.0;
-   return points * point;
-  }
-
-int Strategy_EnvelopeBounceSignal()
-  {
-   if(strategy_envelopes_period <= 0 || strategy_envelopes_deviation <= 0.0)
-      return 0;
-
-   MqlRates bar;
-   if(!Strategy_ReadClosedH1Bar(bar))
-      return 0;
-
-   const double lower = Strategy_EnvelopeLower(1);
-   const double upper = Strategy_EnvelopeUpper(1);
-   if(lower <= 0.0 || upper <= 0.0 || bar.open <= 0.0 || bar.close <= 0.0)
-      return 0;
-
-   if(bar.open < lower && bar.close > lower)
-      return 1;
-   if(bar.open > upper && bar.close < upper)
-      return -1;
-
-   return 0;
-  }
-
-void Strategy_UpdateReentryBlocks()
-  {
-   MqlRates bar;
-   if(!Strategy_ReadClosedH1Bar(bar))
-      return;
-
-   const double lower = Strategy_EnvelopeLower(1);
-   const double upper = Strategy_EnvelopeUpper(1);
-   if(lower <= 0.0 || upper <= 0.0 || bar.close <= 0.0)
-      return;
-
-   if(bar.close > lower && bar.close < upper)
-     {
-      g_long_reentry_blocked = false;
-      g_short_reentry_blocked = false;
-     }
-  }
-
-bool Strategy_HasOpenPosition(ENUM_POSITION_TYPE &position_type, datetime &opened_at)
-  {
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      opened_at = (datetime)PositionGetInteger(POSITION_TIME);
-      return true;
-     }
-
-   return false;
-  }
-
 // Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   if(!Strategy_StopDistanceAllowed())
+   // No card-level time filter. News is handled by the framework and hook below.
+   if(strategy_envelopes_period <= 0 ||
+      strategy_envelopes_deviation <= 0.0 ||
+      strategy_sl_points <= 0 ||
+      strategy_tp_points <= 0)
+      return true;
+
+   const int stops_level = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
+   if(stops_level > 0 && (strategy_sl_points < stops_level || strategy_tp_points < stops_level))
       return true;
 
    if(strategy_max_spread_points > 0)
@@ -222,39 +122,46 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   ENUM_POSITION_TYPE pos_type = POSITION_TYPE_BUY;
-   datetime opened_at = 0;
-   if(Strategy_HasOpenPosition(pos_type, opened_at))
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0 || QM_TM_OpenPositionCount(magic) > 0)
       return false;
 
-   Strategy_UpdateReentryBlocks();
+   MqlRates bar[1];
+   ArraySetAsSeries(bar, true);
+   if(CopyRates(_Symbol, PERIOD_H1, 1, 1, bar) != 1) // perf-allowed: one completed H1 bar for open/close envelope bounce math.
+      return false;
 
-   const int signal = Strategy_EnvelopeBounceSignal();
+   const double middle = QM_SMA(_Symbol, PERIOD_H1, strategy_envelopes_period, 1, PRICE_CLOSE);
+   if(middle <= 0.0 || bar[0].open <= 0.0 || bar[0].close <= 0.0)
+      return false;
+
+   const double band_shift = strategy_envelopes_deviation / 100.0;
+   const double lower = middle * (1.0 - band_shift);
+   const double upper = middle * (1.0 + band_shift);
+   if(lower <= 0.0 || upper <= lower)
+      return false;
+
+   int signal = 0;
+   if(bar[0].open < lower && bar[0].close > lower && bar[0].close < upper)
+      signal = 1;
+   else if(bar[0].open > upper && bar[0].close < upper && bar[0].close > lower)
+      signal = -1;
    if(signal == 0)
-      return false;
-   if(signal > 0 && g_long_reentry_blocked)
-      return false;
-   if(signal < 0 && g_short_reentry_blocked)
       return false;
 
    const QM_OrderType side = (signal > 0) ? QM_BUY : QM_SELL;
    const double entry = QM_EntryMarketPrice(side);
-   const double sl_distance = Strategy_PointsToDistance(strategy_sl_points);
-   const double tp_distance = Strategy_PointsToDistance(strategy_tp_points);
-   if(entry <= 0.0 || sl_distance <= 0.0 || tp_distance <= 0.0)
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(entry <= 0.0 || point <= 0.0)
       return false;
 
+   const double sl_distance = strategy_sl_points * point;
+   const double tp_distance = strategy_tp_points * point;
+
    req.type = side;
-   req.price = 0.0;
-   req.sl = QM_StopRulesNormalizePrice(_Symbol, (signal > 0) ? (entry - sl_distance) : (entry + sl_distance));
-   req.tp = QM_StopRulesNormalizePrice(_Symbol, (signal > 0) ? (entry + tp_distance) : (entry - tp_distance));
+   req.sl = QM_StopRulesNormalizePrice(_Symbol, (signal > 0) ? entry - sl_distance : entry + sl_distance);
+   req.tp = QM_StopRulesNormalizePrice(_Symbol, (signal > 0) ? entry + tp_distance : entry - tp_distance);
    req.reason = (signal > 0) ? "MQL5_ENV_REV_LONG" : "MQL5_ENV_REV_SHORT";
-
-   if(signal > 0)
-      g_long_reentry_blocked = true;
-   else
-      g_short_reentry_blocked = true;
-
    return true;
   }
 
@@ -262,34 +169,68 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies no trailing, partial close, or break-even management.
+   // Card specifies no trailing stop, break-even move, partial close, or add-on.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   ENUM_POSITION_TYPE pos_type = POSITION_TYPE_BUY;
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   ENUM_POSITION_TYPE position_type = POSITION_TYPE_BUY;
    datetime opened_at = 0;
-   if(!Strategy_HasOpenPosition(pos_type, opened_at))
+   bool have_position = false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+
+      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      opened_at = (datetime)PositionGetInteger(POSITION_TIME);
+      have_position = true;
+      break;
+     }
+
+   if(!have_position)
       return false;
 
    if(strategy_time_stop_bars > 0 && opened_at > 0)
      {
-      const datetime max_hold_until = opened_at + (datetime)(strategy_time_stop_bars * 3600);
-      if(TimeCurrent() >= max_hold_until)
+      const int seconds_per_bar = PeriodSeconds(PERIOD_H1);
+      if(seconds_per_bar > 0 && TimeCurrent() >= opened_at + (datetime)(strategy_time_stop_bars * seconds_per_bar))
          return true;
      }
 
-   if(!QM_IsNewBar(_Symbol, PERIOD_H1))
+   MqlRates bar[1];
+   ArraySetAsSeries(bar, true);
+   if(CopyRates(_Symbol, PERIOD_H1, 1, 1, bar) != 1) // perf-allowed: one completed H1 bar for opposite-signal close.
       return false;
 
-   Strategy_UpdateReentryBlocks();
+   const double middle = QM_SMA(_Symbol, PERIOD_H1, strategy_envelopes_period, 1, PRICE_CLOSE);
+   if(middle <= 0.0 || bar[0].open <= 0.0 || bar[0].close <= 0.0)
+      return false;
 
-   const int signal = Strategy_EnvelopeBounceSignal();
-   if(pos_type == POSITION_TYPE_BUY && signal < 0)
+   const double band_shift = strategy_envelopes_deviation / 100.0;
+   const double lower = middle * (1.0 - band_shift);
+   const double upper = middle * (1.0 + band_shift);
+   if(lower <= 0.0 || upper <= lower)
+      return false;
+
+   const bool long_signal = (bar[0].open < lower && bar[0].close > lower && bar[0].close < upper);
+   const bool short_signal = (bar[0].open > upper && bar[0].close < upper && bar[0].close > lower);
+
+   if(position_type == POSITION_TYPE_BUY && short_signal)
       return true;
-   if(pos_type == POSITION_TYPE_SELL && signal > 0)
+   if(position_type == POSITION_TYPE_SELL && long_signal)
       return true;
 
    return false;
