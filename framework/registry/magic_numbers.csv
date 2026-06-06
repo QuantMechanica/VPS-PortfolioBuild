@@ -6078,3 +6078,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10941,grimes-keltner-pb,2,USDJPY.DWX,109410002,2026-06-06,Development,active
 10941,grimes-keltner-pb,3,XAUUSD.DWX,109410003,2026-06-06,Development,active
 10941,grimes-keltner-pb,4,XTIUSD.DWX,109410004,2026-06-06,Development,active
+10942,grimes-run-fade,0,EURUSD.DWX,109420000,2026-06-06,Development,active
+10942,grimes-run-fade,1,GBPUSD.DWX,109420001,2026-06-06,Development,active
+10942,grimes-run-fade,2,USDJPY.DWX,109420002,2026-06-06,Development,active
+10942,grimes-run-fade,3,XAUUSD.DWX,109420003,2026-06-06,Development,active
+10942,grimes-run-fade,4,GDAXI.DWX,109420004,2026-06-06,Development,active
