@@ -60,11 +60,27 @@ elseif ($nWorkers -ge $MinWorkers) {
 }
 else {
     # 3. heal: factory is meant ON but workers are dead/short -> respawn the missing ones
-    $detail = "workers=$nWorkers/$ExpectWorkers (< $MinWorkers) while factory ON -> respawning missing"
+    $detail = "workers=$nWorkers/$ExpectWorkers (< $MinWorkers) while factory ON -> clean-slate respawn"
     try {
-        & $py (Join-Path $repo 'tools\strategy_farm\start_terminal_workers.py') `
-            --repo-root $repo --farm-root 'D:\QM\strategy_farm' --dedupe 2>$null | Out-Null
-        Start-Sleep -Seconds 10
+        # CLEAN-SLATE respawn INTO the autologon console session (visible-mode).
+        # Why clean-slate (kill-all then spawn 10) instead of --dedupe gap-fill:
+        # start_terminal_workers' --dedupe detects existing workers via a CIM
+        # (Get-CimInstance) query that FAILS inside a CreateProcessAsUser'd
+        # disconnected-session process -> it would see 0 existing and spawn a full
+        # 10 ON TOP of survivors (observed 7 -> 17 over-provision). So we first
+        # kill every worker + terminal64 from THIS SYSTEM/session-0 context (where
+        # CIM works), then launch a fresh set of exactly 10 (nothing to dedupe).
+        #
+        # This watchdog runs as SYSTEM (SeTcb) so the launcher can WTSQueryUserToken
+        # + CreateProcessAsUser into qm-admin's session even when RDP is DISCONNECTED.
+        # A plain `& $py ...` here would land workers in SYSTEM's session-0 (hazard).
+        foreach ($d in $daemons) { Stop-Process -Id $d.ProcessId -Force -ErrorAction SilentlyContinue }
+        @(Get-Process terminal64 -ErrorAction SilentlyContinue) | ForEach-Object { Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue }
+        Start-Sleep -Seconds 4
+        $launcher = Join-Path $repo 'tools\strategy_farm\run_in_console_session.ps1'
+        $swArgs = '"' + (Join-Path $repo 'tools\strategy_farm\start_terminal_workers.py') + '" --repo-root "' + $repo + '" --farm-root "D:\QM\strategy_farm" --dedupe'
+        & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $launcher -Exe $py -Arguments $swArgs -WorkDir $repo 2>$null | Out-Null
+        Start-Sleep -Seconds 12
         $after = @(Get-CimInstance Win32_Process -Filter "Name='python.exe' OR Name='pythonw.exe'" -ErrorAction SilentlyContinue |
                    Where-Object { $_.CommandLine -match 'terminal_worker\.py' }).Count
         $action = 'healed_respawn_workers'
