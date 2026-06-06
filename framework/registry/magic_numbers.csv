@@ -6006,3 +6006,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10926,grimes-powerpull,2,GDAXI.DWX,109260002,2026-06-06,Development,active
 10926,grimes-powerpull,3,WS30.DWX,109260003,2026-06-06,Development,active
 10926,grimes-powerpull,4,XAUUSD.DWX,109260004,2026-06-06,Development,active
+10927,grimes-powerpush,0,GDAXI.DWX,109270000,2026-06-06,Development,active
+10927,grimes-powerpush,1,NDX.DWX,109270001,2026-06-06,Development,active
+10927,grimes-powerpush,2,WS30.DWX,109270002,2026-06-06,Development,active
+10927,grimes-powerpush,3,XAUUSD.DWX,109270003,2026-06-06,Development,active
+10927,grimes-powerpush,4,XTIUSD.DWX,109270004,2026-06-06,Development,active
