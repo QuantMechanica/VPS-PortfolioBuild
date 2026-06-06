@@ -401,6 +401,9 @@ bool Strategy_ExitSignal()
    if(!Strategy_SelectOurPosition(ticket, ptype))
       return false;
 
+   if(QM_IsNewBar())
+      Strategy_AdvanceClosedBarState();
+
    const int now_minute = Strategy_MinutesOfDay(TimeCurrent());
    const int flat_minute = MathMax(0, MathMin(1439, strategy_flat_hour_broker * 60 + strategy_flat_minute_broker));
    if(now_minute >= flat_minute)
