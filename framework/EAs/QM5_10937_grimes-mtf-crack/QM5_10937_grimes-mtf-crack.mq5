@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QuantMechanica V5 EA skeleton template"
+#property description "QM5_10937 Grimes MTF Pattern Crack"
 
 #include <QM/QM_Common.mqh>
 
@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 9999;
+input int    qm_ea_id                   = 10937;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -73,11 +73,285 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-// TODO: declare strategy-specific input params here, e.g.:
-//   input int    strategy_atr_period   = 14;
-//   input double strategy_atr_sl_mult  = 2.0;
-//   input double strategy_atr_tp_mult  = 3.0;
-input int    strategy_placeholder       = 0;
+input int    strategy_d1_ema_period          = 20;
+input int    strategy_d1_atr_period          = 20;
+input int    strategy_d1_ema_slope_bars      = 10;
+input int    strategy_d1_price_above_bars    = 5;
+input int    strategy_flag_min_bars          = 5;
+input int    strategy_flag_max_bars          = 20;
+input int    strategy_d1_crack_max_age       = 3;
+input double strategy_crack_atr_buffer       = 0.25;
+input double strategy_max_d1_crack_range_atr = 3.0;
+input double strategy_max_stop_atr_mult      = 3.0;
+input double strategy_spread_stop_fraction   = 0.08;
+input double strategy_target_r_mult          = 2.0;
+input double strategy_be_trigger_r           = 1.0;
+input int    strategy_time_exit_h4_bars      = 12;
+input double strategy_time_exit_min_r        = 0.5;
+
+struct Strategy_CrackSetup
+  {
+   bool   is_long;
+   int    crack_shift;
+   int    flag_bars;
+   double flag_high;
+   double flag_low;
+   double crack_high;
+   double crack_low;
+   double atr;
+   double sl;
+  };
+
+double D1Open(const int shift)  { return iOpen(_Symbol, PERIOD_D1, shift); }   // perf-allowed: bounded D1 flag/crack structure read from framework-gated entry path.
+double D1High(const int shift)  { return iHigh(_Symbol, PERIOD_D1, shift); }   // perf-allowed: bounded D1 flag/crack structure read from framework-gated entry path.
+double D1Low(const int shift)   { return iLow(_Symbol, PERIOD_D1, shift); }    // perf-allowed: bounded D1 flag/crack structure read from framework-gated entry path.
+double D1Close(const int shift) { return iClose(_Symbol, PERIOD_D1, shift); }  // perf-allowed: bounded D1 flag/crack structure read from framework-gated entry path.
+double H4Close(const int shift) { return iClose(_Symbol, _Period, shift); }    // perf-allowed: single closed H4 trigger/progress read.
+
+bool Strategy_InputsValid()
+  {
+   return strategy_d1_ema_period > 1 &&
+          strategy_d1_atr_period > 1 &&
+          strategy_d1_ema_slope_bars > 0 &&
+          strategy_d1_price_above_bars > 0 &&
+          strategy_flag_min_bars >= 2 &&
+          strategy_flag_max_bars >= strategy_flag_min_bars &&
+          strategy_d1_crack_max_age > 0 &&
+          strategy_crack_atr_buffer >= 0.0 &&
+          strategy_max_d1_crack_range_atr > 0.0 &&
+          strategy_max_stop_atr_mult > 0.0 &&
+          strategy_spread_stop_fraction > 0.0 &&
+          strategy_target_r_mult > 0.0 &&
+          strategy_be_trigger_r > 0.0 &&
+          strategy_time_exit_h4_bars > 0 &&
+          strategy_time_exit_min_r >= 0.0;
+  }
+
+bool Strategy_D1TrendOK(const bool long_signal, const int crack_shift)
+  {
+   const int pre_shift = crack_shift + 1;
+   const double ema_recent = QM_EMA(_Symbol, PERIOD_D1, strategy_d1_ema_period, pre_shift);
+   const double ema_old = QM_EMA(_Symbol, PERIOD_D1, strategy_d1_ema_period,
+                                 pre_shift + strategy_d1_ema_slope_bars);
+   if(ema_recent <= 0.0 || ema_old <= 0.0)
+      return false;
+
+   if(long_signal && ema_recent >= ema_old)
+      return false;
+   if(!long_signal && ema_recent <= ema_old)
+      return false;
+
+   for(int s = pre_shift; s < pre_shift + strategy_d1_price_above_bars; ++s)
+     {
+      const double close_s = D1Close(s);
+      const double ema_s = QM_EMA(_Symbol, PERIOD_D1, strategy_d1_ema_period, s);
+      if(close_s <= 0.0 || ema_s <= 0.0)
+         return false;
+      if(long_signal && close_s < ema_s)
+         return true;
+      if(!long_signal && close_s > ema_s)
+         return true;
+     }
+
+   return false;
+  }
+
+bool Strategy_FlagBounds(const bool long_signal,
+                         const int crack_shift,
+                         const int flag_bars,
+                         double &flag_high,
+                         double &flag_low)
+  {
+   flag_high = -DBL_MAX;
+   flag_low = DBL_MAX;
+
+   for(int s = crack_shift + 1; s <= crack_shift + flag_bars; ++s)
+     {
+      const double high_s = D1High(s);
+      const double low_s = D1Low(s);
+      if(high_s <= 0.0 || low_s <= 0.0)
+         return false;
+      flag_high = MathMax(flag_high, high_s);
+      flag_low = MathMin(flag_low, low_s);
+     }
+
+   for(int s = crack_shift + flag_bars; s > crack_shift + 1; --s)
+     {
+      if(long_signal)
+        {
+         const double older_low = D1Low(s);
+         const double newer_low = D1Low(s - 1);
+         if(older_low <= 0.0 || newer_low <= 0.0 || newer_low <= older_low)
+            return false;
+        }
+      else
+        {
+         const double older_high = D1High(s);
+         const double newer_high = D1High(s - 1);
+         if(older_high <= 0.0 || newer_high <= 0.0 || newer_high >= older_high)
+            return false;
+        }
+     }
+
+   return (flag_high > flag_low && flag_high > 0.0 && flag_low < DBL_MAX);
+  }
+
+bool Strategy_BuildCrackSetup(const bool long_signal,
+                              const int crack_shift,
+                              const int flag_bars,
+                              Strategy_CrackSetup &setup)
+  {
+   if(!Strategy_D1TrendOK(long_signal, crack_shift))
+      return false;
+
+   double flag_high = 0.0;
+   double flag_low = 0.0;
+   if(!Strategy_FlagBounds(long_signal, crack_shift, flag_bars, flag_high, flag_low))
+      return false;
+
+   const double crack_close = D1Close(crack_shift);
+   const double crack_high = D1High(crack_shift);
+   const double crack_low = D1Low(crack_shift);
+   const double ema = QM_EMA(_Symbol, PERIOD_D1, strategy_d1_ema_period, crack_shift);
+   const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_d1_atr_period, crack_shift);
+   if(crack_close <= 0.0 || crack_high <= 0.0 || crack_low <= 0.0 || ema <= 0.0 || atr <= 0.0)
+      return false;
+   if((crack_high - crack_low) > strategy_max_d1_crack_range_atr * atr)
+      return false;
+
+   const double crack_buffer = strategy_crack_atr_buffer * atr;
+   if(long_signal)
+     {
+      if(crack_close <= flag_high || crack_close <= ema + crack_buffer)
+         return false;
+      setup.sl = flag_low - crack_buffer;
+     }
+   else
+     {
+      if(crack_close >= flag_low || crack_close >= ema - crack_buffer)
+         return false;
+      setup.sl = flag_high + crack_buffer;
+     }
+
+   setup.is_long = long_signal;
+   setup.crack_shift = crack_shift;
+   setup.flag_bars = flag_bars;
+   setup.flag_high = flag_high;
+   setup.flag_low = flag_low;
+   setup.crack_high = crack_high;
+   setup.crack_low = crack_low;
+   setup.atr = atr;
+   return true;
+  }
+
+bool Strategy_FindCrackSetup(const bool long_signal, Strategy_CrackSetup &setup)
+  {
+   for(int crack_shift = 1; crack_shift <= strategy_d1_crack_max_age; ++crack_shift)
+     {
+      for(int flag_bars = strategy_flag_min_bars; flag_bars <= strategy_flag_max_bars; ++flag_bars)
+        {
+         if(Strategy_BuildCrackSetup(long_signal, crack_shift, flag_bars, setup))
+            return true;
+        }
+     }
+   return false;
+  }
+
+bool Strategy_H4Trigger(const Strategy_CrackSetup &setup)
+  {
+   const double close1 = H4Close(1);
+   const double close2 = H4Close(2);
+   if(close1 <= 0.0 || close2 <= 0.0)
+      return false;
+
+   if(setup.is_long)
+      return (close1 > setup.crack_high && close2 <= setup.crack_high);
+   return (close1 < setup.crack_low && close2 >= setup.crack_low);
+  }
+
+bool Strategy_SpreadWithinStop(const double stop_distance)
+  {
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0 || ask <= bid || stop_distance <= 0.0)
+      return false;
+   return (ask - bid) <= strategy_spread_stop_fraction * stop_distance;
+  }
+
+bool Strategy_BuildEntryRequest(const Strategy_CrackSetup &setup, QM_EntryRequest &req)
+  {
+   const double entry = setup.is_long ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
+                                      : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(entry <= 0.0 || setup.sl <= 0.0 || setup.atr <= 0.0)
+      return false;
+
+   const double stop_distance = setup.is_long ? (entry - setup.sl) : (setup.sl - entry);
+   if(stop_distance <= 0.0)
+      return false;
+   if(stop_distance > strategy_max_stop_atr_mult * setup.atr)
+      return false;
+   if(!Strategy_SpreadWithinStop(stop_distance))
+      return false;
+
+   const double tp = setup.is_long ? entry + strategy_target_r_mult * stop_distance
+                                   : entry - strategy_target_r_mult * stop_distance;
+   if(setup.is_long && tp <= entry)
+      return false;
+   if(!setup.is_long && tp >= entry)
+      return false;
+
+   req.type = setup.is_long ? QM_BUY : QM_SELL;
+   req.price = 0.0;
+   req.sl = NormalizeDouble(setup.sl, _Digits);
+   req.tp = NormalizeDouble(tp, _Digits);
+   req.reason = setup.is_long ? "GRIMES_MTF_CRACK_LONG" : "GRIMES_MTF_CRACK_SHORT";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+   return true;
+  }
+
+bool Strategy_SelectOurPosition(ulong &ticket,
+                                ENUM_POSITION_TYPE &position_type,
+                                double &open_price,
+                                double &sl,
+                                datetime &open_time)
+  {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong candidate = PositionGetTicket(i);
+      if(candidate == 0 || !PositionSelectByTicket(candidate))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      ticket = candidate;
+      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+      sl = PositionGetDouble(POSITION_SL);
+      open_time = (datetime)PositionGetInteger(POSITION_TIME);
+      return true;
+     }
+
+   return false;
+  }
+
+bool Strategy_D1ClosedBackInsideFlag(const bool is_long_position)
+  {
+   Strategy_CrackSetup setup;
+   if(!Strategy_FindCrackSetup(is_long_position, setup))
+      return false;
+
+   const double close1 = D1Close(1);
+   if(close1 <= 0.0)
+      return false;
+   return (close1 > setup.flag_low && close1 < setup.flag_high);
+  }
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -87,7 +361,6 @@ input int    strategy_placeholder       = 0;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   // TODO: e.g. "only trade London session" or "skip if ADX<20"
    return false;
   }
 
@@ -96,7 +369,31 @@ bool Strategy_NoTradeFilter()
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // TODO: build req.type / req.price / req.sl / req.tp / req.lots
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(!Strategy_InputsValid())
+      return false;
+   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
+      return false;
+
+   Strategy_CrackSetup short_setup;
+   if(Strategy_FindCrackSetup(false, short_setup) &&
+      Strategy_H4Trigger(short_setup) &&
+      Strategy_BuildEntryRequest(short_setup, req))
+      return true;
+
+   Strategy_CrackSetup long_setup;
+   if(Strategy_FindCrackSetup(true, long_setup) &&
+      Strategy_H4Trigger(long_setup) &&
+      Strategy_BuildEntryRequest(long_setup, req))
+      return true;
+
    return false;
   }
 
@@ -104,23 +401,65 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // TODO: e.g.
-   //   const int magic = QM_FrameworkMagic();
-   //   for(int i = PositionsTotal() - 1; i >= 0; --i) {
-   //       const ulong ticket = PositionGetTicket(i);
-   //       if(!PositionSelectByTicket(ticket)) continue;
-   //       if(PositionGetInteger(POSITION_MAGIC) != magic) continue;
-   //       QM_TM_MoveToBreakEven(ticket, /*trigger_pips=*/30, /*buffer=*/2);
-   //       QM_TM_TrailATR(ticket, /*atr_period=*/14, /*atr_mult=*/2.0);
-   //   }
+   ulong ticket = 0;
+   ENUM_POSITION_TYPE position_type;
+   double open_price = 0.0;
+   double sl = 0.0;
+   datetime open_time = 0;
+   if(!Strategy_SelectOurPosition(ticket, position_type, open_price, sl, open_time))
+      return;
+
+   const double risk_distance = MathAbs(open_price - sl);
+   if(ticket == 0 || open_price <= 0.0 || sl <= 0.0 || risk_distance <= 0.0)
+      return;
+
+   const bool is_long = (position_type == POSITION_TYPE_BUY);
+   const double current = is_long ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
+                                  : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   if(current <= 0.0)
+      return;
+
+   const double favorable = is_long ? current - open_price : open_price - current;
+   if(favorable < strategy_be_trigger_r * risk_distance)
+      return;
+
+   if(is_long && sl < open_price)
+      QM_TM_MoveSL(ticket, NormalizeDouble(open_price, _Digits), "GRIMES_MTF_BE_1R");
+   if(!is_long && sl > open_price)
+      QM_TM_MoveSL(ticket, NormalizeDouble(open_price, _Digits), "GRIMES_MTF_BE_1R");
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   // TODO: when to close manually (separate from SL/TP and trade management)
-   return false;
+   ulong ticket = 0;
+   ENUM_POSITION_TYPE position_type;
+   double open_price = 0.0;
+   double sl = 0.0;
+   datetime open_time = 0;
+   if(!Strategy_SelectOurPosition(ticket, position_type, open_price, sl, open_time))
+      return false;
+
+   const bool is_long = (position_type == POSITION_TYPE_BUY);
+   if(Strategy_D1ClosedBackInsideFlag(is_long))
+      return true;
+
+   const int bars_open = iBarShift(_Symbol, _Period, open_time, false);
+   if(bars_open < strategy_time_exit_h4_bars)
+      return false;
+
+   const double risk_distance = MathAbs(open_price - sl);
+   if(open_price <= 0.0 || sl <= 0.0 || risk_distance <= 0.0)
+      return false;
+
+   const double current = is_long ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
+                                  : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   if(current <= 0.0)
+      return false;
+
+   const double favorable = is_long ? current - open_price : open_price - current;
+   return (favorable < strategy_time_exit_min_r * risk_distance);
   }
 
 // Optional news-filter override. Return TRUE to suppress trading regardless
