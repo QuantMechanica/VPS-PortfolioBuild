@@ -37,7 +37,7 @@ exceeds 15% of the stop distance.
 | `er_trend_threshold` | 0.30 | 0.0-1.0 | ER at/above this = trending regime |
 | `fast_ma_period` | 9 | 5-20 | Fast EMA period |
 | `slow_ma_period` | 21 | 15-60 | Slow EMA period |
-| `atr_period` | 14 | 5-30 | ATR period for the bracket |
+| `strat_atr_period` | 14 | 5-30 | ATR period for the bracket |
 | `atr_sl_mult` | 1.0 | 0.5-2.0 | Stop distance = mult * ATR |
 | `atr_tp_mult` | 1.0 | 0.5-2.0 | Target distance = mult * ATR |
 | `min_body_atr_frac` | 0.10 | 0.0-1.0 | Min signal-candle body as fraction of ATR |

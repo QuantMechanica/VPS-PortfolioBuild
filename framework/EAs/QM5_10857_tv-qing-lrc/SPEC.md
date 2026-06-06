@@ -3,14 +3,14 @@
 **EA ID:** QM5_10857
 **Slug:** tv-qing-lrc
 **Source:** d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7 (see `strategy-seeds/sources/d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7/`)
-**Author of this spec:** Codex
+**Author of this spec:** Claude
 **Last revised:** 2026-06-06
 
 ---
 
 ## 1. Strategy Logic
 
-This EA trades long-only mean reversion into a bullish linear regression channel. On each closed H1 or H4 bar it builds a linear regression channel, confirms the channel upper band remains above EMA(20), rejects narrow channels and three-bar negative EMA slope, then buys when the signal bar touches the lower channel. The target is the channel upper band; the stop is the lower of recent pivot support and 1.5 ATR below entry. The EA exits early when the lower channel crosses below EMA(20), or after 20 bars if neither stop nor target has been reached.
+This EA trades long-only mean reversion into a bullish linear regression channel (LRC). Once per closed bar it fits a least-squares linear regression of close over the last `lrc_length` bars and forms channel bands at +/- `lrc_dev` times the residual standard deviation. A long is allowed only when the bullish bias holds (the LRC upper band sits above EMA(`ema_period`)), the channel is wide enough (width >= `width_atr_min` * ATR), and the EMA slope is not negative for three consecutive bars. It buys when the most recent closed bar's low touches or pierces the lower LRC band. The take-profit is the LRC upper band; the stop is the lower of the recent pivot support and entry minus `atr_sl_mult` * ATR(`atr_len`). The position exits early when the LRC lower band crosses below the EMA (trend weakness), or after `time_exit_bars` bars if neither stop nor target is hit. A V5 spread guard skips entries whose spread exceeds `spread_stop_frac` of the stop distance, and same-bar re-entry after a weakness exit is suppressed.
 
 ---
 
@@ -18,17 +18,18 @@ This EA trades long-only mean reversion into a bullish linear regression channel
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `strategy_lrc_length` | 100 | 10-300 | Bars used for the linear regression channel. |
-| `strategy_channel_deviation` | 2.0 | >0 | Standard-deviation multiplier for upper and lower channel bands. |
-| `strategy_pivot_lookback` | 5 | 1-20 | Bars on each side used to identify recent pivot support. |
-| `strategy_atr_period` | 14 | >0 | ATR period for stop sizing and filter distances. |
-| `strategy_stop_atr_mult` | 1.5 | >0 | ATR multiple for the initial stop candidate. |
-| `strategy_support_atr_buffer` | 0.25 | >=0 | Maximum distance from recent pivot support for support-qualified entries. |
-| `strategy_min_width_atr_mult` | 0.75 | >0 | Minimum channel width expressed as ATR multiple. |
-| `strategy_time_exit_bars` | 20 | >0 | Maximum bars to hold before discretionary time exit. |
+| `lrc_length` | 100 | 50-150 | Bars used for the linear regression channel fit. |
+| `lrc_dev` | 2.0 | 1.5-2.5 | Std-dev multiplier for the upper/lower channel bands. |
+| `ema_period` | 20 | >0 | Trend-filter EMA period (bias + weakness-cross exit). |
+| `atr_len` | 14 | >0 | ATR period for stop sizing and width filter. |
+| `atr_sl_mult` | 1.5 | 1.0-2.0 | ATR multiple for the entry-minus-ATR stop candidate. |
+| `pivot_lookback` | 5 | 3-10 | Window for the recent swing-low pivot support. |
+| `time_exit_bars` | 20 | 12-30 | Maximum bars held before the discretionary time exit. |
+| `width_atr_min` | 0.75 | >0 | Minimum channel width as an ATR multiple. |
+| `spread_stop_frac` | 0.15 | >0 | Skip if spread > this fraction of the stop distance. |
 
 > Note: framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
-> qm_news_mode, qm_rng_seed, qm_stress_reject_probability, qm_friday_close_*)
+> qm_news_*, qm_rng_seed, qm_stress_reject_probability, qm_friday_close_*)
 > are documented in `framework/V5_FRAMEWORK_DESIGN.md` - do NOT re-document
 > them here. Only list strategy-specific inputs.
 
@@ -41,7 +42,7 @@ This EA trades long-only mean reversion into a bullish linear regression channel
 - `GBPUSD.DWX` - liquid FX major from the card's R3 P2 basket.
 - `XAUUSD.DWX` - gold exposure matching the source's "Gold Chances" framing.
 - `NDX.DWX` - liquid index CFD from the card's R3 P2 basket.
-- `GDAXI.DWX` - DAX exposure; used as the available DWX matrix port for card-stated `GER40.DWX`.
+- `GDAXI.DWX` - DAX exposure; the available DWX-matrix port for the card-stated `GER40.DWX`.
 
 **Explicitly NOT for:**
 - `GER40.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; DAX registration uses `GDAXI.DWX`.
@@ -53,7 +54,7 @@ This EA trades long-only mean reversion into a bullish linear regression channel
 
 | Aspect | Value |
 |---|---|
-| Base timeframe | H1, H4 |
+| Base timeframe | H1 (card baseline H1/H4; smoke + P2 baseline on H1) |
 | Multi-timeframe refs | none |
 | Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
 

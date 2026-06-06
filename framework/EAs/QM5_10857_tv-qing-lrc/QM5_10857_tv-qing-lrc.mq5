@@ -61,7 +61,7 @@ input group "Strategy"
 input int    lrc_length        = 100;   // LRC regression lookback (card: 50/100/150)
 input double lrc_dev           = 2.0;    // channel std-dev multiplier (card: 1.5/2.0/2.5)
 input int    ema_period        = 20;     // trend-filter EMA period
-input int    atr_period        = 14;     // ATR period for stop / width
+input int    atr_len           = 14;     // ATR period for stop / width
 input double atr_sl_mult       = 1.5;    // stop = entry - atr_sl_mult*ATR (card: 1.0/1.5/2.0)
 input int    pivot_lookback    = 5;      // recent pivot-support window (card: 3/5/10)
 input int    time_exit_bars    = 20;     // time exit after N bars (card: 12/20/30)
@@ -143,7 +143,7 @@ void ComputeChannelState()
    g_ema_slope_neg3 = (g_ema_now < g_ema_prev && g_ema_prev < ema3 && ema3 < ema4);
 
    // --- ATR (pooled reader) for stop distance and width filter.
-   g_atr_now = QM_ATR(_Symbol, _Period, atr_period, 1);
+   g_atr_now = QM_ATR(_Symbol, _Period, atr_len, 1);
 
    // --- Recent pivot support = lowest low over the pivot_lookback closed bars.
    double swing_low = DBL_MAX;

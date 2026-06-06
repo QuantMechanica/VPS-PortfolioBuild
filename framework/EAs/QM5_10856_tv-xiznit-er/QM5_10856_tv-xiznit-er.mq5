@@ -66,7 +66,7 @@ input double er_trend_threshold     = 0.30;  // ER >= thr => regime is "trending
 input int    fast_ma_period         = 9;     // fast EMA (card tests 9/12)
 input int    slow_ma_period         = 21;    // slow EMA (card tests 21/34)
 // --- Bracket (ATR-calibrated, approximates source 100-tick fixed SL/TP) ---
-input int    atr_period             = 14;    // ATR period for stop/target
+input int    strat_atr_period       = 14;    // ATR period for stop/target
 input double atr_sl_mult            = 1.0;   // stop = 1.0*ATR(14) (card P2 baseline)
 input double atr_tp_mult            = 1.0;   // target = 1.0*ATR (source 100t SL == 100t TP => 1:1)
 // --- Entry quality filters ---
@@ -222,7 +222,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double slow1 = QM_EMA(_Symbol, _Period, slow_ma_period, 1);
    const double fast2 = QM_EMA(_Symbol, _Period, fast_ma_period, 2);
    const double slow2 = QM_EMA(_Symbol, _Period, slow_ma_period, 2);
-   const double atr   = QM_ATR(_Symbol, _Period, atr_period, 1);
+   const double atr   = QM_ATR(_Symbol, _Period, strat_atr_period, 1);
    const double er    = ComputeER(er_length);
 
    const double close1 = iClose(_Symbol, _Period, 1);  // perf-allowed: bespoke regime/candle close
