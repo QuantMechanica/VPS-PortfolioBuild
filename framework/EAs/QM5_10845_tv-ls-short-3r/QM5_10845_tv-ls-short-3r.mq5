@@ -29,91 +29,41 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_atr_period             = 14;
-input double strategy_stop_buffer_atr_mult   = 0.10;
-input double strategy_rr_target              = 3.0;
-input double strategy_min_stop_spread_mult   = 3.0;
-input double strategy_max_stop_atr_mult      = 2.5;
-input int    strategy_fx_session_start_min   = 840;
-input int    strategy_fx_session_end_min     = 1080;
+input int    strategy_atr_period              = 14;
+input double strategy_stop_buffer_atr_mult    = 0.10;
+input double strategy_rr_target               = 3.0;
+input double strategy_min_stop_spread_mult    = 3.0;
+input double strategy_max_stop_atr_mult       = 2.5;
+input int    strategy_fx_session_start_min    = 840;
+input int    strategy_fx_session_end_min      = 1080;
 input int    strategy_index_session_start_min = 570;
 input int    strategy_index_session_end_min   = 1080;
-input int    strategy_day_high_scan_bars     = 288;
+input int    strategy_day_high_scan_bars      = 288;
 
-int MinuteOfDay(const datetime t)
-  {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.hour * 60 + dt.min;
-  }
-
-bool MinuteInWindow(const int minute, const int start_minute, const int end_minute)
-  {
-   if(start_minute == end_minute)
-      return true;
-   if(start_minute < end_minute)
-      return (minute >= start_minute && minute < end_minute);
-   return (minute >= start_minute || minute < end_minute);
-  }
-
-bool SameBrokerDay(const datetime a, const datetime b)
-  {
-   MqlDateTime da;
-   MqlDateTime db;
-   TimeToStruct(a, da);
-   TimeToStruct(b, db);
-   return (da.year == db.year && da.day_of_year == db.day_of_year);
-  }
-
-bool IsIndexSymbol()
-  {
-   return (StringFind(_Symbol, "NDX") >= 0 ||
-           StringFind(_Symbol, "WS30") >= 0 ||
-           StringFind(_Symbol, "GDAXI") >= 0 ||
-           StringFind(_Symbol, "GER40") >= 0 ||
-           StringFind(_Symbol, "UK100") >= 0 ||
-           StringFind(_Symbol, "SP500") >= 0);
-  }
-
-double CurrentSpreadPrice()
-  {
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(ask > 0.0 && bid > 0.0 && ask > bid)
-      return ask - bid;
-   return (double)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD) * point;
-  }
-
-double DayHighThroughShift(const int start_shift, const int max_scan_bars)
-  {
-   const datetime anchor = iTime(_Symbol, _Period, start_shift); // perf-allowed: bespoke broker-day sweep structure, called only inside framework new-bar entry hook.
-   if(anchor <= 0)
-      return 0.0;
-
-   double high = -DBL_MAX;
-   const int limit = MathMax(1, max_scan_bars);
-   for(int shift = start_shift; shift < start_shift + limit; ++shift)
-     {
-      const datetime t = iTime(_Symbol, _Period, shift); // perf-allowed: bounded broker-day scan for current-day high.
-      if(t <= 0 || !SameBrokerDay(t, anchor))
-         break;
-      const double h = iHigh(_Symbol, _Period, shift); // perf-allowed: bounded broker-day scan for current-day high.
-      if(h > high)
-         high = h;
-     }
-
-   return (high == -DBL_MAX) ? 0.0 : high;
-  }
-
+// Return TRUE to BLOCK trading this tick (time, spread, news override).
 bool Strategy_NoTradeFilter()
   {
-   const int minute = MinuteOfDay(TimeCurrent());
-   if(IsIndexSymbol())
-      return !MinuteInWindow(minute, strategy_index_session_start_min, strategy_index_session_end_min);
-   return !MinuteInWindow(minute, strategy_fx_session_start_min, strategy_fx_session_end_min);
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(), dt);
+   const int minute = dt.hour * 60 + dt.min;
+
+   const bool is_index = (StringFind(_Symbol, "NDX") >= 0 ||
+                          StringFind(_Symbol, "WS30") >= 0 ||
+                          StringFind(_Symbol, "GDAXI") >= 0 ||
+                          StringFind(_Symbol, "GER40") >= 0 ||
+                          StringFind(_Symbol, "UK100") >= 0 ||
+                          StringFind(_Symbol, "SP500") >= 0);
+   const int start_minute = is_index ? strategy_index_session_start_min : strategy_fx_session_start_min;
+   const int end_minute = is_index ? strategy_index_session_end_min : strategy_fx_session_end_min;
+
+   if(start_minute == end_minute)
+      return false;
+   if(start_minute < end_minute)
+      return !(minute >= start_minute && minute < end_minute);
+   return !(minute >= start_minute || minute < end_minute);
   }
 
+// Short after a failed sweep above the broker-day high. Caller guarantees a new bar.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    req.type = QM_SELL;
@@ -125,47 +75,70 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.expiration_seconds = 0;
 
    if(strategy_atr_period < 1 || strategy_rr_target <= 0.0 ||
-      strategy_stop_buffer_atr_mult < 0.0 || strategy_day_high_scan_bars < 2)
+      strategy_stop_buffer_atr_mult < 0.0 || strategy_day_high_scan_bars < 2 ||
+      strategy_min_stop_spread_mult <= 0.0 || strategy_max_stop_atr_mult <= 0.0)
       return false;
 
-   const double prev_open = iOpen(_Symbol, _Period, 2); // perf-allowed: two-candle OHLC source pattern.
-   const double prev_high = iHigh(_Symbol, _Period, 2); // perf-allowed: two-candle OHLC source pattern.
-   const double prev_close = iClose(_Symbol, _Period, 2); // perf-allowed: two-candle OHLC source pattern.
-   const double sweep_high = iHigh(_Symbol, _Period, 1); // perf-allowed: two-candle OHLC source pattern.
-   const double sweep_close = iClose(_Symbol, _Period, 1); // perf-allowed: two-candle OHLC source pattern.
-   if(prev_open <= 0.0 || prev_high <= 0.0 || prev_close <= 0.0 ||
-      sweep_high <= 0.0 || sweep_close <= 0.0)
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int bars_needed = MathMax(strategy_day_high_scan_bars + 3, 5);
+   const int copied = CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, 0, bars_needed, rates);
+   if(copied < 3)
       return false;
 
-   if(prev_close <= prev_open)
+   const MqlRates sweep = rates[1];
+   const MqlRates prev = rates[2];
+   if(prev.open <= 0.0 || prev.high <= 0.0 || prev.close <= 0.0 ||
+      sweep.high <= 0.0 || sweep.close <= 0.0)
+      return false;
+
+   if(prev.close <= prev.open)
+      return false;
+
+   MqlDateTime day_anchor;
+   TimeToStruct(prev.time, day_anchor);
+   double day_high_before_sweep = -DBL_MAX;
+   const int scan_limit = MathMin(copied, strategy_day_high_scan_bars + 2);
+   for(int i = 2; i < scan_limit; ++i)
+     {
+      MqlDateTime bar_dt;
+      TimeToStruct(rates[i].time, bar_dt);
+      if(bar_dt.year != day_anchor.year || bar_dt.day_of_year != day_anchor.day_of_year)
+         break;
+      if(rates[i].high > day_high_before_sweep)
+         day_high_before_sweep = rates[i].high;
+     }
+   if(day_high_before_sweep == -DBL_MAX)
       return false;
 
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    if(point <= 0.0)
       return false;
-
-   const double day_high_before_sweep = DayHighThroughShift(2, strategy_day_high_scan_bars);
-   if(day_high_before_sweep <= 0.0 || prev_high < day_high_before_sweep - point * 0.5)
+   if(MathAbs(prev.high - day_high_before_sweep) > point * 0.5)
       return false;
-
-   if(sweep_high <= prev_high || sweep_close >= prev_open)
+   if(sweep.high <= prev.high || sweep.close >= prev.open)
       return false;
 
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(bid <= 0.0)
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   if(bid <= 0.0 || ask <= 0.0)
+      return false;
+
+   double spread = ask - bid;
+   if(spread <= 0.0)
+      spread = (double)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD) * point;
+   if(spread <= 0.0)
       return false;
 
    const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
-   const double spread = CurrentSpreadPrice();
-   if(atr <= 0.0 || spread <= 0.0)
+   if(atr <= 0.0)
       return false;
 
    const double buffer = MathMax(strategy_stop_buffer_atr_mult * atr, 2.0 * spread);
-   const double sl = sweep_high + buffer;
+   const double sl = sweep.high + buffer;
    const double stop_dist = sl - bid;
    if(stop_dist <= 0.0)
       return false;
-
    if(stop_dist < strategy_min_stop_spread_mult * spread)
       return false;
    if(stop_dist > strategy_max_stop_atr_mult * atr)
@@ -179,21 +152,26 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    return true;
   }
 
+// Card specifies fixed SL and fixed 3R TP only.
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies fixed SL and fixed 3R TP only.
   }
 
+// No discretionary strategy close; exits are SL, TP, and framework Friday close.
 bool Strategy_ExitSignal()
   {
-   // No discretionary strategy close in the card; exits are SL, TP, and framework Friday close.
    return false;
   }
 
+// News Filter Hook for P8 News Impact phase.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
   }
+
+// -----------------------------------------------------------------------------
+// Framework wiring - do NOT edit below this line.
+// -----------------------------------------------------------------------------
 
 int OnInit()
   {
@@ -233,7 +211,6 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
@@ -241,7 +218,6 @@ void OnTick()
       news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
    if(!news_allows)
       return;
-
    if(QM_FrameworkHandleFridayClose())
       return;
 
