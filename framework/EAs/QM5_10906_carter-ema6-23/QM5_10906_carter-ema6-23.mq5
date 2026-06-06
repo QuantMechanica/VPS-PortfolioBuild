@@ -5,7 +5,6 @@
 // Source: Thomas Carter, 20 Forex Trading Strategies (1H), Strategy #3, p.9.
 
 #include <QM/QM_Common.mqh>
-#include <QM/QM_Signals.mqh>
 
 // =============================================================================
 // Carter EMA 6/23 — H1 EURUSD trend-cross with MACD + Stochastic confirmation.
@@ -78,8 +77,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.expiration_seconds = 0;
 
    // Primary trigger: EMA(6) / EMA(23) cross on the last closed bar.
-   const int ma_cross = QM_Sig_MA_Cross(_Symbol, PERIOD_CURRENT,
-                                        strategy_ema_fast, strategy_ema_slow, 1);
+   const double ema_fast_1_cross = QM_EMA(_Symbol, PERIOD_CURRENT, strategy_ema_fast, 1);
+   const double ema_slow_1_cross = QM_EMA(_Symbol, PERIOD_CURRENT, strategy_ema_slow, 1);
+   const double ema_fast_2_cross = QM_EMA(_Symbol, PERIOD_CURRENT, strategy_ema_fast, 2);
+   const double ema_slow_2_cross = QM_EMA(_Symbol, PERIOD_CURRENT, strategy_ema_slow, 2);
+   int ma_cross = 0;
+   if(ema_fast_2_cross <= ema_slow_2_cross && ema_fast_1_cross > ema_slow_1_cross)
+      ma_cross = 1;
+   else if(ema_fast_2_cross >= ema_slow_2_cross && ema_fast_1_cross < ema_slow_1_cross)
+      ma_cross = -1;
    if(ma_cross == 0)
       return false;
 
@@ -178,8 +184,15 @@ bool Strategy_ExitSignal()
    if(!have)
       return false;
 
-   const int ma_cross = QM_Sig_MA_Cross(_Symbol, PERIOD_CURRENT,
-                                        strategy_ema_fast, strategy_ema_slow, 1);
+   const double ema_fast_1_cross = QM_EMA(_Symbol, PERIOD_CURRENT, strategy_ema_fast, 1);
+   const double ema_slow_1_cross = QM_EMA(_Symbol, PERIOD_CURRENT, strategy_ema_slow, 1);
+   const double ema_fast_2_cross = QM_EMA(_Symbol, PERIOD_CURRENT, strategy_ema_fast, 2);
+   const double ema_slow_2_cross = QM_EMA(_Symbol, PERIOD_CURRENT, strategy_ema_slow, 2);
+   int ma_cross = 0;
+   if(ema_fast_2_cross <= ema_slow_2_cross && ema_fast_1_cross > ema_slow_1_cross)
+      ma_cross = 1;
+   else if(ema_fast_2_cross >= ema_slow_2_cross && ema_fast_1_cross < ema_slow_1_cross)
+      ma_cross = -1;
    if(ptype == POSITION_TYPE_BUY && ma_cross < 0)
       return true;
    if(ptype == POSITION_TYPE_SELL && ma_cross > 0)

@@ -5931,3 +5931,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10906,carter-ema6-23,0,EURUSD.DWX,109060000,2026-06-06,Development,active
 10907,carter-ema60-pb,0,EURUSD.DWX,109070000,2026-06-06,Development,active
 10907,carter-ema60-pb,1,GBPUSD.DWX,109070001,2026-06-06,Development,active
+10910,grimes-pullback,0,EURUSD.DWX,109100000,2026-06-06,Development,active
+10910,grimes-pullback,1,GBPUSD.DWX,109100001,2026-06-06,Development,active
+10910,grimes-pullback,2,XAUUSD.DWX,109100002,2026-06-06,Development,active
+10910,grimes-pullback,3,GDAXI.DWX,109100003,2026-06-06,Development,active
+10910,grimes-pullback,4,NDX.DWX,109100004,2026-06-06,Development,active
