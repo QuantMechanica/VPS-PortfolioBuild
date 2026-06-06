@@ -84,26 +84,32 @@ input int    strategy_max_spread_points = 0;
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
-// regime filter). Cheap O(1) checks only — runs on every tick.
+// No Trade Filter (time, spread, news)
 bool Strategy_NoTradeFilter()
   {
    if(_Period != PERIOD_D1)
       return true;
 
-   if(strategy_max_spread_points > 0)
-     {
-      const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-      if(spread_points > strategy_max_spread_points)
-         return true;
-     }
+   if(qm_magic_slot_offset == 0 && _Symbol != "SP500.DWX")  return true;
+   if(qm_magic_slot_offset == 1 && _Symbol != "NDX.DWX")    return true;
+   if(qm_magic_slot_offset == 2 && _Symbol != "WS30.DWX")   return true;
+   if(qm_magic_slot_offset == 3 && _Symbol != "GDAXI.DWX")  return true;
+   if(qm_magic_slot_offset == 4 && _Symbol != "XAUUSD.DWX") return true;
+   if(qm_magic_slot_offset == 5 && _Symbol != "XTIUSD.DWX") return true;
+   if(qm_magic_slot_offset == 6 && _Symbol != "EURUSD.DWX") return true;
+   if(qm_magic_slot_offset == 7 && _Symbol != "GBPUSD.DWX") return true;
+   if(qm_magic_slot_offset == 8 && _Symbol != "AUDUSD.DWX") return true;
+   if(qm_magic_slot_offset == 9 && _Symbol != "NZDUSD.DWX") return true;
+   if(qm_magic_slot_offset == 10 && _Symbol != "USDJPY.DWX") return true;
+   if(qm_magic_slot_offset == 11 && _Symbol != "USDCAD.DWX") return true;
+   if(qm_magic_slot_offset == 12 && _Symbol != "USDCHF.DWX") return true;
+   if(qm_magic_slot_offset < 0 || qm_magic_slot_offset > 12)
+      return true;
 
    return false;
   }
 
-// Populate `req` with entry order parameters and return TRUE if a NEW entry
-// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
-// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
+// Trade Entry
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    req.type = QM_BUY;
@@ -126,8 +132,35 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double warmup_sma = QM_SMA(_Symbol, PERIOD_D1, strategy_min_daily_bars, 1);
    const double sma_fast = QM_SMA(_Symbol, PERIOD_D1, strategy_fast_sma_days, 1);
    const double sma_slow = QM_SMA(_Symbol, PERIOD_D1, strategy_slow_sma_days, 1);
-   if(warmup_sma <= 0.0 || sma_fast <= 0.0 || sma_slow <= 0.0 || sma_fast <= sma_slow)
+   if(warmup_sma <= 0.0 || sma_fast <= 0.0 || sma_slow <= 0.0)
       return false;
+
+   const int magic = QM_FrameworkMagic();
+   bool has_position = false;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      has_position = true;
+      if(sma_fast <= sma_slow)
+         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+     }
+
+   if(sma_fast <= sma_slow || has_position)
+      return false;
+
+   if(strategy_max_spread_points > 0)
+     {
+      const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+      if(spread_points > strategy_max_spread_points)
+         return false;
+     }
 
    const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    if(entry <= 0.0)
@@ -141,57 +174,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    return true;
   }
 
-// Called every tick when an open position exists for this EA's magic.
-// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
+// Trade Management
 void Strategy_ManageOpenPosition()
   {
    // Card defines no trailing, break-even, partial, or pyramiding management.
   }
 
-// Return TRUE to close the open position now (e.g. opposite-signal exit,
-// max-hold-time exceeded, session end).
+// Trade Close
 bool Strategy_ExitSignal()
   {
-   if(_Period != PERIOD_D1)
-      return false;
-   if(strategy_fast_sma_days <= 0 ||
-      strategy_slow_sma_days <= 0 ||
-      strategy_min_daily_bars < strategy_slow_sma_days)
-      return false;
-
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   bool has_position = false;
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
-        {
-         has_position = true;
-         break;
-        }
-     }
-   if(!has_position)
-      return false;
-
-   const double warmup_sma = QM_SMA(_Symbol, PERIOD_D1, strategy_min_daily_bars, 1);
-   const double sma_fast = QM_SMA(_Symbol, PERIOD_D1, strategy_fast_sma_days, 1);
-   const double sma_slow = QM_SMA(_Symbol, PERIOD_D1, strategy_slow_sma_days, 1);
-   if(warmup_sma <= 0.0 || sma_fast <= 0.0 || sma_slow <= 0.0)
-      return false;
-
-   return (sma_fast <= sma_slow);
+   return false;
   }
 
-// Optional news-filter override. Return TRUE to suppress trading regardless
-// of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
-// custom high-impact-event handling beyond the central filter.
+// News Filter Hook (callable for P8 News Impact phase)
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false; // defer to QM_NewsAllowsTrade(...)
