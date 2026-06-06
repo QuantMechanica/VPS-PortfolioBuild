@@ -108,7 +108,7 @@ double Strategy_PipDistance(const int pips)
 
 bool Strategy_ReadGapBars(MqlRates &current_bar, MqlRates &previous_bar)
   {
-   MqlRates bars[2];
+   MqlRates bars[];
    ArraySetAsSeries(bars, true);
    const int copied = CopyRates(_Symbol, PERIOD_H1, 0, 2, bars); // perf-allowed: bounded OHLC gap read inside framework new-bar entry hook.
    if(copied != 2)
