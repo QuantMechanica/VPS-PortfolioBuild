@@ -127,7 +127,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    MqlRates bar[1];
-   ArraySetAsSeries(bar, true);
    if(CopyRates(_Symbol, PERIOD_H1, 1, 1, bar) != 1) // perf-allowed: one completed H1 bar for open/close envelope bounce math.
       return false;
 
@@ -211,7 +210,6 @@ bool Strategy_ExitSignal()
      }
 
    MqlRates bar[1];
-   ArraySetAsSeries(bar, true);
    if(CopyRates(_Symbol, PERIOD_H1, 1, 1, bar) != 1) // perf-allowed: one completed H1 bar for opposite-signal close.
       return false;
 
