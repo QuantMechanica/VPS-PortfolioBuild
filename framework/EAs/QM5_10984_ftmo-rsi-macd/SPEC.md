@@ -10,48 +10,50 @@
 
 ## 1. Strategy Logic
 
-This EA trades H1 synchronized RSI and MACD reversals. A long entry requires RSI(14) to have crossed back above 30 within the last three closed bars, a bullish MACD(12,26,9) signal-line cross on the current closed bar, and the confirming candle closing above its midpoint. A short entry mirrors this with RSI crossing back below 70, a bearish MACD cross, and a close below the candle midpoint. The stop is placed beyond the RSI extreme sequence with an ATR buffer, the target is 2.0R, and open trades close early on an opposite MACD cross or after 36 H1 bars.
+This EA trades H1 RSI extreme recoveries that are confirmed by a MACD signal-line cross. A long setup requires RSI(14) to recover above 30 after an oversold sequence, a bullish MACD(12,26,9) cross on the latest closed candle, and that candle closing above its midpoint. A short setup mirrors the rule above 70 with a bearish MACD cross and a close below midpoint. Exits are the 2R target, the initial structural/ATR stop, an opposite MACD cross, or a 36-bar time stop.
 
 ---
 
 ## 2. Parameters
 
 | Parameter | Default | Range | Meaning |
-|---|---:|---|---|
-| `strategy_timeframe` | `PERIOD_H1` | H1 only | Base timeframe for all RSI, MACD, ATR, and OHLC reads. |
-| `strategy_rsi_period` | 14 | >1 | RSI period. |
-| `strategy_rsi_oversold` | 30.0 | 0-100 | Long recovery threshold. |
-| `strategy_rsi_overbought` | 70.0 | 0-100 | Short recovery threshold. |
-| `strategy_rsi_signal_lookback` | 3 | >=1 | Closed bars allowed for the RSI recovery cross. |
-| `strategy_rsi_sequence_max_bars` | 3 | >=1 | Bars scanned for the RSI extreme sequence used by the stop. |
-| `strategy_macd_fast` | 12 | >0 | MACD fast EMA period. |
-| `strategy_macd_slow` | 26 | > fast | MACD slow EMA period. |
-| `strategy_macd_signal` | 9 | >0 | MACD signal EMA period. |
-| `strategy_macd_confirm_bars` | 2 | >=0 | Bars after the RSI recovery during which MACD may confirm. |
-| `strategy_atr_period` | 14 | >0 | ATR period for stop and volatility filter. |
-| `strategy_atr_percentile_bars` | 250 | >=10 | ATR history used for the 20th percentile filter. |
-| `strategy_min_atr_percentile` | 0.20 | 0-1 | Minimum ATR percentile; below this, entries are skipped. |
-| `strategy_stop_atr_buffer_mult` | 0.25 | >=0 | ATR buffer beyond the RSI extreme sequence. |
-| `strategy_min_stop_atr_mult` | 0.80 | >0 | Minimum stop distance in ATR units. |
-| `strategy_max_stop_atr_mult` | 2.50 | > min | Maximum stop distance in ATR units; wider setups are skipped. |
-| `strategy_take_profit_r` | 2.0 | >0 | Fixed R-multiple target. |
-| `strategy_time_exit_bars` | 36 | >0 | Maximum H1 bars to hold before strategy exit. |
-| `strategy_spread_median_bars` | 20 | >=1 | Closed bars used for the median spread filter. |
-| `strategy_spread_median_mult` | 1.50 | >0 | Current spread must be at most this multiple of the median. |
+|---|---|---|---|
+| `strategy_rsi_period` | 14 | 2-100 | RSI lookback used for oversold and overbought recovery. |
+| `strategy_rsi_oversold` | 30.0 | 1-50 | Long recovery threshold. |
+| `strategy_rsi_overbought` | 70.0 | 50-99 | Short recovery threshold. |
+| `strategy_rsi_sequence_bars` | 3 | 1-20 | Prior closed bars used to define the RSI extreme sequence. |
+| `strategy_macd_fast` | 12 | 2-100 | MACD fast EMA period. |
+| `strategy_macd_slow` | 26 | 3-200 | MACD slow EMA period. |
+| `strategy_macd_signal` | 9 | 2-100 | MACD signal period. |
+| `strategy_confirm_bars` | 2 | 0-10 | Maximum bars between RSI recovery and MACD confirmation. |
+| `strategy_atr_period` | 14 | 2-100 | ATR period for stop and volatility filter. |
+| `strategy_sl_atr_buffer` | 0.25 | 0.0-2.0 | ATR buffer beyond the RSI sequence high or low. |
+| `strategy_min_sl_atr` | 0.80 | 0.1-5.0 | Minimum stop distance in ATR units. |
+| `strategy_max_sl_atr` | 2.50 | 0.5-10.0 | Maximum allowed stop distance in ATR units. |
+| `strategy_tp_r_multiple` | 2.0 | 0.5-10.0 | Profit target as R multiple. |
+| `strategy_max_hold_bars` | 36 | 1-500 | Time exit after this many H1 bars. |
+| `strategy_atr_percentile_bars` | 250 | 20-1000 | Lookback for the ATR percentile filter. |
+| `strategy_min_atr_percentile` | 20.0 | 0-100 | Skip entries when current ATR is below this percentile. |
+| `strategy_spread_median_bars` | 20 | 2-200 | Lookback for median spread filter. |
+| `strategy_spread_median_mult` | 1.5 | 0.1-10.0 | Maximum current spread as a multiple of recent median spread. |
+
+> Note: framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
+> qm_news_mode, qm_rng_seed, qm_stress_reject_probability, qm_friday_close_*)
+> are documented in `framework/V5_FRAMEWORK_DESIGN.md` - do NOT re-document
+> them here. Only list strategy-specific inputs.
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `EURUSD.DWX` - Card-listed major FX symbol with DWX data availability.
-- `GBPUSD.DWX` - Card-listed major FX symbol with DWX data availability.
-- `USDJPY.DWX` - Card-listed major FX symbol with DWX data availability.
-- `XAUUSD.DWX` - Card-listed liquid metal symbol with DWX data availability.
+- `EURUSD.DWX` - liquid major FX pair in the card's R3 P2 basket.
+- `GBPUSD.DWX` - liquid major FX pair in the card's R3 P2 basket.
+- `USDJPY.DWX` - liquid major FX pair in the card's R3 P2 basket.
+- `XAUUSD.DWX` - liquid metal symbol in the card's R3 P2 basket.
 
 **Explicitly NOT for:**
-- Non-DWX symbols - Research and backtest artifacts must keep the `.DWX` suffix.
-- Symbols outside `framework/registry/dwx_symbol_matrix.csv` - no broker or custom-symbol tick evidence.
+- `SP500.DWX` - not part of the card's FX/metals R3 basket.
 
 ---
 
@@ -59,9 +61,9 @@ This EA trades H1 synchronized RSI and MACD reversals. A long entry requires RSI
 
 | Aspect | Value |
 |---|---|
-| Base timeframe | H1 |
-| Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` through the V5 skeleton entry path |
+| Base timeframe | `H1` |
+| Multi-timeframe refs | `none` |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
 
 ---
 
@@ -69,12 +71,11 @@ This EA trades H1 synchronized RSI and MACD reversals. A long entry requires RSI
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | 55 |
-| Typical hold time | Intraday to 36 H1 bars; earlier on opposite MACD cross or 2R target. |
-| Expected drawdown profile | Fixed-risk reversal system with skipped low-volatility and high-spread regimes. |
-| Regime preference | Momentum reversal with indicator confluence. |
-| Win rate target (qualitative) | Medium. |
-| Expected trade frequency | H1 RSI extreme recovery plus MACD cross within two bars should be moderately active; conservative estimate 35-80 trades/year/symbol. |
+| Trades / year / symbol | `55` |
+| Typical hold time | `up to 36 H1 bars` |
+| Expected drawdown profile | `moderate fixed-risk drawdown from 2R reversal trades` |
+| Regime preference | `momentum-reversal / volatility-normal` |
+| Win rate target (qualitative) | `medium` |
 
 ---
 
@@ -82,10 +83,10 @@ This EA trades H1 synchronized RSI and MACD reversals. A long entry requires RSI
 
 This card was mechanised from:
 
-**Source ID:** c11dc4d3-bdfb-5076-aeed-5d943e9ef03f
-**Source type:** blog
-**Pointer:** FTMO, "10 Steps to Building a Trading Strategy", 2025-09-05, https://ftmo.com/en/blog/10-steps-to-building-a-trading-strategy/
-**R1-R4 verdict (Q00):** all PASS per `artifacts/cards_approved/QM5_10984_ftmo-rsi-macd.md`
+**Source ID:** `c11dc4d3-bdfb-5076-aeed-5d943e9ef03f`
+**Source type:** `blog`
+**Pointer:** `https://ftmo.com/en/blog/10-steps-to-building-a-trading-strategy/`
+**R1-R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_10984_ftmo-rsi-macd.md`
 
 ---
 

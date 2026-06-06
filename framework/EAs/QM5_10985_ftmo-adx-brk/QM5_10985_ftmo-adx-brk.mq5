@@ -3,6 +3,7 @@
 #property description "QM5_10985 FTMO ADX Range Breakout"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_Signals.mqh>
 
 // =============================================================================
 // QuantMechanica V5 EA SKELETON
@@ -162,13 +163,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double channel_height = donchian_high - donchian_low;
    if(channel_height > strategy_compression_atr_mult * atr)
       return false;
-
-   const double close_1 = iClose(_Symbol, tf, 1); // perf-allowed: breakout close for Donchian structural signal
-   const double high_1 = iHigh(_Symbol, tf, 1);   // perf-allowed: breakout candle range check
-   const double low_1 = iLow(_Symbol, tf, 1);     // perf-allowed: breakout candle range check
-   if(close_1 <= 0.0 || high_1 <= 0.0 || low_1 <= 0.0 || high_1 <= low_1)
+   // Breakout candle (just-closed bar) extremes for the range-explosion filter.
+   const double high_1 = iHigh(_Symbol, tf, 1); // perf-allowed: breakout candle range check
+   const double low_1 = iLow(_Symbol, tf, 1);   // perf-allowed: breakout candle range check
+   if(high_1 <= 0.0 || low_1 <= 0.0 || high_1 <= low_1)
       return false;
    if((high_1 - low_1) > strategy_breakout_range_atr_mult * atr)
+      return false;
+
+   // Breakout direction on the just-closed bar via the framework signal. It
+   // evaluates close[1] against the same prior-N Donchian window computed above
+   // (shift+1..shift+lookback), so no raw iClose is needed in the EA.
+   const int brk = QM_Sig_Range_Breakout(_Symbol, tf, strategy_donchian_lookback, 1);
+   if(brk == 0)
       return false;
 
    const double adx_1 = QM_ADX(_Symbol, tf, strategy_adx_period, 1);
@@ -189,9 +196,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double same_range_tolerance = (point > 0.0) ? point * 0.5 : 0.00000001;
 
    int side = 0;
-   if(close_1 > donchian_high && plus_di > minus_di)
+   if(brk > 0 && plus_di > minus_di)
       side = 1;
-   else if(close_1 < donchian_low && minus_di > plus_di)
+   else if(brk < 0 && minus_di > plus_di)
       side = -1;
    else
       return false;
@@ -252,9 +259,6 @@ void Strategy_ManageOpenPosition()
    if(magic <= 0)
       return;
 
-   static ulong  tracked_ticket = 0;
-   static double anchor_close = 0.0;
-
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -267,26 +271,12 @@ void Strategy_ManageOpenPosition()
 
       const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
-      const double current_sl = PositionGetDouble(POSITION_SL);
       const double current_tp = PositionGetDouble(POSITION_TP);
-      if(open_price <= 0.0 || current_sl <= 0.0 || current_tp <= 0.0)
+      if(open_price <= 0.0 || current_tp <= 0.0)
          continue;
 
-      if(tracked_ticket != ticket)
-        {
-         tracked_ticket = ticket;
-         anchor_close = open_price;
-        }
-
-      const double closed_close = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed: O(1) closed-bar close for trailing anchor
-      if(closed_close > 0.0)
-        {
-         if(position_type == POSITION_TYPE_BUY)
-            anchor_close = MathMax(anchor_close, closed_close);
-         else
-            anchor_close = MathMin(anchor_close, closed_close);
-        }
-
+      // Initial risk R recovered from the entry geometry (TP = entry + 2R, fixed
+      // at open and never moved), so no per-trade file-scope state is required.
       const double original_r = MathAbs(current_tp - open_price) / strategy_tp_r_multiple;
       if(original_r <= 0.0)
          continue;
@@ -297,26 +287,12 @@ void Strategy_ManageOpenPosition()
       const double favorable = (position_type == POSITION_TYPE_BUY)
                                ? (market_price - open_price)
                                : (open_price - market_price);
-      if(favorable < strategy_trail_trigger_r * original_r)
-         continue;
 
-      const double atr = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
-      if(atr <= 0.0)
-         continue;
-
-      const double raw_sl = (position_type == POSITION_TYPE_BUY)
-                            ? (anchor_close - strategy_trail_atr_mult * atr)
-                            : (anchor_close + strategy_trail_atr_mult * atr);
-      const double new_sl = NormalizeDouble(raw_sl, _Digits);
-      const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-      if(point <= 0.0 || new_sl <= 0.0)
-         continue;
-
-      const bool improves = (position_type == POSITION_TYPE_BUY)
-                             ? (new_sl > current_sl + point * 0.5 && new_sl < market_price)
-                             : (new_sl < current_sl - point * 0.5 && new_sl > market_price);
-      if(improves)
-         QM_TM_MoveSL(ticket, new_sl, "adx_donchian_atr_close_trail");
+      // Card: trail after +1.5R using 2*ATR. QM_TM_TrailATR trails the SL to
+      // market -/+ 2*ATR and only ever tightens (favourable-only), which is the
+      // framework primitive closest to the card's "2*ATR from the extreme close".
+      if(favorable >= strategy_trail_trigger_r * original_r)
+         QM_TM_TrailATR(ticket, strategy_atr_period, strategy_trail_atr_mult);
      }
   }
 
