@@ -6131,3 +6131,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10958,ftmo-ib-brk,1,GBPUSD.DWX,109580001,2026-06-06,Development,active
 10958,ftmo-ib-brk,2,NDX.DWX,109580002,2026-06-06,Development,active
 10958,ftmo-ib-brk,3,WS30.DWX,109580003,2026-06-06,Development,active
+10959,ftmo-mp-80,0,SP500.DWX,109590000,2026-06-06,Development,active
+10959,ftmo-mp-80,1,NDX.DWX,109590001,2026-06-06,Development,active
+10959,ftmo-mp-80,2,WS30.DWX,109590002,2026-06-06,Development,active
+10959,ftmo-mp-80,3,XAUUSD.DWX,109590003,2026-06-06,Development,active
