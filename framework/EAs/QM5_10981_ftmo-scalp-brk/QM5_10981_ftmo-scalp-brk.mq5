@@ -269,8 +269,12 @@ bool SpreadAllowsTrade()
   {
    const long current_spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
    const double median_spread = MedianSpreadPoints(1, strategy_spread_lookback);
+   // Fail-open: when the spread baseline cannot be established (zero-spread
+   // custom-symbol tick data, or no current spread), the "spread too wide"
+   // filter is undefined and must not block all trading. The card only says
+   // SKIP when spread > 1.5x median — i.e. only when both are measurable.
    if(current_spread <= 0 || median_spread <= 0.0)
-      return false;
+      return true;
    return ((double)current_spread <= strategy_spread_mult * median_spread);
   }
 
