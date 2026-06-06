@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QuantMechanica V5 EA skeleton template"
+#property description "QM5_10921 Grimes Momentum Bear Flag"
 
 #include <QM/QM_Common.mqh>
 
@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 9999;
+input int    qm_ea_id                   = 10921;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -73,11 +73,273 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-// TODO: declare strategy-specific input params here, e.g.:
-//   input int    strategy_atr_period   = 14;
-//   input double strategy_atr_sl_mult  = 2.0;
-//   input double strategy_atr_tp_mult  = 3.0;
-input int    strategy_placeholder       = 0;
+input int    strategy_keltner_period          = 20;
+input double strategy_keltner_atr_mult        = 2.25;
+input int    strategy_breakout_lookback       = 20;
+input int    strategy_breakdown_scan_bars     = 10;
+input int    strategy_macd_fast               = 12;
+input int    strategy_macd_slow               = 26;
+input int    strategy_macd_signal             = 9;
+input int    strategy_macd_extreme_lookback   = 60;
+input int    strategy_macd_extreme_window     = 3;
+input int    strategy_bounce_min_bars         = 2;
+input int    strategy_bounce_max_bars         = 8;
+input double strategy_bounce_max_retrace      = 0.50;
+input double strategy_bounce_reject_retrace   = 0.618;
+input int    strategy_sl_atr_period           = 14;
+input double strategy_sl_atr_buffer_mult      = 0.25;
+input double strategy_max_stop_atr_mult       = 3.0;
+input double strategy_target_r_mult           = 1.0;
+input double strategy_trail_atr_mult          = 2.0;
+input int    strategy_time_exit_bars          = 10;
+input double strategy_spread_stop_fraction    = 0.10;
+
+ulong g_trailing_tickets[32];
+int   g_trailing_ticket_count = 0;
+
+double BarOpen(const int shift)  { return iOpen(_Symbol, _Period, shift); }   // perf-allowed: structural D1 flag math, EntrySignal is framework new-bar gated.
+double BarHigh(const int shift)  { return iHigh(_Symbol, _Period, shift); }   // perf-allowed: structural D1 flag math, bounded helper.
+double BarLow(const int shift)   { return iLow(_Symbol, _Period, shift); }    // perf-allowed: structural D1 flag math, bounded helper.
+double BarClose(const int shift) { return iClose(_Symbol, _Period, shift); }  // perf-allowed: structural D1 flag math, bounded helper.
+
+bool ValidStrategyInputs()
+  {
+   return strategy_keltner_period > 1 &&
+          strategy_keltner_atr_mult > 0.0 &&
+          strategy_breakout_lookback > 1 &&
+          strategy_breakdown_scan_bars >= 3 &&
+          strategy_macd_fast > 0 &&
+          strategy_macd_slow > strategy_macd_fast &&
+          strategy_macd_signal > 0 &&
+          strategy_macd_extreme_lookback > 1 &&
+          strategy_macd_extreme_window > 0 &&
+          strategy_bounce_min_bars >= 1 &&
+          strategy_bounce_max_bars >= strategy_bounce_min_bars &&
+          strategy_bounce_max_retrace > 0.0 &&
+          strategy_bounce_reject_retrace >= strategy_bounce_max_retrace &&
+          strategy_sl_atr_period > 1 &&
+          strategy_sl_atr_buffer_mult >= 0.0 &&
+          strategy_max_stop_atr_mult > 0.0 &&
+          strategy_target_r_mult > 0.0 &&
+          strategy_trail_atr_mult > 0.0 &&
+          strategy_time_exit_bars > 0 &&
+          strategy_spread_stop_fraction > 0.0;
+  }
+
+double HighestClose(const int start_shift, const int count)
+  {
+   double value = -DBL_MAX;
+   for(int i = start_shift; i < start_shift + count; ++i)
+     {
+      const double close_i = BarClose(i);
+      if(close_i <= 0.0)
+         return 0.0;
+      value = MathMax(value, close_i);
+     }
+   return value;
+  }
+
+double LowestClose(const int start_shift, const int count)
+  {
+   double value = DBL_MAX;
+   for(int i = start_shift; i < start_shift + count; ++i)
+     {
+      const double close_i = BarClose(i);
+      if(close_i <= 0.0)
+         return 0.0;
+      value = MathMin(value, close_i);
+     }
+   return value;
+  }
+
+double HighestHigh(const int start_shift, const int count)
+  {
+   double value = -DBL_MAX;
+   for(int i = start_shift; i < start_shift + count; ++i)
+     {
+      const double high_i = BarHigh(i);
+      if(high_i <= 0.0)
+         return 0.0;
+      value = MathMax(value, high_i);
+     }
+   return value;
+  }
+
+double LowestLow(const int start_shift, const int count)
+  {
+   double value = DBL_MAX;
+   for(int i = start_shift; i < start_shift + count; ++i)
+     {
+      const double low_i = BarLow(i);
+      if(low_i <= 0.0)
+         return 0.0;
+      value = MathMin(value, low_i);
+     }
+   return value;
+  }
+
+bool MacdExtremeNearBreak(const int break_shift, const bool bullish)
+  {
+   for(int s = break_shift; s < break_shift + strategy_macd_extreme_window; ++s)
+     {
+      const double candidate = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast,
+                                            strategy_macd_slow, strategy_macd_signal, s);
+      double extreme = bullish ? -DBL_MAX : DBL_MAX;
+      for(int j = s; j < s + strategy_macd_extreme_lookback; ++j)
+        {
+         const double macd_j = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast,
+                                            strategy_macd_slow, strategy_macd_signal, j);
+         extreme = bullish ? MathMax(extreme, macd_j) : MathMin(extreme, macd_j);
+        }
+
+      if(bullish && candidate >= extreme - 1e-10)
+         return true;
+      if(!bullish && candidate <= extreme + 1e-10)
+         return true;
+     }
+   return false;
+  }
+
+bool SpreadWithinStop(const double stop_distance)
+  {
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0 || ask <= bid || stop_distance <= 0.0)
+      return false;
+   return (ask - bid) <= strategy_spread_stop_fraction * stop_distance;
+  }
+
+bool IsTrailingTicket(const ulong ticket)
+  {
+   for(int i = 0; i < g_trailing_ticket_count; ++i)
+      if(g_trailing_tickets[i] == ticket)
+         return true;
+   return false;
+  }
+
+void MarkTrailingTicket(const ulong ticket)
+  {
+   if(ticket == 0 || IsTrailingTicket(ticket) || g_trailing_ticket_count >= 32)
+      return;
+   g_trailing_tickets[g_trailing_ticket_count] = ticket;
+   g_trailing_ticket_count++;
+  }
+
+bool BuildShortSignal(const int bounce_bars, QM_EntryRequest &req)
+  {
+   const int break_shift = bounce_bars + 2;
+   if(break_shift > strategy_breakdown_scan_bars)
+      return false;
+
+   const double trigger_close = BarClose(1);
+   const double break_close = BarClose(break_shift);
+   if(trigger_close <= 0.0 || break_close <= 0.0)
+      return false;
+
+   const double prior_low = LowestClose(break_shift + 1, strategy_breakout_lookback);
+   const double prior_high = HighestClose(break_shift + 1, strategy_breakout_lookback);
+   if(prior_low <= 0.0 || prior_high <= 0.0 || break_close >= prior_low)
+      return false;
+
+   const double atr20 = QM_ATR(_Symbol, _Period, strategy_keltner_period, break_shift);
+   const double ema20 = QM_EMA(_Symbol, _Period, strategy_keltner_period, break_shift);
+   if(atr20 <= 0.0 || ema20 <= 0.0 || break_close > ema20 - strategy_keltner_atr_mult * atr20)
+      return false;
+
+   if(!MacdExtremeNearBreak(break_shift, false))
+      return false;
+
+   const double bounce_high = HighestHigh(2, bounce_bars);
+   const double bounce_low = LowestLow(2, bounce_bars);
+   const double bounce_high_close = HighestClose(2, bounce_bars);
+   const double leg = prior_high - break_close;
+   if(bounce_high <= 0.0 || bounce_low <= 0.0 || bounce_high_close <= 0.0 || leg <= 0.0)
+      return false;
+
+   const double retrace = (bounce_high_close - break_close) / leg;
+   if(retrace > strategy_bounce_max_retrace || retrace > strategy_bounce_reject_retrace)
+      return false;
+   if(trigger_close >= bounce_low)
+      return false;
+
+   const double atr14 = QM_ATR(_Symbol, _Period, strategy_sl_atr_period, 1);
+   const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double stop = bounce_high + strategy_sl_atr_buffer_mult * atr14;
+   const double stop_distance = stop - entry;
+   if(atr14 <= 0.0 || entry <= 0.0 || stop_distance <= 0.0)
+      return false;
+   if(stop_distance > strategy_max_stop_atr_mult * atr14)
+      return false;
+   if(!SpreadWithinStop(stop_distance))
+      return false;
+
+   req.type = QM_SELL;
+   req.price = 0.0;
+   req.sl = NormalizeDouble(stop, _Digits);
+   req.tp = 0.0;
+   req.reason = "GRIMES_BEARFLAG_SHORT";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+   return true;
+  }
+
+bool BuildLongSignal(const int bounce_bars, QM_EntryRequest &req)
+  {
+   const int break_shift = bounce_bars + 2;
+   if(break_shift > strategy_breakdown_scan_bars)
+      return false;
+
+   const double trigger_close = BarClose(1);
+   const double break_close = BarClose(break_shift);
+   if(trigger_close <= 0.0 || break_close <= 0.0)
+      return false;
+
+   const double prior_high = HighestClose(break_shift + 1, strategy_breakout_lookback);
+   const double prior_low = LowestClose(break_shift + 1, strategy_breakout_lookback);
+   if(prior_high <= 0.0 || prior_low <= 0.0 || break_close <= prior_high)
+      return false;
+
+   const double atr20 = QM_ATR(_Symbol, _Period, strategy_keltner_period, break_shift);
+   const double ema20 = QM_EMA(_Symbol, _Period, strategy_keltner_period, break_shift);
+   if(atr20 <= 0.0 || ema20 <= 0.0 || break_close < ema20 + strategy_keltner_atr_mult * atr20)
+      return false;
+
+   if(!MacdExtremeNearBreak(break_shift, true))
+      return false;
+
+   const double pullback_low = LowestLow(2, bounce_bars);
+   const double pullback_high = HighestHigh(2, bounce_bars);
+   const double pullback_low_close = LowestClose(2, bounce_bars);
+   const double leg = break_close - prior_low;
+   if(pullback_low <= 0.0 || pullback_high <= 0.0 || pullback_low_close <= 0.0 || leg <= 0.0)
+      return false;
+
+   const double retrace = (break_close - pullback_low_close) / leg;
+   if(retrace > strategy_bounce_max_retrace || retrace > strategy_bounce_reject_retrace)
+      return false;
+   if(trigger_close <= pullback_high)
+      return false;
+
+   const double atr14 = QM_ATR(_Symbol, _Period, strategy_sl_atr_period, 1);
+   const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double stop = pullback_low - strategy_sl_atr_buffer_mult * atr14;
+   const double stop_distance = entry - stop;
+   if(atr14 <= 0.0 || entry <= 0.0 || stop_distance <= 0.0)
+      return false;
+   if(stop_distance > strategy_max_stop_atr_mult * atr14)
+      return false;
+   if(!SpreadWithinStop(stop_distance))
+      return false;
+
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = NormalizeDouble(stop, _Digits);
+   req.tp = 0.0;
+   req.reason = "GRIMES_BEARFLAG_LONG";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+   return true;
+  }
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -87,7 +349,8 @@ input int    strategy_placeholder       = 0;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   // TODO: e.g. "only trade London session" or "skip if ADX<20"
+   // Card has no time/session/regime no-trade filter. Spread is enforced
+   // after the signal because it depends on the signal's stop distance.
    return false;
   }
 
@@ -96,7 +359,26 @@ bool Strategy_NoTradeFilter()
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // TODO: build req.type / req.price / req.sl / req.tp / req.lots
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(!ValidStrategyInputs())
+      return false;
+   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
+      return false;
+
+   for(int bounce_bars = strategy_bounce_min_bars; bounce_bars <= strategy_bounce_max_bars; ++bounce_bars)
+     {
+      if(BuildShortSignal(bounce_bars, req))
+         return true;
+      if(BuildLongSignal(bounce_bars, req))
+         return true;
+     }
    return false;
   }
 
@@ -104,22 +386,73 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // TODO: e.g.
-   //   const int magic = QM_FrameworkMagic();
-   //   for(int i = PositionsTotal() - 1; i >= 0; --i) {
-   //       const ulong ticket = PositionGetTicket(i);
-   //       if(!PositionSelectByTicket(ticket)) continue;
-   //       if(PositionGetInteger(POSITION_MAGIC) != magic) continue;
-   //       QM_TM_MoveToBreakEven(ticket, /*trigger_pips=*/30, /*buffer=*/2);
-   //       QM_TM_TrailATR(ticket, /*atr_period=*/14, /*atr_mult=*/2.0);
-   //   }
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
+      const int bars_open = iBarShift(_Symbol, _Period, open_time, false);
+      if(bars_open >= strategy_time_exit_bars)
+        {
+         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+         continue;
+        }
+
+      if(IsTrailingTicket(ticket))
+        {
+         QM_TM_TrailATR(ticket, strategy_sl_atr_period, strategy_trail_atr_mult);
+         continue;
+        }
+
+      const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const bool is_buy = (pos_type == POSITION_TYPE_BUY);
+      const double entry = PositionGetDouble(POSITION_PRICE_OPEN);
+      const double sl = PositionGetDouble(POSITION_SL);
+      const double risk_distance = MathAbs(entry - sl);
+      if(entry <= 0.0 || sl <= 0.0 || risk_distance <= 0.0)
+         continue;
+
+      const double target = is_buy ? entry + strategy_target_r_mult * risk_distance
+                                   : entry - strategy_target_r_mult * risk_distance;
+      const double high1 = BarHigh(1);
+      const double low1 = BarLow(1);
+      const double close1 = BarClose(1);
+      if(high1 <= 0.0 || low1 <= 0.0 || close1 <= 0.0)
+         continue;
+
+      const bool target_touched = is_buy ? (high1 >= target) : (low1 <= target);
+      if(!target_touched)
+         continue;
+
+      const bool closed_beyond_target = is_buy ? (close1 >= target) : (close1 <= target);
+      if(closed_beyond_target)
+        {
+         MarkTrailingTicket(ticket);
+         QM_TM_TrailATR(ticket, strategy_sl_atr_period, strategy_trail_atr_mult);
+        }
+      else
+        {
+         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+        }
+     }
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   // TODO: when to close manually (separate from SL/TP and trade management)
+   // Time exit and 1R continuation/exit handling live in Trade Management so
+   // the hook can address each ticket with its open time and stop distance.
    return false;
   }
 
