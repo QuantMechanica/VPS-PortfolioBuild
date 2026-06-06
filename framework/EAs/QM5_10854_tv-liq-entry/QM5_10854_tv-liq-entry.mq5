@@ -6,7 +6,6 @@
 // New York session entry, fixed 2R target with session-end + EMA-flip exits.
 
 #include <QM/QM_Common.mqh>
-#include <QM/QM_Signals.mqh>
 
 // =============================================================================
 // QuantMechanica V5 — QM5_10854 tv-liq-entry
@@ -232,7 +231,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const bool   stack_short = (ema_f < ema_m && ema_m < ema_s);
 
    // Higher-timeframe directional confirmation.
-   const int htf_bias = QM_Sig_Price_Above_MA(_Symbol, strategy_htf, strategy_htf_ema, 0.0, 1);
+   MqlRates htf_bar[];
+   if(CopyRates(_Symbol, strategy_htf, 1, 1, htf_bar) < 1) // perf-allowed: single gated closed-bar HTF close
+      return false;
+   const double htf_ema = QM_EMA(_Symbol, strategy_htf, strategy_htf_ema, 1);
+   int htf_bias = 0;
+   if(htf_bar[0].close > htf_ema)
+      htf_bias = +1;
+   else if(htf_bar[0].close < htf_ema)
+      htf_bias = -1;
 
    const double atr = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
    if(atr <= 0.0)
