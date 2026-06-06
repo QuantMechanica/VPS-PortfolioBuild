@@ -171,8 +171,8 @@ bool Strategy_BuildRangeFromRates(const MqlRates &rates[], const int copied, con
 
 int Strategy_AdvanceState()
   {
-   MqlRates rates[96];
-   ArraySetAsSeries(rates, true);
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true); // dynamic array: rates[0] = most recent closed bar
 
    // Called only from OnTick after the framework `QM_IsNewBar()` gate.
    const int copied = CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, 96, rates); // perf-allowed: one closed-bar structural read
