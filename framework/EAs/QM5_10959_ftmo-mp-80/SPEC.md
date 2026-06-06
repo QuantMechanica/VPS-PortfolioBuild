@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA builds the previous regular-session value area from closed M30 bars. It approximates the value area as a 70 percent centered range around the highest tick-volume TPO block's typical price, then waits for the current session to open outside that prior value area and close back inside it for two consecutive M30 blocks. Long entries occur after an open below prior VAL and two closes above VAL; short entries occur after an open above prior VAH and two closes below VAH. The final target is the opposite value-area boundary, TP1 handling occurs when price touches prior POC, and any remaining position is closed at the configured regular-session end.
+The EA builds the previous regular-session value area from closed M30 bars. It bins the prior session's price range into a TPO/volume-profile histogram (each M30 block distributes its tick volume across the price bins its high-low range spans), takes the highest-volume bin as the POC, and expands outward from the POC bin - always adding the larger of the two neighbouring bins - until 70 percent of the session volume is captured; the resulting band's edges are VAL (lower) and VAH (upper). It then waits for the current session to open outside that prior value area and close back inside it for two consecutive M30 blocks. Long entries occur after an open below prior VAL and two closes above VAL; short entries occur after an open above prior VAH and two closes below VAH. The final target is the opposite value-area boundary, TP1 handling occurs when price touches prior POC, and any remaining position is closed at the configured regular-session end.
 
 ---
 
@@ -23,7 +23,8 @@ The EA builds the previous regular-session value area from closed M30 bars. It a
 | strategy_session_end_hour | 23 | 0-23 | Broker-hour end of the regular session and time exit. |
 | strategy_session_end_minute | 0 | 0-59 | Broker-minute end of the regular session. |
 | strategy_profile_lookback_bars | 500 | 120+ | Closed M30 bars copied for prior-session and current-session profile state. |
-| strategy_value_area_fraction | 0.70 | 0.01-1.00 | Fraction of prior-session range used as the value-area approximation. |
+| strategy_value_area_fraction | 0.70 | 0.01-1.00 | Fraction of prior-session volume captured by the value area (70% rule). |
+| strategy_profile_bins | 50 | 10-250 | Price bins for the prior-session TPO/volume-profile histogram. |
 | strategy_atr_period | 14 | 1+ | ATR period for M30 stop cap and H1 value-width filter. |
 | strategy_min_va_width_atr_h1 | 1.0 | 0+ | Minimum previous value-area width as a multiple of H1 ATR. |
 | strategy_max_va_width_atr_h1 | 4.0 | 0+ | Maximum previous value-area width as a multiple of H1 ATR. |
