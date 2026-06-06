@@ -90,7 +90,6 @@ bool g_short_reentry_blocked = false;
 bool Strategy_ReadClosedH1Bar(MqlRates &bar)
   {
    MqlRates rates[1];
-   ArraySetAsSeries(rates, true);
    if(CopyRates(_Symbol, PERIOD_H1, 1, 1, rates) != 1) // perf-allowed: one completed H1 bar for open/close envelope bounce math.
       return false;
    bar = rates[0];

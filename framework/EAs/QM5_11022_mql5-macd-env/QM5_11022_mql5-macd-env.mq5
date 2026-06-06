@@ -83,6 +83,8 @@ input int    strategy_tp_points            = 310;
 input int    strategy_trailing_points      = 50;
 input int    strategy_max_spread_points    = 0;
 
+int strategy_cached_closed_bar_signal = 0;
+
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -128,17 +130,26 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.expiration_seconds = 0;
 
    const int magic = QM_FrameworkMagic();
-   if(magic <= 0 || QM_TM_OpenPositionCount(magic) > 0)
+   if(magic <= 0)
+     {
+      strategy_cached_closed_bar_signal = 0;
       return false;
+     }
 
    MqlRates rates[1];
    ArraySetAsSeries(rates, true);
    if(CopyRates(_Symbol, PERIOD_H1, 1, 1, rates) != 1) // perf-allowed: one closed H1 bar; EntrySignal is called only after the framework new-bar gate.
+     {
+      strategy_cached_closed_bar_signal = 0;
       return false;
+     }
 
    const double middle = QM_SMA(_Symbol, PERIOD_H1, strategy_envelopes_period, 1, PRICE_CLOSE);
    if(middle <= 0.0 || rates[0].open <= 0.0 || rates[0].close <= 0.0)
+     {
+      strategy_cached_closed_bar_signal = 0;
       return false;
+     }
 
    const double lower = middle * (1.0 - (strategy_envelopes_deviation / 100.0));
    const double upper = middle * (1.0 + (strategy_envelopes_deviation / 100.0));
@@ -146,7 +157,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double macd2 = QM_MACD_Main(_Symbol, PERIOD_D1, strategy_macd_fast_ema, strategy_macd_slow_ema, strategy_macd_signal_period, 2, PRICE_CLOSE);
    const double macd3 = QM_MACD_Main(_Symbol, PERIOD_D1, strategy_macd_fast_ema, strategy_macd_slow_ema, strategy_macd_signal_period, 3, PRICE_CLOSE);
    if(macd1 == 0.0 && macd2 == 0.0 && macd3 == 0.0)
+     {
+      strategy_cached_closed_bar_signal = 0;
       return false;
+     }
 
    int signal = 0;
    if(rates[0].open < lower && rates[0].close > lower && macd1 > macd2 && macd2 > macd3)
@@ -154,7 +168,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    else if(rates[0].open > upper && rates[0].close < upper && macd1 < macd2 && macd2 < macd3)
       signal = -1;
 
+   strategy_cached_closed_bar_signal = signal;
    if(signal == 0)
+      return false;
+
+   if(QM_TM_OpenPositionCount(magic) > 0)
       return false;
 
    const QM_OrderType side = (signal > 0) ? QM_BUY : QM_SELL;
@@ -224,7 +242,7 @@ void Strategy_ManageOpenPosition()
 bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
+   if(magic <= 0 || strategy_cached_closed_bar_signal == 0)
       return false;
 
    ENUM_POSITION_TYPE pos_type = POSITION_TYPE_BUY;
@@ -247,32 +265,9 @@ bool Strategy_ExitSignal()
    if(!have_position)
       return false;
 
-   MqlRates rates[1];
-   ArraySetAsSeries(rates, true);
-   if(CopyRates(_Symbol, PERIOD_H1, 1, 1, rates) != 1) // perf-allowed: one closed H1 bar for opposite-signal exit; no historical scan.
-      return false;
-
-   const double middle = QM_SMA(_Symbol, PERIOD_H1, strategy_envelopes_period, 1, PRICE_CLOSE);
-   if(middle <= 0.0 || rates[0].open <= 0.0 || rates[0].close <= 0.0)
-      return false;
-
-   const double lower = middle * (1.0 - (strategy_envelopes_deviation / 100.0));
-   const double upper = middle * (1.0 + (strategy_envelopes_deviation / 100.0));
-   const double macd1 = QM_MACD_Main(_Symbol, PERIOD_D1, strategy_macd_fast_ema, strategy_macd_slow_ema, strategy_macd_signal_period, 1, PRICE_CLOSE);
-   const double macd2 = QM_MACD_Main(_Symbol, PERIOD_D1, strategy_macd_fast_ema, strategy_macd_slow_ema, strategy_macd_signal_period, 2, PRICE_CLOSE);
-   const double macd3 = QM_MACD_Main(_Symbol, PERIOD_D1, strategy_macd_fast_ema, strategy_macd_slow_ema, strategy_macd_signal_period, 3, PRICE_CLOSE);
-   if(macd1 == 0.0 && macd2 == 0.0 && macd3 == 0.0)
-      return false;
-
-   int signal = 0;
-   if(rates[0].open < lower && rates[0].close > lower && macd1 > macd2 && macd2 > macd3)
-      signal = 1;
-   else if(rates[0].open > upper && rates[0].close < upper && macd1 < macd2 && macd2 < macd3)
-      signal = -1;
-
-   if(pos_type == POSITION_TYPE_BUY && signal < 0)
+   if(pos_type == POSITION_TYPE_BUY && strategy_cached_closed_bar_signal < 0)
       return true;
-   if(pos_type == POSITION_TYPE_SELL && signal > 0)
+   if(pos_type == POSITION_TYPE_SELL && strategy_cached_closed_bar_signal > 0)
       return true;
 
    return false;
