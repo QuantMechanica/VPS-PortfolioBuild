@@ -216,12 +216,18 @@ bool Strategy_DailyMetrics(const string symbol,
 
 bool Strategy_MonthlyCloseRising(const string symbol)
   {
-   MqlRates months[];
-   if(!Strategy_CopyRates(symbol, PERIOD_MN1, 1, 2, months))
+   // D1 proxy for "latest monthly close > prior monthly close". PERIOD_MN1
+   // CANNOT be used here: the MT5 tester generates 0 bars/0 ticks on MN1 for
+   // DWX custom symbols (evidence 2026-06-06), so an MN1 read returns nothing
+   // in-backtest and would silently disable the mean-reversion leg. Compare the
+   // last closed D1 close against the close ~one trading month (21 bars) earlier.
+   const int month_bars = 21;
+   MqlRates rates[];
+   if(!Strategy_CopyRates(symbol, PERIOD_D1, 1, month_bars + 2, rates))
       return false;
-   if(months[0].close <= 0.0 || months[1].close <= 0.0)
+   if(rates[0].close <= 0.0 || rates[month_bars].close <= 0.0)
       return false;
-   return (months[0].close > months[1].close);
+   return (rates[0].close > rates[month_bars].close);
   }
 
 bool Strategy_SelectsSymbol(const string symbol)

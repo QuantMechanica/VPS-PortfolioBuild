@@ -50,7 +50,7 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md`.
 | Aspect | Value |
 |---|---|
 | Base timeframe | D1 |
-| Multi-timeframe refs | MN1 closes for the monthly mean-reversion confirmation |
+| Multi-timeframe refs | none — monthly mean-reversion confirmation uses a D1 proxy (21-bar close compare); MN1 is NOT read (0 bars in tester for DWX symbols) |
 | Bar gating | QM_IsNewBar(_Symbol, PERIOD_CURRENT) (default) |
 
 ---
