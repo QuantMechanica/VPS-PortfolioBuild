@@ -145,10 +145,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   // perf-allowed: closed-bar session/day clock (bespoke structural read)
-   const datetime bar_t = iTime(_Symbol, _Period, 1);
-   if(bar_t <= 0)
+   // Single closed-bar fetch (shift 1): time + OHLC for the bespoke
+   // liquidity-sweep / displacement logic. Runs once per closed bar — the
+   // caller (OnTick) gates Strategy_EntrySignal behind QM_IsNewBar(), so this
+   // is never a per-tick recompute.
+   MqlRates bar[];
+   if(CopyRates(_Symbol, _Period, 1, 1, bar) < 1) // perf-allowed: single gated closed-bar fetch
       return false;
+   const datetime bar_t     = bar[0].time;
+   const double   bar_open  = bar[0].open;
+   const double   bar_high  = bar[0].high;
+   const double   bar_low   = bar[0].low;
+   const double   bar_close = bar[0].close;
 
    MqlDateTime dt;
    TimeToStruct(bar_t, dt);
@@ -160,11 +168,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       ResetDailyState();
       g_cur_doy = dt.day_of_year;
      }
-
-   // perf-allowed: bespoke liquidity-sweep high read
-   const double bar_high = iHigh(_Symbol, _Period, 1);
-   // perf-allowed: bespoke liquidity-sweep low read
-   const double bar_low  = iLow(_Symbol, _Period, 1);
 
    // --- Phase 1: accumulate the Asian range during its build window. ---
    if(hour >= strategy_asian_start_hour && hour < strategy_asian_end_hour)
@@ -215,10 +218,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          g_sweep_high_px = bar_high;
      }
 
-   // perf-allowed: displacement-candle open read
-   const double bar_open  = iOpen(_Symbol, _Period, 1);
-   // perf-allowed: reclaim/displacement close read
-   const double bar_close = iClose(_Symbol, _Period, 1);
    const double bar_range = bar_high - bar_low;
    if(bar_range <= 0.0)
       return false;
