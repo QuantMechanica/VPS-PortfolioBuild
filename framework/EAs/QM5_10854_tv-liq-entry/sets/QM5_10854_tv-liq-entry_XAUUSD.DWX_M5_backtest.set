@@ -4,17 +4,17 @@
 ; ea_slug:      tv-liq-entry
 ; ea_version:   v5.0
 ; set_version:  s20260606-001
-; symbol:       EURUSD.DWX
-; timeframe:    M15
+; symbol:       XAUUSD.DWX
+; timeframe:    M5
 ; environment:  backtest
-; magic_slot:   0
+; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   375dd49c1726ab9f98b010d14cb2ecc4b8db597a01614afcd48ee0e8b00aa416
+; build_hash:   4f2beeb78dab4007f03bdf6fbe165e37a2f3f088695557250372442d1e41cee3
 ; author:       Development
 ; date:         2026-06-06
 ;==========================================================
-qm_magic_slot_offset=0
+qm_magic_slot_offset=2
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
