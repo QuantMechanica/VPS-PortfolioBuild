@@ -225,7 +225,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
          double prior_high = -DBL_MAX;
          double prior_low = DBL_MAX;
-         for(int shift = leg_end_shift + 1; shift <= leg_end_shift + strategy_breakout_lookback; ++shift)
+         for(int shift = leg_start_shift + 1; shift <= leg_start_shift + strategy_breakout_lookback; ++shift)
            {
             prior_high = MathMax(prior_high, rates[shift - 1].high);
             prior_low = MathMin(prior_low, rates[shift - 1].low);
