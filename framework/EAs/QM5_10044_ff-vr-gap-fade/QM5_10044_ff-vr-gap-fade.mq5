@@ -73,12 +73,12 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_min_gap_points_fx  = 50;
-input int    strategy_min_gap_points_xau = 150;
-input int    strategy_atr_period_h1      = 14;
-input double strategy_atr_sl_cap_mult    = 2.0;
-input double strategy_max_spread_gap_frac = 0.20;
-input int    strategy_max_hold_bars      = 12;
+input int    strategy_min_gap_pips      = 10;
+input double strategy_min_gap_atr_mult  = 0.35;
+input int    strategy_atr_period        = 14;
+input int    strategy_min_stop_pips     = 20;
+input double strategy_stop_gap_mult     = 1.25;
+input int    strategy_max_hold_bars     = 12;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -88,47 +88,57 @@ input int    strategy_max_hold_bars      = 12;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
+   // Card declares no additional time or spread filter; framework handles news.
    return false;
   }
 
-int Strategy_MinGapPoints()
+double Strategy_PipDistance(const int pips)
   {
-   if(StringFind(_Symbol, "XAUUSD") >= 0)
-      return strategy_min_gap_points_xau;
-   return strategy_min_gap_points_fx;
+   if(pips <= 0)
+      return 0.0;
+
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(point <= 0.0)
+      return 0.0;
+
+   const int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
+   const int pip_factor = (digits == 3 || digits == 5) ? 10 : 1;
+   return (double)pips * point * pip_factor;
   }
 
-bool Strategy_HasOurPosition()
+bool Strategy_ReadGapBars(MqlRates &current_bar, MqlRates &previous_bar)
   {
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
-         return true;
-     }
-   return false;
-  }
-
-bool Strategy_IsSessionGapBar(const datetime current_bar_time, const datetime prior_bar_time)
-  {
-   if(current_bar_time <= 0 || prior_bar_time <= 0)
+   MqlRates bars[2];
+   ArraySetAsSeries(bars, true);
+   const int copied = CopyRates(_Symbol, PERIOD_H1, 0, 2, bars); // perf-allowed: bounded OHLC gap read inside framework new-bar entry hook.
+   if(copied != 2)
       return false;
 
-   int period_seconds = PeriodSeconds((ENUM_TIMEFRAMES)_Period);
-   if(period_seconds <= 0)
-      period_seconds = 15 * 60;
-
-   const int delta_seconds = (int)(current_bar_time - prior_bar_time);
-   if(delta_seconds <= period_seconds + 60)
-      return false;
-   if(delta_seconds > 4 * 24 * 60 * 60)
-      return false;
+   current_bar = bars[0];
+   previous_bar = bars[1];
    return true;
+  }
+
+bool Strategy_StopsMeetBrokerLevel(const QM_OrderType type,
+                                   const double entry_price,
+                                   const double sl_price,
+                                   const double tp_price)
+  {
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(point <= 0.0 || entry_price <= 0.0 || sl_price <= 0.0 || tp_price <= 0.0)
+      return false;
+
+   const int stop_level_points = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
+   if(stop_level_points <= 0)
+      return true;
+
+   const double min_distance = (double)stop_level_points * point;
+   if(QM_OrderTypeIsBuy(type))
+      return ((entry_price - sl_price) >= min_distance &&
+              (tp_price - entry_price) >= min_distance);
+
+   return ((sl_price - entry_price) >= min_distance &&
+           (entry_price - tp_price) >= min_distance);
   }
 
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
@@ -144,58 +154,58 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(_Period != PERIOD_M15)
+   if(_Period != PERIOD_H1)
       return false;
-   if(strategy_atr_sl_cap_mult <= 0.0 || strategy_max_spread_gap_frac < 0.0)
+   if(strategy_min_gap_pips <= 0 ||
+      strategy_min_gap_atr_mult <= 0.0 ||
+      strategy_atr_period <= 0 ||
+      strategy_min_stop_pips <= 0 ||
+      strategy_stop_gap_mult <= 0.0)
       return false;
-   if(Strategy_HasOurPosition())
+
+   MqlRates current_bar;
+   MqlRates previous_bar;
+   if(!Strategy_ReadGapBars(current_bar, previous_bar))
+      return false;
+   if(current_bar.open <= 0.0 || previous_bar.close <= 0.0)
+      return false;
+
+   const double gap = current_bar.open - previous_bar.close;
+   const double gap_distance = MathAbs(gap);
+   if(gap_distance <= 0.0)
       return false;
 
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    if(point <= 0.0)
       return false;
 
-   const datetime current_open_time = iTime(_Symbol, _Period, 1);
-   const datetime prior_bar_time = iTime(_Symbol, _Period, 2);
-   if(!Strategy_IsSessionGapBar(current_open_time, prior_bar_time))
+   const double atr = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
+   if(atr <= 0.0)
       return false;
 
-   const double current_open = iOpen(_Symbol, _Period, 1);
-   const double prior_close = iClose(_Symbol, _Period, 2);
-   if(current_open <= 0.0 || prior_close <= 0.0 || current_open == prior_close)
+   const double min_gap_distance = MathMax(Strategy_PipDistance(strategy_min_gap_pips),
+                                           strategy_min_gap_atr_mult * atr);
+   if(gap_distance < min_gap_distance)
       return false;
 
-   const double gap_price = MathAbs(current_open - prior_close);
-   const double gap_points = gap_price / point;
-   if(gap_points < (double)Strategy_MinGapPoints())
-      return false;
+   const bool gap_up = (gap > 0.0);
+   req.type = gap_up ? QM_SELL : QM_BUY;
 
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0 || ask < bid)
-      return false;
-
-   const double spread_points = (ask - bid) / point;
-   if(spread_points > gap_points * strategy_max_spread_gap_frac)
-      return false;
-
-   const bool upward_gap = (current_open > prior_close);
-   const double entry_price = upward_gap ? bid : ask;
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double entry_price = gap_up ? bid : ask;
    if(entry_price <= 0.0)
       return false;
 
-   double sl_dist = gap_price;
-   const double atr_h1 = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period_h1, 1);
-   if(atr_h1 > 0.0)
-      sl_dist = MathMin(sl_dist, atr_h1 * strategy_atr_sl_cap_mult);
-   if(sl_dist <= 0.0)
+   const double sl_distance = MathMax(Strategy_PipDistance(strategy_min_stop_pips),
+                                      strategy_stop_gap_mult * gap_distance);
+   req.sl = gap_up ? (entry_price + sl_distance) : (entry_price - sl_distance);
+   req.tp = gap_up ? (entry_price - gap_distance) : (entry_price + gap_distance);
+
+   if(!Strategy_StopsMeetBrokerLevel(req.type, entry_price, req.sl, req.tp))
       return false;
 
-   req.type = upward_gap ? QM_SELL : QM_BUY;
-   req.price = 0.0;
-   req.sl = upward_gap ? entry_price + sl_dist : entry_price - sl_dist;
-   req.tp = upward_gap ? entry_price - gap_price : entry_price + gap_price;
-   req.reason = upward_gap ? "VR_GAP_FADE_SHORT" : "VR_GAP_FADE_LONG";
+   req.reason = gap_up ? "VR_GAP_FADE_SHORT" : "VR_GAP_FADE_LONG";
    return true;
   }
 
@@ -213,9 +223,9 @@ bool Strategy_ExitSignal()
    if(strategy_max_hold_bars <= 0)
       return false;
 
-   int period_seconds = PeriodSeconds((ENUM_TIMEFRAMES)_Period);
-   if(period_seconds <= 0)
-      period_seconds = 15 * 60;
+   const int hold_seconds = strategy_max_hold_bars * PeriodSeconds(PERIOD_H1);
+   if(hold_seconds <= 0)
+      return false;
 
    const datetime broker_now = TimeCurrent();
    const int magic = QM_FrameworkMagic();
@@ -230,9 +240,10 @@ bool Strategy_ExitSignal()
          continue;
 
       const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
-      if(open_time > 0 && broker_now - open_time >= strategy_max_hold_bars * period_seconds)
+      if(open_time > 0 && (broker_now - open_time) >= hold_seconds)
          return true;
      }
+
    return false;
   }
 
