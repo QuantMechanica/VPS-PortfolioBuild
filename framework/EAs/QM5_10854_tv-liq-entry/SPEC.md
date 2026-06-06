@@ -12,8 +12,10 @@
 
 This EA trades a session liquidity-sweep reclaim. During the Asian build window
 (broker hours 0–9) it records the session high and low. After that window closes
-it validates the Asian range against ATR(14) — skipping sessions whose range is
-below 0.25×ATR or above 2.5×ATR. During the New York volatility window (broker
+it validates the Asian range against a session-scaled ATR(14) read on D1 —
+skipping sessions whose ~9h range is below 0.25×ATR or above 2.5×ATR (a single
+execution-TF bar's ATR is far too small a yardstick for a multi-hour session
+range and rejected every setup). During the New York volatility window (broker
 hours 15–18) it looks for a stop-hunt-and-reclaim: a long fires when price has
 swept below the Asian low and a bar then closes back above it; a short fires when
 price has swept above the Asian high and a bar then closes back below it. The
@@ -44,6 +46,7 @@ against the position. One long and one short are allowed per session.
 | `strategy_spread_guard_pct` | 0.15 | 0.05-0.30 | Skip if spread > pct of stop distance |
 | `strategy_range_min_atr` | 0.25 | 0.10-1.00 | Skip if Asian range < this × ATR |
 | `strategy_range_max_atr` | 2.50 | 1.50-4.00 | Skip if Asian range > this × ATR |
+| `strategy_range_atr_tf` | PERIOD_D1 | M15/H1/H4/D1 | TF for the range-width ATR (session-scaled, not execution-TF) |
 | `strategy_asian_start_hour` | 0 | 0-23 | Asian build window start (broker, inclusive) |
 | `strategy_asian_end_hour` | 9 | 0-23 | Asian build window end (broker, exclusive) |
 | `strategy_ny_start_hour` | 15 | 0-23 | NY entry window start (broker, inclusive) |
@@ -116,3 +119,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-06 | Initial build from card | b8f32403-2a2c-4733-8079-585092699678 |
+| v2 | 2026-06-06 | Q01 zero-trades: range filter used execution-TF ATR (always rejected); rescaled to D1 ATR + broadened sweep tracking to full post-Asian window | b8f32403-2a2c-4733-8079-585092699678 |

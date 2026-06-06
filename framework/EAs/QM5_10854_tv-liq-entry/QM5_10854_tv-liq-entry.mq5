@@ -59,6 +59,10 @@ input double strategy_spread_guard_pct  = 0.15;    // skip if spread > pct of st
 // --- Asian-range filter (multiples of ATR) ---
 input double strategy_range_min_atr     = 0.25;    // skip if Asian range < this * ATR
 input double strategy_range_max_atr     = 2.50;    // skip if Asian range > this * ATR
+// The Asian range spans ~9h, so it must be scaled against a session-sized ATR,
+// not a single execution-TF bar's ATR (the latter rejected every range -> 0
+// trades). D1 ATR(14) is the card's "ATR(14)" read on a session-relevant frame.
+input ENUM_TIMEFRAMES strategy_range_atr_tf = PERIOD_D1; // TF for the range-width ATR
 // --- Session windows (broker time, NY-Close server GMT+2/+3) ---
 input int    strategy_asian_start_hour  = 0;       // Asian build window start (inclusive)
 input int    strategy_asian_end_hour    = 9;       // Asian build window end (exclusive)
@@ -189,7 +193,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(g_asian_started && !g_asian_frozen && hour >= strategy_asian_end_hour)
      {
       g_asian_frozen = true;
-      const double atr_f = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
+      const double atr_f = QM_ATR(_Symbol, strategy_range_atr_tf, strategy_atr_period, 1);
       const double range = g_asian_high - g_asian_low;
       g_range_valid = (atr_f > 0.0 &&
                        range >= strategy_range_min_atr * atr_f &&
@@ -199,23 +203,27 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!g_asian_frozen || !g_range_valid)
       return false;
 
-   // --- Phase 3: only hunt entries inside the NY volatility window. ---
+   // --- Phase 3a: track sweeps across the whole post-Asian session, so a
+   // sweep that prints before the NY window still arms a later NY reclaim. ---
+   if(hour >= strategy_asian_end_hour && hour < strategy_session_close_hour)
+     {
+      if(bar_low < g_asian_low)
+        {
+         g_swept_low = true;
+         if(g_sweep_low_px <= 0.0 || bar_low < g_sweep_low_px)
+            g_sweep_low_px = bar_low;
+        }
+      if(bar_high > g_asian_high)
+        {
+         g_swept_high = true;
+         if(bar_high > g_sweep_high_px)
+            g_sweep_high_px = bar_high;
+        }
+     }
+
+   // --- Phase 3b: only fire entries inside the NY volatility window. ---
    if(hour < strategy_ny_start_hour || hour >= strategy_ny_end_hour)
       return false;
-
-   // Track sweeps of the Asian range on the just-closed bar.
-   if(bar_low < g_asian_low)
-     {
-      g_swept_low = true;
-      if(g_sweep_low_px <= 0.0 || bar_low < g_sweep_low_px)
-         g_sweep_low_px = bar_low;
-     }
-   if(bar_high > g_asian_high)
-     {
-      g_swept_high = true;
-      if(bar_high > g_sweep_high_px)
-         g_sweep_high_px = bar_high;
-     }
 
    const double bar_range = bar_high - bar_low;
    if(bar_range <= 0.0)
