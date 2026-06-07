@@ -11,6 +11,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11071,spike-reversal,1,EURUSD.DWX,110710001,2026-06-07,Development,active
 11071,spike-reversal,2,GBPUSD.DWX,110710002,2026-06-07,Development,active
 11071,spike-reversal,3,USDJPY.DWX,110710003,2026-06-07,Development,active
+11081,schaff-cycle,0,EURUSD.DWX,110810000,2026-06-07,Development,active
+11081,schaff-cycle,1,GBPUSD.DWX,110810001,2026-06-07,Development,active
+11081,schaff-cycle,2,USDJPY.DWX,110810002,2026-06-07,Development,active
+11081,schaff-cycle,3,XAUUSD.DWX,110810003,2026-06-07,Development,active
 10586,mql5-cycleper,0,USDJPY.DWX,105860000,2026-05-29,Development,active
 10586,mql5-cycleper,1,EURUSD.DWX,105860001,2026-05-29,Development,active
 10586,mql5-cycleper,2,GBPJPY.DWX,105860002,2026-05-29,Development,active
@@ -6325,3 +6329,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11079,cci-zero-cross,1,GBPUSD.DWX,110790001,2026-06-07,Development,active
 11079,cci-zero-cross,2,USDJPY.DWX,110790002,2026-06-07,Development,active
 11079,cci-zero-cross,3,XAUUSD.DWX,110790003,2026-06-07,Development,active
+11080,bb-macd-flip,0,EURUSD.DWX,110800000,2026-06-07,Development,active
+11080,bb-macd-flip,1,GBPUSD.DWX,110800001,2026-06-07,Development,active
+11080,bb-macd-flip,2,USDJPY.DWX,110800002,2026-06-07,Development,active
+11080,bb-macd-flip,3,XAUUSD.DWX,110800003,2026-06-07,Development,active
