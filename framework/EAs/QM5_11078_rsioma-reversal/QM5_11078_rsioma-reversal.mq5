@@ -265,6 +265,8 @@ bool Strategy_ExitSignal()
    if(magic <= 0)
       return false;
 
+   bool has_position = false;
+   ENUM_POSITION_TYPE position_type = POSITION_TYPE_BUY;
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -275,12 +277,18 @@ bool Strategy_ExitSignal()
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
 
-      const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      if(position_type == POSITION_TYPE_BUY)
-         return g_rsioma_exit_long;
-      if(position_type == POSITION_TYPE_SELL)
-         return g_rsioma_exit_short;
+      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      has_position = true;
+      break;
      }
+
+   if(!has_position || !Strategy_UpdateRsiomaState())
+      return false;
+
+   if(position_type == POSITION_TYPE_BUY)
+      return g_rsioma_exit_long;
+   if(position_type == POSITION_TYPE_SELL)
+      return g_rsioma_exit_short;
 
    return false;
   }
