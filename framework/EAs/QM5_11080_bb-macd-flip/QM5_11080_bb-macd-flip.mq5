@@ -1,37 +1,35 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11080 BB-MACD Flip"
+#property description "QM5_11080 EarnForex BB-MACD Flip (bb-macd-flip)"
+// Strategy Card: QM5_11080 (bb-macd-flip), G0 APPROVED 2026-05-22.
+// Source: EarnForex BB-MACD (github.com/EarnForex/BB-MACD).
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA SKELETON
+// QuantMechanica V5 EA — EarnForex BB-MACD Flip
 // -----------------------------------------------------------------------------
-// Fill in only the five Strategy_* hooks below. Everything else is framework
-// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
-// risk + magic + news + Friday-close guard rails). The framework provides:
+// Mechanic (card §Mechanik):
+//   bbMACD = EMA(close, FastLen) - EMA(close, SlowLen)   (= MACD main line)
+//   Bollinger bands are computed ON the bbMACD series with BBLength period and
+//   StDv standard deviations:  band = SMA(bbMACD, BBLength) +/- StDv*stddev.
+//   The BB-MACD "colour" is a band-cross state machine: it turns UP when the
+//   bbMACD crosses ABOVE the upper band, DOWN when it crosses BELOW the lower
+//   band, and holds otherwise. A colour flip is exactly the band-cross event on
+//   the completed bar.
+//     Long  flip (down->up): bbMACD crosses above the upper band.
+//     Short flip (up->down): bbMACD crosses below the lower band.
+//   Optional stricter variant additionally requires bbMACD > 0 (long) / < 0
+//   (short) on the completed bar.
 //
-//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  — closed-bar gate
-//   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
-//     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
-//     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
-//   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
-//   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
-//   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
-//   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
-//   - QM_FrameworkHandleFridayClose / QM_KillSwitchCheck / QM_NewsAllowsTrade
+// Stop-and-reverse: a flip closes any opposite open position and opens a new one
+// in the flip direction (card Exit: "close long on next short flip" etc.). The
+// only standalone protective exit is the catastrophic ATR stop (broker-side SL).
 //
-// DO NOT
-//   - Write per-EA IsNewBar() — use QM_IsNewBar()
-//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
-//     use the QM_* readers above. The framework pools handles and releases them
-//     on shutdown.
-//   - CopyRates over warmup windows on every tick. If you genuinely need raw
-//     bar arrays, gate by QM_IsNewBar so the work runs once per closed bar.
-//   - Hand-edit framework/include/QM/QM_MagicResolver.mqh. After adding rows
-//     to magic_numbers.csv, run:
-//         python framework/scripts/update_magic_resolver.py
-//     This is idempotent and preserves all rows.
+// All per-bar work runs inside Strategy_EntrySignal, which the framework calls
+// once per closed bar behind its QM_IsNewBar() gate — no per-EA new-bar gate,
+// no raw indicator calls, no CopyRates. bbMACD values come from the pooled
+// QM_MACD_Main reader.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
@@ -73,206 +71,188 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_fast_ema          = 12;
-input int    strategy_slow_ema          = 26;
-input int    strategy_bb_length         = 10;
-input double strategy_bb_stdev_mult     = 2.5;
-input bool   strategy_stricter_zero     = false;
-input int    strategy_atr_period        = 14;
-input double strategy_atr_sl_mult       = 2.5;
-input bool   strategy_use_take_profit   = false;
-input double strategy_atr_tp_mult       = 3.5;
+// Card §Mechanik — EarnForex BB-MACD defaults.
+input int    strategy_fast_len          = 12;    // bbMACD fast EMA length (FastLen).
+input int    strategy_slow_len          = 26;    // bbMACD slow EMA length (SlowLen).
+input int    strategy_bb_length         = 10;    // Bollinger length over bbMACD (Length).
+input double strategy_bb_stdv           = 2.5;   // Bollinger deviations over bbMACD (StDv).
+input bool   strategy_stricter_zero     = false; // Stricter variant: require bbMACD>0 long / <0 short.
+input int    strategy_atr_period        = 14;    // Catastrophic stop ATR period.
+input double strategy_atr_sl_mult       = 2.5;   // Catastrophic stop = 2.5 ATR (card P2 baseline).
+input double strategy_atr_tp_mult       = 0.0;   // Optional TP in ATR (0 = disabled; flip exit only).
 
 // -----------------------------------------------------------------------------
-// Strategy hooks — implement these against the card mechanically.
+// Strategy helpers
 // -----------------------------------------------------------------------------
 
-double Strategy_BBMacdValue(const int shift)
+// bbMACD value at the given closed-bar shift. MACD main line = EMA(fast)-EMA(slow);
+// the signal period does not affect the main line, so any value (9) is fine.
+double BBMacd(const int shift)
   {
-   const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
-   return QM_EMA(_Symbol, tf, strategy_fast_ema, shift, PRICE_CLOSE) -
-          QM_EMA(_Symbol, tf, strategy_slow_ema, shift, PRICE_CLOSE);
+   return QM_MACD_Main(_Symbol, _Period, strategy_fast_len, strategy_slow_len, 9, shift);
   }
 
-bool Strategy_BBMacdBands(const int shift,
-                          double &value,
-                          double &avg,
-                          double &upper,
-                          double &lower)
+// Mean + population standard deviation of the bbMACD series over `length`
+// values starting at `start_idx` (inclusive, walking back in time).
+void BBMacdBand(const double &series[], const int start_idx, const int length,
+                double &upper, double &lower)
   {
-   value = 0.0;
-   avg = 0.0;
-   upper = 0.0;
-   lower = 0.0;
+   double sum = 0.0;
+   for(int k = 0; k < length; ++k)
+      sum += series[start_idx + k];
+   const double mean = sum / length;
 
-   if(strategy_fast_ema <= 0 || strategy_slow_ema <= strategy_fast_ema)
-      return false;
-   if(strategy_bb_length <= 1 || strategy_bb_length > 100 || strategy_bb_stdev_mult <= 0.0)
-      return false;
-
-   const double alpha = 2.0 / (1.0 + (double)strategy_bb_length);
-   avg = Strategy_BBMacdValue(shift + strategy_bb_length - 1);
-   for(int i = strategy_bb_length - 2; i >= 0; --i)
+   double sq = 0.0;
+   for(int k = 0; k < length; ++k)
      {
-      const double sample = Strategy_BBMacdValue(shift + i);
-      avg = sample * alpha + avg * (1.0 - alpha);
+      const double d = series[start_idx + k] - mean;
+      sq += d * d;
      }
+   const double sd = MathSqrt(sq / length);
 
-   value = Strategy_BBMacdValue(shift);
-   double var_sum = 0.0;
-   for(int i = 0; i < strategy_bb_length; ++i)
-     {
-      const double diff = Strategy_BBMacdValue(shift + i) - avg;
-      var_sum += diff * diff;
-     }
-
-   const double stdev = MathSqrt(var_sum / (double)strategy_bb_length);
-   upper = avg + strategy_bb_stdev_mult * stdev;
-   lower = avg - strategy_bb_stdev_mult * stdev;
-   return (upper > lower);
+   upper = mean + strategy_bb_stdv * sd;
+   lower = mean - strategy_bb_stdv * sd;
   }
 
-int Strategy_BBMacdColor(const int shift)
+// Direction of our currently-open position: +1 long, -1 short, 0 flat.
+// Also returns the ticket via out_ticket when a position exists.
+int OurPositionDir(ulong &out_ticket)
   {
-   const double current = Strategy_BBMacdValue(shift);
-   const double previous = Strategy_BBMacdValue(shift + 1);
-   if(current > previous)
-      return 1;
-   if(current < previous)
-      return -1;
-   return 0;
-  }
-
-int Strategy_FlipSignal()
-  {
-   const int color_now = Strategy_BBMacdColor(1);
-   const int color_prev = Strategy_BBMacdColor(2);
-   if(color_now == 0 || color_prev == 0 || color_now == color_prev)
-      return 0;
-
-   const double value_now = Strategy_BBMacdValue(1);
-   if(strategy_stricter_zero)
-     {
-      if(color_now > 0 && value_now <= 0.0)
-         return 0;
-      if(color_now < 0 && value_now >= 0.0)
-         return 0;
-     }
-
-   return color_now;
-  }
-
-bool Strategy_GetOurPosition(ENUM_POSITION_TYPE &position_type)
-  {
+   out_ticket = 0;
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
-      return false;
+      return 0;
 
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
+   const int total = PositionsTotal();
+   for(int i = 0; i < total; ++i)
      {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
+      const ulong t = PositionGetTicket(i);
+      if(t == 0 || !PositionSelectByTicket(t))
          continue;
       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
 
-      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      return true;
+      out_ticket = t;
+      return (PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY) ? 1 : -1;
      }
-
-   return false;
+   return 0;
   }
 
-// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
-// regime filter). Cheap O(1) checks only — runs on every tick.
+// Build an entry request for the given side with a catastrophic ATR stop and
+// optional ATR target. Returns true on success.
+bool BuildEntry(const QM_OrderType side, const string reason, QM_EntryRequest &req)
+  {
+   const double entry = (side == QM_BUY)
+                        ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
+                        : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(entry <= 0.0)
+      return false;
+
+   const double sl = QM_StopATR(_Symbol, side, entry, strategy_atr_period, strategy_atr_sl_mult);
+   if(sl <= 0.0)
+      return false;
+
+   double tp = 0.0;
+   if(strategy_atr_tp_mult > 0.0)
+     {
+      const double atr = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
+      if(atr > 0.0)
+         tp = (side == QM_BUY) ? entry + atr * strategy_atr_tp_mult
+                               : entry - atr * strategy_atr_tp_mult;
+     }
+
+   req.type               = side;
+   req.price              = 0.0;            // market
+   req.sl                 = sl;
+   req.tp                 = tp;
+   req.reason             = reason;
+   req.symbol_slot        = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+   return true;
+  }
+
+// -----------------------------------------------------------------------------
+// Strategy hooks
+// -----------------------------------------------------------------------------
+
+// No Trade Filter — no bespoke session/regime gate; news + spread + Friday-close
+// are handled by the framework. Cheap O(1).
 bool Strategy_NoTradeFilter()
   {
    return false;
   }
 
-// Populate `req` with entry order parameters and return TRUE if a NEW entry
-// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
-// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
+// Trade Entry — evaluated once per closed bar (framework QM_IsNewBar gate).
+// Detects the BB-MACD colour flip (band cross) and applies stop-and-reverse.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   req.type = QM_BUY;
-   req.price = 0.0;
-   req.sl = 0.0;
-   req.tp = 0.0;
-   req.reason = "";
-   req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
+   const int need = strategy_bb_length + 1;      // bands needed for shift 1 and shift 2
+   const int count = need + 1;                    // series indices 1..need
+   double series[];
+   ArrayResize(series, count);
+   series[0] = 0.0;                                // unused (shift 0 = forming bar)
+   for(int s = 1; s <= need; ++s)
+      series[s] = BBMacd(s);
 
-   ENUM_POSITION_TYPE position_type;
-   if(Strategy_GetOurPosition(position_type))
-      return false;
+   double up1, lo1, up2, lo2;
+   BBMacdBand(series, 1, strategy_bb_length, up1, lo1);   // band on completed bar (shift 1)
+   BBMacdBand(series, 2, strategy_bb_length, up2, lo2);   // band on prior bar    (shift 2)
 
-   double bb_value = 0.0;
-   double bb_avg = 0.0;
-   double bb_upper = 0.0;
-   double bb_lower = 0.0;
-   if(!Strategy_BBMacdBands(1, bb_value, bb_avg, bb_upper, bb_lower))
-      return false;
+   const double bbm1 = series[1];
+   const double bbm2 = series[2];
 
-   const int signal = Strategy_FlipSignal();
-   if(signal == 0)
-      return false;
+   bool long_flip  = (bbm2 <= up2) && (bbm1 > up1);   // crossed above upper band
+   bool short_flip = (bbm2 >= lo2) && (bbm1 < lo1);   // crossed below lower band
 
-   req.type = (signal > 0) ? QM_BUY : QM_SELL;
-   req.price = 0.0;
-
-   const double entry = (req.type == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                                             : SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(entry <= 0.0 || strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
-      return false;
-
-   req.sl = QM_StopATR(_Symbol, req.type, entry, strategy_atr_period, strategy_atr_sl_mult);
-   if(req.sl <= 0.0)
-      return false;
-
-   if(strategy_use_take_profit)
+   if(strategy_stricter_zero)
      {
-      const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
-      if(atr <= 0.0 || strategy_atr_tp_mult <= 0.0)
-         return false;
-      req.tp = QM_StopRulesTakeFromDistance(_Symbol, req.type, entry, atr * strategy_atr_tp_mult);
+      if(bbm1 <= 0.0) long_flip  = false;
+      if(bbm1 >= 0.0) short_flip = false;
      }
 
-   req.reason = (signal > 0) ? "BB_MACD_FLIP_LONG" : "BB_MACD_FLIP_SHORT";
-   return true;
-  }
-
-// Called every tick when an open position exists for this EA's magic.
-// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
-void Strategy_ManageOpenPosition()
-  {
-   // Card baseline has no trailing, break-even, or partial-close rule.
-  }
-
-// Return TRUE to close the open position now (e.g. opposite-signal exit,
-// max-hold-time exceeded, session end).
-bool Strategy_ExitSignal()
-  {
-   ENUM_POSITION_TYPE position_type;
-   if(!Strategy_GetOurPosition(position_type))
+   // A single bar cannot be both above the upper and below the lower band.
+   if(long_flip == short_flip)
       return false;
 
-   const int signal = Strategy_FlipSignal();
-   if(position_type == POSITION_TYPE_BUY && signal < 0)
-      return true;
-   if(position_type == POSITION_TYPE_SELL && signal > 0)
-      return true;
+   ulong cur_ticket = 0;
+   const int dir = OurPositionDir(cur_ticket);
+
+   if(long_flip)
+     {
+      if(dir > 0)
+         return false;                              // already long
+      if(dir < 0)
+         QM_TM_ClosePosition(cur_ticket, QM_EXIT_STRATEGY);   // reverse: close short first
+      return BuildEntry(QM_BUY, "bb_macd_flip_long", req);
+     }
+
+   // short_flip
+   if(dir < 0)
+      return false;                                 // already short
+   if(dir > 0)
+      QM_TM_ClosePosition(cur_ticket, QM_EXIT_STRATEGY);      // reverse: close long first
+   return BuildEntry(QM_SELL, "bb_macd_flip_short", req);
+  }
+
+// Trade Management — flip-based system carries a fixed catastrophic ATR stop;
+// no break-even or trailing per card. No-op.
+void Strategy_ManageOpenPosition()
+  {
+  }
+
+// Trade Close — discretionary close is handled as stop-and-reverse inside
+// Strategy_EntrySignal; the protective exit is the broker-side ATR stop.
+bool Strategy_ExitSignal()
+  {
    return false;
   }
 
-// Optional news-filter override. Return TRUE to suppress trading regardless
-// of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
-// custom high-impact-event handling beyond the central filter.
+// News Filter Hook — defer to the central two-axis QM news filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false; // defer to QM_NewsAllowsTrade(...)
+   return false;
   }
 
 // -----------------------------------------------------------------------------
