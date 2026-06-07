@@ -6288,3 +6288,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11051,pst-volatten-break,4,WS30.DWX,110510004,2026-06-07,Development,active
 11051,pst-volatten-break,5,XAUUSD.DWX,110510005,2026-06-07,Development,active
 11051,pst-volatten-break,6,XTIUSD.DWX,110510006,2026-06-07,Development,active
+11063,atc-macd-reverse,0,EURUSD.DWX,110630000,2026-06-07,Development,active
+11063,atc-macd-reverse,1,GBPUSD.DWX,110630001,2026-06-07,Development,active
+11063,atc-macd-reverse,2,USDJPY.DWX,110630002,2026-06-07,Development,active
+11063,atc-macd-reverse,3,EURJPY.DWX,110630003,2026-06-07,Development,active
