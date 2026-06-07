@@ -87,96 +87,6 @@ input int    strategy_max_spread_points    = 0;
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-bool Strategy_HasWarmupBars()
-  {
-   const long h1_bars = SeriesInfoInteger(_Symbol, PERIOD_H1, SERIES_BARS_COUNT);
-   const long d1_bars = SeriesInfoInteger(_Symbol, PERIOD_D1, SERIES_BARS_COUNT);
-   return (h1_bars >= MathMax(strategy_bb_period, strategy_atr_period) + 1 &&
-           d1_bars >= strategy_d1_sma_period + 1);
-  }
-
-double Strategy_PointsToDistance(const int points)
-  {
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(points <= 0 || point <= 0.0)
-      return 0.0;
-   return points * point;
-  }
-
-bool Strategy_StopDistanceAllowed()
-  {
-   const int stops_level = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
-   if(stops_level <= 0)
-      return true;
-   return (strategy_sl_points >= stops_level && strategy_tp_points >= stops_level);
-  }
-
-int Strategy_Bias()
-  {
-   const double d1_close = QM_SMA(_Symbol, PERIOD_D1, 1, 1, PRICE_CLOSE);
-   const double d1_sma = QM_SMA(_Symbol, PERIOD_D1, strategy_d1_sma_period, 1, PRICE_CLOSE);
-   if(d1_close <= 0.0 || d1_sma <= 0.0)
-      return 0;
-   if(d1_close > d1_sma)
-      return 1;
-   if(d1_close < d1_sma)
-      return -1;
-   return 0;
-  }
-
-bool Strategy_BandWidthAllowed()
-  {
-   const double upper = QM_BB_Upper(_Symbol, PERIOD_H1, strategy_bb_period, strategy_bb_deviation, 1, PRICE_CLOSE);
-   const double lower = QM_BB_Lower(_Symbol, PERIOD_H1, strategy_bb_period, strategy_bb_deviation, 1, PRICE_CLOSE);
-   const double atr = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
-   if(upper <= 0.0 || lower <= 0.0 || upper <= lower || atr <= 0.0)
-      return false;
-   return ((upper - lower) >= strategy_min_band_atr_mult * atr);
-  }
-
-int Strategy_BollingerBounceSignal()
-  {
-   const int bias = Strategy_Bias();
-   if(bias == 0 || !Strategy_BandWidthAllowed())
-      return 0;
-
-   const double h1_open = QM_SMA(_Symbol, PERIOD_H1, 1, 1, PRICE_OPEN);
-   const double h1_close = QM_SMA(_Symbol, PERIOD_H1, 1, 1, PRICE_CLOSE);
-   const double upper = QM_BB_Upper(_Symbol, PERIOD_H1, strategy_bb_period, strategy_bb_deviation, 1, PRICE_CLOSE);
-   const double lower = QM_BB_Lower(_Symbol, PERIOD_H1, strategy_bb_period, strategy_bb_deviation, 1, PRICE_CLOSE);
-   if(h1_open <= 0.0 || h1_close <= 0.0 || upper <= 0.0 || lower <= 0.0)
-      return 0;
-
-   if(bias > 0 && h1_open < lower && h1_close > lower)
-      return 1;
-   if(bias < 0 && h1_open > upper && h1_close < upper)
-      return -1;
-   return 0;
-  }
-
-bool Strategy_HasOpenPosition(ENUM_POSITION_TYPE &position_type)
-  {
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      return true;
-     }
-
-   return false;
-  }
-
 // No Trade Filter (time, spread, news)
 // Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
 // regime filter). Cheap O(1) checks only — runs on every tick.
@@ -191,7 +101,8 @@ bool Strategy_NoTradeFilter()
       strategy_tp_points <= 0)
       return true;
 
-   if(!Strategy_StopDistanceAllowed())
+   const int stops_level = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
+   if(stops_level > 0 && (strategy_sl_points < stops_level || strategy_tp_points < stops_level))
       return true;
 
    if(strategy_max_spread_points > 0)
@@ -218,21 +129,47 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!Strategy_HasWarmupBars())
+   const long h1_bars = SeriesInfoInteger(_Symbol, PERIOD_H1, SERIES_BARS_COUNT);
+   const long d1_bars = SeriesInfoInteger(_Symbol, PERIOD_D1, SERIES_BARS_COUNT);
+   if(h1_bars < MathMax(strategy_bb_period, strategy_atr_period) + 1 ||
+      d1_bars < strategy_d1_sma_period + 1)
       return false;
 
    const int magic = QM_FrameworkMagic();
    if(magic <= 0 || QM_TM_OpenPositionCount(magic) > 0)
       return false;
 
-   const int signal = Strategy_BollingerBounceSignal();
-   if(signal == 0)
+   const double d1_close = QM_SMA(_Symbol, PERIOD_D1, 1, 1, PRICE_CLOSE);
+   const double d1_sma = QM_SMA(_Symbol, PERIOD_D1, strategy_d1_sma_period, 1, PRICE_CLOSE);
+   if(d1_close <= 0.0 || d1_sma <= 0.0)
+      return false;
+
+   const double upper = QM_BB_Upper(_Symbol, PERIOD_H1, strategy_bb_period, strategy_bb_deviation, 1, PRICE_CLOSE);
+   const double lower = QM_BB_Lower(_Symbol, PERIOD_H1, strategy_bb_period, strategy_bb_deviation, 1, PRICE_CLOSE);
+   const double atr = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
+   if(upper <= 0.0 || lower <= 0.0 || upper <= lower || atr <= 0.0)
+      return false;
+   if((upper - lower) < strategy_min_band_atr_mult * atr)
+      return false;
+
+   const double h1_open = QM_SMA(_Symbol, PERIOD_H1, 1, 1, PRICE_OPEN);
+   const double h1_close = QM_SMA(_Symbol, PERIOD_H1, 1, 1, PRICE_CLOSE);
+   if(h1_open <= 0.0 || h1_close <= 0.0)
+      return false;
+
+   int signal = 0;
+   if(d1_close > d1_sma && h1_open < lower && h1_close > lower)
+      signal = 1;
+   else if(d1_close < d1_sma && h1_open > upper && h1_close < upper)
+      signal = -1;
+   else
       return false;
 
    const QM_OrderType side = (signal > 0) ? QM_BUY : QM_SELL;
    const double entry = QM_EntryMarketPrice(side);
-   const double sl_distance = Strategy_PointsToDistance(strategy_sl_points);
-   const double tp_distance = Strategy_PointsToDistance(strategy_tp_points);
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const double sl_distance = strategy_sl_points * point;
+   const double tp_distance = strategy_tp_points * point;
    if(entry <= 0.0 || sl_distance <= 0.0 || tp_distance <= 0.0)
       return false;
 
@@ -266,7 +203,8 @@ void Strategy_ManageOpenPosition()
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
 
-      const double trail_distance = Strategy_PointsToDistance(strategy_trailing_points);
+      const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+      const double trail_distance = strategy_trailing_points * point;
       const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
       const double current_sl = PositionGetDouble(POSITION_SL);
       const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
@@ -295,14 +233,53 @@ void Strategy_ManageOpenPosition()
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
    ENUM_POSITION_TYPE pos_type = POSITION_TYPE_BUY;
-   if(!Strategy_HasOpenPosition(pos_type))
+   bool have_position = false;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      have_position = true;
+      break;
+     }
+   if(!have_position)
       return false;
 
-   if(!Strategy_HasWarmupBars())
+   const long h1_bars = SeriesInfoInteger(_Symbol, PERIOD_H1, SERIES_BARS_COUNT);
+   const long d1_bars = SeriesInfoInteger(_Symbol, PERIOD_D1, SERIES_BARS_COUNT);
+   if(h1_bars < MathMax(strategy_bb_period, strategy_atr_period) + 1 ||
+      d1_bars < strategy_d1_sma_period + 1)
       return false;
 
-   const int signal = Strategy_BollingerBounceSignal();
+   const double d1_close = QM_SMA(_Symbol, PERIOD_D1, 1, 1, PRICE_CLOSE);
+   const double d1_sma = QM_SMA(_Symbol, PERIOD_D1, strategy_d1_sma_period, 1, PRICE_CLOSE);
+   const double upper = QM_BB_Upper(_Symbol, PERIOD_H1, strategy_bb_period, strategy_bb_deviation, 1, PRICE_CLOSE);
+   const double lower = QM_BB_Lower(_Symbol, PERIOD_H1, strategy_bb_period, strategy_bb_deviation, 1, PRICE_CLOSE);
+   const double atr = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
+   const double h1_open = QM_SMA(_Symbol, PERIOD_H1, 1, 1, PRICE_OPEN);
+   const double h1_close = QM_SMA(_Symbol, PERIOD_H1, 1, 1, PRICE_CLOSE);
+   if(d1_close <= 0.0 || d1_sma <= 0.0 || upper <= 0.0 || lower <= 0.0 ||
+      upper <= lower || atr <= 0.0 || h1_open <= 0.0 || h1_close <= 0.0)
+      return false;
+   if((upper - lower) < strategy_min_band_atr_mult * atr)
+      return false;
+
+   int signal = 0;
+   if(d1_close > d1_sma && h1_open < lower && h1_close > lower)
+      signal = 1;
+   else if(d1_close < d1_sma && h1_open > upper && h1_close < upper)
+      signal = -1;
+
    if(pos_type == POSITION_TYPE_BUY && signal < 0)
       return true;
    if(pos_type == POSITION_TYPE_SELL && signal > 0)
