@@ -6270,3 +6270,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11046,roman-stoch-rev,1,GBPUSD.DWX,110460001,2026-06-07,Development,active
 11046,roman-stoch-rev,2,USDCHF.DWX,110460002,2026-06-07,Development,active
 11046,roman-stoch-rev,3,USDJPY.DWX,110460003,2026-06-07,Development,active
+11048,cs2011-macd,0,EURUSD.DWX,110480000,2026-06-07,Development,active
+11048,cs2011-macd,1,GBPUSD.DWX,110480001,2026-06-07,Development,active
+11048,cs2011-macd,2,AUDUSD.DWX,110480002,2026-06-07,Development,active
+11048,cs2011-macd,3,USDJPY.DWX,110480003,2026-06-07,Development,active
