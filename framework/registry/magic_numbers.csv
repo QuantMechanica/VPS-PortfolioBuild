@@ -6417,6 +6417,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11116,fractal-alert-rev,1,GBPUSD.DWX,111160001,2026-06-07,Development,active
 11116,fractal-alert-rev,2,USDJPY.DWX,111160002,2026-06-07,Development,active
 11116,fractal-alert-rev,3,XAUUSD.DWX,111160003,2026-06-07,Development,active
+11117,murrey-breach,0,EURUSD.DWX,111170000,2026-06-07,Development,active
+11117,murrey-breach,1,GBPUSD.DWX,111170001,2026-06-07,Development,active
+11117,murrey-breach,2,USDJPY.DWX,111170002,2026-06-07,Development,active
+11117,murrey-breach,3,XAUUSD.DWX,111170003,2026-06-07,Development,active
 11118,stoch-alert-cross,0,EURUSD.DWX,111180000,2026-06-07,Development,active
 11118,stoch-alert-cross,1,GBPUSD.DWX,111180001,2026-06-07,Development,active
 11118,stoch-alert-cross,2,USDJPY.DWX,111180002,2026-06-07,Development,active
