@@ -1,8 +1,8 @@
 # QM5_11047_roman-sar-break - Strategy Spec
 
 **EA ID:** QM5_11047
-**Slug:** `roman-sar-break`
-**Source:** `9441393d-5ffc-5b43-87be-bd532110f204` (see approved card)
+**Slug:** roman-sar-break
+**Source:** 9441393d-5ffc-5b43-87be-bd532110f204 (see `strategy-seeds/sources/9441393d-5ffc-5b43-87be-bd532110f204/`)
 **Author of this spec:** Codex
 **Last revised:** 2026-06-07
 
@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA trades H1 Parabolic SAR crossings through the completed bar open. A long entry fires when SAR moves from above the previous completed bar open to below the latest completed bar open; a short entry fires on the inverse crossing. Each entry uses an ATR(14) stop at 1.5x ATR, a 1.0R take profit, one active position per symbol/magic, and exits on the opposite SAR/open crossing or after the configured max bars in trade.
+The EA trades a fixed Parabolic SAR crossover against H1 bar open prices. On each new H1 bar it compares the latest completed bar and the prior completed bar: a long signal fires when SAR is above the latest completed open and below the prior completed open, while a short signal fires when SAR is below the latest completed open and above the prior completed open. Positions use an ATR(14) stop, a fixed reward/risk take-profit, optional break-even after 0.75R, opposite SAR/open cross exit, and a maximum hold of 24 H1 bars.
 
 ---
 
@@ -18,31 +18,41 @@ The EA trades H1 Parabolic SAR crossings through the completed bar open. A long 
 
 | Parameter | Default | Range | Meaning |
 |---|---:|---|---|
-| `strategy_timeframe` | `PERIOD_H1` | H1 | Base signal timeframe from the card |
-| `strategy_psar_step` | `0.02` | 0.01-0.03 | Parabolic SAR acceleration step |
-| `strategy_psar_maximum` | `0.20` | 0.10-0.30 | Parabolic SAR maximum acceleration |
-| `strategy_atr_period` | `14` | fixed | ATR period for volatility filter and stop distance |
-| `strategy_atr_sl_mult` | `1.50` | 1.00-2.00 | Stop-loss distance as a multiple of ATR |
-| `strategy_tp_sl_ratio` | `1.00` | 0.75-1.25 | Take-profit distance relative to stop distance |
-| `strategy_max_bars_in_trade` | `24` | 12-48 | Time exit in H1 bars |
-| `strategy_break_even_enabled` | `true` | true/false | Enables optional break-even management |
-| `strategy_break_even_trigger_r` | `0.75` | 0.75 | Move stop to entry after this R-multiple |
-| `strategy_atr_percentile_lookback_bars` | `100` | >=20 | Lookback used for the ATR percentile filter |
-| `strategy_min_atr_percentile` | `20.0` | 0-100 | Skip entries when ATR is below this rolling percentile |
-| `strategy_median_spread_points` | `20.0` | >0 | Current spread must be no more than twice this median-spread proxy |
+| `strategy_sar_step` | 0.02 | 0.01-0.03 | Parabolic SAR acceleration step. |
+| `strategy_sar_maximum` | 0.20 | 0.10-0.30 | Parabolic SAR maximum acceleration. |
+| `strategy_atr_period` | 14 | 5-50 | ATR lookback used for stop distance and volatility filter. |
+| `strategy_atr_sl_mult` | 1.50 | 1.00-2.00 | Stop-loss distance as ATR multiple. |
+| `strategy_tp_sl_ratio` | 1.00 | 0.75-1.25 | Take-profit distance as reward/risk multiple. |
+| `strategy_max_bars_in_trade` | 24 | 12-48 | Time exit after this many H1 bars. |
+| `strategy_atr_percentile_lookback` | 100 | 20-300 | ATR sample size for the low-volatility filter. |
+| `strategy_atr_min_percentile` | 20.0 | 0-50 | Minimum ATR percentile required for entry. |
+| `strategy_median_spread_points` | 20 | 1-200 | Baseline median spread in points for the spread filter. |
+| `strategy_spread_limit_mult` | 2.00 | 1-5 | Maximum current spread as a multiple of baseline median spread. |
+| `strategy_session_filter_enabled` | false | true/false | Enables the optional London plus New York session filter. |
+| `strategy_session_start_hour` | 7 | 0-23 | Broker hour when the optional session window starts. |
+| `strategy_session_end_hour` | 21 | 0-23 | Broker hour when the optional session window ends. |
+| `strategy_breakeven_enabled` | true | true/false | Enables optional break-even management. |
+| `strategy_breakeven_rr` | 0.75 | 0.25-2.00 | Favorable R multiple that triggers break-even. |
+| `strategy_breakeven_buffer_points` | 2 | 0-50 | Point buffer added beyond entry when moving SL to break-even. |
+
+> Note: framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
+> qm_news_mode, qm_rng_seed, qm_stress_reject_probability, qm_friday_close_*)
+> are documented in `framework/V5_FRAMEWORK_DESIGN.md` - do NOT re-document
+> them here. Only list strategy-specific inputs.
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `EURUSD.DWX` - Source and card list EURUSD as an H1 FX test symbol.
-- `GBPUSD.DWX` - Source and card list GBPUSD as an H1 FX test symbol.
-- `USDCHF.DWX` - Source and card list USDCHF as an H1 FX test symbol.
-- `USDJPY.DWX` - Source and card list USDJPY as an H1 FX test symbol.
+- `EURUSD.DWX` - source and card include EURUSD H1 in the tested FX basket.
+- `GBPUSD.DWX` - source and card include GBPUSD H1 in the tested FX basket.
+- `USDCHF.DWX` - source and card include USDCHF H1 in the tested FX basket.
+- `USDJPY.DWX` - source and card include USDJPY H1 in the tested FX basket.
 
 **Explicitly NOT for:**
-- Non-FX `.DWX` symbols - The approved card R3 basket is limited to four FX majors.
+- `SP500.DWX` - this card is an FX Parabolic SAR module, not an equity-index strategy.
+- `XAUUSD.DWX` - not listed by the source card's R3 portable basket.
 
 ---
 
@@ -50,8 +60,8 @@ The EA trades H1 Parabolic SAR crossings through the completed bar open. A long 
 
 | Aspect | Value |
 |---|---|
-| Base timeframe | `H1` |
-| Multi-timeframe refs | `none` |
+| Base timeframe | H1 |
+| Multi-timeframe refs | none |
 | Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
 
 ---
@@ -60,10 +70,10 @@ The EA trades H1 Parabolic SAR crossings through the completed bar open. A long 
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `55` |
-| Typical hold time | H1 bars, capped by default at 24 bars |
-| Expected drawdown profile | Whipsaw risk in range-bound markets, bounded by ATR SL, TP, break-even, and time exit |
-| Regime preference | trend-following breakout |
+| Trades / year / symbol | 55 |
+| Typical hold time | Up to 24 H1 bars |
+| Expected drawdown profile | Whipsaw-prone in range-bound periods, bounded by fixed ATR SL and TP. |
+| Regime preference | trend-following / breakout |
 | Win rate target (qualitative) | medium |
 
 ---
@@ -72,9 +82,9 @@ The EA trades H1 Parabolic SAR crossings through the completed bar open. A long 
 
 This card was mechanised from:
 
-**Source ID:** `9441393d-5ffc-5b43-87be-bd532110f204`
-**Source type:** MQL5 article and attachment
-**Pointer:** `https://www.mql5.com/en/articles/350`, `strategysar.mqh` attachment
+**Source ID:** 9441393d-5ffc-5b43-87be-bd532110f204
+**Source type:** article
+**Pointer:** https://www.mql5.com/en/articles/350 and attachment `strategysar.mqh`
 **R1-R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_11047_roman-sar-break.md`
 
 ---

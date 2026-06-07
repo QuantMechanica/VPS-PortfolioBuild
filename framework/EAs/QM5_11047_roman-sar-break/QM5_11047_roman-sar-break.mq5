@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11047 Roman Fixed SAR Breakout"
+#property description "QuantMechanica V5 EA skeleton template"
 
 #include <QM/QM_Common.mqh>
 
@@ -73,196 +73,151 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input ENUM_TIMEFRAMES strategy_timeframe              = PERIOD_H1;
-input double strategy_psar_step                       = 0.02;
-input double strategy_psar_maximum                    = 0.20;
-input int    strategy_atr_period                      = 14;
-input double strategy_atr_sl_mult                     = 1.50;
-input double strategy_tp_sl_ratio                     = 1.00;
-input int    strategy_max_bars_in_trade               = 24;
-input bool   strategy_break_even_enabled              = true;
-input double strategy_break_even_trigger_r            = 0.75;
-input int    strategy_atr_percentile_lookback_bars    = 100;
-input double strategy_min_atr_percentile              = 20.0;
-input double strategy_median_spread_points            = 20.0;
+input double strategy_sar_step                = 0.02;
+input double strategy_sar_maximum             = 0.20;
+input int    strategy_atr_period              = 14;
+input double strategy_atr_sl_mult             = 1.50;
+input double strategy_tp_sl_ratio             = 1.00;
+input int    strategy_max_bars_in_trade       = 24;
+input int    strategy_atr_percentile_lookback = 100;
+input double strategy_atr_min_percentile      = 20.0;
+input int    strategy_median_spread_points    = 20;
+input double strategy_spread_limit_mult       = 2.0;
+input bool   strategy_session_filter_enabled  = false;
+input int    strategy_session_start_hour      = 7;
+input int    strategy_session_end_hour        = 21;
+input bool   strategy_breakeven_enabled       = true;
+input double strategy_breakeven_rr            = 0.75;
+input int    strategy_breakeven_buffer_points = 2;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-bool Strategy_ReadRates(MqlRates &rates[], const int bars)
+int Strategy_SARHandle()
   {
-   if(bars < 10)
-      return false;
-   ArraySetAsSeries(rates, true);
-   const int copied = CopyRates(_Symbol, strategy_timeframe, 1, bars, rates); // perf-allowed: bounded PSAR/Open window, called from closed-bar strategy paths only.
-   return (copied >= bars);
+   const string key = StringFormat("SAR|%s|%d|%.5f|%.5f",
+                                   _Symbol,
+                                   (int)PERIOD_H1,
+                                   strategy_sar_step,
+                                   strategy_sar_maximum);
+   int handle = QM_IndicatorsLookup(key);
+   if(handle != INVALID_HANDLE)
+      return handle;
+
+   handle = iSAR(_Symbol, PERIOD_H1, strategy_sar_step, strategy_sar_maximum);
+   return QM_IndicatorsRegister(key, handle);
   }
 
-bool Strategy_ComputePSAR(const int shift, double &out_psar)
+double Strategy_SAR(const int shift)
   {
-   out_psar = 0.0;
-   if(shift < 1 || strategy_psar_step <= 0.0 || strategy_psar_maximum <= 0.0)
-      return false;
-
-   const int bars_needed = (int)MathMax(shift + 80, 120);
-   MqlRates rates[];
-   if(!Strategy_ReadRates(rates, bars_needed))
-      return false;
-
-   double psar[];
-   ArrayResize(psar, bars_needed);
-   ArrayInitialize(psar, 0.0);
-
-   bool uptrend = (rates[bars_needed - 2].close >= rates[bars_needed - 1].close);
-   double sar = uptrend ? rates[bars_needed - 1].low : rates[bars_needed - 1].high;
-   double ep = uptrend ? MathMax(rates[bars_needed - 2].high, rates[bars_needed - 1].high)
-                       : MathMin(rates[bars_needed - 2].low, rates[bars_needed - 1].low);
-   double af = strategy_psar_step;
-
-   for(int idx = bars_needed - 3; idx >= 0; --idx)
-     {
-      double next_sar = sar + af * (ep - sar);
-
-      if(uptrend)
-        {
-         next_sar = MathMin(next_sar, rates[idx + 1].low);
-         next_sar = MathMin(next_sar, rates[idx + 2].low);
-
-         if(rates[idx].low < next_sar)
-           {
-            uptrend = false;
-            next_sar = ep;
-            ep = rates[idx].low;
-            af = strategy_psar_step;
-           }
-         else if(rates[idx].high > ep)
-           {
-            ep = rates[idx].high;
-            af = MathMin(af + strategy_psar_step, strategy_psar_maximum);
-           }
-        }
-      else
-        {
-         next_sar = MathMax(next_sar, rates[idx + 1].high);
-         next_sar = MathMax(next_sar, rates[idx + 2].high);
-
-         if(rates[idx].high > next_sar)
-           {
-            uptrend = true;
-            next_sar = ep;
-            ep = rates[idx].high;
-            af = strategy_psar_step;
-           }
-         else if(rates[idx].low < ep)
-           {
-            ep = rates[idx].low;
-            af = MathMin(af + strategy_psar_step, strategy_psar_maximum);
-           }
-        }
-
-      psar[idx] = next_sar;
-      sar = next_sar;
-     }
-
-   if(psar[shift - 1] <= 0.0)
-      return false;
-   out_psar = psar[shift - 1];
-   return true;
+   return QM_IndicatorReadBuffer(Strategy_SARHandle(), 0, shift);
   }
 
-bool Strategy_ReadOpen(const int shift, double &out_open)
+bool Strategy_ReadOpen(const int shift, double &open_price)
   {
-   out_open = 0.0;
-   MqlRates rates[];
-   if(!Strategy_ReadRates(rates, (int)MathMax(shift + 2, 10)))
+   open_price = 0.0;
+   double values[];
+   ArraySetAsSeries(values, true);
+   const int copied = CopyOpen(_Symbol, PERIOD_H1, shift, 1, values); // perf-allowed
+   if(copied != 1)
       return false;
-   out_open = rates[shift - 1].open;
-   return (out_open > 0.0);
+   open_price = values[0];
+   return (open_price > 0.0);
   }
 
-int Strategy_SAROpenCross()
+int Strategy_SAROpenSignal()
   {
-   double sar1 = 0.0;
-   double sar2 = 0.0;
-   double open1 = 0.0;
-   double open2 = 0.0;
-   if(!Strategy_ComputePSAR(1, sar1) || !Strategy_ComputePSAR(2, sar2) ||
-      !Strategy_ReadOpen(1, open1) || !Strategy_ReadOpen(2, open2))
+   const double sar_recent = Strategy_SAR(1);
+   const double sar_older  = Strategy_SAR(2);
+   double open_recent = 0.0;
+   double open_older  = 0.0;
+   if(sar_recent <= 0.0 || sar_older <= 0.0)
+      return 0;
+   if(!Strategy_ReadOpen(1, open_recent) || !Strategy_ReadOpen(2, open_older))
       return 0;
 
-   if(sar1 < open1 && sar2 > open2)
-      return -1;
-   if(sar1 > open1 && sar2 < open2)
+   const bool short_signal = (sar_recent < open_recent && sar_older > open_older);
+   const bool long_signal  = (sar_recent > open_recent && sar_older < open_older);
+   if(long_signal && !short_signal)
       return 1;
+   if(short_signal && !long_signal)
+      return -1;
    return 0;
   }
 
-bool Strategy_PassesATRPercentile()
+bool Strategy_ATRPassesFilter()
   {
-   if(strategy_atr_percentile_lookback_bars <= 0 || strategy_min_atr_percentile <= 0.0)
+   if(strategy_atr_percentile_lookback <= 1 || strategy_atr_min_percentile <= 0.0)
       return true;
 
-   const double current_atr = QM_ATR(_Symbol, strategy_timeframe, strategy_atr_period, 1);
+   const double current_atr = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
    if(current_atr <= 0.0)
       return false;
 
-   double values[];
-   ArrayResize(values, strategy_atr_percentile_lookback_bars);
-   int count = 0;
-   for(int i = 0; i < strategy_atr_percentile_lookback_bars; ++i)
+   double samples[];
+   ArrayResize(samples, strategy_atr_percentile_lookback);
+   int sample_count = 0;
+   for(int shift = 1; shift <= strategy_atr_percentile_lookback; ++shift)
      {
-      const double atr = QM_ATR(_Symbol, strategy_timeframe, strategy_atr_period, i + 2);
+      const double atr = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, shift);
       if(atr <= 0.0)
          continue;
-      values[count] = atr;
-      count++;
+      samples[sample_count] = atr;
+      sample_count++;
      }
 
-   if(count < 20)
-      return false;
+   if(sample_count < 10)
+      return true;
 
-   ArrayResize(values, count);
-   ArraySort(values);
-   int idx = (int)MathFloor((MathMax(0.0, MathMin(strategy_min_atr_percentile, 100.0)) / 100.0) * (count - 1));
-   idx = MathMax(0, MathMin(idx, count - 1));
-   return (current_atr >= values[idx]);
+   ArrayResize(samples, sample_count);
+   ArraySort(samples);
+   double pct = strategy_atr_min_percentile;
+   if(pct < 0.0)
+      pct = 0.0;
+   if(pct > 100.0)
+      pct = 100.0;
+
+   int idx = (int)MathFloor((pct / 100.0) * (double)(sample_count - 1));
+   if(idx < 0)
+      idx = 0;
+   if(idx >= sample_count)
+      idx = sample_count - 1;
+
+   return (current_atr >= samples[idx]);
   }
 
-bool Strategy_HasOpenPosition()
+bool Strategy_SessionAllowsTrade()
   {
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
+   if(!strategy_session_filter_enabled)
+      return true;
 
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
-         return true;
-     }
-   return false;
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(), dt);
+   const int start_hour = strategy_session_start_hour;
+   const int end_hour = strategy_session_end_hour;
+   if(start_hour == end_hour)
+      return true;
+   if(start_hour < end_hour)
+      return (dt.hour >= start_hour && dt.hour < end_hour);
+   return (dt.hour >= start_hour || dt.hour < end_hour);
   }
 
 // Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   if(strategy_median_spread_points > 0.0)
+   if(strategy_median_spread_points > 0 && strategy_spread_limit_mult > 0.0)
      {
-      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-      if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
-         return true;
-      const double spread_points = (ask - bid) / point;
-      if(spread_points > strategy_median_spread_points * 2.0)
+      const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+      const double max_spread = (double)strategy_median_spread_points * strategy_spread_limit_mult;
+      if((double)spread_points > max_spread)
          return true;
      }
+
+   if(!Strategy_SessionAllowsTrade())
+      return true;
+
    return false;
   }
 
@@ -271,48 +226,31 @@ bool Strategy_NoTradeFilter()
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   req.type = QM_BUY;
-   req.price = 0.0;
-   req.sl = 0.0;
-   req.tp = 0.0;
-   req.reason = "";
-   req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
-
-   if(strategy_timeframe != (ENUM_TIMEFRAMES)_Period)
-      return false;
-   if(Strategy_HasOpenPosition())
-      return false;
-   if(!Strategy_PassesATRPercentile())
+   if(!Strategy_ATRPassesFilter())
       return false;
 
-   const int cross = Strategy_SAROpenCross();
-   if(cross == 0)
+   const int signal = Strategy_SAROpenSignal();
+   if(signal == 0)
       return false;
 
-   const QM_OrderType side = (cross > 0) ? QM_BUY : QM_SELL;
-   const double entry = (side == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                                         : SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(entry <= 0.0)
+   const QM_OrderType side = (signal > 0) ? QM_BUY : QM_SELL;
+   const double entry_price = (signal > 0) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
+                                           : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(entry_price <= 0.0)
       return false;
 
-   const double atr = QM_ATR(_Symbol, strategy_timeframe, strategy_atr_period, 1);
-   if(atr <= 0.0)
-      return false;
-
-   const double sl = QM_StopATRFromValue(_Symbol, side, entry, atr, strategy_atr_sl_mult);
+   const double sl = QM_StopATR(_Symbol, side, entry_price, strategy_atr_period, strategy_atr_sl_mult);
    if(sl <= 0.0)
       return false;
-
-   const double tp = QM_TakeRR(_Symbol, side, entry, sl, strategy_tp_sl_ratio);
+   const double tp = QM_TakeRR(_Symbol, side, entry_price, sl, strategy_tp_sl_ratio);
    if(tp <= 0.0)
       return false;
 
    req.type = side;
-   req.price = 0.0;
+   req.price = entry_price;
    req.sl = sl;
    req.tp = tp;
-   req.reason = (side == QM_BUY) ? "ROMAN_SAR_BREAK_LONG" : "ROMAN_SAR_BREAK_SHORT";
+   req.reason = (signal > 0) ? "sar_open_cross_long" : "sar_open_cross_short";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
    return true;
@@ -322,11 +260,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   if(!strategy_break_even_enabled || strategy_break_even_trigger_r <= 0.0)
+   if(!strategy_breakeven_enabled || strategy_breakeven_rr <= 0.0)
       return;
 
    const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(point <= 0.0)
       return;
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -334,37 +273,40 @@ void Strategy_ManageOpenPosition()
       const ulong ticket = PositionGetTicket(i);
       if(ticket == 0 || !PositionSelectByTicket(ticket))
          continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
 
-      const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const bool is_buy = (pos_type == POSITION_TYPE_BUY);
       const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
       const double current_sl = PositionGetDouble(POSITION_SL);
-      const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-      if(open_price <= 0.0 || current_sl <= 0.0 || point <= 0.0)
+      if(open_price <= 0.0 || current_sl <= 0.0)
          continue;
 
-      const bool is_buy = (position_type == POSITION_TYPE_BUY);
-      const double market = is_buy ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
-                                   : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      if(market <= 0.0)
+      const double risk_distance = MathAbs(open_price - current_sl);
+      if(risk_distance <= 0.0)
          continue;
 
-      const double initial_r = MathAbs(open_price - current_sl);
-      if(initial_r <= 0.0)
+      const double market_price = is_buy ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
+                                         : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      if(market_price <= 0.0)
          continue;
 
-      const double moved = is_buy ? (market - open_price) : (open_price - market);
-      if(moved < initial_r * strategy_break_even_trigger_r)
+      const double favorable_move = is_buy ? (market_price - open_price)
+                                           : (open_price - market_price);
+      if(favorable_move < risk_distance * strategy_breakeven_rr)
          continue;
 
-      const double be_sl = NormalizeDouble(open_price, _Digits);
-      const bool improves = is_buy ? (be_sl > current_sl + point * 0.5)
-                                   : (be_sl < current_sl - point * 0.5);
-      if(improves)
-         QM_TM_MoveSL(ticket, be_sl, "roman_sar_break_even");
+      const double buffer = (double)strategy_breakeven_buffer_points * point;
+      const double target_sl = is_buy ? (open_price + buffer) : (open_price - buffer);
+      const bool improves = is_buy ? (target_sl > current_sl + point * 0.5)
+                                   : (target_sl < current_sl - point * 0.5);
+      if(!improves)
+         continue;
+
+      QM_TM_MoveSL(ticket, target_sl, "sar_break_breakeven_075r");
      }
   }
 
@@ -372,8 +314,13 @@ void Strategy_ManageOpenPosition()
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
+   const int signal = Strategy_SAROpenSignal();
+   if(signal != 0)
+      return true;
+
    const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
+   const int period_seconds = PeriodSeconds(PERIOD_H1);
+   if(strategy_max_bars_in_trade <= 0 || period_seconds <= 0)
       return false;
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -381,25 +328,17 @@ bool Strategy_ExitSignal()
       const ulong ticket = PositionGetTicket(i);
       if(ticket == 0 || !PositionSelectByTicket(ticket))
          continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
 
-      const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      const int cross = Strategy_SAROpenCross();
-      if(position_type == POSITION_TYPE_BUY && cross < 0)
-         return true;
-      if(position_type == POSITION_TYPE_SELL && cross > 0)
-         return true;
+      const datetime opened_at = (datetime)PositionGetInteger(POSITION_TIME);
+      if(opened_at <= 0)
+         continue;
 
-      if(strategy_max_bars_in_trade > 0)
-        {
-         const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
-         const int bars_since_open = iBarShift(_Symbol, strategy_timeframe, opened, false);
-         if(bars_since_open >= strategy_max_bars_in_trade)
-            return true;
-        }
+      if((TimeCurrent() - opened_at) >= strategy_max_bars_in_trade * period_seconds)
+         return true;
      }
 
    return false;
