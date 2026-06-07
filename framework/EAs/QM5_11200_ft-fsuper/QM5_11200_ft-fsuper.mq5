@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11199 ft-fadxsma"
+#property description "QM5_11200 ft-fsuper"
 
 #include <QM/QM_Common.mqh>
 
@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 11199;
+input int    qm_ea_id                   = 11200;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -73,20 +73,205 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_adx_period          = 14;
-input double strategy_entry_adx           = 30.0;
-input int    strategy_sma_short_period    = 12;
-input int    strategy_sma_long_period     = 48;
-input int    strategy_atr_stop_period     = 14;
-input double strategy_atr_stop_mult       = 2.0;
-input double strategy_source_stoploss_pct = 5.0;
+input int    buy_m1                       = 4;
+input int    buy_m2                       = 7;
+input int    buy_m3                       = 1;
+input int    buy_p1                       = 8;
+input int    buy_p2                       = 9;
+input int    buy_p3                       = 8;
+input int    sell_m1                      = 1;
+input int    sell_m2                      = 3;
+input int    sell_m3                      = 6;
+input int    sell_p1                      = 16;
+input int    sell_p2                      = 18;
+input int    sell_p3                      = 18;
+input int    atr_stop_period              = 14;
+input double atr_stop_mult                = 2.5;
+input int    strategy_warmup_bars         = 180;
 input double strategy_max_spread_stop_pct = 8.0;
+input double strategy_source_stoploss_pct = 26.5;
+input double strategy_trailing_positive_pct = 5.0;
+input double strategy_trailing_offset_pct = 10.0;
+input bool   strategy_trailing_only_offset_is_reached = false;
 input int    strategy_roi_1_minutes       = 0;
-input double strategy_roi_1_pct           = 5.0;
+input double strategy_roi_1_pct           = 10.0;
 input int    strategy_roi_2_minutes       = 30;
-input double strategy_roi_2_pct           = 10.0;
+input double strategy_roi_2_pct           = 75.0;
 input int    strategy_roi_3_minutes       = 60;
-input double strategy_roi_3_pct           = 7.5;
+input double strategy_roi_3_pct           = 5.0;
+input int    strategy_roi_4_minutes       = 120;
+input double strategy_roi_4_pct           = 2.5;
+
+bool g_strategy_signal_valid = false;
+bool g_strategy_volume_ok = false;
+bool g_strategy_entry_long = false;
+bool g_strategy_entry_short = false;
+bool g_strategy_exit_long = false;
+bool g_strategy_exit_short = false;
+
+double Strategy_Max3(const double a, const double b, const double c)
+  {
+   return MathMax(a, MathMax(b, c));
+  }
+
+int Strategy_MaxPeriod()
+  {
+   int max_period = MathMax(MathMax(buy_p1, buy_p2), buy_p3);
+   max_period = MathMax(max_period, MathMax(MathMax(sell_p1, sell_p2), sell_p3));
+   return max_period;
+  }
+
+int Strategy_SupertrendDirection(const MqlRates &rates[],
+                                 const int copied,
+                                 const int multiplier,
+                                 const int period)
+  {
+   if(copied <= period + 2 || period <= 0 || multiplier <= 0)
+      return 0;
+
+   double tr_values[];
+   ArrayResize(tr_values, copied);
+
+   double tr_sum = 0.0;
+   int tr_count = 0;
+   double prev_final_upper = 0.0;
+   double prev_final_lower = 0.0;
+   int prev_direction = 0;
+
+   for(int i = copied - 1; i >= 0; --i)
+     {
+      const double high = rates[i].high;
+      const double low = rates[i].low;
+      const double close = rates[i].close;
+      const double prev_close = (i == copied - 1) ? close : rates[i + 1].close;
+      if(high <= 0.0 || low <= 0.0 || close <= 0.0 || high < low)
+         continue;
+
+      const double tr = Strategy_Max3(high - low,
+                                      MathAbs(high - prev_close),
+                                      MathAbs(low - prev_close));
+      tr_values[i] = tr;
+      tr_sum += tr;
+      tr_count++;
+      if(tr_count > period)
+         tr_sum -= tr_values[i + period];
+      if(tr_count < period)
+         continue;
+
+      const double atr = tr_sum / (double)period;
+      if(atr <= 0.0 || !MathIsValidNumber(atr))
+         continue;
+
+      const double hl2 = (high + low) * 0.5;
+      const double basic_upper = hl2 + (double)multiplier * atr;
+      const double basic_lower = hl2 - (double)multiplier * atr;
+
+      double final_upper = basic_upper;
+      double final_lower = basic_lower;
+      if(prev_final_upper > 0.0)
+         final_upper = (basic_upper < prev_final_upper || prev_close > prev_final_upper)
+                       ? basic_upper : prev_final_upper;
+      if(prev_final_lower > 0.0)
+         final_lower = (basic_lower > prev_final_lower || prev_close < prev_final_lower)
+                       ? basic_lower : prev_final_lower;
+
+      int direction = prev_direction;
+      if(direction == 0)
+         direction = (close >= final_lower) ? 1 : -1;
+      else if(direction < 0 && close > final_upper)
+         direction = 1;
+      else if(direction > 0 && close < final_lower)
+         direction = -1;
+
+      prev_final_upper = final_upper;
+      prev_final_lower = final_lower;
+      prev_direction = direction;
+     }
+
+   return prev_direction;
+  }
+
+bool Strategy_RecomputeSignals()
+  {
+   g_strategy_signal_valid = false;
+   g_strategy_volume_ok = false;
+   g_strategy_entry_long = false;
+   g_strategy_entry_short = false;
+   g_strategy_exit_long = false;
+   g_strategy_exit_short = false;
+
+   const int min_warmup = MathMax(strategy_warmup_bars, Strategy_MaxPeriod() + 80);
+   const int bars_needed = MathMax(min_warmup, 180);
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, bars_needed, rates); // perf-allowed: closed-bar Supertrend state cache; no QM OHLC array helper exists.
+   if(copied < min_warmup)
+      return false;
+
+   g_strategy_volume_ok = (rates[0].tick_volume > 0);
+   if(!g_strategy_volume_ok)
+      return false;
+
+   const int buy1 = Strategy_SupertrendDirection(rates, copied, buy_m1, buy_p1);
+   const int buy2 = Strategy_SupertrendDirection(rates, copied, buy_m2, buy_p2);
+   const int buy3 = Strategy_SupertrendDirection(rates, copied, buy_m3, buy_p3);
+   const int sell1 = Strategy_SupertrendDirection(rates, copied, sell_m1, sell_p1);
+   const int sell2 = Strategy_SupertrendDirection(rates, copied, sell_m2, sell_p2);
+   const int sell3 = Strategy_SupertrendDirection(rates, copied, sell_m3, sell_p3);
+
+   g_strategy_entry_long = (buy1 > 0 && buy2 > 0 && buy3 > 0);
+   g_strategy_entry_short = (sell1 < 0 && sell2 < 0 && sell3 < 0);
+   g_strategy_exit_long = (sell2 < 0);
+   g_strategy_exit_short = (buy2 > 0);
+   g_strategy_signal_valid = true;
+   return true;
+  }
+
+bool Strategy_HasOpenPosition()
+  {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      return true;
+     }
+
+   return false;
+  }
+
+double Strategy_ProfitPct(const ENUM_POSITION_TYPE position_type,
+                          const double open_price,
+                          const double market_price)
+  {
+   if(open_price <= 0.0 || market_price <= 0.0)
+      return 0.0;
+   if(position_type == POSITION_TYPE_BUY)
+      return ((market_price - open_price) / open_price) * 100.0;
+   if(position_type == POSITION_TYPE_SELL)
+      return ((open_price - market_price) / open_price) * 100.0;
+   return 0.0;
+  }
+
+double Strategy_CurrentRoiThresholdPct(const int hold_minutes)
+  {
+   double threshold = strategy_roi_1_pct;
+   if(hold_minutes >= strategy_roi_2_minutes)
+      threshold = MathMin(threshold, strategy_roi_2_pct);
+   if(hold_minutes >= strategy_roi_3_minutes)
+      threshold = MathMin(threshold, strategy_roi_3_pct);
+   if(hold_minutes >= strategy_roi_4_minutes)
+      threshold = MathMin(threshold, strategy_roi_4_pct);
+   return threshold;
+  }
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -96,27 +281,29 @@ input double strategy_roi_3_pct           = 7.5;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   if(strategy_adx_period <= 0 ||
-      strategy_sma_short_period <= 0 ||
-      strategy_sma_long_period <= 0 ||
-      strategy_sma_short_period >= strategy_sma_long_period ||
-      strategy_atr_stop_period <= 0 ||
-      strategy_atr_stop_mult <= 0.0 ||
-      strategy_entry_adx <= 0.0 ||
-      strategy_source_stoploss_pct <= 0.0 ||
+   if(buy_m1 <= 0 || buy_m2 <= 0 || buy_m3 <= 0 ||
+      buy_p1 <= 0 || buy_p2 <= 0 || buy_p3 <= 0 ||
+      sell_m1 <= 0 || sell_m2 <= 0 || sell_m3 <= 0 ||
+      sell_p1 <= 0 || sell_p2 <= 0 || sell_p3 <= 0 ||
+      atr_stop_period <= 0 || atr_stop_mult <= 0.0 ||
+      strategy_warmup_bars <= Strategy_MaxPeriod() ||
       strategy_max_spread_stop_pct < 0.0 ||
+      strategy_source_stoploss_pct <= 0.0 ||
+      strategy_trailing_positive_pct < 0.0 ||
+      strategy_trailing_offset_pct < 0.0 ||
       strategy_roi_1_minutes < 0 ||
       strategy_roi_2_minutes < strategy_roi_1_minutes ||
-      strategy_roi_3_minutes < strategy_roi_2_minutes)
+      strategy_roi_3_minutes < strategy_roi_2_minutes ||
+      strategy_roi_4_minutes < strategy_roi_3_minutes)
       return true;
 
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   if(bid <= 0.0 || ask <= 0.0 || ask <= bid)
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0 || ask <= bid)
       return true;
 
-   const double atr = QM_ATR(_Symbol, PERIOD_CURRENT, strategy_atr_stop_period, 1);
-   const double planned_stop_distance = atr * strategy_atr_stop_mult;
+   const double atr = QM_ATR(_Symbol, PERIOD_CURRENT, atr_stop_period, 1);
+   const double planned_stop_distance = atr * atr_stop_mult;
    if(atr <= 0.0 || planned_stop_distance <= 0.0 || !MathIsValidNumber(planned_stop_distance))
       return true;
 
@@ -140,39 +327,29 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   const double adx = QM_ADX(_Symbol, PERIOD_CURRENT, strategy_adx_period, 1);
-   if(adx <= strategy_entry_adx || !MathIsValidNumber(adx))
+   if(!Strategy_RecomputeSignals())
+      return false;
+   if(!g_strategy_volume_ok || Strategy_HasOpenPosition())
+      return false;
+   if(g_strategy_entry_long == g_strategy_entry_short)
       return false;
 
-   const double sma_short_1 = QM_SMA(_Symbol, PERIOD_CURRENT, strategy_sma_short_period, 1);
-   const double sma_short_2 = QM_SMA(_Symbol, PERIOD_CURRENT, strategy_sma_short_period, 2);
-   const double sma_long_1 = QM_SMA(_Symbol, PERIOD_CURRENT, strategy_sma_long_period, 1);
-   const double sma_long_2 = QM_SMA(_Symbol, PERIOD_CURRENT, strategy_sma_long_period, 2);
-   if(sma_short_1 <= 0.0 || sma_short_2 <= 0.0 || sma_long_1 <= 0.0 || sma_long_2 <= 0.0 ||
-      !MathIsValidNumber(sma_short_1) || !MathIsValidNumber(sma_short_2) ||
-      !MathIsValidNumber(sma_long_1) || !MathIsValidNumber(sma_long_2))
-      return false;
-
-   const bool long_cross = (sma_short_1 > sma_long_1 && sma_short_2 <= sma_long_2);
-   const bool short_cross = (sma_short_1 < sma_long_1 && sma_short_2 >= sma_long_2);
-   if(!long_cross && !short_cross)
-      return false;
-
-   const QM_OrderType side = long_cross ? QM_BUY : QM_SELL;
-   const double entry = long_cross ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                                   : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const bool long_signal = g_strategy_entry_long;
+   const QM_OrderType side = long_signal ? QM_BUY : QM_SELL;
+   const double entry = long_signal ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
+                                    : SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(entry <= 0.0)
       return false;
 
-   const double sl = QM_StopATR(_Symbol, side, entry, strategy_atr_stop_period, strategy_atr_stop_mult);
+   const double sl = QM_StopATR(_Symbol, side, entry, atr_stop_period, atr_stop_mult);
    if(sl <= 0.0 ||
-      (long_cross && sl >= entry) ||
-      (short_cross && sl <= entry))
+      (long_signal && sl >= entry) ||
+      (!long_signal && sl <= entry))
       return false;
 
    req.type = side;
    req.sl = sl;
-   req.reason = long_cross ? "ADX_SMA_CROSS_LONG" : "ADX_SMA_CROSS_SHORT";
+   req.reason = long_signal ? "FSUPER_TRIPLE_ST_LONG" : "FSUPER_TRIPLE_ST_SHORT";
    return true;
   }
 
@@ -180,19 +357,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies no break-even, trailing, partial close, or add-on logic.
-  }
+   if(strategy_trailing_positive_pct <= 0.0)
+      return;
 
-// Return TRUE to close the open position now (e.g. opposite-signal exit,
-// max-hold-time exceeded, session end).
-bool Strategy_ExitSignal()
-  {
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
-      return false;
-
-   const double adx = QM_ADX(_Symbol, PERIOD_CURRENT, strategy_adx_period, 1);
-   const datetime now = TimeCurrent();
+      return;
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
@@ -204,10 +374,68 @@ bool Strategy_ExitSignal()
       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
 
-      if(adx > 0.0 && MathIsValidNumber(adx) && adx < strategy_entry_adx)
-         return true;
+      const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const bool is_buy = (position_type == POSITION_TYPE_BUY);
+      const double market_price = is_buy ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
+                                         : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+      if(market_price <= 0.0 || open_price <= 0.0)
+         continue;
+
+      const double profit_pct = Strategy_ProfitPct(position_type, open_price, market_price);
+      const double activation_pct = strategy_trailing_only_offset_is_reached
+                                    ? strategy_trailing_offset_pct
+                                    : strategy_trailing_positive_pct;
+      if(profit_pct < activation_pct)
+         continue;
+
+      const double trail_distance = market_price * strategy_trailing_positive_pct / 100.0;
+      if(trail_distance <= 0.0)
+         continue;
+
+      const double new_sl = is_buy ? (market_price - trail_distance)
+                                   : (market_price + trail_distance);
+      const double current_sl = PositionGetDouble(POSITION_SL);
+      const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+      if(point <= 0.0)
+         continue;
+
+      const bool improves = (current_sl <= 0.0) ||
+                            (is_buy ? (new_sl > current_sl + point * 0.5)
+                                    : (new_sl < current_sl - point * 0.5));
+      if(improves)
+         QM_TM_MoveSL(ticket, new_sl, "fsuper_source_percent_trailing");
+     }
+  }
+
+// Return TRUE to close the open position now (e.g. opposite-signal exit,
+// max-hold-time exceeded, session end).
+bool Strategy_ExitSignal()
+  {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   const datetime now = TimeCurrent();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
 
       const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      if(g_strategy_signal_valid && g_strategy_volume_ok)
+        {
+         if(position_type == POSITION_TYPE_BUY && g_strategy_exit_long)
+            return true;
+         if(position_type == POSITION_TYPE_SELL && g_strategy_exit_short)
+            return true;
+        }
+
       const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
       const double market_price = (position_type == POSITION_TYPE_BUY)
                                   ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
@@ -215,26 +443,14 @@ bool Strategy_ExitSignal()
       if(open_price <= 0.0 || market_price <= 0.0)
          continue;
 
-      double profit_pct = 0.0;
-      if(position_type == POSITION_TYPE_BUY)
-         profit_pct = ((market_price - open_price) / open_price) * 100.0;
-      else if(position_type == POSITION_TYPE_SELL)
-         profit_pct = ((open_price - market_price) / open_price) * 100.0;
-      else
-         continue;
-
+      const double profit_pct = Strategy_ProfitPct(position_type, open_price, market_price);
       if(profit_pct <= -strategy_source_stoploss_pct)
          return true;
 
       const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
       const int hold_minutes = (int)((now - opened) / 60);
-      double roi_threshold_pct = strategy_roi_1_pct;
-      if(hold_minutes >= strategy_roi_2_minutes)
-         roi_threshold_pct = MathMin(roi_threshold_pct, strategy_roi_2_pct);
-      if(hold_minutes >= strategy_roi_3_minutes)
-         roi_threshold_pct = MathMin(roi_threshold_pct, strategy_roi_3_pct);
-
-      if(profit_pct >= roi_threshold_pct)
+      const double roi_threshold_pct = Strategy_CurrentRoiThresholdPct(hold_minutes);
+      if(roi_threshold_pct >= 0.0 && profit_pct >= roi_threshold_pct)
          return true;
      }
 
