@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 11174;
+input int    qm_ea_id                   = 9999;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -73,15 +73,98 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_sequence_closes   = 6;
-input double strategy_stop_pct          = 0.01;
-input double strategy_target_pct        = 0.01;
-input bool   strategy_enable_longs      = true;
-input bool   strategy_enable_shorts     = true;
+input ENUM_TIMEFRAMES strategy_timeframe          = PERIOD_H1;
+input int             strategy_sequence_steps     = 6;
+input double          strategy_stop_pct           = 1.0;
+input double          strategy_target_pct         = 1.0;
 
-bool g_strategy_long_signal = false;
-bool g_strategy_short_signal = false;
-bool g_strategy_signal_ready = false;
+bool g_weiss_long_signal = false;
+bool g_weiss_short_signal = false;
+
+double Strategy_Close(const int shift)
+  {
+   return iClose(_Symbol, strategy_timeframe, shift); // perf-allowed: fixed closed-bar close for card-defined seven-period reversal; no QM_Close reader exists.
+  }
+
+bool Strategy_HasOpenPosition(ENUM_POSITION_TYPE &ptype)
+  {
+   ptype = POSITION_TYPE_BUY;
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      return true;
+     }
+
+   return false;
+  }
+
+bool Strategy_SequenceFell()
+  {
+   if(strategy_sequence_steps != 6)
+      return false;
+
+   for(int shift = 8; shift >= 3; --shift)
+     {
+      const double older = Strategy_Close(shift);
+      const double newer = Strategy_Close(shift - 1);
+      if(older <= 0.0 || newer <= 0.0)
+         return false;
+      if(!(newer < older))
+         return false;
+     }
+
+   return true;
+  }
+
+bool Strategy_SequenceRose()
+  {
+   if(strategy_sequence_steps != 6)
+      return false;
+
+   for(int shift = 8; shift >= 3; --shift)
+     {
+      const double older = Strategy_Close(shift);
+      const double newer = Strategy_Close(shift - 1);
+      if(older <= 0.0 || newer <= 0.0)
+         return false;
+      if(!(newer > older))
+         return false;
+     }
+
+   return true;
+  }
+
+void Strategy_UpdateSignals()
+  {
+   g_weiss_long_signal = false;
+   g_weiss_short_signal = false;
+
+   const double close2 = Strategy_Close(2);
+   const double close1 = Strategy_Close(1);
+   if(close2 <= 0.0 || close1 <= 0.0)
+      return;
+
+   g_weiss_long_signal = Strategy_SequenceFell() && (close2 < close1);
+   g_weiss_short_signal = Strategy_SequenceRose() && (close2 > close1);
+
+   if(g_weiss_long_signal && g_weiss_short_signal)
+     {
+      g_weiss_long_signal = false;
+      g_weiss_short_signal = false;
+     }
+  }
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -99,10 +182,6 @@ bool Strategy_NoTradeFilter()
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   g_strategy_long_signal = false;
-   g_strategy_short_signal = false;
-   g_strategy_signal_ready = false;
-
    req.type = QM_BUY;
    req.price = 0.0;
    req.sl = 0.0;
@@ -111,97 +190,63 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   const int sequence_closes = MathMax(1, MathMin(strategy_sequence_closes, 20));
-   const int newest_shift = 1;
-   const int reversal_shift = 2;
-   const int oldest_shift = sequence_closes + 2;
-   if(strategy_stop_pct <= 0.0 || strategy_stop_pct >= 1.0 ||
-      strategy_target_pct <= 0.0 || strategy_target_pct >= 1.0)
+   Strategy_UpdateSignals();
+
+   if(strategy_stop_pct <= 0.0 || strategy_target_pct <= 0.0)
       return false;
 
-   double closes[32];
-   ArrayInitialize(closes, 0.0);
+   ENUM_POSITION_TYPE existing_type;
+   if(Strategy_HasOpenPosition(existing_type))
+      return false;
 
-   for(int shift = newest_shift; shift <= oldest_shift; ++shift)
-     {
-      double value[1];
-      if(CopyClose(_Symbol, (ENUM_TIMEFRAMES)_Period, shift, 1, value) != 1) // perf-allowed: fixed closed-bar close window inside framework QM_IsNewBar gate.
-         return false;
-      closes[shift] = value[0];
-      if(closes[shift] <= 0.0)
-         return false;
-     }
+   if(!g_weiss_long_signal && !g_weiss_short_signal)
+      return false;
 
-   bool falling_sequence = true;
-   bool rising_sequence = true;
-   for(int shift = oldest_shift; shift > reversal_shift; --shift)
-     {
-      if(!(closes[shift] > closes[shift - 1]))
-         falling_sequence = false;
-      if(!(closes[shift] < closes[shift - 1]))
-         rising_sequence = false;
-     }
+   const bool is_long = g_weiss_long_signal;
+   const double entry = is_long ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
+                                : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(entry <= 0.0 || point <= 0.0)
+      return false;
 
-   g_strategy_long_signal = falling_sequence && (closes[reversal_shift] < closes[newest_shift]);
-   g_strategy_short_signal = rising_sequence && (closes[reversal_shift] > closes[newest_shift]);
-   g_strategy_signal_ready = true;
+   const double stop_mult = strategy_stop_pct / 100.0;
+   const double target_mult = strategy_target_pct / 100.0;
+   const double sl = is_long ? entry * (1.0 - stop_mult)
+                             : entry * (1.0 + stop_mult);
+   const double tp = is_long ? entry * (1.0 + target_mult)
+                             : entry * (1.0 - target_mult);
+   const double sl_points = MathAbs(entry - sl) / point;
+   const int min_stop_points = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
+   if(sl_points <= 0.0 || sl_points < (double)min_stop_points)
+      return false;
 
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(strategy_enable_longs && g_strategy_long_signal && ask > 0.0)
-     {
-      req.type = QM_BUY;
-      req.price = ask;
-      req.sl = ask * (1.0 - strategy_stop_pct);
-      req.tp = ask * (1.0 + strategy_target_pct);
-      req.reason = "WEISS_7REV_LONG";
-      return true;
-     }
-
-   if(strategy_enable_shorts && g_strategy_short_signal && bid > 0.0)
-     {
-      req.type = QM_SELL;
-      req.price = bid;
-      req.sl = bid * (1.0 + strategy_stop_pct);
-      req.tp = bid * (1.0 - strategy_target_pct);
-      req.reason = "WEISS_7REV_SHORT";
-      return true;
-     }
-
-   return false;
+   req.type = is_long ? QM_BUY : QM_SELL;
+   req.price = entry;
+   req.sl = sl;
+   req.tp = tp;
+   req.reason = is_long ? "WEISS_7REV_LONG" : "WEISS_7REV_SHORT";
+   return true;
   }
 
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies fixed SL/TP only; no trailing, partial close, or BE move.
+   // Card specifies fixed SL/TP only; no trailing, break-even, partial close, or pyramiding.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   if(!g_strategy_signal_ready)
+   ENUM_POSITION_TYPE ptype;
+   if(!Strategy_HasOpenPosition(ptype))
       return false;
 
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      if(position_type == POSITION_TYPE_BUY && g_strategy_short_signal)
-         return true;
-      if(position_type == POSITION_TYPE_SELL && g_strategy_long_signal)
-         return true;
-     }
+   if(ptype == POSITION_TYPE_BUY && g_weiss_short_signal)
+      return true;
+   if(ptype == POSITION_TYPE_SELL && g_weiss_long_signal)
+      return true;
 
    return false;
   }
