@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11185 FT RSI Hammer Reversal"
+#property description "QM5_11187 Freqtrade ADX CCI stochastic reversal"
 
 #include <QM/QM_Common.mqh>
 
@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 11185;
+input int    qm_ea_id                   = 11187;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -73,167 +73,33 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_rsi_period         = 14;
-input double strategy_rsi_entry          = 30.0;
-input int    strategy_stoch_k            = 5;
-input int    strategy_stoch_d            = 3;
-input int    strategy_stoch_slowing      = 3;
-input double strategy_stoch_k_entry      = 20.0;
-input int    strategy_bb_period          = 20;
-input double strategy_bb_deviation       = 2.0;
-input int    strategy_atr_period         = 14;
-input double strategy_atr_sl_mult        = 2.0;
-input double strategy_max_spread_stop_pct = 8.0;
-input double strategy_min_atr_points     = 1.0;
-input double strategy_roi_0_pct          = 5.0;
-input double strategy_roi_20_pct         = 4.0;
-input double strategy_roi_30_pct         = 3.0;
-input double strategy_roi_60_pct         = 1.0;
-input double strategy_fisher_exit        = 0.30;
-input bool   strategy_exit_profit_only   = false;
-input double strategy_psar_step          = 0.02;
-input double strategy_psar_maximum       = 0.20;
-input int    strategy_psar_warmup_bars   = 120;
-
-bool Strategy_ReadClosedBar(const int shift, MqlRates &bar)
-  {
-   MqlRates rates[];
-   ArraySetAsSeries(rates, true);
-   const int copied = CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, shift, 1, rates); // perf-allowed: one closed bar for hammer/exit checks.
-   if(copied != 1)
-      return false;
-
-   bar = rates[0];
-   return (bar.open > 0.0 && bar.high > 0.0 && bar.low > 0.0 && bar.close > 0.0);
-  }
-
-bool Strategy_IsHammer(const MqlRates &bar)
-  {
-   const double range = bar.high - bar.low;
-   if(range <= 0.0)
-      return false;
-
-   const double body = MathAbs(bar.close - bar.open);
-   if(body > range * 0.50)
-      return false;
-
-   const double upper_shadow = bar.high - MathMax(bar.open, bar.close);
-   const double lower_shadow = MathMin(bar.open, bar.close) - bar.low;
-   const double body_top = MathMax(bar.open, bar.close);
-
-   return (body_top >= bar.low + range * 0.50 &&
-           lower_shadow >= range * 0.20 &&
-           lower_shadow >= body * 0.75 &&
-           upper_shadow <= range * 0.40);
-  }
-
-double Strategy_InverseFisherRSI(const double rsi)
-  {
-   double value = 0.1 * (rsi - 50.0);
-   if(value > 10.0)
-      value = 10.0;
-   if(value < -10.0)
-      value = -10.0;
-
-   const double exp_value = MathExp(2.0 * value);
-   if(exp_value <= 0.0)
-      return 0.0;
-   return (exp_value - 1.0) / (exp_value + 1.0);
-  }
-
-bool Strategy_ReadPSAR(const int shift, double &out_psar)
-  {
-   out_psar = 0.0;
-   if(strategy_psar_step <= 0.0 || strategy_psar_maximum <= 0.0 ||
-      strategy_psar_warmup_bars < 10)
-      return false;
-
-   MqlRates rates[];
-   ArraySetAsSeries(rates, true);
-   const int bars_needed = MathMax(strategy_psar_warmup_bars, 30);
-   const int copied = CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, shift, bars_needed, rates); // perf-allowed: bounded SAR reconstruction only on exit checks.
-   if(copied < 10)
-      return false;
-
-   int oldest = copied - 1;
-   int prev = oldest - 1;
-   bool uptrend = (rates[prev].close >= rates[oldest].close);
-   double acceleration = strategy_psar_step;
-   double extreme = uptrend ? MathMax(rates[oldest].high, rates[prev].high)
-                            : MathMin(rates[oldest].low, rates[prev].low);
-   double sar = uptrend ? MathMin(rates[oldest].low, rates[prev].low)
-                        : MathMax(rates[oldest].high, rates[prev].high);
-
-   for(int bar = oldest - 2; bar >= 0; --bar)
-     {
-      sar = sar + acceleration * (extreme - sar);
-
-      if(uptrend)
-        {
-         sar = MathMin(sar, rates[bar + 1].low);
-         sar = MathMin(sar, rates[bar + 2].low);
-         if(rates[bar].low < sar)
-           {
-            uptrend = false;
-            sar = extreme;
-            extreme = rates[bar].low;
-            acceleration = strategy_psar_step;
-           }
-         else if(rates[bar].high > extreme)
-           {
-            extreme = rates[bar].high;
-            acceleration = MathMin(acceleration + strategy_psar_step, strategy_psar_maximum);
-           }
-        }
-      else
-        {
-         sar = MathMax(sar, rates[bar + 1].high);
-         sar = MathMax(sar, rates[bar + 2].high);
-         if(rates[bar].high > sar)
-           {
-            uptrend = true;
-            sar = extreme;
-            extreme = rates[bar].high;
-            acceleration = strategy_psar_step;
-           }
-         else if(rates[bar].low < extreme)
-           {
-            extreme = rates[bar].low;
-            acceleration = MathMin(acceleration + strategy_psar_step, strategy_psar_maximum);
-           }
-        }
-     }
-
-   out_psar = NormalizeDouble(sar, _Digits);
-   return (out_psar > 0.0);
-  }
-
-bool Strategy_HasOpenLong(ulong &ticket, double &open_price, datetime &open_time)
-  {
-   ticket = 0;
-   open_price = 0.0;
-   open_time = 0;
-
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong candidate = PositionGetTicket(i);
-      if(candidate == 0 || !PositionSelectByTicket(candidate))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol ||
-         (int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      if((ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) != POSITION_TYPE_BUY)
-         continue;
-
-      ticket = candidate;
-      open_price = PositionGetDouble(POSITION_PRICE_OPEN);
-      open_time = (datetime)PositionGetInteger(POSITION_TIME);
-      return true;
-     }
-
-   return false;
-  }
+input int    strategy_adx_fast_period       = 14;
+input int    strategy_adx_slow_period       = 35;
+input double strategy_adx_fast_min          = 50.0;
+input double strategy_adx_slow_min          = 26.0;
+input double strategy_exit_adx_slow_max     = 25.0;
+input int    strategy_cci_period            = 14;
+input double strategy_cci_entry_max         = -100.0;
+input int    strategy_fast_stoch_k          = 5;
+input int    strategy_fast_stoch_d          = 3;
+input int    strategy_fast_stoch_slowing    = 3;
+input int    strategy_slow_stoch_k          = 50;
+input int    strategy_slow_stoch_d          = 3;
+input int    strategy_slow_stoch_slowing    = 3;
+input double strategy_fast_oversold         = 20.0;
+input double strategy_slow_oversold         = 30.0;
+input double strategy_fast_exit_overbought  = 70.0;
+input int    strategy_ema_exit_period       = 5;
+input int    strategy_volume_mean_period    = 12;
+input double strategy_volume_mean_min       = 0.75;
+input double strategy_min_close             = 0.000001;
+input int    strategy_atr_stop_period       = 14;
+input double strategy_atr_stop_mult         = 2.0;
+input double strategy_max_spread_stop_frac  = 0.08;
+input double strategy_roi_0m_pct            = 5.0;
+input double strategy_roi_20m_pct           = 4.0;
+input double strategy_roi_30m_pct           = 3.0;
+input double strategy_roi_60m_pct           = 1.0;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -243,36 +109,19 @@ bool Strategy_HasOpenLong(ulong &ticket, double &open_price, datetime &open_time
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   if(_Period != PERIOD_M5)
-      return true;
-
-   if(strategy_rsi_period <= 0 || strategy_stoch_k <= 0 || strategy_stoch_d <= 0 ||
-      strategy_stoch_slowing <= 0 || strategy_bb_period <= 1 ||
-      strategy_bb_deviation <= 0.0 || strategy_atr_period <= 0 ||
-      strategy_atr_sl_mult <= 0.0)
-      return true;
-
-   const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
-   const double atr = QM_ATR(_Symbol, tf, strategy_atr_period, 1);
+   const long spread_points_raw = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(atr <= 0.0 || point <= 0.0)
-      return true;
-   if(strategy_min_atr_points > 0.0 && atr < strategy_min_atr_points * point)
+   if(spread_points_raw < 0 || point <= 0.0)
       return true;
 
-   if(strategy_max_spread_stop_pct > 0.0)
-     {
-      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      if(ask <= 0.0 || bid <= 0.0 || ask <= bid)
-         return true;
+   const double atr = QM_ATR(_Symbol, PERIOD_CURRENT, strategy_atr_stop_period, 1);
+   const double stop_distance = atr * strategy_atr_stop_mult;
+   if(atr <= 0.0 || stop_distance <= 0.0 || !MathIsValidNumber(stop_distance))
+      return true;
 
-      const double planned_stop_distance = atr * strategy_atr_sl_mult;
-      if(planned_stop_distance <= 0.0)
-         return true;
-      if((ask - bid) > planned_stop_distance * strategy_max_spread_stop_pct / 100.0)
-         return true;
-     }
+   const double spread_price = (double)spread_points_raw * point;
+   if(spread_price > stop_distance * strategy_max_spread_stop_frac)
+      return true;
 
    return false;
   }
@@ -286,51 +135,71 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
-   req.reason = "";
+   req.reason = "FT_ADX_STOCH_LONG";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   ulong existing_ticket = 0;
-   double existing_open = 0.0;
-   datetime existing_time = 0;
-   if(Strategy_HasOpenLong(existing_ticket, existing_open, existing_time))
+   if(strategy_volume_mean_period <= 0)
       return false;
 
-   const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
-   const double rsi = QM_RSI(_Symbol, tf, strategy_rsi_period, 1);
-   const double stoch_k = QM_Stoch_K(_Symbol, tf, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, 1);
-   const double bb_lower = QM_BB_Lower(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 1, PRICE_TYPICAL);
-   if(rsi <= 0.0 || stoch_k < 0.0 || bb_lower <= 0.0)
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, PERIOD_CURRENT, 1, strategy_volume_mean_period, rates);
+   if(copied < strategy_volume_mean_period)
       return false;
 
-   MqlRates bar;
-   if(!Strategy_ReadClosedBar(1, bar))
+   double volume_sum = 0.0;
+   for(int i = 0; i < copied; ++i)
+      volume_sum += (double)rates[i].tick_volume;
+   const double volume_mean = volume_sum / (double)copied;
+   if(volume_mean <= strategy_volume_mean_min)
       return false;
 
-   if(!(rsi < strategy_rsi_entry))
-      return false;
-   if(!(stoch_k < strategy_stoch_k_entry))
-      return false;
-   if(!(bar.close < bb_lower))
-      return false;
-   if(!Strategy_IsHammer(bar))
+   const double close1 = rates[0].close;
+   if(close1 <= strategy_min_close)
       return false;
 
-   const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   if(entry <= 0.0)
+   const double adx_fast = QM_ADX(_Symbol, PERIOD_CURRENT, strategy_adx_fast_period, 1);
+   const double adx_slow = QM_ADX(_Symbol, PERIOD_CURRENT, strategy_adx_slow_period, 1);
+   const double cci = QM_CCI(_Symbol, PERIOD_CURRENT, strategy_cci_period, 1);
+   const double fast_k_1 = QM_Stoch_K(_Symbol, PERIOD_CURRENT, strategy_fast_stoch_k,
+                                      strategy_fast_stoch_d, strategy_fast_stoch_slowing, 1);
+   const double fast_d_1 = QM_Stoch_D(_Symbol, PERIOD_CURRENT, strategy_fast_stoch_k,
+                                      strategy_fast_stoch_d, strategy_fast_stoch_slowing, 1);
+   const double fast_k_2 = QM_Stoch_K(_Symbol, PERIOD_CURRENT, strategy_fast_stoch_k,
+                                      strategy_fast_stoch_d, strategy_fast_stoch_slowing, 2);
+   const double fast_d_2 = QM_Stoch_D(_Symbol, PERIOD_CURRENT, strategy_fast_stoch_k,
+                                      strategy_fast_stoch_d, strategy_fast_stoch_slowing, 2);
+   const double slow_k_2 = QM_Stoch_K(_Symbol, PERIOD_CURRENT, strategy_slow_stoch_k,
+                                      strategy_slow_stoch_d, strategy_slow_stoch_slowing, 2);
+   const double slow_d_2 = QM_Stoch_D(_Symbol, PERIOD_CURRENT, strategy_slow_stoch_k,
+                                      strategy_slow_stoch_d, strategy_slow_stoch_slowing, 2);
+
+   if(adx_fast == EMPTY_VALUE || adx_slow == EMPTY_VALUE || cci == EMPTY_VALUE ||
+      fast_k_1 == EMPTY_VALUE || fast_d_1 == EMPTY_VALUE ||
+      fast_k_2 == EMPTY_VALUE || fast_d_2 == EMPTY_VALUE ||
+      slow_k_2 == EMPTY_VALUE || slow_d_2 == EMPTY_VALUE)
       return false;
 
-   const double sl = QM_StopATR(_Symbol, QM_BUY, entry, strategy_atr_period, strategy_atr_sl_mult);
-   if(sl <= 0.0 || sl >= entry)
+   if(!(adx_fast > strategy_adx_fast_min || adx_slow > strategy_adx_slow_min))
+      return false;
+   if(cci >= strategy_cci_entry_max)
+      return false;
+   if(fast_k_2 >= strategy_fast_oversold || fast_d_2 >= strategy_fast_oversold)
+      return false;
+   if(slow_k_2 >= strategy_slow_oversold || slow_d_2 >= strategy_slow_oversold)
+      return false;
+   if(!(fast_k_2 < fast_d_2 && fast_k_1 > fast_d_1))
       return false;
 
-   req.type = QM_BUY;
-   req.price = 0.0;
-   req.sl = sl;
-   req.tp = 0.0;
-   req.reason = "ft_rsi_hammer_long";
-   req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   if(ask <= 0.0)
+      return false;
+
+   req.sl = QM_StopATR(_Symbol, QM_BUY, ask, strategy_atr_stop_period, strategy_atr_stop_mult);
+   if(req.sl <= 0.0 || req.sl >= ask)
+      return false;
+
    return true;
   }
 
@@ -338,63 +207,80 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   ulong ticket = 0;
-   double open_price = 0.0;
-   datetime open_time = 0;
-   if(!Strategy_HasOpenLong(ticket, open_price, open_time))
-      return;
-
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(open_price <= 0.0 || bid <= 0.0)
-      return;
-
-   const int hold_minutes = (int)((TimeCurrent() - open_time) / 60);
-   double min_roi = strategy_roi_0_pct;
-   if(hold_minutes >= 60)
-      min_roi = strategy_roi_60_pct;
-   else if(hold_minutes >= 30)
-      min_roi = strategy_roi_30_pct;
-   else if(hold_minutes >= 20)
-      min_roi = strategy_roi_20_pct;
-
-   const double profit_pct = (bid - open_price) / open_price * 100.0;
-   if(min_roi > 0.0 && profit_pct >= min_roi)
-      QM_TM_ClosePosition(ticket, QM_EXIT_TP_HIT);
+   // Card specifies no break-even, trailing, partial close, or add-on logic.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   ulong ticket = 0;
-   double open_price = 0.0;
+   const int magic = QM_FrameworkMagic();
+   bool has_position = false;
    datetime open_time = 0;
-   if(!Strategy_HasOpenLong(ticket, open_price, open_time))
-      return false;
+   double open_price = 0.0;
+   ENUM_POSITION_TYPE position_type = POSITION_TYPE_BUY;
 
-   if(!QM_IsNewBar(_Symbol, (ENUM_TIMEFRAMES)_Period))
-      return false;
-
-   MqlRates bar;
-   if(!Strategy_ReadClosedBar(1, bar))
-      return false;
-
-   double psar = 0.0;
-   if(!Strategy_ReadPSAR(1, psar))
-      return false;
-
-   const double rsi = QM_RSI(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_rsi_period, 1);
-   if(rsi <= 0.0)
-      return false;
-
-   if(strategy_exit_profit_only)
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
-      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      if(bid <= open_price)
-         return false;
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      has_position = true;
+      open_time = (datetime)PositionGetInteger(POSITION_TIME);
+      open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      break;
      }
 
-   return (psar > bar.close && Strategy_InverseFisherRSI(rsi) > strategy_fisher_exit);
+   if(!has_position || position_type != POSITION_TYPE_BUY || open_price <= 0.0)
+      return false;
+
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(bid <= 0.0)
+      return false;
+
+   const int age_minutes = (int)((TimeCurrent() - open_time) / 60);
+   double roi_threshold = strategy_roi_0m_pct;
+   if(age_minutes >= 60)
+      roi_threshold = strategy_roi_60m_pct;
+   else if(age_minutes >= 30)
+      roi_threshold = strategy_roi_30m_pct;
+   else if(age_minutes >= 20)
+      roi_threshold = strategy_roi_20m_pct;
+
+   const double profit_pct = ((bid - open_price) / open_price) * 100.0;
+   if(profit_pct >= roi_threshold)
+      return true;
+
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   if(CopyRates(_Symbol, PERIOD_CURRENT, 1, 1, rates) != 1) // perf-allowed: single closed-bar close read for source exit condition.
+      return false;
+
+   const double adx_slow = QM_ADX(_Symbol, PERIOD_CURRENT, strategy_adx_slow_period, 1);
+   const double fast_k_1 = QM_Stoch_K(_Symbol, PERIOD_CURRENT, strategy_fast_stoch_k,
+                                      strategy_fast_stoch_d, strategy_fast_stoch_slowing, 1);
+   const double fast_d_1 = QM_Stoch_D(_Symbol, PERIOD_CURRENT, strategy_fast_stoch_k,
+                                      strategy_fast_stoch_d, strategy_fast_stoch_slowing, 1);
+   const double fast_k_2 = QM_Stoch_K(_Symbol, PERIOD_CURRENT, strategy_fast_stoch_k,
+                                      strategy_fast_stoch_d, strategy_fast_stoch_slowing, 2);
+   const double fast_d_2 = QM_Stoch_D(_Symbol, PERIOD_CURRENT, strategy_fast_stoch_k,
+                                      strategy_fast_stoch_d, strategy_fast_stoch_slowing, 2);
+   const double ema5 = QM_EMA(_Symbol, PERIOD_CURRENT, strategy_ema_exit_period, 1);
+
+   if(adx_slow == EMPTY_VALUE || fast_k_1 == EMPTY_VALUE || fast_d_1 == EMPTY_VALUE ||
+      fast_k_2 == EMPTY_VALUE || fast_d_2 == EMPTY_VALUE || ema5 == EMPTY_VALUE)
+      return false;
+
+   return (adx_slow < strategy_exit_adx_slow_max &&
+           (fast_k_1 > strategy_fast_exit_overbought || fast_d_1 > strategy_fast_exit_overbought) &&
+           fast_k_2 < fast_d_2 &&
+           rates[0].close > ema5);
   }
 
 // Optional news-filter override. Return TRUE to suppress trading regardless
