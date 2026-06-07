@@ -159,7 +159,43 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies no trailing, break-even, partial exits, or profit target.
+   if(strategy_atr_period < 1 || strategy_atr_sl_mult <= 0.0)
+      return;
+
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      if(PositionGetDouble(POSITION_SL) > 0.0)
+         continue;
+
+      const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+      if(open_price <= 0.0)
+         continue;
+
+      const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const QM_OrderType side = (position_type == POSITION_TYPE_BUY) ? QM_BUY : QM_SELL;
+      const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+      const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+      if(atr <= 0.0 || point <= 0.0)
+         continue;
+
+      const int stop_level_points = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
+      const double broker_min_distance = MathMax(0, stop_level_points) * point;
+      const double stop_distance = MathMax(atr * strategy_atr_sl_mult, broker_min_distance);
+      const double sl = QM_StopRulesStopFromDistance(_Symbol, side, open_price, stop_distance);
+      if(sl > 0.0)
+         QM_TM_MoveSL(ticket, sl, "weiss_ichi3_catastrophic_stop_restore");
+     }
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
