@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11099 PRM Engulfing Reversal"
+#property description "QM5_11104 Total Power Indicator power cross"
 
 #include <QM/QM_Common.mqh>
 
@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 11099;
+input int    qm_ea_id                   = 11104;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -52,8 +52,8 @@ input group "News"
 //   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
 //   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
 // A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
 // Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
@@ -73,212 +73,197 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_candle_length              = 12;
-input int    strategy_engulfing_length           = 10;
-input int    strategy_atr_period                 = 14;
-input double strategy_atr_sl_mult                = 2.0;
-input int    strategy_atr_percentile_lookback    = 252;
-input double strategy_atr_percentile_floor       = 20.0;
-input int    strategy_time_stop_bars             = 8;
+input ENUM_TIMEFRAMES strategy_signal_tf       = PERIOD_H4;
+input int             strategy_lookback_period = 45;
+input int             strategy_power_period    = 10;
+input int             strategy_atr_period      = 14;
+input double          strategy_atr_sl_mult     = 2.0;
+input int             strategy_time_stop_bars  = 20;
+
+bool LoadPowerRates(MqlRates &rates[])
+  {
+   if(strategy_lookback_period <= 0 || strategy_power_period <= 0)
+      return false;
+
+   const int bars_needed = strategy_lookback_period + 1;
+   ArrayResize(rates, bars_needed);
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, strategy_signal_tf, 1, bars_needed, rates); // perf-allowed: closed-bar Total Power high/low window; Strategy_EntrySignal is framework-new-bar gated.
+   return (copied == bars_needed);
+  }
+
+double PowerPercent(const MqlRates &rates[], const bool bulls, const int signal_shift)
+  {
+   if(signal_shift < 1 || strategy_lookback_period <= 0)
+      return -1.0;
+
+   const int bars_available = ArraySize(rates);
+   int hits = 0;
+   for(int i = 0; i < strategy_lookback_period; ++i)
+     {
+      const int bar_shift = signal_shift + i;
+      const int idx = bar_shift - 1;
+      if(idx < 0 || idx >= bars_available)
+         return -1.0;
+
+      const double ema = QM_EMA(_Symbol, strategy_signal_tf, strategy_power_period, bar_shift);
+      if(ema <= 0.0 || rates[idx].high <= 0.0 || rates[idx].low <= 0.0)
+         return -1.0;
+
+      if(bulls)
+        {
+         if((rates[idx].high - ema) > 0.0)
+            hits++;
+        }
+      else
+        {
+         if((rates[idx].low - ema) < 0.0)
+            hits++;
+        }
+     }
+
+   return 100.0 * (double)hits / (double)strategy_lookback_period;
+  }
+
+int TotalPowerCrossSignal()
+  {
+   MqlRates rates[];
+   if(!LoadPowerRates(rates))
+      return 0;
+
+   const double bulls1 = PowerPercent(rates, true, 1);
+   const double bears1 = PowerPercent(rates, false, 1);
+   const double bulls2 = PowerPercent(rates, true, 2);
+   const double bears2 = PowerPercent(rates, false, 2);
+   if(bulls1 < 0.0 || bears1 < 0.0 || bulls2 < 0.0 || bears2 < 0.0)
+      return 0;
+
+   if(bulls1 > bears1 && bulls2 <= bears2)
+      return 1;
+   if(bulls1 < bears1 && bulls2 >= bears2)
+      return -1;
+   return 0;
+  }
+
+int OurPositionDir(ulong &out_ticket, datetime &out_open_time)
+  {
+   out_ticket = 0;
+   out_open_time = 0;
+
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return 0;
+
+   const int total = PositionsTotal();
+   for(int i = 0; i < total; ++i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      out_ticket = ticket;
+      out_open_time = (datetime)PositionGetInteger(POSITION_TIME);
+      return (PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY) ? 1 : -1;
+     }
+
+   return 0;
+  }
+
+bool BuildEntry(const QM_OrderType side, const string reason, QM_EntryRequest &req)
+  {
+   const double entry = (side == QM_BUY)
+                        ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
+                        : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(entry <= 0.0)
+      return false;
+
+   const double atr = QM_ATR(_Symbol, strategy_signal_tf, strategy_atr_period, 1);
+   if(atr <= 0.0)
+      return false;
+
+   const double sl = QM_StopATRFromValue(_Symbol, side, entry, atr, strategy_atr_sl_mult);
+   if(sl <= 0.0)
+      return false;
+
+   req.type               = side;
+   req.price              = 0.0;
+   req.sl                 = sl;
+   req.tp                 = 0.0;
+   req.reason             = reason;
+   req.symbol_slot        = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+   return true;
+  }
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-// No Trade Filter (time, spread, news)
-// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
-// regime filter). Cheap O(1) checks only — runs on every tick.
+// No Trade Filter (time, spread, news): no card-specific session or spread
+// gate; the framework handles news, spread, kill-switch, and Friday close.
 bool Strategy_NoTradeFilter()
   {
-   // Card specifies no session/spread overlay; central framework handles news and Friday close.
-   return false;
+   return (_Period != (int)strategy_signal_tf);
   }
 
-// Trade Entry
-// Populate `req` with entry order parameters and return TRUE if a NEW entry
-// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
-// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
+// Trade Entry: completed-bar Bulls/Bears Power percentage cross from the card.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   req.type = QM_BUY;
-   req.price = 0.0;
-   req.sl = 0.0;
-   req.tp = 0.0;
-   req.reason = "";
-   req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
-
-   if(strategy_candle_length <= 0 ||
-      strategy_engulfing_length <= 0 ||
-      strategy_atr_period <= 0 ||
-      strategy_atr_sl_mult <= 0.0 ||
-      strategy_atr_percentile_lookback <= strategy_atr_period ||
-      strategy_atr_percentile_floor < 0.0 ||
-      strategy_atr_percentile_floor > 100.0 ||
-      strategy_time_stop_bars <= 0)
+   const int signal = TotalPowerCrossSignal();
+   if(signal == 0)
       return false;
 
-   const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
-   const double atr = QM_ATR(_Symbol, tf, strategy_atr_period, 1);
-   if(atr <= 0.0)
-      return false;
+   ulong ticket = 0;
+   datetime open_time = 0;
+   const int dir = OurPositionDir(ticket, open_time);
 
-   double atr_values[];
-   ArrayResize(atr_values, strategy_atr_percentile_lookback);
-   int atr_count = 0;
-   for(int shift = 1; shift <= strategy_atr_percentile_lookback; ++shift)
+   if(signal > 0)
      {
-      const double atr_i = QM_ATR(_Symbol, tf, strategy_atr_period, shift);
-      if(atr_i <= 0.0)
-         continue;
-      atr_values[atr_count] = atr_i;
-      atr_count++;
-     }
-   if(atr_count < strategy_atr_period + strategy_engulfing_length)
-      return false;
-
-   ArrayResize(atr_values, atr_count);
-   ArraySort(atr_values);
-   int percentile_index = (int)MathFloor((atr_count - 1) * strategy_atr_percentile_floor / 100.0);
-   if(percentile_index < 0)
-      percentile_index = 0;
-   if(percentile_index >= atr_count)
-      percentile_index = atr_count - 1;
-   if(atr < atr_values[percentile_index])
-      return false;
-   const double prev_open = iOpen(_Symbol, tf, 2);    // perf-allowed: fixed two-bar engulfing geometry, called only after framework QM_IsNewBar gate.
-   const double prev_close = iClose(_Symbol, tf, 2);  // perf-allowed: fixed two-bar engulfing geometry, called only after framework QM_IsNewBar gate.
-   const double curr_open = iOpen(_Symbol, tf, 1);    // perf-allowed: fixed two-bar engulfing geometry, called only after framework QM_IsNewBar gate.
-   const double curr_close = iClose(_Symbol, tf, 1);  // perf-allowed: fixed two-bar engulfing geometry, called only after framework QM_IsNewBar gate.
-   if(prev_open <= 0.0 || prev_close <= 0.0 || curr_open <= 0.0 || curr_close <= 0.0)
-      return false;
-
-   const double prev_body = MathAbs(prev_open - prev_close);
-   const double curr_body = MathAbs(curr_open - curr_close);
-   if(prev_body <= 0.0 || curr_body <= prev_body)
-      return false;
-
-   const bool bullish_engulf =
-      (prev_close < prev_open) &&
-      (curr_close > curr_open) &&
-      (curr_close >= prev_open) &&
-      (prev_close >= curr_open);
-   const bool bearish_engulf =
-      (prev_close > prev_open) &&
-      (curr_close < curr_open) &&
-      (curr_open >= prev_close) &&
-      (prev_open >= curr_close);
-
-   if(bullish_engulf)
-     {
-      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      if(entry <= 0.0)
+      if(dir > 0)
          return false;
-      const double sl = QM_StopATRFromValue(_Symbol, QM_BUY, entry, atr, strategy_atr_sl_mult);
-      if(sl <= 0.0 || sl >= entry)
-         return false;
-      req.type = QM_BUY;
-      req.sl = sl;
-      req.reason = "PRM_ENGULF_LONG";
-      return true;
+      if(dir < 0)
+         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+      return BuildEntry(QM_BUY, "total_power_bull_cross", req);
      }
 
-   if(bearish_engulf)
-     {
-      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      if(entry <= 0.0)
-         return false;
-      const double sl = QM_StopATRFromValue(_Symbol, QM_SELL, entry, atr, strategy_atr_sl_mult);
-      if(sl <= entry)
-         return false;
-      req.type = QM_SELL;
-      req.sl = sl;
-      req.reason = "PRM_ENGULF_SHORT";
-      return true;
-     }
-
-   return false;
+   if(dir < 0)
+      return false;
+   if(dir > 0)
+      QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+   return BuildEntry(QM_SELL, "total_power_bear_cross", req);
   }
 
-// Trade Management
-// Called every tick when an open position exists for this EA's magic.
-// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
+// Trade Management: the card specifies only the initial 2.0 ATR hard stop.
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies no trailing, break-even, partial-close, or add-on logic.
   }
 
-// Trade Close
-// Return TRUE to close the open position now (e.g. opposite-signal exit,
-// max-hold-time exceeded, session end).
+// Trade Close: opposite crosses are handled as stop-and-reverse in Trade Entry;
+// this hook enforces the 20 H4-bar safety time stop.
 bool Strategy_ExitSignal()
   {
    if(strategy_time_stop_bars <= 0)
       return false;
 
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
+   ulong ticket = 0;
+   datetime open_time = 0;
+   if(OurPositionDir(ticket, open_time) == 0 || open_time <= 0)
       return false;
 
-   const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
-   const int hold_seconds = strategy_time_stop_bars * PeriodSeconds(tf);
-   const double prev_open = iOpen(_Symbol, tf, 2);    // perf-allowed: fixed two-bar opposite engulfing check; O(1), no loops in per-tick exit path.
-   const double prev_close = iClose(_Symbol, tf, 2);  // perf-allowed: fixed two-bar opposite engulfing check; O(1), no loops in per-tick exit path.
-   const double curr_open = iOpen(_Symbol, tf, 1);    // perf-allowed: fixed two-bar opposite engulfing check; O(1), no loops in per-tick exit path.
-   const double curr_close = iClose(_Symbol, tf, 1);  // perf-allowed: fixed two-bar opposite engulfing check; O(1), no loops in per-tick exit path.
-   bool bullish_engulf = false;
-   bool bearish_engulf = false;
-   if(prev_open > 0.0 && prev_close > 0.0 && curr_open > 0.0 && curr_close > 0.0)
-     {
-      const double prev_body = MathAbs(prev_open - prev_close);
-      const double curr_body = MathAbs(curr_open - curr_close);
-      if(prev_body > 0.0 && curr_body > prev_body)
-        {
-         bullish_engulf =
-            (prev_close < prev_open) &&
-            (curr_close > curr_open) &&
-            (curr_close >= prev_open) &&
-            (prev_close >= curr_open);
-         bearish_engulf =
-            (prev_close > prev_open) &&
-            (curr_close < curr_open) &&
-            (curr_open >= prev_close) &&
-            (prev_open >= curr_close);
-        }
-     }
+   const int tf_seconds = PeriodSeconds(strategy_signal_tf);
+   if(tf_seconds <= 0)
+      return false;
 
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-
-      const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
-      if(hold_seconds > 0 && opened > 0 && (TimeCurrent() - opened) >= hold_seconds)
-         return true;
-
-      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      if(ptype == POSITION_TYPE_BUY && bearish_engulf)
-         return true;
-      if(ptype == POSITION_TYPE_SELL && bullish_engulf)
-         return true;
-     }
-
-   return false;
+   return ((TimeCurrent() - open_time) >= (strategy_time_stop_bars * tf_seconds));
   }
 
-// News Filter Hook
-// Optional news-filter override. Return TRUE to suppress trading regardless
-// of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
-// custom high-impact-event handling beyond the central filter.
+// News Filter Hook: news blackout is deferred to P8 / central framework mode.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   if(broker_time < 0)
-      return false;
    return false; // defer to QM_NewsAllowsTrade(...)
   }
 

@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        11100
-; ea_slug:      csl-strength-cross
+; ea_id:        11104
+; ea_slug:      tpi-power-cross
 ; ea_version:   v5.0
 ; set_version:  s20260607-001
-; symbol:       EURUSD.DWX
-; timeframe:    H1
+; symbol:       XAUUSD.DWX
+; timeframe:    H4
 ; environment:  backtest
-; magic_slot:   0
+; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   eec1e57e657b1c68f5eaa396da0dd6985c1ed85904a7adc62149131172e59250
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-06-07
 ;==========================================================
-qm_magic_slot_offset=0
+qm_magic_slot_offset=3
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
