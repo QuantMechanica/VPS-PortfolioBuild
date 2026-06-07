@@ -133,6 +133,37 @@ bool Strategy_HasOurPendingOrder()
    return false;
   }
 
+void Strategy_RemoveExpiredPendingOrders()
+  {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return;
+
+   const int d1_seconds = PeriodSeconds(PERIOD_D1);
+   if(d1_seconds <= 0)
+      return;
+
+   const datetime now = TimeCurrent();
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0 || !OrderSelect(ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+
+      const ENUM_ORDER_TYPE order_type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
+      if(order_type != ORDER_TYPE_BUY_LIMIT)
+         continue;
+
+      const datetime setup_time = (datetime)OrderGetInteger(ORDER_TIME_SETUP);
+      if(setup_time > 0 && (now - setup_time) >= d1_seconds)
+         QM_TM_RemovePendingOrder(ticket, "one_d1_bar_unfilled");
+     }
+  }
+
 bool Strategy_RsiChron(const double &values[],
                        const int count,
                        const int period,
@@ -286,8 +317,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_max_hold_bars <= 0)
       return false;
 
-   const int required_rates = MathMax(strategy_crsi_rank_period + 10,
-                                      strategy_pullback_lookback + 5);
+   const int crsi_rates = strategy_crsi_rank_period + 10;
+   const int pullback_rates = strategy_pullback_lookback + 5;
+   const int required_rates = (crsi_rates > pullback_rates) ? crsi_rates : pullback_rates;
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
    // Called only after OnTick passed QM_IsNewBar(); CopyRates is closed-bar gated. // perf-allowed
@@ -360,13 +392,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.expiration_seconds = (expiry > 0) ? expiry : 86400;
    return true;
   }
-   return false;
-  }
 
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
+   Strategy_RemoveExpiredPendingOrders();
    // Card specifies no trailing, break-even, pyramiding, or partial close.
   }
 
