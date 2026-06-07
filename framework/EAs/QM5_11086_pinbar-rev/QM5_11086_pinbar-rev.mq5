@@ -90,6 +90,7 @@ input int    strategy_time_stop_bars          = 12;
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
+// No Trade Filter (time, spread, news)
 // Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
@@ -98,6 +99,7 @@ bool Strategy_NoTradeFilter()
    return false;
   }
 
+// Trade Entry
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
 // should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
@@ -200,6 +202,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    return true;
   }
 
+// Trade Management
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
@@ -207,6 +210,7 @@ void Strategy_ManageOpenPosition()
    // Card specifies no trailing, break-even, partial close, or add-on logic.
   }
 
+// Trade Close
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
@@ -231,14 +235,14 @@ bool Strategy_ExitSignal()
       if(atr <= 0.0)
          continue;
 
-      const double nose_open = iOpen(_Symbol, tf, 1);    // perf-allowed: fixed two-bar opposite-pinbar exit check; O(1), no loops.
-      const double nose_high = iHigh(_Symbol, tf, 1);    // perf-allowed: fixed two-bar opposite-pinbar exit check; O(1), no loops.
-      const double nose_low = iLow(_Symbol, tf, 1);      // perf-allowed: fixed two-bar opposite-pinbar exit check; O(1), no loops.
-      const double nose_close = iClose(_Symbol, tf, 1);  // perf-allowed: fixed two-bar opposite-pinbar exit check; O(1), no loops.
-      const double eye_open = iOpen(_Symbol, tf, 2);     // perf-allowed: fixed two-bar opposite-pinbar exit check; O(1), no loops.
-      const double eye_high = iHigh(_Symbol, tf, 2);     // perf-allowed: fixed two-bar opposite-pinbar exit check; O(1), no loops.
-      const double eye_low = iLow(_Symbol, tf, 2);       // perf-allowed: fixed two-bar opposite-pinbar exit check; O(1), no loops.
-      const double eye_close = iClose(_Symbol, tf, 2);   // perf-allowed: fixed two-bar opposite-pinbar exit check; O(1), no loops.
+      const double nose_open = iOpen(_Symbol, tf, 1);    // perf-allowed: fixed two-bar opposite-pinbar exit check; O(1), no loops in per-tick exit path.
+      const double nose_high = iHigh(_Symbol, tf, 1);    // perf-allowed: fixed two-bar opposite-pinbar exit check; O(1), no loops in per-tick exit path.
+      const double nose_low = iLow(_Symbol, tf, 1);      // perf-allowed: fixed two-bar opposite-pinbar exit check; O(1), no loops in per-tick exit path.
+      const double nose_close = iClose(_Symbol, tf, 1);  // perf-allowed: fixed two-bar opposite-pinbar exit check; O(1), no loops in per-tick exit path.
+      const double eye_open = iOpen(_Symbol, tf, 2);     // perf-allowed: fixed two-bar opposite-pinbar exit check; O(1), no loops in per-tick exit path.
+      const double eye_high = iHigh(_Symbol, tf, 2);     // perf-allowed: fixed two-bar opposite-pinbar exit check; O(1), no loops in per-tick exit path.
+      const double eye_low = iLow(_Symbol, tf, 2);       // perf-allowed: fixed two-bar opposite-pinbar exit check; O(1), no loops in per-tick exit path.
+      const double eye_close = iClose(_Symbol, tf, 2);   // perf-allowed: fixed two-bar opposite-pinbar exit check; O(1), no loops in per-tick exit path.
       if(nose_open <= 0.0 || nose_high <= 0.0 || nose_low <= 0.0 || nose_close <= 0.0 ||
          eye_open <= 0.0 || eye_high <= 0.0 || eye_low <= 0.0 || eye_close <= 0.0)
          continue;
@@ -280,6 +284,7 @@ bool Strategy_ExitSignal()
    return false;
   }
 
+// News Filter Hook
 // Optional news-filter override. Return TRUE to suppress trading regardless
 // of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
 // custom high-impact-event handling beyond the central filter.
