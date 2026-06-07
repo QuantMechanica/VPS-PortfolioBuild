@@ -27,7 +27,7 @@ The EA trades long-only M5 reversal entries after a high-volume selloff below SM
 | `strategy_rsi_period` | 14 | `>=1` | RSI period for Fisher RSI, entry, and exit. |
 | `strategy_stoch_k` | 5 | `>=1` | Stochastic K period. |
 | `strategy_stoch_d` | 3 | `>=1` | Stochastic D period. |
-| `strategy_stoch_slow` | 3 | `>=1` | Stochastic slowing period. |
+| `strategy_stoch_slow` | 1 | `>=1` | Stochastic slowing period; `1` = STOCHF fast stochastic per the card. |
 | `strategy_macd_fast` | 12 | `>=1` | MACD fast EMA period. |
 | `strategy_macd_slow` | 26 | `> fast` | MACD slow EMA period. |
 | `strategy_macd_signal` | 9 | `>=1` | MACD signal period. |

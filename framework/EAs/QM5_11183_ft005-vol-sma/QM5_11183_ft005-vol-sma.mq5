@@ -82,7 +82,7 @@ input int    strategy_sma_period        = 40;
 input int    strategy_rsi_period        = 14;
 input int    strategy_stoch_k           = 5;
 input int    strategy_stoch_d           = 3;
-input int    strategy_stoch_slow        = 3;
+input int    strategy_stoch_slow        = 1;   // STOCHF = fast stochastic (no %K smoothing)
 input int    strategy_macd_fast         = 12;
 input int    strategy_macd_slow         = 26;
 input int    strategy_macd_signal       = 9;
