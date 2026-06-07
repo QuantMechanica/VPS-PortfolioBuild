@@ -42,7 +42,11 @@ by Factory_ON (visible mode), and a one-shot `farmctl.py repair`.
 | `QM_StrategyFarm_CodexOrchestration_15min` | 15 min | **1** (see warning) |
 | `QM_StrategyFarm_GeminiOrchestration_15min` | 15 min | 1 |
 | `QM_StrategyFarm_ClaudeOrchestration_15min` | 15 min | **5** |
-| `QM_StrategyFarm_QuotaReceiver` | continuous | n/a |
+
+> `QM_StrategyFarm_QuotaReceiver` (Tampermonkey receiver) was **removed
+> 2026-06-07** — never actually registered, browser-dependent, broke on every
+> reboot. Superseded by `QM_StrategyFarm_QuotaPull` (ALWAYS_ON, headless API
+> pull). See that section.
 
 **Instance count lives in THREE places that must stay in sync** (OWNER 2026-06-01):
 1. `agent_router.py` `DEFAULT_AGENT_REGISTRY[*].max_parallel` — routing cap.
@@ -72,6 +76,7 @@ by Factory_ON (visible mode), and a one-shot `farmctl.py repair`.
 | `QM_WorkItemLogPruner_Daily_0310` | 03:10 | `prune_workitem_logs.py` |
 | `QM_StrategyFarm_HourlyMonitor_60min` | 60 min | `hourly_monitor.ps1` — health triage: auto-fix reversible task-state drift, escalate auth/factory/T_Live to `D:\QM\reports\state\hourly_monitor.jsonl`. Install: `install_hourly_monitor_scheduled_task.ps1`. Fail-safe (DL-065). |
 | `QM_StrategyFarm_TesterCachePurge` | 3 h | `tester_cache_purge.ps1` — if D: free <80GB: stop factory, purge regenerable `T*\Tester\bases`+`Agent-*` caches, restart. **Runs as INTERACTIVE qm-admin** (not SYSTEM) so workers respawn in OWNER's visible session. Source ticks/reports never touched. Permanent fix for D: fill-up (incident 2026-06-02). Install: `install_tester_cache_purge_scheduled_task.ps1`. |
+| `QM_StrategyFarm_QuotaPull` | 5 min | `quota_pull.py` — headless Codex+Claude limit pull. Hits the authenticated usage JSON endpoints (`chatgpt.com/backend-api/codex/usage`, `api.anthropic.com/api/oauth/usage`) with the OAuth tokens the CLIs already store, writes `quota_snapshot.json` (USED % per 5h/weekly window). **Replaces the Tampermonkey browser-scraper** (2026-06-07) — no browser, survives reboot. Runs as **SYSTEM** (reads world-readable token files). Read-only on tokens; never refreshes/writes them, so it cannot trigger the codex `refresh_token_reused` race. On 401/403 keeps last-good (health goes stale only if pulls persistently fail). |
 
 > Note: the duplicate **07:00 email** morning brief (`QM_StrategyFarm_MorningBrief_0700`)
 > was deleted 2026-06-01 (OWNER: keep the 06:00 vault brief, drop the email). Only

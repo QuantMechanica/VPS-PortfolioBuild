@@ -260,17 +260,25 @@ def quota_snapshot() -> dict:
                 age_sec = None
         data = s.get("data") or {}
         matches = data.get("matches") or {}
+        # quota_pull.py (headless API pull) writes a structured block with USED %
+        # already extracted — prefer it over the legacy DOM text-parse path.
+        structured = data.get("structured") or {}
         text = data.get("full_text_head") or ""
         parsed = _parse_codex_text(text) if src == "codex" else _parse_claude_text(text)
+
+        def _pick(key):
+            v = structured.get(key)
+            return v if v is not None else parsed.get(key)
+
         out[src] = {
             "fresh": age_sec is not None and age_sec <= 300,
             "age_sec": age_sec,
-            "hour_pct": parsed.get("hour_pct"),
-            "week_pct": parsed.get("week_pct"),
-            "hour_reset": parsed.get("hour_reset"),
-            "week_reset": parsed.get("week_reset"),
-            "sonnet_pct": parsed.get("sonnet_pct"),
-            "plan": parsed.get("plan") or matches.get("plan_label"),
+            "hour_pct": _pick("hour_pct"),
+            "week_pct": _pick("week_pct"),
+            "hour_reset": _pick("hour_reset"),
+            "week_reset": _pick("week_reset"),
+            "sonnet_pct": _pick("sonnet_pct"),
+            "plan": structured.get("plan") or parsed.get("plan") or matches.get("plan_label"),
             "meters": data.get("meters") or [],
             "matches": matches,
             "url": data.get("url"),
