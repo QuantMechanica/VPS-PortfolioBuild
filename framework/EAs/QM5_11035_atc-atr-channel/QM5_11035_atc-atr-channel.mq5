@@ -85,10 +85,44 @@ input bool   strategy_weekend_guard_enabled    = true;
 input int    strategy_weekend_guard_hour       = 21;
 
 bool g_strategy_block_entry_after_exit = false;
+int  g_strategy_last_channel_cross = 0;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
+
+int Strategy_ChannelCrossOnClosedBar()
+  {
+   if(strategy_atr_period <= 0 || strategy_channel_mult <= 0.0)
+      return 0;
+
+   const double close1 = iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, 1); // perf-allowed: O(1) closed-bar price read for channel cross math.
+   const double close2 = iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, 2); // perf-allowed: O(1) closed-bar price read for channel cross math.
+   if(close1 <= 0.0 || close2 <= 0.0)
+      return 0;
+
+   const double mid1 = (strategy_mid_period <= 1)
+                       ? iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, 2) // perf-allowed: O(1) prior closed-bar midline when period=1.
+                       : QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_mid_period, 1);
+   const double mid2 = (strategy_mid_period <= 1)
+                       ? iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, 3) // perf-allowed: O(1) prior closed-bar midline when period=1.
+                       : QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_mid_period, 2);
+   const double atr1 = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
+   const double atr2 = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 2);
+   if(mid1 <= 0.0 || mid2 <= 0.0 || atr1 <= 0.0 || atr2 <= 0.0)
+      return 0;
+
+   const double upper1 = mid1 + strategy_channel_mult * atr1;
+   const double lower1 = mid1 - strategy_channel_mult * atr1;
+   const double upper2 = mid2 + strategy_channel_mult * atr2;
+   const double lower2 = mid2 - strategy_channel_mult * atr2;
+
+   if(close1 > upper1 && close2 <= upper2)
+      return 1;
+   if(close1 < lower1 && close2 >= lower2)
+      return -1;
+   return 0;
+  }
 
 // Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
 // regime filter). Cheap O(1) checks only — runs on every tick.
@@ -128,6 +162,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
+   g_strategy_last_channel_cross = Strategy_ChannelCrossOnClosedBar();
+
    if(g_strategy_block_entry_after_exit)
      {
       g_strategy_block_entry_after_exit = false;
@@ -155,36 +191,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
      }
 
-   if(strategy_atr_period <= 0 || strategy_channel_mult <= 0.0)
-      return false;
-
-   const double close1 = iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, 1); // perf-allowed: O(1) closed-bar price read for channel cross math.
-   const double close2 = iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, 2); // perf-allowed: O(1) closed-bar price read for channel cross math.
-   if(close1 <= 0.0 || close2 <= 0.0)
-      return false;
-
-   const double mid1 = (strategy_mid_period <= 1)
-                       ? iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, 2) // perf-allowed: O(1) prior closed-bar midline when period=1.
-                       : QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_mid_period, 1);
-   const double mid2 = (strategy_mid_period <= 1)
-                       ? iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, 3) // perf-allowed: O(1) prior closed-bar midline when period=1.
-                       : QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_mid_period, 2);
-   const double atr1 = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
-   const double atr2 = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 2);
-   if(mid1 <= 0.0 || mid2 <= 0.0 || atr1 <= 0.0 || atr2 <= 0.0)
-      return false;
-
-   const double upper1 = mid1 + strategy_channel_mult * atr1;
-   const double lower1 = mid1 - strategy_channel_mult * atr1;
-   const double upper2 = mid2 + strategy_channel_mult * atr2;
-   const double lower2 = mid2 - strategy_channel_mult * atr2;
-
-   int cross = 0;
-   if(close1 > upper1 && close2 <= upper2)
-      cross = 1;
-   else if(close1 < lower1 && close2 >= lower2)
-      cross = -1;
-
+   const int cross = g_strategy_last_channel_cross;
    if(cross == 0)
       return false;
 
@@ -236,36 +243,7 @@ bool Strategy_ExitSignal()
    if(!has_position)
       return false;
 
-   if(strategy_atr_period <= 0 || strategy_channel_mult <= 0.0)
-      return false;
-
-   const double close1 = iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, 1); // perf-allowed: O(1) closed-bar price read for channel cross math.
-   const double close2 = iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, 2); // perf-allowed: O(1) closed-bar price read for channel cross math.
-   if(close1 <= 0.0 || close2 <= 0.0)
-      return false;
-
-   const double mid1 = (strategy_mid_period <= 1)
-                       ? iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, 2) // perf-allowed: O(1) prior closed-bar midline when period=1.
-                       : QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_mid_period, 1);
-   const double mid2 = (strategy_mid_period <= 1)
-                       ? iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, 3) // perf-allowed: O(1) prior closed-bar midline when period=1.
-                       : QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_mid_period, 2);
-   const double atr1 = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
-   const double atr2 = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 2);
-   if(mid1 <= 0.0 || mid2 <= 0.0 || atr1 <= 0.0 || atr2 <= 0.0)
-      return false;
-
-   const double upper1 = mid1 + strategy_channel_mult * atr1;
-   const double lower1 = mid1 - strategy_channel_mult * atr1;
-   const double upper2 = mid2 + strategy_channel_mult * atr2;
-   const double lower2 = mid2 - strategy_channel_mult * atr2;
-
-   int cross = 0;
-   if(close1 > upper1 && close2 <= upper2)
-      cross = 1;
-   else if(close1 < lower1 && close2 >= lower2)
-      cross = -1;
-
+   const int cross = g_strategy_last_channel_cross;
    if((position_type == POSITION_TYPE_BUY && cross < 0) ||
       (position_type == POSITION_TYPE_SELL && cross > 0))
      {
