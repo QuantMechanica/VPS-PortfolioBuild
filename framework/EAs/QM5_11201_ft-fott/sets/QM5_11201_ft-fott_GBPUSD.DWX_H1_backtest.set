@@ -1,0 +1,48 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11201
+; ea_slug:      ft-fott
+; ea_version:   v5.0
+; set_version:  s20260607-001
+; symbol:       GBPUSD.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   1b8757cf86848da98b0ba4706fb872556da626ad72e5e38d5fa471300cf8f173
+; author:       Development
+; date:         2026-06-07
+;==========================================================
+qm_magic_slot_offset=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; core filter library params; filter-on/off variants must be pre-declared
+qm_filter_news_enabled=1
+qm_filter_news_mode=3
+qm_filter_regime_enabled=0
+qm_filter_regime_lookback_bars=100
+qm_filter_regime_bull_return_pct=2.0
+qm_filter_regime_bear_return_pct=2.0
+qm_filter_volatility_enabled=0
+qm_filter_volatility_atr_period=14
+qm_filter_volatility_lookback_bars=50
+qm_filter_volatility_compression_ratio=0.75
+qm_filter_volatility_expansion_ratio=1.25
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=not_found
+strategy_ott_pds=2
+strategy_ott_percent=1.4
+strategy_cmo_period=9
+strategy_ott_lookback_bars=200
+strategy_adx_period=14
+strategy_adx_exit=60.0
+strategy_atr_period=14
+strategy_atr_stop_mult=2.5
+strategy_roi_0_min_pct=10.0
+strategy_roi_30_min_pct=10.0
+strategy_roi_60_min_pct=5.0
+strategy_roi_120_min_pct=2.5
+strategy_trailing_percent=5.0
+strategy_trailing_offset_percent=10.0
