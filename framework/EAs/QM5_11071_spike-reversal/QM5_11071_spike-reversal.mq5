@@ -114,7 +114,6 @@ int Strategy_SpikeSignal()
    if(strategy_bars_number < 1 || strategy_percentage_diff <= 0.0 ||
       strategy_close_fraction < 0.0 || strategy_close_fraction > 1.0)
       return 0;
-
    const double current_high = iHigh(_Symbol, PERIOD_D1, 1); // perf-allowed: bounded D1 spike-bar OHLC from the approved card.
    const double current_low = iLow(_Symbol, PERIOD_D1, 1); // perf-allowed: bounded D1 spike-bar OHLC from the approved card.
    const double current_close = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: bounded D1 spike-bar OHLC from the approved card.
