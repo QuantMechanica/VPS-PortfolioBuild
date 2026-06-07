@@ -6313,3 +6313,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11076,tbo-breakout,1,GBPUSD.DWX,110760001,2026-06-07,Development,active
 11076,tbo-breakout,2,USDJPY.DWX,110760002,2026-06-07,Development,active
 11076,tbo-breakout,3,NDX.DWX,110760003,2026-06-07,Development,active
+11077,qqe-50-cross,0,EURUSD.DWX,110770000,2026-06-07,Development,active
+11077,qqe-50-cross,1,GBPUSD.DWX,110770001,2026-06-07,Development,active
+11077,qqe-50-cross,2,USDJPY.DWX,110770002,2026-06-07,Development,active
+11077,qqe-50-cross,3,XAUUSD.DWX,110770003,2026-06-07,Development,active
