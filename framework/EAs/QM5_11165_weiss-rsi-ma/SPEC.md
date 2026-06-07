@@ -26,6 +26,7 @@ This EA trades H1 mean reversion only in the direction of a long moving-average 
 | strategy_exit_rsi | 50.0 | 0-100 | RSI midpoint exit threshold. |
 | strategy_stop_pct | 1.0 | >0 | Percent price distance for the initial stop. |
 | strategy_max_hold_bars | 60 | 1+ | Maximum holding period in strategy timeframe bars. |
+| strategy_max_spread_pts | 0 | 0+ | Optional spread cap in points; 0 leaves the cap disabled. |
 
 Note: framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md`; only strategy-specific inputs are listed here.
 

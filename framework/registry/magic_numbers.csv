@@ -6509,3 +6509,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11165,weiss-rsi-ma,2,AUDCAD.DWX,111650002,2026-06-07,Development,active
 11165,weiss-rsi-ma,3,NDX.DWX,111650003,2026-06-07,Development,active
 11165,weiss-rsi-ma,4,SP500.DWX,111650004,2026-06-07,Development,active
+11166,weiss-chan-swing,0,EURUSD.DWX,111660000,2026-06-07,Development,active
+11166,weiss-chan-swing,1,USDJPY.DWX,111660001,2026-06-07,Development,active
+11166,weiss-chan-swing,2,XAUUSD.DWX,111660002,2026-06-07,Development,active
+11166,weiss-chan-swing,3,XTIUSD.DWX,111660003,2026-06-07,Development,active
+11166,weiss-chan-swing,4,SP500.DWX,111660004,2026-06-07,Development,active
