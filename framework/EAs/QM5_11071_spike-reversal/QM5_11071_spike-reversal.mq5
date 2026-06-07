@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QuantMechanica V5 EA skeleton template"
+#property description "QM5_11071 Spike Reversal"
 
 #include <QM/QM_Common.mqh>
 
@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 11070;
+input int    qm_ea_id                   = 11071;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -73,11 +73,89 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_lookback_bars     = 10;
-input double strategy_ratio             = 0.66;
-input bool   strategy_reverse           = true;
+input int    strategy_hold_bars         = 11;
+input int    strategy_bars_number       = 3;
+input double strategy_percentage_diff   = 0.003;
+input double strategy_close_fraction    = 0.5;
 input int    strategy_atr_period        = 20;
 input double strategy_atr_sl_mult       = 3.0;
+
+ulong    g_hold_ticket      = 0;
+datetime g_hold_anchor_time = 0;
+
+bool Strategy_FindPosition(ENUM_POSITION_TYPE &ptype, ulong &ticket, datetime &open_time)
+  {
+   ptype = POSITION_TYPE_BUY;
+   ticket = 0;
+   open_time = 0;
+
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong pos_ticket = PositionGetTicket(i);
+      if(pos_ticket == 0 || !PositionSelectByTicket(pos_ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      ticket = pos_ticket;
+      open_time = (datetime)PositionGetInteger(POSITION_TIME);
+      return true;
+     }
+
+   return false;
+  }
+
+int Strategy_SpikeSignal()
+  {
+   if(strategy_bars_number < 1 || strategy_percentage_diff <= 0.0 ||
+      strategy_close_fraction < 0.0 || strategy_close_fraction > 1.0)
+      return 0;
+
+   const double current_high = iHigh(_Symbol, PERIOD_D1, 1); // perf-allowed: bounded D1 spike-bar OHLC from the approved card.
+   const double current_low = iLow(_Symbol, PERIOD_D1, 1); // perf-allowed: bounded D1 spike-bar OHLC from the approved card.
+   const double current_close = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: bounded D1 spike-bar OHLC from the approved card.
+   if(current_high <= 0.0 || current_low <= 0.0 || current_close <= 0.0 || current_high <= current_low)
+      return 0;
+
+   double previous_high = 0.0;
+   double previous_low = DBL_MAX;
+   for(int shift = 2; shift <= strategy_bars_number + 1; ++shift)
+     {
+      const double high_i = iHigh(_Symbol, PERIOD_D1, shift); // perf-allowed: bounded three-bar extreme check from the approved card.
+      const double low_i = iLow(_Symbol, PERIOD_D1, shift); // perf-allowed: bounded three-bar extreme check from the approved card.
+      if(high_i <= 0.0 || low_i <= 0.0)
+         return 0;
+      if(high_i > previous_high)
+         previous_high = high_i;
+      if(low_i < previous_low)
+         previous_low = low_i;
+     }
+
+   if(previous_high <= 0.0 || previous_low <= 0.0 || previous_low == DBL_MAX)
+      return 0;
+
+   const double bar_range = current_high - current_low;
+   const double close_from_low = (current_close - current_low) / bar_range;
+   const double close_from_high = (current_high - current_close) / bar_range;
+
+   const bool upside_spike = (current_high > previous_high &&
+                              (current_high - previous_high) / previous_high >= strategy_percentage_diff &&
+                              close_from_low <= strategy_close_fraction);
+   if(upside_spike)
+      return -1;
+
+   const bool downside_spike = (current_low < previous_low &&
+                                (previous_low - current_low) / previous_low >= strategy_percentage_diff &&
+                                close_from_high <= strategy_close_fraction);
+   if(downside_spike)
+      return 1;
+
+   return 0;
+  }
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -103,85 +181,29 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(strategy_lookback_bars < 1 || strategy_ratio <= 0.0 || strategy_atr_period < 1 || strategy_atr_sl_mult <= 0.0)
-      return false;
-   const double prev_close = iClose(_Symbol, PERIOD_W1, 1); // perf-allowed: bounded W1 close-to-close persistence rule from card.
-   const double prev_prior_close = iClose(_Symbol, PERIOD_W1, 2); // perf-allowed: bounded W1 close-to-close persistence rule from card.
-   if(prev_close <= 0.0 || prev_prior_close <= 0.0)
-      return false;
-
-   int previous_dir = 0;
-   if(prev_close > prev_prior_close)
-      previous_dir = 1;
-   else if(prev_close < prev_prior_close)
-      previous_dir = -1;
-   if(previous_dir == 0)
+   ENUM_POSITION_TYPE ptype;
+   ulong ticket;
+   datetime open_time;
+   if(Strategy_FindPosition(ptype, ticket, open_time))
       return false;
 
-   int persistence = 0;
-   int antipersistence = 0;
-   for(int shift = 1; shift <= strategy_lookback_bars; ++shift)
-     {
-      const double c0 = iClose(_Symbol, PERIOD_W1, shift); // perf-allowed: bounded W1 close-to-close persistence rule from card.
-      const double c1 = iClose(_Symbol, PERIOD_W1, shift + 1); // perf-allowed: bounded W1 close-to-close persistence rule from card.
-      const double c2 = iClose(_Symbol, PERIOD_W1, shift + 2); // perf-allowed: bounded W1 close-to-close persistence rule from card.
-      if(c0 <= 0.0 || c1 <= 0.0 || c2 <= 0.0)
-         return false;
-
-      int current_dir = 0;
-      if(c0 > c1)
-         current_dir = 1;
-      else if(c0 < c1)
-         current_dir = -1;
-
-      int prior_dir = 0;
-      if(c1 > c2)
-         prior_dir = 1;
-      else if(c1 < c2)
-         prior_dir = -1;
-
-      if(current_dir == 0 || prior_dir == 0)
-         continue;
-      if(current_dir == prior_dir)
-         persistence++;
-      else
-         antipersistence++;
-     }
-
-   const double threshold = strategy_ratio * (double)strategy_lookback_bars;
-   int selected_dir = 0;
-   if((double)persistence > threshold)
-      selected_dir = strategy_reverse ? -previous_dir : previous_dir;
-   else if((double)antipersistence > threshold)
-      selected_dir = strategy_reverse ? previous_dir : -previous_dir;
-   if(selected_dir == 0)
+   const int signal = Strategy_SpikeSignal();
+   if(signal == 0)
       return false;
 
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      return false;
-     }
-
-   req.type = (selected_dir > 0) ? QM_BUY : QM_SELL;
-   req.price = (req.type == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK) : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   req.type = (signal > 0) ? QM_BUY : QM_SELL;
+   req.price = (req.type == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
+                                    : SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(req.price <= 0.0)
       return false;
 
-   const double atr = QM_ATR(_Symbol, PERIOD_W1, strategy_atr_period, 1);
+   const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
    req.sl = QM_StopATRFromValue(_Symbol, req.type, req.price, atr, strategy_atr_sl_mult);
    if(req.sl <= 0.0)
       return false;
 
    req.tp = 0.0;
-   req.reason = (selected_dir > 0) ? "PERSISTENT_ANTI_LONG" : "PERSISTENT_ANTI_SHORT";
+   req.reason = (signal > 0) ? "SPIKE_REVERSAL_LONG" : "SPIKE_REVERSAL_SHORT";
    return true;
   }
 
@@ -189,90 +211,56 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card defines no break-even, trailing, or partial-close management.
+   ENUM_POSITION_TYPE ptype;
+   ulong ticket;
+   datetime open_time;
+   if(!Strategy_FindPosition(ptype, ticket, open_time))
+     {
+      g_hold_ticket = 0;
+      g_hold_anchor_time = 0;
+      return;
+     }
+
+   if(ticket != g_hold_ticket || g_hold_anchor_time <= 0)
+     {
+      g_hold_ticket = ticket;
+      g_hold_anchor_time = open_time;
+     }
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   const int magic = QM_FrameworkMagic();
-   bool have_position = false;
-   ENUM_POSITION_TYPE position_type = POSITION_TYPE_BUY;
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      have_position = true;
-      break;
-     }
-   if(!have_position)
+   ENUM_POSITION_TYPE ptype;
+   ulong ticket;
+   datetime open_time;
+   if(!Strategy_FindPosition(ptype, ticket, open_time))
       return false;
 
-   if(strategy_lookback_bars < 1 || strategy_ratio <= 0.0)
-      return true;
-   const double prev_close = iClose(_Symbol, PERIOD_W1, 1); // perf-allowed: bounded W1 close-to-close persistence rule from card.
-   const double prev_prior_close = iClose(_Symbol, PERIOD_W1, 2); // perf-allowed: bounded W1 close-to-close persistence rule from card.
-   if(prev_close <= 0.0 || prev_prior_close <= 0.0)
-      return false;
-
-   int previous_dir = 0;
-   if(prev_close > prev_prior_close)
-      previous_dir = 1;
-   else if(prev_close < prev_prior_close)
-      previous_dir = -1;
-   if(previous_dir == 0)
-      return true;
-
-   int persistence = 0;
-   int antipersistence = 0;
-   for(int shift = 1; shift <= strategy_lookback_bars; ++shift)
+   if(ticket != g_hold_ticket || g_hold_anchor_time <= 0)
      {
-      const double c0 = iClose(_Symbol, PERIOD_W1, shift); // perf-allowed: bounded W1 close-to-close persistence rule from card.
-      const double c1 = iClose(_Symbol, PERIOD_W1, shift + 1); // perf-allowed: bounded W1 close-to-close persistence rule from card.
-      const double c2 = iClose(_Symbol, PERIOD_W1, shift + 2); // perf-allowed: bounded W1 close-to-close persistence rule from card.
-      if(c0 <= 0.0 || c1 <= 0.0 || c2 <= 0.0)
-         return false;
-
-      int current_dir = 0;
-      if(c0 > c1)
-         current_dir = 1;
-      else if(c0 < c1)
-         current_dir = -1;
-
-      int prior_dir = 0;
-      if(c1 > c2)
-         prior_dir = 1;
-      else if(c1 < c2)
-         prior_dir = -1;
-
-      if(current_dir == 0 || prior_dir == 0)
-         continue;
-      if(current_dir == prior_dir)
-         persistence++;
-      else
-         antipersistence++;
+      g_hold_ticket = ticket;
+      g_hold_anchor_time = open_time;
      }
 
-   const double threshold = strategy_ratio * (double)strategy_lookback_bars;
-   int selected_dir = 0;
-   if((double)persistence > threshold)
-      selected_dir = strategy_reverse ? -previous_dir : previous_dir;
-   else if((double)antipersistence > threshold)
-      selected_dir = strategy_reverse ? previous_dir : -previous_dir;
+   const int position_dir = (ptype == POSITION_TYPE_BUY) ? 1 : -1;
+   const int signal = Strategy_SpikeSignal();
+   if(signal == -position_dir)
+      return true;
 
-   if(selected_dir == 0)
-      return true;
-   if(position_type == POSITION_TYPE_BUY && selected_dir < 0)
-      return true;
-   if(position_type == POSITION_TYPE_SELL && selected_dir > 0)
-      return true;
+   if(signal == position_dir)
+     {
+      const datetime bar_time = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 hold-timer reset anchor from source rule.
+      if(bar_time > 0)
+         g_hold_anchor_time = bar_time;
+      return false;
+     }
+
+   const int period_seconds = PeriodSeconds(PERIOD_D1);
+   if(strategy_hold_bars > 0 && period_seconds > 0 && g_hold_anchor_time > 0)
+      return (TimeCurrent() - g_hold_anchor_time >= (long)strategy_hold_bars * period_seconds);
+
    return false;
   }
 
@@ -281,7 +269,7 @@ bool Strategy_ExitSignal()
 // custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false; // defer to QM_NewsAllowsTrade(...)
+   return false; // News blackout is deferred to the framework/P8 hook.
   }
 
 // -----------------------------------------------------------------------------
