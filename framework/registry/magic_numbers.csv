@@ -6345,3 +6345,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11087,laguerre-cross,1,GBPUSD.DWX,110870001,2026-06-07,Development,active
 11087,laguerre-cross,2,USDJPY.DWX,110870002,2026-06-07,Development,active
 11087,laguerre-cross,3,XAUUSD.DWX,110870003,2026-06-07,Development,active
+11088,coppock-turn,0,EURUSD.DWX,110880000,2026-06-07,Development,active
+11088,coppock-turn,1,GBPUSD.DWX,110880001,2026-06-07,Development,active
+11088,coppock-turn,2,USDJPY.DWX,110880002,2026-06-07,Development,active
+11088,coppock-turn,3,XAUUSD.DWX,110880003,2026-06-07,Development,active
