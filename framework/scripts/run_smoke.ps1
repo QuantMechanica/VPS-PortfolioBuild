@@ -63,15 +63,33 @@ function Get-ReportMetricValue {
         [switch]$AllowMissing
     )
 
-    $regex = [regex]::new("(?is)<td[^>]*>\s*$([regex]::Escape($Label)):\s*</td>\s*<td[^>]*>\s*<b>(?<value>[^<]*)</b>", [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
-    $match = $regex.Match($Html)
-    if (-not $match.Success) {
-        if ($AllowMissing) { return $null }
-        throw "Could not find metric label '$Label' in report."
+    # MT5 renders the report in the terminal UI language. T2/T6 run a German UI
+    # (docs/ops: T2/T6 German-locale report drift) so the English labels miss and
+    # the run false-fails as REPORT_FORMAT_DRIFT even when the EA traded. Try each
+    # label's German alias too. German strings verified against a real German
+    # report.htm (QM5_10440 baseline 2026-06-05), not invented; "Symbol" is
+    # identical in the German UI so it needs no alias.
+    $germanAliases = @{
+        "Total Trades"     = "Gesamtanzahl Trades"
+        "Profit Factor"    = "Profitfaktor"
+        "Total Net Profit" = "Nettogewinn gesamt"
+        "Expert"           = "Expertenprogramm"
+        "Period"           = "Periode"
+        "Bars"             = "Balken"
+    }
+    $candidateLabels = @($Label)
+    if ($germanAliases.ContainsKey($Label)) { $candidateLabels += $germanAliases[$Label] }
+
+    foreach ($candidate in $candidateLabels) {
+        $regex = [regex]::new("(?is)<td[^>]*>\s*$([regex]::Escape($candidate)):\s*</td>\s*<td[^>]*>\s*<b>(?<value>[^<]*)</b>", [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+        $match = $regex.Match($Html)
+        if ($match.Success) {
+            return Convert-HtmlEntityText -Text $match.Groups["value"].Value.Trim()
+        }
     }
 
-    $value = Convert-HtmlEntityText -Text $match.Groups["value"].Value.Trim()
-    return $value
+    if ($AllowMissing) { return $null }
+    throw "Could not find metric label '$Label' in report."
 }
 
 # FW8-classifier 2026-05-23 — per-metric error isolation. Pre-fix, this
