@@ -2749,6 +2749,119 @@ def _detail_decision(ea: dict, highest_pass: str | None, most_advanced: str | No
     }
 
 
+# Q02/Q03 are "did it run + enough trades" gates — a PASS there means the EA
+# executed, NOT that it has an edge. Q04+ are the robustness gates where a PASS is
+# a real (cost-aware, walk-forward / stress / crisis) survival signal. The swim-lane
+# colours these differently so a smoke-pass is never mistaken for an edge-pass.
+SMOKE_GATES = {"Q02", "Q03"}
+
+SWIMLANE_CSS = """
+.swimlane-wrap{margin:20px 0 6px}
+.swimlane-title{font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:0.18em;text-transform:uppercase;margin:0 0 12px}
+.swimlane{border-collapse:separate;border-spacing:3px;width:100%;table-layout:fixed}
+.swimlane th{font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--text-3);letter-spacing:0.05em;padding:2px 0;text-align:center}
+.swimlane th.sym-h{text-align:left;width:128px;letter-spacing:0.1em}
+.swimlane td.sym{font-family:var(--font-mono);font-size:12px;color:var(--text);font-weight:600;white-space:nowrap;padding-right:10px}
+.sl-cell{height:30px;text-align:center;font-family:var(--font-mono);font-size:13px;font-weight:700;border:1px solid var(--border);line-height:30px;cursor:default}
+.sl-edge{background:rgba(16,185,129,0.16);color:var(--signal);border-color:rgba(16,185,129,0.42)}
+.sl-smoke{background:rgba(120,140,170,0.13);color:var(--text-2);border-color:var(--border-2)}
+.sl-loss{background:rgba(234,88,12,0.12);color:var(--warn);border-color:rgba(234,88,12,0.36)}
+.sl-fail{background:rgba(225,29,72,0.15);color:var(--fail);border-color:rgba(225,29,72,0.42)}
+.sl-infra{background:rgba(234,88,12,0.09);color:var(--warn);border-color:rgba(234,88,12,0.3)}
+.sl-regress{background:rgba(120,140,170,0.09);color:var(--text-3);border-style:dashed}
+.sl-none{background:transparent;border-color:transparent}
+.sl-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;font-family:var(--font-mono);font-size:10px;color:var(--text-3);letter-spacing:0.04em}
+.sl-legend span{display:inline-flex;align-items:center;gap:6px}
+.sl-sw{width:12px;height:12px;display:inline-block;border:1px solid var(--border-2)}
+"""
+
+
+def _render_symbol_swimlane(detail: dict) -> str:
+    """One row per symbol across all gates Q0x — the per-symbol funnel made
+    legible: you see at a glance where each symbol died (loser at Q02, OOS-fail
+    at Q04, infra at Q08, …) and smoke-pass vs edge-pass are visually distinct."""
+    items = detail.get("work_items") or []
+    symbols = sorted({i["symbol"] for i in items if i.get("symbol") and i["symbol"] != "?"})
+    present_idx = sorted({PHASE_ORDER.index(i["phase"]) for i in items if i.get("phase") in PHASE_ORDER})
+    if not symbols or not present_idx:
+        return ""
+    cell = {(i["phase"], i["symbol"]): i for i in items}
+    gates = [PHASE_ORDER[x] for x in range(present_idx[0], present_idx[-1] + 1)]
+    head = "".join(f'<th>{e(phase_label(g))}</th>' for g in gates)
+
+    rows = []
+    for sym in symbols:
+        # Trajectory model: the furthest gate this symbol reached is its frontier.
+        # Gates BEFORE the frontier that it ever-passed are shown as passed (the
+        # symbol provably advanced past them — a later infra re-run there is just
+        # noise). The frontier gate shows the real current state (pass/fail/infra).
+        reached = [PHASE_ORDER.index(g) for g in gates if (g, sym) in cell]
+        frontier = max(reached) if reached else -1
+        tds = []
+        for g in gates:
+            it = cell.get((g, sym))
+            if not it:
+                tds.append('<td class="sl-cell sl-none"></td>')
+                continue
+            gi = PHASE_ORDER.index(g)
+            is_frontier = (gi == frontier)
+            verd = it.get("verdict") or ""
+            ever = it.get("n_ever_pass") or 0
+            np_ = it.get("net_profit")
+            pf = it.get("profit_factor")
+            title = f'{phase_label(g)} {sym}: {verd or "—"}'
+            if verd not in ("INFRA_FAIL", "INVALID"):
+                if isinstance(pf, (int, float)):
+                    title += f' · PF {pf:.2f}'
+                if isinstance(np_, (int, float)):
+                    title += f' · net {fmt_dollar(np_)}'
+            if verd == "PASS" or (ever and not is_frontier):
+                # passed this gate (current PASS, or provably advanced past it)
+                if g in SMOKE_GATES:
+                    if verd == "PASS" and isinstance(np_, (int, float)) and np_ <= 0:
+                        cls, glyph = "sl-loss", "≈"
+                        title += " · ran but not profitable"
+                    else:
+                        cls, glyph = "sl-smoke", "✓"
+                        title += " · smoke pass (ran)"
+                else:
+                    cls, glyph = "sl-edge", "✓"
+                    title += " · edge pass"
+                if verd != "PASS":
+                    title += " (later re-run noisy; symbol advanced)"
+            elif ever:  # frontier gate, ever-passed but latest re-run FAIL/infra
+                cls, glyph = "sl-regress", "↺"
+                title += f" · {ever} earlier PASS, latest re-run not clean"
+            elif verd == "FAIL":
+                cls, glyph = "sl-fail", "✗"
+            elif verd in ("INFRA_FAIL", "INVALID"):
+                cls, glyph = "sl-infra", "⚠"
+                title += " · infra / no evidence"
+            elif verd == "COMPLETED":
+                cls, glyph = "sl-edge", "✓"
+            else:
+                cls, glyph = "sl-smoke", "·"
+            tds.append(f'<td class="sl-cell {cls}" title="{e(title)}">{glyph}</td>')
+        rows.append(f'<tr><td class="sym">{e(sym)}</td>{"".join(tds)}</tr>')
+
+    legend = (
+        '<div class="sl-legend">'
+        '<span><i class="sl-sw sl-edge"></i> edge pass (Q04+ robust)</span>'
+        '<span><i class="sl-sw sl-smoke"></i> smoke pass (ran)</span>'
+        '<span><i class="sl-sw sl-loss"></i> ran, not profitable</span>'
+        '<span><i class="sl-sw sl-fail"></i> fail</span>'
+        '<span><i class="sl-sw sl-infra"></i> infra / no evidence</span>'
+        '<span><i class="sl-sw sl-regress"></i> passed then regressed</span>'
+        '</div>'
+    )
+    return (
+        '<div class="swimlane-wrap">'
+        '<div class="swimlane-title">Per-symbol funnel · where each symbol stands at each gate</div>'
+        f'<table class="swimlane"><thead><tr><th class="sym-h">Symbol</th>{head}</tr></thead>'
+        f'<tbody>{"".join(rows)}</tbody></table>{legend}</div>'
+    )
+
+
 def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
     ea_id = detail["ea_id"]
     slug = detail.get("slug", ea_id)
@@ -3395,6 +3508,7 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
   </div>
 </div>
 """
+    swimlane_html = _render_symbol_swimlane(detail)
     rescue_rows = detail.get("q08_portfolio_rescue") or []
     rescue_html = ""
     if rescue_rows:
@@ -3442,7 +3556,7 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
   </table>
 </div>
 """
-    return html_head(f"{ea_id} · {slug}", ARCHIVE_CSS + EA_DETAIL_CSS + DETAIL2_CSS) + f"""
+    return html_head(f"{ea_id} · {slug}", ARCHIVE_CSS + EA_DETAIL_CSS + DETAIL2_CSS + SWIMLANE_CSS) + f"""
 <div class="detail-wrap">
   <a class="detail-back" href="strategies.html">← back to Strategy Archive</a>
   <div class="detail-head">
@@ -3460,6 +3574,7 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
   {rescue_html}
   {desc_html}
   {kpis_html}
+  {swimlane_html}
   <h2 class="acc-title">Pipeline-Stage Evidence · Q01 → Q11 ascending</h2>
   {''.join(phases_html_chunks)}
   {files_html}
