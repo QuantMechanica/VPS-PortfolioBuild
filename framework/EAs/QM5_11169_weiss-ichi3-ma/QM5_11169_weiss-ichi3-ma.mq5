@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11168 Weissman Three Moving Average Neutral Crossover"
+#property description "QM5_11169 Weissman Ichimoku Three Moving Average Crossover"
 
 #include <QM/QM_Common.mqh>
 
@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 11168;
+input int    qm_ea_id                   = 11169;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -87,7 +87,7 @@ input double strategy_atr_sl_mult       = 3.0;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   if(_Period != PERIOD_D1)
+   if((ENUM_TIMEFRAMES)_Period != PERIOD_D1)
       return true;
 
    return false;
@@ -106,79 +106,52 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(strategy_fast_sma_period <= 0 ||
-      strategy_mid_sma_period <= 0 ||
-      strategy_slow_sma_period <= 0 ||
-      strategy_fast_sma_period >= strategy_mid_sma_period ||
-      strategy_mid_sma_period >= strategy_slow_sma_period ||
-      strategy_atr_period <= 0 ||
+   if(strategy_fast_sma_period < 1 ||
+      strategy_mid_sma_period <= strategy_fast_sma_period ||
+      strategy_slow_sma_period <= strategy_mid_sma_period ||
+      strategy_atr_period < 1 ||
       strategy_atr_sl_mult <= 0.0)
       return false;
 
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
+   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
-         return false;
-     }
-
-   const double fast_sma = QM_SMA(_Symbol, PERIOD_D1, strategy_fast_sma_period, 1);
-   const double mid_sma = QM_SMA(_Symbol, PERIOD_D1, strategy_mid_sma_period, 1);
-   const double slow_sma = QM_SMA(_Symbol, PERIOD_D1, strategy_slow_sma_period, 1);
-   if(fast_sma <= 0.0 || mid_sma <= 0.0 || slow_sma <= 0.0)
+   const double fast_1 = QM_SMA(_Symbol, PERIOD_D1, strategy_fast_sma_period, 1);
+   const double mid_1 = QM_SMA(_Symbol, PERIOD_D1, strategy_mid_sma_period, 1);
+   const double mid_2 = QM_SMA(_Symbol, PERIOD_D1, strategy_mid_sma_period, 2);
+   const double slow_1 = QM_SMA(_Symbol, PERIOD_D1, strategy_slow_sma_period, 1);
+   const double slow_2 = QM_SMA(_Symbol, PERIOD_D1, strategy_slow_sma_period, 2);
+   if(fast_1 <= 0.0 || mid_1 <= 0.0 || mid_2 <= 0.0 ||
+      slow_1 <= 0.0 || slow_2 <= 0.0)
       return false;
 
-   QM_OrderType side = QM_BUY;
-   string reason = "";
-   if(fast_sma > mid_sma && mid_sma > slow_sma)
-     {
-      side = QM_BUY;
-      reason = "WEISSMAN_MA3_STACK_LONG";
-     }
-   else if(fast_sma < mid_sma && mid_sma < slow_sma)
-     {
-      side = QM_SELL;
-      reason = "WEISSMAN_MA3_STACK_SHORT";
-     }
-   else
+   const bool long_setup = (fast_1 > mid_1 &&
+                            mid_1 > slow_1 &&
+                            mid_1 > mid_2 &&
+                            slow_1 > slow_2);
+   const bool short_setup = (fast_1 < mid_1 &&
+                             mid_1 < slow_1 &&
+                             mid_1 < mid_2 &&
+                             slow_1 < slow_2);
+   if(!long_setup && !short_setup)
       return false;
 
-   const double entry = QM_OrderTypeIsBuy(side) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                                                : SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(entry <= 0.0)
-      return false;
+   req.type = long_setup ? QM_BUY : QM_SELL;
 
+   const double entry_price = QM_EntryMarketPrice(req.type);
    const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
-   if(atr <= 0.0)
-      return false;
-
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(point <= 0.0)
+   if(entry_price <= 0.0 || atr <= 0.0 || point <= 0.0)
       return false;
 
-   const int stops_level = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
-   double stop_distance = atr * strategy_atr_sl_mult;
-   const double broker_min_distance = MathMax(0, stops_level) * point;
-   if(stop_distance < broker_min_distance)
-      stop_distance = broker_min_distance;
-
-   const double sl = QM_StopATRFromValue(_Symbol, side, entry, stop_distance, 1.0);
-   if(sl <= 0.0)
+   const int stop_level_points = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
+   const double broker_min_distance = MathMax(0, stop_level_points) * point;
+   const double stop_distance = MathMax(atr * strategy_atr_sl_mult, broker_min_distance);
+   req.sl = QM_StopRulesStopFromDistance(_Symbol, req.type, entry_price, stop_distance);
+   if(req.sl <= 0.0)
       return false;
 
-   req.type = side;
-   req.price = 0.0;
-   req.sl = sl;
-   req.tp = 0.0;
-   req.reason = reason;
+   req.reason = long_setup ? "WEISSMAN_ICHI3_SMA_LONG" : "WEISSMAN_ICHI3_SMA_SHORT";
    return true;
   }
 
@@ -186,60 +159,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   if(strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
-      return;
-
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      if(PositionGetDouble(POSITION_SL) > 0.0)
-         continue;
-
-      const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
-      if(open_price <= 0.0)
-         continue;
-
-      const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      const QM_OrderType side = (position_type == POSITION_TYPE_BUY) ? QM_BUY : QM_SELL;
-      const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
-      if(atr <= 0.0)
-         continue;
-
-      const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-      if(point <= 0.0)
-         continue;
-
-      const int stops_level = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
-      double stop_distance = atr * strategy_atr_sl_mult;
-      const double broker_min_distance = MathMax(0, stops_level) * point;
-      if(stop_distance < broker_min_distance)
-         stop_distance = broker_min_distance;
-
-      const double sl = QM_StopATRFromValue(_Symbol, side, open_price, stop_distance, 1.0);
-      if(sl > 0.0)
-         QM_TM_MoveSL(ticket, sl, "weiss_ma3_catastrophic_stop_restore");
-     }
+   // Card specifies no trailing, break-even, partial exits, or profit target.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   if(strategy_fast_sma_period <= 0 ||
-      strategy_mid_sma_period <= 0 ||
-      strategy_slow_sma_period <= 0 ||
-      strategy_fast_sma_period >= strategy_mid_sma_period ||
-      strategy_mid_sma_period >= strategy_slow_sma_period)
+   if(strategy_fast_sma_period < 1 ||
+      strategy_mid_sma_period <= strategy_fast_sma_period ||
+      strategy_slow_sma_period <= strategy_mid_sma_period)
       return false;
 
    const int magic = QM_FrameworkMagic();
@@ -247,7 +176,7 @@ bool Strategy_ExitSignal()
       return false;
 
    bool have_position = false;
-   bool is_long = false;
+   bool position_is_buy = false;
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -258,24 +187,25 @@ bool Strategy_ExitSignal()
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
 
+      const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      position_is_buy = (pos_type == POSITION_TYPE_BUY);
       have_position = true;
-      is_long = ((ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY);
       break;
      }
 
    if(!have_position)
       return false;
 
-   const double fast_sma = QM_SMA(_Symbol, PERIOD_D1, strategy_fast_sma_period, 1);
-   const double mid_sma = QM_SMA(_Symbol, PERIOD_D1, strategy_mid_sma_period, 1);
-   const double slow_sma = QM_SMA(_Symbol, PERIOD_D1, strategy_slow_sma_period, 1);
-   if(fast_sma <= 0.0 || mid_sma <= 0.0 || slow_sma <= 0.0)
+   const double fast_1 = QM_SMA(_Symbol, PERIOD_D1, strategy_fast_sma_period, 1);
+   const double mid_1 = QM_SMA(_Symbol, PERIOD_D1, strategy_mid_sma_period, 1);
+   const double slow_1 = QM_SMA(_Symbol, PERIOD_D1, strategy_slow_sma_period, 1);
+   if(fast_1 <= 0.0 || mid_1 <= 0.0 || slow_1 <= 0.0)
       return false;
 
-   if(is_long)
-      return (fast_sma < mid_sma || mid_sma < slow_sma);
+   if(position_is_buy)
+      return (fast_1 < mid_1 || mid_1 < slow_1);
 
-   return (fast_sma > mid_sma || mid_sma > slow_sma);
+   return (fast_1 > mid_1 || mid_1 > slow_1);
   }
 
 // Optional news-filter override. Return TRUE to suppress trading regardless
