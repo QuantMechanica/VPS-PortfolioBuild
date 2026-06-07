@@ -81,6 +81,7 @@ input int    strategy_atr_period        = 14;
 input double strategy_atr_sl_mult       = 2.5;
 input int    strategy_max_hold_d1_bars  = 7;
 input bool   strategy_enable_shorts     = false;
+input int    strategy_max_spread_points = 300;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -90,9 +91,16 @@ input bool   strategy_enable_shorts     = false;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   const int spread_points = (int)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-   if(spread_points < 0)
+   if(_Period != PERIOD_D1)
       return true;
+
+   if(strategy_max_spread_points > 0)
+     {
+      const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+      if(spread_points > strategy_max_spread_points)
+         return true;
+     }
+
    return false;
   }
 

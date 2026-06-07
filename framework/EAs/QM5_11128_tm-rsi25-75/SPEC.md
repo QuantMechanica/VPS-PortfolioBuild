@@ -26,6 +26,7 @@ The EA evaluates the last closed D1 bar. It enters long when the close is above 
 | `strategy_atr_sl_mult` | 2.5 | 0.1-10.0 | ATR multiple for the protective stop. |
 | `strategy_max_hold_d1_bars` | 7 | 1-30 | Maximum holding period measured in D1-bar equivalents. |
 | `strategy_enable_shorts` | false | true/false | Enables the optional short-side ablation from the card. |
+| `strategy_max_spread_points` | 300 | 0-1000 | Maximum allowed spread in points; 0 disables the explicit strategy spread gate. |
 
 ---
 
