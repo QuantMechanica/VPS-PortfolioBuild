@@ -7,6 +7,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11070,persistent-anti,1,GBPUSD.DWX,110700001,2026-06-07,Development,active
 11070,persistent-anti,2,USDJPY.DWX,110700002,2026-06-07,Development,active
 11070,persistent-anti,3,USDCAD.DWX,110700003,2026-06-07,Development,active
+11071,spike-reversal,0,USDCAD.DWX,110710000,2026-06-07,Development,active
+11071,spike-reversal,1,EURUSD.DWX,110710001,2026-06-07,Development,active
+11071,spike-reversal,2,GBPUSD.DWX,110710002,2026-06-07,Development,active
+11071,spike-reversal,3,USDJPY.DWX,110710003,2026-06-07,Development,active
 10586,mql5-cycleper,0,USDJPY.DWX,105860000,2026-05-29,Development,active
 10586,mql5-cycleper,1,EURUSD.DWX,105860001,2026-05-29,Development,active
 10586,mql5-cycleper,2,GBPJPY.DWX,105860002,2026-05-29,Development,active
