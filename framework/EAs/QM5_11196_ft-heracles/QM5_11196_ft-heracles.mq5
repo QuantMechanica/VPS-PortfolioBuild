@@ -93,123 +93,6 @@ input double          strategy_roi_2_min          = 0.115;
 input int             strategy_roi_3_after_min    = 7289;
 input double          strategy_roi_3_min          = 0.0;
 
-double Strategy_High(const int shift)
-  {
-   return iHigh(_Symbol, strategy_timeframe, shift); // perf-allowed: bounded custom Donchian/Keltner channel math in closed-bar entry hook.
-  }
-
-double Strategy_Low(const int shift)
-  {
-   return iLow(_Symbol, strategy_timeframe, shift); // perf-allowed: bounded custom Donchian/Keltner channel math in closed-bar entry hook.
-  }
-
-double Strategy_Close(const int shift)
-  {
-   return iClose(_Symbol, strategy_timeframe, shift); // perf-allowed: bounded custom Donchian/Keltner channel math in closed-bar entry hook.
-  }
-
-bool Strategy_HasWarmup()
-  {
-   if(strategy_donchian_window <= 0 ||
-      strategy_keltner_window <= 0 ||
-      strategy_keltner_atr_period <= 0 ||
-      strategy_donchian_shift < 0 ||
-      strategy_keltner_shift < 0)
-      return false;
-
-   const int donchian_need = 1 + strategy_donchian_shift + strategy_donchian_window;
-   const int keltner_need = 1 + strategy_keltner_shift + strategy_keltner_window;
-   const int needed = MathMax(strategy_min_warmup_bars, MathMax(donchian_need, keltner_need));
-   return (Bars(_Symbol, strategy_timeframe) >= needed); // perf-allowed: closed-bar warmup check for bounded custom channel math.
-  }
-
-bool Strategy_DonchianPBand(const int shift, double &out_pband)
-  {
-   out_pband = 0.0;
-   if(strategy_donchian_window <= 0)
-      return false;
-
-   double highest = -DBL_MAX;
-   double lowest = DBL_MAX;
-   for(int i = 0; i < strategy_donchian_window; ++i)
-     {
-      const int bar_shift = shift + i;
-      const double high = Strategy_High(bar_shift);
-      const double low = Strategy_Low(bar_shift);
-      if(high <= 0.0 || low <= 0.0 || high < low)
-         return false;
-      highest = MathMax(highest, high);
-      lowest = MathMin(lowest, low);
-     }
-
-   const double close = Strategy_Close(shift);
-   const double width = highest - lowest;
-   if(close <= 0.0 || width <= 0.0)
-      return false;
-
-   out_pband = (close - lowest) / width;
-   return MathIsValidNumber(out_pband);
-  }
-
-bool Strategy_KeltnerWBand(const int shift, double &out_wband)
-  {
-   out_wband = 0.0;
-   if(strategy_keltner_window <= 0)
-      return false;
-
-   double middle_sum = 0.0;
-   for(int i = 0; i < strategy_keltner_window; ++i)
-     {
-      const int bar_shift = shift + i;
-      const double high = Strategy_High(bar_shift);
-      const double low = Strategy_Low(bar_shift);
-      const double close = Strategy_Close(bar_shift);
-      if(high <= 0.0 || low <= 0.0 || close <= 0.0 || high < low)
-         return false;
-
-      middle_sum += (high + low + close) / 3.0;
-     }
-
-   const double middle = middle_sum / (double)strategy_keltner_window;
-   const double atr = QM_ATR(_Symbol, strategy_timeframe, strategy_keltner_atr_period, shift);
-   if(middle <= 0.0 || atr <= 0.0)
-      return false;
-
-   const double keltner_mult = 2.0;
-   out_wband = ((2.0 * keltner_mult * atr) / middle) * 100.0;
-   return MathIsValidNumber(out_wband) && out_wband > 0.0;
-  }
-
-bool Strategy_ChannelRatio(double &out_ratio)
-  {
-   out_ratio = 0.0;
-   if(!Strategy_HasWarmup())
-      return false;
-
-   double donchian_pband = 0.0;
-   double keltner_wband = 0.0;
-   if(!Strategy_DonchianPBand(1 + strategy_donchian_shift, donchian_pband))
-      return false;
-   if(!Strategy_KeltnerWBand(1 + strategy_keltner_shift, keltner_wband))
-      return false;
-   if(keltner_wband <= 0.0)
-      return false;
-
-   out_ratio = donchian_pband / keltner_wband;
-   return MathIsValidNumber(out_ratio);
-  }
-
-double Strategy_RoiTarget(const int elapsed_minutes)
-  {
-   if(elapsed_minutes >= strategy_roi_3_after_min)
-      return strategy_roi_3_min;
-   if(elapsed_minutes >= strategy_roi_2_after_min)
-      return strategy_roi_2_min;
-   if(elapsed_minutes >= strategy_roi_1_after_min)
-      return strategy_roi_1_min;
-   return strategy_roi_0_min;
-  }
-
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -237,8 +120,67 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(magic <= 0 || QM_TM_OpenPositionCount(magic) > 0)
       return false;
 
-   double ratio = 0.0;
-   if(!Strategy_ChannelRatio(ratio))
+   if(strategy_donchian_window <= 0 ||
+      strategy_keltner_window <= 0 ||
+      strategy_keltner_atr_period <= 0 ||
+      strategy_donchian_shift < 0 ||
+      strategy_keltner_shift < 0)
+      return false;
+
+   const int donchian_need = 1 + strategy_donchian_shift + strategy_donchian_window;
+   const int keltner_need = 1 + strategy_keltner_shift + strategy_keltner_window;
+   const int needed = MathMax(strategy_min_warmup_bars, MathMax(donchian_need, keltner_need));
+   if(Bars(_Symbol, strategy_timeframe) < needed) // perf-allowed: closed-bar warmup check for bounded custom channel math.
+      return false;
+
+   const int donchian_shift = 1 + strategy_donchian_shift;
+   double highest = -DBL_MAX;
+   double lowest = DBL_MAX;
+   for(int i = 0; i < strategy_donchian_window; ++i)
+     {
+      const int bar_shift = donchian_shift + i;
+      const double high = iHigh(_Symbol, strategy_timeframe, bar_shift); // perf-allowed: bounded closed-bar Donchian structural high.
+      const double low = iLow(_Symbol, strategy_timeframe, bar_shift); // perf-allowed: bounded closed-bar Donchian structural low.
+      if(high <= 0.0 || low <= 0.0 || high < low)
+         return false;
+      highest = MathMax(highest, high);
+      lowest = MathMin(lowest, low);
+     }
+
+   const double donchian_close = iClose(_Symbol, strategy_timeframe, donchian_shift); // perf-allowed: fixed shifted closed-bar Donchian close.
+   const double donchian_width = highest - lowest;
+   if(donchian_close <= 0.0 || donchian_width <= 0.0)
+      return false;
+
+   const double donchian_pband = (donchian_close - lowest) / donchian_width;
+   if(!MathIsValidNumber(donchian_pband))
+      return false;
+
+   const int keltner_shift = 1 + strategy_keltner_shift;
+   double middle_sum = 0.0;
+   for(int i = 0; i < strategy_keltner_window; ++i)
+     {
+      const int bar_shift = keltner_shift + i;
+      const double high = iHigh(_Symbol, strategy_timeframe, bar_shift); // perf-allowed: bounded closed-bar Keltner typical-price high.
+      const double low = iLow(_Symbol, strategy_timeframe, bar_shift); // perf-allowed: bounded closed-bar Keltner typical-price low.
+      const double close = iClose(_Symbol, strategy_timeframe, bar_shift); // perf-allowed: bounded closed-bar Keltner typical-price close.
+      if(high <= 0.0 || low <= 0.0 || close <= 0.0 || high < low)
+         return false;
+      middle_sum += (high + low + close) / 3.0;
+     }
+
+   const double middle = middle_sum / (double)strategy_keltner_window;
+   const double keltner_atr = QM_ATR(_Symbol, strategy_timeframe, strategy_keltner_atr_period, keltner_shift);
+   if(middle <= 0.0 || keltner_atr <= 0.0)
+      return false;
+
+   const double keltner_mult = 2.0;
+   const double keltner_wband = ((2.0 * keltner_mult * keltner_atr) / middle) * 100.0;
+   if(!MathIsValidNumber(keltner_wband) || keltner_wband <= 0.0)
+      return false;
+
+   const double ratio = donchian_pband / keltner_wband;
+   if(!MathIsValidNumber(ratio))
       return false;
    if(ratio < strategy_buy_div_min || ratio > strategy_buy_div_max)
       return false;
@@ -306,8 +248,16 @@ bool Strategy_ExitSignal()
          continue;
 
       const int elapsed_minutes = (int)MathMax(0.0, (double)(now - open_time) / 60.0);
+      double roi_target = strategy_roi_0_min;
+      if(elapsed_minutes >= strategy_roi_3_after_min)
+         roi_target = strategy_roi_3_min;
+      else if(elapsed_minutes >= strategy_roi_2_after_min)
+         roi_target = strategy_roi_2_min;
+      else if(elapsed_minutes >= strategy_roi_1_after_min)
+         roi_target = strategy_roi_1_min;
+
       const double roi = (bid - open_price) / open_price;
-      if(roi >= Strategy_RoiTarget(elapsed_minutes))
+      if(roi >= roi_target)
          return true;
      }
 
