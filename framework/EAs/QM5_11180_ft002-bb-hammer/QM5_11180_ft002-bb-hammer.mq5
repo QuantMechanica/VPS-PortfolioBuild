@@ -98,6 +98,8 @@ bool Strategy_ReadClosedBar(const int shift, MqlRates &bar)
   {
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
+   // perf-allowed: single closed bar for hammer detection; callers invoke this
+   // only after the framework QM_IsNewBar() gate, so it runs once per closed bar.
    const int copied = CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, shift, 1, rates);
    if(copied != 1)
       return false;
@@ -145,6 +147,8 @@ bool Strategy_ReadPSAR(const int shift, double &out_psar)
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
    const int bars_needed = MathMax(strategy_psar_warmup_bars, 30);
+   // perf-allowed: bounded PSAR warmup read; Strategy_ExitSignal gates this with
+   // QM_IsNewBar() and only runs while a position is open, so it is once per bar.
    const int copied = CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, shift, bars_needed, rates);
    if(copied < 10)
       return false;
