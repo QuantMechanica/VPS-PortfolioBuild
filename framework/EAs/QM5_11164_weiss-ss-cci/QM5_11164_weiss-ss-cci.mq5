@@ -43,64 +43,6 @@ input double          strategy_cci_short_min   = 100.0;
 input double          strategy_stop_pct        = 1.5;
 input int             strategy_max_hold_bars   = 15;
 
-bool Strategy_SelectOurPosition(ulong &ticket, ENUM_POSITION_TYPE &ptype, datetime &open_time)
-  {
-   ticket = 0;
-   ptype = POSITION_TYPE_BUY;
-   open_time = 0;
-
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong t = PositionGetTicket(i);
-      if(t == 0 || !PositionSelectByTicket(t))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      ticket = t;
-      ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      open_time = (datetime)PositionGetInteger(POSITION_TIME);
-      return true;
-     }
-
-   return false;
-  }
-
-bool Strategy_HasOurPosition()
-  {
-   ulong ticket = 0;
-   ENUM_POSITION_TYPE ptype = POSITION_TYPE_BUY;
-   datetime open_time = 0;
-   return Strategy_SelectOurPosition(ticket, ptype, open_time);
-  }
-
-bool Strategy_CrossBelow(const double prior, const double current, const double level)
-  {
-   return (prior >= level && current < level);
-  }
-
-bool Strategy_CrossAbove(const double prior, const double current, const double level)
-  {
-   return (prior <= level && current > level);
-  }
-
-bool Strategy_StopDistanceAllowed(const double entry, const double sl)
-  {
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(entry <= 0.0 || sl <= 0.0 || point <= 0.0)
-      return false;
-
-   const double sl_points = MathAbs(entry - sl) / point;
-   const int min_stop_points = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
-   return (sl_points > 0.0 && sl_points >= (double)min_stop_points);
-  }
-
 bool Strategy_NoTradeFilter()
   {
    return false;
@@ -116,8 +58,21 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(Strategy_HasOurPosition())
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
       return false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+         return false;
+     }
+
    if(strategy_stoch_k_period < 1 || strategy_stoch_d_period < 1 || strategy_stoch_slowing < 1 ||
       strategy_cci_period < 1 || strategy_stop_pct <= 0.0)
       return false;
@@ -136,9 +91,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(k1 == EMPTY_VALUE || k2 == EMPTY_VALUE || cci1 == EMPTY_VALUE)
       return false;
 
-   const bool long_signal = Strategy_CrossBelow(k2, k1, strategy_long_entry_k) &&
+   const bool long_signal = (k2 >= strategy_long_entry_k && k1 < strategy_long_entry_k) &&
                             cci1 < strategy_cci_long_max;
-   const bool short_signal = Strategy_CrossAbove(k2, k1, strategy_short_entry_k) &&
+   const bool short_signal = (k2 <= strategy_short_entry_k && k1 > strategy_short_entry_k) &&
                              cci1 > strategy_cci_short_min;
    if(!long_signal && !short_signal)
       return false;
@@ -153,7 +108,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    const double sl = long_signal ? entry * (1.0 - stop_mult)
                                  : entry * (1.0 + stop_mult);
-   if(!Strategy_StopDistanceAllowed(entry, sl))
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(point <= 0.0)
+      return false;
+
+   const double sl_points = MathAbs(entry - sl) / point;
+   const int min_stop_points = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
+   if(sl_points <= 0.0 || sl_points < (double)min_stop_points)
       return false;
 
    req.type = long_signal ? QM_BUY : QM_SELL;
@@ -171,10 +132,31 @@ void Strategy_ManageOpenPosition()
 
 bool Strategy_ExitSignal()
   {
-   ulong ticket = 0;
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   bool has_position = false;
    ENUM_POSITION_TYPE ptype = POSITION_TYPE_BUY;
    datetime open_time = 0;
-   if(!Strategy_SelectOurPosition(ticket, ptype, open_time))
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      open_time = (datetime)PositionGetInteger(POSITION_TIME);
+      has_position = true;
+      break;
+     }
+
+   if(!has_position)
       return false;
 
    const double k1 = QM_Stoch_K(_Symbol, strategy_timeframe,
@@ -189,9 +171,9 @@ bool Strategy_ExitSignal()
                                 2);
    if(k1 != EMPTY_VALUE && k2 != EMPTY_VALUE)
      {
-      if(ptype == POSITION_TYPE_BUY && Strategy_CrossAbove(k2, k1, strategy_long_exit_k))
+      if(ptype == POSITION_TYPE_BUY && k2 <= strategy_long_exit_k && k1 > strategy_long_exit_k)
          return true;
-      if(ptype == POSITION_TYPE_SELL && Strategy_CrossBelow(k2, k1, strategy_short_exit_k))
+      if(ptype == POSITION_TYPE_SELL && k2 >= strategy_short_exit_k && k1 < strategy_short_exit_k)
          return true;
      }
 
