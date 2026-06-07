@@ -1,0 +1,52 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11163
+; ea_slug:      weiss-bb-adx
+; ea_version:   v5.0
+; set_version:  s20260607-001
+; symbol:       EURCHF.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   55a031f4c6692ab14baa17fbbf49f9c15444a7a3329b3ecd68f896b24eab95f2
+; author:       Development
+; date:         2026-06-07
+;==========================================================
+qm_magic_slot_offset=2
+qm_ea_id=11163
+qm_rng_seed=42
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=3
+qm_news_compliance=1
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=1
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+; core filter library params; filter-on/off variants must be pre-declared
+qm_filter_news_enabled=1
+qm_filter_news_mode=3
+qm_filter_regime_enabled=0
+qm_filter_regime_lookback_bars=100
+qm_filter_regime_bull_return_pct=2.0
+qm_filter_regime_bear_return_pct=2.0
+qm_filter_volatility_enabled=0
+qm_filter_volatility_atr_period=14
+qm_filter_volatility_lookback_bars=50
+qm_filter_volatility_compression_ratio=0.75
+qm_filter_volatility_expansion_ratio=1.25
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=not_found
+strategy_bb_period=20
+strategy_bb_deviation=2.0
+strategy_adx_period=9
+strategy_adx_max=20.0
+strategy_profit_pct=0.0125
+strategy_source_parity_pct=0.0250
+strategy_use_source_parity_pct=1
+strategy_max_spread_points=500
