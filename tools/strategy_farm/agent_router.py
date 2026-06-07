@@ -76,7 +76,7 @@ DEFAULT_AGENT_REGISTRY: dict[str, dict[str, Any]] = {
     "claude": {
         "enabled": True,
         "capabilities": ["code", "research", "review", "strategy", "summary"],
-        "max_parallel": 5,
+        "max_parallel": 2,  # OWNER 2026-06-07: token-reduction 5->2 (moderate throttle)
         "cost_rank": 30,
     },
     "gemini": {

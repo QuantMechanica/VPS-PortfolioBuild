@@ -30,16 +30,16 @@ if (-not (Test-Path -LiteralPath $wrapper)) {
 # codex would need 5 separate Codex OAuth logins, which we do not have. Codex
 # throughput comes from the pump's build dispatch + router, not parallel
 # orchestration sessions. DO NOT raise without per-session auth isolation.
+# EveryMinutes is per-agent (OWNER 2026-06-07 token-reduction): codex cadence
+# halved 15->30; claude max-sessions 5->2. (Task names keep the legacy "_15min"
+# suffix to avoid churn; the real interval is the EveryMinutes field below.)
 $definitions = @(
-    @{ Name = "QM_StrategyFarm_CodexOrchestration_15min"; Agent = "codex"; MaxSessions = 1 },
-    @{ Name = "QM_StrategyFarm_GeminiOrchestration_15min"; Agent = "gemini"; MaxSessions = 1 },
-    @{ Name = "QM_StrategyFarm_ClaudeOrchestration_15min"; Agent = "claude"; MaxSessions = 5 }
+    @{ Name = "QM_StrategyFarm_CodexOrchestration_15min"; Agent = "codex"; MaxSessions = 1; EveryMinutes = 30 },
+    @{ Name = "QM_StrategyFarm_GeminiOrchestration_15min"; Agent = "gemini"; MaxSessions = 1; EveryMinutes = 15 },
+    @{ Name = "QM_StrategyFarm_ClaudeOrchestration_15min"; Agent = "claude"; MaxSessions = 2; EveryMinutes = 15 }
 )
 
 $startBoundary = (Get-Date).Date
-$trigger = New-ScheduledTaskTrigger -Once -At $startBoundary `
-    -RepetitionInterval (New-TimeSpan -Minutes $EveryMinutes) `
-    -RepetitionDuration (New-TimeSpan -Days 3650)
 
 $settings = New-ScheduledTaskSettingsSet `
     -AllowStartIfOnBatteries `
@@ -55,6 +55,10 @@ foreach ($definition in $definitions) {
     $taskName = [string]$definition.Name
     $agent = [string]$definition.Agent
     $maxSessions = [int]$definition.MaxSessions
+    $everyMin = if ($definition.EveryMinutes) { [int]$definition.EveryMinutes } else { [int]$EveryMinutes }
+    $trigger = New-ScheduledTaskTrigger -Once -At $startBoundary `
+        -RepetitionInterval (New-TimeSpan -Minutes $everyMin) `
+        -RepetitionDuration (New-TimeSpan -Days 3650)
     $arguments = "`"$wrapper`" --agent $agent --max-sessions $maxSessions"
     $action = New-ScheduledTaskAction `
         -Execute $PythonwExe `

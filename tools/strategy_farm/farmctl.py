@@ -98,8 +98,8 @@ BUILD_BACKPRESSURE_PENDING_SOFT_LIMIT = 8000  # OWNER 2026-06-05 today-boost: ke
 BUILD_BACKPRESSURE_PENDING_HARD_LIMIT = 10000  # OWNER 2026-06-05 today-boost: 5000->10000
 BUILD_BACKPRESSURE_ACTIVE_WORK_ITEM_LIMIT = 7
 MAX_AUTO_CREATED_BUILDS_PER_PUMP = 1
-MAX_PARALLEL_CLAUDE = 6  # OWNER 2026-06-05: today-boost (no restrictions, build parallelism >3 <10); revert to 3 after
-MAX_PARALLEL_CLAUDE_BUILDS = 3  # OWNER 2026-06-05: today-boost 1->3 so Claude builds cards in parallel with Codex (total codex3+claude<=6 builds, <10)
+MAX_PARALLEL_CLAUDE = 3  # OWNER 2026-06-07: token-reduction, 6->3 (reverts the 06-05 today-boost)
+MAX_PARALLEL_CLAUDE_BUILDS = 1  # OWNER 2026-06-07: token-reduction, 3->1 (reverts the 06-05 boost; Claude builds 1 at a time, Codex carries bulk builds)
 DIRTY_REPO_BUILD_GUARD_ENV = "QM_ALLOW_DIRTY_REPO_BUILDS"
 DIRTY_REPO_GUARD_DETAIL_LIMIT = 20
 ZERO_TRADE_DEAD_THRESHOLD = 0.80
