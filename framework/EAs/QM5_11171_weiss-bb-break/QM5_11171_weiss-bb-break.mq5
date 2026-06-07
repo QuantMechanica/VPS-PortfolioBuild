@@ -79,22 +79,6 @@ input double strategy_bb_deviation      = 2.0;
 input int    strategy_atr_period        = 20;
 input double strategy_atr_stop_mult     = 3.0;
 
-double Strategy_CatastrophicStop(const QM_OrderType side, const double entry)
-  {
-   if(entry <= 0.0 || strategy_atr_period <= 0 || strategy_atr_stop_mult <= 0.0)
-      return 0.0;
-
-   const double atr = QM_ATR(_Symbol, PERIOD_CURRENT, strategy_atr_period, 1);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(atr <= 0.0 || point <= 0.0)
-      return 0.0;
-
-   const int stop_level_points = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
-   const double min_distance = MathMax((double)stop_level_points * point, point);
-   const double atr_for_stop = MathMax(atr, min_distance / strategy_atr_stop_mult);
-   return QM_StopATRFromValue(_Symbol, side, entry, atr_for_stop, strategy_atr_stop_mult);
-  }
-
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -123,25 +107,35 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(strategy_bb_period <= 1 || strategy_bb_deviation <= 0.0)
       return false;
 
-   const int bb_pierce = QM_Sig_BB_MeanRev(_Symbol, PERIOD_CURRENT,
+   const double atr = QM_ATR(_Symbol, PERIOD_CURRENT, strategy_atr_period, 1);
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(atr <= 0.0 || point <= 0.0 || strategy_atr_stop_mult <= 0.0)
+      return false;
+
+   const int stop_level_points = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
+   const double min_distance = MathMax((double)stop_level_points * point, point);
+   const double atr_for_stop = MathMax(atr, min_distance / strategy_atr_stop_mult);
+
+   // The signal helper returns -1 above the upper band and +1 below the lower band.
+   const int bb_break = QM_Sig_BB_MeanRev(_Symbol, PERIOD_CURRENT,
                                            strategy_bb_period,
                                            strategy_bb_deviation,
                                            1);
 
-   if(bb_pierce < 0)
+   if(bb_break < 0)
      {
       req.type = QM_BUY;
       req.price = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      req.sl = Strategy_CatastrophicStop(req.type, req.price);
+      req.sl = QM_StopATRFromValue(_Symbol, req.type, req.price, atr_for_stop, strategy_atr_stop_mult);
       req.reason = "WEISSMAN_BB_BREAK_LONG";
       return (req.price > 0.0 && req.sl > 0.0);
      }
 
-   if(bb_pierce > 0)
+   if(bb_break > 0)
      {
       req.type = QM_SELL;
       req.price = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      req.sl = Strategy_CatastrophicStop(req.type, req.price);
+      req.sl = QM_StopATRFromValue(_Symbol, req.type, req.price, atr_for_stop, strategy_atr_stop_mult);
       req.reason = "WEISSMAN_BB_BREAK_SHORT";
       return (req.price > 0.0 && req.sl > 0.0);
      }
