@@ -6353,3 +6353,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11090,ma-mtf-align,1,GBPUSD.DWX,110900001,2026-06-07,Development,active
 11090,ma-mtf-align,2,USDJPY.DWX,110900002,2026-06-07,Development,active
 11090,ma-mtf-align,3,XAUUSD.DWX,110900003,2026-06-07,Development,active
+11091,stoch-mtf-state,0,EURUSD.DWX,110910000,2026-06-07,Development,active
+11091,stoch-mtf-state,1,GBPUSD.DWX,110910001,2026-06-07,Development,active
+11091,stoch-mtf-state,2,USDJPY.DWX,110910002,2026-06-07,Development,active
+11091,stoch-mtf-state,3,XAUUSD.DWX,110910003,2026-06-07,Development,active
