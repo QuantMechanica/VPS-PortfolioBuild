@@ -1577,6 +1577,7 @@ EA_DETAIL_CSS = """
 .wi-table .report-link{font-family:var(--font-mono);font-size:10px;color:var(--live);text-decoration:none;letter-spacing:0.1em;text-transform:uppercase;font-weight:600}
 .wi-table .report-link:hover{text-decoration:underline}
 .wi-table .net-zero{color:var(--text-3)}
+.wi-table .net-nodata,.fold-table .net-nodata{color:var(--text-3);opacity:.55}
 """
 
 
@@ -2502,6 +2503,39 @@ def collect_ea_detail(ea_id: str, root: Path) -> dict[str, Any]:
                                 item["fold_criterion"] = ej.get("criterion") or ""
                     except Exception:
                         pass
+            # Q04 walk-forward (current pipeline). Schema differs from legacy P4:
+            # each fold has id / dev_* / oos_* / pf_net (net-of-commission OOS
+            # profit factor) / trades. This is THE walk-forward view — a fold with
+            # pf_net < 1 (or 0.0) is the EA failing out-of-sample, which is the
+            # usual Q04 death. Normalise to the fold-table fields. (The old code
+            # keyed on "P4", which never matches live Qxx rows → WF was invisible.)
+            if w.get("phase") == "Q04":
+                ev = w.get("evidence_path")
+                if ev:
+                    try:
+                        ep = Path(ev)
+                        if ep.exists() and ep.suffix == ".json":
+                            ej = json.loads(ep.read_text(encoding="utf-8", errors="ignore"))
+                            raw_folds = ej.get("folds") or []
+                            norm = []
+                            for f in raw_folds:
+                                norm.append({
+                                    "fold_id": f.get("id"),
+                                    "dev_start": f.get("dev_start"),
+                                    "dev_end": f.get("dev_end"),
+                                    "oos_start": f.get("oos_start"),
+                                    "oos_end": f.get("oos_end"),
+                                    "oos_trades": f.get("trades"),
+                                    "pf_net": f.get("pf_net"),
+                                    "fold_status": f.get("status")
+                                    or ("ok" if f.get("exit_code") == 0 else "fail"),
+                                })
+                            if norm:
+                                item["folds"] = norm
+                                item["fold_kind"] = "q04_wf"
+                                item["fold_criterion"] = qxx_text(str(ej.get("reason") or ""))
+                    except Exception:
+                        pass
             # Q06 / Q07 / Q08 evidence — stress / calibrated-noise / crisis-slice
             # (OWNER call 2026-05-23). Each phase has its own JSON / CSV shape.
             if w.get("phase") == "P5":
@@ -2625,6 +2659,7 @@ def collect_ea_detail(ea_id: str, root: Path) -> dict[str, Any]:
                 "n_pass": verdicts.count("PASS"),
                 "n_fail": verdicts.count("FAIL"),
                 "n_invalid": verdicts.count("INVALID"),
+                "n_infra": verdicts.count("INFRA_FAIL"),
                 "net_profit_mean": (sum(nets) / len(nets)) if nets else None,
                 "net_profit_best": max(nets) if nets else None,
                 "net_profit_worst": min(nets) if nets else None,
@@ -2724,8 +2759,14 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
     for w in work_items:
         items_by_phase[w["phase"]].append(w)
     present_phases = [p for p in PHASE_ORDER if p in items_by_phase]
+    # A phase counts as "passed" if ANY symbol ever passed it — not just if the
+    # LATEST re-run is PASS. Otherwise the header ("Highest real PASS Q06")
+    # contradicts the expandable tables, which show "ever PASS 5/7" at Q07 where
+    # a later re-run happened to FAIL. ever-pass is the same signal the cascade
+    # used to promote the EA forward, so it is the honest "how far did it get".
     pass_phases = [p for p in present_phases
-                   if any(x.get("verdict") == "PASS" for x in items_by_phase[p])]
+                   if any(x.get("verdict") == "PASS" or (x.get("n_ever_pass") or 0) > 0
+                          for x in items_by_phase[p])]
     highest_pass = pass_phases[-1] if pass_phases else None
     most_advanced = present_phases[-1] if present_phases else None
     cur_phase = ea.get("current_phase") or "—"
@@ -2815,7 +2856,7 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
   <div class="kpi-tile">
     <div class="kpi-tile-label">Most-advanced phase</div>
     <div class="kpi-tile-val">{e(phase_label(advanced))}</div>
-    <div class="kpi-tile-sub">{k['n_pass']} PASS · {k['n_fail']} FAIL · {k.get('n_invalid', 0)} INVALID</div>
+    <div class="kpi-tile-sub">{k['n_pass']} PASS · {k['n_fail']} FAIL · {k.get('n_invalid', 0)} INVALID{f" · {k['n_infra']} INFRA_FAIL" if k.get('n_infra') else ""}</div>
   </div>
   <div class="kpi-tile">
     <div class="kpi-tile-label">Symbols Tested</div>
@@ -2875,11 +2916,21 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
         if n_pass and n_pass_profitable < n_pass:
             pass_qualifier = (f' <span style="color:var(--text-3)">'
                               f'({n_pass_profitable}/{n_pass} profitable)</span>')
+        # ever-pass at phase level: a phase header saying "no PASS" while the
+        # expandable rows show "ever PASS 7/52" (a later re-run FAILed) reads as a
+        # contradiction. Surface the historical passes that actually cascaded.
+        n_ever_pass_phase = sum(x.get("n_ever_pass") or 0 for x in items)
+        ever_note = ""
+        if not n_pass and n_ever_pass_phase:
+            ever_note = (f' <span style="color:var(--text-3)">'
+                         f'({n_ever_pass_phase} ever-passed → cascaded; latest re-run FAIL)</span>')
         if nets:
             kpi_html = (f'best net <strong>{e(fmt_dollar(max(nets)))}</strong>'
                         f'{pass_qualifier}')
         elif n_pass:
             kpi_html = f'<strong>{n_pass} PASS</strong>{pass_qualifier}'
+        elif n_ever_pass_phase:
+            kpi_html = f'<strong>no current PASS</strong>{ever_note}'
         else:
             kpi_html = '<strong>no PASS</strong>'
 
@@ -2910,23 +2961,31 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
             verd = w.get("verdict") or "—"
             v_cls = {"PASS": "v-pass", "FAIL": "v-fail", "INVALID": "v-invalid",
                      "COMPLETED": "v-completed"}.get(verd, "v-pending")
-            # Numeric-cell convention (OWNER call 2026-05-23):
-            #   - If real number present (PASS or FAIL with parsed report): show it
-            #   - If no data (INVALID infra-fail, no report.htm): show 0/$0.00
-            #   "—" placeholders removed — they read as "no information" but the
-            #   semantic is "no run happened → effectively zero outcomes".
-            #   The verdict cell still shows INVALID so context is preserved.
+            # Numeric-cell convention (REVISED 2026-06-07, OWNER): missing data
+            # must read as "no evidence" (—), NOT as a real 0. The prior
+            # $0.00/0/0.00 convention made an infra-fail or unparsed-report row
+            # look like a genuine zero-trade result — e.g. "PASS · 0 trades ·
+            # PF 0.00", which is nonsense and exactly what confused the operator.
+            # A number is shown ONLY when it actually exists; otherwise "—".
+            NODATA = '<span class="net-nodata" title="no parsed evidence for this run">—</span>'
+            # A failed / invalid run's parsed numbers are not trustworthy: the
+            # German-locale + infra failures wrote total_trades=0 / net=0 into the
+            # summary because the *parse* failed, not because the EA traded zero.
+            # Showing those 0s next to a verdict produced "PASS · 0 trades · PF 0"
+            # nonsense. Gate every metric on the verdict: only a real graded run
+            # (not INFRA_FAIL / INVALID) may show numbers; otherwise "—".
+            metrics_ok = verd not in ("INFRA_FAIL", "INVALID", "—") and w.get("status") != "failed"
             np_ = w.get("net_profit")
-            if isinstance(np_, (int, float)):
+            if metrics_ok and isinstance(np_, (int, float)):
                 np_html = f'<span class="{"net-pos" if np_ > 0 else "net-neg"}">{fmt_dollar(np_)}</span>'
             else:
-                np_html = '<span class="net-zero">$0.00</span>'
-            tr_html = str(int(w["trades"])) if isinstance(w.get("trades"), (int, float)) else "0"
-            dd_html = fmt_dollar(w.get("drawdown")) if isinstance(w.get("drawdown"), (int, float)) else "$0.00"
+                np_html = NODATA
+            tr_html = str(int(w["trades"])) if metrics_ok and isinstance(w.get("trades"), (int, float)) else NODATA
+            dd_html = fmt_dollar(w.get("drawdown")) if metrics_ok and isinstance(w.get("drawdown"), (int, float)) else NODATA
             pf_v = w.get("profit_factor")
-            pf_html = f"{pf_v:.2f}" if isinstance(pf_v, (int, float)) else "0.00"
+            pf_html = f"{pf_v:.2f}" if metrics_ok and isinstance(pf_v, (int, float)) else NODATA
             sh_v = w.get("sharpe")
-            sh_html = f"{sh_v:.2f}" if isinstance(sh_v, (int, float)) else "0.00"
+            sh_html = f"{sh_v:.2f}" if metrics_ok and isinstance(sh_v, (int, float)) else NODATA
             spark = equity_svg(w.get("deals") or [], width=180, height=44, net_profit=np_ if isinstance(np_, (int, float)) else None)
             report_link = ""
             if w.get("report_htm"):
@@ -3045,7 +3104,52 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
                 # Q05 fold table — rendered above the attempt timeline when
                 # the latest run has parsed walk-forward folds.
                 fold_block_html = ""
-                if folds_for_row:
+                if folds_for_row and w.get("fold_kind") == "q04_wf":
+                    # Q04 walk-forward: per-fold out-of-sample PROFIT FACTOR (net of
+                    # commission). PF_net < 1.0 = the EA loses money out-of-sample
+                    # in that fold → the gate fails. This is the answer to "how does
+                    # walk-forward show": one row per OOS window, pass/fail by PF.
+                    fold_rows = []
+                    for f in folds_for_row:
+                        fid = f.get("fold_id") or "?"
+                        dev = f"{(f.get('dev_start') or '?')[:10]} → {(f.get('dev_end') or '?')[:10]}"
+                        oos = f"{(f.get('oos_start') or '?')[:10]} → {(f.get('oos_end') or '?')[:10]}"
+                        pf = f.get("pf_net")
+                        if isinstance(pf, (int, float)):
+                            pf_cls = "net-pos" if pf >= 1.0 else "net-neg"
+                            pf_html = f'<span class="{pf_cls}">{pf:.2f}</span>'
+                        else:
+                            pf_html = '<span class="net-nodata">—</span>'
+                        trd = f.get("oos_trades")
+                        trd_html = str(int(trd)) if isinstance(trd, (int, float)) else '<span class="net-nodata">—</span>'
+                        ok = isinstance(pf, (int, float)) and pf >= 1.0
+                        ok_html = (f'<span class="clean-yes">✓</span>' if ok
+                                   else f'<span class="clean-no">✗</span>')
+                        fold_rows.append(
+                            f'<tr><td class="fold-id">{e(fid)}</td>'
+                            f'<td>{e(dev)}</td>'
+                            f'<td>{e(oos)}</td>'
+                            f'<td class="col-num">{trd_html}</td>'
+                            f'<td class="col-num">{pf_html}</td>'
+                            f'<td>{ok_html}</td></tr>'
+                        )
+                    crit = w.get("fold_criterion") or ""
+                    crit_html = (f'<div class="fold-criterion">{e(crit)}</div>'
+                                 if crit else "")
+                    fold_block_html = (
+                        f'<div class="fold-block">'
+                        f'<div class="att-title">Walk-forward · {e(w["symbol"])} · {len(folds_for_row)} OOS folds '
+                        f'(PF net-of-commission; ✓ = PF ≥ 1.0)</div>'
+                        f'{crit_html}'
+                        f'<table class="fold-table"><thead><tr>'
+                        f'<th>Fold</th><th>DEV window</th><th>OOS window</th>'
+                        f'<th class="col-num">OOS Trades</th>'
+                        f'<th class="col-num">OOS PF (net)</th>'
+                        f'<th>Pass</th>'
+                        f'</tr></thead><tbody>{"".join(fold_rows)}</tbody></table>'
+                        f'</div>'
+                    )
+                elif folds_for_row:
                     fold_rows = []
                     for f in folds_for_row:
                         fid = f.get("fold_id") or "?"
@@ -3347,7 +3451,7 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
   </div>
   <div class="detail-meta">
     <span>Current <strong>{e(phase_label(cur_phase) if cur_phase != '—' else '—')}</strong></span>
-    <span>Done <strong>{e(', '.join(phase_label(p) for p in (ea.get('completed_phases') or [])) or '—')}</strong></span>
+    <span>Done <strong>{e(', '.join(sorted({phase_label(p) for p in (ea.get('completed_phases') or [])}, key=lambda q: PHASE_ORDER.index(q) if q in PHASE_ORDER else 99)) or '—')}</strong></span>
     <span>Updated {e(ev_ts)}</span>
     <span>Tasks <strong>{ea.get('task_count', 0)}</strong></span>
     <span>Symbols <strong>{len(detail.get('symbols') or [])}</strong></span>
