@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11079 CCI Zero Cross"
+#property description "QM5_11080 BB-MACD Flip"
 
 #include <QM/QM_Common.mqh>
 
@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 11079;
+input int    qm_ea_id                   = 11080;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -73,29 +73,96 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_cci_period        = 14;
+input int    strategy_fast_ema          = 12;
+input int    strategy_slow_ema          = 26;
+input int    strategy_bb_length         = 10;
+input double strategy_bb_stdev_mult     = 2.5;
+input bool   strategy_stricter_zero     = false;
 input int    strategy_atr_period        = 14;
 input double strategy_atr_sl_mult       = 2.5;
+input bool   strategy_use_take_profit   = false;
 input double strategy_atr_tp_mult       = 3.5;
 
-int Strategy_CciZeroCrossSignal()
+// -----------------------------------------------------------------------------
+// Strategy hooks — implement these against the card mechanically.
+// -----------------------------------------------------------------------------
+
+double Strategy_BBMacdValue(const int shift)
   {
-   if(strategy_cci_period <= 1)
-      return 0;
+   const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
+   return QM_EMA(_Symbol, tf, strategy_fast_ema, shift, PRICE_CLOSE) -
+          QM_EMA(_Symbol, tf, strategy_slow_ema, shift, PRICE_CLOSE);
+  }
 
-   const double cci_closed = QM_CCI(_Symbol, PERIOD_CURRENT, strategy_cci_period, 1, PRICE_CLOSE);
-   const double cci_prev = QM_CCI(_Symbol, PERIOD_CURRENT, strategy_cci_period, 2, PRICE_CLOSE);
-   if(cci_closed == EMPTY_VALUE || cci_prev == EMPTY_VALUE)
-      return 0;
+bool Strategy_BBMacdBands(const int shift,
+                          double &value,
+                          double &avg,
+                          double &upper,
+                          double &lower)
+  {
+   value = 0.0;
+   avg = 0.0;
+   upper = 0.0;
+   lower = 0.0;
 
-   if(cci_closed > 0.0 && cci_prev < 0.0)
+   if(strategy_fast_ema <= 0 || strategy_slow_ema <= strategy_fast_ema)
+      return false;
+   if(strategy_bb_length <= 1 || strategy_bb_length > 100 || strategy_bb_stdev_mult <= 0.0)
+      return false;
+
+   const double alpha = 2.0 / (1.0 + (double)strategy_bb_length);
+   avg = Strategy_BBMacdValue(shift + strategy_bb_length - 1);
+   for(int i = strategy_bb_length - 2; i >= 0; --i)
+     {
+      const double sample = Strategy_BBMacdValue(shift + i);
+      avg = sample * alpha + avg * (1.0 - alpha);
+     }
+
+   value = Strategy_BBMacdValue(shift);
+   double var_sum = 0.0;
+   for(int i = 0; i < strategy_bb_length; ++i)
+     {
+      const double diff = Strategy_BBMacdValue(shift + i) - avg;
+      var_sum += diff * diff;
+     }
+
+   const double stdev = MathSqrt(var_sum / (double)strategy_bb_length);
+   upper = avg + strategy_bb_stdev_mult * stdev;
+   lower = avg - strategy_bb_stdev_mult * stdev;
+   return (upper > lower);
+  }
+
+int Strategy_BBMacdColor(const int shift)
+  {
+   const double current = Strategy_BBMacdValue(shift);
+   const double previous = Strategy_BBMacdValue(shift + 1);
+   if(current > previous)
       return 1;
-   if(cci_closed < 0.0 && cci_prev > 0.0)
+   if(current < previous)
       return -1;
    return 0;
   }
 
-bool Strategy_SelectOurPosition(ENUM_POSITION_TYPE &position_type)
+int Strategy_FlipSignal()
+  {
+   const int color_now = Strategy_BBMacdColor(1);
+   const int color_prev = Strategy_BBMacdColor(2);
+   if(color_now == 0 || color_prev == 0 || color_now == color_prev)
+      return 0;
+
+   const double value_now = Strategy_BBMacdValue(1);
+   if(strategy_stricter_zero)
+     {
+      if(color_now > 0 && value_now <= 0.0)
+         return 0;
+      if(color_now < 0 && value_now >= 0.0)
+         return 0;
+     }
+
+   return color_now;
+  }
+
+bool Strategy_GetOurPosition(ENUM_POSITION_TYPE &position_type)
   {
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
@@ -118,19 +185,16 @@ bool Strategy_SelectOurPosition(ENUM_POSITION_TYPE &position_type)
    return false;
   }
 
-// -----------------------------------------------------------------------------
-// Strategy hooks — implement these against the card mechanically.
-// -----------------------------------------------------------------------------
-
-// No Trade Filter (time, spread, news): central framework handles spread/news
-// defaults; the card adds no extra session or regime block.
+// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
+// regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   // Card adds no strategy-specific no-trade rule beyond V5 defaults.
    return false;
   }
 
-// Trade Entry: CCI(14) close-applied zero-line cross on the latest completed H1 bar.
+// Populate `req` with entry order parameters and return TRUE if a NEW entry
+// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
+// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    req.type = QM_BUY;
@@ -141,65 +205,71 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
+   ENUM_POSITION_TYPE position_type;
+   if(Strategy_GetOurPosition(position_type))
       return false;
 
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0 || QM_TM_OpenPositionCount(magic) > 0)
+   double bb_value = 0.0;
+   double bb_avg = 0.0;
+   double bb_upper = 0.0;
+   double bb_lower = 0.0;
+   if(!Strategy_BBMacdBands(1, bb_value, bb_avg, bb_upper, bb_lower))
       return false;
 
-   const int signal = Strategy_CciZeroCrossSignal();
+   const int signal = Strategy_FlipSignal();
    if(signal == 0)
       return false;
 
-   const QM_OrderType side = (signal > 0) ? QM_BUY : QM_SELL;
-   const double entry = QM_EntryMarketPrice(side);
-   if(entry <= 0.0)
+   req.type = (signal > 0) ? QM_BUY : QM_SELL;
+   req.price = 0.0;
+
+   const double entry = (req.type == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
+                                             : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(entry <= 0.0 || strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
       return false;
 
-   const double atr = QM_ATR(_Symbol, PERIOD_CURRENT, strategy_atr_period, 1);
-   if(atr <= 0.0)
+   req.sl = QM_StopATR(_Symbol, req.type, entry, strategy_atr_period, strategy_atr_sl_mult);
+   if(req.sl <= 0.0)
       return false;
 
-   const double sl = QM_StopATRFromValue(_Symbol, side, entry, atr, strategy_atr_sl_mult);
-   if(sl <= 0.0)
-      return false;
+   if(strategy_use_take_profit)
+     {
+      const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
+      if(atr <= 0.0 || strategy_atr_tp_mult <= 0.0)
+         return false;
+      req.tp = QM_StopRulesTakeFromDistance(_Symbol, req.type, entry, atr * strategy_atr_tp_mult);
+     }
 
-   double tp = 0.0;
-   if(strategy_atr_tp_mult > 0.0)
-      tp = QM_TakeATR(_Symbol, side, entry, strategy_atr_period, strategy_atr_tp_mult);
-
-   req.type = side;
-   req.price = entry;
-   req.sl = sl;
-   req.tp = tp;
-   req.reason = (signal > 0) ? "CCI_ZERO_CROSS_LONG" : "CCI_ZERO_CROSS_SHORT";
+   req.reason = (signal > 0) ? "BB_MACD_FLIP_LONG" : "BB_MACD_FLIP_SHORT";
    return true;
   }
 
-// Trade Management: no trailing, break-even, partial close, or pyramiding in card.
+// Called every tick when an open position exists for this EA's magic.
+// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies no trailing, break-even, partial close, or pyramiding.
+   // Card baseline has no trailing, break-even, or partial-close rule.
   }
 
-// Trade Close: close on the next opposite CCI zero-line cross.
+// Return TRUE to close the open position now (e.g. opposite-signal exit,
+// max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   ENUM_POSITION_TYPE position_type = POSITION_TYPE_BUY;
-   if(!Strategy_SelectOurPosition(position_type))
+   ENUM_POSITION_TYPE position_type;
+   if(!Strategy_GetOurPosition(position_type))
       return false;
 
-   const int signal = Strategy_CciZeroCrossSignal();
-   if(position_type == POSITION_TYPE_BUY)
-      return (signal < 0);
-   if(position_type == POSITION_TYPE_SELL)
-      return (signal > 0);
-
+   const int signal = Strategy_FlipSignal();
+   if(position_type == POSITION_TYPE_BUY && signal < 0)
+      return true;
+   if(position_type == POSITION_TYPE_SELL && signal > 0)
+      return true;
    return false;
   }
 
-// News Filter Hook: no card-specific override; central framework news mode applies.
+// Optional news-filter override. Return TRUE to suppress trading regardless
+// of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
+// custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false; // defer to QM_NewsAllowsTrade(...)
