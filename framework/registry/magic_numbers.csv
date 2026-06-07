@@ -6393,3 +6393,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11109,bb-mtf-reentry,1,GBPUSD.DWX,111090001,2026-06-07,Development,active
 11109,bb-mtf-reentry,2,USDJPY.DWX,111090002,2026-06-07,Development,active
 11109,bb-mtf-reentry,3,XAUUSD.DWX,111090003,2026-06-07,Development,active
+11110,macd-alert-cross,0,EURUSD.DWX,111100000,2026-06-07,Development,active
+11110,macd-alert-cross,1,GBPUSD.DWX,111100001,2026-06-07,Development,active
+11110,macd-alert-cross,2,USDJPY.DWX,111100002,2026-06-07,Development,active
+11110,macd-alert-cross,3,XAUUSD.DWX,111100003,2026-06-07,Development,active
