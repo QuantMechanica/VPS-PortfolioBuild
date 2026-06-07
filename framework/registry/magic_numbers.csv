@@ -6484,3 +6484,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11143,vbt-dmac,2,USDJPY.DWX,111430002,2026-06-07,Development,active
 11143,vbt-dmac,3,XAUUSD.DWX,111430003,2026-06-07,Development,active
 11143,vbt-dmac,4,GDAXI.DWX,111430004,2026-06-07,Development,active
+11144,vbt-macd-zero,0,EURUSD.DWX,111440000,2026-06-07,Development,active
+11144,vbt-macd-zero,1,GBPUSD.DWX,111440001,2026-06-07,Development,active
+11144,vbt-macd-zero,2,USDJPY.DWX,111440002,2026-06-07,Development,active
+11144,vbt-macd-zero,3,XAUUSD.DWX,111440003,2026-06-07,Development,active
+11144,vbt-macd-zero,4,NDX.DWX,111440004,2026-06-07,Development,active
