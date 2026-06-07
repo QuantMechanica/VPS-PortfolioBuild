@@ -287,6 +287,9 @@ bool Strategy_ExitSignal()
       return false;
 
    const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
+   if(!QM_IsNewBar(_Symbol, tf))
+      return false;
+
    const double ema_fast_1 = QM_EMA(_Symbol, tf, strategy_ema_fast, 1);
    const double ema_mid_1 = QM_EMA(_Symbol, tf, strategy_ema_mid, 1);
    const double ema_mid_2 = QM_EMA(_Symbol, tf, strategy_ema_mid, 2);
