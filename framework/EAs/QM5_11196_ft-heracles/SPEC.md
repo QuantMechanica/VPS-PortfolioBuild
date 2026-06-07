@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-This EA trades long on H4 closed bars when a shifted Donchian channel percent-band divided by a shifted Keltner channel width is between 0.16 and 0.75. The Donchian percent-band uses a 10-bar high/low window shifted 15 bars back, and the Keltner width uses the source library's original-version 20-bar typical-price bands shifted 9 bars back. Entries use an ATR(14) stop at 2.5x ATR, with no fixed take-profit. Positions close through the source ROI ladder: 59.8% immediately, 16.6% after 644 minutes, 11.5% after 3269 minutes, and breakeven-or-better after 7289 minutes, plus framework Friday close.
+This EA trades long on H4 closed bars when a shifted Donchian channel percent-band divided by a shifted Keltner channel width is between 0.16 and 0.75. The Donchian percent-band uses a 10-bar high/low window shifted 15 bars back, and the Keltner width uses a 20-bar typical-price middle with ATR(10), shifted 9 bars back. The card does not state a Keltner multiplier, so the implementation uses the standard 2x ATR channel width. Entries use an ATR(14) stop at 2.5x ATR, with no fixed take-profit. Positions close through the source ROI ladder: 59.8% immediately, 16.6% after 644 minutes, 11.5% after 3269 minutes, and breakeven-or-better after 7289 minutes, plus framework Friday close.
 
 ---
 
@@ -23,7 +23,7 @@ This EA trades long on H4 closed bars when a shifted Donchian channel percent-ba
 | `strategy_buy_div_max` | `0.75` | 0.50-0.90 | Upper bound for Donchian/Keltner ratio |
 | `strategy_donchian_window` | `10` | fixed | Donchian percent-band rolling window |
 | `strategy_keltner_window` | `20` | fixed | Keltner original-version rolling window |
-| `strategy_keltner_atr_period` | `10` | fixed | Source parameter; ignored by `ta` when `original_version=True` |
+| `strategy_keltner_atr_period` | `10` | fixed | ATR period for Keltner channel width |
 | `strategy_donchian_shift` | `15` | 9-20 | Closed-bar shift for Donchian percent-band |
 | `strategy_keltner_shift` | `9` | 5-15 | Closed-bar shift for Keltner width |
 | `strategy_min_warmup_bars` | `40` | >=40 | Minimum bars before evaluating the ratio |

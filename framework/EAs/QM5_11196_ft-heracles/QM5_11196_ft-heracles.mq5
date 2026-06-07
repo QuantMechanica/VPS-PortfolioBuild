@@ -158,8 +158,6 @@ bool Strategy_KeltnerWBand(const int shift, double &out_wband)
       return false;
 
    double middle_sum = 0.0;
-   double high_sum = 0.0;
-   double low_sum = 0.0;
    for(int i = 0; i < strategy_keltner_window; ++i)
      {
       const int bar_shift = shift + i;
@@ -170,17 +168,15 @@ bool Strategy_KeltnerWBand(const int shift, double &out_wband)
          return false;
 
       middle_sum += (high + low + close) / 3.0;
-      high_sum += ((4.0 * high) - (2.0 * low) + close) / 3.0;
-      low_sum += ((-2.0 * high) + (4.0 * low) + close) / 3.0;
      }
 
    const double middle = middle_sum / (double)strategy_keltner_window;
-   const double high_band = high_sum / (double)strategy_keltner_window;
-   const double low_band = low_sum / (double)strategy_keltner_window;
-   if(middle <= 0.0 || high_band <= low_band)
+   const double atr = QM_ATR(_Symbol, strategy_timeframe, strategy_keltner_atr_period, shift);
+   if(middle <= 0.0 || atr <= 0.0)
       return false;
 
-   out_wband = ((high_band - low_band) / middle) * 100.0;
+   const double keltner_mult = 2.0;
+   out_wband = ((2.0 * keltner_mult * atr) / middle) * 100.0;
    return MathIsValidNumber(out_wband) && out_wband > 0.0;
   }
 
@@ -322,7 +318,6 @@ bool Strategy_ExitSignal()
 // news pause configured by framework inputs.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   (void)broker_time;
    return false; // defer to QM_NewsAllowsTrade(...)
   }
 
