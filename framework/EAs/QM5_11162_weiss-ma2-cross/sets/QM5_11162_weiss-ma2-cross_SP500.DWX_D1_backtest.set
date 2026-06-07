@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        11144
-; ea_slug:      vbt-macd-zero
+; ea_id:        11162
+; ea_slug:      weiss-ma2-cross
 ; ea_version:   v5.0
 ; set_version:  s20260607-001
-; symbol:       EURUSD.DWX
+; symbol:       SP500.DWX
 ; timeframe:    D1
 ; environment:  backtest
-; magic_slot:   0
+; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   aa996446eb0944f603b6c9d2d9f06eeeca30ba9bd50d5727852178a2a17fed8c
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-06-07
 ;==========================================================
-qm_magic_slot_offset=0
+qm_magic_slot_offset=4
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
