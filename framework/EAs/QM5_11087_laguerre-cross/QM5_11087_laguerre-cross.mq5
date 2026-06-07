@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11085 Box Breakout"
+#property description "QM5_11087 Laguerre level cross"
 
 #include <QM/QM_Common.mqh>
 
@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 11085;
+input int    qm_ea_id                   = 11087;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -52,8 +52,8 @@ input group "News"
 //   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
 //   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
 // A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
 // Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
@@ -73,42 +73,87 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_box_bars          = 10;
-input int    strategy_atr_period        = 14;
-input double strategy_atr_sl_mult       = 2.0;
-input double strategy_atr_tp_mult       = 3.0;
+input double strategy_gamma              = 0.70;
+input double strategy_lower_level        = 0.20;
+input double strategy_upper_level        = 0.80;
+input int    strategy_atr_period         = 14;
+input double strategy_atr_sl_mult        = 2.50;
+input int    strategy_max_hold_bars      = 20;
+input int    strategy_laguerre_warmup    = 160;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-int Strategy_BoxBreakoutSignal(const int lookback_bars, const int shift)
+bool Strategy_LaguerreValues(double &laguerre_1, double &laguerre_2)
   {
-   if(lookback_bars < 1 || shift < 1)
-      return 0;
+   laguerre_1 = 0.0;
+   laguerre_2 = 0.0;
 
-   // perf-allowed: bespoke box structure requires closed-bar high/low scan.
-   const double breakout_close = iClose(_Symbol, PERIOD_CURRENT, shift); // perf-allowed: bespoke box structure
-   if(breakout_close <= 0.0)
-      return 0;
+   const int bars_needed = MathMax(8, strategy_laguerre_warmup);
+   double closes[];
+   ArraySetAsSeries(closes, true);
+   const int copied = CopyClose(_Symbol, _Period, 1, bars_needed, closes); // perf-allowed: bounded custom Laguerre RSI math; Entry is framework-gated and Exit runs this only while a matching position is open.
+   if(copied < 3)
+      return false;
 
-   double box_high = -DBL_MAX;
-   double box_low = DBL_MAX;
-   for(int i = shift + 1; i <= shift + lookback_bars; ++i)
+   const double gamma = MathMax(0.0, MathMin(0.99, strategy_gamma));
+   double l0 = closes[copied - 1];
+   double l1 = l0;
+   double l2 = l0;
+   double l3 = l0;
+
+   for(int i = copied - 1; i >= 0; --i)
      {
-      const double bar_high = iHigh(_Symbol, PERIOD_CURRENT, i); // perf-allowed: bespoke box structure
-      const double bar_low = iLow(_Symbol, PERIOD_CURRENT, i);   // perf-allowed: bespoke box structure
-      if(bar_high <= 0.0 || bar_low <= 0.0)
-         return 0;
-      if(bar_high > box_high)
-         box_high = bar_high;
-      if(bar_low < box_low)
-         box_low = bar_low;
+      const double price = closes[i];
+      const double old_l0 = l0;
+      const double old_l1 = l1;
+      const double old_l2 = l2;
+      const double old_l3 = l3;
+
+      l0 = (1.0 - gamma) * price + gamma * old_l0;
+      l1 = -gamma * l0 + old_l0 + gamma * old_l1;
+      l2 = -gamma * l1 + old_l1 + gamma * old_l2;
+      l3 = -gamma * l2 + old_l2 + gamma * old_l3;
+
+      double cu = 0.0;
+      double cd = 0.0;
+      if(l0 >= l1)
+         cu += l0 - l1;
+      else
+         cd += l1 - l0;
+      if(l1 >= l2)
+         cu += l1 - l2;
+      else
+         cd += l2 - l1;
+      if(l2 >= l3)
+         cu += l2 - l3;
+      else
+         cd += l3 - l2;
+
+      double value = 0.0;
+      if(cu + cd > 0.0)
+         value = cu / (cu + cd);
+
+      if(i == 1)
+         laguerre_2 = value;
+      if(i == 0)
+         laguerre_1 = value;
      }
 
-   if(breakout_close > box_high)
+   return true;
+  }
+
+int Strategy_LaguerreSignal()
+  {
+   double lag1 = 0.0;
+   double lag2 = 0.0;
+   if(!Strategy_LaguerreValues(lag1, lag2))
+      return 0;
+
+   if(lag2 <= strategy_lower_level && lag1 > strategy_lower_level)
       return 1;
-   if(breakout_close < box_low)
+   if(lag2 >= strategy_upper_level && lag1 < strategy_upper_level)
       return -1;
    return 0;
   }
@@ -117,7 +162,6 @@ int Strategy_BoxBreakoutSignal(const int lookback_bars, const int shift)
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   // Card has no strategy-specific no-trade filter beyond framework defaults.
    return false;
   }
 
@@ -134,37 +178,25 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0 || QM_EntryHasOpenPosition((long)magic, _Symbol))
-      return false;
-   if(strategy_box_bars < 1)
+   if(strategy_lower_level <= 0.0 || strategy_upper_level >= 1.0 ||
+      strategy_lower_level >= strategy_upper_level)
       return false;
 
-   const int signal_now = Strategy_BoxBreakoutSignal(strategy_box_bars, 1);
-   if(signal_now == 0)
+   const int signal = Strategy_LaguerreSignal();
+   if(signal == 0)
       return false;
 
-   // First breakout after neutral: prior closed bar was not already outside its box.
-   if(Strategy_BoxBreakoutSignal(strategy_box_bars, 2) != 0)
-      return false;
-
-   const QM_OrderType side = (signal_now > 0) ? QM_BUY : QM_SELL;
-   const double entry = (side == QM_BUY)
-                        ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                        : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   req.type = (signal > 0) ? QM_BUY : QM_SELL;
+   const double entry = (signal > 0) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
+                                     : SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(entry <= 0.0)
       return false;
 
-   const double sl = QM_StopATR(_Symbol, side, entry, strategy_atr_period, strategy_atr_sl_mult);
-   const double tp = QM_TakeATR(_Symbol, side, entry, strategy_atr_period, strategy_atr_tp_mult);
-   if(sl <= 0.0 || tp <= 0.0)
+   req.sl = QM_StopATR(_Symbol, req.type, entry, strategy_atr_period, strategy_atr_sl_mult);
+   if(req.sl <= 0.0)
       return false;
 
-   req.type = side;
-   req.price = entry;
-   req.sl = sl;
-   req.tp = tp;
-   req.reason = (side == QM_BUY) ? "BOX_BREAKOUT_LONG" : "BOX_BREAKOUT_SHORT";
+   req.reason = (signal > 0) ? "LAGUERRE_LOWER_CROSS_UP" : "LAGUERRE_UPPER_CROSS_DOWN";
    return true;
   }
 
@@ -172,7 +204,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card defines no trailing, break-even, partial close, or pyramiding logic.
+   // Card defines no trailing stop, break-even move, partial close, or TP.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
@@ -180,11 +212,13 @@ void Strategy_ManageOpenPosition()
 bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
-   if(magic <= 0 || strategy_box_bars < 1)
+   if(magic <= 0)
       return false;
 
    bool have_position = false;
    ENUM_POSITION_TYPE position_type = POSITION_TYPE_BUY;
+   datetime open_time = 0;
+
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -195,17 +229,26 @@ bool Strategy_ExitSignal()
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
 
-      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       have_position = true;
+      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      open_time = (datetime)PositionGetInteger(POSITION_TIME);
       break;
      }
+
    if(!have_position)
       return false;
 
-   const int signal_now = Strategy_BoxBreakoutSignal(strategy_box_bars, 1);
-   if(position_type == POSITION_TYPE_BUY && signal_now < 0)
+   const int seconds_per_bar = PeriodSeconds((ENUM_TIMEFRAMES)_Period);
+   if(strategy_max_hold_bars > 0 && seconds_per_bar > 0 && open_time > 0)
+     {
+      if(TimeCurrent() - open_time >= strategy_max_hold_bars * seconds_per_bar)
+         return true;
+     }
+
+   const int signal = Strategy_LaguerreSignal();
+   if(position_type == POSITION_TYPE_BUY && signal < 0)
       return true;
-   if(position_type == POSITION_TYPE_SELL && signal_now > 0)
+   if(position_type == POSITION_TYPE_SELL && signal > 0)
       return true;
 
    return false;
@@ -216,8 +259,6 @@ bool Strategy_ExitSignal()
 // custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   if(broker_time < 0)
-      return true;
    return false; // defer to QM_NewsAllowsTrade(...)
   }
 
