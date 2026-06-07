@@ -6373,3 +6373,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11096,tdi-mbl-cross,1,GBPUSD.DWX,110960001,2026-06-07,Development,active
 11096,tdi-mbl-cross,2,USDJPY.DWX,110960002,2026-06-07,Development,active
 11096,tdi-mbl-cross,3,XAUUSD.DWX,110960003,2026-06-07,Development,active
+11099,prm-engulf-rev,0,EURUSD.DWX,110990000,2026-06-07,Development,active
+11099,prm-engulf-rev,1,GBPUSD.DWX,110990001,2026-06-07,Development,active
+11099,prm-engulf-rev,2,USDJPY.DWX,110990002,2026-06-07,Development,active
+11099,prm-engulf-rev,3,XAUUSD.DWX,110990003,2026-06-07,Development,active
