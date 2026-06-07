@@ -84,82 +84,7 @@ input double strategy_spread_median_mult       = 2.0;
 input bool   strategy_weekend_guard_enabled    = true;
 input int    strategy_weekend_guard_hour       = 21;
 
-bool g_block_entry_after_exit = false;
-
-bool Strategy_SelectOurPosition(ulong &ticket, ENUM_POSITION_TYPE &position_type)
-  {
-   ticket = 0;
-   position_type = POSITION_TYPE_BUY;
-
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong pos_ticket = PositionGetTicket(i);
-      if(pos_ticket == 0 || !PositionSelectByTicket(pos_ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      ticket = pos_ticket;
-      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      return true;
-     }
-
-   return false;
-  }
-
-double Strategy_Close(const int shift)
-  {
-   return iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, shift); // perf-allowed: O(1) closed-bar price read for channel cross math.
-  }
-
-double Strategy_Midline(const int shift)
-  {
-   if(strategy_mid_period <= 1)
-      return Strategy_Close(shift + 1);
-   return QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_mid_period, shift);
-  }
-
-bool Strategy_Channel(const int shift, double &upper, double &lower)
-  {
-   upper = 0.0;
-   lower = 0.0;
-   if(strategy_atr_period <= 0 || strategy_channel_mult <= 0.0)
-      return false;
-
-   const double mid = Strategy_Midline(shift);
-   const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, shift);
-   if(mid <= 0.0 || atr <= 0.0)
-      return false;
-
-   upper = mid + strategy_channel_mult * atr;
-   lower = mid - strategy_channel_mult * atr;
-   return true;
-  }
-
-int Strategy_ChannelCross()
-  {
-   double upper1 = 0.0, lower1 = 0.0, upper2 = 0.0, lower2 = 0.0;
-   if(!Strategy_Channel(1, upper1, lower1) || !Strategy_Channel(2, upper2, lower2))
-      return 0;
-
-   const double close1 = Strategy_Close(1);
-   const double close2 = Strategy_Close(2);
-   if(close1 <= 0.0 || close2 <= 0.0)
-      return 0;
-
-   if(close1 > upper1 && close2 <= upper2)
-      return 1;
-   if(close1 < lower1 && close2 >= lower2)
-      return -1;
-
-   return 0;
-  }
+bool g_strategy_block_entry_after_exit = false;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -203,16 +128,25 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(g_block_entry_after_exit)
+   if(g_strategy_block_entry_after_exit)
      {
-      g_block_entry_after_exit = false;
+      g_strategy_block_entry_after_exit = false;
       return false;
      }
 
-   ulong ticket = 0;
-   ENUM_POSITION_TYPE position_type = POSITION_TYPE_BUY;
-   if(Strategy_SelectOurPosition(ticket, position_type))
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
       return false;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+         return false;
+     }
 
    if(strategy_adx_min > 0.0)
      {
@@ -221,7 +155,36 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
      }
 
-   const int cross = Strategy_ChannelCross();
+   if(strategy_atr_period <= 0 || strategy_channel_mult <= 0.0)
+      return false;
+
+   const double close1 = iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, 1); // perf-allowed: O(1) closed-bar price read for channel cross math.
+   const double close2 = iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, 2); // perf-allowed: O(1) closed-bar price read for channel cross math.
+   if(close1 <= 0.0 || close2 <= 0.0)
+      return false;
+
+   const double mid1 = (strategy_mid_period <= 1)
+                       ? iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, 2) // perf-allowed: O(1) prior closed-bar midline when period=1.
+                       : QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_mid_period, 1);
+   const double mid2 = (strategy_mid_period <= 1)
+                       ? iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, 3) // perf-allowed: O(1) prior closed-bar midline when period=1.
+                       : QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_mid_period, 2);
+   const double atr1 = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
+   const double atr2 = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 2);
+   if(mid1 <= 0.0 || mid2 <= 0.0 || atr1 <= 0.0 || atr2 <= 0.0)
+      return false;
+
+   const double upper1 = mid1 + strategy_channel_mult * atr1;
+   const double lower1 = mid1 - strategy_channel_mult * atr1;
+   const double upper2 = mid2 + strategy_channel_mult * atr2;
+   const double lower2 = mid2 - strategy_channel_mult * atr2;
+
+   int cross = 0;
+   if(close1 > upper1 && close2 <= upper2)
+      cross = 1;
+   else if(close1 < lower1 && close2 >= lower2)
+      cross = -1;
+
    if(cross == 0)
       return false;
 
@@ -250,16 +213,63 @@ void Strategy_ManageOpenPosition()
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   ulong ticket = 0;
-   ENUM_POSITION_TYPE position_type = POSITION_TYPE_BUY;
-   if(!Strategy_SelectOurPosition(ticket, position_type))
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
       return false;
 
-   const int cross = Strategy_ChannelCross();
+   bool has_position = false;
+   ENUM_POSITION_TYPE position_type = POSITION_TYPE_BUY;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      has_position = true;
+      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      break;
+     }
+   if(!has_position)
+      return false;
+
+   if(strategy_atr_period <= 0 || strategy_channel_mult <= 0.0)
+      return false;
+
+   const double close1 = iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, 1); // perf-allowed: O(1) closed-bar price read for channel cross math.
+   const double close2 = iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, 2); // perf-allowed: O(1) closed-bar price read for channel cross math.
+   if(close1 <= 0.0 || close2 <= 0.0)
+      return false;
+
+   const double mid1 = (strategy_mid_period <= 1)
+                       ? iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, 2) // perf-allowed: O(1) prior closed-bar midline when period=1.
+                       : QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_mid_period, 1);
+   const double mid2 = (strategy_mid_period <= 1)
+                       ? iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, 3) // perf-allowed: O(1) prior closed-bar midline when period=1.
+                       : QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_mid_period, 2);
+   const double atr1 = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
+   const double atr2 = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 2);
+   if(mid1 <= 0.0 || mid2 <= 0.0 || atr1 <= 0.0 || atr2 <= 0.0)
+      return false;
+
+   const double upper1 = mid1 + strategy_channel_mult * atr1;
+   const double lower1 = mid1 - strategy_channel_mult * atr1;
+   const double upper2 = mid2 + strategy_channel_mult * atr2;
+   const double lower2 = mid2 - strategy_channel_mult * atr2;
+
+   int cross = 0;
+   if(close1 > upper1 && close2 <= upper2)
+      cross = 1;
+   else if(close1 < lower1 && close2 >= lower2)
+      cross = -1;
+
    if((position_type == POSITION_TYPE_BUY && cross < 0) ||
       (position_type == POSITION_TYPE_SELL && cross > 0))
      {
-      g_block_entry_after_exit = true;
+      g_strategy_block_entry_after_exit = true;
       return true;
      }
 
