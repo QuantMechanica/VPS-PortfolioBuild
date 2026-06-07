@@ -136,14 +136,17 @@ double Strategy_Median(double &values[], const int count)
    return 0.5 * (values[(count / 2) - 1] + values[count / 2]);
   }
 
-bool Strategy_LoadClosedCloses(const int count, double &closes[])
+bool Strategy_LoadClosedCloses(const int requested_count, const int min_count, double &closes[])
   {
-   if(count <= 0)
+   if(requested_count <= 0 || min_count <= 0)
       return false;
-   ArrayResize(closes, count);
+   ArrayResize(closes, requested_count);
    ArraySetAsSeries(closes, true);
-   const int copied = CopyClose(_Symbol, PERIOD_D1, 1, count, closes); // perf-allowed: gated/cached D1 rolling breakout math
-   return (copied == count);
+   const int copied = CopyClose(_Symbol, PERIOD_D1, 1, requested_count, closes); // perf-allowed: gated/cached D1 rolling breakout math
+   if(copied < min_count)
+      return false;
+   ArrayResize(closes, copied);
+   return true;
   }
 
 double Strategy_RawBreakout(double &closes[], const int start_shift, const int lookback, bool &valid)
@@ -200,98 +203,78 @@ bool Strategy_SmoothedBreakout(double &closes[], const int lookback, const doubl
    return true;
   }
 
-double Strategy_DailyPctVol(double &closes[], const int shift)
-  {
-   const int period = MathMax(2, strategy_daily_vol_period);
-   if(ArraySize(closes) < shift + period + 1)
-      return 0.0;
-
-   double mean = 0.0;
-   double returns[];
-   ArrayResize(returns, period);
-   for(int i = 0; i < period; ++i)
-     {
-      const double c0 = closes[shift + i];
-      const double c1 = closes[shift + i + 1];
-      if(c0 <= 0.0 || c1 <= 0.0)
-         return 0.0;
-      returns[i] = (c0 - c1) / c1;
-      mean += returns[i];
-     }
-   mean /= (double)period;
-
-   double var = 0.0;
-   for(int i = 0; i < period; ++i)
-      var += (returns[i] - mean) * (returns[i] - mean);
-   var /= (double)MathMax(period - 1, 1);
-   return MathSqrt(var);
-  }
-
-double Strategy_NormalisedVol(double &closes[], const int shift)
-  {
-   const int sma_period = MathMax(20, strategy_vol_sma_period);
-   const double current_vol = Strategy_DailyPctVol(closes, shift);
-   if(current_vol <= 0.0 || ArraySize(closes) < shift + sma_period + strategy_daily_vol_period + 1)
-      return 0.0;
-
-   double sum = 0.0;
-   int count = 0;
-   for(int i = 0; i < sma_period; ++i)
-     {
-      const double vol_i = Strategy_DailyPctVol(closes, shift + i);
-      if(vol_i <= 0.0)
-         continue;
-      sum += vol_i;
-      ++count;
-     }
-
-   if(count <= 0 || sum <= 0.0)
-      return 0.0;
-   return current_vol / (sum / (double)count);
-  }
-
-double Strategy_VolQuantile(double &closes[], const int shift)
-  {
-   const int lookback = MathMax(20, strategy_vol_sma_period);
-   const double current = Strategy_NormalisedVol(closes, shift);
-   if(current <= 0.0)
-      return 0.0;
-
-   int less_equal = 0;
-   int count = 0;
-   for(int i = 1; i <= lookback; ++i)
-     {
-      const double value = Strategy_NormalisedVol(closes, shift + i);
-      if(value <= 0.0)
-         continue;
-      if(value <= current)
-         ++less_equal;
-      ++count;
-     }
-   if(count <= 0)
-      return 0.0;
-   return (double)less_equal / (double)count;
-  }
-
 double Strategy_VolAttenuation(double &closes[])
   {
    if(!strategy_use_attenuation)
       return 1.0;
 
-   const int need = strategy_vol_sma_period * 2 + strategy_daily_vol_period + strategy_vol_atten_ema_period + 4;
-   if(ArraySize(closes) < need)
+   const int vol_period = MathMax(2, strategy_daily_vol_period);
+   const int sma_period = MathMax(20, strategy_vol_sma_period);
+   const int ema_period = MathMax(1, strategy_vol_atten_ema_period);
+   const int normal_count = ema_period + sma_period;
+   const int vol_count = normal_count + sma_period;
+   const int returns_count = vol_count + vol_period;
+   if(ArraySize(closes) < returns_count + 1)
       return 1.0;
 
-   const int ema_period = MathMax(1, strategy_vol_atten_ema_period);
+   double prefix_sum[];
+   double prefix_sq[];
+   ArrayResize(prefix_sum, returns_count + 1);
+   ArrayResize(prefix_sq, returns_count + 1);
+   prefix_sum[0] = 0.0;
+   prefix_sq[0] = 0.0;
+   for(int i = 0; i < returns_count; ++i)
+     {
+      const double c0 = closes[i];
+      const double c1 = closes[i + 1];
+      if(c0 <= 0.0 || c1 <= 0.0)
+         return 1.0;
+      const double r = (c0 - c1) / c1;
+      prefix_sum[i + 1] = prefix_sum[i] + r;
+      prefix_sq[i + 1] = prefix_sq[i] + r * r;
+     }
+
+   double daily_vol[];
+   ArrayResize(daily_vol, vol_count);
+   for(int shift = 0; shift < vol_count; ++shift)
+     {
+      const double sum = prefix_sum[shift + vol_period] - prefix_sum[shift];
+      const double sq = prefix_sq[shift + vol_period] - prefix_sq[shift];
+      const double mean = sum / (double)vol_period;
+      double var = (sq / (double)vol_period) - mean * mean;
+      if(var < 0.0)
+         var = 0.0;
+      daily_vol[shift] = MathSqrt(var);
+     }
+
+   double vol_prefix[];
+   ArrayResize(vol_prefix, vol_count + 1);
+   vol_prefix[0] = 0.0;
+   for(int i = 0; i < vol_count; ++i)
+      vol_prefix[i + 1] = vol_prefix[i] + daily_vol[i];
+
+   double normalised[];
+   ArrayResize(normalised, normal_count);
+   for(int shift = 0; shift < normal_count; ++shift)
+     {
+      const double avg_vol = (vol_prefix[shift + sma_period] - vol_prefix[shift]) / (double)sma_period;
+      if(avg_vol <= 0.0 || daily_vol[shift] <= 0.0)
+         return 1.0;
+      normalised[shift] = daily_vol[shift] / avg_vol;
+     }
+
    const double alpha = 2.0 / ((double)ema_period + 1.0);
    double ema = 1.0;
    bool seeded = false;
 
    for(int shift = ema_period - 1; shift >= 0; --shift)
      {
-      const double quantile = Strategy_VolQuantile(closes, shift);
-      if(quantile <= 0.0)
-         continue;
+      const double current = normalised[shift];
+      int less_equal = 0;
+      for(int i = shift + 1; i <= shift + sma_period; ++i)
+         if(normalised[i] <= current)
+            ++less_equal;
+      const double quantile = (double)less_equal / (double)sma_period;
       const double raw = 2.0 - 1.5 * quantile;
       if(!seeded)
         {
@@ -329,7 +312,7 @@ bool Strategy_RefreshForecast()
    const int copy_count = MathMax(breakout_need, vol_need);
 
    double closes[];
-   if(!Strategy_LoadClosedCloses(copy_count, closes))
+   if(!Strategy_LoadClosedCloses(copy_count, breakout_need, closes))
       return false;
 
    double sum = 0.0;
