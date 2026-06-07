@@ -1,4 +1,8 @@
 ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
+11047,roman-sar-break,0,EURUSD.DWX,110470000,2026-06-07,Development,active
+11047,roman-sar-break,1,GBPUSD.DWX,110470001,2026-06-07,Development,active
+11047,roman-sar-break,2,USDCHF.DWX,110470002,2026-06-07,Development,active
+11047,roman-sar-break,3,USDJPY.DWX,110470003,2026-06-07,Development,active
 10586,mql5-cycleper,0,USDJPY.DWX,105860000,2026-05-29,Development,active
 10586,mql5-cycleper,1,EURUSD.DWX,105860001,2026-05-29,Development,active
 10586,mql5-cycleper,2,GBPJPY.DWX,105860002,2026-05-29,Development,active
