@@ -266,7 +266,6 @@ void Strategy_ManageOpenPosition()
       const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
       const double current_sl = PositionGetDouble(POSITION_SL);
-      const double current_tp = PositionGetDouble(POSITION_TP);
       const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
       if(open_price <= 0.0 || current_sl <= 0.0 || point <= 0.0)
          continue;
@@ -287,7 +286,7 @@ void Strategy_ManageOpenPosition()
       const bool improves = is_buy ? (target_sl > current_sl + point * 0.5)
                                    : (target_sl < current_sl - point * 0.5);
       if(improves)
-         QM_TM_SendSLTPModify(ticket, target_sl, current_tp, "atc_channel_classical_trail");
+         QM_TM_MoveSL(ticket, target_sl, "atc_channel_classical_trail");
      }
 
    if(!has_position)
