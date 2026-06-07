@@ -187,7 +187,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const int mfi_bars = strategy_mfi_period + 1;
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
-   const int copied = CopyRates(_Symbol, tf, 1, mfi_bars, rates);
+   const int copied = CopyRates(_Symbol, tf, 1, mfi_bars, rates); // perf-allowed: MFI requires bounded closed-bar OHLCV and this hook is framework new-bar gated.
    if(copied != mfi_bars)
       return false;
 
