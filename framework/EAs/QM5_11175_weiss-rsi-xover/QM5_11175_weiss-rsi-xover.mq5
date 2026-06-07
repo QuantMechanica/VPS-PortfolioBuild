@@ -100,14 +100,17 @@ bool Strategy_NoTradeFilter()
    return false;
   }
 
-double Strategy_NormalizePrice(const double price)
+// Trade Entry
+bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   const int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
-   return NormalizeDouble(price, digits);
-  }
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
 
-bool Strategy_HasOpenPosition()
-  {
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
       return false;
@@ -121,52 +124,8 @@ bool Strategy_HasOpenPosition()
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
-      return true;
+      return false;
      }
-   return false;
-  }
-
-bool Strategy_StopsMeetBrokerMinimum(const double entry, const double sl, const double tp)
-  {
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(point <= 0.0 || entry <= 0.0 || sl <= 0.0 || tp <= 0.0)
-      return false;
-
-   const int stops_level = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
-   if(stops_level <= 0)
-      return true;
-
-   const double sl_points = MathAbs(entry - sl) / point;
-   const double tp_points = MathAbs(entry - tp) / point;
-   return (sl_points >= stops_level && tp_points >= stops_level);
-  }
-
-bool Strategy_SpreadAllowsEntry(const double stop_distance)
-  {
-   if(strategy_max_spread_sl_frac <= 0.0)
-      return true;
-
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   if(bid <= 0.0 || ask <= 0.0 || ask <= bid || stop_distance <= 0.0)
-      return false;
-
-   return ((ask - bid) <= stop_distance * strategy_max_spread_sl_frac);
-  }
-
-// Trade Entry
-bool Strategy_EntrySignal(QM_EntryRequest &req)
-  {
-   req.type = QM_BUY;
-   req.price = 0.0;
-   req.sl = 0.0;
-   req.tp = 0.0;
-   req.reason = "";
-   req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
-
-   if(Strategy_HasOpenPosition())
-      return false;
 
    const double rsi_prev = QM_RSI(_Symbol, strategy_timeframe, strategy_rsi_period, 2);
    const double rsi_last = QM_RSI(_Symbol, strategy_timeframe, strategy_rsi_period, 1);
@@ -178,13 +137,26 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(bid <= 0.0 || ask <= 0.0)
       return false;
 
-   if(rsi_prev < strategy_rsi_lower && rsi_last >= strategy_rsi_lower)
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(point <= 0.0)
+      return false;
+
+   const int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
+   const int stops_level = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
+   const double spread = ask - bid;
+
+   if(rsi_prev < strategy_rsi_lower && rsi_last > strategy_rsi_lower)
      {
       const double entry = ask;
-      const double sl = Strategy_NormalizePrice(entry * (1.0 - strategy_stop_pct / 100.0));
-      const double tp = Strategy_NormalizePrice(entry * (1.0 + strategy_take_profit_pct / 100.0));
+      const double sl = NormalizeDouble(entry * (1.0 - strategy_stop_pct / 100.0), digits);
+      const double tp = NormalizeDouble(entry * (1.0 + strategy_take_profit_pct / 100.0), digits);
       const double stop_distance = entry - sl;
-      if(!Strategy_SpreadAllowsEntry(stop_distance) || !Strategy_StopsMeetBrokerMinimum(entry, sl, tp))
+      if(stop_distance <= 0.0)
+         return false;
+      if(strategy_max_spread_sl_frac > 0.0 && spread > stop_distance * strategy_max_spread_sl_frac)
+         return false;
+      if(stops_level > 0 &&
+         (MathAbs(entry - sl) / point < stops_level || MathAbs(entry - tp) / point < stops_level))
          return false;
 
       req.type = QM_BUY;
@@ -195,13 +167,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return true;
      }
 
-   if(rsi_prev > strategy_rsi_upper && rsi_last <= strategy_rsi_upper)
+   if(rsi_prev > strategy_rsi_upper && rsi_last < strategy_rsi_upper)
      {
       const double entry = bid;
-      const double sl = Strategy_NormalizePrice(entry * (1.0 + strategy_stop_pct / 100.0));
-      const double tp = Strategy_NormalizePrice(entry * (1.0 - strategy_take_profit_pct / 100.0));
+      const double sl = NormalizeDouble(entry * (1.0 + strategy_stop_pct / 100.0), digits);
+      const double tp = NormalizeDouble(entry * (1.0 - strategy_take_profit_pct / 100.0), digits);
       const double stop_distance = sl - entry;
-      if(!Strategy_SpreadAllowsEntry(stop_distance) || !Strategy_StopsMeetBrokerMinimum(entry, sl, tp))
+      if(stop_distance <= 0.0)
+         return false;
+      if(strategy_max_spread_sl_frac > 0.0 && spread > stop_distance * strategy_max_spread_sl_frac)
+         return false;
+      if(stops_level > 0 &&
+         (MathAbs(entry - sl) / point < stops_level || MathAbs(entry - tp) / point < stops_level))
          return false;
 
       req.type = QM_SELL;
