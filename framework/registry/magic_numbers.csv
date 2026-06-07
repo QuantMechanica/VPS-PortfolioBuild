@@ -6448,3 +6448,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11125,tm-rsi2-extreme,1,NDX.DWX,111250001,2026-06-07,Development,active
 11125,tm-rsi2-extreme,2,WS30.DWX,111250002,2026-06-07,Development,active
 11125,tm-rsi2-extreme,3,GDAXI.DWX,111250003,2026-06-07,Development,active
+11126,tm-rsi2-limit,0,SP500.DWX,111260000,2026-06-07,Development,active
+11126,tm-rsi2-limit,1,NDX.DWX,111260001,2026-06-07,Development,active
+11126,tm-rsi2-limit,2,WS30.DWX,111260002,2026-06-07,Development,active
+11126,tm-rsi2-limit,3,GDAXI.DWX,111260003,2026-06-07,Development,active
