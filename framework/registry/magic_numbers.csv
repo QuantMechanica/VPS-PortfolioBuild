@@ -6425,3 +6425,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11118,stoch-alert-cross,1,GBPUSD.DWX,111180001,2026-06-07,Development,active
 11118,stoch-alert-cross,2,USDJPY.DWX,111180002,2026-06-07,Development,active
 11118,stoch-alert-cross,3,XAUUSD.DWX,111180003,2026-06-07,Development,active
+11119,ma-cross-alert,0,EURUSD.DWX,111190000,2026-06-07,Development,active
+11119,ma-cross-alert,1,GBPUSD.DWX,111190001,2026-06-07,Development,active
+11119,ma-cross-alert,2,USDJPY.DWX,111190002,2026-06-07,Development,active
+11119,ma-cross-alert,3,XAUUSD.DWX,111190003,2026-06-07,Development,active
