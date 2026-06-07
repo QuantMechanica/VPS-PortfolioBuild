@@ -1,0 +1,38 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11085
+; ea_slug:      box-breakout
+; ea_version:   v5.0
+; set_version:  s20260607-001
+; symbol:       USDJPY.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   12069999ffe6af58c5e05edda612f2f27a90263b1da7f84187f7edac155c18dc
+; author:       Development
+; date:         2026-06-07
+;==========================================================
+qm_magic_slot_offset=2
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; core filter library params; filter-on/off variants must be pre-declared
+qm_filter_news_enabled=1
+qm_filter_news_mode=3
+qm_filter_regime_enabled=0
+qm_filter_regime_lookback_bars=100
+qm_filter_regime_bull_return_pct=2.0
+qm_filter_regime_bear_return_pct=2.0
+qm_filter_volatility_enabled=0
+qm_filter_volatility_atr_period=14
+qm_filter_volatility_lookback_bars=50
+qm_filter_volatility_compression_ratio=0.75
+qm_filter_volatility_expansion_ratio=1.25
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=not_found
+strategy_box_bars=10
+strategy_atr_period=14
+strategy_atr_sl_mult=2.0
+strategy_atr_tp_mult=3.0
