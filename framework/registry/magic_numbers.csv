@@ -6597,3 +6597,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11184,ft-ema-ha,1,GBPUSD.DWX,111840001,2026-06-07,Development,active
 11184,ft-ema-ha,2,USDJPY.DWX,111840002,2026-06-07,Development,active
 11184,ft-ema-ha,3,XAUUSD.DWX,111840003,2026-06-07,Development,active
+11185,ft-rsi-hammer,0,EURUSD.DWX,111850000,2026-06-07,Development,active
+11185,ft-rsi-hammer,1,GBPUSD.DWX,111850001,2026-06-07,Development,active
+11185,ft-rsi-hammer,2,USDJPY.DWX,111850002,2026-06-07,Development,active
+11185,ft-rsi-hammer,3,XAUUSD.DWX,111850003,2026-06-07,Development,active
