@@ -12,13 +12,13 @@
 // Mechanic (card §Mechanik):
 //   bbMACD = EMA(close, FastLen) - EMA(close, SlowLen)   (= MACD main line)
 //   Bollinger bands are computed ON the bbMACD series with BBLength period and
-//   StDv standard deviations:  band = SMA(bbMACD, BBLength) +/- StDv*stddev.
-//   The BB-MACD "colour" is a band-cross state machine: it turns UP when the
-//   bbMACD crosses ABOVE the upper band, DOWN when it crosses BELOW the lower
-//   band, and holds otherwise. A colour flip is exactly the band-cross event on
-//   the completed bar.
-//     Long  flip (down->up): bbMACD crosses above the upper band.
-//     Short flip (up->down): bbMACD crosses below the lower band.
+//   StDv standard deviations: band = average(bbMACD, BBLength) +/- StDv*stddev.
+//   The source indicator colours the dots by bbMACD slope:
+//     UP   when bbMACD[bar] > bbMACD[previous bar]
+//     DOWN when bbMACD[bar] < bbMACD[previous bar]
+//   A trade signal is the completed-bar colour flip.
+//     Long  flip (down->up): slope changes from falling to rising.
+//     Short flip (up->down): slope changes from rising to falling.
 //   Optional stricter variant additionally requires bbMACD > 0 (long) / < 0
 //   (short) on the completed bar.
 //
@@ -93,25 +93,30 @@ double BBMacd(const int shift)
   }
 
 // Mean + population standard deviation of the bbMACD series over `length`
-// values starting at `start_idx` (inclusive, walking back in time).
-void BBMacdBand(const double &series[], const int start_idx, const int length,
-                double &upper, double &lower)
+// values starting at `shift` (inclusive, walking back in time). The card
+// requires the BB-MACD band calculation, though the source flip signal itself
+// is the dot-colour slope change.
+bool BBMacdBand(const int shift, const int length, double &upper, double &lower)
   {
+   if(length <= 1)
+      return false;
+
    double sum = 0.0;
    for(int k = 0; k < length; ++k)
-      sum += series[start_idx + k];
+      sum += BBMacd(shift + k);
    const double mean = sum / length;
 
    double sq = 0.0;
    for(int k = 0; k < length; ++k)
      {
-      const double d = series[start_idx + k] - mean;
+      const double d = BBMacd(shift + k) - mean;
       sq += d * d;
      }
    const double sd = MathSqrt(sq / length);
 
    upper = mean + strategy_bb_stdv * sd;
    lower = mean - strategy_bb_stdv * sd;
+   return true;
   }
 
 // Direction of our currently-open position: +1 long, -1 short, 0 flat.
@@ -185,26 +190,27 @@ bool Strategy_NoTradeFilter()
   }
 
 // Trade Entry — evaluated once per closed bar (framework QM_IsNewBar gate).
-// Detects the BB-MACD colour flip (band cross) and applies stop-and-reverse.
+// Detects the BB-MACD colour flip (slope change) and applies stop-and-reverse.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   const int need = strategy_bb_length + 1;      // bands needed for shift 1 and shift 2
-   const int count = need + 1;                    // series indices 1..need
-   double series[];
-   ArrayResize(series, count);
-   series[0] = 0.0;                                // unused (shift 0 = forming bar)
-   for(int s = 1; s <= need; ++s)
-      series[s] = BBMacd(s);
+   double upper = 0.0;
+   double lower = 0.0;
+   if(!BBMacdBand(1, strategy_bb_length, upper, lower))
+      return false;
+   if(upper < lower)
+      return false;
 
-   double up1, lo1, up2, lo2;
-   BBMacdBand(series, 1, strategy_bb_length, up1, lo1);   // band on completed bar (shift 1)
-   BBMacdBand(series, 2, strategy_bb_length, up2, lo2);   // band on prior bar    (shift 2)
+   const double bbm1 = BBMacd(1);  // last completed bar
+   const double bbm2 = BBMacd(2);  // prior completed bar
+   const double bbm3 = BBMacd(3);  // bar before prior, for prior colour
 
-   const double bbm1 = series[1];
-   const double bbm2 = series[2];
+   const bool up_now = (bbm1 > bbm2);
+   const bool down_now = (bbm1 < bbm2);
+   const bool up_prev = (bbm2 > bbm3);
+   const bool down_prev = (bbm2 < bbm3);
 
-   bool long_flip  = (bbm2 <= up2) && (bbm1 > up1);   // crossed above upper band
-   bool short_flip = (bbm2 >= lo2) && (bbm1 < lo1);   // crossed below lower band
+   bool long_flip  = up_now && down_prev;
+   bool short_flip = down_now && up_prev;
 
    if(strategy_stricter_zero)
      {
@@ -212,7 +218,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if(bbm1 >= 0.0) short_flip = false;
      }
 
-   // A single bar cannot be both above the upper and below the lower band.
+   // Equal bbMACD values carry no new colour in the source indicator.
    if(long_flip == short_flip)
       return false;
 

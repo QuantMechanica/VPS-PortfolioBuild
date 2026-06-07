@@ -11,20 +11,20 @@
 ## 1. Strategy Logic
 
 The EA trades the EarnForex "BB-MACD" colour flip — a trend-change detector built
-on a Bollinger envelope drawn around the MACD line itself. Each closed bar it
-computes `bbMACD = EMA(close, 12) - EMA(close, 26)` (the MACD main line), then a
-Bollinger band over the last 10 bbMACD values: `SMA(bbMACD, 10) ± 2.5 ×
-stddev(bbMACD, 10)`. The indicator's colour turns UP when bbMACD crosses above
-the upper band and DOWN when it crosses below the lower band; a colour flip is
-exactly that band-cross event.
+from the MACD main line and a Bollinger envelope drawn around that line. Each
+closed bar it computes `bbMACD = EMA(close, 12) - EMA(close, 26)`, then computes
+the source band math over the last 10 bbMACD values: `average(bbMACD, 10) ± 2.5 ×
+stddev(bbMACD, 10)`. The source indicator's dot colour is driven by bbMACD slope:
+UP when the completed bar's bbMACD is above the previous bar's bbMACD, and DOWN
+when it is below.
 
-Long when bbMACD crosses above the upper band (down→up flip); short when it
-crosses below the lower band (up→down flip). The system is stop-and-reverse: a
-flip closes any opposite position and opens a new one in the flip direction, so
-the exit for a long is the next short flip and vice-versa. A catastrophic ATR(14)
-× 2.5 stop sits broker-side as the only standalone protective exit. An optional
-stricter variant (`strategy_stricter_zero`) additionally requires bbMACD > 0 for
-longs / < 0 for shorts. Signals evaluate on completed bars only.
+Long when the completed-bar colour flips from DOWN to UP; short when it flips
+from UP to DOWN. The system is stop-and-reverse: a flip closes any opposite
+position and opens a new one in the flip direction, so the exit for a long is
+the next short flip and vice-versa. A catastrophic ATR(14) × 2.5 stop sits
+broker-side as the only standalone protective exit. An optional stricter variant
+(`strategy_stricter_zero`) additionally requires bbMACD > 0 for longs / < 0 for
+shorts. Signals evaluate on completed bars only.
 
 ---
 
