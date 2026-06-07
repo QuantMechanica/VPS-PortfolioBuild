@@ -44,9 +44,9 @@ struct MurreyState
    double interval;
   };
 
-double g_last_entry_level = 0.0;
-int    g_last_entry_line = -1;
-int    g_last_entry_side = 0;
+bool   g_bar_state_ready = false;
+bool   g_exit_on_next_tick = false;
+double g_active_entry_level = 0.0;
 
 void ResetEntryRequest(QM_EntryRequest &req)
   {
@@ -59,81 +59,71 @@ void ResetEntryRequest(QM_EntryRequest &req)
    req.expiration_seconds = 0;
   }
 
-int MurreyLookbackBars()
-  {
-   if(strategy_murrey_period <= 0)
-      return 0;
-
-   const int current_seconds = PeriodSeconds((ENUM_TIMEFRAMES)_Period);
-   int upper_seconds = PeriodSeconds(strategy_upper_timeframe);
-   if(upper_seconds <= 0)
-      upper_seconds = current_seconds;
-
-   int multiplier = 1;
-   if(strategy_upper_timeframe != PERIOD_CURRENT &&
-      strategy_upper_timeframe != (ENUM_TIMEFRAMES)_Period &&
-      current_seconds > 0 &&
-      upper_seconds > current_seconds)
-      multiplier = (int)MathCeil((double)upper_seconds / (double)current_seconds);
-
-   return strategy_murrey_period * multiplier;
-  }
-
-bool CalculateMurreyState(MurreyState &state)
+void ResetMurreyState(MurreyState &state)
   {
    state.ok = false;
    state.interval = 0.0;
    for(int i = 0; i < 13; ++i)
       state.lines[i] = 0.0;
+  }
 
-   const int lookback = MurreyLookbackBars();
-   if(lookback <= 0 || strategy_step_back < 0)
+bool ReadRecentChartBars(MqlRates &bars[])
+  {
+   ArraySetAsSeries(bars, true);
+   return (CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, 0, 3, bars) >= 3); // perf-allowed: closed-bar breach check only reads current, last closed, and prior closed bars from the framework new-bar path.
+  }
+
+bool CalculateMurreyState(MurreyState &state)
+  {
+   ResetMurreyState(state);
+
+   if(strategy_murrey_period <= 0 || strategy_step_back < 0)
       return false;
 
-   const int need = lookback + strategy_step_back + 3;
+   const ENUM_TIMEFRAMES upper_tf = (strategy_upper_timeframe == PERIOD_CURRENT)
+                                    ? (ENUM_TIMEFRAMES)_Period
+                                    : strategy_upper_timeframe;
+   const int need = strategy_murrey_period + strategy_step_back;
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
-   if(CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, 0, need, rates) < need) // perf-allowed: Murrey structural window, called from framework new-bar path or bounded exit check.
+   if(CopyRates(_Symbol, upper_tf, strategy_step_back, need, rates) < need) // perf-allowed: bespoke Murrey source window, called once from the framework closed-bar entry path.
       return false;
 
    double lowest = DBL_MAX;
    double highest = -DBL_MAX;
-   for(int shift = strategy_step_back; shift < strategy_step_back + lookback; ++shift)
+   for(int i = 0; i < strategy_murrey_period; ++i)
      {
-      if(rates[shift].low > 0.0 && rates[shift].low < lowest)
-         lowest = rates[shift].low;
-      if(rates[shift].high > 0.0 && rates[shift].high > highest)
-         highest = rates[shift].high;
+      if(rates[i].low > 0.0 && rates[i].low < lowest)
+         lowest = rates[i].low;
+      if(rates[i].high > 0.0 && rates[i].high > highest)
+         highest = rates[i].high;
      }
 
    if(lowest == DBL_MAX || highest == -DBL_MAX || highest <= lowest)
       return false;
 
    double fractal = 0.0;
-   if((highest <= 250000.0) && (highest > 25000.0)) fractal = 100000.0;
-   else if((highest <= 25000.0) && (highest > 2500.0)) fractal = 10000.0;
-   else if((highest <= 2500.0) && (highest > 250.0)) fractal = 1000.0;
-   else if((highest <= 250.0) && (highest > 25.0)) fractal = 100.0;
-   else if((highest <= 25.0) && (highest > 12.5)) fractal = 12.5;
-   else if((highest <= 12.5) && (highest > 6.25)) fractal = 12.5;
-   else if((highest <= 6.25) && (highest > 3.125)) fractal = 6.25;
-   else if((highest <= 3.125) && (highest > 1.5625)) fractal = 3.125;
-   else if((highest <= 1.5625) && (highest > 0.390625)) fractal = 1.5625;
-   else if((highest <= 0.390625) && (highest > 0.0)) fractal = 0.1953125;
+   if(highest > 25000.0)          fractal = 100000.0;
+   else if(highest > 2500.0)      fractal = 10000.0;
+   else if(highest > 250.0)       fractal = 1000.0;
+   else if(highest > 25.0)        fractal = 100.0;
+   else if(highest > 12.5)        fractal = 12.5;
+   else if(highest > 6.25)        fractal = 12.5;
+   else if(highest > 3.125)       fractal = 6.25;
+   else if(highest > 1.5625)      fractal = 3.125;
+   else if(highest > 0.390625)    fractal = 1.5625;
+   else if(highest > 0.0)         fractal = 0.1953125;
    if(fractal <= 0.0)
       return false;
 
    const double range = highest - lowest;
-   if(range <= 0.0)
-      return false;
-
    const double octave_power = MathFloor(MathLog(fractal / range) / MathLog(2.0));
    const double octave = fractal * MathPow(0.5, octave_power);
    if(octave <= 0.0)
       return false;
 
    const double mn = MathFloor(lowest / octave) * octave;
-   const double mx = (mn + octave > highest) ? (mn + octave) : (mn + 2.0 * octave);
+   const double mx = ((mn + octave) > highest) ? (mn + octave) : (mn + 2.0 * octave);
    const double width = mx - mn;
    if(width <= 0.0)
       return false;
@@ -177,21 +167,21 @@ bool CalculateMurreyState(MurreyState &state)
    return true;
   }
 
-bool FindMurreyBreach(const MurreyState &state, int &side, int &line_index, double &level)
+bool FindMurreyBreach(const MurreyState &state,
+                      const MqlRates &bars[],
+                      int &side,
+                      int &line_index,
+                      double &level)
   {
    side = 0;
    line_index = -1;
    level = 0.0;
-
-   MqlRates bars[];
-   ArraySetAsSeries(bars, true);
-   if(CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, 0, 3, bars) < 3) // perf-allowed: source alert rule needs only the last completed candle and prior close.
+   if(!state.ok)
       return false;
 
    const double close_last = bars[1].close;
-   const double open_last = bars[1].open;
    const double close_prev = bars[2].close;
-   if(close_last <= 0.0 || open_last <= 0.0 || close_prev <= 0.0)
+   if(close_last <= 0.0 || close_prev <= 0.0)
       return false;
 
    for(int i = 2; i <= 10; ++i)
@@ -200,14 +190,14 @@ bool FindMurreyBreach(const MurreyState &state, int &side, int &line_index, doub
       if(candidate <= 0.0)
          continue;
 
-      if(close_last > candidate && (open_last <= candidate || close_prev <= candidate))
+      if(close_last > candidate && close_prev <= candidate)
         {
          side = 1;
          line_index = i - 2;
          level = candidate;
          return true;
         }
-      if(close_last < candidate && (open_last >= candidate || close_prev >= candidate))
+      if(close_last < candidate && close_prev >= candidate)
         {
          side = -1;
          line_index = i - 2;
@@ -219,9 +209,7 @@ bool FindMurreyBreach(const MurreyState &state, int &side, int &line_index, doub
    return false;
   }
 
-bool SelectOurPosition(ENUM_POSITION_TYPE &position_type,
-                       datetime &open_time,
-                       string &comment)
+bool SelectOurPosition(ENUM_POSITION_TYPE &position_type, datetime &open_time, string &comment)
   {
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
@@ -254,29 +242,91 @@ double LevelFromPositionComment(const string comment)
    return StringToDouble(StringSubstr(comment, at_pos + 1));
   }
 
+void UpdateClosedBarExitState(const MurreyState &state,
+                              const MqlRates &bars[],
+                              const int breach_side,
+                              const double breach_level)
+  {
+   g_exit_on_next_tick = false;
+
+   ENUM_POSITION_TYPE position_type;
+   datetime open_time = 0;
+   string comment = "";
+   if(!SelectOurPosition(position_type, open_time, comment))
+     {
+      g_active_entry_level = 0.0;
+      return;
+     }
+
+   const bool is_long = (position_type == POSITION_TYPE_BUY);
+   double entry_level = g_active_entry_level;
+   if(entry_level <= 0.0)
+      entry_level = LevelFromPositionComment(comment);
+
+   const double close_last = bars[1].close;
+   if(entry_level > 0.0)
+     {
+      if(is_long && close_last < entry_level)
+         g_exit_on_next_tick = true;
+      if(!is_long && close_last > entry_level)
+         g_exit_on_next_tick = true;
+     }
+
+   if(!g_exit_on_next_tick && breach_side != 0)
+     {
+      if(is_long && breach_side < 0)
+         g_exit_on_next_tick = true;
+      if(!is_long && breach_side > 0)
+         g_exit_on_next_tick = true;
+     }
+
+   if(!g_exit_on_next_tick && strategy_max_hold_bars > 0 && open_time > 0)
+     {
+      const int sec = PeriodSeconds((ENUM_TIMEFRAMES)_Period);
+      if(sec > 0 && (bars[1].time - open_time) >= (datetime)(strategy_max_hold_bars * sec))
+         g_exit_on_next_tick = true;
+     }
+  }
+
+// No Trade Filter (time, spread, news)
 bool Strategy_NoTradeFilter()
   {
    return false;
   }
 
+// Trade Entry
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    ResetEntryRequest(req);
 
    MurreyState state;
+   MqlRates bars[];
+   g_bar_state_ready = false;
    if(!CalculateMurreyState(state))
+      return false;
+   if(!ReadRecentChartBars(bars))
+      return false;
+   g_bar_state_ready = true;
+
+   int side = 0;
+   int line_index = -1;
+   double level = 0.0;
+   const bool breached = FindMurreyBreach(state, bars, side, line_index, level);
+   UpdateClosedBarExitState(state, bars, breached ? side : 0, breached ? level : 0.0);
+
+   ENUM_POSITION_TYPE position_type;
+   datetime open_time = 0;
+   string comment = "";
+   if(SelectOurPosition(position_type, open_time, comment))
+      return false;
+
+   if(!breached)
       return false;
 
    const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
    if(atr <= 0.0)
       return false;
    if(state.interval < atr * strategy_min_interval_atr_mult)
-      return false;
-
-   int side = 0;
-   int line_index = -1;
-   double level = 0.0;
-   if(!FindMurreyBreach(state, side, line_index, level))
       return false;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -303,71 +353,29 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(req.sl <= 0.0)
       return false;
 
-   g_last_entry_level = level;
-   g_last_entry_line = line_index;
-   g_last_entry_side = side;
+   g_active_entry_level = level;
    return true;
   }
 
+// Trade Management
 void Strategy_ManageOpenPosition()
   {
   }
 
+// Trade Close
 bool Strategy_ExitSignal()
   {
-   ENUM_POSITION_TYPE position_type;
-   datetime open_time = 0;
-   string comment = "";
-   if(!SelectOurPosition(position_type, open_time, comment))
+   if(!g_bar_state_ready)
+      return false;
+   if(!g_exit_on_next_tick)
       return false;
 
-   const bool is_long = (position_type == POSITION_TYPE_BUY);
-   double entry_level = g_last_entry_level;
-   if(entry_level <= 0.0)
-      entry_level = LevelFromPositionComment(comment);
-
-   MqlRates bars[];
-   ArraySetAsSeries(bars, true);
-   if(CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, 0, 3, bars) < 3) // perf-allowed: closed-bar exit checks are O(1) while framework calls this hook per tick.
-      return false;
-
-   const double close_last = bars[1].close;
-   if(close_last <= 0.0)
-      return false;
-
-   if(strategy_max_hold_bars > 0 && open_time > 0)
-     {
-      const int sec = PeriodSeconds((ENUM_TIMEFRAMES)_Period);
-      if(sec > 0 && (bars[1].time - open_time) >= (datetime)(strategy_max_hold_bars * sec))
-         return true;
-     }
-
-   if(entry_level > 0.0)
-     {
-      if(is_long && close_last < entry_level)
-         return true;
-      if(!is_long && close_last > entry_level)
-         return true;
-     }
-
-   MurreyState state;
-   if(!CalculateMurreyState(state))
-      return false;
-
-   int side = 0;
-   int line_index = -1;
-   double level = 0.0;
-   if(!FindMurreyBreach(state, side, line_index, level))
-      return false;
-
-   if(is_long && side < 0)
-      return true;
-   if(!is_long && side > 0)
-      return true;
-
-   return false;
+   g_exit_on_next_tick = false;
+   g_active_entry_level = 0.0;
+   return true;
   }
 
+// News Filter Hook (callable for P8 News Impact phase)
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
@@ -471,4 +479,3 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-

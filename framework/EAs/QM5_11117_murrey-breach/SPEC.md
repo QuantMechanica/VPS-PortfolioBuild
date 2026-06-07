@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA calculates Murrey Math lines from the rolling high and low over 64 D1-equivalent periods, using the source default `StepBack = 0`. On each completed H4 bar it watches only the primary `[0/8]` through `[8/8]` levels. It buys at the next bar open when the completed close breaches upward through one of those levels, and sells when the completed close breaches downward. It closes when price closes back through the breached level, when an opposite breach appears, or when 12 H4 bars have passed.
+The EA calculates Murrey Math lines from the rolling high and low over 64 completed D1 bars, using the source default `StepBack = 0`. On each completed H4 bar it watches only the primary `[0/8]` through `[8/8]` levels. It buys at the next bar open when the completed close crosses upward through one of those levels, and sells when the completed close crosses downward. It closes after a completed close back through the breached level, after an opposite breach, or after 12 H4 bars.
 
 ---
 
@@ -19,7 +19,7 @@ The EA calculates Murrey Math lines from the rolling high and low over 64 D1-equ
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
 | `strategy_murrey_period` | 64 | 16-256 | Number of upper-timeframe periods used to calculate Murrey levels. |
-| `strategy_upper_timeframe` | PERIOD_D1 | PERIOD_H4-PERIOD_D1 | Upper timeframe used to translate the source Murrey lookback onto the chart timeframe. |
+| `strategy_upper_timeframe` | PERIOD_D1 | PERIOD_H4-PERIOD_D1 | Upper timeframe used for the source Murrey high/low window. |
 | `strategy_step_back` | 0 | 0-20 | Source Murrey StepBack offset for the high/low window. |
 | `strategy_atr_period` | 14 | 5-50 | ATR period used for the stop cap and minimum interval filter. |
 | `strategy_atr_stop_cap_mult` | 2.5 | 0.5-6.0 | Maximum stop distance as a multiple of ATR. |
@@ -47,7 +47,7 @@ The EA calculates Murrey Math lines from the rolling high and low over 64 D1-equ
 | Aspect | Value |
 |---|---|
 | Base timeframe | H4 |
-| Multi-timeframe refs | PERIOD_D1 Murrey lookback expansion |
+| Multi-timeframe refs | PERIOD_D1 Murrey level window |
 | Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
 
 ---
