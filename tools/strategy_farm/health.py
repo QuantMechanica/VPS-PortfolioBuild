@@ -18,7 +18,7 @@ The 10 invariants below cover every silent failure we hit overnight
   7. MT5 dispatch idle while work_items pending
   8. Codex zero-activity while builds pending
   9. Source pool drained (need to add more sources)
- 10. Tampermonkey quota snapshot stale (Chrome tabs closed)
+ 10. Quota snapshot stale (quota_pull API pull failing)
 """
 
 from __future__ import annotations
@@ -1304,17 +1304,17 @@ def chk_codex_auth_broken(con) -> dict:
 
 
 def chk_quota_snapshot_fresh() -> dict:
-    """Quota snapshot from Tampermonkey scrapers — stale = Chrome tabs closed
-    or receiver dead."""
+    """Quota snapshot from quota_pull.py (headless API pull) — stale = pulls
+    failing (expired token mid-refresh, or chatgpt.com Cloudflare block)."""
     if not QUOTA_SNAPSHOT.exists():
         return _check("quota_snapshot_fresh", "WARN", "missing", 300,
                       "quota_snapshot.json missing",
-                      "Start QM_StrategyFarm_QuotaReceiver and open both Tampermonkey tabs")
+                      "Check QM_StrategyFarm_QuotaPull task; run quota_pull.py manually")
     try:
         snap = json.loads(QUOTA_SNAPSHOT.read_text(encoding="utf-8"))
     except Exception as exc:
         return _check("quota_snapshot_fresh", "WARN", "unreadable", 300,
-                      f"snapshot unreadable: {exc}", "Check receiver process")
+                      f"snapshot unreadable: {exc}", "Check quota_pull.py output")
     now = _utc_now()
     ages: dict = {}
     sources = ["codex"]
@@ -1334,20 +1334,20 @@ def chk_quota_snapshot_fresh() -> dict:
     if max_age is None:
         return _check("quota_snapshot_fresh", "WARN", "no timestamps", 300,
                       "no received_at timestamps in snapshot",
-                      "Open Tampermonkey tabs (chatgpt.com / claude.ai)")
+                      "Check QM_StrategyFarm_QuotaPull task; run quota_pull.py")
     if max_age > 600:  # > 10 min
         src_detail = ", ".join(f"{src}={ages.get(src, '?')}s" for src in sources)
         if ages.get("codex", 10**9) <= 600 and ages.get("claude", 0) > 600:
             return _check("quota_snapshot_fresh", "WARN", max_age, 600,
                           f"claude snapshot stale but codex snapshot fresh ({src_detail})",
-                          "Refresh Claude Tampermonkey tab when relying on Claude quota routing")
+                          "Claude usage pull failing — check quota_pull.py token/anthropic-beta")
         return _check("quota_snapshot_fresh", "FAIL", max_age, 600,
                       f"oldest enabled snapshot {max_age}s old ({src_detail})",
-                      "Refresh Tampermonkey tabs in Chrome")
+                      "Check QM_StrategyFarm_QuotaPull task; run quota_pull.py to see the error")
     if max_age > 300:
         return _check("quota_snapshot_fresh", "WARN", max_age, 300,
                       f"oldest enabled snapshot {max_age}s old",
-                      "Tabs may have lost focus — check Chrome")
+                      "quota_pull may be lagging — check the 5-min task")
     src_detail = ", ".join(f"{src}={ages.get(src, '?')}s" for src in sources)
     if claude_disabled:
         src_detail += "; claude disabled"

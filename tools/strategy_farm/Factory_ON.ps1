@@ -120,10 +120,10 @@ Write-Host '  running farmctl repair (one-shot, this session) ...'
 Write-Host '  farmctl repair done'
 
 # 7. trigger one Pump cycle to start dispatching
-Start-ScheduledTask -TaskName 'QM_StrategyFarm_QuotaReceiver' -ErrorAction SilentlyContinue
+Start-ScheduledTask -TaskName 'QM_StrategyFarm_QuotaPull' -ErrorAction SilentlyContinue
 Start-ScheduledTask -TaskName 'QM_StrategyFarm_AgentRouter_5min' -ErrorAction SilentlyContinue
 Start-ScheduledTask -TaskName 'QM_StrategyFarm_Pump_5min' -ErrorAction SilentlyContinue
-Write-Host '  AI router/quota receiver started; pump triggered (dispatching queued backtests)'
+Write-Host '  AI router/quota pull started; pump triggered (dispatching queued backtests)'
 
 Write-Host ''
 if ($inMySession.Count -ge 8) {
