@@ -79,13 +79,9 @@ input int    strategy_atr_period       = 14;
 input double strategy_atr_sl_mult      = 2.0;
 input int    strategy_max_hold_bars    = 12;
 
-double Strategy_Close(const int shift)
+double Strategy_CloseValue(const int shift)
   {
-   double closes[1];
-   ArraySetAsSeries(closes, true);
-   if(CopyClose(_Symbol, strategy_signal_tf, shift, 1, closes) != 1)
-      return 0.0;
-   return closes[0];
+   return QM_SMA(_Symbol, strategy_signal_tf, 1, shift, PRICE_CLOSE);
   }
 
 int Strategy_PriceCrossSignal()
@@ -93,8 +89,8 @@ int Strategy_PriceCrossSignal()
    if(strategy_sma_period <= 0)
       return 0;
 
-   const double close_now = Strategy_Close(1);
-   const double close_prev = Strategy_Close(2);
+   const double close_now = Strategy_CloseValue(1);
+   const double close_prev = Strategy_CloseValue(2);
    const double sma_now = QM_SMA(_Symbol, strategy_signal_tf, strategy_sma_period, 1, PRICE_CLOSE);
    const double sma_prev = QM_SMA(_Symbol, strategy_signal_tf, strategy_sma_period, 2, PRICE_CLOSE);
    if(close_now <= 0.0 || close_prev <= 0.0 || sma_now <= 0.0 || sma_prev <= 0.0)
@@ -168,7 +164,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(entry <= 0.0)
       return false;
 
-   const double sl = QM_StopATR(_Symbol, side, entry, strategy_atr_period, strategy_atr_sl_mult);
+   const double atr = QM_ATR(_Symbol, strategy_signal_tf, strategy_atr_period, 1);
+   const double sl = QM_StopATRFromValue(_Symbol, side, entry, atr, strategy_atr_sl_mult);
    if(sl <= 0.0)
       return false;
    if(side == QM_BUY && sl >= entry)
