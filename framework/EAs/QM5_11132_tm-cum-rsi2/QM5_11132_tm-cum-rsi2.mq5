@@ -129,12 +129,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_max_hold_bars <= 0)
       return false;
 
-   MqlRates last_bar[];
-   ArraySetAsSeries(last_bar, true);
-   if(CopyRates(_Symbol, PERIOD_D1, 1, 1, last_bar) != 1) // perf-allowed: one closed D1 bar; EntrySignal is called only after QM_IsNewBar().
-      return false;
-
-   const double close_last = last_bar[0].close;
+   const double close_last = QM_SMA(_Symbol, PERIOD_D1, 1, 1, PRICE_CLOSE);
    const double sma_last = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_period, 1, PRICE_CLOSE);
    const double rsi_last = QM_RSI(_Symbol, PERIOD_D1, strategy_rsi_period, 1, PRICE_CLOSE);
    const double rsi_prev = QM_RSI(_Symbol, PERIOD_D1, strategy_rsi_period, 2, PRICE_CLOSE);
