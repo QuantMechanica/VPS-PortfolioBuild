@@ -84,6 +84,11 @@ input double strategy_roi_20m_pct       = 4.0;
 input double strategy_roi_30m_pct       = 3.0;
 input double strategy_roi_60m_pct       = 1.0;
 
+bool     g_strategy_state_ready = false;
+bool     g_strategy_entry_long  = false;
+bool     g_strategy_exit_long   = false;
+datetime g_strategy_signal_bar_time = 0;
+
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -125,6 +130,11 @@ bool Strategy_NoTradeFilter()
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   g_strategy_state_ready = false;
+   g_strategy_entry_long = false;
+   g_strategy_exit_long = false;
+   g_strategy_signal_bar_time = 0;
+
    req.type = QM_BUY;
    req.price = 0.0;
    req.sl = 0.0;
@@ -139,8 +149,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double ema_mid_1 = QM_EMA(_Symbol, tf, strategy_ema_mid, 1);
    const double ema_mid_2 = QM_EMA(_Symbol, tf, strategy_ema_mid, 2);
    const double ema_slow_1 = QM_EMA(_Symbol, tf, strategy_ema_slow, 1);
+   const double ema_slow_2 = QM_EMA(_Symbol, tf, strategy_ema_slow, 2);
    if(ema_fast_1 <= 0.0 || ema_fast_2 <= 0.0 || ema_mid_1 <= 0.0 ||
-      ema_mid_2 <= 0.0 || ema_slow_1 <= 0.0)
+      ema_mid_2 <= 0.0 || ema_slow_1 <= 0.0 || ema_slow_2 <= 0.0)
       return false;
 
    double ha_open_1 = 0.0;
@@ -157,6 +168,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(copied <= 1)
       return false;
 
+   g_strategy_signal_bar_time = rates[1].time;
    const int oldest = copied - 1;
    double prev_ha_close = (rates[oldest].open + rates[oldest].high + rates[oldest].low + rates[oldest].close) / 4.0;
    double prev_ha_open = (rates[oldest].open + rates[oldest].close) / 2.0;
@@ -176,9 +188,17 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(ha_open_1 <= 0.0 || ha_close_1 <= 0.0)
       return false;
 
-   const bool ema_cross_up = (ema_fast_1 > ema_mid_1 && ema_fast_2 <= ema_mid_2);
-   const bool ha_green_above_fast = (ha_close_1 > ema_fast_1 && ha_open_1 < ha_close_1);
-   if(!ema_cross_up || !ha_green_above_fast)
+   g_strategy_entry_long = (ema_fast_1 > ema_mid_1 &&
+                            ema_fast_2 <= ema_mid_2 &&
+                            ha_close_1 > ema_fast_1 &&
+                            ha_open_1 < ha_close_1);
+   g_strategy_exit_long = (ema_mid_1 > ema_slow_1 &&
+                           ema_mid_2 <= ema_slow_2 &&
+                           ha_close_1 < ema_fast_1 &&
+                           ha_open_1 > ha_close_1);
+   g_strategy_state_ready = true;
+
+   if(!g_strategy_entry_long)
       return false;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -244,8 +264,17 @@ bool Strategy_ExitSignal()
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
       return false;
+   if(!g_strategy_state_ready || !g_strategy_exit_long || g_strategy_signal_bar_time <= 0)
+      return false;
 
-   bool have_position = false;
+   const int period_seconds = PeriodSeconds((ENUM_TIMEFRAMES)_Period);
+   if(period_seconds <= 0)
+      return false;
+   const datetime now = TimeCurrent();
+   if(now < g_strategy_signal_bar_time + period_seconds ||
+      now >= g_strategy_signal_bar_time + 2 * period_seconds)
+      return false;
+
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -257,59 +286,11 @@ bool Strategy_ExitSignal()
          continue;
       if((ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) != POSITION_TYPE_BUY)
          continue;
-      have_position = true;
-      break;
+      const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
+      if(open_time <= g_strategy_signal_bar_time)
+         return true;
      }
-   if(!have_position)
-      return false;
-
-   const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
-   const double ema_fast_1 = QM_EMA(_Symbol, tf, strategy_ema_fast, 1);
-   const double ema_mid_1 = QM_EMA(_Symbol, tf, strategy_ema_mid, 1);
-   const double ema_mid_2 = QM_EMA(_Symbol, tf, strategy_ema_mid, 2);
-   const double ema_slow_1 = QM_EMA(_Symbol, tf, strategy_ema_slow, 1);
-   const double ema_slow_2 = QM_EMA(_Symbol, tf, strategy_ema_slow, 2);
-   if(ema_fast_1 <= 0.0 || ema_mid_1 <= 0.0 || ema_mid_2 <= 0.0 ||
-      ema_slow_1 <= 0.0 || ema_slow_2 <= 0.0)
-      return false;
-
-   double ha_open_1 = 0.0;
-   double ha_close_1 = 0.0;
-   int bars_needed = strategy_ema_slow + 11;
-   if(bars_needed < 20)
-      bars_needed = 20;
-   if(bars_needed > 300)
-      bars_needed = 300;
-
-   MqlRates rates[];
-   ArraySetAsSeries(rates, true);
-   const int copied = CopyRates(_Symbol, PERIOD_CURRENT, 0, bars_needed, rates); // perf-allowed: Heikin-Ashi exit reads closed OHLC only after this EA has an open position.
-   if(copied <= 1)
-      return false;
-
-   const int oldest = copied - 1;
-   double prev_ha_close = (rates[oldest].open + rates[oldest].high + rates[oldest].low + rates[oldest].close) / 4.0;
-   double prev_ha_open = (rates[oldest].open + rates[oldest].close) / 2.0;
-   for(int i = oldest - 1; i >= 1; --i)
-     {
-      const double current_ha_close = (rates[i].open + rates[i].high + rates[i].low + rates[i].close) / 4.0;
-      const double current_ha_open = (prev_ha_open + prev_ha_close) / 2.0;
-      if(i == 1)
-        {
-         ha_open_1 = current_ha_open;
-         ha_close_1 = current_ha_close;
-         break;
-        }
-      prev_ha_open = current_ha_open;
-      prev_ha_close = current_ha_close;
-     }
-   if(ha_open_1 <= 0.0 || ha_close_1 <= 0.0)
-      return false;
-
-   return (ema_mid_1 > ema_slow_1 &&
-           ema_mid_2 <= ema_slow_2 &&
-           ha_close_1 < ema_fast_1 &&
-           ha_open_1 > ha_close_1);
+   return false;
   }
 
 // Optional news-filter override. Return TRUE to suppress trading regardless
