@@ -88,76 +88,6 @@ input double strategy_roi_60m_pct       = 1.0;
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-bool Strategy_ReadHeikinAshi(const int shift, double &ha_open, double &ha_close)
-  {
-   ha_open = 0.0;
-   ha_close = 0.0;
-   if(shift < 1)
-      return false;
-
-   int bars_needed = strategy_ema_slow + shift + 10;
-   if(bars_needed < shift + 3)
-      bars_needed = shift + 3;
-   if(bars_needed < 20)
-      bars_needed = 20;
-   if(bars_needed > 300)
-      bars_needed = 300;
-
-   MqlRates rates[];
-   ArraySetAsSeries(rates, true);
-   const int copied = CopyRates(_Symbol, PERIOD_CURRENT, 0, bars_needed, rates); // perf-allowed: Heikin-Ashi requires bounded OHLC; entry is framework-new-bar gated and exit runs only while a position exists.
-   if(copied <= shift)
-      return false;
-
-   const int oldest = copied - 1;
-   double prev_ha_close = (rates[oldest].open + rates[oldest].high + rates[oldest].low + rates[oldest].close) / 4.0;
-   double prev_ha_open = (rates[oldest].open + rates[oldest].close) / 2.0;
-
-   if(oldest == shift)
-     {
-      ha_open = prev_ha_open;
-      ha_close = prev_ha_close;
-      return true;
-     }
-
-   for(int i = oldest - 1; i >= shift; --i)
-     {
-      const double current_ha_close = (rates[i].open + rates[i].high + rates[i].low + rates[i].close) / 4.0;
-      const double current_ha_open = (prev_ha_open + prev_ha_close) / 2.0;
-      if(i == shift)
-        {
-         ha_open = current_ha_open;
-         ha_close = current_ha_close;
-         return (ha_open > 0.0 && ha_close > 0.0);
-        }
-      prev_ha_open = current_ha_open;
-      prev_ha_close = current_ha_close;
-     }
-
-   return false;
-  }
-
-bool Strategy_HasOpenPosition()
-  {
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      return true;
-     }
-
-   return false;
-  }
-
 // Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
@@ -215,7 +145,35 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    double ha_open_1 = 0.0;
    double ha_close_1 = 0.0;
-   if(!Strategy_ReadHeikinAshi(1, ha_open_1, ha_close_1))
+   int bars_needed = strategy_ema_slow + 11;
+   if(bars_needed < 20)
+      bars_needed = 20;
+   if(bars_needed > 300)
+      bars_needed = 300;
+
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, PERIOD_CURRENT, 0, bars_needed, rates); // perf-allowed: Heikin-Ashi requires bounded OHLC; EntrySignal is framework-new-bar gated.
+   if(copied <= 1)
+      return false;
+
+   const int oldest = copied - 1;
+   double prev_ha_close = (rates[oldest].open + rates[oldest].high + rates[oldest].low + rates[oldest].close) / 4.0;
+   double prev_ha_open = (rates[oldest].open + rates[oldest].close) / 2.0;
+   for(int i = oldest - 1; i >= 1; --i)
+     {
+      const double current_ha_close = (rates[i].open + rates[i].high + rates[i].low + rates[i].close) / 4.0;
+      const double current_ha_open = (prev_ha_open + prev_ha_close) / 2.0;
+      if(i == 1)
+        {
+         ha_open_1 = current_ha_open;
+         ha_close_1 = current_ha_close;
+         break;
+        }
+      prev_ha_open = current_ha_open;
+      prev_ha_close = current_ha_close;
+     }
+   if(ha_open_1 <= 0.0 || ha_close_1 <= 0.0)
       return false;
 
    const bool ema_cross_up = (ema_fast_1 > ema_mid_1 && ema_fast_2 <= ema_mid_2);
@@ -283,13 +241,29 @@ void Strategy_ManageOpenPosition()
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   if(!Strategy_HasOpenPosition())
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   bool have_position = false;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      if((ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) != POSITION_TYPE_BUY)
+         continue;
+      have_position = true;
+      break;
+     }
+   if(!have_position)
       return false;
 
    const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
-   if(!QM_IsNewBar(_Symbol, tf))
-      return false;
-
    const double ema_fast_1 = QM_EMA(_Symbol, tf, strategy_ema_fast, 1);
    const double ema_mid_1 = QM_EMA(_Symbol, tf, strategy_ema_mid, 1);
    const double ema_mid_2 = QM_EMA(_Symbol, tf, strategy_ema_mid, 2);
@@ -301,7 +275,35 @@ bool Strategy_ExitSignal()
 
    double ha_open_1 = 0.0;
    double ha_close_1 = 0.0;
-   if(!Strategy_ReadHeikinAshi(1, ha_open_1, ha_close_1))
+   int bars_needed = strategy_ema_slow + 11;
+   if(bars_needed < 20)
+      bars_needed = 20;
+   if(bars_needed > 300)
+      bars_needed = 300;
+
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, PERIOD_CURRENT, 0, bars_needed, rates); // perf-allowed: Heikin-Ashi exit reads closed OHLC only after this EA has an open position.
+   if(copied <= 1)
+      return false;
+
+   const int oldest = copied - 1;
+   double prev_ha_close = (rates[oldest].open + rates[oldest].high + rates[oldest].low + rates[oldest].close) / 4.0;
+   double prev_ha_open = (rates[oldest].open + rates[oldest].close) / 2.0;
+   for(int i = oldest - 1; i >= 1; --i)
+     {
+      const double current_ha_close = (rates[i].open + rates[i].high + rates[i].low + rates[i].close) / 4.0;
+      const double current_ha_open = (prev_ha_open + prev_ha_close) / 2.0;
+      if(i == 1)
+        {
+         ha_open_1 = current_ha_open;
+         ha_close_1 = current_ha_close;
+         break;
+        }
+      prev_ha_open = current_ha_open;
+      prev_ha_close = current_ha_close;
+     }
+   if(ha_open_1 <= 0.0 || ha_close_1 <= 0.0)
       return false;
 
    return (ema_mid_1 > ema_slow_1 &&
