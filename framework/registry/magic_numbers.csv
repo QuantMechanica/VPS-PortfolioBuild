@@ -6559,3 +6559,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11175,weiss-rsi-xover,2,WS30.DWX,111750002,2026-06-07,Development,active
 11175,weiss-rsi-xover,3,EURUSD.DWX,111750003,2026-06-07,Development,active
 11175,weiss-rsi-xover,4,XAUUSD.DWX,111750004,2026-06-07,Development,active
+11176,zip-sma-cross,0,SP500.DWX,111760000,2026-06-07,Development,active
+11176,zip-sma-cross,1,NDX.DWX,111760001,2026-06-07,Development,active
+11176,zip-sma-cross,2,WS30.DWX,111760002,2026-06-07,Development,active
+11176,zip-sma-cross,3,GDAXI.DWX,111760003,2026-06-07,Development,active
+11176,zip-sma-cross,4,EURUSD.DWX,111760004,2026-06-07,Development,active
+11176,zip-sma-cross,5,GBPUSD.DWX,111760005,2026-06-07,Development,active
+11176,zip-sma-cross,6,XAUUSD.DWX,111760006,2026-06-07,Development,active
