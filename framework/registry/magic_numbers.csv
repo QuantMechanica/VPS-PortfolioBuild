@@ -6321,3 +6321,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11078,rsioma-reversal,1,GBPUSD.DWX,110780001,2026-06-07,Development,active
 11078,rsioma-reversal,2,USDJPY.DWX,110780002,2026-06-07,Development,active
 11078,rsioma-reversal,3,USDCAD.DWX,110780003,2026-06-07,Development,active
+11079,cci-zero-cross,0,EURUSD.DWX,110790000,2026-06-07,Development,active
+11079,cci-zero-cross,1,GBPUSD.DWX,110790001,2026-06-07,Development,active
+11079,cci-zero-cross,2,USDJPY.DWX,110790002,2026-06-07,Development,active
+11079,cci-zero-cross,3,XAUUSD.DWX,110790003,2026-06-07,Development,active
