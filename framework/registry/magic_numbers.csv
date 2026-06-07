@@ -6529,3 +6529,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11169,weiss-ichi3-ma,2,XAUUSD.DWX,111690002,2026-06-07,Development,active
 11169,weiss-ichi3-ma,3,XTIUSD.DWX,111690003,2026-06-07,Development,active
 11169,weiss-ichi3-ma,4,SP500.DWX,111690004,2026-06-07,Development,active
+11170,weiss-macd-sar,0,EURUSD.DWX,111700000,2026-06-07,Development,active
+11170,weiss-macd-sar,1,USDJPY.DWX,111700001,2026-06-07,Development,active
+11170,weiss-macd-sar,2,XAUUSD.DWX,111700002,2026-06-07,Development,active
+11170,weiss-macd-sar,3,XTIUSD.DWX,111700003,2026-06-07,Development,active
+11170,weiss-macd-sar,4,SP500.DWX,111700004,2026-06-07,Development,active
