@@ -6807,3 +6807,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11348,rbt-cci200-ema-triple-m5,1,GBPUSD.DWX,113480001,2026-06-08,Development,active
 11348,rbt-cci200-ema-triple-m5,2,AUDUSD.DWX,113480002,2026-06-08,Development,active
 11348,rbt-cci200-ema-triple-m5,3,USDJPY.DWX,113480003,2026-06-08,Development,active
+11355,robo-psar-cci,0,EURUSD.DWX,113550000,2026-06-08,Development,active
+11355,robo-psar-cci,1,AUDUSD.DWX,113550001,2026-06-08,Development,active
+11355,robo-psar-cci,2,GBPUSD.DWX,113550002,2026-06-08,Development,active
