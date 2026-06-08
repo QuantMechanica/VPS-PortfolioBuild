@@ -111,34 +111,6 @@ double Strategy_AwesomeOscillator(const int shift)
    return fast - slow;
   }
 
-bool Strategy_IndicatorsReady()
-  {
-   const int macd_handle = QM_IndMACD(_Symbol,
-                                      PERIOD_CURRENT,
-                                      strategy_macd_fast,
-                                      strategy_macd_slow,
-                                      strategy_macd_signal,
-                                      PRICE_CLOSE);
-   const int ao_fast_handle = QM_IndMA(_Symbol,
-                                       PERIOD_CURRENT,
-                                       strategy_ao_fast,
-                                       MODE_SMA,
-                                       PRICE_MEDIAN);
-   const int ao_slow_handle = QM_IndMA(_Symbol,
-                                       PERIOD_CURRENT,
-                                       strategy_ao_slow,
-                                       MODE_SMA,
-                                       PRICE_MEDIAN);
-   if(macd_handle == INVALID_HANDLE || ao_fast_handle == INVALID_HANDLE || ao_slow_handle == INVALID_HANDLE)
-      return false;
-
-   const int needed = MathMax(strategy_macd_slow + strategy_macd_signal + 2,
-                              strategy_ao_slow + 2);
-   return (BarsCalculated(macd_handle) >= needed &&
-           BarsCalculated(ao_fast_handle) >= needed &&
-           BarsCalculated(ao_slow_handle) >= needed);
-  }
-
 bool Strategy_SpreadAllowsEntry()
   {
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
@@ -167,7 +139,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!Strategy_IndicatorsReady() || !Strategy_SpreadAllowsEntry())
+   if(!Strategy_SpreadAllowsEntry())
       return false;
 
    const double macd = QM_MACD_Main(_Symbol,
@@ -204,9 +176,6 @@ void Strategy_ManageOpenPosition()
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   if(!Strategy_IndicatorsReady())
-      return false;
-
    const double macd = QM_MACD_Main(_Symbol,
                                     PERIOD_CURRENT,
                                     strategy_macd_fast,
