@@ -6813,3 +6813,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11356,robo-10pts,0,EURUSD.DWX,113560000,2026-06-08,Development,active
 11356,robo-10pts,1,GBPUSD.DWX,113560001,2026-06-08,Development,active
 11356,robo-10pts,2,AUDUSD.DWX,113560002,2026-06-08,Development,active
+11357,robo-bb-gjpy,0,GBPJPY.DWX,113570000,2026-06-08,Development,active
+11357,robo-bb-gjpy,1,GBPUSD.DWX,113570001,2026-06-08,Development,active
+11357,robo-bb-gjpy,2,USDJPY.DWX,113570002,2026-06-08,Development,active
