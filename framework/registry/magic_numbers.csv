@@ -6793,3 +6793,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11310,tc20-h1-7-ema-cascade-rsi21,0,EURUSD.DWX,113100000,2026-06-08,Development,active
 11310,tc20-h1-7-ema-cascade-rsi21,1,GBPUSD.DWX,113100001,2026-06-08,Development,active
 11310,tc20-h1-7-ema-cascade-rsi21,2,USDJPY.DWX,113100002,2026-06-08,Development,active
+11332,tc-m5-18-ema20-macd-cross-trail,0,EURUSD.DWX,113320000,2026-06-08,Development,active
+11332,tc-m5-18-ema20-macd-cross-trail,1,GBPUSD.DWX,113320001,2026-06-08,Development,active
+11332,tc-m5-18-ema20-macd-cross-trail,2,USDJPY.DWX,113320002,2026-06-08,Development,active
