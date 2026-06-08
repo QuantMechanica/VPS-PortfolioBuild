@@ -379,21 +379,22 @@ def _is_codex_auth_broken(con) -> bool:
             auth_age_h = (_t.time() - auth_mtime) / 3600
         except OSError:
             pass
-    try:
-        import subprocess as _sp
-        out = _sp.run(
-            ["powershell.exe", "-NoProfile", "-Command",
-             "(Get-Process -Name codex -ErrorAction SilentlyContinue).Count"],
-            capture_output=True, text=True, timeout=10,
-            creationflags=_creationflags_no_window(),
-        )
-        n_codex = int((out.stdout or "0").strip() or "0")
-    except Exception:
-        n_codex = -1
     n_pending = con.execute(
         "SELECT COUNT(*) FROM tasks WHERE kind='build_ea' AND status='pending'"
     ).fetchone()[0]
-    return (n_401 >= 2) or (n_codex == 0 and n_pending >= 1 and auth_age_h is not None and auth_age_h > 12)
+    # Real "codex is alive" signal: a build_ea task reached a terminal state
+    # (done OR failed — both prove codex spawned and ran) in the last 3h. The old
+    # heuristic counted live `codex` processes, but those are transient (one per
+    # build, gone between builds) so an instantaneous 0 is normal; and auth.json
+    # mtime is not rewritten on every use (long-lived access token), so file age
+    # is a poor proxy. Together they cried wolf while builds were flowing.
+    cutoff_3h = (_utc_now() - dt.timedelta(hours=3)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    recent_build_activity = con.execute(
+        "SELECT COUNT(*) FROM tasks WHERE kind='build_ea' "
+        "AND status IN ('done','failed') AND updated_at >= ?", (cutoff_3h,)
+    ).fetchone()[0]
+    return (n_401 >= 2) or (n_pending >= 1 and recent_build_activity == 0
+                            and auth_age_h is not None and auth_age_h > 12)
 
 
 def chk_codex_review_fail_rate(con) -> dict:
@@ -1270,27 +1271,25 @@ def chk_codex_auth_broken(con) -> dict:
             auth_age_h = (_t.time() - auth_mtime) / 3600
         except OSError:
             pass
-    try:
-        import subprocess as _sp
-        out = _sp.run(
-            ["powershell.exe", "-NoProfile", "-Command",
-             "(Get-Process -Name codex -ErrorAction SilentlyContinue).Count"],
-            capture_output=True, text=True, timeout=10,
-            creationflags=_creationflags_no_window(),
-        )
-        n_codex = int((out.stdout or "0").strip() or "0")
-    except Exception:
-        n_codex = -1
     n_pending = con.execute(
         "SELECT COUNT(*) FROM tasks WHERE kind='build_ea' AND status='pending'"
     ).fetchone()[0]
-    pipeline_silent_on_codex = (n_codex == 0 and n_pending >= 1
+    # Real activity signal instead of an instantaneous codex-process snapshot:
+    # codex processes are transient (one per build), so 0 live procs is normal
+    # between builds and auth.json mtime is not rewritten on every use. Only flag
+    # a stall when NO build_ea reached a terminal state (done/failed) in 3h.
+    cutoff_3h = (_utc_now() - dt.timedelta(hours=3)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    recent_build_activity = con.execute(
+        "SELECT COUNT(*) FROM tasks WHERE kind='build_ea' "
+        "AND status IN ('done','failed') AND updated_at >= ?", (cutoff_3h,)
+    ).fetchone()[0]
+    pipeline_silent_on_codex = (recent_build_activity == 0 and n_pending >= 1
                                 and auth_age_h is not None and auth_age_h > 12)
 
     if n_401 >= 2 or pipeline_silent_on_codex:
         detail = (f"{n_401} recent 401-logs"
                   + (f", auth_age={auth_age_h:.1f}h" if auth_age_h else "")
-                  + (f", {n_pending} builds pending with 0 codex" if pipeline_silent_on_codex else ""))
+                  + (f", {n_pending} builds pending, 0 build activity in 3h" if pipeline_silent_on_codex else ""))
         return _check("codex_auth_broken", "FAIL", n_401 or 1, 1,
                       detail,
                       "Run `codex login` interactively on the VPS. The pump circuit "
