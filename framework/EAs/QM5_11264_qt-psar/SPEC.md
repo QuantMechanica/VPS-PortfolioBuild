@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA reconstructs Parabolic SAR on closed bars with initial AF 0.02, step AF 0.02, and max AF 0.20. It opens long when the latest closed bar has SAR below close and the prior closed bar was not long; it opens short when the latest closed bar has SAR above close and the prior closed bar was not short. Existing opposite positions are closed before the reversal entry is submitted. Entries are skipped when SAR is closer than 0.25 ATR(14) to close or when spread is more than 10% of that SAR distance.
+The EA reconstructs Parabolic SAR on closed bars with initial AF 0.02, step AF 0.02, and max AF 0.20. It opens long when the latest closed bar has SAR below close and opens short when the latest closed bar has SAR above close; a fresh flat tester account is allowed to align with the current SAR state. Existing opposite positions are closed before the reversal entry is submitted. New entries are skipped when SAR is closer than 0.25 ATR(14) to close or when spread is more than 10% of that SAR distance.
 
 ---
 

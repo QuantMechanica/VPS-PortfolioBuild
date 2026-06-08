@@ -236,8 +236,24 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    const int state_1 = Strategy_SARState(sar_1, close_1);
    const int state_2 = Strategy_SARState(sar_2, close_2);
-   if(state_1 == 0 || state_1 == state_2)
+   if(state_1 == 0)
       return false;
+
+   int open_direction = 0;
+   ulong open_ticket = 0;
+   const bool has_open_position = Strategy_FindOpenPosition(open_direction, open_ticket);
+   if(has_open_position)
+     {
+      if(open_direction == state_1)
+         return false;
+      if(!QM_TM_ClosePosition(open_ticket, QM_EXIT_OPPOSITE_SIGNAL))
+         return false;
+     }
+   else if(state_1 == state_2)
+     {
+      // Initial state alignment: the source models a PSAR position state on
+      // every closed bar, while a fresh tester account starts flat.
+     }
 
    const double atr = QM_ATR(_Symbol, strategy_signal_tf, strategy_atr_period, 1);
    if(atr <= 0.0)
@@ -258,16 +274,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       sar_distance > 0.0 &&
       spread > sar_distance * strategy_max_spread_sar_pct / 100.0)
       return false;
-
-   int open_direction = 0;
-   ulong open_ticket = 0;
-   if(Strategy_FindOpenPosition(open_direction, open_ticket))
-     {
-      if(open_direction == state_1)
-         return false;
-      if(!QM_TM_ClosePosition(open_ticket, QM_EXIT_OPPOSITE_SIGNAL))
-         return false;
-     }
 
    req.type = (state_1 > 0) ? QM_BUY : QM_SELL;
    req.price = 0.0;
