@@ -6799,3 +6799,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11342,triad-offhours-watermark,0,EURUSD.DWX,113420000,2026-06-08,Development,active
 11342,triad-offhours-watermark,1,GBPUSD.DWX,113420001,2026-06-08,Development,active
 11342,triad-offhours-watermark,2,USDJPY.DWX,113420002,2026-06-08,Development,active
+11343,triad-session-breakout,0,EURUSD.DWX,113430000,2026-06-08,Development,active
+11343,triad-session-breakout,1,GBPUSD.DWX,113430001,2026-06-08,Development,active
+11343,triad-session-breakout,2,GBPJPY.DWX,113430002,2026-06-08,Development,active
+11343,triad-session-breakout,3,USDJPY.DWX,113430003,2026-06-08,Development,active
