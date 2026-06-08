@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11286 AutoTrader MACD EMA Trend Strategy"
+#property description "QM5_11310 TC20 H1 7 EMA Cascade RSI21"
 
 #include <QM/QM_Common.mqh>
 
@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 11286;
+input int    qm_ea_id                   = 11310;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -52,8 +52,8 @@ input group "News"
 //   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
 //   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
 // A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
 // Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
@@ -73,33 +73,16 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input ENUM_TIMEFRAMES strategy_timeframe          = PERIOD_H1;
-input int             strategy_ema_period         = 200;
-input int             strategy_macd_fast          = 12;
-input int             strategy_macd_slow          = 26;
-input int             strategy_macd_signal        = 9;
-input int             strategy_swing_left_right   = 5;
-input int             strategy_swing_scan_bars    = 80;
-input int             strategy_atr_period         = 14;
-input double          strategy_atr_fallback_mult  = 2.0;
-input double          strategy_reward_risk        = 1.5;
-input int             strategy_min_stop_points    = 10;
-
-int Strategy_PriceVsEma(const string symbol,
-                        const ENUM_TIMEFRAMES timeframe,
-                        const int ema_period,
-                        const int shift)
-  {
-   const double ema = QM_EMA(symbol, timeframe, ema_period, shift);
-   const double close_price = iClose(symbol, timeframe, shift); // perf-allowed: single closed-bar price-vs-EMA check replacing direct QM_Signals include.
-   if(ema <= 0.0 || close_price <= 0.0)
-      return 0;
-   if(close_price > ema)
-      return +1;
-   if(close_price < ema)
-      return -1;
-   return 0;
-  }
+input ENUM_TIMEFRAMES strategy_signal_tf = PERIOD_H1;
+input int    strategy_ema_fast          = 3;
+input int    strategy_ema_trigger       = 5;
+input int    strategy_ema_mid_fast      = 13;
+input int    strategy_ema_mid_slow      = 21;
+input int    strategy_ema_trend         = 80;
+input int    strategy_rsi_period        = 21;
+input double strategy_rsi_midline       = 50.0;
+input int    strategy_stop_pips         = 25;
+input int    strategy_spread_cap_pips   = 20;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -109,7 +92,18 @@ int Strategy_PriceVsEma(const string symbol,
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   return ((ENUM_TIMEFRAMES)_Period != strategy_timeframe);
+   if(strategy_spread_cap_pips <= 0)
+      return false;
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
+   if(ask <= 0.0 || bid <= 0.0 || spread_cap <= 0.0)
+      return true;
+   if((ask - bid) > spread_cap)
+      return true;
+
+   return false;
   }
 
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
@@ -125,126 +119,67 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(strategy_ema_period <= 0 ||
-      strategy_macd_fast <= 0 ||
-      strategy_macd_slow <= strategy_macd_fast ||
-      strategy_macd_signal <= 0 ||
-      strategy_swing_left_right < 1 ||
-      strategy_swing_scan_bars < strategy_swing_left_right * 2 + 2 ||
-      strategy_atr_period <= 0 ||
-      strategy_atr_fallback_mult <= 0.0 ||
-      strategy_reward_risk <= 0.0)
+   if(strategy_ema_fast <= 0 ||
+      strategy_ema_trigger <= 0 ||
+      strategy_ema_mid_fast <= 0 ||
+      strategy_ema_mid_slow <= 0 ||
+      strategy_ema_trend <= 0 ||
+      strategy_rsi_period <= 0 ||
+      strategy_stop_pips <= 0)
       return false;
 
-   const int trend = Strategy_PriceVsEma(_Symbol, strategy_timeframe,
-                                         strategy_ema_period, 1);
-   const double macd_now = QM_MACD_Main(_Symbol, strategy_timeframe,
-                                        strategy_macd_fast, strategy_macd_slow,
-                                        strategy_macd_signal, 1);
-   const double sig_now = QM_MACD_Signal(_Symbol, strategy_timeframe,
-                                         strategy_macd_fast, strategy_macd_slow,
-                                         strategy_macd_signal, 1);
-   const double macd_prev = QM_MACD_Main(_Symbol, strategy_timeframe,
-                                         strategy_macd_fast, strategy_macd_slow,
-                                         strategy_macd_signal, 2);
-   const double sig_prev = QM_MACD_Signal(_Symbol, strategy_timeframe,
-                                          strategy_macd_fast, strategy_macd_slow,
-                                          strategy_macd_signal, 2);
-
-   const bool long_signal = (trend > 0 &&
-                             macd_prev <= sig_prev &&
-                             macd_now > sig_now &&
-                             macd_now < 0.0);
-   const bool short_signal = (trend < 0 &&
-                              macd_prev >= sig_prev &&
-                              macd_now < sig_now &&
-                              macd_now > 0.0);
-   if(!long_signal && !short_signal)
+   const double ema3_1  = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_fast, 1);
+   const double ema3_2  = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_fast, 2);
+   const double ema5_1  = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_trigger, 1);
+   const double ema5_2  = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_trigger, 2);
+   const double ema13_1 = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_mid_fast, 1);
+   const double ema21_1 = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_mid_slow, 1);
+   const double ema80_1 = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_trend, 1);
+   const double rsi_1   = QM_RSI(_Symbol, strategy_signal_tf, strategy_rsi_period, 1);
+   if(ema3_1 <= 0.0 || ema3_2 <= 0.0 || ema5_1 <= 0.0 || ema5_2 <= 0.0 ||
+      ema13_1 <= 0.0 || ema21_1 <= 0.0 || ema80_1 <= 0.0 || rsi_1 <= 0.0)
       return false;
 
-   const QM_OrderType side = long_signal ? QM_BUY : QM_SELL;
-   const double entry = QM_EntryMarketPrice(side);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(entry <= 0.0 || point <= 0.0)
-      return false;
-
-   double swing_stop = 0.0;
-   const int radius = strategy_swing_left_right;
-   for(int shift = radius + 1; shift <= strategy_swing_scan_bars; ++shift)
+   const bool long_cross = (ema3_2 <= ema5_2 && ema3_1 > ema5_1);
+   const bool long_cascade = (ema3_1 > ema5_1 && ema5_1 > ema13_1 && ema13_1 > ema21_1 && ema21_1 > ema80_1);
+   if(long_cross && long_cascade && rsi_1 > strategy_rsi_midline)
      {
-      bool pivot = true;
-      if(long_signal)
-        {
-         const double center = iLow(_Symbol, strategy_timeframe, shift); // perf-allowed: bounded 5-left/5-right swing stop from card.
-         if(center <= 0.0)
-            continue;
-         for(int j = 1; j <= radius; ++j)
-           {
-            const double newer = iLow(_Symbol, strategy_timeframe, shift - j); // perf-allowed: bounded 5-left/5-right swing stop from card.
-            const double older = iLow(_Symbol, strategy_timeframe, shift + j); // perf-allowed: bounded 5-left/5-right swing stop from card.
-            if(newer <= 0.0 || older <= 0.0 || center > newer || center > older)
-              {
-               pivot = false;
-               break;
-              }
-           }
-         if(pivot)
-           {
-            swing_stop = center;
-            break;
-           }
-        }
-      else
-        {
-         const double center = iHigh(_Symbol, strategy_timeframe, shift); // perf-allowed: bounded 5-left/5-right swing stop from card.
-         if(center <= 0.0)
-            continue;
-         for(int j = 1; j <= radius; ++j)
-           {
-            const double newer = iHigh(_Symbol, strategy_timeframe, shift - j); // perf-allowed: bounded 5-left/5-right swing stop from card.
-            const double older = iHigh(_Symbol, strategy_timeframe, shift + j); // perf-allowed: bounded 5-left/5-right swing stop from card.
-            if(newer <= 0.0 || older <= 0.0 || center < newer || center < older)
-              {
-               pivot = false;
-               break;
-              }
-           }
-         if(pivot)
-           {
-            swing_stop = center;
-            break;
-           }
-        }
+      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      const double sl = QM_StopFixedPips(_Symbol, QM_BUY, entry, strategy_stop_pips);
+      if(entry <= 0.0 || sl <= 0.0)
+         return false;
+      req.type = QM_BUY;
+      req.price = 0.0;
+      req.sl = sl;
+      req.tp = 0.0;
+      req.reason = "EMA_CASCADE_RSI_LONG";
+      return true;
      }
 
-   double sl = QM_StopStructureFromExtremes(_Symbol, side, swing_stop, swing_stop);
-   if((long_signal && (sl <= 0.0 || sl >= entry)) ||
-      (short_signal && (sl <= 0.0 || sl <= entry)))
-      sl = QM_StopATR(_Symbol, side, entry, strategy_atr_period, strategy_atr_fallback_mult);
+   const bool short_cross = (ema3_2 >= ema5_2 && ema3_1 < ema5_1);
+   const bool short_cascade = (ema3_1 < ema5_1 && ema5_1 < ema13_1 && ema13_1 < ema21_1 && ema21_1 < ema80_1);
+   if(short_cross && short_cascade && rsi_1 < strategy_rsi_midline)
+     {
+      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      const double sl = QM_StopFixedPips(_Symbol, QM_SELL, entry, strategy_stop_pips);
+      if(entry <= 0.0 || sl <= 0.0)
+         return false;
+      req.type = QM_SELL;
+      req.price = 0.0;
+      req.sl = sl;
+      req.tp = 0.0;
+      req.reason = "EMA_CASCADE_RSI_SHORT";
+      return true;
+     }
 
-   const double sl_points = MathAbs(entry - sl) / point;
-   if(sl <= 0.0 || sl_points < strategy_min_stop_points)
-      return false;
-
-   const double tp = QM_TakeRR(_Symbol, side, entry, sl, strategy_reward_risk);
-   if(tp <= 0.0)
-      return false;
-
-   req.type = side;
-   req.price = 0.0;
-   req.sl = sl;
-   req.tp = tp;
-   req.reason = long_signal ? "AT_MACD_EMA_LONG" : "AT_MACD_EMA_SHORT";
-   req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
-   return true;
+   return false;
   }
 
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies no break-even, trailing stop, or partial close.
+   // Card specifies no trailing, partial close, or break-even management.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
@@ -252,56 +187,42 @@ void Strategy_ManageOpenPosition()
 bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
-   bool have_long = false;
-   bool have_short = false;
+   if(magic <= 0)
+      return false;
+
+   bool has_long = false;
+   bool has_short = false;
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
          continue;
       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
 
-      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      if(ptype == POSITION_TYPE_BUY)
-         have_long = true;
-      if(ptype == POSITION_TYPE_SELL)
-         have_short = true;
+      const ENUM_POSITION_TYPE type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      if(type == POSITION_TYPE_BUY)
+         has_long = true;
+      if(type == POSITION_TYPE_SELL)
+         has_short = true;
      }
 
-   if(!have_long && !have_short)
+   if(!has_long && !has_short)
       return false;
 
-   const int trend = Strategy_PriceVsEma(_Symbol, strategy_timeframe,
-                                         strategy_ema_period, 1);
-   const double macd_now = QM_MACD_Main(_Symbol, strategy_timeframe,
-                                        strategy_macd_fast, strategy_macd_slow,
-                                        strategy_macd_signal, 1);
-   const double sig_now = QM_MACD_Signal(_Symbol, strategy_timeframe,
-                                         strategy_macd_fast, strategy_macd_slow,
-                                         strategy_macd_signal, 1);
-   const double macd_prev = QM_MACD_Main(_Symbol, strategy_timeframe,
-                                         strategy_macd_fast, strategy_macd_slow,
-                                         strategy_macd_signal, 2);
-   const double sig_prev = QM_MACD_Signal(_Symbol, strategy_timeframe,
-                                          strategy_macd_fast, strategy_macd_slow,
-                                          strategy_macd_signal, 2);
+   const double ema3_1 = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_fast, 1);
+   const double ema5_1 = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_trigger, 1);
+   const double rsi_1  = QM_RSI(_Symbol, strategy_signal_tf, strategy_rsi_period, 1);
+   if(ema3_1 <= 0.0 || ema5_1 <= 0.0 || rsi_1 <= 0.0)
+      return false;
 
-   const bool long_entry_now = (trend > 0 &&
-                                macd_prev <= sig_prev &&
-                                macd_now > sig_now &&
-                                macd_now < 0.0);
-   const bool short_entry_now = (trend < 0 &&
-                                 macd_prev >= sig_prev &&
-                                 macd_now < sig_now &&
-                                 macd_now > 0.0);
+   if(has_long && (ema3_1 < ema5_1 || rsi_1 < strategy_rsi_midline))
+      return true;
+   if(has_short && (ema3_1 > ema5_1 || rsi_1 > strategy_rsi_midline))
+      return true;
 
-   if(have_long && short_entry_now)
-      return true;
-   if(have_short && long_entry_now)
-      return true;
    return false;
   }
 

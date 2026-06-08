@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        11286
-; ea_slug:      at-macd-ema
+; ea_id:        11310
+; ea_slug:      tc20-h1-7-ema-cascade-rsi21
 ; ea_version:   v5.0
 ; set_version:  s20260608-001
-; symbol:       EURUSD.DWX
+; symbol:       USDJPY.DWX
 ; timeframe:    H1
 ; environment:  backtest
-; magic_slot:   0
+; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   06cbdf647e87948c2663fbb5a2b05c95ed496991cbdd6ed74e2a88914be61e3b
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-06-08
 ;==========================================================
-qm_magic_slot_offset=0
+qm_magic_slot_offset=2
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
