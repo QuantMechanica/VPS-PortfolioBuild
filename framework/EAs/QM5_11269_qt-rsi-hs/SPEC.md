@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA computes RSI on the active chart timeframe and searches the last 25 closed bars for a head-and-shoulders top in the RSI series. It enters short when the two RSI shoulders are near each other, the head is materially above both shoulders, the two neckline bottoms are near the current RSI value, and the latest closed-bar close is not a new 25-bar high. The short exits when closed-bar RSI has risen more than 4 points above the entry RSI or after 5 bars, with the framework also enforcing Friday close and news blackout.
+The EA computes RSI on the active chart timeframe and searches a 25-bar horizon for the source script's head-and-shoulders node sequence in the RSI series. It enters short when the current RSI acts as the bottom, a prior head is more than `head * delta` above that bottom, the two bottom nodes are within `delta`, and matching shoulder nodes are more than `shoulder * delta` above the bottom but below the head. The latest closed-bar close must not be a new 25-bar closing high. The short exits when closed-bar RSI has risen more than 4 points above the entry RSI or after 5 bars, with the framework also enforcing Friday close and news blackout.
 
 ---
 
@@ -21,8 +21,8 @@ The EA computes RSI on the active chart timeframe and searches the last 25 close
 | strategy_rsi_period | 14 | 1+ | RSI period used for the pattern and RSI exit. |
 | strategy_pattern_horizon | 25 | 8-60 | Closed-bar lookback window for the RSI head-and-shoulders search. |
 | strategy_delta_rsi | 0.2 | >0 | Maximum RSI-point distance for shoulder equality and neckline-bottom proximity. |
-| strategy_head_ratio | 1.1 | >1.0 | Required ratio of head RSI over each shoulder RSI. |
-| strategy_shoulder_ratio | 1.1 | >1.0 | Required ratio of each shoulder RSI over its adjacent neckline bottom. |
+| strategy_head_ratio | 1.1 | >1.0 | Multiplier applied to delta for the required head-vs-bottom RSI distance. |
+| strategy_shoulder_ratio | 1.1 | >1.0 | Multiplier applied to delta for shoulder-vs-bottom and head-vs-shoulder RSI distances. |
 | strategy_atr_period | 14 | 1+ | ATR period for the hard stop. |
 | strategy_atr_sl_mult | 2.0 | >0 | ATR multiple for the default short stop. |
 | strategy_head_atr_buffer | 0.25 | >=0 | Extra ATR buffer above the detected pattern head high for the optional protective stop. |

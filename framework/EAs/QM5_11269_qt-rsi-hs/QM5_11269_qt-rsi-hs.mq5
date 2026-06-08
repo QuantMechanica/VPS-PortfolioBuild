@@ -128,29 +128,29 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
    const int copied = CopyRates(_Symbol, _Period, 0, horizon + 2, rates); // perf-allowed: bounded RSI head-and-shoulders OHLC window, once per framework new bar
-   if(copied < horizon + 1)
+   if(copied < horizon + 2)
       return false;
 
    double rsi[];
-   ArrayResize(rsi, horizon + 1);
-   for(int shift = 1; shift <= horizon; ++shift)
+   ArrayResize(rsi, horizon + 2);
+   for(int shift = 1; shift <= horizon + 1; ++shift)
      {
       rsi[shift] = QM_RSI(_Symbol, PERIOD_CURRENT, strategy_rsi_period, shift);
       if(rsi[shift] == EMPTY_VALUE || !MathIsValidNumber(rsi[shift]) || rsi[shift] <= 0.0)
          return false;
      }
 
-   double max_high = rates[1].high;
-   for(int shift = 2; shift <= horizon; ++shift)
-      if(rates[shift].high > max_high)
-         max_high = rates[shift].high;
+   double max_close = rates[2].close;
+   for(int shift = 3; shift <= horizon + 1; ++shift)
+      if(rates[shift].close > max_close)
+         max_close = rates[shift].close;
 
-   if(rates[1].close >= max_high)
+   if(rates[1].close >= max_close)
       return false;
 
    int head_shift = 2;
    double head_rsi = rsi[2];
-   for(int shift = 3; shift <= horizon - 1; ++shift)
+   for(int shift = 3; shift <= horizon + 1; ++shift)
      {
       if(rsi[shift] > head_rsi)
         {
@@ -159,54 +159,71 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
         }
      }
 
-   if(head_shift < 4 || head_shift > horizon - 3)
+   const double bottom_rsi = rsi[1];
+   if(MathAbs(head_rsi - bottom_rsi) <= strategy_head_ratio * strategy_delta_rsi)
       return false;
 
-   int right_shoulder_shift = 2;
-   double right_shoulder_rsi = rsi[2];
-   for(int shift = 3; shift < head_shift; ++shift)
+   int k_shift = -1;
+   for(int shift = head_shift - 1; shift >= 2; --shift)
      {
-      if(rsi[shift] > right_shoulder_rsi)
+      if(MathAbs(rsi[shift] - bottom_rsi) < strategy_delta_rsi)
         {
-         right_shoulder_rsi = rsi[shift];
-         right_shoulder_shift = shift;
+         k_shift = shift;
+         break;
+        }
+     }
+   if(k_shift < 0)
+      return false;
+
+   int l_shift = -1;
+   for(int shift = head_shift + 1; shift <= horizon + 1; ++shift)
+     {
+      if(MathAbs(rsi[shift] - bottom_rsi) < strategy_delta_rsi)
+        {
+         l_shift = shift;
+         break;
+        }
+     }
+   if(l_shift < 0)
+      return false;
+
+   int m_shift = -1;
+   for(int shift = horizon + 1; shift > l_shift; --shift)
+     {
+      if(MathAbs(rsi[shift] - bottom_rsi) < strategy_delta_rsi)
+        {
+         m_shift = shift;
+         break;
+        }
+     }
+   if(m_shift < 0 || m_shift <= l_shift)
+      return false;
+
+   int n_shift = m_shift;
+   double top_rsi = rsi[m_shift];
+   for(int shift = m_shift - 1; shift > l_shift; --shift)
+     {
+      if(rsi[shift] > top_rsi)
+        {
+         top_rsi = rsi[shift];
+         n_shift = shift;
         }
      }
 
-   int left_shoulder_shift = head_shift + 1;
-   double left_shoulder_rsi = rsi[left_shoulder_shift];
-   for(int shift = head_shift + 2; shift <= horizon; ++shift)
-     {
-      if(rsi[shift] > left_shoulder_rsi)
-        {
-         left_shoulder_rsi = rsi[shift];
-         left_shoulder_shift = shift;
-        }
-     }
-
-   if(right_shoulder_shift >= head_shift - 1 || left_shoulder_shift <= head_shift + 1)
+   if(top_rsi - bottom_rsi <= strategy_shoulder_ratio * strategy_delta_rsi ||
+      head_rsi - top_rsi <= strategy_shoulder_ratio * strategy_delta_rsi)
       return false;
 
-   double left_bottom_rsi = rsi[head_shift + 1];
-   for(int shift = head_shift + 1; shift < left_shoulder_shift; ++shift)
-      if(rsi[shift] < left_bottom_rsi)
-         left_bottom_rsi = rsi[shift];
-
-   double right_bottom_rsi = rsi[right_shoulder_shift + 1];
-   for(int shift = right_shoulder_shift + 1; shift < head_shift; ++shift)
-      if(rsi[shift] < right_bottom_rsi)
-         right_bottom_rsi = rsi[shift];
-
-   const double current_rsi = rsi[1];
-   const bool shoulders_near = (MathAbs(left_shoulder_rsi - right_shoulder_rsi) <= strategy_delta_rsi);
-   const bool head_above_shoulders = (head_rsi >= left_shoulder_rsi * strategy_head_ratio &&
-                                      head_rsi >= right_shoulder_rsi * strategy_head_ratio);
-   const bool shoulders_above_bottoms = (left_shoulder_rsi >= left_bottom_rsi * strategy_shoulder_ratio &&
-                                         right_shoulder_rsi >= right_bottom_rsi * strategy_shoulder_ratio);
-   const bool bottoms_near_current = (MathAbs(left_bottom_rsi - current_rsi) <= strategy_delta_rsi &&
-                                      MathAbs(right_bottom_rsi - current_rsi) <= strategy_delta_rsi);
-
-   if(!shoulders_near || !head_above_shoulders || !shoulders_above_bottoms || !bottoms_near_current)
+   bool right_shoulder_found = false;
+   for(int shift = k_shift - 1; shift >= 2; --shift)
+     {
+      if(MathAbs(rsi[shift] - top_rsi) < strategy_delta_rsi)
+        {
+         right_shoulder_found = true;
+         break;
+        }
+     }
+   if(!right_shoulder_found)
       return false;
 
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
@@ -228,7 +245,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(head_stop > bid && head_stop < atr_stop)
       req.sl = head_stop;
    req.tp = 0.0;
-   req.reason = StringFormat("QT_RSI_HS_SHORT rsi=%.2f", current_rsi);
+   req.reason = StringFormat("QT_RSI_HS_SHORT rsi=%.2f n=%d j=%d", bottom_rsi, n_shift, head_shift);
    return true;
   }
 
