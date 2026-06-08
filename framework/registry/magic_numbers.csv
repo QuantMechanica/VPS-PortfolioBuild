@@ -6796,3 +6796,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11332,tc-m5-18-ema20-macd-cross-trail,0,EURUSD.DWX,113320000,2026-06-08,Development,active
 11332,tc-m5-18-ema20-macd-cross-trail,1,GBPUSD.DWX,113320001,2026-06-08,Development,active
 11332,tc-m5-18-ema20-macd-cross-trail,2,USDJPY.DWX,113320002,2026-06-08,Development,active
+11342,triad-offhours-watermark,0,EURUSD.DWX,113420000,2026-06-08,Development,active
+11342,triad-offhours-watermark,1,GBPUSD.DWX,113420001,2026-06-08,Development,active
+11342,triad-offhours-watermark,2,USDJPY.DWX,113420002,2026-06-08,Development,active
