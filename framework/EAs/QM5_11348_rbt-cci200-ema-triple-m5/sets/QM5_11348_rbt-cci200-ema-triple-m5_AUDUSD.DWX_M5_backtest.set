@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        11342
-; ea_slug:      triad-offhours-watermark
+; ea_id:        11348
+; ea_slug:      rbt-cci200-ema-triple-m5
 ; ea_version:   v5.0
 ; set_version:  s20260608-001
-; symbol:       EURUSD.DWX
-; timeframe:    H1
+; symbol:       AUDUSD.DWX
+; timeframe:    M5
 ; environment:  backtest
-; magic_slot:   0
+; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   0f426c7de5b890d9bdcb6625e6c38cbbc3e94110f0c85f85e81006835091e3aa
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-06-08
 ;==========================================================
-qm_magic_slot_offset=0
+qm_magic_slot_offset=2
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
