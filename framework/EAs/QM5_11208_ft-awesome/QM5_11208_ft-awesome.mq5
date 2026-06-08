@@ -122,8 +122,13 @@ bool Strategy_SpreadAllowsEntry()
    if(stop_points <= 0.0)
       return false;
 
-   const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-   return ((double)spread_points <= stop_points * strategy_max_spread_stop_pct / 100.0);
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0 || ask < bid)
+      return false;
+
+   const double spread_points = (ask - bid) / point;
+   return (spread_points <= stop_points * strategy_max_spread_stop_pct / 100.0);
   }
 
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
