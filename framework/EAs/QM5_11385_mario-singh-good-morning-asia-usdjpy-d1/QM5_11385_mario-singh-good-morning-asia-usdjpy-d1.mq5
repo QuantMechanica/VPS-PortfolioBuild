@@ -78,17 +78,6 @@ input double strategy_max_sl_pips       = 80.0;
 input double strategy_tp_sl_ratio       = 0.50;
 input double strategy_doji_threshold_pips = 3.0;
 
-double Strategy_PipSize()
-  {
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   const int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
-   if(point <= 0.0)
-      return 0.0;
-   if(digits == 3 || digits == 5)
-      return point * 10.0;
-   return point;
-  }
-
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -123,7 +112,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_doji_threshold_pips < 0.0)
       return false;
 
-   const double pip = Strategy_PipSize();
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
+   if(point <= 0.0)
+      return false;
+   const double pip = ((digits == 3 || digits == 5) ? 10.0 : 1.0) * point;
    if(pip <= 0.0)
       return false;
 
@@ -150,7 +143,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    const double min_dist = strategy_min_sl_pips * pip;
    const double max_dist = strategy_max_sl_pips * pip;
-   const int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
 
    if(prev_bull)
      {
