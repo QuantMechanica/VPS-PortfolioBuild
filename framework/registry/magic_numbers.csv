@@ -6790,3 +6790,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11293,ema5-13-fib-cross-h1,2,USDJPY.DWX,112930002,2026-06-08,Development,active
 11293,ema5-13-fib-cross-h1,3,AUDUSD.DWX,112930003,2026-06-08,Development,active
 11293,ema5-13-fib-cross-h1,4,EURJPY.DWX,112930004,2026-06-08,Development,active
+11310,tc20-h1-7-ema-cascade-rsi21,0,EURUSD.DWX,113100000,2026-06-08,Development,active
+11310,tc20-h1-7-ema-cascade-rsi21,1,GBPUSD.DWX,113100001,2026-06-08,Development,active
+11310,tc20-h1-7-ema-cascade-rsi21,2,USDJPY.DWX,113100002,2026-06-08,Development,active
