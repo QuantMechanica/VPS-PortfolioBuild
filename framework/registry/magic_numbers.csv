@@ -6810,3 +6810,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11355,robo-psar-cci,0,EURUSD.DWX,113550000,2026-06-08,Development,active
 11355,robo-psar-cci,1,AUDUSD.DWX,113550001,2026-06-08,Development,active
 11355,robo-psar-cci,2,GBPUSD.DWX,113550002,2026-06-08,Development,active
+11356,robo-10pts,0,EURUSD.DWX,113560000,2026-06-08,Development,active
+11356,robo-10pts,1,GBPUSD.DWX,113560001,2026-06-08,Development,active
+11356,robo-10pts,2,AUDUSD.DWX,113560002,2026-06-08,Development,active
