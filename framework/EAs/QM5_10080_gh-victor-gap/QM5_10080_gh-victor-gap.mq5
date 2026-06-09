@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QuantMechanica V5 EA skeleton template"
+#property description "QM5_10080 GitHub Victor Algo Gap Reversal"
 
 #include <QM/QM_Common.mqh>
 
@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 9999;
+input int    qm_ea_id                   = 10080;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -73,11 +73,11 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-// TODO: declare strategy-specific input params here, e.g.:
-//   input int    strategy_atr_period   = 14;
-//   input double strategy_atr_sl_mult  = 2.0;
-//   input double strategy_atr_tp_mult  = 3.0;
-input int    strategy_placeholder       = 0;
+input double strategy_gap_threshold_pct = 1.0;
+input int    strategy_sma_period        = 250;
+input int    strategy_atr_period        = 250;
+input double strategy_atr_sl_mult       = 1.0;
+input double strategy_atr_tp_mult       = 1.0;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -87,7 +87,6 @@ input int    strategy_placeholder       = 0;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   // TODO: e.g. "only trade London session" or "skip if ADX<20"
    return false;
   }
 
@@ -96,7 +95,64 @@ bool Strategy_NoTradeFilter()
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // TODO: build req.type / req.price / req.sl / req.tp / req.lots
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(strategy_gap_threshold_pct <= 0.0 ||
+      strategy_sma_period <= 1 ||
+      strategy_atr_period <= 1 ||
+      strategy_atr_sl_mult <= 0.0 ||
+      strategy_atr_tp_mult <= 0.0)
+      return false;
+
+   const double open_1 = iOpen(_Symbol, _Period, 1);   // perf-allowed: structural closed-bar gap input
+   const double close_1 = iClose(_Symbol, _Period, 1); // perf-allowed: structural closed-bar gap input
+   const double close_2 = iClose(_Symbol, _Period, 2); // perf-allowed: structural closed-bar gap input
+   if(open_1 <= 0.0 || close_1 <= 0.0 || close_2 <= 0.0)
+      return false;
+
+   const double sma = QM_SMA(_Symbol, _Period, strategy_sma_period, 1, PRICE_CLOSE);
+   const double atr = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
+   if(sma <= 0.0 || atr <= 0.0)
+      return false;
+
+   const double gap_pct = 100.0 * (open_1 - close_2) / close_2;
+   const bool bullish_gap_bar = (close_1 > open_1);
+   const bool bearish_gap_bar = (close_1 < open_1);
+
+   if(gap_pct <= -strategy_gap_threshold_pct &&
+      bullish_gap_bar &&
+      close_1 > sma)
+     {
+      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      if(entry <= 0.0)
+         return false;
+      req.type = QM_BUY;
+      req.sl = NormalizeDouble(entry - strategy_atr_sl_mult * atr, _Digits);
+      req.tp = NormalizeDouble(entry + strategy_atr_tp_mult * atr, _Digits);
+      req.reason = "GAP_REVERSAL_LONG";
+      return (req.sl > 0.0 && req.tp > 0.0 && req.sl < entry && req.tp > entry);
+     }
+
+   if(gap_pct >= strategy_gap_threshold_pct &&
+      bearish_gap_bar &&
+      close_1 < sma)
+     {
+      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      if(entry <= 0.0)
+         return false;
+      req.type = QM_SELL;
+      req.sl = NormalizeDouble(entry + strategy_atr_sl_mult * atr, _Digits);
+      req.tp = NormalizeDouble(entry - strategy_atr_tp_mult * atr, _Digits);
+      req.reason = "GAP_REVERSAL_SHORT";
+      return (req.sl > 0.0 && req.tp > 0.0 && req.sl > entry && req.tp < entry);
+     }
+
    return false;
   }
 
@@ -104,22 +160,47 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // TODO: e.g.
-   //   const int magic = QM_FrameworkMagic();
-   //   for(int i = PositionsTotal() - 1; i >= 0; --i) {
-   //       const ulong ticket = PositionGetTicket(i);
-   //       if(!PositionSelectByTicket(ticket)) continue;
-   //       if(PositionGetInteger(POSITION_MAGIC) != magic) continue;
-   //       QM_TM_MoveToBreakEven(ticket, /*trigger_pips=*/30, /*buffer=*/2);
-   //       QM_TM_TrailATR(ticket, /*atr_period=*/14, /*atr_mult=*/2.0);
-   //   }
+   if(strategy_atr_period <= 1 || strategy_atr_sl_mult <= 0.0)
+      return;
+
+   const double close_1 = iClose(_Symbol, _Period, 1); // perf-allowed: structural closed-bar trailing anchor
+   const double atr = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(close_1 <= 0.0 || atr <= 0.0 || point <= 0.0)
+      return;
+
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const double current_sl = PositionGetDouble(POSITION_SL);
+      if(pos_type == POSITION_TYPE_BUY)
+        {
+         const double target_sl = NormalizeDouble(close_1 - strategy_atr_sl_mult * atr, _Digits);
+         if(target_sl > 0.0 && (current_sl <= 0.0 || target_sl > current_sl + point * 0.5))
+            QM_TM_MoveSL(ticket, target_sl, "gap_reversal_atr_trail");
+        }
+      else if(pos_type == POSITION_TYPE_SELL)
+        {
+         const double target_sl = NormalizeDouble(close_1 + strategy_atr_sl_mult * atr, _Digits);
+         if(target_sl > 0.0 && (current_sl <= 0.0 || target_sl < current_sl - point * 0.5))
+            QM_TM_MoveSL(ticket, target_sl, "gap_reversal_atr_trail");
+        }
+     }
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   // TODO: when to close manually (separate from SL/TP and trade management)
    return false;
   }
 
