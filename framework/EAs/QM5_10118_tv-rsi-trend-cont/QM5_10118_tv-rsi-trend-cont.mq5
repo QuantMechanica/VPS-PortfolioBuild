@@ -161,7 +161,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                                      strategy_stoch_d_period, strategy_stoch_slowing, 1);
    const double ema200 = QM_EMA(_Symbol, tf, strategy_ema_trend_period, 1, PRICE_CLOSE);
    const double atr = QM_ATR(_Symbol, tf, strategy_atr_period, 1);
-   const double low = iLow(_Symbol, tf, 1);
+   const double low = iLow(_Symbol, tf, 1); // perf-allowed: single closed-bar low for the card's low > EMA200 rule; no QM low reader exists.
    if(rsi <= 0.0 || stoch_k < 0.0 || stoch_d < 0.0 || ema200 <= 0.0 ||
       atr <= 0.0 || low <= 0.0)
       return false;
@@ -197,7 +197,7 @@ void Strategy_ManageOpenPosition()
 
    const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
    const double atr = QM_ATR(_Symbol, tf, strategy_atr_period, 1);
-   const double close = iClose(_Symbol, tf, 1);
+   const double close = iClose(_Symbol, tf, 1); // perf-allowed: single closed-bar close for ATR profit activation; no QM close reader exists.
    if(atr <= 0.0 || close <= 0.0)
       return;
 
@@ -235,7 +235,7 @@ bool Strategy_ExitSignal()
 
    const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
    const double ema20 = QM_EMA(_Symbol, tf, strategy_ema_exit_period, 1, PRICE_CLOSE);
-   const double close = iClose(_Symbol, tf, 1);
+   const double close = iClose(_Symbol, tf, 1); // perf-allowed: single closed-bar close for EMA20 trailing exit; no QM close reader exists.
    if(ema20 <= 0.0 || close <= 0.0 || close >= ema20)
       return false;
 

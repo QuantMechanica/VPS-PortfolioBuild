@@ -88,7 +88,8 @@ input int    strategy_supertrend_bars   = 220;
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-int g_qm10196_cached_signal = 0;
+int  g_qm10196_cached_signal = 0;
+bool g_qm10196_signal_ready = false;
 
 bool QM10196_HasOpenPosition()
   {
@@ -136,23 +137,28 @@ int QM10196_CurrentPositionDirection()
   }
 
 int QM10196_SupertrendDirection(const int atr_period,
-                                const double factor,
-                                const int shift)
+                                const double factor)
   {
-   if(atr_period <= 0 || factor <= 0.0 || shift < 1)
+   if(atr_period <= 0 || factor <= 0.0)
       return 0;
 
    const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
    const int warmup = MathMax(strategy_supertrend_bars, atr_period + 80);
+   MqlRates rates[];
+   const int copied = CopyRates(_Symbol, tf, 1, warmup, rates); // perf-allowed: Strategy_EntrySignal is called only after the framework QM_IsNewBar gate.
+   if(copied < atr_period + 10)
+      return 0;
+
    int trend = 0;
    double final_upper = 0.0;
    double final_lower = 0.0;
 
-   for(int bar_shift = shift + warmup; bar_shift >= shift; --bar_shift)
+   for(int i = 0; i < copied; ++i)
      {
-      const double high = iHigh(_Symbol, tf, bar_shift);
-      const double low = iLow(_Symbol, tf, bar_shift);
-      const double close = iClose(_Symbol, tf, bar_shift);
+      const int bar_shift = copied - i;
+      const double high = rates[i].high;
+      const double low = rates[i].low;
+      const double close = rates[i].close;
       const double atr = QM_ATR(_Symbol, tf, atr_period, bar_shift);
       if(high <= 0.0 || low <= 0.0 || close <= 0.0 || atr <= 0.0)
          continue;
@@ -169,13 +175,15 @@ int QM10196_SupertrendDirection(const int atr_period,
          continue;
         }
 
-      const double prev_close = iClose(_Symbol, tf, bar_shift + 1);
+      const double prev_close = rates[i - 1].close;
+      const double prev_upper = final_upper;
+      const double prev_lower = final_lower;
       final_upper = (basic_upper < final_upper || prev_close > final_upper) ? basic_upper : final_upper;
       final_lower = (basic_lower > final_lower || prev_close < final_lower) ? basic_lower : final_lower;
 
-      if(trend < 0 && close > final_upper)
+      if(trend < 0 && close > prev_upper)
          trend = 1;
-      else if(trend > 0 && close < final_lower)
+      else if(trend > 0 && close < prev_lower)
          trend = -1;
      }
 
@@ -185,11 +193,9 @@ int QM10196_SupertrendDirection(const int atr_period,
 int QM10196_ClosedBarSignal()
   {
    const int st1 = QM10196_SupertrendDirection(strategy_st1_atr_period,
-                                               strategy_st1_factor,
-                                               1);
+                                               strategy_st1_factor);
    const int st2 = QM10196_SupertrendDirection(strategy_st2_atr_period,
-                                               strategy_st2_factor,
-                                               1);
+                                               strategy_st2_factor);
    if(st1 == 0 || st2 == 0)
       return 0;
 
@@ -235,6 +241,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.expiration_seconds = 0;
 
    g_qm10196_cached_signal = QM10196_ClosedBarSignal();
+   g_qm10196_signal_ready = true;
    if(g_qm10196_cached_signal == 0)
       return false;
    if(QM10196_HasOpenPosition())
@@ -268,6 +275,8 @@ void Strategy_ManageOpenPosition()
 bool Strategy_ExitSignal()
   {
    const int position_direction = QM10196_CurrentPositionDirection();
+   if(!g_qm10196_signal_ready)
+      return false;
    if(position_direction > 0 && g_qm10196_cached_signal <= 0)
       return true;
    if(position_direction < 0 && g_qm10196_cached_signal >= 0)

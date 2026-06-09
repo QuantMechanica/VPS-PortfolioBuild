@@ -73,13 +73,12 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input ENUM_TIMEFRAMES strategy_timeframe = PERIOD_D1;
 input int    strategy_wpr_length        = 2;
 input double strategy_entry_wpr         = -90.0;
 input double strategy_exit_wpr          = -30.0;
 input int    strategy_atr_period        = 14;
 input double strategy_atr_sl_mult       = 2.5;
-input double strategy_price_stop_pct    = 5.0;
+input double strategy_price_sl_pct      = 5.0;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -92,6 +91,19 @@ bool Strategy_NoTradeFilter()
    return false;
   }
 
+double Strategy_WilliamsR(const int shift)
+  {
+   int length = strategy_wpr_length;
+   if(length < 2)
+      length = 2;
+   if(length > 25)
+      length = 25;
+   if(QM_SMA(_Symbol, PERIOD_D1, 1, shift, PRICE_CLOSE) <= 0.0)
+      return 0.0;
+   const double stoch_k = QM_Stoch_K(_Symbol, PERIOD_D1, length, 1, 1, shift);
+   return stoch_k - 100.0;
+  }
+
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
 // should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
@@ -101,70 +113,25 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
-   req.reason = "QM5_10211_WPR_LONG";
+   req.reason = "TV_WILLIAMS_R_LONG";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   int length = strategy_wpr_length;
-   if(length < 2)
-      length = 2;
-   if(length > 25)
-      length = 25;
-
-   const datetime bar_open = iTime(_Symbol, strategy_timeframe, 0);
-   const int magic = QM_FrameworkMagic();
-   if(bar_open > 0 && magic > 0 && HistorySelect(bar_open, TimeCurrent()))
-     {
-      const int deals = HistoryDealsTotal();
-      for(int i = deals - 1; i >= 0; --i)
-        {
-         const ulong deal = HistoryDealGetTicket(i);
-         if(deal == 0)
-            continue;
-         if(HistoryDealGetString(deal, DEAL_SYMBOL) != _Symbol)
-            continue;
-         if((int)HistoryDealGetInteger(deal, DEAL_MAGIC) != magic)
-            continue;
-         if((ENUM_DEAL_ENTRY)HistoryDealGetInteger(deal, DEAL_ENTRY) == DEAL_ENTRY_OUT)
-            return false;
-        }
-     }
-
-   const double close_1 = iClose(_Symbol, strategy_timeframe, 1);
-   if(close_1 <= 0.0)
-      return false;
-
-   double highest = -DBL_MAX;
-   double lowest = DBL_MAX;
-   for(int shift = 1; shift <= length; ++shift)
-     {
-      const double high_i = iHigh(_Symbol, strategy_timeframe, shift);
-      const double low_i = iLow(_Symbol, strategy_timeframe, shift);
-      if(high_i <= 0.0 || low_i <= 0.0)
-         return false;
-      highest = MathMax(highest, high_i);
-      lowest = MathMin(lowest, low_i);
-     }
-
-   if(highest <= lowest)
-      return false;
-
-   const double wpr = -100.0 * (highest - close_1) / (highest - lowest);
+   const double wpr = Strategy_WilliamsR(1);
    if(wpr >= strategy_entry_wpr)
       return false;
 
-   const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(entry <= 0.0 || point <= 0.0)
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   if(ask <= 0.0)
       return false;
 
-   const double atr_stop = QM_StopATR(_Symbol, QM_BUY, entry, strategy_atr_period, strategy_atr_sl_mult);
-   const double pct_stop = NormalizeDouble(entry * (1.0 - strategy_price_stop_pct / 100.0), _Digits);
+   const double atr_stop = QM_StopATR(_Symbol, QM_BUY, ask, strategy_atr_period, strategy_atr_sl_mult);
+   const double pct_stop = NormalizeDouble(ask * (1.0 - strategy_price_sl_pct / 100.0), _Digits);
    if(atr_stop <= 0.0 || pct_stop <= 0.0)
       return false;
 
    req.sl = MathMax(atr_stop, pct_stop);
-   if(req.sl <= 0.0 || req.sl >= entry)
+   if(req.sl <= 0.0 || req.sl >= ask)
       return false;
 
    return true;
@@ -174,44 +141,23 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card defines no trailing, break-even, or partial-close management.
+   // Card specifies no trailing stop, break-even move, or partial close.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   int length = strategy_wpr_length;
-   if(length < 2)
-      length = 2;
-   if(length > 25)
-      length = 25;
-
-   const double close_1 = iClose(_Symbol, strategy_timeframe, 1);
-   const double high_2 = iHigh(_Symbol, strategy_timeframe, 2);
-   if(close_1 <= 0.0 || high_2 <= 0.0)
-      return false;
-
-   if(close_1 > high_2)
+   const double wpr = Strategy_WilliamsR(1);
+   if(wpr > strategy_exit_wpr)
       return true;
 
-   double highest = -DBL_MAX;
-   double lowest = DBL_MAX;
-   for(int shift = 1; shift <= length; ++shift)
-     {
-      const double high_i = iHigh(_Symbol, strategy_timeframe, shift);
-      const double low_i = iLow(_Symbol, strategy_timeframe, shift);
-      if(high_i <= 0.0 || low_i <= 0.0)
-         return false;
-      highest = MathMax(highest, high_i);
-      lowest = MathMin(lowest, low_i);
-     }
+   const double last_close = QM_SMA(_Symbol, PERIOD_D1, 1, 1, PRICE_CLOSE);
+   const double prev_high = QM_SMA(_Symbol, PERIOD_D1, 1, 2, PRICE_HIGH);
+   if(last_close > 0.0 && prev_high > 0.0 && last_close > prev_high)
+      return true;
 
-   if(highest <= lowest)
-      return false;
-
-   const double wpr = -100.0 * (highest - close_1) / (highest - lowest);
-   return (wpr > strategy_exit_wpr);
+   return false;
   }
 
 // Optional news-filter override. Return TRUE to suppress trading regardless
@@ -219,7 +165,7 @@ bool Strategy_ExitSignal()
 // custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false;
+   return false; // defer to QM_NewsAllowsTrade(...)
   }
 
 // -----------------------------------------------------------------------------

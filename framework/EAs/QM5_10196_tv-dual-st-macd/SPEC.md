@@ -1,23 +1,16 @@
-# QM5_10196_tv-dual-st-macd — Strategy Spec
+# QM5_10196_tv-dual-st-macd - Strategy Spec
 
 **EA ID:** QM5_10196
 **Slug:** `tv-dual-st-macd`
 **Source:** `30591366-874b-5bee-b47c-da2fca20b728` (see `strategy-seeds/sources/30591366-874b-5bee-b47c-da2fca20b728/`)
-**Author of this spec:** auto-generated ex-post by gen_spec_md.py
-**Last revised:** 2026-05-25
+**Author of this spec:** Codex
+**Last revised:** 2026-06-09
 
 ---
 
 ## 1. Strategy Logic
 
-Mechanical strategy implemented per the approved card
-`artifacts/cards_approved/QM5_10196_tv-dual-st-macd.md`. See that card's body for
-the full entry/exit/stop/sizing rules; this SPEC summarises the
-implementation surface.
-
-Entry/exit logic is encoded in the five `Strategy_*` hooks in
-`QM5_10196_tv-dual-st-macd.mq5`. Framework wiring (risk, magic, news, Friday close)
-is inherited from `QM_Common.mqh` and is not redocumented here.
+The EA evaluates closed H4 bars. It calculates two Supertrend states, one using ATR(10) with factor 3.0 and one using ATR(20) with factor 5.0. It enters long when both Supertrends are bullish and the MACD(12,26,9) histogram is above zero; it enters short when both Supertrends are bearish and the histogram is below zero. Open positions exit when the cached closed-bar signal no longer supports the position direction, with a protective 2.0 x ATR(14) stop at entry.
 
 ---
 
@@ -25,36 +18,35 @@ is inherited from `QM_Common.mqh` and is not redocumented here.
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `strategy_st1_atr_period` | 10 | (see source) | (see strategy logic) |
-| `strategy_st1_factor` | 3.0 | (see source) | (see strategy logic) |
-| `strategy_st2_atr_period` | 20 | (see source) | (see strategy logic) |
-| `strategy_st2_factor` | 5.0 | (see source) | (see strategy logic) |
-| `strategy_macd_fast` | 12 | (see source) | (see strategy logic) |
-| `strategy_macd_slow` | 26 | (see source) | (see strategy logic) |
-| `strategy_macd_signal` | 9 | (see source) | (see strategy logic) |
-| `strategy_stop_atr_period` | 14 | (see source) | (see strategy logic) |
-| `strategy_stop_atr_mult` | 2.0 | (see source) | (see strategy logic) |
-| `strategy_supertrend_bars` | 220 | (see source) | (see strategy logic) |
+| `strategy_st1_atr_period` | 10 | 2-100 | ATR period for the first Supertrend engine. |
+| `strategy_st1_factor` | 3.0 | 0.1-20.0 | ATR multiplier for the first Supertrend engine. |
+| `strategy_st2_atr_period` | 20 | 2-100 | ATR period for the second Supertrend engine. |
+| `strategy_st2_factor` | 5.0 | 0.1-20.0 | ATR multiplier for the second Supertrend engine. |
+| `strategy_macd_fast` | 12 | 2-100 | MACD fast EMA period. |
+| `strategy_macd_slow` | 26 | 3-200 | MACD slow EMA period. |
+| `strategy_macd_signal` | 9 | 2-100 | MACD signal EMA period. |
+| `strategy_stop_atr_period` | 14 | 2-100 | ATR period for the protective stop. |
+| `strategy_stop_atr_mult` | 2.0 | 0.1-20.0 | ATR multiplier for the protective stop. |
+| `strategy_supertrend_bars` | 220 | 50-1000 | Closed-bar warmup depth for the Supertrend state. |
 
-> Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
-> qm_news_mode, qm_rng_seed, qm_stress_reject_probability,
-> qm_friday_close_*) are documented in
-> `framework/V5_FRAMEWORK_DESIGN.md` — not re-listed here.
+> Note: framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
+> qm_news_mode, qm_rng_seed, qm_stress_reject_probability, qm_friday_close_*)
+> are documented in `framework/V5_FRAMEWORK_DESIGN.md` - do NOT re-document
+> them here. Only list strategy-specific inputs.
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `EURUSD.DWX` — registered in magic_numbers.csv for this EA
-- `GBPUSD.DWX` — registered in magic_numbers.csv for this EA
-- `XAUUSD.DWX` — registered in magic_numbers.csv for this EA
-- `GDAXI.DWX` — registered in magic_numbers.csv for this EA
-- `NDX.DWX` — registered in magic_numbers.csv for this EA
+- `EURUSD.DWX` - card-stated FX port for OHLC-derived trend and momentum logic.
+- `GBPUSD.DWX` - card-stated FX port for the same liquid major-FX behavior.
+- `XAUUSD.DWX` - card-stated gold CFD port for trend-following and momentum behavior.
+- `GDAXI.DWX` - canonical DWX matrix name for the card's DAX target.
+- `NDX.DWX` - card-stated large-cap index CFD port.
 
-**Explicitly NOT for:** any symbol not in the list above (no implicit
-universe expansion at runtime; the `QM_SymbolGuard` framework helper
-rejects foreign symbols).
+**Explicitly NOT for:**
+- Any symbol absent from `framework/registry/dwx_symbol_matrix.csv` - no phantom DWX symbols are registered.
 
 ---
 
@@ -62,8 +54,8 @@ rejects foreign symbols).
 
 | Aspect | Value |
 |---|---|
-| Base timeframe | `H1` |
-| Multi-timeframe refs | see `Strategy_*` hooks in the .mq5 |
+| Base timeframe | `H4` |
+| Multi-timeframe refs | none |
 | Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
 
 ---
@@ -72,11 +64,10 @@ rejects foreign symbols).
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | 55 |
-| Cadence note | see card body |
-| Typical hold time | see card body |
-| Expected drawdown profile | bounded by RISK_FIXED + FTMO 10% total DD ceiling |
-| Regime preference | per card thesis |
+| Trades / year / symbol | `55` |
+| Typical hold time | multi-bar H4 trend holds |
+| Expected drawdown profile | bounded per trade by the V5 fixed-risk backtest model and ATR stop |
+| Regime preference | trend-following / momentum |
 | Win rate target (qualitative) | medium |
 
 ---
@@ -86,9 +77,9 @@ rejects foreign symbols).
 This card was mechanised from:
 
 **Source ID:** `30591366-874b-5bee-b47c-da2fca20b728`
-**Pointer:** `strategy-seeds/sources/30591366-874b-5bee-b47c-da2fca20b728/`
-**R1–R4 verdict (Q00):** all PASS — see
-`artifacts/cards_approved/QM5_10196_tv-dual-st-macd.md`
+**Source type:** TradingView public script page
+**Pointer:** `https://www.tradingview.com/script/zFKRj4Gi-Dual-Supertrend-with-MACD-Strategy-presentTrading/`
+**R1-R4 verdict (Q00):** all PASS per `artifacts/cards_approved/QM5_10196_tv-dual-st-macd.md`
 
 ---
 
@@ -108,4 +99,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-05-25 | Initial spec (ex-post, generated by gen_spec_md.py) | post-PT15 remediation |
+| v1 | 2026-06-09 | Initial build from card | 708a8b44-d79a-4495-a296-32f5bfa84859 |

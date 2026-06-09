@@ -3,16 +3,16 @@
 ; ea_id:        10196
 ; ea_slug:      tv-dual-st-macd
 ; ea_version:   v5.0
-; set_version:  s20260524-001
+; set_version:  s20260609-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   db91616c117478a68a48c56035b55c92a10a293514af358df82a876fc2473a61
 ; author:       Development
-; date:         2026-05-24
+; date:         2026-06-09
 ;==========================================================
 qm_magic_slot_offset=1
 RISK_FIXED=1000

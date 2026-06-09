@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        10196
-; ea_slug:      tv-dual-st-macd
+; ea_id:        10118
+; ea_slug:      tv-rsi-trend-cont
 ; ea_version:   v5.0
 ; set_version:  s20260609-001
-; symbol:       GDAXI.DWX
-; timeframe:    H4
+; symbol:       EURUSD.DWX
+; timeframe:    H2
 ; environment:  backtest
-; magic_slot:   3
+; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   e44c8bf9074877e01b34068c84e7ff363b6b27fe55d36fd18a0f7846273e01fe
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-06-09
 ;==========================================================
-qm_magic_slot_offset=3
+qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1

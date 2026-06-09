@@ -3,16 +3,16 @@
 ; ea_id:        10196
 ; ea_slug:      tv-dual-st-macd
 ; ea_version:   v5.0
-; set_version:  s20260524-001
+; set_version:  s20260609-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   d306d4e48acf0fd73cb1a9c41ba02dcd890d710ad90ef9b038e6d20e6931c464
 ; author:       Development
-; date:         2026-05-24
+; date:         2026-06-09
 ;==========================================================
 qm_magic_slot_offset=2
 RISK_FIXED=1000
