@@ -47,45 +47,6 @@ input double strategy_d1_atr_cap_mult    = 6.0;
 input int    strategy_time_stop_days     = 5;
 input int    strategy_max_spread_points  = 35;
 
-double Strategy_PipSize()
-  {
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   const int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
-   if(point <= 0.0)
-      return 0.0;
-   if(digits == 3 || digits == 5)
-      return point * 10.0;
-   return point;
-  }
-
-double Strategy_DeMarker(const int period, const int shift)
-  {
-   if(period <= 0 || shift < 1)
-      return EMPTY_VALUE;
-
-   double demax_sum = 0.0;
-   double demin_sum = 0.0;
-   for(int i = shift; i < shift + period; ++i)
-     {
-      const double high_now = iHigh(_Symbol, PERIOD_M5, i);
-      const double high_prev = iHigh(_Symbol, PERIOD_M5, i + 1);
-      const double low_now = iLow(_Symbol, PERIOD_M5, i);
-      const double low_prev = iLow(_Symbol, PERIOD_M5, i + 1);
-      if(high_now <= 0.0 || high_prev <= 0.0 || low_now <= 0.0 || low_prev <= 0.0)
-         return EMPTY_VALUE;
-
-      if(high_now > high_prev)
-         demax_sum += high_now - high_prev;
-      if(low_now < low_prev)
-         demin_sum += low_prev - low_now;
-     }
-
-   const double denom = demax_sum + demin_sum;
-   if(denom <= 0.0)
-      return 0.5;
-   return demax_sum / denom;
-  }
-
 bool Strategy_NoTradeFilter()
   {
    if(_Period != PERIOD_M5)
@@ -118,16 +79,20 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   const double pip = Strategy_PipSize();
+   const double pip = QM_StopRulesPipsToPriceDistance(_Symbol, 1);
    if(pip <= 0.0)
       return false;
 
-   const double close1 = iClose(_Symbol, PERIOD_M5, 1);
+   const double close1 = iClose(_Symbol, PERIOD_M5, 1); // perf-allowed: single closed-bar close read inside framework QM_IsNewBar-gated EntrySignal.
    const double upper = QM_BB_Upper(_Symbol, PERIOD_M5, strategy_bb_period, strategy_bb_deviation, 1, PRICE_LOW);
    const double lower = QM_BB_Lower(_Symbol, PERIOD_M5, strategy_bb_period, strategy_bb_deviation, 1, PRICE_HIGH);
-   const double demarker = Strategy_DeMarker(strategy_demarker_period, 1);
+   const string demarker_key = StringFormat("DEMARKER|%s|%d|%d", _Symbol, (int)PERIOD_M5, strategy_demarker_period);
+   int demarker_handle = QM_IndicatorsLookup(demarker_key);
+   if(demarker_handle == INVALID_HANDLE)
+      demarker_handle = QM_IndicatorsRegister(demarker_key, iDeMarker(_Symbol, PERIOD_M5, strategy_demarker_period));
+   const double demarker = QM_IndicatorReadBuffer(demarker_handle, 0, 1);
    const double adx = QM_ADX(_Symbol, PERIOD_M5, strategy_adx_period, 1);
-   if(close1 <= 0.0 || upper <= 0.0 || lower <= 0.0 || demarker == EMPTY_VALUE || adx <= 0.0)
+   if(close1 <= 0.0 || upper <= 0.0 || lower <= 0.0 || demarker <= 0.0 || adx <= 0.0)
       return false;
 
    if(adx < strategy_adx_min)
@@ -151,26 +116,25 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double window = strategy_band_window_pips * pip;
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
    if(ask <= 0.0 || bid <= 0.0)
       return false;
 
    if(MathAbs(close1 - upper) <= window)
      {
       req.type = QM_BUY;
-      req.sl = NormalizeDouble(ask - sl_dist, digits);
-      req.tp = NormalizeDouble(ask + (strategy_tp_pips * pip), digits);
+      req.sl = QM_StopATRFromValue(_Symbol, req.type, ask, h4_atr, strategy_sl_atr_mult);
+      req.tp = QM_StopRulesTakeFromDistance(_Symbol, req.type, ask, strategy_tp_pips * pip);
       req.reason = "FF_BB_DEMARKER_ADX_LONG";
-      return true;
+      return (req.sl > 0.0 && req.tp > 0.0);
      }
 
    if(MathAbs(close1 - lower) <= window)
      {
       req.type = QM_SELL;
-      req.sl = NormalizeDouble(bid + sl_dist, digits);
-      req.tp = NormalizeDouble(bid - (strategy_tp_pips * pip), digits);
+      req.sl = QM_StopATRFromValue(_Symbol, req.type, bid, h4_atr, strategy_sl_atr_mult);
+      req.tp = QM_StopRulesTakeFromDistance(_Symbol, req.type, bid, strategy_tp_pips * pip);
       req.reason = "FF_BB_DEMARKER_ADX_SHORT";
-      return true;
+      return (req.sl > 0.0 && req.tp > 0.0);
      }
 
    return false;
@@ -184,7 +148,7 @@ bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
    const double ema = QM_EMA(_Symbol, PERIOD_M5, strategy_ema_period, 1, PRICE_TYPICAL);
-   const double close1 = iClose(_Symbol, PERIOD_M5, 1);
+   const double close1 = iClose(_Symbol, PERIOD_M5, 1); // perf-allowed: single closed-bar close read for card EMA exit; no loops or history copy.
    if(ema <= 0.0 || close1 <= 0.0)
       return false;
 
