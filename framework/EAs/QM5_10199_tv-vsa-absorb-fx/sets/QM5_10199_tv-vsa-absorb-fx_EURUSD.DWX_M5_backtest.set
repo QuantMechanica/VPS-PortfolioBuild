@@ -3,16 +3,16 @@
 ; ea_id:        10199
 ; ea_slug:      tv-vsa-absorb-fx
 ; ea_version:   v5.0
-; set_version:  s20260524-001
+; set_version:  s20260609-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    M5
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   2b768b102e869a05925baed2e46129a40cd5bcd935e58f5e459d4704b2ad80d6
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-24
+; date:         2026-06-09
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=1000

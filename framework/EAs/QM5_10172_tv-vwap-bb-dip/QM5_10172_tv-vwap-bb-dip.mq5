@@ -74,14 +74,14 @@ input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input ENUM_TIMEFRAMES strategy_signal_tf = PERIOD_H1;
-input int    strategy_ema_fast           = 13;
-input int    strategy_ema_slow           = 55;
-input int    strategy_bb_period          = 20;
-input double strategy_bb_deviation       = 2.0;
-input int    strategy_dip_lookback       = 10;
-input int    strategy_atr_period         = 14;
-input double strategy_atr_stop_mult      = 2.5;
-input double strategy_percent_stop       = 5.0;
+input int    strategy_ema_fast          = 13;
+input int    strategy_ema_slow          = 55;
+input int    strategy_bb_period         = 20;
+input double strategy_bb_deviation      = 2.0;
+input int    strategy_dip_lookback      = 10;
+input int    strategy_atr_period        = 14;
+input double strategy_atr_stop_mult     = 2.5;
+input double strategy_percent_stop      = 5.0;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -91,79 +91,11 @@ input double strategy_percent_stop       = 5.0;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   return false;
-  }
-
-double Strategy_SessionVWAP(const int target_shift)
-  {
-   if(target_shift < 1)
-      return 0.0;
-
-   const datetime target_time = iTime(_Symbol, strategy_signal_tf, target_shift);
-   if(target_time <= 0)
-      return 0.0;
-
-   MqlDateTime target_dt;
-   TimeToStruct(target_time, target_dt);
-
-   double pv_sum = 0.0;
-   double vol_sum = 0.0;
-
-   for(int shift = target_shift; shift < target_shift + 72; ++shift)
-     {
-      const datetime bar_time = iTime(_Symbol, strategy_signal_tf, shift);
-      if(bar_time <= 0)
-         break;
-
-      MqlDateTime bar_dt;
-      TimeToStruct(bar_time, bar_dt);
-      if(bar_dt.year != target_dt.year || bar_dt.mon != target_dt.mon || bar_dt.day != target_dt.day)
-         break;
-
-      const double close_price = iClose(_Symbol, strategy_signal_tf, shift);
-      const long tick_volume = iVolume(_Symbol, strategy_signal_tf, shift);
-      if(close_price <= 0.0 || tick_volume <= 0)
-         continue;
-
-      pv_sum += close_price * (double)tick_volume;
-      vol_sum += (double)tick_volume;
-     }
-
-   if(vol_sum <= 0.0)
-      return 0.0;
-   return pv_sum / vol_sum;
-  }
-
-bool Strategy_HadLowerBandDip(const int first_shift)
-  {
-   const int lookback = MathMax(1, strategy_dip_lookback);
-   for(int offset = 0; offset < lookback; ++offset)
-     {
-      const int shift = first_shift + offset;
-      const double lower = QM_BB_Lower(_Symbol, strategy_signal_tf, strategy_bb_period, strategy_bb_deviation, shift);
-      const double low_price = iLow(_Symbol, strategy_signal_tf, shift);
-      const double close_price = iClose(_Symbol, strategy_signal_tf, shift);
-      if(lower <= 0.0 || low_price <= 0.0 || close_price <= 0.0)
-         continue;
-      if(low_price <= lower || close_price <= lower)
-         return true;
-     }
-   return false;
-  }
-
-bool Strategy_LongFiltersAtShift(const int shift)
-  {
-   const double ema_fast = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_fast, shift);
-   const double ema_slow = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_slow, shift);
-   if(ema_fast <= 0.0 || ema_slow <= 0.0 || ema_fast <= ema_slow)
-      return false;
-
-   const double close_price = iClose(_Symbol, strategy_signal_tf, shift);
-   const double vwap = Strategy_SessionVWAP(shift);
-   if(close_price <= 0.0 || vwap <= 0.0 || close_price <= vwap)
-      return false;
-
-   return Strategy_HadLowerBandDip(shift);
+   // No Trade Filter (time, spread, news): no card-specific time window;
+   // framework handles news and Friday close, this hook rejects invalid quotes.
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   return (bid <= 0.0 || ask <= 0.0 || ask <= bid);
   }
 
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
@@ -179,7 +111,75 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!Strategy_LongFiltersAtShift(1))
+   if(strategy_ema_fast <= 0 || strategy_ema_slow <= 0 ||
+      strategy_ema_fast >= strategy_ema_slow ||
+      strategy_bb_period <= 1 || strategy_bb_deviation <= 0.0 ||
+      strategy_dip_lookback <= 0 || strategy_atr_period <= 0 ||
+      strategy_atr_stop_mult <= 0.0 || strategy_percent_stop <= 0.0)
+      return false;
+
+   int bars_needed = 72;
+   if(strategy_dip_lookback + 1 > bars_needed)
+      bars_needed = strategy_dip_lookback + 1;
+
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, strategy_signal_tf, 1, bars_needed, rates); // perf-allowed: closed-bar VWAP window inside framework QM_IsNewBar gate.
+   if(copied < strategy_dip_lookback)
+      return false;
+
+   const double close_last = rates[0].close;
+   if(close_last <= 0.0)
+      return false;
+
+   const double ema_fast = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_fast, 1);
+   const double ema_slow = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_slow, 1);
+   if(ema_fast <= 0.0 || ema_slow <= 0.0 || ema_fast <= ema_slow)
+      return false;
+
+   MqlDateTime session_dt;
+   TimeToStruct(rates[0].time, session_dt);
+
+   double pv_sum = 0.0;
+   double vol_sum = 0.0;
+   for(int i = 0; i < copied; ++i)
+     {
+      MqlDateTime bar_dt;
+      TimeToStruct(rates[i].time, bar_dt);
+      if(bar_dt.year != session_dt.year || bar_dt.mon != session_dt.mon || bar_dt.day != session_dt.day)
+         break;
+
+      const double typical = (rates[i].high + rates[i].low + rates[i].close) / 3.0;
+      const double volume = (double)rates[i].tick_volume;
+      if(typical <= 0.0 || volume <= 0.0)
+         continue;
+
+      pv_sum += typical * volume;
+      vol_sum += volume;
+     }
+
+   if(vol_sum <= 0.0)
+      return false;
+
+   const double session_vwap = pv_sum / vol_sum;
+   if(session_vwap <= 0.0 || close_last <= session_vwap)
+      return false;
+
+   bool had_lower_band_dip = false;
+   for(int i = 0; i < strategy_dip_lookback && i < copied; ++i)
+     {
+      const int shift = i + 1;
+      const double lower_band = QM_BB_Lower(_Symbol, strategy_signal_tf, strategy_bb_period, strategy_bb_deviation, shift);
+      if(lower_band <= 0.0)
+         continue;
+      if(rates[i].low <= lower_band || rates[i].close <= lower_band)
+        {
+         had_lower_band_dip = true;
+         break;
+        }
+     }
+
+   if(!had_lower_band_dip)
       return false;
 
    const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -187,54 +187,60 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(entry <= 0.0 || atr <= 0.0)
       return false;
 
-   const double pct_distance = entry * MathMax(0.0, strategy_percent_stop) / 100.0;
+   const double pct_distance = entry * strategy_percent_stop / 100.0;
    const double atr_distance = atr * strategy_atr_stop_mult;
-   double stop_distance = 0.0;
-   if(pct_distance > 0.0 && atr_distance > 0.0)
-      stop_distance = MathMin(pct_distance, atr_distance);
-   else if(pct_distance > 0.0)
-      stop_distance = pct_distance;
-   else
-      stop_distance = atr_distance;
-
+   const double stop_distance = MathMin(pct_distance, atr_distance);
    if(stop_distance <= 0.0)
       return false;
 
    req.sl = QM_StopRulesStopFromDistance(_Symbol, QM_BUY, entry, stop_distance);
-   req.tp = 0.0;
+   if(req.sl <= 0.0 || req.sl >= entry)
+      return false;
+
    req.reason = "TV_VWAP_BB_DIP_LONG";
-   return (req.sl > 0.0 && req.sl < entry);
+   return true;
   }
 
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
+   // Trade Management: card specifies no break-even, trailing, or partial close.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   const int magic = QM_FrameworkMagic();
-   const double close_price = iClose(_Symbol, strategy_signal_tf, 1);
-   const double upper = QM_BB_Upper(_Symbol, strategy_signal_tf, strategy_bb_period, strategy_bb_deviation, 1);
-   if(close_price <= 0.0 || upper <= 0.0 || close_price <= upper)
-      return false;
-
+   // Trade Close: close long positions after a completed bar closes above the upper BB.
+   const long magic = (long)QM_FrameworkMagic();
+   bool have_long = false;
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
       if(ticket == 0 || !PositionSelectByTicket(ticket))
          continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol ||
-         (int)PositionGetInteger(POSITION_MAGIC) != magic)
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if(PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
       if((ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY)
-         return true;
+        {
+         have_long = true;
+         break;
+        }
      }
 
-   return false;
+   if(!have_long)
+      return false;
+
+   MqlRates last_bar[];
+   ArraySetAsSeries(last_bar, true);
+   if(CopyRates(_Symbol, strategy_signal_tf, 1, 1, last_bar) != 1) // perf-allowed: single closed-bar exit read.
+      return false;
+
+   const double upper_band = QM_BB_Upper(_Symbol, strategy_signal_tf, strategy_bb_period, strategy_bb_deviation, 1);
+   return (upper_band > 0.0 && last_bar[0].close > upper_band);
   }
 
 // Optional news-filter override. Return TRUE to suppress trading regardless

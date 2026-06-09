@@ -3,16 +3,16 @@
 ; ea_id:        10240
 ; ea_slug:      tv-vwap-orb-pull
 ; ea_version:   v5.0
-; set_version:  s20260524-001
+; set_version:  s20260609-001
 ; symbol:       NDX.DWX
 ; timeframe:    M5
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   fa5b84215d65fda046924998f9e080b55a2f403bb8e09f403cdd4aa3042aec9d
 ; author:       Development
-; date:         2026-05-24
+; date:         2026-06-09
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=1000

@@ -3,6 +3,7 @@
 #property description "QM5_10163 TradingView RSI MACD Long Only"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_Signals.mqh>
 
 // =============================================================================
 // QuantMechanica V5 EA SKELETON
@@ -129,14 +130,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(magic <= 0 || QM_TM_OpenPositionCount(magic) > 0)
       return false;
 
-   const double close_1 = iClose(_Symbol, strategy_signal_tf, 1);
-   if(close_1 <= 0.0)
-      return false;
-
    if(strategy_use_ema_filter)
      {
-      const double ema_1 = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_period, 1, PRICE_CLOSE);
-      if(ema_1 <= 0.0 || close_1 <= ema_1)
+      if(QM_Sig_Price_Above_MA(_Symbol, strategy_signal_tf, strategy_ema_period, 0.0, 1) <= 0)
          return false;
      }
 

@@ -153,6 +153,17 @@ bool HasOpenStrategyPosition()
    return false;
   }
 
+bool ReadClosedSignalBar(MqlRates &bar)
+  {
+   MqlRates rates[1];
+   const int copied = CopyRates(_Symbol, strategy_signal_tf, 1, 1, rates); // perf-allowed: one closed signal bar for bespoke ORB/VWAP state inside framework new-bar gate.
+   if(copied != 1)
+      return false;
+
+   bar = rates[0];
+   return (bar.time > 0 && bar.high > 0.0 && bar.low > 0.0 && bar.close > 0.0);
+  }
+
 void AdvanceVwapAndOpeningRange(const datetime bar_time,
                                 const double high1,
                                 const double low1,
@@ -231,20 +242,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(strategy_one_trade_per_day && g_trade_taken_today)
       return false;
 
-   const datetime bar_time = iTime(_Symbol, strategy_signal_tf, 1);
-   if(bar_time <= 0)
+   MqlRates bar;
+   if(!ReadClosedSignalBar(bar))
       return false;
 
-   const double high1 = iHigh(_Symbol, strategy_signal_tf, 1);
-   const double low1 = iLow(_Symbol, strategy_signal_tf, 1);
-   const double close1 = iClose(_Symbol, strategy_signal_tf, 1);
-   const long volume1 = iVolume(_Symbol, strategy_signal_tf, 1);
-   if(high1 <= 0.0 || low1 <= 0.0 || close1 <= 0.0)
-      return false;
+   AdvanceVwapAndOpeningRange(bar.time, bar.high, bar.low, bar.close, bar.tick_volume);
 
-   AdvanceVwapAndOpeningRange(bar_time, high1, low1, close1, volume1);
-
-   const int hhmm = HhmmNY(bar_time);
+   const int hhmm = HhmmNY(bar.time);
    const int or_end = HhmmAddMinutes(strategy_or_start_hhmm_ny, MathMax(1, strategy_or_minutes));
    if(!g_or_ready || hhmm < or_end || hhmm >= strategy_session_end_hhmm_ny)
       return false;
@@ -256,9 +260,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(g_breakout_dir == 0)
      {
-      if(close1 > g_or_high && close1 > g_session_vwap && close1 > ema9)
+      if(bar.close > g_or_high && bar.close > g_session_vwap && bar.close > ema9)
          g_breakout_dir = 1;
-      else if(close1 < g_or_low && close1 < g_session_vwap && close1 < ema9)
+      else if(bar.close < g_or_low && bar.close < g_session_vwap && bar.close < ema9)
          g_breakout_dir = -1;
       return false;
      }
@@ -270,16 +274,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(g_breakout_dir > 0)
      {
       side = QM_BUY;
-      entry_ok = (close1 > g_session_vwap &&
-                  close1 > ema9 &&
-                  low1 <= g_session_vwap + tolerance);
+      entry_ok = (bar.close > g_session_vwap &&
+                  bar.close > ema9 &&
+                  bar.low <= g_session_vwap + tolerance);
      }
    else
      {
       side = QM_SELL;
-      entry_ok = (close1 < g_session_vwap &&
-                  close1 < ema9 &&
-                  high1 >= g_session_vwap - tolerance);
+      entry_ok = (bar.close < g_session_vwap &&
+                  bar.close < ema9 &&
+                  bar.high >= g_session_vwap - tolerance);
      }
 
    if(!entry_ok)

@@ -119,14 +119,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!(ema_1 > ema_2 && rsi_1 > strategy_rsi_min))
       return false;
 
-   const double open_1 = iOpen(_Symbol, strategy_signal_tf, 1);
-   const double close_1 = iClose(_Symbol, strategy_signal_tf, 1);
-   const double open_2 = iOpen(_Symbol, strategy_signal_tf, 2);
-   const double close_2 = iClose(_Symbol, strategy_signal_tf, 2);
-   if(open_1 <= 0.0 || close_1 <= 0.0 || open_2 <= 0.0 || close_2 <= 0.0)
+   // perf-allowed: two closed OHLC bars are required for the card's bearish-candle pullback rule.
+   MqlRates bars[];
+   ArraySetAsSeries(bars, true);
+   if(CopyRates(_Symbol, strategy_signal_tf, 1, 2, bars) != 2)
       return false;
 
-   if(!(close_1 < open_1 && close_2 < open_2))
+   if(!(bars[0].close < bars[0].open && bars[1].close < bars[1].open))
       return false;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -142,9 +141,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(spread > stop_distance * strategy_max_spread_stop_fraction)
       return false;
 
-   req.price = 0.0;
-   req.sl = ask - stop_distance;
-   req.tp = ask + (atr_1 * strategy_atr_tp_mult);
+   req.price = ask;
+   req.sl = QM_StopATRFromValue(_Symbol, QM_BUY, ask, atr_1, strategy_atr_sl_mult);
+   req.tp = QM_TakeATRFromValue(_Symbol, QM_BUY, ask, atr_1, strategy_atr_tp_mult);
    req.reason = "bhd_trend_pullback_long";
    return (req.sl > 0.0 && req.tp > ask);
   }

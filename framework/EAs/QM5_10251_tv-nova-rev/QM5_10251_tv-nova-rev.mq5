@@ -63,41 +63,83 @@ input int    strategy_min_touches          = 1;
 input int    strategy_max_touches          = 4;
 input double strategy_pin_wick_ratio       = 0.50;
 input double strategy_deep_penetration_atr = 0.10;
-input double strategy_squeeze_atr_mult     = 1.00;
 input int    strategy_max_hold_bars        = 30;
+input double strategy_max_spread_points    = 0.0;
 
-double PercentileRange(const int lookback, const double pct)
+int Strategy_RangeLookback()
   {
-   if(lookback <= 1)
+   return (strategy_range_lookback < 2) ? 2 : strategy_range_lookback;
+  }
+
+int Strategy_TouchLookback()
+  {
+   return (strategy_touch_lookback < 1) ? 1 : strategy_touch_lookback;
+  }
+
+int Strategy_BarsNeeded()
+  {
+   const int range_need = Strategy_RangeLookback() + 2;
+   const int touch_need = Strategy_TouchLookback() + 2;
+   return (range_need > touch_need) ? range_need : touch_need;
+  }
+
+bool Strategy_LoadClosedBars(MqlRates &rates[])
+  {
+   const int needed = Strategy_BarsNeeded();
+   ArrayResize(rates, needed);
+   const int copied = CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, needed, rates); // perf-allowed: Strategy_EntrySignal is called only after the skeleton QM_IsNewBar() gate.
+   return (copied >= needed);
+  }
+
+double Strategy_PercentileRange(const MqlRates &rates[],
+                                const int start_index,
+                                const int lookback,
+                                const double percentile)
+  {
+   if(lookback <= 1 || start_index < 0 || ArraySize(rates) < start_index + lookback)
       return 0.0;
 
    double ranges[];
    ArrayResize(ranges, lookback);
    for(int i = 0; i < lookback; ++i)
      {
-      const int shift = i + 1;
-      const double hi = iHigh(_Symbol, _Period, shift);
-      const double lo = iLow(_Symbol, _Period, shift);
-      if(hi <= 0.0 || lo <= 0.0 || hi < lo)
+      const MqlRates bar = rates[start_index + i];
+      if(bar.high <= 0.0 || bar.low <= 0.0 || bar.high < bar.low)
          return 0.0;
-      ranges[i] = hi - lo;
+      ranges[i] = bar.high - bar.low;
      }
 
    ArraySort(ranges);
-   int idx = (int)MathFloor(((MathMax(0.0, MathMin(100.0, pct)) / 100.0) * (lookback - 1)) + 0.5);
-   idx = MathMax(0, MathMin(lookback - 1, idx));
+   double pct = percentile;
+   if(pct < 0.0)
+      pct = 0.0;
+   if(pct > 100.0)
+      pct = 100.0;
+   int idx = (int)MathFloor(((pct / 100.0) * (lookback - 1)) + 0.5);
+   if(idx < 0)
+      idx = 0;
+   if(idx >= lookback)
+      idx = lookback - 1;
    return ranges[idx];
   }
 
-bool ComputeBands(const int shift, double &fair, double &upper, double &lower, double &atr, double &width)
+bool Strategy_ComputeBands(const MqlRates &rates[],
+                           const int start_index,
+                           const int indicator_shift,
+                           double &fair,
+                           double &upper,
+                           double &lower,
+                           double &atr,
+                           double &width)
   {
-   if(strategy_fair_period < 4 || strategy_atr_period < 1 || strategy_range_lookback < 2)
+   if(strategy_fair_period < 4 || strategy_atr_period < 1)
       return false;
 
-   const double hma = QM_HMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_fair_period, shift);
-   const double wma = QM_WMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_fair_period, shift);
-   atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, shift);
-   const double prange = PercentileRange(strategy_range_lookback, strategy_range_percentile);
+   const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
+   const double hma = QM_HMA(_Symbol, tf, strategy_fair_period, indicator_shift);
+   const double wma = QM_WMA(_Symbol, tf, strategy_fair_period, indicator_shift);
+   atr = QM_ATR(_Symbol, tf, strategy_atr_period, indicator_shift);
+   const double prange = Strategy_PercentileRange(rates, start_index, Strategy_RangeLookback(), strategy_range_percentile);
    if(hma <= 0.0 || wma <= 0.0 || atr <= 0.0 || prange <= 0.0 || strategy_band_mult <= 0.0)
       return false;
 
@@ -108,85 +150,79 @@ bool ComputeBands(const int shift, double &fair, double &upper, double &lower, d
    return (fair > 0.0 && upper > lower);
   }
 
-bool IsBullishReversalCandle()
+bool Strategy_BullishReversalCandle(const MqlRates &bar1, const MqlRates &bar2)
   {
-   const double open1 = iOpen(_Symbol, _Period, 1);
-   const double close1 = iClose(_Symbol, _Period, 1);
-   const double high1 = iHigh(_Symbol, _Period, 1);
-   const double low1 = iLow(_Symbol, _Period, 1);
-   const double open2 = iOpen(_Symbol, _Period, 2);
-   const double close2 = iClose(_Symbol, _Period, 2);
-   const double range = high1 - low1;
+   const double range = bar1.high - bar1.low;
    if(range <= 0.0)
       return false;
 
-   const double lower_wick = MathMin(open1, close1) - low1;
-   const bool pin = (close1 > open1 && lower_wick > strategy_pin_wick_ratio * range);
-   const bool engulf = (close1 > open1 && close2 < open2 && open1 <= close2 && close1 >= open2);
+   const double lower_wick = MathMin(bar1.open, bar1.close) - bar1.low;
+   const bool pin = (bar1.close > bar1.open && lower_wick > strategy_pin_wick_ratio * range);
+   const bool engulf = (bar1.close > bar1.open &&
+                        bar2.close < bar2.open &&
+                        bar1.open <= bar2.close &&
+                        bar1.close >= bar2.open);
    return (pin || engulf);
   }
 
-bool IsBearishReversalCandle()
+bool Strategy_BearishReversalCandle(const MqlRates &bar1, const MqlRates &bar2)
   {
-   const double open1 = iOpen(_Symbol, _Period, 1);
-   const double close1 = iClose(_Symbol, _Period, 1);
-   const double high1 = iHigh(_Symbol, _Period, 1);
-   const double low1 = iLow(_Symbol, _Period, 1);
-   const double open2 = iOpen(_Symbol, _Period, 2);
-   const double close2 = iClose(_Symbol, _Period, 2);
-   const double range = high1 - low1;
+   const double range = bar1.high - bar1.low;
    if(range <= 0.0)
       return false;
 
-   const double upper_wick = high1 - MathMax(open1, close1);
-   const bool pin = (close1 < open1 && upper_wick > strategy_pin_wick_ratio * range);
-   const bool engulf = (close1 < open1 && close2 > open2 && open1 >= close2 && close1 <= open2);
+   const double upper_wick = bar1.high - MathMax(bar1.open, bar1.close);
+   const bool pin = (bar1.close < bar1.open && upper_wick > strategy_pin_wick_ratio * range);
+   const bool engulf = (bar1.close < bar1.open &&
+                        bar2.close > bar2.open &&
+                        bar1.open >= bar2.close &&
+                        bar1.close <= bar2.open);
    return (pin || engulf);
   }
 
-int CountBandTouches(const bool lower_side)
+int Strategy_CountBandTouches(const MqlRates &rates[],
+                              const bool lower_side,
+                              const double upper,
+                              const double lower)
   {
    int touches = 0;
-   const int bars = MathMax(1, strategy_touch_lookback);
-   for(int shift = 1; shift <= bars; ++shift)
+   const int bars = Strategy_TouchLookback();
+   const int available = ArraySize(rates);
+   for(int i = 0; i < bars && i < available; ++i)
      {
-      double fair = 0.0, upper = 0.0, lower = 0.0, atr = 0.0, width = 0.0;
-      if(!ComputeBands(shift, fair, upper, lower, atr, width))
-         continue;
       if(lower_side)
         {
-         if(iLow(_Symbol, _Period, shift) <= lower)
+         if(rates[i].low <= lower)
             touches++;
         }
       else
         {
-         if(iHigh(_Symbol, _Period, shift) >= upper)
+         if(rates[i].high >= upper)
             touches++;
         }
      }
    return touches;
   }
 
-int SignalScore(const bool long_side,
-                const double upper,
-                const double lower,
-                const double atr,
-                const double width)
+int Strategy_SignalScore(const MqlRates &signal_bar,
+                         const bool long_side,
+                         const double upper,
+                         const double lower,
+                         const double atr,
+                         const double width,
+                         const double atr_prev,
+                         const double width_prev)
   {
-   double fair_prev = 0.0, upper_prev = 0.0, lower_prev = 0.0, atr_prev = 0.0, width_prev = 0.0;
-   if(!ComputeBands(2, fair_prev, upper_prev, lower_prev, atr_prev, width_prev))
-      return 0;
-
    int score = 0;
    if(long_side)
      {
-      const double penetration = lower - iLow(_Symbol, _Period, 1);
+      const double penetration = lower - signal_bar.low;
       if(penetration >= strategy_deep_penetration_atr * atr)
          score++;
      }
    else
      {
-      const double penetration = iHigh(_Symbol, _Period, 1) - upper;
+      const double penetration = signal_bar.high - upper;
       if(penetration >= strategy_deep_penetration_atr * atr)
          score++;
      }
@@ -225,6 +261,17 @@ bool HasOpenPositionForThisEA()
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
+   if(strategy_max_spread_points > 0.0)
+     {
+      const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      if(point <= 0.0 || ask <= 0.0 || bid <= 0.0)
+         return true;
+      if((ask - bid) / point > strategy_max_spread_points)
+         return true;
+     }
+
    return false;
   }
 
@@ -244,45 +291,56 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(HasOpenPositionForThisEA())
       return false;
 
+   MqlRates rates[];
+   if(!Strategy_LoadClosedBars(rates))
+      return false;
+   const MqlRates bar1 = rates[0];
+   const MqlRates bar2 = rates[1];
+
    double fair = 0.0, upper = 0.0, lower = 0.0, atr = 0.0, width = 0.0;
-   if(!ComputeBands(1, fair, upper, lower, atr, width))
-      return false;
-   if(width < strategy_squeeze_atr_mult * atr)
+   if(!Strategy_ComputeBands(rates, 0, 1, fair, upper, lower, atr, width))
       return false;
 
-   const double high1 = iHigh(_Symbol, _Period, 1);
-   const double low1 = iLow(_Symbol, _Period, 1);
-   if(high1 <= 0.0 || low1 <= 0.0)
+   double fair_prev = 0.0, upper_prev = 0.0, lower_prev = 0.0, atr_prev = 0.0, width_prev = 0.0;
+   if(!Strategy_ComputeBands(rates, 1, 2, fair_prev, upper_prev, lower_prev, atr_prev, width_prev))
+      return false;
+   if(width <= width_prev && atr <= atr_prev)
       return false;
 
-   const int lower_touches = CountBandTouches(true);
-   if(low1 <= lower &&
+   const int lower_touches = Strategy_CountBandTouches(rates, true, upper, lower);
+   if(bar1.low <= lower &&
       lower_touches >= strategy_min_touches &&
       lower_touches <= strategy_max_touches &&
-      SignalScore(true, upper, lower, atr, width) >= 2 &&
-      IsBullishReversalCandle())
+      Strategy_SignalScore(bar1, true, upper, lower, atr, width, atr_prev, width_prev) >= 2 &&
+      Strategy_BullishReversalCandle(bar1, bar2))
      {
+      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      if(ask <= 0.0 || fair <= ask)
+         return false;
       req.type = QM_BUY;
       req.price = 0.0;
-      req.sl = lower - strategy_sl_atr_mult * atr;
-      req.tp = fair;
+      req.sl = NormalizeDouble(lower - strategy_sl_atr_mult * atr, _Digits);
+      req.tp = NormalizeDouble(fair, _Digits);
       req.reason = "NOVA_REV_LONG";
-      return (req.sl > 0.0 && req.tp > SymbolInfoDouble(_Symbol, SYMBOL_ASK));
+      return (req.sl > 0.0 && req.sl < ask && req.tp > ask);
      }
 
-   const int upper_touches = CountBandTouches(false);
-   if(high1 >= upper &&
+   const int upper_touches = Strategy_CountBandTouches(rates, false, upper, lower);
+   if(bar1.high >= upper &&
       upper_touches >= strategy_min_touches &&
       upper_touches <= strategy_max_touches &&
-      SignalScore(false, upper, lower, atr, width) >= 2 &&
-      IsBearishReversalCandle())
+      Strategy_SignalScore(bar1, false, upper, lower, atr, width, atr_prev, width_prev) >= 2 &&
+      Strategy_BearishReversalCandle(bar1, bar2))
      {
+      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      if(bid <= 0.0 || fair >= bid)
+         return false;
       req.type = QM_SELL;
       req.price = 0.0;
-      req.sl = upper + strategy_sl_atr_mult * atr;
-      req.tp = fair;
+      req.sl = NormalizeDouble(upper + strategy_sl_atr_mult * atr, _Digits);
+      req.tp = NormalizeDouble(fair, _Digits);
       req.reason = "NOVA_REV_SHORT";
-      return (req.sl > 0.0 && req.tp < SymbolInfoDouble(_Symbol, SYMBOL_BID));
+      return (req.sl > bid && req.tp > 0.0 && req.tp < bid);
      }
 
    return false;
@@ -317,8 +375,8 @@ bool Strategy_ExitSignal()
          continue;
 
       const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
-      const int bars_since_open = iBarShift(_Symbol, _Period, open_time, false);
-      if(bars_since_open >= strategy_max_hold_bars)
+      const int period_seconds = PeriodSeconds((ENUM_TIMEFRAMES)_Period);
+      if(open_time > 0 && period_seconds > 0 && TimeCurrent() - open_time >= strategy_max_hold_bars * period_seconds)
          return true;
      }
    return false;

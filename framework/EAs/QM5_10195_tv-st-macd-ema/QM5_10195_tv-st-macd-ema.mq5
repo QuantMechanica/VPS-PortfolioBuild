@@ -4,12 +4,6 @@
 
 #include <QM/QM_Common.mqh>
 
-// =============================================================================
-// QuantMechanica V5 EA SKELETON
-// -----------------------------------------------------------------------------
-// Strategy implementation is confined to the five Strategy_* hooks below.
-// =============================================================================
-
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 10195;
 input int    qm_magic_slot_offset       = 0;
@@ -35,26 +29,19 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_supertrend_period = 10;
-input double strategy_supertrend_mult   = 3.0;
-input int    strategy_macd_fast         = 12;
-input int    strategy_macd_slow         = 26;
-input int    strategy_macd_signal       = 9;
-input int    strategy_ema_period        = 200;
-input int    strategy_swing_lookback    = 10;
-input int    strategy_atr_period        = 14;
-input double strategy_atr_fallback_mult = 1.5;
+input ENUM_TIMEFRAMES strategy_timeframe = PERIOD_H1;
+input int    strategy_supertrend_period  = 10;
+input double strategy_supertrend_mult    = 3.0;
+input int    strategy_supertrend_warmup  = 120;
+input int    strategy_macd_fast          = 12;
+input int    strategy_macd_slow          = 26;
+input int    strategy_macd_signal        = 9;
+input int    strategy_ema_period         = 200;
+input int    strategy_swing_lookback     = 10;
+input int    strategy_atr_period         = 14;
+input double strategy_atr_fallback_mult  = 1.5;
 
-// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
-// regime filter). Cheap O(1) checks only - runs on every tick.
-bool Strategy_NoTradeFilter()
-  {
-   return false;
-  }
-
-// Populate `req` with entry order parameters and return TRUE if a NEW entry
-// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
-bool Strategy_EntrySignal(QM_EntryRequest &req)
+void Strategy_ResetEntryRequest(QM_EntryRequest &req)
   {
    req.type = QM_BUY;
    req.price = 0.0;
@@ -63,64 +50,140 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.reason = "";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
+  }
+
+bool Strategy_SelectOurPosition(ulong &ticket, ENUM_POSITION_TYPE &ptype)
+  {
+   ticket = 0;
+   ptype = POSITION_TYPE_BUY;
 
    const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
+      const ulong t = PositionGetTicket(i);
+      if(t == 0 || !PositionSelectByTicket(t))
          continue;
       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
-         return false;
-     }
-
-   const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
-   const double close_1 = iClose(_Symbol, tf, 1);
-   const double ema_1 = QM_EMA(_Symbol, tf, strategy_ema_period, 1);
-   const double macd_main_1 = QM_MACD_Main(_Symbol, tf, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
-   const double macd_signal_1 = QM_MACD_Signal(_Symbol, tf, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
-   if(close_1 <= 0.0 || ema_1 <= 0.0)
-      return false;
-
-   int st_dir = 0;
-   double final_upper = 0.0;
-   double final_lower = 0.0;
-   const int st_period = MathMax(strategy_supertrend_period, 1);
-   const int warmup = MathMax(st_period * 8, 80);
-   for(int shift = 1 + warmup; shift >= 1; --shift)
-     {
-      const double high = iHigh(_Symbol, tf, shift);
-      const double low = iLow(_Symbol, tf, shift);
-      const double close = iClose(_Symbol, tf, shift);
-      const double atr = QM_ATR(_Symbol, tf, st_period, shift);
-      if(high <= 0.0 || low <= 0.0 || close <= 0.0 || atr <= 0.0)
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
 
-      const double hl2 = (high + low) * 0.5;
-      const double basic_upper = hl2 + strategy_supertrend_mult * atr;
-      const double basic_lower = hl2 - strategy_supertrend_mult * atr;
+      ticket = t;
+      ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      return true;
+     }
 
-      if(st_dir == 0)
+   return false;
+  }
+
+int Strategy_SupertrendDirection(double &closed_bar_close)
+  {
+   closed_bar_close = 0.0;
+
+   const int period = MathMax(1, strategy_supertrend_period);
+   if(strategy_supertrend_mult <= 0.0)
+      return 0;
+
+   const int min_warmup = MathMax(period + 20, 80);
+   const int warmup = MathMax(strategy_supertrend_warmup, min_warmup);
+
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, strategy_timeframe, 1, warmup + 2, rates); // perf-allowed: bounded Supertrend OHLC read inside framework closed-bar entry hook.
+   if(copied < period + 5)
+      return 0;
+
+   closed_bar_close = rates[0].close;
+
+   int trend = 0;
+   double final_upper = 0.0;
+   double final_lower = 0.0;
+
+   for(int idx = copied - 2; idx >= 0; --idx)
+     {
+      const int shift = idx + 1;
+      const double high = rates[idx].high;
+      const double low = rates[idx].low;
+      const double close = rates[idx].close;
+      const double prev_close = rates[idx + 1].close;
+      const double atr = QM_ATR(_Symbol, strategy_timeframe, period, shift);
+      if(high <= 0.0 || low <= 0.0 || close <= 0.0 || prev_close <= 0.0 || atr <= 0.0)
+         continue;
+
+      const double midpoint = (high + low) * 0.5;
+      const double basic_upper = midpoint + strategy_supertrend_mult * atr;
+      const double basic_lower = midpoint - strategy_supertrend_mult * atr;
+
+      if(trend == 0)
         {
          final_upper = basic_upper;
          final_lower = basic_lower;
-         st_dir = (close >= hl2) ? 1 : -1;
+         trend = (close >= midpoint) ? 1 : -1;
          continue;
         }
 
-      const double prev_close = iClose(_Symbol, tf, shift + 1);
       final_upper = (basic_upper < final_upper || prev_close > final_upper) ? basic_upper : final_upper;
       final_lower = (basic_lower > final_lower || prev_close < final_lower) ? basic_lower : final_lower;
 
-      if(st_dir < 0)
-         st_dir = (close > final_upper) ? 1 : -1;
-      else
-         st_dir = (close < final_lower) ? -1 : 1;
+      if(trend < 0 && close > final_upper)
+         trend = 1;
+      else if(trend > 0 && close < final_lower)
+         trend = -1;
      }
 
-   if(st_dir == 0)
+   return trend;
+  }
+
+bool Strategy_StopMeetsBrokerDistance(const QM_OrderType side,
+                                      const double entry,
+                                      const double stop)
+  {
+   if(entry <= 0.0 || stop <= 0.0)
+      return false;
+
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const int stops_level = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
+   if(point <= 0.0)
+      return false;
+
+   if(QM_OrderTypeIsBuy(side) && stop >= entry)
+      return false;
+   if(!QM_OrderTypeIsBuy(side) && stop <= entry)
+      return false;
+
+   const double min_distance = (stops_level > 0) ? point * stops_level : 0.0;
+   return (min_distance <= 0.0 || MathAbs(entry - stop) >= min_distance);
+  }
+
+// Return TRUE to BLOCK trading this tick.
+bool Strategy_NoTradeFilter()
+  {
+   return (_Period != strategy_timeframe);
+  }
+
+// Populate `req` with entry order parameters and return TRUE if a NEW entry
+// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
+bool Strategy_EntrySignal(QM_EntryRequest &req)
+  {
+   Strategy_ResetEntryRequest(req);
+
+   ulong ticket;
+   ENUM_POSITION_TYPE ptype;
+   if(Strategy_SelectOurPosition(ticket, ptype))
+      return false;
+
+   double close_1 = 0.0;
+   const int st_dir = Strategy_SupertrendDirection(close_1);
+   if(st_dir == 0 || close_1 <= 0.0)
+      return false;
+
+   const double ema_1 = QM_EMA(_Symbol, strategy_timeframe, MathMax(1, strategy_ema_period), 1);
+   const double macd_main_1 = QM_MACD_Main(_Symbol, strategy_timeframe, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
+   const double macd_signal_1 = QM_MACD_Signal(_Symbol, strategy_timeframe, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
+   if(ema_1 <= 0.0)
       return false;
 
    QM_OrderType side = QM_BUY;
@@ -139,24 +202,24 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const double entry = QM_EntryMarketPrice(side);
-   double stop = QM_StopStructure(_Symbol, side, entry, strategy_swing_lookback);
    const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
-   if(stop <= 0.0 || tick_size <= 0.0)
+   if(entry <= 0.0 || tick_size <= 0.0)
       return false;
 
-   stop = QM_OrderTypeIsBuy(side) ? (stop - tick_size) : (stop + tick_size);
+   double stop = QM_StopStructure(_Symbol, side, entry, MathMax(1, strategy_swing_lookback));
+   if(stop > 0.0)
+      stop = QM_OrderTypeIsBuy(side) ? (stop - tick_size) : (stop + tick_size);
 
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   const int stops_level = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
-   const double min_distance = (point > 0.0 && stops_level > 0) ? point * stops_level : 0.0;
-   if(min_distance > 0.0 && MathAbs(entry - stop) < min_distance)
-      stop = QM_StopATR(_Symbol, side, entry, strategy_atr_period, strategy_atr_fallback_mult);
+   if(!Strategy_StopMeetsBrokerDistance(side, entry, stop))
+      stop = QM_StopATR(_Symbol, side, entry, MathMax(1, strategy_atr_period), strategy_atr_fallback_mult);
 
-   if(stop <= 0.0)
+   if(!Strategy_StopMeetsBrokerDistance(side, entry, stop))
       return false;
 
    req.type = side;
+   req.price = 0.0;
    req.sl = QM_StopRulesNormalizePrice(_Symbol, stop);
+   req.tp = 0.0;
    req.reason = reason;
    return true;
   }
@@ -170,29 +233,20 @@ void Strategy_ManageOpenPosition()
 // Return TRUE to close the open position now.
 bool Strategy_ExitSignal()
   {
-   const int magic = QM_FrameworkMagic();
-   const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
-   const double macd_main_1 = QM_MACD_Main(_Symbol, tf, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
-   const double macd_signal_1 = QM_MACD_Signal(_Symbol, tf, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
-   const double macd_main_2 = QM_MACD_Main(_Symbol, tf, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 2);
-   const double macd_signal_2 = QM_MACD_Signal(_Symbol, tf, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 2);
+   ulong ticket;
+   ENUM_POSITION_TYPE ptype;
+   if(!Strategy_SelectOurPosition(ticket, ptype))
+      return false;
 
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
+   const double macd_main_1 = QM_MACD_Main(_Symbol, strategy_timeframe, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
+   const double macd_signal_1 = QM_MACD_Signal(_Symbol, strategy_timeframe, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
+   const double macd_main_2 = QM_MACD_Main(_Symbol, strategy_timeframe, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 2);
+   const double macd_signal_2 = QM_MACD_Signal(_Symbol, strategy_timeframe, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 2);
 
-      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      if(ptype == POSITION_TYPE_BUY && macd_main_2 >= macd_signal_2 && macd_main_1 < macd_signal_1)
-         return true;
-      if(ptype == POSITION_TYPE_SELL && macd_main_2 <= macd_signal_2 && macd_main_1 > macd_signal_1)
-         return true;
-     }
+   if(ptype == POSITION_TYPE_BUY)
+      return (macd_main_2 >= macd_signal_2 && macd_main_1 < macd_signal_1);
+   if(ptype == POSITION_TYPE_SELL)
+      return (macd_main_2 <= macd_signal_2 && macd_main_1 > macd_signal_1);
 
    return false;
   }

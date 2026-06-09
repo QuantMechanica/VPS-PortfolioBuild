@@ -80,39 +80,61 @@ input double strategy_atr_tp_mult       = 2.0;
 input double strategy_spread_stop_max   = 0.15;
 
 int  g_pending_reverse_direction = 0;
-bool g_skip_pending_once = false;
 
-double Strategy_DemaBaseline(const int shift)
+bool Strategy_DemaTriplet(double &dema_1, double &dema_2, double &dema_3)
   {
-   const int slow_period = MathMax(1, strategy_dema_period * 2 - 1);
-   const double ema_fast = QM_EMA(_Symbol, PERIOD_H1, strategy_dema_period, shift);
-   const double ema_slow = QM_EMA(_Symbol, PERIOD_H1, slow_period, shift);
-   if(ema_fast <= 0.0 || ema_slow <= 0.0)
-      return 0.0;
-   return (2.0 * ema_fast - ema_slow);
-  }
+   dema_1 = 0.0;
+   dema_2 = 0.0;
+   dema_3 = 0.0;
+   if(strategy_dema_period < 2)
+      return false;
 
-int Strategy_DemaDirection(const int shift)
-  {
-   if(strategy_dema_period < 2 || strategy_atr_period < 1)
-      return 0;
+   const int warmup = MathMax(strategy_dema_period * 8, strategy_dema_period + 10);
+   double close_values[];
+   ArrayResize(close_values, warmup);
+   // perf-allowed: exact DEMA is not exposed by QM_Indicators; caller is
+   // QM_IsNewBar-gated and this bounded H1 close copy runs once per closed bar.
+   const int copied = CopyClose(_Symbol, PERIOD_H1, 1, warmup, close_values); // perf-allowed
+   if(copied < strategy_dema_period + 4)
+      return false;
 
-   const double atr = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, shift);
-   const double dema_1 = Strategy_DemaBaseline(shift);
-   const double dema_2 = Strategy_DemaBaseline(shift + 1);
-   if(atr <= 0.0 || dema_1 <= 0.0 || dema_2 <= 0.0)
-      return 0;
-   if(dema_1 > dema_2)
-      return 1;
-   if(dema_1 < dema_2)
-      return -1;
-   return 0;
+   const double alpha = 2.0 / (strategy_dema_period + 1.0);
+   double ema_1 = close_values[0];
+   double ema_2 = ema_1;
+   for(int i = 1; i < copied; ++i)
+     {
+      ema_1 = alpha * close_values[i] + (1.0 - alpha) * ema_1;
+      ema_2 = alpha * ema_1 + (1.0 - alpha) * ema_2;
+      const double dema = 2.0 * ema_1 - ema_2;
+      if(i == copied - 3)
+         dema_3 = dema;
+      else if(i == copied - 2)
+         dema_2 = dema;
+      else if(i == copied - 1)
+         dema_1 = dema;
+     }
+
+   return (dema_1 > 0.0 && dema_2 > 0.0 && dema_3 > 0.0);
   }
 
 int Strategy_DemaShiftSignal()
   {
-   const int now = Strategy_DemaDirection(1);
-   const int prior = Strategy_DemaDirection(2);
+   double dema_1 = 0.0, dema_2 = 0.0, dema_3 = 0.0;
+   if(!Strategy_DemaTriplet(dema_1, dema_2, dema_3))
+      return 0;
+
+   int now = 0;
+   if(dema_1 > dema_2)
+      now = 1;
+   else if(dema_1 < dema_2)
+      now = -1;
+
+   int prior = 0;
+   if(dema_2 > dema_3)
+      prior = 1;
+   else if(dema_2 < dema_3)
+      prior = -1;
+
    if(now > 0 && prior <= 0)
       return 1;
    if(now < 0 && prior >= 0)
@@ -128,6 +150,8 @@ int Strategy_DemaShiftSignal()
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
+   // No Trade Filter (time, spread, news): framework owns news/Friday gates;
+   // the card adds an ATR-relative spread ceiling.
    const double atr = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
    if(atr <= 0.0 || strategy_atr_sl_mult <= 0.0)
       return true;
@@ -159,11 +183,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    int direction = 0;
    if(g_pending_reverse_direction != 0)
      {
-      if(g_skip_pending_once)
-        {
-         g_skip_pending_once = false;
-         return false;
-        }
       direction = g_pending_reverse_direction;
       g_pending_reverse_direction = 0;
      }
@@ -204,10 +223,6 @@ bool Strategy_ExitSignal()
    if(magic <= 0)
       return false;
 
-   const int direction = Strategy_DemaShiftSignal();
-   if(direction == 0)
-      return false;
-
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -218,17 +233,22 @@ bool Strategy_ExitSignal()
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
 
+      if(!QM_IsNewBar(_Symbol, PERIOD_H1))
+         return false;
+
+      const int direction = Strategy_DemaShiftSignal();
+      if(direction == 0)
+         return false;
+
       const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       if(ptype == POSITION_TYPE_BUY && direction < 0)
         {
          g_pending_reverse_direction = direction;
-         g_skip_pending_once = true;
          return true;
         }
       if(ptype == POSITION_TYPE_SELL && direction > 0)
         {
          g_pending_reverse_direction = direction;
-         g_skip_pending_once = true;
          return true;
         }
      }

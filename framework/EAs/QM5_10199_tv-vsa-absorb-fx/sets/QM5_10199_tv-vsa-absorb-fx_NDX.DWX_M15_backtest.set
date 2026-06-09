@@ -3,16 +3,16 @@
 ; ea_id:        10199
 ; ea_slug:      tv-vsa-absorb-fx
 ; ea_version:   v5.0
-; set_version:  s20260524-001
+; set_version:  s20260609-001
 ; symbol:       NDX.DWX
 ; timeframe:    M15
 ; environment:  backtest
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   42fa1877d300406164dc195a6da0e8a79fa36be849ff1c61fba1d6f0b25b4da2
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-24
+; date:         2026-06-09
 ;==========================================================
 qm_magic_slot_offset=4
 RISK_FIXED=1000
