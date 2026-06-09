@@ -1,208 +1,217 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_10022 Robot Wealth Dual Momentum Rotation"
+#property description "QM5_10022 rw-dual-mom — Robot Wealth Dual Momentum Rotation (D1 monthly)"
 
 #include <QM/QM_Common.mqh>
 
-// =============================================================================
-// QuantMechanica V5 EA SKELETON
-// -----------------------------------------------------------------------------
-// Fill in only the five Strategy_* hooks below. Everything else is framework
-// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
-// risk + magic + news + Friday-close guard rails).
-// =============================================================================
+// ============================================================
+// INPUT PARAMETERS
+// ============================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 10022;
-input int    qm_magic_slot_offset       = 0;
-input uint   qm_rng_seed                = 42;
+input int    qm_ea_id                     = 10022;
+input int    qm_magic_slot_offset         = 0;
+input uint   qm_rng_seed                  = 42;
 
 input group "Risk"
-input double RISK_PERCENT               = 0.0;
-input double RISK_FIXED                 = 1000.0;
-input double PORTFOLIO_WEIGHT           = 1.0;
+input double RISK_PERCENT                 = 0.0;
+input double RISK_FIXED                   = 1000.0;
+input double PORTFOLIO_WEIGHT             = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
-input int    qm_news_stale_max_hours      = 336;
-input string qm_news_min_impact           = "high";
-input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input int    qm_news_stale_max_hours               = 336;
+input string qm_news_min_impact                    = "high";
+input QM_NewsMode qm_news_mode_legacy              = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled    = true;
-input int    qm_friday_close_hour_broker = 21;
+input bool   qm_friday_close_enabled      = true;
+input int    qm_friday_close_hour_broker  = 21;
 
 input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_momentum_d1_bars   = 126;
-input int    strategy_max_holdings       = 3;
-input int    strategy_atr_period         = 20;
-input double strategy_atr_sl_mult        = 3.0;
+input int    strategy_formation_period    = 126;   // D1 bars for 6-month return (~6 months)
+input int    strategy_max_held            = 3;     // max universe members held simultaneously
+input int    strategy_atr_period          = 20;    // ATR period for catastrophic stop
+input double strategy_atr_sl_mult         = 3.0;   // catastrophic SL = N * ATR(20,D1)
 
-const int STRATEGY_UNIVERSE_SIZE = 4;
-string g_strategy_symbols[4] = {"SP500.DWX", "NDX.DWX", "WS30.DWX", "XAUUSD.DWX"};
+// ============================================================
+// UNIVERSE — mirrors magic_numbers.csv slots 0..3 for QM5_10022
+// ============================================================
+string g_universe[4] = {"SP500.DWX", "NDX.DWX", "WS30.DWX", "XAUUSD.DWX"};
+const int UNIVERSE_SIZE = 4;
 
-int Strategy_CurrentSymbolIndex()
-  {
-   for(int i = 0; i < STRATEGY_UNIVERSE_SIZE; ++i)
-      if(g_strategy_symbols[i] == _Symbol)
-         return i;
-   return -1;
-  }
+// ============================================================
+// FILE-SCOPE CACHED STATE
+// Recomputed once per new calendar month inside QM_IsNewBar gate.
+// Per-tick logic only reads g_is_selected — O(1), no cross-symbol reads.
+// ============================================================
+bool g_is_selected        = false;   // is _Symbol in the selected basket this month?
+int  g_last_rebalance_mon = -1;      // calendar month of last rebalance (1-12; -1=never)
+int  g_last_rebalance_yr  = -1;      // calendar year  of last rebalance
 
-int Strategy_MonthOf(const datetime value)
+// ============================================================
+// INTERNAL HELPERS
+// ============================================================
+
+// Returns true when the current broker timestamp belongs to a new calendar
+// month relative to the last rebalance.  Called only inside QM_IsNewBar gate.
+bool IsNewMonthBar()
   {
    MqlDateTime dt;
-   TimeToStruct(value, dt);
-   return dt.mon;
+   TimeToStruct(TimeCurrent(), dt);
+   return (dt.year != g_last_rebalance_yr || dt.mon != g_last_rebalance_mon);
   }
 
-bool Strategy_IsMonthlyRebalance()
+// Recomputes cross-symbol 6-month returns and updates g_is_selected.
+// Called once per new calendar month — total 4 * 2 iClose reads, O(1) each.
+// All raw series calls carry // perf-allowed because this is bespoke structural
+// logic (cross-symbol 6-month return) that has no QM_Indicators equivalent.
+void AdvanceState_OnNewMonth()
   {
-   const datetime current_d1 = iTime(_Symbol, PERIOD_D1, 0);
-   const datetime prior_d1 = iTime(_Symbol, PERIOD_D1, 1);
-   if(current_d1 <= 0 || prior_d1 <= 0)
-      return false;
-   return (Strategy_MonthOf(current_d1) != Strategy_MonthOf(prior_d1));
-  }
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(), dt);
+   g_last_rebalance_yr  = dt.year;
+   g_last_rebalance_mon = dt.mon;
 
-double Strategy_TotalReturn(const string symbol)
-  {
-   if(strategy_momentum_d1_bars < 1)
-      return -DBL_MAX;
-   if(!SymbolSelect(symbol, true))
-      return -DBL_MAX;
-   if(Bars(symbol, PERIOD_D1) < strategy_momentum_d1_bars + 2)
-      return -DBL_MAX;
-
-   const double recent_close = QM_SMA(symbol, PERIOD_D1, 1, 1);
-   const double lookback_close = QM_SMA(symbol, PERIOD_D1, 1, 1 + strategy_momentum_d1_bars);
-   if(recent_close <= 0.0 || lookback_close <= 0.0)
-      return -DBL_MAX;
-
-   return (recent_close / lookback_close) - 1.0;
-  }
-
-bool Strategy_SymbolSelected()
-  {
-   const int current_idx = Strategy_CurrentSymbolIndex();
-   if(current_idx < 0)
-      return false;
-
+   const int fp = strategy_formation_period;
    double returns[4];
-   int ranks[4] = {0, 1, 2, 3};
-   for(int i = 0; i < STRATEGY_UNIVERSE_SIZE; ++i)
-      returns[i] = Strategy_TotalReturn(g_strategy_symbols[i]);
+   bool   valid  [4];
+   int    my_idx = -1;
 
-   for(int a = 0; a < STRATEGY_UNIVERSE_SIZE - 1; ++a)
+   for(int i = 0; i < UNIVERSE_SIZE; i++)
      {
-      for(int b = a + 1; b < STRATEGY_UNIVERSE_SIZE; ++b)
-        {
-         if(returns[ranks[b]] > returns[ranks[a]])
-           {
-            const int tmp = ranks[a];
-            ranks[a] = ranks[b];
-            ranks[b] = tmp;
-           }
-        }
+      returns[i] = -9999.0;
+      valid[i]   = false;
+      const string sym = g_universe[i];
+      if(sym == _Symbol) my_idx = i;
+
+      int nbars = Bars(sym, PERIOD_D1); // perf-allowed: single bar-count per symbol, monthly gate
+      if(nbars < fp + 2) continue;
+
+      double c_now = iClose(sym, PERIOD_D1, 1);  // perf-allowed: single-shift close read, monthly gate
+      double c_ago = iClose(sym, PERIOD_D1, fp); // perf-allowed: single-shift close read, monthly gate
+      if(c_now <= 0.0 || c_ago <= 0.0) continue;
+
+      returns[i] = (c_now - c_ago) / c_ago;
+      valid[i]   = true;
      }
 
-   const int hold_count = MathMax(0, MathMin(strategy_max_holdings, STRATEGY_UNIVERSE_SIZE));
-   for(int rank = 0; rank < hold_count; ++rank)
+   // Deselect when not in universe, data insufficient, or absolute momentum negative
+   if(my_idx < 0 || !valid[my_idx] || returns[my_idx] <= 0.0)
      {
-      const int idx = ranks[rank];
-      if(idx == current_idx && returns[idx] > 0.0)
-         return true;
+      const string reason = my_idx < 0 ? "not_in_universe"
+                            : !valid[my_idx] ? "insufficient_bars"
+                            : "neg_abs_mom";
+      const double my_ret = (my_idx >= 0 && valid[my_idx]) ? returns[my_idx] : 0.0;
+      g_is_selected = false;
+      QM_LogEvent(QM_INFO, "REBALANCE",
+                  StringFormat("{\"selected\":false,\"reason\":\"%s\",\"ret\":%.4f,\"month\":%d}",
+                               reason, my_ret, dt.mon));
+      return;
      }
 
-   return false;
+   // Cross-sectional rank: number of valid universe members with strictly higher return
+   int rank = 0;
+   for(int i = 0; i < UNIVERSE_SIZE; i++)
+     {
+      if(i == my_idx) continue;
+      if(valid[i] && returns[i] > returns[my_idx])
+         rank++;
+     }
+
+   // Selected if rank is inside top-N AND absolute return is positive
+   g_is_selected = (rank < strategy_max_held);
+   QM_LogEvent(QM_INFO, "REBALANCE",
+               StringFormat("{\"selected\":%s,\"rank\":%d,\"ret\":%.4f,\"max_held\":%d,\"month\":%d}",
+                            g_is_selected ? "true" : "false",
+                            rank, returns[my_idx], strategy_max_held, dt.mon));
   }
 
-bool Strategy_HasOpenPosition()
-  {
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      return true;
-     }
-   return false;
-  }
+// ============================================================
+// STRATEGY HOOKS — five required functions
+// ============================================================
 
 // No Trade Filter (time, spread, news)
+// Monthly D1 rotation has no intra-month session or regime filter.
 bool Strategy_NoTradeFilter()
   {
-   const int symbol_index = Strategy_CurrentSymbolIndex();
-   if(symbol_index < 0)
-      return true;
-   return (symbol_index != qm_magic_slot_offset);
+   return false;
   }
 
 // Trade Entry
+// Open a long when this symbol is monthly-selected and no position is held.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   req.type = QM_BUY;
-   req.price = 0.0;
-   req.sl = 0.0;
-   req.tp = 0.0;
-   req.reason = "";
-   req.symbol_slot = qm_magic_slot_offset;
+   req.type               = QM_BUY;
+   req.price              = 0.0;
+   req.sl                 = 0.0;
+   req.tp                 = 0.0;
+   req.reason             = "";
+   req.symbol_slot        = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!Strategy_IsMonthlyRebalance())
+   if(!g_is_selected)
       return false;
-   if(Strategy_HasOpenPosition())
-      return false;
-   if(!Strategy_SymbolSelected())
+
+   // Framework duplicate guard (also in QM_Entry); early-exit avoids ATR compute
+   if(QM_EntryHasOpenPosition((long)QM_FrameworkMagic(), _Symbol))
       return false;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   if(ask <= 0.0)
-      return false;
+   if(ask <= 0.0) return false;
 
-   const double sl = QM_StopATR(_Symbol, QM_BUY, ask, strategy_atr_period, strategy_atr_sl_mult);
-   if(sl <= 0.0)
-      return false;
+   const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   if(atr <= 0.0) return false;
 
-   req.sl = sl;
-   req.reason = "RW_DUAL_MOM_MONTHLY_LONG";
+   req.type   = QM_BUY;
+   req.price  = 0.0; // market order
+   req.sl     = ask - atr * strategy_atr_sl_mult; // catastrophic SL; primary exit = monthly rotation
+   req.tp     = 0.0; // no TP; exit at monthly rebalance
+   req.reason = "rw-dual-mom-long";
    return true;
   }
 
 // Trade Management
+// Baseline uses only the catastrophic ATR SL set at entry; no intra-month management.
 void Strategy_ManageOpenPosition()
   {
-   // Card baseline uses monthly rotation exits and catastrophic ATR SL only.
   }
 
 // Trade Close
+// Close when g_is_selected flipped to false at the last monthly rebalance.
+// g_is_selected is updated in AdvanceState_OnNewMonth (QM_IsNewBar gate) so
+// ExitSignal() reads a stable per-bar flag — no cross-symbol logic on the exit path.
 bool Strategy_ExitSignal()
   {
-   if(!Strategy_IsMonthlyRebalance())
-      return false;
-   if(!Strategy_HasOpenPosition())
-      return false;
-   return !Strategy_SymbolSelected();
+   if(g_is_selected)
+      return false; // still selected — keep position
+
+   // Check if we actually hold a position before returning true
+   const long magic = (long)QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; i--)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(!PositionSelectByTicket(ticket)) continue;
+      if(PositionGetInteger(POSITION_MAGIC) != magic) continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol) continue;
+      return true;
+     }
+   return false;
   }
 
 // News Filter Hook
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false;
+   return false; // defer to QM_NewsAllowsTrade2 via framework
   }
 
-// -----------------------------------------------------------------------------
-// Framework wiring — do NOT edit below this line unless you know why.
-// -----------------------------------------------------------------------------
+// ============================================================
+// FRAMEWORK WIRING
+// ============================================================
 
 int OnInit()
   {
@@ -224,6 +233,16 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
+   // Register the full universe so the symbol guard permits cross-symbol reads.
+   // Without this, QM_FrameworkInit defaults to single-symbol guard and every
+   // iClose/Bars call on a non-_Symbol emits SYMBOL_GUARD_VIOLATION.
+   QM_SymbolGuardInit(g_universe);
+
+   // Pre-load D1 history for all universe symbols so the MT5 tester has bar data
+   // for the cross-symbol iClose calls in AdvanceState_OnNewMonth.
+   // Without this, iClose returns 0 in the tester (QM5_10717 pattern) → no trades.
+   QM_BasketWarmupHistory(g_universe, PERIOD_D1, strategy_formation_period + 10);
+
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
   }
@@ -242,6 +261,7 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
+
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
@@ -255,26 +275,32 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
+   // Per-tick: adjust open positions (no-op for this baseline strategy)
    Strategy_ManageOpenPosition();
 
+   // Per-tick: discretionary exit when not selected (reads cached g_is_selected only)
    if(Strategy_ExitSignal())
      {
-      const int magic = QM_FrameworkMagic();
-      for(int i = PositionsTotal() - 1; i >= 0; --i)
+      const long magic = (long)QM_FrameworkMagic();
+      for(int i = PositionsTotal() - 1; i >= 0; i--)
         {
          const ulong ticket = PositionGetTicket(i);
-         if(!PositionSelectByTicket(ticket))
-            continue;
-         if(PositionGetInteger(POSITION_MAGIC) != magic)
-            continue;
+         if(!PositionSelectByTicket(ticket)) continue;
+         if(PositionGetInteger(POSITION_MAGIC) != magic) continue;
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
 
+   // Per-closed-bar: rebalance and entry check
    if(!QM_IsNewBar())
       return;
 
    QM_EquityStreamOnNewBar();
+
+   // Monthly rebalance: update g_is_selected on the first D1 bar of each new month.
+   // All cross-symbol iClose reads are confined to this branch.
+   if(IsNewMonthBar())
+      AdvanceState_OnNewMonth();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))

@@ -131,7 +131,6 @@ double PreEventDrift()
          continue;
       if(NewYorkHhmm(bar_time) != strategy_pre_start_hhmm_ny)
          continue;
-
       const double start_open = iOpen(_Symbol, _Period, shift); // perf-allowed: bespoke drift scan, gated by QM_IsNewBar
       if(start_open <= 0.0)
          return 0.0;

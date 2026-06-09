@@ -75,7 +75,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.reason = "";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
-
    const datetime entry_bar = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: bespoke EOM calendar math; O(1) cached bar lookup; no QM_* equivalent
    if(entry_bar <= 0)
       return false;
@@ -206,7 +205,6 @@ bool Strategy_ExitSignal()
 
    if(!have_position)
       return false;
-
    const datetime first_month_bar = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: bespoke EOM month-rollover detection; O(1) cached lookup
    const datetime prior_bar = iTime(_Symbol, PERIOD_D1, 2); // perf-allowed: bespoke EOM month-rollover detection; O(1) cached lookup
    if(first_month_bar <= 0 || prior_bar <= 0)

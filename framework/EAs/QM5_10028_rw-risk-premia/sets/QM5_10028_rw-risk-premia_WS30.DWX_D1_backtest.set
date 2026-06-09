@@ -3,16 +3,16 @@
 ; ea_id:        10028
 ; ea_slug:      rw-risk-premia
 ; ea_version:   v5.0
-; set_version:  s20260523-001
+; set_version:  s20260609-001
 ; symbol:       WS30.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   085af126bf152fdf7e4544ab491be47bf052b6d93a82c990c6fb6fe7ce1c3be8
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-23
+; date:         2026-06-09
 ;==========================================================
 qm_magic_slot_offset=2
 RISK_FIXED=1000
