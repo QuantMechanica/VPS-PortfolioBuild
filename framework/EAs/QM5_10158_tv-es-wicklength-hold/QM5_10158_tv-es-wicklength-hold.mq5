@@ -83,64 +83,6 @@ input double strategy_atr_sl_mult       = 1.5;
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-double Strategy_TotalWickLength(const int shift)
-  {
-   const double open_price = iOpen(_Symbol, _Period, shift);
-   const double high_price = iHigh(_Symbol, _Period, shift);
-   const double low_price = iLow(_Symbol, _Period, shift);
-   const double close_price = iClose(_Symbol, _Period, shift);
-   if(open_price <= 0.0 || high_price <= 0.0 || low_price <= 0.0 || close_price <= 0.0)
-      return -1.0;
-
-   const double upper_wick = high_price - MathMax(open_price, close_price);
-   const double lower_wick = MathMin(open_price, close_price) - low_price;
-   if(upper_wick < 0.0 || lower_wick < 0.0)
-      return -1.0;
-
-   return upper_wick + lower_wick;
-  }
-
-double Strategy_WickSMA(const int period)
-  {
-   if(period <= 0)
-      return -1.0;
-
-   double sum = 0.0;
-   for(int shift = 1; shift <= period; ++shift)
-     {
-      const double wick = Strategy_TotalWickLength(shift);
-      if(wick < 0.0)
-         return -1.0;
-      sum += wick;
-     }
-
-   return sum / (double)period;
-  }
-
-bool Strategy_FindOpenPosition(datetime &open_time)
-  {
-   open_time = 0;
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      open_time = (datetime)PositionGetInteger(POSITION_TIME);
-      return true;
-     }
-
-   return false;
-  }
-
 // Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
@@ -165,16 +107,36 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
       return false;
 
-   const double signal_wick = Strategy_TotalWickLength(1);
-   const double wick_ma = Strategy_WickSMA(strategy_wick_ma_period);
-   if(signal_wick < 0.0 || wick_ma <= 0.0)
+   // perf-allowed: wick length is bespoke OHLC structure. EntrySignal is
+   // called only after the framework QM_IsNewBar() gate, so this bounded read
+   // runs once per closed bar rather than once per tick.
+   MqlRates bars[];
+   ArraySetAsSeries(bars, true);
+   const int copied = CopyRates(_Symbol, _Period, 1, strategy_wick_ma_period, bars); // perf-allowed
+   if(copied < strategy_wick_ma_period)
+      return false;
+
+   double wick_sum = 0.0;
+   for(int i = 0; i < strategy_wick_ma_period; ++i)
+     {
+      const double upper_wick = bars[i].high - MathMax(bars[i].open, bars[i].close);
+      const double lower_wick = MathMin(bars[i].open, bars[i].close) - bars[i].low;
+      if(upper_wick < 0.0 || lower_wick < 0.0)
+         return false;
+      wick_sum += upper_wick + lower_wick;
+     }
+
+   const double signal_wick = (bars[0].high - MathMax(bars[0].open, bars[0].close)) +
+                              (MathMin(bars[0].open, bars[0].close) - bars[0].low);
+   const double wick_ma = wick_sum / (double)strategy_wick_ma_period;
+   if(signal_wick <= 0.0 || wick_ma <= 0.0)
       return false;
 
    if(signal_wick <= wick_ma + strategy_wick_offset)
       return false;
 
    const double entry_price = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double signal_low = iLow(_Symbol, _Period, 1);
+   const double signal_low = bars[0].low;
    const double atr = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
    if(entry_price <= 0.0 || signal_low <= 0.0 || atr <= 0.0)
       return false;
@@ -200,12 +162,30 @@ void Strategy_ManageOpenPosition()
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   datetime open_time = 0;
-   if(!Strategy_FindOpenPosition(open_time))
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
       return false;
 
-   const int bars_since_open = iBarShift(_Symbol, _Period, open_time, false);
-   return (bars_since_open >= strategy_hold_bars);
+   const int hold_seconds = PeriodSeconds((ENUM_TIMEFRAMES)_Period) * strategy_hold_bars;
+   if(hold_seconds <= 0)
+      return false;
+
+   const datetime broker_now = TimeCurrent();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
+      return (open_time > 0 && broker_now >= open_time + hold_seconds);
+     }
+
+   return false;
   }
 
 // Optional news-filter override. Return TRUE to suppress trading regardless

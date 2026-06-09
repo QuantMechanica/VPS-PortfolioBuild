@@ -168,8 +168,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       ema_slow_1 <= 0.0 || ema_slow_2 <= 0.0 || ema_trend_1 <= 0.0)
       return false;
 
-   const double open_1 = iOpen(_Symbol, strategy_signal_tf, 1);
-   const double close_1 = iClose(_Symbol, strategy_signal_tf, 1);
+   const double open_1 = iOpen(_Symbol, strategy_signal_tf, 1);    // perf-allowed: literal bullish/bearish closed signal bar; Strategy_EntrySignal is framework new-bar gated.
+   const double close_1 = iClose(_Symbol, strategy_signal_tf, 1);  // perf-allowed: literal bullish/bearish closed signal bar; Strategy_EntrySignal is framework new-bar gated.
    if(open_1 <= 0.0 || close_1 <= 0.0)
       return false;
 

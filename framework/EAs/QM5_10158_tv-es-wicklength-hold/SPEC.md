@@ -1,23 +1,16 @@
-# QM5_10158_tv-es-wicklength-hold — Strategy Spec
+# QM5_10158_tv-es-wicklength-hold - Strategy Spec
 
 **EA ID:** QM5_10158
 **Slug:** `tv-es-wicklength-hold`
 **Source:** `30591366-874b-5bee-b47c-da2fca20b728` (see `strategy-seeds/sources/30591366-874b-5bee-b47c-da2fca20b728/`)
-**Author of this spec:** auto-generated ex-post by gen_spec_md.py
-**Last revised:** 2026-05-25
+**Author of this spec:** Codex
+**Last revised:** 2026-06-09
 
 ---
 
 ## 1. Strategy Logic
 
-Mechanical strategy implemented per the approved card
-`artifacts/cards_approved/QM5_10158_tv-es-wicklength-hold.md`. See that card's body for
-the full entry/exit/stop/sizing rules; this SPEC summarises the
-implementation surface.
-
-Entry/exit logic is encoded in the five `Strategy_*` hooks in
-`QM5_10158_tv-es-wicklength-hold.mq5`. Framework wiring (risk, magic, news, Friday close)
-is inherited from `QM_Common.mqh` and is not redocumented here.
+This EA trades long-only on index CFD bars when the last closed candle has unusually large total wick length. The signal candle's upper wick is `high - max(open, close)`, its lower wick is `min(open, close) - low`, and total wick length must exceed the SMA(20) of total wick length plus the configured offset. The entry is a market buy on the next tick after the closed H1 signal bar. Exit is by protective stop or by closing after the configured holding period.
 
 ---
 
@@ -25,29 +18,27 @@ is inherited from `QM_Common.mqh` and is not redocumented here.
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `strategy_wick_ma_period` | 20 | (see source) | (see strategy logic) |
-| `strategy_wick_offset` | 0.0 | (see source) | (see strategy logic) |
-| `strategy_hold_bars` | 4 | (see source) | (see strategy logic) |
-| `strategy_atr_period` | 14 | (see source) | (see strategy logic) |
-| `strategy_atr_sl_mult` | 1.5 | (see source) | (see strategy logic) |
+| `strategy_wick_ma_period` | 20 | 1+ | Number of closed bars used for the SMA of total wick length. |
+| `strategy_wick_offset` | 0.0 | 0.0+ | Extra wick-length amount required above the SMA before a long entry. |
+| `strategy_hold_bars` | 4 | 1+ | Maximum H1 bars to hold before strategy exit. |
+| `strategy_atr_period` | 14 | 1+ | ATR lookback used for the protective stop. |
+| `strategy_atr_sl_mult` | 1.5 | >0.0 | ATR multiple for the protective stop before the signal-candle-low tightening rule. |
 
-> Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
-> qm_news_mode, qm_rng_seed, qm_stress_reject_probability,
-> qm_friday_close_*) are documented in
-> `framework/V5_FRAMEWORK_DESIGN.md` — not re-listed here.
+> Note: framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
+> qm_news_mode, qm_rng_seed, qm_stress_reject_probability, qm_friday_close_*)
+> are documented in `framework/V5_FRAMEWORK_DESIGN.md` and are not re-listed here.
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `SP500.DWX` — registered in magic_numbers.csv for this EA
-- `NDX.DWX` — registered in magic_numbers.csv for this EA
-- `WS30.DWX` — registered in magic_numbers.csv for this EA
+- `SP500.DWX` - primary ES/SPX analog named by R3; backtest-only custom symbol.
+- `NDX.DWX` - live-tradable US index fallback named by R3.
+- `WS30.DWX` - live-tradable US index fallback named by R3.
 
-**Explicitly NOT for:** any symbol not in the list above (no implicit
-universe expansion at runtime; the `QM_SymbolGuard` framework helper
-rejects foreign symbols).
+**Explicitly NOT for:**
+- Any symbol outside the three registered `.DWX` rows above; this card does not authorize a wider basket.
 
 ---
 
@@ -56,8 +47,8 @@ rejects foreign symbols).
 | Aspect | Value |
 |---|---|
 | Base timeframe | `H1` |
-| Multi-timeframe refs | see `Strategy_*` hooks in the .mq5 |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Multi-timeframe refs | none |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` via framework entry gate |
 
 ---
 
@@ -66,10 +57,9 @@ rejects foreign symbols).
 | Metric | Expected |
 |---|---|
 | Trades / year / symbol | 160 |
-| Cadence note | see card body |
-| Typical hold time | see card body |
-| Expected drawdown profile | bounded by RISK_FIXED + FTMO 10% total DD ceiling |
-| Regime preference | per card thesis |
+| Typical hold time | 4 H1 bars, or protective-stop exit earlier |
+| Expected drawdown profile | Fixed $1,000 risk per backtest trade with ATR or signal-candle-low stop. |
+| Regime preference | Candlestick volatility expansion on liquid US index baskets. |
 | Win rate target (qualitative) | medium |
 
 ---
@@ -79,9 +69,9 @@ rejects foreign symbols).
 This card was mechanised from:
 
 **Source ID:** `30591366-874b-5bee-b47c-da2fca20b728`
-**Pointer:** `strategy-seeds/sources/30591366-874b-5bee-b47c-da2fca20b728/`
-**R1–R4 verdict (Q00):** all PASS — see
-`artifacts/cards_approved/QM5_10158_tv-es-wicklength-hold.md`
+**Source type:** TradingView script
+**Pointer:** `https://www.tradingview.com/script/m78ZqKsX/`
+**R1-R4 verdict (Q00):** all PASS per `artifacts/cards_approved/QM5_10158_tv-es-wicklength-hold.md`
 
 ---
 
@@ -89,11 +79,11 @@ This card was mechanised from:
 
 | Phase | Risk mode | Value |
 |---|---|---|
-| Backtest (Q02 – Q10) | RISK_FIXED | $1,000 per trade (HR4) |
+| Backtest (Q02 - Q10) | RISK_FIXED | $1,000 per trade (HR4) |
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
-| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
+| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% - 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
 
 ---
 
@@ -101,4 +91,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-05-25 | Initial spec (ex-post, generated by gen_spec_md.py) | post-PT15 remediation |
+| v1 | 2026-06-09 | Initial build from card | eb48ddd2-5730-4ff0-ab5e-d6474b47e57f |

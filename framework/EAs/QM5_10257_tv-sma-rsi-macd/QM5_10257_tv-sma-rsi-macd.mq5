@@ -3,6 +3,7 @@
 #property description "QM5_10257 TradingView SMA RSI MACD Scalper"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_Signals.mqh>
 
 // =============================================================================
 // QuantMechanica V5 EA SKELETON
@@ -143,7 +144,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(bid <= 0.0 || ask <= 0.0)
       return false;
 
-   const double price_proxy = (bid + ask) * 0.5;
    const double ema200 = QM_EMA(_Symbol, tf, strategy_ema_period, 1);
    const double sma5 = QM_SMA(_Symbol, tf, strategy_sma_fast_period, 1);
    const double sma8 = QM_SMA(_Symbol, tf, strategy_sma_mid_period, 1);
@@ -154,8 +154,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       rsi_now <= 0.0 || rsi_prev <= 0.0)
       return false;
 
-   const bool trend_up = (price_proxy > ema200 && sma5 > sma8 && sma8 > sma13);
-   const bool trend_down = (price_proxy < ema200 && sma5 < sma8 && sma8 < sma13);
+   const int price_vs_ema = QM_Sig_Price_Above_MA(_Symbol, tf, strategy_ema_period, 0.0, 1);
+   const bool trend_up = (price_vs_ema > 0 && sma5 > sma8 && sma8 > sma13);
+   const bool trend_down = (price_vs_ema < 0 && sma5 < sma8 && sma8 < sma13);
    const bool rsi_long = (rsi_prev < strategy_rsi_oversold &&
                           rsi_now >= strategy_rsi_oversold);
    const bool rsi_short = (rsi_prev > strategy_rsi_overbought &&
