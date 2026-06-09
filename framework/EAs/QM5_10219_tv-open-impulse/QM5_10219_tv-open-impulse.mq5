@@ -133,21 +133,22 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(strategy_atr_period <= 0 || strategy_impulse_atr_mult <= 0.0 || strategy_rr_target <= 0.0)
       return false;
 
-   const datetime impulse_bar_time = iTime(_Symbol, PERIOD_M5, 1);
-   if(impulse_bar_time <= 0)
+   MqlRates impulse_bar[1];
+   const int copied = CopyRates(_Symbol, PERIOD_M5, 1, 1, impulse_bar); // perf-allowed: one closed M5 impulse candle inside framework QM_IsNewBar gate.
+   if(copied != 1 || impulse_bar[0].time <= 0)
       return false;
 
    MqlDateTime bar_dt;
-   TimeToStruct(impulse_bar_time, bar_dt);
+   TimeToStruct(impulse_bar[0].time, bar_dt);
    const int bar_hhmm = bar_dt.hour * 100 + bar_dt.min;
    if(bar_hhmm != strategy_open_hhmm)
       return false;
 
    const double atr = QM_ATR(_Symbol, PERIOD_M5, strategy_atr_period, 1);
-   const double open1 = iOpen(_Symbol, PERIOD_M5, 1);
-   const double high1 = iHigh(_Symbol, PERIOD_M5, 1);
-   const double low1 = iLow(_Symbol, PERIOD_M5, 1);
-   const double close1 = iClose(_Symbol, PERIOD_M5, 1);
+   const double open1 = impulse_bar[0].open;
+   const double high1 = impulse_bar[0].high;
+   const double low1 = impulse_bar[0].low;
+   const double close1 = impulse_bar[0].close;
    if(atr <= 0.0 || open1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0 || close1 <= 0.0)
       return false;
 
