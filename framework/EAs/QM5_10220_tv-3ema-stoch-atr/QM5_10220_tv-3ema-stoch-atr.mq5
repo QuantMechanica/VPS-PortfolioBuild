@@ -73,17 +73,16 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input ENUM_TIMEFRAMES strategy_signal_tf       = PERIOD_H1;
-input int             strategy_ema_fast        = 8;
-input int             strategy_ema_mid         = 20;
-input int             strategy_ema_slow        = 40;
-input int             strategy_rsi_period      = 14;
-input int             strategy_stoch_lookback  = 14;
-input int             strategy_stoch_k_smooth  = 3;
-input int             strategy_stoch_d_smooth  = 3;
-input int             strategy_atr_period      = 14;
-input double          strategy_atr_tp_mult     = 2.0;
-input double          strategy_atr_sl_mult     = 3.0;
+input int    strategy_ema_fast          = 8;
+input int    strategy_ema_mid           = 20;
+input int    strategy_ema_slow          = 40;
+input int    strategy_rsi_period        = 14;
+input int    strategy_stoch_period      = 14;
+input int    strategy_stoch_k_smooth    = 3;
+input int    strategy_stoch_d_smooth    = 3;
+input int    strategy_atr_period        = 14;
+input double strategy_atr_tp_mult       = 2.0;
+input double strategy_atr_sl_mult       = 3.0;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -93,6 +92,7 @@ input double          strategy_atr_sl_mult     = 3.0;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
+   // Card baseline has no session or regime filter.
    return false;
   }
 
@@ -110,119 +110,106 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.expiration_seconds = 0;
 
    if(strategy_ema_fast <= 0 || strategy_ema_mid <= 0 || strategy_ema_slow <= 0 ||
-      strategy_rsi_period <= 0 || strategy_stoch_lookback <= 1 ||
+      strategy_rsi_period <= 0 || strategy_stoch_period <= 1 ||
       strategy_stoch_k_smooth <= 0 || strategy_stoch_d_smooth <= 0 ||
       strategy_atr_period <= 0 || strategy_atr_tp_mult <= 0.0 || strategy_atr_sl_mult <= 0.0)
       return false;
 
-   const int warmup = strategy_ema_slow + strategy_rsi_period + strategy_stoch_lookback
-                      + strategy_stoch_k_smooth + strategy_stoch_d_smooth + 5;
-   if(Bars(_Symbol, strategy_signal_tf) < warmup)
+   const double ema_fast = QM_EMA(_Symbol, _Period, strategy_ema_fast, 1);
+   const double ema_mid = QM_EMA(_Symbol, _Period, strategy_ema_mid, 1);
+   const double ema_slow = QM_EMA(_Symbol, _Period, strategy_ema_slow, 1);
+   const double atr = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
+   if(ema_fast <= 0.0 || ema_mid <= 0.0 || ema_slow <= 0.0 || atr <= 0.0)
       return false;
 
-   const double ema_fast = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_fast, 1, PRICE_CLOSE);
-   const double ema_mid = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_mid, 1, PRICE_CLOSE);
-   const double ema_slow = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_slow, 1, PRICE_CLOSE);
-   if(ema_fast == EMPTY_VALUE || ema_mid == EMPTY_VALUE || ema_slow == EMPTY_VALUE)
-      return false;
-
-   double k_now_sum = 0.0;
-   double k_prev_sum = 0.0;
-   double d_now_sum = 0.0;
-   double d_prev_sum = 0.0;
-
-   for(int d_i = 0; d_i < strategy_stoch_d_smooth; ++d_i)
+   double smooth_k[2];
+   double smooth_d[2];
+   for(int state = 0; state < 2; ++state)
      {
-      double k_for_d_now = 0.0;
-      double k_for_d_prev = 0.0;
+      const int base_shift = state + 1;
+      double k_sum = 0.0;
+      double d_sum = 0.0;
 
-      for(int k_i = 0; k_i < strategy_stoch_k_smooth; ++k_i)
+      for(int d_idx = 0; d_idx < strategy_stoch_d_smooth; ++d_idx)
         {
-         const int raw_shift_now = 1 + d_i + k_i;
-         const int raw_shift_prev = 2 + d_i + k_i;
-         double lowest_now = DBL_MAX;
-         double highest_now = -DBL_MAX;
-         double lowest_prev = DBL_MAX;
-         double highest_prev = -DBL_MAX;
-
-         const double rsi_now = QM_RSI(_Symbol, strategy_signal_tf, strategy_rsi_period, raw_shift_now, PRICE_CLOSE);
-         const double rsi_prev = QM_RSI(_Symbol, strategy_signal_tf, strategy_rsi_period, raw_shift_prev, PRICE_CLOSE);
-         if(rsi_now == EMPTY_VALUE || rsi_prev == EMPTY_VALUE)
-            return false;
-
-         for(int lb = 0; lb < strategy_stoch_lookback; ++lb)
+         double inner_k_sum = 0.0;
+         for(int k_idx = 0; k_idx < strategy_stoch_k_smooth; ++k_idx)
            {
-            const double rsi_lb_now = QM_RSI(_Symbol, strategy_signal_tf, strategy_rsi_period, raw_shift_now + lb, PRICE_CLOSE);
-            const double rsi_lb_prev = QM_RSI(_Symbol, strategy_signal_tf, strategy_rsi_period, raw_shift_prev + lb, PRICE_CLOSE);
-            if(rsi_lb_now == EMPTY_VALUE || rsi_lb_prev == EMPTY_VALUE)
+            const int raw_shift = base_shift + d_idx + k_idx;
+            double min_rsi = DBL_MAX;
+            double max_rsi = -DBL_MAX;
+            for(int lookback = 0; lookback < strategy_stoch_period; ++lookback)
+              {
+               const double rsi_value = QM_RSI(_Symbol, _Period, strategy_rsi_period, raw_shift + lookback);
+               if(rsi_value < min_rsi)
+                  min_rsi = rsi_value;
+               if(rsi_value > max_rsi)
+                  max_rsi = rsi_value;
+              }
+
+            const double rsi_now = QM_RSI(_Symbol, _Period, strategy_rsi_period, raw_shift);
+            if(max_rsi <= min_rsi)
                return false;
-            lowest_now = MathMin(lowest_now, rsi_lb_now);
-            highest_now = MathMax(highest_now, rsi_lb_now);
-            lowest_prev = MathMin(lowest_prev, rsi_lb_prev);
-            highest_prev = MathMax(highest_prev, rsi_lb_prev);
+            inner_k_sum += 100.0 * (rsi_now - min_rsi) / (max_rsi - min_rsi);
            }
 
-         const double range_now = highest_now - lowest_now;
-         const double range_prev = highest_prev - lowest_prev;
-         k_for_d_now += (range_now <= 0.0) ? 50.0 : 100.0 * (rsi_now - lowest_now) / range_now;
-         k_for_d_prev += (range_prev <= 0.0) ? 50.0 : 100.0 * (rsi_prev - lowest_prev) / range_prev;
+         const double k_value = inner_k_sum / (double)strategy_stoch_k_smooth;
+         if(d_idx == 0)
+            k_sum = k_value;
+         d_sum += k_value;
         }
 
-      k_for_d_now /= (double)strategy_stoch_k_smooth;
-      k_for_d_prev /= (double)strategy_stoch_k_smooth;
-      d_now_sum += k_for_d_now;
-      d_prev_sum += k_for_d_prev;
-      if(d_i == 0)
-        {
-         k_now_sum = k_for_d_now;
-         k_prev_sum = k_for_d_prev;
-        }
+      smooth_k[state] = k_sum;
+      smooth_d[state] = d_sum / (double)strategy_stoch_d_smooth;
      }
 
-   const double k_now = k_now_sum;
-   const double k_prev = k_prev_sum;
-   const double d_now = d_now_sum / (double)strategy_stoch_d_smooth;
-   const double d_prev = d_prev_sum / (double)strategy_stoch_d_smooth;
-   const bool ema_stack_long = (ema_fast > ema_mid && ema_mid > ema_slow);
-   const bool ema_stack_short = (ema_fast < ema_mid && ema_mid < ema_slow);
-   const bool stoch_bull_cross = (k_prev <= d_prev && k_now > d_now);
-   const bool stoch_bear_cross = (k_prev >= d_prev && k_now < d_now);
+   const bool bullish_stack = (ema_fast > ema_mid && ema_mid > ema_slow);
+   const bool bearish_stack = (ema_fast < ema_mid && ema_mid < ema_slow);
+   const bool bullish_cross = (smooth_k[1] <= smooth_d[1] && smooth_k[0] > smooth_d[0]);
+   const bool bearish_cross = (smooth_k[1] >= smooth_d[1] && smooth_k[0] < smooth_d[0]);
 
-   if(ema_stack_long && stoch_bull_cross)
+   QM_OrderType side = QM_BUY;
+   double entry = 0.0;
+   if(bullish_stack && bullish_cross)
      {
-      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      req.type = QM_BUY;
-      req.sl = QM_StopATR(_Symbol, req.type, entry, strategy_atr_period, strategy_atr_sl_mult);
-      req.tp = QM_TakeATR(_Symbol, req.type, entry, strategy_atr_period, strategy_atr_tp_mult);
-      req.reason = "EMA_STACK_STOCHRSI_BULL_ATR_BRACKET";
-      return (req.sl > 0.0 && req.tp > 0.0);
+      side = QM_BUY;
+      entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      req.reason = "EMA_STACK_STOCHRSI_BULL";
      }
-
-   if(ema_stack_short && stoch_bear_cross)
+   else if(bearish_stack && bearish_cross)
      {
-      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      req.type = QM_SELL;
-      req.sl = QM_StopATR(_Symbol, req.type, entry, strategy_atr_period, strategy_atr_sl_mult);
-      req.tp = QM_TakeATR(_Symbol, req.type, entry, strategy_atr_period, strategy_atr_tp_mult);
-      req.reason = "EMA_STACK_STOCHRSI_BEAR_ATR_BRACKET";
-      return (req.sl > 0.0 && req.tp > 0.0);
+      side = QM_SELL;
+      entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      req.reason = "EMA_STACK_STOCHRSI_BEAR";
      }
+   else
+      return false;
 
-   return false;
+   if(entry <= 0.0)
+      return false;
+
+   req.type = side;
+   req.price = 0.0;
+   req.sl = QM_StopATRFromValue(_Symbol, side, entry, atr, strategy_atr_sl_mult);
+   req.tp = QM_TakeATRFromValue(_Symbol, side, entry, atr, strategy_atr_tp_mult);
+   if(req.sl <= 0.0 || req.tp <= 0.0)
+      return false;
+
+   return true;
   }
 
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card baseline has no trailing stop, break-even move, or partial close.
+   // Card baseline has no trailing, break-even, partial, or pyramiding logic.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   // Card exits only through the fixed ATR stop/target bracket plus framework guards.
+   // Exits are the fixed ATR SL/TP bracket plus framework Friday close.
    return false;
   }
 

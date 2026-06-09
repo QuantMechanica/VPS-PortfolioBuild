@@ -3,16 +3,16 @@
 ; ea_id:        10220
 ; ea_slug:      tv-3ema-stoch-atr
 ; ea_version:   v5.0
-; set_version:  s20260524-001
+; set_version:  s20260609-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    M30
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   656239849a7c162c87f3daa083fc79b3e37d054be88b938976efd0f4e5da63e9
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-24
+; date:         2026-06-09
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=1000
