@@ -97,6 +97,18 @@ bool Strategy_NoTradeFilter()
       strategy_atr_sl_mult <= 0.0 || strategy_max_spread_frac < 0.0)
       return true;
 
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(!PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if(PositionGetInteger(POSITION_MAGIC) == magic)
+         return false;
+     }
+
    const double atr = QM_ATR(_Symbol, strategy_signal_tf, strategy_atr_period, 1);
    if(atr <= 0.0)
       return true;
@@ -126,7 +138,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(Bars(_Symbol, strategy_signal_tf) < strategy_gauss_length + 3)
+   if(Bars(_Symbol, strategy_signal_tf) < strategy_gauss_length + 3) // perf-allowed
       return false;
 
    const int magic = QM_FrameworkMagic();
@@ -141,8 +153,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
      }
 
-   const double close_1 = iClose(_Symbol, strategy_signal_tf, 1);
-   const double close_2 = iClose(_Symbol, strategy_signal_tf, 2);
+   const double close_1 = iClose(_Symbol, strategy_signal_tf, 1); // perf-allowed
+   const double close_2 = iClose(_Symbol, strategy_signal_tf, 2); // perf-allowed
    const double mid_1 = QM_EMA(_Symbol, strategy_signal_tf, strategy_gauss_length, 1, PRICE_CLOSE);
    const double mid_2 = QM_EMA(_Symbol, strategy_signal_tf, strategy_gauss_length, 2, PRICE_CLOSE);
    const double atr_1 = QM_ATR(_Symbol, strategy_signal_tf, strategy_atr_period, 1);
@@ -194,11 +206,11 @@ void Strategy_ManageOpenPosition()
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   if(Bars(_Symbol, strategy_signal_tf) < strategy_gauss_length + 3)
+   if(Bars(_Symbol, strategy_signal_tf) < strategy_gauss_length + 3) // perf-allowed
       return false;
 
-   const double close_1 = iClose(_Symbol, strategy_signal_tf, 1);
-   const double close_2 = iClose(_Symbol, strategy_signal_tf, 2);
+   const double close_1 = iClose(_Symbol, strategy_signal_tf, 1); // perf-allowed
+   const double close_2 = iClose(_Symbol, strategy_signal_tf, 2); // perf-allowed
    const double mid_1 = QM_EMA(_Symbol, strategy_signal_tf, strategy_gauss_length, 1, PRICE_CLOSE);
    const double mid_2 = QM_EMA(_Symbol, strategy_signal_tf, strategy_gauss_length, 2, PRICE_CLOSE);
    const double rsi_1 = QM_RSI(_Symbol, strategy_signal_tf, strategy_rsi_period, 1, PRICE_CLOSE);

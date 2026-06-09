@@ -82,10 +82,119 @@ input int             strategy_ema_fast_period   = 50;
 input int             strategy_ema_slow_period   = 200;
 input int             strategy_rsi_period        = 14;
 input int             strategy_stoch_rsi_period  = 14;
+input int             strategy_stoch_rsi_smooth_k = 3;
+input int             strategy_stoch_rsi_smooth_d = 3;
 input int             strategy_swing_lookback    = 10;
 input int             strategy_atr_period        = 14;
 input double          strategy_atr_sl_mult       = 2.5;
-input double          strategy_take_profit_rr    = 0.0;
+
+bool g_strategy_cached_exit_signal = false;
+
+bool Strategy_RangeMid(const MqlRates &rates[],
+                       const int count,
+                       const int start_shift,
+                       const int period,
+                       double &mid)
+  {
+   mid = 0.0;
+   if(start_shift < 1 || period <= 0)
+      return false;
+
+   double highest = 0.0;
+   double lowest = 0.0;
+   for(int shift = start_shift; shift < start_shift + period; ++shift)
+     {
+      const int idx = shift - 1;
+      if(idx < 0 || idx >= count)
+         return false;
+
+      const double high = rates[idx].high;
+      const double low = rates[idx].low;
+      if(high <= 0.0 || low <= 0.0)
+         return false;
+
+      if(shift == start_shift || high > highest)
+         highest = high;
+      if(shift == start_shift || low < lowest)
+         lowest = low;
+     }
+
+   mid = (highest + lowest) * 0.5;
+   return (mid > 0.0);
+  }
+
+bool Strategy_CloudAtShift(const MqlRates &rates[],
+                           const int count,
+                           const int shift,
+                           double &span_a,
+                           double &span_b)
+  {
+   span_a = 0.0;
+   span_b = 0.0;
+   const int cloud_shift = shift + strategy_displacement;
+
+   double tenkan = 0.0;
+   double kijun = 0.0;
+   if(!Strategy_RangeMid(rates, count, cloud_shift, strategy_tenkan_period, tenkan))
+      return false;
+   if(!Strategy_RangeMid(rates, count, cloud_shift, strategy_kijun_period, kijun))
+      return false;
+   if(!Strategy_RangeMid(rates, count, cloud_shift, strategy_senkou_b_period, span_b))
+      return false;
+
+   span_a = (tenkan + kijun) * 0.5;
+   return (span_a > 0.0 && span_b > 0.0);
+  }
+
+double Strategy_RawStochRsi(const int shift)
+  {
+   double min_rsi = 0.0;
+   double max_rsi = 0.0;
+   const double rsi_now = QM_RSI(_Symbol, strategy_signal_tf, strategy_rsi_period, shift);
+   if(rsi_now <= 0.0)
+      return -1.0;
+
+   for(int i = shift; i < shift + strategy_stoch_rsi_period; ++i)
+     {
+      const double rsi = QM_RSI(_Symbol, strategy_signal_tf, strategy_rsi_period, i);
+      if(rsi <= 0.0)
+         return -1.0;
+      if(i == shift || rsi < min_rsi)
+         min_rsi = rsi;
+      if(i == shift || rsi > max_rsi)
+         max_rsi = rsi;
+     }
+
+   if(max_rsi <= min_rsi)
+      return -1.0;
+   return 100.0 * (rsi_now - min_rsi) / (max_rsi - min_rsi);
+  }
+
+double Strategy_StochRsiK(const int shift)
+  {
+   double sum = 0.0;
+   for(int i = shift; i < shift + strategy_stoch_rsi_smooth_k; ++i)
+     {
+      const double raw = Strategy_RawStochRsi(i);
+      if(raw < 0.0)
+         return -1.0;
+      sum += raw;
+     }
+   return sum / (double)strategy_stoch_rsi_smooth_k;
+  }
+
+double Strategy_StochRsiD(const int shift)
+  {
+   double sum = 0.0;
+   for(int i = shift; i < shift + strategy_stoch_rsi_smooth_d; ++i)
+     {
+      const double k = Strategy_StochRsiK(i);
+      if(k < 0.0)
+         return -1.0;
+      sum += k;
+     }
+   return sum / (double)strategy_stoch_rsi_smooth_d;
+  }
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -95,6 +204,7 @@ input double          strategy_take_profit_rr    = 0.0;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
+   // Card specifies no additional time or spread filter; framework handles news and Friday close.
    return false;
   }
 
@@ -103,65 +213,50 @@ bool Strategy_NoTradeFilter()
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   g_strategy_cached_exit_signal = false;
+
    if(strategy_tenkan_period <= 0 || strategy_kijun_period <= 0 ||
       strategy_senkou_b_period <= 0 || strategy_displacement < 0 ||
       strategy_ema_fast_period <= 0 || strategy_ema_slow_period <= 0 ||
       strategy_rsi_period <= 0 || strategy_stoch_rsi_period <= 1 ||
+      strategy_stoch_rsi_smooth_k <= 0 || strategy_stoch_rsi_smooth_d <= 0 ||
       strategy_swing_lookback <= 0 || strategy_atr_period <= 0 ||
       strategy_atr_sl_mult <= 0.0)
       return false;
 
-   const int shift = 1;
-   const int cloud_shift = shift + strategy_displacement;
-   double tenkan_high = 0.0, tenkan_low = 0.0;
-   for(int i = cloud_shift; i < cloud_shift + strategy_tenkan_period; ++i)
-     {
-      const double high = iHigh(_Symbol, strategy_signal_tf, i);
-      const double low = iLow(_Symbol, strategy_signal_tf, i);
-      if(high <= 0.0 || low <= 0.0)
-         return false;
-      if(i == cloud_shift || high > tenkan_high)
-         tenkan_high = high;
-      if(i == cloud_shift || low < tenkan_low)
-         tenkan_low = low;
-     }
-
-   double kijun_high = 0.0, kijun_low = 0.0;
-   for(int i = cloud_shift; i < cloud_shift + strategy_kijun_period; ++i)
-     {
-      const double high = iHigh(_Symbol, strategy_signal_tf, i);
-      const double low = iLow(_Symbol, strategy_signal_tf, i);
-      if(high <= 0.0 || low <= 0.0)
-         return false;
-      if(i == cloud_shift || high > kijun_high)
-         kijun_high = high;
-      if(i == cloud_shift || low < kijun_low)
-         kijun_low = low;
-     }
-
-   double span_b_high = 0.0, span_b_low = 0.0;
-   for(int i = cloud_shift; i < cloud_shift + strategy_senkou_b_period; ++i)
-     {
-      const double high = iHigh(_Symbol, strategy_signal_tf, i);
-      const double low = iLow(_Symbol, strategy_signal_tf, i);
-      if(high <= 0.0 || low <= 0.0)
-         return false;
-      if(i == cloud_shift || high > span_b_high)
-         span_b_high = high;
-      if(i == cloud_shift || low < span_b_low)
-         span_b_low = low;
-     }
-
-   const double tenkan = (tenkan_high + tenkan_low) * 0.5;
-   const double kijun = (kijun_high + kijun_low) * 0.5;
-   const double span_a = (tenkan + kijun) * 0.5;
-   const double span_b = (span_b_high + span_b_low) * 0.5;
-   if(span_a <= 0.0 || span_b <= 0.0 || span_a <= span_b)
+   const int max_cloud_period = MathMax(strategy_senkou_b_period,
+                                        MathMax(strategy_tenkan_period, strategy_kijun_period));
+   const int bars_needed = strategy_displacement + max_cloud_period + 2;
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, strategy_signal_tf, 1, bars_needed, rates); // perf-allowed: bounded Ichimoku OHLC window inside framework new-bar entry hook.
+   if(copied != bars_needed)
       return false;
 
-   const double open_1 = iOpen(_Symbol, strategy_signal_tf, 1);
-   const double close_1 = iClose(_Symbol, strategy_signal_tf, 1);
-   if(open_1 <= 0.0 || close_1 <= 0.0 || close_1 <= open_1 || close_1 <= span_a)
+   double span_a = 0.0;
+   double span_b = 0.0;
+   if(!Strategy_CloudAtShift(rates, copied, 1, span_a, span_b))
+      return false;
+
+   const MqlRates closed_bar = rates[0];
+   if(closed_bar.open <= 0.0 || closed_bar.close <= 0.0)
+      return false;
+
+   g_strategy_cached_exit_signal = (closed_bar.close < closed_bar.open && closed_bar.close < span_a);
+   if(g_strategy_cached_exit_signal)
+      return false;
+
+   if(!(span_a > span_b))
+      return false;
+   if(!(closed_bar.close > closed_bar.open && closed_bar.close > span_a))
       return false;
 
    const double ema_fast = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_fast_period, 1);
@@ -169,36 +264,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(ema_fast <= 0.0 || ema_slow <= 0.0 || ema_fast <= ema_slow)
       return false;
 
-   double rsi_min_k = 0.0, rsi_max_k = 0.0, rsi_min_d = 0.0, rsi_max_d = 0.0;
-   const double rsi_now = QM_RSI(_Symbol, strategy_signal_tf, strategy_rsi_period, 1);
-   const double rsi_prev = QM_RSI(_Symbol, strategy_signal_tf, strategy_rsi_period, 2);
-   if(rsi_now <= 0.0 || rsi_prev <= 0.0)
-      return false;
-   for(int i = 1; i <= strategy_stoch_rsi_period; ++i)
-     {
-      const double rsi = QM_RSI(_Symbol, strategy_signal_tf, strategy_rsi_period, i);
-      if(rsi <= 0.0)
-         return false;
-      if(i == 1 || rsi > rsi_max_k)
-         rsi_max_k = rsi;
-      if(i == 1 || rsi < rsi_min_k)
-         rsi_min_k = rsi;
-     }
-   for(int i = 2; i <= strategy_stoch_rsi_period + 1; ++i)
-     {
-      const double rsi = QM_RSI(_Symbol, strategy_signal_tf, strategy_rsi_period, i);
-      if(rsi <= 0.0)
-         return false;
-      if(i == 2 || rsi > rsi_max_d)
-         rsi_max_d = rsi;
-      if(i == 2 || rsi < rsi_min_d)
-         rsi_min_d = rsi;
-     }
-   if(rsi_max_k <= rsi_min_k || rsi_max_d <= rsi_min_d)
-      return false;
-   const double stoch_k = 100.0 * (rsi_now - rsi_min_k) / (rsi_max_k - rsi_min_k);
-   const double stoch_d = 100.0 * (rsi_prev - rsi_min_d) / (rsi_max_d - rsi_min_d);
-   if(stoch_k <= stoch_d)
+   const double stoch_k = Strategy_StochRsiK(1);
+   const double stoch_d = Strategy_StochRsiD(1);
+   if(stoch_k < 0.0 || stoch_d < 0.0 || stoch_k <= stoch_d)
       return false;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -207,8 +275,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(ask <= 0.0 || point <= 0.0 || atr <= 0.0)
       return false;
 
-   double structure_sl = QM_StopStructure(_Symbol, QM_BUY, ask, strategy_swing_lookback);
-   const double atr_sl = QM_StopATR(_Symbol, QM_BUY, ask, strategy_atr_period, strategy_atr_sl_mult);
+   const double structure_sl = QM_StopStructure(_Symbol, QM_BUY, ask, strategy_swing_lookback);
+   const double atr_sl = QM_StopATRFromValue(_Symbol, QM_BUY, ask, atr, strategy_atr_sl_mult);
    if(structure_sl <= 0.0 || atr_sl <= 0.0)
       return false;
 
@@ -223,7 +291,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.type = QM_BUY;
    req.price = 0.0;
    req.sl = sl;
-   req.tp = (strategy_take_profit_rr > 0.0) ? QM_TakeRR(_Symbol, QM_BUY, ask, sl, strategy_take_profit_rr) : 0.0;
+   req.tp = 0.0;
    req.reason = "ichi_ema_stochrsi_long";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
@@ -241,61 +309,24 @@ void Strategy_ManageOpenPosition()
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   if(!QM_IsNewBar(_Symbol, strategy_signal_tf))
+   if(!g_strategy_cached_exit_signal)
       return false;
 
    const int magic = QM_FrameworkMagic();
-   bool has_long = false;
-   for(int pos = PositionsTotal() - 1; pos >= 0; --pos)
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
-      const ulong ticket = PositionGetTicket(pos);
+      const ulong ticket = PositionGetTicket(i);
       if(ticket == 0 || !PositionSelectByTicket(ticket))
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
-      if((ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) != POSITION_TYPE_BUY)
-         continue;
-      has_long = true;
-      break;
-     }
-   if(!has_long || strategy_tenkan_period <= 0 || strategy_kijun_period <= 0 ||
-      strategy_displacement < 0)
-      return false;
-
-   const int shift = 1;
-   const int cloud_shift = shift + strategy_displacement;
-   double tenkan_high = 0.0, tenkan_low = 0.0;
-   for(int i = cloud_shift; i < cloud_shift + strategy_tenkan_period; ++i)
-     {
-      const double high = iHigh(_Symbol, strategy_signal_tf, i);
-      const double low = iLow(_Symbol, strategy_signal_tf, i);
-      if(high <= 0.0 || low <= 0.0)
-         return false;
-      if(i == cloud_shift || high > tenkan_high)
-         tenkan_high = high;
-      if(i == cloud_shift || low < tenkan_low)
-         tenkan_low = low;
+      if((ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY)
+         return true;
      }
 
-   double kijun_high = 0.0, kijun_low = 0.0;
-   for(int i = cloud_shift; i < cloud_shift + strategy_kijun_period; ++i)
-     {
-      const double high = iHigh(_Symbol, strategy_signal_tf, i);
-      const double low = iLow(_Symbol, strategy_signal_tf, i);
-      if(high <= 0.0 || low <= 0.0)
-         return false;
-      if(i == cloud_shift || high > kijun_high)
-         kijun_high = high;
-      if(i == cloud_shift || low < kijun_low)
-         kijun_low = low;
-     }
-
-   const double span_a = ((tenkan_high + tenkan_low) * 0.5 + (kijun_high + kijun_low) * 0.5) * 0.5;
-   const double open_1 = iOpen(_Symbol, strategy_signal_tf, 1);
-   const double close_1 = iClose(_Symbol, strategy_signal_tf, 1);
-   return (span_a > 0.0 && open_1 > 0.0 && close_1 > 0.0 && close_1 < open_1 && close_1 < span_a);
+   return false;
   }
 
 // Optional news-filter override. Return TRUE to suppress trading regardless
@@ -303,6 +334,8 @@ bool Strategy_ExitSignal()
 // custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
+   if(broker_time <= 0)
+      return false;
    return false; // defer to QM_NewsAllowsTrade(...)
   }
 

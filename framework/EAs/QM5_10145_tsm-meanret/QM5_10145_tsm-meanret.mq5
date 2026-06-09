@@ -121,8 +121,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
      }
 
-   const double close_recent = iClose(_Symbol, PERIOD_D1, 1);
-   const double close_lookback = iClose(_Symbol, PERIOD_D1, 1 + strategy_lookback_n);
+   // perf-allowed: bounded D1 closed-bar close reads for card-defined rolling return.
+   const double close_recent = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: bounded D1 closed-bar close read for card-defined rolling return.
+   const double close_lookback = iClose(_Symbol, PERIOD_D1, 1 + strategy_lookback_n); // perf-allowed: bounded D1 closed-bar close read for card-defined rolling return.
    if(close_recent <= 0.0 || close_lookback <= 0.0)
       return false;
 
@@ -175,8 +176,9 @@ bool Strategy_ExitSignal()
    if(strategy_lookback_n <= 0)
       return false;
 
-   const double close_recent = iClose(_Symbol, PERIOD_D1, 1);
-   const double close_lookback = iClose(_Symbol, PERIOD_D1, 1 + strategy_lookback_n);
+   // perf-allowed: bounded D1 closed-bar close reads for card-defined rolling return.
+   const double close_recent = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: bounded D1 closed-bar close read for card-defined rolling return.
+   const double close_lookback = iClose(_Symbol, PERIOD_D1, 1 + strategy_lookback_n); // perf-allowed: bounded D1 closed-bar close read for card-defined rolling return.
    if(close_recent <= 0.0 || close_lookback <= 0.0)
       return false;
 

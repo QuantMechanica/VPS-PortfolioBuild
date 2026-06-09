@@ -86,6 +86,8 @@ bool   g_had_position = false;
 bool   g_last_position_be_protected = false;
 int    g_last_position_dir = 0;
 int    g_be_reentry_dir = 0;
+int    g_cached_supertrend_dir = 0;
+double g_cached_supertrend_line = 0.0;
 
 double NormalizeStrategyPrice(const double price)
   {
@@ -152,9 +154,9 @@ bool BuildSuperTrendAtShift(const int target_shift, int &dir, double &line)
 
    for(int shift = oldest; shift >= target_shift; --shift)
      {
-      const double high = iHigh(_Symbol, _Period, shift);
-      const double low = iLow(_Symbol, _Period, shift);
-      const double close = iClose(_Symbol, _Period, shift);
+      const double high = iHigh(_Symbol, _Period, shift);       // perf-allowed: custom SuperTrend recurrence, called only from closed-bar EntrySignal
+      const double low = iLow(_Symbol, _Period, shift);         // perf-allowed: custom SuperTrend recurrence, called only from closed-bar EntrySignal
+      const double close = iClose(_Symbol, _Period, shift);     // perf-allowed: custom SuperTrend recurrence, called only from closed-bar EntrySignal
       const double atr = QM_ATR(_Symbol, _Period, strategy_atr_period, shift);
       if(high <= 0.0 || low <= 0.0 || close <= 0.0 || atr <= 0.0)
          return false;
@@ -171,7 +173,7 @@ bool BuildSuperTrendAtShift(const int target_shift, int &dir, double &line)
         }
       else
         {
-         const double prev_close = iClose(_Symbol, _Period, shift + 1);
+         const double prev_close = iClose(_Symbol, _Period, shift + 1); // perf-allowed: custom SuperTrend recurrence, called only from closed-bar EntrySignal
          if(prev_close <= 0.0)
             return false;
 
@@ -241,15 +243,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    double open_price;
    double pos_sl;
    double volume;
-   if(GetOurPosition(ticket, ptype, open_price, pos_sl, volume))
-      return false;
-
    int dir_1 = 0;
    int dir_2 = 0;
    double st_line_1 = 0.0;
    double st_line_2 = 0.0;
    if(!BuildSuperTrendAtShift(1, dir_1, st_line_1) ||
       !BuildSuperTrendAtShift(2, dir_2, st_line_2))
+      return false;
+
+   g_cached_supertrend_dir = dir_1;
+   g_cached_supertrend_line = st_line_1;
+
+   if(GetOurPosition(ticket, ptype, open_price, pos_sl, volume))
       return false;
 
    if(dir_1 > 0 && dir_2 < 0)
@@ -288,7 +293,9 @@ void Strategy_ManageOpenPosition()
    double volume;
    if(!GetOurPosition(ticket, ptype, open_price, sl, volume))
      {
-      if(g_had_position && g_last_position_be_protected)
+      if(g_had_position &&
+         g_last_position_be_protected &&
+         g_cached_supertrend_dir == g_last_position_dir)
          g_be_reentry_dir = g_last_position_dir;
       g_had_position = false;
       return;
@@ -336,18 +343,10 @@ bool Strategy_ExitSignal()
    if(!GetOurPosition(ticket, ptype, open_price, sl, volume))
       return false;
 
-   if(!QM_IsNewBar(_Symbol, _Period))
-      return false;
-
-   int dir_1 = 0;
-   double st_line_1 = 0.0;
-   if(!BuildSuperTrendAtShift(1, dir_1, st_line_1))
-      return false;
-
-   if(ptype == POSITION_TYPE_BUY && dir_1 < 0)
-      return true;
-   if(ptype == POSITION_TYPE_SELL && dir_1 > 0)
-      return true;
+   if(ptype == POSITION_TYPE_BUY && g_cached_supertrend_dir < 0)
+     return true;
+   if(ptype == POSITION_TYPE_SELL && g_cached_supertrend_dir > 0)
+     return true;
 
    return false;
   }
