@@ -73,47 +73,97 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_max_hold_bars     = 10;
-input int    strategy_atr_period        = 14;
-input double strategy_atr_sl_mult       = 2.0;
+input int    strategy_atr_period              = 14;
+input double strategy_atr_sl_mult             = 2.0;
+input int    strategy_max_hold_bars           = 10;
+input int    strategy_pending_expiration_bars = 1;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
+bool IsOurPendingType(const ENUM_ORDER_TYPE order_type)
+  {
+   return (order_type == ORDER_TYPE_BUY_STOP || order_type == ORDER_TYPE_SELL_STOP);
+  }
+
+int Strategy_PeriodSeconds()
+  {
+   const int seconds = PeriodSeconds((ENUM_TIMEFRAMES)_Period);
+   return (seconds > 0) ? seconds : 86400;
+  }
+
+bool Strategy_RemoveOurPendingOrders()
+  {
+   bool all_ok = true;
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0 || !OrderSelect(ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+      if(!IsOurPendingType((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE)))
+         continue;
+      if(!QM_TM_RemovePendingOrder(ticket, "next_bar_refresh"))
+         all_ok = false;
+     }
+
+   return all_ok;
+  }
+
+bool Strategy_HasOurOpenPosition()
+  {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      return true;
+     }
+
+   return false;
+  }
+
+bool Strategy_PositionExitDue()
+  {
+   const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
+   const int bars_held = iBarShift(_Symbol, (ENUM_TIMEFRAMES)_Period, open_time, false);
+   if(bars_held < 1)
+      return false;
+
+   if(strategy_max_hold_bars > 0 && bars_held >= strategy_max_hold_bars)
+      return true;
+
+   const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+   const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+   const double close_last = iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, 1); // perf-allowed: one fixed closed-bar close for the card's profit-at-bar-close exit.
+   if(open_price <= 0.0 || close_last <= 0.0)
+      return false;
+
+   if(position_type == POSITION_TYPE_BUY)
+      return (close_last > open_price);
+   return (close_last < open_price);
+  }
+
 // Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   MqlDateTime dt;
-   TimeToStruct(TimeCurrent(), dt);
-   const int now_seconds = dt.hour * 3600 + dt.min * 60 + dt.sec;
-
-   bool have_session = false;
-   for(uint i = 0; i < 10; ++i)
-     {
-      datetime from = 0;
-      datetime to = 0;
-      if(!SymbolInfoSessionTrade(_Symbol, (ENUM_DAY_OF_WEEK)dt.day_of_week, i, from, to))
-         break;
-
-      have_session = true;
-      const int from_seconds = (int)from;
-      const int to_seconds = (int)to;
-      if(from_seconds <= to_seconds)
-        {
-         if(now_seconds >= from_seconds && now_seconds < to_seconds)
-            return false;
-        }
-      else
-        {
-         if(now_seconds >= from_seconds || now_seconds < to_seconds)
-            return false;
-        }
-     }
-
-   if(have_session)
-      return true;
    return false;
   }
 
@@ -128,82 +178,72 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.tp = 0.0;
    req.reason = "";
    req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = PeriodSeconds(_Period);
+   req.expiration_seconds = 0;
 
-   if(strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
+   Strategy_RemoveOurPendingOrders();
+   if(Strategy_HasOurOpenPosition())
       return false;
 
-   const int magic = QM_FrameworkMagic();
-   for(int i = OrdersTotal() - 1; i >= 0; --i)
+   const double open_1 = iOpen(_Symbol, (ENUM_TIMEFRAMES)_Period, 1);   // perf-allowed: fixed two-bar OHLC structural pattern, called only after framework QM_IsNewBar gate.
+   const double high_1 = iHigh(_Symbol, (ENUM_TIMEFRAMES)_Period, 1);   // perf-allowed: fixed two-bar OHLC structural pattern, called only after framework QM_IsNewBar gate.
+   const double low_1 = iLow(_Symbol, (ENUM_TIMEFRAMES)_Period, 1);     // perf-allowed: fixed two-bar OHLC structural pattern, called only after framework QM_IsNewBar gate.
+   const double close_1 = iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, 1); // perf-allowed: fixed two-bar OHLC structural pattern, called only after framework QM_IsNewBar gate.
+   const double high_2 = iHigh(_Symbol, (ENUM_TIMEFRAMES)_Period, 2);   // perf-allowed: fixed two-bar OHLC structural pattern, called only after framework QM_IsNewBar gate.
+   const double low_2 = iLow(_Symbol, (ENUM_TIMEFRAMES)_Period, 2);     // perf-allowed: fixed two-bar OHLC structural pattern, called only after framework QM_IsNewBar gate.
+   if(open_1 <= 0.0 || high_1 <= 0.0 || low_1 <= 0.0 || close_1 <= 0.0 ||
+      high_2 <= 0.0 || low_2 <= 0.0)
+      return false;
+
+   const bool bearish_extension = (close_1 < open_1 && close_1 < low_2);
+   const bool bullish_extension = (close_1 > open_1 && close_1 > high_2);
+   if(!bearish_extension && !bullish_extension)
+      return false;
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
+      return false;
+
+   const int expiry_seconds = MathMax(1, strategy_pending_expiration_bars) * Strategy_PeriodSeconds();
+
+   if(bearish_extension)
      {
-      const ulong ticket = OrderGetTicket(i);
-      if(ticket == 0 || !OrderSelect(ticket))
-         continue;
-      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
-         continue;
-      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
-         continue;
-
-      const ENUM_ORDER_TYPE order_type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
-      if(order_type == ORDER_TYPE_BUY_STOP || order_type == ORDER_TYPE_SELL_STOP)
-         return false;
-     }
-
-   MqlRates bars[2];
-   ArraySetAsSeries(bars, true);
-   if(CopyRates(_Symbol, _Period, 1, 2, bars) != 2) // perf-allowed: closed-bar bespoke two-candle OHLC pattern; caller gated by QM_IsNewBar().
-      return false;
-
-   const double open1 = bars[0].open;
-   const double close1 = bars[0].close;
-   const double high1 = bars[0].high;
-   const double low1 = bars[0].low;
-   const double high2 = bars[1].high;
-   const double low2 = bars[1].low;
-   if(open1 <= 0.0 || close1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0 ||
-      high2 <= 0.0 || low2 <= 0.0)
-      return false;
-
-   if(close1 < open1 && close1 < low2)
-     {
-      req.type = QM_BUY_STOP;
-      req.price = high1;
-      req.sl = QM_StopATR(_Symbol, req.type, req.price, strategy_atr_period, strategy_atr_sl_mult);
-      req.reason = "SANTI_PA2_BEAR_EXT_REV_BUY_STOP";
+      const double trigger = QM_StopRulesNormalizePrice(_Symbol, high_1);
+      req.type = (ask >= trigger) ? QM_BUY : QM_BUY_STOP;
+      req.price = (req.type == QM_BUY) ? 0.0 : trigger;
+      const double entry_price = (req.type == QM_BUY) ? ask : trigger;
+      req.sl = QM_StopATR(_Symbol, req.type, entry_price, strategy_atr_period, strategy_atr_sl_mult);
+      req.tp = 0.0;
+      req.reason = "GH_SANTI_PA2_BUY_REVERSAL";
+      req.expiration_seconds = (req.type == QM_BUY_STOP) ? expiry_seconds : 0;
       return (req.sl > 0.0);
      }
 
-   if(close1 > open1 && close1 > high2)
-     {
-      req.type = QM_SELL_STOP;
-      req.price = low1;
-      req.sl = QM_StopATR(_Symbol, req.type, req.price, strategy_atr_period, strategy_atr_sl_mult);
-      req.reason = "SANTI_PA2_BULL_EXT_REV_SELL_STOP";
-      return (req.sl > 0.0);
-     }
-
-   return false;
+   const double trigger = QM_StopRulesNormalizePrice(_Symbol, low_1);
+   req.type = (bid <= trigger) ? QM_SELL : QM_SELL_STOP;
+   req.price = (req.type == QM_SELL) ? 0.0 : trigger;
+   const double entry_price = (req.type == QM_SELL) ? bid : trigger;
+   req.sl = QM_StopATR(_Symbol, req.type, entry_price, strategy_atr_period, strategy_atr_sl_mult);
+   req.tp = 0.0;
+   req.reason = "GH_SANTI_PA2_SELL_REVERSAL";
+   req.expiration_seconds = (req.type == QM_SELL_STOP) ? expiry_seconds : 0;
+   return (req.sl > 0.0);
   }
 
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card has no trailing, break-even, partial close, or add-on management.
+   // Card has no trailing, partial, or break-even management.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   if(strategy_max_hold_bars <= 0)
-      return false;
-
    const int magic = QM_FrameworkMagic();
-   const int period_seconds = PeriodSeconds(_Period);
-   if(period_seconds <= 0)
+   if(magic <= 0)
       return false;
-   const datetime now = TimeCurrent();
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
@@ -214,16 +254,7 @@ bool Strategy_ExitSignal()
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
-
-      const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
-      const int seconds_held = (int)(now - open_time);
-      if(seconds_held < period_seconds)
-         continue;
-
-      const int bars_held = seconds_held / period_seconds;
-      if(PositionGetDouble(POSITION_PROFIT) > 0.0)
-         return true;
-      if(bars_held >= strategy_max_hold_bars)
+      if(Strategy_PositionExitDue())
          return true;
      }
 

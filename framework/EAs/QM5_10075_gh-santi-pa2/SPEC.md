@@ -1,44 +1,43 @@
-# QM5_10075_gh-santi-pa2 — Strategy Spec
+# QM5_10075_gh-santi-pa2 - Strategy Spec
 
 **EA ID:** QM5_10075
-**Slug:** `gh-santi-pa2`
-**Source:** `3b3ec48a-0755-5187-9331-afb36e174175` (see `strategy-seeds/sources/3b3ec48a-0755-5187-9331-afb36e174175/`)
+**Slug:** gh-santi-pa2
+**Source:** 3b3ec48a-0755-5187-9331-afb36e174175 (see `sources/github-mql5-stars-20`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-09
+**Last revised:** 2026-06-10
 
 ---
 
 ## 1. Strategy Logic
 
-The EA trades a two-bar price-action reversal on the D1 chart. If the last closed candle is bearish and closes below the prior candle low, it places a one-bar buy stop at that candle high. If the last closed candle is bullish and closes above the prior candle high, it places a one-bar sell stop at that candle low. Open positions close when profitable after at least one bar in the market, or after 10 bars if no profitable exit has occurred; an ATR protective stop is attached for V5 baseline safety.
+On each new D1 bar, the EA inspects the last closed candle and the candle before it. If the last candle is bearish and closes below the prior candle low, it places a buy stop at that bearish candle's high for the next bar. If the last candle is bullish and closes above the prior candle high, it places a sell stop at that bullish candle's low for the next bar. Open trades close when the last closed bar is profitable versus entry, or after 10 bars in the market; an ATR protective stop is attached for V5 baseline safety.
 
 ---
 
 ## 2. Parameters
 
 | Parameter | Default | Range | Meaning |
-|---|---|---|---|
-| `strategy_max_hold_bars` | 10 | 1-100 | Maximum bars to hold if the profitable exit has not occurred. |
-| `strategy_atr_period` | 14 | 1-200 | ATR period used only for the protective baseline stop. |
-| `strategy_atr_sl_mult` | 2.0 | 0.1-10.0 | ATR multiple for the protective baseline stop. |
+|---|---:|---|---|
+| `strategy_atr_period` | 14 | 2-100 | ATR lookback used only for the protective stop. |
+| `strategy_atr_sl_mult` | 2.0 | 0.5-10.0 | ATR multiple for the protective stop distance. |
+| `strategy_max_hold_bars` | 10 | 1-50 | Maximum D1 bars to hold if no profitable bar-close exit occurs. |
+| `strategy_pending_expiration_bars` | 1 | 1-5 | Number of current-chart bars before an unfilled trigger order expires. |
 
-> Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
-> qm_news_mode, qm_rng_seed, qm_stress_reject_probability,
-> qm_friday_close_*) are documented in
-> `framework/V5_FRAMEWORK_DESIGN.md` — not re-listed here.
+Note: framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and are not repeated here.
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `EURUSD.DWX` — card-listed major FX symbol with DWX OHLC data.
-- `GBPUSD.DWX` — card-listed major FX symbol with DWX OHLC data.
-- `XAUUSD.DWX` — card-listed gold symbol with DWX OHLC data.
-- `GDAXI.DWX` — DAX DWX matrix symbol used for the card's GER40 DAX exposure.
+- `EURUSD.DWX` - card-listed FX major with full OHLC data in the DWX matrix.
+- `GBPUSD.DWX` - card-listed FX major with full OHLC data in the DWX matrix.
+- `XAUUSD.DWX` - card-listed gold symbol with full OHLC data in the DWX matrix.
+- `GDAXI.DWX` - available DWX DAX equivalent for the card-listed `GER40.DWX`, which is not present in the matrix.
 
 **Explicitly NOT for:**
-- Symbols outside the four registered rows above — not registered for this EA's magic slots.
+- `GER40.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; use `GDAXI.DWX` for DAX exposure.
+- Symbols outside the DWX matrix - unavailable for deterministic P2 backtests.
 
 ---
 
@@ -48,7 +47,7 @@ The EA trades a two-bar price-action reversal on the D1 chart. If the last close
 |---|---|
 | Base timeframe | `D1` |
 | Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (framework default) |
 
 ---
 
@@ -56,12 +55,12 @@ The EA trades a two-bar price-action reversal on the D1 chart. If the last close
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | 40 |
-| Expected trade frequency | low daily cadence |
-| Typical hold time | 1-10 D1 bars |
-| Expected drawdown profile | bounded by the V5 fixed-risk baseline stop and time exit |
-| Regime preference | reversal after short-term price extension |
-| Win rate target (qualitative) | medium |
+| Trades / year / symbol | `40` |
+| Expected trade frequency | Not specified in frontmatter; card implies event-driven D1 two-bar triggers. |
+| Typical hold time | Profitable first closed bar after entry, otherwise maximum `10` D1 bars. |
+| Expected drawdown profile | Reversal-breakout entries with ATR protective stop and time exit. |
+| Regime preference | Price-action reversal after one-bar extension. |
+| Win rate target (qualitative) | Not specified in frontmatter. |
 
 ---
 
@@ -69,10 +68,10 @@ The EA trades a two-bar price-action reversal on the D1 chart. If the last close
 
 This card was mechanised from:
 
-**Source ID:** `3b3ec48a-0755-5187-9331-afb36e174175`
+**Source ID:** 3b3ec48a-0755-5187-9331-afb36e174175
 **Source type:** GitHub source code
-**Pointer:** `santiago-cruzlopez/MQL5`, `1_Expert_Advisors_EA/018_Price_Action_EA.mq5`
-**R1–R4 verdict (Q00):** all PASS — see `artifacts/cards_approved/QM5_10075_gh-santi-pa2.md`
+**Pointer:** `santiago-cruzlopez/MQL5`, `1_Expert_Advisors_EA/018_Price_Action_EA.mq5`, https://github.com/santiago-cruzlopez/MQL5/blob/master/1_Expert_Advisors_EA/018_Price_Action_EA.mq5
+**R1-R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_10075_gh-santi-pa2.md`
 
 ---
 
@@ -80,11 +79,11 @@ This card was mechanised from:
 
 | Phase | Risk mode | Value |
 |---|---|---|
-| Backtest (Q02 – Q10) | RISK_FIXED | $1,000 per trade (HR4) |
+| Backtest (Q02 - Q10) | RISK_FIXED | $1,000 per trade (HR4) |
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
-| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
+| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% - 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
 
 ---
 
@@ -92,4 +91,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-09 | Initial build from card | e5ae380a-6cd5-49b0-9037-7ccc0880bc1a |
+| v1 | 2026-06-10 | Initial build from card | e5ae380a-6cd5-49b0-9037-7ccc0880bc1a |

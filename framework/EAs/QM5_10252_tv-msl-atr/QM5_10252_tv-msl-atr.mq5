@@ -199,15 +199,21 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.tp = 0.0;
    if(signal > 0)
      {
+      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      if(entry <= 0.0)
+         return false;
       const double trail_sl = close1 - (atr * strategy_atr_trail_mult);
-      const double hard_sl = close1 - (atr * strategy_catastrophic_atr_mult);
+      const double hard_sl = entry - (atr * strategy_catastrophic_atr_mult);
       req.sl = MathMax(trail_sl, hard_sl);
       req.reason = "MSL_LONG_STRUCTURE_BREAK";
      }
    else
      {
+      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      if(entry <= 0.0)
+         return false;
       const double trail_sl = close1 + (atr * strategy_atr_trail_mult);
-      const double hard_sl = close1 + (atr * strategy_catastrophic_atr_mult);
+      const double hard_sl = entry + (atr * strategy_catastrophic_atr_mult);
       req.sl = MathMin(trail_sl, hard_sl);
       req.reason = "MSL_SHORT_STRUCTURE_BREAK";
      }
@@ -224,6 +230,13 @@ void Strategy_ManageOpenPosition()
    if(magic <= 0)
       return;
 
+   const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
+   const double close1 = iClose(_Symbol, tf, 1); // perf-allowed: O(1) closed-bar ATR ratchet anchor
+   const double atr = QM_ATR(_Symbol, tf, strategy_atr_period, 1);
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(close1 <= 0.0 || atr <= 0.0 || point <= 0.0)
+      return;
+
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -234,7 +247,17 @@ void Strategy_ManageOpenPosition()
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
 
-      QM_TM_TrailATR(ticket, strategy_atr_period, strategy_atr_trail_mult);
+      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const double current_sl = PositionGetDouble(POSITION_SL);
+      const bool is_buy = (ptype == POSITION_TYPE_BUY);
+      const double raw_sl = is_buy ? (close1 - atr * strategy_atr_trail_mult)
+                                   : (close1 + atr * strategy_atr_trail_mult);
+      const double target_sl = NormalizeDouble(raw_sl, _Digits);
+      const bool improves = (current_sl <= 0.0) ||
+                            (is_buy ? (target_sl > current_sl + point * 0.5)
+                                    : (target_sl < current_sl - point * 0.5));
+      if(improves)
+         QM_TM_MoveSL(ticket, target_sl, "msl_closed_bar_atr_ratchet");
      }
   }
 
@@ -242,6 +265,36 @@ void Strategy_ManageOpenPosition()
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
+   const double close1 = iClose(_Symbol, tf, 1); // perf-allowed: O(1) closed-bar trail-stop cross check
+   if(close1 <= 0.0)
+      return false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const double sl = PositionGetDouble(POSITION_SL);
+      if(sl <= 0.0)
+         continue;
+
+      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      if(ptype == POSITION_TYPE_BUY && close1 <= sl)
+         return true;
+      if(ptype == POSITION_TYPE_SELL && close1 >= sl)
+         return true;
+     }
+
    return false;
   }
 

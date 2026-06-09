@@ -4,13 +4,13 @@
 **Slug:** `tv-msl-atr`
 **Source:** `c84ae47e-8ea0-56f1-8b25-4436b6dda5b5` (see `strategy-seeds/sources/c84ae47e-8ea0-56f1-8b25-4436b6dda5b5/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-09
+**Last revised:** 2026-06-10
 
 ---
 
 ## 1. Strategy Logic
 
-The EA confirms swing highs and lows with symmetric pivots on closed H1 bars. A long signal fires when the latest closed bar closes above the most recent confirmed swing high, and a short signal fires when it closes below the most recent confirmed swing low. Signals are separated by at least 10 bars, breakout bars must have a range of at least 0.5 x ATR(14), and opposite structure breaks close the current position before attempting the reverse entry. Risk is expressed through the framework; the initial stop uses the first ATR trailing-stop distance and the framework ratchets the stop with ATR.
+The EA confirms swing highs and lows with symmetric pivots on closed H1 bars. A long signal fires when the latest closed bar closes above the most recent confirmed swing high, and a short signal fires when it closes below the most recent confirmed swing low. Signals are separated by at least 10 bars, breakout bars must have a range of at least 0.5 x ATR(14), and opposite structure breaks close the current position before attempting the reverse entry. Risk is expressed through the framework; the initial stop uses the tighter of the first closed-bar 3 x ATR trailing-stop value and the 5 x ATR catastrophic stop from entry, then the stop ratchets on closed-bar close values.
 
 ---
 
@@ -23,7 +23,7 @@ The EA confirms swing highs and lows with symmetric pivots on closed H1 bars. A 
 | `strategy_min_bars_between_signals` | 10 | `>= 0` | Minimum closed bars between trend signals. |
 | `strategy_atr_period` | 14 | `>= 1` | ATR period for initial and trailing stops. |
 | `strategy_atr_trail_mult` | 3.0 | `> 0` | ATR multiple for the ratchet trailing stop. |
-| `strategy_catastrophic_atr_mult` | 5.0 | `> 0` | Catastrophic ATR stop multiple; the initial protective stop is the tighter ATR trail value. |
+| `strategy_catastrophic_atr_mult` | 5.0 | `> 0` | Catastrophic ATR stop multiple from entry; the initial protective stop is the tighter ATR trail value. |
 | `strategy_min_breakout_range_atr` | 0.5 | `>= 0` | Minimum breakout-bar range as a multiple of ATR(14). |
 
 Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and are not repeated here.
@@ -93,4 +93,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-09 | Initial build from card | 7bcccbc6-a6d9-4428-83b5-d6e46c02d889 |
+| v1 | 2026-06-10 | Initial build from card | 7bcccbc6-a6d9-4428-83b5-d6e46c02d889 |
