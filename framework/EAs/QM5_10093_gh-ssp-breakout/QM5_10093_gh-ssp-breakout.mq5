@@ -151,18 +151,33 @@ int Strategy_PointsAsFixedPips(const int points)
    return MathMax(1, (int)MathRound((double)points / (double)factor));
   }
 
-bool Strategy_BreakoutExtremes(double &highest, double &lowest)
+bool Strategy_ReadBreakoutBars(double &close1,
+                               double &close2,
+                               double &highest,
+                               double &lowest)
   {
+   close1 = 0.0;
+   close2 = 0.0;
    highest = -DBL_MAX;
    lowest = DBL_MAX;
 
    if(strategy_breakout_lookback < 1)
       return false;
 
-   for(int shift = 2; shift < 2 + strategy_breakout_lookback; ++shift)
+   const int bars_needed = strategy_breakout_lookback + 2;
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, _Period, 1, bars_needed, rates); // perf-allowed: bounded closed-bar OHLC read inside framework QM_IsNewBar-gated EntrySignal.
+   if(copied < bars_needed)
+      return false;
+
+   close1 = rates[0].close;
+   close2 = rates[1].close;
+
+   for(int i = 1; i <= strategy_breakout_lookback; ++i)
      {
-      const double high = iHigh(_Symbol, _Period, shift);
-      const double low = iLow(_Symbol, _Period, shift);
+      const double high = rates[i].high;
+      const double low = rates[i].low;
       if(high <= 0.0 || low <= 0.0)
          return false;
       highest = MathMax(highest, high);
@@ -237,15 +252,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    double breakout_high = 0.0;
    double breakout_low = 0.0;
-   if(!Strategy_BreakoutExtremes(breakout_high, breakout_low))
+   double close1 = 0.0;
+   double close2 = 0.0;
+   if(!Strategy_ReadBreakoutBars(close1, close2, breakout_high, breakout_low))
       return false;
 
    const double ema_fast = QM_EMA(_Symbol, _Period, strategy_fast_ema_period, 1);
    const double ema_slow = QM_EMA(_Symbol, _Period, strategy_slow_ema_period, 1);
    const double rsi = QM_RSI(_Symbol, _Period, strategy_rsi_period, 1);
    const double atr = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   const double close1 = iClose(_Symbol, _Period, 1);
-   const double close2 = iClose(_Symbol, _Period, 2);
    if(ema_fast <= 0.0 || ema_slow <= 0.0 || rsi <= 0.0 || atr <= 0.0 ||
       close1 <= 0.0 || close2 <= 0.0)
       return false;
