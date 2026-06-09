@@ -6390,6 +6390,12 @@ ARTIFACT_COMMIT_ALLOWLIST = (
     "framework/registry/magic_numbers.csv",
     "framework/registry/ea_id_registry.csv",
     "framework/include/QM/",
+    # Pump-generated P5 slippage/latency calibration auto-stub. NOT including it here
+    # caused a dirty-guard build deadlock: the pump writes this stub, it stays dirty,
+    # repo_dirty_build_guard blocks ALL builds, and the build-gated auto-commit can never
+    # self-heal (no build completes to trigger it). It is machine-generated
+    # (farmctl_pump_p5_calibration_autostub), so commit it like magic_numbers.csv. (2026-06-09)
+    "framework/calibrations/VPS_SLIPPAGE_LATENCY_CALIBRATION_V2.json",
     "public-data/",
     "strategy-seeds/",
 )
