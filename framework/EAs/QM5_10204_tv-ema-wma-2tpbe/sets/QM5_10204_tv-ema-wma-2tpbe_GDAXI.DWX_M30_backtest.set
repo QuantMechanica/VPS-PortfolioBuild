@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        10131
-; ea_slug:      tv-nifty-range-short
+; ea_id:        10204
+; ea_slug:      tv-ema-wma-2tpbe
 ; ea_version:   v5.0
-; set_version:  s20260523-001
-; symbol:       WS30.DWX
-; timeframe:    M15
+; set_version:  s20260609-001
+; symbol:       GDAXI.DWX
+; timeframe:    M30
 ; environment:  backtest
-; magic_slot:   2
+; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   bf920952804905afc0e9f07820465fdfbbf85bf3986642697edfc5e393cdccb0
+; build_hash:   01cdd7c49680ed931734bdc2a36600f229d43c6e9e1cbd4756d5ec1a471bc904
 ; author:       Development
-; date:         2026-05-23
+; date:         2026-06-09
 ;==========================================================
-qm_magic_slot_offset=2
+qm_magic_slot_offset=4
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1

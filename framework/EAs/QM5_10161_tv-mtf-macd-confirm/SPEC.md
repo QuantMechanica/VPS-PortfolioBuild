@@ -1,23 +1,16 @@
-# QM5_10161_tv-mtf-macd-confirm — Strategy Spec
+# QM5_10161_tv-mtf-macd-confirm - Strategy Spec
 
 **EA ID:** QM5_10161
 **Slug:** `tv-mtf-macd-confirm`
 **Source:** `30591366-874b-5bee-b47c-da2fca20b728` (see `strategy-seeds/sources/30591366-874b-5bee-b47c-da2fca20b728/`)
-**Author of this spec:** auto-generated ex-post by gen_spec_md.py
-**Last revised:** 2026-05-25
+**Author of this spec:** Codex
+**Last revised:** 2026-06-09
 
 ---
 
 ## 1. Strategy Logic
 
-Mechanical strategy implemented per the approved card
-`artifacts/cards_approved/QM5_10161_tv-mtf-macd-confirm.md`. See that card's body for
-the full entry/exit/stop/sizing rules; this SPEC summarises the
-implementation surface.
-
-Entry/exit logic is encoded in the five `Strategy_*` hooks in
-`QM5_10161_tv-mtf-macd-confirm.mq5`. Framework wiring (risk, magic, news, Friday close)
-is inherited from `QM_Common.mqh` and is not redocumented here.
+The EA trades the TradingView Multi-Timeframe MACD Confirm card mechanically. On H1, it opens long when the H1 MACD line crosses above its signal line and the completed H4 MACD state is bullish; it opens short when the H1 MACD line crosses below its signal line and the completed H4 MACD state is bearish. Long positions close when H1 MACD crosses back below its signal line, and short positions close when H1 MACD crosses back above its signal line. Every entry receives a protective stop 2.0 ATR(14) away from entry; the baseline does not use the source's optional trailing stop mode.
 
 ---
 
@@ -25,32 +18,29 @@ is inherited from `QM_Common.mqh` and is not redocumented here.
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `strategy_signal_tf` | PERIOD_H1 | (see source) | (see strategy logic) |
-| `strategy_confirm_tf` | PERIOD_H4 | (see source) | (see strategy logic) |
-| `strategy_macd_fast` | 12 | (see source) | (see strategy logic) |
-| `strategy_macd_slow` | 26 | (see source) | (see strategy logic) |
-| `strategy_macd_signal` | 9 | (see source) | (see strategy logic) |
-| `strategy_atr_period` | 14 | (see source) | (see strategy logic) |
-| `strategy_atr_sl_mult` | 2.0 | (see source) | (see strategy logic) |
+| `strategy_signal_tf` | `PERIOD_H1` | MT5 timeframe enum | Current timeframe MACD signal in the baseline. |
+| `strategy_confirm_tf` | `PERIOD_H4` | MT5 timeframe enum | Higher timeframe MACD confirmation timeframe. |
+| `strategy_macd_fast` | `12` | `1+` and less than slow | MACD fast EMA period. |
+| `strategy_macd_slow` | `26` | Greater than fast | MACD slow EMA period. |
+| `strategy_macd_signal` | `9` | `1+` | MACD signal EMA period. |
+| `strategy_atr_period` | `14` | `1+` | ATR period used for the protective stop. |
+| `strategy_atr_sl_mult` | `2.0` | `> 0` | Stop distance multiplier applied to ATR(14). |
 
-> Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
-> qm_news_mode, qm_rng_seed, qm_stress_reject_probability,
-> qm_friday_close_*) are documented in
-> `framework/V5_FRAMEWORK_DESIGN.md` — not re-listed here.
+Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and are not re-listed here.
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `EURUSD.DWX` — registered in magic_numbers.csv for this EA
-- `GBPUSD.DWX` — registered in magic_numbers.csv for this EA
-- `XAUUSD.DWX` — registered in magic_numbers.csv for this EA
-- `GDAXI.DWX` — registered in magic_numbers.csv for this EA
+- `EURUSD.DWX` - Card target forex major; MACD OHLC logic ports directly.
+- `GBPUSD.DWX` - Card target forex major; MACD OHLC logic ports directly.
+- `XAUUSD.DWX` - Card target gold CFD; MACD OHLC logic ports directly.
+- `GDAXI.DWX` - DWX matrix DAX custom symbol used for the card's `DAX.DWX` target.
 
-**Explicitly NOT for:** any symbol not in the list above (no implicit
-universe expansion at runtime; the `QM_SymbolGuard` framework helper
-rejects foreign symbols).
+**Explicitly NOT for:**
+- Symbols outside the registered list - no implicit runtime universe expansion.
+- `DAX.DWX` - not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is the verified DAX equivalent.
 
 ---
 
@@ -59,7 +49,7 @@ rejects foreign symbols).
 | Aspect | Value |
 |---|---|
 | Base timeframe | `H1` |
-| Multi-timeframe refs | see `Strategy_*` hooks in the .mq5 |
+| Multi-timeframe refs | `H4` MACD state from completed bars only |
 | Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
 
 ---
@@ -68,12 +58,11 @@ rejects foreign symbols).
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | 90 |
-| Cadence note | see card body |
-| Typical hold time | see card body |
-| Expected drawdown profile | bounded by RISK_FIXED + FTMO 10% total DD ceiling |
-| Regime preference | per card thesis |
-| Win rate target (qualitative) | medium |
+| Trades / year / symbol | `90` |
+| Typical hold time | Until H1 MACD reversal or protective stop |
+| Expected drawdown profile | Fixed $1,000 per-trade risk in backtest; capped by V5 risk framework |
+| Regime preference | Trend-following / momentum |
+| Win rate target (qualitative) | Medium |
 
 ---
 
@@ -82,9 +71,9 @@ rejects foreign symbols).
 This card was mechanised from:
 
 **Source ID:** `30591366-874b-5bee-b47c-da2fca20b728`
-**Pointer:** `strategy-seeds/sources/30591366-874b-5bee-b47c-da2fca20b728/`
-**R1–R4 verdict (Q00):** all PASS — see
-`artifacts/cards_approved/QM5_10161_tv-mtf-macd-confirm.md`
+**Source type:** TradingView public script page
+**Pointer:** TradingView script `Multi-Timeframe MACD Strategy ver 1.0`, author handle `fenyesk`, published 2025-03-14, https://www.tradingview.com/script/WqzrfL2Q-Multi-Timeframe-MACD-Strategy-ver-1-0/
+**R1-R4 verdict (Q00):** all PASS per `artifacts/cards_approved/QM5_10161_tv-mtf-macd-confirm.md`
 
 ---
 
@@ -92,11 +81,11 @@ This card was mechanised from:
 
 | Phase | Risk mode | Value |
 |---|---|---|
-| Backtest (Q02 – Q10) | RISK_FIXED | $1,000 per trade (HR4) |
+| Backtest (Q02 - Q10) | RISK_FIXED | $1,000 per trade (HR4) |
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
-| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
+| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% - 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
 
 ---
 
@@ -104,4 +93,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-05-25 | Initial spec (ex-post, generated by gen_spec_md.py) | post-PT15 remediation |
+| v1 | 2026-06-09 | Initial build from card | 5baae284-e657-463e-8291-4771f927abca |

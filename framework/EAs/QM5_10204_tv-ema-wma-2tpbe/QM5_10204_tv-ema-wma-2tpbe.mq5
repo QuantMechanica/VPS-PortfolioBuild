@@ -73,7 +73,7 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input ENUM_TIMEFRAMES strategy_signal_tf = PERIOD_H1;
+input ENUM_TIMEFRAMES strategy_signal_tf = PERIOD_CURRENT;
 input int    strategy_ema_period         = 20;
 input int    strategy_wma_period         = 50;
 input int    strategy_fx_stop_pips       = 20;

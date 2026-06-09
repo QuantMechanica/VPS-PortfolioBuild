@@ -3,16 +3,16 @@
 ; ea_id:        10204
 ; ea_slug:      tv-ema-wma-2tpbe
 ; ea_version:   v5.0
-; set_version:  s20260524-001
+; set_version:  s20260609-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   723c365d5b50a9832bdc75c177712b7282b4b3cc7c61d8b8d5ec58f2b0dc88e0
 ; author:       Development
-; date:         2026-05-24
+; date:         2026-06-09
 ;==========================================================
 qm_magic_slot_offset=4
 RISK_FIXED=1000
