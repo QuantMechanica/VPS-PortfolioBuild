@@ -55,12 +55,22 @@ Disciplined null-heavy result — only **2 of 66 pairs** cleared (DEV>0 AND OOS 
 - **QM5_12533** edgelab-eurjpy-gbpjpy-cointegration (the stronger one)
 Both 2-leg market-neutral RV basket EAs (QM5_10717 recipe); the pipeline (DL-073 notional + DL-072 cushion + swap) is the judge.
 
-## Forward idea menu (not yet tested — need data we haven't exported)
-- **Risk-on/off cross-asset:** export NDX/SP500/XAUUSD bars, test JPY/CHF (havens) & gold vs equity-index
-  selloffs (lead/lag + reversion across asset classes — genuinely orthogonal to FX-only).
-- **Regime-conditioned pairs:** does cross-sectional FX dispersion (or VIX-proxy) predict when the
-  cointegration pairs revert fastest → a regime filter to lift the pairs Sharpe.
-- **Gold-USD / gold-AUD structural link** (XAUUSD vs AUDUSD commodity-currency beta).
+## v4 — risk-on/off CROSS-ASSET-CLASS (tested 2026-06-09, `analyze_risk_onoff.py`): NULL
+Exported NDX/SP500/GDAXI/WS30/XAUUSD D1+H1 (`Export_Risk_Bars.mq5`) and tested equity↔FX↔gold:
+- **Lead-lag (SP500[t] → asset[t+1]): DEAD** — DEV ICs (AUDUSD 0.064, USDCHF −0.133, EURUSD 0.080)
+  sign-flip OOS, all net Sharpes negative (WS30 marginal +0.34). Cross-asset-class lead-lag is arbitraged at D1.
+- **Cross-asset RV (asset vs SP500 beta-hedged spread reversion): no strong survivor.** Only
+  **XAUUSD~SP500** positive in both windows (DEV 0.26 / OOS 0.40, +7.43%, 23 trades) but BELOW the 0.8
+  bar + low corr 0.33; AUDUSD~SP500 OOS flat (0.05); NDX/GDAXI/WS30~SP500 negative-or-flat OOS.
+- **Verdict: NOT carded** (discipline — XAUUSD~SP500 too weak; would die at the gates). The risk-on/off
+  relationships are economically real (AUDUSD corr 0.62 to SP500) but **not net-tradeable** in straight
+  lead-lag / beta-RV form. Don't re-chase these forms.
+
+## Forward idea menu (genuinely still untested)
+- **Regime-conditioned** version of the surviving FX cointegration pairs (trade only in high-dispersion
+  / risk-off regimes) — could lift the pairs Sharpe, but adds a param (curve-fit risk; only if the base holds).
+- Gold-AUD commodity-currency beta (XAUUSD vs AUDUSD specifically, not vs equity).
+- Intraday session effects (London/NY open) — needs the H1 data already exported.
 
 Reusable tooling kept: `T_Export` terminal + the export/analysis scripts (re-run for any future
 cross-asset study; re-export to refresh data, or add NDX/SP500/XAUUSD to Export_FX_Bars.mq5 for the risk-on/off menu).
