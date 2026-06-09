@@ -96,7 +96,7 @@ input double strategy_take_profit_rr    = 1.0;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   if(Bars(_Symbol, _Period) < strategy_min_bars)
+   if(Bars(_Symbol, _Period) < strategy_min_bars) // perf-allowed: O(1) bar-count guard, no QM_Bars helper exists
       return true;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -109,7 +109,7 @@ bool Strategy_NoTradeFilter()
    if(spread_points > strategy_max_spread_points)
       return true;
 
-   const datetime d1_open = iTime(_Symbol, PERIOD_D1, 0);
+   const datetime d1_open = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 bar-open time for daily cooldown; no QM_Time helper
    if(d1_open > 0 && HistorySelect(d1_open, TimeCurrent()))
      {
       const int magic = QM_FrameworkMagic();
@@ -271,16 +271,16 @@ bool Strategy_ExitSignal()
    double prior_low = DBL_MAX;
    for(int shift = 2; shift <= strategy_exit_lookback + 1; ++shift)
      {
-      const double h = iHigh(_Symbol, _Period, shift);
-      const double l = iLow(_Symbol, _Period, shift);
+      const double h = iHigh(_Symbol, _Period, shift); // perf-allowed: structural lookback; no QM_High helper
+      const double l = iLow(_Symbol, _Period, shift);  // perf-allowed: structural lookback; no QM_Low helper
       if(h > 0.0)
          prior_high = MathMax(prior_high, h);
       if(l > 0.0)
          prior_low = MathMin(prior_low, l);
      }
 
-   const double last_high = iHigh(_Symbol, _Period, 1);
-   const double last_low = iLow(_Symbol, _Period, 1);
+   const double last_high = iHigh(_Symbol, _Period, 1); // perf-allowed: last closed bar high; no QM_High helper
+   const double last_low = iLow(_Symbol, _Period, 1);   // perf-allowed: last closed bar low; no QM_Low helper
    if(position_type == POSITION_TYPE_BUY &&
       cross_down &&
       prior_high > 0.0 &&
