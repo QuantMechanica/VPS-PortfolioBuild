@@ -98,8 +98,19 @@ BUILD_BACKPRESSURE_PENDING_SOFT_LIMIT = 8000  # OWNER 2026-06-05 today-boost: ke
 BUILD_BACKPRESSURE_PENDING_HARD_LIMIT = 10000  # OWNER 2026-06-05 today-boost: 5000->10000
 BUILD_BACKPRESSURE_ACTIVE_WORK_ITEM_LIMIT = 7
 MAX_AUTO_CREATED_BUILDS_PER_PUMP = 1
-MAX_PARALLEL_CLAUDE = 3  # OWNER 2026-06-09: hold at 3
-MAX_PARALLEL_CLAUDE_BUILDS = 3  # OWNER 2026-06-09: 1->3 (use weekly token headroom before Wed reset)
+# File/env-driven (re-read each pump process spawn): state/claude_parallel.txt >
+# QM_CLAUDE_PARALLEL env > default 3. OWNER 2026-06-09: boost (10) when Codex quota is
+# exhausted so the headless CLAUDE/Sonnet lane builds the card backlog ("programmier du").
+# Clamped 1..16. Headless Claude lane runs Sonnet (cheap); claude weekly resets Wed.
+try:
+    _cl_file = Path(r"D:/QM/strategy_farm/state/claude_parallel.txt")
+    _cl_par = max(1, min(16, int(
+        _cl_file.read_text(encoding="utf-8").strip() if _cl_file.exists()
+        else os.environ.get("QM_CLAUDE_PARALLEL", "3"))))
+except (TypeError, ValueError, OSError):
+    _cl_par = 3
+MAX_PARALLEL_CLAUDE = _cl_par
+MAX_PARALLEL_CLAUDE_BUILDS = _cl_par
 DIRTY_REPO_BUILD_GUARD_ENV = "QM_ALLOW_DIRTY_REPO_BUILDS"
 DIRTY_REPO_GUARD_DETAIL_LIMIT = 20
 ZERO_TRADE_DEAD_THRESHOLD = 0.80
