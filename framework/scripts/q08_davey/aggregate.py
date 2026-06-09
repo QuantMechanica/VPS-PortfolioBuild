@@ -309,10 +309,37 @@ def _gross_before_commission(trade: dict) -> float:
     return net
 
 
+# DL-072 (OWNER-ratified 2026-06-09): cost-cushion gate. cushion = gross / realistic
+# cost = the multiple of realistic per-instrument cost the gross edge can absorb before
+# net P&L hits zero. The principled, instrument-correct robustness filter for cost-
+# fragile small edges — replaces the arbitrary flat-$7 cost number with a margin metric.
+Q08_COST_CUSHION_PASS = 2.0   # cushion >= 2 => net profit >= realistic cost (robust)
+Q08_COST_CUSHION_SOFT = 1.0   # 1 <= cushion < 2 => net-positive but thin -> EDGE_SOFT
+
+
+def _cost_cushion(gross_total: float, cost_total: float) -> tuple[float | None, str]:
+    """(cushion, tier). cushion = gross/cost; tier PASS / EDGE_SOFT / EDGE_HARD.
+    gross<=0 => no edge to cushion (EDGE_HARD; profitability gates handle it anyway).
+    cost~0  => no modeled cost drag (PASS, cushion N/A)."""
+    if gross_total <= 0:
+        return ((round(gross_total / cost_total, 4) if cost_total > 1e-9 else 0.0), "EDGE_HARD")
+    if cost_total <= 1e-9:
+        return None, "PASS"
+    cushion = gross_total / cost_total
+    if cushion >= Q08_COST_CUSHION_PASS:
+        tier = "PASS"
+    elif cushion >= Q08_COST_CUSHION_SOFT:
+        tier = "EDGE_SOFT"
+    else:
+        tier = "EDGE_HARD"
+    return round(cushion, 4), tier
+
+
 def _apply_worst_case_commission(trades: list[dict], fallback_symbol: str) -> tuple[list[dict], dict]:
     model = commission.load_model()
     adjusted: list[dict] = []
     total_cost = 0.0
+    gross_total = 0.0
 
     for trade in trades:
         row = dict(trade)
@@ -321,6 +348,7 @@ def _apply_worst_case_commission(trades: list[dict], fallback_symbol: str) -> tu
         notional = _float_or_none(row.get("notional"))
         cost = model.cost_round_trip(trade_symbol, volume, notional)
         total_cost += cost
+        gross_total += _gross_before_commission(row)
 
         original_net = _float_or_none(row.get("net", row.get("profit", 0))) or 0.0
         row["net_original"] = original_net
@@ -329,11 +357,18 @@ def _apply_worst_case_commission(trades: list[dict], fallback_symbol: str) -> tu
         row["net"] = _gross_before_commission(row) - cost
         adjusted.append(row)
 
+    cushion, tier = _cost_cushion(gross_total, total_cost)
     model_info = commission.describe_model(model)
     return adjusted, {
         "commission_basis": "worst_case_dxz_ftmo",
         "commission_model": model_info,
         "commission_total": round(total_cost, 6),
+        "gross_total": round(gross_total, 6),
+        # DL-072 cost-cushion: how many multiples of realistic per-instrument cost
+        # the gross edge can absorb before net P&L hits zero (cushion = gross/cost).
+        # The principled, instrument-correct successor to the flat-$7 cost gate.
+        "cost_cushion": cushion,
+        "cost_cushion_tier": tier,
         "degraded_symbols": model_info["degraded_symbols"],
     }
 
@@ -412,7 +447,8 @@ def _net_profit_factor(trades: list[dict]) -> float | None:
     return common.profit_factor(profits)
 
 
-def _aggregate_verdict(sub_results: list[dict], trades: list[dict] | None = None) -> tuple[str, dict[str, str]]:
+def _aggregate_verdict(sub_results: list[dict], trades: list[dict] | None = None,
+                       cost_cushion_tier: str | None = None) -> tuple[str, dict[str, str]]:
     """Combine sub-gate statuses into PASS/FAIL_SOFT/FAIL_HARD/INVALID."""
     classification: dict[str, str] = {}
     hard = False
@@ -442,6 +478,18 @@ def _aggregate_verdict(sub_results: list[dict], trades: list[dict] | None = None
     if pf is not None and pf < 1.0:
         classification["portfolio_net_pf"] = "EDGE_HARD"
         hard = True
+
+    # DL-072 cost-cushion gate: the new signal here is the EDGE_SOFT band — an edge
+    # that IS net-positive but has a thin margin over realistic per-instrument cost
+    # (< 2x). EDGE_HARD (cost > gross) is consistent with portfolio_net_pf above.
+    if cost_cushion_tier == "EDGE_HARD":
+        classification["cost_cushion"] = "EDGE_HARD"
+        hard = True
+    elif cost_cushion_tier == "EDGE_SOFT":
+        classification["cost_cushion"] = "EDGE_SOFT"
+        soft = True
+    elif cost_cushion_tier == "PASS":
+        classification["cost_cushion"] = "PASS"
 
     # HARD dominates: a definitive edge failure (e.g. PBO 88%, 4-consecutive losing
     # months) means the EA is not robust regardless of a single non-evaluable gate.
@@ -524,7 +572,8 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
         sub_results.append(res)
 
     # PASS only if all 10 PASS; otherwise split failures into hard/soft/infra.
-    overall, verdict_classification = _aggregate_verdict(sub_results, trades)
+    overall, verdict_classification = _aggregate_verdict(
+        sub_results, trades, commission_info.get("cost_cushion_tier"))
 
     aggregate = {
         "ea_id": ea_id,
@@ -543,6 +592,9 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
         "commission_basis": commission_info["commission_basis"],
         "commission_model": commission_info["commission_model"],
         "commission_total": commission_info["commission_total"],
+        "gross_total": commission_info.get("gross_total"),
+        "cost_cushion": commission_info.get("cost_cushion"),
+        "cost_cushion_tier": commission_info.get("cost_cushion_tier"),
         "sub_gates": sub_results,
         "sub_gate_input_runs": sub_gate_input_runs,
         "baseline_run": baseline_run,
