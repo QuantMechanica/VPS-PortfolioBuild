@@ -120,19 +120,19 @@ bool SameNewYorkDate(const datetime a, const datetime b)
 double PreEventDrift()
   {
    const datetime now = TimeCurrent();
-   const double last_close = iClose(_Symbol, _Period, 1);
+   const double last_close = iClose(_Symbol, _Period, 1); // perf-allowed: bespoke drift scan, gated by QM_IsNewBar
    if(last_close <= 0.0)
       return 0.0;
 
    for(int shift = 1; shift <= 36; ++shift)
      {
-      const datetime bar_time = iTime(_Symbol, _Period, shift);
+      const datetime bar_time = iTime(_Symbol, _Period, shift); // perf-allowed: bespoke drift scan, gated by QM_IsNewBar
       if(bar_time <= 0 || !SameNewYorkDate(bar_time, now))
          continue;
       if(NewYorkHhmm(bar_time) != strategy_pre_start_hhmm_ny)
          continue;
 
-      const double start_open = iOpen(_Symbol, _Period, shift);
+      const double start_open = iOpen(_Symbol, _Period, shift); // perf-allowed: bespoke drift scan, gated by QM_IsNewBar
       if(start_open <= 0.0)
          return 0.0;
       return last_close - start_open;
