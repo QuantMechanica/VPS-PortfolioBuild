@@ -107,6 +107,31 @@ else {
     } else {
         $detail = "workers=$nWorkers/$ExpectWorkers (< $MinWorkers) while factory ON -> clean-slate respawn"
     }
+    # ESCALATION (2026-06-09): a dispatch stall on a DISCONNECTED session is the case the
+    # plain respawn CANNOT fix -- workers respawn fine, but terminal64 (a GUI app) has no
+    # live desktop to render in on a disconnected session, so 0 runs persist (observed:
+    # 6 failed heals 13:30-14:45Z, then OWNER's manual reconnect+ON fixed it). Reattach the
+    # session to the physical console with tscon -> a persistent ACTIVE desktop that needs
+    # NO RDP connection -> the respawned terminals run headless. SAFETY: only when the
+    # session is DISCONNECTED (Disc); never tscon an Active RDP view (would disrupt OWNER).
+    if ($dispatchStalled) {
+        try {
+            $targetUser = (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' -ErrorAction SilentlyContinue).DefaultUserName
+            if (-not $targetUser) { $targetUser = 'qm-admin' }
+            $sid = $null; $sstate = ''
+            foreach ($line in (qwinsta 2>$null)) {
+                if (($line -match "\b$([regex]::Escape($targetUser))\b") -and
+                    ($line -match "\s(\d+)\s+(Active|Disc|Conn|Listen)\b")) { $sid = $matches[1]; $sstate = $matches[2] }
+            }
+            if ($sstate -eq 'Disc' -and $sid) {
+                & tscon.exe $sid /dest:console 2>$null
+                Start-Sleep -Seconds 3
+                $detail += " | tscon->console(sid=$sid) to restore desktop"
+            } else {
+                $detail += " | tscon_skip(state='$sstate')"
+            }
+        } catch { $detail += " | tscon_err=$($_.Exception.Message)" }
+    }
     try {
         # CLEAN-SLATE respawn INTO the autologon console session (visible-mode).
         # Why clean-slate (kill-all then spawn 10) instead of --dedupe gap-fill:
