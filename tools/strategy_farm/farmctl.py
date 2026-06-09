@@ -297,6 +297,12 @@ def _claude_env() -> dict[str, str]:
     env.setdefault("FORCE_COLOR", "0")
     env.setdefault("CI", "1")
     env["QM_AGENT_ID"] = "claude"  # DL-065: spawned identity for the scope layer
+    # Headless Claude lane (build_ea / ea_review / research / g0) runs SONNET, not Opus.
+    # These are mechanical contract-build + checklist-review tasks — Opus is overkill and
+    # burns the Claude weekly limit. The DEEP/premium reviews are done by the interactive
+    # Opus session (which does NOT use _claude_env, so it is unaffected). Override via
+    # QM_CLAUDE_HEADLESS_MODEL if a specific spawn ever needs Opus. (OWNER 2026-06-09)
+    env["ANTHROPIC_MODEL"] = os.environ.get("QM_CLAUDE_HEADLESS_MODEL", "claude-sonnet-4-6")
     return env
 
 RUNTIME_DIRS = [
