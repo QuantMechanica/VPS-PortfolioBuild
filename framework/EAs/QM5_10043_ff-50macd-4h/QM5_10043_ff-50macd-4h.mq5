@@ -139,12 +139,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if((ask - bid) > stop_distance * strategy_max_spread_stop_fraction)
       return false;
 
-   const double atr = QM_ATR(_Symbol, strategy_signal_tf, strategy_atr_period, 1);
-   const double high_1 = iHigh(_Symbol, strategy_signal_tf, 1); // perf-allowed: one closed H4 high read for card's prior-bar range filter.
-   const double low_1 = iLow(_Symbol, strategy_signal_tf, 1); // perf-allowed: one closed H4 low read for card's prior-bar range filter.
-   if(atr <= 0.0 || high_1 <= 0.0 || low_1 <= 0.0)
+   MqlRates last_bar[1];
+   // perf-allowed: EntrySignal is called only after the framework QM_IsNewBar() gate; this reads one closed H4 bar for the card's range filter.
+   if(CopyRates(_Symbol, strategy_signal_tf, 1, 1, last_bar) != 1)
       return false;
-   if((high_1 - low_1) < atr * strategy_min_range_atr_mult)
+
+   const double atr = QM_ATR(_Symbol, strategy_signal_tf, strategy_atr_period, 1);
+   if(atr <= 0.0 || last_bar[0].high <= 0.0 || last_bar[0].low <= 0.0)
+      return false;
+   if((last_bar[0].high - last_bar[0].low) < atr * strategy_min_range_atr_mult)
       return false;
 
    const double macd_1 = QM_MACD_Main(_Symbol, strategy_signal_tf,
@@ -157,6 +160,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                                       strategy_macd_slow,
                                       strategy_macd_signal,
                                       3);
+   if(macd_1 == EMPTY_VALUE || macd_3 == EMPTY_VALUE)
+      return false;
+
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    if(point <= 0.0)
       return false;
@@ -250,6 +256,9 @@ bool Strategy_ExitSignal()
                                       strategy_macd_slow,
                                       strategy_macd_signal,
                                       3);
+   if(macd_1 == EMPTY_VALUE || macd_3 == EMPTY_VALUE)
+      return false;
+
    const double threshold = strategy_macd_delta_points * point;
    const double delta = macd_1 - macd_3;
    if(have_buy && delta <= -threshold)

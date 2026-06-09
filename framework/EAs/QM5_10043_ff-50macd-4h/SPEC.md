@@ -65,6 +65,7 @@ The EA checks the H4 MACD main line at the source decision hours 08:00, 12:00, 1
 | Metric | Expected |
 |---|---|
 | Trades / year / symbol | `44` |
+| Expected trade frequency | H4 MACD-delta threshold checked four times per active trading day; conservative filtered estimate 30-60 trades/year/symbol. |
 | Typical hold time | Intraday to a few H4 bars, bounded by 30 pip SL, 45 pip TP, breakeven, and Friday close. |
 | Expected drawdown profile | Fixed-risk momentum strategy with losses bounded by the card's 30 pip stop. |
 | Regime preference | Momentum breakout / volatility expansion. |

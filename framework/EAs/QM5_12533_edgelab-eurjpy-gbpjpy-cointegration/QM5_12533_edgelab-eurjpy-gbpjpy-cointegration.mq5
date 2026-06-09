@@ -3,7 +3,6 @@
 #property description "QM5_12533 Edge Lab EURJPY GBPJPY Cointegration"
 
 #include <QM/QM_Common.mqh>
-#include <QM/QM_BasketOrder.mqh>
 
 // =============================================================================
 // QuantMechanica V5 EA SKELETON
@@ -223,20 +222,18 @@ bool Strategy_OpenLeg(const string symbol,
    const int digits = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
    const double stop_dist = strategy_atr_sl_mult * atr;
 
-   QM_BasketOrderRequest breq;
-   breq.symbol = symbol;
-   breq.type = type;
-   breq.price = 0.0;
-   breq.sl = QM_OrderTypeIsBuy(type) ? NormalizeDouble(entry - stop_dist, digits)
-                                     : NormalizeDouble(entry + stop_dist, digits);
-   breq.tp = 0.0;
-   breq.lots = Strategy_LotsForLeg(symbol, risk_weight, risk_weight_sum);
-   breq.reason = reason;
-   breq.symbol_slot = slot;
-   breq.expiration_seconds = 0;
+   QM_EntryRequest req;
+   req.type = type;
+   req.price = 0.0;
+   req.sl = QM_OrderTypeIsBuy(type) ? NormalizeDouble(entry - stop_dist, digits)
+                                    : NormalizeDouble(entry + stop_dist, digits);
+   req.tp = 0.0;
+   req.reason = reason;
+   req.symbol_slot = slot;
+   req.expiration_seconds = 0;
 
    ulong ticket = 0;
-   return QM_BasketOpenPosition(qm_ea_id, QM_NEWS_OFF, strategy_deviation_points, breq, ticket);
+   return QM_TM_OpenPosition(req, ticket);
   }
 
 bool Strategy_OpenPair(const int spread_direction)

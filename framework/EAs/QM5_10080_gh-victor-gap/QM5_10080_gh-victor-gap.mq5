@@ -90,6 +90,19 @@ bool Strategy_NoTradeFilter()
    return false;
   }
 
+bool Strategy_ReadClosedGapBars(MqlRates &gap_bar, MqlRates &prior_bar)
+  {
+   MqlRates bars[];
+   ArraySetAsSeries(bars, true);
+   const int copied = CopyRates(_Symbol, _Period, 1, 2, bars); // perf-allowed: bounded closed-bar gap read inside framework new-bar entry hook.
+   if(copied != 2)
+      return false;
+
+   gap_bar = bars[0];
+   prior_bar = bars[1];
+   return true;
+  }
+
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
 // should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
@@ -110,10 +123,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_atr_tp_mult <= 0.0)
       return false;
 
-   const double open_1 = iOpen(_Symbol, _Period, 1);   // perf-allowed: structural closed-bar gap input
-   const double close_1 = iClose(_Symbol, _Period, 1); // perf-allowed: structural closed-bar gap input
-   const double close_2 = iClose(_Symbol, _Period, 2); // perf-allowed: structural closed-bar gap input
-   if(open_1 <= 0.0 || close_1 <= 0.0 || close_2 <= 0.0)
+   MqlRates gap_bar;
+   MqlRates prior_bar;
+   if(!Strategy_ReadClosedGapBars(gap_bar, prior_bar))
+      return false;
+   if(gap_bar.open <= 0.0 || gap_bar.close <= 0.0 || prior_bar.close <= 0.0)
       return false;
 
    const double sma = QM_SMA(_Symbol, _Period, strategy_sma_period, 1, PRICE_CLOSE);
@@ -121,34 +135,34 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(sma <= 0.0 || atr <= 0.0)
       return false;
 
-   const double gap_pct = 100.0 * (open_1 - close_2) / close_2;
-   const bool bullish_gap_bar = (close_1 > open_1);
-   const bool bearish_gap_bar = (close_1 < open_1);
+   const double gap_pct = 100.0 * (gap_bar.open - prior_bar.close) / prior_bar.close;
+   const bool bullish_gap_bar = (gap_bar.close > gap_bar.open);
+   const bool bearish_gap_bar = (gap_bar.close < gap_bar.open);
 
    if(gap_pct <= -strategy_gap_threshold_pct &&
       bullish_gap_bar &&
-      close_1 > sma)
+      gap_bar.close > sma)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       if(entry <= 0.0)
          return false;
       req.type = QM_BUY;
-      req.sl = NormalizeDouble(entry - strategy_atr_sl_mult * atr, _Digits);
-      req.tp = NormalizeDouble(entry + strategy_atr_tp_mult * atr, _Digits);
+      req.sl = QM_StopATRFromValue(_Symbol, req.type, entry, atr, strategy_atr_sl_mult);
+      req.tp = QM_TakeATRFromValue(_Symbol, req.type, entry, atr, strategy_atr_tp_mult);
       req.reason = "GAP_REVERSAL_LONG";
       return (req.sl > 0.0 && req.tp > 0.0 && req.sl < entry && req.tp > entry);
      }
 
    if(gap_pct >= strategy_gap_threshold_pct &&
       bearish_gap_bar &&
-      close_1 < sma)
+      gap_bar.close < sma)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       if(entry <= 0.0)
          return false;
       req.type = QM_SELL;
-      req.sl = NormalizeDouble(entry + strategy_atr_sl_mult * atr, _Digits);
-      req.tp = NormalizeDouble(entry - strategy_atr_tp_mult * atr, _Digits);
+      req.sl = QM_StopATRFromValue(_Symbol, req.type, entry, atr, strategy_atr_sl_mult);
+      req.tp = QM_TakeATRFromValue(_Symbol, req.type, entry, atr, strategy_atr_tp_mult);
       req.reason = "GAP_REVERSAL_SHORT";
       return (req.sl > 0.0 && req.tp > 0.0 && req.sl > entry && req.tp < entry);
      }
@@ -163,7 +177,7 @@ void Strategy_ManageOpenPosition()
    if(strategy_atr_period <= 1 || strategy_atr_sl_mult <= 0.0)
       return;
 
-   const double close_1 = iClose(_Symbol, _Period, 1); // perf-allowed: structural closed-bar trailing anchor
+   const double close_1 = QM_SMA(_Symbol, _Period, 1, 1, PRICE_CLOSE);
    const double atr = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    if(close_1 <= 0.0 || atr <= 0.0 || point <= 0.0)

@@ -1747,11 +1747,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10022,rw-dual-mom,1,NDX.DWX,100220001,2026-05-19,Development,active
 10022,rw-dual-mom,2,WS30.DWX,100220002,2026-05-19,Development,active
 10022,rw-dual-mom,3,XAUUSD.DWX,100220003,2026-05-19,Development,active
-10043,ff-50macd-4h,0,EURUSD.DWX,100430000,2026-05-19,Development,active
-10043,ff-50macd-4h,1,GBPUSD.DWX,100430001,2026-05-19,Development,active
+10043,ff-50macd-4h,0,GBPUSD.DWX,100430000,2026-06-09,Development,active
+10043,ff-50macd-4h,1,EURUSD.DWX,100430001,2026-06-09,Development,active
 10043,ff-50macd-4h,2,USDJPY.DWX,100430002,2026-05-19,Development,active
-10043,ff-50macd-4h,3,AUDUSD.DWX,100430003,2026-05-19,Development,active
-10043,ff-50macd-4h,4,EURJPY.DWX,100430004,2026-05-23,Development,active
+10043,ff-50macd-4h,3,EURJPY.DWX,100430003,2026-06-09,Development,active
 10027,rw-fx-carry,0,AUDJPY.DWX,100270000,2026-05-19,Development,active
 10027,rw-fx-carry,1,NZDJPY.DWX,100270001,2026-05-19,Development,active
 10027,rw-fx-carry,2,AUDUSD.DWX,100270002,2026-05-19,Development,active

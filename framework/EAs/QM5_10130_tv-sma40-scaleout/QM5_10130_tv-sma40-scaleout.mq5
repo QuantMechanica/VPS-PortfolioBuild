@@ -137,8 +137,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_atr_sl_mult <= 0.0 || strategy_tp3_r <= 0.0)
       return false;
 
-   const double close_1 = iClose(_Symbol, _Period, 1);
-   const double close_2 = iClose(_Symbol, _Period, 2);
+   const double close_1 = QM_SMA(_Symbol, _Period, 1, 1, PRICE_CLOSE);
+   const double close_2 = QM_SMA(_Symbol, _Period, 1, 2, PRICE_CLOSE);
    const double sma_1 = QM_SMA(_Symbol, _Period, strategy_sma_period, 1);
    const double sma_2 = QM_SMA(_Symbol, _Period, strategy_sma_period, 2);
    if(close_1 <= 0.0 || close_2 <= 0.0 || sma_1 <= 0.0 || sma_2 <= 0.0)
@@ -301,7 +301,7 @@ bool Strategy_ExitSignal()
    if(!found)
       return false;
 
-   const double close_1 = iClose(_Symbol, _Period, 1);
+   const double close_1 = QM_SMA(_Symbol, _Period, 1, 1, PRICE_CLOSE);
    const double sma_1 = QM_SMA(_Symbol, _Period, strategy_sma_period, 1);
    if(close_1 <= 0.0 || sma_1 <= 0.0)
       return false;
