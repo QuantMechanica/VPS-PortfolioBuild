@@ -63,7 +63,13 @@ $dispatchStalled = $false
 $stallInfo = ''
 if ($factoryEnabled) {
     try {
-        $nTerm = @(Get-Process terminal64 -ErrorAction SilentlyContinue).Count
+        # Count ONLY factory T1-T10 terminals, not every terminal64 on the box. A
+        # dedicated analysis terminal (D:\QM\mt5\T_Export) or the live T_Live terminal
+        # must NOT count here, else they MASK a real dispatch stall (observed 2026-06-09:
+        # a T_Export export run showed term64=1 and the watchdog read 'healthy' while the
+        # factory was wedged 0-active).
+        $nTerm = @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
+                   Where-Object { $_.CommandLine -match '\\mt5\\T(?:[1-9]|10)\\' }).Count
         # single-quoted here-string + stdin pipe avoids all PowerShell/SQL quote escaping
         $q = @'
 import sqlite3
@@ -115,7 +121,12 @@ else {
         # + CreateProcessAsUser into qm-admin's session even when RDP is DISCONNECTED.
         # A plain `& $py ...` here would land workers in SYSTEM's session-0 (hazard).
         foreach ($d in $daemons) { Stop-Process -Id $d.ProcessId -Force -ErrorAction SilentlyContinue }
-        @(Get-Process terminal64 -ErrorAction SilentlyContinue) | ForEach-Object { Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue }
+        # Kill ONLY factory T1-T10 terminals. NEVER terminate T_Live (live trading —
+        # OWNER+Claude authority, Hard Rule) or T_Export (analysis); matching by the
+        # T1-T10 path keeps the clean-slate respawn from ever touching them.
+        @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
+          Where-Object { $_.CommandLine -match '\\mt5\\T(?:[1-9]|10)\\' }) |
+          ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
         Start-Sleep -Seconds 4
         $launcher = Join-Path $repo 'tools\strategy_farm\run_in_console_session.ps1'
         $swArgs = '"' + (Join-Path $repo 'tools\strategy_farm\start_terminal_workers.py') + '" --repo-root "' + $repo + '" --farm-root "D:\QM\strategy_farm" --dedupe'
