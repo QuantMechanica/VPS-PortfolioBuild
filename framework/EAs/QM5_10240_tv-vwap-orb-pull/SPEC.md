@@ -18,7 +18,6 @@ The EA defines the opening range during the first configurable minutes after the
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `strategy_signal_tf` | `PERIOD_M5` | `PERIOD_M1`/`PERIOD_M5`/`PERIOD_M15` | Signal timeframe used for opening range, VWAP, EMA, ATR, and pullback checks. |
 | `strategy_or_start_hhmm_ny` | `930` | `0`-`2359` | New York session opening time in HHMM form. |
 | `strategy_or_minutes` | `15` | `1`-`120` | Number of minutes used to build the opening range. |
 | `strategy_session_end_hhmm_ny` | `1600` | `0`-`2359` | New York session end time for new-entry blocking and forced flat exit. |
@@ -27,8 +26,6 @@ The EA defines the opening range during the first configurable minutes after the
 | `strategy_atr_sl_mult` | `1.0` | `0.1`-`10.0` | ATR multiple used for the stop distance. |
 | `strategy_take_profit_rr` | `1.5` | `0.1`-`10.0` | Take-profit distance as a multiple of stop risk. |
 | `strategy_vwap_pullback_atr_tolerance` | `0.25` | `0.0`-`5.0` | Maximum ATR fraction away from VWAP that still counts as a pullback. |
-| `strategy_max_spread_points` | `120` | `0`-`10000` | Optional spread gate in points; `0` disables it. |
-| `strategy_one_trade_per_day` | `false` | `true`/`false` | Optional one-entry-per-session restriction; default keeps the card's one-position-per-magic rule. |
 
 > Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT, qm_news_mode, qm_rng_seed, qm_stress_reject_probability, qm_friday_close_*) are documented in `framework/V5_FRAMEWORK_DESIGN.md` and are not re-listed here.
 
@@ -52,7 +49,7 @@ The EA defines the opening range during the first configurable minutes after the
 
 | Aspect | Value |
 |---|---|
-| Base timeframe | `M5` |
+| Base timeframe | `M1`, `M5`, or `M15` from the tester chart period; smoke uses `M5` |
 | Multi-timeframe refs | none |
 | Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
 

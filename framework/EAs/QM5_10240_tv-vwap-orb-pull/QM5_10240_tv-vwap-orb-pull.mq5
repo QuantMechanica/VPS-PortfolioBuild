@@ -73,7 +73,6 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input ENUM_TIMEFRAMES strategy_signal_tf        = PERIOD_M5;
 input int    strategy_or_start_hhmm_ny          = 930;
 input int    strategy_or_minutes                = 15;
 input int    strategy_session_end_hhmm_ny       = 1600;
@@ -82,15 +81,12 @@ input int    strategy_atr_period                = 14;
 input double strategy_atr_sl_mult               = 1.0;
 input double strategy_take_profit_rr            = 1.5;
 input double strategy_vwap_pullback_atr_tolerance = 0.25;
-input int    strategy_max_spread_points         = 120;
-input bool   strategy_one_trade_per_day         = false;
 
 int    g_session_day_key       = 0;
 double g_or_high               = 0.0;
 double g_or_low                = 0.0;
 bool   g_or_ready              = false;
 int    g_breakout_dir          = 0;
-bool   g_trade_taken_today     = false;
 double g_vwap_pv_sum           = 0.0;
 double g_vwap_volume_sum       = 0.0;
 double g_session_vwap          = 0.0;
@@ -130,7 +126,6 @@ void ResetSessionState(const int day_key)
    g_or_low = 0.0;
    g_or_ready = false;
    g_breakout_dir = 0;
-   g_trade_taken_today = false;
    g_vwap_pv_sum = 0.0;
    g_vwap_volume_sum = 0.0;
    g_session_vwap = 0.0;
@@ -156,7 +151,7 @@ bool HasOpenStrategyPosition()
 bool ReadClosedSignalBar(MqlRates &bar)
   {
    MqlRates rates[1];
-   const int copied = CopyRates(_Symbol, strategy_signal_tf, 1, 1, rates); // perf-allowed: one closed signal bar for bespoke ORB/VWAP state inside framework new-bar gate.
+   const int copied = CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, 1, rates); // perf-allowed: one closed chart-period bar for bespoke ORB/VWAP state inside framework new-bar gate.
    if(copied != 1)
       return false;
 
@@ -211,16 +206,6 @@ bool Strategy_NoTradeFilter()
    if(hhmm >= strategy_session_end_hhmm_ny && !HasOpenStrategyPosition())
       return true;
 
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(strategy_max_spread_points > 0 && ask > 0.0 && bid > 0.0 && point > 0.0)
-     {
-      const double spread_points = (ask - bid) / point;
-      if(spread_points > strategy_max_spread_points && !HasOpenStrategyPosition())
-         return true;
-     }
-
    return false;
   }
 
@@ -239,8 +224,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(HasOpenStrategyPosition())
       return false;
-   if(strategy_one_trade_per_day && g_trade_taken_today)
-      return false;
 
    MqlRates bar;
    if(!ReadClosedSignalBar(bar))
@@ -253,8 +236,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!g_or_ready || hhmm < or_end || hhmm >= strategy_session_end_hhmm_ny)
       return false;
 
-   const double ema9 = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_period, 1);
-   const double atr = QM_ATR(_Symbol, strategy_signal_tf, strategy_atr_period, 1);
+   const ENUM_TIMEFRAMES signal_tf = (ENUM_TIMEFRAMES)_Period;
+   const double ema9 = QM_EMA(_Symbol, signal_tf, strategy_ema_period, 1);
+   const double atr = QM_ATR(_Symbol, signal_tf, strategy_atr_period, 1);
    if(ema9 <= 0.0 || atr <= 0.0 || g_session_vwap <= 0.0)
       return false;
 
@@ -302,7 +286,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(req.sl <= 0.0 || req.tp <= 0.0)
       return false;
 
-   g_trade_taken_today = true;
    return true;
   }
 
