@@ -10,7 +10,7 @@
 ; magic_slot:   100
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   39537b6ab5686256c6bdb564ec6106c9ea290133e54c109fdfbcf4c32fb608ac
+; build_hash:   8cebb1c55dafc43e44a43ba9b485f0dd5c30568e029dda3185ad9a3b51e1bc2c
 ; author:       Development
 ; date:         2026-05-17
 ;==========================================================
@@ -20,10 +20,8 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
-; --- ablation child 03 of QM5_1086_aa-dpm-tmom-ma_SP500.DWX_H1_backtest (perturb=?25%) ---
-strategy_lookback_months=13
-strategy_atr_period_d1=24
-strategy_atr_sl_mult=4.1065
-strategy_max_spread_points=4248
-
-
+; --- ablation child 03 of QM5_1086_aa-dpm-tmom-ma_v2_SP500.DWX_D1_backtest (perturb=±25%) ---
+strategy_lookback_months=12
+strategy_atr_period_d1=17
+strategy_atr_sl_mult=3.764082
+strategy_max_spread_points=4623
