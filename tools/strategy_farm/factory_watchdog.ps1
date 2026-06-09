@@ -25,7 +25,9 @@
 
 param(
     [int]$MinWorkers = 8,            # heal when fewer than this many worker daemons are alive
-    [int]$ExpectWorkers = 10
+    [int]$ExpectWorkers = 10,
+    [int]$StallPendingThreshold = 50 # heal when workers are ALIVE but WEDGED: 0 active +
+                                     # >= this many pending + 0 terminal64 = dispatcher stalled
 )
 
 $ErrorActionPreference = 'Continue'
@@ -50,17 +52,55 @@ $daemons = @(Get-CimInstance Win32_Process -Filter "Name='python.exe' OR Name='p
              Where-Object { $_.CommandLine -match 'terminal_worker\.py' })
 $nWorkers = $daemons.Count
 
+# 2b. DISPATCH-STALL detection (added 2026-06-09 after an ~8.5h wedge stall).
+# Worker COUNT alone misses the case where workers are alive but WEDGED: after an
+# RDP disconnect/reconnect they hold a dead session handle, so they claim work but
+# cannot launch terminal64 ("released_stale_claims") -> the queue has work but 0
+# runs. Signal: factory ON, 0 active work_items, >= StallPendingThreshold pending,
+# and 0 terminal64 procs. The same clean-slate respawn fixes it (fresh workers get
+# a live session handle via CreateProcessAsUser, even into a disconnected session).
+$dispatchStalled = $false
+$stallInfo = ''
+if ($factoryEnabled) {
+    try {
+        $nTerm = @(Get-Process terminal64 -ErrorAction SilentlyContinue).Count
+        # single-quoted here-string + stdin pipe avoids all PowerShell/SQL quote escaping
+        $q = @'
+import sqlite3
+c = sqlite3.connect(r"D:/QM/strategy_farm/state/farm_state.sqlite")
+a = c.execute("SELECT COUNT(*) FROM work_items WHERE status='active'").fetchone()[0]
+p = c.execute("SELECT COUNT(*) FROM work_items WHERE status='pending'").fetchone()[0]
+print(str(a) + " " + str(p))
+'@
+        $out = ($q | & $py - 2>$null) -join ' '
+        $m = [regex]::Match($out, '(\d+)\s+(\d+)')
+        if ($m.Success) {
+            $nActive = [int]$m.Groups[1].Value
+            $nPending = [int]$m.Groups[2].Value
+            $stallInfo = "active=$nActive pending=$nPending term64=$nTerm"
+            if ($nActive -eq 0 -and $nPending -ge $StallPendingThreshold -and $nTerm -eq 0) {
+                $dispatchStalled = $true
+            }
+        }
+    } catch { $stallInfo = "stall-probe-error: $_" }
+}
+
 if (-not $factoryEnabled) {
     $action = 'noop_factory_off'
     $detail = "FACTORY tasks disabled (OWNER OFF); workers=$nWorkers - leaving alone"
 }
-elseif ($nWorkers -ge $MinWorkers) {
+elseif ($nWorkers -ge $MinWorkers -and -not $dispatchStalled) {
     $action = 'noop_healthy'
-    $detail = "workers=$nWorkers/$ExpectWorkers (>= $MinWorkers)"
+    $detail = "workers=$nWorkers/$ExpectWorkers (>= $MinWorkers); $stallInfo"
 }
 else {
-    # 3. heal: factory is meant ON but workers are dead/short -> respawn the missing ones
-    $detail = "workers=$nWorkers/$ExpectWorkers (< $MinWorkers) while factory ON -> clean-slate respawn"
+    # 3. heal: factory meant ON but workers are dead/short OR alive-but-wedged
+    #    (dispatch stalled) -> clean-slate respawn either way.
+    if ($dispatchStalled) {
+        $detail = "DISPATCH STALL: workers=$nWorkers alive but wedged ($stallInfo) while factory ON -> clean-slate respawn"
+    } else {
+        $detail = "workers=$nWorkers/$ExpectWorkers (< $MinWorkers) while factory ON -> clean-slate respawn"
+    }
     try {
         # CLEAN-SLATE respawn INTO the autologon console session (visible-mode).
         # Why clean-slate (kill-all then spawn 10) instead of --dedupe gap-fill:
@@ -93,12 +133,13 @@ else {
 
 # 4. record (rolling JSONL, keep last 500). No email.
 $record = [ordered]@{
-    ts              = $now
-    factory_enabled = $factoryEnabled
-    workers         = $nWorkers
-    expect          = $ExpectWorkers
-    action          = $action
-    detail          = $detail
+    ts               = $now
+    factory_enabled  = $factoryEnabled
+    workers          = $nWorkers
+    expect           = $ExpectWorkers
+    dispatch_stalled = $dispatchStalled
+    action           = $action
+    detail           = $detail
 } | ConvertTo-Json -Compress -Depth 4
 
 try {
