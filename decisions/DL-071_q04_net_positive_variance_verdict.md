@@ -69,10 +69,36 @@ Analyse oben war Mittel-Schwelle 1.05; 1.10 ist die konservativere Wahl.
 4. Die ORB/ICT/Session-Cards (reservoir-reich, meist unbuilt) per `force_build` force-forwarden
    (DL-… / Edge-Quality-Initiative), damit sie das rekalibrierte Gate durchlaufen.
 
-## Caveat (Ehrlichkeit)
+## Praktiker-Evidenz (Deep-Research `wakdgb7gi`, 102 Agents, adversarial verifiziert)
 
-Q04-Strenge war *gewollte* Robustheit (kein „funktionierte nur 2024"). Die Lockerung ist eine
-**Rekalibrierung auf das echte Ziel** (netto-positiv-tradeable / Prop-Challenge-tauglich), keine
-blinde Aufweichung — die Guardrails verhindern Single-Year-Wonder und katastrophale Folds. Die
-Praktiker-Evidenz (ORB/ICT/Turnaround-Tuesday-Expektanz, realistische Jahres-Varianz) liefert
-der laufende Deep-Research-Lauf `wakdgb7gi` und wird hier angehängt, bevor OWNER ratifiziert.
+Die Research **validiert die Rekalibrierung mit eigenen Worten** und schärft sie:
+
+- **ORB ist die EINE belegte, kosten-überlebende-aber-streaky Edge.** Zarattini-Aziz 2023
+  (SSRN 4416622): 5-Min Opening-Range, Entry 2.-Bar-Open in 1.-Bar-Richtung, Stop am 1.-Bar-
+  Extrem, **Ziel 10R**, EOD-Exit; TQQQ 1.484% vs QQQ 169%, Sharpe 1.12. Struktur: **niedrige
+  Winrate (~17%) + 10:1 asymmetrisches RR + 1% Fixed-Fractional** → netto-positiv *durch die
+  Asymmetrie, nicht die Trefferquote*. Genau eine „verliert in manchen Perioden by design"-Edge.
+- Die Research sagt **wörtlich**: *„the pipeline's 'profitable in every fold' gate would
+  correctly kill the weak ones but **wrongly kill ORB-class edges, which by design lose in some
+  periods**."* → direkte Bestätigung von DL-071. Und die Guardrails sind richtig kalibriert: die
+  **Kosten-Illusionen** (Turnaround Tuesday / Weekly-Reversal: +61.7bp brutto, **−66 bis −104bp
+  netto** nach ~677% Turnover) und die **unbelegten ICT-Setups** (Silver Bullet/Judas/Unicorn —
+  keine Evidenz; „Gaps füllen zuverlässig" empirisch falsch, bis 80% füllen nicht) failen ohnehin
+  auf Netto-PF / katastrophalem Fold — die Lockerung lässt sie NICHT durch.
+
+**Zwei Caveats, die die Rekalibrierung begleiten müssen:**
+1. **Kosten-Realismus (kritisch):** die ORB-Headlines sind *brutto* von Spread+Slippage (nur
+   $0.0005/Share modelliert) auf US-Aktien im 2016-2023-Bull-Run — nicht auf unseren CFDs. Intraday
+   dominieren Spread/Slippage die Kosten. Q04/Q08 müssen **realistische Intraday-CFD-Kosten**
+   modellieren (heute: $7/Lot Kommission, *kein* Spread/Slippage/Swap) — sonst überschätzen wir
+   ORB massiv. **Vorbedingung**, sonst recovern wir Schein-Edges.
+2. Q04-Strenge war *gewollte* Robustheit. Die Lockerung ist **Rekalibrierung aufs echte Ziel**
+   (netto-positiv / Prop-tauglich), keine blinde Aufweichung — Guardrails (Mehrheit + Mittel +
+   No-Catastrophic-Fold + FTMO-DD-Box) verhindern Single-Year-Wonder.
+
+**Richtungs-Konsequenz** (für die Card-Priorisierung, nicht dieses Gate): **ORB-Index-Cards
+force-forwarden** (QM5_1062 unger-orb-index, et-session/firstbar/openpct-orb, 10181 xau-ny-orb);
+**ICT-Lore (Silver Bullet/Judas/Unicorn) und Turnaround-Tuesday NICHT priorisieren** (Marketing /
+Kosten-Illusion). Nuance: unser Survivor QM5_10692 ist ein *mechanisierter* Sweep/Structure-Edge,
+der unsere Gates real bestand — ein spezifisches mechanisches Sweep-Setup kann also funktionieren,
+auch wenn die ICT-*Lehre* unbelegt ist; nur die benannten Marken nicht blind bauen.
