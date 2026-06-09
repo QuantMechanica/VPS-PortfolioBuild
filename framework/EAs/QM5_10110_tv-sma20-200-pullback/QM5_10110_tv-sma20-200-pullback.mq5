@@ -85,6 +85,9 @@ input int    strategy_swing_fallback_bars    = 10;
 input double strategy_fx_tp_atr_mult         = 1.00;
 input double strategy_index_tp_points        = 100.0;
 
+bool g_strategy_last_long_pullback = false;
+bool g_strategy_last_short_pullback = false;
+
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -94,83 +97,6 @@ input double strategy_index_tp_points        = 100.0;
 bool Strategy_NoTradeFilter()
   {
    return false;
-  }
-
-bool Strategy_IsIndexSymbol()
-  {
-   return (StringFind(_Symbol, "NDX") >= 0 ||
-           StringFind(_Symbol, "GDAXI") >= 0 ||
-           StringFind(_Symbol, "GER40") >= 0 ||
-           StringFind(_Symbol, "UK100") >= 0 ||
-           StringFind(_Symbol, "WS30") >= 0 ||
-           StringFind(_Symbol, "SP500") >= 0);
-  }
-
-bool Strategy_HasOpenPosition()
-  {
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if(PositionGetInteger(POSITION_MAGIC) == magic)
-         return true;
-     }
-   return false;
-  }
-
-double Strategy_FallbackSwingStop(const bool is_long)
-  {
-   const int bars = MathMax(1, strategy_swing_fallback_bars);
-   double stop = is_long ? DBL_MAX : 0.0;
-   for(int shift = 1; shift <= bars; ++shift)
-     {
-      if(is_long)
-         stop = MathMin(stop, iLow(_Symbol, _Period, shift));
-      else
-         stop = MathMax(stop, iHigh(_Symbol, _Period, shift));
-     }
-   return (is_long && stop == DBL_MAX) ? 0.0 : stop;
-  }
-
-double Strategy_OpposingCandleStop(const bool is_long)
-  {
-   const int bars = MathMax(1, strategy_opposing_candle_bars);
-   for(int shift = 1; shift <= bars; ++shift)
-     {
-      const double open = iOpen(_Symbol, _Period, shift);
-      const double close = iClose(_Symbol, _Period, shift);
-      const double high = iHigh(_Symbol, _Period, shift);
-      const double low = iLow(_Symbol, _Period, shift);
-      const double sma200 = QM_SMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_slow_sma_period, shift);
-      if(open <= 0.0 || close <= 0.0 || high <= 0.0 || low <= 0.0 || sma200 <= 0.0)
-         continue;
-
-      if(is_long && close < open && high < sma200)
-         return low;
-      if(!is_long && close > open && low > sma200)
-         return high;
-     }
-   return Strategy_FallbackSwingStop(is_long);
-  }
-
-double Strategy_TakeProfit(const QM_OrderType side, const double entry)
-  {
-   const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
-   double distance = 0.0;
-   if(Strategy_IsIndexSymbol())
-      distance = strategy_index_tp_points;
-   else
-      distance = atr * strategy_fx_tp_atr_mult;
-
-   if(distance <= 0.0)
-      return 0.0;
-   if(side == QM_BUY)
-      return QM_TM_NormalizePrice(_Symbol, entry + distance);
-   return QM_TM_NormalizePrice(_Symbol, entry - distance);
   }
 
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
@@ -186,30 +112,59 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(Strategy_HasOpenPosition())
+   g_strategy_last_long_pullback = false;
+   g_strategy_last_short_pullback = false;
+
+   if(strategy_fast_sma_period < 1 || strategy_slow_sma_period < 2 ||
+      strategy_atr_period < 1 || strategy_opposing_candle_bars < 1 ||
+      strategy_swing_fallback_bars < 1)
       return false;
 
-   const double close1 = iClose(_Symbol, _Period, 1);
-   const double close2 = iClose(_Symbol, _Period, 2);
-   const double sma20_1 = QM_SMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_fast_sma_period, 1);
-   const double sma20_2 = QM_SMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_fast_sma_period, 2);
-   const double sma200_1 = QM_SMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_slow_sma_period, 1);
-   const double sma200_slope = QM_SMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_slow_sma_period, 1 + MathMax(1, strategy_slope_bars));
-   const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
+   const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
+   const int opposing_bars = (strategy_opposing_candle_bars > 1) ? strategy_opposing_candle_bars : 1;
+   const int swing_bars = (strategy_swing_fallback_bars > 1) ? strategy_swing_fallback_bars : 1;
+   const int needed_bars = ((opposing_bars > swing_bars) ? opposing_bars : swing_bars) + 3;
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, tf, 0, needed_bars, rates); // perf-allowed: Strategy_EntrySignal is called only after the skeleton QM_IsNewBar() gate.
+   if(copied < needed_bars)
+      return false;
+
+   const double close1 = rates[1].close;
+   const double close2 = rates[2].close;
+   const double sma20_1 = QM_SMA(_Symbol, tf, strategy_fast_sma_period, 1);
+   const double sma20_2 = QM_SMA(_Symbol, tf, strategy_fast_sma_period, 2);
+   const double sma200_1 = QM_SMA(_Symbol, tf, strategy_slow_sma_period, 1);
+   const int slope_bars = (strategy_slope_bars > 1) ? strategy_slope_bars : 1;
+   const double sma200_slope = QM_SMA(_Symbol, tf, strategy_slow_sma_period, 1 + slope_bars);
+   const double atr = QM_ATR(_Symbol, tf, strategy_atr_period, 1);
    if(close1 <= 0.0 || close2 <= 0.0 || sma20_1 <= 0.0 || sma20_2 <= 0.0 || sma200_1 <= 0.0 || atr <= 0.0)
+      return false;
+
+   const bool slope_long_ok = (!strategy_use_slow_slope_filter || sma200_1 > sma200_slope);
+   const bool slope_short_ok = (!strategy_use_slow_slope_filter || sma200_1 < sma200_slope);
+   const bool is_long = (sma20_1 > sma200_1 && close2 <= sma20_2 && close1 > sma20_1 && slope_long_ok);
+   const bool is_short = (sma20_1 < sma200_1 && close2 >= sma20_2 && close1 < sma20_1 && slope_short_ok);
+   g_strategy_last_long_pullback = is_long;
+   g_strategy_last_short_pullback = is_short;
+
+   if(!is_long && !is_short)
       return false;
 
    if(MathAbs(close1 - sma20_1) > strategy_max_sma20_atr_distance * atr)
       return false;
 
-   bool is_long = false;
-   bool is_short = false;
-   if(sma20_1 > sma200_1 && close2 <= sma20_2 && close1 > sma20_1)
-      is_long = (!strategy_use_slow_slope_filter || sma200_1 > sma200_slope);
-   if(sma20_1 < sma200_1 && close2 >= sma20_2 && close1 < sma20_1)
-      is_short = (!strategy_use_slow_slope_filter || sma200_1 < sma200_slope);
-   if(!is_long && !is_short)
-      return false;
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(!PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if(PositionGetInteger(POSITION_MAGIC) == magic)
+         return false;
+     }
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
@@ -219,7 +174,40 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    req.type = is_long ? QM_BUY : QM_SELL;
    req.price = 0.0;
-   req.sl = QM_TM_NormalizePrice(_Symbol, Strategy_OpposingCandleStop(is_long));
+   double stop = 0.0;
+   for(int shift = 1; shift <= opposing_bars && shift < copied; ++shift)
+     {
+      const double sma200 = QM_SMA(_Symbol, tf, strategy_slow_sma_period, shift);
+      if(sma200 <= 0.0)
+         continue;
+
+      if(is_long && rates[shift].close < rates[shift].open && rates[shift].high < sma200)
+        {
+         stop = rates[shift].low;
+         break;
+        }
+      if(is_short && rates[shift].close > rates[shift].open && rates[shift].low > sma200)
+        {
+         stop = rates[shift].high;
+         break;
+        }
+     }
+
+   if(stop <= 0.0)
+     {
+      stop = is_long ? DBL_MAX : 0.0;
+      for(int shift = 1; shift <= swing_bars && shift < copied; ++shift)
+        {
+         if(is_long)
+            stop = MathMin(stop, rates[shift].low);
+         else
+            stop = MathMax(stop, rates[shift].high);
+        }
+      if(is_long && stop == DBL_MAX)
+         stop = 0.0;
+     }
+
+   req.sl = QM_TM_NormalizePrice(_Symbol, stop);
    if(req.sl <= 0.0 || (is_long && req.sl >= entry) || (is_short && req.sl <= entry))
       return false;
 
@@ -227,7 +215,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(stop_distance <= 0.0 || (ask - bid) > stop_distance * strategy_max_spread_stop_frac)
       return false;
 
-   req.tp = Strategy_TakeProfit(req.type, entry);
+   const bool is_index_symbol = (StringFind(_Symbol, "NDX") >= 0 ||
+                                 StringFind(_Symbol, "GDAXI") >= 0 ||
+                                 StringFind(_Symbol, "UK100") >= 0 ||
+                                 StringFind(_Symbol, "WS30") >= 0 ||
+                                 StringFind(_Symbol, "SP500") >= 0);
+   const double tp_distance = is_index_symbol ? strategy_index_tp_points : (atr * strategy_fx_tp_atr_mult);
+   if(tp_distance <= 0.0)
+      return false;
+
+   req.tp = QM_TM_NormalizePrice(_Symbol, is_long ? entry + tp_distance : entry - tp_distance);
    if(req.tp <= 0.0)
       return false;
 
@@ -245,23 +242,8 @@ void Strategy_ManageOpenPosition()
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   const double close1 = iClose(_Symbol, _Period, 1);
-   const double close2 = iClose(_Symbol, _Period, 2);
-   const double sma20_1 = QM_SMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_fast_sma_period, 1);
-   const double sma20_2 = QM_SMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_fast_sma_period, 2);
-   const double sma200_1 = QM_SMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_slow_sma_period, 1);
-   const double sma200_slope = QM_SMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_slow_sma_period, 1 + MathMax(1, strategy_slope_bars));
-   if(close1 <= 0.0 || close2 <= 0.0 || sma20_1 <= 0.0 || sma20_2 <= 0.0 || sma200_1 <= 0.0)
+   if(!g_strategy_last_long_pullback && !g_strategy_last_short_pullback)
       return false;
-
-   const bool opposite_long = (sma20_1 > sma200_1 &&
-                               close2 <= sma20_2 &&
-                               close1 > sma20_1 &&
-                               (!strategy_use_slow_slope_filter || sma200_1 > sma200_slope));
-   const bool opposite_short = (sma20_1 < sma200_1 &&
-                                close2 >= sma20_2 &&
-                                close1 < sma20_1 &&
-                                (!strategy_use_slow_slope_filter || sma200_1 < sma200_slope));
 
    const int magic = QM_FrameworkMagic();
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -275,9 +257,9 @@ bool Strategy_ExitSignal()
          continue;
 
       const long type = PositionGetInteger(POSITION_TYPE);
-      if(type == POSITION_TYPE_BUY && opposite_short)
+      if(type == POSITION_TYPE_BUY && g_strategy_last_short_pullback)
          return true;
-      if(type == POSITION_TYPE_SELL && opposite_long)
+      if(type == POSITION_TYPE_SELL && g_strategy_last_long_pullback)
          return true;
      }
    return false;

@@ -1,60 +1,49 @@
-# QM5_10110_tv-sma20-200-pullback — Strategy Spec
+# QM5_10110_tv-sma20-200-pullback - Strategy Spec
 
 **EA ID:** QM5_10110
 **Slug:** `tv-sma20-200-pullback`
 **Source:** `30591366-874b-5bee-b47c-da2fca20b728` (see `strategy-seeds/sources/30591366-874b-5bee-b47c-da2fca20b728/`)
-**Author of this spec:** auto-generated ex-post by gen_spec_md.py
-**Last revised:** 2026-05-25
+**Author of this spec:** Codex
+**Last revised:** 2026-06-09
 
 ---
 
 ## 1. Strategy Logic
 
-Mechanical strategy implemented per the approved card
-`artifacts/cards_approved/QM5_10110_tv-sma20-200-pullback.md`. See that card's body for
-the full entry/exit/stop/sizing rules; this SPEC summarises the
-implementation surface.
-
-Entry/exit logic is encoded in the five `Strategy_*` hooks in
-`QM5_10110_tv-sma20-200-pullback.mq5`. Framework wiring (risk, magic, news, Friday close)
-is inherited from `QM_Common.mqh` and is not redocumented here.
+The EA trades a 20-SMA pullback in the direction of the 200-SMA trend on the chart timeframe. A long setup requires SMA(20) above SMA(200), the prior closed bar at or below SMA(20), and the latest closed bar back above SMA(20); shorts mirror the rule below SMA(20). The optional source slope filter requires SMA(200) to slope in the trade direction over the prior 10 bars. Exits use broker TP/SL plus an opposite SMA20 pullback signal when it appears first.
 
 ---
 
 ## 2. Parameters
 
 | Parameter | Default | Range | Meaning |
-|---|---|---|---|
-| `strategy_fast_sma_period` | 20 | (see source) | (see strategy logic) |
-| `strategy_slow_sma_period` | 200 | (see source) | (see strategy logic) |
-| `strategy_slope_bars` | 10 | (see source) | (see strategy logic) |
-| `strategy_use_slow_slope_filter` | true | (see source) | (see strategy logic) |
-| `strategy_atr_period` | 14 | (see source) | (see strategy logic) |
-| `strategy_max_sma20_atr_distance` | 1.50 | (see source) | (see strategy logic) |
-| `strategy_max_spread_stop_frac` | 0.10 | (see source) | (see strategy logic) |
-| `strategy_opposing_candle_bars` | 50 | (see source) | (see strategy logic) |
-| `strategy_swing_fallback_bars` | 10 | (see source) | (see strategy logic) |
-| `strategy_fx_tp_atr_mult` | 1.00 | (see source) | (see strategy logic) |
-| `strategy_index_tp_points` | 100.0 | (see source) | (see strategy logic) |
+|---|---:|---|---|
+| `strategy_fast_sma_period` | 20 | 1+ | Pullback moving-average period. |
+| `strategy_slow_sma_period` | 200 | 2+ | Trend moving-average period. |
+| `strategy_slope_bars` | 10 | 1+ | Bars used for the optional SMA200 slope check. |
+| `strategy_use_slow_slope_filter` | true | true/false | Enables the source SMA200 slope filter. |
+| `strategy_atr_period` | 14 | 1+ | ATR period used for FX TP and distance filter. |
+| `strategy_max_sma20_atr_distance` | 1.50 | 0+ | Blocks entries whose closed-bar price is too far from SMA20. |
+| `strategy_max_spread_stop_frac` | 0.10 | 0+ | Blocks entries when spread exceeds this fraction of stop distance. |
+| `strategy_opposing_candle_bars` | 50 | 1+ | Search window for the source opposing-candle stop. |
+| `strategy_swing_fallback_bars` | 10 | 1+ | Fallback swing-stop lookback when no opposing candle qualifies. |
+| `strategy_fx_tp_atr_mult` | 1.00 | 0+ | FX take-profit distance in ATR multiples. |
+| `strategy_index_tp_points` | 100.0 | 0+ | Index take-profit distance in index points. |
 
-> Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
-> qm_news_mode, qm_rng_seed, qm_stress_reject_probability,
-> qm_friday_close_*) are documented in
-> `framework/V5_FRAMEWORK_DESIGN.md` — not re-listed here.
+> Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT, news, seed, stress, and Friday-close inputs) are documented in `framework/V5_FRAMEWORK_DESIGN.md` and are not re-listed here.
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `EURUSD.DWX` — registered in magic_numbers.csv for this EA
-- `GBPUSD.DWX` — registered in magic_numbers.csv for this EA
-- `NDX.DWX` — registered in magic_numbers.csv for this EA
-- `GDAXI.DWX` — registered in magic_numbers.csv for this EA
+- `EURUSD.DWX` - card-listed FX major; OHLC-derived SMA pullback logic ports directly.
+- `GBPUSD.DWX` - card-listed FX major; same trend-pullback mechanics as EURUSD.
+- `NDX.DWX` - card-listed liquid index CFD; uses fixed index-point TP.
+- `GDAXI.DWX` - canonical available DWX DAX symbol used in place of card-stated `GER40.DWX`.
 
-**Explicitly NOT for:** any symbol not in the list above (no implicit
-universe expansion at runtime; the `QM_SymbolGuard` framework helper
-rejects foreign symbols).
+**Explicitly NOT for:**
+- Any symbol outside the active registry rows above - no runtime universe expansion is intended.
 
 ---
 
@@ -63,8 +52,8 @@ rejects foreign symbols).
 | Aspect | Value |
 |---|---|
 | Base timeframe | `H1` |
-| Multi-timeframe refs | see `Strategy_*` hooks in the .mq5 |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Multi-timeframe refs | none |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default skeleton gate) |
 
 ---
 
@@ -73,11 +62,12 @@ rejects foreign symbols).
 | Metric | Expected |
 |---|---|
 | Trades / year / symbol | 52 |
-| Cadence note | "H1 trend-pullback mode can trigger multiple times per trend; conservative filtered estimate 35-70 trades/year/symbol." |
-| Typical hold time | see card body |
-| Expected drawdown profile | bounded by RISK_FIXED + FTMO 10% total DD ceiling |
-| Regime preference | per card thesis |
+| Typical hold time | H1 trend-pullback holds until fixed TP, structure SL, or opposite signal; typically hours to days. |
+| Expected drawdown profile | Fixed-risk trend-following drawdowns during whipsaw/range regimes. |
+| Regime preference | Trend-following / moving-average pullback. |
 | Win rate target (qualitative) | medium |
+
+Card frequency note: "H1 trend-pullback mode can trigger multiple times per trend; conservative filtered estimate 35-70 trades/year/symbol."
 
 ---
 
@@ -86,9 +76,9 @@ rejects foreign symbols).
 This card was mechanised from:
 
 **Source ID:** `30591366-874b-5bee-b47c-da2fca20b728`
-**Pointer:** `strategy-seeds/sources/30591366-874b-5bee-b47c-da2fca20b728/`
-**R1–R4 verdict (Q00):** all PASS — see
-`artifacts/cards_approved/QM5_10110_tv-sma20-200-pullback.md`
+**Source type:** TradingView public Pine script
+**Pointer:** `https://www.tradingview.com/script/ZqnuKIAw-20-200-SMA-Strategy/`
+**R1-R4 verdict (Q00):** all PASS per `artifacts/cards_approved/QM5_10110_tv-sma20-200-pullback.md`
 
 ---
 
@@ -96,11 +86,11 @@ This card was mechanised from:
 
 | Phase | Risk mode | Value |
 |---|---|---|
-| Backtest (Q02 – Q10) | RISK_FIXED | $1,000 per trade (HR4) |
+| Backtest (Q02 - Q10) | RISK_FIXED | $1,000 per trade (HR4) |
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
-| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
+| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% - 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
 
 ---
 
@@ -108,4 +98,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-05-25 | Initial spec (ex-post, generated by gen_spec_md.py) | post-PT15 remediation |
+| v1 | 2026-06-09 | Initial build from card | 84bcc837-f939-4e92-a6ed-d038b38d572d |
