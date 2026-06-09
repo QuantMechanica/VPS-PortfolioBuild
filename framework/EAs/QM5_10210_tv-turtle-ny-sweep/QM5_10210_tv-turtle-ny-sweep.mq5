@@ -60,6 +60,42 @@ bool Strategy_NoTradeFilter()
    MqlDateTime ny;
    TimeToStruct(ny_now, ny);
    const int hhmm_ny = ny.hour * 100 + ny.min;
+
+   const int magic = QM_FrameworkMagic();
+   bool has_active_trade = false;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(!PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+        {
+         has_active_trade = true;
+         break;
+        }
+     }
+   if(!has_active_trade)
+     {
+      for(int i = OrdersTotal() - 1; i >= 0; --i)
+        {
+         const ulong ticket = OrderGetTicket(i);
+         if(ticket == 0 || !OrderSelect(ticket))
+            continue;
+         if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+            continue;
+         if((int)OrderGetInteger(ORDER_MAGIC) == magic)
+           {
+            has_active_trade = true;
+            break;
+           }
+        }
+     }
+
+   if(has_active_trade)
+      return false;
+
    if(hhmm_ny < strategy_ny_open_hhmm || hhmm_ny >= strategy_ny_flat_hhmm)
       return true;
 
@@ -230,7 +266,27 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Called every tick when an open position exists for this EA's magic.
 void Strategy_ManageOpenPosition()
   {
-   // Card baseline: no trailing, partial close, or break-even rule.
+   const datetime broker_now = TimeCurrent();
+   const datetime utc_now = QM_BrokerToUTC(broker_now);
+   const datetime ny_now = utc_now + (QM_IsUSDSTUTC(utc_now) ? -4 * 3600 : -5 * 3600);
+   MqlDateTime ny;
+   TimeToStruct(ny_now, ny);
+   const int hhmm_ny = ny.hour * 100 + ny.min;
+   if(hhmm_ny < strategy_ny_flat_hhmm)
+      return;
+
+   const int magic = QM_FrameworkMagic();
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0 || !OrderSelect(ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+      QM_TM_RemovePendingOrder(ticket, "ny_session_flat_pending_cancel");
+     }
   }
 
 // Return TRUE to close the open position now at end of NY cash session.

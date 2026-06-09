@@ -141,7 +141,7 @@ void StrategyAdvanceVwapOnClosedBar()
   {
    // perf-allowed: session VWAP is bespoke structural state, advanced once
    // per framework new-bar call from a single closed bar.
-   const datetime bar_time = iTime(_Symbol, strategy_signal_tf, 1);
+   const datetime bar_time = iTime(_Symbol, strategy_signal_tf, 1); // perf-allowed: session VWAP uses one closed bar after framework new-bar gating.
    if(bar_time <= 0)
       return;
 
@@ -152,13 +152,13 @@ void StrategyAdvanceVwapOnClosedBar()
    if(!StrategyInSession(bar_time))
       return;
 
-   const double high_price = iHigh(_Symbol, strategy_signal_tf, 1);
-   const double low_price = iLow(_Symbol, strategy_signal_tf, 1);
-   const double close_price = iClose(_Symbol, strategy_signal_tf, 1);
+   const double high_price = iHigh(_Symbol, strategy_signal_tf, 1); // perf-allowed: session VWAP uses one closed bar after framework new-bar gating.
+   const double low_price = iLow(_Symbol, strategy_signal_tf, 1); // perf-allowed: session VWAP uses one closed bar after framework new-bar gating.
+   const double close_price = iClose(_Symbol, strategy_signal_tf, 1); // perf-allowed: session VWAP uses one closed bar after framework new-bar gating.
    if(high_price <= 0.0 || low_price <= 0.0 || close_price <= 0.0)
       return;
 
-   double tick_volume = (double)iVolume(_Symbol, strategy_signal_tf, 1);
+   double tick_volume = (double)iVolume(_Symbol, strategy_signal_tf, 1); // perf-allowed: session VWAP uses one closed bar after framework new-bar gating.
    if(tick_volume <= 0.0)
       tick_volume = 1.0;
 
@@ -202,7 +202,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    // perf-allowed: read only the most recent closed bar for the VWAP/RSI/EMA
    // setup after the framework has gated this function to a new bar.
-   const datetime bar_time = iTime(_Symbol, strategy_signal_tf, 1);
+   const datetime bar_time = iTime(_Symbol, strategy_signal_tf, 1); // perf-allowed: session VWAP signal reads one closed bar after framework new-bar gating.
    if(bar_time <= 0)
       return false;
 
@@ -216,7 +216,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(g_session_vwap <= 0.0)
       return false;
 
-   const double close_price = iClose(_Symbol, strategy_signal_tf, 1);
+   const double close_price = iClose(_Symbol, strategy_signal_tf, 1); // perf-allowed: session VWAP signal reads one closed bar after framework new-bar gating.
    const double rsi = QM_RSI(_Symbol, strategy_signal_tf, strategy_rsi_period, 1);
    const double ema = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_period, 1);
    const double atr = QM_ATR(_Symbol, strategy_signal_tf, strategy_atr_period, 1);
