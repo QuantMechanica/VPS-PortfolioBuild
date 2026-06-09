@@ -1,12 +1,22 @@
-# QM5_10132 tv-mtf-body-bos
+# QM5_10132_tv-mtf-body-bos - Strategy Spec
 
-## Strategy Logic
-Trades a closed-bar body break with break-of-structure confirmation. A long signal requires the last closed candle close to be above the prior candle body high, above the highest high of the prior 20 bars, and above a higher-timeframe SMA(50) regime filter. A short signal is the symmetric close below prior body low, below the lowest low of the prior 20 bars, and below the higher-timeframe SMA(50).
+**EA ID:** QM5_10132
+**Slug:** tv-mtf-body-bos
+**Source:** 30591366-874b-5bee-b47c-da2fca20b728 (TradingView public script citation in approved card)
+**Author of this spec:** Codex
+**Last revised:** 2026-06-09
 
-Positions exit through the broker 2R target, stop loss, framework Friday close, or a strategy exit when a long closes back below the prior candle body low or a short closes back above the prior candle body high.
+---
 
-## Parameters
-| Input | Default | Range | Meaning |
+## 1. Strategy Logic
+
+The EA trades a closed-bar body breakout with a break-of-structure filter. A long signal requires the last closed candle to close above the prior candle body high, above the highest high of the prior 20 bars, and with the 4x higher-timeframe close above its SMA(50). A short signal is the symmetric close below prior body low, below the lowest low of the prior 20 bars, and with the 4x higher-timeframe close below its SMA(50). Positions close at the 2R target, stop loss, framework Friday close, or when price closes back through the prior candle body in the opposite direction.
+
+---
+
+## 2. Parameters
+
+| Parameter | Default | Range | Meaning |
 |---|---:|---|---|
 | `strategy_structure_lookback` | 20 | `>=1` | Prior-bar high/low lookback for BOS confirmation. |
 | `strategy_atr_period` | 14 | `>=1` | ATR period for stop placement. |
@@ -16,17 +26,70 @@ Positions exit through the broker 2R target, stop loss, framework Friday close, 
 | `strategy_take_profit_rr` | 2.0 | `>0` | Fixed reward/risk target. |
 | `strategy_max_spread_stop_fraction` | 0.10 | `>=0` | Reject entry if spread exceeds this fraction of stop distance. |
 
-## Symbol Universe
-Designed for the approved P2 basket: `EURUSD.DWX`, `GBPUSD.DWX`, `XAUUSD.DWX`, `NDX.DWX`. These are all present in `framework/registry/dwx_symbol_matrix.csv`.
+Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md`.
 
-## Timeframe
-Primary timeframe is `M15`. Robustness setfiles are also generated for `H1`. The higher-timeframe filter uses the 4x timeframe: `M15 -> H1`, `H1 -> H4`.
+---
 
-## Expected Behaviour
-The card estimates roughly 60-120 trades per year per symbol after the MTF filter, with an expected center near 80 trades per year per symbol. It is a breakout and market-structure strategy that prefers directional continuation after candle-body expansion.
+## 3. Symbol Universe
 
-## Source Citation
-JK, "Body Close Outside Prior Body - BOS Filtered (MTF)", TradingView, accessed 2026-05-19, URL: https://www.tradingview.com/script/OcVKeqc2-Body-Close-Outside-Prior-Body-BOS-Filtered-MTF-by-JK/.
+**Designed for:**
+- `EURUSD.DWX` - card-approved FX target with liquid M15 OHLC structure.
+- `GBPUSD.DWX` - card-approved FX target with liquid M15 OHLC structure.
+- `XAUUSD.DWX` - card-approved gold CFD target with body/BOS portability.
+- `NDX.DWX` - card-approved index CFD target with body/BOS portability.
 
-## Risk Model
-Backtests use fixed risk with `RISK_FIXED = 1000` and `RISK_PERCENT = 0`. Live promotion uses percent risk through the deployment manifest, conventionally `RISK_PERCENT = 0.5`, after the full pipeline and OWNER-signed manifest.
+**Explicitly NOT for:**
+- Symbols outside `framework/registry/dwx_symbol_matrix.csv` - no approved DWX data target.
+
+---
+
+## 4. Timeframe
+
+| Aspect | Value |
+|---|---|
+| Base timeframe | `M15` |
+| Multi-timeframe refs | 4x chart timeframe: `M15 -> H1`, `H1 -> H4` |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` framework entry gate |
+
+---
+
+## 5. Expected Behaviour
+
+| Metric | Expected |
+|---|---|
+| Trades / year / symbol | `80` |
+| Typical hold time | Intraday to multi-session, depending on 2R or body-reversal close |
+| Expected drawdown profile | Breakout losses cluster in sideways regimes; fixed 1R stop per entry |
+| Regime preference | Breakout / volatility expansion with higher-timeframe trend alignment |
+| Win rate target (qualitative) | Medium |
+
+---
+
+## 6. Source Citation
+
+This card was mechanised from:
+
+**Source ID:** 30591366-874b-5bee-b47c-da2fca20b728
+**Source type:** TradingView public script page
+**Pointer:** https://www.tradingview.com/script/OcVKeqc2-Body-Close-Outside-Prior-Body-BOS-Filtered-MTF-by-JK/
+**R1-R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_10132_tv-mtf-body-bos.md`
+
+---
+
+## 7. Risk Model
+
+| Phase | Risk mode | Value |
+|---|---|---|
+| Backtest (Q02 - Q10) | RISK_FIXED | $1,000 per trade (HR4) |
+| Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
+| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% - 0.5%) |
+
+ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+
+---
+
+## Revision History
+
+| Version | Date | Reason | Notes |
+|---|---|---|---|
+| v1 | 2026-06-09 | Initial build from card | 4b181377-64ea-4515-bbb1-097bbe536a19 |

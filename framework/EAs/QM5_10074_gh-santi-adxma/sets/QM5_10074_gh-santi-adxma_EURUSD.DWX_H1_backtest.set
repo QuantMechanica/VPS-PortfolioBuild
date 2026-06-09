@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   803f5a98cca927651391f61b063756d9ef1d0b216c163fd6c837c7e8330fef57
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-06-09
 ;==========================================================
@@ -32,8 +32,3 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
-strategy_ema_period=8
-strategy_adx_period=8
-strategy_adx_min=22.0
-strategy_stop_loss_pips=30
-strategy_take_profit_pips=100
