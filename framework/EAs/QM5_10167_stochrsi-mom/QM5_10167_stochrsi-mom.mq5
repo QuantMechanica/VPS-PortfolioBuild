@@ -73,79 +73,94 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input ENUM_TIMEFRAMES strategy_signal_tf       = PERIOD_D1;
-input int             strategy_rsi_period      = 14;
-input int             strategy_stoch_lookback  = 14;
-input double          strategy_centerline      = 50.0;
-input double          strategy_long_exhaustion = 80.0;
-input double          strategy_short_exhaustion= 20.0;
-input int             strategy_atr_period      = 14;
-input double          strategy_atr_sl_mult     = 3.0;
-input int             strategy_warmup_bars     = 30;
-input bool            strategy_sma_slope_filter= false;
-input int             strategy_sma_period      = 50;
+input int    strategy_rsi_period        = 14;
+input int    strategy_stochrsi_lookback = 14;
+input double strategy_centerline        = 50.0;
+input double strategy_long_exhaustion   = 80.0;
+input double strategy_short_exhaustion  = 20.0;
+input int    strategy_atr_period        = 14;
+input double strategy_atr_sl_mult       = 3.0;
+input int    strategy_warmup_bars       = 30;
+input int    strategy_sma_slope_period  = 0;       // 0=off; P3 variants use 50 or 100.
 
-double Strategy_StochRSI(const int shift)
+int g_pending_reverse_dir = 0;
+
+bool Strategy_HasOpenPosition(ENUM_POSITION_TYPE &position_type)
   {
-   if(strategy_rsi_period <= 0 || strategy_stoch_lookback <= 1 || shift < 1)
-      return EMPTY_VALUE;
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
 
-   const double rsi_now = QM_RSI(_Symbol, strategy_signal_tf, strategy_rsi_period, shift);
-   if(rsi_now == EMPTY_VALUE)
-      return EMPTY_VALUE;
-
-   double lowest = DBL_MAX;
-   double highest = -DBL_MAX;
-   for(int i = 0; i < strategy_stoch_lookback; ++i)
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
-      const double rsi = QM_RSI(_Symbol, strategy_signal_tf, strategy_rsi_period, shift + i);
-      if(rsi == EMPTY_VALUE)
-         return EMPTY_VALUE;
-      lowest = MathMin(lowest, rsi);
-      highest = MathMax(highest, rsi);
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      return true;
      }
 
-   const double range = highest - lowest;
+   return false;
+  }
+
+bool Strategy_StochRsi(const int shift, double &out_value)
+  {
+   out_value = 0.0;
+   if(strategy_rsi_period <= 1 || strategy_stochrsi_lookback <= 1 || shift < 1)
+      return false;
+
+   double lo = DBL_MAX;
+   double hi = -DBL_MAX;
+   const double current_rsi = QM_RSI(_Symbol, PERIOD_D1, strategy_rsi_period, shift);
+   if(current_rsi <= 0.0)
+      return false;
+
+   for(int i = 0; i < strategy_stochrsi_lookback; ++i)
+     {
+      const double rsi = QM_RSI(_Symbol, PERIOD_D1, strategy_rsi_period, shift + i);
+      if(rsi <= 0.0)
+         return false;
+      lo = MathMin(lo, rsi);
+      hi = MathMax(hi, rsi);
+     }
+
+   const double range = hi - lo;
    if(range <= 0.0)
-      return 50.0;
-   return 100.0 * (rsi_now - lowest) / range;
+      return false;
+
+   out_value = 100.0 * (current_rsi - lo) / range;
+   return true;
   }
 
-bool Strategy_HasWarmup()
+bool Strategy_StochPair(double &stoch_now, double &stoch_prev)
   {
-   const int bars_required = strategy_warmup_bars + strategy_rsi_period + strategy_stoch_lookback + 2;
-   return (Bars(_Symbol, strategy_signal_tf) >= bars_required);
+   stoch_now = 0.0;
+   stoch_prev = 0.0;
+   if(strategy_warmup_bars > 0 && QM_RSI(_Symbol, PERIOD_D1, strategy_rsi_period, strategy_warmup_bars) <= 0.0)
+      return false;
+   return (Strategy_StochRsi(1, stoch_now) && Strategy_StochRsi(2, stoch_prev));
   }
 
-bool Strategy_SlopeAllows(const QM_OrderType side)
+bool Strategy_SmaSlopeAllows(const int direction)
   {
-   if(!strategy_sma_slope_filter)
+   if(strategy_sma_slope_period <= 0)
       return true;
-   if(strategy_sma_period <= 1)
+
+   const double sma_now = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_slope_period, 1);
+   const double sma_prev = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_slope_period, 2);
+   if(sma_now <= 0.0 || sma_prev <= 0.0)
       return false;
 
-   const double sma_now = QM_SMA(_Symbol, strategy_signal_tf, strategy_sma_period, 1);
-   const double sma_prev = QM_SMA(_Symbol, strategy_signal_tf, strategy_sma_period, 2);
-   if(sma_now == EMPTY_VALUE || sma_prev == EMPTY_VALUE)
-      return false;
-
-   if(QM_OrderTypeIsBuy(side))
+   if(direction > 0)
       return (sma_now > sma_prev);
-   return (sma_now < sma_prev);
-  }
-
-bool Strategy_StochCrossAbove(const double level)
-  {
-   const double now = Strategy_StochRSI(1);
-   const double prev = Strategy_StochRSI(2);
-   return (now != EMPTY_VALUE && prev != EMPTY_VALUE && prev <= level && now > level);
-  }
-
-bool Strategy_StochCrossBelow(const double level)
-  {
-   const double now = Strategy_StochRSI(1);
-   const double prev = Strategy_StochRSI(2);
-   return (now != EMPTY_VALUE && prev != EMPTY_VALUE && prev >= level && now < level);
+   if(direction < 0)
+      return (sma_now < sma_prev);
+   return false;
   }
 
 // -----------------------------------------------------------------------------
@@ -156,7 +171,9 @@ bool Strategy_StochCrossBelow(const double level)
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   return !Strategy_HasWarmup();
+   // Card has no extra session/spread/regime no-trade filter. Framework gates
+   // kill-switch, news, Friday close, and one-position-per-magic.
+   return false;
   }
 
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
@@ -172,62 +189,91 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!Strategy_HasWarmup())
+   ENUM_POSITION_TYPE position_type;
+   if(Strategy_HasOpenPosition(position_type))
       return false;
 
-   if(Strategy_StochCrossAbove(strategy_centerline) && Strategy_SlopeAllows(QM_BUY))
+   int direction = 0;
+   if(g_pending_reverse_dir != 0)
      {
-      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      req.type = QM_BUY;
-      req.sl = QM_StopATR(_Symbol, req.type, entry, strategy_atr_period, strategy_atr_sl_mult);
-      req.reason = "STOCHRSI_CENTERLINE_LONG";
-      return (req.sl > 0.0);
+      direction = g_pending_reverse_dir;
+      g_pending_reverse_dir = 0;
+     }
+   else
+     {
+      double stoch_now = 0.0;
+      double stoch_prev = 0.0;
+      if(!Strategy_StochPair(stoch_now, stoch_prev))
+         return false;
+
+      if(stoch_prev <= strategy_centerline && stoch_now > strategy_centerline)
+         direction = 1;
+      else if(stoch_prev >= strategy_centerline && stoch_now < strategy_centerline)
+         direction = -1;
      }
 
-   if(Strategy_StochCrossBelow(strategy_centerline) && Strategy_SlopeAllows(QM_SELL))
-     {
-      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      req.type = QM_SELL;
-      req.sl = QM_StopATR(_Symbol, req.type, entry, strategy_atr_period, strategy_atr_sl_mult);
-      req.reason = "STOCHRSI_CENTERLINE_SHORT";
-      return (req.sl > 0.0);
-     }
+   if(direction == 0 || !Strategy_SmaSlopeAllows(direction))
+      return false;
 
-   return false;
+   const QM_OrderType side = (direction > 0) ? QM_BUY : QM_SELL;
+   const double entry_price = (direction > 0)
+                              ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
+                              : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(entry_price <= 0.0)
+      return false;
+
+   const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   const double sl = QM_StopATRFromValue(_Symbol, side, entry_price, atr, strategy_atr_sl_mult);
+   if(sl <= 0.0)
+      return false;
+
+   req.type = side;
+   req.price = 0.0;
+   req.sl = sl;
+   req.tp = 0.0;
+   req.reason = (direction > 0) ? "STOCHRSI_CROSS_ABOVE_CENTER" : "STOCHRSI_CROSS_BELOW_CENTER";
+   return true;
   }
 
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies no trailing, partial close, or break-even management.
+   // Card specifies no trailing, break-even, partial close, or pyramiding.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   if(!Strategy_HasWarmup())
+   ENUM_POSITION_TYPE position_type;
+   if(!Strategy_HasOpenPosition(position_type))
       return false;
 
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
+   if(!QM_IsNewBar(_Symbol, PERIOD_D1))
+      return false;
 
-      const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      if(position_type == POSITION_TYPE_BUY)
-         return (Strategy_StochCrossBelow(strategy_long_exhaustion) ||
-                 Strategy_StochCrossBelow(strategy_centerline));
-      if(position_type == POSITION_TYPE_SELL)
-         return (Strategy_StochCrossAbove(strategy_short_exhaustion) ||
-                 Strategy_StochCrossAbove(strategy_centerline));
+   double stoch_now = 0.0;
+   double stoch_prev = 0.0;
+   if(!Strategy_StochPair(stoch_now, stoch_prev))
+      return false;
+
+   if(position_type == POSITION_TYPE_BUY)
+     {
+      const bool exit_exhaustion = (stoch_prev >= strategy_long_exhaustion && stoch_now < strategy_long_exhaustion);
+      const bool exit_center = (stoch_prev >= strategy_centerline && stoch_now < strategy_centerline);
+      if(exit_center)
+         g_pending_reverse_dir = -1;
+      return (exit_exhaustion || exit_center);
+     }
+
+   if(position_type == POSITION_TYPE_SELL)
+     {
+      const bool exit_exhaustion = (stoch_prev <= strategy_short_exhaustion && stoch_now > strategy_short_exhaustion);
+      const bool exit_center = (stoch_prev <= strategy_centerline && stoch_now > strategy_centerline);
+      if(exit_center)
+         g_pending_reverse_dir = 1;
+      return (exit_exhaustion || exit_center);
      }
 
    return false;

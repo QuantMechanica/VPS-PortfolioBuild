@@ -120,14 +120,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_tp_r_mult <= 0.0)
       return false;
 
-   const int bars_needed = strategy_breakout_lookback + 2;
-   if(Bars(_Symbol, _Period) < bars_needed)
+   const int copy_count = strategy_breakout_lookback + 1;
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   // QM_IsNewBar() gate is in OnTick before Strategy_EntrySignal; this bounded
+   // OHLCV read is required because tick volume is part of the card signal.
+   if(CopyRates(_Symbol, _Period, 1, copy_count, rates) != copy_count)
       return false;
 
-   const double close1 = iClose(_Symbol, _Period, 1);
-   const double high1 = iHigh(_Symbol, _Period, 1);
-   const double low1 = iLow(_Symbol, _Period, 1);
-   const long volume1 = iVolume(_Symbol, _Period, 1);
+   const double close1 = rates[0].close;
+   const double high1 = rates[0].high;
+   const double low1 = rates[0].low;
+   const long volume1 = rates[0].tick_volume;
    const double trend_ma = QM_SMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_trend_ma_period, 1);
    const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
    if(close1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0 || volume1 <= 0 || trend_ma <= 0.0 || atr <= 0.0)
@@ -136,11 +140,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    double prior_high = -DBL_MAX;
    double prior_low = DBL_MAX;
    long prior_max_volume = 0;
-   for(int shift = 2; shift < 2 + strategy_breakout_lookback; ++shift)
+   for(int i = 1; i <= strategy_breakout_lookback; ++i)
      {
-      const double h = iHigh(_Symbol, _Period, shift);
-      const double l = iLow(_Symbol, _Period, shift);
-      const long v = iVolume(_Symbol, _Period, shift);
+      const double h = rates[i].high;
+      const double l = rates[i].low;
+      const long v = rates[i].tick_volume;
       if(h <= 0.0 || l <= 0.0 || v <= 0)
          return false;
       prior_high = MathMax(prior_high, h);
@@ -171,7 +175,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       const bool opposite = (signal > 0 && pos_type == POSITION_TYPE_SELL) ||
                             (signal < 0 && pos_type == POSITION_TYPE_BUY);
       if(opposite)
-         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+        {
+         if(!QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY))
+            return false;
+         continue;
+        }
       return false;
      }
 
