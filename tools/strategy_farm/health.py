@@ -819,29 +819,29 @@ def chk_codex_zero_activity(con) -> dict:
     # Upstream check: codex auth broken takes precedence
     auth_broken = _is_codex_auth_broken(con)
 
-    try:
-        out = subprocess.run(
-            ["powershell.exe", "-NoProfile", "-Command",
-             "(Get-Process -Name codex -ErrorAction SilentlyContinue).Count"],
-            capture_output=True, text=True, timeout=10,
-            creationflags=_creationflags_no_window(),
-        )
-        n_codex = int((out.stdout or "0").strip() or "0")
-    except Exception:
-        n_codex = 0
+    # Real activity signal, not an instantaneous `Get-Process codex` snapshot:
+    # codex procs are transient (one per build, gone between builds), so 0 live
+    # procs is normal and with builds always pending it cried wolf permanently
+    # (same root cause fixed in codex_auth_broken). "Active" = a build_ea reached
+    # a terminal state (done/failed = codex ran) in the last 3h.
+    cutoff_3h = (_utc_now() - dt.timedelta(hours=3)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    recent_build_activity = con.execute(
+        "SELECT COUNT(*) FROM tasks WHERE kind='build_ea' "
+        "AND status IN ('done','failed') AND updated_at >= ?", (cutoff_3h,)
+    ).fetchone()[0]
     n_pending_builds = con.execute(
         "SELECT COUNT(*) FROM tasks WHERE kind='build_ea' AND status='pending'"
     ).fetchone()[0]
-    if auth_broken and n_codex == 0:
-        return _check("codex_zero_activity", "WARN", n_codex, 1,
-                      f"0 codex (auth_broken upstream; circuit breaker active)",
-                      "Downstream of codex_auth_broken — will recover once OWNER runs `codex login`")
-    if n_codex == 0 and n_pending_builds >= 3:
-        return _check("codex_zero_activity", "FAIL", n_codex, 1,
-                      f"0 codex procs but {n_pending_builds} pending build_ea tasks",
+    if auth_broken and recent_build_activity == 0:
+        return _check("codex_zero_activity", "WARN", 0, 1,
+                      "no codex build activity in 3h (auth_broken upstream)",
+                      "Downstream of codex_auth_broken — recovers once OWNER runs `codex login`")
+    if recent_build_activity == 0 and n_pending_builds >= 3:
+        return _check("codex_zero_activity", "FAIL", 0, 1,
+                      f"0 codex build activity in 3h but {n_pending_builds} pending build_ea tasks",
                       "Run farmctl pump manually; check codex.cmd is on PATH and codex CLI works")
-    return _check("codex_zero_activity", "OK", n_codex, 1,
-                  f"{n_codex} codex, {n_pending_builds} pending", "")
+    return _check("codex_zero_activity", "OK", recent_build_activity, 1,
+                  f"{recent_build_activity} codex builds in 3h, {n_pending_builds} pending", "")
 
 
 def chk_source_pool(con) -> dict:
@@ -1082,17 +1082,16 @@ def chk_unenqueued_eas_count(con) -> dict:
 def chk_codex_bridge_heartbeat(con) -> dict:
     """Interactive bridge heartbeat freshness."""
     auth_broken = _is_codex_auth_broken(con)
-    direct_codex_active = False
-    try:
-        out = subprocess.run(
-            ["powershell.exe", "-NoProfile", "-Command",
-             "(Get-Process -Name codex -ErrorAction SilentlyContinue).Count"],
-            capture_output=True, text=True, timeout=10,
-            creationflags=_creationflags_no_window(),
-        )
-        direct_codex_active = int((out.stdout or "0").strip() or "0") > 0
-    except Exception:
-        direct_codex_active = False
+    # "direct pump Codex is active" via real build activity, not an instantaneous
+    # `Get-Process codex` snapshot (transient procs flip this OK<->FAIL randomly —
+    # same cry-wolf fixed in codex_auth_broken / codex_zero_activity). The legacy
+    # bridge heartbeat is expected-stale (bridge decommissioned); it's fine as long
+    # as the direct pump is building.
+    _cutoff_3h = (_utc_now() - dt.timedelta(hours=3)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    direct_codex_active = con.execute(
+        "SELECT COUNT(*) FROM tasks WHERE kind='build_ea' "
+        "AND status IN ('done','failed') AND updated_at >= ?", (_cutoff_3h,)
+    ).fetchone()[0] > 0
     if not CODEX_BRIDGE_HEARTBEAT.exists():
         return _check("codex_bridge_heartbeat", "WARN", "missing", 300,
                       "codex bridge heartbeat file missing",
