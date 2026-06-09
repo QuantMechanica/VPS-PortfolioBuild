@@ -47,7 +47,7 @@ The EA evaluates a seven-symbol DWX proxy universe once per new monthly bar. For
 
 | Aspect | Value |
 |---|---|
-| Base timeframe | `MN1` |
+| Base timeframe | `MN1` ranking and rebalance logic; lower chart periods may be used by the tester to provide tick generation while monthly closed bars remain the signal source. |
 | Multi-timeframe refs | none |
 | Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
 

@@ -318,8 +318,6 @@ bool Strategy_NoTradeFilter()
    const int idx = Strategy_CurrentSymbolIndex();
    if(idx < 0)
       return true;
-   if(_Period != strategy_rebalance_timeframe)
-      return true;
    if(qm_magic_slot_offset != g_universe_slots[idx])
       return true;
    return false;
