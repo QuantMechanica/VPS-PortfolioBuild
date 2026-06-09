@@ -356,9 +356,44 @@ def _is_zero_trade_failure_payload(payload_json: str | None, evidence_path: str 
     return "MIN_TRADES_NOT_MET" in reason
 
 
+def _build_lane_block_reason(con) -> tuple[str | None, str]:
+    """Why the codex BUILD lane would be blocked right now, INDEPENDENT of auth.
+
+    Returns (reason, detail) with reason in {'dirty_guard', 'backpressure', None}.
+    Lets chk_codex_auth_broken stop mislabeling a dirty-guard / backpressure build
+    stall as an auth failure — auth is judged separately by the 401 signal. The #1
+    recurring build-stall cause is repo_dirty_build_guard, NOT auth
+    (project_qm_dirty_guard_build_deadlock 2026-06-04/09)."""
+    try:
+        dirty = farmctl._repo_dirty_status()
+        if dirty.get("blocked"):
+            entries = dirty.get("entries") or []
+            n = dirty.get("count", len(entries))
+            return "dirty_guard", (
+                f"repo_dirty_build_guard blocked by {n} uncommitted file(s): "
+                f"{', '.join(e.strip() for e in entries[:3])}")
+    except Exception:
+        pass
+    try:
+        pending = con.execute("SELECT COUNT(*) FROM work_items WHERE status='pending'").fetchone()[0]
+        active = con.execute("SELECT COUNT(*) FROM work_items WHERE status='active'").fetchone()[0]
+        soft = farmctl.BUILD_BACKPRESSURE_PENDING_SOFT_LIMIT
+        hard = farmctl.BUILD_BACKPRESSURE_PENDING_HARD_LIMIT
+        act_thr = farmctl.BUILD_BACKPRESSURE_ACTIVE_WORK_ITEM_LIMIT
+        if pending >= hard or (pending >= soft and active >= act_thr):
+            return "backpressure", (
+                f"new builds intentionally paused by backpressure "
+                f"({pending} pending work_items, {active} active)")
+    except Exception:
+        pass
+    return None, ""
+
+
 def _is_codex_auth_broken(con) -> bool:
-    """Shared helper: same logic as chk_codex_auth_broken, returns bool.
-    Used by downstream checks for cascade suppression."""
+    """Shared helper: TRUE only when auth is genuinely the cause (real 401s, or a
+    silent+stale pipeline NOT explained by the dirty-guard/backpressure). Used by
+    downstream checks for cascade suppression — so a dirty-guard/backpressure stall
+    no longer masquerades as 'codex_auth_broken upstream'."""
     import time as _t
     auth_path = CODEX_AUTH
     auth_mtime = auth_path.stat().st_mtime if auth_path.exists() else 0.0
@@ -393,8 +428,16 @@ def _is_codex_auth_broken(con) -> bool:
         "SELECT COUNT(*) FROM tasks WHERE kind='build_ea' "
         "AND status IN ('done','failed') AND updated_at >= ?", (cutoff_3h,)
     ).fetchone()[0]
-    return (n_401 >= 2) or (n_pending >= 1 and recent_build_activity == 0
-                            and auth_age_h is not None and auth_age_h > 12)
+    if n_401 >= 2:
+        return True
+    silent = (n_pending >= 1 and recent_build_activity == 0
+              and auth_age_h is not None and auth_age_h > 12)
+    if silent:
+        # Only count silence as auth when the build lane is NOT blocked by the
+        # dirty-guard or throttled by backpressure (those are the real, non-auth causes).
+        reason, _ = _build_lane_block_reason(con)
+        return reason is None
+    return False
 
 
 def chk_codex_review_fail_rate(con) -> dict:
@@ -1285,17 +1328,36 @@ def chk_codex_auth_broken(con) -> dict:
     pipeline_silent_on_codex = (recent_build_activity == 0 and n_pending >= 1
                                 and auth_age_h is not None and auth_age_h > 12)
 
-    if n_401 >= 2 or pipeline_silent_on_codex:
-        detail = (f"{n_401} recent 401-logs"
-                  + (f", auth_age={auth_age_h:.1f}h" if auth_age_h else "")
-                  + (f", {n_pending} builds pending, 0 build activity in 3h" if pipeline_silent_on_codex else ""))
-        return _check("codex_auth_broken", "FAIL", n_401 or 1, 1,
-                      detail,
+    # Real auth failure: actual 401s in recent codex logs.
+    if n_401 >= 2:
+        detail = f"{n_401} recent 401-logs" + (f", auth_age={auth_age_h:.1f}h" if auth_age_h else "")
+        return _check("codex_auth_broken", "FAIL", n_401, 1, detail,
                       "Run `codex login` interactively on the VPS. The pump circuit "
                       "breaker is preventing new spawns until then.")
+    # Silent build lane + stale auth but NO 401s. Do NOT blame auth blindly — classify
+    # the real cause first (the #1 recurring one is the dirty-guard deadlock; backpressure
+    # is intentional). This is the cry-wolf fix: auth is only asserted with 401 evidence.
+    if pipeline_silent_on_codex:
+        reason, rdetail = _build_lane_block_reason(con)
+        base = (f"{n_pending} builds pending, 0 build activity in 3h"
+                + (f", auth_age={auth_age_h:.1f}h" if auth_age_h else "") + ", n_401=0")
+        if reason == "dirty_guard":
+            return _check("codex_auth_broken", "WARN", 1, 1,
+                          f"NOT auth — {rdetail} ({base})",
+                          "Build lane blocked by repo_dirty_build_guard, not auth. Commit/clean "
+                          "the artifact; the pump auto-commit should self-heal "
+                          "(project_qm_dirty_guard_build_deadlock).")
+        if reason == "backpressure":
+            return _check("codex_auth_broken", "OK", 0, 1,
+                          f"builds paused by backpressure (intentional), not auth — {rdetail}", "")
+        return _check("codex_auth_broken", "WARN", 1, 1,
+                      f"codex build lane silent, cause unconfirmed (no 401s, no dirty-guard, "
+                      f"no backpressure) — {base}",
+                      "Auth may be stale; if it persists run `codex login`. Also check the "
+                      "codex orchestration task + build queue.")
     if n_401 == 1:
         return _check("codex_auth_broken", "WARN", 1, 1,
-                      f"1 recent codex log has 401 — could be transient",
+                      "1 recent codex log has 401 — could be transient",
                       "Watch for more. If recurs, OWNER must `codex login`.")
     return _check("codex_auth_broken", "OK", 0, 1,
                   f"no 401 errors; auth_age={auth_age_h:.1f}h" if auth_age_h else "no 401", "")
