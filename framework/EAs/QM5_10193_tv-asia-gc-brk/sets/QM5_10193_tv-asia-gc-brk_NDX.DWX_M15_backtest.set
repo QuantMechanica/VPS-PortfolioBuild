@@ -3,16 +3,16 @@
 ; ea_id:        10193
 ; ea_slug:      tv-asia-gc-brk
 ; ea_version:   v5.0
-; set_version:  s20260524-001
+; set_version:  s20260609-001
 ; symbol:       NDX.DWX
 ; timeframe:    M15
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   56cbf1f44b03c0f7f6b340a50c4ad1998caf2e4ce49bede2a679f519972ff644
+; build_hash:   206e3edb7d59aca033b4955595fd87f5cea77431d37185085e7bddb7c1f62703
 ; author:       Development
-; date:         2026-05-24
+; date:         2026-06-09
 ;==========================================================
 qm_magic_slot_offset=3
 RISK_FIXED=1000

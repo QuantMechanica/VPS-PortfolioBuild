@@ -3,16 +3,16 @@
 ; ea_id:        10193
 ; ea_slug:      tv-asia-gc-brk
 ; ea_version:   v5.0
-; set_version:  s20260524-001
+; set_version:  s20260609-001
 ; symbol:       XAGUSD.DWX
 ; timeframe:    M5
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   7f39981544296c214b9135bdd941f71729440a465eae02348831c1a9b6fed005
+; build_hash:   a2a9c0dc304424dc782d7ec65051ddf6e8e5b1fb9e8a2b1ff33a6e9011b6bad4
 ; author:       Development
-; date:         2026-05-24
+; date:         2026-06-09
 ;==========================================================
 qm_magic_slot_offset=1
 RISK_FIXED=1000

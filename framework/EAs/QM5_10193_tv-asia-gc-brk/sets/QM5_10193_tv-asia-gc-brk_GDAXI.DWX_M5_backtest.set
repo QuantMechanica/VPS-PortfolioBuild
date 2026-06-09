@@ -3,16 +3,16 @@
 ; ea_id:        10193
 ; ea_slug:      tv-asia-gc-brk
 ; ea_version:   v5.0
-; set_version:  s20260524-001
+; set_version:  s20260609-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    M5
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   5637453aac2c490fe79d59148ec54cda782de9a75854ddb4a0f94e8e5205ea2b
+; build_hash:   77d30c7b1584b026b20e809e329a02716c93eb5b640ed0cf863dc1bbe0e5912a
 ; author:       Development
-; date:         2026-05-24
+; date:         2026-06-09
 ;==========================================================
 qm_magic_slot_offset=2
 RISK_FIXED=1000
