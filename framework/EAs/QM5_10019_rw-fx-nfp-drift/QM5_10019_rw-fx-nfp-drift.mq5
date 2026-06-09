@@ -151,8 +151,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   const datetime broker_now = TimeCurrent();
-   if(!IsFirstFridayNewYork(broker_now) || NewYorkHhmm(broker_now) != strategy_entry_hhmm_ny)
+   // Entry fires on the bar that opened at strategy_entry_hhmm_ny (08:00 NY).
+   // Strategy_EntrySignal is called after QM_IsNewBar() is true, so the bar
+   // that just CLOSED is at shift=1. TimeCurrent() is the 08:05 bar open (805),
+   // not 800 — check the closed bar's open time instead.
+   const datetime closed_bar_time = iTime(_Symbol, _Period, 1); // perf-allowed: structural event timing, gated by QM_IsNewBar
+   if(!IsFirstFridayNewYork(closed_bar_time) || NewYorkHhmm(closed_bar_time) != strategy_entry_hhmm_ny)
       return false;
 
    const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
