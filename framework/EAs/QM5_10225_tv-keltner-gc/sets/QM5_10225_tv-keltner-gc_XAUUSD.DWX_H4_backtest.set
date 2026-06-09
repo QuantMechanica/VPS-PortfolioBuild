@@ -5,7 +5,7 @@
 ; ea_version:   v5.0
 ; set_version:  s20260609-001
 ; symbol:       XAUUSD.DWX
-; timeframe:    H1
+; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED

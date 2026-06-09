@@ -120,8 +120,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double basis_prev = QM_EMA(_Symbol, _Period, strategy_keltner_ema_period, 2);
    const double atr_now = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
    const double atr_prev = QM_ATR(_Symbol, _Period, strategy_atr_period, 2);
-   const double close_now = iClose(_Symbol, _Period, 1);
-   const double close_prev = iClose(_Symbol, _Period, 2);
+   const double close_now = iClose(_Symbol, _Period, 1); // perf-allowed: fixed confirmed-bar close for Keltner breakout cross; EntrySignal is QM_IsNewBar-gated.
+   const double close_prev = iClose(_Symbol, _Period, 2); // perf-allowed: fixed confirmed-bar close for prior Keltner breakout state; no loops or history copy.
 
    if(fast_ma <= 0.0 || slow_ma <= 0.0 ||
       basis_now <= 0.0 || basis_prev <= 0.0 ||

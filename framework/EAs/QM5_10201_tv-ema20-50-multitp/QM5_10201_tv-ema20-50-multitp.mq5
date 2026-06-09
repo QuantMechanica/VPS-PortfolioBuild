@@ -83,7 +83,8 @@ input double strategy_percent_sl        = 3.0;
 input double strategy_tp_range_mult     = 1.0;
 input double strategy_max_spread_stop_fraction = 0.15;
 
-datetime g_opposite_exit_signal_time = 0;
+int  g_pending_reversal_direction = 0;
+bool g_pending_reversal_ready = false;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -93,6 +94,31 @@ datetime g_opposite_exit_signal_time = 0;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
+   if(strategy_atr_period < 1 ||
+      strategy_atr_sl_mult <= 0.0 ||
+      strategy_atr_floor_mult <= 0.0 ||
+      strategy_percent_sl <= 0.0 ||
+      strategy_max_spread_stop_fraction < 0.0)
+      return true;
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double atr_1 = QM_ATR(_Symbol, strategy_signal_tf, strategy_atr_period, 1);
+   if(ask <= 0.0 || bid <= 0.0 || atr_1 <= 0.0)
+      return true;
+
+   const double mid = (ask + bid) * 0.5;
+   const double percent_stop = mid * (strategy_percent_sl / 100.0);
+   const double atr_stop = atr_1 * strategy_atr_sl_mult;
+   const double atr_floor = atr_1 * strategy_atr_floor_mult;
+   const double stop_distance = MathMax(atr_floor, MathMin(percent_stop, atr_stop));
+   const double spread = ask - bid;
+   if(stop_distance <= 0.0 || spread < 0.0)
+      return true;
+
+   if(spread > stop_distance * strategy_max_spread_stop_fraction)
+      return true;
+
    return false;
   }
 
@@ -119,10 +145,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_max_spread_stop_fraction < 0.0)
       return false;
 
-   const datetime signal_bar = iTime(_Symbol, strategy_signal_tf, 1);
-   if(signal_bar <= 0 || signal_bar == g_opposite_exit_signal_time)
-      return false;
-
    const double fast_1 = QM_EMA(_Symbol, strategy_signal_tf, strategy_fast_ema_period, 1, PRICE_CLOSE);
    const double fast_2 = QM_EMA(_Symbol, strategy_signal_tf, strategy_fast_ema_period, 2, PRICE_CLOSE);
    const double slow_1 = QM_EMA(_Symbol, strategy_signal_tf, strategy_slow_ema_period, 1, PRICE_CLOSE);
@@ -131,13 +153,33 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(fast_1 <= 0.0 || fast_2 <= 0.0 || slow_1 <= 0.0 || slow_2 <= 0.0 || atr_1 <= 0.0)
       return false;
 
-   const int signal = (fast_2 <= slow_2 && fast_1 > slow_1) ? 1 :
-                      ((fast_2 >= slow_2 && fast_1 < slow_1) ? -1 : 0);
+   int signal = 0;
+   if(g_pending_reversal_direction != 0)
+     {
+      if(!g_pending_reversal_ready)
+        {
+         g_pending_reversal_ready = true;
+         return false;
+        }
+      signal = g_pending_reversal_direction;
+      g_pending_reversal_direction = 0;
+      g_pending_reversal_ready = false;
+     }
+   else
+     {
+      signal = (fast_2 <= slow_2 && fast_1 > slow_1) ? 1 :
+               ((fast_2 >= slow_2 && fast_1 < slow_1) ? -1 : 0);
+     }
    if(signal == 0)
       return false;
 
-   const double high_1 = iHigh(_Symbol, strategy_signal_tf, 1);
-   const double low_1 = iLow(_Symbol, strategy_signal_tf, 1);
+   MqlRates prev_bar[1];
+   // perf-allowed: EntrySignal is called only after the framework QM_IsNewBar() gate; one closed bar is read for the card's range TP.
+   if(CopyRates(_Symbol, strategy_signal_tf, 1, 1, prev_bar) != 1)
+      return false;
+
+   const double high_1 = prev_bar[0].high;
+   const double low_1 = prev_bar[0].low;
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
@@ -212,7 +254,8 @@ bool Strategy_ExitSignal()
                       ((fast_2 >= slow_2 && fast_1 < slow_1) ? -1 : 0);
    if(signal != 0 && signal == -position_side)
      {
-      g_opposite_exit_signal_time = iTime(_Symbol, strategy_signal_tf, 1);
+      g_pending_reversal_direction = signal;
+      g_pending_reversal_ready = false;
       return true;
      }
 

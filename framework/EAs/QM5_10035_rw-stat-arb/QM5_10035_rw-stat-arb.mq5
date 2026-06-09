@@ -57,8 +57,8 @@ double Strategy_LogReturnForShift(const string symbol, const int shift, const in
    if(lookback < 1 || shift < 1)
       return 0.0;
 
-   const double c0 = iClose(symbol, PERIOD_D1, shift);
-   const double c1 = iClose(symbol, PERIOD_D1, shift + lookback);
+   const double c0 = iClose(symbol, PERIOD_D1, shift); // perf-allowed: bounded D1 basket return read, called only from the framework QM_IsNewBar(_Symbol, PERIOD_D1)-gated path.
+   const double c1 = iClose(symbol, PERIOD_D1, shift + lookback); // perf-allowed: bounded D1 basket return read, called only from the framework QM_IsNewBar(_Symbol, PERIOD_D1)-gated path.
    if(c0 <= 0.0 || c1 <= 0.0)
       return 0.0;
 
@@ -67,7 +67,7 @@ double Strategy_LogReturnForShift(const string symbol, const int shift, const in
 
 bool Strategy_SymbolFreshForShift(const string symbol, const int shift, const datetime ref_time)
   {
-   const datetime t = iTime(symbol, PERIOD_D1, shift);
+   const datetime t = iTime(symbol, PERIOD_D1, shift); // perf-allowed: bounded D1 freshness check for the cross-sectional basket, reached only from the closed-bar path.
    if(t <= 0)
       return false;
    if(ref_time <= 0)
@@ -86,7 +86,7 @@ bool Strategy_BasketStatsForShift(const int shift,
    sd = 0.0;
    eligible = 0;
 
-   const datetime ref_time = iTime(_Symbol, PERIOD_D1, shift);
+   const datetime ref_time = iTime(_Symbol, PERIOD_D1, shift); // perf-allowed: bounded D1 freshness anchor for the cross-sectional basket, reached only from the closed-bar path.
    double returns[STRATEGY_BASKET_COUNT];
    ArrayInitialize(returns, 0.0);
 
