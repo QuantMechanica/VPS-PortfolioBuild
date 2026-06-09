@@ -73,13 +73,10 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_bb_period          = 20;
-input double strategy_bb_deviation       = 2.0;
-input int    strategy_atr_period         = 14;
-input double strategy_atr_sl_mult        = 2.0;
-input int    strategy_max_spread_points  = 0;
-input int    strategy_session_start_hhmm = 0;
-input int    strategy_session_end_hhmm   = 2359;
+input int    strategy_bb_period         = 20;
+input double strategy_bb_deviation      = 2.0;
+input int    strategy_atr_period        = 14;
+input double strategy_atr_sl_mult       = 2.0;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -89,27 +86,6 @@ input int    strategy_session_end_hhmm   = 2359;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   if(strategy_max_spread_points > 0)
-     {
-      const int spread_points = (int)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-      if(spread_points > strategy_max_spread_points)
-         return true;
-     }
-
-   MqlDateTime dt;
-   TimeToStruct(TimeCurrent(), dt);
-   const int hhmm = dt.hour * 100 + dt.min;
-   if(strategy_session_start_hhmm <= strategy_session_end_hhmm)
-     {
-      if(hhmm < strategy_session_start_hhmm || hhmm > strategy_session_end_hhmm)
-         return true;
-     }
-   else
-     {
-      if(hhmm > strategy_session_end_hhmm && hhmm < strategy_session_start_hhmm)
-         return true;
-     }
-
    return false;
   }
 
@@ -130,34 +106,44 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_atr_period < 1 || strategy_atr_sl_mult <= 0.0)
       return false;
 
-   const double lower_low = QM_BB_Lower(_Symbol, (ENUM_TIMEFRAMES)_Period,
-                                        strategy_bb_period, strategy_bb_deviation,
-                                        1, PRICE_LOW);
-   const double upper_high = QM_BB_Upper(_Symbol, (ENUM_TIMEFRAMES)_Period,
-                                         strategy_bb_period, strategy_bb_deviation,
-                                         1, PRICE_HIGH);
-   if(lower_low <= 0.0 || upper_high <= 0.0)
-      return false;
-
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
       return false;
 
+   const double lower_low = QM_BB_Lower(_Symbol, _Period,
+                                        strategy_bb_period,
+                                        strategy_bb_deviation,
+                                        0,
+                                        PRICE_LOW);
+   const double upper_high = QM_BB_Upper(_Symbol, _Period,
+                                         strategy_bb_period,
+                                         strategy_bb_deviation,
+                                         0,
+                                         PRICE_HIGH);
+   if(lower_low <= 0.0 || upper_high <= 0.0)
+      return false;
+
    if(ask <= lower_low)
      {
       req.type = QM_BUY;
-      req.sl = QM_StopATR(_Symbol, req.type, ask, strategy_atr_period, strategy_atr_sl_mult);
-      req.reason = "BB_LOW_TOUCH_BUY";
-      return (req.sl > 0.0 && req.sl < ask);
+      req.sl = QM_StopATR(_Symbol, req.type, ask,
+                          strategy_atr_period, strategy_atr_sl_mult);
+      if(req.sl <= 0.0 || req.sl >= ask)
+         return false;
+      req.reason = "BB_TOUCH_LOW_BUY";
+      return true;
      }
 
    if(bid >= upper_high)
      {
       req.type = QM_SELL;
-      req.sl = QM_StopATR(_Symbol, req.type, bid, strategy_atr_period, strategy_atr_sl_mult);
-      req.reason = "BB_HIGH_TOUCH_SELL";
-      return (req.sl > bid);
+      req.sl = QM_StopATR(_Symbol, req.type, bid,
+                          strategy_atr_period, strategy_atr_sl_mult);
+      if(req.sl <= 0.0 || req.sl <= bid)
+         return false;
+      req.reason = "BB_TOUCH_HIGH_SELL";
+      return true;
      }
 
    return false;
@@ -167,7 +153,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card has no trailing, break-even, partial close, or pyramiding rule.
+   // Card defines no trailing, break-even, or partial-close management.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
@@ -177,13 +163,8 @@ bool Strategy_ExitSignal()
    if(strategy_bb_period < 2 || strategy_bb_deviation <= 0.0)
       return false;
 
-   const double lower_high = QM_BB_Lower(_Symbol, (ENUM_TIMEFRAMES)_Period,
-                                         strategy_bb_period, strategy_bb_deviation,
-                                         1, PRICE_HIGH);
-   const double upper_low = QM_BB_Upper(_Symbol, (ENUM_TIMEFRAMES)_Period,
-                                        strategy_bb_period, strategy_bb_deviation,
-                                        1, PRICE_LOW);
-   if(lower_high <= 0.0 || upper_low <= 0.0)
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
       return false;
 
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
@@ -191,7 +172,19 @@ bool Strategy_ExitSignal()
    if(bid <= 0.0 || ask <= 0.0)
       return false;
 
-   const int magic = QM_FrameworkMagic();
+   const double lower_high = QM_BB_Lower(_Symbol, _Period,
+                                         strategy_bb_period,
+                                         strategy_bb_deviation,
+                                         0,
+                                         PRICE_HIGH);
+   const double upper_low = QM_BB_Upper(_Symbol, _Period,
+                                        strategy_bb_period,
+                                        strategy_bb_deviation,
+                                        0,
+                                        PRICE_LOW);
+   if(lower_high <= 0.0 || upper_low <= 0.0)
+      return false;
+
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -203,12 +196,12 @@ bool Strategy_ExitSignal()
          continue;
 
       const ENUM_POSITION_TYPE type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      if(type == POSITION_TYPE_BUY && bid >= lower_high)
-         return true;
-      if(type == POSITION_TYPE_SELL && ask <= upper_low)
-         return true;
-      if(type != POSITION_TYPE_BUY && type != POSITION_TYPE_SELL)
-         return true;
+      if(type == POSITION_TYPE_BUY)
+         return (bid >= lower_high);
+      if(type == POSITION_TYPE_SELL)
+         return (ask <= upper_low);
+
+      return true;
      }
 
    return false;
