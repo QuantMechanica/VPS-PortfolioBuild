@@ -3,7 +3,6 @@
 #property description "QM5_10717 Edge Lab Cross-Sectional FX Momentum"
 
 #include <QM/QM_Common.mqh>
-#include <QM/QM_BasketOrder.mqh>
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 10717;
@@ -278,17 +277,24 @@ bool QM10717_VolFilterRed()
 
 void QM10717_CloseAll()
   {
-   const long magic_min = (long)qm_ea_id * 10000L;
-   const long magic_max = magic_min + 27L;
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
+       const ulong ticket = PositionGetTicket(i);
+       if(ticket == 0 || !PositionSelectByTicket(ticket))
+          continue;
 
-      const long magic = PositionGetInteger(POSITION_MAGIC);
-      if(magic >= magic_min && magic <= magic_max)
-         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+       const string symbol = PositionGetString(POSITION_SYMBOL);
+       const int slot = QM10717_PairSlot(symbol);
+       if(slot < 0)
+          continue;
+
+       const int resolved_magic = QM_MagicChecked(qm_ea_id, slot, symbol);
+       if(resolved_magic <= 0)
+          continue;
+
+       const long magic = PositionGetInteger(POSITION_MAGIC);
+       if(magic == (long)resolved_magic)
+          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
      }
   }
 
@@ -306,10 +312,13 @@ bool QM10717_OpenLeg(const string strong_ccy,
 
    SymbolSelect(symbol, true);
 
-   QM_BasketOrderRequest req;
-   req.symbol = symbol;
+   if(symbol != _Symbol)
+      return false;
+
+   QM_EntryRequest req;
    req.type = inverted ? QM_SELL : QM_BUY;
-   req.price = QM_BasketMarketPrice(symbol, req.type);
+   req.price = QM_OrderTypeIsBuy(req.type) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
+                                           : SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(req.price <= 0.0)
       return false;
 
@@ -318,17 +327,12 @@ bool QM10717_OpenLeg(const string strong_ccy,
       return false;
 
    req.tp = 0.0;
-   req.lots = 0.0;
    req.reason = StringFormat("XSEC_MOM_%s_%s", strong_ccy, weak_ccy);
    req.symbol_slot = slot;
    req.expiration_seconds = 0;
 
    ulong ticket = 0;
-   return QM_BasketOpenPosition(qm_ea_id,
-                                qm_news_mode_legacy,
-                                strategy_deviation_points,
-                                req,
-                                ticket);
+   return QM_TM_OpenPosition(req, ticket);
   }
 
 bool QM10717_Rebalance()
