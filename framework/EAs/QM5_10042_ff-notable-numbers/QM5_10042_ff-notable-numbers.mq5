@@ -33,29 +33,30 @@ input int    qm_friday_close_hour_broker = 21;
 input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
-// No user-tunable strategy inputs; all per-symbol params come from the card
-// and are hard-coded in InitSymbolParams().
+input group "Strategy"
+// All symbol-specific params are hard-coded from the card in InitSymbolParams().
+// No user-tunable strategy inputs.
+input int    strategy_reserved = 0;
 
 // =============================================================================
 // Symbol-specific parameters (populated by InitSymbolParams in OnInit)
 // =============================================================================
 
-int    g_lookback_days    = 22;
-double g_tp_pct           = 0.004;
-double g_sl_pct           = 0.004;
-int    g_session_start_h  = 0;      // broker-hour session start; -1 = any time
-int    g_session_end_h    = 8;      // broker-hour session end;   -1 = no time exit
-double g_level_grid       = 0.0100; // spacing between notable levels (price units)
-double g_level_offset     = 0.0000; // fractional offset within each grid cell
-bool   g_valid_symbol     = false;  // false = unknown symbol; block all trading
+int    g_lookback_days   = 22;
+double g_tp_pct          = 0.004;
+double g_sl_pct          = 0.004;
+int    g_session_start_h = 0;      // broker-hour session start; -1 = any time
+int    g_session_end_h   = 8;      // broker-hour session end;   -1 = no time exit
+double g_level_grid      = 0.0100; // spacing between notable levels (price units)
+double g_level_offset    = 0.0000; // fractional offset of level within each grid cell
+bool   g_valid_symbol    = false;  // false = unknown symbol; block all trading
 
 // Per-bar cached notable levels (recomputed on each new closed M15 bar)
-double g_notable_below    = 0.0;
-double g_notable_above    = 0.0;
+double g_notable_below   = 0.0;
+double g_notable_above   = 0.0;
 
-// Trade dedup: one entry per (day, level) pair
-int    g_last_trade_day   = -1;
-int    g_last_trade_year  = -1;
+// Trade dedup: one entry per (day, level) pair; stored as YYYYMMDD key
+int    g_last_trade_date  = -1;    // YYYYMMDD of last trade
 double g_last_trade_level = 0.0;
 
 // Session exit: when to close the open position on time (0 = no pending exit)
@@ -66,11 +67,11 @@ datetime g_session_exit_time = 0;
 // =============================================================================
 
 // Return the greatest notable level at or below price.
-// Notable levels are spaced g_level_grid apart, offset by g_level_offset
+// Levels are spaced g_level_grid apart with fractional offset g_level_offset
 // within each cell (e.g., 0.0066 targets ".66" endings in 4-decimal prices).
 double NotableLevelBelow(const double price)
   {
-   // perf-allowed: bespoke notable-number grid math
+   // perf-allowed: bespoke notable-number grid math (not a QM_* framework helper)
    const double base = MathFloor((price - g_level_offset) / g_level_grid)
                        * g_level_grid + g_level_offset;
    return NormalizeDouble((base > price) ? base - g_level_grid : base, _Digits);
@@ -81,7 +82,7 @@ double NotableLevelAbove(const double price)
    return NormalizeDouble(NotableLevelBelow(price) + g_level_grid, _Digits);
   }
 
-// Return the next wall-clock datetime when broker-time hour equals hour_h.
+// Return the next wall-clock datetime when broker-time hour == hour_h.
 datetime NextHourOccurrence(const int hour_h, const datetime from_time)
   {
    MqlDateTime dt;
@@ -95,14 +96,14 @@ datetime NextHourOccurrence(const int hour_h, const datetime from_time)
    return candidate;
   }
 
-// Set per-symbol parameters from card spec. Returns false for unknown symbols.
+// Set per-symbol parameters from the card spec. Returns false for unknown symbols.
 bool InitSymbolParams()
   {
    const string s = _Symbol;
 
    if(s == "GBPUSD.DWX")
      {
-      // Card: ".00" endings, 22-day lookback, Sydney session (broker 00-08), TP 0.4%, SL 0.4%
+      // Card: ".00" endings, 22-day lookback, Sydney session broker 00-08, TP 0.4%, SL 0.4%
       g_lookback_days   = 22;
       g_tp_pct          = 0.004;
       g_sl_pct          = 0.004;
@@ -114,7 +115,7 @@ bool InitSymbolParams()
      }
    if(s == "EURGBP.DWX")
      {
-      // Card: ".66" endings, 13-day lookback, Tokyo-to-Sydney (broker 02-08), TP 0.35%, SL 0.9%
+      // Card: ".66" endings, 13-day lookback, Tokyo-to-Sydney broker 02-08, TP 0.35%, SL 0.9%
       g_lookback_days   = 13;
       g_tp_pct          = 0.0035;
       g_sl_pct          = 0.009;
@@ -126,7 +127,7 @@ bool InitSymbolParams()
      }
    if(s == "AUDUSD.DWX")
      {
-      // Card: ".33" endings, 42-day lookback, Tokyo-to-London (broker 02-18), TP 0.85%, SL 0.55%
+      // Card: ".33" endings, 42-day lookback, Tokyo-to-London broker 02-18, TP 0.85%, SL 0.55%
       g_lookback_days   = 42;
       g_tp_pct          = 0.0085;
       g_sl_pct          = 0.0055;
@@ -180,7 +181,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    g_notable_below = NotableLevelBelow(mid);
    g_notable_above = NotableLevelAbove(mid);
 
-   // One position per magic at a time.
+   // One position per magic at a time (framework also guards this in QM_Entry).
    const int magic = QM_FrameworkMagic();
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
@@ -197,9 +198,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    for(int i = 1; i <= g_lookback_days; i++)
      {
-      // perf-allowed: D1 bar access for structural lookback (once per new M15 bar)
-      const double dh = iHigh(_Symbol, PERIOD_D1, i);
-      const double dl = iLow(_Symbol,  PERIOD_D1, i);
+      const double dh = iHigh(_Symbol, PERIOD_D1, i); // perf-allowed: D1 structural lookback, once per new M15 bar
+      const double dl = iLow(_Symbol,  PERIOD_D1, i); // perf-allowed: D1 structural lookback, once per new M15 bar
       if(dh <= 0.0 || dl <= 0.0)
         { all_above = false; all_below = false; break; }
       if(dl <= g_notable_below) all_above = false;
@@ -208,16 +208,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      }
 
    const datetime broker_now = TimeCurrent();
-   const int  today_day  = TimeDay(broker_now);
-   const int  today_year = TimeYear(broker_now);
-   const bool same_day   = (today_day == g_last_trade_day && today_year == g_last_trade_year);
+   MqlDateTime dt;
+   TimeToStruct(broker_now, dt);
+   const int today_date = (dt.year * 10000) + (dt.mon * 100) + dt.day;
+   const bool same_day  = (today_date == g_last_trade_date);
 
-   // --- LONG: all D1 bars above notable_below; M15 bar opened above and touched level down ---
+   // --- LONG: all D1 bars above notable_below; M15 bar opened above and touched level ---
    if(all_above)
      {
-      // perf-allowed: single M15 closed-bar OHLC for touch detection (gated by QM_IsNewBar)
-      const double bar_open = iOpen(_Symbol, PERIOD_M15, 1);
-      const double bar_low  = iLow(_Symbol,  PERIOD_M15, 1);
+      const double bar_open = iOpen(_Symbol, PERIOD_M15, 1); // perf-allowed: M15 closed-bar touch detection, gated by QM_IsNewBar
+      const double bar_low  = iLow(_Symbol,  PERIOD_M15, 1); // perf-allowed: M15 closed-bar touch detection, gated by QM_IsNewBar
 
       if(bar_open > g_notable_below && bar_low <= g_notable_below)
         {
@@ -227,16 +227,17 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
            {
             const double spread  = ask - bid;
             const double sl_dist = ask * g_sl_pct;
-            if(sl_dist < 3.0 * spread) return false;
+            if(sl_dist < 3.0 * spread)
+               return false;
 
-            req.type  = ORDER_TYPE_BUY;
-            req.price = ask;
-            req.sl    = NormalizeDouble(ask - sl_dist, _Digits);
-            req.tp    = NormalizeDouble(ask + ask * g_tp_pct, _Digits);
-            req.lots  = QM_LotsForRisk(_Symbol, sl_dist / _Point);
+            req.type         = QM_BUY;
+            req.price        = ask;
+            req.sl           = NormalizeDouble(ask - sl_dist, _Digits);
+            req.tp           = NormalizeDouble(ask + ask * g_tp_pct, _Digits);
+            req.reason       = "nn_long";
+            req.symbol_slot  = qm_magic_slot_offset;
 
-            g_last_trade_day   = today_day;
-            g_last_trade_year  = today_year;
+            g_last_trade_date  = today_date;
             g_last_trade_level = g_notable_below;
             g_session_exit_time = (g_session_end_h >= 0)
                                   ? NextHourOccurrence(g_session_end_h, broker_now) : 0;
@@ -245,12 +246,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
         }
      }
 
-   // --- SHORT: all D1 bars below notable_above; M15 bar opened below and touched level up ---
+   // --- SHORT: all D1 bars below notable_above; M15 bar opened below and touched level ---
    if(all_below)
      {
-      // perf-allowed: single M15 closed-bar OHLC for touch detection (gated by QM_IsNewBar)
-      const double bar_open = iOpen(_Symbol, PERIOD_M15, 1);
-      const double bar_high = iHigh(_Symbol, PERIOD_M15, 1);
+      const double bar_open = iOpen(_Symbol, PERIOD_M15, 1); // perf-allowed: M15 closed-bar touch detection, gated by QM_IsNewBar
+      const double bar_high = iHigh(_Symbol, PERIOD_M15, 1); // perf-allowed: M15 closed-bar touch detection, gated by QM_IsNewBar
 
       if(bar_open < g_notable_above && bar_high >= g_notable_above)
         {
@@ -260,16 +260,17 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
            {
             const double spread  = ask - bid;
             const double sl_dist = bid * g_sl_pct;
-            if(sl_dist < 3.0 * spread) return false;
+            if(sl_dist < 3.0 * spread)
+               return false;
 
-            req.type  = ORDER_TYPE_SELL;
-            req.price = bid;
-            req.sl    = NormalizeDouble(bid + sl_dist, _Digits);
-            req.tp    = NormalizeDouble(bid - bid * g_tp_pct, _Digits);
-            req.lots  = QM_LotsForRisk(_Symbol, sl_dist / _Point);
+            req.type         = QM_SELL;
+            req.price        = bid;
+            req.sl           = NormalizeDouble(bid + sl_dist, _Digits);
+            req.tp           = NormalizeDouble(bid - bid * g_tp_pct, _Digits);
+            req.reason       = "nn_short";
+            req.symbol_slot  = qm_magic_slot_offset;
 
-            g_last_trade_day   = today_day;
-            g_last_trade_year  = today_year;
+            g_last_trade_date  = today_date;
             g_last_trade_level = g_notable_above;
             g_session_exit_time = (g_session_end_h >= 0)
                                   ? NextHourOccurrence(g_session_end_h, broker_now) : 0;

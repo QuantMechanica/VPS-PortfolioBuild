@@ -88,10 +88,8 @@ void AdvanceState_OnNewMonth()
       valid[i]   = false;
       const string sym = g_universe[i];
       if(sym == _Symbol) my_idx = i;
-
       int nbars = Bars(sym, PERIOD_D1); // perf-allowed: single bar-count per symbol, monthly gate
       if(nbars < fp + 2) continue;
-
       double c_now = iClose(sym, PERIOD_D1, 1);  // perf-allowed: single-shift close read, monthly gate
       double c_ago = iClose(sym, PERIOD_D1, fp); // perf-allowed: single-shift close read, monthly gate
       if(c_now <= 0.0 || c_ago <= 0.0) continue;

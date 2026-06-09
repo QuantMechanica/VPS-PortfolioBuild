@@ -3,16 +3,16 @@
 ; ea_id:        10022
 ; ea_slug:      rw-dual-mom
 ; ea_version:   v5.0
-; set_version:  s20260523-001
+; set_version:  s20260609-001
 ; symbol:       SP500.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   7f305588c44bb73b4da5a13070f3fb75f3e6942c10860dd0bd60a36723160436
+; build_hash:   d9d421f3ba459b0eb1cbf80346d69001a5208299329269dc070dbcbe1db07256
 ; author:       Development
-; date:         2026-05-23
+; date:         2026-06-09
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=1000

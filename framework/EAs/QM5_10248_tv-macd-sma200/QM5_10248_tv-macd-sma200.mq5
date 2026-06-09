@@ -80,6 +80,7 @@ input int    strategy_macd_signal       = 9;
 input int    strategy_sma_period        = 200;
 input int    strategy_atr_period        = 14;
 input double strategy_atr_sl_mult       = 2.0;
+input int    strategy_max_spread_points = 0;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -89,6 +90,13 @@ input double strategy_atr_sl_mult       = 2.0;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
+   if(strategy_max_spread_points > 0)
+     {
+      const int spread_points = (int)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+      if(spread_points > strategy_max_spread_points)
+         return true;
+     }
+
    return false;
   }
 
@@ -141,10 +149,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    req.type = (direction > 0) ? QM_BUY : QM_SELL;
-   req.price = QM_EntryMarketPrice(req.type);
-   req.sl = QM_StopATR(_Symbol, req.type, req.price, strategy_atr_period, strategy_atr_sl_mult);
+   const double entry = QM_EntryMarketPrice(req.type);
+   req.price = 0.0;
+   req.sl = QM_StopATR(_Symbol, req.type, entry, strategy_atr_period, strategy_atr_sl_mult);
    req.reason = (direction > 0) ? "MACD_SMA200_LONG" : "MACD_SMA200_SHORT";
-   if(req.price <= 0.0 || req.sl <= 0.0)
+   if(entry <= 0.0 || req.sl <= 0.0)
       return false;
 
    return true;

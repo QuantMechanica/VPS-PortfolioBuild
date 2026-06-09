@@ -3,16 +3,16 @@
 ; ea_id:        10022
 ; ea_slug:      rw-dual-mom
 ; ea_version:   v5.0
-; set_version:  s20260523-001
+; set_version:  s20260609-001
 ; symbol:       WS30.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   1c969901c4914f878f0d578d7da35bec8a200c54ab0956f6ff276c908698ddc3
+; build_hash:   7c183a3de78280bcd8d6f583ee1fdedddbf9f6000cc086b627d6501154f0401e
 ; author:       Development
-; date:         2026-05-23
+; date:         2026-06-09
 ;==========================================================
 qm_magic_slot_offset=2
 RISK_FIXED=1000
