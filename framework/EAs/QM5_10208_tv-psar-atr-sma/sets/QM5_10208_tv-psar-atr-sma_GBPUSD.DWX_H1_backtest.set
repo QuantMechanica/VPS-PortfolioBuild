@@ -3,16 +3,16 @@
 ; ea_id:        10208
 ; ea_slug:      tv-psar-atr-sma
 ; ea_version:   v5.0
-; set_version:  s20260524-001
+; set_version:  s20260609-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   c852f4d6f427bbdc6c43a7ddb6c6406b5a2807165d39dc9f5f17073412155df5
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-24
+; date:         2026-06-09
 ;==========================================================
 qm_magic_slot_offset=1
 RISK_FIXED=1000

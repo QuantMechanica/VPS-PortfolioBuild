@@ -93,105 +93,85 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
      }
 
-   const double close_1 = iClose(_Symbol, strategy_timeframe, 1); // perf-allowed: PSAR flip has no QM reader; EntrySignal is called only after QM_IsNewBar().
-   const double close_2 = iClose(_Symbol, strategy_timeframe, 2); // perf-allowed: same bounded closed-bar PSAR calculation.
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int bars_needed = MathMax(strategy_psar_warmup_bars, 30);
+   const int copied = CopyRates(_Symbol, strategy_timeframe, 1, bars_needed, rates); // perf-allowed: one bounded OHLC read inside the framework new-bar entry hook for PSAR state.
+   if(copied < 10)
+      return false;
+
+   const double close_1 = rates[0].close;
+   const double close_2 = rates[1].close;
    const double sma_1 = QM_SMA(_Symbol, strategy_timeframe, strategy_sma_period, 1);
    const double atr_1 = QM_ATR(_Symbol, strategy_timeframe, strategy_atr_period, 1);
    if(close_1 <= 0.0 || close_2 <= 0.0 || sma_1 <= 0.0 || atr_1 <= 0.0)
       return false;
 
-   double psar_values[2];
-   bool psar_uptrend[2];
-   const int lookback = MathMax(strategy_psar_warmup_bars, 20);
+   double psar_values[];
+   bool psar_uptrend[];
+   ArrayResize(psar_values, copied);
+   ArrayResize(psar_uptrend, copied);
+   ArrayInitialize(psar_values, 0.0);
 
-   for(int pass = 0; pass < 2; ++pass)
+   const int oldest = copied - 1;
+   const int previous = oldest - 1;
+   bool uptrend = (rates[previous].close >= rates[oldest].close);
+   double af = strategy_psar_start;
+   double ep = uptrend ? MathMax(rates[oldest].high, rates[previous].high)
+                       : MathMin(rates[oldest].low, rates[previous].low);
+   double sar = uptrend ? MathMin(rates[oldest].low, rates[previous].low)
+                        : MathMax(rates[oldest].high, rates[previous].high);
+
+   psar_values[oldest] = sar;
+   psar_values[previous] = sar;
+   psar_uptrend[oldest] = uptrend;
+   psar_uptrend[previous] = uptrend;
+
+   for(int bar = oldest - 2; bar >= 0; --bar)
      {
-      const int shift = pass + 1;
-      const int oldest = shift + lookback - 1;
-      const double old_close = iClose(_Symbol, strategy_timeframe, oldest); // perf-allowed: bounded custom PSAR warmup, closed-bar scoped.
-      const double newer_close = iClose(_Symbol, strategy_timeframe, oldest - 1); // perf-allowed: bounded custom PSAR warmup, closed-bar scoped.
-      if(old_close <= 0.0 || newer_close <= 0.0)
-         return false;
+      sar = sar + af * (ep - sar);
 
-      bool uptrend = (newer_close >= old_close);
-      double sar = 0.0;
-      double ep = 0.0;
       if(uptrend)
         {
-         const double low_old = iLow(_Symbol, strategy_timeframe, oldest); // perf-allowed: bounded custom PSAR warmup, closed-bar scoped.
-         const double low_new = iLow(_Symbol, strategy_timeframe, oldest - 1); // perf-allowed: bounded custom PSAR warmup, closed-bar scoped.
-         const double high_old = iHigh(_Symbol, strategy_timeframe, oldest); // perf-allowed: bounded custom PSAR warmup, closed-bar scoped.
-         const double high_new = iHigh(_Symbol, strategy_timeframe, oldest - 1); // perf-allowed: bounded custom PSAR warmup, closed-bar scoped.
-         if(low_old <= 0.0 || low_new <= 0.0 || high_old <= 0.0 || high_new <= 0.0)
-            return false;
-         sar = MathMin(low_old, low_new);
-         ep = MathMax(high_old, high_new);
+         sar = MathMin(sar, rates[bar + 1].low);
+         sar = MathMin(sar, rates[bar + 2].low);
+         if(rates[bar].low < sar)
+           {
+            uptrend = false;
+            sar = ep;
+            ep = rates[bar].low;
+            af = strategy_psar_start;
+           }
+         else if(rates[bar].high > ep)
+           {
+            ep = rates[bar].high;
+            af = MathMin(af + strategy_psar_increment, strategy_psar_maximum);
+           }
         }
       else
         {
-         const double high_old = iHigh(_Symbol, strategy_timeframe, oldest); // perf-allowed: bounded custom PSAR warmup, closed-bar scoped.
-         const double high_new = iHigh(_Symbol, strategy_timeframe, oldest - 1); // perf-allowed: bounded custom PSAR warmup, closed-bar scoped.
-         const double low_old = iLow(_Symbol, strategy_timeframe, oldest); // perf-allowed: bounded custom PSAR warmup, closed-bar scoped.
-         const double low_new = iLow(_Symbol, strategy_timeframe, oldest - 1); // perf-allowed: bounded custom PSAR warmup, closed-bar scoped.
-         if(high_old <= 0.0 || high_new <= 0.0 || low_old <= 0.0 || low_new <= 0.0)
-            return false;
-         sar = MathMax(high_old, high_new);
-         ep = MathMin(low_old, low_new);
-        }
-
-      double af = strategy_psar_start;
-      for(int j = oldest - 2; j >= shift; --j)
-        {
-         const double high_j = iHigh(_Symbol, strategy_timeframe, j); // perf-allowed: bounded custom PSAR loop, closed-bar scoped.
-         const double low_j = iLow(_Symbol, strategy_timeframe, j); // perf-allowed: bounded custom PSAR loop, closed-bar scoped.
-         const double high_prev1 = iHigh(_Symbol, strategy_timeframe, j + 1); // perf-allowed: bounded custom PSAR loop, closed-bar scoped.
-         const double high_prev2 = iHigh(_Symbol, strategy_timeframe, j + 2); // perf-allowed: bounded custom PSAR loop, closed-bar scoped.
-         const double low_prev1 = iLow(_Symbol, strategy_timeframe, j + 1); // perf-allowed: bounded custom PSAR loop, closed-bar scoped.
-         const double low_prev2 = iLow(_Symbol, strategy_timeframe, j + 2); // perf-allowed: bounded custom PSAR loop, closed-bar scoped.
-         if(high_j <= 0.0 || low_j <= 0.0 || high_prev1 <= 0.0 ||
-            high_prev2 <= 0.0 || low_prev1 <= 0.0 || low_prev2 <= 0.0)
-            return false;
-
-         sar = sar + af * (ep - sar);
-         if(uptrend)
+         sar = MathMax(sar, rates[bar + 1].high);
+         sar = MathMax(sar, rates[bar + 2].high);
+         if(rates[bar].high > sar)
            {
-            sar = MathMin(sar, MathMin(low_prev1, low_prev2));
-            if(low_j < sar)
-              {
-               uptrend = false;
-               sar = ep;
-               ep = low_j;
-               af = strategy_psar_start;
-              }
-            else if(high_j > ep)
-              {
-               ep = high_j;
-               af = MathMin(af + strategy_psar_increment, strategy_psar_maximum);
-              }
+            uptrend = true;
+            sar = ep;
+            ep = rates[bar].high;
+            af = strategy_psar_start;
            }
-         else
+         else if(rates[bar].low < ep)
            {
-            sar = MathMax(sar, MathMax(high_prev1, high_prev2));
-            if(high_j > sar)
-              {
-               uptrend = true;
-               sar = ep;
-               ep = high_j;
-               af = strategy_psar_start;
-              }
-            else if(low_j < ep)
-              {
-               ep = low_j;
-               af = MathMin(af + strategy_psar_increment, strategy_psar_maximum);
-              }
+            ep = rates[bar].low;
+            af = MathMin(af + strategy_psar_increment, strategy_psar_maximum);
            }
         }
 
-      if(sar <= 0.0)
-         return false;
-      psar_values[pass] = sar;
-      psar_uptrend[pass] = uptrend;
+      psar_values[bar] = sar;
+      psar_uptrend[bar] = uptrend;
      }
+
+   if(psar_values[0] <= 0.0 || psar_values[1] <= 0.0)
+      return false;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
