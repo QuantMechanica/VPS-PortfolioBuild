@@ -119,6 +119,21 @@ bool Strategy_HasPendingOrder()
    return false;
   }
 
+bool Strategy_SpreadAllowsEntry()
+  {
+   const double pip = Strategy_PipSize();
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(pip <= 0.0 || ask <= 0.0 || bid <= 0.0 || ask < bid)
+      return false;
+
+   const double stop_distance = strategy_sl_pips * pip;
+   if(stop_distance <= 0.0)
+      return false;
+
+   return ((ask - bid) <= stop_distance * strategy_max_spread_sl_frac);
+  }
+
 double Strategy_NextGridAbove(const double price, const double grid_step)
   {
    if(price <= 0.0 || grid_step <= 0.0)
@@ -150,18 +165,6 @@ bool Strategy_NoTradeFilter()
    if(_Period != PERIOD_H1)
       return true;
 
-   const double pip = Strategy_PipSize();
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(pip <= 0.0 || ask <= 0.0 || bid <= 0.0 || ask < bid)
-      return true;
-
-   const double stop_distance = strategy_sl_pips * pip;
-   if(stop_distance <= 0.0)
-      return true;
-   if((ask - bid) > stop_distance * strategy_max_spread_sl_frac)
-      return true;
-
    return false;
   }
 
@@ -185,12 +188,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(Strategy_HasOpenPosition() || Strategy_HasPendingOrder())
       return false;
+   if(!Strategy_SpreadAllowsEntry())
+      return false;
 
    const double pip = Strategy_PipSize();
    if(pip <= 0.0)
       return false;
 
-   const double close1 = iClose(_Symbol, PERIOD_H1, 1);
+   const double close1 = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed: one closed H1 close anchors the card-defined quarter-pip grid; no QM close reader exists.
    const double sma50 = QM_SMA(_Symbol, PERIOD_H1, strategy_sma_period, 1);
    if(close1 <= 0.0 || sma50 <= 0.0 || close1 == sma50)
       return false;

@@ -107,99 +107,13 @@ double Strategy_BBWidth(const int shift)
    return upper - lower;
   }
 
-// FW8 perf 2026-05-23 — rolling-window BB-width cache. Pre-fix this percentile
-// rank did 240 CopyBuffer reads per closed bar (Strategy_BBWidth called 120x,
-// each = 2 CopyBuffer). ~6M reads over a 4y H1 backtest. Now: ring buffer
-// holds the most recent N closed-bar widths; per closed bar we read ONE new
-// width (2 CopyBuffer) and append. Rank is computed by counting in-memory.
-#define BB_WIDTH_RING_MAX 512
-double   g_bb_width_ring[BB_WIDTH_RING_MAX];
-int      g_bb_width_ring_count = 0;
-int      g_bb_width_ring_head  = 0;   // next-write index
-datetime g_bb_width_ring_last_bar = 0;
-
-void Strategy_BBWidthRingPrefill()
-  {
-   // Called once when the ring is empty (typically first Strategy_RefreshCachedState).
-   // Walks shifts 1..lookback and seeds the ring with historical widths.
-   const int lookback = MathMin(strategy_bb_width_lookback, BB_WIDTH_RING_MAX);
-   if(lookback <= 0) return;
-   // Fill OLDEST to NEWEST: shift=lookback first, shift=1 last.
-   for(int s = lookback; s >= 1; --s)
-     {
-      const double w = Strategy_BBWidth(s);
-      if(w <= 0.0) continue;
-      if(g_bb_width_ring_count < BB_WIDTH_RING_MAX)
-        {
-         g_bb_width_ring[g_bb_width_ring_count] = w;
-         g_bb_width_ring_count++;
-         g_bb_width_ring_head = g_bb_width_ring_count % BB_WIDTH_RING_MAX;
-        }
-     }
-   g_bb_width_ring_last_bar = iTime(_Symbol, PERIOD_H1, 0);
-  }
-
-void Strategy_BBWidthRingTick()
-  {
-   // Cheap no-op when bar hasn't changed since last call.
-   const datetime bar_now = iTime(_Symbol, PERIOD_H1, 0);
-   if(bar_now == g_bb_width_ring_last_bar) return;
-
-   if(g_bb_width_ring_count == 0)
-     {
-      Strategy_BBWidthRingPrefill();
-      return;
-     }
-
-   // A new bar has formed. The PREVIOUSLY-forming bar (shift 1) is now closed.
-   const double w = Strategy_BBWidth(1);
-   g_bb_width_ring_last_bar = bar_now;
-   if(w <= 0.0) return;
-
-   if(g_bb_width_ring_count < BB_WIDTH_RING_MAX)
-     {
-      g_bb_width_ring[g_bb_width_ring_count] = w;
-      g_bb_width_ring_count++;
-      g_bb_width_ring_head = g_bb_width_ring_count % BB_WIDTH_RING_MAX;
-     }
-   else
-     {
-      g_bb_width_ring[g_bb_width_ring_head] = w;
-      g_bb_width_ring_head = (g_bb_width_ring_head + 1) % BB_WIDTH_RING_MAX;
-     }
-  }
-
 double Strategy_BBWidthPercentileRank(const int shift)
   {
    if(strategy_bb_width_lookback <= 1)
       return 100.0;
 
-   // Fast path: shift==1 (the only caller — line 192's Strategy_RefreshCachedState).
-   // Use the in-memory ring; one CopyBuffer pair per new bar, zero per repeat call.
-   if(shift == 1)
-     {
-      Strategy_BBWidthRingTick();
-      const int lookback = MathMin(strategy_bb_width_lookback, g_bb_width_ring_count);
-      if(lookback < 2)
-         return 100.0;
-
-      // Most recent value in the ring lives at (head-1) with wrap.
-      const int newest_idx = (g_bb_width_ring_head - 1 + BB_WIDTH_RING_MAX) % BB_WIDTH_RING_MAX;
-      const double current_width = g_bb_width_ring[newest_idx];
-      if(current_width <= 0.0)
-         return 100.0;
-
-      int less_or_equal = 0;
-      for(int i = 0; i < lookback; ++i)
-        {
-         const int idx = (g_bb_width_ring_head - 1 - i + BB_WIDTH_RING_MAX) % BB_WIDTH_RING_MAX;
-         if(g_bb_width_ring[idx] <= current_width)
-            less_or_equal++;
-        }
-      return 100.0 * (double)less_or_equal / (double)lookback;
-     }
-
-   // Defensive fallback for shift != 1 (no caller today, kept for parity).
+   // Called from Strategy_EntrySignal's framework closed-bar gate.
+   // The 120-bar scan is bounded and uses pooled Bollinger readers.
    const double current_width = Strategy_BBWidth(shift);
    if(current_width <= 0.0)
       return 100.0;
@@ -221,28 +135,9 @@ double Strategy_BBWidthPercentileRank(const int shift)
    return 100.0 * (double)less_or_equal / (double)valid;
   }
 
-double Strategy_LowestLow(const int lookback)
+bool Strategy_ReadStructureExtremes(const int lookback, double &lowest, double &highest)
   {
-   double lowest = DBL_MAX;
-   for(int i = 1; i <= lookback; ++i)
-     {
-      const double value = iLow(_Symbol, PERIOD_H1, i);
-      if(value > 0.0 && value < lowest)
-         lowest = value;
-     }
-   return (lowest == DBL_MAX) ? 0.0 : lowest;
-  }
-
-double Strategy_HighestHigh(const int lookback)
-  {
-   double highest = -DBL_MAX;
-   for(int i = 1; i <= lookback; ++i)
-     {
-      const double value = iHigh(_Symbol, PERIOD_H1, i);
-      if(value > highest)
-         highest = value;
-     }
-   return (highest == -DBL_MAX) ? 0.0 : highest;
+   return QM_StopRulesReadStructureExtremes(_Symbol, lookback, lowest, highest);
   }
 
 bool Strategy_SelectOurPosition(ulong &ticket, ENUM_POSITION_TYPE &position_type, datetime &open_time)
@@ -332,7 +227,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(Strategy_SelectOurPosition(existing_ticket, existing_type, existing_open_time))
       return false;
 
-   const double close_1 = iClose(_Symbol, PERIOD_H1, 1);
+   // perf-allowed: closed-bar re-entry close; no QM close reader exists.
+   const double close_1 = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed
    const double upper_1 = QM_BB_Upper(_Symbol, PERIOD_H1, strategy_bb_period, strategy_bb_deviation, 1);
    const double lower_1 = QM_BB_Lower(_Symbol, PERIOD_H1, strategy_bb_period, strategy_bb_deviation, 1);
    const double rsi_1 = QM_RSI(_Symbol, PERIOD_H1, strategy_rsi_period, 1);
@@ -343,7 +239,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(g_long_setup_pending && close_1 > lower_1)
      {
-      const double prior_low = Strategy_LowestLow(strategy_extreme_lookback);
+      double prior_low = 0.0;
+      double prior_high = 0.0;
+      if(!Strategy_ReadStructureExtremes(strategy_extreme_lookback, prior_low, prior_high))
+         return false;
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       if(prior_low <= 0.0 || entry <= 0.0)
          return false;
@@ -364,7 +263,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(g_short_setup_pending && close_1 < upper_1)
      {
-      const double prior_high = Strategy_HighestHigh(strategy_extreme_lookback);
+      double prior_low = 0.0;
+      double prior_high = 0.0;
+      if(!Strategy_ReadStructureExtremes(strategy_extreme_lookback, prior_low, prior_high))
+         return false;
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       if(prior_high <= 0.0 || entry <= 0.0)
          return false;

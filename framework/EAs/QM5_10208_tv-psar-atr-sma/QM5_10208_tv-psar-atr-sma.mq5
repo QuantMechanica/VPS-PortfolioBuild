@@ -4,6 +4,11 @@
 
 #include <QM/QM_Common.mqh>
 
+// =============================================================================
+// QuantMechanica V5 EA
+// Strategy: TradingView PSAR ATR SMA Trend Trail
+// =============================================================================
+
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 10208;
 input int    qm_magic_slot_offset       = 0;
@@ -39,139 +44,11 @@ input double strategy_psar_maximum             = 0.20;
 input double strategy_max_spread_stop_fraction = 0.15;
 input int    strategy_psar_warmup_bars         = 80;
 
-double NormalizeStrategyPrice(const double price)
-  {
-   if(price <= 0.0)
-      return 0.0;
-   return NormalizeDouble(price, _Digits);
-  }
+// -----------------------------------------------------------------------------
+// Strategy hooks
+// -----------------------------------------------------------------------------
 
-bool GetOurPosition(ENUM_POSITION_TYPE &position_type, double &open_price, ulong &ticket)
-  {
-   position_type = POSITION_TYPE_BUY;
-   open_price = 0.0;
-   ticket = 0;
-
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong t = PositionGetTicket(i);
-      if(t == 0 || !PositionSelectByTicket(t))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      open_price = PositionGetDouble(POSITION_PRICE_OPEN);
-      ticket = t;
-      return true;
-     }
-
-   return false;
-  }
-
-bool ComputePSAR(const string sym,
-                 const ENUM_TIMEFRAMES tf,
-                 const double start_af,
-                 const double increment,
-                 const double maximum,
-                 const int shift,
-                 double &sar,
-                 bool &uptrend)
-  {
-   sar = 0.0;
-   uptrend = true;
-
-   const int lookback = MathMax(strategy_psar_warmup_bars, 20);
-   const int oldest = shift + lookback - 1;
-   if(Bars(sym, tf) <= oldest + 3 || start_af <= 0.0 || increment <= 0.0 || maximum <= 0.0)
-      return false;
-
-   const double old_close = iClose(sym, tf, oldest);
-   const double newer_close = iClose(sym, tf, oldest - 1);
-   if(old_close <= 0.0 || newer_close <= 0.0)
-      return false;
-
-   uptrend = (newer_close >= old_close);
-   double ep = 0.0;
-   if(uptrend)
-     {
-      sar = MathMin(iLow(sym, tf, oldest), iLow(sym, tf, oldest - 1));
-      ep = MathMax(iHigh(sym, tf, oldest), iHigh(sym, tf, oldest - 1));
-     }
-   else
-     {
-      sar = MathMax(iHigh(sym, tf, oldest), iHigh(sym, tf, oldest - 1));
-      ep = MathMin(iLow(sym, tf, oldest), iLow(sym, tf, oldest - 1));
-     }
-
-   double af = start_af;
-   for(int i = oldest - 2; i >= shift; --i)
-     {
-      const double high_i = iHigh(sym, tf, i);
-      const double low_i = iLow(sym, tf, i);
-      const double high_prev1 = iHigh(sym, tf, i + 1);
-      const double high_prev2 = iHigh(sym, tf, i + 2);
-      const double low_prev1 = iLow(sym, tf, i + 1);
-      const double low_prev2 = iLow(sym, tf, i + 2);
-      if(high_i <= 0.0 || low_i <= 0.0 || high_prev1 <= 0.0 || high_prev2 <= 0.0 ||
-         low_prev1 <= 0.0 || low_prev2 <= 0.0)
-         return false;
-
-      sar = sar + af * (ep - sar);
-      if(uptrend)
-        {
-         sar = MathMin(sar, MathMin(low_prev1, low_prev2));
-         if(low_i < sar)
-           {
-            uptrend = false;
-            sar = ep;
-            ep = low_i;
-            af = start_af;
-           }
-         else if(high_i > ep)
-           {
-            ep = high_i;
-            af = MathMin(af + increment, maximum);
-           }
-        }
-      else
-        {
-         sar = MathMax(sar, MathMax(high_prev1, high_prev2));
-         if(high_i > sar)
-           {
-            uptrend = true;
-            sar = ep;
-            ep = high_i;
-            af = start_af;
-           }
-         else if(low_i < ep)
-           {
-            ep = low_i;
-            af = MathMin(af + increment, maximum);
-           }
-        }
-     }
-
-   return (sar > 0.0);
-  }
-
-double StrategyStopPrice(const QM_OrderType type, const double entry_price)
-  {
-   const double atr = QM_ATR(_Symbol, strategy_timeframe, strategy_atr_period, 1);
-   if(atr <= 0.0 || entry_price <= 0.0 || strategy_atr_stop_mult <= 0.0)
-      return 0.0;
-
-   if(type == QM_BUY)
-      return NormalizeStrategyPrice(entry_price - strategy_atr_stop_mult * atr);
-   return NormalizeStrategyPrice(entry_price + strategy_atr_stop_mult * atr);
-  }
-
+// No Trade Filter (time, spread, news)
 bool Strategy_NoTradeFilter()
   {
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -185,6 +62,7 @@ bool Strategy_NoTradeFilter()
    return (spread > strategy_max_spread_stop_fraction * stop_distance);
   }
 
+// Trade Entry
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    req.type = QM_BUY;
@@ -195,49 +73,145 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(strategy_sma_period <= 1 || strategy_atr_period <= 0 || strategy_atr_stop_mult <= 0.0)
+   if(strategy_sma_period <= 1 ||
+      strategy_atr_period <= 0 ||
+      strategy_atr_stop_mult <= 0.0 ||
+      strategy_psar_start <= 0.0 ||
+      strategy_psar_increment <= 0.0 ||
+      strategy_psar_maximum <= 0.0)
       return false;
 
-   ENUM_POSITION_TYPE position_type;
-   double open_price = 0.0;
-   ulong ticket = 0;
-   if(GetOurPosition(position_type, open_price, ticket))
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+         return false;
+     }
+
+   const double close_1 = iClose(_Symbol, strategy_timeframe, 1); // perf-allowed: PSAR flip has no QM reader; EntrySignal is called only after QM_IsNewBar().
+   const double close_2 = iClose(_Symbol, strategy_timeframe, 2); // perf-allowed: same bounded closed-bar PSAR calculation.
+   const double sma_1 = QM_SMA(_Symbol, strategy_timeframe, strategy_sma_period, 1);
+   const double atr_1 = QM_ATR(_Symbol, strategy_timeframe, strategy_atr_period, 1);
+   if(close_1 <= 0.0 || close_2 <= 0.0 || sma_1 <= 0.0 || atr_1 <= 0.0)
       return false;
 
-   const double close_1 = iClose(_Symbol, strategy_timeframe, 1);
-   const double close_2 = iClose(_Symbol, strategy_timeframe, 2);
-   const double sma = QM_SMA(_Symbol, strategy_timeframe, strategy_sma_period, 1);
-   if(close_1 <= 0.0 || close_2 <= 0.0 || sma <= 0.0)
-      return false;
+   double psar_values[2];
+   bool psar_uptrend[2];
+   const int lookback = MathMax(strategy_psar_warmup_bars, 20);
 
-   double psar_1 = 0.0;
-   double psar_2 = 0.0;
-   bool psar_uptrend_1 = true;
-   bool psar_uptrend_2 = true;
-   if(!ComputePSAR(_Symbol, strategy_timeframe, strategy_psar_start, strategy_psar_increment,
-                   strategy_psar_maximum, 1, psar_1, psar_uptrend_1))
-      return false;
-   if(!ComputePSAR(_Symbol, strategy_timeframe, strategy_psar_start, strategy_psar_increment,
-                   strategy_psar_maximum, 2, psar_2, psar_uptrend_2))
-      return false;
+   for(int pass = 0; pass < 2; ++pass)
+     {
+      const int shift = pass + 1;
+      const int oldest = shift + lookback - 1;
+      const double old_close = iClose(_Symbol, strategy_timeframe, oldest); // perf-allowed: bounded custom PSAR warmup, closed-bar scoped.
+      const double newer_close = iClose(_Symbol, strategy_timeframe, oldest - 1); // perf-allowed: bounded custom PSAR warmup, closed-bar scoped.
+      if(old_close <= 0.0 || newer_close <= 0.0)
+         return false;
+
+      bool uptrend = (newer_close >= old_close);
+      double sar = 0.0;
+      double ep = 0.0;
+      if(uptrend)
+        {
+         const double low_old = iLow(_Symbol, strategy_timeframe, oldest); // perf-allowed: bounded custom PSAR warmup, closed-bar scoped.
+         const double low_new = iLow(_Symbol, strategy_timeframe, oldest - 1); // perf-allowed: bounded custom PSAR warmup, closed-bar scoped.
+         const double high_old = iHigh(_Symbol, strategy_timeframe, oldest); // perf-allowed: bounded custom PSAR warmup, closed-bar scoped.
+         const double high_new = iHigh(_Symbol, strategy_timeframe, oldest - 1); // perf-allowed: bounded custom PSAR warmup, closed-bar scoped.
+         if(low_old <= 0.0 || low_new <= 0.0 || high_old <= 0.0 || high_new <= 0.0)
+            return false;
+         sar = MathMin(low_old, low_new);
+         ep = MathMax(high_old, high_new);
+        }
+      else
+        {
+         const double high_old = iHigh(_Symbol, strategy_timeframe, oldest); // perf-allowed: bounded custom PSAR warmup, closed-bar scoped.
+         const double high_new = iHigh(_Symbol, strategy_timeframe, oldest - 1); // perf-allowed: bounded custom PSAR warmup, closed-bar scoped.
+         const double low_old = iLow(_Symbol, strategy_timeframe, oldest); // perf-allowed: bounded custom PSAR warmup, closed-bar scoped.
+         const double low_new = iLow(_Symbol, strategy_timeframe, oldest - 1); // perf-allowed: bounded custom PSAR warmup, closed-bar scoped.
+         if(high_old <= 0.0 || high_new <= 0.0 || low_old <= 0.0 || low_new <= 0.0)
+            return false;
+         sar = MathMax(high_old, high_new);
+         ep = MathMin(low_old, low_new);
+        }
+
+      double af = strategy_psar_start;
+      for(int j = oldest - 2; j >= shift; --j)
+        {
+         const double high_j = iHigh(_Symbol, strategy_timeframe, j); // perf-allowed: bounded custom PSAR loop, closed-bar scoped.
+         const double low_j = iLow(_Symbol, strategy_timeframe, j); // perf-allowed: bounded custom PSAR loop, closed-bar scoped.
+         const double high_prev1 = iHigh(_Symbol, strategy_timeframe, j + 1); // perf-allowed: bounded custom PSAR loop, closed-bar scoped.
+         const double high_prev2 = iHigh(_Symbol, strategy_timeframe, j + 2); // perf-allowed: bounded custom PSAR loop, closed-bar scoped.
+         const double low_prev1 = iLow(_Symbol, strategy_timeframe, j + 1); // perf-allowed: bounded custom PSAR loop, closed-bar scoped.
+         const double low_prev2 = iLow(_Symbol, strategy_timeframe, j + 2); // perf-allowed: bounded custom PSAR loop, closed-bar scoped.
+         if(high_j <= 0.0 || low_j <= 0.0 || high_prev1 <= 0.0 ||
+            high_prev2 <= 0.0 || low_prev1 <= 0.0 || low_prev2 <= 0.0)
+            return false;
+
+         sar = sar + af * (ep - sar);
+         if(uptrend)
+           {
+            sar = MathMin(sar, MathMin(low_prev1, low_prev2));
+            if(low_j < sar)
+              {
+               uptrend = false;
+               sar = ep;
+               ep = low_j;
+               af = strategy_psar_start;
+              }
+            else if(high_j > ep)
+              {
+               ep = high_j;
+               af = MathMin(af + strategy_psar_increment, strategy_psar_maximum);
+              }
+           }
+         else
+           {
+            sar = MathMax(sar, MathMax(high_prev1, high_prev2));
+            if(high_j > sar)
+              {
+               uptrend = true;
+               sar = ep;
+               ep = high_j;
+               af = strategy_psar_start;
+              }
+            else if(low_j < ep)
+              {
+               ep = low_j;
+               af = MathMin(af + strategy_psar_increment, strategy_psar_maximum);
+              }
+           }
+        }
+
+      if(sar <= 0.0)
+         return false;
+      psar_values[pass] = sar;
+      psar_uptrend[pass] = uptrend;
+     }
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
       return false;
 
-   if(close_1 > sma && psar_1 < close_1 && psar_2 >= close_2 && psar_uptrend_1 && !psar_uptrend_2)
+   if(close_1 > sma_1 && psar_values[0] < close_1 && psar_values[1] >= close_2 &&
+      psar_uptrend[0] && !psar_uptrend[1])
      {
       req.type = QM_BUY;
-      req.sl = StrategyStopPrice(req.type, ask);
+      req.sl = NormalizeDouble(ask - strategy_atr_stop_mult * atr_1, _Digits);
       req.reason = "PSAR_ATR_SMA_LONG";
       return (req.sl > 0.0 && req.sl < ask);
      }
 
-   if(close_1 < sma && psar_1 > close_1 && psar_2 <= close_2 && !psar_uptrend_1 && psar_uptrend_2)
+   if(close_1 < sma_1 && psar_values[0] > close_1 && psar_values[1] <= close_2 &&
+      !psar_uptrend[0] && psar_uptrend[1])
      {
       req.type = QM_SELL;
-      req.sl = StrategyStopPrice(req.type, bid);
+      req.sl = NormalizeDouble(bid + strategy_atr_stop_mult * atr_1, _Digits);
       req.reason = "PSAR_ATR_SMA_SHORT";
       return (req.sl > bid);
      }
@@ -245,26 +219,42 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    return false;
   }
 
+// Trade Management
 void Strategy_ManageOpenPosition()
   {
-   ENUM_POSITION_TYPE position_type;
-   double open_price = 0.0;
-   ulong ticket = 0;
-   if(!GetOurPosition(position_type, open_price, ticket))
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
       return;
 
-   QM_TM_TrailATR(ticket, strategy_atr_period, strategy_atr_stop_mult);
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      QM_TM_TrailATR(ticket, strategy_atr_period, strategy_atr_stop_mult);
+     }
   }
 
+// Trade Close
 bool Strategy_ExitSignal()
   {
    return false;
   }
 
+// News Filter Hook
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
   }
+
+// -----------------------------------------------------------------------------
+// Framework wiring — do NOT edit below this line unless you know why.
+// -----------------------------------------------------------------------------
 
 int OnInit()
   {

@@ -88,9 +88,9 @@ input int    strategy_ema_sr_period     = 200;
 
 double Strategy_TypicalPrice(const int shift)
   {
-   const double h = iHigh(_Symbol, _Period, shift);
-   const double l = iLow(_Symbol, _Period, shift);
-   const double c = iClose(_Symbol, _Period, shift);
+   const double h = iHigh(_Symbol, _Period, shift);   // perf-allowed: WaveTrend needs closed-bar typical price; no framework OHLC reader exists.
+   const double l = iLow(_Symbol, _Period, shift);    // perf-allowed: WaveTrend needs closed-bar typical price; no framework OHLC reader exists.
+   const double c = iClose(_Symbol, _Period, shift);  // perf-allowed: WaveTrend needs closed-bar typical price; no framework OHLC reader exists.
    if(h <= 0.0 || l <= 0.0 || c <= 0.0)
       return 0.0;
    return (h + l + c) / 3.0;
@@ -103,7 +103,7 @@ double Strategy_WaveTrend(const int shift)
 
    const int warmup = MathMax(80, strategy_wt_channel_len * 8 + strategy_wt_average_len * 4);
    const int start = shift + warmup;
-   if(Bars(_Symbol, _Period) <= start + 2)
+   if(Bars(_Symbol, _Period) <= start + 2) // perf-allowed: bounded warmup availability check inside closed-bar entry path.
       return 0.0;
 
    const double alpha_esa = 2.0 / ((double)strategy_wt_channel_len + 1.0);
@@ -149,10 +149,10 @@ double Strategy_WaveTrendSignal(const int shift)
 
 int Strategy_SSLState(const int shift)
   {
-   const int max_scan = MathMin(120, Bars(_Symbol, _Period) - shift - strategy_ssl_period - 2);
+   const int max_scan = MathMin(120, Bars(_Symbol, _Period) - shift - strategy_ssl_period - 2); // perf-allowed: bounded SSL state scan inside closed-bar entry path.
    for(int s = shift; s < shift + max_scan; ++s)
      {
-      const double close_s = iClose(_Symbol, _Period, s);
+      const double close_s = iClose(_Symbol, _Period, s); // perf-allowed: SSL state requires closed-bar close; no framework OHLC reader exists.
       const double ma_high = QM_SMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_ssl_period, s, PRICE_HIGH);
       const double ma_low = QM_SMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_ssl_period, s, PRICE_LOW);
       if(close_s <= 0.0 || ma_high <= 0.0 || ma_low <= 0.0)
@@ -223,9 +223,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(ssl_green_1 <= 0.0 || ssl_red_1 <= 0.0 || ssl_green_2 <= 0.0 || ssl_red_2 <= 0.0)
       return false;
 
-   const double close_1 = iClose(_Symbol, _Period, 1);
-   const double high_1 = iHigh(_Symbol, _Period, 1);
-   const double low_1 = iLow(_Symbol, _Period, 1);
+   const double close_1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar candle check; no framework OHLC reader exists.
+   const double high_1 = iHigh(_Symbol, _Period, 1);   // perf-allowed: single closed-bar candle check; no framework OHLC reader exists.
+   const double low_1 = iLow(_Symbol, _Period, 1);     // perf-allowed: single closed-bar candle check; no framework OHLC reader exists.
    const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
    if(close_1 <= 0.0 || high_1 <= 0.0 || low_1 <= 0.0 || atr <= 0.0)
       return false;

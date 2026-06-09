@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_10242 TradingView Keltner Dual Mode"
+#property description "QM5_10242 Keltner Dual Mode"
 
 #include <QM/QM_Common.mqh>
 
@@ -73,20 +73,16 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-enum QM5_10242_Mode
-  {
-   STRATEGY_MODE_TREND    = 0,
-   STRATEGY_MODE_REVERSAL = 1
-  };
-input QM5_10242_Mode strategy_mode              = STRATEGY_MODE_TREND;
-input int            strategy_fast_ema_period   = 9;
-input int            strategy_slow_ema_period   = 21;
-input int            strategy_trend_ema_period  = 50;
-input int            strategy_keltner_period    = 20;
-input int            strategy_atr_period        = 14;
-input double         strategy_keltner_atr_mult  = 1.5;
-input double         strategy_sl_atr_mult       = 1.5;
-input double         strategy_tp_atr_mult       = 2.0;
+input int    strategy_mode              = 0;     // 0=trend mode, 1=reversal mode.
+input int    strategy_fast_ema_period   = 9;
+input int    strategy_slow_ema_period   = 21;
+input int    strategy_trend_ema_period  = 50;
+input int    strategy_keltner_period    = 20;
+input int    strategy_keltner_atr_period = 20;
+input double strategy_keltner_atr_mult  = 2.0;
+input int    strategy_atr_period        = 14;
+input double strategy_atr_sl_mult       = 1.5;
+input double strategy_atr_tp_mult       = 2.0;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -116,153 +112,130 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_slow_ema_period <= 0 ||
       strategy_trend_ema_period <= 0 ||
       strategy_keltner_period <= 0 ||
+      strategy_keltner_atr_period <= 0 ||
       strategy_atr_period <= 0 ||
-      strategy_keltner_atr_mult <= 0.0 ||
-      strategy_sl_atr_mult <= 0.0 ||
-      strategy_tp_atr_mult <= 0.0)
+      strategy_atr_sl_mult <= 0.0 ||
+      strategy_atr_tp_mult <= 0.0)
       return false;
 
-   int signal = 0;
+   const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
+   bool long_signal = false;
+   bool short_signal = false;
 
-   if(strategy_mode == STRATEGY_MODE_TREND)
+   if(strategy_mode == 1)
      {
-      const double fast_now = QM_EMA(_Symbol, _Period, strategy_fast_ema_period, 1);
-      const double fast_prev = QM_EMA(_Symbol, _Period, strategy_fast_ema_period, 2);
-      const double slow_now = QM_EMA(_Symbol, _Period, strategy_slow_ema_period, 1);
-      const double slow_prev = QM_EMA(_Symbol, _Period, strategy_slow_ema_period, 2);
-      const double trend_ema = QM_EMA(_Symbol, _Period, strategy_trend_ema_period, 1);
-      const double close_now = iClose(_Symbol, _Period, 1);
-
-      if(fast_now <= 0.0 || fast_prev <= 0.0 ||
-         slow_now <= 0.0 || slow_prev <= 0.0 ||
-         trend_ema <= 0.0 || close_now <= 0.0)
+      const double close1 = QM_EMA(_Symbol, tf, 1, 1);
+      const double close2 = QM_EMA(_Symbol, tf, 1, 2);
+      const double mid1 = QM_EMA(_Symbol, tf, strategy_keltner_period, 1);
+      const double mid2 = QM_EMA(_Symbol, tf, strategy_keltner_period, 2);
+      const double band_atr1 = QM_ATR(_Symbol, tf, strategy_keltner_atr_period, 1);
+      const double band_atr2 = QM_ATR(_Symbol, tf, strategy_keltner_atr_period, 2);
+      if(close1 <= 0.0 || close2 <= 0.0 || mid1 <= 0.0 || mid2 <= 0.0 ||
+         band_atr1 <= 0.0 || band_atr2 <= 0.0 || strategy_keltner_atr_mult <= 0.0)
          return false;
 
-      if(fast_prev <= slow_prev && fast_now > slow_now && close_now > trend_ema)
-         signal = 1;
-      else if(fast_prev >= slow_prev && fast_now < slow_now && close_now < trend_ema)
-         signal = -1;
+      const double upper1 = mid1 + band_atr1 * strategy_keltner_atr_mult;
+      const double lower1 = mid1 - band_atr1 * strategy_keltner_atr_mult;
+      const double upper2 = mid2 + band_atr2 * strategy_keltner_atr_mult;
+      const double lower2 = mid2 - band_atr2 * strategy_keltner_atr_mult;
+      long_signal = (close2 >= lower2 && close1 < lower1);
+      short_signal = (close2 <= upper2 && close1 > upper1);
      }
    else
      {
-      const double basis_now = QM_EMA(_Symbol, _Period, strategy_keltner_period, 1);
-      const double basis_prev = QM_EMA(_Symbol, _Period, strategy_keltner_period, 2);
-      const double atr_now = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-      const double atr_prev = QM_ATR(_Symbol, _Period, strategy_atr_period, 2);
-      const double close_now = iClose(_Symbol, _Period, 1);
-      const double close_prev = iClose(_Symbol, _Period, 2);
-
-      if(basis_now <= 0.0 || basis_prev <= 0.0 ||
-         atr_now <= 0.0 || atr_prev <= 0.0 ||
-         close_now <= 0.0 || close_prev <= 0.0)
+      const double fast1 = QM_EMA(_Symbol, tf, strategy_fast_ema_period, 1);
+      const double fast2 = QM_EMA(_Symbol, tf, strategy_fast_ema_period, 2);
+      const double slow1 = QM_EMA(_Symbol, tf, strategy_slow_ema_period, 1);
+      const double slow2 = QM_EMA(_Symbol, tf, strategy_slow_ema_period, 2);
+      const double trend = QM_EMA(_Symbol, tf, strategy_trend_ema_period, 1);
+      const double close1 = QM_EMA(_Symbol, tf, 1, 1);
+      if(fast1 <= 0.0 || fast2 <= 0.0 || slow1 <= 0.0 || slow2 <= 0.0 ||
+         trend <= 0.0 || close1 <= 0.0)
          return false;
 
-      const double upper_now = basis_now + atr_now * strategy_keltner_atr_mult;
-      const double upper_prev = basis_prev + atr_prev * strategy_keltner_atr_mult;
-      const double lower_now = basis_now - atr_now * strategy_keltner_atr_mult;
-      const double lower_prev = basis_prev - atr_prev * strategy_keltner_atr_mult;
-
-      if(close_prev >= lower_prev && close_now < lower_now)
-         signal = 1;
-      else if(close_prev <= upper_prev && close_now > upper_now)
-         signal = -1;
+      long_signal = (fast2 <= slow2 && fast1 > slow1 && close1 > trend);
+      short_signal = (fast2 >= slow2 && fast1 < slow1 && close1 < trend);
      }
 
-   if(signal > 0)
-     {
-      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      if(ask <= 0.0)
-         return false;
+   if(!long_signal && !short_signal)
+      return false;
 
-      req.type = QM_BUY;
-      req.price = ask;
-      req.sl = QM_StopATR(_Symbol, req.type, ask, strategy_atr_period, strategy_sl_atr_mult);
-      req.tp = QM_TakeATR(_Symbol, req.type, ask, strategy_atr_period, strategy_tp_atr_mult);
-      req.reason = (strategy_mode == STRATEGY_MODE_TREND) ? "QM5_10242_TREND_LONG" : "QM5_10242_REVERSAL_LONG";
-      return (req.sl > 0.0 && req.tp > 0.0);
-     }
+   const QM_OrderType side = long_signal ? QM_BUY : QM_SELL;
+   const double entry = long_signal ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
+                                    : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double atr = QM_ATR(_Symbol, tf, strategy_atr_period, 1);
+   if(entry <= 0.0 || atr <= 0.0)
+      return false;
 
-   if(signal < 0)
-     {
-      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      if(bid <= 0.0)
-         return false;
+   req.type = side;
+   req.price = 0.0;
+   req.sl = QM_StopATRFromValue(_Symbol, side, entry, atr, strategy_atr_sl_mult);
+   req.tp = QM_TakeATRFromValue(_Symbol, side, entry, atr, strategy_atr_tp_mult);
+   req.reason = long_signal ? "KELTNER_DUAL_LONG" : "KELTNER_DUAL_SHORT";
 
-      req.type = QM_SELL;
-      req.price = bid;
-      req.sl = QM_StopATR(_Symbol, req.type, bid, strategy_atr_period, strategy_sl_atr_mult);
-      req.tp = QM_TakeATR(_Symbol, req.type, bid, strategy_atr_period, strategy_tp_atr_mult);
-      req.reason = (strategy_mode == STRATEGY_MODE_TREND) ? "QM5_10242_TREND_SHORT" : "QM5_10242_REVERSAL_SHORT";
-      return (req.sl > 0.0 && req.tp > 0.0);
-     }
-
-   return false;
+   return (req.sl > 0.0 && req.tp > 0.0);
   }
 
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies fixed ATR stop/target and indicator exits only.
+   // Card specifies fixed ATR stop/target only; no trailing, BE, or partial close.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   if(strategy_fast_ema_period <= 0 ||
-      strategy_slow_ema_period <= 0 ||
-      strategy_keltner_period <= 0 ||
-      strategy_atr_period <= 0 ||
-      strategy_keltner_atr_mult <= 0.0)
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
       return false;
 
-   const int magic = QM_FrameworkMagic();
+   ENUM_POSITION_TYPE position_type = POSITION_TYPE_BUY;
+   bool have_position = false;
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetInteger(POSITION_MAGIC) != magic)
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
          continue;
       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
 
-      const long position_type = PositionGetInteger(POSITION_TYPE);
-
-      if(strategy_mode == STRATEGY_MODE_TREND)
-        {
-         const double fast_now = QM_EMA(_Symbol, _Period, strategy_fast_ema_period, 1);
-         const double fast_prev = QM_EMA(_Symbol, _Period, strategy_fast_ema_period, 2);
-         const double slow_now = QM_EMA(_Symbol, _Period, strategy_slow_ema_period, 1);
-         const double slow_prev = QM_EMA(_Symbol, _Period, strategy_slow_ema_period, 2);
-
-         if(fast_now <= 0.0 || fast_prev <= 0.0 || slow_now <= 0.0 || slow_prev <= 0.0)
-            return false;
-
-         if(position_type == POSITION_TYPE_BUY && fast_prev >= slow_prev && fast_now < slow_now)
-            return true;
-         if(position_type == POSITION_TYPE_SELL && fast_prev <= slow_prev && fast_now > slow_now)
-            return true;
-        }
-      else
-        {
-         const double basis_now = QM_EMA(_Symbol, _Period, strategy_keltner_period, 1);
-         const double basis_prev = QM_EMA(_Symbol, _Period, strategy_keltner_period, 2);
-         const double close_now = iClose(_Symbol, _Period, 1);
-         const double close_prev = iClose(_Symbol, _Period, 2);
-
-         if(basis_now <= 0.0 || basis_prev <= 0.0 || close_now <= 0.0 || close_prev <= 0.0)
-            return false;
-
-         if(position_type == POSITION_TYPE_BUY && close_prev <= basis_prev && close_now > basis_now)
-            return true;
-         if(position_type == POSITION_TYPE_SELL && close_prev >= basis_prev && close_now < basis_now)
-            return true;
-        }
+      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      have_position = true;
+      break;
      }
 
-   return false;
+   if(!have_position)
+      return false;
+
+   const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
+   if(strategy_mode == 1)
+     {
+      const double close1 = QM_EMA(_Symbol, tf, 1, 1);
+      const double close2 = QM_EMA(_Symbol, tf, 1, 2);
+      const double mid1 = QM_EMA(_Symbol, tf, strategy_keltner_period, 1);
+      const double mid2 = QM_EMA(_Symbol, tf, strategy_keltner_period, 2);
+      if(close1 <= 0.0 || close2 <= 0.0 || mid1 <= 0.0 || mid2 <= 0.0)
+         return false;
+
+      if(position_type == POSITION_TYPE_BUY)
+         return (close2 <= mid2 && close1 > mid1);
+      return (close2 >= mid2 && close1 < mid1);
+     }
+
+   const double fast1 = QM_EMA(_Symbol, tf, strategy_fast_ema_period, 1);
+   const double fast2 = QM_EMA(_Symbol, tf, strategy_fast_ema_period, 2);
+   const double slow1 = QM_EMA(_Symbol, tf, strategy_slow_ema_period, 1);
+   const double slow2 = QM_EMA(_Symbol, tf, strategy_slow_ema_period, 2);
+   if(fast1 <= 0.0 || fast2 <= 0.0 || slow1 <= 0.0 || slow2 <= 0.0)
+      return false;
+
+   if(position_type == POSITION_TYPE_BUY)
+      return (fast2 >= slow2 && fast1 < slow1);
+   return (fast2 <= slow2 && fast1 > slow1);
   }
 
 // Optional news-filter override. Return TRUE to suppress trading regardless
@@ -270,7 +243,9 @@ bool Strategy_ExitSignal()
 // custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false; // defer to QM_NewsAllowsTrade(...)
+   if(broker_time <= 0)
+      return false;
+   return false;
   }
 
 // -----------------------------------------------------------------------------

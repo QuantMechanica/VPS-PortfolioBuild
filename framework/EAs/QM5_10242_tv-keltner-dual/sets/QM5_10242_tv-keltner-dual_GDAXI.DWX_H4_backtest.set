@@ -3,16 +3,16 @@
 ; ea_id:        10242
 ; ea_slug:      tv-keltner-dual
 ; ea_version:   v5.0
-; set_version:  s20260524-001
+; set_version:  s20260609-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   4fadf8329d1e819c46933d9427bae84f2d49a1739a589eeae00eb0a6723cfce0
 ; author:       Development
-; date:         2026-05-24
+; date:         2026-06-09
 ;==========================================================
 qm_magic_slot_offset=3
 RISK_FIXED=1000
@@ -32,3 +32,13 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
+strategy_mode=0
+strategy_fast_ema_period=9
+strategy_slow_ema_period=21
+strategy_trend_ema_period=50
+strategy_keltner_period=20
+strategy_keltner_atr_period=20
+strategy_keltner_atr_mult=2.0
+strategy_atr_period=14
+strategy_atr_sl_mult=1.5
+strategy_atr_tp_mult=2.0
