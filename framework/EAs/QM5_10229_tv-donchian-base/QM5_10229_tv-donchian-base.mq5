@@ -73,71 +73,13 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input ENUM_TIMEFRAMES strategy_signal_tf          = PERIOD_CURRENT;
-input int             strategy_donchian_lookback  = 20;
-input int             strategy_atr_period         = 14;
-input double          strategy_atr_sl_mult        = 2.0;
-input int             strategy_fixed_stop_pips    = 0;
-input bool            strategy_allow_shorts       = true;
-input int             strategy_max_spread_points  = 0;
-
-ENUM_TIMEFRAMES Strategy_Timeframe()
-  {
-   return (strategy_signal_tf == PERIOD_CURRENT) ? (ENUM_TIMEFRAMES)_Period : strategy_signal_tf;
-  }
-
-bool Strategy_DonchianChannel(const ENUM_TIMEFRAMES tf,
-                              const int start_shift,
-                              const int bars,
-                              double &upper,
-                              double &lower)
-  {
-   upper = -DBL_MAX;
-   lower = DBL_MAX;
-
-   if(start_shift <= 0 || bars <= 0)
-      return false;
-
-   for(int shift = start_shift; shift < start_shift + bars; ++shift)
-     {
-      const double high_i = iHigh(_Symbol, tf, shift);
-      const double low_i = iLow(_Symbol, tf, shift);
-      if(high_i <= 0.0 || low_i <= 0.0 || high_i < low_i)
-         return false;
-
-      if(high_i > upper)
-         upper = high_i;
-      if(low_i < lower)
-         lower = low_i;
-     }
-
-   return (upper > 0.0 && lower > 0.0 && upper > lower);
-  }
-
-bool Strategy_SelectOpenPosition(ENUM_POSITION_TYPE &ptype)
-  {
-   ptype = POSITION_TYPE_BUY;
-
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      return true;
-     }
-
-   return false;
-  }
+input ENUM_TIMEFRAMES strategy_signal_tf         = PERIOD_CURRENT;
+input int             strategy_donchian_lookback = 20;
+input int             strategy_atr_period        = 14;
+input double          strategy_atr_sl_mult       = 2.0;
+input int             strategy_fixed_stop_pips   = 0;
+input bool            strategy_allow_shorts      = true;
+input int             strategy_max_spread_points = 0;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -147,19 +89,15 @@ bool Strategy_SelectOpenPosition(ENUM_POSITION_TYPE &ptype)
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   if(strategy_donchian_lookback <= 0 || strategy_atr_period <= 0)
+   if(strategy_donchian_lookback < 2 || strategy_atr_period <= 0)
       return true;
    if(strategy_atr_sl_mult <= 0.0 && strategy_fixed_stop_pips <= 0)
       return true;
 
-   const ENUM_TIMEFRAMES tf = Strategy_Timeframe();
-   if(Bars(_Symbol, tf) < strategy_donchian_lookback + 5)
-      return true;
-
    if(strategy_max_spread_points > 0)
      {
-      const long spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-      if(spread > strategy_max_spread_points)
+      const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+      if(spread_points > strategy_max_spread_points)
          return true;
      }
 
@@ -179,18 +117,29 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   ENUM_POSITION_TYPE open_type = POSITION_TYPE_BUY;
-   if(Strategy_SelectOpenPosition(open_type))
+   const ENUM_TIMEFRAMES tf = (strategy_signal_tf == PERIOD_CURRENT)
+                              ? (ENUM_TIMEFRAMES)_Period
+                              : strategy_signal_tf;
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int needed = strategy_donchian_lookback + 2;
+   const int copied = CopyRates(_Symbol, tf, 1, needed, rates); // perf-allowed: bounded Donchian structural window, caller is QM_IsNewBar-gated.
+   if(copied < needed)
       return false;
 
-   const ENUM_TIMEFRAMES tf = Strategy_Timeframe();
-   const double close_1 = iClose(_Symbol, tf, 1);
-   if(close_1 <= 0.0)
-      return false;
-
-   double upper = 0.0;
-   double lower = 0.0;
-   if(!Strategy_DonchianChannel(tf, 2, strategy_donchian_lookback, upper, lower))
+   const double close_1 = rates[0].close;
+   double upper = -DBL_MAX;
+   double lower = DBL_MAX;
+   for(int i = 1; i <= strategy_donchian_lookback; ++i)
+     {
+      if(rates[i].high <= 0.0 || rates[i].low <= 0.0 || rates[i].high < rates[i].low)
+         return false;
+      if(rates[i].high > upper)
+         upper = rates[i].high;
+      if(rates[i].low < lower)
+         lower = rates[i].low;
+     }
+   if(close_1 <= 0.0 || upper <= 0.0 || lower <= 0.0 || upper <= lower)
       return false;
 
    int direction = 0;
@@ -201,17 +150,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    else
       return false;
 
-   req.type = (direction > 0) ? QM_BUY : QM_SELL;
    const double entry = (direction > 0) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
                                         : SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(entry <= 0.0)
       return false;
 
-   if(strategy_fixed_stop_pips > 0)
-      req.sl = QM_StopFixedPips(_Symbol, req.type, entry, strategy_fixed_stop_pips);
-   else
-      req.sl = QM_StopATR(_Symbol, req.type, entry, strategy_atr_period, strategy_atr_sl_mult);
-
+   req.type = (direction > 0) ? QM_BUY : QM_SELL;
+   req.sl = (strategy_fixed_stop_pips > 0)
+            ? QM_StopFixedPips(_Symbol, req.type, entry, strategy_fixed_stop_pips)
+            : QM_StopATR(_Symbol, req.type, entry, strategy_atr_period, strategy_atr_sl_mult);
    if(req.sl <= 0.0)
       return false;
    if(req.type == QM_BUY && req.sl >= entry)
@@ -219,8 +166,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(req.type == QM_SELL && req.sl <= entry)
       return false;
 
-   req.reason = (direction > 0) ? "DONCHIAN_BREAK_ABOVE_PREV_HIGH"
-                                : "DONCHIAN_BREAK_BELOW_PREV_LOW";
+   req.reason = (direction > 0) ? "donchian_close_above_previous_high"
+                                : "donchian_close_below_previous_low";
    return true;
   }
 
@@ -228,38 +175,64 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies signal-only baseline exits plus emergency stop; no trailing.
+   // Card specifies signal-only Donchian baseline exits plus emergency SL.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   ENUM_POSITION_TYPE ptype = POSITION_TYPE_BUY;
-   if(!Strategy_SelectOpenPosition(ptype))
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
       return false;
 
-   const ENUM_TIMEFRAMES tf = Strategy_Timeframe();
-   const double close_1 = iClose(_Symbol, tf, 1);
-   const double close_2 = iClose(_Symbol, tf, 2);
-   if(close_1 <= 0.0 || close_2 <= 0.0)
+   ENUM_POSITION_TYPE pos_type = POSITION_TYPE_BUY;
+   bool have_position = false;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      have_position = true;
+      break;
+     }
+   if(!have_position)
       return false;
 
-   double upper_1 = 0.0;
-   double lower_1 = 0.0;
-   double upper_2 = 0.0;
-   double lower_2 = 0.0;
-   if(!Strategy_DonchianChannel(tf, 2, strategy_donchian_lookback, upper_1, lower_1))
-      return false;
-   if(!Strategy_DonchianChannel(tf, 3, strategy_donchian_lookback, upper_2, lower_2))
+   const ENUM_TIMEFRAMES tf = (strategy_signal_tf == PERIOD_CURRENT)
+                              ? (ENUM_TIMEFRAMES)_Period
+                              : strategy_signal_tf;
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int needed = strategy_donchian_lookback + 2;
+   const int copied = CopyRates(_Symbol, tf, 1, needed, rates); // perf-allowed: bounded Donchian baseline exit window for open-position state only.
+   if(copied < needed)
       return false;
 
-   const double baseline_1 = 0.5 * (upper_1 + lower_1);
-   const double baseline_2 = 0.5 * (upper_2 + lower_2);
+   const double close_1 = rates[0].close;
+   double upper = -DBL_MAX;
+   double lower = DBL_MAX;
+   for(int j = 1; j <= strategy_donchian_lookback; ++j)
+     {
+      if(rates[j].high <= 0.0 || rates[j].low <= 0.0 || rates[j].high < rates[j].low)
+         return false;
+      if(rates[j].high > upper)
+         upper = rates[j].high;
+      if(rates[j].low < lower)
+         lower = rates[j].low;
+     }
+   if(close_1 <= 0.0 || upper <= 0.0 || lower <= 0.0 || upper <= lower)
+      return false;
 
-   if(ptype == POSITION_TYPE_BUY && close_2 >= baseline_2 && close_1 < baseline_1)
+   const double baseline = (upper + lower) * 0.5;
+   if(pos_type == POSITION_TYPE_BUY && close_1 < baseline)
       return true;
-   if(ptype == POSITION_TYPE_SELL && close_2 <= baseline_2 && close_1 > baseline_1)
+   if(pos_type == POSITION_TYPE_SELL && close_1 > baseline)
       return true;
 
    return false;
@@ -333,16 +306,7 @@ void OnTick()
    // Per-tick: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
-   // Per-closed-bar: Donchian baseline exit and breakout entry. Gating here
-   // keeps the lookback scans bounded to one pass per completed bar.
-   if(!QM_IsNewBar())
-      return;
-
-   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
-   // since last tick. Cheap: most calls early-return on same-day check.
-   QM_EquityStreamOnNewBar();
-
-   // Discretionary exit (e.g. Donchian baseline cross). Separate from SL/TP.
+   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -355,8 +319,17 @@ void OnTick()
             continue;
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
-      return;
      }
+
+   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
+   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
+   // call, not every incoming tick.
+   if(!QM_IsNewBar())
+      return;
+
+   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
+   // since last tick. Cheap: most calls early-return on same-day check.
+   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))

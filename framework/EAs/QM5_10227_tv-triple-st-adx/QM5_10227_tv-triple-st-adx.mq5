@@ -73,33 +73,40 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input ENUM_TIMEFRAMES strategy_signal_tf = PERIOD_CURRENT;
-input int    strategy_supertrend_1_atr_period = 10;
-input double strategy_supertrend_1_mult       = 1.0;
-input int    strategy_supertrend_2_atr_period = 11;
-input double strategy_supertrend_2_mult       = 2.0;
-input int    strategy_supertrend_3_atr_period = 12;
-input double strategy_supertrend_3_mult       = 3.0;
-input bool   strategy_use_filters             = true;
-input int    strategy_adx_period              = 14;
-input double strategy_adx_threshold           = 20.0;
-input int    strategy_ema_period              = 200;
-input int    strategy_supertrend_warmup_bars  = 180;
-input double strategy_emergency_stop_atr_mult = 2.0;
-input int    strategy_max_spread_points       = 0;
+input ENUM_TIMEFRAMES strategy_signal_tf             = PERIOD_CURRENT;
+input int             strategy_supertrend_1_period   = 10;
+input double          strategy_supertrend_1_mult     = 1.0;
+input int             strategy_supertrend_2_period   = 15;
+input double          strategy_supertrend_2_mult     = 2.0;
+input int             strategy_supertrend_3_period   = 20;
+input double          strategy_supertrend_3_mult     = 3.0;
+input bool            strategy_use_adx_ema_filter    = false;
+input int             strategy_ema_period            = 200;
+input int             strategy_adx_period            = 14;
+input double          strategy_adx_threshold         = 25.0;
+input bool            strategy_allow_same_side_reentry = false;
+input int             strategy_supertrend_warmup_bars = 220;
+input int             strategy_stop_atr_period       = 14;
+input double          strategy_stop_atr_mult         = 2.0;
+input double          strategy_max_spread_atr_pct    = 0.0;
 
 struct Strategy_STState
   {
-   int dir_1;
-   int dir_2;
+   int current_dir;
+   int previous_dir;
   };
 
 int g_last_entry_dir = 0;
-int g_cached_exit_dir = 0;
+int g_cached_exit_signal = 0;
 
-ENUM_TIMEFRAMES StrategyTF()
+ENUM_TIMEFRAMES Strategy_Timeframe()
   {
    return (strategy_signal_tf == PERIOD_CURRENT) ? (ENUM_TIMEFRAMES)_Period : strategy_signal_tf;
+  }
+
+double Strategy_Max3(const double a, const double b, const double c)
+  {
+   return MathMax(a, MathMax(b, c));
   }
 
 bool Strategy_HasOpenPosition(ENUM_POSITION_TYPE &ptype)
@@ -114,9 +121,11 @@ bool Strategy_HasOpenPosition(ENUM_POSITION_TYPE &ptype)
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
+
       ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       return true;
      }
+
    return false;
   }
 
@@ -124,64 +133,78 @@ bool Strategy_SupertrendState(const int atr_period,
                               const double multiplier,
                               Strategy_STState &state)
   {
-   state.dir_1 = 0;
-   state.dir_2 = 0;
-   const ENUM_TIMEFRAMES tf = StrategyTF();
-   const int warmup = MathMax(strategy_supertrend_warmup_bars, atr_period + 5);
-   if(Bars(_Symbol, tf) <= warmup + 3 || atr_period <= 0 || multiplier <= 0.0)
+   state.current_dir = 0;
+   state.previous_dir = 0;
+   if(atr_period <= 0 || multiplier <= 0.0)
       return false;
 
-   double final_upper = 0.0;
-   double final_lower = 0.0;
-   int prev_dir = 1;
+   const ENUM_TIMEFRAMES tf = Strategy_Timeframe();
+   const int bars_needed = MathMax(strategy_supertrend_warmup_bars, atr_period + 10);
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, tf, 1, bars_needed, rates); // perf-allowed: closed-bar Supertrend OHLC state; no framework Supertrend helper exists.
+   if(copied < atr_period + 5)
+      return false;
 
-   for(int shift = warmup; shift >= 1; --shift)
+   double prev_final_upper = 0.0;
+   double prev_final_lower = 0.0;
+   int prev_dir = 0;
+
+   for(int i = copied - 1; i >= 0; --i)
      {
-      const double high = iHigh(_Symbol, tf, shift);
-      const double low = iLow(_Symbol, tf, shift);
-      const double close = iClose(_Symbol, tf, shift);
-      const double prev_close = iClose(_Symbol, tf, shift + 1);
+      const int shift = i + 1;
+      const double high = rates[i].high;
+      const double low = rates[i].low;
+      const double close = rates[i].close;
+      const double prev_close = (i == copied - 1) ? close : rates[i + 1].close;
       const double atr = QM_ATR(_Symbol, tf, atr_period, shift);
-      if(high <= 0.0 || low <= 0.0 || close <= 0.0 || prev_close <= 0.0 || atr <= 0.0)
+      if(high <= 0.0 || low <= 0.0 || close <= 0.0 || atr <= 0.0 || high < low)
          return false;
 
       const double mid = (high + low) * 0.5;
       const double basic_upper = mid + multiplier * atr;
       const double basic_lower = mid - multiplier * atr;
+      double final_upper = basic_upper;
+      double final_lower = basic_lower;
+      int dir = prev_dir;
 
-      if(shift == warmup)
+      if(prev_dir == 0)
         {
-         final_upper = basic_upper;
-         final_lower = basic_lower;
-         prev_dir = (close >= mid) ? 1 : -1;
+         dir = (close >= mid) ? 1 : -1;
         }
       else
         {
-         final_upper = (basic_upper < final_upper || prev_close > final_upper) ? basic_upper : final_upper;
-         final_lower = (basic_lower > final_lower || prev_close < final_lower) ? basic_lower : final_lower;
+         final_upper = (basic_upper < prev_final_upper || prev_close > prev_final_upper)
+                       ? basic_upper : prev_final_upper;
+         final_lower = (basic_lower > prev_final_lower || prev_close < prev_final_lower)
+                       ? basic_lower : prev_final_lower;
 
-         if(close > final_upper)
-            prev_dir = 1;
-         else if(close < final_lower)
-            prev_dir = -1;
+         if(prev_dir < 0 && close > final_upper)
+            dir = 1;
+         else if(prev_dir > 0 && close < final_lower)
+            dir = -1;
         }
 
-      if(shift == 2)
-         state.dir_2 = prev_dir;
-      if(shift == 1)
-         state.dir_1 = prev_dir;
+      prev_final_upper = final_upper;
+      prev_final_lower = final_lower;
+      prev_dir = dir;
+
+      if(i == 1)
+         state.previous_dir = dir;
+      if(i == 0)
+         state.current_dir = dir;
      }
 
-   return (state.dir_1 != 0 && state.dir_2 != 0);
+   return (state.current_dir != 0 && state.previous_dir != 0);
   }
 
 bool Strategy_ReadTripleSupertrend(Strategy_STState &st1,
                                    Strategy_STState &st2,
                                    Strategy_STState &st3)
   {
-   return Strategy_SupertrendState(strategy_supertrend_1_atr_period, strategy_supertrend_1_mult, st1) &&
-          Strategy_SupertrendState(strategy_supertrend_2_atr_period, strategy_supertrend_2_mult, st2) &&
-          Strategy_SupertrendState(strategy_supertrend_3_atr_period, strategy_supertrend_3_mult, st3);
+   return Strategy_SupertrendState(strategy_supertrend_1_period, strategy_supertrend_1_mult, st1) &&
+          Strategy_SupertrendState(strategy_supertrend_2_period, strategy_supertrend_2_mult, st2) &&
+          Strategy_SupertrendState(strategy_supertrend_3_period, strategy_supertrend_3_mult, st3);
   }
 
 int Strategy_AgreementDir(const Strategy_STState &st1,
@@ -189,9 +212,9 @@ int Strategy_AgreementDir(const Strategy_STState &st1,
                           const Strategy_STState &st3,
                           const bool previous_bar)
   {
-   const int d1 = previous_bar ? st1.dir_2 : st1.dir_1;
-   const int d2 = previous_bar ? st2.dir_2 : st2.dir_1;
-   const int d3 = previous_bar ? st3.dir_2 : st3.dir_1;
+   const int d1 = previous_bar ? st1.previous_dir : st1.current_dir;
+   const int d2 = previous_bar ? st2.previous_dir : st2.current_dir;
+   const int d3 = previous_bar ? st3.previous_dir : st3.current_dir;
    if(d1 > 0 && d2 > 0 && d3 > 0)
       return 1;
    if(d1 < 0 && d2 < 0 && d3 < 0)
@@ -199,15 +222,25 @@ int Strategy_AgreementDir(const Strategy_STState &st1,
    return 0;
   }
 
-int Strategy_FirstReversalDir(const Strategy_STState &st1,
-                              const Strategy_STState &st2,
-                              const Strategy_STState &st3,
-                              const int position_dir)
+int Strategy_FirstReversalSignal(const Strategy_STState &st1,
+                                 const Strategy_STState &st2,
+                                 const Strategy_STState &st3,
+                                 const int position_dir)
   {
-   if(position_dir > 0 && (st1.dir_1 < 0 || st2.dir_1 < 0 || st3.dir_1 < 0))
-      return -1;
-   if(position_dir < 0 && (st1.dir_1 > 0 || st2.dir_1 > 0 || st3.dir_1 > 0))
-      return 1;
+   if(position_dir > 0)
+     {
+      if((st1.current_dir < 0 && st1.previous_dir > 0) ||
+         (st2.current_dir < 0 && st2.previous_dir > 0) ||
+         (st3.current_dir < 0 && st3.previous_dir > 0))
+         return -1;
+     }
+   if(position_dir < 0)
+     {
+      if((st1.current_dir > 0 && st1.previous_dir < 0) ||
+         (st2.current_dir > 0 && st2.previous_dir < 0) ||
+         (st3.current_dir > 0 && st3.previous_dir < 0))
+         return 1;
+     }
    return 0;
   }
 
@@ -219,13 +252,17 @@ int Strategy_FirstReversalDir(const Strategy_STState &st1,
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   if(strategy_max_spread_points > 0)
-     {
-      const long spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-      if(spread > strategy_max_spread_points)
-         return true;
-     }
-   return false;
+   if(strategy_max_spread_atr_pct <= 0.0)
+      return false;
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double atr = QM_ATR(_Symbol, Strategy_Timeframe(), strategy_stop_atr_period, 1);
+   if(ask <= 0.0 || bid <= 0.0 || ask <= bid || atr <= 0.0)
+      return true;
+
+   const double spread = ask - bid;
+   return (spread > atr * strategy_max_spread_atr_pct / 100.0);
   }
 
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
@@ -247,63 +284,64 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!Strategy_ReadTripleSupertrend(st1, st2, st3))
       return false;
 
-   ENUM_POSITION_TYPE ptype;
+   ENUM_POSITION_TYPE ptype = POSITION_TYPE_BUY;
    if(Strategy_HasOpenPosition(ptype))
      {
-      const int pos_dir = (ptype == POSITION_TYPE_BUY) ? 1 : -1;
-      g_cached_exit_dir = Strategy_FirstReversalDir(st1, st2, st3, pos_dir);
+      const int position_dir = (ptype == POSITION_TYPE_BUY) ? 1 : -1;
+      g_cached_exit_signal = Strategy_FirstReversalSignal(st1, st2, st3, position_dir);
       return false;
      }
 
-   g_cached_exit_dir = 0;
+   g_cached_exit_signal = 0;
 
    const int current_dir = Strategy_AgreementDir(st1, st2, st3, false);
    const int previous_dir = Strategy_AgreementDir(st1, st2, st3, true);
-   if(current_dir == 0 || current_dir == previous_dir || current_dir == g_last_entry_dir)
+   if(current_dir == 0)
+      return false;
+   if(!strategy_allow_same_side_reentry && current_dir == g_last_entry_dir)
+      return false;
+   if(g_last_entry_dir == 0 && previous_dir == current_dir)
       return false;
 
-   const ENUM_TIMEFRAMES tf = StrategyTF();
-   const double close_1 = iClose(_Symbol, tf, 1);
-   if(close_1 <= 0.0)
-      return false;
-
-   if(strategy_use_filters)
+   const ENUM_TIMEFRAMES tf = Strategy_Timeframe();
+   if(strategy_use_adx_ema_filter)
      {
+      const double ema = QM_EMA(_Symbol, tf, strategy_ema_period, 1, PRICE_CLOSE);
       const double adx = QM_ADX(_Symbol, tf, strategy_adx_period, 1);
-      const double ema = QM_EMA(_Symbol, tf, strategy_ema_period, 1);
-      if(adx < strategy_adx_threshold || ema <= 0.0)
+      if(ema <= 0.0 || adx <= strategy_adx_threshold)
          return false;
+
+      MqlRates filter_bar[];
+      ArraySetAsSeries(filter_bar, true);
+      if(CopyRates(_Symbol, tf, 1, 1, filter_bar) != 1) // perf-allowed: single closed-bar close for EMA filter.
+         return false;
+      const double close_1 = filter_bar[0].close;
       if(current_dir > 0 && close_1 <= ema)
          return false;
       if(current_dir < 0 && close_1 >= ema)
          return false;
      }
 
-   const double atr = QM_ATR(_Symbol, tf, strategy_supertrend_1_atr_period, 1);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(atr <= 0.0 || point <= 0.0 || ask <= 0.0 || bid <= 0.0 || strategy_emergency_stop_atr_mult <= 0.0)
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(ask <= 0.0 || bid <= 0.0 || point <= 0.0 || strategy_stop_atr_mult <= 0.0)
       return false;
 
-   if(current_dir > 0)
-     {
-      req.type = QM_BUY;
-      req.sl = ask - strategy_emergency_stop_atr_mult * atr;
-      req.reason = "TRIPLE_ST_ADX_LONG";
-     }
-   else
-     {
-      req.type = QM_SELL;
-      req.sl = bid + strategy_emergency_stop_atr_mult * atr;
-      req.reason = "TRIPLE_ST_ADX_SHORT";
-     }
-
    const double entry_price = (current_dir > 0) ? ask : bid;
-   const double sl_points = MathAbs(entry_price - req.sl) / point;
+   const QM_OrderType side = (current_dir > 0) ? QM_BUY : QM_SELL;
+   const double stop = QM_StopATR(_Symbol, side, entry_price, strategy_stop_atr_period, strategy_stop_atr_mult);
+   if(stop <= 0.0)
+      return false;
+
+   const double sl_points = MathAbs(entry_price - stop) / point;
    if(sl_points <= 0.0 || QM_LotsForRisk(_Symbol, sl_points) <= 0.0)
       return false;
 
+   req.type = side;
+   req.sl = stop;
+   req.tp = 0.0;
+   req.reason = (current_dir > 0) ? "TRIPLE_ST_LONG" : "TRIPLE_ST_SHORT";
    g_last_entry_dir = current_dir;
    return true;
   }
@@ -312,14 +350,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies no trailing, break-even, or partial management.
+   // Card specifies no trailing stop, break-even move, partial close, or add-on logic.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   return (g_cached_exit_dir != 0);
+   return (g_cached_exit_signal != 0);
   }
 
 // Optional news-filter override. Return TRUE to suppress trading regardless

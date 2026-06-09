@@ -3,16 +3,16 @@
 ; ea_id:        10227
 ; ea_slug:      tv-triple-st-adx
 ; ea_version:   v5.0
-; set_version:  s20260524-001
+; set_version:  s20260609-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   df2b78b47b254945000db5bc810ca936580d92cfc60831ec4fe2808a14b7d069
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-24
+; date:         2026-06-09
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=1000
