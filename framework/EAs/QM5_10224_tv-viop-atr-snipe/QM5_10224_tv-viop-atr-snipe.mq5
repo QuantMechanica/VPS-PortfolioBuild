@@ -91,8 +91,6 @@ input bool   strategy_no_trade_enabled  = true;
 input int    strategy_no_trade_start_h  = 22;
 input int    strategy_no_trade_end_h    = 1;
 
-int g_last_closed_bar_signal = 0;
-
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -117,77 +115,6 @@ bool Strategy_NoTradeFilter()
    return (hour >= start_h || hour < end_h);
   }
 
-int Strategy_DirectionSignal(const int shift)
-  {
-   if(strategy_fast_ema_period <= 0 ||
-      strategy_slow_ema_period <= 0 ||
-      strategy_rsi_period <= 0 ||
-      strategy_adx_period <= 0 ||
-      strategy_wma_period <= 0 ||
-      shift < 1)
-      return 0;
-
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(point <= 0.0)
-      return 0;
-
-   const double fast = QM_EMA(_Symbol, _Period, strategy_fast_ema_period, shift);
-   const double slow = QM_EMA(_Symbol, _Period, strategy_slow_ema_period, shift);
-   const double fast_prev = QM_EMA(_Symbol, _Period, strategy_fast_ema_period, shift + 1);
-   const double slow_prev = QM_EMA(_Symbol, _Period, strategy_slow_ema_period, shift + 1);
-   const double rsi = QM_RSI(_Symbol, _Period, strategy_rsi_period, shift);
-   const double adx = QM_ADX(_Symbol, _Period, strategy_adx_period, shift);
-   const double wma = QM_WMA(_Symbol, _Period, strategy_wma_period, shift);
-   const double close_now = iClose(_Symbol, _Period, shift);
-   const double close_prev = iClose(_Symbol, _Period, shift + 1);
-
-   if(fast <= 0.0 || slow <= 0.0 || fast_prev <= 0.0 || slow_prev <= 0.0 ||
-      rsi <= 0.0 || adx <= 0.0 || wma <= 0.0 || close_now <= 0.0 || close_prev <= 0.0)
-      return 0;
-
-   const double ema_diff = fast - slow;
-   const double ema_diff_prev = fast_prev - slow_prev;
-   const double min_diff = strategy_min_ema_diff_pts * point;
-
-   if(ema_diff > min_diff &&
-      ema_diff > ema_diff_prev &&
-      rsi >= strategy_rsi_long_min && rsi <= strategy_rsi_long_max &&
-      close_now > close_prev &&
-      adx >= strategy_adx_min &&
-      close_now > wma)
-      return 1;
-
-   if(ema_diff < -min_diff &&
-      ema_diff < ema_diff_prev &&
-      rsi >= strategy_rsi_short_min && rsi <= strategy_rsi_short_max &&
-      close_now < close_prev &&
-      adx >= strategy_adx_min &&
-      close_now < wma)
-      return -1;
-
-   return 0;
-  }
-
-bool Strategy_HasOpenPosition()
-  {
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
-         return true;
-     }
-
-   return false;
-  }
-
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
 // should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
@@ -201,44 +128,81 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(Strategy_HasOpenPosition())
+   if(strategy_fast_ema_period <= 0 ||
+      strategy_slow_ema_period <= 0 ||
+      strategy_rsi_period <= 0 ||
+      strategy_adx_period <= 0 ||
+      strategy_wma_period <= 0 ||
+      strategy_atr_period <= 0 ||
+      strategy_atr_sl_mult <= 0.0 ||
+      strategy_rr_target <= 0.0)
       return false;
 
-   const int direction = Strategy_DirectionSignal(1);
-   g_last_closed_bar_signal = direction;
+   const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(point <= 0.0)
+      return false;
+
+   const double fast = QM_EMA(_Symbol, tf, strategy_fast_ema_period, 1);
+   const double slow = QM_EMA(_Symbol, tf, strategy_slow_ema_period, 1);
+   const double fast_prev = QM_EMA(_Symbol, tf, strategy_fast_ema_period, 2);
+   const double slow_prev = QM_EMA(_Symbol, tf, strategy_slow_ema_period, 2);
+   const double rsi = QM_RSI(_Symbol, tf, strategy_rsi_period, 1);
+   const double adx = QM_ADX(_Symbol, tf, strategy_adx_period, 1);
+   const double wma = QM_WMA(_Symbol, tf, strategy_wma_period, 1);
+   const double close_now = iClose(_Symbol, tf, 1); // perf-allowed: card requires two closed-bar close reads inside framework entry new-bar gate.
+   const double close_prev = iClose(_Symbol, tf, 2); // perf-allowed: card requires two closed-bar close reads inside framework entry new-bar gate.
+
+   if(fast <= 0.0 || slow <= 0.0 || fast_prev <= 0.0 || slow_prev <= 0.0 ||
+      rsi <= 0.0 || adx <= 0.0 || wma <= 0.0 || close_now <= 0.0 || close_prev <= 0.0)
+      return false;
+
+   const double ema_diff = fast - slow;
+   const double ema_diff_prev = fast_prev - slow_prev;
+   const double min_diff = strategy_min_ema_diff_pts * point;
+
+   int direction = 0;
+   if(fast > slow &&
+      ema_diff > min_diff &&
+      ema_diff > ema_diff_prev &&
+      rsi >= strategy_rsi_long_min && rsi <= strategy_rsi_long_max &&
+      close_now > close_prev &&
+      adx >= strategy_adx_min &&
+      close_now > wma)
+      direction = 1;
+   else if(fast < slow &&
+           ema_diff < -min_diff &&
+           ema_diff < ema_diff_prev &&
+           rsi >= strategy_rsi_short_min && rsi <= strategy_rsi_short_max &&
+           close_now < close_prev &&
+           adx >= strategy_adx_min &&
+           close_now < wma)
+      direction = -1;
+
    if(direction == 0)
       return false;
 
-   const double atr = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr <= 0.0 || strategy_atr_sl_mult <= 0.0 || strategy_rr_target <= 0.0)
-      return false;
-
-   const double sl_dist = atr * strategy_atr_sl_mult;
-   const double tp_dist = sl_dist * strategy_rr_target;
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const QM_OrderType side = (direction > 0) ? QM_BUY : QM_SELL;
+   const double entry = (direction > 0) ? ask : bid;
+   if(entry <= 0.0)
+      return false;
 
-   if(direction > 0 && ask > 0.0)
-     {
-      req.type = QM_BUY;
-      req.price = ask;
-      req.sl = ask - sl_dist;
-      req.tp = ask + tp_dist;
-      req.reason = "QM5_10224_LONG";
-      return true;
-     }
+   const double sl = QM_StopATR(_Symbol, side, entry, strategy_atr_period, strategy_atr_sl_mult);
+   if(sl <= 0.0)
+      return false;
 
-   if(direction < 0 && bid > 0.0)
-     {
-      req.type = QM_SELL;
-      req.price = bid;
-      req.sl = bid + sl_dist;
-      req.tp = bid - tp_dist;
-      req.reason = "QM5_10224_SHORT";
-      return true;
-     }
+   const double stop_dist = MathAbs(entry - sl);
+   if(stop_dist <= 0.0)
+      return false;
 
-   return false;
+   req.type = side;
+   req.price = entry;
+   req.sl = sl;
+   req.tp = QM_StopRulesTakeFromDistance(_Symbol, side, entry, stop_dist * strategy_rr_target);
+   req.reason = (direction > 0) ? "QM5_10224_LONG" : "QM5_10224_SHORT";
+   return (req.tp > 0.0);
   }
 
 // Called every tick when an open position exists for this EA's magic.
@@ -256,10 +220,8 @@ bool Strategy_ExitSignal()
    if(magic <= 0)
       return false;
 
-   const int direction = g_last_closed_bar_signal;
-   if(direction == 0)
-      return false;
-
+   bool have_position = false;
+   ENUM_POSITION_TYPE pos_type = POSITION_TYPE_BUY;
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -270,12 +232,63 @@ bool Strategy_ExitSignal()
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
 
-      const ENUM_POSITION_TYPE type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      if((type == POSITION_TYPE_BUY && direction < 0) ||
-         (type == POSITION_TYPE_SELL && direction > 0))
-         return true;
+      pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      have_position = true;
+      break;
      }
 
+   if(!have_position)
+      return false;
+   if(!QM_IsNewBar(_Symbol, (ENUM_TIMEFRAMES)_Period))
+      return false;
+
+   const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(point <= 0.0)
+      return false;
+
+   const double fast = QM_EMA(_Symbol, tf, strategy_fast_ema_period, 1);
+   const double slow = QM_EMA(_Symbol, tf, strategy_slow_ema_period, 1);
+   const double fast_prev = QM_EMA(_Symbol, tf, strategy_fast_ema_period, 2);
+   const double slow_prev = QM_EMA(_Symbol, tf, strategy_slow_ema_period, 2);
+   const double rsi = QM_RSI(_Symbol, tf, strategy_rsi_period, 1);
+   const double adx = QM_ADX(_Symbol, tf, strategy_adx_period, 1);
+   const double wma = QM_WMA(_Symbol, tf, strategy_wma_period, 1);
+   const double close_now = iClose(_Symbol, tf, 1); // perf-allowed: opposite-signal exit needs the last closed-bar close.
+   const double close_prev = iClose(_Symbol, tf, 2); // perf-allowed: opposite-signal exit needs the previous closed-bar close.
+
+   if(fast <= 0.0 || slow <= 0.0 || fast_prev <= 0.0 || slow_prev <= 0.0 ||
+      rsi <= 0.0 || adx <= 0.0 || wma <= 0.0 || close_now <= 0.0 || close_prev <= 0.0)
+      return false;
+
+   const double ema_diff = fast - slow;
+   const double ema_diff_prev = fast_prev - slow_prev;
+   const double min_diff = strategy_min_ema_diff_pts * point;
+
+   int direction = 0;
+   if(fast > slow &&
+      ema_diff > min_diff &&
+      ema_diff > ema_diff_prev &&
+      rsi >= strategy_rsi_long_min && rsi <= strategy_rsi_long_max &&
+      close_now > close_prev &&
+      adx >= strategy_adx_min &&
+      close_now > wma)
+      direction = 1;
+   else if(fast < slow &&
+           ema_diff < -min_diff &&
+           ema_diff < ema_diff_prev &&
+           rsi >= strategy_rsi_short_min && rsi <= strategy_rsi_short_max &&
+           close_now < close_prev &&
+           adx >= strategy_adx_min &&
+           close_now < wma)
+      direction = -1;
+
+   if(direction == 0)
+      return false;
+   if(pos_type == POSITION_TYPE_BUY && direction < 0)
+      return true;
+   if(pos_type == POSITION_TYPE_SELL && direction > 0)
+      return true;
    return false;
   }
 

@@ -91,6 +91,9 @@ input int             strategy_overlap_end_hhmm   = 1900;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
+   if(strategy_spread_stop_frac < 0.0)
+      return true;
+
    const int magic = QM_FrameworkMagic();
    if(magic > 0)
      {
@@ -146,10 +149,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    const double ema1 = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_period, 1);
    const double ema2 = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_period, 2);
-   const double low1 = iLow(_Symbol, strategy_signal_tf, 1);
-   const double low2 = iLow(_Symbol, strategy_signal_tf, 2);
-   const double high1 = iHigh(_Symbol, strategy_signal_tf, 1);
-   const double high2 = iHigh(_Symbol, strategy_signal_tf, 2);
+   const double low1 = iLow(_Symbol, strategy_signal_tf, 1);     // perf-allowed: single closed-bar low for full-candle structural rule; no QM OHLC reader exists.
+   const double low2 = iLow(_Symbol, strategy_signal_tf, 2);     // perf-allowed: single closed-bar low for first-qualifier state; no QM OHLC reader exists.
+   const double high1 = iHigh(_Symbol, strategy_signal_tf, 1);   // perf-allowed: single closed-bar high for full-candle structural rule; no QM OHLC reader exists.
+   const double high2 = iHigh(_Symbol, strategy_signal_tf, 2);   // perf-allowed: single closed-bar high for first-qualifier state; no QM OHLC reader exists.
    if(ema1 <= 0.0 || ema2 <= 0.0 || low1 <= 0.0 || low2 <= 0.0 || high1 <= 0.0 || high2 <= 0.0)
       return false;
 
@@ -161,8 +164,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(long_now && !long_prev)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      const double sl = QM_StopATR(_Symbol, QM_BUY, entry, strategy_atr_period, strategy_atr_sl_mult);
-      if(entry <= 0.0 || sl <= 0.0)
+      const double atr = QM_ATR(_Symbol, strategy_signal_tf, strategy_atr_period, 1);
+      const double sl = QM_StopATRFromValue(_Symbol, QM_BUY, entry, atr, strategy_atr_sl_mult);
+      if(entry <= 0.0 || atr <= 0.0 || sl <= 0.0)
          return false;
       req.type = QM_BUY;
       req.sl = sl;
@@ -173,8 +177,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(short_now && !short_prev)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      const double sl = QM_StopATR(_Symbol, QM_SELL, entry, strategy_atr_period, strategy_atr_sl_mult);
-      if(entry <= 0.0 || sl <= 0.0)
+      const double atr = QM_ATR(_Symbol, strategy_signal_tf, strategy_atr_period, 1);
+      const double sl = QM_StopATRFromValue(_Symbol, QM_SELL, entry, atr, strategy_atr_sl_mult);
+      if(entry <= 0.0 || atr <= 0.0 || sl <= 0.0)
          return false;
       req.type = QM_SELL;
       req.sl = sl;
