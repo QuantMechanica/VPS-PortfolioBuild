@@ -3,16 +3,16 @@
 ; ea_id:        10074
 ; ea_slug:      gh-santi-adxma
 ; ea_version:   v5.0
-; set_version:  s20260523-001
+; set_version:  s20260609-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   d37194e03c283bc9944a8756a78cda76d80838d09b98a3ed39aad022649516bd
 ; author:       Development
-; date:         2026-05-23
+; date:         2026-06-09
 ;==========================================================
 qm_magic_slot_offset=3
 RISK_FIXED=1000

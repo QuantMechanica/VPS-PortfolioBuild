@@ -73,34 +73,21 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_h4_fast_ema       = 13;
-input int    strategy_h4_mid_ema        = 21;
-input int    strategy_h4_slow_ema       = 34;
-input int    strategy_h1_fast_ema       = 13;
-input int    strategy_h1_mid_ema        = 21;
-input int    strategy_sweep_lookback    = 20;
-input int    strategy_atr_period        = 14;
-input double strategy_displacement_atr  = 1.0;
-input double strategy_sl_atr_buffer     = 0.25;
-input double strategy_rr_target         = 2.0;
-input int    strategy_time_stop_bars    = 32;
-input int    strategy_london_start_hour = 7;
-input int    strategy_london_end_hour   = 10;
-input int    strategy_ny_start_hour     = 13;
-input int    strategy_ny_end_hour       = 16;
-input int    strategy_max_spread_points = 80;
-
-bool   g_bull_zone_active = false;
-double g_bull_zone_low = 0.0;
-double g_bull_zone_high = 0.0;
-double g_bull_sweep_low = 0.0;
-bool   g_bull_sweep_pending = false;
-
-bool   g_bear_zone_active = false;
-double g_bear_zone_low = 0.0;
-double g_bear_zone_high = 0.0;
-double g_bear_sweep_high = 0.0;
-bool   g_bear_sweep_pending = false;
+input ENUM_TIMEFRAMES strategy_execution_tf          = PERIOD_M15;
+input int             strategy_fast_ema              = 13;
+input int             strategy_mid_ema               = 21;
+input int             strategy_slow_ema              = 34;
+input int             strategy_sweep_lookback        = 20;
+input int             strategy_atr_period            = 14;
+input double          strategy_displacement_atr_mult = 1.0;
+input double          strategy_sl_atr_mult           = 0.25;
+input double          strategy_tp_r_multiple         = 2.0;
+input int             strategy_max_hold_bars         = 32;
+input int             strategy_london_start_hour     = 8;
+input int             strategy_london_end_hour       = 11;
+input int             strategy_ny_start_hour         = 14;
+input int             strategy_ny_end_hour           = 17;
+input int             strategy_max_spread_points     = 0;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -110,173 +97,28 @@ bool   g_bear_sweep_pending = false;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   const long spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-   if(strategy_max_spread_points > 0 && spread > strategy_max_spread_points)
+   if(_Period != (int)strategy_execution_tf)
       return true;
+
+   if(strategy_max_spread_points > 0)
+     {
+      const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      if(point <= 0.0 || ask <= 0.0 || bid <= 0.0)
+         return true;
+      const int spread_points = (int)MathRound((ask - bid) / point);
+      if(spread_points > strategy_max_spread_points)
+         return true;
+     }
 
    MqlDateTime dt;
    TimeToStruct(TimeCurrent(), dt);
-   const bool london = (dt.hour >= strategy_london_start_hour && dt.hour < strategy_london_end_hour);
-   const bool ny = (dt.hour >= strategy_ny_start_hour && dt.hour < strategy_ny_end_hour);
-   return !(london || ny);
-  }
-
-double HighestHighClosed(const ENUM_TIMEFRAMES tf, const int start_shift, const int bars)
-  {
-   if(bars <= 0 || start_shift < 1)
-      return 0.0;
-   double value = -DBL_MAX;
-   for(int i = start_shift; i < start_shift + bars; ++i)
-     {
-      const double high = iHigh(_Symbol, tf, i);
-      if(high <= 0.0)
-         return 0.0;
-      value = MathMax(value, high);
-     }
-   return value;
-  }
-
-double LowestLowClosed(const ENUM_TIMEFRAMES tf, const int start_shift, const int bars)
-  {
-   if(bars <= 0 || start_shift < 1)
-      return 0.0;
-   double value = DBL_MAX;
-   for(int i = start_shift; i < start_shift + bars; ++i)
-     {
-      const double low = iLow(_Symbol, tf, i);
-      if(low <= 0.0)
-         return 0.0;
-      value = MathMin(value, low);
-     }
-   return value;
-  }
-
-bool HasOurPosition()
-  {
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
-         return true;
-     }
-   return false;
-  }
-
-bool BullishBias()
-  {
-   const double e13 = QM_EMA(_Symbol, PERIOD_H4, strategy_h4_fast_ema, 1);
-   const double e21 = QM_EMA(_Symbol, PERIOD_H4, strategy_h4_mid_ema, 1);
-   const double e34 = QM_EMA(_Symbol, PERIOD_H4, strategy_h4_slow_ema, 1);
-   return (e13 > 0.0 && e21 > 0.0 && e34 > 0.0 && e13 > e21 && e21 > e34);
-  }
-
-bool BearishBias()
-  {
-   const double e13 = QM_EMA(_Symbol, PERIOD_H4, strategy_h4_fast_ema, 1);
-   const double e21 = QM_EMA(_Symbol, PERIOD_H4, strategy_h4_mid_ema, 1);
-   const double e34 = QM_EMA(_Symbol, PERIOD_H4, strategy_h4_slow_ema, 1);
-   return (e13 > 0.0 && e21 > 0.0 && e34 > 0.0 && e13 < e21 && e21 < e34);
-  }
-
-bool BullishContinuation()
-  {
-   const double close = iClose(_Symbol, PERIOD_H1, 1);
-   const double e13 = QM_EMA(_Symbol, PERIOD_H1, strategy_h1_fast_ema, 1);
-   const double e21 = QM_EMA(_Symbol, PERIOD_H1, strategy_h1_mid_ema, 1);
-   return (close > 0.0 && e13 > 0.0 && e21 > 0.0 && close > e21 && e13 > e21);
-  }
-
-bool BearishContinuation()
-  {
-   const double close = iClose(_Symbol, PERIOD_H1, 1);
-   const double e13 = QM_EMA(_Symbol, PERIOD_H1, strategy_h1_fast_ema, 1);
-   const double e21 = QM_EMA(_Symbol, PERIOD_H1, strategy_h1_mid_ema, 1);
-   return (close > 0.0 && e13 > 0.0 && e21 > 0.0 && close < e21 && e13 < e21);
-  }
-
-bool ClosedBarDisplacement()
-  {
-   const double atr = QM_ATR(_Symbol, PERIOD_M15, strategy_atr_period, 1);
-   const double open = iOpen(_Symbol, PERIOD_M15, 1);
-   const double close = iClose(_Symbol, PERIOD_M15, 1);
-   if(atr <= 0.0 || open <= 0.0 || close <= 0.0)
-      return false;
-   return (MathAbs(close - open) >= strategy_displacement_atr * atr);
-  }
-
-void DetectNewZones()
-  {
-   if(strategy_sweep_lookback < 2)
-      return;
-
-   const double low1 = iLow(_Symbol, PERIOD_M15, 1);
-   const double high1 = iHigh(_Symbol, PERIOD_M15, 1);
-   const double close1 = iClose(_Symbol, PERIOD_M15, 1);
-   const double high3 = iHigh(_Symbol, PERIOD_M15, 3);
-   const double low3 = iLow(_Symbol, PERIOD_M15, 3);
-   if(low1 <= 0.0 || high1 <= 0.0 || close1 <= 0.0 || high3 <= 0.0 || low3 <= 0.0)
-      return;
-
-   const double prior_low = LowestLowClosed(PERIOD_M15, 2, strategy_sweep_lookback);
-   const double prior_high = HighestHighClosed(PERIOD_M15, 2, strategy_sweep_lookback);
-   if(prior_low <= 0.0 || prior_high <= 0.0)
-      return;
-
-   if(low1 < prior_low && close1 > prior_low)
-     {
-      g_bull_sweep_pending = true;
-      g_bull_sweep_low = low1;
-     }
-
-   if(high1 > prior_high && close1 < prior_high)
-     {
-      g_bear_sweep_pending = true;
-      g_bear_sweep_high = high1;
-     }
-
-   if(!ClosedBarDisplacement())
-      return;
-
-   if(g_bull_sweep_pending && low1 > high3)
-     {
-      g_bull_zone_active = true;
-      g_bull_zone_low = high3;
-      g_bull_zone_high = low1;
-      g_bull_sweep_pending = false;
-     }
-
-   if(g_bear_sweep_pending && high1 < low3)
-     {
-      g_bear_zone_active = true;
-      g_bear_zone_low = high1;
-      g_bear_zone_high = low3;
-      g_bear_sweep_pending = false;
-     }
-  }
-
-bool RetestedZone(const bool bullish)
-  {
-   const double low1 = iLow(_Symbol, PERIOD_M15, 1);
-   const double high1 = iHigh(_Symbol, PERIOD_M15, 1);
-   if(low1 <= 0.0 || high1 <= 0.0)
-      return false;
-
-   if(bullish)
-      return (g_bull_zone_active && low1 <= g_bull_zone_high && high1 >= g_bull_zone_low);
-   return (g_bear_zone_active && high1 >= g_bear_zone_low && low1 <= g_bear_zone_high);
-  }
-
-double NormalizeStrategyPrice(const double price)
-  {
-   return NormalizeDouble(price, (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS));
+   const bool london_open = (dt.hour >= strategy_london_start_hour &&
+                             dt.hour < strategy_london_end_hour);
+   const bool ny_open = (dt.hour >= strategy_ny_start_hour &&
+                         dt.hour < strategy_ny_end_hour);
+   return !(london_open || ny_open);
   }
 
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
@@ -292,49 +134,144 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(HasOurPosition())
+   static bool   bull_sweep_active = false;
+   static bool   bear_sweep_active = false;
+   static double bull_sweep_low = 0.0;
+   static double bear_sweep_high = 0.0;
+   static bool   bull_zone_active = false;
+   static bool   bear_zone_active = false;
+   static double bull_zone_low = 0.0;
+   static double bull_zone_high = 0.0;
+   static double bull_zone_sweep_low = 0.0;
+   static double bear_zone_low = 0.0;
+   static double bear_zone_high = 0.0;
+   static double bear_zone_sweep_high = 0.0;
+
+   if(_Period != (int)strategy_execution_tf)
+      return false;
+   if(strategy_fast_ema <= 0 || strategy_mid_ema <= 0 || strategy_slow_ema <= 0 ||
+      strategy_sweep_lookback < 3 || strategy_atr_period <= 0 ||
+      strategy_sl_atr_mult <= 0.0 || strategy_tp_r_multiple <= 0.0)
       return false;
 
-   const double atr = QM_ATR(_Symbol, PERIOD_M15, strategy_atr_period, 1);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(atr <= 0.0 || point <= 0.0)
-      return false;
-
-   if(RetestedZone(true) && BullishBias() && BullishContinuation())
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
-      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      const double sl = g_bull_sweep_low - (strategy_sl_atr_buffer * atr);
-      const double risk = entry - sl;
-      if(entry > 0.0 && risk > point)
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) == _Symbol &&
+         (int)PositionGetInteger(POSITION_MAGIC) == magic)
+         return false;
+     }
+
+   const double open1  = iOpen(_Symbol, strategy_execution_tf, 1);  // perf-allowed: M15 structural sweep/IFVG OHLC
+   const double high1  = iHigh(_Symbol, strategy_execution_tf, 1);  // perf-allowed: M15 structural sweep/IFVG OHLC
+   const double low1   = iLow(_Symbol, strategy_execution_tf, 1);   // perf-allowed: M15 structural sweep/IFVG OHLC
+   const double close1 = iClose(_Symbol, strategy_execution_tf, 1); // perf-allowed: M15 structural sweep/IFVG OHLC
+   const double high3  = iHigh(_Symbol, strategy_execution_tf, 3);  // perf-allowed: M15 three-bar IFVG reference
+   const double low3   = iLow(_Symbol, strategy_execution_tf, 3);   // perf-allowed: M15 three-bar IFVG reference
+   if(open1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0 || close1 <= 0.0 || high3 <= 0.0 || low3 <= 0.0)
+      return false;
+
+   double prior_high = -DBL_MAX;
+   double prior_low = DBL_MAX;
+   for(int shift = 2; shift < 2 + strategy_sweep_lookback; ++shift)
+     {
+      const double h = iHigh(_Symbol, strategy_execution_tf, shift); // perf-allowed: bounded 20-bar structural sweep window
+      const double l = iLow(_Symbol, strategy_execution_tf, shift);  // perf-allowed: bounded 20-bar structural sweep window
+      if(h <= 0.0 || l <= 0.0)
+         return false;
+      prior_high = MathMax(prior_high, h);
+      prior_low = MathMin(prior_low, l);
+     }
+
+   const double h4_fast = QM_EMA(_Symbol, PERIOD_H4, strategy_fast_ema, 1);
+   const double h4_mid  = QM_EMA(_Symbol, PERIOD_H4, strategy_mid_ema, 1);
+   const double h4_slow = QM_EMA(_Symbol, PERIOD_H4, strategy_slow_ema, 1);
+   const double h1_fast = QM_EMA(_Symbol, PERIOD_H1, strategy_fast_ema, 1);
+   const double h1_mid  = QM_EMA(_Symbol, PERIOD_H1, strategy_mid_ema, 1);
+   const double h1_close = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed: H1 continuation close vs pooled EMA
+   const double atr = QM_ATR(_Symbol, strategy_execution_tf, strategy_atr_period, 1);
+   if(h4_fast <= 0.0 || h4_mid <= 0.0 || h4_slow <= 0.0 ||
+      h1_fast <= 0.0 || h1_mid <= 0.0 || h1_close <= 0.0 || atr <= 0.0)
+      return false;
+
+   const bool h4_bull = (h4_fast > h4_mid && h4_mid > h4_slow);
+   const bool h4_bear = (h4_fast < h4_mid && h4_mid < h4_slow);
+   const bool h1_bull = (h1_close > h1_mid && h1_fast > h1_mid);
+   const bool h1_bear = (h1_close < h1_mid && h1_fast < h1_mid);
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
+      return false;
+
+   if(bull_zone_active && h4_bull && h1_bull &&
+      high1 >= bull_zone_low && low1 <= bull_zone_high)
+     {
+      const double sl = bull_zone_sweep_low - atr * strategy_sl_atr_mult;
+      if(sl > 0.0 && sl < ask)
         {
          req.type = QM_BUY;
          req.price = 0.0;
-         req.sl = NormalizeStrategyPrice(sl);
-         req.tp = NormalizeStrategyPrice(entry + strategy_rr_target * risk);
-         req.reason = "TV_IFVG_SWEEP_LONG";
-         g_bull_zone_active = false;
+         req.sl = sl;
+         req.tp = ask + (ask - sl) * strategy_tp_r_multiple;
+         req.reason = "TV_IFVG_SWEEP_LONG_RETEST";
+         bull_zone_active = false;
          return true;
         }
      }
 
-   if(RetestedZone(false) && BearishBias() && BearishContinuation())
+   if(bear_zone_active && h4_bear && h1_bear &&
+      high1 >= bear_zone_low && low1 <= bear_zone_high)
      {
-      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      const double sl = g_bear_sweep_high + (strategy_sl_atr_buffer * atr);
-      const double risk = sl - entry;
-      if(entry > 0.0 && risk > point)
+      const double sl = bear_zone_sweep_high + atr * strategy_sl_atr_mult;
+      if(sl > bid)
         {
          req.type = QM_SELL;
          req.price = 0.0;
-         req.sl = NormalizeStrategyPrice(sl);
-         req.tp = NormalizeStrategyPrice(entry - strategy_rr_target * risk);
-         req.reason = "TV_IFVG_SWEEP_SHORT";
-         g_bear_zone_active = false;
+         req.sl = sl;
+         req.tp = bid - (sl - bid) * strategy_tp_r_multiple;
+         req.reason = "TV_IFVG_SWEEP_SHORT_RETEST";
+         bear_zone_active = false;
          return true;
         }
      }
 
-   DetectNewZones();
+   const bool sell_side_sweep = (low1 < prior_low && close1 > prior_low);
+   const bool buy_side_sweep = (high1 > prior_high && close1 < prior_high);
+   const bool displacement = (MathAbs(close1 - open1) >= atr * strategy_displacement_atr_mult);
+
+   if(sell_side_sweep)
+     {
+      bull_sweep_active = true;
+      bull_sweep_low = low1;
+     }
+   if(buy_side_sweep)
+     {
+      bear_sweep_active = true;
+      bear_sweep_high = high1;
+     }
+
+   if(bull_sweep_active && h4_bull && h1_bull && displacement && low1 > high3)
+     {
+      bull_zone_low = high3;
+      bull_zone_high = low1;
+      bull_zone_sweep_low = bull_sweep_low;
+      bull_zone_active = true;
+      bull_sweep_active = false;
+     }
+
+   if(bear_sweep_active && h4_bear && h1_bear && displacement && high1 < low3)
+     {
+      bear_zone_low = high1;
+      bear_zone_high = low3;
+      bear_zone_sweep_high = bear_sweep_high;
+      bear_zone_active = true;
+      bear_sweep_active = false;
+     }
+
    return false;
   }
 
@@ -342,18 +279,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card baseline has no partial, break-even, or trailing management.
+   // Card specifies no break-even, trailing stop, or partial close.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0 || strategy_time_stop_bars <= 0)
+   if(strategy_max_hold_bars <= 0)
       return false;
 
-   const int hold_seconds = strategy_time_stop_bars * PeriodSeconds(PERIOD_M15);
+   const int magic = QM_FrameworkMagic();
+   const int hold_seconds = strategy_max_hold_bars * PeriodSeconds(strategy_execution_tf);
    if(hold_seconds <= 0)
       return false;
 
@@ -362,11 +299,9 @@ bool Strategy_ExitSignal()
       const ulong ticket = PositionGetTicket(i);
       if(ticket == 0 || !PositionSelectByTicket(ticket))
          continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol ||
+         (int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
       const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
       if(opened > 0 && TimeCurrent() - opened >= hold_seconds)
          return true;
@@ -380,6 +315,7 @@ bool Strategy_ExitSignal()
 // custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
+   (void)broker_time;
    return false; // defer to QM_NewsAllowsTrade(...)
   }
 

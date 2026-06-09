@@ -3,16 +3,16 @@
 ; ea_id:        10074
 ; ea_slug:      gh-santi-adxma
 ; ea_version:   v5.0
-; set_version:  s20260523-001
+; set_version:  s20260609-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   31b57dfbc019b22e5d9d19e243fe4dd2a3a52f8c19dc583b33a0d8135e549af7
 ; author:       Development
-; date:         2026-05-23
+; date:         2026-06-09
 ;==========================================================
 qm_magic_slot_offset=1
 RISK_FIXED=1000

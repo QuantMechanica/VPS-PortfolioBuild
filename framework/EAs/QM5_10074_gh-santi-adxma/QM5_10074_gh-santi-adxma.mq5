@@ -3,6 +3,7 @@
 #property description "QM5_10074 GitHub Santiago ADX EMA Trend Filter"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_Signals.mqh>
 
 // =============================================================================
 // QuantMechanica V5 EA SKELETON
@@ -113,16 +114,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double ema_1 = QM_EMA(_Symbol, tf, strategy_ema_period, 1);
    const double ema_2 = QM_EMA(_Symbol, tf, strategy_ema_period, 2);
    const double ema_3 = QM_EMA(_Symbol, tf, strategy_ema_period, 3);
-   const double close_1 = iClose(_Symbol, _Period, 1);
+   const int price_vs_ema = QM_Sig_Price_Above_MA(_Symbol, tf, strategy_ema_period, 0.0, 1);
    const double adx_1 = QM_ADX(_Symbol, tf, strategy_adx_period, 1);
    const double plus_di_1 = QM_ADX_PlusDI(_Symbol, tf, strategy_adx_period, 1);
    const double minus_di_1 = QM_ADX_MinusDI(_Symbol, tf, strategy_adx_period, 1);
    if(ema_1 <= 0.0 || ema_2 <= 0.0 || ema_3 <= 0.0 ||
-      close_1 <= 0.0 || adx_1 <= 0.0)
+      price_vs_ema == 0 || adx_1 <= 0.0)
       return false;
 
    if(ema_1 > ema_2 && ema_2 > ema_3 &&
-      close_1 > ema_1 &&
+      price_vs_ema > 0 &&
       adx_1 > strategy_adx_min &&
       plus_di_1 > minus_di_1)
      {
@@ -138,7 +139,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      }
 
    if(ema_1 < ema_2 && ema_2 < ema_3 &&
-      close_1 < ema_1 &&
+      price_vs_ema < 0 &&
       adx_1 > strategy_adx_min &&
       minus_di_1 > plus_di_1)
      {
