@@ -38,5 +38,29 @@ applies realistic cost (DL-073 notional + DL-072 cushion) and is the honest judg
 reversion + lead-lag: **do not pursue** (cost-killed / dead), but the cross-sectional result confirms
 OWNER's intuition was directionally right — the edge is real, just sub-cost.
 
+## v3 — systematic scan (idea generation, data-tested)
+`analyze_cross_asset_v3.py`: cointegration scan over ALL 66 FX pairs + triangular mispricing.
+Disciplined null-heavy result — only **2 of 66 pairs** cleared (DEV>0 AND OOS net Sharpe>0.8 AND ≥4 trades):
+
+| pair | DEV | OOS net Sharpe | OOS ret | OOS trades | half-life | verdict |
+|---|---|---|---|---|---|---|
+| **EURJPY~GBPJPY** | 0.59 | **1.53** | +5.98% | 24 | 35d | **STRONGEST — carded QM5_12533** (positive DEV *and* OOS; common JPY leg + European-risk factor) |
+| AUDUSD~NZDUSD | 0.13 | 1.29 | +5.68% | 14 | 65d | carded QM5_12532 (OOS-only; regime-sensitive) |
+
+**Triangular mispricing (EURJPY=EUR+JPY, GBPJPY, AUDJPY, EURGBP, EURAUD): ALL DEAD net**
+(OOS net Sharpe −1.1 to −3.4) — the 3-leg cost annihilates the tiny residual; HFT territory, no edge for us at D1.
+
+## Carded (routed to pipeline, force_build)
+- **QM5_12532** edgelab-audnzd-cointegration
+- **QM5_12533** edgelab-eurjpy-gbpjpy-cointegration (the stronger one)
+Both 2-leg market-neutral RV basket EAs (QM5_10717 recipe); the pipeline (DL-073 notional + DL-072 cushion + swap) is the judge.
+
+## Forward idea menu (not yet tested — need data we haven't exported)
+- **Risk-on/off cross-asset:** export NDX/SP500/XAUUSD bars, test JPY/CHF (havens) & gold vs equity-index
+  selloffs (lead/lag + reversion across asset classes — genuinely orthogonal to FX-only).
+- **Regime-conditioned pairs:** does cross-sectional FX dispersion (or VIX-proxy) predict when the
+  cointegration pairs revert fastest → a regime filter to lift the pairs Sharpe.
+- **Gold-USD / gold-AUD structural link** (XAUUSD vs AUDUSD commodity-currency beta).
+
 Reusable tooling kept: `T_Export` terminal + the export/analysis scripts (re-run for any future
-cross-asset study; re-export to refresh data).
+cross-asset study; re-export to refresh data, or add NDX/SP500/XAUUSD to Export_FX_Bars.mq5 for the risk-on/off menu).
