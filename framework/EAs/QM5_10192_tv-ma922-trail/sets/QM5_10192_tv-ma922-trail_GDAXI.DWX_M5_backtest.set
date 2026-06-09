@@ -3,7 +3,7 @@
 ; ea_id:        10192
 ; ea_slug:      tv-ma922-trail
 ; ea_version:   v5.0
-; set_version:  s20260524-001
+; set_version:  s20260609-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    M5
 ; environment:  backtest
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-05-24
+; date:         2026-06-09
 ;==========================================================
 qm_magic_slot_offset=1
 RISK_FIXED=1000
