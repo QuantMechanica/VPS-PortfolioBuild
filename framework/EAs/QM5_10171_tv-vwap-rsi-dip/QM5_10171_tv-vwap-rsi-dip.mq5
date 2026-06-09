@@ -73,16 +73,16 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input ENUM_TIMEFRAMES strategy_signal_tf = PERIOD_H1;
-input int    strategy_ema_fast           = 50;
-input int    strategy_ema_slow           = 200;
-input int    strategy_rsi_period         = 3;
-input int    strategy_rsi_dip_lookback   = 10;
-input double strategy_rsi_dip_level      = 10.0;
-input double strategy_rsi_exit_level     = 90.0;
-input int    strategy_atr_period         = 14;
-input double strategy_atr_stop_mult      = 2.5;
-input double strategy_percent_stop       = 5.0;
+input ENUM_TIMEFRAMES strategy_signal_tf       = PERIOD_H1;
+input int             strategy_ema_fast        = 50;
+input int             strategy_ema_slow        = 200;
+input int             strategy_rsi_period      = 3;
+input int             strategy_rsi_dip_lookback = 10;
+input double          strategy_rsi_dip_level   = 10.0;
+input double          strategy_rsi_exit_level  = 90.0;
+input int             strategy_atr_period      = 14;
+input double          strategy_atr_stop_mult   = 2.5;
+input double          strategy_percent_stop    = 5.0;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -92,26 +92,64 @@ input double strategy_percent_stop       = 5.0;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
+   // Standard spread/news/Friday guards are handled by the framework.
    return false;
+  }
+
+bool Strategy_HasOpenLong()
+  {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      return ((ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY);
+     }
+   return false;
+  }
+
+double Strategy_CloseAt(const int shift)
+  {
+   return iClose(_Symbol, strategy_signal_tf, shift); // perf-allowed: closed-bar candle/VWAP source has no QM reader.
+  }
+
+double Strategy_OpenAt(const int shift)
+  {
+   return iOpen(_Symbol, strategy_signal_tf, shift); // perf-allowed: closed-bar candle filter has no QM reader.
+  }
+
+datetime Strategy_TimeAt(const int shift)
+  {
+   return iTime(_Symbol, strategy_signal_tf, shift); // perf-allowed: same-day VWAP reset needs bar date.
+  }
+
+long Strategy_VolumeAt(const int shift)
+  {
+   return iVolume(_Symbol, strategy_signal_tf, shift); // perf-allowed: session VWAP requires tick volume.
   }
 
 double Strategy_SessionVWAP(const int target_shift)
   {
-   if(target_shift < 1)
-      return 0.0;
-
-   const datetime target_time = iTime(_Symbol, strategy_signal_tf, target_shift);
+   const datetime target_time = Strategy_TimeAt(target_shift);
    if(target_time <= 0)
       return 0.0;
 
    MqlDateTime target_dt;
    TimeToStruct(target_time, target_dt);
+
    double pv_sum = 0.0;
    double vol_sum = 0.0;
-
    for(int shift = target_shift; shift < target_shift + 72; ++shift)
      {
-      const datetime bar_time = iTime(_Symbol, strategy_signal_tf, shift);
+      const datetime bar_time = Strategy_TimeAt(shift);
       if(bar_time <= 0)
          break;
 
@@ -120,8 +158,8 @@ double Strategy_SessionVWAP(const int target_shift)
       if(bar_dt.year != target_dt.year || bar_dt.mon != target_dt.mon || bar_dt.day != target_dt.day)
          break;
 
-      const double close_price = iClose(_Symbol, strategy_signal_tf, shift);
-      const long tick_volume = iVolume(_Symbol, strategy_signal_tf, shift);
+      const double close_price = Strategy_CloseAt(shift);
+      const long tick_volume = Strategy_VolumeAt(shift);
       if(close_price <= 0.0 || tick_volume <= 0)
          continue;
 
@@ -134,7 +172,7 @@ double Strategy_SessionVWAP(const int target_shift)
    return pv_sum / vol_sum;
   }
 
-bool Strategy_RSIDipped(const int first_shift)
+bool Strategy_RSIDippedRecently(const int first_shift)
   {
    const int lookback = MathMax(1, strategy_rsi_dip_lookback);
    for(int offset = 0; offset < lookback; ++offset)
@@ -146,15 +184,15 @@ bool Strategy_RSIDipped(const int first_shift)
    return false;
   }
 
-bool Strategy_FiltersTrueAtShift(const int shift)
+bool Strategy_AllEntryFiltersTrue(const int shift)
   {
    const double ema_fast = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_fast, shift);
    const double ema_slow = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_slow, shift);
    if(ema_fast <= 0.0 || ema_slow <= 0.0 || ema_fast <= ema_slow)
       return false;
 
-   const double open_price = iOpen(_Symbol, strategy_signal_tf, shift);
-   const double close_price = iClose(_Symbol, strategy_signal_tf, shift);
+   const double open_price = Strategy_OpenAt(shift);
+   const double close_price = Strategy_CloseAt(shift);
    if(open_price <= 0.0 || close_price <= 0.0 || close_price <= open_price)
       return false;
 
@@ -162,7 +200,7 @@ bool Strategy_FiltersTrueAtShift(const int shift)
    if(vwap <= 0.0 || close_price <= vwap)
       return false;
 
-   return Strategy_RSIDipped(shift);
+   return Strategy_RSIDippedRecently(shift);
   }
 
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
@@ -178,29 +216,26 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!Strategy_FiltersTrueAtShift(1))
+   if(Strategy_HasOpenLong())
       return false;
-   if(Strategy_FiltersTrueAtShift(2))
+
+   if(!Strategy_AllEntryFiltersTrue(1))
+      return false;
+
+   // Enter only on the first closed bar where the complete filter stack turns true.
+   if(Strategy_AllEntryFiltersTrue(2))
       return false;
 
    const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double atr = QM_ATR(_Symbol, strategy_signal_tf, strategy_atr_period, 1);
-   if(entry <= 0.0 || atr <= 0.0)
+   if(entry <= 0.0)
       return false;
 
-   const double pct_distance = entry * MathMax(0.0, strategy_percent_stop) / 100.0;
-   const double atr_distance = atr * strategy_atr_stop_mult;
-   double stop_distance = 0.0;
-   if(pct_distance > 0.0 && atr_distance > 0.0)
-      stop_distance = MathMin(pct_distance, atr_distance);
-   else if(pct_distance > 0.0)
-      stop_distance = pct_distance;
-   else
-      stop_distance = atr_distance;
-   if(stop_distance <= 0.0)
+   const double atr_stop = QM_StopATR(_Symbol, QM_BUY, entry, strategy_atr_period, strategy_atr_stop_mult);
+   const double pct_stop = QM_StopRulesNormalizePrice(_Symbol, entry * (1.0 - strategy_percent_stop / 100.0));
+   if(atr_stop <= 0.0 || pct_stop <= 0.0)
       return false;
 
-   req.sl = QM_StopRulesStopFromDistance(_Symbol, QM_BUY, entry, stop_distance);
+   req.sl = MathMax(atr_stop, pct_stop);
    req.tp = 0.0;
    req.reason = "TV_VWAP_RSI_DIP_LONG";
    return (req.sl > 0.0 && req.sl < entry);
@@ -210,34 +245,22 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
+   // Card baseline has no trailing, break-even, partial, or add-on logic.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   const int magic = QM_FrameworkMagic();
+   if(!Strategy_HasOpenLong())
+      return false;
+
    const double rsi_1 = QM_RSI(_Symbol, strategy_signal_tf, strategy_rsi_period, 1);
    const double rsi_2 = QM_RSI(_Symbol, strategy_signal_tf, strategy_rsi_period, 2);
    if(rsi_1 <= 0.0 || rsi_2 <= 0.0)
       return false;
 
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol ||
-         (int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      if((ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) != POSITION_TYPE_BUY)
-         continue;
-
-      if(rsi_2 >= strategy_rsi_exit_level && rsi_1 < strategy_rsi_exit_level)
-         return true;
-     }
-
-   return false;
+   return (rsi_2 >= strategy_rsi_exit_level && rsi_1 < strategy_rsi_exit_level);
   }
 
 // Optional news-filter override. Return TRUE to suppress trading regardless

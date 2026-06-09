@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-This EA trades a New York morning day-trading momentum setup on M5 bars. A long entry requires EMA9 above EMA21, the last closed M5 close above EMA9, M15 EMA9 above M15 EMA21, a MACD main-line cross above signal, RSI between 40 and 70, tick volume above 1.2 times its 20-bar SMA, and ATR above the configured movement floor. A short entry mirrors those conditions. Positions use a 2.0 ATR initial stop, a 1.5 ATR trailing stop, close by 16:00 New York, and may close earlier on the opposite signal.
+This EA trades a New York morning day-trading momentum setup on M5 bars. A long entry requires EMA9 above EMA21, the last closed M5 close above EMA9, M15 EMA9 above M15 EMA21, MACD main line above signal line, RSI between 40 and 70, tick volume above 1.2 times its 20-bar SMA, and ATR above the configured movement floor. A short entry mirrors those conditions. Positions use a 2.0 ATR initial stop, a 1.5 ATR trailing stop, close by 16:00 New York, and may close earlier on the opposite signal.
 
 ---
 

@@ -11,19 +11,19 @@
 // boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
 // risk + magic + news + Friday-close guard rails). The framework provides:
 //
-//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  — closed-bar gate
+//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  - closed-bar gate
 //   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
 //     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
 //     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
 //   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
 //   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
-//   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
+//   - QM_LotsForRisk(symbol, sl_points)        - risk model lot sizing
 //   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
 //   - QM_FrameworkHandleFridayClose / QM_KillSwitchCheck / QM_NewsAllowsTrade
 //
 // DO NOT
-//   - Write per-EA IsNewBar() — use QM_IsNewBar()
-//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
+//   - Write per-EA IsNewBar() - use QM_IsNewBar()
+//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly -
 //     use the QM_* readers above. The framework pools handles and releases them
 //     on shutdown.
 //   - CopyRates over warmup windows on every tick. If you genuinely need raw
@@ -48,7 +48,7 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-// FW1 2026-05-23 — Two-axis news filter per Vault Q09.
+// FW1 2026-05-23 - Two-axis news filter per Vault Q09.
 //   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
 //   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
 // A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
@@ -65,7 +65,7 @@ input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Stress"
-// FW2 2026-05-23 — only populated by Q05 MED / Q06 HARSH stress setfiles.
+// FW2 2026-05-23 - only populated by Q05 MED / Q06 HARSH stress setfiles.
 // Default 0.0 = no rejection (Q02/Q03/Q04/Q07/Q08/Q09/Q10/Q13 backtests).
 // Q06 HARSH sets to 0.10 (10% of entries randomly dropped before broker send,
 // deterministic per qm_rng_seed). MED slip/spread/commission live in the
@@ -83,17 +83,18 @@ input double strategy_min_mother_body_points = 0.0;
 input double strategy_max_spread_points      = 0.0;
 
 // -----------------------------------------------------------------------------
-// Strategy hooks — implement these against the card mechanically.
+// Strategy hooks - implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
 // Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
-// regime filter). Cheap O(1) checks only — runs on every tick.
+// regime filter). Cheap O(1) checks only - runs on every tick.
 bool Strategy_NoTradeFilter()
   {
    if(strategy_rsi_period <= 0 ||
       strategy_atr_period <= 0 ||
       strategy_atr_sl_mult <= 0.0 ||
-      strategy_context_bars <= 0 ||
+      strategy_context_bars < 1 ||
+      strategy_context_bars > 20 ||
       strategy_min_mother_body_points < 0.0 ||
       strategy_max_spread_points < 0.0)
       return true;
@@ -129,13 +130,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(point <= 0.0)
       return false;
 
-   const double open_child = iOpen(_Symbol, PERIOD_H1, 1);
-   const double close_child = iClose(_Symbol, PERIOD_H1, 1);
-   const double open_mother = iOpen(_Symbol, PERIOD_H1, 2);
-   const double close_mother = iClose(_Symbol, PERIOD_H1, 2);
-   const double context_close = iClose(_Symbol, PERIOD_H1, 2 + strategy_context_bars);
-   if(open_child <= 0.0 || close_child <= 0.0 || open_mother <= 0.0 ||
-      close_mother <= 0.0 || context_close <= 0.0)
+   const int context_bars = MathMax(1, MathMin(strategy_context_bars, 20));
+   const int bars_needed = 2 + context_bars;
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, PERIOD_H1, 1, bars_needed, rates); // perf-allowed: Harami body structure needs closed OHLC bars; this hook is called only after QM_IsNewBar().
+   if(copied != bars_needed)
+      return false;
+
+   const double open_child = rates[0].open;
+   const double close_child = rates[0].close;
+   const double open_mother = rates[1].open;
+   const double close_mother = rates[1].close;
+   if(open_child <= 0.0 || close_child <= 0.0 || open_mother <= 0.0 || close_mother <= 0.0)
       return false;
 
    const double mother_body = MathAbs(open_mother - close_mother);
@@ -150,10 +157,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double mother_body_low = MathMin(open_mother, close_mother);
    const double child_body_high = MathMax(open_child, close_child);
    const double child_body_low = MathMin(open_child, close_child);
-   const bool body_contained = (child_body_high <= mother_body_high &&
-                                child_body_low >= mother_body_low);
-   if(!body_contained)
+   if(child_body_high > mother_body_high || child_body_low < mother_body_low)
       return false;
+
+   bool downward_context = true;
+   bool upward_context = true;
+   for(int i = 1; i < bars_needed - 1; ++i)
+     {
+      downward_context = downward_context && (rates[i].close < rates[i + 1].close);
+      upward_context = upward_context && (rates[i].close > rates[i + 1].close);
+     }
 
    const double rsi = QM_RSI(_Symbol, PERIOD_H1, strategy_rsi_period, 1);
    if(rsi <= 0.0)
@@ -166,7 +179,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    const bool bullish_harami = (close_mother < open_mother &&
                                 close_child > open_child &&
-                                close_mother < context_close);
+                                downward_context);
    if(bullish_harami && rsi < strategy_buy_rsi_max)
      {
       req.type = QM_BUY;
@@ -179,7 +192,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    const bool bearish_harami = (close_mother > open_mother &&
                                 close_child < open_child &&
-                                close_mother > context_close);
+                                upward_context);
    if(bearish_harami && rsi > strategy_sell_rsi_min)
      {
       req.type = QM_SELL;
@@ -205,7 +218,7 @@ void Strategy_ManageOpenPosition()
 bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
+   if(magic <= 0 || strategy_rsi_period <= 0)
       return false;
 
    bool have_long = false;
@@ -245,15 +258,6 @@ bool Strategy_ExitSignal()
        (rsi_prev < 70.0 && rsi_now >= 70.0)))
       return true;
 
-   QM_EntryRequest opposite;
-   if(Strategy_EntrySignal(opposite))
-     {
-      if(have_long && opposite.type == QM_SELL)
-         return true;
-      if(have_short && opposite.type == QM_BUY)
-         return true;
-     }
-
    return false;
   }
 
@@ -266,7 +270,7 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
   }
 
 // -----------------------------------------------------------------------------
-// Framework wiring — do NOT edit below this line unless you know why.
+// Framework wiring - do NOT edit below this line unless you know why.
 // -----------------------------------------------------------------------------
 
 int OnInit()
@@ -307,7 +311,7 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
+   // FW1 - 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
    // when both new axes are at their OFF defaults.
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
@@ -341,12 +345,12 @@ void OnTick()
      }
 
    // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
-   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
+   // per-tick recompute mistakes - EntrySignal sees one new closed bar per
    // call, not every incoming tick.
    if(!QM_IsNewBar())
       return;
 
-   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
+   // FW6 2026-05-23 - emit end-of-day equity snapshot if the day rolled
    // since last tick. Cheap: most calls early-return on same-day check.
    QM_EquityStreamOnNewBar();
 
@@ -377,3 +381,4 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
+

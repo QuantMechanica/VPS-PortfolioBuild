@@ -232,8 +232,6 @@ int Strategy_DirectionSignal(const bool require_volume_atr)
 
    const double macd_main_1 = QM_MACD_Main(_Symbol, entry_tf, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
    const double macd_sig_1 = QM_MACD_Signal(_Symbol, entry_tf, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
-   const double macd_main_2 = QM_MACD_Main(_Symbol, entry_tf, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 2);
-   const double macd_sig_2 = QM_MACD_Signal(_Symbol, entry_tf, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 2);
    const double rsi_1 = QM_RSI(_Symbol, entry_tf, strategy_rsi_period, 1);
    if(rsi_1 <= 0.0)
       return 0;
@@ -254,7 +252,6 @@ int Strategy_DirectionSignal(const bool require_volume_atr)
    if(ema_fast_1 > ema_slow_1 &&
       close_1 > ema_fast_1 &&
       confirm_fast_1 > confirm_slow_1 &&
-      macd_main_2 <= macd_sig_2 &&
       macd_main_1 > macd_sig_1 &&
       rsi_1 >= strategy_long_rsi_min &&
       rsi_1 <= strategy_long_rsi_max)
@@ -263,7 +260,6 @@ int Strategy_DirectionSignal(const bool require_volume_atr)
    if(ema_fast_1 < ema_slow_1 &&
       close_1 < ema_fast_1 &&
       confirm_fast_1 < confirm_slow_1 &&
-      macd_main_2 >= macd_sig_2 &&
       macd_main_1 < macd_sig_1 &&
       rsi_1 >= strategy_short_rsi_min &&
       rsi_1 <= strategy_short_rsi_max)
