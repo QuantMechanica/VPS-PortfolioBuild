@@ -6797,8 +6797,22 @@ def pump(root: Path) -> dict[str, Any]:
     #    file level: CSV append is atomic line-by-line, update_resolver is
     #    idempotent (reads current CSV state, regenerates .mqh deterministically).
     #    OWNER 2026-05-16: explicit ok to parallelize.
-    MAX_PARALLEL_CODEX = 3       # OWNER 2026-05-29: 5->3 (false-PASS pattern showed bounded burn wasn't holding; project_qm_false_pass_build_ea_wave_2026-05-28)
-    MAX_PARALLEL_CODEX_BUILDS = 3  # same: 5->3 to match
+    # Codex build parallelism is env-driven so a boost needs no code change/revert.
+    # Default 3 (OWNER 2026-05-29: 5->3 after the false-PASS bounded-burn wave;
+    # project_qm_false_pass_build_ea_wave_2026-05-28). Set QM_CODEX_PARALLEL to boost
+    # (OWNER 2026-06-09: 10 until midnight to build the card backlog; a scheduled task
+    # resets it to 3 at 00:00). Clamped to a sane 1..16.
+    # Read order: state file (most reliable — re-read from disk each pump cycle, no
+    # env-propagation lag to scheduled tasks) > QM_CODEX_PARALLEL env > default 3.
+    _cx_file = Path(r"D:/QM/strategy_farm/state/codex_parallel.txt")
+    try:
+        _cx_raw = _cx_file.read_text(encoding="utf-8").strip() if _cx_file.exists() \
+                  else os.environ.get("QM_CODEX_PARALLEL", "3")
+        _cx_par = max(1, min(16, int(_cx_raw)))
+    except (TypeError, ValueError, OSError):
+        _cx_par = 3
+    MAX_PARALLEL_CODEX = _cx_par
+    MAX_PARALLEL_CODEX_BUILDS = _cx_par
     # Gemini headless CLI can authenticate, but on this Windows host it may
     # hang on tool-heavy EA builds after node-pty AttachConsole failures.
     # Keep the lane implemented but opt-in until a supervised smoke proves it
