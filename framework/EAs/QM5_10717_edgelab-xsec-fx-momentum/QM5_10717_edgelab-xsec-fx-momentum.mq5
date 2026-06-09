@@ -1,11 +1,11 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_10717_v2 Edge Lab Cross-Sectional FX Momentum"
+#property description "QM5_10717 Edge Lab Cross-Sectional FX Momentum"
 
 #include <QM/QM_Common.mqh>
 #include <QM/QM_BasketOrder.mqh>
 
-// v2: source unchanged. Two distinct failures in v1 (2026-05-31, T8):
+// Prior build notes. Two distinct failures in the 2026-05-31 T8 run:
 // 1. NZDUSD.DWX (work_item 707d48ca): ONINIT_FAILED — false positive; concurrent
 //    tests on T8 that day left "tester stopped because OnInit returns non-zero code
 //    1" in the shared journal. EA ran but produced 0 trades (basket perspective
@@ -16,8 +16,7 @@
 //    the warmup is partial and the strategy produces no signals. Requires T8 to
 //    have full D1 history for the full 28-symbol basket. Codex/OWNER: verify
 //    terminal data availability before enqueueing.
-// This _v2 recompiles with a fresh artifact. Codex review must confirm basket
-// data availability before pipeline enqueue.
+// Codex review must confirm basket data availability before pipeline enqueue.
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 10717;
@@ -553,4 +552,3 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-

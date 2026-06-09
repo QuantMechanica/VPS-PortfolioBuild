@@ -3,16 +3,16 @@
 ; ea_id:        10717
 ; ea_slug:      edgelab-xsec-fx-momentum
 ; ea_version:   v5.0
-; set_version:  s20260531-001
+; set_version:  s20260609-001
 ; symbol:       GBPAUD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   15
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   86f25eb3de09bd17b81bbf24e366fe39b705557b8597cc20c2d094367cd826a0
+; build_hash:   f4f653ea0c54b3d415b7d66c6d8a8f377d97ab9d86be1fd6bae33f83de4c1f4e
 ; author:       Development
-; date:         2026-05-31
+; date:         2026-06-09
 ;==========================================================
 qm_magic_slot_offset=15
 RISK_FIXED=1000
@@ -31,13 +31,4 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-strategy_lookback_days=63
-strategy_rebalance_dow=1
-strategy_atr_period=20
-strategy_atr_sl_mult=2.0
-strategy_deviation_points=30
-strategy_volfilter_enabled=true
-strategy_vol_window=20
-strategy_vol_percentile_days=252
-strategy_vol_skip_pct=0.90
-strategy_max_spread_points=0
+; card_defaults_source=not_found

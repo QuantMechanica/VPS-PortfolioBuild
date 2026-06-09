@@ -3,16 +3,16 @@
 ; ea_id:        10717
 ; ea_slug:      edgelab-xsec-fx-momentum
 ; ea_version:   v5.0
-; set_version:  s20260531-001
+; set_version:  s20260609-001
 ; symbol:       CADCHF.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   26
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   fa4b6dd5b541ebcc953c8986ddfddd9cccdb3a6cc7773948e77f67c204c6d30a
+; build_hash:   cca612d2b98f5d9e3636a524e6ce7944dab70f68c82fb2a6c7e7abcc160aecc8
 ; author:       Development
-; date:         2026-05-31
+; date:         2026-06-09
 ;==========================================================
 qm_magic_slot_offset=26
 RISK_FIXED=1000
@@ -31,13 +31,4 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-strategy_lookback_days=63
-strategy_rebalance_dow=1
-strategy_atr_period=20
-strategy_atr_sl_mult=2.0
-strategy_deviation_points=30
-strategy_volfilter_enabled=true
-strategy_vol_window=20
-strategy_vol_percentile_days=252
-strategy_vol_skip_pct=0.90
-strategy_max_spread_points=0
+; card_defaults_source=not_found

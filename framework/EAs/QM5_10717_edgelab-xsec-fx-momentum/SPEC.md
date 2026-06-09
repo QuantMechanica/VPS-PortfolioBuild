@@ -4,7 +4,7 @@
 **Slug:** edgelab-xsec-fx-momentum
 **Source:** Menkhoff, Sarno, Schmeling, Schrimpf (2012) and QuantMechanica Edge Lab Direction 1 thesis T1
 **Author of this spec:** Codex
-**Last revised:** 2026-05-31
+**Last revised:** 2026-06-09
 
 ---
 
@@ -118,3 +118,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-05-31 | Initial build from card | 9f1105b7-07e7-4d56-a977-20249cc7a79a |
+| v2 | 2026-06-09 | Rebuild in place from approved card | 156f675d-d1ca-4dda-ba6e-97713eadab4b |
