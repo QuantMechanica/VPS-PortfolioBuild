@@ -142,6 +142,92 @@ def read_pf_net_from_ea(ea_id: int, symbol: str) -> tuple[float | None, int, flo
     return pf, trades, comm
 
 
+# ---------------------------------------------------------------------------
+# DL-073 (OWNER-ratified 2026-06-09): realistic %-of-notional commission.
+# Q04 historically charged a flat $7/lot round-trip EA-side — per-instrument WRONG
+# (too harsh for FX majors ~$5, materially too lenient for high-notional index/gold).
+# We now grade Q04 with the SAME instrument-correct model Q08 uses
+# (tools/strategy_farm/portfolio/commission.py + framework/registry/live_commission.json:
+#  cost_rt = max(pct_rate_rt × notional_acct, flat_per_lot_rt × volume)), applied POST-HOC
+# to the per-trade stream the fold backtest already emits. No EA change, no MT5 re-run:
+# every backtest writes TRADE_CLOSED rows (with notional + volume) to the q08_trades
+# stream, so the realistic net P&L is recomputed in python. The flat-$7 EA self-report
+# is kept only as a fallback when the stream is unavailable. Mirrors
+# q08_davey.aggregate._apply_worst_case_commission so both gates share one cost model.
+# ---------------------------------------------------------------------------
+_COMMISSION_MODEL = None
+
+
+def _commission_model():
+    """Lazy-load the shared CommissionModel (single source of truth = live_commission.json)."""
+    global _COMMISSION_MODEL
+    if _COMMISSION_MODEL is None:
+        from tools.strategy_farm.portfolio import commission
+        _COMMISSION_MODEL = commission.load_model()
+    return _COMMISSION_MODEL
+
+
+def _q08_trade_stream_path(ea_id: int, symbol: str) -> Path:
+    return _common_files_dir() / "QM" / "q08_trades" / f"{ea_id}_{symbol.replace('.', '_')}.jsonl"
+
+
+def _gross_before_commission(trade: dict) -> float:
+    """gross P&L of a trade before any commission (mirrors
+    q08_davey.aggregate._gross_before_commission). The MT5 tester applies $0 commission to
+    .DWX custom symbols, so `profit` is already gross of cost; add swap."""
+    try:
+        profit = trade.get("profit")
+        swap = float(trade.get("swap") or 0.0)
+        if profit is not None:
+            return float(profit) + swap
+        net = float(trade.get("net") or 0.0)
+        bc = trade.get("commission")
+        return net - float(bc) if bc is not None else net
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def pf_net_from_stream(ea_id: int, symbol: str, fold: dict,
+                       model=None) -> tuple[float | None, int, float | None, float | None]:
+    """DL-073 grading source: PF-net under the realistic %-notional commission model,
+    computed post-hoc from the per-trade stream the fold backtest just emitted.
+
+    Returns (pf_net, n_trades, commission_total, gross_total), or (None, 0, None, None)
+    when no usable stream exists (caller falls back to the EA's flat-$7 self-report).
+    """
+    from framework.scripts.q08_davey import common as q08common
+    model = model or _commission_model()
+    trades = q08common.load_trades_from_log(_q08_trade_stream_path(ea_id, symbol))
+    if not trades:
+        return None, 0, None, None
+    # Defensive OOS windowing: a fold backtest only runs its OOS year, but a stale stream
+    # could carry other dates. Keep trades whose close ts is inside [oos_start, oos_end].
+    oos_start = dt.datetime.fromisoformat(fold["oos_start"]).replace(tzinfo=dt.timezone.utc)
+    oos_end = (dt.datetime.fromisoformat(fold["oos_end"]).replace(tzinfo=dt.timezone.utc)
+               + dt.timedelta(days=1))
+    nets: list[float] = []
+    cost_total = 0.0
+    gross_total = 0.0
+    for t in trades:
+        ts = q08common.trade_timestamp(t)
+        if ts is not None and not (oos_start <= ts < oos_end):
+            continue
+        vol = float(t.get("volume") or 0.0)
+        notional = t.get("notional")
+        notional = float(notional) if notional not in (None, "") else None
+        cost = model.cost_round_trip(str(t.get("symbol") or symbol), vol, notional)
+        gross = _gross_before_commission(t)
+        nets.append(gross - cost)
+        cost_total += cost
+        gross_total += gross
+    if not nets:
+        return None, 0, None, None
+    pf = q08common.profit_factor(nets)
+    if pf == float("inf"):      # no losing trades after cost → cap for a finite verdict
+        pf = 999.0
+    return pf, len(nets), round(cost_total, 4), round(gross_total, 4)
+
+
 def resolve_ea_expert_path(repo_root: Path, ea_label: str) -> str | None:
     """Canonical MT5 expert path 'QM\\<ea_dir>' for run_smoke / the tester (run_smoke
     deploys framework/EAs/<dir>/<dir>.ex5 to Experts/QM/<dir>.ex5). Bare labels do NOT
@@ -245,13 +331,15 @@ def run_fold_via_smoke(*, ea_id: int, ea_expert: str, symbol: str,
         base_text = base_text.rstrip("\r\n") + f"\r\nInpQMSimCommissionPerLot={COMMISSION_PER_LOT_ROUND_TRIP}\r\n"
     fold_set.write_text(base_text, encoding="utf-8")
 
-    # Clear any stale EA result before this fold (folds run sequentially per ea/symbol).
-    res_path = _q04_sim_result_path(ea_id, symbol)
-    try:
-        if res_path.exists():
-            res_path.unlink()
-    except OSError:
-        pass
+    # Clear any stale EA result + per-trade stream before this fold (folds run
+    # sequentially per ea/symbol) so the post-hoc stream read picks up ONLY this
+    # fold's trades. Q08 regenerates the stream from its own full-history baseline.
+    for stale in (_q04_sim_result_path(ea_id, symbol), _q08_trade_stream_path(ea_id, symbol)):
+        try:
+            if stale.exists():
+                stale.unlink()
+        except OSError:
+            pass
 
     args = [
         "pwsh.exe", "-NoProfile", "-File", str(run_smoke_ps1),
@@ -291,14 +379,24 @@ def run_fold_via_smoke(*, ea_id: int, ea_expert: str, symbol: str,
         return {**fold, "pf_net": None, "trades": 0, "status": "TIMEOUT",
                 "summary_path": None, "log_path": str(log_path)}
 
-    pf_net, trades, sim_comm = read_pf_net_from_ea(ea_id, symbol)
+    # DL-073: grade from the realistic %-notional model applied post-hoc to the per-trade
+    # stream this fold just emitted (preferred). Fall back to the EA's flat-$7 self-report
+    # only when the stream is unavailable (older EA / stream skipped).
+    pf_net, trades, comm_total, gross_total = pf_net_from_stream(ea_id, symbol, fold)
+    commission_basis = "worst_case_dxz_ftmo_notional"
+    if pf_net is None:
+        pf_net, trades, comm_total = read_pf_net_from_ea(ea_id, symbol)
+        gross_total = None
+        commission_basis = "flat_7_ea_side_fallback"
     summary_path = _summary_from_log(log_path) or report_root / f"QM5_{ea_id}" / "Q04" / fold["id"] / "summary.json"
     status = "OK" if (pf_net is not None and proc.returncode == 0) else "FAIL"
     return {
         **fold,
         "pf_net": pf_net,
         "trades": trades,
-        "sim_commission_total": sim_comm,
+        "sim_commission_total": comm_total,
+        "gross_total": gross_total,
+        "commission_basis": commission_basis,
         "status": status,
         "summary_path": str(summary_path) if summary_path.exists() else None,
         "exit_code": proc.returncode,
@@ -333,7 +431,8 @@ def main() -> int:
     period = period_from_setfile(args.setfile)
 
     folds = folds_for_year(args.latest_full_year)
-    print(f"Q04 {args.ea} {args.symbol} {period}  expert={ea_expert}  folds={[f['id'] for f in folds]}  comm=${COMMISSION_PER_LOT_ROUND_TRIP}/lot (EA-side)")
+    print(f"Q04 {args.ea} {args.symbol} {period}  expert={ea_expert}  folds={[f['id'] for f in folds]}  "
+          f"comm=realistic %-notional worst-case{{DXZ,FTMO}} (DL-073; flat ${COMMISSION_PER_LOT_ROUND_TRIP}/lot fallback)")
 
     fold_results: list[dict] = []
     for fold in folds:
@@ -350,12 +449,17 @@ def main() -> int:
 
     verdict, reason = aggregate_verdict(fold_results)
     out_dir = ensure_dir(args.report_root / f"QM5_{ea_id}" / "Q04" / args.symbol)
+    # DL-073: report the basis actually used across folds (notional model unless a fold
+    # had to fall back to the flat-$7 self-report).
+    bases = sorted({f.get("commission_basis") for f in fold_results if f.get("commission_basis")})
     write_json(out_dir / "aggregate.json", {
         "phase": GATE_NAME,
         "ea_id": ea_id,
         "ea": args.ea,
         "symbol": args.symbol,
-        "commission_per_lot_round_trip": COMMISSION_PER_LOT_ROUND_TRIP,
+        "commission_model": "worst_case_dxz_ftmo_notional (DL-073)",
+        "commission_basis": bases,
+        "commission_per_lot_round_trip_fallback": COMMISSION_PER_LOT_ROUND_TRIP,
         "verdict": verdict,
         "reason": reason,
         "generated_at_utc": utc_now_iso(),
