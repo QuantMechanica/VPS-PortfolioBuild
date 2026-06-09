@@ -1,8 +1,8 @@
 # QM5_10253_tv-ifvg-sweep - Strategy Spec
 
 **EA ID:** QM5_10253
-**Slug:** `tv-ifvg-sweep`
-**Source:** `c84ae47e-8ea0-56f1-8b25-4436b6dda5b5` (see `strategy-seeds/sources/c84ae47e-8ea0-56f1-8b25-4436b6dda5b5/`)
+**Slug:** tv-ifvg-sweep
+**Source:** c84ae47e-8ea0-56f1-8b25-4436b6dda5b5
 **Author of this spec:** Codex
 **Last revised:** 2026-06-09
 
@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA trades only on M15 bars during the London-open and NY-open broker-hour windows. A long setup requires H4 EMA(13) > EMA(21) > EMA(34), H1 close above EMA(21), H1 EMA(13) > EMA(21), an M15 sell-side sweep of the prior 20-bar low, and a displacement candle whose body is at least 1.0 ATR(14). After a bullish three-bar imbalance forms with the latest closed M15 low above the high two bars earlier, the EA stores that IFVG zone and enters long on the first later closed-bar retest into it. Shorts mirror the same rules using bearish EMA bias, buy-side sweep, bearish IFVG, a stop above the sweep high, a fixed 2R target, and a 32 M15-bar time stop.
+The EA trades an M15 retest after a liquidity sweep and a completed imbalance. Direction is confirmed by an H4 EMA stack, where EMA(13) must be above EMA(21) above EMA(34) for longs and below for shorts, plus H1 continuation where price and EMA(13) are on the same side of EMA(21). A long setup requires an M15 sell-side sweep, a bullish displacement candle with body at least 1.0 x ATR(14), and a bullish three-bar imbalance; the EA then buys the first retest into that zone. Shorts use the mirrored buy-side sweep and bearish imbalance, with a 2R target, an ATR-buffered sweep stop, and a 32 M15-bar time stop.
 
 ---
 
@@ -18,34 +18,37 @@ The EA trades only on M15 bars during the London-open and NY-open broker-hour wi
 
 | Parameter | Default | Range | Meaning |
 |---|---:|---|---|
-| `strategy_execution_tf` | `PERIOD_M15` | M15 expected | Execution timeframe from the card. |
-| `strategy_fast_ema` | 13 | 1-200 | Fast EMA for H4 bias and H1 continuation. |
-| `strategy_mid_ema` | 21 | 1-200 | Middle EMA for H4 bias and H1 continuation. |
-| `strategy_slow_ema` | 34 | 1-300 | Slow EMA for H4 bias. |
-| `strategy_sweep_lookback` | 20 | 3-100 | Prior M15 high/low window used for liquidity sweeps. |
-| `strategy_atr_period` | 14 | 1-100 | ATR period for displacement and stop offset. |
-| `strategy_displacement_atr_mult` | 1.0 | 0.1-5.0 | Minimum displacement body as a multiple of ATR(14). |
-| `strategy_sl_atr_mult` | 0.25 | 0.01-2.0 | Stop offset beyond the sweep high/low. |
-| `strategy_tp_r_multiple` | 2.0 | 0.5-10.0 | Fixed target in R multiples. |
-| `strategy_max_hold_bars` | 32 | 1-500 | Time stop in M15 bars. |
-| `strategy_london_start_hour` | 8 | 0-23 | Broker-hour start of London-open trade window. |
-| `strategy_london_end_hour` | 11 | 0-24 | Broker-hour end of London-open trade window. |
-| `strategy_ny_start_hour` | 14 | 0-23 | Broker-hour start of NY-open trade window. |
-| `strategy_ny_end_hour` | 17 | 0-24 | Broker-hour end of NY-open trade window. |
-| `strategy_max_spread_points` | 0 | 0-10000 | Optional spread cap; 0 disables the extra cap. |
+| strategy_h4_fast_ema | 13 | >= 2 | Fast H4 EMA for directional bias. |
+| strategy_h4_mid_ema | 21 | >= 2 | Middle H4 EMA for directional bias. |
+| strategy_h4_slow_ema | 34 | >= 2 | Slow H4 EMA for directional bias. |
+| strategy_h1_fast_ema | 13 | >= 2 | Fast H1 EMA for continuation confirmation. |
+| strategy_h1_mid_ema | 21 | >= 2 | Middle H1 EMA and close filter. |
+| strategy_sweep_lookback | 20 | >= 5 | Prior M15 bars used for liquidity sweep high/low. |
+| strategy_atr_period | 14 | >= 2 | M15 ATR period for displacement and SL buffer. |
+| strategy_displacement_atr | 1.0 | > 0 | Minimum displacement body as a multiple of ATR. |
+| strategy_sl_atr_buffer | 0.25 | >= 0 | ATR buffer beyond the sweep extreme for SL. |
+| strategy_reward_risk | 2.0 | > 0 | Fixed target in R multiples. |
+| strategy_time_stop_m15_bars | 32 | >= 0 | Maximum hold time in M15 bars. |
+| strategy_pending_bars | 8 | >= 1 | Pending retest order lifetime in M15 bars. |
+| strategy_max_spread_points | 500 | >= 0 | No-trade gate for current spread points. |
+| strategy_london_start_hour | 8 | 0-23 | Broker-hour start for London volatility window. |
+| strategy_london_end_hour | 11 | 0-23 | Broker-hour end for London volatility window. |
+| strategy_ny_start_hour | 13 | 0-23 | Broker-hour start for NY volatility window. |
+| strategy_ny_end_hour | 16 | 0-23 | Broker-hour end for NY volatility window. |
+| strategy_enforce_m15 | true | true/false | Blocks trading if the chart/test period is not M15. |
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `XAUUSD.DWX` - primary card symbol and liquid volatility instrument for sweep/IFVG behavior.
-- `EURUSD.DWX` - card-listed DWX FX symbol with sufficient OHLC and ATR history.
-- `GBPUSD.DWX` - card-listed DWX FX symbol with sufficient OHLC and ATR history.
-- `NDX.DWX` - card-listed DWX index symbol for liquid intraday continuation moves.
+- XAUUSD.DWX - primary card symbol; gold is liquid and suited to sweep/IFVG volatility.
+- EURUSD.DWX - card P2 default FX symbol with liquid London and NY sessions.
+- GBPUSD.DWX - card P2 default FX symbol with liquid London and NY sessions.
+- NDX.DWX - card P2 default index symbol with strong open-window volatility.
 
 **Explicitly NOT for:**
-- Symbols outside `framework/registry/dwx_symbol_matrix.csv` - the build may only register broker-supported `.DWX` symbols.
+- Symbols absent from `framework/registry/dwx_symbol_matrix.csv` - the build must use DWX-backed tester data only.
 
 ---
 
@@ -53,9 +56,9 @@ The EA trades only on M15 bars during the London-open and NY-open broker-hour wi
 
 | Aspect | Value |
 |---|---|
-| Base timeframe | `M15` |
-| Multi-timeframe refs | H4 EMA(13/21/34), H1 close and EMA(13/21) |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (framework default) |
+| Base timeframe | M15 |
+| Multi-timeframe refs | H4 EMA(13/21/34), H1 close plus EMA(13/21) |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` via the V5 framework OnTick gate |
 
 ---
 
@@ -64,9 +67,9 @@ The EA trades only on M15 bars during the London-open and NY-open broker-hour wi
 | Metric | Expected |
 |---|---|
 | Trades / year / symbol | 90 |
-| Typical hold time | Up to 32 M15 bars, roughly 8 hours |
-| Expected drawdown profile | Volatility-expansion continuation with fixed 2R reward/risk and one position per magic. |
-| Regime preference | Volatility-expansion pullback-continuation |
+| Typical hold time | Intraday, capped at 32 M15 bars |
+| Expected drawdown profile | Volatility-window continuation drawdowns, controlled by fixed 2R brackets |
+| Regime preference | Pullback-continuation / volatility-expansion |
 | Win rate target (qualitative) | Medium |
 
 ---
@@ -75,9 +78,9 @@ The EA trades only on M15 bars during the London-open and NY-open broker-hour wi
 
 This card was mechanised from:
 
-**Source ID:** `c84ae47e-8ea0-56f1-8b25-4436b6dda5b5`
+**Source ID:** c84ae47e-8ea0-56f1-8b25-4436b6dda5b5
 **Source type:** TradingView public open-source script
-**Pointer:** `https://www.tradingview.com/script/x6Xam693-Multicator-Sweeps-IFVG-Zone-Alerts-by-Olu777/`
+**Pointer:** https://www.tradingview.com/script/x6Xam693-Multicator-Sweeps-IFVG-Zone-Alerts-by-Olu777/
 **R1-R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_10253_tv-ifvg-sweep.md`
 
 ---
