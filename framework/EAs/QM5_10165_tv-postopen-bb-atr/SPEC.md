@@ -4,7 +4,7 @@
 **Slug:** `tv-postopen-bb-atr`
 **Source:** `30591366-874b-5bee-b47c-da2fca20b728` (see `strategy-seeds/sources/30591366-874b-5bee-b47c-da2fca20b728/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-05-25
+**Last revised:** 2026-06-09
 
 ---
 
@@ -27,7 +27,7 @@ This EA trades long-only post-open resistance breakouts on intraday bars. It onl
 | `strategy_rsi_min` | 30.0 | 0.0-100.0 | Minimum RSI value allowed for long entries |
 | `strategy_adx_period` | 7 | 2-50 | ADX trend-strength period |
 | `strategy_adx_min` | 10.0 | 0.0-100.0 | Minimum ADX value allowed for long entries |
-| `strategy_resistance_bars` | 20 | 5-100 | Closed bars used to identify resistance |
+| `strategy_resistance_bars` | 20 | 2-20 | Closed bars used to identify resistance |
 | `strategy_resistance_touches` | 2 | 1-10 | Minimum highs near resistance required |
 | `strategy_touch_tolerance_atr` | 0.20 | 0.0-1.0 | Resistance touch tolerance as a fraction of ATR |
 | `strategy_atr_period` | 14 | 2-100 | ATR period for spread, stop, and target distances |
@@ -111,3 +111,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 |---|---|---|---|
 | v1 | 2026-05-25 | Initial build from card | 74fe4c97-4c5e-4ad6-8782-e7a2fc06f41c |
 | v2 | 2026-06-04 | Q01 rework: evaluate BB lateralization on setup candle and use highest two-touch resistance level | b1747809-4fa1-4ee9-b336-f5893e4bcd27 |
+| v3 | 2026-06-09 | Refresh to current V5 skeleton and preserve session-end exit path | e42a71c2-2d12-45ff-a850-b0585d41d90c |

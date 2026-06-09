@@ -45,34 +45,34 @@ input double strategy_max_range_atr_mult        = 3.0;
 input bool   strategy_enable_trailing           = false;
 input double strategy_trail_atr_mult            = 1.0;
 
-double   g_asia_high = 0.0;
-double   g_asia_low = 0.0;
-double   g_cached_atr = 0.0;
-int      g_range_key = 0;
-int      g_trade_day_key = 0;
-bool     g_long_taken_today = false;
-bool     g_short_taken_today = false;
+double g_asia_high = 0.0;
+double g_asia_low = 0.0;
+double g_cached_atr = 0.0;
+int    g_range_key = 0;
+int    g_trade_day_key = 0;
+bool   g_long_taken_today = false;
+bool   g_short_taken_today = false;
 
-datetime ToNewYorkTime(const datetime broker_time)
+datetime Strategy_ToNewYorkTime(const datetime broker_time)
   {
    return broker_time - (datetime)(strategy_broker_to_ny_offset_hours * 3600);
   }
 
-int DateKey(const datetime t)
+int Strategy_DateKey(const datetime t)
   {
    MqlDateTime dt;
    TimeToStruct(t, dt);
    return dt.year * 10000 + dt.mon * 100 + dt.day;
   }
 
-int HourOf(const datetime t)
+int Strategy_HourOf(const datetime t)
   {
    MqlDateTime dt;
    TimeToStruct(t, dt);
    return dt.hour;
   }
 
-bool HourInWindow(const int hour, const int start_hour, const int end_hour)
+bool Strategy_HourInWindow(const int hour, const int start_hour, const int end_hour)
   {
    if(start_hour == end_hour)
       return true;
@@ -81,26 +81,27 @@ bool HourInWindow(const int hour, const int start_hour, const int end_hour)
    return (hour >= start_hour || hour < end_hour);
   }
 
-int AsiaRangeKeyForNY(const datetime ny_time)
+int Strategy_AsiaRangeKey(const datetime ny_time)
   {
-   const int hour = HourOf(ny_time);
+   const int hour = Strategy_HourOf(ny_time);
    if(strategy_asia_start_hour_ny <= strategy_asia_end_hour_ny)
-      return DateKey(ny_time);
+      return Strategy_DateKey(ny_time);
    if(hour >= strategy_asia_start_hour_ny)
-      return DateKey(ny_time + 86400);
-   return DateKey(ny_time);
+      return Strategy_DateKey(ny_time + 86400);
+   return Strategy_DateKey(ny_time);
   }
 
-void ResetTradeDayIfNeeded(const int trade_day_key)
+void Strategy_ResetTradeDay(const int trade_day_key)
   {
    if(trade_day_key == g_trade_day_key)
       return;
+
    g_trade_day_key = trade_day_key;
    g_long_taken_today = false;
    g_short_taken_today = false;
   }
 
-bool HasOurPosition()
+bool Strategy_HasOurPosition()
   {
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
@@ -119,7 +120,7 @@ bool HasOurPosition()
    return false;
   }
 
-void MarkOpenDirectionFromPositions()
+void Strategy_MarkOpenDirection()
   {
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
@@ -143,28 +144,28 @@ void MarkOpenDirectionFromPositions()
      }
   }
 
-void AdvanceAsiaRangeFromClosedBar()
+void Strategy_AdvanceAsiaRangeFromClosedBar()
   {
-   const datetime bar_time = iTime(_Symbol, _Period, 1);
+   const datetime bar_time = iTime(_Symbol, _Period, 1); // perf-allowed: one closed-bar timestamp for session range state.
    if(bar_time <= 0)
       return;
 
-   const datetime ny_time = ToNewYorkTime(bar_time);
-   const int ny_hour = HourOf(ny_time);
-   const int trade_day_key = DateKey(ny_time);
-   ResetTradeDayIfNeeded(trade_day_key);
+   const datetime ny_time = Strategy_ToNewYorkTime(bar_time);
+   const int trade_day_key = Strategy_DateKey(ny_time);
+   Strategy_ResetTradeDay(trade_day_key);
 
    g_cached_atr = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
 
-   if(!HourInWindow(ny_hour, strategy_asia_start_hour_ny, strategy_asia_end_hour_ny))
+   const int ny_hour = Strategy_HourOf(ny_time);
+   if(!Strategy_HourInWindow(ny_hour, strategy_asia_start_hour_ny, strategy_asia_end_hour_ny))
       return;
 
-   const int range_key = AsiaRangeKeyForNY(ny_time);
-   const double bar_high = iHigh(_Symbol, _Period, 1);
-   const double bar_low = iLow(_Symbol, _Period, 1);
+   const double bar_high = iHigh(_Symbol, _Period, 1); // perf-allowed: bespoke Asia range high, gated by QM_IsNewBar caller.
+   const double bar_low = iLow(_Symbol, _Period, 1); // perf-allowed: bespoke Asia range low, gated by QM_IsNewBar caller.
    if(bar_high <= 0.0 || bar_low <= 0.0 || bar_high <= bar_low)
       return;
 
+   const int range_key = Strategy_AsiaRangeKey(ny_time);
    if(range_key != g_range_key)
      {
       g_range_key = range_key;
@@ -179,10 +180,12 @@ void AdvanceAsiaRangeFromClosedBar()
       g_asia_low = bar_low;
   }
 
-bool SpreadWithinATR()
+bool Strategy_SpreadWithinATR()
   {
-   if(strategy_max_spread_atr_ratio <= 0.0 || g_cached_atr <= 0.0 || strategy_sl_atr_mult <= 0.0)
+   if(strategy_max_spread_atr_ratio <= 0.0 || strategy_sl_atr_mult <= 0.0)
       return true;
+   if(g_cached_atr <= 0.0)
+      return false;
 
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -192,12 +195,10 @@ bool SpreadWithinATR()
 
    const double spread_points = (ask - bid) / point;
    const double stop_points = (g_cached_atr * strategy_sl_atr_mult) / point;
-   if(stop_points <= 0.0)
-      return false;
-   return (spread_points <= stop_points * strategy_max_spread_atr_ratio);
+   return (stop_points > 0.0 && spread_points <= stop_points * strategy_max_spread_atr_ratio);
   }
 
-bool RangeHeightWithinATR()
+bool Strategy_RangeHeightWithinATR()
   {
    if(g_asia_high <= g_asia_low || g_cached_atr <= 0.0)
       return false;
@@ -207,17 +208,19 @@ bool RangeHeightWithinATR()
            range_height <= g_cached_atr * strategy_max_range_atr_mult);
   }
 
+// Return TRUE to BLOCK trading this tick.
 bool Strategy_NoTradeFilter()
   {
-   if(HasOurPosition())
+   if(Strategy_HasOurPosition())
       return false;
 
-   const datetime ny_time = ToNewYorkTime(TimeCurrent());
-   const int ny_hour = HourOf(ny_time);
-   if(HourInWindow(ny_hour, strategy_trade_start_hour_ny, strategy_trade_end_hour_ny) &&
-      !SpreadWithinATR())
-      return true;
-   return false;
+   const datetime ny_time = Strategy_ToNewYorkTime(TimeCurrent());
+   if(!Strategy_HourInWindow(Strategy_HourOf(ny_time),
+                             strategy_trade_start_hour_ny,
+                             strategy_trade_end_hour_ny))
+      return false;
+
+   return !Strategy_SpreadWithinATR();
   }
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
@@ -230,34 +233,39 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   AdvanceAsiaRangeFromClosedBar();
-   MarkOpenDirectionFromPositions();
+   Strategy_AdvanceAsiaRangeFromClosedBar();
+   Strategy_MarkOpenDirection();
 
-   const datetime bar_time = iTime(_Symbol, _Period, 1);
+   const datetime bar_time = iTime(_Symbol, _Period, 1); // perf-allowed: closed-bar session key, gated by framework QM_IsNewBar.
    if(bar_time <= 0)
       return false;
 
-   const datetime ny_time = ToNewYorkTime(bar_time);
-   const int trade_day_key = DateKey(ny_time);
-   ResetTradeDayIfNeeded(trade_day_key);
+   const datetime ny_time = Strategy_ToNewYorkTime(bar_time);
+   const int trade_day_key = Strategy_DateKey(ny_time);
+   Strategy_ResetTradeDay(trade_day_key);
 
    if(g_range_key != trade_day_key)
       return false;
-   if(!HourInWindow(HourOf(ny_time), strategy_trade_start_hour_ny, strategy_trade_end_hour_ny))
+   if(!Strategy_HourInWindow(Strategy_HourOf(ny_time),
+                             strategy_trade_start_hour_ny,
+                             strategy_trade_end_hour_ny))
       return false;
-   if(!RangeHeightWithinATR() || !SpreadWithinATR())
+   if(!Strategy_RangeHeightWithinATR() || !Strategy_SpreadWithinATR())
       return false;
 
-   const double close_last = iClose(_Symbol, _Period, 1);
+   const double bar_high = iHigh(_Symbol, _Period, 1); // perf-allowed: closed-bar breakout high.
+   const double bar_low = iLow(_Symbol, _Period, 1); // perf-allowed: closed-bar breakout low.
+   const double close_last = iClose(_Symbol, _Period, 1); // perf-allowed: EMA filter uses last closed-bar close.
    const double ema = QM_EMA(_Symbol, _Period, strategy_ema_period, 1);
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(close_last <= 0.0 || ema <= 0.0 || point <= 0.0 || ask <= 0.0 || bid <= 0.0)
+   if(bar_high <= 0.0 || bar_low <= 0.0 || close_last <= 0.0 ||
+      ema <= 0.0 || point <= 0.0 || ask <= 0.0 || bid <= 0.0)
       return false;
 
    const double buffer = strategy_breakout_buffer_points * point;
-   if(!g_long_taken_today && close_last > g_asia_high + buffer && close_last > ema)
+   if(!g_long_taken_today && bar_high > g_asia_high + buffer && close_last > ema)
      {
       req.type = QM_BUY;
       req.sl = QM_StopATRFromValue(_Symbol, req.type, ask, g_cached_atr, strategy_sl_atr_mult);
@@ -270,7 +278,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
         }
      }
 
-   if(!g_short_taken_today && close_last < g_asia_low - buffer && close_last < ema)
+   if(!g_short_taken_today && bar_low < g_asia_low - buffer && close_last < ema)
      {
       req.type = QM_SELL;
       req.sl = QM_StopATRFromValue(_Symbol, req.type, bid, g_cached_atr, strategy_sl_atr_mult);
@@ -304,15 +312,20 @@ void Strategy_ManageOpenPosition()
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
+
       QM_TM_TrailATR(ticket, strategy_atr_period, strategy_trail_atr_mult);
      }
   }
 
 bool Strategy_ExitSignal()
   {
-   const datetime ny_time = ToNewYorkTime(TimeCurrent());
-   const int ny_hour = HourOf(ny_time);
-   return (HasOurPosition() && !HourInWindow(ny_hour, strategy_trade_start_hour_ny, strategy_trade_end_hour_ny));
+   if(!Strategy_HasOurPosition())
+      return false;
+
+   const datetime ny_time = Strategy_ToNewYorkTime(TimeCurrent());
+   return !Strategy_HourInWindow(Strategy_HourOf(ny_time),
+                                 strategy_trade_start_hour_ny,
+                                 strategy_trade_end_hour_ny);
   }
 
 bool Strategy_NewsFilterHook(const datetime broker_time)
