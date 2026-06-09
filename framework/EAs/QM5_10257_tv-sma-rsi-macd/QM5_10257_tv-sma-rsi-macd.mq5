@@ -124,19 +124,26 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(strategy_ema_period <= 0 || strategy_sma_fast_period <= 0 ||
-      strategy_sma_mid_period <= 0 || strategy_sma_slow_period <= 0 ||
-      strategy_rsi_period <= 0 || strategy_macd_fast <= 0 ||
-      strategy_macd_slow <= strategy_macd_fast || strategy_macd_signal <= 0 ||
-      strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0 ||
+   if(strategy_ema_period <= 0 ||
+      strategy_sma_fast_period <= 0 ||
+      strategy_sma_mid_period <= 0 ||
+      strategy_sma_slow_period <= 0 ||
+      strategy_rsi_period <= 0 ||
+      strategy_macd_fast <= 0 ||
+      strategy_macd_slow <= strategy_macd_fast ||
+      strategy_macd_signal <= 0 ||
+      strategy_atr_period <= 0 ||
+      strategy_atr_sl_mult <= 0.0 ||
       strategy_take_profit_rr <= 0.0)
       return false;
 
    const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
-   const double close1 = iClose(_Symbol, tf, 1);
-   if(close1 <= 0.0)
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   if(bid <= 0.0 || ask <= 0.0)
       return false;
 
+   const double price_proxy = (bid + ask) * 0.5;
    const double ema200 = QM_EMA(_Symbol, tf, strategy_ema_period, 1);
    const double sma5 = QM_SMA(_Symbol, tf, strategy_sma_fast_period, 1);
    const double sma8 = QM_SMA(_Symbol, tf, strategy_sma_mid_period, 1);
@@ -147,8 +154,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       rsi_now <= 0.0 || rsi_prev <= 0.0)
       return false;
 
-   const bool trend_up = (close1 > ema200 && sma5 > sma8 && sma8 > sma13);
-   const bool trend_down = (close1 < ema200 && sma5 < sma8 && sma8 < sma13);
+   const bool trend_up = (price_proxy > ema200 && sma5 > sma8 && sma8 > sma13);
+   const bool trend_down = (price_proxy < ema200 && sma5 < sma8 && sma8 < sma13);
    const bool rsi_long = (rsi_prev < strategy_rsi_oversold &&
                           rsi_now >= strategy_rsi_oversold);
    const bool rsi_short = (rsi_prev > strategy_rsi_overbought &&
@@ -204,11 +211,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    else
       return false;
 
-   const double entry = (side == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                                         : SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(entry <= 0.0)
-      return false;
-
+   const double entry = (side == QM_BUY) ? ask : bid;
    const double sl = QM_StopATR(_Symbol, side, entry,
                                 strategy_atr_period, strategy_atr_sl_mult);
    const double tp = QM_TakeRR(_Symbol, side, entry, sl,
@@ -221,8 +224,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl = sl;
    req.tp = tp;
    req.reason = reason;
-   req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
    return true;
   }
 
