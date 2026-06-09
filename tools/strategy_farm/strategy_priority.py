@@ -225,8 +225,9 @@ def score_cards(cards: list[dict], built_counts: dict, built_eas: set,
     for c in cards:
         fm = c["fm"]
         b = bucket_of(fm)
+        forced = str(fm.get("force_build", "")).strip().lower() in ("1", "true", "yes")
         enriched.append({**c, "bucket": b, "met": metrics_component(fm),
-                         "built": c["ea_id"] in built_eas})
+                         "built": c["ea_id"] in built_eas, "forced": forced})
 
     # within-bucket rank among UNBUILT candidates (best metrics first, then ea_id)
     by_bucket: dict = {}
@@ -249,10 +250,20 @@ def score_cards(cards: list[dict], built_counts: dict, built_eas: set,
             eff = built_counts.get(b, 0) + e["_wbr"]
             div = 1.0 / (1.0 + eff)
         score = 100.0 * (w_div * div + w_met * e["met"])
+        if e["forced"] and not e["built"]:
+            # OWNER force-forward (2026-06-09): pin a curated card to the top of the
+            # build queue regardless of div/metrics. This is the only lever that
+            # bypasses the frequency bias in metrics_component (freq weight 0.5,
+            # tuned for Q08's 50/100/200 thresholds) which otherwise buries the
+            # most-survivable LOW-frequency structural edges (turn-of-month, FOMC,
+            # seasonal). Additive bonus → forced cards sort above all organic ones,
+            # ordered among themselves by their organic score. Flag/ordering prior
+            # only, never a gate. See docs/research/EDGE_QUALITY_*_2026-06-09.md.
+            score += 1000.0
         out.append({
             "ea_id": e["ea_id"], "slug": e["slug"],
             "mechanism": b[0], "asset": b[1], "tf": b[2],
-            "built": e["built"], "eff_pos": eff,
+            "built": e["built"], "eff_pos": eff, "forced": e["forced"],
             "div": round(div, 3), "met": round(e["met"], 3), "score": round(score, 2),
             "priority_track": False,
         })
