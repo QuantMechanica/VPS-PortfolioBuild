@@ -7640,7 +7640,7 @@ def pump(root: Path) -> dict[str, Any]:
     }
     cascade_pass_verdicts = {
         "Q03": {"PASS"},
-        "Q04": {"PASS"},
+        "Q04": {"PASS", "PASS_SOFT"},  # DL-071: net-positive-with-variance soft-pass advances
         "Q05": {"PASS"},
         "Q06": {"PASS"},
         "Q07": {"PASS"},

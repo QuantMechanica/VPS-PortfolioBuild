@@ -1,7 +1,7 @@
 # DL-071 — Q04 Walk-Forward: net-positive-with-variance verdict (PASS_SOFT track)
 
 **Date:** 2026-06-09
-**Status:** **PROPOSED — awaiting OWNER ratification** (Q04 verdict criterion is hard-bounded; do not implement until ratified)
+**Status:** **RATIFIED + IMPLEMENTED (OWNER 2026-06-09)** — `aggregate_verdict` PASS_SOFT tier live in `q04_walkforward.py`; `cascade_pass_verdicts["Q04"]` accepts PASS_SOFT (farmctl); **18 existing Q04 FAIL (EA,symbol) work_items re-graded FAIL→PASS_SOFT** (16 distinct EAs, +82% vs the 22 clean passes) — incl. QM5_10692/NDX, QM5_10440, QM5_10489, QM5_1050 (SMC), QM5_10432 (WS30 mean PF-net 3.43). They cascade to Q05 on the next pump.
 **Supersedes:** none — recalibrates the `aggregate_verdict` logic in `framework/scripts/q04_walkforward.py`
 **Related:** `framework/scripts/q04_walkforward.py` (aggregate_verdict), DL-070 (Q08 swing/low-freq track), DL-064 (portfolio-construction layer / soft-fail → portfolio admission), `docs/research/EDGE_QUALITY_RESEARCH_SYNTHESIS_2026-06-09.md`, deep-research run `wakdgb7gi` (practitioner-setup evidence, pending)
 

@@ -40,6 +40,14 @@ from framework.scripts._phase_utils import ensure_dir, utc_now_iso, write_json
 GATE_NAME = "Q04"
 COMMISSION_PER_LOT_ROUND_TRIP = 7.00     # USD; locked by Vault Q04 spec
 PF_NET_FLOOR_PER_FOLD = 1.0
+# DL-071 (OWNER-ratified 2026-06-09): PASS_SOFT tier for net-positive-with-variance
+# edges (ORB / structural setups lose in some periods by design). Clean PASS still
+# requires every fold > floor; PASS_SOFT requires a profitable MAJORITY of folds, a
+# clear mean edge, and NO catastrophic fold — guardrails so it recalibrates without
+# passing single-year wonders. Tunable.
+Q04_SOFT_MEAN_FLOOR = 1.10        # mean PF-net across folds must exceed this
+Q04_SOFT_MIN_FOLD_FLOOR = 0.80    # no fold may be below this (no catastrophic year)
+Q04_SOFT_MIN_POS_FRACTION = 2.0 / 3.0  # >= this fraction of folds must have PF-net > floor
 
 # Anchored expanding-window fold geometry. 2025 is the latest closed year
 # (per OWNER 2026-05-23). New full folds auto-add when a new year closes —
@@ -151,7 +159,17 @@ def period_from_setfile(setfile: Path, default: str = "H1") -> str:
 
 
 def aggregate_verdict(fold_results: list[dict]) -> tuple[str, str]:
-    """All-folds-must-pass verdict; PASS only if every fold has PF-net > floor."""
+    """Verdict over the OOS folds (DL-071, OWNER-ratified 2026-06-09):
+      - PASS       : EVERY fold has PF-net > floor (clean, the gold standard).
+      - PASS_SOFT  : a profitable MAJORITY of folds (>= Q04_SOFT_MIN_POS_FRACTION),
+                     mean PF-net > Q04_SOFT_MEAN_FLOOR, and NO catastrophic fold
+                     (every fold's PF-net >= Q04_SOFT_MIN_FOLD_FLOOR; a no-trade
+                     fold counts as 0.0 → fails this guard). Net-positive-with-
+                     controlled-variance — advances like a Q08 soft-pass.
+      - FAIL       : otherwise.
+    A no-trade / missing fold is treated as PF-net 0.0 for the soft test, so it can
+    never soft-pass on a fold that did not trade.
+    """
     if not fold_results:
         return "INVALID", "no_folds_ran"
     incomplete = [
@@ -162,15 +180,26 @@ def aggregate_verdict(fold_results: list[dict]) -> tuple[str, str]:
         return "INVALID", ";".join(f"{f['id']}:incomplete_fold" for f in incomplete)
     failures = [f for f in fold_results if f.get("pf_net") is None or
                                             float(f["pf_net"]) <= PF_NET_FLOOR_PER_FOLD]
-    if failures:
-        reasons = []
-        for f in failures:
-            if f.get("pf_net") is None:
-                reasons.append(f"{f['id']}:trades={f.get('trades', 0)}")
-            else:
-                reasons.append(f"{f['id']}:pf_net={f.get('pf_net')}")
-        return "FAIL", ";".join(reasons)
-    return "PASS", ";".join(f"{f['id']}:pf_net={f['pf_net']:.3f}" for f in fold_results)
+    detail = ";".join(
+        f"{f['id']}:pf_net={f['pf_net']:.3f}" if f.get("pf_net") is not None
+        else f"{f['id']}:trades={f.get('trades', 0)}"
+        for f in fold_results
+    )
+    if not failures:
+        return "PASS", detail
+    # PASS_SOFT check: net-positive with controlled variance.
+    n = len(fold_results)
+    pfs = [float(f["pf_net"]) if f.get("pf_net") is not None else 0.0 for f in fold_results]
+    n_pos = sum(1 for p in pfs if p > PF_NET_FLOOR_PER_FOLD)
+    mean_pf = sum(pfs) / n
+    min_pf = min(pfs)
+    import math
+    need_pos = math.ceil(Q04_SOFT_MIN_POS_FRACTION * n)
+    if (n_pos >= need_pos and mean_pf > Q04_SOFT_MEAN_FLOOR
+            and min_pf >= Q04_SOFT_MIN_FOLD_FLOOR):
+        return "PASS_SOFT", (f"soft:{n_pos}/{n}>floor,mean={mean_pf:.3f},"
+                             f"min={min_pf:.3f};{detail}")
+    return "FAIL", detail
 
 
 def _mt5_date(iso_date: str) -> str:
