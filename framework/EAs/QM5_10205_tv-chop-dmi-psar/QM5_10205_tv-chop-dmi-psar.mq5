@@ -45,26 +45,31 @@ input double strategy_max_spread_stop_fraction = 0.15;
 input bool   strategy_follow_trend             = true;
 input bool   strategy_enable_psar_exit         = true;
 input bool   strategy_enable_dmi_exit          = true;
-input int    strategy_psar_warmup_bars         = 80;
+input int    strategy_psar_warmup_bars         = 90;
 
 double g_chop_1 = 0.0;
 double g_adx_1 = 0.0;
+double g_adx_2 = 0.0;
 double g_plus_di_1 = 0.0;
+double g_plus_di_2 = 0.0;
 double g_minus_di_1 = 0.0;
+double g_minus_di_2 = 0.0;
 double g_atr_1 = 0.0;
 double g_psar_1 = 0.0;
 bool   g_psar_uptrend_1 = true;
 bool   g_has_psar_1 = false;
 bool   g_state_ready = false;
 
-double NormalizeStrategyPrice(const double price)
+double Strategy_NormalizePrice(const double price)
   {
    if(price <= 0.0)
       return 0.0;
-   return NormalizeDouble(price, _Digits);
+   return NormalizeDouble(price, (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS));
   }
 
-bool GetOurPosition(ENUM_POSITION_TYPE &position_type, double &open_price, ulong &ticket)
+bool Strategy_GetOurPosition(ENUM_POSITION_TYPE &position_type,
+                             double &open_price,
+                             ulong &ticket)
   {
    position_type = POSITION_TYPE_BUY;
    open_price = 0.0;
@@ -76,8 +81,8 @@ bool GetOurPosition(ENUM_POSITION_TYPE &position_type, double &open_price, ulong
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
-      const ulong t = PositionGetTicket(i);
-      if(t == 0 || !PositionSelectByTicket(t))
+      const ulong candidate = PositionGetTicket(i);
+      if(candidate == 0 || !PositionSelectByTicket(candidate))
          continue;
       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
@@ -86,232 +91,280 @@ bool GetOurPosition(ENUM_POSITION_TYPE &position_type, double &open_price, ulong
 
       position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       open_price = PositionGetDouble(POSITION_PRICE_OPEN);
-      ticket = t;
+      ticket = candidate;
       return true;
      }
 
    return false;
   }
 
-bool ComputePSAR(const string sym,
-                 const ENUM_TIMEFRAMES tf,
-                 const double start_af,
-                 const double increment,
-                 const double maximum,
-                 const int shift,
-                 double &sar,
-                 bool &uptrend)
+bool Strategy_LoadClosedRates(MqlRates &rates[])
   {
-   sar = 0.0;
-   uptrend = true;
+   ArrayFree(rates);
+   ArraySetAsSeries(rates, true);
 
-   const int lookback = MathMax(strategy_psar_warmup_bars, 20);
-   const int oldest = shift + lookback - 1;
-   if(Bars(sym, tf) <= oldest + 3 || start_af <= 0.0 || increment <= 0.0 || maximum <= 0.0)
+   const int chop_need = strategy_chop_period + MathMax(strategy_chop_smoothing, 1) + 2;
+   const int psar_need = MathMax(strategy_psar_warmup_bars, 20) + 3;
+   const int bars_needed = MathMax(chop_need, psar_need);
+   if(bars_needed <= 10)
       return false;
 
-   const double old_close = iClose(sym, tf, oldest);
-   const double newer_close = iClose(sym, tf, oldest - 1);
-   if(old_close <= 0.0 || newer_close <= 0.0)
-      return false;
-
-   uptrend = (newer_close >= old_close);
-   double ep = 0.0;
-   if(uptrend)
-     {
-      sar = MathMin(iLow(sym, tf, oldest), iLow(sym, tf, oldest - 1));
-      ep = MathMax(iHigh(sym, tf, oldest), iHigh(sym, tf, oldest - 1));
-     }
-   else
-     {
-      sar = MathMax(iHigh(sym, tf, oldest), iHigh(sym, tf, oldest - 1));
-      ep = MathMin(iLow(sym, tf, oldest), iLow(sym, tf, oldest - 1));
-     }
-
-   double af = start_af;
-   for(int i = oldest - 2; i >= shift; --i)
-     {
-      const double high_i = iHigh(sym, tf, i);
-      const double low_i = iLow(sym, tf, i);
-      const double high_prev1 = iHigh(sym, tf, i + 1);
-      const double high_prev2 = iHigh(sym, tf, i + 2);
-      const double low_prev1 = iLow(sym, tf, i + 1);
-      const double low_prev2 = iLow(sym, tf, i + 2);
-      if(high_i <= 0.0 || low_i <= 0.0 || high_prev1 <= 0.0 || high_prev2 <= 0.0 ||
-         low_prev1 <= 0.0 || low_prev2 <= 0.0)
-         return false;
-
-      sar = sar + af * (ep - sar);
-      if(uptrend)
-        {
-         sar = MathMin(sar, MathMin(low_prev1, low_prev2));
-         if(low_i < sar)
-           {
-            uptrend = false;
-            sar = ep;
-            ep = low_i;
-            af = start_af;
-           }
-         else if(high_i > ep)
-           {
-            ep = high_i;
-            af = MathMin(af + increment, maximum);
-           }
-        }
-      else
-        {
-         sar = MathMax(sar, MathMax(high_prev1, high_prev2));
-         if(high_i > sar)
-           {
-            uptrend = true;
-            sar = ep;
-            ep = high_i;
-            af = start_af;
-           }
-         else if(low_i < ep)
-           {
-            ep = low_i;
-            af = MathMin(af + increment, maximum);
-           }
-        }
-     }
-
-   return (sar > 0.0);
+   const int copied = CopyRates(_Symbol, strategy_timeframe, 1, bars_needed, rates); // perf-allowed: bounded CHOP/PSAR OHLC window inside framework QM_IsNewBar-gated EntrySignal.
+   return (copied >= bars_needed);
   }
 
-double TrueRangeAt(const string sym, const ENUM_TIMEFRAMES tf, const int shift)
+double Strategy_TrueRangeAt(const MqlRates &rates[], const int index)
   {
-   const double high_i = iHigh(sym, tf, shift);
-   const double low_i = iLow(sym, tf, shift);
-   const double close_prev = iClose(sym, tf, shift + 1);
-   if(high_i <= 0.0 || low_i <= 0.0 || close_prev <= 0.0)
+   if(index < 0 || index + 1 >= ArraySize(rates))
       return 0.0;
-   return MathMax(high_i - low_i, MathMax(MathAbs(high_i - close_prev), MathAbs(low_i - close_prev)));
+   if(rates[index].high <= 0.0 || rates[index].low <= 0.0 || rates[index + 1].close <= 0.0)
+      return 0.0;
+   return MathMax(rates[index].high - rates[index].low,
+                  MathMax(MathAbs(rates[index].high - rates[index + 1].close),
+                          MathAbs(rates[index].low - rates[index + 1].close)));
   }
 
-double RawCHOP(const string sym, const ENUM_TIMEFRAMES tf, const int period, const int shift)
+double Strategy_RawCHOP(const MqlRates &rates[], const int period, const int offset)
   {
-   if(period <= 1 || Bars(sym, tf) <= shift + period + 2)
+   if(period <= 1 || offset < 0 || offset + period >= ArraySize(rates))
       return 0.0;
 
    double tr_sum = 0.0;
    double highest = -DBL_MAX;
    double lowest = DBL_MAX;
-   for(int i = shift; i < shift + period; ++i)
+   for(int i = offset; i < offset + period; ++i)
      {
-      const double high_i = iHigh(sym, tf, i);
-      const double low_i = iLow(sym, tf, i);
-      const double tr_i = TrueRangeAt(sym, tf, i);
-      if(high_i <= 0.0 || low_i <= 0.0 || tr_i <= 0.0)
+      const double tr = Strategy_TrueRangeAt(rates, i);
+      if(tr <= 0.0 || rates[i].high <= 0.0 || rates[i].low <= 0.0)
          return 0.0;
-      tr_sum += tr_i;
-      highest = MathMax(highest, high_i);
-      lowest = MathMin(lowest, low_i);
+      tr_sum += tr;
+      highest = MathMax(highest, rates[i].high);
+      lowest = MathMin(lowest, rates[i].low);
      }
 
    const double range = highest - lowest;
    if(range <= 0.0 || tr_sum <= 0.0)
       return 0.0;
 
-   return 100.0 * (MathLog(tr_sum / range) / MathLog((double)period));
+   return 100.0 * MathLog(tr_sum / range) / MathLog((double)period);
   }
 
-double SmoothedCHOP(const string sym, const ENUM_TIMEFRAMES tf, const int period, const int smoothing, const int shift)
+double Strategy_SmoothedCHOP(const MqlRates &rates[])
   {
-   const int smooth = MathMax(smoothing, 1);
+   const int smooth = MathMax(strategy_chop_smoothing, 1);
    double sum = 0.0;
-   int count = 0;
    for(int i = 0; i < smooth; ++i)
      {
-      const double value = RawCHOP(sym, tf, period, shift + i);
+      const double value = Strategy_RawCHOP(rates, strategy_chop_period, i);
       if(value <= 0.0)
          return 0.0;
       sum += value;
-      count++;
      }
-   return (count > 0) ? (sum / count) : 0.0;
+   return sum / (double)smooth;
   }
 
-bool DICrossedAbove(const bool plus_over_minus)
+bool Strategy_ComputePSAR(const MqlRates &rates[], double &sar, bool &uptrend)
   {
-   const double plus_1 = QM_ADX_PlusDI(_Symbol, strategy_timeframe, strategy_dmi_period, 1);
-   const double minus_1 = QM_ADX_MinusDI(_Symbol, strategy_timeframe, strategy_dmi_period, 1);
-   const double plus_2 = QM_ADX_PlusDI(_Symbol, strategy_timeframe, strategy_dmi_period, 2);
-   const double minus_2 = QM_ADX_MinusDI(_Symbol, strategy_timeframe, strategy_dmi_period, 2);
-   if(plus_1 <= 0.0 || minus_1 <= 0.0 || plus_2 <= 0.0 || minus_2 <= 0.0)
+   sar = 0.0;
+   uptrend = true;
+
+   const int lookback = MathMax(strategy_psar_warmup_bars, 20);
+   if(ArraySize(rates) < lookback || strategy_psar_start <= 0.0 ||
+      strategy_psar_increment <= 0.0 || strategy_psar_maximum <= 0.0)
       return false;
 
-   if(plus_over_minus)
-      return (plus_1 > minus_1 && plus_2 <= minus_2);
-   return (minus_1 > plus_1 && minus_2 <= plus_2);
+   const int oldest = lookback - 1;
+   const int prev = oldest - 1;
+   uptrend = (rates[prev].close >= rates[oldest].close);
+   double extreme = uptrend ? MathMax(rates[oldest].high, rates[prev].high)
+                            : MathMin(rates[oldest].low, rates[prev].low);
+   sar = uptrend ? MathMin(rates[oldest].low, rates[prev].low)
+                 : MathMax(rates[oldest].high, rates[prev].high);
+
+   double acceleration = strategy_psar_start;
+   for(int bar = oldest - 2; bar >= 0; --bar)
+     {
+      sar = sar + acceleration * (extreme - sar);
+
+      if(uptrend)
+        {
+         sar = MathMin(sar, rates[bar + 1].low);
+         sar = MathMin(sar, rates[bar + 2].low);
+         if(rates[bar].low < sar)
+           {
+            uptrend = false;
+            sar = extreme;
+            extreme = rates[bar].low;
+            acceleration = strategy_psar_start;
+           }
+         else if(rates[bar].high > extreme)
+           {
+            extreme = rates[bar].high;
+            acceleration = MathMin(acceleration + strategy_psar_increment, strategy_psar_maximum);
+           }
+        }
+      else
+        {
+         sar = MathMax(sar, rates[bar + 1].high);
+         sar = MathMax(sar, rates[bar + 2].high);
+         if(rates[bar].high > sar)
+           {
+            uptrend = true;
+            sar = extreme;
+            extreme = rates[bar].high;
+            acceleration = strategy_psar_start;
+           }
+         else if(rates[bar].low < extreme)
+           {
+            extreme = rates[bar].low;
+            acceleration = MathMin(acceleration + strategy_psar_increment, strategy_psar_maximum);
+           }
+        }
+     }
+
+   sar = Strategy_NormalizePrice(sar);
+   return (sar > 0.0);
   }
 
-double StrategyStopPrice(const QM_OrderType type, const double entry_price)
-  {
-   if(g_atr_1 <= 0.0 || entry_price <= 0.0 || strategy_emergency_atr_mult <= 0.0)
-      return 0.0;
-
-   double psar = 0.0;
-   bool psar_uptrend = true;
-   const bool has_psar = g_has_psar_1;
-   if(has_psar)
-     {
-      psar = g_psar_1;
-      psar_uptrend = g_psar_uptrend_1;
-     }
-   const double emergency = strategy_emergency_atr_mult * g_atr_1;
-
-   if(type == QM_BUY)
-     {
-      const double emergency_sl = entry_price - emergency;
-      if(has_psar && psar > 0.0 && psar < entry_price)
-         return NormalizeStrategyPrice(MathMax(psar, emergency_sl));
-      return NormalizeStrategyPrice(emergency_sl);
-     }
-
-   const double emergency_sl = entry_price + emergency;
-   if(has_psar && psar > 0.0 && psar > entry_price)
-      return NormalizeStrategyPrice(MathMin(psar, emergency_sl));
-   return NormalizeStrategyPrice(emergency_sl);
-  }
-
-bool AdvanceStrategyState()
+bool Strategy_AdvanceState()
   {
    g_state_ready = false;
-   g_chop_1 = SmoothedCHOP(_Symbol, strategy_timeframe, strategy_chop_period, strategy_chop_smoothing, 1);
+   g_chop_1 = 0.0;
    g_adx_1 = QM_ADX(_Symbol, strategy_timeframe, strategy_dmi_period, 1);
+   g_adx_2 = QM_ADX(_Symbol, strategy_timeframe, strategy_dmi_period, 2);
    g_plus_di_1 = QM_ADX_PlusDI(_Symbol, strategy_timeframe, strategy_dmi_period, 1);
+   g_plus_di_2 = QM_ADX_PlusDI(_Symbol, strategy_timeframe, strategy_dmi_period, 2);
    g_minus_di_1 = QM_ADX_MinusDI(_Symbol, strategy_timeframe, strategy_dmi_period, 1);
+   g_minus_di_2 = QM_ADX_MinusDI(_Symbol, strategy_timeframe, strategy_dmi_period, 2);
    g_atr_1 = QM_ATR(_Symbol, strategy_timeframe, strategy_atr_period, 1);
-   g_has_psar_1 = ComputePSAR(_Symbol, strategy_timeframe,
-                              strategy_psar_start,
-                              strategy_psar_increment,
-                              strategy_psar_maximum,
-                              1,
-                              g_psar_1,
-                              g_psar_uptrend_1);
 
-   g_state_ready = (g_chop_1 > 0.0 && g_adx_1 > 0.0 && g_plus_di_1 > 0.0 &&
-                    g_minus_di_1 > 0.0 && g_atr_1 > 0.0);
+   MqlRates rates[];
+   if(!Strategy_LoadClosedRates(rates))
+      return false;
+
+   g_chop_1 = Strategy_SmoothedCHOP(rates);
+   g_has_psar_1 = Strategy_ComputePSAR(rates, g_psar_1, g_psar_uptrend_1);
+
+   g_state_ready = (g_chop_1 > 0.0 && g_adx_1 > 0.0 && g_adx_2 > 0.0 &&
+                    g_plus_di_1 > 0.0 && g_plus_di_2 > 0.0 &&
+                    g_minus_di_1 > 0.0 && g_minus_di_2 > 0.0 &&
+                    g_atr_1 > 0.0);
    return g_state_ready;
+  }
+
+double Strategy_StopDistance(const QM_OrderType side, const double entry_price)
+  {
+   if(entry_price <= 0.0 || g_atr_1 <= 0.0 || strategy_emergency_atr_mult <= 0.0)
+      return 0.0;
+
+   const double emergency_distance = strategy_emergency_atr_mult * g_atr_1;
+   if(!g_has_psar_1 || g_psar_1 <= 0.0)
+      return emergency_distance;
+
+   double psar_distance = 0.0;
+   if(side == QM_BUY && g_psar_1 < entry_price)
+      psar_distance = entry_price - g_psar_1;
+   if(side == QM_SELL && g_psar_1 > entry_price)
+      psar_distance = g_psar_1 - entry_price;
+
+   if(psar_distance <= 0.0 || psar_distance > emergency_distance)
+      return emergency_distance;
+   return psar_distance;
+  }
+
+double Strategy_StopPrice(const QM_OrderType side, const double entry_price)
+  {
+   const double distance = Strategy_StopDistance(side, entry_price);
+   if(distance <= 0.0)
+      return 0.0;
+
+   const double stop = (side == QM_BUY) ? (entry_price - distance) : (entry_price + distance);
+   return Strategy_NormalizePrice(stop);
+  }
+
+bool Strategy_BuildSignal(QM_OrderType &side)
+  {
+   side = QM_BUY;
+   if(!g_state_ready || g_adx_1 <= strategy_adx_key_level)
+      return false;
+
+   if(strategy_follow_trend && !g_has_psar_1)
+      return false;
+
+   if(g_chop_1 > strategy_chop_long_level)
+     {
+      if(!strategy_follow_trend || (g_psar_uptrend_1 && g_plus_di_1 > g_minus_di_1))
+        {
+         side = QM_BUY;
+         return true;
+        }
+     }
+
+   if(g_chop_1 < strategy_chop_short_level)
+     {
+      if(!strategy_follow_trend || (!g_psar_uptrend_1 && g_minus_di_1 > g_plus_di_1))
+        {
+         side = QM_SELL;
+         return true;
+        }
+     }
+
+   return false;
+  }
+
+bool Strategy_SpreadAllowedFor(const QM_OrderType side, const double entry_price)
+  {
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0 || ask <= bid)
+      return false;
+
+   double stop_distance = Strategy_StopDistance(side, entry_price);
+   if(stop_distance <= 0.0)
+     {
+      const double atr = QM_ATR(_Symbol, strategy_timeframe, strategy_atr_period, 1);
+      stop_distance = atr * strategy_emergency_atr_mult;
+     }
+
+   if(stop_distance <= 0.0 || strategy_max_spread_stop_fraction <= 0.0)
+      return false;
+   return ((ask - bid) <= strategy_max_spread_stop_fraction * stop_distance);
+  }
+
+bool Strategy_DICrossed(const bool plus_above_minus)
+  {
+   if(g_plus_di_1 <= 0.0 || g_plus_di_2 <= 0.0 || g_minus_di_1 <= 0.0 || g_minus_di_2 <= 0.0)
+      return false;
+
+   if(plus_above_minus)
+      return (g_plus_di_1 > g_minus_di_1 && g_plus_di_2 <= g_minus_di_2);
+   return (g_minus_di_1 > g_plus_di_1 && g_minus_di_2 <= g_plus_di_2);
   }
 
 bool Strategy_NoTradeFilter()
   {
+   ENUM_POSITION_TYPE position_type;
+   double open_price = 0.0;
+   ulong ticket = 0;
+   if(Strategy_GetOurPosition(position_type, open_price, ticket))
+      return false;
+
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double atr = QM_ATR(_Symbol, strategy_timeframe, strategy_atr_period, 1);
-   if(ask <= 0.0 || bid <= 0.0 || atr <= 0.0 || strategy_emergency_atr_mult <= 0.0)
+   if(ask <= 0.0 || bid <= 0.0 || ask <= bid)
       return true;
 
-   const double spread = ask - bid;
-   const double stop_distance = strategy_emergency_atr_mult * atr;
-   return (spread > strategy_max_spread_stop_fraction * stop_distance);
+   const double atr = QM_ATR(_Symbol, strategy_timeframe, strategy_atr_period, 1);
+   if(atr <= 0.0 || strategy_emergency_atr_mult <= 0.0)
+      return true;
+
+   const double stop_distance = atr * strategy_emergency_atr_mult;
+   return ((ask - bid) > strategy_max_spread_stop_fraction * stop_distance);
   }
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   AdvanceStrategyState();
+   Strategy_AdvanceState();
 
    req.type = QM_BUY;
    req.price = 0.0;
@@ -321,45 +374,37 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(strategy_chop_period <= 1 || strategy_dmi_period <= 1 || strategy_atr_period <= 0)
+   if(strategy_chop_period <= 1 || strategy_dmi_period <= 1 ||
+      strategy_atr_period <= 0 || strategy_chop_smoothing <= 0)
+      return false;
+
+   QM_OrderType signal_side = QM_BUY;
+   if(!Strategy_BuildSignal(signal_side))
       return false;
 
    ENUM_POSITION_TYPE position_type;
    double open_price = 0.0;
    ulong ticket = 0;
-   if(GetOurPosition(position_type, open_price, ticket))
-      return false;
-
-   if(!g_state_ready || g_adx_1 <= strategy_adx_key_level)
-      return false;
-
-   if(strategy_follow_trend && !g_has_psar_1)
-      return false;
-
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
-      return false;
-
-   if(g_chop_1 > strategy_chop_long_level &&
-      (!strategy_follow_trend || (g_psar_uptrend_1 && g_plus_di_1 > g_minus_di_1)))
+   if(Strategy_GetOurPosition(position_type, open_price, ticket))
      {
-      req.type = QM_BUY;
-      req.sl = StrategyStopPrice(req.type, ask);
-      req.reason = "CHOP_DMI_PSAR_LONG";
-      return (req.sl > 0.0 && req.sl < ask);
+      const bool position_is_buy = (position_type == POSITION_TYPE_BUY);
+      if((position_is_buy && signal_side == QM_BUY) || (!position_is_buy && signal_side == QM_SELL))
+         return false;
+      if(!QM_TM_ClosePosition(ticket, QM_EXIT_OPPOSITE_SIGNAL))
+         return false;
      }
 
-   if(g_chop_1 < strategy_chop_short_level &&
-      (!strategy_follow_trend || (!g_psar_uptrend_1 && g_minus_di_1 > g_plus_di_1)))
-     {
-      req.type = QM_SELL;
-      req.sl = StrategyStopPrice(req.type, bid);
-      req.reason = "CHOP_DMI_PSAR_SHORT";
-      return (req.sl > bid);
-     }
+   const double entry_price = (signal_side == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
+                                                      : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(entry_price <= 0.0 || !Strategy_SpreadAllowedFor(signal_side, entry_price))
+      return false;
 
-   return false;
+   req.type = signal_side;
+   req.sl = Strategy_StopPrice(signal_side, entry_price);
+   req.reason = (signal_side == QM_BUY) ? "CHOP_DMI_PSAR_LONG" : "CHOP_DMI_PSAR_SHORT";
+   return (req.sl > 0.0 &&
+           ((signal_side == QM_BUY && req.sl < entry_price) ||
+            (signal_side == QM_SELL && req.sl > entry_price)));
   }
 
 void Strategy_ManageOpenPosition()
@@ -367,29 +412,35 @@ void Strategy_ManageOpenPosition()
    ENUM_POSITION_TYPE position_type;
    double open_price = 0.0;
    ulong ticket = 0;
-   if(!GetOurPosition(position_type, open_price, ticket))
+   if(!Strategy_GetOurPosition(position_type, open_price, ticket))
       return;
 
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double ref_price = (position_type == POSITION_TYPE_BUY) ? bid : ask;
+   if(!g_state_ready || g_atr_1 <= 0.0)
+      return;
+
+   const double ref_price = (position_type == POSITION_TYPE_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
+                                                                 : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    if(ref_price <= 0.0)
       return;
 
    const QM_OrderType side = (position_type == POSITION_TYPE_BUY) ? QM_BUY : QM_SELL;
-   const double stop_price = StrategyStopPrice(side, ref_price);
+   const double stop_price = Strategy_StopPrice(side, ref_price);
    if(stop_price <= 0.0)
       return;
 
    const double current_sl = PositionGetDouble(POSITION_SL);
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(point <= 0.0)
+      return;
+
    if(position_type == POSITION_TYPE_BUY)
      {
-      if(current_sl <= 0.0 || stop_price > current_sl)
+      if(current_sl <= 0.0 || stop_price > current_sl + point * 0.5)
          QM_TM_MoveSL(ticket, stop_price, "PSAR_ATR_TRAIL_LONG");
       return;
      }
 
-   if(current_sl <= 0.0 || stop_price < current_sl)
+   if(current_sl <= 0.0 || stop_price < current_sl - point * 0.5)
       QM_TM_MoveSL(ticket, stop_price, "PSAR_ATR_TRAIL_SHORT");
   }
 
@@ -401,31 +452,28 @@ bool Strategy_ExitSignal()
    ENUM_POSITION_TYPE position_type;
    double open_price = 0.0;
    ulong ticket = 0;
-   if(!GetOurPosition(position_type, open_price, ticket))
+   if(!Strategy_GetOurPosition(position_type, open_price, ticket))
       return false;
 
-   if(strategy_enable_dmi_exit && g_adx_1 > 0.0 && g_adx_1 < strategy_adx_key_level)
+   if(strategy_enable_dmi_exit && g_adx_1 < strategy_adx_key_level && g_adx_2 >= strategy_adx_key_level)
      {
-      if(position_type == POSITION_TYPE_BUY && DICrossedAbove(false))
+      if(position_type == POSITION_TYPE_BUY && Strategy_DICrossed(false))
          return true;
-      if(position_type == POSITION_TYPE_SELL && DICrossedAbove(true))
+      if(position_type == POSITION_TYPE_SELL && Strategy_DICrossed(true))
          return true;
      }
 
-   if(strategy_enable_psar_exit)
+   if(strategy_enable_psar_exit && g_has_psar_1)
      {
-      if(g_has_psar_1)
-        {
-         if(position_type == POSITION_TYPE_BUY && !g_psar_uptrend_1)
-            return true;
-         if(position_type == POSITION_TYPE_SELL && g_psar_uptrend_1)
-            return true;
-        }
+      if(position_type == POSITION_TYPE_BUY && !g_psar_uptrend_1)
+         return true;
+      if(position_type == POSITION_TYPE_SELL && g_psar_uptrend_1)
+         return true;
      }
 
    if(!strategy_enable_dmi_exit && !strategy_enable_psar_exit)
      {
-      if(position_type == POSITION_TYPE_BUY && g_chop_1 > 0.0 && g_chop_1 < strategy_chop_short_level)
+      if(position_type == POSITION_TYPE_BUY && g_chop_1 < strategy_chop_short_level)
          return true;
       if(position_type == POSITION_TYPE_SELL && g_chop_1 > strategy_chop_long_level)
          return true;
