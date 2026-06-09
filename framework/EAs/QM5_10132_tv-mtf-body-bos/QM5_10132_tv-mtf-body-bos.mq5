@@ -185,9 +185,31 @@ bool Strategy_ExitSignal()
    if(magic <= 0)
       return false;
 
+   bool have_position = false;
+   ENUM_POSITION_TYPE open_type = POSITION_TYPE_BUY;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(!PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      have_position = true;
+      open_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      break;
+     }
+
+   if(!have_position)
+      return false;
+   if(!QM_IsNewBar())
+      return false;
+
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
-   const int copied = CopyRates(_Symbol, _Period, 1, 2, rates); // perf-allowed: bounded two-bar close rule; framework calls ExitSignal before its new-bar gate.
+   const int copied = CopyRates(_Symbol, _Period, 1, 2, rates); // perf-allowed: bounded two-bar close rule behind an open-position QM_IsNewBar gate.
    if(copied != 2)
       return false;
 
@@ -199,22 +221,10 @@ bool Strategy_ExitSignal()
    const double prior_body_high = MathMax(prior.open, prior.close);
    const double prior_body_low = MathMin(prior.open, prior.close);
 
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      const ENUM_POSITION_TYPE type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      if(type == POSITION_TYPE_BUY && signal.close < prior_body_low)
-         return true;
-      if(type == POSITION_TYPE_SELL && signal.close > prior_body_high)
-         return true;
-     }
+   if(open_type == POSITION_TYPE_BUY && signal.close < prior_body_low)
+      return true;
+   if(open_type == POSITION_TYPE_SELL && signal.close > prior_body_high)
+      return true;
 
    return false;
   }

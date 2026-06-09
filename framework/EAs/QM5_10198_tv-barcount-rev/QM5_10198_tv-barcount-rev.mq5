@@ -83,6 +83,21 @@ input double strategy_target_r               = 2.0;
 input int    strategy_time_stop_bars         = 12;
 input int    strategy_rollover_skip_minutes  = 15;
 
+int Strategy_ExpectedSlotForSymbol(const string symbol)
+  {
+   if(symbol == "EURUSD.DWX")
+      return 0;
+   if(symbol == "GBPUSD.DWX")
+      return 1;
+   if(symbol == "XAUUSD.DWX")
+      return 2;
+   if(symbol == "GDAXI.DWX")
+      return 3;
+   if(symbol == "NDX.DWX")
+      return 4;
+   return -1;
+  }
+
 bool Strategy_SelectOurPosition(ulong &ticket,
                                 ENUM_POSITION_TYPE &position_type,
                                 datetime &open_time)
@@ -129,15 +144,15 @@ bool Strategy_ConsecutiveFallingBars(const int bars)
 
    for(int shift = 1; shift <= bars; ++shift)
      {
-      const double open_price = iOpen(_Symbol, PERIOD_H1, shift);
-      const double close_price = iClose(_Symbol, PERIOD_H1, shift);
+      const double open_price = iOpen(_Symbol, PERIOD_H1, shift); // perf-allowed: closed-bar candle body sequence, called only by framework-gated EntrySignal.
+      const double close_price = iClose(_Symbol, PERIOD_H1, shift); // perf-allowed: closed-bar candle body sequence, called only by framework-gated EntrySignal.
       if(open_price <= 0.0 || close_price <= 0.0 || close_price >= open_price)
          return false;
 
       if(strategy_volume_confirm_enabled && shift < bars)
         {
-         const long newer_volume = iVolume(_Symbol, PERIOD_H1, shift);
-         const long older_volume = iVolume(_Symbol, PERIOD_H1, shift + 1);
+         const long newer_volume = iVolume(_Symbol, PERIOD_H1, shift); // perf-allowed: bounded volume confirmation over N setup bars.
+         const long older_volume = iVolume(_Symbol, PERIOD_H1, shift + 1); // perf-allowed: bounded volume confirmation over N setup bars.
          if(newer_volume <= older_volume)
             return false;
         }
@@ -153,15 +168,15 @@ bool Strategy_ConsecutiveRisingBars(const int bars)
 
    for(int shift = 1; shift <= bars; ++shift)
      {
-      const double open_price = iOpen(_Symbol, PERIOD_H1, shift);
-      const double close_price = iClose(_Symbol, PERIOD_H1, shift);
+      const double open_price = iOpen(_Symbol, PERIOD_H1, shift); // perf-allowed: closed-bar candle body sequence, called only by framework-gated EntrySignal.
+      const double close_price = iClose(_Symbol, PERIOD_H1, shift); // perf-allowed: closed-bar candle body sequence, called only by framework-gated EntrySignal.
       if(open_price <= 0.0 || close_price <= 0.0 || close_price <= open_price)
          return false;
 
       if(strategy_volume_confirm_enabled && shift < bars)
         {
-         const long newer_volume = iVolume(_Symbol, PERIOD_H1, shift);
-         const long older_volume = iVolume(_Symbol, PERIOD_H1, shift + 1);
+         const long newer_volume = iVolume(_Symbol, PERIOD_H1, shift); // perf-allowed: bounded volume confirmation over N setup bars.
+         const long older_volume = iVolume(_Symbol, PERIOD_H1, shift + 1); // perf-allowed: bounded volume confirmation over N setup bars.
          if(newer_volume <= older_volume)
             return false;
         }
@@ -175,7 +190,7 @@ double Strategy_SetupLow(const int bars)
    double lowest = DBL_MAX;
    for(int shift = 1; shift <= bars; ++shift)
      {
-      const double value = iLow(_Symbol, PERIOD_H1, shift);
+      const double value = iLow(_Symbol, PERIOD_H1, shift); // perf-allowed: bounded setup-low scan over N closed bars.
       if(value > 0.0 && value < lowest)
          lowest = value;
      }
@@ -187,7 +202,7 @@ double Strategy_SetupHigh(const int bars)
    double highest = -DBL_MAX;
    for(int shift = 1; shift <= bars; ++shift)
      {
-      const double value = iHigh(_Symbol, PERIOD_H1, shift);
+      const double value = iHigh(_Symbol, PERIOD_H1, shift); // perf-allowed: bounded setup-high scan over N closed bars.
       if(value > highest)
          highest = value;
      }
@@ -202,6 +217,13 @@ double Strategy_SetupHigh(const int bars)
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
+   if(_Period != PERIOD_H1)
+      return true;
+
+   const int expected_slot = Strategy_ExpectedSlotForSymbol(_Symbol);
+   if(expected_slot < 0 || qm_magic_slot_offset != expected_slot)
+      return true;
+
    MqlDateTime dt;
    TimeToStruct(TimeCurrent(), dt);
    if(dt.hour == 0 && dt.min < strategy_rollover_skip_minutes)
@@ -243,8 +265,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       atr <= 0.0 || lower <= 0.0 || upper <= 0.0)
       return false;
 
-   const double low_1 = iLow(_Symbol, PERIOD_H1, 1);
-   const double high_1 = iHigh(_Symbol, PERIOD_H1, 1);
+   const double low_1 = iLow(_Symbol, PERIOD_H1, 1); // perf-allowed: closed setup bar band-touch check, EntrySignal is framework-gated by QM_IsNewBar().
+   const double high_1 = iHigh(_Symbol, PERIOD_H1, 1); // perf-allowed: closed setup bar band-touch check, EntrySignal is framework-gated by QM_IsNewBar().
    if(low_1 <= 0.0 || high_1 <= 0.0)
       return false;
 
@@ -261,7 +283,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
 
       req.type = QM_BUY;
-      req.price = ask;
+      req.price = 0.0;
       req.sl = QM_StopRulesNormalizePrice(_Symbol, stop_price);
       req.tp = QM_StopRulesNormalizePrice(_Symbol, ask + (risk_distance * strategy_target_r));
       req.reason = "TV_BARCOUNT_REV_LONG";
@@ -281,7 +303,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
 
       req.type = QM_SELL;
-      req.price = bid;
+      req.price = 0.0;
       req.sl = QM_StopRulesNormalizePrice(_Symbol, stop_price);
       req.tp = QM_StopRulesNormalizePrice(_Symbol, bid - (risk_distance * strategy_target_r));
       req.reason = "TV_BARCOUNT_REV_SHORT";
