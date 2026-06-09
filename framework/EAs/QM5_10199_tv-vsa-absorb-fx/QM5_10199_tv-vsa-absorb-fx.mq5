@@ -73,10 +73,6 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-// TODO: declare strategy-specific input params here, e.g.:
-//   input int    strategy_atr_period   = 14;
-//   input double strategy_atr_sl_mult  = 2.0;
-//   input double strategy_atr_tp_mult  = 3.0;
 input int    strategy_volume_sma_period = 20;
 input int    strategy_atr_period        = 14;
 input double strategy_volume_multiplier = 1.5;
@@ -87,19 +83,19 @@ input double strategy_reward_r          = 3.5;
 input double strategy_max_spread_stop   = 0.15;
 input int    strategy_fx_session_start  = 13;
 input int    strategy_fx_session_end    = 17;
-input int    strategy_us_session_start  = 15;
-input int    strategy_us_session_end    = 22;
+input int    strategy_index_session_start = 15;
+input int    strategy_index_session_end   = 22;
 
 bool Strategy_IsFxSymbol()
   {
-   return (StringFind(_Symbol, "EURUSD") >= 0 || StringFind(_Symbol, "GBPUSD") >= 0);
+   return (StringFind(_Symbol, "EURUSD") >= 0 ||
+           StringFind(_Symbol, "GBPUSD") >= 0);
   }
 
-bool Strategy_IsGoldOrIndexSymbol()
+bool Strategy_IsIndexOrGoldSymbol()
   {
    return (StringFind(_Symbol, "XAUUSD") >= 0 ||
            StringFind(_Symbol, "GDAXI") >= 0 ||
-           StringFind(_Symbol, "GER40") >= 0 ||
            StringFind(_Symbol, "NDX") >= 0);
   }
 
@@ -112,7 +108,7 @@ bool Strategy_HourInWindow(const int hour, const int start_hour, const int end_h
    return (hour >= start_hour || hour < end_hour);
   }
 
-bool Strategy_SelectOurPosition()
+bool Strategy_HasOpenPosition()
   {
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
@@ -132,38 +128,31 @@ bool Strategy_SelectOurPosition()
    return false;
   }
 
-double Strategy_VolumeSma(const ENUM_TIMEFRAMES tf, const int period)
+double Strategy_DeltaProxy(const MqlRates &bar)
   {
-   if(period <= 0)
+   const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
+   if(bar.open <= 0.0 || bar.close <= 0.0 || bar.high <= bar.low ||
+      bar.tick_volume <= 0 || tick_size <= 0.0)
+      return 0.0;
+
+   const double range = MathMax(bar.high - bar.low, tick_size);
+   return (double)bar.tick_volume * (bar.close - bar.open) / range;
+  }
+
+double Strategy_PreviousVolumeSma(const MqlRates &rates[])
+  {
+   if(strategy_volume_sma_period <= 0)
       return 0.0;
 
    double sum = 0.0;
-   for(int shift = 1; shift <= period; ++shift)
+   for(int i = 1; i <= strategy_volume_sma_period; ++i)
      {
-      const long volume = iVolume(_Symbol, tf, shift);
-      if(volume <= 0)
+      if(rates[i].tick_volume <= 0)
          return 0.0;
-      sum += (double)volume;
+      sum += (double)rates[i].tick_volume;
      }
 
-   return sum / (double)period;
-  }
-
-double Strategy_DeltaProxy(const ENUM_TIMEFRAMES tf, const int shift)
-  {
-   const double open_price = iOpen(_Symbol, tf, shift);
-   const double close_price = iClose(_Symbol, tf, shift);
-   const double high_price = iHigh(_Symbol, tf, shift);
-   const double low_price = iLow(_Symbol, tf, shift);
-   const long volume = iVolume(_Symbol, tf, shift);
-   const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
-
-   if(open_price <= 0.0 || close_price <= 0.0 || high_price <= low_price ||
-      volume <= 0 || tick_size <= 0.0)
-      return 0.0;
-
-   const double range = MathMax(high_price - low_price, tick_size);
-   return (double)volume * (close_price - open_price) / range;
+   return sum / (double)strategy_volume_sma_period;
   }
 
 double Strategy_CappedStop(const QM_OrderType side,
@@ -171,7 +160,8 @@ double Strategy_CappedStop(const QM_OrderType side,
                            const double source_stop,
                            const double atr)
   {
-   if(entry <= 0.0 || source_stop <= 0.0 || atr <= 0.0 || strategy_atr_stop_cap_mult <= 0.0)
+   if(entry <= 0.0 || source_stop <= 0.0 ||
+      atr <= 0.0 || strategy_atr_stop_cap_mult <= 0.0)
       return 0.0;
 
    const double cap_distance = strategy_atr_stop_cap_mult * atr;
@@ -196,8 +186,8 @@ bool Strategy_NoTradeFilter()
    if(Strategy_IsFxSymbol())
       return !Strategy_HourInWindow(dt.hour, strategy_fx_session_start, strategy_fx_session_end);
 
-   if(Strategy_IsGoldOrIndexSymbol())
-      return !Strategy_HourInWindow(dt.hour, strategy_us_session_start, strategy_us_session_end);
+   if(Strategy_IsIndexOrGoldSymbol())
+      return !Strategy_HourInWindow(dt.hour, strategy_index_session_start, strategy_index_session_end);
 
    return false;
   }
@@ -217,51 +207,55 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(strategy_volume_sma_period < 1 || strategy_atr_period < 1 ||
       strategy_volume_multiplier <= 0.0 || strategy_range_multiplier <= 0.0 ||
-      strategy_stop_percent <= 0.0 || strategy_reward_r <= 0.0 ||
-      strategy_max_spread_stop <= 0.0)
+      strategy_stop_percent <= 0.0 || strategy_atr_stop_cap_mult <= 0.0 ||
+      strategy_reward_r <= 0.0 || strategy_max_spread_stop <= 0.0)
       return false;
 
-   if(Strategy_SelectOurPosition())
+   if(Strategy_HasOpenPosition())
       return false;
 
-   const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
-   const double open_1 = iOpen(_Symbol, tf, 1);
-   const double close_1 = iClose(_Symbol, tf, 1);
-   const double high_1 = iHigh(_Symbol, tf, 1);
-   const double low_1 = iLow(_Symbol, tf, 1);
-   const long volume_1 = iVolume(_Symbol, tf, 1);
-   const double atr = QM_ATR(_Symbol, tf, strategy_atr_period, 1);
-   const double volume_sma = Strategy_VolumeSma(tf, strategy_volume_sma_period);
+   const int bars_needed = strategy_volume_sma_period + 2;
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   if(CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, bars_needed, rates) != bars_needed) // perf-allowed: bounded OHLCV proxy read inside framework closed-bar entry hook
+      return false;
+
+   const MqlRates signal_bar = rates[0];
+   const MqlRates prior_bar = rates[1];
+   if(signal_bar.open <= 0.0 || signal_bar.close <= 0.0 ||
+      signal_bar.high <= signal_bar.low || signal_bar.tick_volume <= 0)
+      return false;
+
+   const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
+   const double volume_sma = Strategy_PreviousVolumeSma(rates);
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-
-   if(open_1 <= 0.0 || close_1 <= 0.0 || high_1 <= low_1 ||
-      volume_1 <= 0 || atr <= 0.0 || volume_sma <= 0.0 ||
-      point <= 0.0 || ask <= 0.0 || bid <= 0.0)
+   if(atr <= 0.0 || volume_sma <= 0.0 || point <= 0.0 || ask <= 0.0 || bid <= 0.0)
       return false;
 
-   const double bar_range = high_1 - low_1;
-   if((double)volume_1 <= volume_sma * strategy_volume_multiplier)
+   const double bar_range = signal_bar.high - signal_bar.low;
+   if((double)signal_bar.tick_volume <= volume_sma * strategy_volume_multiplier)
       return false;
    if(bar_range <= atr * strategy_range_multiplier)
       return false;
 
-   const double delta_1 = Strategy_DeltaProxy(tf, 1);
-   const double delta_2 = Strategy_DeltaProxy(tf, 2);
-   if(delta_1 == 0.0 || delta_2 == 0.0)
+   const double delta_signal = Strategy_DeltaProxy(signal_bar);
+   const double delta_prior = Strategy_DeltaProxy(prior_bar);
+   if(delta_signal == 0.0 || delta_prior == 0.0)
       return false;
 
    const double stop_pct = strategy_stop_percent / 100.0;
    const double spread_distance = ask - bid;
 
-   if(close_1 > open_1 && delta_1 > 0.0 && delta_2 < 0.0)
+   if(signal_bar.close > signal_bar.open && delta_signal > 0.0 && delta_prior < 0.0)
      {
       const double entry = ask;
-      const double source_stop = low_1 - (entry * stop_pct);
+      const double source_stop = signal_bar.low * (1.0 - stop_pct);
       const double stop = Strategy_CappedStop(QM_BUY, entry, source_stop, atr);
       const double risk_distance = entry - stop;
-      if(stop <= 0.0 || risk_distance <= point || spread_distance > risk_distance * strategy_max_spread_stop)
+      if(stop <= 0.0 || risk_distance <= point ||
+         spread_distance > risk_distance * strategy_max_spread_stop)
          return false;
 
       req.type = QM_BUY;
@@ -272,13 +266,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return true;
      }
 
-   if(close_1 < open_1 && delta_1 < 0.0 && delta_2 > 0.0)
+   if(signal_bar.close < signal_bar.open && delta_signal < 0.0 && delta_prior > 0.0)
      {
       const double entry = bid;
-      const double source_stop = high_1 + (entry * stop_pct);
+      const double source_stop = signal_bar.high * (1.0 + stop_pct);
       const double stop = Strategy_CappedStop(QM_SELL, entry, source_stop, atr);
       const double risk_distance = stop - entry;
-      if(stop <= 0.0 || risk_distance <= point || spread_distance > risk_distance * strategy_max_spread_stop)
+      if(stop <= 0.0 || risk_distance <= point ||
+         spread_distance > risk_distance * strategy_max_spread_stop)
          return false;
 
       req.type = QM_SELL;
@@ -339,7 +334,7 @@ int OnInit()
                         qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_10199_tv-vsa-absorb-fx\"}");
    return INIT_SUCCEEDED;
   }
 
