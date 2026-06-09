@@ -6820,3 +6820,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11370,forex-profit-system-ema3-psar-h1,0,EURUSD.DWX,113700000,2026-06-08,Development,active
 11370,forex-profit-system-ema3-psar-h1,1,GBPUSD.DWX,113700001,2026-06-08,Development,active
 11370,forex-profit-system-ema3-psar-h1,2,USDJPY.DWX,113700002,2026-06-08,Development,active
+12533,edgelab-eurjpy-gbpjpy-cointegration,0,EURJPY.DWX,125330000,2026-06-09,Development,active
+12533,edgelab-eurjpy-gbpjpy-cointegration,1,GBPJPY.DWX,125330001,2026-06-09,Development,active
+12532,edgelab-audnzd-cointegration,0,AUDUSD.DWX,125320000,2026-06-09,Development,active
+12532,edgelab-audnzd-cointegration,1,NZDUSD.DWX,125320001,2026-06-09,Development,active
