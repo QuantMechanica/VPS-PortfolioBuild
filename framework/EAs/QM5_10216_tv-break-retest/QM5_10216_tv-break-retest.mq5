@@ -128,16 +128,17 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const int pivot_first = strategy_pivot_right + 1;
-   const int pivot_last = MathMin(strategy_pivot_lookback, Bars(_Symbol, _Period) - strategy_pivot_left - 2);
+   // perf-allowed: pivot/retest structure has no QM reader equivalent; caller gates this hook with QM_IsNewBar().
+   const int pivot_last = MathMin(strategy_pivot_lookback, Bars(_Symbol, _Period) - strategy_pivot_left - 2); // perf-allowed
    for(int shift = pivot_first; shift <= pivot_last; ++shift)
      {
-      const double center_high = iHigh(_Symbol, _Period, shift);
+      const double center_high = iHigh(_Symbol, _Period, shift); // perf-allowed
       bool is_pivot_high = (center_high > 0.0);
       for(int i = 1; i <= strategy_pivot_left && is_pivot_high; ++i)
-         if(iHigh(_Symbol, _Period, shift + i) >= center_high)
+         if(iHigh(_Symbol, _Period, shift + i) >= center_high) // perf-allowed
             is_pivot_high = false;
       for(int i = 1; i <= strategy_pivot_right && is_pivot_high; ++i)
-         if(iHigh(_Symbol, _Period, shift - i) > center_high)
+         if(iHigh(_Symbol, _Period, shift - i) > center_high) // perf-allowed
             is_pivot_high = false;
       if(is_pivot_high)
         {
@@ -148,13 +149,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    for(int shift = pivot_first; shift <= pivot_last; ++shift)
      {
-      const double center_low = iLow(_Symbol, _Period, shift);
+      const double center_low = iLow(_Symbol, _Period, shift); // perf-allowed
       bool is_pivot_low = (center_low > 0.0);
       for(int i = 1; i <= strategy_pivot_left && is_pivot_low; ++i)
-         if(iLow(_Symbol, _Period, shift + i) <= center_low)
+         if(iLow(_Symbol, _Period, shift + i) <= center_low) // perf-allowed
             is_pivot_low = false;
       for(int i = 1; i <= strategy_pivot_right && is_pivot_low; ++i)
-         if(iLow(_Symbol, _Period, shift - i) < center_low)
+         if(iLow(_Symbol, _Period, shift - i) < center_low) // perf-allowed
             is_pivot_low = false;
       if(is_pivot_low)
         {
@@ -163,10 +164,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
         }
      }
 
-   const double close_1 = iClose(_Symbol, _Period, 1);
-   const double close_2 = iClose(_Symbol, _Period, 2);
-   const double low_1 = iLow(_Symbol, _Period, 1);
-   const double high_1 = iHigh(_Symbol, _Period, 1);
+   const double close_1 = iClose(_Symbol, _Period, 1); // perf-allowed
+   const double close_2 = iClose(_Symbol, _Period, 2); // perf-allowed
+   const double low_1 = iLow(_Symbol, _Period, 1); // perf-allowed
+   const double high_1 = iHigh(_Symbol, _Period, 1); // perf-allowed
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);

@@ -116,10 +116,10 @@ bool Strategy_SupertrendBullish(const int target_shift)
 
    for(int shift = lookback; shift >= target_shift; --shift)
      {
-      const double high = iHigh(_Symbol, tf, shift);
-      const double low = iLow(_Symbol, tf, shift);
-      const double close = iClose(_Symbol, tf, shift);
-      const double prev_close = iClose(_Symbol, tf, shift + 1);
+      const double high = iHigh(_Symbol, tf, shift);              // perf-allowed: bespoke Supertrend OHLC reconstruction, called from closed-bar logic only
+      const double low = iLow(_Symbol, tf, shift);                // perf-allowed: bespoke Supertrend OHLC reconstruction, called from closed-bar logic only
+      const double close = iClose(_Symbol, tf, shift);            // perf-allowed: bespoke Supertrend OHLC reconstruction, called from closed-bar logic only
+      const double prev_close = iClose(_Symbol, tf, shift + 1);   // perf-allowed: bespoke Supertrend OHLC reconstruction, called from closed-bar logic only
       const double atr = QM_ATR(_Symbol, tf, period, shift);
       if(high <= 0.0 || low <= 0.0 || close <= 0.0 || prev_close <= 0.0 || atr <= 0.0)
          return false;
