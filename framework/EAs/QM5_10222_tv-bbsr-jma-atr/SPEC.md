@@ -1,30 +1,16 @@
-# QM5_10222_tv-bbsr-jma-atr — Strategy Spec
+# QM5_10222_tv-bbsr-jma-atr - Strategy Spec
 
 **EA ID:** QM5_10222
-**Slug:** `tv-bbsr-jma-atr`
-**Source:** `30591366-874b-5bee-b47c-da2fca20b728` (see `strategy-seeds/sources/30591366-874b-5bee-b47c-da2fca20b728/`)
-**Author of this spec:** auto-generated ex-post by gen_spec_md.py
-**Last revised:** 2026-05-25
+**Slug:** tv-bbsr-jma-atr
+**Source:** 30591366-874b-5bee-b47c-da2fca20b728
+**Author of this spec:** Codex
+**Last revised:** 2026-06-09
 
 ---
 
 ## 1. Strategy Logic
 
-Bollinger-band extreme reversal with momentum and trend confirmation. Long
-when the previous bar closed below the lower Bollinger Band and the current bar
-closes back inside (reclaim), while both Stochastic %K and %D are below the
-oversold threshold and the JMA trend filter is rising (green). Short is the
-mirror: previous close above the upper band, current close reclaimed inside,
-Stochastic %K and %D above the overbought threshold, and the JMA trend filter
-falling (red). Exit is an ATR trailing stop in both directions, plus an
-opposite-signal close (a long is closed on a fresh bearish signal and a short
-on a fresh bullish signal). The Jurik Moving Average is reproduced with the
-framework Hull-MA low-lag proxy (`QM_HMA`), per the card's §Stop-Loss license to
-substitute a low-lag EMA/HMA proxy when JMA cannot be reproduced directly.
-
-Entry/exit logic is encoded in the five `Strategy_*` hooks in
-`QM5_10222_tv-bbsr-jma-atr.mq5`. Framework wiring (risk, magic, news, Friday close)
-is inherited from `QM_Common.mqh` and is not redocumented here.
+The EA trades Bollinger Band re-entry signals with Stochastic confirmation and a low-lag JMA proxy. A long signal occurs when the last closed bar closes back above the lower Bollinger Band after the prior close was below the lower band, Stochastic K and D are both below the oversold threshold, and the HMA proxy is rising. A short signal mirrors this at the upper Bollinger Band with Stochastic K and D above the overbought threshold and a falling HMA proxy. Initial stop and ongoing trade management use an ATR trailing stop, and an open position is closed when the opposite entry signal appears.
 
 ---
 
@@ -32,43 +18,38 @@ is inherited from `QM_Common.mqh` and is not redocumented here.
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `strategy_bb_period` | 20 | 10-50 | Bollinger lookback |
-| `strategy_bb_deviation` | 2.0 | 1.5-3.0 | Bollinger band standard deviations |
-| `strategy_stoch_k_period` | 14 | 5-21 | Stochastic %K period |
-| `strategy_stoch_d_period` | 3 | 2-5 | Stochastic %D period |
-| `strategy_stoch_slowing` | 3 | 1-5 | Stochastic slowing |
-| `strategy_stoch_oversold` | 20.0 | 10-30 | Long gate: %K & %D both below this |
-| `strategy_stoch_overbought` | 80.0 | 70-90 | Short gate: %K & %D both above this |
-| `strategy_jma_proxy_period` | 55 | 10-100 | JMA trend filter period (Hull-MA proxy) |
-| `strategy_atr_period` | 14 | 7-28 | ATR period for initial SL + trailing |
-| `strategy_atr_trail_mult` | 3.0 | 1.5-4.0 | ATR multiple for SL distance + trailing stop |
-| `strategy_skip_overnight` | true | true/false | Block the flat overnight session |
-| `strategy_skip_start_hour` | 22 | 0-23 | Overnight block start (broker hour, inclusive) |
-| `strategy_skip_end_hour` | 2 | 0-23 | Overnight block end (broker hour, exclusive, wrap-safe) |
+| strategy_bb_period | 20 | 2-200 | Bollinger Band lookback period. |
+| strategy_bb_deviation | 2.0 | 0.5-5.0 | Bollinger Band standard deviation multiplier. |
+| strategy_stoch_k | 14 | 2-100 | Stochastic K period. |
+| strategy_stoch_d | 3 | 1-50 | Stochastic D period. |
+| strategy_stoch_slowing | 3 | 1-50 | Stochastic slowing value. |
+| strategy_stoch_oversold | 20.0 | 1.0-50.0 | Maximum K and D value for long entries. |
+| strategy_stoch_overbought | 80.0 | 50.0-99.0 | Minimum K and D value for short entries. |
+| strategy_hma_period | 55 | 4-300 | HMA period used as the card-authorized JMA proxy. |
+| strategy_atr_period | 14 | 2-100 | ATR period for initial and trailing stop. |
+| strategy_atr_mult | 2.0 | 0.5-10.0 | ATR multiplier for initial and trailing stop. |
+| strategy_session_start_hour | 7 | 0-23 | Broker hour when baseline trading may begin. |
+| strategy_session_end_hour | 22 | 0-23 | Broker hour when baseline trading stops. |
+| strategy_max_spread_atr_frac | 0.10 | 0.0-1.0 | Maximum spread as a fraction of ATR. |
 
-> Signal timeframe is the chart/tester timeframe (`_Period`), so the same EA
-> evaluates the Bollinger/Stochastic/JMA logic at whatever timeframe the
-> setfile drives (M30 or H1).
-
-> Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
-> qm_news_mode, qm_rng_seed, qm_stress_reject_probability,
-> qm_friday_close_*) are documented in
-> `framework/V5_FRAMEWORK_DESIGN.md` — not re-listed here.
+> Note: framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
+> qm_news_mode, qm_rng_seed, qm_stress_reject_probability, qm_friday_close_*)
+> are documented in `framework/V5_FRAMEWORK_DESIGN.md` and are not repeated here.
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `EURUSD.DWX` — registered in magic_numbers.csv for this EA
-- `GBPUSD.DWX` — registered in magic_numbers.csv for this EA
-- `XAUUSD.DWX` — registered in magic_numbers.csv for this EA
-- `GDAXI.DWX` — registered in magic_numbers.csv for this EA
-- `NDX.DWX` — registered in magic_numbers.csv for this EA
+- EURUSD.DWX - card target; liquid major FX pair suited to Bollinger/Stochastic reversal testing.
+- GBPUSD.DWX - card target; liquid major FX pair suited to Bollinger/Stochastic reversal testing.
+- XAUUSD.DWX - card target; liquid metal CFD with reversal and volatility regimes.
+- GDAXI.DWX - canonical DWX DAX symbol used for the card's GER40 target.
+- NDX.DWX - card target; liquid US index CFD with volatility/reversal behavior.
 
-**Explicitly NOT for:** any symbol not in the list above (no implicit
-universe expansion at runtime; the `QM_SymbolGuard` framework helper
-rejects foreign symbols).
+**Explicitly NOT for:**
+- GER40.DWX - not present in `framework/registry/dwx_symbol_matrix.csv`; mapped to GDAXI.DWX.
+- SPX500.DWX, SPY.DWX, ES.DWX - unavailable phantom symbols under DWX discipline.
 
 ---
 
@@ -76,9 +57,9 @@ rejects foreign symbols).
 
 | Aspect | Value |
 |---|---|
-| Base timeframe | `H1` (card baseline M30/H1; EA reads the chart timeframe) |
-| Multi-timeframe refs | none — all reads on the chart timeframe |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Base timeframe | M30 and H1 |
+| Multi-timeframe refs | none |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` through the V5 skeleton |
 
 ---
 
@@ -87,11 +68,10 @@ rejects foreign symbols).
 | Metric | Expected |
 |---|---|
 | Trades / year / symbol | 100 |
-| Cadence note | see card body |
-| Typical hold time | see card body |
-| Expected drawdown profile | bounded by RISK_FIXED + FTMO 10% total DD ceiling |
-| Regime preference | per card thesis |
-| Win rate target (qualitative) | medium |
+| Typical hold time | Not specified in card; position is held until ATR trailing stop, opposite signal, or framework close. |
+| Expected drawdown profile | Not specified in card. |
+| Regime preference | Mean-reversion from volatility extremes with momentum confirmation. |
+| Win rate target (qualitative) | Not specified in card. |
 
 ---
 
@@ -99,10 +79,10 @@ rejects foreign symbols).
 
 This card was mechanised from:
 
-**Source ID:** `30591366-874b-5bee-b47c-da2fca20b728`
-**Pointer:** `strategy-seeds/sources/30591366-874b-5bee-b47c-da2fca20b728/`
-**R1–R4 verdict (Q00):** all PASS — see
-`artifacts/cards_approved/QM5_10222_tv-bbsr-jma-atr.md`
+**Source ID:** 30591366-874b-5bee-b47c-da2fca20b728
+**Source type:** TradingView script page
+**Pointer:** https://www.tradingview.com/script/59farSw2-BBSR-Extreme-Strategy-nachodog/
+**R1-R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_10222_tv-bbsr-jma-atr.md`
 
 ---
 
@@ -110,11 +90,11 @@ This card was mechanised from:
 
 | Phase | Risk mode | Value |
 |---|---|---|
-| Backtest (Q02 – Q10) | RISK_FIXED | $1,000 per trade (HR4) |
+| Backtest (Q02 - Q10) | RISK_FIXED | $1,000 per trade (HR4) |
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
-| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
+| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% - 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
 
 ---
 
@@ -122,4 +102,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-05-25 | Initial spec (ex-post, generated by gen_spec_md.py) | post-PT15 remediation |
+| v1 | 2026-06-09 | Initial build from card | d75f3d88-efcc-4c5c-b450-d33a03975bda |
