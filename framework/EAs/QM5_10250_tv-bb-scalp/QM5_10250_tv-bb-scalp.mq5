@@ -73,64 +73,136 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input ENUM_TIMEFRAMES strategy_signal_tf          = PERIOD_M5;
-input int             strategy_bb_period         = 20;
-input double          strategy_bb_deviation      = 2.0;
-input int             strategy_ema_exit_period   = 8;
-input int             strategy_ema_fast_period   = 12;
-input int             strategy_ema_slow_period   = 26;
-input bool            strategy_use_ema200_filter = true;
-input int             strategy_ema_trend_period  = 200;
-input int             strategy_volume_sma_period = 20;
-input int             strategy_atr_period        = 14;
-input double          strategy_fx_atr_sl_mult    = 1.2;
-input double          strategy_index_sl_percent  = 0.35;
-input int             strategy_max_hold_bars     = 24;
-input int             strategy_session_start_h   = 7;
-input int             strategy_session_end_h     = 21;
-input int             strategy_spread_avg_bars   = 50;
-input double          strategy_spread_avg_mult   = 1.5;
+// Card QM5_10250 (tv-bb-scalp): TradingView "Bollinger Band Scalping"
+// by JuliusStark. Mean-reversion entry after a closed candle sits fully
+// outside BB(20,2), with volume confirmation and optional EMA(200) trend side.
+input int    strategy_bb_period         = 20;
+input double strategy_bb_deviation      = 2.0;
+input int    strategy_exit_ema_period   = 8;
+input int    strategy_ema12_period      = 12;
+input int    strategy_ema26_period      = 26;
+input bool   strategy_use_ema200_filter = true;
+input int    strategy_ema200_period     = 200;
+input int    strategy_volume_sma_period = 20;
+input int    strategy_spread_avg_bars   = 50;
+input double strategy_spread_avg_mult   = 1.5;
+input int    strategy_atr_period        = 14;
+input double strategy_fx_atr_sl_mult    = 1.2;
+input double strategy_index_sl_percent  = 0.35;
+input int    strategy_max_hold_bars     = 24;
+input int    strategy_london_start_hour = 7;
+input int    strategy_london_end_hour   = 12;
+input int    strategy_ny_start_hour     = 13;
+input int    strategy_ny_end_hour       = 21;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
-// regime filter). Cheap O(1) checks only — runs on every tick.
-bool Strategy_NoTradeFilter()
+bool Strategy_HourInWindow(const int hour, const int start_hour, const int end_hour)
   {
-   // No Trade Filter (time, spread, news): framework handles news; this card adds London/NY hours and spread.
+   if(start_hour < 0 || start_hour > 23 || end_hour < 0 || end_hour > 23)
+      return false;
+   if(start_hour == end_hour)
+      return true;
+   if(start_hour < end_hour)
+      return (hour >= start_hour && hour < end_hour);
+   return (hour >= start_hour || hour < end_hour);
+  }
+
+bool Strategy_InLiquidSession()
+  {
    MqlDateTime dt;
    TimeToStruct(TimeCurrent(), dt);
-   if(dt.hour < strategy_session_start_h || dt.hour >= strategy_session_end_h)
+   return (Strategy_HourInWindow(dt.hour, strategy_london_start_hour, strategy_london_end_hour) ||
+           Strategy_HourInWindow(dt.hour, strategy_ny_start_hour, strategy_ny_end_hour));
+  }
+
+bool Strategy_HasOpenPosition()
+  {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+         return true;
+     }
+   return false;
+  }
+
+bool Strategy_IsIndexSymbol()
+  {
+   return (StringFind(_Symbol, "NDX") >= 0 ||
+           StringFind(_Symbol, "WS30") >= 0 ||
+           StringFind(_Symbol, "SP500") >= 0 ||
+           StringFind(_Symbol, "GDAXI") >= 0 ||
+           StringFind(_Symbol, "DE30") >= 0 ||
+           StringFind(_Symbol, "UK100") >= 0 ||
+           StringFind(_Symbol, "JP225") >= 0);
+  }
+
+bool Strategy_LoadSignalRates(MqlRates &rates[], const int bars_needed)
+  {
+   if(bars_needed <= 2)
+      return false;
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, 0, bars_needed, rates); // perf-allowed: Strategy_EntrySignal is called only after the framework QM_IsNewBar gate.
+   return (copied >= bars_needed);
+  }
+
+double Strategy_StopPrice(const QM_OrderType side, const double entry)
+  {
+   if(entry <= 0.0)
+      return 0.0;
+
+   if(Strategy_IsIndexSymbol())
+     {
+      const double distance = entry * strategy_index_sl_percent / 100.0;
+      return QM_StopRulesStopFromDistance(_Symbol, side, entry, distance);
+     }
+
+   const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
+   if(atr <= 0.0)
+      return 0.0;
+   return QM_StopATRFromValue(_Symbol, side, entry, atr, strategy_fx_atr_sl_mult);
+  }
+
+// No Trade Filter (time, spread, news)
+// Return TRUE to BLOCK new entries. Existing positions are allowed through so
+// EMA target and time-stop exits still run outside the entry session.
+bool Strategy_NoTradeFilter()
+  {
+   if(strategy_bb_period <= 1 || strategy_bb_deviation <= 0.0 ||
+      strategy_exit_ema_period <= 0 || strategy_ema12_period <= 0 ||
+      strategy_ema26_period <= 0 || strategy_ema200_period <= 0 ||
+      strategy_volume_sma_period <= 0 || strategy_spread_avg_bars <= 0 ||
+      strategy_spread_avg_mult <= 0.0 || strategy_atr_period <= 0 ||
+      strategy_fx_atr_sl_mult <= 0.0 || strategy_index_sl_percent <= 0.0 ||
+      strategy_max_hold_bars <= 0)
       return true;
 
-   static double rolling_spread_points = 0.0;
-   if(strategy_spread_avg_bars > 0 && strategy_spread_avg_mult > 0.0)
-     {
-      const long current_spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-      if(current_spread > 0 && rolling_spread_points > 0.0 &&
-         (double)current_spread > strategy_spread_avg_mult * rolling_spread_points)
-         return true;
+   if(Strategy_HasOpenPosition())
+      return false;
 
-      if(current_spread > 0)
-        {
-         const double alpha = 2.0 / ((double)strategy_spread_avg_bars + 1.0);
-         rolling_spread_points = (rolling_spread_points <= 0.0)
-                                 ? (double)current_spread
-                                 : rolling_spread_points + alpha * ((double)current_spread - rolling_spread_points);
-        }
-     }
+   if(!Strategy_InLiquidSession())
+      return true;
 
    return false;
   }
 
+// Trade Entry
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
 // should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // Trade Entry: closed candle fully outside Bollinger band, volume above SMA(volume,20), optional EMA200 trend.
    req.type = QM_BUY;
    req.price = 0.0;
    req.sl = 0.0;
@@ -139,126 +211,145 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(strategy_bb_period <= 1 || strategy_volume_sma_period <= 0 ||
-      strategy_atr_period <= 0 || strategy_max_hold_bars <= 0)
+   int bars_needed = strategy_spread_avg_bars;
+   if(strategy_volume_sma_period > bars_needed)
+      bars_needed = strategy_volume_sma_period;
+   bars_needed += 2;
+
+   MqlRates rates[];
+   if(!Strategy_LoadSignalRates(rates, bars_needed))
       return false;
 
-   const double open1 = iOpen(_Symbol, strategy_signal_tf, 1);
-   const double close1 = iClose(_Symbol, strategy_signal_tf, 1);
-   const double lower = QM_BB_Lower(_Symbol, strategy_signal_tf, strategy_bb_period, strategy_bb_deviation, 1);
-   const double upper = QM_BB_Upper(_Symbol, strategy_signal_tf, strategy_bb_period, strategy_bb_deviation, 1);
-   const double ema200 = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_trend_period, 1);
-   if(open1 <= 0.0 || close1 <= 0.0 || lower <= 0.0 || upper <= 0.0)
+   const double open_1 = rates[1].open;
+   const double close_1 = rates[1].close;
+   if(open_1 <= 0.0 || close_1 <= 0.0)
       return false;
 
    double volume_sum = 0.0;
-   int volume_samples = 0;
-   for(int shift = 1; shift <= strategy_volume_sma_period; ++shift)
+   for(int i = 1; i <= strategy_volume_sma_period; ++i)
+      volume_sum += (double)rates[i].tick_volume;
+   const double volume_avg = volume_sum / (double)strategy_volume_sma_period;
+   if((double)rates[1].tick_volume <= volume_avg)
+      return false;
+
+   double spread_sum = 0.0;
+   int spread_samples = 0;
+   for(int i = 1; i <= strategy_spread_avg_bars; ++i)
      {
-      const long volume = iVolume(_Symbol, strategy_signal_tf, shift);
-      if(volume <= 0)
+      if(rates[i].spread <= 0)
          continue;
-      volume_sum += (double)volume;
-      volume_samples++;
+      spread_sum += (double)rates[i].spread;
+      ++spread_samples;
      }
-   if(volume_samples <= 0 || (double)iVolume(_Symbol, strategy_signal_tf, 1) <= (volume_sum / volume_samples))
+   if(spread_samples <= 0)
       return false;
 
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
+   const long current_spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+   const double avg_spread = spread_sum / (double)spread_samples;
+   if(current_spread <= 0 || (double)current_spread > avg_spread * strategy_spread_avg_mult)
       return false;
 
-   const bool is_index = (StringFind(_Symbol, "NDX") >= 0 ||
-                          StringFind(_Symbol, "WS30") >= 0 ||
-                          StringFind(_Symbol, "SP500") >= 0 ||
-                          StringFind(_Symbol, "GDAXI") >= 0 ||
-                          StringFind(_Symbol, "UK100") >= 0);
+   const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
+   const double lower = QM_BB_Lower(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 1);
+   const double upper = QM_BB_Upper(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 1);
+   if(lower <= 0.0 || upper <= 0.0)
+      return false;
 
-   if(open1 < lower && close1 < lower && (!strategy_use_ema200_filter || close1 > ema200))
+   bool long_signal = (open_1 < lower && close_1 < lower);
+   bool short_signal = (open_1 > upper && close_1 > upper);
+
+   if(strategy_use_ema200_filter)
      {
-      req.type = QM_BUY;
-      req.price = ask;
-      const double sl_distance = is_index ? (req.price * strategy_index_sl_percent / 100.0)
-                                          : (QM_ATR(_Symbol, strategy_signal_tf, strategy_atr_period, 1) * strategy_fx_atr_sl_mult);
-      if(sl_distance <= 0.0)
+      const double ema200 = QM_EMA(_Symbol, tf, strategy_ema200_period, 1);
+      if(ema200 <= 0.0)
          return false;
-      req.sl = QM_StopRulesNormalizePrice(_Symbol, req.price - sl_distance);
-      req.tp = 0.0;
-      req.reason = "QM5_10250_BB_LOWER_MEANREV_LONG";
-      return true;
+      if(long_signal && close_1 <= ema200)
+         long_signal = false;
+      if(short_signal && close_1 >= ema200)
+         short_signal = false;
      }
 
-   if(open1 > upper && close1 > upper && (!strategy_use_ema200_filter || close1 < ema200))
-     {
-      req.type = QM_SELL;
-      req.price = bid;
-      const double sl_distance = is_index ? (req.price * strategy_index_sl_percent / 100.0)
-                                          : (QM_ATR(_Symbol, strategy_signal_tf, strategy_atr_period, 1) * strategy_fx_atr_sl_mult);
-      if(sl_distance <= 0.0)
-         return false;
-      req.sl = QM_StopRulesNormalizePrice(_Symbol, req.price + sl_distance);
-      req.tp = 0.0;
-      req.reason = "QM5_10250_BB_UPPER_MEANREV_SHORT";
-      return true;
-     }
+   if(!long_signal && !short_signal)
+      return false;
 
-   return false;
+   req.type = long_signal ? QM_BUY : QM_SELL;
+   const double entry = QM_EntryMarketPrice(req.type);
+   if(entry <= 0.0)
+      return false;
+
+   req.sl = Strategy_StopPrice(req.type, entry);
+   if(req.sl <= 0.0)
+      return false;
+
+   req.reason = long_signal ? "TV_BB_SCALP_LONG" : "TV_BB_SCALP_SHORT";
+   return true;
   }
 
+// Trade Management
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Trade Management: no partial ladder, break-even, or trailing in the baseline card.
+   // Card baseline has no trailing, break-even, partial close, or add-on logic.
   }
 
+// Trade Close
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   // Trade Close: full exit at EMA(8) target or after the 24-bar time stop.
    const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
+   const double ema_target = QM_EMA(_Symbol, tf, strategy_exit_ema_period, 1);
+   if(ema_target <= 0.0)
+      return false;
+
+   int seconds_per_bar = PeriodSeconds(tf);
+   if(seconds_per_bar <= 0)
+      seconds_per_bar = 300;
+
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
          continue;
       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
 
-      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      const double ema_target = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_exit_period, 1);
-      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      if(ema_target > 0.0)
+      const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
+      if(opened > 0 && TimeCurrent() - opened >= (long)strategy_max_hold_bars * seconds_per_bar)
+         return true;
+
+      const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      if(pos_type == POSITION_TYPE_BUY)
         {
-         if(ptype == POSITION_TYPE_BUY && bid >= ema_target)
-            return true;
-         if(ptype == POSITION_TYPE_SELL && ask <= ema_target)
+         const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+         if(bid > 0.0 && bid >= ema_target)
             return true;
         }
-
-      const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
-      const int seconds_per_bar = PeriodSeconds(strategy_signal_tf);
-      if(open_time > 0 && seconds_per_bar > 0 &&
-         TimeCurrent() - open_time >= strategy_max_hold_bars * seconds_per_bar)
-         return true;
+      else if(pos_type == POSITION_TYPE_SELL)
+        {
+         const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+         if(ask > 0.0 && ask <= ema_target)
+            return true;
+        }
      }
 
    return false;
   }
 
+// News Filter Hook
 // Optional news-filter override. Return TRUE to suppress trading regardless
 // of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
 // custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   // News Filter Hook: no card-specific override; framework news modes remain authoritative.
-   return false; // defer to QM_NewsAllowsTrade(...)
+   return false; // defer to the framework two-axis news filter.
   }
 
 // -----------------------------------------------------------------------------

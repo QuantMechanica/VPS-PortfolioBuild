@@ -3,16 +3,16 @@
 ; ea_id:        10133
 ; ea_slug:      tv-ema80-scalp
 ; ea_version:   v5.0
-; set_version:  s20260523-001
+; set_version:  s20260609-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    M1
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   0bcd0bbfdbb3f668f4dba99655371d8ee776b30a1b4becd923062b012cdb45f1
+; build_hash:   443cbf68f2a8eb5d843d0af1b03dfd50fccc1e8d21406117ff41c25ed2c5dcbd
 ; author:       Development
-; date:         2026-05-23
+; date:         2026-06-09
 ;==========================================================
 qm_magic_slot_offset=2
 RISK_FIXED=1000

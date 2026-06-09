@@ -3,16 +3,16 @@
 ; ea_id:        10133
 ; ea_slug:      tv-ema80-scalp
 ; ea_version:   v5.0
-; set_version:  s20260523-001
+; set_version:  s20260609-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    M1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   ba02d2df2ebc3c8992687c5841a4ca9bcc196db475c8b05dac01cdcd662b48c9
+; build_hash:   64518efb11208f9c0267f90450de11a3dfc29820fd2a8689cf5f6a79d50bbe17
 ; author:       Development
-; date:         2026-05-23
+; date:         2026-06-09
 ;==========================================================
 qm_magic_slot_offset=1
 RISK_FIXED=1000

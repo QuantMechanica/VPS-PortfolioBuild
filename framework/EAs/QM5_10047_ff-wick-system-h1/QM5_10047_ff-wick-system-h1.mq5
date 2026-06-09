@@ -112,16 +112,7 @@ bool Strategy_SessionAllowsTrade(const datetime broker_time)
 
 double Strategy_PipDistance(const int pips)
   {
-   if(pips <= 0)
-      return 0.0;
-
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(point <= 0.0)
-      return 0.0;
-
-   const int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
-   const int pip_factor = (digits == 3 || digits == 5) ? 10 : 1;
-   return pips * point * pip_factor;
+   return QM_StopRulesPipsToPriceDistance(_Symbol, pips);
   }
 
 bool Strategy_SpreadAllowed()
@@ -166,7 +157,7 @@ bool Strategy_HasOpenPosition()
 bool Strategy_NoTradeFilter()
   {
    // Session/spread filters gate new entries only; open positions must still
-   // reach the 12-bar time exit even after the entry window has closed.
+   // reach the 12-bar time exit after the entry window has closed.
    if(Strategy_HasOpenPosition())
       return false;
 
@@ -197,10 +188,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!Strategy_SpreadAllowed())
       return false;
 
-   const double open1 = iOpen(_Symbol, PERIOD_H1, 1);
-   const double high1 = iHigh(_Symbol, PERIOD_H1, 1);
-   const double low1 = iLow(_Symbol, PERIOD_H1, 1);
-   const double close1 = iClose(_Symbol, PERIOD_H1, 1);
+   // perf-allowed: four single closed-bar OHLC reads for bespoke wick geometry; EntrySignal is framework new-bar gated.
+   const double open1 = iOpen(_Symbol, PERIOD_H1, 1);   // perf-allowed: single closed-bar OHLC read for wick geometry
+   const double high1 = iHigh(_Symbol, PERIOD_H1, 1);   // perf-allowed: single closed-bar OHLC read for wick geometry
+   const double low1 = iLow(_Symbol, PERIOD_H1, 1);     // perf-allowed: single closed-bar OHLC read for wick geometry
+   const double close1 = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed: single closed-bar OHLC read for wick geometry
    if(open1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0 || close1 <= 0.0 || high1 <= low1)
       return false;
 

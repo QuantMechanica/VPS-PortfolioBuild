@@ -1,0 +1,12 @@
+{
+  "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+  "host_symbol": "AUDUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "AUDUSD.DWX",
+    "NZDUSD.DWX"
+  ],
+  "notes": [
+    "Two-leg AUDUSD/NZDUSD cointegration pair from the approved card. The EA runs from the AUDUSD.DWX host setfile and reads both D1 close series to compute ln(AUDUSD) - beta * ln(NZDUSD)."
+  ]
+}

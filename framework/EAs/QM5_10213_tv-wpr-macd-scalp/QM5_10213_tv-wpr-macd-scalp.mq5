@@ -108,6 +108,27 @@ bool Strategy_IsIndexSymbol()
    return (_Symbol == "NDX.DWX" || _Symbol == "GDAXI.DWX");
   }
 
+bool Strategy_HasOpenPosition()
+  {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(!PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      return true;
+     }
+
+   return false;
+  }
+
 double Strategy_WilliamsR(const int shift)
   {
    if(strategy_wpr_length <= 0 || shift < 1)
@@ -117,8 +138,8 @@ double Strategy_WilliamsR(const int shift)
    double lowest = DBL_MAX;
    for(int i = shift; i < shift + strategy_wpr_length; ++i)
      {
-      const double high = iHigh(_Symbol, PERIOD_M1, i);
-      const double low = iLow(_Symbol, PERIOD_M1, i);
+      const double high = iHigh(_Symbol, PERIOD_M1, i); // perf-allowed: bounded Williams %R high window on closed-bar path.
+      const double low = iLow(_Symbol, PERIOD_M1, i);   // perf-allowed: bounded Williams %R low window on closed-bar path.
       if(high <= 0.0 || low <= 0.0)
          return EMPTY_VALUE;
       if(high > highest)
@@ -127,7 +148,7 @@ double Strategy_WilliamsR(const int shift)
          lowest = low;
      }
 
-   const double close = iClose(_Symbol, PERIOD_M1, shift);
+   const double close = iClose(_Symbol, PERIOD_M1, shift); // perf-allowed: Williams %R closed-bar close, no framework WPR helper exists.
    if(close <= 0.0 || highest <= lowest)
       return EMPTY_VALUE;
 
@@ -143,13 +164,7 @@ double Strategy_MACDHist(const int shift)
    return main - signal;
   }
 
-// -----------------------------------------------------------------------------
-// Strategy hooks — implement these against the card mechanically.
-// -----------------------------------------------------------------------------
-
-// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
-// regime filter). Cheap O(1) checks only — runs on every tick.
-bool Strategy_NoTradeFilter()
+bool Strategy_EntryBlockedByFilters()
   {
    MqlDateTime broker_dt;
    TimeToStruct(TimeCurrent(), broker_dt);
@@ -175,6 +190,19 @@ bool Strategy_NoTradeFilter()
    return ((ask - bid) > stop_distance * strategy_max_spread_stop_fraction);
   }
 
+// -----------------------------------------------------------------------------
+// Strategy hooks — implement these against the card mechanically.
+// -----------------------------------------------------------------------------
+
+// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
+// regime filter). Cheap O(1) checks only — runs on every tick.
+bool Strategy_NoTradeFilter()
+  {
+   if(Strategy_HasOpenPosition())
+      return false;
+   return Strategy_EntryBlockedByFilters();
+  }
+
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
 // should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
@@ -187,6 +215,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.reason = "";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
+
+   if(Strategy_EntryBlockedByFilters())
+      return false;
 
    const double wpr1 = Strategy_WilliamsR(1);
    const double wpr2 = Strategy_WilliamsR(2);
@@ -206,7 +237,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double hist1 = Strategy_MACDHist(1);
    const double hist2 = Strategy_MACDHist(2);
    const double sma = QM_SMA(_Symbol, PERIOD_M1, strategy_sma_period, 1);
-   const double close1 = iClose(_Symbol, PERIOD_M1, 1);
+   const double close1 = iClose(_Symbol, PERIOD_M1, 1); // perf-allowed: single closed-bar close for SMA confirmation.
    const double atr = QM_ATR(_Symbol, PERIOD_M1, strategy_atr_period, 1);
    if(hist1 == EMPTY_VALUE || hist2 == EMPTY_VALUE || sma <= 0.0 || close1 <= 0.0 || atr <= 0.0)
       return false;

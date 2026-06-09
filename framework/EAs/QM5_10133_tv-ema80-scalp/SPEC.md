@@ -4,7 +4,7 @@
 **Slug:** tv-ema80-scalp
 **Source:** 30591366-874b-5bee-b47c-da2fca20b728
 **Author of this spec:** Codex
-**Last revised:** 2026-06-04
+**Last revised:** 2026-06-09
 
 ---
 
@@ -98,4 +98,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-04 | Initial build from card | 660384f2-3afe-4f3d-84ee-1701a45a3dc6 |
+| v1 | 2026-06-09 | Initial build from card | 7a5a35d1-70cf-4a72-b532-a50104cdb63d |

@@ -3,16 +3,16 @@
 ; ea_id:        10213
 ; ea_slug:      tv-wpr-macd-scalp
 ; ea_version:   v5.0
-; set_version:  s20260524-001
+; set_version:  s20260609-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    M1
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   29ecf092a51057b6e5553166b8681c9ba912d404f073400e922dad9b618f1f59
 ; author:       Development
-; date:         2026-05-24
+; date:         2026-06-09
 ;==========================================================
 qm_magic_slot_offset=3
 RISK_FIXED=1000
