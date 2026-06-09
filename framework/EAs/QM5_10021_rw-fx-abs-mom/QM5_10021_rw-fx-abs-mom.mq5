@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_10021 Robot Wealth FX Absolute Momentum — V2 rebuild"
+#property description "QM5_10021 Robot Wealth FX Absolute Momentum"
 
 #include <QM/QM_Common.mqh>
 
@@ -29,61 +29,53 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_formation_period  = 80;     // number of D1 bars to look back for momentum calc
-input int    strategy_atr_period        = 14;     // ATR period for stop loss
-input double strategy_atr_sl_mult       = 2.5;    // ATR multiplier for stop loss distance
-input int    strategy_max_spread_points = 40;     // max spread in points to allow trade
+input int    strategy_formation_period  = 80;    // D1 bars to look back for momentum: Close[1] - Close[1+N]
+input int    strategy_atr_period        = 14;    // ATR period for catastrophic stop
+input double strategy_atr_sl_mult       = 2.5;   // ATR multiplier for stop distance
+input int    strategy_max_spread_points = 40;    // spread filter at entry (points)
 
-datetime g_cached_d1_bar_time  = 0;
-double   g_cached_close_recent = 0.0;
-double   g_cached_close_formation = 0.0;
+// Closed-bar cache — populated once per new D1 bar in AdvanceState_OnNewBar()
+double g_cached_close_recent    = 0.0;
+double g_cached_close_formation = 0.0;
 
-void RefreshCachedDailyData()
+// Called ONCE per new D1 bar from within the QM_IsNewBar gate in OnTick.
+// Reads the two raw D1 closes needed for the abs-momentum formula — no QM_*
+// helper exists for close-at-offset; using iClose with perf-allowed.
+void AdvanceState_OnNewBar()
   {
-   const datetime bar_time = iTime(_Symbol, PERIOD_D1, 0);
-   if(bar_time == g_cached_d1_bar_time)
-      return;
-   g_cached_d1_bar_time = bar_time;
-   g_cached_close_recent = iClose(_Symbol, PERIOD_D1, 1);
-   g_cached_close_formation = iClose(_Symbol, PERIOD_D1, 1 + strategy_formation_period);
+   g_cached_close_recent    = iClose(_Symbol, PERIOD_D1, 1);                              // perf-allowed: abs-momentum formula requires raw D1 close
+   g_cached_close_formation = iClose(_Symbol, PERIOD_D1, 1 + strategy_formation_period); // perf-allowed: abs-momentum formula requires raw D1 close at N-bar offset
   }
 
+// No-trade filter: block entry if spread is excessive at rollover.
 bool Strategy_NoTradeFilter()
   {
    if(strategy_max_spread_points > 0)
      {
-      const int spread_points = (int)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-      if(spread_points > strategy_max_spread_points)
+      const int spread_pts = (int)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+      if(spread_pts > strategy_max_spread_points)
          return true;
      }
    return false;
   }
 
+// Entry signal: open long when momentum > 0, short when momentum < 0.
+// Only called when QM_IsNewBar() is true (after AdvanceState_OnNewBar).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   req.type = QM_BUY;
-   req.price = 0.0;
-   req.sl = 0.0;
-   req.tp = 0.0;
-   req.reason = "";
-   req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
-
+   if(g_cached_close_recent <= 0.0 || g_cached_close_formation <= 0.0)
+      return false;
    if(strategy_formation_period <= 0 || strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
       return false;
 
-   RefreshCachedDailyData();
-   const double close_recent = g_cached_close_recent;
-   const double close_formation = g_cached_close_formation;
-   if(close_recent <= 0.0 || close_formation <= 0.0)
-      return false;
-
-   const double momentum = close_recent - close_formation;
+   const double momentum = g_cached_close_recent - g_cached_close_formation;
    if(momentum == 0.0)
       return false;
 
    const QM_OrderType side = (momentum > 0.0) ? QM_BUY : QM_SELL;
 
+   // Skip if any position for this EA on this symbol is still open.
+   // ExitSignal runs first on new bar; if position remains it is settling — retry next bar.
    const int magic = QM_FrameworkMagic();
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
@@ -94,12 +86,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
-
-      const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      if((side == QM_BUY && pos_type == POSITION_TYPE_BUY) ||
-         (side == QM_SELL && pos_type == POSITION_TYPE_SELL))
-         return false;
-
       return false;
      }
 
@@ -113,32 +99,29 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(sl <= 0.0)
       return false;
 
-   req.type = side;
-   req.price = 0.0;
-   req.sl = sl;
-   req.tp = 0.0;
-   req.reason = (side == QM_BUY) ? "RW_FX_ABS_MOM_LONG" : "RW_FX_ABS_MOM_SHORT";
-   req.symbol_slot = qm_magic_slot_offset;
+   req.type               = side;
+   req.price              = 0.0;
+   req.sl                 = sl;
+   req.tp                 = 0.0;
+   req.reason             = (side == QM_BUY) ? "RW_FX_ABS_MOM_LONG" : "RW_FX_ABS_MOM_SHORT";
+   req.symbol_slot        = qm_magic_slot_offset;
    req.expiration_seconds = 0;
    return true;
   }
 
+// No intraday position management; catastrophic SL handles drawdown.
 void Strategy_ManageOpenPosition()
   {
   }
 
+// Exit when momentum sign has flipped relative to the open position direction.
+// Called on new bar only (after AdvanceState_OnNewBar updates cache).
 bool Strategy_ExitSignal()
   {
-   if(strategy_formation_period <= 0)
+   if(g_cached_close_recent <= 0.0 || g_cached_close_formation <= 0.0)
       return false;
 
-   RefreshCachedDailyData();
-   const double close_recent = g_cached_close_recent;
-   const double close_formation = g_cached_close_formation;
-   if(close_recent <= 0.0 || close_formation <= 0.0)
-      return false;
-
-   const double momentum = close_recent - close_formation;
+   const double momentum = g_cached_close_recent - g_cached_close_formation;
    if(momentum == 0.0)
       return false;
 
@@ -152,21 +135,24 @@ bool Strategy_ExitSignal()
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
-
       const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       if(momentum > 0.0 && pos_type == POSITION_TYPE_SELL)
          return true;
       if(momentum < 0.0 && pos_type == POSITION_TYPE_BUY)
          return true;
      }
-
    return false;
   }
 
+// Defer to framework news filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
   }
+
+// =============================================================================
+// Framework wiring
+// =============================================================================
 
 int OnInit()
   {
@@ -188,8 +174,9 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
-   g_cached_d1_bar_time = 0;
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"ea\":\"10021_v2\"}");
+   g_cached_close_recent    = 0.0;
+   g_cached_close_formation = 0.0;
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"ea\":\"10021\"}");
    return INIT_SUCCEEDED;
   }
 
@@ -221,7 +208,15 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
+   // Per-tick management (no-op for abs-momentum baseline).
    Strategy_ManageOpenPosition();
+
+   // D1 momentum signal changes only at bar close — gate all signal work here.
+   if(!QM_IsNewBar())
+      return;
+
+   AdvanceState_OnNewBar();
+   QM_EquityStreamOnNewBar();
 
    if(Strategy_ExitSignal())
      {
@@ -236,11 +231,6 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
-
-   if(!QM_IsNewBar())
-      return;
-
-   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
