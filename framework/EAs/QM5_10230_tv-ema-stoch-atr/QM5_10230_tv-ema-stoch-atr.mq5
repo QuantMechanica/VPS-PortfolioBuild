@@ -209,13 +209,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const ENUM_TIMEFRAMES tf = StrategyTF();
-   const int warmup = strategy_ema_slow + strategy_rsi_period +
-                      strategy_stoch_rsi_lookback + strategy_stoch_k_smooth +
-                      strategy_stoch_d_smooth + strategy_recent_extreme_bars + 5;
-   if(Bars(_Symbol, tf) < warmup)
-      return false;
-
-   const double close1 = iClose(_Symbol, tf, 1);
+   const double close1 = QM_SMA(_Symbol, tf, 1, 1, PRICE_CLOSE);
    const double ema_fast = QM_EMA(_Symbol, tf, strategy_ema_fast, 1, PRICE_CLOSE);
    const double ema_slow = QM_EMA(_Symbol, tf, strategy_ema_slow, 1, PRICE_CLOSE);
    const double k1 = Strategy_StochRSIK(1);

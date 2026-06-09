@@ -52,8 +52,8 @@ input group "News"
 //   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
 //   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
 // A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
 // Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
@@ -98,34 +98,14 @@ input int    strategy_decision_hour_4              = 20;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   MqlDateTime dt;
-   TimeToStruct(iTime(_Symbol, strategy_signal_tf, 0), dt);
-   const bool decision_hour = (dt.hour == strategy_decision_hour_1 ||
-                               dt.hour == strategy_decision_hour_2 ||
-                               dt.hour == strategy_decision_hour_3 ||
-                               dt.hour == strategy_decision_hour_4);
-   if(!decision_hour)
+   if(strategy_macd_fast <= 0 || strategy_macd_slow <= strategy_macd_fast ||
+      strategy_macd_signal <= 0 || strategy_macd_delta_points <= 0)
       return true;
-
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   const int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
-   const int pip_factor = (digits == 3 || digits == 5) ? 10 : 1;
-   const double stop_distance = strategy_sl_pips * point * pip_factor;
-   if(ask <= 0.0 || bid <= 0.0 || stop_distance <= 0.0)
+   if(strategy_sl_pips <= 0 || strategy_tp_pips <= 0 ||
+      strategy_breakeven_trigger_pips <= 0 || strategy_atr_period <= 0)
       return true;
-   if((ask - bid) > stop_distance * strategy_max_spread_stop_fraction)
+   if(strategy_min_range_atr_mult < 0.0 || strategy_max_spread_stop_fraction < 0.0)
       return true;
-
-   const double high_1 = iHigh(_Symbol, strategy_signal_tf, 1);
-   const double low_1 = iLow(_Symbol, strategy_signal_tf, 1);
-   const double atr = QM_ATR(_Symbol, strategy_signal_tf, strategy_atr_period, 1);
-   if(high_1 <= 0.0 || low_1 <= 0.0 || atr <= 0.0)
-      return true;
-   if((high_1 - low_1) < atr * strategy_min_range_atr_mult)
-      return true;
-
    return false;
   }
 
@@ -142,7 +122,29 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(Strategy_NoTradeFilter())
+   MqlDateTime gmt;
+   TimeToStruct(TimeGMT(), gmt);
+   const bool decision_hour = (gmt.hour == strategy_decision_hour_1 ||
+                               gmt.hour == strategy_decision_hour_2 ||
+                               gmt.hour == strategy_decision_hour_3 ||
+                               gmt.hour == strategy_decision_hour_4);
+   if(!decision_hour)
+      return false;
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double stop_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_pips);
+   if(ask <= 0.0 || bid <= 0.0 || stop_distance <= 0.0)
+      return false;
+   if((ask - bid) > stop_distance * strategy_max_spread_stop_fraction)
+      return false;
+
+   const double atr = QM_ATR(_Symbol, strategy_signal_tf, strategy_atr_period, 1);
+   const double high_1 = iHigh(_Symbol, strategy_signal_tf, 1); // perf-allowed: one closed H4 high read for card's prior-bar range filter.
+   const double low_1 = iLow(_Symbol, strategy_signal_tf, 1); // perf-allowed: one closed H4 low read for card's prior-bar range filter.
+   if(atr <= 0.0 || high_1 <= 0.0 || low_1 <= 0.0)
+      return false;
+   if((high_1 - low_1) < atr * strategy_min_range_atr_mult)
       return false;
 
    const double macd_1 = QM_MACD_Main(_Symbol, strategy_signal_tf,
@@ -159,26 +161,27 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(point <= 0.0)
       return false;
 
-   const double delta = macd_1 - macd_3;
    const double threshold = strategy_macd_delta_points * point;
-   if(MathAbs(delta) < threshold)
-      return false;
+   const double delta = macd_1 - macd_3;
+   if(delta >= threshold)
+     {
+      req.type = QM_BUY;
+      req.sl = QM_StopFixedPips(_Symbol, req.type, ask, strategy_sl_pips);
+      req.tp = QM_TakeFixedPips(_Symbol, req.type, ask, strategy_tp_pips);
+      req.reason = "FF_50MACD_H4_LONG";
+      return (req.sl > 0.0 && req.tp > 0.0);
+     }
 
-   const bool go_long = (delta >= threshold);
-   req.type = go_long ? QM_BUY : QM_SELL;
-   req.price = 0.0;
-   const double entry = go_long ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                                : SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(entry <= 0.0)
-      return false;
+   if(delta <= -threshold)
+     {
+      req.type = QM_SELL;
+      req.sl = QM_StopFixedPips(_Symbol, req.type, bid, strategy_sl_pips);
+      req.tp = QM_TakeFixedPips(_Symbol, req.type, bid, strategy_tp_pips);
+      req.reason = "FF_50MACD_H4_SHORT";
+      return (req.sl > 0.0 && req.tp > 0.0);
+     }
 
-   req.sl = QM_StopFixedPips(_Symbol, req.type, entry, strategy_sl_pips);
-   req.tp = QM_TakeFixedPips(_Symbol, req.type, entry, strategy_tp_pips);
-   if(req.sl <= 0.0 || req.tp <= 0.0)
-      return false;
-
-   req.reason = go_long ? "FF_50MACD_H4_LONG" : "FF_50MACD_H4_SHORT";
-   return true;
+   return false;
   }
 
 // Called every tick when an open position exists for this EA's magic.
@@ -205,6 +208,15 @@ void Strategy_ManageOpenPosition()
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
+   MqlDateTime gmt;
+   TimeToStruct(TimeGMT(), gmt);
+   const bool decision_hour = (gmt.hour == strategy_decision_hour_1 ||
+                               gmt.hour == strategy_decision_hour_2 ||
+                               gmt.hour == strategy_decision_hour_3 ||
+                               gmt.hour == strategy_decision_hour_4);
+   if(!decision_hour)
+      return false;
+
    const int magic = QM_FrameworkMagic();
    bool have_position = false;
    bool have_buy = false;
@@ -238,8 +250,8 @@ bool Strategy_ExitSignal()
                                       strategy_macd_slow,
                                       strategy_macd_signal,
                                       3);
-   const double delta = macd_1 - macd_3;
    const double threshold = strategy_macd_delta_points * point;
+   const double delta = macd_1 - macd_3;
    if(have_buy && delta <= -threshold)
       return true;
    if(!have_buy && delta >= threshold)

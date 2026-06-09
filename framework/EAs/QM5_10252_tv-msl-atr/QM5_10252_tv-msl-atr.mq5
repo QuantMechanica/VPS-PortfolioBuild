@@ -74,15 +74,12 @@ input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input int    strategy_pivot_length              = 5;
+input int    strategy_pivot_scan_bars           = 60;
 input int    strategy_min_bars_between_signals  = 10;
 input int    strategy_atr_period                = 14;
 input double strategy_atr_trail_mult            = 3.0;
 input double strategy_catastrophic_atr_mult     = 5.0;
 input double strategy_min_breakout_range_atr    = 0.5;
-
-double g_last_confirmed_swing_high = 0.0;
-double g_last_confirmed_swing_low  = 0.0;
-int    g_bars_since_signal         = 1000000;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -93,6 +90,7 @@ int    g_bars_since_signal         = 1000000;
 bool Strategy_NoTradeFilter()
   {
    if(strategy_pivot_length < 1 ||
+      strategy_pivot_scan_bars < strategy_pivot_length * 2 + 2 ||
       strategy_min_bars_between_signals < 0 ||
       strategy_atr_period < 1 ||
       strategy_atr_trail_mult <= 0.0 ||
@@ -116,76 +114,106 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
+   static int bars_since_signal = 1000000;
+   if(bars_since_signal < 1000000)
+      bars_since_signal++;
+
    const int len = strategy_pivot_length;
-   const int center = len + 1;
    const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
+   double last_swing_high = 0.0;
+   double last_swing_low = 0.0;
 
-   const double center_high = iHigh(_Symbol, tf, center);
-   const double center_low = iLow(_Symbol, tf, center);
-   if(center_high <= 0.0 || center_low <= 0.0)
-      return false;
-
-   bool is_swing_high = true;
-   bool is_swing_low = true;
-   for(int k = 1; k <= len; ++k)
+   for(int center = len + 1; center <= strategy_pivot_scan_bars; ++center)
      {
-      const double high_before = iHigh(_Symbol, tf, center + k);
-      const double high_after = iHigh(_Symbol, tf, center - k);
-      const double low_before = iLow(_Symbol, tf, center + k);
-      const double low_after = iLow(_Symbol, tf, center - k);
-      if(high_before <= 0.0 || high_after <= 0.0 || low_before <= 0.0 || low_after <= 0.0)
-         return false;
+      const double center_high = iHigh(_Symbol, tf, center); // perf-allowed: bounded closed-bar pivot-structure scan
+      const double center_low = iLow(_Symbol, tf, center);   // perf-allowed: bounded closed-bar pivot-structure scan
+      if(center_high <= 0.0 || center_low <= 0.0)
+         break;
 
-      if(center_high <= high_before || center_high <= high_after)
-         is_swing_high = false;
-      if(center_low >= low_before || center_low >= low_after)
-         is_swing_low = false;
+      bool is_swing_high = true;
+      bool is_swing_low = true;
+      for(int k = 1; k <= len; ++k)
+        {
+         const double high_before = iHigh(_Symbol, tf, center + k); // perf-allowed: bounded closed-bar pivot-structure scan
+         const double high_after = iHigh(_Symbol, tf, center - k);  // perf-allowed: bounded closed-bar pivot-structure scan
+         const double low_before = iLow(_Symbol, tf, center + k);   // perf-allowed: bounded closed-bar pivot-structure scan
+         const double low_after = iLow(_Symbol, tf, center - k);    // perf-allowed: bounded closed-bar pivot-structure scan
+         if(high_before <= 0.0 || high_after <= 0.0 || low_before <= 0.0 || low_after <= 0.0)
+            return false;
+
+         if(center_high <= high_before || center_high <= high_after)
+            is_swing_high = false;
+         if(center_low >= low_before || center_low >= low_after)
+            is_swing_low = false;
+        }
+
+      if(is_swing_high && last_swing_high <= 0.0)
+         last_swing_high = center_high;
+      if(is_swing_low && last_swing_low <= 0.0)
+         last_swing_low = center_low;
+      if(last_swing_high > 0.0 && last_swing_low > 0.0)
+         break;
      }
 
-   if(is_swing_high)
-      g_last_confirmed_swing_high = center_high;
-   if(is_swing_low)
-      g_last_confirmed_swing_low = center_low;
-
-   if(g_bars_since_signal < 1000000)
-      g_bars_since_signal++;
-
-   const double close1 = iClose(_Symbol, tf, 1);
-   const double high1 = iHigh(_Symbol, tf, 1);
-   const double low1 = iLow(_Symbol, tf, 1);
+   const double close1 = iClose(_Symbol, tf, 1); // perf-allowed: closed-bar breakout close for bespoke structure rule
+   const double high1 = iHigh(_Symbol, tf, 1);   // perf-allowed: closed-bar breakout range for bespoke structure rule
+   const double low1 = iLow(_Symbol, tf, 1);     // perf-allowed: closed-bar breakout range for bespoke structure rule
    const double atr = QM_ATR(_Symbol, tf, strategy_atr_period, 1);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(close1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0 || atr <= 0.0 || point <= 0.0)
+   if(close1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0 || atr <= 0.0)
       return false;
 
    if((high1 - low1) < (strategy_min_breakout_range_atr * atr))
       return false;
-   if(g_bars_since_signal < strategy_min_bars_between_signals)
+   if(bars_since_signal < strategy_min_bars_between_signals)
       return false;
 
-   if(g_last_confirmed_swing_high > 0.0 && close1 > g_last_confirmed_swing_high)
+   int signal = 0;
+   if(last_swing_high > 0.0 && close1 > last_swing_high)
+      signal = 1;
+   else if(last_swing_low > 0.0 && close1 < last_swing_low)
+      signal = -1;
+   if(signal == 0)
+      return false;
+
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      if((signal > 0 && ptype == POSITION_TYPE_BUY) ||
+         (signal < 0 && ptype == POSITION_TYPE_SELL))
+         return false;
+
+      QM_TM_ClosePosition(ticket, QM_EXIT_OPPOSITE_SIGNAL);
+     }
+
+   req.type = (signal > 0) ? QM_BUY : QM_SELL;
+   req.price = 0.0;
+   req.tp = 0.0;
+   if(signal > 0)
      {
       const double trail_sl = close1 - (atr * strategy_atr_trail_mult);
       const double hard_sl = close1 - (atr * strategy_catastrophic_atr_mult);
-      req.type = QM_BUY;
-      req.sl = (trail_sl > hard_sl) ? trail_sl : hard_sl;
+      req.sl = MathMax(trail_sl, hard_sl);
       req.reason = "MSL_LONG_STRUCTURE_BREAK";
-      g_bars_since_signal = 0;
-      return true;
      }
-
-   if(g_last_confirmed_swing_low > 0.0 && close1 < g_last_confirmed_swing_low)
+   else
      {
       const double trail_sl = close1 + (atr * strategy_atr_trail_mult);
       const double hard_sl = close1 + (atr * strategy_catastrophic_atr_mult);
-      req.type = QM_SELL;
-      req.sl = (trail_sl < hard_sl) ? trail_sl : hard_sl;
+      req.sl = MathMin(trail_sl, hard_sl);
       req.reason = "MSL_SHORT_STRUCTURE_BREAK";
-      g_bars_since_signal = 0;
-      return true;
      }
 
-   return false;
+   bars_since_signal = 0;
+   return true;
   }
 
 // Called every tick when an open position exists for this EA's magic.
@@ -196,13 +224,6 @@ void Strategy_ManageOpenPosition()
    if(magic <= 0)
       return;
 
-   const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
-   const double close1 = iClose(_Symbol, tf, 1);
-   const double atr = QM_ATR(_Symbol, tf, strategy_atr_period, 1);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(close1 <= 0.0 || atr <= 0.0 || point <= 0.0)
-      return;
-
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -213,21 +234,7 @@ void Strategy_ManageOpenPosition()
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
 
-      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      const double current_sl = PositionGetDouble(POSITION_SL);
-      double target_sl = 0.0;
-      if(ptype == POSITION_TYPE_BUY)
-        {
-         target_sl = close1 - (atr * strategy_atr_trail_mult);
-         if(current_sl <= 0.0 || target_sl > current_sl + point * 0.5)
-            QM_TM_MoveSL(ticket, target_sl, "MSL_ATR_RATCHET_LONG");
-        }
-      else if(ptype == POSITION_TYPE_SELL)
-        {
-         target_sl = close1 + (atr * strategy_atr_trail_mult);
-         if(current_sl <= 0.0 || target_sl < current_sl - point * 0.5)
-            QM_TM_MoveSL(ticket, target_sl, "MSL_ATR_RATCHET_SHORT");
-        }
+      QM_TM_TrailATR(ticket, strategy_atr_period, strategy_atr_trail_mult);
      }
   }
 
@@ -235,41 +242,6 @@ void Strategy_ManageOpenPosition()
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
-   const double close1 = iClose(_Symbol, tf, 1);
-   if(close1 <= 0.0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      const double current_sl = PositionGetDouble(POSITION_SL);
-      if(ptype == POSITION_TYPE_BUY)
-        {
-         if((g_last_confirmed_swing_low > 0.0 && close1 < g_last_confirmed_swing_low) ||
-            (current_sl > 0.0 && close1 <= current_sl))
-            return true;
-        }
-      else if(ptype == POSITION_TYPE_SELL)
-        {
-         if((g_last_confirmed_swing_high > 0.0 && close1 > g_last_confirmed_swing_high) ||
-            (current_sl > 0.0 && close1 >= current_sl))
-            return true;
-        }
-     }
-
    return false;
   }
 

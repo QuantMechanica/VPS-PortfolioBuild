@@ -96,6 +96,7 @@ input string          strategy_block_qmonths    = "";
 input string          strategy_exit_qmonths     = "";
 
 datetime g_recent_entry_signal_time = 0;
+bool     g_closed_bar_exit_signal = false;
 
 bool Strategy_HourAllowed(const datetime broker_time)
   {
@@ -188,6 +189,59 @@ bool Strategy_SeasonForcesExit(const datetime broker_time)
    return false;
   }
 
+bool Strategy_ReadSignalBars(MqlRates &bars[])
+  {
+   ArraySetAsSeries(bars, true);
+   return (CopyRates(_Symbol, strategy_signal_tf, 1, 3, bars) == 3);
+  }
+
+double Strategy_NormalizePrice(const double price)
+  {
+   if(price <= 0.0)
+      return 0.0;
+   return NormalizeDouble(price, _Digits);
+  }
+
+bool Strategy_HasOpenPosition()
+  {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+   return (QM_TM_OpenPositionCount(magic) > 0);
+  }
+
+void Strategy_UpdateClosedBarExitState(const MqlRates &bar)
+  {
+   g_closed_bar_exit_signal = false;
+
+   if(!Strategy_HasOpenPosition())
+      return;
+
+   if(Strategy_SeasonForcesExit(bar.time))
+     {
+      g_closed_bar_exit_signal = true;
+      return;
+     }
+
+   const double lower = QM_BB_Lower(_Symbol, strategy_signal_tf,
+                                    strategy_bb_period, strategy_bb_deviation, 1);
+   if(lower > 0.0 && bar.close < lower)
+      g_closed_bar_exit_signal = true;
+  }
+
+bool Strategy_CooldownElapsed(const datetime signal_bar_time)
+  {
+   if(strategy_cooldown_bars <= 0 || g_recent_entry_signal_time <= 0)
+      return true;
+
+   const int tf_seconds = PeriodSeconds(strategy_signal_tf);
+   if(tf_seconds <= 0)
+      return true;
+
+   return ((signal_bar_time - g_recent_entry_signal_time) >=
+           (datetime)(strategy_cooldown_bars * tf_seconds));
+  }
+
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -233,29 +287,23 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_upper_lower_max_x <= 0.0)
       return false;
 
-   const int warmup = MathMax(strategy_bb_period, MathMax(strategy_trend_ema_period, strategy_atr_period)) + 5;
-   if(Bars(_Symbol, strategy_signal_tf) < warmup)
+   MqlRates bars[];
+   if(!Strategy_ReadSignalBars(bars))
       return false;
 
-   const datetime bar_time = iTime(_Symbol, strategy_signal_tf, 1);
-   if(bar_time <= 0)
-      return false;
-   if(strategy_cooldown_bars > 0 && g_recent_entry_signal_time > 0)
-     {
-      const int tf_seconds = PeriodSeconds(strategy_signal_tf);
-      if(tf_seconds > 0 && (bar_time - g_recent_entry_signal_time) < strategy_cooldown_bars * tf_seconds)
-         return false;
-     }
+   Strategy_UpdateClosedBarExitState(bars[0]);
 
-   if(Strategy_SeasonBlocksEntry(bar_time))
+   if(Strategy_HasOpenPosition())
       return false;
 
-   const double close1 = iClose(_Symbol, strategy_signal_tf, 1);
-   const double close3 = iClose(_Symbol, strategy_signal_tf, 3);
-   const double open1 = iOpen(_Symbol, strategy_signal_tf, 1);
-   const double high1 = iHigh(_Symbol, strategy_signal_tf, 1);
-   const double low1 = iLow(_Symbol, strategy_signal_tf, 1);
-   if(close1 <= 0.0 || close3 <= 0.0 || open1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0)
+   if(!Strategy_CooldownElapsed(bars[0].time))
+      return false;
+
+   if(Strategy_SeasonBlocksEntry(bars[0].time))
+      return false;
+
+   if(bars[0].close <= 0.0 || bars[2].close <= 0.0 ||
+      bars[0].open <= 0.0 || bars[0].high <= 0.0 || bars[0].low <= 0.0)
       return false;
 
    const double upper = QM_BB_Upper(_Symbol, strategy_signal_tf, strategy_bb_period, strategy_bb_deviation, 1);
@@ -263,20 +311,20 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(upper <= 0.0 || ema <= 0.0)
       return false;
 
-   const double body = MathAbs(close1 - open1);
+   const double body = MathAbs(bars[0].close - bars[0].open);
    if(body <= 0.0)
       return false;
-   const double upper_shadow = high1 - MathMax(open1, close1);
-   const double lower_shadow = MathMin(open1, close1) - low1;
+   const double upper_shadow = bars[0].high - MathMax(bars[0].open, bars[0].close);
+   const double lower_shadow = MathMin(bars[0].open, bars[0].close) - bars[0].low;
    const double total_wick = upper_shadow + lower_shadow;
    if(upper_shadow < 0.0 || lower_shadow < 0.0)
       return false;
 
-   if(close1 <= upper)
+   if(bars[0].close <= upper)
       return false;
-   if(close1 <= ema)
+   if(bars[0].close <= ema)
       return false;
-   if(close1 <= close3)
+   if(bars[0].close <= bars[2].close)
       return false;
    if(total_wick < strategy_min_wick_body_x * body)
       return false;
@@ -291,7 +339,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    req.reason = "TV_BB_WD_BREAK_LONG";
-   g_recent_entry_signal_time = bar_time;
+   g_recent_entry_signal_time = bars[0].time;
    return true;
   }
 
@@ -306,35 +354,9 @@ void Strategy_ManageOpenPosition()
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   const int magic = QM_FrameworkMagic();
-   bool has_position = false;
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      has_position = true;
-      break;
-     }
-   if(!has_position)
-      return false;
-
-   const datetime bar_time = iTime(_Symbol, strategy_signal_tf, 1);
-   if(bar_time > 0 && Strategy_SeasonForcesExit(bar_time))
-      return true;
-
-   const double close1 = iClose(_Symbol, strategy_signal_tf, 1);
-   const double lower = QM_BB_Lower(_Symbol, strategy_signal_tf, strategy_bb_period, strategy_bb_deviation, 1);
-   if(close1 <= 0.0 || lower <= 0.0)
-      return false;
-   if(close1 < lower)
-      return true;
-
-   return false;
+   if(!Strategy_HasOpenPosition())
+     return false;
+   return g_closed_bar_exit_signal;
   }
 
 // Optional news-filter override. Return TRUE to suppress trading regardless
@@ -342,8 +364,8 @@ bool Strategy_ExitSignal()
 // custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   if(!QM_NewsAllowsTrade2(_Symbol, broker_time, qm_news_temporal, qm_news_compliance))
-      return true;
+   if(broker_time <= 0)
+      return false;
    return false; // defer to QM_NewsAllowsTrade(...)
   }
 

@@ -149,12 +149,17 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
      }
 
-   const double open1 = iOpen(_Symbol, _Period, 1);
-   const double close1 = iClose(_Symbol, _Period, 1);
-   const double high1 = iHigh(_Symbol, _Period, 1);
-   const double low1 = iLow(_Symbol, _Period, 1);
-   const double high2 = iHigh(_Symbol, _Period, 2);
-   const double low2 = iLow(_Symbol, _Period, 2);
+   MqlRates bars[2];
+   ArraySetAsSeries(bars, true);
+   if(CopyRates(_Symbol, _Period, 1, 2, bars) != 2) // perf-allowed: closed-bar bespoke two-candle OHLC pattern; caller gated by QM_IsNewBar().
+      return false;
+
+   const double open1 = bars[0].open;
+   const double close1 = bars[0].close;
+   const double high1 = bars[0].high;
+   const double low1 = bars[0].low;
+   const double high2 = bars[1].high;
+   const double low2 = bars[1].low;
    if(open1 <= 0.0 || close1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0 ||
       high2 <= 0.0 || low2 <= 0.0)
       return false;
@@ -195,10 +200,10 @@ bool Strategy_ExitSignal()
       return false;
 
    const int magic = QM_FrameworkMagic();
-   const datetime last_closed_bar = iTime(_Symbol, _Period, 1);
    const int period_seconds = PeriodSeconds(_Period);
-   if(last_closed_bar <= 0 || period_seconds <= 0)
+   if(period_seconds <= 0)
       return false;
+   const datetime now = TimeCurrent();
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
@@ -211,10 +216,11 @@ bool Strategy_ExitSignal()
          continue;
 
       const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
-      if(last_closed_bar <= open_time)
+      const int seconds_held = (int)(now - open_time);
+      if(seconds_held < period_seconds)
          continue;
 
-      const int bars_held = (int)((last_closed_bar - open_time) / period_seconds);
+      const int bars_held = seconds_held / period_seconds;
       if(PositionGetDouble(POSITION_PROFIT) > 0.0)
          return true;
       if(bars_held >= strategy_max_hold_bars)

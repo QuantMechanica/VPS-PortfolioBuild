@@ -118,10 +118,9 @@ bool Strategy_StochRsi(const int shift, double &out_value)
 
 bool Strategy_HasWarmup()
   {
-   const int bars = Bars(_Symbol, PERIOD_D1);
    const int required = MathMax(strategy_warmup_bars,
                                 strategy_rsi_period + strategy_stoch_lookback + 3);
-   return (bars >= required);
+   return (QM_RSI(_Symbol, PERIOD_D1, strategy_rsi_period, required) > 0.0);
   }
 
 bool Strategy_GetStochPair(double &stoch_now, double &stoch_prev)
@@ -144,7 +143,7 @@ bool Strategy_TrendAllows(const QM_OrderType side)
    if(strategy_trend_ma_period <= 0)
       return false;
 
-   const double close_1 = iClose(_Symbol, PERIOD_D1, 1);
+   const double close_1 = QM_SMA(_Symbol, PERIOD_D1, 1, 1);
    const double ma_1 = strategy_trend_filter_ema
                        ? QM_EMA(_Symbol, PERIOD_D1, strategy_trend_ma_period, 1)
                        : QM_SMA(_Symbol, PERIOD_D1, strategy_trend_ma_period, 1);

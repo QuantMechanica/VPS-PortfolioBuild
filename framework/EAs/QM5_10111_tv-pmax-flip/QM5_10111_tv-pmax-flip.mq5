@@ -124,8 +124,6 @@ bool CalculatePMax(const int target_shift, double &out_ma, double &out_pmax, int
 
    int warmup = MathMax(strategy_pmax_warmup_bars, strategy_atr_period + strategy_ma_period + target_shift + 10);
    warmup = MathMin(warmup, 500);
-   if(Bars(_Symbol, _Period) <= warmup + target_shift + 5)
-      return false;
 
    double prev_long_stop = 0.0;
    double prev_short_stop = 0.0;
