@@ -192,7 +192,7 @@ bool Strategy_SeasonForcesExit(const datetime broker_time)
 bool Strategy_ReadSignalBars(MqlRates &bars[])
   {
    ArraySetAsSeries(bars, true);
-   return (CopyRates(_Symbol, strategy_signal_tf, 1, 3, bars) == 3);
+   return (CopyRates(_Symbol, strategy_signal_tf, 1, 3, bars) == 3); // perf-allowed: fixed three closed bars inside framework QM_IsNewBar-gated entry hook.
   }
 
 double Strategy_NormalizePrice(const double price)

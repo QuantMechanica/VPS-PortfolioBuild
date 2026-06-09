@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        10223
-; ea_slug:      tv-bb-wd-break
+; ea_id:        10166
+; ea_slug:      stochrsi-mr
 ; ea_version:   v5.0
 ; set_version:  s20260609-001
-; symbol:       SP500.DWX
-; timeframe:    H4
+; symbol:       CADCHF.DWX
+; timeframe:    D1
 ; environment:  backtest
-; magic_slot:   3
+; magic_slot:   8
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   76ed125887dccaa4d71c5bc0c0f9201079839ac6c780a7928bf072cadda053f3
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-06-09
 ;==========================================================
-qm_magic_slot_offset=3
+qm_magic_slot_offset=8
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
@@ -32,24 +32,3 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
-strategy_signal_tf=16388
-strategy_bb_period=20
-strategy_bb_deviation=2.0
-strategy_trend_ema_period=55
-strategy_atr_period=14
-strategy_atr_stop_mult=0.20
-strategy_cooldown_bars=1
-strategy_min_wick_body_x=10.0
-strategy_upper_lower_max_x=3.0
-strategy_time_filter_enabled=false
-strategy_trade_start_hour=0
-strategy_trade_end_hour=24
-strategy_max_spread_points=0.0
-strategy_seasonal_windows_enabled=false
-strategy_bad_start_month=5
-strategy_bad_start_day=1
-strategy_bad_end_month=10
-strategy_bad_end_day=31
-strategy_qmonth_matrix_enabled=false
-strategy_block_qmonths=
-strategy_exit_qmonths=

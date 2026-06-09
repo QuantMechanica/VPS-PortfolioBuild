@@ -73,117 +73,20 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_rsi_period        = 14;
-input int    strategy_stoch_lookback    = 14;
-input double strategy_entry_low         = 20.0;
-input double strategy_entry_high        = 80.0;
-input double strategy_exit_midline      = 50.0;
-input int    strategy_atr_period        = 14;
-input double strategy_atr_sl_mult       = 2.5;
-input int    strategy_warmup_bars       = 30;
-input bool   strategy_trend_filter      = false;
-input int    strategy_trend_ma_period   = 200;
-input bool   strategy_trend_filter_ema  = false;
-
-bool Strategy_StochRsi(const int shift, double &out_value)
-  {
-   out_value = 0.0;
-   if(strategy_rsi_period <= 0 || strategy_stoch_lookback <= 1 || shift < 1)
-      return false;
-
-   const double rsi_now = QM_RSI(_Symbol, PERIOD_D1, strategy_rsi_period, shift);
-   if(rsi_now <= 0.0)
-      return false;
-
-   double min_rsi = DBL_MAX;
-   double max_rsi = -DBL_MAX;
-   for(int i = 0; i < strategy_stoch_lookback; ++i)
-     {
-      const double rsi_value = QM_RSI(_Symbol, PERIOD_D1, strategy_rsi_period, shift + i);
-      if(rsi_value <= 0.0)
-         return false;
-      if(rsi_value < min_rsi)
-         min_rsi = rsi_value;
-      if(rsi_value > max_rsi)
-         max_rsi = rsi_value;
-     }
-
-   const double range = max_rsi - min_rsi;
-   if(range <= 1e-8)
-      return false;
-
-   out_value = 100.0 * (rsi_now - min_rsi) / range;
-   return true;
-  }
-
-bool Strategy_HasWarmup()
-  {
-   const int required = MathMax(strategy_warmup_bars,
-                                strategy_rsi_period + strategy_stoch_lookback + 3);
-   return (QM_RSI(_Symbol, PERIOD_D1, strategy_rsi_period, required) > 0.0);
-  }
-
-bool Strategy_GetStochPair(double &stoch_now, double &stoch_prev)
-  {
-   stoch_now = 0.0;
-   stoch_prev = 0.0;
-   if(!Strategy_HasWarmup())
-      return false;
-   if(!Strategy_StochRsi(1, stoch_now))
-      return false;
-   if(!Strategy_StochRsi(2, stoch_prev))
-      return false;
-   return true;
-  }
-
-bool Strategy_TrendAllows(const QM_OrderType side)
-  {
-   if(!strategy_trend_filter)
-      return true;
-   if(strategy_trend_ma_period <= 0)
-      return false;
-
-   const double close_1 = QM_SMA(_Symbol, PERIOD_D1, 1, 1);
-   const double ma_1 = strategy_trend_filter_ema
-                       ? QM_EMA(_Symbol, PERIOD_D1, strategy_trend_ma_period, 1)
-                       : QM_SMA(_Symbol, PERIOD_D1, strategy_trend_ma_period, 1);
-   if(close_1 <= 0.0 || ma_1 <= 0.0)
-      return false;
-
-   if(side == QM_BUY)
-      return (close_1 > ma_1);
-   if(side == QM_SELL)
-      return (close_1 < ma_1);
-   return false;
-  }
-
-bool Strategy_HasPosition(ENUM_POSITION_TYPE &position_type)
-  {
-   position_type = POSITION_TYPE_BUY;
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      return true;
-     }
-   return false;
-  }
+input int    strategy_rsi_period          = 14;
+input int    strategy_stochrsi_lookback   = 14;
+input double strategy_entry_low           = 20.0;
+input double strategy_entry_high          = 80.0;
+input double strategy_exit_level          = 50.0;
+input int    strategy_atr_period          = 14;
+input double strategy_atr_sl_mult         = 2.5;
+input int    strategy_min_warmup_bars     = 30;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
+// No Trade Filter (time, spread, news)
 // Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
@@ -191,6 +94,7 @@ bool Strategy_NoTradeFilter()
    return false;
   }
 
+// Trade Entry
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
 // should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
@@ -204,74 +108,220 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   ENUM_POSITION_TYPE existing_type;
-   if(Strategy_HasPosition(existing_type))
+   if(strategy_rsi_period <= 0 ||
+      strategy_stochrsi_lookback <= 1 ||
+      strategy_min_warmup_bars < strategy_stochrsi_lookback + 2 ||
+      strategy_atr_period <= 0 ||
+      strategy_atr_sl_mult <= 0.0 ||
+      strategy_entry_low <= 0.0 ||
+      strategy_entry_high >= 100.0 ||
+      strategy_entry_low >= strategy_entry_high ||
+      strategy_exit_level <= 0.0 ||
+      strategy_exit_level >= 100.0)
       return false;
 
-   double stoch_now = 0.0;
-   double stoch_prev = 0.0;
-   if(!Strategy_GetStochPair(stoch_now, stoch_prev))
+   double rsi_now = QM_RSI(_Symbol, PERIOD_D1, strategy_rsi_period, 1);
+   double min_now = rsi_now;
+   double max_now = rsi_now;
+   int samples_now = 0;
+   for(int offset = 0; offset < strategy_stochrsi_lookback; ++offset)
+     {
+      const double sample = QM_RSI(_Symbol, PERIOD_D1, strategy_rsi_period, 1 + offset);
+      if(sample < 0.0 || sample > 100.0)
+         return false;
+      if(samples_now == 0)
+        {
+         min_now = sample;
+         max_now = sample;
+        }
+      else
+        {
+         if(sample < min_now)
+            min_now = sample;
+         if(sample > max_now)
+            max_now = sample;
+        }
+      samples_now++;
+     }
+
+   double rsi_prev = QM_RSI(_Symbol, PERIOD_D1, strategy_rsi_period, 2);
+   double min_prev = rsi_prev;
+   double max_prev = rsi_prev;
+   int samples_prev = 0;
+   for(int offset = 0; offset < strategy_stochrsi_lookback; ++offset)
+     {
+      const double sample = QM_RSI(_Symbol, PERIOD_D1, strategy_rsi_period, 2 + offset);
+      if(sample < 0.0 || sample > 100.0)
+         return false;
+      if(samples_prev == 0)
+        {
+         min_prev = sample;
+         max_prev = sample;
+        }
+      else
+        {
+         if(sample < min_prev)
+            min_prev = sample;
+         if(sample > max_prev)
+            max_prev = sample;
+        }
+      samples_prev++;
+     }
+
+   if(samples_now < strategy_stochrsi_lookback || samples_prev < strategy_stochrsi_lookback)
       return false;
+   if(max_now <= min_now || max_prev <= min_prev)
+      return false;
+
+   const double stoch_now = 100.0 * (rsi_now - min_now) / (max_now - min_now);
+   const double stoch_prev = 100.0 * (rsi_prev - min_prev) / (max_prev - min_prev);
 
    QM_OrderType side = QM_BUY;
-   string reason = "";
+   bool has_signal = false;
    if(stoch_prev < strategy_entry_low && stoch_now >= strategy_entry_low)
      {
       side = QM_BUY;
-      reason = "stochrsi_cross_up_20";
+      has_signal = true;
      }
    else if(stoch_prev > strategy_entry_high && stoch_now <= strategy_entry_high)
      {
       side = QM_SELL;
-      reason = "stochrsi_cross_down_80";
+      has_signal = true;
      }
-   else
+   if(!has_signal)
       return false;
 
-   if(!Strategy_TrendAllows(side))
+   const double entry = (side == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
+                                         : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   if(entry <= 0.0 || atr <= 0.0)
       return false;
 
-   const double entry = QM_EntryMarketPrice(side);
-   const double sl = QM_StopATR(_Symbol, side, entry, strategy_atr_period, strategy_atr_sl_mult);
-   if(entry <= 0.0 || sl <= 0.0)
+   const double sl = QM_StopATRFromValue(_Symbol, side, entry, atr, strategy_atr_sl_mult);
+   if(sl <= 0.0)
+      return false;
+   if(side == QM_BUY && sl >= entry)
+      return false;
+   if(side == QM_SELL && sl <= entry)
       return false;
 
    req.type = side;
    req.price = 0.0;
    req.sl = sl;
    req.tp = 0.0;
-   req.reason = reason;
-   req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
+   req.reason = (side == QM_BUY) ? "STOCHRSI_D1_CROSS_UP_20"
+                                 : "STOCHRSI_D1_CROSS_DOWN_80";
    return true;
   }
 
+// Trade Management
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
+   // Card specifies no trailing stop, break-even rule, partial close, or pyramiding.
   }
 
+// Trade Close
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   ENUM_POSITION_TYPE position_type;
-   if(!Strategy_HasPosition(position_type))
+   if(strategy_rsi_period <= 0 ||
+      strategy_stochrsi_lookback <= 1 ||
+      strategy_exit_level <= 0.0 ||
+      strategy_exit_level >= 100.0)
       return false;
 
-   double stoch_now = 0.0;
-   double stoch_prev = 0.0;
-   if(!Strategy_GetStochPair(stoch_now, stoch_prev))
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
       return false;
+
+   bool have_position = false;
+   ENUM_POSITION_TYPE position_type = POSITION_TYPE_BUY;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      have_position = true;
+      break;
+     }
+   if(!have_position)
+      return false;
+
+   double rsi_now = QM_RSI(_Symbol, PERIOD_D1, strategy_rsi_period, 1);
+   double min_now = rsi_now;
+   double max_now = rsi_now;
+   int samples_now = 0;
+   for(int offset = 0; offset < strategy_stochrsi_lookback; ++offset)
+     {
+      const double sample = QM_RSI(_Symbol, PERIOD_D1, strategy_rsi_period, 1 + offset);
+      if(sample < 0.0 || sample > 100.0)
+         return false;
+      if(samples_now == 0)
+        {
+         min_now = sample;
+         max_now = sample;
+        }
+      else
+        {
+         if(sample < min_now)
+            min_now = sample;
+         if(sample > max_now)
+            max_now = sample;
+        }
+      samples_now++;
+     }
+
+   double rsi_prev = QM_RSI(_Symbol, PERIOD_D1, strategy_rsi_period, 2);
+   double min_prev = rsi_prev;
+   double max_prev = rsi_prev;
+   int samples_prev = 0;
+   for(int offset = 0; offset < strategy_stochrsi_lookback; ++offset)
+     {
+      const double sample = QM_RSI(_Symbol, PERIOD_D1, strategy_rsi_period, 2 + offset);
+      if(sample < 0.0 || sample > 100.0)
+         return false;
+      if(samples_prev == 0)
+        {
+         min_prev = sample;
+         max_prev = sample;
+        }
+      else
+        {
+         if(sample < min_prev)
+            min_prev = sample;
+         if(sample > max_prev)
+            max_prev = sample;
+        }
+      samples_prev++;
+     }
+
+   if(samples_now < strategy_stochrsi_lookback || samples_prev < strategy_stochrsi_lookback)
+      return false;
+   if(max_now <= min_now || max_prev <= min_prev)
+      return false;
+
+   const double stoch_now = 100.0 * (rsi_now - min_now) / (max_now - min_now);
+   const double stoch_prev = 100.0 * (rsi_prev - min_prev) / (max_prev - min_prev);
+   const bool long_entry_signal = (stoch_prev < strategy_entry_low && stoch_now >= strategy_entry_low);
+   const bool short_entry_signal = (stoch_prev > strategy_entry_high && stoch_now <= strategy_entry_high);
 
    if(position_type == POSITION_TYPE_BUY)
-      return (stoch_prev <= strategy_exit_midline && stoch_now > strategy_exit_midline);
+      return (stoch_prev <= strategy_exit_level && stoch_now > strategy_exit_level) || short_entry_signal;
    if(position_type == POSITION_TYPE_SELL)
-      return (stoch_prev >= strategy_exit_midline && stoch_now < strategy_exit_midline);
+      return (stoch_prev >= strategy_exit_level && stoch_now < strategy_exit_level) || long_entry_signal;
+
    return false;
   }
 
+// News Filter Hook (callable for P8 News Impact phase)
 // Optional news-filter override. Return TRUE to suppress trading regardless
 // of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
 // custom high-impact-event handling beyond the central filter.

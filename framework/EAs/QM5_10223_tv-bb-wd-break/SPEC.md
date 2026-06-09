@@ -4,7 +4,7 @@
 **Slug:** `tv-bb-wd-break`
 **Source:** `30591366-874b-5bee-b47c-da2fca20b728` (see `strategy-seeds/sources/30591366-874b-5bee-b47c-da2fca20b728/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-09
+**Last revised:** 2026-06-10
 
 ---
 
@@ -112,3 +112,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-09 | Initial build from card | 8008811d-cab7-4ec4-a36e-f4c24e21a71c |
+| v1-refresh | 2026-06-10 | Rebuilt in place from approved card | 8008811d-cab7-4ec4-a36e-f4c24e21a71c |
