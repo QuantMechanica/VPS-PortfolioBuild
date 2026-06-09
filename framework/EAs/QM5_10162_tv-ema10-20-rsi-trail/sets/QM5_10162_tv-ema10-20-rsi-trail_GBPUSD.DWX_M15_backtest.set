@@ -3,16 +3,16 @@
 ; ea_id:        10162
 ; ea_slug:      tv-ema10-20-rsi-trail
 ; ea_version:   v5.0
-; set_version:  s20260524-001
+; set_version:  s20260609-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    M15
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   d4fb58c0dd2c579b3cb34df172373ca0f6c99dca6d6ff70c8b37d83605e65bf5
+; build_hash:   39ac26fb0a9eb3e01670d8a3dc53dff1ff662119a9dcc5b85984dfd84de05f5b
 ; author:       Development
-; date:         2026-05-24
+; date:         2026-06-09
 ;==========================================================
 qm_magic_slot_offset=1
 RISK_FIXED=1000

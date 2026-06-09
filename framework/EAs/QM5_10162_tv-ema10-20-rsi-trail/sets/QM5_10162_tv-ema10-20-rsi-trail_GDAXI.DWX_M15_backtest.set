@@ -3,16 +3,16 @@
 ; ea_id:        10162
 ; ea_slug:      tv-ema10-20-rsi-trail
 ; ea_version:   v5.0
-; set_version:  s20260524-001
+; set_version:  s20260609-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    M15
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   4b84a9062765250916bd232ccd3f06df96206d646cfef47b3f76416045acca87
+; build_hash:   36d74023ce60780a96adb864b5ec4c061660041d85bbc87319a386c17b134f48
 ; author:       Development
-; date:         2026-05-24
+; date:         2026-06-09
 ;==========================================================
 qm_magic_slot_offset=3
 RISK_FIXED=1000
