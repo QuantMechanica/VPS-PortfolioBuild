@@ -122,7 +122,11 @@ void Strategy_ManageOpenPosition()
    if(magic <= 0 || strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
       return;
 
-   const double close1 = iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, 1); // perf-allowed: card's trailing stop is explicitly based on latest closed-bar close.
+   MqlRates trail_rates[1];
+   ArraySetAsSeries(trail_rates, true);
+   if(CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, 1, trail_rates) != 1) // perf-allowed: one closed bar for the card's trailing-stop close.
+      return;
+   const double close1 = trail_rates[0].close;
    const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
