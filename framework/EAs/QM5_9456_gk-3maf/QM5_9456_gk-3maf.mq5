@@ -96,7 +96,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double ema60  = QM_EMA(_Symbol, _Period, strategy_ma1_period, 1);
    const double ema350 = QM_EMA(_Symbol, _Period, strategy_ma2_period, 1);
    const double ema600 = QM_EMA(_Symbol, _Period, strategy_ma3_period, 1);
-
    const double low1  = iLow(_Symbol, _Period, 1);  // perf-allowed: single closed-bar structural read, gated by QM_IsNewBar
    const double high1 = iHigh(_Symbol, _Period, 1); // perf-allowed: single closed-bar structural read, gated by QM_IsNewBar
 
