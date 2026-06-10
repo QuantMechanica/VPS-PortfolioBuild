@@ -7011,3 +7011,7 @@
 9270,mql5-bos-liq-sweep,1,GBPUSD.DWX,92700001,2026-06-10,Development,active
 9270,mql5-bos-liq-sweep,2,XAUUSD.DWX,92700002,2026-06-10,Development,active
 9270,mql5-bos-liq-sweep,3,GDAXI.DWX,92700003,2026-06-10,Development,active
+9272,mql5-rsi-reg-div,0,EURUSD.DWX,92720000,2026-06-10,Development,active
+9272,mql5-rsi-reg-div,1,GBPUSD.DWX,92720001,2026-06-10,Development,active
+9272,mql5-rsi-reg-div,2,USDJPY.DWX,92720002,2026-06-10,Development,active
+9272,mql5-rsi-reg-div,3,XAUUSD.DWX,92720003,2026-06-10,Development,active
