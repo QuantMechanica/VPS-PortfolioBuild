@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        9124
-; ea_slug:      aa-abg-velocity
+; ea_id:        9458
+; ea_slug:      gk-2macd-sto
 ; ea_version:   v5.0
 ; set_version:  s20260610-001
-; symbol:       XAUUSD.DWX
-; timeframe:    D1
+; symbol:       GBPUSD.DWX
+; timeframe:    H3
 ; environment:  backtest
-; magic_slot:   4
+; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   96ec8c4623cc63bd98184f4fb590fb2ef54d1aeece745a8b932f6f81aaa492ce
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-06-10
 ;==========================================================
-qm_magic_slot_offset=4
+qm_magic_slot_offset=3
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
