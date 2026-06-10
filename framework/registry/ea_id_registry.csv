@@ -3413,3 +3413,4 @@ ea_id,slug,strategy_id,status,owner,created_at
 12531,clenow-mom,cfeee113-154e-549a-9fba-501b7e3160c0,active,Research,2026-05-27
 12532,edgelab-audnzd-cointegration,claude_cross_asset_discovery_2026-06-09,active,claude,2026-06-09
 12533,edgelab-eurjpy-gbpjpy-cointegration,claude_cross_asset_discovery_2026-06-09,active,claude,2026-06-09
+10135,bbwidth-ema,d3c009d7-a8d6-5251-b572-4777b207c2b9,active,Development,2026-06-10

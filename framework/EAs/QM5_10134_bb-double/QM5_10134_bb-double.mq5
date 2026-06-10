@@ -110,10 +110,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_emergency_atr_mult <= 0.0)
       return false;
 
-   if(Bars(_Symbol, strategy_timeframe) < strategy_bb_period + 2)
+   if(Bars(_Symbol, strategy_timeframe) < strategy_bb_period + 2) // perf-allowed: warmup guard, no QM_Bars helper
       return false;
 
-   const double close_last = iClose(_Symbol, strategy_timeframe, 1);
+   const double close_last = QM_SMA(_Symbol, strategy_timeframe, 1, 1, PRICE_CLOSE);
    const double inner_upper = QM_BB_Upper(_Symbol, strategy_timeframe,
                                           strategy_bb_period, strategy_inner_sigma,
                                           1, PRICE_TYPICAL);
@@ -167,11 +167,11 @@ bool Strategy_ExitSignal()
       strategy_outer_sigma <= 0.0)
       return false;
 
-   if(Bars(_Symbol, strategy_timeframe) < strategy_bb_period + 2)
+   if(Bars(_Symbol, strategy_timeframe) < strategy_bb_period + 2) // perf-allowed: warmup guard, no QM_Bars helper
       return false;
 
    const int magic = QM_FrameworkMagic();
-   const double close_last = iClose(_Symbol, strategy_timeframe, 1);
+   const double close_last = QM_SMA(_Symbol, strategy_timeframe, 1, 1, PRICE_CLOSE);
    const double inner_upper = QM_BB_Upper(_Symbol, strategy_timeframe,
                                           strategy_bb_period, strategy_inner_sigma,
                                           1, PRICE_TYPICAL);

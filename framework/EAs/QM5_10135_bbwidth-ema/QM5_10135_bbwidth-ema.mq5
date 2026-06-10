@@ -115,7 +115,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_fast_ema_period <= 0 || strategy_slow_ema_period <= 0 ||
       strategy_fast_ema_period >= strategy_slow_ema_period)
       return false;
-   if(Bars(_Symbol, tf) < strategy_warmup_bars + strategy_width_low_lookback + 2)
+   if(Bars(_Symbol, tf) < strategy_warmup_bars + strategy_width_low_lookback + 2) // perf-allowed: warmup guard, O(1) bar count
       return false;
 
    const double upper = QM_BB_Upper(_Symbol, tf, strategy_bb_period,

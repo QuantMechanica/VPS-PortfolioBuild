@@ -113,7 +113,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const int bars_required = MathMax(strategy_vol_lookback + 5, strategy_slow_sma_period + 5);
-   if(Bars(_Symbol, strategy_timeframe) < bars_required)
+   if(Bars(_Symbol, strategy_timeframe) < bars_required) // perf-allowed — warmup guard, structural check runs once per D1 bar
       return false;
 
    const double fast = QM_SMA(_Symbol, strategy_timeframe, strategy_fast_sma_period, 1);
