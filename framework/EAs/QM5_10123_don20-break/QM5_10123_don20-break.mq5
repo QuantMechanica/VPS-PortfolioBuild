@@ -43,25 +43,20 @@ input bool   strategy_use_previous_bar_channel = true;
 
 // -----------------------------------------------------------------------------
 // Per-bar Donchian state cache
-// Updated at most once per D1 bar. All strategy hooks read cached values (O(1)).
-// Bounds: strategy_donchian_period iterations per bar, not per tick.
+// Advanced from the framework QM_IsNewBar() gate in OnTick. All strategy hooks
+// read cached values (O(1)). Bounds: strategy_donchian_period iterations per bar.
 // -----------------------------------------------------------------------------
 static double   g_don_upper    = -DBL_MAX;
 static double   g_don_lower    = DBL_MAX;
 static double   g_don_close1   = 0.0;
-static datetime g_don_last_bar = 0;
 
-void EnsureDonchianState()
+void AdvanceDonchianState()
   {
-   const datetime bar0 = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 bar-open timestamp used as cache key; O(1) call
-   if(bar0 == g_don_last_bar)
-      return;
-   g_don_last_bar = bar0;
    g_don_upper    = -DBL_MAX;
    g_don_lower    = DBL_MAX;
    g_don_close1   = 0.0;
    const int need = strategy_donchian_period + 2;
-   if(Bars(_Symbol, PERIOD_D1) < need) // perf-allowed: warmup guard; called once per bar open
+   if(Bars(_Symbol, PERIOD_D1) < need) // perf-allowed: warmup guard; called once per framework new-bar gate
       return;
    for(int s = 2; s <= strategy_donchian_period + 1; ++s)
      {
@@ -89,7 +84,6 @@ bool Strategy_NoTradeFilter()
       return true;
    if(!strategy_use_previous_bar_channel)
       return true;
-   EnsureDonchianState();
    if(g_don_upper <= 0.0 || g_don_lower <= 0.0 || g_don_upper <= g_don_lower || g_don_close1 <= 0.0)
       return true;
    return false;
@@ -100,7 +94,6 @@ bool Strategy_NoTradeFilter()
 // -----------------------------------------------------------------------------
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   EnsureDonchianState();
    if(g_don_upper <= 0.0 || g_don_lower <= 0.0 || g_don_close1 <= 0.0)
       return false;
 
@@ -165,7 +158,6 @@ void Strategy_ManageOpenPosition()
 // -----------------------------------------------------------------------------
 bool Strategy_ExitSignal()
   {
-   EnsureDonchianState();
    if(g_don_upper <= 0.0 || g_don_lower <= 0.0 || g_don_close1 <= 0.0)
       return false;
 
@@ -253,6 +245,12 @@ void OnTick()
    if(QM_FrameworkHandleFridayClose())
       return;
 
+   if(!QM_IsNewBar())
+      return;
+
+   QM_EquityStreamOnNewBar();
+   AdvanceDonchianState();
+
    if(Strategy_NoTradeFilter())
       return;
 
@@ -271,11 +269,6 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
-
-   if(!QM_IsNewBar())
-      return;
-
-   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
