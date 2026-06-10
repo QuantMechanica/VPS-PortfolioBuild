@@ -7107,3 +7107,7 @@
 9459,gk-af-aos-md,1,EURUSD.DWX,94590001,2026-06-11,Development,active
 9459,gk-af-aos-md,2,AUDUSD.DWX,94590002,2026-06-11,Development,active
 9459,gk-af-aos-md,3,USDCAD.DWX,94590003,2026-06-11,Development,active
+9463,gh-macd-zero,0,EURUSD.DWX,94630000,2026-06-11,Development,active
+9463,gh-macd-zero,1,GBPUSD.DWX,94630001,2026-06-11,Development,active
+9463,gh-macd-zero,2,XAUUSD.DWX,94630002,2026-06-11,Development,active
+9463,gh-macd-zero,3,GDAXI.DWX,94630003,2026-06-11,Development,active
