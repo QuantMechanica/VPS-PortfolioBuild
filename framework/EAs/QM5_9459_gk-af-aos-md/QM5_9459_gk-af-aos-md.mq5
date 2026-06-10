@@ -84,7 +84,7 @@ void BootstrapState()
    MqlRates rates[];
    ArraySetAsSeries(rates, false); // oldest-first ordering
    // offset=2 so the bootstrap covers bar[2] through bar[warmup+1]
-   const int copied = CopyRates(_Symbol, PERIOD_M30, 2, warmup, rates);
+   const int copied = CopyRates(_Symbol, PERIOD_M30, 2, warmup, rates); // perf-allowed: one-shot warmup in BootstrapState (not per-tick)
 
    if(copied < strategy_af_period * 2)
    {
@@ -154,11 +154,10 @@ void AdvanceState_OnNewBar()
    const double alpha_sig = 2.0 / (strategy_aos_sig_period + 1);
 
    // --- Average Force from bar[1] OHLC ---
-   // perf-allowed: structural custom-indicator computation, inside closed-bar gate
-   const double c1   = iClose(_Symbol, PERIOD_M30, 1);
-   const double o1   = iOpen(_Symbol,  PERIOD_M30, 1);
-   const double h1   = iHigh(_Symbol,  PERIOD_M30, 1);
-   const double l1   = iLow(_Symbol,   PERIOD_M30, 1);
+   const double c1   = iClose(_Symbol, PERIOD_M30, 1); // perf-allowed: custom Average Force indicator, closed-bar gate
+   const double o1   = iOpen(_Symbol,  PERIOD_M30, 1); // perf-allowed: custom Average Force indicator, closed-bar gate
+   const double h1   = iHigh(_Symbol,  PERIOD_M30, 1); // perf-allowed: custom Average Force indicator, closed-bar gate
+   const double l1   = iLow(_Symbol,   PERIOD_M30, 1); // perf-allowed: custom Average Force indicator, closed-bar gate
    const double body = c1 - o1;
    const double rng  = MathMax(h1 - l1, _Point);
 
@@ -167,8 +166,7 @@ void AdvanceState_OnNewBar()
    g_af_final   = alpha_sm * g_af_stage1  + (1.0 - alpha_sm) * g_af_final;
 
    // --- Andean Oscillator: bar[1] vs bar[2] ---
-   // perf-allowed: structural custom-indicator computation, inside closed-bar gate
-   const double c2       = iClose(_Symbol, PERIOD_M30, 2);
+   const double c2       = iClose(_Symbol, PERIOD_M30, 2); // perf-allowed: custom Andean Oscillator indicator, closed-bar gate
    const double dcp_bull = MathMax(c1 - c2, 0.0);
    const double dco_bull = MathMax(c1 - o1, 0.0);
    const double dcp_bear = MathMax(c2 - c1, 0.0);
@@ -228,21 +226,20 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if(PositionGetInteger(POSITION_MAGIC) == magic) return false;
    }
 
-   // Swing stop: min/max of last strategy_sl_lookback bars
-   // perf-allowed: bespoke structural swing stop, inside closed-bar gate
+   // Swing stop: min/max of last strategy_sl_lookback closed bars
    double sl_level;
    if(g_entry_dir == 1)
    {
-      double lo = iLow(_Symbol, PERIOD_M30, 1);
+      double lo = iLow(_Symbol, PERIOD_M30, 1); // perf-allowed: bespoke structural swing stop, closed-bar gate
       for(int j = 2; j <= strategy_sl_lookback; j++)
-         lo = MathMin(lo, iLow(_Symbol, PERIOD_M30, j));
+         lo = MathMin(lo, iLow(_Symbol, PERIOD_M30, j)); // perf-allowed: bespoke structural swing stop, closed-bar gate
       sl_level = lo - strategy_sl_dev_pts * _Point;
    }
    else
    {
-      double hi = iHigh(_Symbol, PERIOD_M30, 1);
+      double hi = iHigh(_Symbol, PERIOD_M30, 1); // perf-allowed: bespoke structural swing stop, closed-bar gate
       for(int j = 2; j <= strategy_sl_lookback; j++)
-         hi = MathMax(hi, iHigh(_Symbol, PERIOD_M30, j));
+         hi = MathMax(hi, iHigh(_Symbol, PERIOD_M30, j)); // perf-allowed: bespoke structural swing stop, closed-bar gate
       sl_level = hi + strategy_sl_dev_pts * _Point;
    }
 
