@@ -7070,3 +7070,7 @@
 9411,mql5-paq-pinbar,1,GBPUSD.DWX,94110001,2026-06-10,Development,active
 9411,mql5-paq-pinbar,2,USDJPY.DWX,94110002,2026-06-10,Development,active
 9411,mql5-paq-pinbar,3,XAUUSD.DWX,94110003,2026-06-10,Development,active
+9412,mql5-paq-engulf,0,EURUSD.DWX,94120000,2026-06-10,Development,active
+9412,mql5-paq-engulf,1,GBPUSD.DWX,94120001,2026-06-10,Development,active
+9412,mql5-paq-engulf,2,USDJPY.DWX,94120002,2026-06-10,Development,active
+9412,mql5-paq-engulf,3,XAUUSD.DWX,94120003,2026-06-10,Development,active
