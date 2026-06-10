@@ -43,7 +43,7 @@ input double strategy_adx_threshold       = 25.0; // ADX cross-above level for e
 input double strategy_adx_exit_level      = 20.0; // ADX drop-below level for exit
 input int    strategy_adx_max_above_bars  = 5;    // skip entry if ADX already above threshold this many bars
 input int    strategy_rsi_period          = 14;   // RSI period
-input double strategy_rsi_mid             = 50.0; // RSI midline for cross detection
+input double strategy_rsi_mid             = 50.0; // RSI midline for cross detection and exit
 input int    strategy_atr_period          = 14;   // ATR period for stop sizing
 input double strategy_atr_sl_mult         = 1.8;  // ATR multiplier for stop distance
 input double strategy_tp_rr               = 2.0;  // Take-profit as multiple of risk (R)
@@ -75,7 +75,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    // Late-entry guard: ADX must not have been above threshold for too long
-   // (with strict cross detection adx_prev < threshold, this loop returns 1 and never blocks)
+   // (with strict cross detection adx_prev < threshold, consecutive=1, never blocks)
    int consecutive = 1;
    for(int s = 2; s <= strategy_adx_max_above_bars + 1; s++)
      {
@@ -93,44 +93,34 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!rsi_cross_up && !rsi_cross_down)
       return false;
 
-   // One position per magic
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong t = PositionGetTicket(i);
-      if(PositionSelectByTicket(t) && PositionGetInteger(POSITION_MAGIC) == magic)
-         return false;
-     }
-
    const double atr_val = QM_ATR(_Symbol, PERIOD_CURRENT, strategy_atr_period, 1);
    const double atr_sl  = atr_val * strategy_atr_sl_mult;
 
-   req.symbol = _Symbol;
-   req.magic  = magic;
+   req.symbol_slot        = qm_magic_slot_offset;
+   req.reason             = "adx_rsi50_cross";
+   req.expiration_seconds = 0;
 
    if(rsi_cross_up)
      {
-      req.type       = ORDER_TYPE_BUY;
-      req.price      = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      req.type  = QM_BUY;
+      req.price = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       // SL = wider of ATR-based and signal-bar low
       const double bar_low = iLow(_Symbol, PERIOD_CURRENT, 1); // perf-allowed: single bar read inside new-bar gate
       const double sl_atr  = req.price - atr_sl;
-      req.sl         = MathMin(sl_atr, bar_low - _Point);
+      req.sl = MathMin(sl_atr, bar_low - _Point);
       const double sl_dist = req.price - req.sl;
-      req.tp         = req.price + sl_dist * strategy_tp_rr;
-      req.lots       = QM_LotsForRisk(_Symbol, sl_dist / _Point);
+      req.tp = req.price + sl_dist * strategy_tp_rr;
      }
    else
      {
-      req.type       = ORDER_TYPE_SELL;
-      req.price      = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      req.type  = QM_SELL;
+      req.price = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       // SL = wider of ATR-based and signal-bar high
       const double bar_high = iHigh(_Symbol, PERIOD_CURRENT, 1); // perf-allowed: single bar read inside new-bar gate
       const double sl_atr   = req.price + atr_sl;
-      req.sl         = MathMax(sl_atr, bar_high + _Point);
+      req.sl = MathMax(sl_atr, bar_high + _Point);
       const double sl_dist  = req.sl - req.price;
-      req.tp         = req.price - sl_dist * strategy_tp_rr;
-      req.lots       = QM_LotsForRisk(_Symbol, sl_dist / _Point);
+      req.tp = req.price - sl_dist * strategy_tp_rr;
      }
 
    return true;
@@ -171,10 +161,10 @@ bool Strategy_ExitSignal()
 
       if(pos_type == POSITION_TYPE_BUY)
         {
-         // Exit: RSI back below mid, or ADX dropped below exit_level, or sell signal
+         // Exit: RSI back below mid, or ADX dropped below exit_level
          if(rsi_curr < strategy_rsi_mid || adx_curr < strategy_adx_exit_level)
             return true;
-         // Sell signal: check for ADX cross + RSI cross down (allows reversal same tick)
+         // Sell signal (ADX cross + RSI cross down) — enables reversal same tick
          const double adx_prev = QM_ADX(_Symbol, PERIOD_CURRENT, strategy_adx_period, 2);
          const double rsi_prev = QM_RSI(_Symbol, PERIOD_CURRENT, strategy_rsi_period, 2);
          if(adx_curr > strategy_adx_threshold && adx_prev < strategy_adx_threshold &&
@@ -183,10 +173,10 @@ bool Strategy_ExitSignal()
         }
       else if(pos_type == POSITION_TYPE_SELL)
         {
-         // Exit: RSI back above mid, or ADX dropped below exit_level, or buy signal
+         // Exit: RSI back above mid, or ADX dropped below exit_level
          if(rsi_curr > strategy_rsi_mid || adx_curr < strategy_adx_exit_level)
             return true;
-         // Buy signal check for reversal
+         // Buy signal (ADX cross + RSI cross up) — enables reversal same tick
          const double adx_prev = QM_ADX(_Symbol, PERIOD_CURRENT, strategy_adx_period, 2);
          const double rsi_prev = QM_RSI(_Symbol, PERIOD_CURRENT, strategy_rsi_period, 2);
          if(adx_curr > strategy_adx_threshold && adx_prev < strategy_adx_threshold &&

@@ -355,6 +355,23 @@ double QM_CCI(const string sym, const ENUM_TIMEFRAMES tf, const int period = 14,
    return QM_IndicatorReadBuffer(QM_IndCCI(sym, tf, period, price), 0, shift);
   }
 
+// --- Williams Percent Range (WPR) ---
+int QM_IndWPR(const string sym, const ENUM_TIMEFRAMES tf, const int period)
+  {
+   const string key = StringFormat("WPR|%s|%d|%d", sym, (int)tf, period);
+   int h = QM_IndicatorsLookup(key);
+   if(h != INVALID_HANDLE)
+      return h;
+   h = iWPR(sym, tf, period);
+   return QM_IndicatorsRegister(key, h);
+  }
+
+double QM_WPR(const string sym, const ENUM_TIMEFRAMES tf, const int period,
+              const int shift = 1)
+  {
+   return QM_IndicatorReadBuffer(QM_IndWPR(sym, tf, period), 0, shift);
+  }
+
 int QM_IndBands(const string sym, const ENUM_TIMEFRAMES tf, const int period,
                 const double deviation, const ENUM_APPLIED_PRICE price)
   {
