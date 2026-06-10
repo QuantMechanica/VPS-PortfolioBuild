@@ -214,7 +214,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    Strategy_ResetRequest(req);
    if(!Strategy_HasWindowData())
       return false;
-
    const datetime setup_bar_time = iTime(_Symbol, _Period, 1); // perf-allowed: London-open hour gate, single closed-bar read
    if(setup_bar_time <= 0)
       return false;
@@ -227,7 +226,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const int day_key = Strategy_DayKey(setup_bar_time);
    if(g_last_entry_day_key == day_key)
       return false;
-
    const double o4 = iOpen(_Symbol, _Period, 3);   // perf-allowed: bespoke 2-bar reversal OHLC, fixed shifts, closed-bar only
    const double h4 = iHigh(_Symbol, _Period, 3);   // perf-allowed: bespoke 2-bar reversal OHLC, fixed shifts, closed-bar only
    const double l4 = iLow(_Symbol, _Period, 3);    // perf-allowed: bespoke 2-bar reversal OHLC, fixed shifts, closed-bar only

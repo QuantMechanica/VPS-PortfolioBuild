@@ -148,7 +148,6 @@ bool ComputePSAR(const string sym,
    const int oldest = shift + lookback - 1;
    if(Bars(sym, tf) <= oldest + 3 || step <= 0.0 || maximum <= 0.0) // perf-allowed: bespoke PSAR warmup check, no QM_PSAR helper
       return false;
-
    const double old_close = iClose(sym, tf, oldest);       // perf-allowed: bespoke PSAR seed read, no QM_PSAR helper
    const double newer_close = iClose(sym, tf, oldest - 1); // perf-allowed: bespoke PSAR seed read
    if(old_close <= 0.0 || newer_close <= 0.0)
@@ -265,7 +264,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    bool psar_uptrend = true;
    if(!ComputePSAR(_Symbol, strategy_timeframe, strategy_psar_step, strategy_psar_maximum, 1, sar, psar_uptrend))
       return false;
-
    const double close_1 = iClose(_Symbol, strategy_timeframe, 1); // perf-allowed: single shift-1 read for SMA cross check, per new bar
    const double fast_sma = QM_SMA(_Symbol, strategy_timeframe, strategy_fast_sma_period, 1);
    const double slow_sma = QM_SMA(_Symbol, strategy_timeframe, strategy_slow_sma_period, 1);
@@ -317,7 +315,6 @@ void Strategy_ManageOpenPosition()
       ResetTrailingStateIfFlat();
       return;
      }
-
    const double close_1 = iClose(_Symbol, strategy_timeframe, 1); // perf-allowed: single shift-1 read for trailing stop update
    if(close_1 <= 0.0 || strategy_trailing_pct <= 0.0 || strategy_trailing_pct >= 100.0)
       return;
@@ -344,7 +341,6 @@ bool Strategy_ExitSignal()
    ulong ticket = 0;
    if(!GetOurPosition(position_type, open_price, ticket))
       return false;
-
    const double close_1 = iClose(_Symbol, strategy_timeframe, 1); // perf-allowed: single shift-1 read for trailing stop exit check
    if(close_1 <= 0.0 || strategy_trailing_pct <= 0.0 || strategy_trailing_pct >= 100.0)
       return false;
