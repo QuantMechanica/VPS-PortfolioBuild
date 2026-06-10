@@ -99,7 +99,7 @@ bool IsSwingHigh(const int idx, const int strength)
 bool RSILineBullishClean(const int s1, const double R1,
                          const int s2, const double R2,
                          const double tol,
-                         const double rsi_cache[], const int cache_size)
+                         const double &rsi_cache[], const int cache_size)
   {
    const int span = s1 - s2;
    if(span <= 1) return true;
@@ -119,7 +119,7 @@ bool RSILineBullishClean(const int s1, const double R1,
 bool RSILineBearishClean(const int s1, const double R1,
                          const int s2, const double R2,
                          const double tol,
-                         const double rsi_cache[], const int cache_size)
+                         const double &rsi_cache[], const int cache_size)
   {
    const int span = s1 - s2;
    if(span <= 1) return true;
