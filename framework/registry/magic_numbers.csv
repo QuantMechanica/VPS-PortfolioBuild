@@ -6881,3 +6881,17 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9123,aa-tes01325-cross,6,EURUSD.DWX,91230006,2026-06-10,Development,active
 9123,aa-tes01325-cross,7,GBPUSD.DWX,91230007,2026-06-10,Development,active
 9123,aa-tes01325-cross,8,USDJPY.DWX,91230008,2026-06-10,Development,active
+1614,aa-dsp-fbank-turn,0,NDX.DWX,16140000,2026-06-10,Development,active
+1614,aa-dsp-fbank-turn,1,SP500.DWX,16140001,2026-06-10,Development,active
+1614,aa-dsp-fbank-turn,2,WS30.DWX,16140002,2026-06-10,Development,active
+1614,aa-dsp-fbank-turn,3,GDAXI.DWX,16140003,2026-06-10,Development,active
+1614,aa-dsp-fbank-turn,4,XAUUSD.DWX,16140004,2026-06-10,Development,active
+1614,aa-dsp-fbank-turn,5,XTIUSD.DWX,16140005,2026-06-10,Development,active
+1614,aa-dsp-fbank-turn,6,EURUSD.DWX,16140006,2026-06-10,Development,active
+1614,aa-dsp-fbank-turn,7,GBPUSD.DWX,16140007,2026-06-10,Development,active
+1614,aa-dsp-fbank-turn,8,USDJPY.DWX,16140008,2026-06-10,Development,active
+1463,as-papa-bear,0,NDX.DWX,14630000,2026-06-10,Claude,active
+1463,as-papa-bear,1,WS30.DWX,14630001,2026-06-10,Claude,active
+1463,as-papa-bear,2,SP500.DWX,14630002,2026-06-10,Claude,active
+1463,as-papa-bear,3,XAUUSD.DWX,14630003,2026-06-10,Claude,active
+1463,as-papa-bear,4,XTIUSD.DWX,14630004,2026-06-10,Claude,active

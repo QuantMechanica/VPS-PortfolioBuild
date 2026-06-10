@@ -176,18 +176,23 @@ bool Strategy_NoTradeFilter()
 // Also handles TES-cross exit so same-bar flip (exit short → enter long) is possible.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   // Declare all locals at top — MQL5 const-after-jump scoping is fragile.
+   ENUM_POSITION_TYPE ptype;
+   ulong ticket;
+   bool long_exit, short_exit, long_cross, short_cross;
+   double atr, sl_dist, entry_pt, sl_pts, entry_lots;
+   double spread_pt, cur_spread, med_spread;
+
    AdvanceState_OnNewBar();
 
    if(!g_initialized)
       return false;
 
    // === Exit check for any open position ===
-   ENUM_POSITION_TYPE ptype;
-   ulong ticket;
    if(HasOurPosition(ptype, ticket))
      {
-      const bool long_exit  = (ptype == POSITION_TYPE_BUY  && g_close_cur <= g_tes);
-      const bool short_exit = (ptype == POSITION_TYPE_SELL && g_close_cur >= g_tes);
+      long_exit  = (ptype == POSITION_TYPE_BUY  && g_close_cur <= g_tes);
+      short_exit = (ptype == POSITION_TYPE_SELL && g_close_cur >= g_tes);
       if(long_exit || short_exit)
         {
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
@@ -200,55 +205,53 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // === Spread filter (card: skip entry when spread > 2.5×20-day median) ===
    if(g_spread_count >= strategy_spread_window)
      {
-      const double pt = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-      if(pt > 0.0)
+      spread_pt = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+      if(spread_pt > 0.0)
         {
-         const double cur_spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD) * pt;
-         const double med = MedianSpread();
-         if(med > 0.0 && cur_spread > strategy_spread_mult * med)
+         cur_spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD) * spread_pt;
+         med_spread = MedianSpread();
+         if(med_spread > 0.0 && cur_spread > strategy_spread_mult * med_spread)
             return false;
         }
      }
 
    // === TES cross — card: both current AND prior bar must be on correct sides ===
-   const bool long_cross  = (g_close_cur > g_tes  && g_close_prev <= g_tes_prev);
-   const bool short_cross = (g_close_cur < g_tes  && g_close_prev >= g_tes_prev);
+   long_cross  = (g_close_cur > g_tes  && g_close_prev <= g_tes_prev);
+   short_cross = (g_close_cur < g_tes  && g_close_prev >= g_tes_prev);
 
    if(!long_cross && !short_cross)
       return false;
 
    // === Build entry request ===
-   const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
    if(atr <= 0.0) return false;
 
-   const double sl_dist = strategy_atr_sl_mult * atr;
-   const double pt      = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(pt <= 0.0) return false;
+   sl_dist   = strategy_atr_sl_mult * atr;
+   entry_pt  = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(entry_pt <= 0.0) return false;
 
-   const double sl_pts = sl_dist / pt;
-   const double lots   = QM_LotsForRisk(_Symbol, sl_pts);
-   if(lots <= 0.0) return false;
+   sl_pts      = sl_dist / entry_pt;
+   entry_lots  = QM_LotsForRisk(_Symbol, sl_pts);
+   if(entry_lots <= 0.0) return false;
 
    req.symbol_slot        = qm_magic_slot_offset;
    req.expiration_seconds = 0;
-   req.tp                 = 0.0;  // no TP; exit driven by TES cross
+   req.tp                 = 0.0;
 
    if(long_cross)
      {
-      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       req.type   = QM_BUY;
       req.price  = 0.0;
-      req.sl     = ask - sl_dist;
-      req.lots   = lots;
+      req.sl     = SymbolInfoDouble(_Symbol, SYMBOL_ASK) - sl_dist;
+      req.lots   = entry_lots;
       req.reason = "TES_LONG_CROSS";
       return true;
      }
 
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    req.type   = QM_SELL;
    req.price  = 0.0;
-   req.sl     = bid + sl_dist;
-   req.lots   = lots;
+   req.sl     = SymbolInfoDouble(_Symbol, SYMBOL_BID) + sl_dist;
+   req.lots   = entry_lots;
    req.reason = "TES_SHORT_CROSS";
    return true;
   }

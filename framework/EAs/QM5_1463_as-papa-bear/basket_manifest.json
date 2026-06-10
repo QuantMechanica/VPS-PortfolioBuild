@@ -1,0 +1,16 @@
+{
+  "ea_id": "QM5_1463",
+  "slug": "as-papa-bear",
+  "basket_type": "rotation",
+  "primary_chart_symbol": "NDX.DWX",
+  "symbols": [
+    { "symbol": "NDX.DWX",    "slot": 0, "role": "US equity large-cap growth; primary chart; live-tradable" },
+    { "symbol": "WS30.DWX",   "slot": 1, "role": "US equity large-cap value/industrial; live-tradable" },
+    { "symbol": "SP500.DWX",  "slot": 2, "role": "US broad equity S&P500; backtest-only (OWNER custom symbol)" },
+    { "symbol": "XAUUSD.DWX", "slot": 3, "role": "Gold spot; defensive / inflation-hedge sleeve" },
+    { "symbol": "XTIUSD.DWX", "slot": 4, "role": "WTI Crude Oil; commodity sleeve" }
+  ],
+  "rebalance_frequency": "monthly",
+  "top_n_held": 3,
+  "note": "MN1 card TF replaced with D1 + month-change detection; MN1 untestable in MT5 tester for DWX custom symbols."
+}

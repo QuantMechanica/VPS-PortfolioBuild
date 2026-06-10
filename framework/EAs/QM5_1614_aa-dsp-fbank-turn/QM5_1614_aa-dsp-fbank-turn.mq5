@@ -155,16 +155,16 @@ void InitializeFilter()
 bool CheckSpread()
   {
    // perf-allowed: called once per D1 bar from AdvanceState_OnNewBar
-   double hist_spreads[];
+   int hist_spreads[];
    ArraySetAsSeries(hist_spreads, false);
    int got = CopySpread(_Symbol, PERIOD_D1, 1, strategy_spread_lookback, hist_spreads);
    if(got < strategy_spread_lookback / 2)
       return true; // not enough data, allow
 
-   double sorted[];
+   int sorted[];
    ArrayCopy(sorted, hist_spreads, 0, 0, got);
    ArraySort(sorted);
-   double median = sorted[got / 2];
+   double median = (double)sorted[got / 2];
    if(median <= 0.0)
       return true;
 
@@ -185,15 +185,14 @@ void AdvanceState_OnNewBar()
    else if(g_filter_ready)
      {
       // Normal operation: advance by one closed bar
-      // perf-allowed: single-bar iClose access for IIR filter update
-      double c = iClose(_Symbol, PERIOD_D1, 1);
+      double c = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: single closed-bar close for IIR state advance, gated by QM_IsNewBar
       if(c > 0.0)
          AdvanceFilter(c);
      }
    else
      {
       // Still accumulating warmup bars (history was short at init time)
-      double c = iClose(_Symbol, PERIOD_D1, 1);
+      double c = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: single closed-bar close for IIR state advance, gated by QM_IsNewBar
       if(c > 0.0)
         {
          AdvanceFilter(c);

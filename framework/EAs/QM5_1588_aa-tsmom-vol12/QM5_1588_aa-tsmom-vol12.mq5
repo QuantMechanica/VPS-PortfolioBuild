@@ -10,10 +10,13 @@
 // Source: Wesley Gray, Alpha Architect 2016-12-22 (ede348b4-0fa7-5be1-baa8-09e9089b67b7)
 // Card: artifacts/cards_approved/QM5_1588_aa-tsmom-vol12.md
 //
-// D1-native implementation: MN1 period is untestable in MT5 tester for DWX
-// custom symbols; 252 D1 bars proxy the 12-month lookback.
-// Monthly rebalance is preserved — signal only changes when the 12-month
-// return sign flips (~monthly cadence).
+// D1-native: MN1 is untestable in MT5 tester for DWX custom symbols; 252 D1
+// bars proxy the 12-month lookback. Monthly rebalance cadence is preserved —
+// the signal only changes when the 12-month return sign flips (~monthly).
+//
+// Inverse-vol weighting: computed and cached for reference. P2 baseline uses
+// framework PORTFOLIO_WEIGHT (default 1.0); per-symbol vol-weighted sizing is
+// configured via PORTFOLIO_WEIGHT in the generated setfile at P3+/Q11.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
@@ -44,23 +47,23 @@ input double qm_stress_reject_probability = 0.0;
 input group "Strategy"
 // 12-month trailing return lookback in D1 bars (252 ≈ 1 trading year)
 input int    strategy_lookback_days       = 252;
-// Realized-volatility window in D1 bars for inverse-vol sizing
+// Realized-volatility window in D1 bars (used for cached diagnostic / setfile PORTFOLIO_WEIGHT calc)
 input int    strategy_vol_period          = 20;
-// Annual volatility target for position scaling (0.12 = 12%)
+// Annual volatility target for inverse-vol sizing reference (0.12 = 12%)
 input double strategy_vol_target          = 0.12;
 // ATR period (D1 bars) and stop-loss multiplier (card §Stop Loss: 3× ATR20)
 input int    strategy_atr_period          = 20;
 input double strategy_atr_sl_mult         = 3.0;
 
 // =============================================================================
-// Per-bar cached state — updated once per new D1 bar by AdvanceState_OnNewBar.
+// Per-bar cached state — updated once per new D1 bar.
 // These store SIGNAL STATE, NOT a timing gate; timing gate is QM_IsNewBar().
 // =============================================================================
 int    g_signal      = 0;     // +1 long, -1 short, 0 hold-cash
-double g_inv_vol     = 1.0;   // inverse-vol sizing factor (capped at 1.0, no leverage)
-bool   g_cache_valid = false; // becomes true after first successful state advance
+double g_inv_vol     = 1.0;   // inverse-vol factor (diagnostic cache; see note above)
+bool   g_cache_valid = false; // true after first successful state advance
 
-// Advance cached signal state once per new D1 bar.
+// Advance cached signal and vol state once per new D1 bar.
 // CopyRates called once per bar — perf-allowed: 12-month return and realized
 // volatility require raw D1 close sequence unavailable from QM_* readers.
 void AdvanceState_OnNewBar()
@@ -89,6 +92,7 @@ void AdvanceState_OnNewBar()
    g_signal = (ret_12m > 0.0) ? 1 : (ret_12m < 0.0) ? -1 : 0;
 
    // Realized annual vol: std dev of log returns over vol_period D1 bars
+   // Cached for reference; use as PORTFOLIO_WEIGHT suggestion in setfiles.
    double returns[];
    ArrayResize(returns, strategy_vol_period);
    double mean = 0.0;
@@ -107,8 +111,7 @@ void AdvanceState_OnNewBar()
       var += diff * diff;
      }
    double sigma_ann = MathSqrt(var / strategy_vol_period) * MathSqrt(252.0);
-
-   // Inverse-vol factor: target / realized, capped at 1.0 (no leverage per card)
+   // Inverse-vol factor capped at 1.0 (no leverage per card)
    g_inv_vol    = (sigma_ann > 0.001) ? MathMin(strategy_vol_target / sigma_ann, 1.0) : 1.0;
    g_cache_valid = true;
   }
@@ -117,13 +120,13 @@ void AdvanceState_OnNewBar()
 // Strategy hooks
 // =============================================================================
 
-// No Trade Filter — no intraday session or regime filter; TSMOM is direction-only.
+// No Trade Filter — TSMOM is direction-only; no intraday session filter.
 bool Strategy_NoTradeFilter()
   {
    return false;
   }
 
-// Trade Entry — enter long/short on new D1 bar when 12-month return is non-zero.
+// Trade Entry — enter long/short when 12-month return is non-zero on new D1 bar.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    // Update cached signal once per new D1 bar (caller ensures QM_IsNewBar)
@@ -131,48 +134,30 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(!g_cache_valid || g_signal == 0) return false;
 
-   // One position per magic slot — skip if already in market
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket)) continue;
-      if(PositionGetInteger(POSITION_MAGIC) == magic) return false;
-     }
-
-   // ATR-based stop distance (D1 ATR, shift=1 closed bar)
    double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
    if(atr <= 0.0) return false;
    double sl_dist = strategy_atr_sl_mult * atr;
-   double sl_pts  = sl_dist / _Point;
-   if(sl_pts <= 0.0) return false;
-
-   // Inverse-vol scaled lots: base lots × inv_vol_factor
-   double base_lots = QM_LotsForRisk(_Symbol, sl_pts);
-   double lots      = base_lots * g_inv_vol;
-   double min_lot   = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN);
-   if(lots < min_lot) lots = min_lot;
 
    double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
 
    if(g_signal == 1)
      {
-      req.type    = ORDER_TYPE_BUY;
-      req.price   = ask;
-      req.sl      = ask - sl_dist;
-      req.tp      = 0.0;  // primary exit via signal reversal
-      req.lots    = lots;
-      req.comment = "TSMOM_LONG";
+      req.type        = QM_BUY;
+      req.price       = 0.0;          // 0 = market price (framework resolves)
+      req.sl          = ask - sl_dist;
+      req.tp          = 0.0;          // primary exit via signal reversal
+      req.reason      = "TSMOM_LONG";
+      req.symbol_slot = qm_magic_slot_offset;
      }
    else
      {
-      req.type    = ORDER_TYPE_SELL;
-      req.price   = bid;
-      req.sl      = bid + sl_dist;
-      req.tp      = 0.0;
-      req.lots    = lots;
-      req.comment = "TSMOM_SHORT";
+      req.type        = QM_SELL;
+      req.price       = 0.0;
+      req.sl          = bid + sl_dist;
+      req.tp          = 0.0;
+      req.reason      = "TSMOM_SHORT";
+      req.symbol_slot = qm_magic_slot_offset;
      }
    return true;
   }
@@ -182,7 +167,7 @@ void Strategy_ManageOpenPosition()
   {
   }
 
-// Trade Close — close if signal reversed or data incomplete (hold-cash).
+// Trade Close — close if signal reversed or hold-cash (incomplete data).
 bool Strategy_ExitSignal()
   {
    if(!g_cache_valid) return false;
@@ -192,7 +177,7 @@ bool Strategy_ExitSignal()
       const ulong ticket = PositionGetTicket(i);
       if(!PositionSelectByTicket(ticket)) continue;
       if(PositionGetInteger(POSITION_MAGIC) != magic) continue;
-      if(g_signal == 0) return true;   // hold-cash: incomplete data
+      if(g_signal == 0) return true;   // hold-cash: incomplete data or zero return
       ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       if(ptype == POSITION_TYPE_BUY  && g_signal == -1) return true;
       if(ptype == POSITION_TYPE_SELL && g_signal ==  1) return true;
