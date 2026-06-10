@@ -206,37 +206,33 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // Buy: CE_B signal (direction just flipped bullish) AND HA close > ZLSMA
    if(g_ce_b_signal && g_ha_above_zlsma)
      {
-      const double sl     = g_entry_ce_long_stop - (double)strategy_sl_extra_pips * point;
-      const double ask    = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      const double sl_pts = (ask - sl) / point;
-      if(sl_pts <= 0.0)
+      const double sl  = g_entry_ce_long_stop - (double)strategy_sl_extra_pips * point;
+      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      if(sl <= 0.0 || sl >= ask - point)
          return false;
       req.type        = QM_BUY;
-      req.price       = 0.0; // market order
-      req.sl          = sl;
-      req.tp          = 0.0; // no TP; exit via signal or time stop
-      req.lots        = QM_LotsForRisk(_Symbol, sl_pts);
+      req.price       = 0.0;
+      req.sl          = NormalizeDouble(sl, _Digits);
+      req.tp          = 0.0;
       req.reason      = "CE_B_HA_ABOVE_ZLSMA";
       req.symbol_slot = qm_magic_slot_offset;
-      return req.lots > 0.0;
+      return true;
      }
 
    // Sell: CE_S signal (direction just flipped bearish) AND HA close < ZLSMA
    if(g_ce_s_signal && !g_ha_above_zlsma)
      {
-      const double sl     = g_entry_ce_short_stop + (double)strategy_sl_extra_pips * point;
-      const double bid    = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      const double sl_pts = (sl - bid) / point;
-      if(sl_pts <= 0.0)
+      const double sl  = g_entry_ce_short_stop + (double)strategy_sl_extra_pips * point;
+      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      if(sl <= bid + point)
          return false;
       req.type        = QM_SELL;
       req.price       = 0.0;
-      req.sl          = sl;
+      req.sl          = NormalizeDouble(sl, _Digits);
       req.tp          = 0.0;
-      req.lots        = QM_LotsForRisk(_Symbol, sl_pts);
       req.reason      = "CE_S_HA_BELOW_ZLSMA";
       req.symbol_slot = qm_magic_slot_offset;
-      return req.lots > 0.0;
+      return true;
      }
 
    return false;
