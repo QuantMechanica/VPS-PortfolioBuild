@@ -7066,3 +7066,7 @@
 9362,mql5-ichi-chikou-span,3,XAUUSD.DWX,93620003,2026-06-10,Development,active
 9405,qs-forex-mac,0,EURUSD.DWX,94050000,2026-06-10,Development,active
 9405,qs-forex-mac,1,GBPUSD.DWX,94050001,2026-06-10,Development,active
+9411,mql5-paq-pinbar,0,EURUSD.DWX,94110000,2026-06-10,Development,active
+9411,mql5-paq-pinbar,1,GBPUSD.DWX,94110001,2026-06-10,Development,active
+9411,mql5-paq-pinbar,2,USDJPY.DWX,94110002,2026-06-10,Development,active
+9411,mql5-paq-pinbar,3,XAUUSD.DWX,94110003,2026-06-10,Development,active
