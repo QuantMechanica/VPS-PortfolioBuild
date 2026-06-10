@@ -134,7 +134,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const ENUM_TIMEFRAMES tf = PERIOD_D1;
    const int bars_required = MathMax(strategy_warmup_bars,
                                      strategy_pivot_scan_bars + strategy_pivot_order * 2 + 5);
-   if(Bars(_Symbol, tf) < bars_required)
+   if(Bars(_Symbol, tf) < bars_required) // perf-allowed: warmup guard, runs once per D1 bar
       return false;
 
    double pivot_lows[8];
@@ -153,8 +153,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    for(int shift = first_shift; shift <= last_shift; ++shift)
      {
-      const double center_low = iLow(_Symbol, tf, shift);
-      const double center_high = iHigh(_Symbol, tf, shift);
+      const double center_low = iLow(_Symbol, tf, shift); // perf-allowed: bespoke pivot scan, gated by QM_IsNewBar
+      const double center_high = iHigh(_Symbol, tf, shift); // perf-allowed: bespoke pivot scan, gated by QM_IsNewBar
       if(center_low <= 0.0 || center_high <= 0.0)
          continue;
 
@@ -162,11 +162,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       bool is_high_pivot = true;
       for(int offset = 1; offset <= strategy_pivot_order; ++offset)
         {
-         if(center_low >= iLow(_Symbol, tf, shift - offset) ||
-            center_low >= iLow(_Symbol, tf, shift + offset))
+         if(center_low >= iLow(_Symbol, tf, shift - offset) || // perf-allowed: pivot neighborhood check, gated by QM_IsNewBar
+            center_low >= iLow(_Symbol, tf, shift + offset)) // perf-allowed: pivot neighborhood check, gated by QM_IsNewBar
             is_low_pivot = false;
-         if(center_high <= iHigh(_Symbol, tf, shift - offset) ||
-            center_high <= iHigh(_Symbol, tf, shift + offset))
+         if(center_high <= iHigh(_Symbol, tf, shift - offset) || // perf-allowed: pivot neighborhood check, gated by QM_IsNewBar
+            center_high <= iHigh(_Symbol, tf, shift + offset)) // perf-allowed: pivot neighborhood check, gated by QM_IsNewBar
             is_high_pivot = false;
         }
 

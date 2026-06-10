@@ -33,7 +33,6 @@ input group "Strategy"
 input bool   strategy_use_ma_signals      = true;
 input bool   strategy_use_breakout_signals = true;
 input bool   strategy_shorts_enabled      = true;
-input int    strategy_warmup_bars         = 340;
 input int    strategy_atr_period          = 14;
 input double strategy_emergency_atr_mult  = 5.0;
 
@@ -59,9 +58,6 @@ int Strategy_BreakoutSignal(const int lookback)
 
 int Strategy_AggregateSignal()
   {
-   if(Bars(_Symbol, PERIOD_D1) < strategy_warmup_bars)
-      return 0;
-
    int sum = 0;
    if(strategy_use_ma_signals)
      {

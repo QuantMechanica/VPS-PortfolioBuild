@@ -25,12 +25,11 @@ is inherited from `QM_Common.mqh` and is not redocumented here.
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `strategy_use_ma_signals` | true | (see source) | (see strategy logic) |
-| `strategy_use_breakout_signals` | true | (see source) | (see strategy logic) |
-| `strategy_shorts_enabled` | true | (see source) | (see strategy logic) |
-| `strategy_warmup_bars` | 340 | (see source) | (see strategy logic) |
-| `strategy_atr_period` | 14 | (see source) | (see strategy logic) |
-| `strategy_emergency_atr_mult` | 5.0 | (see source) | (see strategy logic) |
+| `strategy_use_ma_signals` | true | true/false | Enable the 4 MA crossover signal family (8/32, 16/64, 32/128, 64/256 SMA pairs) |
+| `strategy_use_breakout_signals` | true | true/false | Enable the 5 Donchian breakout signal family (20/40/80/160/320-bar highs/lows) |
+| `strategy_shorts_enabled` | true | true/false | Allow short positions; false = long-only variant |
+| `strategy_atr_period` | 14 | 7-21 | ATR period for emergency catastrophic stop calculation |
+| `strategy_emergency_atr_mult` | 5.0 | 3.0-8.0 | Emergency stop distance as multiple of ATR (not primary exit) |
 
 > Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
 > qm_news_mode, qm_rng_seed, qm_stress_reject_probability,

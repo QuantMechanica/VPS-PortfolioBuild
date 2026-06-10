@@ -81,7 +81,7 @@ double Strategy_NormalizePrice(const double price)
 
 double Strategy_RangeOscillator(const int shift)
   {
-   const double close_value = iClose(_Symbol, strategy_signal_tf, shift);
+   const double close_value = iClose(_Symbol, strategy_signal_tf, shift); // perf-allowed: no QM_Close helper; reads fixed closed-bar shift
    const double mean_value = QM_WMA(_Symbol, strategy_signal_tf, strategy_range_wma_period, shift, PRICE_CLOSE);
    const double atr_value = QM_ATR(_Symbol, strategy_signal_tf, strategy_atr_period, shift);
    if(close_value <= 0.0 || mean_value <= 0.0 || atr_value <= 0.0)
