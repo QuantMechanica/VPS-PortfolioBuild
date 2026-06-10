@@ -82,119 +82,6 @@ input double strategy_max_spread_risk_pct   = 5.0;
 input int    strategy_atr_period            = 14;
 input double strategy_max_sl_atr_mult       = 3.0;
 
-int g_last_entry_day_key = -1;
-
-int Strategy_DayKey(const datetime t)
-  {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.year * 1000 + dt.day_of_year;
-  }
-
-void Strategy_ResetRequest(QM_EntryRequest &req)
-  {
-   req.type = QM_BUY;
-   req.price = 0.0;
-   req.sl = 0.0;
-   req.tp = 0.0;
-   req.reason = "";
-   req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
-  }
-
-bool Strategy_HasWindowData()
-  {
-   return (iTime(_Symbol, _Period, 7) > 0); // perf-allowed: structural candle-window availability check, one-off closed-bar read
-  }
-
-bool Strategy_ExtremeAtIndex5(const bool want_low)
-  {
-   const double target = want_low ? iLow(_Symbol, _Period, 2) : iHigh(_Symbol, _Period, 2); // perf-allowed: bespoke 7-bar reversal pattern, fixed shifts, closed-bar only
-   if(target <= 0.0)
-      return false;
-
-   for(int shift = 1; shift <= 7; ++shift)
-     {
-      if(shift == 2)
-         continue;
-      const double v = want_low ? iLow(_Symbol, _Period, shift) : iHigh(_Symbol, _Period, shift); // perf-allowed: structural extreme scan, 7-bar bounded, closed-bar only
-      if(v <= 0.0)
-         return false;
-      if(want_low && target >= v)
-         return false;
-      if(!want_low && target <= v)
-         return false;
-     }
-   return true;
-  }
-
-double Strategy_WindowRangePoints()
-  {
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(point <= 0.0)
-      return 0.0;
-
-   double hi = -DBL_MAX;
-   double lo = DBL_MAX;
-   for(int shift = 1; shift <= 7; ++shift)
-     {
-      const double h = iHigh(_Symbol, _Period, shift); // perf-allowed: bespoke range filter, 7-bar bounded, closed-bar only
-      const double l = iLow(_Symbol, _Period, shift);  // perf-allowed: bespoke range filter, 7-bar bounded, closed-bar only
-      if(h <= 0.0 || l <= 0.0)
-         return 0.0;
-      hi = MathMax(hi, h);
-      lo = MathMin(lo, l);
-     }
-   return (hi - lo) / point;
-  }
-
-bool Strategy_FilterRanges(const double accumulation_points)
-  {
-   const double range_points = Strategy_WindowRangePoints();
-   if(range_points <= 0.0)
-      return false;
-   if(strategy_range_min_points > 0.0 && range_points < strategy_range_min_points)
-      return false;
-   if(strategy_range_max_points > 0.0 && range_points > strategy_range_max_points)
-      return false;
-   if(strategy_min_accum_points > 0.0 && accumulation_points < strategy_min_accum_points)
-      return false;
-   return true;
-  }
-
-bool Strategy_FilterRiskDistance(const double entry_price, const double sl_price)
-  {
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(point <= 0.0 || entry_price <= 0.0 || sl_price <= 0.0)
-      return false;
-
-   const double risk_points = MathAbs(entry_price - sl_price) / point;
-   if(risk_points <= 0.0)
-      return false;
-
-   const int stop_level = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
-   if(stop_level > 0 && risk_points < (double)stop_level)
-      return false;
-
-   if(strategy_max_spread_risk_pct > 0.0)
-     {
-      const double spread_points = (SymbolInfoDouble(_Symbol, SYMBOL_ASK) - SymbolInfoDouble(_Symbol, SYMBOL_BID)) / point;
-      if(spread_points > risk_points * strategy_max_spread_risk_pct / 100.0)
-         return false;
-     }
-
-   if(strategy_max_sl_atr_mult > 0.0)
-     {
-      const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
-      if(atr <= 0.0)
-         return false;
-      if(MathAbs(entry_price - sl_price) > atr * strategy_max_sl_atr_mult)
-         return false;
-     }
-
-   return true;
-  }
-
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -211,9 +98,19 @@ bool Strategy_NoTradeFilter()
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   Strategy_ResetRequest(req);
-   if(!Strategy_HasWindowData())
+   static int last_entry_day_key = -1;
+
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(iTime(_Symbol, _Period, 7) <= 0) // perf-allowed: fixed 7-bar candle-window availability check, closed-bar only
       return false;
+
    const datetime setup_bar_time = iTime(_Symbol, _Period, 1); // perf-allowed: London-open hour gate, single closed-bar read
    if(setup_bar_time <= 0)
       return false;
@@ -223,9 +120,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(dt.hour != strategy_open_hour_broker)
       return false;
 
-   const int day_key = Strategy_DayKey(setup_bar_time);
-   if(g_last_entry_day_key == day_key)
+   const int day_key = dt.year * 1000 + dt.day_of_year;
+   if(last_entry_day_key == day_key)
       return false;
+
    const double o4 = iOpen(_Symbol, _Period, 3);   // perf-allowed: bespoke 2-bar reversal OHLC, fixed shifts, closed-bar only
    const double h4 = iHigh(_Symbol, _Period, 3);   // perf-allowed: bespoke 2-bar reversal OHLC, fixed shifts, closed-bar only
    const double l4 = iLow(_Symbol, _Period, 3);    // perf-allowed: bespoke 2-bar reversal OHLC, fixed shifts, closed-bar only
@@ -245,7 +143,44 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(point <= 0.0)
       return false;
 
-   if(Strategy_ExtremeAtIndex5(true) &&
+   double window_high = -DBL_MAX;
+   double window_low = DBL_MAX;
+   bool low_at_bar5 = true;
+   bool high_at_bar5 = true;
+   for(int shift = 1; shift <= 7; ++shift)
+     {
+      const double h = iHigh(_Symbol, _Period, shift); // perf-allowed: bespoke 7-bar reversal scan, fixed bounded shifts, closed-bar only
+      const double l = iLow(_Symbol, _Period, shift);  // perf-allowed: bespoke 7-bar reversal scan, fixed bounded shifts, closed-bar only
+      if(h <= 0.0 || l <= 0.0)
+         return false;
+
+      window_high = MathMax(window_high, h);
+      window_low = MathMin(window_low, l);
+
+      if(shift != 2)
+        {
+         if(l5 >= l)
+            low_at_bar5 = false;
+         if(h5 <= h)
+            high_at_bar5 = false;
+        }
+     }
+
+   const double range_points = (window_high - window_low) / point;
+   if(range_points <= 0.0)
+      return false;
+   if(strategy_range_min_points > 0.0 && range_points < strategy_range_min_points)
+      return false;
+   if(strategy_range_max_points > 0.0 && range_points > strategy_range_max_points)
+      return false;
+
+   const int stop_level = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
+   const double spread_points = (SymbolInfoDouble(_Symbol, SYMBOL_ASK) - SymbolInfoDouble(_Symbol, SYMBOL_BID)) / point;
+   const double atr = (strategy_max_sl_atr_mult > 0.0) ? QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1) : 0.0;
+   if(strategy_max_sl_atr_mult > 0.0 && atr <= 0.0)
+      return false;
+
+   if(low_at_bar5 &&
       o4 > c4 &&
       h5 < h4 &&
       h6 > h4 &&
@@ -255,21 +190,24 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       const double sl = MathMin(o5, c5);
       const double tp = h4 + (h4 - o5);
       const double accumulation_points = MathAbs(h4 - o5) / point;
-      if(tp > entry && sl < entry &&
-         Strategy_FilterRanges(accumulation_points) &&
-         Strategy_FilterRiskDistance(entry, sl))
+      const double risk_points = MathAbs(entry - sl) / point;
+      if(tp > entry && sl < entry && risk_points > 0.0 &&
+         (stop_level <= 0 || risk_points >= (double)stop_level) &&
+         (strategy_min_accum_points <= 0.0 || accumulation_points >= strategy_min_accum_points) &&
+         (strategy_max_spread_risk_pct <= 0.0 || spread_points <= risk_points * strategy_max_spread_risk_pct / 100.0) &&
+         (strategy_max_sl_atr_mult <= 0.0 || MathAbs(entry - sl) <= atr * strategy_max_sl_atr_mult))
         {
          req.type = QM_BUY;
          req.price = 0.0;
          req.sl = NormalizeDouble(sl, _Digits);
          req.tp = NormalizeDouble(tp, _Digits);
          req.reason = "GETYNET_2BAR_LONG";
-         g_last_entry_day_key = day_key;
+         last_entry_day_key = day_key;
          return true;
         }
      }
 
-   if(Strategy_ExtremeAtIndex5(false) &&
+   if(high_at_bar5 &&
       o4 < c4 &&
       l5 > l4 &&
       l6 < l4 &&
@@ -279,16 +217,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       const double sl = MathMax(o5, c5);
       const double tp = l4 - (o5 - l4);
       const double accumulation_points = MathAbs(o5 - l4) / point;
-      if(tp < entry && sl > entry &&
-         Strategy_FilterRanges(accumulation_points) &&
-         Strategy_FilterRiskDistance(entry, sl))
+      const double risk_points = MathAbs(entry - sl) / point;
+      if(tp < entry && sl > entry && risk_points > 0.0 &&
+         (stop_level <= 0 || risk_points >= (double)stop_level) &&
+         (strategy_min_accum_points <= 0.0 || accumulation_points >= strategy_min_accum_points) &&
+         (strategy_max_spread_risk_pct <= 0.0 || spread_points <= risk_points * strategy_max_spread_risk_pct / 100.0) &&
+         (strategy_max_sl_atr_mult <= 0.0 || MathAbs(entry - sl) <= atr * strategy_max_sl_atr_mult))
         {
          req.type = QM_SELL;
          req.price = 0.0;
          req.sl = NormalizeDouble(sl, _Digits);
          req.tp = NormalizeDouble(tp, _Digits);
          req.reason = "GETYNET_2BAR_SHORT";
-         g_last_entry_day_key = day_key;
+         last_entry_day_key = day_key;
          return true;
         }
      }
