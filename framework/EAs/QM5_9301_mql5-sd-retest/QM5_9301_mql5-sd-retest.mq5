@@ -229,7 +229,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if((int)PositionGetInteger(POSITION_MAGIC) == magic)
          return false;
      }
-
    const double cl1 = iClose(_Symbol, _Period, 1); // perf-allowed: zone retest check on last closed bar
    const double hi1 = iHigh(_Symbol, _Period, 1); // perf-allowed: zone retest check on last closed bar
    const double lo1 = iLow(_Symbol, _Period, 1);  // perf-allowed: zone retest check on last closed bar
@@ -332,7 +331,6 @@ bool Strategy_ExitSignal()
      }
    if(!has_pos)
       return false;
-
    const double cl1 = iClose(_Symbol, _Period, 1); // perf-allowed: opposite zone exit check on last closed bar
    const double hi1 = iHigh(_Symbol, _Period, 1); // perf-allowed: opposite zone exit check on last closed bar
    const double lo1 = iLow(_Symbol, _Period, 1);  // perf-allowed: opposite zone exit check on last closed bar
