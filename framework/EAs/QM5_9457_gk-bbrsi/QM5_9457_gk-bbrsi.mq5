@@ -87,7 +87,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(rsi_1 <= 0.0 || rsi_2 <= 0.0)
       return false;
-
    const double close_1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar structural read
    const double close_2 = iClose(_Symbol, _Period, 2); // perf-allowed: single closed-bar structural read
 

@@ -34,7 +34,7 @@ Bollinger Band RSI Re-Entry mean-reversion on M5 bars. Computes Bollinger Bands 
 | `strategy_bb_deviation` | 2.0 | 1.0-4.0 | Bollinger Band standard deviation multiplier |
 | `strategy_rsi_period` | 7 | 2-50 | RSI period (card default 7) |
 | `strategy_tp_coef` | 1.0 | 0.5-5.0 | TP distance = tp_coef * SL distance (card TPCoef=1) |
-| `strategy_sl_dev_mult` | 0.9 | 0.1-2.0 | SL extension beyond band: mult * band_half_width (card SLDev=0 seed; 0.9 is initial P2 seed) |
+| `strategy_sl_dev_mult` | 0.0 | 0.0-2.0 | SL extension beyond band: mult * band_half_width (card P2 seed=0; 0.9 candidate for Q07 sweep) |
 | `strategy_max_hold_bars` | 72 | 1-500 | Time-stop: close after N M5 bars (card default 72) |
 
 ---
