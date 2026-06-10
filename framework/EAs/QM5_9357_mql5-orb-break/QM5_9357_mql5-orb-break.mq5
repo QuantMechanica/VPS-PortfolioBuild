@@ -194,7 +194,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          const datetime bt = iTime(_Symbol, PERIOD_M5, i); // perf-allowed: OR range scan - bespoke structural logic
          if(bt < session_open) break;           // before session start
          if(bt >= s_or_end_time) continue;      // after OR end (skip newer bars)
-
          const double h = iHigh(_Symbol, PERIOD_M5, i); // perf-allowed: OR range scan
          const double l = iLow(_Symbol, PERIOD_M5, i);  // perf-allowed: OR range scan
          if(h > or_high) or_high = h;
@@ -217,7 +216,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // Guard: only one open position allowed per magic
    if(ORB_HasOpenPosition())
       return false;
-
    const double close1 = iClose(_Symbol, PERIOD_M5, 1); // perf-allowed: entry bar close - gated by QM_IsNewBar; single read per bar
    const double open1  = iOpen (_Symbol, PERIOD_M5, 1); // perf-allowed: entry bar open - gated by QM_IsNewBar; single read per bar
 
