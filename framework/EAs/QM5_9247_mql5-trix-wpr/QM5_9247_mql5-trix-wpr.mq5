@@ -70,10 +70,7 @@ double Local_TRIX(const string sym, const ENUM_TIMEFRAMES tf, const int period,
    return QM_IndicatorReadBuffer(Local_IndTRIX(sym, tf, period), 0, shift);
   }
 
-// -----------------------------------------------------------------------------
-// File-scope: track open-position entry bar index for time-based exit
-// -----------------------------------------------------------------------------
-long g_entry_bar_index = -1;
+// No file-scope state required; time exit uses PositionGetInteger(POSITION_TIME)
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -111,7 +108,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.price = ask;
       req.sl    = ask - sl_pts;
       req.tp    = ask + tp_pts;
-      g_entry_bar_index = (long)Bars(_Symbol, PERIOD_H4);
       return true;
      }
 
@@ -123,7 +119,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.price = bid;
       req.sl    = bid + sl_pts;
       req.tp    = bid - tp_pts;
-      g_entry_bar_index = (long)Bars(_Symbol, PERIOD_H4);
       return true;
      }
 
@@ -164,13 +159,11 @@ bool Strategy_ExitSignal()
             return true;
         }
 
-      // Failsafe time exit after strategy_max_hold_bars closed H4 bars
-      if(g_entry_bar_index > 0)
-        {
-         long bars_now = (long)Bars(_Symbol, PERIOD_H4);
-         if((bars_now - g_entry_bar_index) >= strategy_max_hold_bars)
-            return true;
-        }
+      // Failsafe time exit: 1 H4 bar = 4h = 14400s
+      const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
+      const long bars_held = (long)((TimeCurrent() - open_time) / 14400);
+      if(bars_held >= strategy_max_hold_bars)
+         return true;
      }
    return false;
   }

@@ -46,46 +46,53 @@ input int    strategy_max_hold_bars      = 60;   // failsafe time-exit in H1 bar
 // File-scope cached state — updated once per new H1 bar in RefreshAroonState()
 // -----------------------------------------------------------------------------
 
-static double   g_aroon_up_1    = 0.0;   // Aroon Up  last closed bar (shift 1)
-static double   g_aroon_dn_1    = 0.0;   // Aroon Down last closed bar (shift 1)
-static double   g_aroon_up_2    = 0.0;   // Aroon Up  bar before last (shift 2)
-static double   g_aroon_dn_2    = 0.0;   // Aroon Down bar before last (shift 2)
+static double   g_aroon_up_1    = -1.0;  // Aroon Up  last closed bar (shift 1)
+static double   g_aroon_dn_1    = -1.0;  // Aroon Down last closed bar (shift 1)
+static double   g_aroon_up_2    = -1.0;  // Aroon Up  bar before last (shift 2)
+static double   g_aroon_dn_2    = -1.0;  // Aroon Down bar before last (shift 2)
 static datetime g_last_bar      = 0;     // bar time of last state update
 static int      g_bars_held     = 0;     // bars elapsed with open position
 static bool     g_exit_checked  = false; // one-shot exit guard per bar
 
 // -----------------------------------------------------------------------------
-// Aroon handle — pooled via QM_Indicators infrastructure
+// Aroon calculation — O(period) per call, gated to once per new closed bar
+// perf-allowed: iHigh/iLow used for bespoke indicator not in QM framework
+// Aroon(n, shift): looks at n bars starting from ref_shift
+//   Up   = (n - bars_since_n_period_high) / n * 100
+//   Down = (n - bars_since_n_period_low)  / n * 100
 // -----------------------------------------------------------------------------
 
-int GetAroonHandle()
+void CalcAroon(const int period, const int ref_shift, double &up, double &down)
   {
-   const string key = StringFormat("AROON|%s|%d|%d", _Symbol, (int)PERIOD_H1,
-                                   strategy_aroon_period);
-   int h = QM_IndicatorsLookup(key);
-   if(h != INVALID_HANDLE)
-      return h;
-   h = iAroon(_Symbol, PERIOD_H1, strategy_aroon_period);
-   return QM_IndicatorsRegister(key, h);
+   // perf-allowed: O(period) iHigh/iLow reads per call; called once per closed bar
+   int    hi_idx = ref_shift;
+   int    lo_idx = ref_shift;
+   double hi_val = iHigh(_Symbol, PERIOD_H1, ref_shift);
+   double lo_val = iLow(_Symbol, PERIOD_H1, ref_shift);
+   for(int i = ref_shift + 1; i <= ref_shift + period; ++i)
+     {
+      double h = iHigh(_Symbol, PERIOD_H1, i);
+      double l = iLow(_Symbol, PERIOD_H1, i);
+      if(h >= hi_val) { hi_val = h; hi_idx = i; }
+      if(l <= lo_val) { lo_val = l; lo_idx = i; }
+     }
+   up   = (double)(period - (hi_idx - ref_shift)) / period * 100.0;
+   down = (double)(period - (lo_idx - ref_shift)) / period * 100.0;
   }
 
-// Called every tick from Strategy_ManageOpenPosition; advances state at most
-// once per closed bar (iTime shift-1 read is O(1) — perf-allowed).
+// Called every tick from Strategy_ManageOpenPosition; advances once per bar.
+// Uses iTime(shift 1) as a bar-change sentinel — O(1) call, perf-allowed.
 void RefreshAroonState()
   {
-   const datetime t1 = iTime(_Symbol, PERIOD_H1, 1); // perf-allowed: single bar-time, O(1)
+   const datetime t1 = iTime(_Symbol, PERIOD_H1, 1); // perf-allowed: O(1) bar-time read
    if(t1 <= 0 || t1 == g_last_bar)
       return;
 
-   const int h = GetAroonHandle();
-   // Advance rolling window: previous becomes "2-bars-ago"
-   g_aroon_up_2 = g_aroon_up_1;
-   g_aroon_dn_2 = g_aroon_dn_1;
-   // Read freshly closed bar (shift 1) — QM_IndicatorReadBuffer wraps CopyBuffer
-   g_aroon_up_1 = QM_IndicatorReadBuffer(h, 0, 1);
-   g_aroon_dn_1 = QM_IndicatorReadBuffer(h, 1, 1);
+   // Compute Aroon for last two closed bars
+   CalcAroon(strategy_aroon_period, 1, g_aroon_up_1, g_aroon_dn_1);
+   CalcAroon(strategy_aroon_period, 2, g_aroon_up_2, g_aroon_dn_2);
 
-   // Update bar-hold counter for any open position under our magic
+   // Advance bar counter for open positions
    const int magic = QM_FrameworkMagic();
    bool has_pos = false;
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -105,7 +112,7 @@ void RefreshAroonState()
       g_bars_held = 0;
 
    g_last_bar     = t1;
-   g_exit_checked = false; // reset one-shot for new bar
+   g_exit_checked = false;
   }
 
 // Returns true when this EA's magic has an open position; sets ptype.
@@ -129,13 +136,11 @@ bool HasOwnPosition(ENUM_POSITION_TYPE &ptype)
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
-// No Trade Filter — spread/news handled by framework; session is 24h.
 bool Strategy_NoTradeFilter()
   {
    return false;
   }
 
-// Entry Signal — called only on new closed bar (QM_IsNewBar gate in skeleton).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    // One position per magic — framework also guards, but early-exit is cheap.
@@ -143,20 +148,21 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(HasOwnPosition(existing_type))
       return false;
 
-   // Need at least two bars of data (both cross bars populated).
-   if(g_aroon_up_1 <= 0.0 && g_aroon_dn_1 <= 0.0)
+   // Require valid Aroon data (g_aroon_* initialised to -1.0 until first bar).
+   if(g_aroon_up_1 < 0.0 || g_aroon_dn_1 < 0.0 ||
+      g_aroon_up_2 < 0.0 || g_aroon_dn_2 < 0.0)
       return false;
 
-   // Cross detection: shift-1 vs shift-2 (last closed vs bar before that)
-   const double spread_now  = g_aroon_up_1 - g_aroon_dn_1;
+   // Aroon cross detection: shift-1 vs shift-2 (last closed vs bar before)
+   const double spread_now  = g_aroon_up_1 - g_aroon_dn_1; // positive = Up dominant
    const double spread_prev = g_aroon_up_2 - g_aroon_dn_2;
 
-   // Long: Aroon Up crosses above Aroon Down AND spread >= min filter
+   // Long: Aroon Up crosses above Aroon Down; spread >= min filter
    const bool long_cross  = (spread_now  >=  strategy_min_aroon_spread) &&
-                             (spread_prev <= 0.0);
-   // Short: Aroon Down crosses above Aroon Up AND spread >= min filter (Dn-Up >= min)
+                             (spread_prev <=  0.0);
+   // Short: Aroon Down crosses above Aroon Up; spread (Dn-Up) >= min filter
    const bool short_cross = (-spread_now >=  strategy_min_aroon_spread) &&
-                             (spread_prev >= 0.0);
+                             (-spread_prev <= 0.0);
 
    if(!long_cross && !short_cross)
       return false;
@@ -168,14 +174,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double sl_dist = strategy_sl_atr_mult * atr;
    const double tp_dist = sl_dist * strategy_tp_rr;
 
-   req.symbol_slot       = qm_magic_slot_offset;
+   req.symbol_slot        = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
    if(long_cross)
      {
       const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       req.type   = QM_BUY;
-      req.price  = 0.0;                  // market order — fills at ask
+      req.price  = 0.0;                  // market order
       req.sl     = ask - sl_dist;
       req.tp     = ask + tp_dist;
       req.reason = "AROON_LONG_CROSS";
@@ -184,19 +190,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      {
       const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       req.type   = QM_SELL;
-      req.price  = 0.0;                  // market order — fills at bid
+      req.price  = 0.0;                  // market order
       req.sl     = bid + sl_dist;
       req.tp     = bid - tp_dist;
       req.reason = "AROON_SHORT_CROSS";
      }
 
-   g_bars_held = 0; // reset counter; position will be counted from next bar
+   g_bars_held = 0;
    return true;
   }
 
-// Trade Management — no active management (SL/TP handles it per card spec).
-// RefreshAroonState() is called here so the state is current for both
-// ExitSignal and EntrySignal on the same tick.
+// Trade Management — no active trail/BE (SL/TP handles it per card spec).
+// RefreshAroonState called here so state is current before ExitSignal check.
 void Strategy_ManageOpenPosition()
   {
    RefreshAroonState();
@@ -222,30 +227,23 @@ bool Strategy_ExitSignal()
       return true;
      }
 
-   // Aroon reverse-cross exit (symmetrical to entry logic)
-   bool cross_exit = false;
+   // Aroon reverse-cross exit
    const double spread_now  = g_aroon_up_1 - g_aroon_dn_1;
    const double spread_prev = g_aroon_up_2 - g_aroon_dn_2;
 
+   bool cross_exit = false;
    if(ptype == POSITION_TYPE_BUY)
-     {
-      // Exit long when Aroon Down crosses back above Aroon Up
-      cross_exit = (spread_now <= 0.0) && (spread_prev > 0.0);
-     }
+      cross_exit = (spread_now <= 0.0) && (spread_prev > 0.0); // Dn crosses above Up
    else
-     {
-      // Exit short when Aroon Up crosses back above Aroon Down
-      cross_exit = (spread_now >= 0.0) && (spread_prev < 0.0);
-     }
+      cross_exit = (spread_now >= 0.0) && (spread_prev < 0.0); // Up crosses above Dn
 
    g_exit_checked = true;
    return cross_exit;
   }
 
-// News Filter Hook — defers to framework two-axis check.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false;
+   return false; // defer to QM_NewsAllowsTrade
   }
 
 // -----------------------------------------------------------------------------

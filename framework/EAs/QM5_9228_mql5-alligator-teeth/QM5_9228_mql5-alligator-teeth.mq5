@@ -3,7 +3,7 @@
 #property description "QM5_9228 MQL5 Alligator Teeth Close Trigger"
 // Strategy Card: ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb (mql5-alligator-teeth), G0 APPROVED 2026-05-19.
 // Source: Mohamed Abdelmaaboud, "Learn how to design a trading system by Alligator",
-//         MQL5 Articles, 2022-10-12, https://www.mql5.com/en/articles/11549
+//         MQL5 Articles, 2022-10-12 (see SPEC.md for full citation URL).
 
 #include <QM/QM_Common.mqh>
 
@@ -83,9 +83,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // Previous bar Teeth for crossover detection
    const double teeth_p = QM_SMMA(_Symbol, PERIOD_H1, strategy_teeth_period, t_idx + 1, PRICE_MEDIAN);
 
-   // Close prices for cross detection — single-bar reads (perf-allowed: bespoke cross logic)
-   const double close1 = iClose(_Symbol, PERIOD_H1, 1);
-   const double close2 = iClose(_Symbol, PERIOD_H1, 2);
+   // Close prices for cross detection — single fixed-shift bar reads
+   const double close1 = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed: bespoke Alligator cross logic
+   const double close2 = iClose(_Symbol, PERIOD_H1, 2); // perf-allowed: bespoke Alligator cross logic
 
    if(jaw <= 0.0 || teeth <= 0.0 || lips <= 0.0 || close1 <= 0.0)
       return false;
@@ -120,7 +120,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.price  = 0.0;
       req.sl     = sl;
       req.tp     = ask + sl_dist * strategy_atr_tp_mult;
-      req.lots   = QM_LotsForRisk(_Symbol, sl_dist / _Point);
       req.reason = "ALLIGATOR_LONG";
       return true;
      }
@@ -135,7 +134,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.price  = 0.0;
       req.sl     = sl;
       req.tp     = bid - sl_dist * strategy_atr_tp_mult;
-      req.lots   = QM_LotsForRisk(_Symbol, sl_dist / _Point);
       req.reason = "ALLIGATOR_SHORT";
       return true;
      }
@@ -188,8 +186,8 @@ bool Strategy_ExitSignal()
    const double lips_p  = QM_SMMA(_Symbol, PERIOD_H1, strategy_lips_period,  l_idx + 1, PRICE_MEDIAN);
    const double jaw     = QM_SMMA(_Symbol, PERIOD_H1, strategy_jaw_period,   j_idx,     PRICE_MEDIAN);
 
-   const double close1 = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed: single bar read
-   const double close2 = iClose(_Symbol, PERIOD_H1, 2); // perf-allowed: single bar read
+   const double close1 = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed: bespoke Alligator cross logic
+   const double close2 = iClose(_Symbol, PERIOD_H1, 2); // perf-allowed: bespoke Alligator cross logic
 
    if(ptype == POSITION_TYPE_BUY)
      {
