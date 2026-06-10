@@ -3417,3 +3417,6 @@ ea_id,slug,strategy_id,status,owner,created_at
 1614,aa-dsp-fbank-turn,ede348b4-0fa7-5be1-baa8-09e9089b67b7,active,Development,2026-06-10
 1642,aa-xasset-xmom-third,ede348b4-0fa7-5be1-baa8-09e9089b67b7,active,Development,2026-06-10
 9194,mql5-rvgi-cci,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Development,2026-06-10
+9198,mql5-cci-zero,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Development,2026-06-10
+9197,mql5-bb-stoch-mtf,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Development,2026-06-10
+9195,mql5-signal-pulse,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Development,2026-06-10

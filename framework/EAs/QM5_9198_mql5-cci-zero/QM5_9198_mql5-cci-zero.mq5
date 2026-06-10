@@ -8,7 +8,7 @@
 // QM5_9198 — MQL5 CCI Zero Cross Momentum
 // Card: artifacts/cards_approved/QM5_9198_mql5-cci-zero.md
 // Source: Mohamed Abdelmaaboud, "Learn how to design a trading system by CCI",
-//         MQL5 Articles, 2022-04-06. https://www.mql5.com/en/articles/10592
+//         MQL5 Articles 2022-04-06. See SPEC.md for full citation.
 // Strategy: CCI(14) zero-line cross entries; +100/-100 CCI TP; ATR(14)*1.5 SL.
 // =============================================================================
 
@@ -131,7 +131,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.price            = 0.0;
       req.sl               = sl;
       req.tp               = 0.0; // CCI-based TP managed in ExitSignal
-      req.lots             = QM_LotsForRisk(_Symbol, sl_pts);
       req.reason           = "CCI_ZERO_LONG";
       req.symbol_slot      = qm_magic_slot_offset;
       req.expiration_seconds = 0;
@@ -149,7 +148,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.price            = 0.0;
       req.sl               = sl;
       req.tp               = 0.0; // CCI-based TP managed in ExitSignal
-      req.lots             = QM_LotsForRisk(_Symbol, sl_pts);
       req.reason           = "CCI_ZERO_SHORT";
       req.symbol_slot      = qm_magic_slot_offset;
       req.expiration_seconds = 0;
