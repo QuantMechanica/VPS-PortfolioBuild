@@ -7095,3 +7095,7 @@
 9455,gk-ce-zlsma,1,EURUSD.DWX,94550001,2026-06-11,Development,active
 9455,gk-ce-zlsma,2,GBPUSD.DWX,94550002,2026-06-11,Development,active
 9455,gk-ce-zlsma,3,XAUUSD.DWX,94550003,2026-06-11,Development,active
+9457,gk-bbrsi,0,XAUUSD.DWX,94570000,2026-06-11,Development,active
+9457,gk-bbrsi,1,EURUSD.DWX,94570001,2026-06-11,Development,active
+9457,gk-bbrsi,2,GBPUSD.DWX,94570002,2026-06-11,Development,active
+9457,gk-bbrsi,3,USDJPY.DWX,94570003,2026-06-11,Development,active
