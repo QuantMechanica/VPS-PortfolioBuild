@@ -7007,3 +7007,7 @@
 9246,mql5-ao-bounce,0,EURUSD.DWX,92460000,2026-06-10,Development,active
 9246,mql5-ao-bounce,1,GBPJPY.DWX,92460001,2026-06-10,Development,active
 9246,mql5-ao-bounce,2,NDX.DWX,92460002,2026-06-10,Development,active
+9270,mql5-bos-liq-sweep,0,EURUSD.DWX,92700000,2026-06-10,Development,active
+9270,mql5-bos-liq-sweep,1,GBPUSD.DWX,92700001,2026-06-10,Development,active
+9270,mql5-bos-liq-sweep,2,XAUUSD.DWX,92700002,2026-06-10,Development,active
+9270,mql5-bos-liq-sweep,3,GDAXI.DWX,92700003,2026-06-10,Development,active
