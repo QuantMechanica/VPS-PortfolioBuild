@@ -7029,3 +7029,7 @@
 9296,mql5-cmf-obos,1,GBPUSD.DWX,92960001,2026-06-10,Development,active
 9296,mql5-cmf-obos,2,XAUUSD.DWX,92960002,2026-06-10,Development,active
 9296,mql5-cmf-obos,3,GDAXI.DWX,92960003,2026-06-10,Development,active
+9298,mql5-bears-div,0,EURUSD.DWX,92980000,2026-06-10,Development,active
+9298,mql5-bears-div,1,GBPUSD.DWX,92980001,2026-06-10,Development,active
+9298,mql5-bears-div,2,XAUUSD.DWX,92980002,2026-06-10,Development,active
+9298,mql5-bears-div,3,GDAXI.DWX,92980003,2026-06-10,Development,active
