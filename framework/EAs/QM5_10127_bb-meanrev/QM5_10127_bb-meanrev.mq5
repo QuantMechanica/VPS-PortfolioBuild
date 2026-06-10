@@ -116,8 +116,7 @@ bool Strategy_NoTradeFilter()
    if(strategy_bb_period < 2 || strategy_bb_deviation <= 0.0 ||
       strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
       return true;
-
-   return (Bars(_Symbol, strategy_timeframe) < strategy_bb_period + 5); // perf-allowed: bespoke warmup guard, no QM_* bar-count helper exists
+   return (Bars(_Symbol, strategy_timeframe) < strategy_bb_period + 5); // perf-allowed: warmup guard
   }
 
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
@@ -136,8 +135,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    ENUM_POSITION_TYPE position_type;
    if(Strategy_HasOpenPosition(position_type))
       return false;
-
-   const double close_1 = iClose(_Symbol, strategy_timeframe, 1); // perf-allowed: single closed-bar close for bespoke TP-band comparison, called once per new bar
+   const double close_1 = iClose(_Symbol, strategy_timeframe, 1); // perf-allowed: single closed-bar close for TP-band comparison
    const double upper = QM_BB_Upper(_Symbol, strategy_timeframe, strategy_bb_period,
                                     strategy_bb_deviation, 1, PRICE_TYPICAL);
    const double lower = QM_BB_Lower(_Symbol, strategy_timeframe, strategy_bb_period,
@@ -183,8 +181,7 @@ bool Strategy_ExitSignal()
    ENUM_POSITION_TYPE position_type;
    if(!Strategy_HasOpenPosition(position_type))
       return false;
-
-   const double close_1 = iClose(_Symbol, strategy_timeframe, 1); // perf-allowed: single closed-bar close, O(1) per tick, for bespoke TP-band crossback exit
+   const double close_1 = iClose(_Symbol, strategy_timeframe, 1); // perf-allowed: closed-bar close for TP-band crossback exit
    const double close_2 = iClose(_Symbol, strategy_timeframe, 2); // perf-allowed: prior bar close for crossover confirmation
    const double middle_1 = QM_BB_Middle(_Symbol, strategy_timeframe, strategy_bb_period,
                                         strategy_bb_deviation, 1, PRICE_TYPICAL);

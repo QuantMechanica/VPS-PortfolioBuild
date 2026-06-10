@@ -60,8 +60,7 @@ void AdvanceState_OnNewBar()
    const int period = (strategy_bb_period >= 5) ? strategy_bb_period : 20;
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
-   // perf-allowed: TP=(H+L+C)/3 BB; called once per D1 bar via QM_IsNewBar gate in OnTick
-   const int copied = CopyRates(_Symbol, PERIOD_D1, 1, period, rates);
+   const int copied = CopyRates(_Symbol, PERIOD_D1, 1, period, rates); // perf-allowed: TP=(H+L+C)/3 requires OHLC; gated via QM_IsNewBar in OnTick
    if(copied < period)
      {
       g_state_valid = false;
