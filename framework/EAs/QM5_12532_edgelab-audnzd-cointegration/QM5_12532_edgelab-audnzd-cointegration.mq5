@@ -3,7 +3,6 @@
 #property description "QM5_12532 Edge Lab AUDUSD NZDUSD Cointegration"
 
 #include <QM/QM_Common.mqh>
-#include <QM/QM_BasketOrder.mqh>
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 12532;
@@ -228,7 +227,7 @@ bool Strategy_NewsAllowsPair(const datetime broker_time)
 bool Strategy_BuildLegRequest(const string symbol,
                               const bool buy_leg,
                               const string reason,
-                              QM_BasketOrderRequest &breq)
+                              QM_EntryRequest &req)
   {
    const QM_OrderType type = buy_leg ? QM_BUY : QM_SELL;
    const double entry = buy_leg ? SymbolInfoDouble(symbol, SYMBOL_ASK)
@@ -244,17 +243,15 @@ bool Strategy_BuildLegRequest(const string symbol,
       return false;
 
    const int digits = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
-   breq.symbol = symbol;
-   breq.type = type;
-   breq.price = 0.0;
-   breq.sl = buy_leg ? NormalizeDouble(entry - stop_dist, digits)
-                     : NormalizeDouble(entry + stop_dist, digits);
-   breq.tp = 0.0;
-   breq.lots = QM_LotsForRisk(symbol, sl_points) * 0.5;
-   breq.reason = reason;
-   breq.symbol_slot = Strategy_SlotForSymbol(symbol);
-   breq.expiration_seconds = 0;
-   return (breq.lots > 0.0);
+   req.type = type;
+   req.price = 0.0;
+   req.sl = buy_leg ? NormalizeDouble(entry - stop_dist, digits)
+                    : NormalizeDouble(entry + stop_dist, digits);
+   req.tp = 0.0;
+   req.reason = reason;
+   req.symbol_slot = Strategy_SlotForSymbol(symbol);
+   req.expiration_seconds = 0;
+   return (QM_LotsForRisk(symbol, sl_points) > 0.0);
   }
 
 bool Strategy_OpenPair(const int spread_direction)
@@ -267,19 +264,19 @@ bool Strategy_OpenPair(const int spread_direction)
    const string reason = (spread_direction > 0) ? "QM5_12532_LONG_SPREAD_Z_NEG"
                                                 : "QM5_12532_SHORT_SPREAD_Z_POS";
 
-   QM_BasketOrderRequest aud_req;
-   QM_BasketOrderRequest nzd_req;
+   QM_EntryRequest aud_req;
+   QM_EntryRequest nzd_req;
    if(!Strategy_BuildLegRequest(g_pair_symbols[0], buy_aud, reason, aud_req))
       return false;
    if(!Strategy_BuildLegRequest(g_pair_symbols[1], buy_nzd, reason, nzd_req))
       return false;
 
    ulong aud_ticket = 0;
-   if(!QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, 20, aud_req, aud_ticket))
+   if(!QM_TM_OpenPosition(aud_req, aud_ticket))
       return false;
 
    ulong nzd_ticket = 0;
-   if(!QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, 20, nzd_req, nzd_ticket))
+   if(!QM_TM_OpenPosition(nzd_req, nzd_ticket))
      {
       Strategy_ClosePair(QM_EXIT_STRATEGY);
       return false;
