@@ -188,7 +188,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(rsi_1 <= 0.0 || rsi_2 <= 0.0)
       return false;
-
    const double close_1 = iClose(_Symbol, _Period, 1); // perf-allowed: closed-bar close for band re-entry entry signal
    const double close_2 = iClose(_Symbol, _Period, 2); // perf-allowed: prior bar close for oversold/overbought confirmation
 
@@ -327,7 +326,6 @@ bool Strategy_ExitSignal()
    const double mid = QM_BB_Middle(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 1, PRICE_CLOSE);
    if(mid <= 0.0)
       return false;
-
    const double close_1 = iClose(_Symbol, _Period, 1); // perf-allowed: closed-bar close for middle-band crossover exit
    if(close_1 <= 0.0)
       return false;
