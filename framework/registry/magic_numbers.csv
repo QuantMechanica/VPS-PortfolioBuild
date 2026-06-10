@@ -7037,3 +7037,7 @@
 9299,mql5-bears-ema,1,GBPUSD.DWX,92990001,2026-06-10,Development,active
 9299,mql5-bears-ema,2,XAUUSD.DWX,92990002,2026-06-10,Development,active
 9299,mql5-bears-ema,3,GDAXI.DWX,92990003,2026-06-10,Development,active
+9300,mql5-london-break,0,EURUSD.DWX,93000000,2026-06-10,Development,active
+9300,mql5-london-break,1,GBPUSD.DWX,93000001,2026-06-10,Development,active
+9300,mql5-london-break,2,GBPJPY.DWX,93000002,2026-06-10,Development,active
+9300,mql5-london-break,3,GDAXI.DWX,93000003,2026-06-10,Development,active
