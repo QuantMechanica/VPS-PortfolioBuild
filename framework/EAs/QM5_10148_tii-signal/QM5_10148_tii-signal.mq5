@@ -96,7 +96,7 @@ bool Strategy_CalcTiiAtShift(const int shift, double &tii_value)
    for(int lookback = 0; lookback < strategy_tii_period; ++lookback)
      {
       const int bar_shift = shift + lookback;
-      const double close_value = iClose(_Symbol, strategy_timeframe, bar_shift);
+      const double close_value = iClose(_Symbol, strategy_timeframe, bar_shift); // perf-allowed: bespoke TII deviation loop; gated by QM_IsNewBar via Strategy_EntrySignal path
       const double sma_value = QM_SMA(_Symbol, strategy_timeframe, strategy_tii_period, bar_shift);
       if(close_value <= 0.0 || sma_value <= 0.0)
          return false;
@@ -165,7 +165,7 @@ bool Strategy_NoTradeFilter()
       strategy_atr_stop_mult <= 0.0)
       return true;
 
-   if(Bars(_Symbol, strategy_timeframe) < strategy_tii_period + strategy_signal_ema + 3)
+   if(Bars(_Symbol, strategy_timeframe) < strategy_tii_period + strategy_signal_ema + 3) // perf-allowed: O(1) warmup bar-count guard
       return true;
 
    if(strategy_max_spread_points > 0)

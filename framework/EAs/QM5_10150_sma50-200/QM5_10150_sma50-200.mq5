@@ -151,9 +151,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(Bars(_Symbol, strategy_timeframe) < strategy_slow_sma_period + 2)
-      return false;
-
    ENUM_POSITION_TYPE existing_type = POSITION_TYPE_BUY;
    if(Strategy_GetOurPosition(existing_type))
       return false;
@@ -195,9 +192,6 @@ bool Strategy_ExitSignal()
   {
    ENUM_POSITION_TYPE position_type = POSITION_TYPE_BUY;
    if(!Strategy_GetOurPosition(position_type))
-      return false;
-
-   if(Bars(_Symbol, strategy_timeframe) < strategy_slow_sma_period + 2)
       return false;
 
    const int state = Strategy_SmaState(1);

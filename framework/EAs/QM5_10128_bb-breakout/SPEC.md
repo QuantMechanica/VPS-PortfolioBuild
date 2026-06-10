@@ -21,7 +21,7 @@ On the close of each D1 bar, compute the typical price TP = (High + Low + Close)
 | `strategy_bb_period` | 20 | 5–100 | BB lookback in D1 bars (card specifies 20) |
 | `strategy_bb_dev` | 1.0 | 0.5–3.0 | Entry sigma multiplier (card specifies 1-sigma) |
 | `strategy_sl_atr_period` | 14 | 5–50 | ATR period for emergency stop distance |
-| `strategy_sl_atr_mult` | 5.0 | 2.0–10.0 | Emergency stop = ATR × multiplier (card has no explicit stop) |
+| `strategy_sl_atr_mult` | 3.0 | 2.0–10.0 | Emergency stop = ATR × multiplier (card has no explicit stop) |
 
 ---
 

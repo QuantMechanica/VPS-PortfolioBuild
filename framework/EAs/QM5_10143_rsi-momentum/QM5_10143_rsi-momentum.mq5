@@ -113,9 +113,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_upper_exit_level >= 100.0)
       return false;
 
-   if(Bars(_Symbol, strategy_timeframe) < strategy_rsi_period + 3)
-      return false;
-
    const double rsi_last = QM_RSI(_Symbol, strategy_timeframe,
                                   strategy_rsi_period, 1, PRICE_CLOSE);
    const double rsi_prev = QM_RSI(_Symbol, strategy_timeframe,
@@ -165,9 +162,6 @@ bool Strategy_ExitSignal()
       strategy_centerline <= strategy_lower_exit_level ||
       strategy_upper_exit_level <= strategy_centerline ||
       strategy_upper_exit_level >= 100.0)
-      return false;
-
-   if(Bars(_Symbol, strategy_timeframe) < strategy_rsi_period + 3)
       return false;
 
    const int magic = QM_FrameworkMagic();

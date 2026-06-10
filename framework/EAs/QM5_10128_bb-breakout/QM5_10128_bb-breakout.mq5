@@ -8,10 +8,10 @@
 // QM5_10128 — Bollinger Band One-Sigma Breakout
 // Card: D:\QM\strategy_farm\artifacts\cards_approved\QM5_10128_bb-breakout.md
 // Source: Raposa 2021-07-21, "Trading Bollinger Band Breakouts"
-// Strategy: Compute SMA(TP,20) + 1-sigma bands on typical price (TP=(H+L+C)/3).
+// Strategy: SMA(TP,20) ± 1-sigma on typical price (TP=(H+L+C)/3) per D1 bar.
 //   Enter LONG on D1 close above upper band; SHORT on close below lower band.
 //   Exit when close re-enters the band (LONG: close<=upper; SHORT: close>=lower).
-//   Emergency SL: ATR(14,D1) x strategy_sl_atr_mult (card has no explicit stop).
+//   Emergency SL: ATR(14) × strategy_sl_atr_mult (card has no explicit stop).
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
@@ -42,51 +42,25 @@ input group "Strategy"
 input int    strategy_bb_period         = 20;    // BB lookback (D1 bars, per card)
 input double strategy_bb_dev            = 1.0;   // Entry sigma multiplier (1.0 per card)
 input int    strategy_sl_atr_period     = 14;    // ATR period for emergency stop
-input double strategy_sl_atr_mult       = 5.0;   // ATR multiplier for emergency stop
+input double strategy_sl_atr_mult       = 3.0;   // ATR multiplier for emergency stop
 
 // --- Cached closed-bar state (advanced once per D1 bar in AdvanceState_OnNewBar) ---
-double g_bb_upper   = 0.0;
-double g_bb_lower   = 0.0;
-double g_last_close = 0.0;
+// QM_BB_Upper/Lower with PRICE_TYPICAL wraps MT5 iBands(PRICE_TYPICAL) — no CopyRates needed.
+double g_bb_upper    = 0.0;
+double g_bb_lower    = 0.0;
+double g_last_close  = 0.0;
 bool   g_state_valid = false;
 
 // Called once per closed D1 bar (inside QM_IsNewBar gate in OnTick).
-// Computes TP-based Bollinger Bands so exit/entry use just-closed bar data.
-// Uses CopyRates to obtain OHLC needed for TP=(H+L+C)/3; this cannot be
-// expressed via QM_BB (close-only by default) without PRICE_TYPICAL, hence
-// the manual computation is required for strict card fidelity.
+// Reads TP-based Bollinger Bands via QM_BB_Upper/Lower(PRICE_TYPICAL) and
+// caches the just-closed bar's close for exit/entry comparison.
 void AdvanceState_OnNewBar()
   {
-   const int period = (strategy_bb_period >= 5) ? strategy_bb_period : 20;
-   MqlRates rates[];
-   ArraySetAsSeries(rates, true);
-   const int copied = CopyRates(_Symbol, PERIOD_D1, 1, period, rates); // perf-allowed: TP=(H+L+C)/3 requires OHLC; gated via QM_IsNewBar in OnTick
-   if(copied < period)
-     {
-      g_state_valid = false;
-      return;
-     }
-
-   // Compute SMA of typical price over the last `period` closed bars.
-   double tp_sum = 0.0;
-   for(int i = 0; i < period; i++)
-      tp_sum += (rates[i].high + rates[i].low + rates[i].close) / 3.0;
-   const double sma = tp_sum / period;
-
-   // Compute population standard deviation of typical price.
-   double variance = 0.0;
-   for(int i = 0; i < period; i++)
-     {
-      const double tp = (rates[i].high + rates[i].low + rates[i].close) / 3.0;
-      variance += (tp - sma) * (tp - sma);
-     }
-   const double std_dev  = (variance > 0.0) ? MathSqrt(variance / period) : 0.0;
-   const double dev_mult = (strategy_bb_dev > 0.0) ? strategy_bb_dev : 1.0;
-
-   g_bb_upper   = sma + dev_mult * std_dev;
-   g_bb_lower   = sma - dev_mult * std_dev;
-   g_last_close = rates[0].close;  // rates[0] = shift 1 = just-closed bar
-   g_state_valid = true;
+   g_bb_upper = QM_BB_Upper(_Symbol, PERIOD_D1, strategy_bb_period, strategy_bb_dev, 1, PRICE_TYPICAL);
+   g_bb_lower = QM_BB_Lower(_Symbol, PERIOD_D1, strategy_bb_period, strategy_bb_dev, 1, PRICE_TYPICAL);
+   g_last_close = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: single shift=1 close read, gated by QM_IsNewBar (once per D1 bar)
+   g_state_valid = (g_bb_upper > 0.0 && g_bb_lower > 0.0 &&
+                    g_bb_upper > g_bb_lower && g_last_close > 0.0);
   }
 
 // =============================================================================
