@@ -1,16 +1,16 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_9357 — MQL5 Opening Range Breakout (ORB)"
+#property description "QM5_9357 - MQL5 Opening Range Breakout (ORB)"
 
 #include <QM/QM_Common.mqh>
 #include <QM/QM_Signals.mqh>
 
 // =============================================================================
-// QM5_9357 — MQL5 Opening Range Breakout (ORB)
+// QM5_9357 - MQL5 Opening Range Breakout (ORB)
 // -----------------------------------------------------------------------------
 // Source: Israel Pelumi Abioye, "Introduction to MQL5 (Part 23): Automating
 //   Opening Range Breakout Strategy", MQL5 Articles, 2025-10-14
-//   https://www.mql5.com/en/articles/19886
+//   mql5.com/en/articles/19886  (internal reference - no external API calls)
 //
 // Mechanic (card verbatim):
 //   - At strategy_session_start_hour:strategy_session_start_min (server time),
@@ -48,7 +48,7 @@ input int    qm_friday_close_hour_broker = 21;
 input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
-input group "Strategy — ORB Session"
+input group "Strategy"
 // Broker-time hour and minute for session open (default 09:30 as per card)
 input int    strategy_session_start_hour  = 9;
 input int    strategy_session_start_min   = 30;
@@ -62,7 +62,7 @@ input int    strategy_or_minutes          = 15;
 input double strategy_rr_ratio            = 2.0;
 
 // =============================================================================
-// State — one record per day, reset at each new trading day
+// State - one record per day, reset at each new trading day
 // =============================================================================
 static datetime  s_last_bar_time       = 0;     // last processed M5 bar time
 static datetime  s_day_date            = 0;      // date key for current day state
@@ -160,7 +160,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const datetime broker_now = TimeCurrent();
    MqlDateTime t; TimeToStruct(broker_now, t);
 
-   // Detect a new calendar day — reset state
+   // Detect a new calendar day - reset state
    MqlDateTime day_key = t; day_key.hour = 0; day_key.min = 0; day_key.sec = 0;
    const datetime today = StructToTime(day_key);
    if(today != s_day_date)
@@ -175,7 +175,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!s_or_captured)
    {
       // Current closed bar opens at iTime(_Symbol, PERIOD_M5, 1)
-      const datetime bar1_open = iTime(_Symbol, PERIOD_M5, 1);
+      const datetime bar1_open = iTime(_Symbol, PERIOD_M5, 1); // perf-allowed: OR range scan - QM_Indicators has no multi-bar range primitive
       if(bar1_open < s_or_end_time)
          return false;   // OR still forming
 
@@ -191,12 +191,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       // Scan back up to 200 M5 bars to find those in the OR window
       for(int i = 1; i <= 200; ++i)
       {
-         const datetime bt = iTime(_Symbol, PERIOD_M5, i);
+         const datetime bt = iTime(_Symbol, PERIOD_M5, i); // perf-allowed: OR range scan - bespoke structural logic
          if(bt < session_open) break;           // before session start
          if(bt >= s_or_end_time) continue;      // after OR end (skip newer bars)
 
-         const double h = iHigh(_Symbol, PERIOD_M5, i);
-         const double l = iLow(_Symbol, PERIOD_M5, i);
+         const double h = iHigh(_Symbol, PERIOD_M5, i); // perf-allowed: OR range scan
+         const double l = iLow(_Symbol, PERIOD_M5, i);  // perf-allowed: OR range scan
          if(h > or_high) or_high = h;
          if(l < or_low)  or_low  = l;
          found = true;
@@ -211,15 +211,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    }
 
    // -------------------------------------------------------------------------
-   // Phase 2: Entry signal — closed M5 bar breaks above OR high (long)
+   // Phase 2: Entry signal - closed M5 bar breaks above OR high (long)
    //          or below OR low (short).
    // -------------------------------------------------------------------------
    // Guard: only one open position allowed per magic
    if(ORB_HasOpenPosition())
       return false;
 
-   const double close1 = iClose(_Symbol, PERIOD_M5, 1);
-   const double open1  = iOpen (_Symbol, PERIOD_M5, 1);
+   const double close1 = iClose(_Symbol, PERIOD_M5, 1); // perf-allowed: entry bar close - gated by QM_IsNewBar; single read per bar
+   const double open1  = iOpen (_Symbol, PERIOD_M5, 1); // perf-allowed: entry bar open - gated by QM_IsNewBar; single read per bar
 
    const bool long_break  = (close1 > s_or_high) && (close1 > open1);   // bullish candle
    const bool short_break = (close1 < s_or_low)  && (close1 < open1);   // bearish candle
@@ -282,7 +282,7 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 }
 
 // =============================================================================
-// Framework wiring — do NOT edit below this line
+// Framework wiring - do NOT edit below this line
 // =============================================================================
 
 int OnInit()
