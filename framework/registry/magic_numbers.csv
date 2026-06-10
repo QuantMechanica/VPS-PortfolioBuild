@@ -7024,3 +7024,8 @@
 9292,mql5-dem-env-squeeze,0,EURUSD.DWX,92920000,2026-06-10,Development,active
 9292,mql5-dem-env-squeeze,1,GBPUSD.DWX,92920001,2026-06-10,Development,active
 9292,mql5-dem-env-squeeze,2,XAUUSD.DWX,92920002,2026-06-10,Development,active
+
+9296,mql5-cmf-obos,0,EURUSD.DWX,92960000,2026-06-10,Development,active
+9296,mql5-cmf-obos,1,GBPUSD.DWX,92960001,2026-06-10,Development,active
+9296,mql5-cmf-obos,2,XAUUSD.DWX,92960002,2026-06-10,Development,active
+9296,mql5-cmf-obos,3,GDAXI.DWX,92960003,2026-06-10,Development,active

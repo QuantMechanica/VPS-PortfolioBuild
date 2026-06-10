@@ -115,7 +115,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.price           = ask;
       req.sl              = ask - sl_pts * _Point;
       req.tp              = ask + tp_pts * _Point;
-      req.lots            = QM_LotsForRisk(_Symbol, sl_pts);
       req.symbol_slot     = qm_magic_slot_offset;
       req.reason          = "CMF_OBOS_LONG";
       req.expiration_seconds = 0;
@@ -130,7 +129,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.price           = bid;
       req.sl              = bid + sl_pts * _Point;
       req.tp              = bid - tp_pts * _Point;
-      req.lots            = QM_LotsForRisk(_Symbol, sl_pts);
       req.symbol_slot     = qm_magic_slot_offset;
       req.reason          = "CMF_OBOS_SHORT";
       req.expiration_seconds = 0;
