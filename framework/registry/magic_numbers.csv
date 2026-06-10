@@ -7018,3 +7018,6 @@
 9290,mql5-dem-env-fakeout,0,EURUSD.DWX,92900000,2026-06-10,Development,active
 9290,mql5-dem-env-fakeout,1,GBPUSD.DWX,92900001,2026-06-10,Development,active
 9290,mql5-dem-env-fakeout,2,USDJPY.DWX,92900002,2026-06-10,Development,active
+9291,mql5-dem-env-break,0,EURUSD.DWX,92910000,2026-06-10,Development,active
+9291,mql5-dem-env-break,1,GBPUSD.DWX,92910001,2026-06-10,Development,active
+9291,mql5-dem-env-break,2,GDAXI.DWX,92910002,2026-06-10,Development,active

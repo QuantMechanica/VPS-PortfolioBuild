@@ -118,9 +118,8 @@ void AdvanceState_OnNewBar()
    if(g_env_upper1 > 0.0 && g_env_lower1 > 0.0)
       g_env_mid1 = (g_env_upper1 + g_env_lower1) * 0.5;
 
-   // perf-allowed: single iClose call per new bar; no QM_Close reader exists
-   g_close1 = iClose(_Symbol, _Period, 1);
-   g_close2 = iClose(_Symbol, _Period, 2);
+   g_close1 = iClose(_Symbol, _Period, 1); // perf-allowed: one read per new bar; no QM_Close reader
+   g_close2 = iClose(_Symbol, _Period, 2); // perf-allowed: one read per new bar; no QM_Close reader
 
    const double width = (g_env_upper1 > g_env_lower1) ? (g_env_upper1 - g_env_lower1) : 0.0;
    g_width_hist[g_width_idx % QM_DEM_ENV_WIDTH_HIST] = width;
