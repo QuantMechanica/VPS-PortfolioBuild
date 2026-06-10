@@ -30,7 +30,7 @@ is inherited from `QM_Common.mqh` and is not redocumented here.
 | `strategy_centerline` | 50.0 | (see source) | (see strategy logic) |
 | `strategy_upper_exit_level` | 70.0 | (see source) | (see strategy logic) |
 | `strategy_lower_exit_level` | 30.0 | (see source) | (see strategy logic) |
-| `strategy_shorts_enabled` | false | (see source) | (see strategy logic) |
+| `strategy_shorts_enabled` | true | (see source) | (see strategy logic) |
 | `strategy_atr_period` | 14 | (see source) | (see strategy logic) |
 | `strategy_atr_stop_mult` | 3.0 | (see source) | (see strategy logic) |
 

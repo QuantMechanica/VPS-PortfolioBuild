@@ -78,7 +78,7 @@ input int    strategy_rsi_period         = 14;
 input double strategy_centerline         = 50.0;
 input double strategy_upper_exit_level   = 70.0;
 input double strategy_lower_exit_level   = 30.0;
-input bool   strategy_shorts_enabled     = false;
+input bool   strategy_shorts_enabled     = true;
 input int    strategy_atr_period         = 14;
 input double strategy_atr_stop_mult      = 3.0;
 
