@@ -7087,3 +7087,7 @@
 9414,mql5-paq-doji,1,GBPUSD.DWX,94140001,2026-06-10,Development,active
 9414,mql5-paq-doji,2,USDJPY.DWX,94140002,2026-06-10,Development,active
 9414,mql5-paq-doji,3,XAUUSD.DWX,94140003,2026-06-10,Development,active
+9456,gk-3maf,0,USDCAD.DWX,94560000,2026-06-10,Development,active
+9456,gk-3maf,1,EURUSD.DWX,94560001,2026-06-10,Development,active
+9456,gk-3maf,2,GBPUSD.DWX,94560002,2026-06-10,Development,active
+9456,gk-3maf,3,AUDUSD.DWX,94560003,2026-06-10,Development,active
