@@ -3,16 +3,16 @@
 ; ea_id:        10143
 ; ea_slug:      rsi-momentum
 ; ea_version:   v5.0
-; set_version:  s20260524-001
+; set_version:  s20260610-001
 ; symbol:       EURAUD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   8
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   3a2f1b0dd3d9612c819689783950628ce4560da390bca54b5a58ceb68501d463
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-24
+; date:         2026-06-10
 ;==========================================================
 qm_magic_slot_offset=8
 RISK_FIXED=1000

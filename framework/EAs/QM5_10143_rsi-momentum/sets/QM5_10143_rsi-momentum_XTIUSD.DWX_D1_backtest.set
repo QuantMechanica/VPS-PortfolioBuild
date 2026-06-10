@@ -3,16 +3,16 @@
 ; ea_id:        10143
 ; ea_slug:      rsi-momentum
 ; ea_version:   v5.0
-; set_version:  s20260524-001
+; set_version:  s20260610-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   36
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   9df1781e4d357297ffdd8be8641b05c8d5f93b899f3450a99d0e97efbc2e8a7e
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-24
+; date:         2026-06-10
 ;==========================================================
 qm_magic_slot_offset=36
 RISK_FIXED=1000

@@ -3,16 +3,16 @@
 ; ea_id:        10143
 ; ea_slug:      rsi-momentum
 ; ea_version:   v5.0
-; set_version:  s20260524-001
+; set_version:  s20260610-001
 ; symbol:       XAGUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   33
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   cb4c2a56484079da367b0f2a504d896670deb2a2ad30d8cc301719dbc4d3c9cb
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-24
+; date:         2026-06-10
 ;==========================================================
 qm_magic_slot_offset=33
 RISK_FIXED=1000

@@ -3,16 +3,16 @@
 ; ea_id:        10143
 ; ea_slug:      rsi-momentum
 ; ea_version:   v5.0
-; set_version:  s20260524-001
+; set_version:  s20260610-001
 ; symbol:       UK100.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   28
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   074e1b4e4dd85634d5e6b603ee2f1d6024b683104ca31a20e8f3009cd5d2459b
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-24
+; date:         2026-06-10
 ;==========================================================
 qm_magic_slot_offset=28
 RISK_FIXED=1000

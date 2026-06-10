@@ -1,90 +1,79 @@
-# QM5_10143_rsi-momentum — Strategy Spec
+# QM5_10143_rsi-momentum - Strategy Spec
 
 **EA ID:** QM5_10143
-**Slug:** `rsi-momentum`
-**Source:** `d3c009d7-a8d6-5251-b572-4777b207c2b9` (see `strategy-seeds/sources/d3c009d7-a8d6-5251-b572-4777b207c2b9/`)
-**Author of this spec:** auto-generated ex-post by gen_spec_md.py
-**Last revised:** 2026-05-25
+**Slug:** rsi-momentum
+**Source:** d3c009d7-a8d6-5251-b572-4777b207c2b9
+**Author of this spec:** Codex
+**Last revised:** 2026-06-10
 
 ---
 
 ## 1. Strategy Logic
 
-Mechanical strategy implemented per the approved card
-`artifacts/cards_approved/QM5_10143_rsi-momentum.md`. See that card's body for
-the full entry/exit/stop/sizing rules; this SPEC summarises the
-implementation surface.
-
-Entry/exit logic is encoded in the five `Strategy_*` hooks in
-`QM5_10143_rsi-momentum.mq5`. Framework wiring (risk, magic, news, Friday close)
-is inherited from `QM_Common.mqh` and is not redocumented here.
+The EA computes Wilder RSI on completed D1 closes. It enters long when RSI crosses upward through the 50 centerline, and it can enter short when short mode is enabled and RSI crosses downward through the same centerline. A long exits after RSI has traded above the upper exit level and then crosses back below it, or when RSI crosses below the centerline. A short exits after RSI has traded below the lower exit level and then crosses back above it, or when RSI crosses above the centerline. Each entry uses an emergency stop at ATR(14) multiplied by the configured stop multiplier.
 
 ---
 
 ## 2. Parameters
 
 | Parameter | Default | Range | Meaning |
-|---|---|---|---|
-| `strategy_timeframe` | PERIOD_D1 | (see source) | (see strategy logic) |
-| `strategy_rsi_period` | 14 | (see source) | (see strategy logic) |
-| `strategy_centerline` | 50.0 | (see source) | (see strategy logic) |
-| `strategy_upper_exit_level` | 70.0 | (see source) | (see strategy logic) |
-| `strategy_lower_exit_level` | 30.0 | (see source) | (see strategy logic) |
-| `strategy_shorts_enabled` | true | (see source) | (see strategy logic) |
-| `strategy_atr_period` | 14 | (see source) | (see strategy logic) |
-| `strategy_atr_stop_mult` | 3.0 | (see source) | (see strategy logic) |
+|---|---:|---|---|
+| strategy_timeframe | PERIOD_D1 | D1 default | Timeframe used for RSI and ATR reads. |
+| strategy_rsi_period | 14 | 10, 14, 21, 28 | Wilder RSI period. |
+| strategy_centerline | 50.0 | 50 | RSI momentum centerline. |
+| strategy_upper_exit_level | 70.0 | 65, 70, 75 | Long extreme level that arms retrace exit. |
+| strategy_lower_exit_level | 30.0 | 25, 30, 35 | Short extreme level that arms retrace exit. |
+| strategy_shorts_enabled | true | false, true | Enables short entries and short exits. |
+| strategy_atr_period | 14 | 14 default | ATR period for emergency stop distance. |
+| strategy_atr_stop_mult | 3.0 | 2.5, 3.0, 4.0 | ATR multiple for emergency stop. |
 
-> Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
-> qm_news_mode, qm_rng_seed, qm_stress_reject_probability,
-> qm_friday_close_*) are documented in
-> `framework/V5_FRAMEWORK_DESIGN.md` — not re-listed here.
+Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and are not re-listed here.
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `AUDCAD.DWX` — registered in magic_numbers.csv for this EA
-- `AUDCHF.DWX` — registered in magic_numbers.csv for this EA
-- `AUDJPY.DWX` — registered in magic_numbers.csv for this EA
-- `AUDNZD.DWX` — registered in magic_numbers.csv for this EA
-- `AUDUSD.DWX` — registered in magic_numbers.csv for this EA
-- `CADCHF.DWX` — registered in magic_numbers.csv for this EA
-- `CADJPY.DWX` — registered in magic_numbers.csv for this EA
-- `CHFJPY.DWX` — registered in magic_numbers.csv for this EA
-- `EURAUD.DWX` — registered in magic_numbers.csv for this EA
-- `EURCAD.DWX` — registered in magic_numbers.csv for this EA
-- `EURCHF.DWX` — registered in magic_numbers.csv for this EA
-- `EURGBP.DWX` — registered in magic_numbers.csv for this EA
-- `EURJPY.DWX` — registered in magic_numbers.csv for this EA
-- `EURNZD.DWX` — registered in magic_numbers.csv for this EA
-- `EURUSD.DWX` — registered in magic_numbers.csv for this EA
-- `GBPAUD.DWX` — registered in magic_numbers.csv for this EA
-- `GBPCAD.DWX` — registered in magic_numbers.csv for this EA
-- `GBPCHF.DWX` — registered in magic_numbers.csv for this EA
-- `GBPJPY.DWX` — registered in magic_numbers.csv for this EA
-- `GBPNZD.DWX` — registered in magic_numbers.csv for this EA
-- `GBPUSD.DWX` — registered in magic_numbers.csv for this EA
-- `GDAXI.DWX` — registered in magic_numbers.csv for this EA
-- `NDX.DWX` — registered in magic_numbers.csv for this EA
-- `NZDCAD.DWX` — registered in magic_numbers.csv for this EA
-- `NZDCHF.DWX` — registered in magic_numbers.csv for this EA
-- `NZDJPY.DWX` — registered in magic_numbers.csv for this EA
-- `NZDUSD.DWX` — registered in magic_numbers.csv for this EA
-- `SP500.DWX` — registered in magic_numbers.csv for this EA
-- `UK100.DWX` — registered in magic_numbers.csv for this EA
-- `USDCAD.DWX` — registered in magic_numbers.csv for this EA
-- `USDCHF.DWX` — registered in magic_numbers.csv for this EA
-- `USDJPY.DWX` — registered in magic_numbers.csv for this EA
-- `WS30.DWX` — registered in magic_numbers.csv for this EA
-- `XAGUSD.DWX` — registered in magic_numbers.csv for this EA
-- `XAUUSD.DWX` — registered in magic_numbers.csv for this EA
-- `XNGUSD.DWX` — registered in magic_numbers.csv for this EA
-- `XTIUSD.DWX` — registered in magic_numbers.csv for this EA
+- AUDCAD.DWX - close-derived RSI rule is portable to DWX forex crosses.
+- AUDCHF.DWX - close-derived RSI rule is portable to DWX forex crosses.
+- AUDJPY.DWX - close-derived RSI rule is portable to DWX forex crosses.
+- AUDNZD.DWX - close-derived RSI rule is portable to DWX forex crosses.
+- AUDUSD.DWX - close-derived RSI rule is portable to DWX forex majors.
+- CADCHF.DWX - close-derived RSI rule is portable to DWX forex crosses.
+- CADJPY.DWX - close-derived RSI rule is portable to DWX forex crosses.
+- CHFJPY.DWX - close-derived RSI rule is portable to DWX forex crosses.
+- EURAUD.DWX - close-derived RSI rule is portable to DWX forex crosses.
+- EURCAD.DWX - close-derived RSI rule is portable to DWX forex crosses.
+- EURCHF.DWX - close-derived RSI rule is portable to DWX forex crosses.
+- EURGBP.DWX - close-derived RSI rule is portable to DWX forex crosses.
+- EURJPY.DWX - close-derived RSI rule is portable to DWX forex crosses.
+- EURNZD.DWX - close-derived RSI rule is portable to DWX forex crosses.
+- EURUSD.DWX - close-derived RSI rule is portable to DWX forex majors.
+- GBPAUD.DWX - close-derived RSI rule is portable to DWX forex crosses.
+- GBPCAD.DWX - close-derived RSI rule is portable to DWX forex crosses.
+- GBPCHF.DWX - close-derived RSI rule is portable to DWX forex crosses.
+- GBPJPY.DWX - close-derived RSI rule is portable to DWX forex crosses.
+- GBPNZD.DWX - close-derived RSI rule is portable to DWX forex crosses.
+- GBPUSD.DWX - close-derived RSI rule is portable to DWX forex majors.
+- GDAXI.DWX - close-derived RSI rule is portable to liquid DWX index CFDs.
+- NDX.DWX - card explicitly permits US large-cap DWX index exposure.
+- NZDCAD.DWX - close-derived RSI rule is portable to DWX forex crosses.
+- NZDCHF.DWX - close-derived RSI rule is portable to DWX forex crosses.
+- NZDJPY.DWX - close-derived RSI rule is portable to DWX forex crosses.
+- NZDUSD.DWX - close-derived RSI rule is portable to DWX forex majors.
+- SP500.DWX - card permits SP500.DWX, with T6 live-routing caveat handled later.
+- UK100.DWX - close-derived RSI rule is portable to liquid DWX index CFDs.
+- USDCAD.DWX - close-derived RSI rule is portable to DWX forex majors.
+- USDCHF.DWX - close-derived RSI rule is portable to DWX forex majors.
+- USDJPY.DWX - close-derived RSI rule is portable to DWX forex majors.
+- WS30.DWX - card explicitly permits US large-cap DWX index exposure.
+- XAGUSD.DWX - card permits metals CFDs.
+- XAUUSD.DWX - card permits metals CFDs.
+- XNGUSD.DWX - close-derived RSI rule is portable to registered DWX energy CFDs.
+- XTIUSD.DWX - card permits oil CFDs.
 
-**Explicitly NOT for:** any symbol not in the list above (no implicit
-universe expansion at runtime; the `QM_SymbolGuard` framework helper
-rejects foreign symbols).
+**Explicitly NOT for:**
+- Any symbol absent from `framework/registry/dwx_symbol_matrix.csv` - the framework magic resolver only accepts registered DWX symbols.
 
 ---
 
@@ -92,8 +81,8 @@ rejects foreign symbols).
 
 | Aspect | Value |
 |---|---|
-| Base timeframe | `D1` |
-| Multi-timeframe refs | see `Strategy_*` hooks in the .mq5 |
+| Base timeframe | D1 |
+| Multi-timeframe refs | none |
 | Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
 
 ---
@@ -103,11 +92,10 @@ rejects foreign symbols).
 | Metric | Expected |
 |---|---|
 | Trades / year / symbol | 24 |
-| Cadence note | see card body |
-| Typical hold time | see card body |
-| Expected drawdown profile | bounded by RISK_FIXED + FTMO 10% total DD ceiling |
-| Regime preference | per card thesis |
-| Win rate target (qualitative) | medium |
+| Typical hold time | Not specified in card frontmatter; RSI centerline-to-extreme retrace implies multi-day holds on D1. |
+| Expected drawdown profile | Fixed-risk D1 momentum profile, bounded by the V5 risk model and ATR emergency stop. |
+| Regime preference | Momentum and trend-following regimes. |
+| Win rate target (qualitative) | Not specified in card frontmatter. |
 
 ---
 
@@ -115,10 +103,10 @@ rejects foreign symbols).
 
 This card was mechanised from:
 
-**Source ID:** `d3c009d7-a8d6-5251-b572-4777b207c2b9`
-**Pointer:** `strategy-seeds/sources/d3c009d7-a8d6-5251-b572-4777b207c2b9/`
-**R1–R4 verdict (Q00):** all PASS — see
-`artifacts/cards_approved/QM5_10143_rsi-momentum.md`
+**Source ID:** d3c009d7-a8d6-5251-b572-4777b207c2b9
+**Source type:** Raposa.Trade educational article
+**Pointer:** https://raposa.trade/blog/4-simple-rsi-trading-strategies-you-can-use-today/
+**R1-R4 verdict (Q00):** all PASS per `artifacts/cards_approved/QM5_10143_rsi-momentum.md`
 
 ---
 
@@ -126,11 +114,11 @@ This card was mechanised from:
 
 | Phase | Risk mode | Value |
 |---|---|---|
-| Backtest (Q02 – Q10) | RISK_FIXED | $1,000 per trade (HR4) |
+| Backtest (Q02 - Q10) | RISK_FIXED | $1,000 per trade (HR4) |
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
-| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
+| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% - 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
 
 ---
 
@@ -138,4 +126,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-05-25 | Initial spec (ex-post, generated by gen_spec_md.py) | post-PT15 remediation |
+| v1 | 2026-06-10 | Initial build from card | 82f73f85-c573-4bef-921b-e1e9cfe102e1 |

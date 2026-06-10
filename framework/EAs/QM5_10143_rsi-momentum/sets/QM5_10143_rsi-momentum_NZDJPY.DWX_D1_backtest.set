@@ -3,16 +3,16 @@
 ; ea_id:        10143
 ; ea_slug:      rsi-momentum
 ; ea_version:   v5.0
-; set_version:  s20260524-001
+; set_version:  s20260610-001
 ; symbol:       NZDJPY.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   25
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   077d3feacc13c15e4c0eed046da8a8cb6ef64f1f2f45f514e8e6aa2e074e260c
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-24
+; date:         2026-06-10
 ;==========================================================
 qm_magic_slot_offset=25
 RISK_FIXED=1000
