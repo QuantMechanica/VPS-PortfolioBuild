@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   223d480665c2c9cef5753253e9265392374b5ebc8cd65a5331ccd9862c2260aa
+; build_hash:   ffa3c4701b75f953ac7c0a4444020a37634dcd5bd849b959ceaac0d2e869037e
 ; author:       Development
 ; date:         2026-06-10
 ;==========================================================
@@ -30,9 +30,5 @@ qm_filter_volatility_atr_period=14
 qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card
-; card_defaults_source=manual_from_card
-strategy_tenkan_period=9
-strategy_kijun_period=26
-strategy_senkou_b_period=52
-strategy_stop_percent=3.0
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=not_found
