@@ -3,6 +3,7 @@
 #property description "QM5_10142 RSI(2) Pullback With 200-SMA Trend Filter"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_Signals.mqh>
 
 // =============================================================================
 // QuantMechanica V5 EA SKELETON
@@ -113,20 +114,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_atr_stop_mult <= 0.0)
       return false;
 
-   const double close1 = iClose(_Symbol, PERIOD_D1, 1);
-   const double trend_sma = QM_SMA(_Symbol, PERIOD_D1, strategy_trend_sma_period, 1);
-   const double rsi = QM_RSI(_Symbol, PERIOD_D1, strategy_rsi_period, 1);
-   if(close1 <= 0.0 || trend_sma <= 0.0 || rsi < 0.0)
+   const int    trend_signal = QM_Sig_Price_Above_MA(_Symbol, PERIOD_D1, strategy_trend_sma_period, 0.0, 1);
+   const double rsi         = QM_RSI(_Symbol, PERIOD_D1, strategy_rsi_period, 1);
+   if(trend_signal == 0 || rsi < 0.0)
       return false;
 
    QM_OrderType side = QM_BUY;
    bool has_signal = false;
-   if(close1 > trend_sma && rsi < strategy_long_level)
+   if(trend_signal > 0 && rsi < strategy_long_level)
      {
       side = QM_BUY;
       has_signal = true;
      }
-   else if(strategy_shorts_enabled && close1 < trend_sma && rsi > strategy_short_level)
+   else if(strategy_shorts_enabled && trend_signal < 0 && rsi > strategy_short_level)
      {
       side = QM_SELL;
       has_signal = true;
@@ -173,9 +173,8 @@ bool Strategy_ExitSignal()
    if(magic <= 0)
       return false;
 
-   const double close1 = iClose(_Symbol, PERIOD_D1, 1);
-   const double exit_sma = QM_SMA(_Symbol, PERIOD_D1, strategy_exit_sma_period, 1);
-   if(close1 <= 0.0 || exit_sma <= 0.0)
+   const int exit_signal = QM_Sig_Price_Above_MA(_Symbol, PERIOD_D1, strategy_exit_sma_period, 0.0, 1);
+   if(exit_signal == 0)
       return false;
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -189,9 +188,9 @@ bool Strategy_ExitSignal()
          continue;
 
       const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      if(ptype == POSITION_TYPE_BUY && close1 > exit_sma)
+      if(ptype == POSITION_TYPE_BUY && exit_signal > 0)
          return true;
-      if(ptype == POSITION_TYPE_SELL && close1 < exit_sma)
+      if(ptype == POSITION_TYPE_SELL && exit_signal < 0)
          return true;
      }
 
