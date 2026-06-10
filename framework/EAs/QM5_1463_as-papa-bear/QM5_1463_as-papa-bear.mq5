@@ -69,12 +69,10 @@ input int    strategy_sl_atr_period     = 14;   // ATR lookback period
 // Returns -9999 when historical data for the requested shift is unavailable.
 double PapaBear_CompositeReturn(const string sym)
   {
-   // perf-allowed: iClose on D1 at fixed historical shifts — bespoke structural logic;
-   // no QM_ helper computes raw close at an arbitrary bar offset.
-   double c0   = iClose(sym, PERIOD_D1, 1);
-   double c3m  = iClose(sym, PERIOD_D1, strategy_momentum_3m_bars);
-   double c6m  = iClose(sym, PERIOD_D1, strategy_momentum_6m_bars);
-   double c12m = iClose(sym, PERIOD_D1, strategy_momentum_12m_bars);
+   double c0   = iClose(sym, PERIOD_D1, 1);                                  // perf-allowed: D1 close lookback for momentum — bespoke structural logic
+   double c3m  = iClose(sym, PERIOD_D1, strategy_momentum_3m_bars);          // perf-allowed: D1 close at 3m shift — bespoke structural logic
+   double c6m  = iClose(sym, PERIOD_D1, strategy_momentum_6m_bars);          // perf-allowed: D1 close at 6m shift — bespoke structural logic
+   double c12m = iClose(sym, PERIOD_D1, strategy_momentum_12m_bars);         // perf-allowed: D1 close at 12m shift — bespoke structural logic
 
    if(c0 <= 0.0 || c3m <= 0.0 || c6m <= 0.0 || c12m <= 0.0)
       return -9999.0; // insufficient warmup; this symbol ranks last
@@ -156,7 +154,7 @@ void PapaBear_OpenIfMissing(const string sym, const int slot)
 
    QM_BasketOrderRequest req;
    req.symbol             = sym;
-   req.type               = QM_ORDER_BUY;
+   req.type               = QM_BUY;
    req.price              = 0.0;           // market price
    req.sl                 = sl_price;
    req.tp                 = 0.0;           // no TP; rotation is the exit
@@ -182,12 +180,11 @@ bool Strategy_NoTradeFilter()
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    // Monthly rotation gate: only act on the first D1 bar of a new month.
-   // perf-allowed: iTime for month-change detection — bespoke structural logic.
    // Card specifies MN1 timeframe; MN1 is untestable in the MT5 tester (0 bars/ticks
    // generated for DWX custom symbols). D1 with month-change detection is the
    // equivalent; the actual rebalance uses D1 bar-1 close data (last trading day
    // of the previous month).
-   datetime cur_bar_time = iTime(_Symbol, PERIOD_D1, 0);
+   datetime cur_bar_time = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 iTime for month-change detection — bespoke structural logic
    MqlDateTime dt;
    TimeToStruct(cur_bar_time, dt);
    const int cur_month_key = dt.year * 12 + dt.mon;

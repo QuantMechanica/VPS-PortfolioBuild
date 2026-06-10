@@ -118,7 +118,7 @@ void AdvanceState_OnNewBar()
    if(!g_initialized)
      {
       MqlRates rates[];
-      const int n = CopyRates(_Symbol, PERIOD_D1, 1, 600, rates);
+      const int n = CopyRates(_Symbol, PERIOD_D1, 1, 600, rates); // perf-allowed: one-time warmup, called only inside QM_IsNewBar gate
       if(n < strategy_warmup_bars) return; // not enough history — try again next bar
 
       // Seed all three smoothers from the oldest available bar
@@ -148,7 +148,7 @@ void AdvanceState_OnNewBar()
      }
 
    // Regular one-step advance
-   const double c = iClose(_Symbol, PERIOD_D1, 1);
+   const double c = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: single shift close for TES step, called only inside QM_IsNewBar gate
    if(c <= 0.0) return;
 
    UpdateSpreadHistory();
@@ -180,7 +180,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    ENUM_POSITION_TYPE ptype;
    ulong ticket;
    bool long_exit, short_exit, long_cross, short_cross;
-   double atr, sl_dist, entry_pt, sl_pts, entry_lots;
+   double atr, sl_dist, entry_pt;
    double spread_pt, cur_spread, med_spread;
 
    AdvanceState_OnNewBar();
@@ -226,13 +226,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
    if(atr <= 0.0) return false;
 
-   sl_dist   = strategy_atr_sl_mult * atr;
-   entry_pt  = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   sl_dist  = strategy_atr_sl_mult * atr;
+   entry_pt = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    if(entry_pt <= 0.0) return false;
-
-   sl_pts      = sl_dist / entry_pt;
-   entry_lots  = QM_LotsForRisk(_Symbol, sl_pts);
-   if(entry_lots <= 0.0) return false;
 
    req.symbol_slot        = qm_magic_slot_offset;
    req.expiration_seconds = 0;
@@ -243,7 +239,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.type   = QM_BUY;
       req.price  = 0.0;
       req.sl     = SymbolInfoDouble(_Symbol, SYMBOL_ASK) - sl_dist;
-      req.lots   = entry_lots;
       req.reason = "TES_LONG_CROSS";
       return true;
      }
@@ -251,7 +246,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.type   = QM_SELL;
    req.price  = 0.0;
    req.sl     = SymbolInfoDouble(_Symbol, SYMBOL_BID) + sl_dist;
-   req.lots   = entry_lots;
    req.reason = "TES_SHORT_CROSS";
    return true;
   }

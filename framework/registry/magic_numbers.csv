@@ -6895,3 +6895,15 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1463,as-papa-bear,2,SP500.DWX,14630002,2026-06-10,Claude,active
 1463,as-papa-bear,3,XAUUSD.DWX,14630003,2026-06-10,Claude,active
 1463,as-papa-bear,4,XTIUSD.DWX,14630004,2026-06-10,Claude,active
+1642,aa-xasset-xmom-third,0,SP500.DWX,16420000,2026-06-10,Development,active
+1642,aa-xasset-xmom-third,1,NDX.DWX,16420001,2026-06-10,Development,active
+1642,aa-xasset-xmom-third,2,WS30.DWX,16420002,2026-06-10,Development,active
+1642,aa-xasset-xmom-third,3,UK100.DWX,16420003,2026-06-10,Development,active
+1642,aa-xasset-xmom-third,4,GDAXI.DWX,16420004,2026-06-10,Development,active
+1642,aa-xasset-xmom-third,5,EURUSD.DWX,16420005,2026-06-10,Development,active
+1642,aa-xasset-xmom-third,6,GBPUSD.DWX,16420006,2026-06-10,Development,active
+1642,aa-xasset-xmom-third,7,AUDUSD.DWX,16420007,2026-06-10,Development,active
+1642,aa-xasset-xmom-third,8,USDJPY.DWX,16420008,2026-06-10,Development,active
+1642,aa-xasset-xmom-third,9,USDCHF.DWX,16420009,2026-06-10,Development,active
+1642,aa-xasset-xmom-third,10,XAUUSD.DWX,16420010,2026-06-10,Development,active
+1642,aa-xasset-xmom-third,11,XTIUSD.DWX,16420011,2026-06-10,Development,active

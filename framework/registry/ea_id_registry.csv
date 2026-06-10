@@ -3415,3 +3415,4 @@ ea_id,slug,strategy_id,status,owner,created_at
 12533,edgelab-eurjpy-gbpjpy-cointegration,claude_cross_asset_discovery_2026-06-09,active,claude,2026-06-09
 10135,bbwidth-ema,d3c009d7-a8d6-5251-b572-4777b207c2b9,active,Development,2026-06-10
 1614,aa-dsp-fbank-turn,ede348b4-0fa7-5be1-baa8-09e9089b67b7,active,Development,2026-06-10
+1642,aa-xasset-xmom-third,ede348b4-0fa7-5be1-baa8-09e9089b67b7,active,Development,2026-06-10
