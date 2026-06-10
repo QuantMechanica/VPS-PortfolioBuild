@@ -69,7 +69,6 @@ bool AdvanceMonthlySignalIfNeeded()
 
    if(month_id == g_last_advance_month)
       return false;  // same month already evaluated
-
    const double close1 = iClose(_Symbol, PERIOD_D1, 1);  // perf-allowed: month-boundary detection
    const double sma252 = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_period, 1);
 
@@ -147,7 +146,6 @@ bool Strategy_ExitSignal()
       s_cached_exit = false;
       return false;
      }
-
    const datetime t0 = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: month-boundary detection
    if(t0 <= 0)
       return false;
