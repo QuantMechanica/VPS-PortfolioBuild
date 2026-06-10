@@ -60,24 +60,25 @@ static bool   g_last_sweep_bull = false; // last detected sweep direction
 static bool   g_last_sweep_bear = false;
 
 // Detect swing pivot: true if bar[idx] is a swing high/low with `len` bars each side
-static bool IsSwingHigh(int idx, int len)
+// These use iHigh/iLow directly — bespoke structural logic; no QM_* helper covers N-bar pivot scan.
+bool IsSwingHigh(int idx, int len)
   {
-   double h = iHigh(_Symbol, PERIOD_CURRENT, idx);
+   double h = iHigh(_Symbol, PERIOD_CURRENT, idx); // perf-allowed
    for(int i = 1; i <= len; i++)
      {
-      if(iHigh(_Symbol, PERIOD_CURRENT, idx + i) >= h) return false;
-      if(iHigh(_Symbol, PERIOD_CURRENT, idx - i) >= h) return false;
+      if(iHigh(_Symbol, PERIOD_CURRENT, idx + i) >= h) return false; // perf-allowed
+      if(iHigh(_Symbol, PERIOD_CURRENT, idx - i) >= h) return false; // perf-allowed
      }
    return true;
   }
 
-static bool IsSwingLow(int idx, int len)
+bool IsSwingLow(int idx, int len)
   {
-   double l = iLow(_Symbol, PERIOD_CURRENT, idx);
+   double l = iLow(_Symbol, PERIOD_CURRENT, idx); // perf-allowed
    for(int i = 1; i <= len; i++)
      {
-      if(iLow(_Symbol, PERIOD_CURRENT, idx + i) <= l) return false;
-      if(iLow(_Symbol, PERIOD_CURRENT, idx - i) <= l) return false;
+      if(iLow(_Symbol, PERIOD_CURRENT, idx + i) <= l) return false; // perf-allowed
+      if(iLow(_Symbol, PERIOD_CURRENT, idx - i) <= l) return false; // perf-allowed
      }
    return true;
   }
@@ -89,13 +90,13 @@ void AdvanceState_OnNewBar()
    const int len = strategy_swing_length;
    // The earliest bar whose swing status can be confirmed (needs `len` bars on right)
    // is bar index `len`. Check bar[len] against previous swing H/L.
-   if(Bars(_Symbol, PERIOD_CURRENT) < len * 2 + 2)
+   if(Bars(_Symbol, PERIOD_CURRENT) < len * 2 + 2) // perf-allowed
       return;
 
    // --- Update swing high ---
    if(IsSwingHigh(len, len))
      {
-      double candidate_high = iHigh(_Symbol, PERIOD_CURRENT, len);
+      double candidate_high = iHigh(_Symbol, PERIOD_CURRENT, len); // perf-allowed
       // BOS bullish: new HH (higher-high than previous swing high)
       if(g_swing_high > 0 && candidate_high > g_swing_high)
          g_bos_state = 1;   // bullish BOS confirmed
@@ -109,7 +110,7 @@ void AdvanceState_OnNewBar()
    // --- Update swing low ---
    if(IsSwingLow(len, len))
      {
-      double candidate_low = iLow(_Symbol, PERIOD_CURRENT, len);
+      double candidate_low = iLow(_Symbol, PERIOD_CURRENT, len); // perf-allowed
       // BOS bearish: new LL (lower-low than previous swing low)
       if(g_swing_low > 0 && candidate_low < g_swing_low)
          g_bos_state = -1;  // bearish BOS confirmed
@@ -127,9 +128,9 @@ void AdvanceState_OnNewBar()
 
    if(g_swing_low > 0)
      {
-      double lo1  = iLow(_Symbol, PERIOD_CURRENT, 1);
-      double cl1  = iClose(_Symbol, PERIOD_CURRENT, 1);
-      double op1  = iOpen(_Symbol, PERIOD_CURRENT, 1);
+      double lo1  = iLow(_Symbol, PERIOD_CURRENT, 1);   // perf-allowed
+      double cl1  = iClose(_Symbol, PERIOD_CURRENT, 1); // perf-allowed
+      double op1  = iOpen(_Symbol, PERIOD_CURRENT, 1);  // perf-allowed
       // Bullish sweep: wick below swing low, close above swing low, close > open
       if(lo1 < g_swing_low && cl1 > g_swing_low && cl1 > op1)
          g_last_sweep_bull = true;
@@ -137,9 +138,9 @@ void AdvanceState_OnNewBar()
 
    if(g_swing_high > 0)
      {
-      double hi1  = iHigh(_Symbol, PERIOD_CURRENT, 1);
-      double cl1  = iClose(_Symbol, PERIOD_CURRENT, 1);
-      double op1  = iOpen(_Symbol, PERIOD_CURRENT, 1);
+      double hi1  = iHigh(_Symbol, PERIOD_CURRENT, 1);  // perf-allowed
+      double cl1  = iClose(_Symbol, PERIOD_CURRENT, 1); // perf-allowed
+      double op1  = iOpen(_Symbol, PERIOD_CURRENT, 1);  // perf-allowed
       // Bearish sweep: wick above swing high, close below swing high, close < open
       if(hi1 > g_swing_high && cl1 < g_swing_high && cl1 < op1)
          g_last_sweep_bear = true;
@@ -151,7 +152,7 @@ bool ATR_Above_Percentile()
   {
    const int lookback = strategy_atr_vol_period;
    const double pct   = strategy_atr_pct_floor / 100.0;
-   if(Bars(_Symbol, PERIOD_CURRENT) < lookback + 2)
+   if(Bars(_Symbol, PERIOD_CURRENT) < lookback + 2) // perf-allowed
       return false;
 
    double current_atr = QM_ATR(_Symbol, PERIOD_CURRENT, strategy_atr_period, 1);
@@ -204,7 +205,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // ----- LONG entry: bullish BOS + sweep below swing low -----
    if(g_bos_state == 1 && g_last_sweep_bull)
      {
-      double sweep_low = iLow(_Symbol, PERIOD_CURRENT, 1);
+      double sweep_low = iLow(_Symbol, PERIOD_CURRENT, 1); // perf-allowed
       double ask       = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
 
       sl_dist = MathMax(ask - sweep_low + sl_buf_pts,
@@ -213,12 +214,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
       double tp_dist = sl_dist * strategy_rr_target;
 
-      req.type  = ORDER_TYPE_BUY;
-      req.price = ask;
-      req.sl    = ask - sl_dist;
-      req.tp    = ask + tp_dist;
-      req.lots  = QM_LotsForRisk(_Symbol, sl_dist / point);
-      req.comment = "bos-liq-bull";
+      req.type   = QM_BUY;
+      req.price  = ask;
+      req.sl     = ask - sl_dist;
+      req.tp     = ask + tp_dist;
+      req.reason = "bos-liq-bull";
 
       g_entry_bar = 0;
       g_entry_sl  = req.sl;
@@ -228,7 +228,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // ----- SHORT entry: bearish BOS + sweep above swing high -----
    if(g_bos_state == -1 && g_last_sweep_bear)
      {
-      double sweep_high = iHigh(_Symbol, PERIOD_CURRENT, 1);
+      double sweep_high = iHigh(_Symbol, PERIOD_CURRENT, 1); // perf-allowed
       double bid        = SymbolInfoDouble(_Symbol, SYMBOL_BID);
 
       sl_dist = MathMax(sweep_high - bid + sl_buf_pts,
@@ -237,12 +237,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
       double tp_dist = sl_dist * strategy_rr_target;
 
-      req.type  = ORDER_TYPE_SELL;
-      req.price = bid;
-      req.sl    = bid + sl_dist;
-      req.tp    = bid - tp_dist;
-      req.lots  = QM_LotsForRisk(_Symbol, sl_dist / point);
-      req.comment = "bos-liq-bear";
+      req.type   = QM_SELL;
+      req.price  = bid;
+      req.sl     = bid + sl_dist;
+      req.tp     = bid - tp_dist;
+      req.reason = "bos-liq-bear";
 
       g_entry_bar = 0;
       g_entry_sl  = req.sl;
@@ -331,18 +330,18 @@ int OnInit()
 
    // Seed swing state from history (scan back up to 500 bars)
    const int len = strategy_swing_length;
-   int total = MathMin(Bars(_Symbol, PERIOD_CURRENT) - len - 1, 500);
+   int total = MathMin(Bars(_Symbol, PERIOD_CURRENT) - len - 1, 500); // perf-allowed
    for(int i = total; i >= len; i--)
      {
       if(IsSwingHigh(i, len))
         {
-         double h = iHigh(_Symbol, PERIOD_CURRENT, i);
+         double h = iHigh(_Symbol, PERIOD_CURRENT, i); // perf-allowed
          if(g_swing_high <= 0) { g_swing_high = h; g_swing_high_bar = i; }
          else if(h > g_swing_high) { g_bos_state = 1;  g_swing_high = h; g_swing_high_bar = i; }
         }
       if(IsSwingLow(i, len))
         {
-         double l = iLow(_Symbol, PERIOD_CURRENT, i);
+         double l = iLow(_Symbol, PERIOD_CURRENT, i); // perf-allowed
          if(g_swing_low <= 0) { g_swing_low = l; g_swing_low_bar = i; }
          else if(l < g_swing_low) { g_bos_state = -1; g_swing_low = l; g_swing_low_bar = i; }
         }
