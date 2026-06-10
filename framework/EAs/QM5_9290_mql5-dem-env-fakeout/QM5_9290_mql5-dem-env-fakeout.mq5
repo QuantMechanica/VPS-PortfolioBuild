@@ -112,10 +112,9 @@ bool IsFakeoutLong()
    if(lo1 <= 0.0 || lo2 <= 0.0 || lo3 <= 0.0)
       return false;
    const double dem = Local_DeM(strategy_dem_period, 1);
-   // perf-allowed: bespoke structural — comparing 3 historical closes to dynamic band levels
-   const double c1  = iClose(_Symbol, _Period, 1);
-   const double c2  = iClose(_Symbol, _Period, 2);
-   const double c3  = iClose(_Symbol, _Period, 3);
+   const double c1  = iClose(_Symbol, _Period, 1); // perf-allowed: bespoke structural
+   const double c2  = iClose(_Symbol, _Period, 2); // perf-allowed: bespoke structural
+   const double c3  = iClose(_Symbol, _Period, 3); // perf-allowed: bespoke structural
    if(c1 <= 0.0 || c2 <= 0.0 || c3 <= 0.0)
       return false;
    return c1 > lo1 && c2 <= lo2 && c3 >= lo3 && dem <= strategy_dem_long_thresh;
@@ -130,10 +129,9 @@ bool IsFakeoutShort()
    if(up1 <= 0.0 || up2 <= 0.0 || up3 <= 0.0)
       return false;
    const double dem = Local_DeM(strategy_dem_period, 1);
-   // perf-allowed: bespoke structural — comparing 3 historical closes to dynamic band levels
-   const double c1  = iClose(_Symbol, _Period, 1);
-   const double c2  = iClose(_Symbol, _Period, 2);
-   const double c3  = iClose(_Symbol, _Period, 3);
+   const double c1  = iClose(_Symbol, _Period, 1); // perf-allowed: bespoke structural
+   const double c2  = iClose(_Symbol, _Period, 2); // perf-allowed: bespoke structural
+   const double c3  = iClose(_Symbol, _Period, 3); // perf-allowed: bespoke structural
    if(c1 <= 0.0 || c2 <= 0.0 || c3 <= 0.0)
       return false;
    return c1 < up1 && c2 >= up2 && c3 <= up3 && dem >= strategy_dem_short_thresh;
@@ -176,8 +174,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.sl     = lo - strategy_atr_sl_mult * atr;
       req.tp     = 0.0;
       req.reason = "DEM_ENV_FK_LONG";
-      // perf-allowed: record entry bar time for time-exit tracking
-      g_entry_bar_time = iTime(_Symbol, _Period, 1);
+      g_entry_bar_time = iTime(_Symbol, _Period, 1); // perf-allowed: record entry bar for time-exit
       g_open_dir       = 1;
       return true;
      }
@@ -189,8 +186,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.sl     = up + strategy_atr_sl_mult * atr;
       req.tp     = 0.0;
       req.reason = "DEM_ENV_FK_SHORT";
-      // perf-allowed: record entry bar time for time-exit tracking
-      g_entry_bar_time = iTime(_Symbol, _Period, 1);
+      g_entry_bar_time = iTime(_Symbol, _Period, 1); // perf-allowed: record entry bar for time-exit
       g_open_dir       = -1;
       return true;
      }
