@@ -6907,3 +6907,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1642,aa-xasset-xmom-third,9,USDCHF.DWX,16420009,2026-06-10,Development,active
 1642,aa-xasset-xmom-third,10,XAUUSD.DWX,16420010,2026-06-10,Development,active
 1642,aa-xasset-xmom-third,11,XTIUSD.DWX,16420011,2026-06-10,Development,active
+9271,mql5-ifvg-reversal,0,EURUSD.DWX,92710000,2026-06-10,Development,active
+9271,mql5-ifvg-reversal,1,GBPJPY.DWX,92710001,2026-06-10,Development,active
+9271,mql5-ifvg-reversal,2,XAUUSD.DWX,92710002,2026-06-10,Development,active
+9271,mql5-ifvg-reversal,3,NDX.DWX,92710003,2026-06-10,Development,active
