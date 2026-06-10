@@ -6966,3 +6966,12 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9212,mql5-rsi-fail,0,EURUSD.DWX,92120000,2026-06-10,Development,active
 9212,mql5-rsi-fail,1,GBPUSD.DWX,92120001,2026-06-10,Development,active
 9212,mql5-rsi-fail,2,USDJPY.DWX,92120002,2026-06-10,Development,active
+9213,mql5-adx-rsi50,0,EURUSD.DWX,92130000,2026-06-10,Development,active
+9213,mql5-adx-rsi50,1,GBPUSD.DWX,92130001,2026-06-10,Development,active
+9213,mql5-adx-rsi50,2,GDAXI.DWX,92130002,2026-06-10,Development,active
+9199,mql5-liq-ma-sweep,0,EURUSD.DWX,91990000,2026-06-10,Development,active
+9199,mql5-liq-ma-sweep,1,GBPUSD.DWX,91990001,2026-06-10,Development,active
+9199,mql5-liq-ma-sweep,2,XAUUSD.DWX,91990002,2026-06-10,Development,active
+9207,mql5-mom-trend,0,EURUSD.DWX,92070000,2026-06-10,Development,active
+9207,mql5-mom-trend,1,GBPUSD.DWX,92070001,2026-06-10,Development,active
+9207,mql5-mom-trend,2,NDX.DWX,92070002,2026-06-10,Development,active

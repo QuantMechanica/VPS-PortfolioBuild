@@ -387,4 +387,21 @@ double QM_BB_Lower(const string sym, const ENUM_TIMEFRAMES tf, const int period,
    return QM_IndicatorReadBuffer(QM_IndBands(sym, tf, period, deviation, price), 2, shift);
   }
 
+int QM_IndMomentum(const string sym, const ENUM_TIMEFRAMES tf, const int period,
+                   const ENUM_APPLIED_PRICE price)
+  {
+   const string key = StringFormat("MOM|%s|%d|%d|%d", sym, (int)tf, period, (int)price);
+   int h = QM_IndicatorsLookup(key);
+   if(h != INVALID_HANDLE)
+      return h;
+   h = iMomentum(sym, tf, period, price);
+   return QM_IndicatorsRegister(key, h);
+  }
+
+double QM_Momentum(const string sym, const ENUM_TIMEFRAMES tf, const int period,
+                   const int shift = 1, const ENUM_APPLIED_PRICE price = PRICE_CLOSE)
+  {
+   return QM_IndicatorReadBuffer(QM_IndMomentum(sym, tf, period, price), 0, shift);
+  }
+
 #endif // QM_INDICATORS_MQH
