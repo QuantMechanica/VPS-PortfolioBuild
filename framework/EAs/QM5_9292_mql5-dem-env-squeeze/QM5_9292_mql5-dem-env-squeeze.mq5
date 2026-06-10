@@ -226,8 +226,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // --- Check existing armed setup for breakout ---
    if(g_setup_dir != 0)
      {
-      // perf-allowed: closed-bar close read for breakout confirmation
-      const double close1 = iClose(_Symbol, _Period, 1);
+      const double close1 = iClose(_Symbol, _Period, 1);  // perf-allowed: closed-bar breakout confirm
       if(close1 <= 0.0)
         {
          g_setup_bars--;
@@ -315,8 +314,7 @@ bool Strategy_ExitSignal()
 
       // Time exit: close after strategy_max_hold_bars H4 bars
       const datetime pos_open_time = (datetime)PositionGetInteger(POSITION_TIME);
-      // perf-allowed: iBarShift for time-based exit
-      const int bars_held = iBarShift(_Symbol, _Period, pos_open_time, false);
+      const int bars_held = iBarShift(_Symbol, _Period, pos_open_time, false);  // perf-allowed: time-based exit bar count
       if(bars_held >= strategy_max_hold_bars)
          return true;
 
@@ -324,8 +322,7 @@ bool Strategy_ExitSignal()
       if(!QM_IsNewBar())
          return false;
 
-      // perf-allowed: closed-bar reads for exit evaluation
-      const double close1 = iClose(_Symbol, _Period, 1);
+      const double close1 = iClose(_Symbol, _Period, 1);  // perf-allowed: closed-bar exit eval
       if(close1 <= 0.0)
          return false;
 
