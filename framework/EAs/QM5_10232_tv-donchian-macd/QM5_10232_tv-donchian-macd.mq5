@@ -90,7 +90,7 @@ input double strategy_atr_mult          = 4.0;    // initial + trailing stop = N
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   // TODO: e.g. "only trade London session" or "skip if ADX<20"
+   // Card authorizes only standard V5 spread/news guards, handled by framework.
    return false;
   }
 
