@@ -3426,3 +3426,4 @@ ea_id,slug,strategy_id,status,owner,created_at
 11164,weiss-ss-cci,3005c768-aa91-5daf-9dd7-500d7bfcb7a6,active,Development,2026-06-07
 12532,edgelab-audnzd-cointegration,claude_cross_asset_discovery_2026-06-09,active,claude,2026-06-09
 12533,edgelab-eurjpy-gbpjpy-cointegration,claude_cross_asset_discovery_2026-06-09,active,claude,2026-06-09
+10022,rw-dual-mom,dcbac84f-6ecf-5d21-9630-50faa69306ec,active,Development,2026-06-10
