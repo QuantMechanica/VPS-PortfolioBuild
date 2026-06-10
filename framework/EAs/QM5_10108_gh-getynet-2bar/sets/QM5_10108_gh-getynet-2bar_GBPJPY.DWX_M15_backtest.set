@@ -3,16 +3,16 @@
 ; ea_id:        10108
 ; ea_slug:      gh-getynet-2bar
 ; ea_version:   v5.0
-; set_version:  s20260523-001
+; set_version:  s20260610-001
 ; symbol:       GBPJPY.DWX
 ; timeframe:    M15
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   49a8d31c09dd88b41954431e44631e7d34d06fb7bca76c8a421d16d7da0d3730
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-23
+; date:         2026-06-10
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=1000

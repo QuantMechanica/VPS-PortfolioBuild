@@ -3,16 +3,16 @@
 ; ea_id:        10114
 ; ea_slug:      tv-golden-cross-50-200
 ; ea_version:   v5.0
-; set_version:  s20260523-001
+; set_version:  s20260610-001
 ; symbol:       WS30.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   3444d6d6b139efe4be0b2a3a7a8cd4699de9fc0e1d0bc6a32c43113e3ecf3a15
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-23
+; date:         2026-06-10
 ;==========================================================
 qm_magic_slot_offset=2
 RISK_FIXED=1000
