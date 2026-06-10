@@ -145,7 +145,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_atr_period <= 0 || strategy_min_stop_atr <= 0.0 ||
       strategy_max_stop_atr <= strategy_min_stop_atr || strategy_max_spread_stop <= 0.0)
       return false;
-
    const double open1  = iOpen (_Symbol, PERIOD_D1, 1);  // perf-allowed: bespoke wick math
    const double high1  = iHigh (_Symbol, PERIOD_D1, 1);  // perf-allowed: bespoke wick math
    const double low1   = iLow  (_Symbol, PERIOD_D1, 1);  // perf-allowed: bespoke wick math
