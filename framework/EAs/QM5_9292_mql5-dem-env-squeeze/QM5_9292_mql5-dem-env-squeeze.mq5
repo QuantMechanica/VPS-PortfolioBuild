@@ -321,7 +321,6 @@ bool Strategy_ExitSignal()
       // Only evaluate indicator-based exits on new bars (cheap guard)
       if(!QM_IsNewBar())
          return false;
-
       const double close1 = iClose(_Symbol, _Period, 1);  // perf-allowed: closed-bar exit eval
       if(close1 <= 0.0)
          return false;
