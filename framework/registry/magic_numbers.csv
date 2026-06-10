@@ -6933,3 +6933,12 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9193,mql5-rsi-sweep,0,EURUSD.DWX,91930000,2026-06-10,Development,active
 9193,mql5-rsi-sweep,1,GBPUSD.DWX,91930001,2026-06-10,Development,active
 9193,mql5-rsi-sweep,2,XAUUSD.DWX,91930002,2026-06-10,Development,active
+9124,aa-abg-velocity,0,SP500.DWX,91240000,2026-06-10,Development,active
+9124,aa-abg-velocity,1,NDX.DWX,91240001,2026-06-10,Development,active
+9124,aa-abg-velocity,2,WS30.DWX,91240002,2026-06-10,Development,active
+9124,aa-abg-velocity,3,GDAXI.DWX,91240003,2026-06-10,Development,active
+9124,aa-abg-velocity,4,XAUUSD.DWX,91240004,2026-06-10,Development,active
+9124,aa-abg-velocity,5,XTIUSD.DWX,91240005,2026-06-10,Development,active
+9124,aa-abg-velocity,6,EURUSD.DWX,91240006,2026-06-10,Development,active
+9124,aa-abg-velocity,7,GBPUSD.DWX,91240007,2026-06-10,Development,active
+9124,aa-abg-velocity,8,USDJPY.DWX,91240008,2026-06-10,Development,active

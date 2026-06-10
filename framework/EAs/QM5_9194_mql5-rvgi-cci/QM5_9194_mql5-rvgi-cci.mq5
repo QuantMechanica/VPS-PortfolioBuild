@@ -133,7 +133,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // One position at a time
    if(HasOurPosition())
       return false;
-
    const double close1   = iClose(_Symbol, _Period, 1);   // perf-allowed: bespoke closed-bar ref
    if(close1 <= 0.0) return false;
 

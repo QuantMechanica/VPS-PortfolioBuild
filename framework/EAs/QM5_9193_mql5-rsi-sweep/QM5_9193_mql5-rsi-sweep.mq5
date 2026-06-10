@@ -69,7 +69,7 @@ static bool   g_close_opposite = false;
 // =============================================================================
 // Internal helpers
 // =============================================================================
-static bool HasOpenBuy()
+bool HasOpenBuy()
   {
    const int magic = QM_FrameworkMagic();
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -82,7 +82,7 @@ static bool HasOpenBuy()
    return false;
   }
 
-static bool HasOpenSell()
+bool HasOpenSell()
   {
    const int magic = QM_FrameworkMagic();
    for(int i = PositionsTotal() - 1; i >= 0; --i)

@@ -136,7 +136,6 @@ void Strategy_ComputeBox(const datetime broker_now)
       const datetime bar_date = Strategy_CalendarDay(bar_time);
       if(bar_date != today && bar_date != (today - 86400))
          continue;
-
       const double h = iHigh(_Symbol, PERIOD_CURRENT, i);  // perf-allowed
       const double l = iLow(_Symbol, PERIOD_CURRENT, i);   // perf-allowed
       if(h > 0.0 && l > 0.0 && h >= l)
