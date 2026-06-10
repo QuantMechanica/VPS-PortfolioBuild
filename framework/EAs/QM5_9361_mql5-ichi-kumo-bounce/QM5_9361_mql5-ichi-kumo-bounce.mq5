@@ -36,68 +36,75 @@ input double qm_stress_reject_probability          = 0.0;
 
 input group "Strategy"
 input int    strategy_ichi_tenkan    = 9;     // Ichimoku Tenkan-sen period
-input int    strategy_ichi_kijun     = 26;    // Ichimoku Kijun-sen / Senkou offset
+input int    strategy_ichi_kijun     = 26;    // Ichimoku Kijun-sen / Senkou shift
 input int    strategy_ichi_senkou_b  = 52;    // Ichimoku Senkou Span B lookback
-input int    strategy_adx_period     = 14;    // ADX / DI period
+input int    strategy_adx_period     = 14;    // ADX / DI period (also used for ATR SL)
 input double strategy_adx_threshold  = 25.0;  // Minimum ADX to trade
 input double strategy_sl_atr_mult    = 0.5;   // ATR multiplier beyond Senkou B for SL
 input int    strategy_time_exit_bars = 64;    // Time-exit after N closed M30 bars
 
 // =============================================================================
-// Ichimoku helpers — bespoke structural logic; no QM_ Ichimoku wrapper exists.
-// Raw iHigh/iLow/iClose calls are gated by QM_IsNewBar() in the caller;
-// each direct series call carries // perf-allowed per the framework corset.
+// Ichimoku helpers — use QM_Indicators.mqh pooled handles.
+//
+// Senkou Span A is plotted kijun bars FORWARD.  Buffer[N] holds the value
+// COMPUTED at bar N, which is DISPLAYED on the chart at bar N - kijun.
+// To read the DISPLAYED value at chart bar M (M=1 = last closed bar):
+//   shift = kijun + M
 // =============================================================================
 
-double IchiTenkan(const int k)
+double _SpanA(const int chart_bar)
   {
-   double hi = iHigh(_Symbol, _Period, k);           // perf-allowed: Ichimoku structural, once/bar
-   double lo = iLow(_Symbol, _Period, k);            // perf-allowed
-   for(int j = 1; j < strategy_ichi_tenkan; j++)
-     {
-      const double h = iHigh(_Symbol, _Period, k + j); // perf-allowed
-      const double l = iLow(_Symbol, _Period, k + j);  // perf-allowed
-      if(h > hi) hi = h;
-      if(l < lo) lo = l;
-     }
-   return (hi + lo) * 0.5;
+   return QM_Ichimoku_SenkouSpanA(_Symbol, PERIOD_CURRENT,
+                                  strategy_ichi_tenkan,
+                                  strategy_ichi_kijun,
+                                  strategy_ichi_senkou_b,
+                                  strategy_ichi_kijun + chart_bar);
   }
 
-double IchiKijun(const int k)
+double _SpanB(const int chart_bar)
   {
-   double hi = iHigh(_Symbol, _Period, k);           // perf-allowed: Ichimoku structural, once/bar
-   double lo = iLow(_Symbol, _Period, k);            // perf-allowed
-   for(int j = 1; j < strategy_ichi_kijun; j++)
-     {
-      const double h = iHigh(_Symbol, _Period, k + j); // perf-allowed
-      const double l = iLow(_Symbol, _Period, k + j);  // perf-allowed
-      if(h > hi) hi = h;
-      if(l < lo) lo = l;
-     }
-   return (hi + lo) * 0.5;
+   return QM_Ichimoku_SenkouSpanB(_Symbol, PERIOD_CURRENT,
+                                  strategy_ichi_tenkan,
+                                  strategy_ichi_kijun,
+                                  strategy_ichi_senkou_b,
+                                  strategy_ichi_kijun + chart_bar);
   }
 
-// Senkou Span A applicable at framework shift s
-// (Tenkan + Kijun computed kijun_period bars before s, projected forward 26)
-double IchiSenkouA(const int s)
+// Three-bar Pattern 3 long: c2 above cloud → c1 dips to/below SpanA → c0 recovers
+// above SpanA; DI+ > DI-, ADX >= threshold.
+bool _IsLongPattern()
   {
-   return (IchiTenkan(s + strategy_ichi_kijun) + IchiKijun(s + strategy_ichi_kijun)) * 0.5;
+   // perf-allowed: bespoke structural three-bar close comparison (O(1), M30 tick rate)
+   const double c0  = iClose(_Symbol, PERIOD_CURRENT, 1);
+   const double c1  = iClose(_Symbol, PERIOD_CURRENT, 2);
+   const double c2  = iClose(_Symbol, PERIOD_CURRENT, 3);
+   const double sa0 = _SpanA(1);
+   const double sa1 = _SpanA(2);
+   const double sa2 = _SpanA(3);
+   const double adx = QM_ADX(_Symbol, PERIOD_CURRENT, strategy_adx_period, 1);
+   const double diP = QM_ADX_PlusDI(_Symbol, PERIOD_CURRENT, strategy_adx_period, 1);
+   const double diM = QM_ADX_MinusDI(_Symbol, PERIOD_CURRENT, strategy_adx_period, 1);
+   return (c2 > c1) && (c1 < c0) &&
+          (c2 > sa2) && (c0 > sa0) && (c1 <= sa1) &&
+          (diP > diM) && (adx >= strategy_adx_threshold);
   }
 
-// Senkou Span B applicable at framework shift s
-double IchiSenkouB(const int s)
+// Three-bar Pattern 3 short: mirror of long.
+bool _IsShortPattern()
   {
-   const int k = s + strategy_ichi_kijun;
-   double hi = iHigh(_Symbol, _Period, k);           // perf-allowed: Ichimoku structural, once/bar
-   double lo = iLow(_Symbol, _Period, k);            // perf-allowed
-   for(int j = 1; j < strategy_ichi_senkou_b; j++)
-     {
-      const double h = iHigh(_Symbol, _Period, k + j); // perf-allowed
-      const double l = iLow(_Symbol, _Period, k + j);  // perf-allowed
-      if(h > hi) hi = h;
-      if(l < lo) lo = l;
-     }
-   return (hi + lo) * 0.5;
+   // perf-allowed: bespoke structural three-bar close comparison (O(1), M30 tick rate)
+   const double c0  = iClose(_Symbol, PERIOD_CURRENT, 1);
+   const double c1  = iClose(_Symbol, PERIOD_CURRENT, 2);
+   const double c2  = iClose(_Symbol, PERIOD_CURRENT, 3);
+   const double sa0 = _SpanA(1);
+   const double sa1 = _SpanA(2);
+   const double sa2 = _SpanA(3);
+   const double adx = QM_ADX(_Symbol, PERIOD_CURRENT, strategy_adx_period, 1);
+   const double diP = QM_ADX_PlusDI(_Symbol, PERIOD_CURRENT, strategy_adx_period, 1);
+   const double diM = QM_ADX_MinusDI(_Symbol, PERIOD_CURRENT, strategy_adx_period, 1);
+   return (c2 < c1) && (c1 > c0) &&
+          (c2 < sa2) && (c0 < sa0) && (c1 >= sa1) &&
+          (diP < diM) && (adx >= strategy_adx_threshold);
   }
 
 // =============================================================================
@@ -109,140 +116,77 @@ bool Strategy_NoTradeFilter()
    return false;
   }
 
-// Called only after QM_IsNewBar() — handles both bar-close exit checks and
-// entry evaluation for the three-bar Kumo bounce pattern.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // --- Read price and Ichimoku data (all raw calls are once/bar via QM_IsNewBar gate) ---
-   // Framework shift 1 = last completed bar = article notation [0]
-   // Framework shift 2 = article [1];  shift 3 = article [2]
-   const double c0  = iClose(_Symbol, _Period, 1); // perf-allowed: article Close[0], once/bar
-   const double c1  = iClose(_Symbol, _Period, 2); // perf-allowed: article Close[1]
-   const double c2  = iClose(_Symbol, _Period, 3); // perf-allowed: article Close[2]
-
-   const double ssa0 = IchiSenkouA(1); // Senkou A at article [0]
-   const double ssa1 = IchiSenkouA(2); // Senkou A at article [1]
-   const double ssa2 = IchiSenkouA(3); // Senkou A at article [2]
-   const double ssb0 = IchiSenkouB(1); // Senkou B at article [0]
-
-   if(c0 <= 0.0 || ssa0 <= 0.0 || ssb0 <= 0.0)
-      return false;
-
-   const double adx_val     = QM_ADX(_Symbol, _Period, strategy_adx_period, 1);
-   const double diplus_val  = QM_ADX_PlusDI(_Symbol, _Period, strategy_adx_period, 1);
-   const double diminus_val = QM_ADX_MinusDI(_Symbol, _Period, strategy_adx_period, 1);
-
-   const int magic = QM_FrameworkMagic();
-
-   // --- Bar-close exit check for any open position ---
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))                   continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)     continue;
-      if(PositionGetInteger(POSITION_MAGIC) != magic)       continue;
-
-      const bool is_long    = (PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY);
-      const datetime o_time = (datetime)PositionGetInteger(POSITION_TIME);
-
-      // Bar count for time exit — called once per closed bar
-      const int bars_elapsed = iBarShift(_Symbol, _Period, o_time, false); // perf-allowed
-
-      bool should_exit = false;
-
-      if(bars_elapsed >= strategy_time_exit_bars)
-         should_exit = true;
-
-      // Close back through Senkou A against trade direction
-      if(is_long  && c0 < ssa0) should_exit = true;
-      if(!is_long && c0 > ssa0) should_exit = true;
-
-      // Opposite Pattern 3 signal exit
-      if(is_long)
-        {
-         // Exit long when sell pattern fires
-         if(c2 < c1 && c1 > c0 &&
-            c2 < ssa2 && c0 < ssa0 && c1 >= ssa1 &&
-            diplus_val < diminus_val && adx_val >= strategy_adx_threshold)
-            should_exit = true;
-        }
-      else
-        {
-         // Exit short when buy pattern fires
-         if(c2 > c1 && c1 < c0 &&
-            c2 > ssa2 && c0 > ssa0 && c1 <= ssa1 &&
-            diplus_val > diminus_val && adx_val >= strategy_adx_threshold)
-            should_exit = true;
-        }
-
-      if(should_exit)
-         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
-     }
-
-   // --- One-position guard ---
-   for(int i = 0; i < PositionsTotal(); ++i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))                   continue;
-      if(PositionGetString(POSITION_SYMBOL) == _Symbol &&
-         PositionGetInteger(POSITION_MAGIC) == magic)
-         return false;
-     }
-
-   // --- Three-bar cloud-bounce entry evaluation ---
-   // Buy: V-pattern (c2 high, c1 dips into cloud, c0 recovers above cloud) + DI+ > DI-
-   const bool buy_signal  = (c2 > c1  && c1 < c0 &&
-                              c2 > ssa2 && c0 > ssa0 && c1 <= ssa1 &&
-                              diplus_val > diminus_val && adx_val >= strategy_adx_threshold);
-
-   // Sell: inverted-V (c2 low, c1 spikes into cloud, c0 drops below cloud) + DI- > DI+
-   const bool sell_signal = (c2 < c1  && c1 > c0 &&
-                              c2 < ssa2 && c0 < ssa0 && c1 >= ssa1 &&
-                              diplus_val < diminus_val && adx_val >= strategy_adx_threshold);
-
-   if(!buy_signal && !sell_signal)
-      return false;
-
-   // --- Stop loss: Senkou B ± 0.5 × ATR(14) ---
-   const double atr = QM_ATR(_Symbol, _Period, strategy_adx_period, 1);
-
-   double sl_price;
-   if(buy_signal)
-     {
-      sl_price = ssb0 - strategy_sl_atr_mult * atr;
-      if(sl_price >= c0) return false; // degenerate: Senkou B above current close
-     }
-   else
-     {
-      sl_price = ssb0 + strategy_sl_atr_mult * atr;
-      if(sl_price <= c0) return false; // degenerate: Senkou B below current close
-     }
-
-   req.type             = buy_signal ? QM_BUY : QM_SELL;
-   req.price            = 0.0;
-   req.sl               = sl_price;
-   req.tp               = 0.0;
-   req.reason           = buy_signal ? "ichi_kumo_bounce_long" : "ichi_kumo_bounce_short";
-   req.symbol_slot      = qm_magic_slot_offset;
+   req.price              = 0.0;
+   req.tp                 = 0.0;
+   req.reason             = "";
+   req.symbol_slot        = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   return true;
+   const double atr   = QM_ATR(_Symbol, PERIOD_CURRENT, strategy_adx_period, 1);
+   const double spanB = _SpanB(1);
+   if(atr <= 0.0 || spanB <= 0.0)
+      return false;
+
+   if(_IsLongPattern())
+     {
+      req.type   = QM_BUY;
+      req.sl     = spanB - strategy_sl_atr_mult * atr;
+      req.reason = "ichi_kumo_bounce_long";
+      return true;
+     }
+   if(_IsShortPattern())
+     {
+      req.type   = QM_SELL;
+      req.sl     = spanB + strategy_sl_atr_mult * atr;
+      req.reason = "ichi_kumo_bounce_short";
+      return true;
+     }
+   return false;
   }
 
 void Strategy_ManageOpenPosition()
   {
-   // Card: no trailing / BE specified. SL-only position management.
+   // Card: no trailing or break-even specified; SL-only management.
   }
 
 bool Strategy_ExitSignal()
   {
-   // All exits are bar-close based and handled inside Strategy_EntrySignal.
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(!PositionSelectByTicket(ticket))                   continue;
+      if(PositionGetInteger(POSITION_MAGIC) != magic)       continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)     continue;
+
+      const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
+
+      // Time-stop: 64 M30 bars
+      if(TimeCurrent() - open_time >=
+         (datetime)((long)strategy_time_exit_bars * PeriodSeconds(PERIOD_CURRENT)))
+         return true;
+
+      // SpanA close-through exit (perf-allowed: O(1) reads, M30 tick rate)
+      const double c0  = iClose(_Symbol, PERIOD_CURRENT, 1); // perf-allowed: structural
+      const double sa0 = _SpanA(1);
+      if(pos_type == POSITION_TYPE_BUY  && c0 < sa0) return true;
+      if(pos_type == POSITION_TYPE_SELL && c0 > sa0) return true;
+
+      // Opposite-pattern exit; enables immediate reversal via EntrySignal
+      if(pos_type == POSITION_TYPE_BUY  && _IsShortPattern()) return true;
+      if(pos_type == POSITION_TYPE_SELL && _IsLongPattern())  return true;
+
+      break; // one position per magic/symbol
+     }
    return false;
   }
 
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false; // defer to QM_NewsAllowsTrade
+   return false; // defer to QM_NewsAllowsTrade2 in OnTick
   }
 
 // =============================================================================
