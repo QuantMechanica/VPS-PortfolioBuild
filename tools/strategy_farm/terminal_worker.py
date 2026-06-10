@@ -432,6 +432,46 @@ def _finish_work_item(root: Path, item_id: str, exit_code: int | None) -> dict[s
                 payload["evidence_provenance"] = "phase_runner" if item["phase"] in farmctl.REAL_PHASE_RUNNER_PHASES else "real_mt5"
                 payload["verdict_taxonomy"] = "infra" if verdict == "INFRA_FAIL" else "strategy"
                 payload["run_smoke_exit_code"] = exit_code
+                # 2026-06-10 — two-stage prescreen, worker path (mirrors the
+                # farmctl dispatch classification): a prescreen PASS is NOT a
+                # final verdict — requeue the item for the full window with
+                # p2_prescreen_done so the next spawn uses full dates. A
+                # prescreen FAIL is final by P2-prescreen design (cheap kill)
+                # and gets the explicit P2_PRESCREEN_ reason prefix. An
+                # INFRA_FAIL falls through to normal infra handling untouched.
+                if (item["phase"] in ("P2", "Q02")
+                        and payload.get("p2_run_stage") == "prescreen"
+                        and verdict in ("PASS", "FAIL")):
+                    payload.update({
+                        "p2_prescreen_done": True,
+                        "p2_prescreen_verdict": verdict,
+                        "p2_prescreen_reason": reason,
+                        "p2_prescreen_evidence_path": str(summary_path),
+                        "p2_prescreen_from_date": payload.get("from_date"),
+                        "p2_prescreen_to_date": payload.get("to_date"),
+                    })
+                    if verdict == "PASS":
+                        payload.update({
+                            "p2_run_stage": "full_pending",
+                            "pid": None,
+                            "started_at_iso": None,
+                            "log_path": None,
+                        })
+                        conn.execute(
+                            """
+                            UPDATE work_items
+                            SET status='pending', verdict=NULL, claimed_by=NULL,
+                                evidence_path=NULL, payload_json=?, updated_at=?
+                            WHERE id=?
+                            """,
+                            (json.dumps(payload, sort_keys=True), now, item_id),
+                        )
+                        conn.commit()
+                        return {"finished": True, "status": "pending",
+                                "verdict": None,
+                                "reason": f"prescreen_pass_requeued_full:{reason}"}
+                    payload["verdict_reason"] = f"P2_PRESCREEN_{reason}"
+                    reason = payload["verdict_reason"]
                 conn.execute(
                     """
                     UPDATE work_items
@@ -743,6 +783,14 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
         "smoke_year_count": spawn.get("smoke_year_count"),
         "effective_min_trades": spawn.get("effective_min_trades"),
         "phase_runner": spawn.get("phase_runner"),
+        # 2026-06-10 — prescreen stage must survive into classification.
+        # Before this, _finish_work_item could not tell a 6-month prescreen
+        # run from the full window, so prescreen PASSes were recorded as
+        # FINAL Q02 PASSes on ~6 months of evidence (intraday H1/H4/M*
+        # primaries; D1/W1/MN1 skip prescreen and were unaffected).
+        "p2_run_stage": spawn.get("p2_run_stage"),
+        "from_date": spawn.get("from_date"),
+        "to_date": spawn.get("to_date"),
     })
     def _record_spawn() -> None:
         with farmctl.connect(root) as conn:

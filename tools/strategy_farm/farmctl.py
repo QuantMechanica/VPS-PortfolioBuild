@@ -1580,6 +1580,12 @@ Q02_TO_YEAR_BY_PERIOD: dict[str, int] = {
     "D1":  2024, "W1":  2024, "MN1": 2024,
 }
 Q02_SKIP_PRESCREEN_PERIODS: set[str] = {"D1", "W1", "MN1"}  # full run is cheap on slow TFs
+# 2026-06-10 OWNER gate-acceleration #1 — frequency-aware prescreen guard:
+# cards expecting fewer than this many trades/year/symbol skip the 6-month
+# prescreen entirely (a seasonal/swing card can legitimately have 0 trades in
+# any given 6-month window; killing it there would be a false negative —
+# DL-070 swing-track protection, OWNER "we would early miss a chance").
+Q02_PRESCREEN_MIN_EXPECTED_TPY = 12
 
 
 def _summary_net_profit_total(summary: dict[str, Any]) -> float | None:
@@ -2157,6 +2163,16 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         from_date = f"{from_year}.01.01"
         to_date = f"{to_year}.12.31"
         skip_prescreen = (phase == "Q02" and period_upper in Q02_SKIP_PRESCREEN_PERIODS)
+        if phase == "Q02" and not skip_prescreen:
+            # Frequency-aware guard (gate-acceleration #1): low-freq cards go
+            # straight to the full window — a 6-month probe proves nothing
+            # about a strategy expected to trade ~monthly or less.
+            try:
+                _freq = _expected_trade_frequency_for_ea(root, ea_id)
+                if int(_freq["expected_trades_per_year_per_symbol"]) < Q02_PRESCREEN_MIN_EXPECTED_TPY:
+                    skip_prescreen = True
+            except Exception:
+                pass
         if not is_exploration and not skip_prescreen and not item_payload.get("p2_prescreen_done"):
             from_date, to_date = _p2_prescreen_dates(to_year)
             n_runs = "1"
@@ -7555,11 +7571,25 @@ def pump(root: Path) -> dict[str, Any]:
             ORDER BY updated_at ASC LIMIT 5
             """
         ).fetchall()
+        try:
+            import strategy_priority as _sp_abl
+            _abl_scores = _sp_abl.compute_scores()
+        except Exception:
+            _abl_scores = {}
         for wi in p2_pass:
             try:
+                # 2026-06-10 OWNER gate-acceleration #4: ablation budget by
+                # priority tier — 8 variants for priority_track EAs, 3 for the
+                # rest (was a flat 5). Shifts perturbation compute toward the
+                # cards the diversification/metrics prior ranks highest.
+                _tier_priority = bool(
+                    _abl_scores.get(str(wi["ea_id"]), {}).get("priority_track", False)
+                    or '"priority_track": true' in (wi["payload_json"] or "")
+                )
                 report = spawn_ablation_workitems(
                     conn, dict(wi), FRAMEWORK_EAS_DIR,
-                    n_variants=5, perturb_pct=0.25, method="random",
+                    n_variants=8 if _tier_priority else 3,
+                    perturb_pct=0.25, method="random",
                 )
                 result["ablation_children"].append(report)
             except Exception as exc:
@@ -7731,15 +7761,16 @@ def pump(root: Path) -> dict[str, Any]:
                 SELECT w.* FROM work_items w
                 WHERE w.status='done' AND w.phase=? AND w.verdict in ({placeholders})
                   AND NOT EXISTS (
+                    -- DL-074 2026-06-10: block on ANY existing next-phase row
+                    -- for the same (ea, symbol, setfile), regardless of which
+                    -- source created it. The old promoted_from_phase payload
+                    -- filter let the Q04-early default-probe row coexist with
+                    -- a duplicate Q03->Q04 promotion of the identical setfile.
                     SELECT 1 FROM work_items w2
                     WHERE w2.ea_id = w.ea_id
                       AND w2.symbol = w.symbol
                       AND w2.phase = ?
                       AND w2.setfile_path = w.setfile_path
-                      AND (
-                        w2.payload_json LIKE ?
-                        OR w2.payload_json LIKE ?
-                      )
                   )
                 ORDER BY w.updated_at ASC LIMIT 10
                 """,
@@ -7747,8 +7778,6 @@ def pump(root: Path) -> dict[str, Any]:
                     prev_phase,
                     *verdicts,
                     next_phase,
-                    f'%"promoted_from_phase": "{prev_phase}"%',
-                    f'%"promoted_from_phase":"{prev_phase}"%',
                 ),
             ).fetchall()
             for wi in promotable:
@@ -7805,6 +7834,58 @@ def pump(root: Path) -> dict[str, Any]:
                     "parent_task_id": parent_id,
                     "reopened_parent": reopened_parent,
                 })
+        # DL-074 (gate-acceleration #3) Q04-early probe: every Q02-PASS
+        # primary goes straight to a Q04 walk-forward probe on its DEFAULT
+        # params, in parallel with the normal Q02->Q03 path. ~88% of EAs die
+        # at Q04; probing it before the 50-point Q03 grid stops us spending
+        # the grid on parameter sets that were never walk-forward-robust.
+        # Gate criteria are unchanged — only the order of compute moves.
+        q04_probe_rows = conn.execute(
+            """
+            SELECT w.* FROM work_items w
+            WHERE w.status='done' AND w.phase='Q02' AND w.verdict='PASS'
+              AND w.setfile_path NOT LIKE '%_ablation_%'
+              AND w.setfile_path NOT LIKE '%_grid_%'
+              AND w.setfile_path NOT LIKE '%_synth_%'
+              AND NOT EXISTS (
+                SELECT 1 FROM work_items w2
+                WHERE w2.ea_id = w.ea_id AND w2.symbol = w.symbol
+                  AND w2.phase = 'Q04' AND w2.setfile_path = w.setfile_path
+              )
+            ORDER BY w.updated_at ASC LIMIT 10
+            """
+        ).fetchall()
+        for wi in q04_probe_rows:
+            if not _setfile_path_exists(wi["setfile_path"]):
+                continue
+            probe_id = str(uuid.uuid4())
+            now = utc_now()
+            conn.execute(
+                """
+                INSERT INTO work_items
+                  (id, kind, phase, ea_id, symbol, setfile_path, status,
+                   attempt_count, parent_task_id, payload_json, created_at, updated_at)
+                VALUES (?, 'backtest', 'Q04', ?, ?, ?, 'pending', 0, NULL, ?, ?, ?)
+                """,
+                (probe_id, wi["ea_id"], wi["symbol"], wi["setfile_path"],
+                 json.dumps({
+                     "promoted_from_phase": "Q02",
+                     "promoted_from_work_item": wi["id"],
+                     "promotion_source": "pump_q04_early_probe",
+                     "q04_default_probe": True,
+                 }, sort_keys=True), now, now),
+            )
+            result["cascade_promotions"].append({
+                "work_item_id": probe_id,
+                "ea_id": wi["ea_id"],
+                "symbol": wi["symbol"],
+                "from_phase": "Q02",
+                "to_phase": "Q04",
+                "from_work_item_id": wi["id"],
+                "parent_task_id": None,
+                "reopened_parent": False,
+                "q04_default_probe": True,
+            })
         q09_promoted = _promote_q08_soft_fails_to_q09_portfolio(conn, result)
         q09_admitted = _admit_q09_portfolio_passes(conn, result)
         if result["cascade_promotions"] or q09_promoted or q09_admitted:
@@ -7827,6 +7908,14 @@ def pump(root: Path) -> dict[str, Any]:
 
     # §10b P3-PASS → 50 grid (one parent per pump cycle — 50 children is a lot)
     # Same setfile_path lineage check as §10a (see comment above).
+    #
+    # DL-074 (gate-acceleration #3): the grid only spawns once the EA's
+    # DEFAULT params have survived the Q04 walk-forward probe for that
+    # symbol. ~88% of EAs die at Q04 — without this gate, the 50-point grid
+    # burns ~50 backtests optimizing parameter sets that were never
+    # walk-forward-robust. Q03 PASSes whose probe is still pending stay in
+    # the scan window (LIMIT 25) and get their grid as soon as the probe
+    # lands; probe-FAIL parents simply never get a grid (intended saving).
     with connect(root) as conn:
         p3_pass = conn.execute(
             """
@@ -7835,16 +7924,28 @@ def pump(root: Path) -> dict[str, Any]:
               AND setfile_path NOT LIKE '%_ablation_%'
               AND setfile_path NOT LIKE '%_grid_%'
               AND COALESCE(json_extract(payload_json, '$.ablated_at'), '')=''
-            ORDER BY updated_at ASC LIMIT 1
+            ORDER BY updated_at ASC LIMIT 25
             """
         ).fetchall()
+        grid_spawned = 0
         for wi in p3_pass:
+            if grid_spawned >= 1:
+                break
+            q04_ok = conn.execute(
+                "SELECT 1 FROM work_items WHERE ea_id=? AND symbol=? "
+                "AND phase IN ('Q04', 'P4') AND status='done' "
+                "AND verdict IN ('PASS', 'PASS_SOFT') LIMIT 1",
+                (wi["ea_id"], wi["symbol"]),
+            ).fetchone()
+            if not q04_ok:
+                continue  # probe pending or failed — no grid for this parent
             try:
                 report = spawn_ablation_workitems(
                     conn, dict(wi), FRAMEWORK_EAS_DIR,
                     n_variants=50, perturb_pct=0.30, method="grid",
                 )
                 result["ablation_children"].append(report)
+                grid_spawned += 1
             except Exception as exc:
                 result["ablation_children"].append({
                     "parent_id": wi["id"], "ea_id": wi["ea_id"],
@@ -10406,6 +10507,67 @@ def record_build_result(root: Path, task_id: str, result_file: str) -> dict[str,
     }
 
 
+Q02_DEFERRED_SYMBOLS_FILE = Path(r"D:/QM/strategy_farm/state/q02_deferred_symbols.json")
+Q02_STAGE1_MAX_SYMBOLS = 3
+
+
+def _q02_symbol_bucket(symbol: str) -> str:
+    """Coarse asset-class bucket for stage-1 symbol diversity."""
+    s = str(symbol or "").upper()
+    base = s.split(".")[0]
+    if "XAU" in base or "XAG" in base:
+        return "metal"
+    if len(base) == 6 and base.isalpha():
+        return "fx"
+    return "index"
+
+
+def _stage_q02_setfiles(parsed: list[tuple[Any, str, str]]) -> tuple[list, list]:
+    """Split (setfile, symbol, tf) tuples into a diverse stage-1 wave and a
+    deferred remainder.
+
+    2026-06-10 OWNER gate-acceleration #2 (with OWNER's correction): never
+    gate on a single symbol — symbols behave very differently and a one-host
+    probe would miss chances. Stage-1 = up to Q02_STAGE1_MAX_SYMBOLS symbols
+    chosen round-robin across distinct asset buckets (index/metal/fx) so the
+    probe is diverse. Deferred symbols are NEVER dropped: the hourly sweep
+    task promotes them as soon as ANY stage-1 symbol passes Q02, or whenever
+    the queue has spare capacity (pending < 50% of the sweep ceiling).
+    """
+    if len(parsed) <= Q02_STAGE1_MAX_SYMBOLS:
+        return parsed, []
+    by_bucket: dict[str, list] = {}
+    for item in parsed:
+        by_bucket.setdefault(_q02_symbol_bucket(item[1]), []).append(item)
+    stage1: list = []
+    # round-robin across buckets for diversity
+    while len(stage1) < Q02_STAGE1_MAX_SYMBOLS and any(by_bucket.values()):
+        for bucket in sorted(by_bucket):
+            if by_bucket[bucket] and len(stage1) < Q02_STAGE1_MAX_SYMBOLS:
+                stage1.append(by_bucket[bucket].pop(0))
+    deferred = [i for i in parsed if i not in stage1]
+    return stage1, deferred
+
+
+def _record_q02_deferral(ea_id: str, deferred: list, source: str) -> None:
+    """Append deferred (setfile, symbol, tf) tuples to the sidecar state file."""
+    try:
+        state = (json.loads(Q02_DEFERRED_SYMBOLS_FILE.read_text(encoding="utf-8"))
+                 if Q02_DEFERRED_SYMBOLS_FILE.exists() else {})
+    except (json.JSONDecodeError, OSError):
+        state = {}
+    entry = state.setdefault(ea_id, {"setfiles": [], "source": source,
+                                     "deferred_at": utc_now()})
+    known = {e["setfile"] for e in entry["setfiles"]}
+    for setfile, symbol, tf in deferred:
+        if str(setfile) not in known:
+            entry["setfiles"].append({"setfile": str(setfile), "symbol": symbol,
+                                      "tf": tf})
+    Q02_DEFERRED_SYMBOLS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    Q02_DEFERRED_SYMBOLS_FILE.write_text(json.dumps(state, indent=1),
+                                         encoding="utf-8")
+
+
 def _auto_enqueue_q02_for_build(root: Path, build_result: dict[str, Any]) -> dict[str, Any]:
     """Create Q02 work_items for every setfile the Codex build produced.
 
@@ -10426,20 +10588,31 @@ def _auto_enqueue_q02_for_build(root: Path, build_result: dict[str, Any]) -> dic
     skipped: list[dict[str, Any]] = []
     now_iso = utc_now()
 
-    with connect(root) as conn:
-        for setfile_str in setfiles:
-            setfile_path = Path(str(setfile_str))
-            # Filename pattern: <ea_label>_<SYMBOL>_<TF>_backtest.set
-            # Symbol may contain '.' (e.g. EURUSD.DWX); use regex to extract.
-            m = re.search(r"_([A-Z][A-Z0-9.]{2,})_([A-Z0-9]+)_backtest\.set$",
-                          setfile_path.name)
-            if not m:
-                skipped.append({"setfile": str(setfile_path),
-                                "reason": "setfile_name_parse_failed"})
-                continue
-            symbol = m.group(1)
-            tf = m.group(2)
+    # Parse all setfiles first so staging can pick a diverse stage-1 wave.
+    parsed: list[tuple[Path, str, str]] = []
+    for setfile_str in setfiles:
+        setfile_path = Path(str(setfile_str))
+        # Filename pattern: <ea_label>_<SYMBOL>_<TF>_backtest.set
+        # Symbol may contain '.' (e.g. EURUSD.DWX); use regex to extract.
+        m = re.search(r"_([A-Z][A-Z0-9.]{2,})_([A-Z0-9]+)_backtest\.set$",
+                      setfile_path.name)
+        if not m:
+            skipped.append({"setfile": str(setfile_path),
+                            "reason": "setfile_name_parse_failed"})
+            continue
+        parsed.append((setfile_path, m.group(1), m.group(2)))
 
+    # OWNER gate-acceleration #2 (2026-06-10): diverse stage-1 wave, rest
+    # deferred to the sidecar (promoted on any stage-1 PASS / spare capacity).
+    stage1, deferred = _stage_q02_setfiles(parsed)
+    if deferred:
+        _record_q02_deferral(ea_id, deferred, "auto_q02_for_build")
+        for setfile_path, symbol, tf in deferred:
+            skipped.append({"setfile": setfile_path.name, "symbol": symbol,
+                            "reason": "staged_deferred_symbol"})
+
+    with connect(root) as conn:
+        for setfile_path, symbol, tf in stage1:
             # Idempotency: skip if pending/active Q02 already exists
             existing = conn.execute(
                 "SELECT id, status FROM work_items "

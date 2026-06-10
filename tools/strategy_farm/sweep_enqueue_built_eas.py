@@ -1,9 +1,17 @@
 """One-shot sweep (Claude, 2026-06-10, OWNER-approved acceleration):
 
 1. Enqueue Q02 work_items for built EAs (.ex5 on disk) that have ZERO
-   work_items in the DB (never entered the pipeline).
+   work_items in the DB (never entered the pipeline). Symbol-staged per
+   OWNER gate-acceleration #2: diverse stage-1 wave (<=3 symbols across
+   asset buckets), remainder deferred to the sidecar.
 2. Re-enqueue (ea, symbol, setfile) rows stranded on INFRA_FAIL at
    Q02/Q03/Q08 with nothing pending/active and no non-INFRA done row.
+3. Promote deferred symbols (state/q02_deferred_symbols.json): an EA's
+   deferred setfiles are enqueued as soon as ANY of its Q02 rows is a done
+   PASS (a chance was found -> confirm breadth), or whenever the queue has
+   spare capacity (pending < 50% of the ceiling). Deferral never kills a
+   symbol; it only deprioritizes it (OWNER: symbols differ, do not miss a
+   chance by gating on a subset).
 
 Filters: registry status=active, no _obsolete_ dirs, setfiles must exist.
 Idempotent: skips (ea,symbol,phase) pairs with pending/active rows.
@@ -40,6 +48,7 @@ if "--queue-ceiling" in sys.argv:
 NOW = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S+00:00")
 
 sys.path.insert(0, r"C:\QM\repo\tools\strategy_farm")
+import farmctl  # staging helpers (_stage_q02_setfiles, _record_q02_deferral)
 try:
     import strategy_priority as _sp
     _SCORES = _sp.compute_scores()
@@ -132,13 +141,21 @@ for ea_id in sorted((e for e in ea_dirs if e not in wi_eas), key=_prio):
         report["part1_never_tested"]["skipped"].append(
             {"ea_id": ea_id, "reason": "no_setfiles", "dir": pick.name})
         continue
+    parsed = []
     for sf in sets:
         m = SETFILE_RE.search(sf.name)
         if not m:
             report["part1_never_tested"]["skipped"].append(
                 {"ea_id": ea_id, "reason": "setfile_parse_failed", "setfile": sf.name})
             continue
-        symbol, tf = m.group(1), m.group(2)
+        parsed.append((sf, m.group(1), m.group(2)))
+    stage1, deferred = farmctl._stage_q02_setfiles(parsed)
+    if deferred and APPLY:
+        farmctl._record_q02_deferral(ea_id, deferred, "sweep_enqueue")
+    for _sf, _sym, _tf in deferred:
+        report["part1_never_tested"]["skipped"].append(
+            {"ea_id": ea_id, "symbol": _sym, "reason": "staged_deferred_symbol"})
+    for sf, symbol, tf in stage1:
         if pending_active_exists(ea_id, symbol, "Q02"):
             report["part1_never_tested"]["skipped"].append(
                 {"ea_id": ea_id, "symbol": symbol, "reason": "existing_pending_active"})
@@ -193,6 +210,45 @@ for phase in ("Q02", "Q03", "Q08"):
                 {"ea_id": ea_id, "phase": phase, "symbol": symbol,
                  "setfile": Path(setfile).name})
 
+# ---------- Part 3: promote deferred symbols (gate-acceleration #2) ----------
+report["part3_deferred_promotion"] = {"promoted": [], "kept_deferred": 0}
+deferred_file = farmctl.Q02_DEFERRED_SYMBOLS_FILE
+try:
+    deferred_state = (json.loads(deferred_file.read_text(encoding="utf-8"))
+                      if deferred_file.exists() else {})
+except (json.JSONDecodeError, OSError):
+    deferred_state = {}
+if deferred_state:
+    pending_q = cur.execute(
+        "SELECT COUNT(*) FROM work_items WHERE status='pending'").fetchone()[0]
+    spare_capacity = pending_q < QUEUE_CEILING * 0.5
+    for ea_id in sorted(deferred_state):
+        entry = deferred_state[ea_id]
+        has_pass = cur.execute(
+            "SELECT 1 FROM work_items WHERE ea_id=? AND phase='Q02' "
+            "AND status='done' AND verdict='PASS' LIMIT 1", (ea_id,)).fetchone()
+        if not (has_pass or spare_capacity):
+            report["part3_deferred_promotion"]["kept_deferred"] += len(entry["setfiles"])
+            continue
+        for sf in entry["setfiles"]:
+            if not Path(sf["setfile"]).is_file():
+                continue
+            if pending_active_exists(ea_id, sf["symbol"], "Q02"):
+                continue
+            payload = {"host_symbol": sf["symbol"], "host_timeframe": sf.get("tf"),
+                       "enqueued_by": "sweep_enqueue.deferred_promotion",
+                       "promotion_reason": "stage1_pass" if has_pass else "spare_capacity",
+                       "enqueued_at_utc": NOW}
+            insert_wi("Q02", ea_id, sf["symbol"], sf["setfile"], payload)
+            report["part3_deferred_promotion"]["promoted"].append(
+                {"ea_id": ea_id, "symbol": sf["symbol"],
+                 "reason": payload["promotion_reason"]})
+        if APPLY:
+            deferred_state.pop(ea_id, None)
+    if APPLY:
+        deferred_file.write_text(json.dumps(deferred_state, indent=1),
+                                 encoding="utf-8")
+
 if APPLY:
     con.commit()
 EVIDENCE.write_text(json.dumps(report, indent=1), encoding="utf-8")
@@ -204,5 +260,7 @@ print(f"part2 stranded:     enqueued={len(p2['enqueued'])} skipped={len(p2['skip
 from collections import Counter
 print("part1 skip reasons:", dict(Counter(s['reason'] for s in p1['skipped'])))
 print("part2 by phase:", dict(Counter(e['phase'] for e in p2['enqueued'])))
+p3 = report["part3_deferred_promotion"]
+print(f"part3 deferred: promoted={len(p3['promoted'])} kept={p3['kept_deferred']}")
 print("priority_track items:", sum(1 for e in p1['enqueued'] if e['priority_track']))
 print("evidence:", EVIDENCE)
