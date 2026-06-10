@@ -70,7 +70,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const int magic = QM_FrameworkMagic();
    if(QM_EntryHasOpenPosition(magic, _Symbol))
       return false;
-
    const double currOpen  = iOpen (_Symbol, PERIOD_CURRENT, 1); // perf-allowed: engulfing reads fixed closed-bar shifts, O(1), gated by QM_IsNewBar
    const double currClose = iClose(_Symbol, PERIOD_CURRENT, 1); // perf-allowed
    const double currHigh  = iHigh (_Symbol, PERIOD_CURRENT, 1); // perf-allowed
@@ -182,7 +181,6 @@ bool Strategy_ExitSignal()
       // (bar[1] at entry is the signal bar; EMA/engulf checks valid from bar after entry)
       if(elapsed < 3600L)
          return false;
-
       const double c1 = iClose(_Symbol, PERIOD_CURRENT, 1); // perf-allowed: exit checks fixed closed-bar shifts, O(1), stable within bar
       const double o1 = iOpen (_Symbol, PERIOD_CURRENT, 1); // perf-allowed
       const double c2 = iClose(_Symbol, PERIOD_CURRENT, 2); // perf-allowed
