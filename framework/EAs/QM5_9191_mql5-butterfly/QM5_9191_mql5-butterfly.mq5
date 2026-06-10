@@ -241,33 +241,25 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(g_bfly.direction == 1)  // Bullish: buy
      {
-      const double ask    = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       const double sl_prc = g_bfly.d_price - atr_val;
       const double tp_prc = g_bfly.d_price + ad_dist * QM_BFLY_TP1_RATIO;
-      const double sl_pts = (ask - sl_prc) / SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-      if(sl_pts <= 0.0) return false;
 
-      req.type    = ORDER_TYPE_BUY;
-      req.price   = ask;
-      req.sl      = sl_prc;
-      req.tp      = tp_prc;
-      req.lots    = QM_LotsForRisk(_Symbol, sl_pts);
-      req.comment = "Bfly_Long";
+      req.type   = QM_BUY;
+      req.price  = 0.0;   // market price; QM_EntryResolvePrice fills Ask
+      req.sl     = sl_prc;
+      req.tp     = tp_prc;
+      req.reason = "Bfly_Long";
      }
    else  // Bearish: sell
      {
-      const double bid    = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       const double sl_prc = g_bfly.d_price + atr_val;
       const double tp_prc = g_bfly.d_price - ad_dist * QM_BFLY_TP1_RATIO;
-      const double sl_pts = (sl_prc - bid) / SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-      if(sl_pts <= 0.0) return false;
 
-      req.type    = ORDER_TYPE_SELL;
-      req.price   = bid;
-      req.sl      = sl_prc;
-      req.tp      = tp_prc;
-      req.lots    = QM_LotsForRisk(_Symbol, sl_pts);
-      req.comment = "Bfly_Short";
+      req.type   = QM_SELL;
+      req.price  = 0.0;   // market price; QM_EntryResolvePrice fills Bid
+      req.sl     = sl_prc;
+      req.tp     = tp_prc;
+      req.reason = "Bfly_Short";
      }
 
    return true;

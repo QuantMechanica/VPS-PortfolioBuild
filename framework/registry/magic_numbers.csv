@@ -6921,3 +6921,15 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9161,aa-ew6-ma12,4,UK100.DWX,91610004,2026-06-10,Development,active
 9161,aa-ew6-ma12,5,XAUUSD.DWX,91610005,2026-06-10,Development,active
 9161,aa-ew6-ma12,6,XTIUSD.DWX,91610006,2026-06-10,Development,active
+9194,mql5-rvgi-cci,0,EURUSD.DWX,91940000,2026-06-10,Development,active
+9194,mql5-rvgi-cci,1,GBPUSD.DWX,91940001,2026-06-10,Development,active
+9194,mql5-rvgi-cci,2,GDAXI.DWX,91940002,2026-06-10,Development,active
+9192,mql5-trend-flat,0,EURUSD.DWX,91920000,2026-06-10,Development,active
+9192,mql5-trend-flat,1,GBPUSD.DWX,91920001,2026-06-10,Development,active
+9192,mql5-trend-flat,2,GDAXI.DWX,91920002,2026-06-10,Development,active
+9190,mql5-asian-break,0,EURUSD.DWX,91900000,2026-06-10,Development,active
+9190,mql5-asian-break,1,GBPUSD.DWX,91900001,2026-06-10,Development,active
+9190,mql5-asian-break,2,XAUUSD.DWX,91900002,2026-06-10,Development,active
+9193,mql5-rsi-sweep,0,EURUSD.DWX,91930000,2026-06-10,Development,active
+9193,mql5-rsi-sweep,1,GBPUSD.DWX,91930001,2026-06-10,Development,active
+9193,mql5-rsi-sweep,2,XAUUSD.DWX,91930002,2026-06-10,Development,active
