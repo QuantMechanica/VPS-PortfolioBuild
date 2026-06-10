@@ -75,8 +75,10 @@ input int    strategy_time_stop_min     = 90;     // close position after N minu
 void AdvanceState_OnNewBar()
   {
    datetime new_bar = iTime(_Symbol, PERIOD_M5, 0); // perf-allowed: window gate
-   int h = TimeHour(new_bar);
-   int m = TimeMinute(new_bar);
+   MqlDateTime dt;
+   TimeToStruct(new_bar, dt);
+   int h = dt.hour;
+   int m = dt.min;
 
    bool is_window_a = strategy_use_london_window && (h == 10 && m == 0);
    bool is_window_b = strategy_use_ny_window     && (h == 17 && m == 0);
@@ -141,7 +143,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    double spread = (double)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD) * _Point;
    if(spread > strategy_spread_atr_limit * atr) return false;
-
    double bar_close = iClose(_Symbol, PERIOD_M5, 1); // perf-allowed: structural reentry check
    if(bar_close <= 0.0) return false;
 
