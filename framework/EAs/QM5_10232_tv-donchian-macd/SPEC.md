@@ -4,7 +4,7 @@
 **Slug:** `tv-donchian-macd`
 **Source:** `30591366-874b-5bee-b47c-da2fca20b728` (TradingView, LordRobrecht "Trend Following with Donchian Channels and MACD")
 **Author of this spec:** Codex
-**Last revised:** 2026-06-05
+**Last revised:** 2026-06-10
 
 ---
 
@@ -103,3 +103,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-05 | Initial build from card | bc416466-631f-4f3f-a952-f1284f9e3e30 |
+| v2 | 2026-06-10 | Rebuild from approved card | fa42e002-6aeb-4211-80c6-6c475c146886 |

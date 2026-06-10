@@ -3,16 +3,16 @@
 ; ea_id:        10232
 ; ea_slug:      tv-donchian-macd
 ; ea_version:   v5.0
-; set_version:  s20260605-001
+; set_version:  s20260610-001
 ; symbol:       GBPJPY.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   0a1d1ece9d23f8a8875b9a47515c968d54b523b42e24ea8726034356e5ae671f
+; build_hash:   91f40281f00907ed41db57e9152d47e55d2d6dccf0766886b979d10ff739d818
 ; author:       Development
-; date:         2026-06-05
+; date:         2026-06-10
 ;==========================================================
 qm_magic_slot_offset=3
 RISK_FIXED=1000
@@ -32,3 +32,9 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
+strategy_donchian_period=50
+strategy_macd_fast=12
+strategy_macd_slow=26
+strategy_macd_signal=9
+strategy_atr_period=14
+strategy_atr_mult=4.0

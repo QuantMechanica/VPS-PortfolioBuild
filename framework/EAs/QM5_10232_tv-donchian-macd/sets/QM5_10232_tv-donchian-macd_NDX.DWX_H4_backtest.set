@@ -3,16 +3,16 @@
 ; ea_id:        10232
 ; ea_slug:      tv-donchian-macd
 ; ea_version:   v5.0
-; set_version:  s20260605-001
+; set_version:  s20260610-001
 ; symbol:       NDX.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   49255542a80d142bdc440e2223651a9a3057c9481720330b3b2c90f7967d4cbe
+; build_hash:   f97e7b78908d35424d1872fbd213259d05f5dc0f0fa85a11b172f5bb5c56edd5
 ; author:       Development
-; date:         2026-06-05
+; date:         2026-06-10
 ;==========================================================
 qm_magic_slot_offset=2
 RISK_FIXED=1000
@@ -32,3 +32,9 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
+strategy_donchian_period=50
+strategy_macd_fast=12
+strategy_macd_slow=26
+strategy_macd_signal=9
+strategy_atr_period=14
+strategy_atr_mult=4.0

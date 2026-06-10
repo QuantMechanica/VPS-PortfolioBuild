@@ -3,16 +3,16 @@
 ; ea_id:        10232
 ; ea_slug:      tv-donchian-macd
 ; ea_version:   v5.0
-; set_version:  s20260605-001
+; set_version:  s20260610-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   14fda774b75ad4c6902f4ad59b030a700a50e820d743dfceb194130acd5ff6ef
+; build_hash:   b1f7f8fa79f65638374c88011a03901d564f1559312662aca0de98b255657b16
 ; author:       Development
-; date:         2026-06-05
+; date:         2026-06-10
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=1000
@@ -32,3 +32,9 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
+strategy_donchian_period=50
+strategy_macd_fast=12
+strategy_macd_slow=26
+strategy_macd_signal=9
+strategy_atr_period=14
+strategy_atr_mult=4.0
