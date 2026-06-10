@@ -7060,3 +7060,7 @@
 9361,mql5-ichi-kumo-bounce,1,EURUSD.DWX,93610001,2026-06-10,Development,active
 9361,mql5-ichi-kumo-bounce,2,USDJPY.DWX,93610002,2026-06-10,Development,active
 9361,mql5-ichi-kumo-bounce,3,XAUUSD.DWX,93610003,2026-06-10,Development,active
+9362,mql5-ichi-chikou-span,0,GBPUSD.DWX,93620000,2026-06-10,Development,active
+9362,mql5-ichi-chikou-span,1,EURUSD.DWX,93620001,2026-06-10,Development,active
+9362,mql5-ichi-chikou-span,2,USDJPY.DWX,93620002,2026-06-10,Development,active
+9362,mql5-ichi-chikou-span,3,XAUUSD.DWX,93620003,2026-06-10,Development,active
