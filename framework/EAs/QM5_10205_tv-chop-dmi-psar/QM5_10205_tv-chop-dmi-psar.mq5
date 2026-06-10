@@ -46,6 +46,19 @@ input int    strategy_atr_period           = 14;
 input double strategy_emergency_atr_mult   = 3.0;
 input double strategy_spread_stop_fraction = 0.15;
 
+bool   g_state_ready = false;
+bool   g_chop_ready = false;
+bool   g_psar_ready = false;
+double g_chop = 0.0;
+double g_psar = 0.0;
+int    g_psar_trend = 0;
+double g_adx = 0.0;
+double g_plus_di = 0.0;
+double g_minus_di = 0.0;
+double g_plus_di_prev = 0.0;
+double g_minus_di_prev = 0.0;
+double g_atr = 0.0;
+
 bool LoadRates(const int count, MqlRates &rates[])
   {
    if(count <= 0)
@@ -54,6 +67,20 @@ bool LoadRates(const int count, MqlRates &rates[])
    ArraySetAsSeries(rates, true);
    const int copied = CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, 0, count, rates); // perf-allowed
    return (copied >= count);
+  }
+
+void AdvanceStateOnNewBar()
+  {
+   g_state_ready = false;
+   g_chop_ready = ComputeChop(1, g_chop);
+   g_psar_ready = ComputePSAR(1, g_psar, g_psar_trend);
+   g_adx = QM_ADX(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_dmi_period, 1);
+   g_plus_di = QM_ADX_PlusDI(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_dmi_period, 1);
+   g_minus_di = QM_ADX_MinusDI(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_dmi_period, 1);
+   g_plus_di_prev = QM_ADX_PlusDI(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_dmi_period, 2);
+   g_minus_di_prev = QM_ADX_MinusDI(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_dmi_period, 2);
+   g_atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
+   g_state_ready = (g_chop_ready && g_adx > 0.0 && g_atr > 0.0);
   }
 
 bool ComputeRawChop(const int shift, const int period, double &out_chop)
@@ -221,23 +248,17 @@ bool BuildDirectionalSignal(bool &long_signal, bool &short_signal)
    long_signal = false;
    short_signal = false;
 
-   double chop = 0.0;
-   if(!ComputeChop(1, chop))
+   if(!g_state_ready || !g_chop_ready)
       return false;
 
-   const double adx = QM_ADX(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_dmi_period, 1);
-   if(adx <= strategy_adx_key_level)
+   if(g_adx <= strategy_adx_key_level)
       return true;
 
-   int psar_trend = 0;
-   double psar = 0.0;
-   const bool have_psar = ComputePSAR(1, psar, psar_trend);
+   const bool trend_allows_long = (!strategy_follow_trend || (g_psar_ready && g_psar_trend > 0));
+   const bool trend_allows_short = (!strategy_follow_trend || (g_psar_ready && g_psar_trend < 0));
 
-   const bool trend_allows_long = (!strategy_follow_trend || (have_psar && psar_trend > 0));
-   const bool trend_allows_short = (!strategy_follow_trend || (have_psar && psar_trend < 0));
-
-   long_signal = (chop > strategy_chop_bull_threshold && trend_allows_long);
-   short_signal = (chop < strategy_chop_bear_threshold && trend_allows_short);
+   long_signal = (g_chop > strategy_chop_bull_threshold && trend_allows_long);
+   short_signal = (g_chop < strategy_chop_bear_threshold && trend_allows_short);
    return true;
   }
 
@@ -258,29 +279,25 @@ double ResolveInitialStop(const QM_OrderType side, const double entry_price)
       return 0.0;
 
    const double atr_stop = QM_StopATR(_Symbol, side, entry_price, strategy_atr_period, strategy_emergency_atr_mult);
-   double psar = 0.0;
-   int psar_trend = 0;
-   const bool have_psar = ComputePSAR(1, psar, psar_trend);
-
    const bool buy_side = QM_OrderTypeIsBuy(side);
-   bool psar_valid = have_psar && (buy_side ? (psar < entry_price) : (psar > entry_price));
+   bool psar_valid = g_psar_ready && (buy_side ? (g_psar < entry_price) : (g_psar > entry_price));
    if(!psar_valid)
       return atr_stop;
 
    if(atr_stop <= 0.0)
-      return psar;
+      return g_psar;
 
-   const double psar_distance = MathAbs(entry_price - psar);
+   const double psar_distance = MathAbs(entry_price - g_psar);
    const double atr_distance = MathAbs(entry_price - atr_stop);
    if(psar_distance <= 0.0 || psar_distance > atr_distance)
       return atr_stop;
 
-   return psar;
+   return g_psar;
   }
 
 bool Strategy_NoTradeFilter()
   {
-   const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
+   const double atr = (g_atr > 0.0) ? g_atr : QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
    const double stop_distance = atr * strategy_emergency_atr_mult;
    return !SpreadWithinStopDistance(stop_distance);
   }
@@ -332,10 +349,6 @@ void Strategy_ManageOpenPosition()
    if(magic <= 0)
       return;
 
-   double psar = 0.0;
-   int psar_trend = 0;
-   const bool have_psar = ComputePSAR(1, psar, psar_trend);
-
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -346,7 +359,7 @@ void Strategy_ManageOpenPosition()
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
 
-      if(!have_psar)
+      if(!g_psar_ready)
         {
          QM_TM_TrailATR(ticket, strategy_atr_period, strategy_emergency_atr_mult);
          continue;
@@ -357,13 +370,13 @@ void Strategy_ManageOpenPosition()
       const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
 
-      if(position_type == POSITION_TYPE_BUY && psar_trend > 0 && psar < bid &&
-         (current_sl <= 0.0 || psar > current_sl))
-         QM_TM_MoveSL(ticket, psar, "psar_trailing_stop");
+      if(position_type == POSITION_TYPE_BUY && g_psar_trend > 0 && g_psar < bid &&
+         (current_sl <= 0.0 || g_psar > current_sl))
+         QM_TM_MoveSL(ticket, g_psar, "psar_trailing_stop");
 
-      if(position_type == POSITION_TYPE_SELL && psar_trend < 0 && psar > ask &&
-         (current_sl <= 0.0 || psar < current_sl))
-         QM_TM_MoveSL(ticket, psar, "psar_trailing_stop");
+      if(position_type == POSITION_TYPE_SELL && g_psar_trend < 0 && g_psar > ask &&
+         (current_sl <= 0.0 || g_psar < current_sl))
+         QM_TM_MoveSL(ticket, g_psar, "psar_trailing_stop");
      }
   }
 
@@ -374,27 +387,22 @@ bool Strategy_ExitSignal()
    if(!SelectOurPosition(position_type, ticket))
       return false;
 
-   const double adx = QM_ADX(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_dmi_period, 1);
-   const double plus_di = QM_ADX_PlusDI(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_dmi_period, 1);
-   const double minus_di = QM_ADX_MinusDI(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_dmi_period, 1);
-   const double plus_di_prev = QM_ADX_PlusDI(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_dmi_period, 2);
-   const double minus_di_prev = QM_ADX_MinusDI(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_dmi_period, 2);
+   if(!g_state_ready)
+      return false;
 
-   if(strategy_use_dmi_exit && adx < strategy_adx_key_level)
+   if(strategy_use_dmi_exit && g_adx < strategy_adx_key_level)
      {
-      if(position_type == POSITION_TYPE_BUY && minus_di > plus_di && minus_di_prev <= plus_di_prev)
+      if(position_type == POSITION_TYPE_BUY && g_minus_di > g_plus_di && g_minus_di_prev <= g_plus_di_prev)
          return true;
-      if(position_type == POSITION_TYPE_SELL && plus_di > minus_di && plus_di_prev <= minus_di_prev)
+      if(position_type == POSITION_TYPE_SELL && g_plus_di > g_minus_di && g_plus_di_prev <= g_minus_di_prev)
          return true;
      }
 
-   double psar = 0.0;
-   int psar_trend = 0;
-   if(strategy_use_psar_exit && ComputePSAR(1, psar, psar_trend))
+   if(strategy_use_psar_exit && g_psar_ready)
      {
-      if(position_type == POSITION_TYPE_BUY && psar_trend < 0)
+      if(position_type == POSITION_TYPE_BUY && g_psar_trend < 0)
          return true;
-      if(position_type == POSITION_TYPE_SELL && psar_trend > 0)
+      if(position_type == POSITION_TYPE_SELL && g_psar_trend > 0)
          return true;
      }
 
@@ -410,12 +418,11 @@ bool Strategy_ExitSignal()
 
    if(!strategy_use_dmi_exit && !strategy_use_psar_exit)
      {
-      double chop = 0.0;
-      if(ComputeChop(1, chop))
+      if(g_chop_ready)
         {
-         if(position_type == POSITION_TYPE_BUY && chop < strategy_chop_bear_threshold)
+         if(position_type == POSITION_TYPE_BUY && g_chop < strategy_chop_bear_threshold)
             return true;
-         if(position_type == POSITION_TYPE_SELL && chop > strategy_chop_bull_threshold)
+         if(position_type == POSITION_TYPE_SELL && g_chop > strategy_chop_bull_threshold)
             return true;
         }
      }
@@ -477,6 +484,10 @@ void OnTick()
    if(QM_FrameworkHandleFridayClose())
       return;
 
+   const bool new_bar = QM_IsNewBar();
+   if(new_bar)
+      AdvanceStateOnNewBar();
+
    if(Strategy_NoTradeFilter())
       return;
 
@@ -496,7 +507,7 @@ void OnTick()
         }
      }
 
-   if(!QM_IsNewBar())
+   if(!new_bar)
       return;
 
    QM_EquityStreamOnNewBar();
