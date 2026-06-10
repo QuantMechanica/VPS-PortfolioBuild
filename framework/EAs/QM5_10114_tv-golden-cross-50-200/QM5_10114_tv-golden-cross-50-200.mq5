@@ -90,13 +90,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!SMAGoldenCross())
       return false;
 
-   req.type             = QM_BUY;
-   req.price            = 0.0;
-   req.sl               = ask - strategy_atr_sl_mult * atr;
-   req.tp               = 0.0;
-   req.reason           = "QM5_10114_GOLDEN_CROSS";
-   req.symbol_slot      = qm_magic_slot_offset;
+   req.type               = QM_BUY;
+   req.price              = ask;
+   req.sl                 = QM_StopATRFromValue(_Symbol, QM_BUY, ask, atr, strategy_atr_sl_mult);
+   req.tp                 = 0.0;
+   req.reason             = "QM5_10114_GOLDEN_CROSS";
+   req.symbol_slot        = qm_magic_slot_offset;
    req.expiration_seconds = 0;
+   if(req.sl <= 0.0 || req.sl >= ask)
+      return false;
+
    return true;
   }
 
