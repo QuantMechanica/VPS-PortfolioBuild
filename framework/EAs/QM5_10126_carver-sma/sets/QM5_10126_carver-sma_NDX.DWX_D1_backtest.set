@@ -3,16 +3,16 @@
 ; ea_id:        10126
 ; ea_slug:      carver-sma
 ; ea_version:   v5.0
-; set_version:  s20260523-001
+; set_version:  s20260610-001
 ; symbol:       NDX.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   f09945f40d55c8985f0a82b90af2fdbb844fc4a998764d3b1898520d5763bab4
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-23
+; date:         2026-06-10
 ;==========================================================
 qm_magic_slot_offset=1
 RISK_FIXED=1000
