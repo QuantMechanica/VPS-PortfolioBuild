@@ -6959,3 +6959,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9195,mql5-signal-pulse,0,EURUSD.DWX,91950000,2026-06-10,Development,active
 9195,mql5-signal-pulse,1,GBPUSD.DWX,91950001,2026-06-10,Development,active
 9195,mql5-signal-pulse,2,XAUUSD.DWX,91950002,2026-06-10,Development,active
+9955,ff-rectangle-sweep-m1,0,EURUSD.DWX,99550000,2026-06-10,Development,active
+9955,ff-rectangle-sweep-m1,1,GBPUSD.DWX,99550001,2026-06-10,Development,active
+9955,ff-rectangle-sweep-m1,2,USDJPY.DWX,99550002,2026-06-10,Development,active
+9955,ff-rectangle-sweep-m1,3,XAUUSD.DWX,99550003,2026-06-10,Development,active
+9212,mql5-rsi-fail,0,EURUSD.DWX,92120000,2026-06-10,Development,active
+9212,mql5-rsi-fail,1,GBPUSD.DWX,92120001,2026-06-10,Development,active
+9212,mql5-rsi-fail,2,USDJPY.DWX,92120002,2026-06-10,Development,active
