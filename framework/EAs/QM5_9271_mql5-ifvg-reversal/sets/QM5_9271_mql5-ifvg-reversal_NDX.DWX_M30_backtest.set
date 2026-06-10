@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        1463
-; ea_slug:      as-papa-bear
+; ea_id:        9271
+; ea_slug:      mql5-ifvg-reversal
 ; ea_version:   v5.0
 ; set_version:  s20260610-001
-; symbol:       XTIUSD.DWX
-; timeframe:    D1
+; symbol:       NDX.DWX
+; timeframe:    M30
 ; environment:  backtest
-; magic_slot:   4
+; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   f5e74d56c3ae93f458fe164508aeadcca43d6b19c84c6e13768dcf53a0b2d1df
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-06-10
 ;==========================================================
-qm_magic_slot_offset=4
+qm_magic_slot_offset=3
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
