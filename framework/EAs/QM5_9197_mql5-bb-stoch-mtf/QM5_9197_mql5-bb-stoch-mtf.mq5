@@ -52,9 +52,9 @@ input double strategy_sl_atr_mult       = 0.5;    // SL = bar extreme +/- ATR * 
 input double strategy_tp_rr             = 1.5;    // TP cap: max reward/risk ratio
 input int    strategy_min_bar_gap       = 10;     // Min M15 bars between same-dir signals
 
-// Bar-time trackers for minimum-gap filter (per direction)
-datetime g_last_long_bar  = 0;
-datetime g_last_short_bar = 0;
+// Per-direction signal time tracker for minimum-gap filter (uses TimeCurrent, no iTime)
+datetime g_last_long_signal_time  = 0;
+datetime g_last_short_signal_time = 0;
 
 // -----------------------------------------------------------------------------
 // No Trade Filter — runs every tick before entry/exit.
@@ -82,18 +82,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double stk_m30 = QM_Stoch_K(_Symbol, PERIOD_M30, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slow, 1);
    const double stk_h1  = QM_Stoch_K(_Symbol, PERIOD_H1,  strategy_stoch_k, strategy_stoch_d, strategy_stoch_slow, 1);
 
-   const datetime bar1_time = iTime(_Symbol, PERIOD_M15, 1); // perf-allowed: bar gap filter, single read per bar
-
    // ATR for SL offset
    const double atr14 = QM_ATR(_Symbol, PERIOD_M15, strategy_atr_period, 1);
    if(atr14 <= 0.0)
       return false;
 
+   // Gap filter: minimum elapsed seconds between same-direction signals
+   const long gap_secs = (long)strategy_min_bar_gap * (long)PeriodSeconds(PERIOD_M15);
+
    // === LONG ENTRY ===
    if(bb_m15 == 1 && bb_m30 == 1 && bb_h1 == 1 &&
       stk_m15 <= strategy_stoch_os && stk_m30 <= strategy_stoch_os && stk_h1 <= strategy_stoch_os)
      {
-      if(bar1_time - g_last_long_bar < (datetime)(strategy_min_bar_gap * PeriodSeconds(PERIOD_M15)))
+      if(TimeCurrent() - g_last_long_signal_time < (datetime)gap_secs)
          return false;
 
       const double entry   = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -120,7 +121,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.symbol_slot      = qm_magic_slot_offset;
       req.expiration_seconds = 0;
 
-      g_last_long_bar = bar1_time;
+      g_last_long_signal_time = TimeCurrent();
       return true;
      }
 
@@ -128,7 +129,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(bb_m15 == -1 && bb_m30 == -1 && bb_h1 == -1 &&
       stk_m15 >= strategy_stoch_ob && stk_m30 >= strategy_stoch_ob && stk_h1 >= strategy_stoch_ob)
      {
-      if(bar1_time - g_last_short_bar < (datetime)(strategy_min_bar_gap * PeriodSeconds(PERIOD_M15)))
+      if(TimeCurrent() - g_last_short_signal_time < (datetime)gap_secs)
          return false;
 
       const double entry    = SymbolInfoDouble(_Symbol, SYMBOL_BID);
@@ -155,7 +156,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.symbol_slot      = qm_magic_slot_offset;
       req.expiration_seconds = 0;
 
-      g_last_short_bar = bar1_time;
+      g_last_short_signal_time = TimeCurrent();
       return true;
      }
 
