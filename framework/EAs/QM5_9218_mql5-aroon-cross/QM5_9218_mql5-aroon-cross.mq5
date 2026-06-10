@@ -46,13 +46,13 @@ input int    strategy_max_hold_bars      = 60;   // failsafe time-exit in H1 bar
 // File-scope cached state — updated once per new H1 bar in RefreshAroonState()
 // -----------------------------------------------------------------------------
 
-static double   g_aroon_up_1    = -1.0;  // Aroon Up  last closed bar (shift 1)
-static double   g_aroon_dn_1    = -1.0;  // Aroon Down last closed bar (shift 1)
-static double   g_aroon_up_2    = -1.0;  // Aroon Up  bar before last (shift 2)
-static double   g_aroon_dn_2    = -1.0;  // Aroon Down bar before last (shift 2)
-static datetime g_last_bar      = 0;     // bar time of last state update
-static int      g_bars_held     = 0;     // bars elapsed with open position
-static bool     g_exit_checked  = false; // one-shot exit guard per bar
+double   g_aroon_up_1    = -1.0;  // Aroon Up  last closed bar (shift 1)
+double   g_aroon_dn_1    = -1.0;  // Aroon Down last closed bar (shift 1)
+double   g_aroon_up_2    = -1.0;  // Aroon Up  bar before last (shift 2)
+double   g_aroon_dn_2    = -1.0;  // Aroon Down bar before last (shift 2)
+datetime g_last_bar      = 0;     // bar time of last state update
+int      g_bars_held     = 0;     // bars elapsed with open position
+bool     g_exit_checked  = false; // one-shot exit guard per bar
 
 // -----------------------------------------------------------------------------
 // Aroon calculation — O(period) per call, gated to once per new closed bar
@@ -67,12 +67,12 @@ void CalcAroon(const int period, const int ref_shift, double &up, double &down)
    // perf-allowed: O(period) iHigh/iLow reads per call; called once per closed bar
    int    hi_idx = ref_shift;
    int    lo_idx = ref_shift;
-   double hi_val = iHigh(_Symbol, PERIOD_H1, ref_shift);
-   double lo_val = iLow(_Symbol, PERIOD_H1, ref_shift);
+   double hi_val = iHigh(_Symbol, PERIOD_H1, ref_shift); // perf-allowed: bespoke Aroon, gated per bar
+   double lo_val = iLow(_Symbol, PERIOD_H1, ref_shift);  // perf-allowed: bespoke Aroon, gated per bar
    for(int i = ref_shift + 1; i <= ref_shift + period; ++i)
      {
-      double h = iHigh(_Symbol, PERIOD_H1, i);
-      double l = iLow(_Symbol, PERIOD_H1, i);
+      double h = iHigh(_Symbol, PERIOD_H1, i); // perf-allowed: bespoke Aroon, gated per bar
+      double l = iLow(_Symbol, PERIOD_H1, i);  // perf-allowed: bespoke Aroon, gated per bar
       if(h >= hi_val) { hi_val = h; hi_idx = i; }
       if(l <= lo_val) { lo_val = l; lo_idx = i; }
      }

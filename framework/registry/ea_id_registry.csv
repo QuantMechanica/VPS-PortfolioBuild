@@ -3422,3 +3422,5 @@ ea_id,slug,strategy_id,status,owner,created_at
 9195,mql5-signal-pulse,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Development,2026-06-10
 
 9247,mql5-trix-wpr,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Development,2026-06-109228,mql5-alligator-teeth,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Development,2026-06-10
+
+9245,mql5-ao-zero,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Development,2026-06-109246,mql5-ao-bounce,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Development,2026-06-10

@@ -185,7 +185,6 @@ bool Strategy_ExitSignal()
    const double lips    = QM_SMMA(_Symbol, PERIOD_H1, strategy_lips_period,  l_idx,     PRICE_MEDIAN);
    const double lips_p  = QM_SMMA(_Symbol, PERIOD_H1, strategy_lips_period,  l_idx + 1, PRICE_MEDIAN);
    const double jaw     = QM_SMMA(_Symbol, PERIOD_H1, strategy_jaw_period,   j_idx,     PRICE_MEDIAN);
-
    const double close1 = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed: bespoke Alligator cross logic
    const double close2 = iClose(_Symbol, PERIOD_H1, 2); // perf-allowed: bespoke Alligator cross logic
 
