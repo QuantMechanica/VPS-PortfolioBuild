@@ -7078,3 +7078,12 @@
 9413,mql5-paq-marubozu,1,GBPUSD.DWX,94130001,2026-06-10,Development,active
 9413,mql5-paq-marubozu,2,XAUUSD.DWX,94130002,2026-06-10,Development,active
 9413,mql5-paq-marubozu,3,GDAXI.DWX,94130003,2026-06-10,Development,active
+9418,silver-bullet,0,EURUSD.DWX,94180000,2026-06-10,Development,active
+9418,silver-bullet,1,GBPUSD.DWX,94180001,2026-06-10,Development,active
+9418,silver-bullet,2,XAUUSD.DWX,94180002,2026-06-10,Development,active
+9418,silver-bullet,3,NDX.DWX,94180003,2026-06-10,Development,active
+9418,silver-bullet,4,GDAXI.DWX,94180004,2026-06-10,Development,active
+9414,mql5-paq-doji,0,EURUSD.DWX,94140000,2026-06-10,Development,active
+9414,mql5-paq-doji,1,GBPUSD.DWX,94140001,2026-06-10,Development,active
+9414,mql5-paq-doji,2,USDJPY.DWX,94140002,2026-06-10,Development,active
+9414,mql5-paq-doji,3,XAUUSD.DWX,94140003,2026-06-10,Development,active
