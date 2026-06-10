@@ -7049,3 +7049,6 @@
 9302,mql5-ob-bos,1,GBPUSD.DWX,93020001,2026-06-10,Development,active
 9302,mql5-ob-bos,2,XAUUSD.DWX,93020002,2026-06-10,Development,active
 9302,mql5-ob-bos,3,GDAXI.DWX,93020003,2026-06-10,Development,active
+9357,mql5-orb-break,0,NDX.DWX,93570000,2026-06-10,Development,active
+9357,mql5-orb-break,1,WS30.DWX,93570001,2026-06-10,Development,active
+9357,mql5-orb-break,2,XAUUSD.DWX,93570002,2026-06-10,Development,active
