@@ -3,16 +3,16 @@
 ; ea_id:        10079
 ; ea_slug:      gh-victor-kumo
 ; ea_version:   v5.0
-; set_version:  s20260523-001
+; set_version:  s20260610-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   6024387d3b5a64f34cf5e2431944e2b8f3bc8ba7d85794af1c09622d0b956b67
 ; author:       Development
-; date:         2026-05-23
+; date:         2026-06-10
 ;==========================================================
 qm_magic_slot_offset=3
 RISK_FIXED=1000
@@ -30,5 +30,9 @@ qm_filter_volatility_atr_period=14
 qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card
+; card_defaults_source=manual_from_card
+strategy_tenkan_period=9
+strategy_kijun_period=26
+strategy_senkou_b_period=52
+strategy_stop_percent=3.0

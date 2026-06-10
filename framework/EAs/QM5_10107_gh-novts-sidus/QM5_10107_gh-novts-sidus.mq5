@@ -108,7 +108,6 @@ bool Strategy_NoTradeFilter()
    const double spread_points = (ask - bid) / point;
    if(spread_points > strategy_max_spread_points)
       return true;
-
    const datetime d1_open = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 bar-open time for daily cooldown; no QM_Time helper
    if(d1_open > 0 && HistorySelect(d1_open, TimeCurrent()))
      {
@@ -278,7 +277,6 @@ bool Strategy_ExitSignal()
       if(l > 0.0)
          prior_low = MathMin(prior_low, l);
      }
-
    const double last_high = iHigh(_Symbol, _Period, 1); // perf-allowed: last closed bar high; no QM_High helper
    const double last_low = iLow(_Symbol, _Period, 1);   // perf-allowed: last closed bar low; no QM_Low helper
    if(position_type == POSITION_TYPE_BUY &&

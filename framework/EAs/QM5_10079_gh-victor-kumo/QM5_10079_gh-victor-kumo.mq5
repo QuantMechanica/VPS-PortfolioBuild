@@ -34,6 +34,8 @@ input int    strategy_kijun_period      = 26;
 input int    strategy_senkou_b_period   = 52;
 input double strategy_stop_percent      = 3.0;
 
+// Cached Ichimoku cloud boundaries for bar[-1]; refreshed once per closed bar
+// via Strategy_EntrySignal → RefreshCloudCache.
 double g_cached_cloud_lower = 0.0;
 double g_cached_cloud_upper = 0.0;
 bool   g_cloud_cache_ready  = false;
@@ -86,14 +88,16 @@ bool SelectPositionTypeForMagic(ENUM_POSITION_TYPE &position_type)
    return false;
   }
 
+// Checks if an entry deal for this magic was recorded during the prior closed bar.
+// Called only inside the QM_IsNewBar() gate in Strategy_EntrySignal.
 bool TradedDuringPriorBar()
   {
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
       return false;
 
-   const datetime prior_bar_open = iTime(_Symbol, (ENUM_TIMEFRAMES)_Period, 1);
-   const datetime current_bar_open = iTime(_Symbol, (ENUM_TIMEFRAMES)_Period, 0);
+   const datetime prior_bar_open    = iTime(_Symbol, (ENUM_TIMEFRAMES)_Period, 1); // perf-allowed — Ichimoku: closed-bar timestamp gate, no QM_* equivalent
+   const datetime current_bar_open  = iTime(_Symbol, (ENUM_TIMEFRAMES)_Period, 0); // perf-allowed — Ichimoku: closed-bar timestamp gate, no QM_* equivalent
    if(prior_bar_open <= 0 || current_bar_open <= prior_bar_open)
       return false;
 
@@ -119,6 +123,8 @@ bool TradedDuringPriorBar()
    return false;
   }
 
+// Ichimoku Tenkan/Kijun/Senkou midpoint: (period_high + period_low) / 2.
+// Bespoke structural math — no QM_* equivalent. Called only inside QM_IsNewBar gate.
 bool MidpointHighLow(const int start_shift, const int period, double &midpoint)
   {
    if(period <= 0 || start_shift < 0)
@@ -128,18 +134,20 @@ bool MidpointHighLow(const int start_shift, const int period, double &midpoint)
    double lowest = DBL_MAX;
    for(int i = start_shift; i < start_shift + period; ++i)
      {
-      const double hi = iHigh(_Symbol, (ENUM_TIMEFRAMES)_Period, i);
-      const double lo = iLow(_Symbol, (ENUM_TIMEFRAMES)_Period, i);
+      const double hi = iHigh(_Symbol, (ENUM_TIMEFRAMES)_Period, i); // perf-allowed — Ichimoku HL midpoint, bespoke structural, called once/bar
+      const double lo = iLow(_Symbol,  (ENUM_TIMEFRAMES)_Period, i); // perf-allowed — Ichimoku HL midpoint, bespoke structural, called once/bar
       if(hi <= 0.0 || lo <= 0.0)
          return false;
       highest = MathMax(highest, hi);
-      lowest = MathMin(lowest, lo);
+      lowest  = MathMin(lowest, lo);
      }
 
    midpoint = (highest + lowest) * 0.5;
    return true;
   }
 
+// Compute Senkou Span A and B at a given display shift (cloud projected by kijun_period).
+// Called only inside QM_IsNewBar gate.
 bool CloudAtShift(const int display_shift, double &span_a, double &span_b)
   {
    if(strategy_tenkan_period <= 0 || strategy_kijun_period <= 0 ||
@@ -149,18 +157,16 @@ bool CloudAtShift(const int display_shift, double &span_a, double &span_b)
    const int origin_shift = display_shift + strategy_kijun_period;
 
    double tenkan = 0.0;
-   double kijun = 0.0;
-   if(!MidpointHighLow(origin_shift, strategy_tenkan_period, tenkan))
-      return false;
-   if(!MidpointHighLow(origin_shift, strategy_kijun_period, kijun))
-      return false;
-   if(!MidpointHighLow(origin_shift, strategy_senkou_b_period, span_b))
-      return false;
+   double kijun  = 0.0;
+   if(!MidpointHighLow(origin_shift, strategy_tenkan_period,   tenkan))   return false;
+   if(!MidpointHighLow(origin_shift, strategy_kijun_period,    kijun))    return false;
+   if(!MidpointHighLow(origin_shift, strategy_senkou_b_period, span_b))   return false;
 
    span_a = (tenkan + kijun) * 0.5;
    return true;
   }
 
+// Refresh cloud cache from bar[-1]. Called once per new bar from Strategy_EntrySignal.
 bool RefreshCloudCache()
   {
    double span_a = 0.0;
@@ -170,18 +176,21 @@ bool RefreshCloudCache()
 
    g_cached_cloud_lower = MathMin(span_a, span_b);
    g_cached_cloud_upper = MathMax(span_a, span_b);
-   g_cloud_cache_ready = true;
+   g_cloud_cache_ready  = true;
    return true;
   }
 
+// Entry: D1 Kumo breakout. Long when bearish-to-bullish breakout across Kumo upper;
+// short when bullish-to-bearish breakdown below Kumo lower. One position per magic.
+// Called only after QM_IsNewBar() — all series reads are per-bar, not per-tick.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   req.type = QM_BUY;
-   req.price = 0.0;
-   req.sl = 0.0;
-   req.tp = 0.0;
-   req.reason = "";
-   req.symbol_slot = qm_magic_slot_offset;
+   req.type               = QM_BUY;
+   req.price              = 0.0;
+   req.sl                 = 0.0;
+   req.tp                 = 0.0;
+   req.reason             = "";
+   req.symbol_slot        = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
    if(strategy_stop_percent <= 0.0)
@@ -193,39 +202,36 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(TradedDuringPriorBar())
       return false;
 
-   double span_a_1 = 0.0;
-   double span_b_1 = 0.0;
-   double span_a_2 = 0.0;
-   double span_b_2 = 0.0;
-   if(!CloudAtShift(1, span_a_1, span_b_1))
-      return false;
-   if(!CloudAtShift(2, span_a_2, span_b_2))
-      return false;
+   double span_a_1 = 0.0, span_b_1 = 0.0;
+   double span_a_2 = 0.0, span_b_2 = 0.0;
+   if(!CloudAtShift(1, span_a_1, span_b_1)) return false;
+   if(!CloudAtShift(2, span_a_2, span_b_2)) return false;
 
-   const double low1 = iLow(_Symbol, (ENUM_TIMEFRAMES)_Period, 1);
-   const double low2 = iLow(_Symbol, (ENUM_TIMEFRAMES)_Period, 2);
-   const double high1 = iHigh(_Symbol, (ENUM_TIMEFRAMES)_Period, 1);
-   const double high2 = iHigh(_Symbol, (ENUM_TIMEFRAMES)_Period, 2);
+   const double low1  = iLow (_Symbol, (ENUM_TIMEFRAMES)_Period, 1); // perf-allowed — Ichimoku Kumo breakout, called once/bar
+   const double low2  = iLow (_Symbol, (ENUM_TIMEFRAMES)_Period, 2); // perf-allowed — Ichimoku Kumo breakout, called once/bar
+   const double high1 = iHigh(_Symbol, (ENUM_TIMEFRAMES)_Period, 1); // perf-allowed — Ichimoku Kumo breakout, called once/bar
+   const double high2 = iHigh(_Symbol, (ENUM_TIMEFRAMES)_Period, 2); // perf-allowed — Ichimoku Kumo breakout, called once/bar
    if(low1 <= 0.0 || low2 <= 0.0 || high1 <= 0.0 || high2 <= 0.0)
       return false;
 
    const bool bullish_kumo = (span_a_1 > span_b_1 && span_a_2 > span_b_2);
    const bool bearish_kumo = (span_a_1 < span_b_1 && span_a_2 < span_b_2);
+
    const double upper_1 = MathMax(span_a_1, span_b_1);
    const double upper_2 = MathMax(span_a_2, span_b_2);
    const double lower_1 = MathMin(span_a_1, span_b_1);
    const double lower_2 = MathMin(span_a_2, span_b_2);
 
-   QM_OrderType side = QM_BUY;
-   string reason = "";
+   QM_OrderType side  = QM_BUY;
+   string       reason = "";
    if(bullish_kumo && low2 < upper_2 && low1 > upper_1)
      {
-      side = QM_BUY;
+      side   = QM_BUY;
       reason = "KUMO_BREAKOUT_LONG";
      }
    else if(bearish_kumo && high2 > lower_2 && high1 < lower_1)
      {
-      side = QM_SELL;
+      side   = QM_SELL;
       reason = "KUMO_BREAKOUT_SHORT";
      }
    else
@@ -239,17 +245,20 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(stop_distance <= 0.0)
       return false;
 
-   req.type = side;
-   req.sl = (side == QM_BUY) ? entry - stop_distance : entry + stop_distance;
+   req.type   = side;
+   req.sl     = (side == QM_BUY) ? entry - stop_distance : entry + stop_distance;
    req.reason = reason;
    return (req.sl > 0.0);
   }
 
 void Strategy_ManageOpenPosition()
   {
-   // Source strategy has no trailing, break-even, or partial-close rule.
+   // Source strategy specifies no trailing, break-even, or partial-close rule.
   }
 
+// Exit: close long if developing bar low crosses below cached cloud lower boundary;
+// close short if developing bar high crosses above cached cloud upper boundary.
+// g_cached_cloud_lower/upper are refreshed each new bar by Strategy_EntrySignal.
 bool Strategy_ExitSignal()
   {
    ENUM_POSITION_TYPE position_type = POSITION_TYPE_BUY;
@@ -258,23 +267,25 @@ bool Strategy_ExitSignal()
    if(!g_cloud_cache_ready && !RefreshCloudCache())
       return false;
 
-   const double current_low = iLow(_Symbol, (ENUM_TIMEFRAMES)_Period, 0);
-   const double current_high = iHigh(_Symbol, (ENUM_TIMEFRAMES)_Period, 0);
+   const double current_low  = iLow (_Symbol, (ENUM_TIMEFRAMES)_Period, 0); // perf-allowed — intraday exit vs cached cloud; O(1) current-bar read
+   const double current_high = iHigh(_Symbol, (ENUM_TIMEFRAMES)_Period, 0); // perf-allowed — intraday exit vs cached cloud; O(1) current-bar read
    if(current_low <= 0.0 || current_high <= 0.0)
       return false;
 
-   if(position_type == POSITION_TYPE_BUY && current_low < g_cached_cloud_lower)
-      return true;
-   if(position_type == POSITION_TYPE_SELL && current_high > g_cached_cloud_upper)
-      return true;
+   if(position_type == POSITION_TYPE_BUY  && current_low  < g_cached_cloud_lower) return true;
+   if(position_type == POSITION_TYPE_SELL && current_high > g_cached_cloud_upper) return true;
 
    return false;
   }
 
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false;
+   return false; // defer to QM_NewsAllowsTrade
   }
+
+// -----------------------------------------------------------------------------
+// Framework wiring — do NOT edit below this line unless you know why.
+// -----------------------------------------------------------------------------
 
 int OnInit()
   {
@@ -362,8 +373,8 @@ void OnTimer()
   }
 
 void OnTradeTransaction(const MqlTradeTransaction &trans,
-                        const MqlTradeRequest &request,
-                        const MqlTradeResult &result)
+                        const MqlTradeRequest     &request,
+                        const MqlTradeResult      &result)
   {
    QM_FrameworkOnTradeTransaction(trans, request, result);
   }

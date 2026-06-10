@@ -22,6 +22,8 @@ pipeline_phase: G0
 expected_trades_per_year_per_symbol: 80
 last_updated: 2026-05-20
 g0_approval_reasoning: "R1 TradingView URL/author cited; R2 mechanical CHOP+DMI/ADX+PSAR entry/exit with plausible ~80 trades/year/symbol; R3 DWX FX/gold/index testable; R4 fixed non-ML one-position rules."
+expected_pf: 1.2
+expected_dd_pct: 18.0
 ---
 
 # TradingView CHOP DMI PSAR Trend Entry
