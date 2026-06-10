@@ -44,19 +44,19 @@ input double strategy_sl_atr_mult    = 0.5;   // ATR multiplier beyond Senkou B 
 input int    strategy_time_exit_bars = 64;    // Time-exit after N closed M30 bars
 
 // =============================================================================
-// Ichimoku helpers — bespoke structural logic; no QM_ wrapper exists for Ichi.
-// All bar reads are perf-allowed: called only inside the QM_IsNewBar() gate.
+// Ichimoku helpers — bespoke structural logic; no QM_ Ichimoku wrapper exists.
+// Raw iHigh/iLow/iClose calls are gated by QM_IsNewBar() in the caller;
+// each direct series call carries // perf-allowed per the framework corset.
 // =============================================================================
 
 double IchiTenkan(const int k)
   {
-   // perf-allowed: Ichimoku structural logic, once per closed bar
-   double hi = iHigh(_Symbol, _Period, k);
-   double lo = iLow(_Symbol, _Period, k);
+   double hi = iHigh(_Symbol, _Period, k);           // perf-allowed: Ichimoku structural, once/bar
+   double lo = iLow(_Symbol, _Period, k);            // perf-allowed
    for(int j = 1; j < strategy_ichi_tenkan; j++)
      {
-      const double h = iHigh(_Symbol, _Period, k + j);
-      const double l = iLow(_Symbol, _Period, k + j);
+      const double h = iHigh(_Symbol, _Period, k + j); // perf-allowed
+      const double l = iLow(_Symbol, _Period, k + j);  // perf-allowed
       if(h > hi) hi = h;
       if(l < lo) lo = l;
      }
@@ -65,13 +65,12 @@ double IchiTenkan(const int k)
 
 double IchiKijun(const int k)
   {
-   // perf-allowed: Ichimoku structural logic, once per closed bar
-   double hi = iHigh(_Symbol, _Period, k);
-   double lo = iLow(_Symbol, _Period, k);
+   double hi = iHigh(_Symbol, _Period, k);           // perf-allowed: Ichimoku structural, once/bar
+   double lo = iLow(_Symbol, _Period, k);            // perf-allowed
    for(int j = 1; j < strategy_ichi_kijun; j++)
      {
-      const double h = iHigh(_Symbol, _Period, k + j);
-      const double l = iLow(_Symbol, _Period, k + j);
+      const double h = iHigh(_Symbol, _Period, k + j); // perf-allowed
+      const double l = iLow(_Symbol, _Period, k + j);  // perf-allowed
       if(h > hi) hi = h;
       if(l < lo) lo = l;
      }
@@ -88,14 +87,13 @@ double IchiSenkouA(const int s)
 // Senkou Span B applicable at framework shift s
 double IchiSenkouB(const int s)
   {
-   // perf-allowed: Ichimoku structural logic, once per closed bar
    const int k = s + strategy_ichi_kijun;
-   double hi = iHigh(_Symbol, _Period, k);
-   double lo = iLow(_Symbol, _Period, k);
+   double hi = iHigh(_Symbol, _Period, k);           // perf-allowed: Ichimoku structural, once/bar
+   double lo = iLow(_Symbol, _Period, k);            // perf-allowed
    for(int j = 1; j < strategy_ichi_senkou_b; j++)
      {
-      const double h = iHigh(_Symbol, _Period, k + j);
-      const double l = iLow(_Symbol, _Period, k + j);
+      const double h = iHigh(_Symbol, _Period, k + j); // perf-allowed
+      const double l = iLow(_Symbol, _Period, k + j);  // perf-allowed
       if(h > hi) hi = h;
       if(l < lo) lo = l;
      }
@@ -115,12 +113,12 @@ bool Strategy_NoTradeFilter()
 // entry evaluation for the three-bar Kumo bounce pattern.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // --- Read Ichimoku & price data (perf-allowed: once per closed bar) ---
+   // --- Read price and Ichimoku data (all raw calls are once/bar via QM_IsNewBar gate) ---
    // Framework shift 1 = last completed bar = article notation [0]
    // Framework shift 2 = article [1];  shift 3 = article [2]
-   const double c0  = iClose(_Symbol, _Period, 1); // article Close[0]
-   const double c1  = iClose(_Symbol, _Period, 2); // article Close[1]
-   const double c2  = iClose(_Symbol, _Period, 3); // article Close[2]
+   const double c0  = iClose(_Symbol, _Period, 1); // perf-allowed: article Close[0], once/bar
+   const double c1  = iClose(_Symbol, _Period, 2); // perf-allowed: article Close[1]
+   const double c2  = iClose(_Symbol, _Period, 3); // perf-allowed: article Close[2]
 
    const double ssa0 = IchiSenkouA(1); // Senkou A at article [0]
    const double ssa1 = IchiSenkouA(2); // Senkou A at article [1]
@@ -136,7 +134,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    const int magic = QM_FrameworkMagic();
 
-   // --- Bar-close exit check for open position ---
+   // --- Bar-close exit check for any open position ---
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -144,18 +142,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if(PositionGetString(POSITION_SYMBOL) != _Symbol)     continue;
       if(PositionGetInteger(POSITION_MAGIC) != magic)       continue;
 
-      const bool is_long   = (PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY);
+      const bool is_long    = (PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY);
       const datetime o_time = (datetime)PositionGetInteger(POSITION_TIME);
 
-      // perf-allowed: bar-count for time exit, once per closed bar
-      const int bars_elapsed = iBarShift(_Symbol, _Period, o_time, false);
+      // Bar count for time exit — called once per closed bar
+      const int bars_elapsed = iBarShift(_Symbol, _Period, o_time, false); // perf-allowed
 
       bool should_exit = false;
 
       if(bars_elapsed >= strategy_time_exit_bars)
          should_exit = true;
 
-      // Close back through Senkou A against trade
+      // Close back through Senkou A against trade direction
       if(is_long  && c0 < ssa0) should_exit = true;
       if(!is_long && c0 > ssa0) should_exit = true;
 
@@ -193,9 +191,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    // --- Three-bar cloud-bounce entry evaluation ---
    // Buy: V-pattern (c2 high, c1 dips into cloud, c0 recovers above cloud) + DI+ > DI-
-   const bool buy_signal = (c2 > c1  && c1 < c0 &&
-                             c2 > ssa2 && c0 > ssa0 && c1 <= ssa1 &&
-                             diplus_val > diminus_val && adx_val >= strategy_adx_threshold);
+   const bool buy_signal  = (c2 > c1  && c1 < c0 &&
+                              c2 > ssa2 && c0 > ssa0 && c1 <= ssa1 &&
+                              diplus_val > diminus_val && adx_val >= strategy_adx_threshold);
 
    // Sell: inverted-V (c2 low, c1 spikes into cloud, c0 drops below cloud) + DI- > DI+
    const bool sell_signal = (c2 < c1  && c1 > c0 &&
@@ -212,12 +210,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(buy_signal)
      {
       sl_price = ssb0 - strategy_sl_atr_mult * atr;
-      if(sl_price >= c0) return false; // degenerate: Senkou B above entry
+      if(sl_price >= c0) return false; // degenerate: Senkou B above current close
      }
    else
      {
       sl_price = ssb0 + strategy_sl_atr_mult * atr;
-      if(sl_price <= c0) return false; // degenerate: Senkou B below entry
+      if(sl_price <= c0) return false; // degenerate: Senkou B below current close
      }
 
    req.type             = buy_signal ? QM_BUY : QM_SELL;
