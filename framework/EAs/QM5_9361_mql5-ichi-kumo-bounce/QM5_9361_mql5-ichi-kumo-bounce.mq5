@@ -74,10 +74,9 @@ double _SpanB(const int chart_bar)
 // above SpanA; DI+ > DI-, ADX >= threshold.
 bool _IsLongPattern()
   {
-   // perf-allowed: bespoke structural three-bar close comparison (O(1), M30 tick rate)
-   const double c0  = iClose(_Symbol, PERIOD_CURRENT, 1);
-   const double c1  = iClose(_Symbol, PERIOD_CURRENT, 2);
-   const double c2  = iClose(_Symbol, PERIOD_CURRENT, 3);
+   const double c0  = iClose(_Symbol, PERIOD_CURRENT, 1); // perf-allowed: bespoke structural three-bar close
+   const double c1  = iClose(_Symbol, PERIOD_CURRENT, 2); // perf-allowed: bespoke structural three-bar close
+   const double c2  = iClose(_Symbol, PERIOD_CURRENT, 3); // perf-allowed: bespoke structural three-bar close
    const double sa0 = _SpanA(1);
    const double sa1 = _SpanA(2);
    const double sa2 = _SpanA(3);
@@ -92,10 +91,9 @@ bool _IsLongPattern()
 // Three-bar Pattern 3 short: mirror of long.
 bool _IsShortPattern()
   {
-   // perf-allowed: bespoke structural three-bar close comparison (O(1), M30 tick rate)
-   const double c0  = iClose(_Symbol, PERIOD_CURRENT, 1);
-   const double c1  = iClose(_Symbol, PERIOD_CURRENT, 2);
-   const double c2  = iClose(_Symbol, PERIOD_CURRENT, 3);
+   const double c0  = iClose(_Symbol, PERIOD_CURRENT, 1); // perf-allowed: bespoke structural three-bar close
+   const double c1  = iClose(_Symbol, PERIOD_CURRENT, 2); // perf-allowed: bespoke structural three-bar close
+   const double c2  = iClose(_Symbol, PERIOD_CURRENT, 3); // perf-allowed: bespoke structural three-bar close
    const double sa0 = _SpanA(1);
    const double sa1 = _SpanA(2);
    const double sa2 = _SpanA(3);
