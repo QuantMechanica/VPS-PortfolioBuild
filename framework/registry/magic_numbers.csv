@@ -6911,3 +6911,13 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9271,mql5-ifvg-reversal,1,GBPJPY.DWX,92710001,2026-06-10,Development,active
 9271,mql5-ifvg-reversal,2,XAUUSD.DWX,92710002,2026-06-10,Development,active
 9271,mql5-ifvg-reversal,3,NDX.DWX,92710003,2026-06-10,Development,active
+9191,mql5-butterfly,0,EURUSD.DWX,91910000,2026-06-10,Development,active
+9191,mql5-butterfly,1,GBPUSD.DWX,91910001,2026-06-10,Development,active
+9191,mql5-butterfly,2,XAUUSD.DWX,91910002,2026-06-10,Development,active
+9161,aa-ew6-ma12,0,SP500.DWX,91610000,2026-06-10,Development,active
+9161,aa-ew6-ma12,1,NDX.DWX,91610001,2026-06-10,Development,active
+9161,aa-ew6-ma12,2,WS30.DWX,91610002,2026-06-10,Development,active
+9161,aa-ew6-ma12,3,GDAXI.DWX,91610003,2026-06-10,Development,active
+9161,aa-ew6-ma12,4,UK100.DWX,91610004,2026-06-10,Development,active
+9161,aa-ew6-ma12,5,XAUUSD.DWX,91610005,2026-06-10,Development,active
+9161,aa-ew6-ma12,6,XTIUSD.DWX,91610006,2026-06-10,Development,active
