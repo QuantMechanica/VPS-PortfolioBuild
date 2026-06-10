@@ -7052,3 +7052,7 @@
 9357,mql5-orb-break,0,NDX.DWX,93570000,2026-06-10,Development,active
 9357,mql5-orb-break,1,WS30.DWX,93570001,2026-06-10,Development,active
 9357,mql5-orb-break,2,XAUUSD.DWX,93570002,2026-06-10,Development,active
+9360,mql5-ichi-kumo-cross,0,GBPUSD.DWX,93600000,2026-06-10,Development,active
+9360,mql5-ichi-kumo-cross,1,EURUSD.DWX,93600001,2026-06-10,Development,active
+9360,mql5-ichi-kumo-cross,2,USDJPY.DWX,93600002,2026-06-10,Development,active
+9360,mql5-ichi-kumo-cross,3,XAUUSD.DWX,93600003,2026-06-10,Development,active

@@ -421,4 +421,57 @@ double QM_Momentum(const string sym, const ENUM_TIMEFRAMES tf, const int period,
    return QM_IndicatorReadBuffer(QM_IndMomentum(sym, tf, period, price), 0, shift);
   }
 
+// --- Ichimoku Kinko Hyo ---
+// Buffer indices for iIchimoku:
+//   0 = Tenkan-sen, 1 = Kijun-sen, 2 = Senkou Span A, 3 = Senkou Span B, 4 = Chikou Span
+int QM_IndIchimoku(const string sym, const ENUM_TIMEFRAMES tf,
+                   const int tenkan_period, const int kijun_period, const int senkou_period)
+  {
+   const string key = StringFormat("ICHI|%s|%d|%d|%d|%d", sym, (int)tf,
+                                   tenkan_period, kijun_period, senkou_period);
+   int h = QM_IndicatorsLookup(key);
+   if(h != INVALID_HANDLE)
+      return h;
+   h = iIchimoku(sym, tf, tenkan_period, kijun_period, senkou_period);
+   return QM_IndicatorsRegister(key, h);
+  }
+
+double QM_Ichimoku_TenkanSen(const string sym, const ENUM_TIMEFRAMES tf,
+                              const int tenkan = 9, const int kijun = 26,
+                              const int senkou = 52, const int shift = 1)
+  {
+   return QM_IndicatorReadBuffer(QM_IndIchimoku(sym, tf, tenkan, kijun, senkou), 0, shift);
+  }
+
+double QM_Ichimoku_KijunSen(const string sym, const ENUM_TIMEFRAMES tf,
+                             const int tenkan = 9, const int kijun = 26,
+                             const int senkou = 52, const int shift = 1)
+  {
+   return QM_IndicatorReadBuffer(QM_IndIchimoku(sym, tf, tenkan, kijun, senkou), 1, shift);
+  }
+
+// Senkou Span A is displaced 26 bars forward in the chart, but the buffer stores it
+// at the same bar index. To read the current cloud value (26 bars back from future),
+// use shift = kijun_period (default 26) for the "current" cloud position.
+double QM_Ichimoku_SenkouSpanA(const string sym, const ENUM_TIMEFRAMES tf,
+                                const int tenkan = 9, const int kijun = 26,
+                                const int senkou = 52, const int shift = 1)
+  {
+   return QM_IndicatorReadBuffer(QM_IndIchimoku(sym, tf, tenkan, kijun, senkou), 2, shift);
+  }
+
+double QM_Ichimoku_SenkouSpanB(const string sym, const ENUM_TIMEFRAMES tf,
+                                const int tenkan = 9, const int kijun = 26,
+                                const int senkou = 52, const int shift = 1)
+  {
+   return QM_IndicatorReadBuffer(QM_IndIchimoku(sym, tf, tenkan, kijun, senkou), 3, shift);
+  }
+
+double QM_Ichimoku_ChikouSpan(const string sym, const ENUM_TIMEFRAMES tf,
+                               const int tenkan = 9, const int kijun = 26,
+                               const int senkou = 52, const int shift = 1)
+  {
+   return QM_IndicatorReadBuffer(QM_IndIchimoku(sym, tf, tenkan, kijun, senkou), 4, shift);
+  }
+
 #endif // QM_INDICATORS_MQH
