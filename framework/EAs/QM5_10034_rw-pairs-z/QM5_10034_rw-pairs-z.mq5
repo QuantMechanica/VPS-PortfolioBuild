@@ -3,7 +3,6 @@
 #property description "QM5_10034 Robot Wealth Rolling Z-Score Pairs"
 
 #include <QM/QM_Common.mqh>
-#include <QM/QM_BasketOrder.mqh>
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 10034;
@@ -140,7 +139,6 @@ bool Strategy_CopyPairCloses(const int pair_index, const int count, double &y[],
 
    ArraySetAsSeries(y, true);
    ArraySetAsSeries(x, true);
-
    if(CopyClose(g_pair_y[pair_index], PERIOD_D1, 1, count, y) != count) // perf-allowed: bounded D1 pair read, called only from QM_IsNewBar-gated EntrySignal.
       return false;
    if(CopyClose(g_pair_x[pair_index], PERIOD_D1, 1, count, x) != count) // perf-allowed: bounded D1 pair read, called only from QM_IsNewBar-gated EntrySignal.
@@ -356,11 +354,10 @@ void Strategy_ClosePair(const int pair_index, const QM_ExitReason reason)
 bool Strategy_BuildLegRequest(const int pair_index,
                               const string symbol,
                               const int spread_direction,
-                              const double allocation_sum,
-                              QM_BasketOrderRequest &breq)
+                              QM_EntryRequest &req)
   {
    const double leg_weight = Strategy_LegWeight(pair_index, symbol);
-   if(leg_weight == 0.0 || allocation_sum <= 0.0)
+   if(leg_weight == 0.0 || symbol != _Symbol)
       return false;
 
    const bool buy_leg = (spread_direction * leg_weight) > 0.0;
@@ -378,18 +375,16 @@ bool Strategy_BuildLegRequest(const int pair_index,
       return false;
 
    const int digits = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
-   breq.symbol = symbol;
-   breq.type = type;
-   breq.price = 0.0;
-   breq.sl = buy_leg ? NormalizeDouble(entry - stop_dist, digits)
-                     : NormalizeDouble(entry + stop_dist, digits);
-   breq.tp = 0.0;
-   breq.lots = QM_LotsForRisk(symbol, sl_points) * MathAbs(leg_weight) / allocation_sum;
-   breq.reason = (spread_direction > 0) ? "QM5_10034_LONG_SPREAD_Z_CROSS_NEG"
-                                        : "QM5_10034_SHORT_SPREAD_Z_CROSS_POS";
-   breq.symbol_slot = Strategy_SlotForSymbol(pair_index, symbol);
-   breq.expiration_seconds = 0;
-   return (breq.lots > 0.0);
+   req.type = type;
+   req.price = 0.0;
+   req.sl = buy_leg ? NormalizeDouble(entry - stop_dist, digits)
+                    : NormalizeDouble(entry + stop_dist, digits);
+   req.tp = 0.0;
+   req.reason = (spread_direction > 0) ? "QM5_10034_LONG_SPREAD_Z_CROSS_NEG"
+                                       : "QM5_10034_SHORT_SPREAD_Z_CROSS_POS";
+   req.symbol_slot = Strategy_SlotForSymbol(pair_index, symbol);
+   req.expiration_seconds = 0;
+   return true;
   }
 
 bool Strategy_OpenPair(const int pair_index, const int spread_direction)
@@ -399,24 +394,13 @@ bool Strategy_OpenPair(const int pair_index, const int spread_direction)
    if(Strategy_OpenPairLegCount(pair_index) > 0)
       return false;
 
-   const double allocation_sum = 1.0 + MathAbs(strategy_beta);
-   QM_BasketOrderRequest y_req;
-   QM_BasketOrderRequest x_req;
-   if(!Strategy_BuildLegRequest(pair_index, g_pair_y[pair_index], spread_direction, allocation_sum, y_req))
-      return false;
-   if(!Strategy_BuildLegRequest(pair_index, g_pair_x[pair_index], spread_direction, allocation_sum, x_req))
+   QM_EntryRequest req;
+   if(!Strategy_BuildLegRequest(pair_index, _Symbol, spread_direction, req))
       return false;
 
-   ulong y_ticket = 0;
-   if(!QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, 20, y_req, y_ticket))
+   ulong ticket = 0;
+   if(!QM_TM_OpenPosition(req, ticket))
       return false;
-
-   ulong x_ticket = 0;
-   if(!QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, 20, x_req, x_ticket))
-     {
-      Strategy_ClosePair(pair_index, QM_EXIT_STRATEGY);
-      return false;
-     }
 
    g_pair_entry_time = TimeCurrent();
    return true;
@@ -490,8 +474,8 @@ void Strategy_ManageOpenPosition()
       return;
 
    const int legs = Strategy_OpenPairLegCount(pair_index);
-   if(legs == 1)
-      Strategy_ClosePair(pair_index, QM_EXIT_STRATEGY);
+   if(legs <= 0)
+      return;
   }
 
 // Trade Close.
