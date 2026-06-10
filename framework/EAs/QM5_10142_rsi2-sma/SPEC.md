@@ -93,3 +93,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 |---|---|---|---|
 | v1 | 2026-05-24 | Initial build from card | fa6d6d4a-9f2a-406b-a6d7-4f8e96d2a70c |
 | v2 | 2026-06-10 | Fix forbidden iClose calls — replace with QM_Sig_Price_Above_MA | fa6d6d4a-9f2a-406b-a6d7-4f8e96d2a70c |
+| v3 | 2026-06-10 | Fix EMA vs SMA: card specifies SMA(200)/SMA(5); replace QM_Sig_Price_Above_MA (EMA) with QM_SMA(1,shift) comparison | fa6d6d4a-9f2a-406b-a6d7-4f8e96d2a70c |

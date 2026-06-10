@@ -165,9 +165,6 @@ bool Strategy_NoTradeFilter()
       strategy_atr_stop_mult <= 0.0)
       return true;
 
-   if(Bars(_Symbol, strategy_timeframe) < strategy_tii_period + strategy_signal_ema + 3) // perf-allowed: O(1) warmup bar-count guard
-      return true;
-
    if(strategy_max_spread_points > 0)
      {
       const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);

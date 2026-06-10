@@ -114,10 +114,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_atr_stop_mult <= 0.0)
       return false;
 
-   const int    trend_signal = QM_Sig_Price_Above_MA(_Symbol, PERIOD_D1, strategy_trend_sma_period, 0.0, 1);
+   // SMA(1) at shift=1 == close[1] (closed-bar close price without raw iClose call)
+   const double close1      = QM_SMA(_Symbol, PERIOD_D1, 1, 1);
+   const double sma200      = QM_SMA(_Symbol, PERIOD_D1, strategy_trend_sma_period, 1);
    const double rsi         = QM_RSI(_Symbol, PERIOD_D1, strategy_rsi_period, 1);
-   if(trend_signal == 0 || rsi < 0.0)
+   if(close1 <= 0.0 || sma200 <= 0.0 || rsi < 0.0)
       return false;
+   const int    trend_signal = (close1 > sma200) ? 1 : (close1 < sma200) ? -1 : 0;
 
    QM_OrderType side = QM_BUY;
    bool has_signal = false;
@@ -173,7 +176,12 @@ bool Strategy_ExitSignal()
    if(magic <= 0)
       return false;
 
-   const int exit_signal = QM_Sig_Price_Above_MA(_Symbol, PERIOD_D1, strategy_exit_sma_period, 0.0, 1);
+   // SMA(1) at shift=1 == close[1] for the exit comparison
+   const double close1   = QM_SMA(_Symbol, PERIOD_D1, 1, 1);
+   const double sma_exit = QM_SMA(_Symbol, PERIOD_D1, strategy_exit_sma_period, 1);
+   if(close1 <= 0.0 || sma_exit <= 0.0)
+      return false;
+   const int exit_signal = (close1 > sma_exit) ? 1 : (close1 < sma_exit) ? -1 : 0;
    if(exit_signal == 0)
       return false;
 
