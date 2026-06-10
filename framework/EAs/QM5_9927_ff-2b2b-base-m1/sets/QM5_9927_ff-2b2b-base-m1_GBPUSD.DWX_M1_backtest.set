@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        9195
-; ea_slug:      mql5-signal-pulse
+; ea_id:        9927
+; ea_slug:      ff-2b2b-base-m1
 ; ea_version:   v5.0
 ; set_version:  s20260610-001
-; symbol:       XAUUSD.DWX
-; timeframe:    M15
+; symbol:       GBPUSD.DWX
+; timeframe:    M1
 ; environment:  backtest
-; magic_slot:   2
+; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   ae3eb01ea94376f6568e37c035c2a1974b38de7468e815d443e354ae794b6fb3
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-06-10
 ;==========================================================
-qm_magic_slot_offset=2
+qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1

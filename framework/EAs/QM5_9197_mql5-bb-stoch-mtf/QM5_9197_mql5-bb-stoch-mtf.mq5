@@ -82,8 +82,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double stk_m30 = QM_Stoch_K(_Symbol, PERIOD_M30, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slow, 1);
    const double stk_h1  = QM_Stoch_K(_Symbol, PERIOD_H1,  strategy_stoch_k, strategy_stoch_d, strategy_stoch_slow, 1);
 
-   // Bar timestamp for gap filter (perf-allowed: single iTime read at closed-bar gate)
-   const datetime bar1_time = iTime(_Symbol, PERIOD_M15, 1);
+   const datetime bar1_time = iTime(_Symbol, PERIOD_M15, 1); // perf-allowed: bar gap filter, single read per bar
 
    // ATR for SL offset
    const double atr14 = QM_ATR(_Symbol, PERIOD_M15, strategy_atr_period, 1);
