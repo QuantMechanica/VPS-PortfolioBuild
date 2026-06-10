@@ -95,7 +95,6 @@ bool TradedDuringPriorBar()
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
       return false;
-
    const datetime prior_bar_open    = iTime(_Symbol, (ENUM_TIMEFRAMES)_Period, 1); // perf-allowed — Ichimoku: closed-bar timestamp gate, no QM_* equivalent
    const datetime current_bar_open  = iTime(_Symbol, (ENUM_TIMEFRAMES)_Period, 0); // perf-allowed — Ichimoku: closed-bar timestamp gate, no QM_* equivalent
    if(prior_bar_open <= 0 || current_bar_open <= prior_bar_open)
@@ -206,7 +205,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    double span_a_2 = 0.0, span_b_2 = 0.0;
    if(!CloudAtShift(1, span_a_1, span_b_1)) return false;
    if(!CloudAtShift(2, span_a_2, span_b_2)) return false;
-
    const double low1  = iLow (_Symbol, (ENUM_TIMEFRAMES)_Period, 1); // perf-allowed — Ichimoku Kumo breakout, called once/bar
    const double low2  = iLow (_Symbol, (ENUM_TIMEFRAMES)_Period, 2); // perf-allowed — Ichimoku Kumo breakout, called once/bar
    const double high1 = iHigh(_Symbol, (ENUM_TIMEFRAMES)_Period, 1); // perf-allowed — Ichimoku Kumo breakout, called once/bar
@@ -266,7 +264,6 @@ bool Strategy_ExitSignal()
       return false;
    if(!g_cloud_cache_ready && !RefreshCloudCache())
       return false;
-
    const double current_low  = iLow (_Symbol, (ENUM_TIMEFRAMES)_Period, 0); // perf-allowed — intraday exit vs cached cloud; O(1) current-bar read
    const double current_high = iHigh(_Symbol, (ENUM_TIMEFRAMES)_Period, 0); // perf-allowed — intraday exit vs cached cloud; O(1) current-bar read
    if(current_low <= 0.0 || current_high <= 0.0)
