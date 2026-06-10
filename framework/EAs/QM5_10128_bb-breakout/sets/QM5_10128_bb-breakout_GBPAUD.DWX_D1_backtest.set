@@ -3,16 +3,16 @@
 ; ea_id:        10128
 ; ea_slug:      bb-breakout
 ; ea_version:   v5.0
-; set_version:  s20260523-001
+; set_version:  s20260610-001
 ; symbol:       GBPAUD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   15
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   a11de61ef3922a1dee2ebb752b4b3e36cc34e91c9e6cd82f57b6e5eab835f539
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-23
+; date:         2026-06-10
 ;==========================================================
 qm_magic_slot_offset=15
 RISK_FIXED=1000

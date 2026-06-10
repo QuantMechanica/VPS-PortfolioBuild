@@ -3,16 +3,16 @@
 ; ea_id:        10128
 ; ea_slug:      bb-breakout
 ; ea_version:   v5.0
-; set_version:  s20260523-001
+; set_version:  s20260610-001
 ; symbol:       USDJPY.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   31
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   60d29b4a32c00223d0147818450f9c1e881088718384a3f10a9a62fff94b7ed4
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-23
+; date:         2026-06-10
 ;==========================================================
 qm_magic_slot_offset=31
 RISK_FIXED=1000

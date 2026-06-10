@@ -3,16 +3,16 @@
 ; ea_id:        10128
 ; ea_slug:      bb-breakout
 ; ea_version:   v5.0
-; set_version:  s20260523-001
+; set_version:  s20260610-001
 ; symbol:       EURAUD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   8
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   a4ef8eb3b7875b26b01afde706b0ed4b5c6f2c2ccc8a0cf58ec3d104e4cb9201
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-23
+; date:         2026-06-10
 ;==========================================================
 qm_magic_slot_offset=8
 RISK_FIXED=1000
