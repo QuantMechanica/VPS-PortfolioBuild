@@ -97,7 +97,13 @@ MT5_WORK_ITEM_MIN_FEED_DEPTH = 20
 BUILD_BACKPRESSURE_PENDING_SOFT_LIMIT = 8000  # OWNER 2026-06-05 today-boost: keep building (EA count growing); accept deeper backtest queue. Revert to 1000/3000 when restrictions resume.
 BUILD_BACKPRESSURE_PENDING_HARD_LIMIT = 10000  # OWNER 2026-06-05 today-boost: 5000->10000
 BUILD_BACKPRESSURE_ACTIVE_WORK_ITEM_LIMIT = 7
-MAX_AUTO_CREATED_BUILDS_PER_PUMP = 1
+MAX_AUTO_CREATED_BUILDS_PER_PUMP = 3  # 2026-06-10 OWNER accelerate: 1->3 to keep the pending pool fed at codex_parallel=6
+# 2026-06-10 — markers that identify a build-smoke run hijacked by factory
+# terminal contention (project_qm_smoke_terminal_contention_2026-06-05).
+# Review FAILs carrying these are infra, not code findings; they get a
+# bounded free rework retry instead of burning the 2-attempt budget.
+SMOKE_CONTENTION_MARKERS = ("METATESTER_HUNG", "REPORT_MISSING", "smoke report missing")
+MAX_SMOKE_INFRA_RETRIES = 3
 # File/env-driven (re-read each pump process spawn): state/claude_parallel.txt >
 # QM_CLAUDE_PARALLEL env > default 3. OWNER 2026-06-09: boost (10) when Codex quota is
 # exhausted so the headless CLAUDE/Sonnet lane builds the card backlog ("programmier du").
@@ -4589,7 +4595,24 @@ def _prepare_codex_review_fail_reworks(root: Path, limit: int = 1) -> list[dict[
                 payload.get("codex_review_rework") is True
                 and not result_path.exists()
             )
-            attempt = max(1, current_attempt) if recovering_prepared_rework else current_attempt + 1
+            # 2026-06-10 — smoke-contention infra retry. A review FAIL whose
+            # findings are really a hijacked smoke run on the saturated
+            # factory (REPORT_MISSING / METATESTER_HUNG; see
+            # project_qm_smoke_terminal_contention_2026-06-05) is NOT a code
+            # finding: the rework rebuilds an EA that was never broken and
+            # the budget exhausts into a permanent block (45 of 163 build
+            # failures in the 7 days to 06-10). Such tasks get a bounded
+            # free retry (no rework/attempt budget consumed), capped by
+            # MAX_SMOKE_INFRA_RETRIES so a genuinely hanging EA still dies.
+            _payload_text = json.dumps(payload)
+            contention_free_retry = (
+                any(m in _payload_text for m in SMOKE_CONTENTION_MARKERS)
+                and int(payload.get("smoke_infra_retry_count", 0)) < MAX_SMOKE_INFRA_RETRIES
+            )
+            if recovering_prepared_rework or contention_free_retry:
+                attempt = max(1, current_attempt)
+            else:
+                attempt = current_attempt + 1
             if attempt > 2:
                 payload["final_failure"] = payload.get("final_failure") or "codex_review_rework_exhausted"
                 payload["last_blocked_reason"] = "codex_review_fail"
@@ -4630,7 +4653,11 @@ def _prepare_codex_review_fail_reworks(root: Path, limit: int = 1) -> list[dict[
             updated["last_blocked_reason"] = "codex_review_fail"
             updated["last_codex_review_task_id"] = review_fail["review_task_id"]
             updated["last_codex_review_findings"] = review_fail["findings"]
-            updated["attempt_count"] = int(updated.get("attempt_count", 0)) + 1
+            if contention_free_retry:
+                updated["smoke_infra_retry_count"] = int(payload.get("smoke_infra_retry_count", 0)) + 1
+                updated["last_smoke_infra_retry_at"] = utc_now()
+            else:
+                updated["attempt_count"] = int(updated.get("attempt_count", 0)) + 1
 
             if review_fail.get("review_task_id"):
                 conn.execute(

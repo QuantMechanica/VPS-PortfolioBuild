@@ -16,10 +16,15 @@
 #  Deletes ONLY: D:\QM\reports\work_items\**\*.log older than RetentionHours.
 #  KEEPS: every .htm (reports), .json (metrics), .set (configs), .ini.
 # =====================================================================
+#  2026-06-10 (Claude, OWNER accelerate directive): multi-root + defaults
+#  retuned 48h->6h. At ~1,500 work_items/day the old 48h retention held
+#  300-900 GB of dead journals; D: hit 7 GB free on 2026-06-10 before the
+#  6h purge reclaimed 405 GB. Also covers D:\QM\reports\smoke (same
+#  disposable tester journals, 70 GB found uncovered).
 [CmdletBinding()]
 param(
-    [int]$RetentionHours = 48,
-    [string]$ReportsRoot = "D:\QM\reports\work_items",
+    [int]$RetentionHours = 6,
+    [string[]]$ReportsRoot = @("D:\QM\reports\work_items", "D:\QM\reports\smoke"),
     [switch]$DryRun
 )
 $ErrorActionPreference = 'Continue'
@@ -28,20 +33,23 @@ function Now { (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ') }
 function FreeGB { [math]::Round((Get-PSDrive D).Free / 1GB, 2) }
 function Log($m) { $line = "$(Now) $m"; Write-Output $line; try { Add-Content -Path $log -Value $line -Encoding UTF8 } catch {} }
 
-if (-not (Test-Path $ReportsRoot)) { Log "SKIP: $ReportsRoot not found"; return }
+$roots = @($ReportsRoot | Where-Object { Test-Path $_ })
+if (-not $roots) { Log "SKIP: no ReportsRoot found ($($ReportsRoot -join ', '))"; return }
 
 $cutoff = (Get-Date).AddHours(-$RetentionHours)
 $freeBefore = FreeGB
 $count = 0
 [long]$bytes = 0
 
-Get-ChildItem $ReportsRoot -Recurse -File -Filter *.log -ErrorAction SilentlyContinue |
-    Where-Object { $_.LastWriteTime -lt $cutoff } |
-    ForEach-Object {
-        $bytes += $_.Length
-        if ($DryRun) { $count++ }
-        else { try { Remove-Item $_.FullName -Force -ErrorAction Stop; $count++ } catch {} }
-    }
+foreach ($root in $roots) {
+    Get-ChildItem $root -Recurse -File -Filter *.log -ErrorAction SilentlyContinue |
+        Where-Object { $_.LastWriteTime -lt $cutoff } |
+        ForEach-Object {
+            $bytes += $_.Length
+            if ($DryRun) { $count++ }
+            else { try { Remove-Item $_.FullName -Force -ErrorAction Stop; $count++ } catch {} }
+        }
+}
 
 $gb = [math]::Round($bytes / 1GB, 2)
 if ($DryRun) {
