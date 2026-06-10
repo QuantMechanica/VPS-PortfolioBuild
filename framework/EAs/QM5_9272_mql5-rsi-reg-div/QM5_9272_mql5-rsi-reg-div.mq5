@@ -211,7 +211,6 @@ void AdvanceState_OnNewBar()
    for(int s2 = confirm_min; s2 <= scan_s2_max && !bull_found; s2++)
      {
       if(!IsSwingLow(s2, strategy_swing_strength)) continue;
-
       const double L2 = iLow(_Symbol, _Period, s2);   // perf-allowed
       const double R2 = (s2 >= 1 && s2 <= cache_need) ? rsi_cache[s2] : 0.0;
 
@@ -221,7 +220,6 @@ void AdvanceState_OnNewBar()
       for(int s1 = s1_lo; s1 <= s1_hi && !bull_found; s1++)
         {
          if(!IsSwingLow(s1, strategy_swing_strength)) continue;
-
          const double L1 = iLow(_Symbol, _Period, s1);   // perf-allowed
          const double R1 = (s1 >= 1 && s1 <= cache_need) ? rsi_cache[s1] : 0.0;
 
@@ -263,7 +261,6 @@ void AdvanceState_OnNewBar()
    for(int s2 = confirm_min; s2 <= scan_s2_max && !bear_found; s2++)
      {
       if(!IsSwingHigh(s2, strategy_swing_strength)) continue;
-
       const double H2 = iHigh(_Symbol, _Period, s2);  // perf-allowed
       const double R2 = (s2 >= 1 && s2 <= cache_need) ? rsi_cache[s2] : 0.0;
 
@@ -273,7 +270,6 @@ void AdvanceState_OnNewBar()
       for(int s1 = s1_lo; s1 <= s1_hi && !bear_found; s1++)
         {
          if(!IsSwingHigh(s1, strategy_swing_strength)) continue;
-
          const double H1 = iHigh(_Symbol, _Period, s1);  // perf-allowed
          const double R1 = (s1 >= 1 && s1 <= cache_need) ? rsi_cache[s1] : 0.0;
 
