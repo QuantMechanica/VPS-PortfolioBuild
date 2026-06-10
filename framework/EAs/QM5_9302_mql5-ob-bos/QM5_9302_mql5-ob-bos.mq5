@@ -129,7 +129,6 @@ void AdvanceState_OnNewBar()
       const double h_pre = iHigh(_Symbol, _Period, i + 1); // perf-allowed: pre-OB pivot
       const double l_pre = iLow(_Symbol,  _Period, i + 1); // perf-allowed: pre-OB pivot
       if(h_pre <= 0.0) continue;
-
       const datetime t_ob = iTime(_Symbol, _Period, i); // perf-allowed: zone dedup timestamp
       if(OB_Exists(t_ob)) continue;
 
