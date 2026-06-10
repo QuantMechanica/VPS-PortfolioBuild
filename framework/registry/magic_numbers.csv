@@ -1,4 +1,4 @@
-ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
+﻿ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11047,roman-sar-break,0,EURUSD.DWX,110470000,2026-06-07,Development,active
 11047,roman-sar-break,1,GBPUSD.DWX,110470001,2026-06-07,Development,active
 11047,roman-sar-break,2,USDCHF.DWX,110470002,2026-06-07,Development,active
@@ -7003,6 +7003,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 
 9245,mql5-ao-zero,0,EURUSD.DWX,92450000,2026-06-10,Development,active
 9245,mql5-ao-zero,1,GBPJPY.DWX,92450001,2026-06-10,Development,active
-9245,mql5-ao-zero,2,XAUUSD.DWX,92450002,2026-06-10,Development,active9246,mql5-ao-bounce,0,EURUSD.DWX,92460000,2026-06-10,Development,active
+9245,mql5-ao-zero,2,XAUUSD.DWX,92450002,2026-06-10,Development,active
+9246,mql5-ao-bounce,0,EURUSD.DWX,92460000,2026-06-10,Development,active
 9246,mql5-ao-bounce,1,GBPJPY.DWX,92460001,2026-06-10,Development,active
 9246,mql5-ao-bounce,2,NDX.DWX,92460002,2026-06-10,Development,active
