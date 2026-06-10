@@ -4,7 +4,7 @@
 **Slug:** `edgelab-audnzd-cointegration`
 **Source:** `claude_cross_asset_discovery_2026-06-09` (see `docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-09
+**Last revised:** 2026-06-10
 
 ---
 
@@ -93,4 +93,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-09 | Initial build from card | 7f1000ad-b718-407b-99a0-bd88568712eb |
+| v1 | 2026-06-10 | Initial build from card | 7f1000ad-b718-407b-99a0-bd88568712eb |

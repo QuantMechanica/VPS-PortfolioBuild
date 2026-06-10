@@ -3,16 +3,16 @@
 ; ea_id:        12532
 ; ea_slug:      edgelab-audnzd-cointegration
 ; ea_version:   v5.0
-; set_version:  s20260609-001
+; set_version:  s20260610-001
 ; symbol:       NZDUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   4f56bfccca4a20671c11e3a79c0672361e5025732deacd29b221678167f9ab9d
+; build_hash:   42dea98062cfd7c61e77fc20693b8795af0893867d48c376a83052b5cd72a302
 ; author:       Development
-; date:         2026-06-09
+; date:         2026-06-10
 ;==========================================================
 qm_magic_slot_offset=1
 RISK_FIXED=1000

@@ -3,21 +3,21 @@
 ; ea_id:        1088
 ; ea_slug:      aa-faa-ravc
 ; ea_version:   v5.0
-; set_version:  s20260609-001
-; symbol:       XTIUSD.DWX
-; timeframe:    MN1
+; set_version:  s20260610-001
+; symbol:       GDAXI.DWX
+; timeframe:    D1
 ; environment:  backtest
-; magic_slot:   4
+; magic_slot:   2
 ; risk_mode:    FIXED
-; portfolio_weight: 0.33333333
-; build_hash:   5abce1c58b38b173e36a95f3200d3ff5bda73bb3a810a127f6f2b01743e48708
+; portfolio_weight: 1
+; build_hash:   048485b94a3583f8c759cb46df3f71fac89537f80102a05746b06accf84d1b9d
 ; author:       Development
-; date:         2026-06-09
+; date:         2026-06-10
 ;==========================================================
-qm_magic_slot_offset=4
+qm_magic_slot_offset=2
 RISK_FIXED=1000
 RISK_PERCENT=0
-PORTFOLIO_WEIGHT=0.33333333
+PORTFOLIO_WEIGHT=1
 ; core filter library params; filter-on/off variants must be pre-declared
 qm_filter_news_enabled=1
 qm_filter_news_mode=3
