@@ -65,7 +65,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
      }
 
-   const double close1  = iClose(_Symbol, PERIOD_CURRENT, 1); // last closed bar
+   const double close1  = iClose(_Symbol, PERIOD_CURRENT, 1); // perf-allowed: single closed-bar read, no warmup loop
    const double bb_lower = QM_BB_Lower(_Symbol, PERIOD_CURRENT, strategy_bb_period, strategy_bb_deviation, 1);
    const double bb_upper = QM_BB_Upper(_Symbol, PERIOD_CURRENT, strategy_bb_period, strategy_bb_deviation, 1);
 
@@ -75,8 +75,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double atr = QM_ATR(_Symbol, PERIOD_CURRENT, strategy_atr_period, 1);
    if(atr <= 0.0)
       return false;
-
-   const double sl_pts = atr * strategy_atr_sl_mult / _Point;
 
    if(close1 < bb_lower)
      {
@@ -122,7 +120,7 @@ bool Strategy_ExitSignal()
          continue;
 
       const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      const double close1   = iClose(_Symbol, PERIOD_CURRENT, 1);
+      const double close1   = iClose(_Symbol, PERIOD_CURRENT, 1); // perf-allowed: single closed-bar read, no warmup loop
       const double bb_upper = QM_BB_Upper(_Symbol, PERIOD_CURRENT, strategy_bb_period, strategy_bb_deviation, 1);
       const double bb_lower = QM_BB_Lower(_Symbol, PERIOD_CURRENT, strategy_bb_period, strategy_bb_deviation, 1);
 
