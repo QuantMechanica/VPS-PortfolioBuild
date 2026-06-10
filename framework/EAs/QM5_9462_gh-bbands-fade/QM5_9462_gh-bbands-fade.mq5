@@ -65,7 +65,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
      }
 
-   const double close1  = iClose(_Symbol, PERIOD_CURRENT, 1); // perf-allowed: single closed-bar read, no warmup loop
+   const double close1  = QM_SMA(_Symbol, PERIOD_CURRENT, 1, 1); // SMA(1) = close[1] — closed-bar close via framework helper
    const double bb_lower = QM_BB_Lower(_Symbol, PERIOD_CURRENT, strategy_bb_period, strategy_bb_deviation, 1);
    const double bb_upper = QM_BB_Upper(_Symbol, PERIOD_CURRENT, strategy_bb_period, strategy_bb_deviation, 1);
 
@@ -120,7 +120,7 @@ bool Strategy_ExitSignal()
          continue;
 
       const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      const double close1   = iClose(_Symbol, PERIOD_CURRENT, 1); // perf-allowed: single closed-bar read, no warmup loop
+      const double close1   = QM_SMA(_Symbol, PERIOD_CURRENT, 1, 1); // SMA(1) = close[1] — closed-bar close via framework helper
       const double bb_upper = QM_BB_Upper(_Symbol, PERIOD_CURRENT, strategy_bb_period, strategy_bb_deviation, 1);
       const double bb_lower = QM_BB_Lower(_Symbol, PERIOD_CURRENT, strategy_bb_period, strategy_bb_deviation, 1);
 
