@@ -84,7 +84,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    // Gate: only act on the exact London-open M15 bar (08:00 broker time)
    // perf-allowed: structural timing gate — single O(1) bar-time read
-   const datetime bar_t = iTime(_Symbol, _Period, 0);
+   const datetime bar_t = iTime(_Symbol, _Period, 0); // perf-allowed: structural timing gate, O(1), once per tick before bar validation
    if(bar_t <= 0)
       return false;
 
@@ -127,13 +127,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    for(int i = 1; i <= 40; ++i)
      {
-      const datetime bt = iTime(_Symbol, _Period, i);
+      const datetime bt = iTime(_Symbol, _Period, i); // perf-allowed: bespoke time-window range scan, bounded 40 bars, once per day
       if(bt <= 0 || bt < range_start)
          break;
-      if(bt >= bar_t)   // skip any bar at or after London open
+      if(bt >= bar_t)
          continue;
-      const double hi = iHigh(_Symbol, _Period, i);
-      const double lo = iLow(_Symbol, _Period, i);
+      const double hi = iHigh(_Symbol, _Period, i); // perf-allowed: bespoke range scan (see above)
+      const double lo = iLow(_Symbol, _Period, i);  // perf-allowed: bespoke range scan (see above)
       if(hi <= 0.0 || lo <= 0.0)
          continue;
       if(hi > range_high) range_high = hi;
