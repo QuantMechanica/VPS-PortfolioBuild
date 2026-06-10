@@ -146,11 +146,11 @@ bool ComputePSAR(const string sym,
 
    const int lookback = MathMax(strategy_warmup_bars, strategy_slow_sma_period + 10);
    const int oldest = shift + lookback - 1;
-   if(Bars(sym, tf) <= oldest + 3 || step <= 0.0 || maximum <= 0.0)
+   if(Bars(sym, tf) <= oldest + 3 || step <= 0.0 || maximum <= 0.0) // perf-allowed: bespoke PSAR warmup check, no QM_PSAR helper
       return false;
 
-   const double old_close = iClose(sym, tf, oldest);
-   const double newer_close = iClose(sym, tf, oldest - 1);
+   const double old_close = iClose(sym, tf, oldest);       // perf-allowed: bespoke PSAR seed read, no QM_PSAR helper
+   const double newer_close = iClose(sym, tf, oldest - 1); // perf-allowed: bespoke PSAR seed read
    if(old_close <= 0.0 || newer_close <= 0.0)
       return false;
 
@@ -158,13 +158,13 @@ bool ComputePSAR(const string sym,
    double ep = 0.0;
    if(uptrend)
      {
-      sar = MathMin(iLow(sym, tf, oldest), iLow(sym, tf, oldest - 1));
-      ep = MathMax(iHigh(sym, tf, oldest), iHigh(sym, tf, oldest - 1));
+      sar = MathMin(iLow(sym, tf, oldest), iLow(sym, tf, oldest - 1));     // perf-allowed: PSAR seed, bespoke
+      ep = MathMax(iHigh(sym, tf, oldest), iHigh(sym, tf, oldest - 1));    // perf-allowed: PSAR seed, bespoke
      }
    else
      {
-      sar = MathMax(iHigh(sym, tf, oldest), iHigh(sym, tf, oldest - 1));
-      ep = MathMin(iLow(sym, tf, oldest), iLow(sym, tf, oldest - 1));
+      sar = MathMax(iHigh(sym, tf, oldest), iHigh(sym, tf, oldest - 1));   // perf-allowed: PSAR seed, bespoke
+      ep = MathMin(iLow(sym, tf, oldest), iLow(sym, tf, oldest - 1));      // perf-allowed: PSAR seed, bespoke
      }
 
    double af = step;
