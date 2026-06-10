@@ -88,6 +88,17 @@ input int    strategy_session_start_hour = 7;
 input int    strategy_session_end_hour   = 17;
 input double strategy_spread_atr_max     = 0.10;
 
+double g_active_rect_high = 0.0;
+double g_active_rect_low = 0.0;
+double g_active_atr_m1 = 0.0;
+double g_active_m1_close = 0.0;
+bool   g_active_rect_valid = false;
+
+double g_consumed_long_rect_high = 0.0;
+double g_consumed_long_rect_low = 0.0;
+double g_consumed_short_rect_high = 0.0;
+double g_consumed_short_rect_low = 0.0;
+
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -128,6 +139,8 @@ bool Strategy_NoTradeFilter()
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   g_active_rect_valid = false;
+
    req.type = QM_BUY;
    req.price = 0.0;
    req.sl = 0.0;
@@ -170,6 +183,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const double close_back = m1_rates[0].close;
+   g_active_rect_high = rect_high;
+   g_active_rect_low = rect_low;
+   g_active_atr_m1 = atr_m1;
+   g_active_m1_close = close_back;
+   g_active_rect_valid = true;
+
    const bool close_inside_long = (close_back > rect_low && close_back <= rect_high);
    const bool close_inside_short = (close_back < rect_high && close_back >= rect_low);
    bool long_sweep = false;
@@ -192,18 +211,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          short_sweep = true;
      }
 
-   static double last_long_rect_high = 0.0;
-   static double last_long_rect_low = 0.0;
-   static double last_short_rect_high = 0.0;
-   static double last_short_rect_low = 0.0;
-
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
       return false;
 
    if(long_sweep && close_inside_long &&
-      (last_long_rect_high != rect_high || last_long_rect_low != rect_low))
+      (g_consumed_long_rect_high != rect_high || g_consumed_long_rect_low != rect_low))
      {
       const double sl = QM_StopRulesNormalizePrice(_Symbol, rect_low - strategy_sl_atr_mult * atr_m1);
       if(sl <= 0.0 || sl >= ask)
@@ -212,13 +226,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.sl = sl;
       req.tp = QM_TakeRR(_Symbol, req.type, ask, sl, strategy_rr_target);
       req.reason = "RECT_SWEEP_LONG";
-      last_long_rect_high = rect_high;
-      last_long_rect_low = rect_low;
+      g_consumed_long_rect_high = rect_high;
+      g_consumed_long_rect_low = rect_low;
       return (req.tp > ask);
      }
 
    if(short_sweep && close_inside_short &&
-      (last_short_rect_high != rect_high || last_short_rect_low != rect_low))
+      (g_consumed_short_rect_high != rect_high || g_consumed_short_rect_low != rect_low))
      {
       const double sl = QM_StopRulesNormalizePrice(_Symbol, rect_high + strategy_sl_atr_mult * atr_m1);
       if(sl <= 0.0 || sl <= bid)
@@ -227,8 +241,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.sl = sl;
       req.tp = QM_TakeRR(_Symbol, req.type, bid, sl, strategy_rr_target);
       req.reason = "RECT_SWEEP_SHORT";
-      last_short_rect_high = rect_high;
-      last_short_rect_low = rect_low;
+      g_consumed_short_rect_high = rect_high;
+      g_consumed_short_rect_low = rect_low;
       return (req.tp > 0.0 && req.tp < bid);
      }
 
@@ -261,34 +275,18 @@ bool Strategy_ExitSignal()
          TimeCurrent() - opened_at >= strategy_time_stop_bars * PeriodSeconds(PERIOD_M1))
          return true;
 
-      MqlRates rect_rates[];
-      ArraySetAsSeries(rect_rates, true);
-      if(CopyRates(_Symbol, PERIOD_M15, 1, strategy_rectangle_bars_m15, rect_rates) != strategy_rectangle_bars_m15) // perf-allowed: bounded structural rectangle read only while this EA has an open position.
+      if(!g_active_rect_valid)
          return false;
 
-      double rect_high = -DBL_MAX;
-      double rect_low = DBL_MAX;
-      for(int r = 0; r < strategy_rectangle_bars_m15; ++r)
-        {
-         rect_high = MathMax(rect_high, rect_rates[r].high);
-         rect_low = MathMin(rect_low, rect_rates[r].low);
-        }
-
-      MqlRates last_bar[];
-      ArraySetAsSeries(last_bar, true);
-      if(CopyRates(_Symbol, PERIOD_M1, 1, 1, last_bar) != 1) // perf-allowed: single closed M1 bar for card-defined boundary-break exit.
-         return false;
-
-      const double atr_m1 = QM_ATR(_Symbol, PERIOD_M1, strategy_atr_period, 1);
-      if(rect_high <= rect_low || atr_m1 <= 0.0)
+      if(g_active_rect_high <= g_active_rect_low || g_active_atr_m1 <= 0.0)
          return false;
 
       const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       if(ptype == POSITION_TYPE_BUY &&
-         last_bar[0].close < rect_low - strategy_early_exit_atr_mult * atr_m1)
+         g_active_m1_close < g_active_rect_low - strategy_early_exit_atr_mult * g_active_atr_m1)
          return true;
       if(ptype == POSITION_TYPE_SELL &&
-         last_bar[0].close > rect_high + strategy_early_exit_atr_mult * atr_m1)
+         g_active_m1_close > g_active_rect_high + strategy_early_exit_atr_mult * g_active_atr_m1)
          return true;
      }
 
