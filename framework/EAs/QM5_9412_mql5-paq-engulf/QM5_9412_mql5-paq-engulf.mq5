@@ -71,15 +71,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(QM_EntryHasOpenPosition(magic, _Symbol))
       return false;
 
-   // perf-allowed: fixed closed-bar shifts 1 & 2, O(1), gated by QM_IsNewBar
-   const double currOpen  = iOpen (_Symbol, PERIOD_CURRENT, 1);
-   const double currClose = iClose(_Symbol, PERIOD_CURRENT, 1);
-   const double currHigh  = iHigh (_Symbol, PERIOD_CURRENT, 1);
-   const double currLow   = iLow  (_Symbol, PERIOD_CURRENT, 1);
-   const double prevOpen  = iOpen (_Symbol, PERIOD_CURRENT, 2);
-   const double prevClose = iClose(_Symbol, PERIOD_CURRENT, 2);
-   const double prevHigh  = iHigh (_Symbol, PERIOD_CURRENT, 2);
-   const double prevLow   = iLow  (_Symbol, PERIOD_CURRENT, 2);
+   const double currOpen  = iOpen (_Symbol, PERIOD_CURRENT, 1); // perf-allowed: engulfing reads fixed closed-bar shifts, O(1), gated by QM_IsNewBar
+   const double currClose = iClose(_Symbol, PERIOD_CURRENT, 1); // perf-allowed
+   const double currHigh  = iHigh (_Symbol, PERIOD_CURRENT, 1); // perf-allowed
+   const double currLow   = iLow  (_Symbol, PERIOD_CURRENT, 1); // perf-allowed
+   const double prevOpen  = iOpen (_Symbol, PERIOD_CURRENT, 2); // perf-allowed
+   const double prevClose = iClose(_Symbol, PERIOD_CURRENT, 2); // perf-allowed
+   const double prevHigh  = iHigh (_Symbol, PERIOD_CURRENT, 2); // perf-allowed
+   const double prevLow   = iLow  (_Symbol, PERIOD_CURRENT, 2); // perf-allowed
 
    if(currOpen <= 0 || prevOpen <= 0) return false;
 
@@ -141,7 +140,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    // Reset exit-tracking state for new position
    g_pos_was_fav_ema    = false;
-   g_pos_entry_bar_time = iTime(_Symbol, PERIOD_CURRENT, 0);
+   g_pos_entry_bar_time = iTime(_Symbol, PERIOD_CURRENT, 0); // perf-allowed: entry bar capture for exit-guard, O(1)
 
    return true;
   }
@@ -184,11 +183,10 @@ bool Strategy_ExitSignal()
       if(elapsed < 3600L)
          return false;
 
-      // perf-allowed: fixed closed-bar shifts 1 & 2, O(1), stable within bar
-      const double c1 = iClose(_Symbol, PERIOD_CURRENT, 1);
-      const double o1 = iOpen (_Symbol, PERIOD_CURRENT, 1);
-      const double c2 = iClose(_Symbol, PERIOD_CURRENT, 2);
-      const double o2 = iOpen (_Symbol, PERIOD_CURRENT, 2);
+      const double c1 = iClose(_Symbol, PERIOD_CURRENT, 1); // perf-allowed: exit checks fixed closed-bar shifts, O(1), stable within bar
+      const double o1 = iOpen (_Symbol, PERIOD_CURRENT, 1); // perf-allowed
+      const double c2 = iClose(_Symbol, PERIOD_CURRENT, 2); // perf-allowed
+      const double o2 = iOpen (_Symbol, PERIOD_CURRENT, 2); // perf-allowed
       const double ema = QM_EMA(_Symbol, PERIOD_CURRENT, strategy_ema_period, 1);
 
       // Track whether price has closed on EMA's favourable side (required for EMA cross-back exit)
