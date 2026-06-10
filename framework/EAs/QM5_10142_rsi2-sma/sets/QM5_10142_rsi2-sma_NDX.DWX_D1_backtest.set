@@ -3,16 +3,16 @@
 ; ea_id:        10142
 ; ea_slug:      rsi2-sma
 ; ea_version:   v5.0
-; set_version:  s20260524-001
+; set_version:  s20260610-001
 ; symbol:       NDX.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   0e7edbe7570b7d5d4a8f659a576ab0cfedccd50fb8e16cfb546258f0aa5261d4
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-24
+; date:         2026-06-10
 ;==========================================================
 qm_magic_slot_offset=1
 RISK_FIXED=1000
