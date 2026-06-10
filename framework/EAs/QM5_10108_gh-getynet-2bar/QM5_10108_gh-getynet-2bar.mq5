@@ -86,16 +86,11 @@ input double strategy_max_sl_atr_mult       = 3.0;
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
-// regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
    return false;
   }
 
-// Populate `req` with entry order parameters and return TRUE if a NEW entry
-// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
-// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    static int last_entry_day_key = -1;
@@ -108,15 +103,17 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(iTime(_Symbol, _Period, 7) <= 0) // perf-allowed: fixed 7-bar candle-window availability check, closed-bar only
+   // Fetch 8 closed bars (shifts 1-8) once per new bar. ArraySetAsSeries=true
+   // means bars[0]=shift1 (most-recently-closed), bars[1]=shift2, etc.
+   MqlRates bars[]; // perf-allowed: bespoke 2-bar reversal, fixed 8-bar window, called once per closed bar via QM_IsNewBar gate in OnTick
+   ArraySetAsSeries(bars, true);
+   if(CopyRates(_Symbol, _Period, 1, 8, bars) < 8) // perf-allowed: bespoke 2-bar reversal, fixed 8-bar window, called once per closed bar via QM_IsNewBar gate in OnTick
       return false;
 
-   const datetime setup_bar_time = iTime(_Symbol, _Period, 1); // perf-allowed: London-open hour gate, single closed-bar read
-   if(setup_bar_time <= 0)
-      return false;
-
+   // bars[0]=shift1="bar6" (confirmatory), bars[1]=shift2="bar5" (pivot),
+   // bars[2]=shift3="bar4" (signal), bars[0..6]=7-bar pattern window
    MqlDateTime dt;
-   TimeToStruct(setup_bar_time, dt);
+   TimeToStruct(bars[0].time, dt);
    if(dt.hour != strategy_open_hour_broker)
       return false;
 
@@ -124,19 +121,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(last_entry_day_key == day_key)
       return false;
 
-   const double o4 = iOpen(_Symbol, _Period, 3);   // perf-allowed: bespoke 2-bar reversal OHLC, fixed shifts, closed-bar only
-   const double h4 = iHigh(_Symbol, _Period, 3);   // perf-allowed: bespoke 2-bar reversal OHLC, fixed shifts, closed-bar only
-   const double l4 = iLow(_Symbol, _Period, 3);    // perf-allowed: bespoke 2-bar reversal OHLC, fixed shifts, closed-bar only
-   const double c4 = iClose(_Symbol, _Period, 3);  // perf-allowed: bespoke 2-bar reversal OHLC, fixed shifts, closed-bar only
-   const double o5 = iOpen(_Symbol, _Period, 2);   // perf-allowed: bespoke 2-bar reversal OHLC, fixed shifts, closed-bar only
-   const double h5 = iHigh(_Symbol, _Period, 2);   // perf-allowed: bespoke 2-bar reversal OHLC, fixed shifts, closed-bar only
-   const double l5 = iLow(_Symbol, _Period, 2);    // perf-allowed: bespoke 2-bar reversal OHLC, fixed shifts, closed-bar only
-   const double c5 = iClose(_Symbol, _Period, 2);  // perf-allowed: bespoke 2-bar reversal OHLC, fixed shifts, closed-bar only
-   const double h6 = iHigh(_Symbol, _Period, 1);   // perf-allowed: bespoke 2-bar reversal OHLC, fixed shifts, closed-bar only
-   const double l6 = iLow(_Symbol, _Period, 1);    // perf-allowed: bespoke 2-bar reversal OHLC, fixed shifts, closed-bar only
-   if(o4 <= 0.0 || h4 <= 0.0 || l4 <= 0.0 || c4 <= 0.0 ||
-      o5 <= 0.0 || h5 <= 0.0 || l5 <= 0.0 || c5 <= 0.0 ||
-      h6 <= 0.0 || l6 <= 0.0)
+   const double o4 = bars[2].open;
+   const double h4 = bars[2].high;
+   const double l4 = bars[2].low;
+   const double c4 = bars[2].close;
+   const double o5 = bars[1].open;
+   const double h5 = bars[1].high;
+   const double l5 = bars[1].low;
+   const double c5 = bars[1].close;
+   const double h6 = bars[0].high;
+   const double l6 = bars[0].low;
+
+   if(h4 <= 0.0 || h5 <= 0.0 || h6 <= 0.0 || l4 <= 0.0 || l5 <= 0.0 || l6 <= 0.0)
       return false;
 
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
@@ -147,21 +143,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    double window_low = DBL_MAX;
    bool low_at_bar5 = true;
    bool high_at_bar5 = true;
-   for(int shift = 1; shift <= 7; ++shift)
+   for(int i = 0; i < 7; ++i)
      {
-      const double h = iHigh(_Symbol, _Period, shift); // perf-allowed: bespoke 7-bar reversal scan, fixed bounded shifts, closed-bar only
-      const double l = iLow(_Symbol, _Period, shift);  // perf-allowed: bespoke 7-bar reversal scan, fixed bounded shifts, closed-bar only
-      if(h <= 0.0 || l <= 0.0)
-         return false;
-
-      window_high = MathMax(window_high, h);
-      window_low = MathMin(window_low, l);
-
-      if(shift != 2)
+      window_high = MathMax(window_high, bars[i].high);
+      window_low = MathMin(window_low, bars[i].low);
+      if(i != 1)
         {
-         if(l5 >= l)
+         if(l5 >= bars[i].low)
             low_at_bar5 = false;
-         if(h5 <= h)
+         if(h5 <= bars[i].high)
             high_at_bar5 = false;
         }
      }
@@ -237,24 +227,17 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    return false;
   }
 
-// Called every tick when an open position exists for this EA's magic.
-// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
    // Card implements no trailing, break-even, partial close, or add-on logic.
   }
 
-// Return TRUE to close the open position now (e.g. opposite-signal exit,
-// max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
    // Card exits only through the pattern-derived SL/TP and framework Friday close.
    return false;
   }
 
-// Optional news-filter override. Return TRUE to suppress trading regardless
-// of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
-// custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false; // defer to QM_NewsAllowsTrade(...)
