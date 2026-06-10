@@ -104,12 +104,12 @@ void Strategy_ResetRequest(QM_EntryRequest &req)
 
 bool Strategy_HasWindowData()
   {
-   return (iTime(_Symbol, _Period, 7) > 0);
+   return (iTime(_Symbol, _Period, 7) > 0); // perf-allowed: structural candle-window availability check, one-off closed-bar read
   }
 
 bool Strategy_ExtremeAtIndex5(const bool want_low)
   {
-   const double target = want_low ? iLow(_Symbol, _Period, 2) : iHigh(_Symbol, _Period, 2);
+   const double target = want_low ? iLow(_Symbol, _Period, 2) : iHigh(_Symbol, _Period, 2); // perf-allowed: bespoke 7-bar reversal pattern, fixed shifts, closed-bar only
    if(target <= 0.0)
       return false;
 
@@ -117,7 +117,7 @@ bool Strategy_ExtremeAtIndex5(const bool want_low)
      {
       if(shift == 2)
          continue;
-      const double v = want_low ? iLow(_Symbol, _Period, shift) : iHigh(_Symbol, _Period, shift);
+      const double v = want_low ? iLow(_Symbol, _Period, shift) : iHigh(_Symbol, _Period, shift); // perf-allowed: structural extreme scan, 7-bar bounded, closed-bar only
       if(v <= 0.0)
          return false;
       if(want_low && target >= v)
@@ -138,8 +138,8 @@ double Strategy_WindowRangePoints()
    double lo = DBL_MAX;
    for(int shift = 1; shift <= 7; ++shift)
      {
-      const double h = iHigh(_Symbol, _Period, shift);
-      const double l = iLow(_Symbol, _Period, shift);
+      const double h = iHigh(_Symbol, _Period, shift); // perf-allowed: bespoke range filter, 7-bar bounded, closed-bar only
+      const double l = iLow(_Symbol, _Period, shift);  // perf-allowed: bespoke range filter, 7-bar bounded, closed-bar only
       if(h <= 0.0 || l <= 0.0)
          return 0.0;
       hi = MathMax(hi, h);
@@ -215,7 +215,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!Strategy_HasWindowData())
       return false;
 
-   const datetime setup_bar_time = iTime(_Symbol, _Period, 1);
+   const datetime setup_bar_time = iTime(_Symbol, _Period, 1); // perf-allowed: London-open hour gate, single closed-bar read
    if(setup_bar_time <= 0)
       return false;
 
@@ -228,16 +228,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(g_last_entry_day_key == day_key)
       return false;
 
-   const double o4 = iOpen(_Symbol, _Period, 3);
-   const double h4 = iHigh(_Symbol, _Period, 3);
-   const double l4 = iLow(_Symbol, _Period, 3);
-   const double c4 = iClose(_Symbol, _Period, 3);
-   const double o5 = iOpen(_Symbol, _Period, 2);
-   const double h5 = iHigh(_Symbol, _Period, 2);
-   const double l5 = iLow(_Symbol, _Period, 2);
-   const double c5 = iClose(_Symbol, _Period, 2);
-   const double h6 = iHigh(_Symbol, _Period, 1);
-   const double l6 = iLow(_Symbol, _Period, 1);
+   const double o4 = iOpen(_Symbol, _Period, 3);   // perf-allowed: bespoke 2-bar reversal OHLC, fixed shifts, closed-bar only
+   const double h4 = iHigh(_Symbol, _Period, 3);   // perf-allowed: bespoke 2-bar reversal OHLC, fixed shifts, closed-bar only
+   const double l4 = iLow(_Symbol, _Period, 3);    // perf-allowed: bespoke 2-bar reversal OHLC, fixed shifts, closed-bar only
+   const double c4 = iClose(_Symbol, _Period, 3);  // perf-allowed: bespoke 2-bar reversal OHLC, fixed shifts, closed-bar only
+   const double o5 = iOpen(_Symbol, _Period, 2);   // perf-allowed: bespoke 2-bar reversal OHLC, fixed shifts, closed-bar only
+   const double h5 = iHigh(_Symbol, _Period, 2);   // perf-allowed: bespoke 2-bar reversal OHLC, fixed shifts, closed-bar only
+   const double l5 = iLow(_Symbol, _Period, 2);    // perf-allowed: bespoke 2-bar reversal OHLC, fixed shifts, closed-bar only
+   const double c5 = iClose(_Symbol, _Period, 2);  // perf-allowed: bespoke 2-bar reversal OHLC, fixed shifts, closed-bar only
+   const double h6 = iHigh(_Symbol, _Period, 1);   // perf-allowed: bespoke 2-bar reversal OHLC, fixed shifts, closed-bar only
+   const double l6 = iLow(_Symbol, _Period, 1);    // perf-allowed: bespoke 2-bar reversal OHLC, fixed shifts, closed-bar only
    if(o4 <= 0.0 || h4 <= 0.0 || l4 <= 0.0 || c4 <= 0.0 ||
       o5 <= 0.0 || h5 <= 0.0 || l5 <= 0.0 || c5 <= 0.0 ||
       h6 <= 0.0 || l6 <= 0.0)

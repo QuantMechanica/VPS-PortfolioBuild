@@ -170,12 +170,12 @@ bool ComputePSAR(const string sym,
    double af = step;
    for(int i = oldest - 2; i >= shift; --i)
      {
-      const double high_i = iHigh(sym, tf, i);
-      const double low_i = iLow(sym, tf, i);
-      const double high_prev1 = iHigh(sym, tf, i + 1);
-      const double high_prev2 = iHigh(sym, tf, i + 2);
-      const double low_prev1 = iLow(sym, tf, i + 1);
-      const double low_prev2 = iLow(sym, tf, i + 2);
+      const double high_i = iHigh(sym, tf, i);         // perf-allowed: bespoke PSAR loop, no QM_PSAR helper
+      const double low_i = iLow(sym, tf, i);            // perf-allowed: bespoke PSAR loop
+      const double high_prev1 = iHigh(sym, tf, i + 1); // perf-allowed: bespoke PSAR loop
+      const double high_prev2 = iHigh(sym, tf, i + 2); // perf-allowed: bespoke PSAR loop
+      const double low_prev1 = iLow(sym, tf, i + 1);   // perf-allowed: bespoke PSAR loop
+      const double low_prev2 = iLow(sym, tf, i + 2);   // perf-allowed: bespoke PSAR loop
       if(high_i <= 0.0 || low_i <= 0.0 || high_prev1 <= 0.0 || high_prev2 <= 0.0 ||
          low_prev1 <= 0.0 || low_prev2 <= 0.0)
          return false;
@@ -252,7 +252,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const int required_bars = MathMax(strategy_warmup_bars, strategy_slow_sma_period);
-   if(Bars(_Symbol, strategy_timeframe) <= required_bars + 5)
+   if(Bars(_Symbol, strategy_timeframe) <= required_bars + 5) // perf-allowed: warmup bar count guard, single call per new bar
       return false;
 
    ENUM_POSITION_TYPE position_type;
@@ -266,7 +266,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!ComputePSAR(_Symbol, strategy_timeframe, strategy_psar_step, strategy_psar_maximum, 1, sar, psar_uptrend))
       return false;
 
-   const double close_1 = iClose(_Symbol, strategy_timeframe, 1);
+   const double close_1 = iClose(_Symbol, strategy_timeframe, 1); // perf-allowed: single shift-1 read for SMA cross check, per new bar
    const double fast_sma = QM_SMA(_Symbol, strategy_timeframe, strategy_fast_sma_period, 1);
    const double slow_sma = QM_SMA(_Symbol, strategy_timeframe, strategy_slow_sma_period, 1);
    if(close_1 <= 0.0 || fast_sma <= 0.0 || slow_sma <= 0.0)
@@ -318,7 +318,7 @@ void Strategy_ManageOpenPosition()
       return;
      }
 
-   const double close_1 = iClose(_Symbol, strategy_timeframe, 1);
+   const double close_1 = iClose(_Symbol, strategy_timeframe, 1); // perf-allowed: single shift-1 read for trailing stop update
    if(close_1 <= 0.0 || strategy_trailing_pct <= 0.0 || strategy_trailing_pct >= 100.0)
       return;
 
@@ -345,7 +345,7 @@ bool Strategy_ExitSignal()
    if(!GetOurPosition(position_type, open_price, ticket))
       return false;
 
-   const double close_1 = iClose(_Symbol, strategy_timeframe, 1);
+   const double close_1 = iClose(_Symbol, strategy_timeframe, 1); // perf-allowed: single shift-1 read for trailing stop exit check
    if(close_1 <= 0.0 || strategy_trailing_pct <= 0.0 || strategy_trailing_pct >= 100.0)
       return false;
 
