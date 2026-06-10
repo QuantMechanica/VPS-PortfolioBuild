@@ -117,7 +117,6 @@ void AdvanceState_OnNewBar()
 
    if(g_env_upper1 > 0.0 && g_env_lower1 > 0.0)
       g_env_mid1 = (g_env_upper1 + g_env_lower1) * 0.5;
-
    g_close1 = iClose(_Symbol, _Period, 1); // perf-allowed: one read per new bar; no QM_Close reader
    g_close2 = iClose(_Symbol, _Period, 2); // perf-allowed: one read per new bar; no QM_Close reader
 
