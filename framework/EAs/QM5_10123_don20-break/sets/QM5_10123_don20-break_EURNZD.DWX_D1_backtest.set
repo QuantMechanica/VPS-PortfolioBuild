@@ -3,16 +3,16 @@
 ; ea_id:        10123
 ; ea_slug:      don20-break
 ; ea_version:   v5.0
-; set_version:  s20260523-001
+; set_version:  s20260610-001
 ; symbol:       EURNZD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   13
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   069be433c9ce19ef6312cff1c60574c17d871332d02623455cd1e34e4ec2f5cb
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-23
+; date:         2026-06-10
 ;==========================================================
 qm_magic_slot_offset=13
 RISK_FIXED=1000

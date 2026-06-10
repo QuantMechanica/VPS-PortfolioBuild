@@ -3,16 +3,16 @@
 ; ea_id:        10123
 ; ea_slug:      don20-break
 ; ea_version:   v5.0
-; set_version:  s20260523-001
+; set_version:  s20260610-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   34
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   d3f4bcef20f4fc450d81c6d28ed9099ffbdffdfb12e46bad63eacf24e58c2f7e
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-23
+; date:         2026-06-10
 ;==========================================================
 qm_magic_slot_offset=34
 RISK_FIXED=1000

@@ -1,23 +1,16 @@
-# QM5_10123_don20-break — Strategy Spec
+# QM5_10123_don20-break - Strategy Spec
 
 **EA ID:** QM5_10123
 **Slug:** `don20-break`
 **Source:** `d3c009d7-a8d6-5251-b572-4777b207c2b9` (see `strategy-seeds/sources/d3c009d7-a8d6-5251-b572-4777b207c2b9/`)
-**Author of this spec:** auto-generated ex-post by gen_spec_md.py
-**Last revised:** 2026-05-25
+**Author of this spec:** Codex
+**Last revised:** 2026-06-10
 
 ---
 
 ## 1. Strategy Logic
 
-Mechanical strategy implemented per the approved card
-`artifacts/cards_approved/QM5_10123_don20-break.md`. See that card's body for
-the full entry/exit/stop/sizing rules; this SPEC summarises the
-implementation surface.
-
-Entry/exit logic is encoded in the five `Strategy_*` hooks in
-`QM5_10123_don20-break.mq5`. Framework wiring (risk, magic, news, Friday close)
-is inherited from `QM_Common.mqh` and is not redocumented here.
+This EA trades a 20-day Donchian channel breakout on D1 bars. It enters long when the last completed daily close is above the prior 20-bar channel high, using a channel that excludes the breakout bar to avoid lookahead. The default mode is long-only; when the short input is enabled, the symmetric close below the prior 20-bar channel low can open a short. Long positions close when the last completed daily close is below the prior 20-bar channel low, and short positions close when the last completed daily close is above the prior 20-bar channel high. A 3 x ATR(14) emergency stop is placed at entry for MT5 risk containment.
 
 ---
 
@@ -25,63 +18,63 @@ is inherited from `QM_Common.mqh` and is not redocumented here.
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `strategy_donchian_period` | 20 | (see source) | (see strategy logic) |
-| `strategy_shorts_enabled` | false | (see source) | (see strategy logic) |
-| `strategy_atr_period` | 14 | (see source) | (see strategy logic) |
-| `strategy_atr_sl_mult` | 3.0 | (see source) | (see strategy logic) |
-| `strategy_use_previous_bar_channel` | true | (see source) | (see strategy logic) |
+| `strategy_donchian_period` | 20 | 10-55 tested by card | Completed daily bars used for the Donchian high/low channel. |
+| `strategy_shorts_enabled` | false | false/true | Enables the optional short breakout and short exit/reversal logic. |
+| `strategy_atr_period` | 14 | positive integer | ATR lookback for the emergency stop. |
+| `strategy_atr_sl_mult` | 3.0 | 2.0-4.0 tested by card | ATR multiple used for the emergency stop distance. |
+| `strategy_use_previous_bar_channel` | true | true only for baseline | Requires the prior-channel calculation that avoids lookahead. |
 
 > Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
-> qm_news_mode, qm_rng_seed, qm_stress_reject_probability,
-> qm_friday_close_*) are documented in
-> `framework/V5_FRAMEWORK_DESIGN.md` — not re-listed here.
+> qm_news_mode, qm_rng_seed, qm_stress_reject_probability, qm_friday_close_*)
+> are documented in `framework/V5_FRAMEWORK_DESIGN.md` and are not re-listed here.
 
 ---
 
 ## 3. Symbol Universe
 
-**Designed for:**
-- `AUDCAD.DWX` — registered in magic_numbers.csv for this EA
-- `AUDCHF.DWX` — registered in magic_numbers.csv for this EA
-- `AUDJPY.DWX` — registered in magic_numbers.csv for this EA
-- `AUDNZD.DWX` — registered in magic_numbers.csv for this EA
-- `AUDUSD.DWX` — registered in magic_numbers.csv for this EA
-- `CADCHF.DWX` — registered in magic_numbers.csv for this EA
-- `CADJPY.DWX` — registered in magic_numbers.csv for this EA
-- `CHFJPY.DWX` — registered in magic_numbers.csv for this EA
-- `EURAUD.DWX` — registered in magic_numbers.csv for this EA
-- `EURCAD.DWX` — registered in magic_numbers.csv for this EA
-- `EURCHF.DWX` — registered in magic_numbers.csv for this EA
-- `EURGBP.DWX` — registered in magic_numbers.csv for this EA
-- `EURJPY.DWX` — registered in magic_numbers.csv for this EA
-- `EURNZD.DWX` — registered in magic_numbers.csv for this EA
-- `EURUSD.DWX` — registered in magic_numbers.csv for this EA
-- `GBPAUD.DWX` — registered in magic_numbers.csv for this EA
-- `GBPCAD.DWX` — registered in magic_numbers.csv for this EA
-- `GBPCHF.DWX` — registered in magic_numbers.csv for this EA
-- `GBPJPY.DWX` — registered in magic_numbers.csv for this EA
-- `GBPNZD.DWX` — registered in magic_numbers.csv for this EA
-- `GBPUSD.DWX` — registered in magic_numbers.csv for this EA
-- `GDAXI.DWX` — registered in magic_numbers.csv for this EA
-- `NDX.DWX` — registered in magic_numbers.csv for this EA
-- `NZDCAD.DWX` — registered in magic_numbers.csv for this EA
-- `NZDCHF.DWX` — registered in magic_numbers.csv for this EA
-- `NZDJPY.DWX` — registered in magic_numbers.csv for this EA
-- `NZDUSD.DWX` — registered in magic_numbers.csv for this EA
-- `SP500.DWX` — registered in magic_numbers.csv for this EA
-- `UK100.DWX` — registered in magic_numbers.csv for this EA
-- `USDCAD.DWX` — registered in magic_numbers.csv for this EA
-- `USDCHF.DWX` — registered in magic_numbers.csv for this EA
-- `USDJPY.DWX` — registered in magic_numbers.csv for this EA
-- `WS30.DWX` — registered in magic_numbers.csv for this EA
-- `XAGUSD.DWX` — registered in magic_numbers.csv for this EA
-- `XAUUSD.DWX` — registered in magic_numbers.csv for this EA
-- `XNGUSD.DWX` — registered in magic_numbers.csv for this EA
-- `XTIUSD.DWX` — registered in magic_numbers.csv for this EA
+The card is symbol-agnostic and states that the OHLC-only rule is portable to DWX FX, metals, oil, and indices. The registered universe therefore uses the full available DWX basket in `dwx_symbol_matrix.csv`.
 
-**Explicitly NOT for:** any symbol not in the list above (no implicit
-universe expansion at runtime; the `QM_SymbolGuard` framework helper
-rejects foreign symbols).
+**Designed for:**
+- `AUDCAD.DWX` - DWX forex cross with daily OHLC history.
+- `AUDCHF.DWX` - DWX forex cross with daily OHLC history.
+- `AUDJPY.DWX` - DWX forex cross with daily OHLC history.
+- `AUDNZD.DWX` - DWX forex cross with daily OHLC history.
+- `AUDUSD.DWX` - DWX forex pair with daily OHLC history.
+- `CADCHF.DWX` - DWX forex cross with daily OHLC history.
+- `CADJPY.DWX` - DWX forex cross with daily OHLC history.
+- `CHFJPY.DWX` - DWX forex cross with daily OHLC history.
+- `EURAUD.DWX` - DWX forex cross with daily OHLC history.
+- `EURCAD.DWX` - DWX forex cross with daily OHLC history.
+- `EURCHF.DWX` - DWX forex cross with daily OHLC history.
+- `EURGBP.DWX` - DWX forex cross with daily OHLC history.
+- `EURJPY.DWX` - DWX forex cross with daily OHLC history.
+- `EURNZD.DWX` - DWX forex cross with daily OHLC history.
+- `EURUSD.DWX` - DWX forex pair with daily OHLC history.
+- `GBPAUD.DWX` - DWX forex cross with daily OHLC history.
+- `GBPCAD.DWX` - DWX forex cross with daily OHLC history.
+- `GBPCHF.DWX` - DWX forex cross with daily OHLC history.
+- `GBPJPY.DWX` - DWX forex cross with daily OHLC history.
+- `GBPNZD.DWX` - DWX forex cross with daily OHLC history.
+- `GBPUSD.DWX` - DWX forex pair with daily OHLC history.
+- `GDAXI.DWX` - DWX equity index with daily OHLC history.
+- `NDX.DWX` - DWX equity index with daily OHLC history.
+- `NZDCAD.DWX` - DWX forex cross with daily OHLC history.
+- `NZDCHF.DWX` - DWX forex cross with daily OHLC history.
+- `NZDJPY.DWX` - DWX forex cross with daily OHLC history.
+- `NZDUSD.DWX` - DWX forex pair with daily OHLC history.
+- `SP500.DWX` - DWX S&P 500 custom symbol, valid for backtest-only daily OHLC.
+- `UK100.DWX` - DWX equity index with daily OHLC history.
+- `USDCAD.DWX` - DWX forex pair with daily OHLC history.
+- `USDCHF.DWX` - DWX forex pair with daily OHLC history.
+- `USDJPY.DWX` - DWX forex pair with daily OHLC history.
+- `WS30.DWX` - DWX equity index with daily OHLC history.
+- `XAGUSD.DWX` - DWX metal symbol with daily OHLC history.
+- `XAUUSD.DWX` - DWX metal symbol with daily OHLC history.
+- `XNGUSD.DWX` - DWX energy symbol with daily OHLC history.
+- `XTIUSD.DWX` - DWX oil symbol with daily OHLC history.
+
+**Explicitly NOT for:**
+- Any symbol absent from `framework/registry/dwx_symbol_matrix.csv` - no broker/custom-symbol data is registered for P2.
 
 ---
 
@@ -90,7 +83,7 @@ rejects foreign symbols).
 | Aspect | Value |
 |---|---|
 | Base timeframe | `D1` |
-| Multi-timeframe refs | see `Strategy_*` hooks in the .mq5 |
+| Multi-timeframe refs | none |
 | Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
 
 ---
@@ -100,10 +93,10 @@ rejects foreign symbols).
 | Metric | Expected |
 |---|---|
 | Trades / year / symbol | 10 |
-| Cadence note | see card body |
-| Typical hold time | see card body |
-| Expected drawdown profile | bounded by RISK_FIXED + FTMO 10% total DD ceiling |
-| Regime preference | per card thesis |
+| Expected trade frequency | not specified in card frontmatter; inferred low frequency from 10 trades/year/symbol |
+| Typical hold time | not specified in card frontmatter; expected multi-day trend holds until opposite Donchian exit |
+| Expected drawdown profile | not specified in card frontmatter; bounded per trade by fixed-risk sizing and emergency ATR stop |
+| Regime preference | breakout / trend-following |
 | Win rate target (qualitative) | medium |
 
 ---
@@ -113,9 +106,9 @@ rejects foreign symbols).
 This card was mechanised from:
 
 **Source ID:** `d3c009d7-a8d6-5251-b572-4777b207c2b9`
-**Pointer:** `strategy-seeds/sources/d3c009d7-a8d6-5251-b572-4777b207c2b9/`
-**R1–R4 verdict (Q00):** all PASS — see
-`artifacts/cards_approved/QM5_10123_don20-break.md`
+**Source type:** blog tutorial
+**Pointer:** `https://raposa.trade/blog/three-strategies-for-trading-the-donchian-channel-in-python/` and mirror `https://readmedium.com/use-python-to-trade-the-donchian-channel-6bf59d0bc740`
+**R1-R4 verdict (Q00):** all PASS per `artifacts/cards_approved/QM5_10123_don20-break.md`
 
 ---
 
@@ -123,11 +116,11 @@ This card was mechanised from:
 
 | Phase | Risk mode | Value |
 |---|---|---|
-| Backtest (Q02 – Q10) | RISK_FIXED | $1,000 per trade (HR4) |
+| Backtest (Q02 - Q10) | RISK_FIXED | $1,000 per trade (HR4) |
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
-| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
+| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% - 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
 
 ---
 
@@ -135,4 +128,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-05-25 | Initial spec (ex-post, generated by gen_spec_md.py) | post-PT15 remediation |
+| v1 | 2026-06-10 | Initial build from card | 6f483e27-dfcf-4354-ac6b-b64d6c305e61 |

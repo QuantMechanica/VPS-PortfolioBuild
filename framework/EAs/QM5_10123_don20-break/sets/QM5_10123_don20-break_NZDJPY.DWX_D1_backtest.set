@@ -3,16 +3,16 @@
 ; ea_id:        10123
 ; ea_slug:      don20-break
 ; ea_version:   v5.0
-; set_version:  s20260523-001
+; set_version:  s20260610-001
 ; symbol:       NZDJPY.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   25
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   2cd3a6506feeb5e6aadb7c989bc5d1fda94440f3bb3fef9659a7a5c6a15a2b06
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-23
+; date:         2026-06-10
 ;==========================================================
 qm_magic_slot_offset=25
 RISK_FIXED=1000

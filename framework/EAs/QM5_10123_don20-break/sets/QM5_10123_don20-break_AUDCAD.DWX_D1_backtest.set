@@ -3,16 +3,16 @@
 ; ea_id:        10123
 ; ea_slug:      don20-break
 ; ea_version:   v5.0
-; set_version:  s20260523-001
+; set_version:  s20260610-001
 ; symbol:       AUDCAD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   6d78fa84482532d804b8468d1aada322e1eb11836fa36731ea8661b16accde6e
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-23
+; date:         2026-06-10
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=1000
