@@ -185,6 +185,9 @@ bool Strategy_ExitSignal()
    if(!has_position)
       return false;
 
+   if(!QM_IsNewBar(_Symbol, strategy_execution_tf))
+      return false;
+
    if(time_stop)
       return true;
 
