@@ -146,10 +146,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_max_stop_atr <= strategy_min_stop_atr || strategy_max_spread_stop <= 0.0)
       return false;
 
-   const double open1 = iOpen(_Symbol, PERIOD_D1, 1);
-   const double high1 = iHigh(_Symbol, PERIOD_D1, 1);
-   const double low1 = iLow(_Symbol, PERIOD_D1, 1);
-   const double close1 = iClose(_Symbol, PERIOD_D1, 1);
+   const double open1  = iOpen (_Symbol, PERIOD_D1, 1);  // perf-allowed: bespoke wick math
+   const double high1  = iHigh (_Symbol, PERIOD_D1, 1);  // perf-allowed: bespoke wick math
+   const double low1   = iLow  (_Symbol, PERIOD_D1, 1);  // perf-allowed: bespoke wick math
+   const double close1 = iClose(_Symbol, PERIOD_D1, 1);  // perf-allowed: bespoke wick math
    if(open1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0 || close1 <= 0.0 || high1 < low1)
       return false;
 

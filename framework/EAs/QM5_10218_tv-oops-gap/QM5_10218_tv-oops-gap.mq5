@@ -80,6 +80,103 @@ input int    strategy_atr_period         = 14;
 input double strategy_atr_emergency_mult = 3.0;
 input int    strategy_max_spread_points  = 80;
 
+MqlRates g_today_bar;
+MqlRates g_yesterday_bar;
+bool     g_daily_bars_ready = false;
+int      g_daily_bars_day_key = 0;
+
+int DateKey(const datetime t)
+  {
+   MqlDateTime dt;
+   TimeToStruct(t, dt);
+   return dt.year * 10000 + dt.mon * 100 + dt.day;
+  }
+
+int HHMM(const datetime t)
+  {
+   MqlDateTime dt;
+   TimeToStruct(t, dt);
+   return dt.hour * 100 + dt.min;
+  }
+
+bool IsEntryWindow(const datetime broker_time)
+  {
+   const int hhmm = HHMM(broker_time);
+   return (hhmm >= strategy_session_start_hhmm && hhmm < strategy_session_end_hhmm);
+  }
+
+int SecondsUntilSessionEnd(const datetime broker_time)
+  {
+   MqlDateTime dt;
+   TimeToStruct(broker_time, dt);
+   const int end_hour = strategy_session_end_hhmm / 100;
+   const int end_min = strategy_session_end_hhmm % 100;
+   const int seconds_left = (end_hour - dt.hour) * 3600 + (end_min - dt.min) * 60 - dt.sec;
+   return MathMax(60, seconds_left);
+  }
+
+bool RefreshDailyBars()
+  {
+   const datetime now = TimeCurrent();
+   const int today_key = DateKey(now);
+   if(g_daily_bars_ready && g_daily_bars_day_key == today_key)
+      return true;
+
+   MqlRates bars[];
+   ArraySetAsSeries(bars, true);
+   const int copied = CopyRates(_Symbol, PERIOD_D1, 0, 2, bars); // perf-allowed: bounded 2-bar daily setup cache for Oops gap structural OHLC
+   if(copied < 2)
+      return false;
+
+   g_today_bar = bars[0];
+   g_yesterday_bar = bars[1];
+   g_daily_bars_ready = true;
+   g_daily_bars_day_key = today_key;
+   return true;
+  }
+
+bool HasOurPendingOrder()
+  {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0 || !OrderSelect(ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+
+      const ENUM_ORDER_TYPE order_type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
+      if(order_type == ORDER_TYPE_BUY_STOP || order_type == ORDER_TYPE_SELL_STOP)
+         return true;
+     }
+   return false;
+  }
+
+bool HasOurOpenPosition()
+  {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+         return true;
+     }
+   return false;
+  }
+
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -88,8 +185,8 @@ input int    strategy_max_spread_points  = 80;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   // No extra global block: the framework handles news/Friday gates, while
-   // session and spread restrictions are applied to new entries only.
+   // News is handled by the framework before this hook. Session and spread are
+   // enforced in Strategy_EntrySignal so end-session exits are never blocked.
    return false;
   }
 
@@ -108,13 +205,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    static int last_setup_day = 0;
 
-   MqlDateTime now_dt;
-   TimeToStruct(TimeCurrent(), now_dt);
-   const int hhmm = now_dt.hour * 100 + now_dt.min;
-   const int today_key = now_dt.year * 10000 + now_dt.mon * 100 + now_dt.day;
-   if(hhmm < strategy_session_start_hhmm || hhmm >= strategy_session_end_hhmm)
+   const datetime broker_now = TimeCurrent();
+   const int today_key = DateKey(broker_now);
+   if(!IsEntryWindow(broker_now))
       return false;
    if(last_setup_day == today_key)
+      return false;
+   if(HasOurPendingOrder() || HasOurOpenPosition())
       return false;
 
    const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
@@ -125,11 +222,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(point <= 0.0 || strategy_tick_filter_points < 0)
       return false;
 
-   const double y_open = iOpen(_Symbol, PERIOD_D1, 1);
-   const double y_high = iHigh(_Symbol, PERIOD_D1, 1);
-   const double y_low = iLow(_Symbol, PERIOD_D1, 1);
-   const double y_close = iClose(_Symbol, PERIOD_D1, 1);
-   const double today_open = iOpen(_Symbol, PERIOD_D1, 0);
+   if(!RefreshDailyBars())
+      return false;
+
+   const double y_open = g_yesterday_bar.open;
+   const double y_high = g_yesterday_bar.high;
+   const double y_low = g_yesterday_bar.low;
+   const double y_close = g_yesterday_bar.close;
+   const double today_open = g_today_bar.open;
    if(y_open <= 0.0 || y_high <= 0.0 || y_low <= 0.0 || y_close <= 0.0 || today_open <= 0.0)
       return false;
 
@@ -152,9 +252,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    const int stop_level_points = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
    const double min_stop_distance = MathMax(1, stop_level_points) * point;
-   const int seconds_left = MathMax(60, (strategy_session_end_hhmm / 100 - now_dt.hour) * 3600
-                                      + (strategy_session_end_hhmm % 100 - now_dt.min) * 60
-                                      - now_dt.sec);
+   const int seconds_left = SecondsUntilSessionEnd(broker_now);
 
    if(long_setup)
      {
@@ -162,7 +260,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if(entry <= ask + min_stop_distance)
          return false;
 
-      double day_stop = iLow(_Symbol, PERIOD_D1, 0);
+      double day_stop = g_today_bar.low;
       if(day_stop <= 0.0 || day_stop >= entry)
          day_stop = entry - atr * strategy_atr_emergency_mult;
 
@@ -185,7 +283,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(entry >= bid - min_stop_distance)
       return false;
 
-   double day_stop = iHigh(_Symbol, PERIOD_D1, 0);
+   double day_stop = g_today_bar.high;
    if(day_stop <= 0.0 || day_stop <= entry)
       day_stop = entry + atr * strategy_atr_emergency_mult;
 
@@ -229,13 +327,13 @@ void Strategy_ManageOpenPosition()
       const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       if(ptype == POSITION_TYPE_BUY)
         {
-         const double day_low = iLow(_Symbol, PERIOD_D1, 0);
+         const double day_low = g_daily_bars_ready ? g_today_bar.low : 0.0;
          if(day_low > 0.0 && day_low < bid && (current_sl <= 0.0 || day_low > current_sl + point * 0.5))
             QM_TM_MoveSL(ticket, day_low, "trail_current_day_low");
         }
       else if(ptype == POSITION_TYPE_SELL)
         {
-         const double day_high = iHigh(_Symbol, PERIOD_D1, 0);
+         const double day_high = g_daily_bars_ready ? g_today_bar.high : 0.0;
          if(day_high > 0.0 && day_high > ask && (current_sl <= 0.0 || day_high < current_sl - point * 0.5))
             QM_TM_MoveSL(ticket, day_high, "trail_current_day_high");
         }
@@ -246,10 +344,7 @@ void Strategy_ManageOpenPosition()
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   MqlDateTime now_dt;
-   TimeToStruct(TimeCurrent(), now_dt);
-   const int hhmm = now_dt.hour * 100 + now_dt.min;
-   return (hhmm >= strategy_session_end_hhmm);
+   return (HHMM(TimeCurrent()) >= strategy_session_end_hhmm);
   }
 
 // Optional news-filter override. Return TRUE to suppress trading regardless
