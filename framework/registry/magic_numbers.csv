@@ -7425,3 +7425,16 @@
 9701,ff-ema-rsi-m15,1,GBPUSD.DWX,97010001,2026-06-11,Development,active
 9701,ff-ema-rsi-m15,2,USDJPY.DWX,97010002,2026-06-11,Development,active
 9701,ff-ema-rsi-m15,3,XAUUSD.DWX,97010003,2026-06-11,Development,active
+11458,goodwin-friday-monday-gap-d1,0,EURUSD.DWX,114580000,2026-06-11,Development,active
+11458,goodwin-friday-monday-gap-d1,1,GBPUSD.DWX,114580001,2026-06-11,Development,active
+11458,goodwin-friday-monday-gap-d1,2,USDJPY.DWX,114580002,2026-06-11,Development,active
+11458,goodwin-friday-monday-gap-d1,3,AUDUSD.DWX,114580003,2026-06-11,Development,active
+11458,goodwin-friday-monday-gap-d1,4,USDCAD.DWX,114580004,2026-06-11,Development,active
+9704,ff-easy15-jumper-m15,0,EURUSD.DWX,97040000,2026-06-11,Development,active
+9704,ff-easy15-jumper-m15,1,GBPUSD.DWX,97040001,2026-06-11,Development,active
+9704,ff-easy15-jumper-m15,2,USDJPY.DWX,97040002,2026-06-11,Development,active
+9704,ff-easy15-jumper-m15,3,XAUUSD.DWX,97040003,2026-06-11,Development,active
+9928,ff-d1-elasticity-m15,0,EURUSD.DWX,99280000,2026-06-11,Development,active
+9928,ff-d1-elasticity-m15,1,GBPUSD.DWX,99280001,2026-06-11,Development,active
+9928,ff-d1-elasticity-m15,2,USDJPY.DWX,99280002,2026-06-11,Development,active
+9928,ff-d1-elasticity-m15,3,XAUUSD.DWX,99280003,2026-06-11,Development,active
