@@ -7171,3 +7171,6 @@
 12511,bt-target-vol,2,WS30.DWX,125110002,2026-06-11,Development,active
 12511,bt-target-vol,3,XAUUSD.DWX,125110003,2026-06-11,Development,active
 12511,bt-target-vol,4,XTIUSD.DWX,125110004,2026-06-11,Development,active
+12415,ger-2macdsto,0,NZDUSD.DWX,124150000,2026-06-11,Development,active
+12415,ger-2macdsto,1,AUDUSD.DWX,124150001,2026-06-11,Development,active
+12415,ger-2macdsto,2,EURUSD.DWX,124150002,2026-06-11,Development,active
