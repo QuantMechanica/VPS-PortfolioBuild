@@ -7557,3 +7557,8 @@
 11869,ema40-80-cci-m5,1,GBPUSD.DWX,118690001,2026-06-11,Development,active
 11869,ema40-80-cci-m5,2,USDJPY.DWX,118690002,2026-06-11,Development,active
 11869,ema40-80-cci-m5,3,AUDUSD.DWX,118690003,2026-06-11,Development,active
+9956,ff-daylight-wpr-smma-h4,0,EURUSD.DWX,99560000,2026-06-11,Development,active
+9956,ff-daylight-wpr-smma-h4,1,GBPUSD.DWX,99560001,2026-06-11,Development,active
+9956,ff-daylight-wpr-smma-h4,2,USDJPY.DWX,99560002,2026-06-11,Development,active
+9956,ff-daylight-wpr-smma-h4,3,XAUUSD.DWX,99560003,2026-06-11,Development,active
+9956,ff-daylight-wpr-smma-h4,4,NDX.DWX,99560004,2026-06-11,Development,active
