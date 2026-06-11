@@ -435,6 +435,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          if(c1 > g_long_break1_high && c1 > o1)
            {
             g_long_break2_high = h1;
+            const bool touched_zone = (l1 <= g_long_break2_high && h1 >= g_long_base2_low);
+            if(touched_zone && c1 >= g_long_base2_low)
+              {
+               const bool ok = FillLongRequest(req, atr_m1);
+               ResetLongSetup();
+               if(ok)
+                  return true;
+              }
             g_long_state = SETUP_WAIT_RETEST;
             g_long_age_bars = 0;
            }
@@ -489,6 +497,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          if(c1 < g_short_break1_low && c1 < o1)
            {
             g_short_break2_low = l1;
+            const bool touched_zone = (h1 >= g_short_break2_low && l1 <= g_short_base2_high);
+            if(touched_zone && c1 <= g_short_base2_high)
+              {
+               const bool ok = FillShortRequest(req, atr_m1);
+               ResetShortSetup();
+               if(ok)
+                  return true;
+              }
             g_short_state = SETUP_WAIT_RETEST;
             g_short_age_bars = 0;
            }

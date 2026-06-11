@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-This EA trades M1 liquidity-sweep reversals during the first 180 minutes after the configured London or New York open. A long setup starts when price sweeps below the latest 20-bar M1 swing low near an H1/H4/prior-session support level, then prints two bullish breaks with a pullback base between them. It buys after a retest into the second-base-to-second-break zone and a bullish close, with the short side mirrored at resistance; stale retest states expire after the configured break-window length so newer closed-bar setups can form. Exits are the initial SL/TP, a close back beyond Base 1 against the trade, or a 45-bar time stop.
+This EA trades M1 liquidity-sweep reversals during the first 180 minutes after the configured London or New York open. A long setup starts when price sweeps below the latest 20-bar M1 swing low near an H1/H4/prior-session support level, then prints two bullish breaks with a pullback base between them. It buys when the Break-2 candle or a subsequent retest trades into the second-base-to-second-break zone and closes bullish, with the short side mirrored at resistance; stale retest states expire after the configured break-window length so newer closed-bar setups can form. Exits are the initial SL/TP, a close back beyond Base 1 against the trade, or a 45-bar time stop.
 
 ---
 
@@ -106,3 +106,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 |---|---|---|---|
 | v1 | 2026-06-10 | Initial build from card | f0b72d26-f58d-4596-8912-b22874ab174a |
 | v2 | 2026-06-11 | Bounded stale post-Break-2 retest states after Q01 smoke trade-count review | d731be7a-e8de-45fc-bc9d-3b0b60214845 |
+| v3 | 2026-06-11 | Allow closed Break-2 candle to satisfy entry-zone touch after smoke MIN_TRADES_NOT_MET | d731be7a-e8de-45fc-bc9d-3b0b60214845 |
