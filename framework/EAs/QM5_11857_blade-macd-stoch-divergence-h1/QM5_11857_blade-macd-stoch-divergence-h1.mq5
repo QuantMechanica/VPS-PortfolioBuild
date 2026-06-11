@@ -5,281 +5,248 @@
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// Strategy: MACD divergence (bearish/bullish) on H1 confirmed by Stochastic
-// overbought/oversold cross-back. Counter-trend reversal. SL behind recent
-// swing high/low (5-bar), TP = 2×risk, BE when profit ≥ risk AND Stoch mid-side.
+// QuantMechanica V5 EA — strategy-specific inputs and five Strategy_* hooks only.
 // Card: QM5_11857_blade-macd-stoch-divergence-h1
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                      = 11857;
-input int    qm_magic_slot_offset          = 0;
-input uint   qm_rng_seed                   = 42;
+input int    qm_ea_id                   = 11857;
+input int    qm_magic_slot_offset       = 0;
+input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT                  = 0.0;
-input double RISK_FIXED                    = 1000.0;
-input double PORTFOLIO_WEIGHT             = 1.0;
+input double RISK_PERCENT               = 0.0;
+input double RISK_FIXED                 = 1000.0;
+input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
-input int    qm_news_stale_max_hours       = 336;
-input string qm_news_min_impact            = "high";
-input QM_NewsMode qm_news_mode_legacy      = QM_NEWS_OFF;
+input int    qm_news_stale_max_hours    = 336;
+input string qm_news_min_impact         = "high";
+input QM_NewsMode qm_news_mode_legacy   = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled       = true;
-input int    qm_friday_close_hour_broker   = 21;
+input bool   qm_friday_close_enabled    = true;
+input int    qm_friday_close_hour_broker = 21;
 
 input group "Stress"
-input double qm_stress_reject_probability  = 0.0;
+input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_macd_fast            = 12;
-input int    strategy_macd_slow            = 26;
-input int    strategy_macd_signal          = 9;
-input int    strategy_stoch_k              = 9;
-input int    strategy_stoch_d              = 3;
-input int    strategy_stoch_slow           = 3;
-input double strategy_stoch_overbought     = 80.0;
-input double strategy_stoch_oversold      = 20.0;
-input int    strategy_swing_lookback       = 50;   // bars to search for swing high/low pairs
-input int    strategy_sl_bars              = 5;    // bars for SL reference (highest high / lowest low)
-input int    strategy_sl_min_pips          = 20;   // minimum SL distance in pips
-input int    strategy_sl_max_pips          = 35;   // maximum SL distance; skip if larger
-input int    strategy_div_window           = 10;   // bars divergence stays valid after detection
+input int    strategy_macd_fast         = 12;
+input int    strategy_macd_slow         = 26;
+input int    strategy_macd_signal       = 9;
+input int    strategy_stoch_k           = 9;
+input int    strategy_stoch_d           = 3;
+input int    strategy_stoch_slow        = 3;
+input double strategy_stoch_overbought  = 80.0;
+input double strategy_stoch_oversold    = 20.0;
+input int    strategy_swing_lookback    = 50;
+input int    strategy_sl_bars           = 5;
+input int    strategy_sl_min_pips       = 20;
+input int    strategy_sl_max_pips       = 35;
+input int    strategy_div_window        = 10;
+input double strategy_take_profit_rr    = 2.0;
 
 // -----------------------------------------------------------------------------
-// File-scope state: divergence tracking (updated once per new H1 bar)
+// No Trade Filter (time, spread, news)
 // -----------------------------------------------------------------------------
-
-bool   g_bear_div_active     = false;
-int    g_bear_div_bars_left  = 0;
-
-bool   g_bull_div_active     = false;
-int    g_bull_div_bars_left  = 0;
-
-// -----------------------------------------------------------------------------
-// AdvanceState_OnNewBar — called exactly once per closed H1 bar (from OnTick
-// after QM_IsNewBar() returns true). Scans for MACD divergence + updates state.
-// perf-allowed: iHigh/iLow/QM_MACD_Main calls gated by new-bar, O(lookback).
-// -----------------------------------------------------------------------------
-
-void AdvanceState_OnNewBar()
-  {
-   // Decrement divergence expiry windows
-   if(g_bear_div_active)
-     {
-      g_bear_div_bars_left--;
-      if(g_bear_div_bars_left <= 0)
-         g_bear_div_active = false;
-     }
-   if(g_bull_div_active)
-     {
-      g_bull_div_bars_left--;
-      if(g_bull_div_bars_left <= 0)
-         g_bull_div_active = false;
-     }
-
-   const int max_scan = strategy_swing_lookback - 1;  // i+1 <= swing_lookback
-
-   // --- Bearish divergence scan: find 2 most-recent swing highs ---
-   // perf-allowed: bespoke structural swing detection gated by QM_IsNewBar
-   int sh_idx[2] = { -1, -1 };
-   int sh_count = 0;
-   for(int i = 2; i <= max_scan && sh_count < 2; ++i)
-     {
-      const double h_prev = iHigh(_Symbol, PERIOD_H1, i - 1);  // perf-allowed
-      const double h_curr = iHigh(_Symbol, PERIOD_H1, i);       // perf-allowed
-      const double h_next = iHigh(_Symbol, PERIOD_H1, i + 1);   // perf-allowed
-      if(h_curr > h_prev && h_curr > h_next)
-        {
-         sh_idx[sh_count] = i;
-         sh_count++;
-        }
-     }
-
-   if(sh_count == 2)
-     {
-      const int idx_new = sh_idx[0];   // smaller shift = more recent swing high
-      const int idx_old = sh_idx[1];   // larger shift = older swing high
-      const double price_new = iHigh(_Symbol, PERIOD_H1, idx_new);  // perf-allowed
-      const double price_old = iHigh(_Symbol, PERIOD_H1, idx_old);  // perf-allowed
-
-      const double macd_new   = QM_MACD_Main(_Symbol, PERIOD_H1, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, idx_new);
-      const double macd_old   = QM_MACD_Main(_Symbol, PERIOD_H1, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, idx_old);
-      const double macd_new_m1 = QM_MACD_Main(_Symbol, PERIOD_H1, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, idx_new - 1);
-      const double macd_new_p1 = QM_MACD_Main(_Symbol, PERIOD_H1, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, idx_new + 1);
-      const double macd_old_m1 = QM_MACD_Main(_Symbol, PERIOD_H1, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, idx_old - 1);
-      const double macd_old_p1 = QM_MACD_Main(_Symbol, PERIOD_H1, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, idx_old + 1);
-
-      // Both MACD peaks must be visible hills
-      const bool macd_hill_new = (macd_new > macd_new_m1 && macd_new > macd_new_p1);
-      const bool macd_hill_old = (macd_old > macd_old_m1 && macd_old > macd_old_p1);
-
-      // Bearish div: price higher high + MACD lower high
-      if(price_new > price_old && macd_new < macd_old && macd_hill_new && macd_hill_old)
-        {
-         g_bear_div_active    = true;
-         g_bear_div_bars_left = strategy_div_window;
-        }
-     }
-
-   // --- Bullish divergence scan: find 2 most-recent swing lows ---
-   int sl_idx[2] = { -1, -1 };
-   int sl_count = 0;
-   for(int i = 2; i <= max_scan && sl_count < 2; ++i)
-     {
-      const double l_prev = iLow(_Symbol, PERIOD_H1, i - 1);  // perf-allowed
-      const double l_curr = iLow(_Symbol, PERIOD_H1, i);       // perf-allowed
-      const double l_next = iLow(_Symbol, PERIOD_H1, i + 1);   // perf-allowed
-      if(l_curr < l_prev && l_curr < l_next)
-        {
-         sl_idx[sl_count] = i;
-         sl_count++;
-        }
-     }
-
-   if(sl_count == 2)
-     {
-      const int idx_new = sl_idx[0];
-      const int idx_old = sl_idx[1];
-      const double price_new = iLow(_Symbol, PERIOD_H1, idx_new);  // perf-allowed
-      const double price_old = iLow(_Symbol, PERIOD_H1, idx_old);  // perf-allowed
-
-      const double macd_new    = QM_MACD_Main(_Symbol, PERIOD_H1, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, idx_new);
-      const double macd_old    = QM_MACD_Main(_Symbol, PERIOD_H1, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, idx_old);
-      const double macd_new_m1 = QM_MACD_Main(_Symbol, PERIOD_H1, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, idx_new - 1);
-      const double macd_new_p1 = QM_MACD_Main(_Symbol, PERIOD_H1, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, idx_new + 1);
-      const double macd_old_m1 = QM_MACD_Main(_Symbol, PERIOD_H1, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, idx_old - 1);
-      const double macd_old_p1 = QM_MACD_Main(_Symbol, PERIOD_H1, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, idx_old + 1);
-
-      // Both MACD valleys must be visible troughs (inverse hills)
-      const bool macd_trough_new = (macd_new < macd_new_m1 && macd_new < macd_new_p1);
-      const bool macd_trough_old = (macd_old < macd_old_m1 && macd_old < macd_old_p1);
-
-      // Bullish div: price lower low + MACD higher low
-      if(price_new < price_old && macd_new > macd_old && macd_trough_new && macd_trough_old)
-        {
-         g_bull_div_active    = true;
-         g_bull_div_bars_left = strategy_div_window;
-        }
-     }
-  }
-
-// -----------------------------------------------------------------------------
-// No Trade Filter — no extra filters beyond framework news/news/friday
-// -----------------------------------------------------------------------------
-
 bool Strategy_NoTradeFilter()
   {
    return false;
   }
 
 // -----------------------------------------------------------------------------
-// Entry Signal — fires on closed H1 bars; reads only cached state + indicators
+// Trade Entry
 // -----------------------------------------------------------------------------
-
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   const double pt = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(pt <= 0.0)
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(strategy_swing_lookback < 6 || strategy_sl_bars < 1 ||
+      strategy_macd_fast < 1 || strategy_macd_slow <= strategy_macd_fast ||
+      strategy_macd_signal < 1 || strategy_take_profit_rr <= 0.0)
       return false;
 
-   // 1 pip = 10 points on 5-digit brokers (DWX standard)
-   const double pip = 10.0 * pt;
-   const double sl_min_dist = strategy_sl_min_pips * pip;
-   const double sl_max_dist = strategy_sl_max_pips * pip;
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(point <= 0.0)
+      return false;
+   const double pip = point * 10.0;
+   const double min_stop = strategy_sl_min_pips * pip;
+   const double max_stop = strategy_sl_max_pips * pip;
+   if(min_stop <= 0.0 || max_stop <= min_stop)
+      return false;
 
-   // --- SHORT entry: bearish divergence active + Stoch K crossed below overbought ---
-   if(g_bear_div_active)
+   // QM_IsNewBar() caller gate: OnTick invokes Strategy_EntrySignal only after
+   // the framework closed-bar gate, so this bounded bar snapshot is per-bar.
+   const int bars_needed = MathMax(strategy_swing_lookback + 2, strategy_sl_bars + 2);
+   double highs[];
+   double lows[];
+   ArraySetAsSeries(highs, true);
+   ArraySetAsSeries(lows, true);
+   if(CopyHigh(_Symbol, PERIOD_H1, 0, bars_needed, highs) < bars_needed)
+      return false;
+   if(CopyLow(_Symbol, PERIOD_H1, 0, bars_needed, lows) < bars_needed)
+      return false;
+
+   int swing_high_new = -1;
+   int swing_high_old = -1;
+   int swing_low_new = -1;
+   int swing_low_old = -1;
+
+   const int max_scan = MathMax(3, strategy_swing_lookback - 1);
+   for(int shift = 2; shift <= max_scan; ++shift)
      {
-      const double k1 = QM_Stoch_K(_Symbol, PERIOD_H1, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slow, 1);
-      const double k2 = QM_Stoch_K(_Symbol, PERIOD_H1, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slow, 2);
-
-      // Cross: K was at/above overbought on bar[2], now below on bar[1]
-      if(k2 >= strategy_stoch_overbought && k1 < strategy_stoch_overbought)
+      const double h_prev = highs[shift - 1];
+      const double h_curr = highs[shift];
+      const double h_next = highs[shift + 1];
+      if(h_curr > h_prev && h_curr > h_next)
         {
-         // SL = highest high of last strategy_sl_bars bars + 10-point buffer
-         double highest_high = -DBL_MAX;
-         for(int j = 1; j <= strategy_sl_bars; ++j)
-            highest_high = MathMax(highest_high, iHigh(_Symbol, PERIOD_H1, j));  // perf-allowed
-
-         const double bid      = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-         const double sl_price = NormalizeDouble(highest_high + 10.0 * pt, _Digits);
-         const double sl_dist  = sl_price - bid;
-
-         if(sl_dist < sl_min_dist || sl_dist > sl_max_dist)
-            return false;
-
-         req.type              = QM_SELL;
-         req.price             = 0.0;                           // market order at bid
-         req.sl                = sl_price;
-         req.tp                = NormalizeDouble(bid - 2.0 * sl_dist, _Digits);
-         req.reason            = "BLADE_BEAR_DIV";
-         req.symbol_slot       = qm_magic_slot_offset;
-         req.expiration_seconds = 0;
-
-         g_bear_div_active = false;  // consumed; reset so no double-entry
-         return true;
+         if(swing_high_new < 0)
+            swing_high_new = shift;
+         else if(swing_high_old < 0)
+            swing_high_old = shift;
         }
+      const double l_prev = lows[shift - 1];
+      const double l_curr = lows[shift];
+      const double l_next = lows[shift + 1];
+      if(l_curr < l_prev && l_curr < l_next)
+        {
+         if(swing_low_new < 0)
+            swing_low_new = shift;
+         else if(swing_low_old < 0)
+            swing_low_old = shift;
+        }
+
+      if(swing_high_old > 0 && swing_low_old > 0)
+         break;
      }
 
-   // --- LONG entry: bullish divergence active + Stoch K crossed above oversold ---
-   if(g_bull_div_active)
+   bool bearish_divergence = false;
+   if(swing_high_new > 0 && swing_high_old > 0 && swing_high_new <= strategy_div_window)
      {
-      const double k1 = QM_Stoch_K(_Symbol, PERIOD_H1, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slow, 1);
-      const double k2 = QM_Stoch_K(_Symbol, PERIOD_H1, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slow, 2);
-
-      // Cross: K was at/below oversold on bar[2], now above on bar[1]
-      if(k2 <= strategy_stoch_oversold && k1 > strategy_stoch_oversold)
+      const double price_new = highs[swing_high_new];
+      const double price_old = highs[swing_high_old];
+      const double macd_new = QM_MACD_Main(_Symbol, PERIOD_H1, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, swing_high_new);
+      const double macd_old = QM_MACD_Main(_Symbol, PERIOD_H1, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, swing_high_old);
+      const bool new_hill = (macd_new > QM_MACD_Main(_Symbol, PERIOD_H1, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, swing_high_new - 1) &&
+                             macd_new > QM_MACD_Main(_Symbol, PERIOD_H1, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, swing_high_new + 1));
+      const bool old_hill = (macd_old > QM_MACD_Main(_Symbol, PERIOD_H1, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, swing_high_old - 1) &&
+                             macd_old > QM_MACD_Main(_Symbol, PERIOD_H1, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, swing_high_old + 1));
+      bool valley_between = false;
+      const double lower_peak = MathMin(macd_new, macd_old);
+      for(int j = swing_high_new + 1; j < swing_high_old; ++j)
         {
-         double lowest_low = DBL_MAX;
-         for(int j = 1; j <= strategy_sl_bars; ++j)
-            lowest_low = MathMin(lowest_low, iLow(_Symbol, PERIOD_H1, j));  // perf-allowed
-
-         const double ask      = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-         const double sl_price = NormalizeDouble(lowest_low - 10.0 * pt, _Digits);
-         const double sl_dist  = ask - sl_price;
-
-         if(sl_dist < sl_min_dist || sl_dist > sl_max_dist)
-            return false;
-
-         req.type              = QM_BUY;
-         req.price             = 0.0;                           // market order at ask
-         req.sl                = sl_price;
-         req.tp                = NormalizeDouble(ask + 2.0 * sl_dist, _Digits);
-         req.reason            = "BLADE_BULL_DIV";
-         req.symbol_slot       = qm_magic_slot_offset;
-         req.expiration_seconds = 0;
-
-         g_bull_div_active = false;
-         return true;
+         if(QM_MACD_Main(_Symbol, PERIOD_H1, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, j) < lower_peak)
+           {
+            valley_between = true;
+            break;
+           }
         }
+      bearish_divergence = (price_new > price_old && macd_new < macd_old && new_hill && old_hill && valley_between);
+     }
+
+   bool bullish_divergence = false;
+   if(swing_low_new > 0 && swing_low_old > 0 && swing_low_new <= strategy_div_window)
+     {
+      const double price_new = lows[swing_low_new];
+      const double price_old = lows[swing_low_old];
+      const double macd_new = QM_MACD_Main(_Symbol, PERIOD_H1, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, swing_low_new);
+      const double macd_old = QM_MACD_Main(_Symbol, PERIOD_H1, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, swing_low_old);
+      const bool new_trough = (macd_new < QM_MACD_Main(_Symbol, PERIOD_H1, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, swing_low_new - 1) &&
+                               macd_new < QM_MACD_Main(_Symbol, PERIOD_H1, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, swing_low_new + 1));
+      const bool old_trough = (macd_old < QM_MACD_Main(_Symbol, PERIOD_H1, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, swing_low_old - 1) &&
+                               macd_old < QM_MACD_Main(_Symbol, PERIOD_H1, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, swing_low_old + 1));
+      bool hill_between = false;
+      const double higher_trough = MathMax(macd_new, macd_old);
+      for(int j = swing_low_new + 1; j < swing_low_old; ++j)
+        {
+         if(QM_MACD_Main(_Symbol, PERIOD_H1, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, j) > higher_trough)
+           {
+            hill_between = true;
+            break;
+           }
+        }
+      bullish_divergence = (price_new < price_old && macd_new > macd_old && new_trough && old_trough && hill_between);
+     }
+
+   const double stoch_1 = QM_Stoch_K(_Symbol, PERIOD_H1, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slow, 1);
+   const double stoch_2 = QM_Stoch_K(_Symbol, PERIOD_H1, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slow, 2);
+
+   if(bearish_divergence && stoch_2 >= strategy_stoch_overbought && stoch_1 < strategy_stoch_overbought)
+     {
+      double highest_high = -DBL_MAX;
+      for(int j = 1; j <= strategy_sl_bars; ++j)
+         highest_high = MathMax(highest_high, highs[j]);
+
+      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      double sl = highest_high + 10.0 * point;
+      double risk = sl - entry;
+      if(risk > max_stop)
+         return false;
+      if(risk < min_stop)
+        {
+         risk = min_stop;
+         sl = entry + risk;
+        }
+
+      req.type = QM_SELL;
+      req.price = 0.0;
+      req.sl = NormalizeDouble(sl, _Digits);
+      req.tp = NormalizeDouble(entry - strategy_take_profit_rr * risk, _Digits);
+      req.reason = "BLADE_BEAR_MACD_STOCH_DIV";
+      return (req.sl > entry && req.tp < entry);
+     }
+
+   if(bullish_divergence && stoch_2 <= strategy_stoch_oversold && stoch_1 > strategy_stoch_oversold)
+     {
+      double lowest_low = DBL_MAX;
+      for(int j = 1; j <= strategy_sl_bars; ++j)
+         lowest_low = MathMin(lowest_low, lows[j]);
+
+      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      double sl = lowest_low - 10.0 * point;
+      double risk = entry - sl;
+      if(risk > max_stop)
+         return false;
+      if(risk < min_stop)
+        {
+         risk = min_stop;
+         sl = entry - risk;
+        }
+
+      req.type = QM_BUY;
+      req.price = 0.0;
+      req.sl = NormalizeDouble(sl, _Digits);
+      req.tp = NormalizeDouble(entry + strategy_take_profit_rr * risk, _Digits);
+      req.reason = "BLADE_BULL_MACD_STOCH_DIV";
+      return (req.sl < entry && req.tp > entry);
      }
 
    return false;
   }
 
 // -----------------------------------------------------------------------------
-// Trade Management — break-even when profit >= initial risk AND stoch mid-side
-// Runs per tick on the per-tick path; reads only cached indicator + live prices.
+// Trade Management
 // -----------------------------------------------------------------------------
-
 void Strategy_ManageOpenPosition()
   {
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
       return;
 
-   const double pt = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(pt <= 0.0)
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(point <= 0.0)
       return;
 
-   // Stoch K at last closed bar (O(1) pooled read — fine per tick)
-   const double stoch_k = QM_Stoch_K(_Symbol, PERIOD_H1, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slow, 1);
-
+   const double stoch = QM_Stoch_K(_Symbol, PERIOD_H1, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slow, 1);
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -290,68 +257,51 @@ void Strategy_ManageOpenPosition()
       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
 
-      const ENUM_POSITION_TYPE ptype    = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      const double             open_price = PositionGetDouble(POSITION_PRICE_OPEN);
-      const double             current_sl = PositionGetDouble(POSITION_SL);
+      const ENUM_POSITION_TYPE type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+      const double current_sl = PositionGetDouble(POSITION_SL);
+      if(open_price <= 0.0 || current_sl <= 0.0)
+         continue;
 
-      if(ptype == POSITION_TYPE_SELL)
+      if(type == POSITION_TYPE_SELL)
         {
-         // BE not yet applied: original SL is above entry
          if(current_sl <= open_price)
             continue;
-
-         const double risk      = current_sl - open_price;
-         const double bid       = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-         const double profit    = open_price - bid;
-
-         // BE trigger: profit >= initial risk AND stoch has moved below 50
-         if(profit >= risk && stoch_k < 50.0)
-           {
-            // Lock in 10 points (1 pip) profit — covers spread for short
-            const double new_sl = NormalizeDouble(open_price - 10.0 * pt, _Digits);
-            QM_TM_MoveSL(ticket, new_sl, "BLADE_BE_BEAR");
-           }
+         const double risk = current_sl - open_price;
+         const double profit = open_price - SymbolInfoDouble(_Symbol, SYMBOL_BID);
+         if(profit >= risk && stoch < 50.0)
+            QM_TM_MoveSL(ticket, NormalizeDouble(open_price - 10.0 * point, _Digits), "BLADE_BE_SHORT_STOCH_MIDLINE");
         }
-      else if(ptype == POSITION_TYPE_BUY)
+      else if(type == POSITION_TYPE_BUY)
         {
-         // BE not yet applied: original SL is below entry
          if(current_sl >= open_price)
             continue;
-
-         const double risk      = open_price - current_sl;
-         const double ask       = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-         const double profit    = ask - open_price;
-
-         // BE trigger: profit >= initial risk AND stoch has moved above 50
-         if(profit >= risk && stoch_k > 50.0)
-           {
-            const double new_sl = NormalizeDouble(open_price + 10.0 * pt, _Digits);
-            QM_TM_MoveSL(ticket, new_sl, "BLADE_BE_BULL");
-           }
+         const double risk = open_price - current_sl;
+         const double profit = SymbolInfoDouble(_Symbol, SYMBOL_ASK) - open_price;
+         if(profit >= risk && stoch > 50.0)
+            QM_TM_MoveSL(ticket, NormalizeDouble(open_price + 10.0 * point, _Digits), "BLADE_BE_LONG_STOCH_MIDLINE");
         }
      }
   }
 
 // -----------------------------------------------------------------------------
-// Exit Signal — no discretionary exit; SL/TP + framework Friday close handle it
+// Trade Close
 // -----------------------------------------------------------------------------
-
 bool Strategy_ExitSignal()
   {
    return false;
   }
 
 // -----------------------------------------------------------------------------
-// News Filter Hook — defer to framework's 2-axis filter
+// News Filter Hook (callable for P8 News Impact phase)
 // -----------------------------------------------------------------------------
-
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
   }
 
 // -----------------------------------------------------------------------------
-// Framework wiring — do NOT edit below this line
+// Framework wiring — do NOT edit below this line unless the framework changes.
 // -----------------------------------------------------------------------------
 
 int OnInit()
@@ -392,7 +342,6 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
@@ -400,17 +349,14 @@ void OnTick()
       news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
    if(!news_allows)
       return;
-
    if(QM_FrameworkHandleFridayClose())
       return;
 
    if(Strategy_NoTradeFilter())
       return;
 
-   // Per-tick: trade management (BE checks against live prices)
    Strategy_ManageOpenPosition();
 
-   // Per-tick: discretionary exit
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -419,19 +365,16 @@ void OnTick()
          const ulong ticket = PositionGetTicket(i);
          if(!PositionSelectByTicket(ticket))
             continue;
-         if((long)PositionGetInteger(POSITION_MAGIC) != (long)magic)
+         if(PositionGetInteger(POSITION_MAGIC) != magic)
             continue;
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
 
-   // Per-closed-bar: divergence state advance + entry signal
    if(!QM_IsNewBar())
       return;
 
    QM_EquityStreamOnNewBar();
-
-   AdvanceState_OnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))

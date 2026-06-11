@@ -28,9 +28,10 @@ Trades counter-trend reversals on H1 using MACD divergence confirmed by a Stocha
 | `strategy_stoch_oversold` | 20.0 | 10–30 | Stochastic oversold level (long trigger) |
 | `strategy_swing_lookback` | 50 | 20–100 | Bars scanned for the two swing high/low pairs |
 | `strategy_sl_bars` | 5 | 3–10 | Bars used to find the SL reference swing |
-| `strategy_sl_min_pips` | 20 | 10–30 | Minimum SL distance in pips; skip trade if tighter |
+| `strategy_sl_min_pips` | 20 | 10–30 | Minimum SL distance in pips; widen stop if the swing stop is tighter |
 | `strategy_sl_max_pips` | 35 | 25–60 | Maximum SL distance in pips; skip trade if wider |
 | `strategy_div_window` | 10 | 5–20 | Bars divergence remains valid after detection |
+| `strategy_take_profit_rr` | 2.0 | 1.0–4.0 | Fixed reward-to-risk take-profit multiple |
 
 ---
 

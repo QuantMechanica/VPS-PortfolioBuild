@@ -48,7 +48,7 @@ Each EA instance applies Alpha Architect's equal-weight monthly trend rule to a 
 |---|---|
 | Base timeframe | `D1` |
 | Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default); month-boundary detection via D1 bar time |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default); monthly rebalance state advances once per broker calendar month after the framework new-bar gate |
 
 ---
 

@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        11857
 ; ea_slug:      blade-macd-stoch-divergence-h1
@@ -10,7 +10,7 @@
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   81474d5c6be372260d8fbdfdcc7edbdeee597f12664680513f9ad333eda887e2
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-06-11
 ;==========================================================

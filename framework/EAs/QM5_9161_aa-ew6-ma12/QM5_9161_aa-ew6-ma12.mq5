@@ -48,23 +48,19 @@ input double strategy_atr_stop_mult     = 3.0;   // Catastrophic ATR multiplier
 // File-scope monthly signal state
 // ---------------------------------------------------------------------------
 
-// Unique monthly counter (year*12 + month) for the last evaluated bar[1] month.
-// Prevents re-evaluation on the same calendar month.
+// Unique monthly counter (year*12 + month) for the last evaluated broker month.
+// Prevents re-evaluation on the same calendar month after the framework new-bar gate.
 int  g_last_advance_month = -1;
 int  g_monthly_signal     = -1;  // -1=uninitialized, 0=flat, 1=long
 
 // Advance the monthly signal state. Idempotent for the same calendar month.
 // Reads last-completed-D1-bar close (shift=1) vs SMA(strategy_sma_period, shift=1).
-// Called from both ExitSignal and EntrySignal — only the first call per new
-// D1-bar-month is effective; subsequent calls are no-ops.
+// Called only after OnTick has passed QM_IsNewBar(); subsequent calls in the
+// same broker month are no-ops.
 bool AdvanceMonthlySignalIfNeeded()
   {
-   const datetime t0 = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: month-boundary detection
-   if(t0 <= 0)
-      return false;
-
    MqlDateTime dt;
-   TimeToStruct(t0, dt);
+   TimeToStruct(TimeCurrent(), dt);
    const int month_id = dt.year * 12 + dt.mon;
 
    if(month_id == g_last_advance_month)
@@ -138,31 +134,13 @@ void Strategy_ManageOpenPosition()
 
 bool Strategy_ExitSignal()
   {
-   static datetime s_last_exit_bar = 0;
-   static bool     s_cached_exit   = false;
-
    if(!HasOurPosition())
-     {
-      s_cached_exit = false;
       return false;
-     }
-   const datetime t0 = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: month-boundary detection
-   if(t0 <= 0)
-      return false;
-
-   if(t0 == s_last_exit_bar)
-      return s_cached_exit;
-
-   s_last_exit_bar = t0;
-   s_cached_exit   = false;
 
    AdvanceMonthlySignalIfNeeded();
 
    if(g_monthly_signal == 0)
-     {
-      s_cached_exit = true;
       return true;
-     }
 
    return false;
   }
@@ -229,6 +207,11 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
+   if(!QM_IsNewBar())
+      return;
+
+   QM_EquityStreamOnNewBar();
+
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -244,11 +227,6 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
-
-   if(!QM_IsNewBar())
-      return;
-
-   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
