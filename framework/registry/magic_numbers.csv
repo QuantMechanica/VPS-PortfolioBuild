@@ -7288,6 +7288,11 @@
 9942,ff-psar-flip-m30,1,GBPUSD.DWX,99420001,2026-06-11,Development,active
 9942,ff-psar-flip-m30,2,USDJPY.DWX,99420002,2026-06-11,Development,active
 9942,ff-psar-flip-m30,3,AUDUSD.DWX,99420003,2026-06-11,Development,active
+11740,rfs-momentum-sma-m15,0,EURUSD.DWX,117400000,2026-06-11,Development,active
+11740,rfs-momentum-sma-m15,1,GBPUSD.DWX,117400001,2026-06-11,Development,active
+11740,rfs-momentum-sma-m15,2,USDJPY.DWX,117400002,2026-06-11,Development,active
+11740,rfs-momentum-sma-m15,3,USDCHF.DWX,117400003,2026-06-11,Development,active
+11740,rfs-momentum-sma-m15,4,AUDUSD.DWX,117400004,2026-06-11,Development,active
 9991,ff-tmt-scalp-m15,0,EURUSD.DWX,99910000,2026-06-11,Development,active
 9991,ff-tmt-scalp-m15,1,GBPUSD.DWX,99910001,2026-06-11,Development,active
 9991,ff-tmt-scalp-m15,2,USDJPY.DWX,99910002,2026-06-11,Development,active
