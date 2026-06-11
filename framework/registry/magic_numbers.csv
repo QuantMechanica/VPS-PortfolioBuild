@@ -7255,3 +7255,7 @@
 9930,ff-hline-do-breakout-m30,1,EURUSD.DWX,99300001,2026-06-11,Development,active
 9930,ff-hline-do-breakout-m30,2,USDJPY.DWX,99300002,2026-06-11,Development,active
 9930,ff-hline-do-breakout-m30,3,XAUUSD.DWX,99300003,2026-06-11,Development,active
+9525,mql5-ema50-retest,0,EURUSD.DWX,95250000,2026-06-11,Development,active
+9525,mql5-ema50-retest,1,GBPUSD.DWX,95250001,2026-06-11,Development,active
+9525,mql5-ema50-retest,2,GDAXI.DWX,95250002,2026-06-11,Development,active
+9525,mql5-ema50-retest,3,XAUUSD.DWX,95250003,2026-06-11,Development,active

@@ -115,11 +115,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if(strategy_use_defense && !_HasPriorDefense(true))
          return false;
       const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      req.type  = ORDER_TYPE_BUY;
-      req.price = ask;
-      req.sl    = ask - sl;
-      req.tp    = ask + tp;
-      req.lots  = QM_LotsForRisk(_Symbol, strategy_sl_points);
+      req.type             = QM_BUY;
+      req.price            = ask;
+      req.sl               = ask - sl;
+      req.tp               = ask + tp;
+      req.symbol_slot      = qm_magic_slot_offset;
+      req.reason           = "EMA50_RETEST_LONG";
+      req.expiration_seconds = 0;
       return true;
      }
 
@@ -129,11 +131,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if(strategy_use_defense && !_HasPriorDefense(false))
          return false;
       const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      req.type  = ORDER_TYPE_SELL;
-      req.price = bid;
-      req.sl    = bid + sl;
-      req.tp    = bid - tp;
-      req.lots  = QM_LotsForRisk(_Symbol, strategy_sl_points);
+      req.type             = QM_SELL;
+      req.price            = bid;
+      req.sl               = bid + sl;
+      req.tp               = bid - tp;
+      req.symbol_slot      = qm_magic_slot_offset;
+      req.reason           = "EMA50_RETEST_SHORT";
+      req.expiration_seconds = 0;
       return true;
      }
 
