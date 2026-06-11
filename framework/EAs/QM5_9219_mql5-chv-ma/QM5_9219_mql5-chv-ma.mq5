@@ -92,10 +92,9 @@ void AdvanceState_OnNewBar()
    // Warmup: 3 * EMA period gives >99% convergence; add lookback + 2 buffer.
    const int needed = chv_period * 3 + chv_lookback + 2;
 
-   // perf-allowed: CopyRates called once per closed bar, inside QM_IsNewBar gate.
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
-   const int got = CopyRates(_Symbol, _Period, 1, needed, rates);
+   const int got = CopyRates(_Symbol, _Period, 1, needed, rates); // perf-allowed: called once per closed bar from QM_IsNewBar-gated OnTick.
    if(got < chv_period + chv_lookback + 2)
       return; // insufficient history on init; keep previous state
 

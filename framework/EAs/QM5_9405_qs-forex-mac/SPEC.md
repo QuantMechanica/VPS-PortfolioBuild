@@ -10,13 +10,13 @@ Validator: `framework/scripts/validate_spec_doc.py`
 **Slug:** `qs-forex-mac`
 **Source:** `842161b9-a728-55c7-97e8-33e33719b70c` (see `strategy-seeds/sources/842161b9-a728-55c7-97e8-33e33719b70c/`)
 **Author of this spec:** Claude
-**Last revised:** 2026-06-10
+**Last revised:** 2026-06-11
 
 ---
 
 ## 1. Strategy Logic
 
-Long-only SMA crossover on M1 bars. Compute a 500-bar simple moving average (fast) and a 2000-bar simple moving average (slow) of the close price on the M1 chart. Enter long at market when the fast SMA rises above the slow SMA and no position is currently open. Hold the position until the slow SMA meets or exceeds the fast SMA, then close at market. Stop loss is placed 2.0 × ATR(14) below the entry ask. No short entries.
+Long-only SMA crossover on M1 bars. Compute a 500-bar simple moving average (fast) and a 2000-bar simple moving average (slow) of the close price on the M1 chart. Enter long at market when the fast SMA crosses above the slow SMA on the last closed bar and no position is currently open. Hold the position until the slow SMA meets or exceeds the fast SMA, then close at market. Stop loss is placed 2.0 × ATR(14) below the entry ask. No short entries.
 
 ---
 
@@ -91,4 +91,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-10 | Initial build from card | da30d057-ef26-425f-8b09-ac97f22a3768 |
+| v1 | 2026-06-11 | Initial build from card | da30d057-ef26-425f-8b09-ac97f22a3768 |

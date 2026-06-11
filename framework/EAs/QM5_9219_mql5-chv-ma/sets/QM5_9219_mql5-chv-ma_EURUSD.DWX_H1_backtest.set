@@ -3,16 +3,16 @@
 ; ea_id:        9219
 ; ea_slug:      mql5-chv-ma
 ; ea_version:   v5.0
-; set_version:  s20260610-001
+; set_version:  s20260611-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   b7e02751e11e5f86195c7f6eb7fdf73ed825382bcf9b60d00e6ebdde4223d4f3
+; build_hash:   pending
 ; author:       Development
-; date:         2026-06-10
+; date:         2026-06-11
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=1000

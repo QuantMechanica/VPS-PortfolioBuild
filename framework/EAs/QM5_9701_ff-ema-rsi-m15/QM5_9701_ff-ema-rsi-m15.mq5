@@ -157,7 +157,7 @@ void Strategy_ManageOpenPosition()
   }
 
 // -----------------------------------------------------------------------------
-// Exit Signal — runs every tick.
+// Exit Signal — runs once per closed bar from the OnTick new-bar gate.
 //   1. Time stop: close after strategy_time_stop_bars × 15 minutes.
 //   2. Opposite EMA(5/12) cross on the last closed bar.
 // -----------------------------------------------------------------------------
@@ -259,6 +259,11 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
+   if(!QM_IsNewBar())
+      return;
+
+   QM_EquityStreamOnNewBar();
+
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -274,11 +279,6 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
-
-   if(!QM_IsNewBar())
-      return;
-
-   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))

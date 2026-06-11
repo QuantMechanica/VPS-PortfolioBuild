@@ -58,9 +58,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    const double fast_sma = QM_SMA(_Symbol, PERIOD_M1, strategy_fast_period, 1);
    const double slow_sma = QM_SMA(_Symbol, PERIOD_M1, strategy_slow_period, 1);
-   if(fast_sma <= 0.0 || slow_sma <= 0.0)
+   const double fast_sma_prev = QM_SMA(_Symbol, PERIOD_M1, strategy_fast_period, 2);
+   const double slow_sma_prev = QM_SMA(_Symbol, PERIOD_M1, strategy_slow_period, 2);
+   if(fast_sma <= 0.0 || slow_sma <= 0.0 || fast_sma_prev <= 0.0 || slow_sma_prev <= 0.0)
       return false;
-   if(fast_sma <= slow_sma)
+   if(fast_sma <= slow_sma || fast_sma_prev > slow_sma_prev)
       return false;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);

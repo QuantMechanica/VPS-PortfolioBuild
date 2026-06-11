@@ -3,14 +3,14 @@
 **EA ID:** QM5_9219
 **Slug:** `mql5-chv-ma`
 **Source:** `ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb` (see `strategy-seeds/sources/ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb/`)
-**Author of this spec:** Claude
-**Last revised:** 2026-06-10
+**Author of this spec:** Codex
+**Last revised:** 2026-06-11
 
 ---
 
 ## 1. Strategy Logic
 
-The EA computes the Chaikin Volatility indicator (CHV) as the percentage change in the EMA(10) of the daily High-Low range over a 10-bar lookback window. A long position is entered when CHV > 0 (volatility expanding) and the most recent closed-bar close is above SMA(20), indicating upward trend alignment. A short position is entered when CHV < 0 and close is below SMA(20). A volatility regime filter requires ATR(14) >= 0.6 × ATR(100) to avoid entering during dead-range periods. Positions are closed when CHV flips sign, close crosses the SMA(20) in the adverse direction, or after a 48-bar failsafe time stop. Initial stop is ATR(14) × 1.7 from entry; hard take-profit is 2.1R.
+The EA computes the Chaikin Volatility indicator (CHV) as the percentage change in the EMA(10) of the H1 bar High-Low range over a 10-bar lookback window. A long position is entered when CHV > 0 (volatility expanding) and the most recent closed-bar close is above SMA(20), indicating upward trend alignment. A short position is entered when CHV < 0 and close is below SMA(20). A volatility regime filter requires ATR(14) >= 0.6 × ATR(100) to avoid entering during dead-range periods. Positions are closed when CHV flips sign, close crosses the SMA(20) in the adverse direction, or after a 48-bar failsafe time stop. Initial stop is ATR(14) × 1.7 from entry; hard take-profit is 2.1R.
 
 ---
 
@@ -91,4 +91,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-10 | Initial build from card | 9be59aa5-0867-4291-88b1-d4898e8e6a85 |
+| v1 | 2026-06-11 | Initial build from card | 9be59aa5-0867-4291-88b1-d4898e8e6a85 |

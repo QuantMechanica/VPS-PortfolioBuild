@@ -3,16 +3,16 @@
 ; ea_id:        9405
 ; ea_slug:      qs-forex-mac
 ; ea_version:   v5.0
-; set_version:  s20260610-001
+; set_version:  s20260611-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    M1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   2b72e19d8bb88f186701faafd471f5cd9dc7704547feb8d511bcb101bebe4a2d
+; build_hash:   pending
 ; author:       Development
-; date:         2026-06-10
+; date:         2026-06-11
 ;==========================================================
 qm_magic_slot_offset=1
 RISK_FIXED=1000
