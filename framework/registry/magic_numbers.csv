@@ -7187,3 +7187,7 @@
 12349,sb-ema10-20,4,GDAXI.DWX,123490004,2026-06-11,Development,active
 12349,sb-ema10-20,5,NDX.DWX,123490005,2026-06-11,Development,active
 12349,sb-ema10-20,6,WS30.DWX,123490006,2026-06-11,Development,active
+9518,mql5-l1-adx,0,EURUSD.DWX,95180000,2026-06-11,Development,active
+9518,mql5-l1-adx,1,GBPUSD.DWX,95180001,2026-06-11,Development,active
+9518,mql5-l1-adx,2,USDJPY.DWX,95180002,2026-06-11,Development,active
+9518,mql5-l1-adx,3,GDAXI.DWX,95180003,2026-06-11,Development,active
