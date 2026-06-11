@@ -76,6 +76,7 @@ datetime           g_trade_zone_time = 0;
 int                g_trade_zone_direction = 0;
 double             g_trade_zone_high = 0.0;
 double             g_trade_zone_low = 0.0;
+double             g_cached_exit_close = 0.0;
 
 void Strategy_ResetSwing(StrategySwingPoint &p)
   {
@@ -372,14 +373,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_fallback_rr <= 0.0)
       return false;
 
-   if(Strategy_HasOpenPosition())
-      return false;
-   if(strategy_max_trades_per_day > 0 && Strategy_TradesToday() >= strategy_max_trades_per_day)
-      return false;
-
    MqlRates bars[];
    if(!Strategy_LoadClosedBars((ENUM_TIMEFRAMES)_Period, strategy_scan_bars, bars))
       return false;
+   g_cached_exit_close = bars[0].close;
 
    StrategySwingPoint last_high;
    StrategySwingPoint last_low;
@@ -387,6 +384,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    Strategy_DetectZones(bars, last_high, last_low);
+
+   if(Strategy_HasOpenPosition())
+      return false;
+   if(strategy_max_trades_per_day > 0 && Strategy_TradesToday() >= strategy_max_trades_per_day)
+      return false;
 
    const datetime now = TimeCurrent();
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -497,14 +499,12 @@ bool Strategy_ExitSignal()
    if(g_trade_zone_direction == 0 || g_trade_zone_high <= g_trade_zone_low)
       return false;
 
-   MqlRates last_bar[];
-   if(!Strategy_LoadClosedBars((ENUM_TIMEFRAMES)_Period, 1, last_bar))
+   if(g_cached_exit_close <= 0.0)
       return false;
 
-   const double close_1 = last_bar[0].close;
-   if(g_trade_zone_direction > 0 && close_1 < g_trade_zone_low)
+   if(g_trade_zone_direction > 0 && g_cached_exit_close < g_trade_zone_low)
       return true;
-   if(g_trade_zone_direction < 0 && close_1 > g_trade_zone_high)
+   if(g_trade_zone_direction < 0 && g_cached_exit_close > g_trade_zone_high)
       return true;
 
    return false;

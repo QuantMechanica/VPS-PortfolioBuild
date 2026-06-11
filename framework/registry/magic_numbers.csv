@@ -7913,3 +7913,7 @@
 10100,mql5-ga-fractal,2,NDX.DWX,101000002,2026-06-12,Development,active
 10109,tv-tqqq-1pct-week,0,NDX.DWX,101090000,2026-06-12,Development,active
 10109,tv-tqqq-1pct-week,1,SP500.DWX,101090001,2026-06-12,Development,active
+10112,tv-double-tap,0,EURUSD.DWX,101120000,2026-06-12,Development,active
+10112,tv-double-tap,1,GBPUSD.DWX,101120001,2026-06-12,Development,active
+10112,tv-double-tap,2,XAUUSD.DWX,101120002,2026-06-12,Development,active
+10112,tv-double-tap,3,NDX.DWX,101120003,2026-06-12,Development,active
