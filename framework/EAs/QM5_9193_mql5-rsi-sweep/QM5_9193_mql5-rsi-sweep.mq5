@@ -95,6 +95,62 @@ bool HasOpenSell()
    return false;
   }
 
+bool BuildLongRequest(QM_EntryRequest &req,
+                      const double close_price,
+                      const double swept_level,
+                      const double atr,
+                      const string reason)
+  {
+   if(HasOpenSell())
+     {
+      g_close_opposite = true;
+      return false;
+     }
+   if(HasOpenBuy())
+      return false;
+
+   const double sl  = swept_level - atr * strategy_sl_atr_mult;
+   const double sld = (close_price - sl) / _Point;
+   if(sld <= 1.0)
+      return false;
+
+   req.type        = QM_BUY;
+   req.price       = 0;
+   req.sl          = sl;
+   req.tp          = close_price + strategy_rr * (close_price - sl);
+   req.reason      = reason;
+   req.symbol_slot = 0;
+   return true;
+  }
+
+bool BuildShortRequest(QM_EntryRequest &req,
+                       const double close_price,
+                       const double swept_level,
+                       const double atr,
+                       const string reason)
+  {
+   if(HasOpenBuy())
+     {
+      g_close_opposite = true;
+      return false;
+     }
+   if(HasOpenSell())
+      return false;
+
+   const double sl  = swept_level + atr * strategy_sl_atr_mult;
+   const double sld = (sl - close_price) / _Point;
+   if(sld <= 1.0)
+      return false;
+
+   req.type        = QM_SELL;
+   req.price       = 0;
+   req.sl          = sl;
+   req.tp          = close_price - strategy_rr * (sl - close_price);
+   req.reason      = reason;
+   req.symbol_slot = 0;
+   return true;
+  }
+
 // =============================================================================
 // Strategy hooks
 // =============================================================================
@@ -125,12 +181,26 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
            }
          break;
 
-      case 1: // WATCH_SWEEP: RSI recovered → check if price sweeps below extreme low
+      case 1: // WATCH_SWEEP: check if price sweeps below the RSI-extreme low
          if(rsi1 < strategy_rsi_oversold)
            {
-            // Still in oversold zone: update to freshest (lowest) extreme
+            // Still in oversold zone. A break of the recorded RSI-low candle
+            // is already a valid liquidity sweep; RSI recovery is not required
+            // by the card before the sweep itself.
             if(low1 < g_long_ext_low)
-               g_long_ext_low = low1;
+              {
+               g_long_swept  = g_long_ext_low;
+               g_long_phase  = 2;
+               g_long_sw_bar = 0;
+               if(cls1 > g_long_swept)
+                 {
+                  const bool built = BuildLongRequest(req, cls1, g_long_swept, atr1, "rsi_sweep_long_imm");
+                  g_long_phase = 0;
+                  if(built)
+                     return true;
+                 }
+               break;
+              }
             g_long_ext_bar = 0;
            }
          else
@@ -150,25 +220,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                // Immediate confirmation: same bar swept AND closed back above swept level
                if(cls1 > g_long_swept)
                  {
-                  if(HasOpenSell())
-                    { g_close_opposite = true; g_long_phase = 0; break; }
-                  if(!HasOpenBuy())
-                    {
-                     const double sl  = g_long_swept - atr1 * strategy_sl_atr_mult;
-                     const double sld = (cls1 - sl) / _Point;
-                     if(sld > 1.0)
-                       {
-                        req.type        = QM_BUY;
-                        req.price       = 0;
-                        req.sl          = sl;
-                        req.tp          = cls1 + strategy_rr * (cls1 - sl);
-                        req.reason      = "rsi_sweep_long_imm";
-                        req.symbol_slot = 0;
-                        g_long_phase    = 0;
-                        return true;
-                       }
-                    }
+                  const bool built = BuildLongRequest(req, cls1, g_long_swept, atr1, "rsi_sweep_long_imm");
                   g_long_phase = 0;
+                  if(built)
+                     return true;
                  }
                // else: no immediate confirm; stay in phase 2 for next bar
               }
@@ -179,25 +234,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          g_long_sw_bar++;
          if(cls1 > g_long_swept)
            {
-            if(HasOpenSell())
-              { g_close_opposite = true; g_long_phase = 0; break; }
-            if(!HasOpenBuy())
-              {
-               const double sl  = g_long_swept - atr1 * strategy_sl_atr_mult;
-               const double sld = (cls1 - sl) / _Point;
-               if(sld > 1.0)
-                 {
-                  req.type        = QM_BUY;
-                  req.price       = 0;
-                  req.sl          = sl;
-                  req.tp          = cls1 + strategy_rr * (cls1 - sl);
-                  req.reason      = "rsi_sweep_long";
-                  req.symbol_slot = 0;
-                  g_long_phase    = 0;
-                  return true;
-                 }
-              }
+            const bool built = BuildLongRequest(req, cls1, g_long_swept, atr1, "rsi_sweep_long");
             g_long_phase = 0;
+            if(built)
+               return true;
            }
          if(g_long_sw_bar > 3)
             g_long_phase = 0; // grace window expired
@@ -216,12 +256,26 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
            }
          break;
 
-      case 1: // WATCH_SWEEP: RSI recovered → check if price sweeps above extreme high
+      case 1: // WATCH_SWEEP: check if price sweeps above the RSI-extreme high
          if(rsi1 > strategy_rsi_overbought)
            {
-            // Still in overbought zone: update to freshest (highest) extreme
+            // Still in overbought zone. A break of the recorded RSI-high
+            // candle is already a valid liquidity sweep; RSI recovery is not
+            // required by the card before the sweep itself.
             if(high1 > g_short_ext_high)
-               g_short_ext_high = high1;
+              {
+               g_short_swept  = g_short_ext_high;
+               g_short_phase  = 2;
+               g_short_sw_bar = 0;
+               if(cls1 < g_short_swept)
+                 {
+                  const bool built = BuildShortRequest(req, cls1, g_short_swept, atr1, "rsi_sweep_short_imm");
+                  g_short_phase = 0;
+                  if(built)
+                     return true;
+                 }
+               break;
+              }
             g_short_ext_bar = 0;
            }
          else
@@ -241,25 +295,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                // Immediate confirmation: same bar swept AND closed back below swept level
                if(cls1 < g_short_swept)
                  {
-                  if(HasOpenBuy())
-                    { g_close_opposite = true; g_short_phase = 0; break; }
-                  if(!HasOpenSell())
-                    {
-                     const double sl  = g_short_swept + atr1 * strategy_sl_atr_mult;
-                     const double sld = (sl - cls1) / _Point;
-                     if(sld > 1.0)
-                       {
-                        req.type        = QM_SELL;
-                        req.price       = 0;
-                        req.sl          = sl;
-                        req.tp          = cls1 - strategy_rr * (sl - cls1);
-                        req.reason      = "rsi_sweep_short_imm";
-                        req.symbol_slot = 0;
-                        g_short_phase   = 0;
-                        return true;
-                       }
-                    }
+                  const bool built = BuildShortRequest(req, cls1, g_short_swept, atr1, "rsi_sweep_short_imm");
                   g_short_phase = 0;
+                  if(built)
+                     return true;
                  }
               }
            }
@@ -269,25 +308,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          g_short_sw_bar++;
          if(cls1 < g_short_swept)
            {
-            if(HasOpenBuy())
-              { g_close_opposite = true; g_short_phase = 0; break; }
-            if(!HasOpenSell())
-              {
-               const double sl  = g_short_swept + atr1 * strategy_sl_atr_mult;
-               const double sld = (sl - cls1) / _Point;
-               if(sld > 1.0)
-                 {
-                  req.type        = QM_SELL;
-                  req.price       = 0;
-                  req.sl          = sl;
-                  req.tp          = cls1 - strategy_rr * (sl - cls1);
-                  req.reason      = "rsi_sweep_short";
-                  req.symbol_slot = 0;
-                  g_short_phase   = 0;
-                  return true;
-                 }
-              }
+            const bool built = BuildShortRequest(req, cls1, g_short_swept, atr1, "rsi_sweep_short");
             g_short_phase = 0;
+            if(built)
+               return true;
            }
          if(g_short_sw_bar > 3)
             g_short_phase = 0;

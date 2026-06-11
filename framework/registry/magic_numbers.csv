@@ -7813,3 +7813,10 @@
 12510,bt-tsmom-median,5,GDAXI.DWX,125100005,2026-06-11,Development,active
 12510,bt-tsmom-median,6,NDX.DWX,125100006,2026-06-11,Development,active
 12510,bt-tsmom-median,7,WS30.DWX,125100007,2026-06-11,Development,active
+11841,ait-triple-rsi,0,EURUSD.DWX,118410000,2026-06-11,Development,active
+11841,ait-triple-rsi,1,GBPUSD.DWX,118410001,2026-06-11,Development,active
+11841,ait-triple-rsi,2,USDJPY.DWX,118410002,2026-06-11,Development,active
+11841,ait-triple-rsi,3,XAUUSD.DWX,118410003,2026-06-11,Development,active
+11841,ait-triple-rsi,4,GDAXI.DWX,118410004,2026-06-11,Development,active
+11841,ait-triple-rsi,5,NDX.DWX,118410005,2026-06-11,Development,active
+11841,ait-triple-rsi,6,WS30.DWX,118410006,2026-06-11,Development,active

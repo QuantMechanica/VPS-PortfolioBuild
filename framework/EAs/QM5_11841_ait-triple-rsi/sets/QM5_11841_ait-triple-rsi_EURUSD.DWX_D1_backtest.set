@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        10573
-; ea_slug:      mql5-extrem-n
+; ea_id:        11841
+; ea_slug:      ait-triple-rsi
 ; ea_version:   v5.0
-; set_version:  s20260603-001
-; symbol:       GBPUSD.DWX
-; timeframe:    H4
+; set_version:  s20260611-001
+; symbol:       EURUSD.DWX
+; timeframe:    D1
 ; environment:  backtest
-; magic_slot:   1
+; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   41859cf370c9d7dedf2cf178012d0fdc49c8372582279623d1343e63262d1b31
+; build_hash:   pending
 ; author:       Development
-; date:         2026-06-03
+; date:         2026-06-11
 ;==========================================================
-qm_magic_slot_offset=1
+qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1

@@ -51,47 +51,21 @@ input int    strategy_swing_lookback      = 5;     // Bars for swing high/low SL
 int  g_setup_dir   = 0;   // 0=none, 1=long-armed, -1=short-armed
 int  g_setup_bars  = 0;   // remaining bars to check for breakout
 
-// -----------------------------------------------------------------------------
-// Pooled handle helpers for DeMarker and Envelopes (not in QM_Indicators.mqh)
-// Use QM pool infrastructure to avoid file-scope handle variables.
-// -----------------------------------------------------------------------------
-
-int IndDeM(const string sym, const ENUM_TIMEFRAMES tf, const int period)
-  {
-   const string key = StringFormat("DEM|%s|%d|%d", sym, (int)tf, period);
-   int h = QM_IndicatorsLookup(key);
-   if(h != INVALID_HANDLE)
-      return h;
-   h = iDeMarker(sym, tf, period);
-   return QM_IndicatorsRegister(key, h);
-  }
-
 double DeM(const int shift)
   {
-   return QM_IndicatorReadBuffer(IndDeM(_Symbol, _Period, strategy_dem_period), 0, shift);
-  }
-
-int IndEnv(const string sym, const ENUM_TIMEFRAMES tf, const int period, const double dev)
-  {
-   const string key = StringFormat("ENV|%s|%d|%d|%.4f", sym, (int)tf, period, dev);
-   int h = QM_IndicatorsLookup(key);
-   if(h != INVALID_HANDLE)
-      return h;
-   // iEnvelopes: buffer 0 = upper, buffer 1 = lower
-   h = iEnvelopes(sym, tf, period, 0, MODE_SMA, PRICE_CLOSE, dev);
-   return QM_IndicatorsRegister(key, h);
+   return QM_DeMarker(_Symbol, _Period, strategy_dem_period, shift);
   }
 
 double EnvUpper(const int shift)
   {
-   return QM_IndicatorReadBuffer(
-      IndEnv(_Symbol, _Period, strategy_env_period, strategy_env_deviation), 0, shift);
+   return QM_Envelope_Upper(_Symbol, _Period, strategy_env_period, strategy_env_deviation,
+                            MODE_SMA, shift, PRICE_CLOSE);
   }
 
 double EnvLower(const int shift)
   {
-   return QM_IndicatorReadBuffer(
-      IndEnv(_Symbol, _Period, strategy_env_period, strategy_env_deviation), 1, shift);
+   return QM_Envelope_Lower(_Symbol, _Period, strategy_env_period, strategy_env_deviation,
+                            MODE_SMA, shift, PRICE_CLOSE);
   }
 
 double EnvMid(const int shift)

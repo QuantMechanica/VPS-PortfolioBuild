@@ -141,6 +141,7 @@ bool Strategy_CopyPairWindow(const int pair_index, const int count, double &x[],
    ArraySetAsSeries(tx, true);
    ArraySetAsSeries(ty, true);
 
+   // perf-allowed: called only after OnTick passes QM_IsNewBar(); bounded pair window.
    if(CopyClose(g_asset1[pair_index], (ENUM_TIMEFRAMES)_Period, 1, count, x) != count) // perf-allowed: bounded pair close read, called only from QM_IsNewBar-gated EntrySignal.
       return false;
    if(CopyClose(g_asset2[pair_index], (ENUM_TIMEFRAMES)_Period, 1, count, y) != count) // perf-allowed: bounded pair close read, called only from QM_IsNewBar-gated EntrySignal.
@@ -472,6 +473,17 @@ bool Strategy_BuildLegRequest(const int pair_index,
    return (req.lots > 0.0);
   }
 
+void Strategy_CopyLegRequestToEntry(const QM_BasketOrderRequest &src, QM_EntryRequest &dst)
+  {
+   dst.type = src.type;
+   dst.price = src.price;
+   dst.sl = src.sl;
+   dst.tp = src.tp;
+   dst.reason = src.reason;
+   dst.symbol_slot = src.symbol_slot;
+   dst.expiration_seconds = src.expiration_seconds;
+  }
+
 bool Strategy_OpenPair(const int pair_index, const int pair_side)
   {
    if(pair_index < 0 || pair_index >= STRATEGY_PAIR_COUNT || pair_side == 0)
@@ -486,16 +498,24 @@ bool Strategy_OpenPair(const int pair_index, const int pair_side)
    if(!Strategy_BuildLegRequest(pair_index, g_asset2[pair_index], pair_side, req2))
       return false;
 
-   ulong ticket1 = 0;
-   if(!QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, 20, req1, ticket1))
-      return false;
+   QM_EntryRequest entry1;
+   QM_EntryRequest entry2;
+   Strategy_CopyLegRequestToEntry(req1, entry1);
+   Strategy_CopyLegRequestToEntry(req2, entry2);
 
-   ulong ticket2 = 0;
-   if(!QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, 20, req2, ticket2))
+   ulong ticket1 = 0;
+   if(req1.symbol == _Symbol)
      {
-      Strategy_ClosePair(pair_index, QM_EXIT_STRATEGY);
-      return false;
+      if(!QM_TM_OpenPosition(entry1, ticket1))
+         return false;
      }
+   else if(req2.symbol == _Symbol)
+     {
+      if(!QM_TM_OpenPosition(entry2, ticket1))
+         return false;
+     }
+   else
+      return false;
 
    g_entry_residual[pair_index] = g_residual_now;
    g_entry_residual_set[pair_index] = true;

@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-When RSI(14) drops below 30 on any M15 bar, the EA records that bar's low as the liquidity reference level. Once RSI recovers above 30, the EA watches for price to sweep (break below) that level. On the first M15 bar that closes back above the swept level (bullish confirmation), a long position is entered. The stop is placed below the swept level by ATR(14)×0.25; the take-profit is set at 2R. A break-even shift moves the stop to entry+2pips after a +1R favourable move. The short mirror fires when RSI exceeds 70 and price sweeps above the corresponding candle high before a bearish close confirms below it.
+When RSI(14) drops below 30 on any M15 bar, the EA records that bar's low as the liquidity reference level. For up to 20 closed bars, the EA watches for price to sweep (break below) that level; the sweep can occur while RSI is still extreme or after RSI recovers. On the first M15 bar that closes back above the swept level (bullish confirmation), a long position is entered. The stop is placed below the swept level by ATR(14)×0.25; the take-profit is set at 2R. A break-even shift moves the stop to entry+2pips after a +1R favourable move. The short mirror fires when RSI exceeds 70 and price sweeps above the corresponding candle high before a bearish close confirms below it.
 
 ---
 

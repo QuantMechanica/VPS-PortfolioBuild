@@ -54,11 +54,6 @@ input double sl_percent            = 1.0;    // Card: initial SL = price * (1 -/
 input double trail_percent         = 1.0;    // Card: trail SL to price * (1 -/+ 1.0%).
 
 // -----------------------------------------------------------------------------
-// File-scope state.
-// -----------------------------------------------------------------------------
-datetime g_last_entry_bar_time = 0;   // bar[1] time of the most recent entry.
-
-// -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
@@ -140,10 +135,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(copied < (div_lookback_max + 2))
       return false;
 
-   // One entry per closed bar: skip if we already opened on this bar.
-   if(rates[1].time == g_last_entry_bar_time)
-      return false;
-
    // Decompose the window into plain arrays for the pivot scan.
    double highs[]; double lows[];
    ArrayResize(highs, copied); ArrayResize(lows, copied);
@@ -179,7 +170,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          req.sl = ask * (1.0 - sl_percent / 100.0);
          req.tp = 0.0;    // no TP; exit is the percent trailing stop.
          req.reason = "QM5_10081_DIV_LONG";
-         g_last_entry_bar_time = rates[1].time;
          return true;
         }
      }
@@ -205,7 +195,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          req.sl = bid * (1.0 + sl_percent / 100.0);
          req.tp = 0.0;
          req.reason = "QM5_10081_DIV_SHORT";
-         g_last_entry_bar_time = rates[1].time;
          return true;
         }
      }
