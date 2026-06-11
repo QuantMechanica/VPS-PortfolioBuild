@@ -7675,3 +7675,7 @@
 11840,ait-rsi-bb,4,GDAXI.DWX,118400004,2026-06-11,Development,active
 11840,ait-rsi-bb,5,NDX.DWX,118400005,2026-06-11,Development,active
 11840,ait-rsi-bb,6,WS30.DWX,118400006,2026-06-11,Development,active
+9975,ff-pipsaccumulator-d1,0,EURUSD.DWX,99750000,2026-06-11,Development,active
+9975,ff-pipsaccumulator-d1,1,GBPUSD.DWX,99750001,2026-06-11,Development,active
+9975,ff-pipsaccumulator-d1,2,USDJPY.DWX,99750002,2026-06-11,Development,active
+9975,ff-pipsaccumulator-d1,3,AUDUSD.DWX,99750003,2026-06-11,Development,active
