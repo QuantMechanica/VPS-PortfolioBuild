@@ -233,7 +233,7 @@ bool Strategy_ExitSignal()
    if(!Strategy_ReadOurPositionType(position_type))
       return false;
 
-   const int signal = g_cached_vq_signal;
+   const int signal = Strategy_VQColorChange();
    if(position_type == POSITION_TYPE_BUY && signal < 0)
      {
       g_cached_vq_signal = 0;
