@@ -5,22 +5,28 @@
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// Strategy: TRIX(14) H1 Zero-Line Cross
+// Strategy: FSR TRIX(14) H1 Zero-Line Cross
 // Card: QM5_11701_fsr-trix14-zerolinecross
 // Source: 30796091-5c65-5467-9f28-77d938217c26
-// Entry: TRIX14 crosses zero upward (long) or downward (short) on H1 close.
-// Exit:  SL=2×ATR(14), TP=4×ATR(14). Optional reverse-cross exit.
+//
+// Entry: TRIX(14,H1) crosses from <=0 to >0 → LONG; from >=0 to <0 → SHORT.
+// Exit:  SL=2xATR(14,H1), TP=4xATR(14,H1) (2:1 R:R).
+//
+// TRIX implementation note: iTRIX is absent from this MT5 build. TRIX is
+// computed manually as the rate-of-change of a triple-smoothed 14-period EMA.
+// State is seeded from historical H1 closes in OnInit and advanced once per
+// new H1 bar inside Strategy_EntrySignal.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 11701;
-input int    qm_magic_slot_offset       = 0;
-input uint   qm_rng_seed                = 42;
+input int    qm_ea_id                     = 11701;
+input int    qm_magic_slot_offset         = 0;
+input uint   qm_rng_seed                  = 42;
 
 input group "Risk"
-input double RISK_PERCENT               = 0.0;
-input double RISK_FIXED                 = 1000.0;
-input double PORTFOLIO_WEIGHT           = 1.0;
+input double RISK_PERCENT                 = 0.0;
+input double RISK_FIXED                   = 1000.0;
+input double PORTFOLIO_WEIGHT             = 1.0;
 
 input group "News"
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
@@ -38,88 +44,143 @@ input double qm_stress_reject_probability          = 0.0;
 
 input group "Strategy"
 input int    strategy_trix_period                  = 14;   // TRIX triple-EMA smoothing period
-input int    strategy_atr_period                   = 14;   // ATR period for stop/TP sizing
-input double strategy_atr_sl_mult                  = 2.0;  // Stop = N × ATR(14)
-input double strategy_atr_tp_mult                  = 4.0;  // TP = M × ATR(14); default 4 = 2:1 R:R
-input bool   strategy_exit_on_reverse              = false; // Close on TRIX reverse-zero-cross
+input int    strategy_atr_period                   = 14;   // ATR period used for SL/TP sizing
+input double strategy_atr_sl_mult                  = 2.0;  // SL distance = N x ATR
+input double strategy_atr_tp_rr                    = 2.0;  // TP = RR x SL distance (default 2:1)
 
-// --- TRIX via framework indicator pool ---------------------------------------
-// iTRIX is not a QM_Indicators built-in; we register it in the same pool so
-// the framework releases the handle on shutdown (no per-EA IndicatorRelease).
+// =============================================================================
+// Manual TRIX state
+// No iTRIX built-in available; triple EMA maintained as file-scope state,
+// seeded once in OnInit from historical bars and advanced once per new H1 bar.
+// =============================================================================
+double g_trix_ema1     = 0.0;   // first EMA of close
+double g_trix_ema2     = 0.0;   // second EMA (EMA of ema1)
+double g_trix_ema3     = 0.0;   // third EMA (EMA of ema2)
+double g_trix_ema3_prv = 0.0;   // ema3 from previous bar step (for TRIX calculation)
+double g_trix_prv      = 0.0;   // TRIX at bar-before-last (shift=2 equivalent)
+double g_trix_cur      = 0.0;   // TRIX at last closed bar (shift=1 equivalent)
+bool   g_trix_ready    = false; // true after SeedTRIX succeeds
 
-int QM_IndTRIX(const string sym, const ENUM_TIMEFRAMES tf, const int period)
+// Seed TRIX from historical H1 closes.
+// Called once from OnInit — NOT on per-tick path; iClose loops are safe here.
+void SeedTRIX()
   {
-   const string key = StringFormat("TRIX|%s|%d|%d", sym, (int)tf, period);
-   int h = QM_IndicatorsLookup(key);
-   if(h != INVALID_HANDLE)
-      return h;
-   h = iTRIX(sym, tf, period, PRICE_CLOSE);
-   return QM_IndicatorsRegister(key, h);
+   const double alpha   = 2.0 / (strategy_trix_period + 1.0);
+   const int    warmup  = strategy_trix_period * 3 + 1;  // 43 bars for period=14
+
+   // Prime all three EMAs from the oldest warm-up bar
+   const double seed_c  = iClose(_Symbol, PERIOD_H1, warmup); // perf-allowed: OnInit seed only, no QM_TRIX equivalent
+   if(seed_c <= 0.0)
+      return;
+
+   g_trix_ema1 = seed_c;
+   g_trix_ema2 = seed_c;
+   g_trix_ema3 = seed_c;
+
+   // Walk from bar (warmup-1) down to bar 3 to converge the triple EMA
+   for(int i = warmup - 1; i >= 3; i--)
+     {
+      const double c = iClose(_Symbol, PERIOD_H1, i); // perf-allowed: OnInit warmup loop, no QM_TRIX equivalent
+      if(c <= 0.0)
+         continue;
+      g_trix_ema3_prv = g_trix_ema3;
+      g_trix_ema1     = alpha * c + (1.0 - alpha) * g_trix_ema1;
+      g_trix_ema2     = alpha * g_trix_ema1 + (1.0 - alpha) * g_trix_ema2;
+      g_trix_ema3     = alpha * g_trix_ema2 + (1.0 - alpha) * g_trix_ema3;
+     }
+
+   // Advance to bar 2: gives g_trix_prv (TRIX at bar-before-last)
+   const double c2 = iClose(_Symbol, PERIOD_H1, 2); // perf-allowed: OnInit seed, no QM_TRIX equivalent
+   if(c2 > 0.0)
+     {
+      g_trix_ema3_prv = g_trix_ema3;
+      g_trix_ema1     = alpha * c2 + (1.0 - alpha) * g_trix_ema1;
+      g_trix_ema2     = alpha * g_trix_ema1 + (1.0 - alpha) * g_trix_ema2;
+      g_trix_ema3     = alpha * g_trix_ema2 + (1.0 - alpha) * g_trix_ema3;
+      if(g_trix_ema3_prv > 0.0)
+         g_trix_prv = (g_trix_ema3 - g_trix_ema3_prv) / g_trix_ema3_prv * 100.0;
+     }
+
+   // Advance to bar 1: gives g_trix_cur (TRIX at last closed bar)
+   const double c1 = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed: OnInit seed, no QM_TRIX equivalent
+   if(c1 > 0.0)
+     {
+      g_trix_ema3_prv = g_trix_ema3;
+      g_trix_ema1     = alpha * c1 + (1.0 - alpha) * g_trix_ema1;
+      g_trix_ema2     = alpha * g_trix_ema1 + (1.0 - alpha) * g_trix_ema2;
+      g_trix_ema3     = alpha * g_trix_ema2 + (1.0 - alpha) * g_trix_ema3;
+      if(g_trix_ema3_prv > 0.0)
+         g_trix_cur = (g_trix_ema3 - g_trix_ema3_prv) / g_trix_ema3_prv * 100.0;
+     }
+
+   g_trix_ready = true;
   }
 
-double QM_TRIX_Read(const string sym, const ENUM_TIMEFRAMES tf,
-                    const int period, const int shift = 1)
+// Advance TRIX by one H1 bar. Called only from Strategy_EntrySignal which is
+// new-bar-gated, so this executes exactly once per closed H1 bar.
+// iClose shift=1: perf-allowed — single read, new-bar gated, no QM_TRIX equivalent.
+void AdvanceTRIX()
   {
-   return QM_IndicatorReadBuffer(QM_IndTRIX(sym, tf, period), 0, shift);
+   const double alpha = 2.0 / (strategy_trix_period + 1.0);
+   const double c     = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed: shift-1, new-bar gated
+   if(c <= 0.0)
+      return;
+
+   g_trix_prv      = g_trix_cur;        // shift: current → previous
+   g_trix_ema3_prv = g_trix_ema3;
+   g_trix_ema1     = alpha * c + (1.0 - alpha) * g_trix_ema1;
+   g_trix_ema2     = alpha * g_trix_ema1 + (1.0 - alpha) * g_trix_ema2;
+   g_trix_ema3     = alpha * g_trix_ema2 + (1.0 - alpha) * g_trix_ema3;
+
+   if(g_trix_ema3_prv > 0.0)
+      g_trix_cur = (g_trix_ema3 - g_trix_ema3_prv) / g_trix_ema3_prv * 100.0;
   }
 
 // =============================================================================
 // Strategy hooks
 // =============================================================================
 
-// No intraday session filter; trades at any H1 bar.
+// No custom session or regime filter. QM_Entry handles duplicate-position guard.
 bool Strategy_NoTradeFilter()
   {
-   // Block if a position for this magic is already open (one position at a time).
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetInteger(POSITION_MAGIC) == magic &&
-         PositionGetString(POSITION_SYMBOL) == _Symbol)
-         return true; // block new entry
-     }
    return false;
   }
 
-// Entry: TRIX(14) zero-line cross on closed H1 bar.
-// Called only after QM_IsNewBar() is true.
+// Entry on TRIX(14,H1) zero-line cross. Called only when QM_IsNewBar() is true.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   const double trix0 = QM_TRIX_Read(_Symbol, PERIOD_H1, strategy_trix_period, 1); // last closed bar
-   const double trix1 = QM_TRIX_Read(_Symbol, PERIOD_H1, strategy_trix_period, 2); // bar before that
+   if(!g_trix_ready)
+      return false;
 
-   if(trix0 == 0.0 && trix1 == 0.0)
-      return false; // indicator not ready
+   AdvanceTRIX(); // advance by one closed bar; updates g_trix_prv / g_trix_cur
 
    const double atr = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
    if(atr <= 0.0)
       return false;
 
-   const double sl_pts = atr * strategy_atr_sl_mult;
-   const double tp_pts = atr * strategy_atr_tp_mult;
+   const double sl_dist = atr * strategy_atr_sl_mult;
+   const double tp_dist = sl_dist * strategy_atr_tp_rr;
+   const int    digits  = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
 
-   // Long: TRIX crosses from <= 0 to > 0
-   if(trix1 <= 0.0 && trix0 > 0.0)
+   // Long: TRIX[prev] <= 0 AND TRIX[cur] > 0
+   if(g_trix_prv <= 0.0 && g_trix_cur > 0.0)
      {
-      req.type  = ORDER_TYPE_BUY;
-      req.price = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      req.sl    = req.price - sl_pts;
-      req.tp    = req.price + tp_pts;
-      req.lots  = QM_LotsForRisk(_Symbol, sl_pts / SymbolInfoDouble(_Symbol, SYMBOL_POINT));
+      const double ep = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      req.type  = QM_BUY;
+      req.price = ep;
+      req.sl    = NormalizeDouble(ep - sl_dist, digits);
+      req.tp    = NormalizeDouble(ep + tp_dist, digits);
       return true;
      }
 
-   // Short: TRIX crosses from >= 0 to < 0
-   if(trix1 >= 0.0 && trix0 < 0.0)
+   // Short: TRIX[prev] >= 0 AND TRIX[cur] < 0
+   if(g_trix_prv >= 0.0 && g_trix_cur < 0.0)
      {
-      req.type  = ORDER_TYPE_SELL;
-      req.price = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      req.sl    = req.price + sl_pts;
-      req.tp    = req.price - tp_pts;
-      req.lots  = QM_LotsForRisk(_Symbol, sl_pts / SymbolInfoDouble(_Symbol, SYMBOL_POINT));
+      const double ep = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      req.type  = QM_SELL;
+      req.price = ep;
+      req.sl    = NormalizeDouble(ep + sl_dist, digits);
+      req.tp    = NormalizeDouble(ep - tp_dist, digits);
       return true;
      }
 
@@ -131,36 +192,9 @@ void Strategy_ManageOpenPosition()
   {
   }
 
-// Optional: exit on TRIX reverse-zero-cross when strategy_exit_on_reverse=true.
+// No discretionary exit; SL/TP is the only exit mechanism.
 bool Strategy_ExitSignal()
   {
-   if(!strategy_exit_on_reverse)
-      return false;
-   if(!QM_IsNewBar())
-      return false;
-
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-
-      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      const double trix0 = QM_TRIX_Read(_Symbol, PERIOD_H1, strategy_trix_period, 1);
-      const double trix1 = QM_TRIX_Read(_Symbol, PERIOD_H1, strategy_trix_period, 2);
-
-      // Exit long on downward cross
-      if(ptype == POSITION_TYPE_BUY && trix1 >= 0.0 && trix0 < 0.0)
-         return true;
-      // Exit short on upward cross
-      if(ptype == POSITION_TYPE_SELL && trix1 <= 0.0 && trix0 > 0.0)
-         return true;
-     }
    return false;
   }
 
@@ -194,8 +228,12 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
-   // Warm up TRIX handle early so the first bar read is reliable.
-   QM_IndTRIX(_Symbol, PERIOD_H1, strategy_trix_period);
+   SeedTRIX();
+   if(!g_trix_ready)
+     {
+      QM_LogEvent(QM_ERROR, "INIT_FAIL", "{\"reason\":\"trix_seed_failed\"}");
+      return INIT_FAILED;
+     }
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
