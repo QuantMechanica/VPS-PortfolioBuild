@@ -68,33 +68,6 @@ double g_width_hist[QM_DEM_ENV_WIDTH_HIST]; // ring buffer: envelope width per b
 int    g_width_idx   = 0;    // ring buffer write position
 bool   g_state_ready = false;
 
-// ============================================================================
-// Indicator handle helpers — registers into QM pool so framework shutdown
-// cleans up automatically. Never hold file-scope handles or call IndicatorRelease.
-// ============================================================================
-
-int GetDeMarkerHandle()
-  {
-   const string key = StringFormat("DEM|%s|%d|%d",
-                                   _Symbol, (int)_Period, strategy_dem_period);
-   int h = QM_IndicatorsLookup(key);
-   if(h != INVALID_HANDLE) return h;
-   h = iDeMarker(_Symbol, _Period, strategy_dem_period);
-   return QM_IndicatorsRegister(key, h);
-  }
-
-int GetEnvelopesHandle()
-  {
-   const string key = StringFormat("ENV|%s|%d|%d|%.4f",
-                                   _Symbol, (int)_Period,
-                                   strategy_env_period, strategy_env_deviation);
-   int h = QM_IndicatorsLookup(key);
-   if(h != INVALID_HANDLE) return h;
-   h = iEnvelopes(_Symbol, _Period, strategy_env_period, 0,
-                  MODE_SMA, PRICE_CLOSE, strategy_env_deviation);
-   return QM_IndicatorsRegister(key, h);
-  }
-
 double MedianEnvWidth()
   {
    double sorted[QM_DEM_ENV_WIDTH_HIST];
@@ -106,14 +79,15 @@ double MedianEnvWidth()
 // Called ONCE per new closed bar — reads indicator buffers and updates cache.
 void AdvanceState_OnNewBar()
   {
-   const int h_dem = GetDeMarkerHandle();
-   const int h_env = GetEnvelopesHandle();
-
-   g_dem1       = QM_IndicatorReadBuffer(h_dem, 0, 1);
-   g_env_upper1 = QM_IndicatorReadBuffer(h_env, 0, 1); // buffer 0 = upper
-   g_env_lower1 = QM_IndicatorReadBuffer(h_env, 1, 1); // buffer 1 = lower
-   g_env_upper2 = QM_IndicatorReadBuffer(h_env, 0, 2);
-   g_env_lower2 = QM_IndicatorReadBuffer(h_env, 1, 2);
+   g_dem1       = QM_DeMarker(_Symbol, _Period, strategy_dem_period, 1);
+   g_env_upper1 = QM_Envelope_Upper(_Symbol, _Period, strategy_env_period,
+                                    strategy_env_deviation, MODE_SMA, 1, PRICE_CLOSE);
+   g_env_lower1 = QM_Envelope_Lower(_Symbol, _Period, strategy_env_period,
+                                    strategy_env_deviation, MODE_SMA, 1, PRICE_CLOSE);
+   g_env_upper2 = QM_Envelope_Upper(_Symbol, _Period, strategy_env_period,
+                                    strategy_env_deviation, MODE_SMA, 2, PRICE_CLOSE);
+   g_env_lower2 = QM_Envelope_Lower(_Symbol, _Period, strategy_env_period,
+                                    strategy_env_deviation, MODE_SMA, 2, PRICE_CLOSE);
 
    if(g_env_upper1 > 0.0 && g_env_lower1 > 0.0)
       g_env_mid1 = (g_env_upper1 + g_env_lower1) * 0.5;

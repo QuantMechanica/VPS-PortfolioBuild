@@ -4,7 +4,7 @@
 **Slug:** mql5-volqual
 **Source:** b8b5125a-c67f-5bbc-baff-33456e08f5b2 (see `strategy-seeds/sources/b8b5125a-c67f-5bbc-baff-33456e08f5b2/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-05-29
+**Last revised:** 2026-06-11
 
 ---
 
@@ -91,4 +91,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-05-29 | Initial build from card | 6faeeea0-261d-4207-b0fe-6a02e8dfb6d7 |
+| v1 | 2026-06-11 | Initial build from card | 7a610cb8-6049-4156-8fde-44360885860b |

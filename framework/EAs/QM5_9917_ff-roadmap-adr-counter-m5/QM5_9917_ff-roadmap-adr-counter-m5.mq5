@@ -65,7 +65,6 @@ static bool     g_low_touched     = false;   // ADR low touched this day
 static bool     g_high_touched    = false;   // ADR high touched this day
 static int      g_bars_since_low  = 999;     // M5 bars since ADR low touch
 static int      g_bars_since_high = 999;     // M5 bars since ADR high touch
-static datetime g_last_d1_time    = 0;       // D1 bar open time (day change detector)
 static int      g_bars_held       = 0;       // M5 bars position has been open
 static bool     g_force_exit      = false;   // set when bar-close exit condition met
 
@@ -139,10 +138,8 @@ bool RsiCrossedDown(const double from_above, const double to_below)
 void AdvanceState_OnNewBar()
   {
    // -- Daily reset --
-   const datetime d1_time = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: structural
-   if(d1_time != g_last_d1_time && d1_time > 0)
+   if(QM_IsNewBar(_Symbol, PERIOD_D1))
      {
-      g_last_d1_time  = d1_time;
       g_daily_open    = iOpen(_Symbol, PERIOD_D1, 0);  // perf-allowed
       g_adr_14        = QM_ATR(_Symbol, PERIOD_D1, strategy_adr_period, 1);
       g_adr_high      = g_daily_open + g_adr_14;

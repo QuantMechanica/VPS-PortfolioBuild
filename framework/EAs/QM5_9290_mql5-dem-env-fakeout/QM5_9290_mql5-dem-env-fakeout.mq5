@@ -50,41 +50,6 @@ input double         strategy_dem_short_thresh= 0.70;  // DeMarker short thresho
 input int            strategy_max_hold_bars   = 12;    // Max bars before time-exit
 input double         strategy_env_expand_max  = 0.25;  // Max width expansion ratio
 
-// ---- Pooled indicator helpers (same pool as QM_Indicators.mqh) ----
-
-int Local_IndDeMarker(const int period)
-  {
-   const string key = StringFormat("DEM|%s|%d|%d", _Symbol, (int)_Period, period);
-   int h = QM_IndicatorsLookup(key);
-   if(h != INVALID_HANDLE)
-      return h;
-   return QM_IndicatorsRegister(key, iDeMarker(_Symbol, _Period, period));
-  }
-
-double Local_DeM(const int period, const int shift)
-  {
-   return QM_IndicatorReadBuffer(Local_IndDeMarker(period), 0, shift);
-  }
-
-int Local_IndEnvelopes(const int period, const ENUM_MA_METHOD method, const double dev)
-  {
-   const string key = StringFormat("ENV|%s|%d|%d|%d|%.6f", _Symbol, (int)_Period, period, (int)method, dev);
-   int h = QM_IndicatorsLookup(key);
-   if(h != INVALID_HANDLE)
-      return h;
-   return QM_IndicatorsRegister(key, iEnvelopes(_Symbol, _Period, period, 0, method, PRICE_CLOSE, dev));
-  }
-
-double Local_EnvUp(const int period, const ENUM_MA_METHOD method, const double dev, const int shift)
-  {
-   return QM_IndicatorReadBuffer(Local_IndEnvelopes(period, method, dev), 0, shift);
-  }
-
-double Local_EnvLo(const int period, const ENUM_MA_METHOD method, const double dev, const int shift)
-  {
-   return QM_IndicatorReadBuffer(Local_IndEnvelopes(period, method, dev), 1, shift);
-  }
-
 // ---- State: entry bar tracking for time exit and opposite-signal detection ----
 datetime g_entry_bar_time = 0;  // open time of signal bar; 0 = no tracked position
 int      g_open_dir       = 0;  // 1=long, -1=short
@@ -94,10 +59,10 @@ int      g_open_dir       = 0;  // 1=long, -1=short
 // Returns true if envelope width at shift=1 is >strategy_env_expand_max wider than shift=4.
 bool EnvIsExpanding()
   {
-   const double w1 = Local_EnvUp(strategy_env_period, strategy_env_method, strategy_env_deviation, 1)
-                   - Local_EnvLo(strategy_env_period, strategy_env_method, strategy_env_deviation, 1);
-   const double w4 = Local_EnvUp(strategy_env_period, strategy_env_method, strategy_env_deviation, 4)
-                   - Local_EnvLo(strategy_env_period, strategy_env_method, strategy_env_deviation, 4);
+   const double w1 = QM_Envelope_Upper(_Symbol, _Period, strategy_env_period, strategy_env_deviation, strategy_env_method, 1)
+                   - QM_Envelope_Lower(_Symbol, _Period, strategy_env_period, strategy_env_deviation, strategy_env_method, 1);
+   const double w4 = QM_Envelope_Upper(_Symbol, _Period, strategy_env_period, strategy_env_deviation, strategy_env_method, 4)
+                   - QM_Envelope_Lower(_Symbol, _Period, strategy_env_period, strategy_env_deviation, strategy_env_method, 4);
    if(w4 <= 0.0)
       return false;
    return ((w1 / w4) - 1.0) > strategy_env_expand_max;
@@ -106,12 +71,12 @@ bool EnvIsExpanding()
 // 3-bar fakeout below the lower Envelope, confirmed by DeMarker oversold.
 bool IsFakeoutLong()
   {
-   const double lo1 = Local_EnvLo(strategy_env_period, strategy_env_method, strategy_env_deviation, 1);
-   const double lo2 = Local_EnvLo(strategy_env_period, strategy_env_method, strategy_env_deviation, 2);
-   const double lo3 = Local_EnvLo(strategy_env_period, strategy_env_method, strategy_env_deviation, 3);
+   const double lo1 = QM_Envelope_Lower(_Symbol, _Period, strategy_env_period, strategy_env_deviation, strategy_env_method, 1);
+   const double lo2 = QM_Envelope_Lower(_Symbol, _Period, strategy_env_period, strategy_env_deviation, strategy_env_method, 2);
+   const double lo3 = QM_Envelope_Lower(_Symbol, _Period, strategy_env_period, strategy_env_deviation, strategy_env_method, 3);
    if(lo1 <= 0.0 || lo2 <= 0.0 || lo3 <= 0.0)
       return false;
-   const double dem = Local_DeM(strategy_dem_period, 1);
+   const double dem = QM_DeMarker(_Symbol, _Period, strategy_dem_period, 1);
    const double c1  = iClose(_Symbol, _Period, 1); // perf-allowed: bespoke structural
    const double c2  = iClose(_Symbol, _Period, 2); // perf-allowed: bespoke structural
    const double c3  = iClose(_Symbol, _Period, 3); // perf-allowed: bespoke structural
@@ -123,12 +88,12 @@ bool IsFakeoutLong()
 // 3-bar fakeout above the upper Envelope, confirmed by DeMarker overbought.
 bool IsFakeoutShort()
   {
-   const double up1 = Local_EnvUp(strategy_env_period, strategy_env_method, strategy_env_deviation, 1);
-   const double up2 = Local_EnvUp(strategy_env_period, strategy_env_method, strategy_env_deviation, 2);
-   const double up3 = Local_EnvUp(strategy_env_period, strategy_env_method, strategy_env_deviation, 3);
+   const double up1 = QM_Envelope_Upper(_Symbol, _Period, strategy_env_period, strategy_env_deviation, strategy_env_method, 1);
+   const double up2 = QM_Envelope_Upper(_Symbol, _Period, strategy_env_period, strategy_env_deviation, strategy_env_method, 2);
+   const double up3 = QM_Envelope_Upper(_Symbol, _Period, strategy_env_period, strategy_env_deviation, strategy_env_method, 3);
    if(up1 <= 0.0 || up2 <= 0.0 || up3 <= 0.0)
       return false;
-   const double dem = Local_DeM(strategy_dem_period, 1);
+   const double dem = QM_DeMarker(_Symbol, _Period, strategy_dem_period, 1);
    const double c1  = iClose(_Symbol, _Period, 1); // perf-allowed: bespoke structural
    const double c2  = iClose(_Symbol, _Period, 2); // perf-allowed: bespoke structural
    const double c3  = iClose(_Symbol, _Period, 3); // perf-allowed: bespoke structural
@@ -169,7 +134,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(IsFakeoutLong())
      {
-      const double lo = Local_EnvLo(strategy_env_period, strategy_env_method, strategy_env_deviation, 1);
+      const double lo = QM_Envelope_Lower(_Symbol, _Period, strategy_env_period, strategy_env_deviation, strategy_env_method, 1);
       req.type   = QM_BUY;
       req.sl     = lo - strategy_atr_sl_mult * atr;
       req.tp     = 0.0;
@@ -181,7 +146,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(IsFakeoutShort())
      {
-      const double up = Local_EnvUp(strategy_env_period, strategy_env_method, strategy_env_deviation, 1);
+      const double up = QM_Envelope_Upper(_Symbol, _Period, strategy_env_period, strategy_env_deviation, strategy_env_method, 1);
       req.type   = QM_SELL;
       req.sl     = up + strategy_atr_sl_mult * atr;
       req.tp     = 0.0;
