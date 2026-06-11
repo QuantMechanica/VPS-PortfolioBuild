@@ -7873,3 +7873,11 @@
 10061,connors-trin3-d1,0,SP500.DWX,100610000,2026-06-11,Development,active
 10061,connors-trin3-d1,1,NDX.DWX,100610001,2026-06-11,Development,active
 10061,connors-trin3-d1,2,WS30.DWX,100610002,2026-06-11,Development,active
+10078,gh-rfv-ma-rsi,0,EURUSD.DWX,100780000,2026-06-11,Development,active
+10078,gh-rfv-ma-rsi,1,GBPUSD.DWX,100780001,2026-06-11,Development,active
+10078,gh-rfv-ma-rsi,2,USDJPY.DWX,100780002,2026-06-11,Development,active
+10078,gh-rfv-ma-rsi,3,XAUUSD.DWX,100780003,2026-06-11,Development,active
+10077,gh-kai-setup91,0,EURUSD.DWX,100770000,2026-06-11,Development,active
+10077,gh-kai-setup91,1,GBPUSD.DWX,100770001,2026-06-11,Development,active
+10077,gh-kai-setup91,2,USDJPY.DWX,100770002,2026-06-11,Development,active
+10077,gh-kai-setup91,3,XAUUSD.DWX,100770003,2026-06-11,Development,active
