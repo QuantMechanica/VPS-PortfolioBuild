@@ -134,6 +134,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(!g_cache_valid || g_signal == 0) return false;
 
+   // Skip if already positioned in the same direction (avoids REJECTED_DUPLICATE log noise)
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(!PositionSelectByTicket(ticket)) continue;
+      if((long)PositionGetInteger(POSITION_MAGIC) != (long)magic) continue;
+      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      if(ptype == POSITION_TYPE_BUY  && g_signal == 1)  return false;
+      if(ptype == POSITION_TYPE_SELL && g_signal == -1) return false;
+     }
+
    double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
    if(atr <= 0.0) return false;
    double sl_dist = strategy_atr_sl_mult * atr;
