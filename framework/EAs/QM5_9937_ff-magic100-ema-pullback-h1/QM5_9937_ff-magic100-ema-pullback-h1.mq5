@@ -128,8 +128,7 @@ void TryNewEntry()
    const double entry_buf = strategy_entry_buffer_atr * atr;
    const double sl_buf    = strategy_sl_buffer_atr * atr;
    const double max_risk  = strategy_max_risk_atr * atr;
-
-   const double open1  = iOpen(_Symbol,  PERIOD_H1, 1);  // perf-allowed: single closed-bar candle type check
+   const double open1  = iOpen(_Symbol,  PERIOD_H1, 1);  // perf-allowed: single closed-bar candle type
    const double close1 = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed
    const double high1  = iHigh(_Symbol,  PERIOD_H1, 1); // perf-allowed
    const double low1   = iLow(_Symbol,   PERIOD_H1, 1); // perf-allowed
@@ -191,8 +190,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                                     1 + strategy_slope_bars);
       if(atr <= 0.0 || ema_now <= 0.0)
          return false;
-
-      const double open1  = iOpen(_Symbol,  PERIOD_H1, 1);  // perf-allowed: single closed-bar candle type check
+      const double open1  = iOpen(_Symbol,  PERIOD_H1, 1);  // perf-allowed: single closed-bar candle type
       const double close1 = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed
       const double high1  = iHigh(_Symbol,  PERIOD_H1, 1); // perf-allowed
       const double low1   = iLow(_Symbol,   PERIOD_H1, 1); // perf-allowed
