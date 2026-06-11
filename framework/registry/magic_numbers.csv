@@ -7831,3 +7831,10 @@
 11839,ait-sma5-37,4,GDAXI.DWX,118390004,2026-06-11,Development,active
 11839,ait-sma5-37,5,NDX.DWX,118390005,2026-06-11,Development,active
 11839,ait-sma5-37,6,WS30.DWX,118390006,2026-06-11,Development,active
+10030,rw-fx-eur-basket,0,EURUSD.DWX,100300000,2026-06-11,Development,active
+10030,rw-fx-eur-basket,1,GBPUSD.DWX,100300001,2026-06-11,Development,active
+10030,rw-fx-eur-basket,2,EURGBP.DWX,100300002,2026-06-11,Development,active
+10030,rw-fx-eur-basket,3,EURJPY.DWX,100300003,2026-06-11,Development,active
+10030,rw-fx-eur-basket,4,GBPJPY.DWX,100300004,2026-06-11,Development,active
+10030,rw-fx-eur-basket,5,USDCHF.DWX,100300005,2026-06-11,Development,active
+10030,rw-fx-eur-basket,6,EURCHF.DWX,100300006,2026-06-11,Development,active
