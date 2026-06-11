@@ -6,8 +6,8 @@
 
 // =============================================================================
 // QM5_10096 gh-ema-pullstop
-// Source: Umair Khan Jadoon / umairkj, GitHub auto-trading-bot.mq5
-// Card:   artifacts/cards_approved/QM5_10096_gh-ema-pullstop.md
+// Card: artifacts/cards_approved/QM5_10096_gh-ema-pullstop.md
+// Source: Umair Khan Jadoon / umairkj, auto-trading-bot.mq5 EMA section.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
@@ -35,163 +35,18 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_fast_ema_period    = 8;      // Source EMA fast line.
-input int    strategy_slow_ema_period    = 21;     // Source EMA slow line.
-input int    strategy_breakout_lookback  = 5;      // Highest close window for buy-stop entry.
-input int    strategy_sl_buffer_points   = 3;      // Source 0.00003 converted to points.
-input int    strategy_tp_points          = 100;    // Source 0.00100 converted to points.
+input int    strategy_fast_ema_period     = 8;     // Source EMA fast line.
+input int    strategy_slow_ema_period     = 21;    // Source EMA slow line.
+input int    strategy_breakout_lookback   = 5;     // Highest close window for buy-stop entry.
+input int    strategy_sl_buffer_points    = 3;     // Source 0.00003 converted to points.
+input int    strategy_tp_points           = 100;   // Source 0.00100 converted to points.
 input int    strategy_pending_expiry_bars = 10;    // Source-counted stale pending cleanup.
-
-ulong g_pending_ticket = 0;
-int   g_pending_bars   = 0;
-
-// -----------------------------------------------------------------------------
-// Helpers
-// -----------------------------------------------------------------------------
-
-double Strategy_NormalizePrice(const double price)
-  {
-   if(price <= 0.0)
-      return 0.0;
-   return NormalizeDouble(price, (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS));
-  }
-
-bool Strategy_HasOpenPosition()
-  {
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if((long)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) == _Symbol)
-         return true;
-     }
-   return false;
-  }
-
-bool Strategy_IsOurPendingBuyStop(const ulong ticket)
-  {
-   if(ticket == 0 || !OrderSelect(ticket))
-      return false;
-   if(OrderGetString(ORDER_SYMBOL) != _Symbol)
-      return false;
-   if((long)OrderGetInteger(ORDER_MAGIC) != QM_FrameworkMagic())
-      return false;
-   return ((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE) == ORDER_TYPE_BUY_STOP);
-  }
-
-bool Strategy_FindPendingBuyStop(ulong &ticket)
-  {
-   ticket = 0;
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = OrdersTotal() - 1; i >= 0; --i)
-     {
-      const ulong candidate = OrderGetTicket(i);
-      if(candidate == 0)
-         continue;
-      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
-         continue;
-      if((long)OrderGetInteger(ORDER_MAGIC) != magic)
-         continue;
-      if((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE) != ORDER_TYPE_BUY_STOP)
-         continue;
-      ticket = candidate;
-      return true;
-     }
-   return false;
-  }
-
-bool Strategy_HasTrackedPending()
-  {
-   if(Strategy_IsOurPendingBuyStop(g_pending_ticket))
-      return true;
-
-   ulong ticket = 0;
-   if(!Strategy_FindPendingBuyStop(ticket))
-     {
-      g_pending_ticket = 0;
-      g_pending_bars = 0;
-      return false;
-     }
-
-   if(g_pending_ticket != ticket)
-     {
-      g_pending_ticket = ticket;
-      g_pending_bars = 0;
-     }
-   return true;
-  }
-
-void Strategy_CancelTrackedPending(const string reason)
-  {
-   if(g_pending_ticket != 0)
-      QM_TM_RemovePendingOrder(g_pending_ticket, reason);
-   g_pending_ticket = 0;
-   g_pending_bars = 0;
-  }
-
-double Strategy_HighestClose(const int lookback)
-  {
-   if(lookback <= 0)
-      return 0.0;
-
-   double highest = -DBL_MAX;
-   for(int shift = 1; shift <= lookback; ++shift)
-     {
-      const double close_price = iClose(_Symbol, _Period, shift); // perf-allowed: bounded 5-bar close scan for card breakout level.
-      if(close_price <= 0.0)
-         return 0.0;
-      highest = MathMax(highest, close_price);
-     }
-   return highest;
-  }
-
-double Strategy_MinBuyStopEntry(const double ask)
-  {
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(point <= 0.0 || ask <= 0.0)
-      return 0.0;
-
-   const int stops_level = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
-   const double min_distance = (double)MathMax(stops_level, 0) * point;
-   return ask + min_distance + point;
-  }
-
-bool Strategy_PlaceBuyStop(const double entry, const double sl, const double tp)
-  {
-   QM_EntryRequest req;
-   req.type = QM_BUY_STOP;
-   req.price = entry;
-   req.sl = sl;
-   req.tp = tp;
-   req.reason = "EMA Buy Order";
-   req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
-
-   ulong ticket = 0;
-   const bool ok = QM_TM_OpenPosition(req, ticket);
-   if(ok && ticket > 0)
-     {
-      g_pending_ticket = ticket;
-      g_pending_bars = 0;
-     }
-   return ok;
-  }
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
-// No Trade Filter — no card-specific filter beyond framework news/Friday/kill-switch.
+// No Trade Filter — no card-specific session/spread/regime filter.
 bool Strategy_NoTradeFilter()
   {
    return false;
@@ -204,26 +59,75 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
-   req.reason = "";
+   req.reason = "EMA Buy Order";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
-
-   if(Strategy_HasTrackedPending())
-     {
-      g_pending_bars++;
-      if(g_pending_bars >= strategy_pending_expiry_bars)
-         Strategy_CancelTrackedPending("ema_pullstop_pending_expired");
-      return false;
-     }
-
-   if(Strategy_HasOpenPosition())
-      return false;
 
    if(strategy_fast_ema_period <= 0 ||
       strategy_slow_ema_period <= 0 ||
       strategy_breakout_lookback <= 0 ||
       strategy_sl_buffer_points <= 0 ||
-      strategy_tp_points <= 0)
+      strategy_tp_points <= 0 ||
+      strategy_pending_expiry_bars <= 0)
+      return false;
+
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0)
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((long)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+
+      const ENUM_ORDER_TYPE order_type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
+      if(order_type == ORDER_TYPE_BUY_STOP)
+         return false;
+     }
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((long)PositionGetInteger(POSITION_MAGIC) == magic)
+         return false;
+     }
+
+   const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
+   const double ema_fast = QM_EMA(_Symbol, tf, strategy_fast_ema_period, 1);
+   const double ema_slow = QM_EMA(_Symbol, tf, strategy_slow_ema_period, 1);
+   if(ema_fast <= 0.0 || ema_slow <= 0.0)
+      return false;
+
+   MqlRates bars[];
+   ArraySetAsSeries(bars, true);
+   const int copied = CopyRates(_Symbol, tf, 1, strategy_breakout_lookback, bars); // perf-allowed: one closed-bar gated five-close window for card breakout level.
+   if(copied < strategy_breakout_lookback)
+      return false;
+
+   const double close1 = bars[0].close;
+   if(close1 <= 0.0)
+      return false;
+
+   if(!(ema_fast > ema_slow && close1 < ema_slow && close1 <= ema_fast))
+      return false;
+
+   double highest_close = -DBL_MAX;
+   for(int i = 0; i < strategy_breakout_lookback; ++i)
+     {
+      if(bars[i].close <= 0.0)
+         return false;
+      highest_close = MathMax(highest_close, bars[i].close);
+     }
+   if(highest_close <= 0.0)
       return false;
 
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
@@ -231,43 +135,35 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(point <= 0.0 || ask <= 0.0)
       return false;
 
-   const double ema_fast = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_fast_ema_period, 1);
-   const double ema_slow = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_slow_ema_period, 1);
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar pullback close from card.
-   if(ema_fast <= 0.0 || ema_slow <= 0.0 || close1 <= 0.0)
-      return false;
+   const int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
+   const int stops_level = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
+   const double min_stop_distance = MathMax((double)stops_level * point, 0.0);
 
-   if(!(ema_fast > ema_slow && close1 < ema_slow && close1 <= ema_fast))
-      return false;
-
-   double entry = Strategy_HighestClose(strategy_breakout_lookback);
-   if(entry <= 0.0)
-      return false;
-
-   const double min_entry = Strategy_MinBuyStopEntry(ask);
-   if(min_entry <= 0.0)
-      return false;
+   double entry = highest_close;
+   const double min_entry = ask + min_stop_distance + point;
    if(entry < min_entry)
       entry = min_entry;
-   entry = Strategy_NormalizePrice(entry);
+   entry = NormalizeDouble(entry, digits);
 
-   double sl = Strategy_NormalizePrice(close1 - (double)strategy_sl_buffer_points * point);
-   double tp = Strategy_NormalizePrice(entry + (double)strategy_tp_points * point);
+   double sl = NormalizeDouble(close1 - (double)strategy_sl_buffer_points * point, digits);
+   double tp = NormalizeDouble(entry + (double)strategy_tp_points * point, digits);
+
+   if(min_stop_distance > 0.0)
+     {
+      if(entry - sl < min_stop_distance)
+         sl = NormalizeDouble(entry - min_stop_distance - point, digits);
+      if(tp - entry < min_stop_distance)
+         tp = NormalizeDouble(entry + min_stop_distance + point, digits);
+     }
+
    if(entry <= 0.0 || sl <= 0.0 || tp <= 0.0 || sl >= entry || tp <= entry)
       return false;
 
-   const int stops_level = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
-   const double min_distance = (double)MathMax(stops_level, 0) * point;
-   if(min_distance > 0.0)
-     {
-      if(entry - sl < min_distance)
-         sl = Strategy_NormalizePrice(entry - min_distance - point);
-      if(tp - entry < min_distance)
-         tp = Strategy_NormalizePrice(entry + min_distance + point);
-     }
-
-   Strategy_PlaceBuyStop(entry, sl, tp);
-   return false;
+   req.price = entry;
+   req.sl = sl;
+   req.tp = tp;
+   req.expiration_seconds = strategy_pending_expiry_bars * PeriodSeconds(tf);
+   return true;
   }
 
 // Trade Management — no card-authorized trailing, BE, partial, or TP modification.

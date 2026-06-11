@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-This EA trades long-only H1 EMA pullbacks. On each closed bar it requires EMA 8 to be above EMA 21, with the previous candle close below EMA 21 and below or equal to EMA 8. If there is no open position or pending order for this magic number, it places a buy stop at the highest close of the previous five closed candles, adjusted upward when needed to satisfy the broker minimum stop distance. The order uses a fixed point stop below the previous close and a fixed point take-profit above the entry; stale pending orders are removed after 10 closed-bar checks.
+This EA trades long-only H1 EMA pullbacks. On each closed bar it requires EMA 8 to be above EMA 21, with the previous candle close below EMA 21 and below or equal to EMA 8. If there is no open position or pending buy-stop order for this magic number, it places a buy stop at the highest close of the previous five closed candles, adjusted upward when needed to satisfy the broker minimum stop distance. The order uses a fixed point stop below the previous close and a fixed point take-profit above the entry; stale pending orders are submitted with a 10-bar expiration.
 
 ---
 
@@ -23,7 +23,7 @@ This EA trades long-only H1 EMA pullbacks. On each closed bar it requires EMA 8 
 | strategy_breakout_lookback | 5 | > 0 | Number of closed candles used for the highest-close buy-stop level. |
 | strategy_sl_buffer_points | 3 | > 0 | Fixed point buffer subtracted from the previous candle close for stop-loss. |
 | strategy_tp_points | 100 | > 0 | Fixed point distance added to the buy-stop entry for take-profit. |
-| strategy_pending_expiry_bars | 10 | > 0 | Number of closed-bar checks before deleting an unfilled pending buy stop. |
+| strategy_pending_expiry_bars | 10 | > 0 | Number of chart bars used for the unfilled pending buy-stop expiration. |
 
 ---
 
