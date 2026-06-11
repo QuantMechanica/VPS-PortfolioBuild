@@ -7824,3 +7824,10 @@
 11857,blade-macd-stoch-divergence-h1,1,EURUSD.DWX,118570001,2026-06-11,Development,active
 11857,blade-macd-stoch-divergence-h1,2,AUDUSD.DWX,118570002,2026-06-11,Development,active
 11857,blade-macd-stoch-divergence-h1,3,USDJPY.DWX,118570003,2026-06-11,Development,active
+11839,ait-sma5-37,0,EURUSD.DWX,118390000,2026-06-11,Development,active
+11839,ait-sma5-37,1,GBPUSD.DWX,118390001,2026-06-11,Development,active
+11839,ait-sma5-37,2,USDJPY.DWX,118390002,2026-06-11,Development,active
+11839,ait-sma5-37,3,XAUUSD.DWX,118390003,2026-06-11,Development,active
+11839,ait-sma5-37,4,GDAXI.DWX,118390004,2026-06-11,Development,active
+11839,ait-sma5-37,5,NDX.DWX,118390005,2026-06-11,Development,active
+11839,ait-sma5-37,6,WS30.DWX,118390006,2026-06-11,Development,active
