@@ -7889,3 +7889,7 @@
 10087,mql5-cloud-rsi,1,GBPUSD.DWX,100870001,2026-06-11,Development,active
 10087,mql5-cloud-rsi,2,USDJPY.DWX,100870002,2026-06-11,Development,active
 10087,mql5-cloud-rsi,3,XAUUSD.DWX,100870003,2026-06-11,Development,active
+10088,mql5-hammer-rsi,0,EURUSD.DWX,100880000,2026-06-11,Development,active
+10088,mql5-hammer-rsi,1,GBPUSD.DWX,100880001,2026-06-11,Development,active
+10088,mql5-hammer-rsi,2,USDJPY.DWX,100880002,2026-06-11,Development,active
+10088,mql5-hammer-rsi,3,XAUUSD.DWX,100880003,2026-06-11,Development,active
