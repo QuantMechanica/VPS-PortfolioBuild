@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        11555
-; ea_slug:      carter-t-m5-wma5-sma11-psar-adx14
+; ea_id:        9960
+; ea_slug:      ff-lwma5-openclose-cross
 ; ea_version:   v5.0
 ; set_version:  s20260611-001
-; symbol:       AUDUSD.DWX
-; timeframe:    M5
+; symbol:       GBPUSD.DWX
+; timeframe:    H4
 ; environment:  backtest
-; magic_slot:   2
+; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   a69ef9a77fe68474bc7b46f374275ec1cf965aa7ada2fbde87a90a053c6764eb
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-06-11
 ;==========================================================
-qm_magic_slot_offset=2
+qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
