@@ -442,13 +442,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      }
    else if(g_long_state == SETUP_WAIT_RETEST)
      {
-      const bool touched_zone = (l1 <= g_long_break2_high && h1 >= g_long_base2_low);
-      if(touched_zone && c1 > o1 && c1 >= g_long_base2_low)
-        {
-         const bool ok = FillLongRequest(req, atr_m1);
+      if(g_long_age_bars > strategy_max_break_bars)
          ResetLongSetup();
-         if(ok)
-            return true;
+      else
+        {
+         const bool touched_zone = (l1 <= g_long_break2_high && h1 >= g_long_base2_low);
+         if(touched_zone && c1 > o1 && c1 >= g_long_base2_low)
+           {
+            const bool ok = FillLongRequest(req, atr_m1);
+            ResetLongSetup();
+            if(ok)
+               return true;
+           }
         }
      }
 
@@ -491,13 +496,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      }
    else if(g_short_state == SETUP_WAIT_RETEST)
      {
-      const bool touched_zone = (h1 >= g_short_break2_low && l1 <= g_short_base2_high);
-      if(touched_zone && c1 < o1 && c1 <= g_short_base2_high)
-        {
-         const bool ok = FillShortRequest(req, atr_m1);
+      if(g_short_age_bars > strategy_max_break_bars)
          ResetShortSetup();
-         if(ok)
-            return true;
+      else
+        {
+         const bool touched_zone = (h1 >= g_short_break2_low && l1 <= g_short_base2_high);
+         if(touched_zone && c1 < o1 && c1 <= g_short_base2_high)
+           {
+            const bool ok = FillShortRequest(req, atr_m1);
+            ResetShortSetup();
+            if(ok)
+               return true;
+           }
         }
      }
 
