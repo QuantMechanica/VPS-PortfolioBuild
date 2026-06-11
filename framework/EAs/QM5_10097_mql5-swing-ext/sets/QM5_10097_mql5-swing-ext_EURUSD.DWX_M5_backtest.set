@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   1857d84059e5b2fa8f81a618389c9651b44375627ee73c9200ac75378cb6a879
 ; author:       Development
 ; date:         2026-06-11
 ;==========================================================
@@ -31,4 +31,10 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10097_mql5-swing-ext.md
+strategy_htf=PERIOD_H1
+strategy_ltf=PERIOD_M5
+strategy_swing_bars=3
+strategy_atr_period=14
+strategy_atr_multiplier=1.0
+strategy_swing_scan_bars=180
