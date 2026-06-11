@@ -7155,3 +7155,13 @@
 11748,bigben-london-range-fade,2,EURUSD.DWX,117480002,2026-06-11,Development,active
 11748,bigben-london-range-fade,3,USDJPY.DWX,117480003,2026-06-11,Development,active
 11748,bigben-london-range-fade,4,AUDUSD.DWX,117480004,2026-06-11,Development,active
+12447,carver-ab-rev,0,XTIUSD.DWX,124470000,2026-06-11,Development,active
+12447,carver-ab-rev,1,XAUUSD.DWX,124470001,2026-06-11,Development,active
+12447,carver-ab-rev,2,GDAXI.DWX,124470002,2026-06-11,Development,active
+12447,carver-ab-rev,3,NDX.DWX,124470003,2026-06-11,Development,active
+12447,carver-ab-rev,4,WS30.DWX,124470004,2026-06-11,Development,active
+12511,bt-target-vol,0,GDAXI.DWX,125110000,2026-06-11,Development,active
+12511,bt-target-vol,1,NDX.DWX,125110001,2026-06-11,Development,active
+12511,bt-target-vol,2,WS30.DWX,125110002,2026-06-11,Development,active
+12511,bt-target-vol,3,XAUUSD.DWX,125110003,2026-06-11,Development,active
+12511,bt-target-vol,4,XTIUSD.DWX,125110004,2026-06-11,Development,active
