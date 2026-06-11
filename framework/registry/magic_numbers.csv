@@ -7567,3 +7567,8 @@
 9954,ff-weekly-hilo-breakout-d1,2,USDJPY.DWX,99540002,2026-06-11,Development,active
 9954,ff-weekly-hilo-breakout-d1,3,XAUUSD.DWX,99540003,2026-06-11,Development,active
 9954,ff-weekly-hilo-breakout-d1,4,NDX.DWX,99540004,2026-06-11,Development,active
+9953,ff-supertrend-pullback-100p-h4,0,EURUSD.DWX,99530000,2026-06-11,Development,active
+9953,ff-supertrend-pullback-100p-h4,1,AUDUSD.DWX,99530001,2026-06-11,Development,active
+9953,ff-supertrend-pullback-100p-h4,2,USDCAD.DWX,99530002,2026-06-11,Development,active
+9953,ff-supertrend-pullback-100p-h4,3,GBPUSD.DWX,99530003,2026-06-11,Development,active
+9953,ff-supertrend-pullback-100p-h4,4,USDCHF.DWX,99530004,2026-06-11,Development,active

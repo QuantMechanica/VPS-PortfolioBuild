@@ -107,7 +107,6 @@ void UpdateBarCounters()
       g_red_below_cnt   = 0;
       return;
      }
-
    const double close1 = iClose(_Symbol, PERIOD_H4, 1); // perf-allowed: structural close-vs-MA
    if(close1 <= 0.0)
      {
