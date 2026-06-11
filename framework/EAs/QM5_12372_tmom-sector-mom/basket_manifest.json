@@ -1,0 +1,11 @@
+{
+  "ea_id": "QM5_12372",
+  "slug": "tmom-sector-mom",
+  "timeframe": "D1",
+  "symbols": [
+    {"slot": 0, "symbol": "NDX.DWX", "card_symbol": "NDX.DWX"},
+    {"slot": 1, "symbol": "WS30.DWX", "card_symbol": "WS30.DWX"},
+    {"slot": 2, "symbol": "SP500.DWX", "card_symbol": "SP500.DWX"},
+    {"slot": 3, "symbol": "GDAXI.DWX", "card_symbol": "GER40.DWX", "port_reason": "GER40.DWX is absent from dwx_symbol_matrix.csv; GDAXI.DWX is the available DAX custom symbol."}
+  ]
+}

@@ -284,7 +284,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                      double tp_px = ask + strategy_tp_r_multiple * sl_dist;
                      if(g_daily_open > ask && g_daily_open < tp_px)
                         tp_px = g_daily_open;
-                     req.type         = QM_ORDER_TYPE_BUY;
+                     req.type         = QM_BUY;
                      req.price        = ask;
                      req.sl           = NormalizeDouble(sl_px, (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS));
                      req.tp           = NormalizeDouble(tp_px, (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS));
@@ -326,7 +326,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                      double tp_px = bid - strategy_tp_r_multiple * sl_dist;
                      if(g_daily_open < bid && g_daily_open > tp_px)
                         tp_px = g_daily_open;
-                     req.type         = QM_ORDER_TYPE_SELL;
+                     req.type         = QM_SELL;
                      req.price        = bid;
                      req.sl           = NormalizeDouble(sl_px, (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS));
                      req.tp           = NormalizeDouble(tp_px, (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS));
