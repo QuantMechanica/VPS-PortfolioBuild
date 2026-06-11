@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        9636
-; ea_slug:      brooks-failed-ob-h4
+; ea_id:        11502
+; ea_slug:      watthana-hammer-rsi-stoch-h1
 ; ea_version:   v5.0
 ; set_version:  s20260611-001
-; symbol:       XAUUSD.DWX
-; timeframe:    H4
+; symbol:       GBPUSD.DWX
+; timeframe:    H1
 ; environment:  backtest
-; magic_slot:   3
+; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   73e575ce413a4cd68b8931a8c0bb53a31e0f5ce8fa34fe39cd6cb48a3370d307
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-06-11
 ;==========================================================
-qm_magic_slot_offset=3
+qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1

@@ -7353,3 +7353,7 @@
 9951,ff-macd-bias-ema48-m15,1,GBPUSD.DWX,99510001,2026-06-11,Development,active
 9951,ff-macd-bias-ema48-m15,2,USDJPY.DWX,99510002,2026-06-11,Development,active
 9951,ff-macd-bias-ema48-m15,3,XAUUSD.DWX,99510003,2026-06-11,Development,active
+9903,ff-roadmap-do-fail-m5,0,EURUSD.DWX,99030000,2026-06-11,Development,active
+9903,ff-roadmap-do-fail-m5,1,GBPUSD.DWX,99030001,2026-06-11,Development,active
+9903,ff-roadmap-do-fail-m5,2,XAUUSD.DWX,99030002,2026-06-11,Development,active
+9903,ff-roadmap-do-fail-m5,3,NDX.DWX,99030003,2026-06-11,Development,active
