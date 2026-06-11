@@ -1605,6 +1605,17 @@ ARCHIVE2_CSS = """
 .gate-note{max-width:1400px;margin:10px auto 0;padding:0 36px;font-family:var(--font-mono);font-size:10px;color:var(--text-4);line-height:1.55;letter-spacing:0.04em}
 .cov-gap-panel{max-width:1400px;margin:14px auto 0;padding:12px 20px;background:var(--surface-1);border:1px solid var(--warn);border-left-width:2px;font-family:var(--font-mono);font-size:11px;color:var(--text-2);line-height:1.55;letter-spacing:0.04em}
 .cov-gap-panel strong{color:var(--warn);font-weight:700;letter-spacing:0.14em;text-transform:uppercase}
+.death-strip{max-width:1400px;margin:18px auto 0;padding:0 36px}
+.death-strip-label{font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.18em;margin-bottom:8px;text-align:center}
+.death-strip-label .death-total{color:var(--fail);letter-spacing:0.06em}
+.death-row{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+.death-cell{padding:8px 14px;background:var(--surface-1);border:1px solid var(--border);border-top:2px solid var(--fail);min-width:64px;text-align:center}
+.death-cell .death-gate{font-family:var(--font-mono);font-size:9px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:0.14em}
+.death-cell .death-n{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:17px;font-weight:500;color:var(--fail);margin-top:4px}
+.cards-reservoir{max-width:1400px;margin:26px auto 0;padding:16px 20px;background:var(--surface-1);border:1px solid var(--border)}
+.cards-reservoir summary{cursor:pointer;font-family:var(--font-mono);font-size:11px;color:var(--text-2);line-height:1.55;letter-spacing:0.04em}
+.cards-reservoir summary strong{color:var(--text);letter-spacing:0.1em;text-transform:uppercase}
+.cards-reservoir .archive-table-wrap{margin-top:12px}
 """
 
 
@@ -2138,6 +2149,33 @@ def render_strategies(state: dict, root: Path) -> str:
     eas.sort(key=lambda x: x.get("last_updated") or "", reverse=True)
     eas.sort(key=lambda x: lane_meta[x["ea_id"]]["rank"])
 
+    # Split the unbuilt card reservoir out of the EA table (2026-06-11 redesign):
+    # 2000+ card-only rows with full 11-col markup drowned the page's purpose
+    # (EA inventory + fate) and pushed strategies.html past 4 MB. Cards get a
+    # compact collapsed section below; transparency is preserved, weight is not.
+    card_only_eas = [ea for ea in eas if "card_only" in lane_meta[ea["ea_id"]]["lanes"]]
+    main_eas = [ea for ea in eas if "card_only" not in lane_meta[ea["ea_id"]]["lanes"]]
+
+    # Death-by-gate distribution: where do strategies actually die? This is the
+    # archive's core lesson (e.g. the Q04 walk-forward overfitting wall).
+    death_counter: Counter = Counter()
+    for ea in main_eas:
+        if ea.get("dead"):
+            death_counter[phase_label(ea.get("failed_at")) if ea.get("failed_at") else "unknown"] += 1
+    _phase_rank = {phase_label(p): i for i, p in enumerate(PHASE_ORDER)}
+    death_strip = ""
+    if death_counter:
+        cells = "".join(
+            f'<div class="death-cell"><div class="death-gate">{e(g)}</div><div class="death-n">{n}</div></div>'
+            for g, n in sorted(death_counter.items(), key=lambda kv: _phase_rank.get(kv[0], 99))
+        )
+        death_strip = (
+            '<div class="death-strip"><div class="death-strip-label">Death by gate '
+            f'<span class="death-total">({sum(death_counter.values())} dead EAs)</span></div>'
+            f'<div class="death-row">{cells}</div></div>'
+        )
+
+    eas = main_eas
     if not eas:
         body = '<div class="empty" style="max-width:1100px;margin:24px auto;text-align:center;color:var(--qm-text-muted);">No EAs registered yet.</div>'
     else:
@@ -2258,6 +2296,37 @@ def render_strategies(state: dict, root: Path) -> str:
 </div>
 """
 
+    # Compact collapsed listing for the unbuilt card reservoir (4 light columns,
+    # no progress bars) — keeps full transparency at ~1/10 of the row weight.
+    card_state_counts: Counter = Counter(ea.get("card_state") or "unknown" for ea in card_only_eas)
+    card_pill = {"approved": "s-flow", "review": "s-prog", "draft": "s-card", "rejected": "s-dead"}
+    card_rows_html = "".join(
+        f'<tr data-search="{e((ea["ea_id"] + " " + (ea.get("slug") or "")).lower())}">'
+        f'<td class="td-ea"><code>{e(ea["ea_id"])}</code></td>'
+        f'<td class="td-slug">{e(ea.get("slug") or "")}</td>'
+        f'<td><span class="status-chip {card_pill.get(ea.get("card_state"), "s-card")}">{e(ea.get("card_state") or "?")}</span></td>'
+        f'<td>{e((ea.get("last_updated") or "")[:10])}</td></tr>'
+        for ea in card_only_eas
+    )
+    card_counts_label = " · ".join(
+        f"{k}: {v}" for k, v in sorted(card_state_counts.items(), key=lambda kv: -kv[1])
+    ) or "none"
+    cards_html = f"""
+<details class="cards-reservoir">
+  <summary><strong>Card reservoir · not built yet</strong> — {len(card_only_eas)} strategy cards ({card_counts_label}). Build priority is deterministic (diversification + expected metrics); cards enter the EA table above once built.</summary>
+  <div class="controls" style="margin-top:10px">
+    <input type="search" id="card-search" placeholder="search card id or slug…">
+    <span class="row-count"><strong id="cc-visible">{len(card_only_eas)}</strong> of {len(card_only_eas)} cards</span>
+  </div>
+  <div class="archive-table-wrap">
+  <table class="archive-table" id="card-table">
+    <thead><tr><th>Card / EA ID</th><th>Slug</th><th>Card state</th><th>Updated</th></tr></thead>
+    <tbody>{card_rows_html}</tbody>
+  </table>
+  </div>
+</details>
+"""
+
     return html_head("Strategy Archive", ARCHIVE_CSS + ARCHIVE2_CSS) + f"""
 <div class="archive-hero">
   <h1>Strategy <span class="em-text">Archive</span></h1>
@@ -2271,10 +2340,11 @@ def render_strategies(state: dict, root: Path) -> str:
     <div class="achip c-dead"><div class="achip-num">{counts.get("dead", 0)}</div><div class="achip-label">Dead</div></div>
     <div class="achip c-card"><div class="achip-num">{counts.get("card_only", 0)}</div><div class="achip-label">Card · not built</div></div>
   </div>
+  {death_strip}
 </div>
 
 <div class="transparency-banner">
-  <strong>Transparency:</strong> all EAs are the actual pipeline state — DEAD strategies are dimmed but NOT hidden. Q11-PASS and Q05+ survivors are sorted to the top; click any row for strategy card, per-phase × per-symbol backtest evidence, and native MT5 reports.
+  <strong>Transparency:</strong> all EAs are the actual pipeline state — DEAD strategies are dimmed but NOT hidden. Q11-PASS and Q05+ survivors are sorted to the top; click any row for strategy card, per-phase × per-symbol backtest evidence, and native MT5 reports. The unbuilt card reservoir is listed in its own collapsed section below the EA table.
 </div>
 
 <div class="controls">
@@ -2302,17 +2372,13 @@ def render_strategies(state: dict, root: Path) -> str:
   <span class="preset" data-preset="dead">Dead</span>
   <span class="preset" data-preset="live">Live pipeline only</span>
   <span class="preset" data-preset="archive">Archive only</span>
-  <span class="preset" data-preset="card">Cards · all</span>
-  <span class="preset" data-preset="card_approved">Cards · approved</span>
-  <span class="preset" data-preset="card_review">Cards · review</span>
-  <span class="preset" data-preset="card_draft">Cards · draft</span>
-  <span class="preset" data-preset="card_rejected">Cards · rejected</span>
-  <span class="preset" data-preset="card_only">Cards · not built</span>
 </div>
 <div class="gate-note">"Best exploratory P&amp;L" is the single best result across any phase (often a Q02 discovery run) — it is NOT gate proof. "Most advanced gate" is the highest real PASS the EA reached. "Needs EA triage" is an EA-level archive lane, not the same as cockpit "Test Exceptions", which are daily work-item outcomes such as min-trade/zero-trade, invalid report, or waiting-input rows.</div>
 {cov_panel}
 
 {body}
+
+{cards_html}
 
 <div class="archive-footer">
   Generated by tools/strategy_farm/dashboards/render_dashboards.py · click any row for full drill-down.<br>
@@ -2391,6 +2457,24 @@ def render_strategies(state: dict, root: Path) -> str:
       sorted.forEach(r => tbody.appendChild(r));
     }});
   }});
+
+  // card reservoir search (independent of the EA table filters)
+  const cardSearch = document.getElementById('card-search');
+  const cardTable = document.getElementById('card-table');
+  const ccVisible = document.getElementById('cc-visible');
+  if (cardSearch && cardTable) {{
+    const cardRows = Array.from(cardTable.tBodies[0].rows);
+    cardSearch.addEventListener('input', () => {{
+      const q = (cardSearch.value || '').toLowerCase().trim();
+      let visible = 0;
+      cardRows.forEach(r => {{
+        const hide = q && !(r.getAttribute('data-search') || '').includes(q);
+        r.classList.toggle('row-hidden', hide);
+        if (!hide) visible++;
+      }});
+      if (ccVisible) ccVisible.textContent = visible;
+    }});
+  }}
 }})();
 </script>
 </body>

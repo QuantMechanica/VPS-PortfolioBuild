@@ -1517,11 +1517,32 @@ def main() -> int:
         claude_closed_today = 0
         codex_closed_today = 0
 
-    # Token % from live quota snapshot (Tampermonkey) when fresh, else "—"
-    claude_tok_pct = qsnap.get("claude", {}).get("hour_pct") if qsnap else None
-    codex_tok_pct = qsnap.get("codex", {}).get("hour_pct") if qsnap else None
-    claude_tok_str = f"{int(claude_tok_pct)}%" if isinstance(claude_tok_pct, (int, float)) else "—"
-    codex_tok_str = f"{int(codex_tok_pct)}%" if isinstance(codex_tok_pct, (int, float)) else "—"
+    # Full limits readout per agent (OWNER "Update?" standard: 5h + weekly % + resets).
+    # Source: quota_pull.py headless API snapshot via quota_snapshot().
+    def _limits_html(src: str) -> str:
+        s = qsnap.get(src, {}) if qsnap else {}
+
+        def _pct_span(label: str, val, reset) -> str:
+            if not isinstance(val, (int, float)):
+                return f'<span class="k">{label}</span> <span class="v">—</span>'
+            cls = "lim-crit" if val >= 90 else ("lim-warn" if val >= 70 else "lim-ok")
+            r = f' <span class="lim-reset">&rarr;{e(str(reset))}</span>' if reset else ""
+            return f'<span class="k">{label}</span> <span class="v {cls}">{int(val)}%</span>{r}'
+
+        parts = [
+            _pct_span("5H", s.get("hour_pct"), s.get("hour_reset")),
+            _pct_span("WK", s.get("week_pct"), s.get("week_reset")),
+        ]
+        if src == "claude" and isinstance(s.get("sonnet_pct"), (int, float)):
+            parts.append(_pct_span("WK-SONNET", s.get("sonnet_pct"), None))
+        stale = not s.get("fresh")
+        age = s.get("age_sec")
+        if stale and isinstance(age, int):
+            parts.append(f'<span class="lim-stale">stale {age // 60}m</span>')
+        return '<span class="sep">&middot;</span>'.join(parts)
+
+    claude_limits_html = _limits_html("claude")
+    codex_limits_html = _limits_html("codex")
 
     # Total backtests pending across all phases (combine builds + p2 + p3 + work_items pending)
     mt5_pend = (
@@ -1543,6 +1564,36 @@ def main() -> int:
         )
     term_row_html = "".join(term_cells)
     fleet_label = f"T1–T10 Workers // {len(active_terms)} of 10 saturated"
+
+    # Watchdog pulse: last self-heal action + interactive-session state. Answers
+    # OWNER's recurring "ist die Factory eigentlich gelaufen?" without log-digging.
+    watchdog_str = "no watchdog telemetry"
+    watchdog_cls = "wd-warn"
+    try:
+        wd_log = Path(r"D:\QM\reports\state\factory_watchdog.jsonl")
+        if wd_log.exists():
+            tail = wd_log.read_text(encoding="utf-8", errors="ignore").strip().splitlines()
+            if tail:
+                wd = json.loads(tail[-1])
+                wd_ts = str(wd.get("ts") or "")
+                age_min = None
+                try:
+                    t = dt.datetime.fromisoformat(wd_ts.replace("Z", "+00:00"))
+                    age_min = int((dt.datetime.now(dt.timezone.utc) - t).total_seconds() // 60)
+                except Exception:
+                    pass
+                act = str(wd.get("action") or "?")
+                sess = "SESSION LOST" if wd.get("session_lost") else "session ok"
+                age_txt = f" // {age_min}m ago" if age_min is not None else ""
+                watchdog_str = f"{act} // {wd.get('workers', '?')}/{wd.get('expect', '?')} workers // {sess}{age_txt}"
+                if wd.get("session_lost") or act in ("heal_failed", "session_lost_no_autologon"):
+                    watchdog_cls = "wd-crit"
+                elif act.startswith("healed") or (age_min is not None and age_min > 45):
+                    watchdog_cls = "wd-warn"
+                else:
+                    watchdog_cls = "wd-ok"
+    except Exception:
+        pass
 
     # ---------- 4. PROFITABILITY NEXT ACTIONS ----------
     def stage_state_class(status: str) -> tuple[str, str]:
@@ -1757,11 +1808,11 @@ def main() -> int:
         f'{q08_rescue.get("pass_portfolio", 0)} pass // {q08_rescue.get("need_more_data", 0)} need data'
     )
     q08_rescue_html = f'''
-  <div class="section">
+  <div class="section demoted">
     <div class="section-head">
       <span class="section-glyph"></span>
       <span class="section-title">Q08 Portfolio Rescue // Standalone Fail Track</span>
-      <span class="section-aux">{e(q08_rescue_aux)}</span>
+      <span class="section-aux">{e(q08_rescue_aux)} // Reference</span>
     </div>
     <div class="rescue-summary">
       <div class="rescue-stat"><span>FAIL_SOFT</span><strong>{q08_rescue.get("soft", 0)}</strong></div>
@@ -2228,6 +2279,39 @@ body { padding: 32px; min-height: 100vh; }
   color: var(--text-3); font-size: 10px;
   letter-spacing: 0.18em; text-transform: uppercase; margin-left: 4px;
 }
+.agent-limits {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 11px; letter-spacing: 0.02em; color: var(--text-3);
+  padding: 0 20px 12px 116px; margin-top: -8px;
+  border-bottom: 1px solid var(--border);
+}
+.agent-limits .k { color: var(--text-3); font-size: 10px; letter-spacing: 0.12em; }
+.agent-limits .v { font-weight: 700; }
+.agent-limits .lim-ok { color: var(--signal); }
+.agent-limits .lim-warn { color: var(--warn); }
+.agent-limits .lim-crit { color: var(--fail); }
+.agent-limits .lim-reset { color: var(--text-3); font-size: 10px; }
+.agent-limits .lim-stale { color: var(--warn); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
+.agent-limits .sep { margin: 0 8px; color: var(--border); }
+.watchdog-row {
+  display: grid; grid-template-columns: 80px 1fr; gap: 16px;
+  padding: 12px 20px; align-items: baseline;
+  border-top: 1px solid var(--border);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+}
+.watchdog-row .wlbl {
+  font-weight: 700; letter-spacing: 0.2em; font-size: 10px;
+  text-transform: uppercase; color: var(--text-3);
+}
+.watchdog-row .wval { color: var(--text-2); }
+.watchdog-row.wd-ok .wval { color: var(--signal); }
+.watchdog-row.wd-warn .wval { color: var(--warn); }
+.watchdog-row.wd-crit .wval { color: var(--fail); font-weight: 700; }
+.section.demoted { opacity: 0.62; }
+.section.demoted:hover { opacity: 1; }
+.section.demoted .section-title { color: var(--text-3); }
 .agent-fleet { padding: 16px 20px 18px; border-bottom: none; }
 .agent-fleet .flbl {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
@@ -2622,19 +2706,19 @@ body { padding: 32px; min-height: 100vh; }
         <span class="agent-readout">
           <span class="v">{claude_act}</span><span class="k">ACT</span><span class="sep">&middot;</span>
           <span class="v">{review_q_count}</span><span class="k">QUE</span><span class="sep">&middot;</span>
-          <span class="v">{claude_closed_today}</span><span class="k">CLOSED</span><span class="sep">&middot;</span>
-          <span class="k">TOK</span> <span class="v">{e(claude_tok_str)}</span>
+          <span class="v">{claude_closed_today}</span><span class="k">CLOSED</span>
         </span>
       </div>
+      <div class="agent-limits">{claude_limits_html}</div>
       <div class="agent-row">
         <span class="name">CODEX</span>
         <span class="agent-readout">
           <span class="v">{codex_act}</span><span class="k">ACT</span><span class="sep">&middot;</span>
           <span class="v">{q.get("builds_pending", 0)}</span><span class="k">QUE</span><span class="sep">&middot;</span>
-          <span class="v">{codex_closed_today}</span><span class="k">CLOSED</span><span class="sep">&middot;</span>
-          <span class="k">TOK</span> <span class="v">{e(codex_tok_str)}</span>
+          <span class="v">{codex_closed_today}</span><span class="k">CLOSED</span>
         </span>
       </div>
+      <div class="agent-limits">{codex_limits_html}</div>
       <div class="agent-row">
         <span class="name">MT5</span>
         <span class="agent-readout">
@@ -2647,23 +2731,11 @@ body { padding: 32px; min-height: 100vh; }
         <div class="flbl">{e(fleet_label)}</div>
         <div class="fleet-row">{term_row_html}</div>
       </div>
+      <div class="watchdog-row {watchdog_cls}">
+        <span class="wlbl">WATCHDOG</span>
+        <span class="wval">{e(watchdog_str)}</span>
+      </div>
     </div>
-  </div>
-
-  <!-- 4. PROFITABILITY NEXT ACTIONS -->
-  <div class="section">
-    <div class="section-head">
-      <span class="section-glyph"></span>
-      <span class="section-title">Profitability // Next Actions</span>
-      <span class="section-aux">{profit_aux}</span>
-    </div>
-    <table class="qm-table">
-      <tr>
-        <th>Action</th><th>EA</th><th>Lane</th><th>Symbol / Slug</th>
-        <th>State</th><th>Next Gate</th><th>Note</th>
-      </tr>
-      {"".join(action_rows_html)}
-    </table>
   </div>
 
   {progress_html}
@@ -2679,8 +2751,6 @@ body { padding: 32px; min-height: 100vh; }
       {funnel_html_inner}
     </div>
   </div>
-
-  {q08_rescue_html}
 
   <!-- 6. DAILY CONTROLLING -->
   <div class="section">
@@ -2777,7 +2847,26 @@ body { padding: 32px; min-height: 100vh; }
     </div>
   </div>
 
-  <!-- 8. BOTTOM BAR -->
+  <!-- 8. NEXT ACTIONS (demoted below the fold — OWNER directive 2026-06-11) -->
+  <div class="section demoted">
+    <div class="section-head">
+      <span class="section-glyph"></span>
+      <span class="section-title">Profitability // Next Actions</span>
+      <span class="section-aux">{profit_aux} // Reference</span>
+    </div>
+    <table class="qm-table">
+      <tr>
+        <th>Action</th><th>EA</th><th>Lane</th><th>Symbol / Slug</th>
+        <th>State</th><th>Next Gate</th><th>Note</th>
+      </tr>
+      {"".join(action_rows_html)}
+    </table>
+  </div>
+
+  <!-- 9. Q08 RESCUE (demoted below the fold — OWNER directive 2026-06-11) -->
+  {q08_rescue_html}
+
+  <!-- 10. BOTTOM BAR -->
   <div class="botbar">
     <div><span class="key">Next Refresh</span><span class="val">30S</span></div>
     <div class="center"><span class="key">Renderer</span><span class="val">v5.0 // STEEL-EMERALD</span></div>

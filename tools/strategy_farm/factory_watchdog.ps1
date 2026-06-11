@@ -91,7 +91,80 @@ print(str(a) + " " + str(p))
     } catch { $stallInfo = "stall-probe-error: $_" }
 }
 
-if (-not $factoryEnabled) {
+# 2c. SESSION-LOSS detection + reboot-heal (added 2026-06-11).
+# The one case neither respawn nor tscon can fix: the interactive session itself is
+# DESTROYED (observed 3x 2026-06-10/11: LSM event 40 reason 23, per-session user
+# services killed, no logoff event; one death preceded by an 0xc0000142 desktop-heap
+# burst, two more correlate with dxgkrnl LiveKernelEvents). With NO qm-admin session,
+# WTSQueryUserToken has no token to spawn into -> factory stays dead until OWNER logs
+# in. Heal: controlled reboot -> autologon (LSA DefaultPassword secret, verified
+# 2026-06-11) recreates the console session -> FactoryON_AtLogon restores the factory.
+# Guards: confirm on 2 consecutive runs (~15 min), 6h cooldown, autologon secret must
+# exist, never while any T_Live terminal runs (Hard Rule: live trading untouchable).
+$sessionLost = $false
+$targetUser = (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' -ErrorAction SilentlyContinue).DefaultUserName
+if (-not $targetUser) { $targetUser = 'qm-admin' }
+if ($factoryEnabled) {
+    $hasSession = $false
+    foreach ($line in (qwinsta 2>$null)) {
+        if (($line -match "\b$([regex]::Escape($targetUser))\b") -and
+            ($line -match "\s\d+\s+(Active|Disc|Conn)\b")) { $hasSession = $true }
+    }
+    $sessionLost = -not $hasSession
+}
+
+if ($factoryEnabled -and $sessionLost) {
+    $healState = 'D:\QM\reports\state\watchdog_session_heal.json'
+    $st = $null
+    try { $st = Get-Content $healState -Raw -ErrorAction Stop | ConvertFrom-Json } catch {}
+    $nowDt = Get-Date
+    $pendingSince = $null
+    if ($st -and $st.pending_since) { try { $pendingSince = [datetime]$st.pending_since } catch {} }
+    $lastReboot = $null
+    if ($st -and $st.last_reboot) { try { $lastReboot = [datetime]$st.last_reboot } catch {} }
+
+    $secretOk = $false
+    try { $secretOk = $null -ne [Microsoft.Win32.RegistryKey]::OpenBaseKey('LocalMachine','Default').OpenSubKey('SECURITY\Policy\Secrets\DefaultPassword') } catch {}
+    $autologonOn = ((Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' -ErrorAction SilentlyContinue).AutoAdminLogon -eq '1')
+    $tLiveRunning = @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
+                      Where-Object { $_.CommandLine -match 'T_Live' }).Count -gt 0
+
+    if (-not ($secretOk -and $autologonOn)) {
+        $action = 'session_lost_no_autologon'
+        $detail = "NO interactive $targetUser session, but autologon not usable (secret=$secretOk autoadmin=$autologonOn) - reboot would strand at logon screen; OWNER must log in"
+    } elseif ($tLiveRunning) {
+        $action = 'session_lost_tlive_guard'
+        $detail = "NO interactive $targetUser session but a T_Live terminal is running - refusing auto-reboot (Hard Rule)"
+    } elseif ($lastReboot -and ($nowDt - $lastReboot).TotalHours -lt 6) {
+        $action = 'session_lost_cooldown'
+        $detail = "NO interactive $targetUser session; auto-reboot suppressed (last heal-reboot $($st.last_reboot), 6h cooldown)"
+    } elseif (-not $pendingSince) {
+        $action = 'session_lost_pending_confirm'
+        $detail = "NO interactive $targetUser session detected; confirming on next run before reboot-heal"
+        @{ pending_since = $nowDt.ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ'); last_reboot = $st.last_reboot } |
+            ConvertTo-Json -Compress | Set-Content -Path $healState -Encoding UTF8
+    } else {
+        $action = 'healed_session_reboot'
+        $detail = "NO interactive $targetUser session for 2 consecutive checks (since $($st.pending_since)) while factory ON -> controlled reboot to restore autologon session + FactoryON_AtLogon"
+        @{ pending_since = $null; last_reboot = $nowDt.ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ') } |
+            ConvertTo-Json -Compress | Set-Content -Path $healState -Encoding UTF8
+        & shutdown.exe /r /t 60 /d p:4:1 /c "QM factory_watchdog: interactive session lost - auto-reboot to restore autologon session"
+    }
+    # clear stale pending flag once a session exists again
+} elseif (Test-Path 'D:\QM\reports\state\watchdog_session_heal.json') {
+    try {
+        $st = Get-Content 'D:\QM\reports\state\watchdog_session_heal.json' -Raw | ConvertFrom-Json
+        if ($st.pending_since) {
+            @{ pending_since = $null; last_reboot = $st.last_reboot } | ConvertTo-Json -Compress |
+                Set-Content -Path 'D:\QM\reports\state\watchdog_session_heal.json' -Encoding UTF8
+        }
+    } catch {}
+}
+
+if ($factoryEnabled -and $sessionLost) {
+    # handled above; fall through to logging
+}
+elseif (-not $factoryEnabled) {
     $action = 'noop_factory_off'
     $detail = "FACTORY tasks disabled (OWNER OFF); workers=$nWorkers - leaving alone"
 }
@@ -174,6 +247,7 @@ $record = [ordered]@{
     workers          = $nWorkers
     expect           = $ExpectWorkers
     dispatch_stalled = $dispatchStalled
+    session_lost     = $sessionLost
     action           = $action
     detail           = $detail
 } | ConvertTo-Json -Compress -Depth 4
