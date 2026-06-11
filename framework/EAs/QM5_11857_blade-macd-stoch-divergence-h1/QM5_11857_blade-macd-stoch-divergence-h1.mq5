@@ -145,7 +145,6 @@ void AdvanceState_OnNewBar()
      {
       const int idx_new = sl_idx[0];
       const int idx_old = sl_idx[1];
-
       const double price_new = iLow(_Symbol, PERIOD_H1, idx_new);  // perf-allowed
       const double price_old = iLow(_Symbol, PERIOD_H1, idx_old);  // perf-allowed
 
@@ -204,8 +203,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
         {
          // SL = highest high of last strategy_sl_bars bars + 10-point buffer
          double highest_high = -DBL_MAX;
-         for(int j = 1; j <= strategy_sl_bars; ++j)           // perf-allowed
-            highest_high = MathMax(highest_high, iHigh(_Symbol, PERIOD_H1, j));
+         for(int j = 1; j <= strategy_sl_bars; ++j)
+            highest_high = MathMax(highest_high, iHigh(_Symbol, PERIOD_H1, j));  // perf-allowed
 
          const double bid      = SymbolInfoDouble(_Symbol, SYMBOL_BID);
          const double sl_price = NormalizeDouble(highest_high + 10.0 * pt, _Digits);
@@ -237,8 +236,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if(k2 <= strategy_stoch_oversold && k1 > strategy_stoch_oversold)
         {
          double lowest_low = DBL_MAX;
-         for(int j = 1; j <= strategy_sl_bars; ++j)            // perf-allowed
-            lowest_low = MathMin(lowest_low, iLow(_Symbol, PERIOD_H1, j));
+         for(int j = 1; j <= strategy_sl_bars; ++j)
+            lowest_low = MathMin(lowest_low, iLow(_Symbol, PERIOD_H1, j));  // perf-allowed
 
          const double ask      = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
          const double sl_price = NormalizeDouble(lowest_low - 10.0 * pt, _Digits);
