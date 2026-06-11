@@ -3,7 +3,6 @@
 #property description "QM5_9511 Leveraged Trading Starter 16/64 MA — Robert Carver starter system"
 
 #include <QM/QM_Common.mqh>
-#include <QM/QM_Signals.mqh>
 
 // =============================================================================
 // QM5_9511 — lt-starter-ma

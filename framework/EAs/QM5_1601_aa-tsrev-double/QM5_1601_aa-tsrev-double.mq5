@@ -46,8 +46,7 @@ input int    strategy_trading_days_per_month  = 21;  // D1-bar approximation per
 input double strategy_sl_atr_mult             = 3.0; // SL = N * ATR(period, D1)
 input int    strategy_atr_period              = 20;  // ATR period for stop sizing
 
-// File-scope cached state — updated once per month on new D1 bar.
-int    g_last_month         = -1;    // last evaluated month as YYYYMM
+// File-scope cached state — updated once per month through QM_IsNewBar().
 bool   g_qualified          = false; // symbol in realized-winner or contrarian-loser group
 bool   g_exit_requested     = false; // set when symbol leaves qualifying group
 
@@ -65,15 +64,8 @@ bool Strategy_NoTradeFilter()
 // proxy for monthly closes (MN1 bars are untestable in MT5 tester).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // Detect new month from the current D1 bar's open time.
-   MqlDateTime dt;
-   TimeToStruct(iTime(_Symbol, PERIOD_D1, 0), dt); // perf-allowed: single iTime, gated by QM_IsNewBar
-   int this_month = dt.year * 100 + dt.mon;
-
-   if(this_month == g_last_month)
+   if(!QM_IsNewBar(_Symbol, PERIOD_MN1))
       return false; // same month — no rebalance
-
-   g_last_month = this_month;
 
    // Bar offsets for monthly close proxies (21 trading days per month).
    int bar_recent_end   = strategy_trading_days_per_month * strategy_recent_ret_end_months;   // ~21
