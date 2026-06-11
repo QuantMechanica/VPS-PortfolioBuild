@@ -1,16 +1,16 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        11471
-; ea_slug:      nekritin-peters-wammie-moolah-d1
+; ea_id:        9511
+; ea_slug:      lt-starter-ma
 ; ea_version:   v5.0
 ; set_version:  s20260611-001
-; symbol:       EURUSD.DWX
+; symbol:       SP500.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   2e865de8bf49a30f9ddfac0a39983fec13db9e13893dfaa3523c11c8e31b94f9
+; build_hash:   77252aff36b3203063214846f6e95bb8bdaeec97c85ed94ea3eeb40d802f2081
 ; author:       Development
 ; date:         2026-06-11
 ;==========================================================
