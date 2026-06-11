@@ -159,15 +159,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       low_1 <= 0.0 || high_1 <= 0.0)
       return false;
 
-   const string psar_key = StringFormat("SAR|%s|%d|%.8f|%.8f",
-                                        _Symbol,
-                                        (int)tf,
-                                        strategy_psar_step,
-                                        strategy_psar_max);
-   int psar_handle = QM_IndicatorsLookup(psar_key);
-   if(psar_handle == INVALID_HANDLE)
-      psar_handle = QM_IndicatorsRegister(psar_key, iSAR(_Symbol, tf, strategy_psar_step, strategy_psar_max));
-   const double psar_1 = QM_IndicatorReadBuffer(psar_handle, 0, 1);
+   const double psar_1 = QM_SAR(_Symbol, tf, strategy_psar_step, strategy_psar_max, 1);
    if(psar_1 <= 0.0)
       return false;
 
