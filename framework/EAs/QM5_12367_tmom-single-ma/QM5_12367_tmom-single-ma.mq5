@@ -96,7 +96,7 @@ double Strategy_MA(const int shift)
 
 bool Strategy_ReadSignal(const int shift, double &close_value, double &ma_value)
   {
-   close_value = iClose(_Symbol, strategy_timeframe, shift); // perf-allowed: fixed closed-bar close; no QM_Close reader exists.
+   close_value = QM_SMA(_Symbol, strategy_timeframe, 1, shift, PRICE_CLOSE);
    ma_value = Strategy_MA(shift);
    return (close_value > 0.0 && ma_value > 0.0);
   }
@@ -106,7 +106,7 @@ bool Strategy_HasWarmup()
    if(strategy_warmup_bars < strategy_ma_period + 2)
       return false;
 
-   const double warmup_close = iClose(_Symbol, strategy_timeframe, strategy_warmup_bars); // perf-allowed: O(1) warmup availability check.
+   const double warmup_close = QM_SMA(_Symbol, strategy_timeframe, 1, strategy_warmup_bars, PRICE_CLOSE);
    return (warmup_close > 0.0);
   }
 
@@ -180,6 +180,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    if(!Strategy_HasWarmup())
+      return false;
+
+   ulong existing_ticket = 0;
+   ENUM_POSITION_TYPE existing_type = POSITION_TYPE_BUY;
+   if(Strategy_FindOurPosition(existing_ticket, existing_type))
       return false;
 
    double close_signal = 0.0;

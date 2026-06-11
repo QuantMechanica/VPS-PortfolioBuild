@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_12524 Stochastic Zone Exit Reversal"
+#property description "QuantMechanica V5 EA skeleton template"
 
 #include <QM/QM_Common.mqh>
 
@@ -79,7 +79,7 @@ input int    strategy_stoch_slowing     = 3;
 input double strategy_oversold_level    = 20.0;
 input double strategy_overbought_level  = 80.0;
 input int    strategy_atr_period        = 14;
-input double strategy_atr_stop_mult     = 3.0;
+input double strategy_atr_sl_mult       = 3.0;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -109,69 +109,62 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_stoch_d_period <= 0 ||
       strategy_stoch_slowing <= 0 ||
       strategy_atr_period <= 0 ||
-      strategy_atr_stop_mult <= 0.0)
+      strategy_atr_sl_mult <= 0.0 ||
+      strategy_oversold_level <= 0.0 ||
+      strategy_overbought_level <= strategy_oversold_level)
       return false;
 
-   const double k1 = QM_Stoch_K(_Symbol, PERIOD_CURRENT,
-                                strategy_stoch_k_period,
-                                strategy_stoch_d_period,
-                                strategy_stoch_slowing,
-                                1);
-   const double d1 = QM_Stoch_D(_Symbol, PERIOD_CURRENT,
-                                strategy_stoch_k_period,
-                                strategy_stoch_d_period,
-                                strategy_stoch_slowing,
-                                1);
-   const double k2 = QM_Stoch_K(_Symbol, PERIOD_CURRENT,
-                                strategy_stoch_k_period,
-                                strategy_stoch_d_period,
-                                strategy_stoch_slowing,
-                                2);
-   const double d2 = QM_Stoch_D(_Symbol, PERIOD_CURRENT,
-                                strategy_stoch_k_period,
-                                strategy_stoch_d_period,
-                                strategy_stoch_slowing,
-                                2);
-   if(k1 < 0.0 || d1 < 0.0 || k2 < 0.0 || d2 < 0.0)
+   const double k1 = QM_Stoch_K(_Symbol, _Period, strategy_stoch_k_period,
+                                strategy_stoch_d_period, strategy_stoch_slowing, 1);
+   const double d1 = QM_Stoch_D(_Symbol, _Period, strategy_stoch_k_period,
+                                strategy_stoch_d_period, strategy_stoch_slowing, 1);
+   const double k2 = QM_Stoch_K(_Symbol, _Period, strategy_stoch_k_period,
+                                strategy_stoch_d_period, strategy_stoch_slowing, 2);
+   const double d2 = QM_Stoch_D(_Symbol, _Period, strategy_stoch_k_period,
+                                strategy_stoch_d_period, strategy_stoch_slowing, 2);
+
+   if(k1 == EMPTY_VALUE || d1 == EMPTY_VALUE || k2 == EMPTY_VALUE || d2 == EMPTY_VALUE)
       return false;
 
-   const bool long_signal = (k1 <= strategy_oversold_level &&
-                             d1 <= strategy_oversold_level &&
-                             k2 <= d2 &&
-                             k1 > d1);
-   const bool short_signal = (k1 >= strategy_overbought_level &&
-                              d1 >= strategy_overbought_level &&
-                              k2 >= d2 &&
-                              k1 < d1);
-   if(!long_signal && !short_signal)
-      return false;
+   const bool long_cross = (k2 <= d2 && k1 > d1);
+   const bool short_cross = (k2 >= d2 && k1 < d1);
+   const bool oversold_zone = (k1 <= strategy_oversold_level && d1 <= strategy_oversold_level);
+   const bool overbought_zone = (k1 >= strategy_overbought_level && d1 >= strategy_overbought_level);
 
-   const QM_OrderType side = long_signal ? QM_BUY : QM_SELL;
-   const double entry = long_signal ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                                    : SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(entry <= 0.0)
-      return false;
+   if(long_cross && oversold_zone)
+     {
+      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      const double sl = QM_StopATR(_Symbol, QM_BUY, entry, strategy_atr_period, strategy_atr_sl_mult);
+      if(entry <= 0.0 || sl <= 0.0)
+         return false;
 
-   const double sl = QM_StopATR(_Symbol, side, entry,
-                                strategy_atr_period,
-                                strategy_atr_stop_mult);
-   if(sl <= 0.0)
-      return false;
+      req.type = QM_BUY;
+      req.sl = sl;
+      req.reason = "STOCH_OVERSOLD_BULL_CROSS";
+      return true;
+     }
 
-   req.type = side;
-   req.price = 0.0;
-   req.sl = sl;
-   req.tp = 0.0;
-   req.reason = long_signal ? "STOCH_ZONE_EXIT_LONG" : "STOCH_ZONE_EXIT_SHORT";
-   req.symbol_slot = qm_magic_slot_offset;
-   return true;
+   if(short_cross && overbought_zone)
+     {
+      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      const double sl = QM_StopATR(_Symbol, QM_SELL, entry, strategy_atr_period, strategy_atr_sl_mult);
+      if(entry <= 0.0 || sl <= 0.0)
+         return false;
+
+      req.type = QM_SELL;
+      req.sl = sl;
+      req.reason = "STOCH_OVERBOUGHT_BEAR_CROSS";
+      return true;
+     }
+
+   return false;
   }
 
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies no trailing, break-even, or partial-close management.
+   // Card defines no trailing, break-even, or partial-close rule.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
@@ -182,8 +175,8 @@ bool Strategy_ExitSignal()
    if(magic <= 0)
       return false;
 
-   bool have_position = false;
-   ENUM_POSITION_TYPE position_type = POSITION_TYPE_BUY;
+   bool has_buy = false;
+   bool has_sell = false;
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -194,31 +187,27 @@ bool Strategy_ExitSignal()
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
 
-      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      have_position = true;
-      break;
+      const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      if(pos_type == POSITION_TYPE_BUY)
+         has_buy = true;
+      else if(pos_type == POSITION_TYPE_SELL)
+         has_sell = true;
      }
 
-   if(!have_position)
+   if(!has_buy && !has_sell)
       return false;
 
-   const double k1 = QM_Stoch_K(_Symbol, PERIOD_CURRENT,
-                                strategy_stoch_k_period,
-                                strategy_stoch_d_period,
-                                strategy_stoch_slowing,
-                                1);
-   const double d1 = QM_Stoch_D(_Symbol, PERIOD_CURRENT,
-                                strategy_stoch_k_period,
-                                strategy_stoch_d_period,
-                                strategy_stoch_slowing,
-                                1);
-   if(k1 < 0.0 || d1 < 0.0)
+   const double k1 = QM_Stoch_K(_Symbol, _Period, strategy_stoch_k_period,
+                                strategy_stoch_d_period, strategy_stoch_slowing, 1);
+   const double d1 = QM_Stoch_D(_Symbol, _Period, strategy_stoch_k_period,
+                                strategy_stoch_d_period, strategy_stoch_slowing, 1);
+   if(k1 == EMPTY_VALUE || d1 == EMPTY_VALUE)
       return false;
 
-   if(position_type == POSITION_TYPE_BUY)
-      return (k1 >= strategy_overbought_level && d1 >= strategy_overbought_level);
-   if(position_type == POSITION_TYPE_SELL)
-      return (k1 <= strategy_oversold_level && d1 <= strategy_oversold_level);
+   if(has_buy && k1 >= strategy_overbought_level && d1 >= strategy_overbought_level)
+      return true;
+   if(has_sell && k1 <= strategy_oversold_level && d1 <= strategy_oversold_level)
+      return true;
 
    return false;
   }

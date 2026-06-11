@@ -37,12 +37,13 @@ Note: framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md
 - `GBPUSD.DWX` - liquid FX major in the card's R3 portable D1 close-price basket.
 - `USDJPY.DWX` - liquid FX major in the card's R3 portable D1 close-price basket.
 - `XAUUSD.DWX` - liquid metal CFD in the card's R3 portable D1 close-price basket.
-- `GER40.DWX` - DAX index CFD in the card's R3 portable D1 close-price basket and present in the DWX symbol matrix.
+- `GDAXI.DWX` - DAX index CFD used as the DWX matrix-valid port for the card's `GER40.DWX` target.
 - `NDX.DWX` - Nasdaq 100 index CFD in the card's R3 portable D1 close-price basket.
 - `WS30.DWX` - Dow 30 index CFD in the card's R3 portable D1 close-price basket.
 
 **Explicitly NOT for:**
 - Symbols outside `framework/registry/dwx_symbol_matrix.csv` - the broker/tester data universe does not support them.
+- `GER40.DWX` - card-stated DAX symbol is not present in the DWX matrix; this build registers `GDAXI.DWX` instead.
 - `SP500.DWX` - card marks it optional backtest-only, so it is not part of this P2 required registration basket.
 
 ---
