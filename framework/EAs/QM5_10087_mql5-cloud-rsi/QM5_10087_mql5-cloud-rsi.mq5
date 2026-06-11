@@ -84,99 +84,6 @@ input double strategy_min_body_atr_mult   = 0.0;
 input int    strategy_gap_tolerance_points = 0;
 input int    strategy_max_spread_points   = 0;
 
-struct QM5_10087_Bar
-  {
-   double open;
-   double high;
-   double low;
-   double close;
-  };
-
-bool QM5_10087_ReadBar(const int shift, QM5_10087_Bar &bar)
-  {
-   bar.open = iOpen(_Symbol, _Period, shift);   // perf-allowed: fixed closed-bar OHLC for two-candle pattern.
-   bar.high = iHigh(_Symbol, _Period, shift);   // perf-allowed: fixed closed-bar OHLC for two-candle pattern.
-   bar.low = iLow(_Symbol, _Period, shift);     // perf-allowed: fixed closed-bar OHLC for two-candle pattern.
-   bar.close = iClose(_Symbol, _Period, shift); // perf-allowed: fixed closed-bar OHLC for two-candle pattern.
-   return (bar.open > 0.0 && bar.high > 0.0 && bar.low > 0.0 && bar.close > 0.0);
-  }
-
-double QM5_10087_GapTolerancePrice()
-  {
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(point <= 0.0 || strategy_gap_tolerance_points <= 0)
-      return 0.0;
-   return point * strategy_gap_tolerance_points;
-  }
-
-bool QM5_10087_BodyPassesMinimum(const QM5_10087_Bar &bar)
-  {
-   if(strategy_min_body_atr_mult <= 0.0)
-      return (MathAbs(bar.open - bar.close) > 0.0);
-
-   const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
-   if(atr <= 0.0)
-      return false;
-   return (MathAbs(bar.open - bar.close) >= atr * strategy_min_body_atr_mult);
-  }
-
-bool QM5_10087_PiercingLine()
-  {
-   QM5_10087_Bar first;
-   QM5_10087_Bar second;
-   if(!QM5_10087_ReadBar(2, first) || !QM5_10087_ReadBar(1, second))
-      return false;
-
-   if(first.close >= first.open || second.close <= second.open)
-      return false;
-   if(!QM5_10087_BodyPassesMinimum(first))
-      return false;
-
-   const double midpoint = (first.open + first.close) * 0.5;
-   const double tolerance = QM5_10087_GapTolerancePrice();
-   return (second.open <= first.low + tolerance && second.close > midpoint);
-  }
-
-bool QM5_10087_DarkCloudCover()
-  {
-   QM5_10087_Bar first;
-   QM5_10087_Bar second;
-   if(!QM5_10087_ReadBar(2, first) || !QM5_10087_ReadBar(1, second))
-      return false;
-
-   if(first.close <= first.open || second.close >= second.open)
-      return false;
-   if(!QM5_10087_BodyPassesMinimum(first))
-      return false;
-
-   const double midpoint = (first.open + first.close) * 0.5;
-   const double tolerance = QM5_10087_GapTolerancePrice();
-   return (second.open >= first.high - tolerance && second.close < midpoint);
-  }
-
-bool QM5_10087_SelectOurPosition(ENUM_POSITION_TYPE &ptype)
-  {
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      return true;
-     }
-
-   return false;
-  }
-
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -214,11 +121,54 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
+   MqlRates bars[2];
+   if(CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, 2, bars) != 2) // perf-allowed: fixed two closed bars for candlestick geometry after framework new-bar gate.
+      return false;
+
+   const MqlRates second = bars[0];
+   const MqlRates first = bars[1];
+   if(first.open <= 0.0 || first.high <= 0.0 || first.low <= 0.0 || first.close <= 0.0 ||
+      second.open <= 0.0 || second.high <= 0.0 || second.low <= 0.0 || second.close <= 0.0)
+      return false;
+
+   const double first_body = MathAbs(first.open - first.close);
+   if(first_body <= 0.0)
+      return false;
+
+   if(strategy_min_body_atr_mult > 0.0)
+     {
+      const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
+      if(atr <= 0.0 || first_body < atr * strategy_min_body_atr_mult)
+         return false;
+     }
+
    const double rsi = QM_RSI(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_rsi_period, 1);
    if(rsi <= 0.0)
       return false;
 
-   if(QM5_10087_PiercingLine() && rsi < strategy_buy_rsi_max)
+   const double midpoint = (first.open + first.close) * 0.5;
+   double tolerance = 0.0;
+   if(strategy_gap_tolerance_points > 0)
+     {
+      const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+      if(point <= 0.0)
+         return false;
+      tolerance = point * strategy_gap_tolerance_points;
+     }
+
+   const bool piercing_line =
+      first.close < first.open &&
+      second.close > second.open &&
+      second.open <= first.low + tolerance &&
+      second.close > midpoint;
+
+   const bool dark_cloud_cover =
+      first.close > first.open &&
+      second.close < second.open &&
+      second.open >= first.high - tolerance &&
+      second.close < midpoint;
+
+   if(piercing_line && rsi < strategy_buy_rsi_max)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       const double sl = QM_StopATR(_Symbol, QM_BUY, entry, strategy_atr_period, strategy_atr_sl_mult);
@@ -231,7 +181,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return true;
      }
 
-   if(QM5_10087_DarkCloudCover() && rsi > strategy_sell_rsi_min)
+   if(dark_cloud_cover && rsi > strategy_sell_rsi_min)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       const double sl = QM_StopATR(_Symbol, QM_SELL, entry, strategy_atr_period, strategy_atr_sl_mult);
@@ -258,8 +208,28 @@ void Strategy_ManageOpenPosition()
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   ENUM_POSITION_TYPE ptype;
-   if(!QM5_10087_SelectOurPosition(ptype))
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   ENUM_POSITION_TYPE ptype = POSITION_TYPE_BUY;
+   bool has_position = false;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      has_position = true;
+      break;
+     }
+
+   if(!has_position)
       return false;
 
    const double rsi_now = QM_RSI(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_rsi_period, 1);
