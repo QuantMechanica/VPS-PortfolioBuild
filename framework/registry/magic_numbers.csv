@@ -7469,3 +7469,15 @@
 9901,ff-alien-dds-rubber-h1,1,GBPUSD.DWX,99010001,2026-06-11,Development,active
 9901,ff-alien-dds-rubber-h1,2,AUDUSD.DWX,99010002,2026-06-11,Development,active
 9901,ff-alien-dds-rubber-h1,3,XAUUSD.DWX,99010003,2026-06-11,Development,active
+9724,ff-alien-adx-bbs-h1,0,EURUSD.DWX,97240000,2026-06-11,Development,active
+9724,ff-alien-adx-bbs-h1,1,GBPUSD.DWX,97240001,2026-06-11,Development,active
+9724,ff-alien-adx-bbs-h1,2,AUDUSD.DWX,97240002,2026-06-11,Development,active
+9724,ff-alien-adx-bbs-h1,3,XAUUSD.DWX,97240003,2026-06-11,Development,active
+9974,ff-bladerunner-20ema,0,EURUSD.DWX,99740000,2026-06-11,Development,active
+9974,ff-bladerunner-20ema,1,GBPUSD.DWX,99740001,2026-06-11,Development,active
+9974,ff-bladerunner-20ema,2,USDJPY.DWX,99740002,2026-06-11,Development,active
+9974,ff-bladerunner-20ema,3,XAUUSD.DWX,99740003,2026-06-11,Development,active
+11750,nfs-ema3-psar-h1-profit,0,EURUSD.DWX,117500000,2026-06-11,Development,active
+11750,nfs-ema3-psar-h1-profit,1,GBPUSD.DWX,117500001,2026-06-11,Development,active
+11750,nfs-ema3-psar-h1-profit,2,USDCHF.DWX,117500002,2026-06-11,Development,active
+11750,nfs-ema3-psar-h1-profit,3,USDJPY.DWX,117500003,2026-06-11,Development,active
