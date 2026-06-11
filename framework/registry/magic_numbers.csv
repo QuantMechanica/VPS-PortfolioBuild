@@ -7658,4 +7658,13 @@
 9976,ff-ema-fibo-rsi-stoch,1,GBPUSD.DWX,99760001,2026-06-11,Development,active
 9976,ff-ema-fibo-rsi-stoch,2,USDJPY.DWX,99760002,2026-06-11,Development,active
 9976,ff-ema-fibo-rsi-stoch,3,XAUUSD.DWX,99760003,2026-06-11,Development,active
+9978,ff-mr-ema50-h1,0,EURUSD.DWX,99780000,2026-06-11,Development,active
+9978,ff-mr-ema50-h1,1,GBPUSD.DWX,99780001,2026-06-11,Development,active
+9978,ff-mr-ema50-h1,2,USDJPY.DWX,99780002,2026-06-11,Development,active
+9978,ff-mr-ema50-h1,3,AUDUSD.DWX,99780003,2026-06-11,Development,active
 11580,williams-outside-bar-daily-d1,0,EURUSD.DWX,115800000,2026-06-11,Development,active
+12450,ea31337-matrend,0,EURUSD.DWX,124500000,2026-06-11,Development,active
+12450,ea31337-matrend,1,GBPUSD.DWX,124500001,2026-06-11,Development,active
+12450,ea31337-matrend,2,USDJPY.DWX,124500002,2026-06-11,Development,active
+12450,ea31337-matrend,3,XAUUSD.DWX,124500003,2026-06-11,Development,active
+12450,ea31337-matrend,4,GDAXI.DWX,124500004,2026-06-11,Development,active
