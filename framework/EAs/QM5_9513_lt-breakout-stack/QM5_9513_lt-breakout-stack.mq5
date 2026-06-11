@@ -72,12 +72,12 @@ double ComputeBreakoutForecast()
                               strategy_scalar_80, strategy_scalar_160, strategy_scalar_320};
 
    // Need at least 320 bars of D1 history
-   const int total_bars = Bars(_Symbol, PERIOD_D1);
+   const int total_bars = Bars(_Symbol, PERIOD_D1); // perf-allowed — no QM_* for bar count; runs once per new D1 bar
    if(total_bars < 321)
       return DBL_MAX;
 
    // Get the most recent close (bar index 1 = the last CLOSED D1 bar)
-   const double close_now = iClose(_Symbol, PERIOD_D1, 1);
+   const double close_now = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed — rolling N-bar history requires direct iClose; gated by QM_IsNewBar
    if(close_now <= 0.0)
       return DBL_MAX;
 
@@ -95,7 +95,7 @@ double ComputeBreakoutForecast()
       double roll_min =  DBL_MAX;
       for(int i = 1; i <= N; ++i)
         {
-         const double c = iClose(_Symbol, PERIOD_D1, i);
+         const double c = iClose(_Symbol, PERIOD_D1, i); // perf-allowed — rolling N-bar history requires direct iClose; gated by QM_IsNewBar
          if(c <= 0.0)
             continue;
          if(c > roll_max)
@@ -215,10 +215,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
       return false;
 
-   const double sl_dist_pts = (strategy_atr_stop_mult * atr_val) / point;
-   if(sl_dist_pts <= 0.0)
-      return false;
-
    // Card §Entry: LONG if combined_forecast > +entry_threshold
    if(forecast > strategy_entry_threshold)
      {
@@ -226,9 +222,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.price  = ask;
       req.sl     = ask - strategy_atr_stop_mult * atr_val;
       req.tp     = 0.0; // No fixed TP — exits via forecast signal
-      req.lots   = QM_LotsForRisk(_Symbol, sl_dist_pts);
       req.reason = "LT_BREAKOUT_LONG";
-      return (req.lots > 0.0);
+      return true;
      }
 
    // Card §Entry: SHORT if combined_forecast < -entry_threshold
@@ -238,9 +233,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.price  = bid;
       req.sl     = bid + strategy_atr_stop_mult * atr_val;
       req.tp     = 0.0; // No fixed TP — exits via forecast signal
-      req.lots   = QM_LotsForRisk(_Symbol, sl_dist_pts);
       req.reason = "LT_BREAKOUT_SHORT";
-      return (req.lots > 0.0);
+      return true;
      }
 
    return false;
