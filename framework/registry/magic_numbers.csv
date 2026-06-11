@@ -7507,3 +7507,7 @@
 9918,ff-alien-rsioma-div-h1,1,GBPUSD.DWX,99180001,2026-06-11,Development,active
 9918,ff-alien-rsioma-div-h1,2,AUDUSD.DWX,99180002,2026-06-11,Development,active
 9918,ff-alien-rsioma-div-h1,3,XAUUSD.DWX,99180003,2026-06-11,Development,active
+9938,ff-stoch-ma-ignition-h1,0,EURUSD.DWX,99380000,2026-06-11,Development,active
+9938,ff-stoch-ma-ignition-h1,1,GBPUSD.DWX,99380001,2026-06-11,Development,active
+9938,ff-stoch-ma-ignition-h1,2,USDJPY.DWX,99380002,2026-06-11,Development,active
+9938,ff-stoch-ma-ignition-h1,3,AUDUSD.DWX,99380003,2026-06-11,Development,active
