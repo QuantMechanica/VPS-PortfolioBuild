@@ -3,7 +3,6 @@
 #property description "QM5_9951 ForexFactory MACD Bias EMA 4-8 M15"
 
 #include <QM/QM_Common.mqh>
-#include <QM/QM_Signals.mqh>
 
 // =============================================================================
 // QuantMechanica V5 EA SKELETON

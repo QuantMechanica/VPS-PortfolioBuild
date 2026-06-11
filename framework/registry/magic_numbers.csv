@@ -7602,3 +7602,7 @@
 9958,ff-rsi-ema-cci-h1h4,1,GBPUSD.DWX,99580001,2026-06-11,Development,active
 9958,ff-rsi-ema-cci-h1h4,2,USDJPY.DWX,99580002,2026-06-11,Development,active
 9958,ff-rsi-ema-cci-h1h4,3,AUDUSD.DWX,99580003,2026-06-11,Development,active
+9977,ff-simplicity-ha-ema100,0,EURUSD.DWX,99770000,2026-06-11,Development,active
+9977,ff-simplicity-ha-ema100,1,GBPUSD.DWX,99770001,2026-06-11,Development,active
+9977,ff-simplicity-ha-ema100,2,USDCHF.DWX,99770002,2026-06-11,Development,active
+9977,ff-simplicity-ha-ema100,3,USDJPY.DWX,99770003,2026-06-11,Development,active
