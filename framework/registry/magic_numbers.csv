@@ -7191,7 +7191,15 @@
 9518,mql5-l1-adx,1,GBPUSD.DWX,95180001,2026-06-11,Development,active
 9518,mql5-l1-adx,2,USDJPY.DWX,95180002,2026-06-11,Development,active
 9518,mql5-l1-adx,3,GDAXI.DWX,95180003,2026-06-11,Development,active
+11554,carter-t-m5-wma10-sma20-stoch-rsi28-macd,0,EURUSD.DWX,115540000,2026-06-11,Development,active
+12474,gh-dual-thrust,0,EURUSD.DWX,124740000,2026-06-11,Development,active
+12474,gh-dual-thrust,1,GBPUSD.DWX,124740001,2026-06-11,Development,active
+12474,gh-dual-thrust,2,XAUUSD.DWX,124740002,2026-06-11,Development,active
+12474,gh-dual-thrust,3,GDAXI.DWX,124740003,2026-06-11,Development,active
 9944,ff-144ema-shift34-m5,0,EURUSD.DWX,99440000,2026-06-11,Development,active
 9944,ff-144ema-shift34-m5,1,GBPUSD.DWX,99440001,2026-06-11,Development,active
 9944,ff-144ema-shift34-m5,2,USDJPY.DWX,99440002,2026-06-11,Development,active
 9944,ff-144ema-shift34-m5,3,AUDUSD.DWX,99440003,2026-06-11,Development,active
+9936,ff-range-breakout-gmt3-h1,0,USDJPY.DWX,99360000,2026-06-11,Development,active
+9936,ff-range-breakout-gmt3-h1,1,GBPUSD.DWX,99360001,2026-06-11,Development,active
+9936,ff-range-breakout-gmt3-h1,2,NDX.DWX,99360002,2026-06-11,Development,active
