@@ -7223,3 +7223,7 @@
 9919,ff-holo-h1-open-fade-m5,1,GBPUSD.DWX,99190001,2026-06-11,Development,active
 9919,ff-holo-h1-open-fade-m5,2,USDJPY.DWX,99190002,2026-06-11,Development,active
 9919,ff-holo-h1-open-fade-m5,3,XAUUSD.DWX,99190003,2026-06-11,Development,active
+9999,ff-pb-dual-stoch-m15,0,EURUSD.DWX,99990000,2026-06-11,Development,active
+9999,ff-pb-dual-stoch-m15,1,GBPUSD.DWX,99990001,2026-06-11,Development,active
+9999,ff-pb-dual-stoch-m15,2,USDJPY.DWX,99990002,2026-06-11,Development,active
+9999,ff-pb-dual-stoch-m15,3,AUDUSD.DWX,99990003,2026-06-11,Development,active

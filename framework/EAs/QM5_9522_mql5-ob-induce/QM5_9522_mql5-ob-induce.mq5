@@ -106,18 +106,18 @@ bool FindOBSetup(double &ob_top, double &ob_bottom, bool &is_bull,
          continue;
 
       // --- OB candle = bar i ---
-      const double ob_o = iOpen(_Symbol, _Period, i);
-      const double ob_c = iClose(_Symbol, _Period, i);
-      const double ob_h = iHigh(_Symbol, _Period, i);
-      const double ob_l = iLow(_Symbol, _Period, i);
+      const double ob_o = iOpen(_Symbol, _Period, i);  // perf-allowed
+      const double ob_c = iClose(_Symbol, _Period, i); // perf-allowed
+      const double ob_h = iHigh(_Symbol, _Period, i);  // perf-allowed
+      const double ob_l = iLow(_Symbol, _Period, i);   // perf-allowed
       if(ob_o <= 0.0 || ob_c <= 0.0 || ob_h <= 0.0 || ob_l <= 0.0)
          continue;
 
       // --- Impulse candle = bar i-1 ---
-      const double imp_o = iOpen(_Symbol, _Period, i - 1);
-      const double imp_c = iClose(_Symbol, _Period, i - 1);
-      const double imp_h = iHigh(_Symbol, _Period, i - 1);
-      const double imp_l = iLow(_Symbol, _Period, i - 1);
+      const double imp_o = iOpen(_Symbol, _Period, i - 1);  // perf-allowed
+      const double imp_c = iClose(_Symbol, _Period, i - 1); // perf-allowed
+      const double imp_h = iHigh(_Symbol, _Period, i - 1);  // perf-allowed
+      const double imp_l = iLow(_Symbol, _Period, i - 1);   // perf-allowed
       if(imp_o <= 0.0 || imp_c <= 0.0) continue;
       const double imp_body = MathAbs(imp_c - imp_o);
       if(imp_body < min_impulse) continue;
@@ -133,8 +133,8 @@ bool FindOBSetup(double &ob_top, double &ob_bottom, bool &is_bull,
       if(is_bear_ob && !htf_bear) continue;
 
       // --- FVG: gap between bar before OB (i+1) and impulse candle (i-1) ---
-      const double prev_h = iHigh(_Symbol, _Period, i + 1);
-      const double prev_l = iLow(_Symbol, _Period, i + 1);
+      const double prev_h = iHigh(_Symbol, _Period, i + 1); // perf-allowed
+      const double prev_l = iLow(_Symbol, _Period, i + 1);  // perf-allowed
       bool fvg_ok = false;
       if(is_bull_ob)
          fvg_ok = (imp_l - prev_h) >= min_fvg;   // gap above pre-OB bar
@@ -150,9 +150,9 @@ bool FindOBSetup(double &ob_top, double &ob_bottom, bool &is_bull,
 
       for(int k = i - 2; k >= 2; k--)
         {
-         const double kh = iHigh(_Symbol, _Period, k);
-         const double kl = iLow(_Symbol, _Period, k);
-         const double kc = iClose(_Symbol, _Period, k);
+         const double kh = iHigh(_Symbol, _Period, k);  // perf-allowed
+         const double kl = iLow(_Symbol, _Period, k);   // perf-allowed
+         const double kc = iClose(_Symbol, _Period, k); // perf-allowed
          if(kh <= 0.0 || kl <= 0.0) break;
 
          if(is_bull_ob)
