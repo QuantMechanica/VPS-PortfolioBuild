@@ -222,8 +222,10 @@ bool Strategy_ExitSignal()
          continue;
 
       const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
-      const int bars_since_open = iBarShift(_Symbol, PERIOD_D1, open_time, false);
-      if(bars_since_open >= strategy_time_stop_bars)
+      const int d1_seconds = PeriodSeconds(PERIOD_D1);
+      if(d1_seconds <= 0)
+         return false;
+      if(TimeCurrent() >= open_time + (strategy_time_stop_bars * d1_seconds))
          return true;
      }
 
