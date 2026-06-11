@@ -7,11 +7,11 @@
 // =============================================================================
 // QM5_9698 — ForexFactory Symphonie Four-Lights M15
 // Source: Evaluator, Symphonie Trader System, ForexFactory 2011-09-16
-//   https://www.forexfactory.com/thread/315572-symphonie-trader-system
 // Four consensus indicator "lights" — Trendline (EMA slope), Extreme (RSI),
 // Emotion (MACD), Sentiment (Stochastic) — must all align on the same M15
 // closed bar, with at least one fresh flip in the last 3 bars.
 // Targets: EURUSD / GBPUSD / USDJPY / EURJPY
+// Thread: Symphonie Trader System, ForexFactory 2011-09-16, handle: Evaluator
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
@@ -159,7 +159,7 @@ bool HasOurPosition(ENUM_POSITION_TYPE &out_type)
 bool IsPostWeekendBar()
   {
    const datetime t1 = iTime(_Symbol, PERIOD_M15, 1); // perf-allowed: gap detection for weekend skip
-   const datetime t2 = iTime(_Symbol, PERIOD_M15, 2);
+   const datetime t2 = iTime(_Symbol, PERIOD_M15, 2); // perf-allowed: gap detection for weekend skip
    if(t1 <= 0 || t2 <= 0)
       return false;
    return (t1 - t2) > 90 * 60;
@@ -240,7 +240,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.symbol_slot       = qm_magic_slot_offset;
       req.reason            = "SYMPHONIE_4LIGHTS_SHORT";
       req.expiration_seconds = 0;
-      g_entry_bar_time      = iTime(_Symbol, PERIOD_M15, 0);
+      g_entry_bar_time      = iTime(_Symbol, PERIOD_M15, 0); // perf-allowed: entry bar time for time-stop
       g_trade_is_long       = false;
       return true;
      }

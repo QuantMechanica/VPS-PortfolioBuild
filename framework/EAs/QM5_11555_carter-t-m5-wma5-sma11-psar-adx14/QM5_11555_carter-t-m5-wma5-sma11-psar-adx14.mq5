@@ -141,15 +141,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       low_1 <= 0.0 || high_1 <= 0.0)
       return false;
 
-   const string psar_key = StringFormat("SAR|%s|%d|%.8f|%.8f",
-                                        _Symbol,
-                                        (int)tf,
-                                        strategy_psar_step,
-                                        strategy_psar_max);
-   int psar_handle = QM_IndicatorsLookup(psar_key);
-   if(psar_handle == INVALID_HANDLE)
-      psar_handle = QM_IndicatorsRegister(psar_key, iSAR(_Symbol, tf, strategy_psar_step, strategy_psar_max));
-   const double psar_1 = QM_IndicatorReadBuffer(psar_handle, 0, 1);
+   const double psar_1 = QM_SAR(_Symbol, tf, strategy_psar_step, strategy_psar_max, 1);
    if(psar_1 <= 0.0)
       return false;
 
@@ -203,17 +195,8 @@ bool Strategy_ExitSignal()
       return false;
 
    const ENUM_TIMEFRAMES tf = strategy_signal_tf;
-   const string psar_key = StringFormat("SAR|%s|%d|%.8f|%.8f",
-                                        _Symbol,
-                                        (int)tf,
-                                        strategy_psar_step,
-                                        strategy_psar_max);
-   int psar_handle = QM_IndicatorsLookup(psar_key);
-   if(psar_handle == INVALID_HANDLE)
-      psar_handle = QM_IndicatorsRegister(psar_key, iSAR(_Symbol, tf, strategy_psar_step, strategy_psar_max));
-
-   const double psar_1 = QM_IndicatorReadBuffer(psar_handle, 0, 1);
-   const double psar_2 = QM_IndicatorReadBuffer(psar_handle, 0, 2);
+   const double psar_1 = QM_SAR(_Symbol, tf, strategy_psar_step, strategy_psar_max, 1);
+   const double psar_2 = QM_SAR(_Symbol, tf, strategy_psar_step, strategy_psar_max, 2);
    const double low_1 = QM_SMA(_Symbol, tf, 1, 1, PRICE_LOW);
    const double low_2 = QM_SMA(_Symbol, tf, 1, 2, PRICE_LOW);
    const double high_1 = QM_SMA(_Symbol, tf, 1, 1, PRICE_HIGH);
