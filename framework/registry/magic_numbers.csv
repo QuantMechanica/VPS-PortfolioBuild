@@ -7606,3 +7606,7 @@
 9977,ff-simplicity-ha-ema100,1,GBPUSD.DWX,99770001,2026-06-11,Development,active
 9977,ff-simplicity-ha-ema100,2,USDCHF.DWX,99770002,2026-06-11,Development,active
 9977,ff-simplicity-ha-ema100,3,USDJPY.DWX,99770003,2026-06-11,Development,active
+9960,ff-lwma5-openclose-cross,0,GBPUSD.DWX,99600000,2026-06-11,Development,active
+9960,ff-lwma5-openclose-cross,1,AUDUSD.DWX,99600001,2026-06-11,Development,active
+9960,ff-lwma5-openclose-cross,2,EURUSD.DWX,99600002,2026-06-11,Development,active
+9960,ff-lwma5-openclose-cross,3,USDJPY.DWX,99600003,2026-06-11,Development,active
