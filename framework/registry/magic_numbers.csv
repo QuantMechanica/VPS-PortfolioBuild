@@ -7456,3 +7456,12 @@
 9705,ff-simple1ema-m15,1,GBPUSD.DWX,97050001,2026-06-11,Development,active
 9705,ff-simple1ema-m15,2,USDJPY.DWX,97050002,2026-06-11,Development,active
 9705,ff-simple1ema-m15,3,XAUUSD.DWX,97050003,2026-06-11,Development,active
+9725,ff-roadmap-tl-retest-m5,0,EURUSD.DWX,97250000,2026-06-11,Development,active
+9725,ff-roadmap-tl-retest-m5,1,GBPUSD.DWX,97250001,2026-06-11,Development,active
+9725,ff-roadmap-tl-retest-m5,2,XAUUSD.DWX,97250002,2026-06-11,Development,active
+9725,ff-roadmap-tl-retest-m5,3,NDX.DWX,97250003,2026-06-11,Development,active
+9959,ff-daily-wick-hilo-d1,0,EURUSD.DWX,99590000,2026-06-11,Development,active
+9959,ff-daily-wick-hilo-d1,1,GBPUSD.DWX,99590001,2026-06-11,Development,active
+9959,ff-daily-wick-hilo-d1,2,USDJPY.DWX,99590002,2026-06-11,Development,active
+9959,ff-daily-wick-hilo-d1,3,XAUUSD.DWX,99590003,2026-06-11,Development,active
+9959,ff-daily-wick-hilo-d1,4,NDX.DWX,99590004,2026-06-11,Development,active
