@@ -83,43 +83,6 @@ input int    strategy_hold_bars         = 3;
 int  g_cvr1_signal = 0;
 bool g_cvr1_signal_ready = false;
 
-bool AdvanceCVR1SignalOnVixBar()
-  {
-   MqlRates vix_rates[];
-   ArraySetAsSeries(vix_rates, true);
-   const int copied = CopyRates(strategy_vix_symbol, PERIOD_D1, 1, strategy_vix_lookback, vix_rates); // perf-allowed: external VIX OHLC feed; called only after QM_IsNewBar(strategy_vix_symbol, PERIOD_D1).
-   if(copied < strategy_vix_lookback)
-     {
-      g_cvr1_signal = 0;
-      g_cvr1_signal_ready = false;
-      return false;
-     }
-
-   double high_max = vix_rates[0].high;
-   double low_min = vix_rates[0].low;
-   for(int i = 1; i < strategy_vix_lookback; ++i)
-     {
-      if(vix_rates[i].high > high_max)
-         high_max = vix_rates[i].high;
-      if(vix_rates[i].low < low_min)
-         low_min = vix_rates[i].low;
-     }
-
-   const bool long_signal = (vix_rates[0].high >= high_max &&
-                             vix_rates[0].close < vix_rates[0].open);
-   const bool short_signal = (vix_rates[0].low <= low_min &&
-                              vix_rates[0].close > vix_rates[0].open);
-
-   g_cvr1_signal = 0;
-   if(long_signal && !short_signal)
-      g_cvr1_signal = 1;
-   else if(short_signal && !long_signal)
-      g_cvr1_signal = -1;
-
-   g_cvr1_signal_ready = true;
-   return true;
-  }
-
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -133,7 +96,41 @@ bool Strategy_NoTradeFilter()
       return true;
 
    if(QM_IsNewBar(strategy_vix_symbol, PERIOD_D1))
-      AdvanceCVR1SignalOnVixBar();
+     {
+      MqlRates vix_rates[];
+      ArraySetAsSeries(vix_rates, true);
+      const int copied = CopyRates(strategy_vix_symbol, PERIOD_D1, 1, strategy_vix_lookback, vix_rates); // perf-allowed: external VIX OHLC feed gated by QM_IsNewBar(strategy_vix_symbol, PERIOD_D1).
+      if(copied < strategy_vix_lookback)
+        {
+         g_cvr1_signal = 0;
+         g_cvr1_signal_ready = false;
+        }
+      else
+        {
+         double high_max = vix_rates[0].high;
+         double low_min = vix_rates[0].low;
+         for(int i = 1; i < strategy_vix_lookback; ++i)
+           {
+            if(vix_rates[i].high > high_max)
+               high_max = vix_rates[i].high;
+            if(vix_rates[i].low < low_min)
+               low_min = vix_rates[i].low;
+           }
+
+         const bool long_signal = (vix_rates[0].high >= high_max &&
+                                   vix_rates[0].close < vix_rates[0].open);
+         const bool short_signal = (vix_rates[0].low <= low_min &&
+                                    vix_rates[0].close > vix_rates[0].open);
+
+         g_cvr1_signal = 0;
+         if(long_signal && !short_signal)
+            g_cvr1_signal = 1;
+         else if(short_signal && !long_signal)
+            g_cvr1_signal = -1;
+
+         g_cvr1_signal_ready = true;
+        }
+     }
 
    if(!g_cvr1_signal_ready)
       return true;
