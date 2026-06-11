@@ -1,0 +1,42 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        10226
+; ea_slug:      tv-psar-sma-exit
+; ea_version:   v5.0
+; set_version:  s20260611-001
+; symbol:       NDX.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   3
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   d1a94ec25e796578d9969ca72f4545fdf9d68e1587bb8f5c2441dd7b50363e55
+; author:       Development
+; date:         2026-06-11
+;==========================================================
+qm_magic_slot_offset=3
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; core filter library params; filter-on/off variants must be pre-declared
+qm_filter_news_enabled=1
+qm_filter_news_mode=3
+qm_filter_regime_enabled=0
+qm_filter_regime_lookback_bars=100
+qm_filter_regime_bull_return_pct=2.0
+qm_filter_regime_bear_return_pct=2.0
+qm_filter_volatility_enabled=0
+qm_filter_volatility_atr_period=14
+qm_filter_volatility_lookback_bars=50
+qm_filter_volatility_compression_ratio=0.75
+qm_filter_volatility_expansion_ratio=1.25
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10226_tv-psar-sma-exit.md
+strategy_timeframe=16385
+strategy_psar_step=0.02
+strategy_psar_maximum=0.20
+strategy_sma_exit_period=11
+strategy_atr_period=14
+strategy_atr_stop_mult=2.0
+strategy_max_spread_atr_pct=0.10
+
