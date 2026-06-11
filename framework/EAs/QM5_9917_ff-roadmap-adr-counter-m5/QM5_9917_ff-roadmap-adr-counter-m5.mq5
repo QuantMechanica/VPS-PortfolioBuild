@@ -247,7 +247,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // Today's range must be >= completion threshold
    const double today_range = g_today_high - g_today_low;
    if(today_range < strategy_adr_completion_pct * g_adr_14) return false;
-
    const double close1 = iClose(_Symbol, PERIOD_M5, 1); // perf-allowed
    const double ema8   = QM_EMA(_Symbol, PERIOD_M5, strategy_ema_fast, 1);
 

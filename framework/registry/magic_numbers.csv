@@ -7503,3 +7503,7 @@
 12372,tmom-sector-mom,1,WS30.DWX,123720001,2026-06-11,Development,active
 12372,tmom-sector-mom,2,SP500.DWX,123720002,2026-06-11,Development,active
 12372,tmom-sector-mom,3,GDAXI.DWX,123720003,2026-06-11,Development,active
+9918,ff-alien-rsioma-div-h1,0,EURUSD.DWX,99180000,2026-06-11,Development,active
+9918,ff-alien-rsioma-div-h1,1,GBPUSD.DWX,99180001,2026-06-11,Development,active
+9918,ff-alien-rsioma-div-h1,2,AUDUSD.DWX,99180002,2026-06-11,Development,active
+9918,ff-alien-rsioma-div-h1,3,XAUUSD.DWX,99180003,2026-06-11,Development,active
