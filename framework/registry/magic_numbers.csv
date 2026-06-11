@@ -7905,3 +7905,8 @@
 10098,mql5-memory,0,EURUSD.DWX,100980000,2026-06-12,Development,active
 10098,mql5-memory,1,GBPUSD.DWX,100980001,2026-06-12,Development,active
 10098,mql5-memory,2,XAUUSD.DWX,100980002,2026-06-12,Development,active
+10100,mql5-ga-fractal,0,EURUSD.DWX,101000000,2026-06-12,Development,active
+10100,mql5-ga-fractal,1,XAUUSD.DWX,101000001,2026-06-12,Development,active
+10100,mql5-ga-fractal,2,NDX.DWX,101000002,2026-06-12,Development,active
+10109,tv-tqqq-1pct-week,0,NDX.DWX,101090000,2026-06-12,Development,active
+10109,tv-tqqq-1pct-week,1,SP500.DWX,101090001,2026-06-12,Development,active
