@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_10592 MQL5 AsimmetricStochNR Cross"
+#property description "QM5_11767 Connors Double 7s SMA200 D1"
 
 #include <QM/QM_Common.mqh>
 
@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 10592;
+input int    qm_ea_id                   = 11767;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -73,29 +73,76 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input ENUM_TIMEFRAMES strategy_signal_tf          = PERIOD_H4;
-input int    strategy_stoch_k                     = 12;
-input int    strategy_stoch_d                     = 7;
-input int    strategy_stoch_slowing               = 3;
-input int    strategy_atr_period                  = 14;
-input double strategy_atr_sl_mult                 = 2.5;
-input int    strategy_max_hold_bars               = 12;
-input int    strategy_max_spread_points           = 0;
+input int    strategy_sma_period        = 200;
+input int    strategy_extreme_lookback  = 7;
+input int    strategy_atr_period        = 14;
+input double strategy_atr_sl_mult       = 2.0;
+input double strategy_atr_tp_mult       = 4.0;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
+bool Strategy_HasOpenPosition(ENUM_POSITION_TYPE &ptype)
+  {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      return true;
+     }
+
+   return false;
+  }
+
+double Strategy_Close(const int shift)
+  {
+   return iClose(_Symbol, PERIOD_D1, shift); // perf-allowed: bounded D1 close reader; no framework close-price helper exists.
+  }
+
+bool Strategy_CloseExtremes(const int lookback, double &lowest_close, double &highest_close)
+  {
+   lowest_close = DBL_MAX;
+   highest_close = -DBL_MAX;
+
+   if(lookback <= 0)
+      return false;
+
+   for(int shift = 1; shift <= lookback; ++shift)
+     {
+      const double close_i = iClose(_Symbol, PERIOD_D1, shift); // perf-allowed: bounded seven-bar D1 close-window from card.
+      if(close_i <= 0.0)
+         return false;
+      if(close_i < lowest_close)
+         lowest_close = close_i;
+      if(close_i > highest_close)
+         highest_close = close_i;
+     }
+
+   return (lowest_close < DBL_MAX && highest_close > 0.0);
+  }
+
 // Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   if(strategy_max_spread_points > 0)
-     {
-      const int spread = (int)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-      if(spread > strategy_max_spread_points)
-         return true;
-     }
+   if(strategy_sma_period <= 0 ||
+      strategy_extreme_lookback <= 0 ||
+      strategy_atr_period <= 0 ||
+      strategy_atr_sl_mult <= 0.0 ||
+      strategy_atr_tp_mult <= 0.0)
+      return true;
 
    return false;
   }
@@ -113,127 +160,80 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(strategy_stoch_k <= 0 || strategy_stoch_d <= 0 || strategy_stoch_slowing <= 0)
+   ENUM_POSITION_TYPE ptype;
+   if(Strategy_HasOpenPosition(ptype))
       return false;
 
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
+   const double close_last = Strategy_Close(1);
+   const double sma200 = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_period, 1, PRICE_CLOSE);
+   double low_7 = 0.0;
+   double high_7 = 0.0;
+
+   if(close_last <= 0.0 || sma200 <= 0.0)
+      return false;
+   if(!Strategy_CloseExtremes(strategy_extreme_lookback, low_7, high_7))
+      return false;
+
+   QM_OrderType side = QM_BUY;
+   string reason = "";
+   if(close_last > sma200 && close_last <= low_7)
      {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
-         return false;
+      side = QM_BUY;
+      reason = "CONNORS_DOUBLE7S_LONG";
      }
-
-   const double k_now = QM_Stoch_K(_Symbol, strategy_signal_tf,
-                                   strategy_stoch_k, strategy_stoch_d,
-                                   strategy_stoch_slowing, 1);
-   const double d_now = QM_Stoch_D(_Symbol, strategy_signal_tf,
-                                   strategy_stoch_k, strategy_stoch_d,
-                                   strategy_stoch_slowing, 1);
-   const double k_prev = QM_Stoch_K(_Symbol, strategy_signal_tf,
-                                    strategy_stoch_k, strategy_stoch_d,
-                                    strategy_stoch_slowing, 2);
-   const double d_prev = QM_Stoch_D(_Symbol, strategy_signal_tf,
-                                    strategy_stoch_k, strategy_stoch_d,
-                                    strategy_stoch_slowing, 2);
-   if(k_now <= 0.0 || d_now <= 0.0 || k_prev <= 0.0 || d_prev <= 0.0)
+   else if(close_last < sma200 && close_last >= high_7)
+     {
+      side = QM_SELL;
+      reason = "CONNORS_DOUBLE7S_SHORT";
+     }
+   else
       return false;
 
-   int signal = 0;
-   if(k_prev <= d_prev && k_now > d_now)
-      signal = +1;
-   else if(k_prev >= d_prev && k_now < d_now)
-      signal = -1;
-   if(signal == 0)
-      return false;
-
-   const QM_OrderType side = (signal > 0) ? QM_BUY : QM_SELL;
-   const double entry = (signal > 0) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                                     : SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double atr = QM_ATR(_Symbol, strategy_signal_tf, strategy_atr_period, 1);
-   if(entry <= 0.0 || atr <= 0.0 || strategy_atr_sl_mult <= 0.0)
+   const double entry = QM_EntryMarketPrice(side);
+   const double sl = QM_StopATR(_Symbol, side, entry, strategy_atr_period, strategy_atr_sl_mult);
+   const double tp = QM_TakeATR(_Symbol, side, entry, strategy_atr_period, strategy_atr_tp_mult);
+   if(entry <= 0.0 || sl <= 0.0 || tp <= 0.0)
       return false;
 
    req.type = side;
-   req.sl = QM_StopATRFromValue(_Symbol, side, entry, atr, strategy_atr_sl_mult);
-   req.tp = 0.0;
-   req.reason = (signal > 0) ? "ASYMSTOCH_BULL_CROSS" : "ASYMSTOCH_BEAR_CROSS";
-   return (req.sl > 0.0);
+   req.price = 0.0;
+   req.sl = sl;
+   req.tp = tp;
+   req.reason = reason;
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+   return true;
   }
 
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card baseline has no trailing, break-even, partial close, or scale-in logic.
+   // Card specifies no trailing, break-even, partial close, or pyramiding.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   ENUM_POSITION_TYPE ptype = POSITION_TYPE_BUY;
-   datetime opened_at = 0;
-   bool have_position = false;
-
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      opened_at = (datetime)PositionGetInteger(POSITION_TIME);
-      have_position = true;
-      break;
-     }
-
-   if(!have_position)
+   ENUM_POSITION_TYPE ptype;
+   if(!Strategy_HasOpenPosition(ptype))
       return false;
 
-   if(strategy_max_hold_bars > 0 && opened_at > 0)
-     {
-      const int seconds_per_bar = PeriodSeconds(strategy_signal_tf);
-      if(seconds_per_bar > 0 && (TimeCurrent() - opened_at) >= (strategy_max_hold_bars * seconds_per_bar))
-         return true;
-     }
-
-   if(strategy_stoch_k <= 0 || strategy_stoch_d <= 0 || strategy_stoch_slowing <= 0)
+   if(!QM_IsNewBar(_Symbol, PERIOD_D1))
       return false;
 
-   const double k_now = QM_Stoch_K(_Symbol, strategy_signal_tf,
-                                   strategy_stoch_k, strategy_stoch_d,
-                                   strategy_stoch_slowing, 1);
-   const double d_now = QM_Stoch_D(_Symbol, strategy_signal_tf,
-                                   strategy_stoch_k, strategy_stoch_d,
-                                   strategy_stoch_slowing, 1);
-   const double k_prev = QM_Stoch_K(_Symbol, strategy_signal_tf,
-                                    strategy_stoch_k, strategy_stoch_d,
-                                    strategy_stoch_slowing, 2);
-   const double d_prev = QM_Stoch_D(_Symbol, strategy_signal_tf,
-                                    strategy_stoch_k, strategy_stoch_d,
-                                    strategy_stoch_slowing, 2);
-   if(k_now <= 0.0 || d_now <= 0.0 || k_prev <= 0.0 || d_prev <= 0.0)
+   const double close_last = Strategy_Close(1);
+   double low_7 = 0.0;
+   double high_7 = 0.0;
+   if(close_last <= 0.0)
+      return false;
+   if(!Strategy_CloseExtremes(strategy_extreme_lookback, low_7, high_7))
       return false;
 
-   int signal = 0;
-   if(k_prev <= d_prev && k_now > d_now)
-      signal = +1;
-   else if(k_prev >= d_prev && k_now < d_now)
-      signal = -1;
-
-   if(ptype == POSITION_TYPE_BUY && signal < 0)
+   if(ptype == POSITION_TYPE_BUY && close_last >= high_7)
       return true;
-   if(ptype == POSITION_TYPE_SELL && signal > 0)
+   if(ptype == POSITION_TYPE_SELL && close_last <= low_7)
       return true;
 
    return false;
@@ -244,8 +244,6 @@ bool Strategy_ExitSignal()
 // custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   if(broker_time <= 0)
-      return false;
    return false; // defer to QM_NewsAllowsTrade(...)
   }
 

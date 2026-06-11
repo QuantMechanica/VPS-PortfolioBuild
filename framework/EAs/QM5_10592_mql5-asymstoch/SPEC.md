@@ -4,13 +4,13 @@
 **Slug:** mql5-asymstoch
 **Source:** b8b5125a-c67f-5bbc-baff-33456e08f5b2
 **Author of this spec:** Codex
-**Last revised:** 2026-05-30
+**Last revised:** 2026-06-11
 
 ---
 
 ## 1. Strategy Logic
 
-The EA evaluates completed H4 bars. It computes the source-default AsimmetricStochNR-style stochastic line with short and long K windows, then opens long when the stochastic line crosses above its signal line and opens short when it crosses below. Existing longs close on a bearish cross, existing shorts close on a bullish cross, and either side also closes after 12 completed H4 bars if no opposite cross appears. Entries use a 2.5 x ATR(14) catastrophic stop and no fixed take profit.
+The EA evaluates completed H4 bars. It uses the V5 framework stochastic reader as the approved framework-compatible proxy for the card's AsimmetricStochNR stochastic line, then opens long when K crosses above D and opens short when K crosses below D. Existing longs close on a bearish K/D cross, existing shorts close on a bullish K/D cross, and either side also closes after 12 completed H4 bars if no opposite cross appears. Entries use a 2.5 x ATR(14) catastrophic stop and no fixed take profit.
 
 ---
 
@@ -19,13 +19,9 @@ The EA evaluates completed H4 bars. It computes the source-default AsimmetricSto
 | Parameter | Default | Range | Meaning |
 |---|---:|---|---|
 | `strategy_signal_tf` | `PERIOD_H4` | MT5 timeframe enum | Timeframe used for stochastic cross signals, ATR stop, and time stop. |
-| `strategy_kperiod_short` | `5` | 1+ | Short K lookback used by the asymmetric stochastic state. |
-| `strategy_kperiod_long` | `12` | 1+ | Long K lookback used by the asymmetric stochastic state. |
-| `strategy_dperiod` | `7` | 1+ | Signal-line SMA period. |
-| `strategy_slowing` | `3` | 1+ | Stochastic-line smoothing period. |
-| `strategy_sensitivity_points` | `7` | 0+ | Minimum high-low range in points before the oscillator moves away from neutral. |
-| `strategy_overbought` | `80` | 1-100 | Overbought threshold for asymmetric high/low window selection. |
-| `strategy_oversold` | `20` | 0-99 | Oversold threshold for asymmetric high/low window selection. |
+| `strategy_stoch_k` | `12` | 1+ | Stochastic K lookback used by the framework stochastic reader. |
+| `strategy_stoch_d` | `7` | 1+ | Stochastic D signal-line period. |
+| `strategy_stoch_slowing` | `3` | 1+ | Stochastic-line smoothing period. |
 | `strategy_atr_period` | `14` | 1+ | ATR period for the catastrophic stop. |
 | `strategy_atr_sl_mult` | `2.5` | >0 | ATR multiple used for the catastrophic stop. |
 | `strategy_max_hold_bars` | `12` | 0+ | Maximum H4 bars to hold a trade before time-stop exit; 0 disables. |
@@ -97,3 +93,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-05-30 | Initial build from card | 4bcc022a-ce60-4341-9306-71eefa231f89 |
+| v2 | 2026-06-11 | Rebuild in place from card under current framework corset | 10dc3c46-a7b3-4748-bdbb-6ee5621745c1 |

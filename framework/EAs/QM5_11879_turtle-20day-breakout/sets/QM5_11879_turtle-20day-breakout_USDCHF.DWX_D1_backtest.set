@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        10592
-; ea_slug:      mql5-asymstoch
+; ea_id:        11879
+; ea_slug:      turtle-20day-breakout
 ; ea_version:   v5.0
 ; set_version:  s20260611-001
-; symbol:       EURUSD.DWX
-; timeframe:    H4
+; symbol:       USDCHF.DWX
+; timeframe:    D1
 ; environment:  backtest
-; magic_slot:   1
+; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   2dd3772a0f78e63ddd5a1d9ddd2b768c25a8284aef20fb7a3278f691d10ece33
 ; author:       Development
 ; date:         2026-06-11
 ;==========================================================
-qm_magic_slot_offset=1
+qm_magic_slot_offset=4
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
