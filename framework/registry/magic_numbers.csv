@@ -7572,3 +7572,9 @@
 9953,ff-supertrend-pullback-100p-h4,2,USDCAD.DWX,99530002,2026-06-11,Development,active
 9953,ff-supertrend-pullback-100p-h4,3,GBPUSD.DWX,99530003,2026-06-11,Development,active
 9953,ff-supertrend-pullback-100p-h4,4,USDCHF.DWX,99530004,2026-06-11,Development,active
+11879,turtle-20day-breakout,0,EURUSD.DWX,118790000,2026-06-11,Development,active
+11879,turtle-20day-breakout,1,GBPUSD.DWX,118790001,2026-06-11,Development,active
+11879,turtle-20day-breakout,2,USDJPY.DWX,118790002,2026-06-11,Development,active
+11879,turtle-20day-breakout,3,AUDUSD.DWX,118790003,2026-06-11,Development,active
+11879,turtle-20day-breakout,4,USDCHF.DWX,118790004,2026-06-11,Development,active
+11879,turtle-20day-breakout,5,USDCAD.DWX,118790005,2026-06-11,Development,active
