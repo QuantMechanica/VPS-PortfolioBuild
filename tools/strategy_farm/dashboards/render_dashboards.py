@@ -97,13 +97,28 @@ def split_frontmatter(content: str) -> tuple[dict[str, Any], str]:
         if end > 0:
             yaml_block = content[4:end]
             body = content[end + 4 :].lstrip("\n")
+            last_key: str | None = None
             for line in yaml_block.splitlines():
-                if ":" in line and not line.lstrip().startswith("#") and not line.startswith("  "):
+                stripped = line.strip()
+                if line.startswith("  ") and stripped.startswith("- ") and last_key:
+                    # block-style list item under the previous key (concepts:, indicators:, …)
+                    item = stripped[2:].strip()
+                    if item.startswith('"') and item.endswith('"'):
+                        item = item[1:-1]
+                    cur = fm.get(last_key)
+                    if isinstance(cur, list):
+                        cur.append(item)
+                    elif cur in ("", None):
+                        fm[last_key] = [item]
+                    else:
+                        fm[last_key] = [cur, item]
+                elif ":" in line and not stripped.startswith("#") and not line.startswith("  "):
                     k, _, v = line.partition(":")
                     v = v.strip()
                     if v.startswith('"') and v.endswith('"'):
                         v = v[1:-1]
                     fm[k.strip()] = v
+                    last_key = k.strip()
     return fm, body
 
 
@@ -1620,6 +1635,16 @@ ARCHIVE2_CSS = """
 
 
 DETAIL2_CSS = """
+.availability{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:0 0 18px;padding:13px 18px;background:var(--surface-1);border:1px solid var(--border);border-left:3px solid var(--text-3)}
+.availability .av-label{font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;white-space:nowrap}
+.availability .av-body{font-family:var(--font-mono);font-size:11px;color:var(--text-3);line-height:1.6;letter-spacing:0.03em;flex:1;min-width:300px}
+.availability.av-live{border-left-color:var(--signal)} .availability.av-live .av-label{color:var(--signal)}
+.availability.av-cand{border-left-color:var(--live)} .availability.av-cand .av-label{color:var(--live)}
+.availability.av-flow{border-left-color:var(--warn)} .availability.av-flow .av-label{color:var(--warn)}
+.availability.av-failed{border-left-color:var(--fail)} .availability.av-failed .av-label{color:var(--fail)}
+.concept-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.concept-chip{padding:4px 10px;border:1px solid var(--border-2);font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--live)}
+.rescue-detail-note{font-family:var(--font-mono);font-size:10px;color:var(--text-3);line-height:1.6;letter-spacing:0.04em;margin:6px 0 12px;max-width:900px}
 .decision-header{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0 18px}
 .dh-tile{padding:14px 16px;background:var(--surface-1);border:1px solid var(--border)}
 .dh-label{font-family:var(--font-mono);font-size:9px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.2em;margin-bottom:8px}
@@ -1718,12 +1743,16 @@ DETAIL2_CSS = """
 
 
 def _ea_status(ea: dict) -> tuple[str, str]:
-    """Return (label, css-class-suffix) for an EA."""
+    """Return (label, css-class-suffix) for an EA.
+
+    Labels are EXTERNAL-facing (2026-06-11, OWNER: archive targets outside
+    readers/future buyers): "IN VALIDATION" instead of internal "IN FLOW",
+    "FAILED" instead of "DEAD". CSS class suffixes stay stable (filter JS)."""
     if ea.get("live"):
         return "LIVE", "s-live"
     if ea.get("dead"):
-        return "DEAD", "s-dead"
-    return "IN FLOW", "s-flow"
+        return "FAILED", "s-dead"
+    return "IN VALIDATION", "s-flow"
 
 
 _PASS_REASON_TOKENS = (
@@ -2100,13 +2129,9 @@ def render_strategies(state: dict, root: Path) -> str:
             wi_eas = set()
     detail_eas = {ea["ea_id"] for ea in eas}
     coverage_gap = sorted(wi_eas - detail_eas)
+    # Coverage gap is an internal QA signal — keep it off the external page
+    # (it reads as "the site is broken"); the cockpit coverage panel owns it.
     cov_panel = ""
-    if coverage_gap:
-        cov_panel = (
-            '<div class="cov-gap-panel"><strong>Archive coverage gap:</strong> '
-            f'{len(coverage_gap)} EA(s) have live work_items but no rendered detail page — '
-            f'{e(", ".join(coverage_gap))}. Renderer action: add to derive_ea_candidates().</div>'
-        )
 
     # per-EA lane classification — drives summary chips, presets, default sort
     counts: Counter = Counter()
@@ -2330,12 +2355,12 @@ def render_strategies(state: dict, root: Path) -> str:
     return html_head("Strategy Archive", ARCHIVE_CSS + ARCHIVE2_CSS) + f"""
 <div class="archive-hero">
   <h1>Strategy <span class="em-text">Archive</span></h1>
-  <p class="archive-hero-sub">Every EA candidate that has entered the QuantMechanica V5 pipeline. Mechanical strategies only (Hard Rule 14, NO ML). Each row traceable Q00 → Q14 with evidence trail — click for full per-phase × symbol drill-down.</p>
+  <p class="archive-hero-sub">Every strategy we have ever tested — survivors AND failures. Mechanical rules only, no machine learning. Each candidate must survive a 15-gate evidence pipeline (walk-forward, Monte-Carlo, stress, realistic costs, portfolio fit) before we trade it. Click any row for the full per-gate × per-market evidence trail, parsed from native MT5 reports. Strategies that pass every gate will become available for download/licensing.</p>
   <div class="archive-chips">
     <div class="achip c-p8"><div class="achip-num">{counts.get("p8", 0)}</div><div class="achip-label">Q11 PASS</div></div>
     <div class="achip c-surv"><div class="achip-num">{counts.get("surv", 0)}</div><div class="achip-label">Q05+ survivors</div></div>
     <div class="achip"><div class="achip-num">{counts.get("active", 0)}</div><div class="achip-label">Active now</div></div>
-    <div class="achip"><div class="achip-num">{counts.get("triage", 0)}</div><div class="achip-label">Needs EA triage</div></div>
+    <div class="achip"><div class="achip-num">{counts.get("triage", 0)}</div><div class="achip-label">No graded result yet</div></div>
     <div class="achip"><div class="achip-num">{counts.get("notstarted", 0)}</div><div class="achip-label">Not started</div></div>
     <div class="achip c-dead"><div class="achip-num">{counts.get("dead", 0)}</div><div class="achip-label">Dead</div></div>
     <div class="achip c-card"><div class="achip-num">{counts.get("card_only", 0)}</div><div class="achip-label">Card · not built</div></div>
@@ -2344,7 +2369,7 @@ def render_strategies(state: dict, root: Path) -> str:
 </div>
 
 <div class="transparency-banner">
-  <strong>Transparency:</strong> all EAs are the actual pipeline state — DEAD strategies are dimmed but NOT hidden. Q11-PASS and Q05+ survivors are sorted to the top; click any row for strategy card, per-phase × per-symbol backtest evidence, and native MT5 reports. The unbuilt card reservoir is listed in its own collapsed section below the EA table.
+  <strong>Transparency:</strong> this is the live pipeline state, not a marketing selection — failed strategies stay published. Survivors are sorted to the top; click any row for the strategy description, per-gate × per-market backtest evidence, and the original MT5 reports. The research backlog (strategy cards not yet built into EAs) is listed in its own collapsed section below.
 </div>
 
 <div class="controls">
@@ -2352,8 +2377,8 @@ def render_strategies(state: dict, root: Path) -> str:
   <select id="f-status">
     <option value="">All status</option>
     <option value="s-live">Live</option>
-    <option value="s-flow">In Flow</option>
-    <option value="s-dead">Dead</option>
+    <option value="s-flow">In validation</option>
+    <option value="s-dead">Failed</option>
   </select>
   <select id="f-phase">
     <option value="">All phases</option>
@@ -2368,12 +2393,12 @@ def render_strategies(state: dict, root: Path) -> str:
   <span class="preset active" data-preset="all">All</span>
   <span class="preset" data-preset="active">Active now</span>
   <span class="preset" data-preset="survivor">Q05+ survivors</span>
-  <span class="preset" data-preset="triage">Needs EA triage</span>
-  <span class="preset" data-preset="dead">Dead</span>
+  <span class="preset" data-preset="triage">No graded result</span>
+  <span class="preset" data-preset="dead">Failed</span>
   <span class="preset" data-preset="live">Live pipeline only</span>
   <span class="preset" data-preset="archive">Archive only</span>
 </div>
-<div class="gate-note">"Best exploratory P&amp;L" is the single best result across any phase (often a Q02 discovery run) — it is NOT gate proof. "Most advanced gate" is the highest real PASS the EA reached. "Needs EA triage" is an EA-level archive lane, not the same as cockpit "Test Exceptions", which are daily work-item outcomes such as min-trade/zero-trade, invalid report, or waiting-input rows.</div>
+<div class="gate-note">"Best exploratory P&amp;L" is the single best result across any gate (often an early discovery run) — it is NOT proof of an edge. "Most advanced gate" is the highest gate with a real PASS. Most strategies fail — that is the system working, and we publish them anyway.</div>
 {cov_panel}
 
 {body}
@@ -2381,8 +2406,8 @@ def render_strategies(state: dict, root: Path) -> str:
 {cards_html}
 
 <div class="archive-footer">
-  Generated by tools/strategy_farm/dashboards/render_dashboards.py · click any row for full drill-down.<br>
-  Data: D:/QM/strategy_farm/state/farm_state.sqlite + reports/work_items/ + artifacts/cards_approved/
+  QuantMechanica V5 · regenerated continuously from the live pipeline database ·
+  every metric parsed from native MetaTrader 5 backtest reports — no hand-edited results.
 </div>
 
 <script>
@@ -2999,29 +3024,44 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
             cls = "r-unknown" if v == "UNKNOWN" else ("r-fail" if "FAIL" in str(v) else "")
             r_tags_html.append(f'<span class="r-tag {cls}"><strong>{e(label_short)}</strong> {e(v)}</span>')
         reasoning = fm.get("g0_approval_reasoning", "")
+        # Concept / indicator chips from card frontmatter wiki-links — the
+        # fastest external answer to "what kind of strategy is this?"
+        def _wikilink_names(values) -> list[str]:
+            names = []
+            for v in values or []:
+                m = re.search(r"\[\[(?:[^\]/]*/)?([^\]]+)\]\]", str(v))
+                names.append((m.group(1) if m else str(v)).strip())
+            return [n for n in names if n]
+        concept_chips = _wikilink_names(fm.get("concepts")) + _wikilink_names(fm.get("indicators"))
+        chips_html = ""
+        if concept_chips:
+            chips_html = ('<div class="concept-chips">'
+                          + "".join(f'<span class="concept-chip">{e(c)}</span>' for c in concept_chips[:10])
+                          + '</div>')
         facts = [
-            ("Strategy Card", detail.get("card_path") or "—"),
-            ("Slug / family", slug),
-            ("Q00 intake status", fm.get("g0_status", "—")),
-            ("Expected trades/yr", fm.get("expected_trades_per_year_per_symbol", "—")),
-            ("Symbols tested", ", ".join(detail.get("symbols") or []) or "—"),
+            ("Strategy family", slug),
+            ("Intake review (Q00)", fm.get("g0_status", "—")),
+            ("Expected trades/yr/symbol", fm.get("expected_trades_per_year_per_symbol", "—")),
+            ("Markets tested", ", ".join(detail.get("symbols") or []) or "—"),
         ]
         facts_rows = "".join(f"<tr><td>{e(k)}</td><td>{e(v)}</td></tr>" for k, v in facts)
-        src = fm.get("sources") or fm.get("source_id")
-        if src:
-            src_html = (f'<div class="src-attrib"><strong>Source:</strong> {e(src)} — '
-                        f'see Strategy Card body for the full citation.</div>')
-        elif detail.get("card_path"):
-            src_html = (f'<div class="src-attrib"><strong>Source:</strong> see Strategy Card body '
-                        f'(<code>{e(detail.get("card_path"))}</code>); not separately indexed in frontmatter.</div>')
+        # External page: cite the human-readable source, never filesystem paths.
+        citation = fm.get("source_citation")
+        if citation:
+            src_html = f'<div class="src-attrib"><strong>Source:</strong> {e(citation)}</div>'
+        elif fm.get("sources") or fm.get("source_id"):
+            _src = fm.get("sources") or fm.get("source_id")
+            _src_txt = ", ".join(_wikilink_names(_src)) if isinstance(_src, list) else str(_src)
+            src_html = f'<div class="src-attrib"><strong>Source:</strong> {e(_src_txt)}</div>'
         else:
-            src_html = '<div class="src-attrib"><strong>Source:</strong> not found in current artifacts.</div>'
+            src_html = '<div class="src-attrib"><strong>Source:</strong> internal research (no external source).</div>'
         para_html = "".join(f"<p>{e(p)}</p>" for p in paras) or \
             "<p><em>No prose description in the strategy card.</em></p>"
         desc_html = f"""
 <div class="detail-desc">
-  <div class="detail-desc-title">Strategy Description</div>
+  <div class="detail-desc-title">What this strategy does</div>
   <div class="detail-desc-body">
+    {chips_html}
     {para_html}
     {f'<p><em>Q00 intake approval:</em> {e(reasoning)}</p>' if reasoning else ''}
     <div class="detail-desc-r">{''.join(r_tags_html)}</div>
@@ -3035,13 +3075,26 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
                      '<div class="detail-desc-body"><p><em>No strategy card found for this EA. '
                      'Source: not found in current artifacts.</em></p></div></div>')
 
-    # KPI tiles — use the most-advanced phase available
+    # KPI tiles — use the most-advanced phase WITH GRADED EVIDENCE. A phase whose
+    # rows are all pending/INFRA renders a wall of "—" tiles (observed on
+    # QM5_10692: Q08 present but ungraded buried the rich Q02-Q07 evidence).
     kpis_by_phase = detail.get("kpis_by_phase") or {}
+
+    def _has_graded_evidence(k: dict) -> bool:
+        if (k.get("n_pass") or 0) + (k.get("n_fail") or 0) > 0:
+            return True
+        return isinstance(k.get("net_profit_best"), (int, float))
+
     advanced = None
     for ph in reversed(PHASE_ORDER):
-        if ph in kpis_by_phase:
+        if ph in kpis_by_phase and _has_graded_evidence(kpis_by_phase[ph]):
             advanced = ph
             break
+    if advanced is None:
+        for ph in reversed(PHASE_ORDER):
+            if ph in kpis_by_phase:
+                advanced = ph
+                break
 
     kpis_html = ""
     if advanced and advanced in kpis_by_phase:
@@ -3051,9 +3104,9 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
         kpis_html = f"""
 <div class="kpi-grid">
   <div class="kpi-tile">
-    <div class="kpi-tile-label">Most-advanced phase</div>
+    <div class="kpi-tile-label">Evidence stage</div>
     <div class="kpi-tile-val">{e(phase_label(advanced))}</div>
-    <div class="kpi-tile-sub">{k['n_pass']} PASS · {k['n_fail']} FAIL · {k.get('n_invalid', 0)} INVALID{f" · {k['n_infra']} INFRA_FAIL" if k.get('n_infra') else ""}</div>
+    <div class="kpi-tile-sub">{k['n_pass']} PASS · {k['n_fail']} FAIL · {k.get('n_invalid', 0)} INVALID{f" · {k['n_infra']} infra re-runs" if k.get('n_infra') else ""} · highest gate with graded results</div>
   </div>
   <div class="kpi-tile">
     <div class="kpi-tile-label">Symbols Tested</div>
@@ -3592,6 +3645,34 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
   </div>
 </div>
 """
+    # Availability strip — the archive's external promise (OWNER 2026-06-11:
+    # visitors should profit from the research and later download/license the
+    # EAs). Honest by construction: nothing is offered before Q14.
+    pc_states = {str(r.get("candidate_state") or "") for r in (detail.get("q08_portfolio_rescue") or [])}
+    if ea.get("live"):
+        avail_cls, avail_label = "av-live", "LIVE — trading on our own account"
+        avail_body = ("This strategy survived the full evidence pipeline and is trading live. "
+                      "Licensing/download options are planned for validated strategies.")
+    elif ea.get("dead"):
+        fa = ea.get("failed_at")
+        avail_cls, avail_label = "av-failed", "NOT AVAILABLE — failed validation"
+        avail_body = (f"This strategy did not survive the evidence gates"
+                      f"{f' (failed at {phase_label(fa)})' if fa else ''}. "
+                      "We publish failures so you can see what does NOT work — that is the point of the archive.")
+    elif "first_sleeve" in pc_states or any("Q12" in s for s in pc_states):
+        avail_cls, avail_label = "av-cand", "PORTFOLIO CANDIDATE — final review"
+        avail_body = ("This strategy passed portfolio admission and is in final human review (Q12-Q14). "
+                      "If it goes live, licensing/download options will appear here.")
+    else:
+        avail_cls, avail_label = "av-flow", "IN VALIDATION — not yet available"
+        avail_body = ("Still inside the 15-gate evidence pipeline (Q00-Q14: walk-forward, Monte-Carlo, "
+                      "stress, cost-cushion, portfolio fit). Strategies that survive every gate "
+                      "become available for download/licensing here.")
+    availability_html = (
+        f'<div class="availability {avail_cls}"><span class="av-label">{e(avail_label)}</span>'
+        f'<span class="av-body">{e(avail_body)}</span></div>'
+    )
+
     swimlane_html = _render_symbol_swimlane(detail)
     rescue_rows = detail.get("q08_portfolio_rescue") or []
     rescue_html = ""
@@ -3628,7 +3709,10 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
             )
         rescue_html = f"""
 <div class="rescue-detail">
-  <div class="rescue-detail-title">Q08 portfolio-rescue track</div>
+  <div class="rescue-detail-title">Portfolio admission · Q08 standalone &rarr; Q09 portfolio</div>
+  <div class="rescue-detail-note">A strategy that narrowly fails standalone admission (Q08) can still earn a
+  portfolio slot (Q09) if it is weakly correlated to the existing book and improves portfolio Sharpe/drawdown —
+  diversification is the win mechanism.</div>
   <table class="wi-table rescue-detail-table">
     <thead><tr>
       <th>Symbol</th><th>Standalone Q08 Result</th><th class="col-num">Trades</th>
@@ -3651,10 +3735,10 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
     <span>Current <strong>{e(phase_label(cur_phase) if cur_phase != '—' else '—')}</strong></span>
     <span>Done <strong>{e(', '.join(sorted({phase_label(p) for p in (ea.get('completed_phases') or [])}, key=lambda q: PHASE_ORDER.index(q) if q in PHASE_ORDER else 99)) or '—')}</strong></span>
     <span>Updated {e(ev_ts)}</span>
-    <span>Tasks <strong>{ea.get('task_count', 0)}</strong></span>
-    <span>Symbols <strong>{len(detail.get('symbols') or [])}</strong></span>
+    <span>Markets tested <strong>{len(detail.get('symbols') or [])}</strong></span>
   </div>
   {decision_header}
+  {availability_html}
   {rescue_html}
   {desc_html}
   {kpis_html}
@@ -3663,8 +3747,8 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
   {''.join(phases_html_chunks)}
   {files_html}
   <div class="archive-footer">
-    Generated by render_dashboards.py · per-row Equity curves parsed inline from native MT5 reports (UTF-16) ·
-    "Full MT5 ↗" links open the native report with interactive equity, trade markers, monthly distribution.
+    QuantMechanica V5 · every number on this page is parsed from native MetaTrader 5 backtest reports —
+    no hand-edited results. "Full MT5 ↗" opens the original report (equity curve, trade markers, monthly distribution).
   </div>
 </div>
 <script>

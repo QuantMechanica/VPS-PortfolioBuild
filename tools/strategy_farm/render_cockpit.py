@@ -2582,6 +2582,30 @@ body { padding: 32px; min-height: 100vh; }
   letter-spacing: 0.04em; margin-top: 5px; text-transform: uppercase;
 }
 
+/* COMPANY FRONTIER */
+.frontier {
+  grid-column: span 12;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+  background: var(--border); border: 1px solid var(--border);
+}
+.frontier-tile { background: var(--surface-1); padding: 16px 20px; }
+.frontier-tile .f-lbl {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px; font-weight: 600; letter-spacing: 0.22em;
+  color: var(--text-3); text-transform: uppercase; margin-bottom: 10px;
+}
+.frontier-tile .f-val {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 22px; font-weight: 500; color: var(--text); line-height: 1.05;
+}
+.frontier-tile .f-val.hot { color: var(--live); }
+.frontier-tile .f-sub {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px; color: var(--text-3); margin-top: 7px;
+  letter-spacing: 0.05em; line-height: 1.5;
+}
+
 /* BOTTOM BAR */
 .botbar {
   grid-column: span 12;
@@ -2596,6 +2620,50 @@ body { padding: 32px; min-height: 100vh; }
 .botbar .key    { color: var(--text-4); margin-right: 8px; }
 .botbar .val    { color: var(--text-2); }
 """
+
+    # ---------- COMPANY FRONTIER (OWNER 2026-06-11: cockpit = company progress) ----------
+    # The four numbers that say how far the COMPANY is, not how busy the factory is:
+    # furthest candidate, Q08 cohort shape, inventory conversion, 30d throughput.
+    try:
+        pc_rows = db_rows("SELECT ea_id, symbol, state FROM portfolio_candidates ORDER BY updated_at DESC")
+    except Exception:
+        pc_rows = []
+    q12_ready = [r for r in pc_rows if "Q12" in str(r.get("state") or "").upper()]
+    if q12_ready:
+        frontier_val = f"{len(q12_ready)} @ Q12"
+        frontier_sub = " // ".join(
+            f"{r['ea_id']} {str(r.get('symbol') or '').replace('.DWX', '')}" for r in q12_ready[:3]
+        ) + " // waiting OWNER review"
+    elif pc_rows:
+        frontier_val = f"{len(pc_rows)} candidates"
+        frontier_sub = "portfolio candidates pre-Q12"
+    else:
+        frontier_val = "Q08"
+        frontier_sub = "no portfolio candidate yet — frontier is the Q08 cost-cushion gate"
+    frontier_html = f'''
+  <div class="frontier">
+    <div class="frontier-tile">
+      <div class="f-lbl">Frontier // Furthest Candidate</div>
+      <div class="f-val hot">{e(frontier_val)}</div>
+      <div class="f-sub">{e(frontier_sub)}</div>
+    </div>
+    <div class="frontier-tile">
+      <div class="f-lbl">Q08 Cohort</div>
+      <div class="f-val">{q08_rescue.get("pass_portfolio", 0)}<span style="color:var(--text-3)">/{q08_rescue.get("soft", 0) + q08_rescue.get("hard", 0)}</span></div>
+      <div class="f-sub">portfolio-pass / standalone-fails ({q08_rescue.get("soft", 0)} soft // {q08_rescue.get("hard", 0)} hard)</div>
+    </div>
+    <div class="frontier-tile">
+      <div class="f-lbl">Inventory Conversion</div>
+      <div class="f-val">{eas_built:,}<span style="color:var(--text-3)">/{cards_total:,}</span></div>
+      <div class="f-sub">EAs built / cards approved // {bt_done:,} backtests graded</div>
+    </div>
+    <div class="frontier-tile">
+      <div class="f-lbl">Throughput // 30D</div>
+      <div class="f-val">{mt5_30d:,}</div>
+      <div class="f-sub">MT5 items done // {q02_pass_30d:,} Q02 PASS cumulative</div>
+    </div>
+  </div>
+'''
 
     # === Final HTML ===
     html_doc = (
@@ -2681,6 +2749,9 @@ body { padding: 32px; min-height: 100vh; }
       </div>
     </div>
   </div>
+
+  <!-- 2b. COMPANY FRONTIER -->
+  {frontier_html}
 
   <!-- 3. OWNER ATTENTION + AGENT STATUS -->
   <div class="col-left">
