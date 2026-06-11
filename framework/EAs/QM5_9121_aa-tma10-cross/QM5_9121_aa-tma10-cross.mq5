@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QuantMechanica V5 EA skeleton template"
+#property description "QM5_9121 Alpha Architect TMA10 close cross"
 
 #include <QM/QM_Common.mqh>
 
@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 9999;
+input int    qm_ea_id                   = 9121;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -52,8 +52,8 @@ input group "News"
 //   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
 //   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
 // A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
 // Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
@@ -73,11 +73,12 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-// TODO: declare strategy-specific input params here, e.g.:
-//   input int    strategy_atr_period   = 14;
-//   input double strategy_atr_sl_mult  = 2.0;
-//   input double strategy_atr_tp_mult  = 3.0;
-input int    strategy_placeholder       = 0;
+input int    strategy_tma_period          = 10;
+input int    strategy_atr_period          = 20;
+input double strategy_atr_sl_mult         = 2.5;
+input int    strategy_warmup_bars         = 60;
+input int    strategy_spread_median_days  = 20;
+input double strategy_spread_mult         = 2.5;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -87,7 +88,6 @@ input int    strategy_placeholder       = 0;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   // TODO: e.g. "only trade London session" or "skip if ADX<20"
    return false;
   }
 
@@ -96,30 +96,172 @@ bool Strategy_NoTradeFilter()
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // TODO: build req.type / req.price / req.sl / req.tp / req.lots
-   return false;
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   const ENUM_TIMEFRAMES signal_tf = PERIOD_D1;
+   const int n = strategy_tma_period;
+   if(n <= 0 || strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0 ||
+      strategy_warmup_bars < 60 || strategy_spread_median_days <= 0 ||
+      strategy_spread_median_days > 64 || strategy_spread_mult <= 0.0)
+      return false;
+
+   if(QM_SMA(_Symbol, signal_tf, 1, strategy_warmup_bars, PRICE_CLOSE) <= 0.0)
+      return false;
+
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, signal_tf, 1, strategy_spread_median_days, rates); // perf-allowed: D1 spread median has no framework reader; EntrySignal is closed-bar gated.
+   if(copied < strategy_spread_median_days)
+      return false;
+
+   double spreads[64];
+   for(int i = 0; i < strategy_spread_median_days; ++i)
+      spreads[i] = (double)rates[i].spread;
+   for(int i = 0; i < strategy_spread_median_days - 1; ++i)
+     {
+      for(int j = i + 1; j < strategy_spread_median_days; ++j)
+        {
+         if(spreads[j] < spreads[i])
+           {
+            const double tmp = spreads[i];
+            spreads[i] = spreads[j];
+            spreads[j] = tmp;
+           }
+        }
+     }
+
+   double median_spread = 0.0;
+   const int mid = strategy_spread_median_days / 2;
+   if((strategy_spread_median_days % 2) == 1)
+      median_spread = spreads[mid];
+   else
+      median_spread = 0.5 * (spreads[mid - 1] + spreads[mid]);
+   const double current_spread = (double)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+   if(median_spread > 0.0 && current_spread > strategy_spread_mult * median_spread)
+      return false;
+
+   double tma_1 = 0.0;
+   double tma_2 = 0.0;
+   for(int outer = 0; outer < n; ++outer)
+     {
+      double ma2_1 = 0.0;
+      double ma2_2 = 0.0;
+      for(int inner = 0; inner < n; ++inner)
+        {
+         const double ma1_1 = QM_SMA(_Symbol, signal_tf, n, 1 + outer + inner, PRICE_CLOSE);
+         const double ma1_2 = QM_SMA(_Symbol, signal_tf, n, 2 + outer + inner, PRICE_CLOSE);
+         if(ma1_1 <= 0.0 || ma1_2 <= 0.0)
+            return false;
+         ma2_1 += ma1_1;
+         ma2_2 += ma1_2;
+        }
+      tma_1 += ma2_1 / (double)n;
+      tma_2 += ma2_2 / (double)n;
+     }
+   tma_1 /= (double)n;
+   tma_2 /= (double)n;
+
+   const double close_1 = QM_SMA(_Symbol, signal_tf, 1, 1, PRICE_CLOSE);
+   const double close_2 = QM_SMA(_Symbol, signal_tf, 1, 2, PRICE_CLOSE);
+   if(close_1 <= 0.0 || close_2 <= 0.0 || tma_1 <= 0.0 || tma_2 <= 0.0)
+      return false;
+
+   QM_OrderType side = QM_BUY;
+   string reason = "";
+   if(close_1 > tma_1 && close_2 <= tma_2)
+     {
+      side = QM_BUY;
+      reason = "AA_TMA10_CROSS_LONG";
+     }
+   else if(close_1 < tma_1 && close_2 >= tma_2)
+     {
+      side = QM_SELL;
+      reason = "AA_TMA10_CROSS_SHORT";
+     }
+   else
+      return false;
+
+   const double entry = (side == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
+                                        : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double atr = QM_ATR(_Symbol, signal_tf, strategy_atr_period, 1);
+   const double sl = QM_StopATRFromValue(_Symbol, side, entry, atr, strategy_atr_sl_mult);
+   if(entry <= 0.0 || atr <= 0.0 || sl <= 0.0)
+      return false;
+
+   req.type = side;
+   req.price = 0.0;
+   req.sl = sl;
+   req.tp = 0.0;
+   req.reason = reason;
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+   return true;
   }
 
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // TODO: e.g.
-   //   const int magic = QM_FrameworkMagic();
-   //   for(int i = PositionsTotal() - 1; i >= 0; --i) {
-   //       const ulong ticket = PositionGetTicket(i);
-   //       if(!PositionSelectByTicket(ticket)) continue;
-   //       if(PositionGetInteger(POSITION_MAGIC) != magic) continue;
-   //       QM_TM_MoveToBreakEven(ticket, /*trigger_pips=*/30, /*buffer=*/2);
-   //       QM_TM_TrailATR(ticket, /*atr_period=*/14, /*atr_mult=*/2.0);
-   //   }
+   // Card specifies no trailing, break-even, partial, or pyramiding rule.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   // TODO: when to close manually (separate from SL/TP and trade management)
+   const int magic = QM_FrameworkMagic();
+   ENUM_POSITION_TYPE position_type = POSITION_TYPE_BUY;
+   bool have_position = false;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if(PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      have_position = true;
+      break;
+     }
+   if(!have_position)
+      return false;
+
+   const ENUM_TIMEFRAMES signal_tf = PERIOD_D1;
+   const int n = strategy_tma_period;
+   if(n <= 0 || QM_SMA(_Symbol, signal_tf, 1, strategy_warmup_bars, PRICE_CLOSE) <= 0.0)
+      return false;
+
+   double tma_1 = 0.0;
+   for(int outer = 0; outer < n; ++outer)
+     {
+      double ma2_1 = 0.0;
+      for(int inner = 0; inner < n; ++inner)
+        {
+         const double ma1_1 = QM_SMA(_Symbol, signal_tf, n, 1 + outer + inner, PRICE_CLOSE);
+         if(ma1_1 <= 0.0)
+            return false;
+         ma2_1 += ma1_1;
+        }
+      tma_1 += ma2_1 / (double)n;
+     }
+   tma_1 /= (double)n;
+
+   const double close_1 = QM_SMA(_Symbol, signal_tf, 1, 1, PRICE_CLOSE);
+   if(close_1 <= 0.0 || tma_1 <= 0.0)
+      return false;
+
+   if(position_type == POSITION_TYPE_BUY)
+      return (close_1 <= tma_1);
+   if(position_type == POSITION_TYPE_SELL)
+      return (close_1 >= tma_1);
    return false;
   }
 
