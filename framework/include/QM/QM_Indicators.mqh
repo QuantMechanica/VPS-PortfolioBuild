@@ -21,6 +21,8 @@
 //   double QM_ADX_PlusDI (sym, tf, period, shift=1)
 //   double QM_ADX_MinusDI(sym, tf, period, shift=1)
 //   double QM_SAR(sym, tf, step, maximum, shift=1)
+//   double QM_FractalUpper(sym, tf, shift=2)
+//   double QM_FractalLower(sym, tf, shift=2)
 //   double QM_BB_Upper(sym, tf, period, deviation, shift=1, price=PRICE_CLOSE)
 //   double QM_BB_Lower(sym, tf, period, deviation, shift=1, price=PRICE_CLOSE)
 //   double QM_BB_Middle(sym, tf, period, deviation, shift=1, price=PRICE_CLOSE)
@@ -326,6 +328,27 @@ double QM_SAR(const string sym, const ENUM_TIMEFRAMES tf, const double step,
               const double maximum, const int shift = 1)
   {
    return QM_IndicatorReadBuffer(QM_IndSAR(sym, tf, step, maximum), 0, shift);
+  }
+
+// --- Williams Fractals (iFractals) ---
+int QM_IndFractals(const string sym, const ENUM_TIMEFRAMES tf)
+  {
+   const string key = StringFormat("FRAC|%s|%d", sym, (int)tf);
+   int h = QM_IndicatorsLookup(key);
+   if(h != INVALID_HANDLE)
+      return h;
+   h = iFractals(sym, tf);
+   return QM_IndicatorsRegister(key, h);
+  }
+
+double QM_FractalUpper(const string sym, const ENUM_TIMEFRAMES tf, const int shift = 2)
+  {
+   return QM_IndicatorReadBuffer(QM_IndFractals(sym, tf), 0, shift);
+  }
+
+double QM_FractalLower(const string sym, const ENUM_TIMEFRAMES tf, const int shift = 2)
+  {
+   return QM_IndicatorReadBuffer(QM_IndFractals(sym, tf), 1, shift);
   }
 
 // --- Stochastic oscillator (iStochastic) ---

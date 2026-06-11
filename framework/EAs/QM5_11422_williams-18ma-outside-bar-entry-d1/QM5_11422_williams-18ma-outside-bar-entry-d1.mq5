@@ -92,17 +92,6 @@ bool Strategy_NoTradeFilter()
    if((ENUM_TIMEFRAMES)_Period != PERIOD_D1)
       return true;
 
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
-   const double pip = point * ((digits == 3 || digits == 5) ? 10.0 : 1.0);
-   if(point <= 0.0 || pip <= 0.0 || ask <= 0.0 || bid <= 0.0)
-      return true;
-
-   if(((ask - bid) / pip) > strategy_spread_cap_pips)
-      return true;
-
    return false;
   }
 
@@ -178,15 +167,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double pip = point * ((digits == 3 || digits == 5) ? 10.0 : 1.0);
    if(point <= 0.0 || pip <= 0.0)
       return false;
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
+      return false;
+
+   if(((ask - bid) / pip) > strategy_spread_cap_pips)
+      return false;
 
    const double offset = strategy_entry_offset_pips * pip;
    const double max_stop = strategy_max_stop_pips * pip;
    const int stop_level_points = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
    const double min_stop_dist = MathMax((double)stop_level_points * point, point);
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
-      return false;
 
    const bool long_setup = (bar1.low > ma1 && bar2.low > ma2);
    const bool short_setup = (bar1.high < ma1 && bar2.high < ma2);

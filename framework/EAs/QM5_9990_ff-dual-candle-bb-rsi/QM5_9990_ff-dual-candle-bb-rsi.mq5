@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 9999;
+input int    qm_ea_id                   = 9990;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -85,6 +85,8 @@ input double strategy_entry_buffer_pips  = 1.0;
 input double strategy_tp_rr              = 3.0;
 input int    strategy_pending_expiry_bars = 3;
 
+int g_strategy_last_signal_dir = 0;
+
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -103,6 +105,8 @@ bool Strategy_NoTradeFilter()
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   g_strategy_last_signal_dir = 0;
+
    req.type = QM_BUY_STOP;
    req.price = 0.0;
    req.sl = 0.0;
@@ -205,7 +209,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.tp = QM_TakeRR(_Symbol, req.type, entry, sl, strategy_tp_rr);
       req.reason = "FF_DUAL_CANDLE_BB_RSI_LONG";
       req.expiration_seconds = expiry_seconds;
-      return (req.tp > 0.0);
+      if(req.tp <= 0.0)
+         return false;
+      g_strategy_last_signal_dir = 1;
+      return true;
      }
 
    if(close2 < open2 && short_zone && rsi1 < strategy_rsi_midline)
@@ -226,7 +233,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.tp = QM_TakeRR(_Symbol, req.type, entry, sl, strategy_tp_rr);
       req.reason = "FF_DUAL_CANDLE_BB_RSI_SHORT";
       req.expiration_seconds = expiry_seconds;
-      return (req.tp > 0.0);
+      if(req.tp <= 0.0)
+         return false;
+      g_strategy_last_signal_dir = -1;
+      return true;
      }
 
    return false;
@@ -340,48 +350,9 @@ bool Strategy_ExitSignal()
    if(!have_buy && !have_sell)
       return false;
 
-   const double open2  = iOpen(_Symbol, PERIOD_H4, 2);   // perf-allowed: fixed opposite-setup structural check, O(1) and no history scan.
-   const double high1  = iHigh(_Symbol, PERIOD_H4, 1);   // perf-allowed: fixed opposite-setup structural check, O(1) and no history scan.
-   const double high2  = iHigh(_Symbol, PERIOD_H4, 2);   // perf-allowed: fixed opposite-setup structural check, O(1) and no history scan.
-   const double low1   = iLow(_Symbol, PERIOD_H4, 1);    // perf-allowed: fixed opposite-setup structural check, O(1) and no history scan.
-   const double low2   = iLow(_Symbol, PERIOD_H4, 2);    // perf-allowed: fixed opposite-setup structural check, O(1) and no history scan.
-   const double close1 = iClose(_Symbol, PERIOD_H4, 1);  // perf-allowed: fixed opposite-setup structural check, O(1) and no history scan.
-   const double close2 = iClose(_Symbol, PERIOD_H4, 2);  // perf-allowed: fixed opposite-setup structural check, O(1) and no history scan.
-   if(open2 <= 0.0 || high1 <= 0.0 || high2 <= 0.0 || low1 <= 0.0 || low2 <= 0.0 || close1 <= 0.0 || close2 <= 0.0)
-      return false;
-
-   if(!(high1 <= high2 && low1 >= low2))
-      return false;
-
-   const double bb_upper1 = QM_BB_Upper(_Symbol, PERIOD_H4, strategy_bb_period, strategy_bb_deviation, 1);
-   const double bb_mid1   = QM_BB_Middle(_Symbol, PERIOD_H4, strategy_bb_period, strategy_bb_deviation, 1);
-   const double bb_lower1 = QM_BB_Lower(_Symbol, PERIOD_H4, strategy_bb_period, strategy_bb_deviation, 1);
-   const double bb_upper2 = QM_BB_Upper(_Symbol, PERIOD_H4, strategy_bb_period, strategy_bb_deviation, 2);
-   const double bb_mid2   = QM_BB_Middle(_Symbol, PERIOD_H4, strategy_bb_period, strategy_bb_deviation, 2);
-   const double bb_lower2 = QM_BB_Lower(_Symbol, PERIOD_H4, strategy_bb_period, strategy_bb_deviation, 2);
-   const double rsi1 = QM_RSI(_Symbol, PERIOD_H4, strategy_rsi_period, 1);
-   const double atr_width = QM_ATR(_Symbol, PERIOD_H4, strategy_atr_width_period, 1);
-   if(bb_upper1 <= 0.0 || bb_mid1 <= 0.0 || bb_lower1 <= 0.0 ||
-      bb_upper2 <= 0.0 || bb_mid2 <= 0.0 || bb_lower2 <= 0.0 ||
-      rsi1 <= 0.0 || atr_width <= 0.0)
-      return false;
-
-   const double bb_width = bb_upper1 - bb_lower1;
-   if(bb_width < strategy_min_width_atr_mult * atr_width)
-      return false;
-
-   const bool long_setup = (close2 > open2 &&
-                            close1 >= bb_mid1 && close1 <= bb_upper1 &&
-                            close2 >= bb_mid2 && close2 <= bb_upper2 &&
-                            rsi1 > strategy_rsi_midline);
-   const bool short_setup = (close2 < open2 &&
-                             close1 <= bb_mid1 && close1 >= bb_lower1 &&
-                             close2 <= bb_mid2 && close2 >= bb_lower2 &&
-                             rsi1 < strategy_rsi_midline);
-
-   if(have_buy && short_setup)
+   if(have_buy && g_strategy_last_signal_dir < 0)
       return true;
-   if(have_sell && long_setup)
+   if(have_sell && g_strategy_last_signal_dir > 0)
       return true;
 
    return false;
