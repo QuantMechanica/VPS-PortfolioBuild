@@ -21,6 +21,7 @@
 #include "QM_TradeContext.mqh"
 #include "QM_ChartUI.mqh"
 #include "QM_Indicators.mqh"
+#include "QM_Signals.mqh"
 #include "QM_EquityStream.mqh"
 
 int  g_qm_fw_ea_id            = 0;
