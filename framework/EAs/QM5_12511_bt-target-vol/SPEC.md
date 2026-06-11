@@ -26,7 +26,7 @@ The EA is a long-only weekly volatility-targeted basket sleeve. On each new D1 b
 | strategy_single_symbol_cap | 0.40 | 0.01-1.00 | Maximum capped target weight per symbol. |
 | strategy_entry_weight_threshold | 0.05 | > exit threshold | Minimum target weight required to open a long position. |
 | strategy_exit_weight_threshold | 0.02 | >=0 | Target weight below which an open position is closed. |
-| strategy_rebalance_tolerance | 0.10 | >=0 | Weekly close/reopen threshold for target-weight drift. |
+| strategy_rebalance_tolerance | 0.0 | >=0 | Weekly close/reopen threshold for target-weight drift; zero means every weekly rebalance refreshes the position. |
 | strategy_atr_period_d1 | 20 | >0 | ATR period for the per-symbol emergency stop. |
 | strategy_atr_sl_mult | 4.0 | >0 | ATR multiple below entry for the emergency stop. |
 

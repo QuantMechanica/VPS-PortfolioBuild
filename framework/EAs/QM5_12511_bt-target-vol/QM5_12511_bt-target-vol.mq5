@@ -37,7 +37,7 @@ input double strategy_spread_median_mult     = 2.0;
 input double strategy_single_symbol_cap      = 0.40;
 input double strategy_entry_weight_threshold = 0.05;
 input double strategy_exit_weight_threshold  = 0.02;
-input double strategy_rebalance_tolerance    = 0.10;
+input double strategy_rebalance_tolerance    = 0.0;
 input int    strategy_atr_period_d1          = 20;
 input double strategy_atr_sl_mult            = 4.0;
 
@@ -424,6 +424,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.price = entry;
    req.sl = sl;
    g_open_target_weight = target_weight;
+   g_last_exit_week = week;
    return true;
   }
 
