@@ -119,14 +119,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double sma_fast = QM_SMA(_Symbol, tf, strategy_fast_sma_period, shift);
    const double sma_mid = QM_SMA(_Symbol, tf, strategy_mid_sma_period, shift);
    const double sma_trend = QM_SMA(_Symbol, tf, strategy_trend_sma_period, shift);
+   const double sma_fast_prev = QM_SMA(_Symbol, tf, strategy_fast_sma_period, shift + 1);
+   const double sma_mid_prev = QM_SMA(_Symbol, tf, strategy_mid_sma_period, shift + 1);
    const double atr = QM_ATR(_Symbol, tf, strategy_atr_period, shift);
 
    // perf-allowed: single closed-bar OHLC reads; no QM price-reader helper exists.
-   const double open_last = iOpen(_Symbol, tf, shift);   // perf-allowed
    const double close_last = iClose(_Symbol, tf, shift); // perf-allowed
+   const double high_last = iHigh(_Symbol, tf, shift);   // perf-allowed
+   const double low_last = iLow(_Symbol, tf, shift);     // perf-allowed
+   const double close_prev = iClose(_Symbol, tf, shift + 1); // perf-allowed
 
    if(sma_fast <= 0.0 || sma_mid <= 0.0 || sma_trend <= 0.0 ||
-      atr <= 0.0 || open_last <= 0.0 || close_last <= 0.0)
+      sma_fast_prev <= 0.0 || sma_mid_prev <= 0.0 || atr <= 0.0 ||
+      close_last <= 0.0 || high_last <= 0.0 || low_last <= 0.0 || close_prev <= 0.0)
       return false;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -136,11 +141,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    const double upper_short_ma = MathMax(sma_fast, sma_mid);
    const double lower_short_ma = MathMin(sma_fast, sma_mid);
+   const double upper_short_ma_prev = MathMax(sma_fast_prev, sma_mid_prev);
+   const double lower_short_ma_prev = MathMin(sma_fast_prev, sma_mid_prev);
 
    if(close_last > sma_trend &&
       close_last > sma_fast &&
       close_last > sma_mid &&
-      open_last > upper_short_ma)
+      low_last > upper_short_ma &&
+      close_prev <= upper_short_ma_prev)
      {
       req.type = QM_BUY;
       req.price = 0.0;
@@ -153,7 +161,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(close_last < sma_trend &&
       close_last < sma_fast &&
       close_last < sma_mid &&
-      open_last < lower_short_ma)
+      high_last < lower_short_ma &&
+      close_prev >= lower_short_ma_prev)
      {
       req.type = QM_SELL;
       req.price = 0.0;
