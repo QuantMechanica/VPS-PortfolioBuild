@@ -87,117 +87,6 @@ input double strategy_atr_sl_mult          = 2.0;
 input double strategy_min_range_atr_mult   = 0.0;
 input int    strategy_max_spread_points    = 0;
 
-struct QM5_10088_SignalState
-  {
-   bool buy;
-   bool sell;
-  };
-
-bool QM5_10088_ReadSignalBars(MqlRates &rates[])
-  {
-   const int context = (strategy_context_lookback < 1) ? 1 : strategy_context_lookback;
-   const int needed = context + 1;
-   ArraySetAsSeries(rates, true);
-   ArrayResize(rates, needed);
-   const int copied = CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, needed, rates); // perf-allowed: bounded closed-bar OHLC for candlestick geometry, called from new-bar entry hook.
-   return (copied == needed);
-  }
-
-bool QM5_10088_HammerShape(const MqlRates &bar)
-  {
-   const double range = bar.high - bar.low;
-   if(range <= 0.0)
-      return false;
-
-   const double body = MathAbs(bar.close - bar.open);
-   if(body <= 0.0)
-      return false;
-
-   if(body / range > strategy_max_body_range_frac)
-      return false;
-
-   const double body_low = MathMin(bar.open, bar.close);
-   const double body_high = MathMax(bar.open, bar.close);
-   const double lower_shadow = body_low - bar.low;
-   const double upper_shadow = bar.high - body_high;
-
-   if(lower_shadow < body * strategy_lower_shadow_body_min)
-      return false;
-   if(upper_shadow > body * strategy_upper_shadow_body_max)
-      return false;
-
-   if(strategy_min_range_atr_mult > 0.0)
-     {
-      const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
-      if(atr <= 0.0 || range < atr * strategy_min_range_atr_mult)
-         return false;
-     }
-
-   return true;
-  }
-
-bool QM5_10088_DownContext(const MqlRates &rates[])
-  {
-   const int context = (strategy_context_lookback < 1) ? 1 : strategy_context_lookback;
-   return (rates[1].close < rates[context].close);
-  }
-
-bool QM5_10088_UpContext(const MqlRates &rates[])
-  {
-   const int context = (strategy_context_lookback < 1) ? 1 : strategy_context_lookback;
-   return (rates[1].close > rates[context].close);
-  }
-
-QM5_10088_SignalState QM5_10088_CurrentSignals()
-  {
-   QM5_10088_SignalState state;
-   state.buy = false;
-   state.sell = false;
-
-   MqlRates rates[];
-   if(!QM5_10088_ReadSignalBars(rates))
-      return state;
-
-   const double rsi = QM_RSI(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_rsi_period, 1);
-   if(rsi <= 0.0)
-      return state;
-
-   const bool hammer_shape = QM5_10088_HammerShape(rates[0]);
-   if(hammer_shape && QM5_10088_DownContext(rates) && rsi < strategy_buy_rsi_max)
-      state.buy = true;
-   if(hammer_shape && QM5_10088_UpContext(rates) && rsi > strategy_sell_rsi_min)
-      state.sell = true;
-
-   return state;
-  }
-
-bool QM5_10088_SelectOurPosition(ENUM_POSITION_TYPE &ptype, ulong &ticket)
-  {
-   ptype = POSITION_TYPE_BUY;
-   ticket = 0;
-
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong candidate = PositionGetTicket(i);
-      if(candidate == 0 || !PositionSelectByTicket(candidate))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      ticket = candidate;
-      return true;
-     }
-
-   return false;
-  }
-
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -234,22 +123,67 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   const QM5_10088_SignalState signal = QM5_10088_CurrentSignals();
-   if(!signal.buy && !signal.sell)
+   const int context = (strategy_context_lookback < 1) ? 1 : strategy_context_lookback;
+   const int needed = context + 1;
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   ArrayResize(rates, needed);
+   const int copied = CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, needed, rates); // perf-allowed: bounded closed-bar OHLC for candle geometry inside new-bar hook.
+   if(copied != needed)
       return false;
 
-   ENUM_POSITION_TYPE ptype;
-   ulong ticket = 0;
-   if(QM5_10088_SelectOurPosition(ptype, ticket))
+   const double range = rates[0].high - rates[0].low;
+   const double body = MathAbs(rates[0].close - rates[0].open);
+   if(range <= 0.0 || body <= 0.0)
+      return false;
+   if(body / range > strategy_max_body_range_frac)
+      return false;
+
+   const double body_low = MathMin(rates[0].open, rates[0].close);
+   const double body_high = MathMax(rates[0].open, rates[0].close);
+   const double lower_shadow = body_low - rates[0].low;
+   const double upper_shadow = rates[0].high - body_high;
+   if(lower_shadow < body * strategy_lower_shadow_body_min)
+      return false;
+   if(upper_shadow > body * strategy_upper_shadow_body_max)
+      return false;
+
+   if(strategy_min_range_atr_mult > 0.0)
      {
-      if(ptype == POSITION_TYPE_BUY && signal.sell)
+      const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
+      if(atr <= 0.0 || range < atr * strategy_min_range_atr_mult)
+         return false;
+     }
+
+   const double rsi = QM_RSI(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_rsi_period, 1);
+   if(rsi <= 0.0)
+      return false;
+
+   const bool buy_signal = (rates[1].close < rates[context].close && rsi < strategy_buy_rsi_max);
+   const bool sell_signal = (rates[1].close > rates[context].close && rsi > strategy_sell_rsi_min);
+   if(!buy_signal && !sell_signal)
+      return false;
+
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      if(ptype == POSITION_TYPE_BUY && sell_signal)
          QM_TM_ClosePosition(ticket, QM_EXIT_OPPOSITE_SIGNAL);
-      else if(ptype == POSITION_TYPE_SELL && signal.buy)
+      else if(ptype == POSITION_TYPE_SELL && buy_signal)
          QM_TM_ClosePosition(ticket, QM_EXIT_OPPOSITE_SIGNAL);
       return false;
      }
 
-   if(signal.buy)
+   if(buy_signal)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       const double sl = QM_StopATR(_Symbol, QM_BUY, entry, strategy_atr_period, strategy_atr_sl_mult);
@@ -262,7 +196,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return true;
      }
 
-   if(signal.sell)
+   if(sell_signal)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       const double sl = QM_StopATR(_Symbol, QM_SELL, entry, strategy_atr_period, strategy_atr_sl_mult);
@@ -289,29 +223,37 @@ void Strategy_ManageOpenPosition()
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   ENUM_POSITION_TYPE ptype;
-   ulong ticket = 0;
-   if(!QM5_10088_SelectOurPosition(ptype, ticket))
-      return false;
-
    const double rsi_now = QM_RSI(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_rsi_period, 1);
    const double rsi_prev = QM_RSI(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_rsi_period, 2);
    if(rsi_now <= 0.0 || rsi_prev <= 0.0)
       return false;
 
-   if(ptype == POSITION_TYPE_BUY)
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
-      if(rsi_prev >= strategy_exit_upper_level && rsi_now < strategy_exit_upper_level)
-         return true;
-      if(rsi_prev >= strategy_exit_lower_level && rsi_now < strategy_exit_lower_level)
-         return true;
-     }
-   else if(ptype == POSITION_TYPE_SELL)
-     {
-      if(rsi_prev <= strategy_exit_lower_level && rsi_now > strategy_exit_lower_level)
-         return true;
-      if(rsi_prev <= strategy_exit_upper_level && rsi_now > strategy_exit_upper_level)
-         return true;
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      if(ptype == POSITION_TYPE_BUY)
+        {
+         if(rsi_prev >= strategy_exit_upper_level && rsi_now < strategy_exit_upper_level)
+            return true;
+         if(rsi_prev >= strategy_exit_lower_level && rsi_now < strategy_exit_lower_level)
+            return true;
+        }
+      else if(ptype == POSITION_TYPE_SELL)
+        {
+         if(rsi_prev <= strategy_exit_lower_level && rsi_now > strategy_exit_lower_level)
+            return true;
+         if(rsi_prev <= strategy_exit_upper_level && rsi_now > strategy_exit_upper_level)
+            return true;
+        }
      }
 
    return false;
