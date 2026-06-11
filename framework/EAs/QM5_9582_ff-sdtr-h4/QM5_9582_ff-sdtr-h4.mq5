@@ -69,10 +69,9 @@ bool   g_opp_signal = false;                 // Opposite-signal exit flag
 void AdvanceStateOnNewBar()
   {
    // --- Daily Fibonacci pivot zones (prior D1 bar) ---
-   // perf-allowed: bespoke Fib pivot calc — no QM_ helper covers OHLC of D1[1]
-   double dh = iHigh (_Symbol, PERIOD_D1, 1);
-   double dl = iLow  (_Symbol, PERIOD_D1, 1);
-   double dc = iClose(_Symbol, PERIOD_D1, 1);
+   double dh = iHigh (_Symbol, PERIOD_D1, 1); // perf-allowed: bespoke Fib pivot — no QM_ helper covers D1 OHLC
+   double dl = iLow  (_Symbol, PERIOD_D1, 1); // perf-allowed: bespoke Fib pivot — no QM_ helper covers D1 OHLC
+   double dc = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: bespoke Fib pivot — no QM_ helper covers D1 OHLC
    double rng = dh - dl;
    if(rng > 0)
      {
@@ -99,28 +98,28 @@ void AdvanceStateOnNewBar()
    // Maximum shift accessed: lookback + confirm + 1 = 12 bars (well within history).
    for(int p = confirm + 1; p <= lookback + confirm && !g_bull_zz; p++)
      {
-      double lo_p  = iLow(_Symbol, PERIOD_H4, p);
-      double lo_pm = iLow(_Symbol, PERIOD_H4, p + 1); // older bar (left side)
-      double lo_pp = iLow(_Symbol, PERIOD_H4, p - 1); // newer bar (right side start)
+      double lo_p  = iLow(_Symbol, PERIOD_H4, p);     // perf-allowed: ZigZag structural scan
+      double lo_pm = iLow(_Symbol, PERIOD_H4, p + 1); // perf-allowed: ZigZag structural scan
+      double lo_pp = iLow(_Symbol, PERIOD_H4, p - 1); // perf-allowed: ZigZag structural scan
       if(lo_p < lo_pm && lo_p < lo_pp)
         {
          bool ok = true;
          for(int c = 1; c <= confirm && ok; c++)
-            if(iLow(_Symbol, PERIOD_H4, p - c) <= lo_p) ok = false;
+            if(iLow(_Symbol, PERIOD_H4, p - c) <= lo_p) ok = false; // perf-allowed: ZigZag confirm
          if(ok) { g_bull_zz = true; g_zz_swing_low = lo_p; }
         }
      }
 
    for(int p = confirm + 1; p <= lookback + confirm && !g_bear_zz; p++)
      {
-      double hi_p  = iHigh(_Symbol, PERIOD_H4, p);
-      double hi_pm = iHigh(_Symbol, PERIOD_H4, p + 1);
-      double hi_pp = iHigh(_Symbol, PERIOD_H4, p - 1);
+      double hi_p  = iHigh(_Symbol, PERIOD_H4, p);     // perf-allowed: ZigZag structural scan
+      double hi_pm = iHigh(_Symbol, PERIOD_H4, p + 1); // perf-allowed: ZigZag structural scan
+      double hi_pp = iHigh(_Symbol, PERIOD_H4, p - 1); // perf-allowed: ZigZag structural scan
       if(hi_p > hi_pm && hi_p > hi_pp)
         {
          bool ok = true;
          for(int c = 1; c <= confirm && ok; c++)
-            if(iHigh(_Symbol, PERIOD_H4, p - c) >= hi_p) ok = false;
+            if(iHigh(_Symbol, PERIOD_H4, p - c) >= hi_p) ok = false; // perf-allowed: ZigZag confirm
          if(ok) { g_bear_zz = true; g_zz_swing_high = hi_p; }
         }
      }
@@ -172,9 +171,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    double atr14 = QM_ATR(_Symbol, PERIOD_H4, strategy_atr_period, 1);
    double ema10 = QM_EMA(_Symbol, PERIOD_H4, strategy_ema_period, 1);
    if(atr14 <= 0 || ema10 <= 0) return false;
-
-   // perf-allowed: close[1] needed for pivot-zone proximity check
-   double close1 = iClose(_Symbol, PERIOD_H4, 1);
+   double close1 = iClose(_Symbol, PERIOD_H4, 1); // perf-allowed: closed bar needed for pivot-zone proximity check
    double point  = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    int    digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
    // Pip size: 5-digit/3-digit = 10× point; otherwise 1× point (metals, indices)
@@ -206,19 +203,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
             sl_dist = strategy_sl_atr_mult * atr14;
 
          double sl_price = close1 - sl_dist;
-         double sl_pts   = sl_dist / point;
-         if(sl_pts <= 0) return false;
+         if(sl_dist <= 0) return false;
 
          double tp_dist  = MathMax(strategy_tp_pips * pip, strategy_tp_atr_mult * atr14);
          double tp_price = close1 + tp_dist;
-         double lots     = QM_LotsForRisk(_Symbol, sl_pts);
 
-         req.type    = ORDER_TYPE_BUY;
-         req.price   = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-         req.sl      = sl_price;
-         req.tp      = tp_price;
-         req.lots    = lots;
-         req.comment = "SDTR_BULL";
+         req.type             = QM_BUY;
+         req.price            = 0;   // market order; framework resolves from type
+         req.sl               = sl_price;
+         req.tp               = tp_price;
+         req.reason           = "SDTR_BULL";
+         req.symbol_slot      = qm_magic_slot_offset;
+         req.expiration_seconds = 0;
          return true;
         }
      }
@@ -245,19 +241,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
             sl_dist = strategy_sl_atr_mult * atr14;
 
          double sl_price = close1 + sl_dist;
-         double sl_pts   = sl_dist / point;
-         if(sl_pts <= 0) return false;
+         if(sl_dist <= 0) return false;
 
          double tp_dist  = MathMax(strategy_tp_pips * pip, strategy_tp_atr_mult * atr14);
          double tp_price = close1 - tp_dist;
-         double lots     = QM_LotsForRisk(_Symbol, sl_pts);
 
-         req.type    = ORDER_TYPE_SELL;
-         req.price   = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-         req.sl      = sl_price;
-         req.tp      = tp_price;
-         req.lots    = lots;
-         req.comment = "SDTR_BEAR";
+         req.type             = QM_SELL;
+         req.price            = 0;   // market order; framework resolves from type
+         req.sl               = sl_price;
+         req.tp               = tp_price;
+         req.reason           = "SDTR_BEAR";
+         req.symbol_slot      = qm_magic_slot_offset;
+         req.expiration_seconds = 0;
          return true;
         }
      }
