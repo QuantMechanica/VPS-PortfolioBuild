@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-This EA trades EURUSD on M5 when the market has at least medium Standard Deviation(20) volatility. A long signal requires EMA(3) to cross above EMA(8), Parabolic SAR to sit below the last closed bar, MACD(12,26,9) main to be above zero, and Stochastic(10,15,15) K to cross above D. A short signal uses the exact inverse, and positions close when EMA(3) crosses back through EMA(8) against the open position. Stop loss uses the recent five-bar swing, capped at 20 pips.
+This EA trades EURUSD on M5 when the market has at least medium Standard Deviation(20) volatility. A long signal requires EMA(3) to be above EMA(8), Parabolic SAR to sit below the last closed bar, MACD(12,26,9) main to be above zero, and Stochastic(10,15,15) K to cross above D. A short signal uses the exact inverse, and positions close when EMA(3) crosses back through EMA(8) against the open position. Stop loss uses the recent five-bar swing, bounded to 5-20 pips so the fixed-risk backtest does not size from sub-pip structure noise.
 
 ---
 
@@ -99,3 +99,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-11 | Initial build from card | 4c4a6847-3cb4-49a2-8940-20661a498415 |
+| v2 | 2026-06-11 | Rework entry EMA condition and bound structure stop for smoke viability | 99c0a63d-a354-4eea-a5ee-8a1fc3f6d675 |

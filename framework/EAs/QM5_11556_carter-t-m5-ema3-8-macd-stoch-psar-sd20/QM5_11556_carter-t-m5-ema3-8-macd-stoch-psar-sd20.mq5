@@ -168,30 +168,40 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(ask <= 0.0 || bid <= 0.0)
       return false;
 
-   if(ema_fast_1 > ema_slow_1 && ema_fast_2 <= ema_slow_2 &&
+   if(ema_fast_1 > ema_slow_1 &&
       psar_1 < low_1 && macd_1 > 0.0 && stoch_k_1 > stoch_d_1 && stoch_k_2 <= stoch_d_2)
      {
       const double structure_sl = QM_StopStructure(_Symbol, QM_BUY, ask, strategy_sl_lookback_bars);
       const double capped_sl = QM_StopFixedPips(_Symbol, QM_BUY, ask, strategy_sl_cap_pips);
-      if(structure_sl <= 0.0 || capped_sl <= 0.0)
+      const double min_sl = QM_StopFixedPips(_Symbol, QM_BUY, ask, MathMax(1, strategy_sl_cap_pips / 4));
+      if(structure_sl <= 0.0 || capped_sl <= 0.0 || min_sl <= 0.0)
          return false;
 
       req.type = QM_BUY;
-      req.sl = (ask - structure_sl > ask - capped_sl) ? capped_sl : structure_sl;
+      req.sl = structure_sl;
+      if(ask - req.sl < ask - min_sl)
+         req.sl = min_sl;
+      if(ask - req.sl > ask - capped_sl)
+         req.sl = capped_sl;
       req.reason = "CARTER_T_EMA3_8_MACD_STOCH_PSAR_SD20_LONG";
       return (req.sl > 0.0 && req.sl < bid);
      }
 
-   if(ema_fast_1 < ema_slow_1 && ema_fast_2 >= ema_slow_2 &&
+   if(ema_fast_1 < ema_slow_1 &&
       psar_1 > high_1 && macd_1 < 0.0 && stoch_k_1 < stoch_d_1 && stoch_k_2 >= stoch_d_2)
      {
       const double structure_sl = QM_StopStructure(_Symbol, QM_SELL, bid, strategy_sl_lookback_bars);
       const double capped_sl = QM_StopFixedPips(_Symbol, QM_SELL, bid, strategy_sl_cap_pips);
-      if(structure_sl <= 0.0 || capped_sl <= 0.0)
+      const double min_sl = QM_StopFixedPips(_Symbol, QM_SELL, bid, MathMax(1, strategy_sl_cap_pips / 4));
+      if(structure_sl <= 0.0 || capped_sl <= 0.0 || min_sl <= 0.0)
          return false;
 
       req.type = QM_SELL;
-      req.sl = (structure_sl - bid > capped_sl - bid) ? capped_sl : structure_sl;
+      req.sl = structure_sl;
+      if(req.sl - bid < min_sl - bid)
+         req.sl = min_sl;
+      if(req.sl - bid > capped_sl - bid)
+         req.sl = capped_sl;
       req.reason = "CARTER_T_EMA3_8_MACD_STOCH_PSAR_SD20_SHORT";
       return (req.sl > ask);
      }
