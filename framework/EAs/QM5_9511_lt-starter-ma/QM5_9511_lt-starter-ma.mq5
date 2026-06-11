@@ -177,7 +177,6 @@ void Strategy_ManageOpenPosition()
 bool Strategy_ExitSignal()
   {
    if(!g_warmed_up) return false;
-   if(!QM_IsNewBar()) return false; // exit only evaluated on new closed D1 bar
 
    const int magic = QM_FrameworkMagic();
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -275,6 +274,14 @@ void OnTick()
 
    Strategy_ManageOpenPosition();
 
+   if(!QM_IsNewBar())
+      return;
+
+   // Advance closed-bar cached state FIRST (before exit and entry checks)
+   AdvanceState_OnNewBar();
+
+   QM_EquityStreamOnNewBar();
+
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -287,14 +294,6 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
-
-   if(!QM_IsNewBar())
-      return;
-
-   // Advance closed-bar cached state FIRST (before entry check)
-   AdvanceState_OnNewBar();
-
-   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
