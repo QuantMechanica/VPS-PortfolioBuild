@@ -80,6 +80,46 @@ input double strategy_atr_sl_mult       = 2.5;
 input double strategy_spread_atr_mult   = 0.25;
 input int    strategy_hold_bars         = 3;
 
+int  g_cvr1_signal = 0;
+bool g_cvr1_signal_ready = false;
+
+bool AdvanceCVR1SignalOnVixBar()
+  {
+   MqlRates vix_rates[];
+   ArraySetAsSeries(vix_rates, true);
+   const int copied = CopyRates(strategy_vix_symbol, PERIOD_D1, 1, strategy_vix_lookback, vix_rates); // perf-allowed: external VIX OHLC feed; called only after QM_IsNewBar(strategy_vix_symbol, PERIOD_D1).
+   if(copied < strategy_vix_lookback)
+     {
+      g_cvr1_signal = 0;
+      g_cvr1_signal_ready = false;
+      return false;
+     }
+
+   double high_max = vix_rates[0].high;
+   double low_min = vix_rates[0].low;
+   for(int i = 1; i < strategy_vix_lookback; ++i)
+     {
+      if(vix_rates[i].high > high_max)
+         high_max = vix_rates[i].high;
+      if(vix_rates[i].low < low_min)
+         low_min = vix_rates[i].low;
+     }
+
+   const bool long_signal = (vix_rates[0].high >= high_max &&
+                             vix_rates[0].close < vix_rates[0].open);
+   const bool short_signal = (vix_rates[0].low <= low_min &&
+                              vix_rates[0].close > vix_rates[0].open);
+
+   g_cvr1_signal = 0;
+   if(long_signal && !short_signal)
+      g_cvr1_signal = 1;
+   else if(short_signal && !long_signal)
+      g_cvr1_signal = -1;
+
+   g_cvr1_signal_ready = true;
+   return true;
+  }
+
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -88,6 +128,16 @@ input int    strategy_hold_bars         = 3;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
+   if(strategy_vix_lookback < 2 || strategy_atr_period <= 0 ||
+      strategy_atr_sl_mult <= 0.0 || strategy_hold_bars <= 0)
+      return true;
+
+   if(QM_IsNewBar(strategy_vix_symbol, PERIOD_D1))
+      AdvanceCVR1SignalOnVixBar();
+
+   if(!g_cvr1_signal_ready)
+      return true;
+
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
@@ -113,33 +163,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(strategy_vix_lookback < 2 || strategy_atr_period <= 0 ||
-      strategy_atr_sl_mult <= 0.0 || strategy_hold_bars <= 0)
+   if(!g_cvr1_signal_ready || g_cvr1_signal == 0)
       return false;
 
-   MqlRates vix_rates[];
-   ArraySetAsSeries(vix_rates, true);
-   const int copied = CopyRates(strategy_vix_symbol, PERIOD_D1, 1, strategy_vix_lookback, vix_rates); // perf-allowed: external VIX OHLC signal feed; Strategy_EntrySignal is called only after QM_IsNewBar().
-   if(copied < strategy_vix_lookback)
-      return false;
-
-   double high_max = vix_rates[0].high;
-   double low_min = vix_rates[0].low;
-   for(int i = 1; i < strategy_vix_lookback; ++i)
-     {
-      if(vix_rates[i].high > high_max)
-         high_max = vix_rates[i].high;
-      if(vix_rates[i].low < low_min)
-         low_min = vix_rates[i].low;
-     }
-
-   const bool long_signal = (vix_rates[0].high >= high_max &&
-                             vix_rates[0].close < vix_rates[0].open);
-   const bool short_signal = (vix_rates[0].low <= low_min &&
-                              vix_rates[0].close > vix_rates[0].open);
-   if(long_signal == short_signal)
-      return false;
-
+   const bool long_signal = (g_cvr1_signal > 0);
    const QM_OrderType side = long_signal ? QM_BUY : QM_SELL;
    const ENUM_POSITION_TYPE blocked_type = long_signal ? POSITION_TYPE_BUY : POSITION_TYPE_SELL;
    const int our_magic = QM_FrameworkMagic();
@@ -220,33 +247,12 @@ bool Strategy_ExitSignal()
    if(d1_seconds > 0 && TimeCurrent() - open_time >= strategy_hold_bars * d1_seconds)
       return true;
 
-   if(strategy_vix_lookback < 2)
+   if(!g_cvr1_signal_ready || g_cvr1_signal == 0)
       return false;
 
-   MqlRates vix_rates[];
-   ArraySetAsSeries(vix_rates, true);
-   const int copied = CopyRates(strategy_vix_symbol, PERIOD_D1, 1, strategy_vix_lookback, vix_rates); // perf-allowed: bounded external VIX opposite-signal check while a position is open.
-   if(copied < strategy_vix_lookback)
-      return false;
-
-   double high_max = vix_rates[0].high;
-   double low_min = vix_rates[0].low;
-   for(int i = 1; i < strategy_vix_lookback; ++i)
-     {
-      if(vix_rates[i].high > high_max)
-         high_max = vix_rates[i].high;
-      if(vix_rates[i].low < low_min)
-         low_min = vix_rates[i].low;
-     }
-
-   const bool long_signal = (vix_rates[0].high >= high_max &&
-                             vix_rates[0].close < vix_rates[0].open);
-   const bool short_signal = (vix_rates[0].low <= low_min &&
-                              vix_rates[0].close > vix_rates[0].open);
-
-   if(active_type == POSITION_TYPE_BUY && short_signal)
+   if(active_type == POSITION_TYPE_BUY && g_cvr1_signal < 0)
       return true;
-   if(active_type == POSITION_TYPE_SELL && long_signal)
+   if(active_type == POSITION_TYPE_SELL && g_cvr1_signal > 0)
       return true;
 
    return false;
