@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA evaluates completed H4 bars. It uses the V5 framework stochastic reader as the framework-compatible proxy for the card's AsimmetricStochNR stochastic line, using the source indicator's long K period, D period, and slowing defaults. It opens long when K crosses above D and opens short when K crosses below D. Existing longs close on a bearish K/D cross, existing shorts close on a bullish K/D cross, and either side also closes after 12 completed H4 bars if no opposite cross appears. Entries use a 2.5 x ATR(14) catastrophic stop and no fixed take profit.
+The EA evaluates completed H4 bars. It uses the V5 framework stochastic reader as the framework-compatible proxy for the card's AsimmetricStochNR stochastic line, using the source EA's long K period, D period, and slowing defaults. It opens long when K crosses above D and opens short when K crosses below D. Existing longs close on a bearish K/D cross, existing shorts close on a bullish K/D cross, and either side also closes after 12 completed H4 bars if no opposite cross appears. Entries use a 2.5 x ATR(14) catastrophic stop and no fixed take profit.
 
 ---
 
@@ -95,3 +95,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | v1 | 2026-05-30 | Initial build from card | 4bcc022a-ce60-4341-9306-71eefa231f89 |
 | v2 | 2026-06-11 | Rebuild in place from card under current framework corset | 10dc3c46-a7b3-4748-bdbb-6ee5621745c1 |
 | v3 | 2026-06-11 | Rebuild in place for Q01 task | f5379977-9e1e-48a3-a5f8-255d5defc735 |
+| v4 | 2026-06-11 | Rebuild in place for Q01 task | 1546b898-82f1-4b04-992b-44d3c329a5ce |
