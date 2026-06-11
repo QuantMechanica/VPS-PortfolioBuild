@@ -7324,6 +7324,13 @@
 9637,williams-ocr-reversal-h4,1,GBPUSD.DWX,96370001,2026-06-11,Development,active
 9637,williams-ocr-reversal-h4,2,USDJPY.DWX,96370002,2026-06-11,Development,active
 9637,williams-ocr-reversal-h4,3,XAUUSD.DWX,96370003,2026-06-11,Development,active
+12507,pair-coint-z,0,EURUSD.DWX,125070000,2026-06-11,Development,active
+12507,pair-coint-z,1,GBPUSD.DWX,125070001,2026-06-11,Development,active
+12507,pair-coint-z,2,NDX.DWX,125070002,2026-06-11,Development,active
+12507,pair-coint-z,3,WS30.DWX,125070003,2026-06-11,Development,active
 12413,ger-bbrsi,0,XAUUSD.DWX,124130000,2026-06-11,Development,active
 12413,ger-bbrsi,1,EURUSD.DWX,124130001,2026-06-11,Development,active
 12413,ger-bbrsi,2,GBPUSD.DWX,124130002,2026-06-11,Development,active
+11508,carter-t-ema50-100-macd-breakout,0,EURUSD.DWX,115080000,2026-06-11,Development,active
+11508,carter-t-ema50-100-macd-breakout,1,GBPUSD.DWX,115080001,2026-06-11,Development,active
+11508,carter-t-ema50-100-macd-breakout,2,USDJPY.DWX,115080002,2026-06-11,Development,active
