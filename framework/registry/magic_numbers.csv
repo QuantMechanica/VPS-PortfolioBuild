@@ -7917,3 +7917,11 @@
 10112,tv-double-tap,1,GBPUSD.DWX,101120001,2026-06-12,Development,active
 10112,tv-double-tap,2,XAUUSD.DWX,101120002,2026-06-12,Development,active
 10112,tv-double-tap,3,NDX.DWX,101120003,2026-06-12,Development,active
+10117,tv-ma-psar-atr-trend,0,EURUSD.DWX,101170000,2026-06-12,Development,active
+10117,tv-ma-psar-atr-trend,1,GBPUSD.DWX,101170001,2026-06-12,Development,active
+10117,tv-ma-psar-atr-trend,2,XAUUSD.DWX,101170002,2026-06-12,Development,active
+10117,tv-ma-psar-atr-trend,3,GDAXI.DWX,101170003,2026-06-12,Development,active
+10113,tv-ob-matrix,0,EURUSD.DWX,101130000,2026-06-12,Development,active
+10113,tv-ob-matrix,1,GBPUSD.DWX,101130001,2026-06-12,Development,active
+10113,tv-ob-matrix,2,XAUUSD.DWX,101130002,2026-06-12,Development,active
+10113,tv-ob-matrix,3,GDAXI.DWX,101130003,2026-06-12,Development,active
