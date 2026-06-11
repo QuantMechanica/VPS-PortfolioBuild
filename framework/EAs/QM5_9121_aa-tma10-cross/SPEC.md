@@ -56,7 +56,7 @@ The EA evaluates completed D1 bars. It builds a TMA10 by applying SMA(10) to the
 |---|---|
 | Base timeframe | `D1` |
 | Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_D1)` |
 
 ---
 
@@ -99,4 +99,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-11 | Initial build from card | b6082e3a-b506-4ea6-8c52-684f63dfd027 |
+| v1 | 2026-06-11 | Initial build from card | 0ab58ebf-179d-414d-9465-bf449ed79948 |

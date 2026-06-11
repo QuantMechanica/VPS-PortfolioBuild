@@ -7544,3 +7544,16 @@
 9967,ff-ema2550-rsi-h1,1,GBPUSD.DWX,99670001,2026-06-11,Development,active
 9967,ff-ema2550-rsi-h1,2,USDJPY.DWX,99670002,2026-06-11,Development,active
 9967,ff-ema2550-rsi-h1,3,AUDUSD.DWX,99670003,2026-06-11,Development,active
+12412,ger-3maf,0,USDCAD.DWX,124120000,2026-06-11,Development,active
+12412,ger-3maf,1,EURUSD.DWX,124120001,2026-06-11,Development,active
+12412,ger-3maf,2,GBPUSD.DWX,124120002,2026-06-11,Development,active
+12412,ger-3maf,3,AUDUSD.DWX,124120003,2026-06-11,Development,active
+12454,ea31337-pivot,0,EURUSD.DWX,124540000,2026-06-11,Development,active
+12454,ea31337-pivot,1,GBPUSD.DWX,124540001,2026-06-11,Development,active
+12454,ea31337-pivot,2,USDJPY.DWX,124540002,2026-06-11,Development,active
+12454,ea31337-pivot,3,XAUUSD.DWX,124540003,2026-06-11,Development,active
+12454,ea31337-pivot,4,GDAXI.DWX,124540004,2026-06-11,Development,active
+11869,ema40-80-cci-m5,0,EURUSD.DWX,118690000,2026-06-11,Development,active
+11869,ema40-80-cci-m5,1,GBPUSD.DWX,118690001,2026-06-11,Development,active
+11869,ema40-80-cci-m5,2,USDJPY.DWX,118690002,2026-06-11,Development,active
+11869,ema40-80-cci-m5,3,AUDUSD.DWX,118690003,2026-06-11,Development,active
