@@ -7853,3 +7853,7 @@
 10037,rw-caa-mvo,1,NDX.DWX,100370001,2026-06-11,Development,active
 10037,rw-caa-mvo,2,WS30.DWX,100370002,2026-06-11,Development,active
 10037,rw-caa-mvo,3,XAUUSD.DWX,100370003,2026-06-11,Development,active
+10040,ff-d3-body-psych-d1,0,EURUSD.DWX,100400000,2026-06-11,Development,active
+10040,ff-d3-body-psych-d1,1,GBPUSD.DWX,100400001,2026-06-11,Development,active
+10040,ff-d3-body-psych-d1,2,USDJPY.DWX,100400002,2026-06-11,Development,active
+10040,ff-d3-body-psych-d1,3,EURJPY.DWX,100400003,2026-06-11,Development,active
