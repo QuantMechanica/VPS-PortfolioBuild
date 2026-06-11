@@ -7899,3 +7899,6 @@
 10096,gh-ema-pullstop,0,EURUSD.DWX,100960000,2026-06-11,Development,active
 10096,gh-ema-pullstop,1,XAUUSD.DWX,100960001,2026-06-11,Development,active
 10096,gh-ema-pullstop,2,GDAXI.DWX,100960002,2026-06-11,Development,active
+10097,mql5-swing-ext,0,EURUSD.DWX,100970000,2026-06-11,Development,active
+10097,mql5-swing-ext,1,XAUUSD.DWX,100970001,2026-06-11,Development,active
+10097,mql5-swing-ext,2,GDAXI.DWX,100970002,2026-06-11,Development,active
