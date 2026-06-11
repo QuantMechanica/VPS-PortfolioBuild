@@ -7532,3 +7532,15 @@
 9943,ff-fractal-hilo-break-h4,1,GBPUSD.DWX,99430001,2026-06-11,Development,active
 9943,ff-fractal-hilo-break-h4,2,USDCAD.DWX,99430002,2026-06-11,Development,active
 9943,ff-fractal-hilo-break-h4,3,XAUUSD.DWX,99430003,2026-06-11,Development,active
+12371,tmom-skew,0,XAUUSD.DWX,123710000,2026-06-11,Development,active
+12371,tmom-skew,1,XTIUSD.DWX,123710001,2026-06-11,Development,active
+12371,tmom-skew,2,EURUSD.DWX,123710002,2026-06-11,Development,active
+12371,tmom-skew,3,GBPUSD.DWX,123710003,2026-06-11,Development,active
+12371,tmom-skew,4,GDAXI.DWX,123710004,2026-06-11,Development,active
+12371,tmom-skew,5,NDX.DWX,123710005,2026-06-11,Development,active
+12371,tmom-skew,6,WS30.DWX,123710006,2026-06-11,Development,active
+12371,tmom-skew,7,SP500.DWX,123710007,2026-06-11,Development,active
+9967,ff-ema2550-rsi-h1,0,EURUSD.DWX,99670000,2026-06-11,Development,active
+9967,ff-ema2550-rsi-h1,1,GBPUSD.DWX,99670001,2026-06-11,Development,active
+9967,ff-ema2550-rsi-h1,2,USDJPY.DWX,99670002,2026-06-11,Development,active
+9967,ff-ema2550-rsi-h1,3,AUDUSD.DWX,99670003,2026-06-11,Development,active
