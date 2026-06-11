@@ -104,7 +104,6 @@ void AdvanceState_OnNewBar()
      {
       const int idx_new = sh_idx[0];   // smaller shift = more recent swing high
       const int idx_old = sh_idx[1];   // larger shift = older swing high
-
       const double price_new = iHigh(_Symbol, PERIOD_H1, idx_new);  // perf-allowed
       const double price_old = iHigh(_Symbol, PERIOD_H1, idx_old);  // perf-allowed
 

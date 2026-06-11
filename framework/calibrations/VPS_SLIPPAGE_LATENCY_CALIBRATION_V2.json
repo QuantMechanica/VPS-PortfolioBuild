@@ -48,6 +48,25 @@
         "p95": 4.0
       }
     },
+    "GBPUSD.DWX": {
+      "auto_stub": true,
+      "commission_cents_per_lot": 700.0,
+      "derive_from": "D:\\QM\\reports\\work_items\\b3c80c23-dc6f-4b04-aa58-54fba8fdc22d\\QM5_10198\\Q04\\GBPUSD.DWX\\aggregate.json",
+      "latency_ms": {
+        "avg": 50.0,
+        "p95": 120.0
+      },
+      "slippage_points": {
+        "avg": 1.0,
+        "p95": 3.0
+      },
+      "spread_points": {
+        "median": 20.0,
+        "p95": 60.0
+      },
+      "stub_created_at": "2026-06-11T13:54:04+00:00",
+      "stub_source": "farmctl_pump_p5_calibration_autostub"
+    },
     "GDAXI.DWX": {
       "auto_stub": true,
       "commission_cents_per_lot": 700.0,

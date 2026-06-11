@@ -54,7 +54,7 @@ static int    g_long_phase   = 0;    // 0=IDLE 1=WATCH_SWEEP 2=WATCH_CONFIRM
 static double g_long_ext_low = 0.0;  // low of the RSI-extreme bar (updated if RSI stays extreme)
 static int    g_long_ext_bar = 0;    // bars since RSI returned above oversold
 static double g_long_swept   = 0.0;  // the swept level (= ext_low at sweep time)
-static int    g_long_sw_bar  = 0;    // bars since sweep (confirm grace window)
+static int    g_long_sw_bar  = 0;    // bars since sweep after liquidity break
 
 static int    g_short_phase    = 0;
 static double g_short_ext_high = 0.0;
@@ -239,7 +239,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
             if(built)
                return true;
            }
-         if(g_long_sw_bar > 3)
+         if(g_long_sw_bar > strategy_extreme_valid_bars)
             g_long_phase = 0; // grace window expired
          break;
      }
@@ -313,7 +313,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
             if(built)
                return true;
            }
-         if(g_short_sw_bar > 3)
+         if(g_short_sw_bar > strategy_extreme_valid_bars)
             g_short_phase = 0;
          break;
      }
