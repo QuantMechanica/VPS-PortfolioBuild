@@ -7312,3 +7312,11 @@
 9939,ff-atr-breakout-h1,1,GBPUSD.DWX,99390001,2026-06-11,Development,active
 9939,ff-atr-breakout-h1,2,USDJPY.DWX,99390002,2026-06-11,Development,active
 9939,ff-atr-breakout-h1,3,XAUUSD.DWX,99390003,2026-06-11,Development,active
+9582,ff-sdtr-h4,0,EURUSD.DWX,95820000,2026-06-11,Development,active
+9582,ff-sdtr-h4,1,GBPUSD.DWX,95820001,2026-06-11,Development,active
+9582,ff-sdtr-h4,2,USDJPY.DWX,95820002,2026-06-11,Development,active
+9582,ff-sdtr-h4,3,XAUUSD.DWX,95820003,2026-06-11,Development,active
+9636,brooks-failed-ob-h4,0,EURUSD.DWX,96360000,2026-06-11,Development,active
+9636,brooks-failed-ob-h4,1,GBPUSD.DWX,96360001,2026-06-11,Development,active
+9636,brooks-failed-ob-h4,2,USDJPY.DWX,96360002,2026-06-11,Development,active
+9636,brooks-failed-ob-h4,3,XAUUSD.DWX,96360003,2026-06-11,Development,active
