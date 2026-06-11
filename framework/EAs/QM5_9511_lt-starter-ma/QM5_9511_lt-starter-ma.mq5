@@ -58,8 +58,6 @@ double g_spread_cache[];      // ring of recent spread values (daily close-sprea
 int    g_spread_idx   = 0;
 bool   g_spread_ready = false;
 
-// Open-position tracking: entry SL stored per-magic for emergency hard stop
-double g_entry_sl_pts = 0.0;  // stop-loss distance in points computed at entry
 
 // -----------------------------------------------------------------------------
 // Helper: advance cached SMA/ATR state on each new closed D1 bar
@@ -148,34 +146,27 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    double atr_val = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
    if(atr_val <= 0.0) return false;
 
-   double pt = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(pt <= 0.0) return false;
-   double sl_pts = (strategy_atr_sl_mult * atr_val) / pt;
-   double ask    = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   double bid    = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
 
    if(cross > 0)
      {
       // Bullish cross: go LONG
-      req.type   = ORDER_TYPE_BUY;
-      req.price  = ask;
-      req.sl     = ask - strategy_atr_sl_mult * atr_val;
-      req.tp     = 0.0; // no TP; exit on opposite cross
-      req.lots   = QM_LotsForRisk(_Symbol, sl_pts);
-      g_entry_sl_pts = sl_pts;
+      req.type  = QM_BUY;
+      req.price = ask;
+      req.sl    = ask - strategy_atr_sl_mult * atr_val;
+      req.tp    = 0.0; // no TP; exit on opposite cross
      }
    else
      {
       // Bearish cross: go SHORT
-      req.type   = ORDER_TYPE_SELL;
-      req.price  = bid;
-      req.sl     = bid + strategy_atr_sl_mult * atr_val;
-      req.tp     = 0.0;
-      req.lots   = QM_LotsForRisk(_Symbol, sl_pts);
-      g_entry_sl_pts = sl_pts;
+      req.type  = QM_SELL;
+      req.price = bid;
+      req.sl    = bid + strategy_atr_sl_mult * atr_val;
+      req.tp    = 0.0;
      }
 
-   return (req.lots > 0.0);
+   return true;
   }
 
 void Strategy_ManageOpenPosition()
