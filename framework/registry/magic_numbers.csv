@@ -7645,3 +7645,12 @@
 9960,ff-lwma5-openclose-cross,1,AUDUSD.DWX,99600001,2026-06-11,Development,active
 9960,ff-lwma5-openclose-cross,2,EURUSD.DWX,99600002,2026-06-11,Development,active
 9960,ff-lwma5-openclose-cross,3,USDJPY.DWX,99600003,2026-06-11,Development,active
+12456,ea31337-retrace,0,EURUSD.DWX,124560000,2026-06-11,Development,active
+12456,ea31337-retrace,1,GBPUSD.DWX,124560001,2026-06-11,Development,active
+12456,ea31337-retrace,2,USDJPY.DWX,124560002,2026-06-11,Development,active
+12456,ea31337-retrace,3,XAUUSD.DWX,124560003,2026-06-11,Development,active
+12456,ea31337-retrace,4,GDAXI.DWX,124560004,2026-06-11,Development,active
+9966,ff-simple-daily-ema2050-d1,0,EURUSD.DWX,99660000,2026-06-11,Development,active
+9966,ff-simple-daily-ema2050-d1,1,GBPUSD.DWX,99660001,2026-06-11,Development,active
+9966,ff-simple-daily-ema2050-d1,2,USDJPY.DWX,99660002,2026-06-11,Development,active
+9966,ff-simple-daily-ema2050-d1,3,AUDUSD.DWX,99660003,2026-06-11,Development,active
