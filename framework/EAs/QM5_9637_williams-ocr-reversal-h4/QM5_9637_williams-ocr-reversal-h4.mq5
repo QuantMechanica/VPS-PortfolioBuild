@@ -124,10 +124,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      }
 
    // Read the last completed H4 bar (shift=1).
-   // iOpen/iHigh/iLow: perf-allowed — structural OHLC required for OCR body/range/extreme logic.
-   const double open1  = iOpen (_Symbol, PERIOD_H4, 1);
-   const double high1  = iHigh (_Symbol, PERIOD_H4, 1);
-   const double low1   = iLow  (_Symbol, PERIOD_H4, 1);
+   const double open1  = iOpen (_Symbol, PERIOD_H4, 1);  // perf-allowed: structural OHLC for OCR body/range logic
+   const double high1  = iHigh (_Symbol, PERIOD_H4, 1);  // perf-allowed: structural OHLC for running extreme tracking
+   const double low1   = iLow  (_Symbol, PERIOD_H4, 1);  // perf-allowed: structural OHLC for running extreme tracking
    const double close1 = QM_SMA(_Symbol, PERIOD_H4, 1, 1);  // SMA(1,shift=1) = close[1]
    const double atr1   = QM_ATR(_Symbol, PERIOD_H4, strategy_atr_period, 1);
 
