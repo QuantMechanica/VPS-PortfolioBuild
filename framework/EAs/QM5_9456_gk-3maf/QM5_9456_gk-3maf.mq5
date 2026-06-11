@@ -53,22 +53,14 @@ bool g_buy_signal  = false;
 bool g_sell_signal = false;
 
 // -----------------------------------------------------------------------------
-// Fractals helper — uses framework's pooled handle registry to avoid raw
-// CopyBuffer. Key pattern mirrors QM_IndATR/QM_IndMA in QM_Indicators.mqh.
+// Fractals helper — reads through QM_Indicators wrappers.
 // -----------------------------------------------------------------------------
 bool QM_FracActive(const int buffer_idx, const int shift)
   {
    // buffer 0 = upper fractal (peaks), buffer 1 = lower fractal (valleys)
-   const string key = StringFormat("FRAC|%s|%d", _Symbol, (int)_Period);
-   int h = QM_IndicatorsLookup(key);
-   if(h == INVALID_HANDLE)
-     {
-      h = iFractals(_Symbol, _Period);
-      if(h == INVALID_HANDLE)
-         return false;
-      QM_IndicatorsRegister(key, h);
-     }
-   const double val = QM_IndicatorReadBuffer(h, buffer_idx, shift);
+   const double val = (buffer_idx == 0)
+                      ? QM_FractalUpper(_Symbol, _Period, shift)
+                      : QM_FractalLower(_Symbol, _Period, shift);
    return (val != 0.0 && val != EMPTY_VALUE && val > 0.0);
   }
 

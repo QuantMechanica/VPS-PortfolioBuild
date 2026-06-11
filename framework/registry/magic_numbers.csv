@@ -7593,3 +7593,12 @@
 9990,ff-dual-candle-bb-rsi,1,GBPUSD.DWX,99900001,2026-06-11,Development,active
 9990,ff-dual-candle-bb-rsi,2,AUDUSD.DWX,99900002,2026-06-11,Development,active
 9990,ff-dual-candle-bb-rsi,3,USDJPY.DWX,99900003,2026-06-11,Development,active
+11478,williams-l-smash-day-d1,0,EURUSD.DWX,114780000,2026-06-11,Development,active
+11478,williams-l-smash-day-d1,1,GBPUSD.DWX,114780001,2026-06-11,Development,active
+11478,williams-l-smash-day-d1,2,USDJPY.DWX,114780002,2026-06-11,Development,active
+11478,williams-l-smash-day-d1,3,AUDUSD.DWX,114780003,2026-06-11,Development,active
+11478,williams-l-smash-day-d1,4,USDCAD.DWX,114780004,2026-06-11,Development,active
+9958,ff-rsi-ema-cci-h1h4,0,EURUSD.DWX,99580000,2026-06-11,Development,active
+9958,ff-rsi-ema-cci-h1h4,1,GBPUSD.DWX,99580001,2026-06-11,Development,active
+9958,ff-rsi-ema-cci-h1h4,2,USDJPY.DWX,99580002,2026-06-11,Development,active
+9958,ff-rsi-ema-cci-h1h4,3,AUDUSD.DWX,99580003,2026-06-11,Development,active
