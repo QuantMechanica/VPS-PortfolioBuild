@@ -3,7 +3,6 @@
 #property description "QM5_12507 Pair Cointegration Z-Score"
 
 #include <QM/QM_Common.mqh>
-#include <QM/QM_BasketOrder.mqh>
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 12507;
@@ -433,7 +432,7 @@ bool Strategy_NewsAllowsPair(const int pair_index, const datetime broker_time)
 bool Strategy_BuildLegRequest(const int pair_index,
                               const string symbol,
                               const int pair_side,
-                              QM_BasketOrderRequest &req)
+                              QM_EntryRequest &req)
   {
    if(pair_index < 0 || pair_index >= STRATEGY_PAIR_COUNT || pair_side == 0)
       return false;
@@ -459,29 +458,16 @@ bool Strategy_BuildLegRequest(const int pair_index,
       return false;
 
    const int digits = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
-   req.symbol = symbol;
    req.type = type;
    req.price = 0.0;
    req.sl = buy_leg ? NormalizeDouble(entry - stop_dist, digits)
                     : NormalizeDouble(entry + stop_dist, digits);
    req.tp = 0.0;
-   req.lots = QM_TM_NormalizeVolume(symbol, QM_LotsForRisk(symbol, sl_points) * 0.5);
    req.reason = (pair_side > 0) ? "QM5_12507_LONG_ASSET1_SHORT_ASSET2"
                                 : "QM5_12507_SHORT_ASSET1_LONG_ASSET2";
    req.symbol_slot = Strategy_SlotForSymbol(pair_index, symbol);
    req.expiration_seconds = 0;
-   return (req.lots > 0.0);
-  }
-
-void Strategy_CopyLegRequestToEntry(const QM_BasketOrderRequest &src, QM_EntryRequest &dst)
-  {
-   dst.type = src.type;
-   dst.price = src.price;
-   dst.sl = src.sl;
-   dst.tp = src.tp;
-   dst.reason = src.reason;
-   dst.symbol_slot = src.symbol_slot;
-   dst.expiration_seconds = src.expiration_seconds;
+   return true;
   }
 
 bool Strategy_OpenPair(const int pair_index, const int pair_side)
@@ -491,30 +477,15 @@ bool Strategy_OpenPair(const int pair_index, const int pair_side)
    if(Strategy_OpenPairLegCount(pair_index) > 0)
       return false;
 
-   QM_BasketOrderRequest req1;
-   QM_BasketOrderRequest req2;
-   if(!Strategy_BuildLegRequest(pair_index, g_asset1[pair_index], pair_side, req1))
-      return false;
-   if(!Strategy_BuildLegRequest(pair_index, g_asset2[pair_index], pair_side, req2))
+   if(!Strategy_IsPairLeg(pair_index, _Symbol))
       return false;
 
-   QM_EntryRequest entry1;
-   QM_EntryRequest entry2;
-   Strategy_CopyLegRequestToEntry(req1, entry1);
-   Strategy_CopyLegRequestToEntry(req2, entry2);
+   QM_EntryRequest entry;
+   if(!Strategy_BuildLegRequest(pair_index, _Symbol, pair_side, entry))
+      return false;
 
-   ulong ticket1 = 0;
-   if(req1.symbol == _Symbol)
-     {
-      if(!QM_TM_OpenPosition(entry1, ticket1))
-         return false;
-     }
-   else if(req2.symbol == _Symbol)
-     {
-      if(!QM_TM_OpenPosition(entry2, ticket1))
-         return false;
-     }
-   else
+   ulong ticket = 0;
+   if(!QM_TM_OpenPosition(entry, ticket))
       return false;
 
    g_entry_residual[pair_index] = g_residual_now;
