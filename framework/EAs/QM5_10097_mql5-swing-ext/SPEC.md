@@ -4,7 +4,7 @@
 **Slug:** mql5-swing-ext
 **Source:** a120af9a-fb72-526c-bb80-d1d098a617b5
 **Author of this spec:** Codex
-**Last revised:** 2026-06-11
+**Last revised:** 2026-06-12
 
 ---
 
@@ -88,4 +88,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-11 | Initial build from card | 061ff1af-1569-4786-b3c6-efbecd7dd7a6 |
+| v1 | 2026-06-12 | Initial build from card | 061ff1af-1569-4786-b3c6-efbecd7dd7a6 |

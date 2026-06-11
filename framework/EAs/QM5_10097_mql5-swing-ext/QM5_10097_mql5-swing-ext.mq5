@@ -42,165 +42,7 @@ input int    strategy_atr_period          = 14;        // ATR period for extensi
 input double strategy_atr_multiplier      = 1.0;       // ATR multiple for entry extension and SL buffer.
 input int    strategy_swing_scan_bars     = 180;       // Closed bars scanned for recent swing points.
 
-struct SwingPoint
-  {
-   bool     found;
-   double   price;
-   datetime time;
-   int      index;
-  };
-
-datetime g_triggered_buy_swing_time = 0;
-datetime g_triggered_sell_swing_time = 0;
-
-void ResetSwingPoint(SwingPoint &p)
-  {
-   p.found = false;
-   p.price = 0.0;
-   p.time = 0;
-   p.index = -1;
-  }
-
-bool IsSwingHigh(const MqlRates &bars[], const int i, const int swing_bars)
-  {
-   const double price = bars[i].high;
-   if(price <= 0.0)
-      return false;
-
-   for(int j = 1; j <= swing_bars; ++j)
-     {
-      if(price <= bars[i - j].high || price <= bars[i + j].high)
-         return false;
-     }
-   return true;
-  }
-
-bool IsSwingLow(const MqlRates &bars[], const int i, const int swing_bars)
-  {
-   const double price = bars[i].low;
-   if(price <= 0.0)
-      return false;
-
-   for(int j = 1; j <= swing_bars; ++j)
-     {
-      if(price >= bars[i - j].low || price >= bars[i + j].low)
-         return false;
-     }
-   return true;
-  }
-
-bool LoadClosedBars(const ENUM_TIMEFRAMES tf, const int requested, MqlRates &bars[])
-  {
-   ArraySetAsSeries(bars, true);
-   const int copied = CopyRates(_Symbol, tf, 1, requested, bars); // perf-allowed: one closed-bar gated structural swing scan.
-   return (copied >= requested);
-  }
-
-bool FindRecentSwings(const MqlRates &bars[],
-                      const int copied,
-                      const int swing_bars,
-                      SwingPoint &last_high,
-                      SwingPoint &prev_high,
-                      SwingPoint &last_low,
-                      SwingPoint &prev_low)
-  {
-   ResetSwingPoint(last_high);
-   ResetSwingPoint(prev_high);
-   ResetSwingPoint(last_low);
-   ResetSwingPoint(prev_low);
-
-   if(copied < (swing_bars * 2 + 3))
-      return false;
-
-   for(int i = swing_bars; i < copied - swing_bars; ++i)
-     {
-      if(IsSwingHigh(bars, i, swing_bars))
-        {
-         if(!last_high.found)
-           {
-            last_high.found = true;
-            last_high.price = bars[i].high;
-            last_high.time = bars[i].time;
-            last_high.index = i;
-           }
-         else if(!prev_high.found)
-           {
-            prev_high.found = true;
-            prev_high.price = bars[i].high;
-            prev_high.time = bars[i].time;
-            prev_high.index = i;
-           }
-        }
-
-      if(IsSwingLow(bars, i, swing_bars))
-        {
-         if(!last_low.found)
-           {
-            last_low.found = true;
-            last_low.price = bars[i].low;
-            last_low.time = bars[i].time;
-            last_low.index = i;
-           }
-         else if(!prev_low.found)
-           {
-            prev_low.found = true;
-            prev_low.price = bars[i].low;
-            prev_low.time = bars[i].time;
-            prev_low.index = i;
-           }
-        }
-
-      if(last_high.found && prev_high.found && last_low.found && prev_low.found)
-         return true;
-     }
-
-   return (last_high.found && prev_high.found && last_low.found && prev_low.found);
-  }
-
-int HigherTimeframeBias(const SwingPoint &last_high,
-                        const SwingPoint &prev_high,
-                        const SwingPoint &last_low,
-                        const SwingPoint &prev_low)
-  {
-   if(!(last_high.found && prev_high.found && last_low.found && prev_low.found))
-      return 0;
-   if(last_high.price > prev_high.price && last_low.price > prev_low.price)
-      return 1;
-   if(last_high.price < prev_high.price && last_low.price < prev_low.price)
-      return -1;
-   return 0;
-  }
-
-double NormalizeStrategyPrice(const double price)
-  {
-   if(price <= 0.0)
-      return 0.0;
-   int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
-   if(digits < 0)
-      digits = 8;
-   return NormalizeDouble(price, digits);
-  }
-
-bool HasOpenPositionForMagic()
-  {
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((long)PositionGetInteger(POSITION_MAGIC) == magic)
-         return true;
-     }
-   return false;
-  }
-
-// No Trade Filter - no card-specific time/spread gate; news and Friday close are framework gates.
+// No Trade Filter - no card-specific time or spread gate; framework gates news and Friday close.
 bool Strategy_NoTradeFilter()
   {
    return false;
@@ -209,6 +51,9 @@ bool Strategy_NoTradeFilter()
 // Trade Entry - HTF swing bias plus LTF ATR extension beyond the latest swing extreme.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   static datetime triggered_buy_swing_time = 0;
+   static datetime triggered_sell_swing_time = 0;
+
    req.type = QM_BUY;
    req.price = 0.0;
    req.sl = 0.0;
@@ -223,96 +68,212 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_swing_scan_bars < (strategy_swing_bars * 2 + 10))
       return false;
 
-   if(HasOpenPositionForMagic())
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
       return false;
+   for(int pos_i = PositionsTotal() - 1; pos_i >= 0; --pos_i)
+     {
+      const ulong ticket = PositionGetTicket(pos_i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((long)PositionGetInteger(POSITION_MAGIC) == magic)
+         return false;
+     }
 
    MqlRates htf_bars[];
    MqlRates ltf_bars[];
-   if(!LoadClosedBars(strategy_htf, strategy_swing_scan_bars, htf_bars))
-      return false;
-   if(!LoadClosedBars(strategy_ltf, strategy_swing_scan_bars, ltf_bars))
+   ArraySetAsSeries(htf_bars, true);
+   ArraySetAsSeries(ltf_bars, true);
+
+   // perf-allowed: bespoke swing structure scan, called only after OnTick passes QM_IsNewBar().
+   const int htf_copied = CopyRates(_Symbol, strategy_htf, 1, strategy_swing_scan_bars, htf_bars);
+   const int ltf_copied = CopyRates(_Symbol, strategy_ltf, 1, strategy_swing_scan_bars, ltf_bars);
+   const int min_bars = strategy_swing_bars * 2 + 3;
+   if(htf_copied < min_bars || ltf_copied < min_bars)
       return false;
 
-   SwingPoint htf_high;
-   SwingPoint htf_prev_high;
-   SwingPoint htf_low;
-   SwingPoint htf_prev_low;
-   if(!FindRecentSwings(htf_bars, ArraySize(htf_bars), strategy_swing_bars,
-                        htf_high, htf_prev_high, htf_low, htf_prev_low))
+   bool htf_last_high_found = false;
+   bool htf_prev_high_found = false;
+   bool htf_last_low_found = false;
+   bool htf_prev_low_found = false;
+   double htf_last_high = 0.0;
+   double htf_prev_high = 0.0;
+   double htf_last_low = 0.0;
+   double htf_prev_low = 0.0;
+
+   for(int i = strategy_swing_bars; i < htf_copied - strategy_swing_bars; ++i)
+     {
+      bool swing_high = true;
+      bool swing_low = true;
+      for(int j = 1; j <= strategy_swing_bars; ++j)
+        {
+         if(htf_bars[i].high <= htf_bars[i - j].high || htf_bars[i].high <= htf_bars[i + j].high)
+            swing_high = false;
+         if(htf_bars[i].low >= htf_bars[i - j].low || htf_bars[i].low >= htf_bars[i + j].low)
+            swing_low = false;
+        }
+
+      if(swing_high)
+        {
+         if(!htf_last_high_found)
+           {
+            htf_last_high_found = true;
+            htf_last_high = htf_bars[i].high;
+           }
+         else if(!htf_prev_high_found)
+           {
+            htf_prev_high_found = true;
+            htf_prev_high = htf_bars[i].high;
+           }
+        }
+
+      if(swing_low)
+        {
+         if(!htf_last_low_found)
+           {
+            htf_last_low_found = true;
+            htf_last_low = htf_bars[i].low;
+           }
+         else if(!htf_prev_low_found)
+           {
+            htf_prev_low_found = true;
+            htf_prev_low = htf_bars[i].low;
+           }
+        }
+
+      if(htf_last_high_found && htf_prev_high_found && htf_last_low_found && htf_prev_low_found)
+         break;
+     }
+
+   if(!(htf_last_high_found && htf_prev_high_found && htf_last_low_found && htf_prev_low_found))
       return false;
 
-   SwingPoint ltf_high;
-   SwingPoint ltf_prev_high;
-   SwingPoint ltf_low;
-   SwingPoint ltf_prev_low;
-   if(!FindRecentSwings(ltf_bars, ArraySize(ltf_bars), strategy_swing_bars,
-                        ltf_high, ltf_prev_high, ltf_low, ltf_prev_low))
-      return false;
-
-   const int bias = HigherTimeframeBias(htf_high, htf_prev_high, htf_low, htf_prev_low);
+   int bias = 0;
+   if(htf_last_high > htf_prev_high && htf_last_low > htf_prev_low)
+      bias = 1;
+   else if(htf_last_high < htf_prev_high && htf_last_low < htf_prev_low)
+      bias = -1;
    if(bias == 0)
       return false;
 
-   const double atr = QM_ATR(_Symbol, strategy_ltf, strategy_atr_period, 1);
-   if(atr <= 0.0)
+   bool ltf_last_high_found = false;
+   bool ltf_prev_high_found = false;
+   bool ltf_last_low_found = false;
+   bool ltf_prev_low_found = false;
+   double ltf_last_high = 0.0;
+   double ltf_last_low = 0.0;
+   datetime ltf_last_high_time = 0;
+   datetime ltf_last_low_time = 0;
+
+   for(int i = strategy_swing_bars; i < ltf_copied - strategy_swing_bars; ++i)
+     {
+      bool swing_high = true;
+      bool swing_low = true;
+      for(int j = 1; j <= strategy_swing_bars; ++j)
+        {
+         if(ltf_bars[i].high <= ltf_bars[i - j].high || ltf_bars[i].high <= ltf_bars[i + j].high)
+            swing_high = false;
+         if(ltf_bars[i].low >= ltf_bars[i - j].low || ltf_bars[i].low >= ltf_bars[i + j].low)
+            swing_low = false;
+        }
+
+      if(swing_high)
+        {
+         if(!ltf_last_high_found)
+           {
+            ltf_last_high_found = true;
+            ltf_last_high = ltf_bars[i].high;
+            ltf_last_high_time = ltf_bars[i].time;
+           }
+         else if(!ltf_prev_high_found)
+           {
+            ltf_prev_high_found = true;
+           }
+        }
+
+      if(swing_low)
+        {
+         if(!ltf_last_low_found)
+           {
+            ltf_last_low_found = true;
+            ltf_last_low = ltf_bars[i].low;
+            ltf_last_low_time = ltf_bars[i].time;
+           }
+         else if(!ltf_prev_low_found)
+           {
+            ltf_prev_low_found = true;
+           }
+        }
+
+      if(ltf_last_high_found && ltf_prev_high_found && ltf_last_low_found && ltf_prev_low_found)
+         break;
+     }
+
+   if(!(ltf_last_high_found && ltf_prev_high_found && ltf_last_low_found && ltf_prev_low_found))
       return false;
 
+   const double atr = QM_ATR(_Symbol, strategy_ltf, strategy_atr_period, 1);
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(point <= 0.0 || ask <= 0.0 || bid <= 0.0)
+   if(atr <= 0.0 || point <= 0.0 || ask <= 0.0 || bid <= 0.0)
       return false;
 
+   int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
+   if(digits < 0)
+      digits = 8;
    const int stops_level = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
    const double min_stop_distance = MathMax((double)stops_level * point, point);
    const double extension = atr * strategy_atr_multiplier;
-   const double midpoint = (ltf_high.price + ltf_low.price) * 0.5;
+   const double midpoint = (ltf_last_high + ltf_last_low) * 0.5;
 
    if(bias > 0)
      {
-      if(g_triggered_buy_swing_time == ltf_low.time)
+      if(triggered_buy_swing_time == ltf_last_low_time)
          return false;
-      if(ask > ltf_low.price - extension)
+      if(ask > ltf_last_low - extension)
          return false;
 
-      double sl = NormalizeStrategyPrice(ltf_low.price - extension);
-      double tp = NormalizeStrategyPrice(midpoint);
+      double sl = NormalizeDouble(ltf_last_low - extension, digits);
+      double tp = NormalizeDouble(midpoint, digits);
       if(sl <= 0.0 || tp <= 0.0 || sl >= ask || tp <= ask)
          return false;
       if(ask - sl < min_stop_distance)
-         sl = NormalizeStrategyPrice(ask - min_stop_distance - point);
+         sl = NormalizeDouble(ask - min_stop_distance - point, digits);
       if(tp - ask < min_stop_distance)
-         tp = NormalizeStrategyPrice(ask + min_stop_distance + point);
+         tp = NormalizeDouble(ask + min_stop_distance + point, digits);
 
       req.type = QM_BUY;
       req.sl = sl;
       req.tp = tp;
       req.reason = "BUY_HTF_UP_LTF_LOW_EXTENSION";
-      g_triggered_buy_swing_time = ltf_low.time;
+      triggered_buy_swing_time = ltf_last_low_time;
       return true;
      }
 
-   if(g_triggered_sell_swing_time == ltf_high.time)
+   if(triggered_sell_swing_time == ltf_last_high_time)
       return false;
-   if(bid < ltf_high.price + extension)
+   if(bid < ltf_last_high + extension)
       return false;
-   if(bid <= ltf_low.price)
+   if(bid <= ltf_last_low)
       return false;
 
-   double sl = NormalizeStrategyPrice(ltf_high.price + extension);
-   double tp = NormalizeStrategyPrice(midpoint);
+   double sl = NormalizeDouble(ltf_last_high + extension, digits);
+   double tp = NormalizeDouble(midpoint, digits);
    if(sl <= 0.0 || tp <= 0.0 || sl <= bid || tp >= bid)
       return false;
    if(sl - bid < min_stop_distance)
-      sl = NormalizeStrategyPrice(bid + min_stop_distance + point);
+      sl = NormalizeDouble(bid + min_stop_distance + point, digits);
    if(bid - tp < min_stop_distance)
-      tp = NormalizeStrategyPrice(bid - min_stop_distance - point);
+      tp = NormalizeDouble(bid - min_stop_distance - point, digits);
 
    req.type = QM_SELL;
    req.sl = sl;
    req.tp = tp;
    req.reason = "SELL_HTF_DOWN_LTF_HIGH_EXTENSION";
-   g_triggered_sell_swing_time = ltf_high.time;
+   triggered_sell_swing_time = ltf_last_high_time;
    return true;
   }
 
