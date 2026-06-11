@@ -128,32 +128,20 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if(cur > g_spread2x) return false;
      }
 
-   // One open position per magic — no pyramiding
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong t = PositionGetTicket(i);
-      if(!PositionSelectByTicket(t)) continue;
-      if(PositionGetInteger(POSITION_MAGIC) == magic) return false;
-     }
-
    // Trend signal: prior close above shifted 252-bar median → long
    if(g_close1 <= g_median_close) return false;
 
    double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period);
    if(atr <= 0.0) return false;
 
-   double pt      = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   double ask     = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   double sl      = ask - strategy_stop_atr_mult * atr;
-   double sl_pts  = (ask - sl) / pt;
-   if(sl_pts <= 0.0) return false;
+   double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   double sl  = ask - strategy_stop_atr_mult * atr;
+   if(sl <= 0.0) return false;
 
-   req.type  = ORDER_TYPE_BUY;
+   req.type  = QM_BUY;
    req.price = ask;
    req.sl    = sl;
    req.tp    = 0.0;
-   req.lots  = QM_LotsForRisk(_Symbol, sl_pts);
    return true;
   }
 
