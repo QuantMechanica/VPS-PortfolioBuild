@@ -7465,3 +7465,7 @@
 9959,ff-daily-wick-hilo-d1,2,USDJPY.DWX,99590002,2026-06-11,Development,active
 9959,ff-daily-wick-hilo-d1,3,XAUUSD.DWX,99590003,2026-06-11,Development,active
 9959,ff-daily-wick-hilo-d1,4,NDX.DWX,99590004,2026-06-11,Development,active
+9901,ff-alien-dds-rubber-h1,0,EURUSD.DWX,99010000,2026-06-11,Development,active
+9901,ff-alien-dds-rubber-h1,1,GBPUSD.DWX,99010001,2026-06-11,Development,active
+9901,ff-alien-dds-rubber-h1,2,AUDUSD.DWX,99010002,2026-06-11,Development,active
+9901,ff-alien-dds-rubber-h1,3,XAUUSD.DWX,99010003,2026-06-11,Development,active
