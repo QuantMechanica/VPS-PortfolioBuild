@@ -20,8 +20,8 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
 input int    qm_news_stale_max_hours      = 336;
 input string qm_news_min_impact           = "high";
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
@@ -41,46 +41,15 @@ input int    strategy_take_profit_pips       = 10;
 input double strategy_max_spread_pips        = 2.0;
 input int    strategy_time_stop_hour_broker  = 23;
 
-int Strategy_Hhmm(const datetime t)
+// No Trade Filter (time, spread, news): spread is the only card-specific
+// no-trade gate. Framework handles news, kill-switch, Friday close, and
+// duplicate position protection.
+bool Strategy_NoTradeFilter()
   {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.hour * 100 + dt.min;
-  }
-
-int Strategy_ClampHour(const int hour_value)
-  {
-   if(hour_value < 0)
-      return 0;
-   if(hour_value > 23)
-      return 23;
-   return hour_value;
-  }
-
-int Strategy_ClampMinute(const int minute_value)
-  {
-   if(minute_value < 0)
-      return 0;
-   if(minute_value > 59)
-      return 59;
-   return minute_value;
-  }
-
-double Strategy_PipSize()
-  {
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   const int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
-   if(point <= 0.0)
-      return 0.0;
-   return (digits == 3 || digits == 5) ? point * 10.0 : point;
-  }
-
-bool Strategy_HasOpenPosition()
-  {
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
+   if(strategy_max_spread_pips <= 0.0)
       return false;
 
+   const int magic = QM_FrameworkMagic();
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -89,32 +58,12 @@ bool Strategy_HasOpenPosition()
       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) == magic)
-         return true;
+         return false;
      }
 
-   return false;
-  }
-
-bool Strategy_TimeStopActive()
-  {
-   MqlDateTime dt;
-   TimeToStruct(TimeCurrent(), dt);
-   return (dt.hour >= Strategy_ClampHour(strategy_time_stop_hour_broker));
-  }
-
-// No Trade Filter (time, spread, news): spread is the only card-specific
-// no-trade gate. Framework handles news, kill-switch, Friday close, and
-// duplicate position protection.
-bool Strategy_NoTradeFilter()
-  {
-   if(Strategy_HasOpenPosition())
-      return false;
-
-   if(strategy_max_spread_pips <= 0.0)
-      return false;
-
-   const double pip = Strategy_PipSize();
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
+   const double pip = (digits == 3 || digits == 5) ? point * 10.0 : point;
    if(pip <= 0.0 || point <= 0.0)
       return true;
 
@@ -139,7 +88,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
    if(strategy_stop_loss_pips <= 0 || strategy_take_profit_pips <= 0)
       return false;
-   if(Strategy_TimeStopActive())
+
+   MqlDateTime now_dt;
+   TimeToStruct(TimeCurrent(), now_dt);
+   int time_stop_hour = strategy_time_stop_hour_broker;
+   if(time_stop_hour < 0)
+      time_stop_hour = 0;
+   if(time_stop_hour > 23)
+      time_stop_hour = 23;
+   if(now_dt.hour >= time_stop_hour)
       return false;
 
    const datetime closed_h1_time = iTime(_Symbol, PERIOD_H1, 1); // perf-allowed: single closed H1 bar timestamp identifies the card's first-hour candle; EntrySignal is framework QM_IsNewBar-gated.
@@ -148,8 +105,17 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    MqlDateTime closed_dt;
    TimeToStruct(closed_h1_time, closed_dt);
-   if(closed_dt.hour != Strategy_ClampHour(strategy_daily_open_hour_broker) ||
-      closed_dt.min != Strategy_ClampMinute(strategy_daily_open_minute))
+   int open_hour = strategy_daily_open_hour_broker;
+   if(open_hour < 0)
+      open_hour = 0;
+   if(open_hour > 23)
+      open_hour = 23;
+   int open_minute = strategy_daily_open_minute;
+   if(open_minute < 0)
+      open_minute = 0;
+   if(open_minute > 59)
+      open_minute = 59;
+   if(closed_dt.hour != open_hour || closed_dt.min != open_minute)
       return false;
 
    const double daily_open = iOpen(_Symbol, PERIOD_D1, 0); // perf-allowed: card requires broker daily-open price; no QM OHLC reader exists.
@@ -184,9 +150,33 @@ void Strategy_ManageOpenPosition()
 // end-of-day time stop.
 bool Strategy_ExitSignal()
   {
-   if(!Strategy_HasOpenPosition())
+   const int magic = QM_FrameworkMagic();
+   bool have_position = false;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+        {
+         have_position = true;
+         break;
+        }
+     }
+
+   if(!have_position)
       return false;
-   return Strategy_TimeStopActive();
+
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(), dt);
+   int time_stop_hour = strategy_time_stop_hour_broker;
+   if(time_stop_hour < 0)
+      time_stop_hour = 0;
+   if(time_stop_hour > 23)
+      time_stop_hour = 23;
+   return (dt.hour >= time_stop_hour);
   }
 
 // News Filter Hook: no card-specific news override; framework news settings
