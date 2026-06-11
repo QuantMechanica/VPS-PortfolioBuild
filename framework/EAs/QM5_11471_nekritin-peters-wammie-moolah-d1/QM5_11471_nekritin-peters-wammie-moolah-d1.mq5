@@ -147,7 +147,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double max_sl = strategy_max_sl_pips * pip;
    const int first_min_shift = strategy_min_touch_gap_bars + 1;
    const int zone_end = strategy_zone_exclude_recent + strategy_zone_lookback_bars - 1;
-   const int first_max_shift = MathMin(MathMin(strategy_max_pattern_bars, zone_end), copied - 2);
+   const int first_max_shift = MathMin(MathMin(strategy_max_pattern_bars + 1, zone_end), copied - 2);
 
    if(second_close > second_open && second_body > strategy_catalyst_body_ratio * second_range)
      {
@@ -165,7 +165,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
          const double entry = QM_TM_NormalizePrice(_Symbol, second_high + entry_offset);
          const double sl = QM_TM_NormalizePrice(_Symbol, MathMin(rates[first_shift].low, second_low) - entry_offset);
-         if(entry <= ask || sl <= 0.0 || entry <= sl || entry - sl > max_sl)
+         const bool stop_triggered = (ask >= entry);
+         const double risk_entry = stop_triggered ? ask : entry;
+         if(sl <= 0.0 || risk_entry <= sl || risk_entry - sl > max_sl)
             continue;
 
          double tp = 0.0;
@@ -180,16 +182,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
               }
            }
          tp = QM_TM_NormalizePrice(_Symbol, tp);
-         if(tp <= entry)
+         if(tp <= risk_entry)
             continue;
 
-         req.type = QM_BUY_STOP;
-         req.price = entry;
+         req.type = stop_triggered ? QM_BUY : QM_BUY_STOP;
+         req.price = stop_triggered ? 0.0 : entry;
          req.sl = sl;
          req.tp = tp;
-         req.reason = "QM5_11471_WAMMIE_BUY_STOP";
-         req.expiration_seconds = strategy_pending_bars * PeriodSeconds(PERIOD_D1);
-         return (req.expiration_seconds > 0);
+         req.reason = stop_triggered ? "QM5_11471_WAMMIE_BUY_TRIGGERED" : "QM5_11471_WAMMIE_BUY_STOP";
+         req.expiration_seconds = stop_triggered ? 0 : strategy_pending_bars * PeriodSeconds(PERIOD_D1);
+         return (stop_triggered || req.expiration_seconds > 0);
         }
      }
 
@@ -209,7 +211,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
          const double entry = QM_TM_NormalizePrice(_Symbol, second_low - entry_offset);
          const double sl = QM_TM_NormalizePrice(_Symbol, MathMax(rates[first_shift].high, second_high) + entry_offset);
-         if(entry >= bid || sl <= 0.0 || sl <= entry || sl - entry > max_sl)
+         const bool stop_triggered = (bid <= entry);
+         const double risk_entry = stop_triggered ? bid : entry;
+         if(sl <= 0.0 || sl <= risk_entry || sl - risk_entry > max_sl)
             continue;
 
          double tp = 0.0;
@@ -224,16 +228,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
               }
            }
          tp = QM_TM_NormalizePrice(_Symbol, tp);
-         if(tp <= 0.0 || tp >= entry)
+         if(tp <= 0.0 || tp >= risk_entry)
             continue;
 
-         req.type = QM_SELL_STOP;
-         req.price = entry;
+         req.type = stop_triggered ? QM_SELL : QM_SELL_STOP;
+         req.price = stop_triggered ? 0.0 : entry;
          req.sl = sl;
          req.tp = tp;
-         req.reason = "QM5_11471_MOOLAH_SELL_STOP";
-         req.expiration_seconds = strategy_pending_bars * PeriodSeconds(PERIOD_D1);
-         return (req.expiration_seconds > 0);
+         req.reason = stop_triggered ? "QM5_11471_MOOLAH_SELL_TRIGGERED" : "QM5_11471_MOOLAH_SELL_STOP";
+         req.expiration_seconds = stop_triggered ? 0 : strategy_pending_bars * PeriodSeconds(PERIOD_D1);
+         return (stop_triggered || req.expiration_seconds > 0);
         }
      }
 
