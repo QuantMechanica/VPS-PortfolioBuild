@@ -7893,3 +7893,9 @@
 10088,mql5-hammer-rsi,1,GBPUSD.DWX,100880001,2026-06-11,Development,active
 10088,mql5-hammer-rsi,2,USDJPY.DWX,100880002,2026-06-11,Development,active
 10088,mql5-hammer-rsi,3,XAUUSD.DWX,100880003,2026-06-11,Development,active
+10095,gh-ict-orderblk,0,EURUSD.DWX,100950000,2026-06-11,Development,active
+10095,gh-ict-orderblk,1,XAUUSD.DWX,100950001,2026-06-11,Development,active
+10095,gh-ict-orderblk,2,GDAXI.DWX,100950002,2026-06-11,Development,active
+10096,gh-ema-pullstop,0,EURUSD.DWX,100960000,2026-06-11,Development,active
+10096,gh-ema-pullstop,1,XAUUSD.DWX,100960001,2026-06-11,Development,active
+10096,gh-ema-pullstop,2,GDAXI.DWX,100960002,2026-06-11,Development,active
