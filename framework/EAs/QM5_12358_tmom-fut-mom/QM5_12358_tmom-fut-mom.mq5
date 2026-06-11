@@ -74,7 +74,7 @@ bool HasOurPosition(bool &has_long_out, bool &has_short_out)
 // -----------------------------------------------------------------------------
 bool Strategy_NoTradeFilter()
   {
-   return !g_score_ready;
+   return false;
   }
 
 // -----------------------------------------------------------------------------
