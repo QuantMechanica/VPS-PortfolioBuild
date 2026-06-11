@@ -7263,7 +7263,15 @@
 9523,mql5-asia-sweep,1,GDAXI.DWX,95230001,2026-06-11,Development,active
 9523,mql5-asia-sweep,2,EURUSD.DWX,95230002,2026-06-11,Development,active
 9523,mql5-asia-sweep,3,GBPUSD.DWX,95230003,2026-06-11,Development,active
+10008,ff-sd-first-touch-h1,0,EURUSD.DWX,100080000,2026-06-11,Development,active
+10008,ff-sd-first-touch-h1,1,GBPUSD.DWX,100080001,2026-06-11,Development,active
+10008,ff-sd-first-touch-h1,2,USDJPY.DWX,100080002,2026-06-11,Development,active
+10008,ff-sd-first-touch-h1,3,XAUUSD.DWX,100080003,2026-06-11,Development,active
 11555,carter-t-m5-wma5-sma11-psar-adx14,0,EURUSD.DWX,115550000,2026-06-11,Development,active
 11555,carter-t-m5-wma5-sma11-psar-adx14,1,GBPUSD.DWX,115550001,2026-06-11,Development,active
 11555,carter-t-m5-wma5-sma11-psar-adx14,2,AUDUSD.DWX,115550002,2026-06-11,Development,active
 11555,carter-t-m5-wma5-sma11-psar-adx14,3,USDCHF.DWX,115550003,2026-06-11,Development,active
+9696,ff-genesis-matrix-m5,0,EURUSD.DWX,96960000,2026-06-11,Development,active
+9696,ff-genesis-matrix-m5,1,GBPUSD.DWX,96960001,2026-06-11,Development,active
+9696,ff-genesis-matrix-m5,2,USDJPY.DWX,96960002,2026-06-11,Development,active
+9696,ff-genesis-matrix-m5,3,XAUUSD.DWX,96960003,2026-06-11,Development,active
