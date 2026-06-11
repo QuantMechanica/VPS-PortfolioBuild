@@ -7791,3 +7791,10 @@
 11867,psar-adx50-di-h1,1,GBPUSD.DWX,118670001,2026-06-11,Development,active
 11867,psar-adx50-di-h1,2,USDJPY.DWX,118670002,2026-06-11,Development,active
 11867,psar-adx50-di-h1,3,AUDUSD.DWX,118670003,2026-06-11,Development,active
+12359,tmom-two-ma,0,EURUSD.DWX,123590000,2026-06-11,Development,active
+12359,tmom-two-ma,1,GBPUSD.DWX,123590001,2026-06-11,Development,active
+12359,tmom-two-ma,2,USDJPY.DWX,123590002,2026-06-11,Development,active
+12359,tmom-two-ma,3,XAUUSD.DWX,123590003,2026-06-11,Development,active
+12359,tmom-two-ma,4,GDAXI.DWX,123590004,2026-06-11,Development,active
+12359,tmom-two-ma,5,NDX.DWX,123590005,2026-06-11,Development,active
+12359,tmom-two-ma,6,WS30.DWX,123590006,2026-06-11,Development,active
