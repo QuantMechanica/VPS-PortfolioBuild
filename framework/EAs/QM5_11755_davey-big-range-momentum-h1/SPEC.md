@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA evaluates each completed H1 bar. It measures the bar range as high minus low and requires that range to be greater than the rolling average range plus two rolling standard deviations over the configured `xr` lookback. When that large-range condition is true, it buys if the completed close is above the close `daysback` H1 bars earlier, and sells if it is below that prior close. Exits are only the initial 2x ATR(14) stop loss, 4x ATR(14) take profit, and framework-level Friday/news/kill-switch exits.
+The EA evaluates each completed H1 bar. It measures the bar range as high minus low and requires that range to be greater than the rolling average range plus two rolling standard deviations over the configured `xr` lookback, using the completed signal bar and the preceding `xr - 1` H1 bars. When that large-range condition is true, it buys if the completed close is above the close `daysback` H1 bars earlier, and sells if it is below that prior close. Exits are only the initial 2x ATR(14) stop loss, 4x ATR(14) take profit, and framework-level Friday/news/kill-switch exits.
 
 ---
 

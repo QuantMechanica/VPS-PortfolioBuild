@@ -41,50 +41,6 @@ input double strategy_atr_sl_mult        = 2.0;
 input double strategy_atr_tp_mult        = 4.0;
 input double strategy_range_stddev_mult  = 2.0;
 
-double Strategy_BarRange(const int shift)
-  {
-   const double high = iHigh(_Symbol, PERIOD_H1, shift); // perf-allowed: fixed closed-bar high for card range math; no QM_High reader exists.
-   const double low  = iLow(_Symbol, PERIOD_H1, shift);  // perf-allowed: fixed closed-bar low for card range math; no QM_Low reader exists.
-   if(high <= 0.0 || low <= 0.0 || high <= low)
-      return 0.0;
-   return high - low;
-  }
-
-bool Strategy_RangeStats(const int start_shift,
-                         const int lookback,
-                         double &mean_range,
-                         double &stddev_range)
-  {
-   mean_range = 0.0;
-   stddev_range = 0.0;
-   if(lookback < 2 || lookback > 500)
-      return false;
-
-   double ranges[];
-   ArrayResize(ranges, lookback);
-
-   double sum = 0.0;
-   for(int i = 0; i < lookback; ++i)
-     {
-      const double r = Strategy_BarRange(start_shift + i);
-      if(r <= 0.0)
-         return false;
-      ranges[i] = r;
-      sum += r;
-     }
-
-   mean_range = sum / (double)lookback;
-   double var_sum = 0.0;
-   for(int i = 0; i < lookback; ++i)
-     {
-      const double diff = ranges[i] - mean_range;
-      var_sum += diff * diff;
-     }
-
-   stddev_range = MathSqrt(var_sum / (double)lookback);
-   return (mean_range > 0.0 && stddev_range >= 0.0);
-  }
-
 // -----------------------------------------------------------------------------
 // No Trade Filter (time, spread, news)
 // -----------------------------------------------------------------------------
@@ -106,40 +62,71 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(strategy_xr < 2 || strategy_daysback < 1 || strategy_atr_period < 1)
+   if(strategy_xr < 2 || strategy_xr > 500 ||
+      strategy_daysback < 1 || strategy_daysback > 500 ||
+      strategy_atr_period < 1 ||
+      strategy_atr_sl_mult <= 0.0 ||
+      strategy_atr_tp_mult <= 0.0 ||
+      strategy_range_stddev_mult <= 0.0)
       return false;
 
-   const double signal_range = Strategy_BarRange(1);
-   const double close_signal = iClose(_Symbol, PERIOD_H1, 1);                         // perf-allowed: fixed closed-bar close for card momentum math; no QM_Close reader exists.
-   const double close_prior  = iClose(_Symbol, PERIOD_H1, 1 + strategy_daysback);      // perf-allowed: fixed closed-bar close for card momentum math; no QM_Close reader exists.
-   const double atr_signal   = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
-   if(signal_range <= 0.0 || close_signal <= 0.0 || close_prior <= 0.0 || atr_signal <= 0.0)
+   const int bars_needed = MathMax(strategy_xr, strategy_daysback + 1);
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, PERIOD_H1, 1, bars_needed, rates);
+   if(copied < bars_needed)
       return false;
 
-   double mean_range = 0.0;
-   double stddev_range = 0.0;
-   if(!Strategy_RangeStats(2, strategy_xr, mean_range, stddev_range))
+   const double signal_high = rates[0].high;
+   const double signal_low = rates[0].low;
+   const double signal_close = rates[0].close;
+   const double prior_close = rates[strategy_daysback].close;
+   if(signal_high <= 0.0 || signal_low <= 0.0 || signal_high <= signal_low ||
+      signal_close <= 0.0 || prior_close <= 0.0)
       return false;
 
+   double range_sum = 0.0;
+   double ranges[];
+   ArrayResize(ranges, strategy_xr);
+   for(int i = 0; i < strategy_xr; ++i)
+     {
+      const double r = rates[i].high - rates[i].low;
+      if(r <= 0.0)
+         return false;
+      ranges[i] = r;
+      range_sum += r;
+     }
+
+   const double mean_range = range_sum / (double)strategy_xr;
+   double variance_sum = 0.0;
+   for(int i = 0; i < strategy_xr; ++i)
+     {
+      const double diff = ranges[i] - mean_range;
+      variance_sum += diff * diff;
+     }
+
+   const double stddev_range = MathSqrt(variance_sum / (double)strategy_xr);
+   const double signal_range = signal_high - signal_low;
    const double big_range_threshold = mean_range + strategy_range_stddev_mult * stddev_range;
    if(signal_range <= big_range_threshold)
       return false;
 
    QM_OrderType side = QM_BUY;
-   if(close_signal > close_prior)
+   if(signal_close > prior_close)
       side = QM_BUY;
-   else if(close_signal < close_prior)
+   else if(signal_close < prior_close)
       side = QM_SELL;
    else
       return false;
 
    const double entry = (side == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
                                          : SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(entry <= 0.0)
+   const double atr = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
+   if(entry <= 0.0 || atr <= 0.0)
       return false;
 
-   const double sl = QM_StopATRFromValue(_Symbol, side, entry, atr_signal, strategy_atr_sl_mult);
-   const double tp = QM_TakeATRFromValue(_Symbol, side, entry, atr_signal, strategy_atr_tp_mult);
+   const double sl = QM_StopATRFromValue(_Symbol, side, entry, atr, strategy_atr_sl_mult);
+   const double tp = QM_TakeATRFromValue(_Symbol, side, entry, atr, strategy_atr_tp_mult);
    if(sl <= 0.0 || tp <= 0.0)
       return false;
 
