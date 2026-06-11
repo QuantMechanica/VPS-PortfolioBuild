@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA trades PatternPy-style double-top and double-bottom reversals on closed H4 bars. It checks a fixed three-bar window after the right-side neighbour has closed: a double top requires the middle high to be the three-bar maximum and the two neighbouring highs to be within 5 percent of their average; a double bottom mirrors that rule on lows. A double top opens a short at the next bar, and a double bottom opens a long at the next bar. Positions close on the opposite pattern, after 12 H4 bars, or when the last closed bar breaks the stored pattern high or pattern low; the broker stop is seeded at 2.0 x ATR(14).
+The EA trades PatternPy-style double-top and double-bottom reversals on closed H4 bars. On each new H4 bar it evaluates the PatternPy label two bars back, after the right-side neighbour required by `shift(-1)` has closed. A double top opens a short when the labelled bar's high is below both neighbouring highs, the three-bar rolling high is at least as high as both neighbours, and both neighbouring bars have high-low ranges no wider than 5 percent of their average price. A double bottom mirrors the rule on lows. Positions close on the opposite pattern, after 12 H4 bars, or when the last closed bar breaks the stored pattern high or pattern low; the broker stop is seeded at 2.0 x ATR(14).
 
 ---
 
@@ -18,8 +18,8 @@ The EA trades PatternPy-style double-top and double-bottom reversals on closed H
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| strategy_window | 3 | fixed at 3 | PatternPy rolling high/low window used for the double-top or double-bottom label. |
-| strategy_threshold | 0.05 | 0.001-0.20 | Maximum allowed distance between neighbouring highs or lows, expressed as a fraction of their average. |
+| strategy_window | 3 | fixed at 3 | PatternPy rolling high/low window used for the source label. |
+| strategy_threshold | 0.05 | 0.001-0.20 | Maximum allowed high-low range for each neighbouring bar, expressed as a fraction of that bar's average price. |
 | strategy_atr_period | 14 | 2-100 | ATR period used for the emergency protective stop. |
 | strategy_atr_sl_mult | 2.0 | 0.5-10.0 | ATR multiplier for the protective stop distance. |
 | strategy_max_hold_bars | 12 | 1-100 | Maximum position age in base-timeframe bars before strategy exit. |
@@ -81,9 +81,9 @@ This card was mechanised from:
 
 | Phase | Risk mode | Value |
 |---|---|---|
-| Backtest (Q02 – Q10) | RISK_FIXED | $1,000 per trade (HR4) |
+| Backtest (Q02 - Q10) | RISK_FIXED | $1,000 per trade (HR4) |
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
-| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
+| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% - 0.5%) |
 
 ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
 
