@@ -7578,6 +7578,11 @@
 11879,turtle-20day-breakout,3,AUDUSD.DWX,118790003,2026-06-11,Development,active
 11879,turtle-20day-breakout,4,USDCHF.DWX,118790004,2026-06-11,Development,active
 11879,turtle-20day-breakout,5,USDCAD.DWX,118790005,2026-06-11,Development,active
+11422,williams-18ma-outside-bar-entry-d1,0,EURUSD.DWX,114220000,2026-06-11,Development,active
+11422,williams-18ma-outside-bar-entry-d1,1,GBPUSD.DWX,114220001,2026-06-11,Development,active
+11422,williams-18ma-outside-bar-entry-d1,2,USDJPY.DWX,114220002,2026-06-11,Development,active
+11422,williams-18ma-outside-bar-entry-d1,3,AUDUSD.DWX,114220003,2026-06-11,Development,active
+11422,williams-18ma-outside-bar-entry-d1,4,USDCAD.DWX,114220004,2026-06-11,Development,active
 11767,connors-double7s-200sma-d1,0,EURUSD.DWX,117670000,2026-06-11,Development,active
 11767,connors-double7s-200sma-d1,1,GBPUSD.DWX,117670001,2026-06-11,Development,active
 11767,connors-double7s-200sma-d1,2,USDJPY.DWX,117670002,2026-06-11,Development,active
