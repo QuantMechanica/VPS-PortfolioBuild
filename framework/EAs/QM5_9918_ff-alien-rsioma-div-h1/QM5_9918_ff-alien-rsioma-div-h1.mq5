@@ -7,7 +7,7 @@
 // =============================================================================
 // QM5_9918 — ForexFactory Alien RSIOMA/DDS Divergence H1
 // Source: forexalien, "Alien's Extraterrestrial Visual Systems", ForexFactory
-//         2013-2026, https://www.forexfactory.com/thread/463573
+//         2013-2026, ForexFactory thread 463573 (see card source_citation)
 // Logic:  H1 fractal pivot (3-left/3-right on close) divergence between price
 //         and RSI-proxy (RSIOMA) + DDS confirmation. Entry triggered by RSI
 //         cross-30 or DDS cross-up/down. SL at pivot extreme ± 0.35*ATR.
@@ -430,7 +430,7 @@ void Strategy_ManageOpenPosition()
       const bool is_buy = (PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY);
       const double cur  = is_buy ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
                                  : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      if(is_buy ? (cur - open_p) : (open_p - cur) >= strategy_exit_r * r_dist)
+      if((is_buy ? (cur - open_p) : (open_p - cur)) >= strategy_exit_r * r_dist)
          g_reached_08r = true;
       break;
      }
