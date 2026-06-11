@@ -1,10 +1,10 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        9121
-; ea_slug:      aa-tma10-cross
+; ea_id:        12371
+; ea_slug:      tmom-skew
 ; ea_version:   v5.0
 ; set_version:  s20260611-001
-; symbol:       WS30.DWX
+; symbol:       EURUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   2
