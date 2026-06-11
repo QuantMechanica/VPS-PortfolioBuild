@@ -22,7 +22,7 @@ input double RISK_FIXED                  = 1000.0;
 input double PORTFOLIO_WEIGHT            = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal    = QM_NEWS_TEMPORAL_PRE30_POST30;
+input QM_NewsTemporalMode      qm_news_temporal    = QM_NEWS_TEMPORAL_PRE30;
 input QM_NewsComplianceProfile qm_news_compliance  = QM_NEWS_COMPLIANCE_DXZ;
 input int    qm_news_stale_max_hours               = 336;
 input string qm_news_min_impact                    = "high";
@@ -268,9 +268,6 @@ bool Strategy_NoTradeFilter()
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // Update per-bar state (called only when QM_IsNewBar() is true)
-   UpdateBarState();
-
    // London session filter: entries only
    if(!InLondonSession()) return false;
 
@@ -419,6 +416,10 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
+   const bool is_new_bar = QM_IsNewBar();
+   if(is_new_bar)
+      UpdateBarState();
+
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -435,7 +436,7 @@ void OnTick()
         }
      }
 
-   if(!QM_IsNewBar())
+   if(!is_new_bar)
       return;
 
    QM_EquityStreamOnNewBar();

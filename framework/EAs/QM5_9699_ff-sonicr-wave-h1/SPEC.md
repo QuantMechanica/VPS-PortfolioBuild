@@ -3,14 +3,14 @@
 **EA ID:** QM5_9699
 **Slug:** `ff-sonicr-wave-h1`
 **Source:** `6e967762-b26d-59a3-b076-35c17f2e7c36` (see `strategy-seeds/sources/6e967762-b26d-59a3-b076-35c17f2e7c36/`)
-**Author of this spec:** Claude
+**Author of this spec:** Codex
 **Last revised:** 2026-06-11
 
 ---
 
 ## 1. Strategy Logic
 
-During the London session (broker hours 08:00–17:00) the EA scans the last 24 H1 closed bars for a three-swing PA wave: a swing low A, a swing high B (with B−A ≥ 1×ATR), and a higher swing low C (C > A). A long entry fires on the first H1 bar whose close exceeds both the swing high B and the nearest whole/half-number level that capped B (within 0.25×ATR above B), provided the Dragon EMA(34) and Trend EMA(89) are both sloping upward over the last 5 bars and the close is above Dragon. The stop is placed below C minus 0.25×ATR; the take-profit is the closer of the next round/half level above entry or 2.0R. The short side is the exact mirror. Positions exit on a Dragon close-cross, a 10-hour time stop, or via SL/TP.
+During the London session (broker hours 08:00-17:00) the EA scans the last 24 H1 closed bars for a three-swing PA wave: a swing low A, a swing high B (with B-A >= 1xATR), and a higher swing low C (C > A). A long entry fires on the first H1 bar whose close exceeds both the swing high B and the nearest whole/half-number level that capped B (within 0.25xATR above B), provided the Dragon EMA(34) and Trend EMA(89) are both sloping upward over the last 5 bars and the close is above Dragon. The stop is placed below C minus 0.25xATR; the take-profit is the closer of the next round/half level above entry or 2.0R. The short side is the exact mirror. Positions exit on a Dragon close-cross, a 10-hour time stop, or via SL/TP, and entries defer to the framework high-impact news pause for the 30 minutes before events.
 
 ---
 

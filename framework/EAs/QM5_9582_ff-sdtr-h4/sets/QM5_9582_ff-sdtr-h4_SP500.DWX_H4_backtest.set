@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        9699
-; ea_slug:      ff-sonicr-wave-h1
+; ea_id:        9582
+; ea_slug:      ff-sdtr-h4
 ; ea_version:   v5.0
 ; set_version:  s20260611-001
-; symbol:       GBPUSD.DWX
-; timeframe:    H1
+; symbol:       SP500.DWX
+; timeframe:    H4
 ; environment:  backtest
-; magic_slot:   1
+; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   2b96d9104be0f8ecdfc3fbf8ca0daf331ad750cd93106b694519e66416c1fe6d
 ; author:       Development
 ; date:         2026-06-11
 ;==========================================================
-qm_magic_slot_offset=1
+qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
