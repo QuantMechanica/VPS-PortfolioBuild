@@ -7259,3 +7259,11 @@
 9525,mql5-ema50-retest,1,GBPUSD.DWX,95250001,2026-06-11,Development,active
 9525,mql5-ema50-retest,2,GDAXI.DWX,95250002,2026-06-11,Development,active
 9525,mql5-ema50-retest,3,XAUUSD.DWX,95250003,2026-06-11,Development,active
+9523,mql5-asia-sweep,0,XAUUSD.DWX,95230000,2026-06-11,Development,active
+9523,mql5-asia-sweep,1,GDAXI.DWX,95230001,2026-06-11,Development,active
+9523,mql5-asia-sweep,2,EURUSD.DWX,95230002,2026-06-11,Development,active
+9523,mql5-asia-sweep,3,GBPUSD.DWX,95230003,2026-06-11,Development,active
+11555,carter-t-m5-wma5-sma11-psar-adx14,0,EURUSD.DWX,115550000,2026-06-11,Development,active
+11555,carter-t-m5-wma5-sma11-psar-adx14,1,GBPUSD.DWX,115550001,2026-06-11,Development,active
+11555,carter-t-m5-wma5-sma11-psar-adx14,2,AUDUSD.DWX,115550002,2026-06-11,Development,active
+11555,carter-t-m5-wma5-sma11-psar-adx14,3,USDCHF.DWX,115550003,2026-06-11,Development,active

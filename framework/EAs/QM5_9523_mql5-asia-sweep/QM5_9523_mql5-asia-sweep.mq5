@@ -35,7 +35,7 @@ input int    qm_friday_close_hour_broker  = 21;
 input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
-input group "Strategy — Asia Range"
+input group "Strategy"
 input int    AsiaStartHour   = 0;   // Broker time: Asia range build start hour (inclusive)
 input int    AsiaEndHour     = 7;   // Broker time: Asia range build end hour (exclusive)
 
@@ -70,8 +70,7 @@ void AdvanceAsiaRange()
       g_trades_today = 0;
      }
 
-   // perf-allowed: single iTime read inside QM_IsNewBar gate
-   const datetime prev_time = iTime(_Symbol, PERIOD_M15, 1);
+   const datetime prev_time = iTime(_Symbol, PERIOD_M15, 1); // perf-allowed: single-shift inside QM_IsNewBar gate
    if(prev_time == 0)
       return;
    MqlDateTime dt_prev;
@@ -143,10 +142,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(atr <= 0.0)
       return false;
 
-   // perf-allowed: prev bar OHLC single-shift reads inside QM_IsNewBar gate
-   const double prev_h = iHigh(_Symbol,  PERIOD_M15, 1);
-   const double prev_l = iLow(_Symbol,   PERIOD_M15, 1);
-   const double prev_c = iClose(_Symbol, PERIOD_M15, 1);
+   const double prev_h = iHigh(_Symbol,  PERIOD_M15, 1); // perf-allowed: single-shift inside QM_IsNewBar gate
+   const double prev_l = iLow(_Symbol,   PERIOD_M15, 1); // perf-allowed: single-shift inside QM_IsNewBar gate
+   const double prev_c = iClose(_Symbol, PERIOD_M15, 1); // perf-allowed: single-shift inside QM_IsNewBar gate
    if(prev_h <= 0.0 || prev_l <= 0.0 || prev_c <= 0.0)
       return false;
 
@@ -171,7 +169,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.price       = entry;
       req.sl          = sl;
       req.tp          = entry - sl_pts * point * RR;
-      req.lots        = QM_LotsForRisk(_Symbol, sl_pts);
       req.symbol_slot = qm_magic_slot_offset;
       req.reason      = "asia-sweep-short";
       return true;
@@ -189,7 +186,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.price       = entry;
       req.sl          = sl;
       req.tp          = entry + sl_pts * point * RR;
-      req.lots        = QM_LotsForRisk(_Symbol, sl_pts);
       req.symbol_slot = qm_magic_slot_offset;
       req.reason      = "asia-sweep-long";
       return true;
