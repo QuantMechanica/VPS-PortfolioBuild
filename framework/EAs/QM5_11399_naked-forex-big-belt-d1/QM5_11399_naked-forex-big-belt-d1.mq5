@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11741 RFS EMA200 AO H1"
+#property description "QM5_11399 Naked Forex Big Belt D1"
 
 #include <QM/QM_Common.mqh>
 
@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 11741;
+input int    qm_ea_id                   = 11399;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -73,19 +73,14 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_ema_period        = 200;
-input int    strategy_ao_fast_period    = 5;
-input int    strategy_ao_slow_period    = 34;
-input int    strategy_atr_period        = 14;
-input double strategy_atr_mult          = 2.0;
-input double strategy_deadband_points   = 0.0;
-
-double Strategy_AO(const int shift)
-  {
-   const double fast = QM_SMA(_Symbol, PERIOD_H1, strategy_ao_fast_period, shift, PRICE_MEDIAN);
-   const double slow = QM_SMA(_Symbol, PERIOD_H1, strategy_ao_slow_period, shift, PRICE_MEDIAN);
-   return fast - slow;
-  }
+input int    strategy_extreme_lookback_bars = 20;
+input int    strategy_atr_period            = 14;
+input double strategy_atr_tp_mult           = 2.5;
+input int    strategy_entry_offset_pips     = 5;
+input int    strategy_sl_cap_pips           = 100;
+input int    strategy_spread_cap_pips       = 30;
+input int    strategy_be_buffer_pips        = 0;
+input int    strategy_order_expiration_bars = 1;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -95,7 +90,21 @@ double Strategy_AO(const int shift)
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   return (_Period != PERIOD_H1);
+   if(_Period != PERIOD_D1)
+      return true;
+
+   if(strategy_spread_cap_pips > 0)
+     {
+      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      const double pip = QM_StopRulesPipsToPriceDistance(_Symbol, 1);
+      if(ask <= 0.0 || bid <= 0.0 || pip <= 0.0)
+         return true;
+      if((ask - bid) / pip > (double)strategy_spread_cap_pips)
+         return true;
+     }
+
+   return false;
   }
 
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
@@ -103,74 +112,128 @@ bool Strategy_NoTradeFilter()
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   req.type = QM_BUY;
+   req.type = QM_BUY_STOP;
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
    req.reason = "";
    req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
+   const int expiry_bars = (strategy_order_expiration_bars < 1) ? 1 : strategy_order_expiration_bars;
+   req.expiration_seconds = expiry_bars * PeriodSeconds(PERIOD_D1);
 
-   if(strategy_ema_period <= 0 ||
-      strategy_ao_fast_period <= 0 ||
-      strategy_ao_slow_period <= strategy_ao_fast_period ||
-      strategy_atr_period <= 0 ||
-      strategy_atr_mult <= 0.0)
+   if(_Period != PERIOD_D1)
+      return false;
+   if(strategy_extreme_lookback_bars < 1 || strategy_atr_period < 1 ||
+      strategy_atr_tp_mult <= 0.0 || strategy_entry_offset_pips <= 0)
       return false;
 
-   const int trend = QM_Sig_Price_Above_MA(_Symbol,
-                                           PERIOD_H1,
-                                           strategy_ema_period,
-                                           strategy_deadband_points,
-                                           1);
-   const double ao_now = Strategy_AO(1);
-   const double ao_prev = Strategy_AO(2);
-   const double atr = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
-   if(ao_now == 0.0 || ao_prev == 0.0 || atr <= 0.0)
+   const double pip = QM_StopRulesPipsToPriceDistance(_Symbol, 1);
+   const double offset = pip * (double)strategy_entry_offset_pips;
+   const double cap_distance = (strategy_sl_cap_pips > 0) ? pip * (double)strategy_sl_cap_pips : 0.0;
+   const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   if(pip <= 0.0 || offset <= 0.0 || atr <= 0.0)
       return false;
 
-   QM_OrderType side = QM_BUY;
-   string reason = "";
-   if(trend > 0 && ao_now > 0.0 && ao_now > ao_prev)
+   const double belt_open = iOpen(_Symbol, PERIOD_D1, 1);    // perf-allowed: D1 Big Belt OHLC, called only after framework QM_IsNewBar gate.
+   const double belt_high = iHigh(_Symbol, PERIOD_D1, 1);    // perf-allowed: D1 Big Belt OHLC, called only after framework QM_IsNewBar gate.
+   const double belt_low = iLow(_Symbol, PERIOD_D1, 1);      // perf-allowed: D1 Big Belt OHLC, called only after framework QM_IsNewBar gate.
+   const double belt_close = iClose(_Symbol, PERIOD_D1, 1);  // perf-allowed: D1 Big Belt OHLC, called only after framework QM_IsNewBar gate.
+   const double previous_close = iClose(_Symbol, PERIOD_D1, 2); // perf-allowed: prior D1 close for card gap condition.
+   if(belt_open <= 0.0 || belt_high <= 0.0 || belt_low <= 0.0 || belt_close <= 0.0 || previous_close <= 0.0)
+      return false;
+
+   const double range = belt_high - belt_low;
+   if(range <= 0.0)
+      return false;
+
+   double prior_highest = -DBL_MAX;
+   double prior_lowest = DBL_MAX;
+   for(int shift = 2; shift <= strategy_extreme_lookback_bars + 1; ++shift)
      {
-      side = QM_BUY;
-      reason = "EMA200_AO_LONG";
+      const double h = iHigh(_Symbol, PERIOD_D1, shift); // perf-allowed: bounded 20-bar D1 zone proxy from card.
+      const double l = iLow(_Symbol, PERIOD_D1, shift);  // perf-allowed: bounded 20-bar D1 zone proxy from card.
+      if(h <= 0.0 || l <= 0.0)
+         return false;
+      if(h > prior_highest)
+         prior_highest = h;
+      if(l < prior_lowest)
+         prior_lowest = l;
      }
-   else if(trend < 0 && ao_now < 0.0 && ao_now < ao_prev)
+
+   const double top_third = belt_high - range / 3.0;
+   const double bottom_third = belt_low + range / 3.0;
+   const bool bearish_belt = (belt_open > previous_close &&
+                              belt_open >= top_third &&
+                              belt_close <= bottom_third &&
+                              belt_high > prior_highest);
+   const bool bullish_belt = (belt_open < previous_close &&
+                              belt_open <= bottom_third &&
+                              belt_close >= top_third &&
+                              belt_low < prior_lowest);
+
+   if(bearish_belt)
      {
-      side = QM_SELL;
-      reason = "EMA200_AO_SHORT";
+      req.type = QM_SELL_STOP;
+      req.price = QM_StopRulesNormalizePrice(_Symbol, belt_low - offset);
+      double sl = belt_high + offset;
+      if(cap_distance > 0.0 && sl - req.price > cap_distance)
+         sl = req.price + cap_distance;
+      req.sl = QM_StopRulesNormalizePrice(_Symbol, sl);
+      req.tp = QM_StopRulesNormalizePrice(_Symbol, req.price - atr * strategy_atr_tp_mult);
+      req.reason = "NAKED_FOREX_BIG_BELT_SELL";
+      return (req.price > 0.0 && req.sl > req.price && req.tp > 0.0 && req.tp < req.price);
      }
-   else
-      return false;
 
-   const double entry = QM_OrderTypeIsBuy(side)
-                        ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                        : SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(entry <= 0.0)
-      return false;
+   if(bullish_belt)
+     {
+      req.type = QM_BUY_STOP;
+      req.price = QM_StopRulesNormalizePrice(_Symbol, belt_high + offset);
+      double sl = belt_low - offset;
+      if(cap_distance > 0.0 && req.price - sl > cap_distance)
+         sl = req.price - cap_distance;
+      req.sl = QM_StopRulesNormalizePrice(_Symbol, sl);
+      req.tp = QM_StopRulesNormalizePrice(_Symbol, req.price + atr * strategy_atr_tp_mult);
+      req.reason = "NAKED_FOREX_BIG_BELT_BUY";
+      return (req.price > 0.0 && req.sl > 0.0 && req.sl < req.price && req.tp > req.price);
+     }
 
-   req.type = side;
-   req.price = entry;
-   req.sl = QM_StopATRFromValue(_Symbol, side, entry, atr, strategy_atr_mult);
-   req.tp = QM_TakeATRFromValue(_Symbol, side, entry, atr, strategy_atr_mult);
-   req.reason = reason;
-
-   return (req.sl > 0.0 && req.tp > 0.0);
+   return false;
   }
 
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card exits by fixed SL/TP only; no trailing, break-even, or partial close.
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0 || strategy_atr_period < 1)
+      return;
+
+   const double pip = QM_StopRulesPipsToPriceDistance(_Symbol, 1);
+   const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   if(pip <= 0.0 || atr <= 0.0)
+      return;
+
+   int trigger_pips = (int)MathCeil(atr / pip);
+   if(trigger_pips < 1)
+      trigger_pips = 1;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      QM_TM_MoveToBreakEven(ticket, trigger_pips, strategy_be_buffer_pips);
+     }
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   // No discretionary close beyond SL/TP and framework Friday close.
    return false;
   }
 

@@ -11,7 +11,7 @@
 
 London-open momentum jumper on M15. Each day, the EA monitors M15 bars from
 broker hour 10 (GMT+2, outside US DST; adjust to 11 if DST active) for four
-hours. The first candle that closes across EMApredictive (implemented as EMA 2)
+hours. The first candle that closes across the fast EMA (implemented as EMA 2)
 becomes the *jumper* candle. On the immediately following candle, the EA enters
 if that candle breaks above/below the jumper high/low AND the Traders Dynamic
 Index (TDI) and EMA 200 confirm trend direction.
@@ -40,7 +40,7 @@ One trade per session maximum. Positions managed per-tick for:
 | `strategy_tp_r_mult` | 1.2 | TP = R × multiplier |
 | `strategy_be_trigger_pips` | 10 | Pips in profit before BE shift |
 | `strategy_time_stop_bars` | 16 | Max bars before forced close |
-| `strategy_ema_fast_period` | 2 | EMApredictive approximation (EMA 2 of close) |
+| `strategy_ema_fast_period` | 2 | Fast EMA approximation (EMA 2 of close) |
 | `strategy_ema_trend_period` | 200 | Trend filter EMA on M15 |
 | `strategy_rsi_period` | 13 | TDI RSI period |
 | `strategy_tdi_green_period` | 2 | TDI RSI Price Line EMA period |
@@ -80,7 +80,7 @@ No cross-timeframe reads.
 - G0 source ID: 6e967762-b26d-59a3-b076-35c17f2e7c36
 - Original public reference: ForexFactory "Easy 15" thread (R1 community crowd-source).
 - TDI indicator reference: Dean Malone, Traders Dynamic Index.
-- EMApredictive 2.1 approximated as EMA(2) of close — closest deterministic
+- Fast EMA 2.1 approximated as EMA(2) of close — closest deterministic
   equivalent with no look-ahead.
 
 ## 7. Risk Model

@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        9704
-; ea_slug:      ff-easy15-jumper-m15
+; ea_id:        12364
+; ea_slug:      nikh-kc
 ; ea_version:   v5.0
 ; set_version:  s20260611-001
-; symbol:       USDJPY.DWX
-; timeframe:    M15
+; symbol:       XAUUSD.DWX
+; timeframe:    D1
 ; environment:  backtest
-; magic_slot:   2
+; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   549cabb096dd00b003376772a46e02aa1588fa9cc7e35734c2bcccb521321eb0
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-06-11
 ;==========================================================
-qm_magic_slot_offset=2
+qm_magic_slot_offset=3
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1

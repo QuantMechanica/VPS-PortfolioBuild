@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11741 RFS EMA200 AO H1"
+#property description "QM5_12364 Nikhil Keltner Reversal"
 
 #include <QM/QM_Common.mqh>
 
@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 11741;
+input int    qm_ea_id                   = 12364;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -73,19 +73,12 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_ema_period        = 200;
-input int    strategy_ao_fast_period    = 5;
-input int    strategy_ao_slow_period    = 34;
-input int    strategy_atr_period        = 14;
-input double strategy_atr_mult          = 2.0;
-input double strategy_deadband_points   = 0.0;
-
-double Strategy_AO(const int shift)
-  {
-   const double fast = QM_SMA(_Symbol, PERIOD_H1, strategy_ao_fast_period, shift, PRICE_MEDIAN);
-   const double slow = QM_SMA(_Symbol, PERIOD_H1, strategy_ao_slow_period, shift, PRICE_MEDIAN);
-   return fast - slow;
-  }
+input int    strategy_keltner_lookback  = 20;
+input int    strategy_keltner_atr_period = 10;
+input double strategy_band_multiplier   = 2.0;
+input int    strategy_stop_atr_period   = 14;
+input double strategy_stop_atr_mult     = 2.0;
+input int    strategy_warmup_bars       = 120;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -95,7 +88,22 @@ double Strategy_AO(const int shift)
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   return (_Period != PERIOD_H1);
+   if(_Period != PERIOD_D1)
+      return true;
+
+   if(strategy_keltner_lookback <= 0 ||
+      strategy_keltner_atr_period <= 0 ||
+      strategy_band_multiplier <= 0.0 ||
+      strategy_stop_atr_period <= 0 ||
+      strategy_stop_atr_mult <= 0.0 ||
+      strategy_warmup_bars < 2)
+      return true;
+
+   double warmup_check[1];
+   if(CopyClose(_Symbol, PERIOD_CURRENT, strategy_warmup_bars, 1, warmup_check) != 1) // perf-allowed: one-bar warmup availability probe.
+      return true;
+
+   return false;
   }
 
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
@@ -107,71 +115,87 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
-   req.reason = "";
+   req.reason = "KC_LOWER_REVERSAL_LONG";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(strategy_ema_period <= 0 ||
-      strategy_ao_fast_period <= 0 ||
-      strategy_ao_slow_period <= strategy_ao_fast_period ||
-      strategy_atr_period <= 0 ||
-      strategy_atr_mult <= 0.0)
+   double close_current_buf[1];
+   double close_prior_buf[1];
+   if(CopyClose(_Symbol, PERIOD_CURRENT, 1, 1, close_current_buf) != 1) // perf-allowed: closed-bar close required by card trigger.
+      return false;
+   if(CopyClose(_Symbol, PERIOD_CURRENT, 2, 1, close_prior_buf) != 1) // perf-allowed: closed-bar close required by card trigger.
       return false;
 
-   const int trend = QM_Sig_Price_Above_MA(_Symbol,
-                                           PERIOD_H1,
-                                           strategy_ema_period,
-                                           strategy_deadband_points,
-                                           1);
-   const double ao_now = Strategy_AO(1);
-   const double ao_prev = Strategy_AO(2);
-   const double atr = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
-   if(ao_now == 0.0 || ao_prev == 0.0 || atr <= 0.0)
+   const double close_current = close_current_buf[0];
+   const double close_prior = close_prior_buf[0];
+   const double middle_prior = QM_EMA(_Symbol, PERIOD_CURRENT, strategy_keltner_lookback, 2, PRICE_CLOSE);
+   const double atr_prior = QM_ATR(_Symbol, PERIOD_CURRENT, strategy_keltner_atr_period, 2);
+   if(close_current <= 0.0 || close_prior <= 0.0 || middle_prior <= 0.0 || atr_prior <= 0.0)
       return false;
 
-   QM_OrderType side = QM_BUY;
-   string reason = "";
-   if(trend > 0 && ao_now > 0.0 && ao_now > ao_prev)
-     {
-      side = QM_BUY;
-      reason = "EMA200_AO_LONG";
-     }
-   else if(trend < 0 && ao_now < 0.0 && ao_now < ao_prev)
-     {
-      side = QM_SELL;
-      reason = "EMA200_AO_SHORT";
-     }
-   else
+   const double lower_prior = middle_prior - (strategy_band_multiplier * atr_prior);
+   if(!(close_prior < lower_prior && close_current > close_prior))
       return false;
 
-   const double entry = QM_OrderTypeIsBuy(side)
-                        ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                        : SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(entry <= 0.0)
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double stop_atr = QM_ATR(_Symbol, PERIOD_CURRENT, strategy_stop_atr_period, 1);
+   if(ask <= 0.0 || stop_atr <= 0.0)
       return false;
 
-   req.type = side;
-   req.price = entry;
-   req.sl = QM_StopATRFromValue(_Symbol, side, entry, atr, strategy_atr_mult);
-   req.tp = QM_TakeATRFromValue(_Symbol, side, entry, atr, strategy_atr_mult);
-   req.reason = reason;
+   req.sl = QM_StopATRFromValue(_Symbol, QM_BUY, ask, stop_atr, strategy_stop_atr_mult);
+   if(req.sl <= 0.0)
+      return false;
 
-   return (req.sl > 0.0 && req.tp > 0.0);
+   return true;
   }
 
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card exits by fixed SL/TP only; no trailing, break-even, or partial close.
+   // Card defines no break-even, trailing, partial close, or add-on management.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   // No discretionary close beyond SL/TP and framework Friday close.
-   return false;
+   const int magic = QM_FrameworkMagic();
+   bool have_long = false;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      if((ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY)
+        {
+         have_long = true;
+         break;
+        }
+     }
+   if(!have_long)
+      return false;
+
+   double close_current_buf[1];
+   double close_prior_buf[1];
+   if(CopyClose(_Symbol, PERIOD_CURRENT, 1, 1, close_current_buf) != 1) // perf-allowed: closed-bar close required by card trigger.
+      return false;
+   if(CopyClose(_Symbol, PERIOD_CURRENT, 2, 1, close_prior_buf) != 1) // perf-allowed: closed-bar close required by card trigger.
+      return false;
+
+   const double close_current = close_current_buf[0];
+   const double close_prior = close_prior_buf[0];
+   const double middle_prior = QM_EMA(_Symbol, PERIOD_CURRENT, strategy_keltner_lookback, 2, PRICE_CLOSE);
+   const double atr_prior = QM_ATR(_Symbol, PERIOD_CURRENT, strategy_keltner_atr_period, 2);
+   if(close_current <= 0.0 || close_prior <= 0.0 || middle_prior <= 0.0 || atr_prior <= 0.0)
+      return false;
+
+   const double upper_prior = middle_prior + (strategy_band_multiplier * atr_prior);
+   return (close_prior > upper_prior && close_current < close_prior);
   }
 
 // Optional news-filter override. Return TRUE to suppress trading regardless

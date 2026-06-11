@@ -37,7 +37,7 @@ input double strategy_sl_atr_mult           = 0.20;   // ATR SL: anchor +/- 0.20
 input double strategy_tp_r_mult             = 1.2;    // TP = 1.2 x 1R
 input int    strategy_be_trigger_pips       = 10;     // move to BE after +N pips
 input int    strategy_time_stop_bars        = 16;     // max hold: 16 M15 bars
-input int    strategy_ema_fast_period       = 2;      // EMApredictive (card: EMA 2.1, approx EMA 2)
+input int    strategy_ema_fast_period       = 2;      // card EMA 2.1, approximated as EMA 2
 input int    strategy_ema_trend_period      = 200;    // trend EMA period (M15)
 input int    strategy_rsi_period            = 13;     // TDI RSI period
 input int    strategy_tdi_green_period      = 2;      // TDI RSI Price Line EMA period
