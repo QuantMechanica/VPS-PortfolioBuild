@@ -283,16 +283,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if((int)PositionGetInteger(POSITION_MAGIC) == magic) return false;
      }
 
-   double pt   = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    double step = LevelStep();
-   if(pt <= 0.0) return false;
 
    // --- Long entry: close[1] above entry level AND above Dragon ---
    if(g_bull_valid && g_close1 > g_bull_above && g_close1 > g_dragon)
      {
       double ask    = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      double sl_pts = (ask - g_bull_sl) / pt;
-      if(sl_pts <= 0.0) return false;
+      if(ask <= g_bull_sl) return false;
 
       double r_dist  = strategy_tp_r_mult * (ask - g_bull_sl);
       double tp_r    = ask + r_dist;
@@ -304,7 +301,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.price          = ask;
       req.sl             = g_bull_sl;
       req.tp             = tp;
-      req.lots           = QM_LotsForRisk(_Symbol, sl_pts);
       req.reason         = "SONICR_BULL_WAVE";
       req.symbol_slot    = qm_magic_slot_offset;
       req.expiration_seconds = 0;
@@ -315,8 +311,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(g_bear_valid && g_close1 < g_bear_below && g_close1 < g_dragon)
      {
       double bid    = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      double sl_pts = (g_bear_sl - bid) / pt;
-      if(sl_pts <= 0.0) return false;
+      if(bid >= g_bear_sl) return false;
 
       double r_dist  = strategy_tp_r_mult * (g_bear_sl - bid);
       double tp_r    = bid - r_dist;
@@ -328,7 +323,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.price          = bid;
       req.sl             = g_bear_sl;
       req.tp             = tp;
-      req.lots           = QM_LotsForRisk(_Symbol, sl_pts);
       req.reason         = "SONICR_BEAR_WAVE";
       req.symbol_slot    = qm_magic_slot_offset;
       req.expiration_seconds = 0;
