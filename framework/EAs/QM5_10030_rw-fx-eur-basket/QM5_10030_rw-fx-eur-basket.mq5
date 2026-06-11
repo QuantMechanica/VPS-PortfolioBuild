@@ -132,6 +132,7 @@ bool Strategy_CopyLegCloses(const int count,
    ArraySetAsSeries(c5, true);
    ArraySetAsSeries(c6, true);
 
+   // perf-allowed: bounded D1 basket reads, reached only after the framework new-bar gate.
    if(CopyClose(g_leg_symbols[0], PERIOD_D1, 1, count, c0) != count) // perf-allowed: bounded D1 basket read, called only from framework QM_IsNewBar-gated EntrySignal.
       return false;
    if(CopyClose(g_leg_symbols[1], PERIOD_D1, 1, count, c1) != count) // perf-allowed: bounded D1 basket read, called only from framework QM_IsNewBar-gated EntrySignal.
