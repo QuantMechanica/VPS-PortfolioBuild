@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        11753
-; ea_slug:      5min-sma10-15-50-scalp
+; ea_id:        9638
+; ea_slug:      demark-td-termination-active-h4
 ; ea_version:   v5.0
 ; set_version:  s20260611-001
-; symbol:       USDCHF.DWX
-; timeframe:    M5
+; symbol:       GBPUSD.DWX
+; timeframe:    H4
 ; environment:  backtest
-; magic_slot:   3
+; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   aa2651e337befc15022c748d58537325ed2a918c2ce718afac8fea4e2608a31e
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-06-11
 ;==========================================================
-qm_magic_slot_offset=3
+qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1

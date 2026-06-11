@@ -7357,3 +7357,10 @@
 9903,ff-roadmap-do-fail-m5,1,GBPUSD.DWX,99030001,2026-06-11,Development,active
 9903,ff-roadmap-do-fail-m5,2,XAUUSD.DWX,99030002,2026-06-11,Development,active
 9903,ff-roadmap-do-fail-m5,3,NDX.DWX,99030003,2026-06-11,Development,active
+9638,demark-td-termination-active-h4,0,EURUSD.DWX,96380000,2026-06-11,Development,active
+9638,demark-td-termination-active-h4,1,GBPUSD.DWX,96380001,2026-06-11,Development,active
+9638,demark-td-termination-active-h4,2,USDJPY.DWX,96380002,2026-06-11,Development,active
+9638,demark-td-termination-active-h4,3,XAUUSD.DWX,96380003,2026-06-11,Development,active9640,colby-disparity-index-h4,0,EURUSD.DWX,96400000,2026-06-11,Development,active
+9640,colby-disparity-index-h4,1,GBPUSD.DWX,96400001,2026-06-11,Development,active
+9640,colby-disparity-index-h4,2,USDJPY.DWX,96400002,2026-06-11,Development,active
+9640,colby-disparity-index-h4,3,XAUUSD.DWX,96400003,2026-06-11,Development,active

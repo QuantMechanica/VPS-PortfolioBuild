@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA trades the M5 chart using three simple moving averages. A long setup requires the last closed candle to close above SMA(50), SMA(10), and SMA(15), with the candle low above both short SMAs so the candle has fully cleared them. A short setup is the mirror image: the last closed candle closes below all three SMAs and its high is below both short SMAs. Entries are market orders on the next bar; exits are the framework-managed SL/TP, with no additional discretionary close rule.
+The EA trades the M5 chart using three simple moving averages. A long setup requires the last closed candle to close above SMA(50), SMA(10), and SMA(15), with the candle body open and close above both short SMAs so the body has fully cleared them. A short setup is the mirror image: the last closed candle closes below all three SMAs and its body open and close are below both short SMAs. Entries are market orders on the next bar; exits are the framework-managed SL/TP, with no additional discretionary close rule.
 
 ---
 
@@ -94,3 +94,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-11 | Initial build from card | d7f223c3-fbaf-4245-9609-99afd8a858a6 |
+| v2 | 2026-06-11 | Rework body-clearance interpretation after smoke trade-count review | 50e56bf2-04b6-4bdf-bab8-15ff816a076c |
