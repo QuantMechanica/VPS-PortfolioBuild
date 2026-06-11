@@ -7365,6 +7365,10 @@
 9640,colby-disparity-index-h4,1,GBPUSD.DWX,96400001,2026-06-11,Development,active
 9640,colby-disparity-index-h4,2,USDJPY.DWX,96400002,2026-06-11,Development,active
 9640,colby-disparity-index-h4,3,XAUUSD.DWX,96400003,2026-06-11,Development,active
+9952,ff-zigzag-trendline-4060-m5,0,XAUUSD.DWX,99520000,2026-06-11,Development,active
+9952,ff-zigzag-trendline-4060-m5,1,EURUSD.DWX,99520001,2026-06-11,Development,active
+9952,ff-zigzag-trendline-4060-m5,2,GBPUSD.DWX,99520002,2026-06-11,Development,active
+9952,ff-zigzag-trendline-4060-m5,3,USDJPY.DWX,99520003,2026-06-11,Development,active
 11754,continuation-ema50-williamsr-mtf,0,EURUSD.DWX,117540000,2026-06-11,Development,active
 11754,continuation-ema50-williamsr-mtf,1,GBPUSD.DWX,117540001,2026-06-11,Development,active
 11754,continuation-ema50-williamsr-mtf,2,USDJPY.DWX,117540002,2026-06-11,Development,active
