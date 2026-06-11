@@ -7191,3 +7191,7 @@
 9518,mql5-l1-adx,1,GBPUSD.DWX,95180001,2026-06-11,Development,active
 9518,mql5-l1-adx,2,USDJPY.DWX,95180002,2026-06-11,Development,active
 9518,mql5-l1-adx,3,GDAXI.DWX,95180003,2026-06-11,Development,active
+9944,ff-144ema-shift34-m5,0,EURUSD.DWX,99440000,2026-06-11,Development,active
+9944,ff-144ema-shift34-m5,1,GBPUSD.DWX,99440001,2026-06-11,Development,active
+9944,ff-144ema-shift34-m5,2,USDJPY.DWX,99440002,2026-06-11,Development,active
+9944,ff-144ema-shift34-m5,3,AUDUSD.DWX,99440003,2026-06-11,Development,active
