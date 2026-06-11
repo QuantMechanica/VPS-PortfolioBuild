@@ -1,4 +1,4 @@
-ea_id,slug,strategy_id,status,owner,created_at
+﻿ea_id,slug,strategy_id,status,owner,created_at
 1128,daniel-momentum-crash-vol-scale,afab7a6f-c3c8-51ae-a609-f376744beb8e,active,Research,2026-05-18
 1001,breakout-atr,TBD,active,CTO,2026-04-27
 1002,davey-eu-night,SRC01_S01,active,CTO,2026-04-27
@@ -3423,14 +3423,10 @@ ea_id,slug,strategy_id,status,owner,created_at
 
 9247,mql5-trix-wpr,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Development,2026-06-10
 9228,mql5-alligator-teeth,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Development,2026-06-10
-
 9245,mql5-ao-zero,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Development,2026-06-109246,mql5-ao-bounce,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Development,2026-06-10
-
 9291,mql5-dem-env-break,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Development,2026-06-10
 9298,mql5-bears-div,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Development,2026-06-10
-
 9357,mql5-orb-break,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Development,2026-06-10
-
 9360,mql5-ichi-kumo-cross,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Development,2026-06-10
 9362,mql5-ichi-chikou-span,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Development,2026-06-10
 9413,mql5-paq-marubozu,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Development,2026-06-10

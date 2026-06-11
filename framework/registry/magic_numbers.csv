@@ -7000,7 +7000,6 @@
 9219,mql5-chv-ma,0,EURUSD.DWX,92190000,2026-06-10,Development,active
 9219,mql5-chv-ma,1,XAUUSD.DWX,92190001,2026-06-10,Development,active
 9219,mql5-chv-ma,2,NDX.DWX,92190002,2026-06-10,Development,active
-
 9245,mql5-ao-zero,0,EURUSD.DWX,92450000,2026-06-10,Development,active
 9245,mql5-ao-zero,1,GBPJPY.DWX,92450001,2026-06-10,Development,active
 9245,mql5-ao-zero,2,XAUUSD.DWX,92450002,2026-06-10,Development,active
@@ -7024,7 +7023,6 @@
 9292,mql5-dem-env-squeeze,0,EURUSD.DWX,92920000,2026-06-10,Development,active
 9292,mql5-dem-env-squeeze,1,GBPUSD.DWX,92920001,2026-06-10,Development,active
 9292,mql5-dem-env-squeeze,2,XAUUSD.DWX,92920002,2026-06-10,Development,active
-
 9296,mql5-cmf-obos,0,EURUSD.DWX,92960000,2026-06-10,Development,active
 9296,mql5-cmf-obos,1,GBPUSD.DWX,92960001,2026-06-10,Development,active
 9296,mql5-cmf-obos,2,XAUUSD.DWX,92960002,2026-06-10,Development,active
@@ -7146,11 +7144,5 @@
 9512,lt-mom-stack,5,NDX.DWX,95120005,2026-06-11,Development,active
 9512,lt-mom-stack,6,WS30.DWX,95120006,2026-06-11,Development,active
 9512,lt-mom-stack,7,XAUUSD.DWX,95120007,2026-06-11,Development,active
-9512,lt-mom-stack,0,EURUSD.DWX,95120000,2026-06-11,Development,active
-9512,lt-mom-stack,1,GBPUSD.DWX,95120001,2026-06-11,Development,active
-9512,lt-mom-stack,2,USDJPY.DWX,95120002,2026-06-11,Development,active
-9512,lt-mom-stack,3,AUDUSD.DWX,95120003,2026-06-11,Development,active
-9512,lt-mom-stack,4,GDAXI.DWX,95120004,2026-06-11,Development,active
-9512,lt-mom-stack,5,NDX.DWX,95120005,2026-06-11,Development,active
-9512,lt-mom-stack,6,WS30.DWX,95120006,2026-06-11,Development,active
-9512,lt-mom-stack,7,XAUUSD.DWX,95120007,2026-06-11,Development,active
+11868,hour-box-breakout-m5,0,GBPJPY.DWX,118680000,2026-06-11,Development,active
+11868,hour-box-breakout-m5,1,GBPUSD.DWX,118680001,2026-06-11,Development,active
