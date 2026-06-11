@@ -7227,3 +7227,11 @@
 9999,ff-pb-dual-stoch-m15,1,GBPUSD.DWX,99990001,2026-06-11,Development,active
 9999,ff-pb-dual-stoch-m15,2,USDJPY.DWX,99990002,2026-06-11,Development,active
 9999,ff-pb-dual-stoch-m15,3,AUDUSD.DWX,99990003,2026-06-11,Development,active
+9970,ff-369ema-scalp-m5,0,EURUSD.DWX,99700000,2026-06-11,Development,active
+9970,ff-369ema-scalp-m5,1,GBPUSD.DWX,99700001,2026-06-11,Development,active
+9970,ff-369ema-scalp-m5,2,USDJPY.DWX,99700002,2026-06-11,Development,active
+9970,ff-369ema-scalp-m5,3,AUDUSD.DWX,99700003,2026-06-11,Development,active
+12473,gh-london-break,0,EURUSD.DWX,124730000,2026-06-11,Development,active
+12473,gh-london-break,1,GBPUSD.DWX,124730001,2026-06-11,Development,active
+12473,gh-london-break,2,USDJPY.DWX,124730002,2026-06-11,Development,active
+12473,gh-london-break,3,XAUUSD.DWX,124730003,2026-06-11,Development,active
