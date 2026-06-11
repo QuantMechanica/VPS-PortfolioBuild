@@ -205,7 +205,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const int magic = QM_FrameworkMagic();
    if(QM_TM_OpenPositionCount(magic) > 0)
       return false;
-
    const double high1  = iHigh(_Symbol,  PERIOD_M15, 1); // perf-allowed: break check
    const double low1   = iLow(_Symbol,   PERIOD_M15, 1); // perf-allowed: break check
    const double close1 = iClose(_Symbol, PERIOD_M15, 1); // perf-allowed: EMA200 check
