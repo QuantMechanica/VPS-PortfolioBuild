@@ -46,7 +46,7 @@ On H4 bars, compute a SuperTrend channel with ATR period 10 and multiplier 3.0. 
 |---|---|
 | Base timeframe | `H4` |
 | Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` + private bar gate for early state advance |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` — state advances at start of each new-bar block |
 
 ---
 

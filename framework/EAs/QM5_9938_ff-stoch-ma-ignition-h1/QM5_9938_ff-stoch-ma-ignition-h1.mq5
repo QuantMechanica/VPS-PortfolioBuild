@@ -3,7 +3,6 @@
 #property description "QuantMechanica V5 EA skeleton template"
 
 #include <QM/QM_Common.mqh>
-#include <QM/QM_Signals.mqh>
 
 // =============================================================================
 // QuantMechanica V5 EA SKELETON

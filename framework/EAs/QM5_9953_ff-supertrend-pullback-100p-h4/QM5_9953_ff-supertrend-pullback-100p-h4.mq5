@@ -49,9 +49,6 @@ input int    strategy_pending_cancel_bars = 2;    // cancel limit after N new ba
 
 CTrade g_trade;
 
-// Private bar gate — does NOT consume QM_IsNewBar() latch
-datetime g_last_advance_bar = 0;
-
 // SuperTrend state cached per closed bar
 bool   g_st_init   = false;
 double g_st_upper  = 0.0;
@@ -247,17 +244,6 @@ void AdvanceState_OnNewBar()
      }
   }
 
-// Private bar gate: advance SuperTrend state before exit/entry evaluation
-// without consuming the QM_IsNewBar() framework latch.
-void MaybeAdvanceState()
-  {
-   const datetime bar0 = iTime(_Symbol, _Period, 0);  // perf-allowed: bar-change control gate
-   if(bar0 <= 0 || bar0 == g_last_advance_bar)
-      return;
-   g_last_advance_bar = bar0;
-   AdvanceState_OnNewBar();
-  }
-
 // Place limit order via CTrade (separate from QM_TM_OpenPosition to support pending orders)
 bool PlaceLimitEntry(const QM_EntryRequest &req)
   {
@@ -410,11 +396,15 @@ void OnTick()
    if(QM_FrameworkHandleFridayClose()) return;
    if(Strategy_NoTradeFilter()) return;
 
-   // Advance SuperTrend state once per new bar, before exit and entry evaluation.
-   // Private bar gate does not consume QM_IsNewBar() latch.
-   MaybeAdvanceState();
-
    Strategy_ManageOpenPosition();
+
+   if(!QM_IsNewBar()) return;
+
+   // Advance SuperTrend state from last closed bar, then evaluate exit and entry.
+   // Exit condition ("H4 closes beyond opposite boundary") is bar-based — checking
+   // once per closed bar is correct and avoids per-tick state recompute.
+   AdvanceState_OnNewBar();
+   QM_EquityStreamOnNewBar();
 
    if(Strategy_ExitSignal())
      {
@@ -428,10 +418,6 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
-
-   if(!QM_IsNewBar()) return;
-
-   QM_EquityStreamOnNewBar();
 
    if(HasOurPendingOrder() || HasOurPosition()) return;
 
