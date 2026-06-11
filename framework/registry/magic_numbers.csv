@@ -7867,3 +7867,9 @@
 10046,ff-momentum-div-h4,3,XAUUSD.DWX,100460003,2026-06-11,Development,active
 10049,ff-dailyopen-h1,0,EURUSD.DWX,100490000,2026-06-11,Development,active
 10049,ff-dailyopen-h1,1,GBPUSD.DWX,100490001,2026-06-11,Development,active
+10062,connors-cvr1-d1,0,SP500.DWX,100620000,2026-06-11,Development,active
+10062,connors-cvr1-d1,1,NDX.DWX,100620001,2026-06-11,Development,active
+10062,connors-cvr1-d1,2,WS30.DWX,100620002,2026-06-11,Development,active
+10061,connors-trin3-d1,0,SP500.DWX,100610000,2026-06-11,Development,active
+10061,connors-trin3-d1,1,NDX.DWX,100610001,2026-06-11,Development,active
+10061,connors-trin3-d1,2,WS30.DWX,100610002,2026-06-11,Development,active
