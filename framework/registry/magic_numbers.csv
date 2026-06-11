@@ -7885,3 +7885,7 @@
 10083,gh-rwr-pullback,0,EURUSD.DWX,100830000,2026-06-11,Development,active
 10083,gh-rwr-pullback,1,GBPUSD.DWX,100830001,2026-06-11,Development,active
 10083,gh-rwr-pullback,2,GDAXI.DWX,100830002,2026-06-11,Development,active
+10087,mql5-cloud-rsi,0,EURUSD.DWX,100870000,2026-06-11,Development,active
+10087,mql5-cloud-rsi,1,GBPUSD.DWX,100870001,2026-06-11,Development,active
+10087,mql5-cloud-rsi,2,USDJPY.DWX,100870002,2026-06-11,Development,active
+10087,mql5-cloud-rsi,3,XAUUSD.DWX,100870003,2026-06-11,Development,active
