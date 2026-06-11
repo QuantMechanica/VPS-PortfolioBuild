@@ -1,0 +1,24 @@
+{
+  "ea_id": "QM5_10030",
+  "slug": "rw-fx-eur-basket",
+  "timeframe": "D1",
+  "symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "EURGBP.DWX",
+    "EURJPY.DWX",
+    "GBPJPY.DWX",
+    "USDCHF.DWX",
+    "EURCHF.DWX"
+  ],
+  "symbol_slots": {
+    "EURUSD.DWX": 0,
+    "GBPUSD.DWX": 1,
+    "EURGBP.DWX": 2,
+    "EURJPY.DWX": 3,
+    "GBPJPY.DWX": 4,
+    "USDCHF.DWX": 5,
+    "EURCHF.DWX": 6
+  },
+  "coefficient_note": "The approved card specifies PCA/Johansen weights but does not provide numeric coefficients. The EA exposes fixed user-visible coefficient inputs and defaults them to equal positive weights for Q01 build validation."
+}
