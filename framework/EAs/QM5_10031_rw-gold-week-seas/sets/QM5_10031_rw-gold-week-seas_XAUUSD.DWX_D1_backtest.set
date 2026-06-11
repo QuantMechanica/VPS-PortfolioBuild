@@ -32,13 +32,3 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
-strategy_long_weekday=1
-strategy_short_weekday=3
-strategy_enable_long=1
-strategy_enable_short=1
-strategy_min_positive_pct=52.0
-strategy_long_positive_pct=52.0
-strategy_short_positive_pct=52.0
-strategy_atr_period=20
-strategy_atr_stop_mult=1.2
-strategy_max_spread_points=0

@@ -7849,3 +7849,7 @@
 10016,ff-ema100-bb-tdi-h1,2,AUDJPY.DWX,100160002,2026-06-11,Development,active
 10016,ff-ema100-bb-tdi-h1,3,XAUUSD.DWX,100160003,2026-06-11,Development,active
 10031,rw-gold-week-seas,0,XAUUSD.DWX,100310000,2026-06-11,Development,active
+10037,rw-caa-mvo,0,SP500.DWX,100370000,2026-06-11,Development,active
+10037,rw-caa-mvo,1,NDX.DWX,100370001,2026-06-11,Development,active
+10037,rw-caa-mvo,2,WS30.DWX,100370002,2026-06-11,Development,active
+10037,rw-caa-mvo,3,XAUUSD.DWX,100370003,2026-06-11,Development,active
