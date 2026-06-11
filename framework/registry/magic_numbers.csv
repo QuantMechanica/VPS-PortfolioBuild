@@ -7820,3 +7820,7 @@
 11841,ait-triple-rsi,4,GDAXI.DWX,118410004,2026-06-11,Development,active
 11841,ait-triple-rsi,5,NDX.DWX,118410005,2026-06-11,Development,active
 11841,ait-triple-rsi,6,WS30.DWX,118410006,2026-06-11,Development,active
+11857,blade-macd-stoch-divergence-h1,0,GBPUSD.DWX,118570000,2026-06-11,Development,active
+11857,blade-macd-stoch-divergence-h1,1,EURUSD.DWX,118570001,2026-06-11,Development,active
+11857,blade-macd-stoch-divergence-h1,2,AUDUSD.DWX,118570002,2026-06-11,Development,active
+11857,blade-macd-stoch-divergence-h1,3,USDJPY.DWX,118570003,2026-06-11,Development,active
