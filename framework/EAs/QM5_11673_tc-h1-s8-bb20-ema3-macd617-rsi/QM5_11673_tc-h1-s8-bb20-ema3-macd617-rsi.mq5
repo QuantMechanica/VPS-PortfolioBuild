@@ -85,42 +85,6 @@ input int    strategy_atr_period        = 14;
 input double strategy_atr_sl_mult       = 2.0;
 input int    strategy_take_profit_pips  = 50;
 
-bool Strategy_HasOpenPosition(ENUM_POSITION_TYPE &ptype)
-  {
-   ptype = POSITION_TYPE_BUY;
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      return true;
-     }
-
-   return false;
-  }
-
-bool Strategy_IndicatorsReady()
-  {
-   if(strategy_bb_period <= 1 || strategy_ema_period <= 1 ||
-      strategy_macd_fast <= 0 || strategy_macd_slow <= strategy_macd_fast ||
-      strategy_macd_signal <= 0 || strategy_rsi_period <= 1 ||
-      strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0 ||
-      strategy_take_profit_pips <= 0)
-      return false;
-
-   return true;
-  }
-
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -145,11 +109,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!Strategy_IndicatorsReady())
-      return false;
-
-   ENUM_POSITION_TYPE ptype;
-   if(Strategy_HasOpenPosition(ptype))
+   if(strategy_bb_period <= 1 || strategy_ema_period <= 1 ||
+      strategy_macd_fast <= 0 || strategy_macd_slow <= strategy_macd_fast ||
+      strategy_macd_signal <= 0 || strategy_rsi_period <= 1 ||
+      strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0 ||
+      strategy_take_profit_pips <= 0)
       return false;
 
    const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
@@ -197,11 +161,31 @@ void Strategy_ManageOpenPosition()
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   if(!Strategy_IndicatorsReady())
+   if(strategy_bb_period <= 1 || strategy_bb_deviation <= 0.0)
       return false;
 
-   ENUM_POSITION_TYPE ptype;
-   if(!Strategy_HasOpenPosition(ptype))
+   ENUM_POSITION_TYPE ptype = POSITION_TYPE_BUY;
+   bool have_position = false;
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      have_position = true;
+      break;
+     }
+
+   if(!have_position)
       return false;
 
    const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
@@ -225,7 +209,8 @@ bool Strategy_ExitSignal()
 // custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   (void)broker_time;
+   if(broker_time <= 0)
+      return false;
    return false; // defer to QM_NewsAllowsTrade(...)
   }
 
