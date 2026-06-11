@@ -7727,6 +7727,13 @@
 11661,pp-double-tb,2,XAUUSD.DWX,116610002,2026-06-11,Development,active
 11661,pp-double-tb,3,GDAXI.DWX,116610003,2026-06-11,Development,active
 11661,pp-double-tb,4,NDX.DWX,116610004,2026-06-11,Development,active
+12366,nikh-macd,0,EURUSD.DWX,123660000,2026-06-11,Development,active
+12366,nikh-macd,1,GBPUSD.DWX,123660001,2026-06-11,Development,active
+12366,nikh-macd,2,USDJPY.DWX,123660002,2026-06-11,Development,active
+12366,nikh-macd,3,XAUUSD.DWX,123660003,2026-06-11,Development,active
+12366,nikh-macd,4,GDAXI.DWX,123660004,2026-06-11,Development,active
+12366,nikh-macd,5,NDX.DWX,123660005,2026-06-11,Development,active
+12366,nikh-macd,6,WS30.DWX,123660006,2026-06-11,Development,active
 12505,shooting-star,0,EURUSD.DWX,125050000,2026-06-11,Development,active
 12505,shooting-star,1,GBPUSD.DWX,125050001,2026-06-11,Development,active
 12505,shooting-star,2,USDJPY.DWX,125050002,2026-06-11,Development,active
@@ -7744,3 +7751,7 @@
 12524,stoch-zone-exit,1,GBPUSD.DWX,125240001,2026-06-11,Development,active
 12524,stoch-zone-exit,2,EURUSD.DWX,125240002,2026-06-11,Development,active
 12524,stoch-zone-exit,3,NZDUSD.DWX,125240003,2026-06-11,Development,active
+11400,davey-big-range-momentum-d1,0,EURUSD.DWX,114000000,2026-06-11,Development,active
+11400,davey-big-range-momentum-d1,1,GBPUSD.DWX,114000001,2026-06-11,Development,active
+11400,davey-big-range-momentum-d1,2,USDJPY.DWX,114000002,2026-06-11,Development,active
+11400,davey-big-range-momentum-d1,3,AUDUSD.DWX,114000003,2026-06-11,Development,active
