@@ -295,12 +295,12 @@ bool Strategy_HasOpenPosition()
 bool Strategy_LtfConfirms(const int direction)
   {
    MqlRates ltf_bars[];
-   if(!Strategy_LoadClosedBars(strategy_ltf, 2, ltf_bars))
+   if(!Strategy_LoadClosedBars(strategy_ltf, 1, ltf_bars))
       return false;
    if(direction > 0)
-      return (ltf_bars[0].close > ltf_bars[0].open && ltf_bars[0].close > ltf_bars[1].high);
+      return (ltf_bars[0].close > ltf_bars[0].open);
    if(direction < 0)
-      return (ltf_bars[0].close < ltf_bars[0].open && ltf_bars[0].close < ltf_bars[1].low);
+      return (ltf_bars[0].close < ltf_bars[0].open);
    return false;
   }
 

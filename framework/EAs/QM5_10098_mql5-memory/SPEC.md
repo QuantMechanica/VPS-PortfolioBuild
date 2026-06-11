@@ -18,7 +18,7 @@ The EA stores bullish or bearish market-memory zones after either a closed-bar s
 
 | Parameter | Default | Range | Meaning |
 |---|---:|---|---|
-| `strategy_ltf` | `PERIOD_M5` | `M1`-`H1` | Lower timeframe used for candle confirmation before zone entry. |
+| `strategy_ltf` | `PERIOD_M5` | `M1`-`H1` | Lower timeframe used for directional closed-candle confirmation before zone entry. |
 | `strategy_swing_bars` | `3` | `1`-`10` | Bars on each side required to confirm a swing high or swing low. |
 | `strategy_scan_bars` | `160` | `30`-`500` | Closed bars scanned once per new bar for structural breaks and sweeps. |
 | `strategy_atr_period` | `14` | `2`-`100` | ATR period for the stop buffer around the memory zone. |

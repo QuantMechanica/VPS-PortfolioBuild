@@ -84,25 +84,6 @@ input double          strategy_max_spread_stop_pct    = 0.10;
 input bool            strategy_longs_enabled          = true;
 input bool            strategy_shorts_enabled         = true;
 
-bool Strategy_HasOpenPosition(ENUM_POSITION_TYPE &position_type)
-  {
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      return true;
-     }
-   return false;
-  }
-
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -154,9 +135,17 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   ENUM_POSITION_TYPE existing_type = POSITION_TYPE_BUY;
-   if(Strategy_HasOpenPosition(existing_type))
-      return false;
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+         return false;
+     }
 
    const double fast_ema = QM_EMA(_Symbol, strategy_timeframe, strategy_fast_ema_period, 1);
    const double slow_ema = QM_EMA(_Symbol, strategy_timeframe, strategy_slow_ema_period, 1);
@@ -216,7 +205,23 @@ bool Strategy_ExitSignal()
   {
    // Trade Close: exit on opposite EMA state or PSAR flipping across price.
    ENUM_POSITION_TYPE position_type = POSITION_TYPE_BUY;
-   if(!Strategy_HasOpenPosition(position_type))
+   bool have_position = false;
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      have_position = true;
+      break;
+     }
+   if(!have_position)
       return false;
 
    const double fast_ema = QM_EMA(_Symbol, strategy_timeframe, strategy_fast_ema_period, 1);
