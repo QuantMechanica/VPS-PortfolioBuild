@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        11753
-; ea_slug:      5min-sma10-15-50-scalp
+; ea_id:        9952
+; ea_slug:      ff-zigzag-trendline-4060-m5
 ; ea_version:   v5.0
 ; set_version:  s20260611-001
-; symbol:       GBPUSD.DWX
+; symbol:       SP500.DWX
 ; timeframe:    M5
 ; environment:  backtest
-; magic_slot:   1
+; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   cf46ff52c39ae0f1c20439b8476fe7fbf4ed0d632ff24f9009fdfda07d772003
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-06-11
 ;==========================================================
-qm_magic_slot_offset=1
+qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1

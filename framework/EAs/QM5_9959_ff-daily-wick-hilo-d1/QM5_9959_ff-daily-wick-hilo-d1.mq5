@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QuantMechanica V5 EA skeleton template"
+#property description "QM5_9959 ForexFactory Daily Wick High-Low D1"
 
 #include <QM/QM_Common.mqh>
 
@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 11753;
+input int    qm_ea_id                   = 9959;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -73,12 +73,149 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_fast_sma_period   = 10;
-input int    strategy_mid_sma_period    = 15;
-input int    strategy_trend_sma_period  = 50;
-input int    strategy_atr_period        = 14;
-input double strategy_atr_sl_mult       = 2.0;
-input double strategy_atr_tp_mult       = 4.0;
+input ENUM_TIMEFRAMES strategy_timeframe          = PERIOD_D1;
+input int    strategy_atr_period                  = 14;
+input double strategy_fx_entry_buffer_pips        = 5.0;
+input double strategy_fx_sl_pips                  = 30.0;
+input double strategy_fx_tp_pips                  = 100.0;
+input double strategy_nonfx_entry_atr_mult        = 0.05;
+input double strategy_sl_atr_mult                 = 0.8;
+input double strategy_min_range_atr_mult          = 0.5;
+input double strategy_rr_multiple                 = 2.0;
+input double strategy_max_spread_stop_frac        = 0.10;
+input int    strategy_pending_days                = 1;
+
+string Strategy_BaseSymbol()
+  {
+   string symbol = _Symbol;
+   const int dot_pos = StringFind(symbol, ".");
+   if(dot_pos >= 0)
+      symbol = StringSubstr(symbol, 0, dot_pos);
+   return symbol;
+  }
+
+bool Strategy_IsFxSymbol()
+  {
+   const string base = Strategy_BaseSymbol();
+   return (base == "EURUSD" || base == "GBPUSD" || base == "USDJPY");
+  }
+
+double Strategy_PipDistance()
+  {
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
+   if(point <= 0.0)
+      return 0.0;
+   return (digits == 3 || digits == 5) ? point * 10.0 : point;
+  }
+
+bool Strategy_CurrentSpread(double &spread_price)
+  {
+   spread_price = 0.0;
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0 || ask <= bid)
+      return false;
+   spread_price = ask - bid;
+   return true;
+  }
+
+bool Strategy_IsStopOrderType(const ENUM_ORDER_TYPE order_type)
+  {
+   return (order_type == ORDER_TYPE_BUY_STOP || order_type == ORDER_TYPE_SELL_STOP);
+  }
+
+bool Strategy_HasOurOpenPosition()
+  {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+         return true;
+     }
+   return false;
+  }
+
+int Strategy_OurPendingStopCount()
+  {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return 0;
+
+   int count = 0;
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0 || !OrderSelect(ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+      if(Strategy_IsStopOrderType((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE)))
+         ++count;
+     }
+   return count;
+  }
+
+void Strategy_DeleteOurPendingStops(const string reason)
+  {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return;
+
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0 || !OrderSelect(ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+      if(!Strategy_IsStopOrderType((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE)))
+         continue;
+      QM_TM_RemovePendingOrder(ticket, reason);
+     }
+  }
+
+double Strategy_StopDistance(const double atr)
+  {
+   if(atr <= 0.0 || strategy_sl_atr_mult <= 0.0)
+      return 0.0;
+
+   if(!Strategy_IsFxSymbol())
+      return strategy_sl_atr_mult * atr;
+
+   const double pip = Strategy_PipDistance();
+   if(pip <= 0.0 || strategy_fx_sl_pips <= 0.0)
+      return 0.0;
+
+   const double fixed_stop = strategy_fx_sl_pips * pip;
+   if(fixed_stop < 0.4 * atr || fixed_stop > 1.2 * atr)
+      return strategy_sl_atr_mult * atr;
+   return fixed_stop;
+  }
+
+bool Strategy_InitEntryRequest(QM_EntryRequest &req)
+  {
+   req.type = QM_BUY_STOP;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = MathMax(1, strategy_pending_days) * 86400;
+   return true;
+  }
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -88,7 +225,20 @@ input double strategy_atr_tp_mult       = 4.0;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   // Card has no extra session, spread, or regime filter beyond framework gates.
+   if(Strategy_HasOurOpenPosition() || Strategy_OurPendingStopCount() > 0)
+      return false;
+
+   double spread_price = 0.0;
+   if(!Strategy_CurrentSpread(spread_price))
+      return true;
+
+   const double atr = QM_ATR(_Symbol, strategy_timeframe, MathMax(1, strategy_atr_period), 1);
+   const double stop_distance = Strategy_StopDistance(atr);
+   if(stop_distance <= 0.0)
+      return true;
+   if(strategy_max_spread_stop_frac > 0.0 && spread_price > strategy_max_spread_stop_frac * stop_distance)
+      return true;
+
    return false;
   }
 
@@ -97,64 +247,94 @@ bool Strategy_NoTradeFilter()
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   req.type = QM_BUY;
-   req.price = 0.0;
-   req.sl = 0.0;
-   req.tp = 0.0;
-   req.reason = "";
-   req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
+   Strategy_InitEntryRequest(req);
+   Strategy_DeleteOurPendingStops("new_d1_bar_reset");
 
-   if(strategy_fast_sma_period <= 0 ||
-      strategy_mid_sma_period <= 0 ||
-      strategy_trend_sma_period <= 0 ||
-      strategy_atr_period <= 0 ||
-      strategy_atr_sl_mult <= 0.0 ||
-      strategy_atr_tp_mult <= 0.0)
+   if(strategy_timeframe != PERIOD_D1)
+      return false;
+   if(Strategy_HasOurOpenPosition() || Strategy_OurPendingStopCount() > 0)
+      return false;
+   if(strategy_atr_period <= 0 ||
+      strategy_fx_entry_buffer_pips <= 0.0 ||
+      strategy_nonfx_entry_atr_mult <= 0.0 ||
+      strategy_min_range_atr_mult <= 0.0 ||
+      strategy_rr_multiple <= 0.0)
       return false;
 
-   const ENUM_TIMEFRAMES tf = PERIOD_M5;
-   const int shift = 1;
+   const double atr = QM_ATR(_Symbol, strategy_timeframe, strategy_atr_period, 1);
+   if(atr <= 0.0)
+      return false;
 
-   const double sma_fast = QM_SMA(_Symbol, tf, strategy_fast_sma_period, shift);
-   const double sma_mid = QM_SMA(_Symbol, tf, strategy_mid_sma_period, shift);
-   const double sma_trend = QM_SMA(_Symbol, tf, strategy_trend_sma_period, shift);
-   const double atr = QM_ATR(_Symbol, tf, strategy_atr_period, shift);
+   // perf-allowed: single closed D1 OHLC reads for previous-day wick geometry;
+   // framework has no OHLC reader and this runs only behind the skeleton new-bar gate.
+   const double prev_open = iOpen(_Symbol, strategy_timeframe, 1);
+   const double prev_high = iHigh(_Symbol, strategy_timeframe, 1);
+   const double prev_low = iLow(_Symbol, strategy_timeframe, 1);
+   if(prev_open <= 0.0 || prev_high <= 0.0 || prev_low <= 0.0 || prev_high <= prev_low)
+      return false;
 
-   // perf-allowed: single closed-bar close read; no QM price-reader helper exists.
-   const double close_last = iClose(_Symbol, tf, shift); // perf-allowed
+   const double prev_range = prev_high - prev_low;
+   if(prev_range < strategy_min_range_atr_mult * atr)
+      return false;
 
-   if(sma_fast <= 0.0 || sma_mid <= 0.0 || sma_trend <= 0.0 ||
-      atr <= 0.0 || close_last <= 0.0)
+   double spread_price = 0.0;
+   if(!Strategy_CurrentSpread(spread_price))
+      return false;
+
+   const double stop_distance = Strategy_StopDistance(atr);
+   if(stop_distance <= 0.0)
+      return false;
+   if(strategy_max_spread_stop_frac > 0.0 && spread_price > strategy_max_spread_stop_frac * stop_distance)
+      return false;
+
+   const double pip = Strategy_PipDistance();
+   const bool is_fx = Strategy_IsFxSymbol();
+   const double buffer = is_fx ? strategy_fx_entry_buffer_pips * pip
+                               : strategy_nonfx_entry_atr_mult * atr;
+   if(buffer <= 0.0)
+      return false;
+
+   const double rr_tp_distance = strategy_rr_multiple * stop_distance;
+   double tp_distance = rr_tp_distance;
+   if(is_fx && strategy_fx_tp_pips > 0.0 && pip > 0.0)
+      tp_distance = MathMin(strategy_fx_tp_pips * pip, rr_tp_distance);
+   if(tp_distance <= 0.0)
       return false;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
       return false;
+   const double min_dist = (double)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL) * point;
 
-   if(close_last > sma_trend &&
-      close_last > sma_fast &&
-      close_last > sma_mid)
+   const double wick_buy = prev_open - prev_low;
+   const double wick_sell = prev_high - prev_open;
+
+   if(wick_buy > wick_sell)
      {
-      req.type = QM_BUY;
-      req.price = 0.0;
-      req.sl = QM_StopATRFromValue(_Symbol, req.type, ask, atr, strategy_atr_sl_mult);
-      req.tp = QM_TakeATRFromValue(_Symbol, req.type, ask, atr, strategy_atr_tp_mult);
-      req.reason = "SMA10_15_50_M5_LONG";
-      return (req.sl > 0.0 && req.tp > 0.0);
+      const double entry = prev_high + buffer;
+      if(entry <= ask + min_dist || stop_distance <= min_dist || tp_distance <= min_dist)
+         return false;
+      req.type = QM_BUY_STOP;
+      req.price = NormalizeDouble(entry, _Digits);
+      req.sl = NormalizeDouble(entry - stop_distance, _Digits);
+      req.tp = NormalizeDouble(entry + tp_distance, _Digits);
+      req.reason = "FF_DAILY_WICK_BUY_STOP";
+      return (req.sl < req.price && req.tp > req.price);
      }
 
-   if(close_last < sma_trend &&
-      close_last < sma_fast &&
-      close_last < sma_mid)
+   if(wick_sell > wick_buy)
      {
-      req.type = QM_SELL;
-      req.price = 0.0;
-      req.sl = QM_StopATRFromValue(_Symbol, req.type, bid, atr, strategy_atr_sl_mult);
-      req.tp = QM_TakeATRFromValue(_Symbol, req.type, bid, atr, strategy_atr_tp_mult);
-      req.reason = "SMA10_15_50_M5_SHORT";
-      return (req.sl > 0.0 && req.tp > 0.0);
+      const double entry = prev_low - buffer;
+      if(entry >= bid - min_dist || stop_distance <= min_dist || tp_distance <= min_dist)
+         return false;
+      req.type = QM_SELL_STOP;
+      req.price = NormalizeDouble(entry, _Digits);
+      req.sl = NormalizeDouble(entry + stop_distance, _Digits);
+      req.tp = NormalizeDouble(entry - tp_distance, _Digits);
+      req.reason = "FF_DAILY_WICK_SELL_STOP";
+      return (req.sl > req.price && req.tp < req.price);
      }
 
    return false;
@@ -164,14 +344,38 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card exits only via fixed SL/TP plus framework Friday close.
+   if(Strategy_HasOurOpenPosition())
+      Strategy_DeleteOurPendingStops("position_open_cancel_stale_pending");
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   // Card defines no discretionary exit beyond SL/TP.
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   // perf-allowed: one current D1 bar-time read for the card's next-D1-open time stop.
+   const datetime current_d1_open = iTime(_Symbol, strategy_timeframe, 0);
+   if(current_d1_open <= 0)
+      return false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const datetime opened_at = (datetime)PositionGetInteger(POSITION_TIME);
+      if(opened_at > 0 && current_d1_open > opened_at)
+         return true;
+     }
+
    return false;
   }
 
@@ -180,6 +384,8 @@ bool Strategy_ExitSignal()
 // custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
+   if(broker_time <= 0)
+      return false;
    return false; // defer to QM_NewsAllowsTrade(...)
   }
 

@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA trades the M5 chart using three simple moving averages. A long setup requires the last closed candle to close above SMA(50), SMA(10), and SMA(15), with its low above both short SMAs so the candle fully cleared them after the prior candle had not yet cleared the pair. A short setup is the mirror image: the last closed candle closes below all three SMAs, its high is below both short SMAs, and the prior candle had not yet cleared below the pair. Entries are market orders on the next bar; exits are the framework-managed SL/TP, with no additional discretionary close rule.
+The EA trades the M5 chart using three simple moving averages. A long setup requires the last closed candle to close above SMA(50), SMA(10), and SMA(15), matching the card's explicit close-vs-SMA entry test. A short setup is the mirror image: the last closed candle closes below all three SMAs. Entries are market orders on the next bar; exits are the framework-managed SL/TP, with no additional discretionary close rule.
 
 ---
 
@@ -96,3 +96,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | v1 | 2026-06-11 | Initial build from card | d7f223c3-fbaf-4245-9609-99afd8a858a6 |
 | v2 | 2026-06-11 | Rework body-clearance interpretation after smoke trade-count review | 50e56bf2-04b6-4bdf-bab8-15ff816a076c |
 | v3 | 2026-06-11 | Rework entry to require prior-bar SMA-pair cross plus card high/low clearance | acfba687-4608-4acc-8b48-b26b93630c5f |
+| v4 | 2026-06-11 | Rework entry to card's close-vs-SMA tests after repeated smoke trade-count failures | acfba687-4608-4acc-8b48-b26b93630c5f |
