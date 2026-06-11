@@ -20,6 +20,7 @@
 //   double QM_ADX(sym, tf, period, shift=1)
 //   double QM_ADX_PlusDI (sym, tf, period, shift=1)
 //   double QM_ADX_MinusDI(sym, tf, period, shift=1)
+//   double QM_SAR(sym, tf, step, maximum, shift=1)
 //   double QM_BB_Upper(sym, tf, period, deviation, shift=1, price=PRICE_CLOSE)
 //   double QM_BB_Lower(sym, tf, period, deviation, shift=1, price=PRICE_CLOSE)
 //   double QM_BB_Middle(sym, tf, period, deviation, shift=1, price=PRICE_CLOSE)
@@ -309,6 +310,22 @@ double QM_ADX_PlusDI(const string sym, const ENUM_TIMEFRAMES tf, const int perio
 double QM_ADX_MinusDI(const string sym, const ENUM_TIMEFRAMES tf, const int period, const int shift = 1)
   {
    return QM_IndicatorReadBuffer(QM_IndADX(sym, tf, period), 2, shift);
+  }
+
+int QM_IndSAR(const string sym, const ENUM_TIMEFRAMES tf, const double step, const double maximum)
+  {
+   const string key = StringFormat("SAR|%s|%d|%.8f|%.8f", sym, (int)tf, step, maximum);
+   int h = QM_IndicatorsLookup(key);
+   if(h != INVALID_HANDLE)
+      return h;
+   h = iSAR(sym, tf, step, maximum);
+   return QM_IndicatorsRegister(key, h);
+  }
+
+double QM_SAR(const string sym, const ENUM_TIMEFRAMES tf, const double step,
+              const double maximum, const int shift = 1)
+  {
+   return QM_IndicatorReadBuffer(QM_IndSAR(sym, tf, step, maximum), 0, shift);
   }
 
 // --- Stochastic oscillator (iStochastic) ---
