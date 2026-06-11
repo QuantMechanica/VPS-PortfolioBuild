@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA trades D1 double touches of a recent support or resistance zone. A Wammie long is eligible when the latest closed D1 bar returns to the support zone, closes as a strong bullish candle, and a prior touch within the pattern window was followed by a rally away from the zone. A Moolah short mirrors the rule at resistance, requiring a strong bearish second-touch candle after a prior touch and sell-off. Entries are stop orders one pip beyond the second-touch candle, with stops beyond the two touch extremes and targets at the nearest recent swing level.
+The EA trades D1 double touches of a recent support or resistance zone. A Wammie long is eligible when the latest closed D1 bar returns to a prior-touch support candidate inside the pattern window, closes as a strong bullish candle, and that prior touch was followed by a rally away from the zone. A Moolah short mirrors the rule at resistance, requiring a strong bearish second-touch candle after a prior-touch resistance candidate and sell-off. Entries are stop orders one pip beyond the second-touch candle, with stops beyond the two touch extremes and targets at the nearest recent swing level.
 
 ---
 
@@ -103,3 +103,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-11 | Initial build from card | 6dc790f1-32e1-4c36-9812-f44c4b03e54b |
+| v2 | 2026-06-11 | Rework zone candidate scan for smoke trade generation | 8ed708bf-6bcc-46c2-a6b7-0d0c56b8c2fa |

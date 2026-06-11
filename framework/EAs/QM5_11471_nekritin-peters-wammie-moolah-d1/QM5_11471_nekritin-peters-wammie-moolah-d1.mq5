@@ -141,30 +141,20 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(second_open <= 0.0 || second_high <= 0.0 || second_low <= 0.0 || second_close <= 0.0 || second_range <= 0.0)
       return false;
 
-   double support_zone = DBL_MAX;
-   double resistance_zone = -DBL_MAX;
-   const int zone_end = strategy_zone_exclude_recent + strategy_zone_lookback_bars - 1;
-   for(int s = strategy_zone_exclude_recent; s <= zone_end && s < copied; ++s)
-     {
-      support_zone = MathMin(support_zone, rates[s].low);
-      resistance_zone = MathMax(resistance_zone, rates[s].high);
-     }
-   if(support_zone == DBL_MAX || resistance_zone == -DBL_MAX)
-      return false;
-
    const double buffer = strategy_zone_buffer_pips * pip;
    const double min_rally = strategy_min_rally_pips * pip;
    const double entry_offset = strategy_entry_offset_pips * pip;
    const double max_sl = strategy_max_sl_pips * pip;
    const int first_min_shift = strategy_min_touch_gap_bars + 1;
-   const int first_max_shift = MathMin(strategy_max_pattern_bars, copied - 2);
+   const int zone_end = strategy_zone_exclude_recent + strategy_zone_lookback_bars - 1;
+   const int first_max_shift = MathMin(MathMin(strategy_max_pattern_bars, zone_end), copied - 2);
 
-   if(second_close > second_open && second_body > strategy_catalyst_body_ratio * second_range &&
-      MathAbs(second_low - support_zone) <= buffer)
+   if(second_close > second_open && second_body > strategy_catalyst_body_ratio * second_range)
      {
       for(int first_shift = first_min_shift; first_shift <= first_max_shift; ++first_shift)
         {
-         if(MathAbs(rates[first_shift].low - support_zone) > buffer)
+         const double support_zone = rates[first_shift].low;
+         if(support_zone <= 0.0 || MathAbs(second_low - support_zone) > buffer)
             continue;
 
          double rally_high = -DBL_MAX;
@@ -203,12 +193,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
         }
      }
 
-   if(second_close < second_open && second_body > strategy_catalyst_body_ratio * second_range &&
-      MathAbs(second_high - resistance_zone) <= buffer)
+   if(second_close < second_open && second_body > strategy_catalyst_body_ratio * second_range)
      {
       for(int first_shift = first_min_shift; first_shift <= first_max_shift; ++first_shift)
         {
-         if(MathAbs(rates[first_shift].high - resistance_zone) > buffer)
+         const double resistance_zone = rates[first_shift].high;
+         if(resistance_zone <= 0.0 || MathAbs(second_high - resistance_zone) > buffer)
             continue;
 
          double selloff_low = DBL_MAX;
