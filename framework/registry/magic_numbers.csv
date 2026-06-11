@@ -7499,3 +7499,7 @@
 11398,naked-forex-big-shadow-d1,4,USDCAD.DWX,113980004,2026-06-11,Development,active
 9957,ff-tf15-tdi-10ema-m15,0,EURUSD.DWX,99570000,2026-06-11,Development,active
 9957,ff-tf15-tdi-10ema-m15,1,GBPUSD.DWX,99570001,2026-06-11,Development,active
+12372,tmom-sector-mom,0,NDX.DWX,123720000,2026-06-11,Development,active
+12372,tmom-sector-mom,1,WS30.DWX,123720001,2026-06-11,Development,active
+12372,tmom-sector-mom,2,SP500.DWX,123720002,2026-06-11,Development,active
+12372,tmom-sector-mom,3,GDAXI.DWX,123720003,2026-06-11,Development,active
