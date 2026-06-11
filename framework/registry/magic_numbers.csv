@@ -7780,3 +7780,7 @@
 12506,bb-bottom-w,3,XAUUSD.DWX,125060003,2026-06-11,Development,active
 12506,bb-bottom-w,4,NDX.DWX,125060004,2026-06-11,Development,active
 12506,bb-bottom-w,5,WS30.DWX,125060005,2026-06-11,Development,active
+11867,psar-adx50-di-h1,0,EURUSD.DWX,118670000,2026-06-11,Development,active
+11867,psar-adx50-di-h1,1,GBPUSD.DWX,118670001,2026-06-11,Development,active
+11867,psar-adx50-di-h1,2,USDJPY.DWX,118670002,2026-06-11,Development,active
+11867,psar-adx50-di-h1,3,AUDUSD.DWX,118670003,2026-06-11,Development,active

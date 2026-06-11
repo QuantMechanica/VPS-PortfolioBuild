@@ -26,6 +26,9 @@
 //   double QM_BB_Upper(sym, tf, period, deviation, shift=1, price=PRICE_CLOSE)
 //   double QM_BB_Lower(sym, tf, period, deviation, shift=1, price=PRICE_CLOSE)
 //   double QM_BB_Middle(sym, tf, period, deviation, shift=1, price=PRICE_CLOSE)
+//   double QM_DeMarker(sym, tf, period, shift=1)
+//   double QM_Envelope_Upper(sym, tf, period, deviation, method, shift=1, price=PRICE_CLOSE)
+//   double QM_Envelope_Lower(sym, tf, period, deviation, method, shift=1, price=PRICE_CLOSE)
 //
 //   void   QM_IndicatorsShutdown()       // called from QM_FrameworkShutdown
 //
@@ -393,6 +396,51 @@ double QM_CCI(const string sym, const ENUM_TIMEFRAMES tf, const int period = 14,
               const int shift = 1, const ENUM_APPLIED_PRICE price = PRICE_TYPICAL)
   {
    return QM_IndicatorReadBuffer(QM_IndCCI(sym, tf, period, price), 0, shift);
+  }
+
+// --- DeMarker oscillator (iDeMarker) ---
+int QM_IndDeMarker(const string sym, const ENUM_TIMEFRAMES tf, const int period)
+  {
+   const string key = StringFormat("DEM|%s|%d|%d", sym, (int)tf, period);
+   int h = QM_IndicatorsLookup(key);
+   if(h != INVALID_HANDLE)
+      return h;
+   h = iDeMarker(sym, tf, period);
+   return QM_IndicatorsRegister(key, h);
+  }
+
+double QM_DeMarker(const string sym, const ENUM_TIMEFRAMES tf, const int period,
+                   const int shift = 1)
+  {
+   return QM_IndicatorReadBuffer(QM_IndDeMarker(sym, tf, period), 0, shift);
+  }
+
+// --- Envelopes (iEnvelopes) ---
+int QM_IndEnvelopes(const string sym, const ENUM_TIMEFRAMES tf, const int period,
+                    const double deviation, const ENUM_MA_METHOD method,
+                    const ENUM_APPLIED_PRICE price)
+  {
+   const string key = StringFormat("ENV|%s|%d|%d|%.6f|%d|%d",
+                                   sym, (int)tf, period, deviation, (int)method, (int)price);
+   int h = QM_IndicatorsLookup(key);
+   if(h != INVALID_HANDLE)
+      return h;
+   h = iEnvelopes(sym, tf, period, 0, method, price, deviation);
+   return QM_IndicatorsRegister(key, h);
+  }
+
+double QM_Envelope_Upper(const string sym, const ENUM_TIMEFRAMES tf, const int period,
+                         const double deviation, const ENUM_MA_METHOD method = MODE_SMA,
+                         const int shift = 1, const ENUM_APPLIED_PRICE price = PRICE_CLOSE)
+  {
+   return QM_IndicatorReadBuffer(QM_IndEnvelopes(sym, tf, period, deviation, method, price), 0, shift);
+  }
+
+double QM_Envelope_Lower(const string sym, const ENUM_TIMEFRAMES tf, const int period,
+                         const double deviation, const ENUM_MA_METHOD method = MODE_SMA,
+                         const int shift = 1, const ENUM_APPLIED_PRICE price = PRICE_CLOSE)
+  {
+   return QM_IndicatorReadBuffer(QM_IndEnvelopes(sym, tf, period, deviation, method, price), 1, shift);
   }
 
 // --- Williams Percent Range (WPR) ---
