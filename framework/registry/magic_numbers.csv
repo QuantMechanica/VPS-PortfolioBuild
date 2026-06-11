@@ -7511,3 +7511,11 @@
 9938,ff-stoch-ma-ignition-h1,1,GBPUSD.DWX,99380001,2026-06-11,Development,active
 9938,ff-stoch-ma-ignition-h1,2,USDJPY.DWX,99380002,2026-06-11,Development,active
 9938,ff-stoch-ma-ignition-h1,3,AUDUSD.DWX,99380003,2026-06-11,Development,active
+11480,capra-pristine-pbs-pss-pullback-d1,0,EURUSD.DWX,114800000,2026-06-11,Development,active
+11480,capra-pristine-pbs-pss-pullback-d1,1,GBPUSD.DWX,114800001,2026-06-11,Development,active
+11480,capra-pristine-pbs-pss-pullback-d1,2,USDJPY.DWX,114800002,2026-06-11,Development,active
+11480,capra-pristine-pbs-pss-pullback-d1,3,AUDUSD.DWX,114800003,2026-06-11,Development,active
+11480,capra-pristine-pbs-pss-pullback-d1,4,USDCAD.DWX,114800004,2026-06-11,Development,active
+12414,ger-cezlsma,0,AUDUSD.DWX,124140000,2026-06-11,Development,active
+12414,ger-cezlsma,1,EURUSD.DWX,124140001,2026-06-11,Development,active
+12414,ger-cezlsma,2,GBPUSD.DWX,124140002,2026-06-11,Development,active
