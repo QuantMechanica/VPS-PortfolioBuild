@@ -7519,3 +7519,16 @@
 12414,ger-cezlsma,0,AUDUSD.DWX,124140000,2026-06-11,Development,active
 12414,ger-cezlsma,1,EURUSD.DWX,124140001,2026-06-11,Development,active
 12414,ger-cezlsma,2,GBPUSD.DWX,124140002,2026-06-11,Development,active
+9937,ff-magic100-ema-pullback-h1,0,EURUSD.DWX,99370000,2026-06-11,Development,active
+9937,ff-magic100-ema-pullback-h1,1,GBPUSD.DWX,99370001,2026-06-11,Development,active
+9937,ff-magic100-ema-pullback-h1,2,USDJPY.DWX,99370002,2026-06-11,Development,active
+9937,ff-magic100-ema-pullback-h1,3,XAUUSD.DWX,99370003,2026-06-11,Development,active
+9937,ff-magic100-ema-pullback-h1,4,NDX.DWX,99370004,2026-06-11,Development,active
+9941,ff-5x5-hilo-break-h1,0,EURUSD.DWX,99410000,2026-06-11,Claude,active
+9941,ff-5x5-hilo-break-h1,1,GBPUSD.DWX,99410001,2026-06-11,Claude,active
+9941,ff-5x5-hilo-break-h1,2,USDCAD.DWX,99410002,2026-06-11,Claude,active
+9941,ff-5x5-hilo-break-h1,3,USDJPY.DWX,99410003,2026-06-11,Claude,active
+9943,ff-fractal-hilo-break-h4,0,EURUSD.DWX,99430000,2026-06-11,Development,active
+9943,ff-fractal-hilo-break-h4,1,GBPUSD.DWX,99430001,2026-06-11,Development,active
+9943,ff-fractal-hilo-break-h4,2,USDCAD.DWX,99430002,2026-06-11,Development,active
+9943,ff-fractal-hilo-break-h4,3,XAUUSD.DWX,99430003,2026-06-11,Development,active

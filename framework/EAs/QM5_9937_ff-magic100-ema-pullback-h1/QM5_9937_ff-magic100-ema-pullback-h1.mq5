@@ -6,8 +6,7 @@
 
 // =============================================================================
 // QM5_9937 ff-magic100-ema-pullback-h1
-// Source: Minotawr, "Magic 100", ForexFactory 2020
-//         https://www.forexfactory.com/thread/989445-magic-100
+// Source: Minotawr, Magic 100, ForexFactory 2020 (see SPEC.md § 6 for URL)
 // Card:   artifacts/cards_approved/QM5_9937_ff-magic100-ema-pullback-h1.md
 // =============================================================================
 
@@ -130,11 +129,10 @@ void TryNewEntry()
    const double sl_buf    = strategy_sl_buffer_atr * atr;
    const double max_risk  = strategy_max_risk_atr * atr;
 
-   // perf-allowed: single-bar OHLC for candle direction + boundary check
-   const double open1  = iOpen(_Symbol,  PERIOD_H1, 1);
-   const double close1 = iClose(_Symbol, PERIOD_H1, 1);
-   const double high1  = iHigh(_Symbol,  PERIOD_H1, 1);
-   const double low1   = iLow(_Symbol,   PERIOD_H1, 1);
+   const double open1  = iOpen(_Symbol,  PERIOD_H1, 1);  // perf-allowed: single closed-bar candle type check
+   const double close1 = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed
+   const double high1  = iHigh(_Symbol,  PERIOD_H1, 1); // perf-allowed
+   const double low1   = iLow(_Symbol,   PERIOD_H1, 1); // perf-allowed
    if(open1 <= 0.0 || close1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0)
       return;
 
@@ -194,11 +192,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if(atr <= 0.0 || ema_now <= 0.0)
          return false;
 
-      // perf-allowed: single-bar OHLC for cancel/update decisions
-      const double open1  = iOpen(_Symbol,  PERIOD_H1, 1);
-      const double close1 = iClose(_Symbol, PERIOD_H1, 1);
-      const double high1  = iHigh(_Symbol,  PERIOD_H1, 1);
-      const double low1   = iLow(_Symbol,   PERIOD_H1, 1);
+      const double open1  = iOpen(_Symbol,  PERIOD_H1, 1);  // perf-allowed: single closed-bar candle type check
+      const double close1 = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed
+      const double high1  = iHigh(_Symbol,  PERIOD_H1, 1); // perf-allowed
+      const double low1   = iLow(_Symbol,   PERIOD_H1, 1); // perf-allowed
 
       // Cancellation: expiry or EMA cross
       bool cancel = (g_pending_bars >= strategy_expiry_bars);
