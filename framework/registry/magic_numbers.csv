@@ -7654,3 +7654,7 @@
 9966,ff-simple-daily-ema2050-d1,1,GBPUSD.DWX,99660001,2026-06-11,Development,active
 9966,ff-simple-daily-ema2050-d1,2,USDJPY.DWX,99660002,2026-06-11,Development,active
 9966,ff-simple-daily-ema2050-d1,3,AUDUSD.DWX,99660003,2026-06-11,Development,active
+9976,ff-ema-fibo-rsi-stoch,0,EURUSD.DWX,99760000,2026-06-11,Development,active
+9976,ff-ema-fibo-rsi-stoch,1,GBPUSD.DWX,99760001,2026-06-11,Development,active
+9976,ff-ema-fibo-rsi-stoch,2,USDJPY.DWX,99760002,2026-06-11,Development,active
+9976,ff-ema-fibo-rsi-stoch,3,XAUUSD.DWX,99760003,2026-06-11,Development,active
