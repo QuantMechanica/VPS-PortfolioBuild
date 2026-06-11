@@ -69,7 +69,6 @@ void AdvanceAsiaRange()
       g_asia_ready   = false;
       g_trades_today = 0;
      }
-
    const datetime prev_time = iTime(_Symbol, PERIOD_M15, 1); // perf-allowed: single-shift inside QM_IsNewBar gate
    if(prev_time == 0)
       return;
@@ -141,7 +140,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double atr = QM_ATR(_Symbol, PERIOD_M15, 14, 1);
    if(atr <= 0.0)
       return false;
-
    const double prev_h = iHigh(_Symbol,  PERIOD_M15, 1); // perf-allowed: single-shift inside QM_IsNewBar gate
    const double prev_l = iLow(_Symbol,   PERIOD_M15, 1); // perf-allowed: single-shift inside QM_IsNewBar gate
    const double prev_c = iClose(_Symbol, PERIOD_M15, 1); // perf-allowed: single-shift inside QM_IsNewBar gate
