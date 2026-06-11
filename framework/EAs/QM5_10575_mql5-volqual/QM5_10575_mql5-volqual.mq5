@@ -51,6 +51,9 @@ input double          strategy_rr_target        = 1.5;
 // Strategy hooks and local helpers.
 // -----------------------------------------------------------------------------
 
+int g_cached_vq_signal = 0;
+int g_cached_vq_color = 0;
+
 double Strategy_MA(const ENUM_APPLIED_PRICE price, const int shift)
   {
    if(strategy_vq_length <= 0 || shift <= 0)
@@ -119,6 +122,7 @@ int Strategy_VQColorChange()
   {
    const int current_color = Strategy_VQColorAt(1);
    const int previous_color = Strategy_VQColorAt(2);
+   g_cached_vq_color = current_color;
    if(current_color > 0 && previous_color < 0)
       return 1;
    if(current_color < 0 && previous_color > 0)
@@ -187,10 +191,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.expiration_seconds = 0;
 
    if(strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0 ||
-      strategy_rr_target <= 0.0 || Strategy_HasOurPosition())
+      strategy_rr_target <= 0.0)
       return false;
 
-   const int signal = Strategy_VQColorChange();
+   g_cached_vq_signal = Strategy_VQColorChange();
+   const int signal = g_cached_vq_signal;
+   if(Strategy_HasOurPosition())
+      return false;
    if(signal == 0)
       return false;
 
@@ -226,11 +233,17 @@ bool Strategy_ExitSignal()
    if(!Strategy_ReadOurPositionType(position_type))
       return false;
 
-   const int signal = Strategy_VQColorChange();
+   const int signal = g_cached_vq_signal;
    if(position_type == POSITION_TYPE_BUY && signal < 0)
+     {
+      g_cached_vq_signal = 0;
       return true;
+     }
    if(position_type == POSITION_TYPE_SELL && signal > 0)
+     {
+      g_cached_vq_signal = 0;
       return true;
+     }
 
    return false;
   }
