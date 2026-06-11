@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11748 Big Ben London Range Fade"
+#property description "QM5_11699 anon-sma10-15-50-m5-scalp"
 
 #include <QM/QM_Common.mqh>
 
@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 11748;
+input int    qm_ea_id                   = 11699;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -73,14 +73,15 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_asia_start_hour_utc    = 0;
-input int    strategy_asia_end_hour_utc      = 7;
-input int    strategy_breakout_start_hour_utc = 7;
-input int    strategy_breakout_end_hour_utc   = 8;
-input int    strategy_fade_hour_utc           = 8;
-input int    strategy_time_stop_hour_utc      = 9;
-input int    strategy_history_bars_h1         = 16;
-input bool   strategy_use_body_range          = false;
+input int    strategy_fast_sma_period   = 10;
+input int    strategy_trigger_sma_period = 15;
+input int    strategy_trend_sma_period  = 50;
+input int    strategy_atr_period        = 14;
+input double strategy_atr_sl_mult       = 2.0;
+input double strategy_reward_risk       = 2.0;
+input int    strategy_cooldown_bars     = 1;
+
+int g_cooldown_bars_remaining = 0;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -90,9 +91,6 @@ input bool   strategy_use_body_range          = false;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   // Card defines no global no-trade filter beyond framework news/Friday gates.
-   // The London-session timing is enforced inside Strategy_EntrySignal so
-   // exits and trade management remain available on every tick.
    return false;
   }
 
@@ -109,162 +107,69 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(_Period != PERIOD_H1)
-      return false;
-   if(strategy_asia_start_hour_utc < 0 || strategy_asia_end_hour_utc > 24 ||
-      strategy_breakout_start_hour_utc < 0 || strategy_breakout_end_hour_utc > 24 ||
-      strategy_fade_hour_utc < 0 || strategy_fade_hour_utc > 23 ||
-      strategy_time_stop_hour_utc < 0 || strategy_time_stop_hour_utc > 23)
-      return false;
-   if(strategy_asia_start_hour_utc >= strategy_asia_end_hour_utc ||
-      strategy_breakout_start_hour_utc >= strategy_breakout_end_hour_utc)
-      return false;
-
-   MqlRates rates[];
-   ArraySetAsSeries(rates, true);
-   const int bars_to_copy = MathMax(10, MathMin(strategy_history_bars_h1, 48));
-   const int copied = CopyRates(_Symbol, PERIOD_H1, 1, bars_to_copy, rates); // perf-allowed: bounded H1 session-structure read, called only after framework QM_IsNewBar()
-   if(copied < 10)
-      return false;
-
-   MqlDateTime fade_dt;
-   ZeroMemory(fade_dt);
-   const datetime fade_utc = QM_BrokerToUTC(rates[0].time);
-   TimeToStruct(fade_utc, fade_dt);
-   if(fade_dt.hour != strategy_fade_hour_utc)
-      return false;
-
-   const int fade_day_key = fade_dt.year * 10000 + fade_dt.mon * 100 + fade_dt.day;
-   double asia_high = -DBL_MAX;
-   double asia_low = DBL_MAX;
-   bool found_asia = false;
-
-   for(int i = 0; i < copied; ++i)
+   if(g_cooldown_bars_remaining > 0)
      {
-      MqlDateTime dt;
-      ZeroMemory(dt);
-      TimeToStruct(QM_BrokerToUTC(rates[i].time), dt);
-      const int day_key = dt.year * 10000 + dt.mon * 100 + dt.day;
-      if(day_key != fade_day_key)
-         continue;
-      if(dt.hour < strategy_asia_start_hour_utc || dt.hour >= strategy_asia_end_hour_utc)
-         continue;
-
-      const double hi = strategy_use_body_range ? MathMax(rates[i].open, rates[i].close) : rates[i].high;
-      const double lo = strategy_use_body_range ? MathMin(rates[i].open, rates[i].close) : rates[i].low;
-      asia_high = MathMax(asia_high, hi);
-      asia_low = MathMin(asia_low, lo);
-      found_asia = true;
+      g_cooldown_bars_remaining--;
+      return false;
      }
 
-   if(!found_asia || asia_high <= asia_low || asia_high <= 0.0 || asia_low <= 0.0)
+   if(strategy_fast_sma_period <= 0 ||
+      strategy_trigger_sma_period <= 0 ||
+      strategy_trend_sma_period <= 0 ||
+      strategy_atr_period <= 0 ||
+      strategy_atr_sl_mult <= 0.0 ||
+      strategy_reward_risk <= 0.0 ||
+      strategy_cooldown_bars < 0)
       return false;
 
-   bool up_breakout = false;
-   bool down_breakout = false;
-   double pre_high_close = -DBL_MAX;
-   double pre_low_close = DBL_MAX;
-   bool found_pre = false;
-
-   for(int i = 0; i < copied; ++i)
-     {
-      MqlDateTime dt;
-      ZeroMemory(dt);
-      TimeToStruct(QM_BrokerToUTC(rates[i].time), dt);
-      const int day_key = dt.year * 10000 + dt.mon * 100 + dt.day;
-      if(day_key != fade_day_key)
-         continue;
-      if(dt.hour < strategy_breakout_start_hour_utc || dt.hour >= strategy_breakout_end_hour_utc)
-         continue;
-
-      if(rates[i].close > asia_high)
-         up_breakout = true;
-      if(rates[i].close < asia_low)
-         down_breakout = true;
-      pre_high_close = MathMax(pre_high_close, rates[i].close);
-      pre_low_close = MathMin(pre_low_close, rates[i].close);
-      found_pre = true;
-     }
-
-   if(!found_pre)
+   const ENUM_TIMEFRAMES tf = PERIOD_M5;
+   const double low1 = QM_SMA(_Symbol, tf, 1, 1, PRICE_LOW);
+   const double high1 = QM_SMA(_Symbol, tf, 1, 1, PRICE_HIGH);
+   const double close1 = QM_SMA(_Symbol, tf, 1, 1, PRICE_CLOSE);
+   const double sma_fast = QM_SMA(_Symbol, tf, strategy_fast_sma_period, 1, PRICE_CLOSE);
+   const double sma_trigger = QM_SMA(_Symbol, tf, strategy_trigger_sma_period, 1, PRICE_CLOSE);
+   const double sma_trend = QM_SMA(_Symbol, tf, strategy_trend_sma_period, 1, PRICE_CLOSE);
+   const double atr = QM_ATR(_Symbol, tf, strategy_atr_period, 1);
+   if(low1 <= 0.0 || high1 <= 0.0 || close1 <= 0.0 ||
+      sma_fast <= 0.0 || sma_trigger <= 0.0 || sma_trend <= 0.0 || atr <= 0.0)
       return false;
 
-   const double range = asia_high - asia_low;
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   if(range <= 0.0 || bid <= 0.0 || ask <= 0.0)
+   const bool long_signal = (close1 > sma_trend &&
+                             low1 > sma_fast &&
+                             low1 > sma_trigger);
+   const bool short_signal = (close1 < sma_trend &&
+                              high1 < sma_fast &&
+                              high1 < sma_trigger);
+   if(!long_signal && !short_signal)
       return false;
 
-   if(up_breakout && rates[0].close < asia_high)
-     {
-      req.type = QM_SELL;
-      req.price = 0.0;
-      req.sl = pre_high_close;
-      req.tp = asia_low - range;
-      req.reason = "BIGBEN_SHORT_FADE";
-      if(req.sl <= bid || req.tp >= bid)
-         return false;
-      return true;
-     }
+   req.type = long_signal ? QM_BUY : QM_SELL;
+   req.price = long_signal ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
+                           : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(req.price <= 0.0)
+      return false;
 
-   if(down_breakout && rates[0].close > asia_low)
-     {
-      req.type = QM_BUY;
-      req.price = 0.0;
-      req.sl = pre_low_close;
-      req.tp = asia_high + range;
-      req.reason = "BIGBEN_LONG_FADE";
-      if(req.sl >= ask || req.tp <= ask)
-         return false;
-      return true;
-     }
+   req.sl = QM_StopATRFromValue(_Symbol, req.type, req.price, atr, strategy_atr_sl_mult);
+   req.tp = QM_TakeRR(_Symbol, req.type, req.price, req.sl, strategy_reward_risk);
+   if(req.sl <= 0.0 || req.tp <= 0.0)
+      return false;
 
-   return false;
+   req.reason = long_signal ? "SMA10_15_50_M5_LONG" : "SMA10_15_50_M5_SHORT";
+   g_cooldown_bars_remaining = strategy_cooldown_bars;
+   return true;
   }
 
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies no break-even, trailing, partial close, or pyramiding.
+   // Card defines no trailing stop, break-even, or partial-close management.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   MqlDateTime now_dt;
-   ZeroMemory(now_dt);
-   const datetime now_utc = QM_BrokerToUTC(TimeCurrent());
-   TimeToStruct(now_utc, now_dt);
-   if(now_dt.hour < strategy_time_stop_hour_utc)
-      return false;
-
-   const int now_day_key = now_dt.year * 10000 + now_dt.mon * 100 + now_dt.day;
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      MqlDateTime open_dt;
-      ZeroMemory(open_dt);
-      const datetime open_utc = QM_BrokerToUTC((datetime)PositionGetInteger(POSITION_TIME));
-      TimeToStruct(open_utc, open_dt);
-      const int open_day_key = open_dt.year * 10000 + open_dt.mon * 100 + open_dt.day;
-      const double open_pnl = PositionGetDouble(POSITION_PROFIT) + PositionGetDouble(POSITION_SWAP);
-      if(open_day_key == now_day_key && open_pnl <= 0.0)
-         return true;
-     }
-
    return false;
   }
 
@@ -273,8 +178,6 @@ bool Strategy_ExitSignal()
 // custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   if(!QM_NewsAllowsTrade(_Symbol, broker_time, qm_news_mode_legacy))
-      return true;
    return false; // defer to QM_NewsAllowsTrade(...)
   }
 

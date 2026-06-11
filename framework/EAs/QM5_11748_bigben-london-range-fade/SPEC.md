@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA measures the Asian session range from 00:00 through 07:00 UTC on H1 bars. If the 07:00 UTC pre-London bar closes above that range, the EA opens a short fade when the completed 08:00 UTC bar closes back below the Asia high. If the 07:00 UTC bar closes below the range, the EA opens a long fade when the completed 08:00 UTC bar closes back above the Asia low. The stop is the pre-London breakout close extreme, the target is one full Asia range projected past the opposite side, and same-day open trades are closed by the strategy time stop from 09:00 UTC onward.
+The EA measures the Asian session range from 00:00 through 07:00 UTC on H1 bars. If the 07:00 UTC pre-London bar closes above that range, the EA opens a short fade when the completed 08:00 UTC bar closes back below the Asia high. If the 07:00 UTC bar closes below the range, the EA opens a long fade when the completed 08:00 UTC bar closes back above the Asia low. The stop is the pre-London breakout close extreme, the target is one full Asia range projected past the opposite side, and same-day open trades that are not profitable are closed by the strategy time stop from 09:00 UTC onward.
 
 ---
 
