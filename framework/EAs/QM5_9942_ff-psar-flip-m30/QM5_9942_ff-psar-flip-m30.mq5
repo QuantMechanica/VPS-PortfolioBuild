@@ -69,15 +69,7 @@ double StrategyPSAR(const ENUM_TIMEFRAMES tf, const int shift)
    if(strategy_psar_step <= 0.0 || strategy_psar_maximum <= 0.0 || shift < 0)
       return 0.0;
 
-   const string key = StringFormat("SAR|%s|%d|%.8f|%.8f",
-                                   _Symbol,
-                                   (int)tf,
-                                   strategy_psar_step,
-                                   strategy_psar_maximum);
-   int handle = QM_IndicatorsLookup(key);
-   if(handle == INVALID_HANDLE)
-      handle = QM_IndicatorsRegister(key, iSAR(_Symbol, tf, strategy_psar_step, strategy_psar_maximum));
-   return QM_IndicatorReadBuffer(handle, 0, shift);
+   return QM_SAR(_Symbol, tf, strategy_psar_step, strategy_psar_maximum, shift);
   }
 
 bool HasOurPosition()
