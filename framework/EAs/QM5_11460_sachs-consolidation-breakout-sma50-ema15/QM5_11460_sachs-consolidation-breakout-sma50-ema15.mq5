@@ -86,95 +86,6 @@ input double          strategy_sl_buffer_pips    = 5.0;
 input double          strategy_tp_atr_mult       = 2.0;
 input double          strategy_max_spread_pips   = 20.0;
 
-double Strategy_PipSize()
-  {
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   const int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
-   if(point <= 0.0)
-      return 0.0;
-   return (digits == 3 || digits == 5) ? point * 10.0 : point;
-  }
-
-double Strategy_SpreadPips()
-  {
-   const double pip = Strategy_PipSize();
-   if(pip <= 0.0)
-      return DBL_MAX;
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0 || ask < bid)
-      return DBL_MAX;
-   return (ask - bid) / pip;
-  }
-
-bool Strategy_FindConsolidationBox(double &box_high, double &box_low, int &box_bars)
-  {
-   box_high = 0.0;
-   box_low = 0.0;
-   box_bars = 0;
-
-   const double pip = Strategy_PipSize();
-   if(pip <= 0.0 || strategy_atr_period <= 0 || strategy_box_atr_mult <= 0.0)
-      return false;
-
-   const int min_bars = MathMax(3, strategy_consol_min_bars);
-   const int max_bars = MathMin(10, MathMax(min_bars, strategy_consol_max_bars));
-   for(int bars = min_bars; bars <= max_bars; ++bars)
-     {
-      double hi = -DBL_MAX;
-      double lo = DBL_MAX;
-      for(int shift = 2; shift <= bars + 1; ++shift)
-        {
-         const double h = iHigh(_Symbol, strategy_signal_tf, shift); // perf-allowed
-         const double l = iLow(_Symbol, strategy_signal_tf, shift);  // perf-allowed
-         if(h <= 0.0 || l <= 0.0 || h < l)
-            return false;
-         hi = MathMax(hi, h);
-         lo = MathMin(lo, l);
-        }
-
-      const double width = hi - lo;
-      const double width_pips = width / pip;
-      if(width_pips < strategy_min_box_pips || width_pips > strategy_max_box_pips)
-         continue;
-
-      const double atr_ref = QM_ATR(_Symbol, strategy_signal_tf, strategy_atr_period, bars + 2);
-      if(atr_ref <= 0.0)
-         continue;
-      if(width < atr_ref * strategy_box_atr_mult)
-        {
-         box_high = hi;
-         box_low = lo;
-         box_bars = bars;
-         return true;
-        }
-     }
-
-   return false;
-  }
-
-bool Strategy_SelectOurPosition(ENUM_POSITION_TYPE &ptype)
-  {
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      return true;
-     }
-
-   return false;
-  }
-
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -185,7 +96,18 @@ bool Strategy_NoTradeFilter()
   {
    // No Trade Filter: time, spread, news. The framework owns time/news gates;
    // the card adds a 20-pip spread cap.
-   return (strategy_max_spread_pips > 0.0 && Strategy_SpreadPips() > strategy_max_spread_pips);
+   if(strategy_max_spread_pips <= 0.0)
+      return false;
+
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
+   const double pip = (digits == 3 || digits == 5) ? point * 10.0 : point;
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(pip <= 0.0 || ask <= 0.0 || bid <= 0.0 || ask < bid)
+      return true;
+
+   return ((ask - bid) / pip > strategy_max_spread_pips);
   }
 
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
@@ -205,13 +127,58 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_tp_atr_mult <= 0.0 || strategy_sl_buffer_pips <= 0.0)
       return false;
 
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
+   const double pip = (digits == 3 || digits == 5) ? point * 10.0 : point;
+   if(pip <= 0.0 || strategy_atr_period <= 0 || strategy_box_atr_mult <= 0.0)
+      return false;
+
    double box_high = 0.0;
    double box_low = 0.0;
    int box_bars = 0;
-   if(!Strategy_FindConsolidationBox(box_high, box_low, box_bars))
+   bool box_ok = false;
+
+   const int min_bars = MathMax(3, strategy_consol_min_bars);
+   const int max_bars = MathMin(10, MathMax(min_bars, strategy_consol_max_bars));
+   for(int bars = min_bars; bars <= max_bars && !box_ok; ++bars)
+     {
+      double hi = -DBL_MAX;
+      double lo = DBL_MAX;
+      for(int shift = 2; shift <= bars + 1; ++shift)
+        {
+         // perf-allowed: bounded structural box read, inside framework closed-bar entry gate.
+         const double h = iHigh(_Symbol, strategy_signal_tf, shift);
+         // perf-allowed: bounded structural box read, inside framework closed-bar entry gate.
+         const double l = iLow(_Symbol, strategy_signal_tf, shift);
+         if(h <= 0.0 || l <= 0.0 || h < l)
+            return false;
+         hi = MathMax(hi, h);
+         lo = MathMin(lo, l);
+        }
+
+      const double width = hi - lo;
+      const double width_pips = width / pip;
+      if(width_pips < strategy_min_box_pips || width_pips > strategy_max_box_pips)
+         continue;
+
+      const double atr_ref = QM_ATR(_Symbol, strategy_signal_tf, strategy_atr_period, bars + 2);
+      if(atr_ref <= 0.0)
+         continue;
+
+      if(width < atr_ref * strategy_box_atr_mult)
+        {
+         box_high = hi;
+         box_low = lo;
+         box_bars = bars;
+         box_ok = true;
+        }
+     }
+
+   if(!box_ok)
       return false;
 
-   const double close1 = iClose(_Symbol, strategy_signal_tf, 1); // perf-allowed
+   // perf-allowed: closed breakout bar read, inside framework closed-bar entry gate.
+   const double close1 = iClose(_Symbol, strategy_signal_tf, 1);
    if(close1 <= 0.0)
       return false;
 
@@ -221,10 +188,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double ema1 = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_period, 1);
    const double atr1 = QM_ATR(_Symbol, strategy_signal_tf, strategy_atr_period, 1);
    if(sma1 <= 0.0 || sma3 <= 0.0 || sma5 <= 0.0 || ema1 <= 0.0 || atr1 <= 0.0)
-      return false;
-
-   const double pip = Strategy_PipSize();
-   if(pip <= 0.0)
       return false;
 
    const bool downtrend = (sma3 < sma5 && ema1 < sma1);
@@ -270,11 +233,31 @@ bool Strategy_ExitSignal()
   {
    // Trade Close: close on EMA15 cross back through the last closed close.
    ENUM_POSITION_TYPE ptype = POSITION_TYPE_BUY;
-   if(!Strategy_SelectOurPosition(ptype))
+   bool found = false;
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
       return false;
 
-   const double close1 = iClose(_Symbol, strategy_signal_tf, 1); // perf-allowed
-   const double close2 = iClose(_Symbol, strategy_signal_tf, 2); // perf-allowed
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      found = true;
+      break;
+     }
+   if(!found)
+      return false;
+
+   // perf-allowed: O(1) closed-bar exit reads; skeleton calls ExitSignal before the entry new-bar gate.
+   const double close1 = iClose(_Symbol, strategy_signal_tf, 1);
+   // perf-allowed: O(1) closed-bar exit reads; skeleton calls ExitSignal before the entry new-bar gate.
+   const double close2 = iClose(_Symbol, strategy_signal_tf, 2);
    const double ema1 = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_period, 1);
    const double ema2 = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_period, 2);
    if(close1 <= 0.0 || close2 <= 0.0 || ema1 <= 0.0 || ema2 <= 0.0)
