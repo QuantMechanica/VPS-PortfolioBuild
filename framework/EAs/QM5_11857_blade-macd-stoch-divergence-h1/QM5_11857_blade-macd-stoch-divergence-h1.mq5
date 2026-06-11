@@ -84,8 +84,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(min_stop <= 0.0 || max_stop <= min_stop)
       return false;
 
-   // QM_IsNewBar() caller gate: OnTick invokes Strategy_EntrySignal only after
-   // the framework closed-bar gate, so this bounded bar snapshot is per-bar.
+   // perf-allowed: bespoke swing-high/low structure scan, bounded and called
+   // only after the framework QM_IsNewBar() closed-bar gate.
    const int bars_needed = MathMax(strategy_swing_lookback + 2, strategy_sl_bars + 2);
    double highs[];
    double lows[];
@@ -268,7 +268,7 @@ void Strategy_ManageOpenPosition()
          if(current_sl <= open_price)
             continue;
          const double risk = current_sl - open_price;
-         const double profit = open_price - SymbolInfoDouble(_Symbol, SYMBOL_BID);
+         const double profit = open_price - SymbolInfoDouble(_Symbol, SYMBOL_ASK);
          if(profit >= risk && stoch < 50.0)
             QM_TM_MoveSL(ticket, NormalizeDouble(open_price - 10.0 * point, _Digits), "BLADE_BE_SHORT_STOCH_MIDLINE");
         }
@@ -277,7 +277,7 @@ void Strategy_ManageOpenPosition()
          if(current_sl >= open_price)
             continue;
          const double risk = open_price - current_sl;
-         const double profit = SymbolInfoDouble(_Symbol, SYMBOL_ASK) - open_price;
+         const double profit = SymbolInfoDouble(_Symbol, SYMBOL_BID) - open_price;
          if(profit >= risk && stoch > 50.0)
             QM_TM_MoveSL(ticket, NormalizeDouble(open_price + 10.0 * point, _Digits), "BLADE_BE_LONG_STOCH_MIDLINE");
         }
