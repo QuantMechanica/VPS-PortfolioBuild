@@ -7902,3 +7902,6 @@
 10097,mql5-swing-ext,0,EURUSD.DWX,100970000,2026-06-11,Development,active
 10097,mql5-swing-ext,1,XAUUSD.DWX,100970001,2026-06-11,Development,active
 10097,mql5-swing-ext,2,GDAXI.DWX,100970002,2026-06-11,Development,active
+10098,mql5-memory,0,EURUSD.DWX,100980000,2026-06-12,Development,active
+10098,mql5-memory,1,GBPUSD.DWX,100980001,2026-06-12,Development,active
+10098,mql5-memory,2,XAUUSD.DWX,100980002,2026-06-12,Development,active
